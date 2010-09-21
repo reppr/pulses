@@ -1,4 +1,11 @@
-//  poly_osc
+//  poly_oscillators
+
+#define PROFILING
+#ifdef PROFILING
+  unsigned long inTime=0, late=0, easy=0, urgent=0, repeat=0, quit=0, leftOscillatorAtTime=0, leftOscillatorCount=0;
+  unsigned long lapseSum=0;
+  int lapse=0, maxLapse=0, dontProfileThisRound=0;
+#endif
 
 #define OSCILLATORS 3
 #define ILLEGALpin -1
@@ -10,8 +17,19 @@ int oscillator;
 unsigned long period[OSCILLATORS], next[OSCILLATORS], nextFlip;
 int state[OSCILLATORS], oscPIN[OSCILLATORS];
 
+unsigned long timeFor1Round = 26;	//  micro seconds for main loop other then oscillating
 int toneSwitch=-1;
 int debugSwitch=0;
+
+void oscillatorInit() {
+  int i;
+
+  for (i=0; i<OSCILLATORS; i++) {
+    pinMode(oscPIN[i], OUTPUT);
+    period[i] = next[i] = 0;
+    state[i] = 0;
+  }
+}
 
 void setup() {
   oscPIN[0] = 49;
@@ -25,16 +43,6 @@ void setup() {
 
   Serial.begin(9600);
   initMenu();
-}
-
-void oscillatorInit() {
-  int i;
-
-  for (i=0; i<OSCILLATORS; i++) {
-    pinMode(oscPIN[i], OUTPUT);
-    period[i] = next[i] = 0;
-    state[i] = 0;
-  }
 }
 
 int startOscillator(int oscillator, unsigned long newPeriod) {
@@ -54,7 +62,7 @@ int startOscillator(int oscillator, unsigned long newPeriod) {
   //  if (next[oscillator] < nextFlip)
   //      updateNextFlip();
 
-  updateNextFlip();
+  nextFlip = updateNextFlip();
 
   Serial.print("Started oscillator "); Serial.print(oscillator);
   Serial.print("\tpin "); Serial.print(oscPIN[oscillator]);
@@ -66,7 +74,7 @@ int startOscillator(int oscillator, unsigned long newPeriod) {
 void stopOscillator(int oscillator) {
   state[oscillator] = 0;
   digitalWrite(oscPIN[oscillator], LOW);
-  updateNextFlip();
+  nextFlip = updateNextFlip();
 }
 
 void toggleOscillator(int oscillator) {
@@ -160,12 +168,23 @@ void menuOscillators(){
       break;
 
     case 'D':
+#ifdef PROFILING
+      Serial.print("inTime "); Serial.print(inTime);
+      Serial.print("\tlate "); Serial.print(late);
+      Serial.print("\teasy "); Serial.print(easy);
+      Serial.print("\turgent "); Serial.println(urgent);
+      Serial.print("repeat "); Serial.print(repeat);
+      Serial.print("\tquit "); Serial.println(quit);
+      Serial.print("maxLapse "); Serial.print(maxLapse);
+      Serial.print("\taverage "); Serial.println(lapseSum / leftOscillatorCount);
+#endif
+      /*
       debugSwitch ^= -1 ;
       if (debugSwitch)
 	Serial.println("debug: ON");
       else
 	Serial.println("debug: OFF");
-
+      */
       break;
 
     case 'o': // set menu local oscillator index to act on the given oscillator
@@ -174,6 +193,22 @@ void menuOscillators(){
 	oscillator = newValue;
 	Serial.print("oscillator "); Serial.println(oscillator);
       }
+
+      break;
+
+    case 'r': // set timeFor1Round
+      Serial.print("timeFor1Round = "); Serial.println(timeFor1Round);
+      newValue = numericInput(timeFor1Round);
+      if (timeFor1Round > 0) {
+	timeFor1Round = newValue;
+      	Serial.print("timeFor1Round set to "); Serial.println(timeFor1Round);
+
+#ifdef PROFILING
+	inTime=0; late=0; easy=0; urgent=0; repeat=0; quit=0, leftOscillatorAtTime=0, leftOscillatorCount=0;
+	lapse=0, lapseSum=0, maxLapse=0;
+#endif
+
+     }
 
       break;
 
@@ -199,29 +234,90 @@ void menuOscillators(){
 
     break;
 
+    default:
+      Serial.print("unknown input: "); Serial.print(byte(input));
+      Serial.print(" = "); Serial.println(input);
+      while (Serial.available() > 0) {
+	input = Serial.read();
+	Serial.print(byte(input));
+      }
+      Serial.println("");
+
+      break;
     }
+
     if (!Serial.available())
       delay(WAITforSERIAL);
   }
+
+#ifdef PROFILING
+  dontProfileThisRound=1;
+#endif
 }
 
 void oscillate() {
   int oscillator;
   unsigned long now = micros();
 
-  for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
-    if (state[oscillator] && (next[oscillator] <= now)) {
-      if (toneSwitch) {
-	if ( (state[oscillator] *= -1) == -1)
-	  digitalWrite(oscPIN[oscillator], LOW);
-	else
-	  digitalWrite(oscPIN[oscillator], HIGH);
-      }
+#ifdef PROFILING
+  if (dontProfileThisRound==0) {
+    if (leftOscillatorCount) {
+      lapse = now - leftOscillatorAtTime;
+      if (lapse > maxLapse)
+	maxLapse = lapse;
 
-      next[oscillator] += period[oscillator];
-      updateNextFlip();
+      lapseSum += lapse;
     }
   }
+#endif
+
+  do {
+    for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
+      if (state[oscillator] && (next[oscillator] <= now)) {
+	if (toneSwitch) {
+	  if ( (state[oscillator] *= -1) == -1)
+	    digitalWrite(oscPIN[oscillator], LOW);
+	  else
+	    digitalWrite(oscPIN[oscillator], HIGH);
+	}
+
+	next[oscillator] += period[oscillator];
+	nextFlip = updateNextFlip();
+      }
+    }
+
+    // is there enough time to do something else in between?
+    now = micros();
+
+#ifdef PROFILING
+    if (dontProfileThisRound==0) {
+      if (now < nextFlip)
+	inTime++;
+      else
+	late++;
+
+      if ((nextFlip - now) > timeFor1Round)
+	easy++;
+      else
+	urgent++;
+
+      if (now >= nextFlip || ((nextFlip - now) <= timeFor1Round))
+	repeat++;
+      else
+	quit++;
+    }
+#endif
+
+  } while (now >= nextFlip || ((nextFlip - now) <= timeFor1Round));
+
+#ifdef PROFILING
+  if (dontProfileThisRound==0) {
+    leftOscillatorCount++;
+  }
+  dontProfileThisRound = 0;
+
+  leftOscillatorAtTime = micros();
+#endif
 }
 
 long updateNextFlip () {
@@ -233,6 +329,7 @@ long updateNextFlip () {
       if (next[oscillator] < nextFlip)
 	nextFlip = next[oscillator];
   }
+  // Serial.print("NEXT "); Serial.println(nextFlip);
   return nextFlip;
 }
 
@@ -241,14 +338,9 @@ void loop() {
 
   if (Serial.available())
     menuOscillators();
-  int i;
 
+  analogRead(0);
   if (debugSwitch) {
-    unsigned long now;
-    now = micros();
-    for (i=0; i<100; i++)
       analogRead(0);
-    Serial.println(micros() - now);
   }
-
 }
