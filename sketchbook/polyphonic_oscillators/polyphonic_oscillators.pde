@@ -3,9 +3,11 @@
 #define OSCILLATORS 3
 #define ILLEGALpin -1
 
+// sometimes serial was not ready:
+#define WAITforSERIAL 10
+
 int oscillator;
-unsigned long periodSet;
-unsigned long period[OSCILLATORS], next[OSCILLATORS];
+unsigned long period[OSCILLATORS], next[OSCILLATORS], nextFlip;
 int state[OSCILLATORS], oscPIN[OSCILLATORS];
 
 int toneSwitch=-1;
@@ -17,9 +19,9 @@ void setup() {
   oscPIN[2] = 53;
   oscillatorInit();
 
-  oscillator=0; periodSet=5000; startOscillator();
-  oscillator=1; periodSet=5001; startOscillator();
-  oscillator=2; periodSet=15002; startOscillator();
+  startOscillator(0, 1000);
+  startOscillator(1, 1201);
+  startOscillator(2, 799);
 
   Serial.begin(9600);
   initMenu();
@@ -35,7 +37,7 @@ void oscillatorInit() {
   }
 }
 
-int startOscillator() {
+int startOscillator(int oscillator, unsigned long newPeriod) {
   unsigned long now = micros();
 
   if (oscillator >= OSCILLATORS )
@@ -43,11 +45,16 @@ int startOscillator() {
   if (oscPIN[oscillator] == ILLEGALpin)
     return 1;
 
-  period[oscillator] = periodSet;
-  next[oscillator] = now + periodSet;
+  period[oscillator] = newPeriod;
+  next[oscillator] = now + newPeriod;
   state[oscillator] = 1;
 
   digitalWrite(oscPIN[oscillator], HIGH);
+
+  //  if (next[oscillator] < nextFlip)
+  //      updateNextFlip();
+
+  updateNextFlip();
 
   Serial.print("Started oscillator "); Serial.print(oscillator);
   Serial.print("\tpin "); Serial.print(oscPIN[oscillator]);
@@ -59,16 +66,16 @@ int startOscillator() {
 void stopOscillator(int oscillator) {
   state[oscillator] = 0;
   digitalWrite(oscPIN[oscillator], LOW);
+  updateNextFlip();
 }
 
-void toggleOscillator() {
+void toggleOscillator(int oscillator) {
   if (state[oscillator]) {
     stopOscillator(oscillator);
     Serial.print("Oscillator "); Serial.print(oscillator); Serial.println(" stopped");
   }
   else if (period[oscillator]) {
-    periodSet = period[oscillator];
-    startOscillator();
+    startOscillator(oscillator, period[oscillator]);
   }
   else
     Serial.println("error: no period set");
@@ -79,7 +86,7 @@ int numericInput(int oldValue) {
 
   while (!Serial.available())	// wait for input
     ;
-  delay(10);	// sometimes the second byte was not ready without that
+  delay(WAITforSERIAL);	// sometimes the second byte was not ready without that
 
   input = Serial.read();
   if (input >= '0' && input <= '9')
@@ -107,7 +114,7 @@ int numericInput(int oldValue) {
   return num;
 }
 
-int isOscOK() {
+int isOscOK(int oscillator) {
   if (oscillator < 0) {
     Serial.println("You must set the oscillator with o<number> first.");
     return 0;
@@ -162,19 +169,25 @@ void menuOscillators(){
       break;
 
     case 'o': // set menu local oscillator index to act on the given oscillator
-      oscillator = numericInput(oscillator);
-      Serial.print("oscillator "); Serial.println(oscillator);
+      newValue = numericInput(oscillator);
+      if (isOscOK(newValue)) {
+	oscillator = newValue;
+	Serial.print("oscillator "); Serial.println(oscillator);
+      }
 
       break;
 
     case '~': // toggle oscillator on/off
-      if (isOscOK())
-	toggleOscillator();
+      if (isOscOK(oscillator))
+	toggleOscillator(oscillator);
 
       break;
 
     case 'p':
-      if (isOscOK()) {
+      if (isOscOK(oscillator)) {
+	Serial.print("Oscillator "); Serial.print(oscillator);
+	Serial.print(" \tperiod = "); Serial.println(period[oscillator]);
+
 	newValue = numericInput(period[oscillator]);
 	if (period[oscillator] != newValue) {
 	  period[oscillator] = newValue;
@@ -187,17 +200,14 @@ void menuOscillators(){
     break;
 
     }
+    if (!Serial.available())
+      delay(WAITforSERIAL);
   }
 }
 
 void oscillate() {
+  int oscillator;
   unsigned long now = micros();
-
-  int i;
-  if (debugSwitch)
-    for (i=0; i<4; i++)
-      analogRead(0);
-
 
   for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
     if (state[oscillator] && (next[oscillator] <= now)) {
@@ -209,8 +219,21 @@ void oscillate() {
       }
 
       next[oscillator] += period[oscillator];
+      updateNextFlip();
     }
   }
+}
+
+long updateNextFlip () {
+  int oscillator;
+  nextFlip |=-1;
+
+  for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
+    if (state[oscillator])
+      if (next[oscillator] < nextFlip)
+	nextFlip = next[oscillator];
+  }
+  return nextFlip;
 }
 
 void loop() {
@@ -218,4 +241,14 @@ void loop() {
 
   if (Serial.available())
     menuOscillators();
+  int i;
+
+  if (debugSwitch) {
+    unsigned long now;
+    now = micros();
+    for (i=0; i<100; i++)
+      analogRead(0);
+    Serial.println(micros() - now);
+  }
+
 }
