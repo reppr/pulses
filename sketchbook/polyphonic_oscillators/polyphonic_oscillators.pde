@@ -1,39 +1,17 @@
 // polyphonic_oscillators
 
+/* **************************************************************** */
+int debugSwitch=0;	// debugging
+
 #define OSCILLATORS 3	// # of oscillators
+#ifdef OSCILLATORS
+
 unsigned long period[OSCILLATORS], next[OSCILLATORS], nextFlip;
 int state[OSCILLATORS];
 int oscPIN[OSCILLATORS] = {49, 51, 53};
 int oscillator=0;
 
 #define ILLEGALpin -1
-
-// sometimes serial is not ready quick enough:
-#define WAITforSERIAL 10
-
-// micro seconds for main loop other then oscillating
-// check this value for your program by PROFILING and
-// set default here between average and maximum lapse
-// time (displayed by pressing 'd')
-unsigned long timeFor1Round = 148;
-
-// default switch settings:
-int toneSwitch=-1;	// tone switched on by default
-int debugSwitch=0;	// debugging
-
-#define PROFILING	// gather info for debugging and profiling
-			// mainly to find out how long the main loop
-			// needs to come back to the oscillator in time.
-#ifdef PROFILING
-  unsigned long inTime=0, late=0, easy=0, urgent=0, repeat=0, quit=0;
-  unsigned long enteredOscillatorCount=0, profiledRounds=0, leftOscillatorTime;
-  unsigned long lapseSum=0;
-  int lapse=0, maxLapse=0;
-  int dontProfileThisRound=0;	// no profiling when we spent time in menus or somesuch
-  float ratio;
-  unsigned char autoAdapt=false;
-#endif
-
 
 void oscillatorInit() {
   int i;
@@ -45,16 +23,15 @@ void oscillatorInit() {
   }
 }
 
-void setup() {
-  oscillatorInit();
+// micro seconds for main loop other then oscillating
+// check this value for your program by PROFILING and
+// set default here between average and maximum lapse
+// time (displayed by pressing 'd')
+unsigned long timeFor1Round = 148;
 
-  startOscillator(0, 1000);
-  startOscillator(1, 1201);
-  startOscillator(2, 799);
+// default switch settings:
+int toneSwitch=-1;	// tone switched on by default
 
-  Serial.begin(9600);
-  initMenu();
-}
 
 int startOscillator(int oscillator, unsigned long newPeriod) {
   unsigned long now = micros();
@@ -97,6 +74,159 @@ void toggleOscillator(int oscillator) {
     Serial.println("error: no period set");
 }
 
+
+/* **************************************************************** */
+#define PROFILING	// gather info for debugging and profiling
+			// mainly to find out how long the main loop
+			// needs to come back to the oscillator in time.
+#ifdef PROFILING
+unsigned long inTime=0, late=0, easy=0, urgent=0, repeat=0, quit=0;
+unsigned long enteredOscillatorCount=0, profiledRounds=0, leftOscillatorTime;
+unsigned long lapseSum=0;
+int lapse=0, maxLapse=0;
+int dontProfileThisRound=0;	// no profiling when we spent time in menus or somesuch
+float ratio;
+unsigned char autoAdapt=false;
+#endif // PROFILING (inside OSCILLATORS)
+
+
+/* **************************************************************** */
+// oscillate:
+// check if it is time to switch a pin and do so
+// if there is enough time (see 'timeFor1Round') return
+// to the main loop do do other things (like reading sensors
+// changing sound parameters)
+// if the next flip is too near loop until there is enough idle time.
+void oscillate() {
+  int oscillator;
+  unsigned long now = micros();
+
+#ifdef PROFILING
+  enteredOscillatorCount++;
+  // how long did the program spend outside the oscillator?
+  if (dontProfileThisRound==0) {
+    if (enteredOscillatorCount > 2) {	// start on second run
+      // did we arrive in time?
+      if (now >= nextFlip)
+	late++;
+      else
+	inTime++;
+
+      lapse = now - leftOscillatorTime;	// how long have we been doing other things?
+      lapseSum += lapse;
+
+      if (lapse > maxLapse)		// track maximal lapse
+	maxLapse = lapse;
+
+      if (autoAdapt)			// maybe adapt timeFor1Round automatically?
+	if (lapse > timeFor1Round)
+	  timeFor1Round++;		// step by step ;)
+    }
+  }
+#endif
+
+  // is there enough time to do something else in between?
+  while (now >= nextFlip || ((nextFlip - now) <= timeFor1Round)) {
+    // check all the oscillators if it's time to flip
+    for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
+      if (state[oscillator] && (next[oscillator] <= now)) {
+	if (toneSwitch) {
+	  if ( (state[oscillator] *= -1) == -1)
+	    digitalWrite(oscPIN[oscillator], LOW);
+	  else
+	    digitalWrite(oscPIN[oscillator], HIGH);
+	}
+
+	next[oscillator] += period[oscillator];
+	nextFlip = updateNextFlip();
+      }
+    }
+
+    // is there enough time to do something else in between?
+    now = micros();
+
+#ifdef PROFILING
+    // profile oscillator loop
+    if (dontProfileThisRound==0 && enteredOscillatorCount>1) {
+
+      if ((nextFlip - now) > timeFor1Round)
+	easy++;
+      else
+	urgent++;
+
+      if (now >= nextFlip || ((nextFlip - now) <= timeFor1Round))
+	repeat++;
+      else
+	quit++;
+    }
+#endif
+
+  }
+
+#ifdef PROFILING
+  if (dontProfileThisRound==0) {
+    profiledRounds++;
+  }
+  dontProfileThisRound = 0;
+
+  leftOscillatorTime = micros();
+#endif
+}
+
+
+// compute when the next flip (in any of the active oscillators is due
+long updateNextFlip () {
+  int oscillator;
+  nextFlip |=-1;
+
+  for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
+    if (state[oscillator])
+      if (next[oscillator] < nextFlip)
+	nextFlip = next[oscillator];
+  }
+  // Serial.print("NEXT "); Serial.println(nextFlip);
+  return nextFlip;
+}
+
+#endif // OSCILLATORS
+
+/* **************************************************************** */
+// #define INPUTs_ANALOG	4	// use analog inputs?
+#ifdef INPUTs_ANALOG
+
+char input_ana=0;			// index
+char IN_PIN[INPUTs_ANALOG] = {8, 1, 2, 3};
+char IN_state[INPUTs_ANALOG];
+char input_analog_cyclic_index=0;	// cycle throug the inputs to return in time to the oscillators
+short IN_last[INPUTs_ANALOG];
+
+void input_analog_initialize() {
+  int input_ana;
+
+  for (input_ana=0; input_ana<INPUTs_ANALOG; input_ana++)
+    IN_state[input_ana] = 0;
+
+  IN_state[0]=1; // IN_state[3]=1;
+}
+
+void input_analog_cyclic_poll() {
+  int input_ana = (input_analog_cyclic_index++ % INPUTs_ANALOG);	// cycle through inputs
+  if (IN_state[input_ana]) {
+    IN_last[input_ana] = analogRead(IN_PIN[input_ana]);
+    // Serial.print(input_ana); Serial.print(" gives value "); Serial.println(IN_last[input_ana]);
+    // period[0] = abs(10 * IN_last[input_ana]) + 1000 ;
+    // Serial.println(abs(10 * IN_last[input_ana]));
+  }
+}
+#endif	// INPUTs_ANALOG
+
+/* **************************************************************** */
+#define MENU_over_serial	// do we use a serial menu?
+#ifdef MENU_over_serial
+
+// sometimes serial is not ready quick enough:
+#define WAITforSERIAL 10
+
 // get numeric input from serial
 int numericInput(long oldValue) {
   long input, num; 
@@ -131,40 +261,6 @@ int numericInput(long oldValue) {
   return num;
 }
 
-void displayInfos() {
-  int i;
-
-  Serial.println(" osc\tactive\tstate\tperiod\tPIN");
-  for (i=0; i<OSCILLATORS; i++) {
-    if (i == oscillator)
-      Serial.print("*");
-    else
-      Serial.print(" ");
-
-    Serial.print(i); Serial.print("\t");
-
-    switch (state[i]) {
-    case 0:
-      Serial.print("off\tlow\t");
-      break;
-    case 1:
-      Serial.print("ON\tHIGH\t");
-      break;
-    case -1:
-      Serial.print("ON\tLOW\t");
-      break;
-    default:
-      Serial.print("UNKNOWN\t\t");
-    }
-    Serial.print(period[i]); Serial.print("\t");
-    Serial.print(oscPIN[i]); Serial.print("\t");
-    Serial.println("");
-  }
-
-  Serial.println("");
-  // Serial.print("tone: "); ONoff(toneSwitch, 1, false); Serial.println("");
-}
-
 int ONoff(int value, int mode, int tab) {
   if (value) {
     switch (mode) {
@@ -197,6 +293,42 @@ int ONoff(int value, int mode, int tab) {
   return value;
 }
 
+#ifdef OSCILLATORS
+
+void displayOscillatorsInfos() {
+  int i;
+
+  Serial.println("osc\tactive\tstate\tperiod\tPIN");
+  for (i=0; i<OSCILLATORS; i++) {
+    if (i == oscillator)
+      Serial.print("*");
+    else
+      Serial.print(" ");
+
+    Serial.print(i); Serial.print("\t");
+
+    switch (state[i]) {
+    case 0:
+      Serial.print("off\tlow\t");
+      break;
+    case 1:
+      Serial.print("ON\tHIGH\t");
+      break;
+    case -1:
+      Serial.print("ON\tLOW\t");
+      break;
+    default:
+      Serial.print("UNKNOWN\t\t");
+    }
+    Serial.print(period[i]); Serial.print("\t");
+    Serial.print(oscPIN[i]); Serial.print("\t");
+    Serial.println("");
+  }
+
+  Serial.println("");
+  // Serial.print("tone: "); ONoff(toneSwitch, 1, false); Serial.println("");
+}
+
 void displayMenuOscillators() {
   Serial.println("");
   Serial.print("** MENU OSCILLATORS **  t=toggle tone ("); ONoff(toneSwitch, 2, false); Serial.println(")");
@@ -217,24 +349,17 @@ void displayMenuOscillators() {
   Serial.println("");
 }
 
-void initMenu() {
-  Serial.println("Press m or ? for menu.");
-  displayMenuOscillators();
-  displayInfos();
-  Serial.println("");
-}
-
 // primitive menu working through the serial port
-void menuOscillators(){
-  int input;
+void menuOscillators() {
+  int menu_input;
   long newValue;
 
   while(!Serial.available())
     ;
 
   while(Serial.available()) {
-    switch (input = Serial.read()) {
-    case ' ':		// continue reading menu input (i.e. after numeric input) 
+    switch (menu_input = Serial.read()) {
+    case ' ':		// continue reading menu_input (i.e. after numeric input) 
       break;
 
     case 'm': case '?':
@@ -352,16 +477,16 @@ void menuOscillators(){
 
     case 'i':
       Serial.println("");
-      displayInfos();
+      displayOscillatorsInfos();
 
       break;
 
     default:
-      Serial.print("unknown input: "); Serial.print(byte(input));
-      Serial.print(" = "); Serial.println(input);
+      Serial.print("unknown menu_input: "); Serial.print(byte(menu_input));
+      Serial.print(" = "); Serial.println(menu_input);
       while (Serial.available() > 0) {
-	input = Serial.read();
-	Serial.print(byte(input));
+	menu_input = Serial.read();
+	Serial.print(byte(menu_input));
       }
       Serial.println("");
 
@@ -377,110 +502,64 @@ void menuOscillators(){
 #endif
 
 }
+#endif // OSCILLATORS (inside MENU_over_serial)
 
-// oscillate:
-// check if it is time to switch a pin and do so
-// if there is enough time (see 'timeFor1Round') return
-// to the main loop do do other things (like reading sensors
-// changing sound parameters)
-// if the next flip is too near loop until there is enough idle time.
-void oscillate() {
-  int oscillator;
-  unsigned long now = micros();
+void initMenu() {
+  Serial.println("Press m or ? for menu.");
 
-#ifdef PROFILING
-  enteredOscillatorCount++;
-  // how long did the program spend outside the oscillator?
-  if (dontProfileThisRound==0) {
-    if (enteredOscillatorCount > 2) {	// start on second run
-      // did we arrive in time?
-      if (now >= nextFlip)
-	late++;
-      else
-	inTime++;
-
-      lapse = now - leftOscillatorTime;	// how long have we been doing other things?
-      lapseSum += lapse;
-
-      if (lapse > maxLapse)		// track maximal lapse
-	maxLapse = lapse;
-
-      if (autoAdapt)			// maybe adapt timeFor1Round automatically?
-	if (lapse > timeFor1Round)
-	  timeFor1Round++;		// step by step ;)
-    }
-  }
+#ifdef OSCILLATORS
+  displayMenuOscillators();
+  displayOscillatorsInfos();
 #endif
 
-  // is there enough time to do something else in between?
-  while (now >= nextFlip || ((nextFlip - now) <= timeFor1Round)) {
-    // check all the oscillators if it's time to flip
-    for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
-      if (state[oscillator] && (next[oscillator] <= now)) {
-	if (toneSwitch) {
-	  if ( (state[oscillator] *= -1) == -1)
-	    digitalWrite(oscPIN[oscillator], LOW);
-	  else
-	    digitalWrite(oscPIN[oscillator], HIGH);
-	}
-
-	next[oscillator] += period[oscillator];
-	nextFlip = updateNextFlip();
-      }
-    }
-
-    // is there enough time to do something else in between?
-    now = micros();
-
-#ifdef PROFILING
-    // profile oscillator loop
-    if (dontProfileThisRound==0 && enteredOscillatorCount>1) {
-
-      if ((nextFlip - now) > timeFor1Round)
-	easy++;
-      else
-	urgent++;
-
-      if (now >= nextFlip || ((nextFlip - now) <= timeFor1Round))
-	repeat++;
-      else
-	quit++;
-    }
-#endif
-
-  }
-
-#ifdef PROFILING
-  if (dontProfileThisRound==0) {
-    profiledRounds++;
-  }
-  dontProfileThisRound = 0;
-
-  leftOscillatorTime = micros();
-#endif
+  Serial.println("");
 }
 
-// compute when the next flip (in any of the active oscillators is due
-long updateNextFlip () {
-  int oscillator;
-  nextFlip |=-1;
+#endif // MENU_over_serial
 
-  for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
-    if (state[oscillator])
-      if (next[oscillator] < nextFlip)
-	nextFlip = next[oscillator];
-  }
-  // Serial.print("NEXT "); Serial.println(nextFlip);
-  return nextFlip;
+
+/* **************************************************************** */
+void setup() {
+
+#ifdef OSCILLATORS
+  oscillatorInit();
+
+  startOscillator(0, 1000);
+  startOscillator(1, 1201);
+  startOscillator(2, 799);
+#endif
+
+#ifdef MENU_over_serial
+  Serial.begin(9600);
+  initMenu();
+#endif
+
+#ifdef INPUTs_ANALOG
+  input_analog_initialize();
+#endif
+
 }
 
+/* **************************************************************** */
 void loop() {
+
+#ifdef OSCILLATORS
   oscillate();
+
+#ifdef MENU_over_serial
 
   if (Serial.available())
     menuOscillators();
 
-  if (debugSwitch) {
-      analogRead(0);
-  }
+#endif //  MENU_over_serial
+#endif // OSCILLATORS
+
+#ifdef INPUTs_ANALOG
+  input_analog_cyclic_poll();
+#endif
+
+  if (debugSwitch)
+    ;
+
 }
+/* **************************************************************** */
