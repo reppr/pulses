@@ -31,6 +31,7 @@ int debugSwitch=0;	// debugging
   int lapse=0, maxLapse=0;
   int dontProfileThisRound=0;	// no profiling when we spent time in menus or somesuch
   float ratio;
+  unsigned char autoAdapt=false;
 #endif
 
 
@@ -97,8 +98,8 @@ void toggleOscillator(int oscillator) {
 }
 
 // get numeric input from serial
-int numericInput(int oldValue) {
-  int input, num; 
+int numericInput(long oldValue) {
+  long input, num; 
 
   while (!Serial.available())	// wait for input
     ;
@@ -225,7 +226,8 @@ void initMenu() {
 
 // primitive menu working through the serial port
 void menuOscillators(){
-  int input, newValue;
+  int input;
+  long newValue;
 
   while(!Serial.available())
     ;
@@ -253,7 +255,8 @@ void menuOscillators(){
       Serial.print("expected maximal timeFor1Round "); Serial.println(timeFor1Round);
 
       Serial.print("entered oscillator "); Serial.print(enteredOscillatorCount);
-      Serial.print("\tprofiled rounds "); Serial.println(profiledRounds);
+      Serial.print("\tprofiled rounds "); Serial.print(profiledRounds);
+      Serial.print("\tskipped "); Serial.println(enteredOscillatorCount - profiledRounds);
 
       Serial.print("inTime "); Serial.print(inTime);
       Serial.print("\tlate   "); Serial.print(late);
@@ -279,6 +282,14 @@ void menuOscillators(){
       Serial.print("maxLapse "); Serial.print(maxLapse);
       Serial.print("\taverage "); Serial.println(lapseSum / profiledRounds);
 
+      break;
+
+    case 'a':
+      autoAdapt ^= -1 ;
+      if (autoAdapt)
+	Serial.println("adapt: ON");
+      else
+	Serial.println("adapt: OFF");
       break;
 #endif
 
@@ -381,28 +392,28 @@ void oscillate() {
   enteredOscillatorCount++;
   // how long did the program spend outside the oscillator?
   if (dontProfileThisRound==0) {
-    if (enteredOscillatorCount > 2) {	// no use at round zero and takes too long at 1
-      lapse = now - leftOscillatorTime;
-      if (lapse > maxLapse)
+    if (enteredOscillatorCount > 2) {	// start on second run
+      // did we arrive in time?
+      if (now >= nextFlip)
+	late++;
+      else
+	inTime++;
+
+      lapse = now - leftOscillatorTime;	// how long have we been doing other things?
+      lapseSum += lapse;
+
+      if (lapse > maxLapse)		// track maximal lapse
 	maxLapse = lapse;
 
-      lapseSum += lapse;
+      if (autoAdapt)			// maybe adapt timeFor1Round automatically?
+	if (lapse > timeFor1Round)
+	  timeFor1Round++;		// step by step ;)
     }
   }
 #endif
 
   // is there enough time to do something else in between?
   while (now >= nextFlip || ((nextFlip - now) <= timeFor1Round)) {
-#ifdef PROFILING
-    // did we arrive in time?
-    if (dontProfileThisRound==0 && enteredOscillatorCount>1) {
-      if (now >= nextFlip)
-	late++;
-      else
-	inTime++;
-    }
-#endif
-
     // check all the oscillators if it's time to flip
     for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
       if (state[oscillator] && (next[oscillator] <= now)) {
@@ -469,7 +480,6 @@ void loop() {
   if (Serial.available())
     menuOscillators();
 
-  analogRead(0);
   if (debugSwitch) {
       analogRead(0);
   }
