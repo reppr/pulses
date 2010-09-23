@@ -4,7 +4,7 @@
 unsigned long period[OSCILLATORS], next[OSCILLATORS], nextFlip;
 int state[OSCILLATORS];
 int oscPIN[OSCILLATORS] = {49, 51, 53};
-int oscillator;
+int oscillator=0;
 
 #define ILLEGALpin -1
 
@@ -130,30 +130,19 @@ int numericInput(int oldValue) {
   return num;
 }
 
-// check if oscillator is set to a legal value, tell the user if it isn't.
-int isOscOK(int oscillator) {
-  if (oscillator < 0) {
-    Serial.println("You must set the oscillator with o<number> first.");
-    return 0;
-  }
-  else if (oscillator >= OSCILLATORS) {
-    Serial.print("oscillator must be between 0 and "); Serial.println(OSCILLATORS - 1);
-    return 0;
-  }
-  return 1;
-} 
-      
 void initMenu() {
   Serial.println("Press m or ? for menu.");
 }
 
 // primitive menu working through the serial port
 void menuOscillators(){
-  int input, newValue, oscillator=-1;
+  int input, newValue;
 
   Serial.println("");
   Serial.println("*********** Menu oscillators *********** ");
-  Serial.println("t=toggle tone \to=oscillator \t~=on/off \tp=period");
+  Serial.print("o=oscillator ("); Serial.print(oscillator);
+  Serial.println(") \tt=toggle tone\t~=on/off \tp=period");
+
   Serial.println("r=set expected time for one roundtrip (outside oscillator)");
 #ifdef PROFILING
   Serial.println("d=display profiling and debug information");
@@ -225,10 +214,12 @@ void menuOscillators(){
 
     case 'o': // set menu local oscillator index to act on the given oscillator
       newValue = numericInput(oscillator);
-      if (isOscOK(newValue)) {
+      if (newValue >=0 && newValue < OSCILLATORS) {
 	oscillator = newValue;
 	Serial.print("oscillator "); Serial.println(oscillator);
       }
+      else
+	Serial.print("oscillator must be between 0 and "); Serial.println(OSCILLATORS -1);
 
       break;
 
@@ -251,24 +242,21 @@ void menuOscillators(){
       break;
 
     case '~': // toggle oscillator on/off
-      if (isOscOK(oscillator))
-	toggleOscillator(oscillator);
+      toggleOscillator(oscillator);
 
       break;
 
     case 'p':
-      if (isOscOK(oscillator)) {
-	Serial.print("Oscillator "); Serial.print(oscillator);
-	Serial.print(" \tperiod = "); Serial.println(period[oscillator]);
-
-	newValue = numericInput(period[oscillator]);
-	if (period[oscillator] != newValue) {
-	  period[oscillator] = newValue;
-	  Serial.print("period set to "); Serial.println(newValue);
-	} 
-	else
-	  Serial.println("(quit)");
-      }
+      Serial.print("Oscillator "); Serial.print(oscillator);
+      Serial.print(" \tperiod = "); Serial.println(period[oscillator]);
+      
+      newValue = numericInput(period[oscillator]);
+      if (period[oscillator] != newValue) {
+	period[oscillator] = newValue;
+	Serial.print("period set to "); Serial.println(newValue);
+      } 
+      else
+	Serial.println("(quit)");
 
     break;
 
