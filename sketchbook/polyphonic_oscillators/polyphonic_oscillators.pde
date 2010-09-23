@@ -13,8 +13,8 @@ int oscillator;
 
 // micro seconds for main loop other then oscillating
 // check this value for your program by PROFILING and
-// set default here a bit bigger then average time lapse
-// (displayed by pressingg 'd')
+// set default here between average and maximum lapse
+// time (displayed by pressing 'd')
 unsigned long timeFor1Round = 148;
 
 // default switch settings:
@@ -152,9 +152,9 @@ void menuOscillators(){
   Serial.println("");
   Serial.println("*********** Menu oscillators *********** ");
   Serial.println("t=toggle tone \to=oscillator \t~=on/off \tp=period");
-  Serial.println("r=set minimal time for roundtrip");
+  Serial.println("r=set expected time for one roundtrip (outside oscillator)");
 #ifdef PROFILING
-  Serial.println("d display profiling and debug information");
+  Serial.println("d=display profiling and debug information");
 #endif
   Serial.println("");
 
@@ -180,6 +180,7 @@ void menuOscillators(){
 
 #ifdef PROFILING
     case 'd':	// display profiling and debugging infos
+      Serial.print("expected timeFor1Round (set with 'r') "); Serial.println(timeFor1Round);
       Serial.print("inTime "); Serial.print(inTime);
       Serial.print("\tlate "); Serial.print(late);
       Serial.print("\teasy "); Serial.print(easy);
@@ -281,7 +282,7 @@ void oscillate() {
 
 #ifdef PROFILING
   if (dontProfileThisRound==0) {
-    if (leftOscillatorCount) {
+    if (leftOscillatorCount > 1) {	// no use at round zero and takes too long at 1
       lapse = now - leftOscillatorAtTime;
       if (lapse > maxLapse)
 	maxLapse = lapse;
@@ -360,7 +361,7 @@ void loop() {
   if (Serial.available())
     menuOscillators();
 
-  //  analogRead(0);
+  analogRead(0);
   if (debugSwitch) {
       analogRead(0);
   }
