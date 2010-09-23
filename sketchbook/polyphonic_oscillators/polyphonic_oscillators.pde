@@ -1,4 +1,4 @@
-//  poly_oscillators
+// polyphonic_oscillators
 
 #define OSCILLATORS 3	// # of oscillators
 unsigned long period[OSCILLATORS], next[OSCILLATORS], nextFlip;
@@ -25,10 +25,12 @@ int debugSwitch=0;	// debugging
 			// mainly to find out how long the main loop
 			// needs to come back to the oscillator in time.
 #ifdef PROFILING
-  unsigned long inTime=0, late=0, easy=0, urgent=0, repeat=0, quit=0, leftOscillatorAtTime=0, leftOscillatorCount=0;
+  unsigned long inTime=0, late=0, easy=0, urgent=0, repeat=0, quit=0;
+  unsigned long enteredOscillatorCount=0, profiledRounds=0, leftOscillatorTime;
   unsigned long lapseSum=0;
   int lapse=0, maxLapse=0;
-int dontProfileThisRound=0;	// no profiling when we spent time in menus or somesuch
+  int dontProfileThisRound=0;	// no profiling when we spent time in menus or somesuch
+  float ratio;
 #endif
 
 
@@ -180,15 +182,34 @@ void menuOscillators(){
 
 #ifdef PROFILING
     case 'd':	// display profiling and debugging infos
-      Serial.print("expected timeFor1Round (set with 'r') "); Serial.println(timeFor1Round);
+      Serial.print("expected maximal timeFor1Round (set with 'r') "); Serial.println(timeFor1Round);
+
+      Serial.print("entered oscillator "); Serial.print(enteredOscillatorCount);
+      Serial.print("\tprofiled rounds "); Serial.println(profiledRounds);
+
       Serial.print("inTime "); Serial.print(inTime);
-      Serial.print("\tlate "); Serial.print(late);
-      Serial.print("\teasy "); Serial.print(easy);
-      Serial.print("\turgent "); Serial.println(urgent);
-      Serial.print("repeat "); Serial.print(repeat);
-      Serial.print("\tquit "); Serial.println(quit);
+      Serial.print("\tlate   "); Serial.print(late);
+      if (late) {
+	ratio = (float) inTime / late;
+	Serial.print("\tratio ");  Serial.println(ratio);
+      }
+
+      Serial.print("easy   "); Serial.print(easy);
+      Serial.print("\turgent "); Serial.print(urgent);
+      if (urgent) {
+	ratio = (float) easy / urgent;
+	Serial.print("\tratio ");  Serial.println(ratio);
+      }
+
+      Serial.print("quit   "); Serial.print(quit);
+      Serial.print("\trepeat "); Serial.print(repeat);
+      if (quit) {
+	ratio = (float) quit / repeat ;
+	Serial.print("\tratio ");  Serial.println(ratio);
+      }
+
       Serial.print("maxLapse "); Serial.print(maxLapse);
-      Serial.print("\taverage "); Serial.println(lapseSum / leftOscillatorCount);
+      Serial.print("\taverage "); Serial.println(lapseSum / profiledRounds);
 
       break;
 #endif
@@ -219,7 +240,9 @@ void menuOscillators(){
       	Serial.print("timeFor1Round set to "); Serial.println(timeFor1Round);
 
 #ifdef PROFILING
-	inTime=0; late=0; easy=0; urgent=0; repeat=0; quit=0, leftOscillatorAtTime=0, leftOscillatorCount=0;
+	// reset profiling data
+	profiledRounds=0; enteredOscillatorCount=0;
+	inTime=0; late=0; easy=0; urgent=0; repeat=0; quit=0;
 	lapse=0, lapseSum=0, maxLapse=0;
 #endif
 
@@ -281,9 +304,11 @@ void oscillate() {
   unsigned long now = micros();
 
 #ifdef PROFILING
+  enteredOscillatorCount++;
+  // how long did the program spend outside the oscillator?
   if (dontProfileThisRound==0) {
-    if (leftOscillatorCount > 1) {	// no use at round zero and takes too long at 1
-      lapse = now - leftOscillatorAtTime;
+    if (enteredOscillatorCount > 2) {	// no use at round zero and takes too long at 1
+      lapse = now - leftOscillatorTime;
       if (lapse > maxLapse)
 	maxLapse = lapse;
 
@@ -292,7 +317,19 @@ void oscillate() {
   }
 #endif
 
-  do {
+  // is there enough time to do something else in between?
+  while (now >= nextFlip || ((nextFlip - now) <= timeFor1Round)) {
+#ifdef PROFILING
+    // did we arrive in time?
+    if (dontProfileThisRound==0 && enteredOscillatorCount>1) {
+      if (now >= nextFlip)
+	late++;
+      else
+	inTime++;
+    }
+#endif
+
+    // check all the oscillators if it's time to flip
     for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
       if (state[oscillator] && (next[oscillator] <= now)) {
 	if (toneSwitch) {
@@ -311,11 +348,8 @@ void oscillate() {
     now = micros();
 
 #ifdef PROFILING
-    if (dontProfileThisRound==0) {
-      if (now < nextFlip)
-	inTime++;
-      else
-	late++;
+    // profile oscillator loop
+    if (dontProfileThisRound==0 && enteredOscillatorCount>1) {
 
       if ((nextFlip - now) > timeFor1Round)
 	easy++;
@@ -329,15 +363,15 @@ void oscillate() {
     }
 #endif
 
-  } while (now >= nextFlip || ((nextFlip - now) <= timeFor1Round));
+  }
 
 #ifdef PROFILING
   if (dontProfileThisRound==0) {
-    leftOscillatorCount++;
+    profiledRounds++;
   }
   dontProfileThisRound = 0;
 
-  leftOscillatorAtTime = micros();
+  leftOscillatorTime = micros();
 #endif
 }
 
