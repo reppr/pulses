@@ -1,8 +1,11 @@
 // polyphonic_oscillators
 
 /* **************************************************************** */
+#define ILLEGALpin -1
 int debugSwitch=0;	// debugging
 
+
+/* **************************************************************** */
 #define OSCILLATORS 3	// # of oscillators
 #ifdef OSCILLATORS
 
@@ -10,8 +13,6 @@ unsigned long period[OSCILLATORS], next[OSCILLATORS], nextFlip;
 int state[OSCILLATORS];
 int oscPIN[OSCILLATORS] = {49, 51, 53};
 int oscillator=0;
-
-#define ILLEGALpin -1
 
 void oscillatorInit() {
   int i;
@@ -191,7 +192,7 @@ long updateNextFlip () {
 #endif // OSCILLATORS
 
 /* **************************************************************** */
-// #define INPUTs_ANALOG	4	// use analog inputs?
+#define INPUTs_ANALOG	4	// use analog inputs?
 #ifdef INPUTs_ANALOG
 
 char input_ana=0;			// index
@@ -219,6 +220,13 @@ void input_analog_cyclic_poll() {
   }
 }
 #endif	// INPUTs_ANALOG
+
+
+/* **************************************************************** */
+#define HARDWARE_menu		// menu interface to hardware configuration
+#ifdef HARDWARE_menu
+char hw_PIN = ILLEGALpin;
+#endif // HARDWARE_menu
 
 /* **************************************************************** */
 #define MENU_over_serial	// do we use a serial menu?
@@ -345,6 +353,16 @@ void displayMenuOscillators() {
 
   Serial.println("");
   Serial.print("r=expected roundtrip time (outside oscillator "); Serial.print(timeFor1Round); Serial.println(")");
+
+#ifdef HARDWARE_menu
+  Serial.println("");
+  Serial.print("P=select PIN (");
+  if (hw_PIN == ILLEGALpin)
+    Serial.print("none");
+  else
+    Serial.print((int) hw_PIN);
+  Serial.println(")\tH=set high\tL=set low\tA=analog write");
+#endif
 
   Serial.println("");
 }
@@ -480,6 +498,57 @@ void menuOscillators() {
       displayOscillatorsInfos();
 
       break;
+
+#ifdef HARDWARE_menu
+    case 'P':
+      Serial.print("Select pin ");
+      newValue = numericInput(period[oscillator]);
+      if (newValue>=0 && newValue<255) {
+	hw_PIN = newValue;
+	Serial.println((int) hw_PIN);
+      } else
+	Serial.println("(quit)");
+
+      break;
+
+    case 'H':
+      if (hw_PIN == ILLEGALpin)
+	Serial.println("Please select pin with P first.");
+      else {
+	pinMode(hw_PIN, OUTPUT);
+	digitalWrite(hw_PIN, HIGH);
+	Serial.print("PIN "); Serial.print((int) hw_PIN); Serial.println(" was set to HIGH.");
+      }
+
+      break;
+
+    case 'L':
+      if (hw_PIN == ILLEGALpin)
+	Serial.println("Please select pin with P first.");
+      else {
+	pinMode(hw_PIN, OUTPUT);
+	digitalWrite(hw_PIN, LOW);
+	Serial.print("PIN "); Serial.print((int) hw_PIN); Serial.println(" was set to LOW.");
+      }
+
+      break;
+
+    case 'A':
+      if (hw_PIN == ILLEGALpin)
+	Serial.println("Please select pin with P first.");
+      else {
+	Serial.print("value ");
+	newValue = numericInput(-1);
+	if (newValue>=0 && newValue<=255) {
+	  analogWrite(hw_PIN, newValue);
+	  Serial.print("analogWrite("); Serial.print((int) hw_PIN); Serial.print(newValue); Serial.println(")");
+	  Serial.println(newValue);
+	} else
+	  Serial.println("(quit)");
+      }
+
+      break;
+#endif // HARDWARE_menu
 
     default:
       Serial.print("unknown menu_input: "); Serial.print(byte(menu_input));
