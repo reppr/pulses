@@ -1,25 +1,36 @@
 //  poly_oscillators
 
-#define PROFILING
+#define OSCILLATORS 3	// # of oscillators
+unsigned long period[OSCILLATORS], next[OSCILLATORS], nextFlip;
+int state[OSCILLATORS];
+int oscPIN[OSCILLATORS] = {49, 51, 53};
+int oscillator;
+
+#define ILLEGALpin -1
+
+// sometimes serial is not ready quick enough:
+#define WAITforSERIAL 10
+
+// micro seconds for main loop other then oscillating
+// check this value for your program by PROFILING and
+// set default here a bit bigger then average time lapse
+// (displayed by pressingg 'd')
+unsigned long timeFor1Round = 148;
+
+// default switch settings:
+int toneSwitch=-1;	// tone switched on by default
+int debugSwitch=0;	// debugging
+
+#define PROFILING	// gather info for debugging and profiling
+			// mainly to find out how long the main loop
+			// needs to come back to the oscillator in time.
 #ifdef PROFILING
   unsigned long inTime=0, late=0, easy=0, urgent=0, repeat=0, quit=0, leftOscillatorAtTime=0, leftOscillatorCount=0;
   unsigned long lapseSum=0;
-  int lapse=0, maxLapse=0, dontProfileThisRound=0;
+  int lapse=0, maxLapse=0;
+int dontProfileThisRound=0;	// no profiling when we spent time in menus or somesuch
 #endif
 
-#define OSCILLATORS 3
-#define ILLEGALpin -1
-
-// sometimes serial was not ready:
-#define WAITforSERIAL 10
-
-int oscillator;
-unsigned long period[OSCILLATORS], next[OSCILLATORS], nextFlip;
-int state[OSCILLATORS], oscPIN[OSCILLATORS];
-
-unsigned long timeFor1Round = 26;	//  micro seconds for main loop other then oscillating
-int toneSwitch=-1;
-int debugSwitch=0;
 
 void oscillatorInit() {
   int i;
@@ -32,9 +43,6 @@ void oscillatorInit() {
 }
 
 void setup() {
-  oscPIN[0] = 49;
-  oscPIN[1] = 51;
-  oscPIN[2] = 53;
   oscillatorInit();
 
   startOscillator(0, 1000);
@@ -58,9 +66,6 @@ int startOscillator(int oscillator, unsigned long newPeriod) {
   state[oscillator] = 1;
 
   digitalWrite(oscPIN[oscillator], HIGH);
-
-  //  if (next[oscillator] < nextFlip)
-  //      updateNextFlip();
 
   nextFlip = updateNextFlip();
 
@@ -89,6 +94,7 @@ void toggleOscillator(int oscillator) {
     Serial.println("error: no period set");
 }
 
+// get numeric input from serial
 int numericInput(int oldValue) {
   int input, num; 
 
@@ -122,6 +128,7 @@ int numericInput(int oldValue) {
   return num;
 }
 
+// check if oscillator is set to a legal value, tell the user if it isn't.
 int isOscOK(int oscillator) {
   if (oscillator < 0) {
     Serial.println("You must set the oscillator with o<number> first.");
@@ -134,17 +141,21 @@ int isOscOK(int oscillator) {
   return 1;
 } 
       
-
 void initMenu() {
   Serial.println("Press m or ? for menu.");
 }
 
+// primitive menu working through the serial port
 void menuOscillators(){
   int input, newValue, oscillator=-1;
 
   Serial.println("");
   Serial.println("*********** Menu oscillators *********** ");
   Serial.println("t=toggle tone \to=oscillator \t~=on/off \tp=period");
+  Serial.println("r=set minimal time for roundtrip");
+#ifdef PROFILING
+  Serial.println("d display profiling and debug information");
+#endif
   Serial.println("");
 
   while(!Serial.available())
@@ -167,8 +178,8 @@ void menuOscillators(){
 
       break;
 
-    case 'D':
 #ifdef PROFILING
+    case 'd':	// display profiling and debugging infos
       Serial.print("inTime "); Serial.print(inTime);
       Serial.print("\tlate "); Serial.print(late);
       Serial.print("\teasy "); Serial.print(easy);
@@ -177,14 +188,17 @@ void menuOscillators(){
       Serial.print("\tquit "); Serial.println(quit);
       Serial.print("maxLapse "); Serial.print(maxLapse);
       Serial.print("\taverage "); Serial.println(lapseSum / leftOscillatorCount);
+
+      break;
 #endif
-      /*
+
+    case 'D':	// stuff for debugging, always changing...
       debugSwitch ^= -1 ;
       if (debugSwitch)
 	Serial.println("debug: ON");
       else
 	Serial.println("debug: OFF");
-      */
+
       break;
 
     case 'o': // set menu local oscillator index to act on the given oscillator
@@ -255,6 +269,12 @@ void menuOscillators(){
 #endif
 }
 
+// oscillate:
+// check if it is time to switch a pin and do so
+// if there is enough time (see 'timeFor1Round') return
+// to the main loop do do other things (like reading sensors
+// changing sound parameters)
+// if the next flip is too near loop until there is enough idle time.
 void oscillate() {
   int oscillator;
   unsigned long now = micros();
@@ -320,6 +340,7 @@ void oscillate() {
 #endif
 }
 
+// compute when the next flip (in any of the active oscillators is due
 long updateNextFlip () {
   int oscillator;
   nextFlip |=-1;
@@ -339,7 +360,7 @@ void loop() {
   if (Serial.available())
     menuOscillators();
 
-  analogRead(0);
+  //  analogRead(0);
   if (debugSwitch) {
       analogRead(0);
   }
