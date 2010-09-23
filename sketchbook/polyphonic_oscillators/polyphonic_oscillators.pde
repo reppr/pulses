@@ -130,48 +130,127 @@ int numericInput(int oldValue) {
   return num;
 }
 
+void displayInfos() {
+  int i;
+
+  Serial.println(" osc\tactive\tstate\tperiod\tPIN");
+  for (i=0; i<OSCILLATORS; i++) {
+    if (i == oscillator)
+      Serial.print("*");
+    else
+      Serial.print(" ");
+
+    Serial.print(i); Serial.print("\t");
+
+    switch (state[i]) {
+    case 0:
+      Serial.print("off\tlow\t");
+      break;
+    case 1:
+      Serial.print("ON\tHIGH\t");
+      break;
+    case -1:
+      Serial.print("ON\tLOW\t");
+      break;
+    default:
+      Serial.print("UNKNOWN\t\t");
+    }
+    Serial.print(period[i]); Serial.print("\t");
+    Serial.print(oscPIN[i]); Serial.print("\t");
+    Serial.println("");
+  }
+
+  Serial.println("");
+  // Serial.print("tone: "); ONoff(toneSwitch, 1, false); Serial.println("");
+}
+
+int ONoff(int value, int mode, int tab) {
+  if (value) {
+    switch (mode) {
+    case 0:		// ON		off
+    case 1:		// ON		OFF
+      Serial.print("ON");
+      break;
+    case 2:		// ON/off	on/OFF
+      Serial.print("ON/off");
+      break;
+    }
+  }
+  else {
+    switch (mode) {
+    case 0:		// ON		off
+      Serial.print("off");
+      break;
+    case 1:		// ON		OFF
+      Serial.print("OFF");
+      break;
+    case 2:		// ON/off	on/OFF
+      Serial.print("on/OFF");
+      break;
+    }
+  }
+
+  if (tab)
+    Serial.print("\t");
+
+  return value;
+}
+
+void displayMenuOscillators() {
+  Serial.println("");
+  Serial.print("** MENU OSCILLATORS **  t=toggle tone ("); ONoff(toneSwitch, 2, false); Serial.println(")");
+
+  Serial.print("display: i=infos\t");
+#ifdef PROFILING
+  Serial.print("d=debug, profiling\t");
+#endif
+  Serial.println("");
+
+  Serial.print("o=oscillator("); Serial.print(oscillator); Serial.print(") \t~="); ONoff(state[oscillator],2,false);
+  Serial.print("\tp=period["); Serial.print(oscillator); Serial.print("] (");
+  Serial.print(period[oscillator]); Serial.println(")");  
+
+  Serial.println("");
+  Serial.print("r=expected roundtrip time (outside oscillator "); Serial.print(timeFor1Round); Serial.println(")");
+
+  Serial.println("");
+}
+
 void initMenu() {
   Serial.println("Press m or ? for menu.");
+  displayMenuOscillators();
+  displayInfos();
+  Serial.println("");
 }
 
 // primitive menu working through the serial port
 void menuOscillators(){
   int input, newValue;
 
-  Serial.println("");
-  Serial.println("*********** Menu oscillators *********** ");
-  Serial.print("o=oscillator ("); Serial.print(oscillator);
-  Serial.println(") \tt=toggle tone\t~=on/off \tp=period");
-
-  Serial.println("r=set expected time for one roundtrip (outside oscillator)");
-#ifdef PROFILING
-  Serial.println("d=display profiling and debug information");
-#endif
-  Serial.println("");
-
   while(!Serial.available())
     ;
 
   while(Serial.available()) {
     switch (input = Serial.read()) {
-    case ' ':
+    case ' ':		// continue reading menu input (i.e. after numeric input) 
       break;
 
     case 'm': case '?':
+      displayMenuOscillators();
       break;
 
     case 't':
       toneSwitch ^= -1 ;
-      if (toneSwitch)
-	Serial.println("tone: ON");
-      else
-	Serial.println("tone: OFF");
+      Serial.print("tone: ");
+      ONoff(toneSwitch, 1, false);
+      Serial.println("");
 
       break;
 
 #ifdef PROFILING
     case 'd':	// display profiling and debugging infos
-      Serial.print("expected maximal timeFor1Round (set with 'r') "); Serial.println(timeFor1Round);
+      Serial.println("");
+      Serial.print("expected maximal timeFor1Round "); Serial.println(timeFor1Round);
 
       Serial.print("entered oscillator "); Serial.print(enteredOscillatorCount);
       Serial.print("\tprofiled rounds "); Serial.println(profiledRounds);
@@ -214,12 +293,12 @@ void menuOscillators(){
 
     case 'o': // set menu local oscillator index to act on the given oscillator
       newValue = numericInput(oscillator);
-      if (newValue >=0 && newValue < OSCILLATORS) {
+      if (newValue < OSCILLATORS && newValue >= 0) {
 	oscillator = newValue;
 	Serial.print("oscillator "); Serial.println(oscillator);
-      }
-      else
+      } else {
 	Serial.print("oscillator must be between 0 and "); Serial.println(OSCILLATORS -1);
+      }
 
       break;
 
@@ -260,6 +339,12 @@ void menuOscillators(){
 
     break;
 
+    case 'i':
+      Serial.println("");
+      displayInfos();
+
+      break;
+
     default:
       Serial.print("unknown input: "); Serial.print(byte(input));
       Serial.print(" = "); Serial.println(input);
@@ -279,6 +364,7 @@ void menuOscillators(){
 #ifdef PROFILING
   dontProfileThisRound=1;
 #endif
+
 }
 
 // oscillate:
