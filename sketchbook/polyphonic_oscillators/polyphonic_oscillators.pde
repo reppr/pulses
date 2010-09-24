@@ -374,7 +374,26 @@ void display_analog_reads() {
   Serial.println("");
 }
 
+void watch_digital_input(int pin) {
+  int state, old_state=-9997;
 
+  Serial.print("watching digital input pin "); Serial.print((int) pin); Serial.println("\t\t(send any byte to stop)");
+  while (!Serial.available()) {
+    state = digitalRead(hw_PIN);
+    if (state != old_state) {
+      old_state = state;
+      Serial.print("pin "); Serial.print((int) pin); Serial.print(" is ");
+      if (state)
+	Serial.println("HIGH");
+      else
+	Serial.println("LOW");
+    }
+  }
+  Serial.read();
+}
+
+
+/* **************************************************************** */
 #ifdef OSCILLATORS
 
 void displayOscillatorsInfos() {
@@ -635,6 +654,16 @@ void menuOscillators() {
 	Serial.println("Please select pin with P first.");
       else
 	bar_graph_VU(hw_PIN);
+
+      break;
+
+    case 'I':
+      if (hw_PIN == ILLEGALpin)
+	Serial.println("Please select pin with P first.");
+      else {
+	pinMode(hw_PIN, INPUT);
+	watch_digital_input(hw_PIN);
+      }
 
       break;
 
