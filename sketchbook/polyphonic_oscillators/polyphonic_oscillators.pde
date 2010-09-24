@@ -1,17 +1,21 @@
 // polyphonic_oscillators
 
+// hmm, no...
+// these are not oscillators, these are flippylators ;)
+
 /* **************************************************************** */
-#define ILLEGALpin -1
-int debugSwitch=0;	// debugging
+#define ILLEGALpin	-1	// a pin that is not assigned
+
+int debugSwitch=0;		// hook for testing and debugging
 
 
 /* **************************************************************** */
-#define OSCILLATORS 3	// # of oscillators
+#define OSCILLATORS	4	// # of oscillators
 #ifdef OSCILLATORS
 
 unsigned long period[OSCILLATORS], next[OSCILLATORS], nextFlip;
 int state[OSCILLATORS];
-int oscPIN[OSCILLATORS] = {49, 51, 53};
+int oscPIN[OSCILLATORS] = {47, 49, 51, 53};
 int oscillator=0;
 
 void oscillatorInit() {
@@ -131,8 +135,9 @@ void oscillate() {
     // check all the oscillators if it's time to flip
     for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
       if (state[oscillator] && (next[oscillator] <= now)) {
+	state[oscillator] *= -1;
 	if (toneSwitch) {
-	  if ( (state[oscillator] *= -1) == -1)
+	  if (state[oscillator] < 0)
 	    digitalWrite(oscPIN[oscillator], LOW);
 	  else
 	    digitalWrite(oscPIN[oscillator], HIGH);
@@ -196,7 +201,7 @@ long updateNextFlip () {
 #ifdef INPUTs_ANALOG
 
 char input_analog=0;			// index
-char IN_PIN[INPUTs_ANALOG] = {7, 1, 2, 3};
+char IN_PIN[INPUTs_ANALOG] = {8, 9, 10, 11};
 char IN_state[INPUTs_ANALOG];
 char input_analog_cyclic_index=0;	// cycle throug the inputs to return in time to the oscillators
 short IN_last[INPUTs_ANALOG];
@@ -207,7 +212,10 @@ void input_analog_initialize() {
   for (input_analog=0; input_analog<INPUTs_ANALOG; input_analog++)
     IN_state[input_analog] = 0;
 
-  // IN_state[0]=1; // IN_state[3]=1;
+  IN_state[0]=1; 
+  IN_state[1]=1;
+  IN_state[2]=1;
+  IN_state[3]=1;
 }
 
 void input_analog_cyclic_poll() {
@@ -215,7 +223,7 @@ void input_analog_cyclic_poll() {
   if (IN_state[input_analog]) {
     IN_last[input_analog] = analogRead(IN_PIN[input_analog]);
     // Serial.print(input_analog); Serial.print(" gives value "); Serial.println(IN_last[input_analog]);
-    // period[0] = IN_last[input_analog] + 1000 ;
+    period[input_analog] = 1000 + (2 * IN_last[input_analog]);
     // Serial.println(period[0]);
   }
 }
@@ -440,24 +448,18 @@ void menuOscillators() {
 
       Serial.print("inTime "); Serial.print(inTime);
       Serial.print("\tlate   "); Serial.print(late);
-      if (late) {
-	ratio = (float) inTime / late;
-	Serial.print("\tratio ");  Serial.println(ratio);
-      }
+      ratio = (float) inTime / (inTime + late);
+      Serial.print("\tratio "); Serial.println(ratio);
 
       Serial.print("easy   "); Serial.print(easy);
       Serial.print("\turgent "); Serial.print(urgent);
-      if (urgent) {
-	ratio = (float) easy / urgent;
-	Serial.print("\tratio ");  Serial.println(ratio);
-      }
+      ratio = (float) easy / (easy + urgent);
+      Serial.print("\tratio "); Serial.println(ratio);
 
       Serial.print("quit   "); Serial.print(quit);
       Serial.print("\trepeat "); Serial.print(repeat);
-      if (quit) {
-	ratio = (float) quit / repeat ;
-	Serial.print("\tratio ");  Serial.println(ratio);
-      }
+      ratio = (float) quit / (quit + repeat);
+      Serial.print("\tratio "); Serial.println(ratio);
 
       Serial.print("maxLapse "); Serial.print(maxLapse);
       Serial.print("\taverage "); Serial.println(lapseSum / profiledRounds);
@@ -574,12 +576,14 @@ void menuOscillators() {
       if (hw_PIN == ILLEGALpin)
 	Serial.println("Please select pin with P first.");
       else {
-	Serial.print("value ");
+	Serial.print("analog write value ");
 	newValue = numericInput(-1);
 	if (newValue>=0 && newValue<=255) {
-	  analogWrite(hw_PIN, newValue);
-	  Serial.print("analogWrite("); Serial.print((int) hw_PIN); Serial.print(newValue); Serial.println(")");
 	  Serial.println(newValue);
+
+	  analogWrite(hw_PIN, newValue);
+	  Serial.print("analogWrite("); Serial.print((int) hw_PIN);
+	  Serial.print(", "); Serial.print(newValue); Serial.println(")");
 	} else
 	  Serial.println("(quit)");
       }
@@ -648,6 +652,7 @@ void setup() {
   startOscillator(0, 1000);
   startOscillator(1, 1201);
   startOscillator(2, 799);
+  startOscillator(3, 2000);
 #endif
 
 #ifdef MENU_over_serial
@@ -659,6 +664,9 @@ void setup() {
   input_analog_initialize();
 #endif
 
+  // i happen to use these pins for HIGH and LOW level right now... 
+  pinMode(12, OUTPUT); digitalWrite(12, LOW);
+  pinMode(13, OUTPUT); digitalWrite(13, HIGH);
 }
 
 /* **************************************************************** */
