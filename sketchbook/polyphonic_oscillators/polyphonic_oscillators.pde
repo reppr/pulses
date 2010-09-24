@@ -196,6 +196,7 @@ long updateNextFlip () {
 
 #endif // OSCILLATORS
 
+
 /* **************************************************************** */
 #define INPUTs_ANALOG	4	// use analog inputs?
 #ifdef INPUTs_ANALOG
@@ -328,6 +329,35 @@ void bar_graph(int value) {
     Serial.print("value "); Serial.print(value); Serial.println(" out of range."); }
 
   Serial.println("");
+}
+
+void bar_graph_VU(int pin) {
+  int value, oldValue=-9997;	// just an unlikely value...
+  int tolerance=0, menu_input;
+
+  Serial.print("Follow pin "); Serial.print((int) pin); Serial.print("values\t\t +/- tolerance (send any other byte to stop)");
+
+  while (true) {
+    value =  analogRead(pin);
+    if (abs(value - oldValue) > tolerance) {
+      bar_graph(value);
+      oldValue = value;
+    }
+
+    if (Serial.available()) {
+      switch (menu_input = Serial.read()) {
+      case '+':
+	tolerance++;
+	break;
+      case '-':
+	if (tolerance)
+	  tolerance--;
+	break;
+      default:
+	return;		// exit
+      }
+    }
+  }    
 }
 
 void display_analog_reads() {
@@ -597,6 +627,14 @@ void menuOscillators() {
 	  Serial.print("analog value on pin "); Serial.print((int) hw_PIN); Serial.print(" is ");
 	  Serial.println(analogRead(hw_PIN));
       }
+
+      break;
+
+    case 'F':
+      if (hw_PIN == ILLEGALpin)
+	Serial.println("Please select pin with P first.");
+      else
+	bar_graph_VU(hw_PIN);
 
       break;
 
