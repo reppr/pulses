@@ -195,28 +195,28 @@ long updateNextFlip () {
 #define INPUTs_ANALOG	4	// use analog inputs?
 #ifdef INPUTs_ANALOG
 
-char input_ana=0;			// index
-char IN_PIN[INPUTs_ANALOG] = {8, 1, 2, 3};
+char input_analog=0;			// index
+char IN_PIN[INPUTs_ANALOG] = {7, 1, 2, 3};
 char IN_state[INPUTs_ANALOG];
 char input_analog_cyclic_index=0;	// cycle throug the inputs to return in time to the oscillators
 short IN_last[INPUTs_ANALOG];
 
 void input_analog_initialize() {
-  int input_ana;
+  int input_analog;
 
-  for (input_ana=0; input_ana<INPUTs_ANALOG; input_ana++)
-    IN_state[input_ana] = 0;
+  for (input_analog=0; input_analog<INPUTs_ANALOG; input_analog++)
+    IN_state[input_analog] = 0;
 
-  IN_state[0]=1; // IN_state[3]=1;
+  // IN_state[0]=1; // IN_state[3]=1;
 }
 
 void input_analog_cyclic_poll() {
-  int input_ana = (input_analog_cyclic_index++ % INPUTs_ANALOG);	// cycle through inputs
-  if (IN_state[input_ana]) {
-    IN_last[input_ana] = analogRead(IN_PIN[input_ana]);
-    // Serial.print(input_ana); Serial.print(" gives value "); Serial.println(IN_last[input_ana]);
-    // period[0] = abs(10 * IN_last[input_ana]) + 1000 ;
-    // Serial.println(abs(10 * IN_last[input_ana]));
+  int input_analog = (input_analog_cyclic_index++ % INPUTs_ANALOG);	// cycle through inputs
+  if (IN_state[input_analog]) {
+    IN_last[input_analog] = analogRead(IN_PIN[input_analog]);
+    // Serial.print(input_analog); Serial.print(" gives value "); Serial.println(IN_last[input_analog]);
+    // period[0] = IN_last[input_analog] + 1000 ;
+    // Serial.println(period[0]);
   }
 }
 #endif	// INPUTs_ANALOG
@@ -301,6 +301,42 @@ int ONoff(int value, int mode, int tab) {
   return value;
 }
 
+void bar_graph(int value) {
+  int i, length=64, scale=1023;
+  int stars = ((long) value * (long) length) / scale + 1 ;
+
+
+  if (value >=0 && value <= 1024) {
+    Serial.print(value); Serial.print("\t");
+    for (i=0; i<stars; i++) {
+      if (i == 0 && value == 0)		// zero
+	Serial.print("0");
+      else if ((i == length/2 && value == 512) || (i == length && value == scale))	// middle or top
+	Serial.print("|");
+      else
+	Serial.print("*");
+    }
+  } else {
+    Serial.print("value "); Serial.print(value); Serial.println(" out of range."); }
+
+  Serial.println("");
+}
+
+void display_analog_reads() {
+  int i, value;
+
+  Serial.print("pin\t");
+  Serial.println("\t|\t\t\t\t|\t\t\t\t|");
+
+  for (i=0; i<16; i++) {
+    value = analogRead(i);
+    Serial.print(i); Serial.print("\t"); bar_graph(value);
+  }
+
+  Serial.println("");
+}
+
+
 #ifdef OSCILLATORS
 
 void displayOscillatorsInfos() {
@@ -342,6 +378,7 @@ void displayMenuOscillators() {
   Serial.print("** MENU OSCILLATORS **  t=toggle tone ("); ONoff(toneSwitch, 2, false); Serial.println(")");
 
   Serial.print("display: i=infos\t");
+  Serial.print("y=analog in\t");
 #ifdef PROFILING
   Serial.print("d=debug, profiling\t");
 #endif
@@ -361,7 +398,7 @@ void displayMenuOscillators() {
     Serial.print("none");
   else
     Serial.print((int) hw_PIN);
-  Serial.println(")\tH=set high\tL=set low\tA=analog write");
+  Serial.println(")\tH=set high\tL=set low\tA=analog write\tR=read");
 #endif
 
   Serial.println("");
@@ -548,7 +585,22 @@ void menuOscillators() {
       }
 
       break;
+
+    case 'R':
+      if (hw_PIN == ILLEGALpin)
+	Serial.println("Please select pin with P first.");
+      else {
+	  Serial.print("analog value on pin "); Serial.print((int) hw_PIN); Serial.print(" is ");
+	  Serial.println(analogRead(hw_PIN));
+      }
+
+      break;
+
 #endif // HARDWARE_menu
+    case 'y':
+      display_analog_reads();
+
+      break;
 
     default:
       Serial.print("unknown menu_input: "); Serial.print(byte(menu_input));
