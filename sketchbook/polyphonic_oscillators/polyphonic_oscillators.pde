@@ -84,7 +84,7 @@ void toggleOscillator(int oscillator) {
 #define PROFILING	// gather info for debugging and profiling
 			// mainly to find out how long the main loop
 			// needs to come back to the oscillator in time.
-#ifdef PROFILING
+#ifdef PROFILING	// (inside OSCILLATORS)
 unsigned long inTime=0, late=0, easy=0, urgent=0, repeat=0, quit=0;
 unsigned long enteredOscillatorCount=0, profiledRounds=0, leftOscillatorTime;
 unsigned long lapseSum=0;
@@ -92,6 +92,16 @@ int lapse=0, maxLapse=0;
 int dontProfileThisRound=0;	// no profiling when we spent time in menus or somesuch
 float ratio;
 unsigned char autoAdapt=false;
+
+void reset_profiling() {
+  profiledRounds=0;
+  enteredOscillatorCount=0;
+  inTime=0; late=0;
+  easy=0; urgent=0;
+  repeat=0; quit=0;
+  lapse=0, lapseSum=0, maxLapse=0;
+}
+
 #endif // PROFILING (inside OSCILLATORS)
 
 
@@ -232,6 +242,74 @@ void input_analog_cyclic_poll() {
 
 
 /* **************************************************************** */
+#define TAP_PINs	1
+#ifdef TAP_PINs
+
+char tap = 0;
+char tapPIN[TAP_PINs];
+unsigned char tap_state[TAP_PINs];	// 0 inactive	1 off	2 on
+unsigned char tap_toggle[TAP_PINs]; 	// toggle actually is a counter, we get 2^n toggling for free ;)
+unsigned long tap_debouncing_since[TAP_PINs];
+unsigned long tap_debounce=20000;	// duration
+
+void init_TAPs() {
+  char tap;
+
+  for (tap=0; tap<TAP_PINs; tap++) {
+    tapPIN[tap] = ILLEGALpin;
+    tap_state[tap] = 0;
+    tap_debouncing_since[tap] = 0;
+  }
+}
+
+void setup_TAP(char tap, char pin, unsigned char toggle) {	// set toggle to 0 or 1...
+  pinMode(tap, INPUT);
+  tapPIN[tap] = pin;
+  tap_toggle[tap] = toggle;
+  tap_state[tap] = 1;			// default state 1 is active but OFF
+  tap_debouncing_since[tap] = 0;	// not debouncing
+}
+
+// check if TAP 'tap' is ON
+int TAP_(char tap) {
+  return tap_state[tap] == 2;
+}
+
+// check if TAP 'tap' is toggled
+int TAP_toggled_(char tap) {
+  return tap_toggle[tap] & 1 ;
+}
+
+void check_TAPs () {
+  char tap=0;
+ 
+  unsigned long now=micros();		// this routine should run quickly
+
+  for (tap=0; tap<TAP_PINs; tap++) {
+    if (tap_state[tap]) {		// active?
+      if (digitalRead(tapPIN[tap]))	// TAP pin is HIGH
+	if (tap_state[tap] != 2) {	// just switched on?
+	  tap_toggle[tap]++;		//   so toggle
+	tap_debouncing_since[tap] = 0;	// always switch to ON
+	tap_state[tap] = 2;		// state 2 is ON
+      } else {				// TAP pin is LOW
+	if(tap_debouncing_since[tap]) {	// still debouncing?
+	  if ((now - tap_debouncing_since[tap]) > tap_debounce) {	// long enough to switch off?
+	    tap_state[tap] = 1;						// switch to state 1, OFF
+	    tap_debouncing_since[tap] = 0;				// debouncing finished
+	  }
+	}
+	if (tap_state[tap] > 1){		// just went low
+	  tap_debouncing_since[tap] = now; }	// start debouncing
+      }
+    }
+  }
+}
+
+#endif	// TAP_PINs
+
+
+/* **************************************************************** */
 #define HARDWARE_menu		// menu interface to hardware configuration
 #ifdef HARDWARE_menu
 char hw_PIN = ILLEGALpin;
@@ -245,7 +323,7 @@ char hw_PIN = ILLEGALpin;
 #define WAITforSERIAL 10
 
 // get numeric input from serial
-int numericInput(long oldValue) {
+long numericInput(long oldValue) {
   long input, num; 
 
   while (!Serial.available())	// wait for input
@@ -354,6 +432,7 @@ void bar_graph_VU(int pin) {
 	  tolerance--;
 	break;
       default:
+	Serial.println("(quit)");
 	return;		// exit
       }
     }
@@ -389,6 +468,7 @@ void watch_digital_input(int pin) {
 	Serial.println("LOW");
     }
   }
+  Serial.println("(quit)");
   Serial.read();
 }
 
@@ -443,19 +523,21 @@ void displayMenuOscillators() {
 
   Serial.print("o=oscillator("); Serial.print(oscillator); Serial.print(") \t~="); ONoff(state[oscillator],2,false);
   Serial.print("\tp=period["); Serial.print(oscillator); Serial.print("] (");
-  Serial.print(period[oscillator]); Serial.println(")");  
+  Serial.print(period[oscillator]); Serial.println(")");
 
   Serial.println("");
-  Serial.print("r=expected roundtrip time (outside oscillator "); Serial.print(timeFor1Round); Serial.println(")");
+  Serial.print("r=expected roundtrip time (outside oscillator "); Serial.print(timeFor1Round); Serial.print(")");
+  Serial.print("\ta=adapt "); ONoff(autoAdapt,0,0); Serial.println("");
 
 #ifdef HARDWARE_menu
   Serial.println("");
-  Serial.print("P=select PIN (");
+  Serial.print("P=PIN (");
   if (hw_PIN == ILLEGALpin)
-    Serial.print("none");
+    Serial.print("no");
   else
     Serial.print((int) hw_PIN);
-  Serial.println(")\tH=set high\tL=set low\tA=analog write\tR=read");
+  Serial.println(")\tH=set HIGH\tL=set LOW\tA=analog write\tR=read");
+  Serial.println("V=VU bar\tI=digiwatch");
 #endif
 
   Serial.println("");
@@ -488,7 +570,6 @@ void menuOscillators() {
 
 #ifdef PROFILING
     case 'd':	// display profiling and debugging infos
-      Serial.println("");
       Serial.print("expected maximal timeFor1Round "); Serial.println(timeFor1Round);
 
       Serial.print("entered oscillator "); Serial.print(enteredOscillatorCount);
@@ -524,12 +605,14 @@ void menuOscillators() {
       break;
 #endif
 
-    case 'D':	// stuff for debugging, always changing...
+    case 'D':	// stuff to test, try, debug, always changing...
       debugSwitch ^= -1 ;
       if (debugSwitch)
 	Serial.println("debug: ON");
       else
 	Serial.println("debug: OFF");
+
+//      tap_debounce=numericInput(tap_debounce);
 
       break;
 
@@ -552,12 +635,8 @@ void menuOscillators() {
       	Serial.print("timeFor1Round set to "); Serial.println(timeFor1Round);
 
 #ifdef PROFILING
-	// reset profiling data
-	profiledRounds=0; enteredOscillatorCount=0;
-	inTime=0; late=0; easy=0; urgent=0; repeat=0; quit=0;
-	lapse=0, lapseSum=0, maxLapse=0;
+	reset_profiling();	// reset profiling data
 #endif
-
      }
 
       break;
@@ -649,7 +728,7 @@ void menuOscillators() {
 
       break;
 
-    case 'F':
+    case 'V':
       if (hw_PIN == ILLEGALpin)
 	Serial.println("Please select pin with P first.");
       else
@@ -701,7 +780,7 @@ void initMenu() {
 
 #ifdef OSCILLATORS
   displayMenuOscillators();
-  displayOscillatorsInfos();
+  // displayOscillatorsInfos();
 #endif
 
   Serial.println("");
@@ -727,13 +806,18 @@ void setup() {
   initMenu();
 #endif
 
+#ifdef TAP_PINs
+  init_TAPs();
+  setup_TAP(0, 2, 1);
+#endif
+
 #ifdef INPUTs_ANALOG
   input_analog_initialize();
 #endif
 
-  // i happen to use these pins for HIGH and LOW level right now... 
-  pinMode(12, OUTPUT); digitalWrite(12, LOW);
-  pinMode(13, OUTPUT); digitalWrite(13, HIGH);
+  // i happen to use these pins fon HIGH and LOW levels right now... 
+  pinMode(13, OUTPUT); digitalWrite(13, LOW);	// TAP check
+
 }
 
 /* **************************************************************** */
@@ -749,6 +833,17 @@ void loop() {
 
 #endif //  MENU_over_serial
 #endif // OSCILLATORS
+
+#ifdef TAP_PINs
+  check_TAPs ();
+
+  if (TAP_(0))
+    digitalWrite(13, HIGH);
+  else
+    digitalWrite(13, LOW);
+
+  toneSwitch = TAP_toggled_(0);		// toggling tone
+#endif
 
 #ifdef INPUTs_ANALOG
   input_analog_cyclic_poll();
