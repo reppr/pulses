@@ -6,11 +6,41 @@
 /* **************************************************************** */
 #define ILLEGALpin	-1	// a pin that is not assigned
 
+
+/* **************************************************************** */
 int debugSwitch=0;		// hook for testing and debugging
 
 
 /* **************************************************************** */
+// Some coloured LEDs
+// Quick hack to have some insight what's happening in the machine
+// while building the software...
+/* **************************************************************** */
+#define COULOUR_LEDs	// colour LED feedback
+/* **************************************************************** */
+#ifdef  COULOUR_LEDs
+
+#define redPIN 8
+#define greenPIN 9
+#define bluePIN 10
+
+/*
+unsigned char redPIN=8;
+unsigned char greenPIN=9;
+unsigned char bluePIN=10;
+*/
+
+void init_coulour_LEDs() {
+  pinMode(redPIN, OUTPUT);
+  pinMode(greenPIN, OUTPUT);
+  pinMode(bluePIN, OUTPUT);
+}
+#endif	// COULOUR_LEDs
+
+
+/* **************************************************************** */
 #define OSCILLATORS	4	// # of oscillators
+/* **************************************************************** */
 #ifdef OSCILLATORS
 
 unsigned long period[OSCILLATORS], next[OSCILLATORS], nextFlip;
@@ -84,6 +114,7 @@ void toggleOscillator(int oscillator) {
 #define PROFILING	// gather info for debugging and profiling
 			// mainly to find out how long the main loop
 			// needs to come back to the oscillator in time.
+/* **************************************************************** */
 #ifdef PROFILING	// (inside OSCILLATORS)
 unsigned long inTime=0, late=0, easy=0, urgent=0, repeat=0, quit=0;
 unsigned long enteredOscillatorCount=0, profiledRounds=0, leftOscillatorTime;
@@ -106,12 +137,18 @@ void reset_profiling() {
 
 
 /* **************************************************************** */
-// oscillate:
-// check if it is time to switch a pin and do so
-// if there is enough time (see 'timeFor1Round') return
-// to the main loop do do other things (like reading sensors
-// changing sound parameters)
-// if the next flip is too near loop until there is enough idle time.
+/*
+  main oscillator routine  void oscillate()
+
+  Check if it is time to switch a pin and do so
+
+  If there is enough time (see 'timeFor1Round') return
+  to the main loop do do other things (like reading sensors,
+  changing sound parameters)
+
+  If the next flip approaches loop until there is idle time.
+*/
+
 void oscillate() {
   int oscillator;
   unsigned long now = micros();
@@ -207,8 +244,10 @@ long updateNextFlip () {
 #endif // OSCILLATORS
 
 
+
 /* **************************************************************** */
-#define INPUTs_ANALOG	4	// use analog inputs?
+#define INPUTs_ANALOG	4	// ANALOG INPUTS
+/* **************************************************************** */
 #ifdef INPUTs_ANALOG
 
 char input_analog=0;			// index
@@ -233,24 +272,29 @@ void input_analog_cyclic_poll() {
   int input_analog = (input_analog_cyclic_index++ % INPUTs_ANALOG);	// cycle through inputs
   if (IN_state[input_analog]) {
     IN_last[input_analog] = analogRead(IN_PIN[input_analog]);
-    // Serial.print(input_analog); Serial.print(" gives value "); Serial.println(IN_last[input_analog]);
     period[input_analog] = 1000 + (2 * IN_last[input_analog]);
-    // Serial.println(period[0]);
   }
 }
 #endif	// INPUTs_ANALOG
 
 
+
 /* **************************************************************** */
-#define TAP_PINs	1
+#define TAP_PINs	1  // TAP pins for electrical touch INPUT
+/* **************************************************************** */
 #ifdef TAP_PINs
 
 char tap = 0;
 char tapPIN[TAP_PINs];
-unsigned char tap_state[TAP_PINs];	// 0 inactive	1 off	2 on
-unsigned char tap_toggle[TAP_PINs]; 	// toggle actually is a counter, we get 2^n toggling for free ;)
-unsigned long tap_debouncing_since[TAP_PINs];
-unsigned long tap_debounce=20000;	// duration
+
+// *logical* state:  0 inactive  1 OFF  2 ON (pin might be low, debouncing)
+unsigned char tap_state[TAP_PINs];
+
+// toggling is implemented with a counter. We get 2^n toggling for free ;)
+unsigned char tap_count[TAP_PINs];
+
+unsigned long tap_debouncing_since[TAP_PINs];	// debouncing flag and time stamp
+unsigned long tap_debounce=20000;		// duration
 
 void init_TAPs() {
   char tap;
@@ -265,42 +309,78 @@ void init_TAPs() {
 void setup_TAP(char tap, char pin, unsigned char toggle) {	// set toggle to 0 or 1...
   pinMode(tap, INPUT);
   tapPIN[tap] = pin;
-  tap_toggle[tap] = toggle;
+  tap_count[tap] = toggle;
   tap_state[tap] = 1;			// default state 1 is active but OFF
   tap_debouncing_since[tap] = 0;	// not debouncing
 }
 
-// check if TAP 'tap' is ON
+// check if TAP 'tap' is logically ON
 int TAP_(char tap) {
-  return tap_state[tap] == 2;
+  return (tap_state[tap] == 2);
 }
 
-// check if TAP 'tap' is toggled
+// check if TAP 'tap' is toggled ON
 int TAP_toggled_(char tap) {
-  return tap_toggle[tap] & 1 ;
+  return (tap_count[tap] &  1) ;
 }
+
+// set logical state (including toggling) by checking PINs and debouncing:
+// sorry, but i leave the colour LED debugging/profiling stuff in...
+#define TAP_COLOUR_LED_DEBUG	// do set  pinMode(13, OUTPUT);
+/*
+  electrical state: PIN13
+  logical ON	    green
+  logical OFF	    red
+  debouncing	    blue
+ */
 
 void check_TAPs () {
   char tap=0;
- 
-  unsigned long now=micros();		// this routine should run quickly
+  unsigned long now=micros();
 
-  for (tap=0; tap<TAP_PINs; tap++) {
-    if (tap_state[tap]) {		// active?
-      if (digitalRead(tapPIN[tap]))	// TAP pin is HIGH
-	if (tap_state[tap] != 2) {	// just switched on?
-	  tap_toggle[tap]++;		//   so toggle
-	tap_debouncing_since[tap] = 0;	// always switch to ON
-	tap_state[tap] = 2;		// state 2 is ON
-      } else {				// TAP pin is LOW
-	if(tap_debouncing_since[tap]) {	// still debouncing?
-	  if ((now - tap_debouncing_since[tap]) > tap_debounce) {	// long enough to switch off?
-	    tap_state[tap] = 1;						// switch to state 1, OFF
-	    tap_debouncing_since[tap] = 0;				// debouncing finished
+  for (tap=0; tap<TAP_PINs; tap++) {	// check all active TAPs
+    if (tap_state[tap]) {			// active?, then check pin state
+      if (digitalRead(tapPIN[tap])) {		// TAP PIN is HIGH
+
+#ifdef TAP_COLOUR_LED_DEBUG
+	digitalWrite(13,HIGH);
+	digitalWrite(bluePIN,LOW);
+	digitalWrite(redPIN,LOW); digitalWrite(greenPIN,HIGH);
+#endif
+
+	if (tap_state[tap] == 1) {		//   just switched on?
+	  tap_count[tap]++;			//     yes, so count to toggle
+	  tap_state[tap] = 2;			//     set state 2 meaning *logical* ON
+	  tap_debouncing_since[tap] = 0;	//     not debouncing
+	}
+      } else {					// TAP PIN is LOW
+
+#ifdef TAP_COLOUR_LED_DEBUG
+	digitalWrite(13,LOW);
+#endif
+
+	if (tap_state[tap] != 1) {		//   LOW but, logical state ON 
+
+#ifdef TAP_COLOUR_LED_DEBUG
+	  digitalWrite(bluePIN,HIGH); // debounce
+#endif
+
+	  if(tap_debouncing_since[tap] != 0) {	//   debouncing is in progress
+						//     long enough to switch off?
+	    if ((now - tap_debouncing_since[tap]) > tap_debounce) {	// done?
+	      tap_state[tap] = 1;					//   switch to logical state 1, OFF
+	      tap_debouncing_since[tap] = 0;				//   debouncing finished
+
+#ifdef TAP_COLOUR_LED_DEBUG
+	      digitalWrite(bluePIN,LOW); // debounce
+	      digitalWrite(redPIN,HIGH); digitalWrite(greenPIN,LOW);
+#endif
+
+	    }
+	  } else {
+	    tap_debouncing_since[tap] = now;	//   start debouncing
 	  }
 	}
-	if (tap_state[tap] > 1){		// just went low
-	  tap_debouncing_since[tap] = now; }	// start debouncing
       }
     }
   }
@@ -309,14 +389,19 @@ void check_TAPs () {
 #endif	// TAP_PINs
 
 
+
 /* **************************************************************** */
 #define HARDWARE_menu		// menu interface to hardware configuration
+/* **************************************************************** */
 #ifdef HARDWARE_menu
 char hw_PIN = ILLEGALpin;
 #endif // HARDWARE_menu
 
+
+
 /* **************************************************************** */
 #define MENU_over_serial	// do we use a serial menu?
+/* **************************************************************** */
 #ifdef MENU_over_serial
 
 // sometimes serial is not ready quick enough:
@@ -474,7 +559,7 @@ void watch_digital_input(int pin) {
 
 
 /* **************************************************************** */
-#ifdef OSCILLATORS
+#ifdef OSCILLATORS	// MENU STUFF for OSCILLATORS
 
 void displayOscillatorsInfos() {
   int i;
@@ -543,7 +628,7 @@ void displayMenuOscillators() {
   Serial.println("");
 }
 
-// primitive menu working through the serial port
+// simple menu interface through serial port
 void menuOscillators() {
   int menu_input;
   long newValue;
@@ -806,9 +891,13 @@ void setup() {
   initMenu();
 #endif
 
+#ifdef COULOUR_LEDs
+  init_coulour_LEDs();
+#endif
+
 #ifdef TAP_PINs
   init_TAPs();
-  setup_TAP(0, 2, 1);
+  setup_TAP(0, 2, 1);	// PIN 2, start toggled on 
 #endif
 
 #ifdef INPUTs_ANALOG
@@ -816,7 +905,12 @@ void setup() {
 #endif
 
   // i happen to use these pins fon HIGH and LOW levels right now... 
-  pinMode(13, OUTPUT); digitalWrite(13, LOW);	// TAP check
+#ifdef TAP_COLOUR_LED_DEBUG
+  pinMode(13, OUTPUT); digitalWrite(13, LOW);	// TAP colour LED debugging
+#endif
+
+  pinMode(21, OUTPUT); digitalWrite(21, LOW);	// ground for colour LEDs
+  pinMode(13, OUTPUT); digitalWrite(13, LOW);	// TAP state
 
 }
 
@@ -835,14 +929,17 @@ void loop() {
 #endif // OSCILLATORS
 
 #ifdef TAP_PINs
-  check_TAPs ();
+  check_TAPs ();	// set logigal state, debounce
 
-  if (TAP_(0))
+  toneSwitch = TAP_toggled_(0);		// toggling tone
+
+#ifndef TAP_COLOUR_LED_DEBUG	// I use LED 13 for electrical TAP state there
+  if (TAP_(0))				// TAP status on LED 13
     digitalWrite(13, HIGH);
   else
     digitalWrite(13, LOW);
+#endif
 
-  toneSwitch = TAP_toggled_(0);		// toggling tone
 #endif
 
 #ifdef INPUTs_ANALOG
