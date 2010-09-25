@@ -136,6 +136,7 @@ void reset_profiling() {
 #endif // PROFILING (inside OSCILLATORS)
 
 
+#define OSCILLATOR_COLOUR_LED_PROFILING
 /* **************************************************************** */
 /*
   main oscillator routine  void oscillate()
@@ -153,8 +154,15 @@ void oscillate() {
   int oscillator;
   unsigned long now = micros();
 
+#ifdef OSCILLATOR_COLOUR_LED_PROFILING
+  digitalWrite(bluePIN, HIGH);	// time inside oscillate()
+  digitalWrite(greenPIN, HIGH); // no stress
+  digitalWrite(redPIN, LOW);	// no stress
+#endif
+
 #ifdef PROFILING
   enteredOscillatorCount++;
+
   // how long did the program spend outside the oscillator?
   if (dontProfileThisRound==0) {
     if (enteredOscillatorCount > 2) {	// start on second run
@@ -214,7 +222,12 @@ void oscillate() {
     }
 #endif
 
-  }
+#ifdef OSCILLATOR_COLOUR_LED_PROFILING	// stress?
+    // second round only when urgent
+    digitalWrite(greenPIN, LOW);	// stress
+    digitalWrite(redPIN, HIGH);		// stress
+#endif
+  }  // while no time to leave oscillator
 
 #ifdef PROFILING
   if (dontProfileThisRound==0) {
@@ -223,6 +236,12 @@ void oscillate() {
   dontProfileThisRound = 0;
 
   leftOscillatorTime = micros();
+#endif
+
+#ifdef OSCILLATOR_COLOUR_LED_PROFILING
+  digitalWrite(bluePIN, LOW);	// time outside oscillate()
+  digitalWrite(greenPIN, HIGH); // no stress
+  digitalWrite(redPIN, LOW);	// no stress
 #endif
 }
 
@@ -324,9 +343,13 @@ int TAP_toggled_(char tap) {
   return (tap_count[tap] &  1) ;
 }
 
+/* **************************************************************** */
+// void check_TAPs()
 // set logical state (including toggling) by checking PINs and debouncing:
 // sorry, but i leave the colour LED debugging/profiling stuff in...
-#define TAP_COLOUR_LED_DEBUG	// do set  pinMode(13, OUTPUT);
+
+/* **************************************************************** */
+// #define TAP_COLOUR_LED_DEBUG	// do set  pinMode(13, OUTPUT);
 /*
   electrical state: PIN13
   logical ON	    green
@@ -334,7 +357,7 @@ int TAP_toggled_(char tap) {
   debouncing	    blue
  */
 
-void check_TAPs () {
+void check_TAPs() {
   char tap=0;
   unsigned long now=micros();
 
