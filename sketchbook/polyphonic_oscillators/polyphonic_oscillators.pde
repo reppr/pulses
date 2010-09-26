@@ -43,9 +43,12 @@ void init_coulour_LEDs() {
 /* **************************************************************** */
 #ifdef OSCILLATORS
 
+// This version does not only flip a bit, it increases a short integer.
+// We get 16 octaves for free :)
+unsigned short osc_count[OSCILLATORS];
 unsigned long period[OSCILLATORS], next[OSCILLATORS], nextFlip;
-int state[OSCILLATORS];
-int oscPIN[OSCILLATORS] = {47, 49, 51, 53};
+unsigned char osc_flag[OSCILLATORS];
+signed char oscPIN[OSCILLATORS] = {47, 49, 51, 53};
 int oscillator=0;
 
 void oscillatorInit() {
@@ -54,7 +57,7 @@ void oscillatorInit() {
   for (i=0; i<OSCILLATORS; i++) {
     pinMode(oscPIN[i], OUTPUT);
     period[i] = next[i] = 0;
-    state[i] = 0;
+    osc_flag[i] = 0;		// off
   }
 }
 
@@ -78,7 +81,7 @@ int startOscillator(int oscillator, unsigned long newPeriod) {
 
   period[oscillator] = newPeriod;
   next[oscillator] = now + newPeriod;
-  state[oscillator] = 1;
+  osc_flag[oscillator] |= 1;
 
   digitalWrite(oscPIN[oscillator], HIGH);
 
@@ -92,13 +95,13 @@ int startOscillator(int oscillator, unsigned long newPeriod) {
 }
 
 void stopOscillator(int oscillator) {
-  state[oscillator] = 0;
+  osc_flag[oscillator] &= ~1;
   digitalWrite(oscPIN[oscillator], LOW);
   nextFlip = updateNextFlip();
 }
 
 void toggleOscillator(int oscillator) {
-  if (state[oscillator]) {
+  if (osc_flag[oscillator] & 1) {
     stopOscillator(oscillator);
     Serial.print("Oscillator "); Serial.print(oscillator); Serial.println(" stopped");
   }
@@ -136,7 +139,7 @@ void reset_profiling() {
 #endif // PROFILING (inside OSCILLATORS)
 
 
-#define OSCILLATOR_COLOUR_LED_PROFILING
+// #define OSCILLATOR_COLOUR_LED_PROFILING
 /* **************************************************************** */
 /*
   main oscillator routine  void oscillate()
@@ -189,13 +192,13 @@ void oscillate() {
   while (now >= nextFlip || ((nextFlip - now) <= timeFor1Round)) {
     // check all the oscillators if it's time to flip
     for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
-      if (state[oscillator] && (next[oscillator] <= now)) {
-	state[oscillator] *= -1;
+      if ((osc_flag[oscillator] & 1) && (next[oscillator] <= now)) {
+	osc_count[oscillator]++;
 	if (toneSwitch) {
-	  if (state[oscillator] < 0)
-	    digitalWrite(oscPIN[oscillator], LOW);
-	  else
+	  if (osc_count[oscillator] & 1)
 	    digitalWrite(oscPIN[oscillator], HIGH);
+	  else
+	    digitalWrite(oscPIN[oscillator], LOW);
 	}
 
 	next[oscillator] += period[oscillator];
@@ -249,10 +252,10 @@ void oscillate() {
 // compute when the next flip (in any of the active oscillators is due
 long updateNextFlip () {
   int oscillator;
-  nextFlip |=-1;
+  nextFlip |= -1;
 
   for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
-    if (state[oscillator])
+    if (osc_flag[oscillator] & 1)
       if (next[oscillator] < nextFlip)
 	nextFlip = next[oscillator];
   }
@@ -313,7 +316,7 @@ unsigned char tap_state[TAP_PINs];
 unsigned char tap_count[TAP_PINs];
 
 unsigned long tap_debouncing_since[TAP_PINs];	// debouncing flag and time stamp
-unsigned long tap_debounce=20000;		// duration
+unsigned long tap_debounce=30000L;		// duration
 
 void init_TAPs() {
   char tap;
@@ -349,7 +352,7 @@ int TAP_toggled_(char tap) {
 // sorry, but i leave the colour LED debugging/profiling stuff in...
 
 /* **************************************************************** */
-// #define TAP_COLOUR_LED_DEBUG	// do set  pinMode(13, OUTPUT);
+#define TAP_COLOUR_LED_DEBUG	// do set  pinMode(13, OUTPUT);
 /*
   electrical state: PIN13
   logical ON	    green
@@ -580,6 +583,19 @@ void watch_digital_input(int pin) {
   Serial.read();
 }
 
+// print binary numbers with leading zeroes
+void serial_print_BIN(unsigned long value, int bits) {
+  int i;
+  unsigned long mask=0;
+
+  for (i = bits - 1; i >= 0; i--) {
+    mask = (1 << i);
+      if (value & mask)
+	Serial.print(1);
+      else
+	Serial.print(0);
+  }
+}
 
 /* **************************************************************** */
 #ifdef OSCILLATORS	// MENU STUFF for OSCILLATORS
@@ -587,35 +603,35 @@ void watch_digital_input(int pin) {
 void displayOscillatorsInfos() {
   int i;
 
-  Serial.println("osc\tactive\tstate\tperiod\tPIN");
+  Serial.println("  osc\tactive\tstate\tperiod\tPIN\toctaves");
+  Serial.println("");
+
   for (i=0; i<OSCILLATORS; i++) {
     if (i == oscillator)
-      Serial.print("*");
+      Serial.print("* ");
     else
-      Serial.print(" ");
+      Serial.print("  ");
 
     Serial.print(i); Serial.print("\t");
 
-    switch (state[i]) {
-    case 0:
-      Serial.print("off\tlow\t");
-      break;
-    case 1:
-      Serial.print("ON\tHIGH\t");
-      break;
-    case -1:
-      Serial.print("ON\tLOW\t");
-      break;
-    default:
-      Serial.print("UNKNOWN\t\t");
-    }
+
+    if (osc_flag[i] & 1)
+      Serial.print("ON\t");
+    else
+      Serial.print("off\t");
+
+    if (osc_count[i] & 1)
+      Serial.print("HIGH\t");
+    else
+      Serial.print("LOW\t");
+
     Serial.print(period[i]); Serial.print("\t");
     Serial.print(oscPIN[i]); Serial.print("\t");
+    serial_print_BIN(osc_count[i], 16); Serial.print("\t");
     Serial.println("");
   }
 
   Serial.println("");
-  // Serial.print("tone: "); ONoff(toneSwitch, 1, false); Serial.println("");
 }
 
 void displayMenuOscillators() {
@@ -629,7 +645,7 @@ void displayMenuOscillators() {
 #endif
   Serial.println("");
 
-  Serial.print("o=oscillator("); Serial.print(oscillator); Serial.print(") \t~="); ONoff(state[oscillator],2,false);
+  Serial.print("o=oscillator("); Serial.print(oscillator); Serial.print(") \t~="); ONoff((osc_flag[oscillator] & 1),2,false);
   Serial.print("\tp=period["); Serial.print(oscillator); Serial.print("] (");
   Serial.print(period[oscillator]); Serial.println(")");
 
@@ -720,7 +736,11 @@ void menuOscillators() {
       else
 	Serial.println("debug: OFF");
 
-//      tap_debounce=numericInput(tap_debounce);
+      newValue=tap_debounce / 2;
+      tap_debounce += newValue;
+      Serial.println(tap_debounce);
+
+      // tap_debounce=numericInput(tap_debounce);
 
       break;
 
