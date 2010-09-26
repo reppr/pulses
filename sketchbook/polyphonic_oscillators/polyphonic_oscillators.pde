@@ -5,7 +5,7 @@
 
 /* **************************************************************** */
 #define ILLEGALpin	-1	// a pin that is not assigned
-
+#define PIN13		13	// onboard LED
 
 /* **************************************************************** */
 int debugSwitch=0;		// hook for testing and debugging
@@ -16,9 +16,9 @@ int debugSwitch=0;		// hook for testing and debugging
 // Quick hack to have some insight what's happening in the machine
 // while building the software...
 /* **************************************************************** */
-#define COULOUR_LEDs	// colour LED feedback
+#define COLOUR_LEDs	// colour LED feedback
 /* **************************************************************** */
-#ifdef  COULOUR_LEDs
+#ifdef  COLOUR_LEDs
 
 #define redPIN 8
 #define greenPIN 9
@@ -30,12 +30,12 @@ unsigned char greenPIN=9;
 unsigned char bluePIN=10;
 */
 
-void init_coulour_LEDs() {
+void init_colour_LEDs() {
   pinMode(redPIN, OUTPUT);
   pinMode(greenPIN, OUTPUT);
   pinMode(bluePIN, OUTPUT);
 }
-#endif	// COULOUR_LEDs
+#endif	// COLOUR_LEDs
 
 
 /* **************************************************************** */
@@ -46,10 +46,11 @@ void init_coulour_LEDs() {
 // This version does not only flip a bit, it increases a short integer.
 // We get 16 octaves for free :)
 unsigned short osc_count[OSCILLATORS];
+// unsigned long longest_period = ~0L ;
 unsigned long period[OSCILLATORS], next[OSCILLATORS], nextFlip;
 unsigned char osc_flag[OSCILLATORS];
 signed char oscPIN[OSCILLATORS] = {47, 49, 51, 53};
-int oscillator=0;
+int oscillator=0;	// int might produce faster code then unsigned char
 
 void oscillatorInit() {
   int i;
@@ -100,6 +101,11 @@ void stopOscillator(int oscillator) {
   nextFlip = updateNextFlip();
 }
 
+// is oscillator ON or OFF?
+int OSC_(int oscillator) {
+  return (osc_count[oscillator] & 1);
+}
+
 void toggleOscillator(int oscillator) {
   if (osc_flag[oscillator] & 1) {
     stopOscillator(oscillator);
@@ -110,6 +116,27 @@ void toggleOscillator(int oscillator) {
   }
   else
     Serial.println("error: no period set");
+}
+
+
+#define INTERFERENCE_COLOUR_LED
+void osc_flip_reaction(){	// whatever you want ;)
+  int oscillator=0;
+
+  if (OSC_(oscillator) & OSC_(3))
+    digitalWrite(redPIN, HIGH);
+  else
+    digitalWrite(redPIN, LOW);
+
+  if (OSC_(oscillator) ^ OSC_(3))
+    digitalWrite(bluePIN, HIGH);
+  else
+    digitalWrite(bluePIN, LOW);
+
+  if (!OSC_(oscillator) | OSC_(3))
+    digitalWrite(PIN13, HIGH);
+  else
+    digitalWrite(PIN13, LOW);
 }
 
 
@@ -154,7 +181,7 @@ void reset_profiling() {
 */
 
 void oscillate() {
-  int oscillator;
+  int oscillator;	// int might produce faster code then unsigned char
   unsigned long now = micros();
 
 #ifdef OSCILLATOR_COLOUR_LED_PROFILING
@@ -188,12 +215,15 @@ void oscillate() {
   }
 #endif
 
-  // is there enough time to do something else in between?
+  // First decide what to do now, based on current time.
+  // If times are easy leave do do other things in between.
+  // else check oscillators if it's time to flip.
   while (now >= nextFlip || ((nextFlip - now) <= timeFor1Round)) {
-    // check all the oscillators if it's time to flip
     for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
       if ((osc_flag[oscillator] & 1) && (next[oscillator] <= now)) {
+	// flip one
 	osc_count[oscillator]++;
+	// maybe sound
 	if (toneSwitch) {
 	  if (osc_count[oscillator] & 1)
 	    digitalWrite(oscPIN[oscillator], HIGH);
@@ -201,13 +231,19 @@ void oscillate() {
 	    digitalWrite(oscPIN[oscillator], LOW);
 	}
 
+	// compute new next on this oscillator
 	next[oscillator] += period[oscillator];
-	nextFlip = updateNextFlip();
       }
     }
 
-    // is there enough time to do something else in between?
+    // compute new nextFlip on one of all oscillators
+    nextFlip = updateNextFlip();
+
+    // decide what to do next based on time
     now = micros();
+
+    if (now < nextFlip)		// all oscillators up to date?
+      osc_flip_reaction();	// whatever you want ;)
 
 #ifdef PROFILING
     // profile oscillator loop
@@ -283,18 +319,17 @@ void input_analog_initialize() {
 
   for (input_analog=0; input_analog<INPUTs_ANALOG; input_analog++)
     IN_state[input_analog] = 0;
-
-  IN_state[0]=1; 
-  IN_state[1]=1;
-  IN_state[2]=1;
-  IN_state[3]=1;
 }
+
+
+short int output_offset=4000;	// output start value when analog input is zero
+int output_scaling=4;		// factor analog input to output change
 
 void input_analog_cyclic_poll() {
   int input_analog = (input_analog_cyclic_index++ % INPUTs_ANALOG);	// cycle through inputs
   if (IN_state[input_analog]) {
     IN_last[input_analog] = analogRead(IN_PIN[input_analog]);
-    period[input_analog] = 1000 + (2 * IN_last[input_analog]);
+    period[input_analog] = output_offset + (output_scaling * IN_last[input_analog]);
   }
 }
 #endif	// INPUTs_ANALOG
@@ -316,7 +351,7 @@ unsigned char tap_state[TAP_PINs];
 unsigned char tap_count[TAP_PINs];
 
 unsigned long tap_debouncing_since[TAP_PINs];	// debouncing flag and time stamp
-unsigned long tap_debounce=30000L;		// duration
+unsigned long tap_debounce=68000L;		// debounce duration
 
 void init_TAPs() {
   char tap;
@@ -352,7 +387,7 @@ int TAP_toggled_(char tap) {
 // sorry, but i leave the colour LED debugging/profiling stuff in...
 
 /* **************************************************************** */
-#define TAP_COLOUR_LED_DEBUG	// do set  pinMode(13, OUTPUT);
+// #define TAP_COLOUR_LED_DEBUG	// do set  pinMode(PIN13, OUTPUT);
 /*
   electrical state: PIN13
   logical ON	    green
@@ -369,7 +404,7 @@ void check_TAPs() {
       if (digitalRead(tapPIN[tap])) {		// TAP PIN is HIGH
 
 #ifdef TAP_COLOUR_LED_DEBUG
-	digitalWrite(13,HIGH);
+	digitalWrite(PIN13,HIGH);
 	digitalWrite(bluePIN,LOW);
 	digitalWrite(redPIN,LOW); digitalWrite(greenPIN,HIGH);
 #endif
@@ -382,7 +417,7 @@ void check_TAPs() {
       } else {					// TAP PIN is LOW
 
 #ifdef TAP_COLOUR_LED_DEBUG
-	digitalWrite(13,LOW);
+	digitalWrite(PIN13,LOW);
 #endif
 
 	if (tap_state[tap] != 1) {		//   LOW but, logical state ON 
@@ -744,28 +779,49 @@ void menuOscillators() {
 
       break;
 
+    case 's': // set output scaling
+      Serial.print("output_scaling       "); Serial.println(output_scaling);
+      Serial.print("output_scaling new = ");
+      output_scaling = numericInput(output_scaling);
+      Serial.println(output_scaling);
+
+      break;
+
+    case 'S': // set output offset
+      Serial.print("output_offset       "); Serial.println(output_offset);
+      Serial.print("output_offset new = ");
+      output_offset = numericInput(output_offset);
+      Serial.println(output_offset);
+
+      break;
+
     case 'o': // set menu local oscillator index to act on the given oscillator
+      Serial.print("oscillator       "); Serial.println(oscillator);
+      Serial.print("oscillator new = ");
       newValue = numericInput(oscillator);
       if (newValue < OSCILLATORS && newValue >= 0) {
 	oscillator = newValue;
-	Serial.print("oscillator "); Serial.println(oscillator);
+	Serial.println(oscillator);
       } else {
-	Serial.print("oscillator must be between 0 and "); Serial.println(OSCILLATORS -1);
+	Serial.println(" must be between 0 and "); Serial.println(OSCILLATORS -1);
       }
 
       break;
 
     case 'r': // set timeFor1Round
-      Serial.print("timeFor1Round = "); Serial.println(timeFor1Round);
+      Serial.print("timeFor1Round       "); Serial.println(timeFor1Round);
+      Serial.print("timeFor1Round new = ");
       newValue = numericInput(timeFor1Round);
       if (timeFor1Round > 0) {
 	timeFor1Round = newValue;
-      	Serial.print("timeFor1Round set to "); Serial.println(timeFor1Round);
+      	Serial.println(timeFor1Round);
 
 #ifdef PROFILING
 	reset_profiling();	// reset profiling data
 #endif
-     }
+
+     } else
+      	Serial.println("must be positive");
 
       break;
 
@@ -776,13 +832,18 @@ void menuOscillators() {
 
     case 'p':
       Serial.print("Oscillator "); Serial.print(oscillator);
-      Serial.print(" \tperiod = "); Serial.println(period[oscillator]);
+      Serial.print(" \tperiod     = "); Serial.println(period[oscillator]);
+      Serial.print("Oscillator "); Serial.print(oscillator);
+      Serial.print(" \tperiod new = "); Serial.println(period[oscillator]);
       
       newValue = numericInput(period[oscillator]);
       if (period[oscillator] != newValue) {
-	period[oscillator] = newValue;
-	Serial.print("period set to "); Serial.println(newValue);
-      } 
+	if (newValue > 0) {
+	  period[oscillator] = newValue;
+	  Serial.println(newValue);
+	} else
+	  Serial.println("must be positive.");
+      }
       else
 	Serial.println("(quit)");
 
@@ -796,19 +857,19 @@ void menuOscillators() {
 
 #ifdef HARDWARE_menu
     case 'P':
-      Serial.print("Select pin ");
+      Serial.print("Input pin to work on ");
       newValue = numericInput(period[oscillator]);
       if (newValue>=0 && newValue<255) {
 	hw_PIN = newValue;
 	Serial.println((int) hw_PIN);
       } else
-	Serial.println("(quit)");
+	Serial.println("(none)");
 
       break;
 
     case 'H':
       if (hw_PIN == ILLEGALpin)
-	Serial.println("Please select pin with P first.");
+	Serial.println("Select a pin with P.");
       else {
 	pinMode(hw_PIN, OUTPUT);
 	digitalWrite(hw_PIN, HIGH);
@@ -819,7 +880,7 @@ void menuOscillators() {
 
     case 'L':
       if (hw_PIN == ILLEGALpin)
-	Serial.println("Please select pin with P first.");
+	Serial.println("Select a pin with P.");
       else {
 	pinMode(hw_PIN, OUTPUT);
 	digitalWrite(hw_PIN, LOW);
@@ -830,7 +891,7 @@ void menuOscillators() {
 
     case 'A':
       if (hw_PIN == ILLEGALpin)
-	Serial.println("Please select pin with P first.");
+	Serial.println("Select a pin with P.");
       else {
 	Serial.print("analog write value ");
 	newValue = numericInput(-1);
@@ -848,7 +909,7 @@ void menuOscillators() {
 
     case 'R':
       if (hw_PIN == ILLEGALpin)
-	Serial.println("Please select pin with P first.");
+	Serial.println("Select a pin with P.");
       else {
 	  Serial.print("analog value on pin "); Serial.print((int) hw_PIN); Serial.print(" is ");
 	  Serial.println(analogRead(hw_PIN));
@@ -858,7 +919,7 @@ void menuOscillators() {
 
     case 'V':
       if (hw_PIN == ILLEGALpin)
-	Serial.println("Please select pin with P first.");
+	Serial.println("Select a pin with P.");
       else
 	bar_graph_VU(hw_PIN);
 
@@ -866,7 +927,7 @@ void menuOscillators() {
 
     case 'I':
       if (hw_PIN == ILLEGALpin)
-	Serial.println("Please select pin with P first.");
+	Serial.println("Select a pin with P.");
       else {
 	pinMode(hw_PIN, INPUT);
 	watch_digital_input(hw_PIN);
@@ -923,10 +984,8 @@ void setup() {
 #ifdef OSCILLATORS
   oscillatorInit();
 
-  startOscillator(0, 1000);
-  startOscillator(1, 1201);
-  startOscillator(2, 799);
-  startOscillator(3, 2000);
+  startOscillator(0, 4000);
+  startOscillator(3, 8000);
 #endif
 
 #ifdef MENU_over_serial
@@ -934,8 +993,8 @@ void setup() {
   initMenu();
 #endif
 
-#ifdef COULOUR_LEDs
-  init_coulour_LEDs();
+#ifdef COLOUR_LEDs
+  init_colour_LEDs();
 #endif
 
 #ifdef TAP_PINs
@@ -945,20 +1004,28 @@ void setup() {
 
 #ifdef INPUTs_ANALOG
   input_analog_initialize();
+
+  IN_state[0]=1; 
+  IN_PIN[0] = 0;
+
+  /*  IN_state[1]=1;
+      IN_state[2]=1;
+      IN_state[3]=1;*/
 #endif
 
   // i happen to use these pins fon HIGH and LOW levels right now... 
 #ifdef TAP_COLOUR_LED_DEBUG
-  pinMode(13, OUTPUT); digitalWrite(13, LOW);	// TAP colour LED debugging
+  pinMode(PIN13, OUTPUT); digitalWrite(PIN13, LOW);	// TAP colour LED debugging
 #endif
 
   pinMode(21, OUTPUT); digitalWrite(21, LOW);	// ground for colour LEDs
-  pinMode(13, OUTPUT); digitalWrite(13, LOW);	// TAP state
+  pinMode(PIN13, OUTPUT); digitalWrite(PIN13, LOW);	// TAP state
 
 }
 
 /* **************************************************************** */
 void loop() {
+  pinMode(PIN13, OUTPUT);	// to use the onboard LED
 
 #ifdef OSCILLATORS
   oscillate();
@@ -977,10 +1044,10 @@ void loop() {
   toneSwitch = TAP_toggled_(0);		// toggling tone
 
 #ifndef TAP_COLOUR_LED_DEBUG	// I use LED 13 for electrical TAP state there
-  if (TAP_(0))				// TAP status on LED 13
-    digitalWrite(13, HIGH);
+  if (TAP_(0))				// TAP status on LED on PIN13
+    digitalWrite(PIN13, HIGH);
   else
-    digitalWrite(13, LOW);
+    digitalWrite(PIN13, LOW);
 #endif
 
 #endif
