@@ -1,15 +1,23 @@
 // polyphonic_oscillators
 
 // hmm, no...
-// these are not oscillators, these are flippylators ;)
+// these are not oscillators,
+//
+// more like countylators ;)
+
+
+// #define DEBUG_HW_ON_INIT	// check hardware on init
 
 /* **************************************************************** */
 #define ILLEGALpin	-1	// a pin that is not assigned
 #define PIN13		13	// onboard LED
+				// currently used for electrical tap activity
+
+
 
 /* **************************************************************** */
+// LED stuff:	let me *see* what's happening in the machine...
 int debugSwitch=0;		// hook for testing and debugging
-
 
 /* **************************************************************** */
 // Some coloured LEDs
@@ -34,33 +42,96 @@ void init_colour_LEDs() {
   pinMode(redPIN, OUTPUT);
   pinMode(greenPIN, OUTPUT);
   pinMode(bluePIN, OUTPUT);
+
+#ifdef DEBUG_HW_ON_INIT		// blink the LEDs to check connections:
+  digitalWrite(redPIN, HIGH); delay(100); digitalWrite(redPIN, LOW); delay(200);
+  digitalWrite(greenPIN, HIGH); delay(100); digitalWrite(greenPIN, LOW); delay(200);
+  digitalWrite(bluePIN, HIGH); delay(100); digitalWrite(bluePIN, LOW); delay(200);
+#endif
 }
+
 #endif	// COLOUR_LEDs
 
 
 /* **************************************************************** */
+// more LED stuff:
+// Quick hack to use some LED rows I have, 1 pin spacing between LEDs
+// #define LED_ROW		4	// LED rows to stick in digital OUTPUTS
+/* **************************************************************** */
+#ifdef LED_ROW
+
+int led=0;	// index
+
+char led_row_anode_PIN[LED_ROW], led_row_cathode_PIN[LED_ROW];
+
+
+void led_row_ON(int led) {
+  digitalWrite(led_row_anode_PIN[led],HIGH); digitalWrite(led_row_cathode_PIN[led],LOW);	// ON
+}
+
+void init_LED_row(int start, int leds, int spacing, int anode_first) {
+  int led;
+
+  for (led=0; led < leds; led++) {
+    if (anode_first) {
+      led_row_anode_PIN[led]   = start +  led * (2 + spacing);
+      led_row_cathode_PIN[led] = start +  led * (2 + spacing) + 1;
+    } else {
+      led_row_anode_PIN[led]   = start +  led * (2 + spacing) + 1;
+      led_row_cathode_PIN[led] = start +  led * (2 + spacing);
+    }
+    pinMode(led_row_anode_PIN[led], OUTPUT);
+    pinMode(led_row_cathode_PIN[led], OUTPUT);
+
+    digitalWrite(led_row_anode_PIN[led],LOW);
+    digitalWrite(led_row_cathode_PIN[led],LOW);
+
+#ifdef DEBUG_HW_ON_INIT	// Serial info and blink to check LEDs
+    Serial.print((int) led);
+    Serial.print(" led_row_anode_PIN[led] ");
+    Serial.print((int) led_row_anode_PIN[led]);
+    Serial.print(" led_row_cathode_PIN[led] ");
+    Serial.print((int) led_row_cathode_PIN[led]);
+    Serial.println("");
+
+    led_row_ON(led); delay(100);				// ON
+    digitalWrite(led_row_anode_PIN[led],LOW); delay(200);	// OFF
+#endif
+
+  }
+}
+#endif // LED_ROW
+
+
+
+/* **************************************************************** */
+// OSCILLATORS
+// once they were flippylators, now they are implemented as countillators
+// we get many octaves for free ;)
+//
 #define OSCILLATORS	4	// # of oscillators
 /* **************************************************************** */
 #ifdef OSCILLATORS
 
+int oscillator=0;	// index. int might produce faster code then unsigned char
+
 // This version does not only flip a bit, it increases a short integer.
 // We get 16 octaves for free :)
 unsigned short osc_count[OSCILLATORS];
+
 // unsigned long longest_period = ~0L ;
 unsigned long period[OSCILLATORS], next[OSCILLATORS], nextFlip;
-unsigned char osc_flag[OSCILLATORS];
+
+unsigned char osc_flags[OSCILLATORS];
+#define OSC_FLAG_ACTIVE	1
+#define OSC_FLAG_MUTE	2
+
+
 signed char oscPIN[OSCILLATORS] = {47, 49, 51, 53};
-int oscillator=0;	// int might produce faster code then unsigned char
+// signed char oscPIN[OSCILLATORS];
+// signed char oscPIN[OSCILLATORS] = {49, 51, 53};
+// signed char oscPIN[OSCILLATORS] = {3, 4, 5};
 
-void oscillatorInit() {
-  int i;
-
-  for (i=0; i<OSCILLATORS; i++) {
-    pinMode(oscPIN[i], OUTPUT);
-    period[i] = next[i] = 0;
-    osc_flag[i] = 0;		// off
-  }
-}
 
 // micro seconds for main loop other then oscillating
 // check this value for your program by PROFILING and
@@ -72,6 +143,16 @@ unsigned long timeFor1Round = 148;
 int toneSwitch=-1;	// tone switched on by default
 
 
+void oscillatorInit() {
+  int i;
+
+  for (i=0; i<OSCILLATORS; i++) {
+    pinMode(oscPIN[i], OUTPUT);
+    period[i] = next[i] = 0;
+    osc_flags[i] = 0;		// off
+  }
+}
+
 int startOscillator(int oscillator, unsigned long newPeriod) {
   unsigned long now = micros();
 
@@ -82,7 +163,7 @@ int startOscillator(int oscillator, unsigned long newPeriod) {
 
   period[oscillator] = newPeriod;
   next[oscillator] = now + newPeriod;
-  osc_flag[oscillator] |= 1;
+  osc_flags[oscillator] |= OSC_FLAG_ACTIVE;	// active ON
 
   digitalWrite(oscPIN[oscillator], HIGH);
 
@@ -96,7 +177,7 @@ int startOscillator(int oscillator, unsigned long newPeriod) {
 }
 
 void stopOscillator(int oscillator) {
-  osc_flag[oscillator] &= ~1;
+  osc_flags[oscillator] &= ~OSC_FLAG_ACTIVE;	// active OFF
   digitalWrite(oscPIN[oscillator], LOW);
   nextFlip = updateNextFlip();
 }
@@ -107,7 +188,8 @@ int OSC_(int oscillator) {
 }
 
 void toggleOscillator(int oscillator) {
-  if (osc_flag[oscillator] & 1) {
+  if (osc_flags[oscillator] & OSC_FLAG_ACTIVE)	// was active
+{
     stopOscillator(oscillator);
     Serial.print("Oscillator "); Serial.print(oscillator); Serial.println(" stopped");
   }
@@ -118,27 +200,62 @@ void toggleOscillator(int oscillator) {
     Serial.println("error: no period set");
 }
 
-
 #define INTERFERENCE_COLOUR_LED
 void osc_flip_reaction(){	// whatever you want ;)
-  int oscillator=0;
+  int oscillator=0, led=0;
 
-  if (OSC_(oscillator) & OSC_(3))
+  if (OSC_(oscillator) & OSC_(1))
     digitalWrite(redPIN, HIGH);
   else
     digitalWrite(redPIN, LOW);
 
-  if (OSC_(oscillator) ^ OSC_(3))
+  if (OSC_(oscillator) ^ OSC_(1))
+    digitalWrite(greenPIN, HIGH);
+  else
+    digitalWrite(greenPIN, LOW);
+
+
+  if (!OSC_(oscillator) | OSC_(1))
     digitalWrite(bluePIN, HIGH);
   else
     digitalWrite(bluePIN, LOW);
 
-  if (!OSC_(oscillator) | OSC_(3))
-    digitalWrite(PIN13, HIGH);
-  else
-    digitalWrite(PIN13, LOW);
-}
+  // digitalWrite(PIN13, !(OSC_(oscillator) | OSC_(1)));
 
+  // ################################################################
+
+
+#ifdef LED_ROW
+  // these are interesting regarding interferences:
+  led=-1;
+
+  led++;
+  digitalWrite(led_row_anode_PIN[led], next[0] > next[1]);
+  digitalWrite(led_row_cathode_PIN[led],LOW);
+
+  led++;
+  digitalWrite(led_row_anode_PIN[led], next[0] < next[1]);
+  digitalWrite(led_row_cathode_PIN[led],LOW);
+
+  led++;
+  digitalWrite(led_row_anode_PIN[led], next[0] < next[1]);
+  digitalWrite(led_row_cathode_PIN[led], OSC_(1));
+
+  led++;
+  digitalWrite(led_row_anode_PIN[led], next[0] > next[1]);
+  digitalWrite(led_row_cathode_PIN[led], OSC_(1));
+
+  /*
+  led++;
+  digitalWrite(led_row_anode_PIN[led],OSC_(0));
+  digitalWrite(led_row_cathode_PIN[led],OSC_(1));
+  
+  led++;
+  digitalWrite(led_row_anode_PIN[led],!OSC_(0));
+  digitalWrite(led_row_cathode_PIN[led],OSC_(1));
+  */
+#endif
+}
 
 /* **************************************************************** */
 #define PROFILING	// gather info for debugging and profiling
@@ -220,11 +337,11 @@ void oscillate() {
   // else check oscillators if it's time to flip.
   while (now >= nextFlip || ((nextFlip - now) <= timeFor1Round)) {
     for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
-      if ((osc_flag[oscillator] & 1) && (next[oscillator] <= now)) {
+      if ((osc_flags[oscillator] & OSC_FLAG_ACTIVE) && (next[oscillator] <= now)) {
 	// flip one
 	osc_count[oscillator]++;
 	// maybe sound
-	if (toneSwitch) {
+	if (toneSwitch && ((osc_flags[oscillator] & OSC_FLAG_MUTE) == 0)) {
 	  if (osc_count[oscillator] & 1)
 	    digitalWrite(oscPIN[oscillator], HIGH);
 	  else
@@ -291,7 +408,7 @@ long updateNextFlip () {
   nextFlip |= -1;
 
   for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
-    if (osc_flag[oscillator] & 1)
+    if (osc_flags[oscillator] & OSC_FLAG_ACTIVE)
       if (next[oscillator] < nextFlip)
 	nextFlip = next[oscillator];
   }
@@ -309,27 +426,27 @@ long updateNextFlip () {
 #ifdef INPUTs_ANALOG
 
 char input_analog=0;			// index
-char IN_PIN[INPUTs_ANALOG] = {8, 9, 10, 11};
-char IN_state[INPUTs_ANALOG];
-char input_analog_cyclic_index=0;	// cycle throug the inputs to return in time to the oscillators
-short IN_last[INPUTs_ANALOG];
+char analog_IN_PIN[INPUTs_ANALOG] = {8, 9, 10, 11};	// on poti row
+char analog_IN_state[INPUTs_ANALOG];
+char analog_input_cyclic_index=0;	// cycle throug the inputs to return in time to the oscillators
+short analog_IN_last[INPUTs_ANALOG];
 
-void input_analog_initialize() {
+void analog_input_initialize() {
   int input_analog;
 
   for (input_analog=0; input_analog<INPUTs_ANALOG; input_analog++)
-    IN_state[input_analog] = 0;
+    analog_IN_state[input_analog] = 0;
 }
 
 
 short int output_offset=4000;	// output start value when analog input is zero
-int output_scaling=4;		// factor analog input to output change
+int output_scaling=5;		// factor analog input to output change
 
-void input_analog_cyclic_poll() {
-  int input_analog = (input_analog_cyclic_index++ % INPUTs_ANALOG);	// cycle through inputs
-  if (IN_state[input_analog]) {
-    IN_last[input_analog] = analogRead(IN_PIN[input_analog]);
-    period[input_analog] = output_offset + (output_scaling * IN_last[input_analog]);
+void analog_input_cyclic_poll() {
+  int input_analog = (analog_input_cyclic_index++ % INPUTs_ANALOG);	// cycle through inputs
+  if (analog_IN_state[input_analog]) {
+    analog_IN_last[input_analog] = analogRead(analog_IN_PIN[input_analog]);
+    period[input_analog] = output_offset + (output_scaling * analog_IN_last[input_analog]);
   }
 }
 #endif	// INPUTs_ANALOG
@@ -337,11 +454,12 @@ void input_analog_cyclic_poll() {
 
 
 /* **************************************************************** */
-#define TAP_PINs	1  // TAP pins for electrical touch INPUT
+#define TAP_PINs	5  // # TAP pins for electrical touch INPUT
 /* **************************************************************** */
 #ifdef TAP_PINs
 
-char tap = 0;
+char tap = 0;	// index
+char taps=0;	// number of Taps already setup
 char tapPIN[TAP_PINs];
 
 // *logical* state:  0 inactive  1 OFF  2 ON (pin might be low, debouncing)
@@ -369,6 +487,7 @@ void setup_TAP(char tap, char pin, unsigned char toggle) {	// set toggle to 0 or
   tap_count[tap] = toggle;
   tap_state[tap] = 1;			// default state 1 is active but OFF
   tap_debouncing_since[tap] = 0;	// not debouncing
+  taps++;
 }
 
 // check if TAP 'tap' is logically ON
@@ -387,7 +506,7 @@ int TAP_toggled_(char tap) {
 // sorry, but i leave the colour LED debugging/profiling stuff in...
 
 /* **************************************************************** */
-// #define TAP_COLOUR_LED_DEBUG	// do set  pinMode(PIN13, OUTPUT);
+// #define TAP_COLOUR_LED_DEBUG	// default does set  pinMode(PIN13, OUTPUT);
 /*
   electrical state: PIN13
   logical ON	    green
@@ -396,15 +515,16 @@ int TAP_toggled_(char tap) {
  */
 
 void check_TAPs() {
-  char tap=0;
+  char tap=0;				// id as index
+  char tap_electrical_activity=0;	// any tap switch electrical high?
   unsigned long now=micros();
 
   for (tap=0; tap<TAP_PINs; tap++) {	// check all active TAPs
     if (tap_state[tap]) {			// active?, then check pin state
       if (digitalRead(tapPIN[tap])) {		// TAP PIN is HIGH
+	tap_electrical_activity=1;
 
 #ifdef TAP_COLOUR_LED_DEBUG
-	digitalWrite(PIN13,HIGH);
 	digitalWrite(bluePIN,LOW);
 	digitalWrite(redPIN,LOW); digitalWrite(greenPIN,HIGH);
 #endif
@@ -415,15 +535,10 @@ void check_TAPs() {
 	  tap_debouncing_since[tap] = 0;	//     not debouncing
 	}
       } else {					// TAP PIN is LOW
+	if (tap_state[tap] != 1) {		//   LOW but, logical state ON. Debounce 
 
 #ifdef TAP_COLOUR_LED_DEBUG
-	digitalWrite(PIN13,LOW);
-#endif
-
-	if (tap_state[tap] != 1) {		//   LOW but, logical state ON 
-
-#ifdef TAP_COLOUR_LED_DEBUG
-	  digitalWrite(bluePIN,HIGH); // debounce
+	  digitalWrite(bluePIN,HIGH);		// debounce
 #endif
 
 	  if(tap_debouncing_since[tap] != 0) {	//   debouncing is in progress
@@ -445,6 +560,9 @@ void check_TAPs() {
       }
     }
   }
+
+  digitalWrite(PIN13,tap_electrical_activity);	// PIN13 is activity LED
+
 }
 
 #endif	// TAP_PINs
@@ -650,7 +768,7 @@ void displayOscillatorsInfos() {
     Serial.print(i); Serial.print("\t");
 
 
-    if (osc_flag[i] & 1)
+    if (osc_flags[i] & OSC_FLAG_ACTIVE)
       Serial.print("ON\t");
     else
       Serial.print("off\t");
@@ -680,7 +798,8 @@ void displayMenuOscillators() {
 #endif
   Serial.println("");
 
-  Serial.print("o=oscillator("); Serial.print(oscillator); Serial.print(") \t~="); ONoff((osc_flag[oscillator] & 1),2,false);
+  Serial.print("o=oscillator("); Serial.print(oscillator);
+  Serial.print(") \t~="); ONoff((osc_flags[oscillator] & OSC_FLAG_ACTIVE),2,false);
   Serial.print("\tp=period["); Serial.print(oscillator); Serial.print("] (");
   Serial.print(period[oscillator]); Serial.println(")");
 
@@ -857,7 +976,7 @@ void menuOscillators() {
 
 #ifdef HARDWARE_menu
     case 'P':
-      Serial.print("Input pin to work on ");
+      Serial.print("Give number of pin to work on ");
       newValue = numericInput(period[oscillator]);
       if (newValue>=0 && newValue<255) {
 	hw_PIN = newValue;
@@ -980,55 +1099,109 @@ void initMenu() {
 
 /* **************************************************************** */
 void setup() {
+  int i;
 
 #ifdef OSCILLATORS
+  // signed char oscPIN[OSCILLATORS] = {49, 51, 53};
+
   oscillatorInit();
 
   startOscillator(0, 4000);
-  startOscillator(3, 8000);
+  startOscillator(1, 6000);
+  startOscillator(2, 8000);
 #endif
+
 
 #ifdef MENU_over_serial
   Serial.begin(9600);
   initMenu();
 #endif
 
+
 #ifdef COLOUR_LEDs
   init_colour_LEDs();
 #endif
 
+
+#ifdef LED_ROW
+  init_LED_row(14, LED_ROW, 0, 1);
+#endif
+
+
 #ifdef TAP_PINs
   init_TAPs();
-  setup_TAP(0, 2, 1);	// PIN 2, start toggled on 
+
+  setup_TAP(4, 30, 1);	// PIN 30, all tones toneSwitch, start ON
+
+#ifdef OSCILLATORS
+  int oscillator;
+
+  setup_TAP(0, 22, 0);	// "down" TAPs
+  setup_TAP(1, 24, 0);	// "down" TAPs
+  setup_TAP(2, 26, 0);	// "down" TAPs
+
+  /*
+  for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
+    setup_TAP(taps, 22 + 2*oscillator, 0);	// "down" TAPs
+    setup_TAP(taps, 23 + 2*oscillator, 0);	// "up  " TAPs
+  }
+  */
+
 #endif
+
+  #ifdef TAP_COLOUR_LED_DEBUG
+  // TAP colour LED debugging, assume electrical state low to start
+  pinMode(PIN13, OUTPUT); digitalWrite(PIN13, LOW);
+  #endif 
+
+#endif
+
 
 #ifdef INPUTs_ANALOG
-  input_analog_initialize();
+  analog_input_initialize();
 
-  IN_state[0]=1; 
-  IN_PIN[0] = 0;
+  analog_IN_state[0]=1;		// analog_IN_PIN[] = {0, 1, 2};		accelerometer
+  analog_IN_PIN[0] = 0;
 
-  /*  IN_state[1]=1;
-      IN_state[2]=1;
-      IN_state[3]=1;*/
+  analog_IN_state[1]=1; 
+  analog_IN_PIN[1] = 1;
+
+  analog_IN_state[2]=1; 
+  analog_IN_PIN[1] = 2;
+
+//  analog_IN_state[3]=1;	// other analog input like piezzo 
+//  analog_IN_PIN[1] = 3;
+
+
+//  analog_IN_state[0]=1;		// analog_IN_PIN[] = {8, 9, 10, 11};	poti row
+//  analog_IN_PIN[0] = 8;
+//
+//  analog_IN_state[1]=1; 
+//  analog_IN_PIN[1] = 9;
+//
+//  analog_IN_state[2]=1; 
+//  analog_IN_PIN[1] = 10;
+//
+//  analog_IN_state[3]=0;	// OFF
+//  analog_IN_PIN[1] = 11;
+
 #endif
 
-  // i happen to use these pins fon HIGH and LOW levels right now... 
-#ifdef TAP_COLOUR_LED_DEBUG
-  pinMode(PIN13, OUTPUT); digitalWrite(PIN13, LOW);	// TAP colour LED debugging
-#endif
+  // PIN settings:
+pinMode(PIN13, OUTPUT);		// to use the onboard LED
 
-  pinMode(21, OUTPUT); digitalWrite(21, LOW);	// ground for colour LEDs
+  // temporary PIN settings:
   pinMode(PIN13, OUTPUT); digitalWrite(PIN13, LOW);	// TAP state
+  pinMode(6, OUTPUT); digitalWrite(6, LOW);		// ground for piezzos
 
 }
 
 /* **************************************************************** */
 void loop() {
-  pinMode(PIN13, OUTPUT);	// to use the onboard LED
 
 #ifdef OSCILLATORS
   oscillate();
+
 
 #ifdef MENU_over_serial
 
@@ -1038,23 +1211,29 @@ void loop() {
 #endif //  MENU_over_serial
 #endif // OSCILLATORS
 
+
 #ifdef TAP_PINs
   check_TAPs ();	// set logigal state, debounce
 
-  toneSwitch = TAP_toggled_(0);		// toggling tone
+  toneSwitch = TAP_toggled_(4);		// toggling toneSwitch
 
-#ifndef TAP_COLOUR_LED_DEBUG	// I use LED 13 for electrical TAP state there
-  if (TAP_(0))				// TAP status on LED on PIN13
-    digitalWrite(PIN13, HIGH);
-  else
-    digitalWrite(PIN13, LOW);
+  { 
+    int oscillator;
+    for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
+      if (TAP_toggled_(oscillator))
+	osc_flags[oscillator] |= OSC_FLAG_MUTE;		// mute this oscillatur
+      else
+	osc_flags[oscillator] &= ~OSC_FLAG_MUTE;	// unmute this oscillatur
+    }
+  }
+
 #endif
 
-#endif
 
 #ifdef INPUTs_ANALOG
-  input_analog_cyclic_poll();
+  analog_input_cyclic_poll();
 #endif
+
 
   if (debugSwitch)
     ;
