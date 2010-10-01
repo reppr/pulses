@@ -258,6 +258,78 @@ void osc_flip_reaction(){	// whatever you want ;)
 }
 
 /* **************************************************************** */
+#define BIT_STRIPs	1	// show numbers, bitmasks, etc on LEDs
+//
+// a number of (usually adjacent) arduino pins represent bit positions
+//
+/* **************************************************************** */
+#ifdef BIT_STRIPs
+#define  MAX_BiTS_IN_STRIP 	4
+
+signed char bit_strip_PIN[BIT_STRIPs][MAX_BiTS_IN_STRIP];
+char bit_strip_bits[BIT_STRIPs];
+
+int init_bit_strip(int start, int bits, int downwards) { // 'downwards': PINs count down
+  static unsigned char strips=0;
+  int bit, strip=strips;
+  int direction;
+
+  if (bits>MAX_BiTS_IN_STRIP) {		// ERROR protection #######################
+    Serial.println("init_bit_strip: ERROR bits value too high");
+    return -1;
+  }
+
+  bit_strip_bits[strip]=bits;
+
+  if (downwards)
+    direction=-1;
+  else
+    direction=1;
+
+  for (bit=0; bit<bits; bit++) {
+    bit_strip_PIN[strip][bit] = start +  direction * (signed char) bit ;
+    pinMode(bit_strip_PIN[strip][bit], OUTPUT);
+
+#ifdef DEBUG_HW_ON_INIT				// blink each single LED
+    digitalWrite(bit_strip_PIN[strip][bit], HIGH); delay(40);   // ON
+    digitalWrite(bit_strip_PIN[strip][bit], LOW);  delay(60);	  // OFF
+#endif
+
+  }
+
+#ifdef DEBUG_HW_ON_INIT				// count on all LEDs
+  { int i;
+    for (i=0; i<(2 << bits)+1; i++){	// from zero to 'zero'
+      set_bit_strip(strip, i, 0);
+      delay(20);
+    }
+  }
+#endif
+
+  return (int) strips++;
+}
+
+void set_bit_strip(int strip, int value, int direction) {
+  int bit, mask;
+  int bits = bit_strip_bits[strip];
+
+  if (direction == 0) {		// normal bit positions
+    mask = 1;
+    for (bit=0; bit<bits; bit++, mask *= 2 ) {
+      digitalWrite(bit_strip_PIN[strip][bit], value & mask);    
+    }
+  } else {			// upside down
+    mask = 1 << bits ;
+    for (bit=0; bit<bits; bit++, mask /= 2 ) {
+      digitalWrite(bit_strip_PIN[strip][bit], value & mask);    
+    }
+  }
+}
+
+#endif // BIT_STRIPs
+
+
+/* **************************************************************** */
 #define PROFILING	// gather info for debugging and profiling
 			// mainly to find out how long the main loop
 			// needs to come back to the oscillator in time.
@@ -1131,7 +1203,8 @@ void setup() {
 #ifdef TAP_PINs
   init_TAPs();
 
-  setup_TAP(4, 30, 1);	// PIN 30, all tones toneSwitch, start ON
+  //  setup_TAP(4, 30, 1);	// PIN 30, all tones toneSwitch, start ON
+  setup_TAP(4, 30, 0);	// PIN 30, all tones toneSwitch, start tone OFF
 
 #ifdef OSCILLATORS
   int oscillator;
@@ -1187,6 +1260,11 @@ void setup() {
 
 #endif
 
+#ifdef BIT_STRIPs
+  pinMode(18,OUTPUT); digitalWrite(18, LOW);	// ground connection
+  init_bit_strip(14, 4, 0);			// 4bit chain from pin 14
+#endif
+
   // PIN settings:
 pinMode(PIN13, OUTPUT);		// to use the onboard LED
 
@@ -1226,7 +1304,6 @@ void loop() {
 	osc_flags[oscillator] &= ~OSC_FLAG_MUTE;	// unmute this oscillatur
     }
   }
-
 #endif
 
 
