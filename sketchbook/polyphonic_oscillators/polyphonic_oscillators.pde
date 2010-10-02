@@ -5,6 +5,7 @@
 //
 // more like countylators ;)
 
+#define USE_SERIAL	9600	// 9600
 
 // #define DEBUG_HW_ON_INIT	// check hardware on init
 
@@ -14,6 +15,18 @@
 				// currently used for electrical tap activity
 
 
+void wuschel()
+{
+  int i;
+
+  digitalWrite(PIN13,LOW);
+  for (i=0; i<4; i++) {
+    delay(120) ; digitalWrite(PIN13,HIGH);
+    delay(50) ; digitalWrite(PIN13,LOW);
+  }
+
+  Serial.println("wuschel");
+}
 
 /* **************************************************************** */
 // LED stuff:	let me *see* what's happening in the machine...
@@ -24,7 +37,7 @@ int debugSwitch=0;		// hook for testing and debugging
 // Quick hack to have some insight what's happening in the machine
 // while building the software...
 /* **************************************************************** */
-#define COLOUR_LEDs	// colour LED feedback
+//#define COLOUR_LEDs	// colour LED feedback
 /* **************************************************************** */
 #ifdef  COLOUR_LEDs
 
@@ -156,7 +169,7 @@ void oscillatorInit() {
 int startOscillator(int oscillator, unsigned long newPeriod) {
   unsigned long now = micros();
 
-  if (oscillator >= OSCILLATORS )
+  if (oscillator >= OSCILLATORS )	// ERROR recovery needed! #########
     return 1;
   if (oscPIN[oscillator] == ILLEGALpin)
     return 1;
@@ -169,9 +182,11 @@ int startOscillator(int oscillator, unsigned long newPeriod) {
 
   nextFlip = updateNextFlip();
 
+  /*
   Serial.print("Started oscillator "); Serial.print(oscillator);
   Serial.print("\tpin "); Serial.print(oscPIN[oscillator]);
   Serial.print("\tperiod "); Serial.println(period[oscillator]);
+  */
 
   return 0;
 }
@@ -200,10 +215,23 @@ void toggleOscillator(int oscillator) {
     Serial.println("error: no period set");
 }
 
+// Bitmap of each oscillators mute status:
+int oscillators_mute_bits() {
+  int oscillator, bitpattern=0;
+
+  for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
+    if (osc_flags[oscillator] & OSC_FLAG_MUTE)
+      bitpattern |= (1 << oscillator);
+  }
+
+  return bitpattern;
+}
+
 #define INTERFERENCE_COLOUR_LED
 void osc_flip_reaction(){	// whatever you want ;)
   int oscillator=0, led=0;
 
+#ifdef COLOUR_LEDs
   if (OSC_(oscillator) & OSC_(1))
     digitalWrite(redPIN, HIGH);
   else
@@ -219,6 +247,7 @@ void osc_flip_reaction(){	// whatever you want ;)
     digitalWrite(bluePIN, HIGH);
   else
     digitalWrite(bluePIN, LOW);
+#endif
 
   // digitalWrite(PIN13, !(OSC_(oscillator) | OSC_(1)));
 
@@ -503,22 +532,38 @@ char analog_IN_state[INPUTs_ANALOG];
 char analog_input_cyclic_index=0;	// cycle throug the inputs to return in time to the oscillators
 short analog_IN_last[INPUTs_ANALOG];
 
+// parameters for the in2out translation:
+short analog_input_offset[INPUTs_ANALOG];
+long  analog_input_output_offset[INPUTs_ANALOG];
+double analog_in2out_scaling[INPUTs_ANALOG];
+
 void analog_input_initialize() {
   int input_analog;
 
-  for (input_analog=0; input_analog<INPUTs_ANALOG; input_analog++)
+  for (input_analog=0; input_analog<INPUTs_ANALOG; input_analog++) {
     analog_IN_state[input_analog] = 0;
+    analog_input_offset[input_analog] = 0;
+    analog_input_offset[input_analog] = 512;	// ###############
+    analog_input_output_offset[input_analog] = 0;
+    analog_input_output_offset[input_analog] = 6000;	// ###############
+    analog_in2out_scaling[input_analog] = 1.0;
+    analog_in2out_scaling[input_analog] = 3.0;	// ###############
+  }
 }
 
+long analog_read2out(int input_analog) {
+  long value;
 
-short int output_offset=4000;	// output start value when analog input is zero
-int output_scaling=5;		// factor analog input to output change
+  value = analogRead(analog_IN_PIN[input_analog]) + analog_input_offset[input_analog];
+  value = value * analog_in2out_scaling[input_analog] + analog_input_output_offset[input_analog];
+
+  return value;
+}
 
 void analog_input_cyclic_poll() {
   int input_analog = (analog_input_cyclic_index++ % INPUTs_ANALOG);	// cycle through inputs
   if (analog_IN_state[input_analog]) {
-    analog_IN_last[input_analog] = analogRead(analog_IN_PIN[input_analog]);
-    period[input_analog] = output_offset + (output_scaling * analog_IN_last[input_analog]);
+    period[input_analog] = analog_read2out(input_analog);
   }
 }
 #endif	// INPUTs_ANALOG
@@ -533,6 +578,25 @@ void analog_input_cyclic_poll() {
 char tap = 0;	// index
 char taps=0;	// number of Taps already setup
 char tapPIN[TAP_PINs];
+
+// pointers on functions:
+
+/*
+  // pointers on  void something()  functions:
+  void (*tap_do_on_tap[TAP_PINs])();
+  void (*tap_do_on_toggle[TAP_PINs])();
+*/
+
+// pointers on  void something(int tap)  functions:
+void (*tap_do_on_tap[TAP_PINs])(int);
+void (*tap_do_on_toggle[TAP_PINs])(int);
+
+
+// parameters for tap_do_on_xxx(tap) functions:
+int  tap_parameter1_int[TAP_PINs];	// i.e. oscillator, PIN
+long tap_para2_long[TAP_PINs];
+long tap_para2_double[TAP_PINs];
+
 
 // *logical* state:  0 inactive  1 OFF  2 ON (pin might be low, debouncing)
 unsigned char tap_state[TAP_PINs];
@@ -550,6 +614,16 @@ void init_TAPs() {
     tapPIN[tap] = ILLEGALpin;
     tap_state[tap] = 0;
     tap_debouncing_since[tap] = 0;
+
+    /*
+    // pointers on  void something()  functions:
+    tap_do_on_tap[tap] = 0;
+    tap_do_on_toggle[tap] = 0;
+    */
+
+    // pointers on  void something()  functions:
+    tap_do_on_tap[tap] = 0;
+    tap_do_on_toggle[tap] = 0;
   }
 }
 
@@ -605,6 +679,21 @@ void check_TAPs() {
 	  tap_count[tap]++;			//     yes, so count to toggle
 	  tap_state[tap] = 2;			//     set state 2 meaning *logical* ON
 	  tap_debouncing_since[tap] = 0;	//     not debouncing
+
+	  /*
+	  // pointers on  void something()  functions:
+	  if (tap_do_on_tap[tap] !=0)		//		maybe do something on tap?
+	    tap_do_on_tap[tap]();		//		yes
+	  if (tap_count[tap] & 1 && tap_do_on_toggle[tap] !=0)	//  maybe do something on toggle?
+	    tap_do_on_toggle[tap]();				//     yes
+	  */
+
+	  // pointers on  void something(int tap)  functions:
+	  if (tap_do_on_tap[tap] !=0)		//		maybe do something on tap?
+	    tap_do_on_tap[tap](tap);		//		yes
+	  if (tap_count[tap] & 1 && tap_do_on_toggle[tap] !=0)	//  maybe do something on toggle?
+	    tap_do_on_toggle[tap](tap);				//     yes
+
 	}
       } else {					// TAP PIN is LOW
 	if (tap_state[tap] != 1) {		//   LOW but, logical state ON. Debounce 
@@ -636,6 +725,17 @@ void check_TAPs() {
   digitalWrite(PIN13,tap_electrical_activity);	// PIN13 is activity LED
 
 }
+
+#ifdef OSCILLATORS
+void tap_toggle_osc_mute(int tap) {
+  osc_flags[tap_parameter1_int[tap]] ^= OSC_FLAG_MUTE;	// toggle muting of oscillatur
+
+#ifdef BIT_STRIPs
+  set_bit_strip(0, ~oscillators_mute_bits(), 0);	// show ON/mute on LED strip
+#endif
+}
+
+#endif // OSCILLATORS
 
 #endif	// TAP_PINs
 
@@ -828,7 +928,7 @@ void serial_print_BIN(unsigned long value, int bits) {
 void displayOscillatorsInfos() {
   int i;
 
-  Serial.println("  osc\tactive\tstate\tperiod\tPIN\toctaves");
+  Serial.println("  osc\tactive\tmute\tstate\tperiod\tPIN\toctaves");
   Serial.println("");
 
   for (i=0; i<OSCILLATORS; i++) {
@@ -844,6 +944,11 @@ void displayOscillatorsInfos() {
       Serial.print("ON\t");
     else
       Serial.print("off\t");
+
+    if (osc_flags[i] & OSC_FLAG_MUTE)
+      Serial.print("mute\t");
+    else
+      Serial.print(" on\t");
 
     if (osc_count[i] & 1)
       Serial.print("HIGH\t");
@@ -970,19 +1075,21 @@ void menuOscillators() {
 
       break;
 
-    case 's': // set output scaling
-      Serial.print("output_scaling       "); Serial.println(output_scaling);
-      Serial.print("output_scaling new = ");
-      output_scaling = numericInput(output_scaling);
-      Serial.println(output_scaling);
+    case 's': // set output scaling	########### need float input... ######################
+      Serial.print("A"); Serial.print(input_analog); Serial.print("\tin2out scaling: ");
+      Serial.println(analog_in2out_scaling[input_analog]);
+      Serial.print("output scaling new = ");
+      analog_in2out_scaling[input_analog] = numericInput(analog_in2out_scaling[input_analog]);
+      Serial.println(analog_in2out_scaling[input_analog]);
 
       break;
 
     case 'S': // set output offset
-      Serial.print("output_offset       "); Serial.println(output_offset);
-      Serial.print("output_offset new = ");
-      output_offset = numericInput(output_offset);
-      Serial.println(output_offset);
+      Serial.print("A"); Serial.print(input_analog); Serial.print("\toutput offset: ");
+      Serial.println(analog_input_output_offset[input_analog]);
+      Serial.print("output offset new = ");
+      analog_input_output_offset[input_analog] = numericInput(input_analog);
+      Serial.println(analog_input_output_offset[input_analog]);
 
       break;
 
@@ -1168,10 +1275,135 @@ void initMenu() {
 
 #endif // MENU_over_serial
 
+/* **************************************************************** */
+/* **************************************************************** */
+// found this on the net to determine free memory:
 
+// I changed these to extern int
+// extern void __bss_end;
+// extern void *__brkval;
+
+extern int __bss_end;
+extern int *__brkval;
+
+int get_free_memory()
+{
+  int free_memory;
+
+  if((int)__brkval == 0)
+    free_memory = ((int)&free_memory) - ((int)&__bss_end);
+  else
+    free_memory = ((int)&free_memory) - ((int)__brkval);
+
+  return free_memory;
+}
+/* **************************************************************** */
+
+// this function will return the number of bytes currently free in RAM
+// written by David A. Mellis
+// based on code by Rob Faludi http://www.faludi.com
+int availableMemory() {
+  int size = 8192;	// 1024 // Use 2048 with ATmega328
+  byte *buf;
+
+  while ((buf = (byte *) malloc(--size)) == NULL)
+    ;
+
+  free(buf);
+
+  return size;
+}
+
+/* **************************************************************** */
+/* // dosn't seem to work #######################
+Here is an alternative function:
+ * This function places the current value of the heap and stack pointers in the
+ * variables. You can call it from any place in your code and save the data for
+ * outputting or displaying later. This allows you to check at different parts of
+ * your program flow.
+ * The stack pointer starts at the top of RAM and grows downwards. The heap pointer
+ * starts just above the static variables etc. and grows upwards. SP should always
+ * be larger than HP or you'll be in big trouble! The smaller the gap, the more
+ * careful you need to be. Julian Gall 6-Feb-2009.
+*/
+
+uint8_t * heapptr, * stackptr;
+void check_mem() {
+  stackptr = (uint8_t *)malloc(4);          // use stackptr temporarily
+  heapptr = stackptr;                     // save value of heap pointer
+  free(stackptr);      // free up the memory again (sets stackptr to 0)
+  stackptr =  (uint8_t *)(SP);           // save value of stack pointer
+}
+
+/* **************************************************************** */
+
+// 
+// I would like to add a similar function posted in the forum (here):
+// MemoryFree.h:
+// // memoryFree header
+// 
+// #ifndef	MEMORY_FREE_H
+// #define MEMORY_FREE_H
+// 
+// #ifdef __cplusplus
+// extern "C" {
+// #endif
+// 
+// int freeMemory();
+// 
+// #ifdef  __cplusplus
+// }
+// #endif
+// 
+// #endif
+// 
+// MemoryFree.cpp:
+// extern unsigned int __bss_end;
+// extern unsigned int __heap_start;
+// extern void *__brkval;
+// 
+// 
+// #include "MemoryFree.h";
+// 
+// 
+// int freeMemory() {
+//   int free_memory;
+// 
+//   if((int)__brkval == 0)
+//      free_memory = ((int)&free_memory) - ((int)&__bss_end);
+//   else
+//     free_memory = ((int)&free_memory) - ((int)__brkval);
+// 
+//   return free_memory;
+// }
+// 
+// Example sketch:
+// #include <MemoryFree.h>
+// 
+
+void show_memory() {
+  Serial.println("memory info is probably wrongx");
+
+
+  Serial.print("get free memory  = "); Serial.println(get_free_memory());
+  Serial.print("available memory = "); Serial.println(availableMemory());
+  Serial.print("stackptr = "); Serial.print((int) *stackptr);
+
+  // does not seem to work ################
+  Serial.print("\theapptr = "); Serial.print((int) *heapptr);
+  Serial.print("\tstackptr - heapptr = "); Serial.println((int) (*stackptr - *heapptr));
+}
+
+ 
 /* **************************************************************** */
 void setup() {
   int i;
+
+#ifdef USE_SERIAL
+  Serial.begin(USE_SERIAL);
+#endif
+
+  // show_memory();
 
 #ifdef OSCILLATORS
   // signed char oscPIN[OSCILLATORS] = {49, 51, 53};
@@ -1181,12 +1413,7 @@ void setup() {
   startOscillator(0, 4000);
   startOscillator(1, 6000);
   startOscillator(2, 8000);
-#endif
-
-
-#ifdef MENU_over_serial
-  Serial.begin(9600);
-  initMenu();
+  startOscillator(3, 12000);
 #endif
 
 
@@ -1203,24 +1430,39 @@ void setup() {
 #ifdef TAP_PINs
   init_TAPs();
 
-  //  setup_TAP(4, 30, 1);	// PIN 30, all tones toneSwitch, start ON
-  setup_TAP(4, 30, 0);	// PIN 30, all tones toneSwitch, start tone OFF
-
 #ifdef OSCILLATORS
-  int oscillator;
+  {
+    int oscillator, pin, tap;
 
-  setup_TAP(0, 22, 0);	// "down" TAPs
-  setup_TAP(1, 24, 0);	// "down" TAPs
-  setup_TAP(2, 26, 0);	// "down" TAPs
+    // TAPs start with a down/mute tap for each oscillator:
+    for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
+      pin = 22;	// ################
+      pin += + 2 * oscillator;
+      tap = oscillator;
 
-  /*
-  for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
-    setup_TAP(taps, 22 + 2*oscillator, 0);	// "down" TAPs
-    setup_TAP(taps, 23 + 2*oscillator, 0);	// "up  " TAPs
+      setup_TAP(tap, pin, 0);	// "down" TAPs
+      tap_parameter1_int[tap] = oscillator;
+      tap_do_on_tap[tap] = &tap_toggle_osc_mute;
+    }
+
+    /*
+    // Followed by a up/select tap for each oscillator:
+    for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
+      pin = 23;	// ################
+      pin += + 2 * oscillator;
+      tap = OSCILLATORS + oscillator;
+
+      setup_TAP(tap, pin, 0);	// "down" TAPs
+      tap_parameter1_int[tap] = oscillator;
+      // tap_do_on_tap[tap] = &tap_toggle_select_osc; #######################
+    }
+    */
+
+    // next: tone switch to mute all oscillators:
+    setup_TAP(4, 30, 0);	// PIN 30, all tones toneSwitch, start tone OFF
+
   }
-  */
-
-#endif
+#endif // OSCILLATORS
 
   #ifdef TAP_COLOUR_LED_DEBUG
   // TAP colour LED debugging, assume electrical state low to start
@@ -1233,37 +1475,50 @@ void setup() {
 #ifdef INPUTs_ANALOG
   analog_input_initialize();
 
-  analog_IN_state[0]=1;		// analog_IN_PIN[] = {0, 1, 2};		accelerometer
-  analog_IN_PIN[0] = 0;
+//  #####################
+//  analog_IN_state[0]=1;		// analog_IN_PIN[] = {0, 1, 2};		accelerometer
+//  analog_IN_PIN[0] = 0;
 
-  analog_IN_state[1]=1; 
-  analog_IN_PIN[1] = 1;
+//  analog_IN_state[1]=1; 
+//  analog_IN_PIN[1] = 1;
 
-  analog_IN_state[2]=1; 
-  analog_IN_PIN[1] = 2;
+//  analog_IN_state[2]=1; 
+//  analog_IN_PIN[2] = 2;
 
 //  analog_IN_state[3]=1;	// other analog input like piezzo 
-//  analog_IN_PIN[1] = 3;
+//  analog_IN_PIN[3] = 3;
 
 
-//  analog_IN_state[0]=1;		// analog_IN_PIN[] = {8, 9, 10, 11};	poti row
-//  analog_IN_PIN[0] = 8;
-//
-//  analog_IN_state[1]=1; 
-//  analog_IN_PIN[1] = 9;
-//
-//  analog_IN_state[2]=1; 
-//  analog_IN_PIN[1] = 10;
-//
-//  analog_IN_state[3]=0;	// OFF
-//  analog_IN_PIN[1] = 11;
+  analog_IN_state[0]=1;		// analog_IN_PIN[] = {8, 9, 10, 11};	poti row
+  analog_IN_PIN[0] = 8;
 
-#endif
+  analog_IN_state[1]=1; 
+  analog_IN_PIN[1] = 9;
+
+  analog_IN_state[2]=1; 
+  analog_IN_PIN[2] = 10;
+
+  analog_IN_state[3]=1;
+  analog_IN_PIN[3] = 11;
+#endif	// INPUTs_ANALOG
 
 #ifdef BIT_STRIPs
   pinMode(18,OUTPUT); digitalWrite(18, LOW);	// ground connection
   init_bit_strip(14, 4, 0);			// 4bit chain from pin 14
 #endif
+
+#ifdef MENU_over_serial
+  initMenu();
+#endif
+
+
+  show_memory();
+
+//  for (i=0; i<32 ;i++){	// count down negative ########################
+//    set_bit_strip(0, -i, 0); delay(200);
+//    Serial.print(-i); Serial.print("\t"); serial_print_BIN(-i, 16); Serial.println("");
+//  }
+//    set_bit_strip(0, 0, 0); delay(200);
 
   // PIN settings:
 pinMode(PIN13, OUTPUT);		// to use the onboard LED
@@ -1295,15 +1550,6 @@ void loop() {
 
   toneSwitch = TAP_toggled_(4);		// toggling toneSwitch
 
-  { 
-    int oscillator;
-    for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
-      if (TAP_toggled_(oscillator))
-	osc_flags[oscillator] |= OSC_FLAG_MUTE;		// mute this oscillatur
-      else
-	osc_flags[oscillator] &= ~OSC_FLAG_MUTE;	// unmute this oscillatur
-    }
-  }
 #endif
 
 
