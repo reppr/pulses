@@ -10,9 +10,10 @@
 // #define DEBUG_HW_ON_INIT	// check hardware on init
 
 /* **************************************************************** */
-#define ILLEGALpin	-1	// a pin that is not assigned
-#define PIN13		13	// onboard LED
-				// currently used for electrical tap activity
+#define ILLEGALinputVALUE	-1	// impossible analog input value
+#define ILLEGALpin		-1	// a pin that is not assigned
+#define PIN13			13	// onboard LED
+					// currently used for electrical tap activity
 
 
 void wuschel()
@@ -27,6 +28,7 @@ void wuschel()
 
   Serial.println("wuschel");
 }
+
 
 /* **************************************************************** */
 // LED stuff:	let me *see* what's happening in the machine...
@@ -526,9 +528,9 @@ long updateNextFlip () {
 /* **************************************************************** */
 #ifdef INPUTs_ANALOG
 
-char input_analog=0;			// index
+int input_analog=0;			// index
 char analog_IN_PIN[INPUTs_ANALOG] = {8, 9, 10, 11};	// on poti row
-char analog_IN_state[INPUTs_ANALOG];
+unsigned char analog_IN_state[INPUTs_ANALOG];
 char analog_input_cyclic_index=0;	// cycle throug the inputs to return in time to the oscillators
 short analog_IN_last[INPUTs_ANALOG];
 
@@ -537,34 +539,47 @@ short analog_input_offset[INPUTs_ANALOG];
 long  analog_input_output_offset[INPUTs_ANALOG];
 double analog_in2out_scaling[INPUTs_ANALOG];
 
-void analog_input_initialize() {
+void analog_inputs_initialize() {
   int input_analog;
 
   for (input_analog=0; input_analog<INPUTs_ANALOG; input_analog++) {
     analog_IN_state[input_analog] = 0;
+    analog_IN_last[input_analog] = ILLEGALinputVALUE;
     analog_input_offset[input_analog] = 0;
     analog_input_offset[input_analog] = 512;	// ###############
     analog_input_output_offset[input_analog] = 0;
     analog_input_output_offset[input_analog] = 6000;	// ###############
     analog_in2out_scaling[input_analog] = 1.0;
-    analog_in2out_scaling[input_analog] = 3.0;	// ###############
+    analog_in2out_scaling[input_analog] = 5.0;	// ###############
   }
 }
 
-long analog_read2out(int input_analog) {
-  long value;
+short analog_IN(int input_analog) {
+  return analogRead(analog_IN_PIN[input_analog]);
+}
 
-  value = analogRead(analog_IN_PIN[input_analog]) + analog_input_offset[input_analog];
-  value = value * analog_in2out_scaling[input_analog] + analog_input_output_offset[input_analog];
-
+long analog_inval2out(int input_analog, int input_raw_value) {
+  long value=input_raw_value;
+  value += analog_input_offset[input_analog];
+  value *= analog_in2out_scaling[input_analog];;
+  value += analog_input_output_offset[input_analog];
   return value;
 }
 
 void analog_input_cyclic_poll() {
-  int input_analog = (analog_input_cyclic_index++ % INPUTs_ANALOG);	// cycle through inputs
-  if (analog_IN_state[input_analog]) {
-    period[input_analog] = analog_read2out(input_analog);
+  int actual_index=input_analog;
+  int value;
+  {
+    int input_analog = (analog_input_cyclic_index++ % INPUTs_ANALOG);	// cycle through inputs
+    if (analog_IN_state[input_analog]) {
+      if ((value = analog_IN(input_analog)) != analog_IN_last[input_analog]) { // input has changed
+	analog_IN_last[input_analog] = value;
+	period[input_analog] = analog_inval2out(input_analog, value);
+      }
+    }
   }
+
+  input_analog = actual_index;	// restore index
 }
 #endif	// INPUTs_ANALOG
 
@@ -576,7 +591,6 @@ void analog_input_cyclic_poll() {
 #ifdef TAP_PINs
 
 char tap = 0;	// index
-char taps=0;	// number of Taps already setup
 char tapPIN[TAP_PINs];
 
 // pointers on functions:
@@ -633,7 +647,6 @@ void setup_TAP(char tap, char pin, unsigned char toggle) {	// set toggle to 0 or
   tap_count[tap] = toggle;
   tap_state[tap] = 1;			// default state 1 is active but OFF
   tap_debouncing_since[tap] = 0;	// not debouncing
-  taps++;
 }
 
 // check if TAP 'tap' is logically ON
@@ -908,7 +921,7 @@ void watch_digital_input(int pin) {
   Serial.read();
 }
 
-// print binary numbers with leading zeroes
+// print binary numbers with leading zeroes and a space
 void serial_print_BIN(unsigned long value, int bits) {
   int i;
   unsigned long mask=0;
@@ -920,6 +933,7 @@ void serial_print_BIN(unsigned long value, int bits) {
       else
 	Serial.print(0);
   }
+  Serial.print(" ");
 }
 
 /* **************************************************************** */
@@ -968,7 +982,7 @@ void displayMenuOscillators() {
   Serial.println("");
   Serial.print("** MENU OSCILLATORS **  t=toggle tone ("); ONoff(toneSwitch, 2, false); Serial.println(")");
 
-  Serial.print("display: i=infos\t");
+  Serial.print("display: ?=osc infos\t");
   Serial.print("y=analog in\t");
 #ifdef PROFILING
   Serial.print("d=debug, profiling\t");
@@ -976,13 +990,17 @@ void displayMenuOscillators() {
   Serial.println("");
 
   Serial.print("o=oscillator("); Serial.print(oscillator);
-  Serial.print(") \t~="); ONoff((osc_flags[oscillator] & OSC_FLAG_ACTIVE),2,false);
+  Serial.print(")\t~="); ONoff((osc_flags[oscillator] & OSC_FLAG_ACTIVE),2,false);
   Serial.print("\tp=period["); Serial.print(oscillator); Serial.print("] (");
   Serial.print(period[oscillator]); Serial.println(")");
 
-  Serial.println("");
-  Serial.print("r=expected roundtrip time (outside oscillator "); Serial.print(timeFor1Round); Serial.print(")");
-  Serial.print("\ta=adapt "); ONoff(autoAdapt,0,0); Serial.println("");
+  Serial.print("i=analog inp("); Serial.print(input_analog);
+  Serial.print(")\tj=input offset ("); Serial.print(analog_input_offset[input_analog]);
+  Serial.print(") \ts=scaling ("); Serial.print(analog_in2out_scaling[input_analog]);
+  Serial.println(")");
+  Serial.print("\t\tf=output offset("); Serial.print(analog_input_output_offset[input_analog]);
+  Serial.print(")\t(last output="); Serial.print(analog_inval2out(input_analog, analog_IN_last[input_analog]));
+  Serial.println(")");
 
 #ifdef HARDWARE_menu
   Serial.println("");
@@ -996,6 +1014,9 @@ void displayMenuOscillators() {
 #endif
 
   Serial.println("");
+  Serial.print("r=expected roundtrip time (outside oscillator "); Serial.print(timeFor1Round); Serial.print(")");
+  Serial.print("\ta=adapt "); ONoff(autoAdapt,0,0); Serial.println("");
+
 }
 
 // simple menu interface through serial port
@@ -1011,12 +1032,12 @@ void menuOscillators() {
     case ' ':		// continue reading menu_input (i.e. after numeric input) 
       break;
 
-    case 'm': case '?':
+    case 'm':
       displayMenuOscillators();
       break;
 
     case 't':
-      toneSwitch ^= -1 ;
+      toneSwitch ^= ~0 ;
       Serial.print("tone: ");
       ONoff(toneSwitch, 1, false);
       Serial.println("");
@@ -1084,7 +1105,7 @@ void menuOscillators() {
 
       break;
 
-    case 'S': // set output offset
+    case 'f': // set output offset
       Serial.print("A"); Serial.print(input_analog); Serial.print("\toutput offset: ");
       Serial.println(analog_input_output_offset[input_analog]);
       Serial.print("output offset new = ");
@@ -1101,7 +1122,20 @@ void menuOscillators() {
 	oscillator = newValue;
 	Serial.println(oscillator);
       } else {
-	Serial.println(" must be between 0 and "); Serial.println(OSCILLATORS -1);
+	Serial.print(" must be between 0 and "); Serial.println(OSCILLATORS -1);
+      }
+
+      break;
+
+    case 'i': // set menu local analog input index
+      Serial.print("input_analog       "); Serial.println(input_analog);
+      Serial.print("input_analog new = ");
+      newValue = numericInput(input_analog);
+      if (newValue < INPUTs_ANALOG && newValue >= 0) {
+	input_analog = newValue;
+	Serial.println(input_analog);
+      } else {
+	Serial.print(" must be between 0 and "); Serial.println(INPUTs_ANALOG -1);
       }
 
       break;
@@ -1147,7 +1181,7 @@ void menuOscillators() {
 
     break;
 
-    case 'i':
+    case '?':
       Serial.println("");
       displayOscillatorsInfos();
 
@@ -1263,7 +1297,7 @@ void menuOscillators() {
 #endif // OSCILLATORS (inside MENU_over_serial)
 
 void initMenu() {
-  Serial.println("Press m or ? for menu.");
+  Serial.println("Press 'm' for menu.");
 
 #ifdef OSCILLATORS
   displayMenuOscillators();
@@ -1382,7 +1416,7 @@ void check_mem() {
 // 
 
 void show_memory() {
-  Serial.println("memory info is probably wrongx");
+  Serial.println("memory info is probably wrong");
 
 
   Serial.print("get free memory  = "); Serial.println(get_free_memory());
@@ -1473,7 +1507,7 @@ void setup() {
 
 
 #ifdef INPUTs_ANALOG
-  analog_input_initialize();
+  analog_inputs_initialize();
 
 //  #####################
 //  analog_IN_state[0]=1;		// analog_IN_PIN[] = {0, 1, 2};		accelerometer
