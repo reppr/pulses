@@ -607,10 +607,10 @@ void (*tap_do_on_toggle[TAP_PINs])(int);
 
 
 // parameters for tap_do_on_xxx(tap) functions:
-int  tap_parameter1_int[TAP_PINs];	// i.e. oscillator, PIN
-long tap_para2_long[TAP_PINs];
-long tap_para2_double[TAP_PINs];
-
+long tap_parameter_1[TAP_PINs];		// i.e. oscillator, PIN
+long tap_parameter_2[TAP_PINs];		//
+double tap_parameter_double[TAP_PINs];
+char *tap_parameter_char_address[TAP_PINs];
 
 // *logical* state:  0 inactive  1 OFF  2 ON (pin might be low, debouncing)
 unsigned char tap_state[TAP_PINs];
@@ -674,8 +674,8 @@ int TAP_toggled_(char tap) {
  */
 
 void check_TAPs() {
-  char tap=0;				// id as index
-  char tap_electrical_activity=0;	// any tap switch electrical high?
+  int tap=0;				// id as index
+  int tap_electrical_activity=0;	// any tap switch electrical high?
   unsigned long now=micros();
 
   for (tap=0; tap<TAP_PINs; tap++) {	// check all active TAPs
@@ -740,8 +740,8 @@ void check_TAPs() {
 }
 
 #ifdef OSCILLATORS
-void tap_toggle_osc_mute(int tap) {
-  osc_flags[tap_parameter1_int[tap]] ^= OSC_FLAG_MUTE;	// toggle muting of oscillatur
+void tap_do_toggle_osc_mute(int tap) {
+  osc_flags[tap_parameter_1[tap]] ^= OSC_FLAG_MUTE;	// toggle muting of oscillator
 
 #ifdef BIT_STRIPs
   set_bit_strip(0, ~oscillators_mute_bits(), 0);	// show ON/mute on LED strip
@@ -749,7 +749,6 @@ void tap_toggle_osc_mute(int tap) {
 }
 
 void tap_do_XOR_byte(int tap) {
-  Serial.print("XOR tap "); Serial.println(tap);
   *tap_parameter_char_address[tap] ^= (char) tap_parameter_1[tap];
 }
 
@@ -1421,7 +1420,7 @@ void check_mem() {
 // 
 
 void show_memory() {
-  Serial.println("memory info is probably wrong");
+  Serial.println("memory info looks wrong!");
 
 
   Serial.print("get free memory  = "); Serial.println(get_free_memory());
@@ -1471,35 +1470,33 @@ void setup() {
 
 #ifdef OSCILLATORS
   {
-    int oscillator, pin, tap;
+    int oscillator, pin, tap=0;
 
     // TAPs start with a down/mute tap for each oscillator:
-    for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
+    for (oscillator=0; oscillator<4; oscillator++) {
       pin = 22;	// ################
-      pin += + 2 * oscillator;
-      tap = oscillator;
+      pin += (2 * oscillator);
 
       setup_TAP(tap, pin, 0);	// "down" TAPs
-      tap_parameter1_int[tap] = oscillator;
-      tap_do_on_tap[tap] = &tap_toggle_osc_mute;
+      tap_parameter_1[tap] = oscillator;
+      tap_do_on_tap[tap] = &tap_do_toggle_osc_mute;
+      tap++;
     }
 
     /*
     // Followed by a up/select tap for each oscillator:
-    for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
+    for (oscillator=0; oscillator<4; oscillator++) {
       pin = 23;	// ################
-      pin += + 2 * oscillator;
-      tap = OSCILLATORS + oscillator;
+      pin += 2 * oscillator;
 
       setup_TAP(tap, pin, 0);	// "down" TAPs
-      tap_parameter1_int[tap] = oscillator;
+      tap_parameter_1[tap] = oscillator;
       // tap_do_on_tap[tap] = &tap_toggle_select_osc; #######################
+      tap++;
     }
     */
 
-    tap=4;	// tap++;
-
-    // next: toneswitch to mute all oscillators:
+    // next: toneSwitch to mute all oscillators:
     setup_TAP(tap, 30, 1);	// PIN 30, all tones toneSwitch, start tone OFF
     tap_parameter_1[tap] = ~0;
     tap_parameter_char_address[tap] = &toneSwitch;
@@ -1591,10 +1588,7 @@ void loop() {
 
 
 #ifdef TAP_PINs
-  check_TAPs ();	// set logigal state, debounce
-
-  // toneSwitch = TAP_toggled_(4);		// toggling toneSwitch
-
+  check_TAPs ();	// set logigal state, debounce, act
 #endif
 
 
