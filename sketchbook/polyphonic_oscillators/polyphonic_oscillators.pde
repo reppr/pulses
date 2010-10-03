@@ -155,7 +155,7 @@ signed char oscPIN[OSCILLATORS] = {47, 49, 51, 53};
 unsigned long timeFor1Round = 148;
 
 // default switch settings:
-int toneSwitch=-1;	// tone switched on by default
+char toneSwitch=0;	// tone switched OFF by default
 
 
 void oscillatorInit() {
@@ -746,6 +746,11 @@ void tap_toggle_osc_mute(int tap) {
 #ifdef BIT_STRIPs
   set_bit_strip(0, ~oscillators_mute_bits(), 0);	// show ON/mute on LED strip
 #endif
+}
+
+void tap_do_XOR_byte(int tap) {
+  Serial.print("XOR tap "); Serial.println(tap);
+  *tap_parameter_char_address[tap] ^= (char) tap_parameter_1[tap];
 }
 
 #endif // OSCILLATORS
@@ -1492,8 +1497,14 @@ void setup() {
     }
     */
 
-    // next: tone switch to mute all oscillators:
-    setup_TAP(4, 30, 0);	// PIN 30, all tones toneSwitch, start tone OFF
+    tap=4;	// tap++;
+
+    // next: toneswitch to mute all oscillators:
+    setup_TAP(tap, 30, 1);	// PIN 30, all tones toneSwitch, start tone OFF
+    tap_parameter_1[tap] = ~0;
+    tap_parameter_char_address[tap] = &toneSwitch;
+    tap_do_on_tap[tap]= &tap_do_XOR_byte;
+    tap++;
 
   }
 #endif // OSCILLATORS
@@ -1582,7 +1593,7 @@ void loop() {
 #ifdef TAP_PINs
   check_TAPs ();	// set logigal state, debounce
 
-  toneSwitch = TAP_toggled_(4);		// toggling toneSwitch
+  // toneSwitch = TAP_toggled_(4);		// toggling toneSwitch
 
 #endif
 
