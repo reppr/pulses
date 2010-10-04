@@ -775,38 +775,75 @@ char hw_PIN = ILLEGALpin;
 // sometimes serial is not ready quick enough:
 #define WAITforSERIAL 10
 
-// get numeric input from serial
-long numericInput(long oldValue) {
-  long input, num; 
+// char input with one byte buffering:
+char stored_char, chars_stored=0;
 
-  while (!Serial.available())	// wait for input
-    ;
-  delay(WAITforSERIAL);	// sometimes the second byte was not ready without that
+int get_char() {
+  if(!char_available())
+    return -1;		// EOF no input available
 
-  input = Serial.read();
-  if (input >= '0' && input <= '9')
-    num = input - '0';
-  else {
-    if (input != ' ' && input != '\t') { 
-      Serial.print(byte(input)); Serial.println("  : not parsed...");
+  if (chars_stored) {
+    --chars_stored;
+    return stored_char;
+  } else if (Serial.available())
+    return Serial.read();
+  else
+    return -1;		// EOF no input available
+}
+
+int char_store(char c) {
+  if (chars_stored) {	// ERROR ##################
+    Serial.println("char_store: sorry, buffer full.");
   }
 
+  chars_stored++;
+  stored_char = c;
+}
+
+int char_available() {
+  if (chars_stored || Serial.available()) 
+    return 1;
+  return 0;
+}
+
+// get numeric input from serial
+long numericInput(long oldValue) {
+  long input, num, sign=1;
+
+  do {
+    while (!char_available())	// wait for input
+      ;
+    delay(WAITforSERIAL);	// sometimes the second byte was not ready without that
+
+
+    input = get_char();		// get first chiffre
+  } while (input == ' ');	// skip leading space
+
+  if (input == '-') {		//	check for sign
+    sign = -1;
+    input = get_char(); }
+  else if (input == '+')
+    input = get_char();
+
+  if (input >= '0' && input <= '9')	// numeric?
+    num = input - '0';
+  else {				// NAN
+    char_store(input);
     return oldValue;
   }
 
-  while (Serial.available()) {
-    input = Serial.read();
-    if (input >= '0' && input <= '9')
+  while (char_available()) {
+    input = get_char();
+    if (input >= '0' && input <= '9')	// numeric?
       num = 10 * num + (input - '0');
     else {
-      if (input != ' ' && input != '\t') {
-        Serial.print(byte(input)); Serial.println("  : not parsed..."); }
-
-      return num;
+      char_store(input);	// put NAN chars back into input buffer
+      // return sign * num; ###########
+      break;
     }
   }
 
-  return num;
+  return sign * num;
 }
 
 int ONoff(int value, int mode, int tab) {
@@ -875,8 +912,8 @@ void bar_graph_VU(int pin) {
       oldValue = value;
     }
 
-    if (Serial.available()) {
-      switch (menu_input = Serial.read()) {
+    if (char_available()) {
+      switch (menu_input = get_char()) {
       case '+':
 	tolerance++;
 	break;
@@ -910,7 +947,7 @@ void watch_digital_input(int pin) {
   int state, old_state=-9997;
 
   Serial.print("watching digital input pin "); Serial.print((int) pin); Serial.println("\t\t(send any byte to stop)");
-  while (!Serial.available()) {
+  while (!char_available()) {
     state = digitalRead(hw_PIN);
     if (state != old_state) {
       old_state = state;
@@ -922,7 +959,7 @@ void watch_digital_input(int pin) {
     }
   }
   Serial.println("(quit)");
-  Serial.read();
+  get_char();
 }
 
 // print binary numbers with leading zeroes and a space
@@ -986,7 +1023,7 @@ void displayMenuOscillators() {
   Serial.println("");
   Serial.print("** MENU OSCILLATORS **  t=toggle tone ("); ONoff(toneSwitch, 2, false); Serial.println(")");
 
-  Serial.print("display: ?=osc infos\t");
+  Serial.print("display: l=oscs list\t");
   Serial.print("y=analog in\t");
 #ifdef PROFILING
   Serial.print("d=debug, profiling\t");
@@ -1028,15 +1065,15 @@ void menuOscillators() {
   int menu_input;
   long newValue;
 
-  while(!Serial.available())
+  while(!char_available())
     ;
 
-  while(Serial.available()) {
-    switch (menu_input = Serial.read()) {
-    case ' ':		// continue reading menu_input (i.e. after numeric input) 
+  while(char_available()) {
+    switch (menu_input = get_char()) {
+    case ' ': case '\t':		// skip white chars
       break;
 
-    case 'm':
+    case 'm': case '?':
       displayMenuOscillators();
       break;
 
@@ -1185,7 +1222,7 @@ void menuOscillators() {
 
     break;
 
-    case '?':
+    case 'l':
       Serial.println("");
       displayOscillatorsInfos();
 
@@ -1193,7 +1230,7 @@ void menuOscillators() {
 
 #ifdef HARDWARE_menu
     case 'P':
-      Serial.print("Give number of pin to work on ");
+      Serial.print("Number of pin to work on: ");
       newValue = numericInput(period[oscillator]);
       if (newValue>=0 && newValue<255) {
 	hw_PIN = newValue;
@@ -1280,8 +1317,8 @@ void menuOscillators() {
     default:
       Serial.print("unknown menu_input: "); Serial.print(byte(menu_input));
       Serial.print(" = "); Serial.println(menu_input);
-      while (Serial.available() > 0) {
-	menu_input = Serial.read();
+      while (char_available() > 0) {
+	menu_input = get_char();
 	Serial.print(byte(menu_input));
       }
       Serial.println("");
@@ -1289,7 +1326,7 @@ void menuOscillators() {
       break;
     }
 
-    if (!Serial.available())
+    if (!char_available())
       delay(WAITforSERIAL);
   }
 
@@ -1301,7 +1338,7 @@ void menuOscillators() {
 #endif // OSCILLATORS (inside MENU_over_serial)
 
 void initMenu() {
-  Serial.println("Press 'm' for menu.");
+  Serial.println("Press 'm' or '?' for menu.");
 
 #ifdef OSCILLATORS
   displayMenuOscillators();
@@ -1503,6 +1540,11 @@ void setup() {
     tap_do_on_tap[tap]= &tap_do_XOR_byte;
     tap++;
 
+    /*
+    // hot tap
+    setup_TAP(tap, 31, 0);	// PIN 31, 'hot tap'
+    tap++;
+    */
   }
 #endif // OSCILLATORS
 
@@ -1531,17 +1573,17 @@ void setup() {
 //  analog_IN_PIN[3] = 3;
 
 
-  analog_IN_state[0]=1;		// analog_IN_PIN[] = {8, 9, 10, 11};	poti row
-  analog_IN_PIN[0] = 8;
+  analog_IN_state[0]=1;		// analog_IN_PIN[] = {15, 14, 13, 12};	poti row
+  analog_IN_PIN[0] = 15;
 
   analog_IN_state[1]=1; 
-  analog_IN_PIN[1] = 9;
+  analog_IN_PIN[1] = 14;
 
   analog_IN_state[2]=1; 
-  analog_IN_PIN[2] = 10;
+  analog_IN_PIN[2] = 13;
 
   analog_IN_state[3]=1;
-  analog_IN_PIN[3] = 11;
+  analog_IN_PIN[3] = 12;
 #endif	// INPUTs_ANALOG
 
 #ifdef BIT_STRIPs
@@ -1580,7 +1622,7 @@ void loop() {
 
 #ifdef MENU_over_serial
 
-  if (Serial.available())
+  if (char_available())
     menuOscillators();
 
 #endif //  MENU_over_serial
