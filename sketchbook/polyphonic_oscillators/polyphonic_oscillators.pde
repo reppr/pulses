@@ -141,12 +141,8 @@ unsigned char osc_flags[OSCILLATORS];
 #define OSC_FLAG_ACTIVE	1
 #define OSC_FLAG_MUTE	2
 
-
-signed char oscPIN[OSCILLATORS] = {47, 49, 51, 53};
 // signed char oscPIN[OSCILLATORS];
-// signed char oscPIN[OSCILLATORS] = {49, 51, 53};
-// signed char oscPIN[OSCILLATORS] = {3, 4, 5};
-
+signed char oscPIN[OSCILLATORS] = {47, 49, 51, 53};
 
 // micro seconds for main loop other then oscillating
 // check this value for your program by PROFILING and
@@ -155,7 +151,7 @@ signed char oscPIN[OSCILLATORS] = {47, 49, 51, 53};
 unsigned long timeFor1Round = 148;
 
 // default switch settings:
-char toneSwitch=0;	// tone switched OFF by default
+unsigned char toneSwitch=0;	// tone switched OFF by default
 
 
 void oscillatorInit() {
@@ -289,7 +285,7 @@ void osc_flip_reaction(){	// whatever you want ;)
 }
 
 /* **************************************************************** */
-#define BIT_STRIPs	1	// show numbers, bitmasks, etc on LEDs
+#define BIT_STRIPs	2	// show numbers, bitmasks, etc on LEDs
 //
 // a number of (usually adjacent) arduino pins represent bit positions
 //
@@ -298,12 +294,19 @@ void osc_flip_reaction(){	// whatever you want ;)
 #define  MAX_BiTS_IN_STRIP 	4
 
 signed char bit_strip_PIN[BIT_STRIPs][MAX_BiTS_IN_STRIP];
-char bit_strip_bits[BIT_STRIPs];
+unsigned char bit_strip_bits[BIT_STRIPs];
 
-int init_bit_strip(int start, int bits, int downwards) { // 'downwards': PINs count down
+// bit strips can have INPUT TAPs.
+// pin to switch between TAPs and LEDs
+// input switch pin (ILLEGALpin for no input capability)
+unsigned char bit_strip_INPUT_PIN[BIT_STRIPs];
+
+int init_bit_strip(int start, int bits, int downwards, int input_pin) {
+  /* 'downwards': PINs count down
+     'input_pin': ILLEGALpin  for no input capability */
   static unsigned char strips=0;
-  int bit, strip=strips;
-  int direction;
+  int bit, pin, strip=strips;
+  int direction, skip=0;
 
   if (bits>MAX_BiTS_IN_STRIP) {		// ERROR protection #######################
     Serial.println("init_bit_strip: ERROR bits value too high");
@@ -312,27 +315,43 @@ int init_bit_strip(int start, int bits, int downwards) { // 'downwards': PINs co
 
   bit_strip_bits[strip]=bits;
 
+  bit_strip_INPUT_PIN[strip]=input_pin;
+  if (input_pin != ILLEGALpin) {
+    pinMode(bit_strip_INPUT_PIN[strip], OUTPUT);
+    digitalWrite(bit_strip_INPUT_PIN[strip], LOW);	// defaults to output
+  }
+
+
   if (downwards)
     direction=-1;
   else
     direction=1;
 
   for (bit=0; bit<bits; bit++) {
-    bit_strip_PIN[strip][bit] = start +  direction * (signed char) bit ;
+  init_strip_pins:
+
+    // Maybe the input pin is inside the led row?
+    if ((pin = start +  skip + direction * (signed char) bit ) == input_pin ) {
+      skip++;			// skip input pin
+      goto init_strip_pins;
+    }
+
+    bit_strip_PIN[strip][bit] = pin;
     pinMode(bit_strip_PIN[strip][bit], OUTPUT);
 
-#ifdef DEBUG_HW_ON_INIT				// blink each single LED
+#ifdef DEBUG_HW_ON_INIT			// blink each single LED
     digitalWrite(bit_strip_PIN[strip][bit], HIGH); delay(40);   // ON
     digitalWrite(bit_strip_PIN[strip][bit], LOW);  delay(60);	  // OFF
 #endif
 
   }
 
-#ifdef DEBUG_HW_ON_INIT				// count on all LEDs
+#ifdef DEBUG_HW_ON_INIT			// count on all LEDs
+  delay(250);
   { int i;
     for (i=0; i<(2 << bits)+1; i++){	// from zero to 'zero'
-      set_bit_strip(strip, i, 0);
-      delay(20);
+      output_on_strip(strip, i, 0);
+      delay(30);
     }
   }
 #endif
@@ -340,7 +359,8 @@ int init_bit_strip(int start, int bits, int downwards) { // 'downwards': PINs co
   return (int) strips++;
 }
 
-void set_bit_strip(int strip, int value, int direction) {
+
+void output_on_strip(int strip, int value, int direction) {
   int bit, mask;
   int bits = bit_strip_bits[strip];
 
@@ -355,6 +375,30 @@ void set_bit_strip(int strip, int value, int direction) {
       digitalWrite(bit_strip_PIN[strip][bit], value & mask);    
     }
   }
+}
+
+void switch_strip_as_TAPs(int strip) {
+  int bit, bits= bit_strip_bits[strip];
+
+  for (bit=0; bit<bits; bit++) {
+    digitalWrite(bit_strip_PIN[strip][bit], LOW);
+    pinMode(bit_strip_PIN[strip][bit], INPUT);
+  }
+
+  if (bit_strip_INPUT_PIN[strip] != ILLEGALpin)
+    digitalWrite(bit_strip_INPUT_PIN[strip], HIGH);	// switch to input
+}
+
+void switch_strip_as_LEDs(int strip) {
+  int bit, bits= bit_strip_bits[strip];
+
+  for (bit=0; bit<bits; bit++) {
+    pinMode(bit_strip_PIN[strip][bit], OUTPUT);
+    digitalWrite(bit_strip_PIN[strip][bit], LOW);
+  }
+
+  if (bit_strip_INPUT_PIN[strip] != ILLEGALpin)
+    digitalWrite(bit_strip_INPUT_PIN[strip], LOW);	// switch to output
 }
 
 #endif // BIT_STRIPs
@@ -536,7 +580,7 @@ short analog_IN_last[INPUTs_ANALOG];
 
 // parameters for the in2out translation:
 short analog_input_offset[INPUTs_ANALOG];
-long  analog_input_output_offset[INPUTs_ANALOG];
+long  analog_output_offset[INPUTs_ANALOG];
 double analog_in2out_scaling[INPUTs_ANALOG];
 
 void analog_inputs_initialize() {
@@ -546,11 +590,11 @@ void analog_inputs_initialize() {
     analog_IN_state[input_analog] = 0;
     analog_IN_last[input_analog] = ILLEGALinputVALUE;
     analog_input_offset[input_analog] = 0;
-    analog_input_offset[input_analog] = 512;	// ###############
-    analog_input_output_offset[input_analog] = 0;
-    analog_input_output_offset[input_analog] = 6000;	// ###############
+    analog_input_offset[input_analog] = -512;	// ###############
+    analog_output_offset[input_analog] = 0;
+    analog_output_offset[input_analog] = 12000;	// ###############
     analog_in2out_scaling[input_analog] = 1.0;
-    analog_in2out_scaling[input_analog] = 5.0;	// ###############
+    analog_in2out_scaling[input_analog] = 20.0;	// ###############
   }
 }
 
@@ -562,7 +606,7 @@ long analog_inval2out(int input_analog, int input_raw_value) {
   long value=input_raw_value;
   value += analog_input_offset[input_analog];
   value *= analog_in2out_scaling[input_analog];;
-  value += analog_input_output_offset[input_analog];
+  value += analog_output_offset[input_analog];
   return value;
 }
 
@@ -610,7 +654,7 @@ void (*tap_do_on_toggle[TAP_PINs])(int);
 long tap_parameter_1[TAP_PINs];		// i.e. oscillator, PIN
 long tap_parameter_2[TAP_PINs];		//
 double tap_parameter_double[TAP_PINs];
-char *tap_parameter_char_address[TAP_PINs];
+unsigned char *tap_parameter_char_address[TAP_PINs];
 
 // *logical* state:  0 inactive  1 OFF  2 ON (pin might be low, debouncing)
 unsigned char tap_state[TAP_PINs];
@@ -744,12 +788,12 @@ void tap_do_toggle_osc_mute(int tap) {
   osc_flags[tap_parameter_1[tap]] ^= OSC_FLAG_MUTE;	// toggle muting of oscillator
 
 #ifdef BIT_STRIPs
-  set_bit_strip(0, ~oscillators_mute_bits(), 0);	// show ON/mute on LED strip
+  output_on_strip(0, ~oscillators_mute_bits(), 0);	// show ON/mute on LED strip
 #endif
 }
 
 void tap_do_XOR_byte(int tap) {
-  *tap_parameter_char_address[tap] ^= (char) tap_parameter_1[tap];
+  *tap_parameter_char_address[tap] ^= (unsigned char) tap_parameter_1[tap];
 }
 
 #endif // OSCILLATORS
@@ -1039,7 +1083,7 @@ void displayMenuOscillators() {
   Serial.print(")\tj=input offset ("); Serial.print(analog_input_offset[input_analog]);
   Serial.print(") \ts=scaling ("); Serial.print(analog_in2out_scaling[input_analog]);
   Serial.println(")");
-  Serial.print("\t\tf=output offset("); Serial.print(analog_input_output_offset[input_analog]);
+  Serial.print("\t\tf=output offset("); Serial.print(analog_output_offset[input_analog]);
   Serial.print(")\t(last output="); Serial.print(analog_inval2out(input_analog, analog_IN_last[input_analog]));
   Serial.println(")");
 
@@ -1148,10 +1192,10 @@ void menuOscillators() {
 
     case 'f': // set output offset
       Serial.print("A"); Serial.print(input_analog); Serial.print("\toutput offset: ");
-      Serial.println(analog_input_output_offset[input_analog]);
+      Serial.println(analog_output_offset[input_analog]);
       Serial.print("output offset new = ");
-      analog_input_output_offset[input_analog] = numericInput(input_analog);
-      Serial.println(analog_input_output_offset[input_analog]);
+      analog_output_offset[input_analog] = numericInput(input_analog);
+      Serial.println(analog_output_offset[input_analog]);
 
       break;
 
@@ -1481,7 +1525,7 @@ void setup() {
   // show_memory();
 
 #ifdef OSCILLATORS
-  // signed char oscPIN[OSCILLATORS] = {49, 51, 53};
+  // oscPIN = {47, 49, 51, 53};
 
   oscillatorInit();
 
@@ -1505,7 +1549,7 @@ void setup() {
 #ifdef TAP_PINs
   init_TAPs();
 
-#ifdef OSCILLATORS
+#ifdef OSCILLATORS	// inside #ifdef TAP_PINs
   {
     int oscillator, pin, tap=0;
 
@@ -1533,7 +1577,7 @@ void setup() {
     }
     */
 
-    // next: toneSwitch to mute all oscillators:
+    // next: a toneSwitch to mute *all* oscillators:
     setup_TAP(tap, 30, 1);	// PIN 30, all tones toneSwitch, start tone OFF
     tap_parameter_1[tap] = ~0;
     tap_parameter_char_address[tap] = &toneSwitch;
@@ -1546,14 +1590,14 @@ void setup() {
     tap++;
     */
   }
-#endif // OSCILLATORS
+#endif // OSCILLATORS	// inside #ifdef TAP_PINs
 
   #ifdef TAP_COLOUR_LED_DEBUG
   // TAP colour LED debugging, assume electrical state low to start
   pinMode(PIN13, OUTPUT); digitalWrite(PIN13, LOW);
   #endif 
 
-#endif
+#endif // TAP_PINs
 
 
 #ifdef INPUTs_ANALOG
@@ -1573,36 +1617,37 @@ void setup() {
 //  analog_IN_PIN[3] = 3;
 
 
-  analog_IN_state[0]=1;		// analog_IN_PIN[] = {15, 14, 13, 12};	poti row
-  analog_IN_PIN[0] = 15;
+  analog_IN_state[0]=1;		// analog_IN_PIN[] = {8, 9, 10, 11};	poti row
+  analog_IN_PIN[0] = 8;
 
   analog_IN_state[1]=1; 
-  analog_IN_PIN[1] = 14;
+  analog_IN_PIN[1] = 9;
 
   analog_IN_state[2]=1; 
-  analog_IN_PIN[2] = 13;
+  analog_IN_PIN[2] = 10;
 
   analog_IN_state[3]=1;
-  analog_IN_PIN[3] = 12;
+  analog_IN_PIN[3] = 11;
 #endif	// INPUTs_ANALOG
 
 #ifdef BIT_STRIPs
+
+  // 4bit strip, DISPLAY only:
   pinMode(18,OUTPUT); digitalWrite(18, LOW);	// ground connection
-  init_bit_strip(14, 4, 0);			// 4bit chain from pin 14
+  init_bit_strip(17, 4, 1, ILLEGALpin);	// 4bit chain from pin 14, upside down
+
+  // 4bit/5pin strip, with INPUT taps, input switch pin in the middle:
+  // 4bit/5pin I/o strip from pin 3, INPUT switch on pin 5
+  init_bit_strip(3, 4, 0, 5);
+
 #endif
 
 #ifdef MENU_over_serial
   initMenu();
 #endif
 
-
   show_memory();
 
-//  for (i=0; i<32 ;i++){	// count down negative ########################
-//    set_bit_strip(0, -i, 0); delay(200);
-//    Serial.print(-i); Serial.print("\t"); serial_print_BIN(-i, 16); Serial.println("");
-//  }
-//    set_bit_strip(0, 0, 0); delay(200);
 
   // PIN settings:
 pinMode(PIN13, OUTPUT);		// to use the onboard LED
