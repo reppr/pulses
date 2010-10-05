@@ -140,6 +140,7 @@ unsigned long period[OSCILLATORS], next[OSCILLATORS], nextFlip;
 unsigned char osc_flags[OSCILLATORS];
 #define OSC_FLAG_ACTIVE	1
 #define OSC_FLAG_MUTE	2
+#define OSC_FLAG_SELECT	4
 
 // signed char oscPIN[OSCILLATORS];
 signed char oscPIN[OSCILLATORS] = {47, 49, 51, 53};
@@ -219,6 +220,18 @@ int oscillators_mute_bits() {
 
   for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
     if (osc_flags[oscillator] & OSC_FLAG_MUTE)
+      bitpattern |= (1 << oscillator);
+  }
+
+  return bitpattern;
+}
+
+// Bitmap of each oscillators select status:
+int oscillators_SELECTed_bits() {
+  int oscillator, bitpattern=0;
+
+  for (oscillator=0; oscillator<OSCILLATORS; oscillator++) {
+    if (osc_flags[oscillator] & OSC_FLAG_SELECT)
       bitpattern |= (1 << oscillator);
   }
 
@@ -400,6 +413,16 @@ void switch_strip_as_LEDs(int strip) {
   if (bit_strip_INPUT_PIN[strip] != ILLEGALpin)
     digitalWrite(bit_strip_INPUT_PIN[strip], LOW);	// switch to output
 }
+
+#ifdef OSCILLATORS
+void show_selected(int dummy) {
+
+#ifdef BIT_STRIPs
+  output_on_strip(1, oscillators_SELECTed_bits(), 0);	// show SELECTed on LED strip
+#endif
+
+}
+#endif
 
 #endif // BIT_STRIPs
 
@@ -630,7 +653,7 @@ void analog_input_cyclic_poll() {
 
 
 /* **************************************************************** */
-#define TAP_PINs	5  // # TAP pins for electrical touch INPUT
+#define TAP_PINs	16  // # TAP pins for electrical touch INPUT
 /* **************************************************************** */
 #ifdef TAP_PINs
 
@@ -648,6 +671,7 @@ char tapPIN[TAP_PINs];
 // pointers on  void something(int tap)  functions:
 void (*tap_do_on_tap[TAP_PINs])(int);
 void (*tap_do_on_toggle[TAP_PINs])(int);
+void (*tap_do_after[TAP_PINs])(int);
 
 
 // parameters for tap_do_on_xxx(tap) functions:
@@ -675,13 +699,14 @@ void init_TAPs() {
 
     /*
     // pointers on  void something()  functions:
-    tap_do_on_tap[tap] = 0;
-    tap_do_on_toggle[tap] = 0;
+    tap_do_on_tap[tap] = NULL;
+    tap_do_on_toggle[tap] = NULL;
     */
 
     // pointers on  void something()  functions:
-    tap_do_on_tap[tap] = 0;
-    tap_do_on_toggle[tap] = 0;
+    tap_do_on_tap[tap] = NULL;
+    tap_do_on_toggle[tap] = NULL;
+    tap_do_after[tap] = NULL;
   }
 }
 
@@ -720,10 +745,12 @@ int TAP_toggled_(char tap) {
 void check_TAPs() {
   int tap=0;				// id as index
   int tap_electrical_activity=0;	// any tap switch electrical high?
+  int did_do;
   unsigned long now=micros();
 
   for (tap=0; tap<TAP_PINs; tap++) {	// check all active TAPs
     if (tap_state[tap]) {			// active?, then check pin state
+
       if (digitalRead(tapPIN[tap])) {		// TAP PIN is HIGH
 	tap_electrical_activity=1;
 
@@ -733,6 +760,8 @@ void check_TAPs() {
 #endif
 
 	if (tap_state[tap] == 1) {		//   just switched on?
+	  did_do=0;
+
 	  tap_count[tap]++;			//     yes, so count to toggle
 	  tap_state[tap] = 2;			//     set state 2 meaning *logical* ON
 	  tap_debouncing_since[tap] = 0;	//     not debouncing
@@ -746,11 +775,18 @@ void check_TAPs() {
 	  */
 
 	  // pointers on  void something(int tap)  functions:
-	  if (tap_do_on_tap[tap] !=0)		//		maybe do something on tap?
+	  if (tap_do_on_tap[tap] !=NULL) {	//		maybe do something on tap?
 	    tap_do_on_tap[tap](tap);		//		yes
-	  if (tap_count[tap] & 1 && tap_do_on_toggle[tap] !=0)	//  maybe do something on toggle?
-	    tap_do_on_toggle[tap](tap);				//     yes
+	    did_do++;
+	  }
 
+	  if (tap_count[tap] & 1 && tap_do_on_toggle[tap] !=NULL) { //  maybe do something on toggle?
+	    tap_do_on_toggle[tap](tap);				    //     yes
+	    did_do++;
+	  }
+
+	  if (did_do && (tap_do_after[tap] !=NULL))		// something else to do?
+	    tap_do_after[tap](tap);				    //     yes
 	}
       } else {					// TAP PIN is LOW
 	if (tap_state[tap] != 1) {		//   LOW but, logical state ON. Debounce 
@@ -1553,29 +1589,30 @@ void setup() {
   {
     int oscillator, pin, tap=0;
 
-    // TAPs start with a down/mute tap for each oscillator:
-    for (oscillator=0; oscillator<4; oscillator++) {
-      pin = 22;	// ################
-      pin += (2 * oscillator);
+    // double TAP rows on double pin row for 4 oscillators
 
-      setup_TAP(tap, pin, 0);	// "down" TAPs
+    // TAPs start with a down/mute tap for each oscillator
+    // on even PIN numbers starting with pin
+    pin= 22;	// ################
+    //
+    for (oscillator=0; oscillator<4; oscillator++, pin+=2, tap++) {
+      setup_TAP(tap, pin, 0);			// "down" TAPs
       tap_parameter_1[tap] = oscillator;
       tap_do_on_tap[tap] = &tap_do_toggle_osc_mute;
-      tap++;
     }
 
-    /*
+
     // Followed by a up/select tap for each oscillator:
-    for (oscillator=0; oscillator<4; oscillator++) {
-      pin = 23;	// ################
-      pin += 2 * oscillator;
-
-      setup_TAP(tap, pin, 0);	// "down" TAPs
-      tap_parameter_1[tap] = oscillator;
-      // tap_do_on_tap[tap] = &tap_toggle_select_osc; #######################
-      tap++;
+    // on the uneven pins starting with pin
+    pin= 23;	// ################
+    for (oscillator=0; oscillator<4; oscillator++, pin+=2, tap++) {
+      setup_TAP(tap, pin, 0);			// "up" TAPs
+      tap_parameter_1[tap] = OSC_FLAG_SELECT;
+      tap_parameter_char_address[tap] = &osc_flags[oscillator];
+      tap_do_on_tap[tap] = &tap_do_XOR_byte;
+      tap_do_after[tap]  = &show_selected;
     }
-    */
+
 
     // next: a toneSwitch to mute *all* oscillators:
     setup_TAP(tap, 30, 1);	// PIN 30, all tones toneSwitch, start tone OFF
@@ -1584,11 +1621,11 @@ void setup() {
     tap_do_on_tap[tap]= &tap_do_XOR_byte;
     tap++;
 
-    /*
+
     // hot tap
     setup_TAP(tap, 31, 0);	// PIN 31, 'hot tap'
     tap++;
-    */
+
   }
 #endif // OSCILLATORS	// inside #ifdef TAP_PINs
 
@@ -1639,7 +1676,6 @@ void setup() {
   // 4bit/5pin strip, with INPUT taps, input switch pin in the middle:
   // 4bit/5pin I/o strip from pin 3, INPUT switch on pin 5
   init_bit_strip(3, 4, 0, 5);
-
 #endif
 
 #ifdef MENU_over_serial
