@@ -1,130 +1,56 @@
+/* **************************************************************** */
 // polyphonic_oscillators
+/* **************************************************************** */
 
-// hmm, no...
-// these are not oscillators,
-//
-// more like countylators ;)
+/* ****************************************************************
+  hmm, no...
 
+  these are not oscillators
+  something like countators ;)
+
+*/
+/* **************************************************************** */
+// basic configuration:
+
+#define OSCILLATORS	4	// # of oscillators
+#define PROFILING		// gather info for debugging and profiling
+#define INPUTs_ANALOG	4	// ANALOG INPUTS
+#define TAP_PINs	16  	// # TAP pins for electrical touch INPUT
+#define BIT_STRIPs	2	// show numbers, bitmasks, etc on LEDs
+#define MAX_BiTS_IN_STRIP 4	// maximal # of bits in a strip
 #define USE_SERIAL	9600	// 9600
+#define MENU_over_serial	// do we use a serial menu?
+#define HARDWARE_menu		// menu interface to hardware configuration
 
+// #define DEBUG_TOOLS		// some functions to help with debugging
 // #define DEBUG_HW_ON_INIT	// check hardware on init
 
+// #define COLOUR_LEDs	// colour LED feedback
+// #define OSCILLATOR_COLOUR_LED_PROFILING
+// #define TAP_COLOUR_LED_DEBUG	// default does set  pinMode(PIN13, OUTPUT);
+// #define LED_ROW	1	// # LED rows to stick in ouput pins
+
+// #define MEMORY_INFO		// this code from the net is buggy
+
 /* **************************************************************** */
+/* some  basic defines:						    */
+
 #define ILLEGALinputVALUE	-1	// impossible analog input value
 #define ILLEGALpin		-1	// a pin that is not assigned
 #define PIN13			13	// onboard LED
 					// currently used for electrical tap activity
+#define WAITforSERIAL		10	// next byte was not always ready
 
-
-void wuschel()
-{
-  int i;
-
-  digitalWrite(PIN13,LOW);
-  for (i=0; i<4; i++) {
-    delay(120) ; digitalWrite(PIN13,HIGH);
-    delay(50) ; digitalWrite(PIN13,LOW);
-  }
-
-  Serial.println("wuschel");
-}
-
-
-/* **************************************************************** */
-// LED stuff:	let me *see* what's happening in the machine...
 int debugSwitch=0;		// hook for testing and debugging
 
 /* **************************************************************** */
-// Some coloured LEDs
-// Quick hack to have some insight what's happening in the machine
-// while building the software...
-/* **************************************************************** */
-//#define COLOUR_LEDs	// colour LED feedback
-/* **************************************************************** */
-#ifdef  COLOUR_LEDs
-
-#define redPIN 8
-#define greenPIN 9
-#define bluePIN 10
-
-/*
-unsigned char redPIN=8;
-unsigned char greenPIN=9;
-unsigned char bluePIN=10;
-*/
-
-void init_colour_LEDs() {
-  pinMode(redPIN, OUTPUT);
-  pinMode(greenPIN, OUTPUT);
-  pinMode(bluePIN, OUTPUT);
-
-#ifdef DEBUG_HW_ON_INIT		// blink the LEDs to check connections:
-  digitalWrite(redPIN, HIGH); delay(100); digitalWrite(redPIN, LOW); delay(200);
-  digitalWrite(greenPIN, HIGH); delay(100); digitalWrite(greenPIN, LOW); delay(200);
-  digitalWrite(bluePIN, HIGH); delay(100); digitalWrite(bluePIN, LOW); delay(200);
-#endif
-}
-
-#endif	// COLOUR_LEDs
-
-
-/* **************************************************************** */
-// more LED stuff:
-// Quick hack to use some LED rows I have, 1 pin spacing between LEDs
-// #define LED_ROW		4	// LED rows to stick in digital OUTPUTS
-/* **************************************************************** */
-#ifdef LED_ROW
-
-int led=0;	// index
-
-char led_row_anode_PIN[LED_ROW], led_row_cathode_PIN[LED_ROW];
-
-
-void led_row_ON(int led) {
-  digitalWrite(led_row_anode_PIN[led],HIGH); digitalWrite(led_row_cathode_PIN[led],LOW);	// ON
-}
-
-void init_LED_row(int start, int leds, int spacing, int anode_first) {
-  int led;
-
-  for (led=0; led < leds; led++) {
-    if (anode_first) {
-      led_row_anode_PIN[led]   = start +  led * (2 + spacing);
-      led_row_cathode_PIN[led] = start +  led * (2 + spacing) + 1;
-    } else {
-      led_row_anode_PIN[led]   = start +  led * (2 + spacing) + 1;
-      led_row_cathode_PIN[led] = start +  led * (2 + spacing);
-    }
-    pinMode(led_row_anode_PIN[led], OUTPUT);
-    pinMode(led_row_cathode_PIN[led], OUTPUT);
-
-    digitalWrite(led_row_anode_PIN[led],LOW);
-    digitalWrite(led_row_cathode_PIN[led],LOW);
-
-#ifdef DEBUG_HW_ON_INIT	// Serial info and blink to check LEDs
-    Serial.print((int) led);
-    Serial.print(" led_row_anode_PIN[led] ");
-    Serial.print((int) led_row_anode_PIN[led]);
-    Serial.print(" led_row_cathode_PIN[led] ");
-    Serial.print((int) led_row_cathode_PIN[led]);
-    Serial.println("");
-
-    led_row_ON(led); delay(100);				// ON
-    digitalWrite(led_row_anode_PIN[led],LOW); delay(200);	// OFF
-#endif
-
-  }
-}
-#endif // LED_ROW
-
-
 
 /* **************************************************************** */
 // OSCILLATORS
 // once they were flippylators, now they are implemented as countillators
 // we get many octaves for free ;)
 //
-#define OSCILLATORS	4	// # of oscillators
+// #define OSCILLATORS	4	// # of oscillators
 /* **************************************************************** */
 #ifdef OSCILLATORS
 
@@ -149,7 +75,7 @@ signed char oscPIN[OSCILLATORS] = {47, 49, 51, 53};
 // check this value for your program by PROFILING and
 // set default here between average and maximum lapse
 // time (displayed by pressing 'd')
-unsigned long timeFor1Round = 148;
+unsigned long timeFor1Round = 220;
 
 // default switch settings:
 unsigned char toneSwitch=0;	// tone switched OFF by default
@@ -238,7 +164,6 @@ int oscillators_SELECTed_bits() {
   return bitpattern;
 }
 
-#define INTERFERENCE_COLOUR_LED
 void osc_flip_reaction(){	// whatever you want ;)
   int oscillator=0, led=0;
 
@@ -259,10 +184,6 @@ void osc_flip_reaction(){	// whatever you want ;)
   else
     digitalWrite(bluePIN, LOW);
 #endif
-
-  // digitalWrite(PIN13, !(OSC_(oscillator) | OSC_(1)));
-
-  // ################################################################
 
 
 #ifdef LED_ROW
@@ -297,14 +218,15 @@ void osc_flip_reaction(){	// whatever you want ;)
 #endif
 }
 
+
 /* **************************************************************** */
-#define BIT_STRIPs	2	// show numbers, bitmasks, etc on LEDs
+// #define BIT_STRIPs	2	// show numbers, bitmasks, etc on LEDs
 //
 // a number of (usually adjacent) arduino pins represent bit positions
 //
 /* **************************************************************** */
 #ifdef BIT_STRIPs
-#define  MAX_BiTS_IN_STRIP 	4
+// #define  MAX_BiTS_IN_STRIP 	4
 
 signed char bit_strip_PIN[BIT_STRIPs][MAX_BiTS_IN_STRIP];
 unsigned char bit_strip_bits[BIT_STRIPs];
@@ -428,7 +350,7 @@ void show_selected(int dummy) {
 
 
 /* **************************************************************** */
-#define PROFILING	// gather info for debugging and profiling
+// #define PROFILING	// gather info for debugging and profiling
 			// mainly to find out how long the main loop
 			// needs to come back to the oscillator in time.
 /* **************************************************************** */
@@ -591,7 +513,7 @@ long updateNextFlip () {
 
 
 /* **************************************************************** */
-#define INPUTs_ANALOG	4	// ANALOG INPUTS
+// #define INPUTs_ANALOG	4	// ANALOG INPUTS
 /* **************************************************************** */
 #ifdef INPUTs_ANALOG
 
@@ -653,7 +575,7 @@ void analog_input_cyclic_poll() {
 
 
 /* **************************************************************** */
-#define TAP_PINs	16  // # TAP pins for electrical touch INPUT
+// #define TAP_PINs	16  // # TAP pins for electrical touch INPUT
 /* **************************************************************** */
 #ifdef TAP_PINs
 
@@ -837,9 +759,95 @@ void tap_do_XOR_byte(int tap) {
 #endif	// TAP_PINs
 
 
+/* **************************************************************** */
+// LED stuff:	let me *see* what's happening in the machine...
 
 /* **************************************************************** */
-#define HARDWARE_menu		// menu interface to hardware configuration
+// Some coloured LEDs
+// Quick hack to have some insight what's happening in the machine
+// while building the software...
+/* **************************************************************** */
+// #define COLOUR_LEDs	// colour LED feedback
+/* **************************************************************** */
+#ifdef  COLOUR_LEDs
+
+#define redPIN 8
+#define greenPIN 9
+#define bluePIN 10
+
+/*
+unsigned char redPIN=8;
+unsigned char greenPIN=9;
+unsigned char bluePIN=10;
+*/
+
+void init_colour_LEDs() {
+  pinMode(redPIN, OUTPUT);
+  pinMode(greenPIN, OUTPUT);
+  pinMode(bluePIN, OUTPUT);
+
+#ifdef DEBUG_HW_ON_INIT		// blink the LEDs to check connections:
+  digitalWrite(redPIN, HIGH); delay(100); digitalWrite(redPIN, LOW); delay(200);
+  digitalWrite(greenPIN, HIGH); delay(100); digitalWrite(greenPIN, LOW); delay(200);
+  digitalWrite(bluePIN, HIGH); delay(100); digitalWrite(bluePIN, LOW); delay(200);
+#endif
+}
+
+#endif	// COLOUR_LEDs
+
+
+/* **************************************************************** */
+// more LED stuff:
+// Quick hack to use some LED rows I have, 1 pin spacing between LEDs
+// #define LED_ROW		4	// LED rows to stick in digital OUTPUTS
+/* **************************************************************** */
+#ifdef LED_ROW
+
+int led=0;	// index
+
+char led_row_anode_PIN[LED_ROW], led_row_cathode_PIN[LED_ROW];
+
+
+void led_row_ON(int led) {
+  digitalWrite(led_row_anode_PIN[led],HIGH); digitalWrite(led_row_cathode_PIN[led],LOW);	// ON
+}
+
+void init_LED_row(int start, int leds, int spacing, int anode_first) {
+  int led;
+
+  for (led=0; led < leds; led++) {
+    if (anode_first) {
+      led_row_anode_PIN[led]   = start +  led * (2 + spacing);
+      led_row_cathode_PIN[led] = start +  led * (2 + spacing) + 1;
+    } else {
+      led_row_anode_PIN[led]   = start +  led * (2 + spacing) + 1;
+      led_row_cathode_PIN[led] = start +  led * (2 + spacing);
+    }
+    pinMode(led_row_anode_PIN[led], OUTPUT);
+    pinMode(led_row_cathode_PIN[led], OUTPUT);
+
+    digitalWrite(led_row_anode_PIN[led],LOW);
+    digitalWrite(led_row_cathode_PIN[led],LOW);
+
+#ifdef DEBUG_HW_ON_INIT	// Serial info and blink to check LEDs
+    Serial.print((int) led);
+    Serial.print(" led_row_anode_PIN[led] ");
+    Serial.print((int) led_row_anode_PIN[led]);
+    Serial.print(" led_row_cathode_PIN[led] ");
+    Serial.print((int) led_row_cathode_PIN[led]);
+    Serial.println("");
+
+    led_row_ON(led); delay(100);				// ON
+    digitalWrite(led_row_anode_PIN[led],LOW); delay(200);	// OFF
+#endif
+
+  }
+}
+#endif // LED_ROW
+
+
+/* **************************************************************** */
+// #define HARDWARE_menu   // hardware configuration menu interface
 /* **************************************************************** */
 #ifdef HARDWARE_menu
 char hw_PIN = ILLEGALpin;
@@ -848,12 +856,12 @@ char hw_PIN = ILLEGALpin;
 
 
 /* **************************************************************** */
-#define MENU_over_serial	// do we use a serial menu?
+// #define MENU_over_serial	// do we use a serial menu?
 /* **************************************************************** */
 #ifdef MENU_over_serial
 
 // sometimes serial is not ready quick enough:
-#define WAITforSERIAL 10
+// #define WAITforSERIAL 10
 
 // char input with one byte buffering:
 char stored_char, chars_stored=0;
@@ -918,7 +926,6 @@ long numericInput(long oldValue) {
       num = 10 * num + (input - '0');
     else {
       char_store(input);	// put NAN chars back into input buffer
-      // return sign * num; ###########
       break;
     }
   }
@@ -1430,6 +1437,9 @@ void initMenu() {
 
 #endif // MENU_over_serial
 
+
+// #define MEMORY_INFO	// this code from the net is buggy
+#ifdef MEMORY_INFO	// this code from the net is buggy
 /* **************************************************************** */
 /* **************************************************************** */
 // found this on the net to determine free memory:
@@ -1548,8 +1558,29 @@ void show_memory() {
   Serial.print("\theapptr = "); Serial.print((int) *heapptr);
   Serial.print("\tstackptr - heapptr = "); Serial.println((int) (*stackptr - *heapptr));
 }
+#endif	// #ifdef MEMORY_INFO
 
- 
+
+/* **************************************************************** */
+// #define DEBUG_TOOLS	// some functions to help with debugging
+#ifdef DEBUG_TOOLS	// some functions to help with debugging
+void wuschel()
+{
+  int i;
+
+  digitalWrite(PIN13,LOW);
+  for (i=0; i<4; i++) {
+    delay(120) ; digitalWrite(PIN13,HIGH);
+    delay(50) ; digitalWrite(PIN13,LOW);
+  }
+
+  Serial.println("wuschel");
+}
+#endif	// DEBUG_TOOLS
+
+
+/* **************************************************************** */
+/* **************************************************************** */
 /* **************************************************************** */
 void setup() {
   int i;
@@ -1558,7 +1589,9 @@ void setup() {
   Serial.begin(USE_SERIAL);
 #endif
 
-  // show_memory();
+#ifdef MEMORY_INFO	// this code from the net is buggy
+  show_memory();
+#endif
 
 #ifdef OSCILLATORS
   // oscPIN = {47, 49, 51, 53};
@@ -1682,8 +1715,9 @@ void setup() {
   initMenu();
 #endif
 
+#ifdef MEMORY_INFO	// this code from the net is buggy
   show_memory();
-
+#endif
 
   // PIN settings:
 pinMode(PIN13, OUTPUT);		// to use the onboard LED
