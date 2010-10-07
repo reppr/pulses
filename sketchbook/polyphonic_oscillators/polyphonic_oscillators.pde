@@ -14,7 +14,7 @@
 
 #define OSCILLATORS	4	// # of oscillators
 #define PROFILING		// gather info for debugging and profiling
-#define INPUTs_ANALOG	4	// ANALOG INPUTS
+#define INPUTs_ANALOG	16	// ANALOG INPUTs
 #define TAP_PINs	16  	// # TAP pins for electrical touch INPUT
 #define BIT_STRIPs	2	// show numbers, bitmasks, etc on LEDs
 #define MAX_BiTS_IN_STRIP 4	// maximal # of bits in a strip
@@ -62,11 +62,7 @@ int debugSwitch=0;		// hook for testing and debugging
 #define greenPIN 9
 #define bluePIN 10
 
-/*
-unsigned char redPIN=8;
-unsigned char greenPIN=9;
-unsigned char bluePIN=10;
-*/
+char show_interference_color=0;	// unused ##################
 
 void init_colour_LEDs() {
   pinMode(redPIN, OUTPUT);
@@ -224,23 +220,23 @@ void osc_flip_reaction(){	// whatever you want ;)
   int oscillator=0, led=0;
 
 #ifdef COLOUR_LEDs
-  if (OSC_(oscillator) & OSC_(1))
-    digitalWrite(redPIN, HIGH);
-  else
-    digitalWrite(redPIN, LOW);
+  if (show_interference_color) {
+    if (OSC_(oscillator) & OSC_(1))
+      digitalWrite(redPIN, HIGH);
+    else
+      digitalWrite(redPIN, LOW);
 
-  if (OSC_(oscillator) ^ OSC_(1))
-    digitalWrite(greenPIN, HIGH);
-  else
-    digitalWrite(greenPIN, LOW);
+    if (OSC_(oscillator) ^ OSC_(1))
+      digitalWrite(greenPIN, HIGH);
+    else
+      digitalWrite(greenPIN, LOW);
 
-
-  if (!OSC_(oscillator) | OSC_(1))
-    digitalWrite(bluePIN, HIGH);
-  else
-    digitalWrite(bluePIN, LOW);
+    if (!OSC_(oscillator) | OSC_(1))
+      digitalWrite(bluePIN, HIGH);
+    else
+      digitalWrite(bluePIN, LOW);
+  }
 #endif
-
 
 #ifdef LED_ROW
   // these are interesting regarding interferences:
@@ -569,62 +565,124 @@ long updateNextFlip () {
 
 
 /* **************************************************************** */
-// #define INPUTs_ANALOG	4	// ANALOG INPUTS
+// #define INPUTs_ANALOG	16	// ANALOG INPUTS
 /* **************************************************************** */
 #ifdef INPUTs_ANALOG
 
-int input_analog=0;			// index
+int inp=0;				// index of the analog index
+int analog_input_cyclic_index=0;	// cycle throug the inputs to return in time to the oscillators
+
 char analog_IN_PIN[INPUTs_ANALOG] = {8, 9, 10, 11};	// on poti row
 unsigned char analog_IN_state[INPUTs_ANALOG];
-char analog_input_cyclic_index=0;	// cycle throug the inputs to return in time to the oscillators
 short analog_IN_last[INPUTs_ANALOG];
 
 // parameters for the in2out translation:
 short analog_input_offset[INPUTs_ANALOG];
 long  analog_output_offset[INPUTs_ANALOG];
 double analog_in2out_scaling[INPUTs_ANALOG];
+// unsigned char analog_in2out_method[INPUTs_ANALOG];
 
+// destination
+unsigned char analog_in2out_destination_type[INPUTs_ANALOG];	// i.e. oscillator, analog out
+#define TYPE_no		0	//
+#define TYPE_oscillator	1	// oscillator period
+#define TYPE_analog_out	2	// analog output
+
+unsigned char analog_in2out_destination_index[INPUTs_ANALOG];	// osc
+
+// Do this once:
 void analog_inputs_initialize() {
-  int input_analog;
+  int inp;
 
-  for (input_analog=0; input_analog<INPUTs_ANALOG; input_analog++) {
-    analog_IN_state[input_analog] = 0;
-    analog_IN_last[input_analog] = ILLEGALinputVALUE;
-    analog_input_offset[input_analog] = 0;
-    analog_input_offset[input_analog] = -512;	// ###############
-    analog_output_offset[input_analog] = 0;
-    analog_output_offset[input_analog] = 12000;	// ###############
-    analog_in2out_scaling[input_analog] = 1.0;
-    analog_in2out_scaling[input_analog] = 20.0;	// ###############
+  for (inp=0; inp<INPUTs_ANALOG; inp++) {
+    analog_IN_state[inp] = 0;
+    analog_IN_last[inp] = ILLEGALinputVALUE;
+    analog_input_offset[inp] = 0;
+    analog_output_offset[inp] = 0;
+    analog_in2out_scaling[inp] = 1.0;
+
+    analog_in2out_destination_type[inp] = TYPE_no;
+    analog_in2out_destination_index[inp] = 0;
   }
 }
 
-short analog_IN(int input_analog) {
-  return analogRead(analog_IN_PIN[input_analog]);
+// Do this once for each analog input:
+int analog_input_setup(char pin, unsigned char state, short in_offset, long out_offset, double i2o_scaling, \
+		       unsigned char destination_type, unsigned char index) {
+  static unsigned char analog_inputs=0;
+  int inp= analog_inputs;
+
+  if (inp >= INPUTs_ANALOG) {	// ERROR
+
+#ifdef USE_SERIAL
+    Serial.println("ERROR: too many analog inputs.");
+#endif
+
+    return -1;
+  }
+
+  analog_IN_PIN[inp]			= pin;
+  analog_IN_state[inp]			= state;
+  analog_input_offset[inp]		= in_offset;
+  analog_output_offset[inp]		= out_offset;
+  analog_in2out_scaling[inp]		= i2o_scaling;
+  analog_in2out_destination_type[inp]	= destination_type;
+  analog_in2out_destination_index[inp]	= index;
+
+  return analog_inputs++;
 }
 
-long analog_inval2out(int input_analog, int input_raw_value) {
+short analog_IN(int inp) {
+  return analogRead(analog_IN_PIN[inp]);
+}
+
+long analog_inval2out(int inp, int input_raw_value) {
   long value=input_raw_value;
-  value += analog_input_offset[input_analog];
-  value *= analog_in2out_scaling[input_analog];;
-  value += analog_output_offset[input_analog];
+  value += analog_input_offset[inp];
+  value *= analog_in2out_scaling[inp];;
+  value += analog_output_offset[inp];
   return value;
 }
 
 void analog_input_cyclic_poll() {
-  int actual_index=input_analog;
+  int actual_index=inp;
   int value;
+
   {
-    int input_analog = (analog_input_cyclic_index++ % INPUTs_ANALOG);	// cycle through inputs
-    if (analog_IN_state[input_analog]) {
-      if ((value = analog_IN(input_analog)) != analog_IN_last[input_analog]) { // input has changed
-	analog_IN_last[input_analog] = value;
-	period[input_analog] = analog_inval2out(input_analog, value);
+    int i, inp;
+
+    // find the next active input starting from analog_input_cyclic_index: 
+    for (i=0; i<=INPUTs_ANALOG; i++) {
+      inp = (analog_input_cyclic_index++ % INPUTs_ANALOG); // try all inputs, starting
+      if (analog_IN_state[inp])		// found next active input
+	break;
+      if (i == INPUTs_ANALOG)		// there's no active input
+	goto cyclic_done;
+    }
+
+    if (analog_IN_state[inp]) {
+      if ((value = analog_IN(inp)) != analog_IN_last[inp]) {	// input has changed
+	analog_IN_last[inp] = value;
+
+	switch (analog_in2out_destination_type[inp]) {
+
+	case TYPE_no:	// nothing
+	  break;
+
+	case TYPE_oscillator: // set oscillator period
+	  period[analog_in2out_destination_index[inp]] = analog_inval2out(inp, value);
+	  break;
+
+	default:	// ERROR
+	  break;
+
+	}
       }
     }
   }
 
-  input_analog = actual_index;	// restore index
+  cyclic_done:
+  inp = actual_index;	// restore index
 }
 #endif	// INPUTs_ANALOG
 
@@ -1157,12 +1215,12 @@ void displayMenuOscillators() {
   Serial.print("\tp=period["); Serial.print(oscillator); Serial.print("] (");
   Serial.print(period[oscillator]); Serial.println(")");
 
-  Serial.print("i=analog inp("); Serial.print(input_analog);
-  Serial.print(")\tj=input offset ("); Serial.print(analog_input_offset[input_analog]);
-  Serial.print(") \ts=scaling ("); Serial.print(analog_in2out_scaling[input_analog]);
+  Serial.print("i=analog inp("); Serial.print(inp);
+  Serial.print(")\tj=input offset ("); Serial.print(analog_input_offset[inp]);
+  Serial.print(") \ts=scaling ("); Serial.print(analog_in2out_scaling[inp]);
   Serial.println(")");
-  Serial.print("\t\tf=output offset("); Serial.print(analog_output_offset[input_analog]);
-  Serial.print(")\t(last output="); Serial.print(analog_inval2out(input_analog, analog_IN_last[input_analog]));
+  Serial.print("\t\tf=output offset("); Serial.print(analog_output_offset[inp]);
+  Serial.print(")\t(last output="); Serial.print(analog_inval2out(inp, analog_IN_last[inp]));
   Serial.println(")");
 
 #ifdef HARDWARE_menu
@@ -1267,20 +1325,20 @@ void menuOscillators() {
       break;
 
     case 's': // set output scaling	########### need float input... ######################
-      Serial.print("A"); Serial.print(input_analog); Serial.print("\tin2out scaling: ");
-      Serial.println(analog_in2out_scaling[input_analog]);
+      Serial.print("A"); Serial.print(inp); Serial.print("\tin2out scaling: ");
+      Serial.println(analog_in2out_scaling[inp]);
       Serial.print("output scaling new = ");
-      analog_in2out_scaling[input_analog] = numericInput(analog_in2out_scaling[input_analog]);
-      Serial.println(analog_in2out_scaling[input_analog]);
+      analog_in2out_scaling[inp] = numericInput(analog_in2out_scaling[inp]);
+      Serial.println(analog_in2out_scaling[inp]);
 
       break;
 
     case 'f': // set output offset
-      Serial.print("A"); Serial.print(input_analog); Serial.print("\toutput offset: ");
-      Serial.println(analog_output_offset[input_analog]);
+      Serial.print("A"); Serial.print(inp); Serial.print("\toutput offset: ");
+      Serial.println(analog_output_offset[inp]);
       Serial.print("output offset new = ");
-      analog_output_offset[input_analog] = numericInput(input_analog);
-      Serial.println(analog_output_offset[input_analog]);
+      analog_output_offset[inp] = numericInput(inp);
+      Serial.println(analog_output_offset[inp]);
 
       break;
 
@@ -1298,12 +1356,12 @@ void menuOscillators() {
       break;
 
     case 'i': // set menu local analog input index
-      Serial.print("input_analog       "); Serial.println(input_analog);
-      Serial.print("input_analog new = ");
-      newValue = numericInput(input_analog);
+      Serial.print("analog inpput       "); Serial.println(inp);
+      Serial.print("analog inpput new = ");
+      newValue = numericInput(inp);
       if (newValue < INPUTs_ANALOG && newValue >= 0) {
-	input_analog = newValue;
-	Serial.println(input_analog);
+	inp = newValue;
+	Serial.println(inp);
       } else {
 	Serial.print(" must be between 0 and "); Serial.println(INPUTs_ANALOG -1);
       }
@@ -1945,31 +2003,29 @@ void setup() {
 #ifdef INPUTs_ANALOG
   analog_inputs_initialize();
 
-//  #####################
-//  analog_IN_state[0]=1;		// analog_IN_PIN[] = {0, 1, 2};		accelerometer
-//  analog_IN_PIN[0] = 0;
+  /* int analog_input_setup(char pin, unsigned char state, short in_offset, long out_offset, double i2o_scaling, \
+		            unsigned char destination_type, unsigned char index)
+  */
 
-//  analog_IN_state[1]=1; 
-//  analog_IN_PIN[1] = 1;
+  // accelerometer:	// analog_IN_PIN[] = {0, 1, 2}
+  analog_input_setup(0, 0, 0, 8000, 10.0, 1, 0); // x-acceleration	// set parameters ##########################
+  analog_input_setup(1, 0, 0, 8000, 10.0, 1, 1); // y-acceleration	// set parameters ##########################
+  analog_input_setup(2, 0, 0, 8000, 10.0, 1, 2); // z-acceleration	// set parameters ##########################
 
-//  analog_IN_state[2]=1; 
-//  analog_IN_PIN[2] = 2;
+  // unused:
+  analog_input_setup(3, 0, 0, 8000, 10.0, 1, 0); // unused	// ########################
+  analog_input_setup(4, 0, 0, 8000, 10.0, 1, 0); // unused	// ########################
+  analog_input_setup(5, 0, 0, 8000, 10.0, 1, 0); // unused	// ########################
+  analog_input_setup(6, 0, 0, 8000, 10.0, 1, 0); // unused	// ########################
+  analog_input_setup(7, 0, 0, 8000, 10.0, 1, 0); // unused	// ########################
 
-//  analog_IN_state[3]=1;	// other analog input like piezzo 
-//  analog_IN_PIN[3] = 3;
+  // poti row, starting pin 8
+  {
+    int pin=8;
 
-
-  analog_IN_state[0]=1;		// analog_IN_PIN[] = {8, 9, 10, 11};	poti row
-  analog_IN_PIN[0] = 8;
-
-  analog_IN_state[1]=1; 
-  analog_IN_PIN[1] = 9;
-
-  analog_IN_state[2]=1; 
-  analog_IN_PIN[2] = 10;
-
-  analog_IN_state[3]=1;
-  analog_IN_PIN[3] = 11;
+    for (oscillator=0; oscillator<OSCILLATORS; oscillator++)
+      analog_input_setup(pin++, 1, -512, 12000, 20.0, TYPE_oscillator, oscillator);	// oscillators, default active
+  }
 #endif	// INPUTs_ANALOG
 
 #ifdef BIT_STRIPs
