@@ -19,13 +19,14 @@
 #define BIT_STRIPs	2	// show numbers, bitmasks, etc on LEDs
 #define MAX_BiTS_IN_STRIP 4	// maximal # of bits in a strip
 #define USE_SERIAL	9600	// 9600
+#define TAP_EDIT		// user interface over taps
 #define MENU_over_serial	// do we use a serial menu?
 #define HARDWARE_menu		// menu interface to hardware configuration
 
-// #define DEBUG_TOOLS		// some functions to help with debugging
+#define DEBUG_TOOLS		// some functions to help with debugging
 // #define DEBUG_HW_ON_INIT	// check hardware on init
 
-// #define COLOUR_LEDs	// colour LED feedback
+#define COLOUR_LEDs	// colour LED feedback
 // #define OSCILLATOR_COLOUR_LED_PROFILING
 // #define TAP_COLOUR_LED_DEBUG	// default does set  pinMode(PIN13, OUTPUT);
 // #define LED_ROW	1	// # LED rows to stick in ouput pins
@@ -44,6 +45,61 @@
 int debugSwitch=0;		// hook for testing and debugging
 
 /* **************************************************************** */
+
+/* **************************************************************** */
+// LED stuff:	let me *see* what's happening in the machine...
+
+/* **************************************************************** */
+// Some coloured LEDs
+// Quick hack to have some insight what's happening in the machine
+// while building the software...
+/* **************************************************************** */
+// #define COLOUR_LEDs	// colour LED feedback
+/* **************************************************************** */
+#ifdef COLOUR_LEDs
+
+#define redPIN 8
+#define greenPIN 9
+#define bluePIN 10
+
+/*
+unsigned char redPIN=8;
+unsigned char greenPIN=9;
+unsigned char bluePIN=10;
+*/
+
+void init_colour_LEDs() {
+  pinMode(redPIN, OUTPUT);
+  pinMode(greenPIN, OUTPUT);
+  pinMode(bluePIN, OUTPUT);
+
+#ifdef DEBUG_HW_ON_INIT		// blink the LEDs to check connections:
+  digitalWrite(redPIN, HIGH); delay(100); digitalWrite(redPIN, LOW); delay(200);
+  digitalWrite(greenPIN, HIGH); delay(100); digitalWrite(greenPIN, LOW); delay(200);
+  digitalWrite(bluePIN, HIGH); delay(100); digitalWrite(bluePIN, LOW); delay(200);
+#endif
+}
+
+void red(int ledstat) {
+  if (ledstat)
+    pinMode(redPIN, OUTPUT);
+  digitalWrite(redPIN, ledstat);
+}
+
+void green(int ledstat) {
+  if (ledstat)
+    pinMode(greenPIN, OUTPUT);
+  digitalWrite(greenPIN, ledstat);
+}
+
+void blue(int ledstat) {
+  if (ledstat)
+    pinMode(bluePIN, OUTPUT);
+  digitalWrite(bluePIN, ledstat);
+}
+
+#endif	// COLOUR_LEDs
+
 
 /* **************************************************************** */
 // OSCILLATORS
@@ -632,12 +688,27 @@ void init_TAPs() {
   }
 }
 
-void setup_TAP(char tap, char pin, unsigned char toggle) {	// set toggle to 0 or 1...
+int setup_TAP(char pin, unsigned char toggle, void (*do_on_tap)(int), long parameter_1) {	// set toggle to 0 or 1...
+  static int taps=0;
+  int tap=taps;
+
+  if (taps >= TAP_PINs) {	// ERROR
+
+#ifdef USE_SERIAL
+    Serial.println("ERROR: too many TAPs.");
+#endif
+
+    return -1;
+  }
+
   pinMode(tap, INPUT);
   tapPIN[tap] = pin;
   tap_count[tap] = toggle;
   tap_state[tap] = 1;			// default state 1 is active but OFF
   tap_debouncing_since[tap] = 0;	// not debouncing
+  tap_do_on_tap[tap] = do_on_tap;
+  tap_parameter_1[tap] = parameter_1;
+  return taps++;	// returns tap index
 }
 
 // check if TAP 'tap' is logically ON
@@ -758,42 +829,6 @@ void tap_do_XOR_byte(int tap) {
 
 #endif	// TAP_PINs
 
-
-/* **************************************************************** */
-// LED stuff:	let me *see* what's happening in the machine...
-
-/* **************************************************************** */
-// Some coloured LEDs
-// Quick hack to have some insight what's happening in the machine
-// while building the software...
-/* **************************************************************** */
-// #define COLOUR_LEDs	// colour LED feedback
-/* **************************************************************** */
-#ifdef  COLOUR_LEDs
-
-#define redPIN 8
-#define greenPIN 9
-#define bluePIN 10
-
-/*
-unsigned char redPIN=8;
-unsigned char greenPIN=9;
-unsigned char bluePIN=10;
-*/
-
-void init_colour_LEDs() {
-  pinMode(redPIN, OUTPUT);
-  pinMode(greenPIN, OUTPUT);
-  pinMode(bluePIN, OUTPUT);
-
-#ifdef DEBUG_HW_ON_INIT		// blink the LEDs to check connections:
-  digitalWrite(redPIN, HIGH); delay(100); digitalWrite(redPIN, LOW); delay(200);
-  digitalWrite(greenPIN, HIGH); delay(100); digitalWrite(greenPIN, LOW); delay(200);
-  digitalWrite(bluePIN, HIGH); delay(100); digitalWrite(bluePIN, LOW); delay(200);
-#endif
-}
-
-#endif	// COLOUR_LEDs
 
 
 /* **************************************************************** */
@@ -1211,11 +1246,18 @@ void menuOscillators() {
 
     case 'D':	// stuff to test, try, debug, always changing...
       debugSwitch ^= -1 ;
-      if (debugSwitch)
+      if (debugSwitch) {
 	Serial.println("debug: ON");
-      else
+      pinMode(8,OUTPUT);
+      pinMode(9,OUTPUT);
+      pinMode(10,OUTPUT);
+      }
+      else {
 	Serial.println("debug: OFF");
-
+      pinMode(8,INPUT);
+      pinMode(9,INPUT);
+      pinMode(10,INPUT);
+      }
       newValue=tap_debounce / 2;
       tap_debounce += newValue;
       Serial.println(tap_debounce);
@@ -1436,6 +1478,238 @@ void initMenu() {
 }
 
 #endif // MENU_over_serial
+/* **************************************************************** */
+
+
+/* **************************************************************** */
+// #define TAP_EDIT	// user interface over taps
+/* **************************************************************** */
+#ifdef TAP_EDIT
+unsigned int edit_type=0;	// what type of editing is going on?
+
+#define EDIT_no			0x00   //  0000
+
+#define EDIT_ANALOG_select	0x01   //  0001
+#define EDIT_ANALOG_destination	0x02   //  0010
+#define EDIT_ANALOG_unused	0x03   //  0011
+#define EDIT_ANALOG_scaling	0x04   //  0100
+#define EDIT_ANALOG_inp_offset	0x05   //  0101
+#define EDIT_ANALOG_out_offset	0x06   //  0110
+#define EDIT_ANALOG_out_method	0x07   //  0111
+
+#define EDIT_OUT_OSC_select	0x08   //  1000
+#define EDIT_OUT_OSC_unused	0x09   //  1001
+#define EDIT_OUTPUT_type	0x0a   //  1010
+#define EDIT_OUTPUT_method	0x0b   //  1011
+
+#define EDIT_undecided_active	0x0f   //  1111
+
+void tap_edit_setup(int setPIN, int hotPIN, int coldPIN) {
+  int tap;
+
+  tap = setup_TAP(setPIN, 1, &SET_TAP_do, -999);
+  tap= setup_TAP(hotPIN, 0, &HOT_TAP_do, -999);
+  tap= setup_TAP(coldPIN, 0, &COLD_TAP_do, -999);
+}
+
+void SET_TAP_do(int tap) {
+  switch (edit_type) {
+  case EDIT_no:
+    edit_type = EDIT_undecided_active;
+
+#ifdef COLOUR_LEDs
+    blue(true);
+#endif
+
+    break;
+
+  case EDIT_undecided_active:
+    edit_type = EDIT_no;
+
+#ifdef COLOUR_LEDs
+    blue(false);
+#endif
+
+    break;
+
+  case EDIT_ANALOG_select:
+    break;
+
+  case EDIT_ANALOG_destination:
+    break;
+
+  case EDIT_ANALOG_unused:
+    break;
+
+  case EDIT_ANALOG_scaling:
+    break;
+
+  case EDIT_ANALOG_inp_offset:
+    break;
+
+  case EDIT_ANALOG_out_offset:
+    break;
+
+  case EDIT_ANALOG_out_method:
+    break;
+
+  case EDIT_OUT_OSC_select:
+    break;
+
+  case EDIT_OUT_OSC_unused:
+    break;
+
+  case EDIT_OUTPUT_type:
+    break;
+
+  case EDIT_OUTPUT_method:
+    break;
+
+  default:
+    break;
+  }
+}
+
+void HOT_TAP_do(int tap) {
+  switch (edit_type) {
+  case EDIT_no:
+    break;
+
+  case EDIT_undecided_active:
+    break;
+
+  case EDIT_ANALOG_select:
+    break;
+
+  case EDIT_ANALOG_destination:
+    break;
+
+  case EDIT_ANALOG_unused:
+    break;
+
+  case EDIT_ANALOG_scaling:
+    break;
+
+  case EDIT_ANALOG_inp_offset:
+    break;
+
+  case EDIT_ANALOG_out_offset:
+    break;
+
+  case EDIT_ANALOG_out_method:
+    break;
+
+  case EDIT_OUT_OSC_select:
+    break;
+
+  case EDIT_OUT_OSC_unused:
+    break;
+
+  case EDIT_OUTPUT_type:
+    break;
+
+  case EDIT_OUTPUT_method:
+    break;
+
+  default:
+    break;
+  }
+}
+
+void COLD_TAP_do(int tap) {
+  switch (edit_type) {
+  case EDIT_no:
+    toneSwitch ^= ~0;
+    break;
+
+  case EDIT_undecided_active:
+    break;
+
+  case EDIT_ANALOG_select:
+    break;
+
+  case EDIT_ANALOG_destination:
+    break;
+
+  case EDIT_ANALOG_unused:
+    break;
+
+  case EDIT_ANALOG_scaling:
+    break;
+
+  case EDIT_ANALOG_inp_offset:
+    break;
+
+  case EDIT_ANALOG_out_offset:
+    break;
+
+  case EDIT_ANALOG_out_method:
+    break;
+
+  case EDIT_OUT_OSC_select:
+    break;
+
+  case EDIT_OUT_OSC_unused:
+    break;
+
+  case EDIT_OUTPUT_type:
+    break;
+
+  case EDIT_OUTPUT_method:
+    break;
+
+  default:
+    break;
+  }
+}
+
+
+/*
+int check_editing(void) {
+  switch (edit_type) {
+  case EDIT_no:
+    break;
+
+  case EDIT_ANALOG_select:
+    break;
+
+  case EDIT_ANALOG_destination:
+    break;
+
+  case EDIT_ANALOG_unused:
+    break;
+
+  case EDIT_ANALOG_scaling:
+    break;
+
+  case EDIT_ANALOG_inp_offset:
+    break;
+
+  case EDIT_ANALOG_out_offset:
+    break;
+
+  case EDIT_ANALOG_out_method:
+    break;
+
+  case EDIT_OUT_OSC_select:
+    break;
+
+  case EDIT_OUT_OSC_unused:
+    break;
+
+  case EDIT_OUTPUT_type:
+    break;
+
+  case EDIT_OUTPUT_method:
+    break;
+
+  default:
+
+  }
+}
+*/
+
+#endif	// TAP_EDIT
 
 
 // #define MEMORY_INFO	// this code from the net is buggy
@@ -1593,6 +1867,11 @@ void setup() {
   show_memory();
 #endif
 
+#ifdef COLOUR_LEDs
+  init_colour_LEDs();
+#endif
+
+
 #ifdef OSCILLATORS
   // oscPIN = {47, 49, 51, 53};
 
@@ -1602,11 +1881,6 @@ void setup() {
   startOscillator(1, 6000);
   startOscillator(2, 8000);
   startOscillator(3, 12000);
-#endif
-
-
-#ifdef COLOUR_LEDs
-  init_colour_LEDs();
 #endif
 
 
@@ -1629,9 +1903,8 @@ void setup() {
     pin= 22;	// ################
     //
     for (oscillator=0; oscillator<4; oscillator++, pin+=2, tap++) {
-      setup_TAP(tap, pin, 0);			// "down" TAPs
-      tap_parameter_1[tap] = oscillator;
-      tap_do_on_tap[tap] = &tap_do_toggle_osc_mute;
+      setup_TAP(pin, 0, &tap_do_toggle_osc_mute, oscillator);	// "down" TAPs
+      //      tap_parameter_1[tap] = oscillator;
     }
 
 
@@ -1639,25 +1912,24 @@ void setup() {
     // on the uneven pins starting with pin
     pin= 23;	// ################
     for (oscillator=0; oscillator<4; oscillator++, pin+=2, tap++) {
-      setup_TAP(tap, pin, 0);			// "up" TAPs
-      tap_parameter_1[tap] = OSC_FLAG_SELECT;
+      setup_TAP(pin, 0, &tap_do_XOR_byte, OSC_FLAG_SELECT);	// "up" TAPs
+      // tap_parameter_1[tap] = OSC_FLAG_SELECT;
       tap_parameter_char_address[tap] = &osc_flags[oscillator];
-      tap_do_on_tap[tap] = &tap_do_XOR_byte;
       tap_do_after[tap]  = &show_selected;
     }
 
+#ifdef TAP_EDIT
+    tap_edit_setup(33, 31, 30);
+#endif
 
+    /*
+    // down tap
     // next: a toneSwitch to mute *all* oscillators:
-    setup_TAP(tap, 30, 1);	// PIN 30, all tones toneSwitch, start tone OFF
-    tap_parameter_1[tap] = ~0;
+    setup_TAP(30, 1, &tap_do_XOR_byte, ~0);	// PIN 30, all tones toneSwitch, start tone OFF
+    // tap_parameter_1[tap] = ~0;
     tap_parameter_char_address[tap] = &toneSwitch;
-    tap_do_on_tap[tap]= &tap_do_XOR_byte;
     tap++;
-
-
-    // hot tap
-    setup_TAP(tap, 31, 0);	// PIN 31, 'hot tap'
-    tap++;
+    */
 
   }
 #endif // OSCILLATORS	// inside #ifdef TAP_PINs
