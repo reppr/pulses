@@ -1627,7 +1627,7 @@ void initMenu() {
 // #define TAP_EDIT	// user interface over taps
 /* **************************************************************** */
 #ifdef TAP_EDIT
-#define TAP_ED_SERIELL_DEBUG
+// #define TAP_ED_SERIELL_DEBUG
 
 unsigned char edit_strip;	// I/O strip for editing
 int input_value;		// any int value (for input)
@@ -1708,12 +1708,12 @@ void SET_TAP_do(int tap) {
   case EDIT_ANALOG_destination_index:
     // only oscillators implemented here ################
     if(input_value >= 0 && input_value < OSCILLATORS) {
-      analog_in2out_destination_index[inp] = input_value;
+      // set destination, activate, switch other inputs of the same dest off:
+      set_analog_destination(inp, TYPE_oscillator, input_value);
       show_on_strip(output_strip, input_value, 0);
 #ifdef TAP_ED_SERIELL_DEBUG
       Serial.print("Set destination of inp "); Serial.print((int) inp); Serial.print(" to "); Serial.println(input_value);
 #endif
-      analog_IN_last[inp] = ILLEGALinputVALUE;
     }
 
     end_edit_mode();
@@ -1794,7 +1794,11 @@ void HOT_TAP_do(int tap) {
       Serial.print("Activated inp "); Serial.print((int) inp); Serial.println("");
 #endif
       analog_IN_state[inp] |= 1;	// activate analog input
+
+      // switch all other inputs of the same destination off...
+      set_analog_destination(inp, analog_in2out_destination_type[inp], analog_in2out_destination_index[inp]);
     }
+
     end_edit_mode();
     break;
 
@@ -2049,6 +2053,41 @@ void editTAPs_do(int tap) {
   }
 }
 
+// Set destination of an analog input, activate it,
+// and switch all other inputs of the same destination off...
+void set_analog_destination(int inp, int type, int index) {
+  int i;
+
+  if (inp >= 0 && inp < INPUTs_ANALOG) {
+    switch (type) {
+
+    case TYPE_no:
+      break;
+
+    case TYPE_oscillator: case TYPE_analog_out:
+      // brute force: deactivate all (other) inputs with the same destination:
+      for (i=0; i<INPUTs_ANALOG; i++) {
+	// check all inputs for same destination:
+	if ((analog_in2out_destination_index[i] == index) && (analog_in2out_destination_type[i] == type)) 
+	  analog_IN_state[i] &= ~1;	// deactivate
+      }
+
+      // now activate selected input
+      analog_IN_state[inp] |= 1;	// activate selected input
+      analog_IN_last[inp] = ILLEGALinputVALUE;	// trigger first action
+
+      analog_in2out_destination_type[inp] = type;
+      analog_in2out_destination_index[inp] = index;
+
+      break;
+
+    default:
+      Serial.println("set_analog_destination: ERROR unknown output type.");
+    }
+  }
+  else
+    Serial.println("set_analog_destination: ERROR inp out of range.");
+}
 #endif	// TAP_EDIT
 
 
@@ -2323,9 +2362,9 @@ void setup() {
   */
 
   // accelerometer:	// analog_IN_PIN[] = {0, 1, 2}
-  analog_input_setup(0, 0, 0, 8000, 10.0, 1, 0); // x-acceleration	// set parameters ##########################
-  analog_input_setup(1, 0, 0, 8000, 10.0, 1, 1); // y-acceleration	// set parameters ##########################
-  analog_input_setup(2, 0, 0, 8000, 10.0, 1, 2); // z-acceleration	// set parameters ##########################
+  analog_input_setup(0, 0, -425, 12000, 20.0, 1, 0); // y-acceleration	// set parameters ##########################
+  analog_input_setup(1, 0, -425, 12000, 20.0, 1, 1); // x-acceleration	// set parameters ##########################
+  analog_input_setup(2, 0, -612, 12000, 20.0, 1, 2); // z-acceleration	// set parameters ##########################
 
   // unused:
   analog_input_setup(3, 0, 0, 8000, 10.0, 1, 0); // unused	// ########################
