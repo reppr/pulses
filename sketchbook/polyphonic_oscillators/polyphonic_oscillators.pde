@@ -2,13 +2,15 @@
 // polyphonic_oscillators
 /* **************************************************************** */
 
-/* ****************************************************************
+
+/* **************************************************************** */
+/*
   hmm, no...
   these are not really oscillators
   more like countators ;)
-
 */
 /* **************************************************************** */
+
 // basic configuration:
 
 #define OSCILLATORS	4	// # of oscillators
@@ -706,6 +708,56 @@ void analog_input_cyclic_poll() {
   cyclic_done:
   inp = actual_index;	// restore index
 }
+
+void display_analog_inputs_info() {
+  int global_inp=inp;
+  int inp, value;
+
+  Serial.println("  state\tpin\tvalue\tlast\tout val\tin offs\toutoff\tscaling\tout\ttype");
+  Serial.println("");
+  for (inp=0; inp<INPUTs_ANALOG; inp++) {
+    if (inp==global_inp)
+      Serial.print(" * ");
+    else
+      Serial.print("   ");
+
+    if (analog_IN_state[inp])
+      Serial.print("ON\t");
+    else
+      Serial.print("off\t");
+
+    Serial.print((int) analog_IN_PIN[inp]); Serial.print("\t");
+
+    Serial.print(value = analogRead(analog_IN_PIN[inp])); Serial.print("\t");
+    Serial.print(analog_IN_last[inp]); Serial.print("\t");
+    Serial.print(analog_inval2out(inp,value)); Serial.print("\t");
+
+    Serial.print(analog_input_offset[inp]); Serial.print("\t");
+    Serial.print(analog_output_offset[inp]); Serial.print("\t");
+    Serial.print(analog_in2out_scaling[inp]); Serial.print("\t");
+
+    Serial.print((int) analog_in2out_destination_index[inp]); Serial.print("\t");
+    switch(analog_in2out_destination_type[inp]) {
+    case TYPE_oscillator:
+      Serial.print("osciltr");
+      break;
+
+    case TYPE_analog_out:
+      Serial.print("analog");
+      break;
+
+    case TYPE_no:
+      Serial.print("(none)");
+      break;
+
+    default:
+      Serial.print("unknown");
+    }
+
+    Serial.println("");
+  }
+}
+
 #endif	// INPUTs_ANALOG
 
 
@@ -902,11 +954,11 @@ void tap_do_toggle_osc_mute(int tap) {
 #endif
 }
 
+#endif // OSCILLATORS
+
 void tap_do_XOR_byte(int tap) {
   *tap_parameter_char_address[tap] ^= (unsigned char) tap_parameter_1[tap];
 }
-
-#endif // OSCILLATORS
 
 #endif	// TAP_PINs
 
@@ -1226,11 +1278,10 @@ void displayMenuOscillators() {
   Serial.println("");
   Serial.print("** MENU OSCILLATORS **  t=toggle tone ("); ONoff(toneSwitch, 2, false); Serial.println(")");
 
-  Serial.print("display: l=oscs list\t");
-  Serial.print("y=analog in\t");
-#ifdef PROFILING
-  Serial.print("d=debug, profiling\t");
-#endif
+  Serial.print("display: O=oscs list\t");
+  Serial.print("a=analog in\t");
+  Serial.println("A=inp config");
+
   Serial.println("");
 
   Serial.print("o=oscillator("); Serial.print(osc);
@@ -1253,13 +1304,17 @@ void displayMenuOscillators() {
     Serial.print("no");
   else
     Serial.print((int) hw_PIN);
-  Serial.println(")\tH=set HIGH\tL=set LOW\tA=analog write\tR=read");
+  Serial.println(")\tH=set HIGH\tL=set LOW\tW=analog write\tR=read");
   Serial.println("V=VU bar\tI=digiwatch");
 #endif
 
   Serial.println("");
   Serial.print("r=expected roundtrip time (outside oscillator "); Serial.print(timeFor1Round); Serial.print(")");
-  Serial.print("\ta=adapt "); ONoff(autoAdapt,0,0); Serial.println("");
+  Serial.print("\ty=adapt "); ONoff(autoAdapt,0,0); Serial.println("");
+
+#ifdef PROFILING
+  Serial.print("d=debug, profiling\t");
+#endif
 
 }
 
@@ -1316,7 +1371,7 @@ void menuOscillators() {
 
       break;
 
-    case 'a':
+    case 'y':
       autoAdapt ^= -1 ;
       if (autoAdapt)
 	Serial.println("adapt: ON");
@@ -1432,9 +1487,15 @@ void menuOscillators() {
 
     break;
 
-    case 'l':
+    case 'O':
       Serial.println("");
       displayOscillatorsInfos();
+
+      break;
+
+    case 'A':
+      Serial.println("");
+      display_analog_inputs_info();
 
       break;
 
@@ -1472,7 +1533,7 @@ void menuOscillators() {
 
       break;
 
-    case 'A':
+    case 'W':
       if (hw_PIN == ILLEGALpin)
 	Serial.println("Select a pin with P.");
       else {
@@ -1519,7 +1580,7 @@ void menuOscillators() {
       break;
 
 #endif // HARDWARE_menu
-    case 'y':
+    case 'a':
       display_analog_reads();
 
       break;
@@ -1605,6 +1666,9 @@ void SET_TAP_do(int tap) {
   switch (edit_type) {
 
   case EDIT_no:
+#ifdef TAP_ED_SERIELL_DEBUG
+    Serial.println("activated editing on TAPs");
+#endif
     switch_edit_type(EDIT_undecided_active);
 
 #ifdef COLOUR_LEDs
@@ -1631,9 +1695,7 @@ void SET_TAP_do(int tap) {
   case EDIT_ANALOG_select:
     if(input_value >= 0 && input_value < INPUTs_ANALOG) {
       inp = input_value;
-      red(true);
       show_on_strip(output_strip, inp, 0);
-      input_value=0;
 #ifdef TAP_ED_SERIELL_DEBUG
       Serial.print("Set inp to "); Serial.print((int) inp); Serial.println("");
 #endif
@@ -1647,13 +1709,11 @@ void SET_TAP_do(int tap) {
     // only oscillators implemented here ################
     if(input_value >= 0 && input_value < OSCILLATORS) {
       analog_in2out_destination_index[inp] = input_value;
-      red(true);
       show_on_strip(output_strip, input_value, 0);
 #ifdef TAP_ED_SERIELL_DEBUG
       Serial.print("Set destination of inp "); Serial.print((int) inp); Serial.print(" to "); Serial.println(input_value);
 #endif
       analog_IN_last[inp] = ILLEGALinputVALUE;
-      input_value=0;
     }
 
     end_edit_mode();
@@ -1676,7 +1736,6 @@ void SET_TAP_do(int tap) {
 #endif
 
       analog_IN_last[inp] = ILLEGALinputVALUE;
-      input_value=0;
     }
 
     end_edit_mode();
@@ -1852,6 +1911,7 @@ void switch_edit_type(int new_edit_type) {
   switch (edit_type = new_edit_type) {
 
   case EDIT_no:
+    end_edit_mode();
     break;
 
   case EDIT_undecided_active:
@@ -1904,14 +1964,13 @@ void switch_edit_type(int new_edit_type) {
 void end_edit_mode() {
   edit_type = EDIT_no;
   show_on_strip(output_strip, 0, 0);
+  input_value = 0;		// for robustness
 
 #ifdef COLOUR_LEDs
   blue(false);
   red(false);
   green(false);
 #endif
-
-  input_value = 0;		// for robustness
 }
 
 // action of the edit 4-TAP row:
@@ -1991,6 +2050,40 @@ void editTAPs_do(int tap) {
 }
 
 #endif	// TAP_EDIT
+
+
+#ifdef OSCILLATORS
+void tap_do_osc_up_taps(int tab) {
+
+#ifdef TAP_EDIT
+  if (edit_type == EDIT_ANALOG_destination_index) {
+    // BUGGY! ###################################################################################
+    //    Serial.print("tap "); Serial.print((int) tap); // #####################
+    //    Serial.print("\tOSC? "); Serial.println((int) tap_parameter_1[tap]);
+
+    // only oscillators implemented here ################
+    analog_in2out_destination_index[inp] = tap_parameter_1[tap];
+    show_on_strip(output_strip, analog_in2out_destination_index[inp], 0);
+
+#ifdef TAP_ED_SERIELL_DEBUG
+  Serial.print("Set destination of inp "); Serial.print((int) inp); Serial.print(" to ");
+  Serial.println((int) analog_in2out_destination_index[inp]);
+#endif
+
+  analog_IN_last[inp] = ILLEGALinputVALUE;
+  end_edit_mode();
+      
+  return;
+}
+#endif
+
+  osc_flags[tap_parameter_1[tap]] ^= OSC_FLAG_SELECT;	// toggle select state of oscillator
+
+#ifdef BIT_STRIPs
+  show_on_strip(output_strip, ~oscillators_SELECTed_bits(), 0);	// show selected on LED strip
+#endif
+}
+#endif // OSCILLATORS
 
 
 // #define MEMORY_INFO	// this code from the net is buggy
@@ -2192,10 +2285,11 @@ void setup() {
     // on the uneven pins starting with pin
     pin= 23;	// ################
     for (osc=0; osc<4; osc++, pin+=2, tap++) {
-      setup_TAP(pin, 0, &tap_do_XOR_byte, OSC_FLAG_SELECT);	// "up" TAPs
-      // tap_parameter_1[tap] = OSC_FLAG_SELECT;
-      tap_parameter_char_address[tap] = &osc_flags[osc];
-      tap_do_after[tap]  = &show_selected;
+      setup_TAP(pin, 0, &tap_do_osc_up_taps, osc);	// "up" TAPs
+
+      //      setup_TAP(pin, 0, &tap_do_XOR_byte, OSC_FLAG_SELECT);	// "up" TAPs
+      //      tap_parameter_char_address[tap] = &osc_flags[osc];
+      //      tap_do_after[tap]  = &show_selected;
     }
 
 #ifdef TAP_EDIT
@@ -2206,7 +2300,6 @@ void setup() {
     // down tap
     // next: a toneSwitch to mute *all* oscillators:
     setup_TAP(30, 1, &tap_do_XOR_byte, ~0);	// PIN 30, all tones toneSwitch, start tone OFF
-    // tap_parameter_1[tap] = ~0;
     tap_parameter_char_address[tap] = &toneSwitch;
     tap++;
     */
