@@ -4,9 +4,8 @@
 
 /* ****************************************************************
   hmm, no...
-
-  these are not oscillators
-  something like countators ;)
+  these are not really oscillators
+  more like countators ;)
 
 */
 /* **************************************************************** */
@@ -146,8 +145,15 @@ void oscillatorInit() {
 int startOscillator(int osc, unsigned long newPeriod) {
   unsigned long now = micros();
 
-  if (osc >= OSCILLATORS )	// ERROR recovery needed! #########
+  if (osc >= OSCILLATORS ) {	// ERROR recovery needed! #########
+
+#ifdef USE_SERIAL
+    Serial.println("ERROR: too many oscillators.");
+#endif
+
     return 1;
+  }
+
   if (oscPIN[osc] == ILLEGALpin)
     return 1;
 
@@ -288,6 +294,8 @@ unsigned char bit_strip_bits[BIT_STRIPs];
 // input switch pin (ILLEGALpin for no input capability)
 unsigned char bit_strip_INPUT_PIN[BIT_STRIPs];
 
+unsigned char output_strip=0;
+
 int init_bit_strip(int start, int bits, int downwards, int input_pin) {
   /* 'downwards': PINs count down
      'input_pin': ILLEGALpin  for no input capability */
@@ -302,7 +310,7 @@ int init_bit_strip(int start, int bits, int downwards, int input_pin) {
 
   bit_strip_bits[strip]=bits;
 
-  bit_strip_INPUT_PIN[strip]=input_pin;
+  bit_strip_INPUT_PIN[strip]=input_pin;			// input/output
   if (input_pin != ILLEGALpin) {
     pinMode(bit_strip_INPUT_PIN[strip], OUTPUT);
     digitalWrite(bit_strip_INPUT_PIN[strip], LOW);	// defaults to output
@@ -337,7 +345,7 @@ int init_bit_strip(int start, int bits, int downwards, int input_pin) {
   delay(250);
   { int i;
     for (i=0; i<(2 << bits)+1; i++){	// from zero to 'zero'
-      output_on_strip(strip, i, 0);
+      show_on_strip(strip, i, 0);
       delay(30);
     }
   }
@@ -347,7 +355,7 @@ int init_bit_strip(int start, int bits, int downwards, int input_pin) {
 }
 
 
-void output_on_strip(int strip, int value, int direction) {
+void show_on_strip(int strip, int value, int direction) {
   int bit, mask;
   int bits = bit_strip_bits[strip];
 
@@ -367,13 +375,21 @@ void output_on_strip(int strip, int value, int direction) {
 void switch_strip_as_TAPs(int strip) {
   int bit, bits= bit_strip_bits[strip];
 
-  for (bit=0; bit<bits; bit++) {
-    digitalWrite(bit_strip_PIN[strip][bit], LOW);
-    pinMode(bit_strip_PIN[strip][bit], INPUT);
-  }
-
+  // we must switch the input *first*, otherwise
+  // some of the nearby taps pick up the change as a high...
   if (bit_strip_INPUT_PIN[strip] != ILLEGALpin)
     digitalWrite(bit_strip_INPUT_PIN[strip], HIGH);	// switch to input
+
+  // before switching	make sure there are no pullup resistors
+  // and get rid of spurious charges.
+  for (bit=0; bit<bits; bit++) {
+    pinMode(bit_strip_PIN[strip][bit], OUTPUT);
+    digitalWrite(bit_strip_PIN[strip][bit], LOW);
+  }
+
+  // I put this in a second loop to let the pins settle on electrical LOW
+  for (bit=0; bit<bits; bit++)
+    pinMode(bit_strip_PIN[strip][bit], INPUT);
 }
 
 void switch_strip_as_LEDs(int strip) {
@@ -391,8 +407,8 @@ void switch_strip_as_LEDs(int strip) {
 #ifdef OSCILLATORS
 void show_selected(int dummy) {
 
-#ifdef BIT_STRIPs
-  output_on_strip(1, oscillators_SELECTed_bits(), 0);	// show SELECTed on LED strip
+#ifdef BIT_STRIPs	// show SELECTed on LED strip
+  show_on_strip(output_strip, oscillators_SELECTed_bits(), 0);
 #endif
 
 }
@@ -569,8 +585,8 @@ long updateNextFlip () {
 /* **************************************************************** */
 #ifdef INPUTs_ANALOG
 
-int inp=0;				// index of the analog index
-int analog_input_cyclic_index=0;	// cycle throug the inputs to return in time to the oscillators
+unsigned int inp=0;				// index of the analog index
+unsigned int analog_input_cyclic_index=0;	// cycle throug the inputs to return in time to the oscillators
 
 char analog_IN_PIN[INPUTs_ANALOG] = {8, 9, 10, 11};	// on poti row
 unsigned char analog_IN_state[INPUTs_ANALOG];
@@ -649,7 +665,7 @@ void analog_input_cyclic_poll() {
   int value;
 
   {
-    int i, inp;
+    unsigned int i, inp;
 
     // find the next active input starting from analog_input_cyclic_index: 
     for (i=0; i<=INPUTs_ANALOG; i++) {
@@ -674,6 +690,12 @@ void analog_input_cyclic_poll() {
 	  break;
 
 	default:	// ERROR
+
+#ifdef USE_SERIAL
+    Serial.print("analog_input_cyclic_poll: unknown analog_in2out_destination_type[inp].");
+    Serial.print("\tinp "); Serial.println((int) inp);
+#endif
+
 	  break;
 
 	}
@@ -723,7 +745,8 @@ unsigned char tap_state[TAP_PINs];
 unsigned char tap_count[TAP_PINs];
 
 unsigned long tap_debouncing_since[TAP_PINs];	// debouncing flag and time stamp
-unsigned long tap_debounce=68000L;		// debounce duration
+// unsigned long tap_debounce=68000L;		// debounce duration
+unsigned long tap_debounce=120000L;		// debounce duration
 
 void init_TAPs() {
   char tap;
@@ -759,8 +782,8 @@ int setup_TAP(char pin, unsigned char toggle, void (*do_on_tap)(int), long param
     return -1;
   }
 
-  pinMode(tap, INPUT);
   tapPIN[tap] = pin;
+  pinMode(pin, INPUT);
   tap_count[tap] = toggle;
   tap_state[tap] = 1;			// default state 1 is active but OFF
   tap_debouncing_since[tap] = 0;	// not debouncing
@@ -875,7 +898,7 @@ void tap_do_toggle_osc_mute(int tap) {
   osc_flags[tap_parameter_1[tap]] ^= OSC_FLAG_MUTE;	// toggle muting of oscillator
 
 #ifdef BIT_STRIPs
-  output_on_strip(0, ~oscillators_mute_bits(), 0);	// show ON/mute on LED strip
+  show_on_strip(output_strip, ~oscillators_mute_bits(), 0);	// show ON/mute on LED strip
 #endif
 }
 
@@ -1543,24 +1566,31 @@ void initMenu() {
 // #define TAP_EDIT	// user interface over taps
 /* **************************************************************** */
 #ifdef TAP_EDIT
+#define TAP_ED_SERIELL_DEBUG
+
+unsigned char edit_strip;	// I/O strip for editing
+int input_value;		// any int value (for input)
+
 unsigned int edit_type=0;	// what type of editing is going on?
 
-#define EDIT_no			0x00   //  0000
+#define EDIT_no				0x00   //  0000
 
-#define EDIT_ANALOG_select	0x01   //  0001
-#define EDIT_ANALOG_destination	0x02   //  0010
-#define EDIT_ANALOG_unused	0x03   //  0011
-#define EDIT_ANALOG_scaling	0x04   //  0100
-#define EDIT_ANALOG_inp_offset	0x05   //  0101
-#define EDIT_ANALOG_out_offset	0x06   //  0110
-#define EDIT_ANALOG_out_method	0x07   //  0111
+#define EDIT_ANALOG_select		0x01   //  0001
+#define EDIT_ANALOG_destination_index	0x02   //  0010
+#define EDIT_ANALOG_destination_type	0x03   //  0011
+#define EDIT_ANALOG_scaling		0x04   //  0100
+#define EDIT_ANALOG_inp_offset		0x05   //  0101
+#define EDIT_ANALOG_out_offset		0x06   //  0110
+#define EDIT_ANALOG_out_method		0x07   //  0111
 
-#define EDIT_OUT_OSC_select	0x08   //  1000
-#define EDIT_OUT_OSC_unused	0x09   //  1001
-#define EDIT_OUTPUT_type	0x0a   //  1010
-#define EDIT_OUTPUT_method	0x0b   //  1011
+#define EDIT_OUT_OSC_select		0x08   //  1000
+#define EDIT_OUT_OSC_unused		0x09   //  1001
+#define EDIT_OUTPUT_type		0x0a   //  1010
+#define EDIT_OUTPUT_method		0x0b   //  1011
 
-#define EDIT_undecided_active	0x0f   //  1111
+#define EDIT_undecided_active		0x0f   //  1111
+
+double scaling_zoom_factor=1.5;
 
 void tap_edit_setup(int setPIN, int hotPIN, int coldPIN) {
   int tap;
@@ -1570,51 +1600,110 @@ void tap_edit_setup(int setPIN, int hotPIN, int coldPIN) {
   tap= setup_TAP(coldPIN, 0, &COLD_TAP_do, -999);
 }
 
+// action of the SET tap:
 void SET_TAP_do(int tap) {
   switch (edit_type) {
+
   case EDIT_no:
-    edit_type = EDIT_undecided_active;
+    switch_edit_type(EDIT_undecided_active);
 
 #ifdef COLOUR_LEDs
     blue(true);
 #endif
 
+    show_on_strip(output_strip, input_value, 0);
+    switch_strip_as_TAPs(edit_strip);
+
     break;
 
   case EDIT_undecided_active:
-    edit_type = EDIT_no;
-
-#ifdef COLOUR_LEDs
-    blue(false);
+    if (input_value > 0 && input_value != EDIT_undecided_active) {	// user selected edit_type
+      switch_edit_type(input_value);
+      green(true);
+#ifdef TAP_ED_SERIELL_DEBUG
+      Serial.print("Set edit_type to "); serial_print_BIN(edit_type, 4); Serial.println("");
 #endif
+    } else 
+      end_edit_mode();
 
     break;
 
   case EDIT_ANALOG_select:
+    if(input_value >= 0 && input_value < INPUTs_ANALOG) {
+      inp = input_value;
+      red(true);
+      show_on_strip(output_strip, inp, 0);
+      input_value=0;
+#ifdef TAP_ED_SERIELL_DEBUG
+      Serial.print("Set inp to "); Serial.print((int) inp); Serial.println("");
+#endif
+    }
+
+    end_edit_mode();
+
     break;
 
-  case EDIT_ANALOG_destination:
+  case EDIT_ANALOG_destination_index:
+    // only oscillators implemented here ################
+    if(input_value >= 0 && input_value < OSCILLATORS) {
+      analog_in2out_destination_index[inp] = input_value;
+      red(true);
+      show_on_strip(output_strip, input_value, 0);
+#ifdef TAP_ED_SERIELL_DEBUG
+      Serial.print("Set destination of inp "); Serial.print((int) inp); Serial.print(" to "); Serial.println(input_value);
+#endif
+      analog_IN_last[inp] = ILLEGALinputVALUE;
+      input_value=0;
+    }
+
+    end_edit_mode();
+
     break;
 
-  case EDIT_ANALOG_unused:
+  case EDIT_ANALOG_destination_type:
+    end_edit_mode();	// ###############
+
     break;
 
   case EDIT_ANALOG_scaling:
+    if(input_value) {
+      analog_in2out_scaling[inp] = (double) input_value;
+      analog_IN_last[inp] = ILLEGALinputVALUE;
+      show_on_strip(output_strip, input_value, 0);
+
+#ifdef TAP_ED_SERIELL_DEBUG
+      Serial.print("Set scaling of inp "); Serial.print((int) inp); Serial.print(" to "); Serial.println((double) input_value);
+#endif
+
+      analog_IN_last[inp] = ILLEGALinputVALUE;
+      input_value=0;
+    }
+
+    end_edit_mode();
+
     break;
 
   case EDIT_ANALOG_inp_offset:
+    end_edit_mode();	// ###############
+
     break;
 
   case EDIT_ANALOG_out_offset:
+    end_edit_mode();	// ###############
+
     break;
 
   case EDIT_ANALOG_out_method:
+    end_edit_mode();	// ###############
+
     break;
 
   case EDIT_OUT_OSC_select:
     break;
 
   case EDIT_OUT_OSC_unused:
+    end_edit_mode();	// ###############
+
     break;
 
   case EDIT_OUTPUT_type:
@@ -1624,10 +1713,13 @@ void SET_TAP_do(int tap) {
     break;
 
   default:
+    end_edit_mode();	// ###############
+
     break;
   }
 }
 
+// action of the HOT/UP/YES pad:
 void HOT_TAP_do(int tap) {
   switch (edit_type) {
   case EDIT_no:
@@ -1637,15 +1729,31 @@ void HOT_TAP_do(int tap) {
     break;
 
   case EDIT_ANALOG_select:
+    if(input_value >= 0 && input_value < INPUTs_ANALOG) {
+      inp = input_value;
+#ifdef TAP_ED_SERIELL_DEBUG
+      Serial.print("Activated inp "); Serial.print((int) inp); Serial.println("");
+#endif
+      analog_IN_state[inp] |= 1;	// activate analog input
+    }
+    end_edit_mode();
     break;
 
-  case EDIT_ANALOG_destination:
+  case EDIT_ANALOG_destination_index:
     break;
 
-  case EDIT_ANALOG_unused:
+  case EDIT_ANALOG_destination_type:
     break;
 
   case EDIT_ANALOG_scaling:
+    analog_in2out_scaling[inp] *= scaling_zoom_factor;
+    analog_IN_last[inp] = ILLEGALinputVALUE;
+
+#ifdef TAP_ED_SERIELL_DEBUG
+    Serial.print("Zoomed scaling of inp "); Serial.print((int) inp); Serial.print(" to ");
+    Serial.println(analog_in2out_scaling[inp]);
+#endif
+
     break;
 
   case EDIT_ANALOG_inp_offset:
@@ -1674,6 +1782,7 @@ void HOT_TAP_do(int tap) {
   }
 }
 
+// action of the cold/DOWN/NO pad:
 void COLD_TAP_do(int tap) {
   switch (edit_type) {
   case EDIT_no:
@@ -1684,15 +1793,31 @@ void COLD_TAP_do(int tap) {
     break;
 
   case EDIT_ANALOG_select:
+    if (input_value >= 0 && input_value < INPUTs_ANALOG) {
+      inp = input_value;
+      analog_IN_state[inp] &= ~1;	// deactivate analog input
+      end_edit_mode();
+#ifdef TAP_ED_SERIELL_DEBUG
+      Serial.print("Deactivated inp "); Serial.print((int) inp); Serial.println("");
+#endif
+    }
     break;
 
-  case EDIT_ANALOG_destination:
+  case EDIT_ANALOG_destination_index:
     break;
 
-  case EDIT_ANALOG_unused:
+  case EDIT_ANALOG_destination_type:
     break;
 
   case EDIT_ANALOG_scaling:
+    analog_in2out_scaling[inp] /= scaling_zoom_factor;
+    analog_IN_last[inp] = ILLEGALinputVALUE;
+
+#ifdef TAP_ED_SERIELL_DEBUG
+    Serial.print("Zoomed scaling of inp "); Serial.print((int) inp); Serial.print(" to ");
+    Serial.println(analog_in2out_scaling[inp]);
+#endif
+
     break;
 
   case EDIT_ANALOG_inp_offset:
@@ -1721,23 +1846,122 @@ void COLD_TAP_do(int tap) {
   }
 }
 
+void switch_edit_type(int new_edit_type) {
+  input_value = 0;
 
-/*
-int check_editing(void) {
+  switch (edit_type = new_edit_type) {
+
+  case EDIT_no:
+    break;
+
+  case EDIT_undecided_active:
+    break;
+
+  case EDIT_ANALOG_select:
+    input_value = inp;
+    break;
+
+  case EDIT_ANALOG_destination_index:
+    // only oscillators implemented here ################
+    input_value =  analog_in2out_destination_index[inp];
+    break;
+
+  case EDIT_ANALOG_destination_type:
+    break;
+
+  case EDIT_ANALOG_scaling:
+    input_value = 0;
+    break;
+
+  case EDIT_ANALOG_inp_offset:
+    break;
+
+  case EDIT_ANALOG_out_offset:
+    break;
+
+  case EDIT_ANALOG_out_method:
+    break;
+
+  case EDIT_OUT_OSC_select:
+    break;
+
+  case EDIT_OUT_OSC_unused:
+    break;
+
+  case EDIT_OUTPUT_type:
+    break;
+
+  case EDIT_OUTPUT_method:
+    break;
+
+  default:
+    break;
+  }
+
+  show_on_strip(output_strip, input_value, 0);
+}
+
+void end_edit_mode() {
+  edit_type = EDIT_no;
+  show_on_strip(output_strip, 0, 0);
+
+#ifdef COLOUR_LEDs
+  blue(false);
+  red(false);
+  green(false);
+#endif
+
+  input_value = 0;		// for robustness
+}
+
+// action of the edit 4-TAP row:
+void editTAPs_do(int tap) {
   switch (edit_type) {
   case EDIT_no:
     break;
 
+  case EDIT_undecided_active:
+    input_value ^= tap_parameter_1[tap];
+
+    show_on_strip(output_strip, input_value, 0);
+    switch_strip_as_TAPs(edit_strip);
+    break;
+
   case EDIT_ANALOG_select:
+    input_value ^= tap_parameter_1[tap];
+    show_on_strip(output_strip, input_value, 0);
+
+    if (input_value >= 0 && input_value < INPUTs_ANALOG)
+      red(true);
+    else
+      red(false);
+
+    switch_strip_as_TAPs(edit_strip);
+
     break;
 
-  case EDIT_ANALOG_destination:
+  case EDIT_ANALOG_destination_index:
+    input_value ^= tap_parameter_1[tap];
+    show_on_strip(output_strip, input_value, 0);
+
+    if (input_value >= 0 && input_value < OSCILLATORS)
+      red(true);
+    else
+      red(false);
+
+    switch_strip_as_TAPs(edit_strip);
+
     break;
 
-  case EDIT_ANALOG_unused:
+  case EDIT_ANALOG_destination_type:
     break;
 
   case EDIT_ANALOG_scaling:
+    input_value ^= tap_parameter_1[tap];
+    show_on_strip(output_strip, input_value, 0);
+
+    switch_strip_as_TAPs(edit_strip);
+
     break;
 
   case EDIT_ANALOG_inp_offset:
@@ -1762,10 +1986,9 @@ int check_editing(void) {
     break;
 
   default:
-
+    break;
   }
 }
-*/
 
 #endif	// TAP_EDIT
 
@@ -1943,7 +2166,7 @@ void setup() {
 
 
 #ifdef LED_ROW
-  init_LED_row(14, LED_ROW, 0, 1);
+  // init_LED_row(14, LED_ROW, 0, 1);
 #endif
 
 
@@ -2028,14 +2251,20 @@ void setup() {
 #endif	// INPUTs_ANALOG
 
 #ifdef BIT_STRIPs
-
   // 4bit strip, DISPLAY only:
   pinMode(18,OUTPUT); digitalWrite(18, LOW);	// ground connection
-  init_bit_strip(17, 4, 1, ILLEGALpin);	// 4bit chain from pin 14, upside down
+  output_strip = init_bit_strip(17, 4, 1, ILLEGALpin);	// 4bit chain on pins 17-14, upside down
 
   // 4bit/5pin strip, with INPUT taps, input switch pin in the middle:
   // 4bit/5pin I/o strip from pin 3, INPUT switch on pin 5
-  init_bit_strip(3, 4, 0, 5);
+  edit_strip = init_bit_strip(3, 4, 0, 5);
+  // strip has TAPs
+  // setup_TAP(char pin, unsigned char toggle, void (*do_on_tap)(int), long parameter_1) {	// set toggle to 0 or 1...
+  setup_TAP(3, 0, &editTAPs_do, 1);
+  setup_TAP(4, 0, &editTAPs_do, 2);
+  setup_TAP(6, 0, &editTAPs_do, 4);
+  setup_TAP(7, 0, &editTAPs_do, 8); pinMode(7, OUTPUT);
+
 #endif
 
 #ifdef MENU_over_serial
