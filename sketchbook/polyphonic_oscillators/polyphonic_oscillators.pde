@@ -63,7 +63,7 @@ int debugSwitch=0;		// hook for testing and debugging
 #define greenPIN 9
 #define bluePIN 10
 
-char show_interference_color=-1;
+char show_interference_color=0;
 
 void init_colour_LEDs() {
   pinMode(redPIN, OUTPUT);
@@ -111,7 +111,9 @@ int osc=0;	// index. int might produce faster code then unsigned char
 
 // This version does not only flip a bit, it increases a short integer.
 // We get 16 octaves for free :)
-unsigned short osc_count[OSCILLATORS];
+unsigned long osc_count[OSCILLATORS];
+unsigned long osc_mask[OSCILLATORS];	// for octaves and rhythms
+#define DEFAULT_OCTAVE_SHIFT	6
 
 unsigned long farest_future = ~0L ;
 unsigned long period[OSCILLATORS], next[OSCILLATORS], nextFlip;
@@ -123,6 +125,7 @@ unsigned char osc_flags[OSCILLATORS];
 
 // signed char oscPIN[OSCILLATORS];
 signed char oscPIN[OSCILLATORS] = {47, 49, 51, 53};
+signed char oscMaskPIN[OSCILLATORS];
 
 // micro seconds for main loop other then oscillating
 // check this value for your program by PROFILING and
@@ -135,13 +138,18 @@ unsigned char toneSwitch=0;	// tone switched OFF by default
 
 
 void oscillatorInit() {
-  int i;
+  int osc;
 
-  for (i=0; i<OSCILLATORS; i++) {
-    pinMode(oscPIN[i], OUTPUT);
-    period[i] = next[i] = farest_future;
-    osc_flags[i] = 0;		// off
+  for (osc=0; osc<OSCILLATORS; osc++) {
+    osc_count[osc]=0;
+    osc_mask[osc]= 0x3 << DEFAULT_OCTAVE_SHIFT;
+
+    period[osc] = next[osc] = farest_future;
+    osc_flags[osc] = 0;		// off
+    pinMode(oscPIN[osc], OUTPUT);
+    oscMaskPIN[osc]=ILLEGALpin;
   }
+  nextFlip=farest_future;
 }
 
 int startOscillator(int osc) {
@@ -183,6 +191,12 @@ void stopOscillator(int osc) {
 // is oscillator ON or OFF?
 int OSC_(int osc) {
   return (osc_count[osc] & 1);
+}
+
+void set_osc_mask_pin(unsigned int osc, unsigned int pin) {
+  oscMaskPIN[osc] = pin;
+  pinMode(pin, OUTPUT);
+  digitalWrite(pin, LOW);
 }
 
 void toggleOscillator(int osc) {
@@ -229,6 +243,17 @@ char show_interference_strip=0;	// ################ should be declared elsewhere
 void osc_flip_reaction(){	// whatever you want ;)
   int osc=0, led=0;
   int pin, bit;
+
+  // check osc_mask reactions:
+  for (osc=0; osc<OSCILLATORS; osc++) {
+    if (osc_mask[osc] && ((osc_count[osc] & osc_mask[osc]) == osc_mask[osc])) {
+      if (oscMaskPIN[osc] != ILLEGALpin)
+	digitalWrite(oscMaskPIN[osc], HIGH);
+    } else {
+      if (oscMaskPIN[osc] != ILLEGALpin)
+	digitalWrite(oscMaskPIN[osc], LOW);
+    }
+  }
 
 #ifdef BIT_STRIPs
   if (show_interference_strip) {
@@ -554,10 +579,7 @@ void oscillate() {
 	osc_count[osc]++;
 	// maybe sound
 	if (toneSwitch && ((osc_flags[osc] & OSC_FLAG_MUTE) == 0)) {
-	  if (osc_count[osc] & 1)
-	    digitalWrite(oscPIN[osc], HIGH);
-	  else
-	    digitalWrite(oscPIN[osc], LOW);
+	  digitalWrite(oscPIN[osc], osc_count[osc] & 1);
 	}
 
 	// compute new next on this oscillator
@@ -1295,7 +1317,8 @@ void serial_print_BIN(unsigned long value, int bits) {
 void displayOscillatorsInfos() {
   int i;
 
-  Serial.println("  osc\tactive\tmute\tstate\tperiod\tPIN\toctaves");
+  Serial.println("  osc\tactive\tmute\tstate\tperiod\tPIN");
+  Serial.println("  octaves\t\t\t\tmask");
   Serial.println("");
 
   for (i=0; i<OSCILLATORS; i++) {
@@ -1323,8 +1346,11 @@ void displayOscillatorsInfos() {
       Serial.print("LOW\t");
 
     Serial.print(period[i]); Serial.print("\t");
-    Serial.print(oscPIN[i]); Serial.print("\t");
-    serial_print_BIN(osc_count[i], 16); Serial.print("\t");
+    Serial.print(oscPIN[i]); Serial.println("");
+
+    Serial.print("  "); serial_print_BIN(osc_count[i], 32);
+    Serial.print("\t"); serial_print_BIN(osc_mask[i], 32); Serial.println("");
+ 
     Serial.println("");
   }
 
@@ -1686,6 +1712,9 @@ void initMenu() {
 #ifdef TAP_EDIT
 #define TAP_ED_SERIELL_DEBUG	// debugging only
 
+#define EDIT_BITS_MASK	0x00ff	// i/o bits like taps and leds
+				// currently only 4 in use
+
 unsigned char edit_strip;	// I/O strip for editing
 int input_value;		// any int value (for input)
 
@@ -1705,7 +1734,7 @@ unsigned int edit_type=0;	// what type of editing is going on?
 #define EDIT_OUT_OSC_unused		0x09   //  1001
 #define EDIT_OUTPUT_type		0x0a   //  1010
 #define EDIT_OUTPUT_method		0x0b   //  1011
-#define EDIT_OUTPUT_unused2		0x0c   //  1011
+#define EDIT_OUTPUT_mask		0x0c   //  1100
 
 // ################ temporary hack:
 #define EDIT_OUTPUT_switch_out_0	0x0d   //  1101
@@ -1715,6 +1744,8 @@ unsigned int edit_type=0;	// what type of editing is going on?
 
 double scaling_zoom_factor=2.0;
 int offset_zoom_factor=2;
+
+#define IMPOSSIBLE_MASK		0x0f00
 
 void tap_edit_setup(int setPIN, int hotPIN, int coldPIN) {
   int tap;
@@ -1839,6 +1870,22 @@ void SET_TAP_do(int tap) {
   case EDIT_OUTPUT_method:
     break;
 
+  case EDIT_OUTPUT_mask:
+    if(input_value != IMPOSSIBLE_MASK) {
+      input_value &= EDIT_BITS_MASK;
+      show_on_strip(output_strip, input_value, 0);
+      input_value <<= DEFAULT_OCTAVE_SHIFT;
+      osc_mask[osc] = input_value;
+
+#ifdef TAP_ED_SERIELL_DEBUG
+      Serial.print("Set octave mask of inp "); Serial.print((int) inp); Serial.print(" to "); serial_print_BIN(input_value, 32);
+#endif
+    }
+
+    end_edit_mode();
+
+    break;
+
   case EDIT_OUTPUT_switch_out_0:
     if (oscPIN[0] == 47) {	// ################
       pinMode(20, OUTPUT);
@@ -1946,6 +1993,23 @@ void HOT_TAP_do(int tap) {
   case EDIT_OUTPUT_method:
     break;
 
+  case EDIT_OUTPUT_mask:
+    if(input_value != IMPOSSIBLE_MASK) {
+      input_value &= EDIT_BITS_MASK;
+      input_value <<= DEFAULT_OCTAVE_SHIFT;
+      osc_mask[osc] = input_value;
+      input_value = IMPOSSIBLE_MASK;
+    }
+    
+    osc_mask[osc] >>= 1;
+
+#ifdef TAP_ED_SERIELL_DEBUG
+      Serial.print("Shifted octave mask of inp "); Serial.print((int) inp); Serial.print(" up to ");
+      serial_print_BIN(osc_mask[osc], 32);
+#endif
+
+    break;
+
   default:
     break;
   }
@@ -2026,6 +2090,23 @@ void COLD_TAP_do(int tap) {
   case EDIT_OUTPUT_method:
     break;
 
+  case EDIT_OUTPUT_mask:
+    if(input_value != IMPOSSIBLE_MASK) {
+      input_value &= EDIT_BITS_MASK;
+      input_value <<= DEFAULT_OCTAVE_SHIFT;
+      osc_mask[osc] = input_value;
+      input_value = IMPOSSIBLE_MASK;
+    }
+
+    osc_mask[osc] <<= 1;
+    
+#ifdef TAP_ED_SERIELL_DEBUG
+      Serial.print("Shifted octave mask of inp "); Serial.print((int) inp); Serial.print(" down to ");
+      serial_print_BIN(osc_mask[osc], 32);
+#endif
+
+    break;
+
   default:
     break;
   }
@@ -2078,6 +2159,10 @@ void switch_edit_type(int new_edit_type) {
     break;
 
   case EDIT_OUTPUT_method:
+    break;
+
+  case EDIT_OUTPUT_mask:
+    input_value = IMPOSSIBLE_MASK;
     break;
 
   default:
@@ -2170,6 +2255,14 @@ void editTAPs_do(int tap) {
     break;
 
   case EDIT_OUTPUT_method:
+    break;
+
+  case EDIT_OUTPUT_mask:
+    input_value ^= tap_parameter_1[tap];
+    show_on_strip(output_strip, input_value & 0x00ff, 0);
+
+    switch_strip_as_TAPs(edit_strip);
+
     break;
 
   default:
@@ -2450,6 +2543,8 @@ void setup() {
   oscillatorInit();
 
   startOscillator(0);
+  set_osc_mask_pin(0, 42);
+
   startOscillator(1);
 
   startOscillator(2);
