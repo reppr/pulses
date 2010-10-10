@@ -222,12 +222,15 @@ int oscillators_SELECTed_bits() {
   return bitpattern;
 }
 
+#ifdef BIT_STRIPs
 char show_interference_strip=0;	// ################ should be declared elsewhere
+#endif
 
 void osc_flip_reaction(){	// whatever you want ;)
   int osc=0, led=0;
   int pin, bit;
 
+#ifdef BIT_STRIPs
   if (show_interference_strip) {
     /*
     for (bit=0; bit<4; bit++) {
@@ -271,6 +274,7 @@ void osc_flip_reaction(){	// whatever you want ;)
     digitalWrite(pin, OSC_(osc) == OSC_(3));
 
   }
+#endif // BIT_STRIPs
 
 #ifdef COLOUR_LEDs
   if (show_interference_color) {
@@ -1701,6 +1705,11 @@ unsigned int edit_type=0;	// what type of editing is going on?
 #define EDIT_OUT_OSC_unused		0x09   //  1001
 #define EDIT_OUTPUT_type		0x0a   //  1010
 #define EDIT_OUTPUT_method		0x0b   //  1011
+#define EDIT_OUTPUT_unused2		0x0c   //  1011
+
+// ################ temporary hack:
+#define EDIT_OUTPUT_switch_out_0	0x0d   //  1101
+#define EDIT_OUTPUT_switch_out_1	0x0e   //  1110
 
 #define EDIT_undecided_active		0x0f   //  1111
 
@@ -1725,7 +1734,12 @@ void SET_TAP_do(int tap) {
     switch_edit_type(EDIT_undecided_active);
 
 #ifdef COLOUR_LEDs
+    show_interference_color=0;
     blue(true);
+#endif
+
+#ifdef BIT_STRIPs
+    show_interference_strip=0;
 #endif
 
     show_on_strip(output_strip, input_value, 0);
@@ -1822,6 +1836,28 @@ void SET_TAP_do(int tap) {
     break;
 
   case EDIT_OUTPUT_method:
+    break;
+
+  case EDIT_OUTPUT_switch_out_0:
+    if (oscPIN[0] == 47) {	// ################
+      pinMode(20, OUTPUT);
+      oscPIN[0] = 20;
+    } else
+      oscPIN[0] = 47;
+
+    end_edit_mode();
+
+    break;
+
+  case EDIT_OUTPUT_switch_out_1:
+    if (oscPIN[1] == 49) {	// ################
+      pinMode(19, OUTPUT);
+      oscPIN[1] = 19;
+    } else
+      oscPIN[1] = 49;
+
+    end_edit_mode();
+
     break;
 
   default:
