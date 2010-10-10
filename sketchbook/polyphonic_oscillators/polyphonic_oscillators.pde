@@ -63,7 +63,7 @@ int debugSwitch=0;		// hook for testing and debugging
 #define greenPIN 9
 #define bluePIN 10
 
-char show_interference_color=0;	// unused ##################
+char show_interference_color=-1;
 
 void init_colour_LEDs() {
   pinMode(redPIN, OUTPUT);
@@ -113,7 +113,7 @@ int osc=0;	// index. int might produce faster code then unsigned char
 // We get 16 octaves for free :)
 unsigned short osc_count[OSCILLATORS];
 
-// unsigned long longest_period = ~0L ;
+unsigned long farest_future = ~0L ;
 unsigned long period[OSCILLATORS], next[OSCILLATORS], nextFlip;
 
 unsigned char osc_flags[OSCILLATORS];
@@ -139,12 +139,12 @@ void oscillatorInit() {
 
   for (i=0; i<OSCILLATORS; i++) {
     pinMode(oscPIN[i], OUTPUT);
-    period[i] = next[i] = 0;
+    period[i] = next[i] = farest_future;
     osc_flags[i] = 0;		// off
   }
 }
 
-int startOscillator(int osc, unsigned long newPeriod) {
+int startOscillator(int osc) {
   unsigned long now = micros();
 
   if (osc >= OSCILLATORS ) {	// ERROR recovery needed! #########
@@ -159,12 +159,10 @@ int startOscillator(int osc, unsigned long newPeriod) {
   if (oscPIN[osc] == ILLEGALpin)
     return 1;
 
-  period[osc] = newPeriod;
-  next[osc] = now + newPeriod;
-  osc_flags[osc] |= OSC_FLAG_ACTIVE;	// active ON
-
   digitalWrite(oscPIN[osc], HIGH);
 
+  osc_flags[osc] |= OSC_FLAG_ACTIVE;	// active ON
+  next[osc] = now + period[osc];
   nextFlip = updateNextFlip();
 
   /*
@@ -194,7 +192,7 @@ void toggleOscillator(int osc) {
     Serial.print("Oscillator "); Serial.print(osc); Serial.println(" stopped");
   }
   else if (period[osc]) {
-    startOscillator(osc, period[osc]);
+    startOscillator(osc);
   }
   else
     Serial.println("error: no period set");
@@ -224,8 +222,55 @@ int oscillators_SELECTed_bits() {
   return bitpattern;
 }
 
+char show_interference_strip=0;	// ################ should be declared elsewhere
+
 void osc_flip_reaction(){	// whatever you want ;)
   int osc=0, led=0;
+  int pin, bit;
+
+  if (show_interference_strip) {
+    /*
+    for (bit=0; bit<4; bit++) {
+      pin = bit_strip_PIN[output_strip][bit];
+      digitalWrite(pin, ##############);
+    }
+    */
+
+    /*
+    bit=0;
+    pin=17; // ################   pin = bit_strip_PIN[output_strip][bit];
+    digitalWrite(pin, (OSC_(0) & OSC_(1)));
+
+    bit=1;
+    pin=16; //    pin = bit_strip_PIN[output_strip][bit];
+    digitalWrite(pin, OSC_(0) | OSC_(1));
+
+    bit=2;
+    pin=15; //    pin = bit_strip_PIN[output_strip][bit];
+    digitalWrite(pin, OSC_(0) ^ OSC_(1));
+
+    bit=3;
+    pin=14; //    pin = bit_strip_PIN[output_strip][bit];
+    digitalWrite(pin, OSC_(0) == OSC_(1));
+    */
+
+    bit=0;
+    pin=17; // ################   pin = bit_strip_PIN[output_strip][bit];
+    digitalWrite(pin, (OSC_(osc) == OSC_(0)));
+
+    bit=1;
+    pin=16; //    pin = bit_strip_PIN[output_strip][bit];
+    digitalWrite(pin, OSC_(osc) == OSC_(1));
+
+    bit=2;
+    pin=15; //    pin = bit_strip_PIN[output_strip][bit];
+    digitalWrite(pin, OSC_(osc) == OSC_(2));
+
+    bit=3;
+    pin=14; //    pin = bit_strip_PIN[output_strip][bit];
+    digitalWrite(pin, OSC_(osc) == OSC_(3));
+
+  }
 
 #ifdef COLOUR_LEDs
   if (show_interference_color) {
@@ -239,10 +284,11 @@ void osc_flip_reaction(){	// whatever you want ;)
     else
       digitalWrite(greenPIN, LOW);
 
-    if (!OSC_(osc) | OSC_(1))
-      digitalWrite(bluePIN, HIGH);
-    else
-      digitalWrite(bluePIN, LOW);
+//    // deactivated blue led, made me nervous ;)
+//    if (!OSC_(osc) | OSC_(1))
+//      digitalWrite(bluePIN, HIGH);
+//    else
+//      digitalWrite(bluePIN, LOW);
   }
 #endif
 
@@ -664,7 +710,8 @@ long analog_inval2out(int inp, int input_raw_value) {
 
 void analog_input_cyclic_poll() {
   int actual_index=inp;
-  int value;
+  int value, osc;
+  long now;
 
   {
     unsigned int i, inp;
@@ -678,29 +725,35 @@ void analog_input_cyclic_poll() {
 	goto cyclic_done;
     }
 
-    if (analog_IN_state[inp]) {
-      if ((value = analog_IN(inp)) != analog_IN_last[inp]) {	// input has changed
-	analog_IN_last[inp] = value;
+    if ((value = analog_IN(inp)) != analog_IN_last[inp]) {	// input has changed
+      analog_IN_last[inp] = value;
 
-	switch (analog_in2out_destination_type[inp]) {
+      switch (analog_in2out_destination_type[inp]) {
 
-	case TYPE_no:	// nothing
-	  break;
+      case TYPE_no:	// nothing
+	break;
 
-	case TYPE_oscillator: // set oscillator period
-	  period[analog_in2out_destination_index[inp]] = analog_inval2out(inp, value);
-	  break;
+      case TYPE_oscillator: // set oscillator period
+	osc = analog_in2out_destination_index[inp];
+	period[osc] = analog_inval2out(inp, value);
 
-	default:	// ERROR
+	// check if next[osc] is not too far in the future:
+	now = micros();
+	if ((now + period[osc]) < next[osc]) { // we will not wait that long...
+	  next[osc] = now + period[osc];
+	  nextFlip = updateNextFlip();
+	}
+	break;
+
+      default:	// ERROR
 
 #ifdef USE_SERIAL
-    Serial.print("analog_input_cyclic_poll: unknown analog_in2out_destination_type[inp].");
-    Serial.print("\tinp "); Serial.println((int) inp);
+	Serial.print("analog_input_cyclic_poll: unknown analog_in2out_destination_type[inp].");
+	Serial.print("\tinp "); Serial.println((int) inp);
 #endif
 
-	  break;
+	break;
 
-	}
       }
     }
   }
@@ -1651,7 +1704,7 @@ unsigned int edit_type=0;	// what type of editing is going on?
 
 #define EDIT_undecided_active		0x0f   //  1111
 
-double scaling_zoom_factor=1.5;
+double scaling_zoom_factor=2.0;
 
 void tap_edit_setup(int setPIN, int hotPIN, int coldPIN) {
   int tap;
@@ -1981,6 +2034,8 @@ void end_edit_mode() {
 void editTAPs_do(int tap) {
   switch (edit_type) {
   case EDIT_no:
+    editTAPs_noedit_do(tap);
+    return;
     break;
 
   case EDIT_undecided_active:
@@ -2050,6 +2105,41 @@ void editTAPs_do(int tap) {
 
   default:
     break;
+  }
+}
+
+void editTAPs_noedit_do(int tap) {
+  // we just use the mask bits from editing mode
+  // to recognize the taps:
+  switch (tap_parameter_1[tap]) {
+  case 8:
+    show_interference_color ^= ~0;
+    if (!show_interference_color) { // shut down active leds 
+      red(false);
+      green(false);
+      // blue(false);
+    }
+    break;
+
+  case 4:
+    show_interference_strip ^= ~0;
+    if (!show_interference_strip) { // shut down active leds 
+      show_on_strip(output_strip, 0, 0);
+    }
+    break;
+
+  case 2:
+    show_on_strip(output_strip, 0, 0);
+    break;
+
+  case 1:
+    // #######################
+    show_interference_strip = 0;
+    show_on_strip(output_strip, 0, 0);
+    break;
+
+  default:
+    Serial.println("editTAPs_noedit_do: ERROR unknown tap.");
   }
 }
 
@@ -2290,10 +2380,14 @@ void setup() {
 
   oscillatorInit();
 
-  startOscillator(0, 4000);
-  startOscillator(1, 6000);
-  startOscillator(2, 8000);
-  startOscillator(3, 12000);
+  startOscillator(0);
+  startOscillator(1);
+
+  startOscillator(2);
+  osc_flags[2] |= OSC_FLAG_MUTE;	// muted
+  startOscillator(3);
+  osc_flags[3] |= OSC_FLAG_MUTE;	// muted
+
 #endif
 
 
@@ -2396,6 +2490,7 @@ void setup() {
   setup_TAP(4, 0, &editTAPs_do, 2);
   setup_TAP(6, 0, &editTAPs_do, 4);
   setup_TAP(7, 0, &editTAPs_do, 8); pinMode(7, OUTPUT);
+  switch_strip_as_TAPs(edit_strip);
 
 #endif
 
