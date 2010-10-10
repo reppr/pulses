@@ -637,7 +637,7 @@ long updateNextFlip () {
 /* **************************************************************** */
 #ifdef INPUTs_ANALOG
 
-unsigned int inp=0;				// index of the analog index
+unsigned int inp=8;				// index of the analog input
 unsigned int analog_input_cyclic_index=0;	// cycle throug the inputs to return in time to the oscillators
 
 char analog_IN_PIN[INPUTs_ANALOG] = {8, 9, 10, 11};	// on poti row
@@ -1684,7 +1684,7 @@ void initMenu() {
 // #define TAP_EDIT	// user interface over taps
 /* **************************************************************** */
 #ifdef TAP_EDIT
-// #define TAP_ED_SERIELL_DEBUG
+#define TAP_ED_SERIELL_DEBUG	// debugging only
 
 unsigned char edit_strip;	// I/O strip for editing
 int input_value;		// any int value (for input)
@@ -1714,6 +1714,7 @@ unsigned int edit_type=0;	// what type of editing is going on?
 #define EDIT_undecided_active		0x0f   //  1111
 
 double scaling_zoom_factor=2.0;
+int offset_zoom_factor=2;
 
 void tap_edit_setup(int setPIN, int hotPIN, int coldPIN) {
   int tap;
@@ -1909,9 +1910,25 @@ void HOT_TAP_do(int tap) {
     break;
 
   case EDIT_ANALOG_inp_offset:
+    analog_input_offset[inp] *= offset_zoom_factor;
+    analog_IN_last[inp] = ILLEGALinputVALUE;
+
+#ifdef TAP_ED_SERIELL_DEBUG
+    Serial.print("Zoomed input offset of inp "); Serial.print((int) inp); Serial.print(" to ");
+    Serial.println(analog_input_offset[inp]);
+#endif
+
     break;
 
   case EDIT_ANALOG_out_offset:
+    analog_output_offset[inp] *= offset_zoom_factor;
+    analog_IN_last[inp] = ILLEGALinputVALUE;
+
+#ifdef TAP_ED_SERIELL_DEBUG
+    Serial.print("Zoomed output offset of inp "); Serial.print((int) inp); Serial.print(" to ");
+    Serial.println(analog_output_offset[inp]);
+#endif
+
     break;
 
   case EDIT_ANALOG_out_method:
@@ -1973,9 +1990,25 @@ void COLD_TAP_do(int tap) {
     break;
 
   case EDIT_ANALOG_inp_offset:
+    analog_input_offset[inp] /= offset_zoom_factor;
+    analog_IN_last[inp] = ILLEGALinputVALUE;
+
+#ifdef TAP_ED_SERIELL_DEBUG
+    Serial.print("Zoomed input offset of inp "); Serial.print((int) inp); Serial.print(" to ");
+    Serial.println(analog_input_offset[inp]);
+#endif
+
     break;
 
   case EDIT_ANALOG_out_offset:
+    analog_output_offset[inp] /= offset_zoom_factor;
+    analog_IN_last[inp] = ILLEGALinputVALUE;
+
+#ifdef TAP_ED_SERIELL_DEBUG
+    Serial.print("Zoomed output offset of inp "); Serial.print((int) inp); Serial.print(" to ");
+    Serial.println(analog_output_offset[inp]);
+#endif
+
     break;
 
   case EDIT_ANALOG_out_method:
