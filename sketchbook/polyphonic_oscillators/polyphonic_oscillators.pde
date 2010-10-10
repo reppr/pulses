@@ -240,18 +240,22 @@ int oscillators_SELECTed_bits() {
 char show_interference_strip=0;	// ################ should be declared elsewhere
 #endif
 
+char show_mask=0;	// tempo indicator
+
 void osc_flip_reaction(){	// whatever you want ;)
   int osc=0, led=0;
   int pin, bit;
 
   // check osc_mask reactions:
-  for (osc=0; osc<OSCILLATORS; osc++) {
-    if (osc_mask[osc] && ((osc_count[osc] & osc_mask[osc]) == osc_mask[osc])) {
-      if (oscMaskPIN[osc] != ILLEGALpin)
-	digitalWrite(oscMaskPIN[osc], HIGH);
-    } else {
-      if (oscMaskPIN[osc] != ILLEGALpin)
-	digitalWrite(oscMaskPIN[osc], LOW);
+  if (show_mask) {
+    for (osc=0; osc<OSCILLATORS; osc++) {
+      if (osc_mask[osc] && ((osc_count[osc] & osc_mask[osc]) == osc_mask[osc])) {
+	if (oscMaskPIN[osc] != ILLEGALpin)
+	  digitalWrite(oscMaskPIN[osc], HIGH);
+      } else {
+	if (oscMaskPIN[osc] != ILLEGALpin)
+	  digitalWrite(oscMaskPIN[osc], LOW);
+      }
     }
   }
 
@@ -2019,7 +2023,18 @@ void HOT_TAP_do(int tap) {
 void COLD_TAP_do(int tap) {
   switch (edit_type) {
   case EDIT_no:
-    toneSwitch ^= ~0;
+    if (toneSwitch ^= ~0) {
+#ifdef BIT_STRIPs
+      show_on_strip(output_strip, ~oscillators_mute_bits(), 0);	// show ON/mute on LED strip
+#endif
+      ;
+    } else {
+#ifdef BIT_STRIPs
+      show_on_strip(output_strip, 0, 0);	// switch leds off
+#endif
+      ;
+    }
+
     break;
 
   case EDIT_undecided_active:
@@ -2295,9 +2310,7 @@ void editTAPs_noedit_do(int tap) {
     break;
 
   case 1:
-    // #######################
-    show_interference_strip = 0;
-    show_on_strip(output_strip, 0, 0);
+    show_mask ^= ~0;
     break;
 
   default:
@@ -2590,16 +2603,8 @@ void setup() {
     }
 
 #ifdef TAP_EDIT
-    tap_edit_setup(33, 31, 30);
+    tap_edit_setup(33, 31, 30);	// new with SUPER tap 44
 #endif
-
-    /*
-    // down tap
-    // next: a toneSwitch to mute *all* oscillators:
-    setup_TAP(30, 1, &tap_do_XOR_byte, ~0);	// PIN 30, all tones toneSwitch, start tone OFF
-    tap_parameter_char_address[tap] = &toneSwitch;
-    tap++;
-    */
 
   }
 #endif // OSCILLATORS	// inside #ifdef TAP_PINs
@@ -2628,8 +2633,10 @@ void setup() {
   analog_input_setup(3, 0, 0, 8000, 10.0, 1, 0); // unused	// ########################
   analog_input_setup(4, 0, 0, 8000, 10.0, 1, 0); // unused	// ########################
   analog_input_setup(5, 0, 0, 8000, 10.0, 1, 0); // unused	// ########################
-  analog_input_setup(6, 0, 0, 8000, 10.0, 1, 0); // unused	// ########################
-  analog_input_setup(7, 0, 0, 8000, 10.0, 1, 0); // unused	// ########################
+
+  // 2 piezzo UP/DOWN analog inputs
+  char down = analog_input_setup(6, 1, 0, 0, -1.0, 0, 0); // piezzo DOWN
+  char up = analog_input_setup(7, 1, 0, 0, 1.0, 0, 0); // piezzo UP
 
   // poti row, starting pin 8
   {
@@ -2667,11 +2674,16 @@ void setup() {
 #endif
 
   // PIN settings:
-pinMode(PIN13, OUTPUT);		// to use the onboard LED
+  pinMode(PIN13, OUTPUT);		// to use the onboard LED
+
+  // golden out piezzo
+  char golden_A = 43; 
+  char golden_B = 45; 
+  pinMode(golden_A, OUTPUT); digitalWrite(golden_A, LOW);
+  pinMode(golden_B, OUTPUT); digitalWrite(golden_B, LOW);
 
   // temporary PIN settings:
   pinMode(PIN13, OUTPUT); digitalWrite(PIN13, LOW);	// TAP state
-  pinMode(6, OUTPUT); digitalWrite(6, LOW);		// ground for piezzos
 
 }
 
