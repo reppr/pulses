@@ -127,15 +127,28 @@ unsigned char osc_flags[OSCILLATORS];
 signed char oscPIN[OSCILLATORS] = {47, 49, 51, 53};
 signed char oscMaskPIN[OSCILLATORS];
 
+signed   char global_octave=0;			// global octave shift. ONLY negative shifts supported atm
+unsigned long global_octave_mask=1;		// this mask gets shifted and then actually used
+unsigned long current_global_octave_mask=1;	// actually used mask to switch oscillators
+
+void global_shift(int global_octave)
+{
+
+  if (global_octave>0) {
+    Serial.println("global_shift: ERROR only negative octave shifts implemented.");
+    return;
+  }
+  current_global_octave_mask = global_octave_mask << -global_octave;
+}
+
 // micro seconds for main loop other then oscillating
 // check this value for your program by PROFILING and
 // set default here between average and maximum lapse
 // time (displayed by pressing 'd')
 unsigned long timeFor1Round = 220;
 
-// default switch settings:
 unsigned char toneSwitch=0;	// tone switched OFF by default
-
+				// see toggle_toneSwitch(dummy)
 
 void oscillatorInit() {
   int osc;
@@ -190,7 +203,7 @@ void stopOscillator(int osc) {
 
 // is oscillator ON or OFF?
 int OSC_(int osc) {
-  return (osc_count[osc] & 1);
+  return (osc_count[osc] & current_global_octave_mask) !=0;
 }
 
 void set_osc_mask_pin(unsigned int osc, unsigned int pin) {
@@ -493,7 +506,23 @@ void show_selected(int dummy) {
 #endif
 
 }
+
+void toggle_toneSwitch(int dummy)
+{
+  if (toneSwitch ^= ~0) {
+#ifdef BIT_STRIPs
+    show_on_strip(output_strip, ~oscillators_mute_bits(), 0);	// show ON/mute on LED strip
 #endif
+    ;
+  } else {
+#ifdef BIT_STRIPs
+    show_on_strip(output_strip, 0, 0);	// switch leds off
+#endif
+    ;
+  }
+}
+
+#endif // OSCILLATORS inside BIT_STRIPs
 
 #endif // BIT_STRIPs
 
@@ -583,7 +612,7 @@ void oscillate() {
 	osc_count[osc]++;
 	// maybe sound
 	if (toneSwitch && ((osc_flags[osc] & OSC_FLAG_MUTE) == 0)) {
-	  digitalWrite(oscPIN[osc], osc_count[osc] & 1);
+	  digitalWrite(oscPIN[osc], (osc_count[osc] & current_global_octave_mask) != 0);
 	}
 
 	// compute new next on this oscillator
@@ -1734,8 +1763,8 @@ unsigned int edit_type=0;	// what type of editing is going on?
 #define EDIT_ANALOG_out_offset		0x06   //  0110
 #define EDIT_ANALOG_out_method		0x07   //  0111
 
-#define EDIT_OUT_OSC_select		0x08   //  1000
-#define EDIT_OUT_OSC_unused		0x09   //  1001
+#define EDIT_OUT_OSC_octave		0x08   //  1000
+#define EDIT_OUT_OSC_select		0x09   //  1001
 #define EDIT_OUTPUT_type		0x0a   //  1010
 #define EDIT_OUTPUT_method		0x0b   //  1011
 #define EDIT_OUTPUT_mask		0x0c   //  1100
@@ -1860,11 +1889,31 @@ void SET_TAP_do(int tap) {
 
     break;
 
-  case EDIT_OUT_OSC_select:
+  case EDIT_OUT_OSC_octave:
+    if(-input_value != global_octave) {
+      global_octave = (signed char) -input_value;
+      global_shift(global_octave);
+      show_on_strip(output_strip, input_value, 0);
+
+#ifdef TAP_ED_SERIELL_DEBUG
+      Serial.print("Set global_octave to "); Serial.print((int) global_octave); Serial.println("");
+      Serial.print("current_global_octave_mask "); serial_print_BIN(current_global_octave_mask, 32); Serial.println("");
+#endif
+    }
+
+    end_edit_mode();
     break;
 
-  case EDIT_OUT_OSC_unused:
-    end_edit_mode();	// ###############
+  case EDIT_OUT_OSC_select:
+    if(input_value >= 0 && input_value < OSCILLATORS) {
+      osc = input_value;
+      show_on_strip(output_strip, input_value, 0);
+#ifdef TAP_ED_SERIELL_DEBUG
+      Serial.print("Set osc to "); Serial.print(input_value); Serial.println("");
+#endif
+    }
+
+    end_edit_mode();
 
     break;
 
@@ -1923,6 +1972,16 @@ void SET_TAP_do(int tap) {
 void HOT_TAP_do(int tap) {
   switch (edit_type) {
   case EDIT_no:
+    if(global_octave < 0) {
+      ++global_octave;
+      global_shift(global_octave);
+      show_on_strip(output_strip, -global_octave, 0);
+
+#ifdef TAP_ED_SERIELL_DEBUG
+      Serial.print("Raised global_octave to    "); Serial.print(global_octave); Serial.println("");
+      Serial.print("current_global_octave_mask "); serial_print_BIN(current_global_octave_mask, 32); Serial.println("");
+#endif
+    }
     break;
 
   case EDIT_undecided_active:
@@ -1985,10 +2044,20 @@ void HOT_TAP_do(int tap) {
   case EDIT_ANALOG_out_method:
     break;
 
-  case EDIT_OUT_OSC_select:
+  case EDIT_OUT_OSC_octave:
+    if(input_value < 0) {
+      global_octave = ++input_value;
+      global_shift(global_octave);
+      show_on_strip(output_strip, -global_octave, 0);
+
+#ifdef TAP_ED_SERIELL_DEBUG
+      Serial.print("Raised global_octave to "); Serial.print(input_value); Serial.println("");
+      Serial.print("current_global_octave_mask "); serial_print_BIN(current_global_octave_mask, 32); Serial.println("");
+#endif
+    }
     break;
 
-  case EDIT_OUT_OSC_unused:
+  case EDIT_OUT_OSC_select:
     break;
 
   case EDIT_OUTPUT_type:
@@ -2023,18 +2092,14 @@ void HOT_TAP_do(int tap) {
 void COLD_TAP_do(int tap) {
   switch (edit_type) {
   case EDIT_no:
-    if (toneSwitch ^= ~0) {
-#ifdef BIT_STRIPs
-      show_on_strip(output_strip, ~oscillators_mute_bits(), 0);	// show ON/mute on LED strip
-#endif
-      ;
-    } else {
-#ifdef BIT_STRIPs
-      show_on_strip(output_strip, 0, 0);	// switch leds off
-#endif
-      ;
-    }
+    --global_octave;
+    global_shift(global_octave);
+    show_on_strip(output_strip, -global_octave, 0);
 
+#ifdef TAP_ED_SERIELL_DEBUG
+    Serial.print("Lowered global_octave to "); Serial.print(global_octave); Serial.println("");
+    Serial.print("current_global_octave_mask "); serial_print_BIN(current_global_octave_mask, 32); Serial.println("");
+#endif
     break;
 
   case EDIT_undecided_active:
@@ -2093,10 +2158,18 @@ void COLD_TAP_do(int tap) {
   case EDIT_ANALOG_out_method:
     break;
 
-  case EDIT_OUT_OSC_select:
+  case EDIT_OUT_OSC_octave:
+      global_octave = --input_value;
+      global_shift(global_octave);
+      show_on_strip(output_strip, -global_octave, 0);
+
+#ifdef TAP_ED_SERIELL_DEBUG
+      Serial.print("Lowered global_octave to "); Serial.print(input_value); Serial.println("");
+      Serial.print("current_global_octave_mask "); serial_print_BIN(current_global_octave_mask, 32); Serial.println("");
+#endif
     break;
 
-  case EDIT_OUT_OSC_unused:
+  case EDIT_OUT_OSC_select:
     break;
 
   case EDIT_OUTPUT_type:
@@ -2164,10 +2237,12 @@ void switch_edit_type(int new_edit_type) {
   case EDIT_ANALOG_out_method:
     break;
 
-  case EDIT_OUT_OSC_select:
+  case EDIT_OUT_OSC_octave:
+    input_value = -global_octave;
     break;
 
-  case EDIT_OUT_OSC_unused:
+  case EDIT_OUT_OSC_select:
+    input_value= osc;
     break;
 
   case EDIT_OUTPUT_type:
@@ -2260,10 +2335,20 @@ void editTAPs_do(int tap) {
   case EDIT_ANALOG_out_method:
     break;
 
-  case EDIT_OUT_OSC_select:
+  case EDIT_OUT_OSC_octave:
+    input_value ^= tap_parameter_1[tap];
+    show_on_strip(output_strip, -input_value, 0);
+
+    switch_strip_as_TAPs(edit_strip);
+
     break;
 
-  case EDIT_OUT_OSC_unused:
+  case EDIT_OUT_OSC_select:
+    input_value ^= tap_parameter_1[tap];
+    show_on_strip(output_strip, input_value, 0);
+
+    switch_strip_as_TAPs(edit_strip);
+
     break;
 
   case EDIT_OUTPUT_type:
@@ -2603,8 +2688,11 @@ void setup() {
     }
 
 #ifdef TAP_EDIT
-    tap_edit_setup(33, 31, 30);	// new with SUPER tap 44
+    tap_edit_setup(33, 31, 30);
 #endif
+
+    // mute switch on 44
+    setup_TAP(44, 0, &toggle_toneSwitch, tap);	// (tap is a dummy her, not used)
 
   }
 #endif // OSCILLATORS	// inside #ifdef TAP_PINs
