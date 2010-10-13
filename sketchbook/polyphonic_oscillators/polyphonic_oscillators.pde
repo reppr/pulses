@@ -1738,7 +1738,7 @@ void initMenu() {
 // #define TAP_EDIT	// user interface over taps
 /* **************************************************************** */
 #ifdef TAP_EDIT
-#define TAP_ED_SERIELL_DEBUG	// debugging only
+#define TAP_ED_SERIAL_DEBUG	// debugging only
 
 #define EDIT_BITS_MASK	0x00ff	// i/o bits like taps and leds
 				// currently only 4 in use
@@ -1758,7 +1758,7 @@ unsigned int edit_type=0;	// what type of editing is going on?
 #define EDIT_ANALOG_out_method		0x07   //  0111
 
 #define EDIT_OUT_OSC_mul_div		0x08   //  1000
-  // #define DEBUG_SERIAL_mul_div
+  #define DEBUG_SERIAL_mul_div
   // hold rational factors:
   int mul=1, divi=1;	// name 'div' is taken
 
@@ -1801,7 +1801,7 @@ void SET_TAP_do(int dummy) {
   switch (edit_type) {
 
   case EDIT_no:
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
     Serial.println("activated editing on TAPs");
 #endif
     switch_edit_type(EDIT_undecided_active);
@@ -1824,7 +1824,7 @@ void SET_TAP_do(int dummy) {
     if (input_value > 0 && input_value != EDIT_undecided_active) {	// user selected edit_type
       switch_edit_type(input_value);
       green(true);
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Set edit_type to "); serial_print_BIN(edit_type, 4); Serial.println("");
 #endif
     } else 
@@ -1836,7 +1836,7 @@ void SET_TAP_do(int dummy) {
     if(input_value >= 0 && input_value < INPUTs_ANALOG) {
       inp = input_value;
       show_on_strip(output_strip, inp, 0);
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Set inp to "); Serial.print((int) inp); Serial.println("");
 #endif
     }
@@ -1851,7 +1851,7 @@ void SET_TAP_do(int dummy) {
       // set destination, activate, switch other inputs of the same dest off:
       set_analog_destination(inp, TYPE_oscillator, input_value);
       show_on_strip(output_strip, input_value, 0);
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Set destination of inp "); Serial.print((int) inp); Serial.print(" to "); Serial.println(input_value);
 #endif
     }
@@ -1871,7 +1871,7 @@ void SET_TAP_do(int dummy) {
       analog_IN_last[inp] = ILLEGALinputVALUE;
       show_on_strip(output_strip, input_value, 0);
 
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Set scaling of inp "); Serial.print((int) inp); Serial.print(" to "); Serial.println((double) input_value);
 #endif
 
@@ -1900,7 +1900,7 @@ void SET_TAP_do(int dummy) {
   case EDIT_OUT_OSC_mul_div:
     // input mul or divi?
 
-    // test for mul
+    // test for mul input
     if ((mul_div_state == MUL_DIV_active) || mul_div_state == MUL_DIV_has_source) {
       if (input_value) {
 	mul = input_value;
@@ -1948,7 +1948,7 @@ void SET_TAP_do(int dummy) {
     if(input_value >= 0 && input_value < OSCILLATORS) {
       osc = input_value;
       show_on_strip(output_strip, input_value, 0);
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Set osc to "); Serial.print(input_value); Serial.println("");
 #endif
     }
@@ -1970,7 +1970,7 @@ void SET_TAP_do(int dummy) {
       input_value <<= DEFAULT_OCTAVE_SHIFT;
       osc_mask[osc] = input_value;
 
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Set octave mask of inp "); Serial.print((int) inp); Serial.print(" to "); serial_print_BIN(input_value, 32);
 #endif
     }
@@ -2014,7 +2014,7 @@ void global_shift_up_maybe(void) {
     global_shift(global_octave);
     show_on_strip(output_strip, -global_octave, 0);
 
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
     Serial.print("Raised global_octave to    "); Serial.print(global_octave); Serial.println("");
     Serial.print("current_global_octave_mask "); serial_print_BIN(current_global_octave_mask, 32); Serial.println("");
 #endif
@@ -2034,7 +2034,7 @@ void HOT_TAP_do(int dummy) {
   case EDIT_ANALOG_select:
     if(input_value >= 0 && input_value < INPUTs_ANALOG) {
       inp = input_value;
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Activated inp "); Serial.print((int) inp); Serial.println("");
 #endif
       analog_IN_state[inp] |= 1;	// activate analog input
@@ -2056,7 +2056,7 @@ void HOT_TAP_do(int dummy) {
     analog_in2out_scaling[inp] *= scaling_zoom_factor;
     analog_IN_last[inp] = ILLEGALinputVALUE;
 
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
     Serial.print("Zoomed scaling of inp "); Serial.print((int) inp); Serial.print(" to ");
     Serial.println(analog_in2out_scaling[inp]);
 #endif
@@ -2067,7 +2067,7 @@ void HOT_TAP_do(int dummy) {
     analog_input_offset[inp] *= offset_zoom_factor;
     analog_IN_last[inp] = ILLEGALinputVALUE;
 
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
     Serial.print("Zoomed input offset of inp "); Serial.print((int) inp); Serial.print(" to ");
     Serial.println(analog_input_offset[inp]);
 #endif
@@ -2078,7 +2078,7 @@ void HOT_TAP_do(int dummy) {
     analog_output_offset[inp] *= offset_zoom_factor;
     analog_IN_last[inp] = ILLEGALinputVALUE;
 
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
     Serial.print("Zoomed output offset of inp "); Serial.print((int) inp); Serial.print(" to ");
     Serial.println(analog_output_offset[inp]);
 #endif
@@ -2111,7 +2111,7 @@ void HOT_TAP_do(int dummy) {
 
     osc_mask[osc] >>= 1;
 
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Shifted octave mask of inp "); Serial.print((int) inp); Serial.print(" up to ");
       serial_print_BIN(osc_mask[osc], 32);
 #endif
@@ -2128,7 +2128,7 @@ void global_shift_down() {
   global_shift(global_octave);
   show_on_strip(output_strip, -global_octave, 0);
 
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
   Serial.print("Lowered global_octave to "); Serial.print(global_octave); Serial.println("");
   Serial.print("current_global_octave_mask "); serial_print_BIN(current_global_octave_mask, 32); Serial.println("");
 #endif
@@ -2149,7 +2149,7 @@ void COLD_TAP_do(int dummy) {
       inp = input_value;
       analog_IN_state[inp] &= ~1;	// deactivate analog input
       end_edit_mode();
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Deactivated inp "); Serial.print((int) inp); Serial.println("");
 #endif
     }
@@ -2165,7 +2165,7 @@ void COLD_TAP_do(int dummy) {
     analog_in2out_scaling[inp] /= scaling_zoom_factor;
     analog_IN_last[inp] = ILLEGALinputVALUE;
 
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
     Serial.print("Zoomed scaling of inp "); Serial.print((int) inp); Serial.print(" to ");
     Serial.println(analog_in2out_scaling[inp]);
 #endif
@@ -2176,7 +2176,7 @@ void COLD_TAP_do(int dummy) {
     analog_input_offset[inp] /= offset_zoom_factor;
     analog_IN_last[inp] = ILLEGALinputVALUE;
 
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
     Serial.print("Zoomed input offset of inp "); Serial.print((int) inp); Serial.print(" to ");
     Serial.println(analog_input_offset[inp]);
 #endif
@@ -2187,7 +2187,7 @@ void COLD_TAP_do(int dummy) {
     analog_output_offset[inp] /= offset_zoom_factor;
     analog_IN_last[inp] = ILLEGALinputVALUE;
 
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
     Serial.print("Zoomed output offset of inp "); Serial.print((int) inp); Serial.print(" to ");
     Serial.println(analog_output_offset[inp]);
 #endif
@@ -2220,7 +2220,7 @@ void COLD_TAP_do(int dummy) {
 
     osc_mask[osc] <<= 1;
     
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Shifted octave mask of inp "); Serial.print((int) inp); Serial.print(" down to ");
       serial_print_BIN(osc_mask[osc], 32);
 #endif
@@ -2479,7 +2479,8 @@ void tap_do_osc_up_taps(int tab) {
       mul_div_state = MUL_DIV_has_source;
 
 #ifdef DEBUG_SERIAL_mul_div
-      Serial.print("Set mul_div source to period[" ); Serial.print((int) osc); Serial.println("].");
+      Serial.print("Set mul_div source to period[" ); Serial.print((int) osc); Serial.print("] = ");
+      Serial.println(mul_div_source);
 #endif
 
       return;					// EXIT here
@@ -2488,13 +2489,17 @@ void tap_do_osc_up_taps(int tab) {
     // destination input: act on selected oscillator
     // from other source?
     if (mul_div_state & MUL_DIV_has_source) {	// from other source
+
+#ifdef DEBUG_SERIAL_mul_div
+      Serial.print("mul_div: period[" ); Serial.print((int) osc); Serial.print("] ");
+      Serial.print(" from source value ");  Serial.print(mul_div_source);
+      Serial.print(" * "); Serial.print(mul); Serial.print(" / "); Serial.print(divi);
+#endif
+
       period[osc] = mul_div_source * mul;	// I insist on * coming first
       period[osc] /= divi;			// and then /
 
 #ifdef DEBUG_SERIAL_mul_div
-      Serial.print("mul_div: set period[" ); Serial.print((int) osc); Serial.print("] ");
-      Serial.print(" from source value ");  Serial.print(mul_div_source);
-      Serial.print(" * "); Serial.print(mul); Serial.print(" / "); Serial.print(divi);
       Serial.print(" = "); Serial.print(period[osc]);
       Serial.println("");
 #endif
@@ -2502,15 +2507,17 @@ void tap_do_osc_up_taps(int tab) {
       return; }					// EXIT here
 
     // no source: act directly on selected oscillator.
+#ifdef DEBUG_SERIAL_mul_div
+      Serial.print("mul_div period[" ); Serial.print((int) osc); Serial.print("] ");
+      Serial.print(" from current value "); Serial.print(period[osc]);
+      Serial.print(" * "); Serial.print(mul); Serial.print(" / "); Serial.print(divi);
+#endif
+
     period[osc] *= mul;				// I insist on * coming first
     period[osc] /= divi;			// and then /
 
 #ifdef DEBUG_SERIAL_mul_div
-      Serial.print("mul_div set period[" ); Serial.print((int) osc); Serial.print("] ");
-      Serial.print(" from current value ");
-      Serial.print(" * "); Serial.print(mul); Serial.print(" / "); Serial.print(divi);
-      Serial.print(" = "); Serial.print(period[osc]);
-      Serial.println("");
+      Serial.print(" = "); Serial.print(period[osc]); Serial.println("");
 #endif
 
     return;					// EXIT here
@@ -2526,7 +2533,7 @@ void tap_do_osc_up_taps(int tab) {
     analog_in2out_destination_index[inp] = tap_parameter_1[tap];
     show_on_strip(output_strip, analog_in2out_destination_index[inp], 0);
 
-#ifdef TAP_ED_SERIELL_DEBUG
+#ifdef TAP_ED_SERIAL_DEBUG
     Serial.print("Set destination of inp "); Serial.print((int) inp); Serial.print(" to ");
     Serial.println((int) analog_in2out_destination_index[inp]);
 #endif
@@ -2562,7 +2569,7 @@ void tap_do_osc_down_taps(int tab) {
       period[osc] /= mul;			// and then / both reciprocal
 
 #ifdef DEBUG_SERIAL_mul_div
-      Serial.print("mul_div: set period[" ); Serial.print((int) osc); Serial.print("] reciprocal ");
+      Serial.print("mul_div  period[" ); Serial.print((int) osc); Serial.print("] reciprocal ");
       Serial.print(" from source value ");  Serial.print(mul_div_source);
       Serial.print(" * "); Serial.print(divi); Serial.print(" / "); Serial.print(mul);
       Serial.print(" = "); Serial.print(period[osc]);
@@ -2573,15 +2580,17 @@ void tap_do_osc_down_taps(int tab) {
     }
 
     // no source: act directly on selected oscillator (reciprocal)
+#ifdef DEBUG_SERIAL_mul_div
+      Serial.print("mul_div period[" ); Serial.print((int) osc); Serial.print("] reciprocally ");
+      Serial.print(" from current value "); Serial.print(period[osc]);
+      Serial.print(" * "); Serial.print(divi); Serial.print(" / "); Serial.print(mul);
+#endif
+
     period[osc] *= divi;		// I insist on * coming first
     period[osc] /= mul;			// and then /
 
 #ifdef DEBUG_SERIAL_mul_div
-      Serial.print("mul_div set period[" ); Serial.print((int) osc); Serial.print("] reciprocally ");
-      Serial.print(" from current value ");
-      Serial.print(" * "); Serial.print(divi); Serial.print(" / "); Serial.print(mul);
-      Serial.print(" = "); Serial.print(period[osc]);
-      Serial.println("");
+      Serial.print(" = "); Serial.print(period[osc]); Serial.println("");
 #endif
 
     return;				// EXIT here
