@@ -881,7 +881,7 @@ void display_analog_inputs_info() {
 /* **************************************************************** */
 #ifdef TAP_PINs
 
-char tap = 0;	// index
+int tap = 0;	// index
 char tapPIN[TAP_PINs];
 
 // pointers on functions:
@@ -915,20 +915,14 @@ unsigned long tap_debouncing_since[TAP_PINs];	// debouncing flag and time stamp
 unsigned long tap_debounce=120000L;		// debounce duration
 
 void init_TAPs() {
-  char tap;
+  int tap;
 
   for (tap=0; tap<TAP_PINs; tap++) {
     tapPIN[tap] = ILLEGALpin;
     tap_state[tap] = 0;
     tap_debouncing_since[tap] = 0;
 
-    /*
-    // pointers on  void something()  functions:
-    tap_do_on_tap[tap] = NULL;
-    tap_do_on_toggle[tap] = NULL;
-    */
-
-    // pointers on  void something()  functions:
+    // pointers on  void something(int tap)  functions:
     tap_do_on_tap[tap] = NULL;
     tap_do_on_toggle[tap] = NULL;
     tap_do_after[tap] = NULL;
@@ -959,12 +953,12 @@ int setup_TAP(char pin, unsigned char toggle, void (*do_on_tap)(int), long param
 }
 
 // check if TAP 'tap' is logically ON
-int TAP_(char tap) {
+int TAP_(int tap) {
   return (tap_state[tap] == 2);
 }
 
 // check if TAP 'tap' is toggled ON
-int TAP_toggled_(char tap) {
+int TAP_toggled_(int tap) {
   return (tap_count[tap] &  1) ;
 }
 
@@ -983,7 +977,7 @@ int TAP_toggled_(char tap) {
  */
 
 void check_TAPs() {
-  int tap=0;				// id as index
+  // int tap=0;				// id as index
   int tap_electrical_activity=0;	// any tap switch electrical high?
   int did_do;
   unsigned long now=micros();
@@ -1056,7 +1050,6 @@ void check_TAPs() {
   }
 
   digitalWrite(PIN13,tap_electrical_activity);	// PIN13 is activity LED
-
 }
 
 #ifdef OSCILLATORS
@@ -1765,7 +1758,7 @@ unsigned int edit_type=0;	// what type of editing is going on?
 #define EDIT_ANALOG_out_method		0x07   //  0111
 
 #define EDIT_OUT_OSC_mul_div		0x08   //  1000
-  #define DEBUG_SERIAL_mul_div
+  // #define DEBUG_SERIAL_mul_div
   // hold rational factors:
   int mul=1, divi=1;	// name 'div' is taken
 
@@ -1798,13 +1791,13 @@ int offset_zoom_factor=2;
 void tap_edit_setup(int setPIN, int hotPIN, int coldPIN) {
   int tap;
 
-  tap = setup_TAP(setPIN, 1, &SET_TAP_do, -999);
-  tap= setup_TAP(hotPIN, 0, &HOT_TAP_do, -999);
+  tap= setup_TAP(setPIN,  1, &SET_TAP_do,  -999);
+  tap= setup_TAP(hotPIN,  0, &HOT_TAP_do,  -999);
   tap= setup_TAP(coldPIN, 0, &COLD_TAP_do, -999);
 }
 
 // action of the SET tap:
-void SET_TAP_do(int tap) {
+void SET_TAP_do(int dummy) {
   switch (edit_type) {
 
   case EDIT_no:
@@ -2029,7 +2022,7 @@ void global_shift_up_maybe(void) {
 }
 
 // action of the HOT/UP/YES pad:
-void HOT_TAP_do(int tap) {
+void HOT_TAP_do(int dummy) {
   switch (edit_type) {
   case EDIT_no:
     global_shift_up_maybe();
@@ -2115,7 +2108,7 @@ void HOT_TAP_do(int tap) {
       osc_mask[osc] = input_value;
       input_value = IMPOSSIBLE_MASK;
     }
-    
+
     osc_mask[osc] >>= 1;
 
 #ifdef TAP_ED_SERIELL_DEBUG
@@ -2142,7 +2135,7 @@ void global_shift_down() {
 }
 
 // action of the cold/DOWN/NO pad:
-void COLD_TAP_do(int tap) {
+void COLD_TAP_do(int dummy) {
   switch (edit_type) {
   case EDIT_no:
     global_shift_down();
@@ -2427,7 +2420,7 @@ void editTAPs_noedit_do(int tap) {
     break;
 
   default:
-    Serial.println("editTAPs_noedit_do: ERROR unknown tap.");
+    Serial.println("editTAPs_noedit_do: ERROR unknown code.");
   }
 }
 
