@@ -498,14 +498,16 @@ void switch_strip_as_LEDs(int strip) {
     digitalWrite(bit_strip_INPUT_PIN[strip], LOW);	// switch to output
 }
 
-#ifdef OSCILLATORS
-void show_selected(int dummy) {
 
+#ifdef OSCILLATORS
+/*
+void show_selected(int dummy) {
+  ;
 #ifdef BIT_STRIPs	// show SELECTed on LED strip
   show_on_strip(output_strip, oscillators_SELECTed_bits(), 0);
 #endif
-
 }
+*/
 
 void toggle_toneSwitch(int dummy)
 {
@@ -1014,17 +1016,17 @@ void check_TAPs() {
 
 	  // pointers on  void something(int tap)  functions:
 	  if (tap_do_on_tap[tap] !=NULL) {	//		maybe do something on tap?
-	    tap_do_on_tap[tap](tap);		//		yes
+	    (*tap_do_on_tap[tap])(tap);		//		  yes
 	    did_do++;
 	  }
 
 	  if (tap_count[tap] & 1 && tap_do_on_toggle[tap] !=NULL) { //  maybe do something on toggle?
-	    tap_do_on_toggle[tap](tap);				    //     yes
+	    (*tap_do_on_toggle[tap])(tap);			    //    yes
 	    did_do++;
 	  }
 
 	  if (did_do && (tap_do_after[tap] !=NULL))		// something else to do?
-	    tap_do_after[tap](tap);				    //     yes
+	    (*tap_do_after[tap])(tap);				//   yes
 	}
       } else {					// TAP PIN is LOW
 	if (tap_state[tap] != 1) {		//   LOW but, logical state ON. Debounce 
@@ -1058,7 +1060,7 @@ void check_TAPs() {
 }
 
 #ifdef OSCILLATORS
-void tap_do_toggle_osc_mute(int tap) {
+void tap_do_toggle_osc_mute(int tap) {	// old routine, left for reuse
   osc_flags[tap_parameter_1[tap]] ^= OSC_FLAG_MUTE;	// toggle muting of oscillator
 
 #ifdef BIT_STRIPs
@@ -1754,7 +1756,6 @@ int input_value;		// any int value (for input)
 unsigned int edit_type=0;	// what type of editing is going on?
 
 #define EDIT_no				0x00   //  0000
-
 #define EDIT_ANALOG_select		0x01   //  0001
 #define EDIT_ANALOG_destination_index	0x02   //  0010
 #define EDIT_ANALOG_destination_type	0x03   //  0011
@@ -1763,7 +1764,21 @@ unsigned int edit_type=0;	// what type of editing is going on?
 #define EDIT_ANALOG_out_offset		0x06   //  0110
 #define EDIT_ANALOG_out_method		0x07   //  0111
 
-#define EDIT_OUT_OSC_octave		0x08   //  1000
+#define EDIT_OUT_OSC_mul_div		0x08   //  1000
+  #define DEBUG_SERIAL_mul_div
+  // hold rational factors:
+  int mul=1, divi=1;	// name 'div' is taken
+
+  // maybe hold a source period:
+  unsigned long mul_div_source;
+
+  // interface logic states:
+  unsigned char mul_div_state=0;
+  #define MUL_DIV_active	1
+  #define MUL_DIV_has_source	2
+  #define MUL_DIV_has_mul	4
+  #define MUL_DIV_has_div	8
+
 #define EDIT_OUT_OSC_select		0x09   //  1001
 #define EDIT_OUTPUT_type		0x0a   //  1010
 #define EDIT_OUTPUT_method		0x0b   //  1011
@@ -1889,19 +1904,51 @@ void SET_TAP_do(int tap) {
 
     break;
 
-  case EDIT_OUT_OSC_octave:
-    if(-input_value != global_octave) {
-      global_octave = (signed char) -input_value;
-      global_shift(global_octave);
+  case EDIT_OUT_OSC_mul_div:
+    // input mul or divi?
+
+    // test for mul
+    if ((mul_div_state == MUL_DIV_active) || mul_div_state == MUL_DIV_has_source) {
+      if (input_value) {
+	mul = input_value;
+	mul_div_state  |= MUL_DIV_has_mul;
+
+#ifdef DEBUG_SERIAL_mul_div
+	Serial.print("Set mul to " ); Serial.print(mul); Serial.println("");
+#endif
+
+	input_value = divi; // expecting divi (or multiply only action) now
+	show_on_strip(output_strip, input_value, 0);	// already show divi
+      } else {				// input 0 ends edit_mode mode early
+
+#ifdef DEBUG_SERIAL_mul_div
+	Serial.println("Exit edit mode early 1." );
+#endif
+
+	end_edit_mode();
+      }
+    }
+    // divi input,  or zero or third numeric input ==> end edit mode.
+    else if ((mul_div_state & MUL_DIV_has_div) || input_value == 0) {	// exit
+
+#ifdef DEBUG_SERIAL_mul_div
+	Serial.println("Exit edit mode early 2." );
+#endif
+
+      end_edit_mode();
+    } else {
+      // it *is* divi input:
+      divi = input_value;
+      mul_div_state |= MUL_DIV_has_div;
       show_on_strip(output_strip, input_value, 0);
 
-#ifdef TAP_ED_SERIELL_DEBUG
-      Serial.print("Set global_octave to "); Serial.print((int) global_octave); Serial.println("");
-      Serial.print("current_global_octave_mask "); serial_print_BIN(current_global_octave_mask, 32); Serial.println("");
+#ifdef DEBUG_SERIAL_mul_div
+      Serial.print("Set divi to " ); Serial.print(divi); Serial.println("");
 #endif
+
+      input_value = 0;	// so next time we will exit	################
     }
 
-    end_edit_mode();
     break;
 
   case EDIT_OUT_OSC_select:
@@ -1968,20 +2015,24 @@ void SET_TAP_do(int tap) {
   }
 }
 
+void global_shift_up_maybe(void) {
+  if(global_octave < 0) {
+    ++global_octave;
+    global_shift(global_octave);
+    show_on_strip(output_strip, -global_octave, 0);
+
+#ifdef TAP_ED_SERIELL_DEBUG
+    Serial.print("Raised global_octave to    "); Serial.print(global_octave); Serial.println("");
+    Serial.print("current_global_octave_mask "); serial_print_BIN(current_global_octave_mask, 32); Serial.println("");
+#endif
+  }
+}
+
 // action of the HOT/UP/YES pad:
 void HOT_TAP_do(int tap) {
   switch (edit_type) {
   case EDIT_no:
-    if(global_octave < 0) {
-      ++global_octave;
-      global_shift(global_octave);
-      show_on_strip(output_strip, -global_octave, 0);
-
-#ifdef TAP_ED_SERIELL_DEBUG
-      Serial.print("Raised global_octave to    "); Serial.print(global_octave); Serial.println("");
-      Serial.print("current_global_octave_mask "); serial_print_BIN(current_global_octave_mask, 32); Serial.println("");
-#endif
-    }
+    global_shift_up_maybe();
     break;
 
   case EDIT_undecided_active:
@@ -2044,17 +2095,8 @@ void HOT_TAP_do(int tap) {
   case EDIT_ANALOG_out_method:
     break;
 
-  case EDIT_OUT_OSC_octave:
-    if(input_value < 0) {
-      global_octave = ++input_value;
-      global_shift(global_octave);
-      show_on_strip(output_strip, -global_octave, 0);
-
-#ifdef TAP_ED_SERIELL_DEBUG
-      Serial.print("Raised global_octave to "); Serial.print(input_value); Serial.println("");
-      Serial.print("current_global_octave_mask "); serial_print_BIN(current_global_octave_mask, 32); Serial.println("");
-#endif
-    }
+  case EDIT_OUT_OSC_mul_div:
+    global_shift_up_maybe();
     break;
 
   case EDIT_OUT_OSC_select:
@@ -2088,18 +2130,22 @@ void HOT_TAP_do(int tap) {
   }
 }
 
+void global_shift_down() {
+  --global_octave;
+  global_shift(global_octave);
+  show_on_strip(output_strip, -global_octave, 0);
+
+#ifdef TAP_ED_SERIELL_DEBUG
+  Serial.print("Lowered global_octave to "); Serial.print(global_octave); Serial.println("");
+  Serial.print("current_global_octave_mask "); serial_print_BIN(current_global_octave_mask, 32); Serial.println("");
+#endif
+}
+
 // action of the cold/DOWN/NO pad:
 void COLD_TAP_do(int tap) {
   switch (edit_type) {
   case EDIT_no:
-    --global_octave;
-    global_shift(global_octave);
-    show_on_strip(output_strip, -global_octave, 0);
-
-#ifdef TAP_ED_SERIELL_DEBUG
-    Serial.print("Lowered global_octave to "); Serial.print(global_octave); Serial.println("");
-    Serial.print("current_global_octave_mask "); serial_print_BIN(current_global_octave_mask, 32); Serial.println("");
-#endif
+    global_shift_down();
     break;
 
   case EDIT_undecided_active:
@@ -2158,15 +2204,8 @@ void COLD_TAP_do(int tap) {
   case EDIT_ANALOG_out_method:
     break;
 
-  case EDIT_OUT_OSC_octave:
-      global_octave = --input_value;
-      global_shift(global_octave);
-      show_on_strip(output_strip, -global_octave, 0);
-
-#ifdef TAP_ED_SERIELL_DEBUG
-      Serial.print("Lowered global_octave to "); Serial.print(input_value); Serial.println("");
-      Serial.print("current_global_octave_mask "); serial_print_BIN(current_global_octave_mask, 32); Serial.println("");
-#endif
+  case EDIT_OUT_OSC_mul_div:
+    global_shift_down();
     break;
 
   case EDIT_OUT_OSC_select:
@@ -2237,8 +2276,14 @@ void switch_edit_type(int new_edit_type) {
   case EDIT_ANALOG_out_method:
     break;
 
-  case EDIT_OUT_OSC_octave:
-    input_value = -global_octave;
+  case EDIT_OUT_OSC_mul_div:
+    mul_div_state=MUL_DIV_active; // expects source or mul now
+    // keep prior values or reset them to 1?
+    // I try out to keep them:
+    mul = (mul < 1) ? 1: mul;
+    divi= (divi< 1) ? 1: divi;
+    input_value=mul;	// mul
+    show_on_strip(output_strip, input_value, 0);
     break;
 
   case EDIT_OUT_OSC_select:
@@ -2274,6 +2319,12 @@ void end_edit_mode() {
 #endif
 }
 
+void tap_input_bit_toggle(int tap) {
+    input_value ^= tap_parameter_1[tap];
+    show_on_strip(output_strip, input_value, 0);
+    switch_strip_as_TAPs(edit_strip);
+}
+
 // action of the edit 4-TAP row:
 void editTAPs_do(int tap) {
   switch (edit_type) {
@@ -2283,35 +2334,28 @@ void editTAPs_do(int tap) {
     break;
 
   case EDIT_undecided_active:
-    input_value ^= tap_parameter_1[tap];
-
-    show_on_strip(output_strip, input_value, 0);
-    switch_strip_as_TAPs(edit_strip);
+    tap_input_bit_toggle(tap);
     break;
 
   case EDIT_ANALOG_select:
-    input_value ^= tap_parameter_1[tap];
-    show_on_strip(output_strip, input_value, 0);
+    tap_input_bit_toggle(tap);
 
     if (input_value >= 0 && input_value < INPUTs_ANALOG)
       red(true);
     else
       red(false);
-
-    switch_strip_as_TAPs(edit_strip);
+    switch_strip_as_TAPs(edit_strip);	// the led might trigger tap
 
     break;
 
   case EDIT_ANALOG_destination_index:
-    input_value ^= tap_parameter_1[tap];
-    show_on_strip(output_strip, input_value, 0);
+    tap_input_bit_toggle(tap);
 
     if (input_value >= 0 && input_value < OSCILLATORS)
       red(true);
     else
       red(false);
-
-    switch_strip_as_TAPs(edit_strip);
+    switch_strip_as_TAPs(edit_strip);	// the led might trigger tap
 
     break;
 
@@ -2319,11 +2363,7 @@ void editTAPs_do(int tap) {
     break;
 
   case EDIT_ANALOG_scaling:
-    input_value ^= tap_parameter_1[tap];
-    show_on_strip(output_strip, input_value, 0);
-
-    switch_strip_as_TAPs(edit_strip);
-
+    tap_input_bit_toggle(tap);
     break;
 
   case EDIT_ANALOG_inp_offset:
@@ -2335,20 +2375,12 @@ void editTAPs_do(int tap) {
   case EDIT_ANALOG_out_method:
     break;
 
-  case EDIT_OUT_OSC_octave:
-    input_value ^= tap_parameter_1[tap];
-    show_on_strip(output_strip, -input_value, 0);
-
-    switch_strip_as_TAPs(edit_strip);
-
+  case EDIT_OUT_OSC_mul_div:
+    tap_input_bit_toggle(tap);
     break;
 
   case EDIT_OUT_OSC_select:
-    input_value ^= tap_parameter_1[tap];
-    show_on_strip(output_strip, input_value, 0);
-
-    switch_strip_as_TAPs(edit_strip);
-
+    tap_input_bit_toggle(tap);
     break;
 
   case EDIT_OUTPUT_type:
@@ -2358,11 +2390,7 @@ void editTAPs_do(int tap) {
     break;
 
   case EDIT_OUTPUT_mask:
-    input_value ^= tap_parameter_1[tap];
-    show_on_strip(output_strip, input_value & 0x00ff, 0);
-
-    switch_strip_as_TAPs(edit_strip);
-
+    tap_input_bit_toggle(tap);
     break;
 
   default:
@@ -2445,7 +2473,58 @@ void set_analog_destination(int inp, int type, int index) {
 void tap_do_osc_up_taps(int tab) {
 
 #ifdef TAP_EDIT
-  if (edit_type == EDIT_ANALOG_destination_index) {
+  switch (edit_type) {	// only few edit_types change behavior of these UP taps:
+
+  case EDIT_OUT_OSC_mul_div:
+    osc=tap_parameter_1[tap];	// set globally
+
+    // source input or action on destination osc?
+
+    // test for source input first:
+    if (mul_div_state == MUL_DIV_active) {	// it is source period input
+      mul_div_source = period[osc];
+      mul_div_state = MUL_DIV_has_source;
+
+#ifdef DEBUG_SERIAL_mul_div
+      Serial.print("Set mul_div source to period[" ); Serial.print((int) osc); Serial.println("].");
+#endif
+
+      return;					// EXIT here
+    }
+
+    // destination input: act on selected oscillator
+    // from other source?
+    if (mul_div_state & MUL_DIV_has_source) {	// from other source
+      period[osc] = mul_div_source * mul;	// I insist on * coming first
+      period[osc] /= divi;			// and then /
+
+#ifdef DEBUG_SERIAL_mul_div
+      Serial.print("mul_div: set period[" ); Serial.print((int) osc); Serial.print("] ");
+      Serial.print(" from source value ");  Serial.print(mul_div_source);
+      Serial.print(" * "); Serial.print(mul); Serial.print(" / "); Serial.print(divi);
+      Serial.print(" = "); Serial.print(period[osc]);
+      Serial.println("");
+#endif
+
+      return; }					// EXIT here
+
+    // no source: act directly on selected oscillator.
+    period[osc] *= mul;				// I insist on * coming first
+    period[osc] /= divi;			// and then /
+
+#ifdef DEBUG_SERIAL_mul_div
+      Serial.print("mul_div set period[" ); Serial.print((int) osc); Serial.print("] ");
+      Serial.print(" from current value ");
+      Serial.print(" * "); Serial.print(mul); Serial.print(" / "); Serial.print(divi);
+      Serial.print(" = "); Serial.print(period[osc]);
+      Serial.println("");
+#endif
+
+    return;					// EXIT here
+
+    break;	// everybody has gone out anyway...
+
+  case EDIT_ANALOG_destination_index:
     // BUGGY! ###################################################################################
     //    Serial.print("tap "); Serial.print((int) tap); // #####################
     //    Serial.print("\tOSC? "); Serial.println((int) tap_parameter_1[tap]);
@@ -2455,15 +2534,16 @@ void tap_do_osc_up_taps(int tab) {
     show_on_strip(output_strip, analog_in2out_destination_index[inp], 0);
 
 #ifdef TAP_ED_SERIELL_DEBUG
-  Serial.print("Set destination of inp "); Serial.print((int) inp); Serial.print(" to ");
-  Serial.println((int) analog_in2out_destination_index[inp]);
+    Serial.print("Set destination of inp "); Serial.print((int) inp); Serial.print(" to ");
+    Serial.println((int) analog_in2out_destination_index[inp]);
 #endif
 
-  analog_IN_last[inp] = ILLEGALinputVALUE;
-  end_edit_mode();
+    analog_IN_last[inp] = ILLEGALinputVALUE;
+    end_edit_mode();
       
-  return;
-}
+    return;
+    break;
+  }
 #endif
 
   osc_flags[tap_parameter_1[tap]] ^= OSC_FLAG_SELECT;	// toggle select state of oscillator
@@ -2472,6 +2552,55 @@ void tap_do_osc_up_taps(int tab) {
   show_on_strip(output_strip, ~oscillators_SELECTed_bits(), 0);	// show selected on LED strip
 #endif
 }
+
+void tap_do_osc_down_taps(int tab) {
+
+#ifdef TAP_EDIT
+  switch (edit_type) {	// only few edit_types change behavior of these DOWN/mute osc taps:
+
+  case EDIT_OUT_OSC_mul_div:
+    if (mul_div_state != MUL_DIV_active) {
+    osc=tap_parameter_1[tap];	// set globally
+
+    // destination input: reciprocal action on selected oscillator
+    // from other source?
+    if (mul_div_state & MUL_DIV_has_source) {	// from other source
+      period[osc] = mul_div_source * divi;	// I insist on * coming first
+      period[osc] /= mul;			// and then / both reciprocal
+
+#ifdef DEBUG_SERIAL_mul_div
+      Serial.print("mul_div: set period[" ); Serial.print((int) osc); Serial.print("] reciprocal ");
+      Serial.print(" from source value ");  Serial.print(mul_div_source);
+      Serial.print(" * "); Serial.print(divi); Serial.print(" / "); Serial.print(mul);
+      Serial.print(" = "); Serial.print(period[osc]);
+      Serial.println("");
+#endif
+
+      return;					// EXIT here
+    }
+
+    // no source: act directly on selected oscillator (reciprocal)
+    period[osc] *= divi;		// I insist on * coming first
+    period[osc] /= mul;			// and then /
+
+#ifdef DEBUG_SERIAL_mul_div
+      Serial.print("mul_div set period[" ); Serial.print((int) osc); Serial.print("] reciprocally ");
+      Serial.print(" from current value ");
+      Serial.print(" * "); Serial.print(divi); Serial.print(" / "); Serial.print(mul);
+      Serial.print(" = "); Serial.print(period[osc]);
+      Serial.println("");
+#endif
+
+    return;				// EXIT here
+    }
+    break;	// nobody passes here...
+  }  // switch(edit_type)
+#endif
+
+  tap_do_toggle_osc_mute(tap);
+}
+
+
 #endif // OSCILLATORS
 
 
@@ -2672,7 +2801,8 @@ void setup() {
     pin= 22;	// ################
     //
     for (osc=0; osc<4; osc++, pin+=2, tap++) {
-      setup_TAP(pin, 0, &tap_do_toggle_osc_mute, osc);	// "down" TAPs
+      //      setup_TAP(pin, 0, &tap_do_toggle_osc_mute, osc);	// "down" TAPs
+      setup_TAP(pin, 0, &tap_do_osc_down_taps, osc);	// "down" TAPs
     }
 
 
@@ -2681,10 +2811,6 @@ void setup() {
     pin= 23;	// ################
     for (osc=0; osc<4; osc++, pin+=2, tap++) {
       setup_TAP(pin, 0, &tap_do_osc_up_taps, osc);	// "up" TAPs
-
-      //      setup_TAP(pin, 0, &tap_do_XOR_byte, OSC_FLAG_SELECT);	// "up" TAPs
-      //      tap_parameter_char_address[tap] = &osc_flags[osc];
-      //      tap_do_after[tap]  = &show_selected;
     }
 
 #ifdef TAP_EDIT
