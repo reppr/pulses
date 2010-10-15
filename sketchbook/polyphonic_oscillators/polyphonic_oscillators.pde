@@ -697,15 +697,20 @@ long updateNextFlip () {
 unsigned int inp=8;				// index of the analog input
 unsigned int analog_input_cyclic_index=0;	// cycle throug the inputs to return in time to the oscillators
 
-char analog_IN_PIN[INPUTs_ANALOG] = {8, 9, 10, 11};	// on poti row
 unsigned char analog_IN_state[INPUTs_ANALOG];
+char analog_IN_PIN[INPUTs_ANALOG];
 short analog_IN_last[INPUTs_ANALOG];
+
+unsigned char analog_in2out_method[INPUTs_ANALOG];
+  // bitmask
+  #define METHOD_linear		1	// these 2 could be same bit
+  #define METHOD_set		2	// these 2 could be same bit
+  #define METHOD_add		4
 
 // parameters for the in2out translation:
 short analog_input_offset[INPUTs_ANALOG];
 long  analog_output_offset[INPUTs_ANALOG];
 double analog_in2out_scaling[INPUTs_ANALOG];
-// unsigned char analog_in2out_method[INPUTs_ANALOG];
 
 // destination
 unsigned char analog_in2out_destination_type[INPUTs_ANALOG];	// i.e. osc, analog out
@@ -722,17 +727,18 @@ void analog_inputs_initialize() {
   for (inp=0; inp<INPUTs_ANALOG; inp++) {
     analog_IN_state[inp] = 0;
     analog_IN_last[inp] = ILLEGALinputVALUE;
+    analog_in2out_method[inp] = 0;
     analog_input_offset[inp] = 0;
     analog_output_offset[inp] = 0;
     analog_in2out_scaling[inp] = 1.0;
-
     analog_in2out_destination_type[inp] = TYPE_no;
     analog_in2out_destination_index[inp] = 0;
   }
 }
 
 // Do this once for each analog input:
-int analog_input_setup(char pin, unsigned char state, short in_offset, long out_offset, double i2o_scaling, \
+int analog_input_setup(char pin, unsigned char state, unsigned char method,  \ 
+		       short in_offset, long out_offset, double i2o_scaling, \
 		       unsigned char destination_type, unsigned char index) {
   static unsigned char analog_inputs=0;
   int inp= analog_inputs;
@@ -748,6 +754,8 @@ int analog_input_setup(char pin, unsigned char state, short in_offset, long out_
 
   analog_IN_PIN[inp]			= pin;
   analog_IN_state[inp]			= state;
+
+  analog_in2out_method[inp]		= method;
   analog_input_offset[inp]		= in_offset;
   analog_output_offset[inp]		= out_offset;
   analog_in2out_scaling[inp]		= i2o_scaling;
@@ -763,10 +771,13 @@ short analog_IN(int inp) {
 
 long analog_inval2out(int inp, int input_raw_value) {
   long value=input_raw_value;
-  value += analog_input_offset[inp];
-  value *= analog_in2out_scaling[inp];;
-  value += analog_output_offset[inp];
-  return value;
+
+  if (analog_in2out_method[inp] & METHOD_linear) {
+    value += analog_input_offset[inp];
+    value *= analog_in2out_scaling[inp];;
+    value += analog_output_offset[inp];
+    return value;
+  } // else: ERROR
 }
 
 void analog_input_cyclic_poll() {
@@ -776,7 +787,6 @@ void analog_input_cyclic_poll() {
 
   {
     unsigned int i, inp;
-
     // find the next active input starting from analog_input_cyclic_index: 
     for (i=0; i<=INPUTs_ANALOG; i++) {
       inp = (analog_input_cyclic_index++ % INPUTs_ANALOG); // try all inputs, starting
@@ -796,7 +806,13 @@ void analog_input_cyclic_poll() {
 
       case TYPE_oscillator: // set oscillator period
 	osc = analog_in2out_destination_index[inp];
-	period[osc] = analog_inval2out(inp, value);
+
+	// set or add?
+	if (analog_in2out_method[inp] & METHOD_set) {
+	  period[osc] = analog_inval2out(inp, value);
+	} else if (analog_in2out_method[inp] & METHOD_add) {
+	  period[osc] += analog_inval2out(inp, value);
+	} // else ERROR
 
 	// check if next[osc] is not too far in the future:
 	now = micros();
@@ -827,7 +843,7 @@ void display_analog_inputs_info() {
   int global_inp=inp;
   int inp, value;
 
-  Serial.println("  state\tpin\tvalue\tlast\tout val\tin offs\toutoff\tscaling\tout\ttype");
+  Serial.println("  state\tpin\tvalue\tlast\tout val\tmethod\tin offs\toutoff\tscaling\tout\ttype");
   Serial.println("");
   for (inp=0; inp<INPUTs_ANALOG; inp++) {
     if (inp==global_inp)
@@ -846,6 +862,7 @@ void display_analog_inputs_info() {
     Serial.print(analog_IN_last[inp]); Serial.print("\t");
     Serial.print(analog_inval2out(inp,value)); Serial.print("\t");
 
+    Serial.print((int) analog_in2out_method[inp]); Serial.print("\t");
     Serial.print(analog_input_offset[inp]); Serial.print("\t");
     Serial.print(analog_output_offset[inp]); Serial.print("\t");
     Serial.print(analog_in2out_scaling[inp]); Serial.print("\t");
@@ -900,12 +917,18 @@ void (*tap_do_after[TAP_PINs])(int);
 
 // parameters for tap_do_on_xxx(tap) functions:
 long tap_parameter_1[TAP_PINs];		// i.e. osc, PIN
-long tap_parameter_2[TAP_PINs];		//
+// long tap_parameter_2[TAP_PINs];		//
 double tap_parameter_double[TAP_PINs];
 unsigned char *tap_parameter_char_address[TAP_PINs];
 
-// *logical* state:  0 inactive  1 OFF  2 ON (pin might be low, debouncing)
 unsigned char tap_state[TAP_PINs];
+// *logical* state:  0 inactive  1 OFF  2 ON (pin might be low, debouncing)
+// bitmasks for tap_state[tap]
+#define ACTIVE_undecided	1	// globally used in many status bitmaps
+#define TAP_STATE_ON		2	// *logical ON/OFF* (pin might be low, debouncing)
+#define ENABLE_MULTITAP		4	// this tap waits for multitap detection
+#define COUNTING_MULTITAPS	8	// waiting counting multitaps
+#define TAP_IS_ANATAP		16	// tap on an analog input like a piezzo
 
 // toggling is implemented with a counter. We get 2^n toggling for free ;)
 unsigned char tap_count[TAP_PINs];
@@ -945,7 +968,7 @@ int setup_TAP(char pin, unsigned char toggle, void (*do_on_tap)(int), long param
   tapPIN[tap] = pin;
   pinMode(pin, INPUT);
   tap_count[tap] = toggle;
-  tap_state[tap] = 1;			// default state 1 is active but OFF
+  tap_state[tap] = ACTIVE_undecided;	// default active but OFF
   tap_debouncing_since[tap] = 0;	// not debouncing
   tap_do_on_tap[tap] = do_on_tap;
   tap_parameter_1[tap] = parameter_1;
@@ -954,7 +977,10 @@ int setup_TAP(char pin, unsigned char toggle, void (*do_on_tap)(int), long param
 
 // check if TAP 'tap' is logically ON
 int TAP_(int tap) {
-  return (tap_state[tap] == 2);
+  if (tap_state[tap] & TAP_STATE_ON)
+    return 1;	// yes, i want it to be 1, exactly
+  else
+    return 0;
 }
 
 // check if TAP 'tap' is toggled ON
@@ -982,9 +1008,9 @@ void check_TAPs() {
   int did_do;
   unsigned long now=micros();
 
-  for (tap=0; tap<TAP_PINs; tap++) {	// check all active TAPs
-    if (tap_state[tap]) {			// active?, then check pin state
-
+  for (tap=0; tap<TAP_PINs; tap++) {		// check all active TAPs
+    if (tap_state[tap] &  ACTIVE_undecided) {		// active?, then check pin state
+      // check anatab here ########################
       if (digitalRead(tapPIN[tap])) {		// TAP PIN is HIGH
 	tap_electrical_activity=1;
 
@@ -993,11 +1019,13 @@ void check_TAPs() {
 	digitalWrite(redPIN,LOW); digitalWrite(greenPIN,HIGH);
 #endif
 
-	if (tap_state[tap] == 1) {		//   just switched on?
+	// check if logical state is ON already:
+	if ((tap_state[tap] & TAP_STATE_ON) == 0) {	// just switching on?
+// if (!tap_state[tap] & ENABLE_MULTITAP) ################
 	  did_do=0;
 
 	  tap_count[tap]++;			//     yes, so count to toggle
-	  tap_state[tap] = 2;			//     set state 2 meaning *logical* ON
+	  tap_state[tap] |= TAP_STATE_ON;	//     meaning *logically* ON
 	  tap_debouncing_since[tap] = 0;	//     not debouncing
 
 	  /*
@@ -1021,9 +1049,9 @@ void check_TAPs() {
 
 	  if (did_do && (tap_do_after[tap] !=NULL))		// something else to do?
 	    (*tap_do_after[tap])(tap);				//   yes
-	}
+	} // switching to ON
       } else {					// TAP PIN is LOW
-	if (tap_state[tap] != 1) {		//   LOW but, logical state ON. Debounce 
+	if (tap_state[tap] & TAP_STATE_ON) {	//   LOW but, logical state ON. Debounce 
 
 #ifdef TAP_COLOUR_LED_DEBUG
 	  digitalWrite(bluePIN,HIGH);		// debounce
@@ -1032,7 +1060,7 @@ void check_TAPs() {
 	  if(tap_debouncing_since[tap] != 0) {	//   debouncing is in progress
 						//     long enough to switch off?
 	    if ((now - tap_debouncing_since[tap]) > tap_debounce) {	// done?
-	      tap_state[tap] = 1;					//   switch to logical state 1, OFF
+	      tap_state[tap] &= ~TAP_STATE_ON;				//   switch to logical state 1, OFF
 	      tap_debouncing_since[tap] = 0;				//   debouncing finished
 
 #ifdef TAP_COLOUR_LED_DEBUG
@@ -1044,13 +1072,13 @@ void check_TAPs() {
 	  } else {
 	    tap_debouncing_since[tap] = now;	//   start debouncing
 	  }
-	}
-      }
-    }
-  }
+	} // debounce
+      } // pin low
+    } // tap active
+  } // for tap
 
   digitalWrite(PIN13,tap_electrical_activity);	// PIN13 is activity LED
-}
+} // check_TAPs()
 
 #ifdef OSCILLATORS
 void tap_do_toggle_osc_mute(int tap) {	// old routine, left for reuse
@@ -2561,7 +2589,8 @@ void tap_do_osc_up_taps(int tab) {
 
     break;	// everybody has gone out anyway...
 
-  case EDIT_ANALOG_destination_index:
+  case EDIT_ANALOG_select:
+  case EDIT_ANALOG_destination_index:	// maybe obsolete
     // only oscillators implemented here ################
     osc=tap_parameter_1[tap];	// set globally
 
@@ -2871,30 +2900,47 @@ void setup() {
 #ifdef INPUTs_ANALOG
   analog_inputs_initialize();
 
-  /* int analog_input_setup(char pin, unsigned char state, short in_offset, long out_offset, double i2o_scaling, \
-		            unsigned char destination_type, unsigned char index)
+  /* int analog_input_setup(char pin, unsigned char state, unsigned char method,  \ 
+		       short in_offset, long out_offset, double i2o_scaling, \
+		       unsigned char destination_type, unsigned char index) {
   */
 
   // accelerometer:	// analog_IN_PIN[] = {0, 1, 2}
-  analog_input_setup(0, 0, -425, 12000, 20.0, 1, 0); // y-acceleration	// set parameters ##########################
-  analog_input_setup(1, 0, -425, 12000, 20.0, 1, 1); // x-acceleration	// set parameters ##########################
-  analog_input_setup(2, 0, -612, 12000, 20.0, 1, 2); // z-acceleration	// set parameters ##########################
+  //
+  // y-acceleration
+  analog_input_setup(0, 0, (METHOD_linear | METHOD_set), -425, 12000, 20.0, TYPE_oscillator, 0);
+  //
+  // x-acceleration
+  analog_input_setup(1, 0, (METHOD_linear | METHOD_set), -425, 12000, 20.0, TYPE_oscillator, 1);
+  //
+  // z-acceleration
+  analog_input_setup(2, 0, (METHOD_linear | METHOD_set), -612, 12000, 20.0, TYPE_oscillator, 2);
 
   // unused:
-  analog_input_setup(3, 0, 0, 8000, 10.0, 1, 0); // unused	// ########################
-  analog_input_setup(4, 0, 0, 8000, 10.0, 1, 0); // unused	// ########################
-  analog_input_setup(5, 0, 0, 8000, 10.0, 1, 0); // unused	// ########################
+  //
+  // unused
+  analog_input_setup(3, 0, (METHOD_linear | METHOD_set), 0, 8000, 10.0, TYPE_oscillator, 0);
+  //
+  // unused
+  analog_input_setup(4, 0, (METHOD_linear | METHOD_set), 0, 8000, 10.0, TYPE_oscillator, 0);
+  //
+  // unused
+  analog_input_setup(5, 0, (METHOD_linear | METHOD_set), 0, 8000, 10.0, TYPE_oscillator, 0);
 
   // 2 piezzo UP/DOWN analog inputs
-  char down = analog_input_setup(6, 1, 0, 0, -1.0, 0, 0); // piezzo DOWN
-  char up = analog_input_setup(7, 1, 0, 0, 1.0, 0, 0); // piezzo UP
+  //
+  // piezzo DOWN
+  char down = analog_input_setup(6, 0, (METHOD_linear | METHOD_add), -4, 0, -0.25, TYPE_oscillator, 0);
+  //
+  // piezzo UP
+  char up   = analog_input_setup(7, 0, (METHOD_linear | METHOD_add), -4, 0,  0.25, TYPE_oscillator, 0);
 
   // poti row, starting pin 8
   {
     int osc, pin=8;
 
     for (osc=0; osc<OSCILLATORS; osc++)
-      analog_input_setup(pin++, 1, -512, 12000, 20.0, TYPE_oscillator, osc);	// oscillators, default active
+      analog_input_setup(pin++, 1, (METHOD_linear | METHOD_set), -512, 12000, 20.0, TYPE_oscillator, osc);  // default active
   }
 #endif	// INPUTs_ANALOG
 
@@ -2940,7 +2986,6 @@ void setup() {
 
 /* **************************************************************** */
 void loop() {
-
 #ifdef OSCILLATORS
   oscillate();
 
@@ -2968,4 +3013,24 @@ void loop() {
     ;
 
 }
+/* **************************************************************** */
+
+/* **************************************************************** */
+/*
+
+#define ANATAPs		2
+*/
+/* **************************************************************** */
+#ifdef ANATAPs
+
+unsigned char  anatap_state[ANATAPs];
+unsigned short anatap_wake_up_level=[ANATAPs];	// get attention when sleeping
+unsigned short anatap_ignore_level[ANATAPs];	// filter noise
+
+unsigned short multitap_gap=360;		// ms wait for evental next tap
+unsigned int   last_multitap_stopped[ANATAPs];	// now we wait for multitap_gap
+unsigned char  anatap_multitap[ANATAPs];	// multitap count
+
+unsigned long  anatap_got_on[ANATAPs], anatap_got_off[ANATAPs]	// top logic level
+#endif ANATAPs
 /* **************************************************************** */
