@@ -37,6 +37,9 @@
 /* **************************************************************** */
 /* some  basic defines:						    */
 
+#define ACTIVE_undecided	1	// globally used in many status bitmaps
+#define ILLEGAL			-1	// illegal value for many topics
+
 #define ILLEGALinputVALUE	-1	// impossible analog input value
 #define ILLEGALpin		-1	// a pin that is not assigned
 #define PIN13			13	// onboard LED
@@ -121,7 +124,7 @@ unsigned long period[OSCILLATORS], next[OSCILLATORS], nextFlip;
 unsigned char osc_flags[OSCILLATORS];
 #define OSC_FLAG_ACTIVE	1
 #define OSC_FLAG_MUTE	2
-#define OSC_FLAG_SELECT	4
+// #define OSC_FLAG_SELECT	4	// unused
 
 // signed char oscPIN[OSCILLATORS];
 signed char oscPIN[OSCILLATORS] = {47, 49, 51, 53};
@@ -237,6 +240,7 @@ int oscillators_mute_bits() {
   return bitpattern;
 }
 
+/* unused
 // Bitmap of each oscillators select status:
 int oscillators_SELECTed_bits() {
   int osc, bitpattern=0;
@@ -248,6 +252,7 @@ int oscillators_SELECTed_bits() {
 
   return bitpattern;
 }
+*/
 
 #ifdef BIT_STRIPs
 char show_interference_strip=0;	// ################ should be declared elsewhere
@@ -500,7 +505,7 @@ void switch_strip_as_LEDs(int strip) {
 
 
 #ifdef OSCILLATORS
-/*
+/* unused
 void show_selected(int dummy) {
   ;
 #ifdef BIT_STRIPs	// show SELECTed on LED strip
@@ -703,9 +708,10 @@ short analog_IN_last[INPUTs_ANALOG];
 
 unsigned char analog_in2out_method[INPUTs_ANALOG];
   // bitmask
-  #define METHOD_linear		1	// these 2 could be same bit
-  #define METHOD_set		2	// these 2 could be same bit
+  #define METHOD_linear		1	// these 2 could be on same bit
+  #define METHOD_set		2	// these 2 could be on same bit
   #define METHOD_add		4
+  #define METHOD_continuous	8	// not only on change
 
 // parameters for the in2out translation:
 short analog_input_offset[INPUTs_ANALOG];
@@ -790,13 +796,14 @@ void analog_input_cyclic_poll() {
     // find the next active input starting from analog_input_cyclic_index: 
     for (i=0; i<=INPUTs_ANALOG; i++) {
       inp = (analog_input_cyclic_index++ % INPUTs_ANALOG); // try all inputs, starting
-      if (analog_IN_state[inp])		// found next active input
+      if (analog_IN_state[inp] & ACTIVE_undecided)	// found next active input
 	break;
-      if (i == INPUTs_ANALOG)		// there's no active input
+      if (i == INPUTs_ANALOG)				// there's no active input
 	goto cyclic_done;
     }
 
-    if ((value = analog_IN(inp)) != analog_IN_last[inp]) {	// input has changed
+    value = analog_IN(inp);
+    if ((analog_in2out_method[inp] & METHOD_continuous) || (value != analog_IN_last[inp])) {	// input has changed
       analog_IN_last[inp] = value;
 
       switch (analog_in2out_destination_type[inp]) {
@@ -851,7 +858,7 @@ void display_analog_inputs_info() {
     else
       Serial.print("   ");
 
-    if (analog_IN_state[inp])
+    if (analog_IN_state[inp] & ACTIVE_undecided)
       Serial.print("ON\t");
     else
       Serial.print("off\t");
@@ -924,7 +931,7 @@ unsigned char *tap_parameter_char_address[TAP_PINs];
 unsigned char tap_state[TAP_PINs];
 // *logical* state:  0 inactive  1 OFF  2 ON (pin might be low, debouncing)
 // bitmasks for tap_state[tap]
-#define ACTIVE_undecided	1	// globally used in many status bitmaps
+// #define ACTIVE_undecided	1	// globally used in many status bitmaps
 #define TAP_STATE_ON		2	// *logical ON/OFF* (pin might be low, debouncing)
 #define ENABLE_MULTITAP		4	// this tap waits for multitap detection
 #define COUNTING_MULTITAPS	8	// waiting counting multitaps
@@ -1334,15 +1341,15 @@ void display_analog_reads() {
 }
 
 void watch_digital_input(int pin) {
-  int state, old_state=-9997;
+  int value, old_value=-9997;
 
   Serial.print("watching digital input pin "); Serial.print((int) pin); Serial.println("\t\t(send any byte to stop)");
   while (!char_available()) {
-    state = digitalRead(hw_PIN);
-    if (state != old_state) {
-      old_state = state;
+    value = digitalRead(hw_PIN);
+    if (value != old_value) {
+      old_value = value;
       Serial.print("pin "); Serial.print((int) pin); Serial.print(" is ");
-      if (state)
+      if (value)
 	Serial.println("HIGH");
       else
 	Serial.println("LOW");
@@ -1521,6 +1528,11 @@ void menuOscillators() {
 
     case 'D':	// stuff to test, try, debug, always changing...
       debugSwitch ^= -1 ;
+
+      analog_in2out_scaling[6] *= 2;
+      analog_in2out_scaling[7] *= 2;
+
+      /*
       if (debugSwitch) {
 	Serial.println("debug: ON");
       pinMode(8,OUTPUT);
@@ -1533,9 +1545,13 @@ void menuOscillators() {
       pinMode(9,INPUT);
       pinMode(10,INPUT);
       }
+      */
+
+      /*
       newValue=tap_debounce / 2;
       tap_debounce += newValue;
       Serial.println(tap_debounce);
+      */
 
       // tap_debounce=numericInput(tap_debounce);
 
@@ -2063,7 +2079,7 @@ void HOT_TAP_do(int dummy) {
 #ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Activated inp "); Serial.print((int) inp); Serial.println("");
 #endif
-      analog_IN_state[inp] |= 1;	// activate analog input
+      analog_IN_state[inp] |= ACTIVE_undecided;	// activate analog input
 
       // switch all other inputs of the same destination off...
       set_analog_destination(inp, analog_in2out_destination_type[inp], analog_in2out_destination_index[inp]);
@@ -2171,7 +2187,7 @@ void COLD_TAP_do(int dummy) {
   case EDIT_ANALOG_select:
     if (input_value >= 0 && input_value < INPUTs_ANALOG) {
       inp = input_value;
-      analog_IN_state[inp] &= ~1;	// deactivate analog input
+      analog_IN_state[inp] &= ~ACTIVE_undecided;	// deactivate analog input
 
 #ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Deactivated inp "); Serial.print((int) inp); Serial.println("");
@@ -2294,7 +2310,7 @@ void switch_edit_type(int new_edit_type) {
     break;
 
   case EDIT_OUT_OSC_mul_div:
-    mul_div_state=MUL_DIV_undefined_active; // expects source or mul now
+    mul_div_state = MUL_DIV_undefined_active; // expects source or mul now
     // different strategies: keep prior mul/divi values or reset them to 1?
     // let's try out to keep them if they look save
     mul = (mul < 1) ? 1: mul;
@@ -2488,6 +2504,21 @@ void editTAPs_noedit_do(int tap) {
   }
 }
 
+// check if any active input influences a given output
+// return the first inp found or ILLEGAL if none
+int which_inp_sets_this_output_(int type, int index) {
+  int inp;
+
+  for (inp=0; inp<INPUTs_ANALOG; inp++) {
+    // check all acive inputs for same destination:
+    if (analog_IN_state[inp] & ACTIVE_undecided)	// active?
+      if ((analog_in2out_destination_index[inp] == index) && (analog_in2out_destination_type[inp] == type))
+	return inp;
+  }
+
+  return ILLEGAL;
+}
+
 // Set destination of an analog input, activate it,
 // and switch all other inputs of the same destination off...
 void set_analog_destination(int inp, int type, int index) {
@@ -2501,14 +2532,11 @@ void set_analog_destination(int inp, int type, int index) {
 
     case TYPE_oscillator: case TYPE_analog_out:
       // brute force: deactivate all (other) inputs with the same destination:
-      for (i=0; i<INPUTs_ANALOG; i++) {
-	// check all inputs for same destination:
-	if ((analog_in2out_destination_index[i] == index) && (analog_in2out_destination_type[i] == type)) 
-	  analog_IN_state[i] &= ~1;	// deactivate
-      }
+      while ((i = which_inp_sets_this_output_(type, index)) != ILLEGAL)
+	analog_IN_state[i] &= ~ACTIVE_undecided;	// deactivate
 
       // now activate selected input
-      analog_IN_state[inp] |= 1;	// activate selected input
+      analog_IN_state[inp] |= ACTIVE_undecided;	// activate selected input
       analog_IN_last[inp] = ILLEGALinputVALUE;	// trigger first action
 
       analog_in2out_destination_type[inp] = type;
@@ -2525,7 +2553,38 @@ void set_analog_destination(int inp, int type, int index) {
 }
 #endif	// TAP_EDIT
 
+char up=ILLEGAL, down=ILLEGAL;	// up/down analog inputs, like piezzos	################
 
+void set_unset_regulate_this_output(int destination_type, int destination_index) {
+  int inp, was_active_already=0;
+
+  if (up==ILLEGAL || down==ILLEGAL) { // ERROR
+#ifdef USE_SERIAL
+    Serial.println("ERROR 'up' and 'down' inputs not available");
+#endif
+    return;
+  }
+
+  // deactivate *all* inputs that influence this output
+  while ((inp = which_inp_sets_this_output_(destination_type, destination_index)) != ILLEGAL) {
+    analog_IN_state[inp] &= ~ACTIVE_undecided;	// switch it off
+    if ((inp==up) || (inp==down))
+      was_active_already = 1;
+  }
+
+  if (was_active_already)	// if it was active already we just turn it off, done.
+    return;
+
+
+  // any other case setup regulation:
+  analog_in2out_destination_type[up]	= destination_type;
+  analog_in2out_destination_index[up]	= destination_index;
+  analog_IN_state[up] |= ACTIVE_undecided;	// switch it on
+
+  analog_in2out_destination_type[down]	= destination_type;
+  analog_in2out_destination_index[down]	= destination_index;
+  analog_IN_state[down] |= ACTIVE_undecided;	// switch it on
+}
 
 #ifdef OSCILLATORS
 void tap_do_osc_up_taps(int tab) {
@@ -2592,7 +2651,7 @@ void tap_do_osc_up_taps(int tab) {
   case EDIT_ANALOG_select:
   case EDIT_ANALOG_destination_index:	// maybe obsolete
     // only oscillators implemented here ################
-    osc=tap_parameter_1[tap];	// set globally
+    osc = tap_parameter_1[tap];		// set globally
 
     set_analog_destination(inp, TYPE_oscillator, osc);
     show_on_strip(output_strip, osc, 0);
@@ -2610,11 +2669,17 @@ void tap_do_osc_up_taps(int tab) {
   }
 #endif
 
+  // everything else:
+  osc = tap_parameter_1[tap];		// set globally
+  set_unset_regulate_this_output(TYPE_oscillator, osc);
+
+  /* unused
   osc_flags[tap_parameter_1[tap]] ^= OSC_FLAG_SELECT;	// toggle select state of oscillator
 
 #ifdef BIT_STRIPs
   show_on_strip(output_strip, ~oscillators_SELECTed_bits(), 0);	// show selected on LED strip
 #endif
+  */
 }
 
 void tap_do_osc_down_taps(int tab) {
@@ -2930,10 +2995,10 @@ void setup() {
   // 2 piezzo UP/DOWN analog inputs
   //
   // piezzo DOWN
-  char down = analog_input_setup(6, 0, (METHOD_linear | METHOD_add), -4, 0, -0.25, TYPE_oscillator, 0);
+  down = analog_input_setup(6, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -4, 0,  0.002, TYPE_oscillator, 0);
   //
   // piezzo UP
-  char up   = analog_input_setup(7, 0, (METHOD_linear | METHOD_add), -4, 0,  0.25, TYPE_oscillator, 0);
+  up   = analog_input_setup(7, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -4, 0, -0.002, TYPE_oscillator, 0);
 
   // poti row, starting pin 8
   {
