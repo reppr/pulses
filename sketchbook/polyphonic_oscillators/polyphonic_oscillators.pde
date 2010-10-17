@@ -21,9 +21,9 @@
 #define MAX_BiTS_IN_STRIP 4	// maximal # of bits in a strip
 #define USE_SERIAL	9600	// 9600
 #define TAP_EDIT		// user interface over taps
+#define HAS_TUNING_WHEELs	// piezzo up/down, acc_x, y, z
 #define MENU_over_serial	// do we use a serial menu?
 #define HARDWARE_menu		// menu interface to hardware configuration
-
 #define DEBUG_TOOLS		// some functions to help with debugging
 // #define DEBUG_HW_ON_INIT	// check hardware on init
 
@@ -49,6 +49,7 @@
 int debugSwitch=0;		// hook for testing and debugging
 
 /* **************************************************************** */
+
 
 /* **************************************************************** */
 // LED stuff:	let me *see* what's happening in the machine...
@@ -158,7 +159,8 @@ void oscillatorInit() {
 
   for (osc=0; osc<OSCILLATORS; osc++) {
     osc_count[osc]=0;
-    osc_mask[osc]= 0x3 << DEFAULT_OCTAVE_SHIFT;
+    // use osc_mask's like 0x1 or 0x3
+    osc_mask[osc]= 0x1 << DEFAULT_OCTAVE_SHIFT;
 
     period[osc] = next[osc] = farest_future;
     osc_flags[osc] = 0;		// off
@@ -708,21 +710,26 @@ short analog_IN_last[INPUTs_ANALOG];
 
 unsigned char analog_in2out_method[INPUTs_ANALOG];
   // bitmask
-  #define METHOD_linear		1	// these 2 could be on same bit
-  #define METHOD_set		2	// these 2 could be on same bit
-  #define METHOD_add		4
-  #define METHOD_continuous	8	// not only on change
+/* ################ must be thought about more...... ################ */
+/* ################ put them in the list display, too ################ */
+  #define METHOD_add		1	// 0: set parameter 1: add to parameter
+  #define METHOD_continuous	2	// act every time, not only on change
+  #define METHOD_linear		4	// math method linear/multiply
+  // valid bits, PLEASE ALWAYS DO UPDATE!
+  unsigned char in2out_method_valid_mask=0x00000111;
 
 // parameters for the in2out translation:
 short analog_input_offset[INPUTs_ANALOG];
 long  analog_output_offset[INPUTs_ANALOG];
 double analog_in2out_scaling[INPUTs_ANALOG];
+double analog_in2out_reminder[INPUTs_ANALOG];
 
 // destination
 unsigned char analog_in2out_destination_type[INPUTs_ANALOG];	// i.e. osc, analog out
-#define TYPE_no		0	//
-#define TYPE_oscillator	1	// oscillator period
-#define TYPE_analog_out	2	// analog output
+#define TYPE_no			0	//
+#define TYPE_osc_period		1	// oscillator period
+// #define TYPE_osc_phase  	2	// oscillator phase
+#define TYPE_analog_out		3	// analog output
 
 unsigned char analog_in2out_destination_index[INPUTs_ANALOG];	// osc
 
@@ -737,6 +744,7 @@ void analog_inputs_initialize() {
     analog_input_offset[inp] = 0;
     analog_output_offset[inp] = 0;
     analog_in2out_scaling[inp] = 1.0;
+    analog_in2out_reminder[inp] = 0.0;
     analog_in2out_destination_type[inp] = TYPE_no;
     analog_in2out_destination_index[inp] = 0;
   }
@@ -755,7 +763,7 @@ int analog_input_setup(char pin, unsigned char state, unsigned char method,  \
     Serial.println("ERROR: too many analog inputs.");
 #endif
 
-    return -1;
+    return ILLEGAL;
   }
 
   analog_IN_PIN[inp]			= pin;
@@ -776,14 +784,28 @@ short analog_IN(int inp) {
 }
 
 long analog_inval2out(int inp, int input_raw_value) {
-  long value=input_raw_value;
+  double value = input_raw_value;
+  long out_value;
+  // Despite the long integer return type we do compute a long float value.
+  // When adding to parameters we can accumulate cut-offs in analog_in2out_reminder[inp]
+
+  if(analog_in2out_method[inp] & METHOD_add) {
+    value += analog_in2out_reminder[inp];
+  }
 
   if (analog_in2out_method[inp] & METHOD_linear) {
     value += analog_input_offset[inp];
     value *= analog_in2out_scaling[inp];;
     value += analog_output_offset[inp];
-    return value;
   } // else: ERROR
+
+  out_value = (long) value;			// integer part
+
+  if(analog_in2out_method[inp] & METHOD_add) {	// reminder
+    analog_in2out_reminder[inp] = value - out_value;
+  }
+
+  return out_value;
 }
 
 void analog_input_cyclic_poll() {
@@ -803,7 +825,8 @@ void analog_input_cyclic_poll() {
     }
 
     value = analog_IN(inp);
-    if ((analog_in2out_method[inp] & METHOD_continuous) || (value != analog_IN_last[inp])) {	// input has changed
+    // actions are triggered if the input has changed or if it's in continuous mode:
+    if ((analog_in2out_method[inp] & METHOD_continuous) || (value != analog_IN_last[inp])) {
       analog_IN_last[inp] = value;
 
       switch (analog_in2out_destination_type[inp]) {
@@ -811,15 +834,14 @@ void analog_input_cyclic_poll() {
       case TYPE_no:	// nothing
 	break;
 
-      case TYPE_oscillator: // set oscillator period
+      case TYPE_osc_period: // set oscillator period
 	osc = analog_in2out_destination_index[inp];
 
-	// set or add?
-	if (analog_in2out_method[inp] & METHOD_set) {
+	// add or set?
+	if (analog_in2out_method[inp] & METHOD_add)	// add to parameter
+  	  period[osc] += analog_inval2out(inp, value);
+	else						// set parameter
 	  period[osc] = analog_inval2out(inp, value);
-	} else if (analog_in2out_method[inp] & METHOD_add) {
-	  period[osc] += analog_inval2out(inp, value);
-	} // else ERROR
 
 	// check if next[osc] is not too far in the future:
 	now = micros();
@@ -876,8 +898,8 @@ void display_analog_inputs_info() {
 
     Serial.print((int) analog_in2out_destination_index[inp]); Serial.print("\t");
     switch(analog_in2out_destination_type[inp]) {
-    case TYPE_oscillator:
-      Serial.print("osciltr");
+    case TYPE_osc_period:
+      Serial.print("oscperi");
       break;
 
     case TYPE_analog_out:
@@ -1779,6 +1801,32 @@ void initMenu() {
 
 
 /* **************************************************************** */
+// tuning wheels
+/* **************************************************************** */
+#ifdef HAS_TUNING_WHEELs
+char up=ILLEGAL, down=ILLEGAL;	// up/down analog inputs, like piezzos	################
+char acc_x=ILLEGAL, acc_y=ILLEGAL, acc_z=ILLEGAL;	// accelerometer
+
+#define PIEZZO_UpDown	0
+#define ACCELERO_x	1
+#define ACCELERO_y	2
+#define ACCELERO_z	3
+#define TUNING_WHEELS	4	// *** always keep up to date ***
+
+char tuning_wheel=ACCELERO_x;
+// char tuning_wheel=PIEZZO_UpDown;
+
+#define TUNE_period		0
+#define TUNE_phase		1
+#define TUNING_parameters	2	// *** always keep up to date ***
+
+char tuned_parameter = TUNE_period;
+
+#endif HAS_TUNING_WHEELs
+/* **************************************************************** */
+
+
+/* **************************************************************** */
 // #define TAP_EDIT	// user interface over taps
 /* **************************************************************** */
 #ifdef TAP_EDIT
@@ -1801,7 +1849,8 @@ unsigned int edit_type=0;	// what type of editing is going on?
 #define EDIT_ANALOG_scaling		0x04   //  0100
 #define EDIT_ANALOG_inp_offset		0x05   //  0101
 #define EDIT_ANALOG_out_offset		0x06   //  0110
-#define EDIT_ANALOG_out_method		0x07   //  0111
+// #define EDIT_ANALOG_out_method		0x07   //  0111
+#define EDIT_HAND_TUNE			0x07   //  0111
 
 #define EDIT_OUT_OSC_mul_div		0x08   //  1000
   #define DEBUG_SERIAL_mul_div
@@ -1889,7 +1938,7 @@ void SET_TAP_do(int dummy) {
     if(input_value >= 0 && input_value < OSCILLATORS) {
       osc = input_value;	// global
       // set destination, activate, switch other inputs of the same dest off:
-      set_analog_destination(inp, TYPE_oscillator, osc);
+      set_analog_destination(inp, TYPE_osc_period, osc);
       show_on_strip(output_strip, input_value, 0);
       analog_IN_last[inp] = ILLEGALinputVALUE;
 
@@ -1934,8 +1983,9 @@ void SET_TAP_do(int dummy) {
 
     break;
 
-  case EDIT_ANALOG_out_method:
-    end_edit_mode();	// ###############
+  case EDIT_HAND_TUNE:
+    // analog_in2out_method[inp] is set on the fly, so just quit
+    end_edit_mode();
 
     break;
 
@@ -2125,7 +2175,10 @@ void HOT_TAP_do(int dummy) {
 
     break;
 
-  case EDIT_ANALOG_out_method:
+  case EDIT_HAND_TUNE:
+#ifdef HAS_TUNING_WHEELs
+    // cycle_driven_parameter like period, phase
+#endif
     break;
 
   case EDIT_OUT_OSC_mul_div:
@@ -2234,7 +2287,11 @@ void COLD_TAP_do(int dummy) {
 
     break;
 
-  case EDIT_ANALOG_out_method:
+  case EDIT_HAND_TUNE:
+#ifdef HAS_TUNING_WHEELs
+    // cycle input sources like up/down piezzos, accelerometer x, y, z, generic analog input.
+    tuning_wheel = ++tuning_wheel % TUNING_WHEELS;
+#endif
     break;
 
   case EDIT_OUT_OSC_mul_div:
@@ -2306,7 +2363,8 @@ void switch_edit_type(int new_edit_type) {
   case EDIT_ANALOG_out_offset:
     break;
 
-  case EDIT_ANALOG_out_method:
+  case EDIT_HAND_TUNE:
+    input_value = analog_in2out_method[inp];
     break;
 
   case EDIT_OUT_OSC_mul_div:
@@ -2416,7 +2474,12 @@ void editTAPs_do(int tap) {
   case EDIT_ANALOG_out_offset:
     break;
 
-  case EDIT_ANALOG_out_method:
+  case EDIT_HAND_TUNE:
+    tap_input_bit_toggle(tap);			// set analog_in2out_method[inp]
+    input_value &= in2out_method_valid_mask;	// mask out illegal bits
+    analog_in2out_method[inp] = input_value;	// and set on the fly
+    show_on_strip(output_strip, input_value, 0);// show
+    switch_strip_as_TAPs(edit_strip);		// the led might trigger tap
     break;
 
   case EDIT_OUT_OSC_mul_div:
@@ -2530,7 +2593,7 @@ void set_analog_destination(int inp, int type, int index) {
     case TYPE_no:
       break;
 
-    case TYPE_oscillator: case TYPE_analog_out:
+    case TYPE_osc_period: case TYPE_analog_out:
       // brute force: deactivate all (other) inputs with the same destination:
       while ((i = which_inp_sets_this_output_(type, index)) != ILLEGAL)
 	analog_IN_state[i] &= ~ACTIVE_undecided;	// deactivate
@@ -2553,7 +2616,6 @@ void set_analog_destination(int inp, int type, int index) {
 }
 #endif	// TAP_EDIT
 
-char up=ILLEGAL, down=ILLEGAL;	// up/down analog inputs, like piezzos	################
 
 void set_unset_regulate_this_output(int destination_type, int destination_index) {
   int inp, was_active_already=0;
@@ -2576,14 +2638,57 @@ void set_unset_regulate_this_output(int destination_type, int destination_index)
     return;
 
 
-  // any other case setup regulation:
-  analog_in2out_destination_type[up]	= destination_type;
-  analog_in2out_destination_index[up]	= destination_index;
-  analog_IN_state[up] |= ACTIVE_undecided;	// switch it on
+ // any other case setup and activate a hand tuning wheel:
+  switch (tuning_wheel) {
 
-  analog_in2out_destination_type[down]	= destination_type;
-  analog_in2out_destination_index[down]	= destination_index;
-  analog_IN_state[down] |= ACTIVE_undecided;	// switch it on
+  case PIEZZO_UpDown:
+    // in this case two separate up/down inputs are used:
+
+    analog_in2out_reminder[up]			= 0.0;	// reset reminder 
+    analog_in2out_destination_type[up]		= destination_type;
+    analog_in2out_destination_index[up]		= destination_index;
+    analog_IN_state[up] |= ACTIVE_undecided;	// switch it on
+
+    analog_in2out_reminder[down]		= 0.0;	// reset reminder 
+    analog_in2out_destination_type[down]	= destination_type;
+    analog_in2out_destination_index[down]	= destination_index;
+    analog_IN_state[down] |= ACTIVE_undecided;	// switch it on
+    break;
+
+  case ACCELERO_x:
+    // calibrate to cancel current acceleration:
+    //    analog_input_offset[acc_x] = analogRead(analog_IN_PIN[acc_x]);
+
+    analog_in2out_reminder[acc_x] 		= 0.0;  // reset reminder 
+    analog_in2out_destination_type[acc_x]	= destination_type;
+    analog_in2out_destination_index[acc_x]	= destination_index;
+    analog_IN_state[acc_x] |= ACTIVE_undecided;	// switch it on
+    break;
+
+  case ACCELERO_y:
+    // calibrate to cancel current acceleration:
+    //    analog_input_offset[acc_y] = analogRead(analog_IN_PIN[acc_y]);
+
+    analog_in2out_reminder[acc_y] 		= 0.0;  // reset reminder 
+    analog_in2out_destination_type[acc_y]	= destination_type;
+    analog_in2out_destination_index[acc_y]	= destination_index;
+    analog_IN_state[acc_y] |= ACTIVE_undecided;	// switch it on
+    break;
+
+  case ACCELERO_z:
+    // calibrate to cancel current acceleration:
+    //    analog_input_offset[acc_z] = analogRead(analog_IN_PIN[acc_z]);
+
+    analog_in2out_reminder[acc_z] 		= 0.0;  // reset reminder 
+    analog_in2out_destination_type[acc_z]	= destination_type;
+    analog_in2out_destination_index[acc_z]	= destination_index;
+    analog_IN_state[acc_z] |= ACTIVE_undecided;	// switch it on
+    break;
+
+  default:
+    // ERROR
+    ;
+  }
 }
 
 #ifdef OSCILLATORS
@@ -2653,7 +2758,7 @@ void tap_do_osc_up_taps(int tab) {
     // only oscillators implemented here ################
     osc = tap_parameter_1[tap];		// set globally
 
-    set_analog_destination(inp, TYPE_oscillator, osc);
+    set_analog_destination(inp, TYPE_osc_period, osc);
     show_on_strip(output_strip, osc, 0);
 
 #ifdef TAP_ED_SERIAL_DEBUG
@@ -2666,12 +2771,15 @@ void tap_do_osc_up_taps(int tab) {
       
     return;
     break;
+
+    //  case EDIT_HAND_TUNE:	does default action here
+    //    break;
   }
 #endif
 
   // everything else:
   osc = tap_parameter_1[tap];		// set globally
-  set_unset_regulate_this_output(TYPE_oscillator, osc);
+  set_unset_regulate_this_output(TYPE_osc_period, osc);
 
   /* unused
   osc_flags[tap_parameter_1[tap]] ^= OSC_FLAG_SELECT;	// toggle select state of oscillator
@@ -2971,41 +3079,47 @@ void setup() {
   */
 
   // accelerometer:	// analog_IN_PIN[] = {0, 1, 2}
-  //
-  // y-acceleration
-  analog_input_setup(0, 0, (METHOD_linear | METHOD_set), -425, 12000, 20.0, TYPE_oscillator, 0);
-  //
-  // x-acceleration
-  analog_input_setup(1, 0, (METHOD_linear | METHOD_set), -425, 12000, 20.0, TYPE_oscillator, 1);
-  //
-  // z-acceleration
-  analog_input_setup(2, 0, (METHOD_linear | METHOD_set), -612, 12000, 20.0, TYPE_oscillator, 2);
+  // for parameter tuning
+
+  // y-acceleration	the input offset will be calibrated on each activation to cancel current acceleration
+  acc_y = analog_input_setup(0, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -425, 0, 0.03, TYPE_osc_period, 0);
+
+  // x-acceleration	the input offset will be calibrated on each activation to cancel current acceleration
+  acc_x = analog_input_setup(1, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -425, 0, 0.03, TYPE_osc_period, 1);
+
+  // z-acceleration	the input offset will be calibrated on each activation to cancel current acceleration
+  acc_z = analog_input_setup(2, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -612, 0, 0.03, TYPE_osc_period, 2);
+
 
   // unused:
   //
   // unused
-  analog_input_setup(3, 0, (METHOD_linear | METHOD_set), 0, 8000, 10.0, TYPE_oscillator, 0);
+  analog_input_setup(3, 0, METHOD_linear, 0, 8000, 10.0, TYPE_osc_period, 0);
   //
   // unused
-  analog_input_setup(4, 0, (METHOD_linear | METHOD_set), 0, 8000, 10.0, TYPE_oscillator, 0);
+  analog_input_setup(4, 0, METHOD_linear, 0, 8000, 10.0, TYPE_osc_period, 0);
   //
   // unused
-  analog_input_setup(5, 0, (METHOD_linear | METHOD_set), 0, 8000, 10.0, TYPE_oscillator, 0);
+  analog_input_setup(5, 0, METHOD_linear, 0, 8000, 10.0, TYPE_osc_period, 0);
+
 
   // 2 piezzo UP/DOWN analog inputs
-  //
+  // for hand tuning parameters
   // piezzo DOWN
-  down = analog_input_setup(6, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -4, 0,  0.002, TYPE_oscillator, 0);
+  down = analog_input_setup(6, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -4, 0,  0.002, TYPE_osc_period, 0);
   //
   // piezzo UP
-  up   = analog_input_setup(7, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -4, 0, -0.002, TYPE_oscillator, 0);
+  up   = analog_input_setup(7, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -4, 0, -0.002, TYPE_osc_period, 0);
 
   // poti row, starting pin 8
   {
     int osc, pin=8;
 
+    // 2*2*2*2 * 3*3*3 * 5*5 = 2160
+    // 2*3* 2160 = 12960
+    // or alternative: 7 * 2160 = 15120
     for (osc=0; osc<OSCILLATORS; osc++)
-      analog_input_setup(pin++, 1, (METHOD_linear | METHOD_set), -512, 12000, 20.0, TYPE_oscillator, osc);  // default active
+      analog_input_setup(pin++, 1, METHOD_linear, -512, 12960, 20.0, TYPE_osc_period, osc);  // default active
   }
 #endif	// INPUTs_ANALOG
 
