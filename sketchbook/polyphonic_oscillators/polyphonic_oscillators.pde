@@ -21,7 +21,7 @@
 #define TAP_PINs	16  	// # TAP pins for electrical touch INPUT
 #define BIT_STRIPs	2	// show numbers, bitmasks, etc on LEDs
 #define MAX_BiTS_IN_STRIP 4	// maximal # of bits in a strip
-#define USE_SERIAL	38400	// 9600
+#define USE_SERIAL	115200	// 9600
 #define TAP_EDIT		// user interface over taps
 #define HAS_TUNING_WHEELs	// piezzo up/down, acc_x, y, z
 #define MENU_over_serial	// do we use a serial menu?
@@ -1551,11 +1551,18 @@ void displayOscillatorsInfos() {
 
     Serial.print(period[i]); Serial.print("\t");
     Serial.print(oscPIN[i]); Serial.println("");
+  }
 
-    Serial.print("  "); serial_print_BIN(osc_count[i], 32);
-    Serial.print("\t"); serial_print_BIN(osc_mask[i], 32); Serial.println("");
- 
-    Serial.println("");
+  Serial.println("");
+
+
+  Serial.println("\tcount\t\t\t\t  mask");
+  Serial.println("");
+
+  for (i=0; i<OSCILLATORs; i++) {
+    Serial.print("  ");
+    Serial.print(i); Serial.print("\t"); serial_print_BIN(osc_count[i], 32);
+    Serial.print(" "); serial_print_BIN(osc_mask[i], 32); Serial.println("");
   }
 
   Serial.println("");
@@ -2056,11 +2063,6 @@ void SET_TAP_do(int dummy) {
     if (input_value > 0 && input_value != EDIT_undecided_active) {	// user selected edit_type
       switch_edit_type(input_value);
       green(true);
-
-#ifdef TAP_ED_SERIAL_DEBUG
-      Serial.print("Set edit_type to "); serial_print_BIN(edit_type, 4); Serial.println("");
-#endif
-
     } else 
       end_edit_mode();
 
@@ -2205,7 +2207,8 @@ void SET_TAP_do(int dummy) {
       osc_mask[osc] = input_value;
 
 #ifdef TAP_ED_SERIAL_DEBUG
-      Serial.print("Set octave mask of inp "); Serial.print((int) inp); Serial.print(" to "); serial_print_BIN(input_value, 32);
+      Serial.print("Set octave mask of inp "); Serial.print((int) inp);
+      Serial.print(" to "); serial_print_BIN(input_value, 32);
 #endif
 
     }
@@ -2251,8 +2254,8 @@ void global_shift_up_maybe(void) {
     show_on_strip(output_strip, -global_octave, 0);
 
 #ifdef TAP_ED_SERIAL_DEBUG
-    Serial.print("Raised global_octave to    "); Serial.print(global_octave); Serial.println("");
-    Serial.print("current_global_octave_mask "); serial_print_BIN(current_global_octave_mask, 32); Serial.println("");
+    Serial.print("Raised global_octave to    "); Serial.print(global_octave);
+    Serial.print("\tmask= "); serial_print_BIN(current_global_octave_mask, 32); Serial.println("");
 #endif
   }
 }
@@ -2361,7 +2364,7 @@ void HOT_TAP_do(int dummy) {
 
 #ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Shifted octave mask of inp "); Serial.print((int) inp); Serial.print(" up to ");
-      serial_print_BIN(osc_mask[osc], 32);
+      serial_print_BIN(osc_mask[osc], 32); Serial.println("");
 #endif
 
     break;
@@ -2370,6 +2373,7 @@ void HOT_TAP_do(int dummy) {
     break;
   }
 } // HOT_TAP_do()
+
 
 void global_shift_down() {
   --global_octave;
@@ -2449,6 +2453,11 @@ void COLD_TAP_do(int dummy) {
 #ifdef HAS_TUNING_WHEELs
     // cycle input sources like up/down piezzos, accelerometer x, y, z, generic analog input.
     tuning_wheel = ++tuning_wheel % TUNING_WHEELS;
+
+#ifdef TAP_ED_SERIAL_DEBUG
+    Serial.print("Cycle through tuning_wheel's to "); Serial.println((int) tuning_wheel);
+#endif
+
 #endif
 
     break;
@@ -2501,6 +2510,11 @@ void switch_edit_type(int new_edit_type) {
   switch (edit_type = new_edit_type) {
 
   case EDIT_no:
+
+#ifdef TAP_ED_SERIAL_DEBUG
+    Serial.println("switch_edit_type OFF");
+#endif
+
     end_edit_mode();
     break;
 
@@ -2509,11 +2523,23 @@ void switch_edit_type(int new_edit_type) {
 
   case EDIT_ANALOG_select:
     input_value = inp;
+
+#ifdef TAP_ED_SERIAL_DEBUG
+    Serial.println("switch_edit_type EDIT_ANALOG_select");
+    Serial.print("enter with  inp="); Serial.println(input_value);
+#endif
+
     break;
 
   case EDIT_ANALOG_destination_index:
     // only oscillators implemented here ################
     input_value =  analog_in2out_destination_index[inp];
+
+#ifdef TAP_ED_SERIAL_DEBUG
+    Serial.println("switch_edit_type to EDIT_ANALOG_destination_index");
+    Serial.print("enter with  destination_index="); Serial.println(input_value);
+#endif
+
     break;
 
   case EDIT_ANALOG_destination_type:
@@ -2521,6 +2547,11 @@ void switch_edit_type(int new_edit_type) {
 
   case EDIT_ANALOG_scaling:
     input_value = 0;
+
+#ifdef TAP_ED_SERIAL_DEBUG
+    Serial.println("switch_edit_type to EDIT_ANALOG_scaling");
+#endif
+
     break;
 
   case EDIT_ANALOG_inp_offset:
@@ -2531,6 +2562,12 @@ void switch_edit_type(int new_edit_type) {
 
   case EDIT_HAND_TUNE:
     input_value = analog_in2out_method[inp];
+
+#ifdef TAP_ED_SERIAL_DEBUG
+    Serial.println("switch_edit_type to EDIT_HAND_TUNE");
+    Serial.print("enter with  method="); serial_print_BIN(input_value, 8); Serial.println("");
+#endif
+
     break;
 
   case EDIT_OUT_OSC_mul_div:
@@ -2541,14 +2578,32 @@ void switch_edit_type(int new_edit_type) {
     divi= (divi< 1) ? 1: divi;
     input_value=mul;	// mul expected (or source)
     show_on_strip(output_strip, input_value, 0);
+
+#ifdef TAP_ED_SERIAL_DEBUG
+    Serial.println("switch_edit_type to EDIT_OUT_OSC_mul_div");
+    Serial.print("enter with values of  mul="); Serial.print(mul); Serial.print("  and  divi="); Serial.println(divi); 
+#endif
+
     break;
 
   case EDIT_OUT_OSC_select:
     input_value= osc;
+
+#ifdef TAP_ED_SERIAL_DEBUG
+    Serial.println("switch_edit_type to TAP_ED_SERIAL_DEBUG");
+    Serial.print("enter with  osc="); Serial.println(input_value);
+#endif
+
     break;
 
   case EDIT_OSC_sync:
     input_value = sync_mode;
+
+#ifdef TAP_ED_SERIAL_DEBUG
+    Serial.println("switch_edit_type to EDIT_OSC_sync");
+    Serial.print("enter with  sync_mode="); serial_print_BIN(input_value, 8); Serial.println("");
+#endif
+
     break;
 
   case EDIT_OUTPUT_method:
@@ -2556,9 +2611,19 @@ void switch_edit_type(int new_edit_type) {
 
   case EDIT_OUTPUT_mask:
     input_value = IMPOSSIBLE_MASK;
+
+#ifdef TAP_ED_SERIAL_DEBUG
+    Serial.println("switch_edit_type to EDIT_OUTPUT_mask");
+#endif
+
     break;
 
   default:
+
+#ifdef TAP_ED_SERIAL_DEBUG
+    Serial.println("switch_edit_type ERROR: unknown type");
+#endif
+
     break;
   }
 
@@ -2570,6 +2635,10 @@ void end_edit_mode() {
   edit_type = EDIT_no;
   show_on_strip(output_strip, 0, 0);
   input_value = 0;	// robustness
+
+#ifdef TAP_ED_SERIAL_DEBUG
+      Serial.println("end_edit_mode");
+#endif
 
 #ifdef COLOUR_LEDs
   blue(false);
@@ -2606,7 +2675,7 @@ void editTAPs_do(int tap) {
       green(true); red(false);
 
 #ifdef TAP_ED_SERIAL_DEBUG
-      Serial.print("Set inp to "); Serial.print((int) inp); Serial.println("");
+      Serial.print("Set inp to "); Serial.println(input_value);
 #endif
 
     } else {
@@ -2623,6 +2692,11 @@ void editTAPs_do(int tap) {
     if (input_value >= 0 && input_value < OSCILLATORs) {
       osc = input_value;
       green(true); red(false);
+
+#ifdef TAP_ED_SERIAL_DEBUG
+      Serial.print("Set osc to "); Serial.println(input_value);
+#endif
+
     } else {
       red(true); green(false);
     }
@@ -2650,6 +2724,11 @@ void editTAPs_do(int tap) {
     analog_in2out_method[inp] = input_value;	// and set on the fly
     show_on_strip(output_strip, input_value, 0);// show
     switch_strip_as_TAPs(edit_strip);		// the led might trigger tap
+
+#ifdef TAP_ED_SERIAL_DEBUG
+    Serial.print("Set analog_in2out_method[inp] to "); serial_print_BIN(input_value, 8); Serial.println("");
+#endif
+
     break;
 
   case EDIT_OUT_OSC_mul_div:
@@ -2684,6 +2763,11 @@ void editTAPs_do(int tap) {
     if (input_value >= 0 && input_value < OSCILLATORs) {
       osc = input_value;
       green(true); red(false);
+
+#ifdef TAP_ED_SERIAL_DEBUG
+      Serial.print("Set osc to "); Serial.println(input_value);
+#endif
+
     } else {
       red(true); green(false);
     }
@@ -2706,6 +2790,11 @@ void editTAPs_do(int tap) {
 
   case EDIT_OUTPUT_mask:
     tap_input_bit_toggle(tap);
+
+#ifdef TAP_ED_SERIAL_DEBUG
+      Serial.print("Set output_mask to "); Serial.println(input_value);
+#endif
+
     break;
 
   default:
@@ -2787,6 +2876,12 @@ void set_analog_destination(int inp, int type, int index) {
       analog_in2out_destination_type[inp] = type;
       analog_in2out_destination_index[inp] = index;
 
+#ifdef TAP_ED_SERIAL_DEBUG
+      Serial.print("set_analog_destination  inp="); Serial.print(inp);
+      Serial.print("  type="); serial_print_BIN(type, 8);
+      Serial.print("  index="); Serial.println(index);
+#endif
+
       break;
 
     default:
@@ -2819,9 +2914,14 @@ void set_unset_regulate_this_output(int destination_type, int destination_index)
       was_active_already = 1;
   }
 
-  if (was_active_already)	// if it was active already we just turn it off, done.
-    return;
+  if (was_active_already) {	// if it was active already we just turn it off, done.
 
+#ifdef TAP_ED_SERIAL_DEBUG
+      Serial.println("hand tuning switched off ");
+#endif
+
+    return;
+  }
 
  // any other case setup and activate a hand tuning wheel:
   switch (tuning_wheel) {
@@ -2838,6 +2938,11 @@ void set_unset_regulate_this_output(int destination_type, int destination_index)
     analog_in2out_destination_type[down]	= destination_type;
     analog_in2out_destination_index[down]	= destination_index;
     analog_IN_state[down] |= ACTIVE_undecided;	// switch it on
+
+#ifdef TAP_ED_SERIAL_DEBUG
+    Serial.println("Activated tuning_wheel PIEZZO_UpDown");
+#endif
+
     break;
 
   case ACCELERO_x:
@@ -2848,6 +2953,11 @@ void set_unset_regulate_this_output(int destination_type, int destination_index)
     analog_in2out_destination_type[acc_x]	= destination_type;
     analog_in2out_destination_index[acc_x]	= destination_index;
     analog_IN_state[acc_x] |= ACTIVE_undecided;	// switch it on
+
+#ifdef TAP_ED_SERIAL_DEBUG
+    Serial.println("Activated tuning_wheel ACCELERO_x");
+#endif
+
     break;
 
   case ACCELERO_y:
@@ -2858,6 +2968,11 @@ void set_unset_regulate_this_output(int destination_type, int destination_index)
     analog_in2out_destination_type[acc_y]	= destination_type;
     analog_in2out_destination_index[acc_y]	= destination_index;
     analog_IN_state[acc_y] |= ACTIVE_undecided;	// switch it on
+
+#ifdef TAP_ED_SERIAL_DEBUG
+    Serial.println("Activated tuning_wheel ACCELERO_y");
+#endif
+
     break;
 
   case ACCELERO_z:
@@ -2868,6 +2983,11 @@ void set_unset_regulate_this_output(int destination_type, int destination_index)
     analog_in2out_destination_type[acc_z]	= destination_type;
     analog_in2out_destination_index[acc_z]	= destination_index;
     analog_IN_state[acc_z] |= ACTIVE_undecided;	// switch it on
+
+#ifdef TAP_ED_SERIAL_DEBUG
+    Serial.println("Activated tuning_wheel ACCELERO_z");
+#endif
+
     break;
 
   default:
