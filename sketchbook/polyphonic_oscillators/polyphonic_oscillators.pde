@@ -11,15 +11,17 @@
 */
 /* **************************************************************** */
 
+
+/* **************************************************************** */
 // basic configuration:
 
-#define OSCILLATORS	4	// # of oscillators
+#define OSCILLATORs	4	// # of oscillators
 #define PROFILING		// gather info for debugging and profiling
 #define INPUTs_ANALOG	16	// ANALOG INPUTs
 #define TAP_PINs	16  	// # TAP pins for electrical touch INPUT
 #define BIT_STRIPs	2	// show numbers, bitmasks, etc on LEDs
 #define MAX_BiTS_IN_STRIP 4	// maximal # of bits in a strip
-#define USE_SERIAL	9600	// 9600
+#define USE_SERIAL	38400	// 9600
 #define TAP_EDIT		// user interface over taps
 #define HAS_TUNING_WHEELs	// piezzo up/down, acc_x, y, z
 #define MENU_over_serial	// do we use a serial menu?
@@ -34,6 +36,7 @@
 
 // #define MEMORY_INFO		// this code from the net is buggy
 
+
 /* **************************************************************** */
 /* some  basic defines:						    */
 
@@ -44,9 +47,10 @@
 #define ILLEGALpin		-1	// a pin that is not assigned
 #define PIN13			13	// onboard LED
 					// currently used for electrical tap activity
+
 #define WAITforSERIAL		10	// next byte was not always ready
 
-int debugSwitch=0;		// hook for testing and debugging
+int debugSwitch=0;			// hook for testing and debugging
 
 /* **************************************************************** */
 
@@ -100,6 +104,7 @@ void blue(int ledstat) {
 }
 
 #endif	// COLOUR_LEDs
+/* **************************************************************** */
 
 
 /* **************************************************************** */
@@ -107,33 +112,35 @@ void blue(int ledstat) {
 // once they were flippylators, now they are implemented as countillators
 // we get many octaves for free ;)
 //
-// #define OSCILLATORS	4	// # of oscillators
+// #define OSCILLATORs	4	// # of oscillators
 /* **************************************************************** */
-#ifdef OSCILLATORS
+#ifdef OSCILLATORs
 
 int osc=0;	// index. int might produce faster code then unsigned char
 
 // This version does not only flip a bit, it increases a short integer.
 // We get 16 octaves for free :)
-unsigned long osc_count[OSCILLATORS];
-unsigned long osc_mask[OSCILLATORS];	// for octaves and rhythms
+unsigned long osc_count[OSCILLATORs];
+unsigned long osc_mask[OSCILLATORs];	// for octaves and rhythms
 #define DEFAULT_OCTAVE_SHIFT	6
 
 unsigned long farest_future = ~0L ;
-unsigned long period[OSCILLATORS], next[OSCILLATORS], nextFlip;
+unsigned long period[OSCILLATORs], next[OSCILLATORs], nextFlip;
 
-unsigned char osc_flags[OSCILLATORS];
+unsigned char osc_flags[OSCILLATORs];
 #define OSC_FLAG_ACTIVE	1
 #define OSC_FLAG_MUTE	2
 // #define OSC_FLAG_SELECT	4	// unused
 
-// signed char oscPIN[OSCILLATORS];
-signed char oscPIN[OSCILLATORS] = {47, 49, 51, 53};
-signed char oscMaskPIN[OSCILLATORS];
+// signed char oscPIN[OSCILLATORs];
+signed char oscPIN[OSCILLATORs] = {47, 49, 51, 53};
+signed char oscMaskPIN[OSCILLATORs];
+
 
 signed   char global_octave=0;			// global octave shift. ONLY negative shifts supported atm
 unsigned long global_octave_mask=1;		// this mask gets shifted and then actually used
 unsigned long current_global_octave_mask=1;	// actually used mask to switch oscillators
+
 
 void global_shift(int global_octave)
 {
@@ -144,6 +151,7 @@ void global_shift(int global_octave)
   }
   current_global_octave_mask = global_octave_mask << -global_octave;
 }
+
 
 // micro seconds for main loop other then oscillating
 // check this value for your program by PROFILING and
@@ -157,7 +165,7 @@ unsigned char toneSwitch=0;	// tone switched OFF by default
 void oscillatorInit() {
   int osc;
 
-  for (osc=0; osc<OSCILLATORS; osc++) {
+  for (osc=0; osc<OSCILLATORs; osc++) {
     osc_count[osc]=0;
     // use osc_mask's like 0x1 or 0x3
     osc_mask[osc]= 0x1 << DEFAULT_OCTAVE_SHIFT;
@@ -170,10 +178,11 @@ void oscillatorInit() {
   nextFlip=farest_future;
 }
 
+
 int startOscillator(int osc) {
   unsigned long now = micros();
 
-  if (osc >= OSCILLATORS ) {	// ERROR recovery needed! #########
+  if (osc >= OSCILLATORs ) {	// ERROR recovery needed! #########
 
 #ifdef USE_SERIAL
     Serial.println("ERROR: too many oscillators.");
@@ -200,22 +209,26 @@ int startOscillator(int osc) {
   return 0;
 }
 
+
 void stopOscillator(int osc) {
   osc_flags[osc] &= ~OSC_FLAG_ACTIVE;	// active OFF
   digitalWrite(oscPIN[osc], LOW);
   nextFlip = updateNextFlip();
 }
 
+
 // is oscillator ON or OFF?
 int OSC_(int osc) {
   return (osc_count[osc] & current_global_octave_mask) !=0;
 }
+
 
 void set_osc_mask_pin(unsigned int osc, unsigned int pin) {
   oscMaskPIN[osc] = pin;
   pinMode(pin, OUTPUT);
   digitalWrite(pin, LOW);
 }
+
 
 void toggleOscillator(int osc) {
   if (osc_flags[osc] & OSC_FLAG_ACTIVE)	// was active
@@ -230,11 +243,12 @@ void toggleOscillator(int osc) {
     Serial.println("error: no period set");
 }
 
+
 // Bitmap of each oscillators mute status:
 int oscillators_mute_bits() {
   int osc, bitpattern=0;
 
-  for (osc=0; osc<OSCILLATORS; osc++) {
+  for (osc=0; osc<OSCILLATORs; osc++) {
     if (osc_flags[osc] & OSC_FLAG_MUTE)
       bitpattern |= (1 << osc);
   }
@@ -242,12 +256,13 @@ int oscillators_mute_bits() {
   return bitpattern;
 }
 
+
 /* unused
 // Bitmap of each oscillators select status:
 int oscillators_SELECTed_bits() {
   int osc, bitpattern=0;
 
-  for (osc=0; osc<OSCILLATORS; osc++) {
+  for (osc=0; osc<OSCILLATORs; osc++) {
     if (osc_flags[osc] & OSC_FLAG_SELECT)
       bitpattern |= (1 << osc);
   }
@@ -256,11 +271,13 @@ int oscillators_SELECTed_bits() {
 }
 */
 
+
 #ifdef BIT_STRIPs
 char show_interference_strip=0;	// ################ should be declared elsewhere
 #endif
 
 char show_mask=0;	// tempo indicator
+
 
 void osc_flip_reaction(){	// whatever you want ;)
   int osc=0, led=0;
@@ -268,7 +285,7 @@ void osc_flip_reaction(){	// whatever you want ;)
 
   // check osc_mask reactions:
   if (show_mask) {
-    for (osc=0; osc<OSCILLATORS; osc++) {
+    for (osc=0; osc<OSCILLATORs; osc++) {
       if (osc_mask[osc] && ((osc_count[osc] & osc_mask[osc]) == osc_mask[osc])) {
 	if (oscMaskPIN[osc] != ILLEGALpin)
 	  digitalWrite(oscMaskPIN[osc], HIGH);
@@ -279,7 +296,7 @@ void osc_flip_reaction(){	// whatever you want ;)
     }
   }
 
-#ifdef BIT_STRIPs
+#ifdef BIT_STRIPs	// inside OSCILLATORs
   if (show_interference_strip) {
     /*
     for (bit=0; bit<4; bit++) {
@@ -323,9 +340,9 @@ void osc_flip_reaction(){	// whatever you want ;)
     digitalWrite(pin, OSC_(osc) == OSC_(3));
 
   }
-#endif // BIT_STRIPs
+#endif // BIT_STRIPs inside OSCILLATORs
 
-#ifdef COLOUR_LEDs
+#ifdef COLOUR_LEDs	//  inside OSCILLATORs
   if (show_interference_color) {
     if (OSC_(osc) & OSC_(1))
       digitalWrite(redPIN, HIGH);
@@ -343,9 +360,9 @@ void osc_flip_reaction(){	// whatever you want ;)
 //    else
 //      digitalWrite(bluePIN, LOW);
   }
-#endif
+#endif // COLOUR_LEDs	// inside OSCILLATORs
 
-#ifdef LED_ROW
+#ifdef LED_ROW	// inside OSCILLATORs
   // these are interesting regarding interferences:
   led=-1;
 
@@ -374,8 +391,9 @@ void osc_flip_reaction(){	// whatever you want ;)
   digitalWrite(led_row_anode_PIN[led],!OSC_(0));
   digitalWrite(led_row_cathode_PIN[led],OSC_(1));
   */
-#endif
-}
+#endif	// LED_ROW	 inside OSCILLATORs
+} // osc_flip_reaction()
+
 
 
 /* **************************************************************** */
@@ -384,7 +402,7 @@ void osc_flip_reaction(){	// whatever you want ;)
 // a number of (usually adjacent) arduino pins represent bit positions
 //
 /* **************************************************************** */
-#ifdef BIT_STRIPs
+#ifdef BIT_STRIPs	// inside OSCILLATORs
 // #define  MAX_BiTS_IN_STRIP 	4
 
 signed char bit_strip_PIN[BIT_STRIPs][MAX_BiTS_IN_STRIP];
@@ -396,6 +414,7 @@ unsigned char bit_strip_bits[BIT_STRIPs];
 unsigned char bit_strip_INPUT_PIN[BIT_STRIPs];
 
 unsigned char output_strip=0;
+
 
 int init_bit_strip(int start, int bits, int downwards, int input_pin) {
   /* 'downwards': PINs count down
@@ -416,7 +435,6 @@ int init_bit_strip(int start, int bits, int downwards, int input_pin) {
     pinMode(bit_strip_INPUT_PIN[strip], OUTPUT);
     digitalWrite(bit_strip_INPUT_PIN[strip], LOW);	// defaults to output
   }
-
 
   if (downwards)
     direction=-1;
@@ -473,6 +491,8 @@ void show_on_strip(int strip, int value, int direction) {
   }
 }
 
+
+// strips can have both, tap input's and led output sharing pins
 void switch_strip_as_TAPs(int strip) {
   int bit, bits= bit_strip_bits[strip];
 
@@ -493,6 +513,8 @@ void switch_strip_as_TAPs(int strip) {
     pinMode(bit_strip_PIN[strip][bit], INPUT);
 }
 
+
+// strips can have both, tap input's and led output sharing pins
 void switch_strip_as_LEDs(int strip) {
   int bit, bits= bit_strip_bits[strip];
 
@@ -505,16 +527,6 @@ void switch_strip_as_LEDs(int strip) {
     digitalWrite(bit_strip_INPUT_PIN[strip], LOW);	// switch to output
 }
 
-
-#ifdef OSCILLATORS
-/* unused
-void show_selected(int dummy) {
-  ;
-#ifdef BIT_STRIPs	// show SELECTed on LED strip
-  show_on_strip(output_strip, oscillators_SELECTed_bits(), 0);
-#endif
-}
-*/
 
 void toggle_toneSwitch(int dummy)
 {
@@ -530,10 +542,7 @@ void toggle_toneSwitch(int dummy)
     ;
   }
 }
-
-#endif // OSCILLATORS inside BIT_STRIPs
-
-#endif // BIT_STRIPs
+#endif // BIT_STRIPs	inside OSCILLATORs
 
 
 /* **************************************************************** */
@@ -541,7 +550,7 @@ void toggle_toneSwitch(int dummy)
 			// mainly to find out how long the main loop
 			// needs to come back to the oscillator in time.
 /* **************************************************************** */
-#ifdef PROFILING	// (inside OSCILLATORS)
+#ifdef PROFILING	// inside OSCILLATORs
 unsigned long inTime=0, late=0, easy=0, urgent=0, repeat=0, quit=0;
 unsigned long enteredOscillatorCount=0, profiledRounds=0, leftOscillatorTime;
 unsigned long lapseSum=0;
@@ -549,6 +558,7 @@ int lapse=0, maxLapse=0;
 int dontProfileThisRound=0;	// no profiling when we spent time in menus or somesuch
 float ratio;
 unsigned char autoAdapt=false;
+
 
 void reset_profiling() {
   profiledRounds=0;
@@ -559,9 +569,11 @@ void reset_profiling() {
   lapse=0, lapseSum=0, maxLapse=0;
 }
 
-#endif // PROFILING (inside OSCILLATORS)
+#endif // PROFILING	inside OSCILLATORs
 
 
+
+/* **************************************************************** */
 // #define OSCILLATOR_COLOUR_LED_PROFILING
 /* **************************************************************** */
 /*
@@ -576,6 +588,7 @@ void reset_profiling() {
   If the next flip approaches loop until there is idle time.
 */
 
+/* **************************************************************** */
 void oscillate() {
   int osc;	// int might produce faster code then unsigned char
   unsigned long now = micros();
@@ -609,13 +622,13 @@ void oscillate() {
 	  timeFor1Round++;		// step by step ;)
     }
   }
-#endif
+#endif	// PROFILING
 
   // First decide what to do now, based on current time.
   // If times are easy leave do do other things in between.
   // else check oscillators if it's time to flip.
   while (now >= nextFlip || ((nextFlip - now) <= timeFor1Round)) {
-    for (osc=0; osc<OSCILLATORS; osc++) {
+    for (osc=0; osc<OSCILLATORs; osc++) {
       if ((osc_flags[osc] & OSC_FLAG_ACTIVE) && (next[osc] <= now)) {
 	// flip one
 	osc_count[osc]++;
@@ -652,7 +665,7 @@ void oscillate() {
       else
 	quit++;
     }
-#endif
+#endif	// PROFILING
 
 #ifdef OSCILLATOR_COLOUR_LED_PROFILING	// stress?
     // second round only when urgent
@@ -683,7 +696,7 @@ long updateNextFlip () {
   int osc;
   nextFlip |= -1;
 
-  for (osc=0; osc<OSCILLATORS; osc++) {
+  for (osc=0; osc<OSCILLATORs; osc++) {
     if (osc_flags[osc] & OSC_FLAG_ACTIVE)
       if (next[osc] < nextFlip)
 	nextFlip = next[osc];
@@ -717,7 +730,7 @@ void sync_all_oscillators(unsigned int sync_mode) {
   int osc;
   unsigned long sync_time = micros() + SYNC_after;
 
-  for (osc=0; osc<OSCILLATORS; osc++) {
+  for (osc=0; osc<OSCILLATORs; osc++) {
 
     if(sync_mode & SYNC_reset_counter) {	// reset counter
       // *either* just reset to 0, so it will start with 00000001
@@ -745,7 +758,7 @@ void sync_all_oscillators(unsigned int sync_mode) {
   }
 }
 
-#endif // OSCILLATORS
+#endif // OSCILLATORs
 /* **************************************************************** */
 
 
@@ -761,6 +774,7 @@ unsigned int analog_input_cyclic_index=0;	// cycle throug the inputs to return i
 unsigned char analog_IN_state[INPUTs_ANALOG];
 char analog_IN_PIN[INPUTs_ANALOG];
 short analog_IN_last[INPUTs_ANALOG];
+
 
 unsigned char analog_in2out_method[INPUTs_ANALOG];
   // bitmask
@@ -778,6 +792,7 @@ long  analog_output_offset[INPUTs_ANALOG];
 double analog_in2out_scaling[INPUTs_ANALOG];
 double analog_in2out_reminder[INPUTs_ANALOG];
 
+
 // destination
 unsigned char analog_in2out_destination_type[INPUTs_ANALOG];	// i.e. osc, analog out
 #define TYPE_no			0	//
@@ -786,6 +801,7 @@ unsigned char analog_in2out_destination_type[INPUTs_ANALOG];	// i.e. osc, analog
 #define TYPE_analog_out		3	// analog output
 
 unsigned char analog_in2out_destination_index[INPUTs_ANALOG];	// osc
+
 
 // Do this once:
 void analog_inputs_initialize() {
@@ -803,6 +819,7 @@ void analog_inputs_initialize() {
     analog_in2out_destination_index[inp] = 0;
   }
 }
+
 
 // Do this once for each analog input:
 int analog_input_setup(char pin, unsigned char state, unsigned char method,  \ 
@@ -833,9 +850,11 @@ int analog_input_setup(char pin, unsigned char state, unsigned char method,  \
   return analog_inputs++;
 }
 
+
 short analog_IN(int inp) {
   return analogRead(analog_IN_PIN[inp]);
 }
+
 
 long analog_inval2out(int inp, int input_raw_value) {
   double value = input_raw_value;
@@ -861,6 +880,13 @@ long analog_inval2out(int inp, int input_raw_value) {
 
   return out_value;
 }
+
+
+/* **************************************************************** */
+// analog_input_cyclic_poll(), main routine dealing with analog inputs.
+// The top level loop calls it whenever there is time.
+// The routine checks *one* active input and triggers action, if appropriate.
+// Then it returns immediately not to block more realtime critical tasks.
 
 void analog_input_cyclic_poll() {
   int actual_index=inp;
@@ -922,6 +948,7 @@ void analog_input_cyclic_poll() {
   inp = actual_index;	// restore index
 }
 
+
 void display_analog_inputs_info() {
   int global_inp=inp;
   int inp, value;
@@ -973,6 +1000,7 @@ void display_analog_inputs_info() {
 }
 
 #endif	// INPUTs_ANALOG
+/* **************************************************************** */
 
 
 
@@ -983,6 +1011,7 @@ void display_analog_inputs_info() {
 
 int tap = 0;	// index
 char tapPIN[TAP_PINs];
+
 
 // pointers on functions:
 
@@ -1013,12 +1042,16 @@ unsigned char tap_state[TAP_PINs];
 #define COUNTING_MULTITAPS	8	// waiting counting multitaps
 #define TAP_IS_ANATAP		16	// tap on an analog input like a piezzo
 
+
 // toggling is implemented with a counter. We get 2^n toggling for free ;)
 unsigned char tap_count[TAP_PINs];
 
+
+// debouncing:
 unsigned long tap_debouncing_since[TAP_PINs];	// debouncing flag and time stamp
 // unsigned long tap_debounce=68000L;		// debounce duration
 unsigned long tap_debounce=120000L;		// debounce duration
+
 
 void init_TAPs() {
   int tap;
@@ -1034,6 +1067,7 @@ void init_TAPs() {
     tap_do_after[tap] = NULL;
   }
 }
+
 
 int setup_TAP(char pin, unsigned char toggle, void (*do_on_tap)(int), long parameter_1) {	// set toggle to 0 or 1...
   static int taps=0;
@@ -1058,6 +1092,7 @@ int setup_TAP(char pin, unsigned char toggle, void (*do_on_tap)(int), long param
   return taps++;	// returns tap index
 }
 
+
 // check if TAP 'tap' is logically ON
 int TAP_(int tap) {
   if (tap_state[tap] & TAP_STATE_ON)
@@ -1066,16 +1101,20 @@ int TAP_(int tap) {
     return 0;
 }
 
-// check if TAP 'tap' is toggled ON
+
+// check if TAP 'tap' is *toggled* ON
 int TAP_toggled_(int tap) {
   return (tap_count[tap] &  1) ;
 }
 
-/* **************************************************************** */
-// void check_TAPs()
-// set logical state (including toggling) by checking PINs and debouncing:
-// sorry, but i leave the colour LED debugging/profiling stuff in...
 
+/* **************************************************************** */
+// void check_TAPs()  main routine dealing with TAPs:
+// set logical state (including toggling) by checking PINs and debouncing.
+// act if appropriate, then return to leave time to more realtime critical tasks.
+//
+// sorry, but i leave the colour LED debugging/profiling stuff in...
+// I will do more like multitaps, long taps, ... and might need the leds to debug...
 /* **************************************************************** */
 // #define TAP_COLOUR_LED_DEBUG	// default does set  pinMode(PIN13, OUTPUT);
 /*
@@ -1163,22 +1202,27 @@ void check_TAPs() {
   digitalWrite(PIN13,tap_electrical_activity);	// PIN13 is activity LED
 } // check_TAPs()
 
-#ifdef OSCILLATORS
+
+// functions called by taps:
+void tap_do_XOR_byte(int tap) {
+  *tap_parameter_char_address[tap] ^= (unsigned char) tap_parameter_1[tap];
+}
+
+
+#ifdef OSCILLATORs
+// individual oscillator mute function called by taps:
 void tap_do_toggle_osc_mute(int tap) {	// old routine, left for reuse
   osc_flags[tap_parameter_1[tap]] ^= OSC_FLAG_MUTE;	// toggle muting of oscillator
 
 #ifdef BIT_STRIPs
   show_on_strip(output_strip, ~oscillators_mute_bits(), 0);	// show ON/mute on LED strip
 #endif
-}
 
-#endif // OSCILLATORS
-
-void tap_do_XOR_byte(int tap) {
-  *tap_parameter_char_address[tap] ^= (unsigned char) tap_parameter_1[tap];
 }
+#endif // OSCILLATORs
 
 #endif	// TAP_PINs
+/* **************************************************************** */
 
 
 
@@ -1197,6 +1241,7 @@ char led_row_anode_PIN[LED_ROW], led_row_cathode_PIN[LED_ROW];
 void led_row_ON(int led) {
   digitalWrite(led_row_anode_PIN[led],HIGH); digitalWrite(led_row_cathode_PIN[led],LOW);	// ON
 }
+
 
 void init_LED_row(int start, int leds, int spacing, int anode_first) {
   int led;
@@ -1229,15 +1274,21 @@ void init_LED_row(int start, int leds, int spacing, int anode_first) {
 
   }
 }
+
 #endif // LED_ROW
+/* **************************************************************** */
+
 
 
 /* **************************************************************** */
 // #define HARDWARE_menu   // hardware configuration menu interface
 /* **************************************************************** */
 #ifdef HARDWARE_menu
+
 char hw_PIN = ILLEGALpin;
+
 #endif // HARDWARE_menu
+/* **************************************************************** */
 
 
 
@@ -1249,8 +1300,10 @@ char hw_PIN = ILLEGALpin;
 // sometimes serial is not ready quick enough:
 // #define WAITforSERIAL 10
 
+
 // char input with one byte buffering:
 char stored_char, chars_stored=0;
+
 
 int get_char() {
   if(!char_available())
@@ -1265,6 +1318,7 @@ int get_char() {
     return -1;		// EOF no input available
 }
 
+
 int char_store(char c) {
   if (chars_stored) {	// ERROR ##################
     Serial.println("char_store: sorry, buffer full.");
@@ -1274,11 +1328,13 @@ int char_store(char c) {
   stored_char = c;
 }
 
+
 int char_available() {
   if (chars_stored || Serial.available()) 
     return 1;
   return 0;
 }
+
 
 // get numeric input from serial
 long numericInput(long oldValue) {
@@ -1319,6 +1375,8 @@ long numericInput(long oldValue) {
   return sign * num;
 }
 
+
+// serial display helper function
 int ONoff(int value, int mode, int tab) {
   if (value) {
     switch (mode) {
@@ -1351,6 +1409,8 @@ int ONoff(int value, int mode, int tab) {
   return value;
 }
 
+
+// display helper function
 void bar_graph(int value) {
   int i, length=64, scale=1023;
   int stars = ((long) value * (long) length) / scale + 1 ;
@@ -1371,6 +1431,7 @@ void bar_graph(int value) {
 
   Serial.println("");
 }
+
 
 void bar_graph_VU(int pin) {
   int value, oldValue=-9997;	// just an unlikely value...
@@ -1402,6 +1463,7 @@ void bar_graph_VU(int pin) {
   }    
 }
 
+
 void display_analog_reads() {
   int i, value;
 
@@ -1415,6 +1477,7 @@ void display_analog_reads() {
 
   Serial.println("");
 }
+
 
 void watch_digital_input(int pin) {
   int value, old_value=-9997;
@@ -1435,6 +1498,7 @@ void watch_digital_input(int pin) {
   get_char();
 }
 
+
 // print binary numbers with leading zeroes and a space
 void serial_print_BIN(unsigned long value, int bits) {
   int i;
@@ -1450,8 +1514,9 @@ void serial_print_BIN(unsigned long value, int bits) {
   Serial.print(" ");
 }
 
+
 /* **************************************************************** */
-#ifdef OSCILLATORS	// MENU STUFF for OSCILLATORS
+#ifdef OSCILLATORs	// inside MENU_over_serial	MENU STUFF for OSCILLATORs
 
 void displayOscillatorsInfos() {
   int i;
@@ -1460,7 +1525,7 @@ void displayOscillatorsInfos() {
   Serial.println("  octaves\t\t\t\tmask");
   Serial.println("");
 
-  for (i=0; i<OSCILLATORS; i++) {
+  for (i=0; i<OSCILLATORs; i++) {
     if (i == osc)
       Serial.print("* ");
     else
@@ -1496,9 +1561,10 @@ void displayOscillatorsInfos() {
   Serial.println("");
 }
 
+
 void displayMenuOscillators() {
   Serial.println("");
-  Serial.print("** MENU OSCILLATORS **  t=toggle tone ("); ONoff(toneSwitch, 2, false); Serial.println(")");
+  Serial.print("** MENU OSCILLATORs **  t=toggle tone ("); ONoff(toneSwitch, 2, false); Serial.println(")");
 
   Serial.print("display: O=oscs list\t");
   Serial.print("a=analog in\t");
@@ -1539,6 +1605,7 @@ void displayMenuOscillators() {
 #endif
 
 }
+
 
 // simple menu interface through serial port
 void menuOscillators() {
@@ -1655,11 +1722,11 @@ void menuOscillators() {
       Serial.print("oscillator       "); Serial.println(osc);
       Serial.print("oscillator new = ");
       newValue = numericInput(osc);
-      if (newValue < OSCILLATORS && newValue >= 0) {
+      if (newValue < OSCILLATORs && newValue >= 0) {
 	osc = newValue;
 	Serial.println(osc);
       } else {
-	Serial.print(" must be between 0 and "); Serial.println(OSCILLATORS -1);
+	Serial.print(" must be between 0 and "); Serial.println(OSCILLATORs -1);
       }
 
       break;
@@ -1836,13 +1903,15 @@ void menuOscillators() {
   dontProfileThisRound=1;
 #endif
 
-}
-#endif // OSCILLATORS (inside MENU_over_serial)
+} // menuOscillators()
+
+#endif // OSCILLATORs	inside MENU_over_serial
+
 
 void initMenu() {
   Serial.println("Press 'm' or '?' for menu.");
 
-#ifdef OSCILLATORS
+#ifdef OSCILLATORs
   displayMenuOscillators();
   // displayOscillatorsInfos();
 #endif
@@ -1850,16 +1919,24 @@ void initMenu() {
   Serial.println("");
 }
 
+
 #endif // MENU_over_serial
 /* **************************************************************** */
+
 
 
 /* **************************************************************** */
 // tuning wheels
 /* **************************************************************** */
+
+// controlling parameters like period, phase, analog outputs through
+// analog inputs like piezzos or accelerometers.
+
+/* **************************************************************** */
 #ifdef HAS_TUNING_WHEELs
 char up=ILLEGAL, down=ILLEGAL;	// up/down analog inputs, like piezzos	################
 char acc_x=ILLEGAL, acc_y=ILLEGAL, acc_z=ILLEGAL;	// accelerometer
+
 
 #define PIEZZO_UpDown	0
 #define ACCELERO_x	1
@@ -1867,7 +1944,8 @@ char acc_x=ILLEGAL, acc_y=ILLEGAL, acc_z=ILLEGAL;	// accelerometer
 #define ACCELERO_z	3
 #define TUNING_WHEELS	4	// *** always keep up to date ***
 
-char tuning_wheel=ACCELERO_x;
+
+char tuning_wheel=ACCELERO_x;	// default
 // char tuning_wheel=PIEZZO_UpDown;
 
 #define TUNE_period		0
@@ -1878,6 +1956,7 @@ char tuned_parameter = TUNE_period;
 
 #endif HAS_TUNING_WHEELs
 /* **************************************************************** */
+
 
 
 /* **************************************************************** */
@@ -1907,7 +1986,6 @@ unsigned int edit_type=0;	// what type of editing is going on?
 #define EDIT_HAND_TUNE			0x07   //  0111
 
 #define EDIT_OUT_OSC_mul_div		0x08   //  1000
-  #define DEBUG_SERIAL_mul_div
   // hold integer rational factors:
   int mul=1, divi=1;	// name 'div' is taken
 
@@ -1932,10 +2010,12 @@ unsigned int edit_type=0;	// what type of editing is going on?
 
 #define EDIT_undecided_active		0x0f   //  1111
 
+
 double scaling_zoom_factor=2.0;
 int offset_zoom_factor=2;
 
 #define IMPOSSIBLE_MASK		0x0f00
+
 
 void tap_edit_setup(int setPIN, int hotPIN, int coldPIN) {
   int tap;
@@ -1951,9 +2031,11 @@ void SET_TAP_do(int dummy) {
   switch (edit_type) {
 
   case EDIT_no:
+
 #ifdef TAP_ED_SERIAL_DEBUG
     Serial.println("activated editing on TAPs");
 #endif
+
     switch_edit_type(EDIT_undecided_active);
 
 #ifdef COLOUR_LEDs
@@ -1974,9 +2056,11 @@ void SET_TAP_do(int dummy) {
     if (input_value > 0 && input_value != EDIT_undecided_active) {	// user selected edit_type
       switch_edit_type(input_value);
       green(true);
+
 #ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Set edit_type to "); serial_print_BIN(edit_type, 4); Serial.println("");
 #endif
+
     } else 
       end_edit_mode();
 
@@ -1989,7 +2073,7 @@ void SET_TAP_do(int dummy) {
 
   case EDIT_ANALOG_destination_index:
     // only oscillators implemented here ################
-    if(input_value >= 0 && input_value < OSCILLATORS) {
+    if(input_value >= 0 && input_value < OSCILLATORs) {
       osc = input_value;	// global
       // set destination, activate, switch other inputs of the same dest off:
       set_analog_destination(inp, TYPE_osc_period, osc);
@@ -1999,6 +2083,7 @@ void SET_TAP_do(int dummy) {
 #ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Set destination of inp "); Serial.print((int) inp); Serial.print(" to "); Serial.println(input_value);
 #endif
+
     }
 
     end_edit_mode();
@@ -2052,7 +2137,7 @@ void SET_TAP_do(int dummy) {
 	mul = input_value;
 	mul_div_state  |= MUL_DIV_has_mul;
 
-#ifdef DEBUG_SERIAL_mul_div
+#ifdef TAP_ED_SERIAL_DEBUG
 	Serial.print("Set mul to " ); Serial.print(mul); Serial.println("");
 #endif
 
@@ -2060,7 +2145,7 @@ void SET_TAP_do(int dummy) {
 	show_on_strip(output_strip, input_value, 0);	// already show divi
       } else {				// input 0 ends edit_mode mode early
 
-#ifdef DEBUG_SERIAL_mul_div
+#ifdef TAP_ED_SERIAL_DEBUG
 	Serial.println("Exit edit mode early 1." );
 #endif
 
@@ -2070,7 +2155,7 @@ void SET_TAP_do(int dummy) {
     // divi input,  or zero or third numeric input ==> exit edit mode.
     else if ((mul_div_state & MUL_DIV_has_div) || input_value == 0) {	// exit
 
-#ifdef DEBUG_SERIAL_mul_div
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.println("Exit edit mode early 2." );
 #endif
 
@@ -2081,7 +2166,7 @@ void SET_TAP_do(int dummy) {
       mul_div_state |= MUL_DIV_has_div;
       show_on_strip(output_strip, input_value, 0);
 
-#ifdef DEBUG_SERIAL_mul_div
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Set divi to " ); Serial.print(divi); Serial.println("");
 #endif
 
@@ -2091,12 +2176,14 @@ void SET_TAP_do(int dummy) {
     break;
 
   case EDIT_OUT_OSC_select:
-    if(input_value >= 0 && input_value < OSCILLATORS) {
+    if(input_value >= 0 && input_value < OSCILLATORs) {
       osc = input_value;
       show_on_strip(output_strip, input_value, 0);
+
 #ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Set osc to "); Serial.print(input_value); Serial.println("");
 #endif
+
     }
 
     end_edit_mode();
@@ -2120,6 +2207,7 @@ void SET_TAP_do(int dummy) {
 #ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Set octave mask of inp "); Serial.print((int) inp); Serial.print(" to "); serial_print_BIN(input_value, 32);
 #endif
+
     }
 
     end_edit_mode();
@@ -2127,7 +2215,7 @@ void SET_TAP_do(int dummy) {
     break;
 
   case EDIT_OUTPUT_switch_out_0:
-    if (oscPIN[0] == 47) {	// ################
+    if (oscPIN[0] == 47) {	// ################ temporary hack
       pinMode(20, OUTPUT);
       oscPIN[0] = 20;
     } else
@@ -2138,7 +2226,7 @@ void SET_TAP_do(int dummy) {
     break;
 
   case EDIT_OUTPUT_switch_out_1:
-    if (oscPIN[1] == 49) {	// ################
+    if (oscPIN[1] == 49) {	// ################ temporary hack
       pinMode(19, OUTPUT);
       oscPIN[1] = 19;
     } else
@@ -2153,7 +2241,8 @@ void SET_TAP_do(int dummy) {
 
     break;
   }
-}
+} // SET_TAP_do()
+
 
 void global_shift_up_maybe(void) {
   if(global_octave < 0) {
@@ -2168,6 +2257,7 @@ void global_shift_up_maybe(void) {
   }
 }
 
+
 // action of the HOT/UP/YES pad:
 void HOT_TAP_do(int dummy) {
   switch (edit_type) {
@@ -2181,9 +2271,11 @@ void HOT_TAP_do(int dummy) {
   case EDIT_ANALOG_select:
     if(input_value >= 0 && input_value < INPUTs_ANALOG) {
       inp = input_value;
+
 #ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Activated inp "); Serial.print((int) inp); Serial.println("");
 #endif
+
       analog_IN_state[inp] |= ACTIVE_undecided;	// activate analog input
 
       // switch all other inputs of the same destination off...
@@ -2231,9 +2323,11 @@ void HOT_TAP_do(int dummy) {
     break;
 
   case EDIT_HAND_TUNE:
+
 #ifdef HAS_TUNING_WHEELs
     // cycle_driven_parameter like period, phase
 #endif
+
     break;
 
   case EDIT_OUT_OSC_mul_div:
@@ -2275,7 +2369,7 @@ void HOT_TAP_do(int dummy) {
   default:
     break;
   }
-}
+} // HOT_TAP_do()
 
 void global_shift_down() {
   --global_octave;
@@ -2287,6 +2381,7 @@ void global_shift_down() {
   Serial.print("current_global_octave_mask "); serial_print_BIN(current_global_octave_mask, 32); Serial.println("");
 #endif
 }
+
 
 // action of the cold/DOWN/NO pad:
 void COLD_TAP_do(int dummy) {
@@ -2306,6 +2401,7 @@ void COLD_TAP_do(int dummy) {
 #ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Deactivated inp "); Serial.print((int) inp); Serial.println("");
 #endif
+
     }
     break;
 
@@ -2349,10 +2445,12 @@ void COLD_TAP_do(int dummy) {
     break;
 
   case EDIT_HAND_TUNE:
+
 #ifdef HAS_TUNING_WHEELs
     // cycle input sources like up/down piezzos, accelerometer x, y, z, generic analog input.
     tuning_wheel = ++tuning_wheel % TUNING_WHEELS;
 #endif
+
     break;
 
   case EDIT_OUT_OSC_mul_div:
@@ -2394,7 +2492,8 @@ void COLD_TAP_do(int dummy) {
   default:
     break;
   }
-}
+}  // COLD_TAP_do()
+
 
 void switch_edit_type(int new_edit_type) {
   input_value = 0;
@@ -2464,7 +2563,8 @@ void switch_edit_type(int new_edit_type) {
   }
 
   show_on_strip(output_strip, input_value, 0);
-}
+} // switch_edit_type()
+
 
 void end_edit_mode() {
   edit_type = EDIT_no;
@@ -2478,11 +2578,13 @@ void end_edit_mode() {
 #endif
 }
 
+
 void tap_input_bit_toggle(int tap) {
     input_value ^= tap_parameter_1[tap];
     show_on_strip(output_strip, input_value, 0);
     switch_strip_as_TAPs(edit_strip);
 }
+
 
 // action of the edit 4-TAP row:
 void editTAPs_do(int tap) {
@@ -2518,7 +2620,7 @@ void editTAPs_do(int tap) {
   case EDIT_ANALOG_destination_index:
     tap_input_bit_toggle(tap);
 
-    if (input_value >= 0 && input_value < OSCILLATORS) {
+    if (input_value >= 0 && input_value < OSCILLATORs) {
       osc = input_value;
       green(true); red(false);
     } else {
@@ -2558,17 +2660,19 @@ void editTAPs_do(int tap) {
       if (input_value) {
 	mul = input_value;
 
-#ifdef DEBUG_SERIAL_mul_div
+#ifdef TAP_ED_SERIAL_DEBUG
 	Serial.print("temporally set mul to " ); Serial.print(mul); Serial.println("");
 #endif
+
       }
     } else {	// divi input
       if (input_value) {
 	divi = input_value;
 
-#ifdef DEBUG_SERIAL_mul_div
+#ifdef TAP_ED_SERIAL_DEBUG
 	Serial.print("temporally set divi to " ); Serial.print(divi); Serial.println("");
 #endif
+
       }
     }
 
@@ -2577,7 +2681,7 @@ void editTAPs_do(int tap) {
   case EDIT_OUT_OSC_select:
     tap_input_bit_toggle(tap);
 
-    if (input_value >= 0 && input_value < OSCILLATORS) {
+    if (input_value >= 0 && input_value < OSCILLATORs) {
       osc = input_value;
       green(true); red(false);
     } else {
@@ -2607,12 +2711,13 @@ void editTAPs_do(int tap) {
   default:
     break;
   }
-}
+} // editTAPs_do()
 
 void editTAPs_noedit_do(int tap) {
   // we just use the mask bits from editing mode
   // to recognize the taps:
   switch (tap_parameter_1[tap]) {
+
   case 8:
     show_interference_color ^= ~0;
     if (!show_interference_color) { // shut down active leds 
@@ -2642,6 +2747,7 @@ void editTAPs_noedit_do(int tap) {
   }
 }
 
+
 // check if any active input influences a given output
 // return the first inp found or ILLEGAL if none
 int which_inp_sets_this_output_(int type, int index) {
@@ -2656,6 +2762,7 @@ int which_inp_sets_this_output_(int type, int index) {
 
   return ILLEGAL;
 }
+
 
 // Set destination of an analog input, activate it,
 // and switch all other inputs of the same destination off...
@@ -2690,8 +2797,11 @@ void set_analog_destination(int inp, int type, int index) {
     Serial.println("set_analog_destination: ERROR inp out of range.");
 }
 #endif	// TAP_EDIT
+/* **************************************************************** */
 
 
+
+/* **************************************************************** */
 void set_unset_regulate_this_output(int destination_type, int destination_index) {
   int inp, was_active_already=0;
 
@@ -2766,7 +2876,9 @@ void set_unset_regulate_this_output(int destination_type, int destination_index)
   }
 }
 
-#ifdef OSCILLATORS
+
+/* **************************************************************** */
+#ifdef OSCILLATORs
 void tap_do_osc_up_taps(int tab) {
 
 #ifdef TAP_EDIT
@@ -2782,7 +2894,7 @@ void tap_do_osc_up_taps(int tab) {
       mul_div_source = period[osc];
       mul_div_state = MUL_DIV_has_source;
 
-#ifdef DEBUG_SERIAL_mul_div
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("Set mul_div source to period[" ); Serial.print((int) osc); Serial.print("] = ");
       Serial.println(mul_div_source);
 #endif
@@ -2794,7 +2906,7 @@ void tap_do_osc_up_taps(int tab) {
     // from other source?
     if (mul_div_state & MUL_DIV_has_source) {	// from other source
 
-#ifdef DEBUG_SERIAL_mul_div
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("mul_div: period[" ); Serial.print((int) osc); Serial.print("] ");
       Serial.print(" from source value ");  Serial.print(mul_div_source);
       Serial.print(" * "); Serial.print(mul); Serial.print(" / "); Serial.print(divi);
@@ -2803,7 +2915,7 @@ void tap_do_osc_up_taps(int tab) {
       period[osc] = mul_div_source * mul;	// I insist on * coming first
       period[osc] /= divi;			// and then /
 
-#ifdef DEBUG_SERIAL_mul_div
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.print(" = "); Serial.print(period[osc]);
       Serial.println("");
 #endif
@@ -2811,7 +2923,8 @@ void tap_do_osc_up_taps(int tab) {
       return; }					// EXIT here
 
     // no source: act directly on selected oscillator.
-#ifdef DEBUG_SERIAL_mul_div
+
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("mul_div period[" ); Serial.print((int) osc); Serial.print("] ");
       Serial.print(" from current value "); Serial.print(period[osc]);
       Serial.print(" * "); Serial.print(mul); Serial.print(" / "); Serial.print(divi);
@@ -2820,7 +2933,7 @@ void tap_do_osc_up_taps(int tab) {
     period[osc] *= mul;				// I insist on * coming first
     period[osc] /= divi;			// and then /
 
-#ifdef DEBUG_SERIAL_mul_div
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.print(" = "); Serial.print(period[osc]); Serial.println("");
 #endif
 
@@ -2863,7 +2976,9 @@ void tap_do_osc_up_taps(int tab) {
   show_on_strip(output_strip, ~oscillators_SELECTed_bits(), 0);	// show selected on LED strip
 #endif
   */
-}
+} // tap_do_osc_up_taps()
+
+
 
 void tap_do_osc_down_taps(int tab) {
 
@@ -2880,7 +2995,7 @@ void tap_do_osc_down_taps(int tab) {
       period[osc] = mul_div_source * divi;	// I insist on * coming first
       period[osc] /= mul;			// and then / both reciprocal
 
-#ifdef DEBUG_SERIAL_mul_div
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("mul_div  period[" ); Serial.print((int) osc); Serial.print("] reciprocal ");
       Serial.print(" from source value ");  Serial.print(mul_div_source);
       Serial.print(" * "); Serial.print(divi); Serial.print(" / "); Serial.print(mul);
@@ -2892,7 +3007,7 @@ void tap_do_osc_down_taps(int tab) {
     }
 
     // no source: act directly on selected oscillator (reciprocal)
-#ifdef DEBUG_SERIAL_mul_div
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.print("mul_div period[" ); Serial.print((int) osc); Serial.print("] reciprocally ");
       Serial.print(" from current value "); Serial.print(period[osc]);
       Serial.print(" * "); Serial.print(divi); Serial.print(" / "); Serial.print(mul);
@@ -2901,7 +3016,7 @@ void tap_do_osc_down_taps(int tab) {
     period[osc] *= divi;		// I insist on * coming first
     period[osc] /= mul;			// and then /
 
-#ifdef DEBUG_SERIAL_mul_div
+#ifdef TAP_ED_SERIAL_DEBUG
       Serial.print(" = "); Serial.print(period[osc]); Serial.println("");
 #endif
 
@@ -2912,11 +3027,16 @@ void tap_do_osc_down_taps(int tab) {
 #endif
 
   tap_do_toggle_osc_mute(tap);
-}
+}  // tap_do_osc_down_taps()
 
 
-#endif // OSCILLATORS
+#endif // OSCILLATORs
+/* **************************************************************** */
 
+
+
+/* **************************************************************** */
+// BUGGY CODE FROM THE NET	################
 
 // #define MEMORY_INFO	// this code from the net is buggy
 #ifdef MEMORY_INFO	// this code from the net is buggy
@@ -3041,6 +3161,7 @@ void show_memory() {
 #endif	// #ifdef MEMORY_INFO
 
 
+
 /* **************************************************************** */
 // #define DEBUG_TOOLS	// some functions to help with debugging
 #ifdef DEBUG_TOOLS	// some functions to help with debugging
@@ -3057,6 +3178,7 @@ void wuschel()
   Serial.println("wuschel");
 }
 #endif	// DEBUG_TOOLS
+
 
 
 /* **************************************************************** */
@@ -3078,7 +3200,7 @@ void setup() {
 #endif
 
 
-#ifdef OSCILLATORS
+#ifdef OSCILLATORs
   // oscPIN = {47, 49, 51, 53};
 
   oscillatorInit();
@@ -3104,7 +3226,7 @@ void setup() {
 #ifdef TAP_PINs
   init_TAPs();
 
-#ifdef OSCILLATORS	// inside #ifdef TAP_PINs
+#ifdef OSCILLATORs	// inside #ifdef TAP_PINs
   {
     int osc, pin, tap=0;
 
@@ -3135,7 +3257,7 @@ void setup() {
     setup_TAP(44, 0, &toggle_toneSwitch, tap);	// (tap is a dummy her, not used)
 
   }
-#endif // OSCILLATORS	// inside #ifdef TAP_PINs
+#endif // OSCILLATORs	// inside #ifdef TAP_PINs
 
   #ifdef TAP_COLOUR_LED_DEBUG
   // TAP colour LED debugging, assume electrical state low to start
@@ -3193,7 +3315,7 @@ void setup() {
     // 2*2*2*2 * 3*3*3 * 5*5 = 2160
     // 2*3* 2160 = 12960
     // or alternative: 7 * 2160 = 15120
-    for (osc=0; osc<OSCILLATORS; osc++)
+    for (osc=0; osc<OSCILLATORs; osc++)
       analog_input_setup(pin++, 1, METHOD_linear, -512, 12960, 20.0, TYPE_osc_period, osc);  // default active
   }
 #endif	// INPUTs_ANALOG
@@ -3240,7 +3362,7 @@ void setup() {
 
 /* **************************************************************** */
 void loop() {
-#ifdef OSCILLATORS
+#ifdef OSCILLATORs
   oscillate();
 
 
@@ -3250,7 +3372,7 @@ void loop() {
     menuOscillators();
 
 #endif //  MENU_over_serial
-#endif // OSCILLATORS
+#endif // OSCILLATORs
 
 
 #ifdef TAP_PINs
