@@ -692,7 +692,61 @@ long updateNextFlip () {
   return nextFlip;
 }
 
+/* ***************************************************************** */
+
+
+/* ***************************************************************** */
+// (re) synchronizing oscillators:
+
+// bitmasks for sync_mode:
+#define SYNC_phase		1	// do sync phase
+#define SYNC_phase_stright	2	//   sync phase stright/middle
+#define SYNC_alternate_phase	4	//   even/uneven oscs start up/down
+#define SYNC_reset_counter	8	// yes, do reset counter
+#define SYNC_reset_to_zero	16	//   start at zero, counting up ||
+#define SYNC_start_all_on	32	//   start all hot or all cold
+
+unsigned int sync_mode = 27;
+
+// the sync does not happen *exactly* now,
+// but is setup for a very near point in the future
+#define SYNC_after		120	// micros delay to set it all up
+
+// sync all oscillators
+void sync_all_oscillators(unsigned int sync_mode) {
+  int osc;
+  unsigned long sync_time = micros() + SYNC_after;
+
+  for (osc=0; osc<OSCILLATORS; osc++) {
+
+    if(sync_mode & SYNC_reset_counter) {	// reset counter
+      // *either* just reset to 0, so it will start with 00000001
+      if (sync_mode & SYNC_reset_to_zero)	// start with 0000001
+	osc_count[osc] = 0;
+      // *or* arrange to start with all bits zero or all bits one:
+      else if (sync_mode & SYNC_start_all_on)	// start all bits on?
+	osc_count[osc] = (unsigned long) -2;	// next flip will be all on
+      else
+	osc_count[osc] = (unsigned long) -1;	// next flip will be all off
+    }
+
+    if(sync_mode & SYNC_phase) {	// phase sync
+      // sync phase on flip or middle of a (half) period?
+      if(sync_mode & SYNC_phase_stright)
+	next[osc] = sync_time;				// stright
+      else
+	next[osc] = sync_time + (period[osc] / 2);	// middle
+
+      if(sync_mode & SYNC_alternate_phase)	// alternate phase
+	if (osc & 1)				// every second osc
+	  osc_count[osc] ^= 1;			// start the other way round
+    }
+
+  }
+}
+
 #endif // OSCILLATORS
+/* **************************************************************** */
 
 
 
@@ -1868,7 +1922,7 @@ unsigned int edit_type=0;	// what type of editing is going on?
   #define MUL_DIV_has_div		8
 
 #define EDIT_OUT_OSC_select		0x09   //  1001
-#define EDIT_OUTPUT_type		0x0a   //  1010
+#define EDIT_OSC_sync			0x0a   //  1010
 #define EDIT_OUTPUT_method		0x0b   //  1011
 #define EDIT_OUTPUT_mask		0x0c   //  1100
 
@@ -2049,7 +2103,8 @@ void SET_TAP_do(int dummy) {
 
     break;
 
-  case EDIT_OUTPUT_type:
+  case EDIT_OSC_sync:
+    end_edit_mode();
     break;
 
   case EDIT_OUTPUT_method:
@@ -2188,7 +2243,13 @@ void HOT_TAP_do(int dummy) {
   case EDIT_OUT_OSC_select:
     break;
 
-  case EDIT_OUTPUT_type:
+  case EDIT_OSC_sync:
+    sync_all_oscillators(sync_mode | SYNC_phase_stright);
+
+#ifdef TAP_ED_SERIAL_DEBUG
+    Serial.print("synced all oscillators, mode "); serial_print_BIN(sync_mode | SYNC_phase_stright, 8); Serial.println("");
+#endif
+
     break;
 
   case EDIT_OUTPUT_method:
@@ -2301,7 +2362,13 @@ void COLD_TAP_do(int dummy) {
   case EDIT_OUT_OSC_select:
     break;
 
-  case EDIT_OUTPUT_type:
+  case EDIT_OSC_sync:
+    sync_all_oscillators(sync_mode & ~SYNC_phase_stright);
+
+#ifdef TAP_ED_SERIAL_DEBUG
+    Serial.print("synced all oscillators, mode "); serial_print_BIN(sync_mode & ~SYNC_phase_stright, 8); Serial.println("");
+#endif
+
     break;
 
   case EDIT_OUTPUT_method:
@@ -2381,7 +2448,8 @@ void switch_edit_type(int new_edit_type) {
     input_value= osc;
     break;
 
-  case EDIT_OUTPUT_type:
+  case EDIT_OSC_sync:
+    input_value = sync_mode;
     break;
 
   case EDIT_OUTPUT_method:
@@ -2519,7 +2587,14 @@ void editTAPs_do(int tap) {
     switch_strip_as_TAPs(edit_strip);	// the led might trigger tap
     break;
 
-  case EDIT_OUTPUT_type:
+  case EDIT_OSC_sync:
+    tap_input_bit_toggle(tap);
+    sync_mode = input_value;
+
+#ifdef TAP_ED_SERIAL_DEBUG
+    Serial.print("Set sync_mode to "); serial_print_BIN(input_value,8); Serial.println("");
+#endif
+
     break;
 
   case EDIT_OUTPUT_method:
