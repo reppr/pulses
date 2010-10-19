@@ -1522,7 +1522,6 @@ void displayOscillatorsInfos() {
   int i;
 
   Serial.println("  osc\tactive\tmute\tstate\tperiod\tPIN");
-  Serial.println("  octaves\t\t\t\tmask");
   Serial.println("");
 
   for (i=0; i<OSCILLATORs; i++) {
@@ -1556,11 +1555,15 @@ void displayOscillatorsInfos() {
   Serial.println("");
 
 
-  Serial.println("\tcount\t\t\t\t  mask");
+  Serial.println("");
+  Serial.println("  osc\toctaves\t\t\t\t  mask");
   Serial.println("");
 
   for (i=0; i<OSCILLATORs; i++) {
-    Serial.print("  ");
+    if (i == osc)
+      Serial.print("* ");
+    else
+      Serial.print("  ");
     Serial.print(i); Serial.print("\t"); serial_print_BIN(osc_count[i], 32);
     Serial.print(" "); serial_print_BIN(osc_mask[i], 32); Serial.println("");
   }
@@ -2866,8 +2869,14 @@ void set_analog_destination(int inp, int type, int index) {
 
     case TYPE_osc_period: case TYPE_analog_out:
       // brute force: deactivate all (other) inputs with the same destination:
-      while ((i = which_inp_sets_this_output_(type, index)) != ILLEGAL)
+      while ((i = which_inp_sets_this_output_(type, index)) != ILLEGAL) {
 	analog_IN_state[i] &= ~ACTIVE_undecided;	// deactivate
+
+#ifdef TAP_ED_SERIAL_DEBUG
+	Serial.print("set_analog_destination:  deactivate input "); Serial.print(i); Serial.println("] ");
+#endif
+
+      }
 
       // now activate selected input
       analog_IN_state[inp] |= ACTIVE_undecided;	// activate selected input
@@ -2910,8 +2919,15 @@ void set_unset_regulate_this_output(int destination_type, int destination_index)
   // deactivate *all* inputs that influence this output
   while ((inp = which_inp_sets_this_output_(destination_type, destination_index)) != ILLEGAL) {
     analog_IN_state[inp] &= ~ACTIVE_undecided;	// switch it off
-    if ((inp==up) || (inp==down))
+    if ((inp==up) || (inp==down) || (inp=acc_x) || (inp=acc_y) || (inp=acc_z))
       was_active_already = 1;
+    else {
+
+#ifdef TAP_ED_SERIAL_DEBUG
+      Serial.print("set_unset_regulate_this_output: deactivate input "); Serial.print(inp); Serial.println("] ");
+#endif
+      ;
+    }
   }
 
   if (was_active_already) {	// if it was active already we just turn it off, done.
@@ -3002,6 +3018,8 @@ void set_unset_regulate_this_output(int destination_type, int destination_index)
 void tap_do_osc_up_taps(int tab) {
 
 #ifdef TAP_EDIT
+  int i;
+
   switch (edit_type) {	// only few edit_types change behavior of these UP taps:
 
   case EDIT_OUT_OSC_mul_div:
@@ -3022,12 +3040,25 @@ void tap_do_osc_up_taps(int tab) {
       return;					// EXIT here
     }
 
+
     // destination input: act on selected oscillator
+
+    // first deactivate analog inputs setting the same oscillators period:
+    while ((i = which_inp_sets_this_output_(TYPE_osc_period, osc)) != ILLEGAL) {
+      analog_IN_state[i] &= ~ACTIVE_undecided;	// deactivate
+
+#ifdef TAP_ED_SERIAL_DEBUG
+      Serial.print("mul_div: deactivate input "); Serial.print(i); Serial.println("] ");
+#endif
+
+    }
+
+    // now set the new period:
     // from other source?
     if (mul_div_state & MUL_DIV_has_source) {	// from other source
 
 #ifdef TAP_ED_SERIAL_DEBUG
-      Serial.print("mul_div: period[" ); Serial.print((int) osc); Serial.print("] ");
+      Serial.print("mul_div: period["); Serial.print((int) osc); Serial.print("] ");
       Serial.print(" from source value ");  Serial.print(mul_div_source);
       Serial.print(" * "); Serial.print(mul); Serial.print(" / "); Serial.print(divi);
 #endif
