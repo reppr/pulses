@@ -857,14 +857,10 @@ short analog_IN(int inp) {
 
 
 long analog_inval2out(int inp, int input_raw_value) {
-  double value = input_raw_value;
-  long out_value;
   // Despite the long integer return type we do compute a long float value.
   // When adding to parameters we can accumulate cut-offs in analog_in2out_reminder[inp]
-
-  if(analog_in2out_method[inp] & METHOD_add) {
-    value += analog_in2out_reminder[inp];
-  }
+  double value = input_raw_value;
+  long out_value;
 
   if (analog_in2out_method[inp] & METHOD_linear) {
     value += analog_input_offset[inp];
@@ -872,13 +868,13 @@ long analog_inval2out(int inp, int input_raw_value) {
     value += analog_output_offset[inp];
   } // else: ERROR
 
-  out_value = (long) value;			// integer part
-
-  if(analog_in2out_method[inp] & METHOD_add) {	// reminder
-    analog_in2out_reminder[inp] = value - out_value;
+  if(analog_in2out_method[inp] & METHOD_add) {
+    value += analog_in2out_reminder[inp];		// reminder from last time
+    out_value = (long) value;				// integer part
+    analog_in2out_reminder[inp] = value - out_value;	// new reminder
   }
-
-  return out_value;
+    
+  return (long) value;
 }
 
 
@@ -3476,10 +3472,10 @@ void setup() {
   // 2 piezzo UP/DOWN analog inputs
   // for hand tuning parameters
   // piezzo DOWN
-  down = analog_input_setup(6, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -4, 0,  0.002, TYPE_osc_period, 0);
+  down = analog_input_setup(6, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -4, 0,  0.00001, TYPE_osc_period, 0);
   //
   // piezzo UP
-  up   = analog_input_setup(7, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -4, 0, -0.002, TYPE_osc_period, 0);
+  up   = analog_input_setup(7, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -4, 0, -0.00001, TYPE_osc_period, 0);
 
   // poti row, starting pin 8
   {
