@@ -552,7 +552,7 @@ void toggle_toneSwitch(int dummy)
 /* **************************************************************** */
 #ifdef PROFILING	// inside OSCILLATORs
 unsigned long inTime=0, late=0, easy=0, urgent=0, repeat=0, quit=0;
-unsigned long enteredOscillatorCount=0, profiledRounds=0, leftOscillatorTime;
+unsigned long enteredOscillatorCount=0, profiledRounds=0, outsideOscRounds=0, leftOscillatorTime;
 unsigned long lapseSum=0;
 int lapse=0, maxLapse=0;
 int dontProfileThisRound=0;	// no profiling when we spent time in menus or somesuch
@@ -1663,6 +1663,8 @@ void menuOscillators() {
 
       Serial.print("maxLapse "); Serial.print(maxLapse);
       Serial.print("\taverage "); Serial.println(lapseSum / profiledRounds);
+
+      Serial.print("rounds outside oscillator "); Serial.println(outsideOscRounds);
 
       break;
 
@@ -3354,19 +3356,19 @@ void setup() {
   // 2*3* 2160 = 12960
   // or alternative: 7 * 2160 = 15120
   // ################################################################
-  initial_period = 2;
-  initial_period *= 2;
-  initial_period *= 2;
-  initial_period *= 2;
+  initial_period =  2UL;
+  initial_period *= 2UL;
+  initial_period *= 2UL;
+  initial_period *= 2UL;
 
-  initial_period *= 3;
-  initial_period *= 3;
-  initial_period *= 3;
+  initial_period *= 3UL;
+  initial_period *= 3UL;
+  initial_period *= 3UL;
 
-  initial_period *= 5;
-  initial_period *= 5;
+  initial_period *= 5UL;
+  initial_period *= 5UL;
 
-  //    initial_period *= 7;
+  //    initial_period *= 7UL;
 
   for (osc=0; osc<OSCILLATORs; osc++)
     period[osc] = initial_period;
@@ -3448,13 +3450,13 @@ void setup() {
   // for parameter tuning
 
   // y-acceleration	the input offset will be calibrated on each activation to cancel current acceleration
-  acc_y = analog_input_setup(0, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -425, 0, 0.03, TYPE_osc_period, 0);
+  acc_y = analog_input_setup(0, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -425, 0, 0.001L, TYPE_osc_period, 0);
 
   // x-acceleration	the input offset will be calibrated on each activation to cancel current acceleration
-  acc_x = analog_input_setup(1, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -425, 0, 0.03, TYPE_osc_period, 1);
+  acc_x = analog_input_setup(1, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -425, 0, 0.001L, TYPE_osc_period, 1);
 
   // z-acceleration	the input offset will be calibrated on each activation to cancel current acceleration
-  acc_z = analog_input_setup(2, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -612, 0, 0.03, TYPE_osc_period, 2);
+  acc_z = analog_input_setup(2, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -612, 0, 0.001L, TYPE_osc_period, 2);
 
 
   // unused:
@@ -3472,10 +3474,10 @@ void setup() {
   // 2 piezzo UP/DOWN analog inputs
   // for hand tuning parameters
   // piezzo DOWN
-  down = analog_input_setup(6, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -4, 0,  0.00001, TYPE_osc_period, 0);
+  down = analog_input_setup(6, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -4, 0,  0.001L, TYPE_osc_period, 0);
   //
   // piezzo UP
-  up   = analog_input_setup(7, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -4, 0, -0.00001, TYPE_osc_period, 0);
+  up   = analog_input_setup(7, 0, (METHOD_linear | METHOD_add | METHOD_continuous), -4, 0, -0.001L, TYPE_osc_period, 0);
 
   // poti row, starting pin 8
   {
@@ -3536,6 +3538,7 @@ void loop() {
 #ifdef OSCILLATORs
   oscillate();
 
+  outsideOscRounds++;
 
 #ifdef MENU_over_serial
 
