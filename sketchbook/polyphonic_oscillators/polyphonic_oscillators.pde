@@ -3374,15 +3374,15 @@ void setup() {
     period[osc] = initial_period;
 
 
-  startOscillator(0);
-  osc_flags[0] |= OSC_FLAG_MUTE;	// muted	################ hw defect
+  startOscillator(0);			// on
 
   startOscillator(1);			// on
 
   startOscillator(2);
-  osc_flags[2] |= OSC_FLAG_MUTE;	// muted	################ hw defect
+  osc_flags[2] |= OSC_FLAG_MUTE;	// muted
 
-  startOscillator(3);			// on
+  startOscillator(3);
+  osc_flags[3] |= OSC_FLAG_MUTE;	// muted
 
 
   set_osc_mask_pin(0, 42);		// rhythm led out
