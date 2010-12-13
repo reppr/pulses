@@ -546,6 +546,36 @@ void toggle_toneSwitch(int dummy)
 
 
 /* **************************************************************** */
+#define SERIAL_STRIPs	1
+
+#ifdef SERIAL_STRIPs
+
+char serial_strip_data_PIN[SERIAL_STRIPs];
+char serial_strip_data_clock[SERIAL_STRIPs];
+
+unsigned char s_strp=0;
+ 
+void init_out_shift(char data_PIN, char clock_PIN) {	// version 4094, simplest
+  pinMode(data_PIN, OUTPUT); digitalWrite(data_PIN, LOW);
+  pinMode(clock_PIN, OUTPUT); digitalWrite(clock_PIN, LOW);
+  out_shift(data_PIN, clock_PIN, 0, 64);
+}
+
+void out_shift(char data_PIN, char clock_PIN, int value, char bits) {	// version 4094, simplest
+  for ( ; bits > 0; bits--, value >>= 1) {
+    digitalWrite(clock_PIN, LOW);
+    digitalWrite(data_PIN, (value & 1 ));
+    digitalWrite(clock_PIN, HIGH);
+    // value >>= 1;
+  }
+}
+
+#endif // SERIAL_STRIPs
+/* **************************************************************** */
+
+
+
+/* **************************************************************** */
 // #define PROFILING	// gather info for debugging and profiling
 			// mainly to find out how long the main loop
 			// needs to come back to the oscillator in time.
@@ -2955,7 +2985,7 @@ void set_unset_regulate_this_output(int destination_type, int destination_index)
 
   case ACCELERO_x:
     // calibrate to cancel current acceleration:
-    //    analog_input_offset[acc_x] = analogRead(analog_IN_PIN[acc_x]);
+    analog_input_offset[acc_x] = -analogRead(analog_IN_PIN[acc_x]);
 
     analog_in2out_reminder[acc_x] 		= 0.0;  // reset reminder 
     analog_in2out_destination_type[acc_x]	= destination_type;
@@ -2970,7 +3000,7 @@ void set_unset_regulate_this_output(int destination_type, int destination_index)
 
   case ACCELERO_y:
     // calibrate to cancel current acceleration:
-    //    analog_input_offset[acc_y] = analogRead(analog_IN_PIN[acc_y]);
+    analog_input_offset[acc_y] = -analogRead(analog_IN_PIN[acc_y]);
 
     analog_in2out_reminder[acc_y] 		= 0.0;  // reset reminder 
     analog_in2out_destination_type[acc_y]	= destination_type;
@@ -2985,7 +3015,7 @@ void set_unset_regulate_this_output(int destination_type, int destination_index)
 
   case ACCELERO_z:
     // calibrate to cancel current acceleration:
-    //    analog_input_offset[acc_z] = analogRead(analog_IN_PIN[acc_z]);
+    analog_input_offset[acc_z] = -analogRead(analog_IN_PIN[acc_z]);
 
     analog_in2out_reminder[acc_z] 		= 0.0;  // reset reminder 
     analog_in2out_destination_type[acc_z]	= destination_type;
@@ -3509,6 +3539,10 @@ void setup() {
   setup_TAP(7, 0, &editTAPs_do, 8); pinMode(7, OUTPUT);
   switch_strip_as_TAPs(edit_strip);
 
+#endif
+
+#ifdef SERIAL_STRIPs
+  init_out_shift(20, 19);	// data_PIN 20,  clock_PIN 19
 #endif
 
 #ifdef MENU_over_serial
