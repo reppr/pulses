@@ -84,6 +84,8 @@ unsigned char battery_PIN[BATTERY_CELLs] = {0, 1, 2, 3};
   #define LCD_ROWs	4		// this version only works with 20x4 displays and up to 4 cells
 #endif
 
+#define PIN_WITH_SWITCH_1	9	// there is a switch against ground on this pin 
+
 // time interval between measurements
 #define TIME_INTERVAL	30000	// milliseconds
 
@@ -314,6 +316,15 @@ void switch_load_off(int display) {
 char disable_shutdown=0;
 void toggle_disable_shutdown() {
   disable_shutdown = ~disable_shutdown;
+
+#ifdef USE_LCD
+  lcd.setCursor(0, 3);
+  lcd.print(" shutdown ");
+  if (disable_shutdown)
+    lcd.print("DISABLED");
+  else
+    lcd.print("ENABLED");
+#endif
 
 #ifdef USE_SERIAL
   Serial.print("shutdown ");
@@ -1048,20 +1059,26 @@ void shutdown() {
     delay(62);
     digitalWrite(LED_pin,LOW);
     delay(938);
-#ifdef USE_SERIAL
-    if (char_available())	// maybe user wants to continue?
-      break;
-#endif
-  }
 
-#ifdef USE_SERIAL
-  switch (get_char()) {
-    case 'x':
+#ifdef PIN_WITH_SWITCH_1
+    if (digitalRead(PIN_WITH_SWITCH_1) == LOW ) {	// maybe the user wants to continue?
       toggle_disable_shutdown();
-      return ;
+      break;
     }
 #endif
 
+#ifdef USE_SERIAL
+    if (char_available()) {				// maybe the user wants to continue?
+      switch (get_char()) {
+      case 'x':
+	toggle_disable_shutdown();
+	return ;
+      }
+    }
+#endif
+  }
+
+  // ok, we *will* shutdown now:
   for (int pin=0; pin<DIGITAL_PINs; pin++)
     digitalWrite(pin,LOW);	// risky, we might have negative logic on some pins
 
@@ -1169,6 +1186,11 @@ void setup() {
 
 #ifdef USE_LCD
   lcd.clear();
+#endif
+
+#ifdef PIN_WITH_SWITCH_1
+  pinMode(PIN_WITH_SWITCH_1, INPUT);
+  digitalWrite(PIN_WITH_SWITCH_1, HIGH);	// activate pullup resistor
 #endif
 
   switch_load_off(true);
