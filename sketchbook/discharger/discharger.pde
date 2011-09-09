@@ -24,8 +24,6 @@
 
    There is a very simple menu interface through serial line.
 
-   This version uses progmem for strings to save RAM.
-
 */
 /* **************************************************************** */
 #define ILLEGAL		-1
@@ -65,7 +63,7 @@ unsigned char battery_PIN[BATTERY_CELLs] = {0, 1, 2, 3};
   // menu over serial line:
   #define MENU_over_serial	// do we use a serial menu?
   // simple menu to access arduino hardware:
-  #define HARDWARE_menu		// menu interface to hardware configuration
+// #define HARDWARE_menu		// menu interface to hardware configuration
   	  			// this will let you read digital and analog inputs
 				// watch changes on inputs as value or as bar graphs
   	  			// set digital and analog outputs, etc.
@@ -76,6 +74,15 @@ unsigned char battery_PIN[BATTERY_CELLs] = {0, 1, 2, 3};
   #endif // HARDWARE_menu
 
 #endif	// USE_SERIAL
+
+#define USE_LCD	7, 6, 5, 4, 3, 2	// LiquidCrystal(rs, enable, d4, d5, d6, d7) 
+#ifdef USE_LCD
+  #include <LiquidCrystal.h>
+  LiquidCrystal lcd(USE_LCD);
+
+  #define LCD_COLs	20		// this version only works with 20x4 displays and up to 4 cells
+  #define LCD_ROWs	4		// this version only works with 20x4 displays and up to 4 cells
+#endif
 
 // time interval between measurements
 #define TIME_INTERVAL	30000	// milliseconds
@@ -163,6 +170,26 @@ void get_check_and_display_cells(void) {
   get_cell_voltages();
   check_worst_cell_state();	// to know which cell is worst
   for (int cell=0; cell<BATTERY_CELLs; cell++) {
+    drop = cell_voltage[cell] - cell_voltage_start[cell];
+
+#ifdef USE_LCD
+  int drop_mV=(int) ((float) drop + 0.5);
+
+  lcd.setCursor(cell*5, 0);
+  if (cell != worst_cell)
+    lcd.print(" ");
+  else
+    lcd.print("!");
+  lcd.print((int) ((cell_voltage[cell] + 0.0005) * 1000.0));
+
+  lcd.setCursor(cell*5, 1);
+  if (drop_mV > 0)	// '+' sign
+    lcd.print("+");
+  else if (drop_mV == 0)
+    lcd.print("-");
+  lcd.print(drop_mV);
+#endif
+
 #ifdef USE_SERIAL
     Serial.print((int) cell + 1); 
     if (cell != worst_cell)
@@ -170,7 +197,6 @@ void get_check_and_display_cells(void) {
       Serial.print("- ");
     Serial.print((float) cell_voltage[cell] + 0.005,2);
     Serial.print("V  (");
-    drop = cell_voltage[cell] - cell_voltage_start[cell];
     if (drop > 0)	// '+' sign
       Serial.print("+");
     if (drop == 0 )
@@ -237,6 +263,16 @@ int check_worst_cell_state() {
 char load_state=0;	// 0=off, 1=on, ?=pulsed....
 
 void switch_load_on(int display) {
+  #ifdef USE_LCD
+    if (display) {
+      if (load_state != 1) {
+	lcd.setCursor(0,2);
+	lcd.print("Switched ON pin ");
+	lcd.print((int) load_switch_pin);
+      }
+    }
+  #endif
+
   #ifdef USE_SERIAL
     if (display) {
       if (load_state != 1) {
@@ -252,6 +288,16 @@ void switch_load_on(int display) {
 
 
 void switch_load_off(int display) {
+  #ifdef USE_LCD
+    if (display) {
+      if (load_state != 0) {
+	lcd.setCursor(0,2);
+	lcd.print("Switched OFF pin ");
+	lcd.print((int) load_switch_pin);
+      }
+    }
+  #endif
+
   #ifdef USE_SERIAL
     if (display) {
       if (load_state != 0) {
@@ -282,10 +328,26 @@ void react_on_battery_state() {
   switch (check_worst_cell_state()) {
   case emergency:
     if (disable_shutdown == 0) {
+
+#ifdef USE_LCD
+      lcd.setCursor(0, 2);
+      lcd.print("EMERGENCY SHUTDOWN");
+      lcd.setCursor(0, 3);
+      lcd.print("cell ");
+      lcd.print(worst_cell + 1);
+      lcd.print(" has ");
+      lcd.print((int) ((cell_voltage[worst_cell] + 0.0005) * 1000.0));
+      lcd.print("mV");
+#endif
+
 #ifdef USE_SERIAL
       Serial.print("\n==> EMERGENCY SHUTDOWN <==\tworst cell=");
-      Serial.println((int) worst_cell + 1);
+      Serial.print((int) worst_cell + 1);
+      Serial.print(" has only ");
+      Serial.print((float) cell_voltage[worst_cell] + 0.005,2);
+      Serial.print("V");
 #endif
+
       shutdown();
     }
     break;
@@ -1058,6 +1120,13 @@ void setup() {
   Serial.begin(USE_SERIAL);
 #endif
 
+#ifdef USE_LCD
+  lcd.begin(LCD_COLs, LCD_ROWs);
+  lcd.print("BATTERY DISCHARGER");
+  lcd.setCursor(0, 1);
+  lcd.print("version 0.1");
+#endif
+
   // without delay startup message are not always shown
   for (int i=0; i<4; i++) {
     digitalWrite(LED_pin,HIGH);
@@ -1096,6 +1165,11 @@ void setup() {
   for (int cell=0; cell<BATTERY_CELLs ; cell++) {
     cell_voltage_start[cell] = cell_voltage[cell];
   }
+
+
+#ifdef USE_LCD
+  lcd.clear();
+#endif
 
   switch_load_off(true);
 
