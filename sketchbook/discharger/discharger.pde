@@ -69,6 +69,8 @@ unsigned char battery_PIN[BATTERY_CELLs] = {0, 1, 2, 3};
   	  			// set digital and analog outputs, etc.
   #ifdef HARDWARE_menu
     char hw_PIN = ILLEGAL;
+    extern int __bss_end;
+    extern void *__brkval;
   #endif // HARDWARE_menu
 
 #endif
@@ -668,6 +670,15 @@ void display_menu_discharger() {
   Serial.print("\nPress 'm' or '?' for menu.\n\n");
 }
 
+int get_free_RAM() {
+  int free;
+
+  if ((int) __brkval == 0)
+    return ((int) &free) - ((int) &__bss_end);
+  else
+    return ((int) &free) - ((int) __brkval);
+}
+
 void please_select_pin() {
   Serial.println("Select a pin with P.");
 }
@@ -769,6 +780,12 @@ void menu_discharger() {
 	break;
 
 #ifdef HARDWARE_menu inside MENU_over_serial
+      case  'M':
+	Serial.print("free RAM: ");
+	Serial.print(get_free_RAM());
+	Serial.println(" bytes");
+	break;
+
       case 'P':
 	Serial.print("Number of pin to work on: ");
 	newValue = numericInput(hw_PIN);
