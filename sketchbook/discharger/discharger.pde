@@ -75,7 +75,7 @@ unsigned char battery_PIN[BATTERY_CELLs] = {0, 1, 2, 3};
     extern void *__brkval;
   #endif // HARDWARE_menu
 
-#endif
+#endif	// USE_SERIAL
 
 // time interval between measurements
 #define TIME_INTERVAL	30000	// milliseconds
@@ -89,7 +89,7 @@ unsigned char battery_PIN[BATTERY_CELLs] = {0, 1, 2, 3};
 #else								// 168/328 boards
   #define ANALOG_INPUTs	6
   #define DIGITAL_PINs	14
-#endif
+#endif	// board specific initialisations
 
 #define LED_pin	13
 
@@ -132,7 +132,7 @@ float voltage_scale[BATTERY_CELLs];		// scaling factors for each input
     int input_scaling_mV[BATTERY_CELLs];
     int input_scaling_AD_value[BATTERY_CELLs];
   #endif
-#endif
+#endif	// number of BATTERY_CELLs
 
 
 void compute_input_scaling() {
@@ -494,6 +494,7 @@ void display_analog_reads() {
 }
 
 
+#ifdef HARDWARE_menu	// inside MENU_over_serial
 void watch_digital_input(int pin) {
   int value, old_value=-9997;
 
@@ -512,7 +513,7 @@ void watch_digital_input(int pin) {
   Serial.println("(quit)");
   get_char();
 }
-
+#endif	// HARDWARE_menu inside MENU_over_serial
 
 // print binary numbers with leading zeroes and a space
 void serial_print_BIN(unsigned long value, int bits) {
@@ -673,6 +674,7 @@ void display_menu_discharger() {
   Serial.print("\nPress 'm' or '?' for menu.\n\n");
 }
 
+#ifdef HARDWARE_menu	// inside MENU_over_serial
 int get_free_RAM() {
   int free;
 
@@ -681,6 +683,7 @@ int get_free_RAM() {
   else
     return ((int) &free) - ((int) __brkval);
 }
+#endif
 
 void please_select_pin() {
   Serial.println("Select a pin with P.");
@@ -884,7 +887,7 @@ void menu_discharger() {
 } // menu_discharger()
 
 
-#endif	\\ MENU_over_serial
+#endif	// MENU_over_serial
 /* **************************************************************** */
 
 
@@ -1025,14 +1028,14 @@ void reset() {
   pinMode(load_switch_pin,OUTPUT);
   switch_load_off(true);	// switch *default* load off
 
-#ifdef	USE_EEPROM	// load calibration data for analog inputs from EEPROM
+#ifdef USE_EEPROM	// load calibration data for analog inputs from EEPROM
   if ( (error = read_scaling_from_eeprom()) != 0 )
-#ifdef USE_SERIAL
+  #ifdef USE_SERIAL
     calibrate();
-#else
+  #else
     ;
-#endif
-#endif
+  #endif
+#endif	// USE_EEPROM
 
   compute_input_scaling();	// we need this in all cases
 
@@ -1074,7 +1077,7 @@ void setup() {
   // analogReference(INTERNAL2V56);	// internal reference 2.56 V
 #else								// 168/328 boards
   analogReference(INTERNAL);		// internal reference 1.1 V
-#endif
+#endif	// board specific
 
   // after switching reference voltage we do a couple of analogReads
   // to stabilize readings
