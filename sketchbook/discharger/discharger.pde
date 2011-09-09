@@ -24,6 +24,8 @@
 
    There is a very simple menu interface through serial line.
 
+   This version uses progmem for strings to save RAM.
+
 */
 /* **************************************************************** */
 #define ILLEGAL		-1
@@ -656,7 +658,8 @@ void display_menu_discharger() {
   Serial.println(")\t<excellent");
 
 #ifdef HARDWARE_menu	// inside MENU_over_serial
-  Serial.println("\n***  HARDWARE  ***");
+  Serial.print("\n***  HARDWARE  ***\t\tfree RAM=");
+  Serial.println(get_free_RAM());
   Serial.print("P=PIN (");
   if (hw_PIN == ILLEGAL)
     Serial.print("no");
