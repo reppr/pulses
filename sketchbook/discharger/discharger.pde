@@ -319,11 +319,11 @@ void toggle_disable_shutdown() {
 
 #ifdef USE_LCD
   lcd.setCursor(0, 3);
-  lcd.print(" shutdown ");
+  lcd.print("shutdown  ");
   if (disable_shutdown)
-    lcd.print("DISABLED");
+    lcd.print("disabled");
   else
-    lcd.print("ENABLED");
+    lcd.print("enabled");
 #endif
 
 #ifdef USE_SERIAL
@@ -356,7 +356,7 @@ void react_on_battery_state() {
       Serial.print((int) worst_cell + 1);
       Serial.print(" has only ");
       Serial.print((float) cell_voltage[worst_cell] + 0.005,2);
-      Serial.print("V");
+      Serial.println("V");
 #endif
 
       shutdown();
@@ -1053,7 +1053,7 @@ void shutdown() {
   while (char_available())	// clear prior input
     get_char();
 #endif
-  
+
   for (int i=0; i<32; i++) {	// delay
     digitalWrite(LED_pin,HIGH);
     delay(62);
@@ -1063,7 +1063,7 @@ void shutdown() {
 #ifdef PIN_WITH_SWITCH_1
     if (digitalRead(PIN_WITH_SWITCH_1) == LOW ) {	// maybe the user wants to continue?
       toggle_disable_shutdown();
-      break;
+      return;
     }
 #endif
 
