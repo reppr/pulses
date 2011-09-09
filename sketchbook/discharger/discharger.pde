@@ -1,5 +1,5 @@
 /* **************************************************************** */
-// discharger v0.1
+// discharger v0.2
 /* **************************************************************** */
 
 
@@ -21,8 +21,11 @@
 
    Calibration data gets permanently stored in EEPROM.
 
-
    There is a very simple menu interface through serial line.
+
+   This version can use a 20x4 LCD display.
+
+   To save RAM constant strings are stored in PROGMEM.
 
 */
 /* **************************************************************** */
@@ -69,8 +72,6 @@ unsigned char battery_PIN[BATTERY_CELLs] = {0, 1, 2, 3};
   	  			// set digital and analog outputs, etc.
   #ifdef HARDWARE_menu
     char hw_PIN = ILLEGAL;
-    extern int __bss_end;
-    extern void *__brkval;
   #endif // HARDWARE_menu
 
 #endif	// USE_SERIAL
@@ -78,14 +79,14 @@ unsigned char battery_PIN[BATTERY_CELLs] = {0, 1, 2, 3};
 #define USE_LCD	7, 6, 5, 4, 3, 2	// LiquidCrystal(rs, enable, d4, d5, d6, d7) 
 #ifdef USE_LCD
   #include <LiquidCrystal.h>
-  LiquidCrystal lcd(USE_LCD);
+  LiquidCrystal LCD(USE_LCD);
 
   #define LCD_COLs	20		// this version only works with 20x4 displays and up to 4 cells
   #define LCD_ROWs	4		// this version only works with 20x4 displays and up to 4 cells
   #define TOP		0
-  #define INFO_1	1		// line for lcd info_1 display
-  #define INFO_2	2		// line for lcd info_2 display
-  #define MESSAGE	3		// line for lcd message display
+  #define INFO_1	1		// line for LCD info_1 display
+  #define INFO_2	2		// line for LCD info_2 display
+  #define MESSAGE	3		// line for LCD message display
 #endif
 
 #define PIN_WITH_SWITCH_1	9	// there is a switch against ground on this pin 
@@ -112,33 +113,49 @@ char load_switch_pin=LOAD_SWITCH_PIN;
 unsigned long last, time_interval=TIME_INTERVAL;	// milliseconds
 
 /* **************************************************************** */
+extern int __bss_end;
+extern void *__brkval;
+
+int get_free_RAM() {
+  int free;
+
+  if ((int) __brkval == 0)
+    return ((int) &free) - ((int) &__bss_end);
+  else
+    return ((int) &free) - ((int) __brkval);
+}
+
+/* **************************************************************** */
 // use PROGMEM to save RAM:
 #include <avr/pgmspace.h>
 
 // const prog_uchar programName[]="BATTERY DISCHARGER";		// does not work :(
 const unsigned char programName[] PROGMEM = "BATTERY DISCHARGER";
-const unsigned char empty[] PROGMEM = "";
-// const unsigned char linefeed[] PROGMEM = "\n";
+const unsigned char programLongName[] PROGMEM = "*** BATTERY DISCHARGER v0.2 ***";
+const unsigned char version[] PROGMEM = "version 0.2";
+
+const unsigned char tab_[] PROGMEM = "\t";
+// const unsigned char empty[] PROGMEM = "";
 
 #ifdef USE_LCD
-// lcd.print() for progmem strings:
-// void lcd_print_progmem(const prog_uchar *str)	// does not work :(
-void lcd_print_progmem(const unsigned char *str) {
+// LCD.print() for progmem strings:
+// void LCD_print_progmem(const prog_uchar *str)	// does not work :(
+void LCD_print_progmem(const unsigned char *str) {
   unsigned char c;
   while((c = pgm_read_byte(str++)))
-    lcd.print(c);
+    LCD.print(c);
 }
 
-void lcd_print_at_progmem(unsigned char col, unsigned char row, const unsigned char *str) {
-  lcd.setCursor(col, row);
-  lcd_print_progmem(str);
+void LCD_print_at_progmem(unsigned char col, unsigned char row, const unsigned char *str) {
+  LCD.setCursor(col, row);
+  LCD_print_progmem(str);
 }
 
-// clear line and print on lcd at line 'row'
-const unsigned char lcd_empty[] PROGMEM = "                    ";
-void lcd_print_line_progmem(unsigned char row, const unsigned char *str) {
-  lcd_print_at_progmem(0, row, lcd_empty);
-  lcd_print_at_progmem(0, row, str);
+// clear line and print on LCD at line 'row'
+const unsigned char LCD_empty[] PROGMEM = "                    ";
+void LCD_print_line_progmem(unsigned char row, const unsigned char *str) {
+  LCD_print_at_progmem(0, row, LCD_empty);
+  LCD_print_at_progmem(0, row, str);
 }
 
 #endif
@@ -201,6 +218,7 @@ void compute_input_scaling() {
   }
 }
 
+const unsigned char V_[] PROGMEM = "V  (";
 
 void get_cell_voltages(void) {
   int value;
@@ -226,21 +244,21 @@ void get_check_and_display_cells(void) {
     drop = cell_voltage[cell] - cell_voltage_start[cell];
 
 #ifdef USE_LCD
-  int drop_mV=(int) ((float) drop + 0.5);
+  int drop_mV=(int) ((float) drop * 1000.0 + 0.5);
 
-  lcd.setCursor(cell*5, INFO_1);
+  LCD.setCursor(cell*5, INFO_1);
   if (cell != worst_cell)
-    lcd.print(" ");
+    LCD.print(" ");
   else
-    lcd.print("!");
-  lcd.print((int) ((cell_voltage[cell] + 0.0005) * 1000.0));
+    LCD.print("!");
+  LCD.print((int) ((cell_voltage[cell] + 0.0005) * 1000.0));
 
-  lcd.setCursor(cell*5, INFO_2);
+  LCD.setCursor(cell*5, INFO_2);
   if (drop_mV > 0)	// '+' sign
-    lcd.print("+");
+    LCD.print("+");
   else if (drop_mV == 0)
-    lcd.print("-");
-  lcd.print(drop_mV);
+    LCD.print("-");
+  LCD.print(drop_mV);
 #endif
 
 #ifdef USE_SERIAL
@@ -249,7 +267,7 @@ void get_check_and_display_cells(void) {
       Serial.print("  "); else
       Serial.print("- ");
     Serial.print((float) cell_voltage[cell] + 0.005,2);
-    Serial.print("V  (");
+    serial_print_progmem(V_);
     if (drop > 0)	// '+' sign
       Serial.print("+");
     if (drop == 0 )
@@ -321,8 +339,8 @@ void switch_load_on(int display) {
   #ifdef USE_LCD
     if (display) {
       if (load_state != 1) {
-	lcd_print_line_progmem(MESSAGE, switchedOFFpin);
-	lcd.print((int) load_switch_pin);
+	LCD_print_line_progmem(MESSAGE, switchedONpin);
+	LCD.print((int) load_switch_pin);
       }
     }
   #endif
@@ -330,7 +348,7 @@ void switch_load_on(int display) {
   #ifdef USE_SERIAL
     if (display) {
       if (load_state != 1) {
-	serial_print_progmem(switchedOFFpin);
+	serial_print_progmem(switchedONpin);
 	Serial.println((int) load_switch_pin);
       }
     }
@@ -345,8 +363,8 @@ void switch_load_off(int display) {
   #ifdef USE_LCD
     if (display) {
       if (load_state != 0) {
-	lcd_print_line_progmem(MESSAGE, switchedOFFpin);
-	lcd.print((int) load_switch_pin);
+	LCD_print_line_progmem(MESSAGE, switchedOFFpin);
+	LCD.print((int) load_switch_pin);
       }
     }
   #endif
@@ -374,11 +392,11 @@ void toggle_disable_shutdown() {
   disable_shutdown = ~disable_shutdown;
 
 #ifdef USE_LCD
-  lcd_print_line_progmem(TOP, shutDown);
+  LCD_print_line_progmem(TOP, shutDown);
   if (disable_shutdown)
-    lcd_print_progmem(disabled);
+    LCD_print_progmem(disabled);
   else
-    lcd_print_progmem(enabled);
+    LCD_print_progmem(enabled);
 #endif
 
 #ifdef USE_SERIAL
@@ -395,6 +413,8 @@ const unsigned char emergencyShutdown[] PROGMEM = "EMERGENCY SHUTDOWN";
 const unsigned char emergencyShutdownCell[] PROGMEM = "\n==> EMERGENCY SHUTDOWN <==\tworst cell=";
 #endif
 const unsigned char cell_[] PROGMEM = "cell ";
+const unsigned char hasOnly[] PROGMEM = " has only ";
+const unsigned char has_[] PROGMEM = " has ";
 
 void react_on_battery_state() {
   switch (check_worst_cell_state()) {
@@ -402,18 +422,18 @@ void react_on_battery_state() {
     if (disable_shutdown == 0) {
 
 #ifdef USE_LCD
-      lcd_print_line_progmem(MESSAGE, emergencyShutdown);
-      lcd_print_line_progmem(TOP, cell_);
-      lcd.print(worst_cell + 1);
-      lcd.print(" has ");
-      lcd.print((int) ((cell_voltage[worst_cell] + 0.0005) * 1000.0));
-      lcd.print("mV");
+      LCD_print_line_progmem(MESSAGE, emergencyShutdown);
+      LCD_print_line_progmem(TOP, cell_);
+      LCD.print(worst_cell + 1);
+      LCD_print_progmem(has_);
+      LCD.print((int) ((cell_voltage[worst_cell] + 0.0005) * 1000.0));
+      LCD.print("mV");
 #endif
 
 #ifdef USE_SERIAL
       serial_print_progmem(emergencyShutdownCell);
       Serial.print((int) worst_cell + 1);
-      Serial.print(" has only ");
+      serial_print_progmem(hasOnly);
       Serial.print((float) cell_voltage[worst_cell] + 0.005,2);
       Serial.println("V");
 #endif
@@ -422,7 +442,7 @@ void react_on_battery_state() {
 
 #ifdef USE_LCD
       // if we get here, there was no shutdown, so clear message:
-      lcd_print_line_progmem(MESSAGE, lcd_empty);
+      LCD_print_line_progmem(MESSAGE, LCD_empty);
 #endif
 
 #ifdef USE_SERIAL
@@ -564,7 +584,7 @@ int ONoff(int value, int mode, int tab) {
   }
 
   if (tab)
-    Serial.print("\t");
+    serial_print_progmem(tab_);
 
   return value;
 }
@@ -579,7 +599,7 @@ void bar_graph(int value) {
 
 
   if (value >=0 && value <= 1024) {
-    Serial.print(value); Serial.print("\t");
+    Serial.print(value); serial_print_progmem(tab_);
     for (i=0; i<stars; i++) {
       if (i == 0 && value == 0)		// zero
 	Serial.print("0");
@@ -642,7 +662,7 @@ void display_analog_reads() {
 
   for (i=0; i<ANALOG_INPUTs; i++) {
     value = analogRead(i);
-    Serial.print(i); Serial.print("\t"); bar_graph(value);
+    Serial.print(i); serial_print_progmem(tab_); bar_graph(value);
   }
 
   Serial.println("");
@@ -653,6 +673,9 @@ void display_analog_reads() {
 const unsigned char watchingINpin[] PROGMEM = "watching digital input pin ";
 const unsigned char anyStop[] PROGMEM = "\t\t(send any byte to stop)";
 const unsigned char pin_[] PROGMEM = "pin ";
+const unsigned char is_[] PROGMEM = " is ";
+const unsigned char high_[] PROGMEM = "HIGH";
+const unsigned char low_[] PROGMEM = "LOW";
 
 void watch_digital_input(int pin) {
   int value, old_value=-9997;
@@ -665,11 +688,11 @@ void watch_digital_input(int pin) {
     value = digitalRead(hw_PIN);
     if (value != old_value) {
       old_value = value;
-      serial_println_progmem(pin_); Serial.print((int) pin); Serial.print(" is ");
+      serial_println_progmem(pin_); Serial.print((int) pin); serial_print_progmem(is_);
       if (value)
-	Serial.println("HIGH");
+	serial_println_progmem(high_);
       else
-	Serial.println("LOW");
+	serial_println_progmem(low_);
     }
   }
   serial_println_progmem(quit_);
@@ -703,6 +726,7 @@ const unsigned char mV_ADvalue[] PROGMEM = "mV\tAD value=";
 const unsigned char pinNotCalibrated[] PROGMEM = "(pin NOT CALIBRATED)";
 const unsigned char askUseStore[] PROGMEM = "\n\nUse and store the following values?";
 const unsigned char answerUseStore[] PROGMEM = "\nEnter 'y' to use and store permanently\n'u' to USE for this session, 'q' to quit.\t(y/u/Q)?";
+const unsigned char cell___[] PROGMEM = "\nCell "; 
 
 void calibrate()
 {
@@ -724,7 +748,7 @@ void calibrate()
     }
 
   for (int cell=0; cell<BATTERY_CELLs; cell++) {
-    Serial.print("\nCell ");
+    serial_print_progmem(cell___);
     Serial.print((int) cell + 1);
     serial_println_progmem(connectedToPin);
     Serial.println((int) battery_PIN[cell]);
@@ -805,66 +829,92 @@ void show_scaling() {
 /* **************************************************************** */
 // simple menu interface through serial port:
 
-const unsigned char menuTitle[] PROGMEM = "\n*** DISCHARGER v0.1 ***";
 const unsigned char menuLine1[] PROGMEM = ".=display\ts=show\t\tr=reset\t\tx=toggle shutdown ";
-// DADA
+const unsigned char freeRAM[] PROGMEM = "free RAM: ";
+const unsigned char levelsMvEmergency[] PROGMEM = "LEVELS mV:\te=emergency (";
+const unsigned char on_[] PROGMEM = "(on)";
+const unsigned char off_[] PROGMEM = "(OFF)";
+const unsigned char pPin[] PROGMEM = "p=pin (";
+const unsigned char cCalibrate[] PROGMEM = ")\tC=calibrate";
+const unsigned char tTime[] PROGMEM = "\tt=time mS (";
+const unsigned char lLow[] PROGMEM = ")\tl=low (";
+const unsigned char oOk[] PROGMEM = ")\to=ok (";
+const unsigned char gGood[] PROGMEM = ")\tg=good (";
+const unsigned char excellent_[] PROGMEM = ")\t<excellent";
+const unsigned char hwMenuTitle[] PROGMEM = "\n***  HARDWARE  ***\t\tfree RAM=";
+const unsigned char PPin[] PROGMEM = "P=PIN (";
+const unsigned char HLWR[] PROGMEM = ")\tH=set HIGH\tL=set LOW\tW=analog write\tR=read";
+const unsigned char VI[] PROGMEM = "V=VU bar\tI=digiwatch\t";
+const unsigned char aAnalogRead[] PROGMEM = "a=analog read";
+const unsigned char pressm[] PROGMEM = "\nPress 'm' or '?' for menu.\n\n";
 
 void display_menu_discharger() {
-  serial_println_progmem(menuTitle);
+  serial_println_progmem(programLongName);
 
-  serial_println_progmem(menuLine1);
+  serial_print_progmem(menuLine1);
   if (!disable_shutdown)
-    Serial.println("(on)");
+    serial_println_progmem(on_);
   else
-    Serial.println("(OFF)");
+    serial_println_progmem(off_);
 
-  Serial.print("p=pin (");
+  serial_print_progmem(pPin);
   Serial.print((int) load_switch_pin);
-  Serial.print(")\tC=calibrate");
-  Serial.print("\tt=time mS (");
+  serial_print_progmem(cCalibrate);
+  serial_print_progmem(tTime);
   Serial.print(time_interval);
   Serial.println(")");
 
-  Serial.print("LEVELS mV:\te=emergency (");
+  serial_print_progmem(levelsMvEmergency);
   Serial.print(level_emergency);
-  Serial.print(")\tl=low (");
+  serial_print_progmem(lLow);
   Serial.print(level_low);
-  Serial.print(")\to=ok (");
+  serial_print_progmem(oOk);
   Serial.print(level_ok);
-  Serial.print(")\tg=good (");
+  serial_print_progmem(gGood);
   Serial.print(level_good);
-  Serial.println(")\t<excellent");
+  serial_println_progmem(excellent_);
 
 #ifdef HARDWARE_menu	// inside MENU_over_serial
-  Serial.print("\n***  HARDWARE  ***\t\tfree RAM=");
+  serial_print_progmem(hwMenuTitle);
   Serial.println(get_free_RAM());
-  Serial.print("P=PIN (");
+  serial_print_progmem(PPin);
   if (hw_PIN == ILLEGAL)
     Serial.print("no");
   else
     Serial.print((int) hw_PIN);
-  Serial.println(")\tH=set HIGH\tL=set LOW\tW=analog write\tR=read");
-  Serial.print("V=VU bar\tI=digiwatch\t");
+  serial_println_progmem(HLWR);
+  serial_print_progmem(VI);
 #endif			// HARDWARE_menu  inside MENU_over_serial
-  Serial.println("a=analog read");
+  serial_println_progmem(aAnalogRead);
 
-  Serial.print("\nPress 'm' or '?' for menu.\n\n");
+  serial_print_progmem(pressm);
 }
 
-#ifdef HARDWARE_menu	// inside MENU_over_serial
-int get_free_RAM() {
-  int free;
-
-  if ((int) __brkval == 0)
-    return ((int) &free) - ((int) &__bss_end);
-  else
-    return ((int) &free) - ((int) __brkval);
-}
-#endif
+const unsigned char selectPin[] PROGMEM = "Select a pin with P.";
 
 void please_select_pin() {
-  Serial.println("Select a pin with P.");
+  serial_println_progmem(selectPin);
 }
+
+const unsigned char timeInterval[] PROGMEM = "time interval ";
+const unsigned char milliseconds_[] PROGMEM = "milliseconds\t";
+const unsigned char unchanged_[] PROGMEM = "(unchanged)";
+const unsigned char reset_[] PROGMEM = "\n==> RESET <==\n";
+const unsigned char emergencyLevel[] PROGMEM = "emergency level ";
+const unsigned char mV_[] PROGMEM = " mV\t: ";
+const unsigned char lowLevel[] PROGMEM = "low level ";
+const unsigned char okLevel[] PROGMEM = "ok level ";
+const unsigned char goodLevel[] PROGMEM = "good level ";
+const unsigned char bytes_[] PROGMEM = " bytes";
+const unsigned char numberOfPin[] PROGMEM = "Number of pin to work on: ";
+const unsigned char none_[] PROGMEM = "(none)";
+const unsigned char setToHigh[] PROGMEM = " was set to HIGH.";
+const unsigned char setToLow[] PROGMEM = " was set to LOW.";
+const unsigned char analogWriteValue[] PROGMEM = "analog write value ";
+const unsigned char analogWrite_[] PROGMEM = "analogWrite(";
+const unsigned char analogValueOnPin[] PROGMEM = "analog value on pin ";
+const unsigned char switchPin_[] PROGMEM = "switch pin ";
+const unsigned char unknownMenuInput[] PROGMEM = "unknown menu input: ";
 
 void menu_discharger() {
   char menu_input;
@@ -888,19 +938,19 @@ void menu_discharger() {
 	break;
 
       case 't':
-	Serial.print("time interval ");
+	serial_print_progmem(timeInterval);
 	Serial.print(time_interval);
-	Serial.print(" milliseconds\t: ");
+	serial_print_progmem(milliseconds_);
 	newValue = numericInput(time_interval);
 	if (newValue>0) {
 	  time_interval = newValue;
 	  Serial.println(time_interval);
 	} else
-	  Serial.println("(unchanged)");
+	  serial_println_progmem(unchanged_);
 	break;
 
       case 'p':
-	Serial.print("switch pin ");
+	serial_print_progmem(switchPin_);
 	Serial.print((int) load_switch_pin);
 	Serial.print("\t: ");
 	newValue = numericInput(load_switch_pin);
@@ -908,11 +958,11 @@ void menu_discharger() {
 	  load_switch_pin = newValue;
 	  Serial.println((int) load_switch_pin);
 	} else
-	  Serial.println("(unchanged)");
+	  serial_println_progmem(unchanged_);
 	break;
 
       case 'r':
-	  Serial.print("\n==> RESET <==\n");
+	  serial_print_progmem(reset_);
 	  reset();
 	  save_startup_voltages();
 	  display_menu_discharger();
@@ -923,33 +973,33 @@ void menu_discharger() {
 	break;
 
       case 'e':
-	Serial.print("emergency level ");
+	serial_print_progmem(emergencyLevel);
 	Serial.print(level_emergency);
-	Serial.print(" mV\t: ");
+	serial_print_progmem(mV_);
 	level_emergency = numericInput(level_emergency);
 	Serial.println(level_emergency);
 	break;
 
       case 'l':
-	Serial.print("low level ");
+	serial_print_progmem(lowLevel);
 	Serial.print(level_low);
-	Serial.print(" mV\t: ");
+	serial_print_progmem(mV_);
 	level_low = numericInput(level_low);
 	Serial.println(level_low);
 	break;
 
       case 'o':
-	Serial.print("ok level ");
+	serial_print_progmem(okLevel);
 	Serial.print(level_ok);
-	Serial.print(" mV\t: ");
+	serial_print_progmem(mV_);
 	level_ok = numericInput(level_ok);
 	Serial.println(level_ok);
 	break;
 
       case 'g':
-	Serial.print("good level ");
+	serial_print_progmem(goodLevel);
 	Serial.print(level_good);
-	Serial.print(" mV\t: ");
+	serial_print_progmem(mV_);
 	level_good = numericInput(level_good);
 	Serial.println(level_good);
 	break;
@@ -964,19 +1014,19 @@ void menu_discharger() {
 
 #ifdef HARDWARE_menu inside MENU_over_serial
       case  'M':
-	Serial.print("free RAM: ");
+	serial_print_progmem(freeRAM);
 	Serial.print(get_free_RAM());
-	Serial.println(" bytes");
+	serial_println_progmem(bytes_);
 	break;
 
       case 'P':
-	Serial.print("Number of pin to work on: ");
+	serial_print_progmem(numberOfPin);
 	newValue = numericInput(hw_PIN);
 	if (newValue>=0 && newValue<DIGITAL_PINs) {
 	  hw_PIN = newValue;
 	  Serial.println((int) hw_PIN);
 	} else
-	  Serial.println("(none)");
+	  serial_println_progmem(none_);
 	break;
 
       case 'H':
@@ -985,7 +1035,7 @@ void menu_discharger() {
 	else {
 	  pinMode(hw_PIN, OUTPUT);
 	  digitalWrite(hw_PIN, HIGH);
-	  serial_print_progmem(pin_); Serial.print((int) hw_PIN); Serial.println(" was set to HIGH.");
+	  serial_print_progmem(pin_); Serial.print((int) hw_PIN); serial_println_progmem(setToHigh);
 	}
 	break;
 
@@ -995,7 +1045,7 @@ void menu_discharger() {
 	else {
 	  pinMode(hw_PIN, OUTPUT);
 	  digitalWrite(hw_PIN, LOW);
-	  serial_print_progmem(pin_); Serial.print((int) hw_PIN); Serial.println(" was set to LOW.");
+	  serial_print_progmem(pin_); Serial.print((int) hw_PIN); serial_println_progmem(setToLow);
 	}
 	break;
 
@@ -1003,16 +1053,16 @@ void menu_discharger() {
 	if (hw_PIN == ILLEGAL)
 	  please_select_pin();
 	else {
-	  Serial.print("analog write value ");
+	  serial_print_progmem(analogWriteValue);
 	  newValue = numericInput(-1);
 	  if (newValue>=0 && newValue<=255) {
 	    Serial.println(newValue);
 
 	    analogWrite(hw_PIN, newValue);
-	    Serial.print("analogWrite("); Serial.print((int) hw_PIN);
+	    serial_print_progmem(analogWrite_); Serial.print((int) hw_PIN);
 	    Serial.print(", "); Serial.print(newValue); Serial.println(")");
 	  } else
-	    Serial.println("(quit)");
+	    serial_println_progmem(quit_);
 	}
 	break;
 
@@ -1020,7 +1070,7 @@ void menu_discharger() {
 	if (hw_PIN == ILLEGAL)
 	  please_select_pin();
 	else {
-	  Serial.print("analog value on pin "); Serial.print((int) hw_PIN); Serial.print(" is ");
+	  serial_print_progmem(analogValueOnPin); Serial.print((int) hw_PIN); serial_print_progmem(is_);
 	  Serial.println(analogRead(hw_PIN));
 	}
 	break;
@@ -1047,7 +1097,7 @@ void menu_discharger() {
 	break;
 
       default:
-	Serial.print("unknown menu_input: "); Serial.print(byte(menu_input));
+	serial_print_progmem(unknownMenuInput); Serial.print(byte(menu_input));
 	Serial.print(" = "); Serial.println(menu_input);
 	while (char_available() > 0) {
 	  menu_input = get_char();
@@ -1095,6 +1145,9 @@ int read_int_from_eeprom(int eeprom_addr) {
   return value;
 }
 
+const unsigned char saved_[] PROGMEM = "Saved ";
+const unsigned char bytesScalingData[] PROGMEM = " bytes scaling data to EEPROM.";
+const unsigned char bye_[] PROGMEM = "bye\n\n";
 
 int save_scaling_to_eeprom() {
   int eeprom_addr=USE_EEPROM;
@@ -1108,9 +1161,9 @@ int save_scaling_to_eeprom() {
   }
 
 #ifdef USE_SERIAL	// inside USE_EEPROM
-  Serial.print("Saved ");
+  serial_print_progmem(saved_);
   Serial.print(eeprom_addr - eeprom_start);
-  Serial.println(" bytes scaling data to EEPROM.");
+  serial_println_progmem(bytesScalingData);
 #endif
 
   return 0 ;
@@ -1160,10 +1213,10 @@ void shutdown() {
 
   for (int i=0; i<32; i++) {	// delay
     digitalWrite(LED_pin,HIGH);
-    delay(60);
+    delay(10);
     digitalWrite(LED_pin,LOW);
     for (int j=0; j<9; j++) {
-      delay(100);
+      delay(120);
       #ifdef PIN_WITH_SWITCH_1
         if (digitalRead(PIN_WITH_SWITCH_1) == LOW ) {	// maybe the user wants to continue?
 	  toggle_disable_shutdown();
@@ -1188,7 +1241,7 @@ void shutdown() {
     digitalWrite(pin,LOW);	// risky, we might have negative logic on some pins
 
 #ifdef USE_SERIAL
-  Serial.print("bye\n\n");
+  serial_print_progmem(bye_);
 #endif
 
   for (int i=0; i<18; i++)	// ################# correct that
@@ -1243,22 +1296,26 @@ void setup() {
 #endif
 
 #ifdef USE_LCD
-  lcd.begin(LCD_COLs, LCD_ROWs);
-  lcd.print("BATTERY DISCHARGER");
-  lcd.setCursor(0, 1);
-  lcd.print("version 0.1");
+  LCD.begin(LCD_COLs, LCD_ROWs);
+  LCD_print_line_progmem(0, programName);
+  LCD_print_line_progmem(1, version);
+  LCD_print_line_progmem(3, freeRAM);
+  LCD.print(get_free_RAM());
 #endif
 
   // without delay startup message are not always shown
   for (int i=0; i<4; i++) {
     digitalWrite(LED_pin,HIGH);
-    delay(10);
+    delay(4);
     digitalWrite(LED_pin,LOW);
     delay(240);
   }
 
 #ifdef USE_SERIAL
-  Serial.print("*** BATTERY DISCHARGER v0.1 ***\n");
+  #ifndef MENU_over_serial
+   Serial.println("");
+   serial_println_progmem(programLongName);
+  #endif
 #endif
 
   // set an internal analog reference:
@@ -1278,7 +1335,6 @@ void setup() {
   reset();		// must be *after* setting analog reference
 
 #ifdef MENU_over_serial	// show message about menu
-  delay(2000);		// without delay the menu message often does not show up
   display_menu_discharger();
 #endif
 
@@ -1288,14 +1344,15 @@ void setup() {
     cell_voltage_start[cell] = cell_voltage[cell];
   }
 
-
-#ifdef USE_LCD
-  lcd.clear();
-#endif
-
 #ifdef PIN_WITH_SWITCH_1
   pinMode(PIN_WITH_SWITCH_1, INPUT);
   digitalWrite(PIN_WITH_SWITCH_1, HIGH);	// activate pullup resistor
+#endif
+
+#ifdef USE_LCD
+  delay(3000);
+  LCD.clear();
+  LCD_print_line_progmem(TOP, programName);
 #endif
 
   switch_load_off(true);
