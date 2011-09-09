@@ -108,6 +108,33 @@ char load_switch_pin=LOAD_SWITCH_PIN;
 unsigned long last, time_interval=TIME_INTERVAL;	// milliseconds
 
 /* **************************************************************** */
+// use PROGMEM to save RAM:
+#include <avr/pgmspace.h>
+const prog_uchar programName[]="DISCHARGER";
+
+#ifdef USE_SERIAL
+// Serial.print() for progmem strings:
+// void progmem_serial_print(const prog_uchar *str)
+void progmem_serial_print(const unsigned char *str) {
+  char c;
+
+  while((c = pgm_read_byte(str++)))
+    Serial.print(c, BYTE);
+}
+#endif
+
+#ifdef USE_LCD
+// lcd.print() for progmem strings:
+// void progmem_lcd_print(const prog_uchar *str)
+void progmem_lcd_print(const unsigned char *str) {
+  char c;
+
+  while((c = pgm_read_byte(str++)))
+    lcd.print(c);
+}
+#endif
+
+/* **************************************************************** */
 // ADC inputs:
 
 // data of the ADC inputs:
@@ -1173,6 +1200,9 @@ void setup() {
   reset();		// must be *after* setting analog reference
 
 #ifdef MENU_over_serial	// show message about menu
+  progmem_serial_print(programName);
+  progmem_lcd_print(programName);
+  delay(10000);
   delay(2000);		// without delay the menu message often does not show up
   display_menu_discharger();
 #endif
