@@ -319,7 +319,7 @@ void toggle_disable_shutdown() {
 
 #ifdef USE_LCD
   lcd.setCursor(0, 3);
-  lcd.print(" shutdown ");
+  lcd.print("shutdown  ");
   if (disable_shutdown)
     lcd.print("DISABLED");
   else
