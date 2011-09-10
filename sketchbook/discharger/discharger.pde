@@ -89,7 +89,9 @@ unsigned char battery_PIN[BATTERY_CELLs] = {0, 1, 2, 3};
   #define MESSAGE	3		// line for LCD message display
 #endif
 
-#define PIN_WITH_SWITCH_1	9	// there is a switch against ground on this pin 
+#define PIN_WITH_SWITCH_1	9	// pin with a switch against ground, if any
+#define DEBOUNCE		5	// milliseconds
+// #define LED_PIN_2		10	// pin of second LED, if any
 
 // time interval between measurements
 #define TIME_INTERVAL	30000	// milliseconds
@@ -105,7 +107,7 @@ unsigned char battery_PIN[BATTERY_CELLs] = {0, 1, 2, 3};
   #define DIGITAL_PINs	14
 #endif	// board specific initialisations
 
-#define LED_pin	13
+#define LED_PIN	13
 
 // variable, as we might have more then one load and switch the pin at run time
 char load_switch_pin=LOAD_SWITCH_PIN;
@@ -113,6 +115,7 @@ char load_switch_pin=LOAD_SWITCH_PIN;
 unsigned long last, time_interval=TIME_INTERVAL;	// milliseconds
 
 /* **************************************************************** */
+// determine RAM usage:
 extern int __bss_end;
 extern void *__brkval;
 
@@ -124,6 +127,28 @@ int get_free_RAM() {
   else
     return ((int) &free) - ((int) __brkval);
 }
+
+/* **************************************************************** */
+// simle minded switch control:
+#ifdef PIN_WITH_SWITCH_1
+int switch_pressed(int pin) {
+  unsigned long now, on=millis();
+
+  if (digitalRead(pin) == HIGH )		// HIGH means OFF
+    return 0;					// so return immediately
+
+  while (digitalRead(pin) == LOW ) {		// LOW means ON
+    if (((now=millis()) - on ) > DEBOUNCE ) {	// pressed long enough?
+      while (digitalRead(pin) == LOW )		// yes, wait until key is released
+	;
+      now=millis();				// remember time
+      delay(DEBOUNCE);				// debounce switching off
+      return now - on;				// return duration in mS
+    }
+  }
+  return 0;					// not pressed long enough
+}
+#endif
 
 /* **************************************************************** */
 // use PROGMEM to save RAM:
@@ -238,6 +263,14 @@ char worst_cell=ILLEGAL;
 void get_check_and_display_cells(void) {
   float drop;
 
+#ifdef LED_PIN_2
+  digitalWrite(LED_PIN_2, HIGH);
+#else
+  #ifdef LED_PIN
+    digitalWrite(LED_PIN, HIGH);
+  #endif
+#endif
+
   get_cell_voltages();
   check_worst_cell_state();	// to know which cell is worst
   for (int cell=0; cell<BATTERY_CELLs; cell++) {
@@ -279,9 +312,19 @@ void get_check_and_display_cells(void) {
     ;
 #endif
   }
+
 #ifdef USE_SERIAL
   Serial.println("");
 #endif
+
+#ifdef LED_PIN_2
+  digitalWrite(LED_PIN_2, LOW);
+#else
+  #ifdef LED_PIN
+    digitalWrite(LED_PIN, LOW);
+  #endif
+#endif
+
 }
 
 
@@ -1212,9 +1255,9 @@ void shutdown() {
 #endif
 
   for (int i=0; i<32; i++) {	// delay
-    digitalWrite(LED_pin,HIGH);
+    digitalWrite(LED_PIN,HIGH);
     delay(10);
-    digitalWrite(LED_pin,LOW);
+    digitalWrite(LED_PIN,LOW);
     for (int j=0; j<9; j++) {
       delay(120);
       #ifdef PIN_WITH_SWITCH_1
@@ -1305,9 +1348,9 @@ void setup() {
 
   // without delay startup message are not always shown
   for (int i=0; i<4; i++) {
-    digitalWrite(LED_pin,HIGH);
+    digitalWrite(LED_PIN,HIGH);
     delay(4);
-    digitalWrite(LED_pin,LOW);
+    digitalWrite(LED_PIN,LOW);
     delay(240);
   }
 
@@ -1376,4 +1419,14 @@ void loop() {
     get_check_and_display_cells();
     react_on_battery_state();
   }
+
+#ifdef PIN_WITH_SWITCH_1
+  int switch_pressed_ms;
+
+  if (switch_pressed_ms = switch_pressed(PIN_WITH_SWITCH_1)) {
+    get_check_and_display_cells();
+    react_on_battery_state();
+  }
+#endif
+
 }
