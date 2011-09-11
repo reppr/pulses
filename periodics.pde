@@ -11,11 +11,11 @@
 */
 /* **************************************************************** */
 // #define SERIAL_VERBOSE	0	// just bare minimum of feedbackack
-#define SERIAL_VERBOSE	1	// more info on the tasks
+// #define SERIAL_VERBOSE	1	// more info on the tasks
 
 // for testing timer overflow:
 #define TIMER_TYPE	unsigned char
-#define TIMER_SPEEDUP	50L
+#define TIMER_SPEEDUP	20L
 #define TIMER		(TIMER_TYPE) ((unsigned long) millis() / TIMER_SPEEDUP)
 
 // is-it-time-now condition:
@@ -137,15 +137,13 @@ int setup_task(void (*task_do)(int), byte new_flags, TIMER_TYPE when, TIMER_TYPE
 /* **************************************************************** */
 // click un a piezzo to hear result:
 #define CLICK_PIN	12			// pin with a piezzo
+unsigned long clicks=0;
 void click(int task) {
-  digitalWrite(CLICK_PIN, counter[task] & 1);
+  digitalWrite(CLICK_PIN, ++clicks & 1);
 }
 
 /* **************************************************************** */
 void inside_task_info(int task) {
-  if (task == 0)
-    click(task);
-
 #ifdef SERIAL_VERBOSE
   digitalWrite(LED_PIN,HIGH);
   #if (SERIAL_VERBOSE == 0)
@@ -179,15 +177,19 @@ void setup() {
 
   init_tasks();
 
-  delay(2000);
   Serial.println("\nPERIODICS\n");
 
   now=TIMER;
-  setup_task(&inside_task_info, ACTIVE, now, 5);
 
+  /* first commits test case:
+  setup_task(&inside_task_info, ACTIVE, now, 5);
   setup_task(&inside_task_info, ACTIVE, now, 20);
   setup_task(&inside_task_info, ACTIVE, now, 40);
   setup_task(&inside_task_info, ACTIVE, now, 60);
+  */
+
+  setup_task(&click, ACTIVE, now, 30);
+  setup_task(&click, ACTIVE, now+15, 50);
 }
 
 
@@ -202,8 +204,8 @@ void loop() {
   if(now < last_now) {
     overflows++;
     Serial.println("\n====> OVERFLOW <====");
-    if (overflows > 1) {
-      Serial.println("stopped");
+    if (overflows > 5) {
+      Serial.println("\nstopped");
       while (true) ;
     }
   }
