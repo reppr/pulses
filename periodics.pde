@@ -109,8 +109,6 @@ int check_maybe_do() {
 }
 
 
-const int NOW=0;		// keyword for setup_task, not absolutely save
-
 int setup_task(void (*task_do)(int), byte new_flags, TIMER_TYPE when, TIMER_TYPE new_period) {
   int task;
 
@@ -128,26 +126,22 @@ int setup_task(void (*task_do)(int), byte new_flags, TIMER_TYPE when, TIMER_TYPE
   flags[task] = new_flags;			//      initialize task
   period[task] = new_period;
   periodic_do[task] = task_do;			// payload
-
-  if (when == NOW) {				// special case, start right now
-    now=when=TIMER;				// remember time
-    next[task] = now;
-    do_task(task);				// do it just now from here
-
-    return task;
-  }
-
   next[task] = when;
 
   return task;
 }
 
+/* **************************************************************** */
 // debugging:
+
+/* **************************************************************** */
+// click un a piezzo to hear result:
 #define CLICK_PIN	12			// pin with a piezzo
 void click(int task) {
   digitalWrite(CLICK_PIN, counter[task] & 1);
 }
 
+/* **************************************************************** */
 void inside_task_info(int task) {
   if (task == 0)
     click(task);
@@ -187,18 +181,20 @@ void setup() {
 
   delay(2000);
   Serial.println("\nPERIODICS\n");
-  
-  setup_task(&inside_task_info, ACTIVE, NOW, 5);
 
-  setup_task(&inside_task_info, ACTIVE, NOW, 20);
-  setup_task(&inside_task_info, ACTIVE, NOW, 40);
-  setup_task(&inside_task_info, ACTIVE, NOW, 60);
+  now=TIMER;
+  setup_task(&inside_task_info, ACTIVE, now, 5);
+
+  setup_task(&inside_task_info, ACTIVE, now, 20);
+  setup_task(&inside_task_info, ACTIVE, now, 40);
+  setup_task(&inside_task_info, ACTIVE, now, 60);
 }
 
 
 /* **************************************************************** */
+// overflow detection:
 TIMER_TYPE last_now=TIMER;
-int overflows;		// just for debugging timer overflow
+int overflows;
 
 void loop() {
   now=TIMER;
