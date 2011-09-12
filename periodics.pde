@@ -20,7 +20,10 @@
 
 #define LED_PIN			13
 
-#define USE_SERIAL		57600
+// to use serial define USE_SERIAL as serial speed: 
+//  #define USE_SERIAL	115200
+#define USE_SERIAL	57600
+//  #define USE_SERIAL	38400
 
 
 
@@ -29,26 +32,27 @@
 // #define SERIAL_VERBOSE	1	// more info on the tasks
 
 
+/* **************************************************************** */
 // for testing timer overflow:
 #define TIMER_TYPE	unsigned char
 #define TIMER_SPEEDUP	20L
 #define TIMER		(TIMER_TYPE) ((unsigned long) millis() / TIMER_SPEEDUP)
 
-// is-it-time-now condition:
+// The is-it-time-now condition:
 
-// well known *not* to work
-// #define TASK_READY_CONDITION		next[task] <= now
-
-//	stops at overflow
-// #define TASK_READY_CONDITION		(now - last[task]) >= period[task]
+// Well known *not* to work
+// #define TIME_READY_CONDITION		next[task] <= now
 
 //	stops at overflow
-// #define TASK_READY_CONDITION		(last[task] + period[task]) <= now
+// #define TIME_READY_CONDITION		(now - last[task]) >= period[task]
+
+//	stops at overflow
+// #define TIME_READY_CONDITION		(last[task] + period[task]) <= now
 
 // works!
-// #define TASK_READY_CONDITION		((now >= last[task]) && (now >= next[task])) || ((now < last[task]) && now >= next[task])
+// #define TIME_READY_CONDITION		((now >= last[task]) && (now >= next[task])) || ((now < last[task]) && now >= next[task])
 
-#define TASK_READY_CONDITION		((next[task] >= last[task]) && (now >= next[task])) || ((now < last[task]) && now >= next[task])
+#define TIME_READY_CONDITION		((next[task] >= last[task]) && (now >= next[task])) || ((now < last[task]) && now >= next[task])
 
 
 
@@ -96,6 +100,7 @@ void do_task(int task) {
   // prepare future:
   last[task] = next[task];			// when it *should* have happened
   next[task] += period[task];			// when it should happen again
+  // fix_global_next();			// planed soon...
 
 #if (SERIAL_VERBOSE > 0) 
   Serial.print("\n\t\tAFTER   "); Serial.print(task); Serial.print(" / "); Serial.print((unsigned int) counter[task]);
@@ -110,7 +115,7 @@ int check_maybe_do() {
 
   for (task=0; task<PERIODICS; task++) {	// check all tasks once
     if (flags[task] & ACTIVE) {			// task active?
-      if (TASK_READY_CONDITION) {		// yes, is it time?
+      if (TIME_READY_CONDITION) {		// yes, is it time?
 	do_task(task);				// yes, do this task now
       }	// not the time yet
     } // active task
@@ -139,7 +144,16 @@ int setup_task(void (*task_do)(int), byte new_flags, TIMER_TYPE when, TIMER_TYPE
   periodic_do[task] = task_do;			// payload
   next[task] = when;
 
+  // fix_global_next();			// planed soon...
+
   return task;
+}
+
+
+void set_new_period(int task, TIMER_TYPE new_period) {
+  period[task] = new_period;
+  next[task] = last[task] + period[task];
+  // fix_global_next();			// planed soon...
 }
 
 
