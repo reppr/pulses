@@ -14,9 +14,8 @@
 // #define SERIAL_VERBOSE	1	// more info on the tasks
 
 // for testing timer overflow:
-#define TIMER_TYPE	unsigned char
-#define TIMER_SPEEDUP	20L
-#define TIMER		(TIMER_TYPE) ((unsigned long) millis() / TIMER_SPEEDUP)
+#define TIMER_TYPE	unsigned long
+#define TIMER		micros()
 
 // is-it-time-now condition:
 
@@ -149,7 +148,6 @@ void inside_task_info(int task) {
   #if (SERIAL_VERBOSE == 0)
     Serial.print("\ntask do "); Serial.print(task); Serial.print("/"); Serial.print((unsigned int) counter[task]);
   #else
-    // Serial.print("\nat RT "); Serial.println(millis() / TIMER_SPEEDUP); 
     Serial.print("\ntime  "); Serial.print((unsigned int) now);
     Serial.print("  \tTASK DO "); Serial.print(task); Serial.print(" / "); Serial.print((unsigned int) counter[task]);
     Serial.print("\tlast "); Serial.print((unsigned int) last[task]);
@@ -161,7 +159,14 @@ void inside_task_info(int task) {
 #endif
 }
 
+
 /* **************************************************************** */
+// playing with rhythms:
+TIMER_TYPE time_unit=200000;		// scaling timer to 5 beats/s 
+
+
+/* **************************************************************** */
+
 void setup() {
   #ifdef USE_SERIAL
     Serial.begin(USE_SERIAL);
@@ -188,8 +193,8 @@ void setup() {
   setup_task(&inside_task_info, ACTIVE, now, 60);
   */
 
-  setup_task(&click, ACTIVE, now, 30);
-  setup_task(&click, ACTIVE, now+15, 50);
+  setup_task(&click, ACTIVE, now, 12*time_unit);
+  setup_task(&click, ACTIVE, now+6*time_unit, 20*time_unit);
 }
 
 
