@@ -402,12 +402,29 @@ const unsigned char pPin[] PROGMEM = "p=pin (";
 
 
 #ifdef HARDWARE_menu
-const unsigned char hwMenuTitle[] PROGMEM = "\n***  HARDWARE  ***\t\tfree RAM=";
+const unsigned char hwMenuTitle[] PROGMEM = "\n*** HARDWARE MENU ***\t\tfree RAM=";
 const unsigned char PPin[] PROGMEM = "P=PIN (";
 const unsigned char HLWR[] PROGMEM = ")\tH=set HIGH\tL=set LOW\tW=analog write\tR=read";
 const unsigned char VI[] PROGMEM = "V=VU bar\tI=digiwatch\t";
 const unsigned char aAnalogRead[] PROGMEM = "a=analog read";
-#endif
+
+
+void menu_hardware_display() {
+  serial_print_progmem(hwMenuTitle);
+  Serial.println(get_free_RAM());
+  Serial.println("");
+
+  serial_print_progmem(PPin);
+  if (hw_PIN == ILLEGAL)
+    Serial.print("no");
+  else
+    Serial.print((int) hw_PIN);
+  serial_println_progmem(HLWR);
+  serial_print_progmem(VI);
+  serial_println_progmem(aAnalogRead);
+}
+
+#endif // HARDWARE_menu
 
 
 const unsigned char pressm[] PROGMEM = "\nPress 'm' or '?' for menu.\n\n";
@@ -422,18 +439,7 @@ void display_serial_menu() {
   Serial.println("");
 
 #ifdef HARDWARE_menu	// inside MENU_over_serial
-  serial_print_progmem(hwMenuTitle);
-  Serial.println(get_free_RAM());
-  Serial.println("");
-
-  serial_print_progmem(PPin);
-  if (hw_PIN == ILLEGAL)
-    Serial.print("no");
-  else
-    Serial.print((int) hw_PIN);
-  serial_println_progmem(HLWR);
-  serial_print_progmem(VI);
-  serial_println_progmem(aAnalogRead);
+  menu_hardware_display();
 #endif			// HARDWARE_menu  inside MENU_over_serial
 
   serial_print_progmem(pressm);
@@ -452,7 +458,9 @@ void please_select_pin() {
 //	const unsigned char unchanged_[] PROGMEM = "(unchanged)";
 
 const unsigned char bytes_[] PROGMEM = " bytes";
+
 #ifdef HARDWARE_menu
+
 const unsigned char numberOfPin[] PROGMEM = "Number of pin to work on: ";
 const unsigned char none_[] PROGMEM = "(none)";
 const unsigned char setToHigh[] PROGMEM = " was set to HIGH.";
@@ -460,13 +468,104 @@ const unsigned char setToLow[] PROGMEM = " was set to LOW.";
 const unsigned char analogWriteValue[] PROGMEM = "analog write value ";
 const unsigned char analogWrite_[] PROGMEM = "analogWrite(";
 const unsigned char analogValueOnPin[] PROGMEM = "analog value on pin ";
+
+int hardware_menu_reaction(char menu_input) {
+  long newValue;
+
+  switch (menu_input) {
+  case  'M':
+    serial_print_progmem(freeRAM);
+    Serial.print(get_free_RAM());
+    serial_println_progmem(bytes_);
+    break;
+
+  case 'P':
+    serial_print_progmem(numberOfPin);
+    newValue = numericInput(hw_PIN);
+    if (newValue>=0 && newValue<DIGITAL_PINs) {
+      hw_PIN = newValue;
+      Serial.println((int) hw_PIN);
+    } else
+      serial_println_progmem(none_);
+    break;
+
+  case 'H':
+    if (hw_PIN == ILLEGAL)
+      please_select_pin();
+    else {
+      pinMode(hw_PIN, OUTPUT);
+      digitalWrite(hw_PIN, HIGH);
+      serial_print_progmem(pin_); Serial.print((int) hw_PIN); serial_println_progmem(setToHigh);
+    }
+    break;
+
+  case 'L':
+    if (hw_PIN == ILLEGAL)
+      please_select_pin();
+    else {
+      pinMode(hw_PIN, OUTPUT);
+      digitalWrite(hw_PIN, LOW);
+      serial_print_progmem(pin_); Serial.print((int) hw_PIN); serial_println_progmem(setToLow);
+    }
+    break;
+
+  case 'W':
+    if (hw_PIN == ILLEGAL)
+      please_select_pin();
+    else {
+      serial_print_progmem(analogWriteValue);
+      newValue = numericInput(-1);
+      if (newValue>=0 && newValue<=255) {
+	Serial.println(newValue);
+
+	analogWrite(hw_PIN, newValue);
+	serial_print_progmem(analogWrite_); Serial.print((int) hw_PIN);
+	Serial.print(", "); Serial.print(newValue); Serial.println(")");
+      } else
+	serial_println_progmem(quit_);
+    }
+    break;
+
+  case 'R':
+    if (hw_PIN == ILLEGAL)
+      please_select_pin();
+    else {
+      serial_print_progmem(analogValueOnPin); Serial.print((int) hw_PIN); serial_print_progmem(is_);
+      Serial.println(analogRead(hw_PIN));
+    }
+    break;
+
+  case 'V':
+    if ((hw_PIN == ILLEGAL) | (hw_PIN >= ANALOG_INPUTs))
+      please_select_pin();
+    else
+      bar_graph_VU(hw_PIN);
+    break;
+
+  case 'I':
+    if (hw_PIN == ILLEGAL)
+      please_select_pin();
+    else {
+      pinMode(hw_PIN, INPUT);
+      watch_digital_input(hw_PIN);
+    }
+    break;
+
+  case 'a':
+    display_analog_reads();
+    break;
+  default:
+    return 0;		// menu_input not found in this menu
+  }
+  return 1;		// menu_input found in this menu
+}
 #endif
 
 
 
 const unsigned char unknownMenuInput[] PROGMEM = "unknown menu input: ";
 
-void menu_discharger() {
+void menu_serial_reaction() {
   char menu_input;
   long newValue;
 
@@ -483,106 +582,34 @@ void menu_discharger() {
 	display_serial_menu();
 	break;
 
-#ifdef HARDWARE_menu inside MENU_over_serial
-      case  'M':
-	serial_print_progmem(freeRAM);
-	Serial.print(get_free_RAM());
-	serial_println_progmem(bytes_);
-	break;
-
-      case 'P':
-	serial_print_progmem(numberOfPin);
-	newValue = numericInput(hw_PIN);
-	if (newValue>=0 && newValue<DIGITAL_PINs) {
-	  hw_PIN = newValue;
-	  Serial.println((int) hw_PIN);
-	} else
-	  serial_println_progmem(none_);
-	break;
-
-      case 'H':
-	if (hw_PIN == ILLEGAL)
-	  please_select_pin();
-	else {
-	  pinMode(hw_PIN, OUTPUT);
-	  digitalWrite(hw_PIN, HIGH);
-	  serial_print_progmem(pin_); Serial.print((int) hw_PIN); serial_println_progmem(setToHigh);
-	}
-	break;
-
-      case 'L':
-	if (hw_PIN == ILLEGAL)
-	  please_select_pin();
-	else {
-	  pinMode(hw_PIN, OUTPUT);
-	  digitalWrite(hw_PIN, LOW);
-	  serial_print_progmem(pin_); Serial.print((int) hw_PIN); serial_println_progmem(setToLow);
-	}
-	break;
-
-      case 'W':
-	if (hw_PIN == ILLEGAL)
-	  please_select_pin();
-	else {
-	  serial_print_progmem(analogWriteValue);
-	  newValue = numericInput(-1);
-	  if (newValue>=0 && newValue<=255) {
-	    Serial.println(newValue);
-
-	    analogWrite(hw_PIN, newValue);
-	    serial_print_progmem(analogWrite_); Serial.print((int) hw_PIN);
-	    Serial.print(", "); Serial.print(newValue); Serial.println(")");
-	  } else
-	    serial_println_progmem(quit_);
-	}
-	break;
-
-      case 'R':
-	if (hw_PIN == ILLEGAL)
-	  please_select_pin();
-	else {
-	  serial_print_progmem(analogValueOnPin); Serial.print((int) hw_PIN); serial_print_progmem(is_);
-	  Serial.println(analogRead(hw_PIN));
-	}
-	break;
-
-      case 'V':
-	if ((hw_PIN == ILLEGAL) | (hw_PIN >= ANALOG_INPUTs))
-	  please_select_pin();
-	else
-	  bar_graph_VU(hw_PIN);
-	break;
-
-      case 'I':
-	if (hw_PIN == ILLEGAL)
-	  please_select_pin();
-	else {
-	  pinMode(hw_PIN, INPUT);
-	  watch_digital_input(hw_PIN);
-	}
-	break;
-
-      case 'a':
-	display_analog_reads();
-	break;
-#endif // HARDWARE_menu
-
       default:
-	serial_print_progmem(unknownMenuInput); Serial.print(byte(menu_input));
-	Serial.print(" = "); Serial.println(menu_input);
-	while (char_available() > 0) {
-	  menu_input = get_char();
-	  Serial.print(byte(menu_input));
-	}
-	Serial.println("");
+
+	// maybe it's in a submenu?
+
+#ifdef HARDWARE_menu				// quite a hack...
+	if (hardware_menu_reaction(menu_input))
+	  ;
+#else						// quite a hack...
+	if (false)
+	  ;
+#endif // submenu reactions
+	else {
+	  serial_print_progmem(unknownMenuInput); Serial.print(byte(menu_input));
+	  Serial.print(" = "); Serial.println(menu_input);
+	  while (char_available() > 0) {
+	    menu_input = get_char();
+	    Serial.print(byte(menu_input));
+	  }
+	  Serial.println("");
 	break;
+	}
       }
 
       if (!char_available())
 	delay(WAITforSERIAL);
     }
   }
-} // menu_discharger()
+} // menu_serial_reaction()
 
 
 #endif	// MENU_over_serial
@@ -632,12 +659,12 @@ void setup() {
 /* **************************************************************** */
 
 void loop() {
-  unsigned long now;
 
 #ifdef MENU_over_serial
   if (char_available())
-    menu_discharger();
+    menu_serial_reaction();
 #endif
+
 }
 
 
