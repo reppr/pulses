@@ -10,8 +10,24 @@
    used to test timer overflow strategies.
 */
 /* **************************************************************** */
+
+
+
+/* **************************************************************** */
+// CONFIGURATION:
+
+#define PERIODICS		4	// maximal number of tasks
+
+#define LED_PIN			13
+
+#define USE_SERIAL		57600
+
+
+
+/* **************************************************************** */
 // #define SERIAL_VERBOSE	0	// just bare minimum of feedbackack
 // #define SERIAL_VERBOSE	1	// more info on the tasks
+
 
 // for testing timer overflow:
 #define TIMER_TYPE	unsigned char
@@ -34,14 +50,8 @@
 
 #define TASK_READY_CONDITION		((next[task] >= last[task]) && (now >= next[task])) || ((now < last[task]) && now >= next[task])
 
-/* **************************************************************** */
-// CONFIGURATION:
 
-#define USE_SERIAL		57600
 
-#define PERIODICS		4	// maximal number of tasks
-
-#define LED_PIN			13
 /* **************************************************************** */
 byte flags[PERIODICS];
 
@@ -58,6 +68,7 @@ TIMER_TYPE next[PERIODICS];
 
 // pointers on  void something(int task)  functions:
 void (*periodic_do[PERIODICS])(int);
+
 
 
 /* **************************************************************** */
@@ -131,18 +142,19 @@ int setup_task(void (*task_do)(int), byte new_flags, TIMER_TYPE when, TIMER_TYPE
   return task;
 }
 
+
 /* **************************************************************** */
 // debugging:
 
-/* **************************************************************** */
-// click un a piezzo to hear result:
+
+// click on a piezzo to hear result:
 #define CLICK_PIN	12			// pin with a piezzo
 unsigned long clicks=0;
 void click(int task) {
   digitalWrite(CLICK_PIN, ++clicks & 1);
 }
 
-/* **************************************************************** */
+
 void inside_task_info(int task) {
 #ifdef SERIAL_VERBOSE
   digitalWrite(LED_PIN,HIGH);
@@ -161,7 +173,11 @@ void inside_task_info(int task) {
 #endif
 }
 
+
+
 /* **************************************************************** */
+// setup:
+
 void setup() {
   #ifdef USE_SERIAL
     Serial.begin(USE_SERIAL);
@@ -181,22 +197,29 @@ void setup() {
 
   now=TIMER;
 
-  /* first commits test case:
+  /*
+  // first commits test case:
   setup_task(&inside_task_info, ACTIVE, now, 5);
   setup_task(&inside_task_info, ACTIVE, now, 20);
   setup_task(&inside_task_info, ACTIVE, now, 40);
   setup_task(&inside_task_info, ACTIVE, now, 60);
   */
 
+  // 3 to 5 pattern with phase offset
   setup_task(&click, ACTIVE, now, 30);
   setup_task(&click, ACTIVE, now+15, 50);
 }
 
 
+
 /* **************************************************************** */
+// main loop:
+
+
 // overflow detection:
 TIMER_TYPE last_now=TIMER;
 int overflows;
+
 
 void loop() {
   now=TIMER;
@@ -213,5 +236,6 @@ void loop() {
 
   check_maybe_do();
 }
+
 
 /* **************************************************************** */
