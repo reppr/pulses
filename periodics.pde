@@ -319,6 +319,7 @@ byte B = ILLEGAL;
 byte C = ILLEGAL;
 byte D = ILLEGAL;
 
+// *do* change 'case' statement in menu_serial_reaction() if you change this.
 #define CLICK_PERIODICS		4	// number of click frequencies
 
 // playing with rhythms:
@@ -595,8 +596,7 @@ void serial_print_BIN(unsigned long value, int bits) {
 /* **************************************************************** */
 // simple menu interface through serial port:
 
-const unsigned char menuLine1[] PROGMEM = "\nSelect periodic with A, B, C, or D.  (";
-const unsigned char menuLine2[] PROGMEM = "\nToggle periodic with a, b, c, or d.\t";
+const unsigned char switchPeriodic[] PROGMEM = "\ns=switch periodic on/off";
 const unsigned char freeRAM[] PROGMEM = "free RAM: ";
 //	const unsigned char on_[] PROGMEM = "(on)";
 //	const unsigned char off_[] PROGMEM = "(OFF)";
@@ -629,25 +629,17 @@ void menu_hardware_display() {
 
 
 const unsigned char pressm[] PROGMEM = "\nPress 'm' or '?' for menu.\n\n";
+unsigned char selected_periodic=ILLEGAL;
 
-byte selected_periodic=ILLEGAL;
 
 void display_serial_menu() {
 
   serial_println_progmem(programLongName);
 
-  serial_print_progmem(menuLine1);
-  Serial.print((byte) selected_periodic + 'A', BYTE);
-  Serial.println(")");
-
-  serial_print_progmem(menuLine2);
-  for (int task=0; task<CLICK_PERIODICS ; task++) {
-    if (flags[task] & ACTIVE)
-      Serial.print((byte) task + 'A', BYTE);
-    else
-      Serial.print((byte) task + 'a', BYTE);
-  }
   Serial.println("");
+  info_select_periodic_with();
+  serial_println_progmem(switchPeriodic);
+
 
 #ifdef HARDWARE_menu	// inside MENU_over_serial
   menu_hardware_display();
@@ -775,11 +767,29 @@ int hardware_menu_reaction(char menu_input) {
 
 
 
+const unsigned char selectPeriodicWith[] PROGMEM = "Select periodic with ";
+
+void info_select_periodic_with() {
+  serial_print_progmem(selectPeriodicWith);
+  for (int task=0; task<CLICK_PERIODICS; task++ ) {
+    Serial.print(task); Serial.print("  ");
+  }
+  serial_print_progmem(tab_);
+  if (selected_periodic != 255) {
+    Serial.print("(");
+    Serial.print((int) selected_periodic);
+    Serial.println(")");
+  } else
+    serial_println_progmem(none_);
+}
+
+
 const unsigned char unknownMenuInput[] PROGMEM = "unknown menu input: ";
 
-const unsigned char selectPeriodic[] PROGMEM = "First select periodic with A, B, C or D.";
 const unsigned char multipliedPeriod_[] PROGMEM = "Multiplied period[";
 const unsigned char dividedPeriod_[] PROGMEM = "Divided period[";
+const unsigned char selectedPeriodic_[] PROGMEM = "Selected periodic ";
+const unsigned char switchedPeriodic_[] PROGMEM = "Switched periodic ";
 
 void menu_serial_reaction() {
   char menu_input;
@@ -798,40 +808,31 @@ void menu_serial_reaction() {
 	display_serial_menu();
 	break;
 
-      case 'A':
-	// display(A);
-	selected_periodic = A;
+      // *do* change this line if you change CLICK_PERIODICS
+      case '0': case '1': case '2': case '3':
+	// display(menu_input - '0');
+	selected_periodic = menu_input - '0';
+	serial_print_progmem(selectedPeriodic_);
+	Serial.println((int)  menu_input - '0');
 	break;
 
-      case 'B':
-	// display(B);
-	selected_periodic = B;
-	break;
+      case 's':
+	if ( selected_periodic != 255) {
+	  flags[selected_periodic] ^= ACTIVE;
 
-      case 'C':
-	// display(C);
-	selected_periodic = C;
-	break;
+	  serial_print_progmem(switchedPeriodic_);
+	  Serial.print((int)  selected_periodic);
+	  if (flags[selected_periodic] & ACTIVE) {
+	    next[selected_periodic] = TIMER;
+	    last[selected_periodic] = next[selected_periodic];	// for overflow logic
 
-      case 'D':
-	// display(D);
-	selected_periodic=D;
-	break;
+	    Serial.println(" on");
+	  } else
+	    Serial.println (" off");
 
-//	      case 'a':
-//		flags[A] ^= ACTIVE;
-//		break;
-
-      case 'b':
-	flags[B] ^= ACTIVE;
-	break;
-
-      case 'c':
-	flags[C] ^= ACTIVE;
-	break;
-
-      case 'd':
-	flags[D] ^= ACTIVE;
+	  // fix_global_next();			// planed soon...
+	} else
+	  info_select_periodic_with();
 	break;
 
       case '*':
@@ -848,7 +849,7 @@ void menu_serial_reaction() {
 	    serial_println_progmem(invalid);
 
 	} else
-	  serial_println_progmem(selectPeriodic);
+	  info_select_periodic_with();
 	break;
 
       case '/':
@@ -865,7 +866,7 @@ void menu_serial_reaction() {
 	    serial_println_progmem(invalid);
 
 	} else
-	  serial_println_progmem(selectPeriodic);
+	  info_select_periodic_with();
 	break;
 
 //	      case '=':
@@ -878,7 +879,7 @@ void menu_serial_reaction() {
 //		  serial_println_progmem(invalid);
 //	
 //		} else
-//		  serial_println_progmem(selectPeriodic);
+//		  info_select_periodic_with();
 //		break;
 
       default:
