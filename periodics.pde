@@ -94,14 +94,20 @@ byte flags[PERIODICS];
 
 // flag masks:
 #define ACTIVE			1	// switches task on/off
-// #define P_REPETIVE		2		// task is repetive
+#define COUNTED			2	// repeats int1 times, then vanishes
 // #define P_ALTERNATE		4		// has 2 alternating periods
-// #define P_ONE_SHOT		8		// do once, then vanish
+#define CUSTOM_1	       32	// can be used by periodic_do()
+#define CUSTOM_2	       64	// can be used by periodic_do()
+#define CUSTOM_3	      128	// can be used by periodic_do()
 
-unsigned int counter[PERIODICS];
+
+unsigned int counter[PERIODICS];	// counts how many times the task woke up
+unsigned int int1[PERIODICS];		// if COUNTED, gives number of executions
+//					   (else free for any other internal use)
 TIMER_TYPE period[PERIODICS];
 TIMER_TYPE last[PERIODICS];
 TIMER_TYPE next[PERIODICS];
+int parameter_1[PERIODICS];		//  can be used by periodic_do()
 
 // pointers on  void something(int task)  functions:
 void (*periodic_do[PERIODICS])(int);
@@ -115,24 +121,39 @@ int task;
 TIMER_TYPE now;
 
 
+// init, reset or kill a task: 
+void init_task(int task) {
+  flags[task] = 0;
+  periodic_do[task] = NULL;
+  counter[task] = 0;
+  int1[task] = 0;
+  period[task] = 0;
+  last[task] = 0;
+  next[task] = 0;
+  parameter_1[task] = 0;
+}
+
 void init_tasks() {
   for (int task=0; task<PERIODICS; task++) {
-    flags[task] = 0;
-    periodic_do[task] = NULL;
+    init_task(task);
   }
 }
 
 
 void do_task(int task) {
-  counter[task]++;				//      count
+  counter[task]++;						//      count
 
-  if (periodic_do[task] != NULL) {		// there *is* something to do?
-    (*periodic_do[task])(task);			//      do it
+  if (periodic_do[task] != NULL) {				// there *is* something to do?
+    (*periodic_do[task])(task);					//      do it
   } // we *did* do something
  
   // prepare future:
-  last[task] = next[task];			// when it *should* have happened
-  next[task] += period[task];			// when it should happen again
+  last[task] = next[task];					// when it *should* have happened
+  next[task] += period[task];					// when it should happen again
+
+  if ((flags[task] & COUNTED) && (counter[task] == int1[task]))	// COUNTED task?
+    init_task(task);						//   yes: end reached, vanish
+
   // fix_global_next();			// planed soon...
 
 #if (SERIAL_VERBOSE > 0) 
@@ -158,7 +179,7 @@ int check_maybe_do() {
 }
 
 
-int setup_task(void (*task_do)(int), byte new_flags, TIMER_TYPE when, TIMER_TYPE new_period) {
+int setup_task(void (*task_do)(int), byte new_flags, TIMER_TYPE when, TIMER_TYPE new_period, unsigned int new_int1) {
   int task;
 
   if (new_flags == 0)				// illegal new_flags parameter
@@ -172,10 +193,11 @@ int setup_task(void (*task_do)(int), byte new_flags, TIMER_TYPE when, TIMER_TYPE
     return ILLEGAL;				// ERROR
 
   // initiaize new task				// yes, found a free task
-  flags[task] = new_flags;			//      initialize task
-  period[task] = new_period;
+  flags[task] = new_flags;			// initialize task
   periodic_do[task] = task_do;			// payload
-  next[task] = when;
+  next[task] = when;				// next execution time
+  period[task] = new_period;			// repetition period
+  int1[task] = new_int1;;			// internal parameter
 
   // fix_global_next();			// planed soon...
 
@@ -940,25 +962,10 @@ void setup() {
 
   now=TIMER;
 
-  /*
-  // first commits test case:
-  setup_task(&inside_task_info, ACTIVE, now, 5);
-  setup_task(&inside_task_info, ACTIVE, now, 20);
-  setup_task(&inside_task_info, ACTIVE, now, 40);
-  setup_task(&inside_task_info, ACTIVE, now, 60);
-  */
-
-  /*
-  // 3 to 5 pattern with phase offset
-  setup_task(&click, ACTIVE, now, 30);
-  setup_task(&click, ACTIVE, now+15, 50);
-  */
-
-  A = setup_task(&click, ACTIVE, now, (TIMER_TYPE) 6*time_scale);
-  B = setup_task(&click, ACTIVE, now+5*time_scale, (TIMER_TYPE) 10*time_scale);
-  C = setup_task(&click, ACTIVE, now+4*time_scale, (TIMER_TYPE) 8*time_scale);
-  D = setup_task(&click, ACTIVE, now+6*time_scale, (TIMER_TYPE) 12*time_scale);
-
+  A = setup_task(&click, ACTIVE, now, (TIMER_TYPE) 6*time_scale, 0);
+  B = setup_task(&click, ACTIVE, now+5*time_scale, (TIMER_TYPE) 10*time_scale, 0);
+  C = setup_task(&click, ACTIVE, now+4*time_scale, (TIMER_TYPE) 8*time_scale, 0);
+  D = setup_task(&click, ACTIVE, now+6*time_scale, (TIMER_TYPE) 12*time_scale, 0);
 }
 
 
