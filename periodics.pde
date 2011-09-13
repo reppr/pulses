@@ -10,10 +10,13 @@
    used to test timer overflow strategies.
 */
 /* **************************************************************** */
+#define ILLEGAL	-1
+
 
 
 /* **************************************************************** */
 // testing timer overflow:
+
 #define TIMER_TYPE	unsigned long
 #define TIMER		micros()
 
@@ -41,7 +44,6 @@
 
 
 
-#define ILLEGAL	-1
 /* **************************************************************** */
 // CONFIGURATION:
 
@@ -289,10 +291,16 @@ void serial_println_progmem(const unsigned char *str) {
 /* **************************************************************** */
 // some little things to play with:
 
+
 byte A = ILLEGAL;
 byte B = ILLEGAL;
 byte C = ILLEGAL;
 byte D = ILLEGAL;
+
+#define CLICK_PERIODICS		4	// number of click frequencies
+
+// playing with rhythms:
+float time_scale=200000.0;		// scaling timer to 5 beats/s 
 
 
 
@@ -565,12 +573,12 @@ void serial_print_BIN(unsigned long value, int bits) {
 /* **************************************************************** */
 // simple menu interface through serial port:
 
-const unsigned char menuLine1[] PROGMEM = "\nSelect periodic with A, B, C, or D";
+const unsigned char menuLine1[] PROGMEM = "\nSelect periodic with A, B, C, or D.  (";
+const unsigned char menuLine2[] PROGMEM = "\nToggle periodic with a, b, c, or d.\t";
 const unsigned char freeRAM[] PROGMEM = "free RAM: ";
 //	const unsigned char on_[] PROGMEM = "(on)";
 //	const unsigned char off_[] PROGMEM = "(OFF)";
 const unsigned char pPin[] PROGMEM = "p=pin (";
-
 
 #ifdef HARDWARE_menu
 const unsigned char hwMenuTitle[] PROGMEM = "\n***  HARDWARE  ***\t\tfree RAM=";
@@ -578,21 +586,9 @@ const unsigned char PPin[] PROGMEM = "P=PIN (";
 const unsigned char HLWR[] PROGMEM = ")\tH=set HIGH\tL=set LOW\tW=analog write\tR=read";
 const unsigned char VI[] PROGMEM = "V=VU bar\tI=digiwatch\t";
 const unsigned char aAnalogRead[] PROGMEM = "a=analog read";
-#endif
 
 
-const unsigned char pressm[] PROGMEM = "\nPress 'm' or '?' for menu.\n\n";
-
-
-
-void display_serial_menu() {
-  serial_println_progmem(programLongName);
-
-  serial_print_progmem(menuLine1);
-
-  Serial.println("");
-
-#ifdef HARDWARE_menu	// inside MENU_over_serial
+void menu_hardware_display() {
   serial_print_progmem(hwMenuTitle);
   Serial.println(get_free_RAM());
   Serial.println("");
@@ -605,7 +601,35 @@ void display_serial_menu() {
   serial_println_progmem(HLWR);
   serial_print_progmem(VI);
   serial_println_progmem(aAnalogRead);
-#endif			// HARDWARE_menu  inside MENU_over_serial
+}
+
+#endif // HARDWARE_menu
+
+
+const unsigned char pressm[] PROGMEM = "\nPress 'm' or '?' for menu.\n\n";
+
+byte selected_periodic=ILLEGAL;
+
+void display_serial_menu() {
+
+  serial_println_progmem(programLongName);
+
+  serial_print_progmem(menuLine1);
+  Serial.print((byte) selected_periodic + 'A', BYTE);
+  Serial.println(")");
+
+  serial_print_progmem(menuLine2);
+  for (int task=0; task<CLICK_PERIODICS ; task++) {
+    if (flags[task] & ACTIVE)
+      Serial.print((byte) task + 'A', BYTE);
+    else
+      Serial.print((byte) task + 'a', BYTE);
+  }
+  Serial.println("");
+
+#ifdef HARDWARE_menu	// inside MENU_over_serial
+  menu_hardware_display();
+#endif
 
   serial_print_progmem(pressm);
 }
@@ -623,23 +647,119 @@ void please_select_pin() {
 //	const unsigned char unchanged_[] PROGMEM = "(unchanged)";
 
 const unsigned char bytes_[] PROGMEM = " bytes";
+
+
 #ifdef HARDWARE_menu
 const unsigned char numberOfPin[] PROGMEM = "Number of pin to work on: ";
 const unsigned char none_[] PROGMEM = "(none)";
+const unsigned char invalid[] PROGMEM = "(invalid)";
 const unsigned char setToHigh[] PROGMEM = " was set to HIGH.";
 const unsigned char setToLow[] PROGMEM = " was set to LOW.";
 const unsigned char analogWriteValue[] PROGMEM = "analog write value ";
 const unsigned char analogWrite_[] PROGMEM = "analogWrite(";
 const unsigned char analogValueOnPin[] PROGMEM = "analog value on pin ";
+
+int hardware_menu_reaction(char menu_input) {
+  long newValue;
+
+  switch (menu_input) {
+  case  'M':
+    serial_print_progmem(freeRAM);
+    Serial.print(get_free_RAM());
+    serial_println_progmem(bytes_);
+    break;
+
+  case 'P':
+    serial_print_progmem(numberOfPin);
+    newValue = numericInput(hw_PIN);
+    if (newValue>=0 && newValue<DIGITAL_PINs) {
+      hw_PIN = newValue;
+      Serial.println((int) hw_PIN);
+    } else
+      serial_println_progmem(none_);
+    break;
+
+  case 'H':
+    if (hw_PIN == ILLEGAL)
+      please_select_pin();
+    else {
+      pinMode(hw_PIN, OUTPUT);
+      digitalWrite(hw_PIN, HIGH);
+      serial_print_progmem(pin_); Serial.print((int) hw_PIN); serial_println_progmem(setToHigh);
+    }
+    break;
+
+  case 'L':
+    if (hw_PIN == ILLEGAL)
+      please_select_pin();
+    else {
+      pinMode(hw_PIN, OUTPUT);
+      digitalWrite(hw_PIN, LOW);
+      serial_print_progmem(pin_); Serial.print((int) hw_PIN); serial_println_progmem(setToLow);
+    }
+    break;
+
+  case 'W':
+    if (hw_PIN == ILLEGAL)
+      please_select_pin();
+    else {
+      serial_print_progmem(analogWriteValue);
+      newValue = numericInput(-1);
+      if (newValue>=0 && newValue<=255) {
+	Serial.println(newValue);
+
+	analogWrite(hw_PIN, newValue);
+	serial_print_progmem(analogWrite_); Serial.print((int) hw_PIN);
+	Serial.print(", "); Serial.print(newValue); Serial.println(")");
+      } else
+	serial_println_progmem(quit_);
+    }
+    break;
+
+  case 'R':
+    if (hw_PIN == ILLEGAL)
+      please_select_pin();
+    else {
+      serial_print_progmem(analogValueOnPin); Serial.print((int) hw_PIN); serial_print_progmem(is_);
+      Serial.println(analogRead(hw_PIN));
+    }
+    break;
+
+  case 'V':
+    if ((hw_PIN == ILLEGAL) | (hw_PIN >= ANALOG_INPUTs))
+      please_select_pin();
+    else
+      bar_graph_VU(hw_PIN);
+    break;
+
+  case 'I':
+    if (hw_PIN == ILLEGAL)
+      please_select_pin();
+    else {
+      pinMode(hw_PIN, INPUT);
+      watch_digital_input(hw_PIN);
+    }
+    break;
+
+  case 'a':
+    display_analog_reads();
+    break;
+  default:
+    return 0;		// menu_input not found in this menu
+  }
+  return 1;		// menu_input found in this menu
+}
 #endif
 
 
-byte selected_periodic=ILLEGAL;
-
-const unsigned char selectPeriodic[] PROGMEM = "First select periodic with A, B, C or D.";
 
 const unsigned char unknownMenuInput[] PROGMEM = "unknown menu input: ";
-void menu_discharger() {
+
+const unsigned char selectPeriodic[] PROGMEM = "First select periodic with A, B, C or D.";
+const unsigned char multipliedPeriod_[] PROGMEM = "Multiplied period[";
+const unsigned char dividedPeriod_[] PROGMEM = "Divided period[";
+
+void menu_serial_reaction() {
   char menu_input;
   long newValue;
 
@@ -655,90 +775,6 @@ void menu_discharger() {
       case 'm': case '?':
 	display_serial_menu();
 	break;
-
-#ifdef HARDWARE_menu inside MENU_over_serial
-      case  'M':
-	serial_print_progmem(freeRAM);
-	Serial.print(get_free_RAM());
-	serial_println_progmem(bytes_);
-	break;
-
-      case 'P':
-	serial_print_progmem(numberOfPin);
-	newValue = numericInput(hw_PIN);
-	if (newValue>=0 && newValue<DIGITAL_PINs) {
-	  hw_PIN = newValue;
-	  Serial.println((int) hw_PIN);
-	} else
-	  serial_println_progmem(none_);
-	break;
-
-      case 'H':
-	if (hw_PIN == ILLEGAL)
-	  please_select_pin();
-	else {
-	  pinMode(hw_PIN, OUTPUT);
-	  digitalWrite(hw_PIN, HIGH);
-	  serial_print_progmem(pin_); Serial.print((int) hw_PIN); serial_println_progmem(setToHigh);
-	}
-	break;
-
-      case 'L':
-	if (hw_PIN == ILLEGAL)
-	  please_select_pin();
-	else {
-	  pinMode(hw_PIN, OUTPUT);
-	  digitalWrite(hw_PIN, LOW);
-	  serial_print_progmem(pin_); Serial.print((int) hw_PIN); serial_println_progmem(setToLow);
-	}
-	break;
-
-      case 'W':
-	if (hw_PIN == ILLEGAL)
-	  please_select_pin();
-	else {
-	  serial_print_progmem(analogWriteValue);
-	  newValue = numericInput(-1);
-	  if (newValue>=0 && newValue<=255) {
-	    Serial.println(newValue);
-
-	    analogWrite(hw_PIN, newValue);
-	    serial_print_progmem(analogWrite_); Serial.print((int) hw_PIN);
-	    Serial.print(", "); Serial.print(newValue); Serial.println(")");
-	  } else
-	    serial_println_progmem(quit_);
-	}
-	break;
-
-      case 'R':
-	if (hw_PIN == ILLEGAL)
-	  please_select_pin();
-	else {
-	  serial_print_progmem(analogValueOnPin); Serial.print((int) hw_PIN); serial_print_progmem(is_);
-	  Serial.println(analogRead(hw_PIN));
-	}
-	break;
-
-      case 'V':
-	if ((hw_PIN == ILLEGAL) | (hw_PIN >= ANALOG_INPUTs))
-	  please_select_pin();
-	else
-	  bar_graph_VU(hw_PIN);
-	break;
-
-      case 'I':
-	if (hw_PIN == ILLEGAL)
-	  please_select_pin();
-	else {
-	  pinMode(hw_PIN, INPUT);
-	  watch_digital_input(hw_PIN);
-	}
-	break;
-
-      case 'a':
-	display_analog_reads();
-	break;
-#endif // HARDWARE_menu
 
       case 'A':
 	// display(A);
@@ -760,44 +796,101 @@ void menu_discharger() {
 	selected_periodic=D;
 	break;
 
-      case '=':
-	if ( ! selected_periodic == ILLEGAL) {
-	newValue = numericInput(selected_periodic);
-	if (newValue>=0 && newValue<PERIODICS) {
-	  selected_periodic = newValue;
-	  Serial.println((int) selected_periodic);
-	} else
-	  serial_println_progmem(none_);
+//	      case 'a':
+//		flags[A] ^= ACTIVE;
+//		break;
+
+      case 'b':
+	flags[B] ^= ACTIVE;
+	break;
+
+      case 'c':
+	flags[C] ^= ACTIVE;
+	break;
+
+      case 'd':
+	flags[D] ^= ACTIVE;
+	break;
+
+      case '*':
+	if ( selected_periodic != 255) {
+	  newValue = numericInput(1);
+	  if (newValue>=0) {
+	    set_new_period(selected_periodic, (TIMER_TYPE) period[selected_periodic]*newValue);
+
+	    serial_print_progmem(multipliedPeriod_);
+	    Serial.print((int) selected_periodic);
+	    Serial.print("] by ");
+	    Serial.println(newValue);
+	  } else
+	    serial_println_progmem(invalid);
 
 	} else
 	  serial_println_progmem(selectPeriodic);
 	break;
 
-      default:
-	serial_print_progmem(unknownMenuInput); Serial.print(byte(menu_input));
-	Serial.print(" = "); Serial.println(menu_input);
-	while (char_available() > 0) {
-	  menu_input = get_char();
-	  Serial.print(byte(menu_input));
-	}
-	Serial.println("");
+      case '/':
+	if ( selected_periodic != 255) {
+	  newValue = numericInput(1);
+	  if (newValue>0) {
+	    set_new_period(selected_periodic,  (TIMER_TYPE) period[selected_periodic]/newValue);
+
+	    serial_print_progmem(dividedPeriod_);
+	    Serial.print((int) selected_periodic);
+	    Serial.print("] by ");
+	    Serial.println(newValue);
+	  } else
+	    serial_println_progmem(invalid);
+
+	} else
+	  serial_println_progmem(selectPeriodic);
 	break;
+
+//	      case '=':
+//		if ( ! selected_periodic == ILLEGAL) {
+//		newValue = numericInput(selected_periodic);
+//		if (newValue>=0 && newValue<CLICK_PERIODICS) {
+//		  selected_periodic = newValue;
+//		  Serial.println((int) selected_periodic);
+//		} else
+//		  serial_println_progmem(invalid);
+//	
+//		} else
+//		  serial_println_progmem(selectPeriodic);
+//		break;
+
+      default:
+	// maybe it's in a submenu?
+
+#ifdef HARDWARE_menu				// quite a hack...
+	if (hardware_menu_reaction(menu_input))
+	  ;
+#else						// quite a hack...
+	if (false)
+	  ;
+#endif // submenu reactions
+	else {
+	  serial_print_progmem(unknownMenuInput); Serial.print(byte(menu_input));
+	  Serial.print(" = "); Serial.println(menu_input);
+	  while (char_available() > 0) {
+	    menu_input = get_char();
+	    Serial.print(byte(menu_input));
+	  }
+	  Serial.println("");
+	break;
+	}
       }
 
       if (!char_available())
 	delay(WAITforSERIAL);
     }
   }
-} // menu_discharger()
+} // menu_serial_reaction()
 
 
 #endif	// MENU_over_serial
 
 
-
-/* **************************************************************** */
-// playing with rhythms:
-TIMER_TYPE time_unit=200000;		// scaling timer to 5 beats/s 
 
 /* **************************************************************** */
 // setup:
@@ -861,8 +954,10 @@ void setup() {
   setup_task(&click, ACTIVE, now+15, 50);
   */
 
-  setup_task(&click, ACTIVE, now, 12*time_unit);
-  setup_task(&click, ACTIVE, now+6*time_unit, 20*time_unit);
+  A = setup_task(&click, ACTIVE, now, (TIMER_TYPE) 6*time_scale);
+  B = setup_task(&click, ACTIVE, now+5*time_scale, (TIMER_TYPE) 10*time_scale);
+  C = setup_task(&click, ACTIVE, now+4*time_scale, (TIMER_TYPE) 8*time_scale);
+  D = setup_task(&click, ACTIVE, now+6*time_scale, (TIMER_TYPE) 12*time_scale);
 
 }
 
@@ -894,7 +989,7 @@ void loop() {
 
 #ifdef MENU_over_serial
   if (char_available())
-    menu_discharger();
+    menu_serial_reaction();
 #endif
 
 }
