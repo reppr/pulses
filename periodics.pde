@@ -63,6 +63,7 @@ byte flags[PERIODICS];
 #define ACTIVE			1	// switches task on/off
 #define COUNTED			2	// repeats int1 times, then vanishes
 // #define P_ALTERNATE		4		// has 2 alternating periods
+#define DO_NOT_DELETE	       16	// dummy to avoid being thrown out
 #define CUSTOM_1	       32	// can be used by periodic_do()
 #define CUSTOM_2	       64	// can be used by periodic_do()
 #define CUSTOM_3	      128	// can be used by periodic_do()
