@@ -323,7 +323,7 @@ byte D = ILLEGAL;
 #define CLICK_PERIODICS		4	// number of click frequencies
 
 // playing with rhythms:
-float time_scale=200000.0;		// scaling timer to 5 beats/s 
+unsigned long time_unit = 200000;		// scaling timer to 5 beats/s 
 
 
 
@@ -596,7 +596,7 @@ void serial_print_BIN(unsigned long value, int bits) {
 /* **************************************************************** */
 // simple menu interface through serial port:
 
-const unsigned char switchPeriodic[] PROGMEM = "\ns=switch periodic on/off";
+const unsigned char switchPeriodic[] PROGMEM = "s=switch periodic on/off";
 const unsigned char freeRAM[] PROGMEM = "free RAM: ";
 //	const unsigned char on_[] PROGMEM = "(on)";
 //	const unsigned char off_[] PROGMEM = "(OFF)";
@@ -628,9 +628,25 @@ void menu_hardware_display() {
 #endif // HARDWARE_menu
 
 
+const unsigned char periodic_[] PROGMEM = "periodic ";
+const unsigned char period_[] PROGMEM = " period = ";
+const unsigned char timeUnits[] PROGMEM = " time units";
+
+void periodics_info() {
+  for (char task=0; task<PERIODICS; task++) {
+    serial_print_progmem(periodic_);
+    Serial.print((int) task);
+    serial_print_progmem(period_);
+    Serial.println((float) ((float) period[task] / (float) time_unit), 3);
+  }
+  Serial.println("");
+}
+
+
 const unsigned char pressm[] PROGMEM = "\nPress 'm' or '?' for menu.\n\n";
 unsigned char selected_periodic=ILLEGAL;
 
+const unsigned char timeUnit_[] PROGMEM = "\t\ttime unit ";
 
 void display_serial_menu() {
 
@@ -638,8 +654,13 @@ void display_serial_menu() {
 
   Serial.println("");
   info_select_periodic_with();
-  serial_println_progmem(switchPeriodic);
+  serial_print_progmem(switchPeriodic);
 
+  serial_print_progmem(timeUnit_);
+  Serial.println(time_unit);
+  
+  Serial.println("");
+  periodics_info();
 
 #ifdef HARDWARE_menu	// inside MENU_over_serial
   menu_hardware_display();
@@ -869,18 +890,17 @@ void menu_serial_reaction() {
 	  info_select_periodic_with();
 	break;
 
-//	      case '=':
-//		if ( ! selected_periodic == ILLEGAL) {
-//		newValue = numericInput(selected_periodic);
-//		if (newValue>=0 && newValue<CLICK_PERIODICS) {
-//		  selected_periodic = newValue;
-//		  Serial.println((int) selected_periodic);
-//		} else
-//		  serial_println_progmem(invalid);
-//	
-//		} else
-//		  info_select_periodic_with();
-//		break;
+      case '=':
+	if ( selected_periodic != 255) {
+	newValue = numericInput(period[selected_periodic] / time_unit);
+	if (newValue>=0) {
+	  set_new_period(selected_periodic, newValue * time_unit);
+	} else
+	  serial_println_progmem(invalid);
+
+	} else
+	  info_select_periodic_with();
+	break;
 
       default:
 	// maybe it's in a submenu?
@@ -963,10 +983,10 @@ void setup() {
 
   now=TIMER;
 
-  A = setup_task(&click, ACTIVE, now, (TIMER_TYPE) 6*time_scale, 0);
-  B = setup_task(&click, ACTIVE, now+5*time_scale, (TIMER_TYPE) 10*time_scale, 0);
-  C = setup_task(&click, ACTIVE, now+4*time_scale, (TIMER_TYPE) 8*time_scale, 0);
-  D = setup_task(&click, ACTIVE, now+6*time_scale, (TIMER_TYPE) 12*time_scale, 0);
+  A = setup_task(&click, ACTIVE, now, (TIMER_TYPE) 6*time_unit, 0);
+  B = setup_task(&click, ACTIVE, now+5*time_unit, (TIMER_TYPE) 10*time_unit, 0);
+  C = setup_task(&click, ACTIVE, now+4*time_unit, (TIMER_TYPE) 8*time_unit, 0);
+  D = setup_task(&click, ACTIVE, now+6*time_unit, (TIMER_TYPE) 12*time_unit, 0);
 }
 
 
