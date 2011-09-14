@@ -594,8 +594,7 @@ void menu_serial_reaction() {
 	  ;
 #endif // submenu reactions
 	else {
-	  serial_print_progmem(unknownMenuInput); Serial.print(byte(menu_input));
-	  Serial.print(" = "); Serial.println(menu_input);
+	  serial_print_progmem(unknownMenuInput); Serial.println(menu_input);
 	  while (char_available() > 0) {
 	    menu_input = get_char();
 	    Serial.print(byte(menu_input));
