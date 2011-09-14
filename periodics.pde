@@ -109,6 +109,10 @@ TIMER_TYPE period[PERIODICS];
 TIMER_TYPE last[PERIODICS];
 TIMER_TYPE next[PERIODICS];
 int parameter_1[PERIODICS];		//  can be used by periodic_do()
+char char_parameter_1[PERIODICS];	//  can be used by periodic_do()
+char char_parameter_2[PERIODICS];	//  can be used by periodic_do()
+char char_parameter_3[PERIODICS];	//  can be used by periodic_do()
+char char_parameter_4[PERIODICS];	//  can be used by periodic_do()
 
 // pointers on  void something(int task)  functions:
 void (*periodic_do[PERIODICS])(int);
