@@ -47,7 +47,7 @@
 /* **************************************************************** */
 // CONFIGURATION:
 
-#define PERIODICS		4	// maximal number of tasks
+#define PERIODICS		5	// maximal number of tasks
 
 #define LED_PIN			13
 
@@ -136,6 +136,10 @@ void init_task(int task) {
   last[task] = 0;
   next[task] = 0;
   parameter_1[task] = 0;
+  char_parameter_1[task] = 0;
+  char_parameter_2[task] = 0;
+  char_parameter_3[task] = 0;
+  char_parameter_4[task] = 0;
 }
 
 void init_tasks() {
@@ -219,15 +223,6 @@ void set_new_period(int task, TIMER_TYPE new_period) {
 
 /* **************************************************************** */
 // debugging:
-
-
-// click on a piezzo to hear result:
-#define CLICK_PIN	12			// pin with a piezzo
-unsigned long clicks=0;
-void click(int task) {
-  digitalWrite(CLICK_PIN, ++clicks & 1);
-}
-
 
 void inside_task_info(int task) {
 #ifdef SERIAL_VERBOSE
@@ -319,27 +314,115 @@ void serial_println_progmem(const unsigned char *str) {
 // some little things to play with:
 
 
-byte A = ILLEGAL;
-byte B = ILLEGAL;
-byte C = ILLEGAL;
-byte D = ILLEGAL;
+// clicks on piezzos to *hear* the result:
 
 // *do* change 'case' statement in menu_serial_reaction() if you change this.
-#define CLICK_PERIODICS		4	// number of click frequencies
+#ifndef CLICK_PERIODICS				// number of click frequencies
+  #define CLICK_PERIODICS		5       // default number of click frequencies
+#endif
+
+
+
+void init_click_tasks() {
+  for (int task=0; task<CLICK_PERIODICS; task++) {
+    init_task(task);
+  }
+}
+
+
+
+void click(int task) {			// can be called from a task
+  digitalWrite(char_parameter_1[task], counter[task] & 1);
+}
+
+
+unsigned char click_task[CLICK_PERIODICS];
+unsigned char click_pin[CLICK_PERIODICS]= {12, 10, 9, 8};	// configure PINs here
+
+
 
 // playing with rhythms:
-unsigned long time_unit = 200000;		// scaling timer to 5 beats/s 
+unsigned long time_unit = 100000;		// scaling timer to 10 beats/s 
+
+
+// some default rhythms:
+void init_rhythm_1(int sync) { 
+  // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
+  int task=0;
+  TIMER_TYPE now = TIMER;
+
+  init_click_tasks();
+
+  // 2
+  click_task[task] = setup_task(&click, ACTIVE, now + sync*6L*time_unit, (TIMER_TYPE) 12L*time_unit, 0);
+  char_parameter_1[task] = click_pin[task];
+  pinMode(click_pin[task++], OUTPUT);
+
+  // 3
+  click_task[task] = setup_task(&click, ACTIVE, now + sync*9L*time_unit, (TIMER_TYPE) 18L*time_unit, 0);
+  char_parameter_1[task] = click_pin[task];
+  pinMode(click_pin[task++], OUTPUT);
+
+  // 4
+  click_task[task] = setup_task(&click, ACTIVE, now + sync*12L*time_unit, (TIMER_TYPE) 24L*time_unit, 0);
+  char_parameter_1[task] = click_pin[task];
+  pinMode(click_pin[task++], OUTPUT);
+
+  // 5
+  click_task[task] = setup_task(&click, ACTIVE, now + sync*15L*time_unit, (TIMER_TYPE) 30L*time_unit, 0);
+  char_parameter_1[task] = click_pin[task];
+  pinMode(click_pin[task++], OUTPUT);
+
+  // 2*2*3*5
+  click_task[task] = setup_task(&click, ACTIVE, now + sync*6L*4L*4L*time_unit, (TIMER_TYPE) 6L*2L*2L*3L*5L*time_unit, 0);
+  char_parameter_1[task] = click_pin[task];
+  pinMode(click_pin[task++], OUTPUT);
+}
+
+
+// frequencies ratio 1, 4, 6, 8, 10
+void init_rhythm_2(int sync) { 
+  // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
+  int task=0;
+  TIMER_TYPE now = TIMER;
+
+  unsigned long divider;
+  TIMER_TYPE base=60L;
+
+  init_click_tasks();
+
+  for (divider=4; divider<12 ; divider += 2) {
+    click_task[task] = setup_task(&click, ACTIVE, now + sync*base*time_unit/divider/2, (TIMER_TYPE) base*time_unit/divider, 0);
+    char_parameter_1[task] = click_pin[task];
+    pinMode(click_pin[task++], OUTPUT);
+    task++;
+  }
+
+  //  click_task[task] = setup_task(&click, ACTIVE, now + sync*base/2*time_unit, (TIMER_TYPE) base*time_unit, 0);
+  click_task[task] = setup_task(&click, ACTIVE, now, (TIMER_TYPE) base*time_unit, 0);		// slowest *not* synced
+  char_parameter_1[task] = click_pin[task];
+  pinMode(click_pin[task++], OUTPUT);
+}
 
 
 
-unsigned char selected_destination=ILLEGAL;
+/* **************************************************************** */
+// functions to deal with clicks:
+
+// destination of menu functions '*' '/' '=' and 's'
+unsigned char selected_destination=~0;
+// destinations codes (other then 0, 1, 2, ... for individual clicker tasks):
 #define ALL_PERIODICS	PERIODICS
 #define TIME_UNIT	(PERIODICS + 1)
 
 
+
+#ifdef USE_SERIAL
 const unsigned char mutedAllPeriodics[] PROGMEM = "muted all periodics";
-void mute_all_periodics () {
-  for (int task=0; task<PERIODICS; task++)
+#endif
+
+void mute_all_clicks () {
+  for (int task=0; task<CLICK_PERIODICS; task++)
     flags[task] &= ~ACTIVE;
 
   // fix_global_next();			// planed soon...
@@ -348,6 +431,7 @@ void mute_all_periodics () {
   serial_println_progmem(mutedAllPeriodics);
 #endif
 }
+
 
 
 const unsigned char period_[] PROGMEM = " period = ";
@@ -364,10 +448,12 @@ void print_period_in_time_units(int task) {
   serial_print_progmem(timeUnits_);
 }
 
+const unsigned char pin_[] PROGMEM = "pin ";	// HARDWARE_menu uses this too
 
 const unsigned char periodic_[] PROGMEM = "periodic ";
 const unsigned char timeUnits[] PROGMEM = " time units";
 const unsigned char active_[] PROGMEM = "\tactive";
+const unsigned char counter_[] PROGMEM = "\tcounter ";
 
 void periodic_info(int task) {
   serial_print_progmem(periodic_);
@@ -376,13 +462,22 @@ void periodic_info(int task) {
 
   if(flags[task] & ACTIVE)
     serial_print_progmem(active_);
+  else
+    serial_print_progmem(tab_);
+
+  serial_print_progmem(tab_);
+  serial_print_progmem(pin_);
+  Serial.print((int) click_pin[task]);
+
+  serial_print_progmem(counter_);
+  Serial.print(counter[task]);
 
   Serial.println("");
 }
 
 
 void periodics_info() {
-  for (char task=0; task<PERIODICS; task++) {
+  for (char task=0; task<CLICK_PERIODICS; task++) {
     if (task == selected_destination)
       Serial.print("*");
     else
@@ -593,6 +688,21 @@ void bar_graph_VU(int pin) {
 }
 
 
+//	// print binary numbers with leading zeroes and a space
+//	void serial_print_BIN(unsigned long value, int bits) {
+//	  int i;
+//	  unsigned long mask=0;
+//	
+//	  for (i = bits - 1; i >= 0; i--) {
+//	    mask = (1 << i);
+//	      if (value & mask)
+//		Serial.print(1);
+//	      else
+//		Serial.print(0);
+//	  }
+//	  Serial.print(" ");
+//	}
+
 
 #ifdef HARDWARE_menu	// inside MENU_over_serial
 const unsigned char analog_reads_title[] PROGMEM = "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
@@ -614,7 +724,7 @@ void display_analog_reads() {
 
 const unsigned char watchingINpin[] PROGMEM = "watching digital input pin ";
 const unsigned char anyStop[] PROGMEM = "\t\t(send any byte to stop)";
-const unsigned char pin_[] PROGMEM = "pin ";
+// const unsigned char pin_[] PROGMEM = "pin ";		// defined already
 const unsigned char is_[] PROGMEM = " is ";
 const unsigned char high_[] PROGMEM = "HIGH";
 const unsigned char low_[] PROGMEM = "LOW";
@@ -640,37 +750,8 @@ void watch_digital_input(int pin) {
   serial_println_progmem(quit_);
   get_char();
 }
-#endif	// HARDWARE_menu inside MENU_over_serial
 
 
-
-// print binary numbers with leading zeroes and a space
-void serial_print_BIN(unsigned long value, int bits) {
-  int i;
-  unsigned long mask=0;
-
-  for (i = bits - 1; i >= 0; i--) {
-    mask = (1 << i);
-      if (value & mask)
-	Serial.print(1);
-      else
-	Serial.print(0);
-  }
-  Serial.print(" ");
-}
-
-
-
-/* **************************************************************** */
-// simple menu interface through serial port:
-
-const unsigned char switchPeriodic[] PROGMEM = "s=switch periodic on/off";
-const unsigned char freeRAM[] PROGMEM = "free RAM: ";
-//	const unsigned char on_[] PROGMEM = "(on)";
-//	const unsigned char off_[] PROGMEM = "(OFF)";
-const unsigned char pPin[] PROGMEM = "p=pin (";
-
-#ifdef HARDWARE_menu
 const unsigned char hwMenuTitle[] PROGMEM = "\n***  HARDWARE  ***\t\tfree RAM=";
 const unsigned char PPin[] PROGMEM = "P=PIN (";
 const unsigned char HLWR[] PROGMEM = ")\tH=set HIGH\tL=set LOW\tW=analog write\tR=read";
@@ -693,9 +774,16 @@ void menu_hardware_display() {
   serial_println_progmem(aAnalogRead);
 }
 
-#endif // HARDWARE_menu
+#endif	// HARDWARE_menu inside MENU_over_serial
 
 
+
+/* **************************************************************** */
+// program specific menu:
+
+const unsigned char switchPeriodic[] PROGMEM = "s=switch periodic on/off";
+const unsigned char freeRAM[] PROGMEM = "free RAM: ";
+const unsigned char pPin[] PROGMEM = "p=pin (";
 
 const unsigned char none_[] PROGMEM = "(none)";
 const unsigned char selectDestinationInfo[] PROGMEM = "SELECT DESTINATION for '=' '*' '/' and 's' to work on:";
@@ -956,7 +1044,8 @@ void switch_periodic_and_inform(int task) {
     next[task] = TIMER;
     last[task] = next[task];	// for overflow logic
 
-    Serial.println(" on");
+    Serial.println(" on/t");
+    periodic_info(task);
   } else
     Serial.println (" off");
 
@@ -995,7 +1084,7 @@ void menu_serial_reaction() {
 	break;
 
       // *do* change this line if you change CLICK_PERIODICS
-      case '0': case '1': case '2': case '3':
+      case '0': case '1': case '2': case '3': case '4':
 	// display(menu_input - '0');
 	selected_destination = menu_input - '0';
 	serial_print_progmem(selectedPeriodic_);
@@ -1034,7 +1123,7 @@ void menu_serial_reaction() {
 	break;
 
       case 'M':					// hides hardware menus 'M'
-	mute_all_periodics();
+	mute_all_clicks();
 	break;
 
       case '*':
@@ -1190,10 +1279,16 @@ void setup() {
 //	  LCD_print_line_progmem(TOP, programName);
 //	#endif
 
+  click_pin[0]= 2;		// configure PINs here
+  click_pin[1]= 3;		// configure PINs here
+  click_pin[2]= 4;		// configure PINs here
+  click_pin[3]= 5;		// configure PINs here
+  click_pin[4]= 6;		// configure PINs here
 
-#ifdef CLICK_PIN
-  pinMode(CLICK_PIN, OUTPUT);
-#endif
+
+  for (int task=0; task<CLICK_PERIODICS; task++) {
+    pinMode(click_pin[task], OUTPUT);
+  }
 
 #ifdef LED_PIN
   pinMode(LED_PIN, OUTPUT);
@@ -1201,12 +1296,9 @@ void setup() {
 
   init_tasks();
 
-  now=TIMER;
-
-  A = setup_task(&click, ACTIVE, now, (TIMER_TYPE) 6*time_unit, 0);
-  B = setup_task(&click, ACTIVE, now+5*time_unit, (TIMER_TYPE) 10*time_unit, 0);
-  C = setup_task(&click, DO_NOT_DELETE, now+4*time_unit, (TIMER_TYPE) 8*time_unit, 0);
-  D = setup_task(&click, DO_NOT_DELETE, now+6*time_unit, (TIMER_TYPE) 12*time_unit, 0);
+  // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
+  // init_rhythm_1(1);
+  init_rhythm_2(1);
 }
 
 
@@ -1244,3 +1336,9 @@ void loop() {
 
 
 /* **************************************************************** */
+
+//	unsigned int jiffletab[] = {8,1,8, 16,1,32, 32,1,32, 0, 0, 0};
+//	
+//	jiffle0 (int task) {	// to be called by task_do
+//	
+//	]
