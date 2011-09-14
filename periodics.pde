@@ -328,6 +328,69 @@ unsigned long time_unit = 200000;		// scaling timer to 5 beats/s
 
 
 
+unsigned char selected_destination=ILLEGAL;
+#define ALL_PERIODICS	PERIODICS
+#define TIME_UNIT	(PERIODICS + 1)
+
+
+const unsigned char mutedAllPeriodics[] PROGMEM = "muted all periodics";
+void mute_all_periodics () {
+  for (int task=0; task<PERIODICS; task++)
+    flags[task] &= ~ACTIVE;
+
+  // fix_global_next();			// planed soon...
+
+#ifdef USE_SERIAL
+  serial_println_progmem(mutedAllPeriodics);
+#endif
+}
+
+
+const unsigned char period_[] PROGMEM = " period = ";
+const unsigned char timeUnits_[] PROGMEM = " time units";
+
+void print_period_in_time_units(int task) {
+  float time_units;
+
+  serial_print_progmem(period_);
+  time_units = ((float) period[task] / (float) time_unit);
+  if (time_units < 10.0)
+    Serial.print(" ");
+  Serial.print((float) time_units, 3);
+  serial_print_progmem(timeUnits_);
+}
+
+
+const unsigned char periodic_[] PROGMEM = "periodic ";
+const unsigned char timeUnits[] PROGMEM = " time units";
+const unsigned char active_[] PROGMEM = "\tactive";
+
+void periodic_info(int task) {
+  serial_print_progmem(periodic_);
+  Serial.print((int) task);
+  print_period_in_time_units(task);
+
+  if(flags[task] & ACTIVE)
+    serial_print_progmem(active_);
+
+  Serial.println("");
+}
+
+
+void periodics_info() {
+  for (char task=0; task<PERIODICS; task++) {
+    if (task == selected_destination)
+      Serial.print("*");
+    else
+      Serial.print(" ");
+
+    periodic_info(task);
+  }
+  Serial.println("");
+}
+
+
+
 /* **************************************************************** */
 // #define MENU_over_serial	// do we use a serial menu?
 /* **************************************************************** */
@@ -629,39 +692,72 @@ void menu_hardware_display() {
 #endif // HARDWARE_menu
 
 
-const unsigned char periodic_[] PROGMEM = "periodic ";
-const unsigned char period_[] PROGMEM = " period = ";
-const unsigned char timeUnits[] PROGMEM = " time units";
 
-void periodics_info() {
-  for (char task=0; task<PERIODICS; task++) {
-    serial_print_progmem(periodic_);
-    Serial.print((int) task);
-    serial_print_progmem(period_);
-    Serial.println((float) ((float) period[task] / (float) time_unit), 3);
+const unsigned char none_[] PROGMEM = "(none)";
+const unsigned char selectDestinationInfo[] PROGMEM = "SELECT DESTINATION for '=' '*' '/' and 's' to work on:";
+const unsigned char selectPeriodicWith[] PROGMEM = "Select periodic with ";
+const unsigned char all_[] PROGMEM = "(ALL)";
+const unsigned char selectAllPeriodics[] PROGMEM = "A=select *all* periodics";
+const unsigned char selectTimeUnits[] PROGMEM = "t=select time units";
+const unsigned char selected_[] PROGMEM = "\t(selected)";
+
+void info_select_destination_with(boolean extended_destinations) {
+  serial_println_progmem(selectDestinationInfo);
+  serial_print_progmem(selectPeriodicWith);
+  for (int task=0; task<CLICK_PERIODICS; task++ ) {
+    Serial.print(task); Serial.print("  ");
   }
-  Serial.println("");
+  serial_print_progmem(tab_);
+  if (selected_destination < CLICK_PERIODICS) {
+    Serial.print("(");
+    Serial.print((int) selected_destination);
+    Serial.println(")");
+  } else 
+    if(selected_destination == ALL_PERIODICS) {
+      serial_println_progmem(all_);
+    } else
+      serial_println_progmem(none_);
+
+  serial_println_progmem(selectAllPeriodics);
+
+
+  if(extended_destinations) {
+    serial_print_progmem(selectTimeUnits);
+    if(selected_destination == TIME_UNIT) {
+    serial_println_progmem(selected_);
+    } else
+      Serial.println("");
+    Serial.println("");
+  }
 }
 
 
-const unsigned char pressm[] PROGMEM = "\nPress 'm' or '?' for menu.\n\n";
-unsigned char selected_periodic=ILLEGAL;
 
-const unsigned char timeUnit_[] PROGMEM = "\t\ttime unit ";
+const unsigned char pressm[] PROGMEM = "\nPress 'm' or '?' for menu.\n\n";
+
+const unsigned char microSeconds[] PROGMEM = " microseconds";
+const unsigned char Mute_Info[] PROGMEM = "M=mute all\ti=periodics info";
+const unsigned char perSecond_[] PROGMEM = " per second)";
+const unsigned char equals_[] PROGMEM = " = ";
 
 void display_serial_menu() {
 
   serial_println_progmem(programLongName);
 
   Serial.println("");
-  info_select_periodic_with();
-  serial_print_progmem(switchPeriodic);
+  info_select_destination_with(false);
 
-  serial_print_progmem(timeUnit_);
-  Serial.println(time_unit);
-  
+  serial_print_progmem(selectTimeUnits);
+  Serial.print("  (");
+  Serial.print(time_unit);
+  serial_print_progmem(microSeconds);
+  serial_print_progmem(equals_);
+  Serial.print((float) (1000000.0 / (float) time_unit),3);
+  serial_println_progmem(perSecond_);
+
   Serial.println("");
-  periodics_info();
+  serial_println_progmem(switchPeriodic);
+  serial_println_progmem(Mute_Info);
 
 #ifdef HARDWARE_menu	// inside MENU_over_serial
   menu_hardware_display();
@@ -687,7 +783,6 @@ const unsigned char bytes_[] PROGMEM = " bytes";
 
 #ifdef HARDWARE_menu
 const unsigned char numberOfPin[] PROGMEM = "Number of pin to work on: ";
-const unsigned char none_[] PROGMEM = "(none)";
 const unsigned char invalid[] PROGMEM = "(invalid)";
 const unsigned char setToHigh[] PROGMEM = " was set to HIGH.";
 const unsigned char setToLow[] PROGMEM = " was set to LOW.";
@@ -699,7 +794,7 @@ int hardware_menu_reaction(char menu_input) {
   long newValue;
 
   switch (menu_input) {
-  case  'M':
+  case  'M':					// hidden by program menus 'M'
     serial_print_progmem(freeRAM);
     Serial.print(get_free_RAM());
     serial_println_progmem(bytes_);
@@ -789,29 +884,92 @@ int hardware_menu_reaction(char menu_input) {
 
 
 
-const unsigned char selectPeriodicWith[] PROGMEM = "Select periodic with ";
+/* **************************************************************** */
+// functions called from the menu:
 
-void info_select_periodic_with() {
-  serial_print_progmem(selectPeriodicWith);
-  for (int task=0; task<CLICK_PERIODICS; task++ ) {
-    Serial.print(task); Serial.print("  ");
-  }
+const unsigned char multipliedPeriod_[] PROGMEM = "Multiplied period[";
+
+void multiply_period_and_inform(int task, unsigned long factor) {
+  set_new_period(task, (TIMER_TYPE) period[task] * factor);
+
+  serial_print_progmem(multipliedPeriod_);
+  Serial.print((int) task);
+  Serial.print("] by ");
+  Serial.print(factor);
   serial_print_progmem(tab_);
-  if (selected_periodic != 255) {
-    Serial.print("(");
-    Serial.print((int) selected_periodic);
-    Serial.println(")");
-  } else
-    serial_println_progmem(none_);
+  periodic_info(task);
 }
 
 
+const unsigned char dividedPeriod_[] PROGMEM = "Divided period[";
+
+void divide_period_and_inform(int task, unsigned long divisor) {
+  set_new_period(task, (TIMER_TYPE) period[task] / divisor);
+
+  serial_print_progmem(dividedPeriod_);
+  Serial.print((int) task);
+  Serial.print("] by ");
+  Serial.print(divisor);
+  serial_print_progmem(tab_);
+  periodic_info(task);
+}
+
+
+const unsigned char setPeriod_[] PROGMEM = "Set period[";
+
+void set_new_period_and_inform(int task, unsigned long value) {
+  set_new_period(task, value);
+
+  serial_print_progmem(setPeriod_);
+  Serial.print((int) task);
+  Serial.print("] to ");
+  print_period_in_time_units(task);
+  //  Serial.print(value);
+  serial_print_progmem(tab_);
+  serial_print_progmem(tab_);
+  periodic_info(task);
+}
+
+
+const unsigned char setTimeUnit_[] PROGMEM = "Set time unit to ";
+
+void set_time_unit_and_inform(unsigned long newValue) {
+  time_unit = newValue;
+  serial_print_progmem(setTimeUnit_);
+  Serial.print(time_unit);
+  serial_println_progmem(microSeconds);
+}
+
+
+const unsigned char switchedPeriodic_[] PROGMEM = "Switched periodic ";
+
+void switch_periodic_and_inform(int task) {
+  flags[task] ^= ACTIVE;
+
+  serial_print_progmem(switchedPeriodic_);
+  Serial.print((int)  task);
+  if (flags[task] & ACTIVE) {
+    next[task] = TIMER;
+    last[task] = next[task];	// for overflow logic
+
+    Serial.println(" on");
+  } else
+    Serial.println (" off");
+
+  // fix_global_next();			// planed soon...
+}
+
+
+
+/* **************************************************************** */
+// menu reaction:
+
 const unsigned char unknownMenuInput[] PROGMEM = "unknown menu input: ";
 
-const unsigned char multipliedPeriod_[] PROGMEM = "Multiplied period[";
-const unsigned char dividedPeriod_[] PROGMEM = "Divided period[";
 const unsigned char selectedPeriodic_[] PROGMEM = "Selected periodic ";
-const unsigned char switchedPeriodic_[] PROGMEM = "Switched periodic ";
+const unsigned char selectedAllPeriodics[] PROGMEM = "Selected *all* periodics";
+const unsigned char selectedTimeUnit[] PROGMEM = "Selected time unit";
+
 
 void menu_serial_reaction() {
   char menu_input;
@@ -822,6 +980,8 @@ void menu_serial_reaction() {
 
   if (char_available()) {
     while (char_available()) {
+      newValue=0;
+
       switch (menu_input = get_char()) {
       case ' ': case '\t':		// skip white chars
 	break;
@@ -833,75 +993,131 @@ void menu_serial_reaction() {
       // *do* change this line if you change CLICK_PERIODICS
       case '0': case '1': case '2': case '3':
 	// display(menu_input - '0');
-	selected_periodic = menu_input - '0';
+	selected_destination = menu_input - '0';
 	serial_print_progmem(selectedPeriodic_);
 	Serial.println((int)  menu_input - '0');
 	break;
 
+      case 't':
+	selected_destination = TIME_UNIT;
+	serial_println_progmem(selectedTimeUnit);
+	break;
+
+      case 'A':
+	selected_destination = ALL_PERIODICS;
+	serial_println_progmem(selectedAllPeriodics);
+	break;
+
       case 's':
-	if ( selected_periodic != 255) {
-	  flags[selected_periodic] ^= ACTIVE;
-
-	  serial_print_progmem(switchedPeriodic_);
-	  Serial.print((int)  selected_periodic);
-	  if (flags[selected_periodic] & ACTIVE) {
-	    next[selected_periodic] = TIMER;
-	    last[selected_periodic] = next[selected_periodic];	// for overflow logic
-
-	    Serial.println(" on");
-	  } else
-	    Serial.println (" off");
-
-	  // fix_global_next();			// planed soon...
+	if (selected_destination < CLICK_PERIODICS) {
+	  switch_periodic_and_inform(selected_destination);
 	} else
-	  info_select_periodic_with();
+	  switch (selected_destination) {
+	  case ALL_PERIODICS:
+	    for (int task=0; task<CLICK_PERIODICS; task++ ) {
+	      switch_periodic_and_inform(task);
+	    }
+	    Serial.println("");
+	    break;
+
+	  default:
+	    info_select_destination_with(false);
+	  }
+	break;
+
+      case 'i':
+	periodics_info();
+	break;
+
+      case 'M':					// hides hardware menus 'M'
+	mute_all_periodics();
 	break;
 
       case '*':
-	if ( selected_periodic != 255) {
+	if (selected_destination < CLICK_PERIODICS) {
 	  newValue = numericInput(1);
 	  if (newValue>=0) {
-	    set_new_period(selected_periodic, (TIMER_TYPE) period[selected_periodic]*newValue);
-
-	    serial_print_progmem(multipliedPeriod_);
-	    Serial.print((int) selected_periodic);
-	    Serial.print("] by ");
-	    Serial.println(newValue);
+	    multiply_period_and_inform(selected_destination, newValue);
 	  } else
 	    serial_println_progmem(invalid);
 
 	} else
-	  info_select_periodic_with();
+	  newValue = numericInput(1);
+
+	  switch (selected_destination) {
+	  case ALL_PERIODICS:
+	    for (int task=0; task<CLICK_PERIODICS; task++ ) {
+	      multiply_period_and_inform(task, newValue);
+	    }
+	    Serial.println("");
+	    break;
+
+	  case TIME_UNIT:
+	    set_time_unit_and_inform(time_unit*newValue);
+	    break;
+
+	  default:
+	      info_select_destination_with(true);
+	  }
 	break;
 
       case '/':
-	if ( selected_periodic != 255) {
+	if (selected_destination < CLICK_PERIODICS) {
 	  newValue = numericInput(1);
 	  if (newValue>0) {
-	    set_new_period(selected_periodic,  (TIMER_TYPE) period[selected_periodic]/newValue);
-
-	    serial_print_progmem(dividedPeriod_);
-	    Serial.print((int) selected_periodic);
-	    Serial.print("] by ");
-	    Serial.println(newValue);
+	    divide_period_and_inform(selected_destination, newValue);
 	  } else
 	    serial_println_progmem(invalid);
 
 	} else
-	  info_select_periodic_with();
+	  newValue = numericInput(1);
+
+	  switch (selected_destination) {
+	  case ALL_PERIODICS:
+	    for (int task=0; task<CLICK_PERIODICS; task++ ) {
+	      divide_period_and_inform(task, newValue);
+	    }
+	    Serial.println("");
+	    break;
+
+	  case TIME_UNIT:
+	    set_time_unit_and_inform(time_unit/newValue);
+	    break;
+
+	  default:
+	    info_select_destination_with(true);
+	  }
 	break;
 
       case '=':
-	if ( selected_periodic != 255) {
-	newValue = numericInput(period[selected_periodic] / time_unit);
+	if (selected_destination < CLICK_PERIODICS) {		// periodiccs
+	newValue = numericInput(period[selected_destination] / time_unit);
 	if (newValue>=0) {
-	  set_new_period(selected_periodic, newValue * time_unit);
+	  set_new_period_and_inform(selected_destination, newValue * time_unit);
 	} else
 	  serial_println_progmem(invalid);
 
-	} else
-	  info_select_periodic_with();
-	break;
+	} else 
+	  newValue = numericInput(1);
+
+	  switch (selected_destination) {
+	  case ALL_PERIODICS:
+	    for (int task=0; task<CLICK_PERIODICS; task++ ) {
+	      set_new_period_and_inform(task, newValue * time_unit);
+	    }
+	    Serial.println("");
+	    break;
+
+	    break;
+
+	  case TIME_UNIT:			// time_unit
+	    set_time_unit_and_inform(newValue);
+	    break;
+
+	  default:
+	    info_select_destination_with(true);
+	  }
+
 
       default:
 	// maybe it's in a submenu?
@@ -914,8 +1130,7 @@ void menu_serial_reaction() {
 	  ;
 #endif // submenu reactions
 	else {
-	  serial_print_progmem(unknownMenuInput); Serial.print(byte(menu_input));
-	  Serial.print(" = "); Serial.println(menu_input);
+	  serial_print_progmem(unknownMenuInput); Serial.println(menu_input);
 	  while (char_available() > 0) {
 	    menu_input = get_char();
 	    Serial.print(byte(menu_input));
@@ -986,8 +1201,8 @@ void setup() {
 
   A = setup_task(&click, ACTIVE, now, (TIMER_TYPE) 6*time_unit, 0);
   B = setup_task(&click, ACTIVE, now+5*time_unit, (TIMER_TYPE) 10*time_unit, 0);
-  C = setup_task(&click, ACTIVE, now+4*time_unit, (TIMER_TYPE) 8*time_unit, 0);
-  D = setup_task(&click, ACTIVE, now+6*time_unit, (TIMER_TYPE) 12*time_unit, 0);
+  C = setup_task(&click, DO_NOT_DELETE, now+4*time_unit, (TIMER_TYPE) 8*time_unit, 0);
+  D = setup_task(&click, DO_NOT_DELETE, now+6*time_unit, (TIMER_TYPE) 12*time_unit, 0);
 }
 
 
