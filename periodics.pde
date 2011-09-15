@@ -106,6 +106,11 @@ void init_task(int task) {
   last[task] = 0;
   next[task] = 0;
   parameter_1[task] = 0;
+  ulong_parameter_1[task] = 0L;
+  char_parameter_1[task] = 0;
+  char_parameter_2[task] = 0;
+  char_parameter_3[task] = 0;
+  char_parameter_4[task] = 0;
 }
 
 void init_tasks() {
