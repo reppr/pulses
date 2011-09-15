@@ -75,11 +75,14 @@ unsigned int int1[PERIODICS];		// if COUNTED, gives number of executions
 TIMER_TYPE period[PERIODICS];
 TIMER_TYPE last[PERIODICS];
 TIMER_TYPE next[PERIODICS];
-int parameter_1[PERIODICS];		//  can be used by periodic_do()
-char char_parameter_1[PERIODICS];	//  can be used by periodic_do()
-char char_parameter_2[PERIODICS];	//  can be used by periodic_do()
-char char_parameter_3[PERIODICS];	//  can be used by periodic_do()
-char char_parameter_4[PERIODICS];	//  can be used by periodic_do()
+
+// custom parameters[task]
+int parameter_1[PERIODICS];			//  can be used by periodic_do()
+unsigned long ulong_parameter_1[PERIODICS];	//  can be used by periodic_do()
+char char_parameter_1[PERIODICS];		//  can be used by periodic_do()
+char char_parameter_2[PERIODICS];		//  can be used by periodic_do()
+char char_parameter_3[PERIODICS];		//  can be used by periodic_do()
+char char_parameter_4[PERIODICS];		//  can be used by periodic_do()
 
 // pointers on  void something(int task)  functions:
 void (*periodic_do[PERIODICS])(int);
@@ -123,8 +126,11 @@ void do_task(int task) {
   last[task] = next[task];					// when it *should* have happened
   next[task] += period[task];					// when it should happen again
 
-  if ((flags[task] & COUNTED) && (counter[task] == int1[task]))	// COUNTED task?
-    init_task(task);						//   yes: end reached, vanish
+  if ((flags[task] & COUNTED) && (counter[task] == int1[task]))	// COUNTED task && end reached?
+    if (flags[task] & DO_NOT_DELETE)				//  yes: DO_NOT_DELETE?
+      flags[task] &= ~ACTIVE;					//       yes: just deactivate
+    else
+      init_task(task);						//       no:  delete task
 
   // fix_global_next();			// planed soon...
 
