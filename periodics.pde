@@ -47,7 +47,8 @@
 /* **************************************************************** */
 // CONFIGURATION:
 
-#define PERIODICS		5	// maximal number of tasks
+#define PERIODICS		15	// maximal number of tasks
+					// plenty of free tasks for jiffles ;)
 
 #define LED_PIN			13
 
@@ -115,7 +116,7 @@ int parameter_1[PERIODICS];			//  can be used by periodic_do()
 int parameter_2[PERIODICS];			//  can be used by periodic_do()
 // int parameter_3[PERIODICS];			//  can be used by periodic_do()
 // int parameter_4[PERIODICS];			//  can be used by periodic_do()
-// unsigned long ulong_parameter_1[PERIODICS];	//  can be used by periodic_do()
+unsigned long ulong_parameter_1[PERIODICS];	//  can be used by periodic_do()
 // unsigned long ulong_parameter_2[PERIODICS];	//  can be used by periodic_do()
 // unsigned long ulong_parameter_3[PERIODICS];	//  can be used by periodic_do()
 // unsigned long ulong_parameter_4[PERIODICS];	//  can be used by periodic_do()
@@ -150,7 +151,7 @@ void init_task(int task) {
   // parameter_3[task] = 0;
   // parameter_4[task] = 0;
 
-  // ulong_parameter_1[task] = 0L;
+  ulong_parameter_1[task] = 0L;
   // ulong_parameter_2[task] = 0L;
   // ulong_parameter_3[task] = 0L;
   // ulong_parameter_4[task] = 0L;
@@ -158,6 +159,8 @@ void init_task(int task) {
   char_parameter_2[task] = 0;
   // char_parameter_3[task] = 0;
   // char_parameter_4[task] = 0;
+
+  // fix_global_next();			// planed soon...
 }
 
 void init_tasks() {
@@ -413,14 +416,15 @@ void init_rhythm_2(int sync) {
   init_click_tasks();
 
   for (divider=4; divider<12 ; divider += 2) {
-    click_task[task] = setup_task(&click, ACTIVE, now + sync*base*time_unit/divider/2, (TIMER_TYPE) base*time_unit/divider, 0);
+    click_task[task] =
+      setup_task(&click, ACTIVE|DO_NOT_DELETE, now + sync*base*time_unit/divider/2, (TIMER_TYPE) base*time_unit/divider, 0);
     char_parameter_1[task] = click_pin[task];
     pinMode(click_pin[task++], OUTPUT);
     task++;
   }
 
-  //  click_task[task] = setup_task(&click, ACTIVE, now + sync*base/2*time_unit, (TIMER_TYPE) base*time_unit, 0);
-  click_task[task] = setup_task(&click, ACTIVE, now, (TIMER_TYPE) base*time_unit, 0);		// slowest *not* synced
+  //  click_task[task] = setup_task(&click, ACTIVE|DO_NOT_DELETE, now + sync*base/2*time_unit, (TIMER_TYPE) base*time_unit, 0);
+  click_task[task] = setup_task(&click, ACTIVE|DO_NOT_DELETE, now, (TIMER_TYPE) base*time_unit, 0);		// slowest *not* synced
   char_parameter_1[task] = click_pin[task];
   pinMode(click_pin[task++], OUTPUT);
 }
@@ -459,12 +463,15 @@ const unsigned char period_[] PROGMEM = " period = ";
 const unsigned char timeUnits_[] PROGMEM = " time units";
 
 void print_period_in_time_units(int task) {
-  float time_units;
+  float time_units, scratch;
 
   serial_print_progmem(period_);
   time_units = ((float) period[task] / (float) time_unit);
-  if (time_units < 10.0)
+  scratch = 1000.0;
+  while (scratch > time_units) {
     Serial.print(" ");
+    scratch /= 10.0;
+  }
   Serial.print((float) time_units, 3);
   serial_print_progmem(timeUnits_);
 }
@@ -499,7 +506,7 @@ void periodic_info(int task) {
 
 void periodics_info() {
   for (char task=0; task<CLICK_PERIODICS; task++) {
-    if (task == selected_destination)
+    if ((ALL_PERIODICS == selected_destination) || (task == selected_destination))
       Serial.print("*");
     else
       Serial.print(" ");
@@ -1211,7 +1218,7 @@ void menu_serial_reaction() {
 	} else
 	  serial_println_progmem(invalid);
 
-	} else 
+	} else {
 	  newValue = numericInput(1);
 
 	  switch (selected_destination) {
@@ -1222,8 +1229,6 @@ void menu_serial_reaction() {
 	    Serial.println("");
 	    break;
 
-	    break;
-
 	  case TIME_UNIT:			// time_unit
 	    set_time_unit_and_inform(newValue);
 	    break;
@@ -1231,7 +1236,15 @@ void menu_serial_reaction() {
 	  default:
 	    info_select_destination_with(true);
 	  }
+	}
+	break;
 
+
+
+//    case 'd':				// hook for debugging
+//	Serial.println("DEBUGGING");
+//	init_rhythm_2(1);
+//	break;
 
       default:
 	// maybe it's in a submenu?
@@ -1263,6 +1276,93 @@ void menu_serial_reaction() {
 
 #endif	// MENU_over_serial
 
+
+
+/* **************************************************************** */
+// jiffles:
+
+// jiffletabs define melody:
+// up to 256 triplets of {multiplicator, dividend, count}
+// multiplicator and dividend determine period based on the startin tasks period
+// a multiplicator of zero indicates end of jiffle
+#define JIFFLETAB_INDEX_STEP	3
+// unsigned int jiffletab0[] = {1,512,8, 1,1024,16, 1,2048,32, 1,1024,16, 0};
+// unsigned int jiffletab0[] = {1,128,2, 1,256,6, 1,512,10, 1,1024,32, 1,3*128,20, 1,64,8, 0};
+// unsigned int jiffletab0[] = {1,32,4, 1,64,8, 1,128,16, 1,256,32, 1,512,64, 1,1024,128, 0};	// testing octaves
+
+// unsigned int jiffletab0[] =
+//   {1,2096,4, 1,512,2, 1,128,2, 1,256,2, 1,512,8, 1,1024,32, 1,512,4, 1,256,3, 1,128,2, 1,64,1, 0};
+
+// unsigned int jiffletab0[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,2, 1,64,1, 1,32,1, 1,16,2, 0};
+
+
+// unsigned int jiffletab0[] = {1,32,2, 0};	// doubleclick
+
+unsigned int jiffletab0[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,4, 1,64,3, 1,32,1, 1,16,2, 0};	// nice short jiffy
+
+
+void do_jiffle0 (int task) {	// to be called by task_do
+  // char_parameter_1[task]	click pin
+  // char_parameter_2[task]	jiffletab index
+  // parameter_1[task]		count down
+  // parameter_2[task]		jiffletab[] pointer
+  // ulong_parameter_1[task]	base period = period of starting task
+
+  digitalWrite(char_parameter_1[task], counter[task] & 1);	// click
+
+  if (--parameter_1[task] > 0)				// countdown, phase endid?
+    return;						//   no: return immediately
+
+  // if we arrive here, phase endid, start next phase if any:
+  unsigned int* jiffletab = (unsigned int *) parameter_2[task];	// read jiffletab[]
+  char_parameter_2[task] += JIFFLETAB_INDEX_STEP;
+  if (jiffletab[char_parameter_2[task]] == 0) {		// no next phase, return
+    init_task(task);					// remove task
+    return;						// and return
+  }
+
+  //initialize next phase, re-using the same task:
+  int base_index = char_parameter_2[task];			// readability
+  period[task] = ulong_parameter_1[task] * jiffletab[base_index] / jiffletab[base_index+1];
+  parameter_1[task] = jiffletab[base_index+2];			// count of next phase
+  // fix_global_next();
+}
+
+
+int init_jiffle(unsigned int *jiffletab, TIMER_TYPE when, TIMER_TYPE jiffle_base_period, int origin_task) {
+  TIMER_TYPE jiffle_period = jiffle_base_period * jiffletab[0] / jiffletab[1];
+
+  int jiffle_task = setup_task(&do_jiffle0, ACTIVE, when, jiffle_period , 0);
+  if (jiffle_task != ILLEGAL) {
+    char_parameter_1[jiffle_task] = click_pin[origin_task];	// set pin
+    // pinMode(click_pin[task++], OUTPUT);			// should be ok already
+    char_parameter_2[jiffle_task] = 0;				// init phase 0
+    parameter_1[jiffle_task] = jiffletab[2];			// count of first phase
+    parameter_2[jiffle_task] = (unsigned int) jiffletab;
+    ulong_parameter_1[jiffle_task] = jiffle_base_period;
+  } 
+#ifdef USE_SERIAL
+  else {
+    Serial.print("ERROR: no task free to start jiffle from task ");
+    Serial.println(origin_task);
+  }
+#endif
+}
+
+
+void do_throw_a_jiffle(int task) {		// for task_do
+  // parameter_2[task]	= (unsigned int) jiffletab;
+  // we *could* also do     ulong_parameter_1[task] = jiffle_base_period;
+
+  // start a new jiffling task now (next [task] is not yet updated):
+  init_jiffle((unsigned int *) parameter_2[task], next[task], period[task], task);
+}
+
+void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, TIMER_TYPE when, TIMER_TYPE new_period, unsigned int new_int1) {
+  int jiffle_task = setup_task(&do_throw_a_jiffle, new_flags, when, new_period, new_int1);
+  if (jiffle_task != ILLEGAL)
+    parameter_2[jiffle_task] = (unsigned int) jiffletab;
+}
 
 
 /* **************************************************************** */
@@ -1319,7 +1419,27 @@ void setup() {
 
   // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
   // init_rhythm_1(1);
-  init_rhythm_2(1);
+  // init_rhythm_2(1);
+
+//  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, TIMER+5*time_unit, 10*time_unit, 0);
+//  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, TIMER+10*time_unit, 15*time_unit, 0);
+//  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, TIMER+15*time_unit, 20*time_unit, 0);
+//  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, TIMER,              25*time_unit, 0);
+//  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, TIMER+20*time_unit, 30*time_unit, 0);
+
+  now=TIMER;
+  int scale=18;
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*2/2*time_unit,   scale*2*time_unit, 0);	// 2
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*3/2*time_unit,   scale*3*time_unit, 0);	// 3
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*4/2*time_unit,   scale*4*time_unit, 0);	// 4
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*5/2*time_unit,   scale*5*time_unit, 0);	// 5
+
+  // 2*3*2*5	(the 4 needs only another factor of 2)
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now + scale*2*3*2*5/2*time_unit, scale*2*3*2*5*time_unit, 0);
+
+#ifdef MENU_over_serial
+  periodics_info();
+#endif
 }
 
 
@@ -1357,9 +1477,3 @@ void loop() {
 
 
 /* **************************************************************** */
-
-//	unsigned int jiffletab[] = {8,1,8, 16,1,32, 32,1,32, 0, 0, 0};
-//	
-//	jiffle0 (int task) {	// to be called by task_do
-//	
-//	]
