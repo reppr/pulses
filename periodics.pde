@@ -76,13 +76,20 @@ TIMER_TYPE period[PERIODICS];
 TIMER_TYPE last[PERIODICS];
 TIMER_TYPE next[PERIODICS];
 
-// custom parameters[task]
+// custom parameters[task]		//  comment/uncomment as appropriate:
+					//  then *DO ADAPT init_task()* 
 int parameter_1[PERIODICS];			//  can be used by periodic_do()
-unsigned long ulong_parameter_1[PERIODICS];	//  can be used by periodic_do()
+int parameter_2[PERIODICS];			//  can be used by periodic_do()
+// int parameter_3[PERIODICS];			//  can be used by periodic_do()
+// int parameter_4[PERIODICS];			//  can be used by periodic_do()
+// unsigned long ulong_parameter_1[PERIODICS];	//  can be used by periodic_do()
+// unsigned long ulong_parameter_2[PERIODICS];	//  can be used by periodic_do()
+// unsigned long ulong_parameter_3[PERIODICS];	//  can be used by periodic_do()
+// unsigned long ulong_parameter_4[PERIODICS];	//  can be used by periodic_do()
 char char_parameter_1[PERIODICS];		//  can be used by periodic_do()
 char char_parameter_2[PERIODICS];		//  can be used by periodic_do()
-char char_parameter_3[PERIODICS];		//  can be used by periodic_do()
-char char_parameter_4[PERIODICS];		//  can be used by periodic_do()
+// char char_parameter_3[PERIODICS];		//  can be used by periodic_do()
+// char char_parameter_4[PERIODICS];		//  can be used by periodic_do()
 
 // pointers on  void something(int task)  functions:
 void (*periodic_do[PERIODICS])(int);
@@ -106,11 +113,18 @@ void init_task(int task) {
   last[task] = 0;
   next[task] = 0;
   parameter_1[task] = 0;
-  ulong_parameter_1[task] = 0L;
+  parameter_2[task] = 0;
+  // parameter_3[task] = 0;
+  // parameter_4[task] = 0;
+
+  // ulong_parameter_1[task] = 0L;
+  // ulong_parameter_2[task] = 0L;
+  // ulong_parameter_3[task] = 0L;
+  // ulong_parameter_4[task] = 0L;
   char_parameter_1[task] = 0;
   char_parameter_2[task] = 0;
-  char_parameter_3[task] = 0;
-  char_parameter_4[task] = 0;
+  // char_parameter_3[task] = 0;
+  // char_parameter_4[task] = 0;
 }
 
 void init_tasks() {
