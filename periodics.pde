@@ -355,7 +355,7 @@ void init_click_tasks() {
 
 
 void click(int task) {			// can be called from a task
-  digitalWrite(char_parameter_1[task], counter[task] & 1);
+  digitalWrite(char_parameter_1[task], woke_up_count[task] & 1);
 }
 
 
@@ -465,7 +465,7 @@ void print_period_in_time_units(int task) {
   float time_units, scratch;
 
   serial_print_progmem(period_);
-  time_units = ((float) period[task] / (float) time_unit);
+  time_units = ((float) wake_up_period[task] / (float) time_unit);
   scratch = 1000.0;
   while (scratch > time_units) {
     Serial.print(" ");
@@ -497,7 +497,7 @@ void periodic_info(int task) {
   Serial.print((int) click_pin[task]);
 
   serial_print_progmem(counter_);
-  Serial.print(counter[task]);
+  Serial.print(woke_up_count[task]);
 
   Serial.println("");
 }
@@ -1009,7 +1009,7 @@ int hardware_menu_reaction(char menu_input) {
 const unsigned char multipliedPeriod_[] PROGMEM = "Multiplied period[";
 
 void multiply_period_and_inform(int task, unsigned long factor) {
-  set_new_period(task, (TIMER_TYPE) period[task] * factor);
+  set_new_period(task, (TIMER_TYPE) wake_up_period[task] * factor);
 
   serial_print_progmem(multipliedPeriod_);
   Serial.print((int) task);
@@ -1023,7 +1023,7 @@ void multiply_period_and_inform(int task, unsigned long factor) {
 const unsigned char dividedPeriod_[] PROGMEM = "Divided period[";
 
 void divide_period_and_inform(int task, unsigned long divisor) {
-  set_new_period(task, (TIMER_TYPE) period[task] / divisor);
+  set_new_period(task, (TIMER_TYPE) wake_up_period[task] / divisor);
 
   serial_print_progmem(dividedPeriod_);
   Serial.print((int) task);
@@ -1211,7 +1211,7 @@ void menu_serial_reaction() {
 
       case '=':
 	if (selected_destination < CLICK_PERIODICS) {		// periodiccs
-	newValue = numericInput(period[selected_destination] / time_unit);
+	newValue = numericInput(wake_up_period[selected_destination] / time_unit);
 	if (newValue>=0) {
 	  set_new_period_and_inform(selected_destination, newValue * time_unit);
 	} else
@@ -1307,7 +1307,7 @@ void do_jiffle0 (int task) {	// to be called by task_do
   // parameter_2[task]		jiffletab[] pointer
   // ulong_parameter_1[task]	base period = period of starting task
 
-  digitalWrite(char_parameter_1[task], counter[task] & 1);	// click
+  digitalWrite(char_parameter_1[task], woke_up_count[task] & 1);	// click
 
   if (--parameter_1[task] > 0)				// countdown, phase endid?
     return;						//   no: return immediately
@@ -1322,7 +1322,7 @@ void do_jiffle0 (int task) {	// to be called by task_do
 
   //initialize next phase, re-using the same task:
   int base_index = char_parameter_2[task];			// readability
-  period[task] = ulong_parameter_1[task] * jiffletab[base_index] / jiffletab[base_index+1];
+  wake_up_period[task] = ulong_parameter_1[task] * jiffletab[base_index] / jiffletab[base_index+1];
   parameter_1[task] = jiffletab[base_index+2];			// count of next phase
   // fix_global_next();
 }
@@ -1354,7 +1354,7 @@ void do_throw_a_jiffle(int task) {		// for task_do
   // we *could* also do     ulong_parameter_1[task] = jiffle_base_period;
 
   // start a new jiffling task now (next [task] is not yet updated):
-  init_jiffle((unsigned int *) parameter_2[task], next[task], period[task], task);
+  init_jiffle((unsigned int *) parameter_2[task], next[task], wake_up_period[task], task);
 }
 
 void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, TIMER_TYPE when, TIMER_TYPE new_period, unsigned int new_int1) {
