@@ -44,10 +44,10 @@
 // #define TIME_READY_CONDITION		next[task] <= now
 
 //	stops at overflow
-// #define TIME_READY_CONDITION		(now - last[task]) >= period[task]
+// #define TIME_READY_CONDITION		(now - last[task]) >= wake_up_period[task]
 
 //	stops at overflow
-// #define TIME_READY_CONDITION		(last[task] + period[task]) <= now
+// #define TIME_READY_CONDITION		(last[task] + wake_up_period[task]) <= now
 
 // works!
 // #define TIME_READY_CONDITION		((now >= last[task]) && (now >= next[task])) || ((now < last[task]) && now >= next[task])
@@ -62,17 +62,16 @@ byte flags[PERIODICS];
 // flag masks:
 #define ACTIVE			1	// switches task on/off
 #define COUNTED			2	// repeats int1 times, then vanishes
-// #define P_ALTERNATE		4		// has 2 alternating periods
 #define DO_NOT_DELETE	       16	// dummy to avoid being thrown out
 #define CUSTOM_1	       32	// can be used by periodic_do()
 #define CUSTOM_2	       64	// can be used by periodic_do()
 #define CUSTOM_3	      128	// can be used by periodic_do()
 
 
-unsigned int counter[PERIODICS];	// counts how many times the task woke up
+unsigned int woke_up_count[PERIODICS];	// counts how many times the task woke up
 unsigned int int1[PERIODICS];		// if COUNTED, gives number of executions
 //					   (else free for any other internal use)
-TIMER_TYPE period[PERIODICS];
+TIMER_TYPE wake_up_period[PERIODICS];
 TIMER_TYPE last[PERIODICS];
 TIMER_TYPE next[PERIODICS];
 
@@ -107,9 +106,9 @@ TIMER_TYPE now;
 void init_task(int task) {
   flags[task] = 0;
   periodic_do[task] = NULL;
-  counter[task] = 0;
+  woke_up_count[task] = 0;
   int1[task] = 0;
-  period[task] = 0;
+  wake_up_period[task] = 0;
   last[task] = 0;
   next[task] = 0;
   parameter_1[task] = 0;
@@ -134,27 +133,27 @@ void init_tasks() {
 }
 
 
-void do_task(int task) {
-  counter[task]++;						//      count
+void wake_task(int task) {
+  woke_up_count[task]++;					//      count
 
   if (periodic_do[task] != NULL) {				// there *is* something to do?
     (*periodic_do[task])(task);					//      do it
   } // we *did* do something
  
   // prepare future:
-  last[task] = next[task];					// when it *should* have happened
-  next[task] += period[task];					// when it should happen again
+  last[task] = next[task];						// when it *should* have happened
+  next[task] += wake_up_period[task];					// when it should happen again
 
-  if ((flags[task] & COUNTED) && (counter[task] == int1[task]))	// COUNTED task && end reached?
-    if (flags[task] & DO_NOT_DELETE)				//  yes: DO_NOT_DELETE?
-      flags[task] &= ~ACTIVE;					//       yes: just deactivate
+  if ((flags[task] & COUNTED) && (woke_up_count[task] == int1[task]))	// COUNTED task && end reached?
+    if (flags[task] & DO_NOT_DELETE)					//  yes: DO_NOT_DELETE?
+      flags[task] &= ~ACTIVE;						//       yes: just deactivate
     else
-      init_task(task);						//       no:  delete task
+      init_task(task);							//       no:  delete task
 
   // fix_global_next();			// planed soon...
 
 #if (SERIAL_VERBOSE > 0) 
-  Serial.print("\n\t\tAFTER   "); Serial.print(task); Serial.print(" / "); Serial.print((unsigned int) counter[task]);
+  Serial.print("\n\t\tAFTER   "); Serial.print(task); Serial.print(" / "); Serial.print((unsigned int) woke_up_count[task]);
   Serial.print("\tlast "); Serial.print((unsigned int) last[task]);
   Serial.print("  \tnext "); Serial.println((unsigned int) next[task]);
 #endif
@@ -167,7 +166,7 @@ int check_maybe_do() {
   for (task=0; task<PERIODICS; task++) {	// check all tasks once
     if (flags[task] & ACTIVE) {			// task active?
       if (TIME_READY_CONDITION) {		// yes, is it time?
-	do_task(task);				// yes, do this task now
+	wake_task(task);			// yes, wake this task now
       }	// not the time yet
     } // active task
   } // task loop
@@ -176,7 +175,7 @@ int check_maybe_do() {
 }
 
 
-int setup_task(void (*task_do)(int), byte new_flags, TIMER_TYPE when, TIMER_TYPE new_period, unsigned int new_int1) {
+int setup_task(void (*task_do)(int), byte new_flags, TIMER_TYPE when, TIMER_TYPE new_wake_up_period, unsigned int new_int1) {
   int task;
 
   if (new_flags == 0)				// illegal new_flags parameter
@@ -192,8 +191,8 @@ int setup_task(void (*task_do)(int), byte new_flags, TIMER_TYPE when, TIMER_TYPE
   // initiaize new task				// yes, found a free task
   flags[task] = new_flags;			// initialize task
   periodic_do[task] = task_do;			// payload
-  next[task] = when;				// next execution time
-  period[task] = new_period;			// repetition period
+  next[task] = when;				// next wake up time
+  wake_up_period[task] = new_wake_up_period;
   int1[task] = new_int1;;			// internal parameter
 
   // fix_global_next();			// planed soon...
@@ -202,9 +201,9 @@ int setup_task(void (*task_do)(int), byte new_flags, TIMER_TYPE when, TIMER_TYPE
 }
 
 
-void set_new_period(int task, TIMER_TYPE new_period) {
-  period[task] = new_period;
-  next[task] = last[task] + period[task];
+void set_new_period(int task, TIMER_TYPE new_wake_up_period) {
+  wake_up_period[task] = new_wake_up_period;
+  next[task] = last[task] + wake_up_period[task];
   // fix_global_next();			// planed soon...
 }
 
@@ -225,15 +224,15 @@ void inside_task_info(int task) {
 #ifdef SERIAL_VERBOSE
   digitalWrite(LED_PIN,HIGH);
   #if (SERIAL_VERBOSE == 0)
-    Serial.print("\ntask do "); Serial.print(task); Serial.print("/"); Serial.print((unsigned int) counter[task]);
+    Serial.print("\ntask do "); Serial.print(task); Serial.print("/"); Serial.print((unsigned int) woke_up_count[task]);
   #else
     // Serial.print("\nat RT "); Serial.println(millis() / TIMER_SPEEDUP); 
     Serial.print("\ntime  "); Serial.print((unsigned int) now);
-    Serial.print("  \tTASK DO "); Serial.print(task); Serial.print(" / "); Serial.print((unsigned int) counter[task]);
+    Serial.print("  \tTASK DO "); Serial.print(task); Serial.print(" / "); Serial.print((unsigned int) woke_up_count[task]);
     Serial.print("\tlast "); Serial.print((unsigned int) last[task]);
     Serial.print("  \tnext "); Serial.print((unsigned int) next[task]);
-    Serial.print("  \tperiod "); Serial.print((unsigned int) period[task]);
-    Serial.print("  \tcounter "); Serial.print((unsigned int) counter[task]);
+    Serial.print("  \tperiod "); Serial.print((unsigned int) wake_up_period[task]);
+    Serial.print("  \tcounter "); Serial.print((unsigned int) woke_up_count[task]);
   #endif
   digitalWrite(LED_PIN,LOW);
 #endif
