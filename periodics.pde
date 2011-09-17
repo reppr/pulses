@@ -20,7 +20,7 @@
 /* **************************************************************** */
 // CONFIGURATION:
 
-#define PERIODICS		4	// maximal number of tasks
+#define PERIODICS		8	// maximal number of tasks
 
 #define LED_PIN			13
 
@@ -59,7 +59,7 @@ unsigned char flags[PERIODICS];
 #define CUSTOM_3	      128	// can be used by periodic_do()
 
 
-unsigned int woke_up_count[PERIODICS];	// counts how many times the task woke up
+unsigned int cycles_count[PERIODICS];	// counts how many times the task woke up
 TIMER_TYPE wake_up_period[PERIODICS];
 OVERFLOW_TYPE wake_up_overflow[PERIODICS]; // overflow of period (for very long periods)
 
@@ -111,7 +111,7 @@ OVERFLOW_TYPE overflow=0;
 void init_task(int task) {
   flags[task] = 0;
   periodic_do[task] = NULL;
-  woke_up_count[task] = ILLEGAL;
+  cycles_count[task] = ILLEGAL;
   int1[task] = 0;
   wake_up_period[task] = 0;
   last[task] = 0;
@@ -142,7 +142,7 @@ void init_tasks() {
 
 
 void wake_task(int task) {
-  woke_up_count[task]++;					//      count
+  cycles_count[task]++;					//      count
 
   if (periodic_do[task] != NULL) {				// there *is* something to do?
     (*periodic_do[task])(task);					//      do it
@@ -157,11 +157,11 @@ void wake_task(int task) {
   if (last[task] > next[task])
     next_overflow[task]++;
 
-  if ((flags[task] & COUNTED) && (woke_up_count[task] == int1[task]))	// COUNTED task && end reached?
-    if (flags[task] & DO_NOT_DELETE)					//  yes: DO_NOT_DELETE?
-      flags[task] &= ~ACTIVE;						//       yes: just deactivate
+  if ((flags[task] & COUNTED) && ((cycles_count[task] +1) == int1[task] ))	// COUNTED task && end reached?
+    if (flags[task] & DO_NOT_DELETE)						//  yes: DO_NOT_DELETE?
+      flags[task] &= ~ACTIVE;							//       yes: just deactivate
     else
-      init_task(task);							//       no:  delete task
+      init_task(task);								//       no:  DELETE task
 
   // fix_global_next();			// planed soon...
 }
@@ -242,7 +242,7 @@ void set_new_period(int task, TIMER_TYPE new_wake_up_period, OVERFLOW_TYPE new_w
 
 
 // click on a piezzo to hear result:
-#define CLICK_PIN	12			// pin with a piezzo
+#define CLICK_PIN	6			// pin with a piezzo
 unsigned long clicks=0;
 void click(int task) {
   digitalWrite(CLICK_PIN, ++clicks & 1);
@@ -265,13 +265,18 @@ void serial_print_BIN(unsigned long value, int bits) {
 }
 
 // task info as paylod for tasks:
+// blink the LED
 void inside_task_info(int task) {
-  digitalWrite(LED_PIN,HIGH);
+  unsigned long realtime = millis();
+
+#ifdef LED_PIN
+  digitalWrite(LED_PIN,HIGH);		// blink the LED
+#endif
 
   Serial.print("*** TASK INFO ");
   Serial.print(task);
   Serial.print("/");
-  Serial.print((unsigned int) woke_up_count[task]);
+  Serial.print((unsigned int) cycles_count[task]);
 
   Serial.print("\ttime/ovfl ");
   Serial.print((int) TIMER);
@@ -297,19 +302,34 @@ void inside_task_info(int task) {
 
   Serial.print("   \tflags ");
   serial_print_BIN(flags[task], 8);
-// Serial.print((int) flags[task], BIN);
-  Serial.print("\t");
+  //  Serial.print("\t");
+
+  Serial.print("\n\t\t");		// start next line
 
   // no overflow in times yet ################################
-  Serial.print("\treal seconds ");
-  Serial.print((float) millis() / 1000.0, 2);
+  Serial.print("\texpected seconds ");
+  Serial.print((float) now / 1000.0, 4);
+  Serial.print("s");
 
-  Serial.print("  \tperiod S ");
+  Serial.print("\treal ");
+  Serial.print((float) millis() / 1000.0, 2);
+  Serial.print("s");
+
+  Serial.print("  \tperiod ");
   Serial.print((float) wake_up_period[task] * (float) TIMER_SLOWDOWN / 1000.0, 4);
+  Serial.print("s");
 
   Serial.print("\n\n");			// traling empty line
 
+#ifdef LED_PIN
   digitalWrite(LED_PIN,LOW);
+#endif
+}
+
+
+void click_n_info(int task) {
+  click(task);
+  inside_task_info(task);
 }
 
 
@@ -339,22 +359,37 @@ void setup() {
   // setup_task(task_do, new_flags|COUNTED, when, when_overflow, new_wake_up_period, new_wake_up_overflow);
 
   /*
-  // 3 to 5 pattern with phase offset:
-  int slowdown=20;
-  setup_task(&inside_task_info, ACTIVE, now,             overflow, 3*slowdown, 0);
-  setup_task(&inside_task_info, ACTIVE, now+5*slowdown/2, overflow, 5*slowdown, 0);
-  */
-
   // 1 to 2 second pattern straight (for easy to read inside_task_info() output)
   // setup_task(task_do, new_flags|COUNTED, when, when_overflow, new_wake_up_period, new_wake_up_overflow);
   setup_task(&inside_task_info, ACTIVE, now, overflow, 100, 0);
   setup_task(&inside_task_info, ACTIVE, now, overflow, 200, 0);
+  */
+
+  // nice 1 to 3 (to 4) to 5 second pattern with phase offsets
+  // setup_task(task_do, new_flags|COUNTED, when, when_overflow, new_wake_up_period, new_wake_up_overflow);
+  setup_task(&click, ACTIVE, now+100/2, overflow, 100, 0);
+  setup_task(&click, ACTIVE, now+300/2, overflow, 300, 0);
+  //  setup_task(&click, ACTIVE, now+400/2, overflow, 400, 0);
+  setup_task(&click, ACTIVE, now+500/2, overflow, 500, 0);
+
 
   /*
+  // testing periods longer then overflow:
+  setup_task(&inside_task_info, ACTIVE, now, overflow, 100, 1);
+  setup_task(&inside_task_info, ACTIVE, now, overflow, 1, 2);
+  */
+
+  /*
+  // 3 to 5 click_n_info pattern with phase offset:
+  int scale=50;
+  setup_task(&click, ACTIVE, now+3*scale/2, overflow, 3*scale, 0);
+  setup_task(&click, ACTIVE, now+5*scale/2, overflow, 5*scale, 0);
   // testing COUNTED tasks:
-  setup_counted_task(&click, ACTIVE, now, 30, 0);			// test an ordinary task
-  setup_counted_task(&inside_task_info, ACTIVE|COUNTED, now+10, 10, 3);	// test a three shot task
-  setup_counted_task(&inside_task_info, ACTIVE|COUNTED, now+25, 0, 1);	// test a one shot task
+  setup_counted_task(&click, ACTIVE|COUNTED, now, 13, scale/8, 0, 16);
+  setup_counted_task(&click, ACTIVE|COUNTED, now, 17, scale/32, 0, 32);
+  setup_counted_task(&click, ACTIVE|COUNTED, now, 21, scale/4, 0, 64);
+  setup_counted_task(&click, ACTIVE|COUNTED, now, 23, scale/2, 0, 64);
+  setup_counted_task(&click, ACTIVE|COUNTED, now, 27, scale, 0, 16);
   */
 
 }
@@ -377,10 +412,10 @@ void loop() {
     Serial.println((int) overflow);
     Serial.println();
 
-    if (overflow > 5) {
-      Serial.println("\n(stopped)");
-      while (true) ;
-    }
+//	    if (overflow > 5) {
+//	      Serial.println("\n(stopped)");
+//	      while (true) ;
+//	    }
   }
 
   check_maybe_do();
