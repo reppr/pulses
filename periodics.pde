@@ -8,39 +8,13 @@
    Periodically do multiple independent tasks.
    This is a very early experimental test version
    used to test timer overflow strategies.
+
+   New logic version to determine when to wake up tasks.
+   Saving times along with an overflow count makes everything
+   simple and flexible.
 */
 /* **************************************************************** */
 #define ILLEGAL	-1
-
-
-
-/* **************************************************************** */
-// testing timer overflow:
-
-#define TIMER_TYPE	unsigned long
-#define TIMER		micros()
-
-// for testing timer overflow:
-//	#define TIMER_TYPE	unsigned char
-//	#define TIMER_SPEEDUP	20L
-//	#define TIMER		(TIMER_TYPE) ((unsigned long) millis() / TIMER_SPEEDUP)
-
-
-// The is-it-time-now condition:
-
-// Well known *not* to work
-// #define TIME_READY_CONDITION		next[task] <= now
-
-//	stops at overflow
-// #define TIME_READY_CONDITION		(now - last[task]) >= wake_up_period[task]
-
-//	stops at overflow
-// #define TIME_READY_CONDITION		(last[task] + wake_up_period[task]) <= now
-
-// works!
-// #define TIME_READY_CONDITION		((now >= last[task]) && (now >= next[task])) || ((now < last[task]) && now >= next[task])
-
-#define TIME_READY_CONDITION		((next[task] >= last[task]) && (now >= next[task])) || ((now < last[task]) && now >= next[task])
 
 
 
@@ -57,8 +31,18 @@
 #define USE_SERIAL	57600
 //  #define USE_SERIAL	38400
 
-//  #define SERIAL_VERBOSE	0	// just bare minimum of feedbackack
-//  #define SERIAL_VERBOSE	1	// more info on the tasks
+
+
+/* **************************************************************** */
+// for testing timer overflow:
+#define TIMER_TYPE	unsigned char
+#define TIMER_SLOWDOWN	10L	// gives a hundred per second
+
+#define TIMER		(TIMER_TYPE) ((unsigned long) millis() / TIMER_SLOWDOWN)
+#define OVERFLOW_TYPE	unsigned int
+
+
+/* **************************************************************** */
 
 #ifdef USE_SERIAL		// simple menus over serial line?
   // menu basics:
@@ -91,8 +75,11 @@
 
 
 /* **************************************************************** */
-byte flags[PERIODICS];
+// variables for tasks in arrays[task]:
 
+
+// ================>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<================
+unsigned char flags[PERIODICS];
 // flag masks:
 #define ACTIVE			1	// switches task on/off
 #define COUNTED			2	// repeats int1 times, then vanishes
@@ -102,15 +89,24 @@ byte flags[PERIODICS];
 #define CUSTOM_3	      128	// can be used by periodic_do()
 
 
-unsigned int woke_up_count[PERIODICS];	// counts how many times the task woke up
-unsigned int int1[PERIODICS];		// if COUNTED, gives number of executions
-//					   (else free for any other internal use)
+unsigned int cycles_count[PERIODICS];	// counts how many times the task woke up
 TIMER_TYPE wake_up_period[PERIODICS];
-TIMER_TYPE last[PERIODICS];
-TIMER_TYPE next[PERIODICS];
+OVERFLOW_TYPE wake_up_overflow[PERIODICS]; // overflow of period (for very long periods)
+
+TIMER_TYPE last[PERIODICS];		// convenient, but not really needed
+OVERFLOW_TYPE last_overflow[PERIODICS];	// same
+
+TIMER_TYPE next[PERIODICS];		// next wake up time
+OVERFLOW_TYPE next_overflow[PERIODICS];	// overflow of next wake up
+
+// internal parameter:
+unsigned int int1[PERIODICS];		// if COUNTED, gives number of executions
+//					   else free for other internal use
 
 // custom parameters[task]		//  comment/uncomment as appropriate:
 					//  then *DO ADAPT init_task()* 
+
+// ================>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<================
 int parameter_1[PERIODICS];			//  can be used by periodic_do()
 int parameter_2[PERIODICS];			//  can be used by periodic_do()
 // int parameter_3[PERIODICS];			//  can be used by periodic_do()
@@ -126,25 +122,32 @@ char char_parameter_2[PERIODICS];		//  can be used by periodic_do()
 
 // pointers on  void something(int task)  functions:
 void (*periodic_do[PERIODICS])(int);
+// ================>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<================
 
 
 
 /* **************************************************************** */
 #define ILLEGAL		-1
 
+// global variables:
 int task;
-TIMER_TYPE now;
+TIMER_TYPE now=0, last_now=~0;
+OVERFLOW_TYPE overflow;
 
+
+/* **************************************************************** */
 
 // init, reset or kill a task: 
 void init_task(int task) {
   flags[task] = 0;
   periodic_do[task] = NULL;
-  woke_up_count[task] = 0;
+  cycles_count[task] = ILLEGAL;
   int1[task] = 0;
   wake_up_period[task] = 0;
   last[task] = 0;
+  last_overflow[task] = 0;
   next[task] = 0;
+  next_overflow[task] = 0;
   parameter_1[task] = 0;
   parameter_2[task] = 0;
   // parameter_3[task] = 0;
@@ -162,7 +165,15 @@ void init_task(int task) {
   // fix_global_next();			// planed soon...
 }
 
+
 void init_tasks() {
+
+#ifdef CLICK_PERIODICS
+  for (int task=0; task<CLICK_PERIODICS; task++) {
+    pinMode(click_pin[task], OUTPUT);
+  }
+#endif
+
   for (int task=0; task<PERIODICS; task++) {
     init_task(task);
   }
@@ -170,7 +181,7 @@ void init_tasks() {
 
 
 void wake_task(int task) {
-  woke_up_count[task]++;					//      count
+  cycles_count[task]++;					//      count
 
   if (periodic_do[task] != NULL) {				// there *is* something to do?
     (*periodic_do[task])(task);					//      do it
@@ -178,40 +189,50 @@ void wake_task(int task) {
  
   // prepare future:
   last[task] = next[task];						// when it *should* have happened
+  last_overflow[task] = next_overflow[task];
   next[task] += wake_up_period[task];					// when it should happen again
+  next_overflow[task] += wake_up_overflow[task];
 
-  if ((flags[task] & COUNTED) && (woke_up_count[task] == int1[task]))	// COUNTED task && end reached?
-    if (flags[task] & DO_NOT_DELETE)					//  yes: DO_NOT_DELETE?
-      flags[task] &= ~ACTIVE;						//       yes: just deactivate
+  if (last[task] > next[task])
+    next_overflow[task]++;
+
+  if ((flags[task] & COUNTED) && ((cycles_count[task] +1) == int1[task] ))	// COUNTED task && end reached?
+    if (flags[task] & DO_NOT_DELETE)						//  yes: DO_NOT_DELETE?
+      flags[task] &= ~ACTIVE;							//       yes: just deactivate
     else
-      init_task(task);							//       no:  delete task
+      init_task(task);								//       no:  DELETE task
 
   // fix_global_next();			// planed soon...
-
-#if (SERIAL_VERBOSE > 0) 
-  Serial.print("\n\t\tAFTER   "); Serial.print(task); Serial.print(" / "); Serial.print((unsigned int) woke_up_count[task]);
-  Serial.print("\tlast "); Serial.print((unsigned int) last[task]);
-  Serial.print("  \tnext "); Serial.println((unsigned int) next[task]);
-#endif
 }
 
 
-int check_maybe_do() {
-  now=TIMER;
+// always get time through here
+TIMER_TYPE get_now() {		// get time and set overflow
+  now = TIMER;
 
-  for (task=0; task<PERIODICS; task++) {	// check all tasks once
-    if (flags[task] & ACTIVE) {			// task active?
-      if (TIME_READY_CONDITION) {		// yes, is it time?
-	wake_task(task);			// yes, wake this task now
-      }	// not the time yet
-    } // active task
-  } // task loop
+  if (now < last_now)		// manage overflows
+    overflow++;
 
-  return 0;
+  last_now = now;
+
+  return now;
 }
 
 
-int setup_task(void (*task_do)(int), byte new_flags, TIMER_TYPE when, TIMER_TYPE new_wake_up_period, unsigned int new_int1) {
+void check_maybe_do() {
+  now = get_now();
+
+  for (task=0; task<PERIODICS; task++) {				// check all tasks once
+    if (flags[task] & ACTIVE) {						// task active?
+      if ((now >= next[task]) && (overflow == next_overflow[task])) {	//   yes, is it time?
+	wake_task(task);						//     yes, wake task up
+      }
+    }
+  }
+}
+
+
+int setup_task(void (*task_do)(int), unsigned char new_flags, TIMER_TYPE when, OVERFLOW_TYPE when_overflow, TIMER_TYPE new_wake_up_period, OVERFLOW_TYPE new_wake_up_overflow) {
   int task;
 
   if (new_flags == 0)				// illegal new_flags parameter
@@ -228,8 +249,9 @@ int setup_task(void (*task_do)(int), byte new_flags, TIMER_TYPE when, TIMER_TYPE
   flags[task] = new_flags;			// initialize task
   periodic_do[task] = task_do;			// payload
   next[task] = when;				// next wake up time
+  next_overflow[task] = when_overflow;
   wake_up_period[task] = new_wake_up_period;
-  int1[task] = new_int1;;			// internal parameter
+  wake_up_overflow[task] = new_wake_up_overflow;
 
   // fix_global_next();			// planed soon...
 
@@ -237,9 +259,19 @@ int setup_task(void (*task_do)(int), byte new_flags, TIMER_TYPE when, TIMER_TYPE
 }
 
 
-void set_new_period(int task, TIMER_TYPE new_wake_up_period) {
+int setup_counted_task(void (*task_do)(int), unsigned char new_flags, TIMER_TYPE when, OVERFLOW_TYPE when_overflow, TIMER_TYPE new_wake_up_period, OVERFLOW_TYPE new_wake_up_overflow, unsigned int count) {
+  int task;
+
+  task= setup_task(task_do, new_flags|COUNTED, when, when_overflow, new_wake_up_period, new_wake_up_overflow);
+  int1[task]= count;
+}
+
+
+void set_new_period(int task, TIMER_TYPE new_wake_up_period, OVERFLOW_TYPE new_wake_up_oveflow) {
   wake_up_period[task] = new_wake_up_period;
+  wake_up_overflow[task] = new_wake_up_oveflow;
   next[task] = last[task] + wake_up_period[task];
+  next_overflow[task] = last_overflow[task] + wake_up_overflow[task];
   // fix_global_next();			// planed soon...
 }
 
@@ -247,22 +279,90 @@ void set_new_period(int task, TIMER_TYPE new_wake_up_period) {
 /* **************************************************************** */
 // debugging:
 
+// clicking
+// to let a task click a piezzo see 'click(int task)' as payload.
+// flip flopping pins...
+
+
+// infos on serial:
+// binary print flags:
+// print binary numbers with leading zeroes and a space
+void serial_print_BIN(unsigned long value, int bits) {
+  int i;
+  unsigned long mask=0;
+
+  for (i = bits - 1; i >= 0; i--) {
+    mask = (1 << i);
+      if (value & mask)
+	Serial.print(1);
+      else
+	Serial.print(0);
+  }
+  Serial.print(" ");
+}
+
+// inside_task_info() as paylod for tasks:
+// Prints task info over serial and blinks the LED
 void inside_task_info(int task) {
-#ifdef SERIAL_VERBOSE
-  digitalWrite(LED_PIN,HIGH);
-  #if (SERIAL_VERBOSE == 0)
-    Serial.print("\ntask do "); Serial.print(task); Serial.print("/"); Serial.print((unsigned int) woke_up_count[task]);
-  #else
-    Serial.print("\ntime  "); Serial.print((unsigned int) now);
-    Serial.print("  \tTASK DO "); Serial.print(task); Serial.print(" / "); Serial.print((unsigned int) woke_up_count[task]);
-    Serial.print("\tlast "); Serial.print((unsigned int) last[task]);
-    Serial.print("  \tnext "); Serial.print((unsigned int) next[task]);
-    Serial.print("  \tperiod "); Serial.print((unsigned int) wake_up_period[task]);
-    Serial.print("  \tcounter "); Serial.print((unsigned int) woke_up_count[task]);
-  #endif
+  unsigned long realtime = millis();
+
+#ifdef LED_PIN
+  digitalWrite(LED_PIN,HIGH);		// blink the LED
+#endif
+
+  Serial.print("*** TASK INFO ");
+  Serial.print(task);
+  Serial.print("/");
+  Serial.print((unsigned int) cycles_count[task]);
+
+  Serial.print("\ttime/ovfl ");
+  Serial.print((int) TIMER);
+  Serial.print("/");
+  Serial.print((int) overflow);
+
+  Serial.print("    \tnext/ovfl ");
+  Serial.print((int) next[task]);
+  Serial.print("/");
+  Serial.print((OVERFLOW_TYPE) next_overflow[task]);
+
+  Serial.print("   \tperiod/ovfl ");
+  Serial.print((unsigned int) wake_up_period[task]);
+  Serial.print("/");
+  Serial.print((OVERFLOW_TYPE) wake_up_overflow[task]);
+
+  Serial.print("\n\t\t");		// start next line
+
+  Serial.print("\tlast/ovfl ");
+  Serial.print((unsigned int) last[task]);
+  Serial.print("/");
+  Serial.print((OVERFLOW_TYPE) last_overflow[task]);
+
+  Serial.print("   \tflags ");
+  serial_print_BIN(flags[task], 8);
+  //  Serial.print("\t");
+
+  Serial.print("\n\t\t");		// start next line
+
+  // no overflow in times yet ################################
+  Serial.print("\texpected seconds ");
+  Serial.print((float) now / 1000.0, 4);
+  Serial.print("s");
+
+  Serial.print("\treal ");
+  Serial.print((float) millis() / 1000.0, 2);
+  Serial.print("s");
+
+  Serial.print("  \tperiod ");
+  Serial.print((float) wake_up_period[task] * (float) TIMER_SLOWDOWN / 1000.0, 4);
+  Serial.print("s");
+
+  Serial.print("\n\n");			// traling empty line
+
+#ifdef LED_PIN
   digitalWrite(LED_PIN,LOW);
 #endif
 }
+
 
 
 /* **************************************************************** */
@@ -355,7 +455,7 @@ void init_click_tasks() {
 
 
 void click(int task) {			// can be called from a task
-  digitalWrite(char_parameter_1[task], woke_up_count[task] & 1);
+  digitalWrite(char_parameter_1[task], cycles_count[task] & 1);
 }
 
 
@@ -375,29 +475,28 @@ void init_rhythm_1(int sync) {
   TIMER_TYPE now = TIMER;
 
   init_click_tasks();
-
   // 2
-  click_task[task] = setup_task(&click, ACTIVE, now + sync*6L*time_unit, (TIMER_TYPE) 12L*time_unit, 0);
+  click_task[task] = setup_task(&click, ACTIVE, now + sync*6L*time_unit, overflow,  (TIMER_TYPE) 12L*time_unit, 0);
   char_parameter_1[task] = click_pin[task];
   pinMode(click_pin[task++], OUTPUT);
 
   // 3
-  click_task[task] = setup_task(&click, ACTIVE, now + sync*9L*time_unit, (TIMER_TYPE) 18L*time_unit, 0);
+  click_task[task] = setup_task(&click, ACTIVE, now + sync*9L*time_unit, overflow,  (TIMER_TYPE) 18L*time_unit, 0);
   char_parameter_1[task] = click_pin[task];
   pinMode(click_pin[task++], OUTPUT);
 
   // 4
-  click_task[task] = setup_task(&click, ACTIVE, now + sync*12L*time_unit, (TIMER_TYPE) 24L*time_unit, 0);
+  click_task[task] = setup_task(&click, ACTIVE, now + sync*12L*time_unit, overflow,  (TIMER_TYPE) 24L*time_unit, 0);
   char_parameter_1[task] = click_pin[task];
   pinMode(click_pin[task++], OUTPUT);
 
   // 5
-  click_task[task] = setup_task(&click, ACTIVE, now + sync*15L*time_unit, (TIMER_TYPE) 30L*time_unit, 0);
+  click_task[task] = setup_task(&click, ACTIVE, now + sync*15L*time_unit, overflow,  (TIMER_TYPE) 30L*time_unit, 0);
   char_parameter_1[task] = click_pin[task];
   pinMode(click_pin[task++], OUTPUT);
 
   // 2*2*3*5
-  click_task[task] = setup_task(&click, ACTIVE, now + sync*6L*4L*4L*time_unit, (TIMER_TYPE) 6L*2L*2L*3L*5L*time_unit, 0);
+  click_task[task] = setup_task(&click, ACTIVE, now + sync*6L*4L*4L*time_unit, overflow,  (TIMER_TYPE) 6L*2L*2L*3L*5L*time_unit, 0);
   char_parameter_1[task] = click_pin[task];
   pinMode(click_pin[task++], OUTPUT);
 }
@@ -416,14 +515,16 @@ void init_rhythm_2(int sync) {
 
   for (divider=4; divider<12 ; divider += 2) {
     click_task[task] =
-      setup_task(&click, ACTIVE|DO_NOT_DELETE, now + sync*base*time_unit/divider/2, (TIMER_TYPE) base*time_unit/divider, 0);
+      setup_task(&click, ACTIVE|DO_NOT_DELETE, now + sync*base*time_unit/divider/2, overflow, (TIMER_TYPE) base*time_unit/divider, 0);
     char_parameter_1[task] = click_pin[task];
     pinMode(click_pin[task++], OUTPUT);
     task++;
   }
 
-  //  click_task[task] = setup_task(&click, ACTIVE|DO_NOT_DELETE, now + sync*base/2*time_unit, (TIMER_TYPE) base*time_unit, 0);
-  click_task[task] = setup_task(&click, ACTIVE|DO_NOT_DELETE, now, (TIMER_TYPE) base*time_unit, 0);		// slowest *not* synced
+  //  click_task[task] = setup_task(&click, ACTIVE|DO_NOT_DELETE, now + sync*base/2*time_unit, overflow, (TIMER_TYPE) base*time_unit, 0);
+
+  // slowest *not* synced
+  click_task[task] = setup_task(&click, ACTIVE|DO_NOT_DELETE, now, overflow, (TIMER_TYPE) base*time_unit, 0);
   char_parameter_1[task] = click_pin[task];
   pinMode(click_pin[task++], OUTPUT);
 }
@@ -497,7 +598,7 @@ void periodic_info(int task) {
   Serial.print((int) click_pin[task]);
 
   serial_print_progmem(counter_);
-  Serial.print(woke_up_count[task]);
+  Serial.print(cycles_count[task]);
 
   Serial.println("");
 }
@@ -1009,7 +1110,7 @@ int hardware_menu_reaction(char menu_input) {
 const unsigned char multipliedPeriod_[] PROGMEM = "Multiplied period[";
 
 void multiply_period_and_inform(int task, unsigned long factor) {
-  set_new_period(task, (TIMER_TYPE) wake_up_period[task] * factor);
+  set_new_period(task, (TIMER_TYPE) wake_up_period[task] * factor, wake_up_overflow[task]*factor); // DADA ################
 
   serial_print_progmem(multipliedPeriod_);
   Serial.print((int) task);
@@ -1023,7 +1124,7 @@ void multiply_period_and_inform(int task, unsigned long factor) {
 const unsigned char dividedPeriod_[] PROGMEM = "Divided period[";
 
 void divide_period_and_inform(int task, unsigned long divisor) {
-  set_new_period(task, (TIMER_TYPE) wake_up_period[task] / divisor);
+  set_new_period(task, (TIMER_TYPE) wake_up_period[task] / divisor, wake_up_overflow[task]/divisor); // DADA ################
 
   serial_print_progmem(dividedPeriod_);
   Serial.print((int) task);
@@ -1036,8 +1137,8 @@ void divide_period_and_inform(int task, unsigned long divisor) {
 
 const unsigned char setPeriod_[] PROGMEM = "Set period[";
 
-void set_new_period_and_inform(int task, unsigned long value) {
-  set_new_period(task, value);
+void set_new_period_and_inform(int task, unsigned long value, OVERFLOW_TYPE overflow) {
+  set_new_period(task, value, overflow);
 
   serial_print_progmem(setPeriod_);
   Serial.print((int) task);
@@ -1213,7 +1314,7 @@ void menu_serial_reaction() {
 	if (selected_destination < CLICK_PERIODICS) {		// periodiccs
 	newValue = numericInput(wake_up_period[selected_destination] / time_unit);
 	if (newValue>=0) {
-	  set_new_period_and_inform(selected_destination, newValue * time_unit);
+	  set_new_period_and_inform(selected_destination, newValue * time_unit, 0);	// DADA
 	} else
 	  serial_println_progmem(invalid);
 
@@ -1223,7 +1324,7 @@ void menu_serial_reaction() {
 	  switch (selected_destination) {
 	  case ALL_PERIODICS:
 	    for (int task=0; task<CLICK_PERIODICS; task++ ) {
-	      set_new_period_and_inform(task, newValue * time_unit);
+	      set_new_period_and_inform(task, newValue * time_unit, 0);		// DADA
 	    }
 	    Serial.println("");
 	    break;
@@ -1307,7 +1408,7 @@ void do_jiffle0 (int task) {	// to be called by task_do
   // parameter_2[task]		jiffletab[] pointer
   // ulong_parameter_1[task]	base period = period of starting task
 
-  digitalWrite(char_parameter_1[task], woke_up_count[task] & 1);	// click
+  digitalWrite(char_parameter_1[task], cycles_count[task] & 1);	// click
 
   if (--parameter_1[task] > 0)				// countdown, phase endid?
     return;						//   no: return immediately
@@ -1327,11 +1428,11 @@ void do_jiffle0 (int task) {	// to be called by task_do
   // fix_global_next();
 }
 
-
+// DADA
 int init_jiffle(unsigned int *jiffletab, TIMER_TYPE when, TIMER_TYPE jiffle_base_period, int origin_task) {
   TIMER_TYPE jiffle_period = jiffle_base_period * jiffletab[0] / jiffletab[1];
 
-  int jiffle_task = setup_task(&do_jiffle0, ACTIVE, when, jiffle_period , 0);
+  int jiffle_task = setup_task(&do_jiffle0, ACTIVE, when, overflow, jiffle_period , 0);
   if (jiffle_task != ILLEGAL) {
     char_parameter_1[jiffle_task] = click_pin[origin_task];	// set pin
     // pinMode(click_pin[task++], OUTPUT);			// should be ok already
@@ -1357,10 +1458,13 @@ void do_throw_a_jiffle(int task) {		// for task_do
   init_jiffle((unsigned int *) parameter_2[task], next[task], wake_up_period[task], task);
 }
 
-void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, TIMER_TYPE when, TIMER_TYPE new_period, unsigned int new_int1) {
-  int jiffle_task = setup_task(&do_throw_a_jiffle, new_flags, when, new_period, new_int1);
-  if (jiffle_task != ILLEGAL)
+// DADA
+void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, TIMER_TYPE when, OVERFLOW_TYPE when_overflow, TIMER_TYPE new_period, OVERFLOW_TYPE new_period_overflow, unsigned int new_int1) {
+  int jiffle_task = setup_task(&do_throw_a_jiffle, new_flags, when, overflow, new_period, new_period_overflow);
+  if (jiffle_task != ILLEGAL) {
     parameter_2[jiffle_task] = (unsigned int) jiffletab;
+    int1[jiffle_task] = new_int1;
+  }
 }
 
 
@@ -1406,35 +1510,72 @@ void setup() {
   click_pin[4]= 6;		// configure PINs here
 
 
-  for (int task=0; task<CLICK_PERIODICS; task++) {
-    pinMode(click_pin[task], OUTPUT);
-  }
-
 #ifdef LED_PIN
   pinMode(LED_PIN, OUTPUT);
 #endif
 
+
+  // now setup tasks:
   init_tasks();
+
+  // tune in time:
+  // always get time through this function, takes care of overfows.
+  now = get_now();
+  overflow = 0;		// needed *only* for first time setup to start with overflow = 0
 
   // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
   // init_rhythm_1(1);
   // init_rhythm_2(1);
 
-//  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, TIMER+5*time_unit, 10*time_unit, 0);
-//  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, TIMER+10*time_unit, 15*time_unit, 0);
-//  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, TIMER+15*time_unit, 20*time_unit, 0);
-//  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, TIMER,              25*time_unit, 0);
-//  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, TIMER+20*time_unit, 30*time_unit, 0);
+  // setup_task(...) syntax:
+  // setup_task(task_do, new_flags, when, when_overflow, new_wake_up_period, new_wake_up_overflow);
 
-  now=TIMER;
+  // DADA
   int scale=18;
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*2/2*time_unit,   scale*2*time_unit, 0);	// 2
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*3/2*time_unit,   scale*3*time_unit, 0);	// 3
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*4/2*time_unit,   scale*4*time_unit, 0);	// 4
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*5/2*time_unit,   scale*5*time_unit, 0);	// 5
-
+  // 2
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*2/2*time_unit, overflow, scale*2*time_unit, 0, 0);
+  // 3
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*3/2*time_unit, overflow, scale*3*time_unit, 0, 0);
+  // 4
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*4/2*time_unit, overflow, scale*4*time_unit, 0, 0);
+  // 5
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*5/2*time_unit, overflow, scale*5*time_unit, 0, 0);
   // 2*3*2*5	(the 4 needs only another factor of 2)
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now + scale*2*3*2*5/2*time_unit, scale*2*3*2*5*time_unit, 0);
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now + scale*2*3*2*5/2*time_unit, overflow, scale*2*3*2*5*time_unit, 0, 0);
+
+  // DADA
+  /*
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now+5*time_unit , overflow, 10*time_unit, 0);
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now+10*time_unit, overflow, 15*time_unit, 0);
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now+15*time_unit, overflow, 20*time_unit, 0);
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now             , overflow, 25*time_unit, 0);
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now+20*time_unit, overflow, 30*time_unit, 0);
+  */
+
+  // DADA
+  /*
+  // 1 to 2 second pattern straight (for easy to read inside_task_info() output)
+  // setup_task(task_do, new_flags|COUNTED, when, when_overflow, new_wake_up_period, new_wake_up_overflow);
+  setup_task(&inside_task_info, ACTIVE, now, overflow, 100, 0);
+  setup_task(&inside_task_info, ACTIVE, now, overflow, 200, 0);
+  */
+
+  // DADA
+  // nice 1 to 3 (to 4) to 5 second pattern with phase offsets
+  // setup_task(task_do, new_flags|COUNTED, when, when_overflow, new_wake_up_period, new_wake_up_overflow);
+  setup_task(&click, ACTIVE, now+100/2, overflow, 100, 0);
+  setup_task(&click, ACTIVE, now+300/2, overflow, 300, 0);
+  //  setup_task(&click, ACTIVE, now+400/2, overflow, 400, 0);
+  setup_task(&click, ACTIVE, now+500/2, overflow, 500, 0);
+
+
+  // DADA
+  /*
+  // testing periods longer then overflow:
+  setup_task(&inside_task_info, ACTIVE, now, overflow, 100, 1);
+  setup_task(&inside_task_info, ACTIVE, now, overflow, 1, 2);
+  */
+
 
 #ifdef MENU_over_serial
   periodics_info();
@@ -1442,28 +1583,28 @@ void setup() {
 }
 
 
-
 /* **************************************************************** */
 // main loop:
 
-
 // overflow detection:
-TIMER_TYPE last_now=TIMER;
-int overflows;
+OVERFLOW_TYPE last_overflow_displayed=0;
 
 
 void loop() {
-  now=TIMER;
+  now= get_now();
 
-  if(now < last_now) {
-    overflows++;
-    Serial.println("\n====> OVERFLOW <====");
-    if (overflows > 5) {
-      Serial.println("\nstopped");
-      while (true) ;
-    }
+  if(overflow != last_overflow_displayed) {
+
+    last_overflow_displayed = overflow;
+    Serial.print("====> OVERFLOW <====  ");
+    Serial.println((int) overflow);
+    Serial.println();
+
+//	    if (overflow > 5) {
+//	      Serial.println("\n(stopped)");
+//	      while (true) ;
+//	    }
   }
-  last_now = now;
 
   check_maybe_do();
 
@@ -1473,6 +1614,5 @@ void loop() {
 #endif
 
 }
-
 
 /* **************************************************************** */
