@@ -41,7 +41,7 @@
 #define OVERFLOW_TYPE	unsigned int
 
 // The is-it-time-now-condition:
-#define TIME_READY_CONDITION		((now >= next[task]) && (overflow == next_overflow[task]))
+#define TIME_READY_CONDITION		((now >= next[task]) && (overflow == next_ovrfl[task]))
 
 
 /* **************************************************************** */
@@ -59,15 +59,15 @@ unsigned char flags[PERIODICS];
 #define CUSTOM_3	      128	// can be used by periodic_do()
 
 
-unsigned int cycles_count[PERIODICS];	// counts how many times the task woke up
-TIMER_TYPE wake_up_period[PERIODICS];
-OVERFLOW_TYPE wake_up_overflow[PERIODICS]; // overflow of period (for very long periods)
+unsigned int pulse_count[PERIODICS];	// counts how many times the task woke up
+TIMER_TYPE  pulse_period[PERIODICS];	// timer steps
+OVERFLOW_TYPE pulse_ovrfl[PERIODICS];	// overflow of pulse_period (for very long periods)
 
 TIMER_TYPE last[PERIODICS];		// convenient, but not really needed
-OVERFLOW_TYPE last_overflow[PERIODICS];	// same
+OVERFLOW_TYPE last_ovrfl[PERIODICS];	// same
 
 TIMER_TYPE next[PERIODICS];		// next wake up time
-OVERFLOW_TYPE next_overflow[PERIODICS];	// overflow of next wake up
+OVERFLOW_TYPE next_ovrfl[PERIODICS];	// overflow of next wake up
 
 // internal parameter:
 unsigned int int1[PERIODICS];		// if COUNTED, gives number of executions
@@ -111,13 +111,13 @@ OVERFLOW_TYPE overflow=0;
 void init_task(int task) {
   flags[task] = 0;
   periodic_do[task] = NULL;
-  cycles_count[task] = ILLEGAL;
+  pulse_count[task] = ILLEGAL;
   int1[task] = 0;
-  wake_up_period[task] = 0;
+  pulse_period[task] = 0;
   last[task] = 0;
-  last_overflow[task] = 0;
+  last_ovrfl[task] = 0;
   next[task] = 0;
-  next_overflow[task] = 0;
+  next_ovrfl[task] = 0;
   parameter_1[task] = 0;
   parameter_2[task] = 0;
   // parameter_3[task] = 0;
@@ -142,7 +142,7 @@ void init_tasks() {
 
 
 void wake_task(int task) {
-  cycles_count[task]++;					//      count
+  pulse_count[task]++;					//      count
 
   if (periodic_do[task] != NULL) {				// there *is* something to do?
     (*periodic_do[task])(task);					//      do it
@@ -150,14 +150,14 @@ void wake_task(int task) {
  
   // prepare future:
   last[task] = next[task];						// when it *should* have happened
-  last_overflow[task] = next_overflow[task];
-  next[task] += wake_up_period[task];					// when it should happen again
-  next_overflow[task] += wake_up_overflow[task];
+  last_ovrfl[task] = next_ovrfl[task];
+  next[task] += pulse_period[task];					// when it should happen again
+  next_ovrfl[task] += pulse_ovrfl[task];
 
   if (last[task] > next[task])
-    next_overflow[task]++;
+    next_ovrfl[task]++;
 
-  if ((flags[task] & COUNTED) && ((cycles_count[task] +1) == int1[task] ))	// COUNTED task && end reached?
+  if ((flags[task] & COUNTED) && ((pulse_count[task] +1) == int1[task] ))	// COUNTED task && end reached?
     if (flags[task] & DO_NOT_DELETE)						//  yes: DO_NOT_DELETE?
       flags[task] &= ~ACTIVE;							//       yes: just deactivate
     else
@@ -185,7 +185,7 @@ void check_maybe_do() {
 
   for (task=0; task<PERIODICS; task++) {				// check all tasks once
     if (flags[task] & ACTIVE) {						// task active?
-      if ((now >= next[task]) && (overflow == next_overflow[task])) {	//   yes, is it time?
+      if ((now >= next[task]) && (overflow == next_ovrfl[task])) {	//   yes, is it time?
 	wake_task(task);						//     yes, wake task up
       }
     }
@@ -193,7 +193,52 @@ void check_maybe_do() {
 }
 
 
-int setup_task(void (*task_do)(int), unsigned char new_flags, TIMER_TYPE when, OVERFLOW_TYPE when_overflow, TIMER_TYPE new_wake_up_period, OVERFLOW_TYPE new_wake_up_overflow) {
+// Add a time interval to a given start time:
+// 	Returns and sets other_time,
+//      *and* sets other_ovrfl
+TIMER_TYPE other_time;			// might be convenient sometimes. Not really needed.
+OVERFLOW_TYPE other_ovrfl;		// both variables set by other_time(...)
+TIMER_TYPE set_other_time(TIMER_TYPE this_time, OVERFLOW_TYPE this_overflow, TIMER_TYPE interval , OVERFLOW_TYPE interval_ovrfl) {
+  TIMER_TYPE start_time=this_time;
+
+  other_time = this_time + interval;
+
+  other_ovrfl = interval_ovrfl;
+  if (other_time < start_time)
+    other_ovrfl++;
+
+  return other_time;
+}
+
+
+//	// Multiply a given time interval by a (small) positive integer factor.
+//	// 	Returns and sets multiple, sets multiple_ovrfl
+//	// 	These global variables are shared with divided_interval(...)
+//	TIMER_TYPE multiple;
+//	OVERFLOW_TYPE multiple_ovrfl;
+//	TIMER_TYPE multiple_interval(TIMER_TYPE interval, OVERFLOW_TYPE interval_ovrfl, unsigned int factor) {
+//	  TIMER_TYPE scratch;
+//	
+//	  multiple=0;
+//	  multiple_ovrfl = interval_ovrfl * factor;
+//	
+//	  for (; factor>0; factor--) {
+//	    scratch = multiple;
+//	    multiple += interval;
+//	    if (multiple < scratch)
+//	      multiple_ovrfl++;
+//	  }
+//	
+//	    return multiple;
+//	}
+//	
+//	
+//	// not implemented yet:
+//	TIMER_TYPE divided_interval(TIMER_TYPE interval, OVERFLOW_TYPE interval_ovrfl, unsigned int divisor);
+
+
+
+int setup_task(void (*task_do)(int), unsigned char new_flags, TIMER_TYPE when, OVERFLOW_TYPE when_ovrfl, TIMER_TYPE new_pulse_period, OVERFLOW_TYPE new_pulse_ovrfl) {
   int task;
 
   if (new_flags == 0)				// illegal new_flags parameter
@@ -210,9 +255,9 @@ int setup_task(void (*task_do)(int), unsigned char new_flags, TIMER_TYPE when, O
   flags[task] = new_flags;			// initialize task
   periodic_do[task] = task_do;			// payload
   next[task] = when;				// next wake up time
-  next_overflow[task] = when_overflow;
-  wake_up_period[task] = new_wake_up_period;
-  wake_up_overflow[task] = new_wake_up_overflow;
+  next_ovrfl[task] = when_ovrfl;
+  pulse_period[task] = new_pulse_period;
+  pulse_ovrfl[task] = new_pulse_ovrfl;
 
   // fix_global_next();			// planed soon...
 
@@ -220,19 +265,19 @@ int setup_task(void (*task_do)(int), unsigned char new_flags, TIMER_TYPE when, O
 }
 
 
-int setup_counted_task(void (*task_do)(int), unsigned char new_flags, TIMER_TYPE when, OVERFLOW_TYPE when_overflow, TIMER_TYPE new_wake_up_period, OVERFLOW_TYPE new_wake_up_overflow, unsigned int count) {
+int setup_counted_task(void (*task_do)(int), unsigned char new_flags, TIMER_TYPE when, OVERFLOW_TYPE when_ovrfl, TIMER_TYPE new_pulse_period, OVERFLOW_TYPE new_pulse_ovrfl, unsigned int count) {
   int task;
 
-  task= setup_task(task_do, new_flags|COUNTED, when, when_overflow, new_wake_up_period, new_wake_up_overflow);
+  task= setup_task(task_do, new_flags|COUNTED, when, when_ovrfl, new_pulse_period, new_pulse_ovrfl);
   int1[task]= count;
 }
 
 
-void set_new_period(int task, TIMER_TYPE new_wake_up_period, OVERFLOW_TYPE new_wake_up_oveflow) {
-  wake_up_period[task] = new_wake_up_period;
-  wake_up_overflow[task] = new_wake_up_oveflow;
-  next[task] = last[task] + wake_up_period[task];
-  next_overflow[task] = last_overflow[task] + wake_up_overflow[task];
+void set_new_period(int task, TIMER_TYPE new_pulse_period, OVERFLOW_TYPE new_pulse_oveflow) {
+  pulse_period[task] = new_pulse_period;
+  pulse_ovrfl[task] = new_pulse_oveflow;
+  next[task] = last[task] + pulse_period[task];
+  next_ovrfl[task] = last_ovrfl[task] + pulse_ovrfl[task];
   // fix_global_next();			// planed soon...
 }
 
@@ -276,7 +321,7 @@ void inside_task_info(int task) {
   Serial.print("*** TASK INFO ");
   Serial.print(task);
   Serial.print("/");
-  Serial.print((unsigned int) cycles_count[task]);
+  Serial.print((unsigned int) pulse_count[task]);
 
   Serial.print("\ttime/ovfl ");
   Serial.print((int) TIMER);
@@ -286,19 +331,19 @@ void inside_task_info(int task) {
   Serial.print("    \tnext/ovfl ");
   Serial.print((int) next[task]);
   Serial.print("/");
-  Serial.print((OVERFLOW_TYPE) next_overflow[task]);
+  Serial.print((OVERFLOW_TYPE) next_ovrfl[task]);
 
   Serial.print("   \tperiod/ovfl ");
-  Serial.print((unsigned int) wake_up_period[task]);
+  Serial.print((unsigned int) pulse_period[task]);
   Serial.print("/");
-  Serial.print((OVERFLOW_TYPE) wake_up_overflow[task]);
+  Serial.print((OVERFLOW_TYPE) pulse_ovrfl[task]);
 
   Serial.print("\n\t\t");		// start next line
 
   Serial.print("\tlast/ovfl ");
   Serial.print((unsigned int) last[task]);
   Serial.print("/");
-  Serial.print((OVERFLOW_TYPE) last_overflow[task]);
+  Serial.print((OVERFLOW_TYPE) last_ovrfl[task]);
 
   Serial.print("   \tflags ");
   serial_print_BIN(flags[task], 8);
@@ -316,7 +361,7 @@ void inside_task_info(int task) {
   Serial.print("s");
 
   Serial.print("  \tperiod ");
-  Serial.print((float) wake_up_period[task] * (float) TIMER_SLOWDOWN / 1000.0, 4);
+  Serial.print((float) pulse_period[task] * (float) TIMER_SLOWDOWN / 1000.0, 4);
   Serial.print("s");
 
   Serial.print("\n\n");			// traling empty line
@@ -356,17 +401,17 @@ void setup() {
   now = get_now();
   overflow = 0;		// start with overflow = 0
 
-  // setup_task(task_do, new_flags|COUNTED, when, when_overflow, new_wake_up_period, new_wake_up_overflow);
+  // setup_task(task_do, new_flags|COUNTED, when, when_ovrfl, new_pulse_period, new_pulse_ovrfl);
 
   /*
   // 1 to 2 second pattern straight (for easy to read inside_task_info() output)
-  // setup_task(task_do, new_flags|COUNTED, when, when_overflow, new_wake_up_period, new_wake_up_overflow);
+  // setup_task(task_do, new_flags|COUNTED, when, when_ovrfl, new_pulse_period, new_pulse_ovrfl);
   setup_task(&inside_task_info, ACTIVE, now, overflow, 100, 0);
   setup_task(&inside_task_info, ACTIVE, now, overflow, 200, 0);
   */
 
   // nice 1 to 3 (to 4) to 5 second pattern with phase offsets
-  // setup_task(task_do, new_flags|COUNTED, when, when_overflow, new_wake_up_period, new_wake_up_overflow);
+  // setup_task(task_do, new_flags|COUNTED, when, when_ovrfl, new_pulse_period, new_pulse_ovrfl);
   setup_task(&click, ACTIVE, now+100/2, overflow, 100, 0);
   setup_task(&click, ACTIVE, now+300/2, overflow, 300, 0);
   //  setup_task(&click, ACTIVE, now+400/2, overflow, 400, 0);
