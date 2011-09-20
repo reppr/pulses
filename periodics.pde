@@ -12,9 +12,15 @@
    New logic version to determine when to wake up tasks.
    Saving times along with an overflow count makes everything
    simple and flexible.
+
+   "play" version: having fun while debugging...
+     clicks
+     rhytms
+     jiffles
+
 */
 /* **************************************************************** */
-#define ILLEGAL	-1
+#define ILLEGAL		-1
 
 
 
@@ -23,6 +29,13 @@
 
 #define PERIODICS		15	// maximal number of tasks
 					// plenty of free tasks for jiffles ;)
+
+// clicks on piezzos to *hear* the result:
+// *do* change 'case' statement in menu_serial_reaction() if you change this.
+#ifndef CLICK_PERIODICS			// number of click frequencies
+  #define CLICK_PERIODICS	 5 	// default number of click frequencies
+#endif
+
 
 #define LED_PIN			13
 
@@ -35,11 +48,14 @@
 
 /* **************************************************************** */
 // for testing timer overflow:
-#define TIMER_TYPE	unsigned char
-#define TIMER_SLOWDOWN	10L	// gives a hundred per second
-
-#define TIMER		(TIMER_TYPE) ((unsigned long) millis() / TIMER_SLOWDOWN)
+#define TIMER_TYPE	unsigned int
 #define OVERFLOW_TYPE	unsigned int
+
+#define TIMER	(TIMER_TYPE) millis()
+
+//	#define TIMER_SLOWDOWN	10L	// gives 100 per second
+//	#define TIMER		(TIMER_TYPE) ((unsigned long) millis() / TIMER_SLOWDOWN)
+
 
 
 /* **************************************************************** */
@@ -167,13 +183,6 @@ void init_task(int task) {
 
 
 void init_tasks() {
-
-#ifdef CLICK_PERIODICS
-  for (int task=0; task<CLICK_PERIODICS; task++) {
-    pinMode(click_pin[task], OUTPUT);
-  }
-#endif
-
   for (int task=0; task<PERIODICS; task++) {
     init_task(task);
   }
@@ -353,7 +362,13 @@ void inside_task_info(int task) {
   Serial.print("s");
 
   Serial.print("  \tperiod ");
+
+#ifndef TIMER_SLOWDOWN
+  Serial.print((float) wake_up_period[task] / 1000.0, 4);
+#else
   Serial.print((float) wake_up_period[task] * (float) TIMER_SLOWDOWN / 1000.0, 4);
+#endif
+
   Serial.print("s");
 
   Serial.print("\n\n");			// traling empty line
@@ -460,12 +475,18 @@ void click(int task) {			// can be called from a task
 
 
 unsigned char click_task[CLICK_PERIODICS];
-unsigned char click_pin[CLICK_PERIODICS]= {12, 10, 9, 8};	// configure PINs here
+unsigned char click_pin[CLICK_PERIODICS];
+
+void init_click_pins() {
+  for (int task=0; task<CLICK_PERIODICS; task++) {
+    pinMode(click_pin[task], OUTPUT);
+  }
+}
 
 
 
 // playing with rhythms:
-unsigned long time_unit = 100000;		// scaling timer to 10 beats/s 
+unsigned long time_unit = 100;		// scaling timer to 10/s 
 
 
 // some default rhythms:
@@ -1340,11 +1361,51 @@ void menu_serial_reaction() {
 	break;
 
 
+      // debugging entries: ################################################################
+      case 'd':				// hook for debugging
+	Serial.println("DEBUGGING rhtm 1");
+	init_tasks();
+	get_now();
+	init_rhythm_1(1);
+	break;
 
-//    case 'd':				// hook for debugging
-//	Serial.println("DEBUGGING");
-//	init_rhythm_2(1);
-//	break;
+      case 'r':				// hook for debugging
+	Serial.println("DEBUGGING rhtm 2");
+	init_tasks();
+	get_now();
+	init_rhythm_2(1);
+	break;
+
+      case 'D':				// hook for debugging
+	Serial.println("DEBUGGING jiffles0 ");
+	init_tasks();
+	get_now();
+	setup_jiffles0();
+	break;
+
+      // debugging entries: ################################################################
+      // same on last character row:
+      case 'y':				// hook for debugging
+	Serial.println("DEBUGGING rhtm 1");
+	init_tasks();
+	get_now();
+	init_rhythm_1(1);
+	break;
+
+      case 'x':				// hook for debugging
+	Serial.println("DEBUGGING rhtm 2");
+	init_tasks();
+	get_now();
+	init_rhythm_2(1);
+	break;
+
+      case 'c':				// hook for debugging
+	Serial.println("DEBUGGING jiffles0 ");
+	init_tasks();
+	get_now();
+	setup_jiffles0();
+	break;
+      // debugging entries: ################################################################
 
       default:
 	// maybe it's in a submenu?
@@ -1459,12 +1520,28 @@ void do_throw_a_jiffle(int task) {		// for task_do
 }
 
 // DADA
-void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, TIMER_TYPE when, OVERFLOW_TYPE when_overflow, TIMER_TYPE new_period, OVERFLOW_TYPE new_period_overflow, unsigned int new_int1) {
+void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, TIMER_TYPE when, OVERFLOW_TYPE when_overflow, TIMER_TYPE new_period, OVERFLOW_TYPE new_period_overflow ) {
   int jiffle_task = setup_task(&do_throw_a_jiffle, new_flags, when, overflow, new_period, new_period_overflow);
   if (jiffle_task != ILLEGAL) {
     parameter_2[jiffle_task] = (unsigned int) jiffletab;
-    int1[jiffle_task] = new_int1;
   }
+}
+
+
+void setup_jiffles0() {
+
+  // DADA
+  int scale=18;
+  // 2
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*2/2*time_unit, overflow, scale*2*time_unit, 0);
+  // 3
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*3/2*time_unit, overflow, scale*3*time_unit, 0);
+  // 4
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*4/2*time_unit, overflow, scale*4*time_unit, 0);
+  // 5
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*5/2*time_unit, overflow, scale*5*time_unit, 0);
+  // 2*3*2*5	(the 4 needs only another factor of 2)
+  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*2*3*2*5/2*time_unit, overflow, scale*2*3*2*5*time_unit, 0);
 }
 
 
@@ -1503,15 +1580,20 @@ void setup() {
 //	  LCD_print_line_progmem(TOP, programName);
 //	#endif
 
+
+#ifdef LED_PIN
+  pinMode(LED_PIN, OUTPUT);
+#endif
+
+
+#ifdef CLICK_PERIODICS
   click_pin[0]= 2;		// configure PINs here
   click_pin[1]= 3;		// configure PINs here
   click_pin[2]= 4;		// configure PINs here
   click_pin[3]= 5;		// configure PINs here
   click_pin[4]= 6;		// configure PINs here
 
-
-#ifdef LED_PIN
-  pinMode(LED_PIN, OUTPUT);
+  init_click_pins();
 #endif
 
 
@@ -1525,23 +1607,12 @@ void setup() {
 
   // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
   // init_rhythm_1(1);
-  // init_rhythm_2(1);
+  init_rhythm_2(1);
+  // setup_jiffles0();
 
   // setup_task(...) syntax:
   // setup_task(task_do, new_flags, when, when_overflow, new_wake_up_period, new_wake_up_overflow);
 
-  // DADA
-  int scale=18;
-  // 2
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*2/2*time_unit, overflow, scale*2*time_unit, 0, 0);
-  // 3
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*3/2*time_unit, overflow, scale*3*time_unit, 0, 0);
-  // 4
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*4/2*time_unit, overflow, scale*4*time_unit, 0, 0);
-  // 5
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*5/2*time_unit, overflow, scale*5*time_unit, 0, 0);
-  // 2*3*2*5	(the 4 needs only another factor of 2)
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now + scale*2*3*2*5/2*time_unit, overflow, scale*2*3*2*5*time_unit, 0, 0);
 
   // DADA
   /*
@@ -1560,14 +1631,15 @@ void setup() {
   setup_task(&inside_task_info, ACTIVE, now, overflow, 200, 0);
   */
 
+  /*
   // DADA
-  // nice 1 to 3 (to 4) to 5 second pattern with phase offsets
+  // nice 1 to 3 (to 4) to 5 pattern with phase offsets
   // setup_task(task_do, new_flags|COUNTED, when, when_overflow, new_wake_up_period, new_wake_up_overflow);
-  setup_task(&click, ACTIVE, now+100/2, overflow, 100, 0);
-  setup_task(&click, ACTIVE, now+300/2, overflow, 300, 0);
-  //  setup_task(&click, ACTIVE, now+400/2, overflow, 400, 0);
-  setup_task(&click, ACTIVE, now+500/2, overflow, 500, 0);
-
+  setup_task(&click, ACTIVE, now+100/2, overflow*time_unit, 10, 0);
+  setup_task(&click, ACTIVE, now+300/2, overflow*time_unit, 30, 0);
+  // setup_task(&click, ACTIVE, now+400/2, overflow*time_unit, 40, 0);
+  setup_task(&click, ACTIVE, now+500/2, overflow*time_unit, 50, 0);
+  */
 
   // DADA
   /*
