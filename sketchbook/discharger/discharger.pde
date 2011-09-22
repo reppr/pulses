@@ -23,7 +23,7 @@
 
    There is a very simple menu interface through serial line.
 
-   This version can use a 20x4 LCD display.
+   Support for 16x2 or 20x4 LCD displays.
 
    To save RAM constant strings are stored in PROGMEM.
 
@@ -44,6 +44,9 @@ unsigned char battery_PIN[BATTERY_CELLs] = {0, 1, 2, 3};
 // load_switch_pin connected to the cmos that switches the load:
 #define LOAD_SWITCH_PIN	12
 
+// time interval between measurements
+#define TIME_INTERVAL	30000	// milliseconds
+
 // levels to determine NiMh cell state (in millivolts):
 #define LEVEL_EMERGENCY		1080		// mV
 #define LEVEL_LOW		1190		// mV
@@ -56,11 +59,11 @@ unsigned char battery_PIN[BATTERY_CELLs] = {0, 1, 2, 3};
 // store calibration data of the analog inputs in eeprom?
 #define USE_EEPROM	0		// #ifdef eeprom_start
 
-// use serial line for communication?
+
+// use serial line for communication?  Select baud rate.
 //	#define USE_SERIAL	115200
 #define USE_SERIAL	57600
 //	#define USE_SERIAL	38400
-
 
 #ifdef USE_SERIAL	// simple menus over serial line?
   // menu over serial line:
@@ -76,25 +79,52 @@ unsigned char battery_PIN[BATTERY_CELLs] = {0, 1, 2, 3};
 
 #endif	// USE_SERIAL
 
-#define USE_LCD	7, 6, 5, 4, 3, 2	// LiquidCrystal(rs, enable, d4, d5, d6, d7) 
+
+// use an LCD display?
+// LiquidCrystal(rs, enable, d4, d5, d6, d7) 
+// #define USE_LCD	7, 6, 5, 4, 3, 2
+
+// LiquidCrystal(rs, enable, d4, d5, d6, d7) 
+#define USE_LCD		2, 3, 4, 5, 6, 7
+
 #ifdef USE_LCD
   #include <LiquidCrystal.h>
   LiquidCrystal LCD(USE_LCD);
 
-  #define LCD_COLs	20		// this version only works with 20x4 displays and up to 4 cells
-  #define LCD_ROWs	4		// this version only works with 20x4 displays and up to 4 cells
+// 20x4 display, up to 4 cells
+// #define LCD_COLs	20
+// #define LCD_ROWs	4
+
+// 16x2 display, up to 4 cells
+  #define LCD_COLs	16
+  #define LCD_ROWs	2
+
   #define TOP		0
-  #define INFO_1	1		// line for LCD info_1 display
-  #define INFO_2	2		// line for LCD info_2 display
-  #define MESSAGE	3		// line for LCD message display
+  #if (LCD_ROWs == 4)
+    #define INFO_1	1		// line for LCD info_1 display
+    #define INFO_2	2		// line for LCD info_2 display
+    #define MESSAGE	3		// line for LCD message display
+  #elif (LCD_ROWs == 2)
+    #define INFO_1	0		// line for LCD info_1 display
+    #define INFO_2	1		// line for LCD info_2 display
+    #define MESSAGE	1		// line for LCD message display
+  #else
+    #error LCD size not supported:  rows LCD_ROWSs 
+  #endif
+
+  #define LCD_LIGHT_PIN	8
+
 #endif
 
+
+// use a switch?
 #define PIN_WITH_SWITCH_1	9	// pin with a switch against ground, if any
 #define DEBOUNCE		5	// milliseconds
+
+
+// use a second LED for feedback?
 // #define LED_PIN_2		10	// pin of second LED, if any
 
-// time interval between measurements
-#define TIME_INTERVAL	30000	// milliseconds
 
 /* **************************************************************** */
 
@@ -177,13 +207,25 @@ void LCD_print_at_progmem(unsigned char col, unsigned char row, const unsigned c
 }
 
 // clear line and print on LCD at line 'row'
-const unsigned char LCD_empty[] PROGMEM = "                    ";
-void LCD_print_line_progmem(unsigned char row, const unsigned char *str) {
+#if ( LCD_COLs == 20 )
+  const unsigned char LCD_empty[] PROGMEM = "                    ";
+#elif ( LCD_COLs == 16 )
+  const unsigned char LCD_empty[] PROGMEM = "                ";
+#else
+  #error LCD size not supported:  columns LCD_COLs 
+#endif
+
+void LCD_clear_line(unsigned char row) {
   LCD_print_at_progmem(0, row, LCD_empty);
-  LCD_print_at_progmem(0, row, str);
+  LCD.setCursor(0, row);
 }
 
-#endif
+void LCD_print_line_progmem(unsigned char row, const unsigned char *str) {
+  LCD_clear_line(row);
+  LCD_print_progmem(str);
+}
+#endif	// USE_LCD
+
 
 #ifdef USE_SERIAL
 // Serial.print() for progmem strings:
@@ -271,28 +313,59 @@ void get_check_and_display_cells(void) {
   #endif
 #endif
 
+
+#ifdef USE_LCD		// clear display lines
+  LCD_clear_line(INFO_2);
+  LCD_clear_line(INFO_1);
+#endif
+
+
   get_cell_voltages();
   check_worst_cell_state();	// to know which cell is worst
   for (int cell=0; cell<BATTERY_CELLs; cell++) {
     drop = cell_voltage[cell] - cell_voltage_start[cell];
 
 #ifdef USE_LCD
-  int drop_mV=(int) ((float) drop * 1000.0 + 0.5);
 
-  LCD.setCursor(cell*5, INFO_1);
-  if (cell != worst_cell)
-    LCD.print(" ");
-  else
-    LCD.print("!");
-  LCD.print((int) ((cell_voltage[cell] + 0.0005) * 1000.0));
+  #if ( LCD_COLs >= 20 )			// 20 columns
+    int drop_mV=(int) ((float) drop * 1000.0 + 0.5);
+  
+    LCD.setCursor(cell*5, INFO_1);
+    if (cell != worst_cell)
+      LCD.print(" ");
+    else
+      LCD.print("!");
+    LCD.print((int) ((cell_voltage[cell] + 0.0005) * 1000.0));
+  
+    LCD.setCursor(cell*5, INFO_2);
+    if (drop_mV > 0)	// '+' sign
+      LCD.print("+");
+    else if (drop_mV == 0)
+      LCD.print("-");
+    LCD.print(drop_mV);
 
-  LCD.setCursor(cell*5, INFO_2);
-  if (drop_mV > 0)	// '+' sign
-    LCD.print("+");
-  else if (drop_mV == 0)
-    LCD.print("-");
-  LCD.print(drop_mV);
-#endif
+  #elif ( LCD_COLs == 16 )			// 16 columns
+    int drop_cV=(int) ((float) drop * 100.0 + 0.5);
+  
+    LCD.setCursor(cell*4, INFO_1);
+    if (cell != worst_cell)
+      LCD.print(" ");
+    else
+      LCD.print("!");
+    LCD.print((int) ((cell_voltage[cell] + 0.005) * 100.0));
+
+    LCD.setCursor(cell*4, INFO_2);
+    if (drop_cV > 0)	// '+' sign
+      LCD.print("+");
+    else if (drop_cV == 0)
+      LCD.print("-");
+    LCD.print(drop_cV);
+
+  #else
+    #error LCD size not supported:  columns LCD_COLs 
+  #endif
+#endif // USE_LCD
+
 
 #ifdef USE_SERIAL
     Serial.print((int) cell + 1); 
@@ -375,8 +448,13 @@ int check_worst_cell_state() {
 
 
 char load_state=0;	// 0=off, 1=on, ?=pulsed....
-const unsigned char switchedONpin[] PROGMEM = "Switched ON pin";
-const unsigned char switchedOFFpin[] PROGMEM = "Switched OFF pin";
+#if ( LCD_COLs < 20 )
+  const unsigned char switchedONpin[] PROGMEM  = "Load ON  pin ";
+  const unsigned char switchedOFFpin[] PROGMEM = "Load OFF pin ";
+#else
+  const unsigned char switchedONpin[] PROGMEM  = "Switched ON pin";
+  const unsigned char switchedOFFpin[] PROGMEM = "Switched OFF pin";
+#endif
 
 void switch_load_on(int display) {
   #ifdef USE_LCD
@@ -425,9 +503,14 @@ void switch_load_off(int display) {
   digitalWrite(load_switch_pin,LOW);
 }
 
-char disable_shutdown=0;
+boolean disable_shutdown=0;
 
-const unsigned char shutDown[] PROGMEM = "shutdown  ";
+#if ( LCD_COLs == 16 )
+  const unsigned char shutDown[] PROGMEM = "shutdwn ";
+#else
+  const unsigned char shutDown[] PROGMEM = "shutdown  ";
+#endif
+
 const unsigned char enabled[]  PROGMEM = "ENABLED";
 const unsigned char disabled[] PROGMEM = "DISABLED";
 
@@ -462,11 +545,17 @@ const unsigned char has_[] PROGMEM = " has ";
 void react_on_battery_state() {
   switch (check_worst_cell_state()) {
   case emergency:
-    if (disable_shutdown == 0) {
 
 #ifdef USE_LCD
-      LCD_print_line_progmem(MESSAGE, emergencyShutdown);
-      LCD_print_line_progmem(TOP, cell_);
+  #if (LCD_ROWSs < 4 )	// time to read cell voltages (debugging)
+    delay(4000);
+  #endif
+#endif
+
+    if (disable_shutdown == 0) {
+#ifdef USE_LCD
+      LCD_print_line_progmem(TOP, emergencyShutdown);
+      LCD_print_line_progmem(MESSAGE, cell_);
       LCD.print(worst_cell + 1);
       LCD_print_progmem(has_);
       LCD.print((int) ((cell_voltage[worst_cell] + 0.0005) * 1000.0));
@@ -1339,10 +1428,18 @@ void setup() {
 #endif
 
 #ifdef USE_LCD
+  #ifdef LCD_LIGHT_PIN			// switch LCD backlight on
+    pinMode(LCD_LIGHT_PIN, OUTPUT);
+    digitalWrite(LCD_LIGHT_PIN, HIGH);
+  #endif
+
   LCD.begin(LCD_COLs, LCD_ROWs);
-  LCD_print_line_progmem(0, programName);
+  LCD_print_line_progmem(TOP, programName);
   LCD_print_line_progmem(1, version);
-  LCD_print_line_progmem(3, freeRAM);
+  #if (LCD_ROWs < 3 )	// we're  going to overwrite this same line
+    delay(1000);
+  #endif
+  LCD_print_line_progmem(MESSAGE, freeRAM);
   LCD.print(get_free_RAM());
 #endif
 
@@ -1393,7 +1490,7 @@ void setup() {
 #endif
 
 #ifdef USE_LCD
-  delay(3000);
+  delay(2000);
   LCD.clear();
   LCD_print_line_progmem(TOP, programName);
 #endif
