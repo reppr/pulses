@@ -198,7 +198,7 @@ const unsigned char tab_[] PROGMEM = "\t";
 void LCD_print_progmem(const unsigned char *str) {
   unsigned char c;
   while((c = pgm_read_byte(str++)))
-    LCD.print(c);
+    LCD.write(c);
 }
 
 void LCD_print_at_progmem(unsigned char col, unsigned char row, const unsigned char *str) {
@@ -233,7 +233,8 @@ void LCD_print_line_progmem(unsigned char row, const unsigned char *str) {
 void serial_print_progmem(const unsigned char *str) {
   unsigned char c;
   while((c = pgm_read_byte(str++)))
-    Serial.print(c, BYTE);
+    Serial.write(c);
+  // Serial.print(c, BYTE);
 }
 
 void serial_println_progmem(const unsigned char *str) {
@@ -368,7 +369,7 @@ void get_check_and_display_cells(void) {
 
 
 #ifdef USE_SERIAL
-    Serial.print((int) cell + 1); 
+    Serial.print((int) cell); 
     if (cell != worst_cell)
       Serial.print("  "); else
       Serial.print("- ");
@@ -556,7 +557,7 @@ void react_on_battery_state() {
 #ifdef USE_LCD
       LCD_print_line_progmem(TOP, emergencyShutdown);
       LCD_print_line_progmem(MESSAGE, cell_);
-      LCD.print(worst_cell + 1);
+      LCD.print((int) worst_cell);
       LCD_print_progmem(has_);
       LCD.print((int) ((cell_voltage[worst_cell] + 0.0005) * 1000.0));
       LCD.print("mV");
@@ -564,7 +565,7 @@ void react_on_battery_state() {
 
 #ifdef USE_SERIAL
       serial_print_progmem(emergencyShutdownCell);
-      Serial.print((int) worst_cell + 1);
+      Serial.print((int) worst_cell);
       serial_print_progmem(hasOnly);
       Serial.print((float) cell_voltage[worst_cell] + 0.005,2);
       Serial.println("V");
@@ -881,7 +882,7 @@ void calibrate()
 
   for (int cell=0; cell<BATTERY_CELLs; cell++) {
     serial_print_progmem(cell___);
-    Serial.print((int) cell + 1);
+    Serial.print((int) cell);
     serial_println_progmem(connectedToPin);
     Serial.println((int) battery_PIN[cell]);
     serial_println_progmem(connectAndMeasure);
