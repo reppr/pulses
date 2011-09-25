@@ -23,7 +23,7 @@
 
    There is a very simple menu interface through serial line.
 
-   Support for 16x2 or 20x4 LCD displays.
+   Support for 16x2 and 20x4 LCD displays.
 
    To save RAM constant strings are stored in PROGMEM.
 
@@ -339,15 +339,16 @@ void get_check_and_display_cells(void) {
     LCD.print((int) ((cell_voltage[cell] + 0.0005) * 1000.0));
   
     LCD.setCursor(cell*5, INFO_2);
+    LCD.write(cell_state_symbol(cell));
     if (drop_mV > 0)	// '+' sign
       LCD.print("+");
     else if (drop_mV == 0)
-      LCD.print("-");
+      LCD.print(" ");
     LCD.print(drop_mV);
 
   #elif ( LCD_COLs == 16 )			// 16 columns
     int drop_cV=(int) ((float) drop * 100.0 + 0.5);
-  
+
     LCD.setCursor(cell*4, INFO_1);
     if (cell != worst_cell)
       LCD.print(" ");
@@ -356,10 +357,11 @@ void get_check_and_display_cells(void) {
     LCD.print((int) ((cell_voltage[cell] + 0.005) * 100.0));
 
     LCD.setCursor(cell*4, INFO_2);
+    LCD.write(cell_state_symbol(cell));
     if (drop_cV > 0)	// '+' sign
       LCD.print("+");
     else if (drop_cV == 0)
-      LCD.print("-");
+      LCD.print(" ");
     LCD.print(drop_cV);
 
   #else
@@ -414,7 +416,25 @@ void initialize_levels() {
   level_good=LEVEL_GOOD;		// above is level_excellent
 }
 
+
 enum battery_state {emergency, low, ok, good, excellent};
+
+int cell_has_state(int cell) {
+  int cell_voltage_mV = ((cell_voltage[cell] * 1000.0) + 0.5);
+
+  if (cell_voltage_mV < level_emergency) {
+    return emergency;
+  } else if (cell_voltage_mV < level_low) {
+    return low;
+  } else if (cell_voltage_mV < level_ok) {
+    return ok;
+  } else if (cell_voltage_mV < level_good) {
+    return good;
+  } else
+    return excellent;
+}
+
+
 battery_state worst_cell_state;
 int worst_cell_voltage;
 // char worst_cell=ILLEGAL;	// already declared
@@ -432,37 +452,64 @@ int check_worst_cell_state() {
     }
   }
 
-  if (worst_cell_voltage < level_emergency) {
-    worst_cell_state = emergency;
-  } else if (worst_cell_voltage < level_low) {
-    worst_cell_state = low;
-  } else if (worst_cell_voltage < level_ok) {
-    worst_cell_state = ok;
-  } else if (worst_cell_voltage < level_good) {
-    worst_cell_state = good;
-  } else
-    worst_cell_state = excellent;
-
+  worst_cell_state = (battery_state) cell_has_state(worst_cell);
   return worst_cell_state;		// return state of the *worst* cell
 }
 
+#ifdef USE_LCD
+
+// char cell_state_symbol(int cell) {
+//   switch (cell_has_state(cell)) {
+//   case emergency:
+//     return 0;
+//   case low:
+//     return 2;
+//   case ok:
+//     return 4;
+//   case good:
+//     return 6;
+//   case excellent:
+//     return 7;
+//   }
+// }
+
+char cell_state_symbol(int cell) {
+  int range = level_good - level_emergency;
+  int cell_voltage_mV = ((cell_voltage[cell] * 1000.0) + 0.5);
+  int levels=8;
+  int symbol = (int) (cell_voltage_mV - level_emergency) * (levels -1) / range;
+
+  symbol=max(symbol, 0);
+  symbol=min(symbol, 7);
+  return symbol;
+}
+
+#endif	// USE_LCD
 
 
 char load_state=0;	// 0=off, 1=on, ?=pulsed....
-#if ( LCD_COLs < 20 )
-  const unsigned char switchedONpin[] PROGMEM  = "Load ON  pin ";
-  const unsigned char switchedOFFpin[] PROGMEM = "Load OFF pin ";
-#else
+
+#ifdef USE_SERIAL
   const unsigned char switchedONpin[] PROGMEM  = "Switched ON pin";
   const unsigned char switchedOFFpin[] PROGMEM = "Switched OFF pin";
 #endif
+
+#if USE_LCD
+  const unsigned char ON_[] PROGMEM  = " ON ";
+  const unsigned char OFF_[] PROGMEM  = " OFF";
+#endif
+
 
 void switch_load_on(int display) {
   #ifdef USE_LCD
     if (display) {
       if (load_state != 1) {
-	LCD_print_line_progmem(MESSAGE, switchedONpin);
+	LCD_clear_line(MESSAGE);
+	LCD.write(' P');
+	if (load_switch_pin < 10 )
+	  LCD.write('0');
 	LCD.print((int) load_switch_pin);
+	LCD_print_progmem(ON_);
       }
     }
   #endif
@@ -485,8 +532,12 @@ void switch_load_off(int display) {
   #ifdef USE_LCD
     if (display) {
       if (load_state != 0) {
-	LCD_print_line_progmem(MESSAGE, switchedOFFpin);
+	LCD_clear_line(MESSAGE);
+	LCD.write(' P');
+	if (load_switch_pin < 10 )
+	  LCD.write('0');
 	LCD.print((int) load_switch_pin);
+	LCD_print_progmem(OFF_);
       }
     }
   #endif
@@ -1418,6 +1469,21 @@ void reset() {
 }
 
 /* **************************************************************** */
+// creating LCD custom characters symbolizing cell state:
+#ifdef USE_LCD
+void create_custom_lcd_chars() {
+  byte scratch[8];
+  for (int i=0; i<8; i++)
+    scratch[i]=B01001;
+  for (int i=0; i<8; i++) {
+    scratch[7-i] = B01111;
+    LCD.createChar(i, scratch);
+  }
+}
+#endif	// USE_LCD
+
+
+/* **************************************************************** */
 // setup and main loop:
 
 void setup() {
@@ -1435,6 +1501,13 @@ void setup() {
   #endif
 
   LCD.begin(LCD_COLs, LCD_ROWs);
+  create_custom_lcd_chars();
+
+//  LCD.setCursor(0, 0);
+//  for (int i=0; i<8; i++)
+//    LCD.write(i);
+//  delay(60000);
+
   LCD_print_line_progmem(TOP, programName);
   LCD_print_line_progmem(1, version);
   #if (LCD_ROWs < 3 )	// we're  going to overwrite this same line
