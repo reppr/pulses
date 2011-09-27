@@ -19,13 +19,14 @@
    instructions. On first start the program might start calibration
    automatically. Otherwise send the char 'C' through the line.
 
-   Calibration data gets permanently stored in EEPROM.
+   Calibration data can be permanently stored in EEPROM.
+
+   Constant strings are stored in PROGMEM to save RAM.
 
    There is a very simple menu interface through serial line.
 
    Support for 16x2 and 20x4 LCD displays.
 
-   To save RAM constant strings are stored in PROGMEM.
 
 */
 /* **************************************************************** */
@@ -355,27 +356,20 @@ void get_check_and_display_cells(void) {
   #endif
 #endif
 
-
-#ifdef USE_LCD		// clear display lines
-  LCD_clear_line(INFO_2);
-  LCD_clear_line(INFO_1);
-#endif
-
-
   get_cell_voltages();
   check_worst_cell_state();	// to know which cell is worst
 
 #ifdef USE_LCD
+  create_lcd_bar_chars();	// prepare custom chars
   rate_cells();
+  LCD_clear_line(INFO_2);	// clear display lines
+  LCD_clear_line(INFO_1);
 #endif
 
-  // as we need different LCD custom char sets we do the roes separately:
-  create_lcd_bar_chars();
   for (int cell=0; cell<BATTERY_CELLs; cell++) {
     drop = cell_voltage[cell] - cell_voltage_start[cell];
 
 #ifdef USE_LCD
-
   #if ( LCD_COLs >= 20 )			// 20 columns
     int drop_mV=(int) ((float) drop * 1000.0 + 0.5);
   
@@ -411,7 +405,6 @@ void get_check_and_display_cells(void) {
   #endif
 #endif // USE_LCD
 
-
 #ifdef USE_SERIAL
     Serial.print((int) cell); 
     if (cell != worst_cell)
@@ -444,123 +437,6 @@ void get_check_and_display_cells(void) {
 #endif
 
 }
-
-// other version: DOES NOT WORK, as you cannot redefine LCD custom chars
-//                and still have the old version on screen...
-//
-//	void get_check_and_display_cells(void) {
-//	  float drop;
-//	
-//	#ifdef LED_PIN_2
-//	  digitalWrite(LED_PIN_2, HIGH);
-//	#else
-//	  #ifdef LED_PIN
-//	    digitalWrite(LED_PIN, HIGH);
-//	  #endif
-//	#endif
-//	
-//	
-//	#ifdef USE_LCD		// clear display lines
-//	  LCD_clear_line(INFO_2);
-//	  LCD_clear_line(INFO_1);
-//	#endif
-//	
-//	  get_cell_voltages();
-//	
-//	#ifdef USE_SERIAL
-//	  check_worst_cell_state();	// to know which cell is worst
-//	#endif
-//	
-//	  // as we need different LCD custom char sets we do the LCD rows separately:
-//	#ifdef USE_LCD
-//	  create_lcd_dot_chars();
-//	  rate_cells();
-//	#endif
-//	  for (int cell=0; cell<BATTERY_CELLs; cell++) {
-//	
-//	#ifdef USE_LCD
-//	  #if ( LCD_COLs >= 20 )			// 20 columns
-//	    LCD.setCursor(cell*5, INFO_1);
-//	    LCD.write(cell_rating_symbols[cell]);
-//	    LCD.print((int) ((cell_voltage[cell] + 0.0005) * 1000.0));
-//	  #elif ( LCD_COLs == 16 )			// 16 columns
-//	    LCD.setCursor(cell*4, INFO_1);
-//	    LCD.write(cell_rating_symbols[cell]);
-//	    LCD.print((int) ((cell_voltage[cell] + 0.005) * 100.0));
-//	  #else
-//	    #error LCD size not supported:  columns LCD_COLs 
-//	  #endif
-//	#endif // USE_LCD
-//	
-//	
-//	#ifdef USE_SERIAL
-//	    drop = cell_voltage[cell] - cell_voltage_start[cell];
-//	    Serial.print((int) cell); 
-//	    if (cell != worst_cell)
-//	      Serial.print("  "); else
-//	      Serial.print("- ");
-//	    Serial.print((float) cell_voltage[cell] + 0.005,2);
-//	    serial_print_progmem(V_);
-//	    if (drop > 0)	// '+' sign
-//	      Serial.print("+");
-//	    if (drop == 0 )
-//	      Serial.print(" ");
-//	
-//	    Serial.print((float) drop + 0.005,2);
-//	    Serial.print(")\t");
-//	#else
-//	    ;
-//	#endif
-//	  }
-//	
-//	
-//	#ifdef USE_LCD
-//	  // second row:
-//	  create_lcd_bar_chars();
-//	  for (int cell=0; cell<BATTERY_CELLs; cell++) {
-//	    drop = cell_voltage[cell] - cell_voltage_start[cell];
-//	
-//	  #if ( LCD_COLs >= 20 )			// 20 columns
-//	    int drop_mV=(int) ((float) drop * 1000.0 + 0.5);
-//	  
-//	    LCD.setCursor(cell*5, INFO_2);
-//	    LCD.write(cell_state_symbol(cell));
-//	    if (drop_mV > 0)	// '+' sign
-//	      LCD.print("+");
-//	    else if (drop_mV == 0)
-//	      LCD.print(" ");
-//	    LCD.print(drop_mV);
-//	
-//	  #elif ( LCD_COLs == 16 )			// 16 columns
-//	    int drop_cV=(int) ((float) drop * 100.0 + 0.5);
-//	
-//	    LCD.setCursor(cell*4, INFO_2);
-//	    LCD.write(cell_state_symbol(cell));
-//	    if (drop_cV > 0)	// '+' sign
-//	      LCD.print("+");
-//	    else if (drop_cV == 0)
-//	      LCD.print(" ");
-//	    LCD.print(drop_cV);
-//	
-//	  #else
-//	    #error LCD size not supported:  columns LCD_COLs 
-//	  #endif
-//	  }
-//	#endif // USE_LCD
-//	
-//	
-//	#ifdef USE_SERIAL
-//	  Serial.println("");
-//	#endif
-//	
-//	#ifdef LED_PIN_2
-//	  digitalWrite(LED_PIN_2, LOW);
-//	#else
-//	  #ifdef LED_PIN
-//	    digitalWrite(LED_PIN, LOW);
-//	  #endif
-//	#endif
-//	}
 
 
 /* **************************************************************** */
@@ -708,6 +584,7 @@ int check_worst_cell_state() {
   return worst_cell_state;		// return state of the *worst* cell
 }
 
+
 #ifdef USE_LCD
 
 // cell voltage bar graph:
@@ -722,171 +599,14 @@ char cell_state_symbol(int cell) {
   return symbol;
 }
 
-/*
-void rate_cells() {	// which cell is best, worst, ...
-  float voltage[BATTERY_CELLs];
-  int indices=0;
-
-  // insert voltages in ascending order:
-  for (int i=0; i < BATTERY_CELLs; i++)	// higher than possible values
-    voltage[i] = 999999;
-
-  for (int cell=0; cell < BATTERY_CELLs; cell++) {	// cell loop
-    for (int i=0; i < BATTERY_CELLs; i++) {		// position loop
-      if (voltage[i] > cell_voltage[cell]) {	// insert here?
-	for (int j=(BATTERY_CELLs-1); j>i; j--)	//   yes: shift values up
-	  voltage[j] = voltage[j-1];
-	voltage[i] = cell_voltage[cell];	//        insert value
-	indices++;
-	break;
-      }
-    }
-  }
-
-  for (int cell=0; cell<BATTERY_CELLs; cell++) {
-    for (int i=0; i<indices; i++) {
-      if (cell_voltage[cell] == voltage[i]) {
-	cell_rating_symbols[cell] = (char) i;
-	break;
-      }
-    }
-  }  // cell loop
-}
-*/
-
-/*
-// which cell is best, worst, ...
-void rate_cells() {
-  float voltage[BATTERY_CELLs];
-  int indices;
-
-  // insert voltages in descending order:
-  for (int i=0; i < BATTERY_CELLs; i++)
-    voltage[i] = -999999;	// less than possible values
-
-  for (int cell=0; cell < BATTERY_CELLs; cell++) {	// cell loop
-    for (int i=0; i < BATTERY_CELLs; i++) {		// position loop
-      if (voltage[i] < cell_voltage[cell]) {	// insert here?
-	for (int j=(BATTERY_CELLs-1); j>i; j--)	//   yes: shift values up
-	  voltage[j] = voltage[j-1];
-	voltage[i] = cell_voltage[cell];	//        insert value
-	indices++;
-	break;
-      }
-    }
-  }
-
-  for (int cell=0; cell<BATTERY_CELLs; cell++) {
-    for (int i=0; i<indices; i++) {
-      if (cell_voltage[cell] == voltage[i]) {
-	cell_rating_symbols[cell] = 'a' + (char) i;
-	break;
-      }
-    }
-  }
-}
-*/
-
-/*
-void rate_cells() {	// which cell is best, worst, ...
-  float voltage[BATTERY_CELLs];
-  int indices=0;
-
-  // insert voltages in ascending order:
-  for (int i=0; i < BATTERY_CELLs; i++)	// higher than possible values
-    voltage[i] = 999999;
-
-  for (int cell=0; cell < BATTERY_CELLs; cell++) {	// cell loop
-    for (int i=0; i < BATTERY_CELLs; i++) {		// position loop
-      if (voltage[i] > cell_voltage[cell]) {	// insert here?
-	for (int j=(BATTERY_CELLs-1); j>i; j--)	//   yes: shift values up
-	  voltage[j] = voltage[j-1];
-	voltage[i] = cell_voltage[cell];	//        insert value
-	indices++;
-	break;
-      }
-    }
-  }
-
-  switch (indices) {
-  case 1:	// all cells on same voltage level
-    for (int i=0; i < BATTERY_CELLs; i++)
-      cell_rating_symbols[i] = '=';
-    break;
-
-  case 2:	// only worst and best voltage(s)
-    for (int i=0; i < BATTERY_CELLs; i++) {
-      if (cell_voltage[i] == voltage[0])
-	cell_rating_symbols[i] = '_';
-      else
-	cell_rating_symbols[i] = '^';
-    }
-    break;
-
-  case 3:	// worst, best and one intermediate level
-    for (int i=0; i < BATTERY_CELLs; i++) {
-      if (cell_voltage[i] == voltage[0])
-	cell_rating_symbols[i] = '_';
-      else {
-	if (cell_voltage[i] == voltage[1])
-	  cell_rating_symbols[i] = '=';
-	else
-	  cell_rating_symbols[i] = '^';
-      }
-    }
-    break;
-
-  case 4:	// separate levels for all cells
-    for (int i=0; i < BATTERY_CELLs; i++) {
-      if (cell_voltage[i] == voltage[0])
-	cell_rating_symbols[i] = '_';
-      else {
-	if (cell_voltage[i] == voltage[1])
-	  cell_rating_symbols[i] = '<';
-	else {
-	  if (cell_voltage[i] == voltage[2])
-	    cell_rating_symbols[i] = '>';
-	  else
-	    cell_rating_symbols[i] = '^';
-	}
-      }
-    }
-    break;
-
-  default:	// error: more than four cells and levels:
-    for (int i=0; i < BATTERY_CELLs; i++) {
-      if (cell_voltage[i] == voltage[0])
-	cell_rating_symbols[i] = '_';
-      else {
-	if (cell_voltage[i] == voltage[indices-1])
-	  cell_rating_symbols[i] = '^';
-	else
-	  cell_rating_symbols[i] = '?';
-      }
-    }
-  }
-}
-*/
 
 void rate_cells() {
-  float min=999999, max=-999999, other1=-999999, other2=-999999;
+  float min=999999, max=-999999;
 
   for (int i=0; i < BATTERY_CELLs; i++) {
     cell_rating_symbols[i] = 255;
     min = min(min, cell_voltage[i]);
     max = max(max, cell_voltage[i]);
-  }
-
-  for (int i=0; i < BATTERY_CELLs; i++) {
-    if ((cell_voltage[i] != min) && (cell_voltage[i] != max))
-      if (other1 == -999999)
-	other1 = cell_voltage[i];
-      else
-	other2 = cell_voltage[i];
-  }
-
-  if (other2 != -999999) {
-    
   }
 
   for (int i=0; i < BATTERY_CELLs; i++) {
@@ -1797,6 +1517,9 @@ void create_lcd_bar_chars() {
   }
 }
 
+
+/*
+// not used here, but useful anyway:
 #if (BATTERY_CELLs <= 4)	// spacing between dots
 void create_lcd_dot_chars() {
   byte scratch[8];
@@ -1818,6 +1541,8 @@ void create_lcd_dot_chars() {
   }
 }
 #endif
+*/
+
 
 // explore character set of LCD:
 void LCD_show_chars() {
@@ -1951,3 +1676,5 @@ void loop() {
 #endif
 
 }
+
+/* **************************************************************** */
