@@ -158,6 +158,11 @@ int get_free_RAM() {
     return ((int) &free) - ((int) __brkval);
 }
 
+#if (defined(HARDWARE_menu) || defined(USE_LCD))
+  const unsigned char freeRAM[] PROGMEM = "free RAM: ";
+#endif
+
+
 /* **************************************************************** */
 // simle minded switch control:
 #ifdef PIN_WITH_SWITCH_1
@@ -243,6 +248,8 @@ void serial_println_progmem(const unsigned char *str) {
 }
 #endif
 
+
+
 /* **************************************************************** */
 // ADC inputs:
 
@@ -286,6 +293,35 @@ void compute_input_scaling() {
   }
 }
 
+
+#ifdef USE_SERIAL
+// show scaling:
+const unsigned char scalingTitle[] PROGMEM = "\nScaling was calibrated with the following data:";
+const unsigned char cell__[] PROGMEM = "cell=";
+const unsigned char pin__[] PROGMEM = "\tpin=";
+const unsigned char voltage_[] PROGMEM = "\tvoltage=";
+const unsigned char factor_[] PROGMEM = "\tfactor=";
+const unsigned char mV_ADvalue[] PROGMEM = "mV\tAD value=";
+
+void show_scaling() {
+  serial_println_progmem(scalingTitle);
+  for (int cell=0; cell<BATTERY_CELLs; cell++) {
+      serial_println_progmem(cell__);
+      Serial.print(cell);
+      serial_println_progmem(pin__);
+      Serial.print((int) battery_PIN[cell]);
+      serial_println_progmem(voltage_);
+      Serial.print(input_scaling_mV[cell]);
+      serial_println_progmem(mV_ADvalue);
+      Serial.print(input_scaling_AD_value[cell]);
+      serial_println_progmem(factor_);
+      Serial.println(voltage_scale[cell],6);
+    }
+  Serial.println("");
+}
+#endif
+
+
 const unsigned char V_[] PROGMEM = "V  (";
 
 void get_cell_voltages(void) {
@@ -301,7 +337,12 @@ void get_cell_voltages(void) {
   }
 }
 
+
 char worst_cell=ILLEGAL;
+
+#ifdef USE_LCD
+  char cell_rating_symbols[BATTERY_CELLs];
+#endif
 
 void get_check_and_display_cells(void) {
   float drop;
@@ -323,6 +364,13 @@ void get_check_and_display_cells(void) {
 
   get_cell_voltages();
   check_worst_cell_state();	// to know which cell is worst
+
+#ifdef USE_LCD
+  rate_cells();
+#endif
+
+  // as we need different LCD custom char sets we do the roes separately:
+  create_lcd_bar_chars();
   for (int cell=0; cell<BATTERY_CELLs; cell++) {
     drop = cell_voltage[cell] - cell_voltage_start[cell];
 
@@ -332,10 +380,7 @@ void get_check_and_display_cells(void) {
     int drop_mV=(int) ((float) drop * 1000.0 + 0.5);
   
     LCD.setCursor(cell*5, INFO_1);
-    if (cell != worst_cell)
-      LCD.print(" ");
-    else
-      LCD.print("!");
+    LCD.write(cell_rating_symbols[cell]);
     LCD.print((int) ((cell_voltage[cell] + 0.0005) * 1000.0));
   
     LCD.setCursor(cell*5, INFO_2);
@@ -350,10 +395,7 @@ void get_check_and_display_cells(void) {
     int drop_cV=(int) ((float) drop * 100.0 + 0.5);
 
     LCD.setCursor(cell*4, INFO_1);
-    if (cell != worst_cell)
-      LCD.print(" ");
-    else
-      LCD.print("!");
+    LCD.write(cell_rating_symbols[cell]);
     LCD.print((int) ((cell_voltage[cell] + 0.005) * 100.0));
 
     LCD.setCursor(cell*4, INFO_2);
@@ -402,6 +444,216 @@ void get_check_and_display_cells(void) {
 #endif
 
 }
+
+// other version: DOES NOT WORK, as you cannot redefine LCD custom chars
+//                and still have the old version on screen...
+//
+//	void get_check_and_display_cells(void) {
+//	  float drop;
+//	
+//	#ifdef LED_PIN_2
+//	  digitalWrite(LED_PIN_2, HIGH);
+//	#else
+//	  #ifdef LED_PIN
+//	    digitalWrite(LED_PIN, HIGH);
+//	  #endif
+//	#endif
+//	
+//	
+//	#ifdef USE_LCD		// clear display lines
+//	  LCD_clear_line(INFO_2);
+//	  LCD_clear_line(INFO_1);
+//	#endif
+//	
+//	  get_cell_voltages();
+//	
+//	#ifdef USE_SERIAL
+//	  check_worst_cell_state();	// to know which cell is worst
+//	#endif
+//	
+//	  // as we need different LCD custom char sets we do the LCD rows separately:
+//	#ifdef USE_LCD
+//	  create_lcd_dot_chars();
+//	  rate_cells();
+//	#endif
+//	  for (int cell=0; cell<BATTERY_CELLs; cell++) {
+//	
+//	#ifdef USE_LCD
+//	  #if ( LCD_COLs >= 20 )			// 20 columns
+//	    LCD.setCursor(cell*5, INFO_1);
+//	    LCD.write(cell_rating_symbols[cell]);
+//	    LCD.print((int) ((cell_voltage[cell] + 0.0005) * 1000.0));
+//	  #elif ( LCD_COLs == 16 )			// 16 columns
+//	    LCD.setCursor(cell*4, INFO_1);
+//	    LCD.write(cell_rating_symbols[cell]);
+//	    LCD.print((int) ((cell_voltage[cell] + 0.005) * 100.0));
+//	  #else
+//	    #error LCD size not supported:  columns LCD_COLs 
+//	  #endif
+//	#endif // USE_LCD
+//	
+//	
+//	#ifdef USE_SERIAL
+//	    drop = cell_voltage[cell] - cell_voltage_start[cell];
+//	    Serial.print((int) cell); 
+//	    if (cell != worst_cell)
+//	      Serial.print("  "); else
+//	      Serial.print("- ");
+//	    Serial.print((float) cell_voltage[cell] + 0.005,2);
+//	    serial_print_progmem(V_);
+//	    if (drop > 0)	// '+' sign
+//	      Serial.print("+");
+//	    if (drop == 0 )
+//	      Serial.print(" ");
+//	
+//	    Serial.print((float) drop + 0.005,2);
+//	    Serial.print(")\t");
+//	#else
+//	    ;
+//	#endif
+//	  }
+//	
+//	
+//	#ifdef USE_LCD
+//	  // second row:
+//	  create_lcd_bar_chars();
+//	  for (int cell=0; cell<BATTERY_CELLs; cell++) {
+//	    drop = cell_voltage[cell] - cell_voltage_start[cell];
+//	
+//	  #if ( LCD_COLs >= 20 )			// 20 columns
+//	    int drop_mV=(int) ((float) drop * 1000.0 + 0.5);
+//	  
+//	    LCD.setCursor(cell*5, INFO_2);
+//	    LCD.write(cell_state_symbol(cell));
+//	    if (drop_mV > 0)	// '+' sign
+//	      LCD.print("+");
+//	    else if (drop_mV == 0)
+//	      LCD.print(" ");
+//	    LCD.print(drop_mV);
+//	
+//	  #elif ( LCD_COLs == 16 )			// 16 columns
+//	    int drop_cV=(int) ((float) drop * 100.0 + 0.5);
+//	
+//	    LCD.setCursor(cell*4, INFO_2);
+//	    LCD.write(cell_state_symbol(cell));
+//	    if (drop_cV > 0)	// '+' sign
+//	      LCD.print("+");
+//	    else if (drop_cV == 0)
+//	      LCD.print(" ");
+//	    LCD.print(drop_cV);
+//	
+//	  #else
+//	    #error LCD size not supported:  columns LCD_COLs 
+//	  #endif
+//	  }
+//	#endif // USE_LCD
+//	
+//	
+//	#ifdef USE_SERIAL
+//	  Serial.println("");
+//	#endif
+//	
+//	#ifdef LED_PIN_2
+//	  digitalWrite(LED_PIN_2, LOW);
+//	#else
+//	  #ifdef LED_PIN
+//	    digitalWrite(LED_PIN, LOW);
+//	  #endif
+//	#endif
+//	}
+
+
+/* **************************************************************** */
+// scaling and calibration:
+
+// interactively calibrate ADC:
+#ifdef USE_SERIAL
+const unsigned char calibrateExplanation[] PROGMEM = "\n** CALIBRATION **\nBy connecting a stable known voltage to each input in turn.\n(y/n)?";
+const unsigned char notCalibrated[] PROGMEM = "*NO CALIBRATION DONE*";
+const unsigned char connectedToPin[] PROGMEM = " connected to pin ";
+const unsigned char connectAndMeasure[] PROGMEM = "        Connect and measure voltage against ground.";
+const unsigned char inputVoltageOnPin[] PROGMEM = "        Input voltage on pin ";
+const unsigned char inMillivolts[] PROGMEM = " in millivolts:";
+// const unsigned char mV_ADvalue[] PROGMEM = "mV\tAD value=";
+const unsigned char pinNotCalibrated[] PROGMEM = "(pin NOT CALIBRATED)";
+const unsigned char askUseStore[] PROGMEM = "\n\nUse and store the following values?";
+const unsigned char answerUseStore[] PROGMEM = "\nEnter 'y' to use and store permanently\n'u' to USE for this session, 'q' to quit.\t(y/u/Q)?";
+const unsigned char cell___[] PROGMEM = "\nCell "; 
+
+void calibrate()
+{
+  int millivolts, value, got_input=0, menu_input;
+
+  serial_println_progmem(calibrateExplanation);
+
+  while (char_available())	// clear prior input
+    get_char();
+  while (!char_available())	// wait for key pressed
+    ;
+
+  switch (get_char()) {
+    case 'y' :
+      break;
+    default:
+      serial_println_progmem(notCalibrated);
+      return;
+    }
+
+  for (int cell=0; cell<BATTERY_CELLs; cell++) {
+    serial_print_progmem(cell___);
+    Serial.print((int) cell);
+    serial_println_progmem(connectedToPin);
+    Serial.println((int) battery_PIN[cell]);
+    serial_println_progmem(connectAndMeasure);
+
+    serial_println_progmem(inputVoltageOnPin);
+    Serial.print((int) battery_PIN[cell]);
+    serial_println_progmem(inMillivolts);
+
+    millivolts = numericInput(input_scaling_mV[cell]);
+    if (millivolts != 0) {
+      input_scaling_mV[cell] = millivolts;
+
+      value=0;
+      for (int sample=0; sample<OVERSAMPLING; sample++)  
+	value += analogRead(battery_PIN[cell]);
+      input_scaling_AD_value[cell] = value / OVERSAMPLING;
+
+      Serial.print(millivolts); serial_println_progmem(mV_ADvalue);
+      Serial.println(input_scaling_AD_value[cell]);
+      got_input++;
+    } else
+      serial_println_progmem(pinNotCalibrated);
+  }
+
+  if (got_input > 0 ) {
+    serial_println_progmem(askUseStore);
+    show_scaling();
+    serial_println_progmem(answerUseStore);
+
+    while (char_available())	// disregard any prior input
+      get_char();
+    while (!char_available())	// wait for input
+      ;
+    switch (menu_input = get_char()) {
+    case 'y' :
+      compute_input_scaling();
+      save_scaling_to_eeprom();
+      break;
+    case 'u' :
+      compute_input_scaling();
+      break;
+    default :
+      got_input=0;
+    }
+  }
+ 
+  if (got_input == 0 )
+    serial_println_progmem(notCalibrated);
+
+  Serial.println("");
+}
+#endif
 
 
 /* **************************************************************** */
@@ -458,21 +710,7 @@ int check_worst_cell_state() {
 
 #ifdef USE_LCD
 
-// char cell_state_symbol(int cell) {
-//   switch (cell_has_state(cell)) {
-//   case emergency:
-//     return 0;
-//   case low:
-//     return 2;
-//   case ok:
-//     return 4;
-//   case good:
-//     return 6;
-//   case excellent:
-//     return 7;
-//   }
-// }
-
+// cell voltage bar graph:
 char cell_state_symbol(int cell) {
   int range = level_good - level_emergency;
   int cell_voltage_mV = ((cell_voltage[cell] * 1000.0) + 0.5);
@@ -482,6 +720,184 @@ char cell_state_symbol(int cell) {
   symbol=max(symbol, 0);
   symbol=min(symbol, 7);
   return symbol;
+}
+
+/*
+void rate_cells() {	// which cell is best, worst, ...
+  float voltage[BATTERY_CELLs];
+  int indices=0;
+
+  // insert voltages in ascending order:
+  for (int i=0; i < BATTERY_CELLs; i++)	// higher than possible values
+    voltage[i] = 999999;
+
+  for (int cell=0; cell < BATTERY_CELLs; cell++) {	// cell loop
+    for (int i=0; i < BATTERY_CELLs; i++) {		// position loop
+      if (voltage[i] > cell_voltage[cell]) {	// insert here?
+	for (int j=(BATTERY_CELLs-1); j>i; j--)	//   yes: shift values up
+	  voltage[j] = voltage[j-1];
+	voltage[i] = cell_voltage[cell];	//        insert value
+	indices++;
+	break;
+      }
+    }
+  }
+
+  for (int cell=0; cell<BATTERY_CELLs; cell++) {
+    for (int i=0; i<indices; i++) {
+      if (cell_voltage[cell] == voltage[i]) {
+	cell_rating_symbols[cell] = (char) i;
+	break;
+      }
+    }
+  }  // cell loop
+}
+*/
+
+/*
+// which cell is best, worst, ...
+void rate_cells() {
+  float voltage[BATTERY_CELLs];
+  int indices;
+
+  // insert voltages in descending order:
+  for (int i=0; i < BATTERY_CELLs; i++)
+    voltage[i] = -999999;	// less than possible values
+
+  for (int cell=0; cell < BATTERY_CELLs; cell++) {	// cell loop
+    for (int i=0; i < BATTERY_CELLs; i++) {		// position loop
+      if (voltage[i] < cell_voltage[cell]) {	// insert here?
+	for (int j=(BATTERY_CELLs-1); j>i; j--)	//   yes: shift values up
+	  voltage[j] = voltage[j-1];
+	voltage[i] = cell_voltage[cell];	//        insert value
+	indices++;
+	break;
+      }
+    }
+  }
+
+  for (int cell=0; cell<BATTERY_CELLs; cell++) {
+    for (int i=0; i<indices; i++) {
+      if (cell_voltage[cell] == voltage[i]) {
+	cell_rating_symbols[cell] = 'a' + (char) i;
+	break;
+      }
+    }
+  }
+}
+*/
+
+/*
+void rate_cells() {	// which cell is best, worst, ...
+  float voltage[BATTERY_CELLs];
+  int indices=0;
+
+  // insert voltages in ascending order:
+  for (int i=0; i < BATTERY_CELLs; i++)	// higher than possible values
+    voltage[i] = 999999;
+
+  for (int cell=0; cell < BATTERY_CELLs; cell++) {	// cell loop
+    for (int i=0; i < BATTERY_CELLs; i++) {		// position loop
+      if (voltage[i] > cell_voltage[cell]) {	// insert here?
+	for (int j=(BATTERY_CELLs-1); j>i; j--)	//   yes: shift values up
+	  voltage[j] = voltage[j-1];
+	voltage[i] = cell_voltage[cell];	//        insert value
+	indices++;
+	break;
+      }
+    }
+  }
+
+  switch (indices) {
+  case 1:	// all cells on same voltage level
+    for (int i=0; i < BATTERY_CELLs; i++)
+      cell_rating_symbols[i] = '=';
+    break;
+
+  case 2:	// only worst and best voltage(s)
+    for (int i=0; i < BATTERY_CELLs; i++) {
+      if (cell_voltage[i] == voltage[0])
+	cell_rating_symbols[i] = '_';
+      else
+	cell_rating_symbols[i] = '^';
+    }
+    break;
+
+  case 3:	// worst, best and one intermediate level
+    for (int i=0; i < BATTERY_CELLs; i++) {
+      if (cell_voltage[i] == voltage[0])
+	cell_rating_symbols[i] = '_';
+      else {
+	if (cell_voltage[i] == voltage[1])
+	  cell_rating_symbols[i] = '=';
+	else
+	  cell_rating_symbols[i] = '^';
+      }
+    }
+    break;
+
+  case 4:	// separate levels for all cells
+    for (int i=0; i < BATTERY_CELLs; i++) {
+      if (cell_voltage[i] == voltage[0])
+	cell_rating_symbols[i] = '_';
+      else {
+	if (cell_voltage[i] == voltage[1])
+	  cell_rating_symbols[i] = '<';
+	else {
+	  if (cell_voltage[i] == voltage[2])
+	    cell_rating_symbols[i] = '>';
+	  else
+	    cell_rating_symbols[i] = '^';
+	}
+      }
+    }
+    break;
+
+  default:	// error: more than four cells and levels:
+    for (int i=0; i < BATTERY_CELLs; i++) {
+      if (cell_voltage[i] == voltage[0])
+	cell_rating_symbols[i] = '_';
+      else {
+	if (cell_voltage[i] == voltage[indices-1])
+	  cell_rating_symbols[i] = '^';
+	else
+	  cell_rating_symbols[i] = '?';
+      }
+    }
+  }
+}
+*/
+
+void rate_cells() {
+  float min=999999, max=-999999, other1=-999999, other2=-999999;
+
+  for (int i=0; i < BATTERY_CELLs; i++) {
+    cell_rating_symbols[i] = 255;
+    min = min(min, cell_voltage[i]);
+    max = max(max, cell_voltage[i]);
+  }
+
+  for (int i=0; i < BATTERY_CELLs; i++) {
+    if ((cell_voltage[i] != min) && (cell_voltage[i] != max))
+      if (other1 == -999999)
+	other1 = cell_voltage[i];
+      else
+	other2 = cell_voltage[i];
+  }
+
+  if (other2 != -999999) {
+    
+  }
+
+  for (int i=0; i < BATTERY_CELLs; i++) {
+    if (cell_voltage[i] == min) {
+      cell_rating_symbols[i] = '!';
+    } else
+      if (cell_voltage[i] == max) {
+	cell_rating_symbols[i] = '*';
+      } else
+	cell_rating_symbols[i] = ':';
+  }
 }
 
 #endif	// USE_LCD
@@ -505,7 +921,7 @@ void switch_load_on(int display) {
     if (display) {
       if (load_state != 1) {
 	LCD_clear_line(MESSAGE);
-	LCD.write(' P');
+	LCD.print(" P");
 	if (load_switch_pin < 10 )
 	  LCD.write('0');
 	LCD.print((int) load_switch_pin);
@@ -533,7 +949,7 @@ void switch_load_off(int display) {
     if (display) {
       if (load_state != 0) {
 	LCD_clear_line(MESSAGE);
-	LCD.write(' P');
+	LCD.print(" P");
 	if (load_switch_pin < 10 )
 	  LCD.write('0');
 	LCD.print((int) load_switch_pin);
@@ -656,7 +1072,7 @@ void react_on_battery_state() {
 /* **************************************************************** */
 // #define MENU_over_serial	// do we use a serial menu?
 /* **************************************************************** */
-#ifdef MENU_over_serial
+#ifdef USE_SERIAL
 
 // sometimes serial is not ready quick enough:
 #define WAITforSERIAL 10
@@ -664,7 +1080,6 @@ void react_on_battery_state() {
 
 // char input with one byte buffering:
 char stored_char, chars_stored=0;
-
 
 int get_char() {
   if(!char_available())
@@ -736,6 +1151,10 @@ long numericInput(long oldValue) {
 
   return sign * num;
 }
+#endif
+
+
+#ifdef MENU_over_serial
 
 const unsigned char ON_off[] PROGMEM = "ON/off";
 const unsigned char on_OFF[] PROGMEM = "on/OFF";
@@ -899,122 +1318,13 @@ void serial_print_BIN(unsigned long value, int bits) {
   Serial.print(" ");
 }
 
-// interactively calibrate ADC:
-const unsigned char calibrateExplanation[] PROGMEM = "\n** CALIBRATION **\nBy connecting a stable known voltage to each input in turn.\n(y/n)?";
-const unsigned char notCalibrated[] PROGMEM = "*NO CALIBRATION DONE*";
-const unsigned char connectedToPin[] PROGMEM = " connected to pin ";
-const unsigned char connectAndMeasure[] PROGMEM = "        Connect and measure voltage against ground.";
-const unsigned char inputVoltageOnPin[] PROGMEM = "        Input voltage on pin ";
-const unsigned char inMillivolts[] PROGMEM = " in millivolts:";
-const unsigned char mV_ADvalue[] PROGMEM = "mV\tAD value=";
-const unsigned char pinNotCalibrated[] PROGMEM = "(pin NOT CALIBRATED)";
-const unsigned char askUseStore[] PROGMEM = "\n\nUse and store the following values?";
-const unsigned char answerUseStore[] PROGMEM = "\nEnter 'y' to use and store permanently\n'u' to USE for this session, 'q' to quit.\t(y/u/Q)?";
-const unsigned char cell___[] PROGMEM = "\nCell "; 
-
-void calibrate()
-{
-  int millivolts, value, got_input=0, menu_input;
-
-  serial_println_progmem(calibrateExplanation);
-
-  while (char_available())	// clear prior input
-    get_char();
-  while (!char_available())	// wait for key pressed
-    ;
-
-  switch (get_char()) {
-    case 'y' :
-      break;
-    default:
-      serial_println_progmem(notCalibrated);
-      return;
-    }
-
-  for (int cell=0; cell<BATTERY_CELLs; cell++) {
-    serial_print_progmem(cell___);
-    Serial.print((int) cell);
-    serial_println_progmem(connectedToPin);
-    Serial.println((int) battery_PIN[cell]);
-    serial_println_progmem(connectAndMeasure);
-
-    serial_println_progmem(inputVoltageOnPin);
-    Serial.print((int) battery_PIN[cell]);
-    serial_println_progmem(inMillivolts);
-
-    millivolts = numericInput(input_scaling_mV[cell]);
-    if (millivolts != 0) {
-      input_scaling_mV[cell] = millivolts;
-
-      value=0;
-      for (int sample=0; sample<OVERSAMPLING; sample++)  
-	value += analogRead(battery_PIN[cell]);
-      input_scaling_AD_value[cell] = value / OVERSAMPLING;
-
-      Serial.print(millivolts); serial_println_progmem(mV_ADvalue);
-      Serial.println(input_scaling_AD_value[cell]);
-      got_input++;
-    } else
-      serial_println_progmem(pinNotCalibrated);
-  }
-
-  if (got_input > 0 ) {
-    serial_println_progmem(askUseStore);
-    show_scaling();
-    serial_println_progmem(answerUseStore);
-
-    while (char_available())	// disregard any prior input
-      get_char();
-    while (!char_available())	// wait for input
-      ;
-    switch (menu_input = get_char()) {
-    case 'y' :
-      compute_input_scaling();
-      save_scaling_to_eeprom();
-      break;
-    case 'u' :
-      compute_input_scaling();
-      break;
-    default :
-      got_input=0;
-    }
-  }
- 
-  if (got_input == 0 )
-    serial_println_progmem(notCalibrated);
-
-  Serial.println("");
-}
-
-const unsigned char scalingTitle[] PROGMEM = "\nScaling was calibrated with the following data:";
-const unsigned char cell__[] PROGMEM = "cell=";
-const unsigned char pin__[] PROGMEM = "\tpin=";
-const unsigned char voltage_[] PROGMEM = "\tvoltage=";
-const unsigned char factor_[] PROGMEM = "\tfactor=";
-
-void show_scaling() {
-  serial_println_progmem(scalingTitle);
-  for (int cell=0; cell<BATTERY_CELLs; cell++) {
-      serial_println_progmem(cell__);
-      Serial.print(cell);
-      serial_println_progmem(pin__);
-      Serial.print((int) battery_PIN[cell]);
-      serial_println_progmem(voltage_);
-      Serial.print(input_scaling_mV[cell]);
-      serial_println_progmem(mV_ADvalue);
-      Serial.print(input_scaling_AD_value[cell]);
-      serial_println_progmem(factor_);
-      Serial.println(voltage_scale[cell],6);
-    }
-  Serial.println("");
-}
 
 
 /* **************************************************************** */
 // simple menu interface through serial port:
 
 const unsigned char menuLine1[] PROGMEM = ".=display\ts=show\t\tr=reset\t\tx=toggle shutdown ";
-const unsigned char freeRAM[] PROGMEM = "free RAM: ";
+// const unsigned char freeRAM[] PROGMEM = "free RAM: ";
 const unsigned char levelsMvEmergency[] PROGMEM = "LEVELS mV:\te=emergency (";
 const unsigned char on_[] PROGMEM = "(on)";
 const unsigned char off_[] PROGMEM = "(OFF)";
@@ -1194,6 +1504,12 @@ void menu_discharger() {
 
       case '.':
 	get_check_and_display_cells();
+	break;
+
+      case 'd':	// debug stuff
+#ifdef USE_LCD
+	LCD_show_chars();
+#endif
 	break;
 
 #ifdef HARDWARE_menu inside MENU_over_serial
@@ -1471,7 +1787,7 @@ void reset() {
 /* **************************************************************** */
 // creating LCD custom characters symbolizing cell state:
 #ifdef USE_LCD
-void create_custom_lcd_chars() {
+void create_lcd_bar_chars() {
   byte scratch[8];
   for (int i=0; i<8; i++)
     scratch[i]=B01001;
@@ -1480,6 +1796,47 @@ void create_custom_lcd_chars() {
     LCD.createChar(i, scratch);
   }
 }
+
+#if (BATTERY_CELLs <= 4)	// spacing between dots
+void create_lcd_dot_chars() {
+  byte scratch[8];
+  for (int i=0; i<8; i++)
+    scratch[i]=B00000;
+  for (int i=0; i<4; i++) {
+    scratch[7-2*i] = B00100;
+    LCD.createChar(i, scratch);
+  }
+}
+#else	// more than 4 dots, no spacing between them
+void create_lcd_dot_chars() {
+  byte scratch[8];
+  for (int i=0; i<8; i++)
+    scratch[i]=B00000;
+  for (int i=0; i<8; i++) {
+    scratch[7-i] = B00100;
+    LCD.createChar(i, scratch);
+  }
+}
+#endif
+
+// explore character set of LCD:
+void LCD_show_chars() {
+  LCD_clear_line(INFO_1);
+  for (int i=0; i<256 ; i++) {
+    LCD.write(i);
+    if (i % 16 == 15) {
+      LCD_clear_line(INFO_2);
+      LCD.print(i-15);
+      LCD.print("  chars (key)");
+
+      while (! Serial.available())
+	;
+      Serial.read();
+      LCD_clear_line(INFO_1);
+    }
+  }
+}
+
 #endif	// USE_LCD
 
 
@@ -1501,13 +1858,6 @@ void setup() {
   #endif
 
   LCD.begin(LCD_COLs, LCD_ROWs);
-  create_custom_lcd_chars();
-
-//  LCD.setCursor(0, 0);
-//  for (int i=0; i<8; i++)
-//    LCD.write(i);
-//  delay(60000);
-
   LCD_print_line_progmem(TOP, programName);
   LCD_print_line_progmem(1, version);
   #if (LCD_ROWs < 3 )	// we're  going to overwrite this same line
