@@ -12,6 +12,10 @@
    New logic version to determine when to wake up tasks.
    Saving times along with an overflow count makes everything
    simple and flexible.
+
+   This version calculates a global next event once whenever the next
+   event could possible have changed. See fix_global_next().
+
 */
 /* **************************************************************** */
 
@@ -104,6 +108,10 @@ int task;
 TIMER_TYPE now=0, last_now=~0;
 OVERFLOW_TYPE overflow=0;
 
+TIMER_TYPE global_next;
+OVERFLOW_TYPE global_next_ovfl=~0;
+unsigned int global_next_count=0;
+int global_next_tasks[PERIODICS];
 
 /* **************************************************************** */
 
@@ -163,11 +171,11 @@ void wake_task(int task) {
     else
       init_task(task);								//       no:  DELETE task
 
-  // fix_global_next();			// planed soon...
+  fix_global_next();
 }
 
 
-// always get time through here
+// *always* get time through get_now()
 TIMER_TYPE get_now() {		// get time and set overflow
   now = TIMER;
 
@@ -179,17 +187,46 @@ TIMER_TYPE get_now() {		// get time and set overflow
   return now;
 }
 
+void fix_global_next() {
+  // we work directly on the global variables here:
+  global_next_ovfl=~0;	// ILLEGAL value
+  global_next_count=0;
+
+  for (task=0; task<PERIODICS; task++) {	// check all tasks
+    if (flags[task] & ACTIVE) {			// task active?
+      if (next_ovrfl[task] < global_next_ovfl) {	// yes: earlier overflow?
+	global_next = next[task];			//   yes: reset search
+	global_next_ovfl = next_ovrfl[task];
+	global_next_tasks[0] = task;
+	global_next_count = 1;
+      } else {					// same (or later) overflow:
+	if (next_ovrfl[task] == global_next_ovfl) {	// same overflow?
+	  if (next[task] < global_next) {		//   yes: new next?
+	    global_next = next[task];			//     yes: reset search
+	    global_next_tasks[0] = task;
+	    global_next_count = 1;
+	  } else					// (still *same* overflow)
+	    if (next[task] == global_next)		//    *same* next?
+	      global_next_tasks[global_next_count++]=task; //  yes: save task, count
+	}
+	// (*later* overflows are always later)
+      }
+    } // active?
+  } // task loop
+}
+
 
 void check_maybe_do() {
-  now = get_now();
+  now = get_now();	// sets overflow too
 
-  for (task=0; task<PERIODICS; task++) {				// check all tasks once
-    if (flags[task] & ACTIVE) {						// task active?
-      if ((now >= next[task]) && (overflow == next_ovrfl[task])) {	//   yes, is it time?
-	wake_task(task);						//     yes, wake task up
-      }
-    }
-  }
+  if (global_next_ovfl == overflow) {		// current overflow period?
+    if (global_next <= now)			//   yes: is it time?
+      for (int i=global_next_count; i; )	//     yes:
+	wake_task(global_next_tasks[--i]);	//     wake next tasks up
+  } else					// (earlier or later overflow)
+    if (global_next_ovfl < overflow)		// earlier overflow period?
+      for (int i=global_next_count; i; )	//     yes, we're late
+	wake_task(global_next_tasks[--i]);	//     wake next tasks up
 }
 
 
@@ -259,7 +296,7 @@ int setup_task(void (*task_do)(int), unsigned char new_flags, TIMER_TYPE when, O
   pulse_period[task] = new_pulse_period;
   pulse_ovrfl[task] = new_pulse_ovrfl;
 
-  // fix_global_next();			// planed soon...
+  fix_global_next();
 
   return task;
 }
@@ -278,7 +315,7 @@ void set_new_period(int task, TIMER_TYPE new_pulse_period, OVERFLOW_TYPE new_pul
   pulse_ovrfl[task] = new_pulse_oveflow;
   next[task] = last[task] + pulse_period[task];
   next_ovrfl[task] = last_ovrfl[task] + pulse_ovrfl[task];
-  // fix_global_next();			// planed soon...
+  fix_global_next();
 }
 
 
