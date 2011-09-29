@@ -13,8 +13,15 @@
    Saving times along with an overflow count makes everything
    simple and flexible.
 
-   This version calculates a global next event once whenever the next
-   event could possible have changed. See fix_global_next().
+   This version calculates global next event[s] *once* when the next
+   event could possibly have changed. See fix_global_next().
+
+   If a series of tasks are sceduled for the same time they will
+   be called in fast sequence *without* fix_global_next() in between them.
+   After all task with the same time are done fix_global_next() is called.
+
+   If a task sets up another task with the same next it *can* decide to do
+   the fix itself, if it seems appropriate. Normally this is not required.
 
 */
 /* **************************************************************** */
@@ -171,7 +178,7 @@ void wake_task(int task) {
     else
       init_task(task);								//       no:  DELETE task
 
-  fix_global_next();
+  // fix_global_next();		// this version does not call that from here
 }
 
 
@@ -187,7 +194,20 @@ TIMER_TYPE get_now() {		// get time and set overflow
   return now;
 }
 
+
+// determine when the next event[s] will happen:
 void fix_global_next() {
+/* This version calculates global next event[s] *once* when the next
+   event could possibly have changed.
+
+   If a series of tasks are sceduled for the same time they will
+   be called in fast sequence *without* fix_global_next() in between them.
+   After all task with the same time are done fix_global_next() is called.
+
+   If a task sets up another task with the same next it *can* decide to do
+   the fix itself, if it seems appropriate. Normally this is not required.
+*/
+
   // we work directly on the global variables here:
   global_next_ovfl=~0;	// ILLEGAL value
   global_next_count=0;
@@ -216,17 +236,22 @@ void fix_global_next() {
 }
 
 
+// check if it's time to do something and do it:
 void check_maybe_do() {
   now = get_now();	// sets overflow too
 
   if (global_next_ovfl == overflow) {		// current overflow period?
-    if (global_next <= now)			//   yes: is it time?
+    if (global_next <= now) {			//   yes: is it time?
       for (int i=global_next_count; i; )	//     yes:
 	wake_task(global_next_tasks[--i]);	//     wake next tasks up
+      fix_global_next();			// determine next event[s] serie
+    }
   } else					// (earlier or later overflow)
-    if (global_next_ovfl < overflow)		// earlier overflow period?
-      for (int i=global_next_count; i; )	//     yes, we're late
+    if (global_next_ovfl < overflow) {		// earlier overflow period?
+      for (int i=global_next_count; i; )	//     yes, we're late...
 	wake_task(global_next_tasks[--i]);	//     wake next tasks up
+      fix_global_next();			// determine next event[s] serie
+    }
 }
 
 
@@ -296,7 +321,7 @@ int setup_task(void (*task_do)(int), unsigned char new_flags, TIMER_TYPE when, O
   pulse_period[task] = new_pulse_period;
   pulse_ovrfl[task] = new_pulse_ovrfl;
 
-  fix_global_next();
+  // fix_global_next();	// this version does *not* automatically call that here...
 
   return task;
 }
@@ -315,7 +340,8 @@ void set_new_period(int task, TIMER_TYPE new_pulse_period, OVERFLOW_TYPE new_pul
   pulse_ovrfl[task] = new_pulse_oveflow;
   next[task] = last[task] + pulse_period[task];
   next_ovrfl[task] = last_ovrfl[task] + pulse_ovrfl[task];
-  fix_global_next();
+
+  fix_global_next();	// it's saver to do that from here, but could be omitted.
 }
 
 
@@ -447,12 +473,13 @@ void setup() {
   setup_task(&inside_task_info, ACTIVE, now, overflow, 200, 0);
   */
 
-  // nice 1 to 3 (to 4) to 5 second pattern with phase offsets
+  // nice 1 to 3 (to 4) to 5 pattern with phase offsets
   // setup_task(task_do, new_flags|COUNTED, when, when_ovrfl, new_pulse_period, new_pulse_ovrfl);
-  setup_task(&click, ACTIVE, now+100/2, overflow, 100, 0);
-  setup_task(&click, ACTIVE, now+300/2, overflow, 300, 0);
-  //  setup_task(&click, ACTIVE, now+400/2, overflow, 400, 0);
-  setup_task(&click, ACTIVE, now+500/2, overflow, 500, 0);
+  const unsigned int scaling=200;
+  setup_task(&click, ACTIVE, now+(1*scaling)/2, overflow, 1*scaling, 0);
+  setup_task(&click, ACTIVE, now+(3*scaling)/2, overflow, 3*scaling, 0);
+  //  setup_task(&click, ACTIVE, now+(4*scaling)/2, overflow, 4*scaling, 0);
+  setup_task(&click, ACTIVE, now+(5*scaling)/2, overflow, 5*scaling, 0);
 
 
   /*
@@ -474,6 +501,7 @@ void setup() {
   setup_counted_task(&click, ACTIVE|COUNTED, now, 27, scale, 0, 16);
   */
 
+  fix_global_next();	// we *must* call that here
 }
 
 
