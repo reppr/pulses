@@ -12,6 +12,17 @@
    New logic version to determine when to wake up tasks.
    Saving times along with an overflow count makes everything
    simple and flexible.
+
+   This version calculates global next event[s] *once* when the next
+   event could possibly have changed. See fix_global_next().
+
+   If a series of tasks are sceduled for the same time they will
+   be called in fast sequence *without* fix_global_next() in between them.
+   After all task with the same time are done fix_global_next() is called.
+
+   If a task sets up another task with the same next it *can* decide to do
+   the fix itself, if it seems appropriate. Normally this is not required.
+
 */
 /* **************************************************************** */
 
@@ -104,6 +115,10 @@ int task;
 TIMER_TYPE now=0, last_now=~0;
 OVERFLOW_TYPE overflow=0;
 
+TIMER_TYPE global_next;
+OVERFLOW_TYPE global_next_ovfl=~0;
+unsigned int global_next_count=0;
+int global_next_tasks[PERIODICS];
 
 /* **************************************************************** */
 
@@ -163,11 +178,11 @@ void wake_task(int task) {
     else
       init_task(task);								//       no:  DELETE task
 
-  // fix_global_next();			// planed soon...
+  // fix_global_next();		// this version does not call that from here
 }
 
 
-// always get time through here
+// *always* get time through get_now()
 TIMER_TYPE get_now() {		// get time and set overflow
   now = TIMER;
 
@@ -180,16 +195,65 @@ TIMER_TYPE get_now() {		// get time and set overflow
 }
 
 
-void check_maybe_do() {
-  now = get_now();
+// determine when the next event[s] will happen:
+void fix_global_next() {
+/* This version calculates global next event[s] *once* when the next
+   event could possibly have changed.
 
-  for (task=0; task<PERIODICS; task++) {				// check all tasks once
-    if (flags[task] & ACTIVE) {						// task active?
-      if ((now >= next[task]) && (overflow == next_ovrfl[task])) {	//   yes, is it time?
-	wake_task(task);						//     yes, wake task up
+   If a series of tasks are sceduled for the same time they will
+   be called in fast sequence *without* fix_global_next() in between them.
+   After all task with the same time are done fix_global_next() is called.
+
+   If a task sets up another task with the same next it *can* decide to do
+   the fix itself, if it seems appropriate. Normally this is not required.
+*/
+
+  // we work directly on the global variables here:
+  global_next_ovfl=~0;	// ILLEGAL value
+  global_next_count=0;
+
+  for (task=0; task<PERIODICS; task++) {	// check all tasks
+    if (flags[task] & ACTIVE) {			// task active?
+      if (next_ovrfl[task] < global_next_ovfl) {	// yes: earlier overflow?
+	global_next = next[task];			//   yes: reset search
+	global_next_ovfl = next_ovrfl[task];
+	global_next_tasks[0] = task;
+	global_next_count = 1;
+      } else {					// same (or later) overflow:
+	if (next_ovrfl[task] == global_next_ovfl) {	// same overflow?
+	  if (next[task] < global_next) {		//   yes: new next?
+	    global_next = next[task];			//     yes: reset search
+	    global_next_tasks[0] = task;
+	    global_next_count = 1;
+	  } else					// (still *same* overflow)
+	    if (next[task] == global_next)		//    *same* next?
+	      global_next_tasks[global_next_count++]=task; //  yes: save task, count
+	}
+	// (*later* overflows are always later)
       }
+    } // active?
+  } // task loop
+}
+
+
+// check if it's time to do something and do it:
+void check_maybe_do() {
+  now = get_now();	// sets overflow too
+
+  if (global_next_ovfl == overflow) {		// current overflow period?
+    if (global_next <= now) {			//   yes: is it time?
+      for (int i=0; i<global_next_count; i++)	//     yes:
+	wake_task(global_next_tasks[i]);	//     wake next tasks up
+
+      fix_global_next();			// determine next event[s] serie
     }
-  }
+  } else					// (earlier or later overflow)
+    if (global_next_ovfl < overflow) {		// earlier overflow period?
+      for (int i=0; i<global_next_count; i++)	//     yes, we're late...
+	wake_task(global_next_tasks[i]);	//     wake next tasks up
+
+      fix_global_next();			// determine next event[s] serie
+    }
 }
 
 
@@ -259,7 +323,7 @@ int setup_task(void (*task_do)(int), unsigned char new_flags, TIMER_TYPE when, O
   pulse_period[task] = new_pulse_period;
   pulse_ovrfl[task] = new_pulse_ovrfl;
 
-  // fix_global_next();			// planed soon...
+  // fix_global_next();	// this version does *not* automatically call that here...
 
   return task;
 }
@@ -278,7 +342,8 @@ void set_new_period(int task, TIMER_TYPE new_pulse_period, OVERFLOW_TYPE new_pul
   pulse_ovrfl[task] = new_pulse_oveflow;
   next[task] = last[task] + pulse_period[task];
   next_ovrfl[task] = last_ovrfl[task] + pulse_ovrfl[task];
-  // fix_global_next();			// planed soon...
+
+  fix_global_next();	// it's saver to do that from here, but could be omitted.
 }
 
 
@@ -353,7 +418,7 @@ void inside_task_info(int task) {
 
   // no overflow in times yet ################################
   Serial.print("\texpected seconds ");
-  Serial.print((float) now / 1000.0, 4);
+  Serial.print((float) now * (float) TIMER_SLOWDOWN / 1000.0, 3);
   Serial.print("s");
 
   Serial.print("\treal ");
@@ -410,13 +475,13 @@ void setup() {
   setup_task(&inside_task_info, ACTIVE, now, overflow, 200, 0);
   */
 
-  // nice 1 to 3 (to 4) to 5 second pattern with phase offsets
+  // nice 1 to 3 to 4 (to 5) pattern with phase offsets
   // setup_task(task_do, new_flags|COUNTED, when, when_ovrfl, new_pulse_period, new_pulse_ovrfl);
-  setup_task(&click, ACTIVE, now+100/2, overflow, 100, 0);
-  setup_task(&click, ACTIVE, now+300/2, overflow, 300, 0);
-  //  setup_task(&click, ACTIVE, now+400/2, overflow, 400, 0);
-  setup_task(&click, ACTIVE, now+500/2, overflow, 500, 0);
-
+  const unsigned int scaling=50;
+  setup_task(&click, ACTIVE, now+(1*scaling)/2, overflow, 1*scaling, 0);
+  setup_task(&click, ACTIVE, now+(3*scaling)/2, overflow, 3*scaling, 0);
+  setup_task(&click, ACTIVE, now+(4*scaling)/2, overflow, 4*scaling, 0);
+  // setup_task(&click, ACTIVE, now+(5*scaling)/2, overflow, 5*scaling, 0);
 
   /*
   // testing periods longer then overflow:
@@ -424,6 +489,32 @@ void setup() {
   setup_task(&inside_task_info, ACTIVE, now, overflow, 1, 2);
   */
 
+  /*
+  // 3 to 5 click_n_info pattern with phase offset:
+  int scale=50;
+  setup_task(&click, ACTIVE, now+3*scale/2, overflow, 3*scale, 0);
+  setup_task(&click, ACTIVE, now+5*scale/2, overflow, 5*scale, 0);
+  // testing COUNTED tasks:
+  setup_counted_task(&click, ACTIVE|COUNTED, now, 13, scale/8, 0, 16);
+  setup_counted_task(&click, ACTIVE|COUNTED, now, 17, scale/32, 0, 32);
+  setup_counted_task(&click, ACTIVE|COUNTED, now, 21, scale/4, 0, 64);
+  setup_counted_task(&click, ACTIVE|COUNTED, now, 23, scale/2, 0, 64);
+  setup_counted_task(&click, ACTIVE|COUNTED, now, 27, scale, 0, 16);
+  */
+
+  /*
+  // testing global next series:
+  // change TIMER_SLOWDOWN for this test:
+  // #define TIMER_SLOWDOWN	100L	// gives ten per second
+  // setup_task(task_do, new_flags|COUNTED, when, when_ovrfl, new_pulse_period, new_pulse_ovrfl);
+  const unsigned int scaling=10;
+  setup_task(&inside_task_info, ACTIVE, now, overflow, 1*scaling, 0);
+  setup_task(&inside_task_info, ACTIVE, now, overflow, 2*scaling, 0);
+  setup_task(&inside_task_info, ACTIVE, now, overflow, 4*scaling, 0);
+  */
+
+
+  fix_global_next();	// we *must* call that here
 }
 
 
