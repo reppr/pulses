@@ -242,14 +242,16 @@ void check_maybe_do() {
 
   if (global_next_ovfl == overflow) {		// current overflow period?
     if (global_next <= now) {			//   yes: is it time?
-      for (int i=global_next_count; i; )	//     yes:
-	wake_task(global_next_tasks[--i]);	//     wake next tasks up
+      for (int i=0; i<global_next_count; i++)	//     yes:
+	wake_task(global_next_tasks[i]);	//     wake next tasks up
+
       fix_global_next();			// determine next event[s] serie
     }
   } else					// (earlier or later overflow)
     if (global_next_ovfl < overflow) {		// earlier overflow period?
-      for (int i=global_next_count; i; )	//     yes, we're late...
-	wake_task(global_next_tasks[--i]);	//     wake next tasks up
+      for (int i=0; i<global_next_count; i++)	//     yes, we're late...
+	wake_task(global_next_tasks[i]);	//     wake next tasks up
+
       fix_global_next();			// determine next event[s] serie
     }
 }
@@ -416,7 +418,7 @@ void inside_task_info(int task) {
 
   // no overflow in times yet ################################
   Serial.print("\texpected seconds ");
-  Serial.print((float) now / 1000.0, 4);
+  Serial.print((float) now * (float) TIMER_SLOWDOWN / 1000.0, 3);
   Serial.print("s");
 
   Serial.print("\treal ");
@@ -473,14 +475,13 @@ void setup() {
   setup_task(&inside_task_info, ACTIVE, now, overflow, 200, 0);
   */
 
-  // nice 1 to 3 (to 4) to 5 pattern with phase offsets
+  // nice 1 to 3 to 4 (to 5) pattern with phase offsets
   // setup_task(task_do, new_flags|COUNTED, when, when_ovrfl, new_pulse_period, new_pulse_ovrfl);
-  const unsigned int scaling=200;
+  const unsigned int scaling=50;
   setup_task(&click, ACTIVE, now+(1*scaling)/2, overflow, 1*scaling, 0);
   setup_task(&click, ACTIVE, now+(3*scaling)/2, overflow, 3*scaling, 0);
-  //  setup_task(&click, ACTIVE, now+(4*scaling)/2, overflow, 4*scaling, 0);
-  setup_task(&click, ACTIVE, now+(5*scaling)/2, overflow, 5*scaling, 0);
-
+  setup_task(&click, ACTIVE, now+(4*scaling)/2, overflow, 4*scaling, 0);
+  // setup_task(&click, ACTIVE, now+(5*scaling)/2, overflow, 5*scaling, 0);
 
   /*
   // testing periods longer then overflow:
@@ -499,6 +500,17 @@ void setup() {
   setup_counted_task(&click, ACTIVE|COUNTED, now, 21, scale/4, 0, 64);
   setup_counted_task(&click, ACTIVE|COUNTED, now, 23, scale/2, 0, 64);
   setup_counted_task(&click, ACTIVE|COUNTED, now, 27, scale, 0, 16);
+  */
+
+  /*
+  // testing global next series:
+  // change TIMER_SLOWDOWN for this test:
+  // #define TIMER_SLOWDOWN	100L	// gives ten per second
+  // setup_task(task_do, new_flags|COUNTED, when, when_ovrfl, new_pulse_period, new_pulse_ovrfl);
+  const unsigned int scaling=10;
+  setup_task(&inside_task_info, ACTIVE, now, overflow, 1*scaling, 0);
+  setup_task(&inside_task_info, ACTIVE, now, overflow, 2*scaling, 0);
+  setup_task(&inside_task_info, ACTIVE, now, overflow, 4*scaling, 0);
   */
 
   fix_global_next();	// we *must* call that here
