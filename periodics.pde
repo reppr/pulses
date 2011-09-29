@@ -437,7 +437,7 @@ const unsigned char tab_[] PROGMEM = "\t";
 void serial_print_progmem(const unsigned char *str) {
   unsigned char c;
   while((c = pgm_read_byte(str++)))
-    Serial.print(c, BYTE);
+    Serial.write(c);
 }
 
 
