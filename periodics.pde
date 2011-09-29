@@ -48,7 +48,12 @@
 
 #define TIMER_SLOWDOWN	10L	// gives a hundred per second
 
-#define TIMER		(TIMER_TYPE) ((unsigned long) millis() / TIMER_SLOWDOWN)
+#ifndef TIMER_SLOWDOWN
+  #define TIMER		(TIMER_TYPE) ((unsigned long) millis())
+#else
+  #define TIMER		(TIMER_TYPE) ((unsigned long) millis() / TIMER_SLOWDOWN)
+#endif
+
 #define OVERFLOW_TYPE	unsigned int
 
 // The is-it-time-now-condition:
@@ -418,7 +423,11 @@ void inside_task_info(int task) {
 
   // no overflow in times yet ################################
   Serial.print("\texpected seconds ");
+#ifndef TIMER_SLOWDOWN
+  Serial.print((float) now / 1000.0, 3);
+#else
   Serial.print((float) now * (float) TIMER_SLOWDOWN / 1000.0, 3);
+#endif
   Serial.print("s");
 
   Serial.print("\treal ");
@@ -426,7 +435,11 @@ void inside_task_info(int task) {
   Serial.print("s");
 
   Serial.print("  \tperiod ");
+#ifndef TIMER_SLOWDOWN
+  Serial.print((float) pulse_period[task] / 1000.0, 4);
+#else
   Serial.print((float) pulse_period[task] * (float) TIMER_SLOWDOWN / 1000.0, 4);
+#endif
   Serial.print("s");
 
   Serial.print("\n\n");			// traling empty line
