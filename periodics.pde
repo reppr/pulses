@@ -61,10 +61,13 @@
 #define TIMER_TYPE	unsigned int
 #define OVERFLOW_TYPE	unsigned int
 
-#define TIMER	(TIMER_TYPE) millis()
+// #define TIMER_SLOWDOWN	10L	// gives 100 per second
 
-//	#define TIMER_SLOWDOWN	10L	// gives 100 per second
-//	#define TIMER		(TIMER_TYPE) ((unsigned long) millis() / TIMER_SLOWDOWN)
+#ifndef TIMER_SLOWDOWN
+  #define TIMER		(TIMER_TYPE) ((unsigned long) millis())
+#else
+  #define TIMER		(TIMER_TYPE) ((unsigned long) millis() / TIMER_SLOWDOWN)
+#endif
 
 
 
@@ -475,13 +478,11 @@ void inside_task_info(int task) {
   Serial.print("s");
 
   Serial.print("  \tperiod ");
-
 #ifndef TIMER_SLOWDOWN
   Serial.print((float) pulse_period[task] / 1000.0, 4);
 #else
   Serial.print((float) pulse_period[task] * (float) TIMER_SLOWDOWN / 1000.0, 4);
 #endif
-
   Serial.print("s");
 
   Serial.print("\n\n");			// traling empty line
@@ -1759,10 +1760,10 @@ void setup() {
   setup_task(&inside_task_info, ACTIVE, now, overflow, 1, 2);
   */
 
-
 #ifdef MENU_over_serial
   periodics_info();
 #endif
+
 
   fix_global_next();	// we *must* call that here
 }
