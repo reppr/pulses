@@ -156,7 +156,6 @@ void (*periodic_do[PERIODICS])(int);
 
 
 /* **************************************************************** */
-#define ILLEGAL		-1
 
 // global variables:
 int task;
@@ -174,7 +173,7 @@ int global_next_tasks[PERIODICS];
 void init_task(int task) {
   flags[task] = 0;
   periodic_do[task] = NULL;
-  pulse_count[task] = ILLEGAL;
+  pulse_count[task] = 0;	//  or pulse_count[task] = ILLEGAL; ???
   int1[task] = 0;
   pulse_period[task] = 0;
   last[task] = 0;
@@ -652,7 +651,7 @@ void init_rhythm_2(int sync) {
     click_task[task] =
       setup_task(&click, ACTIVE|DO_NOT_DELETE, now + sync*base*time_unit/divider/2, overflow, (TIMER_TYPE) base*time_unit/divider, 0);
     char_parameter_1[task] = click_pin[task];
-    pinMode(click_pin[task++], OUTPUT);
+    pinMode(click_pin[task], OUTPUT);
     task++;
   }
 
