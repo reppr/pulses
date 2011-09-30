@@ -1774,25 +1774,26 @@ void setup() {
   unsigned int overflow, factor;
 
   interval=1000;	overflow=0;	factor=10;
-  mul_time(interval,overflow,factor);
+  mul_time(&interval,&overflow,factor);
 
   interval=1000;	overflow=10;	factor=10;
-  mul_time(interval,overflow,factor);
+  mul_time(&interval,&overflow,factor);
 
   interval=1000;	overflow=0;	factor=66;
-  mul_time(interval,overflow,factor);
+  mul_time(&interval,&overflow,factor);
 
   interval=1000;	overflow=0;	factor=1000;
-  mul_time(interval,overflow,factor);
-
-  interval=4294967295;	overflow=0;	factor=2;
-  mul_time(interval,overflow,factor);
-
-  interval=4294967295;	overflow=1;	factor=3;
-  mul_time(interval,overflow,factor);
+  mul_time(&interval,&overflow,factor);
 
   interval=1000000;	overflow=0;	factor=1000;
-  mul_time(interval,overflow,factor);
+  mul_time(&interval,&overflow,factor);
+
+  interval=4294967295;	overflow=0;	factor=2;
+  mul_time(&interval,&overflow,factor);
+
+  interval=4294967295;	overflow=1;	factor=3;
+  mul_time(&interval,&overflow,factor);
+
   while (true) ;		// STOPS HERE	################
   // REMOVE up to here			################
 
@@ -1833,21 +1834,22 @@ void loop() {
 
 /* **************************************************************** */
 
-void mul_time(unsigned long interval, unsigned int overflow, unsigned int factor) {
+void mul_time(unsigned long *interval, unsigned int *overflow, unsigned int factor)
+ {
   unsigned long scratch;
   unsigned long result=0;
   unsigned long digit;
   unsigned int carry=0;
-  unsigned int mask = ~0; 
-  const unsigned int shift=16;
+  unsigned long mask = (unsigned long) ((unsigned int) ~0); 
+  unsigned int shift=16;
 
-  Serial.print(interval); Serial.print("\t");
-  Serial.print(overflow); Serial.print("\t* ");
+  Serial.print(*interval); Serial.print("\t");
+  Serial.print(*overflow); Serial.print("\t* ");
   Serial.print(factor); Serial.print("\n");
 
   for (int i=0; i<2; i++) {
-    scratch = interval & mask;
-    interval >>= shift;
+    scratch = *interval & mask;
+    *interval >>= shift;
 
     scratch *= factor;
     scratch += carry;
@@ -1859,9 +1861,11 @@ void mul_time(unsigned long interval, unsigned int overflow, unsigned int factor
     carry = scratch >> shift;
   }
 
-  overflow *= factor;
-  overflow += carry;
+  *overflow *= factor;
+  *overflow += carry;
 
-  Serial.print(result); Serial.print("\t");
-  Serial.print(overflow); Serial.print("\n\n");
+  *interval=result;
+
+  Serial.print(*interval); Serial.print("\t");
+  Serial.print(*overflow); Serial.print("\n\n");
 }
