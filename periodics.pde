@@ -1658,6 +1658,60 @@ void setup_jiffles0() {
 }
 
 
+struct duration {
+  unsigned long length;
+  unsigned int overflow;
+};
+
+
+void mul_time(struct duration *struc_interval, unsigned int factor)
+ {
+  unsigned long scratch;
+  unsigned long result=0;
+  unsigned long digit;
+  unsigned int carry=0;
+  unsigned long mask = (unsigned long) ((unsigned int) ~0); 
+  unsigned int shift=16;
+
+//	  Serial.print(*struc_interval.length); Serial.print("\t");
+//	  Serial.print(*struc_interval.overflow); Serial.print("\t* ");
+  Serial.print((*struc_interval).length); Serial.print("\t");
+  Serial.print((*struc_interval).overflow); Serial.print("\t* ");
+  Serial.print(factor); Serial.print("\n");
+
+  for (int i=0; i<2; i++) {
+//	    scratch = *struc_interval.length & mask;
+//	    *struc_interval.length >>= shift;
+    scratch = (*struc_interval).length & mask;
+    (*struc_interval).length >>= shift;
+
+    scratch *= factor;
+    scratch += carry;
+
+    digit = scratch & mask;
+    digit <<= (i * shift);
+    result |= digit;
+
+    carry = scratch >> shift;
+  }
+
+  (*struc_interval).overflow *= factor;
+  (*struc_interval).overflow += carry;
+
+  (*struc_interval).length=result;
+
+  Serial.print((*struc_interval).length); Serial.print("\t");
+  Serial.print((*struc_interval).overflow); Serial.print("\n\n");
+
+//	  *struc_interval.overflow *= factor;
+//	  *struc_interval.overflow += carry;
+//	
+//	  *struc_interval.length=result;
+//	
+//	  Serial.print(*struc_interval.length); Serial.print("\t");
+//	  Serial.print(*struc_interval.overflow); Serial.print("\n\n");
+}
+
 /* **************************************************************** */
 // setup:
 
@@ -1770,29 +1824,29 @@ void setup() {
   // very first EXPERIMENTING with mul_time()	################
  // void mul_time(unsigned long interval, unsigned int overflow, unsigned int factor
 
-  unsigned long interval;
-  unsigned int overflow, factor;
+  unsigned int factor;
+  struct duration struc_interval;
 
-  interval=1000;	overflow=0;	factor=10;
-  mul_time(&interval,&overflow,factor);
+  struc_interval.length=1000;	struc_interval.overflow=0;	factor=10;
+  mul_time(&struc_interval,factor);
 
-  interval=1000;	overflow=10;	factor=10;
-  mul_time(&interval,&overflow,factor);
+  struc_interval.length=1000;	struc_interval.overflow=10;	factor=10;
+  mul_time(&struc_interval,factor);
 
-  interval=1000;	overflow=0;	factor=66;
-  mul_time(&interval,&overflow,factor);
+  struc_interval.length=1000;	struc_interval.overflow=0;	factor=66;
+  mul_time(&struc_interval,factor);
 
-  interval=1000;	overflow=0;	factor=1000;
-  mul_time(&interval,&overflow,factor);
+  struc_interval.length=1000;	struc_interval.overflow=0;	factor=1000;
+  mul_time(&struc_interval,factor);
 
-  interval=1000000;	overflow=0;	factor=1000;
-  mul_time(&interval,&overflow,factor);
+  struc_interval.length=1000000;	struc_interval.overflow=0;	factor=1000;
+  mul_time(&struc_interval,factor);
 
-  interval=4294967295;	overflow=0;	factor=2;
-  mul_time(&interval,&overflow,factor);
+  struc_interval.length=4294967295;	struc_interval.overflow=0;	factor=2;
+  mul_time(&struc_interval,factor);
 
-  interval=4294967295;	overflow=1;	factor=3;
-  mul_time(&interval,&overflow,factor);
+  struc_interval.length=4294967295;	struc_interval.overflow=1;	factor=3;
+  mul_time(&struc_interval,factor);
 
   while (true) ;		// STOPS HERE	################
   // REMOVE up to here			################
@@ -1833,39 +1887,3 @@ void loop() {
 }
 
 /* **************************************************************** */
-
-void mul_time(unsigned long *interval, unsigned int *overflow, unsigned int factor)
- {
-  unsigned long scratch;
-  unsigned long result=0;
-  unsigned long digit;
-  unsigned int carry=0;
-  unsigned long mask = (unsigned long) ((unsigned int) ~0); 
-  unsigned int shift=16;
-
-  Serial.print(*interval); Serial.print("\t");
-  Serial.print(*overflow); Serial.print("\t* ");
-  Serial.print(factor); Serial.print("\n");
-
-  for (int i=0; i<2; i++) {
-    scratch = *interval & mask;
-    *interval >>= shift;
-
-    scratch *= factor;
-    scratch += carry;
-
-    digit = scratch & mask;
-    digit <<= (i * shift);
-    result |= digit;
-
-    carry = scratch >> shift;
-  }
-
-  *overflow *= factor;
-  *overflow += carry;
-
-  *interval=result;
-
-  Serial.print(*interval); Serial.print("\t");
-  Serial.print(*overflow); Serial.print("\n\n");
-}
