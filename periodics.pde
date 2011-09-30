@@ -1657,14 +1657,16 @@ void setup_jiffles0() {
   setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*2*3*2*5/2*time_unit, overflow, scale*2*3*2*5*time_unit, 0);
 }
 
+/* **************************************************************** */
+// struct time, mul_time():
 
-struct duration {
-  unsigned long length;
+
+struct time {
+  unsigned long time;
   unsigned int overflow;
 };
 
-
-void mul_time(struct duration *struc_interval, unsigned int factor)
+void mul_time(struct time *duration, unsigned int factor)
  {
   unsigned long scratch;
   unsigned long result=0;
@@ -1673,17 +1675,13 @@ void mul_time(struct duration *struc_interval, unsigned int factor)
   unsigned long mask = (unsigned long) ((unsigned int) ~0); 
   unsigned int shift=16;
 
-//	  Serial.print(*struc_interval.length); Serial.print("\t");
-//	  Serial.print(*struc_interval.overflow); Serial.print("\t* ");
-  Serial.print((*struc_interval).length); Serial.print("\t");
-  Serial.print((*struc_interval).overflow); Serial.print("\t* ");
+  Serial.print((*duration).time); Serial.print("\t");
+  Serial.print((*duration).overflow); Serial.print("\t* ");
   Serial.print(factor); Serial.print("\n");
 
   for (int i=0; i<2; i++) {
-//	    scratch = *struc_interval.length & mask;
-//	    *struc_interval.length >>= shift;
-    scratch = (*struc_interval).length & mask;
-    (*struc_interval).length >>= shift;
+    scratch = (*duration).time & mask;
+    (*duration).time >>= shift;
 
     scratch *= factor;
     scratch += carry;
@@ -1695,21 +1693,14 @@ void mul_time(struct duration *struc_interval, unsigned int factor)
     carry = scratch >> shift;
   }
 
-  (*struc_interval).overflow *= factor;
-  (*struc_interval).overflow += carry;
+  (*duration).overflow *= factor;
+  (*duration).overflow += carry;
 
-  (*struc_interval).length=result;
+  (*duration).time=result;
 
-  Serial.print((*struc_interval).length); Serial.print("\t");
-  Serial.print((*struc_interval).overflow); Serial.print("\n\n");
+  Serial.print((*duration).time); Serial.print("\t");
+  Serial.print((*duration).overflow); Serial.print("\n\n");
 
-//	  *struc_interval.overflow *= factor;
-//	  *struc_interval.overflow += carry;
-//	
-//	  *struc_interval.length=result;
-//	
-//	  Serial.print(*struc_interval.length); Serial.print("\t");
-//	  Serial.print(*struc_interval.overflow); Serial.print("\n\n");
 }
 
 /* **************************************************************** */
@@ -1825,28 +1816,28 @@ void setup() {
  // void mul_time(unsigned long interval, unsigned int overflow, unsigned int factor
 
   unsigned int factor;
-  struct duration struc_interval;
+  struct time duration;
 
-  struc_interval.length=1000;	struc_interval.overflow=0;	factor=10;
-  mul_time(&struc_interval,factor);
+  duration.time=1000;	duration.overflow=0;	factor=10;
+  mul_time(&duration,factor);
 
-  struc_interval.length=1000;	struc_interval.overflow=10;	factor=10;
-  mul_time(&struc_interval,factor);
+  duration.time=1000;	duration.overflow=10;	factor=10;
+  mul_time(&duration,factor);
 
-  struc_interval.length=1000;	struc_interval.overflow=0;	factor=66;
-  mul_time(&struc_interval,factor);
+  duration.time=1000;	duration.overflow=0;	factor=66;
+  mul_time(&duration,factor);
 
-  struc_interval.length=1000;	struc_interval.overflow=0;	factor=1000;
-  mul_time(&struc_interval,factor);
+  duration.time=1000;	duration.overflow=0;	factor=1000;
+  mul_time(&duration,factor);
 
-  struc_interval.length=1000000;	struc_interval.overflow=0;	factor=1000;
-  mul_time(&struc_interval,factor);
+  duration.time=1000000;	duration.overflow=0;	factor=1000;
+  mul_time(&duration,factor);
 
-  struc_interval.length=4294967295;	struc_interval.overflow=0;	factor=2;
-  mul_time(&struc_interval,factor);
+  duration.time=~0;	duration.overflow=0;	factor=2;
+  mul_time(&duration,factor);
 
-  struc_interval.length=4294967295;	struc_interval.overflow=1;	factor=3;
-  mul_time(&struc_interval,factor);
+  duration.time=~0;	duration.overflow=1;	factor=3;
+  mul_time(&duration,factor);
 
   while (true) ;		// STOPS HERE	################
   // REMOVE up to here			################
