@@ -1703,6 +1703,39 @@ void mul_time(struct time *duration, unsigned int factor)
 
 }
 
+void div_time(struct time *duration, unsigned int divisor) {
+  unsigned long scratch;
+  unsigned long result=0;
+  unsigned long digit;
+  unsigned int carry=0;
+  unsigned long mask = (unsigned long) ((unsigned int) ~0); 
+  unsigned int shift=16;
+
+  Serial.print((*duration).time); Serial.print("\t");
+  Serial.print((*duration).overflow); Serial.print("\t/ ");
+  Serial.print(divisor); Serial.print("\n");
+
+  scratch=(*duration).overflow;
+  carry=(*duration).overflow % divisor;
+  (*duration).overflow /= divisor;
+
+  for (int i=0; i<2; i++) {
+    scratch = carry;						// high digit
+    scratch <<= shift;						// high digit
+    scratch |= ((*duration).time >> ((1-i)*shift)) & mask;	// low digit
+
+    carry = scratch % divisor;
+    scratch /= divisor;
+    result <<=shift;
+    result |= (scratch & mask);
+  }
+
+  (*duration).time=result;
+
+  Serial.print((*duration).time); Serial.print("\t");
+  Serial.print((*duration).overflow); Serial.print("\n\n");
+}
+
 /* **************************************************************** */
 // setup:
 
@@ -1820,24 +1853,59 @@ void setup() {
 
   duration.time=1000;	duration.overflow=0;	factor=10;
   mul_time(&duration,factor);
+  div_time(&duration,factor);
+  Serial.println();
 
   duration.time=1000;	duration.overflow=10;	factor=10;
   mul_time(&duration,factor);
+  div_time(&duration,factor);
+  Serial.println();
 
   duration.time=1000;	duration.overflow=0;	factor=66;
   mul_time(&duration,factor);
+  div_time(&duration,factor);
+  Serial.println();
 
   duration.time=1000;	duration.overflow=0;	factor=1000;
   mul_time(&duration,factor);
+  div_time(&duration,factor);
+  Serial.println();
 
   duration.time=1000000;	duration.overflow=0;	factor=1000;
   mul_time(&duration,factor);
+  div_time(&duration,factor);
+  Serial.println();
 
   duration.time=~0;	duration.overflow=0;	factor=2;
   mul_time(&duration,factor);
+  div_time(&duration,factor);
+  Serial.println();
 
   duration.time=~0;	duration.overflow=1;	factor=3;
   mul_time(&duration,factor);
+  div_time(&duration,factor);
+  Serial.println();
+
+  duration.time=1000000;	duration.overflow=0;	factor=1000;
+  div_time(&duration,factor);
+  mul_time(&duration,factor);
+  Serial.println();
+
+  duration.time=0;	duration.overflow=1;	factor=2;
+  div_time(&duration,factor);
+  mul_time(&duration,factor);
+  Serial.println();
+
+  duration.time=~0;	duration.overflow=0;	factor=2;
+  div_time(&duration,factor);
+  mul_time(&duration,factor);
+  Serial.println();
+
+
+  duration.time=~0;	duration.overflow=0;	factor=2;
+  mul_time(&duration,factor);
+  div_time(&duration,factor);
+  Serial.println();
 
   while (true) ;		// STOPS HERE	################
   // REMOVE up to here			################
