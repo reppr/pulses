@@ -6,12 +6,14 @@
 /* **************************************************************** */
 /*
    Periodically do multiple independent tasks.
-   This is a very early experimental test version
+   This is a early experimental test version
    used to test timer overflow strategies.
 
    New logic version to determine when to wake up tasks.
    Saving times along with an overflow count makes everything
    simple and flexible.
+
+   struct time stores time and overflow.
 
    This version calculates global next event[s] *once* when the next
    event could possibly have changed. See fix_global_next().
@@ -22,9 +24,6 @@
 
    If a task sets up another task with the same next it *can* decide to do
    the fix itself, if it seems appropriate. Normally this is not required.
-
-*/
-/* **************************************************************** */
 
 
 
@@ -45,7 +44,19 @@
 /* **************************************************************** */
 // for testing timer overflow:
 #define TIMER_TYPE	unsigned char
+#define OVERFLOW_TYPE	unsigned int
 
+// we need that very basic 'struct time' first:
+/* **************************************************************** */
+// struct time
+
+struct time {
+  TIMER_TYPE time;
+  OVERFLOW_TYPE overflow;
+};
+
+/* **************************************************************** */
+// for testing timer overflow, continued:
 #define TIMER_SLOWDOWN	10L	// gives a hundred per second
 
 #ifndef TIMER_SLOWDOWN
@@ -54,16 +65,15 @@
   #define TIMER		(TIMER_TYPE) ((unsigned long) millis() / TIMER_SLOWDOWN)
 #endif
 
-#define OVERFLOW_TYPE	unsigned int
 
-// The is-it-time-now-condition:
-#define TIME_READY_CONDITION		((now >= next[task]) && (overflow == next_ovrfl[task]))
+#define TIME_READY_CONDITION	((now.time >= next[task].time) && (now.overflow == next_ovrfl[task]))
+
 
 
 /* **************************************************************** */
 // variables for tasks in arrays[task]:
 
-// ================>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<================
+// ============>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<============
 
 unsigned char flags[PERIODICS];
 // flag masks:
@@ -76,14 +86,10 @@ unsigned char flags[PERIODICS];
 
 
 unsigned int pulse_count[PERIODICS];	// counts how many times the task woke up
-TIMER_TYPE  pulse_period[PERIODICS];	// timer steps
-OVERFLOW_TYPE pulse_ovrfl[PERIODICS];	// overflow of pulse_period (for very long periods)
+struct time pulse[PERIODICS];		// timer steps
+struct time last[PERIODICS];		// convenient, but not really needed
+struct time next[PERIODICS];		// next wake up time 
 
-TIMER_TYPE last[PERIODICS];		// convenient, but not really needed
-OVERFLOW_TYPE last_ovrfl[PERIODICS];	// same
-
-TIMER_TYPE next[PERIODICS];		// next wake up time
-OVERFLOW_TYPE next_ovrfl[PERIODICS];	// overflow of next wake up
 
 // internal parameter:
 unsigned int int1[PERIODICS];		// if COUNTED, gives number of executions
@@ -92,7 +98,7 @@ unsigned int int1[PERIODICS];		// if COUNTED, gives number of executions
 // custom parameters[task]		//  comment/uncomment as appropriate:
 					//  then *DO ADAPT init_task()* 
 
-// ================>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<================
+// ============>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<============
 int parameter_1[PERIODICS];			//  can be used by periodic_do()
 int parameter_2[PERIODICS];			//  can be used by periodic_do()
 // int parameter_3[PERIODICS];			//  can be used by periodic_do()
@@ -108,36 +114,55 @@ char char_parameter_2[PERIODICS];		//  can be used by periodic_do()
 
 // pointers on  void something(int task)  functions:
 void (*periodic_do[PERIODICS])(int);
-// ================>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<================
+// ============>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<============
 
 
 
 /* **************************************************************** */
 #define ILLEGAL		-1
 
-// global variables:
+// global variables, task and time.
 int task;
-TIMER_TYPE now=0, last_now=~0;
-OVERFLOW_TYPE overflow=0;
 
-TIMER_TYPE global_next;
-OVERFLOW_TYPE global_next_ovfl=~0;
+struct time now;
+struct time last_now;
+
+struct time global_next;
 unsigned int global_next_count=0;
 int global_next_tasks[PERIODICS];
 
-/* **************************************************************** */
 
+/* **************************************************************** */
+// init time:
+
+void init_time()
+{
+  now.time=0;
+  now.overflow=0;
+
+  last_now.time=~0;
+  last_now.overflow=0;
+
+  global_next.time=0;
+  global_next.overflow=~0;
+
+  get_now();
+  now.overflow = 0;		// start with now.overflow = 0
+}
+
+
+/* **************************************************************** */
 // init, reset or kill a task: 
 void init_task(int task) {
   flags[task] = 0;
   periodic_do[task] = NULL;
   pulse_count[task] = ILLEGAL;
   int1[task] = 0;
-  pulse_period[task] = 0;
-  last[task] = 0;
-  last_ovrfl[task] = 0;
-  next[task] = 0;
-  next_ovrfl[task] = 0;
+  pulse[task].time = 0;
+  last[task].time = 0;
+  last[task].overflow = 0;
+  next[task].time = 0;
+  next[task].overflow = 0;
   parameter_1[task] = 0;
   parameter_2[task] = 0;
   // parameter_3[task] = 0;
@@ -162,41 +187,41 @@ void init_tasks() {
 
 
 void wake_task(int task) {
-  pulse_count[task]++;					//      count
+  pulse_count[task]++;				//      count
 
-  if (periodic_do[task] != NULL) {				// there *is* something to do?
-    (*periodic_do[task])(task);					//      do it
-  } // we *did* do something
+  if (periodic_do[task] != NULL) {		// there *is* something to do?
+    (*periodic_do[task])(task);			//   yes: do it
+  }
  
   // prepare future:
-  last[task] = next[task];						// when it *should* have happened
-  last_ovrfl[task] = next_ovrfl[task];
-  next[task] += pulse_period[task];					// when it should happen again
-  next_ovrfl[task] += pulse_ovrfl[task];
+  last[task].time = next[task].time;		// when it *should* have happened
+  last[task].overflow = next[task].overflow;
+  next[task].time += pulse[task].time;		// when it should happen again
+  next[task].overflow += pulse[task].overflow;
 
-  if (last[task] > next[task])
-    next_ovrfl[task]++;
+  if (last[task].time > next[task].time)
+    next[task].overflow++;
 
-  if ((flags[task] & COUNTED) && ((pulse_count[task] +1) == int1[task] ))	// COUNTED task && end reached?
-    if (flags[task] & DO_NOT_DELETE)						//  yes: DO_NOT_DELETE?
-      flags[task] &= ~ACTIVE;							//       yes: just deactivate
+  //						// COUNTED task && end reached?
+  if ((flags[task] & COUNTED) && ((pulse_count[task] +1) == int1[task] ))
+    if (flags[task] & DO_NOT_DELETE)		//   yes: DO_NOT_DELETE?
+      flags[task] &= ~ACTIVE;			//     yes: just deactivate
     else
-      init_task(task);								//       no:  DELETE task
+      init_task(task);				//     no:  DELETE task
 
   // fix_global_next();		// this version does not call that from here
 }
 
 
 // *always* get time through get_now()
-TIMER_TYPE get_now() {		// get time and set overflow
-  now = TIMER;
+void get_now() {			// get time, set now.time and now.overflow
+  now.time = TIMER;
 
-  if (now < last_now)		// manage overflows
-    overflow++;
+  if (now.time < last_now.time)		// manage now.overflows
+    now.overflow++;
 
-  last_now = now;
-
-  return now;
+  last_now.time = now.time;		// manage last_now
+  last_now.overflow = now.overflow;	// unused, but who knows?
 }
 
 
@@ -214,24 +239,24 @@ void fix_global_next() {
 */
 
   // we work directly on the global variables here:
-  global_next_ovfl=~0;	// ILLEGAL value
+  global_next.overflow=~0;	// ILLEGAL value
   global_next_count=0;
 
-  for (task=0; task<PERIODICS; task++) {	// check all tasks
-    if (flags[task] & ACTIVE) {			// task active?
-      if (next_ovrfl[task] < global_next_ovfl) {	// yes: earlier overflow?
-	global_next = next[task];			//   yes: reset search
-	global_next_ovfl = next_ovrfl[task];
+  for (task=0; task<PERIODICS; task++) {		// check all tasks
+    if (flags[task] & ACTIVE) {				// task active?
+      if (next[task].overflow < global_next.overflow) {	// yes: earlier overflow?
+	global_next.time = next[task].time;		//   yes: reset search
+	global_next.overflow = next[task].overflow;
 	global_next_tasks[0] = task;
 	global_next_count = 1;
       } else {					// same (or later) overflow:
-	if (next_ovrfl[task] == global_next_ovfl) {	// same overflow?
-	  if (next[task] < global_next) {		//   yes: new next?
-	    global_next = next[task];			//     yes: reset search
+	if (next[task].overflow == global_next.overflow) {	// same overflow?
+	  if (next[task].time < global_next.time) {		//   yes: new next?
+	    global_next.time = next[task].time;		//     yes: reset search
 	    global_next_tasks[0] = task;
 	    global_next_count = 1;
 	  } else					// (still *same* overflow)
-	    if (next[task] == global_next)		//    *same* next?
+	    if (next[task].time == global_next.time)		//    *same* next?
 	      global_next_tasks[global_next_count++]=task; //  yes: save task, count
 	}
 	// (*later* overflows are always later)
@@ -243,17 +268,17 @@ void fix_global_next() {
 
 // check if it's time to do something and do it:
 void check_maybe_do() {
-  now = get_now();	// sets overflow too
+  get_now();	// updates now
 
-  if (global_next_ovfl == overflow) {		// current overflow period?
-    if (global_next <= now) {			//   yes: is it time?
+  if (global_next.overflow == now.overflow) {	// current overflow period?
+    if (global_next.time <= now.time) {		//   yes: is it time?
       for (int i=0; i<global_next_count; i++)	//     yes:
 	wake_task(global_next_tasks[i]);	//     wake next tasks up
 
       fix_global_next();			// determine next event[s] serie
     }
   } else					// (earlier or later overflow)
-    if (global_next_ovfl < overflow) {		// earlier overflow period?
+    if (global_next.overflow < now.overflow) {	// earlier overflow period?
       for (int i=0; i<global_next_count; i++)	//     yes, we're late...
 	wake_task(global_next_tasks[i]);	//     wake next tasks up
 
@@ -262,52 +287,7 @@ void check_maybe_do() {
 }
 
 
-// Add a time interval to a given start time:
-// 	Returns and sets other_time,
-//      *and* sets other_ovrfl
-TIMER_TYPE other_time;			// might be convenient sometimes. Not really needed.
-OVERFLOW_TYPE other_ovrfl;		// both variables set by other_time(...)
-TIMER_TYPE set_other_time(TIMER_TYPE this_time, OVERFLOW_TYPE this_overflow, TIMER_TYPE interval , OVERFLOW_TYPE interval_ovrfl) {
-  TIMER_TYPE start_time=this_time;
-
-  other_time = this_time + interval;
-
-  other_ovrfl = interval_ovrfl;
-  if (other_time < start_time)
-    other_ovrfl++;
-
-  return other_time;
-}
-
-
-//	// Multiply a given time interval by a (small) positive integer factor.
-//	// 	Returns and sets multiple, sets multiple_ovrfl
-//	// 	These global variables are shared with divided_interval(...)
-//	TIMER_TYPE multiple;
-//	OVERFLOW_TYPE multiple_ovrfl;
-//	TIMER_TYPE multiple_interval(TIMER_TYPE interval, OVERFLOW_TYPE interval_ovrfl, unsigned int factor) {
-//	  TIMER_TYPE scratch;
-//	
-//	  multiple=0;
-//	  multiple_ovrfl = interval_ovrfl * factor;
-//	
-//	  for (; factor>0; factor--) {
-//	    scratch = multiple;
-//	    multiple += interval;
-//	    if (multiple < scratch)
-//	      multiple_ovrfl++;
-//	  }
-//	
-//	    return multiple;
-//	}
-//	
-//	
-//	// not implemented yet:
-//	TIMER_TYPE divided_interval(TIMER_TYPE interval, OVERFLOW_TYPE interval_ovrfl, unsigned int divisor);
-
-
-
-int setup_task(void (*task_do)(int), unsigned char new_flags, TIMER_TYPE when, OVERFLOW_TYPE when_ovrfl, TIMER_TYPE new_pulse_period, OVERFLOW_TYPE new_pulse_ovrfl) {
+int setup_task(void (*task_do)(int), unsigned char new_flags, struct time when, struct time new_pulse) {
   int task;
 
   if (new_flags == 0)				// illegal new_flags parameter
@@ -323,10 +303,10 @@ int setup_task(void (*task_do)(int), unsigned char new_flags, TIMER_TYPE when, O
   // initiaize new task				// yes, found a free task
   flags[task] = new_flags;			// initialize task
   periodic_do[task] = task_do;			// payload
-  next[task] = when;				// next wake up time
-  next_ovrfl[task] = when_ovrfl;
-  pulse_period[task] = new_pulse_period;
-  pulse_ovrfl[task] = new_pulse_ovrfl;
+  next[task].time = when.time;			// next wake up time
+  next[task].overflow = when.overflow;
+  pulse[task].time = new_pulse.time;
+  pulse[task].overflow = new_pulse.overflow;
 
   // fix_global_next();	// this version does *not* automatically call that here...
 
@@ -334,19 +314,19 @@ int setup_task(void (*task_do)(int), unsigned char new_flags, TIMER_TYPE when, O
 }
 
 
-int setup_counted_task(void (*task_do)(int), unsigned char new_flags, TIMER_TYPE when, OVERFLOW_TYPE when_ovrfl, TIMER_TYPE new_pulse_period, OVERFLOW_TYPE new_pulse_ovrfl, unsigned int count) {
+int setup_counted_task(void (*task_do)(int), unsigned char new_flags, struct time when, struct time new_pulse, unsigned int count) {
   int task;
 
-  task= setup_task(task_do, new_flags|COUNTED, when, when_ovrfl, new_pulse_period, new_pulse_ovrfl);
+  task= setup_task(task_do, new_flags|COUNTED, when, new_pulse);
   int1[task]= count;
 }
 
 
 void set_new_period(int task, TIMER_TYPE new_pulse_period, OVERFLOW_TYPE new_pulse_oveflow) {
-  pulse_period[task] = new_pulse_period;
-  pulse_ovrfl[task] = new_pulse_oveflow;
-  next[task] = last[task] + pulse_period[task];
-  next_ovrfl[task] = last_ovrfl[task] + pulse_ovrfl[task];
+  pulse[task].time = new_pulse_period;
+  pulse[task].overflow = new_pulse_oveflow;
+  next[task].time = last[task].time + pulse[task].time;
+  next[task].overflow = last[task].overflow + pulse[task].overflow;
 
   fix_global_next();	// it's saver to do that from here, but could be omitted.
 }
@@ -396,24 +376,24 @@ void inside_task_info(int task) {
   Serial.print("\ttime/ovfl ");
   Serial.print((int) TIMER);
   Serial.print("/");
-  Serial.print((int) overflow);
+  Serial.print(now.overflow);
 
   Serial.print("    \tnext/ovfl ");
-  Serial.print((int) next[task]);
+  Serial.print(next[task].time);
   Serial.print("/");
-  Serial.print((OVERFLOW_TYPE) next_ovrfl[task]);
+  Serial.print((OVERFLOW_TYPE) next[task].overflow);
 
   Serial.print("   \tperiod/ovfl ");
-  Serial.print((unsigned int) pulse_period[task]);
+  Serial.print((unsigned int) pulse[task].time);
   Serial.print("/");
-  Serial.print((OVERFLOW_TYPE) pulse_ovrfl[task]);
+  Serial.print((OVERFLOW_TYPE) pulse[task].overflow);
 
   Serial.print("\n\t\t");		// start next line
 
   Serial.print("\tlast/ovfl ");
-  Serial.print((unsigned int) last[task]);
+  Serial.print((unsigned int) last[task].time);
   Serial.print("/");
-  Serial.print((OVERFLOW_TYPE) last_ovrfl[task]);
+  Serial.print((OVERFLOW_TYPE) last[task].overflow);
 
   Serial.print("   \tflags ");
   serial_print_BIN(flags[task], 8);
@@ -424,9 +404,9 @@ void inside_task_info(int task) {
   // no overflow in times yet ################################
   Serial.print("\texpected seconds ");
 #ifndef TIMER_SLOWDOWN
-  Serial.print((float) now / 1000.0, 3);
+  Serial.print((float) now.time / 1000.0, 3);
 #else
-  Serial.print((float) now * (float) TIMER_SLOWDOWN / 1000.0, 3);
+  Serial.print((float) now.time * (float) TIMER_SLOWDOWN / 1000.0, 3);
 #endif
   Serial.print("s");
 
@@ -436,9 +416,9 @@ void inside_task_info(int task) {
 
   Serial.print("  \tperiod ");
 #ifndef TIMER_SLOWDOWN
-  Serial.print((float) pulse_period[task] / 1000.0, 4);
+  Serial.print((float) pulse[task].time / 1000.0, 4);
 #else
-  Serial.print((float) pulse_period[task] * (float) TIMER_SLOWDOWN / 1000.0, 4);
+  Serial.print((float) pulse[task].time * (float) TIMER_SLOWDOWN / 1000.0, 4);
 #endif
   Serial.print("s");
 
@@ -472,58 +452,64 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
 #endif
 
-  init_tasks();
-
   Serial.println("\nPERIODICS\n");
 
-  now = get_now();
-  overflow = 0;		// start with overflow = 0
+  init_time();
+  init_tasks();
 
-  // setup_task(task_do, new_flags|COUNTED, when, when_ovrfl, new_pulse_period, new_pulse_ovrfl);
+
+  struct time when;
+  struct time new_pulse;
+
+  // setup_task(task_do, new_flags|COUNTED, when, new_pulse);
 
   /*
   // 1 to 2 second pattern straight (for easy to read inside_task_info() output)
-  // setup_task(task_do, new_flags|COUNTED, when, when_ovrfl, new_pulse_period, new_pulse_ovrfl);
-  setup_task(&inside_task_info, ACTIVE, now, overflow, 100, 0);
-  setup_task(&inside_task_info, ACTIVE, now, overflow, 200, 0);
+  // setup_task(task_do, new_flags|COUNTED, when, new_pulse);
+  when=now;
+  new_pulse.overflow=0;
+  new_pulse.time=100;
+  setup_task(&inside_task_info, ACTIVE, when, new_pulse);
+  new_pulse.time=200;
+  setup_task(&inside_task_info, ACTIVE, when, new_pulse);
   */
 
-  // nice 1 to 3 to 4 (to 5) pattern with phase offsets
-  // setup_task(task_do, new_flags|COUNTED, when, when_ovrfl, new_pulse_period, new_pulse_ovrfl);
+  // nice 1 to 3 to 4 to 5 pattern with phase offsets
+  // setup_task(task_do, new_flags|COUNTED, when, new_pulse);
   const unsigned int scaling=50;
-  setup_task(&click, ACTIVE, now+(1*scaling)/2, overflow, 1*scaling, 0);
-  setup_task(&click, ACTIVE, now+(3*scaling)/2, overflow, 3*scaling, 0);
-  setup_task(&click, ACTIVE, now+(4*scaling)/2, overflow, 4*scaling, 0);
-  // setup_task(&click, ACTIVE, now+(5*scaling)/2, overflow, 5*scaling, 0);
+
+  when.time=now.time+(1*scaling)/2;
+  when.overflow=now.overflow;
+  new_pulse.time=1*scaling;
+  new_pulse.overflow=0;
+  setup_task(&click, ACTIVE, when, new_pulse);
+
+  when.time=now.time+(3*scaling)/2;
+  when.overflow=now.overflow;
+  new_pulse.time=3*scaling;
+  new_pulse.overflow=0;
+  setup_task(&click, ACTIVE, when, new_pulse);
+
+  when.time=now.time+(4*scaling)/2;
+  when.overflow=now.overflow;
+  new_pulse.time=4*scaling;
+  new_pulse.overflow=0;
+  setup_task(&click, ACTIVE, when, new_pulse);
+
+  when.time=now.time+(5*scaling)/2;
+  when.overflow=now.overflow;
+  new_pulse.time=5*scaling;
+  new_pulse.overflow=0;
+  setup_task(&click, ACTIVE, when, new_pulse);
 
   /*
   // testing periods longer then overflow:
-  setup_task(&inside_task_info, ACTIVE, now, overflow, 100, 1);
-  setup_task(&inside_task_info, ACTIVE, now, overflow, 1, 2);
-  */
-
-  /*
-  // 3 to 5 click_n_info pattern with phase offset:
-  int scale=50;
-  setup_task(&click, ACTIVE, now+3*scale/2, overflow, 3*scale, 0);
-  setup_task(&click, ACTIVE, now+5*scale/2, overflow, 5*scale, 0);
-  // testing COUNTED tasks:
-  setup_counted_task(&click, ACTIVE|COUNTED, now, 13, scale/8, 0, 16);
-  setup_counted_task(&click, ACTIVE|COUNTED, now, 17, scale/32, 0, 32);
-  setup_counted_task(&click, ACTIVE|COUNTED, now, 21, scale/4, 0, 64);
-  setup_counted_task(&click, ACTIVE|COUNTED, now, 23, scale/2, 0, 64);
-  setup_counted_task(&click, ACTIVE|COUNTED, now, 27, scale, 0, 16);
-  */
-
-  /*
-  // testing global next series:
-  // change TIMER_SLOWDOWN for this test:
-  // #define TIMER_SLOWDOWN	100L	// gives ten per second
-  // setup_task(task_do, new_flags|COUNTED, when, when_ovrfl, new_pulse_period, new_pulse_ovrfl);
-  const unsigned int scaling=10;
-  setup_task(&inside_task_info, ACTIVE, now, overflow, 1*scaling, 0);
-  setup_task(&inside_task_info, ACTIVE, now, overflow, 2*scaling, 0);
-  setup_task(&inside_task_info, ACTIVE, now, overflow, 4*scaling, 0);
+  new_pulse.time=100;
+  new_pulse.overflow=1;
+  setup_task(&inside_task_info, ACTIVE, now, new_pulse);
+  new_pulse.time=1;
+  new_pulse.overflow=2;
+  setup_task(&inside_task_info, ACTIVE, now, new_pulse);
   */
 
 
@@ -539,19 +525,13 @@ OVERFLOW_TYPE last_overflow_displayed=0;
 
 
 void loop() {
-  now= get_now();
+  get_now();
 
-  if(overflow != last_overflow_displayed) {
-
-    last_overflow_displayed = overflow;
+  if(now.overflow != last_overflow_displayed) {
+    last_overflow_displayed = now.overflow;
     Serial.print("====> OVERFLOW <====  ");
-    Serial.println((int) overflow);
+    Serial.println((int) now.overflow);
     Serial.println();
-
-//	    if (overflow > 5) {
-//	      Serial.println("\n(stopped)");
-//	      while (true) ;
-//	    }
   }
 
   check_maybe_do();
