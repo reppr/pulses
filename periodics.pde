@@ -107,7 +107,7 @@
 // variables for tasks in arrays[task]:
 
 
-// ================>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<================
+// ============>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<============
 unsigned char flags[PERIODICS];
 // flag masks:
 #define ACTIVE			1	// switches task on/off
@@ -120,7 +120,7 @@ unsigned char flags[PERIODICS];
 
 unsigned int pulse_count[PERIODICS];	// counts how many times the task woke up
 TIMER_TYPE  pulse_period[PERIODICS];	// timer steps
-OVERFLOW_TYPE pulse_ovrfl[PERIODICS];	// overflow of pulse_period (for very long periods)
+OVERFLOW_TYPE pulse_ovrfl[PERIODICS];	// pulse overflow (for very long periods)
 
 TIMER_TYPE last[PERIODICS];		// convenient, but not really needed
 OVERFLOW_TYPE last_ovrfl[PERIODICS];	// same
@@ -135,7 +135,7 @@ unsigned int int1[PERIODICS];		// if COUNTED, gives number of executions
 // custom parameters[task]		//  comment/uncomment as appropriate:
 					//  then *DO ADAPT init_task()* 
 
-// ================>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<================
+// ============>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<============
 int parameter_1[PERIODICS];			//  can be used by periodic_do()
 int parameter_2[PERIODICS];			//  can be used by periodic_do()
 // int parameter_3[PERIODICS];			//  can be used by periodic_do()
@@ -151,7 +151,7 @@ char char_parameter_2[PERIODICS];		//  can be used by periodic_do()
 
 // pointers on  void something(int task)  functions:
 void (*periodic_do[PERIODICS])(int);
-// ================>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<================
+// ============>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<============
 
 
 
@@ -206,26 +206,27 @@ void init_tasks() {
 
 
 void wake_task(int task) {
-  pulse_count[task]++;					//      count
+  pulse_count[task]++;			//      count
 
-  if (periodic_do[task] != NULL) {				// there *is* something to do?
-    (*periodic_do[task])(task);					//      do it
-  } // we *did* do something
+  if (periodic_do[task] != NULL) {	// there *is* something to do?
+    (*periodic_do[task])(task);		//      do it
+  }					// we *did* do something
  
   // prepare future:
-  last[task] = next[task];						// when it *should* have happened
+  last[task] = next[task];			// when it *should* have happened
   last_ovrfl[task] = next_ovrfl[task];
-  next[task] += pulse_period[task];					// when it should happen again
+  next[task] += pulse_period[task];		// when it should happen again
   next_ovrfl[task] += pulse_ovrfl[task];
 
   if (last[task] > next[task])
     next_ovrfl[task]++;
 
-  if ((flags[task] & COUNTED) && ((pulse_count[task] +1) == int1[task] ))	// COUNTED task && end reached?
-    if (flags[task] & DO_NOT_DELETE)						//  yes: DO_NOT_DELETE?
-      flags[task] &= ~ACTIVE;							//       yes: just deactivate
+  //						//  COUNTED task && end reached?
+  if ((flags[task] & COUNTED) && ((pulse_count[task] +1) == int1[task] ))
+    if (flags[task] & DO_NOT_DELETE)		//  yes: DO_NOT_DELETE?
+      flags[task] &= ~ACTIVE;			//       yes: just deactivate
     else
-      init_task(task);								//       no:  DELETE task
+      init_task(task);				//       no:  DELETE task
 
   // fix_global_next();		// this version does not call that from here
 }
@@ -306,51 +307,6 @@ void check_maybe_do() {
 }
 
 
-// Add a time interval to a given start time:
-// 	Returns and sets other_time,
-//      *and* sets other_ovrfl
-TIMER_TYPE other_time;			// might be convenient sometimes. Not really needed.
-OVERFLOW_TYPE other_ovrfl;		// both variables set by other_time(...)
-TIMER_TYPE set_other_time(TIMER_TYPE this_time, OVERFLOW_TYPE this_overflow, TIMER_TYPE interval , OVERFLOW_TYPE interval_ovrfl) {
-  TIMER_TYPE start_time=this_time;
-
-  other_time = this_time + interval;
-
-  other_ovrfl = interval_ovrfl;
-  if (other_time < start_time)
-    other_ovrfl++;
-
-  return other_time;
-}
-
-
-//	// Multiply a given time interval by a (small) positive integer factor.
-//	// 	Returns and sets multiple, sets multiple_ovrfl
-//	// 	These global variables are shared with divided_interval(...)
-//	TIMER_TYPE multiple;
-//	OVERFLOW_TYPE multiple_ovrfl;
-//	TIMER_TYPE multiple_interval(TIMER_TYPE interval, OVERFLOW_TYPE interval_ovrfl, unsigned int factor) {
-//	  TIMER_TYPE scratch;
-//	
-//	  multiple=0;
-//	  multiple_ovrfl = interval_ovrfl * factor;
-//	
-//	  for (; factor>0; factor--) {
-//	    scratch = multiple;
-//	    multiple += interval;
-//	    if (multiple < scratch)
-//	      multiple_ovrfl++;
-//	  }
-//	
-//	    return multiple;
-//	}
-//	
-//	
-//	// not implemented yet:
-//	TIMER_TYPE divided_interval(TIMER_TYPE interval, OVERFLOW_TYPE interval_ovrfl, unsigned int divisor);
-
-
-
 int setup_task(void (*task_do)(int), unsigned char new_flags, TIMER_TYPE when, OVERFLOW_TYPE when_ovrfl, TIMER_TYPE new_pulse_period, OVERFLOW_TYPE new_pulse_ovrfl) {
   int task;
 
@@ -383,6 +339,8 @@ int setup_counted_task(void (*task_do)(int), unsigned char new_flags, TIMER_TYPE
 
   task= setup_task(task_do, new_flags|COUNTED, when, when_ovrfl, new_pulse_period, new_pulse_ovrfl);
   int1[task]= count;
+
+  return task;
 }
 
 
@@ -568,8 +526,8 @@ void serial_println_progmem(const unsigned char *str) {
 // clicks on piezzos to *hear* the result:
 
 // *do* change 'case' statement in menu_serial_reaction() if you change this.
-#ifndef CLICK_PERIODICS				// number of click frequencies
-  #define CLICK_PERIODICS		5       // default number of click frequencies
+#ifndef CLICK_PERIODICS			// number of click frequencies
+  #define CLICK_PERIODICS	5       // default number of click frequencies
 #endif
 
 
@@ -950,21 +908,6 @@ void bar_graph_VU(int pin) {
 }
 
 
-//	// print binary numbers with leading zeroes and a space
-//	void serial_print_BIN(unsigned long value, int bits) {
-//	  int i;
-//	  unsigned long mask=0;
-//	
-//	  for (i = bits - 1; i >= 0; i--) {
-//	    mask = (1 << i);
-//	      if (value & mask)
-//		Serial.print(1);
-//	      else
-//		Serial.print(0);
-//	  }
-//	  Serial.print(" ");
-//	}
-
 
 #ifdef HARDWARE_menu	// inside MENU_over_serial
 const unsigned char analog_reads_title[] PROGMEM = "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
@@ -1046,9 +989,11 @@ void menu_hardware_display() {
 const unsigned char switchPeriodic[] PROGMEM = "s=switch periodic on/off";
 const unsigned char freeRAM[] PROGMEM = "free RAM: ";
 const unsigned char pPin[] PROGMEM = "p=pin (";
-
 const unsigned char none_[] PROGMEM = "(none)";
-const unsigned char selectDestinationInfo[] PROGMEM = "SELECT DESTINATION for '=' '*' '/' and 's' to work on:";
+
+const unsigned char selectDestinationInfo[] PROGMEM =
+  "SELECT DESTINATION for '=' '*' '/' and 's' to work on:";
+
 const unsigned char selectPeriodicWith[] PROGMEM = "Select periodic with ";
 const unsigned char all_[] PROGMEM = "(ALL)";
 const unsigned char selectAllPeriodics[] PROGMEM = "A=select *all* periodics";
@@ -1170,7 +1115,8 @@ int hardware_menu_reaction(char menu_input) {
     else {
       pinMode(hw_PIN, OUTPUT);
       digitalWrite(hw_PIN, HIGH);
-      serial_print_progmem(pin_); Serial.print((int) hw_PIN); serial_println_progmem(setToHigh);
+      serial_print_progmem(pin_); Serial.print((int) hw_PIN);
+      serial_println_progmem(setToHigh);
     }
     break;
 
@@ -1180,7 +1126,8 @@ int hardware_menu_reaction(char menu_input) {
     else {
       pinMode(hw_PIN, OUTPUT);
       digitalWrite(hw_PIN, LOW);
-      serial_print_progmem(pin_); Serial.print((int) hw_PIN); serial_println_progmem(setToLow);
+      serial_print_progmem(pin_); Serial.print((int) hw_PIN);
+      serial_println_progmem(setToLow);
     }
     break;
 
@@ -1205,8 +1152,8 @@ int hardware_menu_reaction(char menu_input) {
     if (hw_PIN == ILLEGAL)
       please_select_pin();
     else {
-      serial_print_progmem(analogValueOnPin); Serial.print((int) hw_PIN); serial_print_progmem(is_);
-      Serial.println(analogRead(hw_PIN));
+      serial_print_progmem(analogValueOnPin); Serial.print((int) hw_PIN);
+      serial_print_progmem(is_); Serial.println(analogRead(hw_PIN));
     }
     break;
 
@@ -1474,7 +1421,7 @@ void menu_serial_reaction() {
 	break;
 
 
-      // debugging entries: ################################################################
+      // debugging entries: DADA ################################################################
       case 'd':				// hook for debugging
 	Serial.println("DEBUGGING rhtm 1");
 	init_tasks();
@@ -1496,7 +1443,7 @@ void menu_serial_reaction() {
 	setup_jiffles0();
 	break;
 
-      // debugging entries: ################################################################
+      // debugging entries: DADA ################################################################
       // same on last character row:
       case 'y':				// hook for debugging
 	Serial.println("DEBUGGING rhtm 1");
@@ -1518,7 +1465,7 @@ void menu_serial_reaction() {
 	get_now();
 	setup_jiffles0();
 	break;
-      // debugging entries: ################################################################
+      // debugging entries: DADA ################################################################
 
       default:
 	// maybe it's in a submenu?
@@ -1632,6 +1579,7 @@ void do_throw_a_jiffle(int task) {		// for task_do
   init_jiffle((unsigned int *) parameter_2[task], next[task], pulse_period[task], task);
 }
 
+
 // DADA
 void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, TIMER_TYPE when, OVERFLOW_TYPE when_overflow, TIMER_TYPE new_period, OVERFLOW_TYPE new_period_overflow ) {
   int jiffle_task = setup_task(&do_throw_a_jiffle, new_flags, when, overflow, new_period, new_period_overflow);
@@ -1657,8 +1605,10 @@ void setup_jiffles0() {
   setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now +  scale*2*3*2*5/2*time_unit, overflow, scale*2*3*2*5*time_unit, 0);
 }
 
+
 /* **************************************************************** */
-// struct time, mul_time():
+// struct time
+// add_time(), sub_time(), mul_time(), div_time():
 
 
 struct time {
@@ -1671,37 +1621,23 @@ void add_time(struct time *delta, struct time *sum)
 {
   unsigned long last=(*sum).time;
 
-  Serial.print((*sum).time); Serial.print("\t");
-  Serial.print((*sum).overflow); Serial.print("\t+\t");
-  Serial.print((*delta).time); Serial.print("\t");
-  Serial.print((*delta).overflow); Serial.print("\n");
-
   (*sum).time += (*delta).time;
   (*sum).overflow += (*delta).overflow;
   if (last > (*sum).time)
     (*sum).overflow++;
-
-  Serial.print((*sum).time); Serial.print("\t");
-  Serial.print((*sum).overflow); Serial.print("\n");
 }
 
 
+// As time is unsigned we need a separate sub_time()
+// to have access to the full unsigned value range.
 void sub_time(struct time *delta, struct time *sum)
 {
   unsigned long last=(*sum).time;
-
-  Serial.print((*sum).time); Serial.print("\t");
-  Serial.print((*sum).overflow); Serial.print("\t-\t");
-  Serial.print((*delta).time); Serial.print("\t");
-  Serial.print((*delta).overflow); Serial.print("\n");
 
   (*sum).time -= (*delta).time;
   (*sum).overflow -= (*delta).overflow;
   if (last < (*sum).time)
     (*sum).overflow--;
-
-  Serial.print((*sum).time); Serial.print("\t");
-  Serial.print((*sum).overflow); Serial.print("\n");
 }
 
 
@@ -1713,10 +1649,6 @@ void mul_time(struct time *duration, unsigned int factor)
   unsigned int carry=0;
   unsigned long mask = (unsigned long) ((unsigned int) ~0); 
   unsigned int shift=16;
-
-  Serial.print((*duration).time); Serial.print("\t");
-  Serial.print((*duration).overflow); Serial.print("\t* ");
-  Serial.print(factor); Serial.print("\n");
 
   for (int i=0; i<2; i++) {
     scratch = (*duration).time & mask;
@@ -1736,10 +1668,6 @@ void mul_time(struct time *duration, unsigned int factor)
   (*duration).overflow += carry;
 
   (*duration).time=result;
-
-  Serial.print((*duration).time); Serial.print("\t");
-  Serial.print((*duration).overflow); Serial.print("\n\n");
-
 }
 
 void div_time(struct time *duration, unsigned int divisor) {
@@ -1749,10 +1677,6 @@ void div_time(struct time *duration, unsigned int divisor) {
   unsigned int carry=0;
   unsigned long mask = (unsigned long) ((unsigned int) ~0); 
   unsigned int shift=16;
-
-  Serial.print((*duration).time); Serial.print("\t");
-  Serial.print((*duration).overflow); Serial.print("\t/ ");
-  Serial.print(divisor); Serial.print("\n");
 
   scratch=(*duration).overflow;
   carry=(*duration).overflow % divisor;
@@ -1770,10 +1694,9 @@ void div_time(struct time *duration, unsigned int divisor) {
   }
 
   (*duration).time=result;
-
-  Serial.print((*duration).time); Serial.print("\t");
-  Serial.print((*duration).overflow); Serial.print("\n\n");
 }
+
+
 
 /* **************************************************************** */
 // setup:
@@ -1833,7 +1756,7 @@ void setup() {
   // tune in time:
   // always get time through this function, takes care of overfows.
   now = get_now();
-  overflow = 0;		// needed *only* for first time setup to start with overflow = 0
+  overflow = 0;		// needed *only* first time to start with overflow = 0
 
   // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
   // init_rhythm_1(1);
@@ -1852,124 +1775,12 @@ void setup() {
   setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, now+20*time_unit, overflow, 30*time_unit, 0);
   */
 
-  // DADA
-  /*
-  // 1 to 2 second pattern straight (for easy to read inside_task_info() output)
-  // setup_task(task_do, new_flags|COUNTED, when, when_ovrfl, new_pulse_period, new_pulse_ovrfl);
-  setup_task(&inside_task_info, ACTIVE, now, overflow, 100, 0);
-  setup_task(&inside_task_info, ACTIVE, now, overflow, 200, 0);
-  */
-
-  /*
-  // DADA
-  // nice 1 to 3 (to 4) to 5 pattern with phase offsets
-  // setup_task(task_do, new_flags|COUNTED, when, when_overflow, new_pulse_period, new_pulse_ovrfl);
-  setup_task(&click, ACTIVE, now+100/2, overflow*time_unit, 10, 0);
-  setup_task(&click, ACTIVE, now+300/2, overflow*time_unit, 30, 0);
-  // setup_task(&click, ACTIVE, now+400/2, overflow*time_unit, 40, 0);
-  setup_task(&click, ACTIVE, now+500/2, overflow*time_unit, 50, 0);
-  */
-
-  /*
-  // testing periods longer then overflow:
-  setup_task(&inside_task_info, ACTIVE, now, overflow, 100, 1);
-  setup_task(&inside_task_info, ACTIVE, now, overflow, 1, 2);
-  */
-
 #ifdef MENU_over_serial
   periodics_info();
 #endif
 
 
   fix_global_next();	// we *must* call that here
-
-  // REMOVE THIS			################
-  // very first EXPERIMENTING with mul_time()	################
- // void mul_time(unsigned long interval, unsigned int overflow, unsigned int factor
-
-  unsigned int factor;
-  struct time duration;
-
-  duration.time=1000;	duration.overflow=0;	factor=10;
-  mul_time(&duration,factor);
-  div_time(&duration,factor);
-  Serial.println();
-
-  duration.time=1000;	duration.overflow=10;	factor=10;
-  mul_time(&duration,factor);
-  div_time(&duration,factor);
-  Serial.println();
-
-  duration.time=1000;	duration.overflow=0;	factor=66;
-  mul_time(&duration,factor);
-  div_time(&duration,factor);
-  Serial.println();
-
-  duration.time=1000;	duration.overflow=0;	factor=1000;
-  mul_time(&duration,factor);
-  div_time(&duration,factor);
-  Serial.println();
-
-  duration.time=1000000;	duration.overflow=0;	factor=1000;
-  mul_time(&duration,factor);
-  div_time(&duration,factor);
-  Serial.println();
-
-  duration.time=~0;	duration.overflow=0;	factor=2;
-  mul_time(&duration,factor);
-  div_time(&duration,factor);
-  Serial.println();
-
-  duration.time=~0;	duration.overflow=1;	factor=3;
-  mul_time(&duration,factor);
-  div_time(&duration,factor);
-  Serial.println();
-
-  duration.time=1000000;	duration.overflow=0;	factor=1000;
-  div_time(&duration,factor);
-  mul_time(&duration,factor);
-  Serial.println();
-
-  duration.time=0;	duration.overflow=1;	factor=2;
-  div_time(&duration,factor);
-  mul_time(&duration,factor);
-  Serial.println();
-
-  duration.time=~0;	duration.overflow=0;	factor=2;
-  div_time(&duration,factor);
-  mul_time(&duration,factor);
-  Serial.println();
-
-
-  duration.time=~0;	duration.overflow=0;	factor=2;
-  mul_time(&duration,factor);
-  div_time(&duration,factor);
-  Serial.println();
-
-  struct time sum;
-  sum.time=0;	sum.overflow=0;
-  duration.time=2000000000;	duration.overflow=0;
-  add_time(&duration, &sum);
-  add_time(&duration, &sum);
-  add_time(&duration, &sum);
-  add_time(&duration, &sum);
-  add_time(&duration, &sum);
-  add_time(&duration, &sum);
-  add_time(&duration, &sum);
-  factor=7;
-  div_time(&sum,factor);
-  mul_time(&sum,factor);
-  sub_time(&duration, &sum);
-  sub_time(&duration, &sum);
-  sub_time(&duration, &sum);
-  sub_time(&duration, &sum);
-  sub_time(&duration, &sum);
-  sub_time(&duration, &sum);
-  sub_time(&duration, &sum);
-
-  while (true) ;		// STOPS HERE	################
-  // REMOVE up to here			################
-
 }
 
 
@@ -1989,11 +1800,6 @@ void loop() {
     Serial.print("====> OVERFLOW <====  ");
     Serial.println((int) overflow);
     Serial.println();
-
-//	    if (overflow > 5) {
-//	      Serial.println("\n(stopped)");
-//	      while (true) ;
-//	    }
   }
 
   check_maybe_do();
