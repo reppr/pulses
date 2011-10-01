@@ -1686,6 +1686,25 @@ void add_time(struct time *delta, struct time *sum)
 }
 
 
+void sub_time(struct time *delta, struct time *sum)
+{
+  unsigned long last=(*sum).time;
+
+  Serial.print((*sum).time); Serial.print("\t");
+  Serial.print((*sum).overflow); Serial.print("\t-\t");
+  Serial.print((*delta).time); Serial.print("\t");
+  Serial.print((*delta).overflow); Serial.print("\n");
+
+  (*sum).time -= (*delta).time;
+  (*sum).overflow -= (*delta).overflow;
+  if (last < (*sum).time)
+    (*sum).overflow--;
+
+  Serial.print((*sum).time); Serial.print("\t");
+  Serial.print((*sum).overflow); Serial.print("\n");
+}
+
+
 void mul_time(struct time *duration, unsigned int factor)
  {
   unsigned long scratch;
@@ -1939,6 +1958,14 @@ void setup() {
   add_time(&duration, &sum);
   factor=7;
   div_time(&sum,factor);
+  mul_time(&sum,factor);
+  sub_time(&duration, &sum);
+  sub_time(&duration, &sum);
+  sub_time(&duration, &sum);
+  sub_time(&duration, &sum);
+  sub_time(&duration, &sum);
+  sub_time(&duration, &sum);
+  sub_time(&duration, &sum);
 
   while (true) ;		// STOPS HERE	################
   // REMOVE up to here			################
