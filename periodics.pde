@@ -27,7 +27,7 @@
 
    "play" version: having fun while debugging...
      clicks
-     rhytms
+     rhythms
      jiffles
 
 */
@@ -57,40 +57,12 @@
 //  #define USE_SERIAL	38400
 
 
-
-/* **************************************************************** */
-// for testing timer overflow:
-#define TIMER_TYPE	unsigned long
-#define OVERFLOW_TYPE	unsigned int
-
-// we need that very basic 'struct time' first:
-/* **************************************************************** */
-// struct time
-
-struct time {
-  TIMER_TYPE time;
-  OVERFLOW_TYPE overflow;
-};
-
-/* **************************************************************** */
-// for testing timer overflow, continued:
-// #define TIMER_SLOWDOWN	10L	// gives a hundred per second
-
-#ifndef TIMER_SLOWDOWN
-  #define TIMER		(TIMER_TYPE) ((unsigned long) millis())
-#else
-  #define TIMER		(TIMER_TYPE) ((unsigned long) millis() / TIMER_SLOWDOWN)
-#endif
-
-
-/* **************************************************************** */
-
 #ifdef USE_SERIAL		// simple menus over serial line?
   // menu basics:
   #define MENU_over_serial	// do we use a serial menu?
 
   // simple menu to access arduino hardware:
-  #define HARDWARE_menu		// menu interface to hardware configuration
+  #define HARDWARE_menu		// menu interface to hardware configu[Bration
   	  			// this will let you read digital and analog inputs
   				// watch changes on inputs as value or as bar graphs
   	  			// set digital and analog outputs, etc.
@@ -116,6 +88,98 @@ struct time {
 
 
 /* **************************************************************** */
+/* **************************************************************** */
+// struct time
+
+struct time {
+  unsigned long time;
+  unsigned int overflow;
+};
+
+// add_time(), sub_time(), mul_time(), div_time():
+
+
+void add_time(struct time *delta, struct time *sum)
+{
+  unsigned long last=(*sum).time;
+
+  (*sum).time += (*delta).time;
+  (*sum).overflow += (*delta).overflow;
+  if (last > (*sum).time)
+    (*sum).overflow++;
+}
+
+
+// As time is unsigned we need a separate sub_time()
+// to have access to the full unsigned value range.
+void sub_time(struct time *delta, struct time *sum)
+{
+  unsigned long last=(*sum).time;
+
+  (*sum).time -= (*delta).time;
+  (*sum).overflow -= (*delta).overflow;
+  if (last < (*sum).time)
+    (*sum).overflow--;
+}
+
+
+void mul_time(struct time *duration, unsigned int factor)
+ {
+  unsigned long scratch;
+  unsigned long result=0;
+  unsigned long digit;
+  unsigned int carry=0;
+  unsigned long mask = (unsigned long) ((unsigned int) ~0); 
+  unsigned int shift=16;
+
+  for (int i=0; i<2; i++) {
+    scratch = (*duration).time & mask;
+    (*duration).time >>= shift;
+
+    scratch *= factor;
+    scratch += carry;
+
+    digit = scratch & mask;
+    digit <<= (i * shift);
+    result |= digit;
+
+    carry = scratch >> shift;
+  }
+
+  (*duration).overflow *= factor;
+  (*duration).overflow += carry;
+
+  (*duration).time=result;
+}
+
+void div_time(struct time *duration, unsigned int divisor) {
+  unsigned long scratch;
+  unsigned long result=0;
+  unsigned long digit;
+  unsigned int carry=0;
+  unsigned long mask = (unsigned long) ((unsigned int) ~0); 
+  unsigned int shift=16;
+
+  scratch=(*duration).overflow;
+  carry=(*duration).overflow % divisor;
+  (*duration).overflow /= divisor;
+
+  for (int i=0; i<2; i++) {
+    scratch = carry;						// high digit
+    scratch <<= shift;						// high digit
+    scratch |= ((*duration).time >> ((1-i)*shift)) & mask;	// low digit
+
+    carry = scratch % divisor;
+    scratch /= divisor;
+    result <<=shift;
+    result |= (scratch & mask);
+  }
+
+  (*duration).time=result;
+}
+
+
+/* **************************************************************** */
 // variables for tasks in arrays[task]:
 
 // ============>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<============
@@ -130,10 +194,9 @@ unsigned char flags[PERIODICS];
 
 
 unsigned int pulse_count[PERIODICS];	// counts how many times the task woke up
-
-struct time pulse[PERIODICS];		// timer steps
+struct time pulse[PERIODICS];		// timer steps, overflows
 struct time last[PERIODICS];		// convenient, but not really needed
-struct time next[PERIODICS];		// next wake up time 
+struct time next[PERIODICS];		// next wake up time, overflow
 
 
 // internal parameter:
@@ -164,34 +227,104 @@ void (*periodic_do[PERIODICS])(int);
 
 
 /* **************************************************************** */
+// use PROGMEM to save RAM:
+
+#if (defined(USE_SERIAL) || defined(USE_LCD))
+#include <avr/pgmspace.h>
+
+const unsigned char programName[] PROGMEM = "PERIODICS";
+const unsigned char programLongName[] PROGMEM = "*** Play with PERIODICS v0.2 ***";
+const unsigned char version[] PROGMEM = "version 0.2";
+
+const unsigned char tab_[] PROGMEM = "\t";
+
+
+//	#ifdef USE_LCD
+//	// LCD.print() for progmem strings:
+//	// void LCD_print_progmem(const prog_uchar *str)	// does not work :(
+//	void LCD_print_progmem(const unsigned char *str) {
+//	  unsigned char c;
+//	  while((c = pgm_read_byte(str++)))
+//	    LCD.print(c);
+//	}
+//	
+//	void LCD_print_at_progmem(unsigned char col, unsigned char row, const unsigned char *str) {
+//	  LCD.setCursor(col, row);
+//	  LCD_print_progmem(str);
+//	}
+//	
+//	// clear line and print on LCD at line 'row'
+//	const unsigned char LCD_empty[] PROGMEM = "                    ";
+//	void LCD_print_line_progmem(unsigned char row, const unsigned char *str) {
+//	  LCD_print_at_progmem(0, row, LCD_empty);
+//	  LCD_print_at_progmem(0, row, str);
+//	}
+//	
+//	#endif
+
+
+#ifdef USE_SERIAL
+// Serial.print() for progmem strings:
+// void serial_print_progmem(const prog_uchar *str)	// does not work :(
+void serial_print_progmem(const unsigned char *str) {
+  unsigned char c;
+  while((c = pgm_read_byte(str++)))
+    Serial.write(c);
+}
+
+
+void serial_println_progmem(const unsigned char *str) {
+  serial_print_progmem(str);
+  Serial.println("");
+}
+#endif
+
+#endif	// #if (defined(USE_SERIAL) || defined(USE_LCD))
+
+
+/* **************************************************************** */
 
 // global variables, task and time.
 int task;
 
-struct time now;
-struct time last_now;
+struct time now, last_now;
 
 struct time global_next;
 unsigned int global_next_count=0;
 int global_next_tasks[PERIODICS];
 
+unsigned long time_unit = 100000;		// scaling timer to 10/s 
 
 /* **************************************************************** */
 // init time:
 
 void init_time()
 {
-  now.time=0;
-  now.overflow=0;
+  extern volatile unsigned long timer0_overflow_count;
 
-  last_now.time=~0;
-  last_now.overflow=0;
+  cli();
+  timer0_overflow_count = 0;
+  sei();
 
-  global_next.time=0;
-  global_next.overflow=~0;
-
+  last_now.time = 0;		// make sure get_now() sees no overflow
   get_now();
   now.overflow = 0;		// start with now.overflow = 0
+
+  last_now = now;		// correct overflow
+
+  global_next.time=0;
+  global_next.overflow=~0;	// ILLEGAL
+}
+
+
+// *always* get time through get_now()
+void get_now() {		// get time, set now.time and now.overflow
+  now.time = micros();
+
+  if (now.time < last_now.time)	// manage now.overflows
+    now.overflow++;
+
+  last_now = now;		// manage last_now
 }
 
 
@@ -235,7 +368,7 @@ void init_tasks() {
 void wake_task(int task) {
   pulse_count[task]++;				//      count
 
-  if (periodic_do[task] != NULL) {		// there *is* something to do?
+  if (periodic_do[task] != NULL) {		// there *is* something else to do?
     (*periodic_do[task])(task);			//   yes: do it
   }
 
@@ -255,19 +388,6 @@ void wake_task(int task) {
     else
       init_task(task);				//     no:  DELETE task
 
-  // fix_global_next();		// this version does not call that from here
-}
-
-
-// *always* get time through get_now()
-void get_now() {			// get time, set now.time and now.overflow
-  now.time = TIMER;
-
-  if (now.time < last_now.time)		// manage now.overflows
-    now.overflow++;
-
-  last_now.time = now.time;		// manage last_now
-  last_now.overflow = now.overflow;	// unused, but who knows?
 }
 
 
@@ -333,6 +453,11 @@ void check_maybe_do() {
 }
 
 
+
+#ifdef USE_SERIAL
+    const unsigned char noFreeTasks[] PROGMEM = "no free tasks";
+#endif
+
 int setup_task(void (*task_do)(int), unsigned char new_flags, struct time when, struct time new_pulse) {
   int task;
 
@@ -343,8 +468,14 @@ int setup_task(void (*task_do)(int), unsigned char new_flags, struct time when, 
     if (flags[task] == 0)			// flags==0 means empty task
       break;					//   found one
   }
-  if (task == PERIODICS)			// no task free :(
-    return ILLEGAL;				// ERROR
+  if (task == PERIODICS) {			// no task free :(
+
+#ifdef USE_SERIAL
+    serial_println_progmem(noFreeTasks);
+#endif
+
+    return ILLEGAL;			// ERROR
+  }
 
   // initiaize new task				// yes, found a free task
   flags[task] = new_flags;			// initialize task
@@ -370,114 +501,18 @@ int setup_counted_task(void (*task_do)(int), unsigned char new_flags, struct tim
 }
 
 
+// not used?
 void set_new_period(int task, struct time new_pulse) {
   pulse[task].time = new_pulse.time;
   pulse[task].overflow = new_pulse.overflow;
 
   next[task].time = last[task].time + pulse[task].time;
   next[task].overflow = last[task].overflow + pulse[task].overflow;
-  if (last[task].time > next[task].time)
+  if(next[task].time < last[task].time)
     next[task].overflow++;
 
   fix_global_next();	// it's saver to do that from here, but could be omitted.
 }
-
-
-/* **************************************************************** */
-// debugging:
-
-// clicking
-// to let a task click a piezzo see 'click(int task)' as payload.
-// flip flopping pins...
-
-
-// infos on serial:
-// binary print flags:
-// print binary numbers with leading zeroes and a space
-void serial_print_BIN(unsigned long value, int bits) {
-  int i;
-  unsigned long mask=0;
-
-  for (i = bits - 1; i >= 0; i--) {
-    mask = (1 << i);
-      if (value & mask)
-	Serial.print(1);
-      else
-	Serial.print(0);
-  }
-  Serial.print(" ");
-}
-
-// inside_task_info() as paylod for tasks:
-// Prints task info over serial and blinks the LED
-void inside_task_info(int task) {
-  unsigned long realtime = millis();
-
-#ifdef LED_PIN
-  digitalWrite(LED_PIN,HIGH);		// blink the LED
-#endif
-
-  Serial.print("*** TASK INFO ");
-  Serial.print(task);
-  Serial.print("/");
-  Serial.print((unsigned int) pulse_count[task]);
-
-  Serial.print("\ttime/ovfl ");
-  Serial.print((int) TIMER);
-  Serial.print("/");
-  Serial.print(now.overflow);
-
-  Serial.print("    \tnext/ovfl ");
-  Serial.print(next[task].time);
-  Serial.print("/");
-  Serial.print((OVERFLOW_TYPE) next[task].overflow);
-
-  Serial.print("   \tperiod/ovfl ");
-  Serial.print((unsigned int) pulse[task].time);
-  Serial.print("/");
-  Serial.print((OVERFLOW_TYPE) pulse[task].overflow);
-
-  Serial.print("\n\t\t");		// start next line
-
-  Serial.print("\tlast/ovfl ");
-  Serial.print((unsigned int) last[task].time);
-  Serial.print("/");
-  Serial.print((OVERFLOW_TYPE) last[task].overflow);
-
-  Serial.print("   \tflags ");
-  serial_print_BIN(flags[task], 8);
-  //  Serial.print("\t");
-
-  Serial.print("\n\t\t");		// start next line
-
-  // no overflow in times yet ################################
-  Serial.print("\texpected seconds ");
-#ifndef TIMER_SLOWDOWN
-  Serial.print((float) now.time / 1000.0, 3);
-#else
-  Serial.print((float) now.time * (float) TIMER_SLOWDOWN / 1000.0, 3);
-#endif
-  Serial.print("s");
-
-  Serial.print("\treal ");
-  Serial.print((float) millis() / 1000.0, 2);
-  Serial.print("s");
-
-  Serial.print("  \tperiod ");
-#ifndef TIMER_SLOWDOWN
-  Serial.print((float) pulse[task].time / 1000.0, 4);
-#else
-  Serial.print((float) pulse[task].time * (float) TIMER_SLOWDOWN / 1000.0, 4);
-#endif
-  Serial.print("s");
-
-  Serial.print("\n\n");			// traling empty line
-
-#ifdef LED_PIN
-  digitalWrite(LED_PIN,LOW);
-#endif
-}
-
 
 
 /* **************************************************************** */
@@ -497,67 +532,21 @@ int get_free_RAM() {
 
 
 /* **************************************************************** */
-// use PROGMEM to save RAM:
-#include <avr/pgmspace.h>
-
-const unsigned char programName[] PROGMEM = "PERIODICS";
-const unsigned char programLongName[] PROGMEM = "*** Play with PERIODICS v0.2 ***";
-const unsigned char version[] PROGMEM = "version 0.2";
-
-const unsigned char tab_[] PROGMEM = "\t";
-
-
-//	#ifdef USE_LCD
-//	// LCD.print() for progmem strings:
-//	// void LCD_print_progmem(const prog_uchar *str)	// does not work :(
-//	void LCD_print_progmem(const unsigned char *str) {
-//	  unsigned char c;
-//	  while((c = pgm_read_byte(str++)))
-//	    LCD.print(c);
-//	}
-//	
-//	void LCD_print_at_progmem(unsigned char col, unsigned char row, const unsigned char *str) {
-//	  LCD.setCursor(col, row);
-//	  LCD_print_progmem(str);
-//	}
-//	
-//	// clear line and print on LCD at line 'row'
-//	const unsigned char LCD_empty[] PROGMEM = "                    ";
-//	void LCD_print_line_progmem(unsigned char row, const unsigned char *str) {
-//	  LCD_print_at_progmem(0, row, LCD_empty);
-//	  LCD_print_at_progmem(0, row, str);
-//	}
-//	
-//	#endif
-
-
-#ifdef USE_SERIAL
-// Serial.print() for progmem strings:
-// void serial_print_progmem(const prog_uchar *str)	// does not work :(
-void serial_print_progmem(const unsigned char *str) {
-  unsigned char c;
-  while((c = pgm_read_byte(str++)))
-    Serial.write(c);
-}
-
-
-void serial_println_progmem(const unsigned char *str) {
-  serial_print_progmem(str);
-  Serial.println("");
-}
-#endif
-
-
-/* **************************************************************** */
 // some little things to play with:
 
+// FlipFlop pins:
 
+#if ( CLICK_PERIODICS > 0)
 // clicks on piezzos to *hear* the result:
+//   or connect LEDs, MOSFETs, MIDI, whatever...
+//   these are just FlipFlop pins.
 
-//	// *do* change 'case' statement in menu_serial_reaction() if you change this.
-//	#ifndef CLICK_PERIODICS			// number of click frequencies
-//	  #define CLICK_PERIODICS	5       // default number of click frequencies
-//	#endif
+//  configured further up:
+//  // *do* change 'case' statement in menu_serial_reaction() if you change this.
+//  #ifndef CLICK_PERIODICS		// number of click frequencies
+//    #define CLICK_PERIODICS	5       // default number of click frequencies
+//  #endif
+//  // *do* change 'case' statement in menu_serial_reaction() if you change this.
 
 
 
@@ -568,10 +557,10 @@ void init_click_tasks() {
 }
 
 
-
 void click(int task) {			// can be called from a task
   digitalWrite(char_parameter_1[task], pulse_count[task] & 1);
 }
+
 
 
 unsigned char click_task[CLICK_PERIODICS];
@@ -586,8 +575,6 @@ void init_click_pins() {
 
 
 // playing with rhythms:
-unsigned long time_unit = 100;		// scaling timer to 10/s 
-
 
 // some default rhythms:
 // DADA
@@ -703,20 +690,179 @@ void init_rhythm_2(int sync) {
   pinMode(click_pin[task++], OUTPUT);
 }
 
+// nice 1 to 3 to 4 to 5 pattern with phase offsets
+void init_rhythm_3(int sync) { 
+  // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
+  int task;
+  struct time when, new_pulse;
+
+  init_click_tasks();
+  get_now();
+
+  // setup_task(task_do, new_flags|COUNTED, when, new_pulse);
+  const unsigned long scaling=500000L;
+
+  when.time=now.time+sync*(1*scaling)/2;
+  when.overflow=now.overflow;
+  new_pulse.time=1*scaling;
+  new_pulse.overflow=0;
+  task = setup_task(&click, ACTIVE, when, new_pulse);
+  if (task != ILLEGAL) {
+    char_parameter_1[task] = click_pin[task];
+    pinMode(click_pin[task++], OUTPUT);
+  }
+
+  when.time=now.time+sync*(3*scaling)/2;
+  when.overflow=now.overflow;
+  new_pulse.time=3*scaling;
+  new_pulse.overflow=0;
+  task = setup_task(&click, ACTIVE, when, new_pulse);
+  if (task != ILLEGAL) {
+    char_parameter_1[task] = click_pin[task];
+    pinMode(click_pin[task++], OUTPUT);
+  }
+
+  when.time=now.time+sync*(4*scaling)/2;
+  when.overflow=now.overflow;
+  new_pulse.time=4*scaling;
+  new_pulse.overflow=0;
+  task = setup_task(&click, ACTIVE, when, new_pulse);
+  if (task != ILLEGAL) {
+    char_parameter_1[task] = click_pin[task];
+    pinMode(click_pin[task++], OUTPUT);
+  }
+
+  when.time=now.time+sync*(5*scaling)/2;
+  when.overflow=now.overflow;
+  new_pulse.time=5*scaling;
+  new_pulse.overflow=0;
+  task = setup_task(&click, ACTIVE, when, new_pulse);
+  if (task != ILLEGAL) {
+    char_parameter_1[task] = click_pin[task];
+    pinMode(click_pin[task++], OUTPUT);
+  }
+}
+
+#endif	//  #if ( CLICK_PERIODICS > 0)
 
 
 /* **************************************************************** */
-// functions to deal with clicks:
+// debugging:
+
+// clicking
+// to let a task click a piezzo see 'click(int task)' as payload.
+// flip flopping pins...
+
+
+// infos on serial:
+#ifdef USE_SERIAL
+
+// binary print flags:
+// print binary numbers with leading zeroes and a space
+void serial_print_BIN(unsigned long value, int bits) {
+  int i;
+  unsigned long mask=0;
+
+  for (i = bits - 1; i >= 0; i--) {
+    mask = (1 << i);
+      if (value & mask)
+	Serial.print(1);
+      else
+	Serial.print(0);
+  }
+  Serial.print(" ");
+}
+
+
+const unsigned char timeUnits_[] PROGMEM = " time units";
+
+// inside_task_info() as paylod for tasks:
+// Prints task info over serial and blinks the LED
+void inside_task_info(int task) {
+  unsigned long realtime = micros();
+
+#ifdef LED_PIN
+  digitalWrite(LED_PIN,HIGH);		// blink the LED
+#endif
+
+  Serial.print("*** TASK INFO ");
+  Serial.print(task);
+  Serial.print("/");
+  Serial.print((unsigned int) pulse_count[task]);
+
+  Serial.print("\ttime/ovfl ");
+  Serial.print(realtime);
+  Serial.print("/");
+  Serial.print(now.overflow);		// cheating a tiny little bit...
+
+  Serial.print("    \tnext/ovfl ");
+  Serial.print(next[task].time);
+  Serial.print("/");
+  Serial.print(next[task].overflow);
+
+  Serial.print("   \tperiod/ovfl ");
+  Serial.print((unsigned int) pulse[task].time);
+  Serial.print("/");
+  Serial.print(pulse[task].overflow);
+
+  Serial.print("\n\t\t");		// start next line
+
+  Serial.print("\tlast/ovfl ");
+  Serial.print((unsigned int) last[task].time);
+  Serial.print("/");
+  Serial.print(last[task].overflow);
+
+  Serial.print("   \tflags ");
+  serial_print_BIN(flags[task], 8);
+  Serial.print("\t\tperiod ");
+  Serial.print((float) pulse[task].time / (float) time_unit,3);
+  serial_print_progmem(timeUnits_);
+
+  Serial.print("\n\t\t");		// start next line
+
+  // no overflow in times yet ################################
+  Serial.print("\texpected seconds ");
+  Serial.print((float) now.time / 1000000.0, 3);
+  Serial.print("s");
+
+  Serial.print("\treal ");
+  Serial.print((float) realtime / 1000000.0, 2);
+  Serial.print("s");
+
+  Serial.print("  \t\tperiod ");
+  Serial.print((float) pulse[task].time / 1000000.0, 4);
+  Serial.print("s");
+
+  Serial.print("\n\n");			// traling empty line
+
+#ifdef LED_PIN
+  digitalWrite(LED_PIN,LOW);
+#endif
+}
+
+void all_tasks_info()
+{
+  for (int task=0; task < PERIODICS; task++)
+    inside_task_info(task);
+}
+
+#endif	// #ifdef USE_SERIAL
+
+
+
+/* **************************************************************** */
+// functions to deal with clicks (i.e. from the menus):
+
+#ifdef USE_SERIAL
+
 
 // destination of menu functions '*' '/' '=' and 's'
 unsigned char selected_destination=~0;
 // destinations codes (other then 0, 1, 2, ... for individual clicker tasks):
-#define ALL_PERIODICS	PERIODICS
-#define TIME_UNIT	(PERIODICS + 1)
+#define ALL_PERIODICS	PERIODICS		// destination code
+#define TIME_UNIT	(PERIODICS + 1)		// destination code
 
 
-
-#ifdef USE_SERIAL
 const unsigned char mutedAllPeriodics[] PROGMEM = "muted all periodics";
 #endif
 
@@ -734,21 +880,23 @@ void mute_all_clicks () {
 
 
 const unsigned char period_[] PROGMEM = " period = ";
-const unsigned char timeUnits_[] PROGMEM = " time units";
 
 void print_period_in_time_units(int task) {
   float time_units, scratch;
 
   serial_print_progmem(period_);
   time_units = ((float) pulse[task].time / (float) time_unit);
+
   scratch = 1000.0;
-  while (scratch > time_units) {
+  while (scratch > max(time_units, 1.0)) {
     Serial.print(" ");
     scratch /= 10.0;
   }
+
   Serial.print((float) time_units, 3);
   serial_print_progmem(timeUnits_);
 }
+
 
 const unsigned char pin_[] PROGMEM = "pin ";	// HARDWARE_menu uses this too
 
@@ -1519,10 +1667,10 @@ void menu_serial_reaction() {
 
       // debugging entries: DADA ################################################################
       case 'd':				// hook for debugging
-	Serial.println("DEBUGGING rhtm 1");
-	init_tasks();
-	get_now();
-	init_rhythm_1(1);
+	extern volatile unsigned long timer0_overflow_count;
+	cli();
+	timer0_overflow_count = 0;
+	sei();
 	break;
 
       case 'r':				// hook for debugging
@@ -1556,6 +1704,13 @@ void menu_serial_reaction() {
 	break;
 
       case 'c':				// hook for debugging
+	Serial.println("DEBUGGING rhtm 3");
+	init_tasks();
+	get_now();
+	init_rhythm_3(1);
+	break;
+
+      case 'v':				// hook for debugging
 	Serial.println("DEBUGGING jiffles0 ");
 	init_tasks();
 	get_now();
@@ -1617,6 +1772,10 @@ void menu_serial_reaction() {
 
 unsigned int jiffletab0[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,4, 1,64,3, 1,32,1, 1,16,2, 0};	// nice short jiffy
 
+/*
+unsigned int jiffletab1[] =
+  {1,1024,64, 1,512,4, 1,128,2, 1,64,1, 1,32,1, 1,16,1, 0};
+*/
 
 void do_jiffle0 (int task) {	// to be called by task_do
   // char_parameter_1[task]	click pin
@@ -1664,6 +1823,7 @@ int init_jiffle(unsigned int *jiffletab, struct time when, struct time new_pulse
   } 
 #ifdef USE_SERIAL
   else {
+    // DADA
     Serial.print("ERROR: no task free to start jiffle from task ");
     Serial.println(origin_task);
   }
@@ -1745,92 +1905,6 @@ void setup_jiffles0() {
 
 
 /* **************************************************************** */
-// struct time
-// add_time(), sub_time(), mul_time(), div_time():
-
-
-void add_time(struct time *delta, struct time *sum)
-{
-  unsigned long last=(*sum).time;
-
-  (*sum).time += (*delta).time;
-  (*sum).overflow += (*delta).overflow;
-  if (last > (*sum).time)
-    (*sum).overflow++;
-}
-
-
-// As time is unsigned we need a separate sub_time()
-// to have access to the full unsigned value range.
-void sub_time(struct time *delta, struct time *sum)
-{
-  unsigned long last=(*sum).time;
-
-  (*sum).time -= (*delta).time;
-  (*sum).overflow -= (*delta).overflow;
-  if (last < (*sum).time)
-    (*sum).overflow--;
-}
-
-
-void mul_time(struct time *duration, unsigned int factor)
- {
-  unsigned long scratch;
-  unsigned long result=0;
-  unsigned long digit;
-  unsigned int carry=0;
-  unsigned long mask = (unsigned long) ((unsigned int) ~0); 
-  unsigned int shift=16;
-
-  for (int i=0; i<2; i++) {
-    scratch = (*duration).time & mask;
-    (*duration).time >>= shift;
-
-    scratch *= factor;
-    scratch += carry;
-
-    digit = scratch & mask;
-    digit <<= (i * shift);
-    result |= digit;
-
-    carry = scratch >> shift;
-  }
-
-  (*duration).overflow *= factor;
-  (*duration).overflow += carry;
-
-  (*duration).time=result;
-}
-
-void div_time(struct time *duration, unsigned int divisor) {
-  unsigned long scratch;
-  unsigned long result=0;
-  unsigned long digit;
-  unsigned int carry=0;
-  unsigned long mask = (unsigned long) ((unsigned int) ~0); 
-  unsigned int shift=16;
-
-  scratch=(*duration).overflow;
-  carry=(*duration).overflow % divisor;
-  (*duration).overflow /= divisor;
-
-  for (int i=0; i<2; i++) {
-    scratch = carry;						// high digit
-    scratch <<= shift;						// high digit
-    scratch |= ((*duration).time >> ((1-i)*shift)) & mask;	// low digit
-
-    carry = scratch % divisor;
-    scratch /= divisor;
-    result <<=shift;
-    result |= (scratch & mask);
-  }
-
-  (*duration).time=result;
-}
-
-
-
-/* **************************************************************** */
 // setup:
 
 
@@ -1887,121 +1961,66 @@ void setup() {
   // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
   // init_rhythm_1(1);
   // init_rhythm_2(1);
+  init_rhythm_3(1);
   // setup_jiffles0();
 
   Serial.println("\nPERIODICS\n");
 
-  init_time();
-  init_tasks();
-
 
   struct time when;
   struct time new_pulse;
-  //  int scaling;
+
   // setup_task(task_do, new_flags|COUNTED, when, new_pulse);
 
-  /*
+/*
   // 1 to 2 second pattern straight (for easy to read inside_task_info() output)
   // setup_task(task_do, new_flags|COUNTED, when, new_pulse);
   when=now;
   new_pulse.overflow=0;
-  new_pulse.time=100;
+  new_pulse.time=1000000L;
   setup_task(&inside_task_info, ACTIVE, when, new_pulse);
-  new_pulse.time=200;
+  new_pulse.time=2000000L;
   setup_task(&inside_task_info, ACTIVE, when, new_pulse);
-  */
-
-  //  /*
-  // nice 1 to 3 to 4 to 5 pattern with phase offsets
-  // setup_task(task_do, new_flags|COUNTED, when, new_pulse);
-  const unsigned int scaling=50;
-
-  when.time=now.time+(1*scaling)/2;
-  when.overflow=now.overflow;
-  new_pulse.time=1*scaling;
-  new_pulse.overflow=0;
-  task = setup_task(&click, ACTIVE, when, new_pulse);
-  if (task != ILLEGAL) {
-    char_parameter_1[task] = click_pin[task];
-    pinMode(click_pin[task++], OUTPUT);
-  }
-
-  when.time=now.time+(3*scaling)/2;
-  when.overflow=now.overflow;
-  new_pulse.time=3*scaling;
-  new_pulse.overflow=0;
-  task = setup_task(&click, ACTIVE, when, new_pulse);
-  if (task != ILLEGAL) {
-    char_parameter_1[task] = click_pin[task];
-    pinMode(click_pin[task++], OUTPUT);
-  }
-
-  when.time=now.time+(4*scaling)/2;
-  when.overflow=now.overflow;
-  new_pulse.time=4*scaling;
-  new_pulse.overflow=0;
-  task = setup_task(&click, ACTIVE, when, new_pulse);
-  if (task != ILLEGAL) {
-    char_parameter_1[task] = click_pin[task];
-    pinMode(click_pin[task++], OUTPUT);
-  }
-
-  when.time=now.time+(5*scaling)/2;
-  when.overflow=now.overflow;
-  new_pulse.time=5*scaling;
-  new_pulse.overflow=0;
-  task = setup_task(&click, ACTIVE, when, new_pulse);
-  if (task != ILLEGAL) {
-    char_parameter_1[task] = click_pin[task];
-    pinMode(click_pin[task++], OUTPUT);
-  }
-  // */
+*/
 
   // DADA
   /*
-  when.time=now.time + 5*time_unit;
+  int scaling=12;
+
+  when.time=now.time + 1*scaling*time_unit;
   when.overflow=now.overflow;
-  new_pulse.time=10*time_unit;
+  new_pulse.time=2*scaling*time_unit;
   new_pulse.overflow=0;
   setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, when, new_pulse);
 
-  when.time=now.time + 10*time_unit;
+  when.time=now.time + 2*scaling*time_unit;
   when.overflow=now.overflow;
-  new_pulse.time=15*time_unit;
+  new_pulse.time=3*scaling*time_unit;
   new_pulse.overflow=0;
   setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, when, new_pulse);
 
-  when.time=now.time + 15*time_unit;
+  when.time=now.time + 3*scaling*time_unit;
   when.overflow=now.overflow;
-  new_pulse.time=20*time_unit;
+  new_pulse.time=4*scaling*time_unit;
   new_pulse.overflow=0;
   setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, when, new_pulse);
 
   when.time=now.time;
   when.overflow=now.overflow;
-  new_pulse.time=25*time_unit;
+  new_pulse.time=5*scaling*time_unit;
   new_pulse.overflow=0;
   setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, when, new_pulse);
 
-  when.time=now.time + 20*time_unit;
+  when.time=now.time + 4*scaling*time_unit;
   when.overflow=now.overflow;
-  new_pulse.time=30*time_unit;
+  new_pulse.time=6*scaling*time_unit;
   new_pulse.overflow=0;
   setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, when, new_pulse);
-  */
-
-  /*
-  // testing periods longer then overflow:
-  new_pulse.time=100;
-  new_pulse.overflow=1;
-  setup_task(&inside_task_info, ACTIVE, now, new_pulse);
-  new_pulse.time=1;
-  new_pulse.overflow=2;
-  setup_task(&inside_task_info, ACTIVE, now, new_pulse);
   */
 
 #ifdef MENU_over_serial
   periodics_info();
+  all_tasks_info();
 #endif
 
 
@@ -2013,7 +2032,7 @@ void setup() {
 // main loop:
 
 // overflow detection:
-OVERFLOW_TYPE last_overflow_displayed=0;
+unsigned int last_overflow_displayed=0;
 
 
 void loop() {
