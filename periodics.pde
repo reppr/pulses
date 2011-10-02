@@ -237,7 +237,7 @@ void div_time(struct time *duration, unsigned int divisor) {
 unsigned char flags[PERIODICS];
 // flag masks:
 #define ACTIVE			1	// switches task on/off
-#define COUNTED			2	// repeats int1 times, then vanishes
+#define COUNTED			2	// repeats 'times[]' times, then vanishes
 #define DO_NOT_DELETE	       16	// dummy to avoid being thrown out
 #define CUSTOM_1	       32	// can be used by periodic_do()
 #define CUSTOM_2	       64	// can be used by periodic_do()
@@ -251,25 +251,26 @@ struct time next[PERIODICS];		// next wake up time, overflow
 
 
 // internal parameter:
-unsigned int int1[PERIODICS];		// if COUNTED, gives number of executions
+unsigned int times[PERIODICS];		// if COUNTED, gives number of executions
 //					   else free for other internal use
 
 // custom parameters[task]		//  comment/uncomment as appropriate:
 					//  then *DO ADAPT init_task()* 
 
 // ============>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<============
-int parameter_1[PERIODICS];			//  can be used by periodic_do()
-int parameter_2[PERIODICS];			//  can be used by periodic_do()
-// int parameter_3[PERIODICS];			//  can be used by periodic_do()
-// int parameter_4[PERIODICS];			//  can be used by periodic_do()
-unsigned long ulong_parameter_1[PERIODICS];	//  can be used by periodic_do()
-// unsigned long ulong_parameter_2[PERIODICS];	//  can be used by periodic_do()
-// unsigned long ulong_parameter_3[PERIODICS];	//  can be used by periodic_do()
-// unsigned long ulong_parameter_4[PERIODICS];	//  can be used by periodic_do()
-char char_parameter_1[PERIODICS];		//  can be used by periodic_do()
-char char_parameter_2[PERIODICS];		//  can be used by periodic_do()
-// char char_parameter_3[PERIODICS];		//  can be used by periodic_do()
-// char char_parameter_4[PERIODICS];		//  can be used by periodic_do()
+// these parameters can be used by periodic_do(task):
+int parameter_1[PERIODICS];
+int parameter_2[PERIODICS];
+// int parameter_3[PERIODICS];
+// int parameter_4[PERIODICS];
+unsigned long ulong_parameter_1[PERIODICS];
+// unsigned long ulong_parameter_2[PERIODICS];
+// unsigned long ulong_parameter_3[PERIODICS];
+// unsigned long ulong_parameter_4[PERIODICS];
+char char_parameter_1[PERIODICS];		// pin
+char char_parameter_2[PERIODICS];		// index
+// char char_parameter_3[PERIODICS];
+// char char_parameter_4[PERIODICS];
 
 // pointers on  void something(int task)  functions:
 void (*periodic_do[PERIODICS])(int);
@@ -339,7 +340,7 @@ void init_task(int task) {
   flags[task] = 0;
   periodic_do[task] = NULL;
   pulse_count[task] = 0;	//  or pulse_count[task] = ILLEGAL; ???
-  int1[task] = 0;
+  times[task] = 0;
   pulse[task].time = 0;
   last[task].time = 0;
   last[task].overflow = 0;
@@ -387,7 +388,7 @@ void wake_task(int task) {
     next[task].overflow++;
 
   //						// COUNTED task && end reached?
-  if ((flags[task] & COUNTED) && ((pulse_count[task] +1) == int1[task] ))
+  if ((flags[task] & COUNTED) && ((pulse_count[task] +1) == times[task] ))
     if (flags[task] & DO_NOT_DELETE)		//   yes: DO_NOT_DELETE?
       flags[task] &= ~ACTIVE;			//     yes: just deactivate
     else
@@ -496,11 +497,12 @@ int setup_task(void (*task_do)(int), unsigned char new_flags, struct time when, 
 }
 
 
+// unused?
 int setup_counted_task(void (*task_do)(int), unsigned char new_flags, struct time when, struct time new_pulse, unsigned int count) {
   int task;
 
   task= setup_task(task_do, new_flags|COUNTED, when, new_pulse);
-  int1[task]= count;
+  times[task]= count;
 
   return task;
 }
@@ -535,6 +537,14 @@ int get_free_RAM() {
 }
 
 
+#ifdef USE_SERIAL
+  const unsigned char freeRAM[] PROGMEM = "free RAM ";
+
+  void RAM_info() {
+    serial_print_progmem(freeRAM);
+    Serial.print(get_free_RAM());
+  }
+#endif
 
 /* **************************************************************** */
 // some little things to play with:
@@ -762,6 +772,22 @@ void init_rhythm_3(int sync) {
 // infos on serial:
 #ifdef USE_SERIAL
 
+
+void time_info()
+{
+  unsigned long realtime = micros();
+
+  Serial.print("*** TIME info\t\t");
+  Serial.print("time/ovfl ");
+  Serial.print(realtime);
+  Serial.print("/");
+  Serial.print(now.overflow);		// cheating a tiny little bit...
+  Serial.print("\t");
+  Serial.print((float) realtime / 1000000.0, 3);
+  Serial.print("s now");
+}
+
+
 // binary print flags:
 // print binary numbers with leading zeroes and a space
 void serial_print_BIN(unsigned long value, int bits) {
@@ -781,62 +807,87 @@ void serial_print_BIN(unsigned long value, int bits) {
 
 const unsigned char timeUnits_[] PROGMEM = " time units";
 
-// inside_task_info() as paylod for tasks:
+// task_info() as paylod for tasks:
 // Prints task info over serial and blinks the LED
-void inside_task_info(int task) {
+void task_info(int task) {
   unsigned long realtime = micros();
 
 #ifdef LED_PIN
   digitalWrite(LED_PIN,HIGH);		// blink the LED
 #endif
 
-  Serial.print("*** TASK INFO ");
+  Serial.print("*** TASK info ");
   Serial.print(task);
   Serial.print("/");
   Serial.print((unsigned int) pulse_count[task]);
 
-  Serial.print("\ttime/ovfl ");
-  Serial.print(realtime);
-  Serial.print("/");
-  Serial.print(now.overflow);		// cheating a tiny little bit...
+//	  switch ((int) periodic_do[task]) {
+//	  case NULL:
+//	    break;
+//	  case ((int) *click):
+//	    Serial.print("\tclick");
+//	    break;
+//	
+//	  case &do_jiffle0:
+//	    Serial.print("\tjiffle0");
+//	    break;
+//	
+//	  case &do_throw_a_jiffle:
+//	    Serial.print("\tseed jiffle");
+//	    break;
+//	
+//	  case &task_info:
+//	    Serial.print("info");
+//	    break;
+//	
+//	  default:
+//	    Serial.print((int) periodic_do[task]);
+//	  }
 
-  Serial.print("    \tnext/ovfl ");
-  Serial.print(next[task].time);
-  Serial.print("/");
-  Serial.print(next[task].overflow);
+  Serial.print("\tflags ");
+  serial_print_BIN(flags[task], 8);
+  Serial.println();
 
-  Serial.print("   \tperiod/ovfl ");
+  Serial.print("pin ");  Serial.print((int) char_parameter_1[task]);
+  Serial.print("\tindex ");  Serial.print((int) char_parameter_2[task]);
+  Serial.print("\ttimes ");  Serial.print(times[task]);
+  Serial.print("\tp1 ");  Serial.print(parameter_1[task]);
+  Serial.print("\tp2 ");  Serial.print(parameter_2[task]);
+  Serial.print("\tul1 ");  Serial.print(ulong_parameter_1[task]);
+
+  Serial.println();		// start next line
+
+  Serial.print((float) pulse[task].time / (float) time_unit,3);
+  serial_print_progmem(timeUnits_);
+
+  Serial.print("\tpulse/ovf ");
   Serial.print((unsigned int) pulse[task].time);
   Serial.print("/");
   Serial.print(pulse[task].overflow);
 
-  Serial.print("\n\t\t");		// start next line
+  Serial.print("\t");
+  Serial.print((float) pulse[task].time / 1000000.0, 4);
+  Serial.print("s pulse");
 
-  Serial.print("\tlast/ovfl ");
+  Serial.println();		// start next line
+
+  Serial.print("last/ovfl ");
   Serial.print((unsigned int) last[task].time);
   Serial.print("/");
   Serial.print(last[task].overflow);
 
-  Serial.print("   \tflags ");
-  serial_print_BIN(flags[task], 8);
-  Serial.print("\t\tperiod ");
-  Serial.print((float) pulse[task].time / (float) time_unit,3);
-  serial_print_progmem(timeUnits_);
-
-  Serial.print("\n\t\t");		// start next line
+  Serial.print("   \tnext/ovfl ");
+  Serial.print(next[task].time);
+  Serial.print("/");
+  Serial.print(next[task].overflow);
 
   // no overflow in times yet ################################
-  Serial.print("\texpected seconds ");
-  Serial.print((float) now.time / 1000000.0, 3);
-  Serial.print("s");
+  Serial.print("\t");
+  Serial.print((float) next[task].time / 1000000.0, 3);
+  Serial.print("s expected");
 
-  Serial.print("\treal ");
-  Serial.print((float) realtime / 1000000.0, 2);
-  Serial.print("s");
-
-  Serial.print("  \t\tperiod ");
-  Serial.print((float) pulse[task].time / 1000000.0, 4);
-  Serial.print("s");
+  Serial.println();		// start last line
+  time_info();
 
   Serial.print("\n\n");			// traling empty line
 
@@ -849,7 +900,7 @@ void all_active_tasks_info()
 {
   for (int task=0; task < PERIODICS; task++)
     if (flags[task] & ACTIVE)				// task active?
-      inside_task_info(task);
+      task_info(task);
 }
 
 #endif	// #ifdef USE_SERIAL
@@ -1223,7 +1274,7 @@ void menu_hardware_display() {
 // program specific menu:
 
 const unsigned char switchPeriodic[] PROGMEM = "s=switch periodic on/off";
-const unsigned char freeRAM[] PROGMEM = "free RAM: ";
+// const unsigned char freeRAM[] PROGMEM = "free RAM ";
 const unsigned char pPin[] PROGMEM = "p=pin (";
 const unsigned char none_[] PROGMEM = "(none)";
 
@@ -1271,7 +1322,7 @@ void info_select_destination_with(boolean extended_destinations) {
 const unsigned char pressm[] PROGMEM = "\nPress 'm' or '?' for menu.\n\n";
 
 const unsigned char microSeconds[] PROGMEM = " microseconds";
-const unsigned char Mute_Info[] PROGMEM = "M=mute all\ti=periodics info";
+const unsigned char Mute_Info[] PROGMEM = "M=mute all\ti=info";
 const unsigned char perSecond_[] PROGMEM = " per second)";
 const unsigned char equals_[] PROGMEM = " = ";
 
@@ -1536,6 +1587,14 @@ void menu_serial_reaction() {
 
       case 'm': case '?':
 	display_serial_menu();
+	time_info(); Serial.println();
+	RAM_info(); Serial.println();
+	break;
+
+      case '.':
+	time_info(); Serial.println();
+	RAM_info(); Serial.println();
+	periodics_info();
 	break;
 
       // *do* change this line if you change CLICK_PERIODICS
@@ -1574,8 +1633,9 @@ void menu_serial_reaction() {
 	break;
 
       case 'i':
+	RAM_info(); Serial.println(); Serial.println();
 	all_active_tasks_info();
-	periodics_info();
+	// periodics_info();
 	break;
 
       case 'M':					// hides hardware menus 'M'
@@ -1930,14 +1990,13 @@ void setup() {
 
 
 #ifdef USE_SERIAL
-  #ifndef MENU_over_serial
-   Serial.println("");
-   serial_println_progmem(programLongName);
+  #ifdef MENU_over_serial	// show message about menu
+    display_serial_menu();
+  #else
+    serial_println_progmem(programLongName);
   #endif
-#endif
 
-#ifdef MENU_over_serial	// show message about menu
-  display_serial_menu();
+  RAM_info(); Serial.println();
 #endif
 
 //	#ifdef USE_LCD
@@ -1980,14 +2039,14 @@ void setup() {
   // setup_task(task_do, new_flags|COUNTED, when, new_pulse);
 
 /*
-  // 1 to 2 second pattern straight (for easy to read inside_task_info() output)
+  // 1 to 2 second pattern straight (for easy to read task_info() output)
   // setup_task(task_do, new_flags|COUNTED, when, new_pulse);
   when=now;
   new_pulse.overflow=0;
   new_pulse.time=1000000L;
-  setup_task(&inside_task_info, ACTIVE, when, new_pulse);
+  setup_task(&task_info, ACTIVE, when, new_pulse);
   new_pulse.time=2000000L;
-  setup_task(&inside_task_info, ACTIVE, when, new_pulse);
+  setup_task(&task_info, ACTIVE, when, new_pulse);
 */
 
   // DADA
