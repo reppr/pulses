@@ -89,15 +89,66 @@
 
 /* **************************************************************** */
 /* **************************************************************** */
-// struct time
+
+// global variables, task and time.
+int task;
 
 struct time {
   unsigned long time;
   unsigned int overflow;
 };
 
-// add_time(), sub_time(), mul_time(), div_time():
+struct time now, last_now;
 
+struct time global_next;
+unsigned int global_next_count=0;
+int global_next_tasks[PERIODICS];
+
+// unsigned long time_unit = 100000L;		// scaling timer to 10/s 0.1s
+
+// I want time_unit to be dividable by a semi random selection of small integers
+// avoiding rounding errors as much as possible.
+//
+// I consider factorials as a good choice:
+// unsigned long time_unit =    40320L;		// scaling timer to  8!, 0.040320s
+// unsigned long time_unit =   362880L;		// scaling timer to  9!, 0,362880s 
+unsigned long time_unit =  3628800L;		// scaling timer to 10!, 3.628800s
+
+
+/* **************************************************************** */
+// init time:
+
+void init_time()
+{
+  extern volatile unsigned long timer0_overflow_count;
+
+  cli();
+  timer0_overflow_count = 0;
+  sei();
+
+  last_now.time = 0;		// make sure get_now() sees no overflow
+  get_now();
+  now.overflow = 0;		// start with now.overflow = 0
+
+  last_now = now;		// correct overflow
+
+  global_next.time=0;
+  global_next.overflow=~0;	// ILLEGAL
+}
+
+
+// *always* get time through get_now()
+void get_now() {		// get time, set now.time and now.overflow
+  now.time = micros();
+
+  if (now.time < last_now.time)	// manage now.overflows
+    now.overflow++;
+
+  last_now = now;		// manage last_now
+}
+
+
+// add_time(), sub_time(), mul_time(), div_time():
 
 void add_time(struct time *delta, struct time *sum)
 {
@@ -280,52 +331,6 @@ void serial_println_progmem(const unsigned char *str) {
 #endif
 
 #endif	// #if (defined(USE_SERIAL) || defined(USE_LCD))
-
-
-/* **************************************************************** */
-
-// global variables, task and time.
-int task;
-
-struct time now, last_now;
-
-struct time global_next;
-unsigned int global_next_count=0;
-int global_next_tasks[PERIODICS];
-
-unsigned long time_unit = 100000;		// scaling timer to 10/s 
-
-/* **************************************************************** */
-// init time:
-
-void init_time()
-{
-  extern volatile unsigned long timer0_overflow_count;
-
-  cli();
-  timer0_overflow_count = 0;
-  sei();
-
-  last_now.time = 0;		// make sure get_now() sees no overflow
-  get_now();
-  now.overflow = 0;		// start with now.overflow = 0
-
-  last_now = now;		// correct overflow
-
-  global_next.time=0;
-  global_next.overflow=~0;	// ILLEGAL
-}
-
-
-// *always* get time through get_now()
-void get_now() {		// get time, set now.time and now.overflow
-  now.time = micros();
-
-  if (now.time < last_now.time)	// manage now.overflows
-    now.overflow++;
-
-  last_now = now;		// manage last_now
-}
 
 
 /* **************************************************************** */
@@ -840,10 +845,11 @@ void inside_task_info(int task) {
 #endif
 }
 
-void all_tasks_info()
+void all_active_tasks_info()
 {
   for (int task=0; task < PERIODICS; task++)
-    inside_task_info(task);
+    if (flags[task] & ACTIVE)				// task active?
+      inside_task_info(task);
 }
 
 #endif	// #ifdef USE_SERIAL
@@ -1568,6 +1574,7 @@ void menu_serial_reaction() {
 	break;
 
       case 'i':
+	all_active_tasks_info();
 	periodics_info();
 	break;
 
@@ -1961,8 +1968,8 @@ void setup() {
   // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
   // init_rhythm_1(1);
   // init_rhythm_2(1);
-  init_rhythm_3(1);
-  // setup_jiffles0();
+  // init_rhythm_3(1);
+  setup_jiffles0();
 
   Serial.println("\nPERIODICS\n");
 
@@ -2020,7 +2027,7 @@ void setup() {
 
 #ifdef MENU_over_serial
   periodics_info();
-  all_tasks_info();
+  //  all_active_tasks_info();
 #endif
 
 
