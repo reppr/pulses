@@ -289,6 +289,20 @@ const unsigned char programLongName[] PROGMEM = "*** Play with PERIODICS v0.2 **
 const unsigned char version[] PROGMEM = "version 0.2";
 
 const unsigned char tab_[] PROGMEM = "\t";
+void tab() {
+  serial_print_progmem(tab_);
+}
+
+const unsigned char space_[] PROGMEM = " ";
+void spaces(int count) {
+  for (; count>0; count--)
+    serial_print_progmem(space_);
+}
+
+const unsigned char slash_[] PROGMEM = "/";
+void slash() {
+  serial_print_progmem(slash_);
+}
 
 
 //	#ifdef USE_LCD
@@ -327,7 +341,7 @@ void serial_print_progmem(const unsigned char *str) {
 
 void serial_println_progmem(const unsigned char *str) {
   serial_print_progmem(str);
-  Serial.println("");
+  Serial.println();
 }
 #endif
 
@@ -581,10 +595,22 @@ void click(int task) {			// can be called from a task
 unsigned char click_task[CLICK_PERIODICS];
 unsigned char click_pin[CLICK_PERIODICS];
 
+
 void init_click_pins() {
   for (int task=0; task<CLICK_PERIODICS; task++) {
     pinMode(click_pin[task], OUTPUT);
   }
+}
+
+
+// unused?
+int setup_click_task(void (*task_do)(int), unsigned char new_flags,
+		     struct time when, struct time new_pulse) {
+  int task = setup_task(task_do, new_flags, when, new_pulse);
+  if (task != ILLEGAL)
+    char_parameter_1[task] = click_pin[task];
+
+  return task;
 }
 
 
@@ -772,19 +798,31 @@ void init_rhythm_3(int sync) {
 // infos on serial:
 #ifdef USE_SERIAL
 
+// I'll need these soon:
+// destination of menu functions '*' '/' '=' and 's'
+unsigned char selected_destination=~0;
+// destinations codes (other then 0, 1, 2, ... for individual clicker tasks):
+#define ALL_PERIODICS	PERIODICS		// destination code
+#define TIME_UNIT	(PERIODICS + 1)		// destination code
+
+
+
+const unsigned char timeInfo[] PROGMEM = "*** TIME info\t\t";
+const unsigned char timeOvfl[] PROGMEM = "time/ovfl ";
+const unsigned char sNow[] PROGMEM = "s now";
 
 void time_info()
 {
   unsigned long realtime = micros();
 
-  Serial.print("*** TIME info\t\t");
-  Serial.print("time/ovfl ");
+  serial_print_progmem(timeInfo);
+  serial_print_progmem(timeOvfl);
   Serial.print(realtime);
-  Serial.print("/");
+  slash();
   Serial.print(now.overflow);		// cheating a tiny little bit...
-  Serial.print("\t");
+  tab();
   Serial.print((float) realtime / 1000000.0, 3);
-  Serial.print("s now");
+  serial_print_progmem(sNow);
 }
 
 
@@ -801,11 +839,64 @@ void serial_print_BIN(unsigned long value, int bits) {
       else
 	Serial.print(0);
   }
-  Serial.print(" ");
+  spaces(1);
+}
+
+
+void print_action(int task) {
+  void (*scratch)(int);
+
+  scratch=&click;
+  if (periodic_do[task] == scratch) {
+    Serial.print("click");
+    return;
+  }
+
+  scratch=&do_jiffle0;
+  if (periodic_do[task] == scratch) {
+    Serial.print("do_jiffle0");
+    return;
+  }
+
+  scratch=&do_throw_a_jiffle;
+  if (periodic_do[task] == scratch) {
+    Serial.print("seed jiffle");
+    return;
+  }
+
+  scratch=&task_info;
+  if (periodic_do[task] == scratch) {
+    Serial.print("task_info");
+    return;
+  }
+
+  scratch=&task_info_1line;
+  if (periodic_do[task] == scratch) {
+    Serial.print("info line");
+    return;
+  }
+
+  scratch=&click;
+  if (periodic_do[task] == scratch) {
+    Serial.print("NULL");
+    return;
+  }
+
+  Serial.print("UNKNOWN");
 }
 
 
 const unsigned char timeUnits_[] PROGMEM = " time units";
+const unsigned char taskInfo[] PROGMEM = "*** TASK info ";
+const unsigned char flags_[] PROGMEM = "\tflags ";
+const unsigned char pulseOvfl[] PROGMEM = "\tpulse/ovf ";
+const unsigned char lastOvfl[] PROGMEM = "last/ovfl ";
+const unsigned char nextOvfl[] PROGMEM = "   \tnext/ovfl ";
+const unsigned char index_[] PROGMEM = "\tindex ";
+const unsigned char times_[] PROGMEM = "\ttimes ";
+const unsigned char sPulse[] PROGMEM = "s pulse";
+const unsigned char sExpected[] PROGMEM = "s expected";
+const unsigned char ul1_[] PROGMEM = "\tul1 ";
 
 // task_info() as paylod for tasks:
 // Prints task info over serial and blinks the LED
@@ -816,75 +907,55 @@ void task_info(int task) {
   digitalWrite(LED_PIN,HIGH);		// blink the LED
 #endif
 
-  Serial.print("*** TASK info ");
+  serial_print_progmem(taskInfo);
   Serial.print(task);
-  Serial.print("/");
+  slash();
   Serial.print((unsigned int) pulse_count[task]);
 
-//	  switch ((int) periodic_do[task]) {
-//	  case NULL:
-//	    break;
-//	  case ((int) *click):
-//	    Serial.print("\tclick");
-//	    break;
-//	
-//	  case &do_jiffle0:
-//	    Serial.print("\tjiffle0");
-//	    break;
-//	
-//	  case &do_throw_a_jiffle:
-//	    Serial.print("\tseed jiffle");
-//	    break;
-//	
-//	  case &task_info:
-//	    Serial.print("info");
-//	    break;
-//	
-//	  default:
-//	    Serial.print((int) periodic_do[task]);
-//	  }
+  tab();
+  print_action(task);
 
-  Serial.print("\tflags ");
+  serial_print_progmem(flags_);
   serial_print_BIN(flags[task], 8);
   Serial.println();
 
   Serial.print("pin ");  Serial.print((int) char_parameter_1[task]);
-  Serial.print("\tindex ");  Serial.print((int) char_parameter_2[task]);
-  Serial.print("\ttimes ");  Serial.print(times[task]);
+  serial_print_progmem(index_);  Serial.print((int) char_parameter_2[task]);
+  serial_print_progmem(times_);  Serial.print(times[task]);
   Serial.print("\tp1 ");  Serial.print(parameter_1[task]);
   Serial.print("\tp2 ");  Serial.print(parameter_2[task]);
-  Serial.print("\tul1 ");  Serial.print(ulong_parameter_1[task]);
+  serial_print_progmem(ul1_);  Serial.print(ulong_parameter_1[task]);
 
   Serial.println();		// start next line
 
   Serial.print((float) pulse[task].time / (float) time_unit,3);
   serial_print_progmem(timeUnits_);
 
-  Serial.print("\tpulse/ovf ");
+  serial_print_progmem(pulseOvfl);
   Serial.print((unsigned int) pulse[task].time);
-  Serial.print("/");
+  slash();
   Serial.print(pulse[task].overflow);
 
-  Serial.print("\t");
+  tab();
   Serial.print((float) pulse[task].time / 1000000.0, 4);
-  Serial.print("s pulse");
+  serial_print_progmem(sPulse);
 
   Serial.println();		// start next line
 
-  Serial.print("last/ovfl ");
+  serial_print_progmem(lastOvfl);
   Serial.print((unsigned int) last[task].time);
-  Serial.print("/");
+  slash();
   Serial.print(last[task].overflow);
 
-  Serial.print("   \tnext/ovfl ");
+  serial_print_progmem(nextOvfl);
   Serial.print(next[task].time);
-  Serial.print("/");
+  slash();
   Serial.print(next[task].overflow);
 
   // no overflow in times yet ################################
-  Serial.print("\t");
+  tab();
   Serial.print((float) next[task].time / 1000000.0, 3);
-  Serial.print("s expected");
+  serial_print_progmem(sExpected);
 
   Serial.println();		// start last line
   time_info();
@@ -896,29 +967,64 @@ void task_info(int task) {
 #endif
 }
 
-void all_active_tasks_info()
+void active_tasks_info()
 {
   for (int task=0; task < PERIODICS; task++)
     if (flags[task] & ACTIVE)				// task active?
       task_info(task);
 }
 
-#endif	// #ifdef USE_SERIAL
 
+// one line task info version:
+const unsigned char task_[] PROGMEM = "TASK ";
+
+void task_info_1line(int task) {
+
+  serial_print_progmem(task_);
+  Serial.print(task);
+  slash();
+  Serial.print((unsigned int) pulse_count[task]);
+
+  serial_print_progmem(flags_);
+  serial_print_BIN(flags[task], 8);
+
+  tab();
+  print_period_in_time_units(task);
+
+  tab();
+  print_action(task);
+
+  // no overflow in times yet ################################
+  tab();
+  Serial.print((float) next[task].time / 1000000.0, 3);
+  serial_print_progmem(sExpected);
+
+  tab();
+  Serial.print((float) micros() / 1000000.0, 3);
+  serial_print_progmem(sNow);
+
+  if ((ALL_PERIODICS == selected_destination) || (task == selected_destination))
+    Serial.print(" *");
+
+  Serial.println();
+}
+
+
+void active_tasks_info_lines()
+{
+  for (int task=0; task < PERIODICS; task++)
+    if (flags[task] & ACTIVE)				// task active?
+      task_info_1line(task);
+}
+
+
+#endif	// #ifdef USE_SERIAL
 
 
 /* **************************************************************** */
 // functions to deal with clicks (i.e. from the menus):
 
 #ifdef USE_SERIAL
-
-
-// destination of menu functions '*' '/' '=' and 's'
-unsigned char selected_destination=~0;
-// destinations codes (other then 0, 1, 2, ... for individual clicker tasks):
-#define ALL_PERIODICS	PERIODICS		// destination code
-#define TIME_UNIT	(PERIODICS + 1)		// destination code
-
 
 const unsigned char mutedAllPeriodics[] PROGMEM = "muted all periodics";
 #endif
@@ -946,7 +1052,7 @@ void print_period_in_time_units(int task) {
 
   scratch = 1000.0;
   while (scratch > max(time_units, 1.0)) {
-    Serial.print(" ");
+    spaces(1);
     scratch /= 10.0;
   }
 
@@ -954,47 +1060,11 @@ void print_period_in_time_units(int task) {
   serial_print_progmem(timeUnits_);
 }
 
-
-const unsigned char pin_[] PROGMEM = "pin ";	// HARDWARE_menu uses this too
-
+// DADA
 const unsigned char periodic_[] PROGMEM = "periodic ";
 const unsigned char timeUnits[] PROGMEM = " time units";
 const unsigned char active_[] PROGMEM = "\tactive";
 const unsigned char counter_[] PROGMEM = "\tcounter ";
-
-void periodic_info(int task) {
-  serial_print_progmem(periodic_);
-  Serial.print((int) task);
-  print_period_in_time_units(task);
-
-  if(flags[task] & ACTIVE)
-    serial_print_progmem(active_);
-  else
-    serial_print_progmem(tab_);
-
-  serial_print_progmem(tab_);
-  serial_print_progmem(pin_);
-  Serial.print((int) click_pin[task]);
-
-  serial_print_progmem(counter_);
-  Serial.print(pulse_count[task]);
-
-  Serial.println("");
-}
-
-
-void periodics_info() {
-  for (char task=0; task<CLICK_PERIODICS; task++) {
-    if ((ALL_PERIODICS == selected_destination) || (task == selected_destination))
-      Serial.print("*");
-    else
-      Serial.print(" ");
-
-    periodic_info(task);
-  }
-  Serial.println("");
-}
-
 
 
 /* **************************************************************** */
@@ -1153,7 +1223,7 @@ void bar_graph(int value) {
     serial_println_progmem(outOfRange);
   }
 
-  Serial.println("");
+  Serial.println();
 }
 
 
@@ -1209,14 +1279,14 @@ void display_analog_reads() {
     Serial.print(i); serial_print_progmem(tab_); bar_graph(value);
   }
 
-  Serial.println("");
+  Serial.println();
 }
 
 
 
 const unsigned char watchingINpin[] PROGMEM = "watching digital input pin ";
 const unsigned char anyStop[] PROGMEM = "\t\t(send any byte to stop)";
-// const unsigned char pin_[] PROGMEM = "pin ";		// defined already
+const unsigned char pin_[] PROGMEM = "pin ";		// defined already
 const unsigned char is_[] PROGMEM = " is ";
 const unsigned char high_[] PROGMEM = "HIGH";
 const unsigned char low_[] PROGMEM = "LOW";
@@ -1254,7 +1324,7 @@ const unsigned char aAnalogRead[] PROGMEM = "a=analog read";
 void menu_hardware_display() {
   serial_print_progmem(hwMenuTitle);
   Serial.println(get_free_RAM());
-  Serial.println("");
+  Serial.println();
 
   serial_print_progmem(PPin);
   if (hw_PIN == ILLEGAL)
@@ -1291,7 +1361,7 @@ void info_select_destination_with(boolean extended_destinations) {
   serial_println_progmem(selectDestinationInfo);
   serial_print_progmem(selectPeriodicWith);
   for (int task=0; task<CLICK_PERIODICS; task++ ) {
-    Serial.print(task); Serial.print("  ");
+    Serial.print(task); spaces(2);
   }
   serial_print_progmem(tab_);
   if (selected_destination < CLICK_PERIODICS) {
@@ -1312,8 +1382,8 @@ void info_select_destination_with(boolean extended_destinations) {
     if(selected_destination == TIME_UNIT) {
     serial_println_progmem(selected_);
     } else
-      Serial.println("");
-    Serial.println("");
+      Serial.println();
+    Serial.println();
   }
 }
 
@@ -1330,7 +1400,7 @@ void display_serial_menu() {
 
   serial_println_progmem(programLongName);
 
-  Serial.println("");
+  Serial.println();
   info_select_destination_with(false);
 
   serial_print_progmem(selectTimeUnits);
@@ -1341,7 +1411,7 @@ void display_serial_menu() {
   Serial.print((float) (1000000.0 / (float) time_unit),3);
   serial_println_progmem(perSecond_);
 
-  Serial.println("");
+  Serial.println();
   serial_println_progmem(switchPeriodic);
   serial_println_progmem(Mute_Info);
 
@@ -1489,7 +1559,7 @@ void multiply_period_and_inform(int task, unsigned long factor) {
   Serial.print("] by ");
   Serial.print(factor);
   serial_print_progmem(tab_);
-  periodic_info(task);
+  task_info_1line(task);
 }
 
 
@@ -1507,7 +1577,7 @@ void divide_period_and_inform(int task, unsigned long divisor) {
   Serial.print("] by ");
   Serial.print(divisor);
   serial_print_progmem(tab_);
-  periodic_info(task);
+  task_info_1line(task);
 }
 
 
@@ -1523,7 +1593,7 @@ void set_new_period_and_inform(int task, struct time new_pulse) {
   //  Serial.print(value);
   serial_print_progmem(tab_);
   serial_print_progmem(tab_);
-  periodic_info(task);
+  task_info_1line(task);
 }
 
 
@@ -1550,7 +1620,7 @@ void switch_periodic_and_inform(int task) {
     last[task] = next[task];	// for overflow logic
 
     Serial.println(" on/t");
-    periodic_info(task);
+    task_info_1line(task);
   } else
     Serial.println (" off");
 
@@ -1593,8 +1663,8 @@ void menu_serial_reaction() {
 
       case '.':
 	time_info(); Serial.println();
+	active_tasks_info_lines();
 	RAM_info(); Serial.println();
-	periodics_info();
 	break;
 
       // *do* change this line if you change CLICK_PERIODICS
@@ -1624,7 +1694,7 @@ void menu_serial_reaction() {
 	    for (int task=0; task<CLICK_PERIODICS; task++ ) {
 	      switch_periodic_and_inform(task);
 	    }
-	    Serial.println("");
+	    Serial.println();
 	    break;
 
 	  default:
@@ -1634,8 +1704,7 @@ void menu_serial_reaction() {
 
       case 'i':
 	RAM_info(); Serial.println(); Serial.println();
-	all_active_tasks_info();
-	// periodics_info();
+	active_tasks_info();
 	break;
 
       case 'M':					// hides hardware menus 'M'
@@ -1658,7 +1727,7 @@ void menu_serial_reaction() {
 	    for (int task=0; task<CLICK_PERIODICS; task++ ) {
 	      multiply_period_and_inform(task, newValue);
 	    }
-	    Serial.println("");
+	    Serial.println();
 	    break;
 
 	  case TIME_UNIT:
@@ -1686,7 +1755,7 @@ void menu_serial_reaction() {
 	    for (int task=0; task<CLICK_PERIODICS; task++ ) {
 	      divide_period_and_inform(task, newValue);
 	    }
-	    Serial.println("");
+	    Serial.println();
 	    break;
 
 	  case TIME_UNIT:
@@ -1718,7 +1787,7 @@ void menu_serial_reaction() {
 	    for (int task=0; task<CLICK_PERIODICS; task++ ) {
 	      set_new_period_and_inform(selected_destination, time_scratch);
 	    }
-	    Serial.println("");
+	    Serial.println();
 	    break;
 
 	  case TIME_UNIT:			// time_unit
@@ -1801,7 +1870,7 @@ void menu_serial_reaction() {
 	    menu_input = get_char();
 	    Serial.print(byte(menu_input));
 	  }
-	  Serial.println("");
+	  Serial.println();
 	break;
 	}
       }
@@ -1872,7 +1941,6 @@ void do_jiffle0 (int task) {	// to be called by task_do
   // fix_global_next();
 }
 
-// DADA
 int init_jiffle(unsigned int *jiffletab, struct time when, struct time new_pulse, int origin_task)
 {
   struct time jiffle_pulse=new_pulse;
@@ -1887,14 +1955,9 @@ int init_jiffle(unsigned int *jiffletab, struct time when, struct time new_pulse
     parameter_1[jiffle_task] = jiffletab[2];			// count of first phase
     parameter_2[jiffle_task] = (unsigned int) jiffletab;
     ulong_parameter_1[jiffle_task] = new_pulse.time;
-  } 
-#ifdef USE_SERIAL
-  else {
-    // DADA
-    Serial.print("ERROR: no task free to start jiffle from task ");
-    Serial.println(origin_task);
   }
-#endif
+
+  return task;
 }
 
 
@@ -1996,7 +2059,7 @@ void setup() {
     serial_println_progmem(programLongName);
   #endif
 
-  RAM_info(); Serial.println();
+  RAM_info(); Serial.println(); Serial.println();
 #endif
 
 //	#ifdef USE_LCD
@@ -2029,9 +2092,6 @@ void setup() {
   // init_rhythm_2(1);
   // init_rhythm_3(1);
   setup_jiffles0();
-
-  Serial.println("\nPERIODICS\n");
-
 
   struct time when;
   struct time new_pulse;
@@ -2085,8 +2145,8 @@ void setup() {
   */
 
 #ifdef MENU_over_serial
-  periodics_info();
-  //  all_active_tasks_info();
+  active_tasks_info_lines();
+  //  active_tasks_info();
 #endif
 
 
