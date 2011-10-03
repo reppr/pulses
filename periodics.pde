@@ -612,24 +612,32 @@ void init_click_pins() {
 }
 
 
-int setup_click_task(void (*task_do)(int), unsigned char new_flags,
-		     struct time when, struct time new_pulse) {
-  int task = setup_task(task_do, new_flags, when, new_pulse);
-  if (task != ILLEGAL) {
-    char_parameter_1[task] = click_pin[task];
-    pinMode(char_parameter_1[task++], OUTPUT);
-    digitalWrite(char_parameter_1[task++], LOW);
-  }
-
-  return task;
-}
+//  // unused? (I use the synced version more often)
+//  int setup_click_task(void (*task_do)(int), unsigned char new_flags,
+//  		     struct time when, struct time new_pulse) {
+//    int task = setup_task(task_do, new_flags, when, new_pulse);
+//    if (task != ILLEGAL) {
+//      char_parameter_1[task] = click_pin[task];
+//      pinMode(char_parameter_1[task++], OUTPUT);
+//      digitalWrite(char_parameter_1[task++], LOW);
+//    }
+//  
+//    return task;
+//  }
 
 
 // playing with rhythms:
 
 // DADA
-int setup_now_click(long unit, long factor, long divisor, int sync) {
-  struct time new_pulse, when=now;
+// Generic setup pulse, stright or middle synced relative to 'when'.
+// Pulse time and phase sync get deviated from unit, which is first
+// multiplied by factor and divided by divisor.
+// sync=0 gives stright syncing, sync=1 middle pulses synced.
+int setup_pulse_synced(void (*task_do)(int), unsigned char new_flags,
+		       struct time when, unsigned long unit,
+		       unsigned long factor, unsigned long divisor, int sync)
+{
+  struct time new_pulse;
 
   if (sync) {
     struct time delta;
@@ -647,85 +655,54 @@ int setup_now_click(long unit, long factor, long divisor, int sync) {
   mul_time(&new_pulse, factor);
   div_time(&new_pulse, divisor);
 
-  setup_click_task(&click, ACTIVE, when, new_pulse);
+  return setup_task(task_do, new_flags, when, new_pulse);
+}
+
+
+int setup_click_synced(struct time when, unsigned long unit, unsigned long factor,
+		       unsigned long divisor, int sync) {
+  int task= setup_pulse_synced(&click, ACTIVE, when, unit, factor, divisor, sync);
+
+  if (task != ILLEGAL) {
+    char_parameter_1[task] = click_pin[task];
+    pinMode(char_parameter_1[task++], OUTPUT);
+    digitalWrite(char_parameter_1[task++], LOW);
+  }
+
+  return task;
+}
+
+
+int setup_jiffle_thrower_synced(struct time when,
+				unsigned long unit,
+				unsigned long factor, unsigned long divisor,
+				int sync, unsigned int *jiffletab)
+{
+  int task= setup_pulse_synced(&do_throw_a_jiffle, ACTIVE,
+			       when, unit, factor, divisor, sync);
+  if (task != ILLEGAL)
+    parameter_2[task] = (unsigned int) jiffletab;
+
+  return task;
 }
 
 
 // some default rhythms:
 void init_rhythm_1(int sync) { 
   // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
-  long factor;
-  long scaling=6;
-  struct time when;
-  struct time delta;
-  struct time new_pulse;
-  struct time templ;
+  unsigned long divisor=1;
+  unsigned long scaling=6;
 
-  templ.time = scaling*time_unit;
-  templ.overflow = 0;
-
-  get_now();
   init_click_tasks();
+  get_now();
 
-  // 2
-  factor=2;
-  when=now;
-  if (sync) {
-    delta.time=sync*factor*scaling/2L*time_unit;
-    delta.overflow=0;
-    add_time(&delta, &when);
-  }
-  new_pulse = templ;
-  mul_time(&new_pulse, factor);
-  setup_click_task(&click, ACTIVE, when, new_pulse);
-
-  // 3
-  factor=3;
-  when=now;
-  if (sync) {
-    delta.time=sync*factor*scaling/2L*time_unit;
-    delta.overflow=0;
-    add_time(&delta, &when);
-  }
-  new_pulse = templ;
-  mul_time(&new_pulse, factor);
-  setup_click_task(&click, ACTIVE, when, new_pulse);
-
-  // 4
-  factor=4;
-  when=now;
-  if (sync) {
-    delta.time=sync*factor*scaling/2L*time_unit;
-    delta.overflow=0;
-    add_time(&delta, &when);
-  }
-  new_pulse = templ;
-  mul_time(&new_pulse, factor);
-  setup_click_task(&click, ACTIVE, when, new_pulse);
-
-  // 5
-  factor=5;
-  when=now;
-  if (sync) {
-    delta.time=sync*factor*scaling/2L*time_unit;
-    delta.overflow=0;
-    add_time(&delta, &when);
-  }
-  new_pulse = templ;
-  mul_time(&new_pulse, factor);
-  setup_click_task(&click, ACTIVE, when, new_pulse);
+  for (long factor=2L; factor<6L; factor++)	// 2, 3, 4, 5
+    setup_click_synced(now, scaling*time_unit, factor, divisor, sync);
 
   // 2*2*3*5
-  factor=2*2*3*5;
-  when=now;
-  if (sync) {
-    delta.time=sync*factor*scaling/2L*time_unit;
-    delta.overflow=0;
-    add_time(&delta, &when);
-  }
-  new_pulse = templ;
-  mul_time(&new_pulse, factor);
-  setup_click_task(&click, ACTIVE, when, new_pulse);
+  setup_click_synced(now, scaling*time_unit, 2L*2L*3L*5L, divisor, sync);
+
+  fix_global_next();
 }
 
 
@@ -733,102 +710,44 @@ void init_rhythm_1(int sync) {
 void init_rhythm_2(int sync) { 
   // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
   int scaling=60;
-  unsigned long divider;
-
-  struct time when;
-  struct time delta;
-  struct time new_pulse;
-  struct time templ;
-
-  templ.time = scaling*time_unit;
-  templ.overflow = 0;
+  unsigned long factor=1;
+  unsigned long unit= scaling*time_unit;
 
   init_click_tasks();
-
   get_now();
 
-  for (divider=4; divider<12 ; divider += 2) {
-    when = now;
-    delta.time = sync*scaling*time_unit/divider/2;
-    delta.overflow = 0;
-    add_time(&delta, &when);
-
-    new_pulse = templ;
-    div_time (&new_pulse, divider);
-
-    setup_click_task(&click, ACTIVE, when, new_pulse);
-  }
+  for (unsigned long divisor=4; divisor<12 ; divisor += 2)
+    setup_click_synced(now, unit, factor, divisor, sync);
 
   // slowest *not* synced
-  when = now;
-  // delta.time = sync*scaling*time_unit/2;	// slowest *not* synced
-  // delta.overflow = 0;			// slowest *not* synced
-  // add_time(&delta, &when);			// slowest *not* synced
-  new_pulse.time = scaling*time_unit;
-  new_pulse.overflow =0 ;
-  setup_click_task(&click, ACTIVE, when, new_pulse);
+  setup_click_synced(now, unit, 1, 1, 0);
+
+  fix_global_next();
 }
 
-// nice 1 to 3 to 4 to 5 pattern with phase offsets
+// nice 2 to 3 to 4 to 5 pattern with phase offsets
 void init_rhythm_3(int sync) { 
   // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
-  long factor;
+  unsigned long factor, divisor=1L;
   const unsigned long scaling=5L;
-  struct time when, delta, new_pulse, templ;
-
-  templ.time = scaling*time_unit;
-  templ.overflow = 0;
+  const unsigned long unit=scaling*time_unit;
 
   init_click_tasks();
   get_now();
 
-  // 1
-  factor=1;
-  when = now;
-  if (sync) {
-    delta.time=sync*factor*scaling/2L*time_unit;
-    delta.overflow = 0;
-    add_time(&delta, &when);
-  }
-  new_pulse = templ;
-  mul_time(&new_pulse, factor);
-  setup_click_task(&click, ACTIVE, when, new_pulse);
+  factor=2;
+  setup_click_synced(now, unit, factor, divisor, sync);
 
-  // 3
   factor=3;
-  when = now;
-  if (sync) {
-    delta.time=sync*factor*scaling/2L*time_unit;
-    delta.overflow = 0;
-    add_time(&delta, &when);
-  }
-  new_pulse = templ;
-  mul_time(&new_pulse, factor);
-  setup_click_task(&click, ACTIVE, when, new_pulse);
+  setup_click_synced(now, unit, factor, divisor, sync);
 
-  // 4
   factor=4;
-  when = now;
-  if (sync) {
-    delta.time=sync*factor*scaling/2L*time_unit;
-    delta.overflow = 0;
-    add_time(&delta, &when);
-  }
-  new_pulse = templ;
-  mul_time(&new_pulse, factor);
-  setup_click_task(&click, ACTIVE, when, new_pulse);
+  setup_click_synced(now, unit, factor, divisor, sync);
 
-  // 5
   factor=5;
-  when = now;
-  if (sync) {
-    delta.time=sync*factor*scaling/2L*time_unit;
-    delta.overflow = 0;
-    add_time(&delta, &when);
-  }
-  new_pulse = templ;
-  mul_time(&new_pulse, factor);
-  setup_click_task(&click, ACTIVE, when, new_pulse);
+  setup_click_synced(now, unit, factor, divisor, sync);
+
+  fix_global_next();
 }
 
 #endif	//  #if ( CLICK_PERIODICS > 0)
@@ -1402,7 +1321,7 @@ const unsigned char selectDestinationInfo[] PROGMEM =
 const unsigned char selectPulseWith[] PROGMEM = "Select puls with ";
 const unsigned char all_[] PROGMEM = "(ALL)";
 const unsigned char selectAllPulses[] PROGMEM = "A=select *all* pulses";
-const unsigned char tSelect[] PROGMEM = "t=select ";
+const unsigned char uSelect[] PROGMEM = "u=select ";
 const unsigned char selected__[] PROGMEM = "\t(selected)";
 
 void info_select_destination_with(boolean extended_destinations) {
@@ -1426,7 +1345,7 @@ void info_select_destination_with(boolean extended_destinations) {
 
 
   if(extended_destinations) {
-    serial_print_progmem(tSelect);  serial_print_progmem(timeUnit);
+    serial_print_progmem(uSelect);  serial_print_progmem(timeUnit);
     if(selected_destination == TIME_UNIT) {
     serial_println_progmem(selected__);
     } else
@@ -1451,7 +1370,7 @@ void display_serial_menu() {
   Serial.println();
   info_select_destination_with(false);
 
-  serial_print_progmem(tSelect);  serial_print_progmem(timeUnit);
+  serial_print_progmem(uSelect);  serial_print_progmem(timeUnit);
   Serial.print("  (");
   Serial.print(time_unit);
   serial_print_progmem(microSeconds);
@@ -1709,7 +1628,7 @@ void menu_serial_reaction() {
       case '.':
 	time_info(); Serial.println();
 	active_tasks_info_lines();
-	RAM_info(); Serial.println();
+	// RAM_info(); Serial.println();
 	Serial.println();
 	break;
 
@@ -1722,15 +1641,15 @@ void menu_serial_reaction() {
 	Serial.println((int)  menu_input - '0');
 	break;
 
-      case 't':
+      case 'u':
 	selected_destination = TIME_UNIT;
-	serial_println_progmem(selected_);
+	serial_print_progmem(selected_);
 	serial_println_progmem(timeUnit);
 	break;
 
       case 'A':
 	selected_destination = ALL_PERIODICS;
-	serial_println_progmem(selected_);
+	serial_print_progmem(selected_);
 	serial_println_progmem(allPulses);
 	break;
 
@@ -1850,7 +1769,6 @@ void menu_serial_reaction() {
 	break;
 
 
-      // debugging entries: DADA ################################################################
       case 'd':				// hook for debugging
 	extern volatile unsigned long timer0_overflow_count;
 	cli();
@@ -1858,50 +1776,56 @@ void menu_serial_reaction() {
 	sei();
 	break;
 
-      case 'r':				// hook for debugging
-	Serial.println("DEBUGGING rhtm 2");
-	init_tasks();
-	get_now();
-	init_rhythm_2(1);
-	break;
-
-      case 'D':				// hook for debugging
-	Serial.println("DEBUGGING jiffles0 ");
-	init_tasks();
-	get_now();
-	setup_jiffles0();
-	break;
-
-      // debugging entries: DADA ################################################################
-      // same on last character row:
+      // debugging entries: DADA ###############################################
       case 'y':				// hook for debugging
-	Serial.println("DEBUGGING rhtm 1");
+	Serial.println("rhtm 1 middle");
 	init_tasks();
-	get_now();
 	init_rhythm_1(1);
 	break;
 
-      case 'x':				// hook for debugging
-	Serial.println("DEBUGGING rhtm 2");
+      case 'Y':				// hook for debugging
+	Serial.println("rhtm 1 stright");
 	init_tasks();
-	get_now();
+	init_rhythm_1(0);
+	break;
+
+      case 'x':				// hook for debugging
+	Serial.println("rhtm 2 middle");
+	init_tasks();
 	init_rhythm_2(1);
 	break;
 
-      case 'c':				// hook for debugging
-	Serial.println("DEBUGGING rhtm 3");
+      case 'X':				// hook for debugging
+	Serial.println("rhtm 2 stright");
 	init_tasks();
-	get_now();
+	init_rhythm_2(0);
+	break;
+
+      case 'c':				// hook for debugging
+	Serial.println("rhtm 3 middle");
+	init_tasks();
 	init_rhythm_3(1);
 	break;
 
-      case 'v':				// hook for debugging
-	Serial.println("DEBUGGING jiffles0 ");
+      case 'C':				// hook for debugging
+	Serial.println("rhtm 3 stright");
 	init_tasks();
-	get_now();
-	setup_jiffles0();
+	init_rhythm_3(0);
 	break;
-      // debugging entries: DADA ################################################################
+
+      case 'v':				// hook for debugging
+	Serial.println("jiffles0 middle");
+	init_tasks();
+	setup_jiffles0(1);
+	break;
+
+      case 'V':				// hook for debugging
+	Serial.println("jiffles0 stright");
+	init_tasks();
+	setup_jiffles0(0);
+	break;
+
+      // debugging entries: DADA ###############################################
 
       default:
 	// maybe it's in a submenu?
@@ -2026,57 +1950,34 @@ void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, stru
 }
 
 
-void setup_jiffles0() {
+void setup_jiffles0(int sync) {
+  unsigned long factor, divisor = 1;
+
   int scale=18;
+  unsigned long unit=scale*time_unit;
 
   struct time when, delta, templ, new_pulse;
 
-  // DADA
-  // 2
+  get_now();
   when=now;
-  delta.time=scale*2/2*time_unit;
-  delta.overflow=0;
-  add_time(&delta, &when);
-  new_pulse.time=scale*2*time_unit;
-  new_pulse.overflow=0;
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, when, new_pulse);
 
-  // 3
-  when=now;
-  delta.time=scale*3/2*time_unit;
-  delta.overflow=0;
-  add_time(&delta, &when);
-  new_pulse.time=scale*3*time_unit;
-  new_pulse.overflow=0;
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, when, new_pulse);
+  factor=2;
+  setup_jiffle_thrower_synced(now, unit, factor, divisor, sync, jiffletab0);
 
-  // 4
-  when=now;
-  delta.time=scale*4/2*time_unit;
-  delta.overflow=0;
-  add_time(&delta, &when);
-  new_pulse.time=scale*4*time_unit;
-  new_pulse.overflow=0;
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, when, new_pulse);
+  factor=3;
+  setup_jiffle_thrower_synced(now, unit, factor, divisor, sync, jiffletab0);
 
-  // 5
-  when=now;
-  delta.time=scale*5/2*time_unit;
-  delta.overflow=0;
-  add_time(&delta, &when);
-  new_pulse.time=scale*5*time_unit;
-  new_pulse.overflow=0;
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, when, new_pulse);
+  factor=4;
+  setup_jiffle_thrower_synced(now, unit, factor, divisor, sync, jiffletab0);
+
+  factor=5;
+  setup_jiffle_thrower_synced(now, unit, factor, divisor, sync, jiffletab0);
 
   // 2*3*2*5	(the 4 needs only another factor of 2)
-  when=now;
-  delta.time=scale*2*3*2*5/2*time_unit;
-  delta.overflow=0;
-  add_time(&delta, &when);
-  new_pulse.time=scale*2*3*2*5*time_unit;
-  new_pulse.overflow=0;
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, when, new_pulse);
+  factor=2*3*2*5;
+  setup_jiffle_thrower_synced(now, unit, factor, divisor, sync, jiffletab0);
 
+  fix_global_next();
 }
 
 
@@ -2135,15 +2036,10 @@ void setup() {
   init_tasks();
 
   // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
-  // init_rhythm_1(1);
+  init_rhythm_1(1);
   // init_rhythm_2(1);
   // init_rhythm_3(1);
-  setup_jiffles0();
-
-  struct time when;
-  struct time new_pulse;
-
-  // setup_task(task_do, new_flags|COUNTED, when, new_pulse);
+  // setup_jiffles0(1);
 
 /*
   // 1 to 2 second pattern straight (for easy to read task_info() output)
@@ -2156,45 +2052,9 @@ void setup() {
   setup_task(&task_info, ACTIVE, when, new_pulse);
 */
 
-  // DADA
-  /*
-  int scaling=12;
-
-  when.time=now.time + 1*scaling*time_unit;
-  when.overflow=now.overflow;
-  new_pulse.time=2*scaling*time_unit;
-  new_pulse.overflow=0;
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, when, new_pulse);
-
-  when.time=now.time + 2*scaling*time_unit;
-  when.overflow=now.overflow;
-  new_pulse.time=3*scaling*time_unit;
-  new_pulse.overflow=0;
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, when, new_pulse);
-
-  when.time=now.time + 3*scaling*time_unit;
-  when.overflow=now.overflow;
-  new_pulse.time=4*scaling*time_unit;
-  new_pulse.overflow=0;
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, when, new_pulse);
-
-  when.time=now.time;
-  when.overflow=now.overflow;
-  new_pulse.time=5*scaling*time_unit;
-  new_pulse.overflow=0;
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, when, new_pulse);
-
-  when.time=now.time + 4*scaling*time_unit;
-  when.overflow=now.overflow;
-  new_pulse.time=6*scaling*time_unit;
-  new_pulse.overflow=0;
-  setup_jiffle_thrower(jiffletab0, ACTIVE|DO_NOT_DELETE, when, new_pulse);
-  */
-
 #ifdef MENU_over_serial
   active_tasks_info_lines(); Serial.println();
 #endif
-
 
   fix_global_next();	// we *must* call that here late in setup();
 }
