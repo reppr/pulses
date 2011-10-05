@@ -1852,7 +1852,7 @@ const unsigned char unknownMenuInput[] PROGMEM = "unknown menu input: ";
 const unsigned char selected_[] PROGMEM = "Selected ";
 const unsigned char allPulses[] PROGMEM = "*all* pulses";
 const unsigned char killedAll[] PROGMEM = "killed all";
-const unsigned char posSyncUsed[] PROGMEM = "positive sync used";
+const unsigned char onlyPositive[] PROGMEM = "only positive sync ";
 
 void menu_serial_reaction() {
   char menu_input;
@@ -1927,7 +1927,11 @@ void menu_serial_reaction() {
 
       case 'S':
 	serial_print_progmem(sync_);
-	sync = numericInput(sync);
+	newValue = numericInput(sync);
+	if (newValue>=0 )
+	  sync = newValue;
+	else
+	  serial_print_progmem(onlyPositive);
 	Serial.println(sync);
 	break;
 
@@ -2074,11 +2078,7 @@ void menu_serial_reaction() {
 
 	  activate_pulse_synced(selected_destination, now, abs(sync));
 	  check_maybe_do();				  // maybe do it *first*
-	  //						  // *then* info ;)
-	  // negative sync relative to now *not allowed*:
-	  if (sync < 0)
-	    serial_println_progmem(posSyncUsed); // maybe warn -sync
-	  task_info_1line(selected_destination);	  // info
+	  task_info_1line(selected_destination);	  // *then* info ;)
 	} else
 	  if (selected_destination == ALL_PERIODICS) {
 	    // DADA
@@ -2092,31 +2092,31 @@ void menu_serial_reaction() {
 	break;
 
       case 'Y':				// hook for debugging
-	Serial.println("rhthm 1");
+	Serial.print("rhthm 1, sync "); Serial.println(sync);
 	init_tasks();
 	init_rhythm_1(sync);
 	break;
 
       case 'X':				// hook for debugging
-	Serial.println("rhthm 2");
+	Serial.print("rhthm 2, sync "); Serial.println(sync);
 	init_tasks();
 	init_rhythm_2(sync);
 	break;
 
       case 'C':				// hook for debugging
-	Serial.println("rhthm 3");
+	Serial.print("rhthm 3, sync "); Serial.println(sync);
 	init_tasks();
 	init_rhythm_3(sync);
 	break;
 
       case 'V':				// hook for debugging, clash with HARDWARE V
-	Serial.println("rhthm 4");
+	Serial.print("rhthm 4, sync "); Serial.println(sync);
 	init_tasks();
 	init_rhythm_4(sync);
 	break;
 
       case 'B':				// hook for debugging
-	Serial.println("jiffles0");
+	Serial.print("jiffles0, sync "); Serial.println(sync);
 	init_tasks();
 	setup_jiffles0(sync);
 	break;
