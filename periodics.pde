@@ -597,6 +597,7 @@ int get_free_RAM() {
 
 
 
+// By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
 void init_click_tasks() {
   for (int task=0; task<CLICK_PERIODICS; task++) {
     init_task(task);
@@ -1852,6 +1853,25 @@ void switch_periodic_and_inform(int task) {
 /* **************************************************************** */
 // menu reaction:
 
+
+// menu interface to reset a pulse and prepare it to be edited:
+void reset_and_edit_pulse(int task) {
+  init_task(task);
+  serial_print_progmem(resetPulse); Serial.println(task);
+  flags[task] |= SCRATCH;	// set SCRATCH flag
+  flags[task] &= ~ACTIVE;	// remove ACTIVE
+
+  // set a default pulse length:
+  struct time scratch;
+  scratch.time = time_unit;
+  scratch.overflow = 0;
+  mul_time(&scratch, 12);		// 12 looks like a usable default
+  pulse[task] = scratch;
+
+  task_info_1line(task);
+}
+
+
 const unsigned char unknownMenuInput[] PROGMEM = "unknown menu input: ";
 
 const unsigned char selected_[] PROGMEM = "Selected ";
@@ -2055,24 +2075,14 @@ void menu_serial_reaction() {
 
       case 'p':
 	if (selected_destination < CLICK_PERIODICS) {		// periodics
-	  init_task(selected_destination);
-	  serial_print_progmem(resetPulse); Serial.println(selected_destination);
-	  flags[selected_destination] |= SCRATCH;	// set SCRATCH flag
-	  flags[selected_destination] &= ~ACTIVE;	// remove ACTIVE
-
-	  // set a default pulse length:
-	  struct time scratch;
-	  scratch.time = time_unit;
-	  scratch.overflow = 0;
-	  mul_time(&scratch, 12);		// 12 looks like a usable default
-	  pulse[selected_destination] = scratch;
-
-	  task_info_1line(selected_destination);
+	  reset_and_edit_pulse(selected_destination);
 	} else
 	  if (selected_destination == ALL_PERIODICS) {
-	    Serial.println("Select *one* task, 0");	// DADA ############
-	    selected_destination=0;
-	    //	    init_tasks();
+	    // we disobey and change only CLICK_PERIODICS:
+	    for (int task=0; task<CLICK_PERIODICS; task++)
+	      reset_and_edit_pulse(task);
+	    Serial.println(); alive_tasks_info_lines();
+	    Serial.println();
 	  } else
 	    info_select_destination_with(false);
 	break;
@@ -2080,13 +2090,17 @@ void menu_serial_reaction() {
       case 'n':
 	if (selected_destination < CLICK_PERIODICS) {		// periodics
 	  get_now();
-
 	  activate_pulse_synced(selected_destination, now, abs(sync));
 	  check_maybe_do();				  // maybe do it *first*
 	  task_info_1line(selected_destination);	  // *then* info ;)
 	} else
 	  if (selected_destination == ALL_PERIODICS) {
-	    // DADA
+	    get_now();
+	    // we disobey and change only CLICK_PERIODICS:
+	    for (int task=0; task<CLICK_PERIODICS; task++)
+	      activate_pulse_synced(task, now, abs(sync));
+	    check_maybe_do();				// maybe do it *first*
+	    alive_tasks_info_lines();			// and *then* info
 	  } else
 	    info_select_destination_with(false);
 	break;
@@ -2134,7 +2148,10 @@ void menu_serial_reaction() {
 	  task_info_1line(selected_destination);
 	} else
 	  if (selected_destination == ALL_PERIODICS) {
-	    // DADA
+	    // we disobey and change only CLICK_PERIODICS:
+	    for (int task=0; task<CLICK_PERIODICS; task++)
+	      en_click(task);
+	    alive_tasks_info_lines();
 	  } else
 	    info_select_destination_with(false);
 	break;
@@ -2145,7 +2162,10 @@ void menu_serial_reaction() {
 	  task_info_1line(selected_destination);
 	} else
 	  if (selected_destination == ALL_PERIODICS) {
-	    // DADA
+	    // we disobey and change only CLICK_PERIODICS:
+	    for (int task=0; task<CLICK_PERIODICS; task++)
+	      en_jiffle_thrower(task, jiffletab0);
+	    alive_tasks_info_lines();
 	  } else
 	    info_select_destination_with(false);
 	break;
@@ -2156,7 +2176,10 @@ void menu_serial_reaction() {
 	  task_info_1line(selected_destination);
 	} else
 	  if (selected_destination == ALL_PERIODICS) {
-	    // DADA
+	    // we disobey and change only CLICK_PERIODICS:
+	    for (int task=0; task<CLICK_PERIODICS; task++)
+	      en_info(task);
+	    alive_tasks_info_lines();
 	  } else
 	    info_select_destination_with(false);
 	break;
@@ -2167,7 +2190,10 @@ void menu_serial_reaction() {
 	  task_info_1line(selected_destination);
 	} else
 	  if (selected_destination == ALL_PERIODICS) {
-	    // DADA
+	    // we disobey and change only CLICK_PERIODICS:
+	    for (int task=0; task<CLICK_PERIODICS; task++)
+	      en_INFO(task);
+	    alive_tasks_info_lines();
 	  } else
 	    info_select_destination_with(false);
 	break;
