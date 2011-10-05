@@ -894,6 +894,18 @@ const unsigned char timeInfo[] PROGMEM = "*** TIME info\t\t";
 const unsigned char timeOvfl[] PROGMEM = "time/ovfl ";
 const unsigned char now_[] PROGMEM = "now ";
 
+// display a time in seconds:
+float display_realtime_sec(struct time duration) {
+  float seconds=((float) duration.time / 1000000.0);
+  seconds += overflow_sec * (float) duration.overflow;
+
+  Serial.print(seconds , 3);
+  Serial.print("s");
+
+  return seconds;
+}
+
+
 void time_info()
 {
   unsigned long realtime = micros();
@@ -904,9 +916,10 @@ void time_info()
   slash();
   Serial.print(now.overflow);		// cheating a tiny little bit...
   tab();
+  struct time scratch=now;
+  scratch.time = realtime;		// update running time
   serial_print_progmem(now_);
-  Serial.print(((float) realtime / 1000000.0) + overflow_sec * now.overflow, 3);
-  Serial.print("s");
+  display_realtime_sec(scratch);
 }
 
 
@@ -979,8 +992,7 @@ const unsigned char lastOvfl[] PROGMEM = "last/ovfl ";
 const unsigned char nextOvfl[] PROGMEM = "   \tnext/ovfl ";
 const unsigned char index_[] PROGMEM = "\tindex ";
 const unsigned char times_[] PROGMEM = "\ttimes ";
-// DADA
-const unsigned char sPulse[] PROGMEM = "s pulse";
+const unsigned char pulse_[] PROGMEM = "pulse ";
 const unsigned char expected_[] PROGMEM = "expected ";
 const unsigned char ul1_[] PROGMEM = "\tul1 ";
 
@@ -1022,9 +1034,8 @@ void task_info(int task) {
   Serial.print(pulse[task].overflow);
 
   tab();
-  Serial.print(((float) pulse[task].time / 1000000.0)
-	       + overflow_sec * pulse[task].overflow, 4);
-  serial_print_progmem(sPulse);
+  display_realtime_sec(pulse[task]);
+  spaces(1); serial_print_progmem(pulse_);
 
   Serial.println();		// start next line
 
@@ -1040,9 +1051,7 @@ void task_info(int task) {
 
   tab();
   serial_print_progmem(expected_);
-  Serial.print(((float) next[task].time / 1000000.0)
-	       + overflow_sec * next[task].overflow, 3);
-  Serial.print("s");
+  display_realtime_sec(next[task]);
 
   Serial.println();		// start last line
   time_info();
@@ -1083,15 +1092,13 @@ void task_info_1line(int task) {
 
   tab();
   serial_print_progmem(expected_);
-  Serial.print(((float) next[task].time / 1000000.0)
-	       + overflow_sec * next[task].overflow, 3);
-  Serial.print("s ");
+  display_realtime_sec(next[task]);
 
   tab();
   serial_print_progmem(now_);
-  Serial.print(((float) micros() / 1000000.0)
-	       + overflow_sec * now.overflow, 3);
-  Serial.print("s");
+  struct time scratch = now;
+  scratch.time= micros();		// update running time
+  display_realtime_sec(scratch);
 
   if ((ALL_PERIODICS == selected_destination) || (task == selected_destination))
     Serial.print(" *");
@@ -1131,8 +1138,6 @@ void mute_all_clicks () {
 }
 
 
-
-const unsigned char pulse_[] PROGMEM = "pulse ";
 
 void print_pulse_in_time_units(int task) {
   float time_units, scratch;
