@@ -89,10 +89,115 @@
 
 
 /* **************************************************************** */
+/*
+	RAM usage, PROGMEM to save RAM.
+*/
 /* **************************************************************** */
 
-// global variables, task and time.
-// int task;
+// determine RAM usage:
+extern int __bss_end;
+extern void *__brkval;
+
+int get_free_RAM() {
+  int free;
+
+  if ((int) __brkval == 0)
+    return ((int) &free) - ((int) &__bss_end);
+  else
+    return ((int) &free) - ((int) __brkval);
+}
+
+
+/* **************************************************************** */
+// use PROGMEM to save RAM:
+
+#if (defined(USE_SERIAL) || defined(USE_LCD))
+#include <avr/pgmspace.h>
+
+const unsigned char programName[] PROGMEM = "PERIODICS";
+const unsigned char programLongName[] PROGMEM = "*** Play with PERIODICS v0.2 ***";
+const unsigned char version[] PROGMEM = "version 0.2";
+
+const unsigned char tab_[] PROGMEM = "\t";
+void tab() {
+  serial_print_progmem(tab_);
+}
+
+const unsigned char space_[] PROGMEM = " ";
+void spaces(int count) {
+  for (; count>0; count--)
+    serial_print_progmem(space_);
+}
+
+const unsigned char slash_[] PROGMEM = "/";
+void slash() {
+  serial_print_progmem(slash_);
+}
+
+
+//	#ifdef USE_LCD
+//	// LCD.print() for progmem strings:
+//	// void LCD_print_progmem(const prog_uchar *str)	// does not work :(
+//	void LCD_print_progmem(const unsigned char *str) {
+//	  unsigned char c;
+//	  while((c = pgm_read_byte(str++)))
+//	    LCD.print(c);
+//	}
+//	
+//	void LCD_print_at_progmem(unsigned char col, unsigned char row, const unsigned char *str) {
+//	  LCD.setCursor(col, row);
+//	  LCD_print_progmem(str);
+//	}
+//	
+//	// clear line and print on LCD at line 'row'
+//	const unsigned char LCD_empty[] PROGMEM = "                    ";
+//	void LCD_print_line_progmem(unsigned char row, const unsigned char *str) {
+//	  LCD_print_at_progmem(0, row, LCD_empty);
+//	  LCD_print_at_progmem(0, row, str);
+//	}
+//	
+//	#endif
+
+
+#ifdef USE_SERIAL
+// Serial.print() for progmem strings:
+// void serial_print_progmem(const prog_uchar *str)	// does not work :(
+void serial_print_progmem(const unsigned char *str) {
+  unsigned char c;
+  while((c = pgm_read_byte(str++)))
+    Serial.write(c);
+}
+
+
+void serial_println_progmem(const unsigned char *str) {
+  serial_print_progmem(str);
+  Serial.println();
+}
+#endif
+
+
+#ifdef USE_SERIAL
+  const unsigned char freeRAM[] PROGMEM = "free RAM ";
+
+  void RAM_info() {
+    serial_print_progmem(freeRAM);
+    Serial.print(get_free_RAM());
+  }
+#endif
+
+#endif	// #if (defined(USE_SERIAL) || defined(USE_LCD))
+// PROGMEM
+
+
+
+/* **************************************************************** */
+/*
+	TIME
+*/
+/* **************************************************************** */
+
+
+// global variables, time.
 
 struct time {
   unsigned long time;
@@ -109,6 +214,9 @@ int sync=1;	// syncing edges or middles of square pulses
 
 const float overflow_sec = 4294.9672851562600;	// overflow time in seconds
 
+// time unit that the user sees.
+// it has no influence on inner working, but is a menu I/O thing only
+// the user sees and edits times in time units.
 unsigned long time_unit = 100000L;		// scaling timer to 10/s 0.1s
 
 // I want time_unit to be dividable by a semi random selection of small integers
@@ -118,6 +226,7 @@ unsigned long time_unit = 100000L;		// scaling timer to 10/s 0.1s
 // unsigned long time_unit =    40320L;		// scaling timer to  8!, 0.040320s
 // unsigned long time_unit =   362880L;		// scaling timer to  9!, 0,362880s 
 // unsigned long time_unit =  3628800L;		// scaling timer to 10!, 3.628800s
+
 
 
 /* **************************************************************** */
@@ -237,8 +346,13 @@ void div_time(struct time *duration, unsigned int divisor) {
 }
 
 
+
 /* **************************************************************** */
+/*
+   PULSES
+*/
 /* **************************************************************** */
+
 // variables for tasks in arrays[task]:
 int task;		// index
 
@@ -270,30 +384,43 @@ unsigned int int1[PERIODICS];		// if COUNTED, gives number of executions
 // ============>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<============
 // these parameters can be used by periodic_do(task):
 int parameter_1[PERIODICS];
-//				used by do_jiffle0 for count down
+/*
+	used by do_jiffle0 for count down
+*/
 
 int parameter_2[PERIODICS];
-//				used by do_jiffle0 *jiffletab
+/*
+	used by do_jiffle0 *jiffletab
+*/
 
 // int parameter_3[PERIODICS];
 // int parameter_4[PERIODICS];
 
 unsigned long ulong_parameter_1[PERIODICS];
-//				used by do_jiffle0 as base period
+/*
+	used by do_jiffle0 as base period
+*/
 
 // unsigned long ulong_parameter_2[PERIODICS];
 // unsigned long ulong_parameter_3[PERIODICS];
 // unsigned long ulong_parameter_4[PERIODICS];
 
 char char_parameter_1[PERIODICS];		// pin
-//				used by click and do_jiffle0 as pin
+/*
+	used by click      as pin
+	used by do_jiffle0 as pin
+*/
 
 char char_parameter_2[PERIODICS];		// index
-//				used by do_jiffle0 as jiffletab index
+/*
+	used by do_jiffle0 as jiffletab index
+*/
 // char char_parameter_3[PERIODICS];
 // char char_parameter_4[PERIODICS];
 
+
 // pointers on  void something(int task)  functions:
+// the tasks will do that, if the pointer is not NULL
 void (*periodic_do[PERIODICS])(int);
 //					some example functions:
 //
@@ -303,107 +430,14 @@ void (*periodic_do[PERIODICS])(int);
 //					do_jiffle0(task)
 //					do_throw_a_jiffle(task)
 
+
 // ============>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<============
 
 
 
 /* **************************************************************** */
-// determine RAM usage:
-extern int __bss_end;
-extern void *__brkval;
+// init tasks:
 
-int get_free_RAM() {
-  int free;
-
-  if ((int) __brkval == 0)
-    return ((int) &free) - ((int) &__bss_end);
-  else
-    return ((int) &free) - ((int) __brkval);
-}
-
-
-/* **************************************************************** */
-// use PROGMEM to save RAM:
-
-#if (defined(USE_SERIAL) || defined(USE_LCD))
-#include <avr/pgmspace.h>
-
-const unsigned char programName[] PROGMEM = "PERIODICS";
-const unsigned char programLongName[] PROGMEM = "*** Play with PERIODICS v0.2 ***";
-const unsigned char version[] PROGMEM = "version 0.2";
-
-const unsigned char tab_[] PROGMEM = "\t";
-void tab() {
-  serial_print_progmem(tab_);
-}
-
-const unsigned char space_[] PROGMEM = " ";
-void spaces(int count) {
-  for (; count>0; count--)
-    serial_print_progmem(space_);
-}
-
-const unsigned char slash_[] PROGMEM = "/";
-void slash() {
-  serial_print_progmem(slash_);
-}
-
-
-//	#ifdef USE_LCD
-//	// LCD.print() for progmem strings:
-//	// void LCD_print_progmem(const prog_uchar *str)	// does not work :(
-//	void LCD_print_progmem(const unsigned char *str) {
-//	  unsigned char c;
-//	  while((c = pgm_read_byte(str++)))
-//	    LCD.print(c);
-//	}
-//	
-//	void LCD_print_at_progmem(unsigned char col, unsigned char row, const unsigned char *str) {
-//	  LCD.setCursor(col, row);
-//	  LCD_print_progmem(str);
-//	}
-//	
-//	// clear line and print on LCD at line 'row'
-//	const unsigned char LCD_empty[] PROGMEM = "                    ";
-//	void LCD_print_line_progmem(unsigned char row, const unsigned char *str) {
-//	  LCD_print_at_progmem(0, row, LCD_empty);
-//	  LCD_print_at_progmem(0, row, str);
-//	}
-//	
-//	#endif
-
-
-#ifdef USE_SERIAL
-// Serial.print() for progmem strings:
-// void serial_print_progmem(const prog_uchar *str)	// does not work :(
-void serial_print_progmem(const unsigned char *str) {
-  unsigned char c;
-  while((c = pgm_read_byte(str++)))
-    Serial.write(c);
-}
-
-
-void serial_println_progmem(const unsigned char *str) {
-  serial_print_progmem(str);
-  Serial.println();
-}
-#endif
-
-
-#ifdef USE_SERIAL
-  const unsigned char freeRAM[] PROGMEM = "free RAM ";
-
-  void RAM_info() {
-    serial_print_progmem(freeRAM);
-    Serial.print(get_free_RAM());
-  }
-#endif
-
-#endif	// #if (defined(USE_SERIAL) || defined(USE_LCD))
-
-
-
-/* **************************************************************** */
 // init, reset or kill a task: 
 void init_task(int task) {
   flags[task] = 0;
@@ -469,6 +503,7 @@ void wake_task(int task) {
 }
 
 
+
 // void fix_global_next();
 // determine when the next event[s] will happen:
 //
@@ -512,6 +547,7 @@ void fix_global_next() {
     } // active?
   } // task loop
 }
+
 
 
 // void check_maybe_do();
@@ -604,11 +640,12 @@ void set_new_period(int task, struct time new_period) {
 
 
 /* **************************************************************** */
-// some little things to play with:
+// piezzo clicks on arduino i/o pins
+// great help when debugging and a lot of fun to play with :)
 
 // FlipFlop pins:
 
-#if ( CLICK_PERIODICS > 0)
+#if ( CLICK_PERIODICS > 0)	// DADA ################
 // clicks on piezzos to *hear* the result:
 //   or connect LEDs, MOSFETs, MIDI, whatever...
 //   these are just FlipFlop pins.
@@ -630,13 +667,14 @@ void init_click_tasks() {
 }
 
 
+
 void click(int task) {			// can be called from a task
   digitalWrite(char_parameter_1[task], pulse_count[task] & 1);
 }
 
 
 
-unsigned char click_pin[CLICK_PERIODICS];
+unsigned char click_pin[CLICK_PERIODICS];	// DADA ################
 
 void init_click_pins() {
   for (int task=0; task<CLICK_PERIODICS; task++) {
@@ -686,10 +724,15 @@ int activate_pulse_synced(int task, struct time when, int sync)
   fix_global_next();
 }
 
+
 // Generic setup pulse, stright or middle synced relative to 'when'.
 // Pulse time and phase sync get deviated from unit, which is first
 // multiplied by factor and divided by divisor.
 // sync=0 gives stright syncing, sync=1 middle pulses synced.
+// other values possible,
+// negative values should not reach into the past
+// (that's why the menu only allows positive. it syncs now related,
+//  so a negative sync value would always reach into past.)
 int setup_pulse_synced(void (*task_do)(int), unsigned char new_flags,
 		       struct time when, unsigned long unit,
 		       unsigned long factor, unsigned long divisor, int sync)
@@ -897,6 +940,7 @@ void init_rhythm_4(int sync) {
 #endif	//  #if ( CLICK_PERIODICS > 0)
 
 
+
 /* **************************************************************** */
 // infos on serial:
 
@@ -906,14 +950,11 @@ void init_rhythm_4(int sync) {
 // destination of menu functions '*' '/' '=' and 's'
 unsigned char selected_destination=~0;
 // destinations codes (other then 0, 1, 2, ... for individual clicker tasks):
+// DADA ################
 #define ALL_PERIODICS	PERIODICS		// destination code
 #define TIME_UNIT	(PERIODICS + 1)		// destination code
 
 
-
-const unsigned char timeInfo[] PROGMEM = "*** TIME info\t\t";
-const unsigned char timeOvfl[] PROGMEM = "time/ovfl ";
-const unsigned char now_[] PROGMEM = "now ";
 
 // display a time in seconds:
 float display_realtime_sec(struct time duration) {
@@ -926,6 +967,11 @@ float display_realtime_sec(struct time duration) {
   return seconds;
 }
 
+
+// time_info()
+const unsigned char timeInfo[] PROGMEM = "*** TIME info\t\t";
+const unsigned char timeOvfl[] PROGMEM = "time/ovfl ";
+const unsigned char now_[] PROGMEM = "now ";
 
 void time_info()
 {
@@ -961,7 +1007,7 @@ void serial_print_BIN(unsigned long value, int bits) {
 }
 
 
-void print_action(int task) {
+void display_action(int task) {
   void (*scratch)(int);
 
   scratch=&click;
@@ -1004,6 +1050,8 @@ void print_action(int task) {
 }
 
 
+
+// task_info()
 const unsigned char timeUnit[] PROGMEM = "time unit";
 const unsigned char timeUnits[] PROGMEM = " time units";
 const unsigned char taskInfo[] PROGMEM = "*** TASK info ";
@@ -1031,7 +1079,7 @@ void task_info(int task) {
   Serial.print((unsigned int) pulse_count[task]);
 
   tab();
-  print_action(task);
+  display_action(task);
 
   serial_print_progmem(flags_);
   serial_print_BIN(flags[task], 8);
@@ -1084,6 +1132,7 @@ void task_info(int task) {
 #endif
 }
 
+
 void alive_tasks_info()
 {
   for (int task=0; task<PERIODICS; ++task)
@@ -1092,7 +1141,8 @@ void alive_tasks_info()
 }
 
 
-// one line task info version:
+
+// task_info_1line():	one line task info, short version
 const unsigned char task_[] PROGMEM = "TASK ";
 
 void task_info_1line(int task) {
@@ -1106,10 +1156,10 @@ void task_info_1line(int task) {
   serial_print_BIN(flags[task], 8);
 
   tab();
-  print_pulse_in_time_units(task);
+  print_period_in_time_units(task);
 
   tab();
-  print_action(task);
+  display_action(task);
 
   tab();
   serial_print_progmem(expected_);
@@ -1139,6 +1189,7 @@ void alive_tasks_info_lines()
 #endif	// #ifdef USE_SERIAL
 
 
+
 /* **************************************************************** */
 // functions to deal with clicks (i.e. from the menus):
 
@@ -1160,14 +1211,14 @@ void mute_all_clicks () {
 
 
 
-void print_pulse_in_time_units(int task) {
+void print_period_in_time_units(int task) {
   float time_units, scratch;
 
   serial_print_progmem(pulse_);
   time_units = ((float) period[task].time / (float) time_unit);
 
   scratch = 1000.0;
-  while (scratch > max(time_units, 1.0)) {
+  while (scratch > max(time_units, 1.0)) {	// DADA
     spaces(1);
     scratch /= 10.0;
   }
@@ -1232,6 +1283,7 @@ void do_jiffle0 (int task) {	// to be called by task_do
   parameter_1[task] = jiffletab[base_index+2];			// count of next phase
   // fix_global_next();
 }
+
 
 int init_jiffle(unsigned int *jiffletab, struct time when, struct time new_period, int origin_task)
 {
@@ -1298,6 +1350,7 @@ void setup_jiffles0(int sync) {
 
   fix_global_next();
 }
+
 
 
 /* **************************************************************** */
@@ -1517,6 +1570,7 @@ void display_analog_reads() {
 
 
 
+// watch_digital_input()
 const unsigned char watchingINpin[] PROGMEM = "watching digital input pin ";
 const unsigned char anyStop[] PROGMEM = "\t\t(send any byte to stop)";
 const unsigned char pin_[] PROGMEM = "pin ";		// defined already
@@ -1547,6 +1601,8 @@ void watch_digital_input(int pin) {
 }
 
 
+
+// menu_hardware_display()
 const unsigned char hwMenuTitle[] PROGMEM = "\n***  HARDWARE  ***\t\tfree RAM=";
 const unsigned char PPin[] PROGMEM = "P=PIN (";
 const unsigned char HLWR[] PROGMEM = ")\tH=set HIGH\tL=set LOW\tW=analog write\tR=read";
@@ -1623,6 +1679,7 @@ void info_select_destination_with(boolean extended_destinations) {
 
 
 
+// display_serial_menu()
 const unsigned char pressm[] PROGMEM = "\nPress 'm' or '?' for menu.\n\n";
 
 const unsigned char helpInfo[] PROGMEM = "?=help\tm=menu\ti=info\t.=short info";
@@ -1666,14 +1723,12 @@ void please_select_pin() {
   serial_println_progmem(selectPin);
 }
 
-//	const unsigned char timeInterval[] PROGMEM = "time interval ";
-//	const unsigned char milliseconds_[] PROGMEM = "milliseconds\t";
-//	const unsigned char unchanged_[] PROGMEM = "(unchanged)";
-
 const unsigned char bytes_[] PROGMEM = " bytes";
 
 
 #ifdef HARDWARE_menu
+
+// hardware_menu_reaction()
 const unsigned char numberOfPin[] PROGMEM = "Number of pin to work on: ";
 const unsigned char sync_[] PROGMEM = "sync ";
 const unsigned char invalid[] PROGMEM = "(invalid)";
@@ -1825,7 +1880,7 @@ void set_new_period_and_inform(int task, struct time new_period) {
   serial_print_progmem(setPulse_);
   Serial.print((int) task);
   Serial.print("] to ");
-  print_pulse_in_time_units(task);
+  print_period_in_time_units(task);
   //  Serial.print(value);
   Serial.println();
 
@@ -1868,11 +1923,6 @@ void switch_periodic_and_inform(int task) {
 }
 
 
-
-/* **************************************************************** */
-// menu reaction:
-
-
 // menu interface to reset a pulse and prepare it to be edited:
 void reset_and_edit_pulse(int task) {
   init_task(task);
@@ -1891,6 +1941,12 @@ void reset_and_edit_pulse(int task) {
 }
 
 
+
+/* **************************************************************** */
+// menu reaction:
+
+
+// menu_serial_reaction()
 const unsigned char unknownMenuInput[] PROGMEM = "unknown menu input: ";
 
 const unsigned char selected_[] PROGMEM = "Selected ";
@@ -2346,5 +2402,3 @@ void loop() {
 }
 
 /* **************************************************************** */
-
-
