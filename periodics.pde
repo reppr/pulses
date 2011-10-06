@@ -1,13 +1,13 @@
 /* **************************************************************** */
-// periodics
+// pulses
 /* **************************************************************** */
 
 
 /* **************************************************************** */
 /*
-   Periodically do multiple independent tasks.
+   Periodically do multiple independent tasks named 'pulses'.
 
-   New logic version to determine when to wake up tasks.
+   New logic version to determine when to wake up pulses.
    Saving times along with an overflow count makes everything
    simple and flexible.
 
@@ -16,11 +16,11 @@
    This version calculates global next event[s] *once* when the next
    event could possibly have changed. See fix_global_next().
 
-   If a series of tasks are sceduled for the same time they will
+   If a series of pulses are sceduled for the same time they will
    be called in fast sequence *without* fix_global_next() in between them.
-   After all task with the same time are done fix_global_next() is called.
+   After all pulse with the same time are done fix_global_next() is called.
 
-   If a task sets up another task with the same next it *can* decide to do
+   If a pulse sets up another pulse with the same next it *can* decide to do
    the fix itself, if it seems appropriate. Normally this is not required.
 
    "play" version: having fun while debugging...
@@ -40,13 +40,13 @@
 /* **************************************************************** */
 // CONFIGURATION:
 
-#define PERIODICS		16	// maximal number of tasks
-					// plenty of free tasks for jiffles ;)
+#define PULSES		16	// maximal number of pulses
+				// plenty of free pulses for jiffles ;)
 
 // having fun while debugging: clicks on piezzos to *hear* the result:
 // *do* change 'case' statement in menu_serial_reaction() if you change this.
-#ifndef CLICK_PERIODICS			// number of click frequencies
-  #define CLICK_PERIODICS	 5 	// default number of click frequencies
+#ifndef CLICK_PULSES		// number of click frequencies
+  #define CLICK_PULSES	 5 	// default number of click frequencies
 #endif
 
 
@@ -114,8 +114,8 @@ int get_free_RAM() {
 #if (defined(USE_SERIAL) || defined(USE_LCD))	// Serial and LCD strings...
 #include <avr/pgmspace.h>
 
-const unsigned char programName[] PROGMEM = "PERIODICS";
-const unsigned char programLongName[] PROGMEM = "*** Play with PERIODICS v0.2 ***";
+const unsigned char programName[] PROGMEM = "PULSES";
+const unsigned char programLongName[] PROGMEM = "*** Play with PULSES v0.2 ***";
 const unsigned char version[] PROGMEM = "version 0.2";
 
 const unsigned char tab_[] PROGMEM = "\t";
@@ -205,7 +205,7 @@ void serial_println_progmem(const unsigned char *str) {
    check with check_maybe_do() if it's time to do something
    else return immediately.
 
-   tasks know when their next turn will be, see 'struct time next[task]'.
+   pulses know when their next turn will be, see 'struct time next[pulse]'.
    fix_global_next() determines which event will be next globally
    fix_global_next() is updated automatically when appropriate.
 
@@ -224,7 +224,7 @@ struct time now, last_now;
 
 struct time global_next;
 unsigned int global_next_count=0;
-int global_next_tasks[PERIODICS];
+int global_next_pulses[PULSES];
 
 int sync=1;	// syncing edges or middles of square pulses
 
@@ -373,13 +373,13 @@ void div_time(struct time *duration, unsigned int divisor) {
 */
 /* **************************************************************** */
 
-// variables for tasks in arrays[task]:
-int task;		// index
+// variables for pulses in arrays[pulse]:
+int pulse;		// index
 
-// ============>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<============
-unsigned char flags[PERIODICS];
+// ============>>> adapt init_pulse() IF YOU CHANGE SOMETHING HERE <<<============
+unsigned char flags[PULSES];
 // flag masks:
-#define ACTIVE			1	// switches task on/off
+#define ACTIVE			1	// switches pulse on/off
 #define COUNTED			2	// repeats 'int1[]' times, then vanishes
 #define SCRATCH			8	// edit (or similar) in progress
 #define DO_NOT_DELETE	       16	// dummy to avoid being thrown out
@@ -388,137 +388,137 @@ unsigned char flags[PERIODICS];
 #define CUSTOM_3	      128	// can be used by periodic_do()
 
 
-unsigned int pulse_count[PERIODICS];	// counts how many times the task woke up
-struct time period[PERIODICS];		// timer steps, overflows
-struct time last[PERIODICS];		// convenient, but not really needed
-struct time next[PERIODICS];		// next wake up time, overflow
+unsigned int pulse_count[PULSES];	// counts how many times the pulse woke up
+struct time period[PULSES];		// timer steps, overflows
+struct time last[PULSES];		// convenient, but not really needed
+struct time next[PULSES];		// next wake up time, overflow
 
 
 // internal parameter:
-unsigned int int1[PERIODICS];		// if COUNTED, gives number of executions
+unsigned int int1[PULSES];		// if COUNTED, gives number of executions
 //					   else free for other internal use
 
-// custom parameters[task]		//  comment/uncomment as appropriate:
-					//  then *DO ADAPT init_task()* 
+// custom parameters[pulse]		//  comment/uncomment as appropriate:
+					//  then *DO ADAPT init_pulse()* 
 
-// ============>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<============
-// these parameters can be used by periodic_do(task):
-int parameter_1[PERIODICS];
+// ============>>> adapt init_pulse() IF YOU CHANGE SOMETHING HERE <<<============
+// these parameters can be used by periodic_do(pulse):
+int parameter_1[PULSES];
 /*
 	used by do_jiffle0 for count down
 */
 
-int parameter_2[PERIODICS];
+int parameter_2[PULSES];
 /*
 	used by do_jiffle0 *jiffletab
 */
 
-// int parameter_3[PERIODICS];
-// int parameter_4[PERIODICS];
+// int parameter_3[PULSES];
+// int parameter_4[PULSES];
 
-unsigned long ulong_parameter_1[PERIODICS];
+unsigned long ulong_parameter_1[PULSES];
 /*
 	used by do_jiffle0 as base period
 */
 
-// unsigned long ulong_parameter_2[PERIODICS];
-// unsigned long ulong_parameter_3[PERIODICS];
-// unsigned long ulong_parameter_4[PERIODICS];
+// unsigned long ulong_parameter_2[PULSES];
+// unsigned long ulong_parameter_3[PULSES];
+// unsigned long ulong_parameter_4[PULSES];
 
-char char_parameter_1[PERIODICS];		// pin
+char char_parameter_1[PULSES];		// pin
 /*
 	used by click      as pin
 	used by do_jiffle0 as pin
 */
 
-char char_parameter_2[PERIODICS];		// index
+char char_parameter_2[PULSES];		// index
 /*
 	used by do_jiffle0 as jiffletab index
 */
-// char char_parameter_3[PERIODICS];
-// char char_parameter_4[PERIODICS];
+// char char_parameter_3[PULSES];
+// char char_parameter_4[PULSES];
 
 
-// pointers on  void something(int task)  functions:
-// the tasks will do that, if the pointer is not NULL
-void (*periodic_do[PERIODICS])(int);
+// pointers on  void something(int pulse)  functions:
+// the pulses will do that, if the pointer is not NULL
+void (*periodic_do[PULSES])(int);
 //					some example functions:
 //
-//					click(task)
-//					task_info_1line(task)
-//					task_info(task)
-//					do_jiffle0(task)
-//					do_throw_a_jiffle(task)
+//					click(pulse)
+//					pulse_info_1line(pulse)
+//					pulse_info(pulse)
+//					do_jiffle0(pulse)
+//					do_throw_a_jiffle(pulse)
 
 
-// ============>>> adapt init_task() IF YOU CHANGE SOMETHING HERE <<<============
+// ============>>> adapt init_pulse() IF YOU CHANGE SOMETHING HERE <<<============
 
 
 
 /* **************************************************************** */
-// init tasks:
+// init pulses:
 
-// init, reset or kill a task: 
-void init_task(int task) {
-  flags[task] = 0;
-  periodic_do[task] = NULL;
-  pulse_count[task] = 0;	//  or pulse_count[task] = ILLEGAL; ???
-  int1[task] = 0;
-  period[task].time = 0;
-  last[task].time = 0;
-  last[task].overflow = 0;
-  next[task].time = 0;
-  next[task].overflow = 0;
-  parameter_1[task] = 0;
-  parameter_2[task] = 0;
-  // parameter_3[task] = 0;
-  // parameter_4[task] = 0;
+// init, reset or kill a pulse: 
+void init_pulse(int pulse) {
+  flags[pulse] = 0;
+  periodic_do[pulse] = NULL;
+  pulse_count[pulse] = 0;	//  or pulse_count[pulse] = ILLEGAL; ???
+  int1[pulse] = 0;
+  period[pulse].time = 0;
+  last[pulse].time = 0;
+  last[pulse].overflow = 0;
+  next[pulse].time = 0;
+  next[pulse].overflow = 0;
+  parameter_1[pulse] = 0;
+  parameter_2[pulse] = 0;
+  // parameter_3[pulse] = 0;
+  // parameter_4[pulse] = 0;
 
-  ulong_parameter_1[task] = 0L;
-  // ulong_parameter_2[task] = 0L;
-  // ulong_parameter_3[task] = 0L;
-  // ulong_parameter_4[task] = 0L;
-  char_parameter_1[task] = 0;
-  char_parameter_2[task] = 0;
-  // char_parameter_3[task] = 0;
-  // char_parameter_4[task] = 0;
+  ulong_parameter_1[pulse] = 0L;
+  // ulong_parameter_2[pulse] = 0L;
+  // ulong_parameter_3[pulse] = 0L;
+  // ulong_parameter_4[pulse] = 0L;
+  char_parameter_1[pulse] = 0;
+  char_parameter_2[pulse] = 0;
+  // char_parameter_3[pulse] = 0;
+  // char_parameter_4[pulse] = 0;
 
   // you *must* call fix_global_next(); late in setup()
 }
 
 
 // do this once from setup():
-void init_tasks() {
-  for (int task=0; task<PERIODICS; task++) {
-    init_task(task);
+void init_pulses() {
+  for (int pulse=0; pulse<PULSES; pulse++) {
+    init_pulse(pulse);
   }
 }
 
 
-// void wake_task(int task);	do one life step of the task
+// void wake_pulse(int pulse);	do one life step of the pulse
 // gets called from check_maybe_do()
-void wake_task(int task) {
-  pulse_count[task]++;				//      count
+void wake_pulse(int pulse) {
+  pulse_count[pulse]++;				//      count
 
-  if (periodic_do[task] != NULL) {		// there *is* something else to do?
-    (*periodic_do[task])(task);			//   yes: do it
+  if (periodic_do[pulse] != NULL) {		// there *is* something else to do?
+    (*periodic_do[pulse])(pulse);			//   yes: do it
   }
 
   // prepare future:
-  last[task].time = next[task].time;		// when it *should* have happened
-  last[task].overflow = next[task].overflow;
-  next[task].time += period[task].time;		// when it should happen again
-  next[task].overflow += period[task].overflow;
+  last[pulse].time = next[pulse].time;		// when it *should* have happened
+  last[pulse].overflow = next[pulse].overflow;
+  next[pulse].time += period[pulse].time;		// when it should happen again
+  next[pulse].overflow += period[pulse].overflow;
 
-  if (last[task].time > next[task].time)
-    next[task].overflow++;
+  if (last[pulse].time > next[pulse].time)
+    next[pulse].overflow++;
 
-  //						// COUNTED task && end reached?
-  if ((flags[task] & COUNTED) && ((pulse_count[task] +1) == int1[task] ))
-    if (flags[task] & DO_NOT_DELETE)		//   yes: DO_NOT_DELETE?
-      flags[task] &= ~ACTIVE;			//     yes: just deactivate
+  //						// COUNTED pulse && end reached?
+  if ((flags[pulse] & COUNTED) && ((pulse_count[pulse] +1) == int1[pulse] ))
+    if (flags[pulse] & DO_NOT_DELETE)		//   yes: DO_NOT_DELETE?
+      flags[pulse] &= ~ACTIVE;			//     yes: just deactivate
     else
-      init_task(task);				//     no:  DELETE task
+      init_pulse(pulse);				//     no:  DELETE pulse
 
 }
 
@@ -533,11 +533,11 @@ void fix_global_next() {
 /* This version calculates global next event[s] *once* when the next
    event could possibly have changed.
 
-   If a series of tasks are sceduled for the same time they will
+   If a series of pulses are sceduled for the same time they will
    be called in fast sequence *without* fix_global_next() in between them.
-   After all task with the same time are done fix_global_next() is called.
+   After all pulse with the same time are done fix_global_next() is called.
 
-   If a task sets up another task with the same next it *can* decide to do
+   If a pulse sets up another pulse with the same next it *can* decide to do
    the fix itself, if it seems appropriate. Normally this is not required.
 */
 
@@ -545,48 +545,48 @@ void fix_global_next() {
   global_next.overflow=~0;	// ILLEGAL value
   global_next_count=0;
 
-  for (task=0; task<PERIODICS; task++) {		// check all tasks
-    if (flags[task] & ACTIVE) {				// task active?
-      if (next[task].overflow < global_next.overflow) {	// yes: earlier overflow?
-	global_next.time = next[task].time;		//   yes: reset search
-	global_next.overflow = next[task].overflow;
-	global_next_tasks[0] = task;
+  for (pulse=0; pulse<PULSES; pulse++) {		// check all pulses
+    if (flags[pulse] & ACTIVE) {				// pulse active?
+      if (next[pulse].overflow < global_next.overflow) {	// yes: earlier overflow?
+	global_next.time = next[pulse].time;		//   yes: reset search
+	global_next.overflow = next[pulse].overflow;
+	global_next_pulses[0] = pulse;
 	global_next_count = 1;
       } else {					// same (or later) overflow:
-	if (next[task].overflow == global_next.overflow) {	// same overflow?
-	  if (next[task].time < global_next.time) {		//   yes: new next?
-	    global_next.time = next[task].time;		//     yes: reset search
-	    global_next_tasks[0] = task;
+	if (next[pulse].overflow == global_next.overflow) {	// same overflow?
+	  if (next[pulse].time < global_next.time) {		//   yes: new next?
+	    global_next.time = next[pulse].time;		//     yes: reset search
+	    global_next_pulses[0] = pulse;
 	    global_next_count = 1;
 	  } else					// (still *same* overflow)
-	    if (next[task].time == global_next.time)		//    *same* next?
-	      global_next_tasks[global_next_count++]=task; //  yes: save task, count
+	    if (next[pulse].time == global_next.time)		//    *same* next?
+	      global_next_pulses[global_next_count++]=pulse; //  yes: save pulse, count
 	}
 	// (*later* overflows are always later)
       }
     } // active?
-  } // task loop
+  } // pulse loop
 }
 
 
 
 // void check_maybe_do();
 // check if it's time to do something and do it if it's time
-// calls wake_task(task); to do one life step of the task
+// calls wake_pulse(pulse); to do one life step of the pulse
 void check_maybe_do() {
   get_now();	// updates now
 
   if (global_next.overflow == now.overflow) {	// current overflow period?
     if (global_next.time <= now.time) {		//   yes: is it time?
       for (int i=0; i<global_next_count; i++)	//     yes:
-	wake_task(global_next_tasks[i]);	//     wake next tasks up
+	wake_pulse(global_next_pulses[i]);	//     wake next pulses up
 
       fix_global_next();			// determine next event[s] serie
     }
   } else					// (earlier or later overflow)
     if (global_next.overflow < now.overflow) {	// earlier overflow period?
       for (int i=0; i<global_next_count; i++)	//     yes, we're late...
-	wake_task(global_next_tasks[i]);	//     wake next tasks up
+	wake_pulse(global_next_pulses[i]);	//     wake next pulses up
 
       fix_global_next();			// determine next event[s] serie
     }
@@ -595,65 +595,65 @@ void check_maybe_do() {
 
 
 #ifdef USE_SERIAL
-    const unsigned char noFreeTasks[] PROGMEM = "no free tasks";
+    const unsigned char noFreePulses[] PROGMEM = "no free pulses";
 #endif
 
-int setup_task(void (*task_do)(int), unsigned char new_flags, struct time when, struct time new_period) {
-  int task;
+int setup_pulse(void (*pulse_do)(int), unsigned char new_flags, struct time when, struct time new_period) {
+  int pulse;
 
   if (new_flags == 0)				// illegal new_flags parameter
     return ILLEGAL;				//   should not happen
 
-  for (task=0; task<PERIODICS; task++) {	// search first free task
-    if (flags[task] == 0)			// flags==0 means empty task
+  for (pulse=0; pulse<PULSES; pulse++) {	// search first free pulse
+    if (flags[pulse] == 0)			// flags==0 means empty pulse
       break;					//   found one
   }
-  if (task == PERIODICS) {			// no task free :(
+  if (pulse == PULSES) {			// no pulse free :(
 
 #ifdef USE_SERIAL
-    serial_println_progmem(noFreeTasks);
+    serial_println_progmem(noFreePulses);
 #endif
 
     return ILLEGAL;			// ERROR
   }
 
-  // initiaize new task				// yes, found a free task
-  flags[task] = new_flags;			// initialize task
-  periodic_do[task] = task_do;			// payload
-  next[task].time = when.time;			// next wake up time
-  next[task].overflow = when.overflow;
-  period[task].time = new_period.time;
-  period[task].overflow = new_period.overflow;
+  // initiaize new pulse				// yes, found a free pulse
+  flags[pulse] = new_flags;			// initialize pulse
+  periodic_do[pulse] = pulse_do;			// payload
+  next[pulse].time = when.time;			// next wake up time
+  next[pulse].overflow = when.overflow;
+  period[pulse].time = new_period.time;
+  period[pulse].overflow = new_period.overflow;
 
   // fix_global_next();	// this version does *not* automatically call that here...
 
-  return task;
+  return pulse;
 }
 
 
 // unused?
-int setup_counted_task(void (*task_do)(int), unsigned char new_flags, struct time when, struct time new_period, unsigned int count) {
-  int task;
+int setup_counted_pulse(void (*pulse_do)(int), unsigned char new_flags, struct time when, struct time new_period, unsigned int count) {
+  int pulse;
 
-  task= setup_task(task_do, new_flags|COUNTED, when, new_period);
-  int1[task]= count;
+  pulse= setup_pulse(pulse_do, new_flags|COUNTED, when, new_period);
+  int1[pulse]= count;
 
-  return task;
+  return pulse;
 }
 
 
-void set_new_period(int task, struct time new_period) {
-  period[task].time = new_period.time;
-  period[task].overflow = new_period.overflow;
+void set_new_period(int pulse, struct time new_period) {
+  period[pulse].time = new_period.time;
+  period[pulse].overflow = new_period.overflow;
 
-  next[task].time = last[task].time + period[task].time;
-  next[task].overflow = last[task].overflow + period[task].overflow;
-  if(next[task].time < last[task].time)
-    next[task].overflow++;
+  next[pulse].time = last[pulse].time + period[pulse].time;
+  next[pulse].overflow = last[pulse].overflow + period[pulse].overflow;
+  if(next[pulse].time < last[pulse].time)
+    next[pulse].overflow++;
 
-  if (flags[task] == 0)
-    flags[task] = SCRATCH;	// looks like we're editing by hand,
-				// so prevent deletion of the task
+  if (flags[pulse] == 0)
+    flags[pulse] = SCRATCH;	// looks like we're editing by hand,
+				// so prevent deletion of the pulse
 
   fix_global_next();	// it's saver to do that from here, but could be omitted.
 }
@@ -665,69 +665,69 @@ void set_new_period(int task, struct time new_period) {
 
 // FlipFlop pins:
 
-#if ( CLICK_PERIODICS > 0)
+#if ( CLICK_PULSES > 0)
 
 // clicks on piezzos to *hear* the result:
 //   or connect LEDs, MOSFETs, MIDI, whatever...
 //   these are just FlipFlop pins.
 
-// Click_periodics are a sub-group of periodics that control an arduino
+// Click_pulses are a sub-group of pulses that control an arduino
 // digital output each.  By design they must be initiated first to get
-// the low task indices. The pins are configured as outputs by init_click_pins()
+// the low pulse indices. The pins are configured as outputs by init_click_pins()
 // and get used by clicks, jiffles and the like. 
 
-// It's best to always leave click_periodics in memory.
+// It's best to always leave click_pulses in memory.
 // You can set DO_NOT_DELETE to achieve this.
 
 
 //  configured further up:
 //  // *do* change 'case' statement in menu_serial_reaction() if you change this.
-//  #ifndef CLICK_PERIODICS		// number of click frequencies
-//    #define CLICK_PERIODICS	5       // default number of click frequencies
+//  #ifndef CLICK_PULSES		// number of click frequencies
+//    #define CLICK_PULSES	5       // default number of click frequencies
 //  #endif
 //  // *do* change 'case' statement in menu_serial_reaction() if you change this.
 
 
 
-// By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
-void init_click_tasks() {
-  for (int task=0; task<CLICK_PERIODICS; task++) {
-    init_task(task);
-    // flags[task] |= DO_NOT_DELETE;
+// By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
+void init_click_pulses() {
+  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+    init_pulse(pulse);
+    // flags[pulse] |= DO_NOT_DELETE;
   }
 }
 
 
 
-void click(int task) {			// can be called from a task
-  digitalWrite(char_parameter_1[task], pulse_count[task] & 1);
+void click(int pulse) {			// can be called from a pulse
+  digitalWrite(char_parameter_1[pulse], pulse_count[pulse] & 1);
 }
 
 
-// pins for click_periodics:
-// It is a bit obscure to held them in an array indexed by [task]
+// pins for click_pulses:
+// It is a bit obscure to held them in an array indexed by [pulse]
 // but it's simple and working well...
-unsigned char click_pin[CLICK_PERIODICS];
+unsigned char click_pin[CLICK_PULSES];
 
 void init_click_pins() {
-  for (int task=0; task<CLICK_PERIODICS; task++) {
-    pinMode(click_pin[task], OUTPUT);
-    digitalWrite(click_pin[task], LOW);
+  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+    pinMode(click_pin[pulse], OUTPUT);
+    digitalWrite(click_pin[pulse], LOW);
   }
 }
 
 
 //  // unused? (I use the synced version more often)
-//  int setup_click_task(void (*task_do)(int), unsigned char new_flags,
+//  int setup_click_pulse(void (*pulse_do)(int), unsigned char new_flags,
 //  		     struct time when, struct time new_period) {
-//    int task = setup_task(task_do, new_flags, when, new_period);
-//    if (task != ILLEGAL) {
-//      char_parameter_1[task] = click_pin[task];
-//      pinMode(char_parameter_1[task], OUTPUT);
-//      digitalWrite(char_parameter_1[task], LOW);
+//    int pulse = setup_pulse(pulse_do, new_flags, when, new_period);
+//    if (pulse != ILLEGAL) {
+//      char_parameter_1[pulse] = click_pin[pulse];
+//      pinMode(char_parameter_1[pulse], OUTPUT);
+//      digitalWrite(char_parameter_1[pulse], LOW);
 //    }
 //  
-//    return task;
+//    return pulse;
 //  }
 
 
@@ -737,8 +737,8 @@ const unsigned char mutedAllPulses[] PROGMEM = "muted all pulses";
 #endif
 
 void mute_all_clicks () {
-  for (int task=0; task<CLICK_PERIODICS; task++)
-    flags[task] &= ~ACTIVE;
+  for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+    flags[pulse] &= ~ACTIVE;
 
   fix_global_next();			// planed soon...
 
@@ -755,63 +755,63 @@ void mute_all_clicks () {
 // (re-) activate pulse that has been edited or modified at a given time:
 // (assumes everything else is set up in order)
 // can also be used to sync running pulses on a given time
-int activate_pulse_synced(int task, struct time when, int sync)
+int activate_pulse_synced(int pulse, struct time when, int sync)
 {
   if (sync) {
-    struct time delta = period[task];
+    struct time delta = period[pulse];
     mul_time(&delta, sync);
     div_time(&delta, 2);
     add_time(&delta, &when);
   }
 
-  last[task] = when;	// replace possibly random last with something a bit better
-  next[task] = when;
+  last[pulse] = when;	// replace possibly random last with something a bit better
+  next[pulse] = when;
 
   // now switch it on
-  flags[task] |= ACTIVE;	// set ACTIVE
-  flags[task] &= ~SCRATCH;	// clear SCRATCH
+  flags[pulse] |= ACTIVE;	// set ACTIVE
+  flags[pulse] &= ~SCRATCH;	// clear SCRATCH
 
   fix_global_next();
 }
 
 
 
-// make an existing task to a click task:
-void en_click(int task)
+// make an existing pulse to a click pulse:
+void en_click(int pulse)
 {
-  if (task != ILLEGAL) {
-    periodic_do[task] = &click;
-    char_parameter_1[task] = click_pin[task];
-    pinMode(char_parameter_1[task], OUTPUT);
-    digitalWrite(char_parameter_1[task], LOW);
+  if (pulse != ILLEGAL) {
+    periodic_do[pulse] = &click;
+    char_parameter_1[pulse] = click_pin[pulse];
+    pinMode(char_parameter_1[pulse], OUTPUT);
+    digitalWrite(char_parameter_1[pulse], LOW);
   }
 }
 
 
-// make an existing task to a jiffle thrower task:
-void en_jiffle_thrower(int task, unsigned int *jiffletab)
+// make an existing pulse to a jiffle thrower pulse:
+void en_jiffle_thrower(int pulse, unsigned int *jiffletab)
 {
-  if (task != ILLEGAL) {
-    periodic_do[task] = &do_throw_a_jiffle;
-    parameter_2[task] = (unsigned int) jiffletab;
+  if (pulse != ILLEGAL) {
+    periodic_do[pulse] = &do_throw_a_jiffle;
+    parameter_2[pulse] = (unsigned int) jiffletab;
   }
 }
 
 
-// make an existing task to display 1 info line:
-void en_info(int task)
+// make an existing pulse to display 1 info line:
+void en_info(int pulse)
 {
-  if (task != ILLEGAL) {
-    periodic_do[task] = &task_info_1line;
+  if (pulse != ILLEGAL) {
+    periodic_do[pulse] = &pulse_info_1line;
   }
 }
 
 
-// make an existing task to display multiline task info:
-void en_INFO(int task)
+// make an existing pulse to display multiline pulse info:
+void en_INFO(int pulse)
 {
-  if (task != ILLEGAL) {
-    periodic_do[task] = &task_info;
+  if (pulse != ILLEGAL) {
+    periodic_do[pulse] = &pulse_info;
   }
 }
 
@@ -829,7 +829,7 @@ void en_INFO(int task)
 // negative values should not reach into the past
 // (that's why the menu only allows positive. it syncs now related,
 //  so a negative sync value would always reach into past.)
-int setup_pulse_synced(void (*task_do)(int), unsigned char new_flags,
+int setup_pulse_synced(void (*pulse_do)(int), unsigned char new_flags,
 		       struct time when, unsigned long unit,
 		       unsigned long factor, unsigned long divisor, int sync)
 {
@@ -851,21 +851,21 @@ int setup_pulse_synced(void (*task_do)(int), unsigned char new_flags,
   mul_time(&new_period, factor);
   div_time(&new_period, divisor);
 
-  return setup_task(task_do, new_flags, when, new_period);
+  return setup_pulse(pulse_do, new_flags, when, new_period);
 }
 
 
 int setup_click_synced(struct time when, unsigned long unit, unsigned long factor,
 		       unsigned long divisor, int sync) {
-  int task= setup_pulse_synced(&click, ACTIVE, when, unit, factor, divisor, sync);
+  int pulse= setup_pulse_synced(&click, ACTIVE, when, unit, factor, divisor, sync);
 
-  if (task != ILLEGAL) {
-    char_parameter_1[task] = click_pin[task];
-    pinMode(char_parameter_1[task], OUTPUT);
-    digitalWrite(char_parameter_1[task], LOW);
+  if (pulse != ILLEGAL) {
+    char_parameter_1[pulse] = click_pin[pulse];
+    pinMode(char_parameter_1[pulse], OUTPUT);
+    digitalWrite(char_parameter_1[pulse], LOW);
   }
 
-  return task;
+  return pulse;
 }
 
 
@@ -874,12 +874,12 @@ int setup_jiffle_thrower_synced(struct time when,
 				unsigned long factor, unsigned long divisor,
 				int sync, unsigned int *jiffletab)
 {
-  int task= setup_pulse_synced(&do_throw_a_jiffle, ACTIVE,
+  int pulse= setup_pulse_synced(&do_throw_a_jiffle, ACTIVE,
 			       when, unit, factor, divisor, sync);
-  if (task != ILLEGAL)
-    parameter_2[task] = (unsigned int) jiffletab;
+  if (pulse != ILLEGAL)
+    parameter_2[pulse] = (unsigned int) jiffletab;
 
-  return task;
+  return pulse;
 }
 
 
@@ -894,7 +894,7 @@ void init_ratio_sequence(struct time when,
 			 int divisor0, int divisor_step, int count,
 			 unsigned int scaling, int sync
 			 )
-// By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
+// By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
 //
 // usage:
 // 1,2,3,4 pattern	init_ratio_sequence(now, 1, 1, 1, 0, 4, scaling, sync)
@@ -905,7 +905,7 @@ void init_ratio_sequence(struct time when,
   unsigned long factor=factor0;
   unsigned long divisor=divisor0;
 
-  // init_click_tasks();
+  // init_click_pulses();
 
   for (; count; count--) {
     setup_click_synced(when, unit, factor, divisor, sync);
@@ -921,11 +921,11 @@ void init_ratio_sequence(struct time when,
 // some pre-defined patterns:
 
 void init_rhythm_1(int sync) { 
-  // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
+  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   unsigned long divisor=1;
   unsigned long scaling=6;
 
-  init_click_tasks();
+  init_click_pulses();
   get_now();
 
   for (long factor=2L; factor<6L; factor++)	// 2, 3, 4, 5
@@ -940,12 +940,12 @@ void init_rhythm_1(int sync) {
 
 // frequencies ratio 1, 4, 6, 8, 10
 void init_rhythm_2(int sync) { 
-  // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
+  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   int scaling=60;
   unsigned long factor=1;
   unsigned long unit= scaling*time_unit;
 
-  init_click_tasks();
+  init_click_pulses();
   get_now();
 
   for (unsigned long divisor=4; divisor<12 ; divisor += 2)
@@ -959,12 +959,12 @@ void init_rhythm_2(int sync) {
 
 // nice 2 to 3 to 4 to 5 pattern with phase offsets
 void init_rhythm_3(int sync) { 
-  // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
+  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   unsigned long factor, divisor=1L;
   const unsigned long scaling=5L;
   const unsigned long unit=scaling*time_unit;
 
-  init_click_tasks();
+  init_click_pulses();
   get_now();
 
   factor=2;
@@ -984,10 +984,10 @@ void init_rhythm_3(int sync) {
 
 
 void init_rhythm_4(int sync) { 
-  // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
+  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   const unsigned long scaling=15L;
 
-  init_click_tasks();
+  init_click_pulses();
   get_now();
 
   setup_click_synced(now, scaling*time_unit, 1, 1, sync);     // 1
@@ -995,7 +995,7 @@ void init_rhythm_4(int sync) {
 }
 
 
-#endif	//  #if ( CLICK_PERIODICS > 0)
+#endif	//  #if ( CLICK_PULSES > 0)
 
 
 
@@ -1007,9 +1007,9 @@ void init_rhythm_4(int sync) {
 // I'll need these soon:
 // destination of menu functions '*' '/' '=' and 's'
 unsigned char selected_destination=~0;
-// destinations codes (other then 0, 1, 2, ... for individual clicker tasks):
-#define CODE_ALL	PERIODICS		// destination code
-#define CODE_TIME_UNIT	(PERIODICS+1)		// destination code
+// destinations codes (other then 0, 1, 2, ... for individual clicker pulses):
+#define CODE_ALL	PULSES		// destination code
+#define CODE_TIME_UNIT	(PULSES+1)		// destination code
 
 
 
@@ -1071,41 +1071,41 @@ void serial_print_BIN(unsigned long value, int bits) {
 }
 
 
-void display_action(int task) {
+void display_action(int pulse) {
   void (*scratch)(int);
 
   scratch=&click;
-  if (periodic_do[task] == scratch) {
+  if (periodic_do[pulse] == scratch) {
     Serial.print("click\t");	// 8 chars at least
     return;
   }
 
   scratch=&do_jiffle0;
-  if (periodic_do[task] == scratch) {
+  if (periodic_do[pulse] == scratch) {
     Serial.print("do_jiffle0");
     return;
   }
 
   scratch=&do_throw_a_jiffle;
-  if (periodic_do[task] == scratch) {
+  if (periodic_do[pulse] == scratch) {
     Serial.print("seed jiffle");
     return;
   }
 
-  scratch=&task_info;
-  if (periodic_do[task] == scratch) {
-    Serial.print("task_info");
+  scratch=&pulse_info;
+  if (periodic_do[pulse] == scratch) {
+    Serial.print("pulse_info");
     return;
   }
 
-  scratch=&task_info_1line;
-  if (periodic_do[task] == scratch) {
+  scratch=&pulse_info_1line;
+  if (periodic_do[pulse] == scratch) {
     Serial.print("info line");
     return;
   }
 
   scratch=NULL;
-  if (periodic_do[task] == scratch) {
+  if (periodic_do[pulse] == scratch) {
     Serial.print("NULL\t");	// 8 chars at least
     return;
   }
@@ -1115,10 +1115,10 @@ void display_action(int task) {
 
 
 
-// task_info()
+// pulse_info()
 const unsigned char timeUnit[] PROGMEM = "time unit";
 const unsigned char timeUnits[] PROGMEM = " time units";
-const unsigned char taskInfo[] PROGMEM = "*** TASK info ";
+const unsigned char pulseInfo[] PROGMEM = "*** PULSE info ";
 const unsigned char flags_[] PROGMEM = "\tflags ";
 const unsigned char pulseOvfl[] PROGMEM = "\tpulse/ovf ";
 const unsigned char lastOvfl[] PROGMEM = "last/ovfl ";
@@ -1129,62 +1129,62 @@ const unsigned char pulse_[] PROGMEM = "pulse ";
 const unsigned char expected_[] PROGMEM = "expected ";
 const unsigned char ul1_[] PROGMEM = "\tul1 ";
 
-// task_info() as paylod for tasks:
-// Prints task info over serial and blinks the LED
-void task_info(int task) {
+// pulse_info() as paylod for pulses:
+// Prints pulse info over serial and blinks the LED
+void pulse_info(int pulse) {
 
 #ifdef LED_PIN
   digitalWrite(LED_PIN,HIGH);		// blink the LED
 #endif
 
-  serial_print_progmem(taskInfo);
-  Serial.print(task);
+  serial_print_progmem(pulseInfo);
+  Serial.print(pulse);
   slash();
-  Serial.print((unsigned int) pulse_count[task]);
+  Serial.print((unsigned int) pulse_count[pulse]);
 
   tab();
-  display_action(task);
+  display_action(pulse);
 
   serial_print_progmem(flags_);
-  serial_print_BIN(flags[task], 8);
+  serial_print_BIN(flags[pulse], 8);
   Serial.println();
 
-  Serial.print("pin ");  Serial.print((int) char_parameter_1[task]);
-  serial_print_progmem(index_);  Serial.print((int) char_parameter_2[task]);
-  serial_print_progmem(times_);  Serial.print(int1[task]);
-  Serial.print("\tp1 ");  Serial.print(parameter_1[task]);
-  Serial.print("\tp2 ");  Serial.print(parameter_2[task]);
-  serial_print_progmem(ul1_);  Serial.print(ulong_parameter_1[task]);
+  Serial.print("pin ");  Serial.print((int) char_parameter_1[pulse]);
+  serial_print_progmem(index_);  Serial.print((int) char_parameter_2[pulse]);
+  serial_print_progmem(times_);  Serial.print(int1[pulse]);
+  Serial.print("\tp1 ");  Serial.print(parameter_1[pulse]);
+  Serial.print("\tp2 ");  Serial.print(parameter_2[pulse]);
+  serial_print_progmem(ul1_);  Serial.print(ulong_parameter_1[pulse]);
 
   Serial.println();		// start next line
 
-  Serial.print((float) period[task].time / (float) time_unit,3);
+  Serial.print((float) period[pulse].time / (float) time_unit,3);
   serial_print_progmem(timeUnits);
 
   serial_print_progmem(pulseOvfl);
-  Serial.print((unsigned int) period[task].time);
+  Serial.print((unsigned int) period[pulse].time);
   slash();
-  Serial.print(period[task].overflow);
+  Serial.print(period[pulse].overflow);
 
   tab();
-  display_realtime_sec(period[task]);
+  display_realtime_sec(period[pulse]);
   spaces(1); serial_print_progmem(pulse_);
 
   Serial.println();		// start next line
 
   serial_print_progmem(lastOvfl);
-  Serial.print((unsigned int) last[task].time);
+  Serial.print((unsigned int) last[pulse].time);
   slash();
-  Serial.print(last[task].overflow);
+  Serial.print(last[pulse].overflow);
 
   serial_print_progmem(nextOvfl);
-  Serial.print(next[task].time);
+  Serial.print(next[pulse].time);
   slash();
-  Serial.print(next[task].overflow);
+  Serial.print(next[pulse].overflow);
 
   tab();
   serial_print_progmem(expected_);
-  display_realtime_sec(next[task]);
+  display_realtime_sec(next[pulse]);
 
   Serial.println();		// start last line
   time_info();
@@ -1197,37 +1197,37 @@ void task_info(int task) {
 }
 
 
-void alive_tasks_info()
+void alive_pulses_info()
 {
-  for (int task=0; task<PERIODICS; ++task)
-    if (flags[task])				// any flags set?
-      task_info(task);
+  for (int pulse=0; pulse<PULSES; ++pulse)
+    if (flags[pulse])				// any flags set?
+      pulse_info(pulse);
 }
 
 
 
-// task_info_1line():	one line task info, short version
-const unsigned char task_[] PROGMEM = "TASK ";
+// pulse_info_1line():	one line pulse info, short version
+const unsigned char Pulse_[] PROGMEM = "PULSE ";
 
-void task_info_1line(int task) {
+void pulse_info_1line(int pulse) {
 
-  serial_print_progmem(task_);
-  Serial.print(task);
+  serial_print_progmem(Pulse_);
+  Serial.print(pulse);
   slash();
-  Serial.print((unsigned int) pulse_count[task]);
+  Serial.print((unsigned int) pulse_count[pulse]);
 
   serial_print_progmem(flags_);
-  serial_print_BIN(flags[task], 8);
+  serial_print_BIN(flags[pulse], 8);
 
   tab();
-  print_period_in_time_units(task);
+  print_period_in_time_units(pulse);
 
   tab();
-  display_action(task);
+  display_action(pulse);
 
   tab();
   serial_print_progmem(expected_); spaces(5);
-  display_realtime_sec(next[task]);
+  display_realtime_sec(next[pulse]);
 
   tab();
   serial_print_progmem(now_);
@@ -1235,26 +1235,26 @@ void task_info_1line(int task) {
   scratch.time= micros();		// update running time
   display_realtime_sec(scratch);
 
-  if ((CODE_ALL == selected_destination) || (task == selected_destination))
+  if ((CODE_ALL == selected_destination) || (pulse == selected_destination))
     Serial.print(" *");
 
   Serial.println();
 }
 
 
-void alive_tasks_info_lines()
+void alive_pulses_info_lines()
 {
-  for (int task=0; task<PERIODICS; ++task)
-    if (flags[task])				// any flags set?
-      task_info_1line(task);
+  for (int pulse=0; pulse<PULSES; ++pulse)
+    if (flags[pulse])				// any flags set?
+      pulse_info_1line(pulse);
 }
 
 
-void print_period_in_time_units(int task) {
+void print_period_in_time_units(int pulse) {
   float time_units, scratch;
 
   serial_print_progmem(pulse_);
-  time_units = ((float) period[task].time / (float) time_unit);
+  time_units = ((float) period[pulse].time / (float) time_unit);
 
   scratch = 1000.0;
   while (scratch > max(time_units, 1.0)) {
@@ -1281,7 +1281,7 @@ void print_period_in_time_units(int task) {
 
 // jiffletabs define melody:
 // up to 256 triplets of {multiplicator, dividend, count}
-// multiplicator and dividend determine period based on the starting tasks period
+// multiplicator and dividend determine period based on the starting pulses period
 // a multiplicator of zero indicates end of jiffle
 #define JIFFLETAB_INDEX_STEP	3
 
@@ -1307,67 +1307,67 @@ unsigned int jiffletab0[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,4, 1,64,3, 
 //	*/
 
 
-void do_jiffle0 (int task) {	// to be called by task_do
-  // char_parameter_1[task]	click pin
-  // char_parameter_2[task]	jiffletab index
-  // parameter_1[task]		count down
-  // parameter_2[task]		jiffletab[] pointer
-  // ulong_parameter_1[task]	base period = period of starting task
+void do_jiffle0 (int pulse) {	// to be called by pulse_do
+  // char_parameter_1[pulse]	click pin
+  // char_parameter_2[pulse]	jiffletab index
+  // parameter_1[pulse]		count down
+  // parameter_2[pulse]		jiffletab[] pointer
+  // ulong_parameter_1[pulse]	base period = period of starting pulse
 
-  digitalWrite(char_parameter_1[task], pulse_count[task] & 1);	// click
+  digitalWrite(char_parameter_1[pulse], pulse_count[pulse] & 1);	// click
 
-  if (--parameter_1[task] > 0)				// countdown, phase endid?
+  if (--parameter_1[pulse] > 0)				// countdown, phase endid?
     return;						//   no: return immediately
 
   // if we arrive here, phase endid, start next phase if any:
-  unsigned int* jiffletab = (unsigned int *) parameter_2[task];	// read jiffletab[]
-  char_parameter_2[task] += JIFFLETAB_INDEX_STEP;
-  if (jiffletab[char_parameter_2[task]] == 0) {		// no next phase, return
-    init_task(task);					// remove task
+  unsigned int* jiffletab = (unsigned int *) parameter_2[pulse];	// read jiffletab[]
+  char_parameter_2[pulse] += JIFFLETAB_INDEX_STEP;
+  if (jiffletab[char_parameter_2[pulse]] == 0) {		// no next phase, return
+    init_pulse(pulse);					// remove pulse
     return;						// and return
   }
 
-  //initialize next phase, re-using the same task:
-  int base_index = char_parameter_2[task];			// readability
-  period[task].time =
-    ulong_parameter_1[task] * jiffletab[base_index] / jiffletab[base_index+1];
-  parameter_1[task] = jiffletab[base_index+2];			// count of next phase
+  //initialize next phase, re-using the same pulse:
+  int base_index = char_parameter_2[pulse];			// readability
+  period[pulse].time =
+    ulong_parameter_1[pulse] * jiffletab[base_index] / jiffletab[base_index+1];
+  parameter_1[pulse] = jiffletab[base_index+2];			// count of next phase
   // fix_global_next();
 }
 
 
-int init_jiffle(unsigned int *jiffletab, struct time when, struct time new_period, int origin_task)
+int init_jiffle(unsigned int *jiffletab, struct time when, struct time new_period, int origin_pulse)
 {
-  struct time jiffle_pulse=new_period;
+  struct time jiffle_period=new_period;
 
-  jiffle_pulse.time = new_period.time * jiffletab[0] / jiffletab[1];
+  jiffle_period.time = new_period.time * jiffletab[0] / jiffletab[1];
 
-  int jiffle_task = setup_task(&do_jiffle0, ACTIVE, when, jiffle_pulse);
-  if (jiffle_task != ILLEGAL) {
-    char_parameter_1[jiffle_task] = click_pin[origin_task];	// set pin
-    // pinMode(click_pin[task++], OUTPUT);			// should be ok already
-    char_parameter_2[jiffle_task] = 0;				// init phase 0
-    parameter_1[jiffle_task] = jiffletab[2];			// count of first phase
-    parameter_2[jiffle_task] = (unsigned int) jiffletab;
-    ulong_parameter_1[jiffle_task] = new_period.time;
+  int jiffle_pulse = setup_pulse(&do_jiffle0, ACTIVE, when, jiffle_period);
+  if (jiffle_pulse != ILLEGAL) {
+    char_parameter_1[jiffle_pulse] = click_pin[origin_pulse];	// set pin
+    // pinMode(click_pin[pulse++], OUTPUT);			// should be ok already
+    char_parameter_2[jiffle_pulse] = 0;				// init phase 0
+    parameter_1[jiffle_pulse] = jiffletab[2];			// count of first phase
+    parameter_2[jiffle_pulse] = (unsigned int) jiffletab;
+    ulong_parameter_1[jiffle_pulse] = new_period.time;
   }
 
-  return task;
+  return pulse;
 }
 
 
-void do_throw_a_jiffle(int task) {		// for task_do
-  // parameter_2[task]	= (unsigned int) jiffletab;
+void do_throw_a_jiffle(int pulse) {		// for pulse_do
+  // parameter_2[pulse]	= (unsigned int) jiffletab;
 
-  // start a new jiffling task now (next [task] is not yet updated):
-  init_jiffle((unsigned int *) parameter_2[task], next[task], period[task], task);
+  // start a new jiffling pulse now (next [pulse] is not yet updated):
+  init_jiffle((unsigned int *) parameter_2[pulse], next[pulse], period[pulse], pulse);
 }
 
 
 void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, struct time when, struct time new_period) {
-  int jiffle_task = setup_task(&do_throw_a_jiffle, new_flags, when, new_period);
-  if (jiffle_task != ILLEGAL) {
-    parameter_2[jiffle_task] = (unsigned int) jiffletab;
+  int jiffle_pulse = setup_pulse(&do_throw_a_jiffle, new_flags, when, new_period);
+  if (jiffle_pulse != ILLEGAL) {
+    parameter_2[jiffle_pulse] = (unsigned int) jiffletab;
   }
 }
 
@@ -1699,11 +1699,11 @@ const unsigned char none_[] PROGMEM = "(none)";
 void info_select_destination_with(boolean extended_destinations) {
   serial_println_progmem(selectDestinationInfo);
   serial_print_progmem(selectPulseWith);
-  for (int task=0; task<CLICK_PERIODICS; task++) {
-    Serial.print(task); spaces(2);
+  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+    Serial.print(pulse); spaces(2);
   }
   serial_print_progmem(tab_);
-  if (selected_destination < CLICK_PERIODICS) {
+  if (selected_destination < CLICK_PULSES) {
     Serial.print("(");
     Serial.print((int) selected_destination);
     Serial.println(")");
@@ -1881,52 +1881,52 @@ int hardware_menu_reaction(char menu_input) {
 
 const unsigned char multipliedPulse_[] PROGMEM = "Multiplied pulse[";
 
-void multiply_period_and_inform(int task, unsigned long factor) {
+void multiply_period_and_inform(int pulse, unsigned long factor) {
   struct time new_period;
 
-  new_period=period[task];
+  new_period=period[pulse];
   mul_time(&new_period, factor);
-  set_new_period(task, new_period);
+  set_new_period(pulse, new_period);
 
   serial_print_progmem(multipliedPulse_);
-  Serial.print((int) task);
+  Serial.print((int) pulse);
   Serial.print("] by ");
   Serial.println(factor);
 
-  task_info_1line(task);
+  pulse_info_1line(pulse);
 }
 
 
 const unsigned char dividedPulse_[] PROGMEM = "Divided pulse[";
 
-void divide_period_and_inform(int task, unsigned long divisor) {
+void divide_period_and_inform(int pulse, unsigned long divisor) {
   struct time new_period;
 
-  new_period=period[task];
+  new_period=period[pulse];
   div_time(&new_period, divisor);
-  set_new_period(task, new_period);
+  set_new_period(pulse, new_period);
 
   serial_print_progmem(dividedPulse_);
-  Serial.print((int) task);
+  Serial.print((int) pulse);
   Serial.print("] by ");
   Serial.println(divisor);
-  task_info_1line(task);
+  pulse_info_1line(pulse);
 }
 
 
 const unsigned char setPeriod_[] PROGMEM = "Set period[";
 
-void set_new_period_and_inform(int task, struct time new_period) {
-  set_new_period(task, new_period);
+void set_new_period_and_inform(int pulse, struct time new_period) {
+  set_new_period(pulse, new_period);
 
   serial_print_progmem(setPeriod_);
-  Serial.print((int) task);
+  Serial.print((int) pulse);
   Serial.print("] to ");
-  print_period_in_time_units(task);
+  print_period_in_time_units(pulse);
   //  Serial.print(value);
   Serial.println();
 
-  task_info_1line(task);
+  pulse_info_1line(pulse);
 }
 
 
@@ -1942,23 +1942,23 @@ void set_time_unit_and_inform(unsigned long newValue) {
 
 const unsigned char switched_[] PROGMEM = "Switched ";
 
-void switch_periodic_and_inform(int task) {
-  // special case: switching on an edited SCRATCH task:
-  if((flags[task] & ACTIVE) == 0)	// was off
-    if (flags[task] & SCRATCH)		// SCRATCH set, like activating after edit
-      flags[task] &= ~SCRATCH;		// so we remove SCRATCH
+void switch_periodic_and_inform(int pulse) {
+  // special case: switching on an edited SCRATCH pulse:
+  if((flags[pulse] & ACTIVE) == 0)	// was off
+    if (flags[pulse] & SCRATCH)		// SCRATCH set, like activating after edit
+      flags[pulse] &= ~SCRATCH;		// so we remove SCRATCH
 
-  flags[task] ^= ACTIVE;
+  flags[pulse] ^= ACTIVE;
 
   serial_print_progmem(switched_);  serial_print_progmem(pulse_);
-  Serial.print((int)  task);
-  if (flags[task] & ACTIVE) {
+  Serial.print((int)  pulse);
+  if (flags[pulse] & ACTIVE) {
     get_now();
-    next[task] = now;
-    last[task] = next[task];	// for overflow logic
+    next[pulse] = now;
+    last[pulse] = next[pulse];	// for overflow logic
 
     Serial.println(" on\t");
-    task_info_1line(task);
+    pulse_info_1line(pulse);
   } else
     Serial.println (" off");
 
@@ -1969,20 +1969,20 @@ void switch_periodic_and_inform(int task) {
 // menu interface to reset a pulse and prepare it to be edited:
 const unsigned char resetPulse[] PROGMEM = "reset pulse ";
 
-void reset_and_edit_pulse(int task) {
-  init_task(task);
-  serial_print_progmem(resetPulse); Serial.println(task);
-  flags[task] |= SCRATCH;	// set SCRATCH flag
-  flags[task] &= ~ACTIVE;	// remove ACTIVE
+void reset_and_edit_pulse(int pulse) {
+  init_pulse(pulse);
+  serial_print_progmem(resetPulse); Serial.println(pulse);
+  flags[pulse] |= SCRATCH;	// set SCRATCH flag
+  flags[pulse] &= ~ACTIVE;	// remove ACTIVE
 
   // set a default pulse length:
   struct time scratch;
   scratch.time = time_unit;
   scratch.overflow = 0;
   mul_time(&scratch, 12);		// 12 looks like a usable default
-  period[task] = scratch;
+  period[pulse] = scratch;
 
-  task_info_1line(task);
+  pulse_info_1line(pulse);
 }
 
 
@@ -2018,7 +2018,7 @@ void menu_serial_reaction() {
 
       case '?':
 	display_serial_menu();
-	alive_tasks_info_lines();
+	alive_pulses_info_lines();
 	time_info();  tab(); RAM_info(); Serial.println();
 	break;
 
@@ -2028,12 +2028,12 @@ void menu_serial_reaction() {
 
       case '.':
 	time_info(); Serial.println();
-	alive_tasks_info_lines();
+	alive_pulses_info_lines();
 	// RAM_info(); Serial.println();
 	Serial.println();
 	break;
 
-      // *do* change this line if you change CLICK_PERIODICS
+      // *do* change this line if you change CLICK_PULSES
       case '0': case '1': case '2': case '3': case '4':
 	// display(menu_input - '0');
 	selected_destination = menu_input - '0';
@@ -2055,13 +2055,13 @@ void menu_serial_reaction() {
 	break;
 
       case 's':
-	if (selected_destination < CLICK_PERIODICS) {
+	if (selected_destination < CLICK_PULSES) {
 	  switch_periodic_and_inform(selected_destination);
 	} else
 	  switch (selected_destination) {
 	  case CODE_ALL:
-	    for (int task=0; task<CLICK_PERIODICS; task++ ) {
-	      switch_periodic_and_inform(task);
+	    for (int pulse=0; pulse<CLICK_PULSES; pulse++ ) {
+	      switch_periodic_and_inform(pulse);
 	    }
 	    Serial.println();
 	    break;
@@ -2083,7 +2083,7 @@ void menu_serial_reaction() {
 
       case 'i':
 	RAM_info(); Serial.println(); Serial.println();
-	alive_tasks_info();
+	alive_pulses_info();
 	break;
 
       case 'M':					// hides hardware menus 'M'
@@ -2091,7 +2091,7 @@ void menu_serial_reaction() {
 	break;
 
       case '*':
-	if (selected_destination < CLICK_PERIODICS) {
+	if (selected_destination < CLICK_PULSES) {
 	  newValue = numericInput(1);
 	  if (newValue>=0) {
 	    multiply_period_and_inform(selected_destination, newValue);
@@ -2103,8 +2103,8 @@ void menu_serial_reaction() {
 
 	  switch (selected_destination) {
 	  case CODE_ALL:
-	    for (int task=0; task<CLICK_PERIODICS; task++ ) {
-	      multiply_period_and_inform(task, newValue);
+	    for (int pulse=0; pulse<CLICK_PULSES; pulse++ ) {
+	      multiply_period_and_inform(pulse, newValue);
 	    }
 	    Serial.println();
 	    break;
@@ -2120,7 +2120,7 @@ void menu_serial_reaction() {
 	break;
 
       case '/':
-	if (selected_destination < CLICK_PERIODICS) {
+	if (selected_destination < CLICK_PULSES) {
 	  newValue = numericInput(1);
 	  if (newValue>0) {
 	    divide_period_and_inform(selected_destination, newValue);
@@ -2132,8 +2132,8 @@ void menu_serial_reaction() {
 
 	  switch (selected_destination) {
 	  case CODE_ALL:
-	    for (int task=0; task<CLICK_PERIODICS; task++ ) {
-	      divide_period_and_inform(task, newValue);
+	    for (int pulse=0; pulse<CLICK_PULSES; pulse++ ) {
+	      divide_period_and_inform(pulse, newValue);
 	    }
 	    Serial.println();
 	    break;
@@ -2149,7 +2149,7 @@ void menu_serial_reaction() {
 	break;
 
       case '=':
-	if (selected_destination < CLICK_PERIODICS) {		// periodics
+	if (selected_destination < CLICK_PULSES) {		// pulses
 	newValue = numericInput(period[selected_destination].time / time_unit);
 	if (newValue>=0) {
 	  time_scratch.time = newValue * time_unit;
@@ -2165,7 +2165,7 @@ void menu_serial_reaction() {
 	  case CODE_ALL:
 	    time_scratch.time = newValue * time_unit;
 	    time_scratch.overflow = 0;
-	    for (int task=0; task<CLICK_PERIODICS; task++ ) {
+	    for (int pulse=0; pulse<CLICK_PULSES; pulse++ ) {
 	      set_new_period_and_inform(selected_destination, time_scratch);
 	    }
 	    Serial.println();
@@ -2182,46 +2182,46 @@ void menu_serial_reaction() {
 	break;
 
       case 'K':
-	if (selected_destination < CLICK_PERIODICS) {		// periodics
-	  init_task(selected_destination);
+	if (selected_destination < CLICK_PULSES) {		// pulses
+	  init_pulse(selected_destination);
 	  serial_print_progmem(killPulse); Serial.println(selected_destination);
-	  alive_tasks_info_lines(); Serial.println();
+	  alive_pulses_info_lines(); Serial.println();
 	} else
 	  if (selected_destination == CODE_ALL) {
-	    init_tasks();
+	    init_pulses();
 	    serial_println_progmem(killedAll);
 	  } else
 	    info_select_destination_with(false);
 	break;
 
       case 'p':
-	if (selected_destination < CLICK_PERIODICS) {		// periodics
+	if (selected_destination < CLICK_PULSES) {		// pulses
 	  reset_and_edit_pulse(selected_destination);
 	} else
 	  if (selected_destination == CODE_ALL) {
-	    // we disobey and change only CLICK_PERIODICS:
-	    for (int task=0; task<CLICK_PERIODICS; task++)
-	      reset_and_edit_pulse(task);
-	    Serial.println(); alive_tasks_info_lines();
+	    // we disobey and change only CLICK_PULSES:
+	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+	      reset_and_edit_pulse(pulse);
+	    Serial.println(); alive_pulses_info_lines();
 	    Serial.println();
 	  } else
 	    info_select_destination_with(false);
 	break;
 
       case 'n':
-	if (selected_destination < CLICK_PERIODICS) {		// periodics
+	if (selected_destination < CLICK_PULSES) {		// pulses
 	  get_now();
 	  activate_pulse_synced(selected_destination, now, abs(sync));
 	  check_maybe_do();				  // maybe do it *first*
-	  task_info_1line(selected_destination);	  // *then* info ;)
+	  pulse_info_1line(selected_destination);	  // *then* info ;)
 	} else
 	  if (selected_destination == CODE_ALL) {
 	    get_now();
-	    // we disobey and change only CLICK_PERIODICS:
-	    for (int task=0; task<CLICK_PERIODICS; task++)
-	      activate_pulse_synced(task, now, abs(sync));
+	    // we disobey and change only CLICK_PULSES:
+	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+	      activate_pulse_synced(pulse, now, abs(sync));
 	    check_maybe_do();				// maybe do it *first*
-	    alive_tasks_info_lines();			// and *then* info
+	    alive_pulses_info_lines();			// and *then* info
 	  } else
 	    info_select_destination_with(false);
 	break;
@@ -2233,88 +2233,88 @@ void menu_serial_reaction() {
 
       case 'Y':				// hook for debugging
 	Serial.print("rhthm 1, sync "); Serial.println(sync);
-	init_tasks();
+	init_pulses();
 	init_rhythm_1(sync);
 	break;
 
       case 'X':				// hook for debugging
 	Serial.print("rhthm 2, sync "); Serial.println(sync);
-	init_tasks();
+	init_pulses();
 	init_rhythm_2(sync);
 	break;
 
       case 'C':				// hook for debugging
 	Serial.print("rhthm 3, sync "); Serial.println(sync);
-	init_tasks();
+	init_pulses();
 	init_rhythm_3(sync);
 	break;
 
       case 'V':				// hook for debugging, clash with HARDWARE V
 	Serial.print("rhthm 4, sync "); Serial.println(sync);
-	init_tasks();
+	init_pulses();
 	init_rhythm_4(sync);
 	break;
 
       case 'B':				// hook for debugging
 	Serial.print("jiffles0, sync "); Serial.println(sync);
-	init_tasks();
+	init_pulses();
 	setup_jiffles0(sync);
 	break;
 
       // debugging entries: DADA ###############################################
 
       case 'c':
-	if (selected_destination < CLICK_PERIODICS) {		// periodics
+	if (selected_destination < CLICK_PULSES) {		// pulses
 	  en_click(selected_destination);
-	  task_info_1line(selected_destination);
+	  pulse_info_1line(selected_destination);
 	} else
 	  if (selected_destination == CODE_ALL) {
-	    // we disobey and change only CLICK_PERIODICS:
-	    for (int task=0; task<CLICK_PERIODICS; task++)
-	      en_click(task);
-	    alive_tasks_info_lines();
+	    // we disobey and change only CLICK_PULSES:
+	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+	      en_click(pulse);
+	    alive_pulses_info_lines();
 	  } else
 	    info_select_destination_with(false);
 	break;
 
       case 'j':
-	if (selected_destination < CLICK_PERIODICS) {		// periodics
+	if (selected_destination < CLICK_PULSES) {		// pulses
 	  en_jiffle_thrower(selected_destination, jiffletab0);
-	  task_info_1line(selected_destination);
+	  pulse_info_1line(selected_destination);
 	} else
 	  if (selected_destination == CODE_ALL) {
-	    // we disobey and change only CLICK_PERIODICS:
-	    for (int task=0; task<CLICK_PERIODICS; task++)
-	      en_jiffle_thrower(task, jiffletab0);
-	    alive_tasks_info_lines();
+	    // we disobey and change only CLICK_PULSES:
+	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+	      en_jiffle_thrower(pulse, jiffletab0);
+	    alive_pulses_info_lines();
 	  } else
 	    info_select_destination_with(false);
 	break;
 
       case 'f':
-	if (selected_destination < CLICK_PERIODICS) {		// periodics
+	if (selected_destination < CLICK_PULSES) {		// pulses
 	  en_info(selected_destination);
-	  task_info_1line(selected_destination);
+	  pulse_info_1line(selected_destination);
 	} else
 	  if (selected_destination == CODE_ALL) {
-	    // we disobey and change only CLICK_PERIODICS:
-	    for (int task=0; task<CLICK_PERIODICS; task++)
-	      en_info(task);
-	    alive_tasks_info_lines();
+	    // we disobey and change only CLICK_PULSES:
+	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+	      en_info(pulse);
+	    alive_pulses_info_lines();
 	  } else
 	    info_select_destination_with(false);
 	break;
 
       case 'F':
-	if (selected_destination < CLICK_PERIODICS) {		// periodics
+	if (selected_destination < CLICK_PULSES) {		// pulses
 	  en_INFO(selected_destination);
-	  task_info_1line(selected_destination);
+	  pulse_info_1line(selected_destination);
 	} else
 	  if (selected_destination == CODE_ALL) {
-	    // we disobey and change only CLICK_PERIODICS:
-	    for (int task=0; task<CLICK_PERIODICS; task++)
-	      en_INFO(task);
-	    alive_tasks_info_lines();
+	    // we disobey and change only CLICK_PULSES:
+	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+	      en_INFO(pulse);
+	    alive_pulses_info_lines();
 	  } else
 	    info_select_destination_with(false);
 	break;
@@ -2390,7 +2390,7 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
 #endif
 
-#ifdef CLICK_PERIODICS
+#ifdef CLICK_PULSES
   click_pin[0]= 2;		// configure PINs here
   click_pin[1]= 3;		// configure PINs here
   click_pin[2]= 4;		// configure PINs here
@@ -2401,11 +2401,11 @@ void setup() {
 #endif
 
 
-  // time and tasks *must* get initialized before setting up tasks:
+  // time and pulses *must* get initialized before setting up pulses:
   init_time();
-  init_tasks();
+  init_pulses();
 
-  // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
+  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   // init_rhythm_1(1);
   // init_rhythm_2(1);
   // init_rhythm_3(1);
@@ -2413,7 +2413,7 @@ void setup() {
   // setup_jiffles0(1);
 
 #ifdef MENU_over_serial
-  alive_tasks_info_lines(); Serial.println();
+  alive_pulses_info_lines(); Serial.println();
 #endif
 
   fix_global_next();	// we *must* call that here late in setup();
