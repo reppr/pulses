@@ -30,6 +30,8 @@
 
    Creating, editing, syncing, killing pulses from serial menu.
 
+   Entering jiffletab by hand.
+
 
 */
 /* **************************************************************** */
@@ -1308,7 +1310,88 @@ void print_period_in_time_units(int pulse) {
 // a multiplicator of zero indicates end of jiffle
 #define JIFFLETAB_INDEX_STEP	3
 
+// put these in PROGMEM or EEPROM	DADA ################
 unsigned int jiffletab0[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,4, 1,64,3, 1,32,1, 1,16,2, 0};	// nice short jiffy
+
+// DADA ################
+#define JIFFLETAB_ENTRIES	8	// how many triplets
+// there *MUST* be a trailing zero in all jiffletabs.
+
+unsigned int jiffletab[] =
+  {1,16,2, 1,256,32, 1,128,8, 1,64,2, 1,32,1, 1,16,1, 1,8,2, 0,0,0, 0};	// there *must* be a trailing zero.
+
+
+// enter_jiffletab(), edit jiffletab by hand:
+#ifdef USE_SERIAL
+const unsigned char jifftabFull[] PROGMEM = "jiffletab full";
+const unsigned char enterJiffletabVal[] PROGMEM = "enter jiffletab values";
+#endif
+
+void enter_jiffletab(unsigned int *jiffletab)
+{
+  int menu_input;
+  int new_value;
+  int index=0;			// counts ints, *not* triplets
+
+  while (true) {
+    if (!char_available())
+      serial_println_progmem(enterJiffletabVal);
+
+    while (!char_available())	// wait for input
+      ;
+
+    // delay(WAITforSERIAL);
+
+    switch (menu_input = get_char()) {
+    case ' ': case ',':
+      break;
+
+    case '0': case '1': case '2': case '3': case '4':
+    case '5': case '6': case '7': case '8': case '9':
+      char_store((char) menu_input); 
+      new_value = numericInput(0);
+      jiffletab[index++] = new_value;
+
+      if (new_value == 0)
+	return;
+
+      if (index == (JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP)) {	// jiffletab is full
+	jiffletab[JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP] = 0;	// trailing 0
+
+#ifdef USE_SERIAL
+	serial_println_progmem(jifftabFull);
+#endif
+
+	return;				// quit
+      }
+      break;
+
+    case '}':
+      display_jiffletab(jiffletab);
+      return;
+      break;
+
+    default:
+      char_store((char) menu_input); 
+      return;
+    }
+  }
+}
+
+
+void display_jiffletab(unsigned int *jiffletab)
+{
+  Serial.print("{");
+  for (int i=0; i <= JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP; i++) {
+    if ((i % JIFFLETAB_INDEX_STEP) == 0)
+      spaces(1);
+    Serial.print(jiffletab[i]);
+    if (jiffletab[i] == 0)
+      break;
+    Serial.print(",");
+  }
+  Serial.println(" }");
+}
 
 
 // DADA
@@ -1464,7 +1547,7 @@ int get_char() {
 
 
 
-const unsigned char storeFull[] PROGMEM = "char_store: sorry, buffer full.";
+const unsigned char storeFull[] PROGMEM = "char_store buffer full";
 int char_store(char c) {
   if (chars_stored) {	// ERROR.  I have not needed more then one char yet...
     serial_println_progmem(storeFull);
@@ -2296,16 +2379,25 @@ void menu_serial_reaction() {
 
       case 'j':
 	if (selected_destination < CLICK_PULSES) {		// pulses
-	  en_jiffle_thrower(selected_destination, jiffletab0);
+	  en_jiffle_thrower(selected_destination, jiffletab);
 	  pulse_info_1line(selected_destination);
 	} else
 	  if (selected_destination == CODE_ALL) {
 	    // we disobey and change only CLICK_PULSES:
 	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
-	      en_jiffle_thrower(pulse, jiffletab0);
+	      en_jiffle_thrower(pulse, jiffletab);
 	    alive_pulses_info_lines();
 	  } else
 	    info_select_destination_with(false);
+	break;
+
+      case '{':
+	enter_jiffletab(jiffletab);
+	display_jiffletab(jiffletab);
+	break;
+
+      case '}':
+	display_jiffletab(jiffletab);
 	break;
 
       case 'f':
