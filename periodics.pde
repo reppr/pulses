@@ -111,7 +111,7 @@ int get_free_RAM() {
 /* **************************************************************** */
 // use PROGMEM to save RAM:
 
-#if (defined(USE_SERIAL) || defined(USE_LCD))
+#if (defined(USE_SERIAL) || defined(USE_LCD))	// Serial and LCD strings...
 #include <avr/pgmspace.h>
 
 const unsigned char programName[] PROGMEM = "PERIODICS";
@@ -192,7 +192,23 @@ void serial_println_progmem(const unsigned char *str) {
 
 /* **************************************************************** */
 /*
-	TIME
+     TIME
+
+
+   all times get stored in 'struct time', taking care of time overflow
+   *always* get time by calling get_now() to have overflow treated correctly.
+
+   run init_time() from setup to initialize time internals.
+
+   'running-through' program design:
+   never wait,
+   check with check_maybe_do() if it's time to do something
+   else return immediately.
+
+   tasks know when their next turn will be, see 'struct time next[task]'.
+   fix_global_next() determines which event will be next globally
+   fix_global_next() is updated automatically when appropriate.
+
 */
 /* **************************************************************** */
 
@@ -229,7 +245,6 @@ unsigned long time_unit = 100000L;		// scaling timer to 10/s 0.1s
 
 
 
-/* **************************************************************** */
 // init time:
 
 // do this once from setup()
@@ -349,7 +364,12 @@ void div_time(struct time *duration, unsigned int divisor) {
 
 /* **************************************************************** */
 /*
-   PULSES
+
+     PULSES
+
+
+   periodically wake up, count and do something
+
 */
 /* **************************************************************** */
 
@@ -645,10 +665,20 @@ void set_new_period(int task, struct time new_period) {
 
 // FlipFlop pins:
 
-#if ( CLICK_PERIODICS > 0)	// DADA ################
+#if ( CLICK_PERIODICS > 0)
+
 // clicks on piezzos to *hear* the result:
 //   or connect LEDs, MOSFETs, MIDI, whatever...
 //   these are just FlipFlop pins.
+
+// Click_periodics are a sub-group of periodics that control an arduino
+// digital output each.  By design they must be initiated first to get
+// the low task indices. The pins are configured as outputs by init_click_pins()
+// and get used by clicks, jiffles and the like. 
+
+// It's best to always leave click_periodics in memory.
+// You can set DO_NOT_DELETE to achieve this.
+
 
 //  configured further up:
 //  // *do* change 'case' statement in menu_serial_reaction() if you change this.
@@ -663,6 +693,7 @@ void set_new_period(int task, struct time new_period) {
 void init_click_tasks() {
   for (int task=0; task<CLICK_PERIODICS; task++) {
     init_task(task);
+    // flags[task] |= DO_NOT_DELETE;
   }
 }
 
@@ -673,8 +704,10 @@ void click(int task) {			// can be called from a task
 }
 
 
-
-unsigned char click_pin[CLICK_PERIODICS];	// DADA ################
+// pins for click_periodics:
+// It is a bit obscure to held them in an array indexed by [task]
+// but it's simple and working well...
+unsigned char click_pin[CLICK_PERIODICS];
 
 void init_click_pins() {
   for (int task=0; task<CLICK_PERIODICS; task++) {
@@ -698,9 +731,26 @@ void init_click_pins() {
 //  }
 
 
-/* **************************************************************** */
-// playing with rhythms:
 
+#ifdef USE_SERIAL
+const unsigned char mutedAllPulses[] PROGMEM = "muted all pulses";
+#endif
+
+void mute_all_clicks () {
+  for (int task=0; task<CLICK_PERIODICS; task++)
+    flags[task] &= ~ACTIVE;
+
+  fix_global_next();			// planed soon...
+
+#ifdef USE_SERIAL
+  serial_println_progmem(mutedAllPulses);
+#endif
+}
+
+
+
+/* **************************************************************** */
+// creating, editing, killing pulses
 
 // (re-) activate pulse that has been edited or modified at a given time:
 // (assumes everything else is set up in order)
@@ -724,39 +774,6 @@ int activate_pulse_synced(int task, struct time when, int sync)
   fix_global_next();
 }
 
-
-// Generic setup pulse, stright or middle synced relative to 'when'.
-// Pulse time and phase sync get deviated from unit, which is first
-// multiplied by factor and divided by divisor.
-// sync=0 gives stright syncing, sync=1 middle pulses synced.
-// other values possible,
-// negative values should not reach into the past
-// (that's why the menu only allows positive. it syncs now related,
-//  so a negative sync value would always reach into past.)
-int setup_pulse_synced(void (*task_do)(int), unsigned char new_flags,
-		       struct time when, unsigned long unit,
-		       unsigned long factor, unsigned long divisor, int sync)
-{
-  struct time new_period;
-
-  if (sync) {
-    struct time delta;
-    delta.time = sync*unit/2L;
-    delta.overflow = 0;
-
-    mul_time(&delta, factor);
-    div_time(&delta, divisor);
-
-    add_time(&delta, &when);
-  }
-
-  new_period.time = unit;
-  new_period.overflow = 0;
-  mul_time(&new_period, factor);
-  div_time(&new_period, divisor);
-
-  return setup_task(task_do, new_flags, when, new_period);
-}
 
 
 // make an existing task to a click task:
@@ -798,6 +815,44 @@ void en_INFO(int task)
   }
 }
 
+
+
+/* **************************************************************** */
+// playing with rhythms:
+
+
+// Generic setup pulse, stright or middle synced relative to 'when'.
+// Pulse time and phase sync get deviated from unit, which is first
+// multiplied by factor and divided by divisor.
+// sync=0 gives stright syncing, sync=1 middle pulses synced.
+// other values possible,
+// negative values should not reach into the past
+// (that's why the menu only allows positive. it syncs now related,
+//  so a negative sync value would always reach into past.)
+int setup_pulse_synced(void (*task_do)(int), unsigned char new_flags,
+		       struct time when, unsigned long unit,
+		       unsigned long factor, unsigned long divisor, int sync)
+{
+  struct time new_period;
+
+  if (sync) {
+    struct time delta;
+    delta.time = sync*unit/2L;
+    delta.overflow = 0;
+
+    mul_time(&delta, factor);
+    div_time(&delta, divisor);
+
+    add_time(&delta, &when);
+  }
+
+  new_period.time = unit;
+  new_period.overflow = 0;
+  mul_time(&new_period, factor);
+  div_time(&new_period, divisor);
+
+  return setup_task(task_do, new_flags, when, new_period);
+}
 
 
 int setup_click_synced(struct time when, unsigned long unit, unsigned long factor,
@@ -861,6 +916,9 @@ void init_ratio_sequence(struct time when,
   fix_global_next();
 }
 
+
+/* **************************************************************** */
+// some pre-defined patterns:
 
 void init_rhythm_1(int sync) { 
   // By design click tasks *HAVE* to be defined *BEFORE* any other tasks:
@@ -950,9 +1008,8 @@ void init_rhythm_4(int sync) {
 // destination of menu functions '*' '/' '=' and 's'
 unsigned char selected_destination=~0;
 // destinations codes (other then 0, 1, 2, ... for individual clicker tasks):
-// DADA ################
-#define ALL_PERIODICS	PERIODICS		// destination code
-#define TIME_UNIT	(PERIODICS + 1)		// destination code
+#define CODE_ALL	PERIODICS		// destination code
+#define CODE_TIME_UNIT	(PERIODICS+1)		// destination code
 
 
 
@@ -960,6 +1017,13 @@ unsigned char selected_destination=~0;
 float display_realtime_sec(struct time duration) {
   float seconds=((float) duration.time / 1000000.0);
   seconds += overflow_sec * (float) duration.overflow;
+
+  float scratch = 1000.0;
+  while (scratch > max(seconds, 1.0)) {
+    spaces(1);
+    scratch /= 10.0;
+  }
+
 
   Serial.print(seconds , 3);
   Serial.print("s");
@@ -1162,7 +1226,7 @@ void task_info_1line(int task) {
   display_action(task);
 
   tab();
-  serial_print_progmem(expected_);
+  serial_print_progmem(expected_); spaces(5);
   display_realtime_sec(next[task]);
 
   tab();
@@ -1171,7 +1235,7 @@ void task_info_1line(int task) {
   scratch.time= micros();		// update running time
   display_realtime_sec(scratch);
 
-  if ((ALL_PERIODICS == selected_destination) || (task == selected_destination))
+  if ((CODE_ALL == selected_destination) || (task == selected_destination))
     Serial.print(" *");
 
   Serial.println();
@@ -1186,31 +1250,6 @@ void alive_tasks_info_lines()
 }
 
 
-#endif	// #ifdef USE_SERIAL
-
-
-
-/* **************************************************************** */
-// functions to deal with clicks (i.e. from the menus):
-
-#ifdef USE_SERIAL
-
-const unsigned char mutedAllPulses[] PROGMEM = "muted all pulses";
-#endif
-
-void mute_all_clicks () {
-  for (int task=0; task<CLICK_PERIODICS; task++)
-    flags[task] &= ~ACTIVE;
-
-  // fix_global_next();			// planed soon...
-
-#ifdef USE_SERIAL
-  serial_println_progmem(mutedAllPulses);
-#endif
-}
-
-
-
 void print_period_in_time_units(int task) {
   float time_units, scratch;
 
@@ -1218,7 +1257,7 @@ void print_period_in_time_units(int task) {
   time_units = ((float) period[task].time / (float) time_unit);
 
   scratch = 1000.0;
-  while (scratch > max(time_units, 1.0)) {	// DADA
+  while (scratch > max(time_units, 1.0)) {
     spaces(1);
     scratch /= 10.0;
   }
@@ -1226,35 +1265,47 @@ void print_period_in_time_units(int task) {
   Serial.print((float) time_units, 3);
   serial_print_progmem(timeUnits);
 }
+#endif	// #ifdef USE_SERIAL
 
 
 
 /* **************************************************************** */
 // jiffles:
+// jiffles are (click) patterns defined in jiffletabs and based on a base period
+//
+// the base period is multiplied/divided by two int values
+// the following jiffleteab value counts how many times the pulse will get
+// woken up with this new computed period
+// then continue with next jiffletab entries 
+// a zero multiplicator ends the jiffle
 
 // jiffletabs define melody:
 // up to 256 triplets of {multiplicator, dividend, count}
-// multiplicator and dividend determine period based on the startin tasks period
+// multiplicator and dividend determine period based on the starting tasks period
 // a multiplicator of zero indicates end of jiffle
 #define JIFFLETAB_INDEX_STEP	3
-// unsigned int jiffletab0[] = {1,512,8, 1,1024,16, 1,2048,32, 1,1024,16, 0};
-// unsigned int jiffletab0[] = {1,128,2, 1,256,6, 1,512,10, 1,1024,32, 1,3*128,20, 1,64,8, 0};
-// unsigned int jiffletab0[] = {1,32,4, 1,64,8, 1,128,16, 1,256,32, 1,512,64, 1,1024,128, 0};	// testing octaves
-
-// unsigned int jiffletab0[] =
-//   {1,2096,4, 1,512,2, 1,128,2, 1,256,2, 1,512,8, 1,1024,32, 1,512,4, 1,256,3, 1,128,2, 1,64,1, 0};
-
-// unsigned int jiffletab0[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,2, 1,64,1, 1,32,1, 1,16,2, 0};
-
-
-// unsigned int jiffletab0[] = {1,32,2, 0};	// doubleclick
 
 unsigned int jiffletab0[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,4, 1,64,3, 1,32,1, 1,16,2, 0};	// nice short jiffy
 
-/*
-unsigned int jiffletab1[] =
-  {1,1024,64, 1,512,4, 1,128,2, 1,64,1, 1,32,1, 1,16,1, 0};
-*/
+
+// DADA
+//	// unsigned int jiffletab0[] = {1,512,8, 1,1024,16, 1,2048,32, 1,1024,16, 0};
+//	// unsigned int jiffletab0[] = {1,128,2, 1,256,6, 1,512,10, 1,1024,32, 1,3*128,20, 1,64,8, 0};
+//	// unsigned int jiffletab0[] = {1,32,4, 1,64,8, 1,128,16, 1,256,32, 1,512,64, 1,1024,128, 0};	// testing octaves
+//	
+//	// unsigned int jiffletab0[] =
+//	//   {1,2096,4, 1,512,2, 1,128,2, 1,256,2, 1,512,8, 1,1024,32, 1,512,4, 1,256,3, 1,128,2, 1,64,1, 0};
+//	
+//	// unsigned int jiffletab0[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,2, 1,64,1, 1,32,1, 1,16,2, 0};
+//	
+//	
+//	// unsigned int jiffletab0[] = {1,32,2, 0};	// doubleclick
+//	
+//	/*
+//	unsigned int jiffletab1[] =
+//	  {1,1024,64, 1,512,4, 1,128,2, 1,64,1, 1,32,1, 1,16,1, 0};
+//	*/
+
 
 void do_jiffle0 (int task) {	// to be called by task_do
   // char_parameter_1[task]	click pin
@@ -1321,6 +1372,7 @@ void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, stru
 }
 
 
+// pre-defined jiffle pattern:
 void setup_jiffles0(int sync) {
   unsigned long factor, divisor = 1;
 
@@ -1445,7 +1497,7 @@ long numericInput(long oldValue) {
 }
 
 
-
+// ONoff()
 const unsigned char ON_off[] PROGMEM = "ON/off";
 const unsigned char on_OFF[] PROGMEM = "on/OFF";
 
@@ -1483,7 +1535,7 @@ int ONoff(int value, int mode, int tab) {
 }
 
 
-
+// bar_graph()
 const unsigned char outOfRange[] PROGMEM = " out of range.";
 const unsigned char value_[] PROGMEM = "value ";
 
@@ -1514,6 +1566,7 @@ void bar_graph(int value) {
 
 
 
+// bar_graph_VU()
 const unsigned char followPin[] PROGMEM = "Follow pin ";
 const unsigned char VU_title[] PROGMEM = "values\t\t +/- tolerance (send any other byte to stop)\n";
 const unsigned char quit_[] PROGMEM = "(quit)";
@@ -1632,20 +1685,16 @@ void menu_hardware_display() {
 /* **************************************************************** */
 // program specific menu:
 
-const unsigned char switchPulse[] PROGMEM = "s=switch pulse on/off";
-// const unsigned char freeRAM[] PROGMEM = "free RAM ";
-const unsigned char pPin[] PROGMEM = "p=pin (";
-const unsigned char none_[] PROGMEM = "(none)";
 
+// info_select_destination_with()
 const unsigned char selectDestinationInfo[] PROGMEM =
   "SELECT DESTINATION for '= * / s K p n c j' to work on:";
 const unsigned char selectPulseWith[] PROGMEM = "Select puls with ";
-const unsigned char killPulse[] PROGMEM = "kill pulse ";
-const unsigned char resetPulse[] PROGMEM = "reset pulse ";
 const unsigned char all_[] PROGMEM = "(ALL)";
 const unsigned char selectAllPulses[] PROGMEM = "A=select *all* pulses";
 const unsigned char uSelect[] PROGMEM = "u=select ";
 const unsigned char selected__[] PROGMEM = "\t(selected)";
+const unsigned char none_[] PROGMEM = "(none)";
 
 void info_select_destination_with(boolean extended_destinations) {
   serial_println_progmem(selectDestinationInfo);
@@ -1659,7 +1708,7 @@ void info_select_destination_with(boolean extended_destinations) {
     Serial.print((int) selected_destination);
     Serial.println(")");
   } else 
-    if(selected_destination == ALL_PERIODICS) {
+    if(selected_destination == CODE_ALL) {
       serial_println_progmem(all_);
     } else
       serial_println_progmem(none_);
@@ -1669,7 +1718,7 @@ void info_select_destination_with(boolean extended_destinations) {
 
   if(extended_destinations) {
     serial_print_progmem(uSelect);  serial_print_progmem(timeUnit);
-    if(selected_destination == TIME_UNIT) {
+    if(selected_destination == CODE_TIME_UNIT) {
     serial_println_progmem(selected__);
     } else
       Serial.println();
@@ -1687,6 +1736,7 @@ const unsigned char microSeconds[] PROGMEM = " microseconds";
 const unsigned char muteKill[] PROGMEM = "M=mute all\tK=kill\n\nCREATE PULSES\tstart with 'p'\np=new pulse\tc=en-click\tj=en-jiffle\tf=en-info\tF=en-INFO\tn=sync now\nS=sync ";
 const unsigned char perSecond_[] PROGMEM = " per second)";
 const unsigned char equals_[] PROGMEM = " = ";
+const unsigned char switchPulse[] PROGMEM = "s=switch pulse on/off";
 
 void display_serial_menu() {
   serial_println_progmem(programLongName);
@@ -1716,20 +1766,12 @@ void display_serial_menu() {
 }
 
 
-
-const unsigned char selectPin[] PROGMEM = "Select a pin with P.";
-
-void please_select_pin() {
-  serial_println_progmem(selectPin);
-}
-
-const unsigned char bytes_[] PROGMEM = " bytes";
-
-
 #ifdef HARDWARE_menu
 
 // hardware_menu_reaction()
+const unsigned char bytes_[] PROGMEM = " bytes";
 const unsigned char numberOfPin[] PROGMEM = "Number of pin to work on: ";
+const unsigned char selectPin[] PROGMEM = "Select a pin with P.";
 const unsigned char sync_[] PROGMEM = "sync ";
 const unsigned char invalid[] PROGMEM = "(invalid)";
 const unsigned char setToHigh[] PROGMEM = " was set to HIGH.";
@@ -1760,7 +1802,7 @@ int hardware_menu_reaction(char menu_input) {
 
   case 'H':
     if (hw_PIN == ILLEGAL)
-      please_select_pin();
+      serial_println_progmem(selectPin);
     else {
       pinMode(hw_PIN, OUTPUT);
       digitalWrite(hw_PIN, HIGH);
@@ -1771,7 +1813,7 @@ int hardware_menu_reaction(char menu_input) {
 
   case 'L':
     if (hw_PIN == ILLEGAL)
-      please_select_pin();
+      serial_println_progmem(selectPin);
     else {
       pinMode(hw_PIN, OUTPUT);
       digitalWrite(hw_PIN, LOW);
@@ -1782,7 +1824,7 @@ int hardware_menu_reaction(char menu_input) {
 
   case 'W':
     if (hw_PIN == ILLEGAL)
-      please_select_pin();
+      serial_println_progmem(selectPin);
     else {
       serial_print_progmem(analogWriteValue);
       newValue = numericInput(-1);
@@ -1799,7 +1841,7 @@ int hardware_menu_reaction(char menu_input) {
 
   case 'R':
     if (hw_PIN == ILLEGAL)
-      please_select_pin();
+      serial_println_progmem(selectPin);
     else {
       serial_print_progmem(analogValueOnPin); Serial.print((int) hw_PIN);
       serial_print_progmem(is_); Serial.println(analogRead(hw_PIN));
@@ -1808,14 +1850,14 @@ int hardware_menu_reaction(char menu_input) {
 
   case 'V':
     if ((hw_PIN == ILLEGAL) | (hw_PIN >= ANALOG_INPUTs))
-      please_select_pin();
+      serial_println_progmem(selectPin);
     else
       bar_graph_VU(hw_PIN);
     break;
 
   case 'I':
     if (hw_PIN == ILLEGAL)
-      please_select_pin();
+      serial_println_progmem(selectPin);
     else {
       pinMode(hw_PIN, INPUT);
       watch_digital_input(hw_PIN);
@@ -1872,12 +1914,12 @@ void divide_period_and_inform(int task, unsigned long divisor) {
 }
 
 
-const unsigned char setPulse_[] PROGMEM = "Set period[";
+const unsigned char setPeriod_[] PROGMEM = "Set period[";
 
 void set_new_period_and_inform(int task, struct time new_period) {
   set_new_period(task, new_period);
 
-  serial_print_progmem(setPulse_);
+  serial_print_progmem(setPeriod_);
   Serial.print((int) task);
   Serial.print("] to ");
   print_period_in_time_units(task);
@@ -1896,6 +1938,7 @@ void set_time_unit_and_inform(unsigned long newValue) {
   Serial.print(time_unit);
   serial_println_progmem(microSeconds);
 }
+
 
 const unsigned char switched_[] PROGMEM = "Switched ";
 
@@ -1924,6 +1967,8 @@ void switch_periodic_and_inform(int task) {
 
 
 // menu interface to reset a pulse and prepare it to be edited:
+const unsigned char resetPulse[] PROGMEM = "reset pulse ";
+
 void reset_and_edit_pulse(int task) {
   init_task(task);
   serial_print_progmem(resetPulse); Serial.println(task);
@@ -1951,6 +1996,7 @@ const unsigned char unknownMenuInput[] PROGMEM = "unknown menu input: ";
 
 const unsigned char selected_[] PROGMEM = "Selected ";
 const unsigned char allPulses[] PROGMEM = "*all* pulses";
+const unsigned char killPulse[] PROGMEM = "kill pulse ";
 const unsigned char killedAll[] PROGMEM = "killed all";
 const unsigned char onlyPositive[] PROGMEM = "only positive sync ";
 
@@ -1997,13 +2043,13 @@ void menu_serial_reaction() {
 	break;
 
       case 'u':
-	selected_destination = TIME_UNIT;
+	selected_destination = CODE_TIME_UNIT;
 	serial_print_progmem(selected_);
 	serial_println_progmem(timeUnit);
 	break;
 
       case 'A':
-	selected_destination = ALL_PERIODICS;
+	selected_destination = CODE_ALL;
 	serial_print_progmem(selected_);
 	serial_println_progmem(allPulses);
 	break;
@@ -2013,7 +2059,7 @@ void menu_serial_reaction() {
 	  switch_periodic_and_inform(selected_destination);
 	} else
 	  switch (selected_destination) {
-	  case ALL_PERIODICS:
+	  case CODE_ALL:
 	    for (int task=0; task<CLICK_PERIODICS; task++ ) {
 	      switch_periodic_and_inform(task);
 	    }
@@ -2056,14 +2102,14 @@ void menu_serial_reaction() {
 	  newValue = numericInput(1);
 
 	  switch (selected_destination) {
-	  case ALL_PERIODICS:
+	  case CODE_ALL:
 	    for (int task=0; task<CLICK_PERIODICS; task++ ) {
 	      multiply_period_and_inform(task, newValue);
 	    }
 	    Serial.println();
 	    break;
 
-	  case TIME_UNIT:
+	  case CODE_TIME_UNIT:
 	    set_time_unit_and_inform(time_unit*newValue);
 	    break;
 
@@ -2085,14 +2131,14 @@ void menu_serial_reaction() {
 	  newValue = numericInput(1);
 
 	  switch (selected_destination) {
-	  case ALL_PERIODICS:
+	  case CODE_ALL:
 	    for (int task=0; task<CLICK_PERIODICS; task++ ) {
 	      divide_period_and_inform(task, newValue);
 	    }
 	    Serial.println();
 	    break;
 
-	  case TIME_UNIT:
+	  case CODE_TIME_UNIT:
 	    set_time_unit_and_inform(time_unit/newValue);
 	    break;
 
@@ -2116,7 +2162,7 @@ void menu_serial_reaction() {
 	  newValue = numericInput(1);
 
 	  switch (selected_destination) {
-	  case ALL_PERIODICS:
+	  case CODE_ALL:
 	    time_scratch.time = newValue * time_unit;
 	    time_scratch.overflow = 0;
 	    for (int task=0; task<CLICK_PERIODICS; task++ ) {
@@ -2125,7 +2171,7 @@ void menu_serial_reaction() {
 	    Serial.println();
 	    break;
 
-	  case TIME_UNIT:			// time_unit
+	  case CODE_TIME_UNIT:			// time_unit
 	    set_time_unit_and_inform(newValue);
 	    break;
 
@@ -2141,7 +2187,7 @@ void menu_serial_reaction() {
 	  serial_print_progmem(killPulse); Serial.println(selected_destination);
 	  alive_tasks_info_lines(); Serial.println();
 	} else
-	  if (selected_destination == ALL_PERIODICS) {
+	  if (selected_destination == CODE_ALL) {
 	    init_tasks();
 	    serial_println_progmem(killedAll);
 	  } else
@@ -2152,7 +2198,7 @@ void menu_serial_reaction() {
 	if (selected_destination < CLICK_PERIODICS) {		// periodics
 	  reset_and_edit_pulse(selected_destination);
 	} else
-	  if (selected_destination == ALL_PERIODICS) {
+	  if (selected_destination == CODE_ALL) {
 	    // we disobey and change only CLICK_PERIODICS:
 	    for (int task=0; task<CLICK_PERIODICS; task++)
 	      reset_and_edit_pulse(task);
@@ -2169,7 +2215,7 @@ void menu_serial_reaction() {
 	  check_maybe_do();				  // maybe do it *first*
 	  task_info_1line(selected_destination);	  // *then* info ;)
 	} else
-	  if (selected_destination == ALL_PERIODICS) {
+	  if (selected_destination == CODE_ALL) {
 	    get_now();
 	    // we disobey and change only CLICK_PERIODICS:
 	    for (int task=0; task<CLICK_PERIODICS; task++)
@@ -2222,7 +2268,7 @@ void menu_serial_reaction() {
 	  en_click(selected_destination);
 	  task_info_1line(selected_destination);
 	} else
-	  if (selected_destination == ALL_PERIODICS) {
+	  if (selected_destination == CODE_ALL) {
 	    // we disobey and change only CLICK_PERIODICS:
 	    for (int task=0; task<CLICK_PERIODICS; task++)
 	      en_click(task);
@@ -2236,7 +2282,7 @@ void menu_serial_reaction() {
 	  en_jiffle_thrower(selected_destination, jiffletab0);
 	  task_info_1line(selected_destination);
 	} else
-	  if (selected_destination == ALL_PERIODICS) {
+	  if (selected_destination == CODE_ALL) {
 	    // we disobey and change only CLICK_PERIODICS:
 	    for (int task=0; task<CLICK_PERIODICS; task++)
 	      en_jiffle_thrower(task, jiffletab0);
@@ -2250,7 +2296,7 @@ void menu_serial_reaction() {
 	  en_info(selected_destination);
 	  task_info_1line(selected_destination);
 	} else
-	  if (selected_destination == ALL_PERIODICS) {
+	  if (selected_destination == CODE_ALL) {
 	    // we disobey and change only CLICK_PERIODICS:
 	    for (int task=0; task<CLICK_PERIODICS; task++)
 	      en_info(task);
@@ -2264,7 +2310,7 @@ void menu_serial_reaction() {
 	  en_INFO(selected_destination);
 	  task_info_1line(selected_destination);
 	} else
-	  if (selected_destination == ALL_PERIODICS) {
+	  if (selected_destination == CODE_ALL) {
 	    // we disobey and change only CLICK_PERIODICS:
 	    for (int task=0; task<CLICK_PERIODICS; task++)
 	      en_INFO(task);
