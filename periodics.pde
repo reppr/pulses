@@ -920,10 +920,18 @@ void init_ratio_sequence(struct time when,
 /* **************************************************************** */
 // some pre-defined patterns:
 
-void init_rhythm_1(int sync) { 
+const unsigned char rhythm_[] PROGMEM = "rhythm ";
+const unsigned char sync_[] PROGMEM = "sync ";
+
+void init_rhythm_1(int sync) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   unsigned long divisor=1;
   unsigned long scaling=6;
+
+#ifdef USE_SERIAL
+  serial_print_progmem(rhythm_); Serial.print(1);
+  spaces(1); serial_print_progmem(sync_); Serial.println(sync);
+#endif
 
   init_click_pulses();
   get_now();
@@ -939,11 +947,16 @@ void init_rhythm_1(int sync) {
 
 
 // frequencies ratio 1, 4, 6, 8, 10
-void init_rhythm_2(int sync) { 
+void init_rhythm_2(int sync) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   int scaling=60;
   unsigned long factor=1;
   unsigned long unit= scaling*time_unit;
+
+#ifdef USE_SERIAL
+  serial_print_progmem(rhythm_); Serial.print(2);
+  spaces(1); serial_print_progmem(sync_); Serial.println(sync);
+#endif
 
   init_click_pulses();
   get_now();
@@ -958,11 +971,16 @@ void init_rhythm_2(int sync) {
 }
 
 // nice 2 to 3 to 4 to 5 pattern with phase offsets
-void init_rhythm_3(int sync) { 
+void init_rhythm_3(int sync) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   unsigned long factor, divisor=1L;
   const unsigned long scaling=5L;
   const unsigned long unit=scaling*time_unit;
+
+#ifdef USE_SERIAL
+  serial_print_progmem(rhythm_); Serial.print(3);
+  spaces(1); serial_print_progmem(sync_); Serial.println(sync);
+#endif
 
   init_click_pulses();
   get_now();
@@ -983,9 +1001,14 @@ void init_rhythm_3(int sync) {
 }
 
 
-void init_rhythm_4(int sync) { 
+void init_rhythm_4(int sync) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   const unsigned long scaling=15L;
+
+#ifdef USE_SERIAL
+  serial_print_progmem(rhythm_); Serial.print(4);
+  spaces(1); serial_print_progmem(sync_); Serial.println(sync);
+#endif
 
   init_click_pulses();
   get_now();
@@ -1381,6 +1404,11 @@ void setup_jiffles0(int sync) {
 
   struct time when, delta, templ, new_period;
 
+#ifdef USE_SERIAL
+  Serial.print("jiffle0 ");
+  serial_print_progmem(sync_); Serial.println(sync);
+#endif
+
   get_now();
   when=now;
 
@@ -1691,7 +1719,7 @@ const unsigned char selectDestinationInfo[] PROGMEM =
   "SELECT DESTINATION for '= * / s K p n c j' to work on:";
 const unsigned char selectPulseWith[] PROGMEM = "Select puls with ";
 const unsigned char all_[] PROGMEM = "(ALL)";
-const unsigned char selectAllPulses[] PROGMEM = "A=select *all* pulses";
+const unsigned char selectAllPulses[] PROGMEM = "A=select *all* click pulses";
 const unsigned char uSelect[] PROGMEM = "u=select ";
 const unsigned char selected__[] PROGMEM = "\t(selected)";
 const unsigned char none_[] PROGMEM = "(none)";
@@ -1772,7 +1800,6 @@ void display_serial_menu() {
 const unsigned char bytes_[] PROGMEM = " bytes";
 const unsigned char numberOfPin[] PROGMEM = "Number of pin to work on: ";
 const unsigned char selectPin[] PROGMEM = "Select a pin with P.";
-const unsigned char sync_[] PROGMEM = "sync ";
 const unsigned char invalid[] PROGMEM = "(invalid)";
 const unsigned char setToHigh[] PROGMEM = " was set to HIGH.";
 const unsigned char setToLow[] PROGMEM = " was set to LOW.";
@@ -2187,7 +2214,7 @@ void menu_serial_reaction() {
 	  serial_print_progmem(killPulse); Serial.println(selected_destination);
 	  alive_pulses_info_lines(); Serial.println();
 	} else
-	  if (selected_destination == CODE_ALL) {
+	  if (selected_destination == CODE_ALL) {	// DADA ################
 	    init_pulses();
 	    serial_println_progmem(killedAll);
 	  } else
@@ -2232,32 +2259,22 @@ void menu_serial_reaction() {
 	break;
 
       case 'Y':				// hook for debugging
-	Serial.print("rhthm 1, sync "); Serial.println(sync);
-	init_pulses();
 	init_rhythm_1(sync);
 	break;
 
       case 'X':				// hook for debugging
-	Serial.print("rhthm 2, sync "); Serial.println(sync);
-	init_pulses();
 	init_rhythm_2(sync);
 	break;
 
       case 'C':				// hook for debugging
-	Serial.print("rhthm 3, sync "); Serial.println(sync);
-	init_pulses();
 	init_rhythm_3(sync);
 	break;
 
       case 'V':				// hook for debugging, clash with HARDWARE V
-	Serial.print("rhthm 4, sync "); Serial.println(sync);
-	init_pulses();
 	init_rhythm_4(sync);
 	break;
 
       case 'B':				// hook for debugging
-	Serial.print("jiffles0, sync "); Serial.println(sync);
-	init_pulses();
 	setup_jiffles0(sync);
 	break;
 
