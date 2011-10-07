@@ -226,9 +226,9 @@ struct time now, last_now;
 
 struct time global_next;
 unsigned int global_next_count=0;
-int global_next_pulses[PULSES];
+int global_next_pulses[PULSES];	// there can't be more then PULSES same next events
 
-int sync=1;	// syncing edges or middles of square pulses
+int sync=1;			// syncing edges or middles of square pulses
 
 const float overflow_sec = 4294.9672851562600;	// overflow time in seconds
 
@@ -1235,6 +1235,7 @@ void alive_pulses_info()
 const unsigned char Pulse_[] PROGMEM = "PULSE ";
 
 void pulse_info_1line(int pulse) {
+  unsigned long realtime=micros();	// let's take time *before* serial output
 
   serial_print_progmem(Pulse_);
   Serial.print(pulse);
@@ -1257,7 +1258,7 @@ void pulse_info_1line(int pulse) {
   tab();
   serial_print_progmem(now_);
   struct time scratch = now;
-  scratch.time= micros();		// update running time
+  scratch.time = realtime;
   display_realtime_sec(scratch);
 
   if ((CODE_ALL == selected_destination) || (pulse == selected_destination))
@@ -1349,7 +1350,7 @@ void enter_jiffletab(unsigned int *jiffletab)
     case '0': case '1': case '2': case '3': case '4':
     case '5': case '6': case '7': case '8': case '9':
       char_store((char) menu_input); 
-      new_value = numericInput(0);
+      new_value = numeric_input(0);
       jiffletab[index++] = new_value;
 
       if (new_value == 0)
@@ -1517,6 +1518,21 @@ void setup_jiffles0(int sync) {
 
 
 /* **************************************************************** */
+//    MENU core
+/* **************************************************************** */
+#if (defined(MENU_over_serial) || defined(MENU_LCD) ) 
+// global menu variable
+
+// menu codes
+#define MENU_UNDECIDED	0
+#define MENU_PROGRAM	1
+#define MENU_HARDWARE	2
+unsigned char menu=MENU_UNDECIDED;
+
+#endif	// (MENU_over_serial || MENU_LCD ) 
+
+
+/* **************************************************************** */
 // #define MENU_over_serial	// do we use a serial menu?
 /* **************************************************************** */
 #ifdef MENU_over_serial
@@ -1566,9 +1582,8 @@ int char_available() {
 }
 
 
-
 // get numeric input from serial
-long numericInput(long oldValue) {
+long numeric_input(long oldValue) {
   long input, num, sign=1;
 
   do {
@@ -1608,44 +1623,6 @@ long numericInput(long oldValue) {
 }
 
 
-// ONoff()
-const unsigned char ON_off[] PROGMEM = "ON/off";
-const unsigned char on_OFF[] PROGMEM = "on/OFF";
-
-// serial display helper function
-int ONoff(int value, int mode, int tab) {
-  if (value) {
-    switch (mode) {
-    case 0:		// ON		off
-    case 1:		// ON		OFF
-      Serial.print("ON");
-      break;
-    case 2:		// ON/off	on/OFF
-      serial_print_progmem(ON_off);
-      break;
-    }
-  }
-  else {
-    switch (mode) {
-    case 0:		// ON		off
-      Serial.print("off");
-      break;
-    case 1:		// ON		OFF
-      Serial.print("OFF");
-      break;
-    case 2:		// ON/off	on/OFF
-      serial_print_progmem(on_OFF);
-      break;
-    }
-  }
-
-  if (tab)
-    serial_print_progmem(tab_);
-
-  return value;
-}
-
-
 // bar_graph()
 const unsigned char outOfRange[] PROGMEM = " out of range.";
 const unsigned char value_[] PROGMEM = "value ";
@@ -1657,7 +1634,7 @@ void bar_graph(int value) {
 
 
   if (value >=0 && value <= 1024) {
-    Serial.print(value); serial_print_progmem(tab_);
+    Serial.print(value); tab();
     for (i=0; i<stars; i++) {
       if (i == 0 && value == 0)		// zero
 	Serial.print("0");
@@ -1715,6 +1692,8 @@ void bar_graph_VU(int pin) {
 }
 
 
+const unsigned char none_[] PROGMEM = "(none)";
+
 
 #ifdef HARDWARE_menu	// inside MENU_over_serial
 const unsigned char analog_reads_title[] PROGMEM = "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
@@ -1726,7 +1705,7 @@ void display_analog_reads() {
 
   for (i=0; i<ANALOG_INPUTs; i++) {
     value = analogRead(i);
-    Serial.print(i); serial_print_progmem(tab_); bar_graph(value);
+    Serial.print(i); tab(); bar_graph(value);
   }
 
   Serial.println();
@@ -1766,22 +1745,26 @@ void watch_digital_input(int pin) {
 
 
 
-// menu_hardware_display()
-const unsigned char hwMenuTitle[] PROGMEM = "\n***  HARDWARE  ***\t\tfree RAM=";
+// display_serial_hardware_menu()
+const unsigned char hwMenuTitle[] PROGMEM = "\n***  HARDWARE menu  ***\t\tfree RAM=";
+
+const unsigned char selectPin[] PROGMEM = "P=SELECT pin for 'H, L, W, R, V' to work on.";
 const unsigned char PPin[] PROGMEM = "P=PIN (";
 const unsigned char HLWR[] PROGMEM = ")\tH=set HIGH\tL=set LOW\tW=analog write\tR=read";
 const unsigned char VI[] PROGMEM = "V=VU bar\tI=digiwatch\t";
 const unsigned char aAnalogRead[] PROGMEM = "a=analog read";
 
 
-void menu_hardware_display() {
+void display_serial_hardware_menu() {
   serial_print_progmem(hwMenuTitle);
   Serial.println(get_free_RAM());
   Serial.println();
 
+  serial_println_progmem(selectPin);
+
   serial_print_progmem(PPin);
   if (hw_PIN == ILLEGAL)
-    Serial.print("no");
+    serial_print_progmem(none_);
   else
     Serial.print((int) hw_PIN);
   serial_println_progmem(HLWR);
@@ -1799,21 +1782,15 @@ void menu_hardware_display() {
 
 // info_select_destination_with()
 const unsigned char selectDestinationInfo[] PROGMEM =
-  "SELECT DESTINATION for '= * / s K p n c j' to work on:";
+  "SELECT DESTINATION for '= * / s K p n c j' to work on:\t\t";
 const unsigned char selectPulseWith[] PROGMEM = "Select puls with ";
 const unsigned char all_[] PROGMEM = "(ALL)";
-const unsigned char selectAllPulses[] PROGMEM = "A=select *all* click pulses";
+const unsigned char selectAllPulses[] PROGMEM = "a=select *all* click pulses";
 const unsigned char uSelect[] PROGMEM = "u=select ";
 const unsigned char selected__[] PROGMEM = "\t(selected)";
-const unsigned char none_[] PROGMEM = "(none)";
 
 void info_select_destination_with(boolean extended_destinations) {
-  serial_println_progmem(selectDestinationInfo);
-  serial_print_progmem(selectPulseWith);
-  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
-    Serial.print(pulse); spaces(2);
-  }
-  serial_print_progmem(tab_);
+  serial_print_progmem(selectDestinationInfo);
   if (selected_destination < CLICK_PULSES) {
     Serial.print("(");
     Serial.print((int) selected_destination);
@@ -1824,8 +1801,12 @@ void info_select_destination_with(boolean extended_destinations) {
     } else
       serial_println_progmem(none_);
 
-  serial_println_progmem(selectAllPulses);
+  serial_print_progmem(selectPulseWith);
+  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+    Serial.print(pulse); spaces(2);
+  }
 
+  serial_println_progmem(selectAllPulses);
 
   if(extended_destinations) {
     serial_print_progmem(uSelect);  serial_print_progmem(timeUnit);
@@ -1838,10 +1819,33 @@ void info_select_destination_with(boolean extended_destinations) {
 }
 
 
-
 // display_serial_menu()
-const unsigned char pressm[] PROGMEM = "\nPress 'm' or '?' for menu.\n\n";
+const unsigned char pressm[] PROGMEM = "\nPress 'm' or '?' for menu, 'q' to quit this menu. 'H' for hardware menu.\n\n";
 
+void display_serial_menu() {
+  serial_println_progmem(programLongName);
+
+  switch (menu) {
+  case MENU_UNDECIDED:
+  case MENU_PROGRAM:
+    display_serial_program_menu();
+    break;
+
+#ifdef HARDWARE_menu
+  case MENU_HARDWARE:
+    display_serial_hardware_menu();
+    break;
+#endif
+
+  default:		// ERROR: unknown menu code
+    ;
+  }
+
+  serial_print_progmem(pressm);
+}
+
+
+// display_serial_program_menu()
 const unsigned char helpInfo[] PROGMEM = "?=help\tm=menu\ti=info\t.=short info";
 const unsigned char microSeconds[] PROGMEM = " microseconds";
 const unsigned char muteKill[] PROGMEM = "M=mute all\tK=kill\n\nCREATE PULSES\tstart with 'p'\np=new pulse\tc=en-click\tj=en-jiffle\tf=en-info\tF=en-INFO\tn=sync now\nS=sync ";
@@ -1849,8 +1853,7 @@ const unsigned char perSecond_[] PROGMEM = " per second)";
 const unsigned char equals_[] PROGMEM = " = ";
 const unsigned char switchPulse[] PROGMEM = "s=switch pulse on/off";
 
-void display_serial_menu() {
-  serial_println_progmem(programLongName);
+void display_serial_program_menu() {
   serial_println_progmem(helpInfo);
 
   Serial.println();
@@ -1868,12 +1871,6 @@ void display_serial_menu() {
   serial_print_progmem(switchPulse);
   tab();  serial_print_progmem(muteKill);
   Serial.println(sync);
-
-#ifdef HARDWARE_menu	// inside MENU_over_serial
-  menu_hardware_display();
-#endif
-
-  serial_print_progmem(pressm);
 }
 
 
@@ -1882,7 +1879,7 @@ void display_serial_menu() {
 // hardware_menu_reaction()
 const unsigned char bytes_[] PROGMEM = " bytes";
 const unsigned char numberOfPin[] PROGMEM = "Number of pin to work on: ";
-const unsigned char selectPin[] PROGMEM = "Select a pin with P.";
+// const unsigned char selectPin[] PROGMEM = "Select a pin with P.";
 const unsigned char invalid[] PROGMEM = "(invalid)";
 const unsigned char setToHigh[] PROGMEM = " was set to HIGH.";
 const unsigned char setToLow[] PROGMEM = " was set to LOW.";
@@ -1890,11 +1887,11 @@ const unsigned char analogWriteValue[] PROGMEM = "analog write value ";
 const unsigned char analogWrite_[] PROGMEM = "analogWrite(";
 const unsigned char analogValueOnPin[] PROGMEM = "analog value on pin ";
 
-int hardware_menu_reaction(char menu_input) {
+bool hardware_menu_reaction(char menu_input) {
   long newValue;
 
   switch (menu_input) {
-  case  'M':					// hidden by program menus 'M'
+  case  'M':
     serial_print_progmem(freeRAM);
     Serial.print(get_free_RAM());
     serial_println_progmem(bytes_);
@@ -1902,7 +1899,7 @@ int hardware_menu_reaction(char menu_input) {
 
   case 'P':
     serial_print_progmem(numberOfPin);
-    newValue = numericInput(hw_PIN);
+    newValue = numeric_input(hw_PIN);
     if (newValue>=0 && newValue<DIGITAL_PINs) {
       hw_PIN = newValue;
       Serial.println((int) hw_PIN);
@@ -1937,7 +1934,7 @@ int hardware_menu_reaction(char menu_input) {
       serial_println_progmem(selectPin);
     else {
       serial_print_progmem(analogWriteValue);
-      newValue = numericInput(-1);
+      newValue = numeric_input(-1);
       if (newValue>=0 && newValue<=255) {
 	Serial.println(newValue);
 
@@ -1978,11 +1975,12 @@ int hardware_menu_reaction(char menu_input) {
     display_analog_reads();
     break;
   default:
-    return 0;		// menu_input not found in this menu
+    return false;		// menu_input not found in this menu
   }
-  return 1;		// menu_input found in this menu
+  return true;		// menu_input found in this menu
 }
-#endif
+
+#endif // HARDWARE_menu
 
 
 
@@ -2101,359 +2099,407 @@ void reset_and_edit_pulse(int pulse) {
 // menu reaction:
 
 
-// menu_serial_reaction()
+// menu_serial_reaction(), react on serial menu input
 const unsigned char unknownMenuInput[] PROGMEM = "unknown menu input: ";
 
+void menu_serial_reaction() {
+  char menu_input;
+  bool found;
+
+  while(!char_available())		// should not happen
+    ;
+
+  while (char_available()) {
+    menu_input = get_char();
+    found = false;
+
+    // for speed reasons let's get rid of whitespace first:
+    switch (menu_input) {
+    case ' ' : case '\t':		// skip white chars
+    case '\n': case '\r':		// skip line breaks
+      break;
+
+    default:				// no whitespace, check menus
+      switch (menu) {
+      case MENU_UNDECIDED:
+      case MENU_PROGRAM:
+	found = menu_serial_program_reaction(menu_input);
+	break;
+
+#ifdef HARDWARE_menu
+      case MENU_HARDWARE:
+	found = hardware_menu_reaction(menu_input);
+	break;
+#endif
+
+      default:		// ERROR: unknown menu code
+	;
+      } // menu branching
+
+      if (!found)		// common menu entry?
+	found = menu_serial_common_reaction(menu_input);
+
+      if (!found) {	// unknown menu entry
+	serial_print_progmem(unknownMenuInput); Serial.println(menu_input);
+	while (char_available()) {
+	  menu_input = get_char();
+	  Serial.print(byte(menu_input));		// DADA ################
+	}
+	Serial.println();
+      }
+    } // switch whitespace or not
+
+    if (!char_available())
+      delay(WAITforSERIAL);
+  } // input loop
+}
+
+
+bool menu_serial_common_reaction(char menu_input) {
+  switch (menu_input) {
+  case 'm':
+    display_serial_menu();
+    break;
+
+  case 'q':
+    menu=MENU_UNDECIDED;
+    display_serial_menu();
+    break;
+
+  case 'H':
+    menu = MENU_HARDWARE;
+    display_serial_menu();
+    break;
+
+  default:
+    return false;	// menu entry not found
+  }
+  return true;		// menu entry found
+}
+
+
+// menu_serial_program_reaction()
 const unsigned char selected_[] PROGMEM = "Selected ";
 const unsigned char allPulses[] PROGMEM = "*all* pulses";
 const unsigned char killPulse[] PROGMEM = "kill pulse ";
 const unsigned char killedAll[] PROGMEM = "killed all";
 const unsigned char onlyPositive[] PROGMEM = "only positive sync ";
 
-void menu_serial_reaction() {
-  char menu_input;
-  long newValue;
+bool menu_serial_program_reaction(char menu_input) {
+  long newValue=0;
   struct time time_scratch;
 
-  while(!char_available())
-    ;
+  switch (menu_input) {
 
-  if (char_available()) {
-    while (char_available()) {
-      newValue=0;
+  case '?':
+    display_serial_menu();
+    alive_pulses_info_lines();
+    time_info();  tab(); RAM_info(); Serial.println();
+    break;
 
-      switch (menu_input = get_char()) {
-      case ' ': case '\t':		// skip white chars
-	break;
+  case '.':
+    time_info(); Serial.println();
+    alive_pulses_info_lines();
+    // RAM_info(); Serial.println();
+    Serial.println();
+    break;
 
-      case '?':
-	display_serial_menu();
-	alive_pulses_info_lines();
-	time_info();  tab(); RAM_info(); Serial.println();
-	break;
+    // *do* change this line if you change CLICK_PULSES
+  case '0': case '1': case '2': case '3': case '4':
+    // display(menu_input - '0');
+    selected_destination = menu_input - '0';
+    serial_print_progmem(selected_);
+    serial_print_progmem(pulse_);
+    Serial.println((int)  menu_input - '0');
+    break;
 
-      case 'm':
-	display_serial_menu();
-	break;
+  case 'u':
+    selected_destination = CODE_TIME_UNIT;
+    serial_print_progmem(selected_);
+    serial_println_progmem(timeUnit);
+    break;
 
-      case '.':
-	time_info(); Serial.println();
-	alive_pulses_info_lines();
-	// RAM_info(); Serial.println();
+  case 'a':	// DADA
+    selected_destination = CODE_ALL;
+    serial_print_progmem(selected_);
+    serial_println_progmem(allPulses);
+    break;
+
+  case 'A':	// DADA
+    selected_destination = CODE_ALL;
+    serial_print_progmem(selected_);
+    serial_println_progmem(allPulses);
+    break;
+
+  case 's':
+    if (selected_destination < CLICK_PULSES) {
+      switch_periodic_and_inform(selected_destination);
+    } else
+      switch (selected_destination) {
+      case CODE_ALL:
+	for (int pulse=0; pulse<CLICK_PULSES; pulse++ ) {
+	  switch_periodic_and_inform(pulse);
+	}
 	Serial.println();
 	break;
 
-      // *do* change this line if you change CLICK_PULSES
-      case '0': case '1': case '2': case '3': case '4':
-	// display(menu_input - '0');
-	selected_destination = menu_input - '0';
-	serial_print_progmem(selected_);
-	serial_print_progmem(pulse_);
-	Serial.println((int)  menu_input - '0');
-	break;
+      default:
+	info_select_destination_with(false);
+      }
+    break;
 
-      case 'u':
-	selected_destination = CODE_TIME_UNIT;
-	serial_print_progmem(selected_);
-	serial_println_progmem(timeUnit);
-	break;
+  case 'S':
+    serial_print_progmem(sync_);
+    newValue = numeric_input(sync);
+    if (newValue>=0 )
+      sync = newValue;
+    else
+      serial_print_progmem(onlyPositive);
+    Serial.println(sync);
+    break;
 
-      case 'A':
-	selected_destination = CODE_ALL;
-	serial_print_progmem(selected_);
-	serial_println_progmem(allPulses);
-	break;
+  case 'i':
+    RAM_info(); Serial.println(); Serial.println();
+    alive_pulses_info();
+    break;
 
-      case 's':
-	if (selected_destination < CLICK_PULSES) {
-	  switch_periodic_and_inform(selected_destination);
-	} else
-	  switch (selected_destination) {
-	  case CODE_ALL:
-	    for (int pulse=0; pulse<CLICK_PULSES; pulse++ ) {
-	      switch_periodic_and_inform(pulse);
-	    }
-	    Serial.println();
-	    break;
+  case 'M':					// hides hardware menus 'M'
+    mute_all_clicks();	// DADA
+    break;
 
-	  default:
-	    info_select_destination_with(false);
-	  }
-	break;
+  case '*':
+    if (selected_destination < CLICK_PULSES) {
+      newValue = numeric_input(1);
+      if (newValue>=0) {
+	multiply_period_and_inform(selected_destination, newValue);
+      } else
+	serial_println_progmem(invalid);
 
-      case 'S':
-	serial_print_progmem(sync_);
-	newValue = numericInput(sync);
-	if (newValue>=0 )
-	  sync = newValue;
-	else
-	  serial_print_progmem(onlyPositive);
-	Serial.println(sync);
-	break;
+    } else {
+      newValue = numeric_input(1);
 
-      case 'i':
-	RAM_info(); Serial.println(); Serial.println();
-	alive_pulses_info();
-	break;
-
-      case 'M':					// hides hardware menus 'M'
-	mute_all_clicks();
-	break;
-
-      case '*':
-	if (selected_destination < CLICK_PULSES) {
-	  newValue = numericInput(1);
-	  if (newValue>=0) {
-	    multiply_period_and_inform(selected_destination, newValue);
-	  } else
-	    serial_println_progmem(invalid);
-
-	} else {
-	  newValue = numericInput(1);
-
-	  switch (selected_destination) {
-	  case CODE_ALL:
-	    for (int pulse=0; pulse<CLICK_PULSES; pulse++ ) {
-	      multiply_period_and_inform(pulse, newValue);
-	    }
-	    Serial.println();
-	    break;
-
-	  case CODE_TIME_UNIT:
-	    set_time_unit_and_inform(time_unit*newValue);
-	    break;
-
-	  default:
-	      info_select_destination_with(true);
-	  }
+      switch (selected_destination) {
+      case CODE_ALL:
+	for (int pulse=0; pulse<CLICK_PULSES; pulse++ ) {
+	  multiply_period_and_inform(pulse, newValue);
 	}
+	Serial.println();
 	break;
 
-      case '/':
-	if (selected_destination < CLICK_PULSES) {
-	  newValue = numericInput(1);
-	  if (newValue>0) {
-	    divide_period_and_inform(selected_destination, newValue);
-	  } else
-	    serial_println_progmem(invalid);
-
-	} else {
-	  newValue = numericInput(1);
-
-	  switch (selected_destination) {
-	  case CODE_ALL:
-	    for (int pulse=0; pulse<CLICK_PULSES; pulse++ ) {
-	      divide_period_and_inform(pulse, newValue);
-	    }
-	    Serial.println();
-	    break;
-
-	  case CODE_TIME_UNIT:
-	    set_time_unit_and_inform(time_unit/newValue);
-	    break;
-
-	  default:
-	    info_select_destination_with(true);
-	  }
-	}
-	break;
-
-      case '=':
-	if (selected_destination < CLICK_PULSES) {		// pulses
-	newValue = numericInput(period[selected_destination].time / time_unit);
-	if (newValue>=0) {
-	  time_scratch.time = newValue * time_unit;
-	  time_scratch.overflow = 0;
-	  set_new_period_and_inform(selected_destination, time_scratch);
-	} else
-	  serial_println_progmem(invalid);
-
-	} else {
-	  newValue = numericInput(1);
-
-	  switch (selected_destination) {
-	  case CODE_ALL:
-	    time_scratch.time = newValue * time_unit;
-	    time_scratch.overflow = 0;
-	    for (int pulse=0; pulse<CLICK_PULSES; pulse++ ) {
-	      set_new_period_and_inform(selected_destination, time_scratch);
-	    }
-	    Serial.println();
-	    break;
-
-	  case CODE_TIME_UNIT:			// time_unit
-	    set_time_unit_and_inform(newValue);
-	    break;
-
-	  default:
-	    info_select_destination_with(true);
-	  }
-	}
-	break;
-
-      case 'K':
-	if (selected_destination < CLICK_PULSES) {		// pulses
-	  init_pulse(selected_destination);
-	  serial_print_progmem(killPulse); Serial.println(selected_destination);
-	  alive_pulses_info_lines(); Serial.println();
-	} else
-	  if (selected_destination == CODE_ALL) {	// DADA ################
-	    init_pulses();
-	    serial_println_progmem(killedAll);
-	  } else
-	    info_select_destination_with(false);
-	break;
-
-      case 'p':
-	if (selected_destination < CLICK_PULSES) {		// pulses
-	  reset_and_edit_pulse(selected_destination);
-	} else
-	  if (selected_destination == CODE_ALL) {
-	    // we disobey and change only CLICK_PULSES:
-	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
-	      reset_and_edit_pulse(pulse);
-	    Serial.println(); alive_pulses_info_lines();
-	    Serial.println();
-	  } else
-	    info_select_destination_with(false);
-	break;
-
-      case 'n':
-	if (selected_destination < CLICK_PULSES) {		// pulses
-	  get_now();
-	  activate_pulse_synced(selected_destination, now, abs(sync));
-	  check_maybe_do();				  // maybe do it *first*
-	  pulse_info_1line(selected_destination);	  // *then* info ;)
-	} else
-	  if (selected_destination == CODE_ALL) {
-	    get_now();
-	    // we disobey and change only CLICK_PULSES:
-	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
-	      activate_pulse_synced(pulse, now, abs(sync));
-	    check_maybe_do();				// maybe do it *first*
-	    alive_pulses_info_lines();			// and *then* info
-	  } else
-	    info_select_destination_with(false);
-	break;
-
-      // debugging entries: DADA ###############################################
-      case 'd':				// hook for debugging
-
-	break;
-
-      case 'Y':				// hook for debugging
-	init_rhythm_1(sync);
-	break;
-
-      case 'X':				// hook for debugging
-	init_rhythm_2(sync);
-	break;
-
-      case 'C':				// hook for debugging
-	init_rhythm_3(sync);
-	break;
-
-      case 'V':				// hook for debugging, clash with HARDWARE V
-	init_rhythm_4(sync);
-	break;
-
-      case 'B':				// hook for debugging
-	setup_jiffles0(sync);
-	break;
-
-      // debugging entries: DADA ###############################################
-
-      case 'c':
-	if (selected_destination < CLICK_PULSES) {		// pulses
-	  en_click(selected_destination);
-	  pulse_info_1line(selected_destination);
-	} else
-	  if (selected_destination == CODE_ALL) {
-	    // we disobey and change only CLICK_PULSES:
-	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
-	      en_click(pulse);
-	    alive_pulses_info_lines();
-	  } else
-	    info_select_destination_with(false);
-	break;
-
-      case 'j':
-	if (selected_destination < CLICK_PULSES) {		// pulses
-	  en_jiffle_thrower(selected_destination, jiffletab);
-	  pulse_info_1line(selected_destination);
-	} else
-	  if (selected_destination == CODE_ALL) {
-	    // we disobey and change only CLICK_PULSES:
-	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
-	      en_jiffle_thrower(pulse, jiffletab);
-	    alive_pulses_info_lines();
-	  } else
-	    info_select_destination_with(false);
-	break;
-
-      case '{':
-	enter_jiffletab(jiffletab);
-	display_jiffletab(jiffletab);
-	break;
-
-      case '}':
-	display_jiffletab(jiffletab);
-	break;
-
-      case 'f':
-	if (selected_destination < CLICK_PULSES) {		// pulses
-	  en_info(selected_destination);
-	  pulse_info_1line(selected_destination);
-	} else
-	  if (selected_destination == CODE_ALL) {
-	    // we disobey and change only CLICK_PULSES:
-	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
-	      en_info(pulse);
-	    alive_pulses_info_lines();
-	  } else
-	    info_select_destination_with(false);
-	break;
-
-      case 'F':
-	if (selected_destination < CLICK_PULSES) {		// pulses
-	  en_INFO(selected_destination);
-	  pulse_info_1line(selected_destination);
-	} else
-	  if (selected_destination == CODE_ALL) {
-	    // we disobey and change only CLICK_PULSES:
-	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
-	      en_INFO(pulse);
-	    alive_pulses_info_lines();
-	  } else
-	    info_select_destination_with(false);
+      case CODE_TIME_UNIT:
+	set_time_unit_and_inform(time_unit*newValue);
 	break;
 
       default:
-	// maybe it's in a submenu?
-
-#ifdef HARDWARE_menu				// quite a hack...
-	if (hardware_menu_reaction(menu_input))
-	  ;
-#else						// quite a hack...
-	if (false)
-	  ;
-#endif // submenu reactions
-	else {
-	  serial_print_progmem(unknownMenuInput); Serial.println(menu_input);
-	  while (char_available() > 0) {
-	    menu_input = get_char();
-	    Serial.print(byte(menu_input));
-	  }
-	  Serial.println();
-	break;
-	}
+	info_select_destination_with(true);
       }
-
-      if (!char_available())
-	delay(WAITforSERIAL);
     }
+    break;
+
+  case '/':
+    if (selected_destination < CLICK_PULSES) {
+      newValue = numeric_input(1);
+      if (newValue>0) {
+	divide_period_and_inform(selected_destination, newValue);
+      } else
+	serial_println_progmem(invalid);
+
+    } else {
+      newValue = numeric_input(1);
+
+      switch (selected_destination) {
+      case CODE_ALL:
+	for (int pulse=0; pulse<CLICK_PULSES; pulse++ ) {
+	  divide_period_and_inform(pulse, newValue);
+	}
+	Serial.println();
+	break;
+
+      case CODE_TIME_UNIT:
+	set_time_unit_and_inform(time_unit/newValue);
+	break;
+
+      default:
+	info_select_destination_with(true);
+      }
+    }
+    break;
+
+  case '=':
+    if (selected_destination < CLICK_PULSES) {		// pulses
+      newValue = numeric_input(period[selected_destination].time / time_unit);
+      if (newValue>=0) {
+	time_scratch.time = newValue * time_unit;
+	time_scratch.overflow = 0;
+	set_new_period_and_inform(selected_destination, time_scratch);
+      } else
+	serial_println_progmem(invalid);
+
+    } else {
+      newValue = numeric_input(1);
+
+      switch (selected_destination) {
+      case CODE_ALL:
+	time_scratch.time = newValue * time_unit;
+	time_scratch.overflow = 0;
+	for (int pulse=0; pulse<CLICK_PULSES; pulse++ ) {
+	  set_new_period_and_inform(selected_destination, time_scratch);
+	}
+	Serial.println();
+	break;
+
+      case CODE_TIME_UNIT:			// time_unit
+	set_time_unit_and_inform(newValue);
+	break;
+
+      default:
+	info_select_destination_with(true);
+      }
+    }
+    break;
+
+  case 'K':
+    if (selected_destination < CLICK_PULSES) {		// pulses
+      init_pulse(selected_destination);
+      serial_print_progmem(killPulse); Serial.println(selected_destination);
+      alive_pulses_info_lines(); Serial.println();
+    } else
+      if (selected_destination == CODE_ALL) {	// DADA ################
+	init_pulses();
+	serial_println_progmem(killedAll);
+      } else
+	info_select_destination_with(false);
+    break;
+
+  case 'p':	// DADA 'P'? ################
+    if (selected_destination < CLICK_PULSES) {		// pulses
+      reset_and_edit_pulse(selected_destination);
+    } else
+      if (selected_destination == CODE_ALL) {
+	// we disobey and change only CLICK_PULSES:
+	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+	  reset_and_edit_pulse(pulse);
+	Serial.println(); alive_pulses_info_lines();
+	Serial.println();
+      } else
+	info_select_destination_with(false);
+    break;
+
+  case 'n':
+    if (selected_destination < CLICK_PULSES) {		// pulses
+      get_now();
+      activate_pulse_synced(selected_destination, now, abs(sync));
+      check_maybe_do();				  // maybe do it *first*
+      pulse_info_1line(selected_destination);	  // *then* info ;)
+    } else
+      if (selected_destination == CODE_ALL) {
+	get_now();
+	// we disobey and change only CLICK_PULSES:
+	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+	  activate_pulse_synced(pulse, now, abs(sync));
+	check_maybe_do();				// maybe do it *first*
+	alive_pulses_info_lines();			// and *then* info
+      } else
+	info_select_destination_with(false);
+    break;
+
+    // debugging entries: DADA ###############################################
+  case 'd':				// hook for debugging
+
+    break;
+
+  case 'Y':				// hook for debugging
+    init_rhythm_1(sync);
+    break;
+
+  case 'X':				// hook for debugging
+    init_rhythm_2(sync);
+    break;
+
+  case 'C':				// hook for debugging
+    init_rhythm_3(sync);
+    break;
+
+  case 'V':				// hook for debugging, clash with HARDWARE V
+    init_rhythm_4(sync);
+    break;
+
+  case 'B':				// hook for debugging
+    setup_jiffles0(sync);
+    break;
+
+    // debugging entries: DADA ###############################################
+
+  case 'c':
+    if (selected_destination < CLICK_PULSES) {		// pulses
+      en_click(selected_destination);
+      pulse_info_1line(selected_destination);
+    } else
+      if (selected_destination == CODE_ALL) {
+	// we disobey and change only CLICK_PULSES:
+	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+	  en_click(pulse);
+	alive_pulses_info_lines();
+      } else
+	info_select_destination_with(false);
+    break;
+
+  case 'j':
+    if (selected_destination < CLICK_PULSES) {		// pulses
+      en_jiffle_thrower(selected_destination, jiffletab);
+      pulse_info_1line(selected_destination);
+    } else
+      if (selected_destination == CODE_ALL) {
+	// we disobey and change only CLICK_PULSES:
+	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+	  en_jiffle_thrower(pulse, jiffletab);
+	alive_pulses_info_lines();
+      } else
+	info_select_destination_with(false);
+    break;
+
+  case '{':
+    enter_jiffletab(jiffletab);
+    display_jiffletab(jiffletab);
+    break;
+
+  case '}':
+    display_jiffletab(jiffletab);
+    break;
+
+  case 'f':
+    if (selected_destination < CLICK_PULSES) {		// pulses
+      en_info(selected_destination);
+      pulse_info_1line(selected_destination);
+    } else
+      if (selected_destination == CODE_ALL) {
+	// we disobey and change only CLICK_PULSES:
+	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+	  en_info(pulse);
+	alive_pulses_info_lines();
+      } else
+	info_select_destination_with(false);
+    break;
+
+  case 'F':
+    if (selected_destination < CLICK_PULSES) {		// pulses
+      en_INFO(selected_destination);
+      pulse_info_1line(selected_destination);
+    } else
+      if (selected_destination == CODE_ALL) {
+	// we disobey and change only CLICK_PULSES:
+	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+	  en_INFO(pulse);
+	alive_pulses_info_lines();
+      } else
+	info_select_destination_with(false);
+    break;
+
+  default:
+    return false;	// menu entry not found
   }
-} // menu_serial_reaction()
+  return true;		// menu entry found
+}
 
 
 #endif	// MENU_over_serial
@@ -2516,9 +2562,9 @@ void setup() {
 
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   // init_rhythm_1(1);
-  // init_rhythm_2(1);
+  init_rhythm_2(5);
   // init_rhythm_3(1);
-  init_rhythm_4(1);
+  // init_rhythm_4(1);
   // setup_jiffles0(1);
 
 #ifdef MENU_over_serial
