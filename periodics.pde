@@ -1,4 +1,4 @@
- /* **************************************************************** */
+/* **************************************************************** */
 // pulses
 /* **************************************************************** */
 
@@ -653,10 +653,6 @@ void set_new_period(int pulse, struct time new_period) {
   if(next[pulse].time < last[pulse].time)
     next[pulse].overflow++;
 
-  if (flags[pulse] == 0)
-    flags[pulse] = SCRATCH;	// looks like we're editing by hand,
-				// so prevent deletion of the pulse
-
   fix_global_next();	// it's saver to do that from here, but could be omitted.
 }
 
@@ -1225,11 +1221,20 @@ void pulse_info(int pulse) {
 }
 
 
+const unsigned char noAlive[] PROGMEM = "no pulses alive";
+
 void alive_pulses_info()
 {
+  int count=0;
+
   for (int pulse=0; pulse<PULSES; ++pulse)
-    if (flags[pulse])				// any flags set?
+    if (flags[pulse]) {				// any flags set?
       pulse_info(pulse);
+      count++;
+    }
+
+  if (count == 0)
+    serial_println_progmem(noAlive);
 }
 
 
@@ -1273,9 +1278,21 @@ void pulse_info_1line(int pulse) {
 
 void alive_pulses_info_lines()
 {
-  for (int pulse=0; pulse<PULSES; ++pulse)
-    if (flags[pulse])				// any flags set?
+  int count=0;
+
+  for (int pulse=0; pulse<PULSES; ++pulse)	// first port used
+    if (flags[pulse]) {				// any flags set?
       pulse_info_1line(pulse);
+      count++;
+    }
+
+  if (count == 0) {				// second port used
+    serial_print_progmem(noAlive);
+      count++;
+    }
+
+  if (count == 0)
+    serial_println_progmem(noAlive);
 
   Serial.println();
 }
@@ -1925,7 +1942,7 @@ const unsigned char analogWrite_[] PROGMEM = "analogWrite(";
 const unsigned char analogValueOnPin[] PROGMEM = "analog value on pin ";
 
 bool hardware_menu_reaction(char menu_input) {
-  long newValue;
+  long new_value;
 
   switch (menu_input) {
   case  'M':
@@ -1936,9 +1953,9 @@ bool hardware_menu_reaction(char menu_input) {
 
   case 'P':
     serial_print_progmem(numberOfPin);
-    newValue = numeric_input(hw_PIN);
-    if (newValue>=0 && newValue<DIGITAL_PINs) {
-      hw_PIN = newValue;
+    new_value = numeric_input(hw_PIN);
+    if (new_value>=0 && new_value<DIGITAL_PINs) {
+      hw_PIN = new_value;
       Serial.println((int) hw_PIN);
     } else
       serial_println_progmem(none_);
@@ -1971,13 +1988,13 @@ bool hardware_menu_reaction(char menu_input) {
       serial_println_progmem(selectPin);
     else {
       serial_print_progmem(analogWriteValue);
-      newValue = numeric_input(-1);
-      if (newValue>=0 && newValue<=255) {
-	Serial.println(newValue);
+      new_value = numeric_input(-1);
+      if (new_value>=0 && new_value<=255) {
+	Serial.println(new_value);
 
-	analogWrite(hw_PIN, newValue);
+	analogWrite(hw_PIN, new_value);
 	serial_print_progmem(analogWrite_); Serial.print((int) hw_PIN);
-	Serial.print(", "); Serial.print(newValue); Serial.println(")");
+	Serial.print(", "); Serial.print(new_value); Serial.println(")");
       } else
 	serial_println_progmem(quit_);
     }
@@ -2044,8 +2061,8 @@ void divide_period(int pulse, unsigned long divisor) {
 
 const unsigned char setTimeUnit_[] PROGMEM = "Set time unit to ";
 
-void set_time_unit_and_inform(unsigned long newValue) {
-  time_unit = newValue;
+void set_time_unit_and_inform(unsigned long new_value) {
+  time_unit = new_value;
   serial_print_progmem(setTimeUnit_);
   Serial.print(time_unit);
   serial_println_progmem(microSeconds);
@@ -2053,11 +2070,8 @@ void set_time_unit_and_inform(unsigned long newValue) {
 
 
 // menu interface to reset a pulse and prepare it to be edited:
-const unsigned char resetPulse[] PROGMEM = "reset pulse ";
-
 void reset_and_edit_pulse(int pulse) {
   init_pulse(pulse);
-  serial_print_progmem(resetPulse); Serial.println(pulse);
   flags[pulse] |= SCRATCH;	// set SCRATCH flag
   flags[pulse] &= ~ACTIVE;	// remove ACTIVE
 
@@ -2067,8 +2081,6 @@ void reset_and_edit_pulse(int pulse) {
   scratch.overflow = 0;
   mul_time(&scratch, 12);		// 12 looks like a usable default
   period[pulse] = scratch;
-
-  pulse_info_1line(pulse);
 }
 
 
@@ -2163,7 +2175,7 @@ const unsigned char killedAll[] PROGMEM = "killed all";
 const unsigned char onlyPositive[] PROGMEM = "only positive sync ";
 
 bool menu_serial_program_reaction(char menu_input) {
-  long newValue=0;
+  long new_value=0;
   struct time time_scratch;
 
   switch (menu_input) {
@@ -2246,9 +2258,9 @@ bool menu_serial_program_reaction(char menu_input) {
 
   case 'S':
     serial_print_progmem(sync_);
-    newValue = numeric_input(sync);
-    if (newValue>=0 )
-      sync = newValue;
+    new_value = numeric_input(sync);
+    if (new_value>=0 )
+      sync = new_value;
     else
       serial_print_progmem(onlyPositive);
     Serial.println(sync);
@@ -2266,11 +2278,11 @@ bool menu_serial_program_reaction(char menu_input) {
   case '*':
     switch (dest) {
     case CODE_PULSES:
-      newValue = numeric_input(1);
-      if (newValue>=0) {
+      new_value = numeric_input(1);
+      if (new_value>=0) {
 	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
 	  if (selected_pulses & (1 << pulse))
-	    multiply_period(pulse, newValue);
+	    multiply_period(pulse, new_value);
 
 	Serial.println();
 	alive_pulses_info_lines();
@@ -2279,9 +2291,9 @@ bool menu_serial_program_reaction(char menu_input) {
       break;
 
     case CODE_TIME_UNIT:
-      newValue = numeric_input(1);
-      if (newValue>0)
-	set_time_unit_and_inform(time_unit*newValue);
+      new_value = numeric_input(1);
+      if (new_value>0)
+	set_time_unit_and_inform(time_unit*new_value);
       else
 	serial_println_progmem(invalid);
       break;
@@ -2291,11 +2303,11 @@ bool menu_serial_program_reaction(char menu_input) {
   case '/':
     switch (dest) {
     case CODE_PULSES:
-      newValue = numeric_input(1);
-      if (newValue>=0) {
+      new_value = numeric_input(1);
+      if (new_value>=0) {
 	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
 	  if (selected_pulses & (1 << pulse))
-	    divide_period(pulse, newValue);
+	    divide_period(pulse, new_value);
 
 	Serial.println();
 	alive_pulses_info_lines();
@@ -2304,9 +2316,9 @@ bool menu_serial_program_reaction(char menu_input) {
       break;
 
     case CODE_TIME_UNIT:
-      newValue = numeric_input(1);
-      if (newValue>0)
-	set_time_unit_and_inform(time_unit/newValue);
+      new_value = numeric_input(1);
+      if (new_value>0)
+	set_time_unit_and_inform(time_unit/new_value);
       else
 	serial_println_progmem(invalid);
       break;
@@ -2316,13 +2328,13 @@ bool menu_serial_program_reaction(char menu_input) {
   case '=':
     switch (dest) {
     case CODE_PULSES:
-      newValue = numeric_input(1);
-      if (newValue>=0) {
+      new_value = numeric_input(1);
+      if (new_value>=0) {
 	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
 	  if (selected_pulses & (1 << pulse)) {
 	    time_scratch.time = time_unit;
 	    time_scratch.overflow = 0;
-	    mul_time(&time_scratch, newValue);
+	    mul_time(&time_scratch, new_value);
 	    set_new_period(pulse, time_scratch);
 	  }
 
@@ -2333,9 +2345,9 @@ bool menu_serial_program_reaction(char menu_input) {
       break;
 
     case CODE_TIME_UNIT:
-      newValue = numeric_input(1);
-      if (newValue>0)
-	set_time_unit_and_inform(newValue);
+      new_value = numeric_input(1);
+      if (new_value>0)
+	set_time_unit_and_inform(new_value);
       else
 	serial_println_progmem(invalid);
       break;
