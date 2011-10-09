@@ -2194,11 +2194,13 @@ bool menu_serial_program_reaction(char menu_input) {
   case '?':
     display_serial_menu();
     alive_pulses_info_lines();
-    time_info();  tab(); RAM_info(); Serial.println();
+    time_info();  tab(); RAM_info();
+    Serial.println();
     break;
 
   case '.':
-    time_info(); Serial.println();
+    Serial.println();
+    // time_info(); Serial.println();
     alive_pulses_info_lines();
     // RAM_info(); Serial.println();
     Serial.println();
@@ -2562,7 +2564,7 @@ void setup() {
 
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   // init_rhythm_1(1);
-  init_rhythm_2(5);
+  init_rhythm_2(1);
   // init_rhythm_3(1);
   // init_rhythm_4(1);
   // setup_jiffles0(1);
