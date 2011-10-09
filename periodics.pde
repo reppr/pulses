@@ -28,7 +28,7 @@
      rhythms
      jiffles
 
-   Creating, editing, syncing, killing pulses from serial menu.
+   Selecting, creating, editing, syncing, killing pulses from serial menu.
 
    Entering jiffletab by hand.
 
@@ -1028,7 +1028,7 @@ void init_rhythm_4(int sync) {
 // dest and selected_pulses
 // destination of menu functions '*' '/' '=' and 's'
 
-unsigned int selected_pulses=0L;	// pulse bitmask
+unsigned long selected_pulses=0L;	// pulse bitmask
 
 // dest codes:
 #define CODE_PULSES	0		// dest code pulses: apply selected_pulses
@@ -1806,11 +1806,14 @@ void display_serial_hardware_menu() {
 // what is selected?
 
 void print_selected_pulses() {
+
+#ifdef CLICK_PULSES
   for (int pulse=0; pulse<min(CLICK_PULSES,8); pulse++)
     if (selected_pulses & (1 << pulse))
       Serial.print(pulse, HEX);
     else
       Serial.print(".");
+#endif
 
 #if (CLICK_PULSES > 8)
   spaces(2);
@@ -1819,6 +1822,15 @@ void print_selected_pulses() {
       Serial.print(pulse, HEX);
     else
       Serial.print(".");
+#endif
+
+#if (PULSES > CLICK_PULSES)
+  spaces(2);
+  for (int pulse=CLICK_PULSES; pulse<PULSES; pulse++)
+    if (selected_pulses & (1 << pulse))
+      Serial.write('+');
+    else
+      Serial.write('.');
 #endif
 
   Serial.println();
@@ -1845,9 +1857,8 @@ void print_selected() {
 const unsigned char selectDestinationInfo[] PROGMEM =
   "SELECT DESTINATION for '= * / s K p n c j' to work on:\t\t";
 const unsigned char selectPulseWith[] PROGMEM = "Select puls with ";
-const unsigned char all_[] PROGMEM = "(ALL)";
 const unsigned char selectAllPulses[] PROGMEM =
-  "a=select *all* click pulses\t~=invert selection";
+  "\na=select *all* click pulses\tA=*all* pulses\tl=alive clicks\tL=all alive\t~=invert selection";
 const unsigned char uSelect[] PROGMEM = "u=select ";
 const unsigned char selected__[] PROGMEM = "\t(selected)";
 
@@ -2209,6 +2220,7 @@ bool menu_serial_program_reaction(char menu_input) {
     break;
 
   case 'a':	// DADA
+    selected_pulses=0;
     for (int pulse=0; pulse<CLICK_PULSES; pulse++)
       selected_pulses |= (1 << pulse);
 
@@ -2218,6 +2230,26 @@ bool menu_serial_program_reaction(char menu_input) {
 
   case 'A':	// DADA
     selected_pulses = ~0;
+
+    serial_print_progmem(selected_);
+    print_selected_pulses();
+    break;
+
+  case 'l':	// alive CLICK_PULSES
+    selected_pulses=0;
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+      if(flags[pulse] && (flags[pulse] != SCRATCH))
+	selected_pulses |= (1 << pulse);
+
+    serial_print_progmem(selected_);
+    print_selected_pulses();
+    break;
+
+  case 'L':	// alive pulses
+    selected_pulses=0;
+    for (int pulse=0; pulse<PULSES; pulse++)
+      if(flags[pulse] && (flags[pulse] != SCRATCH))
+	selected_pulses |= (1 << pulse);
 
     serial_print_progmem(selected_);
     print_selected_pulses();
