@@ -1029,12 +1029,15 @@ void init_rhythm_4(int sync) {
 
 #ifdef USE_SERIAL
 
-// I'll need these soon:
+// dest and selected_pulses
 // destination of menu functions '*' '/' '=' and 's'
-unsigned char selected_destination=~0;
-// destinations codes (other then 0, 1, 2, ... for individual clicker pulses):
-#define CODE_ALL	PULSES		// destination code
-#define CODE_TIME_UNIT	(PULSES+1)		// destination code
+
+unsigned int selected_pulses=0L;	// pulse bitmask
+
+// dest codes:
+#define CODE_PULSES	0		// dest code pulses: apply selected_pulses
+#define CODE_TIME_UNIT	1		// dest code time_unit
+unsigned char dest = CODE_PULSES;
 
 
 
@@ -1261,7 +1264,7 @@ void pulse_info_1line(int pulse) {
   scratch.time = realtime;
   display_realtime_sec(scratch);
 
-  if ((CODE_ALL == selected_destination) || (pulse == selected_destination))
+  if (selected_pulses & (1 << pulse))
     Serial.print(" *");
 
   Serial.println();
@@ -1779,6 +1782,32 @@ void display_serial_hardware_menu() {
 /* **************************************************************** */
 // program specific menu:
 
+// what is selected?
+void print_selected() {
+  switch (dest) {
+  case CODE_PULSES:
+    for (int pulse=0; pulse<min(CLICK_PULSES,8); pulse++)
+      if (selected_pulses & (1 << pulse))
+	Serial.print(pulse, HEX);
+      else
+	Serial.print(".");
+
+#if (CLICK_PULSES > 8)
+    spaces(2);
+    for (int pulse=8; pulse<min(CLICK_PULSES,16); pulse++)
+      if (selected_pulses & (1 << pulse))
+	Serial.print(pulse, HEX);
+      else
+	Serial.print(".");
+#endif
+    break;
+
+  case CODE_TIME_UNIT:
+    serial_print_progmem(timeUnit);
+    break;
+  }
+}
+
 
 // info_select_destination_with()
 const unsigned char selectDestinationInfo[] PROGMEM =
@@ -1791,15 +1820,7 @@ const unsigned char selected__[] PROGMEM = "\t(selected)";
 
 void info_select_destination_with(boolean extended_destinations) {
   serial_print_progmem(selectDestinationInfo);
-  if (selected_destination < CLICK_PULSES) {
-    Serial.print("(");
-    Serial.print((int) selected_destination);
-    Serial.println(")");
-  } else 
-    if(selected_destination == CODE_ALL) {
-      serial_println_progmem(all_);
-    } else
-      serial_println_progmem(none_);
+  print_selected();  Serial.println();
 
   serial_print_progmem(selectPulseWith);
   for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
@@ -1810,8 +1831,8 @@ void info_select_destination_with(boolean extended_destinations) {
 
   if(extended_destinations) {
     serial_print_progmem(uSelect);  serial_print_progmem(timeUnit);
-    if(selected_destination == CODE_TIME_UNIT) {
-    serial_println_progmem(selected__);
+    if(dest == CODE_TIME_UNIT) {
+      serial_println_progmem(selected__);
     } else
       Serial.println();
     Serial.println();
@@ -2048,32 +2069,6 @@ void set_time_unit_and_inform(unsigned long newValue) {
 }
 
 
-const unsigned char switched_[] PROGMEM = "Switched ";
-
-void switch_periodic_and_inform(int pulse) {
-  // special case: switching on an edited SCRATCH pulse:
-  if((flags[pulse] & ACTIVE) == 0)	// was off
-    if (flags[pulse] & SCRATCH)		// SCRATCH set, like activating after edit
-      flags[pulse] &= ~SCRATCH;		// so we remove SCRATCH
-
-  flags[pulse] ^= ACTIVE;
-
-  serial_print_progmem(switched_);  serial_print_progmem(pulse_);
-  Serial.print((int)  pulse);
-  if (flags[pulse] & ACTIVE) {
-    get_now();
-    next[pulse] = now;
-    last[pulse] = next[pulse];	// for overflow logic
-
-    Serial.println(" on\t");
-    pulse_info_1line(pulse);
-  } else
-    Serial.println (" off");
-
-  fix_global_next();
-}
-
-
 // menu interface to reset a pulse and prepare it to be edited:
 const unsigned char resetPulse[] PROGMEM = "reset pulse ";
 
@@ -2206,46 +2201,57 @@ bool menu_serial_program_reaction(char menu_input) {
 
     // *do* change this line if you change CLICK_PULSES
   case '0': case '1': case '2': case '3': case '4':
-    // display(menu_input - '0');
-    selected_destination = menu_input - '0';
-    serial_print_progmem(selected_);
+  // case '5': case '6': case '7': case '8': case '9':
+    selected_pulses ^= (1 << (menu_input - '0'));
+
+    serial_print_progmem(selected_);	// DADA ################
     serial_print_progmem(pulse_);
     Serial.println((int)  menu_input - '0');
     break;
 
   case 'u':
-    selected_destination = CODE_TIME_UNIT;
+    dest = CODE_TIME_UNIT;
     serial_print_progmem(selected_);
     serial_println_progmem(timeUnit);
     break;
 
   case 'a':	// DADA
-    selected_destination = CODE_ALL;
-    serial_print_progmem(selected_);
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+      selected_pulses |= (1 << pulse);
+
+    serial_print_progmem(selected_);	// DADA ################
     serial_println_progmem(allPulses);
     break;
 
   case 'A':	// DADA
-    selected_destination = CODE_ALL;
-    serial_print_progmem(selected_);
+    selected_pulses = ~0;
+    serial_print_progmem(selected_);	// DADA ################
     serial_println_progmem(allPulses);
     break;
 
   case 's':
-    if (selected_destination < CLICK_PULSES) {
-      switch_periodic_and_inform(selected_destination);
-    } else
-      switch (selected_destination) {
-      case CODE_ALL:
-	for (int pulse=0; pulse<CLICK_PULSES; pulse++ ) {
-	  switch_periodic_and_inform(pulse);
-	}
-	Serial.println();
-	break;
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+      if (selected_pulses & (1 << pulse)) {
+	// special case: switching on an edited SCRATCH pulse:
+	if((flags[pulse] & ACTIVE) == 0)	// was off
+	  if (flags[pulse] & SCRATCH)	// SCRATCH set, like activating after edit
+	    flags[pulse] &= ~SCRATCH;	// so we remove SCRATCH
 
-      default:
-	info_select_destination_with(false);
+	flags[pulse] ^= ACTIVE;
+
+	if (flags[pulse] & ACTIVE) {	// DADA test ################
+	  get_now();	// ################################################################
+	  next[pulse] = now;
+	  last[pulse] = next[pulse];	// for overflow logic
+	}
       }
+    }
+
+    fix_global_next();
+    check_maybe_do();				  // maybe do it *first*
+    alive_pulses_info();			  // *then* info ;)
+
+    // info_select_destination_with(false);	// DADA ################
     break;
 
   case 'S':
@@ -2268,144 +2274,108 @@ bool menu_serial_program_reaction(char menu_input) {
     break;
 
   case '*':
-    if (selected_destination < CLICK_PULSES) {
+    switch (dest) {
+    case CODE_PULSES:
       newValue = numeric_input(1);
       if (newValue>=0) {
-	multiply_period_and_inform(selected_destination, newValue);
+	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+	  if (selected_pulses & (1 << pulse))
+	    multiply_period_and_inform(pulse, newValue);
       } else
 	serial_println_progmem(invalid);
+      break;
 
-    } else {
+    case CODE_TIME_UNIT:
       newValue = numeric_input(1);
-
-      switch (selected_destination) {
-      case CODE_ALL:
-	for (int pulse=0; pulse<CLICK_PULSES; pulse++ ) {
-	  multiply_period_and_inform(pulse, newValue);
-	}
-	Serial.println();
-	break;
-
-      case CODE_TIME_UNIT:
+      if (newValue>0)
 	set_time_unit_and_inform(time_unit*newValue);
-	break;
-
-      default:
-	info_select_destination_with(true);
-      }
+      else
+	serial_println_progmem(invalid);
+      break;
     }
     break;
 
   case '/':
-    if (selected_destination < CLICK_PULSES) {
+    switch (dest) {
+    case CODE_PULSES:
       newValue = numeric_input(1);
-      if (newValue>0) {
-	divide_period_and_inform(selected_destination, newValue);
+      if (newValue>=0) {
+	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+	  if (selected_pulses & (1 << pulse))
+	    divide_period_and_inform(pulse, newValue);
       } else
 	serial_println_progmem(invalid);
+      break;
 
-    } else {
+    case CODE_TIME_UNIT:
       newValue = numeric_input(1);
-
-      switch (selected_destination) {
-      case CODE_ALL:
-	for (int pulse=0; pulse<CLICK_PULSES; pulse++ ) {
-	  divide_period_and_inform(pulse, newValue);
-	}
-	Serial.println();
-	break;
-
-      case CODE_TIME_UNIT:
+      if (newValue>0)
 	set_time_unit_and_inform(time_unit/newValue);
-	break;
-
-      default:
-	info_select_destination_with(true);
-      }
+      else
+	serial_println_progmem(invalid);
+      break;
     }
     break;
 
   case '=':
-    if (selected_destination < CLICK_PULSES) {		// pulses
-      newValue = numeric_input(period[selected_destination].time / time_unit);
+    switch (dest) {
+    case CODE_PULSES:
+      newValue = numeric_input(1);
       if (newValue>=0) {
-	time_scratch.time = newValue * time_unit;
-	time_scratch.overflow = 0;
-	set_new_period_and_inform(selected_destination, time_scratch);
+	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+	  if (selected_pulses & (1 << pulse)) {
+	    time_scratch.time = time_unit;
+	    time_scratch.overflow = 0;
+	    mul_time(&time_scratch, newValue);
+	    set_new_period_and_inform(pulse, time_scratch);
+	  }
       } else
 	serial_println_progmem(invalid);
+      break;
 
-    } else {
+    case CODE_TIME_UNIT:
       newValue = numeric_input(1);
-
-      switch (selected_destination) {
-      case CODE_ALL:
-	time_scratch.time = newValue * time_unit;
-	time_scratch.overflow = 0;
-	for (int pulse=0; pulse<CLICK_PULSES; pulse++ ) {
-	  set_new_period_and_inform(selected_destination, time_scratch);
-	}
-	Serial.println();
-	break;
-
-      case CODE_TIME_UNIT:			// time_unit
+      if (newValue>0)
 	set_time_unit_and_inform(newValue);
-	break;
-
-      default:
-	info_select_destination_with(true);
-      }
+      else
+	serial_println_progmem(invalid);
+      break;
     }
     break;
 
   case 'K':
-    if (selected_destination < CLICK_PULSES) {		// pulses
-      init_pulse(selected_destination);
-      serial_print_progmem(killPulse); Serial.println(selected_destination);
-      alive_pulses_info_lines(); Serial.println();
-    } else
-      if (selected_destination == CODE_ALL) {	// DADA ################
-	init_pulses();
-	serial_println_progmem(killedAll);
-      } else
-	info_select_destination_with(false);
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++)	// DADA ################
+      if (selected_pulses & (1 << pulse)) {
+	init_pulse(pulse);
+	serial_print_progmem(killPulse); Serial.println(pulse);
+      }
+    alive_pulses_info_lines(); Serial.println();
     break;
 
   case 'p':	// DADA 'P'? ################
-    if (selected_destination < CLICK_PULSES) {		// pulses
-      reset_and_edit_pulse(selected_destination);
-    } else
-      if (selected_destination == CODE_ALL) {
-	// we disobey and change only CLICK_PULSES:
-	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
-	  reset_and_edit_pulse(pulse);
-	Serial.println(); alive_pulses_info_lines();
-	Serial.println();
-      } else
-	info_select_destination_with(false);
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++)	// DADA ################
+      if (selected_pulses & (1 << pulse)) {
+	reset_and_edit_pulse(pulse);
+      }
+    alive_pulses_info_lines(); Serial.println();
+
+    //	info_select_destination_with(false);	// DADA ################
     break;
 
   case 'n':
-    if (selected_destination < CLICK_PULSES) {		// pulses
-      get_now();
-      activate_pulse_synced(selected_destination, now, abs(sync));
-      check_maybe_do();				  // maybe do it *first*
-      pulse_info_1line(selected_destination);	  // *then* info ;)
-    } else
-      if (selected_destination == CODE_ALL) {
-	get_now();
-	// we disobey and change only CLICK_PULSES:
-	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
-	  activate_pulse_synced(pulse, now, abs(sync));
-	check_maybe_do();				// maybe do it *first*
-	alive_pulses_info_lines();			// and *then* info
-      } else
-	info_select_destination_with(false);
+    // we work on CLICK_PULSES anyway, regardless dest
+    get_now();
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+      if (selected_pulses & (1 << pulse))
+	activate_pulse_synced(pulse, now, abs(sync));
+
+    check_maybe_do();				  // maybe do it *first*
+    alive_pulses_info();			  // *then* info ;)
     break;
+
 
     // debugging entries: DADA ###############################################
   case 'd':				// hook for debugging
-
     break;
 
   case 'Y':				// hook for debugging
@@ -2430,32 +2400,36 @@ bool menu_serial_program_reaction(char menu_input) {
 
     // debugging entries: DADA ###############################################
 
-  case 'c':
-    if (selected_destination < CLICK_PULSES) {		// pulses
-      en_click(selected_destination);
-      pulse_info_1line(selected_destination);
-    } else
-      if (selected_destination == CODE_ALL) {
-	// we disobey and change only CLICK_PULSES:
-	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
-	  en_click(pulse);
-	alive_pulses_info_lines();
-      } else
-	info_select_destination_with(false);
+  case 'c':	// en_click
+    // we work on CLICK_PULSES anyway, regardless dest
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+      if (selected_pulses & (1 << pulse))
+	en_click(pulse);
+    alive_pulses_info();
     break;
 
-  case 'j':
-    if (selected_destination < CLICK_PULSES) {		// pulses
-      en_jiffle_thrower(selected_destination, jiffletab);
-      pulse_info_1line(selected_destination);
-    } else
-      if (selected_destination == CODE_ALL) {
-	// we disobey and change only CLICK_PULSES:
-	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
-	  en_jiffle_thrower(pulse, jiffletab);
-	alive_pulses_info_lines();
-      } else
-	info_select_destination_with(false);
+  case 'j':	// en_jiffle_thrower
+    // we work on CLICK_PULSES anyway, regardless dest
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+      if (selected_pulses & (1 << pulse))
+	en_jiffle_thrower(pulse, jiffletab);
+    alive_pulses_info();
+    break;
+
+  case 'f':	// en_info
+    // we work on CLICK_PULSES anyway, regardless dest
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+      if (selected_pulses & (1 << pulse))
+	en_info(pulse);
+    alive_pulses_info();
+    break;
+
+  case 'F':	// en_INFO
+    // we work on CLICK_PULSES anyway, regardless dest
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+      if (selected_pulses & (1 << pulse))
+	en_INFO(pulse);
+    alive_pulses_info();
     break;
 
   case '{':
@@ -2465,34 +2439,6 @@ bool menu_serial_program_reaction(char menu_input) {
 
   case '}':
     display_jiffletab(jiffletab);
-    break;
-
-  case 'f':
-    if (selected_destination < CLICK_PULSES) {		// pulses
-      en_info(selected_destination);
-      pulse_info_1line(selected_destination);
-    } else
-      if (selected_destination == CODE_ALL) {
-	// we disobey and change only CLICK_PULSES:
-	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
-	  en_info(pulse);
-	alive_pulses_info_lines();
-      } else
-	info_select_destination_with(false);
-    break;
-
-  case 'F':
-    if (selected_destination < CLICK_PULSES) {		// pulses
-      en_INFO(selected_destination);
-      pulse_info_1line(selected_destination);
-    } else
-      if (selected_destination == CODE_ALL) {
-	// we disobey and change only CLICK_PULSES:
-	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
-	  en_INFO(pulse);
-	alive_pulses_info_lines();
-      } else
-	info_select_destination_with(false);
     break;
 
   default:
@@ -2562,8 +2508,8 @@ void setup() {
 
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   // init_rhythm_1(1);
-  init_rhythm_2(5);
-  // init_rhythm_3(1);
+  // init_rhythm_2(5);
+  init_rhythm_3(3);
   // init_rhythm_4(1);
   // setup_jiffles0(1);
 
