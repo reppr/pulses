@@ -1,4 +1,4 @@
-/* **************************************************************** */
+ /* **************************************************************** */
 // pulses
 /* **************************************************************** */
 
@@ -1276,6 +1276,8 @@ void alive_pulses_info_lines()
   for (int pulse=0; pulse<PULSES; ++pulse)
     if (flags[pulse])				// any flags set?
       pulse_info_1line(pulse);
+
+  Serial.println();
 }
 
 
@@ -1782,28 +1784,41 @@ void display_serial_hardware_menu() {
 /* **************************************************************** */
 // program specific menu:
 
+
+
 // what is selected?
-void print_selected() {
-  switch (dest) {
-  case CODE_PULSES:
-    for (int pulse=0; pulse<min(CLICK_PULSES,8); pulse++)
-      if (selected_pulses & (1 << pulse))
-	Serial.print(pulse, HEX);
-      else
-	Serial.print(".");
+
+void print_selected_pulses() {
+  for (int pulse=0; pulse<min(CLICK_PULSES,8); pulse++)
+    if (selected_pulses & (1 << pulse))
+      Serial.print(pulse, HEX);
+    else
+      Serial.print(".");
 
 #if (CLICK_PULSES > 8)
-    spaces(2);
-    for (int pulse=8; pulse<min(CLICK_PULSES,16); pulse++)
-      if (selected_pulses & (1 << pulse))
-	Serial.print(pulse, HEX);
-      else
-	Serial.print(".");
+  spaces(2);
+  for (int pulse=8; pulse<min(CLICK_PULSES,16); pulse++)
+    if (selected_pulses & (1 << pulse))
+      Serial.print(pulse, HEX);
+    else
+      Serial.print(".");
 #endif
+
+  Serial.println();
+}
+
+const unsigned char selected_[] PROGMEM = "selected ";
+
+void print_selected() {
+  serial_print_progmem(selected_);
+
+  switch (dest) {
+  case CODE_PULSES:
+    print_selected_pulses();
     break;
 
   case CODE_TIME_UNIT:
-    serial_print_progmem(timeUnit);
+    serial_println_progmem(timeUnit);
     break;
   }
 }
@@ -1814,7 +1829,8 @@ const unsigned char selectDestinationInfo[] PROGMEM =
   "SELECT DESTINATION for '= * / s K p n c j' to work on:\t\t";
 const unsigned char selectPulseWith[] PROGMEM = "Select puls with ";
 const unsigned char all_[] PROGMEM = "(ALL)";
-const unsigned char selectAllPulses[] PROGMEM = "a=select *all* click pulses";
+const unsigned char selectAllPulses[] PROGMEM =
+  "a=select *all* click pulses\t~=invert selection";
 const unsigned char uSelect[] PROGMEM = "u=select ";
 const unsigned char selected__[] PROGMEM = "\t(selected)";
 
@@ -2008,54 +2024,21 @@ bool hardware_menu_reaction(char menu_input) {
 /* **************************************************************** */
 // functions called from the menu:
 
-const unsigned char multipliedPulse_[] PROGMEM = "Multiplied pulse[";
-
-void multiply_period_and_inform(int pulse, unsigned long factor) {
+void multiply_period(int pulse, unsigned long factor) {
   struct time new_period;
 
   new_period=period[pulse];
   mul_time(&new_period, factor);
   set_new_period(pulse, new_period);
-
-  serial_print_progmem(multipliedPulse_);
-  Serial.print((int) pulse);
-  Serial.print("] by ");
-  Serial.println(factor);
-
-  pulse_info_1line(pulse);
 }
 
 
-const unsigned char dividedPulse_[] PROGMEM = "Divided pulse[";
-
-void divide_period_and_inform(int pulse, unsigned long divisor) {
+void divide_period(int pulse, unsigned long divisor) {
   struct time new_period;
 
   new_period=period[pulse];
   div_time(&new_period, divisor);
   set_new_period(pulse, new_period);
-
-  serial_print_progmem(dividedPulse_);
-  Serial.print((int) pulse);
-  Serial.print("] by ");
-  Serial.println(divisor);
-  pulse_info_1line(pulse);
-}
-
-
-const unsigned char setPeriod_[] PROGMEM = "Set period[";
-
-void set_new_period_and_inform(int pulse, struct time new_period) {
-  set_new_period(pulse, new_period);
-
-  serial_print_progmem(setPeriod_);
-  Serial.print((int) pulse);
-  Serial.print("] to ");
-  print_period_in_time_units(pulse);
-  //  Serial.print(value);
-  Serial.println();
-
-  pulse_info_1line(pulse);
 }
 
 
@@ -2174,8 +2157,7 @@ bool menu_serial_common_reaction(char menu_input) {
 
 
 // menu_serial_program_reaction()
-const unsigned char selected_[] PROGMEM = "Selected ";
-const unsigned char allPulses[] PROGMEM = "*all* pulses";
+// const unsigned char selected_[] PROGMEM = "selected ";
 const unsigned char killPulse[] PROGMEM = "kill pulse ";
 const unsigned char killedAll[] PROGMEM = "killed all";
 const unsigned char onlyPositive[] PROGMEM = "only positive sync ";
@@ -2196,9 +2178,8 @@ bool menu_serial_program_reaction(char menu_input) {
   case '.':
     Serial.println();
     // time_info(); Serial.println();
-    alive_pulses_info_lines();
     // RAM_info(); Serial.println();
-    Serial.println();
+    alive_pulses_info_lines();
     break;
 
     // *do* change this line if you change CLICK_PULSES
@@ -2206,29 +2187,35 @@ bool menu_serial_program_reaction(char menu_input) {
   // case '5': case '6': case '7': case '8': case '9':
     selected_pulses ^= (1 << (menu_input - '0'));
 
-    serial_print_progmem(selected_);	// DADA ################
-    serial_print_progmem(pulse_);
-    Serial.println((int)  menu_input - '0');
+    serial_print_progmem(selected_);
+    print_selected_pulses();
     break;
 
   case 'u':
     dest = CODE_TIME_UNIT;
-    serial_print_progmem(selected_);
-    serial_println_progmem(timeUnit);
+    print_selected();
     break;
 
   case 'a':	// DADA
     for (int pulse=0; pulse<CLICK_PULSES; pulse++)
       selected_pulses |= (1 << pulse);
 
-    serial_print_progmem(selected_);	// DADA ################
-    serial_println_progmem(allPulses);
+    serial_print_progmem(selected_);
+    print_selected_pulses();
     break;
 
   case 'A':	// DADA
     selected_pulses = ~0;
-    serial_print_progmem(selected_);	// DADA ################
-    serial_println_progmem(allPulses);
+
+    serial_print_progmem(selected_);
+    print_selected_pulses();
+    break;
+
+  case '~':
+    selected_pulses = ~selected_pulses;
+
+    serial_print_progmem(selected_);
+    print_selected_pulses();
     break;
 
   case 's':
@@ -2251,7 +2238,8 @@ bool menu_serial_program_reaction(char menu_input) {
 
     fix_global_next();
     check_maybe_do();				  // maybe do it *first*
-    alive_pulses_info();			  // *then* info ;)
+    Serial.println();
+    alive_pulses_info_lines();			  // *then* info ;)
 
     // info_select_destination_with(false);	// DADA ################
     break;
@@ -2282,7 +2270,10 @@ bool menu_serial_program_reaction(char menu_input) {
       if (newValue>=0) {
 	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
 	  if (selected_pulses & (1 << pulse))
-	    multiply_period_and_inform(pulse, newValue);
+	    multiply_period(pulse, newValue);
+
+	Serial.println();
+	alive_pulses_info_lines();
       } else
 	serial_println_progmem(invalid);
       break;
@@ -2304,7 +2295,10 @@ bool menu_serial_program_reaction(char menu_input) {
       if (newValue>=0) {
 	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
 	  if (selected_pulses & (1 << pulse))
-	    divide_period_and_inform(pulse, newValue);
+	    divide_period(pulse, newValue);
+
+	Serial.println();
+	alive_pulses_info_lines();
       } else
 	serial_println_progmem(invalid);
       break;
@@ -2329,8 +2323,11 @@ bool menu_serial_program_reaction(char menu_input) {
 	    time_scratch.time = time_unit;
 	    time_scratch.overflow = 0;
 	    mul_time(&time_scratch, newValue);
-	    set_new_period_and_inform(pulse, time_scratch);
+	    set_new_period(pulse, time_scratch);
 	  }
+
+	Serial.println();
+	alive_pulses_info_lines();
       } else
 	serial_println_progmem(invalid);
       break;
@@ -2351,6 +2348,7 @@ bool menu_serial_program_reaction(char menu_input) {
 	init_pulse(pulse);
 	serial_print_progmem(killPulse); Serial.println(pulse);
       }
+    Serial.println();
     alive_pulses_info_lines(); Serial.println();
     break;
 
@@ -2359,9 +2357,9 @@ bool menu_serial_program_reaction(char menu_input) {
       if (selected_pulses & (1 << pulse)) {
 	reset_and_edit_pulse(pulse);
       }
-    alive_pulses_info_lines(); Serial.println();
 
-    //	info_select_destination_with(false);	// DADA ################
+    Serial.println();
+    alive_pulses_info_lines();
     break;
 
   case 'n':
@@ -2372,8 +2370,10 @@ bool menu_serial_program_reaction(char menu_input) {
 	activate_pulse_synced(pulse, now, abs(sync));
 
     check_maybe_do();				  // maybe do it *first*
-    alive_pulses_info();			  // *then* info ;)
-    break;
+
+    Serial.println();
+    alive_pulses_info_lines();			  // *then* info ;)
+   break;
 
 
     // debugging entries: DADA ###############################################
@@ -2407,7 +2407,9 @@ bool menu_serial_program_reaction(char menu_input) {
     for (int pulse=0; pulse<CLICK_PULSES; pulse++)
       if (selected_pulses & (1 << pulse))
 	en_click(pulse);
-    alive_pulses_info();
+
+    Serial.println();
+    alive_pulses_info_lines();
     break;
 
   case 'j':	// en_jiffle_thrower
@@ -2415,7 +2417,9 @@ bool menu_serial_program_reaction(char menu_input) {
     for (int pulse=0; pulse<CLICK_PULSES; pulse++)
       if (selected_pulses & (1 << pulse))
 	en_jiffle_thrower(pulse, jiffletab);
-    alive_pulses_info();
+
+    Serial.println();
+    alive_pulses_info_lines();
     break;
 
   case 'f':	// en_info
@@ -2423,7 +2427,9 @@ bool menu_serial_program_reaction(char menu_input) {
     for (int pulse=0; pulse<CLICK_PULSES; pulse++)
       if (selected_pulses & (1 << pulse))
 	en_info(pulse);
-    alive_pulses_info();
+
+    Serial.println();
+    alive_pulses_info_lines();
     break;
 
   case 'F':	// en_INFO
@@ -2431,6 +2437,8 @@ bool menu_serial_program_reaction(char menu_input) {
     for (int pulse=0; pulse<CLICK_PULSES; pulse++)
       if (selected_pulses & (1 << pulse))
 	en_INFO(pulse);
+
+    Serial.println();
     alive_pulses_info();
     break;
 
@@ -2516,7 +2524,8 @@ void setup() {
   // setup_jiffles0(1);
 
 #ifdef MENU_over_serial
-  alive_pulses_info_lines(); Serial.println();
+  Serial.println();
+  alive_pulses_info_lines();
 #endif
 
   fix_global_next();	// we *must* call that here late in setup();
