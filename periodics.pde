@@ -2189,11 +2189,13 @@ bool menu_serial_program_reaction(char menu_input) {
   case '?':
     display_serial_menu();
     alive_pulses_info_lines();
-    time_info();  tab(); RAM_info(); Serial.println();
+    time_info();  tab(); RAM_info();
+    Serial.println();
     break;
 
   case '.':
-    time_info(); Serial.println();
+    Serial.println();
+    // time_info(); Serial.println();
     alive_pulses_info_lines();
     // RAM_info(); Serial.println();
     Serial.println();
