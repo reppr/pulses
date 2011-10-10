@@ -180,10 +180,13 @@ void serial_println_progmem(const unsigned char *str) {
 
 #ifdef USE_SERIAL
   const unsigned char freeRAM[] PROGMEM = "free RAM ";
+  const unsigned char bytes_[] PROGMEM = " bytes";
 
   void RAM_info() {
     serial_print_progmem(freeRAM);
     Serial.print(get_free_RAM());
+    serial_println_progmem(bytes_);
+    Serial.println();
   }
 #endif
 
@@ -407,12 +410,12 @@ unsigned int int1[PULSES];		// if COUNTED, gives number of executions
 // these parameters can be used by periodic_do(pulse):
 int parameter_1[PULSES];
 /*
-	used by do_jiffle0 for count down
+	used by do_jiffle for count down
 */
 
 int parameter_2[PULSES];
 /*
-	used by do_jiffle0 *jiffletab
+	used by do_jiffle *jiffletab
 */
 
 // int parameter_3[PULSES];
@@ -420,7 +423,7 @@ int parameter_2[PULSES];
 
 unsigned long ulong_parameter_1[PULSES];
 /*
-	used by do_jiffle0 as base period
+	used by do_jiffle as base period
 */
 
 // unsigned long ulong_parameter_2[PULSES];
@@ -430,12 +433,12 @@ unsigned long ulong_parameter_1[PULSES];
 char char_parameter_1[PULSES];		// pin
 /*
 	used by click      as pin
-	used by do_jiffle0 as pin
+	used by do_jiffle  as pin
 */
 
 char char_parameter_2[PULSES];		// index
 /*
-	used by do_jiffle0 as jiffletab index
+	used by do_jiffle as jiffletab index
 */
 // char char_parameter_3[PULSES];
 // char char_parameter_4[PULSES];
@@ -449,7 +452,7 @@ void (*periodic_do[PULSES])(int);
 //					click(pulse)
 //					pulse_info_1line(pulse)
 //					pulse_info(pulse)
-//					do_jiffle0(pulse)
+//					do_jiffle(pulse)
 //					do_throw_a_jiffle(pulse)
 
 
@@ -738,7 +741,7 @@ void mute_all_clicks () {
   for (int pulse=0; pulse<CLICK_PULSES; pulse++)
     flags[pulse] &= ~ACTIVE;
 
-  fix_global_next();			// planed soon...
+  fix_global_next();
 
 #ifdef USE_SERIAL
   serial_println_progmem(mutedAllPulses);
@@ -768,8 +771,6 @@ int activate_pulse_synced(int pulse, struct time when, int sync)
   // now switch it on
   flags[pulse] |= ACTIVE;	// set ACTIVE
   flags[pulse] &= ~SCRATCH;	// clear SCRATCH
-
-  fix_global_next();
 }
 
 
@@ -1104,9 +1105,9 @@ void display_action(int pulse) {
     return;
   }
 
-  scratch=&do_jiffle0;
+  scratch=&do_jiffle;
   if (periodic_do[pulse] == scratch) {
-    Serial.print("do_jiffle0");
+    Serial.print("do_jiffle");
     return;
   }
 
@@ -1334,6 +1335,7 @@ void print_period_in_time_units(int pulse) {
 #define JIFFLETAB_INDEX_STEP	3
 
 // put these in PROGMEM or EEPROM	DADA ################
+// jiffletab0 is obsolete	DADA ################
 unsigned int jiffletab0[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,4, 1,64,3, 1,32,1, 1,16,2, 0};	// nice short jiffy
 
 // DADA ################
@@ -1366,10 +1368,10 @@ void enter_jiffletab(unsigned int *jiffletab)
     // delay(WAITforSERIAL);
 
     switch (menu_input = get_char()) {
-    case ' ': case ',':
+    case ' ': case ',': case '\t':	// white space, comma
       break;
 
-    case '0': case '1': case '2': case '3': case '4':
+    case '0': case '1': case '2': case '3': case '4':	// numeric
     case '5': case '6': case '7': case '8': case '9':
       char_store((char) menu_input); 
       new_value = numeric_input(0);
@@ -1389,12 +1391,12 @@ void enter_jiffletab(unsigned int *jiffletab)
       }
       break;
 
-    case '}':
+    case '}':	// end jiffletab input. Can be used to display jiffletab.
       display_jiffletab(jiffletab);
       return;
       break;
 
-    default:
+    default:	// default: end input sequence
       char_store((char) menu_input); 
       return;
     }
@@ -1436,7 +1438,7 @@ void display_jiffletab(unsigned int *jiffletab)
 //	*/
 
 
-void do_jiffle0 (int pulse) {	// to be called by pulse_do
+void do_jiffle (int pulse) {	// to be called by pulse_do
   // char_parameter_1[pulse]	click pin
   // char_parameter_2[pulse]	jiffletab index
   // parameter_1[pulse]		count down
@@ -1457,11 +1459,10 @@ void do_jiffle0 (int pulse) {	// to be called by pulse_do
   }
 
   //initialize next phase, re-using the same pulse:
-  int base_index = char_parameter_2[pulse];			// readability
+  int base_index = char_parameter_2[pulse];		// readability
   period[pulse].time =
     ulong_parameter_1[pulse] * jiffletab[base_index] / jiffletab[base_index+1];
-  parameter_1[pulse] = jiffletab[base_index+2];			// count of next phase
-  // fix_global_next();
+  parameter_1[pulse] = jiffletab[base_index+2];		// count of next phase
 }
 
 
@@ -1471,7 +1472,7 @@ int init_jiffle(unsigned int *jiffletab, struct time when, struct time new_perio
 
   jiffle_period.time = new_period.time * jiffletab[0] / jiffletab[1];
 
-  int jiffle_pulse = setup_pulse(&do_jiffle0, ACTIVE, when, jiffle_period);
+  int jiffle_pulse = setup_pulse(&do_jiffle, ACTIVE, when, jiffle_period);
   if (jiffle_pulse != ILLEGAL) {
     char_parameter_1[jiffle_pulse] = click_pin[origin_pulse];	// set pin
     // pinMode(click_pin[pulse++], OUTPUT);			// should be ok already
@@ -1698,14 +1699,14 @@ void bar_graph_VU(int pin) {
 
     if (char_available()) {
       switch (menu_input = get_char()) {
-      case '+':
+      case '+':	// increase tolerance
 	tolerance++;
 	break;
-      case '-':
+      case '-':	// decrease tolerance
 	if (tolerance)
 	  tolerance--;
 	break;
-      default:
+      default:	// quit
 	serial_println_progmem(quit_);
 	return;		// exit
       }
@@ -1768,7 +1769,7 @@ void watch_digital_input(int pin) {
 
 
 // display_serial_hardware_menu()
-const unsigned char hwMenuTitle[] PROGMEM = "\n***  HARDWARE menu  ***\t\tfree RAM=";
+const unsigned char hwMenuTitle[] PROGMEM = "\n***  HARDWARE menu  ***\t\t";
 
 const unsigned char selectPin[] PROGMEM = "P=SELECT pin for 'H, L, W, R, V' to work on.";
 const unsigned char PPin[] PROGMEM = "P=PIN (";
@@ -1778,8 +1779,7 @@ const unsigned char aAnalogRead[] PROGMEM = "a=analog read";
 
 
 void display_serial_hardware_menu() {
-  serial_print_progmem(hwMenuTitle);
-  Serial.println(get_free_RAM());
+  serial_print_progmem(hwMenuTitle);  RAM_info();
   Serial.println();
 
   serial_println_progmem(selectPin);
@@ -1858,7 +1858,7 @@ const unsigned char selectDestinationInfo[] PROGMEM =
   "SELECT DESTINATION for '= * / s K p n c j' to work on:\t\t";
 const unsigned char selectPulseWith[] PROGMEM = "Select puls with ";
 const unsigned char selectAllPulses[] PROGMEM =
-  "\na=select *all* click pulses\tA=*all* pulses\tl=alive clicks\tL=all alive\t~=invert selection";
+  "\na=select *all* click pulses\tA=*all* pulses\tl=alive clicks\tL=all alive\tx=none\t~=invert selection";
 const unsigned char uSelect[] PROGMEM = "u=select ";
 const unsigned char selected__[] PROGMEM = "\t(selected)";
 
@@ -1913,7 +1913,7 @@ void display_serial_menu() {
 // display_serial_program_menu()
 const unsigned char helpInfo[] PROGMEM = "?=help\tm=menu\ti=info\t.=short info";
 const unsigned char microSeconds[] PROGMEM = " microseconds";
-const unsigned char muteKill[] PROGMEM = "M=mute all\tK=kill\n\nCREATE PULSES\tstart with 'p'\np=new pulse\tc=en-click\tj=en-jiffle\tf=en-info\tF=en-INFO\tn=sync now\nS=sync ";
+const unsigned char muteKill[] PROGMEM = "M=mute all\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tf=en-info\tF=en-INFO\tn=sync now\nS=sync ";
 const unsigned char perSecond_[] PROGMEM = " per second)";
 const unsigned char equals_[] PROGMEM = " = ";
 const unsigned char switchPulse[] PROGMEM = "s=switch pulse on/off";
@@ -1942,7 +1942,6 @@ void display_serial_program_menu() {
 #ifdef HARDWARE_menu
 
 // hardware_menu_reaction()
-const unsigned char bytes_[] PROGMEM = " bytes";
 const unsigned char numberOfPin[] PROGMEM = "Number of pin to work on: ";
 // const unsigned char selectPin[] PROGMEM = "Select a pin with P.";
 const unsigned char invalid[] PROGMEM = "(invalid)";
@@ -1956,13 +1955,11 @@ bool hardware_menu_reaction(char menu_input) {
   long new_value;
 
   switch (menu_input) {
-  case  'M':
-    serial_print_progmem(freeRAM);
-    Serial.print(get_free_RAM());
-    serial_println_progmem(bytes_);
+  case  'M':	// RAM
+    RAM_info();
     break;
 
-  case 'P':
+  case 'P':	// hw_PIN
     serial_print_progmem(numberOfPin);
     new_value = numeric_input(hw_PIN);
     if (new_value>=0 && new_value<DIGITAL_PINs) {
@@ -1972,7 +1969,7 @@ bool hardware_menu_reaction(char menu_input) {
       serial_println_progmem(none_);
     break;
 
-  case 'H':
+  case 'H':	// HIGH
     if (hw_PIN == ILLEGAL)
       serial_println_progmem(selectPin);
     else {
@@ -1983,7 +1980,7 @@ bool hardware_menu_reaction(char menu_input) {
     }
     break;
 
-  case 'L':
+  case 'L':	// LOW
     if (hw_PIN == ILLEGAL)
       serial_println_progmem(selectPin);
     else {
@@ -1994,7 +1991,7 @@ bool hardware_menu_reaction(char menu_input) {
     }
     break;
 
-  case 'W':
+  case 'W':	// analogWrite
     if (hw_PIN == ILLEGAL)
       serial_println_progmem(selectPin);
     else {
@@ -2011,7 +2008,7 @@ bool hardware_menu_reaction(char menu_input) {
     }
     break;
 
-  case 'R':
+  case 'R':	// analogRead
     if (hw_PIN == ILLEGAL)
       serial_println_progmem(selectPin);
     else {
@@ -2020,14 +2017,14 @@ bool hardware_menu_reaction(char menu_input) {
     }
     break;
 
-  case 'V':
+  case 'V':	// bar_graph_VU
     if ((hw_PIN == ILLEGAL) | (hw_PIN >= ANALOG_INPUTs))
       serial_println_progmem(selectPin);
     else
       bar_graph_VU(hw_PIN);
     break;
 
-  case 'I':
+  case 'I':	// watch digital input
     if (hw_PIN == ILLEGAL)
       serial_println_progmem(selectPin);
     else {
@@ -2036,7 +2033,7 @@ bool hardware_menu_reaction(char menu_input) {
     }
     break;
 
-  case 'a':
+  case 'a':	// analog read all
     display_analog_reads();
     break;
   default:
@@ -2158,16 +2155,16 @@ void menu_serial_reaction() {
 
 bool menu_serial_common_reaction(char menu_input) {
   switch (menu_input) {
-  case 'm':
+  case 'm':	// menu
     display_serial_menu();
     break;
 
-  case 'q':
+  case 'q':	// quit
     menu=MENU_UNDECIDED;
     display_serial_menu();
     break;
 
-  case 'H':
+  case 'H':	// HARDWARE menu
     menu = MENU_HARDWARE;
     display_serial_menu();
     break;
@@ -2191,22 +2188,21 @@ bool menu_serial_program_reaction(char menu_input) {
 
   switch (menu_input) {
 
-  case '?':
+  case '?':	// help
     display_serial_menu();
     alive_pulses_info_lines();
     time_info();  tab(); RAM_info();
-    Serial.println();
     break;
 
-  case '.':
+  case '.':	// alive pulses info
     Serial.println();
     // time_info(); Serial.println();
-    // RAM_info(); Serial.println();
+    // RAM_info();
     alive_pulses_info_lines();
     break;
 
     // *do* change this line if you change CLICK_PULSES
-  case '0': case '1': case '2': case '3': case '4':
+  case '0': case '1': case '2': case '3': case '4':	// toggle pulse selection
   // case '5': case '6': case '7': case '8': case '9':
     selected_pulses ^= (1 << (menu_input - '0'));
 
@@ -2214,12 +2210,12 @@ bool menu_serial_program_reaction(char menu_input) {
     print_selected_pulses();
     break;
 
-  case 'u':
+  case 'u':	// select destination: time_unit
     dest = CODE_TIME_UNIT;
     print_selected();
     break;
 
-  case 'a':	// DADA
+  case 'a':	// select destination: all click pulses
     selected_pulses=0;
     for (int pulse=0; pulse<CLICK_PULSES; pulse++)
       selected_pulses |= (1 << pulse);
@@ -2228,14 +2224,14 @@ bool menu_serial_program_reaction(char menu_input) {
     print_selected_pulses();
     break;
 
-  case 'A':	// DADA
+  case 'A':	// select destination: *all* pulses
     selected_pulses = ~0;
 
     serial_print_progmem(selected_);
     print_selected_pulses();
     break;
 
-  case 'l':	// alive CLICK_PULSES
+  case 'l':	// select destination: alive CLICK_PULSES
     selected_pulses=0;
     for (int pulse=0; pulse<CLICK_PULSES; pulse++)
       if(flags[pulse] && (flags[pulse] != SCRATCH))
@@ -2245,7 +2241,7 @@ bool menu_serial_program_reaction(char menu_input) {
     print_selected_pulses();
     break;
 
-  case 'L':	// alive pulses
+  case 'L':	// select destination: all alive pulses
     selected_pulses=0;
     for (int pulse=0; pulse<PULSES; pulse++)
       if(flags[pulse] && (flags[pulse] != SCRATCH))
@@ -2255,14 +2251,21 @@ bool menu_serial_program_reaction(char menu_input) {
     print_selected_pulses();
     break;
 
-  case '~':
+  case '~':	// invert destination selection
     selected_pulses = ~selected_pulses;
 
     serial_print_progmem(selected_);
     print_selected_pulses();
     break;
 
-  case 's':
+  case 'x':	// clear destination selection
+    selected_pulses = 0;
+
+    serial_print_progmem(selected_);
+    print_selected_pulses();
+    break;
+
+  case 's':	// switch pulse on/off
     for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
       if (selected_pulses & (1 << pulse)) {
 	// special case: switching on an edited SCRATCH pulse:
@@ -2288,7 +2291,7 @@ bool menu_serial_program_reaction(char menu_input) {
     // info_select_destination_with(false);	// DADA ################
     break;
 
-  case 'S':
+  case 'S':	// enter sync
     serial_print_progmem(sync_);
     new_value = numeric_input(sync);
     if (new_value>=0 )
@@ -2298,16 +2301,17 @@ bool menu_serial_program_reaction(char menu_input) {
     Serial.println(sync);
     break;
 
-  case 'i':
-    RAM_info(); Serial.println(); Serial.println();
+  case 'i':	// info
+    RAM_info();
+    Serial.println();
     alive_pulses_info();
     break;
 
-  case 'M':					// hides hardware menus 'M'
-    mute_all_clicks();	// DADA
+  case 'M':	// mute
+    mute_all_clicks();
     break;
 
-  case '*':
+  case '*':	// multiply destination
     switch (dest) {
     case CODE_PULSES:
       new_value = numeric_input(1);
@@ -2332,7 +2336,7 @@ bool menu_serial_program_reaction(char menu_input) {
     }
     break;
 
-  case '/':
+  case '/':	// divide destination
     switch (dest) {
     case CODE_PULSES:
       new_value = numeric_input(1);
@@ -2357,7 +2361,7 @@ bool menu_serial_program_reaction(char menu_input) {
     }
     break;
 
-  case '=':
+  case '=':	// set destination to value
     switch (dest) {
     case CODE_PULSES:
       new_value = numeric_input(1);
@@ -2386,7 +2390,7 @@ bool menu_serial_program_reaction(char menu_input) {
     }
     break;
 
-  case 'K':
+  case 'K':	// kill selected pulses
     for (int pulse=0; pulse<CLICK_PULSES; pulse++)	// DADA ################
       if (selected_pulses & (1 << pulse)) {
 	init_pulse(pulse);
@@ -2396,7 +2400,7 @@ bool menu_serial_program_reaction(char menu_input) {
     alive_pulses_info_lines(); Serial.println();
     break;
 
-  case 'p':	// DADA 'P'? ################
+  case 'P':	// pulse create and edit
     for (int pulse=0; pulse<CLICK_PULSES; pulse++)	// DADA ################
       if (selected_pulses & (1 << pulse)) {
 	reset_and_edit_pulse(pulse);
@@ -2406,13 +2410,14 @@ bool menu_serial_program_reaction(char menu_input) {
     alive_pulses_info_lines();
     break;
 
-  case 'n':
+  case 'n':	// synchronise to now
     // we work on CLICK_PULSES anyway, regardless dest
     get_now();
     for (int pulse=0; pulse<CLICK_PULSES; pulse++)
       if (selected_pulses & (1 << pulse))
 	activate_pulse_synced(pulse, now, abs(sync));
 
+    fix_global_next();
     check_maybe_do();				  // maybe do it *first*
 
     Serial.println();
@@ -2421,26 +2426,26 @@ bool menu_serial_program_reaction(char menu_input) {
 
 
     // debugging entries: DADA ###############################################
-  case 'd':				// hook for debugging
+  case 'd':	// hook for debugging
     break;
 
-  case 'Y':				// hook for debugging
+  case 'Y':	// hook for debugging
     init_rhythm_1(sync);
     break;
 
-  case 'X':				// hook for debugging
+  case 'X':	// hook for debugging
     init_rhythm_2(sync);
     break;
 
-  case 'C':				// hook for debugging
+  case 'C':	// hook for debugging
     init_rhythm_3(sync);
     break;
 
-  case 'V':				// hook for debugging, clash with HARDWARE V
+  case 'V':	// hook for debugging
     init_rhythm_4(sync);
     break;
 
-  case 'B':				// hook for debugging
+  case 'B':	// hook for debugging
     setup_jiffles0(sync);
     break;
 
@@ -2486,12 +2491,12 @@ bool menu_serial_program_reaction(char menu_input) {
     alive_pulses_info();
     break;
 
-  case '{':
+  case '{':	// enter_jiffletab
     enter_jiffletab(jiffletab);
     display_jiffletab(jiffletab);
     break;
 
-  case '}':
+  case '}':	// display jiffletab / end editing jiffletab
     display_jiffletab(jiffletab);
     break;
 
@@ -2531,7 +2536,7 @@ void setup() {
     serial_println_progmem(programLongName);
   #endif
 
-  RAM_info(); Serial.println(); Serial.println();
+  RAM_info(); Serial.println();
 #endif
 
 //	#ifdef USE_LCD
