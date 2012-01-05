@@ -76,9 +76,9 @@ int get_free_RAM() {
 // use PROGMEM to save RAM:
 #include <avr/pgmspace.h>
 
-const unsigned char programName[] PROGMEM = "SERIAL MENU";
-const unsigned char programLongName[] PROGMEM = "*** SERIAL MENU v0.0 ***";
-const unsigned char version[] PROGMEM = "version 0.0";
+const unsigned char programName[] PROGMEM = "serial MENU";
+const unsigned char programLongName[] PROGMEM = "*** serial MENU v0.1 ***";
+const unsigned char version[] PROGMEM = "version 0.1";
 
 const unsigned char tab_[] PROGMEM = "\t";
 
@@ -113,7 +113,7 @@ const unsigned char tab_[] PROGMEM = "\t";
 void serial_print_progmem(const unsigned char *str) {
   unsigned char c;
   while((c = pgm_read_byte(str++)))
-    Serial.print(c, BYTE);
+    Serial.write(c);
 }
 
 
@@ -394,7 +394,8 @@ void serial_print_BIN(unsigned long value, int bits) {
 /* **************************************************************** */
 // simple menu interface through serial port:
 
-const unsigned char menuLine1[] PROGMEM = "\nSorry, this menu is empty.";
+const unsigned char menuLine1[] PROGMEM = \
+      "\n*** APPLICATION MENU ***\t(empty)";
 const unsigned char freeRAM[] PROGMEM = "free RAM: ";
 //	const unsigned char on_[] PROGMEM = "(on)";
 //	const unsigned char off_[] PROGMEM = "(OFF)";
