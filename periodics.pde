@@ -2551,11 +2551,11 @@ void setup() {
 #endif
 
 #ifdef CLICK_PULSES
-  click_pin[0]= 2;		// configure PINs here
-  click_pin[1]= 3;		// configure PINs here
-  click_pin[2]= 4;		// configure PINs here
-  click_pin[3]= 5;		// configure PINs here
-  click_pin[4]= 6;		// configure PINs here
+  click_pin[0]= 3;		// configure PINs here
+  click_pin[1]= 4;		// configure PINs here
+  click_pin[2]= 5;		// configure PINs here
+  click_pin[3]= 6;		// configure PINs here
+  click_pin[4]= 7;		// configure PINs here
 
   init_click_pins();
 #endif
