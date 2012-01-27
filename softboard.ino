@@ -1,10 +1,12 @@
 /* **************************************************************** */
-// serial_menu
+// serial_menu alias softboard for the arduino
 /* **************************************************************** */
 
 
 /* **************************************************************** */
 /*
+
+   Arduino software breadboard.
 
    Simple hardware menu interface over serial line
    as a kind of software breadboard
@@ -97,7 +99,7 @@ pin	value	|				|				|
     char hw_PIN = ILLEGAL;
   #endif // HARDWARE_menu
 #else
-  #error #define   USE_SERIAL <speed>   in file serial_menu.ino
+  #error #define   USE_SERIAL <speed>   in file softboard.ino
 #endif	// USE_SERIAL
 
 
