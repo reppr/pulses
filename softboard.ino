@@ -619,7 +619,7 @@ int hardware_menu_reaction(char menu_input) {
     break;
 
   case 'R':
-    if (hw_PIN == ILLEGAL)
+    if ((hw_PIN == ILLEGAL) | (hw_PIN >= ANALOG_INPUTs))
       please_select_pin();
     else {
       serial_print_progmem(analogValueOnPin); Serial.print((int) hw_PIN); serial_print_progmem(is_);
