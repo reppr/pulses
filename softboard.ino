@@ -32,7 +32,7 @@
    read and write digital and analog values
    watch changing inputs over time
 
-   Simple aditional menu interface to your application easy to write.
+   Simple additional menu interface to your application easy to write.
    Use it together with your own programs.
 
    Example 1:  'P13 H'	switch LED on	(P selects pin)
