@@ -119,12 +119,17 @@ pin	value	|				|				|
 
 /* **************************************************************** */
 // board specific things:
-#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)	// mega boards
-  #define ANALOG_INPUTs	16
-  #define DIGITAL_PINs	54
-#else								// 168/328 boards
-  #define ANALOG_INPUTs	6
-  #define DIGITAL_PINs	14
+#if defined(NUM_ANALOG_INPUTS) && defined(NUM_DIGITAL_PINS)
+  #define ANALOG_INPUTs	NUM_ANALOG_INPUTS
+  #define DIGITAL_PINs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)
+#else	// savety net
+  #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)	// mega boards
+    #define ANALOG_INPUTs	16
+    #define DIGITAL_PINs	54
+  #else								// 168/328 boards
+    #define ANALOG_INPUTs	6
+    #define DIGITAL_PINs	14
+  #endif
 #endif	// board specific initialisations
 
 #define LED_PIN	13
