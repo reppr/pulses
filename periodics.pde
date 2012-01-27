@@ -116,6 +116,7 @@ int get_free_RAM() {
 #if (defined(USE_SERIAL) || defined(USE_LCD))	// Serial and LCD strings...
 #include <avr/pgmspace.h>
 
+// to save RAM constant strings are stored in PROGMEM
 const unsigned char programName[] PROGMEM = "PULSES";
 const unsigned char programLongName[] PROGMEM = "*** Play with PULSES v0.2 ***";
 const unsigned char version[] PROGMEM = "version 0.2";
@@ -1686,10 +1687,10 @@ void bar_graph_VU(int pin) {
   int value, oldValue=-9997;	// just an unlikely value...
   int tolerance=1, menu_input;
 
-  serial_println_progmem(followPin);
-  Serial.print((int) pin);
-  serial_println_progmem(VU_title);
+  serial_print_progmem(followPin);
+  Serial.println((int) pin);
 
+  serial_println_progmem(VU_title);
   while (true) {
     value =  analogRead(pin);
     if (abs(value - oldValue) > tolerance) {
@@ -1706,6 +1707,8 @@ void bar_graph_VU(int pin) {
 	if (tolerance)
 	  tolerance--;
 	break;
+      case '\n': case '\r':	// linebreak after sending 'V'
+        break;
       default:	// quit
 	serial_println_progmem(quit_);
 	return;		// exit
@@ -1747,7 +1750,7 @@ const unsigned char low_[] PROGMEM = "LOW";
 void watch_digital_input(int pin) {
   int value, old_value=-9997;
 
-  serial_println_progmem(watchingINpin);
+  serial_print_progmem(watchingINpin);
   Serial.print((int) pin);
   serial_println_progmem(anyStop);
 
@@ -1755,7 +1758,7 @@ void watch_digital_input(int pin) {
     value = digitalRead(hw_PIN);
     if (value != old_value) {
       old_value = value;
-      serial_println_progmem(pin_); Serial.print((int) pin); serial_print_progmem(is_);
+      serial_print_progmem(pin_); Serial.print((int) pin); serial_print_progmem(is_);
       if (value)
 	serial_println_progmem(high_);
       else
@@ -1771,12 +1774,11 @@ void watch_digital_input(int pin) {
 // display_serial_hardware_menu()
 const unsigned char hwMenuTitle[] PROGMEM = "\n***  HARDWARE menu  ***\t\t";
 
-const unsigned char selectPin[] PROGMEM = "P=SELECT pin for 'H, L, W, R, V' to work on.";
+const unsigned char selectPin[] PROGMEM = "P=SELECT pin for 'H, L, R, W, I, V' to work on.";
 const unsigned char PPin[] PROGMEM = "P=PIN (";
-const unsigned char HLWR[] PROGMEM = ")\tH=set HIGH\tL=set LOW\tW=analog write\tR=read";
-const unsigned char VI[] PROGMEM = "V=VU bar\tI=digiwatch\t";
-const unsigned char aAnalogRead[] PROGMEM = "a=analog read";
-
+const unsigned char HLWR[] PROGMEM = ")\tH=set HIGH\tL=set LOW\tanalog R=read\tW=write";
+const unsigned char VI[] PROGMEM = "I=digiwatch\tV=VU bar\t";
+const unsigned char aAnalogRead[] PROGMEM = "a=all analog reads";
 
 void display_serial_hardware_menu() {
   serial_print_progmem(hwMenuTitle);  RAM_info();
