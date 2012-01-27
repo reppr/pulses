@@ -5,8 +5,64 @@
 
 /* **************************************************************** */
 /*
-   Simple menu interface over serial line.
-   To save RAM constant strings are stored in PROGMEM.
+
+   Simple hardware menu interface over serial line
+   as a kind of software breadboard
+   Tool for hardware/software developing/testing.
+
+   Send character 'm' over serial and the menu will be sent back
+   displaying help on its one-letter commands.
+
+   Interface to read pins, switch pins on/off
+   read and write digital and analog values
+   watch changing inputs over time
+
+   Simple aditional menu interface to your application easy to write.
+   Use it together with your own programs.
+
+   Example 1:  'P13 H'	switch LED on	(P selects pin)
+	       'L'   	off again	(H high, L low)
+
+   Example 2:  Watch an analog input like a VU meter, changing over time.
+   	       See electric noise on unconnected floating A2 input
+	       scrolling over your serial terminal.
+               (Touch the input if there is no visible signal.)
+
+               Now connect a sensor to the input and explore its data...
+
+   	       'P2 V'      P=select pin (both analogue or digital)
+               	   	   V=display analog read values and bars
+
+175	***********
+190	************
+192	*************
+181	************
+163	***********
+158	**********
+164	***********
+181	************
+192	*************
+190	************
+176	************
+161	***********
+159	**********
+168	***********
+186	************
+194	*************
+188	************
+170	***********
+
+
+   Example 3:  'a'	Display all instant values on analog inputs.
+
+pin	value	|				|				|
+0	609	***************************************
+1	504	********************************
+2	451	*****************************
+3	398	*************************
+4	383	************************
+5	409	**************************
+
 
 */
 /* **************************************************************** */
@@ -21,8 +77,10 @@
 /* **************************************************************** */
 // CONFIGURATION:
 
-// use serial line for communication? Define serial speed:
-//	#define USE_SERIAL	115200
+// to switch serial on you *must* ´#define USE_SERIAL <speed>´
+
+// to switch on serial #define USE_SERIAL <baud> 
+//	#define USE_SERIAL	115200		// works fine here
 #define USE_SERIAL	57600
 //	#define USE_SERIAL	38400
 
@@ -38,6 +96,8 @@
   #ifdef HARDWARE_menu
     char hw_PIN = ILLEGAL;
   #endif // HARDWARE_menu
+#else
+  #error #define   USE_SERIAL <speed>   in file serial_menu.ino
 #endif	// USE_SERIAL
 
 
@@ -76,13 +136,19 @@ int get_free_RAM() {
 // use PROGMEM to save RAM:
 #include <avr/pgmspace.h>
 
+// to save RAM constant strings are stored in PROGMEM
 const unsigned char programName[] PROGMEM = "serial MENU";
-const unsigned char programLongName[] PROGMEM = "*** serial MENU v0.1 ***";
+const unsigned char programLongName[] PROGMEM = "*** serial menu v0.1 ***";
 const unsigned char version[] PROGMEM = "version 0.1";
 
 const unsigned char tab_[] PROGMEM = "\t";
 
 
+// sorry, there is *no* LCD menu support here yet
+// maybe i´ll need it one day and write it...
+//
+// this code comes from other progs of mine
+//
 //	#ifdef USE_LCD
 //	// LCD.print() for progmem strings:
 //	// void LCD_print_progmem(const prog_uchar *str)	// does not work :(
@@ -294,10 +360,10 @@ void bar_graph_VU(int pin) {
   int value, oldValue=-9997;	// just an unlikely value...
   int tolerance=1, menu_input;
 
-  serial_println_progmem(followPin);
-  Serial.print((int) pin);
-  serial_println_progmem(VU_title);
+  serial_print_progmem(followPin);
+  Serial.println((int) pin);
 
+  serial_println_progmem(VU_title);
   while (true) {
     value =  analogRead(pin);
     if (abs(value - oldValue) > tolerance) {
@@ -314,6 +380,8 @@ void bar_graph_VU(int pin) {
 	if (tolerance)
 	  tolerance--;
 	break;
+      case '\n': case '\r':	// linebreak after sending 'V'
+        break;
       default:
 	serial_println_progmem(quit_);
 	return;		// exit
@@ -352,7 +420,7 @@ const unsigned char low_[] PROGMEM = "LOW";
 void watch_digital_input(int pin) {
   int value, old_value=-9997;
 
-  serial_println_progmem(watchingINpin);
+  serial_print_progmem(watchingINpin);
   Serial.print((int) pin);
   serial_println_progmem(anyStop);
 
@@ -360,7 +428,7 @@ void watch_digital_input(int pin) {
     value = digitalRead(hw_PIN);
     if (value != old_value) {
       old_value = value;
-      serial_println_progmem(pin_); Serial.print((int) pin); serial_print_progmem(is_);
+      serial_print_progmem(pin_); Serial.print((int) pin); serial_print_progmem(is_);
       if (value)
 	serial_println_progmem(high_);
       else
@@ -395,7 +463,7 @@ void serial_print_BIN(unsigned long value, int bits) {
 // simple menu interface through serial port:
 
 const unsigned char menuLine1[] PROGMEM = \
-      "\n*** APPLICATION MENU ***\t(empty)";
+      "(you could put your own menu in here)";
 const unsigned char freeRAM[] PROGMEM = "free RAM: ";
 //	const unsigned char on_[] PROGMEM = "(on)";
 //	const unsigned char off_[] PROGMEM = "(OFF)";
@@ -404,16 +472,19 @@ const unsigned char pPin[] PROGMEM = "p=pin (";
 
 #ifdef HARDWARE_menu
 const unsigned char hwMenuTitle[] PROGMEM = "\n*** HARDWARE MENU ***\t\tfree RAM=";
-const unsigned char PPin[] PROGMEM = "P=PIN (";
-const unsigned char HLWR[] PROGMEM = ")\tH=set HIGH\tL=set LOW\tW=analog write\tR=read";
-const unsigned char VI[] PROGMEM = "V=VU bar\tI=digiwatch\t";
-const unsigned char aAnalogRead[] PROGMEM = "a=analog read";
 
+const unsigned char selectPin[] PROGMEM = "P=SELECT pin for 'H, L, R, W, I, V' to work on.";
+const unsigned char PPin[] PROGMEM = "P=PIN (";
+const unsigned char HLWR[] PROGMEM = ")\tH=set HIGH\tL=set LOW\tanalog R=read\tW=write";
+const unsigned char VI[] PROGMEM = "I=digiwatch\tV=VU bar\t";
+const unsigned char aAnalogRead[] PROGMEM = "a=all analog reads";
 
 void menu_hardware_display() {
   serial_print_progmem(hwMenuTitle);
   Serial.println(get_free_RAM());
   Serial.println("");
+
+  serial_println_progmem(selectPin);
 
   serial_print_progmem(PPin);
   if (hw_PIN == ILLEGAL)
@@ -448,7 +519,7 @@ void display_serial_menu() {
 
 
 
-const unsigned char selectPin[] PROGMEM = "Select a pin with P.";
+// const unsigned char selectPin[] PROGMEM = "Select a pin with P.";
 
 void please_select_pin() {
   serial_println_progmem(selectPin);
@@ -577,6 +648,7 @@ void menu_serial_reaction() {
     while (char_available()) {
       switch (menu_input = get_char()) {
       case ' ': case '\t':		// skip white chars
+      case '\n': case '\r':		// skip newlines
 	break;
 
       case 'm': case '?':
