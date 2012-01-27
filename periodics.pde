@@ -34,8 +34,8 @@
 
 #define LED_PIN			13
 
-// to use serial define USE_SERIAL as serial speed: 
-//  #define USE_SERIAL	115200
+// to switch on serial #define USE_SERIAL <baud> 
+//	#define USE_SERIAL	115200		// works fine here
 #define USE_SERIAL	57600
 //  #define USE_SERIAL	38400
 
@@ -117,17 +117,20 @@ int global_next_tasks[PERIODICS];
 
 void init_time()
 {
-  now.time=0;
-  now.overflow=0;
+  extern volatile unsigned long timer0_overflow_count;
 
-  last_now.time=~0;
-  last_now.overflow=0;
+  cli();
+  timer0_overflow_count = 0;
+  sei();
 
-  global_next.time=0;
-  global_next.overflow=~0;
-
+  last_now.time = 0;		// make sure get_now() sees no overflow
   get_now();
   now.overflow = 0;		// start with now.overflow = 0
+
+  last_now = now;		// correct overflow
+
+  global_next.time=0;
+  global_next.overflow=~0;	// ILLEGAL
 }
 
 
