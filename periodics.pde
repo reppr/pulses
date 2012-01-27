@@ -54,8 +54,8 @@
 
 #define LED_PIN			13
 
-// to use serial define USE_SERIAL as serial speed: 
-//  #define USE_SERIAL	115200
+// to switch on serial #define USE_SERIAL <baud> 
+//	#define USE_SERIAL	115200		// works fine here
 #define USE_SERIAL	57600
 //  #define USE_SERIAL	38400
 
