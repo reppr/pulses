@@ -6,7 +6,7 @@ README softboard
    Simple hardware menu interface over serial line
    as a kind of software breadboard
 
-   Read /set I/O pin configuration and states, switch pins on/off.
+   Read/set I/O pin configuration and states, switch pins on/off.
    Read and write digital and analog values, switch pullup/high-z,
    watch changing inputs over time.
 

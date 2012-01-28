@@ -30,7 +30,7 @@
    as a kind of software breadboard
    Tool for hardware/software developing/testing.
 
-   Read /set I/O pin configuration and states, switch pins on/off.
+   Read/set I/O pin configuration and states, switch pins on/off.
    Read and write digital and analog values, switch pullup/high-z,
    watch changing inputs over time.
 
