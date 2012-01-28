@@ -43,7 +43,7 @@
    Get it from http://github.com/reppr/softboard
    Move the 'softboard' folder with all files
    to your arduino sketchbook/ folder.
-   Load the sketch from arduino menu Files>sketchbook>softboard.
+   Load the sketch from arduino menu Files>Sketchbook>softboard.
 
 
    Example 1:  'P13 OH' switch LED on   (P select pin, O output, H high)
