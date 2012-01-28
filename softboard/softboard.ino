@@ -40,6 +40,9 @@
    Easy to write your own menu, but not documented yet...
    Use it together with your own programs.
 
+
+   Installation:
+
    Get it from http://github.com/reppr/softboard
    Move the 'softboard' folder with all files
    to your arduino sketchbook/ folder.
