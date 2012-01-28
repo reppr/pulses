@@ -6,85 +6,87 @@ README softboard
    Simple hardware menu interface over serial line
    as a kind of software breadboard
 
-   Read pin configuration and state, switch pins on/off
-   Read and write digital and analog values
-   Watch changing inputs over time
+   Read /set I/O pin configuration and states, switch pins on/off.
+   Read and write digital and analog values, switch pullup/high-z,
+   watch changing inputs over time.
 
    Send 'm' over serial line and a menu will be sent back
    displaying info on its one-letter commands.
 
-   Simple additional menu interface to your application easy to write.
+   Easy to write your own menu, but not documented yet...
    Use it together with your own programs.
 
 
-   Example 1:  'P13 OH'	switch LED on	(P select pin, O output, H high)
-	       'L'   	off again	(L low)
+
+   Example 1:  'P13 OH' switch LED on   (P select pin, O output, H high)
+               'L'      off again       (L low)
 
 
-   Example 2:  'P13 IH'	pullup LED pin	(P select pin, I input, H high)
-   	       				LED glows at low level
-	       'O'      LED as OUTPUT	now the LED is on
+   Example 2:  'P13 IH' pullup LED pin  (P select pin, I input, H high)
+                                        LED glows at low level
+               'O'      LED as OUTPUT   now the LED is on
 
 
    Example 3:  Watch an analog input like a VU meter, changing over time.
-   	       See electric noise on unconnected floating A2 input
-	       scrolling over your serial terminal.
+               See electric noise on unconnected floating A2 input
+               scrolling over your serial terminal.
                (Touch the input if there is no visible signal.)
 
                Now connect a sensor to the input and explore its data...
 
-   	       'P2 v'      P=select pin (both analogue or digital)
-               	   	   v=display analog read values and bar graphs
+               'P2 v'      P=select pin (both analogue or digital)
+                           v=display analog read values and bar graphs
 
-175	***********
-190	************
-192	*************
-181	************
-163	***********
-158	**********
-164	***********
-181	************
-192	*************
-190	************
-176	************
-161	***********
-159	**********
-168	***********
-186	************
-194	*************
-188	************
-170	***********
-
-
-
-   Example 4:  'a'	Display all instant values on analog inputs.
-
-pin	value	|				|				|
-0	609	***************************************
-1	504	********************************
-2	451	*****************************
-3	398	*************************
-4	383	************************
-5	409	**************************
+175     ***********
+190     ************
+192     *************
+181     ************
+163     ***********
+158     **********
+164     ***********
+181     ************
+192     *************
+190     ************
+176     ************
+161     ***********
+159     **********
+168     ***********
+186     ************
+194     *************
+188     ************
+170     ***********
 
 
 
-   Example 5:  '.'	Display info about all input pin configuration and states.
+   Example 4:  'a'      Display snapshot values on analog inputs.
 
- pin 0	I  hi-z
- pin 1	I  hi-z
- pin 2	O  high
- pin 3	O  low
- pin 4	I  hi-z
-*pin 5	I  pullup	// the * indicates selected pin
- pin 6	I  hi-z
- pin 7	I  hi-z
- pin 8	I  hi-z
- pin 9	I  hi-z
- pin 10	I  hi-z
- pin 11	I  hi-z
- pin 12	I  hi-z
- pin 13	I  pullup
+                        [fixed font only]
+pin     value   |                               |                               |
+0       609     ***************************************
+1       504     ********************************
+2       451     *****************************
+3       398     *************************
+4       383     ************************
+5       409     **************************
+
+
+
+   Example 5:  '.'      Display info about all pin's I/O configuration and states.
+
+ pin 0  I  hi-z
+ pin 1  I  hi-z
+ pin 2  O  high
+ pin 3  O  low
+ pin 4  I  hi-z
+*pin 5  I  pullup       // * indicates the selected pin
+ pin 6  I  hi-z
+ pin 7  I  hi-z
+ pin 8  I  hi-z
+ pin 9  I  hi-z
+ pin 10 I  hi-z
+ pin 11 I  hi-z
+ pin 12 I  hi-z
+ pin 13 I  pullup
 
 
 
