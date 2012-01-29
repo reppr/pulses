@@ -38,6 +38,13 @@ README softboard
     from softboard.ino to softboard.pde
 
 
+   How it works:
+
+   Communicate over serial. The minimalistic menu shows you one letter
+   commands to send. The menu reacts on these commands and reads numbers.
+
+
+
    Example 1:  'P13 OH' switch LED on   (P select pin, O output, H high)
                'L'      off again       (L low)
 
