@@ -58,6 +58,9 @@
          #define round(x)     ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
          tested on arduino-0023
 
+    For older arduino versions you also have to rename the sketch file
+    from softboard.ino to softboard.pde
+
 
 
    Example 1:  'P13 OH' switch LED on   (P select pin, O output, H high)
