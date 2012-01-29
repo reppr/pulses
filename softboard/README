@@ -24,6 +24,16 @@ README softboard
    to your arduino sketchbook/ folder.
    Load the sketch from arduino menu Files>Sketchbook>softboard.
 
+   Older arduino versions than 1.0 need a fix:
+     see this thread:
+     http://code.google.com/p/arduino/issues/detail?id=604&start=200
+
+       short version (adapt to your arduino version)
+         edit file arduino-0022/hardware/arduino/cores/arduino/wiring.h
+         comment out line 79 (round macro)
+         #define round(x)     ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
+         tested on arduino-0023
+
 
 
    Example 1:  'P13 OH' switch LED on   (P select pin, O output, H high)
