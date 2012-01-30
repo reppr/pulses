@@ -442,7 +442,7 @@ void bar_graph(int value) {
       if (i == 0 && value == 0)		// zero
 	Serial.print("0");
 					// middle or top
-      else if \\
+      else if \
 	((i == length/2 && value == 512) || (i == length && value == scale))
 	Serial.print("|");
       else
