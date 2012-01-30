@@ -116,10 +116,10 @@
   #define ANALOG_INPUTs	NUM_ANALOG_INPUTS
   #define DIGITAL_PINs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)
 #else	// savety net
-  #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)	// mega boards
+  #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)   // mega boards
     #define ANALOG_INPUTs	16
     #define DIGITAL_PINs	54
-  #else									// 168/328 boards
+  #else								   // 168/328 boards
     #define ANALOG_INPUTs	6
     #define DIGITAL_PINs	14
   #endif
@@ -157,7 +157,8 @@ int get_free_RAM() {
 
 // to save RAM constant strings are stored in PROGMEM
 const unsigned char programName[] PROGMEM = "PULSES";
-const unsigned char programLongName[] PROGMEM = "*** Play with PULSES v0.2 ***";
+const unsigned char programLongName[] PROGMEM = \
+  "*** Play with PULSES v0.2 ***";
 const unsigned char version[] PROGMEM = "version 0.2";
 
 const unsigned char tab_[] PROGMEM = "\t";
@@ -179,7 +180,7 @@ void slash() {
 
 //	#ifdef USE_LCD
 //	// LCD.print() for progmem strings:
-//	// void LCD_print_progmem(const prog_uchar *str)	// does not work :(
+//	// void LCD_print_progmem(const prog_uchar *str)   // does not work :(
 //	void LCD_print_progmem(const unsigned char *str) {
 //	  unsigned char c;
 //	  while((c = pgm_read_byte(str++)))
@@ -215,7 +216,7 @@ void serial_println_progmem(const unsigned char *str) {
   serial_print_progmem(str);
   Serial.println();
 }
-#endif
+#endif // USE_SERIAL
 
 
 #endif	// #if (defined(USE_SERIAL) || defined(USE_LCD))
@@ -1775,7 +1776,8 @@ void bar_graph_VU(int pin) {
 const unsigned char none_[] PROGMEM = "(none)";
 
 #ifdef HARDWARE_menu	// inside MENU_over_serial
-const unsigned char analog_reads_title[] PROGMEM = "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
+const unsigned char analog_reads_title[] PROGMEM = \
+  "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
 
 void display_analog_reads() {
   int i, value;
@@ -1861,8 +1863,10 @@ void pins_info() {
 
 
 // watch_digital_input()
-const unsigned char watchingINpin[] PROGMEM = "watching digital input pin ";
-const unsigned char anyStop[] PROGMEM = "\t\t(send any byte to stop)";
+const unsigned char watchingINpin[] PROGMEM = \
+  "watching digital input pin ";
+const unsigned char anyStop[] PROGMEM = \
+  "\t\t(send any byte to stop)";
 const unsigned char is_[] PROGMEM = " is ";
 
 void watch_digital_input(int pin) {
@@ -1876,7 +1880,8 @@ void watch_digital_input(int pin) {
     value = digitalRead(hw_PIN);
     if (value != old_value) {
       old_value = value;
-      serial_print_progmem(pin_); Serial.print((int) pin); serial_print_progmem(is_);
+      serial_print_progmem(pin_); Serial.print((int) pin);
+      serial_print_progmem(is_);
       if (value)
 	serial_println_progmem(high_);
       else
@@ -1890,7 +1895,8 @@ void watch_digital_input(int pin) {
 
 
 // menu_hardware_display()
-const unsigned char hwMenuTitle[] PROGMEM = "\n***  HARDWARE menu  ***\t\t";
+const unsigned char hwMenuTitle[] PROGMEM = \
+  "\n***  HARDWARE menu  ***\t\t";
 const unsigned char selectPin[] PROGMEM = \
   "P=select pin for 'I, O, H, L, r, W, d, v' to work on: ";
 const unsigned char PPin[] PROGMEM = "\tP=pin (";
@@ -2008,7 +2014,8 @@ void info_select_destination_with(boolean extended_destinations) {
 
 
 // display_serial_menu()
-const unsigned char pressm[] PROGMEM = "\nPress 'm' or '?' for menu, 'q' to quit this menu. 'H' for hardware menu.\n\n";
+const unsigned char pressm[] PROGMEM = \
+  "\nPress 'm' or '?' for menu, 'q' to quit this menu. 'H' for hardware menu.\n\n";
 
 void display_serial_menu() {
   serial_println_progmem(programLongName);
@@ -2034,9 +2041,11 @@ void display_serial_menu() {
 
 
 // display_serial_program_menu()
-const unsigned char helpInfo[] PROGMEM = "?=help\tm=menu\ti=info\t.=short info";
+const unsigned char helpInfo[] PROGMEM = \
+  "?=help\tm=menu\ti=info\t.=short info";
 const unsigned char microSeconds[] PROGMEM = " microseconds";
-const unsigned char muteKill[] PROGMEM = "M=mute all\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tf=en-info\tF=en-INFO\tn=sync now\nS=sync ";
+const unsigned char muteKill[] PROGMEM = \
+  "M=mute all\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tf=en-info\tF=en-INFO\tn=sync now\nS=sync ";
 const unsigned char perSecond_[] PROGMEM = " per second)";
 const unsigned char equals_[] PROGMEM = " = ";
 const unsigned char switchPulse[] PROGMEM = "s=switch pulse on/off";
@@ -2160,8 +2169,8 @@ int hardware_menu_reaction(char menu_input) {
     if ((hw_PIN == ILLEGAL) | (hw_PIN >= ANALOG_INPUTs))
       please_select_pin();
     else {
-      serial_print_progmem(analogValueOnPin); Serial.print((int) hw_PIN); serial_print_progmem(is_);
-      Serial.println(analogRead(hw_PIN));
+      serial_print_progmem(analogValueOnPin); Serial.print((int) hw_PIN);
+      serial_print_progmem(is_); Serial.println(analogRead(hw_PIN));
     }
     break;
 
