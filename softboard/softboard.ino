@@ -215,22 +215,6 @@ pin     value   |                               |                               
 
 
 /* **************************************************************** */
-// determine RAM usage:
-extern int __bss_end;
-extern void *__brkval;
-
-int get_free_RAM() {
-  int free;
-
-  if ((int) __brkval == 0)
-    return ((int) &free) - ((int) &__bss_end);
-  else
-    return ((int) &free) - ((int) __brkval);
-}
-
-
-
-/* **************************************************************** */
 // use PROGMEM to save RAM:
 #include <avr/pgmspace.h>
 
@@ -290,6 +274,22 @@ void serial_println_progmem(const unsigned char *str) {
 
 
 /* **************************************************************** */
+// determine RAM usage:
+extern int __bss_end;
+extern void *__brkval;
+
+int get_free_RAM() {
+  int free;
+
+  if ((int) __brkval == 0)
+    return ((int) &free) - ((int) &__bss_end);
+  else
+    return ((int) &free) - ((int) __brkval);
+}
+
+
+
+/* **************************************************************** */
 // #define MENU_over_serial	// do we use a serial menu?
 /* **************************************************************** */
 #ifdef MENU_over_serial
@@ -341,7 +341,7 @@ int char_available() {
 
 
 // get numeric input from serial
-long numericInput(long oldValue) {
+long numeric_input(long oldValue) {
   long input, num, sign=1;
 
   do {
@@ -449,6 +449,7 @@ void bar_graph(int value) {
 }
 
 
+// bar_graph_VU():
 // tolerance default 0. Let the user *see* the noise...
 int bar_graph_tolerance=0;
 
@@ -639,9 +640,6 @@ void serial_print_BIN(unsigned long value, int bits) {
 
 const unsigned char menuLine1[] PROGMEM = \
       "(you could put your own menu in here)";
-const unsigned char freeRAM[] PROGMEM = "free RAM: ";
-//	const unsigned char on_[] PROGMEM = "(on)";
-//	const unsigned char off_[] PROGMEM = "(OFF)";
 const unsigned char pPin[] PROGMEM = "p=pin (";
 
 
@@ -708,6 +706,8 @@ const unsigned char analogWriteValue[] PROGMEM = "analog write value ";
 const unsigned char analogWrite_[] PROGMEM = "analogWrite(";
 const unsigned char analogValueOnPin[] PROGMEM = "analog value on pin ";
 
+//	const unsigned char freeRAM[] PROGMEM = "free RAM: ";
+
 int hardware_menu_reaction(char menu_input) {
   long newValue;
 
@@ -724,7 +724,7 @@ int hardware_menu_reaction(char menu_input) {
     serial_print_progmem(selectPin);
     serial_print_progmem(tab_);
 
-    newValue = numericInput(hw_PIN);
+    newValue = numeric_input(hw_PIN);
     if (newValue>=0 && newValue<DIGITAL_PINs) {
       hw_PIN = newValue;
       pin_info(hw_PIN);
@@ -773,7 +773,7 @@ int hardware_menu_reaction(char menu_input) {
       please_select_pin();
     else {
       serial_print_progmem(analogWriteValue);
-      newValue = numericInput(-1);
+      newValue = numeric_input(-1);
       if (newValue>=0 && newValue<=255) {
 	Serial.println(newValue);
 
@@ -913,6 +913,7 @@ void setup() {
 #ifdef MENU_over_serial	// show message about menu
   display_serial_menu();
   pins_info();
+  Serial.println();
 #endif
 
 //	#ifdef USE_LCD
