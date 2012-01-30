@@ -170,16 +170,23 @@ pin     value   |                               |                               
 /* **************************************************************** */
 // CONFIGURATION:
 
-// to switch serial on you *must* ´#define USE_SERIAL <speed>´
+// to switch serial menu on you *must* ´#define USE_SERIAL_BAUD <baud>´
 
-// to switch on serial #define USE_SERIAL <baud>  (otherwise serial will be off)
-//	#define USE_SERIAL	115200		// works fine here
-#define USE_SERIAL	57600
-//	#define USE_SERIAL	38400
+// #define USE_SERIAL_BAUD
+// to switch on serial #define USE_SERIAL_BAUD <baud>  (otherwise serial will be *off*)
+//
+// You can switch all serial line and menu code *off* by not defining USE_SERIAL_BAUD
+// You can also do this later to save program memory.
+//   your sketch could include the menu, but later grow too much,
+//   or you'd want to move to another processor with less program memory.
+//
+// #define USE_SERIAL_BAUD	115200		// works fine here
+#define USE_SERIAL_BAUD	57600
+// #define USE_SERIAL_BAUD	38400
 
-#ifdef USE_SERIAL	// simple menus over serial line?
-  // menu over serial line, basics:
-  #define MENU_over_serial	// do we use a serial menu?
+#ifdef USE_SERIAL_BAUD	// activate minimalistic menus over serial line?
+  // menu over serial, basics:
+  #define MENU_over_serial	// we *do* use serial menu
 
   // simple menu to access arduino hardware:
   #define HARDWARE_menu		// menu interface to hardware configuration
@@ -190,8 +197,8 @@ pin     value   |                               |                               
     char hw_PIN = ILLEGAL;
   #endif // HARDWARE_menu
 #else
-  #error #define   USE_SERIAL <speed>   in file softboard.ino
-#endif	// USE_SERIAL
+  #error #define   USE_SERIAL_BAUD <baud>   in file softboard.ino
+#endif	// USE_SERIAL_BAUD
 
 
 
@@ -255,21 +262,21 @@ const unsigned char tab_[] PROGMEM = "\t";
 //	#endif
 
 
-#ifdef USE_SERIAL
-// Serial.print() for progmem strings:
-// void serial_print_progmem(const prog_uchar *str)	// does not work :(
-void serial_print_progmem(const unsigned char *str) {
-  unsigned char c;
-  while((c = pgm_read_byte(str++)))
-    Serial.write(c);
-}
+#ifdef USE_SERIAL_BAUD
+  // Serial.print() for progmem strings:
+  // void serial_print_progmem(const prog_uchar *str)	// does not work :(
+  void serial_print_progmem(const unsigned char *str) {
+    unsigned char c;
+    while((c = pgm_read_byte(str++)))
+      Serial.write(c);
+  }
 
 
-void serial_println_progmem(const unsigned char *str) {
-  serial_print_progmem(str);
-  Serial.println();
-}
-#endif
+  void serial_println_progmem(const unsigned char *str) {
+    serial_print_progmem(str);
+    Serial.println();
+  }
+#endif	// USE_SERIAL_BAUD
 
 
 
@@ -895,8 +902,10 @@ void menu_serial_reaction() {
 
 void setup() {
 
-#ifdef USE_SERIAL
-  Serial.begin(USE_SERIAL);
+// You can switch all serial line and menu code *off*
+// by not defining USE_SERIAL_BAUD
+#ifdef USE_SERIAL_BAUD
+  Serial.begin(USE_SERIAL_BAUD);
 #endif
 
 //	#ifdef USE_LCD
@@ -908,19 +917,18 @@ void setup() {
 //	#endif
 
 
-#ifdef USE_SERIAL
-  #ifndef MENU_over_serial
-   Serial.println();
-   serial_println_progmem(programLongName);
+// startup messages:
+#ifdef USE_SERIAL_BAUD
+  #ifdef MENU_over_serial	// show message about menu
+    display_serial_menu();
+    pins_info();
+    Serial.println();
+  #else				// no menu, show program name
+    Serial.println();
+    serial_println_progmem(programLongName);
   #endif
 #endif
-
-#ifdef MENU_over_serial	// show message about menu
-  display_serial_menu();
-  pins_info();
-  Serial.println();
-#endif
-
+//
 //	#ifdef USE_LCD
 //	  delay(3000);
 //	  LCD.clear();
