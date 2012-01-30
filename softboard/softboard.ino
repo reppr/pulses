@@ -172,7 +172,7 @@ pin     value   |                               |                               
 
 // to switch serial on you *must* ´#define USE_SERIAL <speed>´
 
-// to switch on serial #define USE_SERIAL <baud> 
+// to switch on serial #define USE_SERIAL <baud>  (otherwise serial will be off)
 //	#define USE_SERIAL	115200		// works fine here
 #define USE_SERIAL	57600
 //	#define USE_SERIAL	38400
