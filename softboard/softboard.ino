@@ -434,7 +434,9 @@ void bar_graph(int value) {
     for (i=0; i<stars; i++) {
       if (i == 0 && value == 0)		// zero
 	Serial.print("0");
-      else if ((i == length/2 && value == 512) || (i == length && value == scale))	// middle or top
+					// middle or top
+      else if \\
+	((i == length/2 && value == 512) || (i == length && value == scale))
 	Serial.print("|");
       else
 	Serial.print("*");
@@ -506,7 +508,8 @@ void bar_graph_VU(int pin) {
 
 
 #ifdef HARDWARE_menu	// inside MENU_over_serial
-const unsigned char analog_reads_title[] PROGMEM = "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
+const unsigned char analog_reads_title[] PROGMEM = \
+  "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
 
 void display_analog_reads() {
   int i, value;
@@ -644,7 +647,8 @@ const unsigned char pPin[] PROGMEM = "p=pin (";
 
 
 #ifdef HARDWARE_menu
-const unsigned char hwMenuTitle[] PROGMEM = "\n*** HARDWARE MENU ***\t\tfree RAM=";
+const unsigned char hwMenuTitle[] PROGMEM = \
+  "\n*** HARDWARE MENU ***\t\tfree RAM=";
 const unsigned char selectPin[] PROGMEM = \
   "P=select pin for 'I, O, H, L, r, W, d, v' to work on: ";
 const unsigned char PPin[] PROGMEM = "\tP=pin (";
@@ -674,7 +678,8 @@ void menu_hardware_display() {
 #endif // HARDWARE_menu
 
 
-const unsigned char pressm[] PROGMEM = "\nPress 'm' or '?' for menu.\n\n";
+const unsigned char pressm[] PROGMEM = \
+  "\nPress 'm' or '?' for menu.\n\n";
 
 
 
@@ -789,8 +794,8 @@ int hardware_menu_reaction(char menu_input) {
     if ((hw_PIN == ILLEGAL) | (hw_PIN >= ANALOG_INPUTs))
       please_select_pin();
     else {
-      serial_print_progmem(analogValueOnPin); Serial.print((int) hw_PIN); serial_print_progmem(is_);
-      Serial.println(analogRead(hw_PIN));
+      serial_print_progmem(analogValueOnPin); Serial.print((int) hw_PIN);
+      serial_print_progmem(is_); Serial.println(analogRead(hw_PIN));
     }
     break;
 
