@@ -69,22 +69,30 @@
 
 #define LED_PIN			13
 
-// to switch on serial #define USE_SERIAL <baud>  (otherwise serial will be off)
-//	#define USE_SERIAL	115200		// works fine here
-#define USE_SERIAL	57600
-//  #define USE_SERIAL	38400
 
+// #define USE_SERIAL_BAUD
+// to switch on serial #define USE_SERIAL_BAUD <baud>  (otherwise serial will be *off*)
+//
+// You can switch all serial line and menu code *off* by not defining USE_SERIAL_BAUD
+// You can also do this later to save program memory.
+//   your sketch could include the menu, but later grow too much,
+//   or you'd want to move to another processor with less program memory.
+//
+// #define USE_SERIAL_BAUD	115200		// works fine here
+#define USE_SERIAL_BAUD	57600
+// #define USE_SERIAL_BAUD	38400
 
-#ifdef USE_SERIAL		// simple menus over serial line?
-  // menu basics:
-  #define MENU_over_serial	// do we use a serial menu?
+#ifdef USE_SERIAL_BAUD	// activate minimalistic menus over serial line?
+  // menu over serial, basics:
+  #define MENU_over_serial	// we *do* use serial menu
 
   // simple menu to access arduino hardware:
   #define HARDWARE_menu		// menu interface to hardware configu[Bration
   	  			// this will let you read digital and analog inputs
   				// watch changes on inputs as value or as bar graphs
   	  			// set digital and analog outputs, etc.
-  #ifdef HARDWARE_menu
+
+  #ifdef HARDWARE_menu	// user reported problems with older arduino versions, fix.
     // arduino versions
  
     // needed for pre 1.0 versions to be compatible with HARDWARE_menu:
@@ -105,7 +113,7 @@
   
     char hw_PIN = ILLEGAL;
   #endif // HARDWARE_menu
-#endif	// USE_SERIAL
+#endif	// USE_SERIAL_BAUD
 
 
 
@@ -152,7 +160,9 @@ int get_free_RAM() {
 /* **************************************************************** */
 // use PROGMEM to save RAM:
 
-#if (defined(USE_SERIAL) || defined(USE_LCD))	// Serial and LCD strings...
+// menu strings use PROGMEM to save RAM:
+#if (defined(USE_SERIAL_BAUD) || defined(USE_LCD))	// Serial and LCD strings...
+
 #include <avr/pgmspace.h>
 
 // to save RAM constant strings are stored in PROGMEM
@@ -202,28 +212,28 @@ void slash() {
 //	#endif
 
 
-#ifdef USE_SERIAL
-// Serial.print() for progmem strings:
-// void serial_print_progmem(const prog_uchar *str)	// does not work :(
-void serial_print_progmem(const unsigned char *str) {
-  unsigned char c;
-  while((c = pgm_read_byte(str++)))
-    Serial.write(c);
-}
+#ifdef USE_SERIAL_BAUD	// inside #if (defined(USE_SERIAL_BAUD) || defined(USE_LCD))
+  // Serial.print() for progmem strings:
+  // void serial_print_progmem(const prog_uchar *str)	// does not work :(
+  void serial_print_progmem(const unsigned char *str) {
+    unsigned char c;
+    while((c = pgm_read_byte(str++)))
+      Serial.write(c);
+  }
 
 
-void serial_println_progmem(const unsigned char *str) {
-  serial_print_progmem(str);
-  Serial.println();
-}
-#endif // USE_SERIAL
+  void serial_println_progmem(const unsigned char *str) {
+    serial_print_progmem(str);
+    Serial.println();
+  }
+#endif // USE_SERIAL_BAUD
 
 
-#endif	// #if (defined(USE_SERIAL) || defined(USE_LCD))
+#endif	// #if (defined(USE_SERIAL_BAUD) || defined(USE_LCD))
 
 
 // RAM_info()
-#ifdef USE_SERIAL
+#ifdef USE_SERIAL_BAUD
   const unsigned char freeRAM[] PROGMEM = "free RAM: ";
   const unsigned char bytes_[] PROGMEM = " bytes";
 
@@ -640,7 +650,7 @@ void check_maybe_do() {
 
 
 
-#ifdef USE_SERIAL
+#ifdef USE_SERIAL_BAUD
     const unsigned char noFreePulses[] PROGMEM = "no free pulses";
 #endif
 
@@ -656,7 +666,7 @@ int setup_pulse(void (*pulse_do)(int), unsigned char new_flags, struct time when
   }
   if (pulse == PULSES) {			// no pulse free :(
 
-#ifdef USE_SERIAL
+#ifdef USE_SERIAL_BAUD
     serial_println_progmem(noFreePulses);
 #endif
 
@@ -774,8 +784,8 @@ void init_click_pins() {
 
 
 
-#ifdef USE_SERIAL
-const unsigned char mutedAllPulses[] PROGMEM = "muted all pulses";
+#ifdef USE_SERIAL_BAUD
+  const unsigned char mutedAllPulses[] PROGMEM = "muted all pulses";
 #endif
 
 void mute_all_clicks () {
@@ -784,7 +794,7 @@ void mute_all_clicks () {
 
   fix_global_next();
 
-#ifdef USE_SERIAL
+#ifdef USE_SERIAL_BAUD
   serial_println_progmem(mutedAllPulses);
 #endif
 }
@@ -968,7 +978,7 @@ void init_rhythm_1(int sync) {
   unsigned long divisor=1;
   unsigned long scaling=6;
 
-#ifdef USE_SERIAL
+#ifdef USE_SERIAL_BAUD
   serial_print_progmem(rhythm_); Serial.print(1);
   spaces(1); serial_print_progmem(sync_); Serial.println(sync);
 #endif
@@ -993,7 +1003,7 @@ void init_rhythm_2(int sync) {
   unsigned long factor=1;
   unsigned long unit= scaling*time_unit;
 
-#ifdef USE_SERIAL
+#ifdef USE_SERIAL_BAUD
   serial_print_progmem(rhythm_); Serial.print(2);
   spaces(1); serial_print_progmem(sync_); Serial.println(sync);
 #endif
@@ -1017,7 +1027,7 @@ void init_rhythm_3(int sync) {
   const unsigned long scaling=5L;
   const unsigned long unit=scaling*time_unit;
 
-#ifdef USE_SERIAL
+#ifdef USE_SERIAL_BAUD
   serial_print_progmem(rhythm_); Serial.print(3);
   spaces(1); serial_print_progmem(sync_); Serial.println(sync);
 #endif
@@ -1045,7 +1055,7 @@ void init_rhythm_4(int sync) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   const unsigned long scaling=15L;
 
-#ifdef USE_SERIAL
+#ifdef USE_SERIAL_BAUD
   serial_print_progmem(rhythm_); Serial.print(4);
   spaces(1); serial_print_progmem(sync_); Serial.println(sync);
 #endif
@@ -1065,7 +1075,7 @@ void init_rhythm_4(int sync) {
 /* **************************************************************** */
 // infos on serial:
 
-#ifdef USE_SERIAL
+#ifdef USE_SERIAL_BAUD
 
 // dest and selected_pulses
 // destination of menu functions '*' '/' '=' and 's'
@@ -1355,7 +1365,7 @@ void print_period_in_time_units(int pulse) {
   Serial.print((float) time_units, 3);
   serial_print_progmem(timeUnits);
 }
-#endif	// #ifdef USE_SERIAL
+#endif	// #ifdef USE_SERIAL_BAUD
 
 
 
@@ -1388,9 +1398,9 @@ unsigned int jiffletab[] =
 
 
 // enter_jiffletab(), edit jiffletab by hand:
-#ifdef USE_SERIAL
-const unsigned char jifftabFull[] PROGMEM = "jiffletab full";
-const unsigned char enterJiffletabVal[] PROGMEM = "enter jiffletab values";
+#ifdef USE_SERIAL_BAUD
+  const unsigned char jifftabFull[] PROGMEM = "jiffletab full";
+  const unsigned char enterJiffletabVal[] PROGMEM = "enter jiffletab values";
 #endif
 
 void enter_jiffletab(unsigned int *jiffletab)
@@ -1424,7 +1434,7 @@ void enter_jiffletab(unsigned int *jiffletab)
       if (index == (JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP)) {	// jiffletab is full
 	jiffletab[JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP] = 0;	// trailing 0
 
-#ifdef USE_SERIAL
+#ifdef USE_SERIAL_BAUD
 	serial_println_progmem(jifftabFull);
 #endif
 
@@ -1552,7 +1562,7 @@ void setup_jiffles0(int sync) {
 
   struct time when, delta, templ, new_period;
 
-#ifdef USE_SERIAL
+#ifdef USE_SERIAL_BAUD
   Serial.print("jiffle0 ");
   serial_print_progmem(sync_); Serial.println(sync);
 #endif
@@ -1702,7 +1712,10 @@ void bar_graph(int value) {
     for (i=0; i<stars; i++) {
       if (i == 0 && value == 0)		// zero
 	Serial.print("0");
-      else if ((i == length/2 && value == 512) || (i == length && value == scale))	// middle or top
+
+					// middle or top
+      else if \
+	((i == length/2 && value == 512) || (i == length && value == scale))
 	Serial.print("|");
       else
 	Serial.print("*");
@@ -2682,8 +2695,8 @@ bool menu_serial_program_reaction(char menu_input) {
 
 
 void setup() {
-  #ifdef USE_SERIAL
-    Serial.begin(USE_SERIAL);
+  #ifdef USE_SERIAL_BAUD
+    Serial.begin(USE_SERIAL_BAUD);
   #endif
 
 //	#ifdef USE_LCD
@@ -2695,7 +2708,7 @@ void setup() {
 //	#endif
 
 
-#ifdef USE_SERIAL
+#ifdef USE_SERIAL_BAUD
   #ifdef MENU_over_serial	// show message about menu
     display_serial_menu();
   #else
