@@ -449,22 +449,34 @@ void bar_graph(int value) {
 }
 
 
+// tolerance default 0. Let the user *see* the noise...
+int bar_graph_tolerance=0;
 
 const unsigned char followPin[] PROGMEM = "Follow pin ";
-const unsigned char VU_title[] PROGMEM = "values\t\t +/- tolerance (send any other byte to stop)\n";
+const unsigned char tolerance_[] PROGMEM = "\ttolerance ";
+
+void follow_info(int pin) {
+  // display info about pin and tolerance
+  serial_print_progmem(followPin);
+  Serial.print((int) pin);
+  serial_print_progmem(tolerance_);
+  Serial.println(bar_graph_tolerance);
+}
+
+const unsigned char VU_title[] PROGMEM = \
+  "values\t\t +/- set tolerance\t(any other byte to stop)\n";
 const unsigned char quit_[] PROGMEM = "(quit)";
 
 void bar_graph_VU(int pin) {
-  int value, oldValue=-9997;	// just an unlikely value...
-  int tolerance=1, menu_input;
+  int value, oldValue=-9997;		// just an unlikely value
+  int menu_input;
 
-  serial_print_progmem(followPin);
-  Serial.println((int) pin);
+  follow_info(pin);
 
   serial_println_progmem(VU_title);
   while (true) {
     value =  analogRead(pin);
-    if (abs(value - oldValue) > tolerance) {
+    if (abs(value - oldValue) > bar_graph_tolerance) {
       bar_graph(value);
       oldValue = value;
     }
@@ -472,11 +484,13 @@ void bar_graph_VU(int pin) {
     if (char_available()) {
       switch (menu_input = get_char()) {
       case '+':
-	tolerance++;
+	bar_graph_tolerance++;
+	follow_info(pin);
 	break;
       case '-':
-	if (tolerance)
-	  tolerance--;
+	if (bar_graph_tolerance)
+	  bar_graph_tolerance--;
+	  follow_info(pin);
 	break;
       case '\n': case '\r':	// linebreak after sending 'V'
         break;
