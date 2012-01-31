@@ -217,7 +217,7 @@ pin     value   |                               |                               
   #endif
 #endif	// board specific initialisations
 
-#ifdef LED_BUILTIN
+#if defined(LED_BUILTIN)
   #define LED_PIN	LED_BUILTIN
 #else
   #define LED_PIN	13
