@@ -217,7 +217,11 @@ pin     value   |                               |                               
   #endif
 #endif	// board specific initialisations
 
-#define LED_PIN	13
+#ifdef LED_BUILTIN
+  #define LED_PIN	LED_BUILTIN
+#else
+  #define LED_PIN	13
+#endif
 
 
 
