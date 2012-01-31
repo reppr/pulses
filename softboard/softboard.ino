@@ -392,45 +392,6 @@ long numeric_input(long oldValue) {
 }
 
 
-
-const unsigned char ON_off[] PROGMEM = "ON/off";
-const unsigned char on_OFF[] PROGMEM = "on/OFF";
-
-// serial display helper function
-int ONoff(int value, int mode, int tab) {
-  if (value) {
-    switch (mode) {
-    case 0:		// ON		off
-    case 1:		// ON		OFF
-      Serial.print("ON");
-      break;
-    case 2:		// ON/off	on/OFF
-      serial_print_progmem(ON_off);
-      break;
-    }
-  }
-  else {
-    switch (mode) {
-    case 0:		// ON		off
-      Serial.print("off");
-      break;
-    case 1:		// ON		OFF
-      Serial.print("OFF");
-      break;
-    case 2:		// ON/off	on/OFF
-      serial_print_progmem(on_OFF);
-      break;
-    }
-  }
-
-  if (tab)
-    serial_print_progmem(tab_);
-
-  return value;
-}
-
-
-
 const unsigned char outOfRange[] PROGMEM = " out of range.";
 const unsigned char value_[] PROGMEM = "value ";
 
