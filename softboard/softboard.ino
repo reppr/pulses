@@ -240,7 +240,7 @@ const unsigned char tab_[] PROGMEM = "\t";
 // sorry, there is *no* LCD menu support here yet
 // maybe i´ll need it one day and write it...
 //
-// this code comes from other progs of mine
+// LCD related code comes from other progs of mine
 //
 //	#ifdef USE_LCD
 //	// LCD.print() for progmem strings:
@@ -301,9 +301,21 @@ int get_free_RAM() {
 
 
 /* **************************************************************** */
-// #define MENU_over_serial	// do we use a serial menu?
+// menu over different interfaces
+// only MENU_over_serial implemented
+//
+// we could add other menus, like LCD or MIDI or whoknows,
+// but nothing there in this version, sorry.
+//
+/* **************************************************************** */
+// #define MENU_over_serial	// do we use serial menu?
 /* **************************************************************** */
 #ifdef MENU_over_serial
+
+
+// inside  #ifdef MENU_over_serial
+// ****************************************************************
+// basic menu I/O:
 
 // sometimes serial is not ready quick enough:
 #define WAITforSERIAL 10
@@ -351,6 +363,10 @@ int char_available() {
 
 
 
+// inside  #ifdef MENU_over_serial
+// ****************************************************************
+// menu I/O functions:
+
 // get numeric input from serial
 long numeric_input(long oldValue) {
   long input, num, sign=1;
@@ -392,10 +408,12 @@ long numeric_input(long oldValue) {
 }
 
 
+
+// bar_graph()
+// print one value & bar graph line:
 const unsigned char outOfRange[] PROGMEM = " out of range.";
 const unsigned char value_[] PROGMEM = "value ";
 
-// display helper function
 void bar_graph(int value) {
   int i, length=64, scale=1023;
   int stars = ((long) value * (long) length) / scale + 1 ;
@@ -423,10 +441,21 @@ void bar_graph(int value) {
 }
 
 
-// bar_graph_VU():
+
+// bar_graph_VU(pin):
+// display a scrolling bar graph over the readings of an analog input.
+//
+// whenever the reading changes for more then +/- tolerance a new line is displayed
+// tolerance can be changed by pressing '+' or '-'
+// any other key stops VU display
+
 // tolerance default 0. Let the user *see* the noise...
 int bar_graph_tolerance=0;
 
+
+
+// follow_info(pin)
+// info line for bar graph:
 const unsigned char followPin[] PROGMEM = "Follow pin ";
 const unsigned char tolerance_[] PROGMEM = "\ttolerance ";
 
@@ -437,6 +466,15 @@ void follow_info(int pin) {
   serial_print_progmem(tolerance_);
   Serial.println(bar_graph_tolerance);
 }
+
+
+
+// bar_graph_VU(pin):
+// display a scrolling bar graph over the readings of an analog input.
+//
+// whenever the reading changes for more then +/- tolerance a new line is displayed
+// tolerance can be changed by pressing '+' or '-'
+// any other key stops VU display
 
 const unsigned char VU_title[] PROGMEM = \
   "values\t\t +/- set tolerance\t(any other byte to stop)\n";
@@ -479,7 +517,30 @@ void bar_graph_VU(int pin) {
 
 
 
+// print binary numbers with leading zeroes and a space
+void serial_print_BIN(unsigned long value, int bits) {
+  int i;
+  unsigned long mask=0;
+
+  for (i = bits - 1; i >= 0; i--) {
+    mask = (1 << i);
+      if (value & mask)
+	Serial.print(1);
+      else
+	Serial.print(0);
+  }
+  Serial.print(" ");
+}
+
+
+
 #ifdef HARDWARE_menu	// inside MENU_over_serial
+// ****************************************************************
+// hw info display functions:
+
+
+// display_analog_reads()
+// display analog snapshot read values and bar graphs, a line each input:
 const unsigned char analog_reads_title[] PROGMEM = \
   "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
 
@@ -497,13 +558,15 @@ void display_analog_reads() {
 }
 
 
+
+// pin_info()
+// display configuration and state of a pin:
 const unsigned char pin_[] PROGMEM = "pin ";
 const unsigned char high_[] PROGMEM = "high";
 const unsigned char low_[] PROGMEM = "low";
 const unsigned char pullup_[] PROGMEM = "pullup";
 const unsigned char hiZ_[] PROGMEM = "hi-z";
 
-// display configuration and state of a pin:
 void pin_info(uint8_t pin) {
   uint8_t mask = digitalPinToBitMask(pin);
   uint8_t port = digitalPinToPort(pin);
@@ -558,12 +621,19 @@ void pin_info(uint8_t pin) {
   Serial.println();
 }
 
+
+
 // display configuration and state of all pins:
 void pins_info() {
   for (uint8_t pin=0; pin<DIGITAL_PINs; pin++)
     pin_info(pin);
 }
 
+
+
+
+// watch_digital_input(pin)
+// continuously display digital input readings, whenever the input changes:
 const unsigned char watchingINpin[] PROGMEM = "watching digital input pin ";
 const unsigned char anyStop[] PROGMEM = "\t\t(send any byte to stop)";
 const unsigned char is_[] PROGMEM = " is ";
@@ -579,7 +649,8 @@ void watch_digital_input(int pin) {
     value = digitalRead(hw_PIN);
     if (value != old_value) {
       old_value = value;
-      serial_print_progmem(pin_); Serial.print((int) pin); serial_print_progmem(is_);
+      serial_print_progmem(pin_); Serial.print((int) pin);
+      serial_print_progmem(is_);
       if (value)
 	serial_println_progmem(high_);
       else
@@ -589,36 +660,14 @@ void watch_digital_input(int pin) {
   serial_println_progmem(quit_);
   get_char();
 }
-#endif	// HARDWARE_menu inside MENU_over_serial
 
 
 
-// print binary numbers with leading zeroes and a space
-void serial_print_BIN(unsigned long value, int bits) {
-  int i;
-  unsigned long mask=0;
 
-  for (i = bits - 1; i >= 0; i--) {
-    mask = (1 << i);
-      if (value & mask)
-	Serial.print(1);
-      else
-	Serial.print(0);
-  }
-  Serial.print(" ");
-}
+// ****************************************************************
+// menu hardware display and reaction:
 
-
-
-/* **************************************************************** */
-// simple menu interface through serial port:
-
-const unsigned char menuLine1[] PROGMEM = \
-      "(you could put your own menu in here)";
-const unsigned char pPin[] PROGMEM = "p=pin (";
-
-
-#ifdef HARDWARE_menu
+// menu_hardware_display()  display hardware menu:
 const unsigned char hwMenuTitle[] PROGMEM = \
   "\n*** HARDWARE MENU ***\t\tfree RAM=";
 const unsigned char selectPin[] PROGMEM = \
@@ -647,45 +696,27 @@ void menu_hardware_display() {
   serial_println_progmem(aAnalog_);
 }
 
-#endif // HARDWARE_menu
-
-
-const unsigned char pressm[] PROGMEM = \
-  "\nPress 'm' or '?' for menu.\n\n";
 
 
 
-void display_serial_menu() {
-  serial_println_progmem(programLongName);
-
-  serial_print_progmem(menuLine1);
-
-  Serial.println();
-
-#ifdef HARDWARE_menu	// inside MENU_over_serial
-  menu_hardware_display();
-#endif			// HARDWARE_menu  inside MENU_over_serial
-
-  serial_print_progmem(pressm);
-}
-
-
+// please_select_pin()
+// give a warning that no valid pin was selected
 void please_select_pin() {
   serial_println_progmem(selectPin);
 }
 
-const unsigned char bytes_[] PROGMEM = " bytes";
 
-#ifdef HARDWARE_menu
 
+// bool menu_hardware_reaction(menu_input)
+// try to react on menu_input, return success flag
 const unsigned char none_[] PROGMEM = "(none)";
 const unsigned char analogWriteValue[] PROGMEM = "analog write value ";
 const unsigned char analogWrite_[] PROGMEM = "analogWrite(";
 const unsigned char analogValueOnPin[] PROGMEM = "analog value on pin ";
+// const unsigned char bytes_[] PROGMEM = " bytes";
+// const unsigned char freeRAM[] PROGMEM = "free RAM: ";
 
-//	const unsigned char freeRAM[] PROGMEM = "free RAM: ";
-
-int hardware_menu_reaction(char menu_input) {
+bool menu_hardware_reaction(char menu_input) {
   long newValue;
 
   switch (menu_input) {
@@ -804,56 +835,186 @@ int hardware_menu_reaction(char menu_input) {
   }
   return 1;		// menu_input found in this menu
 }
+#endif // HARDWARE_menu
+
+
+
+
+/* **************************************************************** */
+//    MENU core
+/* **************************************************************** */
+#if (defined(MENU_over_serial) || defined(MENU_LCD) ) 
+  // global menu variable switches active menu:
+
+  // menu codes: (codes for non-existing menus are not a problem)
+  #define MENU_UNDECIDED	0
+  #define MENU_PROGRAM		1
+  #define MENU_HARDWARE		2
+
+  // unsigned char menu=MENU_UNDECIDED;	// normally better default
+  //
+  // but for this version with HARDWARE_menu only i take:
+  unsigned char menu=MENU_HARDWARE;
+
+#endif	// (MENU_over_serial || MENU_LCD )
+
+
+
+
+// ****************************************************************
+// inside #defined MENU_over_serial
+// top level serial menu display and reactions:
+
+
+// menu_serial_common_display()
+// display menu items common to all menus:
+const unsigned char common_[] PROGMEM = \
+  "\nPress 'm' or '?' for menu, 'q' quit this menu.";
+
+#ifdef PROGRAM_menu
+const unsigned char program_[] PROGMEM = \
+  " 'P' program menu ";
 #endif
 
+#ifdef HARDWARE_menu
+const unsigned char hardware_[] PROGMEM = \
+  " 'H' hardware menu ";
+#endif
+
+// menu_serial_common_display()
+// display menu items common to all menus:
+void menu_serial_common_display() {
+  serial_print_progmem(common_);
+#ifdef PROGRAM_menu
+  serial_print_progmem(program_);
+#endif
+#ifdef HARDWARE_menu
+  serial_print_progmem(hardware_);
+#endif
+}
 
 
+
+// menu_serial_display()
+// top level serial menu display function
+void menu_serial_display() {
+  serial_println_progmem(programLongName);
+
+  switch (menu) {
+  case MENU_UNDECIDED:
+#ifdef PROGRAM_menu
+  case MENU_PROGRAM:
+    menu_program_display();
+    break;
+#endif
+#ifdef HARDWARE_menu
+  case MENU_HARDWARE:
+    menu_hardware_display();
+    break;
+#endif
+
+  default:		// ERROR: unknown menu code
+    ;
+  }
+  menu_serial_common_display();
+  Serial.println();
+
+  Serial.println();
+}
+
+
+
+// menu_serial_common_reaction(menu_input)
+// test menu_input for being a common menu entry key
+// if yes, do it
+// return success flag:
+bool menu_serial_common_reaction(char menu_input) {
+  switch (menu_input) {
+  case 'm': case '?':	// menu
+    menu_serial_display();
+    break;
+
+  case 'q':	// quit
+    menu=MENU_UNDECIDED;
+    menu_serial_display();
+    break;
+#ifdef PROGRAM_menu
+  case 'P':	// PROGRAM menu
+    menu = MENU_PROGRAM;
+    menu_program_display();
+    break;
+#endif
+#ifdef HARDWARE_menu
+  case 'H':	// HARDWARE menu
+    menu = MENU_HARDWARE;
+    menu_serial_display();
+    break;
+#endif
+  default:
+    return false;	// menu entry not found
+  }
+  return true;		// menu entry found
+}
+
+
+
+// menu_serial_reaction(), react on serial menu input.
+// check for serial input, wait if there´s none
+// react on all available serial input
 const unsigned char unknownMenuInput[] PROGMEM = "unknown menu input: ";
 
 void menu_serial_reaction() {
   char menu_input;
-  long newValue;
+  bool found;
 
   while(!char_available())
     ;
 
   if (char_available()) {
     while (char_available()) {
-      switch (menu_input = get_char()) {
+      found=false;
+
+      switch (menu_input = get_char()) {	// submenu forking
+
       case ' ': case '\t':		// skip white chars
       case '\n': case '\r':		// skip newlines
 	break;
 
-      case 'm': case '?':
-	display_serial_menu();
-	break;
-
-      default:
-
-	// maybe it's in a submenu?
-
-#ifdef HARDWARE_menu				// quite a hack...
-	if (hardware_menu_reaction(menu_input))
+      default:				// no whitespace, check menus:
+	switch (menu) {			// check active menu:
+	case MENU_UNDECIDED:
+#ifdef PROGRAM_menu
+	case MENU_PROGRAM:
+	  found = menu_serial_program_reaction(menu_input);
+	  break;
+#endif
+#ifdef HARDWARE_menu
+	case MENU_HARDWARE:
+	  found = menu_hardware_reaction(menu_input);
+	  break;
+#endif
+	default:		// ERROR: unknown menu code
 	  ;
-#else						// quite a hack...
-	if (false)
-	  ;
-#endif // submenu reactions
-	else {
+	} // menu branching
+
+	if (!found)		// common menu entry?
+	  found = menu_serial_common_reaction(menu_input);
+
+	if (!found) {		// unknown menu entry
 	  serial_print_progmem(unknownMenuInput); Serial.println(menu_input);
 	  while (char_available() > 0) {
 	    menu_input = get_char();
 	    Serial.print(byte(menu_input));
 	  }
 	  Serial.println();
-	break;
+	  break;
 	}
-      }
+      } // submenu forking
 
       if (!char_available())
 	delay(WAITforSERIAL);
-    }
-  }
+    } // input loop
+  } // any input?
 } // menu_serial_reaction()
 
 
@@ -885,7 +1046,7 @@ void setup() {
 // startup messages:
 #ifdef USE_SERIAL_BAUD
   #ifdef MENU_over_serial	// show message about menu
-    display_serial_menu();
+    menu_serial_display();
     pins_info();
     Serial.println();
   #else				// no menu, show program name
@@ -914,6 +1075,5 @@ void loop() {
 #endif
 
 }
-
 
 /* **************************************************************** */
