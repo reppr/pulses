@@ -67,8 +67,6 @@
 #endif
 
 
-#define LED_PIN			13
-
 
 // #define USE_SERIAL_BAUD
 // to switch on serial #define USE_SERIAL_BAUD <baud>  (otherwise serial will be *off*)
@@ -135,7 +133,11 @@
   #endif
 #endif
 
-#define LED_PIN	13
+#if defined(LED_BUILTIN)
+  #define LED_PIN	LED_BUILTIN
+#else
+  #define LED_PIN	13
+#endif
 
 
 
@@ -1594,21 +1596,12 @@ void setup_jiffles0(int sync) {
 
 
 /* **************************************************************** */
-//    MENU core
-/* **************************************************************** */
-#if (defined(MENU_over_serial) || defined(MENU_LCD) ) 
-  // global menu variable switches active menu:
-
-  // menu codes:
-  #define MENU_UNDECIDED	0
-  #define MENU_PROGRAM		1
-  #define MENU_HARDWARE		2
-
-  unsigned char menu=MENU_UNDECIDED;
-
-#endif	// (MENU_over_serial || MENU_LCD ) 
-
-
+// menu over different interfaces
+// only MENU_over_serial implemented
+//
+// we could add other menus, like LCD or MIDI or whoknows,
+// but nothing there in this version, sorry.
+//
 /* **************************************************************** */
 // #define MENU_over_serial	// do we use serial menu?
 /* **************************************************************** */
@@ -1661,6 +1654,7 @@ int char_available() {
     return 1;
   return 0;
 }
+
 
 
 // inside  #ifdef MENU_over_serial
@@ -1954,7 +1948,7 @@ void watch_digital_input(int pin) {
 const unsigned char hwMenuTitle[] PROGMEM = \
   "\n***  HARDWARE menu  ***\t\t";
 const unsigned char selectPin[] PROGMEM = \
-  "P=select pin for 'I, O, H, L, r, W, d, v' to work on: ";
+  "P=select pin for 'I, O, H, L, r, W, d, v' to work on ";
 const unsigned char PPin[] PROGMEM = "\tP=pin (";
 const unsigned char OIHLWr[] PROGMEM = \
   "O=OUTPUT\tI=INPUT\t\tH=HIGH\tL=LOW\tanalog:\tW=WRITE\t    r=read";
@@ -2244,6 +2238,7 @@ bool menu_hardware_reaction(char menu_input) {
 }
 
 #endif // HARDWARE_menu
+/* **************************************************************** */
 
 
 
@@ -2294,6 +2289,23 @@ void reset_and_edit_pulse(int pulse) {
 
 
 
+/* **************************************************************** */
+//    MENU core
+/* **************************************************************** */
+// inside #defined MENU_over_serial
+#if (defined(MENU_over_serial) || defined(MENU_LCD) ) 
+  // global menu variable switches active menu:
+
+  // menu codes:
+  #define MENU_CODE_UNDECIDED	0
+  #define MENU_CODE_PROGRAM	1
+  #define MENU_CODE_HARDWARE	2
+
+  unsigned char menu=MENU_CODE_UNDECIDED;
+
+#endif	// (MENU_over_serial || MENU_LCD ) 
+
+
 // ****************************************************************
 // inside #defined MENU_over_serial
 // top level serial menu display and reactions:
@@ -2319,10 +2331,13 @@ const unsigned char hardware_[] PROGMEM = \
 void menu_serial_common_display() {
   serial_print_progmem(common_);
 #ifdef PROGRAM_menu
-  serial_print_progmem(program_);
+  if (menu != MENU_CODE_PROGRAM)
+    if (menu != MENU_CODE_HARDWARE)	// hardware menu hides 'P'
+      serial_print_progmem(program_);
 #endif
 #ifdef HARDWARE_menu
-  serial_print_progmem(hardware_);
+  if (menu != MENU_CODE_HARDWARE)
+    serial_print_progmem(hardware_);
 #endif
 }
 
@@ -2334,14 +2349,14 @@ void menu_serial_display() {
   serial_println_progmem(programLongName);
 
   switch (menu) {
-  case MENU_UNDECIDED:
+  case MENU_CODE_UNDECIDED:
 #ifdef PROGRAM_menu
-  case MENU_PROGRAM:
+  case MENU_CODE_PROGRAM:
     menu_program_display();
     break;
 #endif
 #ifdef HARDWARE_menu
-  case MENU_HARDWARE:
+  case MENU_CODE_HARDWARE:
     menu_hardware_display();
     break;
 #endif
@@ -2368,18 +2383,18 @@ bool menu_serial_common_reaction(char menu_input) {
     break;
 
   case 'q':	// quit
-    menu=MENU_UNDECIDED;
+    menu=MENU_CODE_UNDECIDED;
     menu_serial_display();
     break;
 #ifdef PROGRAM_menu
   case 'P':	// PROGRAM menu
-    menu = MENU_PROGRAM;
+    menu = MENU_CODE_PROGRAM;
     menu_program_display();
     break;
 #endif
 #ifdef HARDWARE_menu
   case 'H':	// HARDWARE menu
-    menu = MENU_HARDWARE;
+    menu = MENU_CODE_HARDWARE;
     menu_serial_display();
     break;
 #endif
@@ -2415,14 +2430,16 @@ void menu_serial_reaction() {
 
       default:				// no whitespace, check menus:
 	switch (menu) {			// check active menu:
-	case MENU_UNDECIDED:
+	case MENU_CODE_UNDECIDED:
 #ifdef PROGRAM_menu
-	case MENU_PROGRAM:
+	case MENU_CODE_PROGRAM:
+	  menu=MENU_CODE_PROGRAM;	// case MENU_CODE_UNDECIDED
 	  found = menu_serial_program_reaction(menu_input);
 	  break;
 #endif
 #ifdef HARDWARE_menu
-	case MENU_HARDWARE:
+	case MENU_CODE_HARDWARE:
+	  menu=MENU_CODE_HARDWARE;	// case MENU_CODE_UNDECIDED
 	  found = menu_hardware_reaction(menu_input);
 	  break;
 #endif
