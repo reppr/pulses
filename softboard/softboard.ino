@@ -184,6 +184,7 @@ pin     value   |                               |                               
 #define USE_SERIAL_BAUD	57600
 // #define USE_SERIAL_BAUD	38400
 
+
 #ifdef USE_SERIAL_BAUD	// activate minimalistic menus over serial line?
   // menu over serial, basics:
   #define MENU_over_serial	// we *do* use serial menu
@@ -199,6 +200,15 @@ pin     value   |                               |                               
 #else
   #error #define   USE_SERIAL_BAUD <baud>   in file softboard.ino
 #endif	// USE_SERIAL_BAUD
+
+
+
+/* **************************************************************** */
+// To integrate your own program menu  #define PROGRAM_menu 
+// Write function menu_program_display() and menu_serial_program_reaction()
+// Please see below.
+//
+// #define PROGRAM_menu		// do you use an own program menu?
 
 
 
@@ -851,10 +861,16 @@ bool menu_hardware_reaction(char menu_input) {
   #define MENU_PROGRAM		1
   #define MENU_HARDWARE		2
 
-  // unsigned char menu=MENU_UNDECIDED;	// normally better default
-  //
-  // but for this version with HARDWARE_menu only i take:
-  unsigned char menu=MENU_HARDWARE;
+  // unsigned char menu;  holds the code of the active menu.
+  // normally i'd default to
+  // unsigned char menu=MENU_UNDECIDED;		// normal default
+  // as this version comes with hw menu only and could have been extended
+  // by the user with his own program menu I do here
+  #ifdef PROGRAM_menu
+    unsigned char menu=MENU_PROGRAM;	// program menu exists
+  #else
+    unsigned char menu=MENU_HARDWARE;	// hw menu only
+  #endif
 
 #endif	// (MENU_over_serial || MENU_LCD )
 
@@ -988,11 +1004,13 @@ void menu_serial_reaction() {
 	case MENU_UNDECIDED:
 #ifdef PROGRAM_menu
 	case MENU_PROGRAM:
+	  menu=MENU_PROGRAM;	// case MENU_UNDECIDED
 	  found = menu_serial_program_reaction(menu_input);
 	  break;
 #endif
 #ifdef HARDWARE_menu
 	case MENU_HARDWARE:
+	  menu=MENU_HARDWARE;	// case MENU_UNDECIDED
 	  found = menu_hardware_reaction(menu_input);
 	  break;
 #endif
@@ -1027,6 +1045,77 @@ void menu_serial_reaction() {
 
 
 /* **************************************************************** */
+// Define your own program specific menu here.
+// To integrate your own program menu  #define PROGRAM_menu 
+// See comments near the top of this file.
+//
+// Write functions menu_program_display()  menu_serial_program_reaction()
+// Please see below.
+
+#if defined(PROGRAM_menu) && defined(MENU_over_serial)
+
+// This code is just a template stub to show how it works.
+// Change everything here to match your own needs.
+
+
+// To save RAM you should store all strings you need in program memory:
+//	const unsigned char MY_STRING_NAME[] PROGMEM = "my string";
+// Print it with:
+//	serial_print_progmem(MY_STRING_NAME); 
+//	serial_println_progmem(MY_STRING_NAME); 
+const unsigned char ProgramMenuTitle_[] PROGMEM = \
+  "\n*** MY PROGRAM MENU ***";
+
+// Give infos about active keys.
+// ('\t' means a tab between entries)
+const unsigned char ProgramMenuKeys_[] PROGMEM = "d=dance\ty=yodel\ts=something special";
+
+const unsigned char ProgramMenuMessage_[] PROGMEM = "\tis empty\n";
+
+// void menu_program_display()
+// Display program menu. Give infos about active keys here.
+void menu_program_display() {
+  serial_println_progmem(ProgramMenuTitle_);
+  serial_println_progmem(ProgramMenuMessage_);
+  serial_println_progmem(ProgramMenuKeys_);
+}
+
+
+// check menu_input for matching keys,
+// react on valid input
+// return success flag,
+//	true  if a matching entry was found
+//	false if no matching entry was found
+bool menu_serial_program_reaction(char menu_input) {
+  long newValue;	// for numeric input
+
+  switch (menu_input) {
+  case 'd':
+    // dance();
+    break;
+
+  case 'y':
+    // yodel();
+    break;
+
+  case 's':
+    // do_something_special();
+    break;
+
+
+  // DO NOT CHANGE THE FOLLOWING LINES
+  default:
+    return false;	// menu_input not found in this menu
+  }
+  return true;		// menu_input found in this menu
+}
+
+#endif	// #if defined(PROGRAM_menu) && defined(MENU_over_serial)
+/* **************************************************************** */
+
+
+
+/* **************************************************************** */
 // setup and main loop:
 
 void setup() {
@@ -1050,8 +1139,12 @@ void setup() {
 #ifdef USE_SERIAL_BAUD
   #ifdef MENU_over_serial	// show message about menu
     menu_serial_display();
-    pins_info();
-    Serial.println();
+
+    if (menu == MENU_HARDWARE )
+      {
+	pins_info();
+	Serial.println();
+      }
   #else				// no menu, show program name
     Serial.println();
     serial_println_progmem(programLongName);
