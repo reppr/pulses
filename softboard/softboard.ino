@@ -671,7 +671,7 @@ void watch_digital_input(int pin) {
 const unsigned char hwMenuTitle[] PROGMEM = \
   "\n*** HARDWARE MENU ***\t\tfree RAM=";
 const unsigned char selectPin[] PROGMEM = \
-  "P=select pin for 'I, O, H, L, r, W, d, v' to work on: ";
+  "P=select pin for 'I, O, H, L, r, W, d, v' to work on ";
 const unsigned char PPin[] PROGMEM = "\tP=pin (";
 const unsigned char OIHLWr[] PROGMEM = \
   "O=OUTPUT\tI=INPUT\t\tH=HIGH\tL=LOW\tanalog:\tW=WRITE\t    r=read";
@@ -886,10 +886,13 @@ const unsigned char hardware_[] PROGMEM = \
 void menu_serial_common_display() {
   serial_print_progmem(common_);
 #ifdef PROGRAM_menu
-  serial_print_progmem(program_);
+  if (menu != MENU_PROGRAM)
+    if (menu != MENU_HARDWARE)		// hardware menu hides 'P'
+      serial_print_progmem(program_);
 #endif
 #ifdef HARDWARE_menu
-  serial_print_progmem(hardware_);
+  if (menu != MENU_HARDWARE)
+    serial_print_progmem(hardware_);
 #endif
 }
 
