@@ -857,19 +857,19 @@ bool menu_hardware_reaction(char menu_input) {
   // global menu variable switches active menu:
 
   // menu codes: (codes for non-existing menus are not a problem)
-  #define MENU_UNDECIDED	0
-  #define MENU_PROGRAM		1
-  #define MENU_HARDWARE		2
+  #define MENU_CODE_UNDECIDED	0
+  #define MENU_CODE_PROGRAM	1
+  #define MENU_CODE_HARDWARE	2
 
   // unsigned char menu;  holds the code of the active menu.
   // normally i'd default to
-  // unsigned char menu=MENU_UNDECIDED;		// normal default
+  // unsigned char menu=MENU_CODE_UNDECIDED;		// normal default
   // as this version comes with hw menu only and could have been extended
   // by the user with his own program menu I do here
   #ifdef PROGRAM_menu
-    unsigned char menu=MENU_PROGRAM;	// program menu exists
+    unsigned char menu=MENU_CODE_PROGRAM;	// program menu exists
   #else
-    unsigned char menu=MENU_HARDWARE;	// hw menu only
+    unsigned char menu=MENU_CODE_HARDWARE;	// hw menu only
   #endif
 
 #endif	// (MENU_over_serial || MENU_LCD )
@@ -902,12 +902,12 @@ const unsigned char hardware_[] PROGMEM = \
 void menu_serial_common_display() {
   serial_print_progmem(common_);
 #ifdef PROGRAM_menu
-  if (menu != MENU_PROGRAM)
-    if (menu != MENU_HARDWARE)		// hardware menu hides 'P'
+  if (menu != MENU_CODE_PROGRAM)
+    if (menu != MENU_CODE_HARDWARE)	// hardware menu hides 'P'
       serial_print_progmem(program_);
 #endif
 #ifdef HARDWARE_menu
-  if (menu != MENU_HARDWARE)
+  if (menu != MENU_CODE_HARDWARE)
     serial_print_progmem(hardware_);
 #endif
 }
@@ -920,14 +920,14 @@ void menu_serial_display() {
   serial_println_progmem(programLongName);
 
   switch (menu) {
-  case MENU_UNDECIDED:
+  case MENU_CODE_UNDECIDED:
 #ifdef PROGRAM_menu
-  case MENU_PROGRAM:
+  case MENU_CODE_PROGRAM:
     menu_program_display();
     break;
 #endif
 #ifdef HARDWARE_menu
-  case MENU_HARDWARE:
+  case MENU_CODE_HARDWARE:
     menu_hardware_display();
     break;
 #endif
@@ -954,18 +954,18 @@ bool menu_serial_common_reaction(char menu_input) {
     break;
 
   case 'q':	// quit
-    menu=MENU_UNDECIDED;
+    menu=MENU_CODE_UNDECIDED;
     menu_serial_display();
     break;
 #ifdef PROGRAM_menu
   case 'P':	// PROGRAM menu
-    menu = MENU_PROGRAM;
+    menu = MENU_CODE_PROGRAM;
     menu_program_display();
     break;
 #endif
 #ifdef HARDWARE_menu
   case 'H':	// HARDWARE menu
-    menu = MENU_HARDWARE;
+    menu = MENU_CODE_HARDWARE;
     menu_serial_display();
     break;
 #endif
@@ -1001,16 +1001,16 @@ void menu_serial_reaction() {
 
       default:				// no whitespace, check menus:
 	switch (menu) {			// check active menu:
-	case MENU_UNDECIDED:
+	case MENU_CODE_UNDECIDED:
 #ifdef PROGRAM_menu
-	case MENU_PROGRAM:
-	  menu=MENU_PROGRAM;	// case MENU_UNDECIDED
+	case MENU_CODE_PROGRAM:
+	  menu=MENU_CODE_PROGRAM;	// case MENU_CODE_UNDECIDED
 	  found = menu_serial_program_reaction(menu_input);
 	  break;
 #endif
 #ifdef HARDWARE_menu
-	case MENU_HARDWARE:
-	  menu=MENU_HARDWARE;	// case MENU_UNDECIDED
+	case MENU_CODE_HARDWARE:
+	  menu=MENU_CODE_HARDWARE;	// case MENU_CODE_UNDECIDED
 	  found = menu_hardware_reaction(menu_input);
 	  break;
 #endif
@@ -1140,7 +1140,7 @@ void setup() {
   #ifdef MENU_over_serial	// show message about menu
     menu_serial_display();
 
-    if (menu == MENU_HARDWARE )
+    if (menu == MENU_CODE_HARDWARE )
       {
 	pins_info();
 	Serial.println();
