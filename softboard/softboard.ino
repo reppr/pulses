@@ -357,10 +357,12 @@ const unsigned char storeFull[] PROGMEM = "char_store: sorry, buffer full.";
 int char_store(char c) {
   if (chars_stored) {	// ERROR.  I have not needed more then one char yet...
     serial_println_progmem(storeFull);
+    return 1;
   }
 
   chars_stored++;
   stored_char = c;
+  return 0;
 }
 
 
