@@ -20,6 +20,7 @@
 
    **************************************************************** */
 /*
+
    Softboard  http://github.com/reppr/softboard
 
    Hardware/software developing/testing tool.
@@ -99,8 +100,13 @@
    check that it *does* send 'Newline' (in the bottom window frame)
    and set baud rate to the same value as USE_SERIAL_BAUD on the arduino.
 
+   Toggle serial echo with ´e´.
+
 
    Some examples:
+       Always let your terminal send a linefeed after the example string
+       to trigger actions.
+
 
    Example 1:  'P13 OH' switch LED on   (P select pin, O output, H high)
                'L'      off again       (L low)
@@ -240,8 +246,6 @@ pin     value   |                               |                               
 //#define serial_input_BUF_size	128	// if you want a bigger buffer
 //#define serial_input_BUF_size	16	// if you are tight of RAM
 
-// #define serial_ECHO	// echo serial input while buffering it.
-
   // simple menu to access arduino hardware:
   #define HARDWARE_menu	 // menu interface to hardware configuration
   	  		 // this will let you read digital and analog inputs
@@ -376,7 +380,6 @@ int get_free_RAM() {
 /* **************************************************************** */
 #ifdef SERIAL_MENU
 
-
 // inside  #ifdef SERIAL_MENU
 // ****************************************************************
 // basic menu I/O:
@@ -392,6 +395,7 @@ int get_free_RAM() {
 //	
 //	circ_buf serial_input_BUFFER;
 
+bool echo_switch=true;
 
 void cb_init(circ_buf *cb, int size) {
   cb->size  = size;
@@ -968,7 +972,7 @@ bool menu_hardware_reaction(char menu_input) {
 // serial_menu_common_display()
 // display menu items common to all menus:
 const unsigned char common_[] PROGMEM = \
-  "\nPress 'm' or '?' for menu, 'q' quit this menu.";
+  "\nPress 'm' or '?' for menu, 'e' toggle echo, 'q' quit this menu.";
 
 #ifdef PROGRAM_menu
 const unsigned char program_[] PROGMEM = \
@@ -1037,6 +1041,10 @@ bool serial_menu_common_reaction(char menu_input) {
     serial_menu_display();
     break;
 
+  case 'e':	// toggle echo
+    echo_switch = !echo_switch;
+    break;
+
   case 'q':	// quit
     menu=MENU_CODE_UNDECIDED;
     serial_menu_display();
@@ -1095,9 +1103,8 @@ int serial_menu() {
   cb_write(&serial_input_BUFFER, token);
 
   if (token) {
-#ifdef serial_ECHO
-    Serial.print(token);
-#endif    
+    if (echo_switch)
+      Serial.print(token);
 
     if (!cb_is_full(&serial_input_BUFFER)) {
       return 0;			// not end token, buffer not full, done
@@ -1108,9 +1115,8 @@ int serial_menu() {
       // this *will* fail with multibyte items like numbers
     }
   }
-#ifdef serial_ECHO
-  Serial.println();
-#endif
+  if (echo_switch)
+    Serial.println();
   // token == 0 || cb_is_full(&serial_input_BUFFER)
 
   // cr-lf and it´s cracy sisters produce empty packages

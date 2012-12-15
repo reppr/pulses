@@ -1,3 +1,4 @@
+
    Softboard  http://github.com/reppr/softboard
 
    Hardware/software developing/testing tool.
@@ -77,8 +78,13 @@
    check that it *does* send 'Newline' (in the bottom window frame)
    and set baud rate to the same value as USE_SERIAL_BAUD on the arduino.
 
+   Toggle serial echo with ´e´.
+
 
    Some examples:
+       Always let your terminal send a linefeed after the example string
+       to trigger actions.
+
 
    Example 1:  'P13 OH' switch LED on   (P select pin, O output, H high)
                'L'      off again       (L low)
