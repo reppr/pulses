@@ -294,7 +294,8 @@ pin     value   |                               |                               
 
 // to save RAM constant strings are stored in PROGMEM
 const unsigned char programName[] PROGMEM = "serial MENU";
-const unsigned char programLongName[] PROGMEM = "*** serial menu v0.2 ***";
+const unsigned char programLongName[] PROGMEM = \
+  "*** serial menu v0.2 ***	buffer=";
 const unsigned char version[] PROGMEM = "version 0.2";
 
 const unsigned char tab_[] PROGMEM = "\t";
@@ -999,7 +1000,8 @@ void serial_menu_common_display() {
 // serial_menu_display()
 // top level serial menu display function
 void serial_menu_display() {
-  serial_println_progmem(programLongName);
+  serial_print_progmem(programLongName);
+  Serial.println(serial_input_BUF_size);
 
   switch (menu) {
   case MENU_CODE_UNDECIDED:
@@ -1286,7 +1288,8 @@ void setup() {
       }
   #else				// no menu, show program name
     Serial.println();
-    serial_println_progmem(programLongName);
+    serial_print_progmem(programLongName);
+    Serial.println(serial_input_BUF_size);
   #endif
 #endif
 
