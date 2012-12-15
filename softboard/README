@@ -1,20 +1,38 @@
-README softboard
+   Softboard  http://github.com/reppr/softboard
 
-   Arduino software breadboard.
    Hardware/software developing/testing tool.
 
    Simple hardware menu interface over serial line
-   as a kind of software breadboard
+   as a kind of arduino software breadboard.
 
-   Read/set I/O pin configuration and states, switch pins on/off.
-   Read and write digital and analog values, switch pullup/high-z,
-   watch changing inputs over time.
+   Send one letter commands (and sometimes also sequences of chiffres)
+   over a serial line say from your computer to the arduino to trigger
+   actions and get infos.
 
-   Send 'm' over serial line and a menu will be sent back
-   displaying info on its one-letter commands.
+   The arduino will buffer serial input (without waiting for it) until
+   a terminating linefeed is received as an end token.
+   Any sequence of one or more '\n'  '\c'  '\0' accepted as end token.
 
-   Easy to write your own menu, but not documented yet...
+   Commands can read and set I/O pin configuration and states,
+   switch pins on/off, read and write digital and analog values,
+   switch pullup/high-z, or continuously watch changing inputs over time.
+
+   Use it to test hardware like sensors, motors, and things you want
+   to run quick tests after setting it up on a (real) breadboard.
+
+   Then you can use it to test software parts of your program while
+   you write it and fit parts together. 
+
+
+   Send 'm' and a linefeed over serial line to see the menu.
+   It displays some basic infos and hints on one-letter commands.
+
+   Easy to write your own menu, take the hardware menu as example.
    Use it together with your own programs.
+   Grep the source for ´dance´ or ´yodel´ and you might find hints
+   how to setup a program menu that will tell the arduino sketch to
+   dance when you send ´d´, to yodel on ´y´,...
+   and to do something special on ´s´ ;)
 
 
    Installation:
@@ -24,7 +42,7 @@ README softboard
    to your arduino sketchbook/ folder.
    Load the sketch from arduino menu Files>Sketchbook>softboard.
 
-   Older arduino versions than 1.0 need a fix:
+   Arduino versions older than 1.0 need a fix:
      see this thread:
      http://code.google.com/p/arduino/issues/detail?id=604&start=200
 
@@ -34,16 +52,33 @@ README softboard
          #define round(x)     ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
          tested on arduino-0023
 
-    For older arduino versions you also have to rename the sketch file
-    from softboard.ino to softboard.pde
+   For older arduino versions you also have to rename the sketch file
+   from softboard.ino to softboard.pde
 
 
    How it works:
 
-   Communicate over serial. The minimalistic menu shows you one letter
-   commands to send. The menu reacts on these commands and reads numbers.
+   You communicate with the arduino over a serial connection
+   that could be a real serial line or an usb cable.
+
+   The minimalistic menu shows you one letter commands and listens to
+   your input. Serial inputs are buffered until you send a linefeed.
+   Then your inputs (commands and numbers as sequences of chiffres)
+   will be read and acted upon.
+
+   Do configure your terminal emulation program to send some sort of
+   line ending code, usual culprits should work.
+
+   Set arduino baud rate by editing the line starting with
+   #define USE_SERIAL_BAUD
+   and set it to the same value in your terminal software.
+
+   So if for example you use the Arduino 'Serial Monitor' window
+   check that it *does* send 'Newline' (in the bottom window frame)
+   and set baud rate to the same value as USE_SERIAL_BAUD on the arduino.
 
 
+   Some examples:
 
    Example 1:  'P13 OH' switch LED on   (P select pin, O output, H high)
                'L'      off again       (L low)
@@ -85,7 +120,7 @@ README softboard
 
 
 
-   Example 4:  'a'      Display snapshot values on analog inputs.
+   Example 4:  'a'  Display snapshot values on analog inputs.
 
                         [fixed font only]
 pin     value   |                               |                               |
@@ -98,7 +133,7 @@ pin     value   |                               |                               
 
 
 
-   Example 5:  '.'      Display info about all pin's I/O configuration and states.
+   Example 5:  '.'  Info on all digital pin's I/O configuration and state.
 
  pin 0  I  hi-z
  pin 1  I  hi-z
@@ -114,7 +149,6 @@ pin     value   |                               |                               
  pin 11 I  hi-z
  pin 12 I  hi-z
  pin 13 I  pullup
-
 
 
    Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
