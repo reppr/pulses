@@ -2,7 +2,10 @@
 // serial_menu alias softboard for the arduino
 /* ****************************************************************
 
-            http://github.com/reppr/softboard
+             Software breadboard for the Arduino.
+
+              http://github.com/reppr/softboard
+
 
     Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
@@ -18,8 +21,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-   **************************************************************** */
-/*
+*/
+
+/* **************************************************************** */
+/* README:
 
    Softboard  http://github.com/reppr/softboard
 
@@ -52,10 +57,10 @@
 
    Easy to write your own menu, take the hardware menu as example.
    Use it together with your own programs.
-   Grep the source for ´dance´ or ´yodel´ and you might find hints
-   how to setup a program menu that will tell the arduino sketch to
-   dance when you send ´d´, to yodel on ´y´,...
-   and to do something special on ´s´ ;)
+
+   Grep the source for ´dance´ or ´yodel´ and you might find hints how to
+   setup a program menu to tell the arduino sketch to dance on ´d´,
+   to yodel on ´y´  and on ´s´ to do something special ;)
 
 
    Installation:
