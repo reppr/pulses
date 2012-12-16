@@ -86,11 +86,11 @@
        to trigger actions.
 
 
-   Example 1:  'P13 OH' switch LED on   (P select pin, O output, H high)
+   Example 1:  'D13 OH' switch LED on   (D select pin, O output, H high)
                'L'      off again       (L low)
 
 
-   Example 2:  'P13 IH' pullup LED pin  (P select pin, I input, H high)
+   Example 2:  'D13 IH' pullup LED pin  (D select pin, I input, H high)
                                         LED glows at low level
                'O'      LED as OUTPUT   now the LED is on
 
@@ -102,7 +102,7 @@
 
                Now connect a sensor to the input and explore its data...
 
-               'P2 v'      P=select pin (both analogue or digital)
+               'A2 v'      A=select pin (both analog or digital)
                            v=display analog read values and bar graphs
 
 175     ***********
@@ -126,16 +126,17 @@
 
 
 
-   Example 4:  'a'  Display snapshot values on analog inputs.
+   Example 4:  ','  Display snapshot values of all analog inputs.
 
                         [fixed font only]
+
 pin     value   |                               |                               |
-0       609     ***************************************
-1       504     ********************************
-2       451     *****************************
-3       398     *************************
-4       383     ************************
-5       409     **************************
+*A0     609     ***************************************
+ A1     504     ********************************
+ A2     451     *****************************
+ A3     398     *************************
+ A4     383     ************************
+ A5     409     **************************
 
 
 
