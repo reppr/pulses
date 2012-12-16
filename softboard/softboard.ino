@@ -129,7 +129,7 @@
 
                Now connect a sensor to the input and explore its data...
 
-               'P2 v'      P=select pin (both analogue or digital)
+               'P2 v'      P=select pin (both analog or digital)
                            v=display analog read values and bar graphs
 
 175     ***********
@@ -257,7 +257,8 @@ pin     value   |                               |                               
   			 // watch changes on inputs as value or as bar graphs
   	  		 // set digital and analog outputs, etc.
   #ifdef HARDWARE_menu
-    char hw_PIN = ILLEGAL;
+    char PIN_digital = ILLEGAL;	// would be dangerous to default to zero
+    char PIN_analog = 0;	// 0 is save as default for analog pins
   #endif // HARDWARE_menu
 #else
   #error #define   USE_SERIAL_BAUD <baud>   in file softboard.ino
@@ -276,6 +277,7 @@ pin     value   |                               |                               
 
 /* **************************************************************** */
 // board specific things:
+// FIXME DADA ################################################################
 #if defined(NUM_ANALOG_INPUTS) && defined(NUM_DIGITAL_PINS)
   #define ANALOG_INPUTs	NUM_ANALOG_INPUTS
   #define DIGITAL_PINs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)
@@ -509,7 +511,7 @@ void numeric_input(circ_buf *cb, long *value) {
 
 
 
-// bar_graph()
+// bar_graph(value)
 // print one value & bar graph line:
 const unsigned char outOfRange[] PROGMEM = " out of range.";
 const unsigned char value_[] PROGMEM = "value ";
@@ -541,7 +543,6 @@ void bar_graph(int value) {
 }
 
 
-
 // bar_graph_VU(pin):
 // display a scrolling bar graph over the readings of an analog input.
 //
@@ -553,20 +554,17 @@ void bar_graph(int value) {
 int bar_graph_tolerance=0;
 
 
+// bar_graph_feedback(pin), info line for bar graph:
+const unsigned char tolerance_[] PROGMEM = "tolerance ";
 
-// follow_info(pin)
-// info line for bar graph:
-const unsigned char followPin[] PROGMEM = "Follow pin ";
-const unsigned char tolerance_[] PROGMEM = "\ttolerance ";
-
-void follow_info(int pin) {
-  // display info about pin and tolerance
-  serial_print_progmem(followPin);
-  Serial.print((int) pin);
+void feedback_tolerance() {
   serial_print_progmem(tolerance_);
   Serial.println(bar_graph_tolerance);
 }
 
+
+const unsigned char analog_reads_title[] PROGMEM = \
+  "pin\tvalue\t|\t\t\t\t|\t\t\t\t|";
 
 
 // bar_graph_VU(pin):
@@ -577,33 +575,36 @@ void follow_info(int pin) {
 // any other key stops VU display
 
 const unsigned char VU_title[] PROGMEM = \
-  "values\t\t +/- set tolerance\t(any other byte to stop)\n";
+  "values\t\t +/- set tolerance\t(any other to stop)";
 const unsigned char quit_[] PROGMEM = "(quit)";
 
 void bar_graph_VU(int pin) {
   int value, oldValue=-9997;		// just an unlikely value
   int menu_input;
 
-  follow_info(pin);
+  feedback_tolerance();
 
   serial_println_progmem(VU_title);
   while (true) {
     value =  analogRead(pin);
     if (abs(value - oldValue) > bar_graph_tolerance) {
-      bar_graph(value);
-      oldValue = value;
+    Serial.print("*A");
+    Serial.print((int) pin);
+    serial_print_progmem(tab_);
+    bar_graph(value);
+    oldValue = value;
     }
 
     if (Serial.available()) {
       switch (menu_input = Serial.read()) {
       case '+':
 	bar_graph_tolerance++;
-	follow_info(pin);
+	feedback_tolerance();
 	break;
       case '-':
 	if (bar_graph_tolerance)
 	  bar_graph_tolerance--;
-	  follow_info(pin);
+	  feedback_tolerance();
 	break;
       case '\n': case '\r':	// linebreak after sending 'V'
         break;
@@ -639,27 +640,26 @@ void serial_print_BIN(unsigned long value, int bits) {
 // hw info display functions:
 
 
-// display_analog_reads()
+// pins_info_analog()
 // display analog snapshot read values and bar graphs, a line each input:
-const unsigned char analog_reads_title[] PROGMEM = \
-  "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
 
-void display_analog_reads() {
+/* const unsigned char analog_reads_title[] PROGMEM =	\
+  "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
+*/
+void pins_info_analog() {
   int i, value;
 
   serial_println_progmem(analog_reads_title);
 
-  for (i=0; i<ANALOG_INPUTs; i++) {
-    value = analogRead(i);
-    Serial.print(i); serial_print_progmem(tab_); bar_graph(value);
-  }
+  for (i=0; i<ANALOG_INPUTs; i++)
+    pin_info_analog(i);
 
   Serial.println();
 }
 
 
 
-// pin_info()
+// pin_info_digital()
 // display configuration and state of a pin:
 const unsigned char pin_[] PROGMEM = "pin ";
 const unsigned char high_[] PROGMEM = "high";
@@ -667,7 +667,7 @@ const unsigned char low_[] PROGMEM = "low";
 const unsigned char pullup_[] PROGMEM = "pullup";
 const unsigned char hiZ_[] PROGMEM = "hi-z";
 
-void pin_info(uint8_t pin) {
+void pin_info_digital(uint8_t pin) {
   uint8_t mask = digitalPinToBitMask(pin);
   uint8_t port = digitalPinToPort(pin);
   volatile uint8_t *reg;
@@ -675,7 +675,7 @@ void pin_info(uint8_t pin) {
   if (port == NOT_A_PIN) return;
 
   // selected sign * and pin:
-  if (pin == hw_PIN )
+  if (pin == PIN_digital )
     Serial.print("*");
   else
     Serial.print(" ");
@@ -723,14 +723,22 @@ void pin_info(uint8_t pin) {
 
 
 
-// display configuration and state of all pins:
-void pins_info() {
+// display configuration and state of all digital pins:
+void pins_info_digital() {
   for (uint8_t pin=0; pin<DIGITAL_PINs; pin++)
-    pin_info(pin);
+    pin_info_digital(pin);
 }
 
 
-
+void pin_info_analog(uint8_t pin) {
+  if (pin == PIN_analog)
+    Serial.print("*A");
+  else
+    Serial.print(" A");
+  Serial.print((int) pin);
+  serial_print_progmem(tab_);
+  bar_graph(analogRead(pin));
+}
 
 // watch_digital_input(pin)
 // continuously display digital input readings, whenever the input changes:
@@ -746,7 +754,7 @@ void watch_digital_input(int pin) {
   serial_println_progmem(anyStop);
 
   while (!Serial.available()) {
-    value = digitalRead(hw_PIN);
+    value = digitalRead(PIN_digital);
     if (value != old_value) {
       old_value = value;
       serial_print_progmem(pin_); Serial.print((int) pin);
@@ -770,49 +778,84 @@ void watch_digital_input(int pin) {
 // menu_hardware_display()  display hardware menu:
 const unsigned char hwMenuTitle[] PROGMEM = \
   "\n*** HARDWARE MENU ***\t\tfree RAM=";
-const unsigned char selectPin[] PROGMEM = \
-  "P=select pin for 'I, O, H, L, r, W, d, v' to work on ";
-const unsigned char PPin[] PROGMEM = "\tP=pin (";
-const unsigned char OIHLWr[] PROGMEM = \
-  "O=OUTPUT\tI=INPUT\t\tH=HIGH\tL=LOW\tanalog:\tW=WRITE\t    r=read";
-const unsigned char dv_[] PROGMEM = "d=digiwatch\tv=VU bar\t";
-const unsigned char aAnalog_[] PROGMEM = "a=all analog\t.=pins_info";
+const unsigned char select_[] PROGMEM = "select ";
+const unsigned char _digital[] PROGMEM = "digital";
+const unsigned char _analog[] PROGMEM = "analog";
+const unsigned char pinFor[] PROGMEM = " pin for ";
+const unsigned char digitalKeys[] PROGMEM = \
+  "'d, r, I, O, H, L, W'";
+const unsigned char analogKeys[] PROGMEM = "'a, v'";
+const unsigned char toWork_[] PROGMEM = \
+  " to work on\t";
+const unsigned char pin__[] PROGMEM = "pin (";
+const unsigned char _close[] PROGMEM = ")";
+const unsigned char OIHLWd[] PROGMEM = \
+  "O=OUTPUT\tI=INPUT\t\tH=HIGH\tL=LOW\tpwm: W=WRITE\td=pin info";
+const unsigned char v_r[] PROGMEM = "watch over time:\tv=VU bar\tr=read";
+
+const unsigned char all_[] PROGMEM = ".=all digital\t,=all analog\t;=both";
+
+// factored out display functions
+void _select_digital(bool key) {
+  if (key)
+    Serial.print("D=");
+  serial_print_progmem(select_);
+  serial_print_progmem(_digital);
+  serial_print_progmem(pinFor);
+  serial_print_progmem(digitalKeys);
+}
+
+void _select_analog(bool key) {
+  if (key)
+    Serial.print("A=");
+  serial_print_progmem(select_);
+  serial_print_progmem(_analog);
+  serial_print_progmem(pinFor);
+  serial_print_progmem(analogKeys);
+}
 
 void menu_hardware_display() {
   serial_print_progmem(hwMenuTitle);
   Serial.println(get_free_RAM());
   Serial.println();
 
-  serial_print_progmem(selectPin);
-  serial_print_progmem(PPin);
-  if (hw_PIN == ILLEGAL)
+  _select_digital(true);
+  serial_print_progmem(toWork_);
+  serial_print_progmem(pin__);
+  if (PIN_digital == ILLEGAL)
     Serial.print("no");
   else
-    Serial.print((int) hw_PIN);
-  Serial.println(")");
+    Serial.print((int) PIN_digital);
+  serial_println_progmem(_close);
+  serial_println_progmem(OIHLWd);
+  Serial.println();
 
-  serial_println_progmem(OIHLWr);
-  serial_print_progmem(dv_);
-  serial_println_progmem(aAnalog_);
+  _select_analog(true);
+  serial_print_progmem(toWork_);
+  serial_print_progmem(pin__);
+  Serial.print((int) PIN_analog);
+  serial_println_progmem(_close);
+  serial_println_progmem(v_r);
+  Serial.println();
+
+  serial_println_progmem(all_);
 }
 
-
-
-
-// please_select_pin()
-// give a warning that no valid pin was selected
-void please_select_pin() {
-  serial_println_progmem(selectPin);
+// factored out helper function
+bool digital_pin_ok() {
+  if (PIN_digital == ILLEGAL) {
+    _select_digital(true);
+    Serial.println();
+    return false;
+  } else
+    return true;
 }
-
-
 
 // bool menu_hardware_reaction(menu_input)
 // try to react on menu_input, return success flag
 const unsigned char none_[] PROGMEM = "(none)";
-const unsigned char analogWriteValue[] PROGMEM = "analog write value ";
+const unsigned char pwmWrite[] PROGMEM = "pwm write ";
 const unsigned char analogWrite_[] PROGMEM = "analogWrite(";
-const unsigned char analogValueOnPin[] PROGMEM = "analog value on pin ";
 // const unsigned char bytes_[] PROGMEM = " bytes";
 // const unsigned char freeRAM[] PROGMEM = "free RAM: ";
 
@@ -820,115 +863,114 @@ bool menu_hardware_reaction(char menu_input) {
   long newValue;
 
   switch (menu_input) {
-//  // DEACTIVATED as it is in the menu already
-//  case  'M':
-//    serial_print_progmem(freeRAM);
-//    Serial.print(get_free_RAM());
-//    serial_println_progmem(bytes_);
-//    break;
-
-  case 'P':	// uppercase/lowercase
-  case 'p':	// we accept lowercase as it does not change the chip
-    serial_print_progmem(selectPin);
+  case 'A':
+    _select_analog(false);
     serial_print_progmem(tab_);
 
-    newValue = hw_PIN;
+    newValue = PIN_analog;
+    numeric_input(&serial_input_BUFFER, &newValue);
+    if (newValue>=0 && newValue<ANALOG_INPUTs)
+      PIN_analog = newValue;
+
+    serial_print_progmem(pin_);
+    Serial.println((int) PIN_analog);
+    break;
+
+  case 'D':
+    _select_digital(false);
+    serial_print_progmem(tab_);
+
+    newValue = PIN_digital;
     numeric_input(&serial_input_BUFFER, &newValue);
     if (newValue>=0 && newValue<DIGITAL_PINs) {
-      hw_PIN = newValue;
-      pin_info(hw_PIN);
+      PIN_digital = newValue;
+      pin_info_digital((int) PIN_digital);
     } else
       serial_println_progmem(none_);
     break;
 
   case 'O':
-    if (hw_PIN == ILLEGAL)
-      please_select_pin();
-    else {
-      pinMode(hw_PIN, OUTPUT);
-      pin_info(hw_PIN);
+    if (digital_pin_ok()) {
+      pinMode(PIN_digital, OUTPUT);
+      pin_info_digital(PIN_digital);
     }
     break;
 
   case 'I':
-    if (hw_PIN == ILLEGAL)
-      please_select_pin();
-    else {
-      pinMode(hw_PIN, INPUT);
-      pin_info(hw_PIN);
+    if (digital_pin_ok()) {
+      pinMode(PIN_digital, INPUT);
+      pin_info_digital(PIN_digital);
     }
     break;
 
- case 'H':
-    if (hw_PIN == ILLEGAL)
-      please_select_pin();
-    else {
-      digitalWrite(hw_PIN, HIGH);
-      pin_info(hw_PIN);
+  case 'H':
+    if (digital_pin_ok()) {
+      digitalWrite(PIN_digital, HIGH);
+      pin_info_digital(PIN_digital);
     }
     break;
 
   case 'L':
-    if (hw_PIN == ILLEGAL)
-      please_select_pin();
-    else {
-      digitalWrite(hw_PIN, LOW);
-      pin_info(hw_PIN);
+    if (digital_pin_ok()) {
+      digitalWrite(PIN_digital, LOW);
+      pin_info_digital(PIN_digital);
     }
     break;
 
   case 'W':
-    if (hw_PIN == ILLEGAL)
-      please_select_pin();
-    else {
-      serial_print_progmem(analogWriteValue);
+    if (digital_pin_ok()) {
+      // ################ which pins can do pwm? ############################
+      serial_print_progmem(pwmWrite);
       newValue = -1;
       numeric_input(&serial_input_BUFFER, &newValue);
       if (newValue>=0 && newValue<=255) {
 	Serial.println(newValue);
 
-	analogWrite(hw_PIN, newValue);
-	serial_print_progmem(analogWrite_); Serial.print((int) hw_PIN);
-	Serial.print(", "); Serial.print(newValue); Serial.println(")");
+	analogWrite(PIN_digital, newValue);
+	serial_print_progmem(analogWrite_); Serial.print((int) PIN_digital);
+	Serial.print(", "); Serial.print(newValue);
+	serial_println_progmem(_close);
       } else
-	serial_println_progmem(quit_);
-    }
-    break;
-
-  case 'r':
-    if ((hw_PIN == ILLEGAL) | (hw_PIN >= ANALOG_INPUTs))
-      please_select_pin();
-    else {
-      serial_print_progmem(analogValueOnPin); Serial.print((int) hw_PIN);
-      serial_print_progmem(is_); Serial.println(analogRead(hw_PIN));
-    }
-    break;
-
-  case 'v':
-  case 'V':	// ok i'm still used to uppercase V
-    if ((hw_PIN == ILLEGAL) | (hw_PIN >= ANALOG_INPUTs))
-      please_select_pin();
-    else
-      bar_graph_VU(hw_PIN);
-    break;
-
-  case 'd':
-    if (hw_PIN == ILLEGAL)
-      please_select_pin();
-    else {
-      pinMode(hw_PIN, INPUT);
-      pin_info(hw_PIN);
-      watch_digital_input(hw_PIN);
+	serial_println_progmem(none_);
     }
     break;
 
   case 'a':
-    display_analog_reads();
+    serial_println_progmem(analog_reads_title);
+    pin_info_analog(PIN_analog);
     break;
 
-  case '.':
+  case 'd':
+    if (digital_pin_ok())
+      pin_info_digital(PIN_digital);
+    break;
+
+  case 'v':
+    bar_graph_VU(PIN_analog);
+    break;
+
+  case 'r':
+    if (digital_pin_ok()) {
+      pinMode(PIN_digital, INPUT);	// ################
+      pin_info_digital(PIN_digital);
+      watch_digital_input(PIN_digital);
+    }
+    break;
+
+  case '.':	// all digital
     Serial.println();
-    pins_info();
+    pins_info_digital();
+    Serial.println();
+    break;
+
+  case ',':	// all analog
+    pins_info_analog();
+    break;
+
+  case ';':	// both ;)
+    Serial.println();
+    pins_info_analog();
+    pins_info_digital();
     Serial.println();
     break;
 
@@ -1294,7 +1336,7 @@ void setup() {
 
     if (menu == MENU_CODE_HARDWARE )
       {
-	pins_info();
+	pins_info_digital();
 	Serial.println();
       }
   #else				// no menu, show program name
