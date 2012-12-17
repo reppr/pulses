@@ -524,6 +524,20 @@ void numeric_input(circ_buf *cb, long *value) {
   return;
 }
 
+// drop numeric input from serial buffer:
+void numeric_drop_input(circ_buf *cb) {
+  int input;
+
+  while (cb_stored(cb)) {
+    input=cb_read(cb);
+    if (input < '0' || input > '9') {	// NAN?
+      cb_recover_last(cb);		// put NAN back into input buffer
+      return;
+    }
+  }
+  return;
+}
+
 
 
 // bar_graph(value)
@@ -869,11 +883,14 @@ bool digital_pin_ok() {
 
 // bool menu_hardware_reaction(menu_input)
 // try to react on menu_input, return success flag
-const unsigned char pwmWrite[] PROGMEM = "PWM write ";
-const unsigned char analogWrite_[] PROGMEM = "analogWrite(";
+const unsigned char pwm_[] PROGMEM = "PWM ";
+const unsigned char write_[] PROGMEM = "write ";
+const unsigned char noHw_[] PROGMEM = "no hardware ";
+const unsigned char analogWrite_[] PROGMEM = "\tanalogWrite(";
 
 bool menu_hardware_reaction(char menu_input) {
   long newValue;
+  bool do_it;	// sorry for the hack...
 
   switch (menu_input) {
   case 'A':
@@ -935,19 +952,34 @@ bool menu_hardware_reaction(char menu_input) {
 
   case 'W':
     if (digital_pin_ok()) {
-      // ################ which pins can do PWM? ############################
-      serial_print_progmem(pwmWrite);
-      newValue = -1;
-      numeric_input(&serial_input_BUFFER, &newValue);
-      if (newValue>=0 && newValue<=255) {
-	Serial.println(newValue);
 
-	analogWrite(PIN_digital, newValue);
-	serial_print_progmem(analogWrite_); Serial.print((int) PIN_digital);
-	Serial.print(", "); Serial.print(newValue);
-	serial_println_progmem(_close);
-      } else
-	serial_println_progmem(outOfRange);
+      // can the pin do hardware PWM?
+      do_it=true;	// hack to get through the #ifdef
+#ifdef digitalPinHasPWM
+      if (!digitalPinHasPWM(PIN_digital)) {
+	do_it=false;	// hack to get through the #ifdef
+	serial_print_progmem(noHw_); serial_print_progmem(pwm_);
+	Serial.println();
+	numeric_drop_input(&serial_input_BUFFER);
+      }
+#endif
+      if (do_it) {	// hack to get through the #ifdef
+	serial_print_progmem(pin_); Serial.print((int) PIN_digital);
+	serial_print_progmem(tab_);
+	serial_print_progmem(pwm_); serial_print_progmem(write_);
+
+	newValue = -1;
+	numeric_input(&serial_input_BUFFER, &newValue);
+	if (newValue>=0 && newValue<=255) {
+	  Serial.print(newValue);
+
+	  analogWrite(PIN_digital, newValue);
+	  serial_print_progmem(analogWrite_); Serial.print((int) PIN_digital);
+	  Serial.print(", "); Serial.print(newValue);
+	  serial_println_progmem(_close);
+	} else
+	  serial_println_progmem(outOfRange);
+      }
     }
     break;
 
