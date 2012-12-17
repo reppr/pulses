@@ -286,27 +286,41 @@ pin     value   |                               |                               
 
 
 /* **************************************************************** */
-// board specific things:
-// FIXME DADA ################################################################
-#if defined(NUM_ANALOG_INPUTS) && defined(NUM_DIGITAL_PINS)
-  #define ANALOG_INPUTs	NUM_ANALOG_INPUTS
-  #define DIGITAL_PINs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)
-#else	// savety net
-  #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
-    #define ANALOG_INPUTs	16
-    #define DIGITAL_PINs	54
-  #else								// 168/328 boards
-    #define ANALOG_INPUTs	6
-    #define DIGITAL_PINs	14
-  #endif
-#endif	// board specific initialisations
+// board specific things, try to use arduino macros:
 
-#if defined(LED_BUILTIN)
-  #define LED_PIN	LED_BUILTIN
-#else
-  #define LED_PIN	13
+#ifndef NUM_DIGITAL_PINS	// try harder...
+  #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
+    #define NUM_DIGITAL_PINS	70
+  #else								// 168/328 boards
+    #define NUM_DIGITAL_PINS	20
+  #endif
+
+  #ifndef NUM_DIGITAL_PINS
+    #error #define NUM_DIGITAL_PINS
+  #endif
 #endif
 
+#ifndef NUM_ANALOG_INPUTS	// try harder...
+  #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
+    #define NUM_ANALOG_INPUTS	16
+  #else								// 168/328 boards
+    #define NUM_ANALOG_INPUTS	6
+  #endif
+
+  #ifndef NUM_ANALOG_INPUTS
+    #error #define NUM_ANALOG_INPUTS
+  #endif
+#endif
+
+// DIGITAL_IOs
+//   number of arduino pins configured for digital I/O 
+//   not counting analog inputs:
+#define DIGITAL_IOs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)
+
+
+#ifndef(LED_BUILTIN)
+//  #define LED_BUILTIN	13	// maybe, maybe not...
+#endif
 
 
 /* **************************************************************** */
@@ -679,7 +693,7 @@ void pins_info_analog() {
 
   serial_println_progmem(analog_reads_title);
 
-  for (i=0; i<ANALOG_INPUTs; i++)
+  for (i=0; i<NUM_ANALOG_INPUTS; i++)
     pin_info_analog(i);
 
   Serial.println();
@@ -753,7 +767,7 @@ void pin_info_digital(uint8_t pin) {
 
 // display configuration and state of all digital pins:
 void pins_info_digital() {
-  for (uint8_t pin=0; pin<DIGITAL_PINs; pin++)
+  for (uint8_t pin=0; pin<DIGITAL_IOs; pin++)
     pin_info_digital(pin);
 }
 
@@ -899,7 +913,7 @@ bool menu_hardware_reaction(char menu_input) {
 
     newValue = PIN_analog;
     numeric_input(&serial_input_BUFFER, &newValue);
-    if (newValue>=0 && newValue<ANALOG_INPUTs)
+    if (newValue>=0 && newValue<NUM_ANALOG_INPUTS)
       PIN_analog = newValue;
     else
       serial_println_progmem(outOfRange);
@@ -914,7 +928,7 @@ bool menu_hardware_reaction(char menu_input) {
 
     newValue = PIN_digital;
     numeric_input(&serial_input_BUFFER, &newValue);
-    if (newValue>=0 && newValue<DIGITAL_PINs) {
+    if (newValue>=0 && newValue<DIGITAL_IOs) {
       PIN_digital = newValue;
       pin_info_digital((int) PIN_digital);
     } else
