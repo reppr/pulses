@@ -1,6 +1,6 @@
 /*
   minimal include file,
-  just enough to keep arduino GUI happy
+  just enough to keep arduino GUI happy when building softboard
 */
 
 
