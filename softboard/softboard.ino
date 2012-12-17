@@ -260,16 +260,16 @@ pin     value   |                               |                               
 //#define serial_input_BUF_size	16	// if you are tight of RAM
 
   // simple menu to access arduino hardware:
-  #define SOFTBOARD_menu // menu interface to hardware configuration
-  	  		 // this will let you read digital and analog inputs
-			 // configure and set pins
-			 // write PWM values
- 			 // watch changes on inputs continuously
-			 // get info about values as numbers and bar graphs
-  #ifdef SOFTBOARD_menu
+  #define HARDWARE_menu // menu interface to hardware configuration
+  	  		// this will let you read digital and analog inputs
+			// configure and set pins
+			// write PWM values
+ 			// watch changes on inputs continuously
+			// get info about values as numbers and bar graphs
+  #ifdef HARDWARE_menu
     char PIN_digital = ILLEGAL;	// would be dangerous to default to zero
     char PIN_analog = 0;	// 0 is save as default for analog pins
-  #endif // SOFTBOARD_menu
+  #endif // HARDWARE_menu
 #else
   #error #define   USE_SERIAL_BAUD <baud>   in file softboard.ino
 #endif	// USE_SERIAL_BAUD
@@ -649,7 +649,7 @@ void serial_print_BIN(unsigned long value, int bits) {
 
 
 
-#ifdef SOFTBOARD_menu	// inside SERIAL_MENU
+#ifdef HARDWARE_menu	// inside SERIAL_MENU
 // ****************************************************************
 // hw info display functions:
 
@@ -791,7 +791,7 @@ void watch_digital_input(int pin) {
 
 // menu_hardware_display()  display hardware menu:
 const unsigned char hwMenuTitle[] PROGMEM = \
-  "\n*** SOFTBOARD MENU ***\t\tfree RAM=";
+  "\n*** HARDWARE MENU ***\t\tfree RAM=";
 const unsigned char select_[] PROGMEM = "select ";
 const unsigned char _digital[] PROGMEM = "digital";
 const unsigned char _analog[] PROGMEM = "analog";
@@ -919,7 +919,7 @@ bool menu_hardware_reaction(char menu_input) {
     }
     break;
 
-  case 'H':
+  case 'H':  // no problem to use H here, same as the menu code.
     if (digital_pin_ok()) {
       digitalWrite(PIN_digital, HIGH);
       pin_info_digital(PIN_digital);
@@ -994,7 +994,7 @@ bool menu_hardware_reaction(char menu_input) {
   }
   return 1;		// menu_input found in this menu
 }
-#endif // SOFTBOARD_menu
+#endif // HARDWARE_menu
 
 
 
@@ -1008,7 +1008,7 @@ bool menu_hardware_reaction(char menu_input) {
   // menu codes: (codes for non-existing menus are not a problem)
   #define MENU_CODE_UNDECIDED	0
   #define MENU_CODE_PROGRAM	1
-  #define MENU_CODE_SOFTBOARD	2
+  #define MENU_CODE_HARDWARE	2
 
   // unsigned char menu;  holds the code of the active menu.
   // normally it would default to
@@ -1018,7 +1018,7 @@ bool menu_hardware_reaction(char menu_input) {
   #ifdef PROGRAM_menu
     unsigned char menu=MENU_CODE_PROGRAM;	// program menu exists
   #else
-    unsigned char menu=MENU_CODE_SOFTBOARD;	// hw menu only
+    unsigned char menu=MENU_CODE_HARDWARE;	// hw menu only
   #endif
 
 #endif	// (SERIAL_MENU || MENU_LCD )
@@ -1041,9 +1041,9 @@ const unsigned char program_[] PROGMEM = \
   " 'P' program menu ";
 #endif
 
-#ifdef SOFTBOARD_menu
+#ifdef HARDWARE_menu
 const unsigned char hardware_[] PROGMEM = \
-  " 'S' hardware menu ";
+  " 'H' hardware menu ";
 #endif
 
 // serial_menu_common_display()
@@ -1054,8 +1054,8 @@ void serial_menu_common_display() {
   if (menu != MENU_CODE_PROGRAM)
     serial_print_progmem(program_);
 #endif
-#ifdef SOFTBOARD_menu
-  if (menu != MENU_CODE_SOFTBOARD)
+#ifdef HARDWARE_menu
+  if (menu != MENU_CODE_HARDWARE)
     serial_print_progmem(hardware_);
 #endif
 }
@@ -1075,8 +1075,8 @@ void serial_menu_display() {
     menu_program_display();
     break;
 #endif
-#ifdef SOFTBOARD_menu
-  case MENU_CODE_SOFTBOARD:
+#ifdef HARDWARE_menu
+  case MENU_CODE_HARDWARE:
     menu_hardware_display();
     break;
 #endif
@@ -1116,9 +1116,9 @@ bool serial_menu_common_reaction(char menu_input) {
     menu_program_display();
     break;
 #endif
-#ifdef SOFTBOARD_menu
-  case 'S':	// SOFTBOARD menu
-    menu = MENU_CODE_SOFTBOARD;
+#ifdef HARDWARE_menu
+  case 'H':	// HARDWARE menu
+    menu = MENU_CODE_HARDWARE;
     serial_menu_display();
     break;
 #endif
@@ -1213,9 +1213,9 @@ void serial_menu_reaction(char menu_input) {
       found = serial_menu_program_reaction(menu_input);
       break;
 #endif
-#ifdef SOFTBOARD_menu
-    case MENU_CODE_SOFTBOARD:
-      menu=MENU_CODE_SOFTBOARD;		// case MENU_CODE_UNDECIDED
+#ifdef HARDWARE_menu
+    case MENU_CODE_HARDWARE:
+      menu=MENU_CODE_HARDWARE;		// case MENU_CODE_UNDECIDED
       found = menu_hardware_reaction(menu_input);
       break;
 #endif
@@ -1433,7 +1433,7 @@ void setup() {
 // startup messages:
 #ifdef USE_SERIAL_BAUD
   #ifdef SERIAL_MENU		// show message about menu
-    if (menu == MENU_CODE_SOFTBOARD )
+    if (menu == MENU_CODE_HARDWARE )
       {
 	pins_info_digital();
 	pins_info_analog();
