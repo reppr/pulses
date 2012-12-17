@@ -52,7 +52,7 @@
    you write it and fit parts together. 
 
 
-   Send 'm' and a linefeed over serial line to see the menu.
+   Send 'm' or '?' and a linefeed over serial line to see the menu.
    It displays some basic infos and hints on one-letter commands.
 
 
