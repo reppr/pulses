@@ -28,12 +28,19 @@
    Send 'm' and a linefeed over serial line to see the menu.
    It displays some basic infos and hints on one-letter commands.
 
+
    Easy to write your own menu, take the hardware menu as example.
    Use it together with your own programs.
+
+
+   Integrate your own code:
 
    Grep the source for ´dance´ or ´yodel´ and you might find hints how to
    setup a program menu to tell the arduino sketch to dance on ´d´,
    to yodel on ´y´  and on ´s´ to do something special ;)
+
+   Just do #define PROGRAM_menu by uncommenting the line further down
+   and you will get an example program menu to build upon.
 
 
    Installation:

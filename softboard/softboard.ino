@@ -55,12 +55,19 @@
    Send 'm' and a linefeed over serial line to see the menu.
    It displays some basic infos and hints on one-letter commands.
 
+
    Easy to write your own menu, take the hardware menu as example.
    Use it together with your own programs.
+
+
+   Integrate your own code:
 
    Grep the source for ´dance´ or ´yodel´ and you might find hints how to
    setup a program menu to tell the arduino sketch to dance on ´d´,
    to yodel on ´y´  and on ´s´ to do something special ;)
+
+   Just do #define PROGRAM_menu by uncommenting the line further down
+   and you will get an example program menu to build upon.
 
 
    Installation:
@@ -270,9 +277,9 @@ pin     value   |                               |                               
 /* **************************************************************** */
 // To integrate your own program menu  #define PROGRAM_menu 
 // Write function menu_program_display() and serial_menu_program_reaction()
-// Please see below.
+// Please see examples below.
 //
-// #define PROGRAM_menu		// do you use an own program menu?
+#define PROGRAM_menu		// uncomment to activate
 
 
 
@@ -283,7 +290,7 @@ pin     value   |                               |                               
   #define ANALOG_INPUTs	NUM_ANALOG_INPUTS
   #define DIGITAL_PINs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)
 #else	// savety net
-  #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)	// mega boards
+  #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
     #define ANALOG_INPUTs	16
     #define DIGITAL_PINs	54
   #else								// 168/328 boards
@@ -460,30 +467,30 @@ void cb_recover_last(circ_buf *cb) {
 // ****************************************************************
 // menu I/O functions:
 
-// const unsigned char missing_number[] PROGMEM = "missing number";
+const unsigned char number_missing[] PROGMEM = "number missing";
 
 // get numeric integer input from chiffre sequence in the serial buffer
 void numeric_input(circ_buf *cb, long *value) {
   long input, num, sign=1;
 
   if (cb_stored(cb) == 0)
-    return;			// no input at all, return
+    goto number_missing;		// no input at all, return
 
   // skip spaces, get first chiffre:
   while ((input=cb_read(cb)) == ' ')	// first chiffre
     if (cb_stored(cb) == 0)
-      return;			// only spaces, return
+      goto number_missing;		// only spaces, return
 
   // check for sign:
   if (input == '-') {
     sign = -1;
     if (cb_stored(cb) == 0)
-      return;			// no input after sign, return
+      goto number_missing;	// no input after sign, return
     input = cb_read(cb);	// first chiffre after sign
   }
   else if (input == '+') {
     if (cb_stored(cb) == 0)
-      return;			// no input after sign, return
+      goto number_missing;	// no input after sign, return
     input = cb_read(cb);	// first chiffre after sign
   }
 
@@ -491,7 +498,7 @@ void numeric_input(circ_buf *cb, long *value) {
     num = input - '0';
   else {				// NAN
     cb_recover_last(cb); // put NAN char back into input buffer
-    return;		  // give up...
+    goto number_missing;		// give up...
   }
   // first chiffre has been read now
 
@@ -500,7 +507,7 @@ void numeric_input(circ_buf *cb, long *value) {
     input = cb_read(cb);
     if (input >= '0' && input <= '9')	// numeric?
       num = 10 * num + (input - '0');
-    else {
+    else {				// NAN
       cb_recover_last(cb); // put NAN char back into input buffer
       break;
     }
@@ -508,13 +515,18 @@ void numeric_input(circ_buf *cb, long *value) {
 
   // *if* we reach here change *value
   *value = sign * num;
+  return;
+  
+ number_missing:
+  serial_println_progmem(number_missing);
+  return;
 }
 
 
 
 // bar_graph(value)
 // print one value & bar graph line:
-const unsigned char outOfRange[] PROGMEM = " out of range.";
+const unsigned char outOfRange[] PROGMEM = "out of range";
 const unsigned char value_[] PROGMEM = "value ";
 
 void bar_graph(int value) {
@@ -576,7 +588,7 @@ const unsigned char analog_reads_title[] PROGMEM = \
 // any other key stops VU display
 
 const unsigned char VU_title[] PROGMEM = \
-  "values\t\t +/- set tolerance\t(any other to stop)";
+  "values\t\t +/- set tolerance\t(q=stop)";
 const unsigned char quit_[] PROGMEM = "(quit)";
 
 void bar_graph_VU(int pin) {
@@ -607,11 +619,10 @@ void bar_graph_VU(int pin) {
 	  bar_graph_tolerance--;
 	  feedback_tolerance();
 	break;
-      case '\n': case '\r':	// linebreak after sending 'V'
+      case '\n': case '\r':	// linebreak
         break;
       default:
-	serial_println_progmem(quit_);
-	return;		// exit
+	return;			// exit
       }
     }
   }    
@@ -663,8 +674,8 @@ void pins_info_analog() {
 // pin_info_digital()
 // display configuration and state of a pin:
 const unsigned char pin_[] PROGMEM = "pin ";
-const unsigned char high_[] PROGMEM = "high";
-const unsigned char low_[] PROGMEM = "low";
+const unsigned char high_[] PROGMEM = "HIGH";
+const unsigned char low_[] PROGMEM = "LOW";
 const unsigned char pullup_[] PROGMEM = "pullup";
 const unsigned char hiZ_[] PROGMEM = "hi-z";
 
@@ -731,6 +742,7 @@ void pins_info_digital() {
 }
 
 
+// display analog pin name and value as number and bar graph: 
 void pin_info_analog(uint8_t pin) {
   if (pin == PIN_analog)
     Serial.print("*A");
@@ -743,23 +755,22 @@ void pin_info_analog(uint8_t pin) {
 
 // watch_digital_input(pin)
 // continuously display digital input readings, whenever the input changes:
-const unsigned char watchingINpin[] PROGMEM = "watching digital input pin ";
-const unsigned char anyStop[] PROGMEM = "\t\t(send any byte to stop)";
-const unsigned char is_[] PROGMEM = " is ";
+const unsigned char watchingPin[] PROGMEM = "watching pin D";
+const unsigned char qStop[] PROGMEM = "\t\t(q=stop)";
 
 void watch_digital_input(int pin) {
   int value, old_value=-9997;
 
-  serial_print_progmem(watchingINpin);
+  serial_print_progmem(watchingPin);
   Serial.print((int) pin);
-  serial_println_progmem(anyStop);
+  serial_println_progmem(qStop);
 
   while (!Serial.available()) {
     value = digitalRead(PIN_digital);
     if (value != old_value) {
       old_value = value;
-      serial_print_progmem(pin_); Serial.print((int) pin);
-      serial_print_progmem(is_);
+      Serial.print("*D");  Serial.print((int) pin);
+      serial_print_progmem(tab_);
       if (value)
 	serial_println_progmem(high_);
       else
@@ -786,8 +797,7 @@ const unsigned char pinFor[] PROGMEM = " pin for ";
 const unsigned char digitalKeys[] PROGMEM = \
   "'d, r, I, O, H, L, W'";
 const unsigned char analogKeys[] PROGMEM = "'a, v'";
-const unsigned char toWork_[] PROGMEM = \
-  " to work on\t";
+const unsigned char toWork_[] PROGMEM = " to work on:\t";
 const unsigned char pin__[] PROGMEM = "pin (";
 const unsigned char _close[] PROGMEM = ")";
 const unsigned char OIHLWd[] PROGMEM = \
@@ -842,8 +852,11 @@ void menu_hardware_display() {
   serial_println_progmem(all_);
 }
 
+// menu reactions:
 // factored out helper function
+// digital_pin_ok()  checks if PIN_digital has been set
 bool digital_pin_ok() {
+  // testing on ILLEGAL is enough in this context
   if (PIN_digital == ILLEGAL) {
     _select_digital(true);
     Serial.println();
@@ -854,11 +867,8 @@ bool digital_pin_ok() {
 
 // bool menu_hardware_reaction(menu_input)
 // try to react on menu_input, return success flag
-const unsigned char none_[] PROGMEM = "(none)";
 const unsigned char pwmWrite[] PROGMEM = "pwm write ";
 const unsigned char analogWrite_[] PROGMEM = "analogWrite(";
-// const unsigned char bytes_[] PROGMEM = " bytes";
-// const unsigned char freeRAM[] PROGMEM = "free RAM: ";
 
 bool menu_hardware_reaction(char menu_input) {
   long newValue;
@@ -872,6 +882,8 @@ bool menu_hardware_reaction(char menu_input) {
     numeric_input(&serial_input_BUFFER, &newValue);
     if (newValue>=0 && newValue<ANALOG_INPUTs)
       PIN_analog = newValue;
+    else
+      serial_println_progmem(outOfRange);
 
     serial_print_progmem(pin_);
     Serial.println((int) PIN_analog);
@@ -887,7 +899,8 @@ bool menu_hardware_reaction(char menu_input) {
       PIN_digital = newValue;
       pin_info_digital((int) PIN_digital);
     } else
-      serial_println_progmem(none_);
+      if (newValue != ILLEGAL)
+	serial_println_progmem(outOfRange);
     break;
 
   case 'O':
@@ -932,7 +945,7 @@ bool menu_hardware_reaction(char menu_input) {
 	Serial.print(", "); Serial.print(newValue);
 	serial_println_progmem(_close);
       } else
-	serial_println_progmem(none_);
+	serial_println_progmem(outOfRange);
     }
     break;
 
@@ -953,7 +966,6 @@ bool menu_hardware_reaction(char menu_input) {
   case 'r':
     if (digital_pin_ok()) {
       pinMode(PIN_digital, INPUT);	// ################
-      pin_info_digital(PIN_digital);
       watch_digital_input(PIN_digital);
     }
     break;
@@ -1038,8 +1050,7 @@ void serial_menu_common_display() {
   serial_print_progmem(common_);
 #ifdef PROGRAM_menu
   if (menu != MENU_CODE_PROGRAM)
-    if (menu != MENU_CODE_HARDWARE)	// hardware menu hides 'P'
-      serial_print_progmem(program_);
+    serial_print_progmem(program_);
 #endif
 #ifdef HARDWARE_menu
   if (menu != MENU_CODE_HARDWARE)
@@ -1235,65 +1246,152 @@ void serial_menu_reaction(char menu_input) {
 
 
 /* **************************************************************** */
-// Define your own program specific menu here.
-// To integrate your own program menu  #define PROGRAM_menu 
-// See comments near the top of this file.
-//
-// Write functions menu_program_display()  serial_menu_program_reaction()
-// Please see below.
-
 #if defined(PROGRAM_menu) && defined(SERIAL_MENU)
+/*
+    Define your own program specific menu here.
+    To integrate your own program menu  #define PROGRAM_menu 
+    See comments near the top of this file.
+    
+    Write functions:
+    	menu_program_display()  serial_menu_program_reaction()
+    Edit:
+    	ProgramMenuTitle_  ProgramMenuKeys_
+    
+    Please see below.
+*/
 
-// This code is just a template stub to show how it works.
-// Change everything here to match your own needs.
+/*
+    This code is just a template stub to show how it works.
+    Change everything here to match your own needs.
+*/
+
+/*
+    To save RAM you should store all strings you need in program memory:
+	const unsigned char MY_STRING_NAME[] PROGMEM = "my string";
+    Print it with:
+	serial_print_progmem(MY_STRING_NAME); 
+	serial_println_progmem(MY_STRING_NAME); 
+*/
 
 
-// To save RAM you should store all strings you need in program memory:
-//	const unsigned char MY_STRING_NAME[] PROGMEM = "my string";
-// Print it with:
-//	serial_print_progmem(MY_STRING_NAME); 
-//	serial_println_progmem(MY_STRING_NAME); 
+// Edit the following two strings:
+
+// ProgramMenuTitle_  title of your program menu:
+// (the '\n' lets it start with an empty line)
 const unsigned char ProgramMenuTitle_[] PROGMEM = \
   "\n*** MY PROGRAM MENU ***";
 
-// Give infos about active keys.
+// ProgramMenuKeys_  user infos about active menu keys:
 // ('\t' means a tab between entries)
-const unsigned char ProgramMenuKeys_[] PROGMEM = "d=dance\ty=yodel\ts=something special";
+const unsigned char ProgramMenuKeys_[] PROGMEM = \
+  "  d=dance\ty=yodel \ts=something special\tb=get bonus points";
 
-const unsigned char ProgramMenuMessage_[] PROGMEM = "\tis empty\n";
 
-// void menu_program_display()
-// Display program menu. Give infos about active keys here.
-void menu_program_display() {
-  serial_println_progmem(ProgramMenuTitle_);
-  serial_println_progmem(ProgramMenuMessage_);
-  serial_println_progmem(ProgramMenuKeys_);
+// Add whatever you want, like...
+long bonus_points=0;
+
+void dance() {
+  bonus_points++;
+}
+
+void yodel() {
+  dance();
+  dance();
+}
+
+const unsigned char something[] PROGMEM = \
+  "* ** *** go and write that code now *** ** *";
+
+void do_something_special() {
+  dance();
+  yodel();
+  serial_println_progmem(something);
+}
+
+const unsigned char bonusPoints[] PROGMEM = "bonus points : ";
+void bonus_info() {
+  serial_print_progmem(bonusPoints);
+  Serial.println(bonus_points);
+}
+
+const unsigned char addedTo[] PROGMEM = "added to ";
+
+void add_bonus(long points) {
+  if (points) {
+    bonus_points += points;
+
+    serial_print_progmem(addedTo);
+    serial_print_progmem(bonusPoints);
+    Serial.println(points);
+  }
 }
 
 
-// check menu_input for matching keys,
-// react on valid input
-// return success flag,
-//	true  if a matching entry was found
-//	false if no matching entry was found
+// Fill the following two functions with your own functionality:
+
+// void menu_program_display()
+// Display your program menu. Give infos about active keys.
+void menu_program_display() {
+  // menu title:
+  serial_println_progmem(ProgramMenuTitle_);
+  Serial.println();
+
+  // inform user about active keys:
+  serial_println_progmem(ProgramMenuKeys_);	// show menu keys
+
+  // example using a numeric value
+  if (bonus_points)
+    bonus_info();
+}
+
+
+// serial_menu_program_reaction(char menu_input)
+// React on menu input.
+//
+// Will be called on each menu input byte:
+// 	check menu_input for matching keys,
+// 	react on valid input, call your sketch functions.
+// 	return success flag,
+// 		true  if a matching entry was found.
+// 		false if no matching entry was found.
 bool serial_menu_program_reaction(char menu_input) {
   long newValue;	// for numeric input
 
   switch (menu_input) {
+    // Insert a case statement for each menu key and
+    // call the code you want to be run when the key is received:    
+
   case 'd':
-    // dance();
+    dance();
+    bonus_info();
     break;
 
   case 'y':
-    // yodel();
+    yodel();
+    bonus_info();
     break;
 
   case 's':
-    // do_something_special();
+    do_something_special();
+    break;
+
+  case 'b':
+    // numeric input:
+    // a sequence of chiffres following the 'b'
+    newValue = 0;
+    numeric_input(&serial_input_BUFFER, &newValue);
+
+    // add bonus points:
+    add_bonus(newValue);
+
+    // inform user:
+    bonus_info();
+
+    // end the code with a break;
     break;
 
 
-  // DO NOT CHANGE THE FOLLOWING LINES
+  // * ** *** DO NOT CHANGE THE FOLLOWING LINES *** ** *
   default:
     return false;	// menu_input not found in this menu
   }
@@ -1333,13 +1431,15 @@ void setup() {
 // startup messages:
 #ifdef USE_SERIAL_BAUD
   #ifdef SERIAL_MENU		// show message about menu
-    serial_menu_display();
-
     if (menu == MENU_CODE_HARDWARE )
       {
 	pins_info_digital();
+	pins_info_analog();
 	Serial.println();
       }
+
+    serial_menu_display();
+
   #else				// no menu, show program name
     Serial.println();
     serial_print_progmem(programLongName);
