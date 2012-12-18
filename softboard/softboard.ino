@@ -282,7 +282,7 @@ pin     value   |                               |                               
 // Write function menu_program_display() and serial_menu_program_reaction()
 // Please see examples below.
 //
-// #define PROGRAM_menu		// uncomment to activate
+//#define PROGRAM_menu		// uncomment to activate
 
 
 
@@ -1098,7 +1098,9 @@ bool menu_hardware_reaction(char menu_input) {
 // serial_menu_common_display()
 // display menu items common to all menus:
 const unsigned char common_[] PROGMEM = \
-  "\nPress 'm' or '?' for menu, 'e' toggle echo, 'q' quit this menu.";
+  "\nPress 'm' or '?' for menu  'e' toggle echo";
+const unsigned char _quit[] PROGMEM = \
+  "  'q' quit this menu";
 
 #ifdef PROGRAM_menu
 const unsigned char program_[] PROGMEM = \
@@ -1114,10 +1116,14 @@ const unsigned char hardware_[] PROGMEM = \
 // display menu items common to all menus:
 void serial_menu_common_display() {
   serial_print_progmem(common_);
+  if (menu != MENU_CODE_UNDECIDED)
+    serial_print_progmem(_quit);
+
 #ifdef PROGRAM_menu
   if (menu != MENU_CODE_PROGRAM)
     serial_print_progmem(program_);
 #endif
+
 #ifdef HARDWARE_menu
   if (menu != MENU_CODE_HARDWARE)
     serial_print_progmem(hardware_);
@@ -1177,7 +1183,7 @@ bool serial_menu_common_reaction(char menu_input) {
 #ifdef PROGRAM_menu
   case 'P':	// PROGRAM menu
     menu = MENU_CODE_PROGRAM;
-    menu_program_display();
+    serial_menu_display();
     break;
 #endif
 #ifdef HARDWARE_menu
