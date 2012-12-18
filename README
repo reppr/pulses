@@ -120,6 +120,8 @@
                'A0 v'      A=select pin (both analog or digital)
                            v=display analog read values and bar graphs
 
+			   Stop it by pressing 'v' again.
+
 
 *A0	77	*****
 *A0	63	****
@@ -180,8 +182,8 @@ pin     value   |                               |                               
  pin 12	I  floating
  pin 13	I  floating
 
-   btw: The example output was generated after 'D2OLD3OHD5H'.
-        'D2OL D3OH D5H' is the same, but easier to read.
+   btw: The example output was generated after 'D2OLD3OHD5IH'.
+        'D2OL D3OH D5IH' is the same, but easier to read.
 
 
 

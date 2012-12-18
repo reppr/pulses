@@ -147,6 +147,8 @@
                'A0 v'      A=select pin (both analog or digital)
                            v=display analog read values and bar graphs
 
+			   Stop it by pressing 'v' again.
+
 
 *A0	77	*****
 *A0	63	****
@@ -518,24 +520,10 @@ void cb_recover_last(circ_buf *cb) {
 
 // inside  #ifdef SERIAL_MENU
 // ****************************************************************
-// running 'continuous' display types or similar without waiting
-// to allow 'run through' programming.
-
-bool run_VU=false;
-bool run_digiwatch=false;
-
-void maybe_run_continuous() {
-  if (run_VU)
-    bar_graph_VU(PIN_analog);
-  // if (run_digiwatch)
-}
-
-
-
-// inside  #ifdef SERIAL_MENU
-// ****************************************************************
 // menu I/O functions:
 
+
+// numeric input:
 const unsigned char number_missing[] PROGMEM = "number missing";
 
 // get numeric integer input from chiffre sequence in the serial buffer
@@ -607,6 +595,32 @@ void numeric_drop_input(circ_buf *cb) {
 
 
 
+// inside  #ifdef SERIAL_MENU
+// ****************************************************************
+// running 'continuous' display types or similar
+// implemented without waiting allows 'run-through' programming.
+
+bool run_VU=false;
+bool run_watch_dI=false;
+
+
+void stop_continuous() {
+  run_VU=false;
+  run_watch_dI=false;
+}
+
+
+void maybe_run_continuous() {
+  if (run_VU)
+    bar_graph_VU(PIN_analog);
+
+  if (run_watch_dI)
+    watch_digital_input(PIN_digital);
+}
+
+
+
+/* **************************************************************** */
 // bar_graph(value)
 // print one value & bar graph line:
 const unsigned char outOfRange[] PROGMEM = "out of range";
@@ -643,13 +657,14 @@ void bar_graph(int value) {
 // continuous display of changes on an analogue input.
 // run-through, don´t wait.
 
-int VU_last=-9798;	// just an impossible value
+#define IMPOSSIBLE	-9785	// just an impossible value
+int VU_last=IMPOSSIBLE;
 
 const unsigned char VU_title[] PROGMEM = \
   "values\t\t +/- set tolerance\t(q=stop)";
 
 void VU_init(int pin) {
-  VU_last=-9798;	// just an impossible value
+  VU_last=IMPOSSIBLE;	// just an impossible value
   feedback_tolerance();
   serial_println_progmem(VU_title);
 }
@@ -830,38 +845,48 @@ void pin_info_analog(uint8_t pin) {
   bar_graph(analogRead(pin));
 }
 
+
+/* **************************************************************** */
 // watch_digital_input(pin)
 // continuously display digital input readings, whenever the input changes:
 const unsigned char watchingPin[] PROGMEM = "watching pin D";
 const unsigned char qStop[] PROGMEM = "\t\t(q=stop)";
 
-// ################
-const unsigned char quit_[] PROGMEM = "(quit)";
-
-
-void watch_digital_input(int pin) {
-  int value, old_value=-9997;
+int watch_seen=IMPOSSIBLE;
+void watch_digital_start(uint8_t pin) {
+  watch_seen=IMPOSSIBLE;
 
   serial_print_progmem(watchingPin);
   Serial.print((int) pin);
-  serial_println_progmem(qStop);
-
-  while (!Serial.available()) {
-    value = digitalRead(PIN_digital);
-    if (value != old_value) {
-      old_value = value;
-      Serial.print("*D");  Serial.print((int) pin);
-      serial_print_progmem(tab_);
-      if (value)
-	serial_println_progmem(high_);
-      else
-	serial_println_progmem(low_);
-    }
-  }
-  Serial.read();
-  serial_println_progmem(quit_);
+  serial_println_progmem(qStop);	// ################
 }
 
+void watch_digital_input(int pin) {
+  int value=digitalRead(PIN_digital);
+
+  if (value != watch_seen) {
+    watch_seen = value;
+    Serial.print("*D");  Serial.print((int) pin);
+    serial_print_progmem(tab_);
+    if (value)
+      serial_println_progmem(high_);
+    else
+      serial_println_progmem(low_);
+  }
+}
+
+
+// toggle_watch()  toggle continuous digital watch display on/off.
+void toggle_watch() {
+  run_watch_dI = !run_watch_dI;
+  if (run_watch_dI)
+    watch_digital_start(PIN_digital);
+  else
+    Serial.println();
+}
+
+
+// toggle extra functionality
 void toggle_extra() {
   extra_switch = !extra_switch;
   if (extra_switch)
@@ -1090,8 +1115,9 @@ bool menu_hardware_reaction(char menu_input) {
 
   case 'r':
     if (digital_pin_ok()) {
-      pinMode(PIN_digital, INPUT);	// ################
-      watch_digital_input(PIN_digital);
+      toggle_watch();
+      // pinMode(PIN_digital, INPUT);	// ################
+      // watch_digital_input(PIN_digital);
     }
     break;
 
@@ -1233,6 +1259,7 @@ bool serial_menu_common_reaction(char menu_input) {
   switch (menu_input) {
   case 'm': case '?':	// menu
     serial_menu_display();
+    // stop_continuous();	// side effect: sane display
     break;
 
   case 'e':	// toggle echo
@@ -1373,6 +1400,7 @@ void serial_menu_reaction(char menu_input) {
 	  Serial.print(token);
       }
       Serial.println();
+      stop_continuous();	// side effect: sane display
     } // unknown menu entry
 
   } // submenu forking
