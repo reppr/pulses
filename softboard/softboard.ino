@@ -207,8 +207,8 @@ pin     value   |                               |                               
  pin 12	I  floating
  pin 13	I  floating
 
-   btw: The example output was generated after 'D2OLD3OHD5H'.
-        'D2OL D3OH D5H' is the same, but easier to read.
+   btw: The example output was generated after 'D2OLD3OHD5IH'.
+        'D2OL D3OH D5IH' is the same, but easier to read.
 
 
 
@@ -515,6 +515,23 @@ void cb_recover_last(circ_buf *cb) {
 }
 
 
+
+// inside  #ifdef SERIAL_MENU
+// ****************************************************************
+// running 'continuous' display types or similar without waiting
+// to allow 'run through' programming.
+
+bool run_VU=false;
+bool run_digiwatch=false;
+
+void maybe_run_continuous() {
+  if (run_VU)
+    bar_graph_VU(PIN_analog);
+  // if (run_digiwatch)
+}
+
+
+
 // inside  #ifdef SERIAL_MENU
 // ****************************************************************
 // menu I/O functions:
@@ -622,6 +639,31 @@ void bar_graph(int value) {
 }
 
 
+/* **************************************************************** */
+// continuous display of changes on an analogue input.
+// run-through, don´t wait.
+
+int VU_last=-9798;	// just an impossible value
+
+const unsigned char VU_title[] PROGMEM = \
+  "values\t\t +/- set tolerance\t(q=stop)";
+
+void VU_init(int pin) {
+  VU_last=-9798;	// just an impossible value
+  feedback_tolerance();
+  serial_println_progmem(VU_title);
+}
+
+// toggle_VU()  toggle continuous VU display on/off.
+void toggle_VU() {
+  run_VU = !run_VU;
+  if (run_VU)
+    VU_init(PIN_analog);
+  else
+    Serial.println();
+}
+
+
 // bar_graph_VU(pin):
 // display a scrolling bar graph over the readings of an analog input.
 //
@@ -645,55 +687,24 @@ void feedback_tolerance() {
 const unsigned char analog_reads_title[] PROGMEM = \
   "pin\tvalue\t|\t\t\t\t|\t\t\t\t|";
 
-
 // bar_graph_VU(pin):
-// display a scrolling bar graph over the readings of an analog input.
-//
+// continuously display scrolling bar graph over the readings of an analog input.
 // whenever the reading changes for more then +/- tolerance a new line is displayed
 // tolerance can be changed by pressing '+' or '-'
-// any other key stops VU display
-
-const unsigned char VU_title[] PROGMEM = \
-  "values\t\t +/- set tolerance\t(q=stop)";
-const unsigned char quit_[] PROGMEM = "(quit)";
-
+// run-through, don´t wait...
+// just make sure you run that from time to time
 void bar_graph_VU(int pin) {
-  int value, oldValue=-9997;		// just an unlikely value
-  int menu_input;
+  int value;
 
-  feedback_tolerance();
-
-  serial_println_progmem(VU_title);
-  while (true) {
-    value =  analogRead(pin);
-    if (abs(value - oldValue) > bar_graph_tolerance) {
+  value =  analogRead(pin);
+  if (abs(value - VU_last) > bar_graph_tolerance) {
     Serial.print("*A");
     Serial.print((int) pin);
     serial_print_progmem(tab_);
     bar_graph(value);
-    oldValue = value;
-    }
-
-    if (Serial.available()) {
-      switch (menu_input = Serial.read()) {
-      case '+':
-	bar_graph_tolerance++;
-	feedback_tolerance();
-	break;
-      case '-':
-	if (bar_graph_tolerance)
-	  bar_graph_tolerance--;
-	  feedback_tolerance();
-	break;
-      case '\n': case '\r':	// linebreak
-        break;
-      default:
-	return;			// exit
-      }
-    }
-  }    
+    VU_last = value;
+  }
 }
-
 
 
 // print binary numbers with leading zeroes and a space
@@ -823,6 +834,10 @@ void pin_info_analog(uint8_t pin) {
 // continuously display digital input readings, whenever the input changes:
 const unsigned char watchingPin[] PROGMEM = "watching pin D";
 const unsigned char qStop[] PROGMEM = "\t\t(q=stop)";
+
+// ################
+const unsigned char quit_[] PROGMEM = "(quit)";
+
 
 void watch_digital_input(int pin) {
   int value, old_value=-9997;
@@ -1059,7 +1074,18 @@ bool menu_hardware_reaction(char menu_input) {
     break;
 
   case 'v':
-    bar_graph_VU(PIN_analog);
+    toggle_VU();
+    break;
+
+  case '+':	// we *could* do  'if (run_VU)' here
+    bar_graph_tolerance++;
+    feedback_tolerance();
+    break;
+
+  case '-':	// we *could* do  'if (run_VU)' here
+    if (bar_graph_tolerance)
+      bar_graph_tolerance--;
+    feedback_tolerance();
     break;
 
   case 'r':
@@ -1259,6 +1285,10 @@ const unsigned char bufferFull[] PROGMEM = "BUFFER FULL!";
    clever about multy byte tokens (like numbers) where it *will* fail...
 */
 int serial_menu() {
+  // things like continuously displaying value changes on a pin may not block
+  // so we update them here and return immediately
+  maybe_run_continuous();
+
   if (!Serial.available())
     return 0;
 
