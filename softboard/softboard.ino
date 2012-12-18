@@ -274,7 +274,8 @@ pin     value   |                               |                               
   #error #define   USE_SERIAL_BAUD <baud>   in file softboard.ino
 #endif	// USE_SERIAL_BAUD
 
-
+// MACROS_STRICT *depend* on arduino macros, don´t guess...
+#define MACROS_STRICT
 
 /* **************************************************************** */
 // To integrate your own program menu  #define PROGRAM_menu 
@@ -289,6 +290,10 @@ pin     value   |                               |                               
 // board specific things, try to use arduino macros:
 
 #ifndef NUM_DIGITAL_PINS	// try harder...
+  #ifdef MACROS_STRICT
+    #error NUM_DIGITAL_PINS undefined
+  #endif
+
   #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
     #define NUM_DIGITAL_PINS	70
   #else								// 168/328 boards
@@ -301,6 +306,10 @@ pin     value   |                               |                               
 #endif
 
 #ifndef NUM_ANALOG_INPUTS	// try harder...
+  #ifdef MACROS_STRICT
+    #error NUM_ANALOG_INPUTS undefined
+  #endif
+
   #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
     #define NUM_ANALOG_INPUTS	16
   #else								// 168/328 boards
@@ -312,13 +321,14 @@ pin     value   |                               |                               
   #endif
 #endif
 
+
 // DIGITAL_IOs
 //   number of arduino pins configured for digital I/O 
 //   not counting analog inputs:
 #define DIGITAL_IOs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)
 
 
-#ifndef(LED_BUILTIN)
+#ifndef LED_BUILTIN
 //  #define LED_BUILTIN	13	// maybe, maybe not...
 #endif
 
@@ -969,14 +979,22 @@ bool menu_hardware_reaction(char menu_input) {
 
       // can the pin do hardware PWM?
       do_it=true;	// hack to get through the #ifdef
-#ifdef digitalPinHasPWM
+
+#ifndef digitalPinHasPWM
+  #ifdef MACROS_STRICT
+    #error digitalPinHasPWM undefined
+  #endif
+#else
+
       if (!digitalPinHasPWM(PIN_digital)) {
 	do_it=false;	// hack to get through the #ifdef
 	serial_print_progmem(noHw_); serial_print_progmem(pwm_);
 	Serial.println();
 	numeric_drop_input(&serial_input_BUFFER);
       }
+
 #endif
+
       if (do_it) {	// hack to get through the #ifdef
 	serial_print_progmem(pin_); Serial.print((int) PIN_digital);
 	serial_print_progmem(tab_);
