@@ -85,7 +85,9 @@
    check that it *does* send 'Newline' (in the bottom window frame)
    and set baud rate to the same value as USE_SERIAL_BAUD on the arduino.
 
-   Toggle serial echo with ´e´.
+
+   'e' toggle serial echo.
+   'x' toggle visibility of analog inputs as extra digital I/O pins.
 
 
    Some examples:

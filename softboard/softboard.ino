@@ -112,7 +112,9 @@
    check that it *does* send 'Newline' (in the bottom window frame)
    and set baud rate to the same value as USE_SERIAL_BAUD on the arduino.
 
-   Toggle serial echo with ´e´.
+
+   'e' toggle serial echo.
+   'x' toggle visibility of analog inputs as extra digital I/O pins.
 
 
    Some examples:
@@ -436,7 +438,13 @@ int get_free_RAM() {
 //	
 //	circ_buf serial_input_BUFFER;
 
-bool echo_switch=true;
+bool echo_switch=true;		// switch serial echo
+
+// the following defaults *must* match with each other
+bool extra_switch=false;	// extra functionality on digital pins
+//
+int visible_digital_pins=DIGITAL_IOs;		// extra_switch==false
+//int visible_digital_pins=NUM_DIGITAL_PINS;	// extra_switch==true
 
 void cb_init(circ_buf *cb, int size) {
   cb->size  = size;
@@ -777,7 +785,7 @@ void pin_info_digital(uint8_t pin) {
 
 // display configuration and state of all digital pins:
 void pins_info_digital() {
-  for (uint8_t pin=0; pin<DIGITAL_IOs; pin++)
+  for (uint8_t pin=0; pin<visible_digital_pins; pin++)
     pin_info_digital(pin);
 }
 
@@ -821,7 +829,13 @@ void watch_digital_input(int pin) {
   serial_println_progmem(quit_);
 }
 
-
+void toggle_extra() {
+  extra_switch = !extra_switch;
+  if (extra_switch)
+    visible_digital_pins=NUM_DIGITAL_PINS;
+  else
+    visible_digital_pins=DIGITAL_IOs;
+}
 
 
 // ****************************************************************
@@ -844,7 +858,8 @@ const unsigned char OIHLWd[] PROGMEM = \
   "O=OUTPUT\tI=INPUT\t\tH=HIGH\tL=LOW\tPWM: W=WRITE\td=pin info";
 const unsigned char v_r[] PROGMEM = "watch over time:\tv=VU bar\tr=read";
 
-const unsigned char all_[] PROGMEM = ".=all digital\t,=all analog\t;=both";
+const unsigned char all_[] PROGMEM = \
+  ".=all digital\t,=all analog\t;=both\tx=extra";
 
 // factored out display functions
 void _select_digital(bool key) {
@@ -938,7 +953,7 @@ bool menu_hardware_reaction(char menu_input) {
 
     newValue = PIN_digital;
     numeric_input(&serial_input_BUFFER, &newValue);
-    if (newValue>=0 && newValue<DIGITAL_IOs) {
+    if (newValue>=0 && newValue<visible_digital_pins) {
       PIN_digital = newValue;
       pin_info_digital((int) PIN_digital);
     } else
@@ -1052,6 +1067,10 @@ bool menu_hardware_reaction(char menu_input) {
     pins_info_digital();
     Serial.println();
     break;
+
+    case 'x':	// toggle extended
+      toggle_extra();
+      break;
 
   default:
     return 0;		// menu_input not found in this menu
