@@ -1,39 +1,48 @@
+README softboard
 
-   Softboard  http://github.com/reppr/softboard
+   softboard  http://github.com/reppr/softboard
 
-   Hardware/software developing/testing tool.
+   Arduino hardware/software developing/testing tool.
+
+Description
 
    Simple hardware menu interface over serial line
    as a kind of arduino software breadboard.
 
-   Send one letter commands (and sometimes also sequences of chiffres)
-   over a serial line say from your computer to the arduino to trigger
-   actions and get infos.
+   Send a sequence of one letter commands and numeric chiffres
+   followed by a linebreak over a serial line (say from your computer)
+   to the arduino to trigger menu actions and get infos.
 
    The arduino will buffer serial input (without waiting for it) until
    a terminating linefeed is received as an end token.
    Any sequence of one or more '\n'  '\c'  '\0' accepted as end token.
 
+
    Commands can read and set I/O pin configuration and states,
    switch pins on/off, read and write digital and analog values,
    switch pullup/high-z, or continuously watch changing inputs over time.
 
-   Use it to test hardware like sensors, motors, and things you want
-   to run quick tests after setting it up on a (real) breadboard.
+   Use it to test hardware like sensors, motors, things you want
+   to run quick tests after setting something up on a (real) breadboard.
 
    Then you can use it to test software parts of your program while
    you write it and fit parts together. 
 
 
-   Send 'm' or '?' and a linefeed over serial line to see the menu.
-   It displays some basic infos and hints on one-letter commands.
+   Send 'm' or '?' (and a linefeed) over serial line to see the menu.
+   It displays some basic infos and shows some one-letter commands.
 
 
-   Easy to write your own menu, take the hardware menu as example.
-   Use it together with your own programs.
+'run-through' cpu time friendly implementation:
+
+   Softboard tries not to block the processor longer then needed and
+   to let as much cpu time as possible to any other code possibly running.
+   serial_menu() will just run through it's code and return immediately.
 
 
-   Integrate your own code:
+Integrate your own code:
+
+   It is easy to write a program menu as interface to your own code.
 
    Grep the source for ´dance´ or ´yodel´ and you might find hints how to
    setup a program menu to tell the arduino sketch to dance on ´d´,
@@ -42,8 +51,10 @@
    Just do #define PROGRAM_menu by uncommenting the line further down
    and you will get an example program menu to build upon.
 
+   Or look in the hardware menu as example how to use serial menu.
 
-   Installation:
+
+Installation:
 
    Get it from http://github.com/reppr/softboard
    Move the 'softboard' folder with all files
@@ -64,7 +75,7 @@
    from softboard.ino to softboard.pde
 
 
-   How it works:
+How it works:
 
    You communicate with the arduino over a serial connection
    that could be a real serial line or an usb cable.
@@ -73,6 +84,9 @@
    your input. Serial inputs are buffered until you send a linefeed.
    Then your inputs (commands and numbers as sequences of chiffres)
    will be read and acted upon.
+
+
+Configure your terminal program:
 
    Do configure your terminal emulation program to send some sort of
    line ending code, usual culprits should work.
@@ -86,16 +100,21 @@
    and set baud rate to the same value as USE_SERIAL_BAUD on the arduino.
 
 
+   Send 'm' or '?' (and a linefeed) over serial line to see the menu.
+   It displays some basic infos and shows some one-letter commands.
+
    'e' toggle serial echo.
    'x' toggle visibility of analog inputs as extra digital I/O pins.
 
 
-   Some examples:
+
+Some examples:
 
        Always let your terminal send a linefeed after the example string
-       to trigger actions.
+       to trigger the menu actions.
 
        Spaces in the strings can be omitted.
+
 
 
    Example 1:  'D13 OH' switch LED on   (D select pin, O output, H high)

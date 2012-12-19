@@ -7,7 +7,14 @@
               http://github.com/reppr/softboard
 
 
+	Please do read the README, at the end of this file
+
+
+
     Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
+*/
+
+/*  GNU General Public License
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,203 +29,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
-
-/* **************************************************************** */
-/* README:
-
-   Softboard  http://github.com/reppr/softboard
-
-   Hardware/software developing/testing tool.
-
-   Simple hardware menu interface over serial line
-   as a kind of arduino software breadboard.
-
-   Send one letter commands (and sometimes also sequences of chiffres)
-   over a serial line say from your computer to the arduino to trigger
-   actions and get infos.
-
-   The arduino will buffer serial input (without waiting for it) until
-   a terminating linefeed is received as an end token.
-   Any sequence of one or more '\n'  '\c'  '\0' accepted as end token.
-
-   Commands can read and set I/O pin configuration and states,
-   switch pins on/off, read and write digital and analog values,
-   switch pullup/high-z, or continuously watch changing inputs over time.
-
-   Use it to test hardware like sensors, motors, and things you want
-   to run quick tests after setting it up on a (real) breadboard.
-
-   Then you can use it to test software parts of your program while
-   you write it and fit parts together. 
-
-
-   Send 'm' or '?' and a linefeed over serial line to see the menu.
-   It displays some basic infos and hints on one-letter commands.
-
-
-   Easy to write your own menu, take the hardware menu as example.
-   Use it together with your own programs.
-
-
-   Integrate your own code:
-
-   Grep the source for ´dance´ or ´yodel´ and you might find hints how to
-   setup a program menu to tell the arduino sketch to dance on ´d´,
-   to yodel on ´y´  and on ´s´ to do something special ;)
-
-   Just do #define PROGRAM_menu by uncommenting the line further down
-   and you will get an example program menu to build upon.
-
-
-   Installation:
-
-   Get it from http://github.com/reppr/softboard
-   Move the 'softboard' folder with all files
-   to your arduino sketchbook/ folder.
-   Load the sketch from arduino menu Files>Sketchbook>softboard.
-
-   Arduino versions older than 1.0 need a fix:
-     see this thread:
-     http://code.google.com/p/arduino/issues/detail?id=604&start=200
-
-       short version (adapt to your arduino version)
-         edit file arduino-0022/hardware/arduino/cores/arduino/wiring.h
-         comment out line 79 (round macro)
-         #define round(x)     ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
-         tested on arduino-0023
-
-   For older arduino versions you also have to rename the sketch file
-   from softboard.ino to softboard.pde
-
-
-   How it works:
-
-   You communicate with the arduino over a serial connection
-   that could be a real serial line or an usb cable.
-
-   The minimalistic menu shows you one letter commands and listens to
-   your input. Serial inputs are buffered until you send a linefeed.
-   Then your inputs (commands and numbers as sequences of chiffres)
-   will be read and acted upon.
-
-   Do configure your terminal emulation program to send some sort of
-   line ending code, usual culprits should work.
-
-   Set arduino baud rate by editing the line starting with
-   #define USE_SERIAL_BAUD
-   and set it to the same value in your terminal software.
-
-   So if for example you use the Arduino 'Serial Monitor' window
-   check that it *does* send 'Newline' (in the bottom window frame)
-   and set baud rate to the same value as USE_SERIAL_BAUD on the arduino.
-
-
-   'e' toggle serial echo.
-   'x' toggle visibility of analog inputs as extra digital I/O pins.
-
-
-   Some examples:
-
-       Always let your terminal send a linefeed after the example string
-       to trigger actions.
-
-       Spaces in the strings can be omitted.
-
-
-   Example 1:  'D13 OH' switch LED on   (D select pin, O output, H high)
-               'L'      off again       (L low)
-
-
-   Example 2:  writing high to an input activates internal pullup resistor
-
-	       'D13 IH' pullup LED pin  (D select pin, I input, H high)
-					
-                                        LED glows at low level
-               'O'      LED as OUTPUT   now the LED is on
-
-
-   Example 3:  Watch an analog input like a VU meter, changing over time.
-               See electric noise on unconnected floating A0 input
-               scrolling over your serial terminal.
-               (Touch the input if there is no visible signal.)
-
-               Or connect a sensor to the input and explore its data...
-
-               'A0 v'      A=select pin (both analog or digital)
-                           v=display analog read values and bar graphs
-
-			   Stop it by pressing 'v' again.
-
-
-*A0	77	*****
-*A0	63	****
-*A0	74	*****
-*A0	84	******
-*A0	115	********
-*A0	165	***********
-*A0	237	***************
-*A0	289	*******************
-*A0	285	******************
-*A0	241	****************
-*A0	159	**********
-*A0	97	*******
-*A0	70	*****
-*A0	63	****
-*A0	76	*****
-*A0	86	******
-*A0	123	********
-*A0	171	***********
-*A0	248	****************
-*A0	294	*******************
-*A0	280	******************
-*A0	227	***************
-*A0	144	**********
-*A0	87	******
-*A0	66	*****
-
-
-
-   Example 4:  ','  Display snapshot values of all analog inputs.
-
-                        [fixed font only]
-
-pin     value   |                               |                               |
-*A0     609     ***************************************
- A1     504     ********************************
- A2     451     *****************************
- A3     398     *************************
- A4     383     ************************
- A5     409     **************************
-
-
-
-   Example 5:  '.'  Info on all digital pin's I/O configuration and state.
-
- pin 0	I  floating
- pin 1	I  floating
- pin 2	O  LOW
- pin 3	O  HIGH
- pin 4	I  floating
-*pin 5	I  pullup       // * indicates the selected pin
- pin 6	I  floating
- pin 7	I  floating
- pin 8	I  floating
- pin 9	I  floating
- pin 10	I  floating
- pin 11	I  floating
- pin 12	I  floating
- pin 13	I  floating
-
-   btw: The example output was generated after 'D2OLD3OHD5IH'.
-        'D2OL D3OH D5IH' is the same, but easier to read.
-
-
-
-   Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
-
-   http://github.com/reppr/softboard
-*/
-
 
 /* **************************************************************** */
 // source code starts here:
@@ -1646,4 +1456,220 @@ void loop() {
 
 }
 
+/* **************************************************************** */
+/* README
+
+README softboard
+
+   softboard  http://github.com/reppr/softboard
+
+   Arduino hardware/software developing/testing tool.
+
+Description
+
+   Simple hardware menu interface over serial line
+   as a kind of arduino software breadboard.
+
+   Send a sequence of one letter commands and numeric chiffres
+   followed by a linebreak over a serial line (say from your computer)
+   to the arduino to trigger menu actions and get infos.
+
+   The arduino will buffer serial input (without waiting for it) until
+   a terminating linefeed is received as an end token.
+   Any sequence of one or more '\n'  '\c'  '\0' accepted as end token.
+
+
+   Commands can read and set I/O pin configuration and states,
+   switch pins on/off, read and write digital and analog values,
+   switch pullup/high-z, or continuously watch changing inputs over time.
+
+   Use it to test hardware like sensors, motors, things you want
+   to run quick tests after setting something up on a (real) breadboard.
+
+   Then you can use it to test software parts of your program while
+   you write it and fit parts together. 
+
+
+   Send 'm' or '?' (and a linefeed) over serial line to see the menu.
+   It displays some basic infos and shows some one-letter commands.
+
+
+'run-through' cpu time friendly implementation:
+
+   Softboard tries not to block the processor longer then needed and
+   to let as much cpu time as possible to any other code possibly running.
+   serial_menu() will just run through it's code and return immediately.
+
+
+Integrate your own code:
+
+   It is easy to write a program menu as interface to your own code.
+
+   Grep the source for ´dance´ or ´yodel´ and you might find hints how to
+   setup a program menu to tell the arduino sketch to dance on ´d´,
+   to yodel on ´y´  and on ´s´ to do something special ;)
+
+   Just do #define PROGRAM_menu by uncommenting the line further down
+   and you will get an example program menu to build upon.
+
+   Or look in the hardware menu as example how to use serial menu.
+
+
+Installation:
+
+   Get it from http://github.com/reppr/softboard
+   Move the 'softboard' folder with all files
+   to your arduino sketchbook/ folder.
+   Load the sketch from arduino menu Files>Sketchbook>softboard.
+
+   Arduino versions older than 1.0 need a fix:
+     see this thread:
+     http://code.google.com/p/arduino/issues/detail?id=604&start=200
+
+       short version (adapt to your arduino version)
+         edit file arduino-0022/hardware/arduino/cores/arduino/wiring.h
+         comment out line 79 (round macro)
+         #define round(x)     ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
+         tested on arduino-0023
+
+   For older arduino versions you also have to rename the sketch file
+   from softboard.ino to softboard.pde
+
+
+How it works:
+
+   You communicate with the arduino over a serial connection
+   that could be a real serial line or an usb cable.
+
+   The minimalistic menu shows you one letter commands and listens to
+   your input. Serial inputs are buffered until you send a linefeed.
+   Then your inputs (commands and numbers as sequences of chiffres)
+   will be read and acted upon.
+
+
+Configure your terminal program:
+
+   Do configure your terminal emulation program to send some sort of
+   line ending code, usual culprits should work.
+
+   Set arduino baud rate by editing the line starting with
+   #define USE_SERIAL_BAUD
+   and set it to the same value in your terminal software.
+
+   So if for example you use the Arduino 'Serial Monitor' window
+   check that it *does* send 'Newline' (in the bottom window frame)
+   and set baud rate to the same value as USE_SERIAL_BAUD on the arduino.
+
+
+   Send 'm' or '?' (and a linefeed) over serial line to see the menu.
+   It displays some basic infos and shows some one-letter commands.
+
+   'e' toggle serial echo.
+   'x' toggle visibility of analog inputs as extra digital I/O pins.
+
+
+
+Some examples:
+
+       Always let your terminal send a linefeed after the example string
+       to trigger the menu actions.
+
+       Spaces in the strings can be omitted.
+
+
+
+   Example 1:  'D13 OH' switch LED on   (D select pin, O output, H high)
+               'L'      off again       (L low)
+
+
+   Example 2:  writing high to an input activates internal pullup resistor
+
+	       'D13 IH' pullup LED pin  (D select pin, I input, H high)
+					
+                                        LED glows at low level
+               'O'      LED as OUTPUT   now the LED is on
+
+
+   Example 3:  Watch an analog input like a VU meter, changing over time.
+               See electric noise on unconnected floating A0 input
+               scrolling over your serial terminal.
+               (Touch the input if there is no visible signal.)
+
+               Or connect a sensor to the input and explore its data...
+
+               'A0 v'      A=select pin (both analog or digital)
+                           v=display analog read values and bar graphs
+
+			   Stop it by pressing 'v' again.
+
+
+*A0	77	*****
+*A0	63	****
+*A0	74	*****
+*A0	84	******
+*A0	115	********
+*A0	165	***********
+*A0	237	***************
+*A0	289	*******************
+*A0	285	******************
+*A0	241	****************
+*A0	159	**********
+*A0	97	*******
+*A0	70	*****
+*A0	63	****
+*A0	76	*****
+*A0	86	******
+*A0	123	********
+*A0	171	***********
+*A0	248	****************
+*A0	294	*******************
+*A0	280	******************
+*A0	227	***************
+*A0	144	**********
+*A0	87	******
+*A0	66	*****
+
+
+
+   Example 4:  ','  Display snapshot values of all analog inputs.
+
+                        [fixed font only]
+
+pin     value   |                               |                               |
+*A0     609     ***************************************
+ A1     504     ********************************
+ A2     451     *****************************
+ A3     398     *************************
+ A4     383     ************************
+ A5     409     **************************
+
+
+
+   Example 5:  '.'  Info on all digital pin's I/O configuration and state.
+
+ pin 0	I  floating
+ pin 1	I  floating
+ pin 2	O  LOW
+ pin 3	O  HIGH
+ pin 4	I  floating
+*pin 5	I  pullup       // * indicates the selected pin
+ pin 6	I  floating
+ pin 7	I  floating
+ pin 8	I  floating
+ pin 9	I  floating
+ pin 10	I  floating
+ pin 11	I  floating
+ pin 12	I  floating
+ pin 13	I  floating
+
+   btw: The example output was generated after 'D2OLD3OHD5IH'.
+        'D2OL D3OH D5IH' is the same, but easier to read.
+
+
+
+   Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
+
+   http://github.com/reppr/softboard
+
+*/
 /* **************************************************************** */
