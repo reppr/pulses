@@ -1312,27 +1312,29 @@ const unsigned char bufferFull[] PROGMEM = "BUFFER FULL!";
    clever about multy byte tokens (like numbers) where it *will* fail...
 */
 int serial_menu() {
-  // things like continuously displaying value changes on a pin may not block
-  // so we update them here and return immediately
-  maybe_run_continuous();
+  int retval=0;
 
   if (!Serial.available())
-    return 0;
+    goto continuous;
 
+  // get token, check for '\n', '\r' 
   char token;
   switch (token = Serial.read()) {
-  case '\n':  case '\r':	/* set \0 end token, case '\0': implizit */
-    token=0;
+  case '\n':  case '\r':	//  set \0 end token, case '\0' implizit
+    token=0;			// '\n', '\r' get replaced by '\0' 
   }
-  // accumulate
+
+  // accumulate:
   cb_write(&serial_input_BUFFER, token);
 
+  // check if buffer is full:
   if (token) {
     if (echo_switch)
       Serial.print(token);
 
     if (!cb_is_full(&serial_input_BUFFER)) {
-      return 0;			// not end token, buffer not full, done
+      // ==> NORMAL TOKEN ACCUMULATING:  ==>>  GOTO continuous
+      goto continuous;		// not end token, buffer not full, done.
 
     } else {			// not end, but buffer full: *undefined*
       serial_println_progmem(bufferFull);
@@ -1340,18 +1342,23 @@ int serial_menu() {
       // this *will* fail with multibyte items like numbers
     }
   }
+
+  // token == 0 || cb_is_full(&serial_input_BUFFER)
   if (echo_switch)
     Serial.println();
-  // token == 0 || cb_is_full(&serial_input_BUFFER)
 
   // cr-lf and it´s cracy sisters produce empty packages
   // drop them here
   if (cb_stored(&serial_input_BUFFER) == 1) {	// empty package
     cb_read(&serial_input_BUFFER);		// drop end token
-    return 0;
+    goto continuous;
   }
 
-  return do_menu_actions();			// react
+  retval = do_menu_actions();			// react
+
+ continuous:
+  maybe_run_continuous();			// run continuous
+  return retval;
 }
 
 // serial_menu_reaction(menu_input), react on serial menu input:
