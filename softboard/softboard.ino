@@ -336,8 +336,10 @@ void cb_recover_last(circ_buf *cb) {
 // numeric input:
 const unsigned char number_missing[] PROGMEM = "number missing";
 
-// get numeric integer input from chiffre sequence in the serial buffer
-void numeric_input(circ_buf *cb, long *value) {
+// numeric integer input from a chiffre sequence in the serial buffer
+// call it with default_value, in most cases the old value,
+// or sometimes an impossible value to check on after the input.
+long numeric_input(circ_buf *cb, long default_value) {
   long input, num, sign=1;
 
   if (cb_stored(cb) == 0)
@@ -380,14 +382,17 @@ void numeric_input(circ_buf *cb, long *value) {
     }
   }
 
-  // *if* we reach here change *value
-  *value = sign * num;
-  return;
-  
+
+  // *if* we reach here there *was* numeric input:
+  return sign * num;		// return new numeric value
+
+
+  // number was missing, return the given default_value:
  number_missing:
   serial_println_progmem(number_missing);
-  return;
+  return default_value;		// return default_value
 }
+
 
 // drop numeric input from serial buffer:
 void numeric_drop_input(circ_buf *cb) {
@@ -804,8 +809,7 @@ bool menu_hardware_reaction(char menu_input) {
     _select_analog(false);
     serial_print_progmem(tab_);
 
-    newValue = PIN_analog;
-    numeric_input(&serial_input_BUFFER, &newValue);
+    newValue = numeric_input(&serial_input_BUFFER, PIN_analog);
     if (newValue>=0 && newValue<NUM_ANALOG_INPUTS)
       PIN_analog = newValue;
     else
@@ -819,8 +823,7 @@ bool menu_hardware_reaction(char menu_input) {
     _select_digital(false);
     serial_print_progmem(tab_);
 
-    newValue = PIN_digital;
-    numeric_input(&serial_input_BUFFER, &newValue);
+    newValue = numeric_input(&serial_input_BUFFER, PIN_digital);
     if (newValue>=0 && newValue<visible_digital_pins) {
       PIN_digital = newValue;
       pin_info_digital((int) PIN_digital);
@@ -883,8 +886,7 @@ bool menu_hardware_reaction(char menu_input) {
 	serial_print_progmem(tab_);
 	serial_print_progmem(pwm_); serial_print_progmem(write_);
 
-	newValue = -1;
-	numeric_input(&serial_input_BUFFER, &newValue);
+	newValue = numeric_input(&serial_input_BUFFER, ILLEGAL);
 	if (newValue>=0 && newValue<=255) {
 	  Serial.print(newValue);
 
@@ -1362,8 +1364,8 @@ bool serial_menu_program_reaction(char menu_input) {
   case 'b':
     // numeric input:
     // a sequence of chiffres following the 'b'
-    newValue = 0;
-    numeric_input(&serial_input_BUFFER, &newValue);
+    // the default of 0 would be returned if no number is given
+   newValue = numeric_input(&serial_input_BUFFER, 0);
 
     // add bonus points:
     add_bonus(newValue);
