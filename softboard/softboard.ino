@@ -1,6 +1,9 @@
 /* **************************************************************** */
-// serial_menu alias softboard for the arduino
-/* ****************************************************************
+/* serial_menu alias softboard for the arduino			    */
+/* **************************************************************** */
+
+/*
+			Softboard
 
              Software breadboard for the Arduino.
 
@@ -10,11 +13,11 @@
 	Please do read the README, at the end of this file
 
 
-
     Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 */
 
-/*  GNU General Public License
+
+/*  GNU General Public License GPLv2
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,17 +33,27 @@
 
 */
 
-/* **************************************************************** */
-// source code starts here:
-/* **************************************************************** */
-// keep arduino GUI happy ;(
-#include "serial_menu.h"
-
 
 /* **************************************************************** */
-// arduino versions
+// SOURCE CODE STARTS HERE:
+/* **************************************************************** */
 
-// needed for pre 1.0 versions:
+#if defined(ARDUINO) && ARDUINO >= 100	// keep Arduino GUI happy ;(
+  #include "Arduino.h"
+#else
+  #include "WProgram.h"
+#endif
+
+#include "serial_menu.h"		// keep Arduino GUI happy ;(
+
+#include <avr/pgmspace.h>
+
+
+
+/* **************************************************************** */
+// Compatibility with older Arduino versions:
+
+/* needed only for pre 1.0 versions: */
 #if (ARDUINO < 100)
   #include <pins_arduino.h>
 
@@ -57,78 +70,87 @@
 #endif
 
 
-
-/* **************************************************************** */
-#define ILLEGAL		-1
-
-
 /* **************************************************************** */
 // CONFIGURATION:
 
-// to switch serial menu on you *must* ´#define USE_SERIAL_BAUD <baud>´
+/*
+   to switch serial menu on you *must* '#define USE_SERIAL_BAUD <baud>'
 
-// USE_SERIAL_BAUD
-// to switch on serial #define USE_SERIAL_BAUD <baud>  *otherwise serial will be off*
-//
-// You can switch all serial line and menu code *off* by not defining USE_SERIAL_BAUD
-// You can also do this later to save program memory.
-//   your sketch could include the menu, but later grow too much,
-//   or you'd want to move to another processor with less program memory.
-//
+   USE_SERIAL_BAUD
+   to switch on serial #define USE_SERIAL_BAUD <baud>
+   *otherwise serial will be off*  (no serial menu would be compiled).
+
+   Switch all serial line and menu code *off* by not defining USE_SERIAL_BAUD
+   You can also do this later to save program memory.
+     your sketch could include the menu, but later grow too much,
+     or you'd want to move to another processor with less program memory.
+*/
 #define USE_SERIAL_BAUD	115200		// works fine here
 // #define USE_SERIAL_BAUD	57600
 // #define USE_SERIAL_BAUD	38400
+// #define USE_SERIAL_BAUD	19200
+// #define USE_SERIAL_BAUD	9600	// failsafe
+// #define USE_SERIAL_BAUD	31250	// MIDI
 
 
 #ifdef USE_SERIAL_BAUD			// activate menus over serial line?
-  // menu over serial, basics:
+/* menu over serial, basics: */
   #define SERIAL_MENU			// we *do* use serial menu
 
-  // this version buffers serial input:
-  // serial_input_BUF_size		   size of serial input buffer
-  // eats RAM
-  #define serial_input_BUF_size	64	// serial input buffer size in bytes 
-//#define serial_input_BUF_size	128	// if you want a bigger buffer
-//#define serial_input_BUF_size	16	// if you are tight of RAM
 
-  // simple menu to access arduino hardware:
-  #define HARDWARE_menu // menu interface to hardware configuration
+/*
+  serial_input_BUF_size  size of serial input buffer in bytes
+  uncomment one of the following #define
+  eats RAM
+*/
+//#define serial_input_BUF_size	8	// if you are tight of RAM
+//#define serial_input_BUF_size	16	// if you are tight of RAM
+  #define serial_input_BUF_size	32	// serial input buffer size in bytes 
+//#define serial_input_BUF_size	64	// serial input buffer size in bytes 
+//#define serial_input_BUF_size	128	// if you want a bigger buffer
+
+
+/* simple menu to access arduino hardware: */
+#define HARDWARE_menu // menu interface to hardware configuration
   	  		// this will let you read digital and analog inputs
 			// configure and set pins
 			// write PWM values
  			// watch changes on inputs continuously
 			// get info about values as numbers and bar graphs
-  #ifdef HARDWARE_menu
-    char PIN_digital = ILLEGAL;	// would be dangerous to default to zero
-    char PIN_analog = 0;	// 0 is save as default for analog pins
-  #endif // HARDWARE_menu
+
+
 #else
   #error #define   USE_SERIAL_BAUD <baud>   in file softboard.ino
 #endif	// USE_SERIAL_BAUD
 
-// MACROS_STRICT *depend* on arduino macros, don´t guess...
+
+/*
+  To integrate your own program menu  #define PROGRAM_menu 
+  Write function menu_program_display() and serial_menu_program_reaction()
+  Please see examples below.
+*/
+// #define PROGRAM_menu		// uncomment to activate
+
+
+/* MACROS_STRICT *depend* on arduino macros, don´t guess... */
 #define MACROS_STRICT
 
-/* **************************************************************** */
-// To integrate your own program menu  #define PROGRAM_menu 
-// Write function menu_program_display() and serial_menu_program_reaction()
-// Please see examples below.
-//
-//#define PROGRAM_menu		// uncomment to activate
 
+/* END CONFIGURATION */
+/* **************************************************************** */
 
 
 /* **************************************************************** */
-// board specific things, try to use arduino macros:
+/* ARDUINO BOARD SPECIFIC THINGS  try to use ARDUINO MACROS: */
 
-#ifndef NUM_DIGITAL_PINS	// try harder...
+#ifndef NUM_DIGITAL_PINS		// try harder... ?
   #ifdef MACROS_STRICT
     #error NUM_DIGITAL_PINS undefined
   #endif
 
   #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
     #define NUM_DIGITAL_PINS	70
-  #else								// 168/328 boards
+  #else								 // 168/328
     #define NUM_DIGITAL_PINS	20
   #endif
 
@@ -137,7 +159,8 @@
   #endif
 #endif
 
-#ifndef NUM_ANALOG_INPUTS	// try harder...
+
+#ifndef NUM_ANALOG_INPUTS		// try harder... ?
   #ifdef MACROS_STRICT
     #error NUM_ANALOG_INPUTS undefined
   #endif
@@ -154,22 +177,31 @@
 #endif
 
 
-// DIGITAL_IOs
-//   number of arduino pins configured for digital I/O 
-//   not counting analog inputs:
-#define DIGITAL_IOs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)
-
-
 #ifndef LED_BUILTIN
 //  #define LED_BUILTIN	13	// maybe, maybe not...
 #endif
 
 
-/* **************************************************************** */
-// use PROGMEM to save RAM:
-#include <avr/pgmspace.h>
 
-// to save RAM constant strings are stored in PROGMEM
+/* **************************************************************** */
+/* define some things early: */
+
+#define ILLEGAL		-1
+
+
+#ifdef HARDWARE_menu
+  char PIN_digital = ILLEGAL;	// would be dangerous to default to zero
+  char PIN_analog = 0;	// 0 is save as default for analog pins
+#endif // HARDWARE_menu
+
+
+
+/* **************************************************************** */
+/*
+  constant strings are stored in PROGMEM to save RAM
+  #include <avr/pgmspace.h>
+*/
+
 const unsigned char programName[] PROGMEM = "serial MENU";
 const unsigned char programLongName[] PROGMEM = \
   "*** serial menu v0.2 ***	buffer=";
@@ -178,38 +210,11 @@ const unsigned char version[] PROGMEM = "version 0.2";
 const unsigned char tab_[] PROGMEM = "\t";
 
 
-// sorry, there is *no* LCD menu support here yet
-// maybe i´ll need it one day and write it...
-//
-// LCD related code comes from other progs of mine
-//
-//	#ifdef USE_LCD
-//	// LCD.print() for progmem strings:
-//	// void LCD_print_progmem(const prog_uchar *str)	// does not work :(
-//	void LCD_print_progmem(const unsigned char *str) {
-//	  unsigned char c;
-//	  while((c = pgm_read_byte(str++)))
-//	    LCD.print(c);
-//	}
-//	
-//	void LCD_print_at_progmem(unsigned char col, unsigned char row, const unsigned char *str) {
-//	  LCD.setCursor(col, row);
-//	  LCD_print_progmem(str);
-//	}
-//	
-//	// clear line and print on LCD at line 'row'
-//	const unsigned char LCD_empty[] PROGMEM = "                    ";
-//	void LCD_print_line_progmem(unsigned char row, const unsigned char *str) {
-//	  LCD_print_at_progmem(0, row, LCD_empty);
-//	  LCD_print_at_progmem(0, row, str);
-//	}
-//	
-//	#endif
-
-
 #ifdef USE_SERIAL_BAUD
-  // Serial.print() for progmem strings:
-  // void serial_print_progmem(const prog_uchar *str)	// does not work :(
+  /*
+    Serial.print() for progmem strings:
+    void serial_print_progmem(const prog_uchar *str)	// does not work :(
+  */
   void serial_print_progmem(const unsigned char *str) {
     unsigned char c;
     while((c = pgm_read_byte(str++)))
@@ -224,57 +229,90 @@ const unsigned char tab_[] PROGMEM = "\t";
 #endif	// USE_SERIAL_BAUD
 
 
+#ifdef USE_LCD
+  /*
+    sorry, there is *no* LCD menu support here yet
+    LCD related code comes from other progs of mine
+    and sleeps here untill somebody kisses it to wake up...
+  
+    LCD.print() for progmem strings:
+    void LCD_print_progmem(const prog_uchar *str)	// did not work :(
+    so:
+  */
+  void LCD_print_progmem(const unsigned char *str) {
+    unsigned char c;
+    while((c = pgm_read_byte(str++)))
+      LCD.print(c);
+  }
+  
+  void LCD_print_at_progmem(unsigned char col, unsigned char row, const unsigned char *str) {
+    LCD.setCursor(col, row);
+    LCD_print_progmem(str);
+  }
+  
+  // clear line and print on LCD at line 'row'
+  const unsigned char LCD_empty[] PROGMEM = "                    ";
+  void LCD_print_line_progmem(unsigned char row, const unsigned char *str) {
+    LCD_print_at_progmem(0, row, LCD_empty);
+    LCD_print_at_progmem(0, row, str);
+  }
+#endif
+
+
 
 /* **************************************************************** */
-// determine RAM usage:
-extern int __bss_end;
-extern void *__brkval;
-
-int get_free_RAM() {
-  int free;
-
-  if ((int) __brkval == 0)
-    return ((int) &free) - ((int) &__bss_end);
-  else
-    return ((int) &free) - ((int) __brkval);
-}
-
-
+/*
+  menu over different interfaces
+  only SERIAL_MENU implemented
+  
+  we could add other menus,
+  like buttons + LCD display
+  or MIDI or whoknows...
+  but nothing there in this version.
+  ..., well i left some 'LCD' marks in the source to insert code there.
+*/
 
 /* **************************************************************** */
-// menu over different interfaces
-// only SERIAL_MENU implemented
-//
-// we could add other menus, like LCD or MIDI or whoknows,
-// but nothing there in this version, sorry.
-//
-/* **************************************************************** */
-// #define SERIAL_MENU	// do we use serial menu?
+/* #define SERIAL_MENU	do we use serial menu?			    */
 /* **************************************************************** */
 #ifdef SERIAL_MENU
 
-// inside  #ifdef SERIAL_MENU
-// ****************************************************************
-// basic menu I/O:
+/* basic menu I/O: */		// inside  #ifdef SERIAL_MENU
 
-// To keep arduino GUI happy I put this into serial_menu.h:
-//	// circular buffer circ_buf:
-//	typedef struct {
-//	  int size;		/* maximum number of elements           */
-//	  int start;		/* index of oldest element              */
-//	  int count;		/* index at which to write new element  */
-//	  char *buf;		/* buffer                               */
-//	} circ_buf;
-//	
-//	circ_buf serial_input_BUFFER;
+/*
+  To keep arduino GUI happy I put this into serial_menu.h:
+  	// circular buffer circ_buf:
+  	typedef struct {
+  	  int size;		// maximum number of elements
+  	  int start;		// index of oldest element
+  	  int count;		// index at which to write new element
+  	  char *buf;		// buffer
+  	} circ_buf;
+  	
+  	circ_buf serial_input_BUFFER;
+*/
 
-bool echo_switch=true;		// switch serial echo
+
+/*
+  DIGITAL_IOs
+  number of arduino pins configured for digital I/O 
+  *not* counting analog inputs:
+*/
+#define DIGITAL_IOs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)
+
 
 // the following defaults *must* match with each other
 bool extra_switch=false;	// extra functionality on digital pins
 //
 int visible_digital_pins=DIGITAL_IOs;		// extra_switch==false
 //int visible_digital_pins=NUM_DIGITAL_PINS;	// extra_switch==true
+
+
+bool echo_switch=true;		// serial echo switch
+
+
+// inside #ifdef SERIAL_MENU
+/* ****************  circular input buffering: ****************  */
 
 void cb_init(circ_buf *cb, int size) {
   cb->size  = size;
@@ -283,7 +321,8 @@ void cb_init(circ_buf *cb, int size) {
   cb->buf = (char *) malloc(cb->size);
 }
 
-/* unused
+
+/*				// unused
 void cb_free(circ_buf *cb) {
   free(cb->buf);
 }
@@ -294,13 +333,16 @@ int cb_is_full(circ_buf *cb) {
   return cb->count == cb->size;
 }
 
-// cb_stored() number of buffered bytes:
-int cb_stored(circ_buf *cb) {
+
+int cb_stored(circ_buf *cb) {	// returns number of buffered bytes
   return cb->count;
 }
 
-// cb_write() save a byte to the buffer:
-// *does not check if buffer is full*
+
+/*
+  cb_write() save a byte to the buffer:
+  does *not* check if buffer is full
+*/
 void cb_write(circ_buf *cb, char value) {
   int end = (cb->start + cb->count) % cb->size;
   cb->buf[end] = value;
@@ -310,8 +352,11 @@ void cb_write(circ_buf *cb, char value) {
     ++ cb->count;
 }
 
-// cb_read() get oldest byte from the buffer:
-// *does not check if buffer is empty*
+
+/*
+  cb_read() get oldest byte from the buffer:
+  does *not* check if buffer is empty
+*/
 char cb_read(circ_buf *cb) {
   char value = cb->buf[cb->start];
   cb->start = (cb->start + 1) % cb->size;
@@ -319,8 +364,11 @@ char cb_read(circ_buf *cb) {
   return value;
 }
 
-// cb_recover_last(): recover one byte immediately read before
-// *no checks inside*
+
+/*
+  cb_recover_last(): recover one byte *read immediately before*
+  *no checks inside*
+*/
 void cb_recover_last(circ_buf *cb) {
   cb->start = (cb->start - 1 + cb->size) % cb->size;	// safety net ;)
   ++cb->count;
@@ -333,12 +381,17 @@ void cb_recover_last(circ_buf *cb) {
 // menu I/O functions:
 
 
+/* **************************************************************** */
 // numeric input:
+
+/*
+  numeric integer input from a chiffre sequence in the serial buffer
+  call it with default_value, in most cases the old value.
+  sometimes you might give an impossible value to check if there was input.
+*/
+
 const unsigned char number_missing[] PROGMEM = "number missing";
 
-// numeric integer input from a chiffre sequence in the serial buffer
-// call it with default_value, in most cases the old value,
-// or sometimes an impossible value to check on after the input.
 long numeric_input(circ_buf *cb, long default_value) {
   long input, num, sign=1;
 
@@ -409,135 +462,12 @@ void numeric_drop_input(circ_buf *cb) {
 }
 
 
-
 // inside  #ifdef SERIAL_MENU
-// ****************************************************************
-// running 'continuous' display types or similar
-// implemented without waiting allows 'run-through' programming.
-
-bool run_VU=false;
-bool run_watch_dI=false;
-
-
-void stop_continuous() {
-  run_VU=false;
-  run_watch_dI=false;
-}
-
-
-void maybe_run_continuous() {
-  if (run_VU)
-    bar_graph_VU(PIN_analog);
-
-  if (run_watch_dI)
-    watch_digital_input(PIN_digital);
-}
-
-
-
 /* **************************************************************** */
-// bar_graph(value)
-// print one value & bar graph line:
-const unsigned char outOfRange[] PROGMEM = "out of range";
-const unsigned char value_[] PROGMEM = "value ";
-
-void bar_graph(int value) {
-  int i, length=64, scale=1023;
-  int stars = ((long) value * (long) length) / scale + 1 ;
-
-
-  if (value >=0 && value <= 1024) {
-    Serial.print(value); serial_print_progmem(tab_);
-    for (i=0; i<stars; i++) {
-      if (i == 0 && value == 0)		// zero
-	Serial.print("0");
-					// middle or top
-      else if \
-	((i == length/2 && value == 512) || (i == length && value == scale))
-	Serial.print("|");
-      else
-	Serial.print("*");
-    }
-  } else {
-    serial_print_progmem(value_);
-    Serial.print(value);
-    serial_println_progmem(outOfRange);
-  }
-
-  Serial.println();
-}
-
-
-/* **************************************************************** */
-// continuous display of changes on an analogue input.
-// run-through, don´t wait.
-
-#define IMPOSSIBLE	-9785	// just an impossible value
-int VU_last=IMPOSSIBLE;
-
-const unsigned char VU_title[] PROGMEM = \
-  "values\t\t +/- set tolerance\t(q=stop)";
-
-void VU_init(int pin) {
-  VU_last=IMPOSSIBLE;	// just an impossible value
-  feedback_tolerance();
-  serial_println_progmem(VU_title);
-}
-
-// toggle_VU()  toggle continuous VU display on/off.
-void toggle_VU() {
-  run_VU = !run_VU;
-  if (run_VU)
-    VU_init(PIN_analog);
-  else
-    Serial.println();
-}
-
-
-// bar_graph_VU(pin):
-// display a scrolling bar graph over the readings of an analog input.
-//
-// whenever the reading changes for more then +/- tolerance a new line is displayed
-// tolerance can be changed by pressing '+' or '-'
-// any other key stops VU display
-
-// tolerance default 0. Let the user *see* the noise...
-int bar_graph_tolerance=0;
-
-
-// bar_graph_feedback(pin), info line for bar graph:
-const unsigned char tolerance_[] PROGMEM = "tolerance ";
-
-void feedback_tolerance() {
-  serial_print_progmem(tolerance_);
-  Serial.println(bar_graph_tolerance);
-}
-
-
-const unsigned char analog_reads_title[] PROGMEM = \
-  "pin\tvalue\t|\t\t\t\t|\t\t\t\t|";
-
-// bar_graph_VU(pin):
-// continuously display scrolling bar graph over the readings of an analog input.
-// whenever the reading changes for more then +/- tolerance a new line is displayed
-// tolerance can be changed by pressing '+' or '-'
-// run-through, don´t wait...
-// just make sure you run that from time to time
-void bar_graph_VU(int pin) {
-  int value;
-
-  value =  analogRead(pin);
-  if (abs(value - VU_last) > bar_graph_tolerance) {
-    Serial.print("*A");
-    Serial.print((int) pin);
-    serial_print_progmem(tab_);
-    bar_graph(value);
-    VU_last = value;
-  }
-}
-
-
-// print binary numbers with leading zeroes and a space
+/*
+  serial_print_BIN(unsigned long value, int bits)
+  print binary numbers with leading zeroes and a trailing space
+*/
 void serial_print_BIN(unsigned long value, int bits) {
   int i;
   unsigned long mask=0;
@@ -559,27 +489,13 @@ void serial_print_BIN(unsigned long value, int bits) {
 // hw info display functions:
 
 
-// pins_info_analog()
-// display analog snapshot read values and bar graphs, a line each input:
+// #ifdef HARDWARE_menu	// inside SERIAL_MENU
+/* ****************  info on DIGITAL pins:  **************** */
 
-/* const unsigned char analog_reads_title[] PROGMEM =	\
-  "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
+/*
+  pin_info_digital()
+  display configuration and state of a pin:
 */
-void pins_info_analog() {
-  int i, value;
-
-  serial_println_progmem(analog_reads_title);
-
-  for (i=0; i<NUM_ANALOG_INPUTS; i++)
-    pin_info_analog(i);
-
-  Serial.println();
-}
-
-
-
-// pin_info_digital()
-// display configuration and state of a pin:
 const unsigned char pin_[] PROGMEM = "pin ";
 const unsigned char high_[] PROGMEM = "HIGH";
 const unsigned char low_[] PROGMEM = "LOW";
@@ -641,7 +557,6 @@ void pin_info_digital(uint8_t pin) {
 }
 
 
-
 // display configuration and state of all digital pins:
 void pins_info_digital() {
   for (uint8_t pin=0; pin<visible_digital_pins; pin++)
@@ -649,23 +564,17 @@ void pins_info_digital() {
 }
 
 
-// display analog pin name and value as number and bar graph: 
-void pin_info_analog(uint8_t pin) {
-  if (pin == PIN_analog)
-    Serial.print("*A");
-  else
-    Serial.print(" A");
-  Serial.print((int) pin);
-  serial_print_progmem(tab_);
-  bar_graph(analogRead(pin));
-}
+/* continuously watch a digital pins readings: */
+/*
+  watch_digital_input(pin)
+  continuously display digital input readings,
+  whenever the input changes:
+*/
 
-
-/* **************************************************************** */
-// watch_digital_input(pin)
-// continuously display digital input readings, whenever the input changes:
 const unsigned char watchingPin[] PROGMEM = "watching pin D";
-const unsigned char qStop[] PROGMEM = "\t\t(q=stop)";
+const unsigned char wStop[] PROGMEM = "\t\tr=stop";
+
+#define IMPOSSIBLE	-9785	// just a value not possible on analog input
 
 int watch_seen=IMPOSSIBLE;
 void watch_digital_start(uint8_t pin) {
@@ -673,8 +582,9 @@ void watch_digital_start(uint8_t pin) {
 
   serial_print_progmem(watchingPin);
   Serial.print((int) pin);
-  serial_println_progmem(qStop);	// ################
+  serial_println_progmem(wStop);
 }
+
 
 void watch_digital_input(int pin) {
   int value=digitalRead(PIN_digital);
@@ -691,6 +601,8 @@ void watch_digital_input(int pin) {
 }
 
 
+bool run_watch_dI=false;
+
 // toggle_watch()  toggle continuous digital watch display on/off.
 void toggle_watch() {
   run_watch_dI = !run_watch_dI;
@@ -701,20 +613,197 @@ void toggle_watch() {
 }
 
 
-// toggle extra functionality
-void toggle_extra() {
-  extra_switch = !extra_switch;
-  if (extra_switch)
-    visible_digital_pins=NUM_DIGITAL_PINS;
+
+// #ifdef HARDWARE_menu	// inside SERIAL_MENU
+/* ****************  info on ANALOG pins:  **************** */
+
+// display analog pin name and value as number and bar graph: 
+void pin_info_analog(uint8_t pin) {
+  if (pin == PIN_analog)
+    Serial.print("*A");
   else
-    visible_digital_pins=DIGITAL_IOs;
+    Serial.print(" A");
+  Serial.print((int) pin);
+  serial_print_progmem(tab_);
+  bar_graph(analogRead(pin));
 }
 
 
+/*
+  pins_info_analog()
+  display analog snapshot read values and bar graphs, a line each analog input:
+*/
+const unsigned char analog_reads_title[] PROGMEM =	\
+  "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
+
+void pins_info_analog() {
+  int i, value;
+
+  serial_println_progmem(analog_reads_title);
+
+  for (i=0; i<NUM_ANALOG_INPUTS; i++)
+    pin_info_analog(i);
+
+  Serial.println();
+}
+
+
+// #ifdef HARDWARE_menu	 // inside  #ifdef SERIAL_MENU
+/* **************************************************************** */
+/*
+  bar_graph(value)
+  print one value & bar graph line:
+*/
+const unsigned char outOfRange[] PROGMEM = "out of range";
+const unsigned char value_[] PROGMEM = "value ";
+
+void bar_graph(int value) {
+  int i, length=64, scale=1023;
+  int stars = ((long) value * (long) length) / scale + 1 ;
+
+
+  if (value >=0 && value <= 1024) {
+    Serial.print(value); serial_print_progmem(tab_);
+    for (i=0; i<stars; i++) {
+      if (i == 0 && value == 0)		// zero
+	Serial.print("0");
+					// middle or top
+      else if \
+	((i == length/2 && value == 512) || (i == length && value == scale))
+	Serial.print("|");
+      else
+	Serial.print("*");
+    }
+  } else {
+    serial_print_progmem(value_);
+    Serial.print(value);
+    serial_println_progmem(outOfRange);
+  }
+
+  Serial.println();
+}
+
+
+
+// #ifdef HARDWARE_menu	 // inside  #ifdef SERIAL_MENU
+/* **************************************************************** */
+/*
+  running 'continuous' display types or similar
+  implemented without waiting allows 'run-through' programming.
+*/
+bool run_VU=false;
+
+
+void stop_continuous() {
+  run_VU=false;
+  run_watch_dI=false;
+}
+
+
+void maybe_run_continuous() {
+  if (run_VU)
+    bar_graph_VU(PIN_analog);
+
+  if (run_watch_dI)
+    watch_digital_input(PIN_digital);
+}
+
+
+
+// #ifdef HARDWARE_menu	// inside SERIAL_MENU
+/* **************************************************************** */
+/*
+  bar_graph_VU(pin)   continuous display of changes on an analogue input.
+  display a scrolling bar graph over the readings
+  a new line is displayed as soon as the reading changes for more
+  then +/- tolerance.
+
+  tolerance can be changed by sending '+' or '-'
+
+  run-through, don´t wait...
+*/
+
+
+int VU_last=IMPOSSIBLE;
+
+
+// tolerance default 0. Let the user *see* the noise...
+int bar_graph_tolerance=0;
+
+
+const unsigned char VU_title[] PROGMEM = \
+  "pin\tval\t+/- set ";
+
+
+void VU_init(int pin) {
+  VU_last=IMPOSSIBLE;	// just an impossible value
+
+  serial_print_progmem(VU_title);
+  feedback_tolerance();
+}
+
+
+// toggle_VU()  toggle continuous VU display on/off.
+void toggle_VU() {
+  run_VU = !run_VU;
+  if (run_VU)
+    VU_init(PIN_analog);
+  else
+    Serial.println();
+}
+
+
+// bar_graph_feedback(pin), info line for bar graph:
+const unsigned char tolerance_[] PROGMEM = "tolerance ";
+
+void feedback_tolerance() {
+  serial_print_progmem(tolerance_);
+  Serial.println(bar_graph_tolerance);
+}
+
+
+void bar_graph_VU(int pin) {
+  int value;
+
+  value =  analogRead(pin);
+  if (abs(value - VU_last) > bar_graph_tolerance) {
+    Serial.print("*A");
+    Serial.print((int) pin);
+    serial_print_progmem(tab_);
+    bar_graph(value);
+    VU_last = value;
+  }
+}
+
+
+// #ifdef HARDWARE_menu	// inside SERIAL_MENU
+/* **************************************************************** */
+/*
+  determine RAM usage:
+  int get_free_RAM() {
+
+  wee use this here below
+*/
+extern int __bss_end;
+extern void *__brkval;
+
+int get_free_RAM() {
+  int free;
+
+  if ((int) __brkval == 0)
+    return ((int) &free) - ((int) &__bss_end);
+  else
+    return ((int) &free) - ((int) __brkval);
+}
+
+
+
+// #ifdef HARDWARE_menu	// inside SERIAL_MENU
 // ****************************************************************
 // menu hardware display and reaction:
 
-// menu_hardware_display()  display hardware menu:
+
+/* ****************  hardware menu display:  **************** */
 const unsigned char hwMenuTitle[] PROGMEM = \
   "\n*** HARDWARE MENU ***\t\tfree RAM=";
 const unsigned char select_[] PROGMEM = "select ";
@@ -734,7 +823,9 @@ const unsigned char v_r[] PROGMEM = "watch over time:\tv=VU bar\tr=read";
 const unsigned char all_[] PROGMEM = \
   ".=all digital\t,=all analog\t;=both\tx=extra";
 
-// factored out display functions
+
+// factored out display functions:
+
 void _select_digital(bool key) {
   if (key)
     Serial.print("D=");
@@ -744,6 +835,7 @@ void _select_digital(bool key) {
   serial_print_progmem(digitalKeys);
 }
 
+
 void _select_analog(bool key) {
   if (key)
     Serial.print("A=");
@@ -752,6 +844,7 @@ void _select_analog(bool key) {
   serial_print_progmem(pinFor);
   serial_print_progmem(analogKeys);
 }
+
 
 void menu_hardware_display() {
   serial_print_progmem(hwMenuTitle);
@@ -780,7 +873,25 @@ void menu_hardware_display() {
   serial_println_progmem(all_);
 }
 
-// menu reactions:
+
+
+// #ifdef HARDWARE_menu	// inside SERIAL_MENU
+/* ****************  menu hardware reactions:  **************** */
+
+/*
+  toggle extra functionality
+  * visability of analog inputs as general digital I/O pins
+    (only this one item implemented)
+*/
+void toggle_extra() {
+  extra_switch = !extra_switch;
+  if (extra_switch)
+    visible_digital_pins=NUM_DIGITAL_PINS;
+  else
+    visible_digital_pins=DIGITAL_IOs;
+}
+
+
 // factored out helper function
 // digital_pin_ok()  checks if PIN_digital has been set
 bool digital_pin_ok() {
@@ -929,7 +1040,6 @@ bool menu_hardware_reaction(char menu_input) {
     if (digital_pin_ok()) {
       toggle_watch();
       // pinMode(PIN_digital, INPUT);	// ################
-      // watch_digital_input(PIN_digital);
     }
     break;
 
@@ -959,11 +1069,10 @@ bool menu_hardware_reaction(char menu_input) {
   }
   return 1;		// menu_input found in this menu
 }
-#endif // HARDWARE_menu
+#endif // HARDWARE_menu	// inside SERIAL_MENU
 
 
-
-
+// inside #defined SERIAL_MENU
 /* **************************************************************** */
 //    MENU core
 /* **************************************************************** */
@@ -990,31 +1099,33 @@ bool menu_hardware_reaction(char menu_input) {
 
 
 
-
-// ****************************************************************
 // inside #defined SERIAL_MENU
+// ****************************************************************
 // top level serial menu display and reactions:
 
 
-// serial_menu_common_display()
-// display menu items common to all menus:
+/*
+  serial_menu_common_display()
+  display menu items common to all menus:
+*/
+
 const unsigned char common_[] PROGMEM = \
   "\nPress 'm' or '?' for menu  'e' toggle echo";
+
 const unsigned char _quit[] PROGMEM = \
   "  'q' quit this menu";
 
 #ifdef PROGRAM_menu
-const unsigned char program_[] PROGMEM = \
-  " 'P' program menu ";
+  const unsigned char program_[] PROGMEM = \
+    " 'P' program menu ";
 #endif
 
 #ifdef HARDWARE_menu
-const unsigned char hardware_[] PROGMEM = \
-  " 'H' hardware menu ";
+  const unsigned char hardware_[] PROGMEM = \
+    " 'H' hardware menu ";
 #endif
 
-// serial_menu_common_display()
-// display menu items common to all menus:
+
 void serial_menu_common_display() {
   serial_print_progmem(common_);
   if (menu != MENU_CODE_UNDECIDED)
@@ -1033,8 +1144,10 @@ void serial_menu_common_display() {
 
 
 
-// serial_menu_display()
-// top level serial menu display function
+/*
+  serial_menu_display()
+  top level serial menu display function
+*/
 void serial_menu_display() {
   serial_print_progmem(programLongName);
   Serial.println(serial_input_BUF_size);
@@ -1062,16 +1175,16 @@ void serial_menu_display() {
 }
 
 
-
-// serial_menu_common_reaction(menu_input)
-// test menu_input for being a common menu entry key
-// if yes, do it
-// return success flag:
+/*
+  serial_menu_common_reaction(menu_input)
+  test menu_input for being a common menu entry key
+  if yes, do it
+  return success flag:
+*/
 bool serial_menu_common_reaction(char menu_input) {
   switch (menu_input) {
   case 'm': case '?':	// menu
     serial_menu_display();
-    // stop_continuous();	// side effect: sane display
     break;
 
   case 'e':	// toggle echo
@@ -1100,6 +1213,7 @@ bool serial_menu_common_reaction(char menu_input) {
   return true;		// menu entry found
 }
 
+
 /* int do_menu_actions()
    done on receiving an end-of-data-package token.
 */
@@ -1127,7 +1241,7 @@ int serial_menu() {
   int retval=0;
 
   if (!Serial.available())
-    goto continuous;
+    goto maybe_continuous;
 
   // get token, check for '\n', '\r' 
   char token;
@@ -1145,8 +1259,8 @@ int serial_menu() {
       Serial.print(token);
 
     if (!cb_is_full(&serial_input_BUFFER)) {
-      // ==> NORMAL TOKEN ACCUMULATING:  ==>>  GOTO continuous
-      goto continuous;		// not end token, buffer not full, done.
+      // ==> NORMAL TOKEN ACCUMULATING:  ==>>  GOTO maybe_continuous
+      goto maybe_continuous;		// not end token, buffer not full, done.
 
     } else {			// not end, but buffer full: *undefined*
       serial_println_progmem(bufferFull);
@@ -1163,15 +1277,18 @@ int serial_menu() {
   // drop them here
   if (cb_stored(&serial_input_BUFFER) == 1) {	// empty package
     cb_read(&serial_input_BUFFER);		// drop end token
-    goto continuous;
+    goto maybe_continuous;
   }
 
   retval = do_menu_actions();			// react
 
- continuous:
+ maybe_continuous:
+#ifdef HARDWARE_menu
   maybe_run_continuous();			// run continuous
+#endif
   return retval;
 }
+
 
 // serial_menu_reaction(menu_input), react on serial menu input:
 // called after receiving an end token (or on buffer overflow)
@@ -1184,18 +1301,20 @@ void serial_menu_reaction(char menu_input) {
   switch (menu_input) {	// submenu forking
   case ' ': case '\t':			// skip white chars
   case '\0':				// '\0' is end token
-// case '\n': case '\r':			// should not happen
+// case '\n': case '\r':			// should not happen here
     break;
 
   default:				// no whitespace, check menus:
     switch (menu) {			// check active menu:
     case MENU_CODE_UNDECIDED:
+
 #ifdef PROGRAM_menu
     case MENU_CODE_PROGRAM:
       menu=MENU_CODE_PROGRAM;		// case MENU_CODE_UNDECIDED
       found = serial_menu_program_reaction(menu_input);
       break;
 #endif
+
 #ifdef HARDWARE_menu
     case MENU_CODE_HARDWARE:
       menu=MENU_CODE_HARDWARE;		// case MENU_CODE_UNDECIDED
@@ -1219,12 +1338,13 @@ void serial_menu_reaction(char menu_input) {
 	  Serial.print(token);
       }
       Serial.println();
+#ifdef HARDWARE_menu
       stop_continuous();	// side effect: sane display
+#endif
     } // unknown menu entry
 
   } // submenu forking
 } // serial_menu_reaction()
-
 
 #endif	// SERIAL_MENU
 /* **************************************************************** */
@@ -1331,15 +1451,17 @@ void menu_program_display() {
 }
 
 
-// serial_menu_program_reaction(char menu_input)
-// React on menu input.
-//
-// Will be called on each menu input byte:
-// 	check menu_input for matching keys,
-// 	react on valid input, call your sketch functions.
-// 	return success flag,
-// 		true  if a matching entry was found.
-// 		false if no matching entry was found.
+/*
+  serial_menu_program_reaction(char menu_input)
+  React on menu input.
+  
+  Will be called on each menu input byte:
+  	check menu_input for matching keys,
+  	react on valid input, call your sketch functions.
+  	return success flag,
+  		true  if a matching entry was found.
+   		false if no matching entry was found.
+*/
 bool serial_menu_program_reaction(char menu_input) {
   long newValue;	// for numeric input
 
@@ -1405,25 +1527,23 @@ void setup() {
   #endif
 #endif
 
-//	#ifdef USE_LCD
-//	  LCD.begin(LCD_COLs, LCD_ROWs);
-//	  LCD_print_line_progmem(0, programName);
-//	  LCD_print_line_progmem(1, version);
-//	  LCD_print_line_progmem(3, freeRAM);
-//	  LCD.print(get_free_RAM());
-//	#endif
+#ifdef USE_LCD
+    #error USE_LCD not implemented yet
+#endif
 
 
 // startup messages:
 #ifdef USE_SERIAL_BAUD
   #ifdef SERIAL_MENU		// show message about menu
-    if (menu == MENU_CODE_HARDWARE )
-      {
+
+    #ifdef HARDWARE_menu
+    if (menu == MENU_CODE_HARDWARE ) {
 	pins_info_digital();
 	Serial.println();
 	pins_info_analog();
 	Serial.println();
-      }
+    }
+    #endif
 
     serial_menu_display();
 
@@ -1434,12 +1554,9 @@ void setup() {
   #endif
 #endif
 
-//	#ifdef USE_LCD
-//	  delay(3000);
-//	  LCD.clear();
-//	  LCD_print_line_progmem(TOP, programName);
-//	#endif
-
+#ifdef USE_LCD
+    #error USE_LCD not implemented yet
+#endif
 }
 
 
