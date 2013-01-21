@@ -5,7 +5,7 @@
 
 #include <iostream>
 #include <stdio.h>
-#include "circ_buf.cpp"
+// #include "circ_buf.cpp"
 #include "circ_accumulator.cpp"
 
 char scratch[80];
@@ -29,6 +29,8 @@ int main() {
 
   Circ_accumulator ACC(64);
 
+  ACC.gather_then_do();
+
 /*
   char c;
   char * p;
@@ -49,5 +51,6 @@ int main() {
   CB.cb_info();
 */
 
+  std::cout << "done\n";
   return 0;
 }

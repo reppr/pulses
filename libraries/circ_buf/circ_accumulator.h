@@ -8,13 +8,13 @@
 
 #include "circ_buf.h"
 
-class Circ_accumulator
+class Circ_accumulator : public Circ_buf
 {
  public:
   Circ_accumulator(int size);
   ~Circ_accumulator();
 
-  bool accumulate_then_do();
+  bool gather_then_do();
  private:
 };
 

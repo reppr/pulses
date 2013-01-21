@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <iostream>
+#include "circ_buf.cpp"
 #include "circ_accumulator.h"
 
 
@@ -18,4 +19,8 @@ Circ_accumulator::~Circ_accumulator() {
     // CB.free();
 }
 
-//  bool accumulate_then_do();
+
+bool Circ_accumulator::gather_then_do() {
+  std::cout << "gathering\n";
+  return false;		// nothing was done
+}

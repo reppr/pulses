@@ -8,7 +8,7 @@
 
 
 // constructor:
-Circ_buf::Circ_buf(int size)
+Circ_buf::Circ_buf(int size=64)
 {
   _size  = size;
   _start = 0;
