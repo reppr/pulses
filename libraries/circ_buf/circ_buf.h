@@ -1,4 +1,6 @@
-// circ_buf.h
+/*
+  circ_buf.h
+*/
 
 #ifndef CIRC_BUF
 #define CIRC_BUF

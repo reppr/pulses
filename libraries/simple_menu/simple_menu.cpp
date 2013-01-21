@@ -4,7 +4,10 @@
 
 #include <stdlib.h>
 #include <iostream>
-#include "circ_buf.h"
+
+// #include "circ_buf.h"
+#include "../circ_buf/circ_buf.h"	// omg! ################################
+
 #include "simple_menu.h"
 
 Simple_menu::Simple_menu(int size, bool (*input_test)(void), int (*getChar)(void)) {

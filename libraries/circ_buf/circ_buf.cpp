@@ -1,3 +1,7 @@
+/*
+   circ_buf.cpp
+*/
+
 #include <stdlib.h>
 #include <iostream>
 #include "circ_buf.h"
@@ -22,6 +26,7 @@ Circ_buf::~Circ_buf()
   _start = 0;
   _count = 0;
 }
+
 
 /*
   cb_write() save a byte to the buffer:

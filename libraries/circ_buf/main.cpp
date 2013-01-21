@@ -1,9 +1,11 @@
-// test only
+/*
+  testing circ_buf
+*/
+
 
 #include <iostream>
 #include <stdio.h>
 #include "circ_buf.cpp"
-#include "simple_menu.cpp"
 
 char scratch[80];
 
@@ -22,15 +24,8 @@ bool input_test() {
 
 int main() {
   std::cout << "testing main:\n";
-
-  //  Simple_menu MENU(64, &input_test, &getchar);
-  Simple_menu MENU(64, &input_test, &getchar_unlocked);
-
-  MENU.lurk();
-  std::cout << "done\n";
-return 99;
-
   std::cout << "\ttesting circ_buf\n";
+
   Circ_buf CB(64);
   CB.cb_info();
 
