@@ -23,17 +23,6 @@ Circ_buf::~Circ_buf()
   _count = 0;
 }
 
-
-int Circ_buf::cb_is_full() {
-  return _count == _size;
-}
-
-
-int Circ_buf::cb_stored() {	// returns number of buffered bytes
-  return _count;
-}
-
-
 /*
   cb_write() save a byte to the buffer:
   does *not* check if buffer is full
@@ -61,23 +50,11 @@ char Circ_buf::cb_read() {
 
 
 /*
-  cb_recover_last()  recover one byte *read immediately before*
-  *no checks inside*
-*/
-// cb_recover_last() OR cb_peek()    don't think we need both ################
-void Circ_buf::cb_recover_last() {
-  _start = (_start - 1 + _size) % _size;	// safety net ;)
-  ++_count;
-}
-
-
-/*
   int cb_peek()
   return -1 if buffer is empty, else
   return next char without removing it from buffer
 */
-// cb_recover_last() OR cb_peek()    don't think we need both ################
-int Circ_buf::cb_peek() {
+int Circ_buf::cb_peek() const {
   if (_count == 0)
     return -1;
 
@@ -86,8 +63,20 @@ int Circ_buf::cb_peek() {
 }
 
 
-// for debugging
-void Circ_buf::cb_info() {
+/* inlined
+int Circ_buf::cb_stored() {	// returns number of buffered bytes
+  return _count;
+}
+
+
+int Circ_buf::cb_is_full() {
+  return _count == _size;
+}
+*/
+
+
+// cb_info() debugging help
+void Circ_buf::cb_info() const {
   std::cout << "\nBuffer:\t\t";
   std::cout << (int) _buf;
 

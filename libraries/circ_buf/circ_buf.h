@@ -8,18 +8,18 @@ class Circ_buf
  public:
   Circ_buf(int size);
   ~Circ_buf();
-  int cb_stored();
-  void cb_write(char value);
-  char cb_read();
-  int cb_is_full();
-  void cb_recover_last();	// don't think we need both
-  int cb_peek();		// don't think we need both
-  void cb_info();
+  void cb_write(char value);			// save a byte in buffer,  no checks
+  char cb_read();				// get a byte from buffer, no checks
+  int cb_peek() const;				// peek at next if any, else return error
+  int cb_stored() const { return _count; }		// inlined: number of stored bytes
+  bool cb_is_full() const { return _count == _size; }	// inlined: is the buffer full?
+  void cb_info() const;				// debugging help
+
  private:
-  int _size;		// maximum number of elements
-  int _start;		// index of oldest element, read index
-  int _count;		// buffered bytes
-  char * _buf;		// *buffer
+  int _size;					// maximum number of elements
+  int _start;					// index of oldest element, read index
+  int _count;					// buffered bytes
+  char * _buf;					// *buffer
 };
 
 #endif
