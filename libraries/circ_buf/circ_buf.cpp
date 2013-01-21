@@ -78,7 +78,7 @@ int Circ_buf::cb_is_full() {
 // cb_info() debugging help
 void Circ_buf::cb_info() const {
   std::cout << "\nBuffer:\t\t";
-  std::cout << (int) _buf;
+  std::cout << (long) _buf;
 
   std::cout << "\n  size:\t\t";
   std::cout << _size;
