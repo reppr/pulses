@@ -10,21 +10,18 @@
 // constructor:
 Circ_buf::Circ_buf(int size=64)
 {
-  _size  = size;
-  _start = 0;
-  _count = 0;
-  _buf = (char *) malloc(size);	// could fail ################
+  CB.size  = size;
+  CB.start = 0;
+  CB.count = 0;
+  CB.buf = (char *) malloc(size);	// could fail ################
 }
 
 
 // destructor:
 Circ_buf::~Circ_buf()
 {
-  free(_buf);
-  _buf   = NULL;
-  _size  = 0;
-  _start = 0;
-  _count = 0;
+  free(CB.buf);
+  CB.buf   = NULL;
 }
 
 
@@ -33,12 +30,12 @@ Circ_buf::~Circ_buf()
   does *not* check if buffer is full
 */
 void Circ_buf::cb_write(char value) {
-  int end = (_start + _count) % _size;
-  _buf[end] = value;
-  if (_count == _size)
-    _start = (_start + 1) % _size;
+  int end = (CB.start + CB.count) % CB.size;
+  CB.buf[end] = value;
+  if (CB.count == CB.size)
+    CB.start = (CB.start + 1) % CB.size;
   else
-    ++_count;
+    ++CB.count;
 }
 
 
@@ -47,9 +44,9 @@ void Circ_buf::cb_write(char value) {
   does *not* check if buffer is empty
 */
 char Circ_buf::cb_read() {
-  char value = _buf[_start];
-  _start = (_start + 1) % _size;
-  --_count;
+  char value = CB.buf[CB.start];
+  CB.start = (CB.start + 1) % CB.size;
+  --CB.count;
   return value;
 }
 
@@ -60,22 +57,22 @@ char Circ_buf::cb_read() {
   return next char without removing it from buffer
 */
 int Circ_buf::cb_peek() const {
-  if (_count == 0)
+  if (CB.count == 0)
     return -1;
 
-  char value = _buf[_start];
+  char value = CB.buf[CB.start];
   return value;
 }
 
 
 /* inlined
 int Circ_buf::cb_stored() {	// returns number of buffered bytes
-  return _count;
+  return CB.count;
 }
 
 
 int Circ_buf::cb_is_full() {
-  return _count == _size;
+  return CB.count == CB.size;
 }
 */
 
@@ -83,16 +80,16 @@ int Circ_buf::cb_is_full() {
 // cb_info() debugging help
 void Circ_buf::cb_info() const {
   std::cout << "\nBuffer:\t\t";
-  std::cout << (long) _buf;
+  std::cout << (long) CB.buf;
 
   std::cout << "\n  size:\t\t";
-  std::cout << _size;
+  std::cout << CB.size;
 
   std::cout << "\n  count:\t";
-  std::cout << _count;
+  std::cout << CB.count;
 
   std::cout << "\n  start:\t";
-  std::cout << _start;
+  std::cout << CB.start;
 
   int value = cb_peek();
   std::cout << "\n  char:\t\t";

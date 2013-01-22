@@ -5,6 +5,13 @@
 #ifndef CIRC_BUF
 #define CIRC_BUF
 
+struct circ_buf {
+  int size;
+  int start;
+  int count;
+  char * buf;
+};
+
 class Circ_buf
 {
  public:
@@ -13,15 +20,12 @@ class Circ_buf
   void cb_write(char value);			// save a byte in buffer,  no checks
   char cb_read();				// get a byte from buffer, no checks
   int cb_peek() const;				// peek at next if any, else return error
-  int cb_stored() const { return _count; }		// inlined: number of stored bytes
-  bool cb_is_full() const { return _count == _size; }	// inlined: is the buffer full?
-  void cb_info() const;				// debugging help
+  int cb_stored() const { return CB.count; }			// inline:  # stored bytes
+  bool cb_is_full() const { return CB.count == CB.size; }	// inlined: buffer full?
+  void cb_info() const;						// debugging help
 
  private:
-  int _size;					// maximum number of elements
-  int _start;					// index of oldest element, read index
-  int _count;					// buffered bytes
-  char * _buf;					// *buffer
+  circ_buf CB;
 };
 
 #endif

@@ -17,7 +17,7 @@ class Simple_menu
   int react();
   bool (*is_input)(void);
   int (*get_char)(void);
-  //  circ_buf _cb;
+  //  circ_buf * _cb;
 };
 
 #endif
