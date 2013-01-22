@@ -2,12 +2,15 @@
   testing circ_buf
 */
 
-
 #include <iostream>
 #include <stdio.h>
+
+#define DEBUGGING
 #include "circ_buf.cpp"
 
+
 char scratch[80];
+
 
 bool input_test() {
   int INP;
@@ -23,8 +26,7 @@ bool input_test() {
 
 
 int main() {
-  std::cout << "testing main:\n";
-  std::cout << "\ttesting circ_buf\n";
+  std::cout << "\ttesting circ_buf main:\n";
 
   Circ_buf CB(64);
   CB.cb_info();

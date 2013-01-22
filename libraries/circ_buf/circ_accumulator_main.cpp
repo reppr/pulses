@@ -2,13 +2,14 @@
   testing circ_accumulator
 */
 
-
 #include <iostream>
 #include <stdio.h>
-// #include "circ_buf.cpp"
+
+#define DEBUGGING
 #include "circ_accumulator.cpp"
 
 char scratch[80];
+
 
 bool input_test() {
   int INP;
@@ -24,10 +25,9 @@ bool input_test() {
 
 
 int main() {
-  std::cout << "testing main:\n";
-  std::cout << "\ttesting circ_accumulator\n";
+  std::cout << "\ttesting circ_accumulator main:\n";
 
-  Circ_accumulator ACC(64);
+  Circ_accumulator ACC(64, &input_test, &getchar_unlocked);	// getchar_unlocked()
 
   ACC.gather_then_do();
 
