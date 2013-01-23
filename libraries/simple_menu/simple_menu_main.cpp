@@ -1,16 +1,18 @@
-// test only
+/*
+  simple_menu_main.cpp
+*/
+
 
 #include <iostream>
 #include <stdio.h>
 
 
 #define DEBUGGING
-// #include "circ_buf.cpp"
-#include "../circ_buf/circ_accumulator.h"	// omg! ################################
 #include "simple_menu.cpp"
 
 
 char scratch[80];
+
 
 bool input_test() {
   int INP;

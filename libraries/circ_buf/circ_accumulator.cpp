@@ -19,6 +19,7 @@ Circ_accumulator::Circ_accumulator(int size, bool (*input_test)(void), int (*get
   get_char = getChar;
 }
 
+
 Circ_accumulator::Circ_accumulator(void) {
 
 #ifdef DEBUGGING

@@ -15,10 +15,6 @@ class Simple_menu : public Circ_accumulator
  private:
   void display();
   int react();
-  // Circ_accumulator ACC;
-  // bool (*is_input)(void);
-  // int (*get_char)(void);
-  // Circ_accumulator * ACC;
 };
 
 #endif
