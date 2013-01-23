@@ -7,18 +7,40 @@
 
 #include "circ_buf.h"
 
+#define CB_DEFAULT_SIZE = 64
 
-// constructor:
-Circ_buf::Circ_buf(int size=64)
+
+// constructor with size:
+Circ_buf::Circ_buf(int size)
 {
 #ifdef DEBUGGING
-  std::cout << "CONSTRUCTING Circ_buf\n";
+  std::cout << "CONSTRUCTING Circ_buf size=";
+  std::cout << size;
+  std::cout << "\n";
 #endif
 
   CB.size  = size;
   CB.start = 0;
   CB.count = 0;
   CB.buf = (char *) malloc(size);	// could fail ################
+}
+
+
+// constructor default size
+Circ_buf::Circ_buf()
+{
+#ifdef DEBUGGING
+  std::cout << "CONSTRUCTING Circ_buf with DEFAULT size=";
+  std::cout << 64; //CB_DEFAULT_SIZE;
+  std::cout << "\n";
+#endif
+
+  CB.size  = 64; //CB_DEFAULT_SIZE;
+  CB.start = 0;
+  CB.count = 0;
+
+  //  CB.buf = (char *) malloc(CB_DEFAULT_SIZE);	// could fail ################
+  CB.buf = (char *) malloc(64);	// could fail ################
 }
 
 

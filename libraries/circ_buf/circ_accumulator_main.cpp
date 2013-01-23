@@ -26,7 +26,7 @@ bool input_test() {
 
 
 int main() {
-  std::cout << "\ttesting circ_accumulator main:\n";
+  std::cout << "testing circ_accumulator main:\n";
 
   Circ_accumulator ACC(64, &input_test, &getchar_unlocked);	// getchar_unlocked()
 

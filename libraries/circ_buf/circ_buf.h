@@ -16,6 +16,7 @@ class Circ_buf
 {
  public:
   Circ_buf(int size);
+  Circ_buf();
   ~Circ_buf();
   void cb_write(char value);			// save a byte in buffer,  no checks
   char cb_read();				// get a byte from buffer, no checks

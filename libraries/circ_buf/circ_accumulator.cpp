@@ -23,7 +23,7 @@ Circ_accumulator::Circ_accumulator(int size, bool (*input_test)(void), int (*get
 Circ_accumulator::Circ_accumulator(void) {
 
 #ifdef DEBUGGING
-  std::cout << "CONSTRUCTING Circ_accumulator using default values\n";
+  std::cout << "will construct Circ_accumulator using default values\n";
 #endif
 
   Circ_accumulator(64, NULL, NULL);

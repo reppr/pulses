@@ -27,7 +27,7 @@ bool input_test() {
 
 
 int main() {
-  std::cout << "\ttesting circ_buf main:\n";
+  std::cout << "testing circ_buf main:\n";
 
   Circ_buf CB(64);
   CB.cb_info();
