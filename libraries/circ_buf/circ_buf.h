@@ -24,7 +24,7 @@ class Circ_buf
   bool cb_is_full() const { return CB.count == CB.size; }	// inlined: buffer full?
   void cb_info() const;						// debugging help
 
- private:
+ protected:
   circ_buf CB;
 };
 

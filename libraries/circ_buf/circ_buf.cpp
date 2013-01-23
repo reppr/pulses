@@ -14,6 +14,7 @@ Circ_buf::Circ_buf(int size=64)
 #ifdef DEBUGGING
   std::cout << "CONSTRUCTING Circ_buf\n";
 #endif
+
   CB.size  = size;
   CB.start = 0;
   CB.count = 0;
@@ -27,6 +28,7 @@ Circ_buf::~Circ_buf()
 #ifdef DEBUGGING
   std::cout << "DESTRUCTING Circ_buf\n";
 #endif
+
   free(CB.buf);
   CB.buf   = NULL;
 }
@@ -72,15 +74,16 @@ int Circ_buf::cb_peek() const {
 }
 
 
-/* inlined:
-int Circ_buf::cb_stored() {	// returns number of buffered bytes
-  return CB.count;
-}
-
-// inlined:
-int Circ_buf::cb_is_full() {
-  return CB.count == CB.size;
-}
+/* inlined:  see circ_buf.h
+    // inlined:
+    int Circ_buf::cb_stored() {	// returns number of buffered bytes
+      return CB.count;
+    }
+    
+    // inlined:
+    int Circ_buf::cb_is_full() {
+      return CB.count == CB.size;
+    }
 */
 
 

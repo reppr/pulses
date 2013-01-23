@@ -5,6 +5,7 @@
 #include <iostream>
 #include <stdio.h>
 
+
 #define DEBUGGING
 #include "circ_accumulator.cpp"
 

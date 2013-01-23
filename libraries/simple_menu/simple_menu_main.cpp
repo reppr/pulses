@@ -3,9 +3,12 @@
 #include <iostream>
 #include <stdio.h>
 
+
+#define DEBUGGING
 // #include "circ_buf.cpp"
-#include "../circ_buf/circ_buf.cpp"	// omg! ################################
+#include "../circ_buf/circ_accumulator.h"	// omg! ################################
 #include "simple_menu.cpp"
+
 
 char scratch[80];
 
@@ -23,7 +26,7 @@ bool input_test() {
 
 
 int main() {
-  std::cout << "testing main:\n";
+  std::cout << "testing simple_menu main:\n";
 
   //  Simple_menu MENU(64, &input_test, &getchar);	// getchar()
   Simple_menu MENU(64, &input_test, &getchar_unlocked);	// getchar_unlocked()
