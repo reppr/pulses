@@ -11,8 +11,11 @@
 
 Simple_menu::Simple_menu(int size, bool (*input_test)(void), int (*getChar)(void)) {
   // Circ_accumulator(int size, bool (*is_input)(void), int (*get_char)(void));
+#ifdef DEBUGGING
+  std::cout << "Simple_menu constructing...\n";
+#endif
 
-  //  Circ_accumulator ACC(size, input_test, getChar);
+  Circ_accumulator ACC(size, input_test, getChar);
 
 #ifdef DEBUGGING
   std::cout << "Simple_menu CONSTRUCTED\n";
@@ -35,21 +38,21 @@ void Simple_menu::lurk() {
   std::cout << "lurking...\n";
 #endif
 
-  /*
-  if ( (*ACC.is_input)() ) {
+
+  if ( (*is_input)() ) {
 #ifdef DEBUGGING
     std::cout << "there is input:  ";
 #endif
-    INP=(*ACC.get_char)();
+    INP=(*get_char)();
     c=(char) INP;
 #ifdef DEBUGGING
     std::cout << c << "\t" << INP << "\n";
 #endif
 
-} else
+  } else {
 #ifdef DEBUGGING
     std::cout << "waiting for input\n";
 #endif
- */
+  }
 
 }

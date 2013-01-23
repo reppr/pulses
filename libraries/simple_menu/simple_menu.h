@@ -12,9 +12,10 @@ class Simple_menu : public Circ_accumulator
   ~Simple_menu();
   void lurk();
 
- private:
+ protected:
   void display();
   int react();
+  Circ_accumulator ACC;
 };
 
 #endif

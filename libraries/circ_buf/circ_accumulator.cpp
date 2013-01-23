@@ -20,7 +20,10 @@ Circ_accumulator::Circ_accumulator(int size, bool (*input_test)(void), int (*get
 }
 
 
-Circ_accumulator::Circ_accumulator(void) {
+Circ_accumulator::Circ_accumulator():
+  is_input(NULL),
+  get_char(NULL)
+{
 
 #ifdef DEBUGGING
   std::cout << "will construct Circ_accumulator using default values\n";
