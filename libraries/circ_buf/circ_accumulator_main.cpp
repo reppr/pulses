@@ -12,50 +12,34 @@
 
 char scratch[80];
 
+Circ_accumulator ACC(64, &getchar);		// getchar(), getchar_unlocked()
 
-bool input_test() {
-  int INP;
-  std::cout << "testing on input\n";
 
-  if ( (INP = getchar_unlocked()) != EOF ) {
-    std::cout << "putting\n";
-    putchar_unlocked(INP);
-    std::cout << "putted\n";
-    return true;
+/*
+int maybe_input() {
+  return getchar_unlocked();
+}
+*/
+
+
+void do_it() {
+  char c;
+
+  std::cout << "program ACTION will be taken on: ";
+
+  while ( ACC.cb_stored() ) {
+    c = ACC.cb_read();
+    std::cout << c;
   }
-
-  return false;
+  std::cout << "\n";
 }
 
 
 int main() {
-  std::cout << "testing circ_accumulator main:\n";
+  std::cout << "testing circ_accumulator looped main:\n";
 
-  Circ_accumulator ACC(64, &input_test, &getchar_unlocked);	// getchar_unlocked()
-  //  Circ_accumulator ACC(64, &input_test, &_kbhit);	// _kbhit()
-
-
-  ACC.gather_then_do();
-
-/*
-  char c;
-  char * p;
-
-  p = scratch;
-  *p=0;
-  std::cout << "enter test string:\t";
-  std::cin.get(scratch, 79);
-
-  while (c = *p++)
-    CB.cb_write(c);
-  CB.cb_info();
-
-  std::cout << "read from buffer:\t";
-  while (CB.cb_stored())
-    std::cout << CB.cb_read();
-  std::cout << "\n";
-  CB.cb_info();
-*/
+  while(true)
+    ACC.gather_then_do(&do_it);
 
   std::cout << "done\n";
   return 0;

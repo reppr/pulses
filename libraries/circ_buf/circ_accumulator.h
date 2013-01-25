@@ -10,14 +10,15 @@
 class Circ_accumulator : public Circ_buf
 {
  public:
-  Circ_accumulator(int size, bool (*is_input)(void), int (*get_char)(void));
+  // Circ_accumulator(int size, int (*maybe_input)(void), void (*action)(void));
+  Circ_accumulator(int size, int (*maybe_input)(void));
   ~Circ_accumulator();
 
-  bool gather_then_do();
+  bool gather_then_do(void (*action)(void));
 
  protected:
-  bool (*is_input)(void);
-  int (*get_char)(void);
+  int (*maybe_input)(void);	// maybe_input() must return EOF or next char
+  void (*action)(void);		// will be called on receiving an end token
 };
 
 #endif
