@@ -3,8 +3,9 @@
 */
 
 #include <iostream>
-#include <stdio.h>
 
+#include <stdio.h>
+#include <termios.h>
 
 #define DEBUGGING
 #include "circ_accumulator.cpp"
@@ -17,7 +18,9 @@ bool input_test() {
   std::cout << "testing on input\n";
 
   if ( (INP = getchar_unlocked()) != EOF ) {
+    std::cout << "putting\n";
     putchar_unlocked(INP);
+    std::cout << "putted\n";
     return true;
   }
 
@@ -29,6 +32,8 @@ int main() {
   std::cout << "testing circ_accumulator main:\n";
 
   Circ_accumulator ACC(64, &input_test, &getchar_unlocked);	// getchar_unlocked()
+  //  Circ_accumulator ACC(64, &input_test, &_kbhit);	// _kbhit()
+
 
   ACC.gather_then_do();
 

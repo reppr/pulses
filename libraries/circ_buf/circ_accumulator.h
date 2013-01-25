@@ -11,7 +11,6 @@ class Circ_accumulator : public Circ_buf
 {
  public:
   Circ_accumulator(int size, bool (*is_input)(void), int (*get_char)(void));
-  Circ_accumulator(void);
   ~Circ_accumulator();
 
   bool gather_then_do();
