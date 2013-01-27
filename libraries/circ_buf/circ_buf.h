@@ -1,5 +1,7 @@
 /*
   circ_buf.h
+  circular buffer of size 'size'
+  elementary operations
 */
 
 #ifndef CIRC_BUF

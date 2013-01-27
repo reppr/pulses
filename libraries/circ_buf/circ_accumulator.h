@@ -1,5 +1,17 @@
 /*
-  circ_accumulater.h
+  circ_accumulator.h
+  Extend Circ_buf class to accumulate incoming bytes until 'end token'
+  then do a programmable action that has read access to the buffer.
+
+  First change typical line ending codes \n and \c to end tokens \0.
+
+  If the result is not \0 = 'end token',
+    then accumulate it.
+  else,
+    on receiving an end token,
+    if the buffer is not empty,
+      then trigger action.
+    empty end tokens (from end of line codes translation) get ignored.
 */
 
 #ifndef CIRC_ACCUMULATOR

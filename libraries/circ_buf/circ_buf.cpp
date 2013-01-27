@@ -1,5 +1,7 @@
 /*
-   circ_buf.cpp
+  circ_buf.cpp
+  circular buffer of size 'size'
+  elementary operations
 */
 
 #include <stdlib.h>
