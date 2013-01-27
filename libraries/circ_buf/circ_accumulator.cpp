@@ -14,10 +14,9 @@
     empty end tokens (from end of line codes translation) get ignored.
 */
 
-#include <stdlib.h>
 #include <iostream>
-
 #include <stdio.h>
+
 #include "circ_buf.cpp"
 #include "circ_accumulator.h"
 
