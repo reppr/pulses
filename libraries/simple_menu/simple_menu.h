@@ -8,9 +8,9 @@
 class Simple_menu : public Circ_accumulator
 {
  public:
-  Simple_menu(int size, bool (*is_input)(void), int (*get_char)(void));
+  Simple_menu(int size, int (*maybeInput)(void));
   ~Simple_menu();
-  void lurk();
+  //  void lurk();
 
  protected:
   void display();

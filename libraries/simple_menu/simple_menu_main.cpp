@@ -2,39 +2,36 @@
   simple_menu_main.cpp
 */
 
-
 #include <iostream>
 #include <stdio.h>
 
-
 #define DEBUGGING
 #include "simple_menu.cpp"
+#include "simple_menu_main.h"
 
 
-char scratch[80];
+Simple_menu MENU(64, &getchar);		// getchar()
 
 
-bool input_test() {
-  int INP;
-  std::cout << "testing on input\n";
+void menu_action() {
+  char c;
 
-  if ( (INP = getchar_unlocked()) != EOF ) {
-    putchar_unlocked(INP);
-    return true;
+  std::cout << "MENU ACTION on : ";
+  while ( MENU.cb_stored() ) {
+    c = MENU.cb_read();
+    std::cout << c;
   }
-
-  return false;
+  std::cout << "\n";
 }
 
 
 int main() {
-  std::cout << "testing simple_menu main:\n";
+  std::cout << "testing simple_menu main  ==> ETHERNAL LOOP <== \n";
 
-  //  Simple_menu MENU(64, &input_test, &getchar);	// getchar()
-  Simple_menu MENU(64, &input_test, &getchar_unlocked);	// getchar_unlocked()
+  while(true)
+    MENU.gather_then_do(&menu_action);
+  // MENU.lurk();
 
-  MENU.lurk();
   std::cout << "done\n";
-
   return 0;
 }

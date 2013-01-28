@@ -22,6 +22,7 @@
 
 char scratch[80];
 
+/* I abuse getchar() as maybe_input()	*/
 Circ_accumulator ACC(64, &getchar);		// getchar(), getchar_unlocked()
 
 /* void do_it()

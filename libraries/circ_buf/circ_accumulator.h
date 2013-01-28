@@ -24,6 +24,7 @@ class Circ_accumulator : public Circ_buf
  public:
   // Circ_accumulator(int size, int (*maybe_input)(void), void (*action)(void));
   Circ_accumulator(int size, int (*maybe_input)(void));
+  Circ_accumulator();	// trying to keep c++ constructors happy
   ~Circ_accumulator();
 
   bool gather_then_do(void (*action)(void));

@@ -35,6 +35,18 @@ Circ_accumulator::Circ_accumulator(int size, int (*maybeInput)(void)):
 }
 
 
+/*
+  trying to keep c++ constructors happy...
+*/
+Circ_accumulator::Circ_accumulator():
+Circ_buf(64)	// ################################################################
+{
+#ifdef DEBUGGING
+  std::cout << "EMPTY CONSTRUCTOR Circ_accumulator\n";
+#endif
+}
+
+
 Circ_accumulator::~Circ_accumulator() {
 #ifdef DEBUGGING
   std::cout << "DESTRUCTING Circ_accumulator\n";
@@ -56,7 +68,7 @@ bool Circ_accumulator::gather_then_do(void (*Action)(void)) {
   char c;
 
 #ifdef DEBUGGING
-  std::cout << "gathering, testing input:\n";
+  std::cout << "gathering, testing input:\t";
 #endif
 
   /* int maybe_input()  
@@ -75,21 +87,21 @@ bool Circ_accumulator::gather_then_do(void (*Action)(void)) {
     case '\n':		// translate \n to 'end token' \0
       c = 0;
 #ifdef DEBUGGING
-      std::cout << "NL\n";
+      std::cout << "NL translated\n";
 #endif
       break;
 
     case '\r':		// translate \r to 'end token' \0
       c = 0;
 #ifdef DEBUGGING
-      std::cout << "CR\n";
+      std::cout << "CR translated\n";
 #endif
       break;
 
     case '\0':		// translate \r to 'end token' \0
       // c = 0;
 #ifdef DEBUGGING
-      std::cout << "\\0\n";
+      std::cout << "\\0 received";
 #endif
       break;
     }
@@ -103,8 +115,8 @@ bool Circ_accumulator::gather_then_do(void (*Action)(void)) {
     } else {
 
 #ifdef DEBUGGING
-      std::cout << "END TOKEN received\n";
-      std::cout << "stored " << cb_stored() << "\n";
+      std::cout << "END token received. ";
+      std::cout << "Buffer stored=" << cb_stored() << "\n";
 #endif
 
       /* end of line token translation can produce more then one \0 in sequence
@@ -114,6 +126,10 @@ bool Circ_accumulator::gather_then_do(void (*Action)(void)) {
       if ( cb_stored() ) {	// disregard empty buffers
 	(*Action)();
 	return true;		// there *was* action
+#ifdef DEBUGGING
+      } else {
+	std::cout << "(empty buffer ignored)\n";
+#endif
       }
     }
 
