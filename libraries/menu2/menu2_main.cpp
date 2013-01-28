@@ -9,7 +9,7 @@
 #define DEBUGGING
 #include "menu2.cpp"
 
-Menu2 MENU;
+Menu2 MENU(32);
 
 int main() {
   std::cout << "running menu2_main.cpp\n";

@@ -4,21 +4,29 @@
 */
 
 #include <iostream>
+#include <stdlib.h>
 
 #include "menu2.h"
 
 
-Menu2::Menu2() {
+Menu2::Menu2(int bufSize) {
 #ifdef DEBUGGING
-  std::cout << "Menu2 CONSTRUCTER\n";
+  std::cout << "Menu2 CONSTRUCTOR\n";
 #endif
+
+  cb_start = 0;
+  cb_size  = bufSize;
+  cb_buf = (char *) malloc(cb_size);	// could fail ################
+  cb_count = 0;
 }
 
 
 Menu2::~Menu2() {
 #ifdef DEBUGGING
-  std::cout << "Menu2 DESTRUCTER\n";
+  std::cout << "Menu2 DESTRUCTOR\n";
 #endif
+
+  free(cb_buf);
 }
 
 

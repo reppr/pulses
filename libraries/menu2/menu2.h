@@ -9,11 +9,16 @@
 class Menu2
 {
  public:
-  Menu2();
+  Menu2(int size);
   ~Menu2();
+
   bool lurk_then_react();
+  int cb_count;
   // protected:
-  // private:
+ private:
+  int cb_start;
+  int cb_size;
+  char * cb_buf;
 };
 
 #endif
