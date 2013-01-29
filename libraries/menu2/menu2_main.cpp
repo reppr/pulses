@@ -15,7 +15,7 @@ Menu2 MENU(32, &getchar);
 void program_action() {
   char c;
 
-  std::cout << "PROGRAM ACTION sees: ";
+  std::cout << "\nPROGRAM ACTION sees: ";
   while ( MENU.cb_stored() ) {
     c = MENU.cb_read();
     std::cout << c;

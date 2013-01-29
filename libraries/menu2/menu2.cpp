@@ -6,6 +6,10 @@
 #include <stdlib.h>
 #include <iostream>
 
+// switch prepared to compile Arduino sketches
+#define MAYBE_PROGMEM
+// #define MAYBE_PROGMEM	PROGMEM
+
 #include "menu2.h"
 
 
@@ -22,6 +26,8 @@ Menu2::Menu2(int bufSize, int (*maybeInput)(void)) {
   cb_count = 0;
 
   maybe_input = maybeInput;
+
+  menu_display();			// display menu on startup
 }
 
 
@@ -32,6 +38,7 @@ Menu2::~Menu2() {
 
   free(cb_buf);
 }
+
 
 /*
   cb_write() save a byte to the buffer:
@@ -61,15 +68,28 @@ char Menu2::cb_read() {
 
 /*
   int cb_peek()
-  return -1 if buffer is empty, else
+  return EOF if buffer is empty, else
   return next char without removing it from buffer
 */
 int Menu2::cb_peek() const {
   if (cb_count == 0)
-    return -1;
+    return EOF;
 
-  char value = cb_buf[cb_start];
-  return value;
+  return cb_buf[cb_start];
+}
+
+
+/*
+  int cb_peek(int offset)
+  like cb_peek() with offset>0
+  return EOF if token does not exist
+  return next char without removing it from buffer
+*/
+int Menu2::cb_peek(int offset) const {
+  if (cb_count <= offset)
+    return EOF;
+
+  return cb_buf[(cb_start + offset) % cb_size ];
 }
 
 
@@ -129,7 +149,7 @@ bool Menu2::lurk_and_do(void (*Action)(void)) {
   char c;
 
 #ifdef DEBUGGING
-  std::cout << "running lurk_and_do()\n";
+  std::cout << "\nrunning lurk_and_do()\n";
 #endif
 
   /* int maybe_input()  
@@ -186,7 +206,9 @@ bool Menu2::lurk_and_do(void (*Action)(void)) {
       */
       if ( cb_stored() ) {	// disregard empty buffers
 	(*Action)();
+	menu_display();
 	return true;		// true means *reaction was triggered*.
+
 #ifdef DEBUGGING
       } else {
 	std::cout << "(empty buffer ignored)\n";
@@ -201,4 +223,126 @@ bool Menu2::lurk_and_do(void (*Action)(void)) {
   }
 
   return false;		// false means *no reaction was triggered*.
+}
+
+
+// remove leading spaces from the input buffer:
+void Menu2::skip_spaces() {
+  while (cb_peek() == ' ')	//  EOF != ' '  so end of buffer case is ok
+    cb_read();
+}
+
+
+/* bool is_numeric()
+   true if there is a next numeric chiffre
+   false on missing data or not numeric data		*/
+bool Menu2::is_numeric() {
+  int c = cb_peek();
+  return ( c >= '0' ) && (c <= 9 );
+}
+
+
+/*
+  numeric integer input from a chiffre sequence in the buffer
+  call it with default_value, in most cases the old value.
+  sometimes you might give an impossible value to check if there was input.
+*/
+
+const unsigned char number_missing[] MAYBE_PROGMEM = "number missing";
+
+long Menu2::numeric_input(long default_value) {
+  long input, num, sign=1;
+
+  skip_spaces();
+  if (cb_count == 0)
+    goto number_missing;	// no non-space input: return
+
+  // check for sign:
+  switch ( cb_peek() ) {
+  case '-':			// switch sign
+    sign = -1;			// then continue like '+'
+  case '+':
+      cb_read();		// remove sign from buffer
+    break;
+  }
+  if (cb_count == 0)
+    goto number_missing;	// no input after sign, return
+
+  if ( ! is_numeric() )
+    goto number_missing;	// NAN, give up...
+
+  input = cb_read();		// read first chiffre after sign
+  num = input;
+
+  // more numeric chiffres?
+  while ( is_numeric() ) {
+    input = cb_read();
+    num = 10 * num + (input - '0');
+  }
+
+  // *if* we reach here there *was* numeric input:
+  return sign * num;		// return new numeric value
+
+  // number was missing, return the given default_value:
+ number_missing:
+  std::cout << number_missing;
+  return default_value;		// return default_value
+}
+
+
+/* drop leading numeric sequence from the buffer:	*/
+void Menu2::skip_numeric_input() {
+  while ( is_numeric() )
+    cb_read();
+}
+
+/* int next_input_token()
+   return next non space input token if any
+   else return EOF					*/
+int Menu2::next_input_token() {
+  int token;
+
+  for (int offset=0; offset<cb_count; offset++) {
+    switch ( token = cb_peek(offset) ) {
+    case ' ':		// skip spaces
+      break;
+//  case '\0':		// currently not possible
+//    return EOF;	// not a meaningful token
+    default:
+      return token;	// found a token
+    }
+  }
+  return EOF;		// no meaningful token found
+}
+
+
+/* void common_display()
+   display menu items common to all menus:		*/
+
+const unsigned char common_[] MAYBE_PROGMEM = \
+  "\nPress 'm' or '?' for menu  'e' toggle echo";
+
+const unsigned char _quit[] MAYBE_PROGMEM = \
+  "  'q' quit this menu";
+
+/*
+  const unsigned char program_[] MAYBE_PROGMEM = \
+    " 'P' program menu ";
+*/
+
+
+void Menu2::common_display() {
+  std::cout << "Program common display will go here\n";
+
+  std::cout << common_;
+//if (menu != MENU_CODE_UNDECIDED)
+    std::cout << _quit;
+
+  std::cout << "\n";
+}
+
+
+void Menu2::menu_display() {
+  std::cout << "\nMENU DISPLAY menu_display()\n";
+  common_display();
 }
