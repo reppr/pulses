@@ -1,8 +1,10 @@
+/* **************************************************************** */
 /*
   menu2.cpp
   menu2 as monolithic base class
 */
 
+/* **************************************************************** */
 #include <stdlib.h>
 #include <iostream>
 
@@ -12,6 +14,9 @@
 
 #include "menu2.h"
 
+
+/* **************************************************************** */
+// constructor/destructors:
 
 Menu2::Menu2(int bufSize, int (*maybeInput)(void)) {
 #ifdef DEBUGGING
@@ -40,10 +45,12 @@ Menu2::~Menu2() {
 }
 
 
+/* **************************************************************** */
+// basic circular buffer functions:
+
 /*
   cb_write() save a byte to the buffer:
-  does *not* check if buffer is full
-*/
+  does *not* check if buffer is full				*/
 void Menu2::cb_write(char value) {
   int end = (cb_start + cb_count) % cb_size;
   cb_buf[end] = value;
@@ -56,40 +63,12 @@ void Menu2::cb_write(char value) {
 
 /*
   cb_read() get oldest byte from the buffer:
-  does *not* check if buffer is empty
-*/
+  does *not* check if buffer is empty				*/
 char Menu2::cb_read() {
   char value = cb_buf[cb_start];
   cb_start = (cb_start + 1) % cb_size;
   --cb_count;
   return value;
-}
-
-
-/*
-  int cb_peek()
-  return EOF if buffer is empty, else
-  return next char without removing it from buffer
-*/
-int Menu2::cb_peek() const {
-  if (cb_count == 0)
-    return EOF;
-
-  return cb_buf[cb_start];
-}
-
-
-/*
-  int cb_peek(int offset)
-  like cb_peek() with offset>0
-  return EOF if token does not exist
-  return next char without removing it from buffer
-*/
-int Menu2::cb_peek(int offset) const {
-  if (cb_count <= offset)
-    return EOF;
-
-  return cb_buf[(cb_start + offset) % cb_size ];
 }
 
 
@@ -106,16 +85,44 @@ int Menu2::cb_peek(int offset) const {
 */
 
 
-// remove leading spaces from the input buffer:
+/* **************************************************************** */
+// less basic buffer interface functions:
+
+/*
+  int cb_peek()
+  return EOF if buffer is empty, else
+  return next char without removing it from buffer		*/
+int Menu2::cb_peek() const {
+  if (cb_count == 0)
+    return EOF;
+
+  return cb_buf[cb_start];
+}
+
+
+/*
+  int cb_peek(int offset)
+  like cb_peek() with offset>0
+  return EOF if token does not exist
+  return next char without removing it from buffer		*/
+int Menu2::cb_peek(int offset) const {
+  if (cb_count <= offset)
+    return EOF;
+
+  return cb_buf[(cb_start + offset) % cb_size ];
+}
+
+
+/* void skip_spaces(): remove leading spaces from input buffer:	*/
 void Menu2::skip_spaces() {
-  while (cb_peek() == ' ')	//  EOF != ' '  so end of buffer case is ok
+  while (cb_peek() == ' ')  //  EOF != ' ' end of buffer case ok
     cb_read();
 }
 
 
 /* int next_input_token()
    return next non space input token if any
-   else return EOF					*/
+   else return EOF						*/
 int Menu2::next_input_token() const {
   int token;
 
@@ -134,7 +141,7 @@ int Menu2::next_input_token() const {
 
 
 #ifdef DEBUGGING
-// cb_info() debugging help
+/* cb_info() debugging help						*/
 void Menu2::cb_info() const {
   std::cout << "\nBuffer:\t\t";
   std::cout << (long) cb_buf;
@@ -173,6 +180,9 @@ void Menu2::cb_info() const {
 }
 #endif
 
+
+/* **************************************************************** */
+// lurk_and_do(&ProgramAction) main menu2 user interface:
 
 /* bool lurk_and_do(bool (*ProgramAction)(void))
    get input byte, translate \n and \r to \0, which is 'END token'
@@ -266,9 +276,17 @@ cb_info();
 }
 
 
+/* **************************************************************** */
+/*
+  numeric integer input from a chiffre sequence in the buffer
+  call it with default_value, in most cases the old value.
+  sometimes you might give an impossible value to check if there was input.
+*/
+
+
 /* bool is_numeric()
    true if there is a next numeric chiffre
-   false on missing data or not numeric data		*/
+   false on missing data or not numeric data			*/
 bool Menu2::is_numeric() const {
   int c = cb_peek();
 
@@ -281,14 +299,8 @@ bool Menu2::is_numeric() const {
   return true;
 }
 
-
-/*
-  numeric integer input from a chiffre sequence in the buffer
-  call it with default_value, in most cases the old value.
-  sometimes you might give an impossible value to check if there was input.
-*/
-
-const unsigned char number_missing[] MAYBE_PROGMEM = "number missing";
+const unsigned char number_missing[] MAYBE_PROGMEM = \
+  "number missing";
 
 long Menu2::numeric_input(long default_value) {
   long input, num, sign=1;
@@ -330,14 +342,18 @@ long Menu2::numeric_input(long default_value) {
 }
 
 
-/* drop leading numeric sequence from the buffer:	*/
+/* drop leading numeric sequence from the buffer:		*/
 void Menu2::skip_numeric_input() {
   while ( is_numeric() )
     cb_read();
 }
 
+
+/* **************************************************************** */
+// menu display:
+
 /* void common_display()
-   display menu items common to all menus:		*/
+   display menu items common to all menus:			*/
 
 const unsigned char common_[] MAYBE_PROGMEM = \
   "\nPress 'm' or '?' for menu  'e' toggle echo";
@@ -351,7 +367,7 @@ const unsigned char _quit[] MAYBE_PROGMEM = \
 */
 
 
-/* display common menu entries:				*/
+/* display common menu entries:					*/
 void Menu2::common_display() {
 #ifdef DEBUGGING
   std::cout << "Program common display will go here\n";
@@ -365,7 +381,7 @@ void Menu2::common_display() {
 }
 
 
-/* display menu	current state and common entries:	*/
+/* display menu	current state and common entries:		*/
 void Menu2::menu_display() {
 #ifdef DEBUGGING
   std::cout << "\nMENU DISPLAY menu_display()\n";
@@ -374,6 +390,9 @@ void Menu2::menu_display() {
   common_display();
 }
 
+
+/* **************************************************************** */
+// menu action:
 
 /* act on buffer content tokens after receiving 'END token':	*/
 void Menu2::do_menu_actions(bool (*ProgramAction)(void)) {
@@ -397,3 +416,4 @@ void Menu2::do_menu_actions(bool (*ProgramAction)(void)) {
   }
 }
 
+/* **************************************************************** */
