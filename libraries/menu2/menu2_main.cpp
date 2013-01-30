@@ -12,7 +12,7 @@
 
 Menu2 MENU(32, &getchar);
 
-void program_action() {
+bool program_action() {
   char c;
 
   std::cout << "\nPROGRAM ACTION sees: ";
@@ -21,6 +21,8 @@ void program_action() {
     std::cout << c;
   }
   std::cout << "\n";
+
+  return false;			// false means *no* action was taken here
 }
 
 int main() {

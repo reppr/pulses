@@ -106,6 +106,33 @@ int Menu2::cb_peek(int offset) const {
 */
 
 
+// remove leading spaces from the input buffer:
+void Menu2::skip_spaces() {
+  while (cb_peek() == ' ')	//  EOF != ' '  so end of buffer case is ok
+    cb_read();
+}
+
+
+/* int next_input_token()
+   return next non space input token if any
+   else return EOF					*/
+int Menu2::next_input_token() const {
+  int token;
+
+  for (int offset=0; offset<cb_count; offset++) {
+    switch ( token = cb_peek(offset) ) {
+    case ' ':		// skip spaces
+      break;
+//  case '\0':		// currently not possible
+//    return EOF;	// not a meaningful token
+    default:
+      return token;	// found a token
+    }
+  }
+  return EOF;		// no meaningful token found
+}
+
+
 #ifdef DEBUGGING
 // cb_info() debugging help
 void Menu2::cb_info() const {
@@ -120,31 +147,44 @@ void Menu2::cb_info() const {
 
   std::cout << "\n  start:\t";
   std::cout << cb_start;
+  std::cout << "\n";
 
   int value = cb_peek();
   std::cout << "\n  char:\t\t";
-  if (value != -1)
-    std::cout << (char) value;
-  else
-    std::cout << "(none)";
+  if (value != -1) {
+    std::cout << value << "\t" << (char) value;
+    if ( is_numeric() )
+      std::cout << "  numeric CHIFFRE\n";
+    else
+      std::cout << "  NAN\n";
+  } else
+    std::cout << "(none)\n";
+
+  value = next_input_token();
+  std::cout << "\n  next_input_token()\t: " << value << "\t" << (char) value << "\n";
   std::cout << "\n";
+
+  for (int i=0; i<=cb_count; i++) {
+    value = cb_peek(i);
+    std::cout << "  cb_peek(" << i << ")\t\t: " << value << "\t" << (char) value << "\n";
+  }
 
   std::cout << "\n";
 }
 #endif
 
 
-/* lurk_and_do(void (*Action)(void))
-   get input byte, translate \n and \r to \0, which is 'end token'
-   check for end token:
+/* bool lurk_and_do(bool (*ProgramAction)(void))
+   get input byte, translate \n and \r to \0, which is 'END token'
+   check for END token:
    * accumulate data bytes
-   * \0 = 'end token':
-     * if there's data call 'Action()' to read and act on all data
+   * \0 = 'END token':
+     * if there's data call 'ProgramAction()' to read and act on all data
        and return true.
-     * disregard end tokens on empty buffer (left over from newline translation)
+     * disregard END tokens on empty buffer (left over from newline translation)
    Return true if and only if action was taken.
  */
-bool Menu2::lurk_and_do(void (*Action)(void)) {
+bool Menu2::lurk_and_do(bool (*ProgramAction)(void)) {
   int INP;
   char c;
 
@@ -164,22 +204,22 @@ bool Menu2::lurk_and_do(void (*Action)(void)) {
   if ( INP != EOF ) {	// there *is* input
     switch ( c = INP ) {
 
-    // end token translation:
-    case '\n':		// translate \n to 'end token' \0
+    // END token translation:
+    case '\n':		// translate \n to 'END token' \0
       c = 0;
 #ifdef DEBUGGING
-      std::cout << "NL translated\n";
+      std::cout << "NL translated to END token\n";
 #endif
       break;
 
-    case '\r':		// translate \r to 'end token' \0
+    case '\r':		// translate \r to 'END token' \0
       c = 0;
 #ifdef DEBUGGING
-      std::cout << "CR translated\n";
+      std::cout << "CR translated to END token\n";
 #endif
       break;
 
-    case '\0':		// translate \r to 'end token' \0
+    case '\0':		// '\0' already is 'END token'
       // c = 0;
 #ifdef DEBUGGING
       std::cout << "\\0 received";
@@ -188,7 +228,7 @@ bool Menu2::lurk_and_do(void (*Action)(void)) {
     }
     if ( c ) {		// accumulate in buffer
       cb_write(c);
-
+cb_info();
 #ifdef DEBUGGING
       std::cout << "accumulated " << c << "\n";
 #endif
@@ -205,7 +245,7 @@ bool Menu2::lurk_and_do(void (*Action)(void)) {
 	 so we treat only the first one (the one with the data).
       */
       if ( cb_stored() ) {	// disregard empty buffers
-	(*Action)();
+	do_menu_actions(ProgramAction);		// act on buffer content
 	menu_display();
 	return true;		// true means *reaction was triggered*.
 
@@ -226,19 +266,19 @@ bool Menu2::lurk_and_do(void (*Action)(void)) {
 }
 
 
-// remove leading spaces from the input buffer:
-void Menu2::skip_spaces() {
-  while (cb_peek() == ' ')	//  EOF != ' '  so end of buffer case is ok
-    cb_read();
-}
-
-
 /* bool is_numeric()
    true if there is a next numeric chiffre
    false on missing data or not numeric data		*/
-bool Menu2::is_numeric() {
+bool Menu2::is_numeric() const {
   int c = cb_peek();
-  return ( c >= '0' ) && (c <= 9 );
+
+  if ( c < '0' )
+    return false;
+
+  if ( c > '9' )
+    return false;
+
+  return true;
 }
 
 
@@ -296,26 +336,6 @@ void Menu2::skip_numeric_input() {
     cb_read();
 }
 
-/* int next_input_token()
-   return next non space input token if any
-   else return EOF					*/
-int Menu2::next_input_token() {
-  int token;
-
-  for (int offset=0; offset<cb_count; offset++) {
-    switch ( token = cb_peek(offset) ) {
-    case ' ':		// skip spaces
-      break;
-//  case '\0':		// currently not possible
-//    return EOF;	// not a meaningful token
-    default:
-      return token;	// found a token
-    }
-  }
-  return EOF;		// no meaningful token found
-}
-
-
 /* void common_display()
    display menu items common to all menus:		*/
 
@@ -331,8 +351,11 @@ const unsigned char _quit[] MAYBE_PROGMEM = \
 */
 
 
+/* display common menu entries:				*/
 void Menu2::common_display() {
+#ifdef DEBUGGING
   std::cout << "Program common display will go here\n";
+#endif
 
   std::cout << common_;
 //if (menu != MENU_CODE_UNDECIDED)
@@ -342,7 +365,35 @@ void Menu2::common_display() {
 }
 
 
+/* display menu	current state and common entries:	*/
 void Menu2::menu_display() {
+#ifdef DEBUGGING
   std::cout << "\nMENU DISPLAY menu_display()\n";
+#endif
+
   common_display();
 }
+
+
+/* act on buffer content tokens after receiving 'END token':	*/
+void Menu2::do_menu_actions(bool (*ProgramAction)(void)) {
+#ifdef DEBUGGING
+  std::cout << "\ndo_menu_actions()\n";
+#endif
+
+  // program menu first:
+  bool did_something = (*ProgramAction)();
+
+  if ( ! did_something ) {
+#ifdef DEBUGGING
+    std::cout << "ProgramAction() did not do anything...\n";
+#endif
+
+  } else {
+#ifdef DEBUGGING
+    std::cout << "ProgramAction() did do something ;)\n";
+#endif
+
+  }
+}
+
