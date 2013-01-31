@@ -7,6 +7,15 @@
 #ifndef MENU2
 #define MENU2
 
+// preprocessor macro logic:
+#ifdef DEBUGGING_ALL
+  #define DEBUGGING_CLASS
+  #define DEBUGGING_CIRCBUF
+  #define DEBUGGING_LURKING
+  #define DEBUGGING_MENU
+#endif
+
+
 class Menu2
 {
  public:
@@ -33,7 +42,7 @@ class Menu2
 
  protected:
   bool cb_is_full() const { return cb_count == cb_size; }	// inlined: buffer full?
-#ifdef DEBUGGING
+#ifdef DEBUGGING_CIRCBUF
   void cb_info() const;						// debugging help
 #endif
   int (*maybe_input)(void);	// maybe_input() must return EOF or next char

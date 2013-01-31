@@ -8,7 +8,12 @@
 #include <iostream>
 #include <stdio.h>
 
-#define DEBUGGING
+//#define DEBUGGING_ALL
+//#define DEBUGGING_CLASS
+//#define DEBUGGING_CIRCBUF
+//#define DEBUGGING_LURKING
+#define DEBUGGING_MENU
+
 #include "menu2.cpp"
 
 
@@ -35,10 +40,15 @@ int main() {
   std::cout << "running menu2_main.cpp  ==> ETHERNAL LOOP <==\n";
 
   while (true)		// ==> ETHERNAL LOOP <==
-    if ( MENU.lurk_and_do(&program_action) )
-      std::cout << "lurk_and_do() returned TRUE\n";
-    else
-      std::cout << "lurk_and_do() returned false\n";
+    if ( MENU.lurk_and_do(&program_action) ) {
+      #if defined(DEBUGGING_MENU) ||  defined(DEBUGGING_LURKING)
+        std::cout << "lurk_and_do() returned TRUE\n";
+      #endif
+    } else {
+      #ifdef DEBUGGING_MENU
+        std::cout << "lurk_and_do() returned false\n";
+      #endif
+    }
 
   return 0;
 }

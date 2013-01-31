@@ -19,7 +19,7 @@
 // constructor/destructors:
 
 Menu2::Menu2(int bufSize, int (*maybeInput)(void)) {
-#ifdef DEBUGGING
+#ifdef DEBUGGING_CLASS
   std::cout << "Menu2 CONSTRUCTOR: cb_size=";
   std::cout << bufSize << "\n";
 #endif
@@ -37,7 +37,7 @@ Menu2::Menu2(int bufSize, int (*maybeInput)(void)) {
 
 
 Menu2::~Menu2() {
-#ifdef DEBUGGING
+#ifdef DEBUGGING_CLASS
   std::cout << "Menu2 DESTRUCTOR\n";
 #endif
 
@@ -140,7 +140,7 @@ int Menu2::next_input_token() const {
 }
 
 
-#ifdef DEBUGGING
+#ifdef DEBUGGING_CIRCBUF
 /* cb_info() debugging help						*/
 void Menu2::cb_info() const {
   std::cout << "\nBuffer:\t\t";
@@ -198,7 +198,7 @@ bool Menu2::lurk_and_do(bool (*ProgramAction)(void)) {
   int INP;
   char c;
 
-#ifdef DEBUGGING
+#if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
   std::cout << "\nrunning lurk_and_do()\n";
 #endif
 
@@ -207,7 +207,7 @@ bool Menu2::lurk_and_do(bool (*ProgramAction)(void)) {
      or if there is no input returning EOF		*/
   INP=(*maybe_input)();
 
-#ifdef DEBUGGING
+#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
   std::cout << "got input\n";
 #endif
 
@@ -217,35 +217,35 @@ bool Menu2::lurk_and_do(bool (*ProgramAction)(void)) {
     // END token translation:
     case '\n':		// translate \n to 'END token' \0
       c = 0;
-#ifdef DEBUGGING
+#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
       std::cout << "NL translated to END token\n";
 #endif
       break;
 
     case '\r':		// translate \r to 'END token' \0
       c = 0;
-#ifdef DEBUGGING
+#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
       std::cout << "CR translated to END token\n";
 #endif
       break;
 
     case '\0':		// '\0' already is 'END token'
       // c = 0;
-#ifdef DEBUGGING
+#if defined(DEBUGGING_MENU) || defined(DEBUGGING_CIRCBUF)
       std::cout << "\\0 received";
 #endif
       break;
     }
     if ( c ) {		// accumulate in buffer
       cb_write(c);
-cb_info();
-#ifdef DEBUGGING
+#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
       std::cout << "accumulated " << c << "\n";
 #endif
 
     } else {
 
-#ifdef DEBUGGING
+#if defined(DEBUGGING_MENU) || defined(DEBUGGING_CIRCBUF) || \
+  defined(DEBUGGING_LURKING)
       std::cout << "END token received. ";
       std::cout << "Buffer stored=" << cb_stored() << "\n";
 #endif
@@ -259,7 +259,7 @@ cb_info();
 	menu_display();
 	return true;		// true means *reaction was triggered*.
 
-#ifdef DEBUGGING
+#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
       } else {
 	std::cout << "(empty buffer ignored)\n";
 #endif
@@ -267,7 +267,7 @@ cb_info();
     }
 
   } else {
-#ifdef DEBUGGING
+#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
       std::cout << "EOF received\n";
 #endif
   }
@@ -369,7 +369,7 @@ const unsigned char _quit[] MAYBE_PROGMEM = \
 
 /* display common menu entries:					*/
 void Menu2::common_display() {
-#ifdef DEBUGGING
+#ifdef DEBUGGING_MENU
   std::cout << "Program common display will go here\n";
 #endif
 
@@ -383,7 +383,7 @@ void Menu2::common_display() {
 
 /* display menu	current state and common entries:		*/
 void Menu2::menu_display() {
-#ifdef DEBUGGING
+#ifdef DEBUGGING_MENU
   std::cout << "\nMENU DISPLAY menu_display()\n";
 #endif
 
@@ -396,7 +396,7 @@ void Menu2::menu_display() {
 
 /* act on buffer content tokens after receiving 'END token':	*/
 void Menu2::do_menu_actions(bool (*ProgramAction)(void)) {
-#ifdef DEBUGGING
+#ifdef DEBUGGING_MENU
   std::cout << "\ndo_menu_actions()\n";
 #endif
 
@@ -404,12 +404,12 @@ void Menu2::do_menu_actions(bool (*ProgramAction)(void)) {
   bool did_something = (*ProgramAction)();
 
   if ( ! did_something ) {
-#ifdef DEBUGGING
+#ifdef DEBUGGING_MENU
     std::cout << "ProgramAction() did not do anything...\n";
 #endif
 
   } else {
-#ifdef DEBUGGING
+#ifdef DEBUGGING_MENU
     std::cout << "ProgramAction() did do something ;)\n";
 #endif
 
