@@ -32,7 +32,7 @@ Menu2::Menu2(int bufSize, int (*maybeInput)(void)) {
 
   maybe_input = maybeInput;
 
-  menu_display();			// display menu on startup
+  //  menu_display();			// display menu on startup
 }
 
 
@@ -86,7 +86,7 @@ char Menu2::cb_read() {
 
 
 /* **************************************************************** */
-// less basic buffer interface functions:
+// buffer interface functions for parsing:
 
 /*
   int cb_peek()
@@ -140,8 +140,11 @@ int Menu2::next_input_token() const {
 }
 
 
+/* **************************************************************** */
+// circ buf debugging:
+
 #ifdef DEBUGGING_CIRCBUF
-/* cb_info() debugging help						*/
+/* cb_info() debugging help					*/
 void Menu2::cb_info() const {
   std::cout << "\nBuffer:\t\t";
   std::cout << (long) cb_buf;
@@ -182,19 +185,20 @@ void Menu2::cb_info() const {
 
 
 /* **************************************************************** */
-// lurk_and_do(&ProgramAction) main menu2 user interface:
+// lurk_and_do() main menu2 user interface:
 
-/* bool lurk_and_do(bool (*ProgramAction)(void))
+/* bool lurk_and_do(bool (void)
    get input byte, translate \n and \r to \0, which is 'END token'
    check for END token:
    * accumulate data bytes
    * \0 = 'END token':
+################################################################
      * if there's data call 'ProgramAction()' to read and act on all data
        and return true.
      * disregard END tokens on empty buffer (left over from newline translation)
    Return true if and only if action was taken.
  */
-bool Menu2::lurk_and_do(bool (*ProgramAction)(void)) {
+bool Menu2::lurk_and_do() {
   int INP;
   char c;
 
@@ -255,7 +259,7 @@ bool Menu2::lurk_and_do(bool (*ProgramAction)(void)) {
 	 so we treat only the first one (the one with the data).
       */
       if ( cb_stored() ) {	// disregard empty buffers
-	do_menu_actions(ProgramAction);		// act on buffer content
+	do_menu_actions();	// <<<<<<<< ACT ON BUFFER CONTENT >>>>>>>>
 	menu_display();
 	return true;		// true means *reaction was triggered*.
 
@@ -350,6 +354,24 @@ void Menu2::skip_numeric_input() {
 
 
 /* **************************************************************** */
+// menu handling:
+
+void Menu2::add_page(char *pageTitle, char token,		\
+	      void (*pageDisplay)(void), bool (*pageReaction)(char)) {
+  page_title = pageTitle;
+  page_token = token;
+  display_page = pageDisplay;
+  page_reaction = pageReaction;
+
+#ifdef DEBUGGING_MENU
+  std::cout << "add_page(\"" << pageTitle << "\", " << token << ",..)\n";
+  std::cout << "________________________________________________\n";
+  (*display_page)();
+  std::cout << "________________________________________________\n";
+#endif
+}
+
+/* **************************************************************** */
 // menu display:
 
 /* void common_display()
@@ -369,10 +391,6 @@ const unsigned char _quit[] MAYBE_PROGMEM = \
 
 /* display common menu entries:					*/
 void Menu2::common_display() {
-#ifdef DEBUGGING_MENU
-  std::cout << "Program common display will go here\n";
-#endif
-
   std::cout << common_;
 //if (menu != MENU_CODE_UNDECIDED)
     std::cout << _quit;
@@ -381,39 +399,83 @@ void Menu2::common_display() {
 }
 
 
-/* display menu	current state and common entries:		*/
+const unsigned char internalKeys[] MAYBE_PROGMEM = "\n'?' for menu";
+const unsigned char qQuit[] MAYBE_PROGMEM = "  'q' quit page";
+
+/* display menu	current menu page and common entries:		*/
 void Menu2::menu_display() {
 #ifdef DEBUGGING_MENU
-  std::cout << "\nMENU DISPLAY menu_display()\n";
+  std::cout << "\nmenu_display():\n";
 #endif
 
-  common_display();
+  // page_display();
+  std::cout << "\nMENU " << page_title << "\n";
+  (*display_page)();
+
+  // internal key bindings:
+  std::cout << internalKeys << qQuit << "\n";
+  
+#ifdef DEBUGGING_MENU
+  std::cout << "\n";
+#endif
 }
 
 
 /* **************************************************************** */
 // menu action:
 
+const unsigned char unknownToken[] MAYBE_PROGMEM = "unkown token ";
+
 /* act on buffer content tokens after receiving 'END token':	*/
-void Menu2::do_menu_actions(bool (*ProgramAction)(void)) {
+void Menu2::do_menu_actions() {
+  char token;
+  bool did_something;
+
 #ifdef DEBUGGING_MENU
-  std::cout << "\ndo_menu_actions()\n";
+  std::cout << "\ndo_menu_actions(" << token << "):\n";
 #endif
 
-  // program menu first:
-  bool did_something = (*ProgramAction)();
-
-  if ( ! did_something ) {
+  while ( cb_count ) {
+    token = cb_read();
 #ifdef DEBUGGING_MENU
-    std::cout << "ProgramAction() did not do anything...\n";
+    std::cout << token;
 #endif
 
-  } else {
+    // skip spaces:
+    if ( token == ' ' )
+      continue;
+
+    // program menu first:
+    did_something = (*page_reaction)(token);
+
+    if ( ! did_something ) {
 #ifdef DEBUGGING_MENU
-    std::cout << "ProgramAction() did do something ;)\n";
+      std::cout << "program menu page does not know '" << token << "'\n";
 #endif
 
+      // check for internal bindings:
+        switch (token) {
+	case '?':
+	  menu_display();
+	  did_something=true;
+	  break;
+
+	case 'q':
+	  did_something=true;
+	  break;
+	}
+
+
+    } else {
+#ifdef DEBUGGING_MENU
+      std::cout << "program menu page responsible for '" << token << "'\n";
+#endif
+    }
   }
-}
 
+  if (! did_something ) {
+    std::cout << unknownToken << token << "\n";
+  }
+
+}
 /* **************************************************************** */

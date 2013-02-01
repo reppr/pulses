@@ -22,7 +22,9 @@ class Menu2
   Menu2(int size, int (*maybeInput)(void));
   ~Menu2();
 
-  bool lurk_and_do(bool (*Action)(void));
+  //  bool lurk_and_do(bool (*Action)(void));
+  bool lurk_and_do(void);
+  void add_page(char *pageTitle, char token, void (*pageDisplay)(), bool (*pageReaction)(char));
   int cb_stored() const { return cb_count; }	// inline:  # stored bytes
   char cb_read();				// get a byte from buffer, no checks
 
@@ -32,13 +34,13 @@ class Menu2
   int next_input_token() const;			// next non space input token if any, else EOL
   bool is_numeric() const;				// test if next token will be a numeric chiffre
   long numeric_input(long default_value);	// read a number from the buffer
-  void skip_numeric_input(void);		// drop leading numeric sequence from the buffer
+  void skip_numeric_input();			// drop leading numeric sequence from the buffer
 
-  void menu_display();				// display menu
+  void menu_display();				// display menu (page and common)
   void common_display();			// display common to all menu pages
 
   // act on buffer content tokens after seeing 'end token':
-  void do_menu_actions(bool (*ProgramAction)(void));
+  void do_menu_actions();
 
  protected:
   bool cb_is_full() const { return cb_count == cb_size; }	// inlined: buffer full?
@@ -54,6 +56,11 @@ class Menu2
   int cb_count;
   char * cb_buf;
   void cb_write(char value);			// save a byte in buffer,  no checks
+
+  char *page_title;
+  char page_token;
+  void (*display_page)(void);
+  bool (*page_reaction)(char token);
 };
 
 #endif
