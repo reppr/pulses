@@ -386,6 +386,8 @@ void Menu2::add_page(char *pageTitle, char ptoken,		\
 
 const unsigned char internalKeys[] MAYBE_PROGMEM = "\n'?' for menu";
 const unsigned char qQuit[] MAYBE_PROGMEM = "  'q' quit page";
+const unsigned char deco_[] MAYBE_PROGMEM = "\n * ** *** ";
+const unsigned char _deco[] MAYBE_PROGMEM = " *** ** *\n";
 
 /* display menu	current menu page and common entries:		*/
 void Menu2::menu_display() {
@@ -396,7 +398,10 @@ void Menu2::menu_display() {
 #endif
 
   // men_selected page display:
-  std::cout << "\nMENU " << men_pages[men_selected].title << "\n";
+  std::cout << deco_;
+  std::cout << "MENU " << men_pages[men_selected].title;
+  std::cout << _deco;
+
   (*men_pages[men_selected].display)();
 
   // display menu page key bindings:
@@ -472,7 +477,7 @@ void Menu2::interpret_men_input() {
 #endif
     // token not found yet...
 
-
+/* deactivated for this one version
     // always check page zero:
     if (men_selected) {		// if not already checked
       did_something = (*men_pages[0].interpret)(token);
@@ -487,7 +492,7 @@ void Menu2::interpret_men_input() {
 #endif
     }
     // token not found yet...
-
+*/
 
     // search menu page tokens:
     for (pg = 0; pg < men_known; pg++) {
