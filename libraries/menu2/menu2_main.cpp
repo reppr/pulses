@@ -18,26 +18,31 @@
 
 
 /* **************************************************************** */
-Menu2 MENU(32, &getchar);
+Menu2 MENU(32, 2, &getchar);
 
 
 /* **************************************************************** */
-void program_display() {
+void program_displayA() {
   std::cout << "\n  say 'a'\n";
 }
 
 /* **************************************************************** */
-bool program_action(char token) {
+void program_displayB() {
+  std::cout << "\n  say 'b'...\n";
+}
+
+/* **************************************************************** */
+bool program_actionA(char token) {
 #ifdef DEBUGGING_MENU
-  std::cout << "program_action2(" << token << "): ";
+  std::cout << "program_actionA(" << token << "): ";
 #endif
   switch (token) {
   case 'a':
     std::cout << "\nYES, I DO KNOW TOKEN 'a' :)\n";
     return true;	// return true;  means there *was* action,
 			// it's  *not* the exit status of the action
-			// the menu page *is responsible* for this token	
-//  break;
+			// the menu page *is responsible* for this token
+    break;
 
   default:
     return false;	// return false; means *no* action was taken here
@@ -46,15 +51,37 @@ bool program_action(char token) {
 }
 
 
-char menuTitle[] = "The 'a' Test";
-char menuToken = 'P';
+bool program_actionB(char token) {
+#ifdef DEBUGGING_MENU
+  std::cout << "program_actionB(" << token << "): ";
+#endif
+  switch (token) {
+  case 'b':
+    std::cout << "\nYES, I DO KNOW TOKEN 'b' :)\n";
+    return true;	// return true;  means there *was* action,
+			// it's  *not* the exit status of the action
+			// the menu page *is responsible* for this token
+    break;
+
+  default:
+    return false;	// return false; means *no* action was taken here
+			// the menu page is *not* responsible for the token    
+  }
+}
+
+
+char menuTitleA[] = "The 'aB' Test";
+char menuTitleB[] = "The 'Ab' Test";
+char menuTokenA = 'A';
+char menuTokenB = 'B';
 
 
 /* **************************************************************** */
 int main() {
   std::cout << "running menu2_main.cpp  ==> ETHERNAL LOOP <==\n";
 
-  MENU.add_page(menuTitle, menuToken, &program_display, &program_action);
+  MENU.add_page(menuTitleA, menuTokenA, &program_displayA, &program_actionA);
+  MENU.add_page(menuTitleB, menuTokenB, &program_displayB, &program_actionB);
 
   MENU.menu_display();
 

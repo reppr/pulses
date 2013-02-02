@@ -16,10 +16,18 @@
 #endif
 
 
-class Menu2
-{
+// struct menupage for pages[]
+struct menupage {
+  void (*display)(void);
+  bool (*interpret)(char token);
+  char *title;
+  char ptoken;
+};
+
+
+class Menu2 {
  public:
-  Menu2(int size, int (*maybeInput)(void));
+  Menu2(int size, int menuPages, int (*maybeInput)(void));
   ~Menu2();
 
   //  bool lurk_and_do(bool (*Action)(void));
@@ -40,7 +48,7 @@ class Menu2
   void common_display();			// display common to all menu pages
 
   // act on buffer content tokens after seeing 'end token':
-  void do_menu_actions();
+  void interpret_men_input();
 
  protected:
   bool cb_is_full() const { return cb_count == cb_size; }	// inlined: buffer full?
@@ -57,10 +65,11 @@ class Menu2
   char * cb_buf;
   void cb_write(char value);			// save a byte in buffer,  no checks
 
-  char *page_title;
-  char page_token;
-  void (*display_page)(void);
-  bool (*page_reaction)(char token);
+  // menu pages:
+  char men_max;
+  char men_known;
+  char men_selected;
+  menupage *men_pages;
 };
 
 #endif
