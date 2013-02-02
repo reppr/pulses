@@ -364,12 +364,13 @@ const unsigned char outOfRange[] MAYBE_PROGMEM = "out of range";
 const unsigned char error_[] MAYBE_PROGMEM = " ERROR: ";
 
 void Menu2::add_page(char *pageTitle, char ptoken,		\
-	      void (*pageDisplay)(void), bool (*pageReaction)(char)) {
+		     void (*pageDisplay)(void), bool (*pageReaction)(char), bool TokenVisible) {
   if (men_known < men_max) {
     men_pages[men_known].title = pageTitle;
     men_pages[men_known].ptoken = ptoken;
     men_pages[men_known].display = pageDisplay;
     men_pages[men_known].interpret = pageReaction;
+    men_pages[men_known].token_visible = TokenVisible;
     men_known++;
 
 #ifdef DEBUGGING_MENU
@@ -477,22 +478,22 @@ void Menu2::interpret_men_input() {
 #endif
     // token not found yet...
 
-/* deactivated for this one version
-    // always check page zero:
-    if (men_selected) {		// if not already checked
-      did_something = (*men_pages[0].interpret)(token);
-      if (did_something) {
+
+    // check all pages with token_visible flag set:
+    for (pg = 0; pg < men_known; pg++) {
+      if ( men_pages[men_selected].token_visible ) {
+	if ( did_something = (*men_pages[pg].interpret)(token) ) {
 #ifdef DEBUGGING_MENU
-      std::cout << "page zero responsible for '" << token << "'\n";
+	  std::cout << "menu " << men_pages[pg].title << " knows'" << token << "'\n";
 #endif
+	  break;
+	}
+      }
+    }
+    if (did_something)
       continue;
-    }
-#ifdef DEBUGGING_MENU
-    std::cout << "page zero does not know '" << token << "'\n";
-#endif
-    }
     // token not found yet...
-*/
+
 
     // search menu page tokens:
     for (pg = 0; pg < men_known; pg++) {

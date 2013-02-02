@@ -102,8 +102,8 @@ int main() {
   cbreak();
   */
 
-  MENU.add_page(menuTitleA, menuTokenA, &program_displayA, &program_actionA);
-  MENU.add_page(menuTitleB, menuTokenB, &program_displayB, &program_actionB);
+  MENU.add_page(menuTitleA, menuTokenA, &program_displayA, &program_actionA, false);
+  MENU.add_page(menuTitleB, menuTokenB, &program_displayB, &program_actionB, false);
 
   MENU.menu_display();
 

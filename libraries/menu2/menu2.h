@@ -22,6 +22,7 @@ struct menupage {
   bool (*interpret)(char token);
   char *title;
   char ptoken;
+  bool token_visible;	// token_visible when not selected
 };
 
 
@@ -32,7 +33,8 @@ class Menu2 {
 
   //  bool lurk_and_do(bool (*Action)(void));
   bool lurk_and_do(void);
-  void add_page(char *pageTitle, char token, void (*pageDisplay)(), bool (*pageReaction)(char));
+  void add_page(char *pageTitle, char token, \
+		void (*pageDisplay)(), bool (*pageReaction)(char), bool TokenVisible);
   int cb_stored() const { return cb_count; }	// inline:  # stored bytes
   char cb_read();				// get a byte from buffer, no checks
 
@@ -48,7 +50,7 @@ class Menu2 {
   void common_display();			// display common to all menu pages
 
   // act on buffer content tokens after seeing 'end token':
-  void interpret_men_input();
+  void interpret_men_input();			// menu input interpreter
 
  protected:
   bool cb_is_full() const { return cb_count == cb_size; }	// inlined: buffer full?
