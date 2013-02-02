@@ -22,7 +22,11 @@ struct menupage {
   bool (*interpret)(char token);
   char *title;
   char ptoken;
-  bool token_visible;	// token_visible when not selected
+  // configure which pages burried below men_selected remain active:
+  char active_group;	// tokens on pages with the same active_group
+			// as men_selected remain active below page actions
+			// '+' and  '-' have special meanings:
+			// '+' means *always* active,  '-' *never* active
 };
 
 
@@ -34,7 +38,7 @@ class Menu2 {
   //  bool lurk_and_do(bool (*Action)(void));
   bool lurk_and_do(void);
   void add_page(char *pageTitle, char token, \
-		void (*pageDisplay)(), bool (*pageReaction)(char), bool TokenVisible);
+		void (*pageDisplay)(), bool (*pageReaction)(char), const char ActiveGroup);
   int cb_stored() const { return cb_count; }	// inline:  # stored bytes
   char cb_read();				// get a byte from buffer, no checks
 

@@ -8,9 +8,11 @@
 #include <iostream>
 #include <stdio.h>
 
-/* unbuffeered getch() for testing on linux pc
-   compile with -lncurses	does not work	*/
+/*	==> does not work <==
+// unbuffeered getch() for testing on linux pc
+// compile with -lncurses
 // #include <ncurses.h>
+*/
 
 
 //#define DEBUGGING_ALL
@@ -23,18 +25,31 @@
 
 
 /* **************************************************************** */
-Menu2 MENU(32, 2, &getchar);
-// Menu2 MENU(32, 2, &getch);
+Menu2 MENU(32, 4, &getchar);
+
 
 /* **************************************************************** */
 void program_displayA() {
-  std::cout << "\n  say 'a'\n";
+  std::cout << "\n'a' is active\n";
 }
 
 /* **************************************************************** */
 void program_displayB() {
-  std::cout << "\n  say 'b'...\n";
+  std::cout << "\n'b'\n";
 }
+
+
+/* **************************************************************** */
+void program_displayX() {
+  std::cout << "\nthere's nothing here to see\n";
+}
+
+
+/* **************************************************************** */
+void program_displayY() {
+  std::cout << "\nYOU SHOULD NEVER SEE THIS...\n";
+}
+
 
 /* **************************************************************** */
 bool program_actionA(char token) {
@@ -48,12 +63,6 @@ bool program_actionA(char token) {
 			// it's  *not* the exit status of the action
 			// the menu page *is responsible* for this token
     break;
-
-  case 'b':
-    std::cout << "\nno, ...give me an 'a'\n";
-    return true;
-    break;
-
   default:
     return false;	// return false; means *no* action was taken here
 			// the menu page is *not* responsible for the token    
@@ -61,23 +70,18 @@ bool program_actionA(char token) {
 }
 
 
+/* **************************************************************** */
 bool program_actionB(char token) {
 #ifdef DEBUGGING_MENU
   std::cout << "program_actionB(" << token << "): ";
 #endif
   switch (token) {
-  case 'a' :
-    std::cout << "\nSORRY, you failed!\n";
-    return true;
-    break;
-
   case 'b':
-    std::cout << "\nYES, 'b' :)\n";
+    std::cout << "\nnow, I *DO* KNOW token 'b' :)\n";
     return true;	// return true;  means there *was* action,
 			// it's  *not* the exit status of the action
 			// the menu page *is responsible* for this token
     break;
-
   default:
     return false;	// return false; means *no* action was taken here
 			// the menu page is *not* responsible for the token    
@@ -85,10 +89,66 @@ bool program_actionB(char token) {
 }
 
 
-char menuTitleA[] = "The 'ab' Test";
-char menuTitleB[] = "'b' page";
+/* **************************************************************** */
+bool program_actionX(char token) {
+#ifdef DEBUGGING_MENU
+  std::cout << "program_actionB(" << token << "): ";
+#endif
+  switch (token) {
+  case 'x':
+    std::cout << "\n XX       XX";
+    std::cout << "\n  XX     XX";
+    std::cout << "\n   XX   XX";
+    std::cout << "\n    XX XX";
+    std::cout << "\n     XXX";
+    std::cout << "\n    XX XX";
+    std::cout << "\n   XX   XX";
+    std::cout << "\n  XX     XX";
+    std::cout << "\n XX       XX\n";
+
+    return true;	// return true;  means there *was* action,
+			// it's  *not* the exit status of the action
+			// the menu page *is responsible* for this token
+    break;
+  default:
+    return false;	// return false; means *no* action was taken here
+			// the menu page is *not* responsible for the token    
+  }
+}
+
+
+/* **************************************************************** */
+bool program_actionY(char token) {
+#ifdef DEBUGGING_MENU
+  std::cout << "program_actionY(" << token << "): ";
+#endif
+  switch (token) {
+  case 'y':
+    std::cout << "\nYou found the BACKDOOR!\n";
+    return true;	// return true;  means there *was* action,
+			// it's  *not* the exit status of the action
+			// the menu page *is responsible* for this token
+    break;
+  default:
+    return false;	// return false; means *no* action was taken here
+			// the menu page is *not* responsible for the token    
+  }
+}
+
+
+/* **************************************************************** */
+char menuTitleA[] = "The 'A' Page";
 char menuTokenA = 'A';
+
+char menuTitleB[] = "Back Page";
 char menuTokenB = 'B';
+
+char menuTitleX[] = "XXX";
+char menuTokenX = 'X';
+
+char menuTitleY[] = "YYYYY";
+// char menuTokenY = '\0';
+
 
 
 /* **************************************************************** */
@@ -102,8 +162,10 @@ int main() {
   cbreak();
   */
 
-  MENU.add_page(menuTitleA, menuTokenA, &program_displayA, &program_actionA, false);
-  MENU.add_page(menuTitleB, menuTokenB, &program_displayB, &program_actionB, false);
+  MENU.add_page(menuTitleA, menuTokenA, &program_displayA, &program_actionA, '-');
+  MENU.add_page(menuTitleB, menuTokenB, &program_displayB, &program_actionB, 'Y');
+  MENU.add_page(menuTitleX, menuTokenX, &program_displayX, &program_actionX, '+');
+  MENU.add_page(menuTitleY, '\0', &program_displayY, &program_actionY, 'Y');
 
   MENU.menu_display();
 

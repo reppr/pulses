@@ -27,7 +27,8 @@ Menu2::Menu2(int bufSize, int menuPages, int (*maybeInput)(void)) {
   // initialize circular input buffer:
   cb_start = 0;
   cb_size  = bufSize;
-  cb_buf = (char *) malloc(cb_size);	// could fail ################
+  cb_buf = (char *) malloc(cb_size);	    // ERROR handling ################
+
   cb_count = 0;
 
   maybe_input = maybeInput;
@@ -35,7 +36,7 @@ Menu2::Menu2(int bufSize, int menuPages, int (*maybeInput)(void)) {
   men_selected = 0;
   men_max = menuPages;
 
-  men_pages = (menupage*) malloc(men_max * sizeof(menupage));
+  men_pages = (menupage*) malloc(men_max * sizeof(menupage)); // ERROR handling ################
 }
 
 
@@ -245,8 +246,9 @@ bool Menu2::lurk_and_do() {
     }
     if ( c ) {		// accumulate in buffer
       cb_write(c);
-#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
-      std::cout << "accumulated " << c << "\n";
+#if defined(DEBUGGING_MENU) || defined(DEBUGGING_CIRCBUF) || \
+  defined(DEBUGGING_LURKING)
+      std::cout << "accumulated '" << c << "'\n";
 #endif
 
     } else {
@@ -306,7 +308,7 @@ bool Menu2::is_numeric() const {
   return true;
 }
 
-const unsigned char number_missing[] MAYBE_PROGMEM = \
+const unsigned char numberMissing[] MAYBE_PROGMEM = \
   "number missing";
 
 long Menu2::numeric_input(long default_value) {
@@ -344,7 +346,7 @@ long Menu2::numeric_input(long default_value) {
 
   // number was missing, return the given default_value:
  number_missing:
-  std::cout << number_missing;
+  std::cout << numberMissing;
   return default_value;		// return default_value
 }
 
@@ -364,20 +366,20 @@ const unsigned char outOfRange[] MAYBE_PROGMEM = "out of range";
 const unsigned char error_[] MAYBE_PROGMEM = " ERROR: ";
 
 void Menu2::add_page(char *pageTitle, char ptoken,		\
-		     void (*pageDisplay)(void), bool (*pageReaction)(char), bool TokenVisible) {
+		     void (*pageDisplay)(void), bool (*pageReaction)(char), const char ActiveGroup) {
   if (men_known < men_max) {
     men_pages[men_known].title = pageTitle;
     men_pages[men_known].ptoken = ptoken;
     men_pages[men_known].display = pageDisplay;
     men_pages[men_known].interpret = pageReaction;
-    men_pages[men_known].token_visible = TokenVisible;
+    men_pages[men_known].active_group = ActiveGroup;
     men_known++;
 
 #ifdef DEBUGGING_MENU
-    std::cout << addPg << "(\"" << pageTitle << "\", " << token << ",..)\n";
+    std::cout << addPg << "(\"" << pageTitle << "\", " << ptoken << ",..)\n";
 #endif
   } else {
-    std::cout << addPg << error_ << outOfRange << "\n";
+    std::cout << addPg << error_ << outOfRange << "\n";	// ERROR handling ################
   } 
 }
 
@@ -389,6 +391,7 @@ const unsigned char internalKeys[] MAYBE_PROGMEM = "\n'?' for menu";
 const unsigned char qQuit[] MAYBE_PROGMEM = "  'q' quit page";
 const unsigned char deco_[] MAYBE_PROGMEM = "\n * ** *** ";
 const unsigned char _deco[] MAYBE_PROGMEM = " *** ** *\n";
+const unsigned char men_[] MAYBE_PROGMEM = "MENU ";
 
 /* display menu	current menu page and common entries:		*/
 void Menu2::menu_display() {
@@ -400,7 +403,7 @@ void Menu2::menu_display() {
 
   // men_selected page display:
   std::cout << deco_;
-  std::cout << "MENU " << men_pages[men_selected].title;
+  std::cout << men_ << men_pages[men_selected].title;
   std::cout << _deco;
 
   (*men_pages[men_selected].display)();
@@ -417,7 +420,7 @@ void Menu2::menu_display() {
 
   // display internal key bindings:
   std::cout << internalKeys << qQuit << "\n";
-  
+
 #ifdef DEBUGGING_MENU
   std::cout << "\n";
 #endif
@@ -431,11 +434,11 @@ const unsigned char unknownToken[] MAYBE_PROGMEM = "unkown token ";
 
 /* act on buffer content tokens after receiving 'END token':	*/
 void Menu2::interpret_men_input() {
-  char token, pg;
-  bool did_something;
+  char token, pg, page_group, selected_group;
+  bool did_something, is_active;
 
 #ifdef DEBUGGING_MENU
-  std::cout << "\ninterpret_men_input(" << token << "):\n";
+  std::cout << "\ninterpret_men_input(): '";
 #endif
 
   // interpreter loop over each token:
@@ -457,7 +460,7 @@ void Menu2::interpret_men_input() {
 
     // try to find a menu entity that knows to interpret the token:
 #ifdef DEBUGGING_MENU
-    std::cout << token;
+    std::cout << token << "'\n";
 #endif
 
     // skip spaces:
@@ -469,33 +472,70 @@ void Menu2::interpret_men_input() {
     did_something = (*men_pages[men_selected].interpret)(token);
     if (did_something) {
 #ifdef DEBUGGING_MENU
-      std::cout << "program menu page responsible for '" << token << "'\n";
+      std::cout << "selected page is responsible for '" << token << "'\n";
 #endif
       continue;
     }
 #ifdef DEBUGGING_MENU
-    std::cout << "program menu page does not know '" << token << "'\n";
+    std::cout << "selected page does not know '" << token << "'\n";
 #endif
     // token not found yet...
 
 
-    // check all pages with token_visible flag set:
-    for (pg = 0; pg < men_known; pg++) {
-      if ( men_pages[men_selected].token_visible ) {
-	if ( did_something = (*men_pages[pg].interpret)(token) ) {
+    // check pages in same page_group and in group '+':
+    selected_group = men_pages[men_selected].active_group;
 #ifdef DEBUGGING_MENU
-	  std::cout << "menu " << men_pages[pg].title << " knows'" << token << "'\n";
+    std::cout << "check selected_group '" << selected_group << "':\n";
+#endif
+    //  if ( selected_group != '-' ) {
+    if (true) {
+      for (pg = 0; pg < men_known; pg++) {
+	if (pg == men_selected )	// we already searched men_selected
+	  continue;
+
+	is_active=false;
+	page_group = men_pages[pg].active_group;
+#ifdef DEBUGGING_MENU
+	std::cout << "checking page " << men_pages[pg].title \
+		  << " group '" << page_group << "'\n";
+#endif
+	switch ( page_group ) {
+	case '-':			// '-' means *never*
+	  break;
+	case '+':			// '+' means always on
+	  is_active=true;
+#ifdef DEBUGGING_MENU
+	  std::cout << men_pages[pg].title << " joker '+' matches\n";
 #endif
 	  break;
+	default:			// else: active if in selected pages' group
+	  if ( page_group == selected_group ) {
+	    is_active=true;
+#ifdef DEBUGGING_MENU
+	    std::cout << "page " << men_pages[pg].title << " matches\n";
+#endif
+	  }
 	}
-      }
-    }
-    if (did_something)
-      continue;
+	if (is_active) {		// test active menu pages on token:
+	  if ( did_something = (*men_pages[pg].interpret)(token) ) {
+#ifdef DEBUGGING_MENU
+	    std::cout << "page_group '" << page_group << "':\n";
+	    std::cout << "menu " << men_pages[pg].title << " knows '" << token << "'\n";
+#endif
+	    break;
+	  }
+	}// is_active
+      }// loop over other pages
+      if (did_something)
+	continue;
+    }// selected_group != '-'
     // token not found yet...
 
 
     // search menu page tokens:
+#ifdef DEBUGGING_MENU
+    std::cout << "search menu page tokens:\t";
+#endif
     for (pg = 0; pg < men_known; pg++) {
       if (token == men_pages[pg].ptoken) {
 	(*men_pages[pg].interpret)(token);	// *might* do more, return is irrelevant
@@ -506,26 +546,39 @@ void Menu2::interpret_men_input() {
     }
     if (did_something) {
 #ifdef DEBUGGING_MENU
-      std::cout << "switched to page " << men_pages[men_selected].title;
+      std::cout << "switched to page " << men_pages[men_selected].title << "\n";
 #endif
       continue;
     }
+#ifdef DEBUGGING_MENU
+    else 
+      std::cout << "(none)\n";
+#endif
     // token not found yet...
 
 
     // check for internal bindings next:
+#ifdef DEBUGGING_MENU
+    std::cout << "search internal key bindings:\t";
+#endif
     switch (token) {
     case '?':
       menu_display();
-      did_something=true;
+      did_something = true;
       break;
 
     case 'q':
-      men_selected=0;
-      did_something=true;
+      men_selected = 0;
+      did_something = true;
       break;
     }
 
+#ifdef DEBUGGING_MENU
+    if (did_something)
+      std::cout << "found internal binding '" << token << "'\n";
+    else
+      std::cout << "(nope)\n";
+#endif
 
     // token still not found, give up...
     if (! did_something ) {
