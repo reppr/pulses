@@ -15,11 +15,16 @@
 */
 
 
+/* outMACRO  macro for stream output:	*/
+#define outMACRO	std::cout
+
+/* macros for debugging:		*/ 
 //#define DEBUGGING_ALL
 //#define DEBUGGING_CLASS
 //#define DEBUGGING_CIRCBUF
 //#define DEBUGGING_LURKING
 //#define DEBUGGING_MENU
+
 
 #include "menu2.cpp"
 
@@ -30,35 +35,35 @@ Menu2 MENU(32, 4, &getchar);
 
 /* **************************************************************** */
 void program_displayA() {
-  std::cout << "\n'a' is active\n";
+  outMACRO << "\n'a' is active\n";
 }
 
 /* **************************************************************** */
 void program_displayB() {
-  std::cout << "\n'b'\n";
+  outMACRO << "\n'b'\n";
 }
 
 
 /* **************************************************************** */
 void program_displayX() {
-  std::cout << "\nthere's nothing here to see\n";
+  outMACRO << "\nthere's nothing here to see\n";
 }
 
 
 /* **************************************************************** */
 void program_displayY() {
-  std::cout << "\nYOU SHOULD NEVER SEE THIS...\n";
+  outMACRO << "\nYOU SHOULD NEVER SEE THIS...\n";
 }
 
 
 /* **************************************************************** */
 bool program_actionA(char token) {
 #ifdef DEBUGGING_MENU
-  std::cout << "program_actionA(" << token << "): ";
+  outMACRO << "program_actionA(" << token << "): ";
 #endif
   switch (token) {
   case 'a':
-    std::cout << "\nYES, I DO KNOW TOKEN 'a' :)\n";
+    outMACRO << "\nYES, I DO KNOW TOKEN 'a' :)\n";
     return true;	// return true;  means there *was* action,
 			// it's  *not* the exit status of the action
 			// the menu page *is responsible* for this token
@@ -73,11 +78,11 @@ bool program_actionA(char token) {
 /* **************************************************************** */
 bool program_actionB(char token) {
 #ifdef DEBUGGING_MENU
-  std::cout << "program_actionB(" << token << "): ";
+  outMACRO << "program_actionB(" << token << "): ";
 #endif
   switch (token) {
   case 'b':
-    std::cout << "\nnow, I *DO* KNOW token 'b' :)\n";
+    outMACRO << "\nnow, I *DO* KNOW token 'b' :)\n";
     return true;	// return true;  means there *was* action,
 			// it's  *not* the exit status of the action
 			// the menu page *is responsible* for this token
@@ -92,19 +97,19 @@ bool program_actionB(char token) {
 /* **************************************************************** */
 bool program_actionX(char token) {
 #ifdef DEBUGGING_MENU
-  std::cout << "program_actionB(" << token << "): ";
+  outMACRO << "program_actionB(" << token << "): ";
 #endif
   switch (token) {
   case 'x':
-    std::cout << "\n XX       XX";
-    std::cout << "\n  XX     XX";
-    std::cout << "\n   XX   XX";
-    std::cout << "\n    XX XX";
-    std::cout << "\n     XXX";
-    std::cout << "\n    XX XX";
-    std::cout << "\n   XX   XX";
-    std::cout << "\n  XX     XX";
-    std::cout << "\n XX       XX\n";
+    outMACRO << "\n XX       XX";
+    outMACRO << "\n  XX     XX";
+    outMACRO << "\n   XX   XX";
+    outMACRO << "\n    XX XX";
+    outMACRO << "\n     XXX";
+    outMACRO << "\n    XX XX";
+    outMACRO << "\n   XX   XX";
+    outMACRO << "\n  XX     XX";
+    outMACRO << "\n XX       XX\n";
 
     return true;	// return true;  means there *was* action,
 			// it's  *not* the exit status of the action
@@ -120,11 +125,11 @@ bool program_actionX(char token) {
 /* **************************************************************** */
 bool program_actionY(char token) {
 #ifdef DEBUGGING_MENU
-  std::cout << "program_actionY(" << token << "): ";
+  outMACRO << "program_actionY(" << token << "): ";
 #endif
   switch (token) {
   case 'y':
-    std::cout << "\nYou found the BACKDOOR!\n";
+    outMACRO << "\nYou found the BACKDOOR!\n";
     return true;	// return true;  means there *was* action,
 			// it's  *not* the exit status of the action
 			// the menu page *is responsible* for this token
@@ -153,11 +158,11 @@ char menuTitleY[] = "YYYYY";
 
 /* **************************************************************** */
 int main() {
-  std::cout << "running menu2_main.cpp  ==> ETHERNAL LOOP <==\n";
+  outMACRO << "running menu2_main.cpp  ==> ETHERNAL LOOP <==\n";
 
   /* 	does not work
   // unbuffered ncurses keyboard test input:
-  std::cout << "unbuffered ncurses keyboard test input\n";
+  outMACRO << "unbuffered ncurses keyboard test input\n";
   initscr();
   cbreak();
   */
@@ -172,11 +177,11 @@ int main() {
   while (true)		// ==> ETHERNAL LOOP <==
     if ( MENU.lurk_and_do() ) {
       #if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
-        std::cout << "lurk_and_do() returned TRUE\n";
+        outMACRO << "lurk_and_do() returned TRUE\n";
       #endif
     } else {
       #ifdef DEBUGGING_MENU
-        std::cout << "lurk_and_do() returned false\n";
+        outMACRO << "lurk_and_do() returned false\n";
       #endif
     }
 

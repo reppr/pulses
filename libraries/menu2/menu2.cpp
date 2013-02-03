@@ -8,9 +8,20 @@
 #include <stdlib.h>
 #include <iostream>
 
+
 // switch prepared to compile Arduino sketches
 #define MAYBE_PROGMEM
 // #define MAYBE_PROGMEM	PROGMEM
+
+/* outMACRO  macro for stream output:	*/
+#ifndef outMACRO
+  /* outMACRO for testing on c++		*/
+  #define outMACRO	std::cout
+
+  /* outMACRO for Arduino		*/	// TODO ################
+  // #include ################
+  // #define outMACRO	Serial::cout
+#endif
 
 #include "menu2.h"
 
@@ -20,8 +31,8 @@
 
 Menu2::Menu2(int bufSize, int menuPages, int (*maybeInput)(void)) {
 #ifdef DEBUGGING_CLASS
-  std::cout << "Menu2 CONSTRUCTOR: cb_size=";
-  std::cout << bufSize << "\n";
+  outMACRO << "Menu2 CONSTRUCTOR: cb_size=";
+  outMACRO << bufSize << "\n";
 #endif
 
   // initialize circular input buffer:
@@ -42,7 +53,7 @@ Menu2::Menu2(int bufSize, int menuPages, int (*maybeInput)(void)) {
 
 Menu2::~Menu2() {
 #ifdef DEBUGGING_CLASS
-  std::cout << "Menu2 DESTRUCTOR\n";
+  outMACRO << "Menu2 DESTRUCTOR\n";
 #endif
 
   free(cb_buf);
@@ -151,40 +162,40 @@ int Menu2::next_input_token() const {
 #ifdef DEBUGGING_CIRCBUF
 /* cb_info() debugging help					*/
 void Menu2::cb_info() const {
-  std::cout << "\nBuffer:\t\t";
-  std::cout << (long) cb_buf;
+  outMACRO << "\nBuffer:\t\t";
+  outMACRO << (long) cb_buf;
 
-  std::cout << "\n  size:\t\t";
-  std::cout << cb_size;
+  outMACRO << "\n  size:\t\t";
+  outMACRO << cb_size;
 
-  std::cout << "\n  count:\t";
-  std::cout << cb_count;
+  outMACRO << "\n  count:\t";
+  outMACRO << cb_count;
 
-  std::cout << "\n  start:\t";
-  std::cout << cb_start;
-  std::cout << "\n";
+  outMACRO << "\n  start:\t";
+  outMACRO << cb_start;
+  outMACRO << "\n";
 
   int value = cb_peek();
-  std::cout << "\n  char:\t\t";
+  outMACRO << "\n  char:\t\t";
   if (value != -1) {
-    std::cout << value << "\t" << (char) value;
+    outMACRO << value << "\t" << (char) value;
     if ( is_numeric() )
-      std::cout << "  numeric CHIFFRE\n";
+      outMACRO << "  numeric CHIFFRE\n";
     else
-      std::cout << "  NAN\n";
+      outMACRO << "  NAN\n";
   } else
-    std::cout << "(none)\n";
+    outMACRO << "(none)\n";
 
   value = next_input_token();
-  std::cout << "\n  next_input_token()\t: " << value << "\t" << (char) value << "\n";
-  std::cout << "\n";
+  outMACRO << "\n  next_input_token()\t: " << value << "\t" << (char) value << "\n";
+  outMACRO << "\n";
 
   for (int i=0; i<=cb_count; i++) {
     value = cb_peek(i);
-    std::cout << "  cb_peek(" << i << ")\t\t: " << value << "\t" << (char) value << "\n";
+    outMACRO << "  cb_peek(" << i << ")\t\t: " << value << "\t" << (char) value << "\n";
   }
 
-  std::cout << "\n";
+  outMACRO << "\n";
 }
 #endif
 
@@ -207,7 +218,7 @@ bool Menu2::lurk_and_do() {
   char c;
 
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
-  std::cout << "\nrunning lurk_and_do()\n";
+  outMACRO << "\nrunning lurk_and_do()\n";
 #endif
 
   /* int maybe_input()  
@@ -216,7 +227,7 @@ bool Menu2::lurk_and_do() {
   INP=(*maybe_input)();
 
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
-  std::cout << "got input\n";
+  outMACRO << "got input\n";
 #endif
 
   if ( INP != EOF ) {	// there *is* input
@@ -226,21 +237,21 @@ bool Menu2::lurk_and_do() {
     case '\n':		// translate \n to 'END token' \0
       c = 0;
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
-      std::cout << "NL translated to END token\n";
+      outMACRO << "NL translated to END token\n";
 #endif
       break;
 
     case '\r':		// translate \r to 'END token' \0
       c = 0;
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
-      std::cout << "CR translated to END token\n";
+      outMACRO << "CR translated to END token\n";
 #endif
       break;
 
     case '\0':		// '\0' already is 'END token'
       // c = 0;
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_CIRCBUF)
-      std::cout << "\\0 received";
+      outMACRO << "\\0 received";
 #endif
       break;
     }
@@ -248,15 +259,15 @@ bool Menu2::lurk_and_do() {
       cb_write(c);
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_CIRCBUF) || \
   defined(DEBUGGING_LURKING)
-      std::cout << "accumulated '" << c << "'\n";
+      outMACRO << "accumulated '" << c << "'\n";
 #endif
 
     } else {
 
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_CIRCBUF) || \
   defined(DEBUGGING_LURKING)
-      std::cout << "END token received. ";
-      std::cout << "Buffer stored=" << cb_stored() << "\n";
+      outMACRO << "END token received. ";
+      outMACRO << "Buffer stored=" << cb_stored() << "\n";
 #endif
 
       /* end of line token translation can produce more then one \0 in sequence
@@ -270,14 +281,14 @@ bool Menu2::lurk_and_do() {
 
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
       } else {
-	std::cout << "(empty buffer ignored)\n";
+	outMACRO << "(empty buffer ignored)\n";
 #endif
       }
     }
 
   } else {
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
-      std::cout << "EOF received\n";
+      outMACRO << "EOF received\n";
 #endif
   }
 
@@ -346,7 +357,7 @@ long Menu2::numeric_input(long default_value) {
 
   // number was missing, return the given default_value:
  number_missing:
-  std::cout << numberMissing;
+  outMACRO << numberMissing;
   return default_value;		// return default_value
 }
 
@@ -376,10 +387,10 @@ void Menu2::add_page(char *pageTitle, char ptoken,		\
     men_known++;
 
 #ifdef DEBUGGING_MENU
-    std::cout << addPg << "(\"" << pageTitle << "\", " << ptoken << ",..)\n";
+    outMACRO << addPg << "(\"" << pageTitle << "\", " << ptoken << ",..)\n";
 #endif
   } else {
-    std::cout << addPg << error_ << outOfRange << "\n";	// ERROR handling ################
+    outMACRO << addPg << error_ << outOfRange << "\n";	// ERROR handling ################
   } 
 }
 
@@ -398,31 +409,31 @@ void Menu2::menu_display() {
   char pg;
 
 #ifdef DEBUGGING_MENU
-  std::cout << "\nmenu_display():\n";
+  outMACRO << "\nmenu_display():\n";
 #endif
 
   // men_selected page display:
-  std::cout << deco_;
-  std::cout << men_ << men_pages[men_selected].title;
-  std::cout << _deco;
+  outMACRO << deco_;
+  outMACRO << men_ << men_pages[men_selected].title;
+  outMACRO << _deco;
 
   (*men_pages[men_selected].display)();
 
   // display menu page key bindings:
   if ( men_known > 1 ) {
-    std::cout << "\n";
+    outMACRO << "\n";
     for (pg = 0; pg < men_known; pg++) {
       if ( pg != men_selected )	// omit selected pages' hot key display, even if active.
-	std::cout << men_pages[pg].ptoken << "=" << men_pages[pg].title << "  ";
+	outMACRO << men_pages[pg].ptoken << "=" << men_pages[pg].title << "  ";
     }
-    std::cout << "\n";
+    outMACRO << "\n";
   }
 
   // display internal key bindings:
-  std::cout << internalKeys << qQuit << "\n";
+  outMACRO << internalKeys << qQuit << "\n";
 
 #ifdef DEBUGGING_MENU
-  std::cout << "\n";
+  outMACRO << "\n";
 #endif
 }
 
@@ -438,7 +449,7 @@ void Menu2::interpret_men_input() {
   bool did_something, is_active;
 
 #ifdef DEBUGGING_MENU
-  std::cout << "\ninterpret_men_input(): '";
+  outMACRO << "\ninterpret_men_input(): '";
 #endif
 
   // interpreter loop over each token:
@@ -460,7 +471,7 @@ void Menu2::interpret_men_input() {
 
     // try to find a menu entity that knows to interpret the token:
 #ifdef DEBUGGING_MENU
-    std::cout << token << "'\n";
+    outMACRO << token << "'\n";
 #endif
 
     // skip spaces:
@@ -472,12 +483,12 @@ void Menu2::interpret_men_input() {
     did_something = (*men_pages[men_selected].interpret)(token);
     if (did_something) {
 #ifdef DEBUGGING_MENU
-      std::cout << "selected page is responsible for '" << token << "'\n";
+      outMACRO << "selected page is responsible for '" << token << "'\n";
 #endif
       continue;
     }
 #ifdef DEBUGGING_MENU
-    std::cout << "selected page does not know '" << token << "'\n";
+    outMACRO << "selected page does not know '" << token << "'\n";
 #endif
     // token not found yet...
 
@@ -485,7 +496,7 @@ void Menu2::interpret_men_input() {
     // check pages in same page_group and in group '+':
     selected_group = men_pages[men_selected].active_group;
 #ifdef DEBUGGING_MENU
-    std::cout << "check selected_group '" << selected_group << "':\n";
+    outMACRO << "check selected_group '" << selected_group << "':\n";
 #endif
     //  if ( selected_group != '-' ) {
     if (true) {
@@ -496,7 +507,7 @@ void Menu2::interpret_men_input() {
 	is_active=false;
 	page_group = men_pages[pg].active_group;
 #ifdef DEBUGGING_MENU
-	std::cout << "checking page " << men_pages[pg].title \
+	outMACRO << "checking page " << men_pages[pg].title \
 		  << " group '" << page_group << "'\n";
 #endif
 	switch ( page_group ) {
@@ -505,22 +516,22 @@ void Menu2::interpret_men_input() {
 	case '+':			// '+' means always on
 	  is_active=true;
 #ifdef DEBUGGING_MENU
-	  std::cout << men_pages[pg].title << " joker '+' matches\n";
+	  outMACRO << men_pages[pg].title << " joker '+' matches\n";
 #endif
 	  break;
 	default:			// else: active if in selected pages' group
 	  if ( page_group == selected_group ) {
 	    is_active=true;
 #ifdef DEBUGGING_MENU
-	    std::cout << "page " << men_pages[pg].title << " matches\n";
+	    outMACRO << "page " << men_pages[pg].title << " matches\n";
 #endif
 	  }
 	}
 	if (is_active) {		// test active menu pages on token:
 	  if ( did_something = (*men_pages[pg].interpret)(token) ) {
 #ifdef DEBUGGING_MENU
-	    std::cout << "page_group '" << page_group << "':\n";
-	    std::cout << "menu " << men_pages[pg].title << " knows '" << token << "'\n";
+	    outMACRO << "page_group '" << page_group << "':\n";
+	    outMACRO << "menu " << men_pages[pg].title << " knows '" << token << "'\n";
 #endif
 	    break;
 	  }
@@ -534,7 +545,7 @@ void Menu2::interpret_men_input() {
 
     // search menu page tokens:
 #ifdef DEBUGGING_MENU
-    std::cout << "search menu page tokens:\t";
+    outMACRO << "search menu page tokens:\t";
 #endif
     for (pg = 0; pg < men_known; pg++) {
       if (token == men_pages[pg].ptoken) {
@@ -546,20 +557,20 @@ void Menu2::interpret_men_input() {
     }
     if (did_something) {
 #ifdef DEBUGGING_MENU
-      std::cout << "switched to page " << men_pages[men_selected].title << "\n";
+      outMACRO << "switched to page " << men_pages[men_selected].title << "\n";
 #endif
       continue;
     }
 #ifdef DEBUGGING_MENU
     else 
-      std::cout << "(none)\n";
+      outMACRO << "(none)\n";
 #endif
     // token not found yet...
 
 
     // check for internal bindings next:
 #ifdef DEBUGGING_MENU
-    std::cout << "search internal key bindings:\t";
+    outMACRO << "search internal key bindings:\t";
 #endif
     switch (token) {
     case '?':
@@ -575,14 +586,14 @@ void Menu2::interpret_men_input() {
 
 #ifdef DEBUGGING_MENU
     if (did_something)
-      std::cout << "found internal binding '" << token << "'\n";
+      outMACRO << "found internal binding '" << token << "'\n";
     else
-      std::cout << "(nope)\n";
+      outMACRO << "(nope)\n";
 #endif
 
     // token still not found, give up...
     if (! did_something ) {
-      std::cout << unknownToken << token << "\n";
+      outMACRO << unknownToken << token << "\n";
     }
 
   } // interpreter loop over all tokens
