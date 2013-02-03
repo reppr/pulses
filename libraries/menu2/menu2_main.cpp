@@ -35,7 +35,8 @@ Menu2 MENU(32, 4, &getchar);
 
 /* **************************************************************** */
 void program_displayA() {
-  outMACRO << "\n'a' is active\n";
+  outMACRO << "\n'a' is active,\t";
+  outMACRO << "hmm... try 'y' maybe?\n";
 }
 
 /* **************************************************************** */
@@ -129,7 +130,32 @@ bool program_actionY(char token) {
 #endif
   switch (token) {
   case 'y':
-    outMACRO << "\nYou found the BACKDOOR!\n";
+    outMACRO << "\n";
+    outMACRO << "/°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°\\ \n";	// ecape \ ...
+    outMACRO << "°      you have found the      °\n";
+    outMACRO << "°                              °\n";
+    outMACRO << "°    °********************°    °\n";
+    outMACRO << "°    °** *  BACKDOOR  * **°    °\n";
+    outMACRO << "°    °********************°    °\n";
+    outMACRO << "°    °**/              \\**°    °\n";	// ecape \ ...
+    outMACRO << "°    °**                **°    °\n";
+    outMACRO << "°    °**   YY      YY   **°    °\n";
+    outMACRO << "°    °**    YY    YY    **°    °\n";
+    outMACRO << "°    °**     YY  YY     **°    °\n";
+    outMACRO << "°    °**      Y\\/Y      **°    °\n";	// ecape \ ...        
+    outMACRO << "°    °**       YY       **°    °\n";
+    outMACRO << "°    °**       YY       **°    °\n";
+    outMACRO << "°    °**       YY       **°    °\n";
+    outMACRO << "°    °**       YY       **°    °\n";
+    outMACRO << "°    °**       YY       **°    °\n";
+    outMACRO << "°    °**                **°    °\n";
+    outMACRO << "°    °**\\.  .******.  ./**°    °\n";	// ecape \ ...
+    outMACRO << "°    °********************°    °\n";
+    outMACRO << "°    °                    °    °\n";
+    outMACRO << "°            (: :)             °\n";
+    outMACRO << "°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°\n";
+    outMACRO << "\n";
+
     return true;	// return true;  means there *was* action,
 			// it's  *not* the exit status of the action
 			// the menu page *is responsible* for this token
@@ -142,7 +168,7 @@ bool program_actionY(char token) {
 
 
 /* **************************************************************** */
-char menuTitleA[] = "The 'A' Page";
+char menuTitleA[] = "'A' PAGE";
 char menuTokenA = 'A';
 
 char menuTitleB[] = "Back Page";
