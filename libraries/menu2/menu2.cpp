@@ -574,7 +574,7 @@ void Menu2::interpret_men_input() {
 #endif
     switch (token) {
     case '?':
-      menu_display();
+      // menu_display();	will be called anyway...
       did_something = true;
       break;
 
