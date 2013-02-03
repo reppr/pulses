@@ -5,15 +5,40 @@
 */
 
 /* **************************************************************** */
+// preprocessor stuff:
+
 #include <stdlib.h>
 #include <iostream>
 
 
-// switch prepared to compile Arduino sketches
-#define MAYBE_PROGMEM
-// #define MAYBE_PROGMEM	PROGMEM
+// Arduino related:
+// switch prepared to compile Arduino sketches, empty or 'PROGMEM'
+//#define MAYBE_PROGMEM
 
-/* outMACRO  macro for stream output:	*/
+// do some preprocessor magic when we compile on Arduino:
+#if defined(ARDUINO)
+  #define MAYBE_PROGMEM	PROGMEM
+
+/* keep Arduino GUI happy ;(			*/
+  #if ARDUINO >= 100
+    #include "Arduino.h"
+  #else
+    #include "WProgram.h"
+  #endif
+
+  #include <avr/pgmspace.h>
+#endif
+
+/* MAYBE_PROGMEM  *MUST* be #defined,
+   either as 'PROGMEM' to save RAM on Arduino
+   or empty for a PC test run.			*/
+#ifndef MAYBE_PROGMEM
+  #define MAYBE_PROGMEM
+#endif
+
+
+// I/O macros:
+/* outMACRO  macro for stream output:		*/
 #ifndef outMACRO
   /* outMACRO for testing on c++		*/
   #define outMACRO	std::cout
@@ -23,6 +48,8 @@
   // #define outMACRO	Serial::cout
 #endif
 
+
+// program #include:
 #include "menu2.h"
 
 
@@ -116,7 +143,7 @@ char Menu2::cb_read() {
     }
     
     // inlined:
-    int Menu2::cb_is_full() {
+    bool Menu2::cb_is_full() {
       return cb_count == cb_size;
     }
 */
@@ -222,12 +249,12 @@ void Menu2::cb_info() const {
 
 
 /* **************************************************************** */
-// lurk_and_do() main menu2 user interface:
+// lurk_then_do() main menu2 user interface:
 
 
 const unsigned char _buffer[] MAYBE_PROGMEM = "buffer";
 
-/* bool lurk_and_do()
+/* bool lurk_then_do()
    get input byte, translate \n and \r to \0, which is 'END token'
    check for END token:
    * accumulate data bytes until receiving a '\0' == 'END token',
@@ -237,12 +264,12 @@ const unsigned char _buffer[] MAYBE_PROGMEM = "buffer";
      * disregard END tokens on empty buffer (left over from newline translation)
    return true if and only if the interpreter was called on the buffer.
  */
-bool Menu2::lurk_and_do() {
+bool Menu2::lurk_then_do() {
   int INP;
   char c;
 
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
-  outMACRO << "\nlurk_and_do():\n";
+  outMACRO << "\nlurk_then_do():\n";
 #endif
 
   /* int maybe_input()  
@@ -296,15 +323,12 @@ bool Menu2::lurk_and_do() {
   defined(DEBUGGING_LURKING)
       outMACRO << "cb is full.  interpreting as EMERGENCY EXIT, dangerous...\n";
 #endif
-	// emergency exit, dangerous...
+	// EMERGENCY EXIT, dangerous...
 	interpret_men_input();	// <<<<<<<< INTERPRET BUFFER CONTENT >>>>>>>>
 	menu_display();
 	return true;		// true means *reaction was triggered*.
       }
-
-
     } else {
-
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_CIRCBUF) || \
   defined(DEBUGGING_LURKING)
       outMACRO << "END token received. ";

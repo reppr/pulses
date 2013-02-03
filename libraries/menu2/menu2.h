@@ -35,9 +35,8 @@ class Menu2 {
   Menu2(int size, int menuPages, int (*maybeInput)(void));
   ~Menu2();
 
-  //  bool lurk_and_do(bool (*Action)(void));
   // high level API:
-  bool lurk_and_do(void);
+  bool lurk_then_do(void);
   void add_page(char *pageTitle, char token, \
 		void (*pageDisplay)(), bool (*pageReaction)(char), const char ActiveGroup);
   void menu_pages_info() const;			// show all known pages' info

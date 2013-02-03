@@ -245,13 +245,13 @@ int main() {
 
 
   while (true)		// ==> ETHERNAL LOOP <==
-    if ( MENU.lurk_and_do() ) {
+    if ( MENU.lurk_then_do() ) {
       #if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
-        outMACRO << "lurk_and_do() returned TRUE\n";
+        outMACRO << "lurk_then_do() returned TRUE\n";
       #endif
     } else {
       #ifdef DEBUGGING_MENU
-        outMACRO << "lurk_and_do() returned false\n";
+        outMACRO << "lurk_then_do() returned false\n";
       #endif
     }
 
