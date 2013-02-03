@@ -27,6 +27,21 @@
 
 
 /* **************************************************************** */
+// some early definitions:
+
+/* char constants for output having the arduino as target in mind:
+   alternative to PROGMEM one char strings...			*/	
+const char _space = ' ';
+const char _tab  = '\t';
+const char _tick = '\'';
+const char _quote = '"';
+const char _star = '*';
+const char _open  = '(';	// not used yet ################
+const char _close = ')';	// not used yet ################
+const char _column = ':';	// not used yet ################
+
+
+/* **************************************************************** */
 // constructor/destructors:
 
 Menu2::Menu2(int bufSize, int menuPages, int (*maybeInput)(void)) {
@@ -370,6 +385,32 @@ void Menu2::skip_numeric_input() {
 
 
 /* **************************************************************** */
+// menu info:
+
+const unsigned char menuPage_[] MAYBE_PROGMEM = "menupage ";
+
+/* menu_page_info()  show a known pages' info			*/
+void Menu2::menu_page_info(char pg) const {
+  if ( pg == men_selected )
+    outMACRO << _star;
+  else
+    outMACRO << _space;
+
+  outMACRO << menuPage_;
+  outMACRO << (int) pg << _space << _tick << men_pages[pg].ptoken << _tick;
+  outMACRO << _tab << _quote << men_pages[pg].title << _quote;
+  outMACRO << "\n";
+}
+
+
+/* menu_pages_info()  show all known pages' info		*/
+void Menu2::menu_pages_info() const {
+  for (char pg = 0; pg < men_known; pg++)
+    menu_page_info(pg);
+}
+
+
+/* **************************************************************** */
 // menu handling:
 
 const unsigned char addPg[] MAYBE_PROGMEM = "add_page";
@@ -574,6 +615,7 @@ void Menu2::interpret_men_input() {
 #endif
     switch (token) {
     case '?':
+      menu_pages_info();
       // menu_display();	will be called anyway...
       did_something = true;
       break;

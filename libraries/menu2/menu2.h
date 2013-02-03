@@ -36,9 +36,13 @@ class Menu2 {
   ~Menu2();
 
   //  bool lurk_and_do(bool (*Action)(void));
+  // high level API:
   bool lurk_and_do(void);
   void add_page(char *pageTitle, char token, \
 		void (*pageDisplay)(), bool (*pageReaction)(char), const char ActiveGroup);
+  void menu_pages_info() const;			// show all known pages' info
+
+
   int cb_stored() const { return cb_count; }	// inline:  # stored bytes
   char cb_read();				// get a byte from buffer, no checks
 
@@ -50,13 +54,16 @@ class Menu2 {
   long numeric_input(long default_value);	// read a number from the buffer
   void skip_numeric_input();			// drop leading numeric sequence from the buffer
 
-  void menu_display();				// display menu (page and common)
-  void common_display();			// display common to all menu pages
+  void menu_display();				// display the menu:
+						//   selected menu page,
+						//   page hot keys,
+						//   internal hot keys.
 
   // act on buffer content tokens after seeing 'end token':
   void interpret_men_input();			// menu input interpreter
 
  protected:
+  void menu_page_info(char pg) const;		// show a menu pages' info
   bool cb_is_full() const { return cb_count == cb_size; }	// inlined: buffer full?
 #ifdef DEBUGGING_CIRCBUF
   void cb_info() const;						// debugging help

@@ -178,7 +178,7 @@ char menuTitleX[] = "XXX";
 char menuTokenX = 'X';
 
 char menuTitleY[] = "YYYYY";
-// char menuTokenY = '\0';
+// char menuTokenY = ' ';
 
 
 
@@ -193,12 +193,21 @@ int main() {
   cbreak();
   */
 
+  // page A will only be visible when selected, never when burried:
   MENU.add_page(menuTitleA, menuTokenA, &program_displayA, &program_actionA, '-');
+
+  // page B belongs to 'Y' group:
   MENU.add_page(menuTitleB, menuTokenB, &program_displayB, &program_actionB, 'Y');
+
+  // page X is always visible
   MENU.add_page(menuTitleX, menuTokenX, &program_displayX, &program_actionX, '+');
-  MENU.add_page(menuTitleY, '\0', &program_displayY, &program_actionY, 'Y');
+
+  // page Y adds actions active for the 'Y' group
+  // this group cannot get selected, the page hot key ' ' makes that impossible.
+  MENU.add_page(menuTitleY, ' ', &program_displayY, &program_actionY, 'Y');
 
   MENU.menu_display();
+
 
   while (true)		// ==> ETHERNAL LOOP <==
     if ( MENU.lurk_and_do() ) {
