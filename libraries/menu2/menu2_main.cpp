@@ -31,6 +31,7 @@
 
 /* **************************************************************** */
 Menu2 MENU(32, 4, &getchar);
+//Menu2 MENU(4, 4, &getchar);	// test cb input buffer overflow.
 
 
 /* **************************************************************** */
@@ -41,7 +42,7 @@ void program_displayA() {
 
 /* **************************************************************** */
 void program_displayB() {
-  outMACRO << "\n'b'\n";
+  outMACRO << "\nHere we say 'b'\n";
 }
 
 
@@ -60,7 +61,7 @@ void program_displayY() {
 /* **************************************************************** */
 bool program_actionA(char token) {
 #ifdef DEBUGGING_MENU
-  outMACRO << "program_actionA(" << token << "): ";
+  outMACRO << "testing program_actionA(" << token << "):\n";
 #endif
   switch (token) {
   case 'a':
@@ -79,7 +80,7 @@ bool program_actionA(char token) {
 /* **************************************************************** */
 bool program_actionB(char token) {
 #ifdef DEBUGGING_MENU
-  outMACRO << "program_actionB(" << token << "): ";
+  outMACRO << "testing program_actionB(" << token << "):\n";
 #endif
   switch (token) {
   case 'b':
@@ -98,7 +99,7 @@ bool program_actionB(char token) {
 /* **************************************************************** */
 bool program_actionX(char token) {
 #ifdef DEBUGGING_MENU
-  outMACRO << "program_actionB(" << token << "): ";
+  outMACRO << "testing program_actionX(" << token << "):\n";
 #endif
   switch (token) {
   case 'x':
@@ -126,7 +127,7 @@ bool program_actionX(char token) {
 /* **************************************************************** */
 bool program_actionY(char token) {
 #ifdef DEBUGGING_MENU
-  outMACRO << "program_actionY(" << token << "): ";
+  outMACRO << "testing program_actionY(" << token << "):\n";
 #endif
   switch (token) {
   case 'y':
@@ -184,7 +185,7 @@ char menuTitleY[] = "YYYYY";
 
 /* **************************************************************** */
 int main() {
-  outMACRO << "running menu2_main.cpp  ==> ETHERNAL LOOP <==\n";
+  outMACRO << "menu2_main.cpp  ==> ETHERNAL LOOP <==:\n";
 
   /* 	does not work
   // unbuffered ncurses keyboard test input:

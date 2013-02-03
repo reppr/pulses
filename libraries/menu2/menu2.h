@@ -21,7 +21,7 @@ struct menupage {
   void (*display)(void);
   bool (*interpret)(char token);
   char *title;
-  char ptoken;
+  char hotkey;
   // configure which pages burried below men_selected remain active:
   char active_group;	// tokens on pages with the same active_group
 			// as men_selected remain active below page actions
