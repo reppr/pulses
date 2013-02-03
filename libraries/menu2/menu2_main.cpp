@@ -215,16 +215,8 @@ char menuTokenN = 'N';
 
 
 
-/* **************************************************************** */
-int main() {
-  outMACRO << "menu2_main.cpp  ==> ETHERNAL LOOP <==:\n";
-
-  /* 	does not work
-  // unbuffered ncurses keyboard test input:
-  outMACRO << "unbuffered ncurses keyboard test input\n";
-  initscr();
-  cbreak();
-  */
+void my_setup() {
+  // add menu pages:
 
   // page A will only be visible when selected, never when burried:
   MENU.add_page(menuTitleA, menuTokenA, &program_displayA, &program_actionA, '-');
@@ -235,27 +227,68 @@ int main() {
   // page X is always visible
   MENU.add_page(menuTitleX, menuTokenX, &program_displayX, &program_actionX, '+');
 
-  // page Y adds actions active for the 'Y' group
-  // this group cannot get selected, the page hot key ' ' makes that impossible.
+  /* page Y adds actions active for the 'Y' group
+     this group cannot get selected, the page hot key ' ' prevents that.	*/
   MENU.add_page(menuTitleY, ' ', &program_displayY, &program_actionY, 'Y');
 
+  // page N testing numeric input
   MENU.add_page(menuTitleN, menuTokenN, &program_displayN, &program_actionN, '-');
 
-  MENU.menu_display();
 
+  // display menu at startup:
+  MENU.menu_display();
+}
+
+
+void my_loop_body() {
+  if ( MENU.lurk_then_do() ) {
+#if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
+    outMACRO << "lurk_then_do() returned TRUE\n";
+#endif
+  } else {
+#ifdef DEBUGGING_MENU
+    outMACRO << "lurk_then_do() returned false\n";
+#endif
+  }
+}
+
+
+#ifndef ARDUINO
+/* **************************************************************** */
+// PC test version:
+int main() {
+  outMACRO << "menu2_main.cpp  ==> ETHERNAL LOOP <==:\n";
+
+  /* 	does not work
+  // unbuffered ncurses keyboard test input:
+  outMACRO << "unbuffered ncurses keyboard test input\n";
+  initscr();
+  cbreak();
+  */
+
+  my_init();
 
   while (true)		// ==> ETHERNAL LOOP <==
-    if ( MENU.lurk_then_do() ) {
-      #if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
-        outMACRO << "lurk_then_do() returned TRUE\n";
-      #endif
-    } else {
-      #ifdef DEBUGGING_MENU
-        outMACRO << "lurk_then_do() returned false\n";
-      #endif
-    }
+    my_loop_body();
 
   return 0;
 }
+#endif
+
+
+#ifdef ARDUINO
+/* **************************************************************** */
+// Arduino setup() and main loop:
+
+void setup() {
+  my_setup();
+}
+
+
+void loop() {
+  MENU.lurk_then_do();
+}
+#endif
+
 
 /* **************************************************************** */
