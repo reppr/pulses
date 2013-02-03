@@ -360,8 +360,8 @@ bool Menu2::is_numeric() const {
   return true;
 }
 
-const unsigned char numberMissing[] MAYBE_PROGMEM = \
-  "number missing";
+const unsigned char numberMissing_[] MAYBE_PROGMEM = \
+  "number missing\n";
 
 long Menu2::numeric_input(long default_value) {
   long input, num, sign=1;
@@ -385,7 +385,7 @@ long Menu2::numeric_input(long default_value) {
     goto number_missing;	// NAN, give up...
 
   input = cb_read();		// read first chiffre after sign
-  num = input;
+  num = input - '0';
 
   // more numeric chiffres?
   while ( is_numeric() ) {
@@ -398,7 +398,7 @@ long Menu2::numeric_input(long default_value) {
 
   // number was missing, return the given default_value:
  number_missing:
-  outMACRO << numberMissing;
+  outMACRO << numberMissing_;
   return default_value;		// return default_value
 }
 

@@ -30,7 +30,7 @@
 
 
 /* **************************************************************** */
-Menu2 MENU(32, 4, &getchar);
+Menu2 MENU(32, 5, &getchar);
 //Menu2 MENU(4, 4, &getchar);	// test cb input buffer overflow.
 
 
@@ -55,6 +55,14 @@ void program_displayX() {
 /* **************************************************************** */
 void program_displayY() {
   outMACRO << "\nYOU SHOULD NEVER SEE THIS...\n";
+}
+
+
+/* **************************************************************** */
+long value = 42;
+
+void program_displayN() {
+  outMACRO << "\nValue = " << value << "\tv=change value.\n";
 }
 
 
@@ -169,6 +177,27 @@ bool program_actionY(char token) {
 
 
 /* **************************************************************** */
+bool program_actionN(char token) {
+#ifdef DEBUGGING_MENU
+  outMACRO << "testing program_actionN(" << token << "):\n";
+#endif
+  switch (token) {
+  case 'v':
+    outMACRO << "Enter new value : ";
+    value=MENU.numeric_input(value);
+
+    return true;	// return true;  means there *was* action,
+			// it's  *not* the exit status of the action
+			// the menu page *is responsible* for this token
+    break;
+  default:
+    return false;	// return false; means *no* action was taken here
+			// the menu page is *not* responsible for the token    
+  }
+}
+
+
+/* **************************************************************** */
 char menuTitleA[] = "'A' PAGE";
 char menuTokenA = 'A';
 
@@ -180,6 +209,9 @@ char menuTokenX = 'X';
 
 char menuTitleY[] = "YYYYY";
 // char menuTokenY = ' ';
+
+char menuTitleN[] = "NUMBERS";
+char menuTokenN = 'N';
 
 
 
@@ -206,6 +238,8 @@ int main() {
   // page Y adds actions active for the 'Y' group
   // this group cannot get selected, the page hot key ' ' makes that impossible.
   MENU.add_page(menuTitleY, ' ', &program_displayY, &program_actionY, 'Y');
+
+  MENU.add_page(menuTitleN, menuTokenN, &program_displayN, &program_actionN, '-');
 
   MENU.menu_display();
 
