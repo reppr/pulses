@@ -17,7 +17,9 @@
 #endif
 
 #include <stdlib.h>
-#include <iostream>
+#ifndef ARDUINO
+  #include <iostream>
+#endif
 
 
 // Preprocessor magic to compile for Arduino:

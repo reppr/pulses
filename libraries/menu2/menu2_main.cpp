@@ -5,7 +5,10 @@
 */
 /* **************************************************************** */
 
-#include <iostream>
+#ifndef ARDUINO
+  #include <iostream>
+#endif
+
 #include <stdio.h>
 
 /*	==> does not work <==
