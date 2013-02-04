@@ -7,19 +7,55 @@
 /* **************************************************************** */
 // preprocessor stuff:
 
+#ifndef BAUDRATE
+  #define BAUDRATE	115200		// works fine here
+  // #define BAUDRATE	57600
+  // #define BAUDRATE	38400
+  // #define BAUDRATE	19200
+  // #define BAUDRATE	9600	// failsafe
+  // #define BAUDRATE	31250	// MIDI
+#endif
+
 #include <stdlib.h>
 #include <iostream>
 
 
-// Arduino related:
-// switch prepared to compile Arduino sketches, empty or 'PROGMEM'
-//#define MAYBE_PROGMEM
-
-// do some preprocessor magic when we compile on Arduino:
+// Preprocessor magic to compile for Arduino:
+/* **************** ARDUINO **************** */
 #if defined(ARDUINO)
-  #define MAYBE_PROGMEM	PROGMEM
+  /* MAYBE_PROGMEM  *MUST* be #defined,
+     either as 'PROGMEM' to save RAM on Arduino
+     or empty for a PC test run.			*/
+  #ifndef MAYBE_PROGMEM		// commandline?
+    #define MAYBE_PROGMEM	PROGMEM
+  #endif
 
-/* keep Arduino GUI happy ;(			*/
+
+  /* I/O MACROs  ARDUINO: */
+
+  /* streaming output on the Arduino
+     http://playground.arduino.cc/Main/StreamingOutput	*/
+  template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
+
+
+  /* outMACRO  macro for stream output:	ARDUINO		*/
+  #ifndef outMACRO		// commandline?
+    #define outMACRO	Serial
+  #endif
+
+
+  /* getcharMACRO  macro for char input: ARDUINO	*/
+  /* returns EOF or char				*/
+  int getchar_serial() {
+    if (!Serial.available())
+      return EOF;
+
+    return Serial.read();
+  }
+  #define getcharMACRO	getchar_serial	// for Arduino
+
+
+  /* keep Arduino GUI happy ;(				*/
   #if ARDUINO >= 100
     #include "Arduino.h"
   #else
@@ -27,28 +63,37 @@
   #endif
 
   #include <avr/pgmspace.h>
-#endif
+
+
+#else /* **************** LINUX **************** */
+/*	    for development on a Linux PC	 */
 
 /* MAYBE_PROGMEM  *MUST* be #defined,
    either as 'PROGMEM' to save RAM on Arduino
    or empty for a PC test run.			*/
-#ifndef MAYBE_PROGMEM
-  #define MAYBE_PROGMEM
-#endif
+  #ifndef MAYBE_PROGMEM		// commandline?
+    #define MAYBE_PROGMEM
+  #endif
 
 
-// I/O macros:
-/* outMACRO  macro for stream output:		*/
-#ifndef outMACRO
-  /* outMACRO for testing on c++		*/
-  #define outMACRO	std::cout
+  /* I/O MACROs for LINUX: */
 
-  /* outMACRO for Arduino		*/	// TODO ################
-  // #include ################
-  // #define outMACRO	Serial::cout
-#endif
+  /* outMACRO  macro for stream output:		*/
+  #ifndef outMACRO		// commandline?
+    /* outMACRO for testing on c++		*/
+    #define outMACRO	std::cout
+  #endif
 
 
+  /* getcharMACRO  macro for char input: LINUX	*/
+  /* returns EOF or char			*/
+  #define getcharMACRO	getchar	/* on Linux	*/
+
+
+#endif // [Arduino else] LINUX
+
+
+/* **************************************************************** */
 // program #include:
 #include "menu2.h"
 
@@ -368,6 +413,8 @@ bool Menu2::lurk_then_do() {
   sometimes you might give an impossible value to check if there was input.
 */
 
+const unsigned char numberMissing_[] MAYBE_PROGMEM = \
+"number missing\n";
 
 /* bool is_numeric()
    true if there is a next numeric chiffre
@@ -383,9 +430,6 @@ bool Menu2::is_numeric() const {
 
   return true;
 }
-
-const unsigned char numberMissing_[] MAYBE_PROGMEM = \
-  "number missing\n";
 
 long Menu2::numeric_input(long default_value) {
   long input, num, sign=1;
@@ -515,8 +559,10 @@ void Menu2::menu_display() {
   if ( men_known > 1 ) {
     outMACRO << "\n";
     for (pg = 0; pg < men_known; pg++) {
-      if ( pg != men_selected )	// omit selected pages' hot key display, even if active.
-	outMACRO << men_pages[pg].hotkey << "=" << men_pages[pg].title << "  ";
+      if ( pg != men_selected ) {	// omit selected pages' hot key display, even if active.
+	outMACRO << men_pages[pg].hotkey << "=" << men_pages[pg].title;
+	outMACRO << _space << _space;
+      }
     }
     outMACRO << "\n";
   }

@@ -14,10 +14,6 @@
 // #include <ncurses.h>
 */
 
-
-/* outMACRO  macro for stream output:	*/
-#define outMACRO	std::cout
-
 /* macros for debugging:		*/ 
 //#define DEBUGGING_ALL
 //#define DEBUGGING_CLASS
@@ -30,8 +26,8 @@
 
 
 /* **************************************************************** */
-Menu2 MENU(32, 5, &getchar);
-//Menu2 MENU(4, 4, &getchar);	// test cb input buffer overflow.
+Menu2 MENU(32, 5, &getcharMACRO);
+
 
 
 /* **************************************************************** */
@@ -266,7 +262,7 @@ int main() {
   cbreak();
   */
 
-  my_init();
+  my_setup();
 
   while (true)		// ==> ETHERNAL LOOP <==
     my_loop_body();
@@ -281,6 +277,7 @@ int main() {
 // Arduino setup() and main loop:
 
 void setup() {
+  Serial.begin(BAUDRATE);
   my_setup();
 }
 
