@@ -37,8 +37,8 @@
 
   /* streaming output on the Arduino
      http://playground.arduino.cc/Main/StreamingOutput	*/
-  template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
-
+  // template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
+  // #include <Streaming.h>
 
   /* outMACRO  macro for stream output:	ARDUINO		*/
   #ifndef outMACRO		// commandline?
