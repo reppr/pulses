@@ -198,19 +198,19 @@ bool program_actionN(char token) {
 
 /* **************************************************************** */
 char menuTitleA[] = "'A' PAGE";
-char menuTokenA = 'A';
+char menuHotkeyA = 'A';
 
 char menuTitleB[] = "Back Page";
-char menuTokenB = 'B';
+char menuHotkeyB = 'B';
 
 char menuTitleX[] = "XXX";
-char menuTokenX = 'X';
+char menuHotkeyX = 'X';
 
 char menuTitleY[] = "YYYYY";
-// char menuTokenY = ' ';
+// char menuHotkeyY = ' ';
 
 char menuTitleN[] = "NUMBERS";
-char menuTokenN = 'N';
+char menuHotkeyN = 'N';
 
 
 
@@ -218,20 +218,20 @@ void my_setup() {
   // add menu pages:
 
   // page A will only be visible when selected, never when burried:
-  MENU.add_page(menuTitleA, menuTokenA, &program_displayA, &program_actionA, '-');
+  MENU.add_page(menuTitleA, menuHotkeyA, &program_displayA, &program_actionA, '-');
 
   // page B belongs to 'Y' group:
-  MENU.add_page(menuTitleB, menuTokenB, &program_displayB, &program_actionB, 'Y');
+  MENU.add_page(menuTitleB, menuHotkeyB, &program_displayB, &program_actionB, 'Y');
 
   // page X is always visible
-  MENU.add_page(menuTitleX, menuTokenX, &program_displayX, &program_actionX, '+');
+  MENU.add_page(menuTitleX, menuHotkeyX, &program_displayX, &program_actionX, '+');
 
   /* page Y adds actions active for the 'Y' group
      this group cannot get selected, the page hot key ' ' prevents that.	*/
   MENU.add_page(menuTitleY, ' ', &program_displayY, &program_actionY, 'Y');
 
   // page N testing numeric input
-  MENU.add_page(menuTitleN, menuTokenN, &program_displayN, &program_actionN, '-');
+  MENU.add_page(menuTitleN, menuHotkeyN, &program_displayN, &program_actionN, '-');
 
 
   // display menu at startup:
