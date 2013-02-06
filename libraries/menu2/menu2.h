@@ -7,6 +7,9 @@
 #define MENU2
 
 
+#include <stdio.h>
+#include <stdlib.h>
+
 /* **************************************************************** */
 // preprocessor macro logic:
 
@@ -25,7 +28,8 @@
      either as 'PROGMEM' to save RAM on Arduino
      or empty for a PC test run.			*/
   #ifndef MAYBE_PROGMEM		// commandline?
-    #define MAYBE_PROGMEM	PROGMEM
+//  #define MAYBE_PROGMEM	PROGMEM		################ DEACTIVATED
+    #define MAYBE_PROGMEM
   #endif
 
 
@@ -33,12 +37,16 @@
 
   /* streaming output on the Arduino
      http://playground.arduino.cc/Main/StreamingOutput	*/
-  // template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
-  // #include <Streaming.h>
+  // #include <Streaming.h> did not work for me
+  // #include "Streaming.h"
+
+
+  #include <Stream.h>
+  template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
 
   /* outMACRO  macro for stream output:	ARDUINO		*/
   #ifndef outMACRO		// commandline?
-    #define outMACRO	Serial
+    #define outMACRO	Serial.print
   #endif
 
 
@@ -119,7 +127,7 @@ class Menu2 {
   // high level API:
   bool lurk_then_do(void);
   void add_page(char *pageTitle, char token, \
-		void (*pageDisplay)(), bool (*pageReaction)(char), const char ActiveGroup);
+		void (*pageDisplay)(), bool (*pageReaction)(char), char ActiveGroup);
   void menu_pages_info() const;			// show all known pages' info
 
 

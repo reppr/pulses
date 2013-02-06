@@ -122,7 +122,9 @@ void program_displayA() {
 /* **************************************************************** */
 bool program_actionA(char token) {
 #ifdef DEBUGGING_MENU
-  outMACRO << "testing program_actionA(" << token << "):\n";
+  outMACRO << "testing program_actionA(";
+  outMACRO << token;
+  outMACRO << "):\n";
 #endif
   switch (token) {
   case 'a':
@@ -164,7 +166,9 @@ void program_displayB() {
 /* **************************************************************** */
 bool program_actionB(char token) {
 #ifdef DEBUGGING_MENU
-  outMACRO << "testing program_actionB(" << token << "):\n";
+  outMACRO << "testing program_actionB(";
+  outMACRO << token;
+  outMACRO << "):\n";
 #endif
   switch (token) {
   case 'b':
@@ -206,7 +210,9 @@ void program_displayY() {
 /* **************************************************************** */
 bool program_actionY(char token) {
 #ifdef DEBUGGING_MENU
-  outMACRO << "testing program_actionY(" << token << "):\n";
+  outMACRO << "testing program_actionY(";
+  outMACRO << token;
+  outMACRO << "):\n";
 #endif
   switch (token) {
   case 'y':
@@ -274,7 +280,9 @@ void program_displayX() {
 /* **************************************************************** */
 bool program_actionX(char token) {
 #ifdef DEBUGGING_MENU
-  outMACRO << "testing program_actionX(" << token << "):\n";
+  outMACRO << "testing program_actionX(";
+  outMACRO << token;
+  outMACRO << "):\n";
 #endif
   switch (token) {
   case 'x':
@@ -319,14 +327,18 @@ char menuTitleN[] = "NUMBERS";
 /* **************************************************************** */
 
 void program_displayN() {
-  outMACRO << "\nValue = " << value << "\tv=change value.\n";
+  outMACRO << "\nValue = ";
+  outMACRO << value;
+  outMACRO << "\tv=change value.\n";
 }
 
 
 /* **************************************************************** */
 bool program_actionN(char token) {
 #ifdef DEBUGGING_MENU
-  outMACRO << "testing program_actionN(" << token << "):\n";
+  outMACRO << "testing program_actionN(";
+  outMACRO << token;
+  outMACRO << "):\n";
 #endif
   switch (token) {
   case 'v':

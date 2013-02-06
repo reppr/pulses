@@ -69,7 +69,8 @@ const unsigned char error_[] MAYBE_PROGMEM = " ERROR: ";
 Menu2::Menu2(int bufSize, int menuPages, int (*maybeInput)(void)) {
 #ifdef DEBUGGING_CLASS
   outMACRO << "Menu2 CONSTRUCTOR: cb_size=";
-  outMACRO << bufSize << "\n";
+  outMACRO << bufSize;
+  outMACRO << "\n";
 #endif
 
   // initialize circular input buffer:
@@ -215,7 +216,9 @@ void Menu2::cb_info() const {
   int value = cb_peek();
   outMACRO << "\n  char:\t\t";
   if (value != -1) {
-    outMACRO << value << "\t" << (char) value;
+    outMACRO << value;
+    outMACRO << "\t";
+    outMACRO << (char) value;
     if ( is_numeric() )
       outMACRO << "  numeric CHIFFRE\n";
     else
@@ -224,12 +227,22 @@ void Menu2::cb_info() const {
     outMACRO << "(none)\n";
 
   value = next_input_token();
-  outMACRO << "\n  next_input_token()\t: " << value << "\t" << (char) value << "\n";
+  outMACRO << "\n  next_input_token()\t: ";
+  outMACRO << value;
+  outMACRO << "\t";
+  outMACRO << (char) value;
+  outMACRO << "\n";
   outMACRO << "\n";
 
   for (int i=0; i<=cb_count; i++) {
     value = cb_peek(i);
-    outMACRO << "  cb_peek(" << i << ")\t\t: " << value << "\t" << (char) value << "\n";
+    outMACRO << "  cb_peek(";
+    outMACRO << i;
+    outMACRO << ")\t\t: ";
+    outMACRO << value;
+    outMACRO << "\t";
+    outMACRO << (char) value;
+    outMACRO << "\n";
   }
 
   outMACRO << "\n";
@@ -299,11 +312,15 @@ bool Menu2::lurk_then_do() {
       cb_write(c);
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_CIRCBUF) || \
   defined(DEBUGGING_LURKING)
-      outMACRO << "accumulated '" << c << "'\n";
+      outMACRO << "accumulated '";
+      outMACRO << c;
+      outMACRO << "'\n";
 #endif
       if (cb_is_full()) {
 	// inform user:
-	outMACRO << _buffer << error_ << outOfRange;
+	outMACRO << _buffer;
+	outMACRO << error_;
+	outMACRO << outOfRange;
 	outMACRO << "\n";
 
 	// try to recover
@@ -324,7 +341,9 @@ bool Menu2::lurk_then_do() {
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_CIRCBUF) || \
   defined(DEBUGGING_LURKING)
       outMACRO << "END token received. ";
-      outMACRO << "Buffer stored=" << cb_stored() << "\n";
+      outMACRO << "Buffer stored=";
+      outMACRO << cb_stored();
+      outMACRO << "\n";
 #endif
 
       /* end of line token translation can produce more then one \0 in sequence
@@ -446,9 +465,19 @@ void Menu2::menu_page_info(char pg) const {
     outMACRO << _space;
 
   outMACRO << menuPage_;
-  outMACRO << (int) pg << _tab << hotk_ << men_pages[pg].hotkey << _tick;
-  outMACRO << _tab << group_ << men_pages[pg].active_group << _tick;
-  outMACRO << _tab << _quote << men_pages[pg].title << _quote;
+  outMACRO << (int) pg;
+  outMACRO << _tab;
+  outMACRO << hotk_;
+  outMACRO << men_pages[pg].hotkey;
+  outMACRO << _tick;
+  outMACRO << _tab;
+  outMACRO << group_;
+  outMACRO << men_pages[pg].active_group;
+  outMACRO << _tick;
+  outMACRO << _tab;
+  outMACRO << _quote;
+  outMACRO << men_pages[pg].title;
+  outMACRO << _quote;
   outMACRO << "\n";
 }
 
@@ -476,10 +505,18 @@ void Menu2::add_page(char *pageTitle, char hotkey,		\
     men_known++;
 
 #ifdef DEBUGGING_MENU
-    outMACRO << addPg << "(\"" << pageTitle << "\", " << hotkey << ",..)\n";
+    outMACRO << addPg;
+    outMACRO << "(\"";
+    outMACRO << pageTitle;
+    outMACRO << "\", ";
+    outMACRO << hotkey;
+    outMACRO << ",..)\n";
 #endif
-  } else {
-    outMACRO << addPg << error_ << outOfRange << "\n";	// ERROR handling ################
+  } else {	// ERROR handling ################
+    outMACRO << addPg;
+    outMACRO << error_;
+    outMACRO << outOfRange;
+    outMACRO << "\n";
   } 
 }
 
@@ -503,7 +540,8 @@ void Menu2::menu_display() {
 
   // men_selected page display:
   outMACRO << deco_;
-  outMACRO << men_ << men_pages[men_selected].title;
+  outMACRO << men_;
+  outMACRO << men_pages[men_selected].title;
   outMACRO << _deco;
 
   (*men_pages[men_selected].display)();
@@ -513,15 +551,20 @@ void Menu2::menu_display() {
     outMACRO << "\n";
     for (pg = 0; pg < men_known; pg++) {
       if ( pg != men_selected ) {	// omit selected pages' hot key display, even if active.
-	outMACRO << men_pages[pg].hotkey << "=" << men_pages[pg].title;
-	outMACRO << _space << _space;
+	outMACRO << men_pages[pg].hotkey;
+	outMACRO << "=";
+	outMACRO << men_pages[pg].title;
+	outMACRO << _space;
+	outMACRO << _space;
       }
     }
     outMACRO << "\n";
   }
 
   // display internal key bindings:
-  outMACRO << internalKeys << qQuit << "\n";
+  outMACRO << internalKeys;
+  outMACRO << qQuit;
+  outMACRO << "\n";
 
 #ifdef DEBUGGING_MENU
   outMACRO << "\n";
@@ -562,7 +605,8 @@ void Menu2::interpret_men_input() {
 
     // try to find a menu entity that knows to interpret the token:
 #ifdef DEBUGGING_MENU
-    outMACRO << token << "'\n";
+    outMACRO << token;
+    outMACRO << "'\n";
 #endif
 
     // skip spaces:
@@ -574,12 +618,16 @@ void Menu2::interpret_men_input() {
     did_something = (*men_pages[men_selected].interpret)(token);
     if (did_something) {
 #ifdef DEBUGGING_MENU
-      outMACRO << "selected page is responsible for '" << token << "'.\n";
+      outMACRO << "selected page is responsible for '";
+      outMACRO << token;
+      outMACRO << "'.\n";
 #endif
       continue;
     }
 #ifdef DEBUGGING_MENU
-    outMACRO << "selected page does not know '" << token << "'\n";
+    outMACRO << "selected page does not know '";
+    outMACRO << token;
+    outMACRO << "'\n";
 #endif
     // token not found yet...
 
@@ -587,7 +635,9 @@ void Menu2::interpret_men_input() {
     // check pages in same page_group and in group '+':
     selected_group = men_pages[men_selected].active_group;
 #ifdef DEBUGGING_MENU
-    outMACRO << "check for selected_group '" << selected_group << "':\n";
+    outMACRO << "check for selected_group '";
+    outMACRO << selected_group;
+    outMACRO << "':\n";
     outMACRO << "  going through the pages:\n";
 #endif
 
@@ -622,8 +672,14 @@ void Menu2::interpret_men_input() {
       if (is_active) {		// test active menu pages on token:
 	if ( did_something = (*men_pages[pg].interpret)(token) ) {
 #ifdef DEBUGGING_MENU
-	  outMACRO << "page_group '" << page_group << "':\n";
-	  outMACRO << "menu " << men_pages[pg].title << " knows '" << token << "'.\n";
+	  outMACRO << "page_group '";
+	  outMACRO << page_group;
+	  outMACRO << "':\n";
+	  outMACRO << "menu ";
+	  outMACRO << men_pages[pg].title;
+	  outMACRO << " knows '";
+	  outMACRO << token;
+	  outMACRO << "'.\n";
 #endif
 	  break;
 	}
@@ -682,13 +738,18 @@ void Menu2::interpret_men_input() {
       break;
     }
 #ifdef DEBUGGING_MENU
-    if (did_something)
-      outMACRO << "==>* internal hotkey '" << token << "'.\n";
+    if (did_something) {
+      outMACRO << "==>* internal hotkey '";
+      outMACRO << token;
+      outMACRO << "'.\n";
+    }
 #endif
 
     // token still not found, give up...
     if (! did_something ) {
-      outMACRO << unknownToken << token << "\n";
+      outMACRO << unknownToken;
+      outMACRO << token;
+      outMACRO << "\n";
     }
 
   } // interpreter loop over all tokens
