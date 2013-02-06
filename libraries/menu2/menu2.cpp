@@ -16,36 +16,20 @@
   // #define BAUDRATE	31250	// MIDI
 #endif
 
+#include <stdio.h>
 #include <stdlib.h>
 #ifndef ARDUINO
   #include <iostream>
 #endif
 
 
-// Preprocessor magic to compile for Arduino:
-/* **************** ARDUINO **************** */
-#if defined(ARDUINO)
-  /* MAYBE_PROGMEM  *MUST* be #defined,
-     either as 'PROGMEM' to save RAM on Arduino
-     or empty for a PC test run.			*/
-  #ifndef MAYBE_PROGMEM		// commandline?
-    #define MAYBE_PROGMEM	PROGMEM
-  #endif
+/* **************************************************************** */
+#include <menu2.h>
 
 
-  /* I/O MACROs  ARDUINO: */
-
-  /* streaming output on the Arduino
-     http://playground.arduino.cc/Main/StreamingOutput	*/
-  // template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
-  // #include <Streaming.h>
-
-  /* outMACRO  macro for stream output:	ARDUINO		*/
-  #ifndef outMACRO		// commandline?
-    #define outMACRO	Serial
-  #endif
-
-
+/* **************************************************************** */
+// #dedine getcharMACRO for Arduino:
+#ifdef ARDUINO
   /* getcharMACRO  macro for char input: ARDUINO	*/
   /* returns EOF or char				*/
   int getchar_serial() {
@@ -54,50 +38,8 @@
 
     return Serial.read();
   }
-  #define getcharMACRO	getchar_serial	// for Arduino
-
-
-  /* keep Arduino GUI happy ;(				*/
-  #if ARDUINO >= 100
-    #include "Arduino.h"
-  #else
-    #include "WProgram.h"
-  #endif
-
-  #include <avr/pgmspace.h>
-
-
-#else /* **************** LINUX **************** */
-/*	    for development on a Linux PC	 */
-
-/* MAYBE_PROGMEM  *MUST* be #defined,
-   either as 'PROGMEM' to save RAM on Arduino
-   or empty for a PC test run.			*/
-  #ifndef MAYBE_PROGMEM		// commandline?
-    #define MAYBE_PROGMEM
-  #endif
-
-
-  /* I/O MACROs for LINUX: */
-
-  /* outMACRO  macro for stream output:		*/
-  #ifndef outMACRO		// commandline?
-    /* outMACRO for testing on c++		*/
-    #define outMACRO	std::cout
-  #endif
-
-
-  /* getcharMACRO  macro for char input: LINUX	*/
-  /* returns EOF or char			*/
-  #define getcharMACRO	getchar	/* on Linux	*/
-
-
-#endif // [Arduino else] LINUX
-
-
-/* **************************************************************** */
-// program #include:
-#include "menu2.h"
+  // #define getcharMACRO	getchar_serial		// on Arduino
+#endif
 
 
 /* **************************************************************** */
@@ -373,6 +315,9 @@ bool Menu2::lurk_then_do() {
 	// EMERGENCY EXIT, dangerous...
 	interpret_men_input();	// <<<<<<<< INTERPRET BUFFER CONTENT >>>>>>>>
 	menu_display();
+#if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
+    outMACRO << "lurk_then_do() INTERPRETed INPUT BUFFER.\n";
+#endif
 	return true;		// true means *reaction was triggered*.
       }
     } else {
@@ -389,6 +334,9 @@ bool Menu2::lurk_then_do() {
       if ( cb_stored() ) {	// disregard empty buffers
 	interpret_men_input();	// <<<<<<<< INTERPRET BUFFER CONTENT >>>>>>>>
 	menu_display();
+#if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
+    outMACRO << "lurk_then_do() INTERPRETed INPUT BUFFER.\n";
+#endif
 	return true;		// true means *reaction was triggered*.
 
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
@@ -404,6 +352,9 @@ bool Menu2::lurk_then_do() {
 #endif
   }
 
+#if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
+    outMACRO << "lurk_then_do() lurking...\n";
+#endif
   return false;		// false means *no reaction was triggered*.
 }
 

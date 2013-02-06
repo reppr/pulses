@@ -1,28 +1,100 @@
 /* **************************************************************** */
 /*
    menu2.h
-   menu2 as monolithic base class
 */
 /* **************************************************************** */
 #ifndef MENU2
 #define MENU2
 
 
-#ifdef ARDUINO
-  /* streaming output on the Arduino
-     http://playground.arduino.cc/Main/StreamingOutput	*/
-  template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
-// #include <Streaming.h>
-#endif
-
-
+/* **************************************************************** */
 // preprocessor macro logic:
+
+/* debugging macros:		*/
 #ifdef DEBUGGING_ALL
   #define DEBUGGING_CLASS
   #define DEBUGGING_CIRCBUF
   #define DEBUGGING_LURKING
   #define DEBUGGING_MENU
 #endif
+
+// Preprocessor magic to compile on Arduino:
+/* **************** ARDUINO **************** */
+#if defined(ARDUINO)
+  /* MAYBE_PROGMEM  *MUST* be #defined,
+     either as 'PROGMEM' to save RAM on Arduino
+     or empty for a PC test run.			*/
+  #ifndef MAYBE_PROGMEM		// commandline?
+    #define MAYBE_PROGMEM	PROGMEM
+  #endif
+
+
+  /* I/O MACROs  ARDUINO: */
+
+  /* streaming output on the Arduino
+     http://playground.arduino.cc/Main/StreamingOutput	*/
+  // template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
+  // #include <Streaming.h>
+
+  /* outMACRO  macro for stream output:	ARDUINO		*/
+  #ifndef outMACRO		// commandline?
+    #define outMACRO	Serial
+  #endif
+
+
+  /* getcharMACRO  macro for char input: ARDUINO	*/
+  /* returns EOF or char				*/
+  /* see menu2.cpp
+  int getchar_serial() {
+    if (!Serial.available())
+      return EOF;
+
+    return Serial.read();
+  }
+  */
+  #define getcharMACRO	getchar_serial	// on Arduino
+
+
+  /* keep Arduino GUI happy ;(				*/
+  #if ARDUINO >= 100
+    #include "Arduino.h"
+  #else
+    #include "WProgram.h"
+  #endif
+
+  #include <avr/pgmspace.h>
+
+
+#else /* **************** LINUX **************** */
+/*	    for development on a Linux PC	 */
+
+/* MAYBE_PROGMEM  *MUST* be #defined,
+   either as 'PROGMEM' to save RAM on Arduino
+   or empty for a PC test run.			*/
+  #ifndef MAYBE_PROGMEM		// commandline?
+    #define MAYBE_PROGMEM
+  #endif
+
+
+  /* I/O MACROs for LINUX: */
+
+  /* outMACRO  macro for stream output:		*/
+  #ifndef outMACRO		// commandline?
+    /* outMACRO for testing on c++		*/
+    #define outMACRO	std::cout
+  #endif
+
+
+  /* getcharMACRO  macro for char input: LINUX	*/
+  /* returns EOF or char			*/
+  #define getcharMACRO	getchar	/* on Linux	*/
+
+
+#endif // [Arduino else] LINUX preprocessor stuff.
+/* **************************************************************** */
+
+// declare this early:
+void menu2_setup();
 
 
 // struct menupage for pages[]
@@ -93,5 +165,5 @@ class Menu2 {
   menupage *men_pages;
 };
 
-#endif
 /* **************************************************************** */
+#endif

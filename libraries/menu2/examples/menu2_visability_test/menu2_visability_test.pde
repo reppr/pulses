@@ -6,10 +6,14 @@
 /* **************************************************************** */
 
 #include <stdio.h>
+#include <stdlib.h>
+#ifndef ARDUINO
+  #include <iostream>
+#endif
 
 
 #include <menu2.h>
-// #include <menu2.cpp>
+#include <menu2.cpp>
 
 
 #define BAUDRATE	115200		// works fine here
@@ -21,66 +25,52 @@ Menu2 MENU(32, 5, &getcharMACRO);
 
 
 /* **************************************************************** */
-/* main loop(); For both versions: Arduino and c++ PC test version.
-void loop() {
-  /*
-    All you have to from your Arduino sketch loop() is to call:
-    MENU.lurk_then_do();
-
-    This will *not* block the loop.
-    It will lurk on menu input, return immediately if there's none.
-    On input if will just accumulate next input byte and return, *if*
-    it was not an END token.
-
-    When seeing one of the usual line endings it takes it as 'END token' \0.
-
-    On receiving an 'END token' it will interpret the accumulated tokens and return.
-
-    So normally just the following line should do fine:
-    MENU.lurk_then_do();
-    should do fine.
-    This version does the same but can also generate debugging output for me...
-  */
-  if ( MENU.lurk_then_do() ) {
-#if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
-    outMACRO << "lurk_then_do() interpreted buffer content, return TRUE\n";
-  } else {
-    outMACRO << "lurk_then_do() just lurking...\n";
-#endif
-  }
-}
-
-
-#ifdef ARDUINO
-/* **************************************************************** */
-// Arduino setup():
-
+/*
+  I use this for both: Arduino example sketch and c++ PC test version.
+  So compile setup() and loop() on Arduino
+  or
+  main() on c++ PC test version:
+*/ 
+#ifdef ARDUINO		// compile setup() and loop() on Arduino:
+// setup() and loop() for Arduino:
 
 void setup() {
   Serial.begin(BAUDRATE);	// Start serial communication.
   Menu2_setup();		// Tell the menu what to do.
 }
 
-// Already defined, see above:
-// void loop() {
-//   MENU.lurk_then_do();
-// }
-/* **************************************************************** */
+void loop() {
+  /*
+    All you have to from your Arduino sketch loop() is to call:
+    MENU.lurk_then_do();
+    This will *not* block the loop.
+
+    It will lurk on menu input, but return immediately if there's none.
+    On input it will accumulate one next input byte and return until it
+    will see an 'END token'.
+
+    When seeing one of the usual line endings it takes it as 'END token' \0.
+
+    On receiving an 'END token' it will interpret the accumulated tokens and return.
+  */
+  MENU.lurk_then_do();
+}
 
 
-#else // c++ PC test version
-/* **************************************************************** */
-// c++ PC test version main():
+#else	// compile main() on c++ PC test version:
+// main() for c++ PC test version:
+
 int main() {
   outMACRO << "menu2_visability_test  ==> ETHERNAL LOOP <==:\n";
 
   menu2_setup();
 
-  loop_body();		// ==> ETHERNAL LOOP <==
+  while(true)		// ==> ETHERNAL LOOP <==
+    MENU.lurk_then_do();
 
   return 0;
 }
-/* **************************************************************** */
+
 #endif // Arduino or 'c++ PC test'
 
 
@@ -119,7 +109,7 @@ int main() {
 */
 
 char menuTitleA[] = "'A' PAGE";
-char menuHotkeyA = 'A';
+// char menuHotkeyA = 'A';
 
 
 /* **************************************************************** */
@@ -162,7 +152,7 @@ bool program_actionA(char token) {
 */
 
 char menuTitleB[] = "Back Page";
-char menuHotkeyB = 'B';
+// char menuHotkeyB = 'B';
 
 
 /* **************************************************************** */
@@ -200,13 +190,13 @@ bool program_actionB(char token) {
    This opens the "backdoor" to use 'y' for all members of 'Y'.
  
    /* page Y adds actions active for the 'Y' group
-      this group cannot get selected, the page hot key ' ' prevents that.	*/
-   see menu2_setup();
-   MENU.add_page(menuTitleY, ' ', &program_displayY, &program_actionY, 'Y');
+      this group cannot get selected, the page hot key ' ' prevents that.
+   // see menu2_setup();
+   // MENU.add_page(menuTitleY, ' ', &program_displayY, &program_actionY, 'Y');
 */
 
 char menuTitleY[] = "YYYYY";
-char menuHotkeyY = ' ';
+// char menuHotkeyY = ' ';
 
 /* **************************************************************** */
 void program_displayY() {
@@ -272,7 +262,7 @@ bool program_actionY(char token) {
 */
 
 char menuTitleX[] = "XXX";
-char menuHotkeyX = 'X';
+// char menuHotkeyX = 'X';
 
 
 /* **************************************************************** */
@@ -323,7 +313,7 @@ bool program_actionX(char token) {
 long value = 42;
 
 char menuTitleN[] = "NUMBERS";
-char menuHotkeyN = 'N';
+// char menuHotkeyN = 'N';
 
 
 /* **************************************************************** */
@@ -361,20 +351,20 @@ void menu2_setup() {
   // add menu pages:
 
   // page A will only be visible when selected, never when burried:
-  MENU.add_page(menuTitleA, menuHotkeyA, &program_displayA, &program_actionA, '-');
+  MENU.add_page(menuTitleA, 'A', &program_displayA, &program_actionA, '-');
 
   // page B belongs to 'Y' group:
-  MENU.add_page(menuTitleB, menuHotkeyB, &program_displayB, &program_actionB, 'Y');
+  MENU.add_page(menuTitleB, 'B', &program_displayB, &program_actionB, 'Y');
 
   // page X is always visible
-  MENU.add_page(menuTitleX, menuHotkeyX, &program_displayX, &program_actionX, '+');
+  MENU.add_page(menuTitleX, 'X', &program_displayX, &program_actionX, '+');
 
   /* page Y adds actions active for the 'Y' group
      this group cannot get selected, the page hot key ' ' prevents that.	*/
   MENU.add_page(menuTitleY, ' ', &program_displayY, &program_actionY, 'Y');
 
   // page N testing numeric input
-  MENU.add_page(menuTitleN, menuHotkeyN, &program_displayN, &program_actionN, '-');
+  MENU.add_page(menuTitleN, 'N', &program_displayN, &program_actionN, '-');
 
 
   // display menu at startup:
