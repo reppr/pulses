@@ -35,25 +35,25 @@ Menu2 MENU(32, 5, &getcharMACRO);
 
 /* **************************************************************** */
 void program_displayA() {
-  outMACRO << "\n'a' is active,\t";
-  outMACRO << "hmm... try 'y' maybe?\n";
+  OUT("\n'a' is active,\t");
+  OUT("hmm... try 'y' maybe?\n");
 }
 
 /* **************************************************************** */
 void program_displayB() {
-  outMACRO << "\nHere we say 'b'\n";
+  OUT("\nHere we say 'b'\n");
 }
 
 
 /* **************************************************************** */
 void program_displayX() {
-  outMACRO << "\nthere's nothing here to see\n";
+  OUT("\nthere's nothing here to see\n");
 }
 
 
 /* **************************************************************** */
 void program_displayY() {
-  outMACRO << "\nYOU SHOULD NEVER SEE THIS...\n";
+  OUT("\nYOU SHOULD NEVER SEE THIS...\n");
 }
 
 
@@ -61,22 +61,22 @@ void program_displayY() {
 long value = 42;
 
 void program_displayN() {
-  outMACRO << "\nValue = ";
-  outMACRO << value;
-  outMACRO << "\tv=change value.\n";
+  OUT("\nValue = ");
+  OUT(value);
+  OUT("\tv=change value.\n");
 }
 
 
 /* **************************************************************** */
 bool program_actionA(char token) {
 #ifdef DEBUGGING_MENU
-  outMACRO << "testing program_actionA(";
-  outMACRO << token;
-  outMACRO << "):\n";
+  OUT("testing program_actionA(");
+  OUT(token);
+  OUT("):\n");
 #endif
   switch (token) {
   case 'a':
-    outMACRO << "\nYES, I DO KNOW TOKEN 'a' :)\n";
+    OUT("\nYES, I DO KNOW TOKEN 'a' :)\n");
     return true;	// return true;  means there *was* action,
 			// it's  *not* the exit status of the action
 			// the menu page *is responsible* for this token
@@ -91,13 +91,13 @@ bool program_actionA(char token) {
 /* **************************************************************** */
 bool program_actionB(char token) {
 #ifdef DEBUGGING_MENU
-  outMACRO << "testing program_actionB(";
-  outMACRO << token;
-  outMACRO << "):\n";
+  OUT("testing program_actionB(");
+  OUT(token);
+  OUT("):\n");
 #endif
   switch (token) {
   case 'b':
-    outMACRO << "\nnow, I *DO* KNOW token 'b' :)\n";
+    OUT("\nnow, I *DO* KNOW token 'b' :)\n");
     return true;	// return true;  means there *was* action,
 			// it's  *not* the exit status of the action
 			// the menu page *is responsible* for this token
@@ -112,21 +112,21 @@ bool program_actionB(char token) {
 /* **************************************************************** */
 bool program_actionX(char token) {
 #ifdef DEBUGGING_MENU
-  outMACRO << "testing program_actionX(";
-  outMACRO << token;
-  outMACRO << "):\n";
+  OUT("testing program_actionX(");
+  OUT(token);
+  OUT("):\n");
 #endif
   switch (token) {
   case 'x':
-    outMACRO << "\n XX       XX";
-    outMACRO << "\n  XX     XX";
-    outMACRO << "\n   XX   XX";
-    outMACRO << "\n    XX XX";
-    outMACRO << "\n     XXX";
-    outMACRO << "\n    XX XX";
-    outMACRO << "\n   XX   XX";
-    outMACRO << "\n  XX     XX";
-    outMACRO << "\n XX       XX\n";
+    OUT("\n XX       XX");
+    OUT("\n  XX     XX");
+    OUT("\n   XX   XX");
+    OUT("\n    XX XX");
+    OUT("\n     XXX");
+    OUT("\n    XX XX");
+    OUT("\n   XX   XX");
+    OUT("\n  XX     XX");
+    OUT("\n XX       XX\n");
 
     return true;	// return true;  means there *was* action,
 			// it's  *not* the exit status of the action
@@ -142,37 +142,37 @@ bool program_actionX(char token) {
 /* **************************************************************** */
 bool program_actionY(char token) {
 #ifdef DEBUGGING_MENU
-  outMACRO << "testing program_actionY(";
-  outMACRO << token;
-  outMACRO << "):\n";
+  OUT("testing program_actionY(");
+  OUT(token);
+  OUT("):\n");
 #endif
   switch (token) {
   case 'y':
-    outMACRO << "\n";
-    outMACRO << "/°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°\\ \n";	// ecape \ ...
-    outMACRO << "°      you have found the      °\n";
-    outMACRO << "°                              °\n";
-    outMACRO << "°    °********************°    °\n";
-    outMACRO << "°    °** *  BACKDOOR  * **°    °\n";
-    outMACRO << "°    °********************°    °\n";
-    outMACRO << "°    °**/              \\**°    °\n";	// ecape \ ...
-    outMACRO << "°    °**                **°    °\n";
-    outMACRO << "°    °**   YY      YY   **°    °\n";
-    outMACRO << "°    °**    YY    YY    **°    °\n";
-    outMACRO << "°    °**     YY  YY     **°    °\n";
-    outMACRO << "°    °**      Y\\/Y      **°    °\n";	// ecape \ ...        
-    outMACRO << "°    °**       YY       **°    °\n";
-    outMACRO << "°    °**       YY       **°    °\n";
-    outMACRO << "°    °**       YY       **°    °\n";
-    outMACRO << "°    °**       YY       **°    °\n";
-    outMACRO << "°    °**       YY       **°    °\n";
-    outMACRO << "°    °**                **°    °\n";
-    outMACRO << "°    °**\\.  .******.  ./**°    °\n";	// ecape \ ...
-    outMACRO << "°    °********************°    °\n";
-    outMACRO << "°    °                    °    °\n";
-    outMACRO << "°            (: :)             °\n";
-    outMACRO << "°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°\n";
-    outMACRO << "\n";
+    OUTln()
+    OUT("/°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°\\ \n");	// ecape \ ...
+    OUT("°      you have found the      °\n");
+    OUT("°                              °\n");
+    OUT("°    °********************°    °\n");
+    OUT("°    °** *  BACKDOOR  * **°    °\n");
+    OUT("°    °********************°    °\n");
+    OUT("°    °**/              \\**°    °\n");	// ecape \ ...
+    OUT("°    °**                **°    °\n");
+    OUT("°    °**   YY      YY   **°    °\n");
+    OUT("°    °**    YY    YY    **°    °\n");
+    OUT("°    °**     YY  YY     **°    °\n");
+    OUT("°    °**      Y\\/Y      **°    °\n");	// ecape \ ...        
+    OUT("°    °**       YY       **°    °\n");
+    OUT("°    °**       YY       **°    °\n");
+    OUT("°    °**       YY       **°    °\n");
+    OUT("°    °**       YY       **°    °\n");
+    OUT("°    °**       YY       **°    °\n");
+    OUT("°    °**                **°    °\n");
+    OUT("°    °**\\.  .******.  ./**°    °\n");	// ecape \ ...
+    OUT("°    °********************°    °\n");
+    OUT("°    °                    °    °\n");
+    OUT("°            (: :)             °\n");
+    OUT("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°\n");
+      OUTln();
 
     return true;	// return true;  means there *was* action,
 			// it's  *not* the exit status of the action
@@ -188,13 +188,13 @@ bool program_actionY(char token) {
 /* **************************************************************** */
 bool program_actionN(char token) {
 #ifdef DEBUGGING_MENU
-  outMACRO << "testing program_actionN(";
-  outMACRO << token;
-  outMACRO << "):\n";
+  OUT("testing program_actionN(");
+  OUT(token);
+  OUT("):\n");
 #endif
   switch (token) {
   case 'v':
-    outMACRO << "Enter new value : ";
+    OUT("Enter new value : ");
     value=MENU.numeric_input(value);
 
     return true;	// return true;  means there *was* action,
@@ -254,11 +254,11 @@ void my_setup() {
 void my_loop_body() {
   if ( MENU.lurk_then_do() ) {
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
-    outMACRO << "lurk_then_do() returned TRUE\n";
+    OUT("lurk_then_do() returned TRUE\n");
 #endif
   } else {
 #ifdef DEBUGGING_MENU
-    outMACRO << "lurk_then_do() returned false\n";
+    OUT("lurk_then_do() returned false\n");
 #endif
   }
 }
@@ -268,11 +268,11 @@ void my_loop_body() {
 /* **************************************************************** */
 // PC test version:
 int main() {
-  outMACRO << "menu2_main.cpp  ==> ETHERNAL LOOP <==:\n";
+  OUT("menu2_main.cpp  ==> ETHERNAL LOOP <==:\n");
 
   /* 	does not work
   // unbuffered ncurses keyboard test input:
-  outMACRO << "unbuffered ncurses keyboard test input\n";
+  OUT("unbuffered ncurses keyboard test input\n");
   initscr();
   cbreak();
   */

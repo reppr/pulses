@@ -40,13 +40,20 @@
   // #include <Streaming.h> did not work for me
   // #include "Streaming.h"
 
-
+/*
   #include <Stream.h>
   template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
-
+/*
   /* outMACRO  macro for stream output:	ARDUINO		*/
   #ifndef outMACRO		// commandline?
-    #define outMACRO	Serial.print
+    #define outMACRO	Serial
+
+    #define OUTch(c)		Serial.print((char) (c))
+    #define OUT_str(str)	serial_print_progmem((str))
+    #define OUT(X)		Serial.print(X)
+    #define OUTln(X)		Serial.println(X)
+    #define OUTln		Serial.println()
+
   #endif
 
 
@@ -90,6 +97,12 @@
   #ifndef outMACRO		// commandline?
     /* outMACRO for testing on c++		*/
     #define outMACRO	std::cout
+
+    #define OUTch(c)		printf("%c", (c))
+    #define OUT_str(str)	printf("%p", (str))
+    #define OUT(X)		printf("%d", (X))
+    #define OUTln(X)		printf("%d\n", (X))
+    #define OUTln		printf("\n")
   #endif
 
 
