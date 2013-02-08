@@ -6,32 +6,31 @@
 #include <stdio.h>
 
 
-void out(char c)	{ putchar(c); }
-void out(int i)		{ printf("%i", i); }
-void out(long l)	{ printf("%d", l); }
-void out(char *str)	{ printf("%s", str); }
+void out(char c)		{ putchar(c); }
+void out(int i)			{ printf("%i", i); }
+void out(long l)		{ printf("%d", l); }
+void out(const char *str)	{ printf("%s", str); }
 
 // End of line versions:
-void outln(char c)	{ printf("%c\n", c); }
-void outln(int i)	{ printf("%i\n", i); }
-void outln(long l)	{ printf("%d\n", l); }
-void outln(char *str)	{ printf("%s\n", str); }
+void outln(char c)		{ printf("%c\n", c); }
+void outln(int i)		{ printf("%i\n", i); }
+void outln(long l)		{ printf("%d\n", l); }
+void outln(const char *str)	{ printf("%s\n", str); }
 
 /*
   out(xxx, char c)
-  A char as a second parameter get's printed after the first argument.
-  like:  out(string, '\t');
-*/
+  A char as a second parameter get's printed after first argument.
+  like:  out(string, '\t');				*/
 void out(char c, char x)	{ printf("%c%c", c, x); }
 void out(int i, char x)		{ printf("%i%c", i, x); }
 void out(long l, char x)	{ printf("%d%c", l, x); }
-void out(char *str, char x)	{ printf("%s%c", str, x); }
+void out(const char *str, char x)	{ printf("%s%c", str, x); }
 
-void nl()		{ putchar('\n'); }
-void tab()		{ putchar('\t'); }
-void space()		{ putchar(' '); }
+void nl()			{ putchar('\n'); }
+void tab()			{ putchar('\t'); }
+void space()			{ putchar(' '); }
 
-void tokenized(char c)	{ printf("\'%c\'", c); }
+void tokenized(char c)	{ printf("\'%c\'", c); } // prints 'c'
 
 
 int main() {
@@ -53,6 +52,8 @@ int main() {
   // out("\tThat was integer.\n");		// Gives a warning.
   out((char *) "\tThat was integer.\n");	// (char *) avoids warning
   out((char *) "ok?\n");			// (char *) avoids warning
+
+  out("That gave a warning.\n");		// Gave a warning.
 
   outln(l);
 

@@ -5,10 +5,35 @@
 */
 
 /* **************************************************************** */
-// preprocessor stuff:
+// Preprocessor #includes:
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#ifndef ARDUINO
+  #include <iostream>
+#endif
+
+#include <menu2.h>
+
+
+/* **************************************************************** */
+// #define I/O for Arduino:
+#ifdef ARDUINO
+
+/* int men_getchar();	// Arduino version
+   Read next char of menu input, if available.
+   Does not block, returns EOF or char.			*/
+int men_getchar() {		// Arduino version
+  if (!Serial.available())
+    return EOF;
+
+  return Serial.read();
+}
+
 
 #ifndef BAUDRATE
-  #define BAUDRATE	115200		// works fine here
+  #define BAUDRATE	115200	// works fine here
   // #define BAUDRATE	57600
   // #define BAUDRATE	38400
   // #define BAUDRATE	19200
@@ -16,50 +41,111 @@
   // #define BAUDRATE	31250	// MIDI
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#ifndef ARDUINO
-  #include <iostream>
-#endif
+
+/* void out(); overloaded menu output function family:		*/
+// Simple versions  void out():
+void out(char c)	{ Serial.print(c); }
+void out(int i)		{ Serial.print(i); }
+void out(long l)	{ Serial.print(l); }
+void out(const char *str) { Serial.print(str); }
+
+// End of line versions  void outln():
+void outln(char c)	{ Serial.println(c); }
+void outln(int i)	{ Serial.println(i); }
+void outln(long l)	{ Serial.println(l); }
+void outln(const char *str) { Serial.println(str); }
+
+/* Second parameter versions with a trailing char:
+  out(xxx, char c)
+  A char as a second parameter get's printed after first argument.
+  like:  out(string, '\t');  or  out(string, ' ');		*/
+void out(char c, char x)	{ Serial.print(c); Serial.print(x); }
+void out(int i, char x)		{ Serial.print(i); Serial.print(x); }
+void out(long l, char x)	{ Serial.print(l); Serial.print(x); }
+void out(const char *str, char x) { Serial.print(str); Serial.print(x); }
+
+/* Output a newline, tab, space  nl(), tab(), space():		*/
+void nl()		{ Serial.println(); }
+void tab()		{ Serial.print('\t'); }
+void space()		{ Serial.print(' '); }
+
+/* void tokenized(char c)	Char output with ticks like 'A'	*/
+void tokenized(char c) {
+  Serial.print("'"); Serial.print(c); Serial.print("'");
+}
+
+
+// PROGMEM strings 	#define out_str() for Arduino:
+/*
+  Serial.print() for PROGMEM strings:
+  // void serial_print_progmem(const prog_uchar *str)	// does not work :(
+*/
+void serial_print_progmem(const unsigned char *str) {
+  unsigned char c;
+  while((c = pgm_read_byte(str++)))
+    Serial.write(c);
+}
+// On Arduino out_str() is #defined as a macro.
+#define out_str(str)	( serial_print_progmem((str)) )
+
+
+#else	// c++ test version
+/* **************************************************************** */
+// #define I/O for c++ Linux PC test version:
+
+/* int men_getchar();
+   Read next char of menu input, if available.
+   Returns EOF or char.						*/
+int men_getchar() {
+  return getchar();
+}
+
+
+/* void out(); overloaded menu output function family:		*/
+// Simple versions  void out():
+void out(char c)	{ putchar(c); }
+void out(int i)		{ printf("%i", i); }
+void out(long l)	{ printf("%d", l); }
+void out(const char *str) { printf("%s", str); }
+
+// End of line versions  void outln():
+void outln(char c)	{ printf("%c\n", c); }
+void outln(int i)	{ printf("%i\n", i); }
+void outln(long l)	{ printf("%d\n", l); }
+void outln(const char *str) { printf("%s\n", str); }
+
+/* Second parameter versions with a trailing char:
+  out(xxx, char c)
+  A char as a second parameter get's printed after first argument.
+  like:  out(string, '\t');  or  out(string, ' ');		*/
+void out(char c, char x)	{ printf("%c%c", c, x); }
+void out(int i, char x)		{ printf("%i%c", i, x); }
+void out(long l, char x)	{ printf("%d%c", l, x); }
+void out(const char *str, char x) { printf("%s%c", str, x); }
+
+/* Output a newline, tab, space  nl(), tab(), space():		*/
+void nl()		{ putchar('\n'); }
+void tab()		{ putchar('\t'); }
+void space()		{ putchar(' '); }
+
+/* void tokenized(char c)	Char output with ticks like 'A'	*/
+void tokenized(char c)	{ printf("\'%c\'", c); }	// prints 'c'
+
+
+/* Fake PROGMEM string output on PC:	*/
+void out_str(const unsigned char *str) {	// Fake PROGMEM string output on PC
+  char c;
+
+  while(c = *str++)
+    out(c);
+}
+
+#endif	// [ Arduino else ]  c++ test version
+/* **************************************************************** */
 
 
 /* **************************************************************** */
-#include <menu2.h>
-
-
-/* **************************************************************** */
-// #define getcharMACRO for Arduino:
-#ifdef ARDUINO
-  /* getcharMACRO  macro for char input: ARDUINO	*/
-  /* returns EOF or char				*/
-  int getchar_serial() {
-    if (!Serial.available())
-      return EOF;
-
-    return Serial.read();
-  }
-  // #define getcharMACRO	getchar_serial		// on Arduino
-#endif
-
-
-/* **************************************************************** */
-// #define OUT_str() for Arduino:
-#ifdef ARDUINO
-  /*
-    Serial.print() for PROGMEM strings:
-    void serial_print_progmem(const prog_uchar *str)	// does not work :(
-  */
-  void serial_print_progmem(const unsigned char *str) {
-    unsigned char c;
-    while((c = pgm_read_byte(str++)))
-      Serial.write(c);
-  }
-  // #define OUT_str(str)	( serial_print_progmem((str)); )
-#endif
-
-
-/* **************************************************************** */
-// some early definitions:
+// Some early definitions:
 
 /* char constants for output having the arduino as target in mind:
    alternative to PROGMEM one char strings...			*/	
@@ -72,20 +158,24 @@ const char _open  = '(';	// not used yet ################
 const char _close = ')';	// not used yet ################
 const char _column = ':';	// not used yet ################
 
+
+/* **************************************************************** */
 /* strings for output having the arduino as target in mind:
    MAYBE_PROGMEM is either empty or has 'PROGMEM' in it.
-   so we can compile them in program memory to save RAM on arduino.
+   so we can compile them in program memory to save RAM on arduino,
+   but still test on c++ Linux PC.
 								*/	
 const unsigned char outOfRange[] MAYBE_PROGMEM = "out of range";
 const unsigned char error_[] MAYBE_PROGMEM = " ERROR: ";
 
+
 /* **************************************************************** */
-// constructor/destructors:
+// Constructor/Destructors:
 
 Menu2::Menu2(int bufSize, int menuPages, int (*maybeInput)(void)) {
 #ifdef DEBUGGING_CLASS
-  OUT("Menu2 CONSTRUCTOR: cb_size=");
-  OUTln(bufSize);
+  out("Menu2 CONSTRUCTOR: cb_size=");
+  outln(bufSize);
 #endif
 
   // initialize circular input buffer:
@@ -106,7 +196,7 @@ Menu2::Menu2(int bufSize, int menuPages, int (*maybeInput)(void)) {
 
 Menu2::~Menu2() {
 #ifdef DEBUGGING_CLASS
-  OUT("Menu2 DESTRUCTOR\n");
+  out("Menu2 DESTRUCTOR\n");
 #endif
 
   free(cb_buf);
@@ -115,7 +205,7 @@ Menu2::~Menu2() {
 
 
 /* **************************************************************** */
-// basic circular buffer functions:
+// Basic circular buffer functions:
 
 /*
   cb_write() save a byte to the buffer:
@@ -155,7 +245,7 @@ char Menu2::cb_read() {
 
 
 /* **************************************************************** */
-// buffer interface functions for parsing:
+// Buffer interface functions for parsing:
 
 /*
   int cb_peek()
@@ -215,49 +305,49 @@ int Menu2::next_input_token() const {
 #ifdef DEBUGGING_CIRCBUF
 /* cb_info() debugging help					*/
 void Menu2::cb_info() const {
-  OUT("\nBuffer:\t\t");
-  OUT(cb_buf);
+  out("\nBuffer:\t\t");
+  out(cb_buf);
 
-  OUT("\n  size:\t\t");
-  OUT(cb_size);
+  out("\n  size:\t\t");
+  out(cb_size);
 
-  OUT("\n  count:\t");
-  OUT(cb_count);
+  out("\n  count:\t");
+  out(cb_count);
 
-  OUT("\n  start:\t");
-  OUTln(cb_start);
+  out("\n  start:\t");
+  outln(cb_start);
 
   int value = cb_peek();
-  OUT("\n  char:\t\t");
+  out("\n  char:\t\t");
   if (value != -1) {
-    OUT(value);
-    OUT("\t");
-    OUT((char) value;
+    out(value);
+    out("\t");
+    out((char) value;
     if ( is_numeric() )
-      OUT("  numeric CHIFFRE\n");
+      out("  numeric CHIFFRE\n");
     else
-      OUT("  NAN\n");
+      out("  NAN\n");
   } else
-    OUT("(none)\n");
+    out("(none)\n");
 
   value = next_input_token();
-  OUT("\n  next_input_token()\t: ");
-  OUT(value);
-  OUT("\t");
-  OUTln((char) value);
-  OUTln();
+  out("\n  next_input_token()\t: ");
+  out(value);
+  out("\t");
+  outln((char) value);
+  outln();
 
   for (int i=0; i<=cb_count; i++) {
     value = cb_peek(i);
-    OUT("  cb_peek(");
-    OUT(i);
-    OUT(")\t\t: ");
-    OUT(value);
-    OUT("\t");
-    OUTln((char) value);
+    out("  cb_peek(");
+    out(i);
+    out(")\t\t: ");
+    out(value);
+    out("\t");
+    outln((char) value);
   }
 
-  OUTln();
+  outln();
 }
 #endif
 
@@ -283,7 +373,7 @@ bool Menu2::lurk_then_do() {
   char c;
 
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
-  OUT("\nlurk_then_do():\n");
+  out("\nlurk_then_do():\n");
 #endif
 
   /* int maybe_input()  
@@ -292,7 +382,7 @@ bool Menu2::lurk_then_do() {
   INP=(*maybe_input)();
 
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
-  OUT("got input\n");
+  out("got input\n");
 #endif
 
   if ( INP != EOF ) {	// there *is* input
@@ -302,21 +392,21 @@ bool Menu2::lurk_then_do() {
     case '\n':		// translate \n to 'END token' \0
       c = 0;
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
-      OUT("NL translated to END token\n");
+      out("NL translated to END token\n");
 #endif
       break;
 
     case '\r':		// translate \r to 'END token' \0
       c = 0;
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
-      OUT("CR translated to END token\n");
+      out("CR translated to END token\n");
 #endif
       break;
 
     case '\0':		// '\0' already is 'END token'
       // c = 0;
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_CIRCBUF)
-      OUT("\\0 received");
+      out("\\0 received");
 #endif
       break;
     }
@@ -324,37 +414,37 @@ bool Menu2::lurk_then_do() {
       cb_write(c);
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_CIRCBUF) || \
   defined(DEBUGGING_LURKING)
-      OUT("accumulated '");
-      OUT(c);
-      OUT("'\n");
+      out("accumulated ");
+      tokenized(c);
+      nl();
 #endif
       if (cb_is_full()) {
 	// inform user:
-	OUT_str(buffer_);
-	OUT_str(error_);
-	OUT_str(outOfRange);
-	OUTln;
+	out_str(buffer_);
+	out_str(error_);
+	out_str(outOfRange);
+	nl();
 
 	// try to recover
 	// the fix would be to match message length and cb buffer size... 
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_CIRCBUF) || \
   defined(DEBUGGING_LURKING)
-      OUT("cb is full.  interpreting as EMERGENCY EXIT, dangerous...\n");
+      out("cb is full.  interpreting as EMERGENCY EXIT, dangerous...\n");
 #endif
 	// EMERGENCY EXIT, dangerous...
 	interpret_men_input();	// <<<<<<<< INTERPRET BUFFER CONTENT >>>>>>>>
 	menu_display();
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
-    OUT("lurk_then_do() INTERPRETed INPUT BUFFER.\n");
+    out("lurk_then_do() INTERPRETed INPUT BUFFER.\n");
 #endif
 	return true;		// true means *reaction was triggered*.
       }
     } else {
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_CIRCBUF) || \
   defined(DEBUGGING_LURKING)
-      OUT("END token received. ");
-      OUT("Buffer stored=");
-      OUTln(cb_stored());
+      out("END token received. ");
+      out("Buffer stored=");
+      outln(cb_stored());
 #endif
 
       /* end of line token translation can produce more then one \0 in sequence
@@ -365,25 +455,25 @@ bool Menu2::lurk_then_do() {
 	interpret_men_input();	// <<<<<<<< INTERPRET BUFFER CONTENT >>>>>>>>
 	menu_display();
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
-    OUT("lurk_then_do() INTERPRETed INPUT BUFFER.\n");
+    out("lurk_then_do() INTERPRETed INPUT BUFFER.\n");
 #endif
 	return true;		// true means *reaction was triggered*.
 
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
       } else {
-	OUT("(empty buffer ignored)\n");
+	out("(empty buffer ignored)\n");
 #endif
       }
     }
 
   } else {
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
-      OUT("EOF received\n");
+      out("EOF received\n");
 #endif
   }
 
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
-    OUT("lurk_then_do() lurking...\n");
+    out("lurk_then_do() lurking...\n");
 #endif
   return false;		// false means *no reaction was triggered*.
 }
@@ -448,7 +538,7 @@ long Menu2::numeric_input(long default_value) {
 
   // number was missing, return the given default_value:
  number_missing:
-  OUT_str(numberMissing_);
+  out_str(numberMissing_);
   return default_value;		// return default_value
 }
 
@@ -470,25 +560,25 @@ const unsigned char group_[] MAYBE_PROGMEM = "group '";
 /* menu_page_info(char pg)  show a known pages' info	*/
 void Menu2::menu_page_info(char pg) const {
   if ( pg == men_selected )
-    OUTch(_star);
+    out(_star);
   else
-    OUTch(_space);
+    out(_space);
 
-  OUT_str(menuPage_);
-  OUT((int) pg);
-  OUTch(_tab);
-  OUT_str(hotk_);
-  OUT(men_pages[pg].hotkey);
-  OUTch(_tick);
-  OUTch(_tab);
-  OUT_str(group_);
-  OUT(men_pages[pg].active_group);
-  OUTch(_tick);
-  OUTch(_tab);
-  OUTch(_quote);
-  OUT(men_pages[pg].title);
-  OUTch(_quote);
-  OUTln;
+  out_str(menuPage_);
+  out((int) pg);
+  out(_tab);
+  out_str(hotk_);
+  out(men_pages[pg].hotkey);
+  out(_tick);
+  out(_tab);
+  out_str(group_);
+  out(men_pages[pg].active_group);
+  out(_tick);
+  out(_tab);
+  out(_quote);
+  out(men_pages[pg].title);
+  out(_quote);
+  nl();
 }
 
 
@@ -515,18 +605,18 @@ void Menu2::add_page(char *pageTitle, char hotkey,		\
     men_known++;
 
 #ifdef DEBUGGING_MENU
-    OUT_str(addPg);
-    OUT("(\"");
-    OUT(pageTitle);
-    OUT("\", ");
-    OUT(hotkey);
-    OUT(",..)\n");
+    out_str(addPg);
+    out("(\"");
+    out(pageTitle);
+    out("\", ");
+    out(hotkey);
+    out(",..)\n");
 #endif
   } else {	// ERROR handling ################
-    OUT_str(addPg);
-    OUT_str(error_);
-    OUT_str(outOfRange);
-    OUTln;
+    out_str(addPg);
+    out_str(error_);
+    out_str(outOfRange);
+    nl();
   } 
 }
 
@@ -545,39 +635,39 @@ void Menu2::menu_display() {
   char pg;
 
 #ifdef DEBUGGING_MENU
-  OUT("\nmenu_display():\n");
+  out("\nmenu_display():\n");
 #endif
 
   // men_selected page display:
-  OUT_str(deco_);
-  OUT_str(men_);
-  OUT(men_pages[men_selected].title);
-  OUT_str(_deco);
+  out_str(deco_);
+  out_str(men_);
+  out(men_pages[men_selected].title);
+  out_str(_deco);
 
   (*men_pages[men_selected].display)();
 
   // display menu page key bindings:
   if ( men_known > 1 ) {
-    OUTln;
+    nl();
     for (pg = 0; pg < men_known; pg++) {
       if ( pg != men_selected ) {	// omit selected pages' hot key display, even if active.
-	OUT(men_pages[pg].hotkey);
-	OUT("=");
-	OUT(men_pages[pg].title);
-	OUTch(_space);
-	OUTch(_space);
+	out(men_pages[pg].hotkey);
+	out("=");
+	out(men_pages[pg].title);
+	out(_space);
+	out(_space);
       }
     }
-    OUTln;
+    nl();
   }
 
   // display internal key bindings:
-  OUT_str(internalKeys);
-  OUT_str(qQuit);
-  OUTln;
+  out_str(internalKeys);
+  out_str(qQuit);
+  nl();
 
 #ifdef DEBUGGING_MENU
-  OUTln;
+  nl();
 #endif
 }
 
@@ -593,7 +683,7 @@ void Menu2::interpret_men_input() {
   bool did_something, is_active;
 
 #ifdef DEBUGGING_MENU
-  OUT("interpret_men_input(): '");
+  out("interpret_men_input(): '");
 #endif
 
   // interpreter loop over each token:
@@ -615,8 +705,8 @@ void Menu2::interpret_men_input() {
 
     // try to find a menu entity that knows to interpret the token:
 #ifdef DEBUGGING_MENU
-    OUT(token);
-    OUT("'\n");
+    out(token);
+    out("'\n");
 #endif
 
     // skip spaces:
@@ -628,16 +718,16 @@ void Menu2::interpret_men_input() {
     did_something = (*men_pages[men_selected].interpret)(token);
     if (did_something) {
 #ifdef DEBUGGING_MENU
-      OUT("selected page is responsible for '");
-      OUT(token);
-      OUT("'.\n");
+      out("selected page is responsible for '");
+      out(token);
+      out("'.\n");
 #endif
       continue;
     }
 #ifdef DEBUGGING_MENU
-    OUT("selected page does not know '");
-    OUT(token);
-    OUT("'\n");
+    out("selected page does not know '");
+    out(token);
+    out("'\n");
 #endif
     // token not found yet...
 
@@ -645,10 +735,10 @@ void Menu2::interpret_men_input() {
     // check pages in same page_group and in group '+':
     selected_group = men_pages[men_selected].active_group;
 #ifdef DEBUGGING_MENU
-    OUT("check for selected_group '");
-    OUT(selected_group);
-    OUT("':\n");
-    OUT("  going through the pages:\n");
+    out("check for selected_group '");
+    out(selected_group);
+    out("':\n");
+    out("  going through the pages:\n");
 #endif
 
     for (pg = 0; pg < men_known; pg++) {
@@ -658,7 +748,7 @@ void Menu2::interpret_men_input() {
       is_active=false;
       page_group = men_pages[pg].active_group;
 #ifdef DEBUGGING_MENU
-      OUT("   ");
+      out("   ");
       menu_page_info(pg);
 #endif
       switch ( page_group ) {
@@ -667,14 +757,14 @@ void Menu2::interpret_men_input() {
       case '+':			// '+' means always on
 	is_active=true;
 #ifdef DEBUGGING_MENU
-	OUT("==>*  joker '+':\n");
+	out("==>*  joker '+':\n");
 #endif
 	break;
       default:			// else: active if in selected pages' group
 	if ( page_group == selected_group ) {
 	  is_active=true;
 #ifdef DEBUGGING_MENU
-	  OUT("==>*  page group match ");
+	  out("==>*  page group match ");
 	  menu_page_info(pg);
 #endif
 	}
@@ -682,14 +772,14 @@ void Menu2::interpret_men_input() {
       if (is_active) {		// test active menu pages on token:
 	if ( did_something = (*men_pages[pg].interpret)(token) ) {
 #ifdef DEBUGGING_MENU
-	  OUT("page_group '");
-	  OUT(page_group);
-	  OUT("':\n");
-	  OUT("menu ");
-	  OUT(men_pages[pg].title;
-	  OUT(" knows '");
-	      OUT(token);
-	  OUT("'.\n");
+	  out("page_group '");
+	  out(page_group);
+	  out("':\n");
+	  out("menu ");
+	  out(men_pages[pg].title;
+	  out(" knows '");
+	      out(token);
+	  out("'.\n");
 #endif
 	  break;
 	}
@@ -703,7 +793,7 @@ void Menu2::interpret_men_input() {
 
     // search menu page hotkeys:
 #ifdef DEBUGGING_MENU
-    OUT("search menu page hotkeys:\n");
+    out("search menu page hotkeys:\n");
 #endif
     for (pg = 0; pg < men_known; pg++) {
       if (token == men_pages[pg].hotkey) {
@@ -711,7 +801,7 @@ void Menu2::interpret_men_input() {
 	men_selected = pg;			// switch to page
 	did_something = true;			// yes, did switch
 #ifdef DEBUGGING_MENU
-    	OUT("==>* ");
+    	out("==>* ");
 	menu_page_info(pg);
 #endif
 	break;
@@ -719,7 +809,7 @@ void Menu2::interpret_men_input() {
     }
     if (did_something) {
 #ifdef DEBUGGING_MENU
-      OUT("==>* switch to ");
+      out("==>* switch to ");
       menu_page_info(men_selected);
 #endif
       continue;
@@ -729,7 +819,7 @@ void Menu2::interpret_men_input() {
 
     // check for internal bindings next:
 #ifdef DEBUGGING_MENU
-    OUT("search internal key bindings:\n");
+    out("search internal key bindings:\n");
 #endif
     switch (token) {
     case '?':
@@ -741,7 +831,7 @@ void Menu2::interpret_men_input() {
     case 'q':
       men_selected = 0;
 #ifdef DEBUGGING_MENU
-      OUT("==>* switch to ");
+      out("==>* switch to ");
       menu_page_info(men_selected);
 #endif
       did_something = true;
@@ -749,17 +839,17 @@ void Menu2::interpret_men_input() {
     }
 #ifdef DEBUGGING_MENU
     if (did_something) {
-      OUT("==>* internal hotkey '");
-      OUT(token);
-      OUT("'.\n");
+      out("==>* internal hotkey '");
+      out(token);
+      out("'.\n");
     }
 #endif
 
     // token still not found, give up...
     if (! did_something ) {
-      OUT_str(unknownToken);
-      OUT(token);
-      OUTln;
+      out_str(unknownToken);
+      out(token);
+      nl();
     }
 
   } // interpreter loop over all tokens

@@ -1,9 +1,11 @@
 /* **************************************************************** */
 /*
-  menu2_visability_test
-  Simple example for menu2 library. 
+		menu2_visability_test.pde
+
+	  A simple example for library Menu2. 
 */
 /* **************************************************************** */
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,25 +23,27 @@
 
 /* **************************************************************** */
 
-Menu2 MENU(32, 5, &getcharMACRO);
+Menu2 MENU(32, 5, &men_getchar);
 
 
 /* **************************************************************** */
-/*
-  I use this for both: Arduino example sketch and c++ PC test version.
-  So compile setup() and loop() on Arduino
-  or
-  main() on c++ PC test version:
+/* I use this for both: Arduino example sketch and c++ PC test version.
+   Compile setup() and loop() on Arduino
+		or:
+   compile main() on c++ Linux PC test version.
 */ 
-#ifdef ARDUINO		// compile setup() and loop() on Arduino:
-// setup() and loop() for Arduino:
+/* **************************************************************** */
+#ifdef ARDUINO		// Compile setup() and loop() on Arduino:
+// Compile setup() and loop() for Arduino:
 
-void setup() {
+
+void setup() {	// ARDUINO
   Serial.begin(BAUDRATE);	// Start serial communication.
-  Menu2_setup();		// Tell the menu what to do.
+  menu2_setup();		// Tell the menu what to do.
 }
 
-void loop() {
+
+void loop() {	// ARDUINO
   /*
     All you have to from your Arduino sketch loop() is to call:
     MENU.lurk_then_do();
@@ -57,11 +61,13 @@ void loop() {
 }
 
 
-#else	// compile main() on c++ PC test version:
-// main() for c++ PC test version:
+/* **************************************************************** */
+#else	// Compile main() on c++ PC test version:
+// Compile main() for c++ Linux PC test version:
 
-int main() {
-  OUT("menu2_visability_test  ==> ETHERNAL LOOP <==:\n");
+
+int main() {	// c++ Linux PC test version
+  out("menu2_visability_test  ==> ETHERNAL LOOP <==:\n");
 
   menu2_setup();
 
@@ -71,7 +77,7 @@ int main() {
   return 0;
 }
 
-#endif // Arduino or 'c++ PC test'
+#endif // Arduino or 'c++ Linux PC test version'
 
 
 /* **************************************************************** */
@@ -114,21 +120,21 @@ char menuTitleA[] = "'A' PAGE";
 
 /* **************************************************************** */
 void program_displayA() {
-  OUT("\n'a' is active,\t");
-  OUT("hmm... try 'y' maybe?\n");
+  out("\n'a' is active,\t");
+  out("hmm... try 'y' maybe?\n");
 }
 
 
 /* **************************************************************** */
 bool program_actionA(char token) {
 #ifdef DEBUGGING_MENU
-  OUT("testing program_actionA(");
-  OUT(token);
-  OUT("):\n");
+  out("testing program_actionA(");
+  out(token);
+  out("):\n");
 #endif
   switch (token) {
   case 'a':
-    OUT("\nYES, I DO KNOW TOKEN 'a' :)\n");
+    out("\nYES, I DO KNOW TOKEN 'a' :)\n");
     return true;	// return true;  means there *was* action,
 			// it's  *not* the exit status of the action
 			// the menu page *is responsible* for this token
@@ -159,20 +165,20 @@ char menuTitleB[] = "Back Page";
 
 /* **************************************************************** */
 void program_displayB() {
-  OUT("\nHere we say 'b'\n");
+  out("\nHere we say 'b'\n");
 }
 
 
 /* **************************************************************** */
 bool program_actionB(char token) {
 #ifdef DEBUGGING_MENU
-  OUT("testing program_actionB(");
-  OUT(token);
-  OUT("):\n");
+  out("testing program_actionB(");
+  out(token);
+  out("):\n");
 #endif
   switch (token) {
   case 'b':
-    OUT("\nnow, I *DO* KNOW token 'b' :)\n");
+    out("\nnow, I *DO* KNOW token 'b' :)\n");
     return true;	// return true;  means there *was* action,
 			// it's  *not* the exit status of the action
 			// the menu page *is responsible* for this token
@@ -204,43 +210,43 @@ char menuTitleY[] = "YYYYY";
 
 /* **************************************************************** */
 void program_displayY() {
-  OUT("\nYOU SHOULD NEVER SEE THIS...\n");
+  out("\nYOU SHOULD NEVER SEE THIS...\n");
 }
 
 /* **************************************************************** */
 bool program_actionY(char token) {
 #ifdef DEBUGGING_MENU
-  OUT("testing program_actionY(");
-  OUT(token);
-  OUT("):\n");
+  out("testing program_actionY(");
+  out(token);
+  out("):\n");
 #endif
   switch (token) {
   case 'y':
-    OUTln;
-    OUT("/°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°\\ \n");	// ecape \ ...
-    OUT("°      you have found the      °\n");
-    OUT("°                              °\n");
-    OUT("°    °********************°    °\n");
-    OUT("°    °** *  BACKDOOR  * **°    °\n");
-    OUT("°    °********************°    °\n");
-    OUT("°    °**/              \\**°    °\n");	// ecape \ ...
-    OUT("°    °**                **°    °\n");
-    OUT("°    °**   YY      YY   **°    °\n");
-    OUT("°    °**    YY    YY    **°    °\n");
-    OUT("°    °**     YY  YY     **°    °\n");
-    OUT("°    °**      Y\\/Y      **°    °\n");	// ecape \ ...        
-    OUT("°    °**       YY       **°    °\n");
-    OUT("°    °**       YY       **°    °\n");
-    OUT("°    °**       YY       **°    °\n");
-    OUT("°    °**       YY       **°    °\n");
-    OUT("°    °**       YY       **°    °\n");
-    OUT("°    °**                **°    °\n");
-    OUT("°    °**\\.  .******.  ./**°    °\n");	// ecape \ ...
-    OUT("°    °********************°    °\n");
-    OUT("°    °                    °    °\n");
-    OUT("°            (: :)             °\n");
-    OUT("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°\n");
-    OUTln;
+    nl();
+    out("/°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°\\ \n");	// ecape \ ...
+    out("°      you have found the      °\n");
+    out("°                              °\n");
+    out("°    °********************°    °\n");
+    out("°    °** *  BACKDOOR  * **°    °\n");
+    out("°    °********************°    °\n");
+    out("°    °**/              \\**°    °\n");	// ecape \ ...
+    out("°    °**                **°    °\n");
+    out("°    °**   YY      YY   **°    °\n");
+    out("°    °**    YY    YY    **°    °\n");
+    out("°    °**     YY  YY     **°    °\n");
+    out("°    °**      Y\\/Y      **°    °\n");	// ecape \ ...        
+    out("°    °**       YY       **°    °\n");
+    out("°    °**       YY       **°    °\n");
+    out("°    °**       YY       **°    °\n");
+    out("°    °**       YY       **°    °\n");
+    out("°    °**       YY       **°    °\n");
+    out("°    °**                **°    °\n");
+    out("°    °**\\.  .******.  ./**°    °\n");	// ecape \ ...
+    out("°    °********************°    °\n");
+    out("°    °                    °    °\n");
+    out("°            (: :)             °\n");
+    out("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°\n");
+    nl();
 
     return true;	// return true;  means there *was* action,
 			// it's  *not* the exit status of the action
@@ -273,28 +279,28 @@ char menuTitleX[] = "XXX";
 
 /* **************************************************************** */
 void program_displayX() {
-  OUT("\nthere's nothing here to see\n");
+  out("\nthere's nothing here to see\n");
 }
 
 
 /* **************************************************************** */
 bool program_actionX(char token) {
 #ifdef DEBUGGING_MENU
-  OUT("testing program_actionX(");
-    OUT(token);
-    OUT("):\n");
+  out("testing program_actionX(");
+    out(token);
+    out("):\n");
 #endif
   switch (token) {
   case 'x':
-    OUT("\n XX       XX");
-    OUT("\n  XX     XX");
-    OUT("\n   XX   XX");
-    OUT("\n    XX XX");
-    OUT("\n     XXX");
-    OUT("\n    XX XX");
-    OUT("\n   XX   XX");
-    OUT("\n  XX     XX");
-    OUT("\n XX       XX\n");
+    out("\n XX       XX");
+    out("\n  XX     XX");
+    out("\n   XX   XX");
+    out("\n    XX XX");
+    out("\n     XXX");
+    out("\n    XX XX");
+    out("\n   XX   XX");
+    out("\n  XX     XX");
+    out("\n XX       XX\n");
 
     return true;	// return true;  means there *was* action,
 			// it's  *not* the exit status of the action
@@ -327,22 +333,22 @@ char menuTitleN[] = "NUMBERS";
 /* **************************************************************** */
 
 void program_displayN() {
-  OUT("\nValue = ");
-  OUT(value);
-  OUT("\tv=change value.\n");
+  out("\nValue = ");
+  out(value);
+  out("\tv=change value.\n");
 }
 
 
 /* **************************************************************** */
 bool program_actionN(char token) {
 #ifdef DEBUGGING_MENU
-  OUT("testing program_actionN(");
-  OUT(token);
-  OUT("):\n");
+  out("testing program_actionN(");
+  out(token);
+  out("):\n");
 #endif
   switch (token) {
   case 'v':
-    OUT("Enter new value : ");
+    out("Enter new value : ");
     value = MENU.numeric_input(value);
 
     return true;	// return true;  means there *was* action,

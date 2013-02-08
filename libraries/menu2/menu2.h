@@ -24,101 +24,47 @@
 // Preprocessor magic to compile on Arduino:
 /* **************** ARDUINO **************** */
 #if defined(ARDUINO)
-  /* MAYBE_PROGMEM  *MUST* be #defined,
-     either as 'PROGMEM' to save RAM on Arduino
-     or empty for a PC test run.			*/
-  #ifndef MAYBE_PROGMEM		// commandline?
-//  #define MAYBE_PROGMEM	PROGMEM		################ DEACTIVATED
-    #define MAYBE_PROGMEM
-  #endif
-
-
-  /* I/O MACROs  ARDUINO: */
-
-  /* streaming output on the Arduino
-     http://playground.arduino.cc/Main/StreamingOutput	*/
-  // #include <Streaming.h> did not work for me
-  // #include "Streaming.h"
-
-/*
-  #include <Stream.h>
-  template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
-/*
-  /* outMACRO  macro for stream output:	ARDUINO		*/
-  #ifndef outMACRO		// commandline?
-    #define outMACRO	Serial
-
-    #define OUTch(c)		Serial.print((char) (c))
-    #define OUT_str(str)	serial_print_progmem((str))
-    #define OUT(X)		Serial.print(X)
-    #define OUTln(X)		Serial.println(X)
-    #define OUTln		Serial.println()
-
-  #endif
-
-
-  /* getcharMACRO  macro for char input: ARDUINO	*/
-  /* returns EOF or char				*/
-  /* see menu2.cpp
-  int getchar_serial() {
-    if (!Serial.available())
-      return EOF;
-
-    return Serial.read();
-  }
-  */
-  #define getcharMACRO	getchar_serial	// on Arduino
-
-
-  /* keep Arduino GUI happy ;(				*/
-  #if ARDUINO >= 100
-    #include "Arduino.h"
-  #else
-    #include "WProgram.h"
-  #endif
-
-  #include <avr/pgmspace.h>
-
-
-#else /* **************** LINUX **************** */
-/*	    for development on a Linux PC	 */
 
 /* MAYBE_PROGMEM  *MUST* be #defined,
    either as 'PROGMEM' to save RAM on Arduino
    or empty for a PC test run.			*/
-  #ifndef MAYBE_PROGMEM		// commandline?
-    #define MAYBE_PROGMEM
-  #endif
+#ifndef MAYBE_PROGMEM		// commandline?
+  // #define MAYBE_PROGMEM	PROGMEM		################ DEACTIVATED
+  #define MAYBE_PROGMEM
+#endif
+
+/* keep Arduino GUI happy ;(				*/
+#if ARDUINO >= 100
+  #include "Arduino.h"
+#else
+  #include "WProgram.h"
+#endif
+
+#include <avr/pgmspace.h>
 
 
-  /* I/O MACROs for LINUX: */
+#else /* **************** LINUX **************** */
+/*	  for c++ development on a Linux PC	 */
 
-  /* outMACRO  macro for stream output:		*/
-  #ifndef outMACRO		// commandline?
-    /* outMACRO for testing on c++		*/
-    #define outMACRO	std::cout
-
-    #define OUTch(c)		printf("%c", (c))
-    #define OUT_str(str)	printf("%p", (str))
-    #define OUT(X)		printf("%d", (X))
-    #define OUTln(X)		printf("%d\n", (X))
-    #define OUTln		printf("\n")
-  #endif
-
-
-  /* getcharMACRO  macro for char input: LINUX	*/
-  /* returns EOF or char			*/
-  #define getcharMACRO	getchar	/* on Linux	*/
-
+/* MAYBE_PROGMEM  *MUST* be #defined,
+   either as 'PROGMEM' to save RAM on Arduino
+   or empty for a PC test run.			*/
+#ifndef MAYBE_PROGMEM		// commandline?
+  #define MAYBE_PROGMEM
+#endif
 
 #endif // [Arduino else] LINUX preprocessor stuff.
 /* **************************************************************** */
 
-// declare this early:
+
+// Declare these early to make live easier:
 void menu2_setup();
+int men_getchar();
 
 
-// struct menupage for pages[]
+/* **************************************************************** */
+/* struct menupage for Menu2::menupage *men_pages[]:		*/
+
 struct menupage {
   void (*display)(void);
   bool (*interpret)(char token);
@@ -131,6 +77,9 @@ struct menupage {
 			// '+' means *always* active,  '-' *never* active
 };
 
+
+/* **************************************************************** */
+/* class Menu2 {}						*/
 
 class Menu2 {
  public:
