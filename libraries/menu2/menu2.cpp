@@ -18,13 +18,13 @@
 
 
 /* **************************************************************** */
-// #define I/O for Arduino:
+// #define I/O for ARDUINO:
 #ifdef ARDUINO
 
-/* int men_getchar();	// Arduino version
+/* int men_getchar();		// ARDUINO version
    Read next char of menu input, if available.
    Does not block, returns EOF or char.			*/
-int menu2::men_getchar() {		// Arduino version
+int Menu2::men_getchar() {		// ARDUINO version
   if (!Serial.available())
     return EOF;
 
@@ -42,47 +42,47 @@ int menu2::men_getchar() {		// Arduino version
 #endif
 
 
-/* void menu2::out(); overloaded menu output function family:	*/
-// Simple versions  void menu2::out():
-void menu2::out(char c)	{ Serial.print(c); }
-void menu2::out(int i)	{ Serial.print(i); }
-void menu2::out(long l)	{ Serial.print(l); }
-void menu2::out(const char *str) { Serial.print(str); }
+/* void Menu2::out(); overloaded menu output function family:	*/
+// Simple versions  void Menu2::out():
+void Menu2::out(char c)	{ Serial.print(c); }	// ARDUINO
+void Menu2::out(int i)	{ Serial.print(i); }
+void Menu2::out(long l)	{ Serial.print(l); }
+void Menu2::out(const char *str) { Serial.print(str); }
 
 // End of line versions  void outln():
-void menu2::outln(char c)	{ Serial.println(c); }
-void menu2::outln(int i)	{ Serial.println(i); }
-void menu2::outln(long l)	{ Serial.println(l); }
-void menu2::outln(const char *str) { Serial.println(str); }
+void Menu2::outln(char c)	{ Serial.println(c); }
+void Menu2::outln(int i)	{ Serial.println(i); }
+void Menu2::outln(long l)	{ Serial.println(l); }
+void Menu2::outln(const char *str) { Serial.println(str); }
 
 /* Second parameter versions with a trailing char:
-  Like menu2::out(xxx, char c)
+  Like Menu2::out(xxx, char c)
   A char as a second parameter get's printed after first argument.
-  like:  menu2::out(string, '\t');  or  menu2::out(string, ' '); */
-void menu2::out(char c, char x)	{ Serial.print(c); Serial.print(x); }
-void menu2::out(int i, char x)	{ Serial.print(i); Serial.print(x); }
-void menu2::out(long l, char x)	{ Serial.print(l); Serial.print(x); }
-void menu2::out(const char *str, char x) {
+  like:  Menu2::out(string, '\t');  or  Menu2::out(string, ' '); */
+void Menu2::out(char c, char x)	{ Serial.print(c); Serial.print(x); }
+void Menu2::out(int i, char x)	{ Serial.print(i); Serial.print(x); }
+void Menu2::out(long l, char x)	{ Serial.print(l); Serial.print(x); }
+void Menu2::out(const char *str, char x) {
   Serial.print(str); Serial.print(x);
 }
 
 /* Output a newline, tab, space  ln(), tab(), space():		*/
-void menu2::ln()	{ Serial.println(); }
-void menu2::tab()	{ Serial.print('\t'); }
-void menu2::space()	{ Serial.print(' '); }
+void Menu2::ln()	{ Serial.println(); }
+void Menu2::tab()	{ Serial.print('\t'); }
+void Menu2::space()	{ Serial.print(' '); }
 
 /* void ticked(char c)	Char output with ticks like 'A'	*/
-void menu2::ticked(char c) {
+void Menu2::ticked(char c) {
   Serial.print("'"); Serial.print(c); Serial.print("'");
 }
 
 
-// PROGMEM strings 	#define out_progmem() for Arduino:
+// PROGMEM strings 	#define out_progmem() for ARDUINO:
 /*
   Serial.print() for PROGMEM strings:
   // void serial_print_progmem(const prog_uchar *str)	// does not work :(
 */
-void menu2::out_progmem(const unsigned char *str) {
+void Menu2::out_progmem(const unsigned char *str) {
   unsigned char c;
   while((c = pgm_read_byte(str++)))
     Serial.write(c);
@@ -96,50 +96,50 @@ void menu2::out_progmem(const unsigned char *str) {
 /* int men_getchar();
    Read next char of menu input, if available.
    Returns EOF or char.						*/
-int menu2::men_getchar() { return getchar(); }
+int Menu2::men_getchar() { return getchar(); }
 
-/* void menu2::out(); overloaded menu output function family:	*/
-// Simple versions  void menu2::out():
-void menu2::out(char c)	{ putchar(c); }
-void menu2::out(int i)	{ printf("%i", i); }
-void menu2::out(long l)	{ printf("%d", l); }
-void menu2::out(const char *str) { printf("%s", str); }
+/* void Menu2::out(); overloaded menu output function family:	*/
+// Simple versions  void Menu2::out():
+void Menu2::out(char c)	{ putchar(c); }
+void Menu2::out(int i)	{ printf("%i", i); }
+void Menu2::out(long l)	{ printf("%d", l); }
+void Menu2::out(const char *str) { printf("%s", str); }
 
 // End of line versions  void outln():
-void menu2::outln(char c)	{ printf("%c\n", c); }
-void menu2::outln(int i)	{ printf("%i\n", i); }
-void menu2::outln(long l)	{ printf("%d\n", l); }
-void menu2::outln(const char *str) { printf("%s\n", str); }
+void Menu2::outln(char c)	{ printf("%c\n", c); }
+void Menu2::outln(int i)	{ printf("%i\n", i); }
+void Menu2::outln(long l)	{ printf("%d\n", l); }
+void Menu2::outln(const char *str) { printf("%s\n", str); }
 
 /* Second parameter versions with a trailing char:
-  menu2::out(xxx, char c)
+  Menu2::out(xxx, char c)
   A char as a second parameter get's printed after first argument.
-  like:  menu2::out(string, '\t');  or  menu2::out(string, ' '); */
-void menu2::out(char c, char x)	{ printf("%c%c", c, x); }
-void menu2::out(int i, char x)	{ printf("%i%c", i, x); }
-void menu2::out(long l, char x)	{ printf("%d%c", l, x); }
-void menu2::out(const char *str, char x) {
+  like:  Menu2::out(string, '\t');  or  Menu2::out(string, ' '); */
+void Menu2::out(char c, char x)	{ printf("%c%c", c, x); }
+void Menu2::out(int i, char x)	{ printf("%i%c", i, x); }
+void Menu2::out(long l, char x)	{ printf("%d%c", l, x); }
+void Menu2::out(const char *str, char x) {
   printf("%s%c", str, x);
 }
 
 /* Output a newline, tab, space  ln(), tab(), space():		*/
-void menu2::ln()		{ putchar('\n'); }
-void menu2::tab()		{ putchar('\t'); }
-void menu2::space()		{ putchar(' '); }
+void Menu2::ln()		{ putchar('\n'); }
+void Menu2::tab()		{ putchar('\t'); }
+void Menu2::space()		{ putchar(' '); }
 
 /* void ticked(char c)	Char output with ticks like 'A'	*/
 void ticked(char c)	{ printf("\'%c\'", c); }	// prints 'c'
 
 
 /* Fake PROGMEM string output on PC:	*/
-void menu2::out_progmem(const unsigned char *str) { // Fake PROGMEM output
+void Menu2::out_progmem(const unsigned char *str) { // Fake PROGMEM output
   char c;
 
   while(c = *str++)
     out(c);
 }
 
-#endif	// [ Arduino else ]  c++ test version
+#endif	// [ ARDUINO else ]  c++ test version
 /* **************************************************************** */
 
 
@@ -149,14 +149,14 @@ void menu2::out_progmem(const unsigned char *str) { // Fake PROGMEM output
 /* Global char constants for output,
    having the arduino as target in mind.
    As an alternative to PROGMEM one char strings.			*/	
-const char _space = ' ';
-const char _tab  = '\t';
-const char _tick = '\'';
-const char _quote = '"';
-const char _star = '*';
-const char _open  = '(';	// not used yet ################
-const char _close = ')';	// not used yet ################
-const char _column = ':';	// not used yet ################
+//	const char _space = ' ';
+//	const char _tab  = '\t';
+//	const char _tick = '\'';
+//	const char _quote = '"';
+//	const char _star = '*';
+//	const char _open  = '(';	// not used yet ################
+//	const char _close = ')';	// not used yet ################
+//	const char _column = ':';	// not used yet ################
 
 
 /* **************************************************************** */
@@ -173,6 +173,15 @@ const unsigned char error_[] MAYBE_PROGMEM = " ERROR: ";
 // Constructor/Destructors:
 
 Menu2::Menu2(int bufSize, int menuPages, int (*maybeInput)(void)) {
+  _space = ' ';
+  _tab  = '\t';
+  _tick = '\'';
+  _quote = '"';
+  _star = '*';
+  _open  = '(';		// not used yet ################
+  _close = ')';		// not used yet ################
+  _column = ':';	// not used yet ################
+
 #ifdef DEBUGGING_CLASS
   out("Menu2 CONSTRUCTOR: cb_size=");
   outln(bufSize);
@@ -635,7 +644,7 @@ void Menu2::menu_display() {
   char pg;
 
 #ifdef DEBUGGING_MENU
-  menu2::out("\nmenu_display():\n");
+  Menu2::out("\nmenu_display():\n");
 #endif
 
   // men_selected page display:

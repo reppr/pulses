@@ -39,6 +39,8 @@ int main() {
   int i = 42;
   long l = 999999999L;
 
+  out('%'); ln();
+
   /*  char *str =      "Stringedibim";	// Gives a warning.	*/
   char *str = (char *) "Stringedibim";	// (char *) avoids warning
 
