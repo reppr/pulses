@@ -92,9 +92,37 @@ class Menu2 {
 		void (*pageDisplay)(), bool (*pageReaction)(char), char ActiveGroup);
   void menu_pages_info() const;			// show all known pages' info
 
+  // out(any );	  Overloaded menu output function family:
+  // Simple versions  void menu2::out():
+  void out(char c);
+  void out(int i);
+  void out(long l);
+  void out(const char *str);
 
-  int cb_stored() const { return cb_count; }	// inline:  # stored bytes
-  char cb_read();				// get a byte from buffer, no checks
+  // End of line versions  void outln():
+  void outln(char c);
+  void outln(int i);
+  void outln(long l);
+  void outln(const char *str);
+
+/* Second parameter versions with a trailing char:
+  Like menu2::out(xxx, char c)
+  A char as a second parameter get's printed after first argument.
+  like:  menu2::out(string, '\t');  or  menu2::out(string, ' '); */
+  void out(char c, char x);
+  void out(int i, char x);
+  void out(long l, char x);
+  void out(const char *str, char x);
+
+/* Output a newline, tab, space  ln(), tab(), space():		*/
+  void ln();				// newline
+  void tab();				// tab
+  void space();				// space
+
+  void out_progmem(const unsigned char *str);
+  void ticked(char c);			// ticked char token like 'A'
+
+  int men_getchar();
 
   int cb_peek() const;				// peek at next if any, else return EOL
   int cb_peek(int offset) const;		// peek at next, overnext... if any, else EOL

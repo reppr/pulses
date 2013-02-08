@@ -26,11 +26,11 @@ void out(int i, char x)		{ printf("%i%c", i, x); }
 void out(long l, char x)	{ printf("%d%c", l, x); }
 void out(const char *str, char x)	{ printf("%s%c", str, x); }
 
-void nl()			{ putchar('\n'); }
+void ln()			{ putchar('\n'); }
 void tab()			{ putchar('\t'); }
 void space()			{ putchar(' '); }
 
-void tokenized(char c)	{ printf("\'%c\'", c); } // prints 'c'
+void ticked(char c)	{ printf("\'%c\'", c); } // prints 'c'
 
 
 int main() {
@@ -45,8 +45,8 @@ int main() {
   char gu[] = "guguseli...";
   char bye[]= "and bye...";
 
-  out(c); space(); out((int) c); tab(); tokenized(c); nl();
-  out(b); space(); out((int) b); tab(); out((long) b); nl();
+  out(c); space(); out((int) c); tab(); ticked(c); ln();
+  out(b); space(); out((int) b); tab(); out((long) b); ln();
   out(i); tab();
 
   // out("\tThat was integer.\n");		// Gives a warning.
@@ -57,9 +57,9 @@ int main() {
 
   outln(l);
 
-  out(str); nl();
+  out(str); ln();
 
-  out(gu); nl();
+  out(gu); ln();
 
   out(bye, '\t'); outln(bye);
 

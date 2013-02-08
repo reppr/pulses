@@ -24,7 +24,7 @@
 /* int men_getchar();	// Arduino version
    Read next char of menu input, if available.
    Does not block, returns EOF or char.			*/
-int men_getchar() {		// Arduino version
+int menu2::men_getchar() {		// Arduino version
   if (!Serial.available())
     return EOF;
 
@@ -42,98 +42,97 @@ int men_getchar() {		// Arduino version
 #endif
 
 
-/* void out(); overloaded menu output function family:		*/
-// Simple versions  void out():
-void out(char c)	{ Serial.print(c); }
-void out(int i)		{ Serial.print(i); }
-void out(long l)	{ Serial.print(l); }
-void out(const char *str) { Serial.print(str); }
+/* void menu2::out(); overloaded menu output function family:	*/
+// Simple versions  void menu2::out():
+void menu2::out(char c)	{ Serial.print(c); }
+void menu2::out(int i)	{ Serial.print(i); }
+void menu2::out(long l)	{ Serial.print(l); }
+void menu2::out(const char *str) { Serial.print(str); }
 
 // End of line versions  void outln():
-void outln(char c)	{ Serial.println(c); }
-void outln(int i)	{ Serial.println(i); }
-void outln(long l)	{ Serial.println(l); }
-void outln(const char *str) { Serial.println(str); }
+void menu2::outln(char c)	{ Serial.println(c); }
+void menu2::outln(int i)	{ Serial.println(i); }
+void menu2::outln(long l)	{ Serial.println(l); }
+void menu2::outln(const char *str) { Serial.println(str); }
 
 /* Second parameter versions with a trailing char:
-  out(xxx, char c)
+  Like menu2::out(xxx, char c)
   A char as a second parameter get's printed after first argument.
-  like:  out(string, '\t');  or  out(string, ' ');		*/
-void out(char c, char x)	{ Serial.print(c); Serial.print(x); }
-void out(int i, char x)		{ Serial.print(i); Serial.print(x); }
-void out(long l, char x)	{ Serial.print(l); Serial.print(x); }
-void out(const char *str, char x) { Serial.print(str); Serial.print(x); }
+  like:  menu2::out(string, '\t');  or  menu2::out(string, ' '); */
+void menu2::out(char c, char x)	{ Serial.print(c); Serial.print(x); }
+void menu2::out(int i, char x)	{ Serial.print(i); Serial.print(x); }
+void menu2::out(long l, char x)	{ Serial.print(l); Serial.print(x); }
+void menu2::out(const char *str, char x) {
+  Serial.print(str); Serial.print(x);
+}
 
-/* Output a newline, tab, space  nl(), tab(), space():		*/
-void nl()		{ Serial.println(); }
-void tab()		{ Serial.print('\t'); }
-void space()		{ Serial.print(' '); }
+/* Output a newline, tab, space  ln(), tab(), space():		*/
+void menu2::ln()	{ Serial.println(); }
+void menu2::tab()	{ Serial.print('\t'); }
+void menu2::space()	{ Serial.print(' '); }
 
-/* void tokenized(char c)	Char output with ticks like 'A'	*/
-void tokenized(char c) {
+/* void ticked(char c)	Char output with ticks like 'A'	*/
+void menu2::ticked(char c) {
   Serial.print("'"); Serial.print(c); Serial.print("'");
 }
 
 
-// PROGMEM strings 	#define out_str() for Arduino:
+// PROGMEM strings 	#define out_progmem() for Arduino:
 /*
   Serial.print() for PROGMEM strings:
   // void serial_print_progmem(const prog_uchar *str)	// does not work :(
 */
-void serial_print_progmem(const unsigned char *str) {
+void menu2::out_progmem(const unsigned char *str) {
   unsigned char c;
   while((c = pgm_read_byte(str++)))
     Serial.write(c);
 }
-// On Arduino out_str() is #defined as a macro.
-#define out_str(str)	( serial_print_progmem((str)) )
 
 
-#else	// c++ test version
+#else	// ! #ifdef ARDUINO	c++ Linux PC test version:
 /* **************************************************************** */
 // #define I/O for c++ Linux PC test version:
 
 /* int men_getchar();
    Read next char of menu input, if available.
    Returns EOF or char.						*/
-int men_getchar() {
-  return getchar();
-}
+int menu2::men_getchar() { return getchar(); }
 
-
-/* void out(); overloaded menu output function family:		*/
-// Simple versions  void out():
-void out(char c)	{ putchar(c); }
-void out(int i)		{ printf("%i", i); }
-void out(long l)	{ printf("%d", l); }
-void out(const char *str) { printf("%s", str); }
+/* void menu2::out(); overloaded menu output function family:	*/
+// Simple versions  void menu2::out():
+void menu2::out(char c)	{ putchar(c); }
+void menu2::out(int i)	{ printf("%i", i); }
+void menu2::out(long l)	{ printf("%d", l); }
+void menu2::out(const char *str) { printf("%s", str); }
 
 // End of line versions  void outln():
-void outln(char c)	{ printf("%c\n", c); }
-void outln(int i)	{ printf("%i\n", i); }
-void outln(long l)	{ printf("%d\n", l); }
-void outln(const char *str) { printf("%s\n", str); }
+void menu2::outln(char c)	{ printf("%c\n", c); }
+void menu2::outln(int i)	{ printf("%i\n", i); }
+void menu2::outln(long l)	{ printf("%d\n", l); }
+void menu2::outln(const char *str) { printf("%s\n", str); }
 
 /* Second parameter versions with a trailing char:
-  out(xxx, char c)
+  menu2::out(xxx, char c)
   A char as a second parameter get's printed after first argument.
-  like:  out(string, '\t');  or  out(string, ' ');		*/
-void out(char c, char x)	{ printf("%c%c", c, x); }
-void out(int i, char x)		{ printf("%i%c", i, x); }
-void out(long l, char x)	{ printf("%d%c", l, x); }
-void out(const char *str, char x) { printf("%s%c", str, x); }
+  like:  menu2::out(string, '\t');  or  menu2::out(string, ' '); */
+void menu2::out(char c, char x)	{ printf("%c%c", c, x); }
+void menu2::out(int i, char x)	{ printf("%i%c", i, x); }
+void menu2::out(long l, char x)	{ printf("%d%c", l, x); }
+void menu2::out(const char *str, char x) {
+  printf("%s%c", str, x);
+}
 
-/* Output a newline, tab, space  nl(), tab(), space():		*/
-void nl()		{ putchar('\n'); }
-void tab()		{ putchar('\t'); }
-void space()		{ putchar(' '); }
+/* Output a newline, tab, space  ln(), tab(), space():		*/
+void menu2::ln()		{ putchar('\n'); }
+void menu2::tab()		{ putchar('\t'); }
+void menu2::space()		{ putchar(' '); }
 
-/* void tokenized(char c)	Char output with ticks like 'A'	*/
-void tokenized(char c)	{ printf("\'%c\'", c); }	// prints 'c'
+/* void ticked(char c)	Char output with ticks like 'A'	*/
+void ticked(char c)	{ printf("\'%c\'", c); }	// prints 'c'
 
 
 /* Fake PROGMEM string output on PC:	*/
-void out_str(const unsigned char *str) {	// Fake PROGMEM string output on PC
+void menu2::out_progmem(const unsigned char *str) { // Fake PROGMEM output
   char c;
 
   while(c = *str++)
@@ -147,8 +146,9 @@ void out_str(const unsigned char *str) {	// Fake PROGMEM string output on PC
 /* **************************************************************** */
 // Some early definitions:
 
-/* char constants for output having the arduino as target in mind:
-   alternative to PROGMEM one char strings...			*/	
+/* Global char constants for output,
+   having the arduino as target in mind.
+   As an alternative to PROGMEM one char strings.			*/	
 const char _space = ' ';
 const char _tab  = '\t';
 const char _tick = '\'';
@@ -415,15 +415,15 @@ bool Menu2::lurk_then_do() {
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_CIRCBUF) || \
   defined(DEBUGGING_LURKING)
       out("accumulated ");
-      tokenized(c);
-      nl();
+      ticked(c);
+      ln();
 #endif
       if (cb_is_full()) {
 	// inform user:
-	out_str(buffer_);
-	out_str(error_);
-	out_str(outOfRange);
-	nl();
+	out_progmem(buffer_);
+	out_progmem(error_);
+	out_progmem(outOfRange);
+	ln();
 
 	// try to recover
 	// the fix would be to match message length and cb buffer size... 
@@ -538,7 +538,7 @@ long Menu2::numeric_input(long default_value) {
 
   // number was missing, return the given default_value:
  number_missing:
-  out_str(numberMissing_);
+  out_progmem(numberMissing_);
   return default_value;		// return default_value
 }
 
@@ -564,21 +564,21 @@ void Menu2::menu_page_info(char pg) const {
   else
     out(_space);
 
-  out_str(menuPage_);
+  out_progmem(menuPage_);
   out((int) pg);
   out(_tab);
-  out_str(hotk_);
+  out_progmem(hotk_);
   out(men_pages[pg].hotkey);
   out(_tick);
   out(_tab);
-  out_str(group_);
+  out_progmem(group_);
   out(men_pages[pg].active_group);
   out(_tick);
   out(_tab);
   out(_quote);
   out(men_pages[pg].title);
   out(_quote);
-  nl();
+  ln();
 }
 
 
@@ -605,7 +605,7 @@ void Menu2::add_page(char *pageTitle, char hotkey,		\
     men_known++;
 
 #ifdef DEBUGGING_MENU
-    out_str(addPg);
+    out_progmem(addPg);
     out("(\"");
     out(pageTitle);
     out("\", ");
@@ -613,10 +613,10 @@ void Menu2::add_page(char *pageTitle, char hotkey,		\
     out(",..)\n");
 #endif
   } else {	// ERROR handling ################
-    out_str(addPg);
-    out_str(error_);
-    out_str(outOfRange);
-    nl();
+    out_progmem(addPg);
+    out_progmem(error_);
+    out_progmem(outOfRange);
+    ln();
   } 
 }
 
@@ -635,20 +635,20 @@ void Menu2::menu_display() {
   char pg;
 
 #ifdef DEBUGGING_MENU
-  out("\nmenu_display():\n");
+  menu2::out("\nmenu_display():\n");
 #endif
 
   // men_selected page display:
-  out_str(deco_);
-  out_str(men_);
+  out_progmem(deco_);
+  out_progmem(men_);
   out(men_pages[men_selected].title);
-  out_str(_deco);
+  out_progmem(_deco);
 
   (*men_pages[men_selected].display)();
 
   // display menu page key bindings:
   if ( men_known > 1 ) {
-    nl();
+    ln();
     for (pg = 0; pg < men_known; pg++) {
       if ( pg != men_selected ) {	// omit selected pages' hot key display, even if active.
 	out(men_pages[pg].hotkey);
@@ -658,16 +658,16 @@ void Menu2::menu_display() {
 	out(_space);
       }
     }
-    nl();
+    ln();
   }
 
   // display internal key bindings:
-  out_str(internalKeys);
-  out_str(qQuit);
-  nl();
+  out_progmem(internalKeys);
+  out_progmem(qQuit);
+  ln();
 
 #ifdef DEBUGGING_MENU
-  nl();
+  ln();
 #endif
 }
 
@@ -847,9 +847,9 @@ void Menu2::interpret_men_input() {
 
     // token still not found, give up...
     if (! did_something ) {
-      out_str(unknownToken);
+      out_progmem(unknownToken);
       out(token);
-      nl();
+      ln();
     }
 
   } // interpreter loop over all tokens

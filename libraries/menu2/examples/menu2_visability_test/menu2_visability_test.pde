@@ -222,7 +222,7 @@ bool program_actionY(char token) {
 #endif
   switch (token) {
   case 'y':
-    nl();
+    ln();
     out("/°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°\\ \n");	// ecape \ ...
     out("°      you have found the      °\n");
     out("°                              °\n");
@@ -246,7 +246,7 @@ bool program_actionY(char token) {
     out("°    °                    °    °\n");
     out("°            (: :)             °\n");
     out("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°\n");
-    nl();
+    ln();
 
     return true;	// return true;  means there *was* action,
 			// it's  *not* the exit status of the action
