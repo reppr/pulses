@@ -378,7 +378,8 @@ bool Menu2::lurk_then_do() {
   /* int maybe_input()  
      must be a function returning one byte data
      or if there is no input returning EOF		*/
-  INP=(*maybe_input)();
+  //- INP=(*maybe_input)();	// DEACTIVATED ################
+  INP=men_getchar();	// TEMPORALLY using men_getchar() directly ################	
 
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
   out("got input\n");
