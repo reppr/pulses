@@ -66,10 +66,12 @@ void Menu2::out(const char *str, char x) {
   Serial.print(str); Serial.print(x);
 }
 
-/* Output a newline, tab, space  ln(), tab(), space():		*/
-void Menu2::ln()	{ Serial.println(); }
-void Menu2::tab()	{ Serial.print('\t'); }
-void Menu2::space()	{ Serial.print(' '); }
+/* Output a newline, tab, space, '='
+   ln(), tab(), space(), equals():			*/
+void Menu2::ln()	{ Serial.println(); }	// Output a newline
+void Menu2::tab()	{ Serial.print('\t'); }	// Output a tab
+void Menu2::space()	{ Serial.print(' '); }	// Output a space
+void Menu2::equals()	{ Serial.print('='); }	// Output char '='
 
 /* void ticked(char c)	Char output with ticks like 'A'	*/
 void Menu2::ticked(char c) {
@@ -122,13 +124,15 @@ void Menu2::out(const char *str, char x) {
   printf("%s%c", str, x);
 }
 
-/* Output a newline, tab, space  ln(), tab(), space():		*/
-void Menu2::ln()		{ putchar('\n'); }
-void Menu2::tab()		{ putchar('\t'); }
-void Menu2::space()		{ putchar(' '); }
+/* Output a newline, tab, space, '='
+   ln(), tab(), space(), equals():			*/
+void Menu2::ln()	{ putchar('\n'); } // Output a newline
+void Menu2::tab()	{ putchar('\t'); } // Output a tab	   
+void Menu2::space()	{ putchar(' '); }  // Output a space  
+void Menu2::equals()	{ putchar('='); }  // Output char '=' 
 
 /* void ticked(char c)	Char output with ticks like 'A'	*/
-void ticked(char c)	{ printf("\'%c\'", c); }	// prints 'c'
+void Menu2::ticked(char c)	{ printf("\'%c\'", c); }   // prints 'c'
 
 
 /* Fake PROGMEM string output on PC:	*/
@@ -144,23 +148,7 @@ void Menu2::out_progmem(const unsigned char *str) { // Fake PROGMEM output
 
 
 /* **************************************************************** */
-// Some early definitions:
-
-/* Global char constants for output,
-   having the arduino as target in mind.
-   As an alternative to PROGMEM one char strings.			*/	
-//	const char _space = ' ';
-//	const char _tab  = '\t';
-//	const char _tick = '\'';
-//	const char _quote = '"';
-//	const char _star = '*';
-//	const char _open  = '(';	// not used yet ################
-//	const char _close = ')';	// not used yet ################
-//	const char _column = ':';	// not used yet ################
-
-
-/* **************************************************************** */
-/* strings for output having the arduino as target in mind:
+/* Strings for output having the arduino as target in mind:
    MAYBE_PROGMEM is either empty or has 'PROGMEM' in it.
    so we can compile them in program memory to save RAM on arduino,
    but still test on c++ Linux PC.
@@ -172,15 +160,8 @@ const unsigned char error_[] MAYBE_PROGMEM = " ERROR: ";
 /* **************************************************************** */
 // Constructor/Destructors:
 
-Menu2::Menu2(int bufSize, int menuPages, int (*maybeInput)(void)) {
-  _space = ' ';
-  _tab  = '\t';
-  _tick = '\'';
-  _quote = '"';
-  _star = '*';
-  _open  = '(';		// not used yet ################
-  _close = ')';		// not used yet ################
-  _column = ':';	// not used yet ################
+//- Menu2::Menu2(int bufSize, int menuPages, int (*maybeInput)(void)) ################
+Menu2::Menu2(int bufSize, int menuPages) {
 
 #ifdef DEBUGGING_CLASS
   out("Menu2 CONSTRUCTOR: cb_size=");
@@ -194,7 +175,16 @@ Menu2::Menu2(int bufSize, int menuPages, int (*maybeInput)(void)) {
 
   cb_count = 0;
 
-  maybe_input = maybeInput;
+  maybe_input = men_getchar;			// Does not work any more ):
+
+  // maybe_input = men_getchar;			// does not work ################################
+  // maybe_input = &men_getchar;		// does not work ################################
+  // maybe_input = &men_getchar();		// does not work ################################
+  // maybe_input = ((*)()) men_getchar;		// does not work ################################
+  // maybe_input = (int (*)()) men_getchar;	// does not work ################################
+  // maybe_input = (int (*)) men_getchar;	// does not work ################################
+  // maybe_input = (*men_getchar) ;		// does not work ################################
+  // maybe_input = (men_getchar()) ;		// does not work ################################
 
   men_selected = 0;
   men_max = menuPages;
@@ -562,37 +552,27 @@ void Menu2::skip_numeric_input() {
 /* **************************************************************** */
 // menu info:
 
-const unsigned char menuPage_[] MAYBE_PROGMEM = "menupage ";
-const unsigned char hotk_[] MAYBE_PROGMEM = "hotk '";
-const unsigned char group_[] MAYBE_PROGMEM = "group '";
+const unsigned char menupage_[] MAYBE_PROGMEM = "menupage ";
+const unsigned char hotk_[] MAYBE_PROGMEM = "hotk ";
+const unsigned char group_[] MAYBE_PROGMEM = "group ";
 
 /* menu_page_info(char pg)  show a known pages' info	*/
-void Menu2::menu_page_info(char pg) const {
+// void Menu2::menu_page_info(char pg) const {	// ################
+void Menu2::menu_page_info(char pg) {
   if ( pg == men_selected )
-    out(_star);
+    out('*');
   else
-    out(_space);
-
-  out_progmem(menuPage_);
-  out((int) pg);
-  out(_tab);
-  out_progmem(hotk_);
-  out(men_pages[pg].hotkey);
-  out(_tick);
-  out(_tab);
-  out_progmem(group_);
-  out(men_pages[pg].active_group);
-  out(_tick);
-  out(_tab);
-  out(_quote);
-  out(men_pages[pg].title);
-  out(_quote);
-  ln();
+    space();
+  out_progmem(menupage_); out((int) pg);
+  tab(); out_progmem(hotk_); ticked(men_pages[pg].hotkey);
+  tab(); out_progmem(group_); ticked(men_pages[pg].active_group);
+  tab(); out('"'); out(men_pages[pg].title); outln('"');
 }
 
 
 /* menu_pages_info()  show all known pages' info		*/
-void Menu2::menu_pages_info() const {
+//-void Menu2::menu_pages_info() const ################
+void Menu2::menu_pages_info() {
   for (char pg = 0; pg < men_known; pg++)
     menu_page_info(pg);
 }
@@ -660,11 +640,8 @@ void Menu2::menu_display() {
     ln();
     for (pg = 0; pg < men_known; pg++) {
       if ( pg != men_selected ) {	// omit selected pages' hot key display, even if active.
-	out(men_pages[pg].hotkey);
-	out("=");
-	out(men_pages[pg].title);
-	out(_space);
-	out(_space);
+	out(men_pages[pg].hotkey); equals();
+	outln(men_pages[pg].title); space();
       }
     }
     ln();

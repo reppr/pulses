@@ -59,7 +59,7 @@
 
 // Declare these early to make live easier:
 void menu2_setup();
-int men_getchar();
+int men_getchar();	// ??? ################
 
 
 /* **************************************************************** */
@@ -83,14 +83,16 @@ struct menupage {
 
 class Menu2 {
  public:
-  Menu2(int size, int menuPages, int (*maybeInput)(void));
+  //-  Menu2(int size, int menuPages, int (*maybeInput)(void)); ################
+  Menu2(int size, int menuPages);
   ~Menu2();
 
   // high level API:
   bool lurk_then_do(void);
   void add_page(char *pageTitle, char token, \
 		void (*pageDisplay)(), bool (*pageReaction)(char), char ActiveGroup);
-  void menu_pages_info() const;			// show all known pages' info
+  //-  void menu_pages_info() const; ################
+  void menu_pages_info();			// show all known pages' info
 
   // out(any );	  Overloaded menu output function family:
   // Simple versions  void menu2::out():
@@ -114,10 +116,12 @@ class Menu2 {
   void out(long l, char x);
   void out(const char *str, char x);
 
-/* Output a newline, tab, space  ln(), tab(), space():		*/
+/* Output a newline, tab, space, '='
+  ln(), tab(), space(), equals():				*/
   void ln();			// Output a newline
   void tab();			// Output a tab
   void space();			// Output a space
+  void equals();		// Output char '='
 
   /* Output for ARDUINO PROGMEM strings.
      (Fake on Linux Pc c++ test version.)			*/
@@ -142,19 +146,10 @@ class Menu2 {
   // Act on buffer content tokens after seeing 'end token':
   void interpret_men_input();		// Menu input interpreter
 
-  // char constants for out(c):
-  char _space;
-  char _tab;
-  char _tick;
-  char _quote;
-  char _star;
-  char _open;
-  char _close;		// not used yet ################
-  char _column;		// not used yet ################
-
 
  protected:
-  void menu_page_info(char pg) const;	// show a menu pages' info
+  //-  void menu_page_info(char pg) const; ################
+  void menu_page_info(char pg);		// show a menu pages' info
   bool cb_is_full() const { return cb_count == cb_size; } // inlined: buffer full?
 #ifdef DEBUGGING_CIRCBUF
   void cb_info() const;			// Debugging help
