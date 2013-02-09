@@ -59,7 +59,7 @@
 
 // Declare these early to make live easier:
 void menu2_setup();
-int men_getchar();	// ??? ################
+// int men_getchar();	// ??? ################
 
 
 /* **************************************************************** */

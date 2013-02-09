@@ -351,6 +351,8 @@ bool program_actionN(char token) {
   case 'v':
     MENU.out("Enter new value : ");
     value = MENU.numeric_input(value);
+    MENU.out("Set value to ");
+    MENU.outln(value);
 
     return true;	// return true;  means there *was* action,
 			// it's  *not* the exit status of the action

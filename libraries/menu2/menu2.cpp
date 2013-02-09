@@ -98,7 +98,7 @@ void Menu2::out_progmem(const unsigned char *str) {
 /* int men_getchar();
    Read next char of menu input, if available.
    Returns EOF or char.						*/
-int Menu2::men_getchar() { return getchar(); }
+int Menu2::men_getchar() { return getchar(); } // c++ Linux PC test version
 
 /* void Menu2::out(); overloaded menu output function family:	*/
 // Simple versions  void Menu2::out():
