@@ -175,7 +175,7 @@ Menu2::Menu2(int bufSize, int menuPages) {
 
   cb_count = 0;
 
-  maybe_input = men_getchar;			// Does not work any more ):
+  //  maybe_input = men_getchar;			// Does not work any more ):
 
   // maybe_input = men_getchar;			// does not work ################################
   // maybe_input = &men_getchar;		// does not work ################################
@@ -613,13 +613,13 @@ void Menu2::add_page(char *pageTitle, char hotkey,		\
 /* **************************************************************** */
 // menu display:
 
-const unsigned char internalKeys[] MAYBE_PROGMEM = "\n'?' for menu";
+const unsigned char internalKeys[] MAYBE_PROGMEM = "'?' for menu";
 const unsigned char qQuit[] MAYBE_PROGMEM = "  'q' quit page";
 const unsigned char deco_[] MAYBE_PROGMEM = "\n * ** *** ";
 const unsigned char _deco[] MAYBE_PROGMEM = " *** ** *\n";
 const unsigned char men_[] MAYBE_PROGMEM = "MENU ";
 
-/* display menu	current menu page and common entries:		*/
+/* Display menu	current menu page and common entries:		*/
 void Menu2::menu_display() {
   char pg;
 
@@ -635,19 +635,22 @@ void Menu2::menu_display() {
 
   (*men_pages[men_selected].display)();
 
-  // display menu page key bindings:
+  // Display menu page key bindings:
   if ( men_known > 1 ) {
     ln();
     for (pg = 0; pg < men_known; pg++) {
-      if ( pg != men_selected ) {	// omit selected pages' hot key display, even if active.
-	out(men_pages[pg].hotkey); equals();
-	outln(men_pages[pg].title); space();
-      }
+      if ( pg != men_selected )		     // burried pages only
+	if ( men_pages[pg].hotkey != ' ') {  // selectable pages only
+	  out(men_pages[pg].hotkey);
+	  equals();
+	  out(men_pages[pg].title);
+	  space(); space();
+	}
     }
     ln();
   }
 
-  // display internal key bindings:
+  // Display internal key bindings:
   out_progmem(internalKeys);
   out_progmem(qQuit);
   ln();
