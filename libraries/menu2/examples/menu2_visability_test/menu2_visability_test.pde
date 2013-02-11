@@ -1,5 +1,12 @@
 /* **************************************************************** */
 /*
+  This version definines the menu INPUT routine int men_getchar();
+  in the *program* not inside the Menu2 class.
+  Reverted to passing &men_getchar to the Menu2 class constructor.
+*/
+
+/* **************************************************************** */
+/*
 		menu2_visability_test.pde
 
 	  A simple example for library Menu2. 
@@ -22,14 +29,36 @@
 
 
 /* **************************************************************** */
+/*
+  This version definines the menu INPUT routine int men_getchar();
+  in the *program* not inside the Menu2 class.
+  Reverted to passing &men_getchar to the Menu2 class constructor.
+*/
+int men_getchar() {
+#ifdef ARDUINO
+  if (!Serial.available())	// ARDUINO
+    return EOF;
 
-// Menu2 MENU(32, 5, &men_getchar);
-Menu2 MENU(32, 5);
+  return Serial.read();
+#else
+ return getchar();		// c++ Linux PC test version
+#endif
+}
+
+
+/* **************************************************************** */
+/*
+  This version definines the menu INPUT routine int men_getchar();
+  in the *program* not inside the Menu2 class.
+  Reverted to passing &men_getchar to the Menu2 class constructor.
+*/
+Menu2 MENU(32, 5, &men_getchar);
+//- Menu2 MENU(32, 5);
 
 
 /* **************************************************************** */
 /* I use this for both: Arduino example sketch and c++ PC test version.
-   Compile setup() and loop() on Arduino
+   Compile setup() and loop() on ARDUINO
 		or:
    compile main() on c++ Linux PC test version.
 */ 
@@ -39,6 +68,11 @@ Menu2 MENU(32, 5);
 
 
 void setup() {	// ARDUINO
+  /*
+    This version definines the menu INPUT routine int men_getchar();
+    in the *program* not inside the Menu2 class.
+    Reverted to passing &men_getchar to the Menu2 class constructor.
+  */
   Serial.begin(BAUDRATE);	// Start serial communication.
   menu2_setup();		// Tell the menu what to do.
 }
@@ -66,11 +100,9 @@ void loop() {	// ARDUINO
 #else	// Compile main() on c++ PC test version:
 // Compile main() for c++ Linux PC test version:
 
-
 int main() {	// c++ Linux PC test version
-  MENU.out("menu2_visability_test  ==> ETHERNAL LOOP <==:\n");
-
   menu2_setup();
+  MENU.out("menu2_visability_test  ==> ETHERNAL LOOP <==:\n");
 
   while(true)		// ==> ETHERNAL LOOP <==
     MENU.lurk_then_do();

@@ -21,15 +21,15 @@
 // #define I/O for ARDUINO:
 #ifdef ARDUINO
 
-/* int men_getchar();		// ARDUINO version
-   Read next char of menu input, if available.
-   Does not block, returns EOF or char.			*/
-int Menu2::men_getchar() {		// ARDUINO version
-  if (!Serial.available())
-    return EOF;
-
-  return Serial.read();
-}
+//	/* int men_getchar();		// ARDUINO version
+//	   Read next char of menu input, if available.
+//	   Does not block, returns EOF or char.			*/
+//	int Menu2::men_getchar() {		// ARDUINO version
+//	  if (!Serial.available())
+//	    return EOF;
+//	
+//	  return Serial.read();
+//	}
 
 
 #ifndef BAUDRATE
@@ -95,10 +95,10 @@ void Menu2::out_progmem(const unsigned char *str) {
 /* **************************************************************** */
 // #define I/O for c++ Linux PC test version:
 
-/* int men_getchar();
-   Read next char of menu input, if available.
-   Returns EOF or char.						*/
-int Menu2::men_getchar() { return getchar(); } // c++ Linux PC test version
+//	/* int men_getchar();
+//	   Read next char of menu input, if available.
+//	   Returns EOF or char.						*/
+//	int Menu2::men_getchar() { return getchar(); } // c++ Linux PC test version
 
 /* void Menu2::out(); overloaded menu output function family:	*/
 // Simple versions  void Menu2::out():
@@ -160,22 +160,35 @@ const unsigned char error_[] MAYBE_PROGMEM = " ERROR: ";
 /* **************************************************************** */
 // Constructor/Destructors:
 
-//- Menu2::Menu2(int bufSize, int menuPages, int (*maybeInput)(void)) ################
-Menu2::Menu2(int bufSize, int menuPages) {
+//-Menu2::Menu2(int bufSize, int menuPages) {################
+Menu2::Menu2(int bufSize, int menuPages, int (*maybeInput)(void)):
+cb_size(bufSize),
+  maybe_input(maybeInput),
+  men_max(menuPages),
+  cb_start(0),
+  cb_count(0),
+  men_selected(0),
+  cb_buf(NULL),
+  men_pages(NULL)
+{
+//- Menu2::Menu2(int bufSize, int menuPages) { ################
 
-#ifdef DEBUGGING_CLASS
-  out("Menu2 CONSTRUCTOR: cb_size=");
-  outln(bufSize);
-#endif
+// ################:
+//	#ifdef DEBUGGING_CLASS
+//	  out("Menu2 CONSTRUCTOR: cb_size=");
+//	  outln(bufSize);
+//	#endif
 
+// ################:
   // initialize circular input buffer:
-  cb_start = 0;
-  cb_size  = bufSize;
+  // cb_start = 0;
+  // cb_count = 0;
+
   cb_buf = (char *) malloc(cb_size);	    // ERROR handling ################
 
-  cb_count = 0;
 
-  //  maybe_input = men_getchar;			// Does not work any more ):
+// ################:
+  // maybe_input = maybeInput;
 
   // maybe_input = men_getchar;			// does not work ################################
   // maybe_input = &men_getchar;		// does not work ################################
@@ -186,10 +199,21 @@ Menu2::Menu2(int bufSize, int menuPages) {
   // maybe_input = (*men_getchar) ;		// does not work ################################
   // maybe_input = (men_getchar()) ;		// does not work ################################
 
-  men_selected = 0;
-  men_max = menuPages;
+// ################:
+  // men_selected = 0;
+  // men_max = menuPages;
 
   men_pages = (menupage*) malloc(men_max * sizeof(menupage)); // ERROR handling ################
+  
+// ################:
+#if defined(ARDUINO) && defined(BAUDRATE)
+  /* ################
+    This version definines the menu INPUT routine int men_getchar();
+    in the *program* not inside the Menu2 class.
+    Reverted to passing &men_getchar to the Menu2 class constructor.
+  */
+  // Serial.begin(BAUDRATE);	// Start serial communication.################
+#endif
 }
 
 
@@ -321,7 +345,7 @@ void Menu2::cb_info() const {
   if (value != -1) {
     out(value);
     out("\t");
-    out((char) value;
+    out((char) value);
     if ( is_numeric() )
       out("  numeric CHIFFRE\n");
     else
@@ -379,8 +403,8 @@ bool Menu2::lurk_then_do() {
      must be a function returning one byte data
      or if there is no input returning EOF		*/
   //- INP=(*maybe_input)();	// DEACTIVATED ################
-  INP=men_getchar();	// TEMPORALLY using men_getchar() directly ################	
-
+  //- INP=men_getchar();	// TEMPORALLY using men_getchar() directly ################	
+  INP=(*maybe_input)();	// REACTIVATED ################
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
   out("got input\n");
 #endif
@@ -766,9 +790,9 @@ void Menu2::interpret_men_input() {
 	  out(page_group);
 	  out("':\n");
 	  out("menu ");
-	  out(men_pages[pg].title;
+	  out(men_pages[pg].title);
 	  out(" knows '");
-	      out(token);
+	  out(token);
 	  out("'.\n");
 #endif
 	  break;

@@ -83,8 +83,8 @@ struct menupage {
 
 class Menu2 {
  public:
-  //-  Menu2(int size, int menuPages, int (*maybeInput)(void)); ################
-  Menu2(int size, int menuPages);
+  Menu2(int size, int menuPages, int (*maybeInput)(void));
+  //- Menu2(int size, int menuPages); ################
   ~Menu2();
 
   // high level API:
@@ -128,7 +128,7 @@ class Menu2 {
   void out_progmem(const unsigned char *str);
   void ticked(char c);		// Output a ticked char token like 'A'
 
-  int men_getchar();		// Basic menu char input function
+  // int men_getchar();		// Basic menu char input function
 
   int cb_peek() const;			// peek at next if any, else return EOL
   int cb_peek(int offset) const;	// peek at next, overnext... if any, else EOL
