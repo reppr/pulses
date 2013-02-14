@@ -1,15 +1,15 @@
 /* **************************************************************** */
 /*
   This version definines the menu INPUT routine int men_getchar();
-  in the *program* not inside the Menu2 class.
-  Reverted to passing &men_getchar to the Menu2 class constructor.
+  in the *program* not inside the Menu class.
+  Reverted to passing &men_getchar to the Menu class constructor.
 */
 
 /* **************************************************************** */
 /*
-		menu2_visability_test.pde
+		menu_visability_test.pde
 
-	  A simple example for library Menu2. 
+	  A simple example for library Menu. 
 */
 /* **************************************************************** */
 
@@ -21,8 +21,8 @@
 #endif
 
 
-#include <menu2.h>
-#include <menu2.cpp>
+#include <Menu.h>
+#include <Menu.cpp>
 
 
 #define BAUDRATE	115200		// works fine here
@@ -31,8 +31,8 @@
 /* **************************************************************** */
 /*
   This version definines the menu INPUT routine int men_getchar();
-  in the *program* not inside the Menu2 class.
-  Reverted to passing &men_getchar to the Menu2 class constructor.
+  in the *program* not inside the Menu class.
+  Reverted to passing &men_getchar to the Menu class constructor.
 */
 int men_getchar() {
 #ifdef ARDUINO
@@ -49,11 +49,11 @@ int men_getchar() {
 /* **************************************************************** */
 /*
   This version definines the menu INPUT routine int men_getchar();
-  in the *program* not inside the Menu2 class.
-  Reverted to passing &men_getchar to the Menu2 class constructor.
+  in the *program* not inside the Menu class.
+  Reverted to passing &men_getchar to the Menu class constructor.
 */
-Menu2 MENU(32, 5, &men_getchar);
-//- Menu2 MENU(32, 5);
+Menu MENU(32, 5, &men_getchar);
+//- Menu MENU(32, 5);
 
 
 /* **************************************************************** */
@@ -70,11 +70,11 @@ Menu2 MENU(32, 5, &men_getchar);
 void setup() {	// ARDUINO
   /*
     This version definines the menu INPUT routine int men_getchar();
-    in the *program* not inside the Menu2 class.
-    Reverted to passing &men_getchar to the Menu2 class constructor.
+    in the *program* not inside the Menu class.
+    Reverted to passing &men_getchar to the Menu class constructor.
   */
   Serial.begin(BAUDRATE);	// Start serial communication.
-  menu2_setup();		// Tell the menu what to do.
+  Menu_setup();		// Tell the menu what to do.
 }
 
 
@@ -101,8 +101,8 @@ void loop() {	// ARDUINO
 // Compile main() for c++ Linux PC test version:
 
 int main() {	// c++ Linux PC test version
-  menu2_setup();
-  MENU.out("menu2_visability_test  ==> ETHERNAL LOOP <==:\n");
+  Menu_setup();
+  MENU.out("Menu_visability_test  ==> ETHERNAL LOOP <==:\n");
 
   while(true)		// ==> ETHERNAL LOOP <==
     MENU.lurk_then_do();
@@ -143,7 +143,7 @@ int main() {	// c++ Linux PC test version
    but it also suggests to try 'y', which is not visible from here...
 
    // page A will only be visible when selected, never when burried:
-   see menu2_setup();
+   see Menu_setup();
    MENU.add_page(menuTitleA, menuHotkeyA, &program_displayA, &program_actionA, '-');
 */
 
@@ -188,7 +188,7 @@ bool program_actionA(char token) {
    Y menu, belowing to the same visability group.
 
    // page B belongs to 'Y' group:
-   see menu2_setup();
+   see Menu_setup();
    MENU.add_page(menuTitleB, menuHotkeyB, &program_displayB, &program_actionB, 'Y');
 */
 
@@ -234,7 +234,7 @@ bool program_actionB(char token) {
  
    /* page Y adds actions active for the 'Y' group
       this group cannot get selected, the page hot key ' ' prevents that.
-   // see menu2_setup();
+   // see Menu_setup();
    // MENU.add_page(menuTitleY, ' ', &program_displayY, &program_actionY, 'Y');
 */
 
@@ -302,7 +302,7 @@ bool program_actionY(char token) {
    This opens the "backdoor" to use 'y' for all members of 'Y'.
  
    // page X is always visible
-   see menu2_setup();
+   see Menu_setup();
    MENU.add_page(menuTitleX, menuHotkeyX, &program_displayX, &program_actionX, '+');
 */
 
@@ -352,7 +352,7 @@ bool program_actionX(char token) {
    Check and change value of a (long) variable defined elsewhere in your program.
 
    // page N testing numeric input
-   see menu2_setup();
+   see Menu_setup();
    MENU.add_page(menuTitleN, menuHotkeyN, &program_displayN, &program_actionN, '-');
 */
 
@@ -400,7 +400,7 @@ bool program_actionN(char token) {
 /* **************************************************************** */
 // set the program menu up:
 
-void menu2_setup() {
+void Menu_setup() {
   // add menu pages:
 
   // page A will only be visible when selected, never when burried:

@@ -1,7 +1,6 @@
 /* **************************************************************** */
 /*
-  menu2.cpp
-  menu2 as monolithic base class
+  Menu.cpp
 */
 
 /* **************************************************************** */
@@ -14,7 +13,7 @@
   #include <iostream>
 #endif
 
-#include <menu2.h>
+#include <Menu.h>
 
 
 /* **************************************************************** */
@@ -24,7 +23,7 @@
 //	/* int men_getchar();		// ARDUINO version
 //	   Read next char of menu input, if available.
 //	   Does not block, returns EOF or char.			*/
-//	int Menu2::men_getchar() {		// ARDUINO version
+//	int Menu::men_getchar() {		// ARDUINO version
 //	  if (!Serial.available())
 //	    return EOF;
 //	
@@ -42,39 +41,39 @@
 #endif
 
 
-/* void Menu2::out(); overloaded menu output function family:	*/
-// Simple versions  void Menu2::out():
-void Menu2::out(char c)	{ Serial.print(c); }	// ARDUINO
-void Menu2::out(int i)	{ Serial.print(i); }
-void Menu2::out(long l)	{ Serial.print(l); }
-void Menu2::out(const char *str) { Serial.print(str); }
+/* void Menu::out(); overloaded menu output function family:	*/
+// Simple versions  void Menu::out():
+void Menu::out(char c)	{ Serial.print(c); }	// ARDUINO
+void Menu::out(int i)	{ Serial.print(i); }
+void Menu::out(long l)	{ Serial.print(l); }
+void Menu::out(const char *str) { Serial.print(str); }
 
 // End of line versions  void outln():
-void Menu2::outln(char c)	{ Serial.println(c); }
-void Menu2::outln(int i)	{ Serial.println(i); }
-void Menu2::outln(long l)	{ Serial.println(l); }
-void Menu2::outln(const char *str) { Serial.println(str); }
+void Menu::outln(char c)	{ Serial.println(c); }
+void Menu::outln(int i)	{ Serial.println(i); }
+void Menu::outln(long l)	{ Serial.println(l); }
+void Menu::outln(const char *str) { Serial.println(str); }
 
 /* Second parameter versions with a trailing char:
-  Like Menu2::out(xxx, char c)
+  Like Menu::out(xxx, char c)
   A char as a second parameter get's printed after first argument.
-  like:  Menu2::out(string, '\t');  or  Menu2::out(string, ' '); */
-void Menu2::out(char c, char x)	{ Serial.print(c); Serial.print(x); }
-void Menu2::out(int i, char x)	{ Serial.print(i); Serial.print(x); }
-void Menu2::out(long l, char x)	{ Serial.print(l); Serial.print(x); }
-void Menu2::out(const char *str, char x) {
+  like:  Menu::out(string, '\t');  or  Menu::out(string, ' '); */
+void Menu::out(char c, char x)	{ Serial.print(c); Serial.print(x); }
+void Menu::out(int i, char x)	{ Serial.print(i); Serial.print(x); }
+void Menu::out(long l, char x)	{ Serial.print(l); Serial.print(x); }
+void Menu::out(const char *str, char x) {
   Serial.print(str); Serial.print(x);
 }
 
 /* Output a newline, tab, space, '='
    ln(), tab(), space(), equals():			*/
-void Menu2::ln()	{ Serial.println(); }	// Output a newline
-void Menu2::tab()	{ Serial.print('\t'); }	// Output a tab
-void Menu2::space()	{ Serial.print(' '); }	// Output a space
-void Menu2::equals()	{ Serial.print('='); }	// Output char '='
+void Menu::ln()	{ Serial.println(); }	// Output a newline
+void Menu::tab()	{ Serial.print('\t'); }	// Output a tab
+void Menu::space()	{ Serial.print(' '); }	// Output a space
+void Menu::equals()	{ Serial.print('='); }	// Output char '='
 
 /* void ticked(char c)	Char output with ticks like 'A'	*/
-void Menu2::ticked(char c) {
+void Menu::ticked(char c) {
   Serial.print("'"); Serial.print(c); Serial.print("'");
 }
 
@@ -84,7 +83,7 @@ void Menu2::ticked(char c) {
   Serial.print() for PROGMEM strings:
   // void serial_print_progmem(const prog_uchar *str)	// does not work :(
 */
-void Menu2::out_progmem(const unsigned char *str) {
+void Menu::out_progmem(const unsigned char *str) {
   unsigned char c;
   while((c = pgm_read_byte(str++)))
     Serial.write(c);
@@ -98,45 +97,45 @@ void Menu2::out_progmem(const unsigned char *str) {
 //	/* int men_getchar();
 //	   Read next char of menu input, if available.
 //	   Returns EOF or char.						*/
-//	int Menu2::men_getchar() { return getchar(); } // c++ Linux PC test version
+//	int Menu::men_getchar() { return getchar(); } // c++ Linux PC test version
 
-/* void Menu2::out(); overloaded menu output function family:	*/
-// Simple versions  void Menu2::out():
-void Menu2::out(char c)	{ putchar(c); }
-void Menu2::out(int i)	{ printf("%i", i); }
-void Menu2::out(long l)	{ printf("%d", l); }
-void Menu2::out(const char *str) { printf("%s", str); }
+/* void Menu::out(); overloaded menu output function family:	*/
+// Simple versions  void Menu::out():
+void Menu::out(char c)	{ putchar(c); }
+void Menu::out(int i)	{ printf("%i", i); }
+void Menu::out(long l)	{ printf("%d", l); }
+void Menu::out(const char *str) { printf("%s", str); }
 
 // End of line versions  void outln():
-void Menu2::outln(char c)	{ printf("%c\n", c); }
-void Menu2::outln(int i)	{ printf("%i\n", i); }
-void Menu2::outln(long l)	{ printf("%d\n", l); }
-void Menu2::outln(const char *str) { printf("%s\n", str); }
+void Menu::outln(char c)	{ printf("%c\n", c); }
+void Menu::outln(int i)	{ printf("%i\n", i); }
+void Menu::outln(long l)	{ printf("%d\n", l); }
+void Menu::outln(const char *str) { printf("%s\n", str); }
 
 /* Second parameter versions with a trailing char:
-  Menu2::out(xxx, char c)
+  Menu::out(xxx, char c)
   A char as a second parameter get's printed after first argument.
-  like:  Menu2::out(string, '\t');  or  Menu2::out(string, ' '); */
-void Menu2::out(char c, char x)	{ printf("%c%c", c, x); }
-void Menu2::out(int i, char x)	{ printf("%i%c", i, x); }
-void Menu2::out(long l, char x)	{ printf("%d%c", l, x); }
-void Menu2::out(const char *str, char x) {
+  like:  Menu::out(string, '\t');  or  Menu::out(string, ' '); */
+void Menu::out(char c, char x)	{ printf("%c%c", c, x); }
+void Menu::out(int i, char x)	{ printf("%i%c", i, x); }
+void Menu::out(long l, char x)	{ printf("%d%c", l, x); }
+void Menu::out(const char *str, char x) {
   printf("%s%c", str, x);
 }
 
 /* Output a newline, tab, space, '='
    ln(), tab(), space(), equals():			*/
-void Menu2::ln()	{ putchar('\n'); } // Output a newline
-void Menu2::tab()	{ putchar('\t'); } // Output a tab	   
-void Menu2::space()	{ putchar(' '); }  // Output a space  
-void Menu2::equals()	{ putchar('='); }  // Output char '=' 
+void Menu::ln()	{ putchar('\n'); } // Output a newline
+void Menu::tab()	{ putchar('\t'); } // Output a tab	   
+void Menu::space()	{ putchar(' '); }  // Output a space  
+void Menu::equals()	{ putchar('='); }  // Output char '=' 
 
 /* void ticked(char c)	Char output with ticks like 'A'	*/
-void Menu2::ticked(char c)	{ printf("\'%c\'", c); }   // prints 'c'
+void Menu::ticked(char c)	{ printf("\'%c\'", c); }   // prints 'c'
 
 
 /* Fake PROGMEM string output on PC:	*/
-void Menu2::out_progmem(const unsigned char *str) { // Fake PROGMEM output
+void Menu::out_progmem(const unsigned char *str) { // Fake PROGMEM output
   char c;
 
   while(c = *str++)
@@ -160,8 +159,8 @@ const unsigned char error_[] MAYBE_PROGMEM = " ERROR: ";
 /* **************************************************************** */
 // Constructor/Destructors:
 
-//-Menu2::Menu2(int bufSize, int menuPages) {################
-Menu2::Menu2(int bufSize, int menuPages, int (*maybeInput)(void)):
+//-Menu::Menu(int bufSize, int menuPages) {################
+Menu::Menu(int bufSize, int menuPages, int (*maybeInput)(void)):
 cb_size(bufSize),
   maybe_input(maybeInput),
   men_max(menuPages),
@@ -171,11 +170,11 @@ cb_size(bufSize),
   cb_buf(NULL),
   men_pages(NULL)
 {
-//- Menu2::Menu2(int bufSize, int menuPages) { ################
+//- Menu::Menu(int bufSize, int menuPages) { ################
 
 // ################:
 //	#ifdef DEBUGGING_CLASS
-//	  out("Menu2 CONSTRUCTOR: cb_size=");
+//	  out("Menu CONSTRUCTOR: cb_size=");
 //	  outln(bufSize);
 //	#endif
 
@@ -209,17 +208,17 @@ cb_size(bufSize),
 #if defined(ARDUINO) && defined(BAUDRATE)
   /* ################
     This version definines the menu INPUT routine int men_getchar();
-    in the *program* not inside the Menu2 class.
-    Reverted to passing &men_getchar to the Menu2 class constructor.
+    in the *program* not inside the Menu class.
+    Reverted to passing &men_getchar to the Menu class constructor.
   */
   // Serial.begin(BAUDRATE);	// Start serial communication.################
 #endif
 }
 
 
-Menu2::~Menu2() {
+Menu::~Menu() {
 #ifdef DEBUGGING_CLASS
-  out("Menu2 DESTRUCTOR\n");
+  out("Menu DESTRUCTOR\n");
 #endif
 
   free(cb_buf);
@@ -233,7 +232,7 @@ Menu2::~Menu2() {
 /*
   cb_write() save a byte to the buffer:
   does *not* check if buffer is full				*/
-void Menu2::cb_write(char value) {	// ERROR handling where? ################
+void Menu::cb_write(char value) {	// ERROR handling where? ################
   int end = (cb_start + cb_count) % cb_size;
   cb_buf[end] = value;
   if (cb_count == cb_size)
@@ -246,7 +245,7 @@ void Menu2::cb_write(char value) {	// ERROR handling where? ################
 /*
   cb_read() get oldest byte from the buffer:
   does *not* check if buffer is empty				*/
-char Menu2::cb_read() {
+char Menu::cb_read() {
   char value = cb_buf[cb_start];
   cb_start = (cb_start + 1) % cb_size;
   --cb_count;
@@ -254,14 +253,14 @@ char Menu2::cb_read() {
 }
 
 
-/* inlined:  see menu2.h
+/* inlined:  see Menu.h
     // inlined:
-    int Menu2::cb_stored() {	// returns number of buffered bytes
+    int Menu::cb_stored() {	// returns number of buffered bytes
       return cb_count;
     }
     
     // inlined:
-    bool Menu2::cb_is_full() {
+    bool Menu::cb_is_full() {
       return cb_count == cb_size;
     }
 */
@@ -274,7 +273,7 @@ char Menu2::cb_read() {
   int cb_peek()
   return EOF if buffer is empty, else
   return next char without removing it from buffer		*/
-int Menu2::cb_peek() const {
+int Menu::cb_peek() const {
   if (cb_count == 0)
     return EOF;
 
@@ -287,7 +286,7 @@ int Menu2::cb_peek() const {
   like cb_peek() with offset>0
   return EOF if token does not exist
   return next char without removing it from buffer		*/
-int Menu2::cb_peek(int offset) const {
+int Menu::cb_peek(int offset) const {
   if (cb_count <= offset)
     return EOF;
 
@@ -296,7 +295,7 @@ int Menu2::cb_peek(int offset) const {
 
 
 /* void skip_spaces(): remove leading spaces from input buffer:	*/
-void Menu2::skip_spaces() {
+void Menu::skip_spaces() {
   while (cb_peek() == ' ')  //  EOF != ' ' end of buffer case ok
     cb_read();
 }
@@ -305,7 +304,7 @@ void Menu2::skip_spaces() {
 /* int next_input_token()
    return next non space input token if any
    else return EOF						*/
-int Menu2::next_input_token() const {
+int Menu::next_input_token() const {
   int token;
 
   for (int offset=0; offset<cb_count; offset++) {
@@ -327,7 +326,7 @@ int Menu2::next_input_token() const {
 
 #ifdef DEBUGGING_CIRCBUF
 /* cb_info() debugging help					*/
-void Menu2::cb_info() const {
+void Menu::cb_info() const {
   out("\nBuffer:\t\t");
   out(cb_buf);
 
@@ -376,7 +375,7 @@ void Menu2::cb_info() const {
 
 
 /* **************************************************************** */
-// lurk_then_do() main menu2 user interface:
+// lurk_then_do() main Menu user interface:
 
 
 const unsigned char buffer_[] MAYBE_PROGMEM = "buffer";
@@ -391,7 +390,7 @@ const unsigned char buffer_[] MAYBE_PROGMEM = "buffer";
      * disregard END tokens on empty buffer (left over from newline translation)
    return true if and only if the interpreter was called on the buffer.
  */
-bool Menu2::lurk_then_do() {
+bool Menu::lurk_then_do() {
   int INP;
   char c;
 
@@ -515,7 +514,7 @@ const unsigned char numberMissing_[] MAYBE_PROGMEM = "number missing\n";
 /* bool is_numeric()
    true if there is a next numeric chiffre
    false on missing data or not numeric data			*/
-bool Menu2::is_numeric() const {
+bool Menu::is_numeric() const {
   int c = cb_peek();
 
   if ( c < '0' )
@@ -527,7 +526,7 @@ bool Menu2::is_numeric() const {
   return true;
 }
 
-long Menu2::numeric_input(long default_value) {
+long Menu::numeric_input(long default_value) {
   long input, num, sign=1;
 
   skip_spaces();
@@ -568,7 +567,7 @@ long Menu2::numeric_input(long default_value) {
 
 
 /* drop leading numeric sequence from the buffer:		*/
-void Menu2::skip_numeric_input() {
+void Menu::skip_numeric_input() {
   while ( is_numeric() )
     cb_read();
 }
@@ -582,8 +581,8 @@ const unsigned char hotk_[] MAYBE_PROGMEM = "hotk ";
 const unsigned char group_[] MAYBE_PROGMEM = "group ";
 
 /* menu_page_info(char pg)  show a known pages' info	*/
-// void Menu2::menu_page_info(char pg) const {	// ################
-void Menu2::menu_page_info(char pg) {
+// void Menu::menu_page_info(char pg) const {	// ################
+void Menu::menu_page_info(char pg) {
   if ( pg == men_selected )
     out('*');
   else
@@ -596,8 +595,8 @@ void Menu2::menu_page_info(char pg) {
 
 
 /* menu_pages_info()  show all known pages' info		*/
-//-void Menu2::menu_pages_info() const ################
-void Menu2::menu_pages_info() {
+//-void Menu::menu_pages_info() const ################
+void Menu::menu_pages_info() {
   for (char pg = 0; pg < men_known; pg++)
     menu_page_info(pg);
 }
@@ -608,7 +607,7 @@ void Menu2::menu_pages_info() {
 
 const unsigned char addPg[] MAYBE_PROGMEM = "add_page";
 
-void Menu2::add_page(char *pageTitle, char hotkey,		\
+void Menu::add_page(char *pageTitle, char hotkey,		\
 		     void (*pageDisplay)(void), bool (*pageReaction)(char), const char ActiveGroup) {
   if (men_known < men_max) {
     men_pages[men_known].title = pageTitle;
@@ -645,11 +644,11 @@ const unsigned char _deco[] MAYBE_PROGMEM = " *** ** *\n";
 const unsigned char men_[] MAYBE_PROGMEM = "MENU ";
 
 /* Display menu	current menu page and common entries:		*/
-void Menu2::menu_display() {
+void Menu::menu_display() {
   char pg;
 
 #ifdef DEBUGGING_MENU
-  Menu2::out("\nmenu_display():\n");
+  Menu::out("\nmenu_display():\n");
 #endif
 
   // men_selected page display:
@@ -692,7 +691,7 @@ void Menu2::menu_display() {
 const unsigned char unknownToken[] MAYBE_PROGMEM = "unkown token ";
 
 /* act on buffer content tokens after receiving 'END token':	*/
-void Menu2::interpret_men_input() {
+void Menu::interpret_men_input() {
   char token, pg, page_group, selected_group;
   bool did_something, is_active;
 

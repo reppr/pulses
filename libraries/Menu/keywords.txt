@@ -1,6 +1,6 @@
-Menu2	KEYWORD1
+Menu	KEYWORD1
 menupage	KEYWORD1
-~Menu2	KEYWORD2
+~Menu	KEYWORD2
 lurk_then_do	KEYWORD2
 add_page	KEYWORD2
 menu_pages_info	KEYWORD2

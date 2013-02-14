@@ -1,10 +1,10 @@
 /* **************************************************************** */
 /*
-   menu2.h
+   Menu.h
 */
 /* **************************************************************** */
-#ifndef MENU2
-#define MENU2
+#ifndef MENU_h
+#define MENU_h
 
 
 #include <stdio.h>
@@ -58,12 +58,12 @@
 
 
 // Declare these early to make live easier:
-void menu2_setup();
+void Menu_setup();
 // int men_getchar();	// ??? ################
 
 
 /* **************************************************************** */
-/* struct menupage for Menu2::menupage *men_pages[]:		*/
+/* struct menupage for Menu::menupage *men_pages[]:		*/
 
 struct menupage {
   void (*display)(void);
@@ -79,13 +79,13 @@ struct menupage {
 
 
 /* **************************************************************** */
-/* class Menu2 {}						*/
+/* class Menu {}						*/
 
-class Menu2 {
+class Menu {
  public:
-  Menu2(int size, int menuPages, int (*maybeInput)(void));
-  //- Menu2(int size, int menuPages); ################
-  ~Menu2();
+  Menu(int size, int menuPages, int (*maybeInput)(void));
+  //- Menu(int size, int menuPages); ################
+  ~Menu();
 
   // high level API:
   bool lurk_then_do(void);
@@ -95,7 +95,7 @@ class Menu2 {
   void menu_pages_info();			// show all known pages' info
 
   // out(any );	  Overloaded menu output function family:
-  // Simple versions  void menu2::out():
+  // Simple versions  void Menu::out():
   void out(char c);		// char output
   void out(int i);		// int output
   void out(long l);		// long output
@@ -108,9 +108,9 @@ class Menu2 {
   void outln(const char *str);
 
 /* Second parameter versions with a trailing char:
-  Like menu2::out(xxx, char c)
+  Like Menu::out(xxx, char c)
   A char as a second parameter get's printed after first argument.
-  Like:  menu2::out(string, '\t');  or  menu2::out(string, ' '); */
+  Like:  Menu::out(string, '\t');  or  Menu::out(string, ' '); */
   void out(char c, char x);
   void out(int i, char x);
   void out(long l, char x);
