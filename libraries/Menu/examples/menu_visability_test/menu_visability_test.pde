@@ -259,29 +259,29 @@ bool program_actionY(char token) {
   switch (token) {
   case 'y':
     MENU.ln();
-    MENU.out("/°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°\\ \n");	// ecape \ ...
-    MENU.out("°      you have found the      °\n");
-    MENU.out("°                              °\n");
-    MENU.out("°    °********************°    °\n");
-    MENU.out("°    °** *  BACKDOOR  * **°    °\n");
-    MENU.out("°    °********************°    °\n");
-    MENU.out("°    °**/              \\**°    °\n");	// ecape \ ...
-    MENU.out("°    °**                **°    °\n");
-    MENU.out("°    °**   YY      YY   **°    °\n");
-    MENU.out("°    °**    YY    YY    **°    °\n");
-    MENU.out("°    °**     YY  YY     **°    °\n");
-    MENU.out("°    °**      Y\\/Y      **°    °\n");	// ecape \ ...        
-    MENU.out("°    °**       YY       **°    °\n");
-    MENU.out("°    °**       YY       **°    °\n");
-    MENU.out("°    °**       YY       **°    °\n");
-    MENU.out("°    °**       YY       **°    °\n");
-    MENU.out("°    °**       YY       **°    °\n");
-    MENU.out("°    °**                **°    °\n");
-    MENU.out("°    °**\\.  .******.  ./**°    °\n");	// ecape \ ...
-    MENU.out("°    °********************°    °\n");
-    MENU.out("°    °                    °    °\n");
-    MENU.out("°            (: :)             °\n");
-    MENU.out("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°\n");
+    MENU.out("/******************************\\ \n");	// ecape \ ...
+    MENU.out("*      you have found the      *\n");
+    MENU.out("*                              *\n");
+    MENU.out("*    **********************    *\n");
+    MENU.out("*    *** *  BACKDOOR  * ***    *\n");
+    MENU.out("*    **********************    *\n");
+    MENU.out("*    ***/              \\***    *\n");	// ecape \ ...
+    MENU.out("*    ***                ***    *\n");
+    MENU.out("*    ***   YY      YY   ***    *\n");
+    MENU.out("*    ***    YY    YY    ***    *\n");
+    MENU.out("*    ***     YY  YY     ***    *\n");
+    MENU.out("*    ***      Y\\/Y      ***    *\n");	// ecape \ ...        
+    MENU.out("*    ***       YY       ***    *\n");
+    MENU.out("*    ***       YY       ***    *\n");
+    MENU.out("*    ***       YY       ***    *\n");
+    MENU.out("*    ***       YY       ***    *\n");
+    MENU.out("*    ***       YY       ***    *\n");
+    MENU.out("*    ***                ***    *\n");
+    MENU.out("*    ***\\.  .******.  ./***    *\n");	// ecape \ ...
+    MENU.out("*    **********************    *\n");
+    MENU.out("*    *                    *    *\n");
+    MENU.out("*            (: :)             *\n");
+    MENU.out("\\******************************/\n");
     MENU.ln();
 
     return true;	// return true;  means there *was* action,
