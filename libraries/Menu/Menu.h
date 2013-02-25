@@ -6,9 +6,18 @@
 #ifndef MENU_h
 #define MENU_h
 
-
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef ARDUINO
+  #define STREAMTYPE	Stream
+#else	// DOES *NOT* WORK ON PC!	################
+  #include <iostream>
+
+  using namespace std;
+  ostream & Serial=cout;	// nice trick from johncc
+  #define STREAMTYPE	ostream
+#endif
 
 /* **************************************************************** */
 // Preprocessor macro logic:
@@ -59,7 +68,6 @@
 
 // Declare these early to make live easier:
 void Menu_setup();
-// int men_getchar();	// ??? ################
 
 
 /* **************************************************************** */
@@ -83,38 +91,38 @@ struct menupage {
 
 class Menu {
  public:
-  Menu(int size, int menuPages, int (*maybeInput)(void));
-  //- Menu(int size, int menuPages); ################
+  Menu(int size, int menuPages, int (*maybeInput)(void), STREAMTYPE & port);
   ~Menu();
 
   // high level API:
   bool lurk_then_do(void);
-  void add_page(char *pageTitle, char token, \
-		void (*pageDisplay)(), bool (*pageReaction)(char), char ActiveGroup);
+  void add_page(const char *pageTitle, const char hotkey, \
+		void (*pageDisplay)(), bool (*pageReaction)(char), \
+		const char ActiveGroup);
   //-  void menu_pages_info() const; ################
   void menu_pages_info();			// show all known pages' info
 
   // out(any );	  Overloaded menu output function family:
   // Simple versions  void Menu::out():
-  void out(char c);		// char output
-  void out(int i);		// int output
-  void out(long l);		// long output
+  void out(const char c);	// char output
+  void out(const int i);	// int output
+  void out(const long l);	// long output
   void out(const char *str);	// string
 
   // End of line versions  void outln():
-  void outln(char c);
-  void outln(int i);
-  void outln(long l);
+  void outln(const char c);
+  void outln(const int i);
+  void outln(const long l);
   void outln(const char *str);
 
 /* Second parameter versions with a trailing char:
   Like Menu::out(xxx, char c)
   A char as a second parameter get's printed after first argument.
   Like:  Menu::out(string, '\t');  or  Menu::out(string, ' '); */
-  void out(char c, char x);
-  void out(int i, char x);
-  void out(long l, char x);
-  void out(const char *str, char x);
+  void out(const char c, const char x);
+  void out(const int i,  const char x);
+  void out(const long l, const char x);
+  void out(const char *st, const char x);
 
 /* Output a newline, tab, space, '='
   ln(), tab(), space(), equals():				*/
@@ -125,8 +133,8 @@ class Menu {
 
   /* Output for ARDUINO PROGMEM strings.
      (Fake on Linux Pc c++ test version.)			*/
-  void out_progmem(const unsigned char *str);
-  void ticked(char c);		// Output a ticked char token like 'A'
+  void out_progmem(const char *str);
+  void ticked(const char c);	// Output a ticked char token like 'A'
 
   // int men_getchar();		// Basic menu char input function
 
@@ -167,6 +175,7 @@ class Menu {
   void cb_write(char value);	// Save a byte in buffer,  no checks
   char cb_read();		// Get oldest byte from the buffer.
 				// Does *not* check if buffer is empty.
+  STREAMTYPE & port_;		// output stream
 
   // Menu pages:
   char men_max;

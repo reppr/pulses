@@ -1,29 +1,32 @@
 /* **************************************************************** */
 /*
-  This version definines the menu INPUT routine int men_getchar();
-  in the *program* not inside the Menu class.
-  Reverted to passing &men_getchar to the Menu class constructor.
-*/
-
-/* **************************************************************** */
-/*
 		menu_visability_test.pde
 
-	  A simple example for library Menu. 
+	  A simple test example for library Menu. 
+*/
+
+/*
+  This version definines the menu INPUT routine int men_getchar();
+  in the *program* not inside the Menu class.
 */
 /* **************************************************************** */
-
 
 #include <stdio.h>
 #include <stdlib.h>
-#ifndef ARDUINO
+
+#ifdef ARDUINO
+  /* Keep ARDUINO GUI happy ;(		*/
+  #if ARDUINO >= 100
+    #include "Arduino.h"
+  #else
+    #include "WProgram.h"
+  #endif
+#else			// c++ Linux PC test version
   #include <iostream>
+  using namespace std;
 #endif
 
-
 #include <Menu.h>
-#include <Menu.cpp>
-
 
 #define BAUDRATE	115200		// works fine here
 
@@ -32,28 +35,27 @@
 /*
   This version definines the menu INPUT routine int men_getchar();
   in the *program* not inside the Menu class.
-  Reverted to passing &men_getchar to the Menu class constructor.
 */
-int men_getchar() {
 #ifdef ARDUINO
-  if (!Serial.available())	// ARDUINO
-    return EOF;
 
-  return Serial.read();
+  int men_getchar() {
+    if (!Serial.available())	// ARDUINO
+      return EOF;
+
+    return Serial.read();
+  }
+
+  Menu MENU(32, 5, &men_getchar, Serial);
+
 #else
- return getchar();		// c++ Linux PC test version
+
+  int men_getchar() {
+    return getchar();		// c++ Linux PC test version
+  }
+
+  Menu MENU(32, 5, &men_getchar, cout);
+
 #endif
-}
-
-
-/* **************************************************************** */
-/*
-  This version definines the menu INPUT routine int men_getchar();
-  in the *program* not inside the Menu class.
-  Reverted to passing &men_getchar to the Menu class constructor.
-*/
-Menu MENU(32, 5, &men_getchar);
-//- Menu MENU(32, 5);
 
 
 /* **************************************************************** */
@@ -101,6 +103,7 @@ void loop() {	// ARDUINO
 // Compile main() for c++ Linux PC test version:
 
 int main() {	// c++ Linux PC test version
+
   Menu_setup();
   MENU.out("Menu_visability_test  ==> ETHERNAL LOOP <==:\n");
 
@@ -147,8 +150,7 @@ int main() {	// c++ Linux PC test version
    MENU.add_page(menuTitleA, menuHotkeyA, &program_displayA, &program_actionA, '-');
 */
 
-char menuTitleA[] = "'A' PAGE";
-// char menuHotkeyA = 'A';
+const char menuTitleA[] = "'A' PAGE";
 
 
 /* **************************************************************** */
@@ -192,8 +194,7 @@ bool program_actionA(char token) {
    MENU.add_page(menuTitleB, menuHotkeyB, &program_displayB, &program_actionB, 'Y');
 */
 
-char menuTitleB[] = "Back Page";
-// char menuHotkeyB = 'B';
+const char menuTitleB[] = "Back Page";
 
 
 /* **************************************************************** */
@@ -238,8 +239,7 @@ bool program_actionB(char token) {
    // MENU.add_page(menuTitleY, ' ', &program_displayY, &program_actionY, 'Y');
 */
 
-char menuTitleY[] = "YYYYY";
-// char menuHotkeyY = ' ';
+const char menuTitleY[] = "YYYYY";
 
 /* **************************************************************** */
 void program_displayY() {
@@ -306,8 +306,7 @@ bool program_actionY(char token) {
    MENU.add_page(menuTitleX, menuHotkeyX, &program_displayX, &program_actionX, '+');
 */
 
-char menuTitleX[] = "XXX";
-// char menuHotkeyX = 'X';
+const char menuTitleX[] = "XXX";
 
 
 /* **************************************************************** */
@@ -359,8 +358,7 @@ bool program_actionX(char token) {
 /* the variable must be defined somewhere. Let's just call it 'value'.	*/
 long value = 42;
 
-char menuTitleN[] = "NUMBERS";
-// char menuHotkeyN = 'N';
+const char menuTitleN[] = "NUMBERS";
 
 
 /* **************************************************************** */
