@@ -176,6 +176,7 @@ class Menu {
   char cb_read();		// Get oldest byte from the buffer.
 				// Does *not* check if buffer is empty.
   STREAMTYPE & port_;		// output stream
+  bool echo_switch;		// switch echo of input to output
 
   // Menu pages:
   char men_max;

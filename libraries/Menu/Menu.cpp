@@ -182,7 +182,8 @@ Menu::Menu(int bufSize, int menuPages, int (*maybeInput)(void), Stream & port):
   cb_count(0),
   men_selected(0),
   cb_buf(NULL),
-  men_pages(NULL)
+  men_pages(NULL),
+  echo_switch(false)
 {
   cb_buf = (char *) malloc(cb_size);			    // ERROR handling ################
   men_pages = (menupage*) malloc(men_max * sizeof(menupage)); // ERROR handling ################
@@ -410,6 +411,9 @@ bool Menu::lurk_then_do() {
     }
     if ( c ) {		// accumulate in buffer
       cb_write(c);
+      if (echo_switch)
+	out(c);
+
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_CIRCBUF) || \
   defined(DEBUGGING_LURKING)
       out("accumulated ");
@@ -450,6 +454,9 @@ bool Menu::lurk_then_do() {
 	 so we treat only the first one (the one with the data).
       */
       if ( cb_stored() ) {	// disregard empty buffers
+	if (echo_switch)
+	  ln();
+
 	interpret_men_input();	// <<<<<<<< INTERPRET BUFFER CONTENT >>>>>>>>
 	menu_display();
 #if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
@@ -612,7 +619,7 @@ void Menu::add_page(const char *pageTitle, const char hotkey,		\
 /* **************************************************************** */
 // menu display:
 
-const char internalKeys[] MAYBE_PROGMEM = "'?' for menu";
+const char internalKeys[] MAYBE_PROGMEM = "'?' for menu  'e' toggle echo";
 const char qQuit[] MAYBE_PROGMEM = "  'q' quit page";
 const char deco_[] MAYBE_PROGMEM = "\n * ** *** ";
 const char _deco[] MAYBE_PROGMEM = " *** ** *\n";
@@ -824,6 +831,12 @@ void Menu::interpret_men_input() {
 #endif
       did_something = true;
       break;
+
+    case 'e':	// toggle echo
+      echo_switch = !echo_switch;
+      did_something = true;
+      break;
+
     }
 #ifdef DEBUGGING_MENU
     if (did_something) {

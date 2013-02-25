@@ -32,6 +32,7 @@ cb_count	KEYWORD2
 cb_buf	KEYWORD2
 cb_write	KEYWORD2
 cb_read	KEYWORD2
+echo_switch	KEYWORD2
 men_max	KEYWORD2
 men_known	KEYWORD2
 men_selected	KEYWORD2
