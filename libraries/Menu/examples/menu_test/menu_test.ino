@@ -1,6 +1,6 @@
 /* **************************************************************** */
 /*
-		menu_visability_test.pde
+		menu_test.ino
 
 	  A simple test example for library Menu. 
 */
