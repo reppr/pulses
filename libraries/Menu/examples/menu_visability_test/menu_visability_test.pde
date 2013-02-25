@@ -27,6 +27,9 @@
 #endif
 
 #include <Menu.h>
+#ifndef ARDUINO		// Does not work without that!  WHAT IS HAPPENING HERE???
+  #include <Menu.cpp>
+#endif
 
 #define BAUDRATE	115200		// works fine here
 

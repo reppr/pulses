@@ -169,6 +169,10 @@ const char error_[] MAYBE_PROGMEM = " ERROR: ";
 /* **************************************************************** */
 // Constructor/Destructors:
 
+#ifndef ARDUINO		// WARNING: Using Stream MACRO hack when not on ARDUINO!
+  #define Stream ostream
+#endif
+
 Menu::Menu(int bufSize, int menuPages, int (*maybeInput)(void), Stream & port):
   cb_size(bufSize),
   maybe_input(maybeInput),
@@ -183,6 +187,10 @@ Menu::Menu(int bufSize, int menuPages, int (*maybeInput)(void), Stream & port):
   cb_buf = (char *) malloc(cb_size);			    // ERROR handling ################
   men_pages = (menupage*) malloc(men_max * sizeof(menupage)); // ERROR handling ################
 }
+
+#ifndef ARDUINO		// WARNING: Using Stream MACRO hack when not on ARDUINO!
+  #undef Stream
+#endif
 
 
 Menu::~Menu() {
