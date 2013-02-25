@@ -1,5 +1,6 @@
 pulses
 
-rewriting of (primary) Arduino software.
-
+more on that later.
 working on the very basics...
+
+Implemented first working version of Menu library.
