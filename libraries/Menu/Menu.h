@@ -11,7 +11,7 @@
 
 #ifdef ARDUINO
   #define STREAMTYPE	Stream
-#else	// DOES *NOT* WORK ON PC!	################
+#else
   #include <iostream>
 
   using namespace std;

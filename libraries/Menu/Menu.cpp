@@ -658,7 +658,8 @@ void Menu::menu_display() {
 
   // Display internal key bindings:
   out_progmem(internalKeys);
-  out_progmem(qQuit);
+  if (men_selected)
+    out_progmem(qQuit);
   ln();
 
 #ifdef DEBUGGING_MENU
