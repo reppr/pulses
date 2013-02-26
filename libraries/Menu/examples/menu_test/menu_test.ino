@@ -60,6 +60,7 @@
 
 #endif
 
+const char guguseli[] MAYBE_PROGMEM = "\tdada...\n";
 
 /* **************************************************************** */
 /* I use this for both: Arduino example sketch and c++ PC test version.
@@ -79,7 +80,16 @@ void setup() {	// ARDUINO
     Reverted to passing &men_getchar to the Menu class constructor.
   */
   Serial.begin(BAUDRATE);	// Start serial communication.
+
+  MENU.out("For me this is a test for visability of menu pages:\n");
+  MENU.out("depending the page different menu keys are active.\n");
+  MENU.out("For you it's a very simple joke game to find out how it works...\n");
+  MENU.ln();
+
   Menu_setup();		// Tell the menu what to do.
+
+  // display menu at startup:
+  MENU.menu_display();
 }
 
 
@@ -107,8 +117,17 @@ void loop() {	// ARDUINO
 
 int main() {	// c++ Linux PC test version
 
-  Menu_setup();
+  MENU.ln();
+  MENU.out("For me this is a test for visability of menu pages:\n");
+  MENU.out("depending the page different menu keys are active.\n");
+  MENU.out("For you it's a very simple joke game to find out how it works...\n");
+
+  MENU.ln();
   MENU.out("Menu_visability_test  ==> ETHERNAL LOOP <==:\n");
+
+  Menu_setup();		// add program menu pages
+  MENU.menu_display();  // display menu at startup
+
 
   while(true)		// ==> ETHERNAL LOOP <==
     MENU.lurk_then_do();
@@ -166,9 +185,9 @@ void program_displayA() {
 /* **************************************************************** */
 bool program_actionA(char token) {
 #ifdef DEBUGGING_MENU
-  out("testing program_actionA(");
-  out(token);
-  out("):\n");
+  MENU.out("testing program_actionA(");
+  MENU.out(token);
+  MENU.out("):\n");
 #endif
   switch (token) {
   case 'a':
@@ -419,10 +438,6 @@ void Menu_setup() {
 
   // page N testing numeric input
   MENU.add_page(menuTitleN, 'N', &program_displayN, &program_actionN, '-');
-
-
-  // display menu at startup:
-  MENU.menu_display();
 }
 
 /* **************************************************************** */

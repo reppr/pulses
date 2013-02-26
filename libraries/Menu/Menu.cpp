@@ -25,149 +25,7 @@
 
 
 /* **************************************************************** */
-// #define I/O for ARDUINO:
-#ifdef ARDUINO
-
-//	/* int men_getchar();		// ARDUINO version
-//	   Read next char of menu input, if available.
-//	   Does not block, returns EOF or char.			*/
-//	int Menu::men_getchar() {		// ARDUINO version
-//	  if (!Serial.available())
-//	    return EOF;
-//	
-//	  return Serial.read();
-//	}
-
-
-#ifndef BAUDRATE
-  #define BAUDRATE	115200	// works fine here
-  // #define BAUDRATE	57600
-  // #define BAUDRATE	38400
-  // #define BAUDRATE	19200
-  // #define BAUDRATE	9600	// failsafe
-  // #define BAUDRATE	31250	// MIDI
-#endif
-
-
-/* void Menu::out(); overloaded menu output function family:	*/
-// Simple versions  void Menu::out():
-void Menu::out(const char c)	{ port_.print(c); }	// ARDUINO
-void Menu::out(const int i)	{ port_.print(i); }
-void Menu::out(const long l)	{ port_.print(l); }
-void Menu::out(const char *str) { port_.print(str); }
-
-// End of line versions  void outln():
-void Menu::outln(const char c)	{ port_.println(c); }
-void Menu::outln(const int i)	{ port_.println(i); }
-void Menu::outln(const long l)	{ port_.println(l); }
-void Menu::outln(const char *str) { port_.println(str); }
-
-/* Second parameter versions with a trailing char:
-  Like Menu::out(xxx, char c)
-  A char as a second parameter get's printed after first argument.
-  like:  Menu::out(string, '\t');  or  Menu::out(string, ' '); */
-void Menu::out(const char c, const char x) { port_.print(c); port_.print(x); }
-void Menu::out(const int i,  const char x) { port_.print(i); port_.print(x); }
-void Menu::out(const long l, const char x) { port_.print(l); port_.print(x); }
-void Menu::out(const char *str, char x)  { port_.print(str); port_.print(x); }
-
-/* Output a newline, tab, space, '='
-   ln(), tab(), space(), equals():			*/
-void Menu::ln()	    { port_.println(); }	// Output a newline
-void Menu::tab()    { port_.print('\t'); }	// Output a tab
-void Menu::space()  { port_.print(' '); }	// Output a space
-void Menu::equals() { port_.print('='); }	// Output char '='
-
-/* void ticked(char c)	Char output with ticks like 'A'	*/
-void Menu::ticked(const char c) {
-  port_.print("'"); port_.print(c); port_.print("'");
-}
-
-
-// PROGMEM strings 	PLANED TO BE DROPPED	################
-// PROGMEM strings 	#define out_progmem() for ARDUINO:
-/*
-void Menu::out_progmem(const unsigned char *str) {
-  unsigned char c;
-  while((c = pgm_read_byte(str++)))
-    port_.write((char) c);
-}
-*/
-
-// PROGMEM strings 	PLANED TO BE DROPPED	################
-// just a fake:
-void Menu::out_progmem(const char *str) { port_.print(str); }
-
-#else	// ! #ifdef ARDUINO	c++ Linux PC test version:
-/* **************************************************************** */
-// #define I/O for c++ Linux PC test version:
-
-//	/* int men_getchar();
-//	   Read next char of menu input, if available.
-//	   Returns EOF or char.						*/
-//	int Menu::men_getchar() { return getchar(); } // c++ Linux PC test version
-
-/* void Menu::out(); overloaded menu output function family:	*/
-// Simple versions  void Menu::out():
-void Menu::out(const char c)	{ putchar(c); }
-void Menu::out(const int i)	{ printf("%i", i); }
-void Menu::out(const long l)	{ printf("%d", l); }
-void Menu::out(const char *str) { printf("%s", str); }
-
-// End of line versions  void outln():
-void Menu::outln(const char c)	{ printf("%c\n", c); }
-void Menu::outln(const int i)	{ printf("%i\n", i); }
-void Menu::outln(const long l)	{ printf("%d\n", l); }
-void Menu::outln(const char *str) { printf("%s\n", str); }
-
-/* Second parameter versions with a trailing char:
-  Menu::out(xxx, char c)
-  A char as a second parameter get's printed after first argument.
-  like:  Menu::out(string, '\t');  or  Menu::out(string, ' '); */
-void Menu::out(const char c, const char x) { printf("%c%c", c, x); }
-void Menu::out(const int i,  const char x) { printf("%i%c", i, x); }
-void Menu::out(const long l, const char x) { printf("%d%c", l, x); }
-void Menu::out(const char *str, char x)    { printf("%s%c", str, x);}
-
-/* Output a newline, tab, space, '='
-   ln(), tab(), space(), equals():			*/
-void Menu::ln()		{ putchar('\n'); } // Output a newline
-void Menu::tab()	{ putchar('\t'); } // Output a tab	   
-void Menu::space()	{ putchar(' '); }  // Output a space  
-void Menu::equals()	{ putchar('='); }  // Output char '=' 
-
-/* void ticked(char c)	Char output with ticks like 'A'	*/
-void Menu::ticked(const char c)	{ printf("\'%c\'", c); }   // prints 'c'
-
-
-/* Fake PROGMEM string output on PC:	*/
-/*
-void Menu::out_progmem(const char *str) { // Fake PROGMEM output
-  char c;
-
-  while(c = *str++)
-    out(c);
-}
-*/
-void Menu::out_progmem(const char *str) { printf("%s", str); }
-
-
-#endif	// [ ARDUINO else ]  c++ test version
-/* **************************************************************** */
-
-
-/* **************************************************************** */
-/* Strings for output having the arduino as target in mind:
-   MAYBE_PROGMEM is either empty or has 'PROGMEM' in it.
-   so we can compile them in program memory to save RAM on arduino,
-   but still test on c++ Linux PC.
-								*/	
-const char outOfRange[] MAYBE_PROGMEM = "out of range";
-const char error_[] MAYBE_PROGMEM = " ERROR: ";
-
-
-/* **************************************************************** */
-// Constructor/Destructors:
+// Constructor/Destructor:
 
 #ifndef ARDUINO		// WARNING: Using Stream MACRO hack when not on ARDUINO!
   #define Stream ostream
@@ -195,10 +53,6 @@ Menu::Menu(int bufSize, int menuPages, int (*maybeInput)(void), Stream & port):
 
 
 Menu::~Menu() {
-#ifdef DEBUGGING_CLASS
-  out("Menu DESTRUCTOR\n");
-#endif
-
   free(cb_buf);
   free(men_pages);
 }
@@ -242,6 +96,227 @@ char Menu::cb_read() {
       return cb_count == cb_size;
     }
 */
+
+
+/* **************************************************************** */
+// circ buf debugging:
+
+#ifdef DEBUGGING_CIRCBUF
+/* cb_info() debugging help					*/
+void Menu::cb_info() const {
+  out("\nBuffer:\t\t");
+  out(cb_buf);
+
+  out("\n  size:\t\t");
+  out(cb_size);
+
+  out("\n  count:\t");
+  out(cb_count);
+
+  out("\n  start:\t");
+  outln(cb_start);
+
+  int value = cb_peek();
+  out("\n  char:\t\t");
+  if (value != -1) {
+    out(value);
+    out("\t");
+    out((char) value);
+    if ( is_numeric() )
+      out("  numeric CHIFFRE\n");
+    else
+      out("  NAN\n");
+  } else
+    out("(none)\n");
+
+  value = next_input_token();
+  out("\n  next_input_token()\t: ");
+  out(value);
+  out("\t");
+  outln((char) value);
+  ln();
+
+  for (int i=0; i<=cb_count; i++) {
+    value = cb_peek(i);
+    out("  cb_peek(");
+    out(i);
+    out(")\t\t: ");
+    out(value);
+    out("\t");
+    outln((char) value);
+  }
+
+  ln();
+}
+#endif
+
+
+/* **************************************************************** */
+// #define I/O for ARDUINO:
+#ifdef ARDUINO
+
+//	/* int men_getchar();		// ARDUINO version
+//	   Read next char of menu input, if available.
+//	   Does not block, returns EOF or char.			*/
+//	int Menu::men_getchar() {		// ARDUINO version
+//	  if (!Serial.available())
+//	    return EOF;
+//	
+//	  return Serial.read();
+//	}
+
+
+#ifndef BAUDRATE
+  #define BAUDRATE	115200	// works fine here
+  // #define BAUDRATE	57600
+  // #define BAUDRATE	38400
+  // #define BAUDRATE	19200
+  // #define BAUDRATE	9600	// failsafe
+  // #define BAUDRATE	31250	// MIDI
+#endif
+
+
+/* void Menu::out(); overloaded menu output function family:	*/
+// Simple versions  void Menu::out():
+void Menu::out(const char c)	const	{ port_.print(c); }	// ARDUINO
+void Menu::out(const int i)	const	{ port_.print(i); }
+void Menu::out(const long l)	const	{ port_.print(l); }
+void Menu::out(const char *str)	const { port_.print(str); }
+
+// End of line versions  void outln():
+void Menu::outln(const char c)	const	{ port_.println(c); }
+void Menu::outln(const int i)	const	{ port_.println(i); }
+void Menu::outln(const long l)	const	{ port_.println(l); }
+void Menu::outln(const char *str) const { port_.println(str); }
+
+/* Second parameter versions with a trailing char:
+  Like Menu::out(xxx, char c)
+  A char as a second parameter get's printed after first argument.
+  like:  Menu::out(string, '\t');  or  Menu::out(string, ' '); */
+void Menu::out(const char c, const char x) const {
+  port_.print(c); port_.print(x);
+}
+
+void Menu::out(const int i,  const char x) const {
+  port_.print(i); port_.print(x);
+}
+
+void Menu::out(const long l, const char x) const {
+  port_.print(l); port_.print(x);
+}
+
+void Menu::out(const char *str, char x)    const {
+  port_.print(str); port_.print(x);
+}
+
+/* Output a newline, tab, space, '='
+   ln(), tab(), space(), equals():			*/
+void Menu::ln()	    const { port_.println(); }	 // Output a newline
+void Menu::tab()    const { port_.print('\t'); } // Output a tab
+void Menu::space()  const { port_.print(' '); }	 // Output a space
+void Menu::equals() const { port_.print('='); }	 // Output char '='
+
+/* void ticked(char c)	Char output with ticks like 'A'	*/
+void Menu::ticked(const char c) const {
+  port_.print("'"); port_.print(c); port_.print("'");
+}
+
+
+// PROGMEM strings 	PLANED TO BE DROPPED	################
+// PROGMEM strings 	#define out_progmem() for ARDUINO:
+/*
+void Menu::out_progmem(const unsigned char *str) {
+  unsigned char c;
+  while((c = pgm_read_byte(str++)))
+    port_.write((char) c);
+}
+*/
+
+// PROGMEM strings 	PLANED TO BE DROPPED	################
+// just a fake doubling normal out():
+void Menu::out_progmem(const char *str) const { port_.print(str); }
+
+#else	// ! #ifdef ARDUINO	c++ Linux PC test version:
+/* **************************************************************** */
+// #define I/O for c++ Linux PC test version:
+
+//	/* int men_getchar();
+//	   Read next char of menu input, if available.
+//	   Returns EOF or char.						*/
+//	int Menu::men_getchar() { return getchar(); } // c++ Linux PC test version
+
+/* void Menu::out(); overloaded menu output function family:	*/
+// Simple versions  void Menu::out():
+void Menu::out(const char c)	const	{ putchar(c); }
+void Menu::out(const int i)	const	{ printf("%i", i); }
+void Menu::out(const long l)	const	{ printf("%d", l); }
+void Menu::out(const char *str)	const	{ printf("%s", str); }
+
+// End of line versions  void outln():
+void Menu::outln(const char c)	const	{ printf("%c\n", c); }
+void Menu::outln(const int i)	const	{ printf("%i\n", i); }
+void Menu::outln(const long l)	const	{ printf("%d\n", l); }
+void Menu::outln(const char *str) const { printf("%s\n", str); }
+
+/* Second parameter versions with a trailing char:
+  Menu::out(xxx, char c)
+  A char as a second parameter get's printed after first argument.
+  like:  Menu::out(string, '\t');  or  Menu::out(string, ' '); */
+void Menu::out(const char c, const char x) const {
+  printf("%c%c", c, x);
+}
+
+void Menu::out(const int i,  const char x) const {
+  printf("%i%c", i, x);
+}
+
+void Menu::out(const long l, const char x) const {
+  printf("%d%c", l, x);
+}
+
+void Menu::out(const char *str, char x)    const {
+  printf("%s%c", str, x);
+}
+
+/* Output a newline, tab, space, '='
+   ln(), tab(), space(), equals():			*/
+void Menu::ln()		const { putchar('\n'); } // Output a newline
+void Menu::tab()	const { putchar('\t'); } // Output a tab	   
+void Menu::space()	const { putchar(' '); }  // Output a space  
+void Menu::equals()	const { putchar('='); }  // Output char '=' 
+
+/* void ticked(char c)	Char output with ticks like 'A'	*/
+void Menu::ticked(const char c)	const {   // prints 'c'
+  printf("\'%c\'", c);
+}
+
+
+/* Fake PROGMEM string output on PC:	*/
+/*
+void Menu::out_progmem(const char *str) { // Fake PROGMEM output
+  char c;
+
+  while(c = *str++)
+    out(c);
+}
+*/
+// PROGMEM strings 	PLANED TO BE DROPPED	################
+// just a fake doubling normal out():
+void Menu::out_progmem(const char *str) const { printf("%s", str); }
+
+
+#endif	// [ ARDUINO else ]  c++ test version
+/* **************************************************************** */
+
+
+/* **************************************************************** */
+/* Strings for output having the arduino as target in mind:
+   MAYBE_PROGMEM is either empty or has 'PROGMEM' in it.
+   so we can compile them in program memory to save RAM on arduino,
+   but still test on c++ Linux PC.
+								*/	
+const char outOfRange[] MAYBE_PROGMEM = "out of range";
+const char error_[] MAYBE_PROGMEM = " ERROR: ";
 
 
 /* **************************************************************** */
@@ -297,59 +372,6 @@ int Menu::next_input_token() const {
   }
   return EOF;		// no meaningful token found
 }
-
-
-/* **************************************************************** */
-// circ buf debugging:
-
-#ifdef DEBUGGING_CIRCBUF
-/* cb_info() debugging help					*/
-void Menu::cb_info() const {
-  out("\nBuffer:\t\t");
-  out(cb_buf);
-
-  out("\n  size:\t\t");
-  out(cb_size);
-
-  out("\n  count:\t");
-  out(cb_count);
-
-  out("\n  start:\t");
-  outln(cb_start);
-
-  int value = cb_peek();
-  out("\n  char:\t\t");
-  if (value != -1) {
-    out(value);
-    out("\t");
-    out((char) value);
-    if ( is_numeric() )
-      out("  numeric CHIFFRE\n");
-    else
-      out("  NAN\n");
-  } else
-    out("(none)\n");
-
-  value = next_input_token();
-  out("\n  next_input_token()\t: ");
-  out(value);
-  out("\t");
-  outln((char) value);
-  outln();
-
-  for (int i=0; i<=cb_count; i++) {
-    value = cb_peek(i);
-    out("  cb_peek(");
-    out(i);
-    out(")\t\t: ");
-    out(value);
-    out("\t");
-    outln((char) value);
-  }
-
-  outln();
-}
-#endif
 
 
 /* **************************************************************** */
@@ -564,7 +586,7 @@ const char group_[] MAYBE_PROGMEM = "group ";
 
 /* menu_page_info(char pg)  show a known pages' info	*/
 // void Menu::menu_page_info(char pg) const {	// ################
-void Menu::menu_page_info(char pg) {
+void Menu::menu_page_info(char pg) const {
   if ( pg == men_selected )
     out('*');
   else
@@ -578,7 +600,7 @@ void Menu::menu_page_info(char pg) {
 
 /* menu_pages_info()  show all known pages' info		*/
 //-void Menu::menu_pages_info() const ################
-void Menu::menu_pages_info() {
+void Menu::menu_pages_info() const {
   for (char pg = 0; pg < men_known; pg++)
     menu_page_info(pg);
 }
@@ -626,7 +648,7 @@ const char _deco[] MAYBE_PROGMEM = " *** ** *\n";
 const char men_[] MAYBE_PROGMEM = "MENU ";
 
 /* Display menu	current menu page and common entries:		*/
-void Menu::menu_display() {
+void Menu::menu_display() const {
   char pg;
 
 #ifdef DEBUGGING_MENU

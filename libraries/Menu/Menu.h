@@ -49,7 +49,7 @@
   #include "WProgram.h"
 #endif
 
-#include <avr/pgmspace.h>
+// #include <avr/pgmspace.h>	PROGMEM		################ DEACTIVATED
 
 
 #else /* **************** LINUX **************** */
@@ -66,7 +66,7 @@
 /* **************************************************************** */
 
 
-// Declare these early to make live easier:
+// Declare early to make live easier:
 void Menu_setup();
 
 
@@ -91,77 +91,78 @@ struct menupage {
 
 class Menu {
  public:
-  Menu(int size, int menuPages, int (*maybeInput)(void), STREAMTYPE & port);
   ~Menu();
 
   // high level API:
+  Menu(int size, int menuPages, int (*maybeInput)(void), STREAMTYPE & port);
   bool lurk_then_do(void);
   void add_page(const char *pageTitle, const char hotkey, \
 		void (*pageDisplay)(), bool (*pageReaction)(char), \
 		const char ActiveGroup);
-  //-  void menu_pages_info() const; ################
-  void menu_pages_info();			// show all known pages' info
+ 
 
-  // out(any );	  Overloaded menu output function family:
-  // Simple versions  void Menu::out():
-  void out(const char c);	// char output
-  void out(const int i);	// int output
-  void out(const long l);	// long output
-  void out(const char *str);	// string
-
-  // End of line versions  void outln():
-  void outln(const char c);
-  void outln(const int i);
-  void outln(const long l);
-  void outln(const char *str);
-
-/* Second parameter versions with a trailing char:
-  Like Menu::out(xxx, char c)
-  A char as a second parameter get's printed after first argument.
-  Like:  Menu::out(string, '\t');  or  Menu::out(string, ' '); */
-  void out(const char c, const char x);
-  void out(const int i,  const char x);
-  void out(const long l, const char x);
-  void out(const char *st, const char x);
-
-/* Output a newline, tab, space, '='
-  ln(), tab(), space(), equals():				*/
-  void ln();			// Output a newline
-  void tab();			// Output a tab
-  void space();			// Output a space
-  void equals();		// Output char '='
-
-  /* Output for ARDUINO PROGMEM strings.
-     (Fake on Linux Pc c++ test version.)			*/
-  void out_progmem(const char *str);
-  void ticked(const char c);	// Output a ticked char token like 'A'
-
-  // int men_getchar();		// Basic menu char input function
+  void flush() const { port_.flush(); }
 
   int cb_peek() const;			// peek at next if any, else return EOL
   int cb_peek(int offset) const;	// peek at next, overnext... if any, else EOL
+
   void skip_spaces();			// skip leading spaces from the buffer
   int next_input_token() const;		// next non space input token if any, else EOL
   bool is_numeric() const;		// test if next token will be a numeric chiffre
   long numeric_input(long default_value);  // read a number from the buffer
   void skip_numeric_input();		// drop leading numeric sequence from the buffer
 
-  void menu_display();			// display the menu:
+  void menu_display() const;		// display the menu:
 					//   selected menu page,
 					//   page hot keys,
 					//   internal hot keys.
 
-  // Act on buffer content tokens after seeing 'end token':
-  void interpret_men_input();		// Menu input interpreter
+  // out(any );	  Overloaded menu output function family:
+  // Simple versions  void Menu::out():
+  void out(const char c)    const;	// char output
+  void out(const int i)     const;	// int output
+  void out(const long l)    const;	// long output
+  void out(const char *str) const;	// string
+
+  // End of line versions  void outln():
+  void outln(const char c)    const;
+  void outln(const int i)     const;
+  void outln(const long l)    const;
+  void outln(const char *str) const;
+
+/* Second parameter versions with a trailing char:
+  Like Menu::out(xxx, char c)
+  A char as a second parameter get's printed after first argument.
+  Like:  Menu::out(string, '\t');  or  Menu::out(string, ' '); */
+  void out(const char c, const char x)   const;
+  void out(const int i,  const char x)   const;
+  void out(const long l, const char x)   const;
+  void out(const char *st, const char x) const;
+
+/* Output a newline, tab, space, '='
+  ln(), tab(), space(), equals():				*/
+  void ln()	const;		// Output a newline
+  void tab()	const;		// Output a tab
+  void space()	const;		// Output a space
+  void equals()	const;		// Output char '='
+
+  /* Output for ARDUINO PROGMEM strings.
+     (Fake on Linux Pc c++ test version.)			*/
+  void out_progmem(const char *str) const;
+  void ticked(const char c) const;	// Output a ticked char token like 'A'
 
 
  protected:
-  //-  void menu_page_info(char pg) const; ################
-  void menu_page_info(char pg);		// show a menu pages' info
+  // Act on buffer content tokens after seeing 'end token':
+  void interpret_men_input();		// Menu input interpreter
+
   bool cb_is_full() const { return cb_count == cb_size; } // inlined: buffer full?
 #ifdef DEBUGGING_CIRCBUF
   void cb_info() const;			// Debugging help
 #endif
+  void menu_page_info(char pg)	const;	// show a menu pages' info
+  void menu_pages_info()	const;	// show all known pages' info
+
   int (*maybe_input)(void);	// maybe_input()  Must return EOF or next char
   bool (*action)(void);		// Will be called on receiving an end token
 
