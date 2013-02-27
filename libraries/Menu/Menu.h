@@ -34,6 +34,7 @@
 /* **************** ARDUINO **************** */
 #if defined(ARDUINO)
 
+// PROGMEM strings 	preparing for some tests before removing
 /* MAYBE_PROGMEM  *MUST* be #defined,
    either as 'PROGMEM' to save RAM on ARDUINO
    or empty for a PC test run.			*/
@@ -49,12 +50,14 @@
   #include "WProgram.h"
 #endif
 
+// PROGMEM strings 	preparing for some tests before removing
 // #include <avr/pgmspace.h>	PROGMEM		################ DEACTIVATED
 
 
 #else /* **************** LINUX **************** */
 /*	  for c++ development on a Linux PC	 */
 
+// PROGMEM strings 	preparing for some tests before removing
 /* MAYBE_PROGMEM  *MUST* be #defined,
    either as 'PROGMEM' to save RAM on ARDUINO
    or empty for a PC test run.			*/
@@ -139,6 +142,13 @@ class Menu {
   void out(const long l, const char x)   const;
   void out(const char *st, const char x) const;
 
+  void ticked(const char c) const;	// Output a ticked char token like 'A'
+
+
+  /* String recycling:						*/
+  void OutOfRange() const;
+  void Error_() const;
+
 /* Output a newline, tab, space, '='
   ln(), tab(), space(), equals():				*/
   void ln()	const;		// Output a newline
@@ -146,10 +156,10 @@ class Menu {
   void space()	const;		// Output a space
   void equals()	const;		// Output char '='
 
+  // PROGMEM strings 	preparing for some tests before removing
   /* Output for ARDUINO PROGMEM strings.
      (Fake on Linux Pc c++ test version.)			*/
   void out_progmem(const char *str) const;
-  void ticked(const char c) const;	// Output a ticked char token like 'A'
 
 
  protected:

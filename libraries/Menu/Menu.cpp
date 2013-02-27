@@ -209,6 +209,15 @@ void Menu::out(const char *str, char x)    const {
   port_.print(str); port_.print(x);
 }
 
+/* void ticked(char c)	Char output with ticks like 'A'	*/
+void Menu::ticked(const char c) const {
+  port_.print("'"); port_.print(c); port_.print("'");
+}
+
+// String recycling:
+void Menu::OutOfRange()	const { out("out of range"); }
+void Menu::Error_()	const { out(" ERROR: "); }
+
 /* Output a newline, tab, space, '='
    ln(), tab(), space(), equals():			*/
 void Menu::ln()	    const { port_.println(); }	 // Output a newline
@@ -216,13 +225,9 @@ void Menu::tab()    const { port_.print('\t'); } // Output a tab
 void Menu::space()  const { port_.print(' '); }	 // Output a space
 void Menu::equals() const { port_.print('='); }	 // Output char '='
 
-/* void ticked(char c)	Char output with ticks like 'A'	*/
-void Menu::ticked(const char c) const {
-  port_.print("'"); port_.print(c); port_.print("'");
-}
-
 
 // PROGMEM strings 	PLANED TO BE DROPPED	################
+// PROGMEM strings 	preparing for some tests before removing
 // PROGMEM strings 	#define out_progmem() for ARDUINO:
 /*
 void Menu::out_progmem(const unsigned char *str) {
@@ -291,6 +296,7 @@ void Menu::ticked(const char c)	const {   // prints 'c'
 }
 
 
+// PROGMEM strings 	preparing for some tests before removing
 /* Fake PROGMEM string output on PC:	*/
 /*
 void Menu::out_progmem(const char *str) { // Fake PROGMEM output
