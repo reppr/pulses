@@ -21,8 +21,14 @@
 
 /* **************************************************************** */
 // Preparing for PROGMEM test before planned removal:
-#define SHOW_FREE_RAM
-#ifndef ARDUINO	  // PC: fake Arduino F("string") macro as noop.
+#ifdef ARDUINO
+  #define SHOW_FREE_RAM
+  // uncomment for RAM tests:
+  #define USE_F_MACRO
+#endif
+
+#ifndef USE_F_MACRO
+  // on PC: fake Arduino F("string") macro as noop:
   #define F(s)	(s)
 #endif
 
