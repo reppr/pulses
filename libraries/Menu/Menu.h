@@ -23,12 +23,14 @@
 // Preparing for PROGMEM test before planned removal:
 #ifdef ARDUINO
   #define SHOW_FREE_RAM
-  // uncomment for RAM tests:
+
+  // Comment/uncomment for RAM tests:
   #define USE_F_MACRO
+  // #define USE_PROGMEM
 #endif
 
 #ifndef USE_F_MACRO
-  // on PC: fake Arduino F("string") macro as noop:
+  // For tests and on PC:  Fake Arduino F("string") macro as noop:
   #define F(s)	(s)
 #endif
 
@@ -47,15 +49,6 @@
 /* **************** ARDUINO **************** */
 #if defined(ARDUINO)
 
-// PROGMEM strings 	preparing for some tests before removing
-/* MAYBE_PROGMEM  *MUST* be #defined,
-   either as 'PROGMEM' to save RAM on ARDUINO
-   or empty for a PC test run.			*/
-#ifndef MAYBE_PROGMEM		// commandline?
-  // #define MAYBE_PROGMEM	PROGMEM		################ DEACTIVATED
-  #define MAYBE_PROGMEM
-#endif
-
 /* Keep ARDUINO GUI happy ;(				*/
 #if ARDUINO >= 100
   #include "Arduino.h"
@@ -64,7 +57,16 @@
 #endif
 
 // PROGMEM strings 	preparing for some tests before removing
-// #include <avr/pgmspace.h>	PROGMEM		################ DEACTIVATED
+
+/* MAYBE_PROGMEM  *MUST* be #defined,
+   either as 'PROGMEM' to save RAM on ARDUINO
+   or empty for a PC test run.			*/
+#ifdef USE_PROGMEM
+  #define MAYBE_PROGMEM	PROGMEM
+  #include <avr/pgmspace.h>
+#else
+  #define MAYBE_PROGMEM
+#endif
 
 
 #else /* **************** LINUX **************** */
@@ -74,9 +76,7 @@
 /* MAYBE_PROGMEM  *MUST* be #defined,
    either as 'PROGMEM' to save RAM on ARDUINO
    or empty for a PC test run.			*/
-#ifndef MAYBE_PROGMEM		// commandline?
   #define MAYBE_PROGMEM
-#endif
 
 #endif // [ARDUINO else] LINUX preprocessor stuff.
 /* **************************************************************** */
