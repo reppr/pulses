@@ -22,6 +22,9 @@
 /* **************************************************************** */
 // Preparing for PROGMEM test before planned removal:
 #define SHOW_FREE_RAM
+#ifndef ARDUINO	  // PC: fake Arduino F("string") macro as noop.
+  #define F(s)	(s)
+#endif
 
 /* **************************************************************** */
 // Preprocessor macro logic:
@@ -130,6 +133,10 @@ class Menu {
   void out(const int i)     const;	// int output
   void out(const long l)    const;	// long output
   void out(const char *str) const;	// string
+
+#ifdef ARDUINO
+  void out(const __FlashStringHelper*) const;	// Arduino macro: F("string")
+#endif
 
   // End of line versions  void outln():
   void outln(const char c)    const;
