@@ -124,15 +124,6 @@ class Menu {
   void outln(const long l)    const;
   void outln(const char *str) const;
 
-/* Second parameter versions with a trailing char:
-  Like Menu::out(xxx, char c)
-  A char as a second parameter get's printed after first argument.
-  Like:  Menu::out(string, '\t');  or  Menu::out(string, ' '); */
-  void out(const char c, const char x)   const;
-  void out(const int i,  const char x)   const;
-  void out(const long l, const char x)   const;
-  void out(const char *st, const char x) const;
-
   void ticked(const char c) const;	// Output a ticked char token like 'A'
 
 

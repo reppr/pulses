@@ -200,26 +200,6 @@ void Menu::outln(const int i)	const	{ port_.println(i); }
 void Menu::outln(const long l)	const	{ port_.println(l); }
 void Menu::outln(const char *str) const { port_.println(str); }
 
-/* Second parameter versions with a trailing char:
-  Like Menu::out(xxx, char c)
-  A char as a second parameter get's printed after first argument.
-  like:  Menu::out(string, '\t');  or  Menu::out(string, ' '); */
-void Menu::out(const char c, const char x) const {
-  port_.print(c); port_.print(x);
-}
-
-void Menu::out(const int i,  const char x) const {
-  port_.print(i); port_.print(x);
-}
-
-void Menu::out(const long l, const char x) const {
-  port_.print(l); port_.print(x);
-}
-
-void Menu::out(const char *str, char x)    const {
-  port_.print(str); port_.print(x);
-}
-
 /* void ticked(char c)	Char output with ticks like 'A'	*/
 void Menu::ticked(const char c) const {
   port_.print("'"); port_.print(c); port_.print("'");
@@ -273,26 +253,6 @@ void Menu::outln(const char c)	const	{ printf("%c\n", c); }
 void Menu::outln(const int i)	const	{ printf("%i\n", i); }
 void Menu::outln(const long l)	const	{ printf("%d\n", l); }
 void Menu::outln(const char *str) const { printf("%s\n", str); }
-
-/* Second parameter versions with a trailing char:
-  Menu::out(xxx, char c)
-  A char as a second parameter get's printed after first argument.
-  like:  Menu::out(string, '\t');  or  Menu::out(string, ' '); */
-void Menu::out(const char c, const char x) const {
-  printf("%c%c", c, x);
-}
-
-void Menu::out(const int i,  const char x) const {
-  printf("%i%c", i, x);
-}
-
-void Menu::out(const long l, const char x) const {
-  printf("%d%c", l, x);
-}
-
-void Menu::out(const char *str, char x)    const {
-  printf("%s%c", str, x);
-}
 
 /* Output a newline, tab, space, '='
    ln(), tab(), space(), equals():			*/
