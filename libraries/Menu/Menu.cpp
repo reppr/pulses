@@ -64,7 +64,7 @@ Menu::~Menu() {
 /*
   cb_write() save a byte to the buffer:
   does *not* check if buffer is full				*/
-void Menu::cb_write(char value) {	// ERROR handling where? ################
+void Menu::cb_write(char value) {
   int end = (cb_start + cb_count) % cb_size;
   cb_buf[end] = value;
   if (cb_count == cb_size)
@@ -87,12 +87,12 @@ char Menu::cb_read() {
 
 /* inlined:  see Menu.h
     // inlined:
-    int Menu::cb_stored() {	// returns number of buffered bytes
+    int Menu::cb_stored() const {	// returns number of buffered bytes
       return cb_count;
     }
     
     // inlined:
-    bool Menu::cb_is_full() {
+    bool Menu::cb_is_full() const {
       return cb_count == cb_size;
     }
 */
@@ -185,7 +185,7 @@ void Menu::cb_info() const {
 void Menu::out(const char c)	const	{ port_.print(c); }	// ARDUINO
 void Menu::out(const int i)	const	{ port_.print(i); }
 void Menu::out(const long l)	const	{ port_.print(l); }
-void Menu::out(const char *str)	const { port_.print(str); }
+void Menu::out(const char *str)	const	{ port_.print(str); }
 
 #ifdef ARDUINO	// Arduino F() macro: out(F("string");
   void Menu::out(const __FlashStringHelper* str) const {
@@ -214,7 +214,7 @@ void Menu::equals() const { port_.print('='); }	 // Output char '='
 
 
 #if defined(ARDUINO) && defined(SHOW_FREE_RAM)	// Arduino: RAM usage
-  /* int get_free_RAM(): determine RAM usage:			*/
+  /* int get_free_RAM(): determine free RAM on Arduino:		*/
   int Menu::get_free_RAM() const {
     int free;
     extern int __bss_end;
@@ -271,7 +271,11 @@ void Menu::ticked(const char c)	const {   // prints 'c'
 
 
 // String recycling:
+
+// void OutOfRange(): output "out of range"
 void Menu::OutOfRange()	const { out(F("out of range")); }
+
+// void Error(): output " ERROR: "
 void Menu::Error_()	const { out(F(" ERROR: ")); }
 
 
@@ -534,7 +538,6 @@ void Menu::skip_numeric_input() {
 
 
 /* menu_page_info(char pg)  show a known pages' info	*/
-// void Menu::menu_page_info(char pg) const {	// ################
 void Menu::menu_page_info(char pg) const {
   if ( pg == men_selected )
     out('*');
@@ -548,7 +551,6 @@ void Menu::menu_page_info(char pg) const {
 
 
 /* menu_pages_info()  show all known pages' info		*/
-//-void Menu::menu_pages_info() const ################
 void Menu::menu_pages_info() const {
   for (char pg = 0; pg < men_known; pg++)
     menu_page_info(pg);

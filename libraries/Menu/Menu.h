@@ -20,11 +20,10 @@
 #endif
 
 /* **************************************************************** */
-// Preparing for PROGMEM test before planned removal:
 #ifdef ARDUINO
   #define SHOW_FREE_RAM
 
-  // Comment/uncomment for RAM tests:
+  // comment/uncomment for RAM tests:
   #define USE_F_MACRO
 #endif
 
@@ -33,12 +32,12 @@
   #define F(s)	(s)
 #endif
 
+
 /* **************************************************************** */
 // Preprocessor macro logic:
 
 /* Debugging macros:		*/
 #ifdef DEBUGGING_ALL
-  #define DEBUGGING_CLASS
   #define DEBUGGING_CIRCBUF
   #define DEBUGGING_LURKING
   #define DEBUGGING_MENU
@@ -107,7 +106,7 @@ class Menu {
 					//   page hot keys,
 					//   internal hot keys.
 
-  // out(any );	  Overloaded menu output function family:
+  // out(any );	  overloaded menu output function family:
   // Simple versions  void Menu::out():
   void out(const char c)    const;	// char output
   void out(const int i)     const;	// int output
@@ -115,28 +114,28 @@ class Menu {
   void out(const char *str) const;	// string
 
 #ifdef ARDUINO
-  void out(const __FlashStringHelper*) const;	// Arduino macro: F("string")
+  void out(const __FlashStringHelper*) const; // Arduino macro: F("string")
 #endif
 
   // End of line versions  void outln():
-  void outln(const char c)    const;
-  void outln(const int i)     const;
-  void outln(const long l)    const;
-  void outln(const char *str) const;
+  void outln(const char c)    const;	// char output and newline
+  void outln(const int i)     const;	// int output  and newline
+  void outln(const long l)    const;	// long output and newline
+  void outln(const char *str) const;	// string and newline
 
-  void ticked(const char c) const;	// Output a ticked char token like 'A'
+  void ticked(const char c) const;  // output a ticked char token like 'A'
 
 
   /* String recycling:						*/
-  void OutOfRange() const;
-  void Error_() const;
+  void OutOfRange() const;	// output "out of range"
+  void Error_() const;		// output " ERROR: "
 
 /* Output a newline, tab, space, '='
   ln(), tab(), space(), equals():				*/
-  void ln()	const;		// Output a newline
-  void tab()	const;		// Output a tab
-  void space()	const;		// Output a space
-  void equals()	const;		// Output char '='
+  void ln()	const;		// output a newline
+  void tab()	const;		// output a tab
+  void space()	const;		// output a space
+  void equals()	const;		// output char '='
 
 
 #if defined(ARDUINO) && defined(SHOW_FREE_RAM)	// Arduino: RAM usage
@@ -151,32 +150,32 @@ class Menu {
 
   bool cb_is_full() const { return cb_count == cb_size; } // inlined: buffer full?
 #ifdef DEBUGGING_CIRCBUF
-  void cb_info() const;			// Debugging help
+  void cb_info() const;			// debugging help
 #endif
   void menu_page_info(char pg)	const;	// show a menu pages' info
   void menu_pages_info()	const;	// show all known pages' info
 
   int (*maybe_input)(void);	// maybe_input()  Must return EOF or next char
-  bool (*action)(void);		// Will be called on receiving an end token
+  bool (*action)(void);		// will be called on receiving an end token
 
-  int cb_stored() { return cb_count; }   // inlined: number of accumulated bytes?
+  int cb_stored() const { return cb_count; }   // inlined: number of accumulated bytes
 
  private:
   int cb_start;
   int cb_size;
   int cb_count;
   char * cb_buf;
-  void cb_write(char value);	// Save a byte in buffer,  no checks
-  char cb_read();		// Get oldest byte from the buffer.
-				// Does *not* check if buffer is empty.
+  void cb_write(char value);	// save a byte in buffer,  no checks
+  char cb_read();		// get oldest byte from the buffer.
+				//   does *not* check if buffer is empty.
   STREAMTYPE & port_;		// output stream
   bool echo_switch;		// switch echo of input to output
 
   // Menu pages:
-  char men_max;
-  char men_known;
-  char men_selected;
-  menupage *men_pages;
+  char men_max;			// maximal number of menu pages
+  char men_known;		// initialized pages
+  char men_selected;		// selected page
+  menupage *men_pages;		// pages' data
 };
 
 /* **************************************************************** */

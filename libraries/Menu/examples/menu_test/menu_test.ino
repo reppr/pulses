@@ -432,7 +432,7 @@ void Menu_setup() {
   MENU.add_page(menuTitleX, 'X', &program_displayX, &program_actionX, '+');
 
   /* page Y adds actions active for the 'Y' group
-     this group cannot get selected, the page hot key ' ' prevents that.	*/
+     this group cannot get selected, the page hot key ' ' prevents that. */
   MENU.add_page(menuTitleY, ' ', &program_displayY, &program_actionY, 'Y');
 
   // page N testing numeric input
