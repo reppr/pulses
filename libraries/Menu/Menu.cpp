@@ -241,6 +241,22 @@ void Menu::out_progmem(const unsigned char *str) {
 // just a fake doubling normal out():
 void Menu::out_progmem(const char *str) const { port_.print(str); }
 
+
+#if defined(ARDUINO) && defined(SHOW_FREE_RAM)	// Arduino: RAM usage
+  /* int get_free_RAM(): determine RAM usage:			*/
+  int Menu::get_free_RAM() const {
+    int free;
+    extern int __bss_end;
+    extern void *__brkval;
+
+    if ((int) __brkval == 0)
+      return ((int) &free) - ((int) &__bss_end);
+    else
+      return ((int) &free) - ((int) __brkval);
+  }
+#endif
+
+
 #else	// ! #ifdef ARDUINO	c++ Linux PC test version:
 /* **************************************************************** */
 // #define I/O for c++ Linux PC test version:
@@ -689,6 +705,10 @@ void Menu::menu_display() const {
   if (men_selected)
     out_progmem(qQuit);
   ln();
+
+#if defined(ARDUINO) && defined(SHOW_FREE_RAM)	// Arduino: RAM usage
+  out("RAM:"); space(); out((int) get_free_RAM()); ln();
+#endif
 
 #ifdef DEBUGGING_MENU
   ln();

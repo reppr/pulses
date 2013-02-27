@@ -20,6 +20,10 @@
 #endif
 
 /* **************************************************************** */
+// Preparing for PROGMEM test before planned removal:
+#define SHOW_FREE_RAM
+
+/* **************************************************************** */
 // Preprocessor macro logic:
 
 /* Debugging macros:		*/
@@ -160,6 +164,12 @@ class Menu {
   /* Output for ARDUINO PROGMEM strings.
      (Fake on Linux Pc c++ test version.)			*/
   void out_progmem(const char *str) const;
+
+
+#if defined(ARDUINO) && defined(SHOW_FREE_RAM)	// Arduino: RAM usage
+/* int get_free_RAM(): determine RAM usage			*/
+  int get_free_RAM() const;
+#endif
 
 
  protected:
