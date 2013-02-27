@@ -31,7 +31,13 @@
   #include <Menu.cpp>
 #endif
 
+/* BAUDRATE for Serial:	uncomment one of the following lines:	*/
 #define BAUDRATE	115200		// works fine here
+//#define BAUDRATE	57600
+//#define BAUDRATE	38400
+//#define BAUDRATE	19200
+//#define BAUDRATE	9600		// failsafe
+//#define BAUDRATE	31250		// MIDI
 
 
 /* **************************************************************** */
