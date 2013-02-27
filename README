@@ -1,6 +1,29 @@
 pulses
+an Arduino project.
 
-more on that later.
-working on the very basics...
+I have started working on the very basics,
+will try to explain the project later...
 
-Implemented first working version of Menu library.
+
+* The Menu library.
+
+  A Menu can be used to interact with your Arduino sketch over a stream interface
+  like Serial. So you could send commands (mostly one letter tokens) and numbers
+  from your computer over USBserial and let it trigger sketch functions, set
+  variables, get informations back over USBserial and the like.
+
+  As exact timing will be crucial to the pulses project the Menu class is
+  implemented in a way that it will never block program flow any longer as
+  necessary. I call this 'run-through-technique'. The menu returns immediately
+  if it has nothing to do, on input collecting a single byte of input a time
+  until it receives an 'end token'.
+
+  The menu will never delay unless *you* program an action that does that,
+  and tell the menu to trigger it ;)
+
+  Menu has support for multiple menu pages and 'visability groups' that make
+  pages be active for a group of pages, even if only one of them is visible.
+
+  Please see the examples for how to do that.
+
+  The source is also full of comments that might be useful to read.
