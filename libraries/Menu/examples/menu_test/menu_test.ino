@@ -60,7 +60,6 @@
 
 #endif
 
-const char guguseli[] MAYBE_PROGMEM = "\tdada...\n";
 
 /* **************************************************************** */
 /* I use this for both: Arduino example sketch and c++ PC test version.

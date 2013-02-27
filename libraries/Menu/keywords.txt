@@ -10,7 +10,6 @@ ln	KEYWORD2
 tab	KEYWORD2
 space	KEYWORD2
 equals	KEYWORD2
-out_progmem	KEYWORD2
 ticked	KEYWORD2
 cb_peek	KEYWORD2
 skip_spaces	KEYWORD2

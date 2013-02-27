@@ -153,8 +153,12 @@ void Menu::cb_info() const {
 
 /* **************************************************************** */
 // #define I/O for ARDUINO:
-#ifdef ARDUINO
+#ifdef ARDUINO		// OUTPUT functions.
 
+/*
+  This version definines the menu INPUT routine int men_getchar();
+  in the *program* not inside the Menu class.
+*/
 //	/* int men_getchar();		// ARDUINO version
 //	   Read next char of menu input, if available.
 //	   Does not block, returns EOF or char.			*/
@@ -221,32 +225,12 @@ void Menu::ticked(const char c) const {
   port_.print("'"); port_.print(c); port_.print("'");
 }
 
-// String recycling:
-void Menu::OutOfRange()	const { out(F("out of range")); }
-void Menu::Error_()	const { out(F(" ERROR: ")); }
-
 /* Output a newline, tab, space, '='
    ln(), tab(), space(), equals():			*/
 void Menu::ln()	    const { port_.println(); }	 // Output a newline
 void Menu::tab()    const { port_.print('\t'); } // Output a tab
 void Menu::space()  const { port_.print(' '); }	 // Output a space
 void Menu::equals() const { port_.print('='); }	 // Output char '='
-
-
-// PROGMEM strings 	PLANED TO BE DROPPED	################
-// PROGMEM strings 	preparing for some tests before removing
-// PROGMEM strings 	#define out_progmem() for ARDUINO:
-/*
-void Menu::out_progmem(const unsigned char *str) {
-  unsigned char c;
-  while((c = pgm_read_byte(str++)))
-    port_.write((char) c);
-}
-*/
-
-// PROGMEM strings 	PLANED TO BE DROPPED	################
-// just a fake doubling normal out():
-void Menu::out_progmem(const char *str) const { port_.print(str); }
 
 
 #if defined(ARDUINO) && defined(SHOW_FREE_RAM)	// Arduino: RAM usage
@@ -264,10 +248,14 @@ void Menu::out_progmem(const char *str) const { port_.print(str); }
 #endif
 
 
-#else	// ! #ifdef ARDUINO	c++ Linux PC test version:
+#else // not on ARDUINO: OUTPUT functions c++ Linux PC test version:
 /* **************************************************************** */
 // #define I/O for c++ Linux PC test version:
 
+/*
+  This version definines the menu INPUT routine int men_getchar();
+  in the *program* not inside the Menu class.
+*/
 //	/* int men_getchar();
 //	   Read next char of menu input, if available.
 //	   Returns EOF or char.						*/
@@ -318,34 +306,13 @@ void Menu::ticked(const char c)	const {   // prints 'c'
   printf("\'%c\'", c);
 }
 
-
-// PROGMEM strings 	preparing for some tests before removing
-/* Fake PROGMEM string output on PC:	*/
-/*
-void Menu::out_progmem(const char *str) { // Fake PROGMEM output
-  char c;
-
-  while(c = *str++)
-    out(c);
-}
-*/
-// PROGMEM strings 	PLANED TO BE DROPPED	################
-// just a fake doubling normal out():
-void Menu::out_progmem(const char *str) const { printf("%s", str); }
-
-
-#endif	// [ ARDUINO else ]  c++ test version
+#endif	// [ ARDUINO else ]  c++ test version	OUTPUT functions.
 /* **************************************************************** */
 
 
-/* **************************************************************** */
-/* Strings for output having the arduino as target in mind:
-   MAYBE_PROGMEM is either empty or has 'PROGMEM' in it.
-   so we can compile them in program memory to save RAM on arduino,
-   but still test on c++ Linux PC.
-								*/	
-const char outOfRange[] MAYBE_PROGMEM = "out of range";
-const char error_[] MAYBE_PROGMEM = " ERROR: ";
+// String recycling:
+void Menu::OutOfRange()	const { out(F("out of range")); }
+void Menu::Error_()	const { out(F(" ERROR: ")); }
 
 
 /* **************************************************************** */
@@ -406,8 +373,6 @@ int Menu::next_input_token() const {
 /* **************************************************************** */
 // lurk_then_do() main Menu user interface:
 
-
-const char buffer_[] MAYBE_PROGMEM = "buffer";
 
 /* bool lurk_then_do()
    get input byte, translate \n and \r to \0, which is 'END token'
@@ -472,10 +437,10 @@ bool Menu::lurk_then_do() {
       ln();
 #endif
       if (cb_is_full()) {
-	// inform user:
-	out_progmem(buffer_);
-	out_progmem(error_);
-	out_progmem(outOfRange);
+	// Inform user:
+	out(F("buffer"));
+	Error_();
+	OutOfRange();
 	ln();
 
 	// try to recover
@@ -542,8 +507,6 @@ bool Menu::lurk_then_do() {
   sometimes you might give an impossible value to check if there was input.
 */
 
-const char numberMissing_[] MAYBE_PROGMEM = "number missing\n";
-
 /* bool is_numeric()
    true if there is a next numeric chiffre
    false on missing data or not numeric data			*/
@@ -594,7 +557,7 @@ long Menu::numeric_input(long default_value) {
 
   // number was missing, return the given default_value:
  number_missing:
-  out_progmem(numberMissing_);
+  out(F("number missing\n"));
   return default_value;		// return default_value
 }
 
@@ -609,9 +572,6 @@ void Menu::skip_numeric_input() {
 /* **************************************************************** */
 // menu info:
 
-const char menupage_[] MAYBE_PROGMEM = "menupage ";
-const char hotk_[] MAYBE_PROGMEM = "hotk ";
-const char group_[] MAYBE_PROGMEM = "group ";
 
 /* menu_page_info(char pg)  show a known pages' info	*/
 // void Menu::menu_page_info(char pg) const {	// ################
@@ -620,9 +580,9 @@ void Menu::menu_page_info(char pg) const {
     out('*');
   else
     space();
-  out_progmem(menupage_); out((int) pg);
-  tab(); out_progmem(hotk_); ticked(men_pages[pg].hotkey);
-  tab(); out_progmem(group_); ticked(men_pages[pg].active_group);
+  out(F("menupage ")); out((int) pg);
+  tab(); out(("hotk ")); ticked(men_pages[pg].hotkey);
+  tab(); out(F("group ")); ticked(men_pages[pg].active_group);
   tab(); out('"'); out(men_pages[pg].title); outln('"');
 }
 
@@ -638,8 +598,6 @@ void Menu::menu_pages_info() const {
 /* **************************************************************** */
 // menu handling:
 
-const char addPg[] MAYBE_PROGMEM = "add_page";
-
 void Menu::add_page(const char *pageTitle, const char hotkey,		\
 		     void (*pageDisplay)(void), bool (*pageReaction)(char), const char ActiveGroup) {
   if (men_known < men_max) {
@@ -651,17 +609,16 @@ void Menu::add_page(const char *pageTitle, const char hotkey,		\
     men_known++;
 
 #ifdef DEBUGGING_MENU
-    out_progmem(addPg);
-    out(F("(\""));
+    out(F("add_page(\""));
     out(pageTitle);
     out(F("\", "));
     out(hotkey);
     out(F(",..)\n"));
 #endif
   } else {	// ERROR handling ################
-    out_progmem(addPg);
-    out_progmem(error_);
-    out_progmem(outOfRange);
+    out(F("add_page"));
+    Error_();
+    OutOfRange();
     ln();
   } 
 }
@@ -669,12 +626,6 @@ void Menu::add_page(const char *pageTitle, const char hotkey,		\
 
 /* **************************************************************** */
 // menu display:
-
-const char internalKeys[] MAYBE_PROGMEM = "'?' for menu  'e' toggle echo";
-const char qQuit[] MAYBE_PROGMEM = "  'q' quit page";
-const char deco_[] MAYBE_PROGMEM = "\n * ** *** ";
-const char _deco[] MAYBE_PROGMEM = " *** ** *\n";
-const char men_[] MAYBE_PROGMEM = "MENU ";
 
 /* Display menu	current menu page and common entries:		*/
 void Menu::menu_display() const {
@@ -685,10 +636,9 @@ void Menu::menu_display() const {
 #endif
 
   // men_selected page display:
-  out_progmem(deco_);
-  out_progmem(men_);
+  out(F("\n * ** *** MENU "));
   out(men_pages[men_selected].title);
-  out_progmem(_deco);
+  out(F(" *** ** *\n"));
 
   (*men_pages[men_selected].display)();
 
@@ -708,9 +658,9 @@ void Menu::menu_display() const {
   }
 
   // Display internal key bindings:
-  out_progmem(internalKeys);
+  out(F("'?' for menu  'e' toggle echo"));
   if (men_selected)
-    out_progmem(qQuit);
+    out(F("  'q' quit page"));
   ln();
 
 #if defined(ARDUINO) && defined(SHOW_FREE_RAM)	// Arduino: RAM usage
@@ -725,8 +675,6 @@ void Menu::menu_display() const {
 
 /* **************************************************************** */
 // menu input interpreter:
-
-const char unknownToken[] MAYBE_PROGMEM = "unkown token ";
 
 /* act on buffer content tokens after receiving 'END token':	*/
 void Menu::interpret_men_input() {
@@ -904,8 +852,10 @@ void Menu::interpret_men_input() {
 
     // token still not found, give up...
     if (! did_something ) {
-      out_progmem(unknownToken);
-      out(token);
+      out(F("unknown token "));
+      ticked(token);
+      tab();
+      out((int) token);
       ln();
     }
 

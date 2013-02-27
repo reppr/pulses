@@ -26,7 +26,6 @@
 
   // Comment/uncomment for RAM tests:
   #define USE_F_MACRO
-  // #define USE_PROGMEM
 #endif
 
 #ifndef USE_F_MACRO
@@ -45,40 +44,15 @@
   #define DEBUGGING_MENU
 #endif
 
-// Preprocessor magic to compile on ARDUINO:
-/* **************** ARDUINO **************** */
+
 #if defined(ARDUINO)
-
 /* Keep ARDUINO GUI happy ;(				*/
-#if ARDUINO >= 100
-  #include "Arduino.h"
-#else
-  #include "WProgram.h"
-#endif
-
-// PROGMEM strings 	preparing for some tests before removing
-
-/* MAYBE_PROGMEM  *MUST* be #defined,
-   either as 'PROGMEM' to save RAM on ARDUINO
-   or empty for a PC test run.			*/
-#ifdef USE_PROGMEM
-  #define MAYBE_PROGMEM	PROGMEM
-  #include <avr/pgmspace.h>
-#else
-  #define MAYBE_PROGMEM
-#endif
-
-
-#else /* **************** LINUX **************** */
-/*	  for c++ development on a Linux PC	 */
-
-// PROGMEM strings 	preparing for some tests before removing
-/* MAYBE_PROGMEM  *MUST* be #defined,
-   either as 'PROGMEM' to save RAM on ARDUINO
-   or empty for a PC test run.			*/
-  #define MAYBE_PROGMEM
-
-#endif // [ARDUINO else] LINUX preprocessor stuff.
+  #if ARDUINO >= 100
+    #include "Arduino.h"
+  #else
+    #include "WProgram.h"
+  #endif
+#endif // ARDUINO
 /* **************************************************************** */
 
 
@@ -172,11 +146,6 @@ class Menu {
   void tab()	const;		// Output a tab
   void space()	const;		// Output a space
   void equals()	const;		// Output char '='
-
-  // PROGMEM strings 	preparing for some tests before removing
-  /* Output for ARDUINO PROGMEM strings.
-     (Fake on Linux Pc c++ test version.)			*/
-  void out_progmem(const char *str) const;
 
 
 #if defined(ARDUINO) && defined(SHOW_FREE_RAM)	// Arduino: RAM usage
