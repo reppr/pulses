@@ -626,7 +626,7 @@ void Menu::menu_display() const {
   ln();
 
 #if defined(ARDUINO) && defined(SHOW_FREE_RAM)	// Arduino: RAM usage
-  out(F("RAM:")); space(); out((int) get_free_RAM()); ln();
+  out(F("free RAM:")); space(); out((int) get_free_RAM()); ln();
 #endif
 
 #ifdef DEBUGGING_MENU
