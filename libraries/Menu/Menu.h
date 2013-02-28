@@ -123,6 +123,11 @@ class Menu {
   void outln(const long l)    const;	// long output and newline
   void outln(const char *str) const;	// string and newline
 
+#ifdef ARDUINO
+  void outln(const __FlashStringHelper*) const; // Arduino macro: F("string")
+#endif
+
+
   void ticked(const char c) const;  // output a ticked char token like 'A'
 
 

@@ -86,9 +86,9 @@ void setup() {	// ARDUINO
   */
   Serial.begin(BAUDRATE);	// Start serial communication.
 
-  MENU.out(F("For me this is a test for visability of menu pages:\n"));
-  MENU.out(F("depending the page different menu keys are active.\n"));
-  MENU.out(F("For you it's a very simple joke game to find out how it works...\n"));
+  MENU.outln(F("For me this is a test for visability of menu pages:"));
+  MENU.outln(F("depending the page different menu keys are active."));
+  MENU.outln(F("For you it's a very simple joke game to find out how it works..."));
   MENU.ln();
 
   Menu_setup();		// Tell the menu what to do.
@@ -123,12 +123,12 @@ void loop() {	// ARDUINO
 int main() {	// c++ Linux PC test version
 
   MENU.ln();
-  MENU.out(F("For me this is a test for visability of menu pages:\n"));
-  MENU.out(F("depending the page different menu keys are active.\n"));
-  MENU.out(F("For you it's a very simple joke game to find out how it works...\n"));
+  MENU.outln(F("For me this is a test for visability of menu pages:"));
+  MENU.outln(F("depending the page different menu keys are active."));
+  MENU.outln(F("For you it's a very simple joke game to find out how it works..."));
 
   MENU.ln();
-  MENU.out(F("Menu_visability_test  ==> ETHERNAL LOOP <==:\n"));
+  MENU.outln(F("Menu_visability_test  ==> ETHERNAL LOOP <==:"));
 
   Menu_setup();		// add program menu pages
   MENU.menu_display();  // display menu at startup
@@ -183,7 +183,7 @@ const char menuTitleA[] = "'A' PAGE";
 /* **************************************************************** */
 void program_displayA() {
   MENU.out(F("\n'a' is active,\t"));
-  MENU.out(F("hmm... try 'y' maybe?\n"));
+  MENU.outln(F("hmm... try 'y' maybe?"));
 }
 
 
@@ -191,12 +191,12 @@ void program_displayA() {
 bool program_actionA(char token) {
 #ifdef DEBUGGING_MENU
   MENU.out(F("testing program_actionA("));
-  MENU.out(token);
-  MENU.out(F("):\n"));
+  MENU.ticked(token);
+  MENU.outln(F("):"));
 #endif
   switch (token) {
   case 'a':
-    MENU.out(F("\nYES, I DO KNOW TOKEN 'a' :)\n"));
+    MENU.outln(F("\nYES, I DO KNOW TOKEN 'a' :)"));
     return true;	// return true;  means there *was* action,
 			// it's  *not* the exit status of the action
 			// the menu page *is responsible* for this token
@@ -226,7 +226,7 @@ const char menuTitleB[] = "Back Page";
 
 /* **************************************************************** */
 void program_displayB() {
-  MENU.out(F("\nHere we say 'b'\n"));
+  MENU.outln(F("\nHere we say 'b'"));
 }
 
 
@@ -234,12 +234,12 @@ void program_displayB() {
 bool program_actionB(char token) {
 #ifdef DEBUGGING_MENU
   MENU.out(F("testing program_actionB("));
-  MENU.out(token);
-  MENU.out(F("):\n"));
+  MENU.ticked(token);
+  MENU.outln(F("):"));
 #endif
   switch (token) {
   case 'b':
-    MENU.out(F("\nnow, I *DO* KNOW token 'b' :)\n"));
+    MENU.outln(F("\nnow, I *DO* KNOW token 'b' :)"));
     return true;	// return true;  means there *was* action,
 			// it's  *not* the exit status of the action
 			// the menu page *is responsible* for this token
@@ -270,42 +270,41 @@ const char menuTitleY[] = "YYYYY";
 
 /* **************************************************************** */
 void program_displayY() {
-  MENU.out(F("\nYOU SHOULD NEVER SEE THIS...\n"));
+  MENU.outln(F("\nYOU SHOULD NEVER SEE THIS..."));
 }
 
 /* **************************************************************** */
 bool program_actionY(char token) {
 #ifdef DEBUGGING_MENU
-  MENU.out(F("testing program_actionY("));
-  MENU.out(token);
-  MENU.out(F("):\n"));
+  MENU.out(F("testing program_actionY(")); MENU.ticked(token);
+  MENU.outln(F("):"));
 #endif
   switch (token) {
   case 'y':
     MENU.ln();
-    MENU.out(F("/******************************\\ \n"));	// ecape \ ...
-    MENU.out(F("*      you have found the      *\n"));
-    MENU.out(F("*                              *\n"));
-    MENU.out(F("*    **********************    *\n"));
-    MENU.out(F("*    *** *  BACKDOOR  * ***    *\n"));
-    MENU.out(F("*    **********************    *\n"));
-    MENU.out(F("*    ***/              \\***    *\n"));	// ecape \ ...
-    MENU.out(F("*    ***                ***    *\n"));
-    MENU.out(F("*    ***   YY      YY   ***    *\n"));
-    MENU.out(F("*    ***    YY    YY    ***    *\n"));
-    MENU.out(F("*    ***     YY  YY     ***    *\n"));
-    MENU.out(F("*    ***      Y\\/Y      ***    *\n"));	// ecape \ ...        
-    MENU.out(F("*    ***       YY       ***    *\n"));
-    MENU.out(F("*    ***       YY       ***    *\n"));
-    MENU.out(F("*    ***       YY       ***    *\n"));
-    MENU.out(F("*    ***       YY       ***    *\n"));
-    MENU.out(F("*    ***       YY       ***    *\n"));
-    MENU.out(F("*    ***                ***    *\n"));
-    MENU.out(F("*    ***\\.  .******.  ./***    *\n"));	// ecape \ ...
-    MENU.out(F("*    **********************    *\n"));
-    MENU.out(F("*    *                    *    *\n"));
-    MENU.out(F("*            (: :)             *\n"));
-    MENU.out(F("\\******************************/\n"));
+    MENU.outln(F("/******************************\\ "));// ecape \ ...
+    MENU.outln(F("*      you have found the      *"));
+    MENU.outln(F("*                              *"));
+    MENU.outln(F("*    **********************    *"));
+    MENU.outln(F("*    *** *  BACKDOOR  * ***    *"));
+    MENU.outln(F("*    **********************    *"));
+    MENU.outln(F("*    ***/              \\***    *"));	// ecape \ ...
+    MENU.outln(F("*    ***                ***    *"));
+    MENU.outln(F("*    ***   YY      YY   ***    *"));
+    MENU.outln(F("*    ***    YY    YY    ***    *"));
+    MENU.outln(F("*    ***     YY  YY     ***    *"));
+    MENU.outln(F("*    ***      Y\\/Y      ***    *"));	// ecape \ ...        
+    MENU.outln(F("*    ***       YY       ***    *"));
+    MENU.outln(F("*    ***       YY       ***    *"));
+    MENU.outln(F("*    ***       YY       ***    *"));
+    MENU.outln(F("*    ***       YY       ***    *"));
+    MENU.outln(F("*    ***       YY       ***    *"));
+    MENU.outln(F("*    ***                ***    *"));
+    MENU.outln(F("*    ***\\.  .******.  ./***    *"));	// ecape \ ...
+    MENU.outln(F("*    **********************    *"));
+    MENU.outln(F("*    *                    *    *"));
+    MENU.outln(F("*            (: :)             *"));
+    MENU.outln(F("\\******************************/"));
     MENU.ln();
 
     return true;	// return true;  means there *was* action,
@@ -338,7 +337,7 @@ const char menuTitleX[] = "XXX";
 
 /* **************************************************************** */
 void program_displayX() {
-  MENU.out(F("\nthere's nothing here to see\n"));
+  MENU.outln(F("\nthere's nothing here to see"));
 }
 
 
@@ -346,8 +345,8 @@ void program_displayX() {
 bool program_actionX(char token) {
 #ifdef DEBUGGING_MENU
   MENU.out(F("testing program_actionX("));
-    MENU.out(token);
-    MENU.out(F("):\n"));
+  MENU.ticked(token);
+  MENU.outln(F("):"));
 #endif
   switch (token) {
   case 'x':
@@ -393,7 +392,7 @@ const char menuTitleN[] = "NUMBERS";
 void program_displayN() {
   MENU.out(F("\nValue = "));
   MENU.out(value);
-  MENU.out(F("\tv=change value.\n"));
+  MENU.outln(F("\tv=change value."));
 }
 
 
@@ -401,8 +400,8 @@ void program_displayN() {
 bool program_actionN(char token) {
 #ifdef DEBUGGING_MENU
   MENU.out(F("testing program_actionN("));
-  MENU.out(token);
-  MENU.out(F("):\n"));
+  MENU.ticked(token);
+  MENU.outln(F("):"));
 #endif
   switch (token) {
   case 'v':

@@ -1,9 +1,12 @@
 pulses
-an Arduino project.
+an arduino project.
+
 
 I have started working on the very basics,
-will try to explain the project later...
+will try to explain later...
 
+
+Already working:
 
 * The Menu library.
 
@@ -13,7 +16,7 @@ will try to explain the project later...
   variables, get informations back over USBserial and the like.
 
   As exact timing will be crucial to the pulses project the Menu class is
-  implemented in a way that it will never block program flow any longer as
+  implemented in a way that it will never block program flow any longer then
   necessary. I call this 'run-through-technique'. The menu returns immediately
   if it has nothing to do, on input collecting a single byte of input a time
   until it receives an 'end token'.
@@ -24,6 +27,8 @@ will try to explain the project later...
   Menu has support for multiple menu pages and 'visability groups' that make
   pages be active for a group of pages, even if only one of them is visible.
 
-  Please see the examples for how to do that.
+  More documentation planed after using and developping it for a while.
+  Ask if you need it now...
 
-  The source is also full of comments that might be useful to read.
+  Please see the examples for how to do use it.
+  The source is also full of comments meant to be useful, please read.

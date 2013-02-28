@@ -123,11 +123,11 @@ void Menu::cb_info() const {
     out(F("\t"));
     out((char) value);
     if ( is_numeric() )
-      out(F("  numeric CHIFFRE\n"));
+      outln(F("  numeric CHIFFRE"));
     else
-      out(F("  NAN\n"));
+      outln(F("  NAN"));
   } else
-    out(F("(none)\n"));
+    outln(F("(none)"));
 
   value = next_input_token();
   out(F("\n  next_input_token()\t: "));
@@ -199,6 +199,12 @@ void Menu::outln(const char c)	const	{ port_.println(c); }
 void Menu::outln(const int i)	const	{ port_.println(i); }
 void Menu::outln(const long l)	const	{ port_.println(l); }
 void Menu::outln(const char *str) const { port_.println(str); }
+
+#ifdef ARDUINO	// Arduino F() macro: outln(F("string");
+  void Menu::outln(const __FlashStringHelper* str) const {
+    port_.println(str);
+  }
+#endif
 
 /* void ticked(char c)	Char output with ticks like 'A'	*/
 void Menu::ticked(const char c) const {
@@ -352,39 +358,36 @@ bool Menu::lurk_then_do() {
   int INP;
   char c;
 
-#if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
-  out(F("\nlurk_then_do():\n"));
-#endif
-
   /* int maybe_input()  
      must be a function returning one byte data
      or if there is no input returning EOF		*/
   INP=(*maybe_input)();
-#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
-  out(F("got input\n"));
-#endif
 
   if ( INP != EOF ) {	// there *is* input
+#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
+  outln(F("got input"));
+#endif
+
     switch ( c = INP ) {
 
     // END token translation:
     case '\n':		// translate \n to 'END token' \0
       c = 0;
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
-      out(F("NL translated to END token\n"));
+      outln(F("NL translated to END token"));
 #endif
       break;
 
     case '\r':		// translate \r to 'END token' \0
       c = 0;
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
-      out(F("CR translated to END token\n"));
+      outln(F("CR translated to END token"));
 #endif
       break;
 
-    case '\0':		// '\0' already is 'END token'
+    case '\0':		// '\0' already *is* 'END token'
       // c = 0;
-#if defined(DEBUGGING_MENU) || defined(DEBUGGING_CIRCBUF)
+#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_MENU)
       out(F("\\0 received"));
 #endif
       break;
@@ -394,8 +397,7 @@ bool Menu::lurk_then_do() {
       if (echo_switch)
 	out(c);
 
-#if defined(DEBUGGING_MENU) || defined(DEBUGGING_CIRCBUF) || \
-  defined(DEBUGGING_LURKING)
+#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
       out(F("accumulated "));
       ticked(c);
       ln();
@@ -409,24 +411,20 @@ bool Menu::lurk_then_do() {
 
 	// try to recover
 	// the fix would be to match message length and cb buffer size... 
-#if defined(DEBUGGING_MENU) || defined(DEBUGGING_CIRCBUF) || \
-  defined(DEBUGGING_LURKING)
-	out(F("cb is full.  interpreting as EMERGENCY EXIT, dangerous...\n"));
+#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
+	outln(F("cb is full.  interpreting as EMERGENCY EXIT, dangerous..."));
 #endif
 	// EMERGENCY EXIT, dangerous...
 	interpret_men_input();	// <<<<<<<< INTERPRET BUFFER CONTENT >>>>>>>>
 	menu_display();
-#if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
-	out(F("lurk_then_do() INTERPRETed INPUT BUFFER.\n"));
+#if defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
+	outln(F("lurk_then_do() INTERPRETed INPUT BUFFER."));
 #endif
 	return true;		// true means *reaction was triggered*.
       }
     } else {
-#if defined(DEBUGGING_MENU) || defined(DEBUGGING_CIRCBUF) || \
-  defined(DEBUGGING_LURKING)
-      out(F("END token received. "));
-      out(F("Buffer stored="));
-      outln(cb_stored());
+#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
+      out(F("END token received. ")); out(F("Buffer stored=")); outln(cb_stored());
 #endif
 
       /* end of line token translation can produce more then one \0 in sequence
@@ -439,27 +437,19 @@ bool Menu::lurk_then_do() {
 
 	interpret_men_input();	// <<<<<<<< INTERPRET BUFFER CONTENT >>>>>>>>
 	menu_display();
-#if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
-	out(F("lurk_then_do() INTERPRETed INPUT BUFFER.\n"));
+#if defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
+	outln(F("lurk_then_do() INTERPRETed INPUT BUFFER."));
 #endif
 	return true;		// true means *reaction was triggered*.
 
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
       } else {
-	out(F("(empty buffer ignored)\n"));
+	outln(F("(empty buffer ignored)"));
 #endif
       }
     }
-
-  } else {
-#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
-    out(F("EOF received\n"));
-#endif
   }
 
-#if defined(DEBUGGING_MENU) || defined(DEBUGGING_LURKING)
-  out(F("lurk_then_do() lurking...\n"));
-#endif
   return false;		// false means *no reaction was triggered*.
 }
 
@@ -521,7 +511,7 @@ long Menu::numeric_input(long default_value) {
 
   // number was missing, return the given default_value:
  number_missing:
-  out(F("number missing\n"));
+  outln(F("number missing"));
   return default_value;		// return default_value
 }
 
@@ -571,11 +561,9 @@ void Menu::add_page(const char *pageTitle, const char hotkey,		\
     men_known++;
 
 #ifdef DEBUGGING_MENU
-    out(F("add_page(\""));
-    out(pageTitle);
-    out(F("\", "));
-    out(hotkey);
-    out(F(",..)\n"));
+    out(F("add_page(\""));  out(pageTitle);
+    out(F("\", "));  ticked(hotkey);  out(F(",..) \t"));
+    outln((int) men_known - 1);
 #endif
   } else {	// ERROR handling ################
     out(F("add_page"));
@@ -594,13 +582,13 @@ void Menu::menu_display() const {
   char pg;
 
 #ifdef DEBUGGING_MENU
-  Menu::out(F("\nmenu_display():\n"));
+  Menu::outln(F("\nmenu_display():"));
 #endif
 
   // men_selected page display:
   out(F("\n * ** *** MENU "));
   out(men_pages[men_selected].title);
-  out(F(" *** ** *\n"));
+  outln(F(" *** ** *"));
 
   (*men_pages[men_selected].display)();
 
@@ -644,7 +632,7 @@ void Menu::interpret_men_input() {
   bool did_something, is_active;
 
 #ifdef DEBUGGING_MENU
-  out(F("interpret_men_input(): '"));
+  out(F("interpret_men_input(): "));
 #endif
 
   // interpreter loop over each token:
@@ -666,8 +654,7 @@ void Menu::interpret_men_input() {
 
     // try to find a menu entity that knows to interpret the token:
 #ifdef DEBUGGING_MENU
-    out(token);
-    out(F("'\n"));
+    ticked(token); ln();
 #endif
 
     // skip spaces:
@@ -677,18 +664,17 @@ void Menu::interpret_men_input() {
 
     // search selected page first:
     did_something = (*men_pages[men_selected].interpret)(token);
+#ifdef DEBUGGING_MENU
+      out(F("selected page "));
+#endif
     if (did_something) {
 #ifdef DEBUGGING_MENU
-      out(F("selected page is responsible for '"));
-      out(token);
-      out(F("'.\n"));
+      out(F("is responsible for ")); ticked(token); ln();
 #endif
       continue;
     }
 #ifdef DEBUGGING_MENU
-    out(F("selected page does not know '"));
-    out(token);
-    out(F("'\n"));
+    out(F("does not know ")); ticked(token); ln();
 #endif
     // token not found yet...
 
@@ -696,10 +682,8 @@ void Menu::interpret_men_input() {
     // check pages in same page_group and in group '+':
     selected_group = men_pages[men_selected].active_group;
 #ifdef DEBUGGING_MENU
-    out(F("check for selected_group '"));
-    out(selected_group);
-    out(F("':\n"));
-    out(F("  going through the pages:\n"));
+    out(F("check for selected_group ")); ticked(selected_group); outln(':');
+    outln(F("  going through the pages:"));
 #endif
 
     for (pg = 0; pg < men_known; pg++) {
@@ -709,8 +693,7 @@ void Menu::interpret_men_input() {
       is_active=false;
       page_group = men_pages[pg].active_group;
 #ifdef DEBUGGING_MENU
-      out(F("   "));
-      menu_page_info(pg);
+      space(); space(); space(); menu_page_info(pg);
 #endif
       switch ( page_group ) {
       case '-':			// '-' means *never*
@@ -718,29 +701,23 @@ void Menu::interpret_men_input() {
       case '+':			// '+' means always on
 	is_active=true;
 #ifdef DEBUGGING_MENU
-	out(F("==>*  joker '+':\n"));
+	outln(F("==>*  joker '+':"));
 #endif
 	break;
       default:			// else: active if in selected pages' group
 	if ( page_group == selected_group ) {
 	  is_active=true;
 #ifdef DEBUGGING_MENU
-	  out(F("==>*  page group match "));
-	  menu_page_info(pg);
+	  out(F("==>*  page group match ")); menu_page_info(pg);
 #endif
 	}
       }
       if (is_active) {		// test active menu pages on token:
 	if ( did_something = (*men_pages[pg].interpret)(token) ) {
 #ifdef DEBUGGING_MENU
-	  out(F("page_group '"));
-	  out(page_group);
-	  out(F("':\n"));
-	  out(F("menu "));
-	  out(men_pages[pg].title);
-	  out(F(" knows '"));
-	  out(token);
-	  out(F("'.\n"));
+	  out(F("page_group ")); ticked(page_group); outln(':');
+	  out(F("menu ")); out(men_pages[pg].title);
+	  out(F(" knew ")); ticked(token); outln('.');
 #endif
 	  break;
 	}
@@ -754,7 +731,7 @@ void Menu::interpret_men_input() {
 
     // search menu page hotkeys:
 #ifdef DEBUGGING_MENU
-    out(F("search menu page hotkeys:\n"));
+    outln(F("search menu page hotkeys:"));
 #endif
     for (pg = 0; pg < men_known; pg++) {
       if (token == men_pages[pg].hotkey) {
@@ -762,16 +739,14 @@ void Menu::interpret_men_input() {
 	men_selected = pg;			// switch to page
 	did_something = true;			// yes, did switch
 #ifdef DEBUGGING_MENU
-    	out(F("==>* "));
-	menu_page_info(pg);
+    	out(F("==>* ")); menu_page_info(pg);
 #endif
 	break;
       }
     }
     if (did_something) {
 #ifdef DEBUGGING_MENU
-      out(F("==>* switch to "));
-      menu_page_info(men_selected);
+      out(F("==>* switch to ")); menu_page_info(men_selected);
 #endif
       continue;
     }
@@ -780,7 +755,7 @@ void Menu::interpret_men_input() {
 
     // check for internal bindings next:
 #ifdef DEBUGGING_MENU
-    out(F("search internal key bindings:\n"));
+    outln(F("search internal key bindings:"));
 #endif
     switch (token) {
     case '?':
@@ -792,8 +767,7 @@ void Menu::interpret_men_input() {
     case 'q':
       men_selected = 0;
 #ifdef DEBUGGING_MENU
-      out(F("==>* switch to "));
-      menu_page_info(men_selected);
+      out(F("==>* switch to ")); menu_page_info(men_selected);
 #endif
       did_something = true;
       break;
@@ -806,9 +780,7 @@ void Menu::interpret_men_input() {
     }
 #ifdef DEBUGGING_MENU
     if (did_something) {
-      out(F("==>* internal hotkey '"));
-      out(token);
-      out(F("'.\n"));
+      out(F("==>* internal hotkey ")); ticked(token); outln('.');
     }
 #endif
 
