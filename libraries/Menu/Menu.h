@@ -42,7 +42,6 @@
   #define DEBUGGING_LURKING
   #define DEBUGGING_MENU
 #endif
-  #define DEBUGGING_MENU
 
 
 #if defined(ARDUINO)
