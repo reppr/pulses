@@ -42,6 +42,7 @@
   #define DEBUGGING_LURKING
   #define DEBUGGING_MENU
 #endif
+  #define DEBUGGING_MENU
 
 
 #if defined(ARDUINO)
@@ -151,6 +152,7 @@ class Menu {
 
  protected:
   // Act on buffer content tokens after seeing 'end token':
+  bool try_page_reaction(char pg, char token);	// interpreter factor
   void interpret_men_input();		// Menu input interpreter
 
   bool cb_is_full() const { return cb_count == cb_size; } // inlined: buffer full?

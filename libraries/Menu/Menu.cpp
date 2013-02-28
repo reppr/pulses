@@ -582,7 +582,7 @@ void Menu::menu_display() const {
   char pg;
 
 #ifdef DEBUGGING_MENU
-  Menu::outln(F("\nmenu_display():"));
+  Menu::outln(F("\nmenu_display()"));
 #endif
 
   // men_selected page display:
@@ -627,12 +627,30 @@ void Menu::menu_display() const {
 // menu input interpreter:
 
 /* act on buffer content tokens after receiving 'END token':	*/
+
+/* factored out:	*/
+bool Menu::try_page_reaction(char pg, char token) {
+  bool did_something=(*men_pages[pg].interpret)(token);
+
+#ifdef DEBUGGING_MENU
+  space(); space();	// indent
+  out(F("page \"")); out(men_pages[pg].title); out('"'); tab();
+  if (did_something)
+    out(F("KNEW"));
+  else
+    out(F("unknown"));
+  out(F(" token ")); ticked(token); ln();
+#endif
+
+  return did_something; 
+}
+
 void Menu::interpret_men_input() {
   char token, pg, page_group, selected_group;
   bool did_something, is_active;
 
 #ifdef DEBUGGING_MENU
-  out(F("interpret_men_input(): "));
+  out(F("\ninterpret_men_input(): "));
 #endif
 
   // interpreter loop over each token:
@@ -663,27 +681,21 @@ void Menu::interpret_men_input() {
 
 
     // search selected page first:
-    did_something = (*men_pages[men_selected].interpret)(token);
 #ifdef DEBUGGING_MENU
-      out(F("selected page "));
+    out(F("* try selected"));
 #endif
+    did_something = try_page_reaction(men_selected, token);
     if (did_something) {
-#ifdef DEBUGGING_MENU
-      out(F("is responsible for ")); ticked(token); ln();
-#endif
       continue;
     }
-#ifdef DEBUGGING_MENU
-    out(F("does not know ")); ticked(token); ln();
-#endif
     // token not found yet...
 
 
     // check pages in same page_group and in group '+':
     selected_group = men_pages[men_selected].active_group;
 #ifdef DEBUGGING_MENU
-    out(F("check for selected_group ")); ticked(selected_group); outln(':');
-    outln(F("  going through the pages:"));
+    out(F("* check visability group ")); ticked(selected_group); ln();
+    outln(F("  * going through the pages"));
 #endif
 
     for (pg = 0; pg < men_known; pg++) {
@@ -701,28 +713,22 @@ void Menu::interpret_men_input() {
       case '+':			// '+' means always on
 	is_active=true;
 #ifdef DEBUGGING_MENU
-	outln(F("==>*  joker '+':"));
+	outln(F("==> * joker '+'"));
 #endif
 	break;
       default:			// else: active if in selected pages' group
 	if ( page_group == selected_group ) {
 	  is_active=true;
 #ifdef DEBUGGING_MENU
-	  out(F("==>*  page group match ")); menu_page_info(pg);
+	  space(); space(); space(); space();
+	  out(F("* visability match"));
 #endif
 	}
       }
-      if (is_active) {		// test active menu pages on token:
-	if ( did_something = (*men_pages[pg].interpret)(token) ) {
-#ifdef DEBUGGING_MENU
-	  out(F("page_group ")); ticked(page_group); outln(':');
-	  out(F("menu ")); out(men_pages[pg].title);
-	  out(F(" knew ")); ticked(token); outln('.');
-#endif
+      if (is_active)		// test active menu pages on token:
+	if ( did_something = try_page_reaction(pg, token) )
 	  break;
-	}
-      }// is_active
-    }// loop over other pages
+    }// loop over hidden pages
 
     if (did_something)
       continue;
@@ -731,7 +737,7 @@ void Menu::interpret_men_input() {
 
     // search menu page hotkeys:
 #ifdef DEBUGGING_MENU
-    outln(F("search menu page hotkeys:"));
+    outln(F("* search menu page hotkeys"));
 #endif
     for (pg = 0; pg < men_known; pg++) {
       if (token == men_pages[pg].hotkey) {
@@ -739,14 +745,14 @@ void Menu::interpret_men_input() {
 	men_selected = pg;			// switch to page
 	did_something = true;			// yes, did switch
 #ifdef DEBUGGING_MENU
-    	out(F("==>* ")); menu_page_info(pg);
+    	out(F("FOUND ")); menu_page_info(pg);
 #endif
 	break;
       }
     }
     if (did_something) {
 #ifdef DEBUGGING_MENU
-      out(F("==>* switch to ")); menu_page_info(men_selected);
+      out(F("SWITCH to ")); menu_page_info(men_selected);
 #endif
       continue;
     }
@@ -755,7 +761,7 @@ void Menu::interpret_men_input() {
 
     // check for internal bindings next:
 #ifdef DEBUGGING_MENU
-    outln(F("search internal key bindings:"));
+    outln(F("* search internal key bindings"));
 #endif
     switch (token) {
     case '?':
@@ -780,7 +786,7 @@ void Menu::interpret_men_input() {
     }
 #ifdef DEBUGGING_MENU
     if (did_something) {
-      out(F("==>* internal hotkey ")); ticked(token); outln('.');
+      out(F("INTERNAL HOTKEY ")); ticked(token); outln('.');
     }
 #endif
 

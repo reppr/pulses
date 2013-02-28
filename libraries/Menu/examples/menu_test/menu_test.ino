@@ -189,11 +189,6 @@ void program_displayA() {
 
 /* **************************************************************** */
 bool program_actionA(char token) {
-#ifdef DEBUGGING_MENU
-  MENU.out(F("testing program_actionA("));
-  MENU.ticked(token);
-  MENU.outln(F("):"));
-#endif
   switch (token) {
   case 'a':
     MENU.outln(F("\nYES, I DO KNOW TOKEN 'a' :)"));
@@ -232,11 +227,6 @@ void program_displayB() {
 
 /* **************************************************************** */
 bool program_actionB(char token) {
-#ifdef DEBUGGING_MENU
-  MENU.out(F("testing program_actionB("));
-  MENU.ticked(token);
-  MENU.outln(F("):"));
-#endif
   switch (token) {
   case 'b':
     MENU.outln(F("\nnow, I *DO* KNOW token 'b' :)"));
@@ -275,10 +265,6 @@ void program_displayY() {
 
 /* **************************************************************** */
 bool program_actionY(char token) {
-#ifdef DEBUGGING_MENU
-  MENU.out(F("testing program_actionY(")); MENU.ticked(token);
-  MENU.outln(F("):"));
-#endif
   switch (token) {
   case 'y':
     MENU.ln();
@@ -343,11 +329,6 @@ void program_displayX() {
 
 /* **************************************************************** */
 bool program_actionX(char token) {
-#ifdef DEBUGGING_MENU
-  MENU.out(F("testing program_actionX("));
-  MENU.ticked(token);
-  MENU.outln(F("):"));
-#endif
   switch (token) {
   case 'x':
     MENU.out(F("\n XX       XX"));
@@ -398,11 +379,6 @@ void program_displayN() {
 
 /* **************************************************************** */
 bool program_actionN(char token) {
-#ifdef DEBUGGING_MENU
-  MENU.out(F("testing program_actionN("));
-  MENU.ticked(token);
-  MENU.outln(F("):"));
-#endif
   switch (token) {
   case 'v':
     MENU.out(F("Enter new value : "));
