@@ -21,7 +21,8 @@
 
 /* **************************************************************** */
 #ifdef ARDUINO
-  #define SHOW_FREE_RAM
+  // Should the menu display free RAM for tests?
+  //#define SHOW_FREE_RAM
 
   // comment/uncomment for RAM tests:
   #define USE_F_MACRO
