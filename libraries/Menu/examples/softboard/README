@@ -10,29 +10,34 @@ README softboard
 
 Description
 
-   Softboard is kind of Arduino software breadboard.
+   Softboard is a kind of Arduino software breadboard.
 
    Simple Arduino hardware Menu interface over a serial line
-   like USBserial.
+   or USBserial.
+
+
+	Use it to test hardware like sensors, motors, things you want
+	to run quick tests after setting something up on a (real) breadboard.
+
+	Then you can use it to test software parts of your program while
+	you write it and fit parts together. 
+
+	Later, when everything is working you can throw out the Menu code
+	from your sketch, or keep it as an interface to your program.
+
 
    Send a sequence of one letter commands and numeric chiffres
    followed by a linebreak over a serial line (say from your computer)
    to the arduino to trigger menu actions and get infos.
 
-   The arduino will buffer serial input (without waiting for it) until
-   a terminating linefeed is received as an end token.
-   Any sequence of one or more '\n'  '\c'  '\0' accepted as end token.
+   The arduino will buffer serial input byte by byte (without waiting)
+   until a terminating linefeed is received as an end token.
+   Any sequence of one or more '\n'  '\c'  '\0' is accepted as end token.
 
 
    Commands can read and set I/O pin configuration and states,
    switch pins on/off, read and write digital and analog values,
    switch pullup/high-z, or continuously watch changing inputs over time.
-
-   Use it to test hardware like sensors, motors, things you want
-   to run quick tests after setting something up on a (real) breadboard.
-
-   Then you can use it to test software parts of your program while
-   you write it and fit parts together. 
 
 
    Send '?' (and a linefeed) over serial line to see the menu.
@@ -48,14 +53,21 @@ Description
 
 Integrate your own code:
 
-   It is easy to define a Menu page as an interface to your own code.
+   It is easy to define Menu pages as an interface to your own code.
    Please have a look at the Menu/examples/ to see how to do this.
+
+   You can define multiple Menu pages and define visability groups
+   for pages sharing the same commands.
+
+   Softboard is just a definition of a Menu page, you can add pages
+   or delete them when compiling your program as you like.
 
 
 Installation:
 
    Get it from http://github.com/reppr/pulses
    Put contents of the pulses/libraries/ folder into sketchbook/libraries/
+
    Softboard is implemented as an example of libraries/Menu/
    After a restart the Arduino GUI shows softboard under
    File >> Sketchbook >> libraries >> Menu >> softboard
@@ -78,6 +90,7 @@ How it works:
 
    You communicate with the arduino over a serial connection
    that could be a real serial line or an usb cable.
+   The library should be able to deal with other stream interfaces, btw.
 
    The minimalistic menu shows you one letter commands and listens to
    your input. Serial inputs are buffered until you send a linefeed.
