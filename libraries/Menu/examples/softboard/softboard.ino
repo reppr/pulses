@@ -80,31 +80,35 @@ int men_getchar() {
   return Serial.read();
 }
 
-Menu MENU(32, 1, &men_getchar, Serial);
+Menu SOFTBOARD(32, 1, &men_getchar, Serial);
 
 
 /* **************************************************************** */
 /* Arduiono setup() and loop():					*/
 
+void softboard_display();		// defined later on
+bool softboard_reaction(char token);	// defined later on
+void pins_info_digital();		// defined later on
+void pins_info_analog();		// defined later on
 
 void setup() {
   Serial.begin(BAUDRATE);	// Start serial communication.
 
-  MENU.add_page("Arduino Hardware", 'H', \
+  SOFTBOARD.add_page("Arduino Softboard", 'H', \
 		&softboard_display, &softboard_reaction, '+');
 
-  MENU.outln(F("Arduino Softboard\nhttp://github.com/reppr/pulses/\n"));
+  SOFTBOARD.outln(F("Arduino Softboard\thttp://github.com/reppr/pulses/\n"));
 
-  pins_info_digital(); MENU.ln();
-  pins_info_analog();  MENU.ln();
+  pins_info_digital(); SOFTBOARD.ln();
+  pins_info_analog();  SOFTBOARD.ln();
 
-  MENU.menu_display();		// display menu at startup
+  SOFTBOARD.menu_display();		// display menu at startup
 }
 
 
 /*
   All you have to from your Arduino sketch loop() is to call:
-  MENU.lurk_then_do();
+  SOFTBOARD.lurk_then_do();
   This will *not* block the loop.
 
   It will lurk on menu input, but return immediately if there's none.
@@ -116,37 +120,17 @@ void setup() {
   On receiving an 'END token' it will interpret the accumulated tokens and return.
 */
 
+void maybe_run_continuous();	// defined later on
+
 void loop() {	// ARDUINO
-  MENU.lurk_then_do();
+  SOFTBOARD.lurk_then_do();
+  maybe_run_continuous();	// maybe display input pin state changes
 
   // Insert your own code here.
   // Do not let your program block program flow,
-  // always return to the main loop soon.
+  // always return to the main loop as soon as possible.
 }
 
-
-/* **************************************************************** */
-/* Building menu pages:
-
-   The program defines what the menu pages display and how they react.
-
-   The menu can have multiple pages, the selected one gets displayed.
-   On start up the first one added will be selected.
-
-   The menu pages define keys ("tokens") and the corresponding actions.
-
-   Below the tokens of the selected/displayed page tokens of other pages
-   can be configured to remain visible in groups of related pages.
-
-   For each menu page we will need:
-
-     hotkey		selects this menu page.
-     title		identifies page to the user.
-     display function	displays the menu page.
-     action function	checks if it is responsible for a token,
-     	    		if so do its trick and return true,
-			else return false.
-*/
 
 /* **************************************************************** */
 /* ARDUINO BOARD SPECIFIC THINGS  try to use ARDUINO MACROS: */
@@ -218,11 +202,11 @@ void serial_print_BIN(unsigned long value, int bits) {
   for (i = bits - 1; i >= 0; i--) {
     mask = (1 << i);
       if (value & mask)
-	MENU.out('1');
+	SOFTBOARD.out('1');
       else
-	MENU.out('0');
+	SOFTBOARD.out('0');
   }
-  MENU.space();
+  SOFTBOARD.space();
 }
 
 
@@ -244,12 +228,12 @@ void pin_info_digital(uint8_t pin) {
 
   // selected sign * and pin:
   if (pin == PIN_digital )
-    MENU.out('*');
+    SOFTBOARD.out('*');
   else
-    MENU.space();
-  MENU.out(pin_);
-  MENU.out((int) pin);
-  MENU.tab();
+    SOFTBOARD.space();
+  SOFTBOARD.out(pin_);
+  SOFTBOARD.out((int) pin);
+  SOFTBOARD.tab();
 
   // input or output?
   reg = portModeRegister(port);
@@ -257,7 +241,7 @@ void pin_info_digital(uint8_t pin) {
   // cli();
   if (*reg & mask) {		// digital OUTPUTS
     // SREG = oldSREG;
-    MENU.out(F("O  "));
+    SOFTBOARD.out(F("O  "));
 
     // high or low?
     reg = portOutputRegister(port);
@@ -265,14 +249,14 @@ void pin_info_digital(uint8_t pin) {
     // cli();
     if (*reg & mask) {		    // HIGH
       // SREG = oldSREG;
-      MENU.out(high_);
+      SOFTBOARD.out(high_);
     } else {			    // LOW
       // SREG = oldSREG;
-      MENU.out(low_);
+      SOFTBOARD.out(low_);
     }
   } else {			// digital INPUTS
     // SREG = oldSREG;
-    MENU.out(F("I  "));
+    SOFTBOARD.out(F("I  "));
 
     // pullup, tristate?
     reg = portOutputRegister(port);
@@ -280,13 +264,13 @@ void pin_info_digital(uint8_t pin) {
     // cli();
     if (*reg & mask) {		    // pull up resistor
       // SREG = oldSREG;
-      MENU.out(F("pullup"));
+      SOFTBOARD.out(F("pullup"));
     } else {			    // tri state high-Z
       // SREG = oldSREG;
-      MENU.out(F("floating"));
+      SOFTBOARD.out(F("floating"));
     }
   }
-  MENU.ln();
+  SOFTBOARD.ln();
 }
 
 
@@ -304,16 +288,15 @@ void pins_info_digital() {
   whenever the input changes:
 */
 
-
 #define IMPOSSIBLE	-9785	// just a value not possible on analog input
 
 int watch_seen=IMPOSSIBLE;
 void watch_digital_start(uint8_t pin) {
   watch_seen=IMPOSSIBLE;
 
-  MENU.out(F("watching pin D"));
-  MENU.out((int) pin);
-  MENU.out(F("\t\tr=stop"));
+  SOFTBOARD.out(F("watching pin D"));
+  SOFTBOARD.out((int) pin);
+  SOFTBOARD.out(F("\t\tr=stop"));
 }
 
 
@@ -322,12 +305,12 @@ void watch_digital_input(int pin) {
 
   if (value != watch_seen) {
     watch_seen = value;
-    MENU.out(F("*D"));  MENU.out((int) pin);
-    MENU.tab();
+    SOFTBOARD.out(F("*D"));  SOFTBOARD.out((int) pin);
+    SOFTBOARD.tab();
     if (value)
-      MENU.out(high_);
+      SOFTBOARD.out(high_);
     else
-      MENU.out(low_);
+      SOFTBOARD.out(low_);
   }
 }
 
@@ -340,47 +323,11 @@ void toggle_watch() {
   if (run_watch_dI)
     watch_digital_start(PIN_digital);
   else
-    MENU.ln();
+    SOFTBOARD.ln();
 }
 
 
-
-// #ifdef HARDWARE_menu	// inside SERIAL_MENU
 /* ****************  info on ANALOG pins:  **************** */
-
-// display analog pin name and value as number and bar graph: 
-void pin_info_analog(uint8_t pin) {
-  if (pin == PIN_analog)
-    MENU.out(F("*A"));
-  else
-    MENU.out(F(" A"));
-  MENU.out((int) pin);
-  MENU.tab();
-  bar_graph(analogRead(pin));
-}
-
-
-/*
-  pins_info_analog()
-  display analog snapshot read values and bar graphs, a line each analog input:
-*/
-const char analog_reads_title[] =	\
-  "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
-
-void pins_info_analog() {
-  int i, value;
-
-  MENU.outln(analog_reads_title);
-
-  for (i=0; i<NUM_ANALOG_INPUTS; i++)
-    pin_info_analog(i);
-
-  MENU.ln();
-}
-
-
-// #ifdef HARDWARE_menu	 // inside  #ifdef SERIAL_MENU
-/* **************************************************************** */
 /*
   bar_graph(value)
   print one value & bar graph line:
@@ -393,77 +340,95 @@ void bar_graph(int value) {
 
 
   if (value >=0 && value <= 1024) {
-    MENU.out(value); MENU.tab();
+    SOFTBOARD.out(value); SOFTBOARD.tab();
     for (i=0; i<stars; i++) {
       if (i == 0 && value == 0)		// zero
-	MENU.out('0');
+	SOFTBOARD.out('0');
 					// middle or top
       else if \
 	((i == length/2 && value == 512) || (i == length && value == scale))
-	MENU.out('|');
+	SOFTBOARD.out('|');
       else
-	MENU.out('*');
+	SOFTBOARD.out('*');
     }
   } else {
-    MENU.out(F("value "));
-    MENU.out(value);
-    MENU.OutOfRange();
+    SOFTBOARD.out(F("value "));
+    SOFTBOARD.out(value);
+    SOFTBOARD.OutOfRange();
   }
 
-  MENU.ln();
+  SOFTBOARD.ln();
 }
 
 
+// Display analog pin name and value as number and bar graph: 
+void pin_info_analog(uint8_t pin) {
+  if (pin == PIN_analog)
+    SOFTBOARD.out(F("*A"));
+  else
+    SOFTBOARD.out(F(" A"));
+  SOFTBOARD.out((int) pin);
+  SOFTBOARD.tab();
+  bar_graph(analogRead(pin));
+}
 
-// #ifdef HARDWARE_menu	 // inside  #ifdef SERIAL_MENU
+
+/*
+  pins_info_analog()
+  Display analog snapshot read values and bar graphs, a line each analog input:
+*/
+const char analog_reads_title[] =	\
+  "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
+
+void pins_info_analog() {
+  int i, value;
+
+  SOFTBOARD.outln(analog_reads_title);
+
+  for (i=0; i<NUM_ANALOG_INPUTS; i++)
+    pin_info_analog(i);
+
+  SOFTBOARD.ln();
+}
+
+
 /* **************************************************************** */
 /*
-  running 'continuous' display types or similar
-  implemented without waiting allows 'run-through' programming.
+  Running 'continuous' display types or similar.
+  Implemented without waiting allows 'run-through' programming.
+
+  bar_graph_VU(pin):
+  Continuous display changes on an analogue input.
+  Display a scrolling bar graph over the readings.
+  A new line is displayed as soon as the reading changes for more
+  than +/- tolerance.
+
+  tolerance can be changed by sending '+' or '-'
+
+  run-through, don't wait...
 */
 bool run_VU=false;
-
 
 void stop_continuous() {
   run_VU=false;
   run_watch_dI=false;
 }
 
-
-void maybe_run_continuous() {
-  if (run_VU)
-    bar_graph_VU(PIN_analog);
-
-  if (run_watch_dI)
-    watch_digital_input(PIN_digital);
-}
-
-
-
-// #ifdef HARDWARE_menu	// inside SERIAL_MENU
-/* **************************************************************** */
-/*
-  bar_graph_VU(pin)   continuous display of changes on an analogue input.
-  display a scrolling bar graph over the readings
-  a new line is displayed as soon as the reading changes for more
-  then +/- tolerance.
-
-  tolerance can be changed by sending '+' or '-'
-
-  run-through, don´t wait...
-*/
-
-
 int VU_last=IMPOSSIBLE;
-
 
 // tolerance default 0. Let the user *see* the noise...
 int bar_graph_tolerance=0;
 
+void feedback_tolerance() {
+  SOFTBOARD.out(F("tolerance "));
+  SOFTBOARD.outln(bar_graph_tolerance);
+}
+
+
 void VU_init(int pin) {
   VU_last=IMPOSSIBLE;	// just an impossible value
 
-  MENU.out(F("pin\tval\t+/- set "));
+  SOFTBOARD.out(F("pin\tval\t+/- set "));
   feedback_tolerance();
 }
 
@@ -474,40 +439,51 @@ void toggle_VU() {
   if (run_VU)
     VU_init(PIN_analog);
   else
-    MENU.ln();
+    SOFTBOARD.ln();
 }
 
+/*
+  bar_graph_VU(pin):
+  Continuous display changes exceeding a tolerance on an analogue input.
+  Display a scrolling bar graph over the readings.
+  A new line is displayed as soon as the reading changes for more
+  than +/- tolerance.
 
-// bar_graph_feedback(pin), info line for bar graph:
+  tolerance can be changed by sending '+' or '-'
 
-
-void feedback_tolerance() {
-  MENU.out(F("tolerance "));
-  MENU.outln(bar_graph_tolerance);
-}
-
-
+  run-through, don't wait...
+*/
 void bar_graph_VU(int pin) {
   int value;
 
   value =  analogRead(pin);
   if (abs(value - VU_last) > bar_graph_tolerance) {
-    MENU.out(F("*A"));
-    MENU.out((int) pin);
-    MENU.tab();
+    SOFTBOARD.out(F("*A"));
+    SOFTBOARD.out((int) pin);
+    SOFTBOARD.tab();
     bar_graph(value);
     VU_last = value;
   }
 }
 
 
-// #ifdef HARDWARE_menu	// inside SERIAL_MENU
+/*
+  void maybe_run_continuous():
+  Check if to continuously show analog/digital input changes:
+*/
+void maybe_run_continuous() {
+  if (run_VU)
+    bar_graph_VU(PIN_analog);
+
+  if (run_watch_dI)
+    watch_digital_input(PIN_digital);
+}
+
+
 /* **************************************************************** */
 /*
-  determine RAM usage:
+  Determine RAM usage:
   int get_free_RAM() {
-
-  wee use this here below
 */
 extern int __bss_end;
 extern void *__brkval;
@@ -523,79 +499,97 @@ int get_free_RAM() {
 
 
 
-// #ifdef HARDWARE_menu	// inside SERIAL_MENU
-// ****************************************************************
-// menu hardware display and reaction:
+/* **************************************************************** */
+/* 
+   Menu softboard display and reaction:
+*/
+
+/* **************************************************************** */
+/* Building menu pages:
+
+   The program defines what the menu pages display and how they react.
+
+   The menu can have multiple pages, the selected one gets displayed.
+   On start up the first one added will be selected.
+
+   The menu pages define keys ("tokens") and the corresponding actions.
+
+   Below the tokens of the selected/displayed page tokens of other pages
+   can be configured to remain visible in groups of related pages.
+
+   For each menu page we will need:
+
+     hotkey		selects this menu page.
+     title		identifies page to the user.
+     display function	displays the menu page.
+     action function	checks if it is responsible for a token,
+     	    		if so do its trick and return true,
+			else return false.
+*/
 
 
-/* ****************  hardware menu display:  **************** */
-const char hwMenuTitle[] = \
-  "\n*** HARDWARE MENU ***\t\tfree RAM=";
+/* ****************  softboard menu display:  **************** */
 const char select_[] = "select ";
 const char pinFor[] = " pin for ";
 const char toWork_[] = " to work on:\t";
 const char pin__[] = "pin (";
-const char close_[] = ")";
 
 
-// factored out display functions:
+// Factored out display functions:
 
 void _select_digital(bool key) {
   if (key)
-    MENU.out(F("D="));
-  MENU.out(select_);
-  MENU.out(F("digital"));
-  MENU.out(pinFor);
-  MENU.out(F("'d, r, I, O, H, L, W'"));
+    SOFTBOARD.out(F("D="));
+  SOFTBOARD.out(select_);
+  SOFTBOARD.out(F("digital"));
+  SOFTBOARD.out(pinFor);
+  SOFTBOARD.out(F("'d, r, I, O, H, L, W'"));
 }
 
 
 void _select_analog(bool key) {
   if (key)
-    MENU.out(F("A="));
-  MENU.out(select_);
-  MENU.out(F("analog"));
-  MENU.out(pinFor);
-  MENU.out(F("'a, v'"));
+    SOFTBOARD.out(F("\nA="));
+  SOFTBOARD.out(select_);
+  SOFTBOARD.out(F("analog"));
+  SOFTBOARD.out(pinFor);
+  SOFTBOARD.out(F("'a, v'"));
 }
 
 
 void softboard_display() {
-  MENU.out(hwMenuTitle);
-  // free RAM=
-  MENU.outln(get_free_RAM());
-  MENU.ln();
+  SOFTBOARD.out(F("\t\tfree RAM="));
+  SOFTBOARD.outln(get_free_RAM());
+  SOFTBOARD.ln();
 
   _select_digital(true);
-  MENU.out(toWork_);
-  MENU.out(pin__);
+  SOFTBOARD.out(toWork_);
+  SOFTBOARD.out(pin__);
   if (PIN_digital == ILLEGAL)
-    MENU.out(F("no"));
+    SOFTBOARD.out(F("no"));
   else
-    MENU.out((int) PIN_digital);
-  MENU.outln(close_);
-  MENU.out(F("O=OUTPUT\tI=INPUT\t\tH=HIGH\tL=LOW\tPWM: W=WRITE\td=pin info"));
-  MENU.ln();
+    SOFTBOARD.out((int) PIN_digital);
+  SOFTBOARD.outln(')');
+  SOFTBOARD.out(F("O=OUTPUT\tI=INPUT\t\tH=HIGH\tL=LOW\tPWM: W=WRITE\td=pin info"));
+  SOFTBOARD.ln();
 
   _select_analog(true);
-  MENU.out(toWork_);
-  MENU.out(pin__);
-  MENU.out((int) PIN_analog);
-  MENU.outln(close_);
-  MENU.out(F("watch over time:\tv=VU bar\tr=read"));
-  MENU.ln();
+  SOFTBOARD.out(toWork_);
+  SOFTBOARD.out(pin__);
+  SOFTBOARD.out((int) PIN_analog);
+  SOFTBOARD.outln(')');
+  SOFTBOARD.out(F("watch over time:\tv=VU bar\tr=read"));
+  SOFTBOARD.ln();
 
-  MENU.outln(F(".=all digital\t,=all analog\t;=both\tx=extra"));
+  SOFTBOARD.outln(F("\n.=all digital\t,=all analog\t;=both\tx=extra"));
 }
 
 
-
-// #ifdef HARDWARE_menu	// inside SERIAL_MENU
-/* ****************  menu hardware reactions:  **************** */
+/* ****************  softboard reactions:  **************** */
 
 /*
-  toggle extra functionality
-  * visability of analog inputs as general digital I/O pins
+  Toggle extra functionality
+  * Visability of analog inputs as general digital I/O pins
     (only this one item implemented)
 */
 void toggle_extra() {
@@ -607,54 +601,55 @@ void toggle_extra() {
 }
 
 
-// factored out helper function
-// digital_pin_ok()  checks if PIN_digital has been set
+// Factored out helper function
+// digital_pin_ok()  Checks if PIN_digital has been set
 bool digital_pin_ok() {
   // testing on ILLEGAL is enough in this context
   if (PIN_digital == ILLEGAL) {
     _select_digital(true);
-    MENU.ln();
+    SOFTBOARD.ln();
     return false;
   } else
     return true;
 }
 
-// bool menu_hardware_reaction(menu_input)
-// try to react on menu_input, return success flag
+
+// bool softboard_reaction(char token)
+// Try to react on token, return success flag.
 const char pwm_[] = "PWM ";
 const char noHw_[] = "no hardware ";
 const char analogWrite_[] = "\tanalogWrite(";
 
-bool softboard_reaction(char menu_input) {
+bool softboard_reaction(char token) {
   long newValue;
   bool do_it;	// sorry for the hack...
 
-  switch (menu_input) {
+  switch (token) {
   case 'A':
     _select_analog(false);
-    MENU.tab();
+    SOFTBOARD.tab();
 
-    newValue = MENU.numeric_input(PIN_analog);
+    newValue = SOFTBOARD.numeric_input(PIN_analog);
     if (newValue>=0 && newValue<NUM_ANALOG_INPUTS)
       PIN_analog = newValue;
     else
-      MENU.OutOfRange();
+      SOFTBOARD.OutOfRange();
 
-    MENU.out(pin_);
-    MENU.outln((int) PIN_analog);
+    SOFTBOARD.out(pin_);
+    SOFTBOARD.outln((int) PIN_analog);
     break;
 
   case 'D':
     _select_digital(false);
-    MENU.tab();
+    SOFTBOARD.tab();
 
-    newValue = MENU.numeric_input(PIN_digital);
+    newValue = SOFTBOARD.numeric_input(PIN_digital);
     if (newValue>=0 && newValue<visible_digital_pins) {
       PIN_digital = newValue;
       pin_info_digital((int) PIN_digital);
     } else
       if (newValue != ILLEGAL)
-	MENU.OutOfRange();
+	SOFTBOARD.OutOfRange();
     break;
 
   case 'O':
@@ -696,36 +691,36 @@ bool softboard_reaction(char menu_input) {
     #error digitalPinHasPWM undefined
   #endif
 #else
-
       if (!digitalPinHasPWM(PIN_digital)) {
-	do_it=false;	// hack to get through the #ifdef
-	MENU.out(noHw_); MENU.out(pwm_);
-	MENU.ln();
-	MENU.skip_numeric_input();
-      }
+	SOFTBOARD.out(noHw_); SOFTBOARD.out(pwm_);
+	SOFTBOARD.out(F("on ")); SOFTBOARD.out(pin_);
+	SOFTBOARD.outln((int) PIN_digital);
 
+	SOFTBOARD.skip_numeric_input();
+	do_it=false;	// hack to get through the #ifdef
+      }
 #endif
 
       if (do_it) {	// hack to get through the #ifdef
-        MENU.out(pin_); MENU.out((int) PIN_digital);
-	MENU.tab();
-	MENU.out(pwm_); MENU.out(F("write "));
-	newValue = MENU.numeric_input(ILLEGAL);
+        SOFTBOARD.out(pin_); SOFTBOARD.out((int) PIN_digital);
+	SOFTBOARD.tab();
+	SOFTBOARD.out(pwm_); SOFTBOARD.out(F("write "));
+	newValue = SOFTBOARD.numeric_input(ILLEGAL);
 	if (newValue>=0 && newValue<=255) {
-	  MENU.out(newValue);
+	  SOFTBOARD.out(newValue);
 
 	  analogWrite(PIN_digital, newValue);
-	  MENU.out(F("\tanalogWrite(")); MENU.out((int) PIN_digital);
-	  MENU.out(F(", ")); MENU.out(newValue);
-	  MENU.outln(close_);
+	  SOFTBOARD.out(F("\tanalogWrite(")); SOFTBOARD.out((int) PIN_digital);
+	  SOFTBOARD.out(F(", ")); SOFTBOARD.out(newValue);
+	  SOFTBOARD.outln(')');
 	} else
-	  MENU.OutOfRange();
+	  SOFTBOARD.OutOfRange();
       }
     }
     break;
 
   case 'a':
-    MENU.outln(analog_reads_title);
+    SOFTBOARD.outln(analog_reads_title);
     pin_info_analog(PIN_analog);
     break;
 
@@ -752,14 +747,18 @@ bool softboard_reaction(char menu_input) {
   case 'r':
     if (digital_pin_ok()) {
       toggle_watch();
-      // pinMode(PIN_digital, INPUT);	// ################
+      /*
+	I do *not* call	pinMode(PIN_digital, INPUT) from here.
+	Looks more flexible to me to let the user do that,
+	if she wants.
+      */
     }
     break;
 
   case '.':	// all digital
-    MENU.ln();
+    SOFTBOARD.ln();
     pins_info_digital();
-    MENU.ln();
+    SOFTBOARD.ln();
     break;
 
   case ',':	// all analog
@@ -767,10 +766,10 @@ bool softboard_reaction(char menu_input) {
     break;
 
   case ';':	// both ;)
-    MENU.ln();
+    SOFTBOARD.ln();
     pins_info_analog();
     pins_info_digital();
-    MENU.ln(); MENU.outln(close_);
+    SOFTBOARD.ln();
     break;
 
     case 'x':	// toggle extended
@@ -778,11 +777,10 @@ bool softboard_reaction(char menu_input) {
       break;
 
   default:
-    return 0;		// menu_input not found in this menu
+    return 0;		// token not found in this menu
   }
-  return 1;		// menu_input found in this menu
+  return 1;		// token found in this menu
 }
-
 
 
 /* **************************************************************** */
@@ -793,6 +791,7 @@ README softboard
    softboard  http://github.com/reppr/pulses
 
    Arduino hardware/software developing/testing tool.
+
 
 Description
 
@@ -819,7 +818,7 @@ Description
    you write it and fit parts together. 
 
 
-   Send 'm' or '?' (and a linefeed) over serial line to see the menu.
+   Send '?' (and a linefeed) over serial line to see the menu.
    It displays some basic infos and shows some one-letter commands.
 
 
@@ -890,7 +889,7 @@ Configure your terminal program:
    and set baud rate to the same value as USE_SERIAL_BAUD on the arduino.
 
 
-   Send 'm' or '?' (and a linefeed) over serial line to see the menu.
+   Send '?' (and a linefeed) over serial line to see the menu.
    It displays some basic infos and shows some one-letter commands.
 
    'e' toggle serial echo.

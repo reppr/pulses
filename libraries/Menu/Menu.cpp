@@ -608,7 +608,7 @@ void Menu::menu_display() const {
   }
 
   // Display internal key bindings:
-  out(F("'?' for menu  'e' toggle echo"));
+  out(F("\n'?' for menu  'e' toggle echo"));
   if (men_selected)
     out(F("  'q' quit page"));
   ln();
