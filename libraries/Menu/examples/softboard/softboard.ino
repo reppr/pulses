@@ -792,11 +792,16 @@ README softboard
 
    Arduino hardware/software developing/testing tool.
 
+   This version is implemented as an example for the Menu library.
+   Using a library makes it easy to include in your own sketches.
+
 
 Description
 
-   Simple hardware menu interface over serial line
-   as a kind of arduino software breadboard.
+   Softboard is kind of Arduino software breadboard.
+
+   Simple Arduino hardware Menu interface over a serial line
+   like USBserial.
 
    Send a sequence of one letter commands and numeric chiffres
    followed by a linebreak over a serial line (say from your computer)
@@ -826,42 +831,35 @@ Description
 
    Softboard tries not to block the processor longer then needed and
    to let as much cpu time as possible to any other code possibly running.
-   serial_menu() will just run through it's code and return immediately.
+   Menu will just run through it's code and return immediately.
 
 
 Integrate your own code:
 
-   It is easy to write a program menu as interface to your own code.
-
-   Grep the source for ´dance´ or ´yodel´ and you might find hints how to
-   setup a program menu to tell the arduino sketch to dance on ´d´,
-   to yodel on ´y´  and on ´s´ to do something special ;)
-
-   Just do #define PROGRAM_menu by uncommenting the line further down
-   and you will get an example program menu to build upon.
-
-   Or look in the hardware menu as example how to use serial menu.
+   It is easy to define a Menu page as an interface to your own code.
+   Please have a look at the Menu/examples/ to see how to do this.
 
 
 Installation:
 
-   Get it from http://github.com/reppr/softboard
-   Move the 'softboard' folder with all files
-   to your arduino sketchbook/ folder.
-   Load the sketch from arduino menu Files>Sketchbook>softboard.
+   Get it from http://github.com/reppr/pulses
+   Put contents of the pulses/libraries/ folder into sketchbook/libraries/
+   Softboard is implemented as an example of libraries/Menu/
+   After a restart the Arduino GUI shows softboard under
+   File >> Sketchbook >> libraries >> Menu >> softboard
 
-   Arduino versions older than 1.0 need a fix:
-     see this thread:
-     http://code.google.com/p/arduino/issues/detail?id=604&start=200
-
-       short version (adapt to your arduino version)
-         edit file arduino-0022/hardware/arduino/cores/arduino/wiring.h
-         comment out line 79 (round macro)
-         #define round(x)     ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
-         tested on arduino-0023
-
-   For older arduino versions you also have to rename the sketch file
-   from softboard.ino to softboard.pde
+	Arduino versions older than 1.0 need a fix:
+	  see this thread:
+	  http://code.google.com/p/arduino/issues/detail?id=604&start=200
+	
+	    short version (adapt to your arduino version)
+	      edit file arduino-0022/hardware/arduino/cores/arduino/wiring.h
+	      comment out line 79 (round macro)
+	      #define round(x)     ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
+	      tested on arduino-0023
+	
+	For older arduino versions you also have to rename the sketch file
+	from softboard.ino to softboard.pde
 
 
 How it works:
@@ -881,12 +879,12 @@ Configure your terminal program:
    line ending code, usual culprits should work.
 
    Set arduino baud rate by editing the line starting with
-   #define USE_SERIAL_BAUD
+   #define BAUDRATE in softboard.ino
    and set it to the same value in your terminal software.
 
    So if for example you use the Arduino 'Serial Monitor' window
    check that it *does* send 'Newline' (in the bottom window frame)
-   and set baud rate to the same value as USE_SERIAL_BAUD on the arduino.
+   and set baud rate to the same value as BAUDRATE on the arduino.
 
 
    Send '?' (and a linefeed) over serial line to see the menu.
