@@ -53,11 +53,6 @@
     #include "WProgram.h"
   #endif
 #endif // ARDUINO
-/* **************************************************************** */
-
-
-// Declare early to make live easier:
-void Menu_setup();
 
 
 /* **************************************************************** */

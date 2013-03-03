@@ -40,6 +40,12 @@
 //#define BAUDRATE	31250		// MIDI
 
 
+
+/* **************************************************************** */
+// Declare early to make live easier:
+void Menu_setup();
+
+
 /* **************************************************************** */
 /*
   This version definines the menu INPUT routine int men_getchar();
