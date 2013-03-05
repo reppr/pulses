@@ -49,18 +49,41 @@
   # echo "${treset}treset"
 
   # ****************************************************************
+  # Debugging:
+  # Personal git error return codes:
+  gitErrClone=1001
+  gitErrAdd=1002
+  gitErrStatus=1003
+  gitErrCommit=1005
+
+  gitErrMerge=1033
+
+  gitErrPull=1061
+
+  gitErrRemoteAdd=1071
+  gitErrRemoteRm=1072
+
+  # ****************************************************************
   echo "${cyan}${0##*/}"
   echo ${yellow}
   echo "Testing main git repo ${DEST_GIT}${treset}"
   cd ${DEST_GIT}		  || exit 1
   cd ${DEST_PAREN}/${DEST_SUBDIR} || exit 1	# should be same ;)
-  git status || exit 1
+  git status || {
+      echo ${red}${?}${treset}
+      echo "  'git status' ${red}FAILED.${treset}"
+      exit $gitErrStatus
+  }
 
   echo ${yellow}
   echo "Testing other git repo ${OTHER_GIT}${treset}"
   cd $OTHER_GIT			  	|| exit 1
   cd ${OTHER_GIT%/*}/${OTHER_SUBDIR}	|| exit 1	# same ;)
-  git status || exit 1
+  git status || {
+      echo ${red}${?}${treset}
+      echo "  'git status' ${red}FAILED.${treset}"
+      exit $gitErrStatus
+  }
   echo
   
   # ****************************************************************
@@ -69,7 +92,7 @@
   
   
   # ****************************************************************
-  echo "${blue}Clone ${OTHER_GIT} to temporary location ${OTHER_TMP}${treset}"
+  echo "${magenta}Clone ${OTHER_GIT} to temporary location ${OTHER_TMP}${treset}"
   # git clones into a subdir named after the paren directory of the
   # cloned repository:
   OTHER_SUBDIR="${OTHER_GIT##*/}"
@@ -77,7 +100,11 @@
   mkdir ${OTHER_TMP} || exit 1
   cd ${OTHER_TMP}    || exit 1
 
-  git clone ${OTHER_GIT} || exit 1
+  git clone ${OTHER_GIT} || {
+      echo ${red}${?}${treset}
+      echo "  'git clone ${OTHER_GIT}' ${red}FAILED.${treset}"
+      exit $gitErrClone
+  }
   #pwd ; ls -Al
   
   cd ${OTHER_TMP}/${OTHER_SUBDIR} || exit 1
@@ -87,7 +114,12 @@
   
   # ****************************************************************
   echo "${yellow}Remove remote origin in ${OTHER_TMP}/${OTHER_SUBDIR}${treset}"
-  git remote rm origin || exit 1
+  git remote rm origin || {
+      echo ${red}${?}${treset}
+      echo "  'git remote rm origin' ${red}FAILED.${treset}"
+      exit $gitErrRemotrRm
+  }
+
 
   # ****************************************************************
   echo ${cyan}
@@ -97,7 +129,7 @@
   
   Preparing repository merge: Do not use.
   
-  git commit || exit 1
+  git commit || exit gitErrCommit
 
   [edit commit message], then
   git commit --allow-empty --amend
@@ -108,7 +140,12 @@
 >>>> >>> >> > INSERT script ${0} HERE < << <<< <<<<
 
   ****************************************************************
-  " || exit 1
+  " || {
+      echo ${red}${?}${treset}
+      echo "  'git commit --allow-empty -m' ${red}FAILED.${treset}"
+      exit $gitErrCommit
+  }
+
 
   
   # ****************************************************************
@@ -116,10 +153,14 @@
   echo "  Please edit commit message
   and *do* include this script BY HAND IN COMMIT MESSAGE.
   file:  ${0}
-    <ENTER>${treset}"
+    ${blue}<ENTER>${treset}"
   read dummy
 
-  git commit --allow-empty --amend || exit 1
+  git commit --allow-empty --amend || {
+      echo ${red}${?}${treset}
+      echo "  'git commit --allow-empty --amend' ${red}FAILED.${treset}"
+      exit $gitErrCommit
+  }
 
 
   # ****************************************************************
@@ -132,11 +173,14 @@
   ${red}
   OPENING A BASH SHELL NOW
   exit shell when done
-    ${blue}<ENTER>
+    ${blue}<ENTER>${treset}
   "
   read dummy
 
-  PS1='\$' bash -l	################
+  echo ${magenta}
+  #PS1='\$' bash -c'source /etc/profile'		################
+  PS1='\$' bash -i
+  echo ${treset}
 
 
   # ****************************************************************
@@ -144,6 +188,8 @@
   mkdir $DEST_COPY_DIR			|| exit 1
   cd ${DEST_PAREN}			|| exit 1
   cp -ap $DEST_SUBDIR $DEST_COPY_DIR	|| exit 1
+  echo "	${blue}<ENTER>${treset}"
+  read dummy
 
   echo "${cyan}Merge ${OTHER_GIT} repo into ${DEST_COPY_DIR}${treset}"
   cd ${DEST_COPY_DIR}/${DEST_SUBDIR}	|| exit 1
@@ -156,43 +202,99 @@
   otherGit="unknownRepo"
   [ -n $OTHER_SUBDIR ] && otherGit=$OTHER_SUBDIR
 
-  git remote add -f ${otherGit} ${OTHER_TMP}/${OTHER_SUBDIR} || exit 1
-  git merge --log=10000 ${otherGit}/master	|| exit 1
+  git remote add -f ${otherGit} ${OTHER_TMP}/${OTHER_SUBDIR} || {
+      echo ${red}${?}${treset}
+      echo "  'git remote add -f ${otherGit} ${OTHER_TMP}/${OTHER_SUBDIR}' ${red}FAILED.${treset}"
+      exit $gitErrRemoteAdd
+  }
+  echo "	${blue}<ENTER>${treset}"
+  read dummy
 
-  git commit -m "Merged ${OTHER_GIT}
+  git merge --no-commit -m "Merged ${OTHER_GIT}
   
   Transition: Do not use.
   
   git remote add -f ${otherGit} ${OTHER_TMP}
-  git merge ${otherGit}/master
-  git commit || exit 1
+  git merge --no-commit ${otherGit}/master || exit gitErrMerge
+  git commit || exit gitErrCommit
 
   git pull -s subtree ${otherGit} master
   git remote rm ${otherGit}
-  " || exit 1
-  
-  echo ${blue}
-  echo "git pull -s subtree ${otherGit} master${treset}"
-  git pull -s subtree ${otherGit} master	|| exit 1
+  " \
+      --log=10000 ${otherGit}/master	|| {
+      echo ${red}${?}${treset}
+      echo "  'git merge --log=10000 ${otherGit}/master' ${red}FAILED.${treset}"
+      exit $gitErrMerge
+  }
 
-  echo ${blue}
+  echo ${yellow}
+  echo "Edit commit message, please.${treset}"
+  echo "	${blue}<ENTER>${treset}"
+  read dummy
+
+  git commit --allow-empty || {
+      echo ${red}${?}${treset}
+      echo "  'git commit --allow-empty -m' ${red}FAILED.${treset}"
+      exit $gitErrCommit
+  }
+
+  echo ${magenta}
+  echo "git pull -s subtree ${otherGit} master${treset}"
+  # echo "	${blue}<ENTER>${treset}"
+  # read dummy
+  git pull -s subtree ${otherGit} master	|| {
+      echo ${red}${?}${treset}
+      echo "  'git pull -s subtree ${otherGit} master' ${red}FAILED.${treset}"
+      exit $gitErrPull
+  }
+
+
+
+  echo ${magenta}
   echo "git remote rm ${otherGit}${treset}"
-  git remote rm ${otherGit}			|| exit 1
+  # echo "	${blue}<ENTER>${treset}"
+  # read dummy
+  git remote rm ${otherGit} || {
+      echo ${red}${?}${treset}
+      echo "  'git remote rm' ${red}FAILED.${treset}"
+      exit $gitErrRemoteRm
+  }
   #pwd ; ls -Al
   
   
   # ****************************************************************
+  echo
+  echo "************************************************"
+  echo "${0##*/}  ${cyan}done :)"
+  echo "New git repo is in ${treset}${DEST_COPY_DIR}"
+  echo "${yellow}Check and copy to ${treset}${DEST_GIT} ${yellow}by hand.${treset}"
+  echo "************************************************"
+
   echo ${cyan}
-  echo "New git repo is in ${DEST_COPY_DIR}"
-  echo "Check and copy to ${DEST_GIT} by hand.${treset}"
-  sleep 3
-
+  echo "git branch${treset}"
   git branch
-  sleep 2
 
+  echo ${cyan}
+  echo "ls -Al${treset}"
   ls -Al
-  sleep 3
 
+  echo ${cyan}
+  echo "git status${treset}"
   git status
-  echo " ${cyan}done :) ${treset}"
+
+
+  # ****************************************************************
+  # leave the user on a shell in new repo:
+  echo ${yellow}
+  echo "opening a shell now${treset}"
+  echo "exit shell when done
+    ${blue}<ENTER>${treset}
+  "
+  read dummy
+
+  echo ${yellow}
+  PS1='\$' bash -i
+  echo ${treset}
+
+  echo "${treset}"
   # ****************************************************************
