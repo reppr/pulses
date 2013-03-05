@@ -284,17 +284,16 @@
 
 
   # ****************************************************************
-  # leave the user on a shell in new repo:
+  # Leave the user on a shell in new repo:
   echo ${yellow}
-  echo "opening a shell now${treset}"
-  echo "exit shell when done
+  echo "Opening a shell now in $(pwd) to examine result now.${treset}"
+  echo "  exit shell when done
     ${blue}<ENTER>${treset}
   "
   read dummy
 
-  echo ${yellow}
+  echo -n ${yellow}
   PS1='\$' bash -i
   echo ${treset}
 
-  echo "${treset}"
   # ****************************************************************
