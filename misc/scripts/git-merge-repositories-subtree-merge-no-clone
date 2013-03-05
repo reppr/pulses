@@ -1,11 +1,10 @@
+#! /bin/sh
   #! /bin/sh
   # ****************************************************************
   # Script used to merge the old softboard repo into pulses:
   # indented to leave #comments when included in commit message...
   # ****************************************************************
   
-  NEW_PULSES="/tmp/GIT-NEW/"
-
   GIT_REPO_DIR="/home/dada/PULSES_i5/"
   PULSES_SOURCE="${GIT_REPO_DIR}pulses/"
   PULSES_NAME="pulses/"
@@ -18,26 +17,6 @@
   # start all over again...
   rm -rf $NEW_PULSES
   rm -rf $SOFTBOARD_TMP
-  
-  
-  # ****************************************************************
-  echo "Building new pulses git repository in $NEW_PULSES."
-  mkdir -p $NEW_PULSES || exit 1
-  cd $NEW_PULSES || exit 1
-  # pwd ; ls -Al
-  
-  
-  # ****************************************************************
-  echo "Clone $PULSES_SOURCE to $(pwd):"
-  git clone $PULSES_SOURCE || exit 1
-  # ls -A1
-  
-  # DEACTIVATED: left github as origin in pulses' origin
-  # cd $PULSES_NAME || exit 1
-  # pwd ; ls -Al
-  #
-  # echo "Remove remote origin in pulses."
-  # git remote rm origin
   
   
   # ****************************************************************
@@ -61,6 +40,7 @@
   # ****************************************************************
   echo "Move README and commit that."
   git mv README softboard/README
+
   git commit -m "Merge softboard c-version as base for later Menu example.
   
   Preparing repository merge: Do not use.
@@ -73,18 +53,26 @@
 
   ****************************************************************
   
-  echo "INCLUDE ${0##*/} SCRIPT BY HAND IN COMMIT MESSAGE, please."
-  sleep 8
+  echo "INCLUDE ${0##*/} SCRIPT
+BY HAND IN COMMIT MESSAGE, please."
+  sleep 4
   git commit --amend
   
   # ****************************************************************
   echo "Merge softboard repo into pulses."
-  cd $NEW_PULSES || exit 1
-  cd $PULSES_NAME || exit 1
+  cd $PULSES_SOURCE || exit 1
   # pwd ; ls -Al
-  
+  # git status
+
+  echo "Working DIRECTLY ON LOCAL REPO ${PULSES_SOURCE}${PULSES_NAME}:"
+  echo "Backup ${PULSES_SOURCE}${PULSES_NAME}"
+  dated-backup-copy ${PULSES_SOURCE}
+
+  emacs ..	# check and last chance to quit ;)
+
   git remote add -f softb $SOFTBOARD_NAME
   git merge --no-commit softb/master
+
   git commit -m "Merged c softboard version.
   
   Transition: Do not use.
@@ -96,15 +84,15 @@
   
   git pull -s subtree softb master
   git remote rm softb
-  pwd ; ls -Al
+  #pwd ; ls -Al
   
   
   # ****************************************************************
   echo "Moving to examples/softboard"
   mkdir -p libraries/Menu/examples/softboard/ || exit 1
   git mv softboard/* libraries/Menu/examples/softboard/
+
   git commit -m "Moved to examples/softboard
-  
   
   mkdir -p libraries/Menu/examples/softboard/ || exit 1
   git mv softboard/* libraries/Menu/examples/softboard/
@@ -114,18 +102,6 @@
   rmdir softboard
   #git status
 
-  
-  # ****************************************************************
-  # after testing everything:
-  echo "Replacing ${PULSES_SOURCE}${PULSES_NAME} by ${NEW_PULSES}${PULSES_NAME}"
-  echo "Backup ${PULSES_SOURCE}${PULSES_NAME}"
-  dated-backup-copy ${PULSES_SOURCE}
-  #ls -l ${PULSES_SOURCE}..
-
-  echo "REPLACING ${PULSES_SOURCE}${PULSES_NAME}"
-  rm -rf ${PULSES_SOURCE}
-  mkdir ${PULSES_SOURCE}
-
-  cp -ap ${NEW_PULSES}${PULSES_NAME} ${GIT_REPO_DIR} || exit 1
-
-  echo "done :)"
+  echo "done"
+  echo
+  git status
