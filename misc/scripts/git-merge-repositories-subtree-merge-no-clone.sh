@@ -10,50 +10,6 @@
   # '  ' indented to protect #comments when included in commit message.
   # ****************************************************************
   commandline="$*"
-  # ****************************************************************
-
-
-  # ****************************************************************
-  mangle_path() {		# X="$(mangle_path "$1")"
-      [ -z "${1}" ] && {
-	  # echo "${0##*/}  ${red}ERROR: empty path${treset}!"
-	  echo "${0##*/}  $(tput setaf 1)ERROR: empty path$(tput sgr0)!"
-          # usage
-	  exit 1
-      }
-      NEW_PATH="${1}"
-      NEW_PATH="${NEW_PATH#./}"			# no starting ./
-      [ "${NEW_PATH}" == '.' ] && NEW_PATH="$(pwd)"	# no '.'
-      [ "${NEW_PATH:0:1}" != "/" ] && NEW_PATH="$(pwd)/${NEW_PATH}"
-      if [ "${NEW_PATH}" != '/' ] ; then		# accept '/'
-	  NEW_PATH="${NEW_PATH%/}"			# no trailing /
-      fi
-      echo "${NEW_PATH}"
-  }
-
-
-  # ****************************************************************
-  #MAIN_GIT="/home/dada/PULSES_i5/pulses"
-  MAIN_GIT="$(mangle_path "${1}")"
-  MAIN_PAREN="${MAIN_GIT%/*}"
-  MAIN_SUBDIR="${MAIN_GIT##*/}"
-
-  #  OTHER_GIT_SRC="/home/dada/ARDUINO-GIT2/softboard"
-  #  OTHER_GIT_SRC="/home/dada/arduino-GIT1"
-  OTHER_GIT_SRC="$(mangle_path "${2}")"
-  OTHER_SUBDIR="${OTHER_GIT_SRC##*/}"
-
-  shift 2
-
-  NEW_MAIN="/tmp/newGIT_${OTHER_SUBDIR}.$$"
-  OTHER_TMP="/tmp/OTHER_CLONE.$$"
-
-  # echo "MAIN_GIT	$MAIN_GIT"
-  # echo "MAIN_PAREN	$MAIN_PAREN"
-  # echo "MAIN_SUBDIR	$MAIN_SUBDIR"
-  # echo "OTHER_GIT_SRC	$OTHER_GIT_SRC"
-  # echo "OTHER_SUBDIR	$OTHER_SUBDIR"
-  # echo "NEW_MAIN	$NEW_MAIN"
 
 
   # ****************************************************************
@@ -82,6 +38,59 @@
 
 
   # ****************************************************************
+  usage() {
+    echo "${0##*/}: Merge another git repo into (a copy of) an existing one."
+    echo
+    echo "Usage:  ${0##*/} main-git-repo repo-to-import"
+    echo
+  }
+
+
+  # ****************************************************************
+  mangle_path() {		# X="$(mangle_path "$1")"
+      [ -z "${1}" ] && {
+	  # echo "${0##*/}  ${red}ERROR: empty path${treset}!"
+	  echo "${0##*/}  $(tput setaf 1)ERROR: empty path$(tput sgr0)!"
+          usage
+	  exit 1
+      }
+      NEW_PATH="${1}"
+      NEW_PATH="${NEW_PATH#./}"				# no starting ./
+      [ "${NEW_PATH}" == '.' ] && NEW_PATH="$(pwd)"	# no '.'
+      [ "${NEW_PATH:0:1}" != "/" ] && NEW_PATH="$(pwd)/${NEW_PATH}"
+      if [ "${NEW_PATH}" != '/' ] ; then		# accept '/'
+	  NEW_PATH="${NEW_PATH%/}"			# no trailing /
+      fi
+      echo "${NEW_PATH}"
+  }
+
+
+  # ****************************************************************
+  # Commandline parameters:
+  [ $# -ne 2 ] && {	# wrong number of parameters
+      echo "${red}ERROR: wrong number of parameters${treset}"
+      echo
+      usage
+      exit 1
+  }
+
+  #MAIN_GIT="/home/dada/PULSES_i5/pulses"
+  MAIN_GIT="$(mangle_path "${1}")"
+  MAIN_PAREN="${MAIN_GIT%/*}"
+  MAIN_SUBDIR="${MAIN_GIT##*/}"
+
+  #  OTHER_GIT_SRC="/home/dada/ARDUINO-GIT2/softboard"
+  #  OTHER_GIT_SRC="/home/dada/arduino-GIT1"
+  OTHER_GIT_SRC="$(mangle_path "${2}")"
+  OTHER_SUBDIR="${OTHER_GIT_SRC##*/}"
+
+  shift 2
+
+  NEW_MAIN="/tmp/newGIT_${OTHER_SUBDIR}.$$"
+  OTHER_TMP="/tmp/${OTHER_SUBDIR:-OTHER_CLONE}.$$"
+
+
+  # ****************************************************************
   # Debugging:
   # Personal git error return codes:
   gitErrClone=1001
@@ -95,6 +104,7 @@
 
   gitErrRemoteAdd=1071
   gitErrRemoteRm=1072
+
 
   # ****************************************************************
   echo "${cyan}${0##*/}"
@@ -118,7 +128,49 @@
       exit $gitErrStatus
   }
   echo
+  echo "${green}tests succeeded :)${treset}"
   
+
+  # ****************************************************************
+  # Summary of planed actions, ask for confirmation:
+  echo 
+  echo "${cyan}================================================================"
+  echo "${0##*/}${red} PLANED ACTIONS${treset}"
+  echo "${cyan}Merge other repository ${OTHER_GIT_SRC} into"
+  echo "a ${MAIN_GIT} *COPY*"
+  echo "================================================================${treset}"
+  echo
+  echo "${yellow}First prepare a CLONE of the other repository${treset}:"
+  echo "  * clone ${OTHER_GIT_SRC} into ${OTHER_TMP}"
+  echo "    The clone will be in ${OTHER_TMP}/${OTHER_SUBDIR}"
+  echo
+  echo "${yellow}  Then work in the clone${treset}:"
+  echo "  * remove remote origin in ${OTHER_SUBDIR}"
+  echo "  * prepare commit message and commit --allow-empty"
+  echo "    ${cyan}commit --amend${yellow} to edit commit message and include this script."
+  echo "  * ${cyan}Give you a shell to work in the CLONE of ${OTHER_SUBDIR}${treset}"
+  echo
+  echo "${yellow}*COPY* the main repo ${red}(with all files)${yellow} to a new repo${treset}:"
+  echo "  * cp -ap ${MAIN_PAREN} ${NEW_MAIN}"
+  echo "    the base repo copy will be in ${NEW_MAIN}/${MAIN_SUBDIR}"
+  echo "  * merge ${OTHER_SUBDIR} from the clone we have been working on"
+  echo "  * ${cyan}commit${yellow}"
+  echo "  * git pull -s subtree ${OTHER_SUBDIR} master"
+  echo
+  echo "${cyan}When done give you a shell in ${MAIN_SUBDIR} to check the new repo.${treset}"
+  echo
+  read -p "(Y/n)" input
+  # echo "MAIN_PAREN	$MAIN_PAREN"
+  # echo "MAIN_SUBDIR	$MAIN_SUBDIR"
+  # echo "OTHER_SUBDIR	$OTHER_SUBDIR"
+  # echo "NEW_MAIN	$NEW_MAIN"
+  case ${input:-Y} in
+      Y|y) ;;
+      *) echo "${red}nothing done, nothing spoilt${treset} ;)"
+	  exit 1
+  esac
+
+
   # ****************************************************************
   # Start all over again...
   rm -rf $OTHER_TMP $NEW_MAIN  # obsolete as long as we use $$
@@ -161,7 +213,7 @@
   
   Preparing repository merge: Do not use.
   
-  git commit || exit gitErrCommit
+  git commit
 
   [edit commit message], then
   git commit --allow-empty --amend
@@ -204,7 +256,7 @@
   move files, i.e. README
   ${red}
   OPENING A BASH SHELL NOW
-  exit shell when done
+  ${cyan}exit shell when done
     ${blue}<ENTER>${treset}
   "
   read dummy
@@ -219,16 +271,15 @@
   mkdir $NEW_MAIN			|| exit 1
   cd ${MAIN_PAREN}			|| exit 1
   cp -ap $MAIN_SUBDIR $NEW_MAIN	|| exit 1
-  echo "	${blue}<ENTER>${treset}"
-  read dummy
 
+  echo
   echo "${cyan}Merge ${OTHER_GIT_SRC} repo into ${NEW_MAIN}${treset}"
   cd ${NEW_MAIN}/${MAIN_SUBDIR}	|| exit 1
   #echo ; pwd ; ls -al ; git status
 
 
   # ****************************************************************
-  echo "${yellow}  Pull from ${OTHER_TMP}${treset}"
+  echo "${yellow}  Merge ${OTHER_SUBDIR}${treset}"
 
   otherGit="unknownRepo"
   [ -n $OTHER_SUBDIR ] && otherGit=$OTHER_SUBDIR
@@ -246,8 +297,8 @@
   Transition: Do not use.
   
   git remote add -f ${otherGit} ${OTHER_TMP}
-  git merge --no-commit ${otherGit}/master || exit gitErrMerge
-  git commit || exit gitErrCommit
+  git merge --no-commit ${otherGit}/master
+  git commit
 
   git pull -s subtree ${otherGit} master
   git remote rm ${otherGit}
@@ -316,14 +367,16 @@
 
   # ****************************************************************
   # Leave the user on a shell in new repo:
-  echo ${yellow}
-  echo "Opening a shell now in $(pwd) to examine result now.${treset}"
-  echo "  exit shell when done
+  echo "${cyan}NEW GIT REPOSITORY READY ${yellow}in ${NEW_MAIN}/${MAIN_SUBDIR}"
+  echo "Opening a shell there to examine result now.${treset}"
+  echo "  ${cyan}exit shell when done
     ${blue}<ENTER>${treset}
   "
   read dummy
 
   PS1="${cyan}\w ${red}\$ ${yellow}"  bash --norc -i
   echo ${treset}
+
+  echo "${green}Left new git repository in ${treset}${NEW_MAIN}/${MAIN_SUBDIR}"
 
   # ****************************************************************
