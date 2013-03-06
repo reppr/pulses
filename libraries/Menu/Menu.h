@@ -44,6 +44,10 @@
   #define DEBUGGING_MENU
 #endif
 
+#ifdef DEBUGGING_CIRCBUF
+  #define DEBUGGING_LURKING
+#endif
+
 
 #if defined(ARDUINO)
 /* Keep ARDUINO GUI happy ;(				*/

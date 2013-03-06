@@ -364,34 +364,26 @@ bool Menu::lurk_then_do() {
   INP=(*maybe_input)();
 
   if ( INP == EOF )	// no input?  done
-    return false;
+    return false;	// false: *no program reaction triggered*
 
   // there *is* input
-#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
+#if defined(DEBUGGING_LURKING)
   outln(F("got input"));
 #endif
 
   // END token translation:
   switch ( c = INP ) {
-  case '\n':		// translate \n to 'END token' \0
-    c = 0;
-#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
-    outln(F("NL translated to END token"));
-#endif
-    break;
-
-  case '\r':		// translate \r to 'END token' \0
-    c = 0;
-#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
-    outln(F("CR translated to END token"));
-#endif
-    break;
-
   case '\0':		// '\0' already *is* 'END token'
-    // c = 0;
-#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_MENU)
+#if defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
     out(F("\\0 received"));
 #endif
+    break;
+  case '\n':		// translate \n to 'END token' \0
+  case '\r':		// translate \r to 'END token' \0
+#if defined(DEBUGGING_LURKING)
+    out((int) c);  outln(F(" translated to END token"));
+#endif
+    c = 0;
     break;
   } // END token translation
 
@@ -400,7 +392,7 @@ bool Menu::lurk_then_do() {
     if (echo_switch)	// echo input back to ouput?
       out(c);
 
-#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
+#if defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
     out(F("accumulated "));
     ticked(c);
     ln();
@@ -414,19 +406,19 @@ bool Menu::lurk_then_do() {
 
       // try to recover
       // the fix would be to match message length and cb buffer size... 
-#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
+#if defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
       outln(F("cb is full.  interpreting as EMERGENCY EXIT, dangerous..."));
 #endif
       // EMERGENCY EXIT, dangerous...
       interpret_men_input();	// <<<<<<<< INTERPRET BUFFER CONTENT >>>>>>>>
-      menu_display();
 #if defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
       outln(F("lurk_then_do() INTERPRETed INPUT BUFFER."));
 #endif
+      menu_display();
       return true;		// true means *reaction was triggered*.
     }
   } else {
-#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
+#if defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
     out(F("END token received. ")); out(F("Buffer stored=")); outln(cb_stored());
 #endif
 
@@ -445,7 +437,7 @@ bool Menu::lurk_then_do() {
 #endif
       return true;		// true means *reaction was triggered*.
 
-#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
+#if defined(DEBUGGING_LURKING)
     } else {
       outln(F("(empty buffer ignored)"));
 #endif
