@@ -363,90 +363,92 @@ bool Menu::lurk_then_do() {
      or if there is no input returning EOF		*/
   INP=(*maybe_input)();
 
-  if ( INP != EOF ) {	// there *is* input
+  if ( INP == EOF )	// no input?  done
+    return false;
+
+  // there *is* input
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
   outln(F("got input"));
 #endif
 
-    switch ( c = INP ) {
-
-    // END token translation:
-    case '\n':		// translate \n to 'END token' \0
-      c = 0;
+  // END token translation:
+  switch ( c = INP ) {
+  case '\n':		// translate \n to 'END token' \0
+    c = 0;
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
-      outln(F("NL translated to END token"));
+    outln(F("NL translated to END token"));
 #endif
-      break;
+    break;
 
-    case '\r':		// translate \r to 'END token' \0
-      c = 0;
+  case '\r':		// translate \r to 'END token' \0
+    c = 0;
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
-      outln(F("CR translated to END token"));
+    outln(F("CR translated to END token"));
 #endif
-      break;
+    break;
 
-    case '\0':		// '\0' already *is* 'END token'
-      // c = 0;
+  case '\0':		// '\0' already *is* 'END token'
+    // c = 0;
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_MENU)
-      out(F("\\0 received"));
+    out(F("\\0 received"));
 #endif
-      break;
-    }
-    if ( c ) {		// accumulate in buffer
-      cb_write(c);
-      if (echo_switch)
-	out(c);
+    break;
+  } // END token translation
+
+  if ( c ) {		// accumulate in buffer
+    cb_write(c);
+    if (echo_switch)	// echo input back to ouput?
+      out(c);
 
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
-      out(F("accumulated "));
-      ticked(c);
-      ln();
+    out(F("accumulated "));
+    ticked(c);
+    ln();
 #endif
-      if (cb_is_full()) {
-	// Inform user:
-	out(F("buffer"));
-	Error_();
-	OutOfRange();
+    if (cb_is_full()) {
+      // Inform user:
+      out(F("buffer"));
+      Error_();
+      OutOfRange();
+      ln();
+
+      // try to recover
+      // the fix would be to match message length and cb buffer size... 
+#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
+      outln(F("cb is full.  interpreting as EMERGENCY EXIT, dangerous..."));
+#endif
+      // EMERGENCY EXIT, dangerous...
+      interpret_men_input();	// <<<<<<<< INTERPRET BUFFER CONTENT >>>>>>>>
+      menu_display();
+#if defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
+      outln(F("lurk_then_do() INTERPRETed INPUT BUFFER."));
+#endif
+      return true;		// true means *reaction was triggered*.
+    }
+  } else {
+#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
+    out(F("END token received. ")); out(F("Buffer stored=")); outln(cb_stored());
+#endif
+
+    /* end of line token translation can produce more then one \0 in sequence
+       only the first is meaningful, the others have no data in the buffer
+       so we treat only the first one (the one with the data).
+    */
+    if ( cb_stored() ) {	// disregard empty buffers
+      if (echo_switch)
 	ln();
 
-	// try to recover
-	// the fix would be to match message length and cb buffer size... 
-#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
-	outln(F("cb is full.  interpreting as EMERGENCY EXIT, dangerous..."));
-#endif
-	// EMERGENCY EXIT, dangerous...
-	interpret_men_input();	// <<<<<<<< INTERPRET BUFFER CONTENT >>>>>>>>
-	menu_display();
+      interpret_men_input();	// <<<<<<<< INTERPRET BUFFER CONTENT >>>>>>>>
+      menu_display();
 #if defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
-	outln(F("lurk_then_do() INTERPRETed INPUT BUFFER."));
+      outln(F("lurk_then_do() INTERPRETed INPUT BUFFER."));
 #endif
-	return true;		// true means *reaction was triggered*.
-      }
-    } else {
-#if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
-      out(F("END token received. ")); out(F("Buffer stored=")); outln(cb_stored());
-#endif
-
-      /* end of line token translation can produce more then one \0 in sequence
-	 only the first is meaningful, the others have no data in the buffer
-	 so we treat only the first one (the one with the data).
-      */
-      if ( cb_stored() ) {	// disregard empty buffers
-	if (echo_switch)
-	  ln();
-
-	interpret_men_input();	// <<<<<<<< INTERPRET BUFFER CONTENT >>>>>>>>
-	menu_display();
-#if defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
-	outln(F("lurk_then_do() INTERPRETed INPUT BUFFER."));
-#endif
-	return true;		// true means *reaction was triggered*.
+      return true;		// true means *reaction was triggered*.
 
 #if defined(DEBUGGING_CIRCBUF) || defined(DEBUGGING_LURKING)
-      } else {
-	outln(F("(empty buffer ignored)"));
+    } else {
+      outln(F("(empty buffer ignored)"));
 #endif
-      }
     }
   }
 
