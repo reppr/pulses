@@ -53,7 +53,9 @@ unsigned char battery_PIN[BATTERY_CELLs] = {0, 1, 2, 3};
 #define USE_EEPROM	0		// #ifdef eeprom_start
 
 // use serial line for communication?
-#define USE_SERIAL	115200
+//	#define USE_SERIAL	115200
+//	#define USE_SERIAL	57600
+#define USE_SERIAL	38400
 
 #ifdef USE_SERIAL	// simple menus over serial line?
   // menu over serial line:
@@ -201,13 +203,14 @@ void shutdown() {
   // switch known loads off immediately:
   switch_load_off(true);
 
-  // give me some time to upload a new program... ;)
-  for (int i=0; i<32; i++) {
-    digitalWrite(LED_pin,HIGH);
-    delay(62);
-    digitalWrite(LED_pin,LOW);
-    delay(938);
-  }
+//	  // give me some time to upload a new program... ;)
+delay(60000);
+//	  for (int i=0; i<32; i++) {
+//	    digitalWrite(LED_pin,HIGH);
+//	    delay(62);
+//	    digitalWrite(LED_pin,LOW);
+//	    delay(938);
+//	  }
 
   for (int pin=0; pin<DIGITAL_PINs; pin++)
     digitalWrite(pin,LOW);	// risky, we might have negative logic on some pins
@@ -956,6 +959,10 @@ void setup() {
   }
 
   switch_load_off(true);
+
+//	  get_and_display_cell_voltages();
+//	  check_worst_cell_state();
+//	  react_on_battery_state();
 }
 
 
