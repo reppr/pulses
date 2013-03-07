@@ -127,13 +127,11 @@ void get_cell_voltages(void) {
 
 char worst_cell=ILLEGAL;
 
-void get_check_display_react_voltages(void) {
+void get_and_display_cell_voltages(void) {
   float drop;
 
   get_cell_voltages();
-  check_worst_cell_state();
-
-#ifdef USE_SERIAL
+  check_worst_cell_state();	// to know which cell is worst
   for (int cell=0; cell<BATTERY_CELLs; cell++) {
     Serial.print((int) cell + 1); 
     if (cell != worst_cell)
@@ -151,9 +149,6 @@ void get_check_display_react_voltages(void) {
     Serial.print(")\t");
   }
   Serial.println("");
-#endif
-
-  react_on_battery_state();
 }
 
 
@@ -596,7 +591,7 @@ void calibrate()
 
 void display_menu_discharger() {
   Serial.println("");
-  Serial.println("Menu  *** DISCHARGER ***");
+  Serial.println("Menu  *** DISCHARGER v0.1 ***");
   Serial.print("C=calibrate\tt=time_interval (");
   Serial.print(time_interval);
   Serial.print(")\ts=switch_pin (");
@@ -961,7 +956,6 @@ void setup() {
   }
 
   switch_load_off(true);
-  get_check_display_react_voltages();	// start with some activity ;)
 }
 
 
@@ -976,6 +970,8 @@ void loop() {
   now=millis();
   if ( (now - last) > time_interval ) {
     last = now;
-    get_check_display_react_voltages();
+    get_and_display_cell_voltages();
+    check_worst_cell_state();
+    react_on_battery_state();
   }
 }

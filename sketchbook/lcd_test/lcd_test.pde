@@ -43,17 +43,24 @@ LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 void setup() {
   // set up the LCD's number of columns and rows: 
   lcd.begin(20, 4);
+
   // Print a message to the LCD.
-  lcd.print("Line 1\n");
-  lcd.print("Line 2\n");
-  lcd.print("Line 3\n");
-  lcd.print("Line 4\n");
+  lcd.print("Line 1");
+  lcd.setCursor(0, 1);
+  lcd.print("Line 2");
+  lcd.setCursor(0, 2);
+  lcd.print("Line 3");
+  lcd.setCursor(0, 3);
+  lcd.print("Line 4");
 }
+
+double seconds;
 
 void loop() {
   // set the cursor to column 0, line 1
   // (note: line 1 is the second row, since counting begins with 0):
-  lcd.setCursor(8, 1);
+  lcd.setCursor(10, 1);
   // print the number of seconds since reset:
-  lcd.print(millis()/1000);
+  seconds = (double) millis() / 1000.0;
+  lcd.print(seconds);
 }

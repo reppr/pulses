@@ -7,7 +7,10 @@ void setup( void )
 
   // REFS1 REFS0          --> 0 0 AREF, Internal Vref turned off
   // MUX3 MUX2 MUX1 MUX0  --> 1110 1.1V (VBG)
-  ADMUX = (0<<REFS1) | (0<<REFS0) | (0<<ADLAR) | (1<<MUX3) | (1<<MUX2) | (1<<MUX1) | (0<<MUX0);
+  // ADMUX = (0<<REFS1) | (0<<REFS0) | (0<<ADLAR) | (1<<MUX3) | (1<<MUX2) | (1<<MUX1) | (0<<MUX0);
+
+  // or for 328 processors:
+  ADMUX = (0<<REFS1) | (1<<REFS0) | (0<<ADLAR) | (1<<MUX3) | (1<<MUX2) | (1<<MUX1) | (0<<MUX0);
 }
 
 void loop( void )
