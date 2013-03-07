@@ -86,7 +86,17 @@
       -m"Checked with ~/ARDUINO-GIT2/polyphonic_oscillators"	|| exit 1
 
   echo
-  echo "${0##*/}:	$(tput sgr0)done :)"
+  echo "Final commit on this clone, to tell what happened"
+  git commit --allow-empty \
+      -m"Prepared and updated to ARDUINO-GIT2 level."	|| exit 1
+
+  echo
+  echo "Insert ${0} in log message, please.	<RETURN>"
+  read dummy
+  git commit --allow-empty --amend			|| exit 1
+
+  echo
+  echo "${0##*/}:	$(tput sgr0)==> done :)"
   . /etc/profile
 
   # ****************************************************************
