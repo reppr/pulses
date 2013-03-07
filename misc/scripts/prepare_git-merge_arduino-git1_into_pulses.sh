@@ -7,14 +7,9 @@
   # Script used inside a *CLONE* of arduino-git1
   # to prepare merge into pulses:
 
+  # SIMPLIFIED VERSION after preparing 'arduino-git1'
+
   git status	|| exit 1		# assure we're in a git repository ;)
-
-  mkdir -p misc/src/arduino-git1		|| exit 1
-
-  git mv README.txt misc/src/arduino-git1/	|| exit 1
-  git mv sketchbook/* misc/src/arduino-git1/	|| exit 1
-
-  rmdir sketchbook/				|| exit 1
 
   # check github for updates:
   git remote add -f 'GHsoftb' 'https://github.com/reppr/softboard' || exit 1
@@ -32,7 +27,7 @@
   git merge master				|| exit 1
   #
   git remote rm SOFTB				|| exit 1
-
+  #
   git commit					|| exit 1
 
   # check local ARDUINO-GIT2/accelerometer_3D repo for updates:
@@ -42,9 +37,14 @@
   git merge master				|| exit 1
   #
   git remote rm A3B				|| exit 1
-
+  #
   git commit					|| exit 1
+
+  # TO BE CONTINUED HERE	################
+  #
+  #
+  #
+  #
 
   # ****************************************************************
 # ****************************************************************
-

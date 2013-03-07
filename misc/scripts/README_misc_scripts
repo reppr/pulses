@@ -1,0 +1,10 @@
+pulses/misc/scripts/README_misc_scripts
+
+This folder contains material that most people will not need.
+It is save to delete it.
+
+That might change in future,
+who knows ;)
+
+
+git scripts used to import older git repos into pulses.
