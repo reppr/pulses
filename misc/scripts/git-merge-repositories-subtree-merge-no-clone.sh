@@ -86,7 +86,7 @@
 
   shift 2
 
-  NEW_MAIN="/tmp/newGIT_${OTHER_SUBDIR}.$$"
+  NEW_MAIN="/tmp/newGIT_${MAIN_SUBDIR}.$$"
   OTHER_TMP="/tmp/${OTHER_SUBDIR:-OTHER_CLONE}.$$"
 
 
@@ -128,7 +128,7 @@
       exit $gitErrStatus
   }
   echo
-  echo "${green}tests succeeded :)${treset}"
+  echo "${green}(tests succeeded :)${treset}"
   
 
   # ****************************************************************
@@ -152,14 +152,14 @@
   echo
   echo "${yellow}*COPY* the main repo ${red}(with all files)${yellow} to a new repo${treset}:"
   echo "  * cp -ap ${MAIN_PAREN} ${NEW_MAIN}"
-  echo "    the base repo copy will be in ${NEW_MAIN}/${MAIN_SUBDIR}"
+  echo "    The base repo copy will be in ${NEW_MAIN}/${MAIN_SUBDIR}"
   echo "  * merge ${OTHER_SUBDIR} from the clone we have been working on"
-  echo "  * ${cyan}commit${yellow}"
+  echo "  * ${cyan}commit${treset}"
   echo "  * git pull -s subtree ${OTHER_SUBDIR} master"
   echo
   echo "${cyan}When done give you a shell in ${MAIN_SUBDIR} to check the new repo.${treset}"
   echo
-  read -p "(Y/n)" input
+  read -p "Proceed  ${cyan}(Y/n)${treset} ? " input
   # echo "MAIN_PAREN	$MAIN_PAREN"
   # echo "MAIN_SUBDIR	$MAIN_SUBDIR"
   # echo "OTHER_SUBDIR	$OTHER_SUBDIR"
@@ -174,10 +174,10 @@
   # ****************************************************************
   # Start all over again...
   rm -rf $OTHER_TMP $NEW_MAIN  # obsolete as long as we use $$
-  
-  
+
+
   # ****************************************************************
-  echo "${magenta}Clone ${OTHER_GIT_SRC} to temporary location ${OTHER_TMP}${treset}"
+  echo "${yellow}Clone ${OTHER_GIT_SRC} to temporary location ${OTHER_TMP}${treset}"
   # git clones into a subdir named after the paren directory of the
   # cloned repository:
 
@@ -261,7 +261,7 @@
   "
   read dummy
 
-  PS1="${cyan}\w ${red}\$ ${magenta}"  bash --norc -i
+  PS1="${cyan}${OTHER_SUBDIR}${red}\$ ${magenta}"  bash --norc -i
   echo ${treset}
   echo "(back fom sub shell)"
 
@@ -272,14 +272,13 @@
   cd ${MAIN_PAREN}			|| exit 1
   cp -ap $MAIN_SUBDIR $NEW_MAIN	|| exit 1
 
+  # ****************************************************************
   echo
-  echo "${cyan}Merge ${OTHER_GIT_SRC} repo into ${NEW_MAIN}${treset}"
+  echo "${yellow}Merge cloned ${OTHER_SUBDIR} repo into ${NEW_MAIN}${treset}"
   cd ${NEW_MAIN}/${MAIN_SUBDIR}	|| exit 1
   #echo ; pwd ; ls -al ; git status
 
 
-  # ****************************************************************
-  echo "${yellow}  Merge ${OTHER_SUBDIR}${treset}"
 
   otherGit="unknownRepo"
   [ -n $OTHER_SUBDIR ] && otherGit=$OTHER_SUBDIR
@@ -309,7 +308,7 @@
       exit $gitErrMerge
   }
 
-  echo ${yellow}
+  echo ${cyan}
   echo "Edit commit message, please.${treset}"
   echo "	${blue}<ENTER>${treset}"
   read dummy
@@ -374,7 +373,8 @@
   "
   read dummy
 
-  PS1="${cyan}\w ${red}\$ ${yellow}"  bash --norc -i
+  # PS1="${red}\$ ${yellow}"  bash --norc -i
+  PS1="${cyan}${MAIN_SUBDIR}${red}\$ ${yellow}"  bash --norc -i
   echo ${treset}
 
   echo "${green}Left new git repository in ${treset}${NEW_MAIN}/${MAIN_SUBDIR}"
