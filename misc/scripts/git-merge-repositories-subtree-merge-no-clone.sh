@@ -293,8 +293,6 @@
 
   git merge --no-commit -m "Merged ${OTHER_GIT_SRC}
   
-  Transition: Do not use.
-  
   git remote add -f ${otherGit} ${OTHER_TMP}
   git merge --no-commit ${otherGit}/master
   git commit
