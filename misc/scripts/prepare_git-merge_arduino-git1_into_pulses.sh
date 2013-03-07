@@ -11,16 +11,28 @@
 
   git status	|| exit 1		# assure we're in a git repository ;)
 
+  echo
+  echo "git rm README_arduino-git1"
+  git rm README_arduino-git1				|| exit 1
+  git commit -m"Avoid double README_arduino-git1."	|| exit 1
+
+
   # check github for updates:
+  echo
+  echo "GHsoftb"
   git remote add -f 'GHsoftb' 'https://github.com/reppr/softboard' || exit 1
   #
   # The merge gives 'Already up-to-date.'
   git merge master				|| exit 1
   #
   git remote rm GHsoftb				|| exit 1
+  git commit --allow-empty \
+      -m"Checked with https://github.com/reppr/softboard" || exit 1
 
 
   # check local ARDUINO-GIT2/softboard repo for updates:
+  echo
+  echo "SOFTB"
   git remote add -f 'SOFTB' '~/ARDUINO-GIT2/softboard/' || exit 1
   #
   # The merge gives 'Already up-to-date.'
@@ -28,23 +40,53 @@
   #
   git remote rm SOFTB				|| exit 1
   #
-  git commit					|| exit 1
+  git commit --allow-empty \
+      -m"Checked with ARDUINO-GIT2/softboard"	|| exit 1
 
-  # check local ARDUINO-GIT2/accelerometer_3D repo for updates:
-  git remote add -f 'A3D' '~/ARDUINO-GIT2/accelerometer_3D/' || exit 1
+
+  # check local ARDUINO-GIT2/discharger repo for updates:
+  echo
+  echo 'discharger'
+  git remote add -f 'discharger' '~/ARDUINO-GIT2/discharger/' || exit 1
   #
-###  # The merge gives 'Already up-to-date.'
+  #  # The merge gives 'Already up-to-date.'
   git merge master				|| exit 1
   #
-  git remote rm A3B				|| exit 1
+  git remote rm discharger			|| exit 1
   #
-  git commit					|| exit 1
+  git commit --allow-empty \
+      -m"Checked with ARDUINO-GIT2/discharger"	|| exit 1
 
-  # TO BE CONTINUED HERE	################
+
+  # check local ARDUINO-GIT2/periodics repo for updates:
+  echo
+  echo 'periodics'
+  git remote add -f 'periodics' '~/ARDUINO-GIT2/periodics' || exit 1
   #
+  # The merge gives 'Already up-to-date.'
+  git merge master				|| exit 1
   #
+  git remote rm periodics			|| exit 1
   #
+  git commit --allow-empty \
+      -m"Checked with ~/ARDUINO-GIT2/periodics"	|| exit 1
+
+
+  # check local ARDUINO-GIT2/polyphonic_oscillators repo for updates:
+  echo
+  echo 'polyphonic_oscillators *master'
+  git remote add -f 'polyphonicOsc' '~/ARDUINO-GIT2/polyphonic_oscillators' || exit 1
   #
+  # The merge gives 'Already up-to-date.'
+  git merge master				|| exit 1
+  #
+  git remote rm polyphonicOsc			|| exit 1
+  #
+  git commit --allow-empty \
+      -m"Checked with ~/ARDUINO-GIT2/polyphonic_oscillators"	|| exit 1
+
+  echo
+  echo "${0##*/}:	$(tput sgr0)done :)"
 
   # ****************************************************************
 # ****************************************************************
