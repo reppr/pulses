@@ -153,146 +153,143 @@ void Menu::cb_info() const {
 
 /* **************************************************************** */
 // #define I/O for ARDUINO:
-#ifdef ARDUINO		// OUTPUT functions.
+#ifdef ARDUINO			// OUTPUT functions: out() family
 
-/*
-  This version definines the menu INPUT routine int men_getchar();
-  in the *program* not inside the Menu class.
-*/
-//	/* int men_getchar();		// ARDUINO version
-//	   Read next char of menu input, if available.
-//	   Does not block, returns EOF or char.			*/
-//	int Menu::men_getchar() {		// ARDUINO version
-//	  if (!Serial.available())
-//	    return EOF;
-//
-//	  return Serial.read();
-//	}
-
-
-#ifndef BAUDRATE
-  #define BAUDRATE	115200	// works fine here
-  // #define BAUDRATE	57600
-  // #define BAUDRATE	38400
-  // #define BAUDRATE	19200
-  // #define BAUDRATE	9600	// failsafe
-  // #define BAUDRATE	31250	// MIDI
-#endif
+  /*
+    This version definines the menu INPUT routine int men_getchar();
+    in the *program* not inside the Menu class.
+  */
+  //	/* int men_getchar();		// ARDUINO version
+  //	   Read next char of menu input, if available.
+  //	   Does not block, returns EOF or char.			*/
+  //	int Menu::men_getchar() {		// ARDUINO version
+  //	  if (!Serial.available())
+  //	    return EOF;
+  //
+  //	  return Serial.read();
+  //	}
 
 
-/* void Menu::out(); overloaded menu output function family:	*/
-// Simple versions  void Menu::out():
-void Menu::out(const char c)	const	{ port_.print(c); }	// ARDUINO
-void Menu::out(const int i)	const	{ port_.print(i); }
-void Menu::out(const long l)	const	{ port_.print(l); }
-void Menu::out(const char *str)	const	{ port_.print(str); }
+  #ifndef BAUDRATE
+    #define BAUDRATE	115200	// works fine here
+    // #define BAUDRATE	57600
+    // #define BAUDRATE	38400
+    // #define BAUDRATE	19200
+    // #define BAUDRATE	9600	// failsafe
+    // #define BAUDRATE	31250	// MIDI
+  #endif
 
-// unsigned versions:
-void Menu::out(const unsigned char c)	const	{ port_.print(c); }
-void Menu::out(const unsigned int i)	const	{ port_.print(i); }
-void Menu::out(const unsigned long l)	const	{ port_.print(l); }
 
-#ifdef ARDUINO	// Arduino F() macro: out(F("string");
+  /* void Menu::out(); overloaded menu output function family:	*/
+  // Simple versions  void Menu::out():
+  void Menu::out(const char c)	const	{ port_.print(c); }	// ARDUINO
+  void Menu::out(const int i)	const	{ port_.print(i); }
+  void Menu::out(const long l)	const	{ port_.print(l); }
+  void Menu::out(const char *str)	const	{ port_.print(str); }
+
+  // unsigned versions:
+  void Menu::out(const unsigned char c)	const	{ port_.print(c); }
+  void Menu::out(const unsigned int i)	const	{ port_.print(i); }
+  void Menu::out(const unsigned long l)	const	{ port_.print(l); }
+
+  // End of line versions  void outln():
+  void Menu::outln(const char c)	const	{ port_.println(c); }
+  void Menu::outln(const int i)	const	{ port_.println(i); }
+  void Menu::outln(const long l)	const	{ port_.println(l); }
+  void Menu::outln(const char *str) const { port_.println(str); }
+
+  // unsigned versions:
+  void Menu::outln(const unsigned char c)	const	{ port_.println(c); }
+  void Menu::outln(const unsigned int i)	const	{ port_.println(i); }
+  void Menu::outln(const unsigned long l)	const	{ port_.println(l); }
+
+
+  // *DO* use Arduino F() MACRO for string output to save RAM:
   void Menu::out(const __FlashStringHelper* str) const {
     port_.print(str);
   }
-#endif
 
-
-// End of line versions  void outln():
-void Menu::outln(const char c)	const	{ port_.println(c); }
-void Menu::outln(const int i)	const	{ port_.println(i); }
-void Menu::outln(const long l)	const	{ port_.println(l); }
-void Menu::outln(const char *str) const { port_.println(str); }
-
-// unsigned versions:
-void Menu::outln(const unsigned char c)	const	{ port_.println(c); }
-void Menu::outln(const unsigned int i)	const	{ port_.println(i); }
-void Menu::outln(const unsigned long l)	const	{ port_.println(l); }
-
-
-#ifdef ARDUINO	// Arduino F() macro: outln(F("string");
+  // End of line version:
+  // Arduino F() macro: outln(F("string");
   void Menu::outln(const __FlashStringHelper* str) const {
     port_.println(str);
   }
-#endif
-
-/* void ticked(char c)	Char output with ticks like 'A'	*/
-void Menu::ticked(const char c) const {
-  port_.print("'"); port_.print(c); port_.print("'");
-}
-
-/* Output a newline, tab, space, '='
-   ln(), tab(), space(), equals():			*/
-void Menu::ln()	    const { port_.println(); }	 // Output a newline
-void Menu::tab()    const { port_.print('\t'); } // Output a tab
-void Menu::space()  const { port_.print(' '); }	 // Output a space
-void Menu::equals() const { port_.print('='); }	 // Output char '='
 
 
-#if defined(ARDUINO) && defined(SHOW_FREE_RAM)	// Arduino: RAM usage
-  /* int get_free_RAM(): determine free RAM on Arduino:		*/
-  int Menu::get_free_RAM() const {
-    int free;
-    extern int __bss_end;
-    extern void *__brkval;
-
-    if ((int) __brkval == 0)
-      return ((int) &free) - ((int) &__bss_end);
-    else
-      return ((int) &free) - ((int) __brkval);
+  /* void ticked(char c)	Char output with ticks like 'A'	*/
+  void Menu::ticked(const char c) const {
+    port_.print("'"); port_.print(c); port_.print("'");
   }
-#endif
+
+  /* Output a newline, tab, space, '='
+     ln(), tab(), space(), equals():			*/
+  void Menu::ln()	    const { port_.println(); }	 // Output a newline
+  void Menu::tab()    const { port_.print('\t'); } // Output a tab
+  void Menu::space()  const { port_.print(' '); }	 // Output a space
+  void Menu::equals() const { port_.print('='); }	 // Output char '='
 
 
-#else // not on ARDUINO: OUTPUT functions c++ Linux PC test version:
+  #if defined(ARDUINO) && defined(SHOW_FREE_RAM)	// Arduino: RAM usage
+    /* int get_free_RAM(): determine free RAM on Arduino:		*/
+    int Menu::get_free_RAM() const {
+      int free;
+      extern int __bss_end;
+      extern void *__brkval;
+
+      if ((int) __brkval == 0)
+        return ((int) &free) - ((int) &__bss_end);
+      else
+        return ((int) &free) - ((int) __brkval);
+    }
+  #endif
+
+#else // OUTPUT functions  out() family for c++ Linux PC test version:
 /* **************************************************************** */
-// #define I/O for c++ Linux PC test version:
+  // #define I/O for c++ Linux PC test version:
 
-/*
-  This version definines the menu INPUT routine int men_getchar();
-  in the *program* not inside the Menu class.
-*/
-//	/* int men_getchar();
-//	   Read next char of menu input, if available.
-//	   Returns EOF or char.						*/
-//	int Menu::men_getchar() { return getchar(); } // c++ Linux PC test version
+  /*
+    This version definines the menu INPUT routine int men_getchar();
+    in the *program* not inside the Menu class.
+  */
+  //	/* int men_getchar();
+  //	   Read next char of menu input, if available.
+  //	   Returns EOF or char.						*/
+  //	int Menu::men_getchar() { return getchar(); } // c++ Linux PC test version
 
-/* void Menu::out(); overloaded menu output function family:	*/
-// Simple versions  void Menu::out():
-void Menu::out(const char c)	const	{ putchar(c); }
-void Menu::out(const int i)	const	{ printf("%i", i); }
-void Menu::out(const long l)	const	{ printf("%d", l); }
-void Menu::out(const char *str)	const	{ printf("%s", str); }
+  /* void Menu::out(); overloaded menu output function family:	*/
+  // Simple versions  void Menu::out():
+  void Menu::out(const char c)	const	{ putchar(c); }
+  void Menu::out(const int i)	const	{ printf("%i", i); }
+  void Menu::out(const long l)	const	{ printf("%d", l); }
+  void Menu::out(const char *str)	const	{ printf("%s", str); }
 
-// unsigned versions:
-void Menu::out(const unsigned char c)	const	{ putchar(c); }
-void Menu::out(const unsigned int i)	const	{ printf("%u", i); }
-void Menu::out(const unsigned long l)	const	{ printf("%u", l); }
+  // unsigned versions:
+  void Menu::out(const unsigned char c)	const	{ putchar(c); }
+  void Menu::out(const unsigned int i)	const	{ printf("%u", i); }
+  void Menu::out(const unsigned long l)	const	{ printf("%u", l); }
 
-// End of line versions  void outln():
-void Menu::outln(const char c)	const	{ printf("%c\n", c); }
-void Menu::outln(const int i)	const	{ printf("%i\n", i); }
-void Menu::outln(const long l)	const	{ printf("%d\n", l); }
-void Menu::outln(const char *str) const { printf("%s\n", str); }
+  // End of line versions  void outln():
+  void Menu::outln(const char c)	const	{ printf("%c\n", c); }
+  void Menu::outln(const int i)	const	{ printf("%i\n", i); }
+  void Menu::outln(const long l)	const	{ printf("%d\n", l); }
+  void Menu::outln(const char *str) const { printf("%s\n", str); }
 
-// unsigned versions:
-void Menu::outln(const unsigned char c)	const { printf("%c\n", c); }
-void Menu::outln(const unsigned int i)	const { printf("%u\n", i); }
-void Menu::outln(const unsigned long l)	const { printf("%u\n", l); }
+  // unsigned versions:
+  void Menu::outln(const unsigned char c)	const { printf("%c\n", c); }
+  void Menu::outln(const unsigned int i)	const { printf("%u\n", i); }
+  void Menu::outln(const unsigned long l)	const { printf("%u\n", l); }
 
-/* Output a newline, tab, space, '='
-   ln(), tab(), space(), equals():			*/
-void Menu::ln()		const { putchar('\n'); } // Output a newline
-void Menu::tab()	const { putchar('\t'); } // Output a tab
-void Menu::space()	const { putchar(' '); }  // Output a space
-void Menu::equals()	const { putchar('='); }  // Output char '='
+  /* Output a newline, tab, space, '='
+     ln(), tab(), space(), equals():			*/
+  void Menu::ln()		const { putchar('\n'); } // Output a newline
+  void Menu::tab()	const { putchar('\t'); } // Output a tab
+  void Menu::space()	const { putchar(' '); }  // Output a space
+  void Menu::equals()	const { putchar('='); }  // Output char '='
 
-/* void ticked(char c)	Char output with ticks like 'A'	*/
-void Menu::ticked(const char c)	const {   // prints 'c'
-  printf("\'%c\'", c);
-}
-
+  /* void ticked(char c)	Char output with ticks like 'A'	*/
+  void Menu::ticked(const char c)	const {   // prints 'c'
+    printf("\'%c\'", c);
+  }
 #endif	// [ ARDUINO else ]  c++ test version	OUTPUT functions.
 /* **************************************************************** */
 
