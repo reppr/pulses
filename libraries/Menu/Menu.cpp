@@ -783,6 +783,12 @@ void Menu::interpret_men_input() {
       break;
 
     case 'q':
+#ifndef ARDUINO	// on PC quit when on page 0
+      if (men_selected == 0) {
+	exit(0);
+      }
+#endif
+
       men_selected = 0;
 #ifdef DEBUGGING_MENU
       out(F("==>* switch to ")); menu_page_info(men_selected);
