@@ -113,6 +113,11 @@ class Menu {
   void out(const long l)	const;	// long output
   void out(const char *str)	const;	// string
 
+  // unsigned versions:
+  void out(const unsigned char c)	const; // unsigned char output
+  void out(const unsigned int i)	const; // i.e. pointers on Arduino
+  void out(const unsigned long l)	const; // i.e. pointers on Linux
+
 #ifdef ARDUINO
   void out(const __FlashStringHelper*) const; // Arduino macro: F("string")
 #endif
@@ -122,6 +127,11 @@ class Menu {
   void outln(const int i)	const;	// int output  and newline
   void outln(const long l)	const;	// long output and newline
   void outln(const char *str)	const;	// string and newline
+
+  // unsigned versions:
+  void outln(const unsigned char c)	const;	// unsigned char and newline
+  void outln(const unsigned int i)	const;	// unsigend int  and newline
+  void outln(const unsigned long l)	const;	// unsigned long and newline
 
 #ifdef ARDUINO
   void outln(const __FlashStringHelper*) const; // Arduino macro: F("string")

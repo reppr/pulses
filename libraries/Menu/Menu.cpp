@@ -187,6 +187,11 @@ void Menu::out(const int i)	const	{ port_.print(i); }
 void Menu::out(const long l)	const	{ port_.print(l); }
 void Menu::out(const char *str)	const	{ port_.print(str); }
 
+// unsigned versions:
+void Menu::out(const unsigned char c)	const	{ port_.print(c); }
+void Menu::out(const unsigned int i)	const	{ port_.print(i); }
+void Menu::out(const unsigned long l)	const	{ port_.print(l); }
+
 #ifdef ARDUINO	// Arduino F() macro: out(F("string");
   void Menu::out(const __FlashStringHelper* str) const {
     port_.print(str);
@@ -199,6 +204,12 @@ void Menu::outln(const char c)	const	{ port_.println(c); }
 void Menu::outln(const int i)	const	{ port_.println(i); }
 void Menu::outln(const long l)	const	{ port_.println(l); }
 void Menu::outln(const char *str) const { port_.println(str); }
+
+// unsigned versions:
+void Menu::outln(const unsigned char c)	const	{ port_.println(c); }
+void Menu::outln(const unsigned int i)	const	{ port_.println(i); }
+void Menu::outln(const unsigned long l)	const	{ port_.println(l); }
+
 
 #ifdef ARDUINO	// Arduino F() macro: outln(F("string");
   void Menu::outln(const __FlashStringHelper* str) const {
@@ -254,11 +265,21 @@ void Menu::out(const int i)	const	{ printf("%i", i); }
 void Menu::out(const long l)	const	{ printf("%d", l); }
 void Menu::out(const char *str)	const	{ printf("%s", str); }
 
+// unsigned versions:
+void Menu::out(const unsigned char c)	const	{ putchar(c); }
+void Menu::out(const unsigned int i)	const	{ printf("%u", i); }
+void Menu::out(const unsigned long l)	const	{ printf("%u", l); }
+
 // End of line versions  void outln():
 void Menu::outln(const char c)	const	{ printf("%c\n", c); }
 void Menu::outln(const int i)	const	{ printf("%i\n", i); }
 void Menu::outln(const long l)	const	{ printf("%d\n", l); }
 void Menu::outln(const char *str) const { printf("%s\n", str); }
+
+// unsigned versions:
+void Menu::outln(const unsigned char c)	const { printf("%c\n", c); }
+void Menu::outln(const unsigned int i)	const { printf("%u\n", i); }
+void Menu::outln(const unsigned long l)	const { printf("%u\n", l); }
 
 /* Output a newline, tab, space, '='
    ln(), tab(), space(), equals():			*/
