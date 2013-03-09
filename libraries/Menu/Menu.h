@@ -88,7 +88,7 @@ class Menu {
   void add_page(const char *pageTitle, const char hotkey, \
 		void (*pageDisplay)(), bool (*pageReaction)(char), \
 		const char ActiveGroup);
- 
+
 
   void flush() const { port_.flush(); }
 
@@ -108,20 +108,20 @@ class Menu {
 
   // out(any );	  overloaded menu output function family:
   // Simple versions  void Menu::out():
-  void out(const char c)    const;	// char output
-  void out(const int i)     const;	// int output
-  void out(const long l)    const;	// long output
-  void out(const char *str) const;	// string
+  void out(const char c)	const;	// char output
+  void out(const int i)		const;	// int output
+  void out(const long l)	const;	// long output
+  void out(const char *str)	const;	// string
 
 #ifdef ARDUINO
   void out(const __FlashStringHelper*) const; // Arduino macro: F("string")
 #endif
 
   // End of line versions  void outln():
-  void outln(const char c)    const;	// char output and newline
-  void outln(const int i)     const;	// int output  and newline
-  void outln(const long l)    const;	// long output and newline
-  void outln(const char *str) const;	// string and newline
+  void outln(const char c)	const;	// char output and newline
+  void outln(const int i)	const;	// int output  and newline
+  void outln(const long l)	const;	// long output and newline
+  void outln(const char *str)	const;	// string and newline
 
 #ifdef ARDUINO
   void outln(const __FlashStringHelper*) const; // Arduino macro: F("string")

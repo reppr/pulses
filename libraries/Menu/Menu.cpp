@@ -90,7 +90,7 @@ char Menu::cb_read() {
     int Menu::cb_stored() const {	// returns number of buffered bytes
       return cb_count;
     }
-    
+
     // inlined:
     bool Menu::cb_is_full() const {
       return cb_count == cb_size;
@@ -165,7 +165,7 @@ void Menu::cb_info() const {
 //	int Menu::men_getchar() {		// ARDUINO version
 //	  if (!Serial.available())
 //	    return EOF;
-//	
+//
 //	  return Serial.read();
 //	}
 
@@ -263,9 +263,9 @@ void Menu::outln(const char *str) const { printf("%s\n", str); }
 /* Output a newline, tab, space, '='
    ln(), tab(), space(), equals():			*/
 void Menu::ln()		const { putchar('\n'); } // Output a newline
-void Menu::tab()	const { putchar('\t'); } // Output a tab	   
-void Menu::space()	const { putchar(' '); }  // Output a space  
-void Menu::equals()	const { putchar('='); }  // Output char '=' 
+void Menu::tab()	const { putchar('\t'); } // Output a tab
+void Menu::space()	const { putchar(' '); }  // Output a space
+void Menu::equals()	const { putchar('='); }  // Output char '='
 
 /* void ticked(char c)	Char output with ticks like 'A'	*/
 void Menu::ticked(const char c)	const {   // prints 'c'
@@ -358,7 +358,7 @@ bool Menu::lurk_then_do() {
   int INP;
   char c;
 
-  /* int maybe_input()  
+  /* int maybe_input()
      must be a function returning one byte data
      or if there is no input returning EOF		*/
   INP=(*maybe_input)();
@@ -405,7 +405,7 @@ bool Menu::lurk_then_do() {
       ln();
 
       // try to recover
-      // the fix would be to match message length and cb buffer size... 
+      // the fix would be to match message length and cb buffer size...
 #if defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
       outln(F("cb is full.  interpreting as EMERGENCY EXIT, dangerous..."));
 #endif
@@ -564,7 +564,7 @@ void Menu::add_page(const char *pageTitle, const char hotkey,		\
     Error_();
     OutOfRange();
     ln();
-  } 
+  }
 }
 
 
@@ -636,7 +636,7 @@ bool Menu::try_page_reaction(char pg, char token) {
   out(F(" token ")); ticked(token); ln();
 #endif
 
-  return did_something; 
+  return did_something;
 }
 
 void Menu::interpret_men_input() {

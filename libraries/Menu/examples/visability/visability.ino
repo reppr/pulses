@@ -2,7 +2,7 @@
 /*
 		visability.ino
 
-	  A simple test example for library Menu. 
+	  A simple test example for library Menu.
 */
 
 /*
@@ -78,7 +78,7 @@ void Menu_setup();
    Compile setup() and loop() on ARDUINO
 		or:
    compile main() on c++ Linux PC test version.
-*/ 
+*/
 /* **************************************************************** */
 #ifdef ARDUINO		// Compile setup() and loop() on Arduino:
 // Compile setup() and loop() for Arduino:
@@ -204,7 +204,7 @@ bool program_actionA(char token) {
     break;
   default:
     return false;	// return false; means *no* action was taken here
-			// the menu page is *not* responsible for the token    
+			// the menu page is *not* responsible for the token
   }
 }
 
@@ -242,7 +242,7 @@ bool program_actionB(char token) {
     break;
   default:
     return false;	// return false; means *no* action was taken here
-			// the menu page is *not* responsible for the token    
+			// the menu page is *not* responsible for the token
   }
 }
 
@@ -255,7 +255,7 @@ bool program_actionB(char token) {
    You can use a dummy for the display function or a NULL pointer.
    Visability will be set to be visible for the 'Y'group members.
    This opens the "backdoor" to use 'y' for all members of 'Y'.
- 
+
    /* page Y adds actions active for the 'Y' group
       this group cannot get selected, the page hot key ' ' prevents that.
    // see Menu_setup();
@@ -285,7 +285,7 @@ bool program_actionY(char token) {
     MENU.outln(F("*    ***   YY      YY   ***    *"));
     MENU.outln(F("*    ***    YY    YY    ***    *"));
     MENU.outln(F("*    ***     YY  YY     ***    *"));
-    MENU.outln(F("*    ***      Y\\/Y      ***    *"));	// ecape \ ...        
+    MENU.outln(F("*    ***      Y\\/Y      ***    *"));	// ecape \ ...
     MENU.outln(F("*    ***       YY       ***    *"));
     MENU.outln(F("*    ***       YY       ***    *"));
     MENU.outln(F("*    ***       YY       ***    *"));
@@ -305,7 +305,7 @@ bool program_actionY(char token) {
     break;
   default:
     return false;	// return false; means *no* action was taken here
-			// the menu page is *not* responsible for the token    
+			// the menu page is *not* responsible for the token
   }
 }
 
@@ -318,7 +318,7 @@ bool program_actionY(char token) {
    You can use a dummy for the display function or a NULL pointer.
    Visability will be set to be visible for the 'Y'group members.
    This opens the "backdoor" to use 'y' for all members of 'Y'.
- 
+
    // page X is always visible
    see Menu_setup();
    MENU.add_page(menuTitleX, menuHotkeyX, &program_displayX, &program_actionX, '+');
@@ -353,7 +353,7 @@ bool program_actionX(char token) {
     break;
   default:
     return false;	// return false; means *no* action was taken here
-			// the menu page is *not* responsible for the token    
+			// the menu page is *not* responsible for the token
   }
 }
 
@@ -398,7 +398,7 @@ bool program_actionN(char token) {
     break;
   default:
     return false;	// return false; means *no* action was taken here
-			// the menu page is *not* responsible for the token    
+			// the menu page is *not* responsible for the token
   }
 }
 

@@ -162,7 +162,7 @@ void loop() {	// ARDUINO
 
 /*
   DIGITAL_IOs
-  number of arduino pins configured for digital I/O 
+  number of arduino pins configured for digital I/O
   *not* counting analog inputs:
 */
 
@@ -361,7 +361,7 @@ void bar_graph(int value) {
 }
 
 
-// Display analog pin name and value as number and bar graph: 
+// Display analog pin name and value as number and bar graph:
 void pin_info_analog(uint8_t pin) {
   if (pin == PIN_analog)
     SOFTBOARD.out(F("*A"));
@@ -500,7 +500,7 @@ int get_free_RAM() {
 
 
 /* **************************************************************** */
-/* 
+/*
    Menu softboard display and reaction:
 */
 
@@ -820,7 +820,7 @@ Description
    to run quick tests after setting something up on a (real) breadboard.
 
    Then you can use it to test software parts of your program while
-   you write it and fit parts together. 
+   you write it and fit parts together.
 
 
    Send '?' (and a linefeed) over serial line to see the menu.
@@ -851,13 +851,13 @@ Installation:
 	Arduino versions older than 1.0 need a fix:
 	  see this thread:
 	  http://code.google.com/p/arduino/issues/detail?id=604&start=200
-	
+
 	    short version (adapt to your arduino version)
 	      edit file arduino-0022/hardware/arduino/cores/arduino/wiring.h
 	      comment out line 79 (round macro)
 	      #define round(x)     ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
 	      tested on arduino-0023
-	
+
 	For older arduino versions you also have to rename the sketch file
 	from softboard.ino to softboard.pde
 
@@ -911,7 +911,7 @@ Some examples:
    Example 2:  writing high to an input activates internal pullup resistor
 
 	       'D13 IH' pullup LED pin  (D select pin, I input, H high)
-					
+
                                         LED glows at low level
                'O'      LED as OUTPUT   now the LED is on
 
