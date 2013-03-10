@@ -160,6 +160,12 @@ void loop() {	// ARDUINO
   #endif
 #endif
 
+
+#ifndef digitalPinHasPWM
+  #error #define digitalPinHasPWM
+#endif
+
+
 /*
   DIGITAL_IOs
   number of arduino pins configured for digital I/O
@@ -167,7 +173,6 @@ void loop() {	// ARDUINO
 */
 
 #define DIGITAL_IOs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)
-
 
 
 /* **************************************************************** */
@@ -622,7 +627,6 @@ const char analogWrite_[] = "\tanalogWrite(";
 
 bool softboard_reaction(char token) {
   long newValue;
-  bool do_it;	// sorry for the hack...
 
   switch (token) {
   case 'A':
@@ -684,24 +688,13 @@ bool softboard_reaction(char token) {
     if (digital_pin_ok()) {
 
       // can the pin do hardware PWM?
-      do_it=true;	// hack to get through the #ifdef
-
-#ifndef digitalPinHasPWM
-  #ifdef MACROS_STRICT
-    #error digitalPinHasPWM undefined
-  #endif
-#else
-      if (!digitalPinHasPWM(PIN_digital)) {
+      if (!digitalPinHasPWM(PIN_digital)) {	// *no PWM* on this pin
 	SOFTBOARD.out(noHw_); SOFTBOARD.out(pwm_);
 	SOFTBOARD.out(F("on ")); SOFTBOARD.out(pin_);
 	SOFTBOARD.outln((int) PIN_digital);
 
 	SOFTBOARD.skip_numeric_input();
-	do_it=false;	// hack to get through the #ifdef
-      }
-#endif
-
-      if (do_it) {	// hack to get through the #ifdef
+      } else {					// pin *can* do PWM
         SOFTBOARD.out(pin_); SOFTBOARD.out((int) PIN_digital);
 	SOFTBOARD.tab();
 	SOFTBOARD.out(pwm_); SOFTBOARD.out(F("write "));
