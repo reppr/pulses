@@ -41,7 +41,8 @@ Menu::Menu(int bufSize, int menuPages, int (*maybeInput)(void), Stream & port):
   men_selected(0),
   cb_buf(NULL),
   men_pages(NULL),
-  echo_switch(false)
+  echo_switch(false),
+  verbosity(VERBOSITY_NORMAL)
 {
   cb_buf = (char *) malloc(cb_size);			    // ERROR handling ################
   men_pages = (menupage*) malloc(men_max * sizeof(menupage)); // ERROR handling ################
@@ -408,7 +409,7 @@ bool Menu::lurk_then_do() {
   if ( c ) {		// accumulate in buffer
     cb_write(c);
     if (echo_switch)	// echo input back to ouput?
-      out(c);
+      out(c);		// *not* depending verbosity
 
 #if defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
     out(F("accumulated "));
@@ -417,10 +418,12 @@ bool Menu::lurk_then_do() {
 #endif
     if (cb_is_full()) {
       // Inform user:
-      out(F("buffer"));
-      Error_();
-      OutOfRange();
-      ln();
+      if (verbosity >= VERBOSITY_ERROR) {
+	out(F("buffer"));
+	Error_();
+	OutOfRange();
+	ln();
+      }
 
       // try to recover
       // the fix would be to match message length and cb buffer size...
@@ -432,7 +435,10 @@ bool Menu::lurk_then_do() {
 #if defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
       outln(F("lurk_then_do() INTERPRETed INPUT BUFFER."));
 #endif
-      menu_display();
+
+      if (verbosity >= VERBOSITY_NORMAL)
+	menu_display();
+
       return true;		// true means *reaction was triggered*.
     }
   } else {
@@ -449,11 +455,15 @@ bool Menu::lurk_then_do() {
 	ln();
 
       interpret_men_input();	// <<<<<<<< INTERPRET BUFFER CONTENT >>>>>>>>
-      menu_display();
+
 #if defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
       outln(F("lurk_then_do() INTERPRETed INPUT BUFFER."));
 #endif
-      return true;		// true means *reaction was triggered*.
+
+      if (verbosity >= VERBOSITY_NORMAL)
+	menu_display();
+
+      return true;	// true means *reaction was triggered*.
 
 #if defined(DEBUGGING_LURKING)
     } else {
@@ -523,7 +533,9 @@ long Menu::numeric_input(long default_value) {
 
   // number was missing, return the given default_value:
  number_missing:
-  outln(F("number missing"));
+  if (verbosity >= VERBOSITY_SOME) {
+    outln(F("number missing"));
+  }
   return default_value;		// return default_value
 }
 
@@ -578,10 +590,13 @@ void Menu::add_page(const char *pageTitle, const char hotkey,		\
     outln((int) men_known - 1);
 #endif
   } else {	// ERROR handling ################
-    out(F("add_page"));
-    Error_();
-    OutOfRange();
-    ln();
+    if (verbosity >= VERBOSITY_ERROR) {
+      out(F("add_page"));
+      Error_();
+      OutOfRange();
+      ln();
+    }
+    // ERROR handling ################
   }
 }
 
@@ -778,7 +793,11 @@ void Menu::interpret_men_input() {
     switch (token) {
     case '?':
       menu_pages_info();
-      // menu_display();	will be called anyway...
+
+      // Normally menu_display(); will be called anyway, depending verbosity:
+      if (! (verbosity >= VERBOSITY_NORMAL))	// if verbosity is too low
+	menu_display();				//   we do it from here
+
       did_something = true;
       break;
 
@@ -810,11 +829,13 @@ void Menu::interpret_men_input() {
 
     // token still not found, give up...
     if (! did_something ) {
-      out(F("unknown token "));
-      ticked(token);
-      tab();
-      out((int) token);
-      ln();
+      if (verbosity >= VERBOSITY_SOME) {
+	out(F("unknown token "));
+	ticked(token);
+	tab();
+	out((int) token);
+	ln();
+      }
     }
 
   } // interpreter loop over all tokens

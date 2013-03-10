@@ -178,6 +178,12 @@ class Menu {
 
   int cb_stored() const { return cb_count; }   // inlined: number of accumulated bytes
 
+  char verbosity;		// Levels of menu feedback:
+				// #define verbosity_ERROR	1
+				// #define verbosity_SOME	2
+				// #define verbosity_NORMAL	3
+				// #define verbosity_HIGH	4
+
  private:
   int cb_start;
   int cb_size;
@@ -195,6 +201,13 @@ class Menu {
   char men_selected;		// selected page
   menupage *men_pages;		// pages' data
 };
+
+/* **************************************************************** */
+// verbosity:	Levels of menu feedback:
+#define VERBOSITY_ERROR		1
+#define VERBOSITY_SOME		2
+#define VERBOSITY_NORMAL	3
+#define VERBOSITY_HIGH		4
 
 /* **************************************************************** */
 #endif
