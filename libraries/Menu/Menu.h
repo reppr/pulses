@@ -37,7 +37,7 @@
 /* **************************************************************** */
 // Preprocessor macro logic:
 
-/* Debugging macros:		*/
+/* DEBUGGING macros:		*/
 #ifdef DEBUGGING_ALL
   #define DEBUGGING_CIRCBUF
   #define DEBUGGING_LURKING

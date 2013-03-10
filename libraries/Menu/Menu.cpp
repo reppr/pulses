@@ -99,56 +99,55 @@ char Menu::cb_read() {
 */
 
 
-/* **************************************************************** */
-// circ buf debugging:
-
 #ifdef DEBUGGING_CIRCBUF
-/* cb_info() debugging help					*/
-void Menu::cb_info() const {
-  out(F("\nBuffer:\t\t"));
-  out(cb_buf);
+  // circ buf debugging:
 
-  out(F("\n  size:\t\t"));
-  out(cb_size);
-
-  out(F("\n  count:\t"));
-  out(cb_count);
-
-  out(F("\n  start:\t"));
-  outln(cb_start);
-
-  int value = cb_peek();
-  out(F("\n  char:\t\t"));
-  if (value != -1) {
-    out(value);
-    out(F("\t"));
-    out((char) value);
-    if ( is_numeric() )
-      outln(F("  numeric CHIFFRE"));
-    else
-      outln(F("  NAN"));
-  } else
-    outln(F("(none)"));
-
-  value = next_input_token();
-  out(F("\n  next_input_token()\t: "));
-  out(value);
-  out(F("\t"));
-  outln((char) value);
-  ln();
-
-  for (int i=0; i<=cb_count; i++) {
-    value = cb_peek(i);
-    out(F("  cb_peek("));
-    out(i);
-    out(F(")\t\t: "));
+  /* cb_info() debugging help					*/
+  void Menu::cb_info() const {
+    out(F("\nBuffer:\t\t"));
+    out(cb_buf);
+  
+    out(F("\n  size:\t\t"));
+    out(cb_size);
+  
+    out(F("\n  count:\t"));
+    out(cb_count);
+  
+    out(F("\n  start:\t"));
+    outln(cb_start);
+  
+    int value = cb_peek();
+    out(F("\n  char:\t\t"));
+    if (value != -1) {
+      out(value);
+      out(F("\t"));
+      out((char) value);
+      if ( is_numeric() )
+        outln(F("  numeric CHIFFRE"));
+      else
+        outln(F("  NAN"));
+    } else
+      outln(F("(none)"));
+  
+    value = next_input_token();
+    out(F("\n  next_input_token()\t: "));
     out(value);
     out(F("\t"));
     outln((char) value);
+    ln();
+  
+    for (int i=0; i<=cb_count; i++) {
+      value = cb_peek(i);
+      out(F("  cb_peek("));
+      out(i);
+      out(F(")\t\t: "));
+      out(value);
+      out(F("\t"));
+      outln((char) value);
+    }
+  
+    ln();
   }
-
-  ln();
-}
 #endif
 
 
@@ -362,7 +361,6 @@ int Menu::next_input_token() const {
 /* **************************************************************** */
 // lurk_then_do() main Menu user interface:
 
-
 /* bool lurk_then_do()
    get input byte, translate \n and \r to \0, which is 'END token'
    check for END token:
@@ -430,6 +428,7 @@ bool Menu::lurk_then_do() {
 #if defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
       outln(F("cb is full.  interpreting as EMERGENCY EXIT, dangerous..."));
 #endif
+
       // EMERGENCY EXIT, dangerous...
       interpret_men_input();	// <<<<<<<< INTERPRET BUFFER CONTENT >>>>>>>>
 #if defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
@@ -441,11 +440,10 @@ bool Menu::lurk_then_do() {
 
       return true;		// true means *reaction was triggered*.
     }
-  } else {
+  } else { // token==0
 #if defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
     out(F("END token received. ")); out(F("Buffer stored=")); outln(cb_stored());
 #endif
-
     /* end of line token translation can produce more then one \0 in sequence
        only the first is meaningful, the others have no data in the buffer
        so we treat only the first one (the one with the data).
@@ -455,7 +453,6 @@ bool Menu::lurk_then_do() {
 	ln();
 
       interpret_men_input();	// <<<<<<<< INTERPRET BUFFER CONTENT >>>>>>>>
-
 #if defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
       outln(F("lurk_then_do() INTERPRETed INPUT BUFFER."));
 #endif
@@ -464,7 +461,6 @@ bool Menu::lurk_then_do() {
 	menu_display();
 
       return true;	// true means *reaction was triggered*.
-
 #if defined(DEBUGGING_LURKING)
     } else {
       outln(F("(empty buffer ignored)"));
@@ -478,7 +474,7 @@ bool Menu::lurk_then_do() {
 
 /* **************************************************************** */
 /*
-  numeric integer input from a chiffre sequence in the buffer
+  numeric integer input from a chiffre sequence in the buffer.
   call it with default_value, in most cases the old value.
   sometimes you might give an impossible value to check if there was input.
 */
@@ -497,6 +493,7 @@ bool Menu::is_numeric() const {
 
   return true;
 }
+
 
 long Menu::numeric_input(long default_value) {
   long input, num, sign=1;
@@ -583,7 +580,6 @@ void Menu::add_page(const char *pageTitle, const char hotkey,		\
     men_pages[men_known].interpret = pageReaction;
     men_pages[men_known].active_group = ActiveGroup;
     men_known++;
-
 #ifdef DEBUGGING_MENU
     out(F("add_page(\""));  out(pageTitle);
     out(F("\", "));  ticked(hotkey);  out(F(",..) \t"));
@@ -607,7 +603,6 @@ void Menu::add_page(const char *pageTitle, const char hotkey,		\
 /* Display menu	current menu page and common entries:		*/
 void Menu::menu_display() const {
   char pg;
-
 #ifdef DEBUGGING_MENU
   Menu::outln(F("\nmenu_display()"));
 #endif
@@ -643,7 +638,6 @@ void Menu::menu_display() const {
 #if defined(ARDUINO) && defined(SHOW_FREE_RAM)	// Arduino: RAM usage
   out(F("free RAM:")); space(); out((int) get_free_RAM()); ln();
 #endif
-
 #ifdef DEBUGGING_MENU
   ln();
 #endif
@@ -653,9 +647,10 @@ void Menu::menu_display() const {
 /* **************************************************************** */
 // menu input interpreter:
 
-/* act on buffer content tokens after receiving 'END token':	*/
+/* Act on buffer content tokens after receiving 'END token':	*/
 
-/* factored out:	*/
+/* factored out:
+   Not needed without debugging code.				*/
 bool Menu::try_page_reaction(char pg, char token) {
   bool did_something=(*men_pages[pg].interpret)(token);
 
@@ -668,9 +663,9 @@ bool Menu::try_page_reaction(char pg, char token) {
     out(F("unknown"));
   out(F(" token ")); ticked(token); ln();
 #endif
-
   return did_something;
 }
+
 
 void Menu::interpret_men_input() {
   char token, pg, page_group, selected_group;
@@ -679,7 +674,6 @@ void Menu::interpret_men_input() {
 #ifdef DEBUGGING_MENU
   out(F("\ninterpret_men_input(): "));
 #endif
-
   // interpreter loop over each token:
   // read all tokens:
   //   skip spaces
@@ -724,7 +718,6 @@ void Menu::interpret_men_input() {
     out(F("* check visability group ")); ticked(selected_group); ln();
     outln(F("  * going through the pages"));
 #endif
-
     for (pg = 0; pg < men_known; pg++) {
       if (pg == men_selected )	// we already searched men_selected
 	continue;
