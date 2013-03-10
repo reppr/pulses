@@ -37,14 +37,14 @@
 #	// #define MEMORY_INFO		// this code from the net is buggy
 #	
 #	
-#	/* **************************************************************** */
-#	/* some  basic defines:						    */
-#	
-#	#define ACTIVE_undecided	1	// globally used in many status bitmaps
-#	#define ILLEGAL			-1	// illegal value for many topics
-#	
-#	#define ILLEGALinputVALUE	-1	// impossible analog input value
-#	#define ILLEGALpin		-1	// a pin that is not assigned
+#!	/* **************************************************************** */
+#!	/* some  basic defines:						    */
+#!	
+#!	#define ACTIVE_undecided	1	// globally used in many status bitmaps
+#!	#define ILLEGAL			-1	// illegal value for many topics
+#!	
+#!	#define ILLEGALinputVALUE	-1	// impossible analog input value
+#!	#define ILLEGALpin		-1	// a pin that is not assigned
 #	#define PIN13			13	// onboard LED
 #						// currently used for electrical tap activity
 #	
@@ -116,7 +116,8 @@
 #	/* **************************************************************** */
 #	#ifdef OSCILLATORs
 #	
-#	int osc=0;	// index. int might produce faster code then unsigned char
+#!	int osc=0;	// index. int might produce faster code then unsigned char
+
 #	
 #	// This version does not only flip a bit, it increases a short integer.
 #	// We get 16 octaves for free :)

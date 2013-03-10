@@ -25,6 +25,17 @@
 
 
 /* **************************************************************** */
+/* Some basic #define's						    */
+
+#define ILLEGAL			-1	// illegal value for many topics
+
+#define ILLEGALinputVALUE	-1	// impossible analog input value
+#define ILLEGALpin		-1	// a pin that is not assigned
+
+#define ACTIVE_undecided	1	// globally used in many status bitmaps
+
+
+/* **************************************************************** */
 // Constructor/Destructor:
 
 #ifndef ARDUINO		// WARNING: Using Stream MACRO hack when not on ARDUINO!
@@ -32,7 +43,8 @@
 #endif
 
 Pulses::Pulses(int max_pl):
-  max_pl(max_pl)
+  max_pl(max_pl),
+  p(0)
 {
 }
 

@@ -50,6 +50,7 @@ class Pulses {
   Pulses(int max_pl);
   ~Pulses();
  private:
+  int p;	// pulse index
   int max_pl:
 };
 
