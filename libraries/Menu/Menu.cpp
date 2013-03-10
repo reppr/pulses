@@ -792,6 +792,7 @@ void Menu::interpret_men_input() {
 #endif
     switch (token) {
     case '?':
+      ln();
       menu_pages_info();
 
       // Normally menu_display(); will be called anyway, depending verbosity:
