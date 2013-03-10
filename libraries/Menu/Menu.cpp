@@ -833,7 +833,7 @@ void Menu::interpret_men_input() {
 	out(F("unknown token "));
 	ticked(token);
 	tab();
-	out((int) token);
+	out((int) (token & 0xFF));
 	ln();
       }
     }
