@@ -56,8 +56,11 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
   #include "WProgram.h"
 #endif
 
-#undef SHOW_FREE_RAM		// softboard does this by default
 #include <Menu.h>
+
+#ifdef SHOW_FREE_RAM
+  #warning SHOW_FREE_RAM: softboard does this by default
+#endif
 
 /* BAUDRATE for Serial:	uncomment one of the following lines:	*/
 #define BAUDRATE	115200		// works fine here

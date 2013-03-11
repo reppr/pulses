@@ -29,6 +29,7 @@
 
 #ifndef ARDUINO		// WARNING: Using Stream MACRO hack when not on ARDUINO!
   #define Stream ostream
+  #warning Using Stream MACRO HACK when not on ARDUINO!
 #endif
 
 Menu::Menu(int bufSize, int menuPages, int (*maybeInput)(void), Stream & port):
@@ -44,8 +45,13 @@ Menu::Menu(int bufSize, int menuPages, int (*maybeInput)(void), Stream & port):
   echo_switch(false),
   verbosity(VERBOSITY_NORMAL)
 {
-  cb_buf = (char *) malloc(cb_size);			    // ERROR handling ################
-  men_pages = (menupage*) malloc(men_max * sizeof(menupage)); // ERROR handling ################
+  cb_buf = (char *) malloc(cb_size);
+  men_pages = (menupage*) malloc(men_max * sizeof(menupage));
+  /*
+    Checking for RAM ERRORs delayed from Menu constructor to add_page()
+    so the user can see the error message.
+    Looks save enough as a menu is not very usable without adding menupages.
+  */
 }
 
 #ifndef ARDUINO		// WARNING: Using Stream MACRO hack when not on ARDUINO!
@@ -106,16 +112,16 @@ char Menu::cb_read() {
   void Menu::cb_info() const {
     out(F("\nBuffer:\t\t"));
     out(cb_buf);
-  
+
     out(F("\n  size:\t\t"));
     out(cb_size);
-  
+
     out(F("\n  count:\t"));
     out(cb_count);
-  
+
     out(F("\n  start:\t"));
     outln(cb_start);
-  
+
     int value = cb_peek();
     out(F("\n  char:\t\t"));
     if (value != -1) {
@@ -128,14 +134,14 @@ char Menu::cb_read() {
         outln(F("  NAN"));
     } else
       outln(F("(none)"));
-  
+
     value = next_input_token();
     out(F("\n  next_input_token()\t: "));
     out(value);
     out(F("\t"));
     outln((char) value);
     ln();
-  
+
     for (int i=0; i<=cb_count; i++) {
       value = cb_peek(i);
       out(F("  cb_peek("));
@@ -145,7 +151,7 @@ char Menu::cb_read() {
       out(F("\t"));
       outln((char) value);
     }
-  
+
     ln();
   }
 #endif
@@ -229,7 +235,7 @@ char Menu::cb_read() {
   void Menu::equals() const { port_.print('='); }	 // Output char '='
 
 
-  #if defined(ARDUINO) && defined(SHOW_FREE_RAM)	// Arduino: RAM usage
+  #ifdef GET_FREE_RAM					// Arduino: RAM usage
     /* int get_free_RAM(): determine free RAM on Arduino:		*/
     int Menu::get_free_RAM() const {
       int free;
@@ -240,6 +246,10 @@ char Menu::cb_read() {
         return ((int) &free) - ((int) &__bss_end);
       else
         return ((int) &free) - ((int) __brkval);
+    }
+
+    void Menu::print_free_RAM(void) const {
+      out(F("free RAM:")); space(); out((int) get_free_RAM()); ln();
     }
   #endif
 
@@ -299,7 +309,7 @@ char Menu::cb_read() {
 // void OutOfRange(): output "out of range"
 void Menu::OutOfRange()	const { out(F("out of range")); }
 
-// void Error(): output " ERROR: "
+// void Error_(): output " ERROR: "
 void Menu::Error_()	const { out(F(" ERROR: ")); }
 
 
@@ -573,6 +583,24 @@ void Menu::menu_pages_info() const {
 
 void Menu::add_page(const char *pageTitle, const char hotkey,		\
 		     void (*pageDisplay)(void), bool (*pageReaction)(char), const char ActiveGroup) {
+
+  // Delayed MALLOC ERROR CHECKING from constructor:
+  if ((cb_buf == NULL) || (men_pages == NULL)) {
+  /*
+    Checking for RAM ERRORs delayed from Menu constructor to add_page()
+    so the user can see the error message.
+    Looks save enough as a menu is not very usable without adding menupages.
+  */
+    Error_();
+
+#ifdef GET_FREE_RAM	// Arduino: RAM usage
+    print_free_RAM();
+#endif
+
+    flush();		// we *do* need to flush here
+    exit(1);		// give up, STOP!
+  }
+
   if (men_known < men_max) {
     men_pages[men_known].title = (char *) pageTitle;
     men_pages[men_known].hotkey = hotkey;
@@ -635,8 +663,8 @@ void Menu::menu_display() const {
     out(F("  'q' quit page"));
   ln();
 
-#if defined(ARDUINO) && defined(SHOW_FREE_RAM)	// Arduino: RAM usage
-  out(F("free RAM:")); space(); out((int) get_free_RAM()); ln();
+#ifdef SHOW_FREE_RAM
+  print_free_RAM();
 #endif
 #ifdef DEBUGGING_MENU
   ln();

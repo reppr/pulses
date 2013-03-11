@@ -21,11 +21,28 @@
 
 /* **************************************************************** */
 #ifdef ARDUINO
-  // Should the menu display free RAM for tests?
-  //#define SHOW_FREE_RAM
+  // compile Menu::get_free_RAM()?
+  #define GET_FREE_RAM
+
+  // should Menu automagically display free RAM for tests?
+  // #define SHOW_FREE_RAM	// COMMENT THAT OFF, normally
+
+  #ifdef SHOW_FREE_RAM
+    #define GET_FREE_RAM
+  #endif
 
   // comment/uncomment for RAM tests:
   #define USE_F_MACRO
+#else	// *ARDUINO ONLY*
+  #ifdef GET_FREE_RAM
+    #warning GET_FREE_RAM *ARDUINO ONLY* #undef
+    #undef GET_FREE_RAM
+  #endif
+
+  #ifdef SHOW_FREE_RAM
+    #warning SHOW_FREE_RAM *ARDUINO ONLY* #undef
+    #undef SHOW_FREE_RAM
+  #endif
 #endif
 
 #ifndef USE_F_MACRO
@@ -155,9 +172,10 @@ class Menu {
   void equals()	const;		// output char '='
 
 
-#if defined(ARDUINO) && defined(SHOW_FREE_RAM)	// Arduino: RAM usage
+#ifdef GET_FREE_RAM		// Arduino: RAM usage
 /* int get_free_RAM(): determine RAM usage			*/
   int get_free_RAM() const;
+  void print_free_RAM() const;
 #endif
 
 

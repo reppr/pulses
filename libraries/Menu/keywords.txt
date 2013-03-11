@@ -37,3 +37,5 @@ men_known	KEYWORD2
 men_selected	KEYWORD2
 men_pages	KEYWORD2
 verbosity	KEYWORD2
+get_free_RAM	KEYWORD2
+print_free_RAM	KEYWORD2
