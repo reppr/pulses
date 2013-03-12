@@ -1,0 +1,60 @@
+README_cpp-page
+
+   http://github.com/reppr/pulses
+
+
+   This is just a very simple menupage giving informations about
+   Arduino software and board. Mainly just showing some macro values.
+   Much overkill for the simple task, I know ;)
+
+   Just for a quick test (aiming at the Arduino DUE, btw).
+
+   Not finished at all,
+   barely usable but starts working.
+
+
+Description
+
+   Show some compiler and system specific infos on a menu page.
+
+
+Installation:
+
+   Get it from http://github.com/reppr/pulses
+   Put contents of the pulses/libraries/ folder into sketchbook/libraries/
+   Restart the Arduino GUI
+   cpp-page is a page for pulses/libraries/Menu/examples/pages/
+   Please see instructions there.
+
+
+How it works:
+
+   You communicate with the arduino over a stream interface
+   that could be connected to something like a serial line,
+   serial over USB or whatever.
+
+
+Configure your terminal program:
+
+   Do configure your terminal emulation program to send some sort of
+   line ending code, usual culprits should work.
+
+   Set arduino baud rate by editing the line starting with
+   #define BAUDRATE in pages.ino
+   and set it to the same value in your terminal software.
+
+   So if for example you use the Arduino 'Serial Monitor' window
+   check that it *does* send 'Newline' (in the bottom window frame)
+   and set baud rate to the same value as BAUDRATE on the arduino.
+
+
+   Send '?' (and a linefeed) over serial line to see the menu.
+   It displays some basic infos and shows some one-letter commands.
+
+
+
+
+   Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
+
+   http://github.com/reppr/pulses
+
