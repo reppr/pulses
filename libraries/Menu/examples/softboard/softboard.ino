@@ -316,9 +316,9 @@ void watch_digital_input(int pin) {
     SOFTBOARD.out(F("*D"));  SOFTBOARD.out((int) pin);
     SOFTBOARD.tab();
     if (value)
-      SOFTBOARD.out(high_);
+      SOFTBOARD.outln(high_);
     else
-      SOFTBOARD.out(low_);
+      SOFTBOARD.outln(low_);
   }
 }
 
