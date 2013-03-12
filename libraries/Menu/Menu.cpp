@@ -229,10 +229,10 @@ char Menu::cb_read() {
 
   /* Output a newline, tab, space, '='
      ln(), tab(), space(), equals():			*/
-  void Menu::ln()	    const { port_.println(); }	 // Output a newline
-  void Menu::tab()    const { port_.print('\t'); } // Output a tab
-  void Menu::space()  const { port_.print(' '); }	 // Output a space
-  void Menu::equals() const { port_.print('='); }	 // Output char '='
+  void Menu::ln()     const { port_.println(); }	// Output a newline
+  void Menu::tab()    const { port_.print('\t'); }	// Output a tab
+  void Menu::space()  const { port_.print(' '); }	// Output a space
+  void Menu::equals() const { port_.print('='); }	// Output char '='
 
 
   #ifdef GET_FREE_RAM					// Arduino: RAM usage
@@ -301,9 +301,27 @@ char Menu::cb_read() {
     printf("\'%c\'", c);
   }
 #endif	// [ ARDUINO else ]  c++ test version	OUTPUT functions.
+
+
 /* **************************************************************** */
+/* void out_BIN(unsigned long value, int bits)
+   Print binary numbers with leading zeroes and a trailing space:   */
+void Menu::outBIN(unsigned long value, int bits ) const {
+  int i;
+  unsigned long mask=0;
+
+  for (i = bits - 1; i >= 0; i--) {
+    mask = (1 << i);
+    if (value & mask)
+      out('1');
+    else
+      out('0');
+  }
+  ln();
+}
 
 
+/* **************************************************************** */
 // String recycling:
 
 // void OutOfRange(): output "out of range"

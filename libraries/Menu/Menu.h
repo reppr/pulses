@@ -146,7 +146,6 @@ class Menu {
   void outln(const unsigned int i)	const;	// unsigend int  and newline
   void outln(const unsigned long l)	const;	// unsigned long and newline
 
-
 #ifdef ARDUINO
   // *DO* use Arduino F() MACRO for string output to save RAM:
 
@@ -159,6 +158,8 @@ class Menu {
 
   void ticked(const char c) const;  // output a ticked char token like 'A'
 
+  // Print binary numbers with leading zeroes and a trailing space:
+  void outBIN(unsigned long l, int bits ) const; // binary output
 
   /* String recycling:						*/
   void OutOfRange() const;	// output "out of range"
