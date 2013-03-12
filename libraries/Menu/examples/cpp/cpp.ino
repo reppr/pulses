@@ -237,6 +237,15 @@ void arduino_info() {	// Display some Arduino specific informations.
     CPP_INFO.out(F("Mega board"));
   #endif
 
+  #if defined(_VARIANT_ARDUINO_DUE_X_)
+    CPP_INFO.outln(F("_VARIANT_ARDUINO_DUE_X_"));
+  #endif
+
+  #if defined(VARIANT_NAME)		// /** Name of the board */
+    CPP_INFO.out(F("VARIANT_NAME\t"));
+    CPP_INFO.outln(F(VARIANT_NAME));
+  #endif
+
   // ..., UNO, DUE, TRE ;)
   CPP_INFO.ln();	// end board type
 
@@ -244,19 +253,33 @@ void arduino_info() {	// Display some Arduino specific informations.
   CPP_INFO.out(F("Processor\t"));
   #if defined(__AVR_ATmega328P__)
     CPP_INFO.outln(F("__AVR_ATmega328P__"));
-  #else
-  #if defined(__AVR_ATmega2560__)
+  #elif defined(__AVR_ATmega2560__)
     CPP_INFO.outln(F("__AVR_ATmega2560__"));
-  #else
-  #if defined(__AVR_ATmega1280__)
+  #elif defined(__AVR_ATmega1280__)
     CPP_INFO.outln(F("__AVR_ATmega1280__"));
+  #elif defined(__SAM3X8E__)
+    CPP_INFO.outln(F("__SAM3X8E__"));
 
   #else
-    CPP_INFO.out(F("NOT IMPLEMENTED YET"));
-  #endif
-  #endif
+    CPP_INFO.outln(F("NOT IMPLEMENTED YET"));
   #endif // processor
   CPP_INFO.ln(); // end processor
+
+  //
+//VARIANT_MAINOSC		/** Frequency of the board main oscillator *\
+//VARIANT_MCK		/** Master clock frequency */
+//PINS_COUNT
+  #if defined(ARDUINO_MODEL_PID)
+    #if (ARDUINO_MODEL_PID == ARDUINO_UNO_PID)
+      CPP_INFO.outln(F("ARDUINO_UNO_PID"));
+    #elif (ARDUINO_MODEL_PID == ARDUINO_DUE_PID)
+      CPP_INFO.outln(F("ARDUINO_DUE_PID"));
+    #elif (ARDUINO_MODEL_PID == ARDUINO_MEGA2560_PID)
+      CPP_INFO.outln(F("ARDUINO_MEGA2560_PID"));
+    #endif
+  #else
+      CPP_INFO.outln(F("ARDUINO_MODEL_PID is not defined.\n"));
+  #endif
 
   // Pins:
   #ifdef NUM_DIGITAL_PINS
