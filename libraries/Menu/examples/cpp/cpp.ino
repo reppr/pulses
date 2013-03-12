@@ -102,7 +102,7 @@ void setup() {
   CPP_INFO.add_page("cpp info", 'C', \
 		&cpp_info_display, &cpp_info_reaction, '+');
 
-  CPP_INFO.outln(F("cpp info\thttp://github.com/reppr/pulses/\n"));
+  CPP_INFO.outln(F("cpp info\thttp://github.com/reppr/pulses/"));
 
   CPP_INFO.menu_display();		// display menu at startup
 }
@@ -227,24 +227,36 @@ int main() {
 /* ****************  arduino_info():  **************** */
 #ifdef ARDUINO
 void arduino_info() {	// Display some Arduino specific informations.
-  CPP_INFO.out(F("\nARDUINO\t"));
+  CPP_INFO.out(F("\nArduino software version\t"));
   CPP_INFO.outln(ARDUINO);
 
-  /* ARDUINO BOARD SPECIFIC THINGS				*/
-  // Processor:
-  #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)	// mega boards
-    CPP_INFO.out(F("Mega "));
-    #if defined(__AVR_ATmega1280__)		// 1280
-      CPP_INFO.out(F("1280"));
-      CPP_INFO.outln(__AVR_ATmega1280__);	// empty? ################
-    #endif
-    #if defined(__AVR_ATmega2560__)		// 2560
-      CPP_INFO.out(F("2560"));
-      CPP_INFO.outln(__AVR_ATmega2560__);	// empty? ################
-    #endif
-  #else								// 168/328 boards
-    CPP_INFO.outln(F("168/328 ?, unknown"));
+  /* ARDUINO BOARD SPECIFIC THINGS:				*/
+
+  // Board type:
+  #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
+    CPP_INFO.out(F("Mega board"));
   #endif
+
+  // ..., UNO, DUE, TRE ;)
+  CPP_INFO.ln();	// end board type
+
+  // Processor:
+  CPP_INFO.out(F("Processor\t"));
+  #if defined(__AVR_ATmega328P__)
+    CPP_INFO.outln(F("__AVR_ATmega328P__"));
+  #else
+  #if defined(__AVR_ATmega2560__)
+    CPP_INFO.outln(F("__AVR_ATmega2560__"));
+  #else
+  #if defined(__AVR_ATmega1280__)
+    CPP_INFO.outln(F("__AVR_ATmega1280__"));
+
+  #else
+    CPP_INFO.out(F("NOT IMPLEMENTED YET"));
+  #endif
+  #endif
+  #endif // processor
+  CPP_INFO.ln(); // end processor
 
   // Pins:
   #ifdef NUM_DIGITAL_PINS
