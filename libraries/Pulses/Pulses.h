@@ -43,15 +43,44 @@
   #endif
 #endif // ARDUINO
 
+
+/* **************************************************************** */
+#define DEFAULT_OCTAVE_SHIFT	6
+const unsigned long farest_future = ~0L ;
+
+
+/* **************************************************************** */
+
+// ################comment
+// enum flag_codes {ACTIVE=1, MUTE=2} pl_flag_codes;
+enum {ACTIVE=1, MUTE=2} pl_flag_code;
+
+struct pulse {
+  unsigned long period;
+  unsigned long next;
+  unsigned long counter;	// counts pulses
+  unsigned long pl_mask;	// for octaves and rhythms
+  uint8 pl_flags;		// ################comment
+  uint8 pl_PIN;			// for clicks and the like
+  uint8 pl_pin_mask;		// ################comment
+};
+
+
 /* **************************************************************** */
 
 class Pulses {
  public:
-  Pulses(int max_pl);
+  Pulses(unsigned int max_pl);
   ~Pulses();
  private:
-  int p;	// pulse index
-  int max_pl:
+  unsigned int p;		// pulse index, not decided if i need it ################
+  unsigned int max_pl;		// max pulses possible
+  unsigned long nextFlip;	// ################...comment please...
+
+  // ################ int16 ??? ################
+  int8 global_octave;			    // global octave shift. ONLY negative shifts atm
+  unsigned long global_octave_mask;	    // this mask gets shifted and then actually used
+  unsigned long current_global_octave_mask; // actually used mask to switch oscillators
 };
 
 /* **************************************************************** */

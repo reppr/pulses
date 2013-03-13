@@ -38,24 +38,36 @@
 /* **************************************************************** */
 // Constructor/Destructor:
 
-#ifndef ARDUINO		// WARNING: Using Stream MACRO hack when not on ARDUINO!
-  #define Stream ostream
-#endif
+//	#ifndef ARDUINO		// WARNING: Using Stream MACRO hack when not on ARDUINO!
+//	  #define Stream ostream
+//	#endif
 
-Pulses::Pulses(int max_pl):
+Pulses::Pulses(unsigned int max_pl):
   max_pl(max_pl),
-  p(0)
+  p(0),
+  global_octave(0),
+  global_octave_mask(1),
+  current_global_octave_mask(1)
 {
 }
 
-#ifndef ARDUINO		// WARNING: Using Stream MACRO hack when not on ARDUINO!
-  #undef Stream
-#endif
+//	#ifndef ARDUINO		// WARNING: Using Stream MACRO hack when not on ARDUINO!
+//	  #undef Stream
+//	#endif
 
 
 Pulses::~Pulses() {
 }
 
+
+void Pulses::global_shift(int global_octave) {
+  if (global_octave>0) {
+    // ################ no Serial here...
+    Serial.println("global_shift: ERROR only negative octave shifts implemented.");
+    return;
+  }
+  current_global_octave_mask = global_octave_mask << -global_octave;
+}
 
 /* **************************************************************** */
 
