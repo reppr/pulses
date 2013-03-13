@@ -19,6 +19,18 @@
   #define STREAMTYPE	ostream
 #endif
 
+
+/* **************************************************************** */
+/* Some basic #define's						    */
+
+#define ILLEGAL			-1	// illegal value for many topics
+
+#define ILLEGALinputVALUE	-1	// impossible analog input value
+#define ILLEGALpin		-1	// a pin that is not assigned
+
+#define ACTIVE_undecided	1	// globally used in many status bitmaps
+
+
 /* **************************************************************** */
 #ifndef USE_F_MACRO
   // For tests and on PC:  Fake Arduino F("string") macro as noop:
@@ -73,7 +85,7 @@ class Pulses {
   Pulses(unsigned int max_pl);
   ~Pulses();
  private:
-  unsigned int p;		// pulse index, not decided if i need it ################
+  unsigned int pl_i;		// pulse index, not decided if i need it ################
   unsigned int max_pl;		// max pulses possible
   unsigned long nextFlip;	// ################...comment please...
 
