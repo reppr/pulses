@@ -35,7 +35,8 @@ Pulses::Pulses(unsigned int max_pl):
   pl_i(0),
   global_octave(0),
   global_octave_mask(1),
-  current_global_octave_mask(1)
+  current_global_octave_mask(1),
+  nextFlip(farest_future)
 {
   pulses = (pulse*) malloc(max_pl * sizeof(pulse));
   // ERROR ################
