@@ -15,7 +15,7 @@
 #	/* **************************************************************** */
 #	// basic configuration:
 #
-#	#define OSCILLATORs	4	// # of oscillators
+#!R max_pl	#define OSCILLATORs	4	// # of oscillators
 #	#define PROFILING		// gather info for debugging and profiling
 #	#define INPUTs_ANALOG	16	// ANALOG INPUTs
 #	#define TAP_PINs	16  	// # TAP pins for electrical touch INPUT
@@ -130,6 +130,8 @@
 #!R pl_flags	unsigned char osc_flags[OSCILLATORs];
 #!enum {ACTIVE=1, MUTE=2} pl_flag_code;	#define OSC_FLAG_ACTIVE	1
 #!enum {ACTIVE=1, MUTE=2} pl_flag_code;	#define OSC_FLAG_MUTE	2
+#!#define pACTIVE 
+#!#define pMUTE
 #	// #define OSC_FLAG_SELECT	4	// unused
 #
 #!R pl_PIN	// signed char oscPIN[OSCILLATORs];
@@ -153,92 +155,101 @@
 #!	}
 #
 #
-
 #	// micro seconds for main loop other then oscillating
 #	// check this value for your program by PROFILING and
 #	// set default here between average and maximum lapse
 #	// time (displayed by pressing 'd')
 #	unsigned long timeFor1Round = 220;
 #
-#	unsigned char toneSwitch=0;	// tone switched OFF by default
+
+#?	unsigned char toneSwitch=0;	// tone switched OFF by default
 #					// see toggle_toneSwitch(dummy)
 #
-#	void oscillatorInit() {
-#	  int i;
-#
-#	  for (i=0; i<OSCILLATORs; i++) {
-#	    max_pl[i]=0;
-#	    // use pl_mask's like 0x1 or 0x3
-#	    pl_mask[i]= 0x1 << DEFAULT_OCTAVE_SHIFT;
-#
-#	    period[i] = next[i] = farest_future;
-#	    pl_flags[i] = 0;		// off
-#	    pinMode(pl_PIN[i], OUTPUT);
-#	    pl_pin_mask[i]=ILLEGALpin;
-#	  }
-#	  nextFlip=farest_future;
-#	}
-#
-#
-#	int startOscillator(int pl_i) {
-#	  unsigned long now = micros();
-#
-#	  if (pl_i >= OSCILLATORs ) {	// ERROR recovery needed! #########
-#
-#	#ifdef USE_SERIAL
-#	    Serial.println("ERROR: too many oscillators.");
-#	#endif
-#
-#	    return 1;
-#	  }
-#
-#	  if (pl_PIN[pl_i] == ILLEGALpin)
-#	    return 1;
-#
-#	  digitalWrite(pl_PIN[pl_i], HIGH);
-#
-#	  pl_flags[pl_i] |= OSC_FLAG_ACTIVE_enum;	// active ON
-#	  next[pl_i] = now + period[pl_i];
-#	  nextFlip = updateNextFlip();
-#
-#	  /*
-#	  Serial.print("Started oscillator "); Serial.print(pl_i);
-#	  Serial.print("\tpin "); Serial.print(pl_PIN[pl_i]);
-#	  Serial.print("\tperiod "); Serial.println(period[pl_i]);
-#	  */
-#
-#	  return 0;
-#	}
-#
-#
-#	void stopOscillator(int pl_i) {
-#	  pl_flags[pl_i] &= ~OSC_FLAG_ACTIVE_enum;	// active OFF
-#	  digitalWrite(pl_PIN[pl_i], LOW);
-#	  nextFlip = updateNextFlip();
-#	}
-#
-#
-#	// is oscillator ON or OFF?
-#	int OSC_(int pl_i) {
-#	  return (max_pl[pl_i] & current_global_octave_mask) !=0;
-#	}
-#
-#
+#!R+ pulses_init()	void oscillatorInit() {
+##	  int pl_i;
+##
+##	  for (pl_i=0; pl_i<max_pl; pl_i++) {
+##	    max_pl[pl_i]=0;
+##	    // use pl_mask's like 0x1 or 0x3
+#!R-	    pl_mask[pl_i]= 0x1 << DEFAULT_OCTAVE_SHIFT;
+#!R+	    pulses[pl_i].pl_mask= 0x1 << DEFAULT_OCTAVE_SHIFT;
+##
+#!R-	    period[pl_i] = next[pl_i] = farest_future;
+#!R+	    pulses[pl_i].period = pulses[pl_i].next = farest_future;
+#!R-	    pl_flags[pl_i] = 0;		// off
+#!R+	    pulses[pl_i].pl_flags = 0;		// off
+#!R-	    pinMode(pl_PIN[pl_i], OUTPUT);
+#!R+	    pinMode(pulses[pl_i].pl_PIN, OUTPUT);
+#!R-	    pl_pin_mask[pl_i]=ILLEGALpin;
+#!R+	    pulses[pl_i].pl_pin_mask=ILLEGALpin;
+##	  }
+##	  nextFlip=farest_future;
+##	}
+##
+##
+#!R start_pulse()	int startOscillator(int pl_i) {
+##	  unsigned long now = micros();
+##
+##	  if (pl_i >= max_pl ) {	// ERROR recovery needed! #########
+##
+##	#ifdef USE_SERIAL
+##	    Serial.println("ERROR: too many oscillators.");
+##	#endif
+##
+##	    return 1;
+##	  }
+##
+##	  if (pulses[pl_i].pl_PIN == ILLEGALpin)
+##	    return 1;
+##
+##	  digitalWrite(pulses[pl_i].pl_PIN, HIGH);
+##
+#!R-	  pulses[pl_i].pl_flags |= OSC_FLAG_ACTIVE_enum;	// active ON
+#!R+	  pulses[pl_i].pl_flags |= pACTIVE;	// active ON
+##	  pulses[pl_i].next = now + pulses[pl_i].period;
+##	  nextFlip = updateNextFlip();
+##
+##	  /*
+##	  Serial.print("Started oscillator "); Serial.print(pl_i);
+##	  Serial.print("\tpin "); Serial.print(pulses[pl_i].pl_PIN);
+##	  Serial.print("\tperiod "); Serial.println(pulses[pl_i].period);
+##	  */
+##
+##	  return 0;
+##	}
+##
+##
+##!R	void stop_pulse(int pl_i) {
+##	  pulses[pl_i].pl_flags &= ~pACTIVE;	// active OFF
+##	  digitalWrite(pulses[pl_i].pl_PIN, LOW);
+##	  nextFlip = updateNextFlip();
+##	}
+##
+##
+##	// is oscillator ON or OFF?
+##!R-	int OSC_(int pl_i) {
+##!R+   int HIGHorLOW()
+##!R-	  return (max_pl[pl_i] & current_global_octave_mask) !=0;
+##!R+	  return (pulses[pl_i].counter & current_global_octave_mask) !=0;
+##	}
+##
+##
 #	void set_pl_mask_pin(unsigned int pl_i, unsigned int pin) {
-#	  pl_pin_mask[pl_i] = pin;
+#!R-	  pl_pin_mask[pl_i] = pin;
+#!R+	  pulses[pl_i].pl_pin_mask = pin;
 #	  pinMode(pin, OUTPUT);
 #	  digitalWrite(pin, LOW);
 #	}
 #
 #
 #	void toggleOscillator(int pl_i) {
-#	  if (pl_flags[pl_i] & OSC_FLAG_ACTIVE_enum)	// was active
+#	  if (pulses[pl_i].pl_flags & pACTIVE)	// was active
 #	{
-#	    stopOscillator(pl_i);
+#	    stop_pulse(pl_i);
 #	    Serial.print("Oscillator "); Serial.print(pl_i); Serial.println(" stopped");
 #	  }
-#	  else if (period[pl_i]) {
-#	    startOscillator(pl_i);
+#	  else if (pulses[pl_i].period) {
+#	    start_pulse(pl_i);
 #	  }
 #	  else
 #	    Serial.println("error: no period set");
@@ -249,8 +260,9 @@
 #	int oscillators_mute_bits() {
 #	  int pl_i, bitpattern=0;
 #
-#	  for (pl_i=0; pl_i<OSCILLATORs; pl_i++) {
-#	    if (pl_flags[pl_i] & OSC_FLAG_MUTE_enum)
+#	  for (pl_i=0; pl_i<max_pl; pl_i++) {
+#!R-	    if (pulses[pl_i].pl_flags & OSC_FLAG_MUTE_enum)
+#!R+	    if (pulses[pl_i].pl_flags & pMUTE)
 #	      bitpattern |= (1 << pl_i);
 #	  }
 #
@@ -263,8 +275,8 @@
 #	int oscillators_SELECTed_bits() {
 #	  int pl_i, bitpattern=0;
 #
-#	  for (pl_i=0; pl_i<OSCILLATORs; pl_i++) {
-#	    if (pl_flags[pl_i] & OSC_FLAG_SELECT)
+#	  for (pl_i=0; pl_i<max_pl; pl_i++) {
+#	    if (pulses[pl_i].pl_flags & OSC_FLAG_SELECT)
 #	      bitpattern |= (1 << pl_i);
 #	  }
 #
@@ -286,13 +298,13 @@
 #
 #	  // check pl_mask reactions:
 #	  if (show_mask) {
-#	    for (pl_i=0; pl_i<OSCILLATORs; pl_i++) {
-#	      if (pl_mask[pl_i] && ((max_pl[pl_i] & pl_mask[pl_i]) == pl_mask[pl_i])) {
-#		if (pl_pin_mask[pl_i] != ILLEGALpin)
-#		  digitalWrite(pl_pin_mask[pl_i], HIGH);
+#	    for (pl_i=0; pl_i<max_pl; pl_i++) {
+#	      if (pulses[pl_i].pl_mask && ((pulses[pl_i].counter & pulses[pl_i].pl_mask) == pulses[pl_i].pl_mask)) {
+#		if (pulses[pl_i].pl_pin_mask != ILLEGALpin)
+#		  digitalWrite(pulses[pl_i].pl_pin_mask, HIGH);
 #	      } else {
-#		if (pl_pin_mask[pl_i] != ILLEGALpin)
-#		  digitalWrite(pl_pin_mask[pl_i], LOW);
+#		if (pulses[pl_i].pl_pin_mask != ILLEGALpin)
+#		  digitalWrite(pulses[pl_i].pl_pin_mask, LOW);
 #	      }
 #	    }
 #	  }
@@ -309,54 +321,54 @@
 #	    /*
 #	    bit=0;
 #	    pin=17; // ################   pin = bit_strip_PIN[output_strip][bit];
-#	    digitalWrite(pin, (OSC_(0) & OSC_(1)));
+#	    digitalWrite(pin, (HIGHorLOW(0) & HIGHorLOW(1)));
 #
 #	    bit=1;
 #	    pin=16; //    pin = bit_strip_PIN[output_strip][bit];
-#	    digitalWrite(pin, OSC_(0) | OSC_(1));
+#	    digitalWrite(pin, HIGHorLOW(0) | HIGHorLOW(1));
 #
 #	    bit=2;
 #	    pin=15; //    pin = bit_strip_PIN[output_strip][bit];
-#	    digitalWrite(pin, OSC_(0) ^ OSC_(1));
+#	    digitalWrite(pin, HIGHorLOW(0) ^ HIGHorLOW(1));
 #
 #	    bit=3;
 #	    pin=14; //    pin = bit_strip_PIN[output_strip][bit];
-#	    digitalWrite(pin, OSC_(0) == OSC_(1));
+#	    digitalWrite(pin, HIGHorLOW(0) == HIGHorLOW(1));
 #	    */
 #
 #	    bit=0;
 #	    pin=17; // ################   pin = bit_strip_PIN[output_strip][bit];
-#	    digitalWrite(pin, (OSC_(pl_i) == OSC_(0)));
+#	    digitalWrite(pin, (HIGHorLOW(pl_i) == HIGHorLOW(0)));
 #
 #	    bit=1;
 #	    pin=16; //    pin = bit_strip_PIN[output_strip][bit];
-#	    digitalWrite(pin, OSC_(pl_i) == OSC_(1));
+#	    digitalWrite(pin, HIGHorLOW(pl_i) == HIGHorLOW(1));
 #
 #	    bit=2;
 #	    pin=15; //    pin = bit_strip_PIN[output_strip][bit];
-#	    digitalWrite(pin, OSC_(pl_i) == OSC_(2));
+#	    digitalWrite(pin, HIGHorLOW(pl_i) == HIGHorLOW(2));
 #
 #	    bit=3;
 #	    pin=14; //    pin = bit_strip_PIN[output_strip][bit];
-#	    digitalWrite(pin, OSC_(pl_i) == OSC_(3));
+#	    digitalWrite(pin, HIGHorLOW(pl_i) == HIGHorLOW(3));
 #
 #	  }
 #	#endif // BIT_STRIPs inside OSCILLATORs
 #
 #	#ifdef COLOUR_LEDs	//  inside OSCILLATORs
 #	  if (show_interference_color) {
-#	    if (OSC_(pl_i) & OSC_(1))
+#	    if (HIGHorLOW(pl_i) & HIGHorLOW(1))
 #	      digitalWrite(redPIN, HIGH);
 #	    else
 #	      digitalWrite(redPIN, LOW);
 #
-#	    if (OSC_(pl_i) ^ OSC_(1))
+#	    if (HIGHorLOW(pl_i) ^ HIGHorLOW(1))
 #	      digitalWrite(greenPIN, HIGH);
 #	    else
 #	      digitalWrite(greenPIN, LOW);
 #
 #	//    // deactivated blue led, made me nervous ;)
-#	//    if (!OSC_(pl_i) | OSC_(1))
+#	//    if (!HIGHorLOW(pl_i) | HIGHorLOW(1))
 #	//      digitalWrite(bluePIN, HIGH);
 #	//    else
 #	//      digitalWrite(bluePIN, LOW);
@@ -377,20 +389,20 @@
 #
 #	  led++;
 #	  digitalWrite(led_row_anode_PIN[led], next[0] < next[1]);
-#	  digitalWrite(led_row_cathode_PIN[led], OSC_(1));
+#	  digitalWrite(led_row_cathode_PIN[led], HIGHorLOW(1));
 #
 #	  led++;
 #	  digitalWrite(led_row_anode_PIN[led], next[0] > next[1]);
-#	  digitalWrite(led_row_cathode_PIN[led], OSC_(1));
+#	  digitalWrite(led_row_cathode_PIN[led], HIGHorLOW(1));
 #
 #	  /*
 #	  led++;
-#	  digitalWrite(led_row_anode_PIN[led],OSC_(0));
-#	  digitalWrite(led_row_cathode_PIN[led],OSC_(1));
+#	  digitalWrite(led_row_anode_PIN[led],HIGHorLOW(0));
+#	  digitalWrite(led_row_cathode_PIN[led],HIGHorLOW(1));
 #
 #	  led++;
-#	  digitalWrite(led_row_anode_PIN[led],!OSC_(0));
-#	  digitalWrite(led_row_cathode_PIN[led],OSC_(1));
+#	  digitalWrite(led_row_anode_PIN[led],!HIGHorLOW(0));
+#	  digitalWrite(led_row_cathode_PIN[led],HIGHorLOW(1));
 #	  */
 #	#endif	// LED_ROW	 inside OSCILLATORs
 #	} // osc_flip_reaction()
@@ -659,17 +671,17 @@
 #	  // If times are easy leave do do other things in between.
 #	  // else check oscillators if it's time to flip.
 #	  while (now >= nextFlip || ((nextFlip - now) <= timeFor1Round)) {
-#	    for (pl_i=0; pl_i<OSCILLATORs; pl_i++) {
-#	      if ((pl_flags[pl_i] & OSC_FLAG_ACTIVE_enum) && (next[pl_i] <= now)) {
+#	    for (pl_i=0; pl_i<max_pl; pl_i++) {
+#	      if ((pulses[pl_i].pl_flags & pACTIVE) && (pulses[pl_i].next <= now)) {
 #		// flip one
-#		max_pl[pl_i]++;
+#		pulses[pl_i].counter++;
 #		// maybe sound
-#		if (toneSwitch && ((pl_flags[pl_i] & OSC_FLAG_MUTE_enum) == 0)) {
-#		  digitalWrite(pl_PIN[pl_i], (max_pl[pl_i] & current_global_octave_mask) != 0);
+#		if (toneSwitch && ((pulses[pl_i].pl_flags & pMUTE) == 0)) {
+#		  digitalWrite(pulses[pl_i].pl_PIN, (pulses[pl_i].counter & current_global_octave_mask) != 0);
 #		}
 #
 #		// compute new next on this oscillator
-#		next[pl_i] += period[pl_i];
+#		pulses[pl_i].next += pulses[pl_i].period;
 #	      }
 #	    }
 #
@@ -722,19 +734,19 @@
 #	}
 #
 #
-#	// compute when the next flip (in any of the active oscillators is due
-#	long updateNextFlip () {
-#	  int pl_i;
-#	  nextFlip |= -1;
-#
-#	  for (pl_i=0; pl_i<OSCILLATORs; pl_i++) {
-#	    if (pl_flags[pl_i] & OSC_FLAG_ACTIVE_enum)
-#	      if (next[pl_i] < nextFlip)
-#		nextFlip = next[pl_i];
-#	  }
-#	  // Serial.print("NEXT "); Serial.println(nextFlip);
-#	  return nextFlip;
-#	}
+##	// compute when the next flip (in any of the active oscillators is due
+##	long updateNextFlip () {
+##	  int pl_i;
+##	  nextFlip |= -1;
+##
+##	  for (pl_i=0; pl_i<max_pl; pl_i++) {
+##	    if (pulses[pl_i].pl_flags & pACTIVE)
+##	      if (pulses[pl_i].next < nextFlip)
+##		nextFlip = pulses[pl_i].next;
+##	  }
+##	  // Serial.print("NEXT "); Serial.println(nextFlip);
+##	  return nextFlip;
+##	}
 #
 #	/* ***************************************************************** */
 #
@@ -761,29 +773,29 @@
 #	  int pl_i;
 #	  unsigned long sync_time = micros() + SYNC_after;
 #
-#	  for (pl_i=0; pl_i<OSCILLATORs; pl_i++) {
+#	  for (pl_i=0; pl_i<max_pl; pl_i++) {
 #
 #	    if(sync_mode & SYNC_reset_counter) {	// reset counter
 #	      // *either* just reset to 0, so it will start with 00000001
 #	      if (sync_mode & SYNC_reset_to_zero)	// start with 0000001
-#		max_pl[pl_i] = 0;
+#		pulses[pl_i].counter = 0;
 #	      // *or* arrange to start with all bits zero or all bits one:
 #	      else if (sync_mode & SYNC_start_all_on)	// start all bits on?
-#		max_pl[pl_i] = (unsigned long) -2;	// next flip will be all on
+#		pulses[pl_i].counter = (unsigned long) -2;	// next flip will be all on
 #	      else
-#		max_pl[pl_i] = (unsigned long) -1;	// next flip will be all off
+#		pulses[pl_i].counter = (unsigned long) -1;	// next flip will be all off
 #	    }
 #
 #	    if(sync_mode & SYNC_phase) {	// phase sync
 #	      // sync phase on flip or middle of a (half) period?
 #	      if(sync_mode & SYNC_phase_stright)
-#		next[pl_i] = sync_time;				// stright
+#		pulses[pl_i].next = sync_time;				// stright
 #	      else
-#		next[pl_i] = sync_time + (period[pl_i] / 2);	// middle
+#		pulses[pl_i].next = sync_time + (pulses[pl_i].period / 2);	// middle
 #
 #	      if(sync_mode & SYNC_alternate_phase)	// alternate phase
 #		if (pl_i & 1)				// every second osc
-#		  pl_i_count[pl_i] ^= 1;			// start the other way round
+#		  pulses[pl_i].counter ^= 1;			// start the other way round
 #	    }
 #
 #	  }
@@ -946,14 +958,14 @@
 #
 #		// add or set?
 #		if (analog_in2out_method[inp] & METHOD_add)	// add to parameter
-#	  	  period[pl_i] += analog_inval2out(inp, value);
+#	  	  pulses[pl_i].period += analog_inval2out(inp, value);
 #		else						// set parameter
-#		  period[pl_i] = analog_inval2out(inp, value);
+#		  pulses[pl_i].period = analog_inval2out(inp, value);
 #
-#		// check if next[pl_i] is not too far in the future:
+#		// check if pulses[pl_i].next is not too far in the future:
 #		now = micros();
-#		if ((now + period[pl_i]) < next[pl_i]) { // we will not wait that long...
-#		  next[pl_i] = now + period[pl_i];
+#		if ((now + pulses[pl_i].period) < pulses[pl_i].next) { // we will not wait that long...
+#		  pulses[pl_i].next = now + pulses[pl_i].period;
 #		  nextFlip = updateNextFlip();
 #		}
 #		break;
@@ -1239,7 +1251,7 @@
 #	#ifdef OSCILLATORs
 #	// individual oscillator mute function called by taps:
 #	void tap_do_toggle_osc_mute(int tap) {	// old routine, left for reuse
-#	  pl_flags[tap_parameter_1[tap]] ^= OSC_FLAG_MUTE_enum;	// toggle muting of oscillator
+#	  pl_flags[tap_parameter_1[tap]] ^= pMUTE;	// toggle muting of oscillator
 #
 #	#ifdef BIT_STRIPs
 #	  show_on_strip(output_strip, ~oscillators_mute_bits(), 0);	// show ON/mute on LED strip
@@ -1546,37 +1558,37 @@
 #	#ifdef OSCILLATORs	// inside MENU_over_serial	MENU STUFF for OSCILLATORs
 #
 #	void displayOscillatorsInfos() {
-#	  int i;
+#	  int pl_i;
 #
 #	  Serial.println("  osc\tactive\tmute\tstate\tperiod\tPIN");
 #	  Serial.println("");
 #
-#	  for (i=0; i<OSCILLATORs; i++) {
-#	    if (i == pl_i)
+#	  for (pl_i=0; pl_i<max_pl; pl_i++) {
+#	    if (pl_i == pl_i)	// OHALÄTZ!
 #	      Serial.print("* ");
 #	    else
 #	      Serial.print("  ");
 #
-#	    Serial.print(i); Serial.print("\t");
+#	    Serial.print(pl_i); Serial.print("\t");
 #
 #
-#	    if (pl_flags[i] & OSC_FLAG_ACTIVE_enum)
+#	    if (pulses[pl_i].pl_flags & pACTIVE)
 #	      Serial.print("ON\t");
 #	    else
 #	      Serial.print("off\t");
 #
-#	    if (pl_flags[i] & OSC_FLAG_MUTE_enum)
+#	    if (pulses[pl_i].pl_flags & pMUTE)
 #	      Serial.print("mute\t");
 #	    else
 #	      Serial.print(" on\t");
 #
-#	    if (max_pl[i] & 1)
+#	    if (pulses[pl_i].counter & 1)
 #	      Serial.print("HIGH\t");
 #	    else
 #	      Serial.print("LOW\t");
 #
-#	    Serial.print(period[i]); Serial.print("\t");
-#	    Serial.print(pl_PIN[i]); Serial.println("");
+#	    Serial.print(pulses[pl_i].period); Serial.print("\t");
+#	    Serial.print(pulses[pl_i].pl_PIN); Serial.println("");
 #	  }
 #
 #	  Serial.println("");
@@ -1586,13 +1598,13 @@
 #	  Serial.println("  osc\toctaves\t\t\t\t  mask");
 #	  Serial.println("");
 #
-#	  for (i=0; i<OSCILLATORs; i++) {
-#	    if (i == pl_i)
+#	  for (pl_i=0; pl_i<max_pl; pl_i++) {
+#	    if (pl_i == pl_i)	################
 #	      Serial.print("* ");
 #	    else
 #	      Serial.print("  ");
-#	    Serial.print(i); Serial.print("\t"); serial_print_BIN(max_pl[i], 32);
-#	    Serial.print(" "); serial_print_BIN(pl_mask[i], 32); Serial.println("");
+#	    Serial.print(pl_i); Serial.print("\t"); serial_print_BIN(pulses[pl_i].counter, 32);
+#	    Serial.print(" "); serial_print_BIN(pulses[pl_i].pl_mask, 32); Serial.println("");
 #	  }
 #
 #	  Serial.println("");
@@ -1610,9 +1622,9 @@
 #	  Serial.println("");
 #
 #	  Serial.print("o=oscillator("); Serial.print(pl_i);
-#	  Serial.print(")\t~="); ONoff((pl_flags[pl_i] & OSC_FLAG_ACTIVE_enum),2,false);
+#	  Serial.print(")\t~="); ONoff((pulses[pl_i].pl_flags & pACTIVE),2,false);
 #	  Serial.print("\tp=period["); Serial.print(pl_i); Serial.print("] (");
-#	  Serial.print(period[pl_i]); Serial.println(")");
+#	  Serial.print(pulses[pl_i].period); Serial.println(")");
 #
 #	  Serial.print("i=analog inp("); Serial.print(inp);
 #	  Serial.print(")\tj=input offset ("); Serial.print(analog_input_offset[inp]);
@@ -1761,11 +1773,11 @@
 #	      Serial.print("oscillator       "); Serial.println(pl_i);
 #	      Serial.print("oscillator new = ");
 #	      newValue = numericInput(pl_i);
-#	      if (newValue < OSCILLATORs && newValue >= 0) {
+#	      if (newValue < max_pl && newValue >= 0) {
 #		pl_i = newValue;
 #		Serial.println(pl_i);
 #	      } else {
-#		Serial.print(" must be between 0 and "); Serial.println(OSCILLATORs -1);
+#		Serial.print(" must be between 0 and "); Serial.println(max_pl -1);
 #	      }
 #
 #	      break;
@@ -1807,14 +1819,14 @@
 #
 #	    case 'p':
 #	      Serial.print("Oscillator "); Serial.print(pl_i);
-#	      Serial.print(" \tperiod     = "); Serial.println(period[pl_i]);
+#	      Serial.print(" \tperiod     = "); Serial.println(pulses[pl_i].period);
 #	      Serial.print("Oscillator "); Serial.print(pl_i);
-#	      Serial.print(" \tperiod new = "); Serial.println(period[pl_i]);
+#	      Serial.print(" \tperiod new = "); Serial.println(pulses[pl_i].period);
 #
-#	      newValue = numericInput(period[pl_i]);
-#	      if (period[pl_i] != newValue) {
+#	      newValue = numericInput(pulses[pl_i].period);
+#	      if (pulses[pl_i].period != newValue) {
 #		if (newValue > 0) {
-#		  period[pl_i] = newValue;
+#		  pulses[pl_i].period = newValue;
 #		  Serial.println(newValue);
 #		} else
 #		  Serial.println("must be positive.");
@@ -1839,7 +1851,7 @@
 #	#ifdef HARDWARE_menu
 #	    case 'P':
 #	      Serial.print("Number of pin to work on: ");
-#	      newValue = numericInput(period[pl_i]);
+#	      newValue = numericInput(pulses[pl_i].period);
 #	      if (newValue>=0 && newValue<255) {
 #		hw_PIN = newValue;
 #		Serial.println((int) hw_PIN);
@@ -2106,7 +2118,7 @@
 #
 #	  case EDIT_ANALOG_destination_index:
 #	    // only oscillators implemented here ################
-#	    if(input_value >= 0 && input_value < OSCILLATORs) {
+#	    if(input_value >= 0 && input_value < max_pl) {
 #	      pl_i = input_value;	// global
 #	      // set destination, activate, switch other inputs of the same dest off:
 #	      set_analog_destination(inp, TYPE_osc_period, pl_i);
@@ -2202,7 +2214,7 @@
 #	    break;
 #
 #	  case EDIT_OUT_OSC_select:
-#	    if(input_value >= 0 && input_value < OSCILLATORs) {
+#	    if(input_value >= 0 && input_value < max_pl) {
 #	      pl_i = input_value;
 #	      show_on_strip(output_strip, input_value, 0);
 #
@@ -2228,7 +2240,7 @@
 #	      input_value &= EDIT_BITS_MASK;
 #	      show_on_strip(output_strip, input_value, 0);
 #	      input_value <<= DEFAULT_OCTAVE_SHIFT;
-#	      pl_mask[pl_i] = input_value;
+#	      pulses[pl_i].pl_mask = input_value;
 #
 #	#ifdef TAP_ED_SERIAL_DEBUG
 #	      Serial.print("Set octave mask of inp "); Serial.print((int) inp);
@@ -2380,15 +2392,15 @@
 #	    if(input_value != IMPOSSIBLE_MASK) {
 #	      input_value &= EDIT_BITS_MASK;
 #	      input_value <<= DEFAULT_OCTAVE_SHIFT;
-#	      pl_mask[pl_i] = input_value;
+#	      pulses[pl_i].pl_mask = input_value;
 #	      input_value = IMPOSSIBLE_MASK;
 #	    }
 #
-#	    pl_mask[pl_i] >>= 1;
+#	    pulses[pl_i].pl_mask >>= 1;
 #
 #	#ifdef TAP_ED_SERIAL_DEBUG
 #	      Serial.print("Shifted octave mask of inp "); Serial.print((int) inp); Serial.print(" up to ");
-#	      serial_print_BIN(pl_mask[pl_i], 32); Serial.println("");
+#	      serial_print_BIN(pulses[pl_i].pl_mask, 32); Serial.println("");
 #	#endif
 #
 #	    break;
@@ -2509,15 +2521,15 @@
 #	    if(input_value != IMPOSSIBLE_MASK) {
 #	      input_value &= EDIT_BITS_MASK;
 #	      input_value <<= DEFAULT_OCTAVE_SHIFT;
-#	      pl_mask[pl_i] = input_value;
+#	      pulses[pl_i].pl_mask = input_value;
 #	      input_value = IMPOSSIBLE_MASK;
 #	    }
 #
-#	    pl_mask[pl_i] <<= 1;
+#	    pulses[pl_i].pl_mask <<= 1;
 #
 #	#ifdef TAP_ED_SERIAL_DEBUG
 #	      Serial.print("Shifted octave mask of inp "); Serial.print((int) inp); Serial.print(" down to ");
-#	      serial_print_BIN(pl_mask[pl_i], 32);
+#	      serial_print_BIN(pulses[pl_i].pl_mask, 32);
 #	#endif
 #
 #	    break;
@@ -2715,7 +2727,7 @@
 #	  case EDIT_ANALOG_destination_index:
 #	    tap_input_bit_toggle(tap);
 #
-#	    if (input_value >= 0 && input_value < OSCILLATORs) {
+#	    if (input_value >= 0 && input_value < max_pl) {
 #	      pl_i = input_value;
 #	      green(true); red(false);
 #
@@ -2786,7 +2798,7 @@
 #	  case EDIT_OUT_OSC_select:
 #	    tap_input_bit_toggle(tap);
 #
-#	    if (input_value >= 0 && input_value < OSCILLATORs) {
+#	    if (input_value >= 0 && input_value < max_pl) {
 #	      pl_i = input_value;
 #	      green(true); red(false);
 #
@@ -3072,11 +3084,11 @@
 #		Serial.print(" * "); Serial.print(mul); Serial.print(" / "); Serial.print(divi);
 #	#endif
 #
-#		period[pl_i] = mul_div_source * mul;	// I insist on * coming first
-#		period[pl_i] /= divi;			// and then /
+#		pulses[pl_i].period = mul_div_source * mul;	// I insist on * coming first
+#		pulses[pl_i].period /= divi;			// and then /
 #
 #	#ifdef TAP_ED_SERIAL_DEBUG
-#		Serial.print(" = "); Serial.print(period[pl_i]);
+#		Serial.print(" = "); Serial.print(pulses[pl_i].period);
 #		Serial.println("");
 #	#endif
 #
@@ -3086,21 +3098,21 @@
 #
 #	#ifdef TAP_ED_SERIAL_DEBUG
 #	      Serial.print("mul_div period[" ); Serial.print((int) pl_i); Serial.print("] ");
-#	      Serial.print(" from current value "); Serial.print(period[pl_i]);
+#	      Serial.print(" from current value "); Serial.print(pulses[pl_i].period);
 #	      Serial.print(" * "); Serial.print(mul); Serial.print(" / "); Serial.print(divi);
 #	#endif
 #
-#	      period[pl_i] *= mul;			// I insist on * coming first
-#	      period[pl_i] /= divi;			// and then /
+#	      pulses[pl_i].period *= mul;			// I insist on * coming first
+#	      pulses[pl_i].period /= divi;			// and then /
 #
 #	#ifdef TAP_ED_SERIAL_DEBUG
-#	      Serial.print(" = "); Serial.print(period[pl_i]); Serial.println("");
+#	      Serial.print(" = "); Serial.print(pulses[pl_i].period); Serial.println("");
 #	#endif
 #
 #	      return;					// EXIT here
 #
 #	    } else {					// it is source period input
-#	      mul_div_source = period[pl_i];
+#	      mul_div_source = pulses[pl_i].period;
 #	      mul_div_state = MUL_DIV_has_source;
 #
 #	      mul_div_state |= MUL_DIV_INPUT_dest;	// next will be destination input
@@ -3166,14 +3178,14 @@
 #	    // destination input: reciprocal action on selected oscillator
 #	    // from other source?
 #	    if (mul_div_state & MUL_DIV_has_source) {	// from other source
-#	      period[pl_i] = mul_div_source * divi;	// I insist on * coming first
-#	      period[pl_i] /= mul;			// and then / both reciprocal
+#	      pulses[pl_i].period = mul_div_source * divi;	// I insist on * coming first
+#	      pulses[pl_i].period /= mul;			// and then / both reciprocal
 #
 #	#ifdef TAP_ED_SERIAL_DEBUG
 #	      Serial.print("mul_div  period[" ); Serial.print((int) pl_i); Serial.print("] reciprocal ");
 #	      Serial.print(" from source value ");  Serial.print(mul_div_source);
 #	      Serial.print(" * "); Serial.print(divi); Serial.print(" / "); Serial.print(mul);
-#	      Serial.print(" = "); Serial.print(period[pl_i]);
+#	      Serial.print(" = "); Serial.print(pulses[pl_i].period);
 #	      Serial.println("");
 #	#endif
 #
@@ -3183,15 +3195,15 @@
 #	    // no source: act directly on selected oscillator (reciprocal)
 #	#ifdef TAP_ED_SERIAL_DEBUG
 #	      Serial.print("mul_div period[" ); Serial.print((int) pl_i); Serial.print("] reciprocally ");
-#	      Serial.print(" from current value "); Serial.print(period[pl_i]);
+#	      Serial.print(" from current value "); Serial.print(pulses[pl_i].period);
 #	      Serial.print(" * "); Serial.print(divi); Serial.print(" / "); Serial.print(mul);
 #	#endif
 #
-#	    period[pl_i] *= divi;		// I insist on * coming first
-#	    period[pl_i] /= mul;			// and then /
+#	    pulses[pl_i].period *= divi;		// I insist on * coming first
+#	    pulses[pl_i].period /= mul;			// and then /
 #
 #	#ifdef TAP_ED_SERIAL_DEBUG
-#	      Serial.print(" = "); Serial.print(period[pl_i]); Serial.println("");
+#	      Serial.print(" = "); Serial.print(pulses[pl_i].period); Serial.println("");
 #	#endif
 #
 #	    return;				// EXIT here
@@ -3379,7 +3391,7 @@
 #
 #	#ifdef OSCILLATORs
 #	  // pl_PIN = {47, 49, 51, 53};
-#	  oscillatorInit();
+#!	  pulses_init();
 #
 #
 #	  // ################################################################
@@ -3401,19 +3413,19 @@
 #
 #	  //    initial_period *= 7UL;
 #
-#	  for (pl_i=0; pl_i<OSCILLATORs; pl_i++)
-#	    period[pl_i] = initial_period;
+#	  for (pl_i=0; pl_i<max_pl; pl_i++)
+#	    pulses[pl_i].period = initial_period;
 #
 #
-#	  startOscillator(0);			// on
+#	  start_pulse(0);			// on
 #
-#	  startOscillator(1);			// on
+#	  start_pulse(1);			// on
 #
-#	  startOscillator(2);
-#	  pl_flags[2] |= OSC_FLAG_MUTE_enum;	// muted
+#	  start_pulse(2);
+#	  pl_flags[2] |= pMUTE;	// muted
 #
-#	  startOscillator(3);
-#	  pl_flags[3] |= OSC_FLAG_MUTE_enum;	// muted
+#	  start_pulse(3);
+#	  pl_flags[3] |= pMUTE;	// muted
 #
 #
 #	  set_pl_mask_pin(0, 42);		// rhythm led out
@@ -3518,7 +3530,7 @@
 #	    // 2*3* 2160 = 12960
 #	    // or alternative: 7 * 2160 = 15120
 #
-#	    for (pl_i=0; pl_i<OSCILLATORs; pl_i++)
+#	    for (pl_i=0; pl_i<max_pl; pl_i++)
 #	      // analog_input_setup(pin++, 1, METHOD_linear, -512, 12960, 20.0, TYPE_osc_period, pl_i);  // default active
 #	      analog_input_setup(pin++, 0, METHOD_linear, -512, 12960, 20.0, TYPE_osc_period, pl_i);  // default off
 #	  }
