@@ -142,7 +142,7 @@
   echo
   echo "${yellow}First prepare a CLONE of the other repository${treset}:"
   echo "  * clone ${OTHER_GIT_SRC} into ${OTHER_TMP}"
-  echo "    The clone will be in ${OTHER_TMP}/${OTHER_SUBDIR}"
+  echo "    The clone will be in ${OTHER_TMP}/${OTHER_SUBDIR}/"
   echo
   echo "${yellow}  Then work in the clone${treset}:"
   echo "  * remove remote origin in ${OTHER_SUBDIR}"
@@ -152,7 +152,7 @@
   echo
   echo "${yellow}*COPY* the main repo ${red}(with all files)${yellow} to a new repo${treset}:"
   echo "  * cp -ap ${MAIN_PAREN} ${NEW_MAIN}"
-  echo "    The base repo copy will be in ${NEW_MAIN}/${MAIN_SUBDIR}"
+  echo "    The base repo copy will be in ${NEW_MAIN}/${MAIN_SUBDIR}/"
   echo "  * merge ${OTHER_SUBDIR} from the clone we have been working on"
   echo "  * ${cyan}commit${treset}"
   echo "  * git pull -s subtree ${OTHER_SUBDIR} master"
