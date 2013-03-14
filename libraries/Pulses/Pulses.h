@@ -108,19 +108,19 @@ struct pulse {
 
 class Pulses {
  public:
-  Pulses(unsigned int max_pl);
+  Pulses(unsigned int pl_max);
   ~Pulses();
-  void pulses_init();
+  void pulses_init();		// ################ move to constructor
   void global_shift(int global_octave);
-  int start_pulse(int pl_i);
-  void stop_pulse(int pl_i);
-  bool HIGHorLOW(int pl_i);
+  int  start_pulse(int pindex);
+  void stop_pulse(int pindex);
+  bool HIGHorLOW(int pindex);
   long updateNextFlip();
 
 
  private:
-  unsigned int pl_i;		// pulse index, not decided if i need it ################
-  unsigned int max_pl;		// max pulses possible
+  unsigned int pindex;		// pulse index, not decided if i need it ################
+  unsigned int pl_max;		// max pulses possible
   unsigned long nextFlip;	// ################...comment please...
 
   int16_t global_octave;		    // global octave shift. ONLY negative shifts atm

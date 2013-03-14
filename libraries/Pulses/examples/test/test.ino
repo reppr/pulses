@@ -53,9 +53,9 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
 #include <Pulses.h>
 
-const int max_pl=16;
+const int pl_max=16;
 
-Pulses PULSES(max_pl);
+Pulses PULSES(pl_max);
 
 /* BAUDRATE for Serial:	uncomment one of the following lines:	*/
 #define BAUDRATE	115200		// works fine here
@@ -88,9 +88,9 @@ void setup() {
   Serial.print(F("\nsizeof(pulse) "));
   Serial.print(sizeof(pulse));
   Serial.print(F(" * "));
-  Serial.print(max_pl);
+  Serial.print(pl_max);
   Serial.print(F(" pulses = total "));
-  Serial.println(sizeof(pulse)*max_pl);
+  Serial.println(sizeof(pulse)*pl_max);
 
 Serial.println(F("\n(done)"));
 }
@@ -107,7 +107,7 @@ int main() {
   PULSES.pulses_init();
   printf("\n");
 
-  printf("\nsizeof(pulse) %d * max_pl %d = total %d\n", sizeof(pulse), max_pl, sizeof(pulse)*max_pl );
+  printf("\nsizeof(pulse) %d * pl_max %d = total %d\n", sizeof(pulse), pl_max, sizeof(pulse)*pl_max );
 
 }
 

@@ -1,2 +1,15 @@
 Pulses	KEYWORD1
 ~Pulses	KEYWORD2
+pulses_init	KEYWORD2
+global_shift	KEYWORD2
+start_pulse	KEYWORD2
+stop_pulse	KEYWORD2
+HIGHorLOW	KEYWORD2
+updateNextFlip	KEYWORD2
+pindex	KEYWORD2
+pl_max	KEYWORD2
+nextFlip	KEYWORD2
+global_octave	KEYWORD2
+global_octave_mask	KEYWORD2
+current_global_octave_mask	KEYWORD2
+pulses	KEYWORD2

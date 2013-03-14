@@ -30,15 +30,15 @@
 //	  #define Stream ostream
 //	#endif
 
-Pulses::Pulses(unsigned int max_pl):
-  max_pl(max_pl),
-  pl_i(0),
+Pulses::Pulses(unsigned int pl_max):
+  pl_max(pl_max),
+  pindex(0),
   global_octave(0),
   global_octave_mask(1),
   current_global_octave_mask(1),
   nextFlip(farest_future)
 {
-  pulses = (pulse*) malloc(max_pl * sizeof(pulse));
+  pulses = (pulse*) malloc(pl_max * sizeof(pulse));
   // ERROR ################
 }
 
@@ -53,19 +53,19 @@ Pulses::~Pulses() {
 
 
 /* **************************************************************** */
-void Pulses::pulses_init() {
-  unsigned int pl_i;
+void Pulses::pulses_init() {	// ################ move to constructor
+  unsigned int pindex;
 
-  for (pl_i=0; pl_i<max_pl; pl_i++) {
-    pulses[pl_i].counter=0;
+  for (pindex=0; pindex<pl_max; pindex++) {
+    pulses[pindex].counter=0;
 
     // use pl_mask's like 0x1 or 0x3
-    pulses[pl_i].pl_mask = 0x1 << DEFAULT_OCTAVE_SHIFT;
+    pulses[pindex].pl_mask = 0x1 << DEFAULT_OCTAVE_SHIFT;
 
-    pulses[pl_i].period = pulses[pl_i].next = farest_future;
-    pulses[pl_i].pl_flags = 0;		// off
-    pinMode(pulses[pl_i].pl_PIN, OUTPUT);
-    pulses[pl_i].pl_pin_mask=ILLEGALpin;
+    pulses[pindex].period = pulses[pindex].next = farest_future;
+    pulses[pindex].pl_flags = 0;		// off
+    pinMode(pulses[pindex].pl_PIN, OUTPUT);
+    pulses[pindex].pl_pin_mask=ILLEGALpin;
   }
   nextFlip = farest_future;
 }
@@ -81,10 +81,10 @@ void Pulses::global_shift(int global_octave) {
 }
 
 
-int Pulses::start_pulse(int pl_i) {
+int Pulses::start_pulse(int pindex) {
   unsigned long now = micros();
 
-  if (pl_i >= max_pl ) {	// ERROR recovery needed! #########
+  if (pindex >= pl_max ) {	// ERROR recovery needed! #########
 
 #ifdef USE_SERIAL
     // ################
@@ -94,47 +94,47 @@ int Pulses::start_pulse(int pl_i) {
     return 1;
   }
 
-  if (pulses[pl_i].pl_PIN == ILLEGALpin)
+  if (pulses[pindex].pl_PIN == ILLEGALpin)
     return 1;
 
-  digitalWrite(pulses[pl_i].pl_PIN, HIGH);
+  digitalWrite(pulses[pindex].pl_PIN, HIGH);
 
-  pulses[pl_i].pl_flags |= pACTIVE;	// active ON
-  pulses[pl_i].next = now + pulses[pl_i].period;
+  pulses[pindex].pl_flags |= pACTIVE;	// active ON
+  pulses[pindex].next = now + pulses[pindex].period;
   nextFlip = updateNextFlip();
 
   /*
-  Serial.print("Started oscillator "); Serial.print(pl_i);
-  Serial.print("\tpin "); Serial.print(pulses[pl_i].pl_PIN);
-  Serial.print("\tperiod "); Serial.println(pulses[pl_i].period);
+  Serial.print("Started oscillator "); Serial.print(pindex);
+  Serial.print("\tpin "); Serial.print(pulses[pindex].pl_PIN);
+  Serial.print("\tperiod "); Serial.println(pulses[pindex].period);
   */
 
   return 0;
 }
 
 
-void Pulses::stop_pulse(int pl_i) {
-  pulses[pl_i].pl_flags &= ~pACTIVE;	// active OFF
-  digitalWrite(pulses[pl_i].pl_PIN, LOW);
+void Pulses::stop_pulse(int pindex) {
+  pulses[pindex].pl_flags &= ~pACTIVE;	// active OFF
+  digitalWrite(pulses[pindex].pl_PIN, LOW);
   nextFlip = updateNextFlip();
 }
 
 
-bool Pulses::HIGHorLOW(int pl_i) {		// is pulse HIGH or LOW?
-  return (pulses[pl_i].counter & current_global_octave_mask);
-  // ################  return (pulses[pl_i].counter & current_global_octave_mask) !=0;
+bool Pulses::HIGHorLOW(int pindex) {		// is pulse HIGH or LOW?
+  return (pulses[pindex].counter & current_global_octave_mask);
+  // ################  return (pulses[pindex].counter & current_global_octave_mask) !=0;
 }
 
 
 // compute when the next flip (in any of the active oscillators is due
 long Pulses::updateNextFlip() {
-  int pl_i;
+  int pindex;
   nextFlip |= -1;
 
-  for (pl_i=0; pl_i<max_pl; pl_i++) {
-    if (pulses[pl_i].pl_flags & pACTIVE)
-      if (pulses[pl_i].next < nextFlip)
-	nextFlip = pulses[pl_i].next;
+  for (pindex=0; pindex<pl_max; pindex++) {
+    if (pulses[pindex].pl_flags & pACTIVE)
+      if (pulses[pindex].next < nextFlip)
+	nextFlip = pulses[pindex].next;
   }
   // Serial.print("NEXT "); Serial.println(nextFlip);
   return nextFlip;
