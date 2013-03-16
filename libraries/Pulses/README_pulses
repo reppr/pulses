@@ -4,7 +4,17 @@ Pulses
 
   Arduino library to raise actions in harmonical time intervalls.
 
-  * ** *** DO NOT USE *** ** **
 
-  Checking in SOME FILES FROM OLD PULES_0 library
-  and from PERIODICS to preserve history.
+* * ** *** PRE PRE PRE ALPHA *** ** *
+*
+*  Checking in SOME FILES FROM OLD PULES_0 library
+*  and from PERIODICS to preserve history.
+*
+*  FIXME: see README_periodics-TODO
+*
+* * ** *** **  DO NOT USE  ** *** ** *
+
+
+  Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
+
+  http://github.com/reppr/pulses
