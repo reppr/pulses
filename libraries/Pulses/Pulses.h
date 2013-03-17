@@ -16,9 +16,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #ifdef ARDUINO
   #define STREAMTYPE	Stream
+  #define USE_F_MACRO
 #else	// c++ Linux PC test version
   #include <iostream>
 

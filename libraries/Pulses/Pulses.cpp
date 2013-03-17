@@ -41,17 +41,17 @@
 
 Pulses::Pulses(unsigned int pl_max):
   pl_max(pl_max),
-  pindex(0),
+  pulse(0),
   global_octave(0),
   global_octave_mask(1),
   current_global_octave_mask(1),
-  //  nextFlip(farest_future),	// ################ ???
+//  nextFlip(farest_future),	// ################ ???
   global_next_count(0)
 {
-  pulses = (pulse*) malloc(pl_max * sizeof(pulse));
+  pulses = (pulse_t *) malloc(pl_max * sizeof(pulse_t));
   // ERROR ################
 
-  global_next_pulses = (int*) malloc(pl_max * sizeof(int));
+  global_next_pulses = (unsigned int*) malloc(pl_max * sizeof(int));
   // ERROR ################
 
   init_time();
@@ -249,8 +249,6 @@ void Pulses::init_pulse(unsigned int pulse) {
   // you *must* call fix_global_next(); late in setup()
 }
 
-DADA
-
 // called from constructor:
 void Pulses::init_pulses() {
   for (unsigned int pulse=0; pulse<pl_max; pulse++) {
@@ -272,7 +270,7 @@ void Pulses::wake_pulse(unsigned int pulse) {
   pulses[pulse].last.time = pulses[pulse].next.time;	// when it *should* have happened
   pulses[pulse].last.overflow = pulses[pulse].next.overflow;
   pulses[pulse].next.time += pulses[pulse].period.time;	// when it should happen again
-  pulses[pulse].next.overflow += period[pulse].overflow;
+  pulses[pulse].next.overflow += pulses[pulse].period.overflow;
 
   if (pulses[pulse].last.time > pulses[pulse].next.time)
     pulses[pulse].next.overflow++;
@@ -386,7 +384,7 @@ int Pulses::setup_pulse(void (*pulse_do)(int), unsigned char new_flags, \
   pulses[pulse].next.time = when.time;			// next wake up time
   pulses[pulse].next.overflow = when.overflow;
   pulses[pulse].period.time = new_period.time;
-  period[pulse].overflow = new_period.overflow;
+  pulses[pulse].period.overflow = new_period.overflow;
 
   // fix_global_next();	// this version does *not* automatically call that here...
 
@@ -396,10 +394,10 @@ int Pulses::setup_pulse(void (*pulse_do)(int), unsigned char new_flags, \
 
 void Pulses::set_new_period(unsigned int pulse, struct time new_period) {
   pulses[pulse].period.time = new_period.time;
-  period[pulse].overflow = new_period.overflow;
+  pulses[pulse].period.overflow = new_period.overflow;
 
   pulses[pulse].next.time = pulses[pulse].last.time + pulses[pulse].period.time;
-  pulses[pulse].next.overflow = pulses[pulse].last.overflow + period[pulse].overflow;
+  pulses[pulse].next.overflow = pulses[pulse].last.overflow + pulses[pulse].period.overflow;
   if(pulses[pulse].next.time < pulses[pulse].last.time)
     pulses[pulse].next.overflow++;
 
