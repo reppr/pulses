@@ -210,6 +210,11 @@ class Pulses {
   void fix_global_next();	// determine next event, prepare everything
 				// for *all* pulses that wait for this exact time
 				// they will be called in fast sequence then
+  void check_maybe_do();	// ################
+  int setup_pulse(void (*pulse_do)(int), unsigned char new_flags, \
+		  struct time when, struct time new_period);
+  void set_new_period(unsigned int pulse, struct time new_period);
+
 
  private:
   unsigned int pulse;		// pulse index

@@ -333,6 +333,83 @@ void Pulses::fix_global_next() {
 }
 
 
+// void check_maybe_do();
+// check if it's time to do something and do it if it's time
+// calls wake_pulse(pulse); to do one life step of the pulse
+void Pulses::check_maybe_do() {
+  get_now();	// updates now
+
+  if (global_next.overflow == now.overflow) {	// current overflow period?
+    if (global_next.time <= now.time) {		//   yes: is it time?
+      for (int i=0; i<global_next_count; i++)	//     yes:
+	wake_pulse(global_next_pulses[i]);	//     wake next pulses up
+
+      fix_global_next();			// determine next event[s] serie
+    }
+  } else					// (earlier or later overflow)
+    if (global_next.overflow < now.overflow) {	// earlier overflow period?
+      for (int i=0; i<global_next_count; i++)	//     yes, we're late...
+	wake_pulse(global_next_pulses[i]);	//     wake next pulses up
+
+      fix_global_next();			// determine next event[s] serie
+    }
+}
+
+#ifdef USE_SERIAL_BAUD
+    const char noFreePulses[] = "no free pulses";
+#endif
+
+int Pulses::setup_pulse(void (*pulse_do)(int), unsigned char new_flags, \
+			struct time when, struct time new_period)
+{
+  int pulse;
+
+  if (new_flags == 0)				// illegal new_flags parameter
+    return ILLEGAL;				//   should not happen
+
+  for (pulse=0; pulse<pl_max; pulse++) {	// search first free pulse
+    if (pulses[pulse].flags == 0)			// flags==0 means empty pulse
+      break;					//   found one
+  }
+  if (pulse == pl_max) {			// no pulse free :(
+
+#ifdef USE_SERIAL_BAUD
+    serial_println_progmem(noFreePulses);
+#endif
+
+    return ILLEGAL;			// ERROR
+  }
+
+  // initiaize new pulse				// yes, found a free pulse
+  pulses[pulse].flags = new_flags;			// initialize pulse
+  pulses[pulse].periodic_do = pulse_do;			// payload
+  pulses[pulse].next.time = when.time;			// next wake up time
+  pulses[pulse].next.overflow = when.overflow;
+  pulses[pulse].period.time = new_period.time;
+  period[pulse].overflow = new_period.overflow;
+
+  // fix_global_next();	// this version does *not* automatically call that here...
+
+  return pulse;
+}
+
+
+void Pulses::set_new_period(unsigned int pulse, struct time new_period) {
+  pulses[pulse].period.time = new_period.time;
+  period[pulse].overflow = new_period.overflow;
+
+  pulses[pulse].next.time = pulses[pulse].last.time + pulses[pulse].period.time;
+  pulses[pulse].next.overflow = pulses[pulse].last.overflow + period[pulse].overflow;
+  if(pulses[pulse].next.time < pulses[pulse].last.time)
+    pulses[pulse].next.overflow++;
+
+  fix_global_next();	// it's saver to do that from here, but could be omitted.
+}
+
+
+
+
+
 /* **************************************************************** */
 /*
 README_pulses
