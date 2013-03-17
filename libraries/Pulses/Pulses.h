@@ -1,8 +1,16 @@
 /* **************************************************************** */
 /*
    Pulses.h
+
+   Arduino library to raise actions in harmonical time intervalls.
+
+   Copyright © Robert Epprecht  www.RobertEpprecht.ch  GPLv2
+   http://github.com/reppr/pulses
+
 */
 /* **************************************************************** */
+
+
 #ifndef PULSES_h
 #define PULSES_h
 
@@ -11,7 +19,7 @@
 
 #ifdef ARDUINO
   #define STREAMTYPE	Stream
-#else
+#else	// c++ Linux PC test version
   #include <iostream>
 
   using namespace std;
@@ -31,6 +39,7 @@
     #define HIGH	1
   #endif
 
+// fakes for some Arduino functions:
 void pinMode(int p, int mode) {
   printf("Pin %d switched to mode %d\n", p, mode);
 }
@@ -41,7 +50,7 @@ void digitalWrite(int p, int value) {
 
 long micros() { return 9999L; }
 
-#endif
+#endif	// Arduino  else  c++ Linux PC test version
 
 
 /* **************************************************************** */
@@ -86,6 +95,7 @@ const unsigned long farest_future = ~0L ;
 
 
 /* **************************************************************** */
+// pulse:
 
 struct pulse {
   unsigned long period;
@@ -104,29 +114,50 @@ struct pulse {
 #define pACTIVE	1
 #define pMUTE	2
 
-/* **************************************************************** */
 
+/* **************************************************************** */
+// time:
+
+struct time {
+  unsigned long time;
+  unsigned int overflow;
+};
+
+
+/* **************************************************************** */
 class Pulses {
  public:
   Pulses(unsigned int pl_max);
   ~Pulses();
   void pulses_init();		// ################ move to constructor
+  void init_time();
+  void get_now();		// *always* use get_now() to get current time!
+  void add_time(struct time *delta, struct time *sum);
+  void sub_time(struct time *delta, struct time *sum);
+  void mul_time(struct time *duration, unsigned int factor);
+  void div_time(struct time *duration, unsigned int divisor);
   void global_shift(int global_octave);
   int  start_pulse(int pindex);
   void stop_pulse(int pindex);
   bool HIGHorLOW(int pindex);
+  unsigned long nextFlip;	// ################...COMMENT PLEASE...
   long updateNextFlip();
-
+  int16_t global_octave;		    // global octave shift. ONLY negative shifts atm
+  unsigned long global_octave_mask;	    // this mask gets shifted and then actually used
+  unsigned long current_global_octave_mask; // actually used mask to switch oscillators
+  struct time now;
+  struct time last_now;		// for simple overflow detection
+				// DO WE NEED OVERFLOW PART of that? ################
+  struct time global_next;	// next time that a pulse wants to be waken up
+  unsigned int global_next_count; // how many tasks wait to be activated at the same time?
 
  private:
   unsigned int pindex;		// pulse index, not decided if i need it ################
   unsigned int pl_max;		// max pulses possible
-  unsigned long nextFlip;	// ################...comment please...
 
-  int16_t global_octave;		    // global octave shift. ONLY negative shifts atm
-  unsigned long global_octave_mask;	    // this mask gets shifted and then actually used
-  unsigned long current_global_octave_mask; // actually used mask to switch oscillators
   pulse * pulses;		// data pointer for pulses
+  int * global_next_pulses;	// pulses that want to be waken up at the same next time.
+				// there can't be more then pl_max
 };
 
 /* **************************************************************** */
