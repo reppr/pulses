@@ -3,7 +3,6 @@ pulse	KEYWORD1
 time	KEYWORD1
 Pulses	KEYWORD1
 ~Pulses	KEYWORD2
-pulses_init	KEYWORD2
 init_time	KEYWORD2
 get_now	KEYWORD2
 add_time	KEYWORD2
@@ -13,9 +12,6 @@ div_time	KEYWORD2
 global_shift	KEYWORD2
 start_pulse	KEYWORD2
 stop_pulse	KEYWORD2
-HIGHorLOW	KEYWORD2
-nextFlip	KEYWORD2
-updateNextFlip	KEYWORD2
 global_octave	KEYWORD2
 global_octave_mask	KEYWORD2
 current_global_octave_mask	KEYWORD2
@@ -23,6 +19,10 @@ now	KEYWORD2
 last_now	KEYWORD2
 global_next	KEYWORD2
 global_next_count	KEYWORD2
+init_pulse	KEYWORD2
+init_pulses	KEYWORD2
+wake_pulse	KEYWORD2
+fix_global_next	KEYWORD2
 pindex	KEYWORD2
 pl_max	KEYWORD2
 pulses	KEYWORD2

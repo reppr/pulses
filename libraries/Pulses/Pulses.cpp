@@ -4,6 +4,7 @@
 
   Arduino library to raise actions in harmonical time intervalls.
 
+
     Copyright © Robert Epprecht  www.RobertEpprecht.ch  GPLv2
 
               http://github.com/reppr/pulses
@@ -44,7 +45,7 @@ Pulses::Pulses(unsigned int pl_max):
   global_octave(0),
   global_octave_mask(1),
   current_global_octave_mask(1),
-  nextFlip(farest_future),
+  //  nextFlip(farest_future),	// ################ ???
   global_next_count(0)
 {
   pulses = (pulse*) malloc(pl_max * sizeof(pulse));
@@ -54,7 +55,7 @@ Pulses::Pulses(unsigned int pl_max):
   // ERROR ################
 
   init_time();
-  pulses_init();
+  init_pulses();
 }
 
 //	#ifndef ARDUINO		// WARNING: Using Stream MACRO hack when not on ARDUINO!
@@ -64,25 +65,6 @@ Pulses::Pulses(unsigned int pl_max):
 
 Pulses::~Pulses() {
   free(pulses);
-}
-
-
-/* **************************************************************** */
-void Pulses::pulses_init() {	// called from constructor
-  unsigned int pindex;
-
-  for (pindex=0; pindex<pl_max; pindex++) {
-    pulses[pindex].counter=0;
-
-    // use pl_mask's like 0x1 or 0x3
-    pulses[pindex].pl_mask = 0x1 << DEFAULT_OCTAVE_SHIFT;
-
-    pulses[pindex].period = pulses[pindex].next = farest_future;
-    pulses[pindex].pl_flags = 0;		// off
-    pinMode(pulses[pindex].pl_PIN, OUTPUT);
-    pulses[pindex].pl_pin_mask=ILLEGALpin;
-  }
-  nextFlip = farest_future;
 }
 
 
@@ -234,63 +216,120 @@ void Pulses::global_shift(int global_octave) {
 }
 
 
-int Pulses::start_pulse(int pindex) {
-  unsigned long now = micros();
+/* **************************************************************** */
+/*
+   PULSES
 
-  if (pindex >= pl_max ) {	// ERROR recovery needed! #########
+	periodically wake up, count and maybe do something
 
-#ifdef USE_SERIAL
-    // ################
-    // Serial.println("ERROR: too many oscillators.");
-#endif
+*/
+/* **************************************************************** */
 
-    return 1;
+/* **************************************************************** */
+// init pulses:
+
+// init, reset or kill a pulse:	// fill with zero??? ################
+// memset(&arr[0], 0, sizeof(arr)); ################
+void Pulses::init_pulse(unsigned int pulse) {
+  pulses[pulse].flags = 0;
+  pulses[pulse].periodic_do = NULL;
+  pulses[pulse].counter = 0;
+  pulses[pulse].int1 = 0;
+  pulses[pulse].period.time = 0;
+  pulses[pulse].last.time = 0;
+  pulses[pulse].last.overflow = 0;
+  pulses[pulse].next.time = 0;
+  pulses[pulse].next.overflow = 0;
+  pulses[pulse].parameter_1 = 0;
+  pulses[pulse].parameter_2 = 0;
+  pulses[pulse].ulong_parameter_1 = 0L;
+  pulses[pulse].char_parameter_1 = 0;
+  pulses[pulse].char_parameter_2 = 0;
+
+  // you *must* call fix_global_next(); late in setup()
+}
+
+DADA
+
+// called from constructor:
+void Pulses::init_pulses() {
+  for (unsigned int pulse=0; pulse<pl_max; pulse++) {
+    init_pulse(pulse);
+  }
+}
+
+
+// void wake_pulse(unsigned int pulse);	do one life step of the pulse
+// gets called from check_maybe_do()
+void Pulses::wake_pulse(unsigned int pulse) {
+  pulses[pulse].counter++;			//      count
+
+  if (pulses[pulse].periodic_do != NULL) {	// there *is* something else to do?
+    (*pulses[pulse].periodic_do)(pulse);	//   yes: do it
   }
 
-  if (pulses[pindex].pl_PIN == ILLEGALpin)
-    return 1;
+  // prepare future:
+  pulses[pulse].last.time = pulses[pulse].next.time;	// when it *should* have happened
+  pulses[pulse].last.overflow = pulses[pulse].next.overflow;
+  pulses[pulse].next.time += pulses[pulse].period.time;	// when it should happen again
+  pulses[pulse].next.overflow += period[pulse].overflow;
 
-  digitalWrite(pulses[pindex].pl_PIN, HIGH);
+  if (pulses[pulse].last.time > pulses[pulse].next.time)
+    pulses[pulse].next.overflow++;
 
-  pulses[pindex].pl_flags |= pACTIVE;	// active ON
-  pulses[pindex].next = now + pulses[pindex].period;
-  nextFlip = updateNextFlip();
+  //						// COUNTED pulse && end reached?
+  if ((pulses[pulse].flags & COUNTED) && ((pulses[pulse].counter +1) == pulses[pulse].int1 ))
+    if (pulses[pulse].flags & DO_NOT_DELETE)	//   yes: DO_NOT_DELETE?
+      pulses[pulse].flags &= ~ACTIVE;		//     yes: just deactivate
+    else
+      init_pulse(pulse);			//     no:  DELETE pulse
 
-  /*
-  Serial.print("Started oscillator "); Serial.print(pindex);
-  Serial.print("\tpin "); Serial.print(pulses[pindex].pl_PIN);
-  Serial.print("\tperiod "); Serial.println(pulses[pindex].period);
-  */
-
-  return 0;
 }
 
 
-void Pulses::stop_pulse(int pindex) {
-  pulses[pindex].pl_flags &= ~pACTIVE;	// active OFF
-  digitalWrite(pulses[pindex].pl_PIN, LOW);
-  nextFlip = updateNextFlip();
-}
 
+// void fix_global_next();
+// determine when the next event[s] will happen:
+//
+// to start properly you *must* call this once, late in setup()
+// will automagically get updated later on
+void Pulses::fix_global_next() {
+/* This version calculates global next event[s] *once* when the next
+   event could possibly have changed.
 
-bool Pulses::HIGHorLOW(int pindex) {		// is pulse HIGH or LOW?
-  return (pulses[pindex].counter & current_global_octave_mask);
-  // ################  return (pulses[pindex].counter & current_global_octave_mask) !=0;
-}
+   If a series of pulses are sceduled for the same time they will
+   be called in fast sequence *without* fix_global_next() in between them.
+   After all pulse with the same time are done fix_global_next() is called.
 
+   If a pulse sets up another pulse with the same next it *can* decide to do
+   the fix itself, if it seems appropriate. Normally this is not required.
+*/
 
-// compute when the next flip (in any of the active oscillators is due
-long Pulses::updateNextFlip() {
-  int pindex;
-  nextFlip |= -1;
+  // we work directly on the global variables here:
+  global_next.overflow=~0;	// ILLEGAL value
+  global_next_count=0;
 
-  for (pindex=0; pindex<pl_max; pindex++) {
-    if (pulses[pindex].pl_flags & pACTIVE)
-      if (pulses[pindex].next < nextFlip)
-	nextFlip = pulses[pindex].next;
-  }
-  // Serial.print("NEXT "); Serial.println(nextFlip);
-  return nextFlip;
+  for (pulse=0; pulse<pl_max; pulse++) {		// check all pulses
+    if (pulses[pulse].flags & ACTIVE) {				// pulse active?
+      if (pulses[pulse].next.overflow < global_next.overflow) {	// yes: earlier overflow?
+	global_next.time = pulses[pulse].next.time;		//   yes: reset search
+	global_next.overflow = pulses[pulse].next.overflow;
+	global_next_pulses[0] = pulse;
+	global_next_count = 1;
+      } else {					// same (or later) overflow:
+	if (pulses[pulse].next.overflow == global_next.overflow) {	// same overflow?
+	  if (pulses[pulse].next.time < global_next.time) {		//   yes: new next?
+	    global_next.time = pulses[pulse].next.time;		//     yes: reset search
+	    global_next_pulses[0] = pulse;
+	    global_next_count = 1;
+	  } else					// (still *same* overflow)
+	    if (pulses[pulse].next.time == global_next.time)		//    *same* next?
+	      global_next_pulses[global_next_count++]=pulse; //  yes: save pulse, count
+	}
+	// (*later* overflows are always later)
+      }
+    } // active?
+  } // pulse loop
 }
 
 

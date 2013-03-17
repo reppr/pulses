@@ -285,9 +285,10 @@
 ##	struct time now, last_now;
 #
 ##	struct time global_next;
-##	unsigned int global_next_count=0;
-##	int global_next_pulses[pl_max];	// there can't be more then pl_max same next events
-DADA
+#R-	unsigned int global_next_count=0;
+#R+	uint8_t global_next_count=0;
+#R-	int global_next_pulses[pl_max];	// there can't be more then pl_max same next events
+#R+	unsigned int global_next_pulses[pl_max];
 
 #
 #	int sync=1;			// syncing edges or middles of square pulses
@@ -309,6 +310,7 @@ DADA
 #
 #
 #
+
 ##	// init time:
 ##
 ##	// do this once from setup()
@@ -426,211 +428,214 @@ DADA
 ##
 ##
 #
-#	/* **************************************************************** */
-#	/*
-#
-#	     PULSES
-#
-#
-#	   periodically wake up, count and do something
-#
-#	*/
-#	/* **************************************************************** */
-#
-#	// variables for pulses in arrays[pulse]:
-#	int pulse;		// index
-#
-#	// ============>>> adapt init_pulse() IF YOU CHANGE SOMETHING HERE <<<============
-#	unsigned char flags[pl_max];
-#	// flag masks:
-#	#define ACTIVE			1	// switches pulse on/off
-#	#define COUNTED			2	// repeats 'int1[]' times, then vanishes
-#	#define SCRATCH			8	// edit (or similar) in progress
-#	#define DO_NOT_DELETE	       16	// dummy to avoid being thrown out
-#	#define CUSTOM_1	       32	// can be used by periodic_do()
-#	#define CUSTOM_2	       64	// can be used by periodic_do()
-#	#define CUSTOM_3	      128	// can be used by periodic_do()
-#
-#
-#	unsigned int pulse_count[pl_max];	// counts how many times the pulse woke up
-#	struct time period[pl_max];		// timer steps, overflows
-#	struct time last[pl_max];		// convenient, but not really needed
-#	struct time next[pl_max];		// next wake up time, overflow
-#
-#
-#	// internal parameter:
-#	unsigned int int1[pl_max];		// if COUNTED, gives number of executions
-#	//					   else free for other internal use
-#
-#	// custom parameters[pulse]		//  comment/uncomment as appropriate:
-#						//  then *DO ADAPT init_pulse()*
-#
-#	// ============>>> adapt init_pulse() IF YOU CHANGE SOMETHING HERE <<<============
-#	// these parameters can be used by periodic_do(pulse):
-#	int parameter_1[pl_max];
-#	/*
-#		used by do_jiffle for count down
-#	*/
-#
-#	int parameter_2[pl_max];
-#	/*
-#		used by do_jiffle *jiffletab
-#	*/
-#
-#	// int parameter_3[pl_max];
-#	// int parameter_4[pl_max];
-#
-#	unsigned long ulong_parameter_1[pl_max];
-#	/*
-#		used by do_jiffle as base period
-#	*/
-#
-#	// unsigned long ulong_parameter_2[pl_max];
-#	// unsigned long ulong_parameter_3[pl_max];
-#	// unsigned long ulong_parameter_4[pl_max];
-#
-#	char char_parameter_1[pl_max];		// pin
-#	/*
-#		used by click      as pin
-#		used by do_jiffle  as pin
-#	*/
-#
-#	char char_parameter_2[pl_max];		// index
-#	/*
-#		used by do_jiffle as jiffletab index
-#	*/
-#	// char char_parameter_3[pl_max];
-#	// char char_parameter_4[pl_max];
-#
-#
-#	// pointers on  void something(int pulse)  functions:
-#	// the pulses will do that, if the pointer is not NULL
-#	void (*periodic_do[pl_max])(int);
-#	//					some example functions:
-#	//
-#	//					click(pulse)
-#	//					pulse_info_1line(pulse)
-#	//					pulse_info(pulse)
-#	//					do_jiffle(pulse)
-#	//					do_throw_a_jiffle(pulse)
-#
-#
-#	// ============>>> adapt init_pulse() IF YOU CHANGE SOMETHING HERE <<<============
-#
-#
-#
-#	/* **************************************************************** */
-#	// init pulses:
-#
-#	// init, reset or kill a pulse:
-#	void init_pulse(int pulse) {
-#	  flags[pulse] = 0;
-#	  periodic_do[pulse] = NULL;
-#	  pulse_count[pulse] = 0;	//  or pulse_count[pulse] = ILLEGAL; ???
-#	  int1[pulse] = 0;
-#	  period[pulse].time = 0;
-#	  last[pulse].time = 0;
-#	  last[pulse].overflow = 0;
-#	  next[pulse].time = 0;
-#	  next[pulse].overflow = 0;
-#	  parameter_1[pulse] = 0;
-#	  parameter_2[pulse] = 0;
-#	  // parameter_3[pulse] = 0;
-#	  // parameter_4[pulse] = 0;
-#
-#	  ulong_parameter_1[pulse] = 0L;
-#	  // ulong_parameter_2[pulse] = 0L;
-#	  // ulong_parameter_3[pulse] = 0L;
-#	  // ulong_parameter_4[pulse] = 0L;
-#	  char_parameter_1[pulse] = 0;
-#	  char_parameter_2[pulse] = 0;
-#	  // char_parameter_3[pulse] = 0;
-#	  // char_parameter_4[pulse] = 0;
-#
-#	  // you *must* call fix_global_next(); late in setup()
-#	}
-#
-#
-#	// do this once from setup():
-#	void init_pulses() {
-#	  for (int pulse=0; pulse<pl_max; pulse++) {
-#	    init_pulse(pulse);
-#	  }
-#	}
-#
-#
-#	// void wake_pulse(int pulse);	do one life step of the pulse
-#	// gets called from check_maybe_do()
-#	void wake_pulse(int pulse) {
-#	  pulse_count[pulse]++;				//      count
-#
-#	  if (periodic_do[pulse] != NULL) {		// there *is* something else to do?
-#	    (*periodic_do[pulse])(pulse);			//   yes: do it
-#	  }
-#
-#	  // prepare future:
-#	  last[pulse].time = next[pulse].time;		// when it *should* have happened
-#	  last[pulse].overflow = next[pulse].overflow;
-#	  next[pulse].time += period[pulse].time;		// when it should happen again
-#	  next[pulse].overflow += period[pulse].overflow;
-#
-#	  if (last[pulse].time > next[pulse].time)
-#	    next[pulse].overflow++;
-#
-#	  //						// COUNTED pulse && end reached?
-#	  if ((flags[pulse] & COUNTED) && ((pulse_count[pulse] +1) == int1[pulse] ))
-#	    if (flags[pulse] & DO_NOT_DELETE)		//   yes: DO_NOT_DELETE?
-#	      flags[pulse] &= ~ACTIVE;			//     yes: just deactivate
-#	    else
-#	      init_pulse(pulse);				//     no:  DELETE pulse
-#
-#	}
-#
-#
-#
-#	// void fix_global_next();
-#	// determine when the next event[s] will happen:
-#	//
-#	// to start properly you *must* call this once, late in setup()
-#	// will automagically get updated later on
-#	void fix_global_next() {
-#	/* This version calculates global next event[s] *once* when the next
-#	   event could possibly have changed.
-#
-#	   If a series of pulses are sceduled for the same time they will
-#	   be called in fast sequence *without* fix_global_next() in between them.
-#	   After all pulse with the same time are done fix_global_next() is called.
-#
-#	   If a pulse sets up another pulse with the same next it *can* decide to do
-#	   the fix itself, if it seems appropriate. Normally this is not required.
-#	*/
-#
-#	  // we work directly on the global variables here:
-#	  global_next.overflow=~0;	// ILLEGAL value
-#	  global_next_count=0;
-#
-#	  for (pulse=0; pulse<pl_max; pulse++) {		// check all pulses
-#	    if (flags[pulse] & ACTIVE) {				// pulse active?
-#	      if (next[pulse].overflow < global_next.overflow) {	// yes: earlier overflow?
-#		global_next.time = next[pulse].time;		//   yes: reset search
-#		global_next.overflow = next[pulse].overflow;
-#		global_next_pulses[0] = pulse;
-#		global_next_count = 1;
-#	      } else {					// same (or later) overflow:
-#		if (next[pulse].overflow == global_next.overflow) {	// same overflow?
-#		  if (next[pulse].time < global_next.time) {		//   yes: new next?
-#		    global_next.time = next[pulse].time;		//     yes: reset search
-#		    global_next_pulses[0] = pulse;
-#		    global_next_count = 1;
-#		  } else					// (still *same* overflow)
-#		    if (next[pulse].time == global_next.time)		//    *same* next?
-#		      global_next_pulses[global_next_count++]=pulse; //  yes: save pulse, count
-#		}
-#		// (*later* overflows are always later)
-#	      }
-#	    } // active?
-#	  } // pulse loop
-#	}
+
+##	/* **************************************************************** */
+##	/*
+##
+##	     PULSES
+##
+##
+##	   periodically wake up, count and do something
+##
+##	*/
+##	/* **************************************************************** */
+##
+##	// variables for pulses in arrays[pulse]:
+#R-	int pulse;		// index
+#R+	unsigned int pulse;		// index
+##
+##	// ============>>> adapt init_pulse() IF YOU CHANGE SOMETHING HERE <<<============
+##	unsigned char flags[pl_max];
+##	// flag masks:
+##	#define ACTIVE			1	// switches pulse on/off
+##	#define COUNTED			2	// repeats 'int1[]' times, then vanishes
+##	#define SCRATCH			8	// edit (or similar) in progress
+##	#define DO_NOT_DELETE	       16	// dummy to avoid being thrown out
+##	#define CUSTOM_1	       32	// can be used by periodic_do()
+##	#define CUSTOM_2	       64	// can be used by periodic_do()
+##	#define CUSTOM_3	      128	// can be used by periodic_do()
+##
+##
+#R-	unsigned int pulse_count[pl_max];	// counts how many times the pulse woke up
+#R+	unsigned int counter[pl_max];	// counts how many times the pulse woke up
+##	struct time period[pl_max];		// timer steps, overflows
+##	struct time last[pl_max];		// convenient, but not really needed
+##	struct time next[pl_max];		// next wake up time, overflow
+##
+##
+##	// internal parameter:
+##	unsigned int int1[pl_max];		// if COUNTED, gives number of executions
+##	//					   else free for other internal use
+##
+##	// custom parameters[pulse]		//  comment/uncomment as appropriate:
+##						//  then *DO ADAPT init_pulse()*
+##
+##	// ============>>> adapt init_pulse() IF YOU CHANGE SOMETHING HERE <<<============
+##	// these parameters can be used by periodic_do(pulse):
+##	int parameter_1[pl_max];
+##	/*
+##		used by do_jiffle for count down
+##	*/
+##
+##	int parameter_2[pl_max];
+##	/*
+##		used by do_jiffle *jiffletab
+##	*/
+##
+##	unsigned long ulong_parameter_1[pl_max];
+##	/*
+##		used by do_jiffle as base period
+##	*/
+##
+##	char char_parameter_1[pl_max];		// pin
+##	/*
+##		used by click      as pin
+##		used by do_jiffle  as pin
+##	*/
+##
+##	char char_parameter_2[pl_max];		// index
+##	/*
+##		used by do_jiffle as jiffletab index
+##	*/
+##
+##	// pointers on  void something(int pulse)  functions:
+##	// the pulses will do that, if the pointer is not NULL
+##	void (*periodic_do[pl_max])(int);
+##	//					some example functions:
+##	//
+##	//					click(pulse)
+##	//					pulse_info_1line(pulse)
+##	//					pulse_info(pulse)
+##	//					do_jiffle(pulse)
+##	//					do_throw_a_jiffle(pulse)
+##
+##
+##	// ============>>> adapt init_pulse() IF YOU CHANGE SOMETHING HERE <<<============
+##
+##
+##
+##	/* **************************************************************** */
+##	// init pulses:
+##
+##	// init, reset or kill a pulse:
+##	void init_pulse(int pulse) {
+#R-	  flags[pulse] = 0;
+#R+	  pulses[pulse].flags = 0;
+#R-	  periodic_do[pulse] = NULL;
+#R+	  pulses[pulse].periodic_do = NULL;
+#R-	  counter[pulse] = 0;	//  or counter[pulse] = ILLEGAL; ???
+#R+	  pulses[pulse].counter = 0;	//  or pulses[pulse].counter = ILLEGAL; ???
+#R-	  int1[pulse] = 0;
+#R+	  pulses[pulse].int1 = 0;
+#R-	  period[pulse].time = 0;
+#R+	  pulses[pulse].period.time = 0;
+#R-	  last[pulse].time = 0;
+#R+	  pulses[pulse].last.time = 0;
+#R-	  last[pulse].overflow = 0;
+#R+	  pulses[pulse].last.overflow = 0;
+#R-	  next[pulse].time = 0;
+#R+	  pulses[pulse].next.time = 0;
+#R-	  next[pulse].overflow = 0;
+#R+	  pulses[pulse].next.overflow = 0;
+
+DADA
+
+#R-	  parameter_1[pulse] = 0;
+#R+	  pulses[pulse].parameter_1 = 0;
+#R-	  parameter_2[pulse] = 0;
+#R+	  pulses[pulse].parameter_2 = 0;
+##
+#R-	  ulong_parameter_1[pulse] = 0L;
+#R+	  pulses[pulse].ulong_parameter_1 = 0L;
+#R-	  char_parameter_1[pulse] = 0;
+#R+	  pulses[pulse].char_parameter_1 = 0;
+#R-	  char_parameter_2[pulse] = 0;
+#R+	  pulses[pulse].char_parameter_2 = 0;
+##
+##	  // you *must* call fix_global_next(); late in setup()
+##	}
+##
+##
+##	// do this once from setup():
+##	void init_pulses() {
+##	  for (int pulse=0; pulse<pl_max; pulse++) {
+##	    init_pulse(pulse);
+##	  }
+##	}
+##
+##
+##	// void wake_pulse(int pulse);	do one life step of the pulse
+##	// gets called from check_maybe_do()
+##	void wake_pulse(int pulse) {
+##	  pulses[pulse].counter++;				//      count
+##
+##	  if (pulses[pulse].periodic_do != NULL) {		// there *is* something else to do?
+##	    (*pulses[pulse].periodic_do)(pulse);			//   yes: do it
+##	  }
+##
+##	  // prepare future:
+##	  pulses[pulse].last.time = pulses[pulse].next.time;		// when it *should* have happened
+##	  pulses[pulse].last.overflow = pulses[pulse].next.overflow;
+##	  pulses[pulse].next.time += pulses[pulse].period.time;		// when it should happen again
+##	  pulses[pulse].next.overflow += period[pulse].overflow;
+##
+##	  if (pulses[pulse].last.time > pulses[pulse].next.time)
+##	    pulses[pulse].next.overflow++;
+##
+##	  //						// COUNTED pulse && end reached?
+##	  if ((pulses[pulse].flags & COUNTED) && ((pulses[pulse].counter +1) == pulses[pulse].int1 ))
+##	    if (pulses[pulse].flags & DO_NOT_DELETE)		//   yes: DO_NOT_DELETE?
+##	      pulses[pulse].flags &= ~ACTIVE;			//     yes: just deactivate
+##	    else
+##	      init_pulse(pulse);				//     no:  DELETE pulse
+##
+##	}
+##
+##
+##
+##	// void fix_global_next();
+##	// determine when the next event[s] will happen:
+##	//
+##	// to start properly you *must* call this once, late in setup()
+##	// will automagically get updated later on
+##	void fix_global_next() {
+##	/* This version calculates global next event[s] *once* when the next
+##	   event could possibly have changed.
+##
+##	   If a series of pulses are sceduled for the same time they will
+##	   be called in fast sequence *without* fix_global_next() in between them.
+##	   After all pulse with the same time are done fix_global_next() is called.
+##
+##	   If a pulse sets up another pulse with the same next it *can* decide to do
+##	   the fix itself, if it seems appropriate. Normally this is not required.
+##	*/
+##
+##	  // we work directly on the global variables here:
+##	  global_next.overflow=~0;	// ILLEGAL value
+##	  global_next_count=0;
+##
+##	  for (pulse=0; pulse<pl_max; pulse++) {		// check all pulses
+##	    if (pulses[pulse].flags & ACTIVE) {				// pulse active?
+##	      if (pulses[pulse].next.overflow < global_next.overflow) {	// yes: earlier overflow?
+##		global_next.time = pulses[pulse].next.time;		//   yes: reset search
+##		global_next.overflow = pulses[pulse].next.overflow;
+##		global_next_pulses[0] = pulse;
+##		global_next_count = 1;
+##	      } else {					// same (or later) overflow:
+##		if (pulses[pulse].next.overflow == global_next.overflow) {	// same overflow?
+##		  if (pulses[pulse].next.time < global_next.time) {		//   yes: new next?
+##		    global_next.time = pulses[pulse].next.time;		//     yes: reset search
+##		    global_next_pulses[0] = pulse;
+##		    global_next_count = 1;
+##		  } else					// (still *same* overflow)
+##		    if (pulses[pulse].next.time == global_next.time)		//    *same* next?
+##		      global_next_pulses[global_next_count++]=pulse; //  yes: save pulse, count
+##		}
+##		// (*later* overflows are always later)
+##	      }
+##	    } // active?
+##	  } // pulse loop
+##	}
 #
 #
 #
@@ -669,7 +674,7 @@ DADA
 #	    return ILLEGAL;				//   should not happen
 #
 #	  for (pulse=0; pulse<pl_max; pulse++) {	// search first free pulse
-#	    if (flags[pulse] == 0)			// flags==0 means empty pulse
+#	    if (pulses[pulse].flags == 0)			// flags==0 means empty pulse
 #	      break;					//   found one
 #	  }
 #	  if (pulse == pl_max) {			// no pulse free :(
@@ -682,11 +687,11 @@ DADA
 #	  }
 #
 #	  // initiaize new pulse				// yes, found a free pulse
-#	  flags[pulse] = new_flags;			// initialize pulse
-#	  periodic_do[pulse] = pulse_do;			// payload
-#	  next[pulse].time = when.time;			// next wake up time
-#	  next[pulse].overflow = when.overflow;
-#	  period[pulse].time = new_period.time;
+#	  pulses[pulse].flags = new_flags;			// initialize pulse
+#	  pulses[pulse].periodic_do = pulse_do;			// payload
+#	  pulses[pulse].next.time = when.time;			// next wake up time
+#	  pulses[pulse].next.overflow = when.overflow;
+#	  pulses[pulse].period.time = new_period.time;
 #	  period[pulse].overflow = new_period.overflow;
 #
 #	  // fix_global_next();	// this version does *not* automatically call that here...
@@ -700,20 +705,20 @@ DADA
 #	  int pulse;
 #
 #	  pulse= setup_pulse(pulse_do, new_flags|COUNTED, when, new_period);
-#	  int1[pulse]= count;
+#	  pulses[pulse].int1= count;
 #
 #	  return pulse;
 #	}
 #
 #
 #	void set_new_period(int pulse, struct time new_period) {
-#	  period[pulse].time = new_period.time;
+#	  pulses[pulse].period.time = new_period.time;
 #	  period[pulse].overflow = new_period.overflow;
 #
-#	  next[pulse].time = last[pulse].time + period[pulse].time;
-#	  next[pulse].overflow = last[pulse].overflow + period[pulse].overflow;
-#	  if(next[pulse].time < last[pulse].time)
-#	    next[pulse].overflow++;
+#	  pulses[pulse].next.time = pulses[pulse].last.time + pulses[pulse].period.time;
+#	  pulses[pulse].next.overflow = pulses[pulse].last.overflow + period[pulse].overflow;
+#	  if(pulses[pulse].next.time < pulses[pulse].last.time)
+#	    pulses[pulse].next.overflow++;
 #
 #	  fix_global_next();	// it's saver to do that from here, but could be omitted.
 #	}
@@ -753,14 +758,14 @@ DADA
 #	void init_click_pulses() {
 #	  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
 #	    init_pulse(pulse);
-#	    // flags[pulse] |= DO_NOT_DELETE;
+#	    // pulses[pulse].flags |= DO_NOT_DELETE;
 #	  }
 #	}
 #
 #
 #
 #	void click(int pulse) {			// can be called from a pulse
-#	  digitalWrite(char_parameter_1[pulse], pulse_count[pulse] & 1);
+#	  digitalWrite(pulses[pulse].char_parameter_1, pulses[pulse].counter & 1);
 #	}
 #
 #
@@ -782,9 +787,9 @@ DADA
 #	//  		     struct time when, struct time new_period) {
 #	//    int pulse = setup_pulse(pulse_do, new_flags, when, new_period);
 #	//    if (pulse != ILLEGAL) {
-#	//      char_parameter_1[pulse] = click_pin[pulse];
-#	//      pinMode(char_parameter_1[pulse], OUTPUT);
-#	//      digitalWrite(char_parameter_1[pulse], LOW);
+#	//      pulses[pulse].char_parameter_1 = click_pin[pulse];
+#	//      pinMode(pulses[pulse].char_parameter_1, OUTPUT);
+#	//      digitalWrite(pulses[pulse].char_parameter_1, LOW);
 #	//    }
 #	//
 #	//    return pulse;
@@ -798,7 +803,7 @@ DADA
 #
 #	void mute_all_clicks () {
 #	  for (int pulse=0; pulse<CLICK_PULSES; pulse++)
-#	    flags[pulse] &= ~ACTIVE;
+#	    pulses[pulse].flags &= ~ACTIVE;
 #
 #	  fix_global_next();
 #
@@ -828,8 +833,8 @@ DADA
 #	  next[pulse] = when;
 #
 #	  // now switch it on
-#	  flags[pulse] |= ACTIVE;	// set ACTIVE
-#	  flags[pulse] &= ~SCRATCH;	// clear SCRATCH
+#	  pulses[pulse].flags |= ACTIVE;	// set ACTIVE
+#	  pulses[pulse].flags &= ~SCRATCH;	// clear SCRATCH
 #	}
 #
 #
@@ -838,10 +843,10 @@ DADA
 #	void en_click(int pulse)
 #	{
 #	  if (pulse != ILLEGAL) {
-#	    periodic_do[pulse] = &click;
-#	    char_parameter_1[pulse] = click_pin[pulse];
-#	    pinMode(char_parameter_1[pulse], OUTPUT);
-#	    digitalWrite(char_parameter_1[pulse], LOW);
+#	    pulses[pulse].periodic_do = &click;
+#	    pulses[pulse].char_parameter_1 = click_pin[pulse];
+#	    pinMode(pulses[pulse].char_parameter_1, OUTPUT);
+#	    digitalWrite(pulses[pulse].char_parameter_1, LOW);
 #	  }
 #	}
 #
@@ -850,8 +855,8 @@ DADA
 #	void en_jiffle_thrower(int pulse, unsigned int *jiffletab)
 #	{
 #	  if (pulse != ILLEGAL) {
-#	    periodic_do[pulse] = &do_throw_a_jiffle;
-#	    parameter_2[pulse] = (unsigned int) jiffletab;
+#	    pulses[pulse].periodic_do = &do_throw_a_jiffle;
+#	    pulses[pulse].parameter_2 = (unsigned int) jiffletab;
 #	  }
 #	}
 #
@@ -860,7 +865,7 @@ DADA
 #	void en_info(int pulse)
 #	{
 #	  if (pulse != ILLEGAL) {
-#	    periodic_do[pulse] = &pulse_info_1line;
+#	    pulses[pulse].periodic_do = &pulse_info_1line;
 #	  }
 #	}
 #
@@ -869,7 +874,7 @@ DADA
 #	void en_INFO(int pulse)
 #	{
 #	  if (pulse != ILLEGAL) {
-#	    periodic_do[pulse] = &pulse_info;
+#	    pulses[pulse].periodic_do = &pulse_info;
 #	  }
 #	}
 #
@@ -918,9 +923,9 @@ DADA
 #	  int pulse= setup_pulse_synced(&click, ACTIVE, when, unit, factor, divisor, sync);
 #
 #	  if (pulse != ILLEGAL) {
-#	    char_parameter_1[pulse] = click_pin[pulse];
-#	    pinMode(char_parameter_1[pulse], OUTPUT);
-#	    digitalWrite(char_parameter_1[pulse], LOW);
+#	    pulses[pulse].char_parameter_1 = click_pin[pulse];
+#	    pinMode(pulses[pulse].char_parameter_1, OUTPUT);
+#	    digitalWrite(pulses[pulse].char_parameter_1, LOW);
 #	  }
 #
 #	  return pulse;
@@ -935,7 +940,7 @@ DADA
 #	  int pulse= setup_pulse_synced(&do_throw_a_jiffle, ACTIVE,
 #				       when, unit, factor, divisor, sync);
 #	  if (pulse != ILLEGAL)
-#	    parameter_2[pulse] = (unsigned int) jiffletab;
+#	    pulses[pulse].parameter_2 = (unsigned int) jiffletab;
 #
 #	  return pulse;
 #	}
@@ -1159,37 +1164,37 @@ DADA
 #	  void (*scratch)(int);
 #
 #	  scratch=&click;
-#	  if (periodic_do[pulse] == scratch) {
+#	  if (pulses[pulse].periodic_do == scratch) {
 #	    Serial.print("click\t");	// 8 chars at least
 #	    return;
 #	  }
 #
 #	  scratch=&do_jiffle;
-#	  if (periodic_do[pulse] == scratch) {
+#	  if (pulses[pulse].periodic_do == scratch) {
 #	    Serial.print("do_jiffle");
 #	    return;
 #	  }
 #
 #	  scratch=&do_throw_a_jiffle;
-#	  if (periodic_do[pulse] == scratch) {
+#	  if (pulses[pulse].periodic_do == scratch) {
 #	    Serial.print("seed jiffle");
 #	    return;
 #	  }
 #
 #	  scratch=&pulse_info;
-#	  if (periodic_do[pulse] == scratch) {
+#	  if (pulses[pulse].periodic_do == scratch) {
 #	    Serial.print("pulse_info");
 #	    return;
 #	  }
 #
 #	  scratch=&pulse_info_1line;
-#	  if (periodic_do[pulse] == scratch) {
+#	  if (pulses[pulse].periodic_do == scratch) {
 #	    Serial.print("info line");
 #	    return;
 #	  }
 #
 #	  scratch=NULL;
-#	  if (periodic_do[pulse] == scratch) {
+#	  if (pulses[pulse].periodic_do == scratch) {
 #	    Serial.print("NULL\t");	// 8 chars at least
 #	    return;
 #	  }
@@ -1224,29 +1229,29 @@ DADA
 #	  serial_print_progmem(pulseInfo);
 #	  Serial.print(pulse);
 #	  slash();
-#	  Serial.print((unsigned int) pulse_count[pulse]);
+#	  Serial.print((unsigned int) pulses[pulse].counter);
 #
 #	  tab();
 #	  display_action(pulse);
 #
 #	  serial_print_progmem(flags_);
-#	  serial_print_BIN(flags[pulse], 8);
+#	  serial_print_BIN(pulses[pulse].flags, 8);
 #	  Serial.println();
 #
-#	  Serial.print("pin ");  Serial.print((int) char_parameter_1[pulse]);
-#	  serial_print_progmem(index_);  Serial.print((int) char_parameter_2[pulse]);
-#	  serial_print_progmem(times_);  Serial.print(int1[pulse]);
-#	  Serial.print("\tp1 ");  Serial.print(parameter_1[pulse]);
-#	  Serial.print("\tp2 ");  Serial.print(parameter_2[pulse]);
-#	  serial_print_progmem(ul1_);  Serial.print(ulong_parameter_1[pulse]);
+#	  Serial.print("pin ");  Serial.print((int) pulses[pulse].char_parameter_1);
+#	  serial_print_progmem(index_);  Serial.print((int) pulses[pulse].char_parameter_2);
+#	  serial_print_progmem(times_);  Serial.print(pulses[pulse].int1);
+#	  Serial.print("\tp1 ");  Serial.print(pulses[pulse].parameter_1);
+#	  Serial.print("\tp2 ");  Serial.print(pulses[pulse].parameter_2);
+#	  serial_print_progmem(ul1_);  Serial.print(pulses[pulse].ulong_parameter_1);
 #
 #	  Serial.println();		// start next line
 #
-#	  Serial.print((float) period[pulse].time / (float) time_unit,3);
+#	  Serial.print((float) pulses[pulse].period.time / (float) time_unit,3);
 #	  serial_print_progmem(timeUnits);
 #
 #	  serial_print_progmem(pulseOvfl);
-#	  Serial.print((unsigned int) period[pulse].time);
+#	  Serial.print((unsigned int) pulses[pulse].period.time);
 #	  slash();
 #	  Serial.print(period[pulse].overflow);
 #
@@ -1257,14 +1262,14 @@ DADA
 #	  Serial.println();		// start next line
 #
 #	  serial_print_progmem(lastOvfl);
-#	  Serial.print((unsigned int) last[pulse].time);
+#	  Serial.print((unsigned int) pulses[pulse].last.time);
 #	  slash();
-#	  Serial.print(last[pulse].overflow);
+#	  Serial.print(pulses[pulse].last.overflow);
 #
 #	  serial_print_progmem(nextOvfl);
-#	  Serial.print(next[pulse].time);
+#	  Serial.print(pulses[pulse].next.time);
 #	  slash();
-#	  Serial.print(next[pulse].overflow);
+#	  Serial.print(pulses[pulse].next.overflow);
 #
 #	  tab();
 #	  serial_print_progmem(expected_);
@@ -1288,7 +1293,7 @@ DADA
 #	  int count=0;
 #
 #	  for (int pulse=0; pulse<pl_max; ++pulse)
-#	    if (flags[pulse]) {				// any flags set?
+#	    if (pulses[pulse].flags) {				// any flags set?
 #	      pulse_info(pulse);
 #	      count++;
 #	    }
@@ -1308,10 +1313,10 @@ DADA
 #	  serial_print_progmem(Pulse_);
 #	  Serial.print(pulse);
 #	  slash();
-#	  Serial.print((unsigned int) pulse_count[pulse]);
+#	  Serial.print((unsigned int) pulses[pulse].counter);
 #
 #	  serial_print_progmem(flags_);
-#	  serial_print_BIN(flags[pulse], 8);
+#	  serial_print_BIN(pulses[pulse].flags, 8);
 #
 #	  tab();
 #	  print_period_in_time_units(pulse);
@@ -1341,7 +1346,7 @@ DADA
 #	  int count=0;
 #
 #	  for (int pulse=0; pulse<pl_max; ++pulse)	// first port used
-#	    if (flags[pulse]) {				// any flags set?
+#	    if (pulses[pulse].flags) {				// any flags set?
 #	      pulse_info_1line(pulse);
 #	      count++;
 #	    }
@@ -1362,7 +1367,7 @@ DADA
 #	  float time_units, scratch;
 #
 #	  serial_print_progmem(pulse_);
-#	  time_units = ((float) period[pulse].time / (float) time_unit);
+#	  time_units = ((float) pulses[pulse].period.time / (float) time_unit);
 #
 #	  scratch = 1000.0;
 #	  while (scratch > max(time_units, 1.0)) {
@@ -1498,30 +1503,30 @@ DADA
 #
 #
 #	void do_jiffle (int pulse) {	// to be called by pulse_do
-#	  // char_parameter_1[pulse]	click pin
-#	  // char_parameter_2[pulse]	jiffletab index
-#	  // parameter_1[pulse]		count down
-#	  // parameter_2[pulse]		jiffletab[] pointer
-#	  // ulong_parameter_1[pulse]	base period = period of starting pulse
+#	  // pulses[pulse].char_parameter_1	click pin
+#	  // pulses[pulse].char_parameter_2	jiffletab index
+#	  // pulses[pulse].parameter_1		count down
+#	  // pulses[pulse].parameter_2		jiffletab[] pointer
+#	  // pulses[pulse].ulong_parameter_1	base period = period of starting pulse
 #
-#	  digitalWrite(char_parameter_1[pulse], pulse_count[pulse] & 1);	// click
+#	  digitalWrite(pulses[pulse].char_parameter_1, pulses[pulse].counter & 1);	// click
 #
-#	  if (--parameter_1[pulse] > 0)				// countdown, phase endid?
+#	  if (--pulses[pulse].parameter_1 > 0)				// countdown, phase endid?
 #	    return;						//   no: return immediately
 #
 #	  // if we arrive here, phase endid, start next phase if any:
-#	  unsigned int* jiffletab = (unsigned int *) parameter_2[pulse];	// read jiffletab[]
-#	  char_parameter_2[pulse] += JIFFLETAB_INDEX_STEP;
-#	  if (jiffletab[char_parameter_2[pulse]] == 0) {		// no next phase, return
+#	  unsigned int* jiffletab = (unsigned int *) pulses[pulse].parameter_2;	// read jiffletab[]
+#	  pulses[pulse].char_parameter_2 += JIFFLETAB_INDEX_STEP;
+#	  if (jiffletab[pulses[pulse].char_parameter_2] == 0) {		// no next phase, return
 #	    init_pulse(pulse);					// remove pulse
 #	    return;						// and return
 #	  }
 #
 #	  //initialize next phase, re-using the same pulse:
-#	  int base_index = char_parameter_2[pulse];		// readability
-#	  period[pulse].time =
-#	    ulong_parameter_1[pulse] * jiffletab[base_index] / jiffletab[base_index+1];
-#	  parameter_1[pulse] = jiffletab[base_index+2];		// count of next phase
+#	  int base_index = pulses[pulse].char_parameter_2;		// readability
+#	  pulses[pulse].period.time =
+#	    pulses[pulse].ulong_parameter_1 * jiffletab[base_index] / jiffletab[base_index+1];
+#	  pulses[pulse].parameter_1 = jiffletab[base_index+2];		// count of next phase
 #	}
 #
 #
@@ -1546,10 +1551,10 @@ DADA
 #
 #
 #	void do_throw_a_jiffle(int pulse) {		// for pulse_do
-#	  // parameter_2[pulse]	= (unsigned int) jiffletab;
+#	  // pulses[pulse].parameter_2	= (unsigned int) jiffletab;
 #
 #	  // start a new jiffling pulse now (next [pulse] is not yet updated):
-#	  init_jiffle((unsigned int *) parameter_2[pulse], next[pulse], period[pulse], pulse);
+#	  init_jiffle((unsigned int *) pulses[pulse].parameter_2, next[pulse], period[pulse], pulse);
 #	}
 #
 #
@@ -2280,8 +2285,8 @@ DADA
 #	// menu interface to reset a pulse and prepare it to be edited:
 #	void reset_and_edit_pulse(int pulse) {
 #	  init_pulse(pulse);
-#	  flags[pulse] |= SCRATCH;	// set SCRATCH flag
-#	  flags[pulse] &= ~ACTIVE;	// remove ACTIVE
+#	  pulses[pulse].flags |= SCRATCH;	// set SCRATCH flag
+#	  pulses[pulse].flags &= ~ACTIVE;	// remove ACTIVE
 #
 #	  // set a default pulse length:
 #	  struct time scratch;
@@ -2532,7 +2537,7 @@ DADA
 #	  case 'l':	// select destination: alive CLICK_PULSES
 #	    selected_pulses=0;
 #	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
-#	      if(flags[pulse] && (flags[pulse] != SCRATCH))
+#	      if(pulses[pulse].flags && (pulses[pulse].flags != SCRATCH))
 #		selected_pulses |= (1 << pulse);
 #
 #	    serial_print_progmem(selected_);
@@ -2542,7 +2547,7 @@ DADA
 #	  case 'L':	// select destination: all alive pulses
 #	    selected_pulses=0;
 #	    for (int pulse=0; pulse<pl_max; pulse++)
-#	      if(flags[pulse] && (flags[pulse] != SCRATCH))
+#	      if(pulses[pulse].flags && (pulses[pulse].flags != SCRATCH))
 #		selected_pulses |= (1 << pulse);
 #
 #	    serial_print_progmem(selected_);
@@ -2567,13 +2572,13 @@ DADA
 #	    for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
 #	      if (selected_pulses & (1 << pulse)) {
 #		// special case: switching on an edited SCRATCH pulse:
-#		if((flags[pulse] & ACTIVE) == 0)	// was off
-#		  if (flags[pulse] & SCRATCH)	// SCRATCH set, like activating after edit
-#		    flags[pulse] &= ~SCRATCH;	// so we remove SCRATCH
+#		if((pulses[pulse].flags & ACTIVE) == 0)	// was off
+#		  if (pulses[pulse].flags & SCRATCH)	// SCRATCH set, like activating after edit
+#		    pulses[pulse].flags &= ~SCRATCH;	// so we remove SCRATCH
 #
-#		flags[pulse] ^= ACTIVE;
+#		pulses[pulse].flags ^= ACTIVE;
 #
-#		if (flags[pulse] & ACTIVE) {	// DADA test ################
+#		if (pulses[pulse].flags & ACTIVE) {	// DADA test ################
 #		  get_now();	// ################################################################
 #		  next[pulse] = now;
 #		  last[pulse] = next[pulse];	// for overflow logic
