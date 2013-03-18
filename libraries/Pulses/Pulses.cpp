@@ -358,7 +358,7 @@ void Pulses::check_maybe_do() {
     const char noFreePulses[] = "no free pulses";
 #endif
 
-int Pulses::setup_pulse(void (*pulse_do)(int), unsigned char new_flags, \
+int Pulses::setup_pulse(void (*pulse_do)(unsigned int), unsigned char new_flags, \
 			struct time when, struct time new_period)
 {
   int pulse;
@@ -469,7 +469,7 @@ void Pulses::init_click_pins() {
 
 
 //  // unused? (I use the synced version more often)
-//  int Pulses::setup_click_pulse(void (*pulse_do)(int), unsigned char new_flags,
+//  int Pulses::setup_click_pulse(void (*pulse_do)(unsigned int), unsigned char new_flags,
 //  		     struct time when, struct time new_period) {
 //    int pulse = setup_pulse(pulse_do, new_flags, when, new_period);
 //    if (pulse != ILLEGAL) {
@@ -497,6 +497,199 @@ void Pulses::mute_all_clicks() {
 #ifdef USE_SERIAL_BAUD
   serial_println_progmem(mutedAllPulses);
 #endif
+}
+
+
+/* **************************************************************** */
+// creating, editing, killing pulses
+
+// (re-) activate pulse that has been edited or modified at a given time:
+// (assumes everything else is set up in order)
+// can also be used to sync running pulses on a given time
+
+// currently only used in menu
+void Pulses::activate_pulse_synced(unsigned int pulse, \
+				   struct time when, int sync)
+{
+  if (sync) {
+    struct time delta = pulses[pulse].period;
+    mul_time(&delta, sync);
+    div_time(&delta, 2);
+    add_time(&delta, &when);
+  }
+
+  pulses[pulse].last = when;	// replace possibly random last with something a bit better
+  pulses[pulse].next = when;
+
+  // now switch it on
+  pulses[pulse].flags |= ACTIVE;	// set ACTIVE
+  pulses[pulse].flags &= ~SCRATCH;	// clear SCRATCH
+}
+
+
+// currently only used in menu
+// make an existing pulse to a click pulse:
+void Pulses::en_click(unsigned int pulse)
+{
+  if (pulse != ILLEGAL) {
+    pulses[pulse].periodic_do = (void (*)(unsigned int)) &Pulses::click;
+    pulses[pulse].char_parameter_1 = click_pin[pulse];
+    pinMode(pulses[pulse].char_parameter_1, OUTPUT);
+    digitalWrite(pulses[pulse].char_parameter_1, LOW);
+  }
+}
+
+
+// currently only used in menu
+// make an existing pulse to display 1 info line:
+void Pulses::en_info(unsigned int pulse)
+{
+  if (pulse != ILLEGAL) {
+    pulses[pulse].periodic_do = (void (*)(unsigned int)) &Pulses::pulse_info_1line;
+  }
+}
+
+
+// currently only used in menu
+// make an existing pulse to display multiline pulse info:
+void Pulses::en_INFO(unsigned int pulse)
+{
+  if (pulse != ILLEGAL) {
+    pulses[pulse].periodic_do = (void (*)(unsigned int)) &Pulses::pulse_info;
+  }
+}
+
+
+// currently only used in menu
+// pulse_info_1line():	one line pulse info, short version
+void Pulses::pulse_info_1line(unsigned int pulse) {
+  unsigned long realtime=micros();	// let's take time *before* serial output
+
+  Serial.print(F("PULSE "));
+  Serial.print(pulse);
+  slash();
+  Serial.print((unsigned int) pulses[pulse].counter);
+
+  serial_print_progmem(flags_);
+  serial_print_BIN(pulses[pulse].flags, 8);
+
+  tab();
+  print_period_in_time_units(pulse);
+
+  tab();
+  display_action(pulse);
+
+  tab();
+  serial_print_progmem(expected_); spaces(5);
+  display_realtime_sec(pulses[pulse].next);
+
+  tab();
+  serial_print_progmem(now_);
+  struct time scratch = now;
+  scratch.time = realtime;
+  display_realtime_sec(scratch);
+
+  if (selected_pulses & (1 << pulse))
+    Serial.print(" *");
+
+  Serial.println();
+}
+
+
+// pulse_info()
+const char timeUnit[] = "time unit";
+const char timeUnits[] = " time units";
+const char pulseInfo[] = "*** PULSE info ";
+const char flags_[] = "\tflags ";
+const char pulseOvfl[] = "\tpulse/ovf ";
+const char lastOvfl[] = "last/ovfl ";
+const char nextOvfl[] = "   \tnext/ovfl ";
+const char index_[] = "\tindex ";
+const char times_[] = "\ttimes ";
+const char pulse_[] = "pulse ";
+const char expected_[] = "expected ";
+const char ul1_[] = "\tul1 ";
+
+// pulse_info() as paylod for pulses:
+// Prints pulse info over serial and blinks the LED
+void Pulses::pulse_info(unsigned int pulse) {
+
+#ifdef LED_PIN
+  digitalWrite(LED_PIN,HIGH);		// blink the LED
+#endif
+
+  serial_print_progmem(pulseInfo);
+  Serial.print(pulse);
+  slash();
+  Serial.print((unsigned int) pulses[pulse].counter);
+
+  tab();
+  display_action(pulse);
+
+  serial_print_progmem(flags_);
+  serial_print_BIN(pulses[pulse].flags, 8);
+  Serial.println();
+
+  Serial.print("pin ");  Serial.print((int) pulses[pulse].char_parameter_1);
+  serial_print_progmem(index_);  Serial.print((int) pulses[pulse].char_parameter_2);
+  serial_print_progmem(times_);  Serial.print(pulses[pulse].int1);
+  Serial.print("\tp1 ");  Serial.print(pulses[pulse].parameter_1);
+  Serial.print("\tp2 ");  Serial.print(pulses[pulse].parameter_2);
+  serial_print_progmem(ul1_);  Serial.print(pulses[pulse].ulong_parameter_1);
+
+  Serial.println();		// start next line
+
+  Serial.print((float) pulses[pulse].period.time / (float) time_unit,3);
+  serial_print_progmem(timeUnits);
+
+  serial_print_progmem(pulseOvfl);
+  Serial.print((unsigned int) pulses[pulse].period.time);
+  slash();
+  Serial.print(pulses[pulse].period.overflow);
+
+  tab();
+  display_realtime_sec(pulses[pulse].period);
+  spaces(1); serial_print_progmem(pulse_);
+
+  Serial.println();		// start next line
+
+  serial_print_progmem(lastOvfl);
+  Serial.print((unsigned int) pulses[pulse].last.time);
+  slash();
+  Serial.print(pulses[pulse].last.overflow);
+
+  serial_print_progmem(nextOvfl);
+  Serial.print(pulses[pulse].next.time);
+  slash();
+  Serial.print(pulses[pulse].next.overflow);
+
+  tab();
+  serial_print_progmem(expected_);
+  display_realtime_sec(pulses[pulse].next);
+
+  Serial.println();		// start last line
+  time_info();
+
+  Serial.print("\n\n");			// traling empty line
+
+#ifdef LED_PIN
+  digitalWrite(LED_PIN,LOW);
+#endif
+}
+
+
+void Pulses::alive_pulses_info()
+{
+  int count=0;
+
+  for (unsigned int pulse=0; pulse<pl_max; ++pulse)
+    if (pulses[pulse].flags) {				// any flags set?
+      pulse_info(pulse);
+      count++;
+    }
+
+  if (count == 0)
+    Serial.println(F("no pulses alive"));
 }
 
 

@@ -162,7 +162,7 @@ struct pulse_t {
 
   // pointers on  void something(unsigned int pulse)  functions:
   // the pulses will do that, if the pointer is not NULL
-  void (*periodic_do)(int);
+  void (*periodic_do)(unsigned int);
   //					some example functions:
   //
   //					click(pulse)
@@ -217,7 +217,7 @@ class Pulses {
 				// for *all* pulses that wait for this exact time
 				// they will be called in fast sequence then
   void check_maybe_do();	// ################
-  int setup_pulse(void (*pulse_do)(int), unsigned char new_flags, \
+  int setup_pulse(void (*pulse_do)(unsigned int), unsigned char new_flags, \
 		  struct time when, struct time new_period);
   void set_new_period(unsigned int pulse, struct time new_period);
 
@@ -225,7 +225,18 @@ class Pulses {
   void click(unsigned int pulse);	// ################
   void mute_all_clicks();		// ################
   void init_click_pins();		// ################
-
+  void activate_pulse_synced(unsigned int pulse,			\
+			    struct time when, int sync);	// ################
+  void en_info(unsigned int pulse);		// ################
+  void en_INFO(unsigned int pulse);		// ################
+  void en_click(unsigned int pulse);		// ################
+  void pulse_info_1line(unsigned int pulse);	// ################
+  void pulse_info(unsigned int pulse);		// ################
+  void alive_pulses_info();
+  int init_jiffle(unsigned int *jiffletab,				\
+		  struct time when, struct time new_period, int origin_pulse);
+  void time_info();
+  
 
  private:
   unsigned int pulse;		// pulse index

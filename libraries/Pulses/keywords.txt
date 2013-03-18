@@ -30,6 +30,14 @@ init_click_pulses	KEYWORD2
 click	KEYWORD2
 mute_all_clicks	KEYWORD2
 init_click_pins	KEYWORD2
+activate_pulse_synced	KEYWORD2
+en_click	KEYWORD2
+en_info	KEYWORD2
+en_INFO	KEYWORD2
+pulse_info_1line	KEYWORD2
+pulse_info	KEYWORD2
+alive_pulses_info	KEYWORD2
+time_info	KEYWORD2
 pindex	KEYWORD2
 pl_max	KEYWORD2
 pulses	KEYWORD2
