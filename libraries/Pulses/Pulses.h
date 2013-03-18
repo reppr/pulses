@@ -65,6 +65,10 @@ long micros() { return 9999L; }
 
 #define ACTIVE_undecided	1	// globally used in many status bitmaps
 
+// FIXME: ################
+#ifndef CLICK_PULSES		// number of click frequencies
+  #define CLICK_PULSES	6       // default number of click frequencies
+#endif
 
 /* **************************************************************** */
 #ifndef USE_F_MACRO
@@ -216,6 +220,11 @@ class Pulses {
   int setup_pulse(void (*pulse_do)(int), unsigned char new_flags, \
 		  struct time when, struct time new_period);
   void set_new_period(unsigned int pulse, struct time new_period);
+
+  void init_click_pulses();		// ################
+  void click(unsigned int pulse);	// ################
+  void mute_all_clicks();		// ################
+  void init_click_pins();		// ################
 
 
  private:

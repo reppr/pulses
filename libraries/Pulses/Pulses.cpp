@@ -92,13 +92,14 @@ Pulses::~Pulses() {
 // init time:
 
 // do this once from setup()	################
-void Pulses::init_time()
-{
+void Pulses::init_time() {
+#ifdef ARDUINO
   extern volatile unsigned long timer0_overflow_count;
 
   cli();
   timer0_overflow_count = 0;
   sei();
+#endif
 
   last_now.time = 0;		// make sure get_now() sees no overflow
   get_now();
@@ -405,6 +406,98 @@ void Pulses::set_new_period(unsigned int pulse, struct time new_period) {
 }
 
 
+/* **************************************************************** */
+// piezzo clicks on arduino i/o pins
+// great help when debugging and a lot of fun to play with :)
+
+/*
+  This is the *old 'periodics' style* implementation
+  copied over to the Pulses library.
+  Click tasks have to be defined first to get the low index range.
+
+  I plan to change the implementation soon.
+
+*/
+
+// FlipFlop pins:
+
+// clicks on piezzos to *hear* the result:
+//   or connect LEDs, MOSFETs, MIDI, whatever...
+//   these are just FlipFlop pins.
+
+// Click_pulses are a sub-group of pulses that control an arduino
+// digital output each.  By design they must be initiated first to get
+// the low pulse indices. The pins are configured as outputs by init_click_pins()
+// and get used by clicks, jiffles and the like.
+
+// It's best to always leave click_pulses in memory.
+// You can set DO_NOT_DELETE to achieve this.
+
+
+// FIXME: ################
+#ifndef CLICK_PULSES		// number of click frequencies
+  #define CLICK_PULSES	6       // default number of click frequencies
+#endif
+
+
+// FIXME: ################
+// By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
+void Pulses::init_click_pulses() {
+  for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++) {
+    init_pulse(pulse);
+    // pulses[pulse].flags |= DO_NOT_DELETE;
+  }
+}
+
+
+void Pulses::click(unsigned int pulse) {	// can be called from a pulse
+  digitalWrite(pulses[pulse].char_parameter_1, pulses[pulse].counter & 1);
+}
+
+
+// pins for click_pulses:
+// It is a bit obscure to held them in an array indexed by [pulse]
+// but it's simple and working well...
+unsigned char click_pin[CLICK_PULSES];
+
+void Pulses::init_click_pins() {
+  for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++) {
+    pinMode(click_pin[pulse], OUTPUT);
+    digitalWrite(click_pin[pulse], LOW);
+  }
+}
+
+
+//  // unused? (I use the synced version more often)
+//  int Pulses::setup_click_pulse(void (*pulse_do)(int), unsigned char new_flags,
+//  		     struct time when, struct time new_period) {
+//    int pulse = setup_pulse(pulse_do, new_flags, when, new_period);
+//    if (pulse != ILLEGAL) {
+//      pulses[pulse].char_parameter_1 = click_pin[pulse];
+//      pinMode(pulses[pulse].char_parameter_1, OUTPUT);
+//      digitalWrite(pulses[pulse].char_parameter_1, LOW);
+//    }
+//
+//    return pulse;
+//  }
+
+
+// FIXME: ################
+#ifdef USE_SERIAL_BAUD
+  const char Pulses::mutedAllPulses[] = "muted all pulses";
+#endif
+
+void Pulses::mute_all_clicks() {
+  for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+    pulses[pulse].flags &= ~ACTIVE;
+
+  fix_global_next();
+
+// FIXME: ################
+#ifdef USE_SERIAL_BAUD
+  serial_println_progmem(mutedAllPulses);
+#endif
+}
 
 
 

@@ -71,6 +71,8 @@ Pulses PULSES(pl_max);
 #ifdef ARDUINO
 /* Arduino setup() and loop():					*/
 
+#define USE_SERIAL_BAUD		dummy	// FIXME: ################
+
 int get_free_RAM();
 void setup() {
   Serial.begin(BAUDRATE);	// Start serial communication.
@@ -78,6 +80,9 @@ void setup() {
 
   Serial.print(F("free RAM :\t"));
   Serial.println(get_free_RAM());
+
+  Serial.print(F("\nNumber of pulses: "));
+  Serial.println(pl_max);
 
   Serial.println(F("\nPULSES.init_pulses()"));
   PULSES.init_pulses();
@@ -89,8 +94,11 @@ void setup() {
   Serial.print(sizeof(pulse_t));
   Serial.print(F(" * "));
   Serial.print(pl_max);
-  Serial.print(F(" pulses = total "));
+  Serial.print(F(" pulses = \t"));
   Serial.println(sizeof(pulse_t)*pl_max);
+
+  Serial.print(F("PULSES.init_time()\n"));
+  PULSES.init_time();
 
 Serial.println(F("\n(done)"));
 }
@@ -101,13 +109,18 @@ void loop() {	// ARDUINO
 #else		// c++ Linux PC test version
 
 int main() {
+
   printf("\nTesting test.ino\n");
 
-  printf("\nPULSES.init_pulses();\n\n");
+  printf("\nNumber of pulses: %d\n", pl_max);
+
+  printf("\nPULSES.init_pulses();\n");
   PULSES.init_pulses();
   printf("\n");
 
-  printf("\nsizeof(pulse) %d * pl_max %d = total %d\n", sizeof(pulse), pl_max, sizeof(pulse)*pl_max );
+
+  printf("sizeof(pulse_t) %d * %d = \t%d\n\n",	\
+	 sizeof(pulse_t), pl_max, sizeof(pulse_t)*pl_max );
 
 }
 

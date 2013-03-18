@@ -724,94 +724,94 @@
 
 DADA
 
-#	/* **************************************************************** */
-#	// piezzo clicks on arduino i/o pins
-#	// great help when debugging and a lot of fun to play with :)
-#
-#	// FlipFlop pins:
-#
-#	#if ( CLICK_PULSES > 0)
-#
-#	// clicks on piezzos to *hear* the result:
-#	//   or connect LEDs, MOSFETs, MIDI, whatever...
-#	//   these are just FlipFlop pins.
-#
-#	// Click_pulses are a sub-group of pulses that control an arduino
-#	// digital output each.  By design they must be initiated first to get
-#	// the low pulse indices. The pins are configured as outputs by init_click_pins()
-#	// and get used by clicks, jiffles and the like.
-#
-#	// It's best to always leave click_pulses in memory.
-#	// You can set DO_NOT_DELETE to achieve this.
-#
-#
-#	//  configured further up:
-#	//  // *do* change 'case' statement in menu_serial_reaction() if you change this.
-#	//  #ifndef CLICK_PULSES		// number of click frequencies
-#	//    #define CLICK_PULSES	5       // default number of click frequencies
-#	//  #endif
-#	//  // *do* change 'case' statement in menu_serial_reaction() if you change this.
-#
-#
-#
-#	// By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-#	void init_click_pulses() {
-#	  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
-#	    init_pulse(pulse);
-#	    // pulses[pulse].flags |= DO_NOT_DELETE;
-#	  }
-#	}
-#
-#
-#
-#	void click(int pulse) {			// can be called from a pulse
-#	  digitalWrite(pulses[pulse].char_parameter_1, pulses[pulse].counter & 1);
-#	}
-#
-#
-#	// pins for click_pulses:
-#	// It is a bit obscure to held them in an array indexed by [pulse]
-#	// but it's simple and working well...
-#	unsigned char click_pin[CLICK_PULSES];
-#
-#	void init_click_pins() {
-#	  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
-#	    pinMode(click_pin[pulse], OUTPUT);
-#	    digitalWrite(click_pin[pulse], LOW);
-#	  }
-#	}
-#
-#
-#	//  // unused? (I use the synced version more often)
-#	//  int setup_click_pulse(void (*pulse_do)(int), unsigned char new_flags,
-#	//  		     struct time when, struct time new_period) {
-#	//    int pulse = setup_pulse(pulse_do, new_flags, when, new_period);
-#	//    if (pulse != ILLEGAL) {
-#	//      pulses[pulse].char_parameter_1 = click_pin[pulse];
-#	//      pinMode(pulses[pulse].char_parameter_1, OUTPUT);
-#	//      digitalWrite(pulses[pulse].char_parameter_1, LOW);
-#	//    }
-#	//
-#	//    return pulse;
-#	//  }
-#
-#
-#
-#	#ifdef USE_SERIAL_BAUD
-#	  const unsigned char mutedAllPulses[] PROGMEM = "muted all pulses";
-#	#endif
-#
-#	void mute_all_clicks () {
-#	  for (int pulse=0; pulse<CLICK_PULSES; pulse++)
-#	    pulses[pulse].flags &= ~ACTIVE;
-#
-#	  fix_global_next();
-#
-#	#ifdef USE_SERIAL_BAUD
-#	  serial_println_progmem(mutedAllPulses);
-#	#endif
-#	}
-#
+##	/* **************************************************************** */
+##	// piezzo clicks on arduino i/o pins
+##	// great help when debugging and a lot of fun to play with :)
+##
+##	// FlipFlop pins:
+##
+##	#if ( CLICK_PULSES > 0)
+##
+##	// clicks on piezzos to *hear* the result:
+##	//   or connect LEDs, MOSFETs, MIDI, whatever...
+##	//   these are just FlipFlop pins.
+##
+##	// Click_pulses are a sub-group of pulses that control an arduino
+##	// digital output each.  By design they must be initiated first to get
+##	// the low pulse indices. The pins are configured as outputs by init_click_pins()
+##	// and get used by clicks, jiffles and the like.
+##
+##	// It's best to always leave click_pulses in memory.
+##	// You can set DO_NOT_DELETE to achieve this.
+##
+##
+##	//  configured further up:
+##	//  // *do* change 'case' statement in menu_serial_reaction() if you change this.
+##	//  #ifndef CLICK_PULSES		// number of click frequencies
+##	//    #define CLICK_PULSES	5       // default number of click frequencies
+##	//  #endif
+##	//  // *do* change 'case' statement in menu_serial_reaction() if you change this.
+##
+##
+##
+##	// By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
+##	void init_click_pulses() {
+##	  for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++) {
+##	    init_pulse(pulse);
+##	    // pulses[pulse].flags |= DO_NOT_DELETE;
+##	  }
+##	}
+##
+##
+##
+##	void click(unsigned int pulse) {			// can be called from a pulse
+##	  digitalWrite(pulses[pulse].char_parameter_1, pulses[pulse].counter & 1);
+##	}
+##
+##
+##	// pins for click_pulses:
+##	// It is a bit obscure to held them in an array indexed by [pulse]
+##	// but it's simple and working well...
+##	unsigned char click_pin[CLICK_PULSES];
+##
+##	void init_click_pins() {
+##	  for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++) {
+##	    pinMode(click_pin[pulse], OUTPUT);
+##	    digitalWrite(click_pin[pulse], LOW);
+##	  }
+##	}
+##
+##
+##	//  // unused? (I use the synced version more often)
+##	//  int setup_click_pulse(void (*pulse_do)(int), unsigned char new_flags,
+##	//  		     struct time when, struct time new_period) {
+##	//    int pulse = setup_pulse(pulse_do, new_flags, when, new_period);
+##	//    if (pulse != ILLEGAL) {
+##	//      pulses[pulse].char_parameter_1 = click_pin[pulse];
+##	//      pinMode(pulses[pulse].char_parameter_1, OUTPUT);
+##	//      digitalWrite(pulses[pulse].char_parameter_1, LOW);
+##	//    }
+##	//
+##	//    return pulse;
+##	//  }
+##
+##
+##
+##	#ifdef USE_SERIAL_BAUD
+##	  const unsigned char mutedAllPulses[] PROGMEM = "muted all pulses";
+##	#endif
+##
+##	void mute_all_clicks () {
+##	  for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+##	    pulses[pulse].flags &= ~ACTIVE;
+##
+##	  fix_global_next();
+##
+##	#ifdef USE_SERIAL_BAUD
+##	  serial_println_progmem(mutedAllPulses);
+##	#endif
+##	}
+# 
 #
 #
 #	/* **************************************************************** */
@@ -1293,7 +1293,7 @@ DADA
 #	{
 #	  int count=0;
 #
-#	  for (int pulse=0; pulse<pl_max; ++pulse)
+#	  for (unsigned int pulse=0; pulse<pl_max; ++pulse)
 #	    if (pulses[pulse].flags) {				// any flags set?
 #	      pulse_info(pulse);
 #	      count++;
@@ -1346,7 +1346,7 @@ DADA
 #	{
 #	  int count=0;
 #
-#	  for (int pulse=0; pulse<pl_max; ++pulse)	// first port used
+#	  for (unsigned int pulse=0; pulse<pl_max; ++pulse)	// first port used
 #	    if (pulses[pulse].flags) {				// any flags set?
 #	      pulse_info_1line(pulse);
 #	      count++;
@@ -1603,6 +1603,7 @@ DADA
 #	  fix_global_next();
 #	}
 #
+
 #
 #
 #	/* **************************************************************** */
@@ -1997,7 +1998,7 @@ DADA
 #	void print_selected_pulses() {
 #
 #	#ifdef CLICK_PULSES
-#	  for (int pulse=0; pulse<min(CLICK_PULSES,8); pulse++)
+#	  for (unsigned int pulse=0; pulse<min(CLICK_PULSES,8); pulse++)
 #	    if (selected_pulses & (1 << pulse))
 #	      Serial.print(pulse, HEX);
 #	    else
@@ -2006,7 +2007,7 @@ DADA
 #
 #	#if (CLICK_PULSES > 8)
 #	  spaces(2);
-#	  for (int pulse=8; pulse<min(CLICK_PULSES,16); pulse++)
+#	  for (unsigned int pulse=8; pulse<min(CLICK_PULSES,16); pulse++)
 #	    if (selected_pulses & (1 << pulse))
 #	      Serial.print(pulse, HEX);
 #	    else
@@ -2015,7 +2016,7 @@ DADA
 #
 #	#if (pl_max > CLICK_PULSES)
 #	  spaces(2);
-#	  for (int pulse=CLICK_PULSES; pulse<pl_max; pulse++)
+#	  for (unsigned int pulse=CLICK_PULSES; pulse<pl_max; pulse++)
 #	    if (selected_pulses & (1 << pulse))
 #	      Serial.write('+');
 #	    else
@@ -2056,7 +2057,7 @@ DADA
 #	  print_selected();  Serial.println();
 #
 #	  serial_print_progmem(selectPulseWith);
-#	  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+#	  for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++) {
 #	    Serial.print(pulse); spaces(2);
 #	  }
 #
@@ -2521,7 +2522,7 @@ DADA
 #
 #	  case 'a':	// select destination: all click pulses
 #	    selected_pulses=0;
-#	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+#	    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
 #	      selected_pulses |= (1 << pulse);
 #
 #	    serial_print_progmem(selected_);
@@ -2537,7 +2538,7 @@ DADA
 #
 #	  case 'l':	// select destination: alive CLICK_PULSES
 #	    selected_pulses=0;
-#	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+#	    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
 #	      if(pulses[pulse].flags && (pulses[pulse].flags != SCRATCH))
 #		selected_pulses |= (1 << pulse);
 #
@@ -2547,7 +2548,7 @@ DADA
 #
 #	  case 'L':	// select destination: all alive pulses
 #	    selected_pulses=0;
-#	    for (int pulse=0; pulse<pl_max; pulse++)
+#	    for (unsigned int pulse=0; pulse<pl_max; pulse++)
 #	      if(pulses[pulse].flags && (pulses[pulse].flags != SCRATCH))
 #		selected_pulses |= (1 << pulse);
 #
@@ -2570,7 +2571,7 @@ DADA
 #	    break;
 #
 #	  case 's':	// switch pulse on/off
-#	    for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+#	    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++) {
 #	      if (selected_pulses & (1 << pulse)) {
 #		// special case: switching on an edited SCRATCH pulse:
 #		if((pulses[pulse].flags & ACTIVE) == 0)	// was off
@@ -2620,7 +2621,7 @@ DADA
 #	    case CODE_PULSES:
 #	      new_value = numeric_input(1);
 #	      if (new_value>=0) {
-#		for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+#		for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
 #		  if (selected_pulses & (1 << pulse))
 #		    multiply_period(pulse, new_value);
 #
@@ -2645,7 +2646,7 @@ DADA
 #	    case CODE_PULSES:
 #	      new_value = numeric_input(1);
 #	      if (new_value>=0) {
-#		for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+#		for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
 #		  if (selected_pulses & (1 << pulse))
 #		    divide_period(pulse, new_value);
 #
@@ -2670,7 +2671,7 @@ DADA
 #	    case CODE_PULSES:
 #	      new_value = numeric_input(1);
 #	      if (new_value>=0) {
-#		for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+#		for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
 #		  if (selected_pulses & (1 << pulse)) {
 #		    time_scratch.time = time_unit;
 #		    time_scratch.overflow = 0;
@@ -2695,7 +2696,7 @@ DADA
 #	    break;
 #
 #	  case 'K':	// kill selected pulses
-#	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)	// DADA ################
+#	    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)	// DADA ################
 #	      if (selected_pulses & (1 << pulse)) {
 #		init_pulse(pulse);
 #		serial_print_progmem(killPulse); Serial.println(pulse);
@@ -2705,7 +2706,7 @@ DADA
 #	    break;
 #
 #	  case 'P':	// pulse create and edit
-#	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)	// DADA ################
+#	    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)	// DADA ################
 #	      if (selected_pulses & (1 << pulse)) {
 #		reset_and_edit_pulse(pulse);
 #	      }
@@ -2717,7 +2718,7 @@ DADA
 #	  case 'n':	// synchronise to now
 #	    // we work on CLICK_PULSES anyway, regardless dest
 #	    get_now();
-#	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+#	    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
 #	      if (selected_pulses & (1 << pulse))
 #		activate_pulse_synced(pulse, now, abs(sync));
 #
@@ -2757,7 +2758,7 @@ DADA
 #
 #	  case 'c':	// en_click
 #	    // we work on CLICK_PULSES anyway, regardless dest
-#	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+#	    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
 #	      if (selected_pulses & (1 << pulse))
 #		en_click(pulse);
 #
@@ -2767,7 +2768,7 @@ DADA
 #
 #	  case 'j':	// en_jiffle_thrower
 #	    // we work on CLICK_PULSES anyway, regardless dest
-#	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+#	    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
 #	      if (selected_pulses & (1 << pulse))
 #		en_jiffle_thrower(pulse, jiffletab);
 #
@@ -2777,7 +2778,7 @@ DADA
 #
 #	  case 'f':	// en_info
 #	    // we work on CLICK_PULSES anyway, regardless dest
-#	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+#	    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
 #	      if (selected_pulses & (1 << pulse))
 #		en_info(pulse);
 #
@@ -2787,7 +2788,7 @@ DADA
 #
 #	  case 'F':	// en_INFO
 #	    // we work on CLICK_PULSES anyway, regardless dest
-#	    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+#	    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
 #	      if (selected_pulses & (1 << pulse))
 #		en_INFO(pulse);
 #
