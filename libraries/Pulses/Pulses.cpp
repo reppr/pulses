@@ -528,10 +528,14 @@ void Pulses::mute_all_clicks() {
 unsigned long selected_pulses=0L;	// pulse bitmask
 
 
-// (re-) activate pulse that has been edited or modified at a given time:
-// (assumes everything else is set up in order)
-// can also be used to sync running pulses on a given time
+// FIXME: ################ want to think that over again...
+int sync=1;			// syncing edges or middles of square pulses
 
+
+/* void activate_pulse_synced(pulse, when, sync)
+   (re-) activate pulse that has been edited or modified at a given time:
+   (assumes everything else is set up in order)
+   can also be used to sync running pulses on a given time		*/
 // currently only used in menu
 void Pulses::activate_pulse_synced(unsigned int pulse, \
 				   struct time when, int sync)
@@ -856,6 +860,916 @@ void display_action(unsigned int pulse) {
   }
 
   Serial.print("UNKNOWN\t");
+}
+
+
+// make an existing pulse to a jiffle thrower pulse:
+void en_jiffle_thrower(unsigned int pulse, unsigned int *jiffletab)
+{
+  if (pulse != ILLEGAL) {
+    pulses[pulse].periodic_do = &do_throw_a_jiffle;
+    pulses[pulse].parameter_2 = (unsigned int) jiffletab;
+  }
+}
+
+
+/* **************************************************************** */
+// playing with rhythms:
+
+
+// Generic setup pulse, stright or middle synced relative to 'when'.
+// Pulse time and phase sync get deviated from unit, which is first
+// multiplied by factor and divided by divisor.
+// sync=0 gives stright syncing, sync=1 middle pulses synced.
+// other values possible,
+// negative values should not reach into the past
+// (that's why the menu only allows positive. it syncs now related,
+//  so a negative sync value would always reach into past.)
+int setup_pulse_synced(void (*pulse_do)(int), unsigned char new_flags,
+		       struct time when, unsigned long unit,
+		       unsigned long factor, unsigned long divisor, int sync)
+{
+  struct time new_period;
+
+  if (sync) {
+    struct time delta;
+    delta.time = sync*unit/2L;
+    delta.overflow = 0;
+
+    mul_time(&delta, factor);
+    div_time(&delta, divisor);
+
+    add_time(&delta, &when);
+  }
+
+  new_period.time = unit;
+  new_period.overflow = 0;
+  mul_time(&new_period, factor);
+  div_time(&new_period, divisor);
+
+  return setup_pulse(pulse_do, new_flags, when, new_period);
+}
+
+
+int setup_click_synced(struct time when, unsigned long unit, unsigned long factor,
+		       unsigned long divisor, int sync) {
+  unsigned int pulse= setup_pulse_synced(&click, ACTIVE, when, unit, factor, divisor, sync);
+
+  if (pulse != ILLEGAL) {
+    pulses[pulse].char_parameter_1 = click_pin[pulse];
+    pinMode(pulses[pulse].char_parameter_1, OUTPUT);
+    digitalWrite(pulses[pulse].char_parameter_1, LOW);
+  }
+
+  return pulse;
+}
+
+
+// some default rhythms:
+
+// helper function to generate certain types of sequences of harmonic relations:
+// for harmonics I use rational number sequences a lot.
+// this is a versatile function to create them:
+void init_ratio_sequence(struct time when,
+			 int factor0, int factor_step,
+			 int divisor0, int divisor_step, int count,
+			 unsigned int scaling, int sync
+			 )
+// By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
+//
+// usage:
+// 1,2,3,4 pattern	init_ratio_sequence(now, 1, 1, 1, 0, 4, scaling, sync)
+// 3,5,7,9 pattern	init_ratio_sequence(now, 3, 2, 1, 0, 4, scaling, sync)
+// 1/2, 2/3, 3/4, 4/5	init_ratio_sequence(now, 1, 1, 2, 1, 4, scaling, sync)
+{
+  const unsigned long unit=scaling*time_unit;
+  unsigned long factor=factor0;
+  unsigned long divisor=divisor0;
+
+  // init_click_pulses();
+
+  for (; count; count--) {
+    setup_click_synced(when, unit, factor, divisor, sync);
+    factor += factor_step;
+    divisor += divisor_step;
+  }
+
+  fix_global_next();
+}
+
+
+/* **************************************************************** */
+// some pre-defined patterns:
+
+const char rhythm_[] = "rhythm ";
+const char sync_[] = "sync ";
+
+void init_rhythm_1(int sync) {
+  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
+  unsigned long divisor=1;
+  unsigned long scaling=6;
+
+#ifdef USE_SERIAL_BAUD
+  Serial.print(F()rhythm_); Serial.print(1);
+  spaces(1);
+  Serial.print(' ');
+   Serial.print(' ');
+   Serial.print(F()sync_); Serial.println(sync);
+#endif
+
+  init_click_pulses();
+  get_now();
+
+  for (long factor=2L; factor<6L; factor++)	// 2, 3, 4, 5
+    setup_click_synced(now, scaling*time_unit, factor, divisor, sync);
+
+  // 2*2*3*5
+  setup_click_synced(now, scaling*time_unit, 2L*2L*3L*5L, divisor, sync);
+
+  fix_global_next();
+}
+
+
+// frequencies ratio 1, 4, 6, 8, 10
+void init_rhythm_2(int sync) {
+  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
+  int scaling=60;
+  unsigned long factor=1;
+  unsigned long unit= scaling*time_unit;
+
+#ifdef USE_SERIAL_BAUD
+  Serial.print(F()rhythm_); Serial.print(2);
+  Serial.print(' '); Serial.print(F()sync_); Serial.println(sync);
+#endif
+
+  init_click_pulses();
+  get_now();
+
+  for (unsigned long divisor=4; divisor<12 ; divisor += 2)
+    setup_click_synced(now, unit, factor, divisor, sync);
+
+  // slowest *not* synced
+  setup_click_synced(now, unit, 1, 1, 0);
+
+  fix_global_next();
+}
+
+// nice 2 to 3 to 4 to 5 pattern with phase offsets
+void init_rhythm_3(int sync) {
+  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
+  unsigned long factor, divisor=1L;
+  const unsigned long scaling=5L;
+  const unsigned long unit=scaling*time_unit;
+
+#ifdef USE_SERIAL_BAUD
+  Serial.print(F()rhythm_); Serial.print(3);
+  Serial.print(' '); Serial.print(F()sync_); Serial.println(sync);
+#endif
+
+  init_click_pulses();
+  get_now();
+
+  factor=2;
+  setup_click_synced(now, unit, factor, divisor, sync);
+
+  factor=3;
+  setup_click_synced(now, unit, factor, divisor, sync);
+
+  factor=4;
+  setup_click_synced(now, unit, factor, divisor, sync);
+
+  factor=5;
+  setup_click_synced(now, unit, factor, divisor, sync);
+
+  fix_global_next();
+}
+
+
+void init_rhythm_4(int sync) {
+  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
+  const unsigned long scaling=15L;
+
+#ifdef USE_SERIAL_BAUD
+  Serial.print(F()rhythm_); Serial.print(4);
+  Serial.print(' '); Serial.print(F()sync_); Serial.println(sync);
+#endif
+
+  init_click_pulses();
+  get_now();
+
+  setup_click_synced(now, scaling*time_unit, 1, 1, sync);     // 1
+  init_ratio_sequence(now, 1, 1, 2, 1, 4, scaling, sync);     // 1/2, 2/3, 3/4, 4/5
+}
+
+
+// dest codes:
+#define CODE_PULSES	0		// dest code pulses: apply selected_pulses
+#define CODE_TIME_UNIT	1		// dest code time_unit
+unsigned char dest = CODE_PULSES;
+
+
+/* **************************************************************** */
+// pulses menu:
+
+// what is selected?
+
+void print_selected_pulses() {
+
+#ifdef CLICK_PULSES
+  for (unsigned int pulse=0; pulse<min(CLICK_PULSES,8); pulse++)
+    if (selected_pulses & (1 << pulse))
+      Serial.print(pulse, HEX);
+    else
+      Serial.print(".");
+#endif
+
+#if (CLICK_PULSES > 8)
+   Serial.print(' ');
+   Serial.print(' ');
+  for (unsigned int pulse=8; pulse<min(CLICK_PULSES,16); pulse++)
+    if (selected_pulses & (1 << pulse))
+      Serial.print(pulse, HEX);
+    else
+      Serial.print(".");
+#endif
+
+#if (pl_max > CLICK_PULSES)
+   Serial.print(' ');
+   Serial.print(' ');
+  for (unsigned int pulse=CLICK_PULSES; pulse<pl_max; pulse++)
+    if (selected_pulses & (1 << pulse))
+      Serial.write('+');
+    else
+      Serial.write('.');
+#endif
+
+  Serial.println();
+}
+
+const char selected_[] = "selected ";
+
+void print_selected() {
+  Serial.print(F()selected_);
+
+  switch (dest) {
+  case CODE_PULSES:
+    print_selected_pulses();
+    break;
+
+  case CODE_TIME_UNIT:
+    Serial.println(F()timeUnit);
+    break;
+  }
+}
+
+
+// info_select_destination_with()
+const char selectDestinationInfo[] =
+  "SELECT DESTINATION for '= * / s K p n c j' to work on:\t\t";
+const char selectPulseWith[] = "Select puls with ";
+const char selectAllPulses[] =
+  "\na=select *all* click pulses\tA=*all* pulses\tl=alive clicks\tL=all alive\tx=none\t~=invert selection";
+const char uSelect[] = "u=select ";
+const char selected__[] = "\t(selected)";
+
+void info_select_destination_with(boolean extended_destinations) {
+  Serial.print(F()selectDestinationInfo);
+  print_selected();  Serial.println();
+
+  Serial.print(F()selectPulseWith);
+  for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++) {
+    Serial.print(pulse);
+     Serial.print(' ');
+     Serial.print(' ');
+  }
+
+  Serial.println(F()selectAllPulses);
+
+  if(extended_destinations) {
+    Serial.print(F()uSelect);  Serial.print(F()timeUnit);
+    if(dest == CODE_TIME_UNIT) {
+      Serial.println(F()selected__);
+    } else
+      Serial.println();
+    Serial.println();
+  }
+}
+
+
+
+// menu_program_display()
+const char helpInfo[] = \
+  "?=help\tm=menu\ti=info\t.=short info";
+const char microSeconds[] = " microseconds";
+const char muteKill[] = \
+  "M=mute all\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tf=en-info\tF=en-INFO\tn=sync now\nS=sync ";
+const char perSecond_[] = " per second)";
+const char equals_[] = " = ";
+const char switchPulse[] = "s=switch pulse on/off";
+
+void menu_program_display() {
+  Serial.println(F()helpInfo);
+
+  Serial.println();
+  info_select_destination_with(false);
+
+  Serial.print(F()uSelect);  Serial.print(F()timeUnit);
+  Serial.print("  (");
+  Serial.print(time_unit);
+  Serial.print(F()microSeconds);
+  Serial.print(F()equals_);
+  Serial.print((float) (1000000.0 / (float) time_unit),3);
+  Serial.println(F()perSecond_);
+
+  Serial.println();
+  Serial.print(F()switchPulse);
+  Serial.print('\t');  Serial.print(F()muteKill);
+  Serial.println(sync);
+}
+
+
+/* **************************************************************** */
+// functions called from the menu:
+
+void multiply_period(unsigned int pulse, unsigned long factor) {
+  struct time new_period;
+
+  new_period=pulses[pulse].period;
+  mul_time(&new_period, factor);
+  set_new_period(pulse, new_period);
+}
+
+
+void divide_period(unsigned int pulse, unsigned long divisor) {
+  struct time new_period;
+
+  new_period=pulses[pulse].period;
+  div_time(&new_period, divisor);
+  set_new_period(pulse, new_period);
+}
+
+
+const char setTimeUnit_[] = "Set time unit to ";
+
+void set_time_unit_and_inform(unsigned long new_value) {
+  time_unit = new_value;
+  Serial.print(F()setTimeUnit_);
+  Serial.print(time_unit);
+  Serial.println(F()microSeconds);
+}
+
+
+// menu interface to reset a pulse and prepare it to be edited:
+void reset_and_edit_pulse(unsigned int pulse) {
+  init_pulse(pulse);
+  pulses[pulse].flags |= SCRATCH;	// set SCRATCH flag
+  pulses[pulse].flags &= ~ACTIVE;	// remove ACTIVE
+
+  // set a default pulse length:
+  struct time scratch;
+  scratch.time = time_unit;
+  scratch.overflow = 0;
+  mul_time(&scratch, 12);		// 12 looks like a usable default
+  pulses[pulse].period = scratch;
+}
+
+
+// ****************************************************************
+// menu_serial_program_reaction()
+// const char selected_[] = "selected ";
+const char killPulse[] = "kill pulse ";
+const char killedAll[] = "killed all";
+const char onlyPositive[] = "only positive sync ";
+
+bool menu_serial_program_reaction(char menu_input) {
+  long new_value=0;
+  struct time time_scratch;
+
+  switch (menu_input) {
+
+  case '?':	// help
+    menu_serial_display();
+    alive_pulses_info_lines();
+    time_info();  Serial.print('\t'); RAM_info();
+    break;
+
+  case '.':	// alive pulses info
+    Serial.println();
+    // time_info(); Serial.println();
+    // RAM_info();
+    alive_pulses_info_lines();
+    break;
+
+    // *do* change this line if you change CLICK_PULSES
+  case '0': case '1': case '2': case '3': case '4':	// toggle pulse selection
+  // case '5': case '6': case '7': case '8': case '9':
+    selected_pulses ^= (1 << (menu_input - '0'));
+
+    Serial.print(F()selected_);
+    print_selected_pulses();
+    break;
+
+  case 'u':	// select destination: time_unit
+    dest = CODE_TIME_UNIT;
+    print_selected();
+    break;
+
+  case 'a':	// select destination: all click pulses
+    selected_pulses=0;
+    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+      selected_pulses |= (1 << pulse);
+
+    Serial.print(F()selected_);
+    print_selected_pulses();
+    break;
+
+  case 'A':	// select destination: *all* pulses
+    selected_pulses = ~0;
+
+    Serial.print(F()selected_);
+    print_selected_pulses();
+    break;
+
+  case 'l':	// select destination: alive CLICK_PULSES
+    selected_pulses=0;
+    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+      if(pulses[pulse].flags && (pulses[pulse].flags != SCRATCH))
+	selected_pulses |= (1 << pulse);
+
+    Serial.print(F()selected_);
+    print_selected_pulses();
+    break;
+
+  case 'L':	// select destination: all alive pulses
+    selected_pulses=0;
+    for (unsigned int pulse=0; pulse<pl_max; pulse++)
+      if(pulses[pulse].flags && (pulses[pulse].flags != SCRATCH))
+	selected_pulses |= (1 << pulse);
+
+    Serial.print(F()selected_);
+    print_selected_pulses();
+    break;
+
+  case '~':	// invert destination selection
+    selected_pulses = ~selected_pulses;
+
+    Serial.print(F()selected_);
+    print_selected_pulses();
+    break;
+
+  case 'x':	// clear destination selection
+    selected_pulses = 0;
+
+    Serial.print(F()selected_);
+    print_selected_pulses();
+    break;
+
+  case 's':	// switch pulse on/off
+    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++) {
+      if (selected_pulses & (1 << pulse)) {
+	// special case: switching on an edited SCRATCH pulse:
+	if((pulses[pulse].flags & ACTIVE) == 0)	// was off
+	  if (pulses[pulse].flags & SCRATCH)	// SCRATCH set, like activating after edit
+	    pulses[pulse].flags &= ~SCRATCH;	// so we remove SCRATCH
+
+	pulses[pulse].flags ^= ACTIVE;
+
+	if (pulses[pulse].flags & ACTIVE) {	// DADA test ################
+	  get_now();	// ################################################################
+	  pulses[pulse].next = now;
+	  pulses[pulse].last = pulses[pulse].next;	// for overflow logic
+	}
+      }
+    }
+
+    fix_global_next();
+    check_maybe_do();				  // maybe do it *first*
+    Serial.println();
+    alive_pulses_info_lines();			  // *then* info ;)
+
+    // info_select_destination_with(false);	// DADA ################
+    break;
+
+  case 'S':	// enter sync
+    Serial.print(F()sync_);
+    new_value = numeric_input(sync);
+    if (new_value>=0 )
+      sync = new_value;
+    else
+      Serial.print(F()onlyPositive);
+    Serial.println(sync);
+    break;
+
+  case 'i':	// info
+    RAM_info();
+    Serial.println();
+    alive_pulses_info();
+    break;
+
+  case 'M':	// mute
+    mute_all_clicks();
+    break;
+
+  case '*':	// multiply destination
+    switch (dest) {
+    case CODE_PULSES:
+      new_value = numeric_input(1);
+      if (new_value>=0) {
+	for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+	  if (selected_pulses & (1 << pulse))
+	    multiply_period(pulse, new_value);
+
+	Serial.println();
+	alive_pulses_info_lines();
+      } else
+	Serial.println(F()invalid_);
+      break;
+
+    case CODE_TIME_UNIT:
+      new_value = numeric_input(1);
+      if (new_value>0)
+	set_time_unit_and_inform(time_unit*new_value);
+      else
+	Serial.println(F()invalid_);
+      break;
+    }
+    break;
+
+  case '/':	// divide destination
+    switch (dest) {
+    case CODE_PULSES:
+      new_value = numeric_input(1);
+      if (new_value>=0) {
+	for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+	  if (selected_pulses & (1 << pulse))
+	    divide_period(pulse, new_value);
+
+	Serial.println();
+	alive_pulses_info_lines();
+      } else
+	Serial.println(F()invalid_);
+      break;
+
+    case CODE_TIME_UNIT:
+      new_value = numeric_input(1);
+      if (new_value>0)
+	set_time_unit_and_inform(time_unit/new_value);
+      else
+	Serial.println(F()invalid_);
+      break;
+    }
+    break;
+
+  case '=':	// set destination to value
+    switch (dest) {
+    case CODE_PULSES:
+      new_value = numeric_input(1);
+      if (new_value>=0) {
+	for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+	  if (selected_pulses & (1 << pulse)) {
+	    time_scratch.time = time_unit;
+	    time_scratch.overflow = 0;
+	    mul_time(&time_scratch, new_value);
+	    set_new_period(pulse, time_scratch);
+	  }
+
+	Serial.println();
+	alive_pulses_info_lines();
+      } else
+	Serial.println(F()invalid_);
+      break;
+
+    case CODE_TIME_UNIT:
+      new_value = numeric_input(1);
+      if (new_value>0)
+	set_time_unit_and_inform(new_value);
+      else
+	Serial.println(F()invalid_);
+      break;
+    }
+    break;
+
+  case 'K':	// kill selected pulses
+    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)	// DADA ################
+      if (selected_pulses & (1 << pulse)) {
+	init_pulse(pulse);
+	Serial.print(F()killPulse); Serial.println(pulse);
+      }
+    Serial.println();
+    alive_pulses_info_lines(); Serial.println();
+    break;
+
+  case 'P':	// pulse create and edit
+    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)	// DADA ################
+      if (selected_pulses & (1 << pulse)) {
+	reset_and_edit_pulse(pulse);
+      }
+
+    Serial.println();
+    alive_pulses_info_lines();
+    break;
+
+  case 'n':	// synchronise to now
+    // we work on CLICK_PULSES anyway, regardless dest
+    get_now();
+    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+      if (selected_pulses & (1 << pulse))
+	activate_pulse_synced(pulse, now, abs(sync));
+
+    fix_global_next();
+    check_maybe_do();				  // maybe do it *first*
+
+    Serial.println();
+    alive_pulses_info_lines();			  // *then* info ;)
+   break;
+
+
+    // debugging entries: DADA ###############################################
+  case 'd':	// hook for debugging
+    break;
+
+  case 'Y':	// hook for debugging
+    init_rhythm_1(sync);
+    break;
+
+  case 'X':	// hook for debugging
+    init_rhythm_2(sync);
+    break;
+
+  case 'C':	// hook for debugging
+    init_rhythm_3(sync);
+    break;
+
+  case 'V':	// hook for debugging
+    init_rhythm_4(sync);
+    break;
+
+  case 'B':	// hook for debugging
+    setup_jiffles0(sync);
+    break;
+
+    // debugging entries: DADA ###############################################
+
+  case 'c':	// en_click
+    // we work on CLICK_PULSES anyway, regardless dest
+    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+      if (selected_pulses & (1 << pulse))
+	en_click(pulse);
+
+    Serial.println();
+    alive_pulses_info_lines();
+    break;
+
+  case 'j':	// en_jiffle_thrower
+    // we work on CLICK_PULSES anyway, regardless dest
+    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+      if (selected_pulses & (1 << pulse))
+	en_jiffle_thrower(pulse, jiffletab);
+
+    Serial.println();
+    alive_pulses_info_lines();
+    break;
+
+  case 'f':	// en_info
+    // we work on CLICK_PULSES anyway, regardless dest
+    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+      if (selected_pulses & (1 << pulse))
+	en_info(pulse);
+
+    Serial.println();
+    alive_pulses_info_lines();
+    break;
+
+  case 'F':	// en_INFO
+    // we work on CLICK_PULSES anyway, regardless dest
+    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+      if (selected_pulses & (1 << pulse))
+	en_INFO(pulse);
+
+    Serial.println();
+    alive_pulses_info();
+    break;
+
+  case '{':	// enter_jiffletab
+    enter_jiffletab(jiffletab);
+    display_jiffletab(jiffletab);
+    break;
+
+  case '}':	// display jiffletab / end editing jiffletab
+    display_jiffletab(jiffletab);
+    break;
+
+  default:
+    return false;	// menu entry not found
+  }
+  return true;		// menu entry found
+}
+
+
+/* **************************************************************** */
+// jiffles:
+// jiffles are (click) patterns defined in jiffletabs and based on a base period
+//
+// the base period is multiplied/divided by two int values
+// the following jiffleteab value counts how many times the pulse will get
+// woken up with this new computed period
+// then continue with next jiffletab entries
+// a zero multiplicator ends the jiffle
+
+// jiffletabs define melody:
+// up to 256 triplets of {multiplicator, dividend, count}
+// multiplicator and dividend determine period based on the starting pulses period
+// a multiplicator of zero indicates end of jiffle
+#define JIFFLETAB_INDEX_STEP	3
+
+// put these in PROGMEM or EEPROM	DADA ################
+// jiffletab0 is obsolete	DADA ################
+unsigned int jiffletab0[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,4, 1,64,3, 1,32,1, 1,16,2, 0};	// nice short jiffy
+
+// DADA ################
+#define JIFFLETAB_ENTRIES	8	// how many triplets
+// there *MUST* be a trailing zero in all jiffletabs.
+
+unsigned int jiffletab[] =
+  {1,16,2, 1,256,32, 1,128,8, 1,64,2, 1,32,1, 1,16,1, 1,8,2, 0,0,0, 0};	// there *must* be a trailing zero.
+
+
+// enter_jiffleSerial.print('\t'), edit jiffletab by hand:
+#ifdef USE_SERIAL_BAUD
+  const char jifftabFull[] = "jiffletab full";
+  const char enterJiffletabVal[] = "enter jiffletab values";
+#endif
+
+void enter_jiffletab(unsigned int *jiffletab)
+{
+  int menu_input;
+  int new_value;
+  int index=0;			// counts ints, *not* triplets
+
+  while (true) {
+    if (!char_available())
+      Serial.println(F()enterJiffletabVal);
+
+    while (!char_available())	// wait for input
+      ;
+
+    // delay(WAITforSERIAL);
+
+    switch (menu_input = get_char()) {
+    case ' ': case ',': case '\t':	// white space, comma
+      break;
+
+    case '0': case '1': case '2': case '3': case '4':	// numeric
+    case '5': case '6': case '7': case '8': case '9':
+      char_store((char) menu_input);
+      new_value = numeric_input(0);
+      jiffletab[index++] = new_value;
+
+      if (new_value == 0)
+	return;
+
+      if (index == (JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP)) {	// jiffletab is full
+	jiffletab[JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP] = 0;	// trailing 0
+
+#ifdef USE_SERIAL_BAUD
+	Serial.println(F()jifftabFull);
+#endif
+
+	return;				// quit
+      }
+      break;
+
+    case '}':	// end jiffletab input. Can be used to display jiffletab.
+      display_jiffletab(jiffletab);
+      return;
+      break;
+
+    default:	// default: end input sequence
+      char_store((char) menu_input);
+      return;
+    }
+  }
+}
+
+
+void display_jiffletab(unsigned int *jiffletab)
+{
+  Serial.print("{");
+  for (int i=0; i <= JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP; i++) {
+    if ((i % JIFFLETAB_INDEX_STEP) == 0)
+      Serial.print(' ');
+    Serial.print(jiffletab[i]);
+    if (jiffletab[i] == 0)
+      break;
+    Serial.print(",");
+  }
+  Serial.println(" }");
+}
+
+
+// DADA
+//	// unsigned int jiffletab0[] = {1,512,8, 1,1024,16, 1,2048,32, 1,1024,16, 0};
+//	// unsigned int jiffletab0[] = {1,128,2, 1,256,6, 1,512,10, 1,1024,32, 1,3*128,20, 1,64,8, 0};
+//	// unsigned int jiffletab0[] = {1,32,4, 1,64,8, 1,128,16, 1,256,32, 1,512,64, 1,1024,128, 0};	// testing octaves
+//
+//	// unsigned int jiffletab0[] =
+//	//   {1,2096,4, 1,512,2, 1,128,2, 1,256,2, 1,512,8, 1,1024,32, 1,512,4, 1,256,3, 1,128,2, 1,64,1, 0};
+//
+//	// unsigned int jiffletab0[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,2, 1,64,1, 1,32,1, 1,16,2, 0};
+//
+//
+//	// unsigned int jiffletab0[] = {1,32,2, 0};	// doubleclick
+//
+//	/*
+//	unsigned int jiffletab1[] =
+//	  {1,1024,64, 1,512,4, 1,128,2, 1,64,1, 1,32,1, 1,16,1, 0};
+//	*/
+
+
+void do_jiffle (unsigned int pulse) {	// to be called by pulse_do
+  // pulses[pulse].char_parameter_1	click pin
+  // pulses[pulse].char_parameter_2	jiffletab index
+  // pulses[pulse].parameter_1		count down
+  // pulses[pulse].parameter_2		jiffletab[] pointer
+  // pulses[pulse].ulong_parameter_1	base period = period of starting pulse
+
+  digitalWrite(pulses[pulse].char_parameter_1, pulses[pulse].counter & 1);	// click
+
+  if (--pulses[pulse].parameter_1 > 0)				// countdown, phase endid?
+    return;						//   no: return immediately
+
+  // if we arrive here, phase endid, start next phase if any:
+  unsigned int* jiffletab = (unsigned int *) pulses[pulse].parameter_2;	// read jiffletab[]
+  pulses[pulse].char_parameter_2 += JIFFLETAB_INDEX_STEP;
+  if (jiffletab[pulses[pulse].char_parameter_2] == 0) {		// no next phase, return
+    init_pulse(pulse);					// remove pulse
+    return;						// and return
+  }
+
+  //initialize next phase, re-using the same pulse:
+  int base_index = pulses[pulse].char_parameter_2;		// readability
+  pulses[pulse].period.time =
+    pulses[pulse].ulong_parameter_1 * jiffletab[base_index] / jiffletab[base_index+1];
+  pulses[pulse].parameter_1 = jiffletab[base_index+2];		// count of next phase
+}
+
+
+void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, struct time when, struct time new_period) {
+  int jiffle_pulse = setup_pulse(&do_throw_a_jiffle, new_flags, when, new_period);
+  if (jiffle_pulse != ILLEGAL) {
+    parameter_2[jiffle_pulse] = (unsigned int) jiffletab;
+  }
+}
+
+
+// pre-defined jiffle pattern:
+void setup_jiffles0(int sync) {
+  unsigned long factor, divisor = 1;
+
+  int scale=18;
+  unsigned long unit=scale*time_unit;
+
+  struct time when, delta, templ, new_period;
+
+#ifdef USE_SERIAL_BAUD
+  Serial.print("jiffle0 ");
+  Serial.print(F()sync_); Serial.println(sync);
+#endif
+
+  get_now();
+  when=now;
+
+  factor=2;
+  setup_jiffle_thrower_synced(now, unit, factor, divisor, sync, jiffletab0);
+
+  factor=3;
+  setup_jiffle_thrower_synced(now, unit, factor, divisor, sync, jiffletab0);
+
+  factor=4;
+  setup_jiffle_thrower_synced(now, unit, factor, divisor, sync, jiffletab0);
+
+  factor=5;
+  setup_jiffle_thrower_synced(now, unit, factor, divisor, sync, jiffletab0);
+
+  // 2*3*2*5	(the 4 needs only another factor of 2)
+  factor=2*3*2*5;
+  setup_jiffle_thrower_synced(now, unit, factor, divisor, sync, jiffletab0);
+
+  fix_global_next();
+}
+
+
+int setup_jiffle_thrower_synced(struct time when,
+				unsigned long unit,
+				unsigned long factor, unsigned long divisor,
+				int sync, unsigned int *jiffletab)
+{
+  unsigned int pulse= setup_pulse_synced(&do_throw_a_jiffle, ACTIVE,
+			       when, unit, factor, divisor, sync);
+  if (pulse != ILLEGAL)
+    pulses[pulse].parameter_2 = (unsigned int) jiffletab;
+
+  return pulse;
 }
 
 
