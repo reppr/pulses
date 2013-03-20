@@ -171,47 +171,49 @@
 #	#include <avr/pgmspace.h>
 #
 #	// to save RAM constant strings are stored in PROGMEM
-#	const unsigned char programName[] PROGMEM = "PULSES";
-#	const unsigned char programLongName[] PROGMEM = \
+#R-	const unsigned char programName[] PROGMEM = "PULSES";
+#R+	const char programName[] = "PULSES";
+#	const char programLongName[] = \
 #	  "*** Play with PULSES v0.2 ***";
-#	const unsigned char version[] PROGMEM = "version 0.2";
+#	const char version[] = "version 0.2";
 #
-#	const unsigned char tab_[] PROGMEM = "\t";
+#	const char tab_[] = "\t";
 #	void tab() {
-#	  serial_print_progmem(tab_);
+#R-	  serial_print_progmem(tab_);
+#R+	  Serial.print(F()tab_);
 #	}
 #
-#	const unsigned char space_[] PROGMEM = " ";
+#	const char space_[] = " ";
 #	void spaces(int count) {
 #	  for (; count>0; count--)
-#	    serial_print_progmem(space_);
+#	    Serial.print(F()space_);
 #	}
 #
-#	const unsigned char slash_[] PROGMEM = "/";
+#	const char slash_[] = "/";
 #	void slash() {
-#	  serial_print_progmem(slash_);
+#	  Serial.print(F()slash_);
 #	}
 #
 #
 #	//	#ifdef USE_LCD
 #	//	// LCD.print() for progmem strings:
-#	//	// void LCD_print_progmem(const prog_uchar *str)   // does not work :(
-#	//	void LCD_print_progmem(const unsigned char *str) {
+#	//	// void LCD_print(F()const prog_uchar *str)   // does not work :(
+#	//	void LCD_print(F()const char *str) {
 #	//	  unsigned char c;
 #	//	  while((c = pgm_read_byte(str++)))
 #	//	    LCD.print(c);
 #	//	}
 #	//
-#	//	void LCD_print_at_progmem(unsigned char col, unsigned char row, const unsigned char *str) {
+#	//	void LCD_print_at(F()unsigned char col, unsigned char row, const char *str) {
 #	//	  LCD.setCursor(col, row);
-#	//	  LCD_print_progmem(str);
+#	//	  LCD_print(F()str);
 #	//	}
 #	//
 #	//	// clear line and print on LCD at line 'row'
-#	//	const unsigned char LCD_empty[] PROGMEM = "                    ";
-#	//	void LCD_print_line_progmem(unsigned char row, const unsigned char *str) {
-#	//	  LCD_print_at_progmem(0, row, LCD_empty);
-#	//	  LCD_print_at_progmem(0, row, str);
+#	//	const char LCD_empty[] = "                    ";
+#	//	void LCD_print_line(F()unsigned char row, const char *str) {
+#	//	  LCD_print_at(F()0, row, LCD_empty);
+#	//	  LCD_print_at(F()0, row, str);
 #	//	}
 #	//
 #	//	#endif
@@ -219,16 +221,16 @@
 #
 #	#ifdef USE_SERIAL_BAUD	// inside #if (defined(USE_SERIAL_BAUD) || defined(USE_LCD))
 #	  // Serial.print() for progmem strings:
-#	  // void serial_print_progmem(const prog_uchar *str)	// does not work :(
-#	  void serial_print_progmem(const unsigned char *str) {
+#	  // void Serial.print(F()const prog_uchar *str)	// does not work :(
+#	  void Serial.print(F()const char *str) {
 #	    unsigned char c;
 #	    while((c = pgm_read_byte(str++)))
 #	      Serial.write(c);
 #	  }
 #
 #
-#	  void serial_println_progmem(const unsigned char *str) {
-#	    serial_print_progmem(str);
+#	  void Serial.println(F()const char *str) {
+#	    Serial.print(F()str);
 #	    Serial.println();
 #	  }
 #	#endif // USE_SERIAL_BAUD
@@ -239,13 +241,13 @@
 #
 #	// RAM_info()
 #	#ifdef USE_SERIAL_BAUD
-#	  const unsigned char freeRAM[] PROGMEM = "free RAM: ";
-#	  const unsigned char bytes_[] PROGMEM = " bytes";
+#	  const char freeRAM[] = "free RAM: ";
+#	  const char bytes_[] = " bytes";
 #
 #	  void RAM_info() {
-#	    serial_print_progmem(freeRAM);
+#	    Serial.print(F()freeRAM);
 #	    Serial.print(get_free_RAM());
-#	    serial_println_progmem(bytes_);
+#	    Serial.println(F()bytes_);
 #	    Serial.println();
 #	  }
 #	#endif
@@ -293,22 +295,24 @@
 #
 #	int sync=1;			// syncing edges or middles of square pulses
 #
-#	const float overflow_sec = 4294.9672851562600;	// overflow time in seconds
+
+##	const float overflow_sec = 4294.9672851562600;	// overflow time in seconds
+
 #
-#	// time unit that the user sees.
-#	// it has no influence on inner working, but is a menu I/O thing only
-#	// the user sees and edits times in time units.
-#	unsigned long time_unit = 100000L;		// scaling timer to 10/s 0.1s
-#
-#	// I want time_unit to be dividable by a semi random selection of small integers
-#	// avoiding rounding errors as much as possible.
-#	//
-#	// I consider factorials as a good choice:
-#	// unsigned long time_unit =    40320L;		// scaling timer to  8!, 0.040320s
-#	// unsigned long time_unit =   362880L;		// scaling timer to  9!, 0,362880s
-#	// unsigned long time_unit =  3628800L;		// scaling timer to 10!, 3.628800s
-#
-#
+##	// time unit that the user sees.
+##	// it has no influence on inner working, but is a menu I/O thing only
+##	// the user sees and edits times in time units.
+##	unsigned long time_unit = 100000L;		// scaling timer to 10/s 0.1s
+##
+##	// I want time_unit to be dividable by a semi random selection of small integers
+##	// avoiding rounding errors as much as possible.
+##	//
+##	// I consider factorials as a good choice:
+##	// unsigned long time_unit =    40320L;		// scaling timer to  8!, 0.040320s
+##	// unsigned long time_unit =   362880L;		// scaling timer to  9!, 0,362880s
+##	// unsigned long time_unit =  3628800L;		// scaling timer to 10!, 3.628800s
+##
+##
 #
 
 ##	// init time:
@@ -661,7 +665,7 @@
 ##
 ##
 ##	#ifdef USE_SERIAL_BAUD
-##	    const unsigned char noFreePulses[] PROGMEM = "no free pulses";
+##	    const char noFreePulses[] = "no free pulses";
 ##	#endif
 ##
 ##	int setup_pulse(void (*pulse_do)(int), unsigned char new_flags, struct time when, struct time new_period) {
@@ -677,7 +681,7 @@
 ##	  if (pulse == pl_max) {			// no pulse free :(
 ##
 ##	#ifdef USE_SERIAL_BAUD
-##	    serial_println_progmem(noFreePulses);
+##	    Serial.println(noFreePulses);
 ##	#endif
 ##
 ##	    return ILLEGAL;			// ERROR
@@ -697,17 +701,19 @@
 ##	}
 ##
 ##
-#	// unused?
-#	int setup_counted_pulse(void (*pulse_do)(int), unsigned char new_flags, struct time when, struct time new_period, unsigned int count) {
-#	  int pulse;
-#
-#	  pulse= setup_pulse(pulse_do, new_flags|COUNTED, when, new_period);
-#	  pulses[pulse].int1= count;
-#
-#	  return pulse;
-#	}
-#
-#
+
+##	// unused?
+##	int setup_counted_pulse(void (*pulse_do)(int), unsigned char new_flags, struct time when, struct time new_period, unsigned int count) {
+##	  int pulse;
+##
+##	  pulse= setup_pulse(pulse_do, new_flags|COUNTED, when, new_period);
+##	  pulses[pulse].int1= count;
+##
+##	  return pulse;
+##	}
+##
+##
+
 ##	void set_new_period(unsigned int pulse, struct time new_period) {
 ##	  pulses[pulse].period.time = new_period.time;
 ##	  pulses[pulse].period.overflow = new_period.overflow;
@@ -796,7 +802,7 @@
 ##
 ##
 ##	#ifdef USE_SERIAL_BAUD
-##	  const unsigned char mutedAllPulses[] PROGMEM = "muted all pulses";
+##	  const char mutedAllPulses[] = "muted all pulses";
 ##	#endif
 ##
 ##	void mute_all_clicks () {
@@ -806,9 +812,11 @@
 ##	  fix_global_next();
 ##
 ##	#ifdef USE_SERIAL_BAUD
-##	  serial_println_progmem(mutedAllPulses);
+##	  Serial.println(F()mutedAllPulses);
 ##	#endif
 ##	}
+
+
 #	// make an existing pulse to a jiffle thrower pulse:
 #	void en_jiffle_thrower(int pulse, unsigned int *jiffletab)
 #	{
@@ -821,8 +829,6 @@
 #
 #
 #
-
-DADA
 
 #
 ##	/* **************************************************************** */
@@ -880,6 +886,9 @@ DADA
 ##	  }
 ##	}
 ##
+
+DADA
+
 #
 #
 #	/* **************************************************************** */
@@ -985,8 +994,8 @@ DADA
 #	/* **************************************************************** */
 #	// some pre-defined patterns:
 #
-#	const unsigned char rhythm_[] PROGMEM = "rhythm ";
-#	const unsigned char sync_[] PROGMEM = "sync ";
+#	const char rhythm_[] = "rhythm ";
+#	const char sync_[] = "sync ";
 #
 #	void init_rhythm_1(int sync) {
 #	  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
@@ -994,8 +1003,11 @@ DADA
 #	  unsigned long scaling=6;
 #
 #	#ifdef USE_SERIAL_BAUD
-#	  serial_print_progmem(rhythm_); Serial.print(1);
-#	  spaces(1); serial_print_progmem(sync_); Serial.println(sync);
+#	  Serial.print(F()rhythm_); Serial.print(1);
+#R-	  spaces(1);
+#R+	  Serial.print(' ');
+#         Serial.print(' ');
+#         Serial.print(F()sync_); Serial.println(sync);
 #	#endif
 #
 #	  init_click_pulses();
@@ -1019,8 +1031,8 @@ DADA
 #	  unsigned long unit= scaling*time_unit;
 #
 #	#ifdef USE_SERIAL_BAUD
-#	  serial_print_progmem(rhythm_); Serial.print(2);
-#	  spaces(1); serial_print_progmem(sync_); Serial.println(sync);
+#	  Serial.print(F()rhythm_); Serial.print(2);
+#	  Serial.print(' '); Serial.print(F()sync_); Serial.println(sync);
 #	#endif
 #
 #	  init_click_pulses();
@@ -1043,8 +1055,8 @@ DADA
 #	  const unsigned long unit=scaling*time_unit;
 #
 #	#ifdef USE_SERIAL_BAUD
-#	  serial_print_progmem(rhythm_); Serial.print(3);
-#	  spaces(1); serial_print_progmem(sync_); Serial.println(sync);
+#	  Serial.print(F()rhythm_); Serial.print(3);
+#	  Serial.print(' '); Serial.print(F()sync_); Serial.println(sync);
 #	#endif
 #
 #	  init_click_pulses();
@@ -1071,8 +1083,8 @@ DADA
 #	  const unsigned long scaling=15L;
 #
 #	#ifdef USE_SERIAL_BAUD
-#	  serial_print_progmem(rhythm_); Serial.print(4);
-#	  spaces(1); serial_print_progmem(sync_); Serial.println(sync);
+#	  Serial.print(F()rhythm_); Serial.print(4);
+#	  Serial.print(' '); Serial.print(F()sync_); Serial.println(sync);
 #	#endif
 #
 #	  init_click_pulses();
@@ -1096,7 +1108,9 @@ DADA
 #	// dest and selected_pulses
 #	// destination of menu functions '*' '/' '=' and 's'
 #
-#	unsigned long selected_pulses=0L;	// pulse bitmask
+
+##	unsigned long selected_pulses=0L;	// pulse bitmask
+
 #
 #	// dest codes:
 #	#define CODE_PULSES	0		// dest code pulses: apply selected_pulses
@@ -1105,121 +1119,126 @@ DADA
 #
 #
 #
-#	// display a time in seconds:
-#	float display_realtime_sec(struct time duration) {
-#	  float seconds=((float) duration.time / 1000000.0);
-#	  seconds += overflow_sec * (float) duration.overflow;
-#
-#	  float scratch = 1000.0;
-#	  while (scratch > max(seconds, 1.0)) {
-#	    spaces(1);
-#	    scratch /= 10.0;
-#	  }
-#
-#
-#	  Serial.print(seconds , 3);
-#	  Serial.print("s");
-#
-#	  return seconds;
-#	}
-#
-#
+##	// display a time in seconds:
+##	float display_realtime_sec(struct time duration) {
+##	  float seconds=((float) duration.time / 1000000.0);
+##	  seconds += overflow_sec * (float) duration.overflow;
+##
+##	  float scratch = 1000.0;
+##	  while (scratch > max(seconds, 1.0)) {
+##	    Serial.print(' ');
+##	    scratch /= 10.0;
+##	  }
+##
+##
+##	  Serial.print(seconds , 3);
+##	  Serial.print("s");
+##
+##	  return seconds;
+##	}
+##
+##
+
 ##	// time_info()
-##	const unsigned char timeInfo[] PROGMEM = "*** TIME info\t\t";
-##	const unsigned char timeOvfl[] PROGMEM = "time/ovfl ";
-##	const unsigned char now_[] PROGMEM = "now ";
+##	const char timeInfo[] = "*** TIME info\t\t";
+##	const char timeOvfl[] = "time/ovfl ";
+##	const char now_[] = "now ";
 ##
 ##	void time_info()
 ##	{
 ##	  unsigned long realtime = micros();
 ##
-##	  serial_print_progmem(timeInfo);
-##	  serial_print_progmem(timeOvfl);
+##	  Serial.print(F()timeInfo);
+##	  Serial.print(F()timeOvfl);
 ##	  Serial.print(realtime);
-##	  slash();
+#R-	  slash();
+#R+	  Serial.print('/');
 ##	  Serial.print(now.overflow);		// cheating a tiny little bit...
-##	  tab();
+#R-	  tab();
+#R+	  Serial.print('\t');
 ##	  struct time scratch=now;
 ##	  scratch.time = realtime;		// update running time
-##	  serial_print_progmem(now_);
+##	  Serial.print(F()now_);
 ##	  display_realtime_sec(scratch);
 ##	}
 ##
 ##
-#	// binary print flags:
-#	// print binary numbers with leading zeroes and a space
-#	void serial_print_BIN(unsigned long value, int bits) {
-#	  int i;
-#	  unsigned long mask=0;
-#
-#	  for (i = bits - 1; i >= 0; i--) {
-#	    mask = (1 << i);
-#	      if (value & mask)
-#		Serial.print(1);
-#	      else
-#		Serial.print(0);
-#	  }
-#	  spaces(1);
-#	}
-#
-#
-#	void display_action(unsigned int pulse) {
-#	  void (*scratch)(int);
-#
-#	  scratch=&click;
-#	  if (pulses[pulse].periodic_do == scratch) {
-#	    Serial.print("click\t");	// 8 chars at least
-#	    return;
-#	  }
-#
-#	  scratch=&do_jiffle;
-#	  if (pulses[pulse].periodic_do == scratch) {
-#	    Serial.print("do_jiffle");
-#	    return;
-#	  }
-#
-#	  scratch=&do_throw_a_jiffle;
-#	  if (pulses[pulse].periodic_do == scratch) {
-#	    Serial.print("seed jiffle");
-#	    return;
-#	  }
-#
-#	  scratch=&pulse_info;
-#	  if (pulses[pulse].periodic_do == scratch) {
-#	    Serial.print("pulse_info");
-#	    return;
-#	  }
-#
-#	  scratch=&pulse_info_1line;
-#	  if (pulses[pulse].periodic_do == scratch) {
-#	    Serial.print("info line");
-#	    return;
-#	  }
-#
-#	  scratch=NULL;
-#	  if (pulses[pulse].periodic_do == scratch) {
-#	    Serial.print("NULL\t");	// 8 chars at least
-#	    return;
-#	  }
-#
-#	  Serial.print("UNKNOWN\t");
-#	}
+
+##	// binary print flags:
+##	// print binary numbers with leading zeroes and a space
+##	void serial_print_BIN(unsigned long value, int bits) {
+##	  int i;
+##	  unsigned long mask=0;
+##
+##	  for (i = bits - 1; i >= 0; i--) {
+##	    mask = (1 << i);
+##	      if (value & mask)
+##		Serial.print(1);
+##	      else
+##		Serial.print(0);
+##	  }
+##	  Serial.print(' ');
+##	}
+##
+##
+
+##	void display_action(unsigned int pulse) {
+##	  void (*scratch)(int);
+##
+##	  scratch=&click;
+##	  if (pulses[pulse].periodic_do == scratch) {
+##	    Serial.print("click\t");	// 8 chars at least
+##	    return;
+##	  }
+##
+##	  scratch=&do_jiffle;
+##	  if (pulses[pulse].periodic_do == scratch) {
+##	    Serial.print("do_jiffle");
+##	    return;
+##	  }
+##
+##	  scratch=&do_throw_a_jiffle;
+##	  if (pulses[pulse].periodic_do == scratch) {
+##	    Serial.print("seed jiffle");
+##	    return;
+##	  }
+##
+##	  scratch=&pulse_info;
+##	  if (pulses[pulse].periodic_do == scratch) {
+##	    Serial.print("pulse_info");
+##	    return;
+##	  }
+##
+##	  scratch=&pulse_info_1line;
+##	  if (pulses[pulse].periodic_do == scratch) {
+##	    Serial.print("info line");
+##	    return;
+##	  }
+##
+##	  scratch=NULL;
+##	  if (pulses[pulse].periodic_do == scratch) {
+##	    Serial.print("NULL\t");	// 8 chars at least
+##	    return;
+##	  }
+##
+##	  Serial.print("UNKNOWN\t");
+##	}
 #
 #
 #
 ##	// pulse_info()
-##	const unsigned char timeUnit[] PROGMEM = "time unit";
-##	const unsigned char timeUnits[] PROGMEM = " time units";
-##	const unsigned char pulseInfo[] PROGMEM = "*** PULSE info ";
-##	const unsigned char flags_[] PROGMEM = "\tflags ";
-##	const unsigned char pulseOvfl[] PROGMEM = "\tpulse/ovf ";
-##	const unsigned char lastOvfl[] PROGMEM = "last/ovfl ";
-##	const unsigned char nextOvfl[] PROGMEM = "   \tnext/ovfl ";
-##	const unsigned char index_[] PROGMEM = "\tindex ";
-##	const unsigned char times_[] PROGMEM = "\ttimes ";
-##	const unsigned char pulse_[] PROGMEM = "pulse ";
-##	const unsigned char expected_[] PROGMEM = "expected ";
-##	const unsigned char ul1_[] PROGMEM = "\tul1 ";
+##	const char timeUnit[] = "time unit";
+##	const char timeUnits[] = " time units";
+##	const char pulseInfo[] = "*** PULSE info ";
+##	const char flags_[] = "\tflags ";
+##	const char pulseOvfl[] = "\tpulse/ovf ";
+##	const char lastOvfl[] = "last/ovfl ";
+##	const char nextOvfl[] = "   \tnext/ovfl ";
+##	const char index_[] = "\tindex ";
+##	const char times_[] = "\ttimes ";
+##	const char pulse_[] = "pulse ";
+##	const char expected_[] = "expected ";
+##	const char ul1_[] = "\tul1 ";
 ##
 ##	// pulse_info() as paylod for pulses:
 ##	// Prints pulse info over serial and blinks the LED
@@ -1229,53 +1248,53 @@ DADA
 ##	  digitalWrite(LED_PIN,HIGH);		// blink the LED
 ##	#endif
 ##
-##	  serial_print_progmem(pulseInfo);
+##	  Serial.print(F()pulseInfo);
 ##	  Serial.print(pulse);
-##	  slash();
+##	  Serial.print('/');
 ##	  Serial.print((unsigned int) pulses[pulse].counter);
 ##
-##	  tab();
+##	  Serial.print('\t');
 ##	  display_action(pulse);
 ##
-##	  serial_print_progmem(flags_);
-##	  serial_print_BIN(pulses[pulse].flags, 8);
+##	  Serial.print(F()flags_);
+##	  Serial.print_BIN(pulses[pulse].flags, 8);
 ##	  Serial.println();
 ##
 ##	  Serial.print("pin ");  Serial.print((int) pulses[pulse].char_parameter_1);
-##	  serial_print_progmem(index_);  Serial.print((int) pulses[pulse].char_parameter_2);
-##	  serial_print_progmem(times_);  Serial.print(pulses[pulse].int1);
+##	  Serial.print(F()index_);  Serial.print((int) pulses[pulse].char_parameter_2);
+##	  Serial.print(F()times_);  Serial.print(pulses[pulse].int1);
 ##	  Serial.print("\tp1 ");  Serial.print(pulses[pulse].parameter_1);
 ##	  Serial.print("\tp2 ");  Serial.print(pulses[pulse].parameter_2);
-##	  serial_print_progmem(ul1_);  Serial.print(pulses[pulse].ulong_parameter_1);
+##	  Serial.print(F()ul1_);  Serial.print(pulses[pulse].ulong_parameter_1);
 ##
 ##	  Serial.println();		// start next line
 ##
 ##	  Serial.print((float) pulses[pulse].period.time / (float) time_unit,3);
-##	  serial_print_progmem(timeUnits);
+##	  Serial.print(F()timeUnits);
 ##
-##	  serial_print_progmem(pulseOvfl);
+##	  Serial.print(F()pulseOvfl);
 ##	  Serial.print((unsigned int) pulses[pulse].period.time);
-##	  slash();
+##	  Serial.print('/');
 ##	  Serial.print(pulses[pulse].period.overflow);
 ##
-##	  tab();
+##	  Serial.print('\t');
 ##	  display_realtime_sec(pulses[pulse].period);
-##	  spaces(1); serial_print_progmem(pulse_);
+##	  Serial.print(' '); Serial.print(F()pulse_);
 ##
 ##	  Serial.println();		// start next line
 ##
-##	  serial_print_progmem(lastOvfl);
+##	  Serial.print(F()lastOvfl);
 ##	  Serial.print((unsigned int) pulses[pulse].last.time);
-##	  slash();
+##	  Serial.print('/');
 ##	  Serial.print(pulses[pulse].last.overflow);
 ##
-##	  serial_print_progmem(nextOvfl);
+##	  Serial.print(F()nextOvfl);
 ##	  Serial.print(pulses[pulse].next.time);
-##	  slash();
+##	  Serial.print('/');
 ##	  Serial.print(pulses[pulse].next.overflow);
 ##
-##	  tab();
-##	  serial_print_progmem(expected_);
+##	  Serial.print('\t');
+##	  Serial.print(F()expected_);
 ##	  display_realtime_sec(pulses[pulse].next);
 ##
 ##	  Serial.println();		// start last line
@@ -1289,7 +1308,7 @@ DADA
 ##	}
 ##
 ##
-##	const unsigned char noAlive[] PROGMEM = "no pulses alive";
+##	const char noAlive[] = "no pulses alive";
 ##
 ##	void alive_pulses_info()
 ##	{
@@ -1302,37 +1321,37 @@ DADA
 ##	    }
 ##
 ##	  if (count == 0)
-##	    serial_println_progmem(noAlive);
+##	    Serial.println(noAlive);
 ##	}
 #
 #
 #
 ##	// pulse_info_1line():	one line pulse info, short version
-##	const unsigned char Pulse_[] PROGMEM = "PULSE ";
+##	const char Pulse_[] = "PULSE ";
 ##
 ##	void pulse_info_1line(unsigned int pulse) {
 ##	  unsigned long realtime=micros();	// let's take time *before* serial output
 ##
-##	  serial_print_progmem(Pulse_);
+##	  Serial.print(F()Pulse_);
 ##	  Serial.print(pulse);
-##	  slash();
+##	  Serial.print('/');
 ##	  Serial.print((unsigned int) pulses[pulse].counter);
 ##
-##	  serial_print_progmem(flags_);
+##	  Serial.print(F()flags_);
 ##	  serial_print_BIN(pulses[pulse].flags, 8);
 ##
-##	  tab();
+##	  Serial.print('\t');
 ##	  print_period_in_time_units(pulse);
 ##
-##	  tab();
+##	  Serial.print('\t');
 ##	  display_action(pulse);
 ##
-##	  tab();
-##	  serial_print_progmem(expected_); spaces(5);
+##	  Serial.print('\t');
+##	  Serial.print(F()expected_); spaces(5);
 ##	  display_realtime_sec(pulses[pulse].next);
 ##
-##	  tab();
-##	  serial_print_progmem(now_);
+##	  Serial.print('\t');
+##	  Serial.print(F()now_);
 ##	  struct time scratch = now;
 ##	  scratch.time = realtime;
 ##	  display_realtime_sec(scratch);
@@ -1344,46 +1363,48 @@ DADA
 ##	}
 #
 #
-#	void alive_pulses_info_lines()
-#	{
-#	  int count=0;
-#
-#	  for (unsigned int pulse=0; pulse<pl_max; ++pulse)	// first port used
-#	    if (pulses[pulse].flags) {				// any flags set?
-#	      pulse_info_1line(pulse);
-#	      count++;
-#	    }
-#
-#	  if (count == 0) {				// second port used
-#	    serial_print_progmem(noAlive);
-#	      count++;
-#	    }
-#
-#	  if (count == 0)
-#	    serial_println_progmem(noAlive);
-#
-#	  Serial.println();
-#	}
-#
-#
-#	void print_period_in_time_units(unsigned int pulse) {
-#	  float time_units, scratch;
-#
-#	  serial_print_progmem(pulse_);
-#	  time_units = ((float) pulses[pulse].period.time / (float) time_unit);
-#
-#	  scratch = 1000.0;
-#	  while (scratch > max(time_units, 1.0)) {
-#	    spaces(1);
-#	    scratch /= 10.0;
-#	  }
-#
-#	  Serial.print((float) time_units, 3);
-#	  serial_print_progmem(timeUnits);
-#	}
+##	void alive_pulses_info_lines()
+##	{
+##	  int count=0;
+##
+##	  for (unsigned int pulse=0; pulse<pl_max; ++pulse)	// first port used
+##	    if (pulses[pulse].flags) {				// any flags set?
+##	      pulse_info_1line(pulse);
+##	      count++;
+##	    }
+##
+##	  if (count == 0) {				// second port used
+##	    Serial.print(noAlive);
+##	      count++;
+##	    }
+##
+##	  if (count == 0)
+##	    Serial.println(noAlive);
+##
+##	  Serial.println();
+##	}
+##
+##
+
+##	void print_period_in_time_units(unsigned int pulse) {
+##	  float time_units, scratch;
+##
+##	  Serial.print(F()pulse_);
+##	  time_units = ((float) pulses[pulse].period.time / (float) time_unit);
+##
+##	  scratch = 1000.0;
+##	  while (scratch > max(time_units, 1.0)) {
+##	    Serial.print(' ');
+##	    scratch /= 10.0;
+##	  }
+##
+##	  Serial.print((float) time_units, 3);
+##	  Serial.print(F()timeUnits);
+##	}
 #	#endif	// #ifdef USE_SERIAL_BAUD
 #
 #
+
 #
 #	/* **************************************************************** */
 #	// jiffles:
@@ -1413,10 +1434,10 @@ DADA
 #	  {1,16,2, 1,256,32, 1,128,8, 1,64,2, 1,32,1, 1,16,1, 1,8,2, 0,0,0, 0};	// there *must* be a trailing zero.
 #
 #
-#	// enter_jiffletab(), edit jiffletab by hand:
+#	// enter_jiffleSerial.print('\t'), edit jiffletab by hand:
 #	#ifdef USE_SERIAL_BAUD
-#	  const unsigned char jifftabFull[] PROGMEM = "jiffletab full";
-#	  const unsigned char enterJiffletabVal[] PROGMEM = "enter jiffletab values";
+#	  const char jifftabFull[] = "jiffletab full";
+#	  const char enterJiffletabVal[] = "enter jiffletab values";
 #	#endif
 #
 #	void enter_jiffletab(unsigned int *jiffletab)
@@ -1427,7 +1448,7 @@ DADA
 #
 #	  while (true) {
 #	    if (!char_available())
-#	      serial_println_progmem(enterJiffletabVal);
+#	      Serial.println(F()enterJiffletabVal);
 #
 #	    while (!char_available())	// wait for input
 #	      ;
@@ -1451,7 +1472,7 @@ DADA
 #		jiffletab[JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP] = 0;	// trailing 0
 #
 #	#ifdef USE_SERIAL_BAUD
-#		serial_println_progmem(jifftabFull);
+#		Serial.println(F()jifftabFull);
 #	#endif
 #
 #		return;				// quit
@@ -1476,7 +1497,7 @@ DADA
 #	  Serial.print("{");
 #	  for (int i=0; i <= JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP; i++) {
 #	    if ((i % JIFFLETAB_INDEX_STEP) == 0)
-#	      spaces(1);
+#	      Serial.print(' ');
 #	    Serial.print(jiffletab[i]);
 #	    if (jiffletab[i] == 0)
 #	      break;
@@ -1581,7 +1602,7 @@ DADA
 #
 #	#ifdef USE_SERIAL_BAUD
 #	  Serial.print("jiffle0 ");
-#	  serial_print_progmem(sync_); Serial.println(sync);
+#	  Serial.print(F()sync_); Serial.println(sync);
 #	#endif
 #
 #	  get_now();
@@ -1651,10 +1672,10 @@ DADA
 #
 #
 #
-#	const unsigned char storeFull[] PROGMEM = "char_store buffer full";
+#	const char storeFull[] = "char_store buffer full";
 #	int char_store(char c) {
 #	  if (chars_stored) {	// ERROR.  I have not needed more then one char yet...
-#	    serial_println_progmem(storeFull);
+#	    Serial.println(F()storeFull);
 #	  }
 #
 #	  chars_stored++;
@@ -1719,8 +1740,8 @@ DADA
 #
 #	// bar_graph()
 #	// print one value & bar graph line:
-#	const unsigned char outOfRange[] PROGMEM = " out of range.";
-#	const unsigned char value_[] PROGMEM = "value ";
+#	const char outOfRange[] = " out of range.";
+#	const char value_[] = "value ";
 #
 #	void bar_graph(int value) {
 #	  int i, length=64, scale=1023;
@@ -1728,7 +1749,7 @@ DADA
 #
 #
 #	  if (value >=0 && value <= 1024) {
-#	    Serial.print(value); tab();
+#	    Serial.print(value); Serial.print('\t');
 #	    for (i=0; i<stars; i++) {
 #	      if (i == 0 && value == 0)		// zero
 #		Serial.print("0");
@@ -1741,9 +1762,9 @@ DADA
 #		Serial.print("*");
 #	    }
 #	  } else {
-#	    serial_print_progmem(value_);
+#	    Serial.print(F()value_);
 #	    Serial.print(value);
-#	    serial_println_progmem(outOfRange);
+#	    Serial.println(F()outOfRange);
 #	  }
 #
 #	  Serial.println();
@@ -1765,14 +1786,14 @@ DADA
 #
 #	// follow_info(pin)
 #	// info line for bar graph:
-#	const unsigned char followPin[] PROGMEM = "Follow pin ";
-#	const unsigned char tolerance_[] PROGMEM = "\ttolerance ";
+#	const char followPin[] = "Follow pin ";
+#	const char tolerance_[] = "\ttolerance ";
 #
 #	void follow_info(int pin) {
 #	  // display info about pin and tolerance
-#	  serial_print_progmem(followPin);
+#	  Serial.print(F()followPin);
 #	  Serial.print((int) pin);
-#	  serial_print_progmem(tolerance_);
+#	  Serial.print(F()tolerance_);
 #	  Serial.println(bar_graph_tolerance);
 #	}
 #
@@ -1785,9 +1806,9 @@ DADA
 #	// tolerance can be changed by pressing '+' or '-'
 #	// any other key stops VU display
 #
-#	const unsigned char VU_title[] PROGMEM = \
+#	const char VU_title[] = \
 #	  "values\t\t +/- set tolerance\t(any other byte to stop)\n";
-#	const unsigned char quit_[] PROGMEM = "(quit)";
+#	const char quit_[] = "(quit)";
 #
 #	void bar_graph_VU(int pin) {
 #	  int value, oldValue=-9997;		// just an unlikely value
@@ -1795,7 +1816,7 @@ DADA
 #
 #	  follow_info(pin);
 #
-#	  serial_println_progmem(VU_title);
+#	  Serial.println(F()VU_title);
 #	  while (true) {
 #	    value =  analogRead(pin);
 #	    if (abs(value - oldValue) > bar_graph_tolerance) {
@@ -1817,7 +1838,7 @@ DADA
 #	      case '\n': case '\r':	// linebreak after sending 'V'
 #	        break;
 #	      default:
-#		serial_println_progmem(quit_);
+#		Serial.println(F()quit_);
 #		return;		// exit
 #	      }
 #	    }
@@ -1833,17 +1854,17 @@ DADA
 #
 #	// display_analog_reads()
 #	// display analog snapshot read values and bar graphs, a line each input:
-#	const unsigned char analog_reads_title[] PROGMEM = \
+#	const char analog_reads_title[] = \
 #	  "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
 #
 #	void display_analog_reads() {
 #	  int i, value;
 #
-#	  serial_println_progmem(analog_reads_title);
+#	  Serial.println(F()analog_reads_title);
 #
 #	  for (i=0; i<ANALOG_INPUTs; i++) {
 #	    value = analogRead(i);
-#	    Serial.print(i); tab(); bar_graph(value);
+#	    Serial.print(i); Serial.print('\t'); bar_graph(value);
 #	  }
 #
 #	  Serial.println();
@@ -1853,11 +1874,11 @@ DADA
 #
 #	// pin_info()
 #	// display configuration and state of a pin:
-#	const unsigned char pin_[] PROGMEM = "pin ";
-#	const unsigned char high_[] PROGMEM = "high";
-#	const unsigned char low_[] PROGMEM = "low";
-#	const unsigned char pullup_[] PROGMEM = "pullup";
-#	const unsigned char hiZ_[] PROGMEM = "hi-z";
+#	const char pin_[] = "pin ";
+#	const char high_[] = "high";
+#	const char low_[] = "low";
+#	const char pullup_[] = "pullup";
+#	const char hiZ_[] = "hi-z";
 #
 #	// display configuration and state of a pin:
 #	void pin_info(uint8_t pin) {
@@ -1872,9 +1893,9 @@ DADA
 #	    Serial.print("*");
 #	  else
 #	    Serial.print(" ");
-#	  serial_print_progmem(pin_);
+#	  Serial.print(F()pin_);
 #	  Serial.print((int) pin);
-#	  serial_print_progmem(tab_);
+#	  Serial.print(F()tab_);
 #
 #	  // input or output?
 #	  reg = portModeRegister(port);
@@ -1890,10 +1911,10 @@ DADA
 #	    // cli();
 #	    if (*reg & mask) {		    // HIGH
 #	      // SREG = oldSREG;
-#	      serial_print_progmem(high_);
+#	      Serial.print(F()high_);
 #	    } else {			    // LOW
 #	      // SREG = oldSREG;
-#	      serial_print_progmem(low_);
+#	      Serial.print(F()low_);
 #	    }
 #	  } else {			// digital INPUTS
 #	    // SREG = oldSREG;
@@ -1905,10 +1926,10 @@ DADA
 #	    // cli();
 #	    if (*reg & mask) {		    // pull up resistor
 #	      // SREG = oldSREG;
-#	      serial_print_progmem(pullup_);
+#	      Serial.print(F()pullup_);
 #	    } else {			    // tri state high-Z
 #	      // SREG = oldSREG;
-#	      serial_print_progmem(hiZ_);
+#	      Serial.print(F()hiZ_);
 #	    }
 #	  }
 #	  Serial.println();
@@ -1926,30 +1947,30 @@ DADA
 #
 #	// watch_digital_input(pin)
 #	// continuously display digital input readings, whenever the input changes:
-#	const unsigned char watchingINpin[] PROGMEM = "watching digital input pin ";
-#	const unsigned char anyStop[] PROGMEM = "\t\t(send any byte to stop)";
-#	const unsigned char is_[] PROGMEM = " is ";
+#	const char watchingINpin[] = "watching digital input pin ";
+#	const char anyStop[] = "\t\t(send any byte to stop)";
+#	const char is_[] = " is ";
 #
 #	void watch_digital_input(int pin) {
 #	  int value, old_value=-9997;
 #
-#	  serial_print_progmem(watchingINpin);
+#	  Serial.print(F()watchingINpin);
 #	  Serial.print((int) pin);
-#	  serial_println_progmem(anyStop);
+#	  Serial.println(F()anyStop);
 #
 #	  while (!char_available()) {
 #	    value = digitalRead(hw_PIN);
 #	    if (value != old_value) {
 #	      old_value = value;
-#	      serial_print_progmem(pin_); Serial.print((int) pin);
-#	      serial_print_progmem(is_);
+#	      Serial.print(F()pin_); Serial.print((int) pin);
+#	      Serial.print(F()is_);
 #	      if (value)
-#		serial_println_progmem(high_);
+#		Serial.println(F()high_);
 #	      else
-#		serial_println_progmem(low_);
+#		Serial.println(F()low_);
 #	    }
 #	  }
-#	  serial_println_progmem(quit_);
+#	  Serial.println(F()quit_);
 #	  get_char();
 #	}
 #
@@ -1959,32 +1980,32 @@ DADA
 #	// menu hardware display and reaction:
 #
 #	// menu_hardware_display()  display hardware menu:
-#	const unsigned char hwMenuTitle[] PROGMEM = \
+#	const char hwMenuTitle[] = \
 #	  "\n***  HARDWARE menu  ***\t\t";
-#	const unsigned char selectPin[] PROGMEM = \
+#	const char selectPin[] = \
 #	  "P=select pin for 'I, O, H, L, r, W, d, v' to work on ";
-#	const unsigned char PPin[] PROGMEM = "\tP=pin (";
-#	const unsigned char OIHLWr[] PROGMEM = \
+#	const char PPin[] = "\tP=pin (";
+#	const char OIHLWr[] = \
 #	  "O=OUTPUT\tI=INPUT\t\tH=HIGH\tL=LOW\tanalog:\tW=WRITE\t    r=read";
-#	const unsigned char dv_[] PROGMEM = "d=digiwatch\tv=VU bar\t";
-#	const unsigned char aAnalog_[] PROGMEM = "a=all analog\t.=pins_info";
+#	const char dv_[] = "d=digiwatch\tv=VU bar\t";
+#	const char aAnalog_[] = "a=all analog\t.=pins_info";
 #
 #	void menu_hardware_display() {
-#	  serial_print_progmem(hwMenuTitle);
+#	  Serial.print(F()hwMenuTitle);
 #	  Serial.println(get_free_RAM());
 #	  Serial.println();
 #
-#	  serial_print_progmem(selectPin);
-#	  serial_print_progmem(PPin);
+#	  Serial.print(F()selectPin);
+#	  Serial.print(F()PPin);
 #	  if (hw_PIN == ILLEGAL)
 #	    Serial.print("no");
 #	  else
 #	    Serial.print((int) hw_PIN);
 #	  Serial.println(")");
 #
-#	  serial_println_progmem(OIHLWr);
-#	  serial_print_progmem(dv_);
-#	  serial_println_progmem(aAnalog_);
+#	  Serial.println(F()OIHLWr);
+#	  Serial.print(F()dv_);
+#	  Serial.println(F()aAnalog_);
 #	}
 #
 #	#endif	// HARDWARE_menu inside MENU_over_serial
@@ -2009,7 +2030,8 @@ DADA
 #	#endif
 #
 #	#if (CLICK_PULSES > 8)
-#	  spaces(2);
+#         Serial.print(' ');
+#         Serial.print(' ');
 #	  for (unsigned int pulse=8; pulse<min(CLICK_PULSES,16); pulse++)
 #	    if (selected_pulses & (1 << pulse))
 #	      Serial.print(pulse, HEX);
@@ -2018,7 +2040,8 @@ DADA
 #	#endif
 #
 #	#if (pl_max > CLICK_PULSES)
-#	  spaces(2);
+#         Serial.print(' ');
+#         Serial.print(' ');
 #	  for (unsigned int pulse=CLICK_PULSES; pulse<pl_max; pulse++)
 #	    if (selected_pulses & (1 << pulse))
 #	      Serial.write('+');
@@ -2029,10 +2052,10 @@ DADA
 #	  Serial.println();
 #	}
 #
-#	const unsigned char selected_[] PROGMEM = "selected ";
+#	const char selected_[] = "selected ";
 #
 #	void print_selected() {
-#	  serial_print_progmem(selected_);
+#	  Serial.print(F()selected_);
 #
 #	  switch (dest) {
 #	  case CODE_PULSES:
@@ -2040,36 +2063,38 @@ DADA
 #	    break;
 #
 #	  case CODE_TIME_UNIT:
-#	    serial_println_progmem(timeUnit);
+#	    Serial.println(F()timeUnit);
 #	    break;
 #	  }
 #	}
 #
 #
 #	// info_select_destination_with()
-#	const unsigned char selectDestinationInfo[] PROGMEM =
+#	const char selectDestinationInfo[] =
 #	  "SELECT DESTINATION for '= * / s K p n c j' to work on:\t\t";
-#	const unsigned char selectPulseWith[] PROGMEM = "Select puls with ";
-#	const unsigned char selectAllPulses[] PROGMEM =
+#	const char selectPulseWith[] = "Select puls with ";
+#	const char selectAllPulses[] =
 #	  "\na=select *all* click pulses\tA=*all* pulses\tl=alive clicks\tL=all alive\tx=none\t~=invert selection";
-#	const unsigned char uSelect[] PROGMEM = "u=select ";
-#	const unsigned char selected__[] PROGMEM = "\t(selected)";
+#	const char uSelect[] = "u=select ";
+#	const char selected__[] = "\t(selected)";
 #
 #	void info_select_destination_with(boolean extended_destinations) {
-#	  serial_print_progmem(selectDestinationInfo);
+#	  Serial.print(F()selectDestinationInfo);
 #	  print_selected();  Serial.println();
 #
-#	  serial_print_progmem(selectPulseWith);
+#	  Serial.print(F()selectPulseWith);
 #	  for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++) {
-#	    Serial.print(pulse); spaces(2);
+#	    Serial.print(pulse);
+#           Serial.print(' ');
+#           Serial.print(' ');
 #	  }
 #
-#	  serial_println_progmem(selectAllPulses);
+#	  Serial.println(F()selectAllPulses);
 #
 #	  if(extended_destinations) {
-#	    serial_print_progmem(uSelect);  serial_print_progmem(timeUnit);
+#	    Serial.print(F()uSelect);  Serial.print(F()timeUnit);
 #	    if(dest == CODE_TIME_UNIT) {
-#	      serial_println_progmem(selected__);
+#	      Serial.println(F()selected__);
 #	    } else
 #	      Serial.println();
 #	    Serial.println();
@@ -2079,32 +2104,32 @@ DADA
 #
 #
 #	// menu_program_display()
-#	const unsigned char helpInfo[] PROGMEM = \
+#	const char helpInfo[] = \
 #	  "?=help\tm=menu\ti=info\t.=short info";
-#	const unsigned char microSeconds[] PROGMEM = " microseconds";
-#	const unsigned char muteKill[] PROGMEM = \
+#	const char microSeconds[] = " microseconds";
+#	const char muteKill[] = \
 #	  "M=mute all\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tf=en-info\tF=en-INFO\tn=sync now\nS=sync ";
-#	const unsigned char perSecond_[] PROGMEM = " per second)";
-#	const unsigned char equals_[] PROGMEM = " = ";
-#	const unsigned char switchPulse[] PROGMEM = "s=switch pulse on/off";
+#	const char perSecond_[] = " per second)";
+#	const char equals_[] = " = ";
+#	const char switchPulse[] = "s=switch pulse on/off";
 #
 #	void menu_program_display() {
-#	  serial_println_progmem(helpInfo);
+#	  Serial.println(F()helpInfo);
 #
 #	  Serial.println();
 #	  info_select_destination_with(false);
 #
-#	  serial_print_progmem(uSelect);  serial_print_progmem(timeUnit);
+#	  Serial.print(F()uSelect);  Serial.print(F()timeUnit);
 #	  Serial.print("  (");
 #	  Serial.print(time_unit);
-#	  serial_print_progmem(microSeconds);
-#	  serial_print_progmem(equals_);
+#	  Serial.print(F()microSeconds);
+#	  Serial.print(F()equals_);
 #	  Serial.print((float) (1000000.0 / (float) time_unit),3);
-#	  serial_println_progmem(perSecond_);
+#	  Serial.println(F()perSecond_);
 #
 #	  Serial.println();
-#	  serial_print_progmem(switchPulse);
-#	  tab();  serial_print_progmem(muteKill);
+#	  Serial.print(F()switchPulse);
+#	  Serial.print('\t');  Serial.print(F()muteKill);
 #	  Serial.println(sync);
 #	}
 #
@@ -2115,17 +2140,17 @@ DADA
 #	// please_select_pin()
 #	// give a warning that no valid pin was selected
 #	void please_select_pin() {
-#	  serial_println_progmem(selectPin);
+#	  Serial.println(F()selectPin);
 #	}
 #
 #
 #	// bool menu_hardware_reaction(menu_input)
 #	// try to react on menu_input, return success flag
-#	const unsigned char invalid_[] PROGMEM = "(invalid)";
-#	const unsigned char setToLow[] PROGMEM = " was set to LOW.";
-#	const unsigned char analogWriteValue[] PROGMEM = "analog write value ";
-#	const unsigned char analogWrite_[] PROGMEM = "analogWrite(";
-#	const unsigned char analogValueOnPin[] PROGMEM = "analog value on pin ";
+#	const char invalid_[] = "(invalid)";
+#	const char setToLow[] = " was set to LOW.";
+#	const char analogWriteValue[] = "analog write value ";
+#	const char analogWrite_[] = "analogWrite(";
+#	const char analogValueOnPin[] = "analog value on pin ";
 #
 #	bool menu_hardware_reaction(char menu_input) {
 #	  long newValue;
@@ -2133,9 +2158,9 @@ DADA
 #	  switch (menu_input) {
 #	//  // DEACTIVATED as it is in the menu already
 #	//  case  'M':
-#	//    serial_print_progmem(freeRAM);
+#	//    Serial.print(F()freeRAM);
 #	//    Serial.print(get_free_RAM());
-#	//    serial_println_progmem(bytes_);
+#	//    Serial.println(F()bytes_);
 #	//    break;
 #	// or:
 #	//  case  'M':	// RAM
@@ -2144,15 +2169,15 @@ DADA
 #
 #	  case 'P':	// uppercase/lowercase
 #	  case 'p':	// we accept lowercase as it does not change the chip
-#	    serial_print_progmem(selectPin);
-#	    serial_print_progmem(tab_);
+#	    Serial.print(F()selectPin);
+#	    Serial.print(F()tab_);
 #
 #	    newValue = numeric_input(hw_PIN);
 #	    if (newValue>=0 && newValue<DIGITAL_PINs) {
 #	      hw_PIN = newValue;
 #	      pin_info(hw_PIN);
 #	    } else
-#	      serial_println_progmem(invalid_);
+#	      Serial.println(F()invalid_);
 #	    break;
 #
 #	  case 'O':
@@ -2195,16 +2220,16 @@ DADA
 #	    if (hw_PIN == ILLEGAL)
 #	      please_select_pin();
 #	    else {
-#	      serial_print_progmem(analogWriteValue);
+#	      Serial.print(F()analogWriteValue);
 #	      newValue = numeric_input(-1);
 #	      if (newValue>=0 && newValue<=255) {
 #		Serial.println(newValue);
 #
 #		analogWrite(hw_PIN, newValue);
-#		serial_print_progmem(analogWrite_); Serial.print((int) hw_PIN);
+#		Serial.print(F()analogWrite_); Serial.print((int) hw_PIN);
 #		Serial.print(", "); Serial.print(newValue); Serial.println(")");
 #	      } else
-#		serial_println_progmem(quit_);
+#		Serial.println(F()quit_);
 #	    }
 #	    break;
 #
@@ -2212,8 +2237,8 @@ DADA
 #	    if ((hw_PIN == ILLEGAL) | (hw_PIN >= ANALOG_INPUTs))
 #	      please_select_pin();
 #	    else {
-#	      serial_print_progmem(analogValueOnPin); Serial.print((int) hw_PIN);
-#	      serial_print_progmem(is_); Serial.println(analogRead(hw_PIN));
+#	      Serial.print(F()analogValueOnPin); Serial.print((int) hw_PIN);
+#	      Serial.print(F()is_); Serial.println(analogRead(hw_PIN));
 #	    }
 #	    break;
 #
@@ -2277,13 +2302,13 @@ DADA
 #	}
 #
 #
-#	const unsigned char setTimeUnit_[] PROGMEM = "Set time unit to ";
+#	const char setTimeUnit_[] = "Set time unit to ";
 #
 #	void set_time_unit_and_inform(unsigned long new_value) {
 #	  time_unit = new_value;
-#	  serial_print_progmem(setTimeUnit_);
+#	  Serial.print(F()setTimeUnit_);
 #	  Serial.print(time_unit);
-#	  serial_println_progmem(microSeconds);
+#	  Serial.println(F()microSeconds);
 #	}
 #
 #
@@ -2327,31 +2352,31 @@ DADA
 #
 #	// menu_serial_common_display()
 #	// display menu items common to all menus:
-#	const unsigned char common_[] PROGMEM = \
+#	const char common_[] = \
 #	  "\nPress 'm' or '?' for menu, 'q' quit this menu.";
 #
 #	#ifdef PROGRAM_menu
-#	const unsigned char program_[] PROGMEM = \
+#	const char program_[] = \
 #	  " 'P' program menu ";
 #	#endif
 #
 #	#ifdef HARDWARE_menu
-#	const unsigned char hardware_[] PROGMEM = \
+#	const char hardware_[] = \
 #	  " 'H' hardware menu ";
 #	#endif
 #
 #	// menu_serial_common_display()
 #	// display menu items common to all menus:
 #	void menu_serial_common_display() {
-#	  serial_print_progmem(common_);
+#	  Serial.print(F()common_);
 #	#ifdef PROGRAM_menu
 #	  if (menu != MENU_CODE_PROGRAM)
 #	    if (menu != MENU_CODE_HARDWARE)	// hardware menu hides 'P'
-#	      serial_print_progmem(program_);
+#	      Serial.print(F()program_);
 #	#endif
 #	#ifdef HARDWARE_menu
 #	  if (menu != MENU_CODE_HARDWARE)
-#	    serial_print_progmem(hardware_);
+#	    Serial.print(F()hardware_);
 #	#endif
 #	}
 #
@@ -2360,7 +2385,7 @@ DADA
 #	// menu_serial_display()
 #	// top level serial menu display function
 #	void menu_serial_display() {
-#	  serial_println_progmem(programLongName);
+#	  Serial.println(F()programLongName);
 #
 #	  switch (menu) {
 #	  case MENU_CODE_UNDECIDED:
@@ -2423,7 +2448,7 @@ DADA
 #	// menu_serial_reaction(), react on serial menu input.
 #	// check for serial input, wait if there´s none
 #	// react on all available serial input
-#	const unsigned char unknownMenuInput[] PROGMEM = "unknown menu input: ";
+#	const char unknownMenuInput[] = "unknown menu input: ";
 #
 #	void menu_serial_reaction() {
 #	  char menu_input;
@@ -2465,7 +2490,7 @@ DADA
 #		  found = menu_serial_common_reaction(menu_input);
 #
 #		if (!found) {		// unknown menu entry
-#		  serial_print_progmem(unknownMenuInput); Serial.println(menu_input);
+#		  Serial.print(F()unknownMenuInput); Serial.println(menu_input);
 #		  while (char_available() > 0) {
 #		    menu_input = get_char();
 #		    Serial.print(byte(menu_input));
@@ -2485,10 +2510,10 @@ DADA
 #
 #	// ****************************************************************
 #	// menu_serial_program_reaction()
-#	// const unsigned char selected_[] PROGMEM = "selected ";
-#	const unsigned char killPulse[] PROGMEM = "kill pulse ";
-#	const unsigned char killedAll[] PROGMEM = "killed all";
-#	const unsigned char onlyPositive[] PROGMEM = "only positive sync ";
+#	// const char selected_[] = "selected ";
+#	const char killPulse[] = "kill pulse ";
+#	const char killedAll[] = "killed all";
+#	const char onlyPositive[] = "only positive sync ";
 #
 #	bool menu_serial_program_reaction(char menu_input) {
 #	  long new_value=0;
@@ -2499,7 +2524,7 @@ DADA
 #	  case '?':	// help
 #	    menu_serial_display();
 #	    alive_pulses_info_lines();
-#	    time_info();  tab(); RAM_info();
+#	    time_info();  Serial.print('\t'); RAM_info();
 #	    break;
 #
 #	  case '.':	// alive pulses info
@@ -2514,7 +2539,7 @@ DADA
 #	  // case '5': case '6': case '7': case '8': case '9':
 #	    selected_pulses ^= (1 << (menu_input - '0'));
 #
-#	    serial_print_progmem(selected_);
+#	    Serial.print(F()selected_);
 #	    print_selected_pulses();
 #	    break;
 #
@@ -2528,14 +2553,14 @@ DADA
 #	    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
 #	      selected_pulses |= (1 << pulse);
 #
-#	    serial_print_progmem(selected_);
+#	    Serial.print(F()selected_);
 #	    print_selected_pulses();
 #	    break;
 #
 #	  case 'A':	// select destination: *all* pulses
 #	    selected_pulses = ~0;
 #
-#	    serial_print_progmem(selected_);
+#	    Serial.print(F()selected_);
 #	    print_selected_pulses();
 #	    break;
 #
@@ -2545,7 +2570,7 @@ DADA
 #	      if(pulses[pulse].flags && (pulses[pulse].flags != SCRATCH))
 #		selected_pulses |= (1 << pulse);
 #
-#	    serial_print_progmem(selected_);
+#	    Serial.print(F()selected_);
 #	    print_selected_pulses();
 #	    break;
 #
@@ -2555,21 +2580,21 @@ DADA
 #	      if(pulses[pulse].flags && (pulses[pulse].flags != SCRATCH))
 #		selected_pulses |= (1 << pulse);
 #
-#	    serial_print_progmem(selected_);
+#	    Serial.print(F()selected_);
 #	    print_selected_pulses();
 #	    break;
 #
 #	  case '~':	// invert destination selection
 #	    selected_pulses = ~selected_pulses;
 #
-#	    serial_print_progmem(selected_);
+#	    Serial.print(F()selected_);
 #	    print_selected_pulses();
 #	    break;
 #
 #	  case 'x':	// clear destination selection
 #	    selected_pulses = 0;
 #
-#	    serial_print_progmem(selected_);
+#	    Serial.print(F()selected_);
 #	    print_selected_pulses();
 #	    break;
 #
@@ -2600,12 +2625,12 @@ DADA
 #	    break;
 #
 #	  case 'S':	// enter sync
-#	    serial_print_progmem(sync_);
+#	    Serial.print(F()sync_);
 #	    new_value = numeric_input(sync);
 #	    if (new_value>=0 )
 #	      sync = new_value;
 #	    else
-#	      serial_print_progmem(onlyPositive);
+#	      Serial.print(F()onlyPositive);
 #	    Serial.println(sync);
 #	    break;
 #
@@ -2631,7 +2656,7 @@ DADA
 #		Serial.println();
 #		alive_pulses_info_lines();
 #	      } else
-#		serial_println_progmem(invalid_);
+#		Serial.println(F()invalid_);
 #	      break;
 #
 #	    case CODE_TIME_UNIT:
@@ -2639,7 +2664,7 @@ DADA
 #	      if (new_value>0)
 #		set_time_unit_and_inform(time_unit*new_value);
 #	      else
-#		serial_println_progmem(invalid_);
+#		Serial.println(F()invalid_);
 #	      break;
 #	    }
 #	    break;
@@ -2656,7 +2681,7 @@ DADA
 #		Serial.println();
 #		alive_pulses_info_lines();
 #	      } else
-#		serial_println_progmem(invalid_);
+#		Serial.println(F()invalid_);
 #	      break;
 #
 #	    case CODE_TIME_UNIT:
@@ -2664,7 +2689,7 @@ DADA
 #	      if (new_value>0)
 #		set_time_unit_and_inform(time_unit/new_value);
 #	      else
-#		serial_println_progmem(invalid_);
+#		Serial.println(F()invalid_);
 #	      break;
 #	    }
 #	    break;
@@ -2685,7 +2710,7 @@ DADA
 #		Serial.println();
 #		alive_pulses_info_lines();
 #	      } else
-#		serial_println_progmem(invalid_);
+#		Serial.println(F()invalid_);
 #	      break;
 #
 #	    case CODE_TIME_UNIT:
@@ -2693,7 +2718,7 @@ DADA
 #	      if (new_value>0)
 #		set_time_unit_and_inform(new_value);
 #	      else
-#		serial_println_progmem(invalid_);
+#		Serial.println(F()invalid_);
 #	      break;
 #	    }
 #	    break;
@@ -2702,7 +2727,7 @@ DADA
 #	    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)	// DADA ################
 #	      if (selected_pulses & (1 << pulse)) {
 #		init_pulse(pulse);
-#		serial_print_progmem(killPulse); Serial.println(pulse);
+#		Serial.print(F()killPulse); Serial.println(pulse);
 #	      }
 #	    Serial.println();
 #	    alive_pulses_info_lines(); Serial.println();
@@ -2830,9 +2855,9 @@ DADA
 #
 #	//	#ifdef USE_LCD
 #	//	  LCD.begin(LCD_COLs, LCD_ROWs);
-#	//	  LCD_print_line_progmem(0, programName);
-#	//	  LCD_print_line_progmem(1, version);
-#	//	  LCD_print_line_progmem(3, freeRAM);
+#	//	  LCD_print_line(F()0, programName);
+#	//	  LCD_print_line(F()1, version);
+#	//	  LCD_print_line(F()3, freeRAM);
 #	//	  LCD.print(get_free_RAM());
 #	//	#endif
 #
@@ -2841,7 +2866,7 @@ DADA
 #	  #ifdef MENU_over_serial	// show message about menu
 #	    menu_serial_display();
 #	  #else
-#	    serial_println_progmem(programLongName);
+#	    Serial.println(F()programLongName);
 #	  #endif
 #
 #	  RAM_info(); Serial.println();
@@ -2850,7 +2875,7 @@ DADA
 #	//	#ifdef USE_LCD
 #	//	  delay(3000);
 #	//	  LCD.clear();
-#	//	  LCD_print_line_progmem(TOP, programName);
+#	//	  LCD_print_line(F()TOP, programName);
 #	//	#endif
 #
 #

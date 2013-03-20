@@ -32,6 +32,16 @@
 #include <Pulses.h>
 
 
+// FIXME: ################
+void display_action(unsigned int pulse);
+float display_realtime_sec(struct time duration);
+void pulse_info_1line(unsigned int pulse);
+void click(unsigned int pulse);
+pulse_t * pulses;
+void do_jiffle (unsigned int pulse);
+void do_throw_a_jiffle(unsigned int pulse);
+
+
 /* **************************************************************** */
 // Constructor/Destructor:
 
@@ -354,9 +364,6 @@ void Pulses::check_maybe_do() {
     }
 }
 
-#ifdef USE_SERIAL_BAUD
-    const char noFreePulses[] = "no free pulses";
-#endif
 
 int Pulses::setup_pulse(void (*pulse_do)(unsigned int), unsigned char new_flags, \
 			struct time when, struct time new_period)
@@ -373,7 +380,7 @@ int Pulses::setup_pulse(void (*pulse_do)(unsigned int), unsigned char new_flags,
   if (pulse == pl_max) {			// no pulse free :(
 
 #ifdef USE_SERIAL_BAUD
-    serial_println_progmem(noFreePulses);
+    Serial.println(F("no free pulses"));
 #endif
 
     return ILLEGAL;			// ERROR
@@ -388,6 +395,19 @@ int Pulses::setup_pulse(void (*pulse_do)(unsigned int), unsigned char new_flags,
   pulses[pulse].period.overflow = new_period.overflow;
 
   // fix_global_next();	// this version does *not* automatically call that here...
+
+  return pulse;
+}
+
+
+// unused?
+int setup_counted_pulse(void (*pulse_do)(int), unsigned char new_flags, \
+			struct time when, struct time new_period, unsigned int count)
+{
+  unsigned int pulse;
+
+  pulse= setup_pulse(pulse_do, new_flags|COUNTED, when, new_period);
+  pulses[pulse].int1= count;
 
   return pulse;
 }
@@ -495,13 +515,18 @@ void Pulses::mute_all_clicks() {
 
 // FIXME: ################
 #ifdef USE_SERIAL_BAUD
-  serial_println_progmem(mutedAllPulses);
+  Serial.println(mutedAllPulses);
 #endif
 }
 
 
 /* **************************************************************** */
 // creating, editing, killing pulses
+
+
+// FIXME: ################ type?
+unsigned long selected_pulses=0L;	// pulse bitmask
+
 
 // (re-) activate pulse that has been edited or modified at a given time:
 // (assumes everything else is set up in order)
@@ -560,43 +585,39 @@ void Pulses::en_INFO(unsigned int pulse)
 }
 
 
-// currently only used in menu
-// pulse_info_1line():	one line pulse info, short version
-void Pulses::pulse_info_1line(unsigned int pulse) {
-  unsigned long realtime=micros();	// let's take time *before* serial output
+// binary print flags:
+// print binary numbers with leading zeroes and a space
+void serial_print_BIN(unsigned long value, int bits) {
+  int i;
+  unsigned long mask=0;
 
-  Serial.print(F("PULSE "));
-  Serial.print(pulse);
-  slash();
-  Serial.print((unsigned int) pulses[pulse].counter);
-
-  serial_print_progmem(flags_);
-  serial_print_BIN(pulses[pulse].flags, 8);
-
-  tab();
-  print_period_in_time_units(pulse);
-
-  tab();
-  display_action(pulse);
-
-  tab();
-  serial_print_progmem(expected_); spaces(5);
-  display_realtime_sec(pulses[pulse].next);
-
-  tab();
-  serial_print_progmem(now_);
-  struct time scratch = now;
-  scratch.time = realtime;
-  display_realtime_sec(scratch);
-
-  if (selected_pulses & (1 << pulse))
-    Serial.print(" *");
-
-  Serial.println();
+  for (i = bits - 1; i >= 0; i--) {
+    mask = (1 << i);
+      if (value & mask)
+	Serial.print(1);
+      else
+	Serial.print(0);
+  }
+  Serial.print(' ');
 }
 
 
-// pulse_info()
+// time unit that the user sees.
+// it has no influence on inner working, but is a menu I/O thing only
+// the user sees and edits times in time units.
+unsigned long time_unit = 100000L;		// scaling timer to 10/s 0.1s
+
+// I want time_unit to be dividable by a semi random selection of small integers
+// avoiding rounding errors as much as possible.
+//
+// I consider factorials as a good choice:
+// unsigned long time_unit =    40320L;		// scaling timer to  8!, 0.040320s
+// unsigned long time_unit =   362880L;		// scaling timer to  9!, 0,362880s
+// unsigned long time_unit =  3628800L;		// scaling timer to 10!, 3.628800s
+
+
+
+
 const char timeUnit[] = "time unit";
 const char timeUnits[] = " time units";
 const char pulseInfo[] = "*** PULSE info ";
@@ -610,6 +631,84 @@ const char pulse_[] = "pulse ";
 const char expected_[] = "expected ";
 const char ul1_[] = "\tul1 ";
 
+
+void print_period_in_time_units(unsigned int pulse) {
+  float time_units, scratch;
+
+  Serial.print(pulse_);
+  time_units = ((float) pulses[pulse].period.time / (float) time_unit);
+
+  scratch = 1000.0;
+  while (scratch > max(time_units, (float) 1.0)) {
+    Serial.print(' ');
+    scratch /= 10.0;
+  }
+
+  Serial.print((float) time_units, 3);
+  Serial.print(timeUnits);
+}
+
+
+// currently only used in menu
+// pulse_info_1line():	one line pulse info, short version
+void Pulses::pulse_info_1line(unsigned int pulse) {
+  unsigned long realtime=micros();	// let's take time *before* serial output
+
+  Serial.print(F("PULSE "));
+  Serial.print(pulse);
+  Serial.print('/');
+  Serial.print((unsigned int) pulses[pulse].counter);
+
+  Serial.print(flags_);
+  serial_print_BIN(pulses[pulse].flags, 8);
+
+  Serial.print('\t');
+  print_period_in_time_units(pulse);
+
+  Serial.print('\t');
+  display_action(pulse);
+
+  Serial.print('\t');
+  Serial.print(expected_);
+  Serial.print(F("     "));
+  display_realtime_sec(pulses[pulse].next);
+
+  Serial.print('\t');
+  Serial.print(F("now "));
+  struct time scratch = now;
+  scratch.time = realtime;
+  display_realtime_sec(scratch);
+
+  if (selected_pulses & (1 << pulse))
+    Serial.print(" *");
+
+  Serial.println();
+}
+
+const char noAlive[] = "no pulses alive";
+
+void alive_pulses_info_lines()
+{
+  int count=0;
+
+  for (unsigned int pulse=0; pulse<pl_max; ++pulse)	// first port used
+    if (pulses[pulse].flags) {				// any flags set?
+      pulse_info_1line(pulse);
+      count++;
+    }
+
+  if (count == 0) {				// second port used
+    Serial.print(noAlive);
+      count++;
+    }
+
+  if (count == 0)
+    Serial.println(noAlive);
+
+  Serial.println();
+}
+
+
 // pulse_info() as paylod for pulses:
 // Prints pulse info over serial and blinks the LED
 void Pulses::pulse_info(unsigned int pulse) {
@@ -618,53 +717,54 @@ void Pulses::pulse_info(unsigned int pulse) {
   digitalWrite(LED_PIN,HIGH);		// blink the LED
 #endif
 
-  serial_print_progmem(pulseInfo);
+  Serial.print(pulseInfo);
   Serial.print(pulse);
-  slash();
+  Serial.print('/');
   Serial.print((unsigned int) pulses[pulse].counter);
 
-  tab();
+  Serial.print('\t');
   display_action(pulse);
 
-  serial_print_progmem(flags_);
-  serial_print_BIN(pulses[pulse].flags, 8);
+  Serial.print(flags_);
+  Serial.print_BIN(pulses[pulse].flags, 8);
   Serial.println();
 
   Serial.print("pin ");  Serial.print((int) pulses[pulse].char_parameter_1);
-  serial_print_progmem(index_);  Serial.print((int) pulses[pulse].char_parameter_2);
-  serial_print_progmem(times_);  Serial.print(pulses[pulse].int1);
+  Serial.print(index_);  Serial.print((int) pulses[pulse].char_parameter_2);
+  Serial.print(times_);  Serial.print(pulses[pulse].int1);
   Serial.print("\tp1 ");  Serial.print(pulses[pulse].parameter_1);
   Serial.print("\tp2 ");  Serial.print(pulses[pulse].parameter_2);
-  serial_print_progmem(ul1_);  Serial.print(pulses[pulse].ulong_parameter_1);
+  Serial.print(ul1_);  Serial.print(pulses[pulse].ulong_parameter_1);
 
   Serial.println();		// start next line
 
   Serial.print((float) pulses[pulse].period.time / (float) time_unit,3);
-  serial_print_progmem(timeUnits);
+  Serial.print(timeUnits);
 
-  serial_print_progmem(pulseOvfl);
+  Serial.print(pulseOvfl);
   Serial.print((unsigned int) pulses[pulse].period.time);
-  slash();
+  Serial.print('/');
   Serial.print(pulses[pulse].period.overflow);
 
-  tab();
+  Serial.print('\t');
   display_realtime_sec(pulses[pulse].period);
-  spaces(1); serial_print_progmem(pulse_);
+  Serial.print(' ');
+  Serial.print(pulse_);
 
   Serial.println();		// start next line
 
-  serial_print_progmem(lastOvfl);
+  Serial.print(lastOvfl);
   Serial.print((unsigned int) pulses[pulse].last.time);
-  slash();
+  Serial.print('/');
   Serial.print(pulses[pulse].last.overflow);
 
-  serial_print_progmem(nextOvfl);
+  Serial.print(nextOvfl);
   Serial.print(pulses[pulse].next.time);
-  slash();
+  Serial.print('/');
   Serial.print(pulses[pulse].next.overflow);
 
-  tab();
-  serial_print_progmem(expected_);
+  Serial.print('\t');
+  Serial.print(expected_);
   display_realtime_sec(pulses[pulse].next);
 
   Serial.println();		// start last line
@@ -689,9 +789,74 @@ void Pulses::alive_pulses_info()
     }
 
   if (count == 0)
-    Serial.println(F("no pulses alive"));
+    Serial.println(noAlive);
 }
 
+
+// FIXME: ################
+const float overflow_sec = 4294.9672851562600;	// overflow time in seconds
+
+
+// display a time in seconds:
+float display_realtime_sec(struct time duration) {
+  float seconds=((float) duration.time / 1000000.0);
+  seconds += overflow_sec * (float) duration.overflow;
+
+  float scratch = 1000.0;
+  while (scratch > max(seconds, 1.0)) {
+    Serial.print(' ');
+    scratch /= 10.0;
+  }
+
+
+  Serial.print(seconds , 3);
+  Serial.print("s");
+
+  return seconds;
+}
+
+
+void display_action(unsigned int pulse) {
+  void (*scratch)(unsigned int);
+
+  scratch=&click;
+  if (pulses[pulse].periodic_do == scratch) {
+    Serial.print("click\t");	// 8 chars at least
+    return;
+  }
+
+  scratch=&do_jiffle;
+  if (pulses[pulse].periodic_do == scratch) {
+    Serial.print("do_jiffle");
+    return;
+  }
+
+  scratch=&do_throw_a_jiffle;
+  if (pulses[pulse].periodic_do == scratch) {
+    Serial.print("seed jiffle");
+    return;
+  }
+
+  scratch=&pulse_info;
+  if (pulses[pulse].periodic_do == scratch) {
+    Serial.print("pulse_info");
+    return;
+  }
+
+  scratch=&pulse_info_1line;
+  if (pulses[pulse].periodic_do == scratch) {
+    Serial.print("info line");
+    return;
+  }
+
+  scratch=NULL;
+  if (pulses[pulse].periodic_do == scratch) {
+    Serial.print("NULL\t");	// 8 chars at least
+    return;
+  }
+
+  Serial.print("UNKNOWN\t");
+}
 
 
 /* **************************************************************** */

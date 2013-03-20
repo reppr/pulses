@@ -53,9 +53,9 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
 #include <Pulses.h>
 
-const int pl_max=16;
+const int pulses_max=16;
 
-Pulses PULSES(pl_max);
+Pulses PULSES(pulses_max);
 
 /* BAUDRATE for Serial:	uncomment one of the following lines:	*/
 #define BAUDRATE	115200		// works fine here
@@ -82,7 +82,7 @@ void setup() {
   Serial.println(get_free_RAM());
 
   Serial.print(F("\nNumber of pulses: "));
-  Serial.println(pl_max);
+  Serial.println(pulses_max);
 
   Serial.println(F("\nPULSES.init_pulses()"));
   PULSES.init_pulses();
@@ -93,9 +93,9 @@ void setup() {
   Serial.print(F("\nsizeof(pulse_t) "));
   Serial.print(sizeof(pulse_t));
   Serial.print(F(" * "));
-  Serial.print(pl_max);
+  Serial.print(pulses_max);
   Serial.print(F(" pulses = \t"));
-  Serial.println(sizeof(pulse_t)*pl_max);
+  Serial.println(sizeof(pulse_t)*pulses_max);
 
   Serial.print(F("PULSES.init_time()\n"));
   PULSES.init_time();
@@ -112,7 +112,7 @@ int main() {
 
   printf("\nTesting test.ino\n");
 
-  printf("\nNumber of pulses: %d\n", pl_max);
+  printf("\nNumber of pulses: %d\n", pulses_max);
 
   printf("\nPULSES.init_pulses();\n");
   PULSES.init_pulses();
@@ -120,7 +120,7 @@ int main() {
 
 
   printf("sizeof(pulse_t) %d * %d = \t%d\n\n",	\
-	 sizeof(pulse_t), pl_max, sizeof(pulse_t)*pl_max );
+	 sizeof(pulse_t), pulses_max, sizeof(pulse_t)*pulses_max );
 
 }
 
