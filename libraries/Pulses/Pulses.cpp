@@ -33,13 +33,13 @@
 
 
 // FIXME: ################
-void display_action(unsigned int pulse);
+void display_action(int pulse);
 float display_realtime_sec(struct time duration);
-void pulse_info_1line(unsigned int pulse);
-void click(unsigned int pulse);
+void pulse_info_1line(int pulse);
+void click(int pulse);
 pulse_t * pulses;
-void do_jiffle (unsigned int pulse);
-void do_throw_a_jiffle(unsigned int pulse);
+void do_jiffle (int pulse);
+void do_throw_a_jiffle(int pulse);
 
 
 /* **************************************************************** */
@@ -241,7 +241,7 @@ void Pulses::global_shift(int global_octave) {
 
 // init, reset or kill a pulse:	// fill with zero??? ################
 // memset(&arr[0], 0, sizeof(arr)); ################
-void Pulses::init_pulse(unsigned int pulse) {
+void Pulses::init_pulse(int pulse) {
   pulses[pulse].flags = 0;
   pulses[pulse].periodic_do = NULL;
   pulses[pulse].counter = 0;
@@ -262,15 +262,15 @@ void Pulses::init_pulse(unsigned int pulse) {
 
 // called from constructor:
 void Pulses::init_pulses() {
-  for (unsigned int pulse=0; pulse<pl_max; pulse++) {
+  for (int pulse=0; pulse<pl_max; pulse++) {
     init_pulse(pulse);
   }
 }
 
 
-// void wake_pulse(unsigned int pulse);	do one life step of the pulse
+// void wake_pulse(int pulse);	do one life step of the pulse
 // gets called from check_maybe_do()
-void Pulses::wake_pulse(unsigned int pulse) {
+void Pulses::wake_pulse(int pulse) {
   pulses[pulse].counter++;			//      count
 
   if (pulses[pulse].periodic_do != NULL) {	// there *is* something else to do?
@@ -404,7 +404,7 @@ int Pulses::setup_pulse(void (*pulse_do)(unsigned int), unsigned char new_flags,
 int setup_counted_pulse(void (*pulse_do)(int), unsigned char new_flags, \
 			struct time when, struct time new_period, unsigned int count)
 {
-  unsigned int pulse;
+  int pulse;
 
   pulse= setup_pulse(pulse_do, new_flags|COUNTED, when, new_period);
   pulses[pulse].int1= count;
@@ -413,7 +413,7 @@ int setup_counted_pulse(void (*pulse_do)(int), unsigned char new_flags, \
 }
 
 
-void Pulses::set_new_period(unsigned int pulse, struct time new_period) {
+void Pulses::set_new_period(int pulse, struct time new_period) {
   pulses[pulse].period.time = new_period.time;
   pulses[pulse].period.overflow = new_period.overflow;
 
@@ -463,14 +463,14 @@ void Pulses::set_new_period(unsigned int pulse, struct time new_period) {
 // FIXME: ################
 // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
 void Pulses::init_click_pulses() {
-  for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++) {
+  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
     init_pulse(pulse);
     // pulses[pulse].flags |= DO_NOT_DELETE;
   }
 }
 
 
-void Pulses::click(unsigned int pulse) {	// can be called from a pulse
+void Pulses::click(int pulse) {	// can be called from a pulse
   digitalWrite(pulses[pulse].char_parameter_1, pulses[pulse].counter & 1);
 }
 
@@ -481,7 +481,7 @@ void Pulses::click(unsigned int pulse) {	// can be called from a pulse
 unsigned char click_pin[CLICK_PULSES];
 
 void Pulses::init_click_pins() {
-  for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++) {
+  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
     pinMode(click_pin[pulse], OUTPUT);
     digitalWrite(click_pin[pulse], LOW);
   }
@@ -508,7 +508,7 @@ void Pulses::init_click_pins() {
 #endif
 
 void Pulses::mute_all_clicks() {
-  for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+  for (int pulse=0; pulse<CLICK_PULSES; pulse++)
     pulses[pulse].flags &= ~ACTIVE;
 
   fix_global_next();
@@ -537,7 +537,7 @@ int sync=1;			// syncing edges or middles of square pulses
    (assumes everything else is set up in order)
    can also be used to sync running pulses on a given time		*/
 // currently only used in menu
-void Pulses::activate_pulse_synced(unsigned int pulse, \
+void Pulses::activate_pulse_synced(int pulse, \
 				   struct time when, int sync)
 {
   if (sync) {
@@ -558,7 +558,7 @@ void Pulses::activate_pulse_synced(unsigned int pulse, \
 
 // currently only used in menu
 // make an existing pulse to a click pulse:
-void Pulses::en_click(unsigned int pulse)
+void Pulses::en_click(int pulse)
 {
   if (pulse != ILLEGAL) {
     pulses[pulse].periodic_do = (void (*)(unsigned int)) &Pulses::click;
@@ -571,7 +571,7 @@ void Pulses::en_click(unsigned int pulse)
 
 // currently only used in menu
 // make an existing pulse to display 1 info line:
-void Pulses::en_info(unsigned int pulse)
+void Pulses::en_info(int pulse)
 {
   if (pulse != ILLEGAL) {
     pulses[pulse].periodic_do = (void (*)(unsigned int)) &Pulses::pulse_info_1line;
@@ -581,7 +581,7 @@ void Pulses::en_info(unsigned int pulse)
 
 // currently only used in menu
 // make an existing pulse to display multiline pulse info:
-void Pulses::en_INFO(unsigned int pulse)
+void Pulses::en_INFO(int pulse)
 {
   if (pulse != ILLEGAL) {
     pulses[pulse].periodic_do = (void (*)(unsigned int)) &Pulses::pulse_info;
@@ -636,7 +636,7 @@ const char expected_[] = "expected ";
 const char ul1_[] = "\tul1 ";
 
 
-void print_period_in_time_units(unsigned int pulse) {
+void print_period_in_time_units(int pulse) {
   float time_units, scratch;
 
   Serial.print(pulse_);
@@ -655,7 +655,7 @@ void print_period_in_time_units(unsigned int pulse) {
 
 // currently only used in menu
 // pulse_info_1line():	one line pulse info, short version
-void Pulses::pulse_info_1line(unsigned int pulse) {
+void Pulses::pulse_info_1line(int pulse) {
   unsigned long realtime=micros();	// let's take time *before* serial output
 
   Serial.print(F("PULSE "));
@@ -695,7 +695,7 @@ void alive_pulses_info_lines()
 {
   int count=0;
 
-  for (unsigned int pulse=0; pulse<pl_max; ++pulse)	// first port used
+  for (int pulse=0; pulse<pl_max; ++pulse)	// first port used
     if (pulses[pulse].flags) {				// any flags set?
       pulse_info_1line(pulse);
       count++;
@@ -715,7 +715,7 @@ void alive_pulses_info_lines()
 
 // pulse_info() as paylod for pulses:
 // Prints pulse info over serial and blinks the LED
-void Pulses::pulse_info(unsigned int pulse) {
+void Pulses::pulse_info(int pulse) {
 
 #ifdef LED_PIN
   digitalWrite(LED_PIN,HIGH);		// blink the LED
@@ -786,7 +786,7 @@ void Pulses::alive_pulses_info()
 {
   int count=0;
 
-  for (unsigned int pulse=0; pulse<pl_max; ++pulse)
+  for (int pulse=0; pulse<pl_max; ++pulse)
     if (pulses[pulse].flags) {				// any flags set?
       pulse_info(pulse);
       count++;
@@ -820,7 +820,7 @@ float display_realtime_sec(struct time duration) {
 }
 
 
-void display_action(unsigned int pulse) {
+void display_action(int pulse) {
   void (*scratch)(unsigned int);
 
   scratch=&click;
@@ -864,7 +864,7 @@ void display_action(unsigned int pulse) {
 
 
 // make an existing pulse to a jiffle thrower pulse:
-void en_jiffle_thrower(unsigned int pulse, unsigned int *jiffletab)
+void en_jiffle_thrower(int pulse, unsigned int *jiffletab)
 {
   if (pulse != ILLEGAL) {
     pulses[pulse].periodic_do = &do_throw_a_jiffle;
@@ -913,7 +913,7 @@ int setup_pulse_synced(void (*pulse_do)(int), unsigned char new_flags,
 
 int setup_click_synced(struct time when, unsigned long unit, unsigned long factor,
 		       unsigned long divisor, int sync) {
-  unsigned int pulse= setup_pulse_synced(&click, ACTIVE, when, unit, factor, divisor, sync);
+  int pulse= setup_pulse_synced(&click, ACTIVE, when, unit, factor, divisor, sync);
 
   if (pulse != ILLEGAL) {
     pulses[pulse].char_parameter_1 = click_pin[pulse];
@@ -1076,7 +1076,7 @@ unsigned char dest = CODE_PULSES;
 void print_selected_pulses() {
 
 #ifdef CLICK_PULSES
-  for (unsigned int pulse=0; pulse<min(CLICK_PULSES,8); pulse++)
+  for (int pulse=0; pulse<min(CLICK_PULSES,8); pulse++)
     if (selected_pulses & (1 << pulse))
       Serial.print(pulse, HEX);
     else
@@ -1086,7 +1086,7 @@ void print_selected_pulses() {
 #if (CLICK_PULSES > 8)
    Serial.print(' ');
    Serial.print(' ');
-  for (unsigned int pulse=8; pulse<min(CLICK_PULSES,16); pulse++)
+  for (int pulse=8; pulse<min(CLICK_PULSES,16); pulse++)
     if (selected_pulses & (1 << pulse))
       Serial.print(pulse, HEX);
     else
@@ -1096,7 +1096,7 @@ void print_selected_pulses() {
 #if (pl_max > CLICK_PULSES)
    Serial.print(' ');
    Serial.print(' ');
-  for (unsigned int pulse=CLICK_PULSES; pulse<pl_max; pulse++)
+  for (int pulse=CLICK_PULSES; pulse<pl_max; pulse++)
     if (selected_pulses & (1 << pulse))
       Serial.write('+');
     else
@@ -1137,7 +1137,7 @@ void info_select_destination_with(boolean extended_destinations) {
   print_selected();  Serial.println();
 
   Serial.print(F()selectPulseWith);
-  for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++) {
+  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
     Serial.print(pulse);
      Serial.print(' ');
      Serial.print(' ');
@@ -1191,7 +1191,7 @@ void menu_program_display() {
 /* **************************************************************** */
 // functions called from the menu:
 
-void multiply_period(unsigned int pulse, unsigned long factor) {
+void multiply_period(int pulse, unsigned long factor) {
   struct time new_period;
 
   new_period=pulses[pulse].period;
@@ -1200,7 +1200,7 @@ void multiply_period(unsigned int pulse, unsigned long factor) {
 }
 
 
-void divide_period(unsigned int pulse, unsigned long divisor) {
+void divide_period(int pulse, unsigned long divisor) {
   struct time new_period;
 
   new_period=pulses[pulse].period;
@@ -1220,7 +1220,7 @@ void set_time_unit_and_inform(unsigned long new_value) {
 
 
 // menu interface to reset a pulse and prepare it to be edited:
-void reset_and_edit_pulse(unsigned int pulse) {
+void reset_and_edit_pulse(int pulse) {
   init_pulse(pulse);
   pulses[pulse].flags |= SCRATCH;	// set SCRATCH flag
   pulses[pulse].flags &= ~ACTIVE;	// remove ACTIVE
@@ -1276,7 +1276,7 @@ bool menu_serial_program_reaction(char menu_input) {
 
   case 'a':	// select destination: all click pulses
     selected_pulses=0;
-    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
       selected_pulses |= (1 << pulse);
 
     Serial.print(F()selected_);
@@ -1292,7 +1292,7 @@ bool menu_serial_program_reaction(char menu_input) {
 
   case 'l':	// select destination: alive CLICK_PULSES
     selected_pulses=0;
-    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
       if(pulses[pulse].flags && (pulses[pulse].flags != SCRATCH))
 	selected_pulses |= (1 << pulse);
 
@@ -1302,7 +1302,7 @@ bool menu_serial_program_reaction(char menu_input) {
 
   case 'L':	// select destination: all alive pulses
     selected_pulses=0;
-    for (unsigned int pulse=0; pulse<pl_max; pulse++)
+    for (int pulse=0; pulse<pl_max; pulse++)
       if(pulses[pulse].flags && (pulses[pulse].flags != SCRATCH))
 	selected_pulses |= (1 << pulse);
 
@@ -1325,7 +1325,7 @@ bool menu_serial_program_reaction(char menu_input) {
     break;
 
   case 's':	// switch pulse on/off
-    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++) {
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
       if (selected_pulses & (1 << pulse)) {
 	// special case: switching on an edited SCRATCH pulse:
 	if((pulses[pulse].flags & ACTIVE) == 0)	// was off
@@ -1375,7 +1375,7 @@ bool menu_serial_program_reaction(char menu_input) {
     case CODE_PULSES:
       new_value = numeric_input(1);
       if (new_value>=0) {
-	for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
 	  if (selected_pulses & (1 << pulse))
 	    multiply_period(pulse, new_value);
 
@@ -1400,7 +1400,7 @@ bool menu_serial_program_reaction(char menu_input) {
     case CODE_PULSES:
       new_value = numeric_input(1);
       if (new_value>=0) {
-	for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
 	  if (selected_pulses & (1 << pulse))
 	    divide_period(pulse, new_value);
 
@@ -1425,7 +1425,7 @@ bool menu_serial_program_reaction(char menu_input) {
     case CODE_PULSES:
       new_value = numeric_input(1);
       if (new_value>=0) {
-	for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
 	  if (selected_pulses & (1 << pulse)) {
 	    time_scratch.time = time_unit;
 	    time_scratch.overflow = 0;
@@ -1450,7 +1450,7 @@ bool menu_serial_program_reaction(char menu_input) {
     break;
 
   case 'K':	// kill selected pulses
-    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)	// DADA ################
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++)	// DADA ################
       if (selected_pulses & (1 << pulse)) {
 	init_pulse(pulse);
 	Serial.print(F()killPulse); Serial.println(pulse);
@@ -1460,7 +1460,7 @@ bool menu_serial_program_reaction(char menu_input) {
     break;
 
   case 'P':	// pulse create and edit
-    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)	// DADA ################
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++)	// DADA ################
       if (selected_pulses & (1 << pulse)) {
 	reset_and_edit_pulse(pulse);
       }
@@ -1472,7 +1472,7 @@ bool menu_serial_program_reaction(char menu_input) {
   case 'n':	// synchronise to now
     // we work on CLICK_PULSES anyway, regardless dest
     get_now();
-    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
       if (selected_pulses & (1 << pulse))
 	activate_pulse_synced(pulse, now, abs(sync));
 
@@ -1512,7 +1512,7 @@ bool menu_serial_program_reaction(char menu_input) {
 
   case 'c':	// en_click
     // we work on CLICK_PULSES anyway, regardless dest
-    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
       if (selected_pulses & (1 << pulse))
 	en_click(pulse);
 
@@ -1522,7 +1522,7 @@ bool menu_serial_program_reaction(char menu_input) {
 
   case 'j':	// en_jiffle_thrower
     // we work on CLICK_PULSES anyway, regardless dest
-    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
       if (selected_pulses & (1 << pulse))
 	en_jiffle_thrower(pulse, jiffletab);
 
@@ -1532,7 +1532,7 @@ bool menu_serial_program_reaction(char menu_input) {
 
   case 'f':	// en_info
     // we work on CLICK_PULSES anyway, regardless dest
-    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
       if (selected_pulses & (1 << pulse))
 	en_info(pulse);
 
@@ -1542,7 +1542,7 @@ bool menu_serial_program_reaction(char menu_input) {
 
   case 'F':	// en_INFO
     // we work on CLICK_PULSES anyway, regardless dest
-    for (unsigned int pulse=0; pulse<CLICK_PULSES; pulse++)
+    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
       if (selected_pulses & (1 << pulse))
 	en_INFO(pulse);
 
@@ -1686,7 +1686,7 @@ void display_jiffletab(unsigned int *jiffletab)
 //	*/
 
 
-void do_jiffle (unsigned int pulse) {	// to be called by pulse_do
+void do_jiffle (int pulse) {	// to be called by pulse_do
   // pulses[pulse].char_parameter_1	click pin
   // pulses[pulse].char_parameter_2	jiffletab index
   // pulses[pulse].parameter_1		count down
@@ -1764,7 +1764,7 @@ int setup_jiffle_thrower_synced(struct time when,
 				unsigned long factor, unsigned long divisor,
 				int sync, unsigned int *jiffletab)
 {
-  unsigned int pulse= setup_pulse_synced(&do_throw_a_jiffle, ACTIVE,
+  int pulse= setup_pulse_synced(&do_throw_a_jiffle, ACTIVE,
 			       when, unit, factor, divisor, sync);
   if (pulse != ILLEGAL)
     pulses[pulse].parameter_2 = (unsigned int) jiffletab;

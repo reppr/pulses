@@ -160,7 +160,7 @@ struct pulse_t {
     used by do_jiffle as jiffletab index
   */
 
-  // pointers on  void something(unsigned int pulse)  functions:
+  // pointers on  void something(int pulse)  functions:
   // the pulses will do that, if the pointer is not NULL
   void (*periodic_do)(unsigned int);
   //					some example functions:
@@ -199,8 +199,8 @@ class Pulses {
   void mul_time(struct time *duration, unsigned int factor);
   void div_time(struct time *duration, unsigned int divisor);
   void global_shift(int global_octave);
-  int start_pulse(unsigned int pulse);
-  void stop_pulse(unsigned int pulse);
+  int start_pulse(int pulse);
+  void stop_pulse(int pulse);
   int global_octave;			    // global octave shift. ONLY negative shifts atm
   unsigned long global_octave_mask;	    // this mask gets shifted and then actually used
   unsigned long current_global_octave_mask; // actually used mask to switch oscillators
@@ -210,28 +210,28 @@ class Pulses {
   struct time global_next;	// next time that a pulse wants to be waken up
   unsigned int global_next_count; // how many tasks wait to be activated at the same time?
 
-  void init_pulse(unsigned int pulse);	// init, reset or kill a pulse
+  void init_pulse(int pulse);	// init, reset or kill a pulse
   void init_pulses();			// init all pulses
-  void wake_pulse(unsigned int pulse);	// wake a pulse up, called from check_maybe_do()
+  void wake_pulse(int pulse);	// wake a pulse up, called from check_maybe_do()
   void fix_global_next();	// determine next event, prepare everything
 				// for *all* pulses that wait for this exact time
 				// they will be called in fast sequence then
   void check_maybe_do();	// ################
   int setup_pulse(void (*pulse_do)(unsigned int), unsigned char new_flags, \
 		  struct time when, struct time new_period);
-  void set_new_period(unsigned int pulse, struct time new_period);
+  void set_new_period(int pulse, struct time new_period);
 
   void init_click_pulses();		// ################
-  void click(unsigned int pulse);	// ################
+  void click(int pulse);		// ################
   void mute_all_clicks();		// ################
   void init_click_pins();		// ################
-  void activate_pulse_synced(unsigned int pulse,			\
+  void activate_pulse_synced(int pulse,			\
 			    struct time when, int sync);	// ################
-  void en_info(unsigned int pulse);		// ################
-  void en_INFO(unsigned int pulse);		// ################
-  void en_click(unsigned int pulse);		// ################
-  void pulse_info_1line(unsigned int pulse);	// ################
-  void pulse_info(unsigned int pulse);		// ################
+  void en_info(int pulse);		// ################
+  void en_INFO(int pulse);		// ################
+  void en_click(int pulse);		// ################
+  void pulse_info_1line(int pulse);	// ################
+  void pulse_info(int pulse);		// ################
   void alive_pulses_info();
   int init_jiffle(unsigned int *jiffletab,				\
 		  struct time when, struct time new_period, int origin_pulse);
@@ -239,7 +239,7 @@ class Pulses {
   
 
  private:
-  unsigned int pulse;		// pulse index
+  int pulse;			// pulse index
   unsigned int pl_max;		// max pulses possible
 
   pulse_t * pulses;		// data pointer for pulses
