@@ -162,7 +162,7 @@ struct pulse_t {
 
   // pointers on  void something(int pulse)  functions:
   // the pulses will do that, if the pointer is not NULL
-  void (*periodic_do)(unsigned int);
+  void (*periodic_do)(int);
   //					some example functions:
   //
   //					click(pulse)
@@ -217,8 +217,10 @@ class Pulses {
 				// for *all* pulses that wait for this exact time
 				// they will be called in fast sequence then
   void check_maybe_do();	// ################
-  int setup_pulse(void (*pulse_do)(unsigned int), unsigned char new_flags, \
+  int setup_pulse(void (*pulse_do)(int), unsigned char new_flags, \
 		  struct time when, struct time new_period);
+  int setup_counted_pulse(void (*pulse_do)(int), unsigned char new_flags, \
+			  struct time when, struct time new_period, unsigned int count);
   void set_new_period(int pulse, struct time new_period);
 
   void init_click_pulses();		// ################

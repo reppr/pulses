@@ -365,7 +365,7 @@ void Pulses::check_maybe_do() {
 }
 
 
-int Pulses::setup_pulse(void (*pulse_do)(unsigned int), unsigned char new_flags, \
+int Pulses::setup_pulse(void (*pulse_do)(int), unsigned char new_flags, \
 			struct time when, struct time new_period)
 {
   int pulse;
@@ -489,7 +489,7 @@ void Pulses::init_click_pins() {
 
 
 //  // unused? (I use the synced version more often)
-//  int Pulses::setup_click_pulse(void (*pulse_do)(unsigned int), unsigned char new_flags,
+//  int Pulses::setup_click_pulse(void (*pulse_do)(int), unsigned char new_flags,
 //  		     struct time when, struct time new_period) {
 //    int pulse = setup_pulse(pulse_do, new_flags, when, new_period);
 //    if (pulse != ILLEGAL) {
@@ -561,7 +561,7 @@ void Pulses::activate_pulse_synced(int pulse, \
 void Pulses::en_click(int pulse)
 {
   if (pulse != ILLEGAL) {
-    pulses[pulse].periodic_do = (void (*)(unsigned int)) &Pulses::click;
+    pulses[pulse].periodic_do = (void (*)(int)) &Pulses::click;
     pulses[pulse].char_parameter_1 = click_pin[pulse];
     pinMode(pulses[pulse].char_parameter_1, OUTPUT);
     digitalWrite(pulses[pulse].char_parameter_1, LOW);
@@ -571,20 +571,20 @@ void Pulses::en_click(int pulse)
 
 // currently only used in menu
 // make an existing pulse to display 1 info line:
-void Pulses::en_info(int pulse)
+void en_info(int pulse)
 {
   if (pulse != ILLEGAL) {
-    pulses[pulse].periodic_do = (void (*)(unsigned int)) &Pulses::pulse_info_1line;
+    pulses[pulse].periodic_do = (void (*)(int)) &Pulses::pulse_info_1line;
   }
 }
 
 
 // currently only used in menu
 // make an existing pulse to display multiline pulse info:
-void Pulses::en_INFO(int pulse)
+void en_INFO(int pulse)
 {
   if (pulse != ILLEGAL) {
-    pulses[pulse].periodic_do = (void (*)(unsigned int)) &Pulses::pulse_info;
+    pulses[pulse].periodic_do = (void (*)(int)) &Pulses::pulse_info;
   }
 }
 
@@ -821,7 +821,7 @@ float display_realtime_sec(struct time duration) {
 
 
 void display_action(int pulse) {
-  void (*scratch)(unsigned int);
+  void (*scratch)(int);
 
   scratch=&click;
   if (pulses[pulse].periodic_do == scratch) {
