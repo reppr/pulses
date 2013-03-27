@@ -20,7 +20,11 @@
 
 #ifdef ARDUINO
   #define STREAMTYPE	Stream
-  #define USE_F_MACRO
+
+  #ifndef __SAM3X8E__	// FIXME: ################
+    #define USE_F_MACRO
+  #endif
+
 #else	// c++ Linux PC test version
   #include <iostream>
 
@@ -60,22 +64,6 @@ long micros() { return 9999L; }
 
 #define ILLEGAL			-1	// illegal value for many topics
 
-#define ILLEGALinputVALUE	-1	// impossible analog input value
-#define ILLEGALpin		-1	// a pin that is not assigned
-
-#define ACTIVE_undecided	1	// globally used in many status bitmaps
-
-// FIXME: ################
-#ifndef CLICK_PULSES		// number of click frequencies
-  #define CLICK_PULSES	6       // default number of click frequencies
-#endif
-
-/* **************************************************************** */
-#ifndef USE_F_MACRO
-  // For tests and on PC:  Fake Arduino F("string") macro as noop:
-  #define F(s)	(s)
-#endif
-
 
 /* **************************************************************** */
 // Preprocessor macro logic:
@@ -93,11 +81,6 @@ long micros() { return 9999L; }
     #include "WProgram.h"
   #endif
 #endif // ARDUINO
-
-
-/* **************************************************************** */
-#define DEFAULT_OCTAVE_SHIFT	6
-const unsigned long farest_future = ~0L ;
 
 
 /* **************************************************************** */
@@ -198,6 +181,8 @@ class Pulses {
   void sub_time(struct time *delta, struct time *sum);
   void mul_time(struct time *duration, unsigned int factor);
   void div_time(struct time *duration, unsigned int divisor);
+  void multiply_period(int pulse, unsigned long factor);
+  void divide_period(int pulse, unsigned long factor);
   void global_shift(int global_octave);
   int start_pulse(int pulse);
   void stop_pulse(int pulse);
@@ -223,28 +208,18 @@ class Pulses {
 			  struct time when, struct time new_period, unsigned int count);
   void set_new_period(int pulse, struct time new_period);
 
-  void init_click_pulses();		// ################
-  void click(int pulse);		// ################
-  void mute_all_clicks();		// ################
-  void init_click_pins();		// ################
   void activate_pulse_synced(int pulse,			\
 			    struct time when, int sync);	// ################
-  void en_info(int pulse);		// ################
-  void en_INFO(int pulse);		// ################
-  void en_click(int pulse);		// ################
-  void pulse_info_1line(int pulse);	// ################
-  void pulse_info(int pulse);		// ################
-  void alive_pulses_info();
-  int init_jiffle(unsigned int *jiffletab,				\
-		  struct time when, struct time new_period, int origin_pulse);
-  void time_info();
-  
+  int setup_pulse_synced(void (*pulse_do)(int), unsigned char new_flags,
+			 struct time when, unsigned long unit,
+			 unsigned long factor, unsigned long divisor, int sync);
+  unsigned int get_pl_max() { return pl_max; }	// inlined
+  pulse_t * pulses;		// data pointer for pulses
 
  private:
-  int pulse;			// pulse index
+  int pulse;			// pulse index	// DO WE NEED THAT? ################
   unsigned int pl_max;		// max pulses possible
 
-  pulse_t * pulses;		// data pointer for pulses
   unsigned int * global_next_pulses;	// indices of all pulses involved @ coming 'next'
 					// pulses that want to be waken up at the same time.
 					// (there can't be more then pl_max)
