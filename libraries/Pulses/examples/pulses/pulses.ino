@@ -845,12 +845,22 @@ void do_throw_a_jiffle(int pulse) {		// for pulse_do
 
 // what is selected?
 
+char hex_char(unsigned int c) {
+  if ((c >= 0) && (c <= 9))
+    return c + '0';
+
+  if (c < 16 )
+    return (c - 10 + 'a');
+
+  return '?';
+}
+
 void print_selected_pulses() {
 
 #ifdef CLICK_PULSES
   for (int pulse=0; pulse<min(CLICK_PULSES,8); pulse++)
     if (selected_pulses & (1 << pulse))
-      MENU.out(pulse, HEX);	// FIXME: ################
+      MENU.out((char) hex_char(pulse));	// FIXME: ################
     else
       MENU.out(".");
 #endif
@@ -860,19 +870,19 @@ void print_selected_pulses() {
   MENU.out(' ');
   for (int pulse=8; pulse<min(CLICK_PULSES,16); pulse++)
     if (selected_pulses & (1 << pulse))
-      MENU.out(pulse, HEX);
+      MENU.out((char) hex_char(pulse));
     else
       MENU.out(".");
 #endif
 
 #if (pl_max > CLICK_PULSES)
-  MENU.out(' ');
-  MENU.out(' ');
+  MENU.out(' '); MENU.out(' ');
+
   for (int pulse=CLICK_PULSES; pulse<pl_max; pulse++)
     if (selected_pulses & (1 << pulse))
-      Serial.write('+');
+      MENU.out('+');
     else
-      Serial.write('.');
+      MENU,out('.');
 #endif
 
   MENU.ln();
@@ -1235,7 +1245,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
     // *do* change this line if you change CLICK_PULSES
-  case '0': case '1': case '2': case '3': case '4':	// toggle pulse selection
+  case '0': case '1': case '2': case '3': case '4': case '5':	// toggle pulse selection
   // case '5': case '6': case '7': case '8': case '9':
     selected_pulses ^= (1 << (menu_input - '0'));
 
