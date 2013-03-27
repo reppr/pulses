@@ -215,6 +215,12 @@ char Menu::cb_read() {
     port_.print(str);
   }
 
+
+  void Menu::out(const float f, int places)	const {	// formatted float output
+    port_.print(f, places);
+  }
+
+
   // End of line version:
   // Arduino F() macro: outln(F("string");
   void Menu::outln(const __FlashStringHelper* str) const {

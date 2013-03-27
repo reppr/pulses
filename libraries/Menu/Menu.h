@@ -155,6 +155,7 @@ class Menu {
   void outln(const __FlashStringHelper*) const; // Arduino macro: F("string")
 #endif
 
+  void out(const float f, int places)	const;	// formatted float output
 
   void ticked(const char c) const;  // output a ticked char token like 'A'
 
