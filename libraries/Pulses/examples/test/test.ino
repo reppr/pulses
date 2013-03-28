@@ -73,6 +73,12 @@ Pulses PULSES(pulses_max);
 
 #define USE_SERIAL_BAUD		dummy	// FIXME: ################
 
+#ifdef __SAM3X8E__
+  #define F(s)	(s)
+  #warning "*NOT* using F() macro..."
+#endif
+
+
 int get_free_RAM();
 void setup() {
   Serial.begin(BAUDRATE);	// Start serial communication.

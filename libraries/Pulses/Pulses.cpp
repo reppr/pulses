@@ -96,10 +96,16 @@ void Pulses::init_time() {
 #ifdef ARDUINO
   extern volatile unsigned long timer0_overflow_count;
 
+#ifdef __SAM3X8E__		// ################
+  #warning 'cli() and sei() *not* on the DUE yet...	################'
+  // cli();			// ################
+  timer0_overflow_count = 0;	// ################ unknown!
+  // sei();			// ################
+#else				// ################
   cli();
   timer0_overflow_count = 0;
   sei();
-#endif
+#endif				// ################
 
   last_now.time = 0;		// make sure get_now() sees no overflow
   get_now();

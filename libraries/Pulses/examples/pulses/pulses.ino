@@ -105,7 +105,20 @@ void do_throw_a_jiffle(int pulse);	// defined later on
 /* **************************************************************** */
 // PULSES
 
-const int pl_max=16;
+#ifdef ARDUINO
+  #ifdef __SAM3X8E__
+    const int pl_max=32;
+  #else
+    #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
+      const int pl_max=16;
+    #else				// the bloat is hitting the RAM limit...
+      const int pl_max=8;
+    #endif
+  #endif
+#else
+  const int pl_max=16;
+#endif
+
 Pulses PULSES(pl_max);
 
 

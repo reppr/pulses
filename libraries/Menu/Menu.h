@@ -45,8 +45,13 @@
   #endif
 #endif
 
+#ifdef __SAM3X8E__
+  #undef USE_F_MACRO	// ################
+#endif
+
 #ifndef USE_F_MACRO
   // For tests and on PC:  Fake Arduino F("string") macro as noop:
+  #undef F(s)
   #define F(s)	(s)
 #endif
 

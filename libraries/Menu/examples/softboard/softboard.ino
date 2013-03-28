@@ -164,8 +164,12 @@ void loop() {	// ARDUINO
 #endif
 
 
-#ifndef digitalPinHasPWM
-  #error #define digitalPinHasPWM
+#ifndef digitalPinHasPWM	// ################
+  #ifndef __SAM3X8E__
+    #error #define digitalPinHasPWM
+  #else
+    #define digitalPinHasPWM(p)         ((p) >= 2 && (p) <= 13)
+  #endif
 #endif
 
 
