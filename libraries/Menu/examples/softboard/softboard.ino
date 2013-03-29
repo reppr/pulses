@@ -743,12 +743,18 @@ bool softboard_reaction(char token) {
     toggle_VU();
     break;
 
-  case '+':	// we *could* do  'if (run_VU)' here
+  case '+':
+    if (! run_VU)
+      return false;    // *only* responsible if (run_VU)
+
     bar_graph_tolerance++;
     feedback_tolerance();
     break;
 
-  case '-':	// we *could* do  'if (run_VU)' here
+  case '-':
+    if (! run_VU)
+      return false;    // *only* responsible if (run_VU)
+
     if (bar_graph_tolerance)
       bar_graph_tolerance--;
     feedback_tolerance();
