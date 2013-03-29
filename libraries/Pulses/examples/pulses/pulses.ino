@@ -1398,7 +1398,7 @@ bool menu_pulses_reaction(char menu_input) {
     time_info();
 
 #ifdef GET_FREE_RAM_COMPILED
-    MENU.out(F("free RAM :\t"));
+    MENU.out(F("\tfree RAM :\t"));	// ################ const str*
     MENU.outln(get_free_RAM());
     MENU.ln();
 #endif
