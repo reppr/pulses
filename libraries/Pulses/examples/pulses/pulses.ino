@@ -94,12 +94,27 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 Menu MENU(32, 5, &men_getchar, MENU_OUTSTREAM);
 
 
-// FIXME: ################
-void menu_pulses_display();			// defined later on
+// FIXME: ################		// defined later on
+void menu_pulses_display();		// defined later on
 bool menu_pulses_reaction(char token);	// defined later on
 void display_action(int pulse);		// defined later on
 void do_jiffle (int pulse);		// defined later on
 void do_throw_a_jiffle(int pulse);	// defined later on
+void init_click_pins();			// defined later on
+void init_click_pulses();		// defined later on
+void init_rhythm_1(int sync);		// defined later on
+void init_rhythm_2(int sync);		// defined later on
+void init_rhythm_3(int sync);		// defined later on
+void init_rhythm_4(int sync);		// defined later on
+void setup_jiffles0(int sync);		// defined later on
+void alive_pulses_info_lines();		// defined later on
+
+
+// FIXME: ################
+#ifndef CLICK_PULSES		// number of click frequencies
+  #define CLICK_PULSES	7       // default number of click frequencies
+#endif
+unsigned char click_pin[CLICK_PULSES];	// ################
 
 
 /* **************************************************************** */
@@ -112,7 +127,8 @@ void do_throw_a_jiffle(int pulse);	// defined later on
     #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
       const int pl_max=16;
     #else				// the bloat is hitting the RAM limit...
-      const int pl_max=8;
+      // const int pl_max=8;
+      const int pl_max=16;
     #endif
   #endif
 #else
@@ -161,42 +177,66 @@ Pulses PULSES(pl_max);
 
 void setup() {
   Serial.begin(BAUDRATE);	// Start serial communication.
-  MENU.outln(F("\nTesting pulses.ino\n"));
-
-  MENU.add_page("pulses", 'M', &menu_pulses_display, &menu_pulses_reaction, '+');
-
-#ifdef GET_FREE_RAM_COMPILED
-  MENU.out(F("free RAM :\t"));
-  MENU.outln(get_free_RAM());
-#endif
+  MENU.outln(F("\nTesting pulses.ino"));
+  MENU.outln(F("http://github.com/reppr/pulses/\n"));
 
   MENU.out(F("\nNumber of pulses: "));
-  MENU.outln(pl_max);
-
-  MENU.outln(F("\nPULSES.init_pulses()"));
-  PULSES.init_pulses();
-
+  MENU.out(pl_max);
 #ifdef GET_FREE_RAM_COMPILED
-  MENU.out(F("free RAM :\t"));
-  MENU.outln(get_free_RAM());
+  MENU.out(F("\tfree RAM :\t"));
+  MENU.out(get_free_RAM());
 #endif
+  MENU.ln();
 
-  MENU.out(F("\nsizeof(pulse_t) "));
+  MENU.out(F("sizeof(pulse_t) "));
   MENU.out(sizeof(pulse_t));
   MENU.out(F(" * "));
   MENU.out(pl_max);
   MENU.out(F(" pulses = \t"));
   MENU.outln(sizeof(pulse_t)*pl_max);
 
-  MENU.out(F("PULSES.init_time()\n"));
-  PULSES.init_time();
+  // setting up the menu:
+  MENU.add_page("pulses", 'M', \
+		&menu_pulses_display, &menu_pulses_reaction, '+');
 
-  MENU.outln(F("\n(done)"));
+  // display menu at startup:
+  MENU.menu_display();
 
-  MENU.outln(F("cpp info\thttp://github.com/reppr/pulses/"));
 
-  MENU.menu_display();		// display menu at startup
+  // setup pulses, click pulses first:	// FIXME: ################
+  #ifdef CLICK_PULSES
+    click_pin[0] = 13;		// configure PINs here	inbuilt LED
 
+    click_pin[1] = 2; 		// configure PINs here
+    click_pin[2] = 3; 		// configure PINs here
+    click_pin[3] = 4; 		// configure PINs here
+    click_pin[4] = 5; 		// configure PINs here
+    click_pin[5] = 6; 		// configure PINs here
+    click_pin[6] = 7; 		// configure PINs here
+
+    init_click_pins();
+  #endif
+
+  // init_click_pulses();	// FIXME: ??? ################
+
+  // time and pulses *must* get initialized before setting up pulses:
+  PULSES.init_time();		// start time
+  PULSES.init_pulses();		// init pulses
+
+
+  // for a demo one of these could be called from here:
+  // init_rhythm_1(1);
+  // init_rhythm_2(5);
+  init_rhythm_3(3);
+  // init_rhythm_4(1);
+  // setup_jiffles0(1);
+
+
+  PULSES.fix_global_next();	// we *must* call that here late in setup();
+
+  // informations about alive pulses:
+  MENU.ln();
+  alive_pulses_info_lines();
 }
 
 void loop() {	// ARDUINO
@@ -255,11 +295,6 @@ int main() {
 // You can set DO_NOT_DELETE to achieve this.
 
 
-// FIXME: ################
-#ifndef CLICK_PULSES		// number of click frequencies
-  #define CLICK_PULSES	6       // default number of click frequencies
-#endif
-
 
 // FIXME: ################
 // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
@@ -279,7 +314,7 @@ void click(int pulse) {	// can be called from a pulse
 // pins for click_pulses:
 // It is a bit obscure to held them in an array indexed by [pulse]
 // but it's simple and working well...
-unsigned char click_pin[CLICK_PULSES];
+// unsigned char click_pin[CLICK_PULSES];
 
 
 void init_click_pins() {
@@ -327,7 +362,7 @@ void en_click(int pulse)
     PULSES.pulses[pulse].periodic_do = (void (*)(int)) &click;
     PULSES.pulses[pulse].char_parameter_1 = click_pin[pulse];
     pinMode(PULSES.pulses[pulse].char_parameter_1, OUTPUT);
-    digitalWrite(PULSES.pulses[pulse].char_parameter_1, LOW);	// ################
+    // digitalWrite(PULSES.pulses[pulse].char_parameter_1, LOW);	// ################
   }
 }
 
@@ -473,6 +508,7 @@ void init_rhythm_1(int sync) {
   MENU.out(sync_); MENU.outln(sync);
 
   init_click_pulses();
+
   PULSES.get_now();
   now=PULSES.now;
 
@@ -498,6 +534,7 @@ void init_rhythm_2(int sync) {
   MENU.out(' '); MENU.out(sync_); MENU.outln(sync);
 
   init_click_pulses();
+
   PULSES.get_now();
   now=PULSES.now;
 
@@ -522,6 +559,7 @@ void init_rhythm_3(int sync) {
   MENU.out(' '); MENU.out(sync_); MENU.outln(sync);
 
   init_click_pulses();
+
   PULSES.get_now();
   now=PULSES.now;
 
@@ -550,6 +588,7 @@ void init_rhythm_4(int sync) {
   MENU.out(' '); MENU.out(sync_); MENU.outln(sync);
 
   init_click_pulses();
+
   PULSES.get_now();
   now=PULSES.now;
 
@@ -660,7 +699,7 @@ void alive_pulses_info_lines()
   int count=0;
 
   for (int pulse=0; pulse<pl_max; ++pulse)	// first port used
-    if (PULSES.pulses[pulse].flags) {				// any flags set?
+    if (PULSES.pulses[pulse].flags) {		// any flags set?
       pulse_info_1line(pulse);
       count++;
     }
@@ -677,13 +716,8 @@ void alive_pulses_info_lines()
 }
 
 
-// pulse_info() as paylod for pulses:
-// Prints pulse info over serial and blinks the LED
+// pulse_info() as paylod for pulses: print pulse info:
 void pulse_info(int pulse) {
-
-#ifdef LED_PIN
-  digitalWrite(LED_PIN,HIGH);		// blink the LED
-#endif
 
   MENU.out(pulseInfo);
   MENU.out(pulse);
@@ -739,10 +773,6 @@ void pulse_info(int pulse) {
   time_info();
 
   MENU.out("\n\n");			// traling empty line
-
-#ifdef LED_PIN
-  digitalWrite(LED_PIN,LOW);
-#endif
 }
 
 
@@ -775,7 +805,8 @@ void display_action(int pulse) {
 
   scratch=&click;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out("click\t");	// 8 chars at least
+    MENU.out("click  ");
+    MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
     return;
   }
 
@@ -920,8 +951,8 @@ void print_selected() {
 
 // info_select_destination_with()
 const char selectDestinationInfo[] =
-  "SELECT DESTINATION for '= * / s K p n c j' to work on:\t\t";
-const char selectPulseWith[] = "Select puls with ";
+  "SELECT DESTINATION for '= * / s K P n c j' to work on:\t\t";
+const char selectPulseWith[] = "Select pulse with ";
 const char selectAllPulses[] =
   "\na=select *all* click pulses\tA=*all* pulses\tl=alive clicks\tL=all alive\tx=none\t~=invert selection";
 const char uSelect[] = "u=select ";
@@ -1054,56 +1085,59 @@ unsigned int jiffletab[] =
 const char jifftabFull[] = "jiffletab full";
 const char enterJiffletabVal[] = "enter jiffletab values";
 
+// FIXME: ################
 void enter_jiffletab(unsigned int *jiffletab) {
   MENU.out(F("enter_jiffletab() NOT IMPLEMENTED YET 	################"));
 }
 
+// FIXME: ################
 //	void enter_jiffletab(unsigned int *jiffletab)
 //	{
 //	  int menu_input;
 //	  int new_value;
 //	  int index=0;			// counts ints, *not* triplets
-//	
+//
 //	  while (true) {
 //	    if (!char_available())
 //	      MENU.outln(enterJiffletabVal);
-//	
+//
 //	    while (!char_available())	// wait for input
 //	      ;
-//	
+//
 //	    // delay(WAITforSERIAL);
-//	
+//
 //	    switch (menu_input = get_char()) {
 //	    case ' ': case ',': case '\t':	// white space, comma
 //	      break;
-//	
+//
 //	    case '0': case '1': case '2': case '3': case '4':	// numeric
 //	    case '5': case '6': case '7': case '8': case '9':
 //	      char_store((char) menu_input);
 //	      new_value = MENU.numeric_input(0);
 //	      jiffletab[index++] = new_value;
-//	
+//
 //	      if (new_value == 0)
 //		return;
-//	
+//
 //	      if (index == (JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP)) {	// jiffletab is full
 //		jiffletab[JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP] = 0;	// trailing 0
 //		MENU.outln(jifftabFull);
 //		return;				// quit
 //	      }
 //	      break;
-//	
+//
 //	    case '}':	// end jiffletab input. Can be used to display jiffletab.
 //	      display_jiffletab(jiffletab);
 //	      return;
 //	      break;
-//	
+//
 //	    default:	// default: end input sequence
 //	      char_store((char) menu_input);
 //	      return;
 //	    }
 //	  }
 //	}
+// FIXME: ################
 
 
 void display_jiffletab(unsigned int *jiffletab)

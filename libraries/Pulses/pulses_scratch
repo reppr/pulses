@@ -2884,38 +2884,38 @@ DADA
 #	//	#endif
 #
 #
-#	#ifdef LED_PIN
-#	  pinMode(LED_PIN, OUTPUT);
-#	#endif
+##	#ifdef LED_PIN
+##	  pinMode(LED_PIN, OUTPUT);
+##	#endif
 #
-#	#ifdef CLICK_PULSES
-#	  click_pin[0]= 3;		// configure PINs here
-#	  click_pin[1]= 4;		// configure PINs here
-#	  click_pin[2]= 5;		// configure PINs here
-#	  click_pin[3]= 6;		// configure PINs here
-#	  click_pin[4]= 7;		// configure PINs here
+##	#ifdef CLICK_PULSES
+##	  click_pin[0]= 3;		// configure PINs here
+##	  click_pin[1]= 4;		// configure PINs here
+##	  click_pin[2]= 5;		// configure PINs here
+##	  click_pin[3]= 6;		// configure PINs here
+##	  click_pin[4]= 7;		// configure PINs here
+##
+##	  init_click_pins();
+##	#endif
 #
-#	  init_click_pins();
-#	#endif
 #
-#
-#	  // time and pulses *must* get initialized before setting up pulses:
-#	  init_time();
-#	  init_pulses();
+##	  // time and pulses *must* get initialized before setting up pulses:
+##	  init_time();
+##	  init_pulses();
 #
 #	  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-#	  // init_rhythm_1(1);
-#	  // init_rhythm_2(5);
-#	  init_rhythm_3(3);
-#	  // init_rhythm_4(1);
-#	  // setup_jiffles0(1);
-#
-#	#ifdef MENU_over_serial
-#	  Serial.println();
-#	  alive_pulses_info_lines();
-#	#endif
-#
-#	  fix_global_next();	// we *must* call that here late in setup();
+##	  // init_rhythm_1(1);
+##	  // init_rhythm_2(5);
+##	  init_rhythm_3(3);
+##	  // init_rhythm_4(1);
+##	  // setup_jiffles0(1);
+##
+##	#ifdef MENU_over_serial
+##	  Serial.println();
+##	  alive_pulses_info_lines();
+##	#endif
+##
+##	  fix_global_next();	// we *must* call that here late in setup();
 #	}
 #
 #
