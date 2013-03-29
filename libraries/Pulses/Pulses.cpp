@@ -272,8 +272,6 @@ void Pulses::init_pulse(int pulse) {
   pulses[pulse].ulong_parameter_1 = 0L;
   pulses[pulse].char_parameter_1 = 0;
   pulses[pulse].char_parameter_2 = 0;
-
-  // you *must* call fix_global_next(); late in setup()
 }
 
 // called from constructor:

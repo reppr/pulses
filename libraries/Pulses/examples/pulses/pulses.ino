@@ -124,15 +124,10 @@ unsigned char click_pin[CLICK_PULSES];	// ################
   #ifdef __SAM3X8E__
     const int pl_max=32;
   #else
-    #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
-      const int pl_max=16;
-    #else				// the bloat is hitting the RAM limit...
-      // const int pl_max=8;
-      const int pl_max=16;
-    #endif
+    const int pl_max=16;
   #endif
 #else
-  const int pl_max=16;
+  const int pl_max=64;
 #endif
 
 Pulses PULSES(pl_max);
@@ -218,10 +213,9 @@ void setup() {
     click_pin[5] = 6; 		// configure PINs here
     click_pin[6] = 7; 		// configure PINs here
 
-    init_click_pins();
+    init_click_pins();		// set OUTPUT, LOW
   #endif
 
-  // init_click_pulses();	// FIXME: ??? ################
 
   // time and pulses *must* get initialized before setting up pulses:
   PULSES.init_time();		// start time
@@ -297,7 +291,6 @@ int main() {
 
 // It's best to always leave click_pulses in memory.
 // You can set DO_NOT_DELETE to achieve this.
-
 
 
 // FIXME: ################
@@ -893,7 +886,8 @@ void do_throw_a_jiffle(int pulse) {		// for pulse_do
 
 // what is selected?
 
-char hex_char(unsigned int c) {
+// display helper function
+char hex_chiffre(unsigned int c) {
   if ((c >= 0) && (c <= 9))
     return c + '0';
 
@@ -904,35 +898,28 @@ char hex_char(unsigned int c) {
 }
 
 void print_selected_pulses() {
+  const int hex_pulses=min(pl_max,16);	// displayed as hex chiffres
 
-#ifdef CLICK_PULSES
-  for (int pulse=0; pulse<min(CLICK_PULSES,8); pulse++)
+  for (int pulse=0; pulse<hex_pulses; pulse++) {
     if (selected_pulses & (1 << pulse))
-      MENU.out((char) hex_char(pulse));	// FIXME: ################
+      MENU.out((char) hex_chiffre(pulse));
     else
-      MENU.out(".");
-#endif
+      MENU.out('.');
+  }
 
-#if (CLICK_PULSES > 8)
-  MENU.out(' ');
-  MENU.out(' ');
-  for (int pulse=8; pulse<min(CLICK_PULSES,16); pulse++)
-    if (selected_pulses & (1 << pulse))
-      MENU.out((char) hex_char(pulse));
-    else
-      MENU.out(".");
-#endif
+  // more than 16 pulses?
+  if (hex_pulses == pl_max) {	// no,
+    MENU.ln();
+    return;			// done
+  }
 
-#if (pl_max > CLICK_PULSES)
-  MENU.out(' '); MENU.out(' ');
-
-  for (int pulse=CLICK_PULSES; pulse<pl_max; pulse++)
+  MENU.space();
+  for (int pulse=16; pulse<pl_max; pulse++) {
     if (selected_pulses & (1 << pulse))
       MENU.out('+');
     else
-      MENU,out('.');
-#endif
-
+      MENU.out('.');
+  }
   MENU.ln();
 }
 
@@ -967,7 +954,7 @@ void info_select_destination_with(boolean extended_destinations) {
   print_selected();  MENU.ln();
 
   MENU.out(selectPulseWith);
-  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+  for (int pulse=0; pulse<min(pl_max,10); pulse++) {
     MENU.out(pulse);
      MENU.out(' ');
      MENU.out(' ');
@@ -1292,9 +1279,21 @@ bool menu_pulses_reaction(char menu_input) {
     alive_pulses_info_lines();
     break;
 
-    // *do* change this line if you change CLICK_PULSES
-  case '0': case '1': case '2': case '3': case '4': case '5':	// toggle pulse selection
-  // case '5': case '6': case '7': case '8': case '9':
+  // toggle pulse selection with chiffres:
+  case '0':
+  case '1':
+  case '2':
+  case '3':
+  case '4':
+  case '5':
+  case '6':
+  case '7':
+  case '8':
+  case '9':
+    if((menu_input -'0') >= pl_max)
+      return false;		// *only* responsible if pulse exists
+
+    // existing pulse:
     selected_pulses ^= (1 << (menu_input - '0'));
 
     MENU.out(selected_);
@@ -1357,7 +1356,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 's':	// switch pulse on/off
-    for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+    for (int pulse=0; pulse<pl_max; pulse++) {
       if (selected_pulses & (1 << pulse)) {
 	// special case: switching on an edited SCRATCH pulse:
 	if((PULSES.pulses[pulse].flags & ACTIVE) == 0)	// was off
@@ -1375,9 +1374,9 @@ bool menu_pulses_reaction(char menu_input) {
     }
 
     PULSES.fix_global_next();
-    PULSES.check_maybe_do();				  // maybe do it *first*
+    PULSES.check_maybe_do();			// maybe do it *first*
     MENU.ln();
-    alive_pulses_info_lines();			  // *then* info ;)
+    alive_pulses_info_lines();			// *then* info ;)
 
     // info_select_destination_with(false);	// DADA ################
     break;
@@ -1490,7 +1489,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'K':	// kill selected pulses
-    for (int pulse=0; pulse<CLICK_PULSES; pulse++)	// DADA ################
+    for (int pulse=0; pulse<pl_max; pulse++)	// DADA ################
       if (selected_pulses & (1 << pulse)) {
 	PULSES.init_pulse(pulse);
 	MENU.out(killPulse); MENU.outln(pulse);
