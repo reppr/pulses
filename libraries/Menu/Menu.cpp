@@ -323,7 +323,7 @@ void Menu::outBIN(unsigned long value, int bits ) const {
     else
       out('0');
   }
-  ln();
+  space();
 }
 
 
