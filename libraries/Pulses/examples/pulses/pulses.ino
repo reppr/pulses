@@ -177,10 +177,13 @@ Pulses PULSES(pl_max);
 
 void setup() {
   Serial.begin(BAUDRATE);	// Start serial communication.
-  MENU.outln(F("\nTesting pulses.ino"));
+
+  // some test output:
+  MENU.outln(F("testing pulses.ino"));
+
   MENU.outln(F("http://github.com/reppr/pulses/\n"));
 
-  MENU.out(F("\nNumber of pulses: "));
+  MENU.out(F("pulses: "));
   MENU.out(pl_max);
 #ifdef GET_FREE_RAM_COMPILED
   MENU.out(F("\tfree RAM :\t"));
@@ -194,6 +197,7 @@ void setup() {
   MENU.out(pl_max);
   MENU.out(F(" pulses = \t"));
   MENU.outln(sizeof(pulse_t)*pl_max);
+  MENU.ln();
 
   // setting up the menu:
   MENU.add_page("pulses", 'M', \
@@ -227,7 +231,7 @@ void setup() {
   // for a demo one of these could be called from here:
   // init_rhythm_1(1);
   // init_rhythm_2(5);
-  init_rhythm_3(3);
+  MENU.ln(); init_rhythm_3(3);
   // init_rhythm_4(1);
   // setup_jiffles0(1);
 
@@ -985,7 +989,7 @@ void info_select_destination_with(boolean extended_destinations) {
 
 // menu_program_display()
 const char helpInfo[] = \
-  "?=help\tm=menu\ti=info\t.=short info";
+  "?=help\ti=info\t.=short info";
 const char microSeconds[] = " microseconds";
 const char muteKill[] = \
   "M=mute all\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tf=en-info\tF=en-INFO\tn=sync now\nS=sync ";
@@ -1266,9 +1270,12 @@ bool menu_pulses_reaction(char menu_input) {
 
   switch (menu_input) {
 
-  case '?':	// help
+  case '?':	// help, overrides common menu entry for '?'
     menu_pulses_display();
+    MENU.ln();
+
     alive_pulses_info_lines();
+
     time_info();
 #ifdef GET_FREE_RAM_COMPILED
     MENU.out('\t');
@@ -1281,13 +1288,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   case '.':	// alive pulses info
     MENU.ln();
-    // time_info(); MENU.ln();
-
-    // #ifdef GET_FREE_RAM_COMPILED
-    //   MENU.out(F("free RAM :\t"));
-    //   MENU.outln(get_free_RAM());
-    // #endif
-
+    time_info(); MENU.ln();
     alive_pulses_info_lines();
     break;
 
@@ -1393,6 +1394,8 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'i':	// info
+    MENU.ln();
+    time_info();
 
 #ifdef GET_FREE_RAM_COMPILED
     MENU.out(F("free RAM :\t"));

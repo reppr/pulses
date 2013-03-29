@@ -186,6 +186,8 @@ class Menu {
 #endif
 
 
+  void verbosity_info();	// helper function
+
  protected:
   // Act on buffer content tokens after seeing 'end token':
   bool try_page_reaction(char pg, char token);	// interpreter factor
@@ -203,11 +205,17 @@ class Menu {
 
   int cb_stored() const { return cb_count; }   // inlined: number of accumulated bytes
 
-  char verbosity;		// Levels of menu feedback:
-				// #define verbosity_ERROR	1
-				// #define verbosity_SOME	2
-				// #define verbosity_NORMAL	3
-				// #define verbosity_HIGH	4
+  // Levels of menu feedback:
+  unsigned char verbosity;	/* verbosity codes:
+    #define VERBOSITY_ERROR	1
+       errors and *requested* informations
+    #define VERBOSITY_SOME	2
+       include feedback, i.e. new values
+    #define VERBOSITY_CHATTY	3
+       some more infos, for novice users
+    #define VERBOSITY_HIGH	4
+       more than you want to see
+*/
 
  private:
   int cb_start;
@@ -231,7 +239,7 @@ class Menu {
 // verbosity:	Levels of menu feedback:
 #define VERBOSITY_ERROR		1
 #define VERBOSITY_SOME		2
-#define VERBOSITY_NORMAL	3
+#define VERBOSITY_CHATTY	3
 #define VERBOSITY_HIGH		4
 
 /* **************************************************************** */
