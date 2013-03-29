@@ -233,10 +233,20 @@ const char low_[] = "LOW";
 
 void pin_info_digital(uint8_t pin) {
   uint8_t mask = digitalPinToBitMask(pin);
+#ifndef __SAM3X8E__	// FIXME: ################
   uint8_t port = digitalPinToPort(pin);
+#else
+  #warning "softboard does not run on Arduino Due yet! ################"
+  Pio* const port = digitalPinToPort(pin);
+#endif
+
   volatile uint8_t *reg;
 
+#ifndef __SAM3X8E__	// FIXME: ################
   if (port == NOT_A_PIN) return;
+#else
+  if (port == NULL) return;
+#endif
 
   // selected sign * and pin:
   if (pin == PIN_digital )
