@@ -223,6 +223,14 @@ void serial_print_BIN(unsigned long value, int bits) {
 
 
 /* ****************  info on DIGITAL pins:  **************** */
+
+#ifdef __SAM3X8E__
+  #ifndef portModeRegister
+    #warning "#define *MISSING* portModeRegister(P)."
+    #define portModeRegister(P) ( (volatile RwReg*)( pgm_read_word( port_to_mode_PGM + (P))) )
+  #endif
+#endif
+
 /*
   pin_info_digital()
   display configuration and state of a pin:
@@ -240,12 +248,15 @@ void pin_info_digital(uint8_t pin) {
   Pio* const port = digitalPinToPort(pin);
 #endif
 
+#ifdef __SAM3X8E__	// FIXME: ################
+  volatile RwReg* reg;
+
+  if (port == NULL) return;
+
+#else
   volatile uint8_t *reg;
 
-#ifndef __SAM3X8E__	// FIXME: ################
   if (port == NOT_A_PIN) return;
-#else
-  if (port == NULL) return;
 #endif
 
   // selected sign * and pin:
@@ -261,6 +272,7 @@ void pin_info_digital(uint8_t pin) {
   #warning "I/O pin configuration info *not implemented on Arduino DUE yet*."
   SOFTBOARD.out(F("??? (DUE not implemented)"));
 #else
+  // see: <Arduino.h>
 
   // input or output?
   reg = portModeRegister(port);
