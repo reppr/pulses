@@ -561,8 +561,7 @@ void arduino_info() {	// Display some Arduino specific informations.
     CPP_INFO.outln(no_);
   #endif
 
-  arduino_pins_info();
-
+  CPP_INFO.outln(F("\nPress 'p' for info about pins."));
 }
 #endif
 
@@ -593,6 +592,9 @@ void cpp_info_display() {
 
 bool cpp_info_reaction(char token) {
   switch (token) {
+  case 'p':
+    arduino_pins_info();
+    break;
 
   default:
     return 0;		// token not found in this menu
