@@ -53,9 +53,11 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
 #ifdef __SAM3X8E__	// FIXME: ################
   #warning 'loading hack for Arduino Due "support"'
-  #define LED_BUILTIN	13
-  #define SDA	-1
-  #define SCL	-1
+  #define LED_BUILTIN	PIN_LED
+  #define SDA	PIN_WIRE_SDA
+  #define SCL	PIN_WIRE_SCL
+  #define SDA1  PIN_WIRE1_SDA
+  #define SCL1	PIN_WIRE1_SCL
 #endif
 
 #include <Menu.h>
@@ -374,30 +376,84 @@ void  arduino_pins_info() {
     case A15:
       CPP_INFO.out(F("A15  "));
       break;
+
+#ifdef DACC_INTERFACE
+    case DAC0:
+      CPP_INFO.out(F("DAC0 resolution:"));
+      CPP_INFO.out((int) DAC0_RESOLUTION);
+      CPP_INFO.out(F("bit  "));
+      break;
+    case DAC1:
+      CPP_INFO.out(F("DAC1 resolution:"));
+      CPP_INFO.out((int) DAC1_RESOLUTION);
+      CPP_INFO.out(F("bit  "));
+      break;
+#endif
+
   #endif
 #endif
     }
+
+// FIXME: does not work ################
+#ifdef PINS_CAN0
+    if(pin == CAN0RX)
+      CPP_INFO.out(F("CAN0RX  "));
+#endif
+#ifdef PINS_CAN1
+    if(pin == CAN1RX)
+      CPP_INFO.out(F("CAN1RX  "));
+#endif
 
     if(pin == LED_BUILTIN)
       CPP_INFO.out(F("LED  "));
 
     if(pin == SS)
-      CPP_INFO.out(F("SS  "));
+      CPP_INFO.out(F("SPI SS  "));
+
+#ifdef PIN_SPI_SS1;	// see: <variant.h>
+    if(pin == SS1)
+      CPP_INFO.out(F("SPI SS1  "));
+#endif
+#ifdef PIN_SPI_SS2;	// see: <variant.h>
+    if(pin == SS2)
+      CPP_INFO.out(F("SPI SS2  "));
+#endif
+#ifdef PIN_SPI_SS3;	// see: <variant.h>
+    if(pin == SS3)
+      CPP_INFO.out(F("SPI SS3  "));
+#endif
 
     if(pin == MOSI)
-      CPP_INFO.out(F("MOSI  "));
+      CPP_INFO.out(F("SPI MOSI  "));
 
     if(pin == MISO)
-      CPP_INFO.out(F("MISO  "));
+      CPP_INFO.out(F("SPI MISO  "));
 
     if(pin == SCK)
-      CPP_INFO.out(F("SCK  "));
+      CPP_INFO.out(F("SPI SCK  "));
 
     if(pin == SDA)
-      CPP_INFO.out(F("SDA  "));
+      CPP_INFO.out(F("I2C SDA  "));
 
     if(pin == SCL)
-      CPP_INFO.out(F("SCL  "));
+      CPP_INFO.out(F("I2C SCL  "));
+
+#ifdef PIN_LED_RXL	// see: <variant.h>
+    if(pin == PIN_LED_RXL)
+      CPP_INFO.out(F("LED Rx  "));
+#endif
+#ifdef PIN_LED_TXL
+    if(pin == PIN_LED_TXL)
+      CPP_INFO.out(F("LED Tx  "));
+#endif
+
+#ifdef PIN_WIRE1_SDA
+    if(pin == SDA1)
+      CPP_INFO.out(F("I2C SDA1  "));
+
+    if(pin == SCL1)
+      CPP_INFO.out(F("I2C SCL1  "));
+#endif
 
     #ifdef digitalPinToTimer
       #ifdef __SAM3X8E__	// FIXME: ################
