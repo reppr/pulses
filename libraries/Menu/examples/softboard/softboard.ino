@@ -257,6 +257,11 @@ void pin_info_digital(uint8_t pin) {
   SOFTBOARD.out((int) pin);
   SOFTBOARD.tab();
 
+#ifdef __SAM3X8E__
+  #warning "I/O pin configuration info *not implemented on Arduino DUE yet*."
+  SOFTBOARD.out(F("??? (DUE not implemented)"));
+#else
+
   // input or output?
   reg = portModeRegister(port);
   // uint8_t oldSREG = SREG;	// let interrupt ACTIVE ;)
@@ -292,6 +297,7 @@ void pin_info_digital(uint8_t pin) {
       SOFTBOARD.out(F("floating"));
     }
   }
+#endif
   SOFTBOARD.ln();
 }
 
@@ -507,6 +513,14 @@ void maybe_run_continuous() {
   Determine RAM usage:
   int get_free_RAM() {
 */
+
+#ifdef __SAM3X8E__
+  #warning "get_free_RAM() *not implemented on the DUE yet*."
+  int get_free_RAM() {
+    return -1;
+  }
+#else
+
 extern int __bss_end;
 extern void *__brkval;
 
@@ -519,6 +533,7 @@ int get_free_RAM() {
     return ((int) &free) - ((int) __brkval);
 }
 
+#endif
 
 
 /* **************************************************************** */
