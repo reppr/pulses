@@ -22,17 +22,28 @@
 /* **************************************************************** */
 #ifdef ARDUINO
   // compile Menu::get_free_RAM()?
-  #define GET_FREE_RAM
-
-  // should Menu automagically display free RAM for tests?
-  // #define SHOW_FREE_RAM	// COMMENT THAT OFF, normally
-
-  #ifdef SHOW_FREE_RAM
+  #ifdef __SAM3X8E__))
+    #warning "not defining get_free_RAM() on Arduino Due."
+    #undef GET_FREE_RAM
+    #undef SHOW_FREE_RAM
+  #else
     #define GET_FREE_RAM
+
+    // should Menu automagically display free RAM for tests?
+    // #define SHOW_FREE_RAM	// COMMENT THAT OFF, normally
+    #ifdef SHOW_FREE_RAM
+      #define GET_FREE_RAM
+    #endif
   #endif
 
   // comment/uncomment for RAM tests:
   #define USE_F_MACRO
+
+  #ifdef __SAM3X8E__	// FIXME: ################
+    #warning "not using macro F() on Arduino Due."
+    #undef USE_F_MACRO
+  #endif
+
 #else	// *ARDUINO ONLY*
   #ifdef GET_FREE_RAM
     #warning GET_FREE_RAM *ARDUINO ONLY* #undef
@@ -43,10 +54,6 @@
     #warning SHOW_FREE_RAM *ARDUINO ONLY* #undef
     #undef SHOW_FREE_RAM
   #endif
-#endif
-
-#ifdef __SAM3X8E__
-  #undef USE_F_MACRO	// ################
 #endif
 
 #ifndef USE_F_MACRO
