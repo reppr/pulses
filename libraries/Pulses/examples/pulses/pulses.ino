@@ -1251,6 +1251,16 @@ const char killedAll[] = "killed all";
 const char onlyPositive[] = "only positive sync ";
 const char invalid_[] = "(invalid)";
 
+// display helper function
+void short_info() {
+  MENU.ln();
+  time_info();
+  MENU.ln();
+
+  MENU.ln();
+  alive_pulses_info_lines();
+}
+
 bool menu_pulses_reaction(char menu_input) {
   long new_value=0;
   struct time now, time_scratch;
@@ -1258,25 +1268,18 @@ bool menu_pulses_reaction(char menu_input) {
   switch (menu_input) {
 
   case '?':	// help, overrides common menu entry for '?'
-    menu_pulses_display();
     MENU.ln();
-
-    alive_pulses_info_lines();
-
-    time_info();
-#ifdef GET_FREE_RAM_COMPILED
+    MENU.menu_display();	// as common
+#ifdef GET_FREE_RAM_COMPILED	// + maybe RAM info
     MENU.out('\t');
     MENU.out(F("free RAM :\t"));
     MENU.outln(get_free_RAM());
 #endif
-    MENU.ln();
-
+    short_info();		// + short info
     break;
 
-  case '.':	// alive pulses info
-    MENU.ln();
-    time_info(); MENU.ln();
-    alive_pulses_info_lines();
+  case '.':	// time and alive pulses info
+    short_info();
     break;
 
   // toggle pulse selection with chiffres:
