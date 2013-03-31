@@ -660,7 +660,7 @@ void Menu::menu_display() const {
 #endif
 
   // men_selected page display:
-  out(F("\n * ** *** MENU "));
+  out(F("\n\n * ** *** MENU "));
   out(men_pages[men_selected].title);
   outln(F(" *** ** *"));
 

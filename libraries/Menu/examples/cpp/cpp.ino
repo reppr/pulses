@@ -146,7 +146,7 @@ int main() {
   CPP_INFO.add_page("cpp info", 'C', \
 		&cpp_info_display, &cpp_info_reaction, '+');
 
-  CPP_INFO.outln(F("cpp info\thttp://github.com/reppr/pulses/\n"));
+  CPP_INFO.outln(F("cpp info\thttp://github.com/reppr/pulses/"));
 
   CPP_INFO.menu_display();		// Display menu at startup
 

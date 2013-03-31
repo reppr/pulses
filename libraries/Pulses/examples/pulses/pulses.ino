@@ -192,7 +192,6 @@ void setup() {
   MENU.out(pl_max);
   MENU.out(F(" pulses = \t"));
   MENU.outln(sizeof(pulse_t)*pl_max);
-  MENU.ln();
 
   // setting up the menu:
   MENU.add_page("pulses", 'M', \
@@ -1268,7 +1267,6 @@ bool menu_pulses_reaction(char menu_input) {
   switch (menu_input) {
 
   case '?':	// help, overrides common menu entry for '?'
-    MENU.ln();
     MENU.menu_display();	// as common
 #ifdef GET_FREE_RAM_COMPILED	// + maybe RAM info
     MENU.out('\t');

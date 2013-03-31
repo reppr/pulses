@@ -95,7 +95,6 @@ void setup() {	// ARDUINO
   MENU.outln(F("For me this is a test for visability of menu pages:"));
   MENU.outln(F("depending the page different menu keys are active."));
   MENU.outln(F("For you it's a very simple joke game to find out how it works..."));
-  MENU.ln();
 
   Menu_setup();		// Tell the menu what to do.
 

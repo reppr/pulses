@@ -78,7 +78,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 //	  MENU.add_page("cpp info", 'C', \
 //			&cpp_info_display, &cpp_info_reaction, '+');
 //
-//	  MENU.outln(F("cpp info\thttp://github.com/reppr/pulses/\n"));
+//	  MENU.outln(F("cpp info\thttp://github.com/reppr/pulses/"));
 //
 //	  MENU.menu_display();		// display menu at startup
 //	}
@@ -112,7 +112,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 //	  MENU.add_page("cpp info", 'C', \
 //			&cpp_info_display, &cpp_info_reaction, '+');
 //
-//	  MENU.outln(F("cpp info\thttp://github.com/reppr/pulses/\n"));
+//	  MENU.outln(F("cpp info\thttp://github.com/reppr/pulses/"));
 //
 //	  MENU.menu_display();		// Display menu at startup
 //

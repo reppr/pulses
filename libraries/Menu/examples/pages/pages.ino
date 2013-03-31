@@ -137,7 +137,7 @@ void setup_pages() {
 void setup() {
   Serial.begin(BAUDRATE);	// Start serial communication.
 
-  MENU.outln(F("\thttp://github.com/reppr/pulses/\n"));
+  MENU.outln(F("\thttp://github.com/reppr/pulses/"));
   setup_pages();
 
   MENU.menu_display();		// Display menu at startup.
@@ -172,7 +172,7 @@ void loop() {		// ARDUINO
 #else	// c++ Linux PC test version int main();
 
 int main() {
-  MENU.outln(F("cpp info\thttp://github.com/reppr/pulses/\n"));
+  MENU.outln(F("cpp info\thttp://github.com/reppr/pulses/"));
 
   setup_pages();
   MENU.menu_display();		// Display menu at startup

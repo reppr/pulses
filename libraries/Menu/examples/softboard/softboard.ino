@@ -103,7 +103,7 @@ void setup() {
   SOFTBOARD.outln(F("Arduino Softboard\thttp://github.com/reppr/pulses/\n"));
 
   pins_info_digital(); SOFTBOARD.ln();
-  pins_info_analog();  SOFTBOARD.ln();
+  pins_info_analog();
 
   SOFTBOARD.menu_display();		// display menu at startup
 }
