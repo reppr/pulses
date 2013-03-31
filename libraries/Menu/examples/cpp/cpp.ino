@@ -51,7 +51,15 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
   #include <Menu.cpp>		// why that?
 #endif
 
+#ifdef __SAM3X8E__	// FIXME: ################
+  #warning 'loading hack for Arduino Due "support"'
+  #define LED_BUILTIN	13
+  #define SDA	-1
+  #define SCL	-1
+#endif
+
 #include <Menu.h>
+
 
 /* BAUDRATE for Serial:	uncomment one of the following lines:	*/
 #define BAUDRATE	115200		// works fine here
@@ -179,18 +187,24 @@ int main() {
 */
 
 #ifdef ARDUINO
-  extern int __bss_end;
-  extern void *__brkval;
+  #ifdef __SAM3X8E__))
+    #warning "not defining get_free_RAM() on Arduino Due."
+    int get_free_RAM() { return ILLEGAL; }
+  #else
+    extern int __bss_end;
+    extern void *__brkval;
 
-  int get_free_RAM() {
-    int free;
+    int get_free_RAM() {
+      int free;
 
-    if ((int) __brkval == 0)
-      return ((int) &free) - ((int) &__bss_end);
-    else
-      return ((int) &free) - ((int) __brkval);
-  }
+      if ((int) __brkval == 0)
+        return ((int) &free) - ((int) &__bss_end);
+      else
+        return ((int) &free) - ((int) __brkval);
+    }
+  #endif
 #else			// not used yet on PC ;(	################
+  #warning "not defining get_free_RAM() on Linux PC."
   int get_free_RAM() { return ILLEGAL; }
 #endif
 
@@ -226,7 +240,41 @@ int main() {
 
 /* ****************  arduino_info():  **************** */
 #ifdef ARDUINO
+
+#include <pins_arduino.h>	// not needed, but source of inspiration...
+
+  // see: <Arduino.h>
+      /*
+#define clockCyclesPerMicrosecond() ( SystemCoreClock / 1000000L )
+#define clockCyclesToMicroseconds(a) ( ((a) * 1000L) / (SystemCoreClock / 1000L) )
+#define microsecondsToClockCycles(a) ( (a) * (SystemCoreClock / 1000000L) )
+
+// Get the bit location within the hardware port of the given virtual pin.
+// This comes from the pins_*.c file for the active board configuration.
+//
+#define digitalPinToPort(P)        ( g_APinDescription[P].pPort )
+#define digitalPinToBitMask(P)     ( g_APinDescription[P].ulPin )
+#define digitalPinToTimer(P)       (  )
+//#define analogInPinToBit(P)        ( )
+#define portOutputRegister(port)   ( &(port->PIO_ODSR) )
+#define portInputRegister(port)    ( &(port->PIO_PDSR) )
+//#define portModeRegister(P)        (  )
+
+#define ADC_CHANNEL_NUMBER_NONE 0xffffffff
+
+      */
+
+
+const char pin_[] = "pin ";
+const char port_[] = "port ";
+const char TIMER_[] = "TIMER ";
+const char YES_[] = "YES";
+const char no_[] = "no ";
+const char Question3_[] = "???\t";
+
+
 void arduino_info() {	// Display some Arduino specific informations.
+
   CPP_INFO.out(F("\nArduino software version\t"));
   CPP_INFO.outln(ARDUINO);
 
@@ -235,6 +283,10 @@ void arduino_info() {	// Display some Arduino specific informations.
   // Board type:
   #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
     CPP_INFO.out(F("Mega board"));
+  #endif
+
+  #ifdef ARDUINO_DUE	// see: boards.txt
+    CPP_INFO.outln(F("ARDUINO_DUE"));
   #endif
 
   #if defined(_VARIANT_ARDUINO_DUE_X_)
@@ -266,9 +318,30 @@ void arduino_info() {	// Display some Arduino specific informations.
   CPP_INFO.ln(); // end processor
 
   //
-//VARIANT_MAINOSC		/** Frequency of the board main oscillator *\
-//VARIANT_MCK		/** Master clock frequency */
-//PINS_COUNT
+  // VARIANT_MAINOSC		/** Frequency of the board main oscillator */
+  #ifdef VARIANT_MAINOSC
+    CPP_INFO.out(F("VARIANT_MAINOSC\t"));
+    CPP_INFO.outln(VARIANT_MAINOSC);
+  #else
+    CPP_INFO.outln(F("VARIANT_MAINOSC\tunknown"));
+  #endif
+
+  // VARIANT_MCK		/** Master clock frequency */
+  #ifdef VARIANT_MCK
+    CPP_INFO.out(F("VARIANT_MCK\t"));
+    CPP_INFO.outln(VARIANT_MCK);
+  #else
+    CPP_INFO.outln(F("VARIANT_MCK\tunknown"));
+  #endif
+
+  // PINS_COUNT
+  #ifdef PINS_COUNT
+    CPP_INFO.out(F("PINS_COUNT\t"));
+    CPP_INFO.outln(PINS_COUNT);
+  #else
+    CPP_INFO.outln(F("PINS_COUNT\tunknown"));
+  #endif
+
   #if defined(ARDUINO_MODEL_PID)
     #if (ARDUINO_MODEL_PID == ARDUINO_UNO_PID)
       CPP_INFO.outln(F("ARDUINO_UNO_PID"));
@@ -278,10 +351,11 @@ void arduino_info() {	// Display some Arduino specific informations.
       CPP_INFO.outln(F("ARDUINO_MEGA2560_PID"));
     #endif
   #else
-      CPP_INFO.outln(F("ARDUINO_MODEL_PID is not defined.\n"));
+      // CPP_INFO.outln(F("ARDUINO_MODEL_PID is not defined.\n"));
   #endif
 
   // Pins:
+  // see: <pins_arduino.h>
   #ifdef NUM_DIGITAL_PINS
     CPP_INFO.out(F("NUM_DIGITAL_PINS\t"));
     CPP_INFO.outln(NUM_DIGITAL_PINS);
@@ -296,17 +370,194 @@ void arduino_info() {	// Display some Arduino specific informations.
     CPP_INFO.outln(F("NUM_ANALOG_INPUTS\tunknown"));
   #endif
 
-  /*
-    DIGITAL_ONLY_PINS
-    number of arduino pins configured for digital I/O
-    *not* counting analog inputs:
-  */
-  #if defined(NUM_DIGITAL_PINS) && defined(NUM_ANALOG_INPUTS)
-    #define DIGITAL_ONLY_PINS	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)
-
-    CPP_INFO.out(F("Digital only pins\t"));
-    CPP_INFO.outln(DIGITAL_ONLY_PINS);
+  #ifdef ADC_CHANNEL_NUMBER_NONE
+    CPP_INFO.outln(F("ADC_CHANNEL_NUMBER_NONE"));
   #endif
+
+  CPP_INFO.outln(F("\nchecking for some macros:"));
+
+  CPP_INFO.out(F("digitalPinHasPWM\t"));
+  #ifdef digitalPinHasPWM
+    CPP_INFO.outln(YES_);
+  #else
+    CPP_INFO.outln(no_);
+  #endif
+
+  CPP_INFO.out(F("analogInputToDigitalPin\t"));
+  #ifdef analogInputToDigitalPin
+    CPP_INFO.outln(YES_);
+  #else
+    CPP_INFO.outln(no_);
+  #endif
+
+  CPP_INFO.out(F("digitalPinToPort\t"));
+  #ifdef digitalPinToPort
+    CPP_INFO.outln(YES_);
+  #else
+    CPP_INFO.outln(no_);
+  #endif
+
+  CPP_INFO.out(F("digitalPinToBitMask\t"));
+  #ifdef digitalPinToBitMask
+    CPP_INFO.outln(YES_);
+  #else
+    CPP_INFO.outln(no_);
+  #endif
+
+  CPP_INFO.out(F("digitalPinToTimer\t"));
+  #ifdef digitalPinToTimer
+    CPP_INFO.outln(YES_);
+  #else
+    CPP_INFO.outln(no_);
+  #endif
+
+  CPP_INFO.ln();
+
+  #ifdef PINS_COUNT		// #defined on Arduino Due
+    #define CHECK_PINS	PINS_COUNT
+  #else
+    #ifdef NUM_DIGITAL_PINS
+      #define CHECK_PINS	NUM_DIGITAL_PINS
+    #else
+      #undef CHECK_PINS
+    #endif
+  #endif
+
+  #ifdef CHECK_PINS
+    int timer;
+
+    for(int pin=0; pin<CHECK_PINS; pin++) {
+      CPP_INFO.out(pin_);
+      CPP_INFO.out(pin);
+      CPP_INFO.tab();
+
+      #ifdef digitalPinHasPWM
+        if(digitalPinHasPWM(pin))
+	  CPP_INFO.out(F("PWM\t"));
+	else
+	  CPP_INFO.tab();
+      #else
+	CPP_INFO.out(Question3_);
+      #endif
+
+      CPP_INFO.out(port_);
+      #ifdef digitalPinToPort
+        #ifndef __SAM3X8E__
+	  CPP_INFO.out(uint8_t digitalPinToPort(pin));
+        #else
+	  CPP_INFO.out(int digitalPinToPort(pin));
+        #endif
+      #else
+	CPP_INFO.out('?');
+      #endif
+      CPP_INFO.space(); CPP_INFO.space();
+
+      #ifdef digitalPinToBitMask
+	CPP_INFO.outBIN(digitalPinToBitMask(pin), 8);
+        CPP_INFO.tab();
+      #else
+	CPP_INFO.out(Question3_);
+      #endif
+
+      CPP_INFO.tab();
+      switch (pin) {	// there can be *only one* of them
+      case A0:		// so we *can* 'switch' here
+        CPP_INFO.out(F("A0  "));
+	break;
+      case A1:
+        CPP_INFO.out(F("A1  "));
+	break;
+      case A2:
+        CPP_INFO.out(F("A2  "));
+	break;
+      case A3:
+        CPP_INFO.out(F("A3  "));
+	break;
+      case A4:
+        CPP_INFO.out(F("A4  "));
+	break;
+      case A5:
+        CPP_INFO.out(F("A5  "));
+	break;
+#if (NUM_ANALOG_INPUTS > 6)
+      case A6:
+        CPP_INFO.out(F("A6  "));
+	break;
+      case A7:
+        CPP_INFO.out(F("A7  "));
+	break;
+#if (NUM_ANALOG_INPUTS > 8)
+      case A8:
+        CPP_INFO.out(F("A8  "));
+	break;
+      case A9:
+        CPP_INFO.out(F("A9  "));
+	break;
+      case A10:
+        CPP_INFO.out(F("A10  "));
+	break;
+      case A11:
+        CPP_INFO.out(F("A11  "));
+	break;
+      case A12:
+        CPP_INFO.out(F("A12  "));
+	break;
+      case A13:
+        CPP_INFO.out(F("A13  "));
+	break;
+      case A14:
+        CPP_INFO.out(F("A14  "));
+	break;
+      case A15:
+        CPP_INFO.out(F("A15  "));
+	break;
+#endif
+#endif
+      }
+
+      if(pin == LED_BUILTIN)
+	CPP_INFO.out(F("LED  "));
+
+      if(pin == SS)
+	CPP_INFO.out(F("SS  "));
+
+      if(pin == MOSI)
+	CPP_INFO.out(F("MOSI  "));
+
+      if(pin == MISO)
+	CPP_INFO.out(F("MISO  "));
+
+      if(pin == SCK)
+	CPP_INFO.out(F("SCK  "));
+
+      if(pin == SDA)
+	CPP_INFO.out(F("SDA  "));
+
+      if(pin == SCL)
+	CPP_INFO.out(F("SCL  "));
+
+      #ifdef digitalPinToTimer
+        #ifdef __SAM3X8E__	// FIXME: ################
+          #warning "no timer info on Arduino Due yet. ################"
+        #else
+          timer= digitalPinToTimer(pin);
+	  if(timer) {
+            CPP_INFO.out(TIMER_);
+	    CPP_INFO.out(timer);
+	    // FIXME: ################
+	    CPP_INFO.space();
+            CPP_INFO.out(Question3_); // don't know what the numbers mean!
+	  }
+        #endif
+      #else
+        CPP_INFO.out(TIMER_);
+	CPP_INFO.out(Question3_);
+      #endif
+
+      CPP_INFO.ln();
+    }
+  #endif
+
 }
 #endif
 
