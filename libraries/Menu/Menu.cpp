@@ -833,6 +833,11 @@ void Menu::interpret_men_input() {
       if (token == men_pages[pg].hotkey) {
 	(*men_pages[pg].interpret)(token);	// *might* do more, return is irrelevant
 	men_selected = pg;			// switch to page
+
+	// often menu_display() will be called anyway, depending verbosity
+	if (verbosity < VERBOSITY_CHATTY)	// if verbosity is too low
+	  menu_display();			//   we do it from here
+
 	did_something = true;			// yes, did switch
 #ifdef DEBUGGING_MENU
     	out(F("FOUND ")); menu_page_info(pg);
@@ -858,7 +863,7 @@ void Menu::interpret_men_input() {
       ln();
       menu_pages_info();
 
-      // Normally menu_display(); will be called anyway, depending verbosity:
+      // often menu_display(); will be called anyway, depending verbosity:
       if (verbosity < VERBOSITY_CHATTY)	// if verbosity is too low
 	menu_display();			//   we do it from here
 
