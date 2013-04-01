@@ -674,6 +674,22 @@ void alive_pulses_info_lines()
 }
 
 
+void selected_pulses_info_lines()
+{
+  int count=0;
+
+  for (int pulse=0; pulse<pl_max; ++pulse) {
+    if (selected_pulses & (1 << pulse)) {
+      pulse_info_1line(pulse);
+      count++;
+    }
+  }
+
+  if (count)
+    MENU.ln();
+}
+
+
 // pulse_info() as paylod for pulses: print pulse info:
 void pulse_info(int pulse) {
 
@@ -858,9 +874,13 @@ char hex_chiffre(unsigned int c) {
   return '?';
 }
 
+
+const char selected_[] = "selected ";
+
 void print_selected_pulses() {
   const int hex_pulses=min(pl_max,16);	// displayed as hex chiffres
 
+  MENU.out(selected_);
   for (int pulse=0; pulse<hex_pulses; pulse++) {
     if (selected_pulses & (1 << pulse))
       MENU.out((char) hex_chiffre(pulse));
@@ -884,8 +904,6 @@ void print_selected_pulses() {
   MENU.ln();
 }
 
-const char selected_[] = "selected ";
-
 void print_selected() {
   MENU.out(selected_);
 
@@ -903,7 +921,7 @@ void print_selected() {
 
 // info_select_destination_with()
 const char selectDestinationInfo[] =
-  "SELECT DESTINATION for '= * / s K P n c j' to work on:\t\t";
+  "SELECT DESTINATION for '= * / s K P n c j :' to work on:\t\t";
 const char selectPulseWith[] = "Select pulse with ";
 const char selectAllPulses[] =
   "\na=select *all* click pulses\tA=*all* pulses\tl=alive clicks\tL=all alive\tx=none\t~=invert selection";
@@ -937,7 +955,7 @@ void info_select_destination_with(boolean extended_destinations) {
 
 // menu_program_display()
 const char helpInfo[] = \
-  "?=help\ti=info\t.=short info";
+  "?=help\ti=info\t.=alive info\t:=selected info";
 const char microSeconds[] = " microseconds";
 const char muteKill[] = \
   "M=mute all\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tf=en-info\tF=en-INFO\tn=sync now\nS=sync ";
@@ -1237,6 +1255,16 @@ bool menu_pulses_reaction(char menu_input) {
     short_info();
     break;
 
+  case ':':
+    MENU.ln();
+    time_info();
+    MENU.ln();
+    MENU.ln();
+    print_selected_pulses();
+    MENU.ln();
+    selected_pulses_info_lines();
+    break;
+
   // toggle pulse selection with chiffres:
   case '0':
   case '1':
@@ -1254,7 +1282,6 @@ bool menu_pulses_reaction(char menu_input) {
     // existing pulse:
     selected_pulses ^= (1 << (menu_input - '0'));
 
-    MENU.out(selected_);
     print_selected_pulses();
     break;
 
@@ -1268,14 +1295,12 @@ bool menu_pulses_reaction(char menu_input) {
     for (int pulse=0; pulse<CLICK_PULSES; pulse++)
       selected_pulses |= (1 << pulse);
 
-    MENU.out(selected_);
     print_selected_pulses();
     break;
 
   case 'A':	// select destination: *all* pulses
     selected_pulses = ~0;
 
-    MENU.out(selected_);
     print_selected_pulses();
     break;
 
@@ -1285,7 +1310,6 @@ bool menu_pulses_reaction(char menu_input) {
       if(PULSES.pulses[pulse].flags && (PULSES.pulses[pulse].flags != SCRATCH))
 	selected_pulses |= (1 << pulse);
 
-    MENU.out(selected_);
     print_selected_pulses();
     break;
 
@@ -1295,21 +1319,18 @@ bool menu_pulses_reaction(char menu_input) {
       if(PULSES.pulses[pulse].flags && (PULSES.pulses[pulse].flags != SCRATCH))
 	selected_pulses |= (1 << pulse);
 
-    MENU.out(selected_);
     print_selected_pulses();
     break;
 
   case '~':	// invert destination selection
     selected_pulses = ~selected_pulses;
 
-    MENU.out(selected_);
     print_selected_pulses();
     break;
 
   case 'x':	// clear destination selection
     selected_pulses = 0;
 
-    MENU.out(selected_);
     print_selected_pulses();
     break;
 

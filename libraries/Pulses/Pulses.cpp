@@ -45,7 +45,6 @@ Pulses::Pulses(unsigned int pl_max):
   global_octave(0),
   global_octave_mask(1),
   current_global_octave_mask(1),
-//  nextFlip(farest_future),	// ################ ???
   global_next_count(0)
 {
   pulses = (pulse_t *) malloc(pl_max * sizeof(pulse_t));
@@ -266,7 +265,7 @@ void Pulses::init_pulse(int pulse) {
   pulses[pulse].last.time = 0;
   pulses[pulse].last.overflow = 0;
   pulses[pulse].next.time = 0;
-  pulses[pulse].next.overflow = 0;
+  pulses[pulse].next.overflow = ~0;	// ILLEGAL
   pulses[pulse].parameter_1 = 0;
   pulses[pulse].parameter_2 = 0;
   pulses[pulse].ulong_parameter_1 = 0L;
