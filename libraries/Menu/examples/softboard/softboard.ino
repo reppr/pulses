@@ -58,9 +58,6 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
 #include <Menu.h>
 
-#ifdef SHOW_FREE_RAM
-  #warning SHOW_FREE_RAM: softboard does this by default
-#endif
 
 /* BAUDRATE for Serial:	uncomment one of the following lines:	*/
 #define BAUDRATE	115200		// works fine here
@@ -502,34 +499,6 @@ void maybe_run_continuous() {
 
 /* **************************************************************** */
 /*
-  Determine RAM usage:
-  int get_free_RAM() {
-*/
-
-#ifdef __SAM3X8E__
-  #warning "get_free_RAM() *not implemented on the DUE yet*."
-  int get_free_RAM() {
-    return -1;
-  }
-#else
-
-extern int __bss_end;
-extern void *__brkval;
-
-int get_free_RAM() {
-  int free;
-
-  if ((int) __brkval == 0)
-    return ((int) &free) - ((int) &__bss_end);
-  else
-    return ((int) &free) - ((int) __brkval);
-}
-
-#endif
-
-
-/* **************************************************************** */
-/*
    Menu softboard display and reaction:
 */
 
@@ -587,10 +556,6 @@ void _select_analog(bool key) {
 
 
 void softboard_display() {
-  SOFTBOARD.out(F("\t\tfree RAM="));
-  SOFTBOARD.outln(get_free_RAM());
-  SOFTBOARD.ln();
-
   _select_digital(true);
   SOFTBOARD.out(toWork_);
   SOFTBOARD.out(pin__);

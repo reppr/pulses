@@ -209,12 +209,12 @@ char Menu::cb_read() {
   void Menu::outln(const unsigned int i)	const	{ port_.println(i); }
   void Menu::outln(const unsigned long l)	const	{ port_.println(l); }
 
-
+#ifdef USE_F_MACRO
   // *DO* use Arduino F() MACRO for string output to save RAM:
   void Menu::out(const __FlashStringHelper* str) const {
     port_.print(str);
   }
-
+#endif
 
   void Menu::out(const float f, int places)	const {	// formatted float output
     port_.print(f, places);
@@ -241,7 +241,13 @@ char Menu::cb_read() {
   void Menu::equals() const { port_.print('='); }	// Output char '='
 
 
-  #ifdef GET_FREE_RAM					// Arduino: RAM usage
+  /*
+   * Menu tries to determine free RAM and to display free RAM in the title line:
+   * To keep the change simple I decided to define the RAM functions as noops
+   * when the menu does not know how to determine RAM properly.
+   */
+  #ifdef GET_FREE_RAM		// REAL free RAM functions:
+
     /* int get_free_RAM(): determine free RAM on Arduino:		*/
     int Menu::get_free_RAM() const {
       int free;
@@ -254,8 +260,17 @@ char Menu::cb_read() {
         return ((int) &free) - ((int) __brkval);
     }
 
-    void Menu::print_free_RAM(void) const {
-      out(F("free RAM:")); space(); out((int) get_free_RAM()); ln();
+    void Menu::print_free_RAM() const {
+      out(F("free RAM:")); space(); out((int) get_free_RAM());
+    }
+
+  #else				// NOOP free RAM fakes only:
+
+    int Menu::get_free_RAM() const {		// noop fake
+      return -1;
+    }
+
+    void Menu::print_free_RAM() const {		// noop fake
     }
   #endif
 
@@ -616,11 +631,8 @@ void Menu::add_page(const char *pageTitle, const char hotkey,		\
     Looks save enough as a menu is not very usable without adding menupages.
   */
     Error_();
-
-#ifdef GET_FREE_RAM	// Arduino: RAM usage
-    print_free_RAM();
-#endif
-
+    print_free_RAM();	// real or fake ;)
+    ln();
     flush();		// we *do* need to flush here
     exit(1);		// give up, STOP!
   }
@@ -662,7 +674,9 @@ void Menu::menu_display() const {
   // men_selected page display:
   out(F("\n\n * ** *** MENU "));
   out(men_pages[men_selected].title);
-  outln(F(" *** ** *"));
+  out(F(" *** ** *\t\t"));
+  print_free_RAM();	// real or fake ;)
+  ln();
 
   (*men_pages[men_selected].display)();
 
@@ -687,9 +701,6 @@ void Menu::menu_display() const {
     out(F("  'q' quit page"));
   ln();
 
-#ifdef SHOW_FREE_RAM
-  print_free_RAM();
-#endif
 #ifdef DEBUGGING_MENU
   ln();
 #endif

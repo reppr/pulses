@@ -19,43 +19,42 @@
   #define STREAMTYPE	ostream
 #endif
 
+
 /* **************************************************************** */
+/* GET_FREE_RAM  and  USE_F_MACRO
+ * compile a working Menu::get_free_RAM() function or just a dummy?
+ * use Arduino F() macro to save RAM or a noop?
+ */
 #ifdef ARDUINO
-  // compile Menu::get_free_RAM()?
+
+  // compile a working Menu::get_free_RAM() function?
   #ifdef __SAM3X8E__))
     #warning "not defining get_free_RAM() on Arduino Due."
     #undef GET_FREE_RAM
-    #undef SHOW_FREE_RAM
   #else
     #define GET_FREE_RAM
-
-    // should Menu automagically display free RAM for tests?
-    // #define SHOW_FREE_RAM	// COMMENT THAT OFF, normally
-    #ifdef SHOW_FREE_RAM
-      #define GET_FREE_RAM
-    #endif
   #endif
 
-  // comment/uncomment for RAM tests:
-  #define USE_F_MACRO
+  // normally we use F() macro on Arduino to save RAM
+  #define USE_F_MACRO	// comment out for RAM tests
 
   #ifdef __SAM3X8E__	// FIXME: ################
-    #warning "not using macro F() on Arduino Due."
+    #ifdef USE_F_MACRO
+      #warning "not using macro F() on Arduino Due."
+    #endif
     #undef USE_F_MACRO
   #endif
 
 #else	// *ARDUINO ONLY*
+
   #ifdef GET_FREE_RAM
     #warning GET_FREE_RAM *ARDUINO ONLY* #undef
-    #undef GET_FREE_RAM
   #endif
+  #undef GET_FREE_RAM
 
-  #ifdef SHOW_FREE_RAM
-    #warning SHOW_FREE_RAM *ARDUINO ONLY* #undef
-    #undef SHOW_FREE_RAM
-  #endif
 #endif
 
+// use Arduino F() macro to save RAM or a noop?
 #ifndef USE_F_MACRO
   // For tests and on PC:  Fake Arduino F("string") macro as noop:
   #undef F(s)
@@ -158,7 +157,7 @@ class Menu {
   void outln(const unsigned int i)	const;	// unsigend int  and newline
   void outln(const unsigned long l)	const;	// unsigned long and newline
 
-#ifdef ARDUINO
+#ifdef USE_F_MACRO
   // *DO* use Arduino F() MACRO for string output to save RAM:
 
   void out(const __FlashStringHelper*) const; // Arduino macro: F("string")
@@ -186,12 +185,9 @@ class Menu {
   void equals()	const;		// output char '='
 
 
-#ifdef GET_FREE_RAM		// Arduino: RAM usage
-/* int get_free_RAM(): determine RAM usage			*/
+/* int get_free_RAM(): determine RAM usage, maybe only a dummy	*/
   int get_free_RAM() const;
   void print_free_RAM() const;
-#endif
-
 
   void verbosity_info();	// helper function
 

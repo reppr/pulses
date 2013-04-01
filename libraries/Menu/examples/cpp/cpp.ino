@@ -162,34 +162,6 @@ int main() {
 #define ILLEGAL		-1
 
 
-/* **************************************************************** */
-/*
-  Determine RAM usage:
-  int get_free_RAM() {
-*/
-
-#ifdef ARDUINO
-  #ifdef __SAM3X8E__))
-    #warning "not defining get_free_RAM() on Arduino Due."
-    int get_free_RAM() { return ILLEGAL; }
-  #else
-    extern int __bss_end;
-    extern void *__brkval;
-
-    int get_free_RAM() {
-      int free;
-
-      if ((int) __brkval == 0)
-        return ((int) &free) - ((int) &__bss_end);
-      else
-        return ((int) &free) - ((int) __brkval);
-    }
-  #endif
-#else			// not used yet on PC ;(	################
-  #warning "not defining get_free_RAM() on Linux PC."
-  int get_free_RAM() { return ILLEGAL; }
-#endif
-
 
 /* **************************************************************** */
 /*
@@ -605,11 +577,6 @@ void arduino_info() {	// Display some Arduino specific informations.
 /* ****************  cpp_info menu display:  **************** */
 
 void cpp_info_display() {
-  CPP_INFO.out(F("free RAM="));
-  CPP_INFO.outln(get_free_RAM());
-
-  CPP_INFO.ln();
-
   CPP_INFO.out(F("sizeof(char)\t"));		CPP_INFO.outln(sizeof(char));
   CPP_INFO.out(F("sizeof(int)\t"));		CPP_INFO.outln(sizeof(int));
   CPP_INFO.out(F("sizeof(long)\t"));		CPP_INFO.outln(sizeof(long));

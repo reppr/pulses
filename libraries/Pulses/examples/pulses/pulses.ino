@@ -134,39 +134,6 @@ Pulses PULSES(pl_max);
 
 
 /* **************************************************************** */
-/*
-  Determine RAM usage:
-  int get_free_RAM() {
-*/
-
-#undef GET_FREE_RAM_COMPILED	// set this *only* if it *has* been compiled
-
-#ifdef ARDUINO
-  #ifndef __SAM3X8E__
-
-    extern int __bss_end;
-    extern void *__brkval;
-
-    int get_free_RAM() {
-      int free;
-
-      if ((int) __brkval == 0)
-        return ((int) &free) - ((int) &__bss_end);
-      else
-        return ((int) &free) - ((int) __brkval);
-    }
-
-    #define GET_FREE_RAM_COMPILED
-  #else
-     #warning '*no* get_free_RAM() on Arduino DUE yet!'
-  #endif
-#else			// not used yet on PC ;(	################
-  #warning '*no* get_free_RAM() on Linux yet...'
-  int get_free_RAM() { return ILLEGAL; }
-#endif
-
-
-/* **************************************************************** */
 #ifdef ARDUINO
 /* Arduino setup() and loop():					*/
 
@@ -179,12 +146,7 @@ void setup() {
   MENU.outln(F("http://github.com/reppr/pulses/\n"));
 
   MENU.out(F("pulses: "));
-  MENU.out(pl_max);
-#ifdef GET_FREE_RAM_COMPILED
-  MENU.out(F("\tfree RAM :\t"));
-  MENU.out(get_free_RAM());
-#endif
-  MENU.ln();
+  MENU.outln(pl_max);
 
   MENU.out(F("sizeof(pulse_t) "));
   MENU.out(sizeof(pulse_t));
@@ -1268,11 +1230,6 @@ bool menu_pulses_reaction(char menu_input) {
 
   case '?':	// help, overrides common menu entry for '?'
     MENU.menu_display();	// as common
-#ifdef GET_FREE_RAM_COMPILED	// + maybe RAM info
-    MENU.out('\t');
-    MENU.out(F("free RAM :\t"));
-    MENU.outln(get_free_RAM());
-#endif
     short_info();		// + short info
     break;
 
@@ -1396,13 +1353,6 @@ bool menu_pulses_reaction(char menu_input) {
   case 'i':	// info
     MENU.ln();
     time_info();
-
-#ifdef GET_FREE_RAM_COMPILED
-    MENU.out(F("\tfree RAM :\t"));	// ################ const str*
-    MENU.outln(get_free_RAM());
-    MENU.ln();
-#endif
-
     alive_pulses_info();
     break;
 

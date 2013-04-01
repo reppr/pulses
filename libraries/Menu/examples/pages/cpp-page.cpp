@@ -132,29 +132,6 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
 /* **************************************************************** */
 /*
-  Determine RAM usage:
-  int get_free_RAM() {
-*/
-
-#ifdef ARDUINO
-  extern int __bss_end;
-  extern void *__brkval;
-
-  int get_free_RAM() {
-    int free;
-
-    if ((int) __brkval == 0)
-      return ((int) &free) - ((int) &__bss_end);
-    else
-      return ((int) &free) - ((int) __brkval);
-  }
-#else			// not used yet on PC ;(	################
-  int get_free_RAM() { return ILLEGAL; }
-#endif
-
-
-/* **************************************************************** */
-/*
    Menu cpp_info display and reaction:
 */
 
@@ -249,11 +226,6 @@ void arduino_info() {	// Display some Arduino specific informations.
 /* ****************  cpp_info menu display:  **************** */
 
 void cpp_info_display() {
-  MENU.out(F("free RAM="));
-  MENU.outln(get_free_RAM());
-
-  MENU.ln();
-
   MENU.out(F("sizeof(char)\t"));		MENU.outln(sizeof(char));
   MENU.out(F("sizeof(int)\t"));		MENU.outln(sizeof(int));
   MENU.out(F("sizeof(long)\t"));		MENU.outln(sizeof(long));
