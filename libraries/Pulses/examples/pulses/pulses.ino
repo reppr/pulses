@@ -156,7 +156,7 @@ void setup() {
   MENU.outln(sizeof(pulse_t)*pl_max);
 
   // setting up the menu:
-  MENU.add_page("pulses", 'M', \
+  MENU.add_page("pulses", 'P', \
 		&menu_pulses_display, &menu_pulses_reaction, '+');
 
   // display menu at startup:
