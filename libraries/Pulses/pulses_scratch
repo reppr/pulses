@@ -1164,22 +1164,6 @@
 ##
 
 ##	// binary print flags:
-##	// print binary numbers with leading zeroes and a space
-##	void serial_print_BIN(unsigned long value, int bits) {
-##	  int i;
-##	  unsigned long mask=0;
-##
-##	  for (i = bits - 1; i >= 0; i--) {
-##	    mask = (1 << i);
-##	      if (value & mask)
-##		Serial.print(1);
-##	      else
-##		Serial.print(0);
-##	  }
-##	  Serial.print(' ');
-##	}
-##
-##
 
 ##	void display_action(int pulse) {
 ##	  void (*scratch)(int);

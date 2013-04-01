@@ -202,26 +202,6 @@ char PIN_analog = 0;		// 0 is save as default for analog pins
 bool echo_switch=true;		// serial echo switch
 
 
-/* **************************************************************** */
-/*
-  serial_print_BIN(unsigned long value, int bits)
-  print binary numbers with leading zeroes and a trailing space
-*/
-void serial_print_BIN(unsigned long value, int bits) {
-  int i;
-  unsigned long mask=0;
-
-  for (i = bits - 1; i >= 0; i--) {
-    mask = (1 << i);
-      if (value & mask)
-	SOFTBOARD.out('1');
-      else
-	SOFTBOARD.out('0');
-  }
-  SOFTBOARD.space();
-}
-
-
 /* ****************  info on DIGITAL pins:  **************** */
 
 #ifdef __SAM3X8E__

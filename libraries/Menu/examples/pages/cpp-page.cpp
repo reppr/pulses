@@ -127,25 +127,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 //
 //	#define ILLEGAL		-1
 //
-//
-//	/* **************************************************************** */
-//	/*
-//	  serial_print_BIN(unsigned long value, int bits)
-//	  print binary numbers with leading zeroes and a trailing space
-//	*/
-//	void print_BIN(unsigned long value, int bits) {
-//	  int i;
-//	  unsigned long mask=0;
-//
-//	  for (i = bits - 1; i >= 0; i--) {
-//	    mask = (1 << i);
-//	      if (value & mask)
-//		MENU.out('1');
-//	      else
-//		MENU.out('0');
-//	  }
-//	  MENU.space();
-//	}
+
 
 
 /* **************************************************************** */

@@ -162,26 +162,6 @@ int main() {
 #define ILLEGAL		-1
 
 
-//	/* **************************************************************** */
-//	/*
-//	  serial_print_BIN(unsigned long value, int bits)
-//	  print binary numbers with leading zeroes and a trailing space
-//	*/
-//	void print_BIN(unsigned long value, int bits) {
-//	  int i;
-//	  unsigned long mask=0;
-//
-//	  for (i = bits - 1; i >= 0; i--) {
-//	    mask = (1 << i);
-//	      if (value & mask)
-//		CPP_INFO.out('1');
-//	      else
-//		CPP_INFO.out('0');
-//	  }
-//	  CPP_INFO.space();
-//	}
-
-
 /* **************************************************************** */
 /*
   Determine RAM usage:
