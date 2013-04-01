@@ -247,7 +247,7 @@ void pin_info_digital(uint8_t pin) {
 
 #ifdef __SAM3X8E__
   #warning "I/O pin configuration info *not implemented on Arduino DUE yet*."
-  SOFTBOARD.out(F("??? (DUE not implemented)"));
+  SOFTBOARD.out(F("(pin_info_digital() not implemented on DUE yet)"));
 #else
   // see: <Arduino.h>
 
