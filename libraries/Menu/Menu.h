@@ -129,6 +129,9 @@ class Menu {
   long numeric_input(long default_value);  // read a number from the buffer
   void skip_numeric_input();		// drop leading numeric sequence from the buffer
 
+  void menu_page_info(char pg)	const;	// show a menu pages' info
+  void menu_pages_info()	const;	// show all known pages' info
+
   void menu_display() const;		// display the menu:
 					//   selected menu page,
 					//   page hot keys,
@@ -191,6 +194,7 @@ class Menu {
 
   void verbosity_info();	// helper function
 
+
  protected:
   // Act on buffer content tokens after seeing 'end token':
   bool try_page_reaction(char pg, char token);	// interpreter factor
@@ -200,9 +204,6 @@ class Menu {
 #ifdef DEBUGGING_CIRCBUF
   void cb_info() const;			// debugging help
 #endif
-  void menu_page_info(char pg)	const;	// show a menu pages' info
-  void menu_pages_info()	const;	// show all known pages' info
-
   int (*maybe_input)(void);	// maybe_input()  Must return EOF or next char
   bool (*action)(void);		// will be called on receiving an end token
 

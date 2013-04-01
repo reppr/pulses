@@ -670,8 +670,13 @@ void Menu::menu_display() const {
   Menu::outln(F("\nmenu_display()"));
 #endif
 
+  ln();
+
+  // start with a line for each menu page:
+  menu_pages_info();
+
   // men_selected page display:
-  out(F("\n\n * ** *** MENU "));
+  out(F("\n * ** *** MENU "));
   out(men_pages[men_selected].title);
   out(F(" *** ** *\t\t"));
   print_free_RAM();	// real or fake ;)
@@ -860,10 +865,6 @@ void Menu::interpret_men_input() {
 #endif
     switch (token) {
     case '?':
-      ln();
-      menu_pages_info();
-
-      // often menu_display(); will be called anyway, depending verbosity:
       if (verbosity < VERBOSITY_CHATTY)	// if verbosity is too low
 	menu_display();			//   we do it from here
 
@@ -881,6 +882,9 @@ void Menu::interpret_men_input() {
 #ifdef DEBUGGING_MENU
       out(F("==>* switch to ")); menu_page_info(men_selected);
 #endif
+      if (verbosity < VERBOSITY_CHATTY)	// if verbosity is too low
+	menu_display();			//   we do it from here
+
       did_something = true;
       break;
 
