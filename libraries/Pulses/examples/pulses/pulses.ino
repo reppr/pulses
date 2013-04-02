@@ -1706,6 +1706,10 @@ Testing Pulses library in a very early stage
 /* ARDUINO BOARD SPECIFIC THINGS  try to use ARDUINO MACROS: */
 
 #ifndef NUM_DIGITAL_PINS		// try harder... ?
+  #ifndef NUM_DIGITAL_PINS
+    #error #define NUM_DIGITAL_PINS
+  #endif
+
   #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
     #define NUM_DIGITAL_PINS	70
   #else								 // 168/328
@@ -1719,6 +1723,10 @@ Testing Pulses library in a very early stage
 
 
 #ifndef NUM_ANALOG_INPUTS		// try harder... ?
+  #ifndef NUM_ANALOG_INPUTS
+    #error #define NUM_ANALOG_INPUTS
+  #endif
+
   #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
     #define NUM_ANALOG_INPUTS	16
   #else								// 168/328 boards
@@ -1731,6 +1739,12 @@ Testing Pulses library in a very early stage
 #endif
 
 
+// check for possible unknown eightanaloginputs variant
+#if (NUM_ANALOG_INPUTS == 8) && (NUM_DIGITAL_PINS != 20)
+  #error "UNKNOWN eightanaloginputs variant, please adapt source or ignore."
+#endif
+
+
 #ifndef digitalPinHasPWM	// ################
   #ifndef __SAM3X8E__
     #error #define digitalPinHasPWM
@@ -1740,31 +1754,43 @@ Testing Pulses library in a very early stage
 #endif
 
 
-/*
-  DIGITAL_IOs
-  number of arduino pins configured for digital I/O
-  *not* counting analog inputs:
-*/
-
-#define DIGITAL_IOs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)
 
 
 /* **************************************************************** */
 /* define some things early: */
 
-// #define ILLEGAL		-1
+// #define ILLEGAL	-1	// probably already defined above
 
 char PIN_digital = ILLEGAL_PIN;	// would be dangerous to default to zero
 char PIN_analog = 0;		// 0 is save as default for analog pins
 
 
-// The following defaults *must* match with each other, choose one pair.
-// either:
-  bool extra_switch=false;	// extra functionality on digital pins
-  int visible_digital_pins=DIGITAL_IOs;		// extra_switch==false
-// or:
-  // bool extra_switch=false;	// extra functionality on digital pins
-  // int visible_digital_pins=NUM_DIGITAL_PINS;	// extra_switch==true
+/* extra_switch:
+ * toggle extra range (and maybe functionality) on digital pins:
+ * chage default here by un/commenting
+ * #define START_WITH_EXTRA_SWITCH_ON				*/
+#define START_WITH_EXTRA_SWITCH_ON
+
+#ifdef START_WITH_EXTRA_SWITCH_ON
+
+  bool extra_switch=true;	// extra functionality default *on*
+
+  #if (NUM_ANALOG_INPUTS != 8)
+    int visible_digital_pins=NUM_DIGITAL_PINS;
+  #else
+    int visible_digital_pins=22;
+
+  #endif
+#else	// extra_switch defaults to off
+
+  bool extra_switch=false;	// extra functionality default *off*
+
+  #if (NUM_ANALOG_INPUTS != 8)	// standard boards
+    int visible_digital_pins=NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS;
+  #else				// variant eightanaloginputs
+    int visible_digital_pins=14;		// FIXME: test ################
+  #endif
+#endif
 
 bool echo_switch=true;		// serial echo switch
 
@@ -2160,14 +2186,27 @@ void softboard_display() {
   * Visability of analog inputs as general digital I/O pins
     (only this one item implemented)
 */
-void toggle_extra() {
-  extra_switch = !extra_switch;
-  if (extra_switch)
-    visible_digital_pins=NUM_DIGITAL_PINS;
-  else
-    visible_digital_pins=DIGITAL_IOs;
-}
 
+/* Variant eightanaloginputs is already tested above.
+ * adapt code here if the test fails.				*/
+#if (NUM_ANALOG_INPUTS != 8)	// *no* variant eightanaloginputs
+  void toggle_extra() {		// *no* variant eightanaloginputs
+    extra_switch = !extra_switch;
+    if (extra_switch) {
+      visible_digital_pins=NUM_DIGITAL_PINS;
+    else
+      visible_digital_pins=NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS;
+    }
+  }
+#else				// VARIANT: eightanaloginputs
+  void toggle_extra() {		// VARIANT: eightanaloginputs
+    extra_switch = !extra_switch;
+    if (extra_switch)
+      visible_digital_pins=22;		// FIXME: test ################
+    else
+      visible_digital_pins=14;		// FIXME: test ################
+  }
+#endif
 
 // Factored out helper function
 // digital_pin_ok()  Checks if PIN_digital has been set
