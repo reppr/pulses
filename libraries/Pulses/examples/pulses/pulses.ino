@@ -2238,8 +2238,10 @@ bool softboard_reaction(char token) {
     newValue = MENU.numeric_input(PIN_analog);
     if (newValue>=0 && newValue<NUM_ANALOG_INPUTS)
       PIN_analog = newValue;
-    else
+    else {
       MENU.OutOfRange();
+      MENU.ln();
+    }
 
     MENU.out(pin_);
     MENU.outln((int) PIN_analog);
@@ -2254,8 +2256,10 @@ bool softboard_reaction(char token) {
       PIN_digital = newValue;
       pin_info_digital((int) PIN_digital);
     } else
-      if (newValue != ILLEGAL_PIN)
+      if (newValue != ILLEGAL_PIN) {
 	MENU.OutOfRange();
+	MENU.ln();
+      }
     break;
 
   case 'O':
@@ -2308,8 +2312,10 @@ bool softboard_reaction(char token) {
 	  MENU.out(F("\tanalogWrite(")); MENU.out((int) PIN_digital);
 	  MENU.out(F(", ")); MENU.out(newValue);
 	  MENU.outln(')');
-	} else
+	} else {
 	  MENU.OutOfRange();
+	  MENU.ln();
+	}
       }
     }
     break;
