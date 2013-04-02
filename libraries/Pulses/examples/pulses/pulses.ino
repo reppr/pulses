@@ -688,14 +688,9 @@ void alive_pulses_info_lines()
 {
   int count=0;
 
-  for (int pulse=0; pulse<pl_max; ++pulse)	// first port used
+  for (int pulse=0; pulse<pl_max; ++pulse)
     if (PULSES.pulses[pulse].flags) {		// any flags set?
       pulse_info_1line(pulse);
-      count++;
-    }
-
-  if (count == 0) {				// second port used
-    MENU.out(noAlive);
       count++;
     }
 
