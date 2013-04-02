@@ -39,6 +39,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 #ifdef ARDUINO
   #if ARDUINO >= 100
@@ -118,7 +119,7 @@ void alive_pulses_info_lines();		// defined later on
 #ifndef CLICK_PULSES		// number of click frequencies
   #define CLICK_PULSES	7       // default number of click frequencies
 #endif
-unsigned char click_pin[CLICK_PULSES];	// ################
+uint8_t click_pin[CLICK_PULSES];	// ################
 
 
 /* **************************************************************** */
@@ -298,7 +299,7 @@ void click(int pulse) {	// can be called from a pulse
 // pins for click_pulses:
 // It is a bit obscure to held them in an array indexed by [pulse]
 // but it's simple and working well...
-// unsigned char click_pin[CLICK_PULSES];
+// uint_8_t click_pin[CLICK_PULSES];
 
 
 void init_click_pins() {
@@ -1761,8 +1762,8 @@ Testing Pulses library in a very early stage
 
 // #define ILLEGAL	-1	// probably already defined above
 
-char PIN_digital = ILLEGAL_PIN;	// would be dangerous to default to zero
-char PIN_analog = 0;		// 0 is save as default for analog pins
+uint8_t PIN_digital = ILLEGAL_PIN;	// would be dangerous to default to zero
+uint8_t PIN_analog = 0;			// 0 *is* a save default for analog pins
 
 
 /* extra_switch:
@@ -1914,7 +1915,7 @@ void watch_digital_start(uint8_t pin) {
 }
 
 
-void watch_digital_input(int pin) {
+void watch_digital_input(uint8_t pin) {
   int value=digitalRead(PIN_digital);
 
   if (value != watch_seen) {
@@ -1995,7 +1996,7 @@ const char analog_reads_title[] =	\
   "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
 
 void pins_info_analog() {
-  int i, value;
+  int i;
 
   MENU.outln(analog_reads_title);
 
@@ -2039,7 +2040,7 @@ void feedback_tolerance() {
 }
 
 
-void VU_init(int pin) {
+void VU_init() {
   VU_last=IMPOSSIBLE;	// just an impossible value
 
   MENU.out(F("pin\tval\t+/- set "));
@@ -2051,7 +2052,7 @@ void VU_init(int pin) {
 void toggle_VU() {
   run_VU = !run_VU;
   if (run_VU)
-    VU_init(PIN_analog);
+    VU_init();
   else
     MENU.ln();
 }
@@ -2068,7 +2069,7 @@ void toggle_VU() {
 
   asynchronous run-through, don't wait too long...
 */
-void bar_graph_VU(int pin) {
+void bar_graph_VU(uint8_t pin) {
   int value;
 
   value =  analogRead(pin);
@@ -2192,11 +2193,10 @@ void softboard_display() {
 #if (NUM_ANALOG_INPUTS != 8)	// *no* variant eightanaloginputs
   void toggle_extra() {		// *no* variant eightanaloginputs
     extra_switch = !extra_switch;
-    if (extra_switch) {
+    if (extra_switch)
       visible_digital_pins=NUM_DIGITAL_PINS;
     else
       visible_digital_pins=NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS;
-    }
   }
 #else				// VARIANT: eightanaloginputs
   void toggle_extra() {		// VARIANT: eightanaloginputs
