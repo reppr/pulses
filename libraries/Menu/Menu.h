@@ -104,21 +104,28 @@ struct menupage {
 
 
 /* **************************************************************** */
-/* class Menu {}						*/
+/* class Menu {}							*/
 
 class Menu {
  public:
   ~Menu();
 
-  // high level API:
+/* high level API:							*/
+
+  // construct a Menu:
   Menu(int size, int menuPages, int (*maybeInput)(void), STREAMTYPE & port);
+
+  // "run-through" routine for main loop:
   bool lurk_then_do(void);
-  void add_page(const char *pageTitle, const char hotkey, \
+
+  // add a menu page, return page number or -1
+  int add_page(const char *pageTitle, const char hotkey, \
 		void (*pageDisplay)(), bool (*pageReaction)(char), \
 		const char ActiveGroup);
 
+  char men_selected;			// selected menu page
 
-  void flush() const { port_.flush(); }
+  void flush() const { port_.flush(); }	// flush menu output, inlined.
 
   int cb_peek() const;			// peek at next if any, else return EOL
   int cb_peek(int offset) const;	// peek at next, overnext... if any, else EOL
@@ -221,6 +228,7 @@ class Menu {
        more than you want to see
 */
 
+
  private:
   int cb_start;
   int cb_size;
@@ -235,7 +243,6 @@ class Menu {
   // Menu pages:
   char men_max;			// maximal number of menu pages
   char men_known;		// initialized pages
-  char men_selected;		// selected page
   menupage *men_pages;		// pages' data
 };
 

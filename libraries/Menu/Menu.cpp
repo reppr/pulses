@@ -619,7 +619,7 @@ void Menu::menu_pages_info() const {
 /* **************************************************************** */
 // menu handling:
 
-void Menu::add_page(const char *pageTitle, const char hotkey,		\
+int Menu::add_page(const char *pageTitle, const char hotkey,		\
 		     void (*pageDisplay)(void), bool (*pageReaction)(char), const char ActiveGroup) {
 
   // Delayed MALLOC ERROR CHECKING from constructor:
@@ -648,12 +648,14 @@ void Menu::add_page(const char *pageTitle, const char hotkey,		\
     out(F("\", "));  ticked(hotkey);  out(F(",..) \t"));
     outln((int) men_known - 1);
 #endif
+    return (men_known - 1);
   } else {	// ERROR handling ################
     if (verbosity) {
       out(F("add_page"));
       Error_();
       OutOfRange();
       ln();
+      return -1;
     }
     // FIXME:  ERROR handling ################
   }
@@ -836,7 +838,17 @@ void Menu::interpret_men_input() {
 #endif
     for (pg = 0; pg < men_known; pg++) {
       if (token == men_pages[pg].hotkey) {
-	(*men_pages[pg].interpret)(token);	// *might* do more, return is irrelevant
+#ifdef DEBUGGING_MENU
+	out(F("   found page "));
+	out((int) pg); tab(); ticked(token);
+	tab(); ticked(men_pages[pg].hotkey); ln(); 
+#endif
+
+	// FIXME: ??? ################
+	// I did this before, no idea why...
+	// seems wrong, most of the time, so deactivated for testing:
+	// (*men_pages[pg].interpret)(token);	// *might* do more, return is irrelevant
+
 	men_selected = pg;			// switch to page
 
 	// often menu_display() will be called anyway, depending verbosity
@@ -927,7 +939,7 @@ void Menu::interpret_men_input() {
 	if(verbosity < VERBOSITY_CHATTY)
 	  menu_display();
 
-	out(F("UNKNOWN TOKEN "));
+	out(F("\nUNKNOWN TOKEN "));
 	ticked(token);
 	tab();
 	out((int) (token & 0xFF));
