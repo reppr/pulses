@@ -10,24 +10,20 @@
 /* Arduino setup()						*/
 
 /*
-  >>>>>>>>>>>>>>>> PUT this *BEFORE*  Arduino setup() <<<<<<<<<<<<<<<
+  >>>>>>>>>>>>>>>> PUT this *BEFORE*  Arduino setup() <<<<<<<<<<<<<<<<
   // needed for MENU.add_page();
   void softboard_display();		// defined later on
   bool softboard_reaction(char token);	// defined later on
-
-  int softboard_page=-1;		// see: maybe_run_continuous()
-
-  >>>>>>>>>>>>>> END put this *BEFORE*  Arduino setup() <<<<<<<<<<<<<
+  >>>>>>>>>>>>>>>> PUT THESE BEFORE  Arduino setup() <<<<<<<<<<<<<<<<
 */
 
-
 /*
-  >>>>>>>>>>>>>>>> PUT this *IN*  Arduino setup() <<<<<<<<<<<<<<<<<
-  // add softboard page:
-  softboard_page = MENU.add_page("Arduino Softboard", 'H',	\
+  >>>>>>>>>>>>>>>> PUT this *IN*  Arduino setup() <<<<<<<<<<<<<<<<
+  // add softboard to MENU:
+  MENU.add_page("Arduino Softboard", 'H',	\
 		&softboard_display, &softboard_reaction, 'H');
 
-  >>>>>>>>>>>>>> END put this *IN* Arduino setup() <<<<<<<<<<<<<<<<
+  >>>>>>>>>>>>>>>> PUT THIS IN Arduino setup() <<<<<<<<<<<<<<<<
 */
 
 /* CODE TO INSERT INTO YOUR PROGRAM setup() ends. ***************** */
@@ -111,9 +107,9 @@
 /* **************************************************************** */
 /* define some things early: */
 
-#define ILLEGAL		-1
+// #define ILLEGAL		-1
 
-char PIN_digital = ILLEGAL;	// would be dangerous to default to zero
+char PIN_digital = ILLEGAL_PIN;	// would be dangerous to default to zero
 char PIN_analog = 0;		// 0 is save as default for analog pins
 
 
@@ -141,7 +137,8 @@ bool echo_switch=true;		// serial echo switch
   pin_info_digital()
   display configuration and state of a pin:
 */
-const char pin_[] = "pin ";
+
+// const char pin_[] = "pin ";		// pulses.ino has already defined it?
 const char high_[] = "HIGH";
 const char low_[] = "LOW";
 
@@ -419,7 +416,7 @@ void bar_graph_VU(int pin) {
   Check if to continuously show analog/digital input changes:
 */
 void maybe_run_continuous() {
-  if (softboard_page == men_selected) {	  // only active on softboard page
+  if (softboard_page == MENU.men_selected) {	  // only active on softboard page
     if (run_VU)
       bar_graph_VU(PIN_analog);
 
@@ -491,7 +488,7 @@ void softboard_display() {
   _select_digital(true);
   MENU.out(toWork_);
   MENU.out(pin__);
-  if (PIN_digital == (char) ILLEGAL)
+  if (PIN_digital == ILLEGAL_PIN)
     MENU.out(F("no"));
   else
     MENU.out((int) PIN_digital);
@@ -530,8 +527,8 @@ void toggle_extra() {
 // Factored out helper function
 // digital_pin_ok()  Checks if PIN_digital has been set
 bool digital_pin_ok() {
-  // testing on ILLEGAL is enough in this context
-  if (PIN_digital == ILLEGAL) {
+  // testing on ILLEGAL_PIN is enough in this context
+  if (PIN_digital == ILLEGAL_PIN) {
     _select_digital(true);
     MENU.ln();
     return false;
@@ -573,7 +570,7 @@ bool softboard_reaction(char token) {
       PIN_digital = newValue;
       pin_info_digital((int) PIN_digital);
     } else
-      if (newValue != ILLEGAL)
+      if (newValue != ILLEGAL_PIN)
 	MENU.OutOfRange();
     break;
 
@@ -619,7 +616,7 @@ bool softboard_reaction(char token) {
         MENU.out(pin_); MENU.out((int) PIN_digital);
 	MENU.tab();
 	MENU.out(pwm_); MENU.out(F("write "));
-	newValue = MENU.numeric_input(ILLEGAL);
+	newValue = MENU.numeric_input(ILLEGAL_PIN);
 	if (newValue>=0 && newValue<=255) {
 	  MENU.out(newValue);
 

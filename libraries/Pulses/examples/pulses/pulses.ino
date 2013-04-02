@@ -372,7 +372,7 @@ const float overflow_sec = 4294.9672851562600;	// overflow time in seconds
 
 // display a time in seconds:
 float display_realtime_sec(struct time duration) {
-  float seconds=((float) duration.time / 1000000.0);
+  float seconds=((float) duration.time / 1000000.0);	// FIXME: DUE ??? ################
   seconds += overflow_sec * (float) duration.overflow;
 
   float scratch = 1000.0;
@@ -381,9 +381,8 @@ float display_realtime_sec(struct time duration) {
     scratch /= 10.0;
   }
 
-
   MENU.out(seconds , 3);
-  MENU.out("s");
+  MENU.out('s');
 
   return seconds;
 }
@@ -402,27 +401,32 @@ unsigned long time_unit = 100000L;		// scaling timer to 10/s 0.1s
 // unsigned long time_unit =   362880L;		// scaling timer to  9!, 0,362880s
 // unsigned long time_unit =  3628800L;		// scaling timer to 10!, 3.628800s
 
-const char timeInfo[] = "*** TIME info\t\t";
-const char timeOvfl[] = "time/ovfl ";
-const char now_[] = "now ";
+// const char arrays[]  to save RAM:
+const char timeInfo[] = "*** TIME info\t";
+const char ticOfl[] = "tic/ofl ";
+const char now_[] = "now\t";
+const char next_[] = "next\t";	// FIXME: scan strings and use it...
+
+void display_real_ovfl_and_sec(struct time then) {
+  MENU.out(ticOfl);
+  MENU.out(then.time);
+  MENU.out('/');
+  MENU.out(then.overflow);
+  MENU.space();
+  MENU.out('=');
+  display_realtime_sec(then);
+}
 
 void time_info()
 {
-  unsigned long realtime = micros();
-  struct time scratch;
-
   MENU.out(timeInfo);
-  MENU.out(timeOvfl);
-  MENU.out(realtime);
-  MENU.out('/');
-  MENU.out(PULSES.now.overflow);		// cheating a tiny little bit...
-  MENU.out('\t');
-  PULSES.get_now();
-
-  scratch=PULSES.now;
-  scratch.time = realtime;		// update running time
   MENU.out(now_);
-  display_realtime_sec(scratch);
+  PULSES.get_now();
+  display_real_ovfl_and_sec(PULSES.now);
+  MENU.tab();
+  MENU.out(next_);
+  display_real_ovfl_and_sec(PULSES.global_next);
+  MENU.ln();
 }
 
 
@@ -609,7 +613,6 @@ const char index_[] = "\tindex ";
 const char times_[] = "\ttimes ";
 const char pulse_[] = "pulse ";
 const char expected_[] = "expected ";
-const char ul1_[] = "\tul1 ";
 
 
 void print_period_in_time_units(int pulse) {
@@ -660,8 +663,10 @@ void pulse_info_1line(int pulse) {
   scratch.time = realtime;
   display_realtime_sec(scratch);
 
-  if (selected_pulses & (1 << pulse))
-    MENU.out(" *");
+  if (selected_pulses & (1 << pulse)) {
+    MENU.space();
+    MENU.out('*');
+  }
 
   MENU.ln();
 }
@@ -715,6 +720,11 @@ void selected_pulses_info_lines()
     MENU.ln();
 }
 
+// const char arrays[]  to save RAM:
+const char pin_[] = "pin ";
+const char _p1_[] = "\tp1 ";
+const char _p2_[] = "\tp2 ";
+const char _ul1_[] = "\tul1 ";
 
 // pulse_info() as paylod for pulses: print pulse info:
 void pulse_info(int pulse) {
@@ -772,7 +782,7 @@ void pulse_info(int pulse) {
   MENU.ln();		// start last line
   time_info();
 
-  MENU.out("\n\n");			// traling empty line
+  MENU.ln();		// traling empty line
 }
 
 
@@ -1260,7 +1270,6 @@ const char invalid_[] = "(invalid)";
 void short_info() {
   MENU.ln();
   time_info();
-  MENU.ln();
 
   MENU.ln();
   alive_pulses_info_lines();
@@ -1284,7 +1293,6 @@ bool menu_pulses_reaction(char menu_input) {
   case ':':
     MENU.ln();
     time_info();
-    MENU.ln();
     MENU.ln();
     print_selected_pulses();
     MENU.ln();
@@ -1400,6 +1408,7 @@ bool menu_pulses_reaction(char menu_input) {
   case 'i':	// info
     MENU.ln();
     time_info();
+    MENU.ln();	// ################################################################
     alive_pulses_info();
     break;
 
@@ -1586,7 +1595,7 @@ bool menu_pulses_reaction(char menu_input) {
 	en_INFO(pulse);
 
     MENU.ln();
-    alive_pulses_info();
+    alive_pulses_info();	// FIXME: ??? or: alive_pulses_info_lines();	################
     break;
 
   case '{':	// enter_jiffletab
