@@ -741,12 +741,12 @@ void pulse_info(int pulse) {
   MENU.outBIN(PULSES.pulses[pulse].flags, 8);
   MENU.ln();
 
-  MENU.out("pin ");  MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
+  MENU.out(pin_);  MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
   MENU.out(index_);  MENU.out((int) PULSES.pulses[pulse].char_parameter_2);
   MENU.out(times_);  MENU.out(PULSES.pulses[pulse].int1);
-  MENU.out("\tp1 ");  MENU.out(PULSES.pulses[pulse].parameter_1);
-  MENU.out("\tp2 ");  MENU.out(PULSES.pulses[pulse].parameter_2);
-  MENU.out(ul1_);  MENU.out(PULSES.pulses[pulse].ulong_parameter_1);
+  MENU.out(_p1_);  MENU.out(PULSES.pulses[pulse].parameter_1);
+  MENU.out(_p2_);  MENU.out(PULSES.pulses[pulse].parameter_2);
+  MENU.out(_ul1_);  MENU.out(PULSES.pulses[pulse].ulong_parameter_1);
 
   MENU.ln();		// start next line
 
@@ -810,47 +810,56 @@ void alive_pulses_info()
 }
 
 
+// const char arrays[]  to save RAM:
+const char click_[] = "click  ";
+const char DoJiffle[] = "do_jiffle";
+const char SeedJiffle[] = "seed jiffle";
+const char PulseInfo[] = "pulse_info";
+const char InfoLine[] = "info line";
+const char NULL_[] = "NULL\t";		// 8 char positions at least
+const char UNKNOWN_[] = "UNKNOWN\t";	// 8 char positions at least
+
 void display_action(int pulse) {
   void (*scratch)(int);
 
   scratch=&click;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out("click  ");
+    MENU.out(click_);
     MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
     return;
   }
 
   scratch=&do_jiffle;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out("do_jiffle");
+    MENU.out(DoJiffle);
     return;
   }
 
   scratch=&do_throw_a_jiffle;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out("seed jiffle");
+    MENU.out(SeedJiffle);
     return;
   }
 
   scratch=&pulse_info;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out("pulse_info");
+    MENU.out(PulseInfo);
     return;
   }
 
   scratch=&pulse_info_1line;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out("info line");
+    MENU.out(InfoLine);
     return;
   }
 
   scratch=NULL;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out("NULL\t");	// 8 chars at least
+    MENU.out(NULL_);		// 8 char positions at least
     return;
   }
 
-  MENU.out("UNKNOWN\t");
+  MENU.out(UNKNOWN_);
 }
 
 
@@ -1773,7 +1782,8 @@ bool echo_switch=true;		// serial echo switch
   pin_info_digital()
   display configuration and state of a pin:
 */
-const char pin_[] = "pin ";
+
+// const char pin_[] = "pin ";		// pulses.ino has already defined it?
 const char high_[] = "HIGH";
 const char low_[] = "LOW";
 
