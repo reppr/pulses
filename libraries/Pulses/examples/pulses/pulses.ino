@@ -95,7 +95,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
   }
 
 #endif
-Menu MENU(32, 5, &men_getchar, MENU_OUTSTREAM);
+Menu MENU(32, 3, &men_getchar, MENU_OUTSTREAM);
 
 
 // FIXME: ################		// defined later on
@@ -124,14 +124,18 @@ unsigned char click_pin[CLICK_PULSES];	// ################
 /* **************************************************************** */
 // PULSES
 
-#ifdef ARDUINO
+#ifdef ARDUINO		// on ARDUINO
   #ifdef __SAM3X8E__
-    const int pl_max=32;
+const int pl_max=32;		// could be more on DUE ;)
   #else
-    const int pl_max=16;
+    #ifdef __AVR_ATmega328P__
+const int pl_max=12;		// saving RAM on 328P
+    #else
+const int pl_max=16;		// default i.e. mega boards
+    #endif
   #endif
-#else
-  const int pl_max=64;
+#else			// *NOT* on ARDUINO...
+const int pl_max=64;		// Linux PC test version
 #endif
 
 Pulses PULSES(pl_max);
