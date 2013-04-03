@@ -341,7 +341,6 @@ void  arduino_pins_info() {
 
     #ifdef digitalPinToBitMask
       MENU.outBIN(digitalPinToBitMask(pin), 8);
-      MENU.tab();
     #else
       MENU.out(Question3_);
     #endif
