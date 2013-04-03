@@ -226,6 +226,78 @@ const char YES_[] = "YES";
 const char no_[] = "no ";
 const char Question3_[] = "???\t";
 
+// helper function:  maybe_display_An(uint8_t pin);
+int maybe_display_An(uint8_t pin) {
+  switch (pin) {	// there can be *only one* of them
+  case A0:		// so we *can* 'switch' here
+    CPP_INFO.out(F("A0  "));
+    break;
+  case A1:
+    CPP_INFO.out(F("A1  "));
+    break;
+  case A2:
+    CPP_INFO.out(F("A2  "));
+    break;
+  case A3:
+    CPP_INFO.out(F("A3  "));
+    break;
+  case A4:
+    CPP_INFO.out(F("A4  "));
+    break;
+  case A5:
+    CPP_INFO.out(F("A5  "));
+    break;
+#if (NUM_ANALOG_INPUTS > 6)
+  case A6:
+    CPP_INFO.out(F("A6  "));
+    break;
+  case A7:
+    CPP_INFO.out(F("A7  "));
+    break;
+#if (NUM_ANALOG_INPUTS > 8)
+  case A8:
+    CPP_INFO.out(F("A8  "));
+    break;
+  case A9:
+    CPP_INFO.out(F("A9  "));
+    break;
+  case A10:
+    CPP_INFO.out(F("A10  "));
+    break;
+  case A11:
+    CPP_INFO.out(F("A11  "));
+    break;
+  case A12:
+    CPP_INFO.out(F("A12  "));
+    break;
+  case A13:
+    CPP_INFO.out(F("A13  "));
+    break;
+  case A14:
+    CPP_INFO.out(F("A14  "));
+    break;
+  case A15:
+    CPP_INFO.out(F("A15  "));
+    break;
+
+#ifdef DACC_INTERFACE
+  case DAC0:
+    CPP_INFO.out(F("DAC0 resolution:"));
+    CPP_INFO.out((int) DAC0_RESOLUTION);
+    CPP_INFO.out(F("bit  "));
+    break;
+  case DAC1:
+    CPP_INFO.out(F("DAC1 resolution:"));
+    CPP_INFO.out((int) DAC1_RESOLUTION);
+    CPP_INFO.out(F("bit  "));
+    break;
+#endif
+
+#endif
+#endif
+  }
+}
+
 
 void  arduino_pins_info() {
   CPP_INFO.ln();
@@ -277,74 +349,7 @@ void  arduino_pins_info() {
     #endif
 
     CPP_INFO.tab();
-    switch (pin) {	// there can be *only one* of them
-    case A0:		// so we *can* 'switch' here
-      CPP_INFO.out(F("A0  "));
-      break;
-    case A1:
-      CPP_INFO.out(F("A1  "));
-      break;
-    case A2:
-      CPP_INFO.out(F("A2  "));
-      break;
-    case A3:
-      CPP_INFO.out(F("A3  "));
-      break;
-    case A4:
-      CPP_INFO.out(F("A4  "));
-      break;
-    case A5:
-      CPP_INFO.out(F("A5  "));
-      break;
-#if (NUM_ANALOG_INPUTS > 6)
-    case A6:
-      CPP_INFO.out(F("A6  "));
-      break;
-    case A7:
-      CPP_INFO.out(F("A7  "));
-      break;
-  #if (NUM_ANALOG_INPUTS > 8)
-    case A8:
-      CPP_INFO.out(F("A8  "));
-      break;
-    case A9:
-      CPP_INFO.out(F("A9  "));
-      break;
-    case A10:
-      CPP_INFO.out(F("A10  "));
-      break;
-    case A11:
-      CPP_INFO.out(F("A11  "));
-      break;
-    case A12:
-      CPP_INFO.out(F("A12  "));
-      break;
-    case A13:
-      CPP_INFO.out(F("A13  "));
-      break;
-    case A14:
-      CPP_INFO.out(F("A14  "));
-      break;
-    case A15:
-      CPP_INFO.out(F("A15  "));
-      break;
-
-#ifdef DACC_INTERFACE
-    case DAC0:
-      CPP_INFO.out(F("DAC0 resolution:"));
-      CPP_INFO.out((int) DAC0_RESOLUTION);
-      CPP_INFO.out(F("bit  "));
-      break;
-    case DAC1:
-      CPP_INFO.out(F("DAC1 resolution:"));
-      CPP_INFO.out((int) DAC1_RESOLUTION);
-      CPP_INFO.out(F("bit  "));
-      break;
-#endif
-
-  #endif
-#endif
-    }
+    maybe_display_An(pin);
 
 // FIXME: does not work ################
 #ifdef PINS_CAN0
