@@ -466,6 +466,7 @@ void arduino_info() {	// Display some Arduino specific informations.
   /* ARDUINO BOARD SPECIFIC THINGS:				*/
 
   // Board type:
+  MENU.out(F("\nBoard\t"));
   #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
     MENU.out(F("Mega board"));
   #endif
@@ -475,19 +476,18 @@ void arduino_info() {	// Display some Arduino specific informations.
   #endif
 
   #if defined(_VARIANT_ARDUINO_DUE_X_)
-    MENU.outln(F("_VARIANT_ARDUINO_DUE_X_"));
+    MENU.outln(F("\t_VARIANT_ARDUINO_DUE_X_"));
   #endif
 
   #if defined(VARIANT_NAME)		// /** Name of the board */
     MENU.out(F("VARIANT_NAME\t"));
     MENU.outln(F(VARIANT_NAME));
   #endif
-
   // ..., UNO, DUE, TRE ;)
-  MENU.ln();	// end board type
+
 
   // Processor:
-  MENU.out(F("Processor\t"));
+  MENU.out(F("\nProcessor\t"));
   #if defined(__AVR_ATmega328P__)
     MENU.outln(F("__AVR_ATmega328P__"));
   #elif defined(__AVR_ATmega2560__)
@@ -500,9 +500,10 @@ void arduino_info() {	// Display some Arduino specific informations.
   #else
     MENU.outln(F("NOT IMPLEMENTED YET"));
   #endif // processor
-  MENU.ln(); // end processor
 
-  //
+
+  // oscillator speed:
+  MENU.outln(F("\nOscillator speed"));
   // VARIANT_MAINOSC		/** Frequency of the board main oscillator */
   #ifdef VARIANT_MAINOSC
     MENU.out(F("VARIANT_MAINOSC\t"));
@@ -510,6 +511,7 @@ void arduino_info() {	// Display some Arduino specific informations.
   #else
     MENU.outln(F("VARIANT_MAINOSC\tunknown"));
   #endif
+
 
   // VARIANT_MCK		/** Master clock frequency */
   #ifdef VARIANT_MCK
@@ -519,13 +521,6 @@ void arduino_info() {	// Display some Arduino specific informations.
     MENU.outln(F("VARIANT_MCK\tunknown"));
   #endif
 
-  // PINS_COUNT
-  #ifdef PINS_COUNT
-    MENU.out(F("PINS_COUNT\t"));
-    MENU.outln(PINS_COUNT);
-  #else
-    MENU.outln(F("PINS_COUNT\tunknown"));
-  #endif
 
   #if defined(ARDUINO_MODEL_PID)
     #if (ARDUINO_MODEL_PID == ARDUINO_UNO_PID)
@@ -538,6 +533,17 @@ void arduino_info() {	// Display some Arduino specific informations.
   #else
       // MENU.outln(F("ARDUINO_MODEL_PID is not defined.\n"));
   #endif
+
+
+  // PINS_COUNT
+  MENU.outln(F("\nPin counts"));
+  #ifdef PINS_COUNT
+    MENU.out(F("PINS_COUNT\t\t"));
+    MENU.outln(PINS_COUNT);
+  #else
+    MENU.outln(F("PINS_COUNT\tnot given"));
+  #endif
+
 
   // Pins:
   // see: <pins_arduino.h>
@@ -559,7 +565,9 @@ void arduino_info() {	// Display some Arduino specific informations.
     MENU.outln(F("ADC_CHANNEL_NUMBER_NONE"));
   #endif
 
-  MENU.outln(F("\nchecking for some macros:"));
+
+  // check for macros
+  MENU.outln(F("\nChecking for some macros"));
 
   MENU.out(F("digitalPinHasPWM\t"));
   #ifdef digitalPinHasPWM
@@ -606,6 +614,7 @@ void arduino_info() {	// Display some Arduino specific informations.
 void cpp_info_display() {
   bool dummybool[8];
 
+  MENU.outln(F("\nSize of some objects:"));
   MENU.out(F("sizeof(char)\t"));	MENU.outln(sizeof(char));
   MENU.out(F("sizeof(int)\t"));		MENU.outln(sizeof(int));
   MENU.out(F("sizeof(short)\t"));	MENU.outln(sizeof(short));
