@@ -303,7 +303,7 @@ void click(int pulse) {	// can be called from a pulse
 
 
 void init_click_pins() {
-  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {	// FIXME: ################
     pinMode(click_pin[pulse], OUTPUT);
     digitalWrite(click_pin[pulse], LOW);
   }
@@ -796,7 +796,7 @@ void alive_pulses_info()
   int count=0;
 
   for (int pulse=0; pulse<pl_max; ++pulse)
-    if (PULSES.pulses[pulse].flags) {				// any flags set?
+    if (PULSES.pulses[pulse].flags) {		// any flags set?
       pulse_info(pulse);
       count++;
     }
@@ -1426,7 +1426,7 @@ bool menu_pulses_reaction(char menu_input) {
     case CODE_PULSES:
       new_value = MENU.numeric_input(1);
       if (new_value>=0) {
-	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+	for (int pulse=0; pulse<pl_max; pulse++)
 	  if (selected_pulses & (1 << pulse))
 	    PULSES.multiply_period(pulse, new_value);
 
@@ -1451,7 +1451,7 @@ bool menu_pulses_reaction(char menu_input) {
     case CODE_PULSES:
       new_value = MENU.numeric_input(1);
       if (new_value>=0) {
-	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+	for (int pulse=0; pulse<pl_max; pulse++)
 	  if (selected_pulses & (1 << pulse))
 	    PULSES.divide_period(pulse, new_value);
 
@@ -1476,7 +1476,7 @@ bool menu_pulses_reaction(char menu_input) {
     case CODE_PULSES:
       new_value = MENU.numeric_input(1);
       if (new_value>=0) {
-	for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+	for (int pulse=0; pulse<pl_max; pulse++)
 	  if (selected_pulses & (1 << pulse)) {
 	    time_scratch.time = time_unit;
 	    time_scratch.overflow = 0;
@@ -1511,7 +1511,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'P':	// pulse create and edit
-    for (int pulse=0; pulse<CLICK_PULSES; pulse++)	// DADA ################
+    for (int pulse=0; pulse<pl_max; pulse++)
       if (selected_pulses & (1 << pulse)) {
 	reset_and_edit_pulse(pulse);
       }
@@ -1521,11 +1521,11 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'n':	// synchronise to now
-    // we work on CLICK_PULSES anyway, regardless dest
+    // we work on pulses anyway, regardless dest
     PULSES.get_now();
     now=PULSES.now;
 
-    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+    for (int pulse=0; pulse<pl_max; pulse++)
       if (selected_pulses & (1 << pulse))
 	PULSES.activate_pulse_synced(pulse, now, abs(sync));
 
@@ -1584,8 +1584,8 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'f':	// en_info
-    // we work on CLICK_PULSES anyway, regardless dest
-    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+    // we work on pulses anyway, regardless dest
+    for (int pulse=0; pulse<pl_max; pulse++)
       if (selected_pulses & (1 << pulse))
 	en_info(pulse);
 
@@ -1594,8 +1594,8 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'F':	// en_INFO
-    // we work on CLICK_PULSES anyway, regardless dest
-    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+    // we work on pulses anyway, regardless dest
+    for (int pulse=0; pulse<pl_max; pulse++)
       if (selected_pulses & (1 << pulse))
 	en_INFO(pulse);
 
