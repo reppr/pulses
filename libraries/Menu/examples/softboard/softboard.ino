@@ -80,7 +80,7 @@ int men_getchar() {
   return Serial.read();
 }
 
-Menu SOFTBOARD(32, 1, &men_getchar, Serial);
+Menu MENU(32, 1, &men_getchar, Serial);
 
 
 /* **************************************************************** */
@@ -94,21 +94,21 @@ void pins_info_analog();		// defined later on
 void setup() {
   Serial.begin(BAUDRATE);	// Start serial communication.
 
-  SOFTBOARD.add_page("Arduino Softboard", 'H', \
+  MENU.add_page("Arduino Softboard", 'H', \
 		&softboard_display, &softboard_reaction, '+');
 
-  SOFTBOARD.outln(F("Arduino Softboard\thttp://github.com/reppr/pulses/\n"));
+  MENU.outln(F("Arduino Softboard\thttp://github.com/reppr/pulses/\n"));
 
-  pins_info_digital(); SOFTBOARD.ln();
+  pins_info_digital(); MENU.ln();
   pins_info_analog();
 
-  SOFTBOARD.menu_display();		// display menu at startup
+  MENU.menu_display();		// display menu at startup
 }
 
 
 /*
   All you have to from your Arduino sketch loop() is to call:
-  SOFTBOARD.lurk_then_do();
+  MENU.lurk_then_do();
   This will *not* block the loop.
 
   It will lurk on menu input, but return immediately if there's none.
@@ -123,7 +123,7 @@ void setup() {
 void maybe_run_continuous();	// defined later on
 
 void loop() {	// ARDUINO
-  SOFTBOARD.lurk_then_do();
+  MENU.lurk_then_do();
   maybe_run_continuous();	// maybe display input pin state changes
 
   // Insert your own code here.
@@ -238,16 +238,16 @@ void pin_info_digital(uint8_t pin) {
 
   // selected sign * and pin:
   if (pin == PIN_digital )
-    SOFTBOARD.out('*');
+    MENU.out('*');
   else
-    SOFTBOARD.space();
-  SOFTBOARD.out(pin_);
-  SOFTBOARD.out((int) pin);
-  SOFTBOARD.tab();
+    MENU.space();
+  MENU.out(pin_);
+  MENU.out((int) pin);
+  MENU.tab();
 
 #ifdef __SAM3X8E__
   #warning "I/O pin configuration info *not implemented on Arduino DUE yet*."
-  SOFTBOARD.out(F("(pin_info_digital() not implemented on DUE yet)"));
+  MENU.out(F("(pin_info_digital() not implemented on DUE yet)"));
 #else
   // see: <Arduino.h>
 
@@ -257,7 +257,7 @@ void pin_info_digital(uint8_t pin) {
   // cli();
   if (*reg & mask) {		// digital OUTPUTS
     // SREG = oldSREG;
-    SOFTBOARD.out(F("O  "));
+    MENU.out(F("O  "));
 
     // high or low?
     reg = portOutputRegister(port);
@@ -265,14 +265,14 @@ void pin_info_digital(uint8_t pin) {
     // cli();
     if (*reg & mask) {		    // HIGH
       // SREG = oldSREG;
-      SOFTBOARD.out(high_);
+      MENU.out(high_);
     } else {			    // LOW
       // SREG = oldSREG;
-      SOFTBOARD.out(low_);
+      MENU.out(low_);
     }
   } else {			// digital INPUTS
     // SREG = oldSREG;
-    SOFTBOARD.out(F("I  "));
+    MENU.out(F("I  "));
 
     // pullup, tristate?
     reg = portOutputRegister(port);
@@ -280,14 +280,14 @@ void pin_info_digital(uint8_t pin) {
     // cli();
     if (*reg & mask) {		    // pull up resistor
       // SREG = oldSREG;
-      SOFTBOARD.out(F("pullup"));
+      MENU.out(F("pullup"));
     } else {			    // tri state high-Z
       // SREG = oldSREG;
-      SOFTBOARD.out(F("floating"));
+      MENU.out(F("floating"));
     }
   }
 #endif
-  SOFTBOARD.ln();
+  MENU.ln();
 }
 
 
@@ -311,9 +311,9 @@ int watch_seen=IMPOSSIBLE;
 void watch_digital_start(uint8_t pin) {
   watch_seen=IMPOSSIBLE;
 
-  SOFTBOARD.out(F("watching pin D"));
-  SOFTBOARD.out((int) pin);
-  SOFTBOARD.out(F("\t\tr=stop"));
+  MENU.out(F("watching pin D"));
+  MENU.out((int) pin);
+  MENU.out(F("\t\tr=stop"));
 }
 
 
@@ -322,12 +322,12 @@ void watch_digital_input(int pin) {
 
   if (value != watch_seen) {
     watch_seen = value;
-    SOFTBOARD.out(F("*D"));  SOFTBOARD.out((int) pin);
-    SOFTBOARD.tab();
+    MENU.out(F("*D"));  MENU.out((int) pin);
+    MENU.tab();
     if (value)
-      SOFTBOARD.outln(high_);
+      MENU.outln(high_);
     else
-      SOFTBOARD.outln(low_);
+      MENU.outln(low_);
   }
 }
 
@@ -340,7 +340,7 @@ void toggle_watch() {
   if (run_watch_dI)
     watch_digital_start(PIN_digital);
   else
-    SOFTBOARD.ln();
+    MENU.ln();
 }
 
 
@@ -357,35 +357,35 @@ void bar_graph(int value) {
 
 
   if (value >=0 && value <= 1024) {
-    SOFTBOARD.out(value); SOFTBOARD.tab();
+    MENU.out(value); MENU.tab();
     for (i=0; i<stars; i++) {
       if (i == 0 && value == 0)		// zero
-	SOFTBOARD.out('0');
+	MENU.out('0');
 					// middle or top
       else if \
 	((i == length/2 && value == 512) || (i == length && value == scale))
-	SOFTBOARD.out('|');
+	MENU.out('|');
       else
-	SOFTBOARD.out('*');
+	MENU.out('*');
     }
   } else {
-    SOFTBOARD.out(F("value "));
-    SOFTBOARD.out(value);
-    SOFTBOARD.OutOfRange();
+    MENU.out(F("value "));
+    MENU.out(value);
+    MENU.OutOfRange();
   }
 
-  SOFTBOARD.ln();
+  MENU.ln();
 }
 
 
 // Display analog pin name and value as number and bar graph:
 void pin_info_analog(uint8_t pin) {
   if (pin == PIN_analog)
-    SOFTBOARD.out(F("*A"));
+    MENU.out(F("*A"));
   else
-    SOFTBOARD.out(F(" A"));
-  SOFTBOARD.out((int) pin);
-  SOFTBOARD.tab();
+    MENU.out(F(" A"));
+  MENU.out((int) pin);
+  MENU.tab();
   bar_graph(analogRead(pin));
 }
 
@@ -400,12 +400,12 @@ const char analog_reads_title[] =	\
 void pins_info_analog() {
   int i, value;
 
-  SOFTBOARD.outln(analog_reads_title);
+  MENU.outln(analog_reads_title);
 
   for (i=0; i<NUM_ANALOG_INPUTS; i++)
     pin_info_analog(i);
 
-  SOFTBOARD.ln();
+  MENU.ln();
 }
 
 
@@ -437,15 +437,15 @@ int VU_last=IMPOSSIBLE;
 int bar_graph_tolerance=0;
 
 void feedback_tolerance() {
-  SOFTBOARD.out(F("tolerance "));
-  SOFTBOARD.outln(bar_graph_tolerance);
+  MENU.out(F("tolerance "));
+  MENU.outln(bar_graph_tolerance);
 }
 
 
 void VU_init(int pin) {
   VU_last=IMPOSSIBLE;	// just an impossible value
 
-  SOFTBOARD.out(F("pin\tval\t+/- set "));
+  MENU.out(F("pin\tval\t+/- set "));
   feedback_tolerance();
 }
 
@@ -456,7 +456,7 @@ void toggle_VU() {
   if (run_VU)
     VU_init(PIN_analog);
   else
-    SOFTBOARD.ln();
+    MENU.ln();
 }
 
 /*
@@ -475,9 +475,9 @@ void bar_graph_VU(int pin) {
 
   value =  analogRead(pin);
   if (abs(value - VU_last) > bar_graph_tolerance) {
-    SOFTBOARD.out(F("*A"));
-    SOFTBOARD.out((int) pin);
-    SOFTBOARD.tab();
+    MENU.out(F("*A"));
+    MENU.out((int) pin);
+    MENU.tab();
     bar_graph(value);
     VU_last = value;
   }
@@ -537,45 +537,45 @@ const char pin__[] = "pin (";
 
 void _select_digital(bool key) {
   if (key)
-    SOFTBOARD.out(F("D="));
-  SOFTBOARD.out(select_);
-  SOFTBOARD.out(F("digital"));
-  SOFTBOARD.out(pinFor);
-  SOFTBOARD.out(F("'d, r, I, O, H, L, W'"));
+    MENU.out(F("D="));
+  MENU.out(select_);
+  MENU.out(F("digital"));
+  MENU.out(pinFor);
+  MENU.out(F("'d, r, I, O, H, L, W'"));
 }
 
 
 void _select_analog(bool key) {
   if (key)
-    SOFTBOARD.out(F("\nA="));
-  SOFTBOARD.out(select_);
-  SOFTBOARD.out(F("analog"));
-  SOFTBOARD.out(pinFor);
-  SOFTBOARD.out(F("'a, v'"));
+    MENU.out(F("\nA="));
+  MENU.out(select_);
+  MENU.out(F("analog"));
+  MENU.out(pinFor);
+  MENU.out(F("'a, v'"));
 }
 
 
 void softboard_display() {
   _select_digital(true);
-  SOFTBOARD.out(toWork_);
-  SOFTBOARD.out(pin__);
+  MENU.out(toWork_);
+  MENU.out(pin__);
   if (PIN_digital == ILLEGAL)
-    SOFTBOARD.out(F("no"));
+    MENU.out(F("no"));
   else
-    SOFTBOARD.out((int) PIN_digital);
-  SOFTBOARD.outln(')');
-  SOFTBOARD.out(F("O=OUTPUT\tI=INPUT\t\tH=HIGH\tL=LOW\tPWM: W=WRITE\td=pin info"));
-  SOFTBOARD.ln();
+    MENU.out((int) PIN_digital);
+  MENU.outln(')');
+  MENU.out(F("O=OUTPUT\tI=INPUT\t\tH=HIGH\tL=LOW\tPWM: W=WRITE\td=pin info"));
+  MENU.ln();
 
   _select_analog(true);
-  SOFTBOARD.out(toWork_);
-  SOFTBOARD.out(pin__);
-  SOFTBOARD.out((int) PIN_analog);
-  SOFTBOARD.outln(')');
-  SOFTBOARD.out(F("watch over time:\tv=VU bar\tr=read"));
-  SOFTBOARD.ln();
+  MENU.out(toWork_);
+  MENU.out(pin__);
+  MENU.out((int) PIN_analog);
+  MENU.outln(')');
+  MENU.out(F("watch over time:\tv=VU bar\tr=read"));
+  MENU.ln();
 
-  SOFTBOARD.outln(F("\n.=all digital\t,=all analog\t;=both\tx=extra"));
+  MENU.outln(F("\n.=all digital\t,=all analog\t;=both\tx=extra"));
 }
 
 
@@ -601,7 +601,7 @@ bool digital_pin_ok() {
   // testing on ILLEGAL is enough in this context
   if (PIN_digital == ILLEGAL) {
     _select_digital(true);
-    SOFTBOARD.ln();
+    MENU.ln();
     return false;
   } else
     return true;
@@ -620,29 +620,29 @@ bool softboard_reaction(char token) {
   switch (token) {
   case 'A':
     _select_analog(false);
-    SOFTBOARD.tab();
+    MENU.tab();
 
-    newValue = SOFTBOARD.numeric_input(PIN_analog);
+    newValue = MENU.numeric_input(PIN_analog);
     if (newValue>=0 && newValue<NUM_ANALOG_INPUTS)
       PIN_analog = newValue;
     else
-      SOFTBOARD.OutOfRange();
+      MENU.OutOfRange();
 
-    SOFTBOARD.out(pin_);
-    SOFTBOARD.outln((int) PIN_analog);
+    MENU.out(pin_);
+    MENU.outln((int) PIN_analog);
     break;
 
   case 'D':
     _select_digital(false);
-    SOFTBOARD.tab();
+    MENU.tab();
 
-    newValue = SOFTBOARD.numeric_input(PIN_digital);
+    newValue = MENU.numeric_input(PIN_digital);
     if (newValue>=0 && newValue<visible_digital_pins) {
       PIN_digital = newValue;
       pin_info_digital((int) PIN_digital);
     } else
       if (newValue != ILLEGAL)
-	SOFTBOARD.OutOfRange();
+	MENU.OutOfRange();
     break;
 
   case 'O':
@@ -678,31 +678,31 @@ bool softboard_reaction(char token) {
 
       // can the pin do hardware PWM?
       if (!digitalPinHasPWM(PIN_digital)) {	// *no PWM* on this pin
-	SOFTBOARD.out(noHw_); SOFTBOARD.out(pwm_);
-	SOFTBOARD.out(F("on ")); SOFTBOARD.out(pin_);
-	SOFTBOARD.outln((int) PIN_digital);
+	MENU.out(noHw_); MENU.out(pwm_);
+	MENU.out(F("on ")); MENU.out(pin_);
+	MENU.outln((int) PIN_digital);
 
-	SOFTBOARD.skip_numeric_input();
+	MENU.skip_numeric_input();
       } else {					// pin *can* do PWM
-        SOFTBOARD.out(pin_); SOFTBOARD.out((int) PIN_digital);
-	SOFTBOARD.tab();
-	SOFTBOARD.out(pwm_); SOFTBOARD.out(F("write "));
-	newValue = SOFTBOARD.numeric_input(ILLEGAL);
+        MENU.out(pin_); MENU.out((int) PIN_digital);
+	MENU.tab();
+	MENU.out(pwm_); MENU.out(F("write "));
+	newValue = MENU.numeric_input(ILLEGAL);
 	if (newValue>=0 && newValue<=255) {
-	  SOFTBOARD.out(newValue);
+	  MENU.out(newValue);
 
 	  analogWrite(PIN_digital, newValue);
-	  SOFTBOARD.out(F("\tanalogWrite(")); SOFTBOARD.out((int) PIN_digital);
-	  SOFTBOARD.out(F(", ")); SOFTBOARD.out(newValue);
-	  SOFTBOARD.outln(')');
+	  MENU.out(F("\tanalogWrite(")); MENU.out((int) PIN_digital);
+	  MENU.out(F(", ")); MENU.out(newValue);
+	  MENU.outln(')');
 	} else
-	  SOFTBOARD.OutOfRange();
+	  MENU.OutOfRange();
       }
     }
     break;
 
   case 'a':
-    SOFTBOARD.outln(analog_reads_title);
+    MENU.outln(analog_reads_title);
     pin_info_analog(PIN_analog);
     break;
 
@@ -744,9 +744,9 @@ bool softboard_reaction(char token) {
     break;
 
   case '.':	// all digital
-    SOFTBOARD.ln();
+    MENU.ln();
     pins_info_digital();
-    SOFTBOARD.ln();
+    MENU.ln();
     break;
 
   case ',':	// all analog
@@ -754,10 +754,10 @@ bool softboard_reaction(char token) {
     break;
 
   case ';':	// both ;)
-    SOFTBOARD.ln();
+    MENU.ln();
     pins_info_analog();
     pins_info_digital();
-    SOFTBOARD.ln();
+    MENU.ln();
     break;
 
     case 'x':	// toggle extended
