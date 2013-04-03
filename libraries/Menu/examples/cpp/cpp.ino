@@ -279,23 +279,12 @@ int maybe_display_An(uint8_t pin) {
   case A15:
     CPP_INFO.out(F("A15  "));
     break;
-
-#ifdef DACC_INTERFACE
-  case DAC0:
-    CPP_INFO.out(F("DAC0 resolution:"));
-    CPP_INFO.out((int) DAC0_RESOLUTION);
-    CPP_INFO.out(F("bit  "));
-    break;
-  case DAC1:
-    CPP_INFO.out(F("DAC1 resolution:"));
-    CPP_INFO.out((int) DAC1_RESOLUTION);
-    CPP_INFO.out(F("bit  "));
-    break;
-#endif
-
 #endif
 #endif
+  default:
+    return false;
   }
+  return true;
 }
 
 
@@ -350,6 +339,30 @@ void  arduino_pins_info() {
 
     CPP_INFO.tab();
     maybe_display_An(pin);
+
+#ifdef DACC_INTERFACE
+    if(pin == DAC0) {
+      CPP_INFO.out(F("DAC0  "));
+  #ifdef DAC0_RESOLUTION	// FIXME: ################
+      CPP_INFO.out(F("DAC0 resolution:"));
+      CPP_INFO.out((int) DAC0_RESOLUTION);
+      CPP_INFO.out(F("bit  "));
+  #else
+    #warning "DAC0_RESOLUTION undefined"
+  #endif
+    }
+
+    if(pin == DAC1) {
+      CPP_INFO.out(F("DAC1  "));
+  #ifdef DAC1_RESOLUTION	// FIXME: ################
+      CPP_INFO.out(F("DAC1 resolution:"));
+      CPP_INFO.out((int) DAC1_RESOLUTION);
+      CPP_INFO.out(F("bit  "));
+  #else
+    #warning "DAC1_RESOLUTION undefined"
+  #endif
+    }
+#endif
 
 // FIXME: does not work ################
 #ifdef PINS_CAN0
