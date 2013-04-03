@@ -1600,7 +1600,7 @@ bool menu_pulses_reaction(char menu_input) {
 	en_INFO(pulse);
 
     MENU.ln();
-    alive_pulses_info();	// FIXME: ??? or: alive_pulses_info_lines();	################
+    alive_pulses_info_lines();
     break;
 
   case '{':	// enter_jiffletab
