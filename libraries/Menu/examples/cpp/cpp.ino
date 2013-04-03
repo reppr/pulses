@@ -577,11 +577,15 @@ void arduino_info() {	// Display some Arduino specific informations.
 /* ****************  cpp_info menu display:  **************** */
 
 void cpp_info_display() {
+  bool dummybool[8];
+
   CPP_INFO.out(F("sizeof(char)\t"));		CPP_INFO.outln(sizeof(char));
   CPP_INFO.out(F("sizeof(int)\t"));		CPP_INFO.outln(sizeof(int));
+  CPP_INFO.out(F("sizeof(short)\t"));		CPP_INFO.outln(sizeof(short));
   CPP_INFO.out(F("sizeof(long)\t"));		CPP_INFO.outln(sizeof(long));
   CPP_INFO.out(F("sizeof(int*)\t"));		CPP_INFO.outln(sizeof(int*));
   CPP_INFO.out(F("sizeof(void*)\t"));		CPP_INFO.outln(sizeof(void*));
+  CPP_INFO.out(F("sizeof(bool[8])\t"));		CPP_INFO.outln(sizeof(dummybool));
 
 #ifdef ARDUINO
   arduino_info();	// Display some Arduino specific informations.
