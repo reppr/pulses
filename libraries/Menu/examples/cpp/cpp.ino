@@ -312,21 +312,137 @@ void  arduino_pins_info() {
 
 #ifdef CHECK_PINS
   int timer;
+  bool spi, i2c, led, analog_in;
 
   for(int pin=0; pin<CHECK_PINS; pin++) {
+
+    // pin number:
     MENU.out(pin_);
     MENU.out(pin);
     MENU.tab();
 
+    // LED?
+    led=false;
+    if (pin == LED_BUILTIN)
+      led=true;
+#ifdef PIN_LED_RXL	// see: <variant.h>
+    if(pin == PIN_LED_RXL)
+      led=true;
+#endif
+#ifdef PIN_LED_TXL
+    if(pin == PIN_LED_TXL)
+      led=true;
+#endif
+
+    if(led)
+      MENU.out('*');
+    
+    // PWM?
     #ifdef digitalPinHasPWM
       if(digitalPinHasPWM(pin))
-	MENU.out(F("PWM\t"));
+	MENU.out('~');
       else
-	MENU.tab();
+	MENU.space();
     #else
+      MENU.out('?');
+    #endif
+    MENU.space();
+
+    // analog input?
+    analog_in = maybe_display_An(pin);
+    MENU.tab();
+
+    // timer?
+    #ifdef digitalPinToTimer
+      #ifdef __SAM3X8E__	// FIXME: ################
+         #warning "no timer info on Arduino Due yet. ################"
+      #else
+        timer= digitalPinToTimer(pin);
+	if(timer) {
+	  // FIXME: ################
+	  MENU.out(TIMER_);
+	  MENU.out(timer);
+	  MENU.space();
+	  MENU.out(Question3_); // don't know what the numbers mean!
+	} else {
+	  // FIXME: ################
+	  MENU.tab();
+	  MENU.tab();
+	}
+      #endif
+    #else
+      MENU.out(TIMER_);
       MENU.out(Question3_);
     #endif
 
+
+    // SPI/I2C: (not expected on same pin, but who knows?)
+    // SPI?
+    spi=true;
+    switch (pin) {
+    case SS:
+      MENU.out(F("SS"));
+      break;
+#ifdef PIN_SPI_SS1;	// see: <variant.h>
+    case SS1:
+      MENU.out(F("SS1"));
+      break;
+#endif
+#ifdef PIN_SPI_SS2;	// see: <variant.h>
+    case SS2:
+      MENU.out(F("SS2"));
+      break;
+#endif
+#ifdef PIN_SPI_SS3;	// see: <variant.h>
+    case SS3:
+      MENU.out(F("SS3"));
+      break;
+#endif
+    case MOSI:
+      MENU.out(F("MOSI"));
+      break;
+
+    case MISO:
+      MENU.out(F("MISO"));
+      break;
+
+    case SCK:
+      MENU.out(F("SCK"));
+      break;
+
+    default:
+      spi=false;
+    }
+    if (spi)	// separate from i2c, just in case...
+      MENU.space();
+
+    // I2C?
+    i2c=true;
+    switch (pin) {
+    case SDA:
+      MENU.out(F("SDA"));
+      break;
+
+    case SCL:
+      MENU.out(F("SCL"));
+      break;
+
+#ifdef PIN_WIRE1_SDA
+    case SDA1:
+      MENU.out(F("SDA1"));
+      break;
+
+    case SCL1:
+      MENU.out(F("SCL1"));
+      break;
+#endif
+
+    default:
+      i2c=false;
+    }
+    MENU.tab();
+
+    // port and mask:
     MENU.out(port_);
     #ifdef digitalPinToPort
       #ifndef __SAM3X8E__
@@ -345,9 +461,31 @@ void  arduino_pins_info() {
       MENU.out(Question3_);
     #endif
 
+    // Summarize special abilities:
     MENU.tab();
-    maybe_display_An(pin);
+    if (spi)
+      MENU.out(F("SPI  "));
+    if (i2c)
+      MENU.out(F("I2C  "));
+    if(pin == LED_BUILTIN)
+      MENU.out(F("LED  "));
+#ifdef digitalPinHasPWM
+    if(digitalPinHasPWM(pin))
+      MENU.out(F("PWM  "));
+#endif
+#ifdef PIN_LED_RXL	// see: <variant.h>
+    if(pin == PIN_LED_RXL)
+      MENU.out(F("LEDRx"));
+#endif
+#ifdef PIN_LED_TXL
+    if(pin == PIN_LED_TXL)
+      MENU.out(F("LEDTx"));
+#endif
+    if (analog_in)
+      MENU.out(F("analog input  "));
 
+
+// TODO: leftovers unfinished	// FIXME: ################
 #ifdef DACC_INTERFACE
     if(pin == DAC0) {
       MENU.out(F("DAC0  "));
@@ -382,77 +520,8 @@ void  arduino_pins_info() {
       MENU.out(F("CAN1RX  "));
 #endif
 
-    if(pin == LED_BUILTIN)
-      MENU.out(F("LED  "));
-
-    if(pin == SS)
-      MENU.out(F("SPI SS  "));
-
-#ifdef PIN_SPI_SS1;	// see: <variant.h>
-    if(pin == SS1)
-      MENU.out(F("SPI SS1  "));
-#endif
-#ifdef PIN_SPI_SS2;	// see: <variant.h>
-    if(pin == SS2)
-      MENU.out(F("SPI SS2  "));
-#endif
-#ifdef PIN_SPI_SS3;	// see: <variant.h>
-    if(pin == SS3)
-      MENU.out(F("SPI SS3  "));
-#endif
-
-    if(pin == MOSI)
-      MENU.out(F("SPI MOSI  "));
-
-    if(pin == MISO)
-      MENU.out(F("SPI MISO  "));
-
-    if(pin == SCK)
-      MENU.out(F("SPI SCK  "));
-
-    if(pin == SDA)
-      MENU.out(F("I2C SDA  "));
-
-    if(pin == SCL)
-      MENU.out(F("I2C SCL  "));
-
-#ifdef PIN_LED_RXL	// see: <variant.h>
-    if(pin == PIN_LED_RXL)
-      MENU.out(F("LED Rx  "));
-#endif
-#ifdef PIN_LED_TXL
-    if(pin == PIN_LED_TXL)
-      MENU.out(F("LED Tx  "));
-#endif
-
-#ifdef PIN_WIRE1_SDA
-    if(pin == SDA1)
-      MENU.out(F("I2C SDA1  "));
-
-    if(pin == SCL1)
-      MENU.out(F("I2C SCL1  "));
-#endif
-
-    #ifdef digitalPinToTimer
-      #ifdef __SAM3X8E__	// FIXME: ################
-         #warning "no timer info on Arduino Due yet. ################"
-      #else
-        timer= digitalPinToTimer(pin);
-	if(timer) {
-	  MENU.out(TIMER_);
-	  MENU.out(timer);
-	  // FIXME: ################
-	  MENU.space();
-	  MENU.out(Question3_); // don't know what the numbers mean!
-	}
-      #endif
-    #else
-      MENU.out(TIMER_);
-      MENU.out(Question3_);
-    #endif
-
     MENU.ln();
-  }
+  } // pin loop
   #endif
 }
 
