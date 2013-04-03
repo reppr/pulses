@@ -228,62 +228,71 @@ const char Question3_[] = "???\t";
 
 // helper function:  maybe_display_An(uint8_t pin);
 int maybe_display_An(uint8_t pin) {
+  int analog_input;
+
   switch (pin) {	// there can be *only one* of them
   case A0:		// so we *can* 'switch' here
-    MENU.out(F("A0  "));
+    analog_input=0;
     break;
   case A1:
-    MENU.out(F("A1  "));
+    analog_input=1;
     break;
   case A2:
-    MENU.out(F("A2  "));
+    analog_input=2;
     break;
   case A3:
-    MENU.out(F("A3  "));
+    analog_input=3;
     break;
   case A4:
-    MENU.out(F("A4  "));
+    analog_input=4;
     break;
   case A5:
-    MENU.out(F("A5  "));
+    analog_input=5;
     break;
 #if (NUM_ANALOG_INPUTS > 6)
   case A6:
-    MENU.out(F("A6  "));
+    analog_input=6;
     break;
   case A7:
-    MENU.out(F("A7  "));
+    analog_input=7;
     break;
 #if (NUM_ANALOG_INPUTS > 8)
   case A8:
-    MENU.out(F("A8  "));
+    analog_input=8;
     break;
   case A9:
-    MENU.out(F("A9  "));
+    analog_input=9;
     break;
   case A10:
-    MENU.out(F("A10  "));
+    analog_input=10;
     break;
   case A11:
-    MENU.out(F("A11  "));
+    analog_input=11;
     break;
   case A12:
-    MENU.out(F("A12  "));
+    analog_input=12;
     break;
   case A13:
-    MENU.out(F("A13  "));
+    analog_input=13;
     break;
   case A14:
-    MENU.out(F("A14  "));
+    analog_input=14;
     break;
   case A15:
-    MENU.out(F("A15  "));
+    analog_input=15;
     break;
 #endif
 #endif
+
   default:
-    return false;
+    return false;	// nothing done, nothing to do
   }
+
+  // found analog input, display:
+  MENU.out('A');
+  MENU.out(analog_input);
+  MENU.space();
+  MENU.space();
   return true;
 }
 
