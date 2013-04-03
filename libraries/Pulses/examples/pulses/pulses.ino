@@ -974,15 +974,18 @@ void info_select_destination_with(boolean extended_destinations) {
   print_selected();  MENU.ln();
 
   MENU.out(selectPulseWith);
-  for (int pulse=0; pulse<min(pl_max,10); pulse++) {
-    MENU.out(pulse);
-     MENU.out(' ');
-     MENU.out(' ');
+
+  // FIXME: use 16 here, when reaction will be prepared for a,b,c,d,e,f too.
+  //  for (int pulse=0; pulse<min(pl_max,16); pulse++) {
+  for (int pulse=0; pulse<min(pl_max,10); pulse++) {	// FIXME: use 16 here, when reaction will be prepared for a,b,c,d,e,f too.
+    MENU.out(hex_chiffre(pulse));
+    MENU.space();
+    MENU.space();
   }
 
   MENU.outln(selectAllPulses);
 
-  if(extended_destinations) {
+  if(extended_destinations) {	// FIXME: will that ever be used??? ################
     MENU.out(uSelect);  MENU.out(timeUnit);
     if(dest == CODE_TIME_UNIT) {
       MENU.outln(selected__);
