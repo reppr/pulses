@@ -53,6 +53,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
 #ifdef __SAM3X8E__	// FIXME: ################
   #warning 'loading hack for Arduino Due "support"'
+
   #define LED_BUILTIN	PIN_LED
   #define SDA	PIN_WIRE_SDA
   #define SCL	PIN_WIRE_SCL
@@ -445,10 +446,10 @@ void  arduino_pins_info() {
     // port and mask:
     MENU.out(port_);
     #ifdef digitalPinToPort
-      #ifndef __SAM3X8E__
-        MENU.out(uint8_t digitalPinToPort(pin));
-      #else
+      #ifdef __SAM3X8E__	// FIXME: ################
 	MENU.out(int digitalPinToPort(pin));
+      #else
+        MENU.out(uint8_t digitalPinToPort(pin));
       #endif
     #else
       MENU.out('?');

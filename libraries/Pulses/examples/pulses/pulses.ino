@@ -1705,35 +1705,41 @@ Testing Pulses library in a very early stage
 /* ARDUINO BOARD SPECIFIC THINGS  try to use ARDUINO MACROS: */
 
 #ifndef NUM_DIGITAL_PINS		// try harder... ?
-  #ifndef NUM_DIGITAL_PINS
-    #error #define NUM_DIGITAL_PINS
-  #endif
+  #warning "#define NUM_DIGITAL_PINS	// FIXME: ################"
 
   #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
     #define NUM_DIGITAL_PINS	70
-  #else								 // 168/328
+  #elif defined(__SAM3X8E__)
+    #ifdef PINS_COUNT	// on Arduino DUE	// FIXME: ################
+      #define NUM_DIGITAL_PINS	PINS_COUNT	// FIXME: ################
+    #else
+      #warning "#define MISING NUM_DIGITAL_PINS	// FIXME: ################"
+      #warning "#define NUM_DIGITAL_PINS 79	// FIXME: ################"
+      #define NUM_DIGITAL_PINS	79 		// FIXME: DUE ################
+    #endif
+  #else						// FIXME: 168/328 boards ???
     #define NUM_DIGITAL_PINS	20
   #endif
 
   #ifndef NUM_DIGITAL_PINS
-    #error #define NUM_DIGITAL_PINS
+    #error "#define NUM_DIGITAL_PINS		// FIXME: ################"
   #endif
 #endif
 
 
 #ifndef NUM_ANALOG_INPUTS		// try harder... ?
-  #ifndef NUM_ANALOG_INPUTS
-    #error #define NUM_ANALOG_INPUTS
-  #endif
+  #warning "#define NUM_ANALOG_INPUTS	// FIXME: ################"
 
   #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
     #define NUM_ANALOG_INPUTS	16
-  #else								// 168/328 boards
+  #elif defined(__SAM3X8E__)
+     #define NUM_ANALOG_INPUTS	16		// FIXME: DUE ################
+  #else 					// FIXME: 168/328 boards ???
     #define NUM_ANALOG_INPUTS	6
   #endif
 
   #ifndef NUM_ANALOG_INPUTS
-    #error #define NUM_ANALOG_INPUTS
+    #error "#define NUM_ANALOG_INPUTS		// FIXME: ################"
   #endif
 #endif
 
@@ -1744,11 +1750,12 @@ Testing Pulses library in a very early stage
 #endif
 
 
-#ifndef digitalPinHasPWM	// ################
-  #ifndef __SAM3X8E__
-    #error #define digitalPinHasPWM
-  #else
+#ifndef digitalPinHasPWM	// FIXME: ################
+  #ifdef __SAM3X8E__
+    #warning "#define MISSING digitalPinHasPWM(p)"
     #define digitalPinHasPWM(p)         ((p) >= 2 && (p) <= 13)
+  #else
+    #error #define digitalPinHasPWM
   #endif
 #endif
 
@@ -1796,7 +1803,7 @@ bool echo_switch=true;		// serial echo switch
 
 /* ****************  info on DIGITAL pins:  **************** */
 
-#ifdef __SAM3X8E__
+#ifdef __SAM3X8E__	// FIXME: ################
   #ifndef portModeRegister
     #warning "#define *MISSING* portModeRegister(P)."
     #define portModeRegister(P) ( (volatile RwReg*)( pgm_read_word( port_to_mode_PGM + (P))) )
@@ -1814,11 +1821,11 @@ const char low_[] = "LOW";
 
 void pin_info_digital(uint8_t pin) {
   uint8_t mask = digitalPinToBitMask(pin);
-#ifndef __SAM3X8E__	// FIXME: ################
-  uint8_t port = digitalPinToPort(pin);
-#else
+#ifdef __SAM3X8E__	// FIXME: ################
   #warning "softboard does not run on Arduino Due yet! ################"
   Pio* const port = digitalPinToPort(pin);
+#else
+  uint8_t port = digitalPinToPort(pin);
 #endif
 
 #ifdef __SAM3X8E__	// FIXME: ################
@@ -1841,7 +1848,7 @@ void pin_info_digital(uint8_t pin) {
   MENU.out((int) pin);
   MENU.tab();
 
-#ifdef __SAM3X8E__
+#ifdef __SAM3X8E__	// FIXME: ! ################
   #warning "I/O pin configuration info *not implemented on Arduino DUE yet*."
   MENU.out(F("??? (DUE not implemented)"));
 #else

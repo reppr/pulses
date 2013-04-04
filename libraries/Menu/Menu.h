@@ -27,6 +27,7 @@
  */
 #ifdef ARDUINO
 
+  // GET_FREE_RAM
   // compile a working Menu::get_free_RAM() function?
   #ifdef __SAM3X8E__))
     #warning "not defining get_free_RAM() on Arduino Due."
@@ -35,6 +36,7 @@
     #define GET_FREE_RAM
   #endif
 
+  // USE_F_MACRO
   // normally we *do* use F() macro on Arduino to save RAM:
   #define USE_F_MACRO	// comment out for RAM tests
 
@@ -47,10 +49,11 @@
 
 #else	// *ARDUINO ONLY*
 
+  // GET_FREE_RAM
   #ifdef GET_FREE_RAM
+    #undef GET_FREE_RAM
     #warning GET_FREE_RAM *ARDUINO ONLY* #undef
   #endif
-  #undef GET_FREE_RAM
 
 #endif
 
