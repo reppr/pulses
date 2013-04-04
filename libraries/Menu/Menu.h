@@ -35,7 +35,7 @@
     #define GET_FREE_RAM
   #endif
 
-  // normally we use F() macro on Arduino to save RAM
+  // normally we *do* use F() macro on Arduino to save RAM:
   #define USE_F_MACRO	// comment out for RAM tests
 
   #ifdef __SAM3X8E__	// FIXME: ################
@@ -54,13 +54,14 @@
 
 #endif
 
-// use Arduino F() macro to save RAM or a noop?
-#ifndef USE_F_MACRO
-  // For tests and on PC:  Fake Arduino F("string") macro as noop:
+
+// use Arduino F() macro to save RAM or just a NOOP?
+#ifndef USE_F_MACRO	// NOOP fake
+  // For tests and on PC:  Fake Arduino F("string") macro as NOOP:
   #undef F(s)
   #define F(s)	(s)
+  #warning "using a NOOP fake F() macro."
 #endif
-
 
 /* **************************************************************** */
 // Preprocessor macro logic:
