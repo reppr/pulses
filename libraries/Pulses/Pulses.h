@@ -211,7 +211,7 @@ class Pulses {
   void fix_global_next();	// determine next event, prepare everything
 				// for *all* pulses that wait for this exact time
 				// they will be called in fast sequence then
-  void check_maybe_do();	// ################
+  bool check_maybe_do();	// FIXME; comment ################
   int setup_pulse(void (*pulse_do)(int), unsigned char new_flags, \
 		  struct time when, struct time new_period);
   int setup_counted_pulse(void (*pulse_do)(int), unsigned char new_flags, \

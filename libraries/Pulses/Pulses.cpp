@@ -355,10 +355,12 @@ void Pulses::fix_global_next() {
 }
 
 
-// void check_maybe_do();
+// bool check_maybe_do();
 // check if it's time to do something and do it if it's time
 // calls wake_pulse(pulse); to do one life step of the pulse
-void Pulses::check_maybe_do() {
+// return true if something was done
+// false if it's not time yet:
+bool Pulses::check_maybe_do() {
   get_now();	// updates now
 
   if (global_next.overflow == now.overflow) {	// current overflow period?
@@ -367,6 +369,7 @@ void Pulses::check_maybe_do() {
 	wake_pulse(global_next_pulses[i]);	//     wake next pulses up
 
       fix_global_next();			// determine next event[s] serie
+      return true;		// *did* do something
     }
   } else					// (earlier or later overflow)
     if (global_next.overflow < now.overflow) {	// earlier overflow period?
@@ -374,7 +377,10 @@ void Pulses::check_maybe_do() {
 	wake_pulse(global_next_pulses[i]);	//     wake next pulses up
 
       fix_global_next();			// determine next event[s] serie
+      return true;		// *did* do something
     }
+
+  return false;			// *no* not the right time yet
 }
 
 
