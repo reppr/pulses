@@ -203,6 +203,17 @@ class Menu {
   int get_free_RAM() const;
   void print_free_RAM() const;
 
+  // Levels of menu feedback:
+  unsigned char verbosity;	/* verbosity codes:
+    #define VERBOSITY_ERROR	1
+       errors and *requested* informations
+    #define VERBOSITY_SOME	2
+       include feedback, i.e. new values
+    #define VERBOSITY_CHATTY	3
+       some more infos, for novice users
+    #define VERBOSITY_HIGH	4
+       more than you want to see
+*/
   void verbosity_info();	// helper function
 
 
@@ -219,18 +230,6 @@ class Menu {
   bool (*action)(void);		// will be called on receiving an end token
 
   int cb_stored() const { return cb_count; }   // inlined: number of accumulated bytes
-
-  // Levels of menu feedback:
-  unsigned char verbosity;	/* verbosity codes:
-    #define VERBOSITY_ERROR	1
-       errors and *requested* informations
-    #define VERBOSITY_SOME	2
-       include feedback, i.e. new values
-    #define VERBOSITY_CHATTY	3
-       some more infos, for novice users
-    #define VERBOSITY_HIGH	4
-       more than you want to see
-*/
 
 
  private:
