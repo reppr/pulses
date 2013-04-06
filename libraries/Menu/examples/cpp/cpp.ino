@@ -270,6 +270,7 @@ int maybe_display_An(uint8_t pin) {
   case A11:
     analog_input=11;
     break;
+#if (NUM_ANALOG_INPUTS > 12)
   case A12:
     analog_input=12;
     break;
@@ -282,6 +283,7 @@ int maybe_display_An(uint8_t pin) {
   case A15:
     analog_input=15;
     break;
+#endif
 #endif
 #endif
 
