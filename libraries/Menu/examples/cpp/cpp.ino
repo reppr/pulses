@@ -326,8 +326,10 @@ void  arduino_pins_info() {
 
     // LED?
     led=false;
+#ifdef LED_BUILTIN
     if (pin == LED_BUILTIN)
       led=true;
+#endif
 #ifdef PIN_LED_RXL	// see: <variant.h>
     if(pin == PIN_LED_RXL)
       led=true;
@@ -470,8 +472,10 @@ void  arduino_pins_info() {
       MENU.out(F("SPI  "));
     if (i2c)
       MENU.out(F("I2C  "));
+#ifdef LED_BUILTIN
     if(pin == LED_BUILTIN)
       MENU.out(F("LED  "));
+#endif
 #ifdef digitalPinHasPWM
     if(digitalPinHasPWM(pin))
       MENU.out(F("PWM  "));
