@@ -29,7 +29,7 @@
 
   // GET_FREE_RAM
   // compile a working Menu::get_free_RAM() function?
-  #ifdef __SAM3X8E__))
+  #ifdef __SAM3X8E__
     #warning "not defining get_free_RAM() on Arduino Due."
     #undef GET_FREE_RAM
   #else
