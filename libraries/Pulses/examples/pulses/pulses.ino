@@ -1715,6 +1715,7 @@ Testing Pulses library in a very early stage
 
 /* **************************************************************** */
 /* ARDUINO BOARD SPECIFIC THINGS  try to use ARDUINO MACROS: */
+#include <Boards.h>
 
 #ifndef NUM_DIGITAL_PINS		// try harder... ?
   #warning "#define NUM_DIGITAL_PINS	// FIXME: ################"

@@ -59,6 +59,7 @@
 
 /* **************************************************************** */
 /* ARDUINO BOARD SPECIFIC THINGS  try to use ARDUINO MACROS: */
+#include <Boards.h>
 
 #ifndef NUM_DIGITAL_PINS		// try harder... ?
   #ifndef NUM_DIGITAL_PINS
