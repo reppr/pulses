@@ -92,6 +92,14 @@ void setup() {	// ARDUINO
   */
   Serial.begin(BAUDRATE);	// Start serial communication.
 
+  // #ifdef __AVR_ATmega32U4__
+  /* on ATmega32U4		Leonardo, Mini, LilyPad Arduino USB
+     to be able to use Serial.print() from setup()
+     we *must* do that before:
+  */
+  while (!Serial) { ;}		// wait for Serial to open
+  //#endif
+
   MENU.outln(F("For me this is a test for visability of menu pages:"));
   MENU.outln(F("depending the page different menu keys are active."));
   MENU.outln(F("For you it's a very simple joke game to find out how it works..."));

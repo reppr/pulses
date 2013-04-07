@@ -137,6 +137,14 @@ void setup_pages() {
 void setup() {
   Serial.begin(BAUDRATE);	// Start serial communication.
 
+#ifdef __AVR_ATmega32U4__
+  /* on ATmega32U4		Leonardo, Mini, LilyPad Arduino USB
+     to be able to use Serial.print() from setup()
+     we *must* do that before:
+  */
+  while (!Serial) { ;}		// wait for Serial to open
+#endif
+
   MENU.outln(F("\thttp://github.com/reppr/pulses/"));
   setup_pages();
 

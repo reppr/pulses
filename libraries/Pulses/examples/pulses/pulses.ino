@@ -155,6 +155,14 @@ int softboard_page=-1;		// see: maybe_run_continuous()
 void setup() {
   Serial.begin(BAUDRATE);	// Start serial communication.
 
+#ifdef __AVR_ATmega32U4__
+  /* on ATmega32U4		Leonardo, Mini, LilyPad Arduino USB
+     to be able to use Serial.print() from setup()
+     we *must* do that before:
+  */
+  while (!Serial) { ;}		// wait for Serial to open
+#endif
+
   // some test output:
   MENU.outln(F("testing pulses.ino"));
 
