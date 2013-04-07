@@ -571,6 +571,8 @@ void arduino_info() {	// Display some Arduino specific informations.
     MENU.outln(F("__AVR_ATmega1280__"));
   #elif defined(__SAM3X8E__)
     MENU.outln(F("__SAM3X8E__"));
+  #elif defined(__AVR_ATmega32U4__)
+    MENU.outln(F("__AVR_ATmega32U4__"));
 
   #else
     MENU.outln(F("NOT IMPLEMENTED YET"));
