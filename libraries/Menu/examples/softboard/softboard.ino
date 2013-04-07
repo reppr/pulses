@@ -777,9 +777,13 @@ bool softboard_reaction(char token) {
     MENU.ln();
     break;
 
-    case 'x':	// toggle extended
-      toggle_extra();
-      break;
+  case 'x':	// toggle extended
+    toggle_extra();
+    if(MENU.verbosity >= VERBOSITY_SOME) {
+      MENU.out(F("Show pins: "));
+      MENU.outln(visible_digital_pins);
+    }
+    break;
 
   default:
     return 0;		// token not found in this menu
