@@ -266,9 +266,47 @@ int main() {
   printf("sizeof(pulse_t) %d * %d = \t%d\n\n",	\
 	 sizeof(pulse_t), pl_max, sizeof(pulse_t)*pl_max );
 
+
+  // setting up the menu:
+
+  // add pulses main page:
+  MENU.add_page("pulses", 'P', \
+		&menu_pulses_display, &menu_pulses_reaction, 'P');
+
+// softboard does not make sense on PC  
+//	  // add softboard page:
+//	  softboard_page = MENU.add_page("Arduino Softboard", 'H',	\
+//			&softboard_display, &softboard_reaction, 'H');
+
+  // display menu at startup:
+  MENU.menu_display();
+
+  // time and pulses *must* get initialized before setting up pulses:
+  PULSES.init_time();		// start time
+  PULSES.init_pulses();		// init pulses
+
+  PULSES.fix_global_next();	// we *must* call that here late in setup();
+
+  // informations about alive pulses:
+  MENU.ln();
+  alive_pulses_info_lines();
+
+  // main program loop:
   while (true) {
-    MENU.lurk_then_do();
-    PULSES.check_maybe_do();
+  /* calling check_maybe_do() in a while loop
+     increases timing priority of PULSES over the MENU.
+     It has little influence on low system load levels
+     but when on stress PULSES gets up to *all* available time.
+     The intention is to have PULSES continue functioning and
+     let the UI starve, when there is not enough time for everything.
+  */
+  while (PULSES.check_maybe_do()) { }	// in stress PULSES get's *first* priority.
+
+  if(! MENU.lurk_then_do())		// MENU comes second in priority.
+    {					// if MENU had nothing to do, then
+      maybe_run_continuous();		//    lowest priority:
+					//    maybe display input state changes.
+    }
   }
 
 }
