@@ -62,23 +62,6 @@
 #include <Boards.h>
 
 #ifndef NUM_DIGITAL_PINS		// try harder... ?
-  #ifndef NUM_DIGITAL_PINS
-    #error #define NUM_DIGITAL_PINS
-  #endif
-
-  #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
-    #define NUM_DIGITAL_PINS	70
-  #else								 // 168/328
-    #define NUM_DIGITAL_PINS	20
-  #endif
-
-  #ifndef NUM_DIGITAL_PINS
-    #error #define NUM_DIGITAL_PINS
-  #endif
-#endif
-
-
-#ifndef NUM_DIGITAL_PINS		// try harder... ?
   #warning "#define NUM_DIGITAL_PINS	// FIXME: ################"
 
   #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
@@ -124,8 +107,8 @@
 #endif
 
 
-#ifndef digitalPinHasPWM	// ################
-  #ifdef __SAM3X8E__	// FIXME: ################
+#ifndef digitalPinHasPWM	// FIXME: ################
+  #ifdef __SAM3X8E__
     #warning "#define MISSING digitalPinHasPWM(p)"
     #define digitalPinHasPWM(p)         ((p) >= 2 && (p) <= 13)
   #else
@@ -141,8 +124,8 @@
 
 // #define ILLEGAL	-1	// probably already defined above
 
-char PIN_digital = ILLEGAL_PIN;	// would be dangerous to default to zero
-char PIN_analog = 0;		// 0 is save as default for analog pins
+uint8_t PIN_digital = ILLEGAL_PIN;	// would be dangerous to default to zero
+uint8_t PIN_analog = 0;			// 0 *is* a save default for analog pins
 
 
 /* extra_switch:
@@ -177,7 +160,7 @@ bool echo_switch=true;		// serial echo switch
 
 /* ****************  info on DIGITAL pins:  **************** */
 
-#ifdef __SAM3X8E__
+#ifdef __SAM3X8E__	// FIXME: ################
   #ifndef portModeRegister
     #warning "#define *MISSING* portModeRegister(P)."
     #define portModeRegister(P) ( (volatile RwReg*)( pgm_read_word( port_to_mode_PGM + (P))) )
@@ -222,7 +205,7 @@ void pin_info_digital(uint8_t pin) {
   MENU.out((int) pin);
   MENU.tab();
 
-#ifdef __SAM3X8E__
+#ifdef __SAM3X8E__	// FIXME: ! ################
   #warning "I/O pin configuration info *not implemented on Arduino DUE yet*."
   MENU.out(F("??? (DUE not implemented)"));
 #else
@@ -294,7 +277,7 @@ void watch_digital_start(uint8_t pin) {
 }
 
 
-void watch_digital_input(int pin) {
+void watch_digital_input(uint8_t pin) {
   int value=digitalRead(PIN_digital);
 
   if (value != watch_seen) {
@@ -375,7 +358,7 @@ const char analog_reads_title[] =	\
   "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
 
 void pins_info_analog() {
-  int i, value;
+  int i;
 
   MENU.outln(analog_reads_title);
 
@@ -419,7 +402,7 @@ void feedback_tolerance() {
 }
 
 
-void VU_init(int pin) {
+void VU_init() {
   VU_last=IMPOSSIBLE;	// just an impossible value
 
   MENU.out(F("pin\tval\t+/- set "));
@@ -431,7 +414,7 @@ void VU_init(int pin) {
 void toggle_VU() {
   run_VU = !run_VU;
   if (run_VU)
-    VU_init(PIN_analog);
+    VU_init();
   else
     MENU.ln();
 }
@@ -448,7 +431,7 @@ void toggle_VU() {
 
   asynchronous run-through, don't wait too long...
 */
-void bar_graph_VU(int pin) {
+void bar_graph_VU(uint8_t pin) {
   int value;
 
   value =  analogRead(pin);
@@ -572,11 +555,10 @@ void softboard_display() {
 #if (NUM_ANALOG_INPUTS != 8)	// *no* variant eightanaloginputs
   void toggle_extra() {		// *no* variant eightanaloginputs
     extra_switch = !extra_switch;
-    if (extra_switch) {
+    if (extra_switch)
       visible_digital_pins=NUM_DIGITAL_PINS;
     else
       visible_digital_pins=NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS;
-    }
   }
 #else				// VARIANT: eightanaloginputs
   void toggle_extra() {		// VARIANT: eightanaloginputs
