@@ -309,6 +309,12 @@ char Menu::cb_read() {
   void Menu::outln(const unsigned int i)	const { printf("%u\n", i); }
   void Menu::outln(const unsigned long l)	const { printf("%u\n", l); }
 
+
+  // float output:
+  void Menu::out(const float f, int places)	const {	// formatted float output
+    printf("%f", places);
+  }
+
   /* Output a newline, tab, space, '='
      ln(), tab(), space(), equals():			*/
   void Menu::ln()		const { putchar('\n'); } // Output a newline
@@ -320,6 +326,16 @@ char Menu::cb_read() {
   void Menu::ticked(const char c)	const {   // prints 'c'
     printf("\'%c\'", c);
   }
+
+
+  /* NOOP free RAM fakes only:				*/
+  int Menu::get_free_RAM() const {		// noop fake
+    return -1;
+  }
+
+  void Menu::print_free_RAM() const {		// noop fake
+  }
+
 #endif	// [ ARDUINO else ]  c++ test version	OUTPUT functions.
 
 

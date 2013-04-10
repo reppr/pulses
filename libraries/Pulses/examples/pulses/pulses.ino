@@ -273,10 +273,12 @@ int main() {
   MENU.add_page("pulses", 'P', \
 		&menu_pulses_display, &menu_pulses_reaction, 'P');
 
-// softboard does not make sense on PC  
-//	  // add softboard page:
-//	  softboard_page = MENU.add_page("Arduino Softboard", 'H',	\
-//			&softboard_display, &softboard_reaction, 'H');
+/*
+  // softboard does not make sense on PC
+  // add softboard page:
+  softboard_page = MENU.add_page("Arduino Softboard", 'H',		\
+		&softboard_display, &softboard_reaction, 'H');
+*/
 
   // display menu at startup:
   MENU.menu_display();
@@ -304,8 +306,10 @@ int main() {
 
   if(! MENU.lurk_then_do())		// MENU comes second in priority.
     {					// if MENU had nothing to do, then
+#ifdef ARDUINO
       maybe_run_continuous();		//    lowest priority:
 					//    maybe display input state changes.
+#endif
     }
   }
 
@@ -1027,7 +1031,7 @@ const char selectAllPulses[] =
 const char uSelect[] = "u=select ";
 const char selected__[] = "\t(selected)";
 
-void info_select_destination_with(boolean extended_destinations) {
+void info_select_destination_with(bool extended_destinations) {
   MENU.out(selectDestinationInfo);
   print_selected();  MENU.ln();
 
@@ -1296,7 +1300,7 @@ void setup_jiffles0(int sync) {
   int scale=18;
   unsigned long unit=scale*time_unit;
 
-  struct time when, delta, templ, new_period;
+  struct time when;
 
   MENU.out("jiffle0 ");
   MENU.out(sync_); MENU.outln(sync);
@@ -1697,8 +1701,9 @@ Testing Pulses library in a very early stage
 
 */
 /* **************************************************************** */
-
-
+#ifndef ARDUINO
+  #warning "Not compiling softboard_page on PC."
+#else
 
 /*
  * ****************************************************************
@@ -2458,6 +2463,7 @@ bool softboard_reaction(char token) {
 }
 
 
+#endif
 /* **************************************************************** */
 /* README
 

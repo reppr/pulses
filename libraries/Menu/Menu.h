@@ -14,8 +14,10 @@
 #else
   #include <iostream>
 
-  using namespace std;
-  ostream & Serial=cout;	// nice trick from johncc
+  #ifndef STREAMTYPE		// could have been #define'd in Pulses.h
+    using namespace std;
+    ostream & Serial=cout;	// nice trick from johncc
+  #endif
   #define STREAMTYPE	ostream
 #endif
 
@@ -48,7 +50,6 @@
   #endif
 
 #else	// *ARDUINO ONLY*
-
   // GET_FREE_RAM
   #ifdef GET_FREE_RAM
     #undef GET_FREE_RAM

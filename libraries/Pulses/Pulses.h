@@ -28,8 +28,10 @@
 #else	// c++ Linux PC test version
   #include <iostream>
 
-  using namespace std;
-  ostream & Serial=cout;	// nice trick from johncc
+  #ifndef STREAMTYPE		// could have been #define'd in Menu.h
+    using namespace std;
+    ostream & Serial=cout;	// nice trick from johncc
+  #endif
   #define STREAMTYPE	ostream
 
   #ifndef INPUT
