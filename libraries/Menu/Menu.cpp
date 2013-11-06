@@ -673,10 +673,9 @@ int Menu::add_page(const char *pageTitle, const char hotkey,		\
       Error_();
       OutOfRange();
       ln();
-      return -1;
     }
-    // FIXME:  ERROR handling ################
   }
+  return -1;
 }
 
 
@@ -841,7 +840,7 @@ void Menu::interpret_men_input() {
 	}
       }
       if (is_active)		// test active menu pages on token:
-	if ( did_something = try_page_reaction(pg, token) )
+	if ( (did_something = try_page_reaction(pg, token)) )
 	  break;
     }// loop over hidden pages
 
