@@ -17,11 +17,13 @@
     #include "WProgram.h"
   #endif
 
+  #include <Menu.h>
+
 #else
   #include <iostream>
-#endif
 
-#include <Menu.h>
+  #include <Menu/Menu.h>
+#endif
 
 
 /* **************************************************************** */

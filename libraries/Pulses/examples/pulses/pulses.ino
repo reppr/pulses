@@ -47,14 +47,19 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
   #else
     #include "WProgram.h"
   #endif
-#else
+
+  #include <Menu.h>
+  #include <Pulses.h>
+
+#else	// #include's for Linux PC test version
   #include <iostream>
-//  #include <Pulses.cpp>		// why that?
+  #include <Menu/Menu.h>
+  #include <Pulses/Pulses.h>
+
+  #include "Pulses/Pulses.cpp"		// why that?
+  #include "Menu/Menu.cpp"		// why that?
 #endif
 
-
-#include <Menu.h>
-#include <Pulses.h>
 
 /* **************************************************************** */
 // some #define's:

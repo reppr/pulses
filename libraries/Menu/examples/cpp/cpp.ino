@@ -48,6 +48,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
   #endif
 #else
   #include <iostream>
+  #include <Menu.h>
   #include <Menu.cpp>		// why that?
 #endif
 

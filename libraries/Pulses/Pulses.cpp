@@ -25,11 +25,12 @@
     #include "WProgram.h"
   #endif
 
+  #include <Pulses.h>
 #else
   #include <iostream>
-#endif
 
-#include <Pulses.h>
+  #include <Pulses/Pulses.h>
+#endif
 
 
 /* **************************************************************** */
