@@ -2,7 +2,7 @@ README_pulses
 
 Pulses
 
-  Arduino library to raise actions in harmonical time intervalls.
+  Arduino library to raise actions in harmonical time intervals.
   Periodically do multiple independent tasks named 'pulses'.
 
 
