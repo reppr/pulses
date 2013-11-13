@@ -201,9 +201,19 @@ void setup() {
 
   // setup pulses, click pulses first:	// FIXME: ################
   #ifdef CLICK_PULSES
+  /*
     click_pin[0] = 13;		// configure PINs here	inbuilt LED
 
     click_pin[1] = 2; 		// configure PINs here
+    click_pin[2] = 3; 		// configure PINs here
+    click_pin[3] = 4; 		// configure PINs here
+    click_pin[4] = 5; 		// configure PINs here
+    click_pin[5] = 6; 		// configure PINs here
+    click_pin[6] = 7; 		// configure PINs here
+  */
+
+    click_pin[0] = 2;		// configure PINs here
+    click_pin[1] = 3; 		// configure PINs here
     click_pin[2] = 3; 		// configure PINs here
     click_pin[3] = 4; 		// configure PINs here
     click_pin[4] = 5; 		// configure PINs here
@@ -444,7 +454,7 @@ float display_realtime_sec(struct time duration) {
   seconds += overflow_sec * (float) duration.overflow;
 
   float scratch = 1000.0;
-  while (scratch > max(seconds, 1.0)) {
+  while (scratch > max(seconds, (float) 1.0)) {		// (float) for Linux PC tests
     MENU.out(' ');
     scratch /= 10.0;
   }
@@ -1270,7 +1280,7 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
   // if we arrive here, phase endid, start next phase if any:
   unsigned int* jiffletab = (unsigned int *) PULSES.pulses[pulse].parameter_2;	// read jiffletab[]
   PULSES.pulses[pulse].char_parameter_2 += JIFFLETAB_INDEX_STEP;
-  if (jiffletab[PULSES.pulses[pulse].char_parameter_2] == 0) {		// no next phase, return
+  if (jiffletab[(int) PULSES.pulses[pulse].char_parameter_2] == 0) {		// no next phase, return
     PULSES.init_pulse(pulse);					// remove pulse
     return;						// and return
   }
@@ -1695,8 +1705,8 @@ bool menu_pulses_reaction(char menu_input) {
 
 README_pulses
 
-Testing Pulses library in a very early stage
-*not usable yet* for anything else...
+Testing Pulses library in an early stage
+
 
 
    Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2

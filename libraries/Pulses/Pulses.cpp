@@ -40,7 +40,7 @@
 //	  #define Stream ostream
 //	#endif
 
-Pulses::Pulses(unsigned int pl_max):
+Pulses::Pulses(int pl_max):
   pl_max(pl_max),
   pulse(0),
   global_octave(0),
@@ -51,7 +51,7 @@ Pulses::Pulses(unsigned int pl_max):
   pulses = (pulse_t *) malloc(pl_max * sizeof(pulse_t));
   // ERROR ################
 
-  global_next_pulses = (unsigned int*) malloc(pl_max * sizeof(int));
+  global_next_pulses = (int*) malloc(pl_max * sizeof(int));
   // ERROR ################
 
   init_time();
@@ -192,7 +192,6 @@ void Pulses::div_time(struct time *duration, unsigned int divisor)
 {
   unsigned long scratch;
   unsigned long result=0;
-  unsigned long digit;
   unsigned int carry=0;
   unsigned long mask = (unsigned long) ((unsigned int) ~0);
   unsigned int shift=16;
@@ -301,12 +300,13 @@ void Pulses::wake_pulse(int pulse) {
     pulses[pulse].next.overflow++;
 
   //						// COUNTED pulse && end reached?
-  if ((pulses[pulse].flags & COUNTED) && ((pulses[pulse].counter +1) == pulses[pulse].int1 ))
+  if ((pulses[pulse].flags & COUNTED) && \
+      ((pulses[pulse].counter +1) == pulses[pulse].int1 )) {
     if (pulses[pulse].flags & DO_NOT_DELETE)	//   yes: DO_NOT_DELETE?
       pulses[pulse].flags &= ~ACTIVE;		//     yes: just deactivate
     else
       init_pulse(pulse);			//     no:  DELETE pulse
-
+  }
 }
 
 
@@ -332,7 +332,7 @@ void Pulses::fix_global_next() {
   global_next.overflow=~0;	// ILLEGAL value
   global_next_count=0;
 
-  for (pulse=0; pulse<pl_max; pulse++) {		// check all pulses
+  for (int pulse=0; pulse<pl_max; pulse++) {		// check all pulses
     if (pulses[pulse].flags & ACTIVE) {				// pulse active?
       if (pulses[pulse].next.overflow < global_next.overflow) {	// yes: earlier overflow?
 	global_next.time = pulses[pulse].next.time;		//   yes: reset search
@@ -366,7 +366,7 @@ bool Pulses::check_maybe_do() {
 
   if (global_next.overflow == now.overflow) {	// current overflow period?
     if (global_next.time <= now.time) {		//   yes: is it time?
-      for (int i=0; i<global_next_count; i++)	//     yes:
+      for (unsigned int i=0; i<global_next_count; i++)	//     yes:
 	wake_pulse(global_next_pulses[i]);	//     wake next pulses up
 
       fix_global_next();			// determine next event[s] serie
@@ -374,7 +374,7 @@ bool Pulses::check_maybe_do() {
     }
   } else					// (earlier or later overflow)
     if (global_next.overflow < now.overflow) {	// earlier overflow period?
-      for (int i=0; i<global_next_count; i++)	//     yes, we're late...
+      for (unsigned int i=0; i<global_next_count; i++)	//   yes, we're late...
 	wake_pulse(global_next_pulses[i]);	//     wake next pulses up
 
       fix_global_next();			// determine next event[s] serie

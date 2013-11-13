@@ -185,7 +185,7 @@ struct pulse_t {
 /* **************************************************************** */
 class Pulses {
  public:
-  Pulses(unsigned int pl_max);
+  Pulses(int pl_max);
   ~Pulses();
   void init_time();
   void get_now();		// *always* use get_now() to get current time!
@@ -230,11 +230,11 @@ class Pulses {
 
  private:
   int pulse;			// pulse index	// DO WE NEED THAT? ################
-  unsigned int pl_max;		// max pulses possible
+  int pl_max;			// max pulses possible
 
-  unsigned int * global_next_pulses;	// indices of all pulses involved @ coming 'next'
-					// pulses that want to be waken up at the same time.
-					// (there can't be more then pl_max)
+  int * global_next_pulses;	// indices of all pulses involved @ coming 'next'
+				//   pulses that want to be waken up at the same time.
+				//   (there can't be more then pl_max)
 };
 
 /* **************************************************************** */
