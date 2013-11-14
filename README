@@ -1,9 +1,9 @@
 pulses
-an arduino project.
 
+  Arduino library collection to raise actions in harmonical time intervals.
+  Periodically do multiple independent tasks named 'pulses'.
 
-I have started working on the very basics,
-will try to explain later...
+  Working on the very basics...
 
 
 Already working:
@@ -34,7 +34,10 @@ Already working:
   The source is also full of comments meant to be useful, please read.
 
 
+
 * Softboard
+
+README softboard
 
    softboard  http://github.com/reppr/pulses
 
@@ -42,24 +45,33 @@ Already working:
 
    This version is implemented as an example for the Menu library.
    Using a library makes it easy to include in your own sketches.
+   You can add more menu pages with other functionality to your sketch.
 
 
 Description
 
-   Softboard is a kind of Arduino software breadboard.
+   Softboard is a kind of an Arduino software breadboard.
 
-   Simple Arduino hardware Menu interface over a serial line
-   or USBserial.
+   Simple Arduino hardware Menu interface over a serial line like USBserial.
+   Softboard gives you an interface to the Arduino hardware
+   by sending simple commands:
+   * show infos about arduino pins and RAM usage
+   * set pin mode
+   * write pin states
+   * read analog and digital inputs
+   * write PWM values
+   * continuously display changes on analog or digital inputs as bar graph
+   * play analog readings back as the pitch of a tone
 
 
-	Use it to test hardware like sensors, motors, things you want
-	to run quick tests after setting something up on a (real) breadboard.
+   Use it to test hardware like sensors, motors, things you want
+   to run quick tests after setting something up on a (real) breadboard.
 
-	Then you can use it to test software parts of your program while
-	you write it and fit parts together.
+   Then you can use it to test software parts of your program while
+   you write it and fit parts together.
 
-	Later, when everything is working you can throw out the Menu code
-	from your sketch, or keep it as an interface to your program.
+   Later, when everything is working you can throw out the Menu code
+   from your sketch, or keep it as an interface to your program.
 
 
    Send a sequence of one letter commands and numeric chiffres
@@ -73,7 +85,9 @@ Description
 
    Commands can read and set I/O pin configuration and states,
    switch pins on/off, read and write digital and analog values,
-   switch pullup/high-z, or continuously watch changing inputs over time.
+   switch pullup/high-z, continuously watch changing inputs over time.
+   You can also connect a piezzo to a spare digital pin and listen
+   to the changes on an analog input coded as pitch of a tone.
 
 
    Send '?' (and a linefeed) over serial line to see the menu.
@@ -218,7 +232,18 @@ Some examples:
 
 
 
-   Example 4:  ','  Display snapshot values of all analog inputs.
+   Example 4:  Listen to an analog input value changing the pitch of a piezzo tone.
+   	       This example does a similar thing as #3 playing an analog value back
+	       as the pitch of a sound on a Piezzo connected from pin 8 to ground:
+
+   	       'A0 T8'	Select analog input and the pin for the piezzo.
+	       't'	toggles the tone on and off.
+
+	       You will hear a sound on the piezzo now. The pitch will change
+	       according to the reading on the analog pin.
+
+
+   Example 5:  ','  Display snapshot values of all analog inputs.
 
                         [fixed font only]
 
@@ -232,7 +257,7 @@ pin     value   |                               |                               
 
 
 
-   Example 5:  '.'  Info on all digital pin's I/O configuration and state.
+   Example 6:  '.'  Info on all digital pin's I/O configuration and state.
 
  pin 0	I  floating
  pin 1	I  floating

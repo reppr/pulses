@@ -212,6 +212,12 @@ void loop() {	// ARDUINO
 char PIN_digital = ILLEGAL;	// would be dangerous to default to zero
 char PIN_analog = 0;		// 0 is save as default for analog pins
 
+// Comment next line out if you do not want the analog2tone functionality:
+#define has_PIEZZO_SOUND
+
+#ifdef has_PIEZZO_SOUND
+char PIN_tone = ILLEGAL;	// pin for tone output on a piezzo
+#endif
 
 // The following defaults *must* match with each other, choose one pair.
 // either:
@@ -338,7 +344,7 @@ void watch_digital_start(uint8_t pin) {
 
   MENU.out(F("watching pin D"));
   MENU.out((int) pin);
-  MENU.out(F("\t\tr=stop"));
+  MENU.outln(F("\t\tr=stop"));
 }
 
 
@@ -451,19 +457,15 @@ void pins_info_analog() {
 */
 bool run_VU=false;
 
-void stop_continuous() {
-  run_VU=false;
-  run_watch_dI=false;
-}
 
 int VU_last=IMPOSSIBLE;
 
 // tolerance default 0. Let the user *see* the noise...
 int bar_graph_tolerance=0;
 
-void feedback_tolerance() {
+void feedback_tolerance(unsigned int tolerance) {
   MENU.out(F("tolerance "));
-  MENU.outln(bar_graph_tolerance);
+  MENU.outln(tolerance);
 }
 
 
@@ -471,7 +473,7 @@ void VU_init(int pin) {
   VU_last=IMPOSSIBLE;	// just an impossible value
 
   MENU.out(F("pin\tval\t+/- set "));
-  feedback_tolerance();
+  feedback_tolerance(bar_graph_tolerance);
 }
 
 
@@ -509,16 +511,103 @@ void bar_graph_VU(int pin) {
 }
 
 
+#ifdef has_PIEZZO_SOUND
+/*
+  analog2tone(int analogPIN, int PIN_tone):
+  Simple acoustical feedback of analog readings using arduino tone()
+
+  This very simple version is probably not compatible with pulses.
+
+  Arduino tone() gives me some garbage below 32hz and is unusable below 16hz
+  So analog2tone switches tone off for analog reading 0 and
+  adds an offset of 31hz starting from analog reading 1.
+*/
+bool run_analog2tone = false;
+
+//unsigned int analog2tone_tolerance = 1;		// tolerance regarding analog reading
+unsigned int analog2tone_tolerance = 0;		// tolerance regarding analog reading
+unsigned long analog2tone_timeInterval = 36;	// minimal time between measurements
+int lastToneReading = -1;
+
+const int unusable_tones = 31;		// tone() plays some garbage below 32hz :(
+// const int unusable_tones = 15;	// tone() plays garbage below 16hz :(
+
+void analog2tone(int analogPIN, int PIN_tone) {
+  if (PIN_tone == ILLEGAL)
+    return;
+
+  static unsigned long lastToneTime = 0;
+  unsigned long now = millis();
+
+  if (now - lastToneTime >= analog2tone_timeInterval) {
+    lastToneTime = now;
+
+    int ToneReading=analogRead(analogPIN);
+    if (abs(ToneReading - lastToneReading) > analog2tone_tolerance) {
+      lastToneReading = ToneReading;
+
+      // unsigned int hz = ToneReading*1;	// arbitrary factor
+      unsigned int hz = ToneReading;		// arbitrary factor==1
+      // arduino tone() delivers garbage below 16hz,
+      // so we mend that a bit:
+      if(hz) {
+	hz += unusable_tones;	// start at lowest ok tone=16hz)
+	tone(PIN_tone, hz);
+      } else			// switch tone off for zero
+	noTone(PIN_tone);
+      if(MENU.verbosity >= VERBOSITY_CHATTY) {
+	MENU.out(F("tone hz="));
+	MENU.outln(hz);
+      }
+    }
+  }
+}
+
+
+// toggle_tone()  toggle continuous sound pitch follower on/off.
+void toggle_tone() {
+  run_analog2tone = !run_analog2tone;
+  if (run_analog2tone)
+    lastToneReading = -1;
+  else
+    noTone(PIN_tone);
+
+  if(MENU.verbosity >= VERBOSITY_SOME) {
+    MENU.out(F("tone "));
+    if (run_analog2tone)
+      MENU.outln(F("ON"));
+    else
+      MENU.outln(F("off"));
+  }
+}
+#endif
+
+
 /*
   void maybe_run_continuous():
-  Check if to continuously show analog/digital input changes:
+  Check if to continuously show/sound analog/digital input changes:
 */
 void maybe_run_continuous() {
   if (run_VU)
     bar_graph_VU(PIN_analog);
 
+#ifdef has_PIEZZO_SOUND
+  if(run_analog2tone)
+    analog2tone(PIN_analog, PIN_tone);
+#endif
+
   if (run_watch_dI)
     watch_digital_input(PIN_digital);
+}
+
+
+void stop_continuous() {	// unused
+  run_VU=false;
+  run_watch_dI=false;
+#ifdef has_PIEZZO_SOUND
+  if(run_analog2tone)
+    toggle_tone();
+#endif
 }
 
 
@@ -576,7 +665,11 @@ void _select_analog(bool key) {
   MENU.out(select_);
   MENU.out(F("analog"));
   MENU.out(pinFor);
+#ifdef has_PIEZZO_SOUND
+  MENU.out(F("'a, v, t'"));
+#else
   MENU.out(F("'a, v'"));
+#endif
 }
 
 
@@ -597,8 +690,14 @@ void softboard_display() {
   MENU.out(pin__);
   MENU.out((int) PIN_analog);
   MENU.outln(')');
-  MENU.out(F("watch over time:\tv=VU bar\tr=read"));
-  MENU.ln();
+
+#ifdef has_PIEZZO_SOUND
+  MENU.out(F("watch over time:\tv=VU bar  r=read\tt=tone\tT=TonePIN ("));
+  MENU.out(( int) PIN_tone);
+  MENU.outln(F(")"));
+#else
+  MENU.outln(F("watch over time:\tv=VU bar\tr=read"));
+#endif
 
   MENU.outln(F("\n.=all digital\t,=all analog\t;=both\tx=extra"));
 }
@@ -741,20 +840,41 @@ bool softboard_reaction(char token) {
     break;
 
   case '+':
-    if (! run_VU)
+#ifdef has_PIEZZO_SOUND
+    if (!run_VU && !run_analog2tone)
+      return false;    // *only* responsible if (run_VU || run_analog2tone)
+
+    if (run_VU)
+      feedback_tolerance(++bar_graph_tolerance);
+    if (run_analog2tone)
+      feedback_tolerance(++analog2tone_tolerance);
+#else
+    if (!run_VU)
       return false;    // *only* responsible if (run_VU)
 
-    bar_graph_tolerance++;
-    feedback_tolerance();
+    feedback_tolerance(++bar_graph_tolerance);
+#endif
     break;
 
   case '-':
+#ifdef has_PIEZZO_SOUND
+    if (!run_VU && !run_analog2tone)
+      return false;    // *only* responsible if (run_VU || run_analog2tone)
+
+    if (run_VU)
+      if (bar_graph_tolerance)		// only if not already zero
+	feedback_tolerance(--bar_graph_tolerance);
+    if (run_analog2tone)
+      if (analog2tone_tolerance)	// only if not already zero
+	feedback_tolerance(--analog2tone_tolerance);
+#else
     if (! run_VU)
       return false;    // *only* responsible if (run_VU)
 
-    if (bar_graph_tolerance)
-      bar_graph_tolerance--;
-    feedback_tolerance();
+    if (bar_graph_tolerance)		// only if not already zero
+      feedback_tolerance(--bar_graph_tolerance);
+#endif
+
     break;
 
   case 'r':
@@ -767,6 +887,27 @@ bool softboard_reaction(char token) {
       */
     }
     break;
+
+#ifdef has_PIEZZO_SOUND
+  case 't':
+    toggle_tone();
+    break;
+
+  case 'T':
+    if(run_analog2tone)
+      toggle_tone();	// switch old tone off
+
+    newValue = MENU.numeric_input(PIN_tone);
+    if (newValue>=0 && newValue<NUM_DIGITAL_PINS) {
+      PIN_tone = newValue;
+      MENU.out(pin_);
+      MENU.outln((int) PIN_tone);
+      toggle_tone();	// switch tone ON
+    } else {
+      MENU.OutOfRange();
+    }
+    break;
+#endif
 
   case '.':	// all digital
     MENU.ln();
@@ -811,33 +952,49 @@ README softboard
 
    This version is implemented as an example for the Menu library.
    Using a library makes it easy to include in your own sketches.
+   You can add more menu pages with other functionality to your sketch.
 
 
 Description
 
-   Softboard is kind of Arduino software breadboard.
+   Softboard is a kind of an Arduino software breadboard.
 
-   Simple Arduino hardware Menu interface over a serial line
-   like USBserial.
+   Simple Arduino hardware Menu interface over a serial line like USBserial.
+   Softboard gives you an interface to the Arduino hardware
+   by sending simple commands:
+   * show infos about arduino pins and RAM usage
+   * set pin mode
+   * write pin states
+   * read analog and digital inputs
+   * write PWM values
+   * continuously display changes on analog or digital inputs as bar graph
+   * play analog readings back as the pitch of a tone
 
-   Send a sequence of one letter commands and numeric chiffres
-   followed by a linebreak over a serial line (say from your computer)
-   to the arduino to trigger menu actions and get infos.
-
-   The arduino will buffer serial input (without waiting for it) until
-   a terminating linefeed is received as an end token.
-   Any sequence of one or more '\n'  '\c'  '\0' accepted as end token.
-
-
-   Commands can read and set I/O pin configuration and states,
-   switch pins on/off, read and write digital and analog values,
-   switch pullup/high-z, or continuously watch changing inputs over time.
 
    Use it to test hardware like sensors, motors, things you want
    to run quick tests after setting something up on a (real) breadboard.
 
    Then you can use it to test software parts of your program while
    you write it and fit parts together.
+
+   Later, when everything is working you can throw out the Menu code
+   from your sketch, or keep it as an interface to your program.
+
+
+   Send a sequence of one letter commands and numeric chiffres
+   followed by a linebreak over a serial line (say from your computer)
+   to the arduino to trigger menu actions and get infos.
+
+   The arduino will buffer serial input byte by byte (without waiting)
+   until a terminating linefeed is received as an end token.
+   Any sequence of one or more '\n'  '\c'  '\0' is accepted as end token.
+
+
+   Commands can read and set I/O pin configuration and states,
+   switch pins on/off, read and write digital and analog values,
+   switch pullup/high-z, continuously watch changing inputs over time.
+   You can also connect a piezzo to a spare digital pin and listen
+   to the changes on an analog input coded as pitch of a tone.
 
 
    Send '?' (and a linefeed) over serial line to see the menu.
@@ -853,14 +1010,21 @@ Description
 
 Integrate your own code:
 
-   It is easy to define a Menu page as an interface to your own code.
+   It is easy to define Menu pages as an interface to your own code.
    Please have a look at the Menu/examples/ to see how to do this.
+
+   You can define multiple Menu pages and define visability groups
+   for pages sharing the same commands.
+
+   Softboard is just a definition of a Menu page, you can add pages
+   or delete them when compiling your program as you like.
 
 
 Installation:
 
    Get it from http://github.com/reppr/pulses
    Put contents of the pulses/libraries/ folder into sketchbook/libraries/
+
    Softboard is implemented as an example of libraries/Menu/
    After a restart the Arduino GUI shows softboard under
    File >> Sketchbook >> libraries >> Menu >> softboard
@@ -883,6 +1047,7 @@ How it works:
 
    You communicate with the arduino over a serial connection
    that could be a real serial line or an usb cable.
+   The library should be able to deal with other stream interfaces, btw.
 
    The minimalistic menu shows you one letter commands and listens to
    your input. Serial inputs are buffered until you send a linefeed.
@@ -974,7 +1139,18 @@ Some examples:
 
 
 
-   Example 4:  ','  Display snapshot values of all analog inputs.
+   Example 4:  Listen to an analog input value changing the pitch of a piezzo tone.
+   	       This example does a similar thing as #3 playing an analog value back
+	       as the pitch of a sound on a Piezzo connected from pin 8 to ground:
+
+   	       'A0 T8'	Select analog input and the pin for the piezzo.
+	       't'	toggles the tone on and off.
+
+	       You will hear a sound on the piezzo now. The pitch will change
+	       according to the reading on the analog pin.
+
+
+   Example 5:  ','  Display snapshot values of all analog inputs.
 
                         [fixed font only]
 
@@ -988,7 +1164,7 @@ pin     value   |                               |                               
 
 
 
-   Example 5:  '.'  Info on all digital pin's I/O configuration and state.
+   Example 6:  '.'  Info on all digital pin's I/O configuration and state.
 
  pin 0	I  floating
  pin 1	I  floating
