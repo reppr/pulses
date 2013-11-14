@@ -189,7 +189,7 @@ class Menu {
   void outBIN(unsigned long l, int bits ) const; // binary output
 
   /* String recycling:						*/
-  void OutOfRange() const;	// output "out of range"
+  void OutOfRange() const;	// output "out of range\n"
   void Error_() const;		// output " ERROR: "
 
 /* Output a newline, tab, space, '='

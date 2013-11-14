@@ -328,13 +328,12 @@ void bar_graph(int value) {
       else
 	MENU.out('*');
     }
+    MENU.ln();
   } else {
     MENU.out(F("value "));
     MENU.out(value);
     MENU.OutOfRange();
   }
-
-  MENU.ln();
 }
 
 
@@ -602,7 +601,6 @@ bool softboard_reaction(char token) {
       PIN_analog = newValue;
     else {
       MENU.OutOfRange();
-      MENU.ln();
     }
 
     MENU.out(pin_);
@@ -620,7 +618,6 @@ bool softboard_reaction(char token) {
     } else
       if (newValue != ILLEGAL_PIN) {
 	MENU.OutOfRange();
-	MENU.ln();
       }
     break;
 
@@ -676,7 +673,6 @@ bool softboard_reaction(char token) {
 	  MENU.outln(')');
 	} else {
 	  MENU.OutOfRange();
-	  MENU.ln();
 	}
       }
     }

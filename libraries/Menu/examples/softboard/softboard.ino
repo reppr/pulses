@@ -399,13 +399,12 @@ void bar_graph(int value) {
       else
 	MENU.out('*');
     }
+    MENU.ln();
   } else {
     MENU.out(F("value "));
     MENU.out(value);
     MENU.OutOfRange();
   }
-
-  MENU.ln();
 }
 
 

@@ -362,8 +362,8 @@ void Menu::outBIN(unsigned long value, int bits ) const {
 /* **************************************************************** */
 // String recycling:
 
-// void OutOfRange(): output "out of range"
-void Menu::OutOfRange()	const { out(F("out of range")); }
+// void OutOfRange(): output "out of range\n"
+void Menu::OutOfRange()	const { out(F("out of range\n")); }
 
 // void Error_(): output " ERROR: "
 void Menu::Error_()	const { out(F(" ERROR: ")); }
@@ -486,7 +486,6 @@ bool Menu::lurk_then_do() {
 	out(F("buffer"));
 	Error_();
 	OutOfRange();
-	ln();
       }
 
       // try to recover
@@ -672,7 +671,6 @@ int Menu::add_page(const char *pageTitle, const char hotkey,		\
       out(F("add_page"));
       Error_();
       OutOfRange();
-      ln();
     }
   }
   return -1;
