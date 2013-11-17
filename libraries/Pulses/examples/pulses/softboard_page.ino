@@ -345,7 +345,7 @@ const char analog_reads_title[] =	\
   "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
 
 void pins_info_analog() {
-  int i, value;
+  int i;
 
   MENU.outln(analog_reads_title);
 
