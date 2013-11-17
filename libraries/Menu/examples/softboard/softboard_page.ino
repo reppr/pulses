@@ -6,6 +6,28 @@
 
 
 /* **************************************************************** */
+/* ****  CODE TO INSERT TO THE START OF YOUR PROGRAM follows:  **** */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <inttypes.h>
+
+#ifdef ARDUINO
+  #if ARDUINO >= 100
+    #include "Arduino.h"
+  #else
+    #include "WProgram.h"
+  #endif
+#else	// #include's for Linux PC test version
+  #include <iostream>
+#endif
+
+/* ****   CODE TO INSERT TO THE START OF YOUR PROGRAM ends:    **** */
+/* **************************************************************** */
+
+
+
+/* **************************************************************** */
 /* CODE TO INSERT INTO YOUR PROGRAM setup() follows: ************** */
 /* Arduino setup()						*/
 
@@ -59,7 +81,7 @@
 
 /* **************************************************************** */
 /* ARDUINO BOARD SPECIFIC THINGS  try to use ARDUINO MACROS: */
-#include <Boards.h>
+#include <pins_arduino.h>
 
 
 #ifndef NUM_DIGITAL_PINS		// try harder... ?
