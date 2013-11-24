@@ -124,7 +124,7 @@ void alive_pulses_info_lines();		// defined later on
 
 // FIXME: ################
 #ifndef CLICK_PULSES		// number of click frequencies
-  #define CLICK_PULSES	7       // default number of click frequencies
+  #define CLICK_PULSES	6       // default number of click frequencies
 #endif
 uint8_t click_pin[CLICK_PULSES];	// ################
 
@@ -216,11 +216,10 @@ void setup() {
 
     click_pin[0] = 2;		// configure PINs here
     click_pin[1] = 3; 		// configure PINs here
-    click_pin[2] = 3; 		// configure PINs here
-    click_pin[3] = 4; 		// configure PINs here
-    click_pin[4] = 5; 		// configure PINs here
-    click_pin[5] = 6; 		// configure PINs here
-    click_pin[6] = 7; 		// configure PINs here
+    click_pin[2] = 4; 		// configure PINs here
+    click_pin[3] = 5; 		// configure PINs here
+    click_pin[4] = 6; 		// configure PINs here
+    click_pin[5] = 7; 		// configure PINs here
 
     init_click_pins();		// set OUTPUT, LOW
   #endif
