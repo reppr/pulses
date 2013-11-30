@@ -56,7 +56,7 @@ void digitalWrite(int p, int value) {
   printf("Pin %d set to %d\n", p, value);
 }
 
-long micros() { return 9999L; }
+unsigned long micros() { return 9999L; }
 
 #endif	// Arduino  else  c++ Linux PC test version
 

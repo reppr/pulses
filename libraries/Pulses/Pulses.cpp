@@ -125,7 +125,7 @@ void Pulses::init_time() {
 void Pulses::get_now() {	// get time, set now.time and now.overflow
   now.time = micros();
 
-  if (now.time < last_now.time)	// manage now.overflows
+  if (now.time < last_now.time)	// manage now.overflow
     now.overflow++;
 
   last_now = now;		// manage last_now
