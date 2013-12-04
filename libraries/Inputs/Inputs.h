@@ -70,7 +70,6 @@ class Inputs {
   unsigned int get_inp_max() { return inp_max; }	// inlined
 
  private:
-  void init_inputs();		// initialize inputs, empty
   int inp_max;			// max inputs possible
   input_t * inputs;		// data pointer for inputs
 };

@@ -89,11 +89,14 @@ void setup() {
 }
 
 
+int samples=0;	// counters are private, so we double it here
 void loop() {
-  //  Serial.println("loop");
-  if (INPUTS.sample(inp))
-    Serial.println("==> TRIGGER");
+  samples++;	// counters are private, so we double it here
 
-  //  Serial.println("back to loop");
+  if (INPUTS.sample(inp)) {
+    Serial.print("==> TRIGGER@");
+    Serial.println(samples);
+  }
+
   delay(1200);
 }

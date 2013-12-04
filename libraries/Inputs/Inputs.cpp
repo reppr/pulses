@@ -38,16 +38,6 @@
 Inputs::Inputs(int inp_max):
   inp_max(inp_max)
 {
-  init_inputs();
-}
-
-// Destructor:
-Inputs::~Inputs() {
-  free(inputs);
-}
-
-
-void Inputs::init_inputs() {			// called from constructor
   inputs = (input_t *) malloc(inp_max * sizeof(input_t));	// ERROR ################
   memset(inputs, 0, inp_max * sizeof(input_t));
 
@@ -55,6 +45,11 @@ void Inputs::init_inputs() {			// called from constructor
     inputs[inp].sample_method = NULL;
     inputs[inp].samples = NULL;
   }
+}
+
+// Destructor:
+Inputs::~Inputs() {
+  free(inputs);
 }
 
 
