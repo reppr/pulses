@@ -69,6 +69,10 @@ class Inputs {
 
   unsigned int get_inp_max() { return inp_max; }	// inlined
 
+  unsigned long get_counter(int inp) {			// inlined
+    return inputs[inp].counter;
+  }
+
  private:
   int inp_max;			// max inputs possible
   input_t * inputs;		// data pointer for inputs
