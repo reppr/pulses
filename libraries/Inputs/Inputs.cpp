@@ -49,6 +49,9 @@ Inputs::Inputs(int inp_max):
 
 // Destructor:
 Inputs::~Inputs() {
+  for (int inp=0; inp<inp_max; inp++)
+    free(inputs[inp].samples);
+
   free(inputs);
 }
 
