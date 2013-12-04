@@ -58,8 +58,8 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 //#define BAUDRATE	31250		// MIDI
 
 
-// Inputs(int inp_max, int oversampling_max);
-Inputs INPUTS(4, 8);
+// Inputs(int inp_max);
+Inputs INPUTS(4);
 int inp;
 
 

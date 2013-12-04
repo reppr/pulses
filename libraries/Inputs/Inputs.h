@@ -58,7 +58,7 @@ struct input_t {
 
 class Inputs {
  public:
-  Inputs(int inp_max, int oversampling_max);
+  Inputs(int inp_max);
   ~Inputs();
 
   // setup an input sample method and reserve memory for samples:
@@ -72,7 +72,6 @@ class Inputs {
  private:
   void init_inputs();		// initialize inputs, empty
   int inp_max;			// max inputs possible
-  int oversampling_max;		// maximal possible oversampling ################ FIXME: needed?
   input_t * inputs;		// data pointer for inputs
 };
 

@@ -35,9 +35,8 @@
 
 /* **************************************************************** */
 // Constructor:
-Inputs::Inputs(int inp_max, int oversampling_max):
-  inp_max(inp_max),
-  oversampling_max(oversampling_max)
+Inputs::Inputs(int inp_max):
+  inp_max(inp_max)
 {
   init_inputs();
 }
