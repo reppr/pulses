@@ -56,11 +56,13 @@ Inputs::~Inputs() {
 }
 
 
-bool Inputs::setup_sample_method(int inp, int (*take_sample)(int), uint8_t oversampling) {
+bool Inputs::setup_sample_method(int inp, int (*take_sample)(int addr), uint8_t addr, uint8_t oversampling)
+{
   if ((inp < 0) or (inp >= inp_max))
     return false;	// inp out of range
 
   inputs[inp].sample_method = take_sample;
+  inputs[inp].input_addr = addr;
 
   free(inputs[inp].samples);
   inputs[inp].samples = (int *) malloc(oversampling * sizeof(int));

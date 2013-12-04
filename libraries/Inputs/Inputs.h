@@ -38,11 +38,9 @@ struct input_t {
   //  scaling;
   // output_offset;
   // uint8_t output_method;		// what to do with the result?
-  int (*sample_method)(int inp);	// method to take a sample,
-					//   if counter < oversampling, return ~0L
-					//   else return counter mod oversampling
+  int (*sample_method)(int addr);	// method to take a sample
   // long (*react_on_input)(int inp);
-  int * samples;			// pointer to the samples
+  int * samples;				// pointer to the samples
 };
 // flag masks:
 #define INPUT_ACTIVE		1
@@ -62,7 +60,7 @@ class Inputs {
   ~Inputs();
 
   // setup an input sample method and reserve memory for samples:
-  bool setup_sample_method(int inp, int (*sample_method)(int), uint8_t oversampling);
+  bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversampling);
 
   bool sample(int inp);		// take a sample
 				//   return true every time a new oversampling set is ready

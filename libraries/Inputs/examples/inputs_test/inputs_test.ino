@@ -79,24 +79,38 @@ int test_sample_method(int addr) {
   return value;
 }
 
+
 void setup() {
   #ifdef BAUDRATE
     Serial.begin(BAUDRATE);
   #endif
 
-  inp=0;
-  INPUTS.setup_sample_method(inp, &test_sample_method, 4);
+  INPUTS.setup_sample_method(0, &test_sample_method, 0, 4);
+  INPUTS.setup_sample_method(1, &test_sample_method, 1, 4);
 }
 
 
+int cnt=0;
 void loop() {
+  cnt++;
+
+  inp=0;
   if (INPUTS.sample(inp)) {
     Serial.print("\t==> TRIGGER@");
     Serial.println(INPUTS.get_counter(inp));
   }
-
   Serial.print("\tcounter=");
   Serial.println(INPUTS.get_counter(inp));
+
+  if ((cnt % 3) == 0 ) {
+    inp=1;
+    if (INPUTS.sample(inp)) {
+      Serial.print("\t==> TRIGGER@");
+      Serial.println(INPUTS.get_counter(inp));
+    }
+    Serial.print("\tcounter=");
+    Serial.println(INPUTS.get_counter(inp));
+  }
 
   delay(1200);
 }
