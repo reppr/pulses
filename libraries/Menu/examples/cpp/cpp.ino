@@ -37,6 +37,8 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 // SOURCE CODE STARTS HERE:
 /* **************************************************************** */
 
+#define USE_FLOAT_TYPES		// you might want switch that off
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -708,6 +710,13 @@ void cpp_info_display() {
   MENU.out(F("sizeof(int*)\t"));	MENU.outln(sizeof(int*));
   MENU.out(F("sizeof(void*)\t"));	MENU.outln(sizeof(void*));
   MENU.out(F("sizeof(bool[8])\t"));	MENU.outln(sizeof(dummybool));
+
+#ifdef USE_FLOAT_TYPES
+  MENU.outln();
+  MENU.out(F("sizeof(float)\t"));	MENU.outln(sizeof(float));
+  MENU.out(F("sizeof(double)\t"));	MENU.outln(sizeof(double));
+  MENU.out(F("sizeof(long double)\t"));	MENU.outln(sizeof(long double));
+#endif
 
 #ifdef ARDUINO
   arduino_info();	// Display some Arduino specific informations.
