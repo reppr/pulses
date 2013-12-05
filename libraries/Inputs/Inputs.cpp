@@ -44,6 +44,8 @@ Inputs::Inputs(int inp_max):
   for (int inp=0; inp<inp_max; inp++) {
     inputs[inp].sample_method = NULL;
     inputs[inp].samples = NULL;
+    // c++ did not like me :(
+    // inputs[inp].in2o_method = NULL;
   }
 }
 
@@ -56,6 +58,10 @@ Inputs::~Inputs() {
 }
 
 
+/*
+  bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversampling)
+  Setup an input sample method and reserve memory for oversampling:
+*/
 bool Inputs::setup_sample_method(int inp, int (*take_sample)(int addr), uint8_t addr, uint8_t oversampling)
 {
   if ((inp < 0) or (inp >= inp_max))
@@ -74,10 +80,12 @@ bool Inputs::setup_sample_method(int inp, int (*take_sample)(int addr), uint8_t 
 }
 
 
-// bool Inputs::sample(int inp)
-// take a sample,
-//   return true every time a new oversampling set is ready
-//   as a trigger for possible reactions.
+/*
+  bool sample(int inp);
+  Take a sample
+  Return true every time a new oversampling set is ready
+  as a trigger for possible reactions.
+*/
 bool Inputs::sample(int inp) {
   int value;
   unsigned int cyclic_index;
@@ -101,6 +109,102 @@ bool Inputs::sample(int inp) {
     return false;		// oversampling continues
 }
 
+
+/*
+  long Inputs::in2o_calculation(int inp, long value)
+  Calculate and return the output value from an input value
+  according the roules for input inp.
+*/
+long Inputs::in2o_calculation(int inp, long value) {
+  long outval;
+
+  // getting these only *once*, hope that's faster:
+  long input_offset = inputs[inp].input_offset;
+  if (input_offset)
+    value += input_offset;
+
+  bool inverse = inputs[inp].flags & PROCESS_INVERSE;
+  if (inverse)
+    outval=1L;
+  else
+    outval=value;
+
+  long mul = inputs[inp].mul;
+  if (mul)
+    outval *= mul;
+
+  long div = inputs[inp].div;
+  if ((div) && (div != 1))
+    outval /= div;
+
+  if (inverse)
+    if (value)
+      outval /= value;
+
+  long output_offset = inputs[inp].output_offset;
+  if (output_offset)
+    outval += output_offset;
+
+  return outval;
+}
+
+
+/*
+  bool Inputs::setup_raw(int inp)
+  Setup input inp to pass through raw values without further processing.
+  Oversampling and friends might still be active though.
+*/
+bool Inputs::setup_raw(int inp) {
+  if ((inp < 0) or (inp >= inp_max))
+    return false;	// inp out of range
+
+  inputs[inp].flags &= ~INPUT_PROCESSING;
+}
+
+
+/*
+  bool Inputs::setup_linear(int inp,\
+         int input_offset, int mul, int div, long output_offset, bool inverse)
+  Configure a linear or reverse linear in2out function on input inp.
+*/
+bool Inputs::setup_linear(int inp, int input_offset, int mul, int div, long output_offset, bool inverse)
+{
+  if ((inp < 0) or (inp >= inp_max))
+    return false;	// inp out of range
+
+  inputs[inp].flags |= INPUT_PROCESSING;
+  inputs[inp].flags |= PROCESS_LINEAR;
+
+  if(inverse)
+    inputs[inp].flags |= PROCESS_INVERSE;
+  else
+    inputs[inp].flags &= ~PROCESS_INVERSE;
+
+//	c++ did not like my first idea :(
+//	  inputs[inp].in2o_method = &Inputs::in2o_linear;
+//	  inputs[inp].in2o_method = &in2o_linear;
+
+  inputs[inp].input_offset = input_offset;
+  inputs[inp].mul = mul;
+  inputs[inp].div = div;
+  inputs[inp].output_offset = output_offset;
+  return true;
+}
+
+
+/* **************************************************************** */
+/* **************************************************************** */
+/*    SOURCE ENDS HERE.						    */				 
+/* **************************************************************** */
+/* **************************************************************** */
+
+
+
+
+// ################	FIXME: delete old source.
+/* **************************************************************** */
+// old source to check how i did it last time.
+/* **************************************************************** */
 
 #undef DO_COMPILE_OLD_SOURCE
 #ifdef DO_COMPILE_OLD_SOURCE

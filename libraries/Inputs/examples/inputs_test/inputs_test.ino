@@ -32,6 +32,15 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 // SOURCE CODE STARTS HERE:
 /* **************************************************************** */
 
+#define INPUTS_DEBUGGING_ALL
+
+#ifdef INPUTS_DEBUGGING_ALL
+  #define INPUTS_DEBUGGING_SAMPLING
+  #define INPUTS_DEBUGGING_IO_CALCULATING
+#endif
+
+
+/* **************************************************************** */
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -62,7 +71,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 Inputs INPUTS(4);
 int inp;
 
-
+#ifdef INPUTS_DEBUGGING_SAMPLING
 int test_sample_method(int addr) {
   int value;
 
@@ -78,21 +87,91 @@ int test_sample_method(int addr) {
 
   return value;
 }
+#endif
+
+
+#ifdef INPUTS_DEBUGGING_IO_CALCULATING
+void test_in2outval(int inp) {
+  Serial.println();
+  Serial.print("test_in2outval\tinp=");
+  Serial.println(inp);
+  Serial.println();
+
+  for (int i=0; i<1024; i++) {
+    Serial.print("inval= ");
+    Serial.print(i);
+    Serial.print("\toutval=");
+    Serial.println(INPUTS.in2o_calculation(inp, i));
+  }
+  Serial.println();
+}
+#endif
 
 
 void setup() {
-  #ifdef BAUDRATE
-    Serial.begin(BAUDRATE);
+#ifdef BAUDRATE
+  Serial.begin(BAUDRATE);
+  Serial.println();	// helps opening connection...
+  Serial.println();	// helps opening connection...
+  Serial.println();	// helps opening connection...
+
+  #ifdef INPUTS_DEBUGGING_SAMPLING
+    Serial.println("will TEST sampling.");
   #endif
 
-  INPUTS.setup_sample_method(0, &test_sample_method, 0, 4);
-  INPUTS.setup_sample_method(1, &test_sample_method, 1, 4);
+  #ifdef INPUTS_DEBUGGING_IO_CALCULATING
+    Serial.println("will TEST in2out calculation.");
+  #endif
+
+  Serial.println();
+#endif
+
+#ifdef INPUTS_DEBUGGING_SAMPLING
+  /*
+  bool Inputs::setup_sample_method(int inp,\
+         int (*take_sample)(int addr), uint8_t addr, uint8_t oversampling)
+  */
+  INPUTS.setup_sample_method(0, &test_sample_method, 0, 4);	// A0
+  INPUTS.setup_sample_method(1, &test_sample_method, 1, 4);	// A1
+#endif	// INPUTS_DEBUGGING_SAMPLING
+
+#ifdef INPUTS_DEBUGGING_IO_CALCULATING
+  // testing in2o_calculation:
+  // bool Inputs::setup_linear(int inp,\
+            int input_offset, int mul, int div, long output_offset, bool inverse)
+
+  INPUTS.setup_linear(0, 0, 1000, 100, 100000, false);	// linear, no offset
+  Serial.println("INPUTS.setup_linear(0, 0, 1000, 100, 100000, false);	// linear, no offset");
+// Serial.println("linear, no offset");
+  test_in2outval(0);
+
+  INPUTS.setup_linear(0, -1, 1000, 100, 100000, false);	// linear, offset -1
+  Serial.println("INPUTS.setup_linear(0, -1, 1000, 100, 100000, false);	// linear, offset -1");
+//Serial.println("linear, offset -1");
+  test_in2outval(0);
+
+  INPUTS.setup_raw(1);					// raw
+  Serial.println("INPUTS.setup_raw(1);	// raw");
+//  Serial.println("raw");
+  test_in2outval(1);
+
+  INPUTS.setup_linear(0, 0, 10000, 0, 0, true);		// inverse
+  Serial.println("INPUTS.setup_linear(0, 0, 10000, 0, 0, true);	// inverse");
+//  Serial.println("inverse");
+  test_in2outval(0);
+
+  Serial.println();
+#endif	// INPUTS_DEBUGGING_IO_CALCULATING
 }
 
 
 int cnt=0;
 void loop() {
   cnt++;
+
+#ifdef INPUTS_DEBUGGING_SAMPLING
+  if (cnt == 1)
+    Serial.println("\nTesting analog sampling:");
 
   inp=0;
   if (INPUTS.sample(inp)) {
@@ -113,4 +192,6 @@ void loop() {
   }
 
   delay(1200);
+#endif // INPUTS_DEBUGGING_SAMPLING
+
 }
