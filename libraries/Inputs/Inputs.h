@@ -10,6 +10,8 @@
 */
 /* **************************************************************** */
 
+
+/* **************************************************************** */
 #ifndef INPUTS_h
 #define INPUTS_h
 
@@ -27,6 +29,30 @@
 #endif // ARDUINO
 
 
+/* **************************************************************** */
+// UNCOMMENT *ONE* OF THE FOLLOWING LINES:
+// #define INPUTS_IO_PARAMETERS_int
+#define INPUTS_IO_PARAMETERS_long
+// #define INPUTS_IO_PARAMETERS_float .....
+
+
+#ifdef INPUTS_IO_PARAMETERS_int
+typedef int ioP_t;	// ioP_t is 'input 2 output parameter type'
+typedef long ioV_t;	// ioV_t is 'input 2 output value type', possibly longer
+#else
+#ifdef INPUTS_IO_PARAMETERS_long
+typedef long ioP_t;	// ioP_t is 'input 2 output parameter type'		
+typedef long ioV_t;	// ioV_t is 'input 2 output value type', possibly longer
+#else
+#ifdef INPUTS_IO_PARAMETERS_float
+typedef float ioP_t;	// ioP_t is 'input 2 output parameter type'		
+typedef float ioV_t;	// ioV_t is 'input 2 output value type', possibly longer
+#endif
+#endif
+#endif
+
+
+/* **************************************************************** */
 struct input_t {
   unsigned long counter;		// counts taken samples
   uint16_t flags;
@@ -35,13 +61,15 @@ struct input_t {
   int (*sample_method)(int addr);	// method to take a sample, i.e. analogRead(pin)
 
   // c++ did not like me :(
-  // long (*in2o_method)(int inp, const long value);	// method to get the output value from an input value
+  // method to get the output value from an input value
+  // ioV_t (*in2o_method)(int inp, ioV_t value);
 
   // Parameters for processing input to output values:
-  int input_offset;	// added to the input value before further processing
-  int mul;		// factor for processing input to output values
-  int div;		// divisor for processing input to output values
-  long output_offset;	// added to the output value after processing
+  ioP_t input_offset;	// added to the input value before further processing
+  ioP_t mul;		// factor for processing input to output values
+  ioP_t div;		// divisor for processing input to output values
+
+  ioV_t output_offset;	// added to the output value after processing
 
   int * samples;	// pointer to the stored samples for oversampling and friends
 };
@@ -69,7 +97,7 @@ class Inputs {
   bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversampling);
 
   // c++ did not like me :(
-  // bool setup_in2o_method(int inp, long (*in2o_method)(int inp, long value));
+  // bool setup_in2o_method(int inp, ioV_t (*in2o_method)(int inp, ioV_t value));
 
 /*
   bool sample(int inp);
@@ -79,7 +107,7 @@ class Inputs {
 */
   bool sample(int inp);
 
-  // long in2o_linear(int inp, long value);	// c++ did not like me :( FIXME ################
+  // ioV_t in2o_linear(int inp, ioV_t value);	// c++ did not like me :( FIXME ################
 
 /*
   bool Inputs::setup_raw(int inp)
@@ -90,17 +118,17 @@ class Inputs {
 
 /*
   bool Inputs::setup_linear(int inp,\
-         int input_offset, int mul, int div, long output_offset, bool inverse)
+         ioP_t input_offset, ioP_t mul, ioP_t div, ioV_t output_offset, bool inverse)
   Configure a linear or reverse linear in2out function on input inp.
 */
-  bool setup_linear(int inp, int input_offset, int mul, int div, long output_offset, bool inverse);
+  bool setup_linear(int inp, ioP_t input_offset, ioP_t mul, ioP_t div, ioV_t output_offset, bool inverse);
 
 /*
-  long Inputs::in2o_calculation(int inp, long value)
+  ioV_t Inputs::in2o_calculation(int inp, ioV_t value)
   Calculate and return the output value from an input value
   according the roules for input inp.
 */
-  long in2o_calculation(int inp, long value);
+  ioV_t in2o_calculation(int inp, ioV_t value);
 
   unsigned int get_inp_max() { return inp_max; }	// inlined
 

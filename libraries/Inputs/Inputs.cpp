@@ -111,15 +111,16 @@ bool Inputs::sample(int inp) {
 
 
 /*
-  long Inputs::in2o_calculation(int inp, long value)
+  ioV_t Inputs::in2o_calculation(int inp, ioV_t value)
   Calculate and return the output value from an input value
   according the roules for input inp.
 */
-long Inputs::in2o_calculation(int inp, long value) {
-  long outval;
+ioV_t Inputs::in2o_calculation(int inp, ioV_t value) {
+  ioV_t outval;
 
   // getting these only *once*, hope that's faster:
-  long input_offset = inputs[inp].input_offset;
+  // (as all calculations are in ioV_t i declare all operands ioV_t)
+  ioV_t input_offset = inputs[inp].input_offset;
   if (input_offset)
     value += input_offset;
 
@@ -129,11 +130,11 @@ long Inputs::in2o_calculation(int inp, long value) {
   else
     outval=value;
 
-  long mul = inputs[inp].mul;
+  ioV_t mul = inputs[inp].mul;
   if (mul)
     outval *= mul;
 
-  long div = inputs[inp].div;
+  ioV_t div = inputs[inp].div;
   if ((div) && (div != 1))
     outval /= div;
 
@@ -141,7 +142,7 @@ long Inputs::in2o_calculation(int inp, long value) {
     if (value)
       outval /= value;
 
-  long output_offset = inputs[inp].output_offset;
+  ioV_t output_offset = inputs[inp].output_offset;
   if (output_offset)
     outval += output_offset;
 
@@ -164,10 +165,11 @@ bool Inputs::setup_raw(int inp) {
 
 /*
   bool Inputs::setup_linear(int inp,\
-         int input_offset, int mul, int div, long output_offset, bool inverse)
+         ioP_t input_offset, ioP_t mul, ioP_t div, ioV_t output_offset, bool inverse)
   Configure a linear or reverse linear in2out function on input inp.
 */
-bool Inputs::setup_linear(int inp, int input_offset, int mul, int div, long output_offset, bool inverse)
+bool Inputs::setup_linear(int inp, \
+       ioP_t input_offset, ioP_t mul, ioP_t div, ioV_t output_offset, bool inverse)
 {
   if ((inp < 0) or (inp >= inp_max))
     return false;	// inp out of range

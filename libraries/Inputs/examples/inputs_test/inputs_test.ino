@@ -138,27 +138,29 @@ void setup() {
 #ifdef INPUTS_DEBUGGING_IO_CALCULATING
   // testing in2o_calculation:
   // bool Inputs::setup_linear(int inp,\
-            int input_offset, int mul, int div, long output_offset, bool inverse)
+            ioP_t input_offset, ioP_t mul, ioP_t div, ioV_t output_offset, bool inverse)
 
   INPUTS.setup_linear(0, 0, 1000, 100, 100000, false);	// linear, no offset
   Serial.println("INPUTS.setup_linear(0, 0, 1000, 100, 100000, false);	// linear, no offset");
-// Serial.println("linear, no offset");
   test_in2outval(0);
 
   INPUTS.setup_linear(0, -1, 1000, 100, 100000, false);	// linear, offset -1
   Serial.println("INPUTS.setup_linear(0, -1, 1000, 100, 100000, false);	// linear, offset -1");
-//Serial.println("linear, offset -1");
   test_in2outval(0);
 
   INPUTS.setup_raw(1);					// raw
   Serial.println("INPUTS.setup_raw(1);	// raw");
-//  Serial.println("raw");
   test_in2outval(1);
 
   INPUTS.setup_linear(0, 0, 10000, 0, 0, true);		// inverse
   Serial.println("INPUTS.setup_linear(0, 0, 10000, 0, 0, true);	// inverse");
-//  Serial.println("inverse");
   test_in2outval(0);
+
+  #ifdef INPUTS_IO_PARAMETERS_long
+    INPUTS.setup_linear(0, 0, 1000000, 0, 0, true);	// inverse, big number
+    Serial.println("INPUTS.setup_linear(0, 0, 1000000, 0, 0, true);	// inverse, big number");
+    test_in2outval(0);
+  #endif
 
   Serial.println();
 #endif	// INPUTS_DEBUGGING_IO_CALCULATING
