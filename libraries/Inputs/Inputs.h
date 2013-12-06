@@ -34,35 +34,29 @@
   parameter types for input 2 output value calculation
   a trade off situation between RAM usage, range and precision...
 */
-// UNCOMMENT *ONE* OF THE FOLLOWING CHOICES:	(see also: inputs_test.ino)
+// UNCOMMENT *ONE* OF THE FOLLOWING TRIPLETS:
 
 // small integer range, save RAM:
-// #define I2O_P_INT_V_LONG
+//#define I2O_PARAMETER_TYPE	int
+//#define I2O_VALUE_TYPE		long
+//#undef I2O_PARAMETER_IS_FLOAT		// see: inputs_test.ino
 
 // integer, bigger range:
-// #define I2O_P_LONG_V_LONG
+//#define I2O_PARAMETER_TYPE	long
+//#define I2O_VALUE_TYPE		long
+//#undef  I2O_PARAMETER_IS_FLOAT	// see: inputs_test.ino
 
 // floating point:
-#define I2O_P_DOUBLE_V_LONG_DOUBLE
+#define I2O_PARAMETER_TYPE	double
+#define I2O_VALUE_TYPE		double
+#define I2O_PARAMETER_IS_FLOAT		// see: inputs_test.ino
 
-// UNCOMMENT *ONE* OF THE ABOVE CHOICES		(see also: inputs_test.ino)
 
-
-#ifdef I2O_P_INT_V_LONG		// integer, save RAM:
-  #define I2O_PARAMETER_TYPE	int
-  #define I2O_VALUE_TYPE	long
-#else
-  #ifdef I2O_P_LONG_V_LONG
-    #define I2O_PARAMETER_TYPE	long
-    #define I2O_VALUE_TYPE	long
-  #else
-    #ifdef I2O_P_DOUBLE_V_LONG_DOUBLE
-      #define I2O_PARAMETER_TYPE	double
-      #define I2O_VALUE_TYPE		double
-    #else
-      #error "#define I2O_P_xxxx_V_yyyy"
-    #endif
-  #endif
+#ifndef I2O_PARAMETER_TYPE
+  #error "#define I2O_PARAMETER_TYPE"
+#endif
+#ifndef I2O_VALUE_TYPE
+  #error "#define I2O_VALUE_TYPE"
 #endif
 typedef I2O_PARAMETER_TYPE ioP_t;	// ioP_t is 'input 2 output parameter type'
 typedef I2O_VALUE_TYPE ioV_t;		// ioV_t is 'input 2 output value type', possibly longer
