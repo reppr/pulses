@@ -37,6 +37,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 #ifdef INPUTS_DEBUGGING_ALL
   #define INPUTS_DEBUGGING_SAMPLING
   #define INPUTS_DEBUGGING_IO_CALCULATING
+  #define INPUTS_DEBUGGING_CUSTOM_FUNCTION
 #endif
 
 
@@ -148,6 +149,13 @@ void test_in2outval(int inp) {
 #endif
 
 
+#ifdef INPUTS_DEBUGGING_CUSTOM_FUNCTION
+ioV_t custom_in2o_method(int inp, ioV_t value) {
+  return 7*value;
+}
+#endif
+
+
 void setup() {
 #ifdef BAUDRATE
   Serial.begin(BAUDRATE);
@@ -155,16 +163,21 @@ void setup() {
   Serial.println();	// helps opening connection...
   Serial.println();	// helps opening connection...
 
-  #ifdef INPUTS_DEBUGGING_SAMPLING
-    Serial.println("will TEST sampling.");
-  #endif
-
   #ifdef INPUTS_DEBUGGING_IO_CALCULATING
     Serial.println("will TEST in2out calculation.");
   #endif
 
+  #ifdef INPUTS_DEBUGGING_CUSTOM_FUNCTION
+    Serial.println("will TEST in2out custom function.");
+  #endif
+
+  #ifdef INPUTS_DEBUGGING_SAMPLING
+    Serial.println("will TEST sampling.");
+  #endif
+
   Serial.println();
 #endif
+
 
 #ifdef INPUTS_DEBUGGING_SAMPLING
   /*
@@ -174,6 +187,13 @@ void setup() {
   INPUTS.setup_sample_method(0, &test_sample_method, 0, 4);	// A0
   INPUTS.setup_sample_method(1, &test_sample_method, 1, 4);	// A1
 #endif	// INPUTS_DEBUGGING_SAMPLING
+
+
+#ifdef SHARP_IR_DISTANCE_TEST
+  INPUTS.setup_sample_method(3, &analogRead_, 0, 4);	// A0
+  INPUTS.setup_linear(3, -20, 4800, 1, 0, true);	// 4800/(x-20)
+#endif
+
 
 #ifdef INPUTS_DEBUGGING_IO_CALCULATING	// testing in2o_calculation:
   test_ioP_t();
@@ -223,6 +243,14 @@ void setup() {
 
   Serial.println();
 #endif	// INPUTS_DEBUGGING_IO_CALCULATING
+
+
+#ifdef INPUTS_DEBUGGING_CUSTOM_FUNCTION
+  // Inputs::setup_in2o_method(int inp, ioV_t (*method)(int inp, ioV_t value)) {
+  INPUTS.setup_in2o_custom(2, &custom_in2o_method);
+  Serial.println("INPUTS.setup_in2o_custom(2, &custom_in2o_method);	// *7");
+  test_in2outval(2);
+#endif
 }
 
 

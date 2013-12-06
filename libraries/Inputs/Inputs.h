@@ -37,24 +37,24 @@
 // UNCOMMENT *ONE* OF THE FOLLOWING TRIPLETS:
 
 // *small* unsigned integer range 0 to 255, save RAM:
-#define I2O_PARAMETER_TYPE	uint8_t
-#define I2O_VALUE_TYPE	unsigned int
-#undef I2O_PARAMETER_IS_FLOAT		// see: inputs_test.ino
+//#define I2O_PARAMETER_TYPE	uint8_t
+//#define I2O_VALUE_TYPE	unsigned int
+//#undef I2O_PARAMETER_IS_FLOAT		// see: inputs_test.ino
 
 // *small* signed integer range -128 to 127, save RAM:
-#define I2O_PARAMETER_TYPE	int8_t
-#define I2O_VALUE_TYPE	int
-#undef I2O_PARAMETER_IS_FLOAT		// see: inputs_test.ino
+//#define I2O_PARAMETER_TYPE	int8_t
+//#define I2O_VALUE_TYPE	int
+//#undef I2O_PARAMETER_IS_FLOAT		// see: inputs_test.ino
 
-// small integer range, save RAM:
+// normal signed integer range, save some RAM:
 //#define I2O_PARAMETER_TYPE	int
 //#define I2O_VALUE_TYPE		long
 //#undef I2O_PARAMETER_IS_FLOAT		// see: inputs_test.ino
 
 // integer, bigger range:
-//#define I2O_PARAMETER_TYPE	long
-//#define I2O_VALUE_TYPE		long
-//#undef  I2O_PARAMETER_IS_FLOAT	// see: inputs_test.ino
+#define I2O_PARAMETER_TYPE	long
+#define I2O_VALUE_TYPE		long
+#undef  I2O_PARAMETER_IS_FLOAT	// see: inputs_test.ino
 
 // floating point:
 //#define I2O_PARAMETER_TYPE	double
@@ -82,7 +82,7 @@ struct input_t {
 
   // c++ did not like me :(
   // method to get the output value from an input value
-  // ioV_t (*in2o_method)(int inp, ioV_t value);
+  ioV_t (*in2o_method)(int inp, ioV_t value);
 
   // Parameters for processing input to output values:
   ioP_t input_offset;	// added to the input value before further processing
@@ -100,9 +100,11 @@ struct input_t {
 #define INPUT_PROCESSING	2	// any type
 #define PROCESS_LINEAR		4	// linear
 #define PROCESS_INVERSE		8	// reziprocal
+#define PROCESS_CUSTOM		128	// custom processing function
 // *output method* flags:
-// #define SET_TO_VALUE
-// #define ADD_TO_VALUE
+//#define SET_TO_VALUE		256
+//#define ADD_TO_VALUE		512
+//#define MUL_VALUE	        1024
 
 
 class Inputs {
@@ -117,7 +119,7 @@ class Inputs {
   bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversampling);
 
   // c++ did not like me :(
-  // bool setup_in2o_method(int inp, ioV_t (*in2o_method)(int inp, ioV_t value));
+  bool setup_in2o_custom(int inp, ioV_t (*method)(int inp, ioV_t value));
 
 /*
   bool sample(int inp);

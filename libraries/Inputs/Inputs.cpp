@@ -45,7 +45,7 @@ Inputs::Inputs(int inp_max):
     inputs[inp].sample_method = NULL;
     inputs[inp].samples = NULL;
     // c++ did not like me :(
-    // inputs[inp].in2o_method = NULL;
+    inputs[inp].in2o_method = NULL;
   }
 }
 
@@ -117,6 +117,9 @@ bool Inputs::sample(int inp) {
 */
 ioV_t Inputs::in2o_calculation(int inp, ioV_t value) {
   ioV_t outval;
+
+  if(inputs[inp].flags & PROCESS_CUSTOM)
+    return inputs[inp].in2o_method(inp, value);
 
   // getting these only *once*, hope that's faster:
   // (as all calculations are in ioV_t i declare all operands ioV_t)
@@ -192,6 +195,19 @@ bool Inputs::setup_linear(int inp, \
   inputs[inp].div = div;
   inputs[inp].output_offset = output_offset;
   return true;
+}
+
+
+bool Inputs::setup_in2o_custom(int inp, ioV_t (*method)(int inp, ioV_t value)) {
+  if ((inp < 0) or (inp >= inp_max))
+    return false;	// inp out of range
+
+  inputs[inp].flags &= ~(PROCESS_LINEAR & PROCESS_INVERSE);
+  inputs[inp].flags |= INPUT_PROCESSING;
+  inputs[inp].flags |= PROCESS_CUSTOM;
+
+  inputs[inp].in2o_method = method;
+  return true;  
 }
 
 
