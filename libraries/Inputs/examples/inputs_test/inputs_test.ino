@@ -91,6 +91,29 @@ int test_sample_method(int addr) {
 
 
 #ifdef INPUTS_DEBUGGING_IO_CALCULATING
+bool i2o_p_type_is_int=false;
+bool i2o_p_type_is_long_int=false;
+bool i2o_p_type_is_float=false;
+void test_ioP_t() {
+  ioP_t testP=1.5f;
+  if(testP == 1.5f) {
+    Serial.println("ioP_t is floating point type");
+    i2o_p_type_is_float=true;
+  }
+  else {
+    testP=1000000000L;
+    if((long) testP == 1000000000L) {
+      Serial.println("ioP_t is type 'long int'");
+      i2o_p_type_is_long_int=true;
+    } else {
+      Serial.println("ioP_t is type 'int'");
+      i2o_p_type_is_int=true;
+    }
+  }
+  Serial.println();
+}
+
+
 void test_in2outval(int inp) {
   Serial.println();
   Serial.print("test_in2outval\tinp=");
@@ -101,7 +124,10 @@ void test_in2outval(int inp) {
     Serial.print("inval= ");
     Serial.print(i);
     Serial.print("\toutval=");
-    Serial.println(INPUTS.in2o_calculation(inp, i));
+    if(! i2o_p_type_is_float)
+      Serial.println(INPUTS.in2o_calculation(inp, i));
+    else
+      Serial.println(INPUTS.in2o_calculation(inp, i), 4);
   }
   Serial.println();
 }
@@ -135,8 +161,9 @@ void setup() {
   INPUTS.setup_sample_method(1, &test_sample_method, 1, 4);	// A1
 #endif	// INPUTS_DEBUGGING_SAMPLING
 
-#ifdef INPUTS_DEBUGGING_IO_CALCULATING
-  // testing in2o_calculation:
+#ifdef INPUTS_DEBUGGING_IO_CALCULATING	// testing in2o_calculation:
+  test_ioP_t();
+
   // bool Inputs::setup_linear(int inp,\
             ioP_t input_offset, ioP_t mul, ioP_t div, ioV_t output_offset, bool inverse)
 
@@ -156,9 +183,16 @@ void setup() {
   Serial.println("INPUTS.setup_linear(0, 0, 10000, 0, 0, true);	// inverse");
   test_in2outval(0);
 
-  #ifdef INPUTS_IO_PARAMETERS_long
-    INPUTS.setup_linear(0, 0, 1000000, 0, 0, true);	// inverse, big number
-    Serial.println("INPUTS.setup_linear(0, 0, 1000000, 0, 0, true);	// inverse, big number");
+  #ifdef I2O_P_LONG_V_LONG		// see: Inputs.h
+    INPUTS.setup_linear(0, 0, 1000000000L, 0, 0, true);	// inverse, big number
+    Serial.println("INPUTS.setup_linear(0, 0, 1000000000L, 0, 0, true);	// inverse, big number");
+    test_in2outval(0);
+  #endif
+
+  #ifdef I2O_P_DOUBLE_V_LONG_DOUBLE	// see: Inputs.h
+    INPUTS.setup_linear(0, 0.0, 0.0, 0.0, 0.0, true);	// 1/x floating
+//    INPUTS.setup_linear(0, 12.4, 1.5437, 0.6543, 17.7354, true);	// 1/x floating
+    Serial.println("INPUTS.setup_linear(0, 0, 0, 0, 0, true);	// 1/x floating");
     test_in2outval(0);
   #endif
 
