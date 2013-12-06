@@ -36,6 +36,16 @@
 */
 // UNCOMMENT *ONE* OF THE FOLLOWING TRIPLETS:
 
+// *small* unsigned integer range 0 to 255, save RAM:
+#define I2O_PARAMETER_TYPE	uint8_t
+#define I2O_VALUE_TYPE	unsigned int
+#undef I2O_PARAMETER_IS_FLOAT		// see: inputs_test.ino
+
+// *small* signed integer range -128 to 127, save RAM:
+#define I2O_PARAMETER_TYPE	int8_t
+#define I2O_VALUE_TYPE	int
+#undef I2O_PARAMETER_IS_FLOAT		// see: inputs_test.ino
+
 // small integer range, save RAM:
 //#define I2O_PARAMETER_TYPE	int
 //#define I2O_VALUE_TYPE		long
@@ -47,9 +57,9 @@
 //#undef  I2O_PARAMETER_IS_FLOAT	// see: inputs_test.ino
 
 // floating point:
-#define I2O_PARAMETER_TYPE	double
-#define I2O_VALUE_TYPE		double
-#define I2O_PARAMETER_IS_FLOAT		// see: inputs_test.ino
+//#define I2O_PARAMETER_TYPE	double
+//#define I2O_VALUE_TYPE		double
+//#define I2O_PARAMETER_IS_FLOAT		// see: inputs_test.ino
 
 
 #ifndef I2O_PARAMETER_TYPE

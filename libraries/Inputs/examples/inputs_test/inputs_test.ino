@@ -91,6 +91,8 @@ int test_sample_method(int addr) {
 
 
 #ifdef INPUTS_DEBUGGING_IO_CALCULATING
+bool i2o_p_type_is_int8=false;
+bool i2o_p_type_is_uint8=false;
 bool i2o_p_type_is_int=false;
 bool i2o_p_type_is_long_int=false;
 bool i2o_p_type_is_float=false;
@@ -99,15 +101,26 @@ void test_ioP_t() {
   if(testP == 1.5f) {
     Serial.println("ioP_t is floating point type");
     i2o_p_type_is_float=true;
-  }
-  else {
+  } else {
     testP=1000000000L;
     if((long) testP == 1000000000L) {
       Serial.println("ioP_t is type 'long int'");
       i2o_p_type_is_long_int=true;
     } else {
-      Serial.println("ioP_t is type 'int'");
-      i2o_p_type_is_int=true;
+      testP=256;
+      if((int) testP == 256) {
+	Serial.println("ioP_t is type 'int'");
+	i2o_p_type_is_int=true;
+      } else {
+	testP=-1;
+	if(testP < 0) {
+	  Serial.println("ioP_t is type 'int8_t'");
+	  i2o_p_type_is_int8=true;
+	} else {
+	  Serial.println("ioP_t is type 'uint8_t'");
+	  i2o_p_type_is_uint8=true;
+	}
+      }
     }
   }
   Serial.println();
@@ -168,21 +181,33 @@ void setup() {
   // bool Inputs::setup_linear(int inp,\
             ioP_t input_offset, ioP_t mul, ioP_t div, ioV_t output_offset, bool inverse)
 
-  INPUTS.setup_linear(0, 0, 1000, 100, 100000, false);	// linear, no offset
-  Serial.println("INPUTS.setup_linear(0, 0, 1000, 100, 100000, false);	// linear, no offset");
-  test_in2outval(0);
+  if(i2o_p_type_is_int8) {
+    INPUTS.setup_linear(0, 0, 1, -2, 0, false);	// linear, -128 to 127, -50%
+    Serial.println("INPUTS.setup_linear(0, 0, 9, 10, 0, false);	// linear, <=255, 90%");
+    test_in2outval(0);
+  } else {
+    if(i2o_p_type_is_uint8) {
+    INPUTS.setup_linear(0, 0, 9, 10, 0, false);	// linear, <=255, 90%
+    Serial.println("INPUTS.setup_linear(0, 0, 9, 10, 0, false);	// linear, <=255, 90%");
+    test_in2outval(0);
+    } else {
+      INPUTS.setup_linear(0, 0, 1000, 100, 100000, false);	// linear, no offset
+      Serial.println("INPUTS.setup_linear(0, 0, 1000, 100, 100000, false);	// linear, no offset");
+      test_in2outval(0);
 
-  INPUTS.setup_linear(0, -1, 1000, 100, 100000, false);	// linear, offset -1
-  Serial.println("INPUTS.setup_linear(0, -1, 1000, 100, 100000, false);	// linear, offset -1");
-  test_in2outval(0);
+      INPUTS.setup_linear(0, -1, 1000, 100, 100000, false);	// linear, offset -1
+      Serial.println("INPUTS.setup_linear(0, -1, 1000, 100, 100000, false);	// linear, offset -1");
+      test_in2outval(0);
 
-  INPUTS.setup_raw(1);					// raw
-  Serial.println("INPUTS.setup_raw(1);	// raw");
-  test_in2outval(1);
+      INPUTS.setup_raw(1);					// raw
+      Serial.println("INPUTS.setup_raw(1);	// raw");
+      test_in2outval(1);
 
-  INPUTS.setup_linear(0, 0, 10000, 0, 0, true);		// inverse
-  Serial.println("INPUTS.setup_linear(0, 0, 10000, 0, 0, true);	// inverse");
-  test_in2outval(0);
+      INPUTS.setup_linear(0, 0, 10000, 0, 0, true);		// inverse
+      Serial.println("INPUTS.setup_linear(0, 0, 10000, 0, 0, true);	// inverse");
+      test_in2outval(0);
+    }
+  }
 
   if(i2o_p_type_is_long_int || i2o_p_type_is_float) {
     INPUTS.setup_linear(0, 0, 1000000000L, 0, 0, true);	// inverse, big number
