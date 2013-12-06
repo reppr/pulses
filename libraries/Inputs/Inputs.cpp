@@ -160,6 +160,7 @@ bool Inputs::setup_raw(int inp) {
     return false;	// inp out of range
 
   inputs[inp].flags &= ~INPUT_PROCESSING;
+  return true;
 }
 
 
