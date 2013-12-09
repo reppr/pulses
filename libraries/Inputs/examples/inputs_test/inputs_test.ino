@@ -44,6 +44,11 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 // uncomment for a simple example using a Sharp IR distance sensor on A0
 #define SHARP_IR_DISTANCE_TEST
 
+// uncomment two lines to get a simple HC-SR04 ultrasonic distance sensor example
+// edit to match the Arduino pins connected to the sensor
+#define HCSR04_TRIGGER_PIN	3
+#define HCSR04_ECHO_PIN		2
+
 
 /* **************************************************************** */
 #include <stdio.h>
@@ -73,7 +78,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
 
 // Inputs(int inp_max);
-Inputs INPUTS(4);
+Inputs INPUTS(6);
 int inp;
 
 #ifdef INPUTS_DEBUGGING_SAMPLING
@@ -167,6 +172,31 @@ int analogRead_(int pin) {	// horrible kludge, we need the type cast here...
 #endif
 
 
+#ifdef HCSR04_TRIGGER_PIN
+  #define HCSR04_TRIGGER_DURATION	10
+
+int read_HCSR04_ultrasonic(int dummy) {
+  long time;
+
+  digitalWrite(HCSR04_TRIGGER_PIN, HIGH);			// trigger
+  time = micros();
+
+  while (micros() - time < HCSR04_TRIGGER_DURATION)	// >= 10 uS
+    ;
+  digitalWrite(HCSR04_TRIGGER_PIN, LOW);			// end trigger
+
+
+  while (digitalRead(HCSR04_ECHO_PIN) == LOW)  	// wait for echo
+    ;
+
+  time = micros();				// echo started
+  while (digitalRead(HCSR04_ECHO_PIN) == HIGH)	// echo still running
+    ;
+  return (int) (micros() - time);		// return echo duration
+}
+#endif
+
+
 void setup() {
 #ifdef BAUDRATE
   Serial.begin(BAUDRATE);
@@ -204,6 +234,11 @@ void setup() {
   INPUTS.setup_sample_method(3, &analogRead_, 0, 4);	// A0
   INPUTS.setup_linear(3, -20, 4800, 1, 0, true);	// 4800/(x-20)
 #endif
+
+
+#ifdef HCSR04_TRIGGER_PIN
+  INPUTS.setup_sample_method(4, &read_HCSR04_ultrasonic, 99, 4);
+  INPUTS.setup_linear(4, 0, 0, 58, 0, false);	// x/58 gives cm
 
 
 #ifdef INPUTS_DEBUGGING_IO_CALCULATING	// testing in2o_calculation:
@@ -262,12 +297,21 @@ void setup() {
   Serial.println("INPUTS.setup_in2o_custom(2, &custom_in2o_method);	// *7");
   test_in2outval(2);
 #endif
+
+
+#ifdef HCSR04_TRIGGER_PIN
+  pinMode(HCSR04_TRIGGER_PIN, OUTPUT);
+  digitalWrite(HCSR04_TRIGGER_PIN, LOW);
+  pinMode(HCSR04_ECHO_PIN, INPUT);
+#endif
 }
 
 
 int cnt=0;
 void loop() {
   cnt++;
+
+  ioV_t value;
 
 #ifdef INPUTS_DEBUGGING_SAMPLING
   if (cnt == 1)
@@ -295,14 +339,79 @@ void loop() {
 #ifdef SHARP_IR_DISTANCE_TEST
   inp=3;
   INPUTS.sample(inp);
-  Serial.print("Sharp IR distance sensor reads ");
+  Serial.print("Sharp IR distance sensor\t");
   Serial.print(INPUTS.get_last_sampled(inp));
+
   Serial.print("\tcm=");
+  value=INPUTS.in2o_calculation(inp, INPUTS.get_last_sampled(inp));
 #ifdef I2O_PARAMETER_IS_FLOAT
-      Serial.println(INPUTS.in2o_calculation(inp, INPUTS.get_last_sampled(inp)), 4);
+      Serial.println(value, 4);
 #else
-      Serial.println(INPUTS.in2o_calculation(inp, INPUTS.get_last_sampled(inp)));
+      bar_graph(value, 120, 'I');
+      //      Serial.println(INPUTS.in2o_calculation(inp, INPUTS.get_last_sampled(inp)));
 #endif
 #endif
+
+
+#ifdef HCSR04_TRIGGER_PIN
+  inp=4;
+  INPUTS.sample(inp);
+  Serial.print("Ultrasonic distance HC-SR04\t");
+  Serial.print(INPUTS.get_last_sampled(inp));
+
+  Serial.print("\tcm=");
+  value=INPUTS.in2o_calculation(inp, INPUTS.get_last_sampled(inp));
+#ifdef I2O_PARAMETER_IS_FLOAT
+      Serial.println(value, 4);
+#else
+      bar_graph(value, 120, 'U');
+#endif
+#endif
+
+
   delay(1000);
+}
+
+
+/*
+  bar_graph(value)
+  print one value & bar graph line:
+*/
+void bar_graph(int value, int scale, char c) {
+  const int length=64;
+  int stars = ((long) value * (long) length) / (scale + 1) ;
+
+  Serial.print("value==");
+  Serial.print(value);
+  Serial.print("\t");
+  if (value >=0 && value <= scale) {
+    for (int i=0; i<stars; i++) {
+      Serial.print(c);
+    }
+  }
+  Serial.println();
+}
+
+void bar_graph_signed(int value, int scale, char m, char p) {
+  const int length=32;
+  int stars = ((long) value * (long) length) / (scale + 1);
+
+  Serial.print("value==");
+  Serial.print(value);
+  Serial.print("\t");
+
+  for (int i=0; i < length; i++) {
+    if (i < (length + stars))
+      Serial.print(F(" "));
+    else
+      Serial.print(m);
+  }
+
+  if (stars==0)
+    Serial.print(F("0"));
+  else
+    for (int i=0; i < stars; i++)
+      Serial.print(m);
+
+  Serial.println();
 }
