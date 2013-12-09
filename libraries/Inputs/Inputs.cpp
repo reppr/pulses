@@ -98,10 +98,12 @@ bool Inputs::sample(int inp) {
   cyclic_index = (inputs[inp].counter++ % inputs[inp].oversampling);
   inputs[inp].samples[cyclic_index]=value;
 
+#ifdef INPUTS_DEBUGGING_SAMPLING
   Serial.print("\tsample stored cyclic_index=");
   Serial.print(cyclic_index);
   Serial.print("\toversampling=");
   Serial.println(inputs[inp].oversampling);
+#endif
 
   if (++cyclic_index == inputs[inp].oversampling)	// oversampling set ready?
     return true;		// oversampling set is ready, trigger possible reactions

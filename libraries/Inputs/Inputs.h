@@ -73,6 +73,11 @@ typedef I2O_VALUE_TYPE ioV_t;		// ioV_t is 'input 2 output value type', possibly
 
 
 /* **************************************************************** */
+// DEBUGGING switches:
+// #define INPUTS_DEBUGGING_SAMPLING
+
+
+/* **************************************************************** */
 struct input_t {
   unsigned long counter;		// counts taken samples
   uint16_t flags;
@@ -156,6 +161,17 @@ class Inputs {
 
   unsigned long get_counter(int inp) {			// inlined
     return inputs[inp].counter;
+  }
+
+
+/*
+  int get_last_sampled(int inp)
+  mainly for debugging
+  get the last sample that was taken before on inp
+  do *not* call this if there was no sample taken before...
+*/
+  int get_last_sampled(int inp) {			// inlined
+    return inputs[inp].samples[((inputs[inp].counter - 1) % inputs[inp].oversampling)];
   }
 
  private:
