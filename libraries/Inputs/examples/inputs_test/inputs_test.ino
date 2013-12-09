@@ -32,13 +32,17 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 // SOURCE CODE STARTS HERE:
 /* **************************************************************** */
 
-#define INPUTS_DEBUGGING_ALL
+// uncomment to get a lot of debugging output:
+// #define INPUTS_DEBUGGING_ALL
 
 #ifdef INPUTS_DEBUGGING_ALL
   #define INPUTS_DEBUGGING_SAMPLING
   #define INPUTS_DEBUGGING_IO_CALCULATING
   #define INPUTS_DEBUGGING_CUSTOM_FUNCTION
 #endif
+
+// uncomment for a simple example using a Sharp IR distance sensor on A0
+#define SHARP_IR_DISTANCE_TEST
 
 
 /* **************************************************************** */
@@ -152,6 +156,13 @@ void test_in2outval(int inp) {
 #ifdef INPUTS_DEBUGGING_CUSTOM_FUNCTION
 ioV_t custom_in2o_method(int inp, ioV_t value) {
   return 7*value;
+}
+#endif
+
+
+#ifdef SHARP_IR_DISTANCE_TEST
+int analogRead_(int pin) {	// horrible kludge, we need the type cast here...
+  return analogRead(pin);
 }
 #endif
 
@@ -279,8 +290,19 @@ void loop() {
     Serial.print("\tcounter=");
     Serial.println(INPUTS.get_counter(inp));
   }
-
-  delay(1200);
 #endif // INPUTS_DEBUGGING_SAMPLING
 
+#ifdef SHARP_IR_DISTANCE_TEST
+  inp=3;
+  INPUTS.sample(inp);
+  Serial.print("Sharp IR distance sensor reads ");
+  Serial.print(INPUTS.get_last_sampled(inp));
+  Serial.print("\tcm=");
+#ifdef I2O_PARAMETER_IS_FLOAT
+      Serial.println(INPUTS.in2o_calculation(inp, INPUTS.get_last_sampled(inp)), 4);
+#else
+      Serial.println(INPUTS.in2o_calculation(inp, INPUTS.get_last_sampled(inp)));
+#endif
+#endif
+  delay(1000);
 }
