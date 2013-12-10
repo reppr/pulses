@@ -97,6 +97,9 @@ struct input_t {
   ioV_t output_offset;	// added to the output value after processing
 
   int * samples;	// pointer to the stored samples for oversampling and friends
+
+  // function pointer to bool out_reaction(int inp, ioV_t value)
+  void (*out_reaction)(int inp, ioV_t output_value);
 };
 
 // flags bitmasks:
@@ -112,9 +115,10 @@ struct input_t {
 #define PROCESS_CUSTOM		128	// custom processing function
 //
 // *output method* flags:
-//#define SET_TO_VALUE		256
-//#define ADD_TO_VALUE		512
-//#define MUL_VALUE	        1024
+#define INPUT_OUTPUT_REACTION	256	// any type, not really needed
+//#define SET_TO_VALUE		512
+//#define ADD_TO_VALUE		1024
+//#define MUL_VALUE	        2048
 
 
 // aliases for io_calculation
@@ -187,6 +191,12 @@ class Inputs {
 	  influence the period of a pulse, or whatever...
 */
   bool sample_and_react(int inp);
+
+/*
+  bool setup_io_reaction(int inp, void (*reaction)(int inp, ioV_t value));
+*/
+  bool setup_io_reaction(int inp, void (*reaction)(int inp, ioV_t value));
+
 
 /*
   int get_last_sampled(int inp)

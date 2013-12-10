@@ -83,7 +83,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
 
 // Inputs(int inp_max);
-Inputs INPUTS(6);
+Inputs INPUTS(8);
 int inp;
 
 #ifdef INPUTS_DEBUGGING_SAMPLING
@@ -170,6 +170,13 @@ ioV_t custom_in2o_method(int inp, ioV_t value) {
 #endif
 
 
+#ifdef INPUTS_DEBUGGING_SAMPLE_REACTION
+void bar_graph_(int dummy, ioV_t value) {
+  bar_graph(value, 1023, '*');
+}
+#endif
+
+
 #if (defined(SHARP_IR_DISTANCE_TEST) || defined(INPUTS_DEBUGGING_SAMPLE_REACTION))
 int analogRead_(int pin) {	// horrible kludge, we need the type cast here...
   return analogRead(pin);
@@ -240,8 +247,17 @@ void setup() {
 
 
 #ifdef INPUTS_DEBUGGING_SAMPLE_REACTION
-  INPUTS.setup_sample_method(5, &analogRead_, 3, 8);		// A3, oversampling=8
-  INPUTS.setup_linear(5, 0, 255, 1023, 0, PROPORTIONAL);	// 255*x/1023
+  // INPUTS.setup_sample_method(5, &analogRead_, 3, 8);		// A3, oversampling=8
+  // INPUTS.setup_linear(5, 0, 255, 1023, 0, PROPORTIONAL);	// 255*x/1023
+
+  inp=6;
+  INPUTS.setup_sample_method(inp, &analogRead_, 2, 8);		// A2, oversampling=8
+  INPUTS.setup_linear(inp, 0, 255, 1023, 0, PROPORTIONAL);	// 255*x/1023
+
+  /*
+  bool setup_io_reaction(int inp, void (*reaction)(int inp, ioV_t value));
+  */
+  INPUTS.setup_io_reaction(inp, &bar_graph_);
 #endif
 
 #ifdef SHARP_IR_DISTANCE_TEST
@@ -354,7 +370,7 @@ void loop() {
 #endif // INPUTS_DEBUGGING_SAMPLING
 
 #ifdef INPUTS_DEBUGGING_SAMPLE_REACTION
-  inp=5;
+  inp=6;
   INPUTS.sample_and_react(inp);
   loop_delay=125;
 #endif

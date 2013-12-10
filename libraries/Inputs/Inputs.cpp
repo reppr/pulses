@@ -243,23 +243,41 @@ bool Inputs::sample_and_react(int inp) {
   if(! sample(inp))	// sample, and...
     return false;	//   return false  if there's nothing else to do
 
+  if(!(inputs[inp].flags & INPUT_OUTPUT_REACTION))
+    return false;	// no reactions configured, return false
+
+  // ok, so let's prepare for reaction:
+  // first get sample_value from oversampling and friends:
   int sample_value;
-  if(inputs[inp].flags & OVERSAMLE_AVERAGE ) {
+  if(inputs[inp].flags & OVERSAMLE_AVERAGE )
     sample_value = oversamples_average(inp);
-  } else
+  else
     sample_value = get_last_sampled(inp);
 
+  // now do in2o_calculation:
   ioV_t output_value;
-  if(inputs[inp].flags & INPUT_PROCESSING) {
+  if(inputs[inp].flags & INPUT_PROCESSING)
     output_value = in2o_calculation(inp, (ioV_t) sample_value);
-  } else
+  else
     output_value = sample_value;
 
-  Serial.print("REACT\t");
-  Serial.println(output_value);
+  // call the reaction of that input with that output_value
+  inputs[inp].out_reaction(inp, output_value);
+  return true;
+}
 
 
-  return false;		// only sample taken, no reaction
+/*
+  bool setup_io_reaction(int inp, void (*reaction)(int inp, ioV_t value));
+*/
+bool Inputs::setup_io_reaction(int inp, void (*reaction)(int inp, ioV_t value)) {
+  if ((inp < 0) or (inp >= inp_max))
+    return false;	// inp out of range
+
+  inputs[inp].out_reaction = reaction;
+  inputs[inp].flags |= INPUT_OUTPUT_REACTION;
+
+  return true;
 }
 
 
