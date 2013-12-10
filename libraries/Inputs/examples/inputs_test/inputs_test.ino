@@ -240,19 +240,19 @@ void setup() {
 
 
 #ifdef INPUTS_DEBUGGING_SAMPLE_REACTION
-  INPUTS.setup_sample_method(5, &analogRead_, 3, 8);	// A3, oversampling=8
-  INPUTS.setup_linear(5, 0, 255, 1023, 0, false);	// 255*x/1023
+  INPUTS.setup_sample_method(5, &analogRead_, 3, 8);		// A3, oversampling=8
+  INPUTS.setup_linear(5, 0, 255, 1023, 0, PROPORTIONAL);	// 255*x/1023
 #endif
 
 #ifdef SHARP_IR_DISTANCE_TEST
-  INPUTS.setup_sample_method(3, &analogRead_, 0, 4);	// A0
-  INPUTS.setup_linear(3, -20, 4800, 1, 0, true);	// 4800/(x-20)
+  INPUTS.setup_sample_method(3, &analogRead_, 0, 4);		// A0
+  INPUTS.setup_linear(3, -20, 4800, 1, 0, INVERSE);		// 4800/(x-20)
 #endif
 
 
 #ifdef HCSR04_TRIGGER_PIN
   INPUTS.setup_sample_method(4, &read_HCSR04_ultrasonic, 99, 4);
-  INPUTS.setup_linear(4, 0, 0, 58, 0, false);	// x/58 gives cm
+  INPUTS.setup_linear(4, 0, 0, 58, 0, PROPORTIONAL);		// x/58 gives cm
 #endif
 
 
@@ -263,42 +263,42 @@ void setup() {
             ioP_t input_offset, ioP_t mul, ioP_t div, ioV_t output_offset, bool inverse)
 
   if(i2o_p_type_is_int8) {
-    INPUTS.setup_linear(0, 0, 1, -2, 0, false);	// linear, -128 to 127, -50%
-    Serial.println("INPUTS.setup_linear(0, 0, 9, 10, 0, false);	// linear, <=255, 90%");
+    INPUTS.setup_linear(0, 0, 1, -2, 0, PROPORTIONAL);			// linear, -128 to 127, -50%
+    Serial.println("INPUTS.setup_linear(0, 0, 9, 10, 0, PROPORTIONAL);	// linear, <=255, 90%");
     test_in2outval(0);
   } else {
     if(i2o_p_type_is_uint8) {
-    INPUTS.setup_linear(0, 0, 9, 10, 0, false);	// linear, <=255, 90%
-    Serial.println("INPUTS.setup_linear(0, 0, 9, 10, 0, false);	// linear, <=255, 90%");
+    INPUTS.setup_linear(0, 0, 9, 10, 0, PROPORTIONAL);			// linear, <=255, 90%
+    Serial.println("INPUTS.setup_linear(0, 0, 9, 10, 0, PROPORTIONAL);	// linear, <=255, 90%");
     test_in2outval(0);
     } else {
-      INPUTS.setup_linear(0, 0, 1000, 100, 100000, false);	// linear, no offset
-      Serial.println("INPUTS.setup_linear(0, 0, 1000, 100, 100000, false);	// linear, no offset");
+      INPUTS.setup_linear(0, 0, 1000, 100, 100000, PROPORTIONAL);	// linear, no offset
+      Serial.println("INPUTS.setup_linear(0, 0, 1000, 100, 100000, PROPORTIONAL);	// linear, no offset");
       test_in2outval(0);
 
-      INPUTS.setup_linear(0, -1, 1000, 100, 100000, false);	// linear, offset -1
-      Serial.println("INPUTS.setup_linear(0, -1, 1000, 100, 100000, false);	// linear, offset -1");
+      INPUTS.setup_linear(0, -1, 1000, 100, 100000, PROPORTIONAL);	// linear, offset -1
+      Serial.println("INPUTS.setup_linear(0, -1, 1000, 100, 100000, PROPORTIONAL);	// linear, offset -1");
       test_in2outval(0);
 
-      INPUTS.setup_raw(1);					// raw
+      INPUTS.setup_raw(1);						// raw
       Serial.println("INPUTS.setup_raw(1);	// raw");
       test_in2outval(1);
 
-      INPUTS.setup_linear(0, 0, 10000, 0, 0, true);		// inverse
-      Serial.println("INPUTS.setup_linear(0, 0, 10000, 0, 0, true);	// inverse");
+      INPUTS.setup_linear(0, 0, 10000, 0, 0, INVERSE);			// inverse
+      Serial.println("INPUTS.setup_linear(0, 0, 10000, 0, 0, INVERSE);	// inverse");
       test_in2outval(0);
     }
   }
 
   if(i2o_p_type_is_long_int || i2o_p_type_is_float) {
-    INPUTS.setup_linear(0, 0, 1000000000L, 0, 0, true);	// inverse, big number
-    Serial.println("INPUTS.setup_linear(0, 0, 1000000000L, 0, 0, true);	// inverse, big number");
+    INPUTS.setup_linear(0, 0, 1000000000L, 0, 0, INVERSE);		// inverse, big number
+    Serial.println("INPUTS.setup_linear(0, 0, 1000000000L, 0, 0, INVERSE);	// inverse, big number");
     test_in2outval(0);
   }
 
   #ifdef  I2O_PARAMETER_IS_FLOAT	// see: Inputs.h
-    INPUTS.setup_linear(0, 0.0, 1.0, 1.0, 0.0, true);	// 1/x floating
-    Serial.println("INPUTS.setup_linear(0, 0, 1.0, 1.0, 0, true);	// 1/x floating");
+    INPUTS.setup_linear(0, 0.0, 1.0, 1.0, 0.0, INVERSE);		// 1/x floating
+    Serial.println("INPUTS.setup_linear(0, 0, 1.0, 1.0, 0, INVERSE);	// 1/x floating");
     test_in2outval(0);
   #endif
 

@@ -187,6 +187,10 @@ bool Inputs::setup_raw(int inp) {
   bool Inputs::setup_linear(int inp,\
          ioP_t input_offset, ioP_t mul, ioP_t div, ioV_t output_offset, bool inverse)
   Configure a linear or reverse linear in2out function on input inp.
+
+  // aliases for io_calculation
+  PROPORTIONAL	false
+  INVERSE	true
 */
 bool Inputs::setup_linear(int inp, \
        ioP_t input_offset, ioP_t mul, ioP_t div, ioV_t output_offset, bool inverse)

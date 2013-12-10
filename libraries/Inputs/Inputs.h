@@ -117,6 +117,10 @@ struct input_t {
 //#define MUL_VALUE	        1024
 
 
+// aliases for io_calculation
+#define PROPORTIONAL	false
+#define INVERSE		true
+
 class Inputs {
  public:
   Inputs(int inp_max);
