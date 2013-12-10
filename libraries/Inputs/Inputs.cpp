@@ -113,6 +113,20 @@ bool Inputs::sample(int inp) {
 
 
 /*
+  int oversamples_average(int inp);
+  return average of the saved samples
+*/
+int Inputs::oversamples_average(int inp){
+  int oversampling=inputs[inp].oversampling;
+  long sum=0;
+  for(int i=0; i < oversampling; i++)
+    sum += inputs[inp].samples[i];
+  sum  += oversampling / 2;	// rounding
+  return sum / oversampling;
+}
+
+
+/*
   ioV_t Inputs::in2o_calculation(int inp, ioV_t value)
   Calculate and return the output value from an input value
   according the roules for input inp.
@@ -209,13 +223,45 @@ bool Inputs::setup_in2o_custom(int inp, ioV_t (*method)(int inp, ioV_t value)) {
   inputs[inp].flags |= PROCESS_CUSTOM;
 
   inputs[inp].in2o_method = method;
-  return true;  
+  return true;
+}
+
+
+/*
+  bool sample_and_react(int inp);
+  take a sample on inp
+  react adequately,
+    like: on completing a new oversampling set
+          compute average, do in2o_calculation on that
+	  influence the period of a pulse, or whatever...
+*/
+bool Inputs::sample_and_react(int inp) {
+  if(! sample(inp))	// sample, and...
+    return false;	//   return false  if there's nothing else to do
+
+  int sample_value;
+  if(inputs[inp].flags & OVERSAMLE_AVERAGE ) {
+    sample_value = oversamples_average(inp);
+  } else
+    sample_value = get_last_sampled(inp);
+
+  ioV_t output_value;
+  if(inputs[inp].flags & INPUT_PROCESSING) {
+    output_value = in2o_calculation(inp, (ioV_t) sample_value);
+  } else
+    output_value = sample_value;
+
+  Serial.print("REACT\t");
+  Serial.println(output_value);
+
+
+  return false;		// only sample taken, no reaction
 }
 
 
 /* **************************************************************** */
 /* **************************************************************** */
-/*    SOURCE ENDS HERE.						    */				 
+/*    SOURCE ENDS HERE.						    */
 /* **************************************************************** */
 /* **************************************************************** */
 

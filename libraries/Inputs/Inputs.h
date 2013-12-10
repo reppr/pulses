@@ -101,11 +101,16 @@ struct input_t {
 
 // flags bitmasks:
 #define INPUT_ACTIVE		1
+//
+// *input oversampling* flags
+#define OVERSAMLE_AVERAGE	2
+//
 // *input processing* flags:
-#define INPUT_PROCESSING	2	// any type
-#define PROCESS_LINEAR		4	// linear
-#define PROCESS_INVERSE		8	// reziprocal
+#define INPUT_PROCESSING	4	// any type, not really needed
+#define PROCESS_LINEAR		8	// linear
+#define PROCESS_INVERSE		16	// reziprocal
 #define PROCESS_CUSTOM		128	// custom processing function
+//
 // *output method* flags:
 //#define SET_TO_VALUE		256
 //#define ADD_TO_VALUE		512
@@ -137,6 +142,12 @@ class Inputs {
   // ioV_t in2o_linear(int inp, ioV_t value);	// c++ did not like me :( FIXME ################
 
 /*
+  int oversamples_average(int inp);
+  return average of the saved samples
+*/
+  int oversamples_average(int inp);
+
+/*
   bool Inputs::setup_raw(int inp)
   Setup input inp to pass through raw values without further processing.
   Oversampling and friends might still be active though.
@@ -163,6 +174,15 @@ class Inputs {
     return inputs[inp].counter;
   }
 
+/*
+  bool sample_and_react(int inp);
+  take a sample on inp
+  react adequately,
+    like: on completing a new oversampling set
+          compute average, do in2o_calculation on that
+	  influence the period of a pulse, or whatever...
+*/
+  bool sample_and_react(int inp);
 
 /*
   int get_last_sampled(int inp)

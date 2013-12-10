@@ -41,13 +41,18 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
   #define INPUTS_DEBUGGING_CUSTOM_FUNCTION
 #endif
 
+
+// uncomment to test reaction on samples
+#define INPUTS_DEBUGGING_SAMPLE_REACTION
+
+
 // uncomment for a simple example using a Sharp IR distance sensor on A0
-#define SHARP_IR_DISTANCE_TEST
+// #define SHARP_IR_DISTANCE_TEST
 
 // uncomment two lines to get a simple HC-SR04 ultrasonic distance sensor example
 // edit to match the Arduino pins connected to the sensor
-#define HCSR04_TRIGGER_PIN	3
-#define HCSR04_ECHO_PIN		2
+//#define HCSR04_TRIGGER_PIN	3	// triggers also compilation of HCSR04 code
+//#define HCSR04_ECHO_PIN		2
 
 
 /* **************************************************************** */
@@ -165,7 +170,7 @@ ioV_t custom_in2o_method(int inp, ioV_t value) {
 #endif
 
 
-#ifdef SHARP_IR_DISTANCE_TEST
+#if (defined(SHARP_IR_DISTANCE_TEST) || defined(INPUTS_DEBUGGING_SAMPLE_REACTION))
 int analogRead_(int pin) {	// horrible kludge, we need the type cast here...
   return analogRead(pin);
 }
@@ -216,6 +221,10 @@ void setup() {
     Serial.println("will TEST sampling.");
   #endif
 
+  #ifdef INPUTS_DEBUGGING_SAMPLE_REACTION
+    Serial.println("will TEST reaction on sampling.");
+  #endif
+
   Serial.println();
 #endif
 
@@ -230,6 +239,11 @@ void setup() {
 #endif	// INPUTS_DEBUGGING_SAMPLING
 
 
+#ifdef INPUTS_DEBUGGING_SAMPLE_REACTION
+  INPUTS.setup_sample_method(5, &analogRead_, 3, 8);	// A3, oversampling=8
+  INPUTS.setup_linear(5, 0, 255, 1023, 0, false);	// 255*x/1023
+#endif
+
 #ifdef SHARP_IR_DISTANCE_TEST
   INPUTS.setup_sample_method(3, &analogRead_, 0, 4);	// A0
   INPUTS.setup_linear(3, -20, 4800, 1, 0, true);	// 4800/(x-20)
@@ -239,6 +253,7 @@ void setup() {
 #ifdef HCSR04_TRIGGER_PIN
   INPUTS.setup_sample_method(4, &read_HCSR04_ultrasonic, 99, 4);
   INPUTS.setup_linear(4, 0, 0, 58, 0, false);	// x/58 gives cm
+#endif
 
 
 #ifdef INPUTS_DEBUGGING_IO_CALCULATING	// testing in2o_calculation:
@@ -308,6 +323,8 @@ void setup() {
 
 
 int cnt=0;
+int loop_delay=1000;
+
 void loop() {
   cnt++;
 
@@ -335,6 +352,12 @@ void loop() {
     Serial.println(INPUTS.get_counter(inp));
   }
 #endif // INPUTS_DEBUGGING_SAMPLING
+
+#ifdef INPUTS_DEBUGGING_SAMPLE_REACTION
+  inp=5;
+  INPUTS.sample_and_react(inp);
+  loop_delay=125;
+#endif
 
 #ifdef SHARP_IR_DISTANCE_TEST
   inp=3;
@@ -369,7 +392,7 @@ void loop() {
 #endif
 
 
-  delay(1000);
+  delay(loop_delay);
 }
 
 
