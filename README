@@ -3,10 +3,13 @@ pulses
   Arduino library collection to raise actions in harmonical time intervals.
   Periodically do multiple independent tasks named 'pulses'.
 
-  Working on the very basics...
+  Working on the very basics, like
+  * library 'Pulses'	beta state.
+  * library 'Menu'	quite usable.
+  * library 'Inputs'	experimental state, working. 
 
 
-Already working:
+Already quite usable:
 
 * The Menu library.
 
