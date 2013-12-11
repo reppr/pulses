@@ -274,6 +274,32 @@ void bar_graph_signed(int value, int scale, char m, char p) {
 
 
 /* **************************************************************** */
+/*
+  Determine RAM usage:
+  int get_free_RAM() {
+*/
+
+#ifdef ARDUINO
+  extern int __bss_end;
+  extern void *__brkval;
+
+  int get_free_RAM() {
+    int free;
+
+    if ((int) __brkval == 0)
+      return ((int) &free) - ((int) &__bss_end);
+    else
+      return ((int) &free) - ((int) __brkval);
+  }
+#else			// not used yet on PC ;(	################
+  #ifndef ILLEGAL
+     #define ILLEGAL	~0
+  #endif
+  int get_free_RAM() { return ILLEGAL; }
+#endif
+
+
+/* **************************************************************** */
 // Arduino setup():
 
 void setup() {
@@ -282,6 +308,18 @@ void setup() {
   Serial.println();	// helps opening connection...
   Serial.println();	// helps opening connection...
   Serial.println();	// helps opening connection...
+
+  Serial.println("running inputs_test.ino");
+  Serial.print("Inputs=");
+  Serial.print(INPUTS.get_inp_max());
+  Serial.print("\tsizeof(input_t)=");
+  Serial.print(sizeof(input_t));
+  Serial.print("\ttotal=");
+  Serial.println(sizeof(input_t) * INPUTS.get_inp_max());
+  Serial.print("free RAM=");
+  Serial.println(get_free_RAM());
+  Serial.println();
+
 
   #ifdef INPUTS_DEBUGGING_IO_CALCULATING
     Serial.println("will TEST in2out calculation.");
