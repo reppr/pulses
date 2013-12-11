@@ -2,6 +2,9 @@
 /*
 		    inputs_test.ino
 
+     A couple of early test stubs to test Inputs library.
+   (The different tests can be activated by pp #define's.)
+
 
             http://github.com/reppr/pulses/
 
