@@ -495,7 +495,7 @@ void loop() {
       Serial.println(value, 4);
 #else
       bar_graph(value, 120, 'I');
-      //      Serial.println(INPUTS.in2o_calculation(inp, INPUTS.get_last_sampled(inp)));
+      // Serial.println(value);
 #endif
 #endif
 
