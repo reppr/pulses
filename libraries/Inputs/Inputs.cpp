@@ -38,14 +38,18 @@
 Inputs::Inputs(int inp_max):
   inp_max(inp_max)
 {
-  inputs = (input_t *) malloc(inp_max * sizeof(input_t));	// FIXME: ERROR ################
-  memset(inputs, 0, inp_max * sizeof(input_t));
+  inputs = (input_t *) malloc(inp_max * sizeof(input_t));
+  if (inputs == NULL)
+    inp_max=0;
+  else {
+    memset(inputs, 0, inp_max * sizeof(input_t));
 
-  for (int inp=0; inp<inp_max; inp++) {
-    inputs[inp].sample_method = NULL;
-    inputs[inp].samples = NULL;
-    // c++ did not like me :(
-    inputs[inp].in2o_method = NULL;
+    for (int inp=0; inp<inp_max; inp++) {
+      inputs[inp].sample_method = NULL;
+      inputs[inp].samples = NULL;
+      // c++ did not like me :(
+      inputs[inp].in2o_method = NULL;
+    }
   }
 }
 
