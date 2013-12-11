@@ -305,6 +305,13 @@ void bar_graph_signed(int value, int scale, char m, char p) {
 void setup() {
 #ifdef BAUDRATE
   Serial.begin(BAUDRATE);
+#ifdef __AVR_ATmega32U4__
+  /* on ATmega32U4		Leonardo, Mini, LilyPad Arduino USB
+     to be able to use Serial.print() from setup()
+     we *must* do that before:
+  */
+  while (!Serial) { ;}		// wait for Serial to open
+#endif
   Serial.println();	// helps opening connection...
   Serial.println();	// helps opening connection...
   Serial.println();	// helps opening connection...
