@@ -1,11 +1,11 @@
 /* **************************************************************** */
 /*
-   Inputs.h
+  Inputs.h
 
-   Arduino library to process input values from different sources
+  Arduino library to process input values from different sources
 
-   Copyright © Robert Epprecht  www.RobertEpprecht.ch  GPLv2
-   http://github.com/reppr/pulses
+  Copyright © Robert Epprecht  www.RobertEpprecht.ch  GPLv2
+  http://github.com/reppr/pulses
 
 */
 /* **************************************************************** */
@@ -31,8 +31,11 @@
 
 /* **************************************************************** */
 /*
-  parameter types for input 2 output value calculation
+  Parameter types for input 2 output value calculation
   a trade off situation between RAM usage, range and precision...
+
+  Undecided which parameter types to use i implement pp switches
+  for different formats to test:
 */
 // UNCOMMENT *ONE* OF THE FOLLOWING TRIPLETS:
 
@@ -130,86 +133,93 @@ class Inputs {
   Inputs(int inp_max);
   ~Inputs();
 
-/*
-  bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversampling)
-  Setup an input sample method and reserve memory for oversampling:
-*/
+  /*
+    bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversampling)
+    Setup an input sample method and reserve memory for oversampling:
+  */
   bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversampling);
 
-  // c++ did not like me :(
+  /*
+    bool setup_in2o_custom(int inp, ioV_t (*method)(int inp, ioV_t value));
+    setup a custom method to calculate output value from sample value.
+  */
   bool setup_in2o_custom(int inp, ioV_t (*method)(int inp, ioV_t value));
 
-/*
-  bool sample(int inp);
-  Take a sample
-  Return true every time a new oversampling set is ready
-  as a trigger for possible reactions.
-*/
+  /*
+    bool sample(int inp);
+    Take a sample
+    Return true every time a new oversampling set is ready
+    as a trigger for possible reactions.
+  */
   bool sample(int inp);
 
   // ioV_t in2o_linear(int inp, ioV_t value);	// c++ did not like me :( FIXME ################
 
-/*
-  int oversamples_average(int inp);
-  return average of the saved samples
-*/
+  /*
+    int oversamples_average(int inp);
+    return average of the saved samples
+  */
   int oversamples_average(int inp);
 
-/*
-  bool Inputs::setup_raw(int inp)
-  Setup input inp to pass through raw values without further processing.
-  Oversampling and friends might still be active though.
-*/
+  /*
+    bool Inputs::setup_raw(int inp)
+    Setup input inp to pass through raw values without further processing.
+    Oversampling and friends might still be active though.
+  */
   bool setup_raw(int inp);
 
-/*
-  bool Inputs::setup_linear(int inp,\
-         ioP_t input_offset, ioP_t mul, ioP_t div, ioV_t output_offset, bool inverse)
-  Configure a linear or reverse linear in2out function on input inp.
-*/
+  /*
+    bool Inputs::setup_linear(int inp,	\
+           ioP_t input_offset, ioP_t mul, ioP_t div, ioV_t output_offset, bool inverse)
+    Configure a linear or reverse linear in2out function on input inp.
+  */
   bool setup_linear(int inp, ioP_t input_offset, ioP_t mul, ioP_t div, ioV_t output_offset, bool inverse);
 
-/*
-  ioV_t Inputs::in2o_calculation(int inp, ioV_t value)
-  Calculate and return the output value from an input value
-  according the roules for input inp.
-*/
+  /*
+    ioV_t Inputs::in2o_calculation(int inp, ioV_t value)
+    Calculate and return the output value from an input value
+    according the roules for input inp.
+  */
   ioV_t in2o_calculation(int inp, ioV_t value);
 
+  /*
+    some inlined get_xxx() functions:
+  */
   unsigned int get_inp_max() { return inp_max; }	// inlined
 
   unsigned long get_counter(int inp) {			// inlined
     return inputs[inp].counter;
   }
 
-/*
-  bool sample_and_react(int inp);
-  take a sample on inp
-  react adequately,
+  /*
+    bool sample_and_react(int inp);
+    take a sample on inp
+    react adequately,
     like: on completing a new oversampling set
           compute average, do in2o_calculation on that
 	  influence the period of a pulse, or whatever...
-*/
+  */
   bool sample_and_react(int inp);
 
-/*
-  bool setup_io_reaction(int inp, void (*reaction)(int inp, ioV_t value));
-*/
+  /*
+    bool setup_io_reaction(int inp, void (*reaction)(int inp, ioV_t value));
+    setup a reaction 'void reaction(int inp, ioV_t value)' to be done when
+    reaching a full oversampling set
+  */
   bool setup_io_reaction(int inp, void (*reaction)(int inp, ioV_t value));
 
-
-/*
-  int get_last_sampled(int inp)
-  mainly for debugging
-  get the last sample that was taken before on inp
-  do *not* call this if there was no sample taken before...
-*/
+  /*
+    int get_last_sampled(int inp)
+    mainly for debugging
+    get the last sample that was taken before on inp
+    do *not* call this if there was no sample taken before...
+  */
   int get_last_sampled(int inp) {			// inlined
     return inputs[inp].samples[((inputs[inp].counter - 1) % inputs[inp].oversampling)];
   }
 
  private:
-  int inp_max;			// max inputs possible
+  int inp_max;			// allocated inputs
   input_t * inputs;		// data pointer for inputs
 };
 

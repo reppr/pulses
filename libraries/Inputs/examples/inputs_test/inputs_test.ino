@@ -86,8 +86,10 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 Inputs INPUTS(8);
 int inp;
 
+/* **************************************************************** */
+// test functions for debugging:
 #ifdef INPUTS_DEBUGGING_SAMPLING
-int test_sample_method(int addr) {
+int test_sample_method(int addr) {	// a test sampling method for very first tests
   int value;
 
   Serial.print("TESTING test_sample_method\taddr=");
@@ -106,6 +108,11 @@ int test_sample_method(int addr) {
 
 
 #ifdef INPUTS_DEBUGGING_IO_CALCULATING
+/*
+  void test_ioP_t();
+  check configured parameter types of Inputs library
+  quite an ugly hack, but ok here
+*/
 bool i2o_p_type_is_int8=false;
 bool i2o_p_type_is_uint8=false;
 bool i2o_p_type_is_int=false;
@@ -142,6 +149,10 @@ void test_ioP_t() {
 }
 
 
+/*
+  void test_in2outval(int inp);
+  test in2o_calculation for inputs 0 to 1023
+*/
 void test_in2outval(int inp) {
   Serial.println();
   Serial.print("test_in2outval\tinp=");
@@ -164,6 +175,7 @@ void test_in2outval(int inp) {
 
 
 #ifdef INPUTS_DEBUGGING_CUSTOM_FUNCTION
+// just a silly function for a quick test
 ioV_t custom_in2o_method(int inp, ioV_t value) {
   return 7*value;
 }
@@ -171,6 +183,7 @@ ioV_t custom_in2o_method(int inp, ioV_t value) {
 
 
 #ifdef INPUTS_DEBUGGING_SAMPLE_REACTION
+// bar_graph_(inp, value) with a dummy inp
 void bar_graph_(int dummy, ioV_t value) {
   bar_graph(value, 1023, '*');
 }
@@ -185,8 +198,11 @@ int analogRead_(int pin) {	// horrible kludge, we need the type cast here...
 
 
 #ifdef HCSR04_TRIGGER_PIN
-  #define HCSR04_TRIGGER_DURATION	10
-
+/*
+  int read_HCSR04_ultrasonic(int dummy);
+  with a dummy inp paramer
+*/
+#define HCSR04_TRIGGER_DURATION	10
 int read_HCSR04_ultrasonic(int dummy) {
   long time;
 
@@ -208,6 +224,54 @@ int read_HCSR04_ultrasonic(int dummy) {
 }
 #endif
 
+
+/* **************************************************************** */
+/*
+  bar_graph(value)
+  print one value & bar graph line:
+*/
+void bar_graph(int value, int scale, char c) {
+  const int length=64;
+  int stars = ((long) value * (long) length) / (scale + 1) ;
+
+  Serial.print("value==");
+  Serial.print(value);
+  Serial.print("\t");
+  if (value >=0 && value <= scale) {
+    for (int i=0; i<stars; i++) {
+      Serial.print(c);
+    }
+  }
+  Serial.println();
+}
+
+void bar_graph_signed(int value, int scale, char m, char p) {
+  const int length=32;
+  int stars = ((long) value * (long) length) / (scale + 1);
+
+  Serial.print("value==");
+  Serial.print(value);
+  Serial.print("\t");
+
+  for (int i=0; i < length; i++) {
+    if (i < (length + stars))
+      Serial.print(F(" "));
+    else
+      Serial.print(m);
+  }
+
+  if (stars==0)
+    Serial.print(F("0"));
+  else
+    for (int i=0; i < stars; i++)
+      Serial.print(m);
+
+  Serial.println();
+}
+
+
+/* **************************************************************** */
+// Arduino setup():
 
 void setup() {
 #ifdef BAUDRATE
@@ -338,6 +402,9 @@ void setup() {
 }
 
 
+/* **************************************************************** */
+// Arduino loop():
+
 int cnt=0;
 int loop_delay=1000;
 
@@ -411,46 +478,4 @@ void loop() {
   delay(loop_delay);
 }
 
-
-/*
-  bar_graph(value)
-  print one value & bar graph line:
-*/
-void bar_graph(int value, int scale, char c) {
-  const int length=64;
-  int stars = ((long) value * (long) length) / (scale + 1) ;
-
-  Serial.print("value==");
-  Serial.print(value);
-  Serial.print("\t");
-  if (value >=0 && value <= scale) {
-    for (int i=0; i<stars; i++) {
-      Serial.print(c);
-    }
-  }
-  Serial.println();
-}
-
-void bar_graph_signed(int value, int scale, char m, char p) {
-  const int length=32;
-  int stars = ((long) value * (long) length) / (scale + 1);
-
-  Serial.print("value==");
-  Serial.print(value);
-  Serial.print("\t");
-
-  for (int i=0; i < length; i++) {
-    if (i < (length + stars))
-      Serial.print(F(" "));
-    else
-      Serial.print(m);
-  }
-
-  if (stars==0)
-    Serial.print(F("0"));
-  else
-    for (int i=0; i < stars; i++)
-      Serial.print(m);
-
-  Serial.println();
-}
+/* **************************************************************** */
