@@ -76,11 +76,6 @@ typedef I2O_VALUE_TYPE ioV_t;		// ioV_t is 'input 2 output value type', possibly
 
 
 /* **************************************************************** */
-// DEBUGGING switches:
-// #define INPUTS_DEBUGGING_SAMPLING
-
-
-/* **************************************************************** */
 struct input_t {
   unsigned long counter;		// counts taken samples
   uint16_t flags;
