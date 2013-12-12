@@ -227,7 +227,6 @@ char PIN_tone = ILLEGAL;	// pin for tone output on a piezzo
   // bool extra_switch=false;	// extra functionality on digital pins
   // int visible_digital_pins=NUM_DIGITAL_PINS;	// extra_switch==true
 
-bool echo_switch=true;		// serial echo switch
 
 
 /* ****************  info on DIGITAL pins:  **************** */
