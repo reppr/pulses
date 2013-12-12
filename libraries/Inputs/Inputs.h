@@ -80,6 +80,7 @@ struct input_t {
   unsigned long counter;		// counts taken samples
   uint16_t flags;
   uint8_t input_addr;			// where to get data from, i.e: pin, i2c address
+  uint8_t input_p2;			// second 'addr' parameter, second pin, i2c register, etc.
   uint8_t oversampling;			// previous samples kept in memory
   int (*sample_method)(int addr);	// method to take a sample, i.e. analogRead(pin)
 
@@ -98,6 +99,8 @@ struct input_t {
 
   // function pointer to bool out_reaction(int inp, ioV_t value)
   void (*out_reaction)(int inp, ioV_t output_value);
+  uint8_t output_addr;	// output address like pin, pulse, etc.
+  //  uint8_t output_p2;	// second output 'addr' parameter, like second pin, etc.
 };
 
 // flags bitmasks:
