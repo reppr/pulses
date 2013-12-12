@@ -85,7 +85,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 //#define BAUDRATE	31250		// MIDI
 
 
-// Inputs(int inp_max);
+// Inputs(int inputs_allocated);
 Inputs INPUTS(8);
 int inp;
 
@@ -318,11 +318,11 @@ void setup() {
 
   Serial.println("running inputs_test.ino");
   Serial.print("Inputs=");
-  Serial.print(INPUTS.get_inp_max());
+  Serial.print(INPUTS.get_inputs_allocated());
   Serial.print("\tsizeof(input_t)=");
   Serial.print(sizeof(input_t));
   Serial.print("\ttotal=");
-  Serial.println(sizeof(input_t) * INPUTS.get_inp_max());
+  Serial.println(sizeof(input_t) * INPUTS.get_inputs_allocated());
   Serial.print("free RAM=");
   Serial.println(get_free_RAM());
   Serial.println();

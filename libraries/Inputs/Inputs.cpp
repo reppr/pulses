@@ -35,16 +35,16 @@
 
 /* **************************************************************** */
 // Constructor:
-Inputs::Inputs(int inp_max):
-  inp_max(inp_max)
+Inputs::Inputs(int inputs_allocated):
+  inputs_allocated(inputs_allocated)
 {
-  inputs = (input_t *) malloc(inp_max * sizeof(input_t));
+  inputs = (input_t *) malloc(inputs_allocated * sizeof(input_t));
   if (inputs == NULL)
-    inp_max=0;
+    inputs_allocated=0;
   else {
-    memset(inputs, 0, inp_max * sizeof(input_t));
+    memset(inputs, 0, inputs_allocated * sizeof(input_t));
 
-    for (int inp=0; inp<inp_max; inp++) {
+    for (int inp=0; inp<inputs_allocated; inp++) {
       inputs[inp].sample_method = NULL;
       inputs[inp].samples = NULL;
       // c++ did not like me :(
@@ -55,7 +55,7 @@ Inputs::Inputs(int inp_max):
 
 // Destructor:
 Inputs::~Inputs() {
-  for (int inp=0; inp<inp_max; inp++)
+  for (int inp=0; inp<inputs_allocated; inp++)
     free(inputs[inp].samples);
 
   free(inputs);
@@ -68,7 +68,7 @@ Inputs::~Inputs() {
 */
 bool Inputs::setup_sample_method(int inp, int (*take_sample)(int addr), uint8_t addr, uint8_t oversampling)
 {
-  if ((inp < 0) or (inp >= inp_max))
+  if ((inp < 0) or (inp >= inputs_allocated))
     return false;	// inp out of range
 
   inputs[inp].sample_method = take_sample;
@@ -172,7 +172,7 @@ ioV_t Inputs::in2o_calculation(int inp, ioV_t value) {
   Oversampling and friends might still be active though.
 */
 bool Inputs::setup_raw(int inp) {
-  if ((inp < 0) or (inp >= inp_max))
+  if ((inp < 0) or (inp >= inputs_allocated))
     return false;	// inp out of range
 
   inputs[inp].flags &= ~INPUT_PROCESSING;
@@ -192,7 +192,7 @@ bool Inputs::setup_raw(int inp) {
 bool Inputs::setup_linear(int inp, \
        ioP_t input_offset, ioP_t mul, ioP_t div, ioV_t output_offset, bool inverse)
 {
-  if ((inp < 0) or (inp >= inp_max))
+  if ((inp < 0) or (inp >= inputs_allocated))
     return false;	// inp out of range
 
   inputs[inp].flags |= INPUT_PROCESSING;
@@ -220,7 +220,7 @@ bool Inputs::setup_linear(int inp, \
   setup a custom method to calculate output value from sample value.
 */
 bool Inputs::setup_in2o_custom(int inp, ioV_t (*method)(int inp, ioV_t value)) {
-  if ((inp < 0) or (inp >= inp_max))
+  if ((inp < 0) or (inp >= inputs_allocated))
     return false;	// inp out of range
 
   inputs[inp].flags &= ~(PROCESS_LINEAR & PROCESS_INVERSE);
@@ -274,7 +274,7 @@ bool Inputs::sample_and_react(int inp) {
   reaching a full oversampling set
 */
 bool Inputs::setup_io_reaction(int inp, void (*reaction)(int inp, ioV_t value)) {
-  if ((inp < 0) or (inp >= inp_max))
+  if ((inp < 0) or (inp >= inputs_allocated))
     return false;	// inp out of range
 
   inputs[inp].out_reaction = reaction;

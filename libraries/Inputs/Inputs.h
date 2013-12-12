@@ -125,7 +125,7 @@ struct input_t {
 
 class Inputs {
  public:
-  Inputs(int inp_max);
+  Inputs(int inputs_allocated);
   ~Inputs();
 
   /*
@@ -180,7 +180,8 @@ class Inputs {
   /*
     some inlined get_xxx() functions:
   */
-  unsigned int get_inp_max() { return inp_max; }	// inlined
+  unsigned int get_inputs_allocated() {		// inlined
+    return inputs_allocated; }
 
   unsigned long get_counter(int inp) {			// inlined
     return inputs[inp].counter;
@@ -214,7 +215,7 @@ class Inputs {
   }
 
  private:
-  int inp_max;			// allocated inputs
+  int inputs_allocated;		// allocated inputs
   input_t * inputs;		// data pointer for inputs
 };
 

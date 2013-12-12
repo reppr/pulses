@@ -10,10 +10,10 @@ oversamples_average	KEYWORD2
 setup_raw	KEYWORD2
 setup_linear	KEYWORD2
 in2o_calculation	KEYWORD2
-get_inp_max	KEYWORD2
+get_inputs_allocated	KEYWORD2
 get_counter	KEYWORD2
 sample_and_react	KEYWORD2
 setup_io_reaction	KEYWORD2
 get_last_sampled	KEYWORD2
-inp_max	KEYWORD2
+inputs_allocated	KEYWORD2
 inputs	KEYWORD2
