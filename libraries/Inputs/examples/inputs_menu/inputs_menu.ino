@@ -37,6 +37,7 @@
 // INPUTS:
 Inputs INPUTS(8);
 
+unsigned long selected_inputs=77;
 
 /* **************************************************************** */
 // MENU:
@@ -92,6 +93,20 @@ void setup() {	// ARDUINO
 
   INPUTS.setup_sample_method(inp, &analogRead_, 5, 16);		// A5, oversampling=16
   INPUTS.setup_linear(inp++, -11, 12, 16, -8, INVERSE);		// (x-11)12/16/(x-11) -8
+
+  // test Inputs::set_xxx() functions:
+  inp=6;
+  INPUTS.set_counter(inp, 11);
+  INPUTS.set_flags(inp, 255);
+  INPUTS.set_input_addr(inp, 33);
+  INPUTS.set_input_p2(inp, 44);
+  INPUTS.set_oversampling(inp, 55);	// outch ;)
+  INPUTS.set_input_offset(inp, 66);
+  INPUTS.set_mul(inp, -77);
+  INPUTS.set_div(inp, 88);
+  INPUTS.set_output_offset(inp, 9999);
+  INPUTS.set_output_addr(inp, 10);
+
   inputs_info();
 }
 #endif
@@ -211,31 +226,45 @@ const char flags_[] = "\tflags ";
 
 void input_info(int inp) {
   MENU.space();
-  MENU.space();
-  if (inp < 10)
+  if (selected_inputs & (1 << inp))
+    MENU.out('*');			// '*' means selected
+  else
+    MENU.space();
+
+  if (inp < 10)				// left side padding
     MENU.space();
   MENU.out(inp);
   MENU.out('/');
   MENU.out(INPUTS.get_inputs_allocated());
+
   MENU.out(flags_);
   MENU.outBIN(INPUTS.get_flags(inp), 16);
   MENU.tab();
+
   MENU.out(F("i@="));
   MENU.pad(INPUTS.get_input_addr(inp), 4);
+
   MENU.out(F("p2="));
   MENU.pad(INPUTS.get_input_p2(inp), 4);
+
   MENU.out(F("smp="));
   MENU.pad(INPUTS.get_oversampling(inp),4);
+
   MENU.out('+');
   MENU.pad(INPUTS.get_input_offset(inp), 6);
+
   MENU.out('*');
   MENU.pad(INPUTS.get_mul(inp), 6);
+
   MENU.out('/');
   MENU.pad(INPUTS.get_div(inp), 6);
+
   MENU.out('+');
   MENU.pad(INPUTS.get_output_offset(inp), 6);
+
   MENU.out(F("o@="));
   MENU.pad(INPUTS.get_output_addr(inp), 4);
+
   MENU.out(F("#="));
   MENU.out(INPUTS.get_counter(inp));	// not padded
 
@@ -253,3 +282,16 @@ void inputs_info() {
 int analogRead_(int pin) {	// horrible kludge, we need the type cast here...
   return analogRead(pin);
 }
+
+/*
+set_counter(inp, value);
+set_flags(inp, value);
+set_input_addr(inp, value);
+set_input_p2(inp, value);
+set_oversampling(inp, value);
+set_input_offset(inp, value);
+set_mul(inp, value);
+set_div(inp, value);
+set_output_offset(inp, value);
+set_output_addr(inp, value);
+*/

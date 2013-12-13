@@ -239,6 +239,61 @@ class Inputs {
 //  }
 
 
+  /*
+    some inlined set_xxx() functions:
+  */
+  void set_counter(int inp, unsigned long counter) {		// inlined
+    inputs[inp].counter = counter;
+  }
+
+  void set_flags(int inp, uint16_t flags) {			// inlined
+    inputs[inp].flags = flags;
+  }
+
+  void set_input_addr(int inp, uint8_t addr) {		// inlined
+    inputs[inp].input_addr = addr;
+  }
+
+  void set_input_p2(int inp, uint8_t p2) {	// inlined
+    inputs[inp].input_p2 = p2;
+  }
+
+  void set_oversampling(int inp, uint8_t oversampling) {	// inlined
+    inputs[inp].oversampling = oversampling;
+  }
+
+  void set_input_offset(int inp, ioP_t offset) {	// inlined
+    inputs[inp].input_offset = offset;
+  }
+
+  void set_mul(int inp, ioP_t mul) {	// inlined
+    inputs[inp].mul=mul;
+  }
+
+  void set_div(int inp, ioP_t div) {	// inlined
+    inputs[inp].div = div;
+  }
+
+  void set_output_offset(int inp, ioV_t output_offset) {	// inlined
+    inputs[inp].output_offset = output_offset;
+  }
+
+// MISSING set_xxx() functions:
+//   samples(int inp)
+//   out_reaction(int inp, ioV_t value);
+//   sample_method(int inp)
+//   in2o_method(int inp)
+
+  void set_output_addr(int inp, uint8_t output_addr) {	// inlined
+    inputs[inp].output_addr = output_addr;
+  }
+
+// NOT USED yet:
+//  void set_output_p2(int inp, uint8_t p2) {	// inlined
+//    inputs[inp].output_p2 = p2;
+//  }
+
+
  /*
     bool sample_and_react(int inp);
     take a sample on inp
