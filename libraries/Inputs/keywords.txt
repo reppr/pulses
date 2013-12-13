@@ -17,3 +17,13 @@ setup_io_reaction	KEYWORD2
 get_last_sampled	KEYWORD2
 inputs_allocated	KEYWORD2
 inputs	KEYWORD2
+get_counter	KEYWORD2
+get_flags	KEYWORD2
+get_input_addr	KEYWORD2
+get_input_p2	KEYWORD2
+get_oversampling	KEYWORD2
+get_input_offset	KEYWORD2
+get_mul	KEYWORD2
+get_div	KEYWORD2
+get_output_offset	KEYWORD2
+get_output_addr	KEYWORD2

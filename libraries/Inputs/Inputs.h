@@ -97,7 +97,7 @@ struct input_t {
 
   int * samples;	// pointer to the stored samples for oversampling and friends
 
-  // function pointer to bool out_reaction(int inp, ioV_t value)
+  // function pointer to void out_reaction(int inp, ioV_t value)
   void (*out_reaction)(int inp, ioV_t output_value);
   uint8_t output_addr;	// output address like pin, pulse, etc.
   //  uint8_t output_p2;	// second output 'addr' parameter, like second pin, etc.
@@ -180,17 +180,66 @@ class Inputs {
   */
   ioV_t in2o_calculation(int inp, ioV_t value);
 
+
   /*
     some inlined get_xxx() functions:
   */
   unsigned int get_inputs_allocated() {		// inlined
     return inputs_allocated; }
 
-  unsigned long get_counter(int inp) {			// inlined
+  unsigned long get_counter(int inp) {		// inlined
     return inputs[inp].counter;
   }
 
-  /*
+  uint16_t get_flags(int inp) {			// inlined
+    return inputs[inp].flags;
+  }
+
+  uint8_t get_input_addr(int inp) {		// inlined
+    return inputs[inp].input_addr;
+  }
+
+  uint8_t get_input_p2(int inp) {	// inlined
+    return inputs[inp].input_p2;
+  }
+
+  uint8_t get_oversampling(int inp) {	// inlined
+    return inputs[inp].oversampling;
+  }
+
+  ioP_t get_input_offset(int inp) {	// inlined
+    return inputs[inp].input_offset;
+  }
+
+  ioP_t get_mul(int inp) {	// inlined
+    return inputs[inp].mul;
+  }
+
+  ioP_t get_div(int inp) {	// inlined
+    return inputs[inp].div;
+  }
+
+  ioV_t get_output_offset(int inp) {	// inlined
+    return inputs[inp].output_offset;
+  }
+
+// MISSING get functions:
+//   samples(int inp)
+//   out_reaction(int inp, ioV_t value);
+//   sample_method(int inp)
+//   in2o_method(int inp)
+
+  uint8_t get_output_addr(int inp) {	// inlined
+    return inputs[inp].output_addr;
+  }
+
+// NOT USED yet:
+//  uint8_t get_output_p2(int inp) {	// inlined
+//    return inputs[inp].output_p2;
+//  }
+
+
+ /*
     bool sample_and_react(int inp);
     take a sample on inp
     react adequately,
