@@ -172,6 +172,10 @@ class Menu {
   void outln(const unsigned int i)	const;	// unsigend int  and newline
   void outln(const unsigned long l)	const;	// unsigned long and newline
 
+  // Print a value and pad with spaces to field width 'pad'.
+  // At least one space will always be printed.
+  void pad(const long value, unsigned int len) const;
+
 #ifdef USE_F_MACRO
   // *DO* use Arduino F() MACRO for string output to save RAM:
 

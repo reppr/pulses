@@ -211,6 +211,27 @@ char Menu::cb_read() {
   void Menu::outln(const unsigned int i)	const	{ port_.println(i); }
   void Menu::outln(const unsigned long l)	const	{ port_.println(l); }
 
+  // Print a value and pad with spaces to field width 'pad'.
+  // At least one space will always be printed.
+  void Menu::pad(long value, unsigned int pad) const {
+    out(value);
+    pad--;		// we need at least one chiffre
+    if (value<0) {
+      value = -value;
+      pad--;		// '-' sign
+    }
+    long scratch=10;
+    while (value >= scratch) {
+      pad--;	// another chiffre
+      scratch *= 10;
+    }
+    if (pad < 1)	// one space at least
+      pad=1;
+
+    for(; pad; pad--)	// pad with spaces
+      space();
+  }
+
 #ifdef USE_F_MACRO
   // *DO* use Arduino F() MACRO for string output to save RAM:
   void Menu::out(const __FlashStringHelper* str) const {
