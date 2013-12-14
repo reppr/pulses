@@ -192,6 +192,9 @@ class Menu {
   // Print binary numbers with leading zeroes and a trailing space:
   void outBIN(unsigned long l, int bits ) const; // binary output
 
+  // Print a hex chiffre:
+  void out_hex_chiffre(unsigned char chiffre) const; // output 1 hex chiffre
+
   /* String recycling:						*/
   void OutOfRange() const;	// output "out of range\n"
   void Error_() const;		// output " ERROR: "

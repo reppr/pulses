@@ -379,6 +379,18 @@ void Menu::outBIN(unsigned long value, int bits ) const {
   space();
 }
 
+void Menu::out_hex_chiffre(unsigned char chiffre) const { // output 1 hex chiffre
+  char c='?';
+
+  if (chiffre < 10)
+    c = chiffre + '0';
+  else
+    if (chiffre < 16 )
+      c = chiffre - 10 + 'a';
+
+  out(c);
+}
+
 
 /* **************************************************************** */
 // String recycling:

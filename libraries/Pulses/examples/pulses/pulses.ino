@@ -982,18 +982,6 @@ void do_throw_a_jiffle(int pulse) {		// for pulse_do
 
 // what is selected?
 
-// display helper function
-char hex_chiffre(unsigned int c) {
-  if ((c >= 0) && (c <= 9))
-    return c + '0';
-
-  if (c < 16 )
-    return (c - 10 + 'a');
-
-  return '?';
-}
-
-
 const char selected_[] = "selected ";
 
 void print_selected_pulses() {
@@ -1002,7 +990,7 @@ void print_selected_pulses() {
   MENU.out(selected_);
   for (int pulse=0; pulse<hex_pulses; pulse++) {
     if (selected_pulses & (1 << pulse))
-      MENU.out((char) hex_chiffre(pulse));
+      MENU.out_hex_chiffre(pulse);
     else
       MENU.out('.');
   }
@@ -1024,14 +1012,13 @@ void print_selected_pulses() {
 }
 
 void print_selected() {
-  MENU.out(selected_);
-
   switch (dest) {
   case CODE_PULSES:
     print_selected_pulses();
     break;
 
   case CODE_TIME_UNIT:
+    MENU.out(selected_);
     MENU.outln(timeUnit);
     break;
   }
@@ -1056,7 +1043,7 @@ void info_select_destination_with(bool extended_destinations) {
   // FIXME: use 16 here, when reaction will be prepared for a,b,c,d,e,f too.
   //  for (int pulse=0; pulse<min(pl_max,16); pulse++) {
   for (int pulse=0; pulse<min(pl_max,10); pulse++) {	// FIXME: use 16 here, when reaction will be prepared for a,b,c,d,e,f too.
-    MENU.out(hex_chiffre(pulse));
+    MENU.out_hex_chiffre(pulse);
     MENU.space();
     MENU.space();
   }
