@@ -197,7 +197,9 @@ class Menu {
 
   /* String recycling:						*/
   void OutOfRange() const;	// output "out of range\n"
-  void Error_() const;		// output " ERROR: "
+  void out_Error_() const;	// output "ERROR: "
+  void out_selected_() const;	// output "selected "
+  void out_flags_() const;	// output "\tflags ";
 
 /* Output a newline, tab, space, '='
   ln(), tab(), space(), equals():				*/

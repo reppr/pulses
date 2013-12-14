@@ -398,9 +398,14 @@ void Menu::out_hex_chiffre(unsigned char chiffre) const { // output 1 hex chiffr
 // void OutOfRange(): output "out of range\n"
 void Menu::OutOfRange()	const { out(F("out of range\n")); }
 
-// void Error_(): output " ERROR: "
-void Menu::Error_()	const { out(F(" ERROR: ")); }
+// void out_Error_(): output "ERROR: "
+void Menu::out_Error_()	const { out(F("ERROR: ")); }
 
+// void out_selected_(): output "selected "
+void Menu::out_selected_() const { out(F("selected ")); }
+
+// void out_flags_(): output "\tflags "
+void Menu::out_flags_()	const { out(F("\tflags ")); }
 
 /* **************************************************************** */
 // Buffer interface functions for parsing:
@@ -516,8 +521,8 @@ bool Menu::lurk_then_do() {
     if (cb_is_full()) {
       // Inform user:
       if (verbosity) {
-	out(F("buffer"));
-	Error_();
+	out(F("buffer "));
+	out_Error_();
 	OutOfRange();
       }
 
@@ -679,7 +684,7 @@ int Menu::add_page(const char *pageTitle, const char hotkey,		\
     so the user can see the error message.
     Looks save enough as a menu is not very usable without adding menupages.
   */
-    Error_();
+    out_Error_();
     print_free_RAM();	// real or fake ;)
     ln();
     flush();		// we *do* need to flush here
@@ -701,8 +706,8 @@ int Menu::add_page(const char *pageTitle, const char hotkey,		\
     return (men_known - 1);
   } else {	// ERROR handling ################
     if (verbosity) {
-      out(F("add_page"));
-      Error_();
+      out(F("add_page "));
+      out_Error_();
       OutOfRange();
     }
   }

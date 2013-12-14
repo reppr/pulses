@@ -684,7 +684,6 @@ int sync=1;			// syncing edges or middles of square pulses
 const char timeUnit[] = "time unit";
 const char timeUnits[] = " time units";
 const char pulseInfo[] = "*** PULSE info ";
-const char flags_[] = "\tflags ";
 const char pulseOvfl[] = "\tpulse/ovf ";
 const char lastOvfl[] = "last/ovfl ";
 const char nextOvfl[] = "   \tnext/ovfl ";
@@ -721,7 +720,7 @@ void pulse_info_1line(int pulse) {
   MENU.out('/');
   MENU.out((unsigned int) PULSES.pulses[pulse].counter);
 
-  MENU.out(flags_);
+  MENU.out_flags_();
   MENU.outBIN(PULSES.pulses[pulse].flags, 8);
 
   MENU.out('\t');
@@ -811,7 +810,7 @@ void pulse_info(int pulse) {
   MENU.out('\t');
   display_action(pulse);
 
-  MENU.out(flags_);
+  MENU.out_flags_();
   MENU.outBIN(PULSES.pulses[pulse].flags, 8);
   MENU.ln();
 
@@ -982,12 +981,10 @@ void do_throw_a_jiffle(int pulse) {		// for pulse_do
 
 // what is selected?
 
-const char selected_[] = "selected ";
-
 void print_selected_pulses() {
   const int hex_pulses=min(pl_max,16);	// displayed as hex chiffres
 
-  MENU.out(selected_);
+  MENU.out_selected_();
   for (int pulse=0; pulse<hex_pulses; pulse++) {
     if (selected_pulses & (1 << pulse))
       MENU.out_hex_chiffre(pulse);
@@ -1018,7 +1015,7 @@ void print_selected() {
     break;
 
   case CODE_TIME_UNIT:
-    MENU.out(selected_);
+    MENU.out_selected_();
     MENU.outln(timeUnit);
     break;
   }
@@ -1333,7 +1330,6 @@ void setup_jiffles0(int sync) {
 
 // ****************************************************************
 // menu_serial_program_reaction()
-// const char selected_[] = "selected ";
 const char killPulse[] = "kill pulse ";
 const char killedAll[] = "killed all";
 const char onlyPositive[] = "only positive sync ";

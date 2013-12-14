@@ -400,8 +400,6 @@ bool inputs_reaction(char token) {
 }
 
 
-const char flags_[] = "\tflags ";
-
 void input_info(int inp) {
   MENU.space();
   if (selected_inputs & (1 << inp))
@@ -415,7 +413,7 @@ void input_info(int inp) {
   MENU.out('/');
   MENU.out(INPUTS.get_inputs_allocated());
 
-  MENU.out(flags_);
+  MENU.out_flags_();
   MENU.outBIN(INPUTS.get_flags(inp), 16);
   MENU.tab();
 
@@ -466,12 +464,10 @@ int analogRead_(int pin) {	// horrible kludge, we need the type cast here...
 }
 
 
-const char selected_[] = "selected ";
-
 void print_selected_inputs() {
   const int inputs=INPUTS.get_inputs_allocated();
   const int hex_inputs=min(inputs, 16);	// displayed as hex chiffres
-  MENU.out(selected_);
+  MENU.out_selected_();
   for (int inp=0; inp < hex_inputs; inp++) {
     if (selected_inputs & (1 << inp))
       MENU.out_hex_chiffre(inp);
