@@ -20,7 +20,7 @@ inputs	KEYWORD2
 get_counter	KEYWORD2
 get_flags	KEYWORD2
 get_input_addr	KEYWORD2
-get_input_p2	KEYWORD2
+get_input_i2	KEYWORD2
 get_oversampling	KEYWORD2
 get_input_offset	KEYWORD2
 get_mul	KEYWORD2
@@ -30,10 +30,11 @@ get_output_addr	KEYWORD2
 set_counter	KEYWORD2
 set_flags	KEYWORD2
 set_input_addr	KEYWORD2
-set_input_p2	KEYWORD2
+set_input_i2	KEYWORD2
 set_oversampling	KEYWORD2
 set_input_offset	KEYWORD2
 set_mul	KEYWORD2
 set_div	KEYWORD2
 set_output_offset	KEYWORD2
 set_output_addr	KEYWORD2
+set_output_o2	KEYWORD2

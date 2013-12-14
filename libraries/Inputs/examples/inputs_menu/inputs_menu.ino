@@ -37,7 +37,7 @@
 // INPUTS:
 Inputs INPUTS(8);
 
-unsigned long selected_inputs=77;
+unsigned long selected_inputs=0;
 
 /* **************************************************************** */
 // MENU:
@@ -57,7 +57,7 @@ Menu MENU(32, 1, &men_getchar, Serial);
 
 
 // needed for MENU.add_page() in setup()
-void inputs_display();		// defined later on
+void inputs_display();			// defined later on
 bool inputs_reaction(char token);	// defined later on
 
 
@@ -99,13 +99,15 @@ void setup() {	// ARDUINO
   INPUTS.set_counter(inp, 11);
   INPUTS.set_flags(inp, 255);
   INPUTS.set_input_addr(inp, 33);
-  INPUTS.set_input_p2(inp, 44);
-  INPUTS.set_oversampling(inp, 55);	// outch ;)
+  INPUTS.set_input_i2(inp, 44);
+//  INPUTS.set_oversampling(inp, 55);	// outch ;)  Do not do this...
   INPUTS.set_input_offset(inp, 66);
   INPUTS.set_mul(inp, -77);
   INPUTS.set_div(inp, 88);
   INPUTS.set_output_offset(inp, 9999);
   INPUTS.set_output_addr(inp, 10);
+  INPUTS.set_output_o2(inp, 111);
+
 
   inputs_info();
 }
@@ -244,8 +246,8 @@ void input_info(int inp) {
   MENU.out(F("i@="));
   MENU.pad(INPUTS.get_input_addr(inp), 4);
 
-  MENU.out(F("p2="));
-  MENU.pad(INPUTS.get_input_p2(inp), 4);
+  MENU.out(F("i2="));
+  MENU.pad(INPUTS.get_input_i2(inp), 4);
 
   MENU.out(F("smp="));
   MENU.pad(INPUTS.get_oversampling(inp),4);
@@ -265,6 +267,9 @@ void input_info(int inp) {
   MENU.out(F("o@="));
   MENU.pad(INPUTS.get_output_addr(inp), 4);
 
+  MENU.out(F("o2="));
+  MENU.pad(INPUTS.get_output_o2(inp), 4);
+
   MENU.out(F("#="));
   MENU.out(INPUTS.get_counter(inp));	// not padded
 
@@ -274,6 +279,7 @@ void input_info(int inp) {
 }
 
 void inputs_info() {
+  MENU.ln();
   int inputs=INPUTS.get_inputs_allocated();
   for (int inp=0; inp < inputs; inp++)
     input_info(inp);

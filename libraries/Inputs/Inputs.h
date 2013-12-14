@@ -80,7 +80,7 @@ struct input_t {
   unsigned long counter;		// counts taken samples
   uint16_t flags;
   uint8_t input_addr;			// where to get data from, i.e: pin, i2c address
-  uint8_t input_p2;			// second 'addr' parameter, second pin, i2c register, etc.
+  uint8_t input_i2;			// second input parameter, second pin, i2c register, etc.
   uint8_t oversampling;			// previous samples kept in memory
   int (*sample_method)(int addr);	// method to take a sample, i.e. analogRead(pin)
 
@@ -100,7 +100,7 @@ struct input_t {
   // function pointer to void out_reaction(int inp, ioV_t value)
   void (*out_reaction)(int inp, ioV_t output_value);
   uint8_t output_addr;	// output address like pin, pulse, etc.
-  //  uint8_t output_p2;	// second output 'addr' parameter, like second pin, etc.
+  uint8_t output_o2;	// second output 'addr' parameter, like second pin, etc.
 };
 
 // flags bitmasks:
@@ -199,8 +199,8 @@ class Inputs {
     return inputs[inp].input_addr;
   }
 
-  uint8_t get_input_p2(int inp) {	// inlined
-    return inputs[inp].input_p2;
+  uint8_t get_input_i2(int inp) {	// inlined
+    return inputs[inp].input_i2;
   }
 
   uint8_t get_oversampling(int inp) {	// inlined
@@ -233,10 +233,9 @@ class Inputs {
     return inputs[inp].output_addr;
   }
 
-// NOT USED yet:
-//  uint8_t get_output_p2(int inp) {	// inlined
-//    return inputs[inp].output_p2;
-//  }
+  uint8_t get_output_o2(int inp) {	// inlined
+    return inputs[inp].output_o2;
+  }
 
 
   /*
@@ -254,13 +253,14 @@ class Inputs {
     inputs[inp].input_addr = addr;
   }
 
-  void set_input_p2(int inp, uint8_t p2) {	// inlined
-    inputs[inp].input_p2 = p2;
+  void set_input_i2(int inp, uint8_t i2) {	// inlined
+    inputs[inp].input_i2 = i2;
   }
 
-  void set_oversampling(int inp, uint8_t oversampling) {	// inlined
-    inputs[inp].oversampling = oversampling;
-  }
+//  // do not do this...
+//  void set_oversampling(int inp, uint8_t oversampling) {	// inlined
+//    inputs[inp].oversampling = oversampling;
+//  }
 
   void set_input_offset(int inp, ioP_t offset) {	// inlined
     inputs[inp].input_offset = offset;
@@ -288,10 +288,9 @@ class Inputs {
     inputs[inp].output_addr = output_addr;
   }
 
-// NOT USED yet:
-//  void set_output_p2(int inp, uint8_t p2) {	// inlined
-//    inputs[inp].output_p2 = p2;
-//  }
+  void set_output_o2(int inp, uint8_t o2) {	// inlined
+    inputs[inp].output_o2 = o2;
+  }
 
 
  /*
