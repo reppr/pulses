@@ -202,17 +202,78 @@ void loop() {	// ARDUINO
 /* **************************************************************** */
 
 void inputs_display() {
+  int max = INPUTS.get_inputs_allocated();
+
   MENU.out(F("Inputs "));
   MENU.outln(INPUTS.get_inputs_allocated());
   MENU.outln(F("i=info"));
+
+  MENU.out(F("Select with "));
+  for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++) {
+    if (inp == 16)	// not a hex chiffre any more	
+      break;
+
+    MENU.out_hex_chiffre(inp);
+    MENU.space();
+  }
+  MENU.tab();
+  MENU.outln(F("'~'=invert  'x'=clear"));
 }
 
-bool inputs_reaction(char token) {	 // just for a demo, REPLACE
+bool inputs_reaction(char token) {
   long newValue;
+  unsigned long bitmask=0;
+  int bit;
 
   switch (token) {
+  case '0':
+  case '1':
+  case '2':
+  case '3':
+  case '4':
+  case '5':
+  case '6':
+  case '7':
+  case '8':
+  case '9':
+    bit = token -'0';
+    if (bit >= INPUTS.get_inputs_allocated())
+      return false;	// *not* responsible
+
+    // existing input:
+    selected_inputs ^= (1 << bit);
+    print_selected_inputs();
+    break;
+
+  case 'a':
+  case 'b':
+  case 'c':
+  case 'd':
+  case 'e':
+  case 'f':
+    bit = token -'a' + 10;
+    if (bit >= INPUTS.get_inputs_allocated())
+      return false;	// *not* responsible
+
+    // existing input:
+    selected_inputs ^= (1 << bit);
+    print_selected_inputs();
+    break;
+
+  case '~':
+    selected_inputs = ~selected_inputs;
+    for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+      bitmask |= (1 << inp);
+    selected_inputs &= bitmask;
+    print_selected_inputs();
+    break;
+
+  case 'x':
+    selected_inputs = 0;
+    print_selected_inputs();
+    break;
+
   case 'i':
-    MENU.ln();
     inputs_info();
     MENU.ln();
     break;
@@ -289,15 +350,26 @@ int analogRead_(int pin) {	// horrible kludge, we need the type cast here...
   return analogRead(pin);
 }
 
-/*
-set_counter(inp, value);
-set_flags(inp, value);
-set_input_addr(inp, value);
-set_input_p2(inp, value);
-set_oversampling(inp, value);
-set_input_offset(inp, value);
-set_mul(inp, value);
-set_div(inp, value);
-set_output_offset(inp, value);
-set_output_addr(inp, value);
-*/
+
+const char selected_[] = "selected ";
+
+void print_selected_inputs() {
+  const int inputs=INPUTS.get_inputs_allocated();
+  const int hex_inputs=min(inputs, 16);	// displayed as hex chiffres
+  MENU.out(selected_);
+  for (int inp=0; inp < hex_inputs; inp++) {
+    if (selected_inputs & (1 << inp))
+      MENU.out_hex_chiffre(inp);
+    else
+      MENU.out('.');
+  }
+
+  MENU.space();
+  for (int inp=16; inp < inputs; inp++) {
+    if (selected_inputs & (1 << inp))
+      MENU.out('+');
+    else
+      MENU.out('.');
+  }
+  MENU.ln();
+}
