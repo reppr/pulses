@@ -85,28 +85,28 @@ void setup() {	// ARDUINO
   MENU.ln();
 
   int inp=0;
-  INPUTS.setup_sample_method(inp, &analogRead_, 2, 8);		// A2, oversampling=8
+  INPUTS.setup_sample_method(inp, &analogRead_, 2, 8);		// A2, oversample=8
   INPUTS.setup_linear(inp++, 0, 255, 1023, 0, PROPORTIONAL);	// 255*x/1023
 
-  INPUTS.setup_sample_method(inp, &analogRead_, 3, 4);		// A3, oversampling=4
+  INPUTS.setup_sample_method(inp, &analogRead_, 3, 4);		// A3, oversample=4
   INPUTS.setup_linear(inp++, -20, 4800, 1, 0, INVERSE);		// 4800/(x-20)
 
-  INPUTS.setup_sample_method(inp, &analogRead_, 5, 16);		// A5, oversampling=16
+  INPUTS.setup_sample_method(inp, &analogRead_, 5, 16);		// A5, oversample=16
   INPUTS.setup_linear(inp++, -11, 12, 16, -8, INVERSE);		// (x-11)12/16/(x-11) -8
 
   // test Inputs::set_xxx() functions:
   inp=6;
   INPUTS.set_counter(inp, 11);
   INPUTS.set_flags(inp, 255);
-  INPUTS.set_input_addr(inp, 33);
-  INPUTS.set_input_i2(inp, 44);
-//  INPUTS.set_oversampling(inp, 55);	// outch ;)  Do not do this...
-  INPUTS.set_input_offset(inp, 66);
+  INPUTS.set_inp_A(inp, 33);
+  INPUTS.set_inp_B(inp, 44);
+//  INPUTS.set_oversample(inp, 55);	// outch ;)  Do not do this...
+  INPUTS.set_in_offset(inp, 66);
   INPUTS.set_mul(inp, -77);
   INPUTS.set_div(inp, 88);
-  INPUTS.set_output_offset(inp, 9999);
-  INPUTS.set_output_addr(inp, 10);
-  INPUTS.set_output_o2(inp, 111);
+  INPUTS.set_out_offset(inp, 9999);
+  INPUTS.set_out_A(inp, 10);
+  INPUTS.set_out_B(inp, 111);
 
 
   inputs_info();
@@ -205,7 +205,12 @@ void inputs_display() {
   int max = INPUTS.get_inputs_allocated();
 
   MENU.out(F("Inputs "));
-  MENU.outln(INPUTS.get_inputs_allocated());
+  MENU.out(INPUTS.get_inputs_allocated());
+  MENU.tab();
+  MENU.out(sizeof(input_t));
+  MENU.outln(F(" bytes RAM each"));
+
+
   MENU.outln(F("i=info"));
 
   MENU.out(F("Select with "));
@@ -218,9 +223,13 @@ void inputs_display() {
   }
   MENU.tab();
   MENU.outln(F("'~'=invert  'x'=clear"));
+
+  if(selected_inputs)
+    MENU.outln(F("Set parameters with  A B + * / > O Q #"));
 }
 
 bool inputs_reaction(char token) {
+  bool was_no_selection = (selected_inputs == 0);
   long newValue;
   unsigned long bitmask=0;
   int bit;
@@ -273,14 +282,120 @@ bool inputs_reaction(char token) {
     print_selected_inputs();
     break;
 
+  case 'A':
+    newValue = MENU.numeric_input(ILLEGAL);
+    if (newValue == (uint8_t) newValue) {
+      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	if (selected_inputs & ( 1 << inp))
+	  INPUTS.set_inp_A(inp, newValue);
+      inputs_info();
+    } else
+      MENU.OutOfRange();
+    break;
+
+  case 'B':
+    newValue = MENU.numeric_input(ILLEGAL);
+    if (newValue == (uint8_t) newValue) {
+      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	if (selected_inputs & ( 1 << inp))
+	  INPUTS.set_inp_B(inp, newValue);
+      inputs_info();
+    } else
+      MENU.OutOfRange();
+    break;
+
+  case '+':
+    newValue = MENU.numeric_input(ILLEGAL);
+    if (newValue == (ioP_t) newValue) {
+      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	if (selected_inputs & ( 1 << inp))
+	  INPUTS.set_in_offset(inp, newValue);
+      inputs_info();
+    } else
+      MENU.OutOfRange();
+    break;
+
+  case '*':
+    newValue = MENU.numeric_input(ILLEGAL);
+    if (newValue == (ioP_t) newValue) {
+      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	if (selected_inputs & ( 1 << inp))
+	  INPUTS.set_mul(inp, newValue);
+      inputs_info();
+    } else
+      MENU.OutOfRange();
+    break;
+
+  case '/':
+    newValue = MENU.numeric_input(ILLEGAL);
+    if (newValue == (ioP_t) newValue) {
+      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	if (selected_inputs & ( 1 << inp))
+	  INPUTS.set_div(inp, newValue);
+      inputs_info();
+    } else
+      MENU.OutOfRange();
+    break;
+
+  case '>':
+    newValue = MENU.numeric_input(ILLEGAL);
+    if (newValue == (ioV_t) newValue) {
+      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	if (selected_inputs & ( 1 << inp))
+	  INPUTS.set_out_offset(inp, newValue);
+      inputs_info();
+    } else
+      MENU.OutOfRange();
+    break;
+
+  case 'O':
+    newValue = MENU.numeric_input(ILLEGAL);
+    if (newValue == (uint8_t) newValue) {
+      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	if (selected_inputs & ( 1 << inp))
+	  INPUTS.set_out_A(inp, newValue);
+      inputs_info();
+    } else
+      MENU.OutOfRange();
+    break;
+
+  case 'Q':
+    newValue = MENU.numeric_input(ILLEGAL);
+    if (newValue == (uint8_t) newValue) {
+      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	if (selected_inputs & ( 1 << inp))
+	  INPUTS.set_out_B(inp, newValue);
+      inputs_info();
+    } else
+      MENU.OutOfRange();
+    break;
+
+  case '#':
+    newValue = MENU.numeric_input(ILLEGAL);
+    if (newValue == (unsigned long) newValue) {
+      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	if (selected_inputs & ( 1 << inp))
+	  INPUTS.set_counter(inp, newValue);
+      inputs_info();
+    } else
+      MENU.OutOfRange();
+    break;
+
+
   case 'i':
     inputs_info();
     MENU.ln();
     break;
 
+
   default:
     return false;	// token not found in this menu
   }
+  if (was_no_selection)	// some menu items have not been displayed before
+    if (selected_inputs) {
+      inputs_info();		// nice to see
+      MENU.menu_display();	// display full menu now
+    }
   return true;		// token found in this menu
 }
 
@@ -304,17 +419,17 @@ void input_info(int inp) {
   MENU.outBIN(INPUTS.get_flags(inp), 16);
   MENU.tab();
 
-  MENU.out(F("i@="));
-  MENU.pad(INPUTS.get_input_addr(inp), 4);
+  MENU.out(F("iA="));
+  MENU.pad(INPUTS.get_inp_A(inp), 4);
 
-  MENU.out(F("i2="));
-  MENU.pad(INPUTS.get_input_i2(inp), 4);
+  MENU.out(F("iB="));
+  MENU.pad(INPUTS.get_inp_B(inp), 4);
 
   MENU.out(F("smp="));
-  MENU.pad(INPUTS.get_oversampling(inp),4);
+  MENU.pad(INPUTS.get_oversample(inp),4);
 
   MENU.out('+');
-  MENU.pad(INPUTS.get_input_offset(inp), 6);
+  MENU.pad(INPUTS.get_in_offset(inp), 6);
 
   MENU.out('*');
   MENU.pad(INPUTS.get_mul(inp), 6);
@@ -322,16 +437,16 @@ void input_info(int inp) {
   MENU.out('/');
   MENU.pad(INPUTS.get_div(inp), 6);
 
-  MENU.out('+');
-  MENU.pad(INPUTS.get_output_offset(inp), 6);
+  MENU.out(F(">+"));
+  MENU.pad(INPUTS.get_out_offset(inp), 6);
 
-  MENU.out(F("o@="));
-  MENU.pad(INPUTS.get_output_addr(inp), 4);
+  MENU.out(F("O="));
+  MENU.pad(INPUTS.get_out_A(inp), 4);
 
-  MENU.out(F("o2="));
-  MENU.pad(INPUTS.get_output_o2(inp), 4);
+  MENU.out(F("Q="));
+  MENU.pad(INPUTS.get_out_B(inp), 4);
 
-  MENU.out(F("#="));
+  MENU.out('#');
   MENU.out(INPUTS.get_counter(inp));	// not padded
 
 //  INPUTS.get_out_reaction(inp);

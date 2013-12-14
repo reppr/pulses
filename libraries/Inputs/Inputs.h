@@ -79,28 +79,27 @@ typedef I2O_VALUE_TYPE ioV_t;		// ioV_t is 'input 2 output value type', possibly
 struct input_t {
   unsigned long counter;		// counts taken samples
   uint16_t flags;
-  uint8_t input_addr;			// where to get data from, i.e: pin, i2c address
-  uint8_t input_i2;			// second input parameter, second pin, i2c register, etc.
-  uint8_t oversampling;			// previous samples kept in memory
+  uint8_t inp_A;			// address where to get data from, i.e: pin, i2c address
+  uint8_t inp_B;			// second input parameter, second pin, i2c register, etc.
+  uint8_t oversample;			// total previous samples kept in memory
   int (*sample_method)(int addr);	// method to take a sample, i.e. analogRead(pin)
 
-  // c++ did not like me :(
   // method to get the output value from an input value
   ioV_t (*in2o_method)(int inp, ioV_t value);
 
   // Parameters for processing input to output values:
-  ioP_t input_offset;	// added to the input value before further processing
+  ioP_t in_offset;	// added to the input value before further processing
   ioP_t mul;		// factor for processing input to output values
   ioP_t div;		// divisor for processing input to output values
 
-  ioV_t output_offset;	// added to the output value after processing
+  ioV_t out_offset;	// added to the output value after processing
 
   int * samples;	// pointer to the stored samples for oversampling and friends
 
   // function pointer to void out_reaction(int inp, ioV_t value)
   void (*out_reaction)(int inp, ioV_t output_value);
-  uint8_t output_addr;	// output address like pin, pulse, etc.
-  uint8_t output_o2;	// second output 'addr' parameter, like second pin, etc.
+  uint8_t out_A;	// output address like pin, pulse, etc.
+  uint8_t out_B;	// second output parameter, like second pin, index, etc.
 };
 
 // flags bitmasks:
@@ -132,10 +131,10 @@ class Inputs {
   ~Inputs();
 
   /*
-    bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversampling)
+    bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversample)
     Setup an input sample method and reserve memory for oversampling:
   */
-  bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversampling);
+  bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversample);
 
   /*
     bool setup_in2o_custom(int inp, ioV_t (*method)(int inp, ioV_t value));
@@ -168,10 +167,10 @@ class Inputs {
 
   /*
     bool Inputs::setup_linear(int inp,	\
-           ioP_t input_offset, ioP_t mul, ioP_t div, ioV_t output_offset, bool inverse)
+           ioP_t in_offset, ioP_t mul, ioP_t div, ioV_t out_offset, bool inverse)
     Configure a linear or reverse linear in2out function on input inp.
   */
-  bool setup_linear(int inp, ioP_t input_offset, ioP_t mul, ioP_t div, ioV_t output_offset, bool inverse);
+  bool setup_linear(int inp, ioP_t in_offset, ioP_t mul, ioP_t div, ioV_t out_offset, bool inverse);
 
   /*
     ioV_t Inputs::in2o_calculation(int inp, ioV_t value)
@@ -181,119 +180,8 @@ class Inputs {
   ioV_t in2o_calculation(int inp, ioV_t value);
 
 
-  /*
-    some inlined get_xxx() functions:
-  */
-  unsigned int get_inputs_allocated() {		// inlined
-    return inputs_allocated; }
-
-  unsigned long get_counter(int inp) {		// inlined
-    return inputs[inp].counter;
-  }
-
-  uint16_t get_flags(int inp) {			// inlined
-    return inputs[inp].flags;
-  }
-
-  uint8_t get_input_addr(int inp) {		// inlined
-    return inputs[inp].input_addr;
-  }
-
-  uint8_t get_input_i2(int inp) {	// inlined
-    return inputs[inp].input_i2;
-  }
-
-  uint8_t get_oversampling(int inp) {	// inlined
-    return inputs[inp].oversampling;
-  }
-
-  ioP_t get_input_offset(int inp) {	// inlined
-    return inputs[inp].input_offset;
-  }
-
-  ioP_t get_mul(int inp) {	// inlined
-    return inputs[inp].mul;
-  }
-
-  ioP_t get_div(int inp) {	// inlined
-    return inputs[inp].div;
-  }
-
-  ioV_t get_output_offset(int inp) {	// inlined
-    return inputs[inp].output_offset;
-  }
-
-// MISSING get functions:
-//   samples(int inp)
-//   out_reaction(int inp, ioV_t value);
-//   sample_method(int inp)
-//   in2o_method(int inp)
-
-  uint8_t get_output_addr(int inp) {	// inlined
-    return inputs[inp].output_addr;
-  }
-
-  uint8_t get_output_o2(int inp) {	// inlined
-    return inputs[inp].output_o2;
-  }
-
 
   /*
-    some inlined set_xxx() functions:
-  */
-  void set_counter(int inp, unsigned long counter) {		// inlined
-    inputs[inp].counter = counter;
-  }
-
-  void set_flags(int inp, uint16_t flags) {			// inlined
-    inputs[inp].flags = flags;
-  }
-
-  void set_input_addr(int inp, uint8_t addr) {		// inlined
-    inputs[inp].input_addr = addr;
-  }
-
-  void set_input_i2(int inp, uint8_t i2) {	// inlined
-    inputs[inp].input_i2 = i2;
-  }
-
-//  // do not do this...
-//  void set_oversampling(int inp, uint8_t oversampling) {	// inlined
-//    inputs[inp].oversampling = oversampling;
-//  }
-
-  void set_input_offset(int inp, ioP_t offset) {	// inlined
-    inputs[inp].input_offset = offset;
-  }
-
-  void set_mul(int inp, ioP_t mul) {	// inlined
-    inputs[inp].mul=mul;
-  }
-
-  void set_div(int inp, ioP_t div) {	// inlined
-    inputs[inp].div = div;
-  }
-
-  void set_output_offset(int inp, ioV_t output_offset) {	// inlined
-    inputs[inp].output_offset = output_offset;
-  }
-
-// MISSING set_xxx() functions:
-//   samples(int inp)
-//   out_reaction(int inp, ioV_t value);
-//   sample_method(int inp)
-//   in2o_method(int inp)
-
-  void set_output_addr(int inp, uint8_t output_addr) {	// inlined
-    inputs[inp].output_addr = output_addr;
-  }
-
-  void set_output_o2(int inp, uint8_t o2) {	// inlined
-    inputs[inp].output_o2 = o2;
-  }
-
-
- /*
     bool sample_and_react(int inp);
     take a sample on inp
     react adequately,
@@ -317,8 +205,125 @@ class Inputs {
     do *not* call this if there was no sample taken before...
   */
   int get_last_sampled(int inp) {			// inlined
-    return inputs[inp].samples[((inputs[inp].counter - 1) % inputs[inp].oversampling)];
+    return inputs[inp].samples[((inputs[inp].counter - 1) % inputs[inp].oversample)];
   }
+
+
+  /*
+    some inlined get_xxx() functions:
+  */
+  unsigned int get_inputs_allocated() {		// inlined
+    return inputs_allocated; }
+
+  unsigned long get_counter(int inp) {		// inlined
+    return inputs[inp].counter;
+  }
+
+  uint16_t get_flags(int inp) {			// inlined
+    return inputs[inp].flags;
+  }
+
+  uint8_t get_inp_A(int inp) {			// inlined
+    return inputs[inp].inp_A;
+  }
+
+  uint8_t get_inp_B(int inp) {			// inlined
+    return inputs[inp].inp_B;
+  }
+
+  uint8_t get_oversample(int inp) {		// inlined
+    return inputs[inp].oversample;
+  }
+
+  ioP_t get_in_offset(int inp) {		// inlined
+    return inputs[inp].in_offset;
+  }
+
+  ioP_t get_mul(int inp) {			// inlined
+    return inputs[inp].mul;
+  }
+
+  ioP_t get_div(int inp) {			// inlined
+    return inputs[inp].div;
+  }
+
+  ioV_t get_out_offset(int inp) {		// inlined
+    return inputs[inp].out_offset;
+  }
+
+// MISSING get functions:
+//   samples(int inp)
+//   out_reaction(int inp, ioV_t value);
+//   sample_method(int inp)
+//   in2o_method(int inp)
+
+  uint8_t get_out_A(int inp) {			// inlined
+    return inputs[inp].out_A;
+  }
+
+  uint8_t get_out_B(int inp) {			// inlined
+    return inputs[inp].out_B;
+  }
+
+
+  /*
+    some inlined set_xxx() functions:
+  */
+  void set_counter(int inp, unsigned long counter) {	// inlined
+    inputs[inp].counter = counter;
+  }
+
+  void set_flags(int inp, uint16_t flags) {		// inlined
+    inputs[inp].flags = flags;
+  }
+
+  void set_inp_A(int inp, uint8_t addr) {		// inlined
+    inputs[inp].inp_A = addr;
+  }
+
+  void set_inp_B(int inp, uint8_t i2) {			// inlined
+    inputs[inp].inp_B = i2;
+  }
+
+  /*
+  // do not do this...
+  void set_oversample(int inp, uint8_t oversample) {
+    inputs[inp].oversample = oversample;
+  }
+  */
+
+  void set_in_offset(int inp, ioP_t offset) {		// inlined
+    inputs[inp].in_offset = offset;
+  }
+
+  void set_mul(int inp, ioP_t mul) {			// inlined
+    inputs[inp].mul=mul;
+  }
+
+  void set_div(int inp, ioP_t div) {			// inlined
+    inputs[inp].div = div;
+  }
+
+  void set_out_offset(int inp, ioV_t out_offset) {	// inlined
+    inputs[inp].out_offset = out_offset;
+  }
+
+  void set_out_A(int inp, uint8_t out_A) {		// inlined
+    inputs[inp].out_A = out_A;
+  }
+
+  void set_out_B(int inp, uint8_t o2) {			// inlined
+    inputs[inp].out_B = o2;
+  }
+
+  /*
+  not implemented set_xxx() functions:
+    samples(int inp)
+    out_reaction(int inp, ioV_t value);
+    sample_method(int inp)
+    in2o_method(int inp)
+  */
+
 
  private:
   int inputs_allocated;		// allocated inputs

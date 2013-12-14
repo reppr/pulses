@@ -351,7 +351,7 @@ void setup() {
 #ifdef INPUTS_DEBUGGING_SAMPLING
   /*
   bool Inputs::setup_sample_method(int inp,\
-         int (*take_sample)(int addr), uint8_t addr, uint8_t oversampling)
+         int (*take_sample)(int addr), uint8_t addr, uint8_t oversample)
   */
   INPUTS.setup_sample_method(0, &test_sample_method, 0, 4);	// A0
   INPUTS.setup_sample_method(1, &test_sample_method, 1, 4);	// A1
@@ -359,11 +359,11 @@ void setup() {
 
 
 #ifdef INPUTS_DEBUGGING_SAMPLE_REACTION
-  // INPUTS.setup_sample_method(5, &analogRead_, 3, 8);		// A3, oversampling=8
+  // INPUTS.setup_sample_method(5, &analogRead_, 3, 8);		// A3, oversample=8
   // INPUTS.setup_linear(5, 0, 255, 1023, 0, PROPORTIONAL);	// 255*x/1023
 
   inp=6;
-  INPUTS.setup_sample_method(inp, &analogRead_, 2, 8);		// A2, oversampling=8
+  INPUTS.setup_sample_method(inp, &analogRead_, 2, 8);		// A2, oversample=8
   INPUTS.setup_linear(inp, 0, 255, 1023, 0, PROPORTIONAL);	// 255*x/1023
 
   /*
@@ -388,7 +388,7 @@ void setup() {
   test_ioP_t();
 
   // bool Inputs::setup_linear(int inp,\
-            ioP_t input_offset, ioP_t mul, ioP_t div, ioV_t output_offset, bool inverse)
+            ioP_t in_offset, ioP_t mul, ioP_t div, ioV_t out_offset, bool inverse)
 
   if(i2o_p_type_is_int8) {
     INPUTS.setup_linear(0, 0, 1, -2, 0, PROPORTIONAL);			// linear, -128 to 127, -50%

@@ -63,23 +63,23 @@ Inputs::~Inputs() {
 
 
 /*
-  bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversampling)
+  bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversample)
   Setup an input sample method and reserve memory for oversampling:
 */
-bool Inputs::setup_sample_method(int inp, int (*take_sample)(int addr), uint8_t addr, uint8_t oversampling)
+bool Inputs::setup_sample_method(int inp, int (*take_sample)(int addr), uint8_t addr, uint8_t oversample)
 {
   if ((inp < 0) or (inp >= inputs_allocated))
     return false;	// inp out of range
 
   inputs[inp].sample_method = take_sample;
-  inputs[inp].input_addr = addr;
+  inputs[inp].inp_A = addr;
 
   free(inputs[inp].samples);
-  inputs[inp].samples = (int *) malloc(oversampling * sizeof(int));
+  inputs[inp].samples = (int *) malloc(oversample * sizeof(int));
   if (inputs[inp].samples == NULL)
     return false;	// not enough RAM
 
-  inputs[inp].oversampling = oversampling;
+  inputs[inp].oversample = oversample;
   return true;	// everything ok
 }
 
@@ -97,12 +97,12 @@ bool Inputs::sample(int inp) {
   if (inputs[inp].sample_method == NULL)	// not really needed
     return false;	// no error treatment, should not happen...
 
-  value=(*(*inputs[inp].sample_method))((int) inputs[inp].input_addr);
+  value=(*(*inputs[inp].sample_method))((int) inputs[inp].inp_A);
 
-  cyclic_index = (inputs[inp].counter++ % inputs[inp].oversampling);
+  cyclic_index = (inputs[inp].counter++ % inputs[inp].oversample);
   inputs[inp].samples[cyclic_index]=value;
 
-  if (++cyclic_index == inputs[inp].oversampling)	// oversampling set ready?
+  if (++cyclic_index == inputs[inp].oversample)	// oversampling set ready?
     return true;		// oversampling set is ready, trigger possible reactions
   else
     return false;		// oversampling continues
@@ -114,12 +114,12 @@ bool Inputs::sample(int inp) {
   return average of the saved samples
 */
 int Inputs::oversamples_average(int inp){
-  int oversampling=inputs[inp].oversampling;
+  int oversample=inputs[inp].oversample;
   long sum=0;
-  for(int i=0; i < oversampling; i++)
+  for(int i=0; i < oversample; i++)
     sum += inputs[inp].samples[i];
-  sum  += oversampling / 2;	// integers rounding, no float samples...
-  return sum / oversampling;
+  sum  += oversample / 2;	// integers rounding, no float samples...
+  return sum / oversample;
 }
 
 
@@ -136,9 +136,9 @@ ioV_t Inputs::in2o_calculation(int inp, ioV_t value) {
 
   // getting these only *once*, hope that's faster:
   // (as all calculations are in ioV_t i declare all operands ioV_t)
-  ioV_t input_offset = inputs[inp].input_offset;
-  if (input_offset)
-    value += input_offset;
+  ioV_t in_offset = inputs[inp].in_offset;
+  if (in_offset)
+    value += in_offset;
 
   bool inverse = inputs[inp].flags & PROCESS_INVERSE;
   if (inverse)
@@ -158,9 +158,9 @@ ioV_t Inputs::in2o_calculation(int inp, ioV_t value) {
     if (value)
       outval /= value;
 
-  ioV_t output_offset = inputs[inp].output_offset;
-  if (output_offset)
-    outval += output_offset;
+  ioV_t out_offset = inputs[inp].out_offset;
+  if (out_offset)
+    outval += out_offset;
 
   return outval;
 }
@@ -182,7 +182,7 @@ bool Inputs::setup_raw(int inp) {
 
 /*
   bool Inputs::setup_linear(int inp,\
-         ioP_t input_offset, ioP_t mul, ioP_t div, ioV_t output_offset, bool inverse)
+         ioP_t in_offset, ioP_t mul, ioP_t div, ioV_t out_offset, bool inverse)
   Configure a linear or reverse linear in2out function on input inp.
 
   // aliases for io_calculation
@@ -190,7 +190,7 @@ bool Inputs::setup_raw(int inp) {
   INVERSE	true
 */
 bool Inputs::setup_linear(int inp, \
-       ioP_t input_offset, ioP_t mul, ioP_t div, ioV_t output_offset, bool inverse)
+       ioP_t in_offset, ioP_t mul, ioP_t div, ioV_t out_offset, bool inverse)
 {
   if ((inp < 0) or (inp >= inputs_allocated))
     return false;	// inp out of range
@@ -207,10 +207,10 @@ bool Inputs::setup_linear(int inp, \
 //	  inputs[inp].in2o_method = &Inputs::in2o_linear;
 //	  inputs[inp].in2o_method = &in2o_linear;
 
-  inputs[inp].input_offset = input_offset;
+  inputs[inp].in_offset = in_offset;
   inputs[inp].mul = mul;
   inputs[inp].div = div;
-  inputs[inp].output_offset = output_offset;
+  inputs[inp].out_offset = out_offset;
   return true;
 }
 
