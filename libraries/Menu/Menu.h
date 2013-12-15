@@ -224,7 +224,7 @@ class Menu {
     #define VERBOSITY_HIGH	4
        more than you want to see
 */
-  void verbosity_info();	// helper function
+  void verbosity_info();	// helper function, unused
 
 
  protected:

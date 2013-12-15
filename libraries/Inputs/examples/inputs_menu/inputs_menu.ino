@@ -211,11 +211,11 @@ void inputs_display() {
   MENU.outln(F(" bytes RAM each"));
 
 
-  MENU.outln(F("i=info"));
+  MENU.outln(F("'i'=info"));
 
   MENU.out(F("Select with "));
   for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++) {
-    if (inp == 16)	// not a hex chiffre any more	
+    if (inp == 16)	// not a hex chiffre any more
       break;
 
     MENU.out_hex_chiffre(inp);
@@ -251,7 +251,8 @@ bool inputs_reaction(char token) {
 
     // existing input:
     selected_inputs ^= (1 << bit);
-    print_selected_inputs();
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      print_selected_inputs();
     break;
 
   case 'a':
@@ -266,7 +267,8 @@ bool inputs_reaction(char token) {
 
     // existing input:
     selected_inputs ^= (1 << bit);
-    print_selected_inputs();
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      print_selected_inputs();
     break;
 
   case '~':
@@ -275,12 +277,14 @@ bool inputs_reaction(char token) {
     for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
       bitmask |= (1 << inp);
     selected_inputs &= bitmask;
-    print_selected_inputs();
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      print_selected_inputs();
     break;
 
   case 'x':
     selected_inputs = 0;
-    print_selected_inputs();
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      print_selected_inputs();
     break;
 
   case 'A':
@@ -289,9 +293,9 @@ bool inputs_reaction(char token) {
       for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
 	if (selected_inputs & ( 1 << inp))
 	  INPUTS.set_inp_A(inp, newValue);
-      inputs_info();
-    } else
-      MENU.OutOfRange();
+      if (MENU.verbosity >= VERBOSITY_SOME)
+	inputs_info();
+    } else MENU.OutOfRange();
     break;
 
   case 'B':
@@ -300,20 +304,23 @@ bool inputs_reaction(char token) {
       for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
 	if (selected_inputs & ( 1 << inp))
 	  INPUTS.set_inp_B(inp, newValue);
-      inputs_info();
-    } else
-      MENU.OutOfRange();
+      if (MENU.verbosity >= VERBOSITY_SOME)
+	inputs_info();
+    } else MENU.OutOfRange();
     break;
 
   case '+':
+    if (!selected_inputs)
+      return false;			// unhide verbosity '+'
+
     newValue = MENU.numeric_input(ILLEGAL);
     if (newValue == (ioP_t) newValue) {
       for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
 	if (selected_inputs & ( 1 << inp))
 	  INPUTS.set_in_offset(inp, newValue);
-      inputs_info();
-    } else
-      MENU.OutOfRange();
+      if (MENU.verbosity >= VERBOSITY_SOME)
+	inputs_info();
+    } else MENU.OutOfRange();
     break;
 
   case '*':
@@ -322,9 +329,9 @@ bool inputs_reaction(char token) {
       for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
 	if (selected_inputs & ( 1 << inp))
 	  INPUTS.set_mul(inp, newValue);
-      inputs_info();
-    } else
-      MENU.OutOfRange();
+      if (MENU.verbosity >= VERBOSITY_SOME)
+	inputs_info();
+    } else MENU.OutOfRange();
     break;
 
   case '/':
@@ -333,9 +340,9 @@ bool inputs_reaction(char token) {
       for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
 	if (selected_inputs & ( 1 << inp))
 	  INPUTS.set_div(inp, newValue);
-      inputs_info();
-    } else
-      MENU.OutOfRange();
+      if (MENU.verbosity >= VERBOSITY_SOME)
+	inputs_info();
+    } else MENU.OutOfRange();
     break;
 
   case '>':
@@ -344,9 +351,9 @@ bool inputs_reaction(char token) {
       for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
 	if (selected_inputs & ( 1 << inp))
 	  INPUTS.set_out_offset(inp, newValue);
-      inputs_info();
-    } else
-      MENU.OutOfRange();
+      if (MENU.verbosity >= VERBOSITY_SOME)
+	inputs_info();
+    } else MENU.OutOfRange();
     break;
 
   case 'O':
@@ -355,9 +362,9 @@ bool inputs_reaction(char token) {
       for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
 	if (selected_inputs & ( 1 << inp))
 	  INPUTS.set_out_A(inp, newValue);
-      inputs_info();
-    } else
-      MENU.OutOfRange();
+      if (MENU.verbosity >= VERBOSITY_SOME)
+	inputs_info();
+    } else MENU.OutOfRange();
     break;
 
   case 'Q':
@@ -366,9 +373,9 @@ bool inputs_reaction(char token) {
       for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
 	if (selected_inputs & ( 1 << inp))
 	  INPUTS.set_out_B(inp, newValue);
-      inputs_info();
-    } else
-      MENU.OutOfRange();
+      if (MENU.verbosity >= VERBOSITY_SOME)
+	inputs_info();
+    } else MENU.OutOfRange();
     break;
 
   case '#':
@@ -377,9 +384,9 @@ bool inputs_reaction(char token) {
       for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
 	if (selected_inputs & ( 1 << inp))
 	  INPUTS.set_counter(inp, newValue);
-      inputs_info();
-    } else
-      MENU.OutOfRange();
+      if (MENU.verbosity >= VERBOSITY_SOME)
+	inputs_info();
+    } else MENU.OutOfRange();
     break;
 
 
@@ -394,8 +401,10 @@ bool inputs_reaction(char token) {
   }
   if (was_no_selection)	// some menu items have not been displayed before
     if (selected_inputs) {
-      inputs_info();		// nice to see
-      MENU.menu_display();	// display full menu now
+      if (MENU.verbosity >= VERBOSITY_SOME) {
+	inputs_info();		// nice to see
+	MENU.menu_display();	// display full menu now
+      }
     }
   return true;		// token found in this menu
 }

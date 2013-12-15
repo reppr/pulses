@@ -767,7 +767,7 @@ void Menu::menu_display() const {
 
 
 /* **************************************************************** */
-// helper function
+// helper function, unused
 void Menu::verbosity_info() {
   if (verbosity) {
     out(F("verbosity "));
