@@ -94,10 +94,11 @@ void setup() {	// ARDUINO
   INPUTS.setup_sample_method(inp, &analogRead_, 5, 16);		// A5, oversample=16
   INPUTS.setup_linear(inp++, -11, 12, 16, -8, INVERSE);		// (x-11)12/16/(x-11) -8
 
-  // test Inputs::set_xxx() functions:
+  /* test Inputs::set_xxx() functions:
+  // ATTENTION: nonsence settings!
   inp=6;
   INPUTS.set_counter(inp, 11);
-  INPUTS.set_flags(inp, 255);
+  INPUTS.set_flags(inp, 255);		// no no
   INPUTS.set_inp_A(inp, 33);
   INPUTS.set_inp_B(inp, 44);
 //  INPUTS.set_oversample(inp, 55);	// outch ;)  Do not do this...
@@ -107,7 +108,7 @@ void setup() {	// ARDUINO
   INPUTS.set_out_offset(inp, 9999);
   INPUTS.set_out_A(inp, 10);
   INPUTS.set_out_B(inp, 111);
-
+  */
 
   inputs_info();
 }
@@ -201,6 +202,8 @@ void loop() {	// ARDUINO
 /* **************************************************************** */
 /* **************************************************************** */
 
+
+// display function for the inputs_menu page:
 void inputs_display() {
   int max = INPUTS.get_inputs_allocated();
 
@@ -224,10 +227,14 @@ void inputs_display() {
   MENU.tab();
   MENU.outln(F("'~'=invert  'x'=clear"));
 
-  if(selected_inputs)
+  if(selected_inputs) {
     MENU.outln(F("Set parameters with  A B + * / > O Q #"));
+    MENU.outln(F("t<n>=test T=tests"));
+  }
 }
 
+
+// reaction function for the inputs_menu page:
 bool inputs_reaction(char token) {
   bool was_no_selection = (selected_inputs == 0);
   long newValue;
@@ -395,6 +402,22 @@ bool inputs_reaction(char token) {
     MENU.ln();
     break;
 
+  case 't':
+    newValue = MENU.numeric_input(0);
+    if (newValue == (int) newValue) {
+      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	if (selected_inputs & ( 1 << inp))
+	  test_in2o_calculation(inp, (int) newValue);
+    } else MENU.OutOfRange();
+    break;
+
+  case 'T':
+    for (int newValue=0; newValue<1024; newValue++)
+      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	if (selected_inputs & ( 1 << inp))
+	  test_in2o_calculation(inp, (int) newValue);
+    break;
+
 
   default:
     return false;	// token not found in this menu
@@ -410,6 +433,7 @@ bool inputs_reaction(char token) {
 }
 
 
+// show an info line for each existing input:
 void input_info(int inp) {
   MENU.space();
   if (selected_inputs & (1 << inp))
@@ -462,6 +486,8 @@ void input_info(int inp) {
   MENU.ln();
 }
 
+
+// show info lines of all existing inputs:
 void inputs_info() {
   MENU.ln();
   int inputs=INPUTS.get_inputs_allocated();
@@ -469,11 +495,13 @@ void inputs_info() {
     input_info(inp);
 }
 
+
 int analogRead_(int pin) {	// horrible kludge, we need the type cast here...
   return analogRead(pin);
 }
 
 
+// show which inputs are selected in the menu:
 void print_selected_inputs() {
   const int inputs=INPUTS.get_inputs_allocated();
   const int hex_inputs=min(inputs, 16);	// displayed as hex chiffres
@@ -493,4 +521,18 @@ void print_selected_inputs() {
       MENU.out('.');
   }
   MENU.ln();
+}
+
+
+// show what in2o_calculation on inp does with value:
+void test_in2o_calculation(int inp, int value) {
+  MENU.pad(inp, 4);
+  MENU.out(F("in="));
+  MENU.out(value);
+  MENU.out(F("\tout="));
+#ifdef I2O_PARAMETER_IS_FLOAT
+      Serial.println(INPUTS.in2o_calculation(inp, value), 4);
+#else
+      Serial.println(INPUTS.in2o_calculation(inp, value));
+#endif
 }
