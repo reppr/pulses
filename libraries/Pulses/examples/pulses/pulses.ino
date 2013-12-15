@@ -1347,6 +1347,7 @@ void short_info() {
 bool menu_pulses_reaction(char menu_input) {
   long new_value=0;
   struct time now, time_scratch;
+  unsigned long bitmask;
 
   switch (menu_input) {
 
@@ -1427,7 +1428,10 @@ bool menu_pulses_reaction(char menu_input) {
 
   case '~':	// invert destination selection
     selected_pulses = ~selected_pulses;
-
+    bitmask=0;
+    for (int pulse=0; pulse<pl_max; pulse++)
+      bitmask |= (1 << pulse);
+    selected_pulses &= bitmask;
     print_selected_pulses();
     break;
 

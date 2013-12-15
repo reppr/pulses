@@ -231,7 +231,7 @@ void inputs_display() {
 bool inputs_reaction(char token) {
   bool was_no_selection = (selected_inputs == 0);
   long newValue;
-  unsigned long bitmask=0;
+  unsigned long bitmask;
   int bit;
 
   switch (token) {
@@ -271,6 +271,7 @@ bool inputs_reaction(char token) {
 
   case '~':
     selected_inputs = ~selected_inputs;
+    bitmask=0;
     for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
       bitmask |= (1 << inp);
     selected_inputs &= bitmask;
