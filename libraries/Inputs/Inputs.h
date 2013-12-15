@@ -209,6 +209,10 @@ class Inputs {
   }
 
 
+  int get_sample(int inp, int index) {			// inlined
+    return inputs[inp].samples[index];
+  }
+
   /*
     some inlined get_xxx() functions:
   */

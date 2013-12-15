@@ -119,13 +119,18 @@ void setup() {	// ARDUINO
 // Arduino loop():
 
 #ifdef ARDUINO
-// Arduino loop() template:
+// Arduino loop():
+unsigned int cnt=0;
+int inp=0;
 void loop() {	// ARDUINO
   MENU.lurk_then_do();
 
   // Insert your own code here.
   // Do not let your program block program flow,
   // always return to the main loop as soon as possible.
+  inp = (cnt % INPUTS.get_inputs_allocated());	// cycle through the inputs
+  INPUTS.sample_and_react(inp);
+  cnt++;
 }
 #endif
 
@@ -397,6 +402,11 @@ bool inputs_reaction(char token) {
     break;
 
 
+  case 's':
+    for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+      if (selected_inputs & ( 1 << inp))
+	show_samples(inp);
+
   case 'i':
     inputs_info();
     MENU.ln();
@@ -535,4 +545,15 @@ void test_in2o_calculation(int inp, int value) {
 #else
       Serial.println(INPUTS.in2o_calculation(inp, value));
 #endif
+}
+
+
+// show all samples from an input:
+void show_samples(int inp) {
+  MENU.ln();
+  for(int s=0 ; s < INPUTS.get_oversample(inp); s++) {
+    MENU.pad(inp, 4);
+    MENU.pad(s, 4);
+    MENU.outln(INPUTS.get_sample(inp, s));
+  }
 }

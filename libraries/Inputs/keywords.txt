@@ -38,3 +38,4 @@ set_div	KEYWORD2
 set_out_offset	KEYWORD2
 set_out_A	KEYWORD2
 set_out_B	KEYWORD2
+get_sample	KEYWORD2
