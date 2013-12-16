@@ -43,3 +43,4 @@ OutOfRange	KEYWORD2
 out_Error_	KEYWORD2
 out_selected_	KEYWORD2
 out_flags_	KEYWORD2
+bar_graph	KEYWORD2

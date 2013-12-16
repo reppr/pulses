@@ -195,6 +195,9 @@ class Menu {
   // Print a hex chiffre:
   void out_hex_chiffre(unsigned char chiffre) const; // output 1 hex chiffre
 
+  // print a bar_graph line
+  void bar_graph(long value, unsigned int scale, char c);
+
   /* String recycling:						*/
   void OutOfRange() const;	// output "out of range\n"
   void out_Error_() const;	// output "ERROR: "

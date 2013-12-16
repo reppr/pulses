@@ -392,6 +392,85 @@ void Menu::out_hex_chiffre(unsigned char chiffre) const { // output 1 hex chiffr
 }
 
 
+/*
+  void bar_graph(long value, unsigned int scale, char c);
+  print one value & bar graph line.
+
+  example output:  MENU.bar_graph(value, 1023, '*');
+
+value -1112 	---------------------------------------------------------------XXXXXX
+value -1040 	---------------------------------------------------------------XX
+value -1039 	---------------------------------------------------------------X
+value -1024 	---------------------------------------------------------------X
+value -1023 	---------------------------------------------------------------|
+value -1022 	---------------------------------------------------------------
+value -319 	-------------------
+value -32  	--
+value -31  	-
+value -16  	-
+value -15  	!
+value -1   	!
+value 0    	0
+value 1    	.
+value 15   	.
+value 16   	*
+value 32   	**
+value 256  	****************
+value 368  	***********************
+value 496  	*******************************
+value 608  	**************************************
+value 832  	****************************************************
+value 1008 	***************************************************************
+value 1022 	***************************************************************
+value 1023 	**************************************************************|
+value 1024 	***************************************************************X
+value 1072 	***************************************************************XXXX
+value 1104 	***************************************************************XXXXXX
+*/
+void Menu::bar_graph(long value, unsigned int scale, char c) {
+  const long length=64;
+  int stars = (value * length) / (scale + 1) ;
+
+  out(F("value "));
+  pad(value, 5);
+  tab();
+
+  if (value==0) {
+    outln('0');
+    return;
+  }
+  if (value < 0) {
+    c='-';
+    value=-value;
+    stars=-stars;
+    if(stars==0) {	// negative, but too little for a star ;)
+      c='!';
+      stars=1;
+    }
+  } else		// positive, non zero value
+    if (value==scale)	// full scale: last sign will be '|'
+      --stars;
+
+  if (stars)
+    for (int i=0; i<stars; i++) {
+      if (i==(length - 1))
+	c='X';
+      out(c);
+    }
+  else
+    out('.');	// not zero, but too little for a star ;)
+
+//	  if (value > scale)		//
+//	    out('X');
+//	  else
+  if (value==scale)		// positive full scale:
+    out('|');			// last sign '|'
+
+  ln();
+}
+
+
+
 /* **************************************************************** */
 // String recycling:
 
@@ -894,7 +973,7 @@ void Menu::interpret_men_input() {
 #ifdef DEBUGGING_MENU
 	out(F("   found page "));
 	out((int) pg); tab(); ticked(token);
-	tab(); ticked(men_pages[pg].hotkey); ln(); 
+	tab(); ticked(men_pages[pg].hotkey); ln();
 #endif
 
 	// FIXME: ??? ################
