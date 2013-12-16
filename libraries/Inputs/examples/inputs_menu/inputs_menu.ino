@@ -1,3 +1,4 @@
+// #define INPUTS_DEBUGGING_SAMPLE_REACTION
 /*
  * ****************************************************************
  * inputs_menu.ino
@@ -85,30 +86,20 @@ void setup() {	// ARDUINO
   MENU.ln();
 
   int inp=0;
-  INPUTS.setup_sample_method(inp, &analogRead_, 2, 8);		// A2, oversample=8
-  INPUTS.setup_linear(inp++, 0, 255, 1023, 0, PROPORTIONAL);	// 255*x/1023
+  INPUTS.setup_sample_method(inp, &analogRead_, 0, 8);		// A0, oversample=8
+  INPUTS.setup_linear(inp, 0, 255, 1023, 0, PROPORTIONAL);	// 255*x/1023
+#ifdef INPUTS_DEBUGGING_SAMPLE_REACTION
+  INPUTS.setup_raw(inp);
+  INPUTS.setup_io_reaction(inp, &bar_graph_);
+#endif
 
-  INPUTS.setup_sample_method(inp, &analogRead_, 3, 4);		// A3, oversample=4
-  INPUTS.setup_linear(inp++, -20, 4800, 1, 0, INVERSE);		// 4800/(x-20)
+  inp++;
+  INPUTS.setup_sample_method(inp, &analogRead_, 1, 4);		// A1, oversample=4
+  INPUTS.setup_linear(inp, -20, 4800, 1, 0, INVERSE);		// 4800/(x-20)
 
-  INPUTS.setup_sample_method(inp, &analogRead_, 5, 16);		// A5, oversample=16
-  INPUTS.setup_linear(inp++, -11, 12, 16, -8, INVERSE);		// (x-11)12/16/(x-11) -8
-
-  /* test Inputs::set_xxx() functions:
-  // ATTENTION: nonsence settings!
-  inp=6;
-  INPUTS.set_counter(inp, 11);
-  INPUTS.set_flags(inp, 255);		// no no
-  INPUTS.set_inp_A(inp, 33);
-  INPUTS.set_inp_B(inp, 44);
-//  INPUTS.set_oversample(inp, 55);	// outch ;)  Do not do this...
-  INPUTS.set_in_offset(inp, 66);
-  INPUTS.set_mul(inp, -77);
-  INPUTS.set_div(inp, 88);
-  INPUTS.set_out_offset(inp, 9999);
-  INPUTS.set_out_A(inp, 10);
-  INPUTS.set_out_B(inp, 111);
-  */
+  inp++;
+  INPUTS.setup_sample_method(inp, &analogRead_, 2, 16);		// A2, oversample=16
+  INPUTS.setup_linear(inp, -11, 12, 16, -8, INVERSE);		// 12/16/(x-11) -8
 
   inputs_info();
 }
@@ -557,3 +548,20 @@ void show_samples(int inp) {
     MENU.outln(INPUTS.get_sample(inp, s));
   }
 }
+
+
+#ifdef INPUTS_DEBUGGING_SAMPLE_REACTION
+
+/* **************************************************************** */
+/*
+  bar_graph_(int inp, ioV_t value);
+  testing io_reaction:
+  print one value & bar graph line
+*/
+// bar_graph_(inp, value)
+void bar_graph_(int inp, ioV_t value) {
+  MENU.pad(inp, 4);
+  MENU.bar_graph(value, 1023, '*');
+}
+
+#endif // INPUTS_DEBUGGING_SAMPLE_REACTION
