@@ -124,6 +124,23 @@ int Inputs::oversamples_average(int inp){
 
 
 /*
+  unsigned int oversamples_deviation(int inp);
+  get average of absolute deviation against average of all samples
+*/
+unsigned int Inputs::oversamples_deviation(int inp) {
+  int oversample=inputs[inp].oversample;
+  int average=oversamples_average(inp);
+
+  int deviation=0;
+  for(int i=0; i < oversample; i++)
+    deviation += abs(average - inputs[inp].samples[i]);
+
+  deviation  += oversample / 2;	// integers rounding, no float samples...
+  return deviation / oversample;
+}
+
+
+/*
   ioV_t Inputs::in2o_calculation(int inp, ioV_t value)
   Calculate and return the output value from an input value
   according the roules for input inp.

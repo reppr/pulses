@@ -159,6 +159,12 @@ class Inputs {
   int oversamples_average(int inp);
 
   /*
+  unsigned int oversamples_deviation(int inp);
+  Get average of absolute deviation against average of all samples
+  */
+  unsigned int oversamples_deviation(int inp);
+
+  /*
     bool Inputs::setup_raw(int inp)
     Setup input inp to pass through raw values without further processing.
     Oversampling and friends might still be active though.

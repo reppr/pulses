@@ -213,7 +213,7 @@ void inputs_display() {
   MENU.outln(F("'i'=info"));
 
   MENU.out(F("Select with "));
-  for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++) {
+  for (int inp=0; inp < max; inp++) {
     if (inp == 16)	// not a hex chiffre any more
       break;
 
@@ -423,6 +423,7 @@ bool inputs_reaction(char token) {
   default:
     return false;	// token not found in this menu
   }
+
   if (was_no_selection)	// some menu items have not been displayed before
     if (selected_inputs) {
       if (MENU.verbosity >= VERBOSITY_SOME) {
@@ -541,12 +542,43 @@ void test_in2o_calculation(int inp, int value) {
 
 // show all samples from an input:
 void show_samples(int inp) {
+  int oversample = INPUTS.get_oversample(inp);
+  if(oversample == 0)	// no sample memory allocated?
+    return;		//   return silently
+
+  int average = INPUTS.oversamples_average(inp);
+  int deviation, sample;
+  int last = ((INPUTS.get_counter(inp) - 1) % INPUTS.get_oversample(inp));
+
   MENU.ln();
-  for(int s=0 ; s < INPUTS.get_oversample(inp); s++) {
+  for(int s=0 ; s<oversample; s++) {
+    if (s == last)
+      MENU.out(F("=>"));	// "=>" sign on last sample
+    else {
+      MENU.space();
+      MENU.space();
+    }
+
     MENU.pad(inp, 4);
     MENU.pad(s, 4);
-    MENU.outln(INPUTS.get_sample(inp, s));
+    sample=INPUTS.get_sample(inp, s);
+    MENU.out(sample);
+    MENU.tab();
+    deviation = (sample - average);
+    if (deviation>0)
+      MENU.out('+');		// '+' sign on positive deviations
+    else
+      if (deviation==0)
+	MENU.space();
+    MENU.outln(deviation);
   }
+
+  MENU.tab();
+  MENU.space();
+  MENU.space();
+  MENU.out(average);
+  MENU.tab();
+  MENU.outln(INPUTS.oversamples_deviation(inp));
 }
 
 
