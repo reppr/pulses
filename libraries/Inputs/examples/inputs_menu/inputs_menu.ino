@@ -201,8 +201,6 @@ void loop() {	// ARDUINO
 
 // display function for the inputs_menu page:
 void inputs_display() {
-  int max = INPUTS.get_inputs_allocated();
-
   MENU.out(F("Inputs "));
   MENU.out(INPUTS.get_inputs_allocated());
   MENU.tab();
@@ -212,16 +210,7 @@ void inputs_display() {
 
   MENU.outln(F("'i'=info"));
 
-  MENU.out(F("Select with "));
-  for (int inp=0; inp < max; inp++) {
-    if (inp == 16)	// not a hex chiffre any more
-      break;
-
-    MENU.out_hex_chiffre(inp);
-    MENU.space();
-  }
-  MENU.tab();
-  MENU.outln(F("'~'=invert  'x'=clear"));
+  how_to_select();
 
   if(selected_inputs) {
     MENU.outln(F("Set parameters with  A B + * / > O Q #"));
@@ -290,26 +279,31 @@ bool inputs_reaction(char token) {
       print_selected_inputs();
     break;
 
+
   case 'A':
-    newValue = MENU.numeric_input(ILLEGAL);
-    if (newValue == (uint8_t) newValue) {
-      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	if (selected_inputs & ( 1 << inp))
-	  INPUTS.set_inp_A(inp, newValue);
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	inputs_info();
-    } else MENU.OutOfRange();
+    if(anything_selected()) {	// if not, tell the user how to select
+      newValue = MENU.numeric_input(ILLEGAL);
+      if (newValue == (uint8_t) newValue) {
+	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	  if (selected_inputs & ( 1 << inp))
+	    INPUTS.set_inp_A(inp, newValue);
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  inputs_info();
+      } else MENU.OutOfRange();
+    }
     break;
 
   case 'B':
-    newValue = MENU.numeric_input(ILLEGAL);
-    if (newValue == (uint8_t) newValue) {
-      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	if (selected_inputs & ( 1 << inp))
-	  INPUTS.set_inp_B(inp, newValue);
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	inputs_info();
-    } else MENU.OutOfRange();
+    if(anything_selected()) {	// if not, tell the user how to select
+      newValue = MENU.numeric_input(ILLEGAL);
+      if (newValue == (uint8_t) newValue) {
+	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	  if (selected_inputs & ( 1 << inp))
+	    INPUTS.set_inp_B(inp, newValue);
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  inputs_info();
+      } else MENU.OutOfRange();
+    }
     break;
 
   case '+':
@@ -327,76 +321,91 @@ bool inputs_reaction(char token) {
     break;
 
   case '*':
-    newValue = MENU.numeric_input(ILLEGAL);
-    if (newValue == (ioP_t) newValue) {
-      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	if (selected_inputs & ( 1 << inp))
-	  INPUTS.set_mul(inp, newValue);
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	inputs_info();
-    } else MENU.OutOfRange();
+    if(anything_selected()) {	// if not, tell the user how to select
+      newValue = MENU.numeric_input(ILLEGAL);
+      if (newValue == (ioP_t) newValue) {
+	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	  if (selected_inputs & ( 1 << inp))
+	    INPUTS.set_mul(inp, newValue);
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  inputs_info();
+      } else MENU.OutOfRange();
+    }
     break;
 
   case '/':
-    newValue = MENU.numeric_input(ILLEGAL);
-    if (newValue == (ioP_t) newValue) {
-      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	if (selected_inputs & ( 1 << inp))
-	  INPUTS.set_div(inp, newValue);
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	inputs_info();
-    } else MENU.OutOfRange();
+    if(anything_selected()) {	// if not, tell the user how to select
+      newValue = MENU.numeric_input(ILLEGAL);
+      if (newValue == (ioP_t) newValue) {
+	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	  if (selected_inputs & ( 1 << inp))
+	    INPUTS.set_div(inp, newValue);
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  inputs_info();
+      } else MENU.OutOfRange();
+    }
     break;
 
   case '>':
-    newValue = MENU.numeric_input(ILLEGAL);
-    if (newValue == (ioV_t) newValue) {
-      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	if (selected_inputs & ( 1 << inp))
-	  INPUTS.set_out_offset(inp, newValue);
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	inputs_info();
-    } else MENU.OutOfRange();
+    if(anything_selected()) {	// if not, tell the user how to select
+      newValue = MENU.numeric_input(ILLEGAL);
+      if (newValue == (ioV_t) newValue) {
+	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	  if (selected_inputs & ( 1 << inp))
+	    INPUTS.set_out_offset(inp, newValue);
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  inputs_info();
+      } else MENU.OutOfRange();
+    }
     break;
 
   case 'O':
-    newValue = MENU.numeric_input(ILLEGAL);
-    if (newValue == (uint8_t) newValue) {
-      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	if (selected_inputs & ( 1 << inp))
-	  INPUTS.set_out_A(inp, newValue);
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	inputs_info();
-    } else MENU.OutOfRange();
+    if(anything_selected()) {	// if not, tell the user how to select
+      newValue = MENU.numeric_input(ILLEGAL);
+      if (newValue == (uint8_t) newValue) {
+	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	  if (selected_inputs & ( 1 << inp))
+	    INPUTS.set_out_A(inp, newValue);
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  inputs_info();
+      } else MENU.OutOfRange();
+    }
     break;
 
   case 'Q':
-    newValue = MENU.numeric_input(ILLEGAL);
-    if (newValue == (uint8_t) newValue) {
-      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	if (selected_inputs & ( 1 << inp))
-	  INPUTS.set_out_B(inp, newValue);
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	inputs_info();
-    } else MENU.OutOfRange();
+    if(anything_selected()) {	// if not, tell the user how to select
+      newValue = MENU.numeric_input(ILLEGAL);
+      if (newValue == (uint8_t) newValue) {
+	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	  if (selected_inputs & ( 1 << inp))
+	    INPUTS.set_out_B(inp, newValue);
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  inputs_info();
+      } else MENU.OutOfRange();
+    }
     break;
 
   case '#':
-    newValue = MENU.numeric_input(ILLEGAL);
-    if (newValue == (unsigned long) newValue) {
-      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	if (selected_inputs & ( 1 << inp))
-	  INPUTS.set_counter(inp, newValue);
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	inputs_info();
-    } else MENU.OutOfRange();
+    if(anything_selected()) {	// if not, tell the user how to select
+      newValue = MENU.numeric_input(ILLEGAL);
+      if (newValue == (unsigned long) newValue) {
+	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	  if (selected_inputs & ( 1 << inp))
+	    INPUTS.set_counter(inp, newValue);
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  inputs_info();
+      } else MENU.OutOfRange();
+    }
     break;
 
 
   case 's':
-    for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-      if (selected_inputs & ( 1 << inp))
-	show_samples(inp);
+    if(anything_selected()) {	// if not, tell the user how to select
+      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	if (selected_inputs & ( 1 << inp))
+	  show_samples(inp);
+    }
+    break;
 
   case 'i':
     inputs_info();
@@ -404,19 +413,23 @@ bool inputs_reaction(char token) {
     break;
 
   case 't':
-    newValue = MENU.numeric_input(0);
-    if (newValue == (int) newValue) {
-      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	if (selected_inputs & ( 1 << inp))
-	  test_in2o_calculation(inp, (int) newValue);
-    } else MENU.OutOfRange();
+    if(anything_selected()) {	// if not, tell the user how to select
+      newValue = MENU.numeric_input(0);
+      if (newValue == (int) newValue) {
+	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	  if (selected_inputs & ( 1 << inp))
+	    test_in2o_calculation(inp, (int) newValue);
+      } else MENU.OutOfRange();
+    }
     break;
 
   case 'T':
-    for (int newValue=0; newValue<1024; newValue++)
-      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	if (selected_inputs & ( 1 << inp))
-	  test_in2o_calculation(inp, (int) newValue);
+    if(anything_selected()) {	// if not, tell the user how to select
+      for (int newValue=0; newValue<1024; newValue++)
+	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	  if (selected_inputs & ( 1 << inp))
+	    test_in2o_calculation(inp, (int) newValue);
+    }
     break;
 
 
@@ -432,6 +445,34 @@ bool inputs_reaction(char token) {
       }
     }
   return true;		// token found in this menu
+}
+
+
+void how_to_select(void) {	// inform user about keys for selection
+  int max = INPUTS.get_inputs_allocated();
+
+  MENU.out(F("Select with "));
+  for (int inp=0; inp < max; inp++) {
+    if (inp == 16)	// not a hex chiffre any more
+      break;
+
+    MENU.out_hex_chiffre(inp);
+    MENU.space();
+  }
+  MENU.tab();
+  MENU.outln(F("'~'=invert  'x'=clear"));
+}
+
+
+// Check if there's something selected.
+// If nothing is selected inform the user how to select items.
+// return true if there *is*  a selection.
+bool anything_selected(void) {
+  if (selected_inputs)
+    return true;
+
+  how_to_select();
+  return false;
 }
 
 
