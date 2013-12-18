@@ -280,6 +280,14 @@ bool inputs_reaction(char token) {
     break;
 
 
+  case 'N':
+    newValue = MENU.numeric_input(ILLEGAL);
+    if ((newValue >= 0) && (newValue < INPUTS.get_inputs_allocated())) {
+      selected_inputs = 1 << newValue;
+    } else MENU.OutOfRange();
+
+    break;
+
   case 'A':
     if(anything_selected()) {	// if not, tell the user how to select
       newValue = MENU.numeric_input(ILLEGAL);
@@ -469,7 +477,7 @@ void how_to_select(void) {	// inform user about keys for selection
     MENU.space();
   }
   MENU.tab();
-  MENU.outln(F("'~'=invert  'x'=clear"));
+  MENU.outln(F("'~'=invert  'x'=clear  'N'<number>"));
 }
 
 
