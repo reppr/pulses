@@ -76,8 +76,10 @@ bool Inputs::setup_sample_method(int inp, int (*take_sample)(int addr), uint8_t 
 
   free(inputs[inp].samples);
   inputs[inp].samples = (int *) malloc(oversample * sizeof(int));
-  if (inputs[inp].samples == NULL)
+  if (inputs[inp].samples == NULL) {
+    inputs[inp].oversample = 0;
     return false;	// not enough RAM
+  }
 
   inputs[inp].oversample = oversample;
   return true;	// everything ok
