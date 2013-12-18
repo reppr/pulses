@@ -103,15 +103,15 @@ struct input_t {
 };
 
 // flags bitmasks:
-#define INPUT_ACTIVE		1
-//
 // *input oversampling* flags
-#define OVERSAMLE_AVERAGE	2
-//
+#define OVERSAMLE_AVERAGE	1
+// 2
 // *input processing* flags:
 #define INPUT_PROCESSING	4	// any type, not really needed
 #define PROCESS_LINEAR		8	// linear
 #define PROCESS_INVERSE		16	// reziprocal
+// 32
+// 64
 #define PROCESS_CUSTOM		128	// custom processing function
 //
 // *output method* flags:
@@ -119,6 +119,10 @@ struct input_t {
 //#define SET_TO_VALUE		512
 //#define ADD_TO_VALUE		1024
 //#define MUL_VALUE	        2048
+//  4096
+//  8192
+//  16384
+#define INPUT_ACTIVE	32768		// leading bit in the menu
 
 
 // aliases for io_calculation

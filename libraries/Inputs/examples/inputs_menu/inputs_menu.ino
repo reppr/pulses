@@ -432,6 +432,15 @@ bool inputs_reaction(char token) {
     }
     break;
 
+  case '!':
+    if(anything_selected()) {	// if not, tell the user how to select
+      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++) {
+	if (selected_inputs & ( 1 << inp)) {
+	  INPUTS.set_flags(inp, (INPUTS.get_flags(inp) ^ INPUT_ACTIVE));
+	}
+      }
+    }
+    break;
 
   default:
     return false;	// token not found in this menu

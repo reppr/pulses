@@ -258,6 +258,9 @@ bool Inputs::setup_in2o_custom(int inp, ioV_t (*method)(int inp, ioV_t value)) {
 	  influence the period of a pulse, or whatever...
 */
 bool Inputs::sample_and_react(int inp) {
+  if(!(inputs[inp].flags & INPUT_ACTIVE))	// active inputs only
+    return false;
+
   if(! sample(inp))	// sample, and...
     return false;	//   return false  if there's nothing else to do
 
