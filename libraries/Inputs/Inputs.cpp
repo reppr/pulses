@@ -63,6 +63,25 @@ Inputs::~Inputs() {
 
 
 /*
+  bool malloc_samples(int inp, uint8_t oversample);
+  (free old sample memory, and)
+  malloc memory for 'oversample' bytes:
+*/
+bool Inputs::malloc_samples(int inp, uint8_t oversample) {
+  free(inputs[inp].samples);
+  inputs[inp].samples = (int *) malloc(oversample * sizeof(int));
+  if (inputs[inp].samples == NULL) {
+    inputs[inp].oversample = 0;
+    return false;	// not enough RAM
+  }
+
+  memset(inputs[inp].samples, 0, (oversample * sizeof(int)));
+  inputs[inp].oversample = oversample;
+  return true;		// ok
+}
+
+
+/*
   bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversample)
   Setup an input sample method and reserve memory for oversampling:
 */
@@ -74,17 +93,28 @@ bool Inputs::setup_sample_method(int inp, int (*take_sample)(int addr), uint8_t 
   inputs[inp].sample_method = take_sample;
   inputs[inp].inp_A = addr;
 
-  free(inputs[inp].samples);
-  inputs[inp].samples = (int *) malloc(oversample * sizeof(int));
-  if (inputs[inp].samples == NULL) {
-    inputs[inp].oversample = 0;
+  if (malloc_samples(inp, oversample))
+    return true;	// everything ok
+  else
     return false;	// not enough RAM
-  }
-
-  inputs[inp].oversample = oversample;
-  return true;	// everything ok
 }
 
+
+/*
+  bool setup_analog_read(int inp, uint8_t addr, uint8_t oversample);
+  Setup internal analogRead(pin), and reserve memory for oversampling:
+*/
+bool Inputs::setup_analog_read(int inp, uint8_t addr, uint8_t oversample) {
+  if ((inp < 0) or (inp >= inputs_allocated))
+    return false;	// inp out of range
+
+  if (malloc_samples(inp, oversample)) {
+    inputs[inp].flags |= INPUT_ANALOG_internal;
+    inputs[inp].inp_A = addr;
+    return true;	// everything ok
+  } else
+    return false;	// not enough RAM
+}
 
 /*
   bool sample(int inp);
@@ -96,10 +126,14 @@ bool Inputs::sample(int inp) {
   int value;
   unsigned int cyclic_index;
 
-  if (inputs[inp].sample_method == NULL)	// not really needed
-    return false;	// no error treatment, should not happen...
+  if (inputs[inp].flags & INPUT_ANALOG_internal)	// analogRead
+    value = analogRead(inputs[inp].inp_A);
+  else {
+    if (inputs[inp].sample_method == NULL)	// not really needed
+      return false;	// no error treatment, should not happen...
 
-  value=(*(*inputs[inp].sample_method))((int) inputs[inp].inp_A);
+    value=(*(*inputs[inp].sample_method))((int) inputs[inp].inp_A);
+  }
 
   cyclic_index = (inputs[inp].counter++ % inputs[inp].oversample);
   inputs[inp].samples[cyclic_index]=value;

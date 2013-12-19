@@ -86,6 +86,15 @@ void setup() {	// ARDUINO
   MENU.ln();
 
   int inp=0;
+  INPUTS.setup_analog_read(inp, 0, 16);				// A0, oversample=16 new internal
+  INPUTS.setup_raw(inp);					// no calculations
+
+  // old way, should give similar results:
+  inp++;
+  INPUTS.setup_sample_method(inp, &analogRead_, 0, 16);		// A0, oversample=16 old external
+  INPUTS.setup_raw(inp);					// no calculations
+
+  inp++;
   INPUTS.setup_sample_method(inp, &analogRead_, 0, 8);		// A0, oversample=8
   INPUTS.setup_linear(inp, 0, 255, 1023, 0, PROPORTIONAL);	// 255*x/1023
 #ifdef INPUTS_DEBUGGING_SAMPLE_REACTION
@@ -98,7 +107,7 @@ void setup() {	// ARDUINO
   INPUTS.setup_linear(inp, -20, 4800, 1, 0, INVERSE);		// 4800/(x-20)
 
   inp++;
-  INPUTS.setup_sample_method(inp, &analogRead_, 2, 16);		// A2, oversample=16
+  INPUTS.setup_sample_method(inp, &analogRead_, 0, 16);		// A0, oversample=16
   INPUTS.setup_linear(inp, -11, 12, 16, -8, INVERSE);		// 12/16/(x-11) -8
 
   inputs_info();

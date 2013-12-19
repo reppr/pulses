@@ -103,9 +103,12 @@ struct input_t {
 };
 
 // flags bitmasks:
+// special input types flags:
+#define INPUT_ANALOG_internal	1
+//
 // *input oversampling* flags
-#define OVERSAMLE_AVERAGE	1
-// 2
+#define OVERSAMLE_AVERAGE	2
+//
 // *input processing* flags:
 #define INPUT_PROCESSING	4	// any type, not really needed
 #define PROCESS_LINEAR		8	// linear
@@ -139,6 +142,19 @@ class Inputs {
     Setup an input sample method and reserve memory for oversampling:
   */
   bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversample);
+
+  /*
+  bool malloc_samples(int inp, uint8_t oversample);
+  (free old sample memory, and)
+  malloc memory for 'oversample' bytes:
+  */
+  bool malloc_samples(int inp, uint8_t oversample);
+
+  /*
+    bool setup_analog_read(int inp, uint8_t addr, uint8_t oversample);
+    Setup internal analogRead(pin), and reserve memory for oversampling:
+  */
+  bool setup_analog_read(int inp, uint8_t addr, uint8_t oversample);
 
   /*
     bool setup_in2o_custom(int inp, ioV_t (*method)(int inp, ioV_t value));
