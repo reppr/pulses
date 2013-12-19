@@ -1,4 +1,3 @@
-// #define INPUTS_DEBUGGING_SAMPLE_REACTION
 /*
  * ****************************************************************
  * inputs_menu.ino
@@ -32,6 +31,12 @@
 //#define BAUDRATE	19200
 //#define BAUDRATE	9600		// failsafe
 //#define BAUDRATE	31250		// MIDI
+
+
+/* **************************************************************** */
+// debugging:
+// #define INPUTS_DEBUGGING_SAMPLE_REACTION
+
 
 
 /* **************************************************************** */
@@ -99,7 +104,7 @@ void setup() {	// ARDUINO
   INPUTS.setup_linear(inp, 0, 255, 1023, 0, PROPORTIONAL);	// 255*x/1023
 #ifdef INPUTS_DEBUGGING_SAMPLE_REACTION
   INPUTS.setup_raw(inp);
-  INPUTS.setup_io_reaction(inp, &bar_graph_);
+  INPUTS.setup_io_reaction(inp, &bar_graph_);	// obsolete
 #endif
 
   inp++;
@@ -502,7 +507,7 @@ bool anything_selected(void) {
 }
 
 
-// show an info line for each existing input:
+// show an info line for an (existing) input:
 void input_info(int inp) {
   MENU.space();
   if (selected_inputs & (1 << inp))
@@ -593,7 +598,7 @@ void print_selected_inputs() {
 }
 
 
-// show what in2o_calculation on inp does with value:
+// show what in2o_calculation [inp] does with value:
 void test_in2o_calculation(int inp, int value) {
   MENU.pad(inp, 4);
   MENU.out(F("in="));
@@ -649,16 +654,16 @@ void show_samples(int inp) {
 }
 
 
-#ifdef INPUTS_DEBUGGING_SAMPLE_REACTION
+#ifdef INPUTS_DEBUGGING_SAMPLE_REACTION	// obsolete
 
 /* **************************************************************** */
 /*
-  bar_graph_(int inp, ioV_t value);
+  bar_graph_(int inp, ioV_t value);	// obsolete
   testing io_reaction:
   print one value & bar graph line
 */
 // bar_graph_(inp, value)
-void bar_graph_(int inp, ioV_t value) {
+void bar_graph_(int inp, ioV_t value) {	// obsolete
   MENU.pad(inp, 4);
   MENU.bar_graph(value, 1023, '*');
 }

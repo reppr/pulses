@@ -47,18 +47,58 @@ Inputs::Inputs(int inputs_allocated):
     for (int inp=0; inp<inputs_allocated; inp++) {
       inputs[inp].sample_method = NULL;
       inputs[inp].samples = NULL;
-      // c++ did not like me :(
       inputs[inp].in2o_method = NULL;
     }
   }
 }
 
-// Destructor:
+/* ****************  Destructor:  **************** */
 Inputs::~Inputs() {
   for (int inp=0; inp<inputs_allocated; inp++)
     free(inputs[inp].samples);
 
   free(inputs);
+}
+
+
+/* ****************  top level user function:  **************** */
+/*
+  bool sample_and_react(int inp);
+  Main function to be called from Arduino loop().
+    Take a sample on inp,
+    react adequately,
+      like: on completing a new oversampling set
+	    compute average, do in2o_calculation on that
+	    influence the period of a pulse, or whatever...
+*/
+bool Inputs::sample_and_react(int inp) {
+  if(!(inputs[inp].flags & INPUT_ACTIVE))	// active inputs only
+    return false;
+
+  if(! sample(inp))	// sample, and...
+    return false;	//   return false  if there's nothing else to do
+
+  if(!(inputs[inp].flags & INPUT_OUTPUT_REACTION))
+    return false;	// no reactions configured, return false
+
+  // ok, so let's prepare for reaction:
+  // first get sample_value from oversampling and friends:
+  int sample_value;
+  if(inputs[inp].flags & OVERSAMLE_AVERAGE )
+    sample_value = oversamples_average(inp);
+  else
+    sample_value = get_last_sampled(inp);
+
+  // now do in2o_calculation:
+  ioV_t output_value;
+  if(inputs[inp].flags & INPUT_PROCESSING)
+    output_value = in2o_calculation(inp, (ioV_t) sample_value);
+  else
+    output_value = sample_value;
+
+  // call the reaction of that input with that output_value
+  inputs[inp].out_reaction(inp, output_value);
+  return true;
 }
 
 
@@ -80,41 +120,6 @@ bool Inputs::malloc_samples(int inp, uint8_t oversample) {
   return true;		// ok
 }
 
-
-/*
-  bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversample)
-  Setup an input sample method and reserve memory for oversampling:
-*/
-bool Inputs::setup_sample_method(int inp, int (*take_sample)(int addr), uint8_t addr, uint8_t oversample)
-{
-  if ((inp < 0) or (inp >= inputs_allocated))
-    return false;	// inp out of range
-
-  inputs[inp].sample_method = take_sample;
-  inputs[inp].inp_A = addr;
-
-  if (malloc_samples(inp, oversample))
-    return true;	// everything ok
-  else
-    return false;	// not enough RAM
-}
-
-
-/*
-  bool setup_analog_read(int inp, uint8_t addr, uint8_t oversample);
-  Setup internal analogRead(pin), and reserve memory for oversampling:
-*/
-bool Inputs::setup_analog_read(int inp, uint8_t addr, uint8_t oversample) {
-  if ((inp < 0) or (inp >= inputs_allocated))
-    return false;	// inp out of range
-
-  if (malloc_samples(inp, oversample)) {
-    inputs[inp].flags |= INPUT_ANALOG_internal;
-    inputs[inp].inp_A = addr;
-    return true;	// everything ok
-  } else
-    return false;	// not enough RAM
-}
 
 /*
   bool sample(int inp);
@@ -145,6 +150,44 @@ bool Inputs::sample(int inp) {
 }
 
 
+/* ****************  setup sampling functions:  **************** */
+/*
+  bool setup_analog_read(int inp, uint8_t addr, uint8_t oversample);
+  Setup internal analogRead(pin), and reserve memory for oversampling:
+*/
+bool Inputs::setup_analog_read(int inp, uint8_t addr, uint8_t oversample) {
+  if ((inp < 0) or (inp >= inputs_allocated))
+    return false;	// inp out of range
+
+  if (malloc_samples(inp, oversample)) {
+    inputs[inp].flags |= INPUT_ANALOG_internal;
+    inputs[inp].inp_A = addr;
+    return true;	// everything ok
+  } else
+    return false;	// not enough RAM
+}
+
+
+/*
+  bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversample)
+  Setup a custom input sample method and reserve memory for oversampling:
+*/
+bool Inputs::setup_sample_method(int inp, int (*take_sample)(int addr), uint8_t addr, uint8_t oversample)
+{
+  if ((inp < 0) or (inp >= inputs_allocated))
+    return false;	// inp out of range
+
+  inputs[inp].sample_method = take_sample;
+  inputs[inp].inp_A = addr;
+
+  if (malloc_samples(inp, oversample))
+    return true;	// everything ok
+  else
+    return false;	// not enough RAM
+}
+
+
+/* ****************  oversampling:  **************** */
 /*
   int oversamples_average(int inp);
   return average of the saved samples
@@ -176,6 +219,7 @@ unsigned int Inputs::oversamples_deviation(int inp) {
 }
 
 
+/* ****************  input to output calcukation:  **************** */
 /*
   ioV_t Inputs::in2o_calculation(int inp, ioV_t value)
   Calculate and return the output value from an input value
@@ -219,6 +263,7 @@ ioV_t Inputs::in2o_calculation(int inp, ioV_t value) {
 }
 
 
+/* ****************  setup input to output calculation functions:  *** */
 /*
   bool Inputs::setup_raw(int inp)
   Setup input inp to pass through raw values without further processing.
@@ -229,6 +274,23 @@ bool Inputs::setup_raw(int inp) {
     return false;	// inp out of range
 
   inputs[inp].flags &= ~INPUT_PROCESSING;
+  return true;
+}
+
+
+/*
+  bool setup_in2o_custom(int inp, ioV_t (*method)(int inp, ioV_t value));
+  setup a custom method to calculate output value from sample value.
+*/
+bool Inputs::setup_in2o_custom(int inp, ioV_t (*method)(int inp, ioV_t value)) {
+  if ((inp < 0) or (inp >= inputs_allocated))
+    return false;	// inp out of range
+
+  inputs[inp].flags &= ~(PROCESS_LINEAR & PROCESS_INVERSE);
+  inputs[inp].flags |= INPUT_PROCESSING;
+  inputs[inp].flags |= PROCESS_CUSTOM;
+
+  inputs[inp].in2o_method = method;
   return true;
 }
 
@@ -256,10 +318,6 @@ bool Inputs::setup_linear(int inp, \
   else
     inputs[inp].flags &= ~PROCESS_INVERSE;
 
-//	c++ did not like my first idea :(
-//	  inputs[inp].in2o_method = &Inputs::in2o_linear;
-//	  inputs[inp].in2o_method = &in2o_linear;
-
   inputs[inp].in_offset = in_offset;
   inputs[inp].mul = mul;
   inputs[inp].div = div;
@@ -268,62 +326,7 @@ bool Inputs::setup_linear(int inp, \
 }
 
 
-/*
-  bool setup_in2o_custom(int inp, ioV_t (*method)(int inp, ioV_t value));
-  setup a custom method to calculate output value from sample value.
-*/
-bool Inputs::setup_in2o_custom(int inp, ioV_t (*method)(int inp, ioV_t value)) {
-  if ((inp < 0) or (inp >= inputs_allocated))
-    return false;	// inp out of range
-
-  inputs[inp].flags &= ~(PROCESS_LINEAR & PROCESS_INVERSE);
-  inputs[inp].flags |= INPUT_PROCESSING;
-  inputs[inp].flags |= PROCESS_CUSTOM;
-
-  inputs[inp].in2o_method = method;
-  return true;
-}
-
-
-/*
-  bool sample_and_react(int inp);
-  take a sample on inp
-  react adequately,
-    like: on completing a new oversampling set
-          compute average, do in2o_calculation on that
-	  influence the period of a pulse, or whatever...
-*/
-bool Inputs::sample_and_react(int inp) {
-  if(!(inputs[inp].flags & INPUT_ACTIVE))	// active inputs only
-    return false;
-
-  if(! sample(inp))	// sample, and...
-    return false;	//   return false  if there's nothing else to do
-
-  if(!(inputs[inp].flags & INPUT_OUTPUT_REACTION))
-    return false;	// no reactions configured, return false
-
-  // ok, so let's prepare for reaction:
-  // first get sample_value from oversampling and friends:
-  int sample_value;
-  if(inputs[inp].flags & OVERSAMLE_AVERAGE )
-    sample_value = oversamples_average(inp);
-  else
-    sample_value = get_last_sampled(inp);
-
-  // now do in2o_calculation:
-  ioV_t output_value;
-  if(inputs[inp].flags & INPUT_PROCESSING)
-    output_value = in2o_calculation(inp, (ioV_t) sample_value);
-  else
-    output_value = sample_value;
-
-  // call the reaction of that input with that output_value
-  inputs[inp].out_reaction(inp, output_value);
-  return true;
-}
-
-
+/* ****************  output reaction functions:  **************** */
 /*
   bool setup_io_reaction(int inp, void (*reaction)(int inp, ioV_t value));
   setup a reaction 'void reaction(int inp, ioV_t value)' to be done when
