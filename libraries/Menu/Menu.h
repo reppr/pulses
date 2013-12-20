@@ -189,13 +189,25 @@ class Menu {
 
   void ticked(const char c) const;  // output a ticked char token like 'A'
 
+  /* Do i want this?
+  // show char sequence ticked, like 'A' 'B' 'C' (ending in a space)
+  void ticked_chars(const char * chars) const;
+  */
+
   // Print binary numbers with leading zeroes and a trailing space:
   void outBIN(unsigned long l, int bits ) const; // binary output
 
   // Print a hex chiffre:
   void out_hex_chiffre(unsigned char chiffre) const; // output 1 hex chiffre
 
-  // print a bar_graph line
+  /*
+  void out_ticked_hexs(unsigned int count) const;
+  Print a sequence of ticked ascending hex chiffres: '0' '1' ... '9' 'a' 'b'
+  Ends with a space.
+  */
+  void out_ticked_hexs(unsigned int count) const;
+
+  // Print a bar_graph line:
   void bar_graph(long value, unsigned int scale, char c);
 
   /* String recycling:						*/

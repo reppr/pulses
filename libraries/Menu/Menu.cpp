@@ -255,6 +255,18 @@ char Menu::cb_read() {
     port_.print("'"); port_.print(c); port_.print("'");
   }
 
+
+  /* Do i want this?
+  // show char sequence ticked, like 'A' 'B' 'C' (ending in a space)
+  void Menu::ticked_chars(const char * chars) const {
+    char c;
+    while (c = *chars++) {
+      ticked(c);
+      space();
+    }
+  }
+  */
+
   /* Output a newline, tab, space, '='
      ln(), tab(), space(), equals():			*/
   void Menu::ln()     const { port_.println(); }	// Output a newline
@@ -390,6 +402,26 @@ void Menu::out_hex_chiffre(unsigned char chiffre) const { // output 1 hex chiffr
 
   out(c);
 }
+
+
+/*
+  void out_ticked_hexs(unsigned int count) const;
+  Print a sequence of ticked ascending hex chiffres: '0' '1' ... '9' 'a' 'b'
+  Ends with a space.
+*/
+void Menu::out_ticked_hexs(unsigned int count) const {
+  if (count>16)
+    count=16;
+
+  for(char i=0; i<count; i++) {
+    if (i<10)
+      ticked(i + '0');
+    else
+      ticked(i -10 + 'a');
+    space();				// ends with a space
+  }
+}
+
 
 
 /*

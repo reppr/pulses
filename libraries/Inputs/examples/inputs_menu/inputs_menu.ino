@@ -41,7 +41,7 @@
 
 /* **************************************************************** */
 // INPUTS:
-Inputs INPUTS(8);
+Inputs INPUTS(12);
 
 unsigned long selected_inputs=0;
 
@@ -480,17 +480,9 @@ bool inputs_reaction(char token) {
 
 
 void how_to_select(void) {	// inform user about keys for selection
-  int max = INPUTS.get_inputs_allocated();
-
   MENU.out(F("Select with "));
-  for (int inp=0; inp < max; inp++) {
-    if (inp == 16)	// not a hex chiffre any more
-      break;
-
-    MENU.out_hex_chiffre(inp);
-    MENU.space();
-  }
-  MENU.tab();
+  MENU.out_ticked_hexs(INPUTS.get_inputs_allocated());
+  MENU.space();
   MENU.outln(F("'~'=invert  'x'=clear  'N'<number>"));
 }
 
