@@ -1038,12 +1038,7 @@ void info_select_destination_with(bool extended_destinations) {
   MENU.out(selectPulseWith);
 
   // FIXME: use 16 here, when reaction will be prepared for a,b,c,d,e,f too.
-  //  for (int pulse=0; pulse<min(pl_max,16); pulse++) {
-  for (int pulse=0; pulse<min(pl_max,10); pulse++) {	// FIXME: use 16 here, when reaction will be prepared for a,b,c,d,e,f too.
-    MENU.out_hex_chiffre(pulse);
-    MENU.space();
-    MENU.space();
-  }
+  MENU.out_ticked_hexs(min(pl_max,10));
 
   MENU.outln(selectAllPulses);
 
