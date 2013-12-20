@@ -170,13 +170,7 @@ void setup() {
   while (!Serial) { ;}		// wait for Serial to open
 #endif
 
-  // some test output:
-  MENU.outln(F("testing pulses.ino"));
-
   MENU.outln(F("http://github.com/reppr/pulses/\n"));
-
-  MENU.out(F("pulses: "));
-  MENU.outln(pl_max);
 
   MENU.out(F("sizeof(pulse_t) "));
   MENU.out(sizeof(pulse_t));
@@ -1024,17 +1018,21 @@ void print_selected() {
 
 // info_select_destination_with()
 const char selectDestinationInfo[] =
-  "SELECT DESTINATION for '= * / s K P n c j :' to work on:\t\t";
+  "SELECT DESTINATION for '= * / s K P n c j :' to work on:\t";
 const char selectPulseWith[] = "Select pulse with ";
 const char selectAllPulses[] =
   "\na=select *all* click pulses\tA=*all* pulses\tl=alive clicks\tL=all alive\tx=none\t~=invert selection";
 const char uSelect[] = "u=select ";
 const char selected__[] = "\t(selected)";
+const char pulses_[] = "pulses ";
 
 void info_select_destination_with(bool extended_destinations) {
+  MENU.out(pulses_);
+  MENU.out(PULSES.get_pl_max());
+  MENU.tab();
   MENU.out(selectDestinationInfo);
-  print_selected();  MENU.ln();
-
+  print_selected();
+  MENU.ln();
   MENU.out(selectPulseWith);
 
   // FIXME: use 16 here, when reaction will be prepared for a,b,c,d,e,f too.
