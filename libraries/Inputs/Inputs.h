@@ -139,7 +139,7 @@ struct input_t {
 
 class Inputs {
  public:
-  Inputs(int inputs_allocated);
+  Inputs(int inputs_to_allocate);
 
   ~Inputs();
 

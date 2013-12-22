@@ -35,16 +35,15 @@
 
 /* **************************************************************** */
 // Constructor:
-Inputs::Inputs(int inputs_allocated):
-  inputs_allocated(inputs_allocated)
-{
-  inputs = (input_t *) malloc(inputs_allocated * sizeof(input_t));
+Inputs::Inputs(int inputs_to_allocate) {
+  inputs = (input_t *) malloc(inputs_to_allocate * sizeof(input_t));
   if (inputs == NULL)
     inputs_allocated=0;
   else {
-    memset(inputs, 0, inputs_allocated * sizeof(input_t));
+    memset(inputs, 0, inputs_to_allocate * sizeof(input_t));
+    inputs_allocated=inputs_to_allocate;
 
-    for (int inp=0; inp<inputs_allocated; inp++) {
+    for (int inp=0; inp<inputs_to_allocate; inp++) {
       inputs[inp].sample_method = NULL;
       inputs[inp].samples = NULL;
       inputs[inp].in2o_method = NULL;
