@@ -130,17 +130,13 @@ void setup() {	// ARDUINO
 
 #ifdef ARDUINO
 // Arduino loop():
-unsigned int cnt=0;
-int inp=0;
 void loop() {	// ARDUINO
   MENU.lurk_then_do();
+  INPUTS.do_next_input();
 
   // Insert your own code here.
   // Do not let your program block program flow,
   // always return to the main loop as soon as possible.
-  inp = (cnt % INPUTS.get_inputs_allocated());	// cycle through the inputs
-  INPUTS.sample_and_react(inp);
-  cnt++;
 }
 #endif
 

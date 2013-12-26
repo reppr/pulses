@@ -42,6 +42,7 @@ Inputs::Inputs(int inputs_to_allocate) {
   else {
     memset(inputs, 0, inputs_to_allocate * sizeof(input_t));
     inputs_allocated=inputs_to_allocate;
+    next_input=0;
 
     for (int inp=0; inp<inputs_to_allocate; inp++) {
       inputs[inp].sample_method = NULL;
@@ -62,13 +63,38 @@ Inputs::~Inputs() {
 
 /* ****************  top level user function:  **************** */
 /*
-  bool sample_and_react(int inp);
+  bool do_next_input(void);
   Main function to be called from Arduino loop().
-    Take a sample on inp,
+    Take a sample on next active input,
     react adequately,
       like: on completing a new oversampling set
 	    compute average, do in2o_calculation on that
 	    influence the period of a pulse, or whatever...
+    Return a flag if an action was triggered.
+*/
+bool Inputs::do_next_input(void) {
+  int inp;
+
+  for (int i=0; i<inputs_allocated ; i++) {
+    inp=next_input;
+    next_input = ++next_input % inputs_allocated;
+
+    if(inputs[inp].flags & INPUT_ACTIVE)	// active inputs only
+      return sample_and_react(inp);		// take sample, maybe react...
+  }
+    
+  return false;		// *no* inputs active
+}
+
+/*
+  bool sample_and_react(int inp);
+  Take a sample on inp,
+    react adequately,
+      like: on completing a new oversampling set
+	    compute average, do in2o_calculation on that
+	    influence the period of a pulse, or whatever...
+  Return true every time an action was triggered.
+  Can be called directly from the sketch or by a pulse.
 */
 bool Inputs::sample_and_react(int inp) {
   if(!(inputs[inp].flags & INPUT_ACTIVE))	// active inputs only
@@ -122,7 +148,7 @@ bool Inputs::malloc_samples(int inp, unsigned int oversample) {
 
 /*
   bool sample(int inp);
-  Take a sample
+  Take a sample on inp.
   Return true every time a new oversampling set is ready
   as a trigger for possible reactions.
 */
@@ -133,8 +159,9 @@ bool Inputs::sample(int inp) {
   if (inputs[inp].flags & INPUT_ANALOG_internal)	// analogRead
     value = analogRead(inputs[inp].inp_A);
   else {
-    if (inputs[inp].sample_method == NULL)	// not really needed
-      return false;	// no error treatment, should not happen...
+    // check for misconfigured input, not really needed.
+    if (inputs[inp].sample_method == NULL)	// ERROR no sample method known
+      return false;	// Silently return, no further error treatment here...
 
     value=(*(*inputs[inp].sample_method))((int) inputs[inp].inp_A);
   }

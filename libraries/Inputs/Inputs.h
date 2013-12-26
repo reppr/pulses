@@ -144,13 +144,26 @@ class Inputs {
   ~Inputs();
 
   /*
-  bool sample_and_react(int inp);
+  bool do_next_input(void);
   Main function to be called from Arduino loop().
-    Take a sample on inp,
+    Take a sample on next active input,
     react adequately,
       like: on completing a new oversampling set
 	    compute average, do in2o_calculation on that
 	    influence the period of a pulse, or whatever...
+    Return a flag if an action was triggered.
+  */
+  bool do_next_input(void);
+
+  /*
+  bool sample_and_react(int inp);
+  Take a sample on inp,
+    react adequately,
+      like: on completing a new oversampling set
+	    compute average, do in2o_calculation on that
+	    influence the period of a pulse, or whatever...
+  Return true every time an action was triggered.
+  Can be called directly from the sketch or by a pulse.
   */
   bool sample_and_react(int inp);
 
@@ -163,7 +176,7 @@ class Inputs {
 
   /*
     bool sample(int inp);
-    Take a sample
+    Take a sample on inp.
     Return true every time a new oversampling set is ready
     as a trigger for possible reactions.
   */
@@ -368,6 +381,7 @@ class Inputs {
 
  private:
   int inputs_allocated;		// allocated inputs
+  int next_input;		// next input to take a sample
   input_t * inputs;		// data pointer for inputs
 };
 
