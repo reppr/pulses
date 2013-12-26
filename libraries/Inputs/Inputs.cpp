@@ -102,11 +102,11 @@ bool Inputs::sample_and_react(int inp) {
 
 
 /*
-  bool malloc_samples(int inp, uint8_t oversample);
+  bool malloc_samples(int inp, unsigned int oversample);
   (free old sample memory, and)
   malloc memory for 'oversample' bytes:
 */
-bool Inputs::malloc_samples(int inp, uint8_t oversample) {
+bool Inputs::malloc_samples(int inp, unsigned int oversample) {
   free(inputs[inp].samples);
   inputs[inp].samples = (int *) malloc(oversample * sizeof(int));
   if (inputs[inp].samples == NULL) {
@@ -151,10 +151,10 @@ bool Inputs::sample(int inp) {
 
 /* ****************  setup sampling functions:  **************** */
 /*
-  bool setup_analog_read(int inp, uint8_t addr, uint8_t oversample);
+  bool setup_analog_read(int inp, uint8_t addr, unsigned int oversample);
   Setup internal analogRead(pin), and reserve memory for oversampling:
 */
-bool Inputs::setup_analog_read(int inp, uint8_t addr, uint8_t oversample) {
+bool Inputs::setup_analog_read(int inp, uint8_t addr, unsigned int oversample) {
   if ((inp < 0) or (inp >= inputs_allocated))
     return false;	// inp out of range
 
@@ -168,10 +168,12 @@ bool Inputs::setup_analog_read(int inp, uint8_t addr, uint8_t oversample) {
 
 
 /*
-  bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversample)
+  bool setup_sample_method(int inp, int (*sample_method)(int addr), \
+			   uint8_t addr, unsigned int oversample)
   Setup a custom input sample method and reserve memory for oversampling:
 */
-bool Inputs::setup_sample_method(int inp, int (*take_sample)(int addr), uint8_t addr, uint8_t oversample)
+bool Inputs::setup_sample_method(int inp, int (*take_sample)(int addr), \
+				 uint8_t addr, unsigned int oversample)
 {
   if ((inp < 0) or (inp >= inputs_allocated))
     return false;	// inp out of range

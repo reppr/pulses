@@ -351,7 +351,7 @@ void setup() {
 #ifdef INPUTS_DEBUGGING_SAMPLING
   /*
   bool Inputs::setup_sample_method(int inp,\
-         int (*take_sample)(int addr), uint8_t addr, uint8_t oversample)
+         int (*take_sample)(int addr), uint8_t addr, unsigned int oversample)
   */
   INPUTS.setup_sample_method(0, &test_sample_method, 0, 4);	// A0
   INPUTS.setup_sample_method(1, &test_sample_method, 1, 4);	// A1

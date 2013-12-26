@@ -94,26 +94,31 @@ void setup() {	// ARDUINO
   INPUTS.setup_analog_read(inp, 0, 16);				// A0, oversample=16 new internal
   INPUTS.setup_raw(inp);					// no calculations
 
-  // old way, should give similar results:
   inp++;
-  INPUTS.setup_sample_method(inp, &analogRead_, 0, 16);		// A0, oversample=16 old external
+  INPUTS.setup_analog_read(inp, 1, 16);				// A1, oversample=16
   INPUTS.setup_raw(inp);					// no calculations
 
   inp++;
-  INPUTS.setup_sample_method(inp, &analogRead_, 0, 8);		// A0, oversample=8
+  INPUTS.setup_analog_read(inp, 2, 8);				// A2, oversample=8
   INPUTS.setup_linear(inp, 0, 255, 1023, 0, PROPORTIONAL);	// 255*x/1023
 #ifdef INPUTS_DEBUGGING_SAMPLE_REACTION
   INPUTS.setup_raw(inp);
   INPUTS.setup_io_reaction(inp, &bar_graph_);	// obsolete
 #endif
 
+  inp++;							// Sharp HC-SR04
+  INPUTS.setup_analog_read(inp, 3, 4);				// A3, oversample=4
+  INPUTS.setup_linear(inp, -20, 4800, 1, 0, INVERSE);		// 4800/(x-20)	[formula often cited]
+
+  /*
   inp++;
-  INPUTS.setup_sample_method(inp, &analogRead_, 1, 4);		// A1, oversample=4
-  INPUTS.setup_linear(inp, -20, 4800, 1, 0, INVERSE);		// 4800/(x-20)
+  INPUTS.setup_analog_read(inp, 4, 2);				// A4, oversample=2
+  INPUTS.setup_raw(inp);					// no calculations
 
   inp++;
-  INPUTS.setup_sample_method(inp, &analogRead_, 0, 16);		// A0, oversample=16
-  INPUTS.setup_linear(inp, -11, 12, 16, -8, INVERSE);		// 12/16/(x-11) -8
+  INPUTS.setup_analog_read(inp, 5, 1);				// A5, oversample=1
+  INPUTS.setup_raw(inp);					// no calculations
+  */
 
   inputs_info();
 }
@@ -227,8 +232,8 @@ void inputs_display() {
   how_to_select();
 
   if(selected_inputs) {
-    MENU.outln(F("Set parameters with  A B + * / > O Q #"));
-    MENU.outln(F("t<n>=test T=tests"));
+    MENU.outln(F("Set parameters with  A B S + * / > O Q #"));
+    MENU.outln(F("!=activate s=samples t<n>=test T=tests"));
   }
 }
 
@@ -293,14 +298,16 @@ bool inputs_reaction(char token) {
       print_selected_inputs();
     break;
 
-
   case 'N':
     newValue = MENU.numeric_input(ILLEGAL);
     if ((newValue >= 0) && (newValue < INPUTS.get_inputs_allocated())) {
       selected_inputs = 1 << newValue;
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      print_selected_inputs();
     } else MENU.OutOfRange();
 
     break;
+
 
   case 'A':
     if(anything_selected()) {	// if not, tell the user how to select
@@ -407,6 +414,22 @@ bool inputs_reaction(char token) {
     }
     break;
 
+  case 'S':
+    if(anything_selected()) {	// if not, tell the user how to select
+      newValue = MENU.numeric_input(ILLEGAL);
+      if (newValue > 0) {
+	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	  if (selected_inputs & ( 1 << inp))
+	    if (!INPUTS.malloc_samples(inp, newValue)) {
+	      MENU.OutOfRange();
+	      break;
+	    }
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  inputs_info();
+      } else MENU.OutOfRange();
+    }
+    break;
+
   case '#':
     if(anything_selected()) {	// if not, tell the user how to select
       newValue = MENU.numeric_input(ILLEGAL);
@@ -461,6 +484,8 @@ bool inputs_reaction(char token) {
 	  INPUTS.set_flags(inp, (INPUTS.get_flags(inp) ^ INPUT_ACTIVE));
 	}
       }
+      if (MENU.verbosity >= VERBOSITY_SOME)
+	inputs_info();
     }
     break;
 
@@ -470,10 +495,8 @@ bool inputs_reaction(char token) {
 
   if (was_no_selection)	// some menu items have not been displayed before
     if (selected_inputs) {
-      if (MENU.verbosity >= VERBOSITY_SOME) {
-	inputs_info();		// nice to see
+      if (MENU.verbosity >= VERBOSITY_SOME)
 	MENU.menu_display();	// display full menu now
-      }
     }
   return true;		// token found in this menu
 }
@@ -524,7 +547,7 @@ void input_info(int inp) {
   MENU.pad(INPUTS.get_inp_B(inp), 4);
 
   MENU.out(F("smp="));
-  MENU.pad(INPUTS.get_oversample(inp),4);
+  MENU.pad(INPUTS.get_oversample(inp),6);
 
   MENU.out('+');
   MENU.pad(INPUTS.get_in_offset(inp), 6);
@@ -559,11 +582,6 @@ void inputs_info() {
   int inputs=INPUTS.get_inputs_allocated();
   for (int inp=0; inp < inputs; inp++)
     input_info(inp);
-}
-
-
-int analogRead_(int pin) {	// horrible kludge, we need the type cast here...
-  return analogRead(pin);
 }
 
 
@@ -606,7 +624,7 @@ void test_in2o_calculation(int inp, int value) {
 
 // show all samples from an input:
 void show_samples(int inp) {
-  int oversample = INPUTS.get_oversample(inp);
+  unsigned int oversample = INPUTS.get_oversample(inp);
   if(oversample == 0)	// no sample memory allocated?
     return;		//   return silently
 
@@ -642,6 +660,7 @@ void show_samples(int inp) {
   MENU.space();
   MENU.out(average);
   MENU.tab();
+// MENU.out('±');		// plusminus sign, does not work here...
   MENU.outln(INPUTS.oversamples_deviation(inp));
 }
 

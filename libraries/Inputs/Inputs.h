@@ -81,7 +81,7 @@ struct input_t {
   uint16_t flags;
   uint8_t inp_A;			// address where to get data from, i.e: pin, i2c address
   uint8_t inp_B;			// second input parameter, second pin, i2c register, etc.
-  uint8_t oversample;			// total previous samples kept in memory
+  unsigned int oversample;		// total samples kept in memory
   int (*sample_method)(int addr);	// method to take a sample, i.e. analogRead(pin)
 
   // method to get the output value from an input value
@@ -155,11 +155,11 @@ class Inputs {
   bool sample_and_react(int inp);
 
   /*
-    bool malloc_samples(int inp, uint8_t oversample);
+    bool malloc_samples(int inp, unsigned int oversample);
     (free old sample memory, and)
     malloc memory for 'oversample' bytes:
   */
-  bool malloc_samples(int inp, uint8_t oversample);
+  bool malloc_samples(int inp, unsigned int oversample);
 
   /*
     bool sample(int inp);
@@ -180,16 +180,18 @@ class Inputs {
   }
 
   /*
-    bool setup_analog_read(int inp, uint8_t addr, uint8_t oversample);
+    bool setup_analog_read(int inp, uint8_t addr, unsigned int oversample);
     Setup internal analogRead(pin), and reserve memory for oversampling:
   */
-  bool setup_analog_read(int inp, uint8_t addr, uint8_t oversample);
+  bool setup_analog_read(int inp, uint8_t addr, unsigned int oversample);
 
   /*
-    bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversample)
+    bool setup_sample_method(int inp, int (*sample_method)(int addr), \
+    					   uint8_t addr, unsigned int oversample)
     Setup a custom input sample method and reserve memory for oversampling:
   */
-  bool setup_sample_method(int inp, int (*sample_method)(int addr), uint8_t addr, uint8_t oversample);
+  bool setup_sample_method(int inp, int (*sample_method)(int addr), \
+			   uint8_t addr, unsigned int oversample);
 
 
   /*
@@ -270,7 +272,7 @@ class Inputs {
     return inputs[inp].inp_B;
   }
 
-  uint8_t get_oversample(int inp) {		// inlined
+  unsigned int get_oversample(int inp) {	// inlined
     return inputs[inp].oversample;
   }
 
@@ -326,7 +328,7 @@ class Inputs {
 
   /*
   // do not do this...
-  void set_oversample(int inp, uint8_t oversample) {
+  void set_oversample(int inp, unsigned int oversample) {
     inputs[inp].oversample = oversample;
   }
   */
