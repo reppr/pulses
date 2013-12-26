@@ -220,7 +220,7 @@ bool Inputs::setup_sample_method(int inp, int (*take_sample)(int addr), \
   int oversamples_average(int inp);
   return average of the saved samples
 */
-int Inputs::oversamples_average(int inp){
+int Inputs::oversamples_average(int inp) const {
   int oversample=inputs[inp].oversample;
   long sum=0;
   for(int i=0; i < oversample; i++)
@@ -234,7 +234,7 @@ int Inputs::oversamples_average(int inp){
   unsigned int oversamples_deviation(int inp);
   get average of absolute deviation against average of all samples
 */
-unsigned int Inputs::oversamples_deviation(int inp) {
+unsigned int Inputs::oversamples_deviation(int inp) const {
   int oversample=inputs[inp].oversample;
   int average=oversamples_average(inp);
 
@@ -253,7 +253,7 @@ unsigned int Inputs::oversamples_deviation(int inp) {
   Calculate and return the output value from an input value
   according the roules for input inp.
 */
-ioV_t Inputs::in2o_calculation(int inp, ioV_t value) {
+ioV_t Inputs::in2o_calculation(int inp, ioV_t value) const {
   ioV_t outval;
 
   if(inputs[inp].flags & PROCESS_CUSTOM)

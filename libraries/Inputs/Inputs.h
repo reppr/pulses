@@ -188,7 +188,7 @@ class Inputs {
     get the last sample that was taken before on inp
     do *not* call this if there was no sample taken before...
   */
-  int get_last_sampled(int inp) {			// inlined
+  int get_last_sampled(int inp) const {			// inlined
     return inputs[inp].samples[((inputs[inp].counter - 1) % inputs[inp].oversample)];
   }
 
@@ -211,13 +211,13 @@ class Inputs {
     int oversamples_average(int inp);
     return average of the saved samples
   */
-  int oversamples_average(int inp);
+  int oversamples_average(int inp) const;
 
   /*
     unsigned int oversamples_deviation(int inp);
     Get average of absolute deviation against average of all samples
   */
-  unsigned int oversamples_deviation(int inp);
+  unsigned int oversamples_deviation(int inp) const;
 
 
 
@@ -226,7 +226,7 @@ class Inputs {
     Calculate and return the output value from an input value
     according the roules for input inp.
   */
-  ioV_t in2o_calculation(int inp, ioV_t value);
+  ioV_t in2o_calculation(int inp, ioV_t value) const;
 
   /*
     bool Inputs::setup_raw(int inp)
@@ -262,46 +262,46 @@ class Inputs {
   /*
     some inlined get_xxx() functions:
   */
-  int get_sample(int inp, int index) {			// inlined
+  int get_sample(int inp, int index) const {		// inlined
     return inputs[inp].samples[index];
   }
 
-  unsigned int get_inputs_allocated() {		// inlined
+  unsigned int get_inputs_allocated() const {		// inlined
     return inputs_allocated; }
 
-  unsigned long get_counter(int inp) {		// inlined
+  unsigned long get_counter(int inp) const {		// inlined
     return inputs[inp].counter;
   }
 
-  uint16_t get_flags(int inp) {			// inlined
+  uint16_t get_flags(int inp) const {			// inlined
     return inputs[inp].flags;
   }
 
-  uint8_t get_inp_A(int inp) {			// inlined
+  uint8_t get_inp_A(int inp) const {			// inlined
     return inputs[inp].inp_A;
   }
 
-  uint8_t get_inp_B(int inp) {			// inlined
+  uint8_t get_inp_B(int inp) const {			// inlined
     return inputs[inp].inp_B;
   }
 
-  unsigned int get_oversample(int inp) {	// inlined
+  unsigned int get_oversample(int inp) const {		// inlined
     return inputs[inp].oversample;
   }
 
-  ioP_t get_in_offset(int inp) {		// inlined
+  ioP_t get_in_offset(int inp) const {			// inlined
     return inputs[inp].in_offset;
   }
 
-  ioP_t get_mul(int inp) {			// inlined
+  ioP_t get_mul(int inp) const {			// inlined
     return inputs[inp].mul;
   }
 
-  ioP_t get_div(int inp) {			// inlined
+  ioP_t get_div(int inp) const {			// inlined
     return inputs[inp].div;
   }
 
-  ioV_t get_out_offset(int inp) {		// inlined
+  ioV_t get_out_offset(int inp) const {			// inlined
     return inputs[inp].out_offset;
   }
 
@@ -311,11 +311,11 @@ class Inputs {
 //   sample_method(int inp)
 //   in2o_method(int inp)
 
-  uint8_t get_out_A(int inp) {			// inlined
+  uint8_t get_out_A(int inp) const {			// inlined
     return inputs[inp].out_A;
   }
 
-  uint8_t get_out_B(int inp) {			// inlined
+  uint8_t get_out_B(int inp) const {			// inlined
     return inputs[inp].out_B;
   }
 
