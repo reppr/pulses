@@ -125,7 +125,9 @@ struct input_t {
 //#define ADD_TO_VALUE		1024
 //#define MUL_VALUE	        2048
 //  4096
-//  8192
+
+// *inbuilt reaction flags:
+#define SET_PWM			8192	// output PWM internal
 //  16384
 
 // general flags:
@@ -257,6 +259,14 @@ class Inputs {
     reaching a full oversampling set
   */
   bool setup_io_reaction(int inp, void (*reaction)(int inp, ioV_t value));
+
+
+  /*
+    bool setup_PWM(int inp, uint8_t pin);
+    Setup PWM output on input inp, using PWM pin (no checks...).
+    On ARDUINO initialize pin.
+  */
+  bool setup_PWM(int inp, uint8_t pin);
 
 
   /*

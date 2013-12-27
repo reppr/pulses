@@ -44,3 +44,4 @@ malloc_samples	KEYWORD2
 setup_analog_read	KEYWORD2
 next_input	KEYWORD2
 do_next_input	KEYWORD2
+setup_PWM	KEYWORD2

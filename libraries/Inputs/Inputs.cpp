@@ -122,7 +122,21 @@ bool Inputs::sample_and_react(int inp) {
     output_value = sample_value;
 
   // call the reaction of that input with that output_value
-  inputs[inp].out_reaction(inp, output_value);
+  if (inputs[inp].flags & SET_PWM) {
+    if (output_value < 0)
+      output_value=0;
+    else
+      // ################	FIXME: add analogWriteResolution(12) on the DUE
+      if (output_value > 255)
+	output_value=255;
+#ifdef ARDUINO
+    analogWrite(inputs[inp].out_A, output_value);	// inbuilt PWM
+#else
+    #error "PWM not available."
+#endif
+  } else
+    inputs[inp].out_reaction(inp, output_value);	// custom output
+
   return true;
 }
 
@@ -366,6 +380,29 @@ bool Inputs::setup_io_reaction(int inp, void (*reaction)(int inp, ioV_t value)) 
 
   inputs[inp].out_reaction = reaction;
   inputs[inp].flags |= INPUT_OUTPUT_REACTION;
+
+  return true;
+}
+
+
+/*
+  bool setup_PWM(int inp, uint8_t pin);
+  Setup PWM output on input inp, using PWM pin (no checks...).
+  On ARDUINO initialize pin.
+*/
+bool Inputs::setup_PWM(int inp, uint8_t pin) {
+  if ((inp < 0) or (inp >= inputs_allocated))
+    return false;	// inp out of range
+
+  inputs[inp].out_A = pin;		// no checks here...
+  inputs[inp].flags |= SET_PWM;
+  inputs[inp].flags |= INPUT_OUTPUT_REACTION;
+
+  // on ARDUINO initialize pin:
+#ifdef ARDUINO
+  pinMode(pin, OUTPUT);
+  analogWrite(pin, 0);
+#endif
 
   return true;
 }

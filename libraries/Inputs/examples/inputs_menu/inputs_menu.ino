@@ -120,6 +120,12 @@ void setup() {	// ARDUINO
   INPUTS.setup_raw(inp);					// no calculations
   */
 
+  inp++;
+  INPUTS.setup_analog_read(inp, 6, 32);				// A5, oversample=32
+  // ################		FIXME: add analogWriteResolution(12) on the DUE
+  INPUTS.setup_linear(inp, 0, 255, 1023, 0, PROPORTIONAL);
+  INPUTS.setup_PWM(inp, 13);
+
   inputs_info();
 }
 #endif
