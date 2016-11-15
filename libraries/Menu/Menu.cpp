@@ -280,7 +280,9 @@ char Menu::cb_read() {
    * To keep the change simple I decided to define the RAM functions as noops
    * when the menu does not know how to determine RAM properly.
    */
-  #ifdef GET_FREE_RAM		// REAL free RAM functions:
+
+  // FIXME: ESP8266 RAM functions?	################
+  #if defined(GET_FREE_RAM) && ! defined(ESP8266)	// REAL free RAM functions:
 
     /* int get_free_RAM(): determine free RAM on Arduino:		*/
     int Menu::get_free_RAM() const {
@@ -307,7 +309,6 @@ char Menu::cb_read() {
     void Menu::print_free_RAM() const {		// noop fake
     }
   #endif
-
 #else // OUTPUT functions  out() family for c++ Linux PC test version:
 /* **************************************************************** */
   // #define I/O for c++ Linux PC test version:
@@ -799,7 +800,9 @@ int Menu::add_page(const char *pageTitle, const char hotkey,		\
     print_free_RAM();	// real or fake ;)
     ln();
     flush();		// we *do* need to flush here
-    exit(1);		// give up, STOP!
+#ifndef ESP8266
+    exit(1);		// give up, STOP!	// FIXME: DOES *NOT* WORK WITH ESP8266 ################
+#endif
   }
 
   if (men_known < men_max) {
@@ -1048,7 +1051,7 @@ void Menu::interpret_men_input() {
       break;
 
     case 'q':
-#ifndef ARDUINO	// on PC quit when on page 0
+#if ! defined(ARDUINO) && ! defined(ESP8266)	// on PC quit when on page 0
       if (men_selected == 0) {
 	exit(0);
       }

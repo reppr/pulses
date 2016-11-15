@@ -246,6 +246,7 @@ int maybe_display_An(uint8_t pin) {
   case A0:		// so we *can* 'switch' here
     analog_input=0;
     break;
+#if (NUM_ANALOG_INPUTS > 1)
   case A1:
     analog_input=1;
     break;
@@ -294,6 +295,7 @@ int maybe_display_An(uint8_t pin) {
   case A15:
     analog_input=15;
     break;
+#endif
 #endif
 #endif
 #endif

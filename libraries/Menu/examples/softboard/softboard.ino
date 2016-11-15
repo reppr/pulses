@@ -279,6 +279,11 @@ void pin_info_digital(uint8_t pin) {
   #warning "I/O pin configuration info *not implemented on Arduino DUE yet*."
   MENU.out(F("(pin_info_digital() not implemented on DUE yet)"));
 #else
+  #ifdef ESP8266	// FIXME: ################
+    #warning "I/O pin configuration info *not implemented on ESP8266*."
+    // MENU.out(F("(pin_info_digital() not implemented on ESP8266)"));
+    MENU.out(digitalRead(pin));
+  #else		// old style Arduino hardware
   // see: <Arduino.h>
 
   // input or output?
@@ -316,6 +321,7 @@ void pin_info_digital(uint8_t pin) {
       MENU.out(F("floating"));
     }
   }
+  #endif
 #endif
   MENU.ln();
 }
