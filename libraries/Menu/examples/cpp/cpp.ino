@@ -316,6 +316,10 @@ int maybe_display_An(uint8_t pin) {
 void  arduino_pins_info() {
   MENU.ln();
 
+#ifdef ESP8266
+  MENU.outln("COMPLETELY UNTESTED ON THIS BOARD");
+#endif
+
 #ifdef PINS_COUNT		// #defined on Arduino Due
   #define CHECK_PINS	PINS_COUNT
 #else
@@ -567,6 +571,10 @@ void arduino_info() {	// Display some Arduino specific informations.
     MENU.outln(F("\t_VARIANT_ARDUINO_DUE_X_"));
   #endif
 
+  #if defined(ESP8266)
+    MENU.outln(F("ESP8266"));
+  #endif
+
   #if defined(VARIANT_NAME)		// /** Name of the board */
     MENU.out(F("VARIANT_NAME\t"));
     MENU.outln(F(VARIANT_NAME));
@@ -586,6 +594,8 @@ void arduino_info() {	// Display some Arduino specific informations.
     MENU.outln(F("__SAM3X8E__"));
   #elif defined(__AVR_ATmega32U4__)
     MENU.outln(F("__AVR_ATmega32U4__"));
+  #elif defined(ESP8266)
+    MENU.outln(F("ESP8266"));
 
   #else
     MENU.outln(F("NOT IMPLEMENTED YET"));
@@ -714,7 +724,7 @@ void cpp_info_display() {
   MENU.out(F("sizeof(bool[8])\t"));	MENU.outln(sizeof(dummybool));
 
 #ifdef USE_FLOAT_TYPES
-  MENU.outln();
+  MENU.ln();
   MENU.out(F("sizeof(float)\t"));	MENU.outln(sizeof(float));
   MENU.out(F("sizeof(double)\t"));	MENU.outln(sizeof(double));
   MENU.out(F("sizeof(long double)\t"));	MENU.outln(sizeof(long double));
