@@ -94,12 +94,13 @@ void pins_info_analog();		// defined later on
 void setup() {
   Serial.begin(BAUDRATE);	// Start serial communication.
 
-#ifdef __AVR_ATmega32U4__
+#if defined(__AVR_ATmega32U4__) || defined(ESP8266)
   /* on ATmega32U4		Leonardo, Mini, LilyPad Arduino USB
      to be able to use Serial.print() from setup()
      we *must* do that before:
   */
   while (!Serial) { ;}		// wait for Serial to open
+  // delay(1000);  // still no Serial in setup
 #endif
 
   MENU.add_page("Arduino Softboard", 'H', \
