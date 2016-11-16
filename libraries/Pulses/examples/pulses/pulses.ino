@@ -114,6 +114,7 @@ void do_jiffle (int pulse);		// defined later on
 void do_throw_a_jiffle(int pulse);	// defined later on
 void init_click_pins();			// defined later on
 void init_click_pulses();		// defined later on
+void init_chord2345(int sync);		// defined later on
 void init_rhythm_1(int sync);		// defined later on
 void init_rhythm_2(int sync);		// defined later on
 void init_rhythm_3(int sync);		// defined later on
@@ -125,7 +126,7 @@ void alive_pulses_info_lines();		// defined later on
 // FIXME: ################
 #ifndef CLICK_PULSES		// default number of click frequencies
   #ifdef ESP8266
-    #define CLICK_PULSES	3       // default number of click frequencies
+    #define CLICK_PULSES	4       // default number of click frequencies
   #else
     #define CLICK_PULSES	6       // default number of click frequencies
   #endif
@@ -234,7 +235,8 @@ void setup() {
       // on ESP8266
       click_pin[0] = D0;		// configure PINs here
       click_pin[1] = D1; 		// configure PINs here
-      click_pin[2] = D7; 		// configure PINs here
+      click_pin[2] = D6; 		// configure PINs here
+      click_pin[3] = D7; 		// configure PINs here
    #else // *not* on ESP8266 i.e. Arduino
       click_pin[0] = 2;			// configure PINs here
       click_pin[1] = 3; 		// configure PINs here
@@ -254,6 +256,7 @@ void setup() {
 
 
   // for a demo one of these could be called from here:
+  // MENU.ln(); init_chord2345(0);	// NOT IMPLEMENTED
   // init_rhythm_1(1);
   // init_rhythm_2(5);
   MENU.ln(); init_rhythm_3(3);
@@ -641,7 +644,7 @@ void init_rhythm_2(int sync) {
 void init_rhythm_3(int sync) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   unsigned long factor, divisor=1L;
-  const unsigned long scaling=5L;
+  const unsigned long scaling=1L;
   const unsigned long unit=scaling*time_unit;
   struct time now;
 
@@ -662,8 +665,10 @@ void init_rhythm_3(int sync) {
   factor=4;
   setup_click_synced(now, unit, factor, divisor, sync);
 
-  factor=5;
-  setup_click_synced(now, unit, factor, divisor, sync);
+  if(CLICK_PULSES>3) {
+    factor=5;
+    setup_click_synced(now, unit, factor, divisor, sync);
+  }
 
   PULSES.fix_global_next();
 }
@@ -1092,6 +1097,7 @@ const char equals_[] = " = ";
 const char switchPulse[] = "s=switch pulse on/off";
 
 void menu_pulses_display() {
+  MENU.outln(F("http://github.com/reppr/pulses/\n"));
   MENU.outln(helpInfo);
 
   MENU.ln();
