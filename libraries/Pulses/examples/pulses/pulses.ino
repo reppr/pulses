@@ -123,8 +123,12 @@ void alive_pulses_info_lines();		// defined later on
 
 
 // FIXME: ################
-#ifndef CLICK_PULSES		// number of click frequencies
-  #define CLICK_PULSES	6       // default number of click frequencies
+#ifndef CLICK_PULSES		// default number of click frequencies
+  #ifdef ESP8266
+    #define CLICK_PULSES	3       // default number of click frequencies
+  #else
+    #define CLICK_PULSES	6       // default number of click frequencies
+  #endif
 #endif
 uint8_t click_pin[CLICK_PULSES];	// ################
 
@@ -212,12 +216,32 @@ void setup() {
     click_pin[6] = 7; 		// configure PINs here
   */
 
-    click_pin[0] = 2;		// configure PINs here
-    click_pin[1] = 3; 		// configure PINs here
-    click_pin[2] = 4; 		// configure PINs here
-    click_pin[3] = 5; 		// configure PINs here
-    click_pin[4] = 6; 		// configure PINs here
-    click_pin[5] = 7; 		// configure PINs here
+    #ifdef ESP8266	// configure PINs here
+      /*
+        // on NodeMCU ESP8266 board Arduino defines digital pins
+        static const uint8_t D0   = 16;
+        static const uint8_t D1   = 5;
+        static const uint8_t D2   = 4;
+        static const uint8_t D3   = 0;
+        static const uint8_t D4   = 2;
+        static const uint8_t D5   = 14;
+        static const uint8_t D6   = 12;
+        static const uint8_t D7   = 13;
+        static const uint8_t D8   = 15;
+        static const uint8_t D9   = 3;
+        static const uint8_t D10  = 1;
+      */
+      click_pin[0] = D0;			// configure PINs here
+      click_pin[1] = D1; 		// configure PINs here
+      click_pin[2] = D7; 		// configure PINs here
+    #else
+      click_pin[0] = 2;		// configure PINs here
+      click_pin[1] = 3; 		// configure PINs here
+      click_pin[2] = 4; 		// configure PINs here
+      click_pin[3] = 5; 		// configure PINs here
+      click_pin[4] = 6; 		// configure PINs here
+      click_pin[5] = 7; 		// configure PINs here
+    #endif
 
     init_click_pins();		// set OUTPUT, LOW
   #endif
