@@ -714,6 +714,8 @@ void _select_analog(bool key) {
 
 
 void softboard_display() {
+  MENU.outln(F("Arduino Softboard  http://github.com/reppr/pulses/\n"));
+
   _select_digital(true);
   MENU.out(toWork_);
   MENU.out(pin__);
