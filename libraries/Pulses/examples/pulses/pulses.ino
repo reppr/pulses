@@ -136,10 +136,14 @@ uint8_t click_pin[CLICK_PULSES];	// ################
   #ifdef __SAM3X8E__
 const int pl_max=32;		// could be more on DUE ;)
   #else
-    #ifdef __AVR_ATmega328P__
-const int pl_max=12;		// saving RAM on 328P
+    #ifdef ESP8266
+const int pl_max=16;		// ESP8266
     #else
+      #ifdef __AVR_ATmega328P__
+const int pl_max=12;		// saving RAM on 328P
+      #else
 const int pl_max=16;		// default i.e. mega boards
+      #endif
     #endif
   #endif
 #else			// *NOT* on ARDUINO...
@@ -162,7 +166,7 @@ int softboard_page=-1;		// see: maybe_run_continuous()
 void setup() {
   Serial.begin(BAUDRATE);	// Start serial communication.
 
-#ifdef __AVR_ATmega32U4__
+#if defined(__AVR_ATmega32U4__) || defined(ESP8266)
   /* on ATmega32U4		Leonardo, Mini, LilyPad Arduino USB
      to be able to use Serial.print() from setup()
      we *must* do that before:
@@ -1683,7 +1687,8 @@ bool menu_pulses_reaction(char menu_input) {
 /* **************************************************************** */
 // include softboard on arduinos:
 #ifdef ARDUINO
-  #include <examples/softboard/softboard_page.ino>
+//  #include "libraries/Pulses/examples/pulses/softboard_page.ino"
+//  #include <examples/softboard/softboard_page.ino>
 #else
   #warning "Not compiling softboard_page on PC."
 #endif
