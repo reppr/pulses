@@ -237,10 +237,12 @@ void pin_info_digital(uint8_t pin) {
   #ifdef ESP8266	// FIXME: ################
     #warning "I/O pin configuration info *not implemented on ESP8266*."
     // MENU.out(F("(pin_info_digital() not implemented on ESP8266)"));
-    MENU.out(digitalRead(pin));
-  #else		// old style Arduino hardware
+  if (digitalRead(pin))
+    MENU.out(high_);
+  else
+    MENU.out(low_);
 
-  
+  #else		// old style Arduino hardware
   // see: <Arduino.h>
 
   // input or output?
