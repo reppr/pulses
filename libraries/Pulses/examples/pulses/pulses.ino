@@ -231,11 +231,12 @@ void setup() {
         static const uint8_t D9   = 3;
         static const uint8_t D10  = 1;
       */
-      click_pin[0] = D0;			// configure PINs here
+      // on ESP8266
+      click_pin[0] = D0;		// configure PINs here
       click_pin[1] = D1; 		// configure PINs here
       click_pin[2] = D7; 		// configure PINs here
-    #else
-      click_pin[0] = 2;		// configure PINs here
+   #else // *not* on ESP8266 i.e. Arduino
+      click_pin[0] = 2;			// configure PINs here
       click_pin[1] = 3; 		// configure PINs here
       click_pin[2] = 4; 		// configure PINs here
       click_pin[3] = 5; 		// configure PINs here
