@@ -312,12 +312,40 @@ int maybe_display_An(uint8_t pin) {
   return true;
 }
 
+#ifdef ARDUINO_ESP8266_NODEMCU
+int pinA2NODEMCU(int arduino_pin) {
+  if (arduino_pin==D0)
+    return 0;
+  if (arduino_pin==D1)
+    return 1;
+  if (arduino_pin==D2)
+    return 2;
+  if (arduino_pin==D3)
+    return 3;
+  if (arduino_pin==D4)
+    return 4;
+  if (arduino_pin==D5)
+    return 5;
+  if (arduino_pin==D6)
+    return 6;
+  if (arduino_pin==D7)
+    return 7;
+  if (arduino_pin==D8)
+    return 8;
+  if (arduino_pin==D9)
+    return 9;
+  if (arduino_pin==D10)
+    return 10;
+
+  return -1;	// error
+}
+#endif
 
 void  arduino_pins_info() {
   MENU.ln();
 
 #ifdef ESP8266
-  MENU.outln("COMPLETELY UNTESTED ON THIS BOARD");
+  MENU.outln("NOT VERIFIED ON THIS BOARD");
 #endif
 
 #ifdef PINS_COUNT		// #defined on Arduino Due
@@ -358,7 +386,7 @@ void  arduino_pins_info() {
 
     if(led)
       MENU.out('*');
-    
+
     // PWM?
     #ifdef digitalPinHasPWM
       if(digitalPinHasPWM(pin))
@@ -369,6 +397,15 @@ void  arduino_pins_info() {
       MENU.out('?');
     #endif
     MENU.space();
+
+    #ifdef ARDUINO_ESP8266_NODEMCU
+      if (pinA2NODEMCU(pin)<0) {
+        MENU.space(); MENU.space();
+      } else {
+        MENU.out('D'); MENU.out(pinA2NODEMCU(pin));
+      }
+      MENU.tab();
+    #endif
 
     // analog input?
     analog_in = maybe_display_An(pin);
@@ -581,6 +618,10 @@ void arduino_info() {	// Display some Arduino specific informations.
 
   #ifdef ARDUINO_ESP8266_NODEMCU
     MENU.outln(F("ARDUINO_ESP8266_NODEMCU"));
+  #endif
+
+  #ifdef ARDUINO_BOARD	// only defined by ESP8266 core
+    MENU.out(F("ARDUINO_BOARD\t")); MENU.outln(F(ARDUINO_BOARD));
   #endif
 
   #if defined(VARIANT_NAME)		// /** Name of the board */
