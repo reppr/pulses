@@ -259,9 +259,9 @@ void setup() {
   // MENU.ln(); init_chord2345(0);	// NOT IMPLEMENTED
   // init_rhythm_1(1);
   // init_rhythm_2(5);
-  MENU.ln(); init_rhythm_3(3);
+  // MENU.ln(); init_rhythm_3(3);
   // init_rhythm_4(1);
-  // setup_jiffles0(1);
+  MENU.ln(); setup_jiffles0(1);
 
 
   PULSES.fix_global_next();	// we *must* call that here late in setup();
