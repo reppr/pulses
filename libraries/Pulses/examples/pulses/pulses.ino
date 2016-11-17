@@ -537,6 +537,8 @@ void time_info()
 
 /* **************************************************************** */
 // playing with chords:
+const char sync_[] = "sync ";
+
 void init_chord2345(int sync) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   unsigned long factor, divisor=256L;
@@ -619,7 +621,6 @@ void init_ratio_sequence(struct time when,
 // some pre-defined patterns:
 
 const char rhythm_[] = "rhythm ";
-const char sync_[] = "sync ";
 
 void init_rhythm_1(int sync) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
@@ -946,8 +947,8 @@ void alive_pulses_info()
 
 // const char arrays[]  to save RAM:
 const char click_[] = "click  ";
-const char DoJiffle[] = "do_jiffle";
-const char SeedJiffle[] = "seed jiffle";
+const char DoJiffle_[] = "do_jiffle ";
+const char SeedJiffle[] = "seed jiffle ";
 const char PulseInfo[] = "pulse_info";
 const char InfoLine[] = "info line";
 const char NULL_[] = "NULL\t";		// 8 char positions at least
@@ -965,7 +966,8 @@ void display_action(int pulse) {
 
   scratch=&do_jiffle;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out(DoJiffle);
+    MENU.out(DoJiffle_);
+    MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
     return;
   }
 
