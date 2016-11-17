@@ -705,6 +705,11 @@ const char analogWrite_[] = "\tanalogWrite(";
 
 bool softboard_reaction(char token) {
   long newValue;
+#ifdef ESP8266
+  const int pwm_maX=1024;
+#else
+  const int pwm_maX=256;
+#endif
 
   switch (token) {
   case 'A':
@@ -777,7 +782,7 @@ bool softboard_reaction(char token) {
 	MENU.tab();
 	MENU.out(pwm_); MENU.out(F("write "));
 	newValue = MENU.numeric_input(ILLEGAL);
-	if (newValue>=0 && newValue<=255) {
+	if (newValue>=0 && newValue<pwm_maX) {
 	  MENU.out(newValue);
 
 	  analogWrite(PIN_digital, newValue);

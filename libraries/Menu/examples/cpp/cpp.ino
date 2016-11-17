@@ -478,7 +478,11 @@ void  arduino_pins_info() {
     MENU.space(); MENU.space();
 
     #ifdef digitalPinToBitMask
-      MENU.outBIN(digitalPinToBitMask(pin), 8);
+      #ifdef ESP8266
+        MENU.outBIN(digitalPinToBitMask(pin), 16);
+      #else
+        MENU.outBIN(digitalPinToBitMask(pin), 8);
+      #endif
     #else
       MENU.out(Question3_);
     #endif
@@ -573,6 +577,10 @@ void arduino_info() {	// Display some Arduino specific informations.
 
   #if defined(ESP8266)
     MENU.outln(F("ESP8266"));
+  #endif
+
+  #ifdef ARDUINO_ESP8266_NODEMCU
+    MENU.outln(F("ARDUINO_ESP8266_NODEMCU"));
   #endif
 
   #if defined(VARIANT_NAME)		// /** Name of the board */
