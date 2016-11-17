@@ -256,7 +256,7 @@ void setup() {
 
 
   // for a demo one of these could be called from here:
-  // MENU.ln(); init_chord2345(0);	// NOT IMPLEMENTED
+  // MENU.ln(); init_chord2345(0);
   // init_rhythm_1(1);
   // init_rhythm_2(5);
   // MENU.ln(); init_rhythm_3(3);
@@ -534,6 +534,39 @@ void time_info()
   MENU.ln();
 }
 
+
+/* **************************************************************** */
+// playing with chords:
+void init_chord2345(int sync) {
+  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
+  unsigned long factor, divisor=256L;
+  const unsigned long scaling=1L;
+  const unsigned long unit=scaling*time_unit;
+  struct time now;
+
+  MENU.out('chord2345'); MENU.out(' '); MENU.out(sync_); MENU.outln(sync);
+
+  init_click_pulses();
+
+  PULSES.get_now();
+  now=PULSES.now;
+
+  factor=2;
+  setup_click_synced(now, unit, factor, divisor, sync);
+
+  factor=3;
+  setup_click_synced(now, unit, factor, divisor, sync);
+
+  factor=4;
+  setup_click_synced(now, unit, factor, divisor, sync);
+
+  if(CLICK_PULSES>3) {
+    factor=5;
+    setup_click_synced(now, unit, factor, divisor, sync);
+  }
+
+  PULSES.fix_global_next();
+}
 
 /* **************************************************************** */
 // playing with rhythms:
