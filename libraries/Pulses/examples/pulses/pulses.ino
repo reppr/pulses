@@ -256,12 +256,12 @@ void setup() {
 
 
   // for a demo one of these could be called from here:
+  MENU.ln(); setup_jiffles0(1);
   // MENU.ln(); init_chord2345(0);
   // init_rhythm_1(1);
   // init_rhythm_2(5);
   // MENU.ln(); init_rhythm_3(3);
-  // init_rhythm_4(1);
-  MENU.ln(); setup_jiffles0(1);
+  // init_rhythm_4(1);	// reimplementation going on
 
 
   PULSES.fix_global_next();	// we *must* call that here late in setup();
@@ -496,7 +496,7 @@ float display_realtime_sec(struct time duration) {
 // time unit that the user sees.
 // it has no influence on inner working, but is a menu I/O thing only
 // the user sees and edits times in time units.
-unsigned long time_unit = 100000L;		// scaling timer to 10/s 0.1s
+// unsigned long time_unit = 100000L;		// scaling timer to 10/s 0.1s
 
 // I want time_unit to be dividable by a semi random selection of small integers
 // avoiding rounding errors as much as possible.
@@ -504,8 +504,7 @@ unsigned long time_unit = 100000L;		// scaling timer to 10/s 0.1s
 // I consider factorials as a good choice:
 // unsigned long time_unit =    40320L;		// scaling timer to  8!, 0.040320s
 // unsigned long time_unit =   362880L;		// scaling timer to  9!, 0,362880s
-// unsigned long time_unit =  3628800L;		// scaling timer to 10!, 3.628800s
-
+unsigned long time_unit =  3628800L;		// scaling timer to 10!, 3.628800s
 // const char arrays[]  to save RAM:
 const char timeInfo[] = "*** TIME info\t";
 const char ticOfl[] = "tic/ofl ";
@@ -541,7 +540,7 @@ const char sync_[] = "sync ";
 
 void init_chord2345(int sync) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-  unsigned long factor, divisor=256L;
+  unsigned long factor, divisor=256L*36L;
   const unsigned long scaling=1L;
   const unsigned long unit=scaling*time_unit;
   struct time now;
@@ -624,8 +623,8 @@ const char rhythm_[] = "rhythm ";
 
 void init_rhythm_1(int sync) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-  unsigned long divisor=1;
-  unsigned long scaling=6;
+  unsigned long divisor=6*7;
+  unsigned long scaling=1;
   struct time now;
 
   MENU.out(rhythm_); MENU.out(1);
@@ -652,7 +651,7 @@ void init_rhythm_1(int sync) {
 // frequencies ratio 1, 4, 6, 8, 10
 void init_rhythm_2(int sync) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-  int scaling=60;
+  int scaling=1;
   unsigned long factor=1;
   unsigned long unit= scaling*time_unit;
   struct time now;
@@ -677,7 +676,7 @@ void init_rhythm_2(int sync) {
 // nice 2 to 3 to 4 to 5 pattern with phase offsets
 void init_rhythm_3(int sync) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-  unsigned long factor, divisor=1L;
+  unsigned long factor, divisor=36L;
   const unsigned long scaling=1L;
   const unsigned long unit=scaling*time_unit;
   struct time now;
@@ -1358,10 +1357,11 @@ void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, stru
 unsigned int jiffletab0[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,4, 1,64,3, 1,32,1, 1,16,2, 0};	// nice short jiffy
 
 void setup_jiffles0(int sync) {
-  unsigned long factor, divisor = 1;
+  unsigned long factor;
 
-  int scale=18;
-  unsigned long unit=scale*time_unit;
+  int scale=1;
+  int divisor=2;
+  unsigned long unit=scale*time_unit/divisor;
 
   struct time when;
 
