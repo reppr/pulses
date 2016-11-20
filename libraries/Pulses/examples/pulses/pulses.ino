@@ -114,6 +114,7 @@ void do_jiffle (int pulse);		// defined later on
 void do_throw_a_jiffle(int pulse);	// defined later on
 void init_click_pins();			// defined later on
 void init_click_pulses();		// defined later on
+void init_123456(int sync, bool inverse); // defined later on
 void init_chord2345(int sync);		// defined later on
 void init_rhythm_1(int sync);		// defined later on
 void init_rhythm_2(int sync);		// defined later on
@@ -265,8 +266,9 @@ void setup() {
   // MENU.ln(); setup_jiffles2345(0);
   // MENU.ln(); setup_jiffles2345(3);
   // MENU.ln(); setup_jiffles2345(4);
-  MENU.ln(); setup_jiffles2345(5);
+  // MENU.ln(); setup_jiffles2345(5);
 
+  MENU.ln(); init_123456(0, false);
   // MENU.ln(); init_chord2345(0);
   // init_rhythm_1(1);
   // init_rhythm_2(5);
@@ -546,6 +548,41 @@ void time_info()
 /* **************************************************************** */
 // playing with chords:
 const char sync_[] = "sync ";
+
+void init_123456(int sync, bool inverse) {
+  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
+  unsigned long factor, divisor=2L*36L;
+  const unsigned long scaling=1L;
+  const unsigned long unit=scaling*time_unit;
+  struct time now;
+
+  MENU.out(F("init123456 ")); MENU.out(sync_); MENU.out(sync); MENU.tab();
+  if (inverse)
+    MENU.out(F("inverse "));
+
+  init_click_pulses();
+
+  PULSES.get_now();
+  now=PULSES.now;
+
+  int integer;
+  if (! inverse) {
+    // low pin number has longest period
+    for (integer=CLICK_PULSES; integer>0; integer--) {
+      setup_click_synced(now, unit, integer, divisor, sync);
+      MENU.out(integer);
+    }
+  } else {
+    // low pin number has shortest period
+    for (integer=1; integer<=CLICK_PULSES; integer++) {
+      setup_click_synced(now, unit, integer, divisor, sync);
+      MENU.out(integer);
+    }
+  }
+  MENU.ln();
+
+  PULSES.fix_global_next();
+}
 
 void init_chord2345(int sync) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
