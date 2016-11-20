@@ -120,13 +120,14 @@ void init_rhythm_2(int sync);		// defined later on
 void init_rhythm_3(int sync);		// defined later on
 void init_rhythm_4(int sync);		// defined later on
 void setup_jiffles0(int sync);		// defined later on
+void setup_jiffles2345(int sync);	// defined later on
 void alive_pulses_info_lines();		// defined later on
 
 
 // FIXME: ################
 #ifndef CLICK_PULSES		// default number of click frequencies
   #ifdef ESP8266
-    #define CLICK_PULSES	4       // default number of click frequencies
+    #define CLICK_PULSES	6       // default number of click frequencies
   #else
     #define CLICK_PULSES	6       // default number of click frequencies
   #endif
@@ -232,11 +233,14 @@ void setup() {
         static const uint8_t D9   = 3;
         static const uint8_t D10  = 1;
       */
-      // on ESP8266
-      click_pin[0] = D0;		// configure PINs here
-      click_pin[1] = D1; 		// configure PINs here
-      click_pin[2] = D6; 		// configure PINs here
-      click_pin[3] = D7; 		// configure PINs here
+      // on ESP8266	// configure PINs here
+      click_pin[0] = D0;	// D0 = 16
+      click_pin[1] = D1;	// D1 = 5
+      click_pin[2] = D6;	// D6 = 12
+      click_pin[3] = D7;	// D7 = 13
+      click_pin[4] = D4;	// D4 = 2
+      click_pin[5] = D5;	// D5 = 14
+
    #else // *not* on ESP8266 i.e. Arduino
       click_pin[0] = 2;			// configure PINs here
       click_pin[1] = 3; 		// configure PINs here
@@ -256,13 +260,18 @@ void setup() {
 
 
   // for a demo one of these could be called from here:
-  MENU.ln(); setup_jiffles0(1);
+  // MENU.ln(); setup_jiffles0(1);
+
+  // MENU.ln(); setup_jiffles2345(0);
+  // MENU.ln(); setup_jiffles2345(3);
+  // MENU.ln(); setup_jiffles2345(4);
+  MENU.ln(); setup_jiffles2345(5);
+
   // MENU.ln(); init_chord2345(0);
   // init_rhythm_1(1);
   // init_rhythm_2(5);
   // MENU.ln(); init_rhythm_3(3);
   // init_rhythm_4(1);	// reimplementation going on
-
 
   PULSES.fix_global_next();	// we *must* call that here late in setup();
 
@@ -709,7 +718,8 @@ void init_rhythm_3(int sync) {
 
 void init_rhythm_4(int sync) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-  const unsigned long scaling=15L;
+  const unsigned long scaling=1L;
+  const unsigned long divisor=7L*3L;
   struct time now;
 
   MENU.out(rhythm_); MENU.out(4);
@@ -720,8 +730,12 @@ void init_rhythm_4(int sync) {
   PULSES.get_now();
   now=PULSES.now;
 
-  setup_click_synced(now, scaling*time_unit, 1, 1, sync);     // 1
-  init_ratio_sequence(now, 1, 1, 2, 1, 4, scaling, sync);     // 1/2, 2/3, 3/4, 4/5
+  setup_click_synced(now, scaling*time_unit/divisor, 1, 1, sync);     // 1
+  // init_ratio_sequence(when, factor0, factor_step, divisor0, divisor_step, count, scaling, sync);
+  if (CLICK_PULSES>=5)
+    init_ratio_sequence(now, 1, 1, 2, 1, 4, scaling, sync);     // 1/2, 2/3, 3/4, 4/5
+  else
+    init_ratio_sequence(now, 1, 1, 2, 1, CLICK_PULSES-1, scaling, sync);     // 1/2, 2/3, 3/4  or  1/2, 2/3
 }
 
 
@@ -1352,6 +1366,44 @@ void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, stru
 
 
 // pre-defined jiffle pattern:
+
+void setup_jiffles2345(int sync) {
+  unsigned long factor;
+
+  int scale=1;
+  int divisor=2;
+  unsigned long unit=scale*time_unit/divisor;
+
+  struct time when;
+
+  MENU.out(F("jiffles2345 "));
+  MENU.out(sync_); MENU.outln(sync);
+
+  PULSES.get_now();
+  when=PULSES.now;
+
+  factor=2;
+  setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab);
+
+  factor=3;
+  setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab);
+
+  factor=4;
+  setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab);
+
+  factor=5;
+  setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab);
+
+  #if CLICK_PULSES > 5
+    factor=6;
+    setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab);
+
+    factor=8;
+    setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab);
+  #endif
+
+  PULSES.fix_global_next();
+}
 
 // jiffletab0 is obsolete	DADA ################
 unsigned int jiffletab0[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,4, 1,64,3, 1,32,1, 1,16,2, 0};	// nice short jiffy
