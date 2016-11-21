@@ -261,7 +261,7 @@ void setup() {
 
 
   // for a demo one of these could be called from here:
-  // MENU.ln(); setup_jiffles0(1);
+  MENU.ln(); setup_jiffles0(1);	// setup for ESP8266 Frog Orchester
 
   // MENU.ln(); setup_jiffles2345(0);
   // MENU.ln(); setup_jiffles2345(3);
@@ -269,7 +269,7 @@ void setup() {
   // MENU.ln(); setup_jiffles2345(5);
 
   // MENU.ln(); init_123456(0, false);
-  init_123456(0, false);
+  // init_123456(0, false);
   // init_123456(1, false);
   // init_123456(1, true);
   // init_123456(5, false);
@@ -1450,11 +1450,11 @@ void setup_jiffles2345(int sync) {
 // jiffletab0 is obsolete	DADA ################
 unsigned int jiffletab0[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,4, 1,64,3, 1,32,1, 1,16,2, 0};	// nice short jiffy
 
-void setup_jiffles0(int sync) {
+void setup_jiffles0(int sync) {	// setup for ESP8266 Frog Orchester
   unsigned long factor;
 
-  int scale=1;
-  int divisor=2;
+  int scale=2;
+  int divisor=3;
   unsigned long unit=scale*time_unit/divisor;
 
   struct time when;
@@ -1477,9 +1477,16 @@ void setup_jiffles0(int sync) {
   factor=5;
   setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab0);
 
-  // 2*3*2*5	(the 4 needs only another factor of 2)
-  factor=2*3*2*5;
-  setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab0);
+  if (CLICK_PULSES>4) {
+    // 2*3*2*5	(the 4 needs only another factor of 2)
+    factor=2*3*2*5;
+    setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab0);
+
+    if (CLICK_PULSES>5) {
+      factor=16;
+      setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab0);
+    }
+  }
 
   PULSES.fix_global_next();
 }
