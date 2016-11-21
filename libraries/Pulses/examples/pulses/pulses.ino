@@ -268,7 +268,12 @@ void setup() {
   // MENU.ln(); setup_jiffles2345(4);
   // MENU.ln(); setup_jiffles2345(5);
 
-  MENU.ln(); init_123456(0, false);
+  // MENU.ln(); init_123456(0, false);
+  init_123456(0, false);
+  // init_123456(1, false);
+  // init_123456(1, true);
+  // init_123456(5, false);
+
   // MENU.ln(); init_chord2345(0);
   // init_rhythm_1(1);
   // init_rhythm_2(5);
