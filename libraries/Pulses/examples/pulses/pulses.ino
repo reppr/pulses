@@ -522,7 +522,7 @@ float display_realtime_sec(struct time duration) {
 
   float scratch = 1000.0;
   while (scratch > max(seconds, (float) 1.0)) {		// (float) for Linux PC tests
-    MENU.out(' ');
+    MENU.space();
     scratch /= 10.0;
   }
 
@@ -656,7 +656,7 @@ void init_chord2345(int sync) {
   const unsigned long unit=scaling*time_unit;
   struct time now;
 
-  MENU.out('chord2345'); MENU.out(' '); MENU.out(sync_); MENU.outln(sync);
+  MENU.out('chord2345'); MENU.space(); MENU.out(sync_); MENU.outln(sync);
 
   init_click_pulses();
 
@@ -739,9 +739,9 @@ void init_rhythm_1(int sync) {
   struct time now;
 
   MENU.out(rhythm_); MENU.out(1);
-  MENU.out(' ');
-  MENU.out(' ');
-  MENU.out(' ');
+  MENU.space();
+  MENU.space();
+  MENU.space();
   MENU.out(sync_); MENU.outln(sync);
 
   init_click_pulses();
@@ -768,7 +768,7 @@ void init_rhythm_2(int sync) {
   struct time now;
 
   MENU.out(rhythm_); MENU.out(2);
-  MENU.out(' '); MENU.out(sync_); MENU.outln(sync);
+  MENU.space(); MENU.out(sync_); MENU.outln(sync);
 
   init_click_pulses();
 
@@ -793,7 +793,7 @@ void init_rhythm_3(int sync) {
   struct time now;
 
   MENU.out(rhythm_); MENU.out(3);
-  MENU.out(' '); MENU.out(sync_); MENU.outln(sync);
+  MENU.space(); MENU.out(sync_); MENU.outln(sync);
 
   init_click_pulses();
 
@@ -825,7 +825,7 @@ void init_rhythm_4(int sync) {
   struct time now;
 
   MENU.out(rhythm_); MENU.out(4);
-  MENU.out(' '); MENU.out(sync_); MENU.outln(sync);
+  MENU.space(); MENU.out(sync_); MENU.outln(sync);
 
   init_click_pulses();
 
@@ -878,7 +878,7 @@ void print_period_in_time_units(int pulse) {
 
   scratch = 1000.0;
   while (scratch > max(time_units, (float) 1.0)) {
-    MENU.out(' ');
+    MENU.space();
     scratch /= 10.0;
   }
 
@@ -900,17 +900,17 @@ void pulse_info_1line(int pulse) {
   MENU.out_flags_();
   MENU.outBIN(PULSES.pulses[pulse].flags, 8);
 
-  MENU.out('\t');
+  MENU.tab();
   print_period_in_time_units(pulse);
 
-  MENU.out('\t');
+  MENU.tab();
   display_action(pulse);
 
   MENU.tab();
   MENU.out(expected_);
   display_realtime_sec(PULSES.pulses[pulse].next);
 
-  MENU.out('\t');
+  MENU.tab();
   MENU.out(F("now "));
   PULSES.get_now();
   scratch = PULSES.now;
@@ -983,7 +983,7 @@ void pulse_info(int pulse) {
   MENU.out('/');
   MENU.out((unsigned int) PULSES.pulses[pulse].counter);
 
-  MENU.out('\t');
+  MENU.tab();
   display_action(pulse);
 
   MENU.out_flags_();
@@ -1007,9 +1007,9 @@ void pulse_info(int pulse) {
   MENU.out('/');
   MENU.out(PULSES.pulses[pulse].period.overflow);
 
-  MENU.out('\t');
+  MENU.tab();
   display_realtime_sec(PULSES.pulses[pulse].period);
-  MENU.out(' ');
+  MENU.space();
   MENU.out(pulse_);
 
   MENU.ln();		// start next line
@@ -1024,7 +1024,7 @@ void pulse_info(int pulse) {
   MENU.out('/');
   MENU.out(PULSES.pulses[pulse].next.overflow);
 
-  MENU.out('\t');
+  MENU.tab();
   MENU.out(expected_);
   display_realtime_sec(PULSES.pulses[pulse].next);
 
@@ -1262,7 +1262,7 @@ void menu_pulses_display() {
 
   MENU.ln();
   MENU.out(switchPulse);
-  MENU.out('\t');  MENU.out(muteKill);
+  MENU.tab();  MENU.out(muteKill);
   MENU.outln(sync);
 }
 
@@ -1398,7 +1398,7 @@ void display_jiffletab(unsigned int *jiffletab)
   MENU.out("{");
   for (int i=0; i <= JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP; i++) {
     if ((i % JIFFLETAB_INDEX_STEP) == 0)
-      MENU.out(' ');
+      MENU.space();
     MENU.out(jiffletab[i]);
     if (jiffletab[i] == 0)
       break;
