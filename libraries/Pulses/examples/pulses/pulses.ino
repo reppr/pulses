@@ -1513,7 +1513,10 @@ void setup_jiffles2345(int sync) {
 unsigned int jiffletab0[] =
   {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,4, 1,64,3, 1,32,1, 1,16,2, 0};	// nice short jiffy
 
-unsigned int gling128[] = {1,128,16, 0};
+// unsigned int gling128[] = {1,128,16, 0};
+// unsigned int gling128[] = {1,256,2, 1,128,16, 0};
+// unsigned int gling128[] = {1,512,4, 1,256,4, 1,128,16, 0};
+unsigned int gling128[] = {1,512,8, 1,256,4, 1,128,16, 0};
 
 void setup_jiffle128(int sync, unsigned int scale, unsigned int divisor) {
   unsigned long unit=scale*time_unit/divisor;
