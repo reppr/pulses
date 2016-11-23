@@ -123,13 +123,16 @@ void init_rhythm_3(int sync);		// defined later on
 void init_rhythm_4(int sync);		// defined later on
 void setup_jiffles0(int sync);		// defined later on
 void setup_jiffles2345(int sync);	// defined later on
+void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor);  // see later
+void setup_jiffle128(int sync, unsigned int scale, unsigned int divisor);  // see later
 void alive_pulses_info_lines();		// defined later on
 
 
 // FIXME: ################
 #ifndef CLICK_PULSES		// default number of click frequencies
   #ifdef ESP8266
-    #define CLICK_PULSES	6       // default number of click frequencies
+    #define CLICK_PULSES	8       // default number of clicks 8
+//    #define CLICK_PULSES	6       // default number of clicks 6
   #else
     #define CLICK_PULSES	6       // default number of click frequencies
   #endif
@@ -235,13 +238,23 @@ void setup() {
         static const uint8_t D9   = 3;
         static const uint8_t D10  = 1;
       */
-      // on ESP8266	// configure PINs here
-      click_pin[0] = D0;	// D0 = 16
-      click_pin[1] = D1;	// D1 = 5
-      click_pin[2] = D6;	// D6 = 12
-      click_pin[3] = D7;	// D7 = 13
-      click_pin[4] = D4;	// D4 = 2
-      click_pin[5] = D5;	// D5 = 14
+      // on ESP8266	// old 6 click  configuration:
+      //	click_pin[0] = D0;	// D0 = 16
+      //	click_pin[1] = D1;	// D1 = 5
+      //	click_pin[2] = D6;	// D6 = 12
+      //	click_pin[3] = D7;	// D7 = 13
+      //	click_pin[4] = D4;	// D4 = 2
+      //	click_pin[5] = D5;	// D5 = 14
+
+      // 8 clicks, using D1 to D8:
+      click_pin[0] = D1;	// D1 = 5
+      click_pin[1] = D2;	// D2 = 4
+      click_pin[2] = D3;	// D3 = 0
+      click_pin[3] = D4;	// D4 = 2	must be HIGH on boot	board blue led on LOW
+      click_pin[4] = D5;	// D5 = 14
+      click_pin[5] = D6;	// D6 = 12
+      click_pin[6] = D7;	// D7 = 13	LED?
+      click_pin[7] = D8;	// D8 = 15
 
    #else // *not* on ESP8266 i.e. Arduino
       click_pin[0] = 2;			// configure PINs here
@@ -269,12 +282,13 @@ void setup() {
   // MENU.ln(); setup_jiffles2345(4);
   // MENU.ln(); setup_jiffles2345(5);
 
-  MENU.ln(); init_div_123456(0, false);
+  // MENU.ln(); init_div_123456(0, false);
   // MENU.ln(); init_div_123456(3, false);
   // MENU.ln(); init_div_123456(0, true);
   // MENU.ln(); init_div_123456(0, true);
 
   // init_123456(0, false);
+  // init_123456(0, true);
   // init_123456(1, false);
   // init_123456(1, true);
   // init_123456(5, false);
@@ -284,6 +298,11 @@ void setup() {
   // init_rhythm_2(5);
   // MENU.ln(); init_rhythm_3(3);
   // init_rhythm_4(1);	// reimplementation going on
+
+  // void setup_jiffle128(int sync, unsigned int scale, unsigned int divisor) {
+  MENU.ln(); setup_jiffle128(0, 1, 1);
+  // MENU.ln(); setup_jiffle128(1, 1, 1);
+  // MENU.ln(); setup_jiffle128(0, 1, 2);
 
   PULSES.fix_global_next();	// we *must* call that here late in setup();
 
@@ -1491,7 +1510,30 @@ void setup_jiffles2345(int sync) {
 // factor==0 means end
 
 // jiffletab0 is obsolete	DADA ################
-unsigned int jiffletab0[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,4, 1,64,3, 1,32,1, 1,16,2, 0};	// nice short jiffy
+unsigned int jiffletab0[] =
+  {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,4, 1,64,3, 1,32,1, 1,16,2, 0};	// nice short jiffy
+
+unsigned int gling128[] = {1,128,16, 0};
+
+void setup_jiffle128(int sync, unsigned int scale, unsigned int divisor) {
+  unsigned long unit=scale*time_unit/divisor;
+
+  MENU.out(F("setup_jiffles128 "));
+  MENU.out(sync_); MENU.out(sync);
+  MENU.out(F("scale/divisor "));
+  MENU.out(scale);
+  MENU.out(F("/")); MENU.outln(divisor);
+
+  PULSES.get_now();
+  struct time when=PULSES.now;
+
+  unsigned long factor=1;
+  for (int click=0; click<CLICK_PULSES; click++) {
+    divisor=click+1;
+    setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, gling128);  
+  }
+  PULSES.fix_global_next();
+}
 
 void setup_jiffles0(int sync) {	// setup for ESP8266 Frog Orchester
   unsigned long factor;
