@@ -261,9 +261,9 @@ void setup() {
 
 
   // for a demo one of these could be called from here:
-  MENU.ln(); setup_jiffles0(1);	// setup for ESP8266 Frog Orchester
+  // MENU.ln(); setup_jiffles0(1);	// setup for ESP8266 Frog Orchester
 
-  // MENU.ln(); setup_jiffles2345(0);
+  MENU.ln(); setup_jiffles2345(0);
   // MENU.ln(); setup_jiffles2345(3);
   // MENU.ln(); setup_jiffles2345(4);
   // MENU.ln(); setup_jiffles2345(5);
@@ -1254,15 +1254,15 @@ int setup_jiffle_thrower_synced(struct time when,
 // jiffles are (click) patterns defined in jiffletabs and based on a base period
 //
 // the base period is multiplied/divided by two int values
-// the following jiffleteab value counts how many times the pulse will get
+// the following jiffletab value counts how many times the pulse will get
 // woken up with this new computed period
 // then continue with next jiffletab entries
-// a zero multiplicator ends the jiffle
+// a zero factor ends the jiffle
 
 // jiffletabs define melody:
-// up to 256 triplets of {multiplicator, dividend, count}
-// multiplicator and dividend determine period based on the starting pulses period
-// a multiplicator of zero indicates end of jiffle
+// up to 256 triplets of {factor, divisor, count}
+// factor and divisor determine period based on the starting pulses period
+// a factor of zero indicates end of jiffle
 
 #define JIFFLETAB_INDEX_STEP	3
 
