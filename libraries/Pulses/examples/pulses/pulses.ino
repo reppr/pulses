@@ -846,9 +846,8 @@ void pulse_info_1line(int pulse) {
   MENU.out('\t');
   display_action(pulse);
 
-  MENU.out('\t');
+  MENU.tab();
   MENU.out(expected_);
-  MENU.out(F("     "));
   display_realtime_sec(PULSES.pulses[pulse].next);
 
   MENU.out('\t');
