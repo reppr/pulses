@@ -114,7 +114,8 @@ void do_jiffle (int pulse);		// defined later on
 void do_throw_a_jiffle(int pulse);	// defined later on
 void init_click_pins();			// defined later on
 void init_click_pulses();		// defined later on
-void init_123456(int sync, bool inverse); // defined later on
+void init_123456(int sync, bool inverse);	// see later
+void init_div_123456(int sync, bool inverse);	// see later
 void init_chord2345(int sync);		// defined later on
 void init_rhythm_1(int sync);		// defined later on
 void init_rhythm_2(int sync);		// defined later on
@@ -263,12 +264,16 @@ void setup() {
   // for a demo one of these could be called from here:
   // MENU.ln(); setup_jiffles0(1);	// setup for ESP8266 Frog Orchester
 
-  MENU.ln(); setup_jiffles2345(0);
+  // MENU.ln(); setup_jiffles2345(0);
   // MENU.ln(); setup_jiffles2345(3);
   // MENU.ln(); setup_jiffles2345(4);
   // MENU.ln(); setup_jiffles2345(5);
 
-  // MENU.ln(); init_123456(0, false);
+  MENU.ln(); init_div_123456(0, false);
+  // MENU.ln(); init_div_123456(3, false);
+  // MENU.ln(); init_div_123456(0, true);
+  // MENU.ln(); init_div_123456(0, true);
+
   // init_123456(0, false);
   // init_123456(1, false);
   // init_123456(1, true);
@@ -553,6 +558,42 @@ void time_info()
 /* **************************************************************** */
 // playing with chords:
 const char sync_[] = "sync ";
+
+void init_div_123456(int sync, bool inverse) {
+  for (int pulse=0; pulse<pl_max; pulse++) {	// tabula rasa
+    PULSES.init_pulse(pulse);
+  }
+  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
+  init_click_pulses();
+
+  const unsigned long factor=1L;
+  const unsigned long scaling=1L;
+  const unsigned long unit=scaling*time_unit;
+  struct time now;
+
+  MENU.out(F("init_div_123456 ")); MENU.out(sync_); MENU.out(sync); MENU.tab();
+  if (inverse)
+    MENU.out(F("inverse "));
+
+  PULSES.get_now();
+  now=PULSES.now;
+
+  int integer;
+  if (! inverse) {	// low pin number has low note
+    for (integer=1; integer<=CLICK_PULSES; integer++) {
+      setup_click_synced(now, unit, factor, integer, sync);
+      MENU.out(integer);
+    }
+  } else {	// inverse: low pin number has high frequency
+    for (integer=CLICK_PULSES; integer>0; integer--) {
+      setup_click_synced(now, unit, factor, integer, sync);
+      MENU.out(integer);
+    }
+  }
+  MENU.ln();
+
+  PULSES.fix_global_next();
+}
 
 void init_123456(int sync, bool inverse) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
@@ -1445,6 +1486,9 @@ void setup_jiffles2345(int sync) {
 
   PULSES.fix_global_next();
 }
+
+// triplets {factor, divisor, count}
+// factor==0 means end
 
 // jiffletab0 is obsolete	DADA ################
 unsigned int jiffletab0[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,4, 1,64,3, 1,32,1, 1,16,2, 0};	// nice short jiffy
