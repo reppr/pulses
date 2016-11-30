@@ -117,6 +117,7 @@ void init_click_pulses();		// defined later on
 void init_123456(int sync, bool inverse);	// see later
 void init_div_123456(int sync, bool inverse);	// see later
 void init_chord2345(int sync);		// defined later on
+void init_pentatonic(int sync, unsigned long scale, unsigned long divisor);	// see later
 void init_rhythm_1(int sync);		// defined later on
 void init_rhythm_2(int sync);		// defined later on
 void init_rhythm_3(int sync);		// defined later on
@@ -299,10 +300,15 @@ void setup() {
   // MENU.ln(); init_rhythm_3(3);
   // init_rhythm_4(1);	// reimplementation going on
 
+  // void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor);
+  // MENU.ln(); setup_jifflesNEW(3, 3, 1);
+
   // void setup_jiffle128(int sync, unsigned int scale, unsigned int divisor) {
   MENU.ln(); setup_jiffle128(0, 1, 1);
   // MENU.ln(); setup_jiffle128(1, 1, 1);
   // MENU.ln(); setup_jiffle128(0, 1, 2);
+
+  // MENU.ln(); init_pentatonic(0, 1, 1);
 
   PULSES.fix_global_next();	// we *must* call that here late in setup();
 
@@ -648,6 +654,59 @@ void init_123456(int sync, bool inverse) {
 
   PULSES.fix_global_next();
 }
+
+
+// unsigned int gling128[] = {1,128,16, 0};
+// unsigned int gling128[] = {1,256,2, 1,128,16, 0};
+// unsigned int gling128[] = {1,512,4, 1,256,4, 1,128,16, 0};
+unsigned int gling128[] = {1,512,8, 1,256,4, 1,128,16, 0};
+
+
+void init_pentatonic(int sync, unsigned long factor, unsigned long divisor ) {
+ /*
+ I was looking at pentatonic scales
+ one of my favorits follows the 'd f g a c' pattern
+
+ Let's look at the  numeric relations:
+ d   f   g   a   c   d
+
+ 5 : 6
+ 3   :   4
+ 2     :     3
+ 1         :         2
+ */
+
+  for (int pulse=0; pulse<pl_max; pulse++)	// tabula rasa
+    PULSES.init_pulse(pulse);
+
+  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
+  init_click_pulses();
+
+  const unsigned long unit=time_unit*factor/divisor;
+  struct time now;
+
+  MENU.out(F("init_pentatonic ")); MENU.out(sync_); MENU.outln(sync);
+
+  PULSES.get_now();
+  now=PULSES.now;
+
+//  setup_click_synced(now, unit, 1, 1, sync);	// 'd'
+//  setup_click_synced(now, unit, 5, 6, sync);	// 'f'
+//  setup_click_synced(now, unit, 3, 4, sync);	// 'g'
+//  setup_click_synced(now, unit, 2, 3, sync);	// 'a'
+//  setup_click_synced(now, unit/3*2, 5, 6, sync); // 'c' is fifth from 'f'
+//  setup_click_synced(now, unit, 1, 2, sync);	// 'd'
+
+  setup_jiffle_thrower_synced(now, unit, 1, 1, sync, gling128);	// 'd'
+  setup_jiffle_thrower_synced(now, unit, 5, 6, sync, gling128);	// 'f'
+  setup_jiffle_thrower_synced(now, unit, 3, 4, sync, gling128);	// 'g'
+  setup_jiffle_thrower_synced(now, unit, 2, 3, sync, gling128);	// 'a'
+  setup_jiffle_thrower_synced(now, unit/3*2, 5, 6, sync, gling128); // 'c' is fifth from 'f'
+  setup_jiffle_thrower_synced(now, unit, 1, 2, sync, gling128);	// 'd'
+
+  PULSES.fix_global_next();
+}
+
 
 void init_chord2345(int sync) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
@@ -1513,16 +1572,56 @@ void setup_jiffles2345(int sync) {
 unsigned int jiffletab0[] =
   {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,4, 1,64,3, 1,32,1, 1,16,2, 0};	// nice short jiffy
 
-// unsigned int gling128[] = {1,128,16, 0};
-// unsigned int gling128[] = {1,256,2, 1,128,16, 0};
-// unsigned int gling128[] = {1,512,4, 1,256,4, 1,128,16, 0};
-unsigned int gling128[] = {1,512,8, 1,256,4, 1,128,16, 0};
+unsigned int jiff0[] =
+  {1,16,4, 1,24,6, 1,128,16, 1,1024,64, 1,2048,128, 1,4096,256, 1,2048,64, 1,4096,128, 1,32,2, 0}; // there *must* be a trailing zero.);
+
+unsigned int jiff1[] =
+  {1,512,8, 1,1024,16, 1,2048,32, 1,1024,16, 0};
+
+unsigned int jiff2[] =
+  {1,2096,4, 1,512,2, 1,128,2, 1,256,2, 1,512,8, 1,1024,32, 1,512,4, 1,256,3, 1,128,2, 1,64,1, 0};
+
+
+void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor) {
+  unsigned long unit=scale*time_unit/divisor;
+
+  MENU.out(F("setup_jifflesNEW "));
+  MENU.out(sync_); MENU.out(sync);
+  MENU.out(F("scale/divisor ")); MENU.out(scale);
+  MENU.out(F("/")); MENU.outln(divisor);
+
+  PULSES.get_now();
+  struct time when=PULSES.now;
+
+  unsigned long factor=1;
+
+  divisor=1;
+  setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiff0);
+
+  divisor=3;
+  setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiff1);
+
+  divisor=4;
+  setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiff2);
+
+  #if CLICK_PULSES > 5
+    divisor=6;
+    setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab0);
+
+    // divisor=8;
+    // setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiff4);
+  #endif
+
+  PULSES.fix_global_next();
+}
+
 
 void setup_jiffle128(int sync, unsigned int scale, unsigned int divisor) {
   unsigned long unit=scale*time_unit/divisor;
 
-  MENU.out(F("setup_jiffles128 "));
+  MENU.out(F("setup_jiffle128 "));
   MENU.out(sync_); MENU.out(sync);
+  MENU.space(); MENU.space();
   MENU.out(F("scale/divisor "));
   MENU.out(scale);
   MENU.out(F("/")); MENU.outln(divisor);
@@ -1537,6 +1636,7 @@ void setup_jiffle128(int sync, unsigned int scale, unsigned int divisor) {
   }
   PULSES.fix_global_next();
 }
+
 
 void setup_jiffles0(int sync) {	// setup for ESP8266 Frog Orchester
   unsigned long factor;
