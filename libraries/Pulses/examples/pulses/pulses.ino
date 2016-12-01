@@ -489,7 +489,7 @@ void mute_all_clicks() {
 
   PULSES.fix_global_next();
 
-  MENU.out(mutedAllPulses);
+  MENU.outln(mutedAllPulses);
 }
 
 
