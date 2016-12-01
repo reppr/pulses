@@ -304,7 +304,10 @@ void setup() {
   // MENU.ln(); setup_jifflesNEW(3, 3, 1);
 
   // void setup_jiffle128(int sync, unsigned int scale, unsigned int divisor) {
-  MENU.ln(); setup_jiffle128(0, 1, 1);
+  // MENU.ln(); setup_jiffle128(0, 1, 1);
+  // MENU.ln(); setup_jiffle128(1, 1, 1);		// nice 12345678 setup
+  // MENU.ln(); setup_jiffle128(3, 1, 1);
+  MENU.ln(); setup_jiffle128(15, 1, 1);		// 12345678 slow beginning of voices, nice
   // MENU.ln(); setup_jiffle128(1, 1, 1);
   // MENU.ln(); setup_jiffle128(0, 1, 2);
 
