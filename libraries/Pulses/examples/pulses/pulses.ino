@@ -172,8 +172,12 @@ Pulses PULSES(pl_max);
 // needed for MENU.add_page();
 void softboard_display();		// defined later on
 bool softboard_reaction(char token);	// defined later on
-
 int softboard_page=-1;		// see: maybe_run_continuous()
+
+void experiments_display();		// defined later on
+bool experiments_reaction(char token);	// defined later on
+int experiments_page=-1;
+
 
 void setup() {
   Serial.begin(BAUDRATE);	// Start serial communication.
@@ -206,6 +210,9 @@ void setup() {
   softboard_page = MENU.add_page("Arduino Softboard", 'H',	\
 		&softboard_display, &softboard_reaction, 'H');
 
+  // add experiments page:
+  experiments_page = MENU.add_page("Harmonical Experiments", 'X',	\
+		&experiments_display, &experiments_reaction, 'P');
 
   // display menu at startup:
   MENU.menu_display();
@@ -276,40 +283,24 @@ void setup() {
 
 
   // for a demo one of these could be called from here:
+
+  // void setup_jiffle128(int sync, unsigned int scale, unsigned int divisor) {
+  MENU.ln(); setup_jiffle128(15, 1, 1);		// 12345678 slow beginning of voices, nice
+
+  // MENU.ln(); init_div_123456(0, false);
+
   // MENU.ln(); setup_jiffles0(1);	// setup for ESP8266 Frog Orchester
 
   // MENU.ln(); setup_jiffles2345(0);
-  // MENU.ln(); setup_jiffles2345(3);
-  // MENU.ln(); setup_jiffles2345(4);
-  // MENU.ln(); setup_jiffles2345(5);
-
-  // MENU.ln(); init_div_123456(0, false);
-  // MENU.ln(); init_div_123456(3, false);
-  // MENU.ln(); init_div_123456(0, true);
-  // MENU.ln(); init_div_123456(0, true);
-
   // init_123456(0, false);
-  // init_123456(0, true);
-  // init_123456(1, false);
-  // init_123456(1, true);
-  // init_123456(5, false);
-
   // MENU.ln(); init_chord2345(0);
   // init_rhythm_1(1);
   // init_rhythm_2(5);
   // MENU.ln(); init_rhythm_3(3);
   // init_rhythm_4(1);	// reimplementation going on
 
-  // void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor);
+  // void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor);[C
   // MENU.ln(); setup_jifflesNEW(3, 3, 1);
-
-  // void setup_jiffle128(int sync, unsigned int scale, unsigned int divisor) {
-  // MENU.ln(); setup_jiffle128(0, 1, 1);
-  // MENU.ln(); setup_jiffle128(1, 1, 1);		// nice 12345678 setup
-  // MENU.ln(); setup_jiffle128(3, 1, 1);
-  MENU.ln(); setup_jiffle128(15, 1, 1);		// 12345678 slow beginning of voices, nice
-  // MENU.ln(); setup_jiffle128(1, 1, 1);
-  // MENU.ln(); setup_jiffle128(0, 1, 2);
 
   // MENU.ln(); init_pentatonic(0, 1, 1);
 
@@ -370,6 +361,10 @@ int main() {
   softboard_page = MENU.add_page("Arduino Softboard", 'H',		\
 		&softboard_display, &softboard_reaction, 'H');
 */
+
+  // add experiments page:
+  experiments_page = MENU.add_page("Arduino Experiments", 'H',		\
+		&experiments_display, &experiments_reaction, 'H');
 
   // display menu at startup:
   MENU.menu_display();
@@ -666,24 +661,18 @@ unsigned int gling128[] = {1,512,8, 1,256,4, 1,128,16, 0};
 
 
 void init_pentatonic(int sync, unsigned long factor, unsigned long divisor ) {
- /*
- I was looking at pentatonic scales
- one of my favorits follows the 'd f g a c' pattern
+  /*
+    I was looking at pentatonic scales
+    one of my favorits follows the 'd f g a c' pattern
 
- Let's look at the  numeric relations:
- d   f   g   a   c   d
+    Let's look at the  numeric relations:
+    d   f   g   a   c   d
 
- 5 : 6
- 3   :   4
- 2     :     3
- 1         :         2
- */
-
-  for (int pulse=0; pulse<pl_max; pulse++)	// tabula rasa
-    PULSES.init_pulse(pulse);
-
-  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-  init_click_pulses();
+    5 : 6
+    3   :   4
+    2     :     3
+    1         :         2
+  */
 
   const unsigned long unit=time_unit*factor/divisor;
   struct time now;
@@ -706,6 +695,13 @@ void init_pentatonic(int sync, unsigned long factor, unsigned long divisor ) {
   setup_jiffle_thrower_synced(now, unit, 2, 3, sync, gling128);	// 'a'
   setup_jiffle_thrower_synced(now, unit/3*2, 5, 6, sync, gling128); // 'c' is fifth from 'f'
   setup_jiffle_thrower_synced(now, unit, 1, 2, sync, gling128);	// 'd'
+#if CLICK_PULSES > 6
+  setup_jiffle_thrower_synced(now, unit, 5, 2*6, sync, gling128);	// 'f'
+#endif
+#if CLICK_PULSES > 7
+  // setup_jiffle_thrower_synced(now, unit, 3, 2*4, sync, gling128);	// 'g'
+  setup_jiffle_thrower_synced(now, unit, 2, 2*3, sync, gling128);	// 'a' seems better on top with 8 voices
+#endif
 
   PULSES.fix_global_next();
 }
@@ -713,7 +709,7 @@ void init_pentatonic(int sync, unsigned long factor, unsigned long divisor ) {
 
 void init_chord2345(int sync) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-  unsigned long factor, divisor=256L*36L;
+  unsigned long factor, divisor=64L*36L;
   const unsigned long scaling=1L;
   const unsigned long unit=scaling*time_unit;
   struct time now;
@@ -1557,12 +1553,25 @@ void setup_jiffles2345(int sync) {
   factor=5;
   setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab);
 
+  // up to 8 voices
   #if CLICK_PULSES > 5
     factor=6;
     setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab);
 
+    // skip factor 7
+
+    #if CLICK_PULSES > 6
     factor=8;
     setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab);
+
+      #if CLICK_PULSES > 7
+    factor=9;
+    setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab);
+      #endif
+    #endif
+
+    // next would be i.e. 10, 12, 14, 15, 16
+    // so 2 3 4 5 6 8 9 10 12 14 15 16
   #endif
 
   PULSES.fix_global_next();
@@ -1588,10 +1597,10 @@ unsigned int jiff2[] =
 void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor) {
   unsigned long unit=scale*time_unit/divisor;
 
-  MENU.out(F("setup_jifflesNEW "));
-  MENU.out(sync_); MENU.out(sync);
-  MENU.out(F("scale/divisor ")); MENU.out(scale);
-  MENU.out(F("/")); MENU.outln(divisor);
+  MENU.out(F("setup_jifflesNEW(")); MENU.out(sync);
+  MENU.out(F(", ")); MENU.out(scale);
+  MENU.out(F(", ")); MENU.out(divisor);
+  MENU.outln(F(")"));
 
   PULSES.get_now();
   struct time when=PULSES.now;
@@ -1619,23 +1628,23 @@ void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor) {
 }
 
 
-void setup_jiffle128(int sync, unsigned int scale, unsigned int divisor) {
-  unsigned long unit=scale*time_unit/divisor;
+void setup_jiffle128(int sync, unsigned int factor, unsigned int divisor) {
+  unsigned long unit=factor*time_unit/divisor;
 
   MENU.out(F("setup_jiffle128 "));
   MENU.out(sync_); MENU.out(sync);
   MENU.space(); MENU.space();
-  MENU.out(F("scale/divisor "));
-  MENU.out(scale);
+  MENU.out(F("factor/divisor "));
+  MENU.out(factor);
   MENU.out(F("/")); MENU.outln(divisor);
 
   PULSES.get_now();
   struct time when=PULSES.now;
 
-  unsigned long factor=1;
+  factor=1;
   for (int click=0; click<CLICK_PULSES; click++) {
     divisor=click+1;
-    setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, gling128);  
+    setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, gling128);
   }
   PULSES.fix_global_next();
 }
@@ -1957,34 +1966,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     MENU.ln();
     alive_pulses_info_lines();			  // *then* info ;)
-   break;
-
-
-    // debugging entries: DADA ###############################################
-  case 'd':	// hook for debugging
     break;
-
-  case 'Y':	// hook for debugging
-    init_rhythm_1(sync);
-    break;
-
-  case 'X':	// hook for debugging
-    init_rhythm_2(sync);
-    break;
-
-  case 'C':	// hook for debugging
-    init_rhythm_3(sync);
-    break;
-
-  case 'V':	// hook for debugging
-    init_rhythm_4(sync);
-    break;
-
-  case 'B':	// hook for debugging
-    setup_jiffles0(sync);
-    break;
-
-    // debugging entries: DADA ###############################################
 
   case 'c':	// en_click
     // we work on CLICK_PULSES anyway, regardless dest
@@ -2041,6 +2023,200 @@ bool menu_pulses_reaction(char menu_input) {
   return true;		// menu entry found
 }
 
+
+/* **************************************************************** */
+// harmonical experiments, setups, demos.
+
+bool inverse=false;
+unsigned long factor=1;
+unsigned long divisor=1;
+// int * jiffle=NULL;
+// int voices=CLICK_PULSES;
+int experiment=-1;
+
+void experiments_display(){
+  MENU.outln(F("http://github.com/reppr/pulses/\n"));
+  MENU.ln();
+
+  MENU.out(F("e=enter experiment (")); MENU.out(experiment); MENU.outln(F(")"));
+
+  MENU.out(F("Scale (")); MENU.out(factor);MENU.out(F("/"));  MENU.out(divisor);
+  MENU.out(F(")\tf=factor d=divisor"));
+
+  MENU.out(F("S=enter sync (")); MENU.out(sync); MENU.outln(F(")\tc=enClick\tj=enJiffleThrower"));
+
+  MENU.out(uSelect);  MENU.out(timeUnit);
+  MENU.out("  (");
+  MENU.out(time_unit);
+  MENU.out(microSeconds);
+  MENU.out(equals_);
+  MENU.out((float) (1000000.0 / (float) time_unit),3);
+  MENU.outln(perSecond_);
+
+  MENU.ln();
+}
+
+
+bool experiments_reaction(char token) {
+  long new_value=0;
+  struct time now, time_scratch;
+  // unsigned long bitmask;
+
+  switch (token) {
+  case '?':	// help, overrides common menu entry for '?'
+    MENU.menu_display();	// as common
+    short_info();		// + short info
+    break;
+
+  case 'd':	// divisor
+    MENU.out(F("divisor "));
+    new_value = MENU.numeric_input(divisor);
+    if (new_value>0 )
+      divisor = new_value;
+    else
+      MENU.out(F("small positive integer only"));
+
+    MENU.outln(divisor);
+    break;
+
+  case 'f':	// factor
+    MENU.out(F("factor "));
+    new_value = MENU.numeric_input(factor);
+    if (new_value>0 )
+      factor = new_value;
+    else
+      MENU.out(F("small positive integer only"));
+
+    MENU.outln(factor);
+    break;
+
+  case 'I':	// initialize, reset
+    for (int pulse=0; pulse<pl_max; pulse++)	// tabula rasa
+      PULSES.init_pulse(pulse);
+
+    // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
+    init_click_pulses();
+
+    MENU.outln(F("initilized all"));
+    break;
+
+  case 'e':	// enter experiment
+    MENU.out(F("experiment "));
+    new_value = MENU.numeric_input(experiment);
+    if (new_value>=0 )
+      experiment = new_value;
+    else
+      MENU.out(onlyPositive);
+
+    MENU.outln(experiment);
+    switch (experiment) {	// initialize defaults, but do not start yet
+    case 1:
+      MENU.outln(F("setup_jiffle128(15, 1, 1)"));
+      sync=15;
+      factor=1;
+      divisor=1;
+      break;
+    case 2:
+      MENU.outln(F("init_div_123456(0, false)"));
+      sync=0;
+      inverse=false;
+      break;
+    case 3:
+      sync=1;
+      MENU.outln(F("setup_jiffles0(1)  ESP8266 Frogs"));
+      break;
+    case 4:
+      sync=0;		// FIXME: test and select ################
+      MENU.outln(F("setup_jiffles2345(0)"));
+      break;
+    case 5:
+      init_123456(0, false);
+      sync=0;		// FIXME: test and select ################
+      inverse=false;	// FIXME: test and select ################
+      MENU.outln(F("init_123456(0, false)"));
+      break;
+    case 6:
+      sync=0;		// FIXME: test and select ################
+      MENU.outln(F("init_chord2345(0)"));
+      break;
+    case 7:
+      sync=1;
+      MENU.outln(F("init_rhythm_1(1)"));
+      break;
+    case 8:
+      sync=5;
+      MENU.outln(F("init_rhythm_2(5)"));
+      break;
+    case 9:
+      sync=3;
+      MENU.outln(F("init_rhythm_3(3)"));
+      break;
+    case 10:
+      sync=1;
+      MENU.outln(F("init_rhythm_4(1);"));
+      break;
+    case 11:
+      sync=3;
+      factor=3;
+      divisor=1;
+      MENU.outln(F("setup_jifflesNEW(3, 3, 1);"));
+      break;
+    case 12:
+      sync=0;
+      factor=1;
+      divisor=1;
+      MENU.outln(F("init_pentatonic(0, 1, 1);"));
+      break;
+    }
+    MENU.outln(F("Press '!' to start"));
+    break;
+
+  case '!':			// '!' setup and start experiment
+    switch (experiment) {
+    case 1:
+      setup_jiffle128(sync, factor, divisor);
+      break;
+    case 2:
+      init_div_123456(sync, inverse);
+      break;
+    case 3:
+      setup_jiffles0(sync);    // setup for ESP8266 Frog Orchester
+      break;
+    case 4:
+      setup_jiffles2345(sync);
+      break;
+    case 5:
+      init_123456(sync, inverse);
+      break;
+    case 6:
+      init_chord2345(sync);
+      break;
+    case 7:
+      init_rhythm_1(sync);
+      break;
+    case 8:
+      init_rhythm_2(sync);
+      break;
+    case 9:
+      init_rhythm_3(sync);
+      break;
+    case 10:
+      init_rhythm_4(sync);
+      break;
+    case 11:
+      setup_jifflesNEW(sync, factor, divisor);
+      break;
+    case 12:
+      init_pentatonic(sync, factor, divisor);
+      break;
+    }
+    break;
+
+  default:
+    return false;	// menu entry not found
+  }
+  return true;		// menu entry found
+}
 
 /* **************************************************************** */
 // include softboard on arduinos:
