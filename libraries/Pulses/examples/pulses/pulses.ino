@@ -125,7 +125,7 @@ void init_rhythm_4(int sync);		// defined later on
 void setup_jiffles0(int sync);		// defined later on
 void setup_jiffles2345(int sync);	// defined later on
 void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor);  // see later
-void setup_jiffle128(unsigned int scale, unsigned int divisor, int sync, bool inverse);  // see later
+void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 void alive_pulses_info_lines();		// defined later on
 
 
@@ -276,8 +276,8 @@ void setup() {
 
   // for a demo one of these could be called from here:
 
-  // void setup_jiffle128(unsigned int scale, unsigned int divisor, int sync, bool inverse) {
-  MENU.ln(); setup_jiffle128(2, 1, 15, false);	// 12345678 slow beginning of voices, nice
+  // void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync)
+  MENU.ln(); setup_jiffle128(false, CLICK_PULSES, 2, 1, 15);	// 12345678 slow beginning of voices, nice
 
   // MENU.ln(); init_div_123456(0, false);
 
@@ -1636,7 +1636,7 @@ void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor) {
 }
 
 
-void setup_jiffle128(unsigned int multiplier, unsigned int divisor, int sync, bool inverse) {
+void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   /*
   multiplier and divisor are used twice:
   first to scale unit from time_unit
@@ -1648,9 +1648,10 @@ void setup_jiffle128(unsigned int multiplier, unsigned int divisor, int sync, bo
   unit /= divisor;
 
   MENU.out(F("setup_jiffle128("));
+  MENU.out(inverse); MENU.out(F(", "));
+  MENU.out(voices); MENU.out(F(", "));
   MENU.out(multiplier); MENU.out(F(", ")); MENU.out(divisor);
   MENU.out(F(", ")); MENU.out(sync);
-  MENU.out(F(", ")); MENU.out(inverse);
   MENU.outln(F(")"));
 
   PULSES.get_now();
@@ -1658,12 +1659,12 @@ void setup_jiffle128(unsigned int multiplier, unsigned int divisor, int sync, bo
 
   multiplier=1;
   if (!inverse) {
-    for (int click=0; click<CLICK_PULSES; click++) {
+    for (int click=0; click<voices; click++) {
       divisor=click+1;
       setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, gling128);
     }
   } else {
-    for (int click=CLICK_PULSES-1; click>=0; click--) {
+    for (int click=voices-1; click>=0; click--) {
       divisor=click+1;
       setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, gling128);
     }
@@ -2103,7 +2104,9 @@ bool menu_pulses_reaction(char menu_input) {
     MENU.outln(experiment);
     switch (experiment) {	// initialize defaults, but do not start yet
     case 1:
-      MENU.outln(F("setup_jiffle128(2, 1, 15, x)"));
+      MENU.out(F("setup_jiffle128(")); MENU.out(inverse);
+      MENU.out(F(", ")); MENU.out(voices);
+      MENU.outln(F(", 2, 1, 15)"));
       sync=15;
       multiplier=2;
       divisor=1;
@@ -2166,7 +2169,7 @@ bool menu_pulses_reaction(char menu_input) {
   case '!':			// '!' setup and start experiment
     switch (experiment) {
     case 1:
-      setup_jiffle128(multiplier, divisor, sync, inverse);
+      setup_jiffle128(inverse, voices, multiplier, divisor, sync);
       break;
     case 2:
       init_div_123456(sync, inverse);
