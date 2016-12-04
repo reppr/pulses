@@ -174,10 +174,6 @@ void softboard_display();		// defined later on
 bool softboard_reaction(char token);	// defined later on
 int softboard_page=-1;		// see: maybe_run_continuous()
 
-void experiments_display();		// defined later on
-bool experiments_reaction(char token);	// defined later on
-int experiments_page=-1;
-
 
 void setup() {
   Serial.begin(BAUDRATE);	// Start serial communication.
@@ -209,10 +205,6 @@ void setup() {
   // add softboard page:
   softboard_page = MENU.add_page("Arduino Softboard", 'H',	\
 		&softboard_display, &softboard_reaction, 'H');
-
-  // add experiments page:
-  experiments_page = MENU.add_page("Harmonical Experiments", 'X',	\
-		&experiments_display, &experiments_reaction, 'P');
 
   // display menu at startup:
   MENU.menu_display();
@@ -362,10 +354,6 @@ int main() {
 		&softboard_display, &softboard_reaction, 'H');
 */
 
-  // add experiments page:
-  experiments_page = MENU.add_page("Arduino Experiments", 'H',		\
-		&experiments_display, &experiments_reaction, 'H');
-
   // display menu at startup:
   MENU.menu_display();
 
@@ -500,9 +488,9 @@ void en_click(int pulse)
 }
 
 
-int setup_click_synced(struct time when, unsigned long unit, unsigned long factor,
+int setup_click_synced(struct time when, unsigned long unit, unsigned long multiplier,
 		       unsigned long divisor, int sync) {
-  int pulse= PULSES.setup_pulse_synced(&click, ACTIVE, when, unit, factor, divisor, sync);
+  int pulse= PULSES.setup_pulse_synced(&click, ACTIVE, when, unit, multiplier, divisor, sync);
 
   if (pulse != ILLEGAL) {
     PULSES.pulses[pulse].char_parameter_1 = click_pin[pulse];
@@ -589,7 +577,7 @@ void init_div_123456(int sync, bool inverse) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   init_click_pulses();
 
-  const unsigned long factor=1L;
+  const unsigned long multiplier=1L;
   const unsigned long scaling=1L;
   const unsigned long unit=scaling*time_unit;
   struct time now;
@@ -604,12 +592,12 @@ void init_div_123456(int sync, bool inverse) {
   int integer;
   if (! inverse) {	// low pin number has low note
     for (integer=1; integer<=CLICK_PULSES; integer++) {
-      setup_click_synced(now, unit, factor, integer, sync);
+      setup_click_synced(now, unit, multiplier, integer, sync);
       MENU.out(integer);
     }
   } else {	// inverse: low pin number has high frequency
     for (integer=CLICK_PULSES; integer>0; integer--) {
-      setup_click_synced(now, unit, factor, integer, sync);
+      setup_click_synced(now, unit, multiplier, integer, sync);
       MENU.out(integer);
     }
   }
@@ -620,7 +608,7 @@ void init_div_123456(int sync, bool inverse) {
 
 void init_123456(int sync, bool inverse) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-  unsigned long factor, divisor=2L*36L;
+  unsigned long multiplier, divisor=2L*36L;
   const unsigned long scaling=1L;
   const unsigned long unit=scaling*time_unit;
   struct time now;
@@ -635,7 +623,7 @@ void init_123456(int sync, bool inverse) {
   now=PULSES.now;
 
   int integer;
-  if (! inverse) {
+  if (! inverse) {	// bottom down/up click-pin mapping
     // low pin number has longest period
     for (integer=CLICK_PULSES; integer>0; integer--) {
       setup_click_synced(now, unit, integer, divisor, sync);
@@ -660,7 +648,7 @@ void init_123456(int sync, bool inverse) {
 unsigned int gling128[] = {1,512,8, 1,256,4, 1,128,16, 0};
 
 
-void init_pentatonic(int sync, unsigned long factor, unsigned long divisor ) {
+void init_pentatonic(int sync, unsigned long multiplier, unsigned long divisor ) {
   /*
     I was looking at pentatonic scales
     one of my favorits follows the 'd f g a c' pattern
@@ -674,7 +662,7 @@ void init_pentatonic(int sync, unsigned long factor, unsigned long divisor ) {
     1         :         2
   */
 
-  const unsigned long unit=time_unit*factor/divisor;
+  const unsigned long unit=time_unit*multiplier/divisor;
   struct time now;
 
   MENU.out(F("init_pentatonic ")); MENU.out(sync_); MENU.outln(sync);
@@ -709,7 +697,7 @@ void init_pentatonic(int sync, unsigned long factor, unsigned long divisor ) {
 
 void init_chord2345(int sync) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-  unsigned long factor, divisor=64L*36L;
+  unsigned long multiplier, divisor=64L*36L;
   const unsigned long scaling=1L;
   const unsigned long unit=scaling*time_unit;
   struct time now;
@@ -721,18 +709,18 @@ void init_chord2345(int sync) {
   PULSES.get_now();
   now=PULSES.now;
 
-  factor=2;
-  setup_click_synced(now, unit, factor, divisor, sync);
+  multiplier=2;
+  setup_click_synced(now, unit, multiplier, divisor, sync);
 
-  factor=3;
-  setup_click_synced(now, unit, factor, divisor, sync);
+  multiplier=3;
+  setup_click_synced(now, unit, multiplier, divisor, sync);
 
-  factor=4;
-  setup_click_synced(now, unit, factor, divisor, sync);
+  multiplier=4;
+  setup_click_synced(now, unit, multiplier, divisor, sync);
 
   if(CLICK_PULSES>3) {
-    factor=5;
-    setup_click_synced(now, unit, factor, divisor, sync);
+    multiplier=5;
+    setup_click_synced(now, unit, multiplier, divisor, sync);
   }
 
   PULSES.fix_global_next();
@@ -744,7 +732,7 @@ void init_chord2345(int sync) {
 
 // Generic setup pulse, stright or middle synced relative to 'when'.
 // Pulse time and phase sync get deviated from unit, which is first
-// multiplied by factor and divided by divisor.
+// multiplied by multiplier and divided by divisor.
 // sync=0 gives stright syncing, sync=1 middle pulses synced.
 // other values possible,
 // negative values should not reach into the past
@@ -758,7 +746,7 @@ void init_chord2345(int sync) {
 // for harmonics I use rational number sequences a lot.
 // this is a versatile function to create them:
 void init_ratio_sequence(struct time when,
-			 int factor0, int factor_step,
+			 int multiplier0, int multiplier_step,
 			 int divisor0, int divisor_step, int count,
 			 unsigned int scaling, int sync
 			 )
@@ -770,14 +758,14 @@ void init_ratio_sequence(struct time when,
 // 1/2, 2/3, 3/4, 4/5	init_ratio_sequence(now, 1, 1, 2, 1, 4, scaling, sync)
 {
   const unsigned long unit=scaling*time_unit;
-  unsigned long factor=factor0;
+  unsigned long multiplier=multiplier0;
   unsigned long divisor=divisor0;
 
   // init_click_pulses();
 
   for (; count; count--) {
-    setup_click_synced(when, unit, factor, divisor, sync);
-    factor += factor_step;
+    setup_click_synced(when, unit, multiplier, divisor, sync);
+    multiplier += multiplier_step;
     divisor += divisor_step;
   }
 
@@ -807,8 +795,8 @@ void init_rhythm_1(int sync) {
   PULSES.get_now();
   now=PULSES.now;
 
-  for (long factor=2L; factor<6L; factor++)	// 2, 3, 4, 5
-    setup_click_synced(now, scaling*time_unit, factor, divisor, sync);
+  for (long multiplier=2L; multiplier<6L; multiplier++)	// 2, 3, 4, 5
+    setup_click_synced(now, scaling*time_unit, multiplier, divisor, sync);
 
   // 2*2*3*5
   setup_click_synced(now, scaling*time_unit, 2L*2L*3L*5L, divisor, sync);
@@ -821,7 +809,7 @@ void init_rhythm_1(int sync) {
 void init_rhythm_2(int sync) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   int scaling=1;
-  unsigned long factor=1;
+  unsigned long multiplier=1;
   unsigned long unit= scaling*time_unit;
   struct time now;
 
@@ -834,7 +822,7 @@ void init_rhythm_2(int sync) {
   now=PULSES.now;
 
   for (unsigned long divisor=4; divisor<12 ; divisor += 2)
-    setup_click_synced(now, unit, factor, divisor, sync);
+    setup_click_synced(now, unit, multiplier, divisor, sync);
 
   // slowest *not* synced
   setup_click_synced(now, unit, 1, 1, 0);
@@ -845,7 +833,7 @@ void init_rhythm_2(int sync) {
 // nice 2 to 3 to 4 to 5 pattern with phase offsets
 void init_rhythm_3(int sync) {
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-  unsigned long factor, divisor=36L;
+  unsigned long multiplier, divisor=36L;
   const unsigned long scaling=1L;
   const unsigned long unit=scaling*time_unit;
   struct time now;
@@ -858,18 +846,18 @@ void init_rhythm_3(int sync) {
   PULSES.get_now();
   now=PULSES.now;
 
-  factor=2;
-  setup_click_synced(now, unit, factor, divisor, sync);
+  multiplier=2;
+  setup_click_synced(now, unit, multiplier, divisor, sync);
 
-  factor=3;
-  setup_click_synced(now, unit, factor, divisor, sync);
+  multiplier=3;
+  setup_click_synced(now, unit, multiplier, divisor, sync);
 
-  factor=4;
-  setup_click_synced(now, unit, factor, divisor, sync);
+  multiplier=4;
+  setup_click_synced(now, unit, multiplier, divisor, sync);
 
   if(CLICK_PULSES>3) {
-    factor=5;
-    setup_click_synced(now, unit, factor, divisor, sync);
+    multiplier=5;
+    setup_click_synced(now, unit, multiplier, divisor, sync);
   }
 
   PULSES.fix_global_next();
@@ -891,7 +879,7 @@ void init_rhythm_4(int sync) {
   now=PULSES.now;
 
   setup_click_synced(now, scaling*time_unit/divisor, 1, 1, sync);     // 1
-  // init_ratio_sequence(when, factor0, factor_step, divisor0, divisor_step, count, scaling, sync);
+  // init_ratio_sequence(when, multiplier0, multiplier_step, divisor0, divisor_step, count, scaling, sync);
   if (CLICK_PULSES>=5)
     init_ratio_sequence(now, 1, 1, 2, 1, 4, scaling, sync);     // 1/2, 2/3, 3/4, 4/5
   else
@@ -1298,10 +1286,19 @@ const char helpInfo[] = \
   "?=help\ti=info\t.=alive info\t:=selected info";
 const char microSeconds[] = " microseconds";
 const char muteKill[] = \
-  "M=mute all\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tf=en-info\tF=en-INFO\tn=sync now\nS=sync ";
+  "M=mute all\tR=remove all\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tf=en-info\tF=en-INFO\tn=sync now\nS=sync ";
 const char perSecond_[] = " per second)";
 const char equals_[] = " = ";
 const char switchPulse[] = "s=switch pulse on/off";
+
+
+// variables used to setup the experiments
+bool inverse=false;	// bottom DOWN/up click-pin mapping
+unsigned long multiplier=1;
+unsigned long divisor=1;
+// int * jiffle=NULL;
+int voices=CLICK_PULSES;
+int experiment=-1;
 
 void menu_pulses_display() {
   MENU.outln(F("http://github.com/reppr/pulses/\n"));
@@ -1322,6 +1319,17 @@ void menu_pulses_display() {
   MENU.out(switchPulse);
   MENU.tab();  MENU.out(muteKill);
   MENU.outln(sync);
+
+  MENU.out(F("E=enter experiment (")); MENU.out(experiment); MENU.out(F(")"));
+  MENU.out(F("\t\tV=voices for experiment (")); MENU.out(voices); MENU.out(F(")\tb=toggle pin mapping (bottom "));
+  if (inverse)
+    MENU.out(F("up"));
+  else
+    MENU.out(F("down"));
+  MENU.outln(F(")"));
+
+  MENU.out(F("Scale (")); MENU.out(multiplier);MENU.out(F("/"));  MENU.out(divisor);
+  MENU.out(F(")\tm=multiplier d=divisor"));
 }
 
 
@@ -1352,11 +1360,11 @@ void reset_and_edit_pulse(int pulse) {
 
 int setup_jiffle_thrower_synced(struct time when,
 				unsigned long unit,
-				unsigned long factor, unsigned long divisor,
+				unsigned long multiplier, unsigned long divisor,
 				int sync, unsigned int *jiffletab)
 {
   int pulse= PULSES.setup_pulse_synced(&do_throw_a_jiffle, ACTIVE,
-			       when, unit, factor, divisor, sync);
+			       when, unit, multiplier, divisor, sync);
   if (pulse != ILLEGAL) {
     PULSES.pulses[pulse].parameter_2 = (unsigned int) jiffletab;
   } else {
@@ -1375,12 +1383,12 @@ int setup_jiffle_thrower_synced(struct time when,
 // the following jiffletab value counts how many times the pulse will get
 // woken up with this new computed period
 // then continue with next jiffletab entries
-// a zero factor ends the jiffle
+// a zero multiplier ends the jiffle
 
 // jiffletabs define melody:
-// up to 256 triplets of {factor, divisor, count}
-// factor and divisor determine period based on the starting pulses period
-// a factor of zero indicates end of jiffle
+// up to 256 triplets of {multiplier, divisor, count}
+// multiplier and divisor determine period based on the starting pulses period
+// a multiplier of zero indicates end of jiffle
 
 #define JIFFLETAB_INDEX_STEP	3
 
@@ -1527,7 +1535,7 @@ void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, stru
 // pre-defined jiffle pattern:
 
 void setup_jiffles2345(int sync) {
-  unsigned long factor;
+  unsigned long multiplier;
 
   int scale=1;
   int divisor=2;
@@ -1541,32 +1549,32 @@ void setup_jiffles2345(int sync) {
   PULSES.get_now();
   when=PULSES.now;
 
-  factor=2;
-  setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab);
+  multiplier=2;
+  setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab);
 
-  factor=3;
-  setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab);
+  multiplier=3;
+  setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab);
 
-  factor=4;
-  setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab);
+  multiplier=4;
+  setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab);
 
-  factor=5;
-  setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab);
+  multiplier=5;
+  setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab);
 
   // up to 8 voices
   #if CLICK_PULSES > 5
-    factor=6;
-    setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab);
+    multiplier=6;
+    setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab);
 
-    // skip factor 7
+    // skip multiplier 7
 
     #if CLICK_PULSES > 6
-    factor=8;
-    setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab);
+    multiplier=8;
+    setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab);
 
       #if CLICK_PULSES > 7
-    factor=9;
-    setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab);
+    multiplier=9;
+    setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab);
       #endif
     #endif
 
@@ -1577,8 +1585,8 @@ void setup_jiffles2345(int sync) {
   PULSES.fix_global_next();
 }
 
-// triplets {factor, divisor, count}
-// factor==0 means end
+// triplets {multiplier, divisor, count}
+// multiplier==0 means end
 
 // jiffletab0 is obsolete	DADA ################
 unsigned int jiffletab0[] =
@@ -1605,53 +1613,53 @@ void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor) {
   PULSES.get_now();
   struct time when=PULSES.now;
 
-  unsigned long factor=1;
+  unsigned long multiplier=1;
 
   divisor=1;
-  setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiff0);
+  setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiff0);
 
   divisor=3;
-  setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiff1);
+  setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiff1);
 
   divisor=4;
-  setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiff2);
+  setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiff2);
 
   #if CLICK_PULSES > 5
     divisor=6;
-    setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab0);
+    setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
 
     // divisor=8;
-    // setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiff4);
+    // setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiff4);
   #endif
 
   PULSES.fix_global_next();
 }
 
 
-void setup_jiffle128(int sync, unsigned int factor, unsigned int divisor) {
-  unsigned long unit=factor*time_unit/divisor;
+void setup_jiffle128(int sync, unsigned int multiplier, unsigned int divisor) {
+  unsigned long unit=multiplier*time_unit/divisor;
 
   MENU.out(F("setup_jiffle128 "));
   MENU.out(sync_); MENU.out(sync);
   MENU.space(); MENU.space();
-  MENU.out(F("factor/divisor "));
-  MENU.out(factor);
+  MENU.out(F("multiplier/divisor "));
+  MENU.out(multiplier);
   MENU.out(F("/")); MENU.outln(divisor);
 
   PULSES.get_now();
   struct time when=PULSES.now;
 
-  factor=1;
+  multiplier=1;
   for (int click=0; click<CLICK_PULSES; click++) {
     divisor=click+1;
-    setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, gling128);
+    setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, gling128);
   }
   PULSES.fix_global_next();
 }
 
 
 void setup_jiffles0(int sync) {	// setup for ESP8266 Frog Orchester
-  unsigned long factor;
+  unsigned long multiplier;
 
   int scale=2;
   int divisor=3;
@@ -1665,26 +1673,26 @@ void setup_jiffles0(int sync) {	// setup for ESP8266 Frog Orchester
   PULSES.get_now();
   when=PULSES.now;
 
-  factor=2;
-  setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab0);
+  multiplier=2;
+  setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
 
-  factor=3;
-  setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab0);
+  multiplier=3;
+  setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
 
-  factor=4;
-  setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab0);
+  multiplier=4;
+  setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
 
-  factor=5;
-  setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab0);
+  multiplier=5;
+  setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
 
   if (CLICK_PULSES>4) {
-    // 2*3*2*5	(the 4 needs only another factor of 2)
-    factor=2*3*2*5;
-    setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab0);
+    // 2*3*2*5	(the 4 needs only another multiplier of 2)
+    multiplier=2*3*2*5;
+    setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
 
     if (CLICK_PULSES>5) {
-      factor=16;
-      setup_jiffle_thrower_synced(when, unit, factor, divisor, sync, jiffletab0);
+      multiplier=16;
+      setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
     }
   }
 
@@ -2017,57 +2025,6 @@ bool menu_pulses_reaction(char menu_input) {
     display_jiffletab(jiffletab);
     break;
 
-  default:
-    return false;	// menu entry not found
-  }
-  return true;		// menu entry found
-}
-
-
-/* **************************************************************** */
-// harmonical experiments, setups, demos.
-
-bool inverse=false;
-unsigned long factor=1;
-unsigned long divisor=1;
-// int * jiffle=NULL;
-// int voices=CLICK_PULSES;
-int experiment=-1;
-
-void experiments_display(){
-  MENU.outln(F("http://github.com/reppr/pulses/\n"));
-  MENU.ln();
-
-  MENU.out(F("e=enter experiment (")); MENU.out(experiment); MENU.outln(F(")"));
-
-  MENU.out(F("Scale (")); MENU.out(factor);MENU.out(F("/"));  MENU.out(divisor);
-  MENU.out(F(")\tf=factor d=divisor"));
-
-  MENU.out(F("S=enter sync (")); MENU.out(sync); MENU.outln(F(")\tc=enClick\tj=enJiffleThrower"));
-
-  MENU.out(uSelect);  MENU.out(timeUnit);
-  MENU.out("  (");
-  MENU.out(time_unit);
-  MENU.out(microSeconds);
-  MENU.out(equals_);
-  MENU.out((float) (1000000.0 / (float) time_unit),3);
-  MENU.outln(perSecond_);
-
-  MENU.ln();
-}
-
-
-bool experiments_reaction(char token) {
-  long new_value=0;
-  struct time now, time_scratch;
-  // unsigned long bitmask;
-
-  switch (token) {
-  case '?':	// help, overrides common menu entry for '?'
-    MENU.menu_display();	// as common
-    short_info();		// + short info
-    break;
-
   case 'd':	// divisor
     MENU.out(F("divisor "));
     new_value = MENU.numeric_input(divisor);
@@ -2079,28 +2036,49 @@ bool experiments_reaction(char token) {
     MENU.outln(divisor);
     break;
 
-  case 'f':	// factor
-    MENU.out(F("factor "));
-    new_value = MENU.numeric_input(factor);
+  case 'm':	// multiplier
+    MENU.out(F("multiplier "));
+    new_value = MENU.numeric_input(multiplier);
     if (new_value>0 )
-      factor = new_value;
+      multiplier = new_value;
     else
       MENU.out(F("small positive integer only"));
 
-    MENU.outln(factor);
+    MENU.outln(multiplier);
     break;
 
-  case 'I':	// initialize, reset
+  case 'V':	// set voices
+    MENU.out(F("voices "));
+    new_value = MENU.numeric_input(voices);
+    if (new_value>0 && new_value<=CLICK_PULSES)
+      voices = new_value;
+    else
+      MENU.outln(invalid_);
+
+    MENU.outln(voices);
+    break;
+
+  case 'b':	// toggle bottom down/up click-pin mapping bottom up/down
+    MENU.out(F("pin mapping bottom "));
+    inverse = !inverse;	// toggle bottom up/down click-pin mapping
+
+    if (inverse)
+      MENU.outln(F("up"));
+    else
+      MENU.outln(F("down"));
+    break;
+
+  case 'R':	// remove (=reset) all
     for (int pulse=0; pulse<pl_max; pulse++)	// tabula rasa
       PULSES.init_pulse(pulse);
 
     // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
     init_click_pulses();
 
-    MENU.outln(F("initilized all"));
+    MENU.outln(F("removed all pulses"));
     break;
 
-  case 'e':	// enter experiment
+  case 'E':	// enter experiment
     MENU.out(F("experiment "));
     new_value = MENU.numeric_input(experiment);
     if (new_value>=0 )
@@ -2113,7 +2091,7 @@ bool experiments_reaction(char token) {
     case 1:
       MENU.outln(F("setup_jiffle128(15, 1, 1)"));
       sync=15;
-      factor=1;
+      multiplier=1;
       divisor=1;
       break;
     case 2:
@@ -2132,7 +2110,7 @@ bool experiments_reaction(char token) {
     case 5:
       init_123456(0, false);
       sync=0;		// FIXME: test and select ################
-      inverse=false;	// FIXME: test and select ################
+      inverse=false;
       MENU.outln(F("init_123456(0, false)"));
       break;
     case 6:
@@ -2157,13 +2135,13 @@ bool experiments_reaction(char token) {
       break;
     case 11:
       sync=3;
-      factor=3;
+      multiplier=3;
       divisor=1;
       MENU.outln(F("setup_jifflesNEW(3, 3, 1);"));
       break;
     case 12:
       sync=0;
-      factor=1;
+      multiplier=1;
       divisor=1;
       MENU.outln(F("init_pentatonic(0, 1, 1);"));
       break;
@@ -2174,7 +2152,7 @@ bool experiments_reaction(char token) {
   case '!':			// '!' setup and start experiment
     switch (experiment) {
     case 1:
-      setup_jiffle128(sync, factor, divisor);
+      setup_jiffle128(sync, multiplier, divisor);
       break;
     case 2:
       init_div_123456(sync, inverse);
@@ -2204,10 +2182,10 @@ bool experiments_reaction(char token) {
       init_rhythm_4(sync);
       break;
     case 11:
-      setup_jifflesNEW(sync, factor, divisor);
+      setup_jifflesNEW(sync, multiplier, divisor);
       break;
     case 12:
-      init_pentatonic(sync, factor, divisor);
+      init_pentatonic(sync, multiplier, divisor);
       break;
     }
     break;
@@ -2217,6 +2195,7 @@ bool experiments_reaction(char token) {
   }
   return true;		// menu entry found
 }
+
 
 /* **************************************************************** */
 // include softboard on arduinos:
