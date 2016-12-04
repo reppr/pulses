@@ -1133,7 +1133,7 @@ void display_action(int pulse) {
 
   scratch=&do_throw_a_jiffle;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out(SeedJiffle);
+    MENU.out(SeedJiffle); MENU.out((int) click_pin[pulse]);
     return;
   }
 
