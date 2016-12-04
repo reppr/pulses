@@ -125,7 +125,7 @@ void init_rhythm_4(int sync);		// defined later on
 void setup_jiffles0(int sync);		// defined later on
 void setup_jiffles2345(int sync);	// defined later on
 void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor);  // see later
-void setup_jiffle128(int sync, unsigned int scale, unsigned int divisor);  // see later
+void setup_jiffle128(unsigned int scale, unsigned int divisor, int sync, bool inverse);  // see later
 void alive_pulses_info_lines();		// defined later on
 
 
@@ -276,8 +276,8 @@ void setup() {
 
   // for a demo one of these could be called from here:
 
-  // void setup_jiffle128(int sync, unsigned int scale, unsigned int divisor) {
-  MENU.ln(); setup_jiffle128(15, 1, 1);		// 12345678 slow beginning of voices, nice
+  // void setup_jiffle128(unsigned int scale, unsigned int divisor, int sync, bool inverse) {
+  MENU.ln(); setup_jiffle128(2, 1, 15, false);	// 12345678 slow beginning of voices, nice
 
   // MENU.ln(); init_div_123456(0, false);
 
@@ -1636,27 +1636,41 @@ void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor) {
 }
 
 
-void setup_jiffle128(int sync, unsigned int multiplier, unsigned int divisor) {
-  unsigned long unit=multiplier*time_unit/divisor;
+void setup_jiffle128(unsigned int multiplier, unsigned int divisor, int sync, bool inverse) {
+  /*
+  multiplier and divisor are used twice:
+  first to scale unit from time_unit
+  then reset to build the jiffle thrower pulses
+    multiplier=1
+    divisor = 1, 2, 3, 4, ...
+  */
+  unsigned long unit=multiplier*time_unit;
+  unit /= divisor;
 
-  MENU.out(F("setup_jiffle128 "));
-  MENU.out(sync_); MENU.out(sync);
-  MENU.space(); MENU.space();
-  MENU.out(F("multiplier/divisor "));
-  MENU.out(multiplier);
-  MENU.out(F("/")); MENU.outln(divisor);
+  MENU.out(F("setup_jiffle128("));
+  MENU.out(multiplier); MENU.out(F(", ")); MENU.out(divisor);
+  MENU.out(F(", ")); MENU.out(sync);
+  MENU.out(F(", ")); MENU.out(inverse);
+  MENU.outln(F(")"));
 
   PULSES.get_now();
   struct time when=PULSES.now;
 
   multiplier=1;
-  for (int click=0; click<CLICK_PULSES; click++) {
-    divisor=click+1;
-    setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, gling128);
+  if (!inverse) {
+    for (int click=0; click<CLICK_PULSES; click++) {
+      divisor=click+1;
+      setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, gling128);
+    }
+  } else {
+    for (int click=CLICK_PULSES-1; click>=0; click--) {
+      divisor=click+1;
+      setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, gling128);
+    }
   }
+
   PULSES.fix_global_next();
 }
-
 
 void setup_jiffles0(int sync) {	// setup for ESP8266 Frog Orchester
   unsigned long multiplier;
@@ -2089,9 +2103,9 @@ bool menu_pulses_reaction(char menu_input) {
     MENU.outln(experiment);
     switch (experiment) {	// initialize defaults, but do not start yet
     case 1:
-      MENU.outln(F("setup_jiffle128(15, 1, 1)"));
+      MENU.outln(F("setup_jiffle128(2, 1, 15, x)"));
       sync=15;
-      multiplier=1;
+      multiplier=2;
       divisor=1;
       break;
     case 2:
@@ -2152,7 +2166,7 @@ bool menu_pulses_reaction(char menu_input) {
   case '!':			// '!' setup and start experiment
     switch (experiment) {
     case 1:
-      setup_jiffle128(sync, multiplier, divisor);
+      setup_jiffle128(multiplier, divisor, sync, inverse);
       break;
     case 2:
       init_div_123456(sync, inverse);
