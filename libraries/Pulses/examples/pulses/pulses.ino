@@ -114,18 +114,19 @@ void do_jiffle (int pulse);		// defined later on
 void do_throw_a_jiffle(int pulse);	// defined later on
 void init_click_pins();			// defined later on
 void init_click_pulses();		// defined later on
-void init_123456(int sync, bool inverse);	// see later
-void init_div_123456(int sync, bool inverse);	// see later
-void init_chord2345(int sync);		// defined later on
+void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
+void init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
+void setup_jiffles0(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync); // Frogs
+void setup_jiffles2345(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
+void init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
+void init_chord_1345689a(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
+
 void init_pentatonic(int sync, unsigned long scale, unsigned long divisor);	// see later
 void init_rhythm_1(int sync);		// defined later on
 void init_rhythm_2(int sync);		// defined later on
 void init_rhythm_3(int sync);		// defined later on
 void init_rhythm_4(int sync);		// defined later on
-void setup_jiffles0(int sync);		// defined later on
-void setup_jiffles2345(int sync);	// defined later on
 void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor);  // see later
-void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 void alive_pulses_info_lines();		// defined later on
 
 
@@ -315,28 +316,35 @@ void setup() {
   PULSES.init_time();		// start time
   PULSES.init_pulses();		// init pulses
 
-
+  MENU.ln();
   // for a demo one of these could be called from here:
 
   // void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync)
-  MENU.ln(); setup_jiffle128(false, CLICK_PULSES, 2, 1, 15);	// 12345678 slow beginning of voices, nice
+  // setup_jiffle128(false, CLICK_PULSES, 2, 1, 15);	// 12345678 slow beginning of voices, nice
 
-  // MENU.ln(); init_div_123456(0, false);
+  // init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
+  // init_div_123456(false, CLICK_PULSES, 1, 1, 0);
 
-  // MENU.ln(); setup_jiffles0(1);	// setup for ESP8266 Frog Orchester
+  // setup_jiffles0(false, CLICK_PULSES, 2, 3, 1);	// setup for ESP8266 Frog Orchester
 
-  // MENU.ln(); setup_jiffles2345(0);
-  // init_123456(0, false);
-  // MENU.ln(); init_chord2345(0);
+  //       void setup_jiffles2345(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
+  // setup_jiffles2345(0, CLICK_PULSES, 1, 2, 0);
+
+  // init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
+  // init_123456(false, CLICK_PULSES, 1, 1, 0);
+  
+  // init_chord_1345689a(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
+  init_chord_1345689a(0, CLICK_PULSES, 1, 1, 0);
+
   // init_rhythm_1(1);
   // init_rhythm_2(5);
-  // MENU.ln(); init_rhythm_3(3);
+  // init_rhythm_3(3);
   // init_rhythm_4(1);	// reimplementation going on
 
   // void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor);[C
-  // MENU.ln(); setup_jifflesNEW(3, 3, 1);
+  // setup_jifflesNEW(3, 3, 1);
 
-  // MENU.ln(); init_pentatonic(0, 1, 1);
+  // init_pentatonic(0, 1, 1);
 
   PULSES.fix_global_next();	// we *must* call that here late in setup();
 
@@ -619,34 +627,38 @@ void time_info()
 // playing with chords:
 const char sync_[] = "sync ";
 
-void init_div_123456(int sync, bool inverse) {
-  for (int pulse=0; pulse<pl_max; pulse++) {	// tabula rasa
-    PULSES.init_pulse(pulse);
-  }
-  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-  init_click_pulses();
+//   init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
+void init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
+//	  for (int pulse=0; pulse<pl_max; pulse++) {	// tabula rasa
+//	    PULSES.init_pulse(pulse);
+//	  }
+//	  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
+//	  init_click_pulses();
 
-  const unsigned long multiplier=1L;
-  const unsigned long scaling=1L;
-  const unsigned long unit=scaling*time_unit;
+//	  const unsigned long divisor=1L;
+  unsigned long unit=multiplier*time_unit;
+  unit /= divisor;
+
+  MENU.out(F("init_div_123456("));
+  MENU.out(inverse);
+  display_next_par(voices);
+  display_next_par(multiplier);
+  display_next_par(divisor);
+  display_last_par(sync);
+
   struct time now;
-
-  MENU.out(F("init_div_123456 ")); MENU.out(sync_); MENU.out(sync); MENU.tab();
-  if (inverse)
-    MENU.out(F("inverse "));
-
   PULSES.get_now();
   now=PULSES.now;
 
   int integer;
   if (! inverse) {	// low pin number has low note
-    for (integer=1; integer<=CLICK_PULSES; integer++) {
-      setup_click_synced(now, unit, multiplier, integer, sync);
+    for (integer=1; integer<=voices; integer++) {
+      setup_click_synced(now, unit, 1, integer, sync);
       MENU.out(integer);
     }
   } else {	// inverse: low pin number has high frequency
-    for (integer=CLICK_PULSES; integer>0; integer--) {
-      setup_click_synced(now, unit, multiplier, integer, sync);
+    for (integer=voices; integer>0; integer--) {
+      setup_click_synced(now, unit, 1, integer, sync);
       MENU.out(integer);
     }
   }
@@ -655,32 +667,34 @@ void init_div_123456(int sync, bool inverse) {
   PULSES.fix_global_next();
 }
 
-void init_123456(int sync, bool inverse) {
-  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-  unsigned long multiplier, divisor=2L*36L;
-  const unsigned long scaling=1L;
-  const unsigned long unit=scaling*time_unit;
+void init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
+  unsigned long unit = multiplier*time_unit;
+  unit /= divisor;
+
+  MENU.out(F("init123456("));
+  MENU.out(inverse);
+  display_next_par(voices);
+  display_next_par(multiplier);
+  display_next_par(divisor);
+  display_last_par(sync);
+
+  //  init_click_pulses();
+
   struct time now;
-
-  MENU.out(F("init123456 ")); MENU.out(sync_); MENU.out(sync); MENU.tab();
-  if (inverse)
-    MENU.out(F("inverse "));
-
-  init_click_pulses();
-
   PULSES.get_now();
   now=PULSES.now;
 
+  divisor=2L*36L;
   int integer;
   if (! inverse) {	// bottom down/up click-pin mapping
     // low pin number has longest period
-    for (integer=CLICK_PULSES; integer>0; integer--) {
+    for (integer=voices; integer>0; integer--) {
       setup_click_synced(now, unit, integer, divisor, sync);
       MENU.out(integer);
     }
   } else {
     // low pin number has shortest period
-    for (integer=1; integer<=CLICK_PULSES; integer++) {
+    for (integer=1; integer<=voices; integer++) {
       setup_click_synced(now, unit, integer, divisor, sync);
       MENU.out(integer);
     }
@@ -732,10 +746,10 @@ void init_pentatonic(int sync, unsigned long multiplier, unsigned long divisor )
   setup_jiffle_thrower_synced(now, unit, 2, 3, sync, gling128);	// 'a'
   setup_jiffle_thrower_synced(now, unit/3*2, 5, 6, sync, gling128); // 'c' is fifth from 'f'
   setup_jiffle_thrower_synced(now, unit, 1, 2, sync, gling128);	// 'd'
-#if CLICK_PULSES > 6
+#if voices > 6
   setup_jiffle_thrower_synced(now, unit, 5, 2*6, sync, gling128);	// 'f'
 #endif
-#if CLICK_PULSES > 7
+#if voices > 7
   // setup_jiffle_thrower_synced(now, unit, 3, 2*4, sync, gling128);	// 'g'
   setup_jiffle_thrower_synced(now, unit, 2, 2*3, sync, gling128);	// 'a' seems better on top with 8 voices
 #endif
@@ -744,21 +758,25 @@ void init_pentatonic(int sync, unsigned long multiplier, unsigned long divisor )
 }
 
 
-void init_chord2345(int sync) {
-  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-  unsigned long multiplier, divisor=64L*36L;
-  const unsigned long scaling=1L;
-  const unsigned long unit=scaling*time_unit;
+void init_chord_1345689a(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
+  unsigned long unit=multiplier*time_unit;
+  unit /= divisor;
+
+  MENU.out('init_chord_1345689a');
+  MENU.out(inverse);
+  display_next_par(voices);
+  display_next_par(multiplier);
+  display_next_par(divisor);
+  display_last_par(sync);
+
+//  init_click_pulses();
+
   struct time now;
-
-  MENU.out('chord2345'); MENU.space(); MENU.out(sync_); MENU.outln(sync);
-
-  init_click_pulses();
-
   PULSES.get_now();
   now=PULSES.now;
 
-  multiplier=2;
+  divisor=32L*36L;
+  multiplier=1;
   setup_click_synced(now, unit, multiplier, divisor, sync);
 
   multiplier=3;
@@ -767,7 +785,7 @@ void init_chord2345(int sync) {
   multiplier=4;
   setup_click_synced(now, unit, multiplier, divisor, sync);
 
-  if(CLICK_PULSES>3) {
+  if(voices>3) {
     multiplier=5;
     setup_click_synced(now, unit, multiplier, divisor, sync);
   }
@@ -881,6 +899,7 @@ void init_rhythm_2(int sync) {
 
 // nice 2 to 3 to 4 to 5 pattern with phase offsets
 void init_rhythm_3(int sync) {
+  int voices; //################
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   unsigned long multiplier, divisor=36L;
   const unsigned long scaling=1L;
@@ -904,7 +923,7 @@ void init_rhythm_3(int sync) {
   multiplier=4;
   setup_click_synced(now, unit, multiplier, divisor, sync);
 
-  if(CLICK_PULSES>3) {
+  if(voices>3) {
     multiplier=5;
     setup_click_synced(now, unit, multiplier, divisor, sync);
   }
@@ -914,6 +933,7 @@ void init_rhythm_3(int sync) {
 
 
 void init_rhythm_4(int sync) {
+  int voices; //################
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   const unsigned long scaling=1L;
   const unsigned long divisor=7L*3L;
@@ -929,10 +949,10 @@ void init_rhythm_4(int sync) {
 
   setup_click_synced(now, scaling*time_unit/divisor, 1, 1, sync);     // 1
   // init_ratio_sequence(when, multiplier0, multiplier_step, divisor0, divisor_step, count, scaling, sync);
-  if (CLICK_PULSES>=5)
+  if (voices>=5)
     init_ratio_sequence(now, 1, 1, 2, 1, 4, scaling, sync);     // 1/2, 2/3, 3/4, 4/5
   else
-    init_ratio_sequence(now, 1, 1, 2, 1, CLICK_PULSES-1, scaling, sync);     // 1/2, 2/3, 3/4  or  1/2, 2/3
+    init_ratio_sequence(now, 1, 1, 2, 1, voices-1, scaling, sync);     // 1/2, 2/3, 3/4  or  1/2, 2/3
 }
 
 
@@ -1582,21 +1602,27 @@ void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, stru
 
 
 // pre-defined jiffle pattern:
+void setup_jiffles2345(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
+  if (inverse) {
+    MENU.outln(F("inverse not implemented"));
+    return;
+  }
 
-void setup_jiffles2345(int sync) {
-  unsigned long multiplier;
+  unsigned long unit=multiplier*time_unit;
+  unit /= divisor;
 
-  int scale=1;
-  int divisor=2;
-  unsigned long unit=scale*time_unit/divisor;
+  MENU.out(F("jiffles2345("));
+  MENU.out(inverse);
+  display_next_par(voices);
+  display_next_par(multiplier);
+  display_next_par(divisor);
+  display_last_par(sync);
 
   struct time when;
-
-  MENU.out(F("jiffles2345 "));
-  MENU.out(sync_); MENU.outln(sync);
-
   PULSES.get_now();
   when=PULSES.now;
+
+  divisor=1;
 
   multiplier=2;
   setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab);
@@ -1611,25 +1637,25 @@ void setup_jiffles2345(int sync) {
   setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab);
 
   // up to 8 voices
-  #if CLICK_PULSES > 5
+  if (voices > 5) {
     multiplier=6;
     setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab);
 
     // skip multiplier 7
 
-    #if CLICK_PULSES > 6
-    multiplier=8;
-    setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab);
+    if (voices > 6) {
+      multiplier=8;
+      setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab);
 
-      #if CLICK_PULSES > 7
-    multiplier=9;
-    setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab);
-      #endif
-    #endif
+      if (voices > 7) {
+	multiplier=9;
+	setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab);
+      }
+    }
 
     // next would be i.e. 10, 12, 14, 15, 16
     // so 2 3 4 5 6 8 9 10 12 14 15 16
-  #endif
+  }
 
   PULSES.fix_global_next();
 }
@@ -1673,7 +1699,7 @@ void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor) {
   divisor=4;
   setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiff2);
 
-  #if CLICK_PULSES > 5
+  #if voices > 5
     divisor=6;
     setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
 
@@ -1722,20 +1748,29 @@ void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned
   PULSES.fix_global_next();
 }
 
-void setup_jiffles0(int sync) {	// setup for ESP8266 Frog Orchester
-  unsigned long multiplier;
+// setup for ESP8266 Frog Orchester
+void setup_jiffles0(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
+  if (inverse) {
+    MENU.outln(F("inverse not implemented"));
+    return;
+  }
 
-  int scale=2;
-  int divisor=3;
-  unsigned long unit=scale*time_unit/divisor;
+  unsigned long unit=multiplier*time_unit;
+  unit /= divisor;
+
+  MENU.out("setup_jiffles0(");
+  MENU.out(inverse);
+  display_next_par(voices);
+  display_next_par(multiplier);
+  display_next_par(divisor);
+  display_last_par(sync);
+
 
   struct time when;
-
-  MENU.out("jiffle0 ");
-  MENU.out(sync_); MENU.outln(sync);
-
   PULSES.get_now();
   when=PULSES.now;
+
+  divisor=3;	// this was just the default for the frogs
 
   multiplier=2;
   setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
@@ -1749,12 +1784,12 @@ void setup_jiffles0(int sync) {	// setup for ESP8266 Frog Orchester
   multiplier=5;
   setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
 
-  if (CLICK_PULSES>4) {
+  if (voices>4) {
     // 2*3*2*5	(the 4 needs only another multiplier of 2)
     multiplier=2*3*2*5;
     setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
 
-    if (CLICK_PULSES>5) {
+    if (voices>5) {
       multiplier=16;
       setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
     }
@@ -1779,6 +1814,19 @@ void short_info() {
   MENU.ln();
   alive_pulses_info_lines();
 }
+
+// helper functions to display parameters of menu functions:
+void display_next_par(long parameter) {
+  MENU.out(F(", "));
+  MENU.out(parameter);
+}
+
+void display_last_par(long parameter) {
+  MENU.out(F(", "));
+  MENU.out(parameter);
+  MENU.outln(F(")"));
+}
+
 
 bool menu_pulses_reaction(char menu_input) {
   long new_value=0;
@@ -1844,9 +1892,9 @@ bool menu_pulses_reaction(char menu_input) {
     print_selected_pulses();
     break;
 
-  case 'l':	// select destination: alive CLICK_PULSES
+  case 'l':	// select destination: alive voices
     selected_pulses=0;
-    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+    for (int pulse=0; pulse<voices; pulse++)
       if(PULSES.pulses[pulse].flags && (PULSES.pulses[pulse].flags != SCRATCH))
 	selected_pulses |= (1 << pulse);
 
@@ -2041,8 +2089,8 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'c':	// en_click
-    // we work on CLICK_PULSES anyway, regardless dest
-    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+    // we work on voices anyway, regardless dest
+    for (int pulse=0; pulse<voices; pulse++)
       if (selected_pulses & (1 << pulse))
 	en_click(pulse);
 
@@ -2051,8 +2099,8 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'j':	// en_jiffle_thrower
-    // we work on CLICK_PULSES anyway, regardless dest
-    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+    // we work on voices anyway, regardless dest
+    for (int pulse=0; pulse<voices; pulse++)
       if (selected_pulses & (1 << pulse))
 	en_jiffle_thrower(pulse, jiffletab);
 
@@ -2153,62 +2201,118 @@ bool menu_pulses_reaction(char menu_input) {
     MENU.outln(experiment);
     switch (experiment) {	// initialize defaults, but do not start yet
     case 1:
-      MENU.out(F("setup_jiffle128(")); MENU.out(inverse);
-      MENU.out(F(", ")); MENU.out(voices);
-      MENU.outln(F(", 2, 1, 15)"));
-      sync=15;
       multiplier=2;
       divisor=1;
+      sync=15;
+
+      MENU.out(F("setup_jiffle128("));
+      MENU.out(inverse);
+      display_next_par(voices);
+      display_next_par(multiplier);
+      display_next_par(divisor);
+      display_last_par(sync);
       break;
     case 2:
-      MENU.outln(F("init_div_123456(0, false)"));
       sync=0;
-      inverse=false;
+      multiplier=2;
+      divisor=1;
+
+      MENU.out(F("init_div_123456("));
+      MENU.out(inverse);
+      display_next_par(voices);
+      display_next_par(multiplier);
+      display_next_par(divisor);
+      display_last_par(sync);
       break;
     case 3:
       sync=1;
-      MENU.outln(F("setup_jiffles0(1)  ESP8266 Frogs"));
+      multiplier=2;
+      divisor=3;
+
+      MENU.out(F("setup_jiffles0("));
+      MENU.out(inverse);
+      display_next_par(voices);
+      display_next_par(multiplier);
+      display_next_par(divisor);
+      display_next_par(sync);
+      MENU.outln(F(")  ESP8266 Frogs"));
       break;
     case 4:
+      multiplier=1;
+      divisor=2;	// FIXME: test and select ################
       sync=0;		// FIXME: test and select ################
-      MENU.outln(F("setup_jiffles2345(0)"));
+
+      MENU.out(F("setup_jiffles2345("));
+      MENU.out(inverse);
+      display_next_par(voices);
+      display_next_par(multiplier);
+      display_next_par(divisor);
+      display_last_par(sync);
       break;
     case 5:
-      init_123456(0, false);
       sync=0;		// FIXME: test and select ################
-      inverse=false;
-      MENU.outln(F("init_123456(0, false)"));
+      multiplier=3;
+      divisor=1;
+
+      MENU.outln(F("init_123456("));
+      MENU.out(inverse);
+      display_next_par(voices);
+      display_next_par(multiplier);
+      display_next_par(divisor);
+      display_last_par(sync);
       break;
     case 6:
       sync=0;		// FIXME: test and select ################
-      MENU.outln(F("init_chord2345(0)"));
+      multiplier=1;
+      divisor=1;
+
+      MENU.outln(F("init_chord_1345689a("));
+      MENU.out(inverse);
+      display_next_par(voices);
+      display_next_par(multiplier);
+      display_next_par(divisor);
+      display_last_par(sync);
       break;
     case 7:
       sync=1;
+      multiplier=1;
+      divisor=1;
+
       MENU.outln(F("init_rhythm_1(1)"));
       break;
     case 8:
       sync=5;
+      multiplier=1;
+      divisor=1;
+
       MENU.outln(F("init_rhythm_2(5)"));
       break;
     case 9:
       sync=3;
+      multiplier=1;
+      divisor=1;
+
       MENU.outln(F("init_rhythm_3(3)"));
       break;
     case 10:
       sync=1;
+      multiplier=1;
+      divisor=1;
+
       MENU.outln(F("init_rhythm_4(1);"));
       break;
     case 11:
       sync=3;
       multiplier=3;
       divisor=1;
+
       MENU.outln(F("setup_jifflesNEW(3, 3, 1);"));
       break;
     case 12:
       sync=0;
       multiplier=1;
       divisor=1;
+
       MENU.outln(F("init_pentatonic(0, 1, 1);"));
       break;
     }
@@ -2221,19 +2325,19 @@ bool menu_pulses_reaction(char menu_input) {
       setup_jiffle128(inverse, voices, multiplier, divisor, sync);
       break;
     case 2:
-      init_div_123456(sync, inverse);
+      init_div_123456(inverse, voices, multiplier, divisor, sync);
       break;
     case 3:
-      setup_jiffles0(sync);    // setup for ESP8266 Frog Orchester
+      setup_jiffles0(inverse, voices, multiplier, divisor, sync);    // ESP8266 Frog Orchester
       break;
     case 4:
-      setup_jiffles2345(sync);
+      setup_jiffles2345(inverse, voices, multiplier, divisor, sync);
       break;
     case 5:
-      init_123456(sync, inverse);
+      init_123456(inverse, voices, multiplier, divisor, sync);
       break;
     case 6:
-      init_chord2345(sync);
+      init_chord_1345689a(inverse, voices, multiplier, divisor, sync);
       break;
     case 7:
       init_rhythm_1(sync);
