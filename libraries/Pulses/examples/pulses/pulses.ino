@@ -164,6 +164,29 @@ const int pl_max=64;		// Linux PC test version
 
 Pulses PULSES(pl_max);
 
+#ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
+  // to switch WiFi off I evaluate different methods:
+  // activate *one* of these methods:
+  #define WIFI_OFF_hackster
+  //#define WIFI_OFF_mysensors
+
+  #ifdef WIFI_OFF_hackster
+    // see: https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
+
+    #define FREQUENCY    80	// valid 80, 160
+    //#define FREQUENCY    160	// valid 80, 160
+
+    #include "ESP8266WiFi.h"  // after that min() and max() do not work any more. Say: std::min() std::max()
+    extern "C" {
+      #include "user_interface.h"
+    }
+  #endif
+
+  #ifdef WIFI_OFF_mysensors
+    // see: https://forum.mysensors.org/topic/5120/esp8266-with-wifi-off/3
+    #include <ESP8266WiFi.h>  // after that min() and max() do not work any more. Say: std::min() std::max()
+  #endif
+#endif
 
 /* **************************************************************** */
 #ifdef ARDUINO
@@ -268,6 +291,25 @@ void setup() {
     init_click_pins();		// set OUTPUT, LOW
   #endif
 
+  #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
+    #ifdef WIFI_OFF_hackster
+      // see: https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
+      WiFi.forceSleepBegin();                  // turn off ESP8266 RF
+      delay(1);                                // give RF section time to shutdown
+
+      #ifdef FREQUENCY
+	system_update_cpu_freq(FREQUENCY);
+      #endif
+    #endif
+
+    #ifdef WIFI_OFF_mysensors
+      // see:	https://forum.mysensors.org/topic/5120/esp8266-with-wifi-off/3
+      WiFi.disconnect();
+      WiFi.mode(WIFI_OFF);
+      WiFi.forceSleepBegin();
+      delay(1);
+    #endif
+  #endif
 
   // time and pulses *must* get initialized before setting up pulses:
   PULSES.init_time();		// start time
@@ -307,6 +349,13 @@ void setup() {
 void maybe_run_continuous();	// defined later on
 
 void loop() {	// ARDUINO
+  #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
+    #ifdef WIFI_OFF_hackster
+      // see: https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
+      // pat the watchdog timer
+      wdt_reset();
+    #endif
+  #endif
 
   /* calling check_maybe_do() in a while loop
      increases timing priority of PULSES over the MENU.
@@ -513,7 +562,7 @@ float display_realtime_sec(struct time duration) {
   seconds += overflow_sec * (float) duration.overflow;
 
   float scratch = 1000.0;
-  while (scratch > max(seconds, (float) 1.0)) {		// (float) for Linux PC tests
+  while (scratch > std::max(seconds, (float) 1.0)) {	// (float) for Linux PC tests, "std::" for ESP8266
     MENU.space();
     scratch /= 10.0;
   }
@@ -923,7 +972,7 @@ void print_period_in_time_units(int pulse) {
   time_units = ((float) PULSES.pulses[pulse].period.time / (float) time_unit);
 
   scratch = 1000.0;
-  while (scratch > max(time_units, (float) 1.0)) {
+  while (scratch > std::max(time_units, (float) 1.0)) {    // "std::" for ESP8266
     MENU.space();
     scratch /= 10.0;
   }
@@ -1205,7 +1254,7 @@ void do_throw_a_jiffle(int pulse) {		// for pulse_do
 // what is selected?
 
 void print_selected_pulses() {
-  const int hex_pulses=min(pl_max,16);	// displayed as hex chiffres
+  const int hex_pulses=std::min(pl_max,16);  // displayed as hex chiffres, "std::" for ESP8266
 
   MENU.out_selected_();
   for (int pulse=0; pulse<hex_pulses; pulse++) {
@@ -1265,7 +1314,7 @@ void info_select_destination_with(bool extended_destinations) {
   MENU.out(selectPulseWith);
 
   // FIXME: use 16 here, when reaction will be prepared for a,b,c,d,e,f too.
-  MENU.out_ticked_hexs(min(pl_max,10));
+  MENU.out_ticked_hexs(std::min(pl_max,10));	// "std::" for ESP8266
 
   MENU.outln(selectAllPulses);
 
