@@ -120,13 +120,13 @@ void setup_jiffles0(bool inverse, int voices, unsigned int multiplier, unsigned 
 void setup_jiffles2345(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 void init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 void init_chord_1345689a(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
+void init_rhythm_1(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
+void init_rhythm_2(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
+void init_rhythm_3(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
+void init_rhythm_4(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 
-void init_pentatonic(int sync, unsigned long scale, unsigned long divisor);	// see later
-void init_rhythm_1(int sync);		// defined later on
-void init_rhythm_2(int sync);		// defined later on
-void init_rhythm_3(int sync);		// defined later on
-void init_rhythm_4(int sync);		// defined later on
 void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor);  // see later
+void init_pentatonic(int sync, unsigned long scale, unsigned long divisor);	// see later
 void alive_pulses_info_lines();		// defined later on
 
 
@@ -332,16 +332,16 @@ void setup() {
 
   // init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
   // init_123456(false, CLICK_PULSES, 1, 1, 0);
-  
+
   // init_chord_1345689a(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-  init_chord_1345689a(0, CLICK_PULSES, 1, 1, 0);
+  // init_chord_1345689a(0, CLICK_PULSES, 1, 1, 0);
 
-  // init_rhythm_1(1);
-  // init_rhythm_2(5);
-  // init_rhythm_3(3);
-  // init_rhythm_4(1);	// reimplementation going on
+  // init_rhythm_1   (0, CLICK_PULSES, 1, 6*7, 1);
+  // init_rhythm_2(0, CLICK_PULSES, 1, 1, 5);
+  // init_rhythm_3(0, CLICK_PULSES, 1, 1, 3);
+  init_rhythm_4(0, CLICK_PULSES, 1, 7*3, 1);
 
-  // void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor);[C
+  // void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor);
   // setup_jifflesNEW(3, 3, 1);
 
   // init_pentatonic(0, 1, 1);
@@ -828,51 +828,44 @@ void init_ratio_sequence(struct time when,
 /* **************************************************************** */
 // some pre-defined patterns:
 
-const char rhythm_[] = "rhythm ";
+void init_rhythm_1(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
+  unsigned long unit=multiplier*time_unit;
+  unit /= divisor;
 
-void init_rhythm_1(int sync) {
-  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-  unsigned long divisor=6*7;
-  unsigned long scaling=1;
   struct time now;
 
-  MENU.out(rhythm_); MENU.out(1);
-  MENU.space();
-  MENU.space();
-  MENU.space();
-  MENU.out(sync_); MENU.outln(sync);
+  display_name5pars("init_rhythm_1", inverse, voices, multiplier, divisor, sync);
 
-  init_click_pulses();
+  //  init_click_pulses();
 
   PULSES.get_now();
   now=PULSES.now;
 
+  divisor=1;
   for (long multiplier=2L; multiplier<6L; multiplier++)	// 2, 3, 4, 5
-    setup_click_synced(now, scaling*time_unit, multiplier, divisor, sync);
+    setup_click_synced(now, unit, multiplier, divisor, sync);
 
   // 2*2*3*5
-  setup_click_synced(now, scaling*time_unit, 2L*2L*3L*5L, divisor, sync);
+  setup_click_synced(now, unit, 2L*2L*3L*5L, divisor, sync);
 
   PULSES.fix_global_next();
 }
 
 
 // frequencies ratio 1, 4, 6, 8, 10
-void init_rhythm_2(int sync) {
-  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-  int scaling=1;
-  unsigned long multiplier=1;
-  unsigned long unit= scaling*time_unit;
+void init_rhythm_2(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
+  unsigned long unit= multiplier*time_unit;
+  unit /= divisor;
+
+  display_name5pars("init_rhythm_2", inverse, voices, multiplier, divisor, sync);
+
+  //  init_click_pulses();
+
   struct time now;
-
-  MENU.out(rhythm_); MENU.out(2);
-  MENU.space(); MENU.out(sync_); MENU.outln(sync);
-
-  init_click_pulses();
-
   PULSES.get_now();
   now=PULSES.now;
 
+  multiplier=1;
   for (unsigned long divisor=4; divisor<12 ; divisor += 2)
     setup_click_synced(now, unit, multiplier, divisor, sync);
 
@@ -883,21 +876,19 @@ void init_rhythm_2(int sync) {
 }
 
 // nice 2 to 3 to 4 to 5 pattern with phase offsets
-void init_rhythm_3(int sync) {
-  int voices; //################
-  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-  unsigned long multiplier, divisor=36L;
-  const unsigned long scaling=1L;
-  const unsigned long unit=scaling*time_unit;
+void init_rhythm_3(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
+  unsigned long unit=multiplier*time_unit;
+  unit /= divisor;
+
+  display_name5pars("init_rhythm_3", inverse, voices, multiplier, divisor, sync);
+
+  //  init_click_pulses();
+
   struct time now;
-
-  MENU.out(rhythm_); MENU.out(3);
-  MENU.space(); MENU.out(sync_); MENU.outln(sync);
-
-  init_click_pulses();
-
   PULSES.get_now();
   now=PULSES.now;
+
+  divisor=36L;
 
   multiplier=2;
   setup_click_synced(now, unit, multiplier, divisor, sync);
@@ -917,27 +908,26 @@ void init_rhythm_3(int sync) {
 }
 
 
-void init_rhythm_4(int sync) {
-  int voices; //################
-  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-  const unsigned long scaling=1L;
-  const unsigned long divisor=7L*3L;
+void init_rhythm_4(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
+  unsigned long unit = multiplier*time_unit;
+  unit /= divisor;
+
   struct time now;
 
-  MENU.out(rhythm_); MENU.out(4);
-  MENU.space(); MENU.out(sync_); MENU.outln(sync);
+  display_name5pars("init_rhythm_4", inverse, voices, multiplier, divisor, sync);
 
-  init_click_pulses();
+  //  init_click_pulses();
 
   PULSES.get_now();
   now=PULSES.now;
 
-  setup_click_synced(now, scaling*time_unit/divisor, 1, 1, sync);     // 1
+  divisor=1;
+  setup_click_synced(now, unit, 1, 1, sync);     // 1
   // init_ratio_sequence(when, multiplier0, multiplier_step, divisor0, divisor_step, count, scaling, sync);
   if (voices>=5)
-    init_ratio_sequence(now, 1, 1, 2, 1, 4, scaling, sync);     // 1/2, 2/3, 3/4, 4/5
+    init_ratio_sequence(now, 1, 1, 2, 1, 4, 1, sync);     // 1/2, 2/3, 3/4, 4/5
   else
-    init_ratio_sequence(now, 1, 1, 2, 1, voices-1, scaling, sync);     // 1/2, 2/3, 3/4  or  1/2, 2/3
+    init_ratio_sequence(now, 1, 1, 2, 1, voices-1, 1, sync);     // 1/2, 2/3, 3/4  or  1/2, 2/3
 }
 
 
@@ -2230,50 +2220,44 @@ bool menu_pulses_reaction(char menu_input) {
     case 7:
       sync=1;
       multiplier=1;
-      divisor=1;
+      divisor=6*7;
 
-      display_name5pars("", inverse, voices, multiplier, divisor, sync);
-      MENU.outln(F("init_rhythm_1(1)"));
+      display_name5pars("init_rhythm_1", inverse, voices, multiplier, divisor, sync);
       break;
     case 8:
       sync=5;
       multiplier=1;
       divisor=1;
 
-      display_name5pars("", inverse, voices, multiplier, divisor, sync);
-      MENU.outln(F("init_rhythm_2(5)"));
+      display_name5pars("init_rhythm_2", inverse, voices, multiplier, divisor, sync);
       break;
     case 9:
       sync=3;
       multiplier=1;
       divisor=1;
 
-      display_name5pars("", inverse, voices, multiplier, divisor, sync);
-      MENU.outln(F("init_rhythm_3(3)"));
+      display_name5pars("init_rhythm_3", inverse, voices, multiplier, divisor, sync);
       break;
     case 10:
       sync=1;
       multiplier=1;
-      divisor=1;
+      divisor=7L*3L;
 
-      display_name5pars("", inverse, voices, multiplier, divisor, sync);
-      MENU.outln(F("init_rhythm_4(1);"));
+      display_name5pars("init_rhythm_4", inverse, voices, multiplier, divisor, sync);
       break;
     case 11:
       sync=3;
       multiplier=3;
       divisor=1;
 
-      display_name5pars("", inverse, voices, multiplier, divisor, sync);
-      MENU.outln(F("setup_jifflesNEW(3, 3, 1);"));
+      display_name5pars("setup_jifflesNEW", inverse, voices, multiplier, divisor, sync);
       break;
     case 12:
       sync=0;
       multiplier=1;
       divisor=1;
 
-      display_name5pars("", inverse, voices, multiplier, divisor, sync);
-      MENU.outln(F("init_pentatonic(0, 1, 1);"));
+      display_name5pars("init_pentatonic", inverse, voices, multiplier, divisor, sync);
       break;
     }
     MENU.outln(F("Press '!' to start"));
@@ -2300,16 +2284,16 @@ bool menu_pulses_reaction(char menu_input) {
       init_chord_1345689a(inverse, voices, multiplier, divisor, sync);
       break;
     case 7:
-      init_rhythm_1(sync);
+      init_rhythm_1(inverse, voices, multiplier, divisor, sync);
       break;
     case 8:
-      init_rhythm_2(sync);
+      init_rhythm_2(inverse, voices, multiplier, divisor, sync);
       break;
     case 9:
-      init_rhythm_3(sync);
+      init_rhythm_3(inverse, voices, multiplier, divisor, sync);
       break;
     case 10:
-      init_rhythm_4(sync);
+      init_rhythm_4(inverse, voices, multiplier, divisor, sync);
       break;
     case 11:
       setup_jifflesNEW(sync, multiplier, divisor);
