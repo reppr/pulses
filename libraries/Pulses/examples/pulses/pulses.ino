@@ -597,8 +597,8 @@ unsigned long time_unit =  3628800L;		// scaling timer to 10!, 3.628800s
 // const char arrays[]  to save RAM:
 const char timeInfo[] = "*** TIME info\t";
 const char ticOfl[] = "tic/ofl ";
-const char now_[] = "now\t";
-const char next_[] = "next\t";	// FIXME: scan strings and use it...
+const char now_[] = "now  ";
+const char next_[] = "next  ";
 
 void display_real_ovfl_and_sec(struct time then) {
   MENU.out(ticOfl);
