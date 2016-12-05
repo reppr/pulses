@@ -105,8 +105,6 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 Menu MENU(32, 3, &men_getchar, MENU_OUTSTREAM);
 
 
-
-// FIXME: ################		// defined later on
 void menu_pulses_display();		// defined later on
 bool menu_pulses_reaction(char token);	// defined later on
 void display_action(int pulse);		// defined later on
@@ -114,6 +112,7 @@ void do_jiffle (int pulse);		// defined later on
 void do_throw_a_jiffle(int pulse);	// defined later on
 void init_click_pins();			// defined later on
 void init_click_pulses();		// defined later on
+void alive_pulses_info_lines();		// defined later on
 void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 void init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 void setup_jiffles0(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync); // Frogs
@@ -124,10 +123,9 @@ void init_rhythm_1(bool inverse, int voices, unsigned int multiplier, unsigned i
 void init_rhythm_2(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 void init_rhythm_3(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 void init_rhythm_4(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
+void init_pentatonic(int sync, unsigned long multiplier, unsigned long divisor);
 
-void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor);  // see later
-void init_pentatonic(int sync, unsigned long scale, unsigned long divisor);	// see later
-void alive_pulses_info_lines();		// defined later on
+void setup_jifflesNEW(int sync, unsigned int multiplier, unsigned int divisor);
 
 
 // FIXME: ################
@@ -339,12 +337,12 @@ void setup() {
   // init_rhythm_1   (0, CLICK_PULSES, 1, 6*7, 1);
   // init_rhythm_2(0, CLICK_PULSES, 1, 1, 5);
   // init_rhythm_3(0, CLICK_PULSES, 1, 1, 3);
-  init_rhythm_4(0, CLICK_PULSES, 1, 7*3, 1);
+  // init_rhythm_4(0, CLICK_PULSES, 1, 7*3, 1);
 
-  // void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor);
+  // void setup_jifflesNEW(int sync, unsigned int multiplier, unsigned int divisor);
   // setup_jifflesNEW(3, 3, 1);
 
-  // init_pentatonic(0, 1, 1);
+  init_pentatonic(0, CLICK_PULSES, 1, 1, 1);
 
   PULSES.fix_global_next();	// we *must* call that here late in setup();
 
@@ -701,7 +699,7 @@ void init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int
 unsigned int gling128[] = {1,512,8, 1,256,4, 1,128,16, 0};
 
 
-void init_pentatonic(int sync, unsigned long multiplier, unsigned long divisor ) {
+void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   /*
     I was looking at pentatonic scales
     one of my favorits follows the 'd f g a c' pattern
@@ -715,11 +713,17 @@ void init_pentatonic(int sync, unsigned long multiplier, unsigned long divisor )
     1         :         2
   */
 
-  const unsigned long unit=time_unit*multiplier/divisor;
+  if (inverse) {
+    MENU.outln(F("inverse not implemented"));
+    return;
+  }
+
+  unsigned long unit=time_unit*multiplier;
+  unit /= divisor;
+
+  display_name5pars("init_pentatonic", inverse, voices, multiplier, divisor, sync);
+
   struct time now;
-
-  MENU.out(F("init_pentatonic ")); MENU.out(sync_); MENU.outln(sync);
-
   PULSES.get_now();
   now=PULSES.now;
 
@@ -734,15 +738,17 @@ void init_pentatonic(int sync, unsigned long multiplier, unsigned long divisor )
   setup_jiffle_thrower_synced(now, unit, 5, 6, sync, gling128);	// 'f'
   setup_jiffle_thrower_synced(now, unit, 3, 4, sync, gling128);	// 'g'
   setup_jiffle_thrower_synced(now, unit, 2, 3, sync, gling128);	// 'a'
-  setup_jiffle_thrower_synced(now, unit/3*2, 5, 6, sync, gling128); // 'c' is fifth from 'f'
-  setup_jiffle_thrower_synced(now, unit, 1, 2, sync, gling128);	// 'd'
-#if voices > 6
-  setup_jiffle_thrower_synced(now, unit, 5, 2*6, sync, gling128);	// 'f'
-#endif
-#if voices > 7
-  // setup_jiffle_thrower_synced(now, unit, 3, 2*4, sync, gling128);	// 'g'
-  setup_jiffle_thrower_synced(now, unit, 2, 2*3, sync, gling128);	// 'a' seems better on top with 8 voices
-#endif
+  if (voices > 4) {
+    setup_jiffle_thrower_synced(now, unit/3*2, 5, 6, sync, gling128); // 'c' is fifth from 'f'
+    setup_jiffle_thrower_synced(now, unit, 1, 2, sync, gling128);	// 'd'
+  }
+  if (voices > 6) {
+    setup_jiffle_thrower_synced(now, unit, 5, 2*6, sync, gling128);	// 'f'
+  }
+  if (voices > 7) {
+    // setup_jiffle_thrower_synced(now, unit, 3, 2*4, sync, gling128);	// 'g'
+    setup_jiffle_thrower_synced(now, unit, 2, 2*3, sync, gling128);	// 'a' seems better on top with 8 voices
+  }
 
   PULSES.fix_global_next();
 }
@@ -1647,18 +1653,19 @@ unsigned int jiff2[] =
   {1,2096,4, 1,512,2, 1,128,2, 1,256,2, 1,512,8, 1,1024,32, 1,512,4, 1,256,3, 1,128,2, 1,64,1, 0};
 
 
-void setup_jifflesNEW(int sync, unsigned int scale, unsigned int divisor) {
-  unsigned long unit=scale*time_unit/divisor;
+void setup_jifflesNEW(int sync, unsigned int multiplier, unsigned int divisor) {
+  unsigned long unit=multiplier*time_unit;
+  unit /= divisor;
 
   MENU.out(F("setup_jifflesNEW(")); MENU.out(sync);
-  MENU.out(F(", ")); MENU.out(scale);
+  MENU.out(F(", ")); MENU.out(multiplier);
   MENU.out(F(", ")); MENU.out(divisor);
   MENU.outln(F(")"));
 
   PULSES.get_now();
   struct time when=PULSES.now;
 
-  unsigned long multiplier=1;
+  multiplier=1;
 
   divisor=1;
   setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiff0);
@@ -2253,7 +2260,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("setup_jifflesNEW", inverse, voices, multiplier, divisor, sync);
       break;
     case 12:
-      sync=0;
+      sync=1;
       multiplier=1;
       divisor=1;
 
@@ -2299,7 +2306,7 @@ bool menu_pulses_reaction(char menu_input) {
       setup_jifflesNEW(sync, multiplier, divisor);
       break;
     case 12:
-      init_pentatonic(sync, multiplier, divisor);
+      init_pentatonic(inverse, voices, multiplier, divisor, sync);
       break;
     }
     break;
