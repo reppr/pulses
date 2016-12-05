@@ -639,12 +639,7 @@ void init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned
   unsigned long unit=multiplier*time_unit;
   unit /= divisor;
 
-  MENU.out(F("init_div_123456("));
-  MENU.out(inverse);
-  display_next_par(voices);
-  display_next_par(multiplier);
-  display_next_par(divisor);
-  display_last_par(sync);
+  display_name5pars("init_div_123456", inverse, voices, multiplier, divisor, sync);
 
   struct time now;
   PULSES.get_now();
@@ -671,12 +666,7 @@ void init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int
   unsigned long unit = multiplier*time_unit;
   unit /= divisor;
 
-  MENU.out(F("init123456("));
-  MENU.out(inverse);
-  display_next_par(voices);
-  display_next_par(multiplier);
-  display_next_par(divisor);
-  display_last_par(sync);
+  display_name5pars("init123456", inverse, voices, multiplier, divisor, sync);
 
   //  init_click_pulses();
 
@@ -762,12 +752,7 @@ void init_chord_1345689a(bool inverse, int voices, unsigned int multiplier, unsi
   unsigned long unit=multiplier*time_unit;
   unit /= divisor;
 
-  MENU.out('init_chord_1345689a');
-  MENU.out(inverse);
-  display_next_par(voices);
-  display_next_par(multiplier);
-  display_next_par(divisor);
-  display_last_par(sync);
+  display_name5pars("init_chord_1345689a", inverse, voices, multiplier, divisor, sync);
 
 //  init_click_pulses();
 
@@ -1611,12 +1596,7 @@ void setup_jiffles2345(bool inverse, int voices, unsigned int multiplier, unsign
   unsigned long unit=multiplier*time_unit;
   unit /= divisor;
 
-  MENU.out(F("jiffles2345("));
-  MENU.out(inverse);
-  display_next_par(voices);
-  display_next_par(multiplier);
-  display_next_par(divisor);
-  display_last_par(sync);
+  display_name5pars("jiffles2345", inverse, voices, multiplier, divisor, sync);
 
   struct time when;
   PULSES.get_now();
@@ -1722,12 +1702,7 @@ void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned
   unsigned long unit=multiplier*time_unit;
   unit /= divisor;
 
-  MENU.out(F("setup_jiffle128("));
-  MENU.out(inverse); MENU.out(F(", "));
-  MENU.out(voices); MENU.out(F(", "));
-  MENU.out(multiplier); MENU.out(F(", ")); MENU.out(divisor);
-  MENU.out(F(", ")); MENU.out(sync);
-  MENU.outln(F(")"));
+  display_name5pars("setup_jiffle128", inverse, voices, multiplier, divisor, sync);
 
   PULSES.get_now();
   struct time when=PULSES.now;
@@ -1758,13 +1733,7 @@ void setup_jiffles0(bool inverse, int voices, unsigned int multiplier, unsigned 
   unsigned long unit=multiplier*time_unit;
   unit /= divisor;
 
-  MENU.out("setup_jiffles0(");
-  MENU.out(inverse);
-  display_next_par(voices);
-  display_next_par(multiplier);
-  display_next_par(divisor);
-  display_last_par(sync);
-
+  display_name5pars("setup_jiffles0", inverse, voices, multiplier, divisor, sync);
 
   struct time when;
   PULSES.get_now();
@@ -1827,6 +1796,15 @@ void display_last_par(long parameter) {
   MENU.outln(F(")"));
 }
 
+void display_name5pars(char* name, bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
+  MENU.out((char *) name);
+  MENU.out("(");
+  MENU.out(inverse);
+  display_next_par(voices);
+  display_next_par(multiplier);
+  display_next_par(divisor);
+  display_last_par(sync);
+}
 
 bool menu_pulses_reaction(char menu_input) {
   long new_value=0;
@@ -2205,30 +2183,21 @@ bool menu_pulses_reaction(char menu_input) {
       divisor=1;
       sync=15;
 
-      MENU.out(F("setup_jiffle128("));
-      MENU.out(inverse);
-      display_next_par(voices);
-      display_next_par(multiplier);
-      display_next_par(divisor);
-      display_last_par(sync);
+      display_name5pars("setup_jiffle128", inverse, voices, multiplier, divisor, sync);
       break;
     case 2:
       sync=0;
       multiplier=2;
       divisor=1;
 
-      MENU.out(F("init_div_123456("));
-      MENU.out(inverse);
-      display_next_par(voices);
-      display_next_par(multiplier);
-      display_next_par(divisor);
-      display_last_par(sync);
+      display_name5pars("init_div_123456", inverse, voices, multiplier, divisor, sync);
       break;
     case 3:
       sync=1;
       multiplier=2;
       divisor=3;
 
+      // display_name5pars("setup_jiffles0", inverse, voices, multiplier, divisor, sync);
       MENU.out(F("setup_jiffles0("));
       MENU.out(inverse);
       display_next_par(voices);
@@ -2242,42 +2211,28 @@ bool menu_pulses_reaction(char menu_input) {
       divisor=2;	// FIXME: test and select ################
       sync=0;		// FIXME: test and select ################
 
-      MENU.out(F("setup_jiffles2345("));
-      MENU.out(inverse);
-      display_next_par(voices);
-      display_next_par(multiplier);
-      display_next_par(divisor);
-      display_last_par(sync);
+      display_name5pars("setup_jiffles2345", inverse, voices, multiplier, divisor, sync);
       break;
     case 5:
       sync=0;		// FIXME: test and select ################
       multiplier=3;
       divisor=1;
 
-      MENU.outln(F("init_123456("));
-      MENU.out(inverse);
-      display_next_par(voices);
-      display_next_par(multiplier);
-      display_next_par(divisor);
-      display_last_par(sync);
+      display_name5pars("init_123456", inverse, voices, multiplier, divisor, sync);
       break;
     case 6:
       sync=0;		// FIXME: test and select ################
       multiplier=1;
       divisor=1;
 
-      MENU.outln(F("init_chord_1345689a("));
-      MENU.out(inverse);
-      display_next_par(voices);
-      display_next_par(multiplier);
-      display_next_par(divisor);
-      display_last_par(sync);
+      display_name5pars("init_chord_1345689a", inverse, voices, multiplier, divisor, sync);
       break;
     case 7:
       sync=1;
       multiplier=1;
       divisor=1;
 
+      display_name5pars("", inverse, voices, multiplier, divisor, sync);
       MENU.outln(F("init_rhythm_1(1)"));
       break;
     case 8:
@@ -2285,6 +2240,7 @@ bool menu_pulses_reaction(char menu_input) {
       multiplier=1;
       divisor=1;
 
+      display_name5pars("", inverse, voices, multiplier, divisor, sync);
       MENU.outln(F("init_rhythm_2(5)"));
       break;
     case 9:
@@ -2292,6 +2248,7 @@ bool menu_pulses_reaction(char menu_input) {
       multiplier=1;
       divisor=1;
 
+      display_name5pars("", inverse, voices, multiplier, divisor, sync);
       MENU.outln(F("init_rhythm_3(3)"));
       break;
     case 10:
@@ -2299,6 +2256,7 @@ bool menu_pulses_reaction(char menu_input) {
       multiplier=1;
       divisor=1;
 
+      display_name5pars("", inverse, voices, multiplier, divisor, sync);
       MENU.outln(F("init_rhythm_4(1);"));
       break;
     case 11:
@@ -2306,6 +2264,7 @@ bool menu_pulses_reaction(char menu_input) {
       multiplier=3;
       divisor=1;
 
+      display_name5pars("", inverse, voices, multiplier, divisor, sync);
       MENU.outln(F("setup_jifflesNEW(3, 3, 1);"));
       break;
     case 12:
@@ -2313,6 +2272,7 @@ bool menu_pulses_reaction(char menu_input) {
       multiplier=1;
       divisor=1;
 
+      display_name5pars("", inverse, voices, multiplier, divisor, sync);
       MENU.outln(F("init_pentatonic(0, 1, 1);"));
       break;
     }
