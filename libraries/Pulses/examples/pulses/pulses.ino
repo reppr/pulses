@@ -123,9 +123,8 @@ void init_rhythm_1(bool inverse, int voices, unsigned int multiplier, unsigned i
 void init_rhythm_2(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 void init_rhythm_3(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 void init_rhythm_4(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-void init_pentatonic(int sync, unsigned long multiplier, unsigned long divisor);
-
-void setup_jifflesNEW(int sync, unsigned int multiplier, unsigned int divisor);
+void setup_jifflesNEW(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);;
+void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 
 
 // FIXME: ################
@@ -340,7 +339,7 @@ void setup() {
   // init_rhythm_4(0, CLICK_PULSES, 1, 7*3, 1);
 
   // void setup_jifflesNEW(int sync, unsigned int multiplier, unsigned int divisor);
-  // setup_jifflesNEW(3, 3, 1);
+  // setup_jifflesNEW(0, CLICK_PULSES, 3, 1, 3);
 
   init_pentatonic(0, CLICK_PULSES, 1, 1, 1);
 
@@ -1653,17 +1652,20 @@ unsigned int jiff2[] =
   {1,2096,4, 1,512,2, 1,128,2, 1,256,2, 1,512,8, 1,1024,32, 1,512,4, 1,256,3, 1,128,2, 1,64,1, 0};
 
 
-void setup_jifflesNEW(int sync, unsigned int multiplier, unsigned int divisor) {
+void setup_jifflesNEW(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
+  if (inverse) {
+    MENU.outln(F("inverse not implemented"));
+    return;
+  }
+
   unsigned long unit=multiplier*time_unit;
   unit /= divisor;
 
-  MENU.out(F("setup_jifflesNEW(")); MENU.out(sync);
-  MENU.out(F(", ")); MENU.out(multiplier);
-  MENU.out(F(", ")); MENU.out(divisor);
-  MENU.outln(F(")"));
+  display_name5pars("setup_jifflesNEW", inverse, voices, multiplier, divisor, sync);
 
+  struct time when;
   PULSES.get_now();
-  struct time when=PULSES.now;
+  when=PULSES.now;
 
   multiplier=1;
 
@@ -1676,13 +1678,10 @@ void setup_jifflesNEW(int sync, unsigned int multiplier, unsigned int divisor) {
   divisor=4;
   setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiff2);
 
-  #if voices > 5
+  if (voices > 5) {
     divisor=6;
     setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
-
-    // divisor=8;
-    // setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiff4);
-  #endif
+  }
 
   PULSES.fix_global_next();
 }
@@ -2303,7 +2302,7 @@ bool menu_pulses_reaction(char menu_input) {
       init_rhythm_4(inverse, voices, multiplier, divisor, sync);
       break;
     case 11:
-      setup_jifflesNEW(sync, multiplier, divisor);
+      setup_jifflesNEW(inverse, voices, multiplier, divisor, sync);
       break;
     case 12:
       init_pentatonic(inverse, voices, multiplier, divisor, sync);
