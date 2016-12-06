@@ -138,7 +138,6 @@ void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned
 #endif
 uint8_t click_pin[CLICK_PULSES];	// ################
 
-
 /* **************************************************************** */
 // PULSES
 
@@ -697,7 +696,6 @@ void init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int
 // unsigned int gling128[] = {1,512,4, 1,256,4, 1,128,16, 0};
 unsigned int gling128[] = {1,512,8, 1,256,4, 1,128,16, 0};
 
-
 void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   /*
     I was looking at pentatonic scales
@@ -711,12 +709,10 @@ void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned
     2     :     3
     1         :         2
   */
-
   if (inverse) {
-    MENU.outln(F("inverse not implemented"));
+    no_inverse();
     return;
   }
-
   unsigned long unit=time_unit*multiplier;
   unit /= divisor;
 
@@ -1341,7 +1337,17 @@ const char switchPulse[] = "s=switch pulse on/off";
 
 
 // variables used to setup the experiments
+
 bool inverse=false;	// bottom DOWN/up click-pin mapping
+/*
+  'inverse' works when setting up an experiment creating pulses
+ 	    other pulses aren't affected
+	    some experiments do not implement that
+
+  'reverse_click_pins()' as alternative:
+  'reverse_click_pins()' works on the global click_pin[] array
+ 			 the pulses won't notice but play with new pin mapping */
+
 unsigned long multiplier=1;
 unsigned long divisor=1;
 // int * jiffle=NULL;
@@ -1369,12 +1375,13 @@ void menu_pulses_display() {
   MENU.outln(sync);
 
   MENU.out(F("E=enter experiment (")); MENU.out(experiment); MENU.out(F(")"));
-  MENU.out(F("\t\tV=voices for experiment (")); MENU.out(voices); MENU.out(F(")\tb=toggle pin mapping (bottom "));
+  MENU.out(F("\t\tV=voices for experiment (")); MENU.out(voices); MENU.outln(F(")"));
+   MENU.out(F("b=toggle pin mapping (bottom "));
   if (inverse)
     MENU.out(F("up"));
   else
     MENU.out(F("down"));
-  MENU.outln(F(")"));
+  MENU.outln(F(")\tZ=reverse_click_pins"));
 
   MENU.out(F("Scale (")); MENU.out(multiplier);MENU.out(F("/"));  MENU.out(divisor);
   MENU.out(F(")\tm=multiplier d=divisor"));
@@ -1583,10 +1590,9 @@ void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, stru
 // pre-defined jiffle pattern:
 void setup_jiffles2345(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   if (inverse) {
-    MENU.outln(F("inverse not implemented"));
+    no_inverse();
     return;
   }
-
   unsigned long unit=multiplier*time_unit;
   unit /= divisor;
 
@@ -1653,10 +1659,9 @@ unsigned int jiff2[] =
 
 void setup_jifflesNEW(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   if (inverse) {
-    MENU.outln(F("inverse not implemented"));
+    no_inverse();
     return;
   }
-
   unsigned long unit=multiplier*time_unit;
   unit /= divisor;
 
@@ -1721,10 +1726,9 @@ void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned
 // setup for ESP8266 Frog Orchester
 void setup_jiffles0(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   if (inverse) {
-    MENU.outln(F("inverse not implemented"));
+    no_inverse();
     return;
   }
-
   unsigned long unit=multiplier*time_unit;
   unit /= divisor;
 
@@ -1760,6 +1764,24 @@ void setup_jiffles0(bool inverse, int voices, unsigned int multiplier, unsigned 
   }
 
   PULSES.fix_global_next();
+}
+
+/*
+  'inverse' works when setting up an experiment creating pulses
+ 	    other pulses aren't affected
+	    some experiments do not implement that
+
+  'reverse_click_pins()' as alternative:
+  'reverse_click_pins()' works on the global click_pin[] array
+ 			 the pulses won't notice but play with new pin mapping */
+
+void reverse_click_pins() {
+  uint8_t scratch;
+  for (int i=0, j=CLICK_PULSES-1; i<j; i++, j--) {
+      scratch=click_pin[i];
+      click_pin[i]=click_pin[j];
+      click_pin[j]=scratch;
+  }
 }
 
 
@@ -1799,6 +1821,13 @@ void display_name5pars(char* name, bool inverse, int voices, unsigned int multip
   display_next_par(multiplier);
   display_next_par(divisor);
   display_last_par(sync);
+}
+
+// display helper function no_inverse()
+void no_inverse() {
+    MENU.outln(F("no 'inverse'\ttry 'Z' instead"));
+    extern bool inverse;
+    inverse=false;
 }
 
 bool menu_pulses_reaction(char menu_input) {
@@ -2161,6 +2190,11 @@ bool menu_pulses_reaction(char menu_input) {
     init_click_pulses();
 
     MENU.outln(F("removed all pulses"));
+    break;
+
+  case 'Z':
+    reverse_click_pins();
+    MENU.outln(F("reverse_click_pins"));
     break;
 
   case 'E':	// enter experiment
