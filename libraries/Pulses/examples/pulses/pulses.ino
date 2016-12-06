@@ -1297,7 +1297,7 @@ void print_selected() {
 // info_select_destination_with()
 const char selectDestinationInfo[] =
   "SELECT DESTINATION for '= * / s K P n c j :' to work on:\t";
-const char selectPulseWith[] = "Select pulse with ";
+const char selectPulseWith[] = "select pulse with ";
 const char selectAllPulses[] =
   "\na=select *all* click pulses\tA=*all* pulses\tl=alive clicks\tL=all alive\tx=none\t~=invert selection";
 const char uSelect[] = "u=select ";
@@ -1310,7 +1310,6 @@ void info_select_destination_with(bool extended_destinations) {
   MENU.tab();
   MENU.out(selectDestinationInfo);
   print_selected();
-  MENU.ln();
   MENU.out(selectPulseWith);
 
   // FIXME: use 16 here, when reaction will be prepared for a,b,c,d,e,f too.
