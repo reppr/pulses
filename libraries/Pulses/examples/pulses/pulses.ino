@@ -695,6 +695,8 @@ void init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int
 // unsigned int gling128[] = {1,256,2, 1,128,16, 0};
 // unsigned int gling128[] = {1,512,4, 1,256,4, 1,128,16, 0};
 unsigned int gling128[] = {1,512,8, 1,256,4, 1,128,16, 0};
+// unsigned int *jiffle=NULL;
+unsigned int *jiffle=gling128;		// FIXME: *jiffle	  works only partly  ################
 
 void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   /*
@@ -1350,9 +1352,19 @@ bool inverse=false;	// bottom DOWN/up click-pin mapping
 
 unsigned long multiplier=1;
 unsigned long divisor=1;
-// int * jiffle=NULL;
+// unsigned int *jiffle=NULL;
 int voices=CLICK_PULSES;
 int experiment=-1;
+
+
+/* **************************************************************** */
+// special menu modes, like numeric input for jiffletabs
+int menu_mode=0;
+#define DATA_ENTRY_UNTIL_ZERO_MODE	1	// menu_mode for unsigned integer data entry, stop at zero
+unsigned int* integer_array = NULL;		// pointer to int array for data entry
+unsigned int data_entry_index=0;		// next data entry to be written
+unsigned int integer_buffer_length=0;		// buffer array length
+
 
 void menu_pulses_display() {
   MENU.outln(F("http://github.com/reppr/pulses/\n"));
@@ -1459,59 +1471,47 @@ unsigned int jiffletab[] =
 const char jifftabFull[] = "jiffletab full";
 const char enterJiffletabVal[] = "enter jiffletab values";
 
-// FIXME: ################
-void enter_jiffletab(unsigned int *jiffletab) {
-  MENU.out(F("enter_jiffletab() NOT IMPLEMENTED YET 	################"));
+
+long complete_numeric_input(long first_value) {
+  char token = MENU.cb_peek();
+
+  if (token < '0')	// if next token is not a chiffre
+    return first_value;	//    return already read first_value
+  if (token > '9')	//
+    return first_value;	//
+
+  int chiffre;
+  for (int i=0;; i++) {
+    chiffre=MENU.cb_peek(i);
+    if (chiffre > '9')
+      break;
+    if (chiffre < '0')
+      break;
+
+    first_value *= 10;
+  }
+  // now we know that there are i more chiffres
+  long more_digits=MENU.numeric_input(0);
+
+  return first_value + more_digits;
 }
 
-// FIXME: ################
-//	void enter_jiffletab(unsigned int *jiffletab)
-//	{
-//	  int menu_input;
-//	  int new_value;
-//	  int index=0;			// counts ints, *not* triplets
-//
-//	  while (true) {
-//	    if (!char_available())
-//	      MENU.outln(enterJiffletabVal);
-//
-//	    while (!char_available())	// wait for input
-//	      ;
-//
-//	    // delay(WAITforSERIAL);
-//
-//	    switch (menu_input = get_char()) {
-//	    case ' ': case ',': case '\t':	// white space, comma
-//	      break;
-//
-//	    case '0': case '1': case '2': case '3': case '4':	// numeric
-//	    case '5': case '6': case '7': case '8': case '9':
-//	      char_store((char) menu_input);
-//	      new_value = MENU.numeric_input(0);
-//	      jiffletab[index++] = new_value;
-//
-//	      if (new_value == 0)
-//		return;
-//
-//	      if (index == (JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP)) {	// jiffletab is full
-//		jiffletab[JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP] = 0;	// trailing 0
-//		MENU.outln(jifftabFull);
-//		return;				// quit
-//	      }
-//	      break;
-//
-//	    case '}':	// end jiffletab input. Can be used to display jiffletab.
-//	      display_jiffletab(jiffletab);
-//	      return;
-//	      break;
-//
-//	    default:	// default: end input sequence
-//	      char_store((char) menu_input);
-//	      return;
-//	    }
-//	  }
-//	}
-// FIXME: ################
+
+void store_integer(int new_value) {
+  integer_array[data_entry_index]=new_value;
+
+  if (++data_entry_index >= integer_buffer_length)
+    store_integer_zero_stop();
+}
+
+
+void store_integer_zero_stop() {
+  integer_array[data_entry_index]=0;	// store a trailing zero
+  menu_mode=0;				// stop numeric data input
+  data_entry_index=0;			// aesthetics, but hmm...
+
+  display_jiffletab(jiffle);		// put that here for now
+}
 
 
 void display_jiffletab(unsigned int *jiffletab)
@@ -1563,19 +1563,30 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
   // if we arrive here, phase endid, start next phase if any:
   unsigned int* jiffletab = (unsigned int *) PULSES.pulses[pulse].parameter_2;	// read jiffletab[]
   PULSES.pulses[pulse].char_parameter_2 += JIFFLETAB_INDEX_STEP;
-  if (jiffletab[(int) PULSES.pulses[pulse].char_parameter_2] == 0) {		// no next phase, return
-    PULSES.init_pulse(pulse);					// remove pulse
-    return;						// and return
+  int base_index = PULSES.pulses[pulse].char_parameter_2;		// readability
+  long multiplier=jiffletab[base_index];
+  if (multiplier == 0) {	// multiplier==0 no next phase, return
+    PULSES.init_pulse(pulse);	// remove pulse
+    return;			// and return
   }
 
   //initialize next phase, re-using the same pulse:
-  int base_index = PULSES.pulses[pulse].char_parameter_2;		// readability
+
+  // to be able to play unfinished jiffletabs while editing them
+  // we check the other 2 items of the triple for zeroes
+  long divisor=jiffletab[base_index+1];
+  long counter=jiffletab[base_index+2];
+  if (divisor==0 || counter==0 ) {	// no next phase, return
+    PULSES.init_pulse(pulse);		// remove pulse
+    return;				// and return
+  }
   PULSES.pulses[pulse].period.time =
     PULSES.pulses[pulse].ulong_parameter_1 * jiffletab[base_index] / jiffletab[base_index+1];
   PULSES.pulses[pulse].parameter_1 = jiffletab[base_index+2];		// count of next phase
 }
 
 
+// huch, unused?	FIXME: unused?
 void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, struct time when, struct time new_period) {
   int pulse = PULSES.setup_pulse(&do_throw_a_jiffle, new_flags, when, new_period);
 
@@ -1784,7 +1795,6 @@ void reverse_click_pins() {
   }
 }
 
-
 // ****************************************************************
 // menu_serial_program_reaction()
 const char killPulse[] = "kill pulse ";
@@ -1855,6 +1865,9 @@ bool menu_pulses_reaction(char menu_input) {
     selected_pulses_info_lines();
     break;
 
+  case ',':	// accept as noop. nice to input data. see 'menu_mode'
+    break;
+
   // toggle pulse selection with chiffres:
   case '0':
   case '1':
@@ -1866,13 +1879,25 @@ bool menu_pulses_reaction(char menu_input) {
   case '7':
   case '8':
   case '9':
-    if((menu_input -'0') >= pl_max)
-      return false;		// *only* responsible if pulse exists
+    switch (menu_mode) {
+    case 0:
+      if((menu_input -'0') >= pl_max)
+	return false;		// *only* responsible if pulse exists
 
-    // existing pulse:
-    selected_pulses ^= (1 << (menu_input - '0'));
+      // existing pulse:
+      selected_pulses ^= (1 << (menu_input - '0'));
 
-    print_selected_pulses();
+      print_selected_pulses();
+      break;
+
+    case DATA_ENTRY_UNTIL_ZERO_MODE:	// first chiffre already seen
+      new_value = complete_numeric_input(menu_input - '0');
+      if (new_value)
+	store_integer(new_value);
+      else	// zero stops the input mode
+	store_integer_zero_stop();
+      break;
+    }
     break;
 
   case 'u':	// select destination: time_unit
@@ -2131,12 +2156,24 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case '{':	// enter_jiffletab
-    enter_jiffletab(jiffletab);
-    display_jiffletab(jiffletab);
+    menu_mode=DATA_ENTRY_UNTIL_ZERO_MODE;
+    data_entry_index=0;
+
+    integer_array=jiffletab;
+    integer_buffer_length=sizeof(jiffletab)/sizeof(jiffletab[0]);
+    MENU.out(F("size of buffer ")); MENU.outln(integer_buffer_length);
+//	FIXME: does not work yet	################
+//	    integer_array=jiffle;
+//	    integer_buffer_length=sizeof(integer_array)/sizeof(integer_array[0]);
+//	    MENU.out(F("size of buffer ")); MENU.outln(integer_buffer_length);
     break;
 
   case '}':	// display jiffletab / end editing jiffletab
     display_jiffletab(jiffletab);
+//    display_jiffletab(jiffle);
+    menu_mode=0;
+    data_entry_index=0;
+    // integer_array=NULL;
     break;
 
   case 'd':	// divisor
