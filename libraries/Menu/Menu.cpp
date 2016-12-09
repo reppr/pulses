@@ -353,7 +353,7 @@ char Menu::cb_read() {
 
   /* Output a newline, tab, space, '='
      ln(), tab(), space(), equals():			*/
-  void Menu::ln()		const { putchar('\n'); } // Output a newline
+  void Menu::ln()	const { putchar('\n'); } // Output a newline
   void Menu::tab()	const { putchar('\t'); } // Output a tab
   void Menu::space()	const { putchar(' '); }  // Output a space
   void Menu::equals()	const { putchar('='); }  // Output char '='
