@@ -1525,6 +1525,8 @@ void store_integer(int new_value) {
 
 
 void store_integer_zero_stop() {
+  if (data_entry_index>=integer_buffer_length)
+    data_entry_index=integer_buffer_length-1;
   integer_array[data_entry_index]=0;	// store a trailing zero
   menu_mode=0;				// stop numeric data input
   data_entry_index=0;			// aesthetics, but hmm...
