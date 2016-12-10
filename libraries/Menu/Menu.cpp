@@ -574,6 +574,27 @@ int Menu::next_input_token() const {
 }
 
 
+/* int drop_input_token()
+   drop next input token from the input and return it
+   no checks
+   only use if you must...					*/
+int Menu::drop_input_token() {
+  return cb_read();
+}
+
+
+/* int restore_input_token()
+   restores last input token and return it
+   no checks
+   only use if you *really must*				*/
+int Menu::restore_input_token() {	// restores last input token	only use if you *really must*
+  cb_count++;				// *dangerous*	but you *can* restore a just-read-token
+  cb_start = (cb_size + cb_start - 1) % cb_size;
+
+  return cb_buf[cb_start];
+}
+
+
 /* **************************************************************** */
 // lurk_then_do() main Menu user interface:
 

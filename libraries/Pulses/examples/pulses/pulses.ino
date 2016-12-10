@@ -695,8 +695,10 @@ void init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int
 // unsigned int gling128[] = {1,256,2, 1,128,16, 0};
 // unsigned int gling128[] = {1,512,4, 1,256,4, 1,128,16, 0};
 unsigned int gling128[] = {1,512,8, 1,256,4, 1,128,16, 0};
+
 // unsigned int *jiffle=NULL;
-unsigned int *jiffle=gling128;		// FIXME: *jiffle	  works only partly  ################
+unsigned int *jiffle=gling128;
+unsigned int integer_buffer_length=sizeof(gling128)/sizeof(gling128[0]);
 
 void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   /*
@@ -1363,7 +1365,7 @@ int menu_mode=0;
 #define DATA_ENTRY_UNTIL_ZERO_MODE	1	// menu_mode for unsigned integer data entry, stop at zero
 unsigned int* integer_array = NULL;		// pointer to int array for data entry
 unsigned int data_entry_index=0;		// next data entry to be written
-unsigned int integer_buffer_length=0;		// buffer array length
+// unsigned int integer_buffer_length=0;		// buffer array length
 
 
 void menu_pulses_display() {
@@ -1500,8 +1502,25 @@ long complete_numeric_input(long first_value) {
 void store_integer(int new_value) {
   integer_array[data_entry_index]=new_value;
 
-  if (++data_entry_index >= integer_buffer_length)
+  if (++data_entry_index >= integer_buffer_length) {	// array is full
     store_integer_zero_stop();
+
+    // drop all remaining numbers and delimiters from input
+    bool yes=true;
+    while (yes) {
+      switch (MENU.drop_input_token()) {
+      case ' ':  case ',':
+      case '0':  case '1':  case '2':  case '3':  case '4':
+      case '5':  case '6':  case '7':  case '8':  case '9':
+	yes=true;
+      break;
+
+      default:
+	MENU.restore_input_token();
+	yes=false;
+      }
+    }
+  }
 }
 
 
@@ -1880,7 +1899,7 @@ bool menu_pulses_reaction(char menu_input) {
   case '8':
   case '9':
     switch (menu_mode) {
-    case 0:
+    case 0:	// normal input, no special menu_mode
       if((menu_input -'0') >= pl_max)
 	return false;		// *only* responsible if pulse exists
 
@@ -2129,7 +2148,7 @@ bool menu_pulses_reaction(char menu_input) {
     // we work on voices anyway, regardless dest
     for (int pulse=0; pulse<voices; pulse++)
       if (selected_pulses & (1 << pulse))
-	en_jiffle_thrower(pulse, jiffletab);
+	en_jiffle_thrower(pulse, jiffle);
 
     MENU.ln();
     alive_pulses_info_lines();
@@ -2159,18 +2178,12 @@ bool menu_pulses_reaction(char menu_input) {
     menu_mode=DATA_ENTRY_UNTIL_ZERO_MODE;
     data_entry_index=0;
 
-    integer_array=jiffletab;
-    integer_buffer_length=sizeof(jiffletab)/sizeof(jiffletab[0]);
+    integer_array=jiffle;
     MENU.out(F("size of buffer ")); MENU.outln(integer_buffer_length);
-//	FIXME: does not work yet	################
-//	    integer_array=jiffle;
-//	    integer_buffer_length=sizeof(integer_array)/sizeof(integer_array[0]);
-//	    MENU.out(F("size of buffer ")); MENU.outln(integer_buffer_length);
     break;
 
   case '}':	// display jiffletab / end editing jiffletab
-    display_jiffletab(jiffletab);
-//    display_jiffletab(jiffle);
+    display_jiffletab(jiffle);
     menu_mode=0;
     data_entry_index=0;
     // integer_array=NULL;
@@ -2186,6 +2199,9 @@ bool menu_pulses_reaction(char menu_input) {
 
     MENU.outln(divisor);
     break;
+
+//	  case 'D':	// DADA debug
+//	    break;
 
   case 'm':	// multiplier
     MENU.out(F("multiplier "));
