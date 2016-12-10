@@ -1364,7 +1364,7 @@ int experiment=-1;
 int menu_mode=0;
 #define DATA_ENTRY_UNTIL_ZERO_MODE	1	// menu_mode for unsigned integer data entry, stop at zero
 unsigned int* integer_array = NULL;		// pointer to int array for data entry
-unsigned int data_entry_index=0;		// next data entry to be written
+unsigned int integer_write_index=0;		// next data entry to be written
 // unsigned int integer_array_length=0;		// buffer array length
 
 
@@ -1500,9 +1500,9 @@ long complete_numeric_input(long first_value) {
 
 
 void store_integer(int new_value) {
-  integer_array[data_entry_index]=new_value;
+  integer_array[integer_write_index]=new_value;
 
-  if (++data_entry_index >= integer_array_length) {	// array is full
+  if (++integer_write_index >= integer_array_length) {	// array is full
     store_integer_zero_stop();
 
     // drop all remaining numbers and delimiters from input
@@ -1525,11 +1525,11 @@ void store_integer(int new_value) {
 
 
 void store_integer_zero_stop() {
-  if (data_entry_index>=integer_array_length)
-    data_entry_index=integer_array_length-1;
-  integer_array[data_entry_index]=0;	// store a trailing zero
+  if (integer_write_index>=integer_array_length)
+    integer_write_index=integer_array_length-1;
+  integer_array[integer_write_index]=0;	// store a trailing zero
   menu_mode=0;				// stop numeric data input
-  data_entry_index=0;			// aesthetics, but hmm...
+  integer_write_index=0;			// aesthetics, but hmm...
 
   display_jiffletab(jiffle);		// put that here for now
 }
@@ -1541,10 +1541,10 @@ void display_jiffletab(unsigned int *jiffletab)
   for (int i=0; i <= JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP; i++) {
     if ((i % JIFFLETAB_INDEX_STEP) == 0)
       MENU.space();
-    if (i==data_entry_index)
+    if (i==integer_write_index)
       MENU.out("<");
     MENU.out(jiffletab[i]);
-    if (i==data_entry_index)
+    if (i==integer_write_index)
       MENU.out(">");
     if (jiffletab[i] == 0)
       break;
@@ -2187,9 +2187,9 @@ bool menu_pulses_reaction(char menu_input) {
 
   case '{':	// enter_jiffletab
     menu_mode=DATA_ENTRY_UNTIL_ZERO_MODE;
-//  if (data_entry_index >= integer_array_length)
-//    data_entry_index=0;
-    data_entry_index=0;
+//  if (integer_write_index >= integer_array_length)
+//    integer_write_index=0;
+    integer_write_index=0;
     display_jiffletab(jiffle);
 
     integer_array=jiffle;
@@ -2198,7 +2198,7 @@ bool menu_pulses_reaction(char menu_input) {
   case '}':	// display jiffletab / end editing jiffletab
     display_jiffletab(jiffle);
     menu_mode=0;
-    data_entry_index=0;
+    integer_write_index=0;
     // integer_array=NULL;
     break;
 
