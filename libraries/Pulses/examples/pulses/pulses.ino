@@ -698,7 +698,7 @@ unsigned int gling128[] = {1,512,8, 1,256,4, 1,128,16, 0};
 
 // unsigned int *jiffle=NULL;
 unsigned int *jiffle=gling128;
-unsigned int integer_buffer_length=sizeof(gling128)/sizeof(gling128[0]);
+unsigned int integer_array_length=sizeof(gling128)/sizeof(gling128[0]);
 
 void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   /*
@@ -1365,7 +1365,7 @@ int menu_mode=0;
 #define DATA_ENTRY_UNTIL_ZERO_MODE	1	// menu_mode for unsigned integer data entry, stop at zero
 unsigned int* integer_array = NULL;		// pointer to int array for data entry
 unsigned int data_entry_index=0;		// next data entry to be written
-// unsigned int integer_buffer_length=0;		// buffer array length
+// unsigned int integer_array_length=0;		// buffer array length
 
 
 void menu_pulses_display() {
@@ -1502,7 +1502,7 @@ long complete_numeric_input(long first_value) {
 void store_integer(int new_value) {
   integer_array[data_entry_index]=new_value;
 
-  if (++data_entry_index >= integer_buffer_length) {	// array is full
+  if (++data_entry_index >= integer_array_length) {	// array is full
     store_integer_zero_stop();
 
     // drop all remaining numbers and delimiters from input
@@ -1525,8 +1525,8 @@ void store_integer(int new_value) {
 
 
 void store_integer_zero_stop() {
-  if (data_entry_index>=integer_buffer_length)
-    data_entry_index=integer_buffer_length-1;
+  if (data_entry_index>=integer_array_length)
+    data_entry_index=integer_array_length-1;
   integer_array[data_entry_index]=0;	// store a trailing zero
   menu_mode=0;				// stop numeric data input
   data_entry_index=0;			// aesthetics, but hmm...
@@ -1541,12 +1541,18 @@ void display_jiffletab(unsigned int *jiffletab)
   for (int i=0; i <= JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP; i++) {
     if ((i % JIFFLETAB_INDEX_STEP) == 0)
       MENU.space();
+    if (i==data_entry_index)
+      MENU.out("<");
     MENU.out(jiffletab[i]);
+    if (i==data_entry_index)
+      MENU.out(">");
     if (jiffletab[i] == 0)
       break;
     MENU.out(",");
   }
-  MENU.outln(" }");
+  MENU.out(" }\t");
+  MENU.out(F("size of buffer ")); MENU.outln(integer_array_length);
+
 }
 
 
@@ -1886,10 +1892,13 @@ bool menu_pulses_reaction(char menu_input) {
     selected_pulses_info_lines();
     break;
 
-  case ',':	// accept as noop. nice to input data. see 'menu_mode'
+  case ',':	// accept as noop in normal mode. used as delimiter to input data, displaying info. see 'menu_mode'
+    if (menu_mode==DATA_ENTRY_UNTIL_ZERO_MODE)
+	display_jiffletab(jiffle);
     break;
 
-  // toggle pulse selection with chiffres:
+  // in normal mode toggle pulse selection with chiffres
+  // else input data. see 'menu_mode'
   case '0':
   case '1':
   case '2':
@@ -2178,10 +2187,12 @@ bool menu_pulses_reaction(char menu_input) {
 
   case '{':	// enter_jiffletab
     menu_mode=DATA_ENTRY_UNTIL_ZERO_MODE;
+//  if (data_entry_index >= integer_array_length)
+//    data_entry_index=0;
     data_entry_index=0;
+    display_jiffletab(jiffle);
 
     integer_array=jiffle;
-    MENU.out(F("size of buffer ")); MENU.outln(integer_buffer_length);
     break;
 
   case '}':	// display jiffletab / end editing jiffletab
