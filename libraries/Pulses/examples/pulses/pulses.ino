@@ -185,6 +185,13 @@ Pulses PULSES(pl_max);
   #endif
 #endif
 
+
+// have a RAM jiffletab?
+// unsigned int jiffle_data[JIFFLE_RAM_SIZE]
+#ifdef ESP8266	// we have a lot of RAM
+  #define JIFFLE_RAM_SIZE	256*3+1
+#endif
+
 /* **************************************************************** */
 #ifdef ARDUINO
 /* Arduino setup() and loop():					*/
@@ -695,10 +702,8 @@ void init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int
 // unsigned int gling128[] = {1,256,2, 1,128,16, 0};
 // unsigned int gling128[] = {1,512,4, 1,256,4, 1,128,16, 0};
 unsigned int gling128[] = {1,512,8, 1,256,4, 1,128,16, 0};
-
-// unsigned int *jiffle=NULL;
-unsigned int *jiffle=gling128;
-unsigned int integer_array_length=sizeof(gling128)/sizeof(gling128[0]);
+// unsigned int *jiffle=gling128;
+// unsigned int jiffle_data_length=sizeof(gling128)/sizeof(gling128[0]);
 
 void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   /*
@@ -1363,10 +1368,21 @@ int experiment=-1;
 // special menu modes, like numeric input for jiffletabs
 int menu_mode=0;
 #define DATA_ENTRY_UNTIL_ZERO_MODE	1	// menu_mode for unsigned integer data entry, stop at zero
+// old implementation
 unsigned int* integer_array = NULL;		// pointer to int array for data entry
 unsigned int integer_write_index=0;		// next data entry to be written
-// unsigned int integer_array_length=0;		// buffer array length
+// unsigned int jiffle_data_length=0;		// buffer array length
 
+// new implementation:
+// if we have enough RAM, we work in an int array[]
+// pre defined jiffletabs can be copied there before using and editing
+#ifndef JIFFLE_RAM_SIZE
+  #define JIFFLE_RAM_SIZE 9*3+1	// small buffer might fit on simple hardware
+#endif
+unsigned int jiffle_data[JIFFLE_RAM_SIZE];
+unsigned int jiffle_data_length = JIFFLE_RAM_SIZE;
+
+unsigned int *jiffle=jiffle_data;
 
 void menu_pulses_display() {
   MENU.outln(F("http://github.com/reppr/pulses/\n"));
@@ -1502,7 +1518,7 @@ long complete_numeric_input(long first_value) {
 void store_integer(int new_value) {
   integer_array[integer_write_index]=new_value;
 
-  if (++integer_write_index >= integer_array_length) {	// array is full
+  if (++integer_write_index >= jiffle_data_length) {	// array is full
     store_integer_zero_stop();
 
     // drop all remaining numbers and delimiters from input
@@ -1525,13 +1541,14 @@ void store_integer(int new_value) {
 
 
 void store_integer_zero_stop() {
-  if (integer_write_index>=integer_array_length)
-    integer_write_index=integer_array_length-1;
-  integer_array[integer_write_index]=0;	// store a trailing zero
-  menu_mode=0;				// stop numeric data input
-  integer_write_index=0;			// aesthetics, but hmm...
+  if (integer_write_index>=jiffle_data_length)
+    integer_write_index=jiffle_data_length-1;
+  integer_array[integer_write_index]=0;	  // store a trailing zero
+  integer_array[jiffle_data_length-1]=0;  // and last arry element (as a savety net)
+  menu_mode=0;				  // stop numeric data input
+  integer_write_index=0;		  // aesthetics, but hmm...
 
-  display_jiffletab(jiffle);		// put that here for now
+  display_jiffletab(jiffle);		  // put that here for now
 }
 
 
@@ -1551,7 +1568,7 @@ void display_jiffletab(unsigned int *jiffletab)
     MENU.out(",");
   }
   MENU.out(" }\t");
-  MENU.out(F("size of buffer ")); MENU.outln(integer_array_length);
+  MENU.out(F("size of buffer ")); MENU.outln(jiffle_data_length);
 
 }
 
@@ -2187,11 +2204,10 @@ bool menu_pulses_reaction(char menu_input) {
 
   case '{':	// enter_jiffletab
     menu_mode=DATA_ENTRY_UNTIL_ZERO_MODE;
-//  if (integer_write_index >= integer_array_length)
+//  if (integer_write_index >= jiffle_data_length)
 //    integer_write_index=0;
     integer_write_index=0;
     display_jiffletab(jiffle);
-
     integer_array=jiffle;
     break;
 
@@ -2305,6 +2321,7 @@ bool menu_pulses_reaction(char menu_input) {
       multiplier=1;
       divisor=2;	// FIXME: test and select ################
       sync=0;		// FIXME: test and select ################
+      jiffle=jiffletab;
 
       display_name5pars("setup_jiffles2345", inverse, voices, multiplier, divisor, sync);
       break;
