@@ -347,7 +347,8 @@ void setup() {
   // void setup_jifflesNEW(int sync, unsigned int multiplier, unsigned int divisor);
   // setup_jifflesNEW(0, CLICK_PULSES, 3, 1, 3);
 
-  init_pentatonic(0, CLICK_PULSES, 1, 1, 1);
+  //  init_pentatonic(0, CLICK_PULSES, 1, 1, 1);
+  init_pentatonic(0, CLICK_PULSES, 1, 6, 1);	// 8 strings on piezzos 2016-12-12
 
   PULSES.fix_global_next();	// we *must* call that here late in setup();
 
