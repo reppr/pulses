@@ -1885,6 +1885,14 @@ void no_inverse() {
     inverse=false;
 }
 
+// display factor function show_scale();
+void show_scale() {
+  MENU.out(F("multiplier/divisor "));
+  MENU.out(multiplier);
+  MENU.out(F("/"));
+  MENU.outln(divisor);
+}
+
 bool menu_pulses_reaction(char menu_input) {
   long new_value=0;
   struct time now, time_scratch;
@@ -2220,28 +2228,26 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'd':	// divisor
-    MENU.out(F("divisor "));
+    MENU.outln(F("divisor"));
     new_value = MENU.numeric_input(divisor);
     if (new_value>0 )
       divisor = new_value;
     else
       MENU.out(F("small positive integer only"));
-
-    MENU.outln(divisor);
+    show_scale();
     break;
 
 //	  case 'D':	// DADA debug
 //	    break;
 
   case 'm':	// multiplier
-    MENU.out(F("multiplier "));
+    MENU.outln(F("multiplier"));
     new_value = MENU.numeric_input(multiplier);
     if (new_value>0 )
       multiplier = new_value;
     else
       MENU.out(F("small positive integer only"));
-
-    MENU.outln(multiplier);
+    show_scale();
     break;
 
   case 'V':	// set voices
