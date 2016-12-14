@@ -2301,7 +2301,7 @@ bool menu_pulses_reaction(char menu_input) {
     if (new_value>0 )
       divisor = new_value;
     else
-      MENU.out(F("small positive integer only"));
+      MENU.outln(F("small positive integer only"));
     show_scale();
     break;
 
@@ -2317,7 +2317,7 @@ bool menu_pulses_reaction(char menu_input) {
     if (new_value>0 )
       multiplier = new_value;
     else
-      MENU.out(F("small positive integer only"));
+      MENU.outln(F("small positive integer only"));
     show_scale();
     break;
 
