@@ -986,15 +986,31 @@ void print_period_in_time_units(int pulse) {
 }
 
 
-// pulse_info_1line():	one line pulse info, short version
+// pulse_info_1line(pulse):	one line pulse info, short version
 void pulse_info_1line(int pulse) {
   unsigned long realtime=micros();	// let's take time *before* serial output
   struct time scratch;
 
   MENU.out(F("PULSE "));
+  if (pulse<100)	// left padding 'pulse'
+    MENU.space();
+  if (pulse<10)
+    MENU.space();
   MENU.out(pulse);
   MENU.out('/');
   MENU.out((unsigned int) PULSES.pulses[pulse].counter);
+  // right padding 'PULSES.pulses[pulse].counter'
+  if (PULSES.pulses[pulse].counter<100000)
+    MENU.space();
+  if (PULSES.pulses[pulse].counter<10000)
+    MENU.space();
+  if (PULSES.pulses[pulse].counter<1000)
+    MENU.space();
+  if (PULSES.pulses[pulse].counter<100)
+    MENU.space();
+  if (PULSES.pulses[pulse].counter<10)
+    MENU.space();
+  MENU.space();
 
   MENU.out_flags_();
   MENU.outBIN(PULSES.pulses[pulse].flags, 8);
@@ -2256,7 +2272,6 @@ bool menu_pulses_reaction(char menu_input) {
     case 16:
       jiffle = gling128_2;
       break;
-      
     }
     display_jiffletab(jiffle);
     break;
