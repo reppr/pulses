@@ -347,8 +347,8 @@ void setup() {
   // void setup_jifflesNEW(int sync, unsigned int multiplier, unsigned int divisor);
   // setup_jifflesNEW(0, CLICK_PULSES, 3, 1, 3);
 
-  //  init_pentatonic(0, CLICK_PULSES, 1, 1, 1);
-  init_pentatonic(0, CLICK_PULSES, 1, 6, 1);	// 8 strings on piezzos 2016-12-12
+  init_pentatonic(0, CLICK_PULSES, 1, 1, 1);	// Harmonical Frogs Choir	Frogs set 2
+  // init_pentatonic(0, CLICK_PULSES, 1, 6, 1);	// 8 strings on piezzos 2016-12-12
 
   PULSES.fix_global_next();	// we *must* call that here late in setup();
 
@@ -699,12 +699,10 @@ void init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int
 }
 
 
-// unsigned int gling128[] = {1,128,16, 0};
-// unsigned int gling128[] = {1,256,2, 1,128,16, 0};
-// unsigned int gling128[] = {1,512,4, 1,256,4, 1,128,16, 0};
+unsigned int gling128_0[] = {1,128,16, 0};
+unsigned int gling128_1[] = {1,256,2, 1,128,16, 0};
+unsigned int gling128_2[] = {1,512,4, 1,256,4, 1,128,16, 0};
 unsigned int gling128[] = {1,512,8, 1,256,4, 1,128,16, 0};
-// unsigned int *jiffle=gling128;
-// unsigned int jiffle_data_length=sizeof(gling128)/sizeof(gling128[0]);
 
 void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   /*
@@ -1368,13 +1366,9 @@ int experiment=-1;
 /* **************************************************************** */
 // special menu modes, like numeric input for jiffletabs
 int menu_mode=0;
-#define DATA_ENTRY_UNTIL_ZERO_MODE	1	// menu_mode for unsigned integer data entry, stop at zero
-// old implementation
-unsigned int* integer_array = NULL;		// pointer to int array for data entry
-unsigned int integer_write_index=0;		// next data entry to be written
-// unsigned int jiffle_data_length=0;		// buffer array length
+#define JIFFLE_ENTRY_UNTIL_ZERO_MODE	1	// menu_mode for unsigned integer data entry, stop at zero
 
-// new implementation:
+// editing jiffle data
 // if we have enough RAM, we work in an int array[]
 // pre defined jiffletabs can be copied there before using and editing
 #ifndef JIFFLE_RAM_SIZE
@@ -1382,9 +1376,11 @@ unsigned int integer_write_index=0;		// next data entry to be written
 #endif
 unsigned int jiffle_data[JIFFLE_RAM_SIZE];
 unsigned int jiffle_data_length = JIFFLE_RAM_SIZE;
-
+unsigned int jiffle_write_index=0;
 unsigned int *jiffle=jiffle_data;
 
+
+/* **************************************************************** */
 void menu_pulses_display() {
   MENU.outln(F("http://github.com/reppr/pulses/\n"));
   MENU.outln(helpInfo);
@@ -1485,6 +1481,15 @@ int setup_jiffle_thrower_synced(struct time when,
 unsigned int jiffletab[] =
   {1,16,2, 1,256,32, 1,128,8, 1,64,2, 1,32,1, 1,16,1, 1,8,2, 0,0,0, 0};	// there *must* be a trailing zero.
 
+unsigned int jiffletab_december[] =
+  {1,1024,4, 1,64,4, 1,28,16, 1,512,8, 1,1024,128, 0 };
+
+unsigned int jiffletab_december128[] =
+  {1,1024,4, 1,64,4, 1,128,16, 1,512,8, 1,1024,128, 0 };
+
+unsigned int jiffletab_december_pizzicato[] =
+  {1,1024,4, 1,64,4, 1,28,16, 1,512,8, 1,1024,128, 1,2048,8, 0 };
+
 
 // void enter_jiffletab(unsigned int *jiffletab), edit jiffletab by hand:
 const char jifftabFull[] = "jiffletab full";
@@ -1516,11 +1521,11 @@ long complete_numeric_input(long first_value) {
 }
 
 
-void store_integer(int new_value) {
-  integer_array[integer_write_index]=new_value;
+void store_jiffle_data(int new_value) {
+  jiffle[jiffle_write_index]=new_value;
 
-  if (++integer_write_index >= jiffle_data_length) {	// array is full
-    store_integer_zero_stop();
+  if (++jiffle_write_index >= jiffle_data_length) {	// array is full
+    store_jiffle_zero_stop();
 
     // drop all remaining numbers and delimiters from input
     bool yes=true;
@@ -1541,15 +1546,27 @@ void store_integer(int new_value) {
 }
 
 
-void store_integer_zero_stop() {
-  if (integer_write_index>=jiffle_data_length)
-    integer_write_index=jiffle_data_length-1;
-  integer_array[integer_write_index]=0;	  // store a trailing zero
-  integer_array[jiffle_data_length-1]=0;  // and last arry element (as a savety net)
-  menu_mode=0;				  // stop numeric data input
-  integer_write_index=0;		  // aesthetics, but hmm...
+void store_jiffle_zero_stop() {
+  if (jiffle_write_index>=jiffle_data_length)
+    jiffle_write_index=jiffle_data_length-1;
+  jiffle[jiffle_write_index]=0;	   // store a trailing zero
+  jiffle[jiffle_data_length-1]=0;  // and last arry element (as a savety net)
+  menu_mode=0;			   // stop numeric data input
+  jiffle_write_index=0;		   // aesthetics, but hmm...
 
   display_jiffletab(jiffle);		  // put that here for now
+}
+
+
+void copy_jiffle_data(unsigned int *source) {	// zero terminated
+  unsigned int data;
+  for (int d=0, i=jiffle_write_index; i<jiffle_data_length; i++) {
+    data=source[d++];
+    store_jiffle_data(data);
+    if (data==0) {
+      break;
+    }
+  }
 }
 
 
@@ -1559,10 +1576,10 @@ void display_jiffletab(unsigned int *jiffletab)
   for (int i=0; i <= JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP; i++) {
     if ((i % JIFFLETAB_INDEX_STEP) == 0)
       MENU.space();
-    if (i==integer_write_index)
+    if (i==jiffle_write_index)
       MENU.out("<");
     MENU.out(jiffletab[i]);
-    if (i==integer_write_index)
+    if (i==jiffle_write_index)
       MENU.out(">");
     if (jiffletab[i] == 0)
       break;
@@ -1574,23 +1591,16 @@ void display_jiffletab(unsigned int *jiffletab)
 }
 
 
-// DADA
-//	// unsigned int jiffletab0[] = {1,512,8, 1,1024,16, 1,2048,32, 1,1024,16, 0};
-//	// unsigned int jiffletab0[] = {1,128,2, 1,256,6, 1,512,10, 1,1024,32, 1,3*128,20, 1,64,8, 0};
-//	// unsigned int jiffletab0[] = {1,32,4, 1,64,8, 1,128,16, 1,256,32, 1,512,64, 1,1024,128, 0};	// testing octaves
-//
-//	// unsigned int jiffletab0[] =
-//	//   {1,2096,4, 1,512,2, 1,128,2, 1,256,2, 1,512,8, 1,1024,32, 1,512,4, 1,256,3, 1,128,2, 1,64,1, 0};
-//
-//	// unsigned int jiffletab0[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,2, 1,64,1, 1,32,1, 1,16,2, 0};
-//
-//
-//	// unsigned int jiffletab0[] = {1,32,2, 0};	// doubleclick
-//
-//	/*
-//	unsigned int jiffletab1[] =
-//	  {1,1024,64, 1,512,4, 1,128,2, 1,64,1, 1,32,1, 1,16,1, 0};
-//	*/
+
+unsigned int jiffletab01[] = {1,512,8, 1,1024,16, 1,2048,32, 1,1024,16, 0};
+unsigned int jiffletab02[] = {1,128,2, 1,256,6, 1,512,10, 1,1024,32, 1,3*128,20, 1,64,8, 0};
+unsigned int jiffletab03[] = {1,32,4, 1,64,8, 1,128,16, 1,256,32, 1,512,64, 1,1024,128, 0};	// testing octaves
+unsigned int jiffletab04[] =
+  {1,2096,4, 1,512,2, 1,128,2, 1,256,2, 1,512,8, 1,1024,32, 1,512,4, 1,256,3, 1,128,2, 1,64,1, 0};
+unsigned int jiffletab05[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,2, 1,64,1, 1,32,1, 1,16,2, 0};
+unsigned int jiffletab06[] = {1,32,2, 0};	// doubleclick
+unsigned int jiffletab1[] =
+  {1,1024,64, 1,512,4, 1,128,2, 1,64,1, 1,32,1, 1,16,1, 0};
 
 
 void do_jiffle (int pulse) {	// to be called by pulse_do
@@ -1919,7 +1929,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case ',':	// accept as noop in normal mode. used as delimiter to input data, displaying info. see 'menu_mode'
-    if (menu_mode==DATA_ENTRY_UNTIL_ZERO_MODE)
+    if (menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE)
 	display_jiffletab(jiffle);
     break;
 
@@ -1946,12 +1956,12 @@ bool menu_pulses_reaction(char menu_input) {
       print_selected_pulses();
       break;
 
-    case DATA_ENTRY_UNTIL_ZERO_MODE:	// first chiffre already seen
+    case JIFFLE_ENTRY_UNTIL_ZERO_MODE:	// first chiffre already seen
       new_value = complete_numeric_input(menu_input - '0');
       if (new_value)
-	store_integer(new_value);
+	store_jiffle_data(new_value);
       else	// zero stops the input mode
-	store_integer_zero_stop();
+	store_jiffle_zero_stop();
       break;
     }
     break;
@@ -2191,6 +2201,66 @@ bool menu_pulses_reaction(char menu_input) {
     alive_pulses_info_lines();
     break;
 
+  case 'J':	// select jiffle
+    // temporary interface to some jiffles from source, some very old
+    // FIXME:	review and delete	################
+    switch (MENU.numeric_input(0)) {
+    case 0:	// temporary interface to some jiffles from source, some very old
+      jiffle = jiffle_data;
+      break;
+    case 1:
+      jiffle=gling128;
+      break;
+    case 2:
+      jiffle = jiffletab;
+      break;
+    case 3:
+      jiffle = jiffletab_december;
+      break;
+    case 4:
+      jiffle = jiffletab_december128;
+      break;
+    case 5:
+      jiffle = jiffletab_december_pizzicato;
+      break;
+    case 6:
+      jiffle = jiffletab01;
+      break;
+    case 7:
+      jiffle = jiffletab01;
+      break;
+    case 8:
+      jiffle = jiffletab02;
+      break;
+    case 9:
+      jiffle = jiffletab03;
+      break;
+    case 10:
+      jiffle = jiffletab04;
+      break;
+    case 11:
+      jiffle = jiffletab05;
+      break;
+    case 12:
+      jiffle = jiffletab06;
+      break;
+    case 13:
+      jiffle = jiffletab06;
+      break;
+    case 14:
+      jiffle = gling128_0;
+      break;
+    case 15:
+      jiffle = gling128_1;
+      break;
+    case 16:
+      jiffle = gling128_2;
+      break;
+      
+    }
+    display_jiffletab(jiffle);
+    break;
+
   case 'f':	// en_info
     // we work on pulses anyway, regardless dest
     for (int pulse=0; pulse<pl_max; pulse++)
@@ -2212,19 +2282,17 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case '{':	// enter_jiffletab
-    menu_mode=DATA_ENTRY_UNTIL_ZERO_MODE;
-//  if (integer_write_index >= jiffle_data_length)
-//    integer_write_index=0;
-    integer_write_index=0;
-    display_jiffletab(jiffle);
-    integer_array=jiffle;
+    menu_mode=JIFFLE_ENTRY_UNTIL_ZERO_MODE;
+    jiffle_write_index=0;
+    if(MENU.cb_peek()==EOF)
+      display_jiffletab(jiffle);
+    jiffle = jiffle_data;
     break;
 
   case '}':	// display jiffletab / end editing jiffletab
     display_jiffletab(jiffle);
     menu_mode=0;
-    integer_write_index=0;
-    // integer_array=NULL;
+    jiffle_write_index=0;
     break;
 
   case 'd':	// divisor
@@ -2237,8 +2305,11 @@ bool menu_pulses_reaction(char menu_input) {
     show_scale();
     break;
 
-//	  case 'D':	// DADA debug
-//	    break;
+  case 'D':	// DADA debug
+    // copy_jiffle_data(gling128);	// zero terminated
+    copy_jiffle_data(jiffletab_december_pizzicato);
+    display_jiffletab(jiffle);
+    break;
 
   case 'm':	// multiplier
     MENU.outln(F("multiplier"));
@@ -2305,7 +2376,7 @@ bool menu_pulses_reaction(char menu_input) {
       break;
     case 2:
       sync=0;
-      multiplier=2;
+      multiplier=1;
       divisor=1;
 
       display_name5pars("init_div_123456", inverse, voices, multiplier, divisor, sync);
@@ -2326,8 +2397,8 @@ bool menu_pulses_reaction(char menu_input) {
       break;
     case 4:
       multiplier=1;
-      divisor=2;	// FIXME: test and select ################
-      sync=0;		// FIXME: test and select ################
+      divisor=2;
+      sync=0;
       jiffle=jiffletab;
 
       display_name5pars("setup_jiffles2345", inverse, voices, multiplier, divisor, sync);
