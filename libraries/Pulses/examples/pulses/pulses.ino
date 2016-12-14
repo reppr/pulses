@@ -1613,8 +1613,7 @@ void display_jiffletab(unsigned int *jiffletab)
     MENU.out(",");
   }
   MENU.out(" }\t");
-  MENU.out(F("size of buffer ")); MENU.outln(jiffle_data_length);
-
+  MENU.out(F("buffer ")); MENU.out(jiffle_write_index); MENU.out(F("/")); MENU.outln(jiffle_data_length);
 }
 
 
