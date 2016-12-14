@@ -190,6 +190,19 @@ Pulses PULSES(pl_max);
 // unsigned int jiffle_data[JIFFLE_RAM_SIZE]
 #ifdef ESP8266	// we have a lot of RAM
   #define JIFFLE_RAM_SIZE	256*3+1
+
+  #define IMPLEMENT_TUNING
+#endif
+
+#ifdef IMPLEMENT_TUNING		// implies floating point
+  #include <math.h>
+
+/* tuning *= detune;
+   called detune_number times
+   will rise tuning by an octave	*/
+   double tuning=1.0;
+   double detune_number=4096;
+   double detune=1 / pow(2.0, 1/detune_number);
 #endif
 
 /* **************************************************************** */
@@ -493,6 +506,14 @@ void click(int pulse) {	// can be called from a pulse
 }
 
 
+void tuned_click(int pulse) {	// can be called from a tuned pulse
+  PULSES.pulses[pulse].period.time = PULSES.pulses[pulse].ulong_parameter_1 * tuning;
+  PULSES.pulses[pulse].period.overflow = 0;
+  click(pulse);
+
+  tuning *= detune;
+}
+
 // pins for click_pulses:
 // It is a bit obscure to held them in an array indexed by [pulse]
 // but it's simple and working well...
@@ -545,6 +566,17 @@ void en_click(int pulse)
     PULSES.pulses[pulse].char_parameter_1 = click_pin[pulse];
     pinMode(PULSES.pulses[pulse].char_parameter_1, OUTPUT);
     // digitalWrite(PULSES.pulses[pulse].char_parameter_1, LOW);	// ################
+  }
+}
+
+
+// make an existing pulse to a tuned click pulse:
+void en_tuned_click(int pulse)
+{
+  if (pulse != ILLEGAL) {
+    en_click(pulse);
+    PULSES.pulses[pulse].ulong_parameter_1 = PULSES.pulses[pulse].period.time;
+    PULSES.pulses[pulse].periodic_do = (void (*)(int)) &tuned_click;
   }
 }
 
@@ -1189,6 +1221,13 @@ void display_action(int pulse) {
   scratch=&click;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out(click_);
+    MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
+    return;
+  }
+
+  scratch=&tuned_click;
+  if (PULSES.pulses[pulse].periodic_do == scratch) {
+    MENU.out(F("tuned_click"));
     MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
     return;
   }
@@ -2210,6 +2249,16 @@ bool menu_pulses_reaction(char menu_input) {
     for (int pulse=0; pulse<voices; pulse++)
       if (selected_pulses & (1 << pulse))
 	en_click(pulse);
+
+    MENU.ln();
+    alive_pulses_info_lines();
+    break;
+
+  case 't':	// en_tuned_click
+    // we work on voices anyway, regardless dest
+    for (int pulse=0; pulse<voices; pulse++)
+      if (selected_pulses & (1 << pulse))
+	en_tuned_click(pulse);
 
     MENU.ln();
     alive_pulses_info_lines();
