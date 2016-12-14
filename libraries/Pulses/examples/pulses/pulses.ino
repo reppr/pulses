@@ -146,7 +146,7 @@ uint8_t click_pin[CLICK_PULSES];	// ################
 const int pl_max=32;		// could be more on DUE ;)
   #else
     #ifdef ESP8266
-const int pl_max=16;		// ESP8266
+const int pl_max=32;		// ESP8266
     #else
       #ifdef __AVR_ATmega328P__
 const int pl_max=12;		// saving RAM on 328P
