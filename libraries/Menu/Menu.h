@@ -222,7 +222,7 @@ class Menu {
   void tab()	const;		// output a tab
   void space()	const;		// output a space
   void equals()	const;		// output char '='
-
+  void slash()	const;		// output char '/'
 
 /* int get_free_RAM(): determine RAM usage, maybe only a dummy	*/
   int get_free_RAM() const;

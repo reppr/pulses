@@ -273,6 +273,7 @@ char Menu::cb_read() {
   void Menu::tab()    const { port_.print('\t'); }	// Output a tab
   void Menu::space()  const { port_.print(' '); }	// Output a space
   void Menu::equals() const { port_.print('='); }	// Output char '='
+  void Menu::slash() const { port_.print('/'); }	// Output char '/'
 
 
   /*

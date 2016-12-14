@@ -607,7 +607,7 @@ const char next_[] = "next  ";
 void display_real_ovfl_and_sec(struct time then) {
   MENU.out(ticOfl);
   MENU.out(then.time);
-  MENU.out('/');
+  MENU.slash();
   MENU.out(then.overflow);
   MENU.space();
   MENU.out('=');
@@ -997,7 +997,7 @@ void pulse_info_1line(int pulse) {
   if (pulse<10)
     MENU.space();
   MENU.out(pulse);
-  MENU.out('/');
+  MENU.slash();
   MENU.out((unsigned int) PULSES.pulses[pulse].counter);
   // right padding 'PULSES.pulses[pulse].counter'
   if (PULSES.pulses[pulse].counter<100000)
@@ -1095,7 +1095,7 @@ void pulse_info(int pulse) {
 
   MENU.out(pulseInfo);
   MENU.out(pulse);
-  MENU.out('/');
+  MENU.slash();
   MENU.out((unsigned int) PULSES.pulses[pulse].counter);
 
   MENU.tab();
@@ -1119,7 +1119,7 @@ void pulse_info(int pulse) {
 
   MENU.out(pulseOvfl);
   MENU.out((unsigned int) PULSES.pulses[pulse].period.time);
-  MENU.out('/');
+  MENU.slash();
   MENU.out(PULSES.pulses[pulse].period.overflow);
 
   MENU.tab();
@@ -1131,12 +1131,12 @@ void pulse_info(int pulse) {
 
   MENU.out(lastOvfl);
   MENU.out((unsigned int) PULSES.pulses[pulse].last.time);
-  MENU.out('/');
+  MENU.slash();
   MENU.out(PULSES.pulses[pulse].last.overflow);
 
   MENU.out(nextOvfl);
   MENU.out(PULSES.pulses[pulse].next.time);
-  MENU.out('/');
+  MENU.slash();
   MENU.out(PULSES.pulses[pulse].next.overflow);
 
   MENU.tab();
@@ -1437,7 +1437,7 @@ void menu_pulses_display() {
     MENU.out(F("down"));
   MENU.outln(F(")\tZ=reverse_click_pins"));
 
-  MENU.out(F("Scale (")); MENU.out(multiplier);MENU.out(F("/"));  MENU.out(divisor);
+  MENU.out(F("Scale (")); MENU.out(multiplier);MENU.slash();  MENU.out(divisor);
   MENU.out(F(")\tm=multiplier d=divisor"));
 }
 
@@ -1612,8 +1612,8 @@ void display_jiffletab(unsigned int *jiffletab)
       break;
     MENU.out(",");
   }
-  MENU.out(" }\t");
-  MENU.out(F("buffer ")); MENU.out(jiffle_write_index); MENU.out(F("/")); MENU.outln(jiffle_data_length);
+  MENU.out(F(" }  buffer "));
+  MENU.out(jiffle_write_index); MENU.slash(); MENU.outln(jiffle_data_length);
 }
 
 
@@ -1924,9 +1924,7 @@ void no_inverse() {
 // display factor function show_scale();
 void show_scale() {
   MENU.out(F("multiplier/divisor "));
-  MENU.out(multiplier);
-  MENU.out(F("/"));
-  MENU.outln(divisor);
+  MENU.out(multiplier); MENU.slash(); MENU.outln(divisor);
 }
 
 bool menu_pulses_reaction(char menu_input) {
