@@ -1263,8 +1263,19 @@ void do_throw_a_jiffle(int pulse) {		// for pulse_do
   // pulses[pulse].parameter_2	= (unsigned int) jiffletab;
 
   // start a new jiffling pulse now (next [pulse] is not yet updated):
-  init_jiffle((unsigned int *) PULSES.pulses[pulse].parameter_2, \
+  unsigned int *this_jiff=(unsigned int *) PULSES.pulses[pulse].parameter_2;
+
+  // check for empty jiffle first:
+  bool has_data=true;
+  for (int i=0; i<3; i++)
+    if (this_jiff[i]==0)
+      has_data=false;
+
+  if (has_data)	// there *is* jiffle data
+    init_jiffle((unsigned int *) PULSES.pulses[pulse].parameter_2,	\
 	      PULSES.pulses[pulse].next, PULSES.pulses[pulse].period, pulse);
+  else	// zero in first triplet, *invalid* jiffle table.
+    MENU.outln(F("no jiffle"));
 }
 
 
