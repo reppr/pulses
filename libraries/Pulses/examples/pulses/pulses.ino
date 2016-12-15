@@ -1359,6 +1359,9 @@ void do_throw_a_jiffle(int pulse) {		// for pulse_do
 void print_selected_pulses() {
   const int hex_pulses=std::min(pl_max,16);  // displayed as hex chiffres, "std::" for ESP8266
 
+  if(is_chiffre(MENU.cb_peek()))	// more numeric input, so no display yet...
+    return;
+
   MENU.out_selected_();
   for (int pulse=0; pulse<hex_pulses; pulse++) {
     if (selected_pulses & (1 << pulse))
@@ -1617,6 +1620,12 @@ long complete_numeric_input(long first_value) {
   long more_digits=MENU.numeric_input(0);
 
   return first_value + more_digits;
+}
+
+int is_chiffre(char token) {
+  if (token > '9' || token < '0')
+    return false;
+  return token;
 }
 
 
