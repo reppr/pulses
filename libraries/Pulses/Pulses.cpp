@@ -457,6 +457,9 @@ void Pulses::set_new_period(int pulse, struct time new_period) {
 void Pulses::activate_pulse_synced(int pulse, \
 				   struct time when, int sync)
 {
+  if (pulses[pulse].period.time==0)	// ignore invalid pulses with period==0
+    return;
+
   if (sync) {
     struct time delta = pulses[pulse].period;
     mul_time(&delta, sync);
