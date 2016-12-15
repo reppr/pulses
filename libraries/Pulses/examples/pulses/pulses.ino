@@ -196,13 +196,8 @@ Pulses PULSES(pl_max);
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
   #include <math.h>
-
-/* tuning *= detune;
-   called detune_number times
-   will rise tuning by an octave	*/
-   double tuning=1.0;
-   double detune_number=4096;
-   double detune=1 / pow(2.0, 1/detune_number);
+  unsigned long ticks_per_octave=60000000L;		// 1 minute/octave (not correct)
+  // unsigned long ticks_per_octave=60000000L*60L;	// 1 hour/octave (not correct)
 #endif
 
 /* **************************************************************** */
@@ -507,11 +502,13 @@ void click(int pulse) {	// can be called from a pulse
 
 
 void tuned_click(int pulse) {	// can be called from a tuned pulse
-  PULSES.pulses[pulse].period.time = PULSES.pulses[pulse].ulong_parameter_1 * tuning;
-  PULSES.pulses[pulse].period.overflow = 0;
+  double period = PULSES.pulses[pulse].period.time;
+  double detune_number = ticks_per_octave / PULSES.pulses[pulse].period.time;
+  double detune = 1 / pow(2.0, 1/detune_number);
+  period *= detune;
+  PULSES.pulses[pulse].period.time = period;
+  // PULSES.pulses[pulse].period.overflow = 0;
   click(pulse);
-
-  tuning *= detune;
 }
 
 // pins for click_pulses:
@@ -575,7 +572,6 @@ void en_tuned_click(int pulse)
 {
   if (pulse != ILLEGAL) {
     en_click(pulse);
-    PULSES.pulses[pulse].ulong_parameter_1 = PULSES.pulses[pulse].period.time;
     PULSES.pulses[pulse].periodic_do = (void (*)(int)) &tuned_click;
   }
 }
@@ -1227,7 +1223,7 @@ void display_action(int pulse) {
 
   scratch=&tuned_click;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out(F("tuned_click"));
+    MENU.out(F("tuned_click "));
     MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
     return;
   }

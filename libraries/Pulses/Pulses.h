@@ -142,13 +142,13 @@ struct pulse_t {
   unsigned long ulong_parameter_1;
   /*
     used by do_jiffle as base period
-    used by tuned_click as base period
   */
 
   char char_parameter_1;		// pin
   /*
-    used by click      as pin
-    used by do_jiffle  as pin
+    used by click	as pin
+    used by tuned_click	as pin
+    used by do_jiffle	as pin
   */
 
   char char_parameter_2;		// index
