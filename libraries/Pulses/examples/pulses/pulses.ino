@@ -196,11 +196,13 @@ Pulses PULSES(pl_max);
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
   #include <math.h>
+
+// second try, see tuned_click()
   unsigned long ticks_per_octave=60000000L;		// 1 minute/octave (not correct)
   // unsigned long ticks_per_octave=60000000L*60L;	// 1 hour/octave (not correct)
 
 
-// first try tuned_click_0()
+// first try, see tuned_click_0()
 /* tuning *= detune;
    called detune_number times
    will rise tuning by an octave	*/
