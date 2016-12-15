@@ -198,6 +198,15 @@ Pulses PULSES(pl_max);
   #include <math.h>
   unsigned long ticks_per_octave=60000000L;		// 1 minute/octave (not correct)
   // unsigned long ticks_per_octave=60000000L*60L;	// 1 hour/octave (not correct)
+
+
+// first try tuned_click_0()
+/* tuning *= detune;
+   called detune_number times
+   will rise tuning by an octave	*/
+   double tuning=1.0;
+   double detune_number=4096;
+   double detune=1 / pow(2.0, 1/detune_number);
 #endif
 
 /* **************************************************************** */
@@ -511,11 +520,19 @@ void tuned_click(int pulse) {	// can be called from a tuned pulse
   click(pulse);
 }
 
+// first try: octave is reached by a fixed number of steps:
+void tuned_click_0(int pulse) {	// can be called from a tuned pulse
+  PULSES.pulses[pulse].period.time = PULSES.pulses[pulse].ulong_parameter_1 * tuning;
+  PULSES.pulses[pulse].period.overflow = 0;
+  click(pulse);
+
+  tuning *= detune;
+}
+
 // pins for click_pulses:
 // It is a bit obscure to held them in an array indexed by [pulse]
 // but it's simple and working well...
 // uint_8_t click_pin[CLICK_PULSES];
-
 
 void init_click_pins() {
   for (int pulse=0; pulse<CLICK_PULSES; pulse++) {	// FIXME: ################
@@ -573,6 +590,17 @@ void en_tuned_click(int pulse)
   if (pulse != ILLEGAL) {
     en_click(pulse);
     PULSES.pulses[pulse].periodic_do = (void (*)(int)) &tuned_click;
+  }
+}
+
+
+// make an existing pulse to a tuned_click_0 pulse:
+void en_tuned_click_0(int pulse)
+{
+  if (pulse != ILLEGAL) {
+    en_click(pulse);
+    PULSES.pulses[pulse].ulong_parameter_1 = PULSES.pulses[pulse].period.time;
+    PULSES.pulses[pulse].periodic_do = (void (*)(int)) &tuned_click_0;
   }
 }
 
@@ -1224,6 +1252,13 @@ void display_action(int pulse) {
   scratch=&tuned_click;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out(F("tuned_click "));
+    MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
+    return;
+  }
+
+  scratch=&tuned_click_0;
+  if (PULSES.pulses[pulse].periodic_do == scratch) {
+    MENU.out(F("tuned_click_0 "));
     MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
     return;
   }
@@ -2255,6 +2290,16 @@ bool menu_pulses_reaction(char menu_input) {
     for (int pulse=0; pulse<voices; pulse++)
       if (selected_pulses & (1 << pulse))
 	en_tuned_click(pulse);
+
+    MENU.ln();
+    alive_pulses_info_lines();
+    break;
+
+  case 'o':	// en_tuned_click_0
+    // we work on voices anyway, regardless dest
+    for (int pulse=0; pulse<voices; pulse++)
+      if (selected_pulses & (1 << pulse))
+	en_tuned_click_0(pulse);
 
     MENU.ln();
     alive_pulses_info_lines();
