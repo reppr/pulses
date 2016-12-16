@@ -104,15 +104,16 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
 Menu MENU(32, 3, &men_getchar, MENU_OUTSTREAM);
 
-
-void menu_pulses_display();		// defined later on
-bool menu_pulses_reaction(char token);	// defined later on
-void display_action(int pulse);		// defined later on
-void do_jiffle (int pulse);		// defined later on
-void do_throw_a_jiffle(int pulse);	// defined later on
-void init_click_pins();			// defined later on
-void init_click_pulses();		// defined later on
-void alive_pulses_info_lines();		// defined later on
+// defined later on:
+void maybe_run_continuous();
+void menu_pulses_display();
+bool menu_pulses_reaction(char token);
+void display_action(int pulse);
+void do_jiffle (int pulse);
+void do_throw_a_jiffle(int pulse);
+void init_click_pins();
+void init_click_pulses();
+void alive_pulses_info_lines();
 void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 void init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 void setup_jiffles0(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync); // Frogs
@@ -194,13 +195,21 @@ Pulses PULSES(pl_max);
   #define IMPLEMENT_TUNING
 #endif
 
+
+/* **************************************************************** */
+// variables:
+
+int sync=1;			// syncing edges or middles of square pulses
+unsigned long multiplier=1;
+unsigned long divisor=1;
+
+int experiment=-1;
+int voices=CLICK_PULSES;
+
+unsigned long selected_pulses=0L;	// pulse bitmask for user interface
+
 #ifdef IMPLEMENT_TUNING		// implies floating point
   #include <math.h>
-
-// second try, see sweeping_click()
-  unsigned long ticks_per_octave=60000000L;		// 1 minute/octave (not correct)
-  // unsigned long ticks_per_octave=60000000L*60L;	// 1 hour/octave (not correct)
-
 
 // first try, see sweeping_click_0()
 /* tuning *= detune;
@@ -210,7 +219,12 @@ Pulses PULSES(pl_max);
    double tuning=1.0;
    double detune_number=4096;
    double detune=1 / pow(2.0, 1/detune_number);
+
+// second try, see sweeping_click()
+  unsigned long ticks_per_octave=60000000L;		// 1 minute/octave (not correct)
+  // unsigned long ticks_per_octave=60000000L*60L;	// 1 hour/octave (not correct)
 #endif
+
 
 /* **************************************************************** */
 #ifdef ARDUINO
@@ -367,7 +381,7 @@ void setup() {
   // void setup_jifflesNEW(int sync, unsigned int multiplier, unsigned int divisor);
   // setup_jifflesNEW(0, CLICK_PULSES, 3, 1, 3);
 
-  init_pentatonic(0, CLICK_PULSES, 1, 1, 1);	// Harmonical Frogs Choir	Frogs set 2
+  // init_pentatonic(0, CLICK_PULSES, 1, 1, 1);	// Harmonical Frogs Choir	Frogs set 2
   // init_pentatonic(0, CLICK_PULSES, 1, 6, 1);	// 8 strings on piezzos 2016-12-12
 
   PULSES.fix_global_next();	// we *must* call that here late in setup();
@@ -377,8 +391,6 @@ void setup() {
   alive_pulses_info_lines();
 }
 
-
-void maybe_run_continuous();	// defined later on
 
 void loop() {	// ARDUINO
   #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
@@ -1015,14 +1027,6 @@ unsigned char dest = CODE_PULSES;
 /* **************************************************************** */
 /* Menu UI							*/
 
-// FIXME: ################ type?
-unsigned long selected_pulses=0L;	// pulse bitmask
-
-
-// FIXME: ################ want to think that over again...
-int sync=1;			// syncing edges or middles of square pulses
-
-
 const char timeUnit[] = "time unit";
 const char timeUnits[] = " time units";
 const char pulseInfo[] = "*** PULSE info ";
@@ -1465,12 +1469,6 @@ bool inverse=false;	// bottom DOWN/up click-pin mapping
   'reverse_click_pins()' as alternative:
   'reverse_click_pins()' works on the global click_pin[] array
  			 the pulses won't notice but play with new pin mapping */
-
-unsigned long multiplier=1;
-unsigned long divisor=1;
-// unsigned int *jiffle=NULL;
-int voices=CLICK_PULSES;
-int experiment=-1;
 
 
 /* **************************************************************** */
