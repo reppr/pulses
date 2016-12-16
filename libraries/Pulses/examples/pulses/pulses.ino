@@ -217,8 +217,8 @@ unsigned long selected_pulses=0L;	// pulse bitmask for user interface
    will rise tuning by an octave	*/
    bool sweep_up=true;
    double tuning=1.0;
-   double detune_number=4096;
-   double detune=1 / pow(2.0, 1/detune_number);
+   double detune_number=4096.0;
+   double detune=1.0 / pow(2.0, 1/detune_number);
 
 // second try, see sweeping_click()
   unsigned long ticks_per_octave=60000000L;		// 1 minute/octave (not correct)
@@ -383,6 +383,15 @@ void setup() {
 
   // init_pentatonic(0, CLICK_PULSES, 1, 1, 1);	// Harmonical Frogs Choir	Frogs set 2
   // init_pentatonic(0, CLICK_PULSES, 1, 6, 1);	// 8 strings on piezzos 2016-12-12
+
+  // 2 strings setup 2016-12-15 sweep and drone on piezzos
+  //  multiplier=1;
+  //  divisor=5800;
+  //  en_click(0);
+  //  en_sweeping_click(1);
+  //  selected_pulses = 3;
+  //  reset_and_edit_selected();
+  //  activate_selected_synced_now(sync);	// FIXME:	something's wrong :(	################
 
   PULSES.fix_global_next();	// we *must* call that here late in setup();
 
@@ -1136,6 +1145,29 @@ void alive_pulses_info_lines()
     MENU.outln(noAlive);
 
   MENU.ln();
+}
+
+void activate_selected_synced_now(int sync) {
+  if (selected_pulses==0)
+    return;
+
+  PULSES.get_now();
+  struct time now=PULSES.now;
+
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if (selected_pulses & (1 << pulse))
+      PULSES.activate_pulse_synced(pulse, now, abs(sync));
+
+  PULSES.fix_global_next();
+  PULSES.check_maybe_do();	  // maybe do it *first*
+}
+
+
+void reset_and_edit_selected() {
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if (selected_pulses & (1 << pulse)) {
+      reset_and_edit_pulse(pulse);
+    }
 }
 
 
@@ -2267,29 +2299,15 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'P':	// pulse create and edit
-    for (int pulse=0; pulse<pl_max; pulse++)
-      if (selected_pulses & (1 << pulse)) {
-	reset_and_edit_pulse(pulse);
-      }
-
+    reset_and_edit_selected();
     MENU.ln();
     alive_pulses_info_lines();
     break;
 
   case 'n':	// synchronise to now
     // we work on pulses anyway, regardless dest
-    PULSES.get_now();
-    now=PULSES.now;
-
-    for (int pulse=0; pulse<pl_max; pulse++)
-      if (selected_pulses & (1 << pulse))
-	PULSES.activate_pulse_synced(pulse, now, abs(sync));
-
-    PULSES.fix_global_next();
-    PULSES.check_maybe_do();			  // maybe do it *first*
-
-    MENU.ln();
-    alive_pulses_info_lines();			  // *then* info ;)
+    activate_selected_synced_now(sync);
+    MENU.ln(); alive_pulses_info_lines();  // *then* info ;)
     break;
 
   case 'c':	// en_click
@@ -2303,7 +2321,10 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'w':
-    sweep_up = !sweep_up;
+    if(sweep_up = !sweep_up)
+      MENU.outln(F("sweep up"));
+    else
+      MENU.outln(F("sweep down"));
     break;
 
   case 't':	// en_sweeping_click
