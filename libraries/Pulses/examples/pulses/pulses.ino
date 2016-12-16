@@ -105,6 +105,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 Menu MENU(32, 3, &men_getchar, MENU_OUTSTREAM);
 
 // defined later on:
+bool maybe_stop_sweeping();
 void maybe_run_continuous();
 void menu_pulses_display();
 bool menu_pulses_reaction(char token);
@@ -208,6 +209,7 @@ int voices=CLICK_PULSES;
 
 unsigned long selected_pulses=0L;	// pulse bitmask for user interface
 
+// #ifndef INTEGER_ONLY		FIXME: make a version without tuning and no floats
 #ifdef IMPLEMENT_TUNING		// implies floating point
   #include <math.h>
 
@@ -215,15 +217,16 @@ unsigned long selected_pulses=0L;	// pulse bitmask for user interface
 /* tuning *= detune;
    called detune_number times
    will rise tuning by an octave	*/
-   bool sweep_up=true;
+   int sweep_up=1;	// sweep_up==0 no sweep, 1 up, -1 down
    double tuning=1.0;
    double detune_number=4096.0;
    double detune=1.0 / pow(2.0, 1/detune_number);
 
 // second try, see sweeping_click()
-  unsigned long ticks_per_octave=60000000L;		// 1 minute/octave (not correct)
+  unsigned long ticks_per_octave=60000000L;		// 1 minute/octave
   // unsigned long ticks_per_octave=60000000L*60L;	// 1 hour/octave (not correct)
 #endif
+// #endif
 
 
 /* **************************************************************** */
@@ -421,8 +424,10 @@ void loop() {	// ARDUINO
 
   if(! MENU.lurk_then_do())		// MENU comes second in priority.
     {					// if MENU had nothing to do, then
-      maybe_run_continuous();		//    lowest priority:
-					//    maybe display input state changes.
+      if (!maybe_stop_sweeping())		// low priority control sweep range
+	if(! maybe_display_tuning_steps())	// low priority tuning steps info
+	  maybe_run_continuous();	// lowest priority:
+					// maybe display input state changes.
     }
 }
 
@@ -482,14 +487,17 @@ int main() {
 
   if(! MENU.lurk_then_do())		// MENU comes second in priority.
     {					// if MENU had nothing to do, then
+      if (!maybe_stop_sweeping())		// low priority control sweep range
+	if(! maybe_display_tuning_steps()) {	// low priority tuning steps info
+	  ;
 #ifdef ARDUINO
-      maybe_run_continuous();		//    lowest priority:
-					//    maybe display input state changes.
-#endif
+          maybe_run_continuous();		//    lowest priority:
+#endif					//    maybe display input state changes.
+      }
     }
   }
 
-}
+} // PC main()
 
 #endif
 
@@ -534,19 +542,27 @@ void click(int pulse) {	// can be called from a pulse
 }
 
 
-void sweeping_click(int pulse) {	// can be called from a sweeping pulse
+void sweeping_click(int pulse) {	// can be called from a pulse
   double period = PULSES.pulses[pulse].period.time;
   double detune_number = ticks_per_octave / PULSES.pulses[pulse].period.time;
   double detune = 1 / pow(2.0, 1/detune_number);
-  if (sweep_up)
+
+  switch (sweep_up) {
+  case 1:
     period *= detune;
-  else
+    tuning *= detune;
+    break;
+  case -1:
     period /= detune;
+    tuning /= detune;
+    break;
+  }
 
   PULSES.pulses[pulse].period.time = period;
   // PULSES.pulses[pulse].period.overflow = 0;
   click(pulse);
 }
+
 
 // first try: octave is reached by a fixed number of steps:
 void sweeping_click_0(int pulse) {	// can be called from a sweeping pulse
@@ -554,10 +570,89 @@ void sweeping_click_0(int pulse) {	// can be called from a sweeping pulse
   PULSES.pulses[pulse].period.overflow = 0;
   click(pulse);
 
-  if (sweep_up)
+  switch (sweep_up) {
+  case 1:
     tuning *= detune;
-  else
+    break;
+  case -1:
     tuning /= detune;
+    break;
+  }
+}
+
+
+
+double slow_tuning_limit = 8.0;
+double fast_tuning_limit = 1.0/3.0;	// current setup does not reach 4
+
+void sweep_info() {
+  MENU.out(F("sweep "));
+  switch (sweep_up) {
+  case 1:
+    MENU.out(F("up"));
+    break;
+  case -1:
+    MENU.out(F("down"));
+    break;
+  case 0:
+    MENU.out(F("off"));
+    break;
+  }
+  MENU.tab();
+  MENU.out(F("tuning ")); MENU.out(tuning);
+  MENU.tab();
+  MENU.out(F("slowest ")); MENU.out(slow_tuning_limit);
+  MENU.tab();
+  MENU.out(F("fastest ")); MENU.outln(fast_tuning_limit);
+}
+
+
+bool maybe_display_tuning_steps() {
+  static int last_tuning_step=-1;	// impossible default
+  static int last_fraction=-1;
+
+  int tuning_step = tuning;
+  int current_fraction = 1.0/(double) tuning;
+
+  if (tuning_step != last_tuning_step) {
+    last_tuning_step = tuning_step;
+    display_now(); MENU.tab();
+    MENU.out('*'); MENU.out(tuning_step);
+    MENU.tab();
+    sweep_info();
+//	    if (tuning_step==1)		// initialization
+//	      last_fraction = current_fraction;
+    return true;
+  } else {
+    if (current_fraction != last_fraction) {
+      last_fraction = current_fraction;
+      display_now(); MENU.tab();
+      MENU.out(F("1/")); MENU.out(current_fraction);
+      MENU.tab();
+      sweep_info();
+      return true;
+    }
+    return false;
+  }
+}
+
+
+bool maybe_stop_sweeping() {
+  if (tuning > slow_tuning_limit) {
+    sweep_up=0;
+    tuning=slow_tuning_limit;
+    MENU.out(F("sweep stopped "));
+    MENU.outln(tuning);
+    return true;
+  }
+  if (tuning < fast_tuning_limit) {
+    sweep_up=0;
+    tuning=fast_tuning_limit;
+    MENU.out(F("sweep stopped "));
+    MENU.outln(tuning);
+    return true;
+  }
+  return false;
 }
 
 // pins for click_pulses:
@@ -700,6 +795,14 @@ void display_real_ovfl_and_sec(struct time then) {
   MENU.out('=');
   display_realtime_sec(then);
 }
+
+
+void display_now() {
+  MENU.out(now_);
+  PULSES.get_now();
+  display_real_ovfl_and_sec(PULSES.now);
+}
+
 
 void time_info()
 {
@@ -2050,9 +2153,9 @@ bool menu_pulses_reaction(char menu_input) {
   long new_value=0;
   struct time now, time_scratch;
   unsigned long bitmask;
+  char next_token;	// for multichar commandos
 
   switch (menu_input) {
-
   case '?':	// help, overrides common menu entry for '?'
     MENU.menu_display();	// as common
     short_info();		// + short info
@@ -2321,10 +2424,43 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'w':
-    if(sweep_up = !sweep_up)
-      MENU.outln(F("sweep up"));
-    else
-      MENU.outln(F("sweep down"));
+    sweep_up *= -1;	// toggle direction up down
+
+    if (sweep_up==0)	// start sweeping if it was disabled
+      sweep_up=1;
+    sweep_info();
+    break;
+
+  case 'W':
+    next_token = MENU.cb_peek();
+    if (next_token != (char) EOF) {	// there is input after 'W'
+      switch(next_token) {	// examine following input token
+      case '~': case 't':
+	MENU.drop_input_token();
+	sweep_up *= -1;		// toggle sweep direction up down
+	break;
+      case '0':
+	MENU.drop_input_token();
+	sweep_up = 0;		// sweep off
+	break;
+      case '+': case '1':
+	MENU.drop_input_token();
+	sweep_up = 1;		// sweep up
+	break;
+      case '-':
+	MENU.drop_input_token();
+	sweep_up = -1;		// sweep down
+	break;
+      case '?':			// info only
+	break;
+      }
+    } else {			// no input follows 'W' token:
+      if (sweep_up==0)
+	sweep_up=1;		// start sweeping up if disabled
+      else			// if already sweeping:
+	sweep_up *= -1;		//    toggle sweep direction up/down
+    }
+    sweep_info();
     break;
 
   case 't':	// en_sweeping_click
@@ -2462,8 +2598,9 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'D':	// DADA debug
     // copy_jiffle_data(gling128);	// zero terminated
-    copy_jiffle_data(jiffletab_december_pizzicato);
-    display_jiffletab(jiffle);
+    // copy_jiffle_data(jiffletab_december_pizzicato);
+    // display_jiffletab(jiffle);
+    sweep_info();
     break;
 
   case 'm':	// multiplier
@@ -2497,7 +2634,7 @@ bool menu_pulses_reaction(char menu_input) {
       MENU.outln(F("down"));
     break;
 
-  case 'R':	// remove (=reset) all
+  case 'R':	// remove (=reset) all pulses
     for (int pulse=0; pulse<pl_max; pulse++)	// tabula rasa
       PULSES.init_pulse(pulse);
 

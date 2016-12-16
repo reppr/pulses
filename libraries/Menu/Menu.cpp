@@ -190,10 +190,13 @@ char Menu::cb_read() {
 
   /* void Menu::out(); overloaded menu output function family:	*/
   // Simple versions  void Menu::out():
-  void Menu::out(const char c)	const	{ port_.print(c); }	// ARDUINO
-  void Menu::out(const int i)	const	{ port_.print(i); }
-  void Menu::out(const long l)	const	{ port_.print(l); }
+  void Menu::out(const char c)		const	{ port_.print(c); }	// ARDUINO
+  void Menu::out(const int i)		const	{ port_.print(i); }
+  void Menu::out(const long l)		const	{ port_.print(l); }
   void Menu::out(const char *str)	const	{ port_.print(str); }
+#ifndef INTEGER_ONLY 
+  void Menu::out(const double d)	const	{ port_.print(d); }
+#endif
 
   // unsigned versions:
   void Menu::out(const unsigned char c)	const	{ port_.print(c); }
@@ -202,9 +205,12 @@ char Menu::cb_read() {
 
   // End of line versions  void outln():
   void Menu::outln(const char c)	const	{ port_.println(c); }
-  void Menu::outln(const int i)	const	{ port_.println(i); }
+  void Menu::outln(const int i)		const	{ port_.println(i); }
   void Menu::outln(const long l)	const	{ port_.println(l); }
-  void Menu::outln(const char *str) const { port_.println(str); }
+  void Menu::outln(const char *str)	const	{ port_.println(str); }
+#ifndef INTEGER_ONLY 
+  void Menu::outln(const double d)	const	{ port_.println(d); }
+#endif
 
   // unsigned versions:
   void Menu::outln(const unsigned char c)	const	{ port_.println(c); }

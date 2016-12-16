@@ -155,6 +155,9 @@ class Menu {
   void out(const int i)		const;	// int output
   void out(const long l)	const;	// long output
   void out(const char *str)	const;	// string
+#ifndef INTEGER_ONLY 
+  void out(const double d)	const;	// double float
+#endif
 
   // unsigned versions:
   void out(const unsigned char c)	const; // unsigned char output
@@ -166,6 +169,9 @@ class Menu {
   void outln(const int i)	const;	// int output  and newline
   void outln(const long l)	const;	// long output and newline
   void outln(const char *str)	const;	// string and newline
+#ifndef INTEGER_ONLY 
+  void outln(const double d)	const;	// double float
+#endif
 
   // unsigned versions:
   void outln(const unsigned char c)	const;	// unsigned char and newline
