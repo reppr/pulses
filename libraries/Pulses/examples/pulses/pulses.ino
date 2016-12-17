@@ -213,17 +213,18 @@ unsigned long selected_pulses=0L;	// pulse bitmask for user interface
 #ifdef IMPLEMENT_TUNING		// implies floating point
   #include <math.h>
 
-// first try, see sweeping_click_0()
+// first try, see sweep_click_0()
 /* tuning *= detune;
-   called detune_number times
-   will rise tuning by an octave	*/
-   int sweep_up=1;	// sweep_up==0 no sweep, 1 up, -1 down
-   double tuning=1.0;
-   double detune_number=4096.0;
-   double detune=1.0 / pow(2.0, 1/detune_number);
+  called detune_number times
+  will rise tuning by an octave	*/
+  int sweep_up=1;	// sweep_up==0 no sweep, 1 up, -1 down
+  double tuning=1.0;
+  double detune_number=4096.0;
+  double detune=1.0 / pow(2.0, 1/detune_number);
 
-// second try, see sweeping_click()
-  unsigned long ticks_per_octave=60000000L;		// 1 minute/octave
+// second try, see sweep_click()
+  unsigned long ticks_per_octave=10000000L;		// 10 seconds/octave
+  // unsigned long ticks_per_octave=60000000L;		// 1 minute/octave
   // unsigned long ticks_per_octave=60000000L*60L;	// 1 hour/octave (not correct)
 #endif
 // #endif
@@ -391,7 +392,7 @@ void setup() {
   //  multiplier=1;
   //  divisor=5800;
   //  en_click(0);
-  //  en_sweeping_click(1);
+  //  en_sweep_click(1);
   //  selected_pulses = 3;
   //  reset_and_edit_selected();
   //  activate_selected_synced_now(sync);	// FIXME:	something's wrong :(	################
@@ -403,6 +404,9 @@ void setup() {
   alive_pulses_info_lines();
 }
 
+
+unsigned int stress_count=0;
+unsigned int stress_emergency=42;
 
 void loop() {	// ARDUINO
   #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
@@ -420,7 +424,17 @@ void loop() {	// ARDUINO
      The intention is to have PULSES continue functioning and
      let the UI starve, when there is not enough time for everything.
   */
-  while (PULSES.check_maybe_do()) { }	// in stress PULSES get's *first* priority.
+
+  stress_count=0;
+  while (PULSES.check_maybe_do()) {	// in stress PULSES get's *first* priority.
+    if (++stress_count >= stress_emergency) {
+      // EMERGENCY
+      // kill fastest pulse might do it? (i.e. fast sweeping up)
+      MENU.outln((int) fastest_pulse());
+      deactivate_pulse(fastest_pulse());
+      MENU.out(F("deactivated pulse "));
+    }
+  }
 
   if(! MENU.lurk_then_do())		// MENU comes second in priority.
     {					// if MENU had nothing to do, then
@@ -542,7 +556,7 @@ void click(int pulse) {	// can be called from a pulse
 }
 
 
-void sweeping_click(int pulse) {	// can be called from a pulse
+void sweep_click(int pulse) {	// can be called from a pulse
   double period = PULSES.pulses[pulse].period.time;
   double detune_number = ticks_per_octave / PULSES.pulses[pulse].period.time;
   double detune = 1 / pow(2.0, 1/detune_number);
@@ -565,7 +579,7 @@ void sweeping_click(int pulse) {	// can be called from a pulse
 
 
 // first try: octave is reached by a fixed number of steps:
-void sweeping_click_0(int pulse) {	// can be called from a sweeping pulse
+void sweep_click_0(int pulse) {	// can be called from a sweeping pulse
   PULSES.pulses[pulse].period.time = PULSES.pulses[pulse].ulong_parameter_1 * tuning;
   PULSES.pulses[pulse].period.overflow = 0;
   click(pulse);
@@ -583,7 +597,12 @@ void sweeping_click_0(int pulse) {	// can be called from a sweeping pulse
 
 
 double slow_tuning_limit = 8.0;
-double fast_tuning_limit = 1.0/3.0;	// current setup does not reach 4
+
+// double fast_tuning_limit = 1.0/3.0;	// oldest setup did not reach 4
+double fast_tuning_limit = 1.0/256.0;
+/* exploring the limits:
+   sweep_click_0  1/143
+   sweep_click    1/7	*/
 
 void sweep_info() {
   MENU.out(F("sweep "));
@@ -687,7 +706,6 @@ void init_click_pins() {
 const char mutedAllPulses[] = "muted all pulses";
 const char noFreePulses[] = "no free pulses";
 
-
 void mute_all_clicks() {
   for (int pulse=0; pulse<CLICK_PULSES; pulse++)
     PULSES.pulses[pulse].flags &= ~ACTIVE;
@@ -710,23 +728,23 @@ void en_click(int pulse)
 }
 
 
-// make an existing pulse to a sweeping click pulse:
-void en_sweeping_click(int pulse)
+// make an existing pulse to a sweep click pulse:
+void en_sweep_click(int pulse)
 {
   if (pulse != ILLEGAL) {
     en_click(pulse);
-    PULSES.pulses[pulse].periodic_do = (void (*)(int)) &sweeping_click;
+    PULSES.pulses[pulse].periodic_do = (void (*)(int)) &sweep_click;
   }
 }
 
 
-// make an existing pulse to a sweeping_click_0 pulse:
-void en_sweeping_click_0(int pulse)
+// make an existing pulse to a sweep_click_0 pulse:
+void en_sweep_click_0(int pulse)
 {
   if (pulse != ILLEGAL) {
     en_click(pulse);
     PULSES.pulses[pulse].ulong_parameter_1 = PULSES.pulses[pulse].period.time;
-    PULSES.pulses[pulse].periodic_do = (void (*)(int)) &sweeping_click_0;
+    PULSES.pulses[pulse].periodic_do = (void (*)(int)) &sweep_click_0;
   }
 }
 
@@ -744,6 +762,31 @@ int setup_click_synced(struct time when, unsigned long unit, unsigned long multi
   }
 
   return pulse;
+}
+
+
+// find fastest pulse (in case of emergency)
+int fastest_pulse() {	// *not* dealing with period overflow here...
+  double min_period=0xefffffffffffffff;
+  int fast_pulse=-1;
+
+  for (int pulse=0; pulse<pl_max; pulse++) {
+    if (PULSES.pulses[pulse].flags & ACTIVE)
+    if (PULSES.pulses[pulse].flags & ACTIVE && PULSES.pulses[pulse].period.time < min_period) {
+      min_period = PULSES.pulses[pulse].period.time;
+      fast_pulse = pulse;
+    }
+  }
+  return fast_pulse;
+}
+
+
+void deactivate_pulse(int pulse) {	// reset all flags, keep data
+  if (pulse == ILLEGAL)	// invalid?
+    return;
+  PULSES.pulses[pulse].flags = 0;
+
+  PULSES.fix_global_next();
 }
 
 
@@ -1398,16 +1441,16 @@ void display_action(int pulse) {
     return;
   }
 
-  scratch=&sweeping_click;
+  scratch=&sweep_click;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out(F("sweeping_click "));
+    MENU.out(F("sweep_click "));
     MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
     return;
   }
 
-  scratch=&sweeping_click_0;
+  scratch=&sweep_click_0;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out(F("sweeping_click_0 "));
+    MENU.out(F("sweep_click_0 "));
     MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
     return;
   }
@@ -2463,21 +2506,21 @@ bool menu_pulses_reaction(char menu_input) {
     sweep_info();
     break;
 
-  case 't':	// en_sweeping_click
+  case 't':	// en_sweep_click
     // we work on voices anyway, regardless dest
     for (int pulse=0; pulse<voices; pulse++)
       if (selected_pulses & (1 << pulse))
-	en_sweeping_click(pulse);
+	en_sweep_click(pulse);
 
     MENU.ln();
     alive_pulses_info_lines();
     break;
 
-  case 'o':	// en_sweeping_click_0
+  case 'o':	// en_sweep_click_0
     // we work on voices anyway, regardless dest
     for (int pulse=0; pulse<voices; pulse++)
       if (selected_pulses & (1 << pulse))
-	en_sweeping_click_0(pulse);
+	en_sweep_click_0(pulse);
 
     MENU.ln();
     alive_pulses_info_lines();
@@ -2600,7 +2643,11 @@ bool menu_pulses_reaction(char menu_input) {
     // copy_jiffle_data(gling128);	// zero terminated
     // copy_jiffle_data(jiffletab_december_pizzicato);
     // display_jiffletab(jiffle);
-    sweep_info();
+
+    // sweep_info();
+
+    MENU.outln(fastest_pulse());
+    deactivate_pulse(fastest_pulse());
     break;
 
   case 'm':	// multiplier
