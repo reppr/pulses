@@ -430,7 +430,7 @@ void loop() {	// ARDUINO
     if (++stress_count >= stress_emergency) {
       // EMERGENCY
       // kill fastest pulse might do it? (i.e. fast sweeping up)
-      MENU.outln((int) fastest_pulse());
+      MENU.out((int) fastest_pulse());
       deactivate_pulse(fastest_pulse());
       MENU.out(F("deactivated pulse "));
     }
@@ -784,7 +784,7 @@ int fastest_pulse() {	// *not* dealing with period overflow here...
 void deactivate_pulse(int pulse) {	// reset all flags, keep data
   if (pulse == ILLEGAL)	// invalid?
     return;
-  PULSES.pulses[pulse].flags = 0;
+  PULSES.pulses[pulse].flags &= ~ACTIVE;
 
   PULSES.fix_global_next();
 }
