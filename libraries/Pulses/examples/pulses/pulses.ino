@@ -430,8 +430,8 @@ void loop() {	// ARDUINO
     if (++stress_count >= stress_emergency) {
       // EMERGENCY
       // kill fastest pulse might do it? (i.e. fast sweeping up)
-      MENU.out((int) fastest_pulse());
-      deactivate_pulse(fastest_pulse());
+      MENU.out((int) PULSES.fastest_pulse());
+      PULSES.deactivate_pulse(PULSES.fastest_pulse());
       MENU.out(F("deactivated pulse "));
     }
   }
@@ -762,31 +762,6 @@ int setup_click_synced(struct time when, unsigned long unit, unsigned long multi
   }
 
   return pulse;
-}
-
-
-// find fastest pulse (in case of emergency)
-int fastest_pulse() {	// *not* dealing with period overflow here...
-  double min_period=0xefffffffffffffff;
-  int fast_pulse=-1;
-
-  for (int pulse=0; pulse<pl_max; pulse++) {
-    if (PULSES.pulses[pulse].flags & ACTIVE)
-    if (PULSES.pulses[pulse].flags & ACTIVE && PULSES.pulses[pulse].period.time < min_period) {
-      min_period = PULSES.pulses[pulse].period.time;
-      fast_pulse = pulse;
-    }
-  }
-  return fast_pulse;
-}
-
-
-void deactivate_pulse(int pulse) {	// reset all flags, keep data
-  if (pulse == ILLEGAL)	// invalid?
-    return;
-  PULSES.pulses[pulse].flags &= ~ACTIVE;
-
-  PULSES.fix_global_next();
 }
 
 
@@ -2645,9 +2620,11 @@ bool menu_pulses_reaction(char menu_input) {
     // display_jiffletab(jiffle);
 
     // sweep_info();
-
-    MENU.outln(fastest_pulse());
-    deactivate_pulse(fastest_pulse());
+    {
+      int fastest=PULSES.fastest_pulse();
+      MENU.ln();
+      PULSES.deactivate_pulse(fastest);
+    }
     break;
 
   case 'm':	// multiplier

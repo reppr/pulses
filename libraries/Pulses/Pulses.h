@@ -209,9 +209,12 @@ class Pulses {
   struct time global_next;	// next time that a pulse wants to be waken up
   unsigned int global_next_count; // how many tasks wait to be activated at the same time?
 
-  void init_pulse(int pulse);	// init, reset or kill a pulse
+  void init_pulse(int pulse);		// init, reset or kill a pulse
   void init_pulses();			// init all pulses
-  void wake_pulse(int pulse);	// wake a pulse up, called from check_maybe_do()
+  void wake_pulse(int pulse);		// wake a pulse up, called from check_maybe_do()
+  void deactivate_pulse(int pulse);	// clear ACTIVE flag, keep data
+  int fastest_pulse();			// fastest pulse, *not* dealing with overflow...
+
   void fix_global_next();	// determine next event, prepare everything
 				// for *all* pulses that wait for this exact time
 				// they will be called in fast sequence then

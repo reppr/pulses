@@ -313,6 +313,29 @@ void Pulses::wake_pulse(int pulse) {
   }
 }
 
+void Pulses::deactivate_pulse(int pulse) {	// clear ACTIVE flag, keep data
+  if (pulse == ILLEGAL)	// invalid?
+    return;
+  pulses[pulse].flags &= ~ACTIVE;
+
+  fix_global_next();
+}
+
+
+// find fastest pulse (in case of emergency)
+int Pulses::fastest_pulse() {	// *not* dealing with period overflow here...
+  double min_period=0xefffffffffffffff;
+  int fast_pulse=-1;
+
+  for (int pulse=0; pulse<pl_max; pulse++) {
+    if (pulses[pulse].flags & ACTIVE)
+    if (pulses[pulse].flags & ACTIVE && pulses[pulse].period.time < min_period) {
+      min_period = pulses[pulse].period.time;
+      fast_pulse = pulse;
+    }
+  }
+  return fast_pulse;
+}
 
 
 // void fix_global_next();
