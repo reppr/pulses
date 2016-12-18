@@ -48,6 +48,14 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
     #include "WProgram.h"
   #endif
 
+
+  // include pulses spezific code:
+  #ifdef ESP8266	// a lot of RAM
+    // must be defined before including Pulses
+    #define IMPLEMENT_TUNING	// needs float
+  #endif
+
+
   #include <Menu.h>
   #include <Pulses.h>
 
@@ -192,8 +200,6 @@ Pulses PULSES(pl_max);
 // unsigned int jiffle_data[JIFFLE_RAM_SIZE]
 #ifdef ESP8266	// we have a lot of RAM
   #define JIFFLE_RAM_SIZE	256*3+1
-
-  #define IMPLEMENT_TUNING
 #endif
 
 
@@ -223,9 +229,14 @@ unsigned long selected_pulses=0L;	// pulse bitmask for user interface
   double detune=1.0 / pow(2.0, 1/detune_number);
 
 // second try, see sweep_click()
-  unsigned long ticks_per_octave=10000000L;		// 10 seconds/octave
-  // unsigned long ticks_per_octave=60000000L;		// 1 minute/octave
-  // unsigned long ticks_per_octave=60000000L*60L;	// 1 hour/octave (not correct)
+  // unsigned long ticks_per_octave=10000000L;		// 10 seconds/octave
+  unsigned long ticks_per_octave=60000000L;		//  1 minutes/octave
+  // unsigned long ticks_per_octave=60000000L*60L;	//  1 houres /octave
+
+// re-implement, see tuned_sweep_click()
+// PULSES.ticks_per_octave = ticks_per_octave;
+//
+
 #endif
 // #endif
 
@@ -357,6 +368,10 @@ void setup() {
   PULSES.init_time();		// start time
   PULSES.init_pulses();		// init pulses
 
+#ifdef IMPLEMENT_TUNING		// implies floating point
+  PULSES.ticks_per_octave = ticks_per_octave;
+#endif
+
   MENU.ln();
   // for a demo one of these could be called from here:
 
@@ -438,6 +453,7 @@ void loop() {	// ARDUINO
 
   if(! MENU.lurk_then_do())		// MENU comes second in priority.
     {					// if MENU had nothing to do, then
+      tuning = PULSES.tuning;	// FIXME: workaround for having all 3 sweep implementations in parallel
       if (!maybe_stop_sweeping())		// low priority control sweep range
 	if(! maybe_display_tuning_steps())	// low priority tuning steps info
 	  maybe_run_continuous();	// lowest priority:
@@ -578,6 +594,24 @@ void sweep_click(int pulse) {	// can be called from a pulse
 }
 
 
+void tuned_sweep_click(int pulse) {	// can be called from a pulse
+  double detune_number = PULSES.ticks_per_octave / PULSES.pulses[pulse].period.time;
+  double detune = pow(2.0, 1/detune_number);
+
+  switch (sweep_up) {
+  case 1:
+    PULSES.tuning *= detune;
+    break;
+  case -1:
+    PULSES.tuning /= detune;
+    break;
+  }
+
+  // PULSES.pulses[pulse].period.overflow = 0;
+  click(pulse);
+}
+
+
 // first try: octave is reached by a fixed number of steps:
 void sweep_click_0(int pulse) {	// can be called from a sweeping pulse
   PULSES.pulses[pulse].period.time = PULSES.pulses[pulse].ulong_parameter_1 * tuning;
@@ -596,7 +630,7 @@ void sweep_click_0(int pulse) {	// can be called from a sweeping pulse
 
 
 
-double slow_tuning_limit = 8.0;
+double slow_tuning_limit = 256.0;
 
 // double fast_tuning_limit = 1.0/3.0;	// oldest setup did not reach 4
 double fast_tuning_limit = 1.0/256.0;
@@ -745,6 +779,16 @@ void en_sweep_click_0(int pulse)
     en_click(pulse);
     PULSES.pulses[pulse].ulong_parameter_1 = PULSES.pulses[pulse].period.time;
     PULSES.pulses[pulse].periodic_do = (void (*)(int)) &sweep_click_0;
+  }
+}
+
+
+void en_tuned_sweep_click(int pulse)
+{
+  if (pulse != ILLEGAL) {
+    en_click(pulse);
+    PULSES.activate_tuning(pulse);
+    PULSES.pulses[pulse].periodic_do = (void (*)(int)) &tuned_sweep_click;
   }
 }
 
@@ -1412,6 +1456,13 @@ void display_action(int pulse) {
   scratch=&click;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out(click_);
+    MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
+    return;
+  }
+
+  scratch=&tuned_sweep_click;
+  if (PULSES.pulses[pulse].periodic_do == scratch) {
+    MENU.out(F("tuned_sweep_click "));
     MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
     return;
   }
@@ -2501,6 +2552,30 @@ bool menu_pulses_reaction(char menu_input) {
     alive_pulses_info_lines();
     break;
 
+  case 'p':	// en_tuned_sweep_click
+    // we work on voices anyway, regardless dest
+    for (int pulse=0; pulse<voices; pulse++)
+      if (selected_pulses & (1 << pulse))
+	en_tuned_sweep_click(pulse);
+
+    MENU.ln();
+    alive_pulses_info_lines();
+    break;
+
+  case 'T':	// toggle TUNED
+    // we work on voices anyway, regardless dest
+    for (int pulse=0; pulse<voices; pulse++)
+      if (selected_pulses & (1 << pulse))
+	if (PULSES.pulses[pulse].flags & TUNED)
+	  PULSES.stop_tuning(pulse);
+	else
+	  PULSES.activate_tuning(pulse);
+
+    MENU.ln();
+    alive_pulses_info_lines();
+    break;
+
+
   case 'j':	// en_jiffle_thrower
     // we work on voices anyway, regardless dest
     for (int pulse=0; pulse<voices; pulse++)
@@ -2619,12 +2694,12 @@ bool menu_pulses_reaction(char menu_input) {
     // copy_jiffle_data(jiffletab_december_pizzicato);
     // display_jiffletab(jiffle);
 
-    // sweep_info();
-    {
-      int fastest=PULSES.fastest_pulse();
-      MENU.ln();
-      PULSES.deactivate_pulse(fastest);
-    }
+    tuning = PULSES.tuning; sweep_info(); // FIXME: workaround for having all 3 sweep implementations in parallel
+    //    {
+    //      int fastest=PULSES.fastest_pulse();
+    //      MENU.ln();
+    //      PULSES.deactivate_pulse(fastest);
+    //    }
     break;
 
   case 'm':	// multiplier

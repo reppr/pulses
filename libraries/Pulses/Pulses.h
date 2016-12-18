@@ -25,6 +25,10 @@
     #define USE_F_MACRO
   #endif
 
+  #ifdef ESP8266	// we have a lot of RAM
+    #define IMPLEMENT_TUNING	// needs float
+  #endif
+
 #else	// c++ Linux PC test version
   #include <iostream>
 
@@ -113,14 +117,18 @@ struct pulse_t {
   struct time last;		// convenient, but not really needed
   struct time next;		// next time the pulse wants to wake up
 
+#ifdef IMPLEMENT_TUNING		// implies floating point
+  struct time other_time;	// used by tuning, maybe others to come
+#endif
+
   uint8_t flags;
 	// ACTIVE		switches pulse on/off
 	// COUNTED		repeats 'int1[]' times, then vanishes
 	// SCRATCH		edit (or similar) in progress
 	// DO_NOT_DELETE	dummy to avoid being thrown out
+	// TUNED		do not set directly, use activate_tuning(pulse)
 	// CUSTOM_1		can be used by periodic_do()
 	// CUSTOM_2		can be used by periodic_do()
-	// CUSTOM_3		can be used by periodic_do()
 
   // internal parameter:
   unsigned int int1;		// if COUNTED, gives number of executions
@@ -175,9 +183,9 @@ struct pulse_t {
 #define COUNTED			2	// repeats 'int1[]' times, then vanishes
 #define SCRATCH			8	// edit (or similar) in progress
 #define DO_NOT_DELETE	       16	// dummy to avoid being thrown out
-#define CUSTOM_1	       32	// can be used by periodic_do()
-#define CUSTOM_2	       64	// can be used by periodic_do()
-#define CUSTOM_3	      128	// can be used by periodic_do()
+#define TUNED		       32	// do not set directly, use activate_tuning(pulse)
+#define CUSTOM_1	       64	// can be used by periodic_do()
+#define CUSTOM_2	      128	// can be used by periodic_do()
 
 //	// ################comment
 //	#define pACTIVE	1
@@ -209,11 +217,18 @@ class Pulses {
   struct time global_next;	// next time that a pulse wants to be waken up
   unsigned int global_next_count; // how many tasks wait to be activated at the same time?
 
+#ifdef IMPLEMENT_TUNING		// implies floating point
+  unsigned long ticks_per_octave;
+  double tuning;
+  void activate_tuning(int pulse);	// copy period to other_time and set TUNING flag
+  void stop_tuning(int pulse);		// the pulse stays as it is, but no further (de)tuning
+#endif
+
   void init_pulse(int pulse);		// init, reset or kill a pulse
   void init_pulses();			// init all pulses
   void wake_pulse(int pulse);		// wake a pulse up, called from check_maybe_do()
   void deactivate_pulse(int pulse);	// clear ACTIVE flag, keep data
-  int fastest_pulse();			// fastest pulse, *not* dealing with overflow...
+  int  fastest_pulse();			// fastest pulse, *not* dealing with overflow...
 
   void fix_global_next();	// determine next event, prepare everything
 				// for *all* pulses that wait for this exact time

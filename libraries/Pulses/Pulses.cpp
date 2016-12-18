@@ -47,6 +47,9 @@ Pulses::Pulses(int pl_max):
   global_octave_mask(1),
   current_global_octave_mask(1),
   global_next_count(0)
+#ifdef IMPLEMENT_TUNING
+  , tuning(1.0)
+#endif
 {
   pulses = (pulse_t *) malloc(pl_max * sizeof(pulse_t));
   // ERROR ################
@@ -98,7 +101,7 @@ void Pulses::init_time() {
 #else
   #if defined(ARDUINO)
     extern volatile unsigned long timer0_overflow_count;
-  
+
     #ifdef __SAM3X8E__		// ################
       #warning 'cli() and sei() *not* on the DUE yet...	################'
       // cli();			// ################
@@ -219,7 +222,7 @@ void Pulses::div_time(struct time *duration, unsigned int divisor)
 }
 
 
-void Pulses::multiply_period(int pulse, unsigned long factor) {
+void Pulses::multiply_period(int pulse, unsigned long factor) {	// integer math
   struct time new_period;
 
   new_period=pulses[pulse].period;
@@ -228,7 +231,7 @@ void Pulses::multiply_period(int pulse, unsigned long factor) {
 }
 
 
-void Pulses::divide_period(int pulse, unsigned long divisor) {
+void Pulses::divide_period(int pulse, unsigned long divisor) {	// integer math
   struct time new_period;
 
   new_period=pulses[pulse].period;
@@ -290,6 +293,13 @@ void Pulses::init_pulses() {
 void Pulses::wake_pulse(int pulse) {
   pulses[pulse].counter++;			//      count
 
+#ifdef IMPLEMENT_TUNING
+  if (pulses[pulse].flags & TUNED) {
+    pulses[pulse].period.time = pulses[pulse].other_time.time / tuning;
+    // period lengths with overflow are *not* supported with tuning
+  }
+#endif
+
   if (pulses[pulse].periodic_do != NULL) {	// there *is* something else to do?
     (*pulses[pulse].periodic_do)(pulse);	//   yes: do it
   }
@@ -319,6 +329,22 @@ void Pulses::deactivate_pulse(int pulse) {	// clear ACTIVE flag, keep data
   pulses[pulse].flags &= ~ACTIVE;
 
   fix_global_next();
+}
+
+
+void Pulses::activate_tuning(int pulse) {	// copy period to other_time and set TUNING flag
+  pulses[pulse].flags |= TUNED;
+  pulses[pulse].other_time.time = pulses[pulse].period.time;
+  pulses[pulse].other_time.overflow = pulses[pulse].period.overflow;
+
+  fix_global_next();	// looks like we do nod need this?
+}
+
+
+void Pulses::stop_tuning(int pulse) {	// the pulse stays as it is, but no further (de)tuning
+  pulses[pulse].flags &= ~TUNED;	// clear TUNING flag
+  // the base period from the tuning can stay in pulses[pulse].other_time, might be useful?
+  // no harm, me thinks
 }
 
 

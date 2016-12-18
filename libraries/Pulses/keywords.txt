@@ -22,6 +22,10 @@ now	KEYWORD2
 last_now	KEYWORD2
 global_next	KEYWORD2
 global_next_count	KEYWORD2
+ticks_per_octave	KEYWORD2
+tuning	KEYWORD2
+activate_tuning	KEYWORD2
+stop_tuning	KEYWORD2
 init_pulse	KEYWORD2
 init_pulses	KEYWORD2
 wake_pulse	KEYWORD2
