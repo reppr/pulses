@@ -198,7 +198,10 @@ class Pulses {
   Pulses(int pl_max);
   ~Pulses();
   void init_time();
-  void get_now();		// *always* use get_now() to get current time!
+  struct time get_now();	// *always* use get_now() to get current time!
+				// get_now() works directly on 'now'
+				// also returns a pointer to 'now'
+
   void add_time(struct time *delta, struct time *sum);
   void sub_time(struct time *delta, struct time *sum);
   void mul_time(struct time *duration, unsigned int factor);

@@ -656,37 +656,39 @@ void sweep_info() {
   MENU.tab();
   MENU.out(F("slowest ")); MENU.out(slow_tuning_limit);
   MENU.tab();
-  MENU.out(F("fastest ")); MENU.outln(fast_tuning_limit);
+  MENU.out(F("fastest 1/")); MENU.outln((double ) 1/fast_tuning_limit);
 }
 
 
 bool maybe_display_tuning_steps() {
   static int last_tuning_step=-1;	// impossible default
   static int last_fraction=-1;
+  bool did_something = false;
 
   int tuning_step = tuning;
   int current_fraction = 1.0/(double) tuning;
 
+  struct time now = PULSES.get_now();
+
   if (tuning_step != last_tuning_step) {
     last_tuning_step = tuning_step;
-    display_now(); MENU.tab();
-    MENU.out('*'); MENU.out(tuning_step);
-    MENU.tab();
+    MENU.out(F("tuning * "));
+    MENU.out(tuning_step); MENU.tab();
+    display_realtime_sec(now); MENU.tab();
     sweep_info();
-//	    if (tuning_step==1)		// initialization
-//	      last_fraction = current_fraction;
-    return true;
-  } else {
-    if (current_fraction != last_fraction) {
-      last_fraction = current_fraction;
-      display_now(); MENU.tab();
-      MENU.out(F("1/")); MENU.out(current_fraction);
-      MENU.tab();
-      sweep_info();
-      return true;
-    }
-    return false;
+    did_something = true;
   }
+
+  if (current_fraction != last_fraction) {
+    last_fraction = current_fraction;
+    MENU.out(F("tuning 1/"));
+    MENU.out(current_fraction); MENU.tab();
+    display_realtime_sec(now); MENU.tab();
+    sweep_info();
+    did_something = true;
+  }
+
+  return did_something;
 }
 
 

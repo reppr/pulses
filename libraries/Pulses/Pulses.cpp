@@ -129,13 +129,15 @@ void Pulses::init_time() {
 
 
 // *always* get time through get_now()
-void Pulses::get_now() {	// get time, set now.time and now.overflow
+struct time Pulses::get_now() {	// get time, set now.time and now.overflow
   now.time = micros();
 
   if (now.time < last_now.time)	// manage now.overflow
     now.overflow++;
 
   last_now = now;		// manage last_now
+
+  return now;
 }
 
 
