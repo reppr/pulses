@@ -212,8 +212,10 @@ Pulses PULSES(pl_max);
   unsigned int *ratios=ratios_data;
 
 // FIXME: does not belong here
-  unsigned int ratios_quot[RATIOS_RAM_SIZE] = {1,1, 1,2, 1,3, 1,4, 1,5, 1,6, 1,7, 1,8, 0,0};  // zero terminated
-  unsigned int ratios_int[RATIOS_RAM_SIZE]  = {1,1, 2,1, 3,1, 4,1, 5,1, 6,1, 7,1, 8,1, 0,0};  // zero terminated
+  unsigned int ratios_quot[] = {1,1, 1,2, 1,3, 1,4, 1,5, 1,6, 1,7, 1,8, 0,0};  // zero terminated
+  unsigned int ratios_int[]  = {1,1, 2,1, 3,1, 4,1, 5,1, 6,1, 7,1, 8,1, 0,0};  // zero terminated
+  unsigned int european_pentatonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 1,2, 4,9, 2,5, 1,3, 3,10,  1,4, 0,0 };  // zero terminated
+  unsigned int pentatonic_minor[] = {1,1, 5,6, 3,4, 2,3, 5*2,6*3, 1,2, 5,12, 3,8, 1,3, 5,6*3, 1,4, 0,0 };  // zero terminated
 #endif
 
 
@@ -431,7 +433,9 @@ void setup() {
   
   // testing ratios, prepare_ratios():
   // void prepare_ratios(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync, unsigned int *ratios)
-  ratios = ratios_quot;
+  ratios = pentatonic_minor;
+  // ratios = european_pentatonic;
+  // ratios = ratios_quot;
   // ratios = ratios_int;
   selected_pulses=~0;
   // or: if nothing is selected all pulses with flags==0 get selected.
