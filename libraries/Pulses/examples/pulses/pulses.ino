@@ -200,6 +200,20 @@ Pulses PULSES(pl_max);
 // unsigned int jiffle_data[JIFFLE_RAM_SIZE]
 #ifdef ESP8266	// we have a lot of RAM
   #define JIFFLE_RAM_SIZE	256*3+1
+
+  // ratios
+  #define RATIOS_RAM_SIZE	256*2+1
+  #ifndef RATIOS_RAM_SIZE
+    #define RATIOS_RAM_SIZE 9*2+1	// small buffer might fit on simple hardware
+  #endif
+  unsigned int ratios_data[RATIOS_RAM_SIZE] = {0};
+  unsigned int ratios_data_length = RATIOS_RAM_SIZE;
+  unsigned int ratios_write_index=0;
+  unsigned int *ratios=ratios_data;
+
+// FIXME: does not belong here
+  unsigned int ratios_quot[RATIOS_RAM_SIZE] = {1,1, 1,2, 1,3, 1,4, 1,5, 1,6, 1,7, 1,8, 0,0};  // zero terminated
+  unsigned int ratios_int[RATIOS_RAM_SIZE]  = {1,1, 2,1, 3,1, 4,1, 5,1, 6,1, 7,1, 8,1, 0,0};  // zero terminated
 #endif
 
 
@@ -373,6 +387,8 @@ void setup() {
 #endif
 
   MENU.ln();
+
+  /* ****************  DEMO SETUPS  **************** */
   // for a demo one of these could be called from here:
 
   // void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync)
@@ -411,6 +427,21 @@ void setup() {
   //  selected_pulses = 3;
   //  reset_and_edit_selected();
   //  activate_selected_synced_now(sync);	// FIXME:	something's wrong :(	################
+
+  
+  // testing ratios, prepare_ratios():
+  // void prepare_ratios(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync, unsigned int *ratios)
+  ratios = ratios_quot;
+  // ratios = ratios_int;
+  selected_pulses=~0;
+  // or: if nothing is selected all pulses with flags==0 get selected.
+  int prepared = prepare_ratios(false, 8, 1, 1, 0, ratios);
+  if (prepared != 8)
+    MENU.out(F("prepared ")); MENU.out(prepared); MENU.slash(); MENU.outln(voices);
+  //  selected_pulses=0;
+
+/* ****************  END DEMO SETUPS  **************** */
+
 
   PULSES.fix_global_next();	// we *must* call that here late in setup();
 
@@ -1011,6 +1042,62 @@ void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned
 }
 
 
+// ****************************************************************
+/* ratios[]
+/* a ratios array has elements of multiplier/divisor pairs
+   each is the integer representation of a rational number
+   very useful for all kind of things like scales, chords, rhythms */
+
+int prepare_ratios(bool inverse, int voices, unsigned long multiplier, unsigned long divisor, int sync, unsigned int *ratios) {
+/* prepare a couple of pulses based on a ratio array.
+   up to 'voices' pulses are created among the selected ones.
+   return number of prepared pulses */
+  if (inverse) {
+    no_inverse();
+    return 0;
+  }
+  int prepared=0;
+  unsigned long unit=time_unit*multiplier;
+  unit /= divisor;
+
+  display_name5pars("prepare_ratios", inverse, voices, multiplier, divisor, sync);
+
+  struct time now;
+  PULSES.get_now();
+  now=PULSES.now;
+
+  unsigned long this_period;
+  struct time new_period;
+  int pulse=0;
+  for (int ratio=0; ratio<voices; ratio++) {
+    multiplier = ratios[ratio*2];
+    if (multiplier==0)
+      goto global_next;		// multiplier==0, end
+    divisor=ratios[ratio*2+1];
+    if (divisor==0)
+      goto global_next;		// multiplier==0, end
+
+    for (; pulse<pl_max; pulse++) {
+      if (selected_pulses & (1 << pulse)) {
+	this_period = unit;
+	this_period *= multiplier;
+	this_period /= divisor;
+	new_period.time = this_period;
+	new_period.overflow = 0;
+	PULSES.setup_pulse(NULL, SCRATCH, now, new_period);
+	prepared++;
+	break;
+      }
+    }
+  }
+
+ global_next:
+  PULSES.fix_global_next();
+  return prepared;
+}
+
+
+// ****************************************************************
 void init_chord_1345689a(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   unsigned long unit=multiplier*time_unit;
   unit /= divisor;
