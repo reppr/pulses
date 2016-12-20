@@ -430,7 +430,7 @@ void setup() {
   //  reset_and_edit_selected();
   //  activate_selected_synced_now(sync);	// FIXME:	something's wrong :(	################
 
-  
+
   // testing ratios, prepare_ratios():
   // void prepare_ratios(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync, unsigned int *ratios)
   ratios = pentatonic_minor;
@@ -695,39 +695,49 @@ void sweep_info() {
 }
 
 
+// inform user when tuning crosses integer or simple rational value
 bool maybe_display_tuning_steps() {
-  static int last_tuning_step=-1;	// impossible default
-  static int last_fraction=-1;
+  static int last_tuning_step=-1;  // impossible default
+  static int last_fraction=-1;	   // impossible default
+  static double last_tuning=1.0;
+
   bool did_something = false;
 
-  int tuning_step = tuning;
-  int current_fraction = 1.0/(double) tuning;
+  if (last_tuning != tuning) {
+    last_tuning = tuning;
+    struct time now = PULSES.get_now();
 
-  struct time now = PULSES.get_now();
+    int tuning_step = tuning;			// integer part
+    int current_fraction = 1.0/(double) tuning;	// integer part
+    bool tuning_up = (tuning > last_tuning);
 
-  if (tuning_step != last_tuning_step) {
-    last_tuning_step = tuning_step;
-    MENU.out(F("tuning * "));
-    MENU.out(tuning_step); MENU.tab();
-    display_realtime_sec(now); MENU.tab();
-    sweep_info();
-    did_something = true;
-  }
+    if (tuning_step != last_tuning_step) {	// integer part changed
+      last_tuning_step = tuning_step;
+      MENU.out(F("tuning * "));
+      MENU.out(tuning_step); MENU.tab();
+      display_realtime_sec(now); MENU.tab();
+      sweep_info();
+      did_something = true;
+    }
 
-  if (current_fraction != last_fraction) {
-    last_fraction = current_fraction;
-    MENU.out(F("tuning 1/"));
-    MENU.out(current_fraction); MENU.tab();
-    display_realtime_sec(now); MENU.tab();
-    sweep_info();
-    did_something = true;
-  }
+    if (current_fraction != last_fraction) {
+      last_fraction = current_fraction;
+      MENU.out(F("tuning 1/"));
+      MENU.out(current_fraction); MENU.tab();
+      display_realtime_sec(now); MENU.tab();
+      sweep_info();
+      did_something = true;
+    }
+  } // tuning has changed
 
   return did_something;
 }
 
 
 bool maybe_stop_sweeping() {
+  if (sweep_up == 0)
+    return false;
+
   if (tuning > slow_tuning_limit) {
     sweep_up=0;
     tuning=slow_tuning_limit;
