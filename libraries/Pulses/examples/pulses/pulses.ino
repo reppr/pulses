@@ -431,18 +431,18 @@ void setup() {
   //  activate_selected_synced_now(sync);	// FIXME:	something's wrong :(	################
 
 
-  // testing ratios, prepare_ratios():
-  // void prepare_ratios(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync, unsigned int *ratios)
-  ratios = pentatonic_minor;
-  // ratios = european_pentatonic;
-  // ratios = ratios_quot;
-  // ratios = ratios_int;
-  selected_pulses=~0;
-  // or: if nothing is selected all pulses with flags==0 get selected.
-  int prepared = prepare_ratios(false, 8, 1, 1, 0, ratios);
-  if (prepared != 8)
-    MENU.out(F("prepared ")); MENU.out(prepared); MENU.slash(); MENU.outln(voices);
-  //  selected_pulses=0;
+//	  // testing ratios, prepare_ratios():
+//	  // void prepare_ratios(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync, unsigned int *ratios)
+//	  ratios = pentatonic_minor;
+//	  // ratios = european_pentatonic;
+//	  // ratios = ratios_quot;
+//	  // ratios = ratios_int;
+//	  selected_pulses=~0;
+//	  // or: if nothing is selected all pulses with flags==0 get selected.
+//	  int prepared = prepare_ratios(false, 8, 1, 1, 0, ratios);
+//	  if (prepared != 8)
+//	    MENU.out(F("prepared ")); MENU.out(prepared); MENU.slash(); MENU.outln(voices);
+//	  //  selected_pulses=0;
 
 /* ****************  END DEMO SETUPS  **************** */
 
@@ -2624,6 +2624,7 @@ bool menu_pulses_reaction(char menu_input) {
 	sweep_up = -1;		// sweep down
 	break;
       case '?':			// info only
+	MENU.drop_input_token();
 	break;
       }
     } else {			// no input follows 'W' token:
