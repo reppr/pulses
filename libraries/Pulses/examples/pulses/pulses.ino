@@ -695,6 +695,17 @@ void sweep_info() {
 }
 
 
+int is_octave(unsigned int integer) {
+  int octave=0;
+  for (; octave<32; octave++) {
+    if (integer == 1 << octave)
+      return octave;
+  }
+
+  return -1;
+}
+
+
 // inform user when tuning crosses integer or simple rational value
 bool maybe_display_tuning_steps() {
   static int last_tuning_step=-1;  // impossible default
@@ -714,7 +725,11 @@ bool maybe_display_tuning_steps() {
     if (tuning_step != last_tuning_step) {	// integer part changed
       last_tuning_step = tuning_step;
       MENU.out(F("tuning * "));
-      MENU.out(tuning_step); MENU.tab();
+      MENU.out(tuning_step);
+      MENU.space();
+      if (is_octave((int) tuning_step) != -1)
+	MENU.out(F("<<"));
+      MENU.tab();
       display_realtime_sec(now); MENU.tab();
       sweep_info();
       did_something = true;
@@ -723,7 +738,11 @@ bool maybe_display_tuning_steps() {
     if (current_fraction != last_fraction) {
       last_fraction = current_fraction;
       MENU.out(F("tuning 1/"));
-      MENU.out(current_fraction); MENU.tab();
+      MENU.out(current_fraction);
+      MENU.space();
+      if (is_octave((int) current_fraction) != -1)
+	MENU.out(F("<<"));
+      MENU.tab();
       display_realtime_sec(now); MENU.tab();
       sweep_info();
       did_something = true;
