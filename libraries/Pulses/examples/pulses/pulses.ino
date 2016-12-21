@@ -2376,6 +2376,7 @@ void show_scale() {
 }
 
 bool menu_pulses_reaction(char menu_input) {
+  static long result=0;
   long new_value=0;
   struct time now, time_scratch;
   unsigned long bitmask;
@@ -2720,15 +2721,24 @@ bool menu_pulses_reaction(char menu_input) {
     alive_pulses_info_lines();
     break;
 
-  case 'T':	// toggle TUNED
-    // we work on voices anyway, regardless dest
-    for (int pulse=0; pulse<voices; pulse++)
-      if (selected_pulses & (1 << pulse))
-	if (PULSES.pulses[pulse].flags & TUNED)
-	  PULSES.stop_tuning(pulse);
-	else
-	  PULSES.activate_tuning(pulse);
-
+  case 'T':	// 'T<integer-number>' sets tuning, 'T' toggles TUNED
+    MENU.out("DADA0 T "); MENU.outln(result);	// ################
+    result = (long) PULSES.tuning;
+    if (maybe_calculate_input(&result))	{	// T1 sets tuning to 1.0
+      PULSES.tuning = (double) result;
+      tuning_info();
+      MENU.ln();
+      MENU.outln("DADA0	calculated	"); MENU.outln(result);	// ################
+    } else {	// toggle TUNED on selected pulses
+      MENU.outln("DADA0	TOGGLING"); MENU.outln(result);	// ################
+      // we work on voices anyway, regardless dest
+      for (int pulse=0; pulse<voices; pulse++)
+	if (selected_pulses & (1 << pulse))
+	  if (PULSES.pulses[pulse].flags & TUNED)
+	    PULSES.stop_tuning(pulse);
+	  else
+	    PULSES.activate_tuning(pulse);
+    }
     MENU.ln();
     alive_pulses_info_lines();
     break;
@@ -2848,11 +2858,8 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'D':	// DADA debug
-    {
-      long result=77;
-      if (maybe_calculate_input(&result))
-	MENU.out("== "), MENU.outln(result);
-    }
+    if (maybe_calculate_input(&result))
+      MENU.out("== "), MENU.outln(result);
     // copy_jiffle_data(gling128);	// zero terminated
     // copy_jiffle_data(jiffletab_december_pizzicato);
     // display_jiffletab(jiffle);
@@ -3132,8 +3139,11 @@ bool maybe_calculate_input(long *result) {
   long scratch;	// see recursion
   char token = MENU.cb_peek();
 
-  if (get_numeric_input(result))
+  if (get_numeric_input(result)) {
     token = MENU.cb_peek();
+    if (token = -1)
+      return true;
+  }
 
   if (is_operator(token)) {	// known operator?
     MENU.drop_input_token();
