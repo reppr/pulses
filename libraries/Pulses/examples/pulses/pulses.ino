@@ -700,18 +700,20 @@ void sweep_click_0(int pulse) {	// can be called from a sweeping pulse
 
 
 
-double slow_tuning_limit = 0.0;	// no limits, please ;)
-				// well there's still zero and resource limitations...
-// double slow_tuning_limit = 256.0;
-
-double fast_tuning_limit = 0.0;	// no limits, please ;)
+double low_sweep_limit = 0.0;	// no limits, please ;)
 				// well there's still zero and resource limitations...
 
-// double fast_tuning_limit = 1.0/3.0;	// oldest setup did not reach 4
-// double fast_tuning_limit = 1.0/256.0;
-/* exploring the limits:
-   sweep_click_0  1/143
-   sweep_click    1/7	*/
+double high_sweep_limit = 0.0;	// no limits, please ;)
+				// well there's still zero and resource limitations...
+
+void tuning_info() {
+  MENU.out(F("tuning ")); MENU.out(PULSES.tuning);
+  MENU.tab();
+  MENU.out(F("slowest ")); MENU.out(low_sweep_limit);
+  MENU.tab();
+  MENU.out(F("fastest 1/")); MENU.out((double) 1/high_sweep_limit);
+}
+
 
 void sweep_info() {
   MENU.out(F("sweep "));
@@ -727,11 +729,8 @@ void sweep_info() {
     break;
   }
   MENU.tab();
-  MENU.out(F("tuning ")); MENU.out(tuning);
-  MENU.tab();
-  MENU.out(F("slowest ")); MENU.out(slow_tuning_limit);
-  MENU.tab();
-  MENU.out(F("fastest 1/")); MENU.outln((double) 1/fast_tuning_limit);
+  tuning_info();
+  MENU.ln();
 }
 
 
@@ -797,20 +796,20 @@ bool maybe_stop_sweeping() {
   if (sweep_up == 0)
     return false;
 
-  if (slow_tuning_limit != 0.0) {
-    if (tuning > slow_tuning_limit) {
+  if (low_sweep_limit != 0.0) {
+    if (tuning > low_sweep_limit) {
       sweep_up=0;
-      tuning=slow_tuning_limit;
+      tuning=low_sweep_limit;
       MENU.out(F("sweep stopped "));
       MENU.outln(tuning);
       return true;
     }
   }
 
-  if (fast_tuning_limit != 0.0) {
-    if (tuning < fast_tuning_limit) {
+  if (high_sweep_limit != 0.0) {
+    if (tuning < high_sweep_limit) {
       sweep_up=0;
-      tuning=fast_tuning_limit;
+      tuning=high_sweep_limit;
       MENU.out(F("sweep stopped "));
       MENU.outln(tuning);
       return true;
