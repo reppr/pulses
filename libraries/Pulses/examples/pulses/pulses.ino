@@ -201,7 +201,7 @@ Pulses PULSES(pl_max);
 #ifdef ESP8266	// we have a lot of RAM
   #define JIFFLE_RAM_SIZE	256*3+1
 
-  // ratios
+  // ratios:
   #define RATIOS_RAM_SIZE	256*2+1
   #ifndef RATIOS_RAM_SIZE
     #define RATIOS_RAM_SIZE 9*2+1	// small buffer might fit on simple hardware
@@ -217,6 +217,19 @@ Pulses PULSES(pl_max);
   unsigned int european_pentatonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 1,2, 4,9, 2,5, 1,3, 3,10,  1,4, 0,0 };  // zero terminated
   unsigned int pentatonic_minor[] = {1,1, 5,6, 3,4, 2,3, 5*2,6*3, 1,2, 5,12, 3,8, 1,3, 5,6*3, 1,4, 0,0 };  // zero terminated
 #endif
+
+// editing jiffle data
+// if we have enough RAM, we work in an int array[]
+// pre defined jiffletabs can be copied there before using and editing
+#ifndef JIFFLE_RAM_SIZE
+  #define JIFFLE_RAM_SIZE 9*3+1	// small buffer might fit on simple hardware
+#endif
+unsigned int jiffle_data[JIFFLE_RAM_SIZE];
+unsigned int jiffle_data_length = JIFFLE_RAM_SIZE;
+unsigned int jiffle_write_index=0;
+unsigned int *jiffle=jiffle_data;
+
+unsigned int harmonics4[] = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0};	// magnets on strings experiments
 
 
 /* **************************************************************** */
@@ -445,6 +458,23 @@ void setup() {
 //	  if (prepared != 8)
 //	    MENU.out(F("prepared ")); MENU.out(prepared); MENU.slash(); MENU.outln(voices);
 //	  //  selected_pulses=0;
+
+// working on:
+// pentatonic steel strings on 8 magnets
+//			  ratios = pentatonic_minor;
+//			  selected_pulses=~0;
+//			  int prepared = prepare_ratios(false, 8, 32768, 41724, 0, ratios);
+
+// doing tests on just one string:
+  selected_pulses = 128;
+  reset_and_edit_selected();
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if (selected_pulses & (1 << pulse))
+      PULSES.divide_period(pulse, 41724);
+
+  jiffle=harmonics4;
+ // unsigned int harmonics4 = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0};
+
 
 /* ****************  END DEMO SETUPS  **************** */
 
@@ -1037,7 +1067,7 @@ void init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int
 unsigned int gling128_0[] = {1,128,16, 0};
 unsigned int gling128_1[] = {1,256,2, 1,128,16, 0};
 unsigned int gling128_2[] = {1,512,4, 1,256,4, 1,128,16, 0};
-unsigned int gling128[] = {1,512,8, 1,256,4, 1,128,16, 0};
+unsigned int gling128[]   = {1,512,8, 1,256,4, 1,128,16, 0};
 
 void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   /*
@@ -1818,18 +1848,6 @@ bool inverse=false;	// bottom DOWN/up click-pin mapping
 // special menu modes, like numeric input for jiffletabs
 int menu_mode=0;
 #define JIFFLE_ENTRY_UNTIL_ZERO_MODE	1	// menu_mode for unsigned integer data entry, stop at zero
-
-// editing jiffle data
-// if we have enough RAM, we work in an int array[]
-// pre defined jiffletabs can be copied there before using and editing
-#ifndef JIFFLE_RAM_SIZE
-  #define JIFFLE_RAM_SIZE 9*3+1	// small buffer might fit on simple hardware
-#endif
-unsigned int jiffle_data[JIFFLE_RAM_SIZE];
-unsigned int jiffle_data_length = JIFFLE_RAM_SIZE;
-unsigned int jiffle_write_index=0;
-unsigned int *jiffle=jiffle_data;
-
 
 /* **************************************************************** */
 void menu_pulses_display() {
