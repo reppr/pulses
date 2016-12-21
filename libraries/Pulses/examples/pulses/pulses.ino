@@ -2830,6 +2830,11 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'D':	// DADA debug
+    {
+      long result=77;
+      if (maybe_calculate_input(&result))
+	MENU.out("== "), MENU.outln(result);
+    }
     // copy_jiffle_data(gling128);	// zero terminated
     // copy_jiffle_data(jiffletab_december_pizzicato);
     // display_jiffletab(jiffle);
@@ -3069,3 +3074,130 @@ Testing Pulses library in an early stage
 
 */
 /* **************************************************************** */
+
+
+char is_operator(char token) {
+  switch (token) {
+  case '*':
+  case '/':
+  case '+':
+  case '-':
+  case '%':
+  case '&':
+  case '|':
+  case '^':
+    return token;
+    break;
+  }
+  return 0;
+}
+
+
+bool get_numeric_input(long *result) {
+  char token = MENU.cb_peek();
+  if (!is_chiffre(token))	// no numeric input, return false
+    return false;
+
+  MENU.drop_input_token();
+  *result = token - '0';	// start with first chiffre
+
+  while (token=MENU.cb_peek(), is_chiffre(token)) {
+    MENU.drop_input_token();
+    *result *= 10;
+    *result += token -'0';
+  }
+  return true;		// all input was read
+}
+
+
+bool maybe_calculate_input(long *result) {
+  long scratch;	// see recursion
+  char token = MENU.cb_peek();
+
+  if (get_numeric_input(result))
+    token = MENU.cb_peek();
+
+  if (is_operator(token)) {	// known operator?
+    MENU.drop_input_token();
+
+    scratch = *result;		// save for recursion
+    switch (token) {
+    case '*':
+      if (get_numeric_input(result)) {
+	scratch *= *result;
+	*result = scratch;
+      }
+      if (MENU.cb_peek()==-1)
+	return true;
+      else
+	return maybe_calculate_input(result);	// recurse and return
+      break;
+    case '/':
+      if (get_numeric_input(result)) {
+	scratch /= *result;
+	*result = scratch;
+      }
+      if (MENU.cb_peek()==-1)
+	return true;
+      else
+	return maybe_calculate_input(result);	// recurse and return
+      break;
+    case '+':
+      if (get_numeric_input(result)) {
+	scratch += *result;
+	*result = scratch;
+      }
+      if (MENU.cb_peek()==-1)
+	return true;
+      else
+	return maybe_calculate_input(result);	// recurse and return
+      break;
+    case '-':
+      if (get_numeric_input(result)) {
+	scratch -= *result;
+	*result = scratch;
+      }
+      if (MENU.cb_peek()==-1)
+	return true;
+      else
+	return maybe_calculate_input(result);	// recurse and return
+      break;
+    case '%':
+      if (maybe_calculate_input(result)) {
+	scratch %= *result;
+	*result = scratch;
+	return true;
+      }
+      return false;
+      break;
+    case '&':
+      if (maybe_calculate_input(result)) {
+	scratch &= *result;
+	*result = scratch;
+	return true;
+      }
+      return false;
+      break;
+    case '|':
+      if (maybe_calculate_input(result)) {
+	scratch |= *result;
+	*result = scratch;
+	return true;
+      }
+      return false;
+      break;
+    case '^':
+      if (maybe_calculate_input(result)) {
+	scratch ^= *result;
+	*result = scratch;
+	return true;
+      }
+      return false;
+      break;
+    default:	// should not happen, see is_operator()
+      return false;
+    }
+  }
+
+  return false;
+}
