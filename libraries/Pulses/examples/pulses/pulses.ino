@@ -245,9 +245,11 @@ unsigned long selected_pulses=0L;	// pulse bitmask for user interface
   double detune=1.0 / pow(2.0, 1/detune_number);
 
 // second try, see sweep_click()
-  // unsigned long ticks_per_octave=10000000L;		// 10 seconds/octave
-  unsigned long ticks_per_octave=60000000L;		//  1 minutes/octave
-  // unsigned long ticks_per_octave=60000000L*60L;	//  1 houres /octave
+  unsigned long ticks_per_octave=10000000L;		// 10 seconds/octave
+  // unsigned long ticks_per_octave=60000000L;		//  1 minute/octave
+  // unsigned long ticks_per_octave=60000000L*10L;	// 10 minutes/octave
+  // unsigned long ticks_per_octave=60000000L*60L;	//  1 hour/octave
+  // unsigned long ticks_per_octave=60000000L*60L*24;	//  1 day/octave	FIXME: (not tested yet)
 
 // re-implement, see tuned_sweep_click()
 // PULSES.ticks_per_octave = ticks_per_octave;
@@ -455,8 +457,11 @@ void setup() {
 }
 
 
+// stress_emergency:  looks like the value does not matter too much
+// unsigned int stress_emergency=42;
+// unsigned int stress_emergency=100;
+unsigned int stress_emergency=64;
 unsigned int stress_count=0;
-unsigned int stress_emergency=42;
 
 void loop() {	// ARDUINO
   #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
@@ -665,10 +670,15 @@ void sweep_click_0(int pulse) {	// can be called from a sweeping pulse
 
 
 
-double slow_tuning_limit = 256.0;
+double slow_tuning_limit = 0.0;	// no limits, please ;)
+				// well there's still zero and resource limitations...
+// double slow_tuning_limit = 256.0;
+
+double fast_tuning_limit = 0.0;	// no limits, please ;)
+				// well there's still zero and resource limitations...
 
 // double fast_tuning_limit = 1.0/3.0;	// oldest setup did not reach 4
-double fast_tuning_limit = 1.0/256.0;
+// double fast_tuning_limit = 1.0/256.0;
 /* exploring the limits:
    sweep_click_0  1/143
    sweep_click    1/7	*/
@@ -691,7 +701,7 @@ void sweep_info() {
   MENU.tab();
   MENU.out(F("slowest ")); MENU.out(slow_tuning_limit);
   MENU.tab();
-  MENU.out(F("fastest 1/")); MENU.outln((double ) 1/fast_tuning_limit);
+  MENU.out(F("fastest 1/")); MENU.outln((double) 1/fast_tuning_limit);
 }
 
 
@@ -757,22 +767,29 @@ bool maybe_stop_sweeping() {
   if (sweep_up == 0)
     return false;
 
-  if (tuning > slow_tuning_limit) {
-    sweep_up=0;
-    tuning=slow_tuning_limit;
-    MENU.out(F("sweep stopped "));
-    MENU.outln(tuning);
-    return true;
+  if (slow_tuning_limit != 0.0) {
+    if (tuning > slow_tuning_limit) {
+      sweep_up=0;
+      tuning=slow_tuning_limit;
+      MENU.out(F("sweep stopped "));
+      MENU.outln(tuning);
+      return true;
+    }
   }
-  if (tuning < fast_tuning_limit) {
-    sweep_up=0;
-    tuning=fast_tuning_limit;
-    MENU.out(F("sweep stopped "));
-    MENU.outln(tuning);
-    return true;
+
+  if (fast_tuning_limit != 0.0) {
+    if (tuning < fast_tuning_limit) {
+      sweep_up=0;
+      tuning=fast_tuning_limit;
+      MENU.out(F("sweep stopped "));
+      MENU.outln(tuning);
+      return true;
+    }
   }
+
   return false;
 }
+
 
 // pins for click_pulses:
 // It is a bit obscure to held them in an array indexed by [pulse]
@@ -2817,7 +2834,8 @@ bool menu_pulses_reaction(char menu_input) {
     // copy_jiffle_data(jiffletab_december_pizzicato);
     // display_jiffletab(jiffle);
 
-    tuning = PULSES.tuning; sweep_info(); // FIXME: workaround for having all 3 sweep implementations in parallel
+    tuning = PULSES.tuning; // FIXME: workaround for having all 3 sweep implementations in parallel
+    sweep_info();
     //    {
     //      int fastest=PULSES.fastest_pulse();
     //      MENU.ln();
