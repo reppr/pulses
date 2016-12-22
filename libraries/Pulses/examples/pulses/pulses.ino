@@ -230,6 +230,7 @@ unsigned int jiffle_write_index=0;
 unsigned int *jiffle=jiffle_data;
 
 unsigned int harmonics4[] = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0};	// magnets on strings experiments
+// unsigned int jiff4096[] = {12,4096,4096/4, 0};	// magnets on strings experiments
 
 
 /* **************************************************************** */
@@ -1120,6 +1121,47 @@ void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned
   PULSES.fix_global_next();
 }
 
+// ****************************************************************
+int select_flagged() {
+  selected_pulses=0;
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if (PULSES.pulses[pulse].flags)
+      selected_pulses |= (1 << pulse);
+
+  return selected_pulses;
+}
+
+
+int select_all() {
+  selected_pulses=0;
+  for (int pulse=0; pulse<pl_max; pulse++)
+    selected_pulses |= (1 << pulse);
+
+  return selected_pulses;
+}
+
+
+int select_alive() {
+  selected_pulses=0;
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if(PULSES.pulses[pulse].flags && (PULSES.pulses[pulse].flags != SCRATCH))
+      selected_pulses |= (1 << pulse);
+
+  return selected_pulses;
+}
+
+
+int select_n(unsigned int n) {
+  selected_pulses=0;
+  if (n == 0)
+    return selected_pulses;
+
+  for (int pulse=0; pulse<pl_max; pulse++)
+    selected_pulses |= (1 << pulse);
+
+  return selected_pulses;
+}
+
 
 // ****************************************************************
 /* ratios[]
@@ -1154,7 +1196,7 @@ int prepare_ratios(bool inverse, int voices, unsigned long multiplier, unsigned 
       goto global_next;		// multiplier==0, end
     divisor=ratios[ratio*2+1];
     if (divisor==0)
-      goto global_next;		// multiplier==0, end
+      goto global_next;		// divisor==0, end
 
     for (; pulse<pl_max; pulse++) {
       if (selected_pulses & (1 << pulse)) {
@@ -1164,6 +1206,7 @@ int prepare_ratios(bool inverse, int voices, unsigned long multiplier, unsigned 
 	new_period.time = this_period;
 	new_period.overflow = 0;
 	PULSES.setup_pulse(NULL, SCRATCH, now, new_period);
+	pulse++;
 	prepared++;
 	break;
       }
@@ -1740,7 +1783,7 @@ void do_throw_a_jiffle(int pulse) {		// for pulse_do
 
 // what is selected?
 
-void print_selected_pulses() {
+void print_selected_mask() {
   const int hex_pulses=std::min(pl_max,16);  // displayed as hex chiffres, "std::" for ESP8266
 
   if(is_chiffre(MENU.cb_peek()))	// more numeric input, so no display yet...
@@ -1773,7 +1816,7 @@ void print_selected_pulses() {
 void print_selected() {
   switch (dest) {
   case CODE_PULSES:
-    print_selected_pulses();
+    print_selected_mask();
     break;
 
   case CODE_TIME_UNIT:
@@ -2395,7 +2438,7 @@ bool menu_pulses_reaction(char menu_input) {
     MENU.ln();
     time_info();
     MENU.ln();
-    print_selected_pulses();
+    print_selected_mask();
     MENU.ln();
     selected_pulses_info_lines();
     break;
@@ -2425,7 +2468,7 @@ bool menu_pulses_reaction(char menu_input) {
       // existing pulse:
       selected_pulses ^= (1 << (menu_input - '0'));
 
-      print_selected_pulses();
+      print_selected_mask();
       break;
 
     case JIFFLE_ENTRY_UNTIL_ZERO_MODE:	// first chiffre already seen
@@ -2443,18 +2486,15 @@ bool menu_pulses_reaction(char menu_input) {
     print_selected();
     break;
 
-  case 'a':	// select destination: all click pulses
-    selected_pulses=0;
-    for (int pulse=0; pulse<CLICK_PULSES; pulse++)
-      selected_pulses |= (1 << pulse);
-
-    print_selected_pulses();
+  case 'a':	// select destination: all pulses with flags
+    select_flagged();
+    print_selected_mask();
+    alive_pulses_info_lines();
     break;
 
   case 'A':	// select destination: *all* pulses
-    selected_pulses = ~0;
-
-    print_selected_pulses();
+    select_all();
+    print_selected_mask();
     break;
 
   case 'l':	// select destination: alive voices
@@ -2463,16 +2503,12 @@ bool menu_pulses_reaction(char menu_input) {
       if(PULSES.pulses[pulse].flags && (PULSES.pulses[pulse].flags != SCRATCH))
 	selected_pulses |= (1 << pulse);
 
-    print_selected_pulses();
+    print_selected_mask();
     break;
 
   case 'L':	// select destination: all alive pulses
-    selected_pulses=0;
-    for (int pulse=0; pulse<pl_max; pulse++)
-      if(PULSES.pulses[pulse].flags && (PULSES.pulses[pulse].flags != SCRATCH))
-	selected_pulses |= (1 << pulse);
-
-    print_selected_pulses();
+    select_alive();
+    print_selected_mask();
     break;
 
   case '~':	// invert destination selection
@@ -2481,13 +2517,12 @@ bool menu_pulses_reaction(char menu_input) {
     for (int pulse=0; pulse<pl_max; pulse++)
       bitmask |= (1 << pulse);
     selected_pulses &= bitmask;
-    print_selected_pulses();
+    print_selected_mask();
     break;
 
   case 'x':	// clear destination selection
     selected_pulses = 0;
-
-    print_selected_pulses();
+    print_selected_mask();
     break;
 
   case 's':	// switch pulse on/off
@@ -2618,12 +2653,15 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'K':	// kill selected pulses
-    for (int pulse=0; pulse<pl_max; pulse++)	// DADA ################
-      if (selected_pulses & (1 << pulse)) {
-	PULSES.init_pulse(pulse);
-	MENU.out(killPulse); MENU.outln(pulse);
-      }
-    MENU.ln();
+    if (selected_pulses) {
+      MENU.out(killPulse);
+      for (int pulse=0; pulse<pl_max; pulse++)
+	if (selected_pulses & (1 << pulse)) {
+	  PULSES.init_pulse(pulse);
+	  MENU.out(pulse); MENU.space();
+	}
+      MENU.ln();
+    }
     alive_pulses_info_lines(); MENU.ln();
     break;
 
@@ -2909,6 +2947,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
     init_click_pulses();
+    init_click_pins();		// switch them on LOW, output	current off, i.e. magnets
 
     MENU.outln(F("removed all pulses"));
     break;
