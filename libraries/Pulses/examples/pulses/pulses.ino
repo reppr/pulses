@@ -1156,7 +1156,7 @@ int select_n(unsigned int n) {
   if (n == 0)
     return selected_pulses;
 
-  for (int pulse=0; pulse<pl_max; pulse++)
+  for (int pulse=0; pulse<n; pulse++)
     selected_pulses |= (1 << pulse);
 
   return selected_pulses;
