@@ -508,6 +508,8 @@ void loop() {	// ARDUINO
       MENU.out((int) PULSES.fastest_pulse());
       PULSES.deactivate_pulse(PULSES.fastest_pulse());
       MENU.out(F("deactivated pulse "));
+      stress_count=0;				// seems best, maybe
+      // stress_count = stress_emergency / 2;	// FIXME: further tests	################
     }
   }
 
