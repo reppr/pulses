@@ -167,14 +167,23 @@ void Pulses::sub_time(struct time *delta, struct time *sum)
 }
 
 
+// #define OLD_BROKEN_ESP8266_COMPATIBILITY  // switches bug back on, might influence old setups ;)
+//
 void Pulses::mul_time(struct time *duration, unsigned int factor)
  {
   unsigned long scratch;
   unsigned long result=0;
   unsigned long digit;
   unsigned int carry=0;
-  unsigned long mask = (unsigned long) ((unsigned int) ~0);
-  unsigned int shift=16;
+  unsigned int shift=8*sizeof(long)/2;
+  unsigned long mask = 0;
+  for (int i=0; i<shift; i++)
+    mask |= 1 << i;
+
+#ifdef OLD_BROKEN_ESP8266_COMPATIBILITY  // *with* bug that might influence setups ;)
+  mask = (unsigned long) ((unsigned int) ~0);
+  shift=16;
+#endif
 
   for (int i=0; i<2; i++) {
     scratch = (*duration).time & mask;
@@ -202,8 +211,15 @@ void Pulses::div_time(struct time *duration, unsigned int divisor)
   unsigned long scratch;
   unsigned long result=0;
   unsigned int carry=0;
-  unsigned long mask = (unsigned long) ((unsigned int) ~0);
-  unsigned int shift=16;
+  unsigned int shift=8*sizeof(long)/2;
+  unsigned long mask=0;
+  for (int i=0; i<shift; i++)
+    mask |= 1 << i;
+
+#ifdef OLD_BROKEN_ESP8266_COMPATIBILITY  // *with* bug that might influence setups ;)
+  mask = (unsigned long) ((unsigned int) ~0);
+  shift=16;
+#endif
 
   scratch=(*duration).overflow;
   carry=(*duration).overflow % divisor;
