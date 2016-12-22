@@ -194,7 +194,7 @@ char Menu::cb_read() {
   void Menu::out(const int i)		const	{ port_.print(i); }
   void Menu::out(const long l)		const	{ port_.print(l); }
   void Menu::out(const char *str)	const	{ port_.print(str); }
-#ifndef INTEGER_ONLY 
+#ifndef INTEGER_ONLY
   void Menu::out(const double d)	const	{ port_.print(d); }
 #endif
 
@@ -208,7 +208,7 @@ char Menu::cb_read() {
   void Menu::outln(const int i)		const	{ port_.println(i); }
   void Menu::outln(const long l)	const	{ port_.println(l); }
   void Menu::outln(const char *str)	const	{ port_.println(str); }
-#ifndef INTEGER_ONLY 
+#ifndef INTEGER_ONLY
   void Menu::outln(const double d)	const	{ port_.println(d); }
 #endif
 
@@ -728,10 +728,7 @@ bool Menu::lurk_then_do() {
 bool Menu::is_numeric() const {
   int c = cb_peek();
 
-  if ( c < '0' )
-    return false;
-
-  if ( c > '9' )
+  if (c > '9' || c < '0')
     return false;
 
   return true;
