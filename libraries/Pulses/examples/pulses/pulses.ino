@@ -1111,7 +1111,6 @@ void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned
 }
 
 
-// not really working yet...
 int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   if (inverse) {
     no_inverse();
@@ -1120,8 +1119,8 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
   ratios = pentatonic_minor;
   select_n(voices);
 
-#define BRUTE_FORCE_COMPATIBILITY
-#ifdef BRUTE_FORCE_COMPATIBILITY
+#define COMPATIBILITY_PERIOD_3110	// sets the period directly
+#ifdef COMPATIBILITY_PERIOD_3110
   for (int pulse=0; pulse<voices; pulse++)
     if (selected_pulses & (1 << pulse)) {
       reset_and_edit_pulse(pulse);
@@ -1133,7 +1132,6 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
   prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
 #endif
 
-  alive_pulses_info_lines();
 }
 
 
