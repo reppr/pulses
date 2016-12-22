@@ -230,7 +230,7 @@ unsigned int jiffle_write_index=0;
 unsigned int *jiffle=jiffle_data;
 
 unsigned int harmonics4[] = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0};	// magnets on strings experiments
-// unsigned int jiff4096[] = {12,4096,4096/4, 0};	// magnets on strings experiments
+// unsigned int jiff4096[] = {1,4096,4096/4, 0};	// magnets on strings experiments
 
 
 /* **************************************************************** */
@@ -460,21 +460,11 @@ void setup() {
 //	    MENU.out(F("prepared ")); MENU.out(prepared); MENU.slash(); MENU.outln(voices);
 //	  //  selected_pulses=0;
 
+
 // working on:
+// prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
 // pentatonic steel strings on 8 magnets
 //			  ratios = pentatonic_minor;
-//			  selected_pulses=~0;
-//			  int prepared = prepare_ratios(false, 8, 32768, 41724, 0, ratios);
-
-// doing tests on just one string:
-  selected_pulses = 128;
-  reset_and_edit_selected();
-  for (int pulse=0; pulse<pl_max; pulse++)
-    if (selected_pulses & (1 << pulse))
-      PULSES.divide_period(pulse, 41724);
-
-  jiffle=harmonics4;
- // unsigned int harmonics4 = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0};
 
 
 /* ****************  END DEMO SETUPS  **************** */
@@ -510,7 +500,6 @@ void loop() {	// ARDUINO
      The intention is to have PULSES continue functioning and
      let the UI starve, when there is not enough time for everything.
   */
-
   stress_count=0;
   while (PULSES.check_maybe_do()) {	// in stress PULSES get's *first* priority.
     if (++stress_count >= stress_emergency) {
@@ -530,7 +519,7 @@ void loop() {	// ARDUINO
 	  maybe_run_continuous();	// lowest priority:
 					// maybe display input state changes.
     }
-}
+} // ARDUINO loop()
 
 #else		// c++ Linux PC test version
 
@@ -1121,6 +1110,21 @@ void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned
   PULSES.fix_global_next();
 }
 
+
+// not really working yet...
+int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
+  if (inverse) {
+    no_inverse();
+    return 0;
+  }
+  ratios = pentatonic_minor;
+  select_n(voices);
+  prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+
+  alive_pulses_info_lines();
+}
+
+
 // ****************************************************************
 int select_flagged() {
   selected_pulses=0;
@@ -1218,6 +1222,40 @@ int prepare_ratios(bool inverse, int voices, unsigned long multiplier, unsigned 
   return prepared;
 }
 
+
+int apply_ratios_on_periode(int voices, unsigned int *ratios) {
+  struct time new_period;
+  int applied=0;
+
+  for (int ratio=0, pulse=0; ratio<voices; ratio++) {
+    multiplier = ratios[ratio*2];
+    if (multiplier==0)
+      goto global_next;		// multiplier==0, end
+
+    divisor=ratios[ratio*2+1];
+    if (divisor==0)
+      goto global_next;		// divisor==0, end
+    for (; pulse<pl_max; pulse++) {
+      if (selected_pulses & (1 << pulse)) {
+	new_period = PULSES.pulses[pulse].period;
+	PULSES.mul_time(&new_period, multiplier);
+	PULSES.div_time(&new_period, divisor);
+	PULSES.pulses[pulse].period = new_period;
+//	PULSES.multiply_period(pulse, multiplier);
+//	PULSES.divide_period(pulse, divisor);
+//	PULSES.mul_time(&PULSES.pulses[pulse].period, multiplier);
+//	PULSES.div_time(&PULSES.pulses[pulse].period, multiplier);
+	applied++;
+	pulse++;
+	break;
+      }
+    }
+  }
+
+ global_next:
+  PULSES.fix_global_next();
+  return applied;
+}
 
 // ****************************************************************
 void init_chord_1345689a(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
@@ -2948,8 +2986,7 @@ bool menu_pulses_reaction(char menu_input) {
     // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
     init_click_pulses();
     init_click_pins();		// switch them on LOW, output	current off, i.e. magnets
-
-    MENU.outln(F("removed all pulses"));
+    MENU.outln(F("removed all pulses,\nswitched pins off."));
     break;
 
   case 'Z':
@@ -3059,6 +3096,22 @@ bool menu_pulses_reaction(char menu_input) {
 
       display_name5pars("init_pentatonic", inverse, voices, multiplier, divisor, sync);
       break;
+    case 13:
+      sync=0;
+      multiplier=12;
+      divisor=41724;
+      // voices=3;
+      // unsigned int harmonics4 = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0};
+      jiffle=harmonics4;
+      select_n(voices);
+      prepare_magnets(false, voices, multiplier, divisor, sync);
+
+      display_name5pars("prepare_magnets", inverse, voices, multiplier, divisor, sync);
+      alive_pulses_info_lines();
+      break;
+    default:
+      experiment=0;
+      break;
     }
     MENU.outln(F("Press '!' to start"));
     break;
@@ -3101,11 +3154,19 @@ bool menu_pulses_reaction(char menu_input) {
     case 12:
       init_pentatonic(inverse, voices, multiplier, divisor, sync);
       break;
+    case 13:
+      activate_selected_synced_now(sync);
+      MENU.ln(); alive_pulses_info_lines();  // *then* info ;)
+      break;
+    default:
+      experiment=0;
+      break;
     }
     break;
 
   default:
     return false;	// menu entry not found
+    break;
   }
   return true;		// menu entry found
 }
