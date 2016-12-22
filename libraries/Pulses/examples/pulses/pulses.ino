@@ -1119,7 +1119,19 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
   }
   ratios = pentatonic_minor;
   select_n(voices);
+
+#define BRUTE_FORCE_COMPATIBILITY
+#ifdef BRUTE_FORCE_COMPATIBILITY
+  for (int pulse=0; pulse<voices; pulse++)
+    if (selected_pulses & (1 << pulse)) {
+      reset_and_edit_pulse(pulse);
+      PULSES.pulses[pulse].period.time = 3110;	// brute force for compatibility ;)
+      PULSES.pulses[pulse].period.overflow = 0;	// brute force for compatibility ;)
+    }
+  apply_ratios_on_periode(voices, ratios);
+#else	// compatibility problems
   prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+#endif
 
   alive_pulses_info_lines();
 }
