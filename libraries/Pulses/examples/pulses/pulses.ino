@@ -2992,13 +2992,20 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'R':	// remove (=reset) all pulses
-    for (int pulse=0; pulse<pl_max; pulse++)	// tabula rasa
-      PULSES.init_pulse(pulse);
+    { int cnt=0;
+      for (int pulse=0; pulse<pl_max; pulse++) {	// tabula rasa
+	if (PULSES.pulses[pulse].flags) {
+	  PULSES.init_pulse(pulse);
+	  cnt++;
+	}
+      }
+      // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
+      init_click_pulses();
+      init_click_pins();		// switch them on LOW, output	current off, i.e. magnets
 
-    // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-    init_click_pulses();
-    init_click_pins();		// switch them on LOW, output	current off, i.e. magnets
-    MENU.outln(F("removed all pulses,\nswitched pins off."));
+      MENU.out(F("\nremoved all pulses ")); MENU.outln(cnt);
+      MENU.outln(F("switched pins off."));
+    }
     break;
 
   case 'Z':
