@@ -481,7 +481,8 @@ void setup() {
 // stress_emergency:  looks like the value does not matter too much
 // unsigned int stress_emergency=42;
 // unsigned int stress_emergency=100;
-unsigned int stress_emergency=64;
+// unsigned int stress_emergency=64;
+unsigned int stress_emergency=256;	// high value for a test
 unsigned int stress_count=0;
 
 void loop() {	// ARDUINO
@@ -505,9 +506,14 @@ void loop() {	// ARDUINO
     if (++stress_count >= stress_emergency) {
       // EMERGENCY
       // kill fastest pulse might do it? (i.e. fast sweeping up)
-      MENU.out((int) PULSES.fastest_pulse());
+
+      if (MENU.verbosity >= VERBOSITY_SOME) {
+	MENU.out((int) PULSES.fastest_pulse());
+	MENU.out(F(" deactivated  "));
+      }
+
       PULSES.deactivate_pulse(PULSES.fastest_pulse());
-      MENU.out(F("deactivated pulse "));
+
       stress_count=0;				// seems best, maybe
       // stress_count = stress_emergency / 2;	// FIXME: further tests	################
     }
@@ -2444,13 +2450,15 @@ void display_last_par(long parameter) {
 }
 
 void display_name5pars(char* name, bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
-  MENU.out((char *) name);
-  MENU.out("(");
-  MENU.out(inverse);
-  display_next_par(voices);
-  display_next_par(multiplier);
-  display_next_par(divisor);
-  display_last_par(sync);
+  if (MENU.verbosity) {
+    MENU.out((char *) name);
+    MENU.out("(");
+    MENU.out(inverse);
+    display_next_par(voices);
+    display_next_par(multiplier);
+    display_next_par(divisor);
+    display_last_par(sync);
+  }
 }
 
 // display helper function no_inverse()
@@ -2467,7 +2475,7 @@ void show_scale() {
 }
 
 void maybe_show_selected_mask() {
-  if (MENU.verbosity >= VERBOSITY_ERROR)
+  if (MENU.verbosity)
     print_selected_mask();
 }
 
@@ -2537,7 +2545,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'u':	// select destination: time_unit
     dest = CODE_TIME_UNIT;
-    if (MENU.verbosity>=VERBOSITY_ERROR)
+    if (MENU.verbosity)
       print_selected();
     break;
 
@@ -2747,7 +2755,6 @@ bool menu_pulses_reaction(char menu_input) {
   case 'n':	// synchronise to now
     // we work on pulses anyway, regardless dest
     activate_selected_synced_now(sync);
-
     if (MENU.verbosity >= VERBOSITY_SOME)
       MENU.ln(); alive_pulses_info_lines();  // *then* info ;)
     break;
@@ -3205,16 +3212,18 @@ bool menu_pulses_reaction(char menu_input) {
       break;
     case 13:
       sync=0;
-      multiplier=12;
-      divisor=41724;
-      // voices=3;
+      multiplier=1;
+      divisor=1;
+//    divisor=14000;
+      inverse=false;
       // unsigned int harmonics4 = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0};
       jiffle=harmonics4;
       select_n(voices);
-      prepare_magnets(false, voices, multiplier, divisor, sync);
-
       display_name5pars("prepare_magnets", inverse, voices, multiplier, divisor, sync);
-      alive_pulses_info_lines();
+      prepare_magnets(inverse, voices, multiplier, divisor, sync);
+
+      if (MENU.verbosity >= VERBOSITY_ERROR)
+	alive_pulses_info_lines();
       break;
     default:
       if (MENU.verbosity)
@@ -3267,9 +3276,10 @@ bool menu_pulses_reaction(char menu_input) {
     case 13:
       activate_selected_synced_now(sync);
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	MENU.ln(); alive_pulses_info_lines();  // *then* info ;)
-
+      if (MENU.verbosity >= VERBOSITY_SOME) {  // *then* maybe info
+	MENU.ln();
+	alive_pulses_info_lines();
+      }
       break;
     default:	// invalid
       experiment=0;

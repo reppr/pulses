@@ -371,12 +371,12 @@ int Pulses::fastest_pulse() {	// *not* dealing with period overflow here...
   double min_period=0xefffffffffffffff;
   int fast_pulse=-1;
 
-  for (int pulse=0; pulse<pl_max; pulse++) {
+  for (int pulse=pl_max-1; pulse>-1; pulse--) {	// start with *highest* pulse index downwards
     if (pulses[pulse].flags & ACTIVE)
-    if (pulses[pulse].flags & ACTIVE && pulses[pulse].period.time < min_period) {
-      min_period = pulses[pulse].period.time;
-      fast_pulse = pulse;
-    }
+      if (pulses[pulse].flags & ACTIVE && pulses[pulse].period.time < min_period) {
+	min_period = pulses[pulse].period.time;
+	fast_pulse = pulse;
+      }
   }
   return fast_pulse;
 }
