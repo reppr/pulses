@@ -1136,6 +1136,7 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
       reset_and_edit_pulse(pulse);
       PULSES.pulses[pulse].period.time = 3110;	// brute force for compatibility ;)
       PULSES.pulses[pulse].period.overflow = 0;	// brute force for compatibility ;)
+      en_jiffle_thrower(pulse, jiffle);
     }
   apply_ratios_on_periode(voices, ratios);
 #else	// compatibility problems
@@ -3211,9 +3212,10 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("init_pentatonic", inverse, voices, multiplier, divisor, sync);
       break;
     case 13:
-      sync=0;
+      sync=1;	// or: sync=0;
       multiplier=1;
       divisor=1;
+      voices=8;	//just for 'The Harmonical Strings Christmas Evening Sounds'
 //    divisor=14000;
       inverse=false;
       // unsigned int harmonics4 = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0};
