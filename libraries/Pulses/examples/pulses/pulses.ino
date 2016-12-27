@@ -56,33 +56,15 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
   #endif
 
 
+  /* **************** Menu **************** */
   #include <Menu.h>
-  #include <Pulses.h>
 
-#else	// #include's for Linux PC test version
-  #include <iostream>
-  #include <Menu/Menu.h>
-  #include <Pulses/Pulses.h>
+  //  Menu(int size, int menuPages, int (*maybeInput)(void), STREAMTYPE & port);
+  /*
+    This version definines the menu INPUT routine int men_getchar();
+    in the *program* not inside the Menu class.
+  */
 
-  #include "Pulses/Pulses.cpp"		// why that?
-  #include "Menu/Menu.cpp"		// why that?
-#endif
-
-
-/* **************************************************************** */
-// some #define's:
-#define ILLEGAL		-1
-#define ILLEGAL_PIN	255
-
-/* **************************************************************** */
-// MENU
-
-//  Menu(int size, int menuPages, int (*maybeInput)(void), STREAMTYPE & port);
-/*
-  This version definines the menu INPUT routine int men_getchar();
-  in the *program* not inside the Menu class.
-*/
-#ifdef ARDUINO
   /* BAUDRATE for Serial:	uncomment one of the following lines:	*/
   #define BAUDRATE	115200		// works fine here
   //#define BAUDRATE	57600
@@ -100,7 +82,14 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
     return Serial.read();
   }
 
-#else
+#else	// #include's for Linux PC test version	*NOT SUPPORTED*
+
+  #include <iostream>
+  #include <Menu/Menu.h>
+  #include <Pulses/Pulses.h>
+
+  #include "Pulses/Pulses.cpp"		// why that?
+  #include "Menu/Menu.cpp"		// why that?
 
   #define MENU_OUTSTREAM	cout
 
@@ -111,6 +100,35 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 #endif
 
 Menu MENU(32, 3, &men_getchar, MENU_OUTSTREAM);
+
+  /* **************** Pulses **************** */
+  #include <Pulses.h>
+#ifdef ARDUINO		// on ARDUINO
+
+  #ifdef __SAM3X8E__
+     const int pl_max=32;		// could be more on DUE ;)
+  #else
+    #ifdef ESP8266
+     const int pl_max=32;		// ESP8266
+    #else
+      #ifdef __AVR_ATmega328P__
+         const int pl_max=12;		// saving RAM on 328P
+      #else
+         const int pl_max=16;		// default i.e. mega boards
+      #endif
+    #endif
+  #endif
+
+#else		// *NOT* on ARDUINO...	*NOT SUPPORTED*
+  const int pl_max=64;		// Linux PC test version
+#endif
+
+Pulses PULSES(pl_max);
+
+/* **************************************************************** */
+// some #define's:
+#define ILLEGAL		-1
+#define ILLEGAL_PIN	255
 
 // defined later on:
 bool maybe_stop_sweeping();
@@ -149,28 +167,6 @@ void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned
 uint8_t click_pin[CLICK_PULSES];	// ################
 
 /* **************************************************************** */
-// PULSES
-
-#ifdef ARDUINO		// on ARDUINO
-  #ifdef __SAM3X8E__
-const int pl_max=32;		// could be more on DUE ;)
-  #else
-    #ifdef ESP8266
-const int pl_max=32;		// ESP8266
-    #else
-      #ifdef __AVR_ATmega328P__
-const int pl_max=12;		// saving RAM on 328P
-      #else
-const int pl_max=16;		// default i.e. mega boards
-      #endif
-    #endif
-  #endif
-#else			// *NOT* on ARDUINO...
-const int pl_max=64;		// Linux PC test version
-#endif
-
-Pulses PULSES(pl_max);
-
 #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
   // to switch WiFi off I evaluate different methods:
   // activate *one* of these methods:
@@ -1559,6 +1555,7 @@ void en_info(int pulse)
 {
   if (pulse != ILLEGAL) {
     PULSES.pulses[pulse].periodic_do = (void (*)(int)) &pulse_info_1line;
+    //    PULSES.pulses[pulse].periodic_do = (void (*)(int)) &Pulses::pulse_info_1line;
   }
 }
 
