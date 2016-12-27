@@ -230,7 +230,9 @@ unsigned int jiffle_write_index=0;
 unsigned int *jiffle=jiffle_data;
 
 unsigned int harmonics4[] = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0};	// magnets on strings experiments
-// unsigned int jiff4096[] = {1,4096,4096/4, 0};	// magnets on strings experiments
+unsigned int ting1024[] = {1,4096,64, 1,1024,128, 1,1024*3,128, 1,1024*2,128, 1,1024*8,64, 1,1024,64, 0}; // magnet strings experiments 2
+// unsigned int ting1024[] = {1,4096,64, 1,1024,128, 0};			// magnet strings experiments 2
+
 
 
 /* **************************************************************** */
@@ -1120,6 +1122,7 @@ void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned
 }
 
 
+// old style, obsolete
 int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   if (inverse) {
     no_inverse();
@@ -3028,8 +3031,8 @@ bool menu_pulses_reaction(char menu_input) {
     // copy_jiffle_data(jiffletab_december_pizzicato);
     // display_jiffletab(jiffle);
 
-    tuning = PULSES.tuning; // FIXME: workaround for having all 3 sweep implementations in parallel
-    sweep_info();
+    //    tuning = PULSES.tuning; // FIXME: workaround for having all 3 sweep implementations in parallel
+    //    sweep_info();
     //    {
     //      int fastest=PULSES.fastest_pulse();
     //      MENU.ln();
@@ -3216,13 +3219,28 @@ bool menu_pulses_reaction(char menu_input) {
       multiplier=1;
       divisor=1;
       voices=8;	//just for 'The Harmonical Strings Christmas Evening Sounds'
-//    divisor=14000;
       inverse=false;
       // unsigned int harmonics4 = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0};
       jiffle=harmonics4;
       select_n(voices);
       display_name5pars("prepare_magnets", inverse, voices, multiplier, divisor, sync);
       prepare_magnets(inverse, voices, multiplier, divisor, sync);
+
+      if (MENU.verbosity >= VERBOSITY_ERROR)
+	alive_pulses_info_lines();
+      break;
+    case 14:
+      // magnets on strings, second take
+      multiplier=1;
+      divisor=1;
+      inverse=false;
+
+      ratios = pentatonic_minor;
+      select_n(voices);
+      prepare_ratios(false, voices, multiplier * 1024 , divisor * 1167, sync, ratios);
+      jiffle=ting1024;
+      select_n(voices);
+      display_name5pars("E14", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.verbosity >= VERBOSITY_ERROR)
 	alive_pulses_info_lines();
