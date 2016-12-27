@@ -2765,6 +2765,18 @@ bool menu_pulses_reaction(char menu_input) {
       MENU.ln(); alive_pulses_info_lines();  // *then* info ;)
     break;
 
+  case 'N':	// NULLs payload
+    // we work on pulses anyway, regardless dest
+    for (int pulse=0; pulse<voices; pulse++)
+      if (selected_pulses & (1 << pulse))
+	PULSES.pulses[pulse].periodic_do = NULL;
+
+    PULSES.fix_global_next();	// just in case?
+
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      MENU.ln(); alive_pulses_info_lines();  // *then* info ;)
+    break;
+
   case 'c':	// en_click
     // we work on voices anyway, regardless dest
     for (int pulse=0; pulse<voices; pulse++)
