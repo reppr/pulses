@@ -125,6 +125,11 @@ Menu MENU(32, 3, &men_getchar, MENU_OUTSTREAM);
 
 Pulses PULSES(pl_max);
 
+  /* **************** Pulses **************** */
+  #include <Harmonical.h>
+
+Harmonical HARMONICAL();
+
 /* **************************************************************** */
 // some #define's:
 #define ILLEGAL		-1
