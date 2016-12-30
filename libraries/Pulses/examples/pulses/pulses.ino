@@ -159,6 +159,16 @@ void init_rhythm_4(bool inverse, int voices, unsigned int multiplier, unsigned i
 void setup_jifflesNEW(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);;
 void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 
+struct fraction* add_fraction(struct fraction * delta, struct fraction * sum);
+void display_fraction(struct fraction *f);
+bool maybe_calculate_input(long *result);
+unsigned int GCD(unsigned int a, unsigned int b);
+unsigned int LCM(unsigned int a, unsigned int b);
+void reduce_fraction(struct fraction *f);
+void expand_fractions(struct fraction * a, struct fraction * b);
+
+
+
 
 // FIXME: ################
 #ifndef CLICK_PULSES		// default number of click frequencies
@@ -1568,6 +1578,21 @@ void en_info(int pulse)
 }
 
 
+bool maybe_display_more() {
+  if (MENU.verbosity < VERBOSITY_SOME)
+    return false;
+
+  if (MENU.verbosity >= VERBOSITY_CHATTY)
+    return true;
+
+  // verbosity is VERBOSITY_SOME: display only if no other input is waiting
+  if(MENU.cb_peek()==EOF)
+    return true;
+
+  return false;
+}
+
+
 const char noAlive[] = "no pulses alive";
 
 void alive_pulses_info_lines()
@@ -2592,8 +2617,10 @@ bool menu_pulses_reaction(char menu_input) {
   case 'a':	// select destination: all pulses with flags
     select_flagged();
     maybe_show_selected_mask();
-    if (MENU.verbosity >= VERBOSITY_SOME)
+
+    if (maybe_display_more())
       alive_pulses_info_lines();
+
     break;
 
   case 'A':	// select destination: *all* pulses
@@ -2649,7 +2676,8 @@ bool menu_pulses_reaction(char menu_input) {
 
     PULSES.fix_global_next();
     PULSES.check_maybe_do();			// maybe do it *first*
-    if (MENU.verbosity >= VERBOSITY_SOME) {
+
+    if (maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();			// *then* info ;)
     }
@@ -2691,7 +2719,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  if (selected_pulses & (1 << pulse))
 	    PULSES.multiply_period(pulse, new_value);
 
-	if (MENU.verbosity >= VERBOSITY_SOME) {
+	if (maybe_display_more()) {
 	  MENU.ln();
 	  alive_pulses_info_lines();
 	}
@@ -2718,7 +2746,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  if (selected_pulses & (1 << pulse))
 	    PULSES.divide_period(pulse, new_value);
 
-	if (MENU.verbosity >= VERBOSITY_SOME) {
+	if (maybe_display_more()) {
 	  MENU.ln();
 	  alive_pulses_info_lines();
 	}
@@ -2749,7 +2777,7 @@ bool menu_pulses_reaction(char menu_input) {
 	    PULSES.set_new_period(pulse, time_scratch);
 	  }
 
-	if (MENU.verbosity >= VERBOSITY_SOME) {
+	if (maybe_display_more()) {
 	  MENU.ln();
 	  alive_pulses_info_lines();
 	}
@@ -2773,12 +2801,13 @@ bool menu_pulses_reaction(char menu_input) {
       for (int pulse=0; pulse<pl_max; pulse++)
 	if (selected_pulses & (1 << pulse)) {
 	  PULSES.init_pulse(pulse);
-	  MENU.out(pulse); MENU.space();
+	  if (maybe_display_more())
+	    MENU.out(pulse); MENU.space();
 	}
       MENU.ln();
     }
 
-    if (MENU.verbosity) {
+    if (maybe_display_more()) {
       alive_pulses_info_lines();
       MENU.ln();
     }
@@ -2786,7 +2815,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'P':	// pulse create and edit
     reset_and_edit_selected();
-    if (MENU.verbosity) {
+    if (maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -2794,9 +2823,9 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'n':	// synchronise to now
     // we work on pulses anyway, regardless dest
-    activate_selected_synced_now(sync);
-    if (MENU.verbosity >= VERBOSITY_SOME)
-      MENU.ln(); alive_pulses_info_lines();  // *then* info ;)
+    activate_selected_synced_now(sync);		// sync and activate
+    if (maybe_display_more())
+      MENU.ln(); alive_pulses_info_lines();	// *then* info ;)
     break;
 
   case 'N':	// NULLs payload
@@ -2807,7 +2836,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     PULSES.fix_global_next();	// just in case?
 
-    if (MENU.verbosity >= VERBOSITY_SOME)
+    if (maybe_display_more())
       MENU.ln(); alive_pulses_info_lines();  // *then* info ;)
     break;
 
@@ -2817,7 +2846,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (selected_pulses & (1 << pulse))
 	en_click(pulse);
 
-    if (MENU.verbosity >= VERBOSITY_SOME) {
+    if (maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -2830,7 +2859,7 @@ bool menu_pulses_reaction(char menu_input) {
     if (sweep_up==0)	// start sweeping if it was disabled
       sweep_up=1;
 
-    if (MENU.verbosity >= VERBOSITY_SOME)
+    if (maybe_display_more())
       sweep_info();
 
     break;
@@ -2881,7 +2910,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (selected_pulses & (1 << pulse))
 	en_sweep_click(pulse);
 
-    if (MENU.verbosity >= VERBOSITY_SOME) {
+    if (maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -2894,7 +2923,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (selected_pulses & (1 << pulse))
 	en_sweep_click_0(pulse);
 
-    if (MENU.verbosity >= VERBOSITY_SOME) {
+    if (maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -2907,7 +2936,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (selected_pulses & (1 << pulse))
 	en_tuned_sweep_click(pulse);
 
-    if (MENU.verbosity >= VERBOSITY_SOME) {
+    if (maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -2915,15 +2944,12 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'T':	// 'T<integer-number>' sets tuning, 'T' toggles TUNED
-    MENU.out("DADA0 T "); MENU.outln(result);	// ################
     result = (long) PULSES.tuning;
     if (maybe_calculate_input(&result))	{	// T1 sets tuning to 1.0
       PULSES.tuning = (double) result;
       tuning_info();
       MENU.ln();
-      MENU.outln("DADA0	calculated	"); MENU.outln(result);	// ################
     } else {	// toggle TUNED on selected pulses
-      MENU.outln("DADA0	TOGGLING"); MENU.outln(result);	// ################
       // we work on voices anyway, regardless dest
       for (int pulse=0; pulse<voices; pulse++)
 	if (selected_pulses & (1 << pulse))
@@ -2933,7 +2959,7 @@ bool menu_pulses_reaction(char menu_input) {
 	    PULSES.activate_tuning(pulse);
     }
 
-    if (MENU.verbosity >= VERBOSITY_SOME) {
+    if (maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -2946,7 +2972,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (selected_pulses & (1 << pulse))
 	en_jiffle_thrower(pulse, jiffle);
 
-    if (MENU.verbosity >= VERBOSITY_SOME) {
+    if (maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -3027,7 +3053,7 @@ bool menu_pulses_reaction(char menu_input) {
 	MENU.outln(invalid_);
     }
 
-    if (MENU.verbosity >= VERBOSITY_SOME)
+    if (maybe_display_more())
       display_jiffletab(jiffle);
 
     break;
@@ -3038,7 +3064,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (selected_pulses & (1 << pulse))
 	en_info(pulse);
 
-    if (MENU.verbosity >= VERBOSITY_SOME) {
+    if (maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -3050,7 +3076,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (selected_pulses & (1 << pulse))
 	en_INFO(pulse);
 
-    if (MENU.verbosity >= VERBOSITY_SOME) {
+    if (maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -3058,11 +3084,11 @@ bool menu_pulses_reaction(char menu_input) {
 
   case '{':	// enter_jiffletab
     menu_mode=JIFFLE_ENTRY_UNTIL_ZERO_MODE;
+    jiffle = jiffle_data;
     jiffle_write_index=0;
     if(MENU.cb_peek()==EOF)
       if (MENU.verbosity)
 	display_jiffletab(jiffle);
-    jiffle = jiffle_data;
     break;
 
   case '}':	// display jiffletab / end editing jiffletab
@@ -3083,7 +3109,7 @@ bool menu_pulses_reaction(char menu_input) {
     else
       MENU.outln(F("small positive integer only"));
 
-    if (MENU.verbosity >= VERBOSITY_SOME)
+    if (maybe_display_more())
       show_scale();
     break;
 
@@ -3131,6 +3157,7 @@ bool menu_pulses_reaction(char menu_input) {
     //      MENU.ln();
     //      PULSES.deactivate_pulse(fastest);
     //    }
+    MENU.out(HARMONICAL.harmonical_base);
     break;
 
   case 'm':	// multiplier
@@ -3143,8 +3170,9 @@ bool menu_pulses_reaction(char menu_input) {
     else
       MENU.outln(F("small positive integer only"));
 
-    if (MENU.verbosity >= VERBOSITY_SOME)
+    if (maybe_display_more())
       show_scale();
+
     break;
 
   case 'V':	// set voices
@@ -3157,7 +3185,7 @@ bool menu_pulses_reaction(char menu_input) {
     else
       MENU.outln(invalid_);
 
-    if (MENU.verbosity >= VERBOSITY_SOME)
+    if (maybe_display_more())
       MENU.outln(voices);
 
     break;
@@ -3168,11 +3196,13 @@ bool menu_pulses_reaction(char menu_input) {
 
     inverse = !inverse;	// toggle bottom up/down click-pin mapping
 
-    if (MENU.verbosity) {
-      if (inverse)
-	MENU.outln(F("up"));
-      else
-	MENU.outln(F("down"));
+    if (maybe_display_more()) {
+      if (MENU.verbosity) {
+	if (inverse)
+	  MENU.outln(F("up"));
+	else
+	  MENU.outln(F("down"));
+      }
     }
 
     break;
@@ -3199,13 +3229,15 @@ bool menu_pulses_reaction(char menu_input) {
   case 'Z':
     reverse_click_pins();
 
-    if (MENU.verbosity >= VERBOSITY_SOME)
+    if (MENU.verbosity)
       MENU.outln(F("reverse_click_pins"));
 
     break;
 
   case 'E':	// enter experiment
-    MENU.out(F("experiment "));
+
+    if (MENU.verbosity)
+      MENU.out(F("experiment "));
 
     new_value = MENU.numeric_input(experiment);
     if (new_value>=0 )
@@ -3213,35 +3245,41 @@ bool menu_pulses_reaction(char menu_input) {
     else
       MENU.out(onlyPositive);
 
-    MENU.outln(experiment);
+    if (MENU.verbosity)
+      MENU.outln(experiment);
+
     switch (experiment) {	// initialize defaults, but do not start yet
     case 1:
       multiplier=2;
       divisor=1;
       sync=15;
 
-      display_name5pars("setup_jiffle128", inverse, voices, multiplier, divisor, sync);
+      if (MENU.verbosity)
+	display_name5pars("setup_jiffle128", inverse, voices, multiplier, divisor, sync);
       break;
     case 2:
       sync=0;
       multiplier=1;
       divisor=1;
 
-      display_name5pars("init_div_123456", inverse, voices, multiplier, divisor, sync);
+      if (MENU.verbosity)
+	display_name5pars("init_div_123456", inverse, voices, multiplier, divisor, sync);
       break;
     case 3:
       sync=1;
       multiplier=2;
       divisor=3;
 
-      // display_name5pars("setup_jiffles0", inverse, voices, multiplier, divisor, sync);
-      MENU.out(F("setup_jiffles0("));
-      MENU.out(inverse);
-      display_next_par(voices);
-      display_next_par(multiplier);
-      display_next_par(divisor);
-      display_next_par(sync);
-      MENU.outln(F(")  ESP8266 Frogs"));
+      if (MENU.verbosity) {
+	// display_name5pars("setup_jiffles0", inverse, voices, multiplier, divisor, sync);
+	MENU.out(F("setup_jiffles0("));
+	MENU.out(inverse);
+	display_next_par(voices);
+	display_next_par(multiplier);
+	display_next_par(divisor);
+	display_next_par(sync);
+	MENU.outln(F(")  ESP8266 Frogs"));
+      }
       break;
     case 4:
       multiplier=1;
@@ -3249,63 +3287,72 @@ bool menu_pulses_reaction(char menu_input) {
       sync=0;
       jiffle=jiffletab;
 
-      display_name5pars("setup_jiffles2345", inverse, voices, multiplier, divisor, sync);
+      if (MENU.verbosity)
+	display_name5pars("setup_jiffles2345", inverse, voices, multiplier, divisor, sync);
       break;
     case 5:
       sync=0;		// FIXME: test and select ################
       multiplier=3;
       divisor=1;
 
-      display_name5pars("init_123456", inverse, voices, multiplier, divisor, sync);
+      if (MENU.verbosity)
+	display_name5pars("init_123456", inverse, voices, multiplier, divisor, sync);
       break;
     case 6:
       sync=0;		// FIXME: test and select ################
       multiplier=1;
       divisor=1;
 
-      display_name5pars("init_chord_1345689a", inverse, voices, multiplier, divisor, sync);
+      if (MENU.verbosity)
+	display_name5pars("init_chord_1345689a", inverse, voices, multiplier, divisor, sync);
       break;
     case 7:
       sync=1;
       multiplier=1;
       divisor=6*7;
 
-      display_name5pars("init_rhythm_1", inverse, voices, multiplier, divisor, sync);
+      if (MENU.verbosity)
+	display_name5pars("init_rhythm_1", inverse, voices, multiplier, divisor, sync);
       break;
     case 8:
       sync=5;
       multiplier=1;
       divisor=1;
 
-      display_name5pars("init_rhythm_2", inverse, voices, multiplier, divisor, sync);
+      if (MENU.verbosity)
+	display_name5pars("init_rhythm_2", inverse, voices, multiplier, divisor, sync);
       break;
     case 9:
       sync=3;
       multiplier=1;
       divisor=1;
 
-      display_name5pars("init_rhythm_3", inverse, voices, multiplier, divisor, sync);
+      if (MENU.verbosity)
+	display_name5pars("init_rhythm_3", inverse, voices, multiplier, divisor, sync);
       break;
     case 10:
       sync=1;
       multiplier=1;
       divisor=7L*3L;
 
-      display_name5pars("init_rhythm_4", inverse, voices, multiplier, divisor, sync);
+      if (MENU.verbosity)
+	display_name5pars("init_rhythm_4", inverse, voices, multiplier, divisor, sync);
       break;
     case 11:
       sync=3;
       multiplier=3;
       divisor=1;
 
-      display_name5pars("setup_jifflesNEW", inverse, voices, multiplier, divisor, sync);
+      if (MENU.verbosity)
+	display_name5pars("setup_jifflesNEW", inverse, voices, multiplier, divisor, sync);
       break;
     case 12:
       sync=1;
       multiplier=1;
       divisor=1;
 
-      display_name5pars("init_pentatonic", inverse, voices, multiplier, divisor, sync);
+      if (MENU.verbosity)
+	display_name5pars("init_pentatonic", inverse, voices, multiplier, divisor, sync);
       break;
     case 13:
       sync=1;	// or: sync=0;
@@ -3319,7 +3366,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("prepare_magnets", inverse, voices, multiplier, divisor, sync);
       prepare_magnets(inverse, voices, multiplier, divisor, sync);
 
-      if (MENU.verbosity >= VERBOSITY_ERROR)
+      if (MENU.verbosity)
 	alive_pulses_info_lines();
       break;
     case 14:
@@ -3335,7 +3382,7 @@ bool menu_pulses_reaction(char menu_input) {
       select_n(voices);
       display_name5pars("E14", inverse, voices, multiplier, divisor, sync);
 
-      if (MENU.verbosity >= VERBOSITY_ERROR)
+      if (MENU.verbosity)
 	alive_pulses_info_lines();
       break;
     case 15:
@@ -3351,7 +3398,7 @@ bool menu_pulses_reaction(char menu_input) {
       select_n(voices);
       display_name5pars("E15", inverse, voices, multiplier, divisor, sync);
 
-      if (MENU.verbosity >= VERBOSITY_ERROR)
+      if (MENU.verbosity)
 	alive_pulses_info_lines();
       break;
 
@@ -3368,7 +3415,7 @@ bool menu_pulses_reaction(char menu_input) {
       // jiffle = arpeggio4096;
       display_name5pars("E16 european_pent", inverse, voices, multiplier, divisor, sync);
 
-      if (MENU.verbosity >= VERBOSITY_ERROR)
+      if (MENU.verbosity)
 	alive_pulses_info_lines();
       break;
 
@@ -3379,7 +3426,9 @@ bool menu_pulses_reaction(char menu_input) {
       experiment=0;
       break;
     }
-    MENU.outln(F("Press '!' to start"));
+    if (MENU.verbosity)
+      MENU.outln(F("Press '!' to start"));
+
     break;
 
   case '!':			// '!' setup and start experiment
@@ -3794,7 +3843,7 @@ double d = atof(thestring).
 
 
 // will go to class Harmonical
-unsigned int GCD (unsigned int a, unsigned int b) {	// greatest common divisor, Euklid
+unsigned int GCD(unsigned int a, unsigned int b) {	// greatest common divisor, Euklid
   unsigned int m;
 
   while (b) {
