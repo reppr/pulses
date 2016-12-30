@@ -159,16 +159,6 @@ void init_rhythm_4(bool inverse, int voices, unsigned int multiplier, unsigned i
 void setup_jifflesNEW(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);;
 void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 
-struct fraction* add_fraction(struct fraction * delta, struct fraction * sum);
-void display_fraction(struct fraction *f);
-bool maybe_calculate_input(long *result);
-unsigned int GCD(unsigned int a, unsigned int b);
-unsigned int LCM(unsigned int a, unsigned int b);
-void reduce_fraction(struct fraction *f);
-void expand_fractions(struct fraction * a, struct fraction * b);
-
-
-
 
 // FIXME: ################
 #ifndef CLICK_PULSES		// default number of click frequencies
@@ -2192,7 +2182,7 @@ struct fraction jiffletab_len(unsigned int *jiffletab) {
 
     scratch.multiplier = multiplier * count;
     scratch.divisor = divisor;
-    add_fraction(&scratch, &f);
+    HARMONICAL.add_fraction(&scratch, &f);
   }
 
   return f;
@@ -3127,13 +3117,13 @@ bool menu_pulses_reaction(char menu_input) {
 //	      }
 //	    }
 //
-    MENU.outln(LCM(100,3));
-    MENU.outln(LCM(18,24));
-    MENU.outln(LCM(60,72));
+    MENU.outln(HARMONICAL.LCM(100,3));
+    MENU.outln(HARMONICAL.LCM(18,24));
+    MENU.outln(HARMONICAL.LCM(60,72));
 
-    MENU.outln(GCD(100,3));
-    MENU.outln(GCD(18,24));
-    MENU.outln(GCD(60,72));
+    MENU.outln(HARMONICAL.GCD(100,3));
+    MENU.outln(HARMONICAL.GCD(18,24));
+    MENU.outln(HARMONICAL.GCD(60,72));
 
     fraction bruch;
     fraction bruch1;
@@ -3143,8 +3133,8 @@ bool menu_pulses_reaction(char menu_input) {
     //    reduce_fraction(&bruch);
     bruch2.multiplier=100;
     bruch2.divisor=300;
-    add_fraction(&bruch1, &bruch2);
 
+    HARMONICAL.add_fraction(&bruch1, &bruch2);
     MENU.out(bruch2.multiplier); MENU.slash(); MENU.outln(bruch2.divisor);
     // copy_jiffle_data(gling128);	// zero terminated
     // copy_jiffle_data(jiffletab_december_pizzicato);
@@ -3652,16 +3642,10 @@ bool maybe_calculate_input(long *result) {
 }
 
 
-// will go to class Harmonical
-unsigned int GCD(unsigned int a, unsigned int b) {	// greatest common divisor, Euklid
-  unsigned int m;
-
-  while (b) {
-    m = a % b;
-    a = b;
-    b = m;
-  }
-  return a;
+void display_fraction(struct fraction *f) {
+  MENU.out((*f).multiplier);
+  MENU.slash();
+  MENU.out((*f).divisor);
 }
 
 
@@ -3670,37 +3654,17 @@ unsigned int LCM(unsigned int a, unsigned int b) {	// least common multiple
 }
 
 
-void reduce_fraction(struct fraction *f) {
-  unsigned int d = GCD(f->multiplier, f->divisor);
+    first_value *= 10;
+  }
+  // now we know that there are i more chiffres
+  long more_digits=MENU.numeric_input(0);
 
-  (*f).multiplier /= d;
-  (*f).divisor /= d;
+  return first_value + more_digits;
 }
 
 
-void expand_fractions(struct fraction * a, struct fraction * b) {
-  unsigned int l = LCM(a->divisor, b->divisor);
-  unsigned int f;
-
-  f =  l / a->divisor ;
-  (*a).multiplier *= f;
-  (*a).divisor    *= f;
-  f =  l / b->divisor ;
-  (*b).multiplier *= f;
-  (*b).divisor *= f;
-}
 
 
-struct fraction* add_fraction(struct fraction * delta, struct fraction * sum) {
-  expand_fractions(delta, sum);
-  (*sum).multiplier += (*delta).multiplier;
-  reduce_fraction(sum);
-  return sum;
-}
 
 
-void display_fraction(struct fraction *f) {
-  MENU.out((*f).multiplier);
-  MENU.slash();
-  MENU.out((*f).divisor);
-}
+

@@ -1,10 +1,10 @@
-/* **************************************************************** */
+#/* **************************************************************** */
 /*
-   Harmonics.h
+   Harmonical.h
 */
 /* **************************************************************** */
-#ifndef HARMONICS_h
-#define HARMONICS_h
+#ifndef HARMONICAL_h
+#define HARMONICAL_h
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,15 +28,29 @@
   #define STREAMTYPE	ostream
 #endif
 
-/* **************************************************************** */
-/* class Harmonics {}							*/
 
-class Harmonics {
+/* **************************************************************** */
+struct fraction {
+  unsigned int multiplier;
+  unsigned int divisor;
+};
+
+/* **************************************************************** */
+class Harmonical {
+
  public:
-  ~Harmonics();
-  Harmonics();
+  ~Harmonical();
+  Harmonical(void);
+
+  unsigned int GCD(unsigned int a, unsigned int b);	// greatest common divisor, Euklid
+  unsigned int LCM(unsigned int a, unsigned int b);	// least common multiple
+  void reduce_fraction(struct fraction *f);
+  void expand_fractions(struct fraction * a, struct fraction * b);
+  fraction * add_fraction(struct fraction * delta, struct fraction * sum);
+
+  unsigned long harmonical_base;
 };
 
 
 /* **************************************************************** */
-#endif HARMONICS_h
+#endif HARMONICAL_h
