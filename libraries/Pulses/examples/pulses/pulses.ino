@@ -2824,7 +2824,7 @@ bool menu_pulses_reaction(char menu_input) {
   case 'n':	// synchronise to now
     // we work on pulses anyway, regardless dest
     activate_selected_synced_now(sync);		// sync and activate
-    if (maybe_display_more())
+    if (MENU.verbosity >= VERBOSITY_SOME)
       MENU.ln(); alive_pulses_info_lines();	// *then* info ;)
     break;
 
@@ -2836,7 +2836,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     PULSES.fix_global_next();	// just in case?
 
-    if (maybe_display_more())
+    if (MENU.verbosity >= VERBOSITY_SOME)
       MENU.ln(); alive_pulses_info_lines();  // *then* info ;)
     break;
 
@@ -3650,196 +3650,6 @@ bool maybe_calculate_input(long *result) {
 
   return false;
 }
-
-
-//	long complete_numeric_input_calculating(long first_value) {
-//	  char token = MENU.cb_peek();
-//
-//	//  if (token=='*') {
-//	//  }
-//
-//	  if (token < '0')	// if next token is not a chiffre
-//	    return first_value;	//    return already read first_value
-//	  if (token > '9')	//
-//	    return first_value;	//
-//
-//	  int chiffre;
-//	  for (int i=0;; i++) {
-//	    chiffre=MENU.cb_peek(i);
-//	    if (chiffre > '9')
-//	      break;
-//	    if (chiffre < '0')
-//	      break;
-//
-//	    first_value *= 10;
-//	  }
-//	  // now we know that there are i more chiffres
-//	  long more_digits=MENU.numeric_input(0);
-//
-//	  return first_value + more_digits;
-//	}
-
-
-/*
-now  tic/ofl 59633662/0 =  59.634s	1/0	sweep up	tuning 1.00	slowest 256.00	fastest 0.00
-now  tic/ofl 119618613/0 = 119.619s	*2	sweep up	tuning 2.00	slowest 256.00	fastest 0.00
-now  tic/ofl 154715558/0 = 154.716s	*3	sweep up	tuning 3.00	slowest 256.00	fastest 0.00
-now  tic/ofl 179616141/0 = 179.616s	*4	sweep up	tuning 4.00	slowest 256.00	fastest 0.00
-now  tic/ofl 198934586/0 = 198.935s	*5	sweep up	tuning 5.00	slowest 256.00	fastest 0.00
-now  tic/ofl 214714231/0 = 214.714s	*6	sweep up	tuning 6.00	slowest 256.00	fastest 0.00
-now  tic/ofl 228058854/0 = 228.059s	*7	sweep up	tuning 7.00	slowest 256.00	fastest 0.00
-now  tic/ofl 239618059/0 = 239.618s	*8	sweep up	tuning 8.00	slowest 256.00	fastest 0.00
-now  tic/ofl 249813689/0 = 249.814s	*9	sweep up	tuning 9.00	slowest 256.00	fastest 0.00
-now  tic/ofl 258933756/0 = 258.934s	*10	sweep up	tuning 10.00	slowest 256.00	fastest 0.00
-now  tic/ofl 267183656/0 = 267.184s	*11	sweep up	tuning 11.00	slowest 256.00	fastest 0.00
-now  tic/ofl 274715064/0 = 274.715s	*12	sweep up	tuning 12.00	slowest 256.00	fastest 0.00
-now  tic/ofl 281644896/0 = 281.645s	*13	sweep up	tuning 13.00	slowest 256.00	fastest 0.00
-now  tic/ofl 288059064/0 = 288.059s	*14	sweep up	tuning 14.00	slowest 256.00	fastest 0.00
-now  tic/ofl 294031941/0 = 294.032s	*15	sweep up	tuning 15.00	slowest 256.00	fastest 0.00
-now  tic/ofl 299617594/0 = 299.618s	*16	sweep up	tuning 16.00	slowest 256.00	fastest 0.00
-now  tic/ofl 304865784/0 = 304.866s	*17	sweep up	tuning 17.00	slowest 256.00	fastest 0.00
-now  tic/ofl 309813746/0 = 309.814s	*18	sweep up	tuning 18.00	slowest 256.00	fastest 0.00
-now  tic/ofl 314492829/0 = 314.493s	*19	sweep up	tuning 19.00	slowest 256.00	fastest 0.00
-now  tic/ofl 318932930/0 = 318.933s	*20	sweep up	tuning 20.00	slowest 256.00	fastest 0.00
-now  tic/ofl 323156260/0 = 323.156s	*21	sweep up	tuning 21.00	slowest 256.00	fastest 0.00
-now  tic/ofl 327184008/0 = 327.184s	*22	sweep up	tuning 22.00	slowest 256.00	fastest 0.00
-now  tic/ofl 331031569/0 = 331.032s	*23	sweep up	tuning 23.00	slowest 256.00	fastest 0.00
-now  tic/ofl 334715298/0 = 334.715s	*24	sweep up	tuning 24.00	slowest 256.00	fastest 0.00
-now  tic/ofl 338249451/0 = 338.249s	*25	sweep up	tuning 25.00	slowest 256.00	fastest 0.00
-now  tic/ofl 341644001/0 = 341.644s	*26	sweep up	tuning 26.00	slowest 256.00	fastest 0.00
-now  tic/ofl 344911222/0 = 344.911s	*27	sweep up	tuning 27.00	slowest 256.00	fastest 0.00
-now  tic/ofl 348058729/0 = 348.059s	*28	sweep up	tuning 28.00	slowest 256.00	fastest 0.00
-now  tic/ofl 351096462/0 = 351.096s	*29	sweep up	tuning 29.00	slowest 256.00	fastest 0.00
-now  tic/ofl 354031161/0 = 354.031s	*30	sweep up	tuning 30.00	slowest 256.00	fastest 0.00
-now  tic/ofl 356869541/0 = 356.870s	*31	sweep up	tuning 31.00	slowest 256.00	fastest 0.00
-now  tic/ofl 359617737/0 = 359.618s	*32	sweep up	tuning 32.00	slowest 256.00	fastest 0.00
-now  tic/ofl 362281326/0 = 362.281s	*33	sweep up	tuning 33.00	slowest 256.00	fastest 0.00
-now  tic/ofl 364865308/0 = 364.865s	*34	sweep up	tuning 34.00	slowest 256.00	fastest 0.00
-now  tic/ofl 367374327/0 = 367.374s	*35	sweep up	tuning 35.00	slowest 256.00	fastest 0.00
-now  tic/ofl 369813226/0 = 369.813s	*36	sweep up	tuning 36.00	slowest 256.00	fastest 0.00
-now  tic/ofl 372184665/0 = 372.185s	*37	sweep up	tuning 37.00	slowest 256.00	fastest 0.00
-now  tic/ofl 374493377/0 = 374.493s	*38	sweep up	tuning 38.00	slowest 256.00	fastest 0.00
-now  tic/ofl 376741484/0 = 376.741s	*39	sweep up	tuning 39.00	slowest 256.00	fastest 0.00
-now  tic/ofl 378933195/0 = 378.933s	*40	sweep up	tuning 40.00	slowest 256.00	fastest 0.00
-now  tic/ofl 381070744/0 = 381.071s	*41	sweep up	tuning 41.00	slowest 256.00	fastest 0.00
-now  tic/ofl 383156722/0 = 383.157s	*42	sweep up	tuning 42.00	slowest 256.00	fastest 0.00
-now  tic/ofl 385193554/0 = 385.194s	*43	sweep up	tuning 43.00	slowest 256.00	fastest 0.00
-now  tic/ofl 387183518/0 = 387.184s	*44	sweep up	tuning 44.00	slowest 256.00	fastest 0.00
-now  tic/ofl 389128734/0 = 389.129s	*45	sweep up	tuning 45.00	slowest 256.00	fastest 0.00
-now  tic/ofl 391031148/0 = 391.031s	*46	sweep up	tuning 46.00	slowest 256.00	fastest 0.00
-now  tic/ofl 392893102/0 = 392.893s	*47	sweep up	tuning 47.00	slowest 256.00	fastest 0.00
-now  tic/ofl 394715305/0 = 394.715s	*48	sweep up	tuning 48.00	slowest 256.00	fastest 0.00
-now  tic/ofl 396500370/0 = 396.500s	*49	sweep up	tuning 49.00	slowest 256.00	fastest 0.00
-now  tic/ofl 398248850/0 = 398.249s	*50	sweep up	tuning 50.00	slowest 256.00	fastest 0.00
-now  tic/ofl 399963173/0 = 399.963s	*51	sweep up	tuning 51.00	slowest 256.00	fastest 0.00
-now  tic/ofl 401644118/0 = 401.644s	*52	sweep up	tuning 52.00	slowest 256.00	fastest 0.00
-now  tic/ofl 403292604/0 = 403.293s	*53	sweep up	tuning 53.00	slowest 256.00	fastest 0.00
-now  tic/ofl 404910637/0 = 404.911s	*54	sweep up	tuning 54.00	slowest 256.00	fastest 0.00
-now  tic/ofl 406498985/0 = 406.499s	*55	sweep up	tuning 55.00	slowest 256.00	fastest 0.00
-now  tic/ofl 408059020/0 = 408.059s	*56	sweep up	tuning 56.00	slowest 256.00	fastest 0.00
-now  tic/ofl 409591041/0 = 409.591s	*57	sweep up	tuning 57.00	slowest 256.00	fastest 0.00
-now  tic/ofl 411096401/0 = 411.096s	*58	sweep up	tuning 58.00	slowest 256.00	fastest 0.00
-now  tic/ofl 412575983/0 = 412.576s	*59	sweep up	tuning 59.00	slowest 256.00	fastest 0.00
-now  tic/ofl 414031084/0 = 414.031s	*60	sweep up	tuning 60.00	slowest 256.00	fastest 0.00
-now  tic/ofl 415461659/0 = 415.462s	*61	sweep up	tuning 61.00	slowest 256.00	fastest 0.00
-now  tic/ofl 416869347/0 = 416.869s	*62	sweep up	tuning 62.00	slowest 256.00	fastest 0.00
-now  tic/ofl 418254436/0 = 418.254s	*63	sweep up	tuning 63.00	slowest 256.00	fastest 0.00
-now  tic/ofl 419617676/0 = 419.618s	*64	sweep up	tuning 64.00	slowest 256.00	fastest 0.00
-now  tic/ofl 420959768/0 = 420.960s	*65	sweep up	tuning 65.00	slowest 256.00	fastest 0.00
-now  tic/ofl 422281088/0 = 422.281s	*66	sweep up	tuning 66.00	slowest 256.00	fastest 0.00
-now  tic/ofl 423582762/0 = 423.583s	*67	sweep up	tuning 67.00	slowest 256.00	fastest 0.00
-now  tic/ofl 424865450/0 = 424.865s	*68	sweep up	tuning 68.00	slowest 256.00	fastest 0.00
-now  tic/ofl 426129007/0 = 426.129s	*69	sweep up	tuning 69.00	slowest 256.00	fastest 0.00
-now  tic/ofl 427374416/0 = 427.374s	*70	sweep up	tuning 70.00	slowest 256.00	fastest 0.00
-now  tic/ofl 428602460/0 = 428.602s	*71	sweep up	tuning 71.00	slowest 256.00	fastest 0.00
-now  tic/ofl 429812964/0 = 429.813s	*72	sweep up	tuning 72.00	slowest 256.00	fastest 0.00
-now  tic/ofl 431007038/0 = 431.007s	*73	sweep up	tuning 73.00	slowest 256.00	fastest 0.00
-now  tic/ofl 432184855/0 = 432.185s	*74	sweep up	tuning 74.00	slowest 256.00	fastest 0.00
-now  tic/ofl 433346546/0 = 433.347s	*75	sweep up	tuning 75.00	slowest 256.00	fastest 0.00
-now  tic/ofl 434493112/0 = 434.493s	*76	sweep up	tuning 76.00	slowest 256.00	fastest 0.00
-now  tic/ofl 435624672/0 = 435.625s	*77	sweep up	tuning 77.00	slowest 256.00	fastest 0.00
-now  tic/ofl 436741680/0 = 436.742s	*78	sweep up	tuning 78.00	slowest 256.00	fastest 0.00
-now  tic/ofl 437844308/0 = 437.844s	*79	sweep up	tuning 79.00	slowest 256.00	fastest 0.00
-now  tic/ofl 438933349/0 = 438.933s	*80	sweep up	tuning 80.00	slowest 256.00	fastest 0.00
-now  tic/ofl 440008603/0 = 440.009s	*81	sweep up	tuning 81.00	slowest 256.00	fastest 0.00
-now  tic/ofl 441070671/0 = 441.071s	*82	sweep up	tuning 82.00	slowest 256.00	fastest 0.00
-now  tic/ofl 442119961/0 = 442.120s	*83	sweep up	tuning 83.00	slowest 256.00	fastest 0.00
-now  tic/ofl 443156492/0 = 443.156s	*84	sweep up	tuning 84.00	slowest 256.00	fastest 0.00
-now  tic/ofl 444181033/0 = 444.181s	*85	sweep up	tuning 85.00	slowest 256.00	fastest 0.00
-now  tic/ofl 445193567/0 = 445.194s	*86	sweep up	tuning 86.00	slowest 256.00	fastest 0.00
-now  tic/ofl 446194067/0 = 446.194s	*87	sweep up	tuning 87.00	slowest 256.00	fastest 0.00
-now  tic/ofl 447183360/0 = 447.183s	*88	sweep up	tuning 88.00	slowest 256.00	fastest 0.00
-now  tic/ofl 448161692/0 = 448.162s	*89	sweep up	tuning 89.00	slowest 256.00	fastest 0.00
-now  tic/ofl 449128855/0 = 449.129s	*90	sweep up	tuning 90.00	slowest 256.00	fastest 0.00
-now  tic/ofl 450085157/0 = 450.085s	*91	sweep up	tuning 91.00	slowest 256.00	fastest 0.00
-now  tic/ofl 451031326/0 = 451.031s	*92	sweep up	tuning 92.00	slowest 256.00	fastest 0.00
-now  tic/ofl 451966987/0 = 451.967s	*93	sweep up	tuning 93.00	slowest 256.00	fastest 0.00
-now  tic/ofl 452892832/0 = 452.893s	*94	sweep up	tuning 94.00	slowest 256.00	fastest 0.00
-now  tic/ofl 453808821/0 = 453.809s	*95	sweep up	tuning 95.00	slowest 256.00	fastest 0.00
-now  tic/ofl 454715219/0 = 454.715s	*96	sweep up	tuning 96.00	slowest 256.00	fastest 0.00
-now  tic/ofl 455612421/0 = 455.612s	*97	sweep up	tuning 97.00	slowest 256.00	fastest 0.00
-now  tic/ofl 456500077/0 = 456.500s	*98	sweep up	tuning 98.00	slowest 256.00	fastest 0.00
-now  tic/ofl 457378848/0 = 457.379s	*99	sweep up	tuning 99.00	slowest 256.00	fastest 0.00
-now  tic/ofl 458248918/0 = 458.249s	*100	sweep up	tuning 100.00	slowest 256.00	fastest 0.00
-now  tic/ofl 459110172/0 = 459.110s	*101	sweep up	tuning 101.00	slowest 256.00	fastest 0.00
-now  tic/ofl 459962996/0 = 459.963s	*102	sweep up	tuning 102.00	slowest 256.00	fastest 0.00
-now  tic/ofl 460807499/0 = 460.807s	*103	sweep up	tuning 103.00	slowest 256.00	fastest 0.00
-now  tic/ofl 461643821/0 = 461.644s	*104	sweep up	tuning 104.00	slowest 256.00	fastest 0.00
-now  tic/ofl 462472338/0 = 462.472s	*105	sweep up	tuning 105.00	slowest 256.00	fastest 0.00
-now  tic/ofl 463292755/0 = 463.293s	*106	sweep up	tuning 106.00	slowest 256.00	fastest 0.00
-now  tic/ofl 464105618/0 = 464.106s	*107	sweep up	tuning 107.00	slowest 256.00	fastest 0.00
-now  tic/ofl 464910887/0 = 464.911s	*108	sweep up	tuning 108.00	slowest 256.00	fastest 0.00
-now  tic/ofl 465708681/0 = 465.709s	*109	sweep up	tuning 109.00	slowest 256.00	fastest 0.00
-now  tic/ofl 466499210/0 = 466.499s	*110	sweep up	tuning 110.00	slowest 256.00	fastest 0.00
-now  tic/ofl 467282608/0 = 467.283s	*111	sweep up	tuning 111.00	slowest 256.00	fastest 0.00
-now  tic/ofl 468058820/0 = 468.059s	*112	sweep up	tuning 112.00	slowest 256.00	fastest 0.00
-now  tic/ofl 468828199/0 = 468.828s	*113	sweep up	tuning 113.00	slowest 256.00	fastest 0.00
-now  tic/ofl 469591042/0 = 469.591s	*114	sweep up	tuning 114.00	slowest 256.00	fastest 0.00
-now  tic/ofl 470346938/0 = 470.347s	*115	sweep up	tuning 115.00	slowest 256.00	fastest 0.00
-now  tic/ofl 471096313/0 = 471.096s	*116	sweep up	tuning 116.00	slowest 256.00	fastest 0.00
-now  tic/ofl 471839528/0 = 471.840s	*117	sweep up	tuning 117.00	slowest 256.00	fastest 0.00
-now  tic/ofl 472576061/0 = 472.576s	*118	sweep up	tuning 118.00	slowest 256.00	fastest 0.00
-now  tic/ofl 473306666/0 = 473.307s	*119	sweep up	tuning 119.00	slowest 256.00	fastest 0.00
-now  tic/ofl 474031032/0 = 474.031s	*120	sweep up	tuning 120.00	slowest 256.00	fastest 0.00
-now  tic/ofl 474749289/0 = 474.749s	*121	sweep up	tuning 121.00	slowest 256.00	fastest 0.00
-now  tic/ofl 475461727/0 = 475.462s	*122	sweep up	tuning 122.00	slowest 256.00	fastest 0.00
-now  tic/ofl 476168415/0 = 476.168s	*123	sweep up	tuning 123.00	slowest 256.00	fastest 0.00
-now  tic/ofl 476869252/0 = 476.869s	*124	sweep up	tuning 124.00	slowest 256.00	fastest 0.00
-now  tic/ofl 477564632/0 = 477.565s	*125	sweep up	tuning 125.00	slowest 256.00	fastest 0.00
-now  tic/ofl 478254395/0 = 478.254s	*126	sweep up	tuning 126.00	slowest 256.00	fastest 0.00
-now  tic/ofl 478938569/0 = 478.939s	*127	sweep up	tuning 127.00	slowest 256.00	fastest 0.00
-now  tic/ofl 479617609/0 = 479.618s	*128	sweep up	tuning 128.00	slowest 256.00	fastest 0.00
-now  tic/ofl 480291170/0 = 480.291s	*129	sweep up	tuning 129.00	slowest 256.00	fastest 0.00
-now  tic/ofl 480959545/0 = 480.960s	*130	sweep up	tuning 130.00	slowest 256.00	fastest 0.00
-now  tic/ofl 481622862/0 = 481.623s	*131	sweep up	tuning 131.00	slowest 256.00	fastest 0.00
-now  tic/ofl 482281196/0 = 482.281s	*132	sweep up	tuning 132.00	slowest 256.00	fastest 0.00
-now  tic/ofl 482934452/0 = 482.934s	*133	sweep up	tuning 133.00	slowest 256.00	fastest 0.00
-now  tic/ofl 483582970/0 = 483.583s	*134	sweep up	tuning 134.00	slowest 256.00	fastest 0.00
-now  tic/ofl 484226451/0 = 484.226s	*135	sweep up	tuning 135.00	slowest 256.00	fastest 0.00
-now  tic/ofl 484865327/0 = 484.865s	*136	sweep up	tuning 136.00	slowest 256.00	fastest 0.00
-now  tic/ofl 485499491/0 = 485.499s	*137	sweep up	tuning 137.00	slowest 256.00	fastest 0.00
-now  tic/ofl 486129148/0 = 486.129s	*138	sweep up	tuning 138.00	slowest 256.00	fastest 0.00
-now  tic/ofl 486754118/0 = 486.754s	*139	sweep up	tuning 139.00	slowest 256.00	fastest 0.00
-now  tic/ofl 487374680/0 = 487.375s	*140	sweep up	tuning 140.00	slowest 256.00	fastest 0.00
-now  tic/ofl 487990739/0 = 487.991s	*141	sweep up	tuning 141.00	slowest 256.00	fastest 0.00
-now  tic/ofl 488602323/0 = 488.602s	*142	sweep up	tuning 142.00	slowest 256.00	fastest 0.00
-now  tic/ofl 489209804/0 = 489.210s	*143	sweep up	tuning 143.00	slowest 256.00	fastest 0.00
-0deactivated pulse
-*/
-
-
-
-/*
-char str[] = "12345.56";
-double d;
-sscanf(str, "%lf", &d);
-printf("%lf", d);
-
-or:
-
-CString thestring("13.37");
-double d = atof(thestring).
-*/
 
 
 // will go to class Harmonical
