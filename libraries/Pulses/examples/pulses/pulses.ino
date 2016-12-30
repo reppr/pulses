@@ -128,7 +128,7 @@ Pulses PULSES(pl_max);
   /* **************** Pulses **************** */
   #include <Harmonical.h>
 
-Harmonical HARMONICAL();
+Harmonical HARMONICAL;	// 'Harmonical HARMONICAL()'  does not work, as there are no parameters.
 
 /* **************************************************************** */
 // some #define's:
