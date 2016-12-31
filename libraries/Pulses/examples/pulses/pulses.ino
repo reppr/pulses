@@ -513,7 +513,7 @@ void loop() {	// ARDUINO
       // EMERGENCY
       // kill fastest pulse might do it? (i.e. fast sweeping up)
 
-      if (MENU.verbosity >= VERBOSITY_SOME) {
+      if (maybe_display_more()) {
 	MENU.out((int) PULSES.fastest_pulse());
 	MENU.out(F(" deactivated  "));
       }
@@ -2600,9 +2600,8 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'u':	// select destination: time_unit
     dest = CODE_TIME_UNIT;
-    if (MENU.verbosity)
-      print_selected();
-    break;
+
+    maybe_show_selected_mask();
 
   case 'a':	// select destination: all pulses with flags
     select_flagged();
@@ -2684,7 +2683,7 @@ bool menu_pulses_reaction(char menu_input) {
     else
       MENU.out(onlyPositive);
 
-    if (MENU.verbosity >= VERBOSITY_SOME)
+    if (maybe_display_more())
       MENU.outln(sync);
 
     break;
@@ -2814,7 +2813,7 @@ bool menu_pulses_reaction(char menu_input) {
   case 'n':	// synchronise to now
     // we work on pulses anyway, regardless dest
     activate_selected_synced_now(sync);		// sync and activate
-    if (MENU.verbosity >= VERBOSITY_SOME)
+    if (maybe_display_more())
       MENU.ln(); alive_pulses_info_lines();	// *then* info ;)
     break;
 
@@ -2826,7 +2825,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     PULSES.fix_global_next();	// just in case?
 
-    if (MENU.verbosity >= VERBOSITY_SOME)
+    if (maybe_display_more())
       MENU.ln(); alive_pulses_info_lines();  // *then* info ;)
     break;
 
@@ -3423,6 +3422,9 @@ bool menu_pulses_reaction(char menu_input) {
 
   case '!':			// '!' setup and start experiment
     switch (experiment) {
+    case -1:
+    case 0:
+      break;
     case 1:
       setup_jiffle128(inverse, voices, multiplier, divisor, sync);
       break;
