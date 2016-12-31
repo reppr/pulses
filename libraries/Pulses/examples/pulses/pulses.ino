@@ -1582,8 +1582,7 @@ bool maybe_display_more() {
   // verbosity is VERBOSITY_SOME: display only if no other input is waiting
   if(MENU.cb_peek()==EOF)
     return true;
-
-  return false;
+  return false;		// there is more input, do not display info yet
 }
 
 
@@ -2794,8 +2793,10 @@ bool menu_pulses_reaction(char menu_input) {
       for (int pulse=0; pulse<pl_max; pulse++)
 	if (selected_pulses & (1 << pulse)) {
 	  PULSES.init_pulse(pulse);
-	  if (maybe_display_more())
-	    MENU.out(pulse); MENU.space();
+	  if (maybe_display_more()) {
+	    MENU.out(pulse);
+	    MENU.space();
+	  }
 	}
       MENU.ln();
     }
@@ -2816,9 +2817,11 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'n':	// synchronise to now
     // we work on pulses anyway, regardless dest
-    activate_selected_synced_now(sync);		// sync and activate
-    if (maybe_display_more())
-      MENU.ln(); alive_pulses_info_lines();	// *then* info ;)
+    activate_selected_synced_now(sync);	// sync and activate
+    if (maybe_display_more()) {		// *then* info ;)
+      MENU.ln();
+      alive_pulses_info_lines();
+    }
     break;
 
   case 'N':	// NULLs payload
@@ -2829,8 +2832,10 @@ bool menu_pulses_reaction(char menu_input) {
 
     PULSES.fix_global_next();	// just in case?
 
-    if (maybe_display_more())
-      MENU.ln(); alive_pulses_info_lines();  // *then* info ;)
+    if (maybe_display_more()) {	// *then* info ;)
+      MENU.ln();
+      alive_pulses_info_lines();
+    }
     break;
 
   case 'c':	// en_click
@@ -3493,8 +3498,10 @@ bool menu_pulses_reaction(char menu_input) {
     case 17:
       // FIXME:	maybe make that default?
       activate_selected_synced_now(sync);	// sync and activate
-      if (maybe_display_more())
-	MENU.ln(); alive_pulses_info_lines();	// *then* maybe info ;)
+      if (maybe_display_more()) {		// *then* maybe info ;)
+	MENU.ln();
+	alive_pulses_info_lines();
+      }
       break;
 
     default:	// invalid
