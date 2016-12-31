@@ -217,6 +217,10 @@ uint8_t click_pin[CLICK_PULSES];	// ################
   unsigned int ratios_int[]  = {1,1, 2,1, 3,1, 4,1, 5,1, 6,1, 7,1, 8,1, 0,0};  // zero terminated
   unsigned int european_pentatonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 1,2, 4,9, 2,5, 1,3, 3,10,  1,4, 0,0 };  // zero terminated
   unsigned int pentatonic_minor[] = {1,1, 5,6, 3,4, 2,3, 5*2,6*3, 1,2, 5,12, 3,8, 1,3, 5,6*3, 1,4, 0,0 };  // zero terminated
+  // nice first try with "wrong" note:
+  //  unsigned int mimic_japan_pentatonic[] = {1,1, 8,9, 5,6, 2,3, 8*2,9*3, 1,2, 8,9*2, 5,12, 2,6, 8,9*3, 1,4, 0,0 };  // zero terminated
+// second try:
+  unsigned int mimic_japan_pentatonic[] = {1,1, 8,9, 5,6, 2,3, 2*15,3*16, 1,2, 8,9*2, 5,12, 2,6, 8,9*3, 1,4, 0,0 };  // zero terminated
 #endif
 
 // editing jiffle data
@@ -3037,6 +3041,9 @@ bool menu_pulses_reaction(char menu_input) {
 //  case 21:
 //    jiffle = halfway;
 //    break;
+    case 21:
+      jiffle = mimic_japan_pentatonic;
+      break;
     default:
       if (MENU.verbosity >= VERBOSITY_SOME)
 	MENU.outln(invalid_);
@@ -3408,6 +3415,24 @@ bool menu_pulses_reaction(char menu_input) {
 	alive_pulses_info_lines();
       break;
 
+    case 17:
+      // magnets on steel strings, "japanese"
+      jiffle = mimic_japan_pentatonic;
+      multiplier=1;	// click
+      // multiplier=4096;	// jiffle ting4096
+      divisor=256*5;
+
+      ratios = mimic_japan_pentatonic;
+      select_n(voices);
+      prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+      jiffle=ting4096;
+      display_name5pars("E17 mimic japan", inverse, voices, multiplier, divisor, sync);
+
+      if (MENU.verbosity)
+	alive_pulses_info_lines();
+
+      break;
+
     default:
       if (MENU.verbosity)
 	MENU.outln(invalid_);
@@ -3462,13 +3487,16 @@ bool menu_pulses_reaction(char menu_input) {
       init_pentatonic(inverse, voices, multiplier, divisor, sync);
       break;
     case 13:
-      activate_selected_synced_now(sync);
-
-      if (MENU.verbosity >= VERBOSITY_SOME) {  // *then* maybe info
-	MENU.ln();
-	alive_pulses_info_lines();
-      }
+    case 14:
+    case 15:
+    case 16:
+    case 17:
+      // FIXME:	maybe make that default?
+      activate_selected_synced_now(sync);	// sync and activate
+      if (maybe_display_more())
+	MENU.ln(); alive_pulses_info_lines();	// *then* maybe info ;)
       break;
+
     default:	// invalid
       experiment=0;
 
@@ -3650,10 +3678,10 @@ void display_fraction(struct fraction *f) {
   MENU.out((*f).divisor);
 }
 
+/* **************************************************************** */
+/* **************************************************************** */
+/* **************************************************************** */
 
-unsigned int LCM(unsigned int a, unsigned int b) {	// least common multiple
-  return a * b / GCD(a, b);
-}
 
 
     first_value *= 10;
