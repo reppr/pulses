@@ -2755,8 +2755,11 @@ bool menu_pulses_reaction(char menu_input) {
   case 'N':	// NULLs payload
     // we work on pulses anyway, regardless dest
     for (int pulse=0; pulse<voices; pulse++)
-      if (selected_pulses & (1 << pulse))
+      if (selected_pulses & (1 << pulse)) {
 	PULSES.pulses[pulse].periodic_do = NULL;
+	if (pulse<CLICK_PULSES)		// set clicks on LOW
+	  digitalWrite(click_pin[pulse], LOW);
+      }
 
     PULSES.fix_global_next();	// just in case?
 
