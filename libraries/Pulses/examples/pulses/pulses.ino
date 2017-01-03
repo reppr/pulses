@@ -1526,8 +1526,11 @@ void alive_pulses_info_lines()
       count++;
     }
 
-  if (count == 0)
+  if (count == 0) {
     MENU.outln(noAlive);
+    if(selected_pulses)		// special feature ;)
+      print_selected_mask();
+  }
 
   MENU.ln();
 }
