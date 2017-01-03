@@ -581,6 +581,13 @@ int Pulses::setup_pulse_synced(void (*pulse_do)(int), unsigned char new_flags,
 }
 
 
+// By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
+void Pulses::init_click_pulses() {
+  for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+    init_pulse(pulse);
+}
+
+
 /* **************************************************************** */
 
 

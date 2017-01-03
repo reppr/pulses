@@ -39,8 +39,8 @@ struct fraction {
 class Harmonical {
 
  public:
+  Harmonical(unsigned long harmonical_base);
   ~Harmonical();
-  Harmonical(void);
 
   unsigned int GCD(unsigned int a, unsigned int b);	// greatest common divisor, Euklid
   unsigned int LCM(unsigned int a, unsigned int b);	// least common multiple

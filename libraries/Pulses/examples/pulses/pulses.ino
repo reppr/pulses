@@ -41,50 +41,36 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 #include <stdlib.h>
 #include <inttypes.h>
 
-#ifdef ARDUINO
-  #if ARDUINO >= 100
-    #include "Arduino.h"
-  #else
-    #include "WProgram.h"
-  #endif
+#include "pulses_systems_and_boards.h"
 
+/* **************** Menu **************** */
+#include <Menu.h>
 
-  // include pulses spezific code:
-  #ifdef ESP8266	// a lot of RAM
-    // must be defined before including Pulses
-    #define IMPLEMENT_TUNING	// needs float
-  #endif
+#define MENU_OUTSTREAM	Serial
 
+int men_getchar() {
+  if (!Serial.available())	// ARDUINO
+    return EOF;
 
-  /* **************** Menu **************** */
-  #include <Menu.h>
+  return Serial.read();
 
-  //  Menu(int size, int menuPages, int (*maybeInput)(void), STREAMTYPE & port);
-  /*
-    This version definines the menu INPUT routine int men_getchar();
-    in the *program* not inside the Menu class.
-  */
+}
 
-  /* BAUDRATE for Serial:	uncomment one of the following lines:	*/
-  #define BAUDRATE	115200		// works fine here
-  //#define BAUDRATE	57600
-  //#define BAUDRATE	38400
-  //#define BAUDRATE	19200
-  //#define BAUDRATE	9600		// failsafe
-  //#define BAUDRATE	31250		// MIDI
+//  Menu(int size, int menuPages, int (*maybeInput)(void), STREAMTYPE & port);
+/*
+  This version definines the menu INPUT routine int men_getchar();
+  in the *program* not inside the Menu class.
+*/
 
-  #define MENU_OUTSTREAM	Serial
+/* BAUDRATE for Serial:	uncomment one of the following lines:	*/
+#define BAUDRATE	115200		// works fine here
+//#define BAUDRATE	57600
+//#define BAUDRATE	38400
+//#define BAUDRATE	19200
+//#define BAUDRATE	9600		// failsafe
+//#define BAUDRATE	31250		// MIDI
 
-  int men_getchar() {
-    if (!Serial.available())	// ARDUINO
-      return EOF;
-
-    return Serial.read();
-  }
-
-#else	// #include's for Linux PC test version	*NOT SUPPORTED*
-
-  #include <iostream>
+#ifndef ARDUINO		// Linux PC test version  *NOT SUPPORTED*
   #include <Menu/Menu.h>
   #include <Pulses/Pulses.h>
 
@@ -96,39 +82,18 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
   int men_getchar() {
     return getchar();		// c++ Linux PC test version
   }
-
 #endif
 
 Menu MENU(32, 3, &men_getchar, MENU_OUTSTREAM);
 
-  /* **************** Pulses **************** */
-  #include <Pulses.h>
-#ifdef ARDUINO		// on ARDUINO
-
-  #ifdef __SAM3X8E__
-     const int pl_max=32;		// could be more on DUE ;)
-  #else
-    #ifdef ESP8266
-     const int pl_max=32;		// ESP8266
-    #else
-      #ifdef __AVR_ATmega328P__
-         const int pl_max=12;		// saving RAM on 328P
-      #else
-         const int pl_max=16;		// default i.e. mega boards
-      #endif
-    #endif
-  #endif
-
-#else		// *NOT* on ARDUINO...	*NOT SUPPORTED*
-  const int pl_max=64;		// Linux PC test version
-#endif
-
+/* **************** Pulses **************** */
+#include <Pulses.h>
 Pulses PULSES(pl_max);
 
-  /* **************** Pulses **************** */
-  #include <Harmonical.h>
+/* **************** Harmonical **************** */
+#include <Harmonical.h>
 
-Harmonical HARMONICAL;	// 'Harmonical HARMONICAL()'  does not work, as there are no parameters.
+Harmonical HARMONICAL(3628800uL);	// old style for a first test
 
 /* **************************************************************** */
 // some #define's:
@@ -144,7 +109,6 @@ void display_action(int pulse);
 void do_jiffle (int pulse);
 void do_throw_a_jiffle(int pulse);
 void init_click_pins();
-void init_click_pulses();
 void alive_pulses_info_lines();
 void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 void init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
@@ -160,16 +124,9 @@ void setup_jifflesNEW(bool inverse, int voices, unsigned int multiplier, unsigne
 void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 
 
-// FIXME: ################
-#ifndef CLICK_PULSES		// default number of click frequencies
-  #ifdef ESP8266
-    #define CLICK_PULSES	8       // default number of clicks 8
-//    #define CLICK_PULSES	6       // default number of clicks 6
-  #else
-    #define CLICK_PULSES	6       // default number of click frequencies
-  #endif
-#endif
-uint8_t click_pin[CLICK_PULSES];	// ################
+
+/* **************************************************************** */
+uint8_t click_pin[CLICK_PULSES];
 
 /* **************************************************************** */
 #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
@@ -633,16 +590,7 @@ int main() {
 
 // It's best to always leave click_pulses in memory.
 // You can set DO_NOT_DELETE to achieve this.
-
-
-// FIXME: ################
 // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-void init_click_pulses() {
-  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
-    PULSES.init_pulse(pulse);
-    // PULSES.pulses[pulse].flags |= DO_NOT_DELETE;
-  }
-}
 
 
 void click(int pulse) {	// can be called from a pulse
@@ -1006,12 +954,6 @@ const char sync_[] = "sync ";
 
 //   init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 void init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
-//	  for (int pulse=0; pulse<pl_max; pulse++) {	// tabula rasa
-//	    PULSES.init_pulse(pulse);
-//	  }
-//	  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-//	  init_click_pulses();
-
 //	  const unsigned long divisor=1L;
   unsigned long unit=multiplier*time_unit;
   unit /= divisor;
@@ -1044,8 +986,6 @@ void init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int
   unit /= divisor;
 
   display_name5pars("init123456", inverse, voices, multiplier, divisor, sync);
-
-  //  init_click_pulses();
 
   struct time now;
   PULSES.get_now();
@@ -1292,8 +1232,6 @@ void init_chord_1345689a(bool inverse, int voices, unsigned int multiplier, unsi
 
   display_name5pars("init_chord_1345689a", inverse, voices, multiplier, divisor, sync);
 
-//  init_click_pulses();
-
   struct time now;
   PULSES.get_now();
   now=PULSES.now;
@@ -1351,8 +1289,6 @@ void init_ratio_sequence(struct time when,
   unsigned long multiplier=multiplier0;
   unsigned long divisor=divisor0;
 
-  // init_click_pulses();
-
   for (; count; count--) {
     setup_click_synced(when, unit, multiplier, divisor, sync);
     multiplier += multiplier_step;
@@ -1373,8 +1309,6 @@ void init_rhythm_1(bool inverse, int voices, unsigned int multiplier, unsigned i
   struct time now;
 
   display_name5pars("init_rhythm_1", inverse, voices, multiplier, divisor, sync);
-
-  //  init_click_pulses();
 
   PULSES.get_now();
   now=PULSES.now;
@@ -1397,8 +1331,6 @@ void init_rhythm_2(bool inverse, int voices, unsigned int multiplier, unsigned i
 
   display_name5pars("init_rhythm_2", inverse, voices, multiplier, divisor, sync);
 
-  //  init_click_pulses();
-
   struct time now;
   PULSES.get_now();
   now=PULSES.now;
@@ -1419,8 +1351,6 @@ void init_rhythm_3(bool inverse, int voices, unsigned int multiplier, unsigned i
   unit /= divisor;
 
   display_name5pars("init_rhythm_3", inverse, voices, multiplier, divisor, sync);
-
-  //  init_click_pulses();
 
   struct time now;
   PULSES.get_now();
@@ -1453,8 +1383,6 @@ void init_rhythm_4(bool inverse, int voices, unsigned int multiplier, unsigned i
   struct time now;
 
   display_name5pars("init_rhythm_4", inverse, voices, multiplier, divisor, sync);
-
-  //  init_click_pulses();
 
   PULSES.get_now();
   now=PULSES.now;
@@ -3144,25 +3072,19 @@ bool menu_pulses_reaction(char menu_input) {
 //	      }
 //	    }
 //
-    MENU.outln(HARMONICAL.LCM(100,3));
-    MENU.outln(HARMONICAL.LCM(18,24));
-    MENU.outln(HARMONICAL.LCM(60,72));
 
-    MENU.outln(HARMONICAL.GCD(100,3));
-    MENU.outln(HARMONICAL.GCD(18,24));
-    MENU.outln(HARMONICAL.GCD(60,72));
+//    fraction bruch1;
+//    fraction bruch2;
+//    bruch1.multiplier=11;
+//    bruch1.divisor=44;
+//    //    reduce_fraction(&bruch1);
+//    bruch2.multiplier=100;
+//    bruch2.divisor=300;
+//
+//    HARMONICAL.add_fraction(&bruch1, &bruch2);
+//    MENU.out(bruch2.multiplier); MENU.slash(); MENU.outln(bruch2.divisor);
 
-    fraction bruch;
-    fraction bruch1;
-    fraction bruch2;
-    bruch1.multiplier=11;
-    bruch1.divisor=44;
-    //    reduce_fraction(&bruch);
-    bruch2.multiplier=100;
-    bruch2.divisor=300;
 
-    HARMONICAL.add_fraction(&bruch1, &bruch2);
-    MENU.out(bruch2.multiplier); MENU.slash(); MENU.outln(bruch2.divisor);
     // copy_jiffle_data(gling128);	// zero terminated
     // copy_jiffle_data(jiffletab_december_pizzicato);
     // display_jiffletab(jiffle);
@@ -3231,8 +3153,9 @@ bool menu_pulses_reaction(char menu_input) {
 	  cnt++;
 	}
       }
+
       // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-      init_click_pulses();
+      PULSES.init_click_pulses();
       init_click_pins();		// switch them on LOW, output	current off, i.e. magnets
 
       if (MENU.verbosity) {

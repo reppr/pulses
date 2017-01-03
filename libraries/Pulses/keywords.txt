@@ -35,6 +35,7 @@ set_new_period	KEYWORD2
 check_maybe_do	KEYWORD2
 activate_pulse_synced	KEYWORD2
 setup_pulse_synced	KEYWORD2
+init_click_pulses	KEYWORD2
 get_pl_max	KEYWORD2
 pulse	KEYWORD2
 pl_max	KEYWORD2

@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <Harmonical.h>
+
 #ifdef ARDUINO
 
   /* Keep ARDUINO GUI happy ;(		*/
@@ -16,22 +18,21 @@
     #include "WProgram.h"
   #endif
 
-  #include <Menu.h>
+//	  #include <Menu.h>
   #include <Pulses.h>
-  # include <Harmonical.h>
 #else	// PC version *NOT SUPPORTED*
   #include <iostream>
 
-  #include <Menu/Menu.h>
-  #include <Pulses/Pulses.h>
+//	  #include <Menu/Menu.h>
+//	  #include <Pulses/Pulses.h>
 #endif
 
 
 /* **************************************************************** */
 // Constructor/Destructor:
 
-Harmonical::Harmonical():
-  harmonical_base(3628800L)	// old style for a first test
+Harmonical::Harmonical(unsigned long harmonical_base):
+  harmonical_base(harmonical_base)
 {
   ;
 }

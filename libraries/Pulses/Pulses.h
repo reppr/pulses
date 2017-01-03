@@ -18,61 +18,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#ifdef ARDUINO
-  #define STREAMTYPE	Stream
-
-  #ifndef __SAM3X8E__	// FIXME: ################
-    #define USE_F_MACRO
-  #endif
-
-  #ifdef ESP8266	// we have a lot of RAM
-    #define IMPLEMENT_TUNING	// needs float
-  #endif
-
-#else	// c++ Linux PC test version
-  #include <iostream>
-
-  #ifndef STREAMTYPE		// could have been #define'd in Menu.h
-    using namespace std;
-    ostream & Serial=cout;	// nice trick from johncc
-  #endif
-  #define STREAMTYPE	ostream
-
-  #ifndef INPUT
-    #define INPUT	0
-  #endif
-  #ifndef OUTPUT
-    #define OUTPUT	1
-  #endif
-  #ifndef LOW
-    #define LOW		0
-  #endif
-  #ifndef HIGH
-    #define HIGH	1
-  #endif
-
-// fakes for some Arduino functions:
-void pinMode(int p, int mode) {
-  printf("Pin %d switched to mode %d\n", p, mode);
-}
-
-void digitalWrite(int p, int value) {
-  printf("Pin %d set to %d\n", p, value);
-}
-
-unsigned long micros() { return 9999L; }
-
-#endif	// Arduino  else  c++ Linux PC test version
-
-
-// use Arduino F() macro to save RAM or just a NOOP?
-#ifndef USE_F_MACRO	// NOOP fake
-  // For tests and on PC:  Fake Arduino F("string") macro as NOOP:
-  #undef F
-  #define F(s)	(s)
-  #warning "using a NOOP fake F() macro."
-#endif
-
+#include "examples/pulses/pulses_systems_and_boards.h"
 
 
 /* **************************************************************** */
@@ -88,16 +34,6 @@ unsigned long micros() { return 9999L; }
 #ifdef DEBUGGING_ALL
 
 #endif
-
-
-#if defined(ARDUINO)
-  #if ARDUINO >= 100
-    #include "Arduino.h"
-  #else
-    #include "WProgram.h"
-  #endif
-#endif // ARDUINO
-
 
 /* **************************************************************** */
 // time:
@@ -248,6 +184,7 @@ class Pulses {
   int setup_pulse_synced(void (*pulse_do)(int), unsigned char new_flags,
 			 struct time when, unsigned long unit,
 			 unsigned long factor, unsigned long divisor, int sync);
+  void init_click_pulses();
   unsigned int get_pl_max() { return pl_max; }	// inlined
   pulse_t * pulses;		// data pointer for pulses
 
