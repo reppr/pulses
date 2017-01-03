@@ -1437,10 +1437,16 @@ void print_period_in_time_units(int pulse) {
 
 // pulse_info_1line(pulse):	one line pulse info, short version
 void pulse_info_1line(int pulse) {
-  unsigned long realtime=micros();	// let's take time *before* serial output
-  struct time scratch;
+  PULSES.get_now();	// let's take time *before* serial output
+  struct time now = PULSES.now;
+  struct time next = PULSES.pulses[pulse].next;
 
   MENU.out(F("PULSE "));
+  if (selected_pulses & (1 << pulse))
+    MENU.out('*');
+  else
+    MENU.space();
+
   if (pulse<100)	// left padding 'pulse'
     MENU.space();
   if (pulse<10)
@@ -1472,14 +1478,8 @@ void pulse_info_1line(int pulse) {
 
   MENU.tab();
   MENU.out(expected_);
-  display_realtime_sec(PULSES.pulses[pulse].next);
-
-  MENU.tab();
-  MENU.out(F("now "));
-  PULSES.get_now();
-  scratch = PULSES.now;
-  scratch.time = realtime;
-  display_realtime_sec(scratch);
+  PULSES.sub_time(&now, &next);
+  display_realtime_sec(next);
 
   if (selected_pulses & (1 << pulse)) {
     MENU.space();
