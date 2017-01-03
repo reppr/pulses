@@ -3378,6 +3378,25 @@ bool menu_pulses_reaction(char menu_input) {
 
       break;
 
+    case 18:	// nylon stringed wooden box, piezzos
+      ratios = pentatonic_minor;
+      multiplier=1;	// click
+      // multiplier=4096;	// jiffle ting4096
+      // divisor=2048;
+
+      multiplier=2*8;
+      divisor=9*2048;
+      jiffle=ting4096;
+
+      select_n(voices);
+      prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+      display_name5pars("E18 pentatonic minor", inverse, voices, multiplier, divisor, sync);
+
+      if (MENU.verbosity)
+	alive_pulses_info_lines();
+
+      break;
+
     default:
       if (MENU.verbosity)
 	MENU.outln(invalid_);
