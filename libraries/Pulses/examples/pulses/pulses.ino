@@ -3363,7 +3363,6 @@ bool menu_pulses_reaction(char menu_input) {
 
     case 17:
       // magnets on steel strings, "japanese"
-      jiffle = mimic_japan_pentatonic;
       multiplier=1;	// click
       // multiplier=4096;	// jiffle ting4096
       divisor=256*5;
