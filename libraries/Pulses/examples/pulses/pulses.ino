@@ -2461,7 +2461,7 @@ void show_scale() {
 }
 
 void maybe_show_selected_mask() {
-  if (MENU.verbosity)
+  if (maybe_display_more())
     print_selected_mask();
 }
 
