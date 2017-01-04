@@ -282,6 +282,25 @@ char Menu::cb_read() {
   void Menu::slash() const { port_.print('/'); }	// Output char '/'
 
 
+bool Menu::maybe_display_more() {	// avoid too much output
+  /* output control, avoid errors caused by serial menu output
+     looks at verbosity *and* input buffer
+     can be fooled to skip output by a terminating ',' on most input lines	*/
+
+   if (verbosity < VERBOSITY_SOME)
+     return false;
+
+   if (verbosity >= VERBOSITY_CHATTY)
+     return true;
+
+   // verbosity is VERBOSITY_SOME: display only if no other input is waiting
+   if(cb_peek()==EOF)
+     return true;
+   return false;		// there is more input, do not display info yet
+  }
+
+
+
 /* numeric input, calculating (left to right)				*/
   int Menu::is_chiffre(char token) {		// is token a chiffre?
     if (token > '9' || token < '0')

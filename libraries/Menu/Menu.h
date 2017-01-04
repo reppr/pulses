@@ -155,7 +155,7 @@ class Menu {
   void out(const int i)		const;	// int output
   void out(const long l)	const;	// long output
   void out(const char *str)	const;	// string
-#ifndef INTEGER_ONLY 
+#ifndef INTEGER_ONLY
   void out(const double d)	const;	// double float
 #endif
 
@@ -169,7 +169,7 @@ class Menu {
   void outln(const int i)	const;	// int output  and newline
   void outln(const long l)	const;	// long output and newline
   void outln(const char *str)	const;	// string and newline
-#ifndef INTEGER_ONLY 
+#ifndef INTEGER_ONLY
   void outln(const double d)	const;	// double float
 #endif
 
@@ -229,6 +229,9 @@ class Menu {
   void space()	const;		// output a space
   void equals()	const;		// output char '='
   void slash()	const;		// output char '/'
+
+  /* Output Control						*/
+  bool maybe_display_more();	// avoid too much output
 
 /* Input							*/
   int is_chiffre(char token);			// is token a chiffre?
