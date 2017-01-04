@@ -474,7 +474,7 @@ void loop() {	// ARDUINO
       // EMERGENCY
       // kill fastest pulse might do it? (i.e. fast sweeping up)
 
-      if (maybe_display_more()) {
+      if (MENU.maybe_display_more()) {
 	MENU.out((int) PULSES.fastest_pulse());
 	MENU.out(F(" deactivated  "));
       }
@@ -1506,20 +1506,6 @@ void en_info(int pulse)
 }
 
 
-bool maybe_display_more() {
-  if (MENU.verbosity < VERBOSITY_SOME)
-    return false;
-
-  if (MENU.verbosity >= VERBOSITY_CHATTY)
-    return true;
-
-  // verbosity is VERBOSITY_SOME: display only if no other input is waiting
-  if(MENU.cb_peek()==EOF)
-    return true;
-  return false;		// there is more input, do not display info yet
-}
-
-
 const char noAlive[] = "no pulses alive";
 
 void alive_pulses_info_lines()
@@ -2470,7 +2456,7 @@ void show_scale() {
 }
 
 void maybe_show_selected_mask() {
-  if (maybe_display_more())
+  if (MENU.maybe_display_more())
     print_selected_mask();
 }
 
@@ -2548,7 +2534,7 @@ bool menu_pulses_reaction(char menu_input) {
     select_flagged();
     maybe_show_selected_mask();
 
-    if (maybe_display_more())
+    if (MENU.maybe_display_more())
       alive_pulses_info_lines();
 
     break;
@@ -2607,7 +2593,7 @@ bool menu_pulses_reaction(char menu_input) {
     PULSES.fix_global_next();
     PULSES.check_maybe_do();			// maybe do it *first*
 
-    if (maybe_display_more()) {
+    if (MENU.maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();			// *then* info ;)
     }
@@ -2615,17 +2601,17 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'S':	// enter sync
-    if (MENU.verbosity)
+    if (MENU.maybe_calculate_input(&result)) {
+      if (result>=0 )
+	sync = result;
+      else
+	MENU.out(onlyPositive);
+    }
+
+    if (MENU.maybe_display_more()) {
       MENU.out(sync_);
-
-    new_value = MENU.numeric_input(sync);
-    if (new_value>=0 )
-      sync = new_value;
-    else
-      MENU.out(onlyPositive);
-
-    if (maybe_display_more())
       MENU.outln(sync);
+    }
 
     break;
 
@@ -2649,7 +2635,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  if (selected_pulses & (1 << pulse))
 	    PULSES.multiply_period(pulse, new_value);
 
-	if (maybe_display_more()) {
+	if (MENU.maybe_display_more()) {
 	  MENU.ln();
 	  alive_pulses_info_lines();
 	}
@@ -2676,7 +2662,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  if (selected_pulses & (1 << pulse))
 	    PULSES.divide_period(pulse, new_value);
 
-	if (maybe_display_more()) {
+	if (MENU.maybe_display_more()) {
 	  MENU.ln();
 	  alive_pulses_info_lines();
 	}
@@ -2707,7 +2693,7 @@ bool menu_pulses_reaction(char menu_input) {
 	    PULSES.set_new_period(pulse, time_scratch);
 	  }
 
-	if (maybe_display_more()) {
+	if (MENU.maybe_display_more()) {
 	  MENU.ln();
 	  alive_pulses_info_lines();
 	}
@@ -2731,7 +2717,7 @@ bool menu_pulses_reaction(char menu_input) {
       for (int pulse=0; pulse<pl_max; pulse++)
 	if (selected_pulses & (1 << pulse)) {
 	  PULSES.init_pulse(pulse);
-	  if (maybe_display_more()) {
+	  if (MENU.maybe_display_more()) {
 	    MENU.out(pulse);
 	    MENU.space();
 	  }
@@ -2739,7 +2725,7 @@ bool menu_pulses_reaction(char menu_input) {
       MENU.ln();
     }
 
-    if (maybe_display_more()) {
+    if (MENU.maybe_display_more()) {
       alive_pulses_info_lines();
       MENU.ln();
     }
@@ -2747,7 +2733,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'P':	// pulse create and edit
     reset_and_edit_selected();
-    if (maybe_display_more()) {
+    if (MENU.maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -2756,7 +2742,7 @@ bool menu_pulses_reaction(char menu_input) {
   case 'n':	// synchronise to now
     // we work on pulses anyway, regardless dest
     activate_selected_synced_now(sync);	// sync and activate
-    if (maybe_display_more()) {		// *then* info ;)
+    if (MENU.maybe_display_more()) {		// *then* info ;)
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -2773,7 +2759,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     PULSES.fix_global_next();	// just in case?
 
-    if (maybe_display_more()) {	// *then* info ;)
+    if (MENU.maybe_display_more()) {	// *then* info ;)
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -2785,7 +2771,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (selected_pulses & (1 << pulse))
 	en_click(pulse);
 
-    if (maybe_display_more()) {
+    if (MENU.maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -2798,7 +2784,7 @@ bool menu_pulses_reaction(char menu_input) {
     if (sweep_up==0)	// start sweeping if it was disabled
       sweep_up=1;
 
-    if (maybe_display_more())
+    if (MENU.maybe_display_more())
       sweep_info();
 
     break;
@@ -2849,7 +2835,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (selected_pulses & (1 << pulse))
 	en_sweep_click(pulse);
 
-    if (maybe_display_more()) {
+    if (MENU.maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -2862,7 +2848,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (selected_pulses & (1 << pulse))
 	en_sweep_click_0(pulse);
 
-    if (maybe_display_more()) {
+    if (MENU.maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -2875,7 +2861,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (selected_pulses & (1 << pulse))
 	en_tuned_sweep_click(pulse);
 
-    if (maybe_display_more()) {
+    if (MENU.maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -2898,7 +2884,7 @@ bool menu_pulses_reaction(char menu_input) {
 	    PULSES.activate_tuning(pulse);
     }
 
-    if (maybe_display_more()) {
+    if (MENU.maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -2911,7 +2897,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (selected_pulses & (1 << pulse))
 	en_jiffle_thrower(pulse, jiffle);
 
-    if (maybe_display_more()) {
+    if (MENU.maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -2995,7 +2981,7 @@ bool menu_pulses_reaction(char menu_input) {
 	MENU.outln(invalid_);
     }
 
-    if (maybe_display_more())
+    if (MENU.maybe_display_more())
       display_jiffletab(jiffle);
 
     break;
@@ -3006,7 +2992,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (selected_pulses & (1 << pulse))
 	en_info(pulse);
 
-    if (maybe_display_more()) {
+    if (MENU.maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -3018,7 +3004,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (selected_pulses & (1 << pulse))
 	en_INFO(pulse);
 
-    if (maybe_display_more()) {
+    if (MENU.maybe_display_more()) {
       MENU.ln();
       alive_pulses_info_lines();
     }
@@ -3051,7 +3037,7 @@ bool menu_pulses_reaction(char menu_input) {
     else
       MENU.outln(F("small positive integer only"));
 
-    if (maybe_display_more())
+    if (MENU.maybe_display_more())
       show_scale();
     break;
 
@@ -3124,7 +3110,7 @@ bool menu_pulses_reaction(char menu_input) {
     else
       MENU.outln(F("small positive integer only"));
 
-    if (maybe_display_more())
+    if (MENU.maybe_display_more())
       show_scale();
 
     break;
@@ -3139,7 +3125,7 @@ bool menu_pulses_reaction(char menu_input) {
     else
       MENU.outln(invalid_);
 
-    if (maybe_display_more())
+    if (MENU.maybe_display_more())
       MENU.outln(voices);
 
     break;
@@ -3150,7 +3136,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     inverse = !inverse;	// toggle bottom up/down click-pin mapping
 
-    if (maybe_display_more()) {
+    if (MENU.maybe_display_more()) {
       if (MENU.verbosity) {
 	if (inverse)
 	  MENU.outln(F("up"));
@@ -3473,7 +3459,7 @@ bool menu_pulses_reaction(char menu_input) {
     case 17:
       // FIXME:	maybe make that default?
       activate_selected_synced_now(sync);	// sync and activate
-      if (maybe_display_more()) {		// *then* maybe info ;)
+      if (MENU.maybe_display_more()) {		// *then* maybe info ;)
 	MENU.ln();
 	alive_pulses_info_lines();
       }
