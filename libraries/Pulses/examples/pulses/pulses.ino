@@ -883,16 +883,22 @@ const float overflow_sec = 4294.9672851562600;	// overflow time in seconds
 
 // display a time in seconds:
 float display_realtime_sec(struct time duration) {
-  float seconds=((float) duration.time / 1000000.0);	// FIXME: DUE ??? ################
-  seconds += overflow_sec * (float) duration.overflow;
+  float seconds=((float) ((signed long) duration.time) / 1000000.0);
+
+  if (duration.overflow != ~0)		// ILLEGAL	FIXME: hmm? what about multiple negative overflows?
+    seconds += overflow_sec * (float) duration.overflow;
+    // seconds += overflow_sec * (float) ((signed long) duration.overflow);
 
   float scratch = 1000.0;
-  while (scratch > std::max(seconds, (float) 1.0)) {	// (float) for Linux PC tests, "std::" for ESP8266
+  while (scratch > std::max(abs(seconds), (float) 1.0)) {	// (float) for Linux PC tests, "std::" for ESP8266
     MENU.space();
     scratch /= 10.0;
   }
 
-  MENU.out(seconds , 3);
+  if (seconds >= 0)	// line up with automatic '-' sign
+    MENU.out('+');
+
+  MENU.out(seconds , 6);
   MENU.out('s');
 
   return seconds;
@@ -921,7 +927,7 @@ void display_real_ovfl_and_sec(struct time then) {
   MENU.out(ticOfl);
   MENU.out(then.time);
   MENU.slash();
-  MENU.out(then.overflow);
+  MENU.out((signed long) then.overflow);
   MENU.space();
   MENU.out('=');
   display_realtime_sec(then);
@@ -1430,7 +1436,7 @@ void print_period_in_time_units(int pulse) {
     scratch /= 10.0;
   }
 
-  MENU.out((float) time_units, 3);
+  MENU.out((float) time_units, 6);
   MENU.out(timeUnits);
 }
 
