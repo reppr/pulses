@@ -1288,15 +1288,23 @@ void Menu::interpret_men_input() {
 
     // token still not found, give up...
     if (! did_something ) {
-      if (verbosity >= VERBOSITY_SOME) {
-	// display menu and *then* the "UNKNOWN TOKEN line"
-	if(verbosity < VERBOSITY_CHATTY)
-	  menu_display();
+      // maybe display menu and *then* the "UNKNOWN TOKEN line"
+      if(verbosity >= VERBOSITY_CHATTY)
+	menu_display();
 
+      if (verbosity >= VERBOSITY_ERROR) {
 	out(F("\nUNKNOWN TOKEN "));
 	ticked(token);
 	tab();
 	out((int) (token & 0xFF));
+	ln();
+      }
+      if (cb_peek() != EOF) {
+	out(F("skipping "));
+	out(token);
+	while (cb_peek() != EOF) {
+	  out((char) drop_input_token());
+	}
 	ln();
       }
     }
