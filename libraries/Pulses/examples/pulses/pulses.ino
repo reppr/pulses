@@ -3170,14 +3170,14 @@ bool menu_pulses_reaction(char menu_input) {
   case 'Z':
     reverse_click_pins();
 
-    if (MENU.verbosity)
+    if (MENU.maybe_display_more())
       MENU.outln(F("reverse_click_pins"));
 
     break;
 
   case 'E':	// enter experiment
 
-    if (MENU.verbosity)
+    if (MENU.maybe_display_more())
       MENU.out(F("experiment "));
 
     new_value = MENU.numeric_input(experiment);
@@ -3186,7 +3186,7 @@ bool menu_pulses_reaction(char menu_input) {
     else
       MENU.out(onlyPositive);
 
-    if (MENU.verbosity)
+    if (MENU.maybe_display_more())
       MENU.outln(experiment);
 
     switch (experiment) {	// initialize defaults, but do not start yet
@@ -3195,7 +3195,7 @@ bool menu_pulses_reaction(char menu_input) {
       divisor=1;
       sync=15;
 
-      if (MENU.verbosity)
+      if (MENU.verbosity >= VERBOSITY_SOME)
 	display_name5pars("setup_jiffle128", inverse, voices, multiplier, divisor, sync);
       break;
     case 2:
@@ -3203,7 +3203,7 @@ bool menu_pulses_reaction(char menu_input) {
       multiplier=1;
       divisor=1;
 
-      if (MENU.verbosity)
+      if (MENU.verbosity >= VERBOSITY_SOME)
 	display_name5pars("init_div_123456", inverse, voices, multiplier, divisor, sync);
       break;
     case 3:
@@ -3211,7 +3211,7 @@ bool menu_pulses_reaction(char menu_input) {
       multiplier=2;
       divisor=3;
 
-      if (MENU.verbosity) {
+      if (MENU.verbosity >= VERBOSITY_SOME) {
 	// display_name5pars("setup_jiffles0", inverse, voices, multiplier, divisor, sync);
 	MENU.out(F("setup_jiffles0("));
 	MENU.out(inverse);
@@ -3228,7 +3228,7 @@ bool menu_pulses_reaction(char menu_input) {
       sync=0;
       jiffle=jiffletab;
 
-      if (MENU.verbosity)
+      if (MENU.verbosity >= VERBOSITY_SOME)
 	display_name5pars("setup_jiffles2345", inverse, voices, multiplier, divisor, sync);
       break;
     case 5:
@@ -3236,7 +3236,7 @@ bool menu_pulses_reaction(char menu_input) {
       multiplier=3;
       divisor=1;
 
-      if (MENU.verbosity)
+      if (MENU.verbosity >= VERBOSITY_SOME)
 	display_name5pars("init_123456", inverse, voices, multiplier, divisor, sync);
       break;
     case 6:
@@ -3244,7 +3244,7 @@ bool menu_pulses_reaction(char menu_input) {
       multiplier=1;
       divisor=1;
 
-      if (MENU.verbosity)
+      if (MENU.verbosity >= VERBOSITY_SOME)
 	display_name5pars("init_chord_1345689a", inverse, voices, multiplier, divisor, sync);
       break;
     case 7:
@@ -3252,7 +3252,7 @@ bool menu_pulses_reaction(char menu_input) {
       multiplier=1;
       divisor=6*7;
 
-      if (MENU.verbosity)
+      if (MENU.verbosity >= VERBOSITY_SOME)
 	display_name5pars("init_rhythm_1", inverse, voices, multiplier, divisor, sync);
       break;
     case 8:
@@ -3260,7 +3260,7 @@ bool menu_pulses_reaction(char menu_input) {
       multiplier=1;
       divisor=1;
 
-      if (MENU.verbosity)
+      if (MENU.verbosity >= VERBOSITY_SOME)
 	display_name5pars("init_rhythm_2", inverse, voices, multiplier, divisor, sync);
       break;
     case 9:
@@ -3268,7 +3268,7 @@ bool menu_pulses_reaction(char menu_input) {
       multiplier=1;
       divisor=1;
 
-      if (MENU.verbosity)
+      if (MENU.verbosity >= VERBOSITY_SOME)
 	display_name5pars("init_rhythm_3", inverse, voices, multiplier, divisor, sync);
       break;
     case 10:
@@ -3276,7 +3276,7 @@ bool menu_pulses_reaction(char menu_input) {
       multiplier=1;
       divisor=7L*3L;
 
-      if (MENU.verbosity)
+      if (MENU.verbosity >= VERBOSITY_SOME)
 	display_name5pars("init_rhythm_4", inverse, voices, multiplier, divisor, sync);
       break;
     case 11:
@@ -3284,7 +3284,7 @@ bool menu_pulses_reaction(char menu_input) {
       multiplier=3;
       divisor=1;
 
-      if (MENU.verbosity)
+      if (MENU.verbosity >= VERBOSITY_SOME)
 	display_name5pars("setup_jifflesNEW", inverse, voices, multiplier, divisor, sync);
       break;
     case 12:
@@ -3292,7 +3292,7 @@ bool menu_pulses_reaction(char menu_input) {
       multiplier=1;
       divisor=1;
 
-      if (MENU.verbosity)
+      if (MENU.verbosity >= VERBOSITY_SOME)
 	display_name5pars("init_pentatonic", inverse, voices, multiplier, divisor, sync);
       break;
     case 13:
@@ -3307,7 +3307,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("prepare_magnets", inverse, voices, multiplier, divisor, sync);
       prepare_magnets(inverse, voices, multiplier, divisor, sync);
 
-      if (MENU.verbosity)
+      if (MENU.verbosity >= VERBOSITY_SOME)
 	alive_pulses_info_lines();
       break;
     case 14:
@@ -3323,7 +3323,7 @@ bool menu_pulses_reaction(char menu_input) {
       select_n(voices);
       display_name5pars("E14", inverse, voices, multiplier, divisor, sync);
 
-      if (MENU.verbosity)
+      if (MENU.verbosity >= VERBOSITY_SOME)
 	alive_pulses_info_lines();
       break;
     case 15:
@@ -3339,7 +3339,7 @@ bool menu_pulses_reaction(char menu_input) {
       select_n(voices);
       display_name5pars("E15", inverse, voices, multiplier, divisor, sync);
 
-      if (MENU.verbosity)
+      if (MENU.verbosity >= VERBOSITY_SOME)
 	alive_pulses_info_lines();
       break;
 
@@ -3356,7 +3356,7 @@ bool menu_pulses_reaction(char menu_input) {
       // jiffle = arpeggio4096;
       display_name5pars("E16 european_pent", inverse, voices, multiplier, divisor, sync);
 
-      if (MENU.verbosity)
+      if (MENU.verbosity >= VERBOSITY_SOME)
 	alive_pulses_info_lines();
       break;
 
@@ -3372,7 +3372,7 @@ bool menu_pulses_reaction(char menu_input) {
       jiffle=ting4096;
       display_name5pars("E17 mimic japan", inverse, voices, multiplier, divisor, sync);
 
-      if (MENU.verbosity)
+      if (MENU.verbosity >= VERBOSITY_SOME)
 	alive_pulses_info_lines();
 
       break;
@@ -3394,19 +3394,19 @@ bool menu_pulses_reaction(char menu_input) {
       prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
       display_name5pars("E18 pentatonic minor", inverse, voices, multiplier, divisor, sync);
 
-      if (MENU.verbosity)
+      if (MENU.verbosity >= VERBOSITY_SOME)
 	alive_pulses_info_lines();
 
       break;
 
     default:
-      if (MENU.verbosity)
+      if (MENU.verbosity >= VERBOSITY_SOME)
 	MENU.outln(invalid_);
 
       experiment=0;
       break;
     }
-    if (MENU.verbosity)
+    if (MENU.verbosity >= VERBOSITY_SOME)
       MENU.outln(F("Press '!' to start"));
 
     break;
