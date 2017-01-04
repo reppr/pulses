@@ -2477,6 +2477,7 @@ void maybe_show_selected_mask() {
 
 bool menu_pulses_reaction(char menu_input) {
   static long result=0;
+  static long calc_result=0;
   long new_value=0;
   struct time now, time_scratch;
   unsigned long bitmask;
@@ -3054,11 +3055,14 @@ bool menu_pulses_reaction(char menu_input) {
       show_scale();
     break;
 
-  case 'D':	// DADA debug
-    if (MENU.maybe_calculate_input(&result))
-      MENU.out("== "), MENU.outln(result);
+  case 'C':	// Calculator *integers only*	Calculates simply *left to right*
+    if (MENU.maybe_calculate_input(&calc_result))
+      MENU.out("==> "), MENU.outln(calc_result);
+    break;
 
+  case 'D':	// DADA debug
     MENU.outln(HARMONICAL.harmonical_base);
+
     {
       int lcm=1;
       for (int pulse=0; pulse<pl_max; pulse++)
