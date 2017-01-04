@@ -3394,8 +3394,10 @@ bool menu_pulses_reaction(char menu_input) {
       // divisor=2048;
 
       // string tuning on 8/9
-      multiplier=8;
-      divisor=9*1024;
+//      multiplier=8;
+//      divisor=9*1024;
+      multiplier=1;
+      divisor=9*128;
       jiffle=ting4096;
 
       select_n(voices);
