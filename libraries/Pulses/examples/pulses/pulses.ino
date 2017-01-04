@@ -3457,6 +3457,7 @@ bool menu_pulses_reaction(char menu_input) {
     case 15:
     case 16:
     case 17:
+    case 18:
       // FIXME:	maybe make that default?
       activate_selected_synced_now(sync);	// sync and activate
       if (MENU.maybe_display_more()) {		// *then* maybe info ;)
