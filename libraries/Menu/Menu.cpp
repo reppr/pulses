@@ -282,6 +282,149 @@ char Menu::cb_read() {
   void Menu::slash() const { port_.print('/'); }	// Output char '/'
 
 
+/* numeric input, calculating (left to right)				*/
+  int Menu::is_chiffre(char token) {		// is token a chiffre?
+    if (token > '9' || token < '0')
+      return false;
+    return token;
+  }
+
+
+  char Menu::is_operator(char token) {
+    switch (token) {
+    case '*':
+    case '/':
+    case '+':
+    case '-':
+    case '%':
+    case '&':
+    case '|':
+    case '^':
+      return token;
+      break;
+    }
+    return 0;
+  }
+
+
+  bool Menu::get_numeric_input(long *result) {	// if there's a number, read it
+    char token = cb_peek();
+    if (!is_chiffre(token))	// no numeric input, return false
+      return false;
+
+    drop_input_token();
+    *result = token - '0';	// start with first chiffre
+
+    while (token=cb_peek(), is_chiffre(token)) {
+      drop_input_token();
+      *result *= 10;
+      *result += token -'0';
+    }
+    return true;		// all input was read
+  }
+
+
+  bool Menu::maybe_calculate_input(long *result) {
+    /* check for & calculate integer input
+       calculates simply left to right  */
+    long scratch;	// see recursion
+    char token = cb_peek();
+    bool is_result = false;
+
+    if (get_numeric_input(result)) {
+      is_result = true;
+
+      token = cb_peek();
+      if (token == -1)
+	return true;
+    }
+
+    if (is_operator(token)) {	// known operator?
+      drop_input_token();
+
+      scratch = *result;		// save for recursion
+      switch (token) {
+      case '*':
+	if (get_numeric_input(result)) {
+	  scratch *= *result;
+	  *result = scratch;
+	}
+	if (cb_peek()==-1)
+	  return true;
+	else
+	  return maybe_calculate_input(result);	// recurse and return
+	break;
+      case '/':
+	if (get_numeric_input(result)) {
+	  scratch /= *result;
+	  *result = scratch;
+	}
+	if (cb_peek()==-1)
+	  return true;
+	else
+	  return maybe_calculate_input(result);	// recurse and return
+	break;
+      case '+':
+	if (get_numeric_input(result)) {
+	  scratch += *result;
+	  *result = scratch;
+	}
+	if (cb_peek()==-1)
+	  return true;
+	else
+	  return maybe_calculate_input(result);	// recurse and return
+	break;
+      case '-':
+	if (get_numeric_input(result)) {
+	  scratch -= *result;
+	  *result = scratch;
+	}
+	if (cb_peek()==-1)
+	  return true;
+	else
+	  return maybe_calculate_input(result);	// recurse and return
+	break;
+      case '%':
+	if (maybe_calculate_input(result)) {
+	  scratch %= *result;
+	  *result = scratch;
+	  return true;
+	}
+	return false;
+	break;
+      case '&':
+	if (maybe_calculate_input(result)) {
+	  scratch &= *result;
+	  *result = scratch;
+	  return true;
+	}
+	return false;
+	break;
+      case '|':
+	if (maybe_calculate_input(result)) {
+	  scratch |= *result;
+	  *result = scratch;
+	  return true;
+	}
+	return false;
+	break;
+      case '^':
+	if (maybe_calculate_input(result)) {
+	  scratch ^= *result;
+	  *result = scratch;
+	  return true;
+	}
+	return false;
+	break;
+      default:	// should not happen, see is_operator()
+	return false;
+      }
+    }
+
+    return is_result;
+  }
+
+
   /*
    * Menu tries to determine free RAM and to display free RAM in the title line:
    * To keep the change simple I decided to define the RAM functions as noops

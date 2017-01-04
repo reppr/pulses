@@ -1804,7 +1804,7 @@ void do_throw_a_jiffle(int pulse) {		// for pulse_do
 void print_selected_mask() {
   const int hex_pulses=std::min(pl_max,16);  // displayed as hex chiffres, "std::" for ESP8266
 
-  if(is_chiffre(MENU.cb_peek()))	// more numeric input, so no display yet...
+  if(MENU.is_chiffre(MENU.cb_peek()))	// more numeric input, so no display yet...
     return;
 
   MENU.out_selected_();
@@ -2883,7 +2883,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'T':	// 'T<integer-number>' sets tuning, 'T' toggles TUNED
     result = (long) PULSES.tuning;
-    if (maybe_calculate_input(&result))	{	// T1 sets tuning to 1.0
+    if (MENU.maybe_calculate_input(&result))	{	// T1 sets tuning to 1.0
       PULSES.tuning = (double) result;
       tuning_info();
       MENU.ln();
@@ -3055,8 +3055,8 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'D':	// DADA debug
-//    if (maybe_calculate_input(&result))
-//      MENU.out("== "), MENU.outln(result);
+    if (MENU.maybe_calculate_input(&result))
+      MENU.out("== "), MENU.outln(result);
 
     MENU.outln(HARMONICAL.harmonical_base);
     {
@@ -3520,136 +3520,6 @@ Testing Pulses library in an early stage
 /* **************************************************************** */
 
 
-char is_operator(char token) {
-  switch (token) {
-  case '*':
-  case '/':
-  case '+':
-  case '-':
-  case '%':
-  case '&':
-  case '|':
-  case '^':
-    return token;
-    break;
-  }
-  return 0;
-}
-
-
-bool get_numeric_input(long *result) {
-  char token = MENU.cb_peek();
-  if (!is_chiffre(token))	// no numeric input, return false
-    return false;
-
-  MENU.drop_input_token();
-  *result = token - '0';	// start with first chiffre
-
-  while (token=MENU.cb_peek(), is_chiffre(token)) {
-    MENU.drop_input_token();
-    *result *= 10;
-    *result += token -'0';
-  }
-  return true;		// all input was read
-}
-
-
-bool maybe_calculate_input(long *result) {
-  long scratch;	// see recursion
-  char token = MENU.cb_peek();
-
-  if (get_numeric_input(result)) {
-    token = MENU.cb_peek();
-    if (token = -1)
-      return true;
-  }
-
-  if (is_operator(token)) {	// known operator?
-    MENU.drop_input_token();
-
-    scratch = *result;		// save for recursion
-    switch (token) {
-    case '*':
-      if (get_numeric_input(result)) {
-	scratch *= *result;
-	*result = scratch;
-      }
-      if (MENU.cb_peek()==-1)
-	return true;
-      else
-	return maybe_calculate_input(result);	// recurse and return
-      break;
-    case '/':
-      if (get_numeric_input(result)) {
-	scratch /= *result;
-	*result = scratch;
-      }
-      if (MENU.cb_peek()==-1)
-	return true;
-      else
-	return maybe_calculate_input(result);	// recurse and return
-      break;
-    case '+':
-      if (get_numeric_input(result)) {
-	scratch += *result;
-	*result = scratch;
-      }
-      if (MENU.cb_peek()==-1)
-	return true;
-      else
-	return maybe_calculate_input(result);	// recurse and return
-      break;
-    case '-':
-      if (get_numeric_input(result)) {
-	scratch -= *result;
-	*result = scratch;
-      }
-      if (MENU.cb_peek()==-1)
-	return true;
-      else
-	return maybe_calculate_input(result);	// recurse and return
-      break;
-    case '%':
-      if (maybe_calculate_input(result)) {
-	scratch %= *result;
-	*result = scratch;
-	return true;
-      }
-      return false;
-      break;
-    case '&':
-      if (maybe_calculate_input(result)) {
-	scratch &= *result;
-	*result = scratch;
-	return true;
-      }
-      return false;
-      break;
-    case '|':
-      if (maybe_calculate_input(result)) {
-	scratch |= *result;
-	*result = scratch;
-	return true;
-      }
-      return false;
-      break;
-    case '^':
-      if (maybe_calculate_input(result)) {
-	scratch ^= *result;
-	*result = scratch;
-	return true;
-      }
-      return false;
-      break;
-    default:	// should not happen, see is_operator()
-      return false;
-    }
-  }
-
-  return false;
-}
-
-
 void display_fraction(struct fraction *f) {
   MENU.out((*f).multiplier);
   MENU.slash();
@@ -3659,17 +3529,6 @@ void display_fraction(struct fraction *f) {
 /* **************************************************************** */
 /* **************************************************************** */
 /* **************************************************************** */
-
-
-
-    first_value *= 10;
-  }
-  // now we know that there are i more chiffres
-  long more_digits=MENU.numeric_input(0);
-
-  return first_value + more_digits;
-}
-
 
 
 

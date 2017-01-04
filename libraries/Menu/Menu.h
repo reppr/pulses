@@ -230,6 +230,13 @@ class Menu {
   void equals()	const;		// output char '='
   void slash()	const;		// output char '/'
 
+/* Input							*/
+  int is_chiffre(char token);			// is token a chiffre?
+  char is_operator(char token);			// known operator?
+  bool get_numeric_input(long *result);		// if there's a number, read it
+  bool maybe_calculate_input(long *result);	// check for & calculate input
+						// calculates simply left to right
+
 /* int get_free_RAM(): determine RAM usage, maybe only a dummy	*/
   int get_free_RAM() const;
   void print_free_RAM() const;

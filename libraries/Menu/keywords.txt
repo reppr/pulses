@@ -10,6 +10,11 @@ ln	KEYWORD2
 tab	KEYWORD2
 space	KEYWORD2
 equals	KEYWORD2
+slash	KEYWORD2
+is_chiffre	KEYWORD2
+is_operator	KEYWORD2
+get_numeric_input	KEYWORD2
+maybe_calculate_input	KEYWORD2
 ticked	KEYWORD2
 cb_peek	KEYWORD2
 skip_spaces	KEYWORD2
