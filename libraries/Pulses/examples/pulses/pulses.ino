@@ -109,7 +109,7 @@ void display_action(int pulse);
 void do_jiffle (int pulse);
 void do_throw_a_jiffle(int pulse);
 void init_click_pins();
-void alive_pulses_info_lines();
+void flagged_pulses_info_lines();
 void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 void init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 void setup_jiffles0(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync); // Frogs
@@ -441,7 +441,7 @@ void setup() {
 
   // informations about alive pulses:
   MENU.ln();
-  alive_pulses_info_lines();
+  flagged_pulses_info_lines();
 }
 
 
@@ -534,7 +534,7 @@ int main() {
 
   // informations about alive pulses:
   MENU.ln();
-  alive_pulses_info_lines();
+  flagged_pulses_info_lines();
 
   // main program loop:
   while (true) {
@@ -1505,7 +1505,7 @@ void en_info(int pulse)
 
 const char noAlive[] = "no pulses alive";
 
-void alive_pulses_info_lines()
+void flagged_pulses_info_lines()
 {
   int count=0;
 
@@ -1638,7 +1638,7 @@ void en_INFO(int pulse)
 }
 
 
-void alive_pulses_info()
+void flagged_pulses_info()
 {
   int count=0;
 
@@ -1866,7 +1866,7 @@ void info_select_destination_with(bool extended_destinations) {
 
 // menu_program_display()
 const char helpInfo[] = \
-  "?=help\ti=info\t.=alive info\t:=selected info";
+  "?=help\ti=info\t.=flagged info\t:=selected info";
 const char microSeconds[] = " microseconds";
 const char muteKill[] = \
   "M=mute all\tR=remove all\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tf=en-info\tF=en-INFO\tn=sync now\nS=sync ";
@@ -2412,7 +2412,7 @@ void short_info() {
   time_info();
 
   MENU.ln();
-  alive_pulses_info_lines();
+  flagged_pulses_info_lines();
 }
 
 // helper functions to display parameters of menu functions:
@@ -2472,7 +2472,7 @@ bool menu_pulses_reaction(char menu_input) {
     short_info();		// + short info
     break;
 
-  case '.':	// time and alive pulses info
+  case '.':	// time and flagged pulses info
     short_info();
     break;
 
@@ -2532,7 +2532,7 @@ bool menu_pulses_reaction(char menu_input) {
     maybe_show_selected_mask();
 
     if (MENU.maybe_display_more())
-      alive_pulses_info_lines();
+      flagged_pulses_info_lines();
 
     break;
 
@@ -2592,7 +2592,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      alive_pulses_info_lines();			// *then* info ;)
+      flagged_pulses_info_lines();			// *then* info ;)
     }
     // info_select_destination_with(false);	// DADA ################
     break;
@@ -2616,7 +2616,7 @@ bool menu_pulses_reaction(char menu_input) {
     MENU.ln();
     time_info();
     MENU.ln();	// ################################################################
-    alive_pulses_info();
+    flagged_pulses_info();
     break;
 
   case 'M':	// mute
@@ -2634,7 +2634,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	if (MENU.maybe_display_more()) {
 	  MENU.ln();
-	  alive_pulses_info_lines();
+	  flagged_pulses_info_lines();
 	}
       } else
 	MENU.outln(invalid_);
@@ -2661,7 +2661,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	if (MENU.maybe_display_more()) {
 	  MENU.ln();
-	  alive_pulses_info_lines();
+	  flagged_pulses_info_lines();
 	}
       } else
 	MENU.outln(invalid_);
@@ -2692,7 +2692,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	if (MENU.maybe_display_more()) {
 	  MENU.ln();
-	  alive_pulses_info_lines();
+	  flagged_pulses_info_lines();
 	}
       } else
 	MENU.outln(invalid_);
@@ -2723,7 +2723,7 @@ bool menu_pulses_reaction(char menu_input) {
     }
 
     if (MENU.maybe_display_more()) {
-      alive_pulses_info_lines();
+      flagged_pulses_info_lines();
       MENU.ln();
     }
     break;
@@ -2732,7 +2732,7 @@ bool menu_pulses_reaction(char menu_input) {
     reset_and_edit_selected();
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      alive_pulses_info_lines();
+      flagged_pulses_info_lines();
     }
     break;
 
@@ -2741,7 +2741,7 @@ bool menu_pulses_reaction(char menu_input) {
     activate_selected_synced_now(sync);	// sync and activate
     if (MENU.maybe_display_more()) {		// *then* info ;)
       MENU.ln();
-      alive_pulses_info_lines();
+      flagged_pulses_info_lines();
     }
     break;
 
@@ -2758,7 +2758,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {	// *then* info ;)
       MENU.ln();
-      alive_pulses_info_lines();
+      flagged_pulses_info_lines();
     }
     break;
 
@@ -2770,7 +2770,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      alive_pulses_info_lines();
+      flagged_pulses_info_lines();
     }
 
     break;
@@ -2834,7 +2834,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      alive_pulses_info_lines();
+      flagged_pulses_info_lines();
     }
 
     break;
@@ -2847,7 +2847,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      alive_pulses_info_lines();
+      flagged_pulses_info_lines();
     }
 
     break;
@@ -2860,7 +2860,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      alive_pulses_info_lines();
+      flagged_pulses_info_lines();
     }
 
     break;
@@ -2883,7 +2883,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      alive_pulses_info_lines();
+      flagged_pulses_info_lines();
     }
     break;
 
@@ -2896,7 +2896,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      alive_pulses_info_lines();
+      flagged_pulses_info_lines();
     }
     break;
 
@@ -2991,7 +2991,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      alive_pulses_info_lines();
+      flagged_pulses_info_lines();
     }
     break;
 
@@ -3003,7 +3003,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      alive_pulses_info_lines();
+      flagged_pulses_info_lines();
     }
     break;
 
@@ -3305,7 +3305,7 @@ bool menu_pulses_reaction(char menu_input) {
       prepare_magnets(inverse, voices, multiplier, divisor, sync);
 
       if (MENU.verbosity >= VERBOSITY_SOME)
-	alive_pulses_info_lines();
+	flagged_pulses_info_lines();
       break;
     case 14:
       // magnets on strings, second take
@@ -3321,7 +3321,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E14", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.verbosity >= VERBOSITY_SOME)
-	alive_pulses_info_lines();
+	flagged_pulses_info_lines();
       break;
     case 15:
       // magnets on strings, third take
@@ -3337,7 +3337,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E15", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.verbosity >= VERBOSITY_SOME)
-	alive_pulses_info_lines();
+	flagged_pulses_info_lines();
       break;
 
     case 16:
@@ -3354,7 +3354,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E16 european_pent", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.verbosity >= VERBOSITY_SOME)
-	alive_pulses_info_lines();
+	flagged_pulses_info_lines();
       break;
 
     case 17:
@@ -3370,7 +3370,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E17 mimic japan", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.verbosity >= VERBOSITY_SOME)
-	alive_pulses_info_lines();
+	flagged_pulses_info_lines();
 
       break;
 
@@ -3392,7 +3392,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E18 pentatonic minor", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.verbosity >= VERBOSITY_SOME)
-	alive_pulses_info_lines();
+	flagged_pulses_info_lines();
 
       break;
 
@@ -3459,7 +3459,7 @@ bool menu_pulses_reaction(char menu_input) {
       activate_selected_synced_now(sync);	// sync and activate
       if (MENU.maybe_display_more()) {		// *then* maybe info ;)
 	MENU.ln();
-	alive_pulses_info_lines();
+	flagged_pulses_info_lines();
       }
       break;
 
