@@ -1593,7 +1593,7 @@ void pulse_info(int pulse) {
 
   MENU.ln();		// start next line
 
-  MENU.out((float) PULSES.pulses[pulse].period.time / (float) time_unit,3);
+  MENU.out((float) PULSES.pulses[pulse].period.time / (float) time_unit,6);
   MENU.out(timeUnits);
 
   MENU.out(pulseOvfl);
@@ -1906,7 +1906,7 @@ void menu_pulses_display() {
   MENU.out(time_unit);
   MENU.out(microSeconds);
   MENU.out(equals_);
-  MENU.out((float) (1000000.0 / (float) time_unit),3);
+  MENU.out((float) (1000000.0 / (float) time_unit),6);
   MENU.outln(perSecond_);
 
   MENU.ln();
