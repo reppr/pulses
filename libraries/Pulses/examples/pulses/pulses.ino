@@ -446,10 +446,7 @@ void setup() {
 
 
 // stress_emergency:  looks like the value does not matter too much
-// unsigned int stress_emergency=42;
-// unsigned int stress_emergency=100;
-// unsigned int stress_emergency=64;
-unsigned int stress_emergency=256;	// high value for a test
+unsigned int stress_emergency=4096;	// high value seems appropriate
 unsigned int stress_count=0;
 
 void loop() {	// ARDUINO
