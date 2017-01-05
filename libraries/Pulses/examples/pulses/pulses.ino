@@ -2522,10 +2522,17 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case 'u':	// select destination: time_unit
-    dest = CODE_TIME_UNIT;
-
-    maybe_show_selected_mask();
+  case 'u':	// calculating or select destination: time_unit
+    {
+      signed long new_value=(signed long) time_unit;
+      if (MENU.maybe_calculate_input(&new_value)) {
+	MENU.out("==> "), MENU.outln(new_value);
+	time_unit=new_value;
+      }
+      else
+	dest = CODE_TIME_UNIT;		// FIXME: obsolete?
+    }
+    break;
 
   case 'a':	// select destination: all pulses with flags
     select_flagged();
