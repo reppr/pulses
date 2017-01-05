@@ -802,17 +802,17 @@ void init_click_pins() {
 //  }
 
 
-const char mutedAllPulses[] = "muted all pulses";
+const char deactivatedAllPulses[] = "deactivated all pulses";
 const char noFreePulses[] = "no free pulses";
 
-void mute_all_clicks() {
+void deactivate_all_clicks() {
   for (int pulse=0; pulse<CLICK_PULSES; pulse++)
     PULSES.pulses[pulse].flags &= ~ACTIVE;
 
   PULSES.fix_global_next();
 
   if (MENU.verbosity)
-    MENU.outln(mutedAllPulses);
+    MENU.outln(deactivatedAllPulses);
 }
 
 
@@ -1834,7 +1834,7 @@ const char selectDestinationInfo[] =
   "SELECT DESTINATION for '= * / s K P n c j :' to work on:\t";
 const char selectPulseWith[] = "select pulse with ";
 const char selectAllPulses[] =
-  "\na=select *all* click pulses\tA=*all* pulses\tl=alive clicks\tL=all alive\tx=none\t~=invert selection";
+  "\na=select *all* click pulses\tA=*all* pulses\tl=alive click voices\tL=all alive\tx=none\t~=invert selection";
 const char uSelect[] = "u=select ";
 const char selected__[] = "\t(selected)";
 const char pulses_[] = "pulses ";
@@ -1868,8 +1868,8 @@ void info_select_destination_with(bool extended_destinations) {
 const char helpInfo[] = \
   "?=help\ti=info\t.=flagged info\t:=selected info";
 const char microSeconds[] = " microseconds";
-const char muteKill[] = \
-  "M=mute all\tR=remove all\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tf=en-info\tF=en-INFO\tn=sync now\nS=sync ";
+const char deactivateKill[] = \
+  "M=deactivate all\tR=remove all\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tf=en-info\tF=en-INFO\tn=sync now\nS=sync ";
 const char perSecond_[] = " per second)";
 const char equals_[] = " = ";
 const char switchPulse[] = "s=switch pulse on/off";
@@ -1911,7 +1911,7 @@ void menu_pulses_display() {
 
   MENU.ln();
   MENU.out(switchPulse);
-  MENU.tab();  MENU.out(muteKill);
+  MENU.tab();  MENU.out(deactivateKill);
   MENU.outln(sync);
 
   MENU.out(F("E=enter experiment (")); MENU.out(experiment); MENU.out(F(")"));
@@ -2626,8 +2626,8 @@ bool menu_pulses_reaction(char menu_input) {
     flagged_pulses_info();
     break;
 
-  case 'M':	// mute
-    mute_all_clicks();
+  case 'M':	// "mute", no deactivate all clicks, see 'N'
+    deactivate_all_clicks();
     break;
 
   case '*':	// multiply destination
