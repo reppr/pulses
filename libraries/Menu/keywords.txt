@@ -11,6 +11,7 @@ tab	KEYWORD2
 space	KEYWORD2
 equals	KEYWORD2
 slash	KEYWORD2
+maybe_display_more	KEYWORD2
 is_chiffre	KEYWORD2
 is_operator	KEYWORD2
 get_numeric_input	KEYWORD2
