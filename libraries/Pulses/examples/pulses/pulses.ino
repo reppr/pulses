@@ -43,24 +43,26 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
 #include "pulses_systems_and_boards.h"
 
+
 /* **************** Menu **************** */
 #include <Menu.h>
-
-#define MENU_OUTSTREAM	Serial
-
-int men_getchar() {
-  if (!Serial.available())	// ARDUINO
-    return EOF;
-
-  return Serial.read();
-
-}
 
 //  Menu(int size, int menuPages, int (*maybeInput)(void), STREAMTYPE & port);
 /*
   This version definines the menu INPUT routine int men_getchar();
   in the *program* not inside the Menu class.
 */
+#ifdef ARDUINO	// FIXME: why doesn't it work from pulses_systems_and_boards.h???
+  #define MENU_OUTSTREAM	Serial
+
+  int men_getchar() {
+    if (!Serial.available())	// ARDUINO
+      return EOF;
+
+    return Serial.read();
+
+  }
+#endif
 
 /* BAUDRATE for Serial:	uncomment one of the following lines:	*/
 #define BAUDRATE	115200		// works fine here
@@ -85,6 +87,7 @@ int men_getchar() {
 #endif
 
 Menu MENU(32, 3, &men_getchar, MENU_OUTSTREAM);
+
 
 /* **************** Pulses **************** */
 #include <Pulses.h>
@@ -773,6 +776,14 @@ bool maybe_stop_sweeping() {
 }
 
 
+void display_fraction(struct fraction *f) {
+  MENU.out((*f).multiplier);
+  MENU.slash();
+  MENU.out((*f).divisor);
+}
+
+
+/* **************************************************************** */
 // pins for click_pulses:
 // It is a bit obscure to held them in an array indexed by [pulse]
 // but it's simple and working well...
@@ -3495,6 +3506,11 @@ bool menu_pulses_reaction(char menu_input) {
 #else
   #warning "Not compiling softboard_page on PC."
 #endif
+
+/* **************************************************************** */
+/* **************************************************************** */
+/* **************************************************************** */
+
 
 /* **************************************************************** */
 /* README_pulses
