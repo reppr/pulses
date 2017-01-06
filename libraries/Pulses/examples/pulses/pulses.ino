@@ -2587,7 +2587,7 @@ bool menu_pulses_reaction(char menu_input) {
     maybe_show_selected_mask();
     break;
 
-  case 's':	// switch pulse on/off
+  case 's':	// switch pulse ACTIVE on/off
     for (int pulse=0; pulse<pl_max; pulse++) {
       if (selected_pulses & (1 << pulse)) {
 	// special case: switching on an edited SCRATCH pulse:
@@ -2639,6 +2639,8 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'M':	// "mute", no deactivate all clicks, see 'N'
     deactivate_all_clicks();
+    PULSES.fix_global_next();
+    PULSES.check_maybe_do();	// maybe do it *first*
     break;
 
   case '*':	// multiply destination
@@ -2649,6 +2651,9 @@ bool menu_pulses_reaction(char menu_input) {
 	for (int pulse=0; pulse<pl_max; pulse++)
 	  if (selected_pulses & (1 << pulse))
 	    PULSES.multiply_period(pulse, new_value);
+
+	PULSES.fix_global_next();
+	PULSES.check_maybe_do();	// maybe do it *first*
 
 	if (MENU.maybe_display_more()) {
 	  MENU.ln();
@@ -2676,6 +2681,9 @@ bool menu_pulses_reaction(char menu_input) {
 	for (int pulse=0; pulse<pl_max; pulse++)
 	  if (selected_pulses & (1 << pulse))
 	    PULSES.divide_period(pulse, new_value);
+
+	PULSES.fix_global_next();
+	PULSES.check_maybe_do();	// maybe do it *first*
 
 	if (MENU.maybe_display_more()) {
 	  MENU.ln();
@@ -2708,6 +2716,9 @@ bool menu_pulses_reaction(char menu_input) {
 	    PULSES.set_new_period(pulse, time_scratch);
 	  }
 
+	PULSES.fix_global_next();
+	PULSES.check_maybe_do();	// maybe do it *first*
+
 	if (MENU.maybe_display_more()) {
 	  MENU.ln();
 	  flagged_pulses_info_lines();
@@ -2737,6 +2748,9 @@ bool menu_pulses_reaction(char menu_input) {
 	    MENU.space();
 	  }
 	}
+      PULSES.fix_global_next();
+      PULSES.check_maybe_do();	// maybe do it *first*
+
       MENU.ln();
     }
 
@@ -2757,7 +2771,8 @@ bool menu_pulses_reaction(char menu_input) {
   case 'n':	// synchronise to now
     // we work on pulses anyway, regardless dest
     activate_selected_synced_now(sync);	// sync and activate
-    if (MENU.maybe_display_more()) {		// *then* info ;)
+
+    if (MENU.maybe_display_more()) {	// *then* info ;)
       MENU.ln();
       flagged_pulses_info_lines();
     }
@@ -2773,6 +2788,7 @@ bool menu_pulses_reaction(char menu_input) {
       }
 
     PULSES.fix_global_next();	// just in case?
+    PULSES.check_maybe_do();	// maybe do it *first*
 
     if (MENU.maybe_display_more()) {	// *then* info ;)
       MENU.ln();
@@ -2785,6 +2801,8 @@ bool menu_pulses_reaction(char menu_input) {
     for (int pulse=0; pulse<voices; pulse++)
       if (selected_pulses & (1 << pulse))
 	en_click(pulse);
+
+    PULSES.check_maybe_do();	// maybe do it *first*
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
@@ -2799,12 +2817,14 @@ bool menu_pulses_reaction(char menu_input) {
     if (sweep_up==0)	// start sweeping if it was disabled
       sweep_up=1;
 
+    PULSES.check_maybe_do();	// maybe do it *first*
+
     if (MENU.maybe_display_more())
       sweep_info();
 
     break;
 
-  case 'W':
+  case 'W':	// sweep control
     next_token = MENU.cb_peek();
     if (next_token != (char) EOF) {	// there is input after 'W'
       switch(next_token) {	// examine following input token
@@ -2850,6 +2870,9 @@ bool menu_pulses_reaction(char menu_input) {
       if (selected_pulses & (1 << pulse))
 	en_sweep_click(pulse);
 
+    PULSES.fix_global_next();	// just in case?
+    PULSES.check_maybe_do();	// maybe do it *first*
+
     if (MENU.maybe_display_more()) {
       MENU.ln();
       flagged_pulses_info_lines();
@@ -2863,6 +2886,9 @@ bool menu_pulses_reaction(char menu_input) {
       if (selected_pulses & (1 << pulse))
 	en_sweep_click_0(pulse);
 
+    PULSES.fix_global_next();	// just in case?
+    PULSES.check_maybe_do();	// maybe do it *first*
+
     if (MENU.maybe_display_more()) {
       MENU.ln();
       flagged_pulses_info_lines();
@@ -2875,6 +2901,9 @@ bool menu_pulses_reaction(char menu_input) {
     for (int pulse=0; pulse<voices; pulse++)
       if (selected_pulses & (1 << pulse))
 	en_tuned_sweep_click(pulse);
+
+    PULSES.fix_global_next();	// just in case?
+    PULSES.check_maybe_do();	// maybe do it *first*
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
@@ -2899,6 +2928,9 @@ bool menu_pulses_reaction(char menu_input) {
 	    PULSES.activate_tuning(pulse);
     }
 
+    PULSES.fix_global_next();	// just in case?
+    PULSES.check_maybe_do();	// maybe do it *first*
+
     if (MENU.maybe_display_more()) {
       MENU.ln();
       flagged_pulses_info_lines();
@@ -2911,6 +2943,9 @@ bool menu_pulses_reaction(char menu_input) {
     for (int pulse=0; pulse<voices; pulse++)
       if (selected_pulses & (1 << pulse))
 	en_jiffle_thrower(pulse, jiffle);
+
+    PULSES.fix_global_next();	// just in case?
+    PULSES.check_maybe_do();	// maybe do it *first*
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
@@ -3180,6 +3215,8 @@ bool menu_pulses_reaction(char menu_input) {
       // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
       PULSES.init_click_pulses();
       init_click_pins();		// switch them on LOW, output	current off, i.e. magnets
+
+      PULSES.fix_global_next();
 
       if (MENU.verbosity) {
 	MENU.out(F("\nremoved all pulses ")); MENU.outln(cnt);
@@ -3494,6 +3531,10 @@ bool menu_pulses_reaction(char menu_input) {
 	MENU.outln(invalid_);
       break;
     }
+
+    PULSES.fix_global_next();	// just in case?
+    PULSES.check_maybe_do();	// maybe do it *first*
+
     break;
 
   default:
