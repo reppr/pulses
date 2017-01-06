@@ -3062,28 +3062,28 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'D':	// DADA debug
-    MENU.outln(HARMONICAL.harmonical_base);
+    //    MENU.outln(HARMONICAL.harmonical_base);
 
-    MENU.outln(F("small primes:"));
-    for (int i=0; HARMONICAL.small_primes[i]; i++) {
-      MENU.out(i+1);
-      MENU.tab();
-      MENU.outln(HARMONICAL.small_primes[i]);
+    //    MENU.outln(F("small primes:"));
+    //    for (int i=0; HARMONICAL.small_primes[i]; i++) {
+    //      MENU.out(i+1);
+    //      MENU.tab();
+    //      MENU.outln(HARMONICAL.small_primes[i]);
+    //    }
+    {
+      unsigned long lcm=1L;
+      for (int pulse=0; pulse<pl_max; pulse++)
+	if (selected_pulses & (1 << pulse))
+	  lcm = HARMONICAL.LCM(lcm, PULSES.pulses[pulse].period.time);
+      MENU.out(F("lcm ")); MENU.outln(lcm);
+
+      for (int pulse=0; pulse<pl_max; pulse++)
+	if ((selected_pulses & (1 << pulse)) && PULSES.pulses[pulse].period.time) {
+	  MENU.out(pulse);
+	  MENU.tab();
+	  MENU.outln(lcm/PULSES.pulses[pulse].period.time);
+	}
     }
-//	    {
-//	      int lcm=1;
-//	      for (int pulse=0; pulse<pl_max; pulse++)
-//		if (selected_pulses & (1 << pulse))
-//		  lcm = HARMONICAL.LCM(lcm, PULSES.pulses[pulse].period.time);
-//	      MENU.out(F("lcm ")); MENU.outln(lcm);
-//
-//	      for (int pulse=0; pulse<pl_max; pulse++)
-//		if ((selected_pulses & (1 << pulse)) && PULSES.pulses[pulse].period.time) {
-//		  MENU.out(pulse);
-//		  MENU.tab();
-//		  MENU.outln(lcm/PULSES.pulses[pulse].period.time);
-//		}
-//	    }
 
 //	    {
 //	    unsigned int lcm=1;

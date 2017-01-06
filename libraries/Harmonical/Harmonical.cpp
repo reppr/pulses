@@ -59,7 +59,7 @@ unsigned int Harmonical::GCD (unsigned int a, unsigned int b) {	// greatest comm
 }
 
 
-unsigned int Harmonical::LCM(unsigned int a, unsigned int b) {	// least common multiple
+unsigned long Harmonical::LCM(unsigned int a, unsigned int b) {	// least common multiple
   return a * b / GCD(a, b);
 }
 
@@ -73,7 +73,7 @@ void Harmonical::reduce_fraction(struct fraction *f) {
 
 
 void Harmonical::expand_fractions(struct fraction * a, struct fraction * b) {
-  unsigned int l = LCM(a->divisor, b->divisor);
+  unsigned long l = LCM(a->divisor, b->divisor);
   unsigned int f;
   f =  l / a->divisor ;
   (*a).multiplier *= f;
