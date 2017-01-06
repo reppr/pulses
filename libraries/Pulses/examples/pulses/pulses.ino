@@ -3253,23 +3253,29 @@ bool menu_pulses_reaction(char menu_input) {
       divisor=1;
       sync=15;
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
+      if (MENU.maybe_display_more()) {
 	display_name5pars("setup_jiffle128", inverse, voices, multiplier, divisor, sync);
+	MENU.outln(F("Press '!' to start"));
+      }
       break;
+
     case 2:
       sync=0;
       multiplier=1;
       divisor=1;
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
+      if (MENU.maybe_display_more()) {
 	display_name5pars("init_div_123456", inverse, voices, multiplier, divisor, sync);
+	MENU.outln(F("Press '!' to start"));
+      }
       break;
+
     case 3:
       sync=1;
       multiplier=2;
       divisor=3;
 
-      if (MENU.verbosity >= VERBOSITY_SOME) {
+      if (MENU.maybe_display_more()) {
 	// display_name5pars("setup_jiffles0", inverse, voices, multiplier, divisor, sync);
 	MENU.out(F("setup_jiffles0("));
 	MENU.out(inverse);
@@ -3278,81 +3284,110 @@ bool menu_pulses_reaction(char menu_input) {
 	display_next_par(divisor);
 	display_next_par(sync);
 	MENU.outln(F(")  ESP8266 Frogs"));
+	MENU.outln(F("Press '!' to start"));
       }
       break;
-    case 4:
+
+      case 4:
       multiplier=1;
       divisor=2;
       sync=0;
       jiffle=jiffletab;
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
+      if (MENU.maybe_display_more()) {
 	display_name5pars("setup_jiffles2345", inverse, voices, multiplier, divisor, sync);
+	MENU.outln(F("Press '!' to start"));
+      }
       break;
+
     case 5:
       sync=0;		// FIXME: test and select ################
       multiplier=3;
       divisor=1;
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
+      if (MENU.maybe_display_more()) {
 	display_name5pars("init_123456", inverse, voices, multiplier, divisor, sync);
+	MENU.outln(F("Press '!' to start"));
+      }
       break;
+
     case 6:
       sync=0;		// FIXME: test and select ################
       multiplier=1;
       divisor=1;
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
+      if (MENU.maybe_display_more()) {
 	display_name5pars("init_chord_1345689a", inverse, voices, multiplier, divisor, sync);
+	MENU.outln(F("Press '!' to start"));
+      }
       break;
+
     case 7:
       sync=1;
       multiplier=1;
       divisor=6*7;
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
+      if (MENU.maybe_display_more()) {
 	display_name5pars("init_rhythm_1", inverse, voices, multiplier, divisor, sync);
+	MENU.outln(F("Press '!' to start"));
+      }
       break;
+
     case 8:
       sync=5;
       multiplier=1;
       divisor=1;
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
+      if (MENU.maybe_display_more()) {
 	display_name5pars("init_rhythm_2", inverse, voices, multiplier, divisor, sync);
+	MENU.outln(F("Press '!' to start"));
+      }
       break;
+
     case 9:
       sync=3;
       multiplier=1;
       divisor=1;
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
+      if (MENU.maybe_display_more()) {
 	display_name5pars("init_rhythm_3", inverse, voices, multiplier, divisor, sync);
+	MENU.outln(F("Press '!' to start"));
+      }
       break;
+
     case 10:
       sync=1;
       multiplier=1;
       divisor=7L*3L;
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
+      if (MENU.maybe_display_more()) {
 	display_name5pars("init_rhythm_4", inverse, voices, multiplier, divisor, sync);
+	MENU.outln(F("Press '!' to start"));
+      }
       break;
+
     case 11:
       sync=3;
       multiplier=3;
       divisor=1;
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
+      if (MENU.maybe_display_more()) {
 	display_name5pars("setup_jifflesNEW", inverse, voices, multiplier, divisor, sync);
+	MENU.outln(F("Press '!' to start"));
+      }
       break;
+
     case 12:
       sync=1;
       multiplier=1;
       divisor=1;
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
+      if (MENU.maybe_display_more()) {
 	display_name5pars("init_pentatonic", inverse, voices, multiplier, divisor, sync);
+	MENU.outln(F("Press '!' to start"));
+      }
       break;
+
     case 13:
       sync=1;	// or: sync=0;
       multiplier=1;
@@ -3365,9 +3400,12 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("prepare_magnets", inverse, voices, multiplier, divisor, sync);
       prepare_magnets(inverse, voices, multiplier, divisor, sync);
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
+      if (MENU.maybe_display_more()) {
 	flagged_pulses_info_lines();
+	MENU.outln(F("Press '!' to start"));
+      }
       break;
+
     case 14:
       // magnets on strings, second take
       multiplier=1;
@@ -3381,10 +3419,11 @@ bool menu_pulses_reaction(char menu_input) {
       select_n(voices);
       display_name5pars("E14", inverse, voices, multiplier, divisor, sync);
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
+      if (MENU.maybe_display_more())
 	flagged_pulses_info_lines();
       break;
-    case 15:
+
+      case 15:
       // magnets on strings, third take
       multiplier=1;
       divisor=1;
@@ -3464,9 +3503,6 @@ bool menu_pulses_reaction(char menu_input) {
       experiment=0;
       break;
     }
-    if (MENU.verbosity >= VERBOSITY_SOME)
-      MENU.outln(F("Press '!' to start"));
-
     break;
 
   case '!':			// '!' setup and start experiment
@@ -3518,6 +3554,7 @@ bool menu_pulses_reaction(char menu_input) {
     case 18:
       // FIXME:	maybe make that default?
       activate_selected_synced_now(sync);	// sync and activate
+
       if (MENU.maybe_display_more()) {		// *then* maybe info ;)
 	MENU.ln();
 	flagged_pulses_info_lines();
