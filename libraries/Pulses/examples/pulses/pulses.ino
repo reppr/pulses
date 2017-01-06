@@ -1959,7 +1959,7 @@ void reset_and_edit_pulse(int pulse) {
   struct time scratch;
   scratch.time = time_unit;
   scratch.overflow = 0;
-  PULSES.mul_time(&scratch, 12);		// 12 looks like a usable default
+  // PULSES.mul_time(&scratch, 12);		// 12 looks like a usable default	FIXME: change to 1
   PULSES.pulses[pulse].period = scratch;
 }
 
