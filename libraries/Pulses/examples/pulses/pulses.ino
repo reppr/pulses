@@ -103,30 +103,6 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 #define ILLEGAL		-1
 #define ILLEGAL_PIN	255
 
-// defined later on:
-bool maybe_stop_sweeping();
-void maybe_run_continuous();
-void menu_pulses_display();
-bool menu_pulses_reaction(char token);
-void display_action(int pulse);
-void do_jiffle (int pulse);
-void do_throw_a_jiffle(int pulse);
-void init_click_pins();
-void flagged_pulses_info_lines();
-void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-void init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-void setup_jiffles0(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync); // Frogs
-void setup_jiffles2345(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-void init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-void init_chord_1345689a(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-void init_rhythm_1(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-void init_rhythm_2(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-void init_rhythm_3(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-void init_rhythm_4(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-void setup_jifflesNEW(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);;
-void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-
-
 
 /* **************************************************************** */
 uint8_t click_pin[CLICK_PULSES];
@@ -3614,16 +3590,6 @@ Testing Pulses library in an early stage
 */
 /* **************************************************************** */
 
-
-void display_fraction(struct fraction *f) {
-  MENU.out((*f).multiplier);
-  MENU.slash();
-  MENU.out((*f).divisor);
-}
-
-/* **************************************************************** */
-/* **************************************************************** */
-/* **************************************************************** */
 
 
 
