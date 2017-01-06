@@ -444,7 +444,7 @@ void setup() {
 
   // informations about alive pulses:
   MENU.ln();
-  flagged_pulses_info_lines();
+  selected_or_flagged_pulses_info_lines();
 }
 
 
@@ -537,7 +537,7 @@ int main() {
 
   // informations about alive pulses:
   MENU.ln();
-  flagged_pulses_info_lines();
+  selected_or_flagged_pulses_info_lines();
 
   // main program loop:
   while (true) {
@@ -1516,7 +1516,7 @@ void en_info(int pulse)
 
 const char noAlive[] = "no pulses alive";
 
-void flagged_pulses_info_lines()
+void selected_or_flagged_pulses_info_lines()
 {
   int count=0;
 
@@ -2423,7 +2423,7 @@ void short_info() {
   time_info();
 
   MENU.ln();
-  flagged_pulses_info_lines();
+  selected_or_flagged_pulses_info_lines();
 }
 
 // helper functions to display parameters of menu functions:
@@ -2550,7 +2550,7 @@ bool menu_pulses_reaction(char menu_input) {
     maybe_show_selected_mask();
 
     if (MENU.maybe_display_more())
-      flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
 
     break;
 
@@ -2610,7 +2610,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      flagged_pulses_info_lines();			// *then* info ;)
+      selected_or_flagged_pulses_info_lines();			// *then* info ;)
     }
     // info_select_destination_with(false);	// DADA ################
     break;
@@ -2657,7 +2657,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	if (MENU.maybe_display_more()) {
 	  MENU.ln();
-	  flagged_pulses_info_lines();
+	  selected_or_flagged_pulses_info_lines();
 	}
       } else
 	MENU.outln(invalid_);
@@ -2687,7 +2687,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	if (MENU.maybe_display_more()) {
 	  MENU.ln();
-	  flagged_pulses_info_lines();
+	  selected_or_flagged_pulses_info_lines();
 	}
       } else
 	MENU.outln(invalid_);
@@ -2721,7 +2721,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	if (MENU.maybe_display_more()) {
 	  MENU.ln();
-	  flagged_pulses_info_lines();
+	  selected_or_flagged_pulses_info_lines();
 	}
       } else
 	MENU.outln(invalid_);
@@ -2755,7 +2755,7 @@ bool menu_pulses_reaction(char menu_input) {
     }
 
     if (MENU.maybe_display_more()) {
-      flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
       MENU.ln();
     }
     break;
@@ -2764,7 +2764,7 @@ bool menu_pulses_reaction(char menu_input) {
     reset_and_edit_selected();
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
     break;
 
@@ -2774,7 +2774,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {	// *then* info ;)
       MENU.ln();
-      flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
     break;
 
@@ -2792,7 +2792,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {	// *then* info ;)
       MENU.ln();
-      flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
     break;
 
@@ -2806,7 +2806,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      flagged_pulses_info_lines();
+      selected_pulses_info_lines();
     }
 
     break;
@@ -2875,7 +2875,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
 
     break;
@@ -2891,7 +2891,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
 
     break;
@@ -2907,7 +2907,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
 
     break;
@@ -2933,7 +2933,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
     break;
 
@@ -2949,7 +2949,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
     break;
 
@@ -3044,7 +3044,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
     break;
 
@@ -3056,7 +3056,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
     break;
 
@@ -3401,7 +3401,7 @@ bool menu_pulses_reaction(char menu_input) {
       prepare_magnets(inverse, voices, multiplier, divisor, sync);
 
       if (MENU.maybe_display_more()) {
-	flagged_pulses_info_lines();
+	selected_or_flagged_pulses_info_lines();
 	MENU.outln(F("Press '!' to start"));
       }
       break;
@@ -3420,7 +3420,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E14", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.maybe_display_more())
-	flagged_pulses_info_lines();
+	selected_or_flagged_pulses_info_lines();
       break;
 
       case 15:
@@ -3437,7 +3437,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E15", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.verbosity >= VERBOSITY_SOME)
-	flagged_pulses_info_lines();
+	selected_or_flagged_pulses_info_lines();
       break;
 
     case 16:
@@ -3454,7 +3454,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E16 european_pent", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.verbosity >= VERBOSITY_SOME)
-	flagged_pulses_info_lines();
+	selected_or_flagged_pulses_info_lines();
       break;
 
     case 17:
@@ -3470,7 +3470,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E17 mimic japan", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.verbosity >= VERBOSITY_SOME)
-	flagged_pulses_info_lines();
+	selected_or_flagged_pulses_info_lines();
 
       break;
 
@@ -3492,7 +3492,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E18 pentatonic minor", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.verbosity >= VERBOSITY_SOME)
-	flagged_pulses_info_lines();
+	selected_or_flagged_pulses_info_lines();
 
       break;
 
@@ -3557,7 +3557,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if (MENU.maybe_display_more()) {		// *then* maybe info ;)
 	MENU.ln();
-	flagged_pulses_info_lines();
+	selected_or_flagged_pulses_info_lines();
       }
       break;
 
