@@ -3079,9 +3079,22 @@ bool menu_pulses_reaction(char menu_input) {
       show_scale();
     break;
 
-  case 'C':	// Calculator *integers only*	Calculates simply *left to right*
+  case 'C':	// Calculator simply *left to right*	*positive integers only*
     if (MENU.maybe_calculate_input(&calc_result))
       MENU.out("==> "), MENU.outln(calc_result);
+
+    if (MENU.maybe_display_more()) {	// show prime factors of result
+      int p_factors_size=6;	// for harmonics I rarely use more than three, sometimes four ;)
+      unsigned int p_factors[p_factors_size];
+      MENU.out(F("prime factors of ")); MENU.outln(calc_result);
+      int highest = HARMONICAL.prime_factors(p_factors, p_factors_size, calc_result);
+      MENU.out(F("highest ")); MENU.outln(highest);
+      for (int i=0; HARMONICAL.small_primes[i]<=highest; i++) {
+	MENU.out(HARMONICAL.small_primes[i]); MENU.tab();
+	MENU.outln(p_factors[i]);
+      }
+    }
+
     break;
 
   case 'D':	// DADA debug
@@ -3098,7 +3111,12 @@ bool menu_pulses_reaction(char menu_input) {
       for (int pulse=0; pulse<pl_max; pulse++)
 	if (selected_pulses & (1 << pulse))
 	  lcm = HARMONICAL.LCM(lcm, PULSES.pulses[pulse].period.time);
-      MENU.out(F("lcm ")); MENU.outln(lcm);
+      MENU.out(F("lcm ")); MENU.out(lcm);
+      struct time length;
+      length.time = lcm;
+      length.overflow = 0;
+      display_realtime_sec(length);
+      MENU.ln();
 
       for (int pulse=0; pulse<pl_max; pulse++)
 	if ((selected_pulses & (1 << pulse)) && PULSES.pulses[pulse].period.time) {

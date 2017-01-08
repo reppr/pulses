@@ -90,3 +90,31 @@ struct fraction* Harmonical::add_fraction(struct fraction * delta, struct fracti
   reduce_fraction(sum);
   return sum;
 }
+
+
+unsigned int Harmonical::prime_factors(unsigned int p_factors[], int size, unsigned long number) {
+  int highest_prime=0;
+  int f=0;		// write index  for p_factors[f]
+
+  if (number<2)
+    return 0;
+
+  //  Serial.println(number);
+  while (number>1) {
+    for(int p=0; p<size && small_primes[p]; p++) {	// loop over small_primes[]
+      p_factors[f]=0;
+      while ((number % small_primes[p]) == 0) {
+	p_factors[f]++;
+	number /= small_primes[p];
+	//	Serial.print("number: "); Serial.print(number); Serial.print("	prime: "); Serial.print(small_primes[p]);
+	//	Serial.print("	cnt: "); Serial.println(*p_factors[f]);
+	if (number==1) {
+	  //	  Serial.print(small_primes[p]); Serial.print('	'); Serial.println(*p_factors[f]);
+	  return (unsigned int) small_primes[p];
+	}
+      }
+      f++;
+    }	// small_primes[]
+    return 0;
+  }
+}

@@ -47,6 +47,7 @@ class Harmonical {
   void reduce_fraction(struct fraction *f);
   void expand_fractions(struct fraction * a, struct fraction * b);
   fraction * add_fraction(struct fraction * delta, struct fraction * sum);
+  unsigned int prime_factors(unsigned int p_factors[], int size, unsigned long number);
 
   unsigned long harmonical_base;
   static const uint8_t small_primes[];
