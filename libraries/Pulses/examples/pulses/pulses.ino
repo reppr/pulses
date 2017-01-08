@@ -205,9 +205,9 @@ unsigned long selected_pulses=0L;	// pulse bitmask for user interface
   double detune=1.0 / pow(2.0, 1/detune_number);
 
 // second try, see sweep_click()
-  unsigned long ticks_per_octave=10000000L;		// 10 seconds/octave
+  // unsigned long ticks_per_octave=10000000L;		// 10 seconds/octave
   // unsigned long ticks_per_octave=60000000L;		//  1 minute/octave
-  // unsigned long ticks_per_octave=60000000L*10L;	// 10 minutes/octave
+  unsigned long ticks_per_octave=60000000L*10L;	// 10 minutes/octave
   // unsigned long ticks_per_octave=60000000L*60L;	//  1 hour/octave
   // unsigned long ticks_per_octave=60000000L*60L*24;	//  1 day/octave	FIXME: (not tested yet)
 
@@ -639,27 +639,33 @@ double high_sweep_limit = 0.0;	// no limits, please ;)
 				// well there's still zero and resource limitations...
 
 void tuning_info() {
-  MENU.out(F("tuning ")); MENU.out(PULSES.tuning);
+  MENU.out(F("tuning ")); MENU.out(PULSES.tuning, 6);
   MENU.tab();
-  MENU.out(F("slowest ")); MENU.out(low_sweep_limit);
+  MENU.out(F("slowest ")); MENU.out(low_sweep_limit, 6);
   MENU.tab();
-  MENU.out(F("fastest 1/")); MENU.out((double) 1/high_sweep_limit);
+  MENU.out(F("fastest 1/")); MENU.out((double) 1/high_sweep_limit, 6);
 }
 
-
 void sweep_info() {
+  struct time duration;
   MENU.out(F("sweep "));
   switch (sweep_up) {
+  case 0:
+    MENU.out(F("off"));
+    break;
   case 1:
     MENU.out(F("up"));
     break;
   case -1:
     MENU.out(F("down"));
     break;
-  case 0:
-    MENU.out(F("off"));
-    break;
   }
+
+  MENU.out(F("\ttime/octave "));
+  duration.time = ticks_per_octave;
+  duration.overflow=0;
+  display_realtime_sec(duration);
+
   MENU.tab();
   tuning_info();
   MENU.ln();
@@ -2826,7 +2832,13 @@ bool menu_pulses_reaction(char menu_input) {
 	// so we do it here
 	if (MENU.verbosity < VERBOSITY_SOME)
 	  sweep_info();
-
+	break;
+      case 'O':		// 'WO<nnn>' ticks_per_octave
+	MENU.drop_input_token();
+	if (MENU.maybe_calculate_input((long*) &ticks_per_octave)) {	// hmmm !!!
+	  MENU.out(ticks_per_octave);
+	  MENU.outln(F(" ticks/octave"));
+	}
 	break;
       }
     } else {			// no input follows 'W' token:
