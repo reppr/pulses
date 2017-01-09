@@ -40,6 +40,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
+using namespace std;	// ESP8266 needs that
 
 #include "pulses_systems_and_boards.h"
 
@@ -140,24 +141,27 @@ uint8_t click_pin[CLICK_PULSES];
 
   // ratios:
   #define RATIOS_RAM_SIZE	256*2+1
-  #ifndef RATIOS_RAM_SIZE
-    #define RATIOS_RAM_SIZE 9*2+1	// small buffer might fit on simple hardware
-  #endif
+#endif // ESP8266
+
+#ifndef RATIOS_RAM_SIZE	// ratios on small harware ressources, FIXME: test
+  #define RATIOS_RAM_SIZE 9*2+1	// small buffer might fit on simple hardware
+#endif
+#ifdef RATIOS_RAM_SIZE
+  // ratios:
   unsigned int ratios_data[RATIOS_RAM_SIZE] = {0};
   unsigned int ratios_data_length = RATIOS_RAM_SIZE;
   unsigned int ratios_write_index=0;
   unsigned int *ratios=ratios_data;
+#endif // RATIOS_RAM_SIZE
 
-// FIXME: does not belong here
-  unsigned int ratios_quot[] = {1,1, 1,2, 1,3, 1,4, 1,5, 1,6, 1,7, 1,8, 0,0};  // zero terminated
-  unsigned int ratios_int[]  = {1,1, 2,1, 3,1, 4,1, 5,1, 6,1, 7,1, 8,1, 0,0};  // zero terminated
-  unsigned int european_pentatonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 1,2, 4,9, 2,5, 1,3, 3,10,  1,4, 0,0 };  // zero terminated
-  unsigned int pentatonic_minor[] = {1,1, 5,6, 3,4, 2,3, 5*2,6*3, 1,2, 5,12, 3,8, 1,3, 5,6*3, 1,4, 0,0 };  // zero terminated
-  // nice first try with "wrong" note:
-  //  unsigned int mimic_japan_pentatonic[] = {1,1, 8,9, 5,6, 2,3, 8*2,9*3, 1,2, 8,9*2, 5,12, 2,6, 8,9*3, 1,4, 0,0 };  // zero terminated
+unsigned int ratios_quot[] = {1,1, 1,2, 1,3, 1,4, 1,5, 1,6, 1,7, 1,8, 0,0};  // zero terminated
+unsigned int ratios_int[]  = {1,1, 2,1, 3,1, 4,1, 5,1, 6,1, 7,1, 8,1, 0,0};  // zero terminated
+unsigned int european_pentatonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 1,2, 4,9, 2,5, 1,3, 3,10,  1,4, 0,0 };  // zero terminated
+unsigned int pentatonic_minor[] = {1,1, 5,6, 3,4, 2,3, 5*2,6*3, 1,2, 5,12, 3,8, 1,3, 5,6*3, 1,4, 0,0 };  // zero terminated
+// nice first try with "wrong" note:
+//  unsigned int mimic_japan_pentatonic[] = {1,1, 8,9, 5,6, 2,3, 8*2,9*3, 1,2, 8,9*2, 5,12, 2,6, 8,9*3, 1,4, 0,0 };  // zero terminated
 // second try:
-  unsigned int mimic_japan_pentatonic[] = {1,1, 8,9, 5,6, 2,3, 2*15,3*16, 1,2, 8,9*2, 5,12, 2,6, 8,9*3, 1,4, 0,0 };  // zero terminated
-#endif
+unsigned int mimic_japan_pentatonic[] = {1,1, 8,9, 5,6, 2,3, 2*15,3*16, 1,2, 8,9*2, 5,12, 2,6, 8,9*3, 1,4, 0,0 };  // zero terminated
 
 // editing jiffle data
 // if we have enough RAM, we work in an int array[]
@@ -886,7 +890,7 @@ float display_realtime_sec(struct time duration) {
     // seconds += overflow_sec * (float) ((signed long) duration.overflow);
 
   float scratch = 1000.0;
-  while (scratch > std::max(abs(seconds), (float) 1.0)) {	// (float) for Linux PC tests, "std::" for ESP8266
+  while (scratch > max(abs(seconds), (float) 1.0)) {	// (float) for Linux PC tests
     MENU.space();
     scratch /= 10.0;
   }
@@ -1427,7 +1431,7 @@ void print_period_in_time_units(int pulse) {
   time_units = ((float) PULSES.pulses[pulse].period.time / (float) time_unit);
 
   scratch = 1000.0;
-  while (scratch > std::max(time_units, (float) 1.0)) {    // "std::" for ESP8266
+  while (scratch > max(time_units, (float) 1.0)) {
     MENU.space();
     scratch /= 10.0;
   }
@@ -1786,7 +1790,7 @@ void do_throw_a_jiffle(int pulse) {		// for pulse_do
 // what is selected?
 
 void print_selected_mask() {
-  const int hex_pulses=std::min(pl_max,16);  // displayed as hex chiffres, "std::" for ESP8266
+  const int hex_pulses=min(pl_max,16);  // displayed as hex chiffres
 
   if(MENU.is_chiffre(MENU.cb_peek()))	// more numeric input, so no display yet...
     return;
@@ -1849,7 +1853,7 @@ void info_select_destination_with(bool extended_destinations) {
   MENU.out(selectPulseWith);
 
   // FIXME: use 16 here, when reaction will be prepared for a,b,c,d,e,f too.
-  MENU.out_ticked_hexs(std::min(pl_max,10));	// "std::" for ESP8266
+  MENU.out_ticked_hexs(min(pl_max,10));
 
   MENU.outln(selectAllPulses);
 
