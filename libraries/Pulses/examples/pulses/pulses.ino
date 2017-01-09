@@ -157,7 +157,8 @@ uint8_t click_pin[CLICK_PULSES];
 unsigned int ratios_quot[] = {1,1, 1,2, 1,3, 1,4, 1,5, 1,6, 1,7, 1,8, 0,0};  // zero terminated
 unsigned int ratios_int[]  = {1,1, 2,1, 3,1, 4,1, 5,1, 6,1, 7,1, 8,1, 0,0};  // zero terminated
 unsigned int european_pentatonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 1,2, 4,9, 2,5, 1,3, 3,10,  1,4, 0,0 };  // zero terminated
-unsigned int pentatonic_minor[] = {1,1, 5,6, 3,4, 2,3, 5*2,6*3, 1,2, 5,12, 3,8, 1,3, 5,6*3, 1,4, 0,0 };  // zero terminated
+
+unsigned int pentatonic_minor[] = {1,1, 5,6, 3,4, 2,3, 5*2,6*3, 0,0};	// scale each octave	zero terminated
 // nice first try with "wrong" note:
 //  unsigned int mimic_japan_pentatonic[] = {1,1, 8,9, 5,6, 2,3, 8*2,9*3, 1,2, 8,9*2, 5,12, 2,6, 8,9*3, 1,4, 0,0 };  // zero terminated
 // second try:
@@ -320,6 +321,20 @@ void setup() {
       click_pin[3] = 5; 		// configure PINs here
       click_pin[4] = 6; 		// configure PINs here
       click_pin[5] = 7; 		// configure PINs here
+      #if CLICK_PULSES > 6	// up to 8
+	click_pin[6] = 8; 		// configure PINs here
+	click_pin[7] = 9; 		// configure PINs here
+	#if CLICK_PULSES >8	// for a test with 16 clicks on the mega2560 ;)
+	  click_pin[8] = 10; 		// configure PINs here
+	  click_pin[9] = 11; 		// configure PINs here
+	  click_pin[10] = 12; 		// configure PINs here
+	  click_pin[11] = 13; 		// configure PINs here
+	  click_pin[12] = 14; 		// configure PINs here
+	  click_pin[13] = 15; 		// configure PINs here
+	  click_pin[14] = 16; 		// configure PINs here
+	  click_pin[15] = 17; 		// configure PINs here
+	#endif
+      #endif
     #endif
 
     init_click_pins();		// set OUTPUT, LOW
@@ -1151,19 +1166,26 @@ int select_n(unsigned int n) {
    each is the integer representation of a rational number
    very useful for all kind of things like scales, chords, rhythms */
 
-int prepare_ratios(bool inverse, int voices, unsigned long multiplier, unsigned long divisor, int sync, unsigned int *ratios) {
+int prepare_ratios(bool inverse, int voices, unsigned long multiplier, unsigned long divisor, int sync, unsigned int *ratios,
+		   bool octaves=true) {
 /* prepare a couple of pulses based on a ratio array.
    up to 'voices' pulses are created among the selected ones.
    return number of prepared pulses */
+  if(ratios[0]==0)  return 0;	// error, no data
+
   if (inverse) {
     no_inverse();
     return 0;
   }
+
   int prepared=0;
   unsigned long unit=time_unit*multiplier;
   unit /= divisor;
 
-  display_name5pars("prepare_ratios", inverse, voices, multiplier, divisor, sync);
+  if (octaves)
+    display_name5pars("prepare_ratios fill octaves", inverse, voices, multiplier, divisor, sync);
+  else
+    display_name5pars("prepare_ratios", inverse, voices, multiplier, divisor, sync);    
 
   struct time now;
   PULSES.get_now();
@@ -1172,13 +1194,21 @@ int prepare_ratios(bool inverse, int voices, unsigned long multiplier, unsigned 
   unsigned long this_period;
   struct time new_period;
   int pulse=0;
-  for (int ratio=0; ratio<voices; ratio++) {
+  int octave=1;	// 1,2,4,8,...
+  for (int ratio=0; prepared<=voices; ratio++) {
     multiplier = ratios[ratio*2];
-    if (multiplier==0)
-      goto global_next;		// multiplier==0, end
-    divisor=ratios[ratio*2+1];
-    if (divisor==0)
-      goto global_next;		// divisor==0, end
+    if (multiplier==0) {
+      if (octaves) {
+	octave *= 2;	// one octave higher
+	ratio = 0;	// restart at first ratio
+	multiplier = ratios[ratio*2];
+      } else
+	goto global_next;		// multiplier==0, end
+    }
+
+    divisor = ratios[ratio*2+1];
+    if (divisor==0)  goto global_next;	// divisor==0, error, end
+    divisor *= octave;
 
     for (; pulse<pl_max; pulse++) {
       if (selected_pulses & (1 << pulse)) {
@@ -1193,6 +1223,8 @@ int prepare_ratios(bool inverse, int voices, unsigned long multiplier, unsigned 
 	break;
       }
     }
+    if (pulse==pl_max)	// all available pulses have been tried, give up
+      break;
   }
 
  global_next:
@@ -1201,18 +1233,31 @@ int prepare_ratios(bool inverse, int voices, unsigned long multiplier, unsigned 
 }
 
 
-int apply_ratios_on_periode(int voices, unsigned int *ratios) {
+int apply_ratios_on_periode(int voices, unsigned int *ratios, bool octaves=true) {
+  // FIXME: octaves are untested here ################
+  if(ratios[0]==0)  return 0;	// error, no data
+
   struct time new_period;
   int applied=0;
 
-  for (int ratio=0, pulse=0; ratio<voices; ratio++) {
+//  int pulse=0;
+  int octave=1;	// 1,2,4,8,...
+  for (int ratio=0, pulse=0; applied<voices; ratio++) {
     multiplier = ratios[ratio*2];
-    if (multiplier==0)
-      goto global_next;		// multiplier==0, end
+    if (multiplier==0) {
+      if (octaves) {
+	octave *= 2;	// one octave higher
+	ratio = 0;	// restart at first ratio
+	multiplier = ratios[ratio*2];
+      } else
+	goto global_next;		// multiplier==0, end
+    }
 
     divisor=ratios[ratio*2+1];
     if (divisor==0)
-      goto global_next;		// divisor==0, end
+      goto global_next;		// divisor==0: error, end
+    divisor *= octave;
+
     for (; pulse<pl_max; pulse++) {
       if (selected_pulses & (1 << pulse)) {
 	new_period = PULSES.pulses[pulse].period;
@@ -1224,6 +1269,8 @@ int apply_ratios_on_periode(int voices, unsigned int *ratios) {
 	break;
       }
     }
+    if (pulse==pl_max)	// all available pulses have been tried, give up
+      break;
   }
 
  global_next:
