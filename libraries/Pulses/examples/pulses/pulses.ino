@@ -154,15 +154,15 @@ uint8_t click_pin[CLICK_PULSES];
   unsigned int *ratios=ratios_data;
 #endif // RATIOS_RAM_SIZE
 
-unsigned int ratios_quot[] = {1,1, 1,2, 1,3, 1,4, 1,5, 1,6, 1,7, 1,8, 0,0};  // zero terminated
-unsigned int ratios_int[]  = {1,1, 2,1, 3,1, 4,1, 5,1, 6,1, 7,1, 8,1, 0,0};  // zero terminated
-unsigned int european_pentatonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 1,2, 4,9, 2,5, 1,3, 3,10,  1,4, 0,0 };  // zero terminated
+// unsigned int ratios_quot[] = {1,1, 1,2, 1,3, 1,4, 1,5, 1,6, 1,7, 1,8, 0,0};  // zero terminated
+// unsigned int ratios_int[]  = {1,1, 2,1, 3,1, 4,1, 5,1, 6,1, 7,1, 8,1, 0,0};  // zero terminated
+unsigned int european_pentatonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 0,0};  // scale each octave	zero terminated
 
 unsigned int pentatonic_minor[] = {1,1, 5,6, 3,4, 2,3, 5*2,6*3, 0,0};	// scale each octave	zero terminated
 // nice first try with "wrong" note:
 //  unsigned int mimic_japan_pentatonic[] = {1,1, 8,9, 5,6, 2,3, 8*2,9*3, 1,2, 8,9*2, 5,12, 2,6, 8,9*3, 1,4, 0,0 };  // zero terminated
 // second try:
-unsigned int mimic_japan_pentatonic[] = {1,1, 8,9, 5,6, 2,3, 2*15,3*16, 1,2, 8,9*2, 5,12, 2,6, 8,9*3, 1,4, 0,0 };  // zero terminated
+unsigned int mimic_japan_pentatonic[] = {1,1, 8,9, 5,6, 2,3, 2*15,3*16, 0,0 };	// scale each octave	zero terminated
 
 // editing jiffle data
 // if we have enough RAM, we work in an int array[]
@@ -2509,6 +2509,10 @@ void maybe_show_selected_mask() {
     print_selected_mask();
 }
 
+// for old style 'experiment'
+void Press_toStart() {
+  MENU.outln(F("Press '!' to start"));
+}
 
 bool menu_pulses_reaction(char menu_input) {
   static long result=0;
@@ -3327,7 +3331,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if (MENU.maybe_display_more()) {
 	display_name5pars("setup_jiffle128", inverse, voices, multiplier, divisor, sync);
-	MENU.outln(F("Press '!' to start"));
+	Press_toStart();
       }
       break;
 
@@ -3338,7 +3342,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if (MENU.maybe_display_more()) {
 	display_name5pars("init_div_123456", inverse, voices, multiplier, divisor, sync);
-	MENU.outln(F("Press '!' to start"));
+	Press_toStart();
       }
       break;
 
@@ -3356,7 +3360,7 @@ bool menu_pulses_reaction(char menu_input) {
 	display_next_par(divisor);
 	display_next_par(sync);
 	MENU.outln(F(")  ESP8266 Frogs"));
-	MENU.outln(F("Press '!' to start"));
+	Press_toStart();
       }
       break;
 
@@ -3368,7 +3372,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if (MENU.maybe_display_more()) {
 	display_name5pars("setup_jiffles2345", inverse, voices, multiplier, divisor, sync);
-	MENU.outln(F("Press '!' to start"));
+	Press_toStart();
       }
       break;
 
@@ -3379,7 +3383,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if (MENU.maybe_display_more()) {
 	display_name5pars("init_123456", inverse, voices, multiplier, divisor, sync);
-	MENU.outln(F("Press '!' to start"));
+	Press_toStart();
       }
       break;
 
@@ -3390,7 +3394,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if (MENU.maybe_display_more()) {
 	display_name5pars("init_chord_1345689a", inverse, voices, multiplier, divisor, sync);
-	MENU.outln(F("Press '!' to start"));
+	Press_toStart();
       }
       break;
 
@@ -3401,7 +3405,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if (MENU.maybe_display_more()) {
 	display_name5pars("init_rhythm_1", inverse, voices, multiplier, divisor, sync);
-	MENU.outln(F("Press '!' to start"));
+	Press_toStart();
       }
       break;
 
@@ -3412,7 +3416,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if (MENU.maybe_display_more()) {
 	display_name5pars("init_rhythm_2", inverse, voices, multiplier, divisor, sync);
-	MENU.outln(F("Press '!' to start"));
+	Press_toStart();
       }
       break;
 
@@ -3423,7 +3427,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if (MENU.maybe_display_more()) {
 	display_name5pars("init_rhythm_3", inverse, voices, multiplier, divisor, sync);
-	MENU.outln(F("Press '!' to start"));
+	Press_toStart();
       }
       break;
 
@@ -3434,7 +3438,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if (MENU.maybe_display_more()) {
 	display_name5pars("init_rhythm_4", inverse, voices, multiplier, divisor, sync);
-	MENU.outln(F("Press '!' to start"));
+	Press_toStart();
       }
       break;
 
@@ -3445,7 +3449,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if (MENU.maybe_display_more()) {
 	display_name5pars("setup_jifflesNEW", inverse, voices, multiplier, divisor, sync);
-	MENU.outln(F("Press '!' to start"));
+	Press_toStart();
       }
       break;
 
@@ -3456,7 +3460,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if (MENU.maybe_display_more()) {
 	display_name5pars("init_pentatonic", inverse, voices, multiplier, divisor, sync);
-	MENU.outln(F("Press '!' to start"));
+	Press_toStart();
       }
       break;
 
@@ -3474,7 +3478,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if (MENU.maybe_display_more()) {
 	selected_or_flagged_pulses_info_lines();
-	MENU.outln(F("Press '!' to start"));
+	Press_toStart();
       }
       break;
 
@@ -3495,7 +3499,7 @@ bool menu_pulses_reaction(char menu_input) {
 	selected_or_flagged_pulses_info_lines();
       break;
 
-      case 15:
+    case 15:
       // magnets on strings, third take
       multiplier=1;
       divisor=1;
