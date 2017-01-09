@@ -319,6 +319,7 @@ bool Menu::maybe_display_more() {	// avoid too much output
     case '&':
     case '|':
     case '^':
+    case '!':
       return token;
       break;
     }
@@ -435,6 +436,13 @@ bool Menu::maybe_display_more() {	// avoid too much output
 	}
 	return false;
 	break;
+      case '!':	// factorial
+	scratch = 1;
+	for (long i=*result; i>0; i--)
+	  scratch *= i;
+	*result = scratch;
+	break;
+
       default:	// should not happen, see is_operator()
 	return false;
       }
