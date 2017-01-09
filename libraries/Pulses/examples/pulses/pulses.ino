@@ -191,7 +191,6 @@ int voices=CLICK_PULSES;
 
 unsigned long selected_pulses=0L;	// pulse bitmask for user interface
 
-// #ifndef INTEGER_ONLY		FIXME: make a version without tuning and no floats
 #ifdef IMPLEMENT_TUNING		// implies floating point
   #include <math.h>
 
@@ -462,14 +461,17 @@ void loop() {	// ARDUINO
     }
   }
 
-  if(! MENU.lurk_then_do())		// MENU comes second in priority.
-    {					// if MENU had nothing to do, then
+  if(! MENU.lurk_then_do()) {		// MENU comes second in priority.
+      // if MENU had nothing to do, then:	// 3rd priority
+#ifdef IMPLEMENT_TUNING		// tuning, sweeping priority below menu		*implies floating point*
       tuning = PULSES.tuning;	// FIXME: workaround for having all 3 sweep implementations in parallel
       if (!maybe_stop_sweeping())		// low priority control sweep range
 	if(! maybe_display_tuning_steps())	// low priority tuning steps info
-	  maybe_run_continuous();	// lowest priority:
-					// maybe display input state changes.
-    }
+	  maybe_run_continuous();	// lowest priority: maybe display input state changes.
+#else	// no tuning:
+      maybe_run_continuous();		// lowest priority: maybe display input state changes.
+#endif
+  } // no menu action
 } // ARDUINO loop()
 
 #else		// c++ Linux PC test version
@@ -574,6 +576,7 @@ void click(int pulse) {	// can be called from a pulse
 }
 
 
+#ifdef IMPLEMENT_TUNING		// implies floating point
 void sweep_click(int pulse) {	// can be called from a pulse
   double period = PULSES.pulses[pulse].period.time;
   double detune_number = ticks_per_octave / PULSES.pulses[pulse].period.time;
@@ -756,6 +759,7 @@ bool maybe_stop_sweeping() {
 
   return false;
 }
+#endif // ifdef IMPLEMENT_TUNING	implies floating point
 
 
 void display_fraction(struct fraction *f) {
@@ -821,6 +825,7 @@ void en_click(int pulse)
 }
 
 
+#ifdef IMPLEMENT_TUNING		// implies floating point
 // make an existing pulse to a sweep click pulse:
 void en_sweep_click(int pulse)
 {
@@ -850,6 +855,7 @@ void en_tuned_sweep_click(int pulse)
     PULSES.pulses[pulse].periodic_do = (void (*)(int)) &tuned_sweep_click;
   }
 }
+#endif	// #ifdef IMPLEMENT_TUNING	implies floating point
 
 
 int setup_click_synced(struct time when, unsigned long unit, unsigned long multiplier,
@@ -1665,6 +1671,7 @@ void display_action(int pulse) {
     return;
   }
 
+#ifdef IMPLEMENT_TUNING		// implies floating point
   scratch=&tuned_sweep_click;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out(F("tuned_sweep_click "));
@@ -1685,6 +1692,7 @@ void display_action(int pulse) {
     MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
     return;
   }
+#endif	// #ifdef IMPLEMENT_TUNING	implies floating point
 
   scratch=&do_jiffle;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
@@ -2793,6 +2801,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     break;
 
+#ifdef IMPLEMENT_TUNING		// implies floating point
   case 'w':
     sweep_up *= -1;	// toggle direction up down
 
@@ -2924,7 +2933,7 @@ bool menu_pulses_reaction(char menu_input) {
       selected_or_flagged_pulses_info_lines();
     }
     break;
-
+#endif	// #ifdef IMPLEMENT_TUNING	implies floating point
 
   case 'j':	// en_jiffle_thrower
     // we work on voices anyway, regardless dest

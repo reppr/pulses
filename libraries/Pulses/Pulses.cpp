@@ -350,6 +350,7 @@ void Pulses::deactivate_pulse(int pulse) {	// clear ACTIVE flag, keep data
 }
 
 
+#ifdef IMPLEMENT_TUNING		// implies floating point
 void Pulses::activate_tuning(int pulse) {	// copy period to other_time and set TUNING flag
   pulses[pulse].flags |= TUNED;
   pulses[pulse].other_time.time = pulses[pulse].period.time;
@@ -364,6 +365,7 @@ void Pulses::stop_tuning(int pulse) {	// the pulse stays as it is, but no furthe
   // the base period from the tuning can stay in pulses[pulse].other_time, might be useful?
   // no harm, me thinks
 }
+#endif	// #ifdef IMPLEMENT_TUNING	implies floating point
 
 
 // find fastest pulse (in case of emergency)
@@ -589,6 +591,9 @@ void Pulses::init_click_pulses() {
 
 
 /* **************************************************************** */
+/* **************************************************************** */
+/* **************************************************************** */
+
 
 
 /* **************************************************************** */
