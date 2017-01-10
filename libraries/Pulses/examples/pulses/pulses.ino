@@ -208,10 +208,10 @@ unsigned long selected_pulses=0L;	// pulse bitmask for user interface
 
   // second try, see sweep_click()
   // unsigned long ticks_per_octave=10000000L;		// 10 seconds/octave
-  unsigned long ticks_per_octave=60000000L;		//  1 minute/octave
+  // unsigned long ticks_per_octave=60000000L;		//  1 minute/octave
   // unsigned long ticks_per_octave=60000000L*10L;	// 10 minutes/octave
-  // unsigned long ticks_per_octave=60000000L*60L;	//  1 hour/octave
-  // unsigned long ticks_per_octave=60000000L*60L*24;	//  1 day/octave	FIXME: (not tested yet)
+  unsigned long ticks_per_octave=60000000L*60L;	//  1 hour/octave
+  // unsigned long ticks_per_octave=60000000L*60L*24;	//  1 day/octave  FIXME: overflows
 
 // re-implement, see tuned_sweep_click()
 // PULSES.ticks_per_octave = ticks_per_octave;
@@ -596,7 +596,7 @@ void click(int pulse) {	// can be called from a pulse
 #ifdef IMPLEMENT_TUNING		// implies floating point
 void sweep_click(int pulse) {	// can be called from a pulse
   double period = PULSES.pulses[pulse].period.time;
-  double detune_number = ticks_per_octave / PULSES.pulses[pulse].period.time;
+  double detune_number = PULSES.ticks_per_octave / PULSES.pulses[pulse].period.time;
   double detune = 1 / pow(2.0, 1/detune_number);
 
   switch (sweep_up) {
@@ -682,7 +682,7 @@ void sweep_info() {
   }
 
   MENU.out(F("\ttime/octave "));
-  duration.time = ticks_per_octave;
+  duration.time = (unsigned long) PULSES.ticks_per_octave;
   duration.overflow=0;
   display_realtime_sec(duration);
 
@@ -2870,6 +2870,18 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'W':	// sweep control
+    next_token = MENU.cb_peek();
+    if (next_token == (char) EOF) {	// there is *no* input after 'W'
+      sweep_up *= -1;		//    toggle sweep direction up/down
+      if (sweep_up==0)
+	sweep_up=1;		//    start sweeping up if disabled
+
+      if (MENU.verbosity >= VERBOSITY_SOME)
+	sweep_info();
+      break;		// done
+    }
+    // there *is* input after 'W'
+
     // 'W<number>' does (calculating) positive integer input on PULSES.ticks_per_octave
     // exception: 'W0' switches sweeping off
     if (MENU.cb_peek()!='0' && MENU.maybe_calculate_input((long*) &PULSES.ticks_per_octave)) {	// hmmm !!!
@@ -2878,45 +2890,39 @@ bool menu_pulses_reaction(char menu_input) {
       MENU.outln(F(" ticks/octave"));
     } else {	// no numeric input (except '0') follows 'W'
       next_token = MENU.cb_peek();
-      if (next_token != (char) EOF) {	// there is input after 'W'
-	if
-	  switch(next_token) {	// examine following input token
-	  case '~': case 't':
-	    MENU.drop_input_token();
-	    if(sweep_up==0)			// start if not active
-	      sweep_up = 1;
-	    else
-	      sweep_up *= -1;		// or toggle sweep direction up down
-	    break;
-	  case '0':				// 'W0' switches sweeping off
-	    MENU.drop_input_token();
-	    sweep_up = 0;		// sweep off
-	    break;
-	  case '+': case '1':
-	    MENU.drop_input_token();
-	    sweep_up = 1;		// sweep up
-	    break;
-	  case '-':
-	    MENU.drop_input_token();
-	    sweep_up = -1;		// sweep down
-	    break;
-	  case '?':			// info only
-	    MENU.drop_input_token();
-	    // if verbosity is too low sweep_info will not be called below,
-	    // so we do it here
-	    if (MENU.verbosity < VERBOSITY_SOME)
-	      sweep_info();
-	    break;
-	  }
-      } else {			// no input follows 'W' token, toggle:
-	sweep_up *= -1;		//    toggle sweep direction up/down
-	if (sweep_up==0)
-	  sweep_up=1;		//    start sweeping up if disabled
+      switch(next_token) {	// examine following input token
+      case '~': case 't':
+	MENU.drop_input_token();
+	if(sweep_up==0)			// start if not active
+	  sweep_up = 1;
+	else
+	  sweep_up *= -1;		// or toggle sweep direction up down
+	break;
+      case '0':				// 'W0' switches sweeping off
+	MENU.drop_input_token();
+	sweep_up = 0;		// sweep off
+	break;
+      case '+': case '1':
+	MENU.drop_input_token();
+	sweep_up = 1;		// sweep up
+	break;
+      case '-':
+	MENU.drop_input_token();
+	sweep_up = -1;		// sweep down
+	break;
+      case '?':			// info only
+	MENU.drop_input_token();
+	// if verbosity is too low sweep_info will not be called below,
+	// so we do it here
+	if (MENU.verbosity < VERBOSITY_SOME)
+	  sweep_info();
+	break;
       }
+    }
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	sweep_info();
-      break;
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      sweep_info();
+    break;
 
   case 't':	// en_sweep_click
     // we work on voices anyway, regardless dest
