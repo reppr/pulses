@@ -206,10 +206,10 @@ unsigned long selected_pulses=0L;	// pulse bitmask for user interface
   double detune_number=4096.0;
   double detune=1.0 / pow(2.0, 1/detune_number);
 
-// second try, see sweep_click()
+  // second try, see sweep_click()
   // unsigned long ticks_per_octave=10000000L;		// 10 seconds/octave
-  // unsigned long ticks_per_octave=60000000L;		//  1 minute/octave
-  unsigned long ticks_per_octave=60000000L*10L;	// 10 minutes/octave
+  unsigned long ticks_per_octave=60000000L;		//  1 minute/octave
+  // unsigned long ticks_per_octave=60000000L*10L;	// 10 minutes/octave
   // unsigned long ticks_per_octave=60000000L*60L;	//  1 hour/octave
   // unsigned long ticks_per_octave=60000000L*60L*24;	//  1 day/octave	FIXME: (not tested yet)
 
@@ -2875,7 +2875,10 @@ bool menu_pulses_reaction(char menu_input) {
       switch(next_token) {	// examine following input token
       case '~': case 't':
 	MENU.drop_input_token();
-	sweep_up *= -1;		// toggle sweep direction up down
+	if(sweep_up==0)			// start if not active
+	  sweep_up = 1;
+	else
+	  sweep_up *= -1;		// or toggle sweep direction up down
 	break;
       case '0':
 	MENU.drop_input_token();
@@ -2898,8 +2901,9 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
       case 'O':		// 'WO<nnn>' ticks_per_octave
 	MENU.drop_input_token();
-	if (MENU.maybe_calculate_input((long*) &ticks_per_octave)) {	// hmmm !!!
-	  MENU.out(ticks_per_octave);
+	if (MENU.maybe_calculate_input((long*) &PULSES.ticks_per_octave)) {	// hmmm !!!
+	  ticks_per_octave = PULSES.ticks_per_octave;	// obsolete
+	  MENU.out(PULSES.ticks_per_octave);
 	  MENU.outln(F(" ticks/octave"));
 	}
 	break;
