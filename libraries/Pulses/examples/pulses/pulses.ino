@@ -1184,7 +1184,7 @@ int prepare_ratios(bool inverse, int voices, unsigned long multiplier, unsigned 
   if (octaves)
     display_name5pars("prepare_ratios fill octaves", inverse, voices, multiplier, divisor, sync);
   else
-    display_name5pars("prepare_ratios", inverse, voices, multiplier, divisor, sync);    
+    display_name5pars("prepare_ratios", inverse, voices, multiplier, divisor, sync);
 
   struct time now;
   PULSES.get_now();
@@ -2870,54 +2870,53 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'W':	// sweep control
-    next_token = MENU.cb_peek();
-    if (next_token != (char) EOF) {	// there is input after 'W'
-      switch(next_token) {	// examine following input token
-      case '~': case 't':
-	MENU.drop_input_token();
-	if(sweep_up==0)			// start if not active
-	  sweep_up = 1;
-	else
-	  sweep_up *= -1;		// or toggle sweep direction up down
-	break;
-      case '0':
-	MENU.drop_input_token();
-	sweep_up = 0;		// sweep off
-	break;
-      case '+': case '1':
-	MENU.drop_input_token();
-	sweep_up = 1;		// sweep up
-	break;
-      case '-':
-	MENU.drop_input_token();
-	sweep_up = -1;		// sweep down
-	break;
-      case '?':			// info only
-	MENU.drop_input_token();
-	// if verbosity is too low sweep_info will not be called below,
-	// so we do it here
-	if (MENU.verbosity < VERBOSITY_SOME)
-	  sweep_info();
-	break;
-      case 'O':		// 'WO<nnn>' ticks_per_octave
-	MENU.drop_input_token();
-	if (MENU.maybe_calculate_input((long*) &PULSES.ticks_per_octave)) {	// hmmm !!!
-	  ticks_per_octave = PULSES.ticks_per_octave;	// obsolete
-	  MENU.out(PULSES.ticks_per_octave);
-	  MENU.outln(F(" ticks/octave"));
-	}
-	break;
-      }
-    } else {			// no input follows 'W' token:
-      if (sweep_up==0)
-	sweep_up=1;		// start sweeping up if disabled
-      else			// if already sweeping:
+    // 'W<number>' does (calculating) positive integer input on PULSES.ticks_per_octave
+    // exception: 'W0' switches sweeping off
+    if (MENU.cb_peek()!='0' && MENU.maybe_calculate_input((long*) &PULSES.ticks_per_octave)) {	// hmmm !!!
+      ticks_per_octave = PULSES.ticks_per_octave;	// obsolete
+      MENU.out(PULSES.ticks_per_octave);
+      MENU.outln(F(" ticks/octave"));
+    } else {	// no numeric input (except '0') follows 'W'
+      next_token = MENU.cb_peek();
+      if (next_token != (char) EOF) {	// there is input after 'W'
+	if
+	  switch(next_token) {	// examine following input token
+	  case '~': case 't':
+	    MENU.drop_input_token();
+	    if(sweep_up==0)			// start if not active
+	      sweep_up = 1;
+	    else
+	      sweep_up *= -1;		// or toggle sweep direction up down
+	    break;
+	  case '0':				// 'W0' switches sweeping off
+	    MENU.drop_input_token();
+	    sweep_up = 0;		// sweep off
+	    break;
+	  case '+': case '1':
+	    MENU.drop_input_token();
+	    sweep_up = 1;		// sweep up
+	    break;
+	  case '-':
+	    MENU.drop_input_token();
+	    sweep_up = -1;		// sweep down
+	    break;
+	  case '?':			// info only
+	    MENU.drop_input_token();
+	    // if verbosity is too low sweep_info will not be called below,
+	    // so we do it here
+	    if (MENU.verbosity < VERBOSITY_SOME)
+	      sweep_info();
+	    break;
+	  }
+      } else {			// no input follows 'W' token, toggle:
 	sweep_up *= -1;		//    toggle sweep direction up/down
-    }
+	if (sweep_up==0)
+	  sweep_up=1;		//    start sweeping up if disabled
+      }
 
-    if (MENU.verbosity >= VERBOSITY_SOME)
-      sweep_info();
-    break;
+      if (MENU.verbosity >= VERBOSITY_SOME)
+	sweep_info();
+      break;
 
   case 't':	// en_sweep_click
     // we work on voices anyway, regardless dest
