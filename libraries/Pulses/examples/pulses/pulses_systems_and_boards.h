@@ -10,30 +10,46 @@
     #include "WProgram.h"
   #endif
 
-  #ifdef __SAM3X8E__
-    const int pl_max=32;		// could be more on DUE ;)
-    // *no* USE_F_MACRO on the DUE	FIXME: test	################
-  #else
-    #define USE_F_MACRO			// *not* on the DUE, FIXME: test	################
 
-    #ifdef ESP8266
-      const int pl_max=32;		// ESP8266: a lot of RAM
-      // must be defined before including Pulses
-      #define IMPLEMENT_TUNING	// needs float
-    #else
-      #ifdef __AVR_ATmega328P__
-         const int pl_max=12;		// saving RAM on 328P
-      #else
-         const int pl_max=16;		// default i.e. mega boards
-      #endif
-    #endif
+  /* **************************************************************** */
+  // Arduino board specific configutation:
+
+  #define USE_F_MACRO	// *not* on the DUE, FIXME: test  ################
+
+  #if defined(ESP8266)				// ESP8266: "a lot of RAM"
+    const int pl_max=32;
+    #define JIFFLE_RAM_SIZE	256*3+1
+    #define RATIOS_RAM_SIZE	256*2+1
+    // must be defined before including Pulses
+    #define IMPLEMENT_TUNING		// needs float
+
+  #elif defined(__AVR_ATmega2560__)		// mega2560
+    const int pl_max=32;	// test with more pins than 8 ;)
+    #define JIFFLE_RAM_SIZE	256*3+1
+    #define RATIOS_RAM_SIZE	256*2+1
+    // must be defined before including Pulses
+    #define IMPLEMENT_TUNING		// needs float
+
+  #elif defined(__AVR_ATmega328P__)		// saving RAM on 328P	no recent tests
+    const int pl_max=12;
+
+  #elif defined(__SAM3X8E__)			// Arduino DUE	not usable yet: ask.
+    const int pl_max=32;
+    // *no* USE_F_MACRO on the DUE	// FIXME: test	################
+    #undef	USE_F_MACRO		// *not* on the DUE, FIXME: test  ################
+
+  #else						// unknown board, defaults
+    const int pl_max=16;
   #endif
 
-  #ifndef CLICK_PULSES		// default number of click frequencies
-    #ifdef ESP8266
-      #define CLICK_PULSES	8       // default number of clicks 8
+  // default number of CLICK_PULSES controlling an associated hardware pin each
+  #ifndef CLICK_PULSES
+    #if defined(ESP8266)		// ESP8266: "a lot of RAM"
+      #define CLICK_PULSES	8
+    #elif defined(__AVR_ATmega2560__)
+      #define CLICK_PULSES	16      // mega2560 test with 16 pins ;)
     #else
-      #define CLICK_PULSES	6       // default number of click frequencies
+      #define CLICK_PULSES	6       // default number of click frequencies on unknown boards
     #endif
   #endif
 
@@ -44,7 +60,7 @@
 //	  int men_getchar() {
 //	    if (!Serial.available())	// ARDUINO
 //	      return EOF;
-//	
+//
 //	    return Serial.read();
 //	  }
 

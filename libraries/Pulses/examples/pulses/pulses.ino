@@ -92,12 +92,15 @@ Menu MENU(32, 3, &men_getchar, MENU_OUTSTREAM);
 
 /* **************** Pulses **************** */
 #include <Pulses.h>
+
 Pulses PULSES(pl_max);
+
 
 /* **************** Harmonical **************** */
 #include <Harmonical.h>
 
 Harmonical HARMONICAL(3628800uL);	// old style for a first test
+
 
 /* **************************************************************** */
 // some #define's:
@@ -107,6 +110,7 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 
 /* **************************************************************** */
 uint8_t click_pin[CLICK_PULSES];
+
 
 /* **************************************************************** */
 #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
@@ -131,19 +135,10 @@ uint8_t click_pin[CLICK_PULSES];
     // see: https://forum.mysensors.org/topic/5120/esp8266-with-wifi-off/3
     #include <ESP8266WiFi.h>  // after that min() and max() do not work any more. Say: std::min() std::max()
   #endif
-#endif
+#endif	// ESP8266
 
 
-// have a RAM jiffletab?
-// unsigned int jiffle_data[JIFFLE_RAM_SIZE]
-#ifdef ESP8266	// we have a lot of RAM
-  #define JIFFLE_RAM_SIZE	256*3+1
-
-  // ratios:
-  #define RATIOS_RAM_SIZE	256*2+1
-#endif // ESP8266
-
-#ifndef RATIOS_RAM_SIZE	// ratios on small harware ressources, FIXME: test
+#ifndef RATIOS_RAM_SIZE	// ratios on small harware ressources, FIXME: test	################
   #define RATIOS_RAM_SIZE 9*2+1	// small buffer might fit on simple hardware
 #endif
 #ifdef RATIOS_RAM_SIZE
@@ -156,7 +151,7 @@ uint8_t click_pin[CLICK_PULSES];
 
 // unsigned int ratios_quot[] = {1,1, 1,2, 1,3, 1,4, 1,5, 1,6, 1,7, 1,8, 0,0};  // zero terminated
 // unsigned int ratios_int[]  = {1,1, 2,1, 3,1, 4,1, 5,1, 6,1, 7,1, 8,1, 0,0};  // zero terminated
-unsigned int european_pentatonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 0,0};  // scale each octave	zero terminated
+unsigned int european_pentatonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 0,0};	// scale each octave	zero terminated
 
 unsigned int pentatonic_minor[] = {1,1, 5,6, 3,4, 2,3, 5*2,6*3, 0,0};	// scale each octave	zero terminated
 // nice first try with "wrong" note:
@@ -164,6 +159,8 @@ unsigned int pentatonic_minor[] = {1,1, 5,6, 3,4, 2,3, 5*2,6*3, 0,0};	// scale e
 // second try:
 unsigned int mimic_japan_pentatonic[] = {1,1, 8,9, 5,6, 2,3, 2*15,3*16, 0,0 };	// scale each octave	zero terminated
 
+
+/* **************************************************************** */
 // editing jiffle data
 // if we have enough RAM, we work in an int array[]
 // pre defined jiffletabs can be copied there before using and editing
@@ -175,6 +172,7 @@ unsigned int jiffle_data_length = JIFFLE_RAM_SIZE;
 unsigned int jiffle_write_index=0;
 unsigned int *jiffle=jiffle_data;
 
+// pre defined jiffles:
 unsigned int harmonics4[] = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0};	// magnets on strings experiments
 unsigned int ting1024[] = {1,4096,64, 1,1024,128, 1,1024*3,128, 1,1024*2,128, 1,1024*8,64, 1,1024,64, 0}; // magnet strings experiments 2
 // unsigned int ting1024[] = {1,4096,64, 1,1024,128, 0};			// magnet strings experiments 2
@@ -1110,9 +1108,10 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
       PULSES.pulses[pulse].period.overflow = 0;	// brute force for compatibility ;)
       en_jiffle_thrower(pulse, jiffle);
     }
-  apply_ratios_on_periode(voices, ratios);
+  int apply_ratios_on_periode(int voices, unsigned int *ratios, bool octaves=true);	// this code is obsolete anyway ################
+  apply_ratios_on_periode(voices, ratios, true);
 #else	// compatibility problems
-  prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+  prepare_ratios(false, voices, multiplier, divisor, sync, ratios, true);
 #endif
 
 }
