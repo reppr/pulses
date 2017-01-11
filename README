@@ -1,14 +1,97 @@
-pulses
+README pulses
+
+  Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
+  http://github.com/reppr/pulses
 
   Arduino library collection to raise actions in harmonical time intervals.
   Periodically do multiple independent tasks named 'pulses'.
 
-  Working on the very basics, like
-  * library 'Pulses'	beta state.
-  * library 'Menu'	quite usable.
+  * library 'Pulses'	daily use.
+  * library 'Menu'	quite usable, see below.
   * library 'Inputs'	experimental state, working. 
+  * library 'Harmonics' in statu nascendi
+  * 'softboard'	Arduino software breadbord, see below.
+
+  main program is
+  libraries/Pulses/examples/pulses/pulses.ino	heavy development
 
 
+  (for Menu and softboard see below)
+
+************************************************************
+****************	Harmonicality	    ****************
+************************************************************
+
+Pulses is a harmonical experiment
+running on ESP8266 NodeMCU and ARDUINO (Mega) boards.
+
+It explores analogies in topics like music, mathematics, aesthetics,
+just to name a few.
+
+
+I use the terms 'harmonical' or 'harmonicality' in a broader sense,
+not restricted to the musical scope. 
+
+I am talking about the implications of selected simple integer relationships
+in mathematics and aesthetics, music, physics, numerics, mythology, art.
+
+I'm not aware of any English term for that, German 'Harmonik' comes close,
+	see i.e.  https://de.wikipedia.org/wiki/Hans_Kayser#Harmonik
+
+
+
+In music a chord uses certain selected tones fitting aesthetically.
+If we look at the frequencies we see *simple* rational number relationships,
+frequeny relationships like 4:5:6 or 2:3:4:5
+
+So what?
+Can we hear numbers?
+
+How is our aesthetic perception connected with mathematics, with numerics?
+
+
+
+If I say 'harmonical experiment' I mean things like the following:
+
+Thinking about musical chords we have tones vibrating in mathematical order.
+While one makes 2 waves another makes 3, exactly.
+If not, we hear that. They get out of tune.
+
+If we take faster vibrations, keeping the exact relationship between them,
+the chord gets higher.
+
+Slowing it down it will produce bass notes, deeper and deeper
+until we can hear the individual clicks rumble
+somewhere between bass and rhythm.
+
+With slow vibrations we get rhythms.
+hmm?
+
+interesting
+
+
+Tuning the drums of the rhythm to a short note in the original pitch
+while the drum keeps beating slow,  in a very low octave of the same note
+we get fascinating melody patterns, chord progressions,
+fractal-like structures.
+
+
+What rhythm, what melody patterns match a minor chord?
+a pentatonic scale? a chord progression?
+
+Or the other way round: How do the numbers sound together?
+
+
+That's the kind of questions pulses gives an instrument to try and play with.
+
+I hope some will have fun with it :)
+
+****************************************************************
+****************************************************************
+
+
+Libraries:
+****************************************************************
 Already quite usable:
 
 * The Menu library.
@@ -38,6 +121,7 @@ Already quite usable:
 
 
 
+****************************************************************
 * Softboard
 
 README softboard
@@ -285,3 +369,5 @@ pin     value   |                               |                               
    Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
    http://github.com/reppr/pulses
+
+****************************************************************
