@@ -3227,9 +3227,9 @@ bool menu_pulses_reaction(char menu_input) {
 
     break;
 
-  case 'R':	// remove (=reset) all pulses
+  case 'R':	// reset, remove all pulses, restart selections at none
     { int cnt=0;
-      for (int pulse=0; pulse<pl_max; pulse++) {	// tabula rasa
+      for (int pulse=0; pulse<pl_max; pulse++) {  // tabula rasa
 	if (PULSES.pulses[pulse].flags) {
 	  PULSES.init_pulse(pulse);
 	  cnt++;
@@ -3239,6 +3239,7 @@ bool menu_pulses_reaction(char menu_input) {
       // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
       PULSES.init_click_pulses();
       init_click_pins();		// switch them on LOW, output	current off, i.e. magnets
+      selected_pulses=0L;		// restart selections at none
 
       PULSES.fix_global_next();
 
