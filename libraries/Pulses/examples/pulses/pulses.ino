@@ -809,15 +809,17 @@ void init_click_pins() {
 //      pinMode(PULSES.pulses[pulse].char_parameter_1, OUTPUT);
 //      digitalWrite(PULSES.pulses[pulse].char_parameter_1, LOW);
 //    } else {
-//      MENU.out(noFreePulses);
+//      out_noFreePulses();
 //    }
 //
 //    return pulse;
 //  }
 
 
-const char deactivatedAllPulses[] = "deactivated all pulses";
-const char noFreePulses[] = "no free pulses";
+void out_noFreePulses() {
+  MENU.out(F("no free pulses"));
+}
+
 
 void deactivate_all_clicks() {
   for (int pulse=0; pulse<CLICK_PULSES; pulse++)
@@ -826,7 +828,7 @@ void deactivate_all_clicks() {
   PULSES.fix_global_next();
 
   if (MENU.verbosity)
-    MENU.outln(deactivatedAllPulses);
+    MENU.outln(F("deactivated all pulses"));
 }
 
 
@@ -884,7 +886,7 @@ int setup_click_synced(struct time when, unsigned long unit, unsigned long multi
     pinMode(PULSES.pulses[pulse].char_parameter_1, OUTPUT);
     digitalWrite(PULSES.pulses[pulse].char_parameter_1, LOW);
   } else {
-    MENU.out(noFreePulses);
+    out_noFreePulses();
   }
 
   return pulse;
@@ -931,13 +933,9 @@ float display_realtime_sec(struct time duration) {
 // unsigned long time_unit =   362880L;		// scaling timer to  9!, 0,362880s
 unsigned long time_unit =  3628800L;		// scaling timer to 10!, 3.628800s
 // const char arrays[]  to save RAM:
-const char timeInfo[] = "*** TIME info\t";
-const char ticOfl[] = "tic/ofl ";
-const char now_[] = "now  ";
-const char next_[] = "next  ";
 
 void display_real_ovfl_and_sec(struct time then) {
-  MENU.out(ticOfl);
+  MENU.out(F("tic/ofl "));
   MENU.out(then.time);
   MENU.slash();
   MENU.out((signed long) then.overflow);
@@ -948,20 +946,17 @@ void display_real_ovfl_and_sec(struct time then) {
 
 
 void display_now() {
-  MENU.out(now_);
+  MENU.out(F("now  "));
   PULSES.get_now();
   display_real_ovfl_and_sec(PULSES.now);
 }
 
 
-void time_info()
-{
-  MENU.out(timeInfo);
-  MENU.out(now_);
-  PULSES.get_now();
-  display_real_ovfl_and_sec(PULSES.now);
+void time_info() {
+  MENU.out(F("*** TIME info\t"));
+  display_now();
   MENU.tab();
-  MENU.out(next_);
+  MENU.out(F("next  "));
   display_real_ovfl_and_sec(PULSES.global_next);
   MENU.ln();
 }
@@ -969,7 +964,6 @@ void time_info()
 
 /* **************************************************************** */
 // playing with chords:
-const char sync_[] = "sync ";
 
 //   init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 void init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
@@ -1458,22 +1452,10 @@ unsigned char dest = CODE_PULSES;
 /* **************************************************************** */
 /* Menu UI							*/
 
-const char timeUnit[] = "time unit";
-const char timeUnits[] = " time units";
-const char pulseInfo[] = "*** PULSE info ";
-const char pulseOvfl[] = "\tpulse/ovf ";
-const char lastOvfl[] = "last/ovfl ";
-const char nextOvfl[] = "   \tnext/ovfl ";
-const char index_[] = "\tindex ";
-const char times_[] = "\ttimes ";
-const char pulse_[] = "pulse ";
-const char expected_[] = "expected ";
-
-
 void print_period_in_time_units(int pulse) {
   float time_units, scratch;
 
-  MENU.out(pulse_);
+  MENU.out(F("pulse "));
   time_units = ((float) PULSES.pulses[pulse].period.time / (float) time_unit);
 
   scratch = 1000.0;
@@ -1483,7 +1465,7 @@ void print_period_in_time_units(int pulse) {
   }
 
   MENU.out((float) time_units, 6);
-  MENU.out(timeUnits);
+  MENU.out(F(" time units"));
 }
 
 
@@ -1529,7 +1511,7 @@ void pulse_info_1line(int pulse) {
   display_action(pulse);
 
   MENU.tab();
-  MENU.out(expected_);
+  MENU.out(F("expected "));
   PULSES.sub_time(&now, &next);
   display_realtime_sec(next);
 
@@ -1552,26 +1534,25 @@ void en_info(int pulse)
 }
 
 
-const char noAlive[] = "no pulses alive";
-
 void selected_or_flagged_pulses_info_lines()
 {
   int count=0;
 
   for (int pulse=0; pulse<pl_max; ++pulse)
-    if (PULSES.pulses[pulse].flags) {		// any flags set?
+    if (PULSES.pulses[pulse].flags || (selected_pulses & (1 << pulse))) { // any flags || selected
       pulse_info_1line(pulse);
       count++;
     }
 
   if (count == 0) {
-    MENU.outln(noAlive);
+    MENU.outln(F("no selected or flagged pulses"));
     if(selected_pulses)		// special feature ;)
       print_selected_mask();
   }
 
   MENU.ln();
 }
+
 
 void activate_selected_synced_now(int sync) {
   if (selected_pulses==0)
@@ -1612,16 +1593,10 @@ void selected_pulses_info_lines()
     MENU.ln();
 }
 
-// const char arrays[]  to save RAM:
-const char pIn_[] = "pin ";	// pin_ is taken by softboard...
-const char _p1_[] = "\tp1 ";
-const char _p2_[] = "\tp2 ";
-const char _ul1_[] = "\tul1 ";
-
 // pulse_info() as paylod for pulses: print pulse info:
 void pulse_info(int pulse) {
 
-  MENU.out(pulseInfo);
+  MENU.out(F("*** PULSE info "));
   MENU.out(pulse);
   MENU.slash();
   MENU.out((unsigned int) PULSES.pulses[pulse].counter);
@@ -1633,19 +1608,19 @@ void pulse_info(int pulse) {
   MENU.outBIN(PULSES.pulses[pulse].flags, 8);
   MENU.ln();
 
-  MENU.out(pIn_);  MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
-  MENU.out(index_);  MENU.out((int) PULSES.pulses[pulse].char_parameter_2);
-  MENU.out(times_);  MENU.out(PULSES.pulses[pulse].int1);
-  MENU.out(_p1_);  MENU.out(PULSES.pulses[pulse].parameter_1);
-  MENU.out(_p2_);  MENU.out(PULSES.pulses[pulse].parameter_2);
-  MENU.out(_ul1_);  MENU.out(PULSES.pulses[pulse].ulong_parameter_1);
+  MENU.out(F("pin ")); MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
+  MENU.out(F("\tindex ")); MENU.out((int) PULSES.pulses[pulse].char_parameter_2);
+  MENU.out(F("\ttimes ")); MENU.out(PULSES.pulses[pulse].int1);
+  MENU.out(F("\tp1 "));	MENU.out(PULSES.pulses[pulse].parameter_1);
+  MENU.out(F("\tp2 "));	MENU.out(PULSES.pulses[pulse].parameter_2);
+  MENU.out(F("\tul1 ")); MENU.out(PULSES.pulses[pulse].ulong_parameter_1);
 
   MENU.ln();		// start next line
 
   MENU.out((float) PULSES.pulses[pulse].period.time / (float) time_unit,6);
-  MENU.out(timeUnits);
+  MENU.out(F(" time units"));
 
-  MENU.out(pulseOvfl);
+  MENU.out(F("\tpulse/ovf "));
   MENU.out((unsigned int) PULSES.pulses[pulse].period.time);
   MENU.slash();
   MENU.out(PULSES.pulses[pulse].period.overflow);
@@ -1653,22 +1628,22 @@ void pulse_info(int pulse) {
   MENU.tab();
   display_realtime_sec(PULSES.pulses[pulse].period);
   MENU.space();
-  MENU.out(pulse_);
+  MENU.out(F("pulse "));
 
   MENU.ln();		// start next line
 
-  MENU.out(lastOvfl);
+  MENU.out(F("last/ovfl "));
   MENU.out((unsigned int) PULSES.pulses[pulse].last.time);
   MENU.slash();
   MENU.out(PULSES.pulses[pulse].last.overflow);
 
-  MENU.out(nextOvfl);
+  MENU.out(F("   \tnext/ovfl "));
   MENU.out(PULSES.pulses[pulse].next.time);
   MENU.slash();
   MENU.out(PULSES.pulses[pulse].next.overflow);
 
   MENU.tab();
-  MENU.out(expected_);
+  MENU.out(F("expected "));
   display_realtime_sec(PULSES.pulses[pulse].next);
 
   MENU.ln();		// start last line
@@ -1698,25 +1673,16 @@ void flagged_pulses_info()
     }
 
   if (count == 0)
-    MENU.outln(noAlive);
+    MENU.outln(F("no flagged pulses"));
 }
 
-
-// const char arrays[]  to save RAM:
-const char click_[] = "click  ";
-const char DoJiffle_[] = "do_jiffle ";
-const char SeedJiffle[] = "seed jiffle ";
-const char PulseInfo[] = "pulse_info";
-const char InfoLine[] = "info line";
-const char NULL_[] = "NULL\t";		// 8 char positions at least
-const char UNKNOWN_[] = "UNKNOWN\t";	// 8 char positions at least
 
 void display_action(int pulse) {
   void (*scratch)(int);
 
   scratch=&click;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out(click_);
+    MENU.out("click  ");
     MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
     return;
   }
@@ -1746,36 +1712,36 @@ void display_action(int pulse) {
 
   scratch=&do_jiffle;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out(DoJiffle_);
+    MENU.out(F("do_jiffle "));
     MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
     return;
   }
 
   scratch=&do_throw_a_jiffle;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out(SeedJiffle); MENU.out((int) click_pin[pulse]);
+    MENU.out(F("seed jiffle ")); MENU.out((int) click_pin[pulse]);
     return;
   }
 
   scratch=&pulse_info;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out(PulseInfo);
+    MENU.out(F("pulse_info"));
     return;
   }
 
   scratch=&pulse_info_1line;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out(InfoLine);
+    MENU.out(F("info line"));
     return;
   }
 
   scratch=NULL;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out(NULL_);		// 8 char positions at least
+    MENU.out(F("NULL\t"));		// 8 char positions at least
     return;
   }
 
-  MENU.out(UNKNOWN_);
+  MENU.out(F("UNKNOWN\t"));
 }
 
 
@@ -1874,56 +1840,34 @@ void print_selected() {
 
   case CODE_TIME_UNIT:
     MENU.out_selected_();
-    MENU.outln(timeUnit);
+    MENU.outln(F("time unit"));
     break;
   }
 }
 
 
-// info_select_destination_with()
-const char selectDestinationInfo[] =
-  "SELECT DESTINATION for '= * / s K P n c j :' to work on:\t";
-const char selectPulseWith[] = "select pulse with ";
-const char selectAllPulses[] =
-  "\na=select *all* click pulses\tA=*all* pulses\tl=alive click voices\tL=all alive\tx=none\t~=invert selection";
-const char uSelect[] = "u=select ";
-const char selected__[] = "\t(selected)";
-const char pulses_[] = "pulses ";
-
 void info_select_destination_with(bool extended_destinations) {
-  MENU.out(pulses_);
+  MENU.out(F("pulses "));
   MENU.out(PULSES.get_pl_max());
   MENU.tab();
-  MENU.out(selectDestinationInfo);
+  MENU.out(F("SELECT DESTINATION for '= * / s K P n c j :' to work on:\t"));
   print_selected();
-  MENU.out(selectPulseWith);
+  MENU.out(F("select pulse with "));
 
   // FIXME: use 16 here, when reaction will be prepared for a,b,c,d,e,f too.
   MENU.out_ticked_hexs(min(pl_max,10));
 
-  MENU.outln(selectAllPulses);
+  MENU.outln(F("\na=select *all* click pulses\tA=*all* pulses\tl=alive click voices\tL=all alive\tx=none\t~=invert selection"));
 
   if(extended_destinations) {	// FIXME: will that ever be used??? ################
-    MENU.out(uSelect);  MENU.out(timeUnit);
+    MENU.out(F("u=select "));  MENU.out(F("time unit"));
     if(dest == CODE_TIME_UNIT) {
-      MENU.outln(selected__);
+      MENU.outln(F("\t(selected)"));
     } else
       MENU.ln();
     MENU.ln();
   }
 }
-
-
-
-// menu_program_display()
-const char helpInfo[] = \
-  "?=help\ti=info\t.=flagged info\t:=selected info";
-const char microSeconds[] = " microseconds";
-const char deactivateKill[] = \
-  "M=deactivate all\tR=remove all\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tf=en-info\tF=en-INFO\tn=sync now\nS=sync ";
-const char perSecond_[] = " per second)";
-const char equals_[] = " = ";
-const char switchPulse[] = "s=switch pulse on/off";
 
 
 // variables used to setup the experiments
@@ -1947,22 +1891,23 @@ int menu_mode=0;
 /* **************************************************************** */
 void menu_pulses_display() {
   MENU.outln(F("http://github.com/reppr/pulses/\n"));
-  MENU.outln(helpInfo);
+  MENU.outln(F("?=help\ti=info\t.=flagged info\t:=selected info"));
 
   MENU.ln();
   info_select_destination_with(false);
 
-  MENU.out(uSelect);  MENU.out(timeUnit);
+  MENU.out(F("u=select "));  MENU.out(F("time unit"));
   MENU.out("  (");
   MENU.out(time_unit);
-  MENU.out(microSeconds);
-  MENU.out(equals_);
+  MENU.out(F(" microseconds"));
+  MENU.out(F(" = "));
   MENU.out((float) (1000000.0 / (float) time_unit),6);
-  MENU.outln(perSecond_);
+  MENU.outln(F(" per second)"));
 
   MENU.ln();
-  MENU.out(switchPulse);
-  MENU.tab();  MENU.out(deactivateKill);
+  MENU.out(F("s=switch pulse on/off"));
+  MENU.tab();
+  MENU.out(F("M=deactivate all\tR=remove all\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tf=en-info\tF=en-INFO\tn=sync now\nS=sync "));
   MENU.outln(sync);
 
   MENU.out(F("E=enter experiment (")); MENU.out(experiment); MENU.out(F(")"));
@@ -1979,13 +1924,11 @@ void menu_pulses_display() {
 }
 
 
-const char setTimeUnit_[] = "Set time unit to ";
-
 void set_time_unit_and_inform(unsigned long new_value) {
   time_unit = new_value;
-  MENU.out(setTimeUnit_);
+  MENU.out(F("Set time unit to "));
   MENU.out(time_unit);
-  MENU.outln(microSeconds);
+  MENU.outln(F(" microseconds"));
 }
 
 
@@ -2014,7 +1957,7 @@ int setup_jiffle_thrower_synced(struct time when,
   if (pulse != ILLEGAL) {
     PULSES.pulses[pulse].parameter_2 = (unsigned int) jiffletab;
   } else {
-    MENU.out(noFreePulses);
+    out_noFreePulses();
   }
 
   return pulse;
@@ -2053,11 +1996,6 @@ unsigned int jiffletab_december128[] =
 
 unsigned int jiffletab_december_pizzicato[] =
   {1,1024,4, 1,64,4, 1,28,16, 1,512,8, 1,1024,128, 1,2048,8, 0 };
-
-
-// void enter_jiffletab(unsigned int *jiffletab), edit jiffletab by hand:
-const char jifftabFull[] = "jiffletab full";
-const char enterJiffletabVal[] = "enter jiffletab values";
 
 
 long complete_numeric_input(long first_value) {
@@ -2245,11 +2183,10 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
 void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, struct time when, struct time new_period) {
   int pulse = PULSES.setup_pulse(&do_throw_a_jiffle, new_flags, when, new_period);
 
-  if (pulse != ILLEGAL) {
+  if (pulse != ILLEGAL)
     PULSES.pulses[pulse].parameter_2 = (unsigned int) jiffletab;
-  } else {
-    MENU.out(noFreePulses);
-  }
+  else
+    out_noFreePulses();
 }
 
 
@@ -2452,12 +2389,14 @@ void reverse_click_pins() {
 
 // ****************************************************************
 // menu_serial_program_reaction()
-const char killPulse[] = "kill pulse ";
-const char killedAll[] = "killed all";
-const char onlyPositive[] = "only positive sync ";
-const char invalid_[] = "(invalid)";
 
-// display helper function
+
+// display helper functions:
+void outln_invalid() {
+  MENU.out(F("(invalid)"));
+}
+  
+
 void short_info() {
   MENU.ln();
   time_info();
@@ -2465,6 +2404,7 @@ void short_info() {
   MENU.ln();
   selected_or_flagged_pulses_info_lines();
 }
+
 
 // helper functions to display parameters of menu functions:
 void display_next_par(long parameter) {
@@ -2664,11 +2604,11 @@ bool menu_pulses_reaction(char menu_input) {
       if (result>=0 )
 	sync = result;
       else
-	MENU.out(onlyPositive);
+	MENU.out(F("positive integer only"));
     }
 
     if (MENU.maybe_display_more()) {
-      MENU.out(sync_);
+      MENU.out(F("sync "));
       MENU.outln(sync);
     }
 
@@ -2704,7 +2644,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  selected_or_flagged_pulses_info_lines();
 	}
       } else
-	MENU.outln(invalid_);
+	outln_invalid();
       break;
 
     case CODE_TIME_UNIT:
@@ -2712,7 +2652,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (new_value>0)
 	set_time_unit_and_inform(time_unit*new_value);
       else
-	MENU.outln(invalid_);
+	outln_invalid();
       break;
     }
     break;
@@ -2734,7 +2674,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  selected_or_flagged_pulses_info_lines();
 	}
       } else
-	MENU.outln(invalid_);
+	outln_invalid();
       break;
 
     case CODE_TIME_UNIT:
@@ -2742,7 +2682,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (new_value>0)
 	set_time_unit_and_inform(time_unit/new_value);
       else
-	MENU.outln(invalid_);
+	outln_invalid();
       break;
     }
     break;
@@ -2768,7 +2708,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  selected_or_flagged_pulses_info_lines();
 	}
       } else
-	MENU.outln(invalid_);
+	outln_invalid();
       break;
 
     case CODE_TIME_UNIT:
@@ -2776,14 +2716,14 @@ bool menu_pulses_reaction(char menu_input) {
       if (new_value>0)
 	set_time_unit_and_inform(new_value);
       else
-	MENU.outln(invalid_);
+	outln_invalid();
       break;
     }
     break;
 
   case 'K':	// kill selected pulses
     if (selected_pulses) {
-      MENU.out(killPulse);
+      MENU.out(F("kill pulse "));
       for (int pulse=0; pulse<pl_max; pulse++)
 	if (selected_pulses & (1 << pulse)) {
 	  PULSES.init_pulse(pulse);
@@ -3088,7 +3028,7 @@ bool menu_pulses_reaction(char menu_input) {
       break;
     default:
       if (MENU.verbosity >= VERBOSITY_SOME)
-	MENU.outln(invalid_);
+	outln_invalid();
     }
 
     if (MENU.maybe_display_more())
@@ -3263,7 +3203,7 @@ bool menu_pulses_reaction(char menu_input) {
     if (new_value>0 && new_value<=CLICK_PULSES)
       voices = new_value;
     else
-      MENU.outln(invalid_);
+      outln_invalid();
 
     if (MENU.maybe_display_more())
       MENU.outln(voices);
@@ -3326,10 +3266,10 @@ bool menu_pulses_reaction(char menu_input) {
     if (new_value>=0 )
       experiment = new_value;
     else
-      MENU.out(onlyPositive);
+      outln_invalid();
 
-    if (MENU.maybe_display_more())
-      MENU.outln(experiment);
+//  if (MENU.maybe_display_more())
+//    MENU.outln(experiment);
 
     switch (experiment) {	// initialize defaults, but do not start yet
     case 1:
@@ -3582,7 +3522,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     default:
       if (MENU.verbosity >= VERBOSITY_SOME)
-	MENU.outln(invalid_);
+	outln_invalid();
 
       experiment=0;
       break;
@@ -3649,7 +3589,7 @@ bool menu_pulses_reaction(char menu_input) {
       experiment=0;
 
       if (MENU.verbosity)
-	MENU.outln(invalid_);
+	outln_invalid();
       break;
     }
 
