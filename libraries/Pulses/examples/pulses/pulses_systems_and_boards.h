@@ -14,8 +14,6 @@
   /* **************************************************************** */
   // Arduino board specific configutation:
 
-  #define USE_F_MACRO	// *not* on the DUE, FIXME: test  ################
-
   #if defined(ESP8266)				// ESP8266: "a lot of RAM"
     const int pl_max=32;
     #define JIFFLE_RAM_SIZE	256*3+1
@@ -33,10 +31,12 @@
   #elif defined(__AVR_ATmega328P__)		// saving RAM on 328P	no recent tests
     const int pl_max=12;
 
-  #elif defined(__SAM3X8E__)			// Arduino DUE	not usable yet: ask.
+  #elif defined(__SAM3X8E__)			// Arduino DUE
     const int pl_max=32;
-    // *no* USE_F_MACRO on the DUE	// FIXME: test	################
-    #undef	USE_F_MACRO		// *not* on the DUE, FIXME: test  ################
+    #define JIFFLE_RAM_SIZE	256*3+1
+    #define RATIOS_RAM_SIZE	256*2+1
+    // must be defined before including Pulses
+    #define IMPLEMENT_TUNING		// needs float
 
   #else						// unknown board, defaults
     const int pl_max=16;

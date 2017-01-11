@@ -40,14 +40,7 @@
 
   // USE_F_MACRO
   // normally we *do* use F() macro on Arduino to save RAM:
-  #define USE_F_MACRO	// comment out for RAM tests
-
-  #ifdef __SAM3X8E__	// FIXME: ################
-    #ifdef USE_F_MACRO
-      #warning "not using macro F() on Arduino Due."
-    #endif
-    #undef USE_F_MACRO
-  #endif
+  #define USE_F_MACRO	// comment out for RAM tests	// FIXME: ???, really?
 
 #else	// *ARDUINO ONLY*
   // GET_FREE_RAM

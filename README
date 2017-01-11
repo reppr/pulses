@@ -23,7 +23,7 @@ README pulses
 ************************************************************
 
 Pulses is a harmonical experiment
-running on ESP8266 NodeMCU and ARDUINO (Mega) boards.
+running on ESP8266 NodeMCU and ARDUINO (Mega, Due) boards.
 
 It explores analogies in topics like music, mathematics, aesthetics,
 just to name a few.
