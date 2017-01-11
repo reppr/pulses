@@ -1,9 +1,34 @@
-README_pulses
+README pulses
 
-Testing Pulses library in an early stage
+  Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
+  http://github.com/reppr/pulses
 
+  Arduino library collection to raise actions in harmonical time intervals.
+  Periodically do multiple independent tasks named 'pulses'.
 
-   Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
+  some pulses can contol hardware pins
+  i call them 'click' pulses
+  if you hang piezzos on them you'll hear them click, or making sounds
 
-   http://github.com/reppr/pulses
+  Pulses can do many other things
+  like starting other pulses
+  playing patterns
+  sweeping
+  give infos.
 
+  and yes, they can also blink a LED :)
+  many LEDs in synchronised patterns, btw
+
+  during that other program functions continue to run,
+  *if* there are the ressources
+
+  main program is
+  libraries/Pulses/examples/pulses/pulses.ino	heavy development
+
+  * library 'Pulses'	daily used
+  * library 'Menu'	quite usable, see below
+  * library 'Inputs'	experimental state, working, but not used recently 
+  * library 'Harmonics' in statu nascendi
+  * 'softboard'	Arduino software breadbord, see below
+
+****************************************************************
