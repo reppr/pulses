@@ -20,7 +20,7 @@ README pulses
   many LEDs in synchronised patterns, btw
 
   during that other program functions continue to run
-  if there are the ressources
+  *if* there are the ressources
 
   main program is
   libraries/Pulses/examples/pulses/pulses.ino	heavy development
