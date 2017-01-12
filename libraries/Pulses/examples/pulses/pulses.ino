@@ -313,6 +313,45 @@ void setup() {
       click_pin[6] = D7;	// D7 = 13	LED?
       click_pin[7] = D8;	// D8 = 15
 
+   #elif defined(__SAM3X8E__)			// Arduino DUE
+      click_pin[0] = 22;		// configure PINs here
+      click_pin[1] = 23; 		// configure PINs here
+      click_pin[2] = 24; 		// configure PINs here
+      click_pin[3] = 25; 		// configure PINs here
+      click_pin[4] = 26; 		// configure PINs here
+      click_pin[5] = 27; 		// configure PINs here
+      #if CLICK_PULSES > 6	// up to 8
+	click_pin[6] = 28; 		// configure PINs here
+	click_pin[7] = 29; 		// configure PINs here
+	#if CLICK_PULSES >8	// for a test with 16 clicks
+	  click_pin[8] = 30; 		// configure PINs here
+	  click_pin[9] = 31; 		// configure PINs here
+	  click_pin[10] = 32; 		// configure PINs here
+	  click_pin[11] = 33; 		// configure PINs here
+	  click_pin[12] = 34; 		// configure PINs here
+	  click_pin[13] = 35; 		// configure PINs here
+	  click_pin[14] = 36; 		// configure PINs here
+	  click_pin[15] = 37; 		// configure PINs here
+	  #if CLICK_PULSES >16	// for a test with 32 clicks
+	  click_pin[16] = 38; 		// configure PINs here
+	  click_pin[17] = 39; 		// configure PINs here
+	  click_pin[18] = 40; 		// configure PINs here
+	  click_pin[19] = 41; 		// configure PINs here
+	  click_pin[20] = 42; 		// configure PINs here
+	  click_pin[21] = 43; 		// configure PINs here
+	  click_pin[22] = 44; 		// configure PINs here
+	  click_pin[23] = 45; 		// configure PINs here
+	  click_pin[24] = 46; 		// configure PINs here
+	  click_pin[25] = 47; 		// configure PINs here
+	  click_pin[26] = 48; 		// configure PINs here
+	  click_pin[27] = 49; 		// configure PINs here
+	  click_pin[28] = 50; 		// configure PINs here
+	  click_pin[29] = 51; 		// configure PINs here
+	  click_pin[30] = 52; 		// configure PINs here
+	  click_pin[31] = 53; 		// configure PINs here
+	  #endif
+        #endif
+      #endif
    #else // *not* on ESP8266 i.e. Arduino
       click_pin[0] = 2;			// configure PINs here
       click_pin[1] = 3; 		// configure PINs here

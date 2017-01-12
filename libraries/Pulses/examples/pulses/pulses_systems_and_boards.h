@@ -22,7 +22,7 @@
     #define IMPLEMENT_TUNING		// needs float
 
   #elif defined(__SAM3X8E__)			// Arduino DUE
-    const int pl_max=32;
+    const int pl_max=64;
     #define JIFFLE_RAM_SIZE	256*3+1
     #define RATIOS_RAM_SIZE	256*2+1
     // must be defined before including Pulses
@@ -51,6 +51,8 @@
       #define CLICK_PULSES	8
     #elif defined(__AVR_ATmega2560__)
       #define CLICK_PULSES	16      // mega2560 test with 16 pins ;)
+    #elif defined(__SAM3X8E__)
+      #define CLICK_PULSES	32      // Arduino DUE test with 32 pins ;)
     #else
       #define CLICK_PULSES	6       // default number of click frequencies on unknown boards
     #endif
