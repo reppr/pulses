@@ -105,7 +105,7 @@ void Pulses::init_time() {
     #ifdef __SAM3X8E__		// ################
       #warning 'cli() and sei() *not* on the DUE yet...	################'
       // cli();			// ################
-      timer0_overflow_count = 0;	// ################ unknown!
+      // timer0_overflow_count = 0;	// FIXME: timer overflow reset ################
       // sei();			// ################
     #else				// ################
       cli();
