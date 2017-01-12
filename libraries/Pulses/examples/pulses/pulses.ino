@@ -214,7 +214,7 @@ unsigned long selected_pulses=0L;	// pulse bitmask for user interface
   // unsigned long ticks_per_octave=60000000L*60L*24;	//  1 day/octave  FIXME: overflows
 
 // re-implement, see tuned_sweep_click()
-// PULSES.ticks_per_octave = ticks_per_octave;
+// PULSES.ticks_per_octave = ticks_per_octave;	// do that in setup
 //
 
 #endif
@@ -240,6 +240,7 @@ void setup() {
      we *must* do that before:
   */
   while (!Serial) { ;}		// wait for Serial to open
+  MENU.ln();	// new line after possible garbage
 #endif
 
   MENU.outln(F("http://github.com/reppr/pulses/\n"));
@@ -358,13 +359,13 @@ void setup() {
     #endif
   #endif
 
-  // time and pulses *must* get initialized before setting up pulses:
-  PULSES.init_time();		// start time
-  PULSES.init_pulses();		// init pulses
-
 #ifdef IMPLEMENT_TUNING		// implies floating point
   PULSES.ticks_per_octave = ticks_per_octave;
 #endif
+
+  // time and pulses *must* get initialized before setting up pulses:
+  PULSES.init_time();		// start time
+  PULSES.init_pulses();		// init pulses
 
   MENU.ln();
 
@@ -618,7 +619,7 @@ void sweep_click(int pulse) {	// can be called from a pulse
 
 void tuned_sweep_click(int pulse) {	// can be called from a pulse
   double detune_number = PULSES.ticks_per_octave / PULSES.pulses[pulse].period.time;
-  double detune = pow(2.0, 1/detune_number);
+  double detune = pow(2.0, 1.0/detune_number);	// fails on Arduino Mega2560
 
   switch (sweep_up) {
   case 1:
@@ -2825,7 +2826,7 @@ bool menu_pulses_reaction(char menu_input) {
     // 'W<number>' does (calculating) positive integer input on PULSES.ticks_per_octave
     // exception: 'W0' switches sweeping off
     if (MENU.cb_peek()!='0' && MENU.maybe_calculate_input((long*) &PULSES.ticks_per_octave)) {	// hmmm !!!
-      ticks_per_octave = PULSES.ticks_per_octave;	// obsolete
+      ticks_per_octave = PULSES.ticks_per_octave;	// FIXME: obsolete
       MENU.out(PULSES.ticks_per_octave);
       MENU.outln(F(" ticks/octave"));
     } else {	// no numeric input (except '0') follows 'W'
