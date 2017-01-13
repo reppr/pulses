@@ -3267,7 +3267,22 @@ bool menu_pulses_reaction(char menu_input) {
 
     break;
 
-  case 'R':	// reset, remove all pulses, restart selections at none
+  case 'R':	// reset, remove all (flagged) pulses, restart selections at none
+/* DEACTIVATED 'R!' reboot ESP8266
+// not very useful, you cannot continue on the same serial line, deactivated
+#ifdef ESP8266	// 'R!' reboot ESP8266		hope it works on all ESP8266 boards, FIXME: test
+    // 'R!' reboots ESP8266
+    next_token = MENU.cb_peek();
+    switch(next_token) {	// examine following input token
+    case '!':	// 'R!' reboots ESP8266
+      MENU.drop_input_token();	// ;)
+      MENU.outln(F("HARDWARE RESET"));
+      pinMode(7, OUTPUT);	// setting pin 7 to output reboots my board
+      break;
+    }
+#endif
+*/
+    // reset, remove all (flagged) pulses, restart selections at none
     { int cnt=0;
       for (int pulse=0; pulse<pl_max; pulse++) {  // tabula rasa
 	if (PULSES.pulses[pulse].flags) {
