@@ -2047,37 +2047,6 @@ unsigned int jiffletab_december_pizzicato[] =
   {1,1024,4, 1,64,4, 1,28,16, 1,512,8, 1,1024,128, 1,2048,8, 0 };
 
 
-long complete_numeric_input(long first_value) {
-  char token = MENU.cb_peek();
-
-  if (token < '0')	// if next token is not a chiffre
-    return first_value;	//    return already read first_value
-  if (token > '9')	//
-    return first_value;	//
-
-  int chiffre;
-  for (int i=0;; i++) {
-    chiffre=MENU.cb_peek(i);
-    if (chiffre > '9')
-      break;
-    if (chiffre < '0')
-      break;
-
-    first_value *= 10;
-  }
-  // now we know that there are i more chiffres
-  long more_digits=MENU.numeric_input(0);
-
-  return first_value + more_digits;
-}
-
-int is_chiffre(char token) {
-  if (token > '9' || token < '0')
-    return false;
-  return token;
-}
-
-
 void store_jiffle_data(int new_value) {
   jiffle[jiffle_write_index]=new_value;
 
@@ -2503,9 +2472,8 @@ void Press_toStart() {
 }
 
 bool menu_pulses_reaction(char menu_input) {
-  static unsigned long result=0;
+  static unsigned long input_value=0;
   static unsigned long calc_result=0;
-  long new_value=0;
   struct time now, time_scratch;
   unsigned long bitmask;
   char next_token;	// for multichar commandos
@@ -2557,9 +2525,9 @@ bool menu_pulses_reaction(char menu_input) {
       break;
 
     case JIFFLE_ENTRY_UNTIL_ZERO_MODE:	// first chiffre already seen
-      new_value = complete_numeric_input(menu_input - '0');
-      if (new_value)
-	store_jiffle_data(new_value);
+      input_value = MENU.numeric_input(menu_input - '0');
+      if (input_value)
+	store_jiffle_data(input_value);
       else	// zero stops the input mode
 	store_jiffle_zero_stop();
       break;
@@ -2568,10 +2536,10 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'u':	// calculating or select destination: time_unit
     {
-      unsigned long new_value=time_unit;
-      if (MENU.maybe_calculate_input(&new_value)) {
-	MENU.out("==> "), MENU.outln(new_value);
-	time_unit=new_value;
+      unsigned long input_value=time_unit;
+      if (MENU.maybe_calculate_input(&input_value)) {
+	MENU.out("==> "), MENU.outln(input_value);
+	time_unit=input_value;
       }
       else
 	dest = CODE_TIME_UNIT;		// FIXME: obsolete?
@@ -2649,9 +2617,9 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'S':	// enter sync
-    if (MENU.maybe_calculate_input(&result)) {
-      if (result>=0 )
-	sync = result;
+    if (MENU.maybe_calculate_input(&input_value)) {
+      if (input_value>=0 )
+	sync = input_value;
       else
 	MENU.out(F("positive integer only"));
     }
@@ -2679,11 +2647,11 @@ bool menu_pulses_reaction(char menu_input) {
   case '*':	// multiply destination
     switch (dest) {
     case CODE_PULSES:
-      new_value = MENU.numeric_input(1);
-      if (new_value>=0) {
+      input_value = MENU.numeric_input(1);
+      if (input_value>=0) {
 	for (int pulse=0; pulse<pl_max; pulse++)
 	  if (selected_pulses & (1 << pulse))
-	    PULSES.multiply_period(pulse, new_value);
+	    PULSES.multiply_period(pulse, input_value);
 
 	PULSES.fix_global_next();
 	PULSES.check_maybe_do();	// maybe do it *first*
@@ -2697,9 +2665,9 @@ bool menu_pulses_reaction(char menu_input) {
       break;
 
     case CODE_TIME_UNIT:
-      new_value = MENU.numeric_input(1);
-      if (new_value>0)
-	set_time_unit_and_inform(time_unit*new_value);
+      input_value = MENU.numeric_input(1);
+      if (input_value>0)
+	set_time_unit_and_inform(time_unit*input_value);
       else
 	outln_invalid();
       break;
@@ -2709,11 +2677,11 @@ bool menu_pulses_reaction(char menu_input) {
   case '/':	// divide destination
     switch (dest) {
     case CODE_PULSES:
-      new_value = MENU.numeric_input(1);
-      if (new_value>=0) {
+      input_value = MENU.numeric_input(1);
+      if (input_value>=0) {
 	for (int pulse=0; pulse<pl_max; pulse++)
 	  if (selected_pulses & (1 << pulse))
-	    PULSES.divide_period(pulse, new_value);
+	    PULSES.divide_period(pulse, input_value);
 
 	PULSES.fix_global_next();
 	PULSES.check_maybe_do();	// maybe do it *first*
@@ -2727,9 +2695,9 @@ bool menu_pulses_reaction(char menu_input) {
       break;
 
     case CODE_TIME_UNIT:
-      new_value = MENU.numeric_input(1);
-      if (new_value>0)
-	set_time_unit_and_inform(time_unit/new_value);
+      input_value = MENU.numeric_input(1);
+      if (input_value>0)
+	set_time_unit_and_inform(time_unit/input_value);
       else
 	outln_invalid();
       break;
@@ -2739,13 +2707,13 @@ bool menu_pulses_reaction(char menu_input) {
   case '=':	// set destination to value
     switch (dest) {
     case CODE_PULSES:
-      new_value = MENU.numeric_input(1);
-      if (new_value>=0) {
+      input_value = MENU.numeric_input(1);
+      if (input_value>=0) {
 	for (int pulse=0; pulse<pl_max; pulse++)
 	  if (selected_pulses & (1 << pulse)) {
 	    time_scratch.time = time_unit;
 	    time_scratch.overflow = 0;
-	    PULSES.mul_time(&time_scratch, new_value);
+	    PULSES.mul_time(&time_scratch, input_value);
 	    PULSES.set_new_period(pulse, time_scratch);
 	  }
 
@@ -2761,9 +2729,9 @@ bool menu_pulses_reaction(char menu_input) {
       break;
 
     case CODE_TIME_UNIT:
-      new_value = MENU.numeric_input(1);
-      if (new_value>0)
-	set_time_unit_and_inform(new_value);
+      input_value = MENU.numeric_input(1);
+      if (input_value>0)
+	set_time_unit_and_inform(input_value);
       else
 	outln_invalid();
       break;
@@ -2961,10 +2929,10 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'T':	// 'T<integer-number>' sets tuning, 'T' toggles TUNED
-    result = (unsigned long) PULSES.tuning;
-    if (MENU.maybe_calculate_input(&result))	{	// T1 sets tuning to 1.0
-      if (result > 0)
-	PULSES.tuning = (double) result;
+    input_value = (unsigned long) PULSES.tuning;
+    if (MENU.maybe_calculate_input(&input_value))	{	// T1 sets tuning to 1.0
+      if (input_value > 0)
+	PULSES.tuning = (double) input_value;
       tuning_info();
       MENU.ln();
     } else {	// toggle TUNED on selected pulses
@@ -3130,9 +3098,9 @@ bool menu_pulses_reaction(char menu_input) {
     if(MENU.cb_peek()==EOF)
       MENU.outln(F("divisor"));
 
-    new_value = MENU.numeric_input(divisor);
-    if (new_value>0 )
-      divisor = new_value;
+    input_value = MENU.numeric_input(divisor);
+    if (input_value>0 )
+      divisor = input_value;
     else
       MENU.outln(F("small positive integer only"));
 
@@ -3233,9 +3201,9 @@ bool menu_pulses_reaction(char menu_input) {
     if(MENU.cb_peek()==EOF)
       MENU.outln(F("multiplier"));
 
-    new_value = MENU.numeric_input(multiplier);
-    if (new_value>0 )
-      multiplier = new_value;
+    input_value = MENU.numeric_input(multiplier);
+    if (input_value>0 )
+      multiplier = input_value;
     else
       MENU.outln(F("small positive integer only"));
 
@@ -3248,9 +3216,9 @@ bool menu_pulses_reaction(char menu_input) {
     if(MENU.cb_peek()==EOF)
       MENU.out(F("voices "));
 
-    new_value = MENU.numeric_input(voices);
-    if (new_value>0 && new_value<=CLICK_PULSES)
-      voices = new_value;
+    input_value = MENU.numeric_input(voices);
+    if (input_value>0 && input_value<=CLICK_PULSES)
+      voices = input_value;
     else
       outln_invalid();
 
@@ -3327,9 +3295,9 @@ bool menu_pulses_reaction(char menu_input) {
     if (MENU.maybe_display_more())
       MENU.out(F("experiment "));
 
-    new_value = MENU.numeric_input(experiment);
-    if (new_value>=0 )
-      experiment = new_value;
+    input_value = MENU.numeric_input(experiment);
+    if (input_value>=0 )
+      experiment = input_value;
     else
       outln_invalid();
 
