@@ -701,13 +701,22 @@ double high_sweep_limit = 0.0;	// no limits, please ;)
 void tuning_info() {
   MENU.out(F("tuning ")); MENU.out(PULSES.tuning, 6);
   MENU.tab();
-  MENU.out(F("slowest ")); MENU.out(low_sweep_limit, 6);
-  MENU.tab();
-  MENU.out(F("fastest 1/")); MENU.out((double) 1/high_sweep_limit, 6);
+
+  if (low_sweep_limit) {
+    MENU.out(F("slowest "));
+    MENU.out(low_sweep_limit, 6);
+    MENU.tab();
+  }
+  if (high_sweep_limit) {
+    MENU.out(F("fastest 1/"));
+    MENU.out((double) 1/high_sweep_limit, 6);
+    MENU.tab();
+  }
 }
 
 void sweep_info() {
   struct time duration;
+
   MENU.out(F("sweep "));
   switch (sweep_up) {
   case 0:
@@ -938,7 +947,7 @@ const float overflow_sec = 4294.9672851562600;	// overflow time in seconds
 
 // display a time in seconds:
 float display_realtime_sec(struct time duration) {
-  float seconds=((float) ((signed long) duration.time) / 1000000.0);
+  float seconds=((float) ((unsigned long) duration.time) / 1000000.0);
 
   if (duration.overflow != ~0)		// ILLEGAL	FIXME: hmm? what about multiple negative overflows?
     seconds += overflow_sec * (float) duration.overflow;
@@ -950,8 +959,8 @@ float display_realtime_sec(struct time duration) {
     scratch /= 10.0;
   }
 
-  if (seconds >= 0)	// line up with automatic '-' sign
-    MENU.out('+');
+//  if (seconds >= 0)	// line up with automatic '-' sign
+//    MENU.out('+');
 
   MENU.out(seconds , 6);
   MENU.out('s');
@@ -2494,8 +2503,8 @@ void Press_toStart() {
 }
 
 bool menu_pulses_reaction(char menu_input) {
-  static long result=0;
-  static long calc_result=0;
+  static unsigned long result=0;
+  static unsigned long calc_result=0;
   long new_value=0;
   struct time now, time_scratch;
   unsigned long bitmask;
@@ -2559,7 +2568,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'u':	// calculating or select destination: time_unit
     {
-      signed long new_value=(signed long) time_unit;
+      unsigned long new_value=time_unit;
       if (MENU.maybe_calculate_input(&new_value)) {
 	MENU.out("==> "), MENU.outln(new_value);
 	time_unit=new_value;
@@ -2849,10 +2858,9 @@ bool menu_pulses_reaction(char menu_input) {
 
     break;
 
-  case 'W':	// sweep control
+  case 'W':	// sweep info and control
     next_token = MENU.cb_peek();
-    if (next_token == (char) EOF) {	// there is *no* input after 'W'
-      sweep_up *= -1;		//    toggle sweep direction up/down
+    if (next_token == (char) EOF) {	// *no* input after 'W': maybe start, info
       if (sweep_up==0)
 	sweep_up=1;		//    start sweeping up if disabled
 
@@ -2864,7 +2872,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     // 'W<number>' does (calculating) positive integer input on PULSES.ticks_per_octave
     // exception: 'W0' switches sweeping off
-    if (MENU.cb_peek()!='0' && MENU.maybe_calculate_input((long*) &PULSES.ticks_per_octave)) {	// hmmm !!!
+    if (MENU.cb_peek()!='0' && MENU.maybe_calculate_input((unsigned long*) &PULSES.ticks_per_octave)) {	// hmmm !!!
       ticks_per_octave = PULSES.ticks_per_octave;	// FIXME: obsolete
       MENU.out(PULSES.ticks_per_octave);
       MENU.outln(F(" ticks/octave"));
@@ -2953,9 +2961,10 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'T':	// 'T<integer-number>' sets tuning, 'T' toggles TUNED
-    result = (long) PULSES.tuning;
+    result = (unsigned long) PULSES.tuning;
     if (MENU.maybe_calculate_input(&result))	{	// T1 sets tuning to 1.0
-      PULSES.tuning = (double) result;
+      if (result > 0)
+	PULSES.tuning = (double) result;
       tuning_info();
       MENU.ln();
     } else {	// toggle TUNED on selected pulses
@@ -3575,6 +3584,24 @@ bool menu_pulses_reaction(char menu_input) {
 	selected_or_flagged_pulses_info_lines();
 
       break;
+
+#ifdef IMPLEMENT_TUNING		// implies floating point
+    case 19:	// TUNING
+      selected_pulses=1;
+      sweep_up=1;
+      reset_and_edit_pulse(0);
+      PULSES.divide_period(0, 1024);
+      en_tuned_sweep_click(0);
+
+      PULSES.fix_global_next();	// just in case?
+      PULSES.check_maybe_do();	// maybe do it *first*
+
+      if (MENU.maybe_display_more()) {
+	MENU.ln();
+	selected_or_flagged_pulses_info_lines();
+      }
+      break;
+#endif
 
     default:
       if (MENU.verbosity >= VERBOSITY_SOME)

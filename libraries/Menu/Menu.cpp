@@ -327,7 +327,7 @@ bool Menu::maybe_display_more() {	// avoid too much output
   }
 
 
-  bool Menu::get_numeric_input(long *result) {	// if there's a number, read it
+  bool Menu::get_numeric_input(unsigned long *result) {	// if there's a number, read it
     char token = cb_peek();
     if (!is_chiffre(token))	// no numeric input, return false
       return false;
@@ -344,10 +344,10 @@ bool Menu::maybe_display_more() {	// avoid too much output
   }
 
 
-  bool Menu::maybe_calculate_input(long *result) {
+  bool Menu::maybe_calculate_input(unsigned long *result) {
     /* check for & calculate integer input
        calculates simply left to right  */
-    long scratch;	// see recursion
+    unsigned long scratch;	// see recursion
     char token = cb_peek();
     bool is_result = false;
 
