@@ -249,6 +249,7 @@ class Menu {
        more than you want to see
 */
   void verbosity_info();	// helper function, unused
+  void outln_invalid();		// displays '(invalid)'
 
   int drop_input_token();	// drops and return next input token, only use if you must
   int restore_input_token();	// restore and return last input token, only use if you *really must*

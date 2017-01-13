@@ -1083,6 +1083,13 @@ void Menu::verbosity_info() {
     outln((int) verbosity);
   }
 }
+
+
+void Menu::outln_invalid() {
+  outln(F("(invalid)"));
+}
+
+
 /* **************************************************************** */
 // menu input interpreter:
 

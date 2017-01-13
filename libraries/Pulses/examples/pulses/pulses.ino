@@ -2410,11 +2410,6 @@ void reverse_click_pins() {
 
 
 // display helper functions:
-void outln_invalid() {
-  MENU.out(F("(invalid)"));
-}
-  
-
 void short_info() {
   MENU.ln();
   time_info();
@@ -2661,7 +2656,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  selected_or_flagged_pulses_info_lines();
 	}
       } else
-	outln_invalid();
+	MENU.outln_invalid();
       break;
 
     case CODE_TIME_UNIT:
@@ -2669,7 +2664,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (input_value>0)
 	set_time_unit_and_inform(time_unit*input_value);
       else
-	outln_invalid();
+	MENU.outln_invalid();
       break;
     }
     break;
@@ -2691,7 +2686,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  selected_or_flagged_pulses_info_lines();
 	}
       } else
-	outln_invalid();
+	MENU.outln_invalid();
       break;
 
     case CODE_TIME_UNIT:
@@ -2699,7 +2694,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (input_value>0)
 	set_time_unit_and_inform(time_unit/input_value);
       else
-	outln_invalid();
+	MENU.outln_invalid();
       break;
     }
     break;
@@ -2725,7 +2720,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  selected_or_flagged_pulses_info_lines();
 	}
       } else
-	outln_invalid();
+	MENU.outln_invalid();
       break;
 
     case CODE_TIME_UNIT:
@@ -2733,7 +2728,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (input_value>0)
 	set_time_unit_and_inform(input_value);
       else
-	outln_invalid();
+	MENU.outln_invalid();
       break;
     }
     break;
@@ -3045,7 +3040,7 @@ bool menu_pulses_reaction(char menu_input) {
       break;
     default:
       if (MENU.verbosity >= VERBOSITY_SOME)
-	outln_invalid();
+	MENU.outln_invalid();
     }
 
     if (MENU.maybe_display_more())
@@ -3220,7 +3215,7 @@ bool menu_pulses_reaction(char menu_input) {
     if (input_value>0 && input_value<=CLICK_PULSES)
       voices = input_value;
     else
-      outln_invalid();
+      MENU.outln_invalid();
 
     if (MENU.maybe_display_more())
       MENU.outln(voices);
@@ -3299,10 +3294,7 @@ bool menu_pulses_reaction(char menu_input) {
     if (input_value>=0 )
       experiment = input_value;
     else
-      outln_invalid();
-
-//  if (MENU.maybe_display_more())
-//    MENU.outln(experiment);
+      MENU.outln_invalid();
 
     switch (experiment) {	// initialize defaults, but do not start yet
     case 1:
@@ -3573,7 +3565,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     default:
       if (MENU.verbosity >= VERBOSITY_SOME)
-	outln_invalid();
+	MENU.outln_invalid();
 
       experiment=0;
       break;
@@ -3640,7 +3632,7 @@ bool menu_pulses_reaction(char menu_input) {
       experiment=0;
 
       if (MENU.verbosity)
-	outln_invalid();
+	MENU.outln_invalid();
       break;
     }
 
