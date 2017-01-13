@@ -167,6 +167,9 @@ class Pulses {
   void init_pulses();			// init all pulses
   void wake_pulse(int pulse);		// wake a pulse up, called from check_maybe_do()
   void deactivate_pulse(int pulse);	// clear ACTIVE flag, keep data
+  void deactivate_all_clicks();
+  void activate_selected_synced_now(int sync, unsigned long selected_pulses);
+  void reset_and_edit_pulse(int pulse, unsigned long time_unit);	// FIXME: time_unit as struct time
   int  fastest_pulse();			// fastest pulse, *not* dealing with overflow...
 
   void fix_global_next();	// determine next event, prepare everything

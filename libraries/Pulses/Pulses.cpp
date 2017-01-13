@@ -350,6 +350,42 @@ void Pulses::deactivate_pulse(int pulse) {	// clear ACTIVE flag, keep data
 }
 
 
+void Pulses::deactivate_all_clicks() {
+  for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+    pulses[pulse].flags &= ~ACTIVE;
+
+  fix_global_next();
+}
+
+
+void Pulses::activate_selected_synced_now(int sync, unsigned long selected_pulses) {
+  if (selected_pulses==0)
+    return;
+
+  get_now();
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if (selected_pulses & (1 << pulse))
+      activate_pulse_synced(pulse, now, abs(sync));
+
+  fix_global_next();
+  check_maybe_do();	  // maybe do it *first*
+}
+
+
+// menu interface to reset a pulse and prepare it to be edited:
+void Pulses::reset_and_edit_pulse(int pulse, unsigned long time_unit) {	// FIXME: time_unit as struct time
+  init_pulse(pulse);
+  pulses[pulse].flags |= SCRATCH;	// set SCRATCH flag
+  pulses[pulse].flags &= ~ACTIVE;	// remove ACTIVE
+
+  // set a default pulse length:
+  struct time scratch;
+  scratch.time = time_unit;
+  scratch.overflow = 0;
+  pulses[pulse].period = scratch;
+}
+
+
 #ifdef IMPLEMENT_TUNING		// implies floating point
 void Pulses::activate_tuning(int pulse) {	// copy period to other_time and set TUNING flag
   pulses[pulse].flags |= TUNED;

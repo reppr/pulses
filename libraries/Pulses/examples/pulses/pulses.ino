@@ -375,7 +375,7 @@ void setup() {
       #endif
     #endif
 
-    init_click_pins();		// set OUTPUT, LOW
+    init_click_pins();		// set them OUTPUT, LOW
   #endif
 
   #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
@@ -841,7 +841,7 @@ void display_fraction(struct fraction *f) {
 // but it's simple and working well...
 // uint_8_t click_pin[CLICK_PULSES];
 
-void init_click_pins() {
+void init_click_pins() {		// set them OUTPUT, LOW
   for (int pulse=0; pulse<CLICK_PULSES; pulse++) {	// FIXME: ################
     pinMode(click_pin[pulse], OUTPUT);
     digitalWrite(click_pin[pulse], LOW);
@@ -849,7 +849,7 @@ void init_click_pins() {
 }
 
 
-//  // unused? (I use the synced version more often)
+////  // unused? (I use the synced version more often)
 //  int setup_click_pulse(void (*pulse_do)(int), unsigned char new_flags,
 //  		     struct time when, struct time new_period) {
 //    int pulse = PULSES.setup_pulse(pulse_do, new_flags, when, new_period);
@@ -867,17 +867,6 @@ void init_click_pins() {
 
 void out_noFreePulses() {
   MENU.out(F("no free pulses"));
-}
-
-
-void deactivate_all_clicks() {
-  for (int pulse=0; pulse<CLICK_PULSES; pulse++)
-    PULSES.pulses[pulse].flags &= ~ACTIVE;
-
-  PULSES.fix_global_next();
-
-  if (MENU.verbosity)
-    MENU.outln(F("deactivated all pulses"));
 }
 
 
@@ -1146,7 +1135,7 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
 #ifdef COMPATIBILITY_PERIOD_3110
   for (int pulse=0; pulse<voices; pulse++)
     if (selected_pulses & (1 << pulse)) {
-      reset_and_edit_pulse(pulse);
+      PULSES.reset_and_edit_pulse(pulse, time_unit);
       PULSES.pulses[pulse].period.time = 3110;	// brute force for compatibility ;)
       PULSES.pulses[pulse].period.overflow = 0;	// brute force for compatibility ;)
       en_jiffle_thrower(pulse, jiffle);
@@ -1603,22 +1592,6 @@ void selected_or_flagged_pulses_info_lines()
 }
 
 
-void activate_selected_synced_now(int sync) {
-  if (selected_pulses==0)
-    return;
-
-  PULSES.get_now();
-  struct time now=PULSES.now;
-
-  for (int pulse=0; pulse<pl_max; pulse++)
-    if (selected_pulses & (1 << pulse))
-      PULSES.activate_pulse_synced(pulse, now, abs(sync));
-
-  PULSES.fix_global_next();
-  PULSES.check_maybe_do();	  // maybe do it *first*
-}
-
-
 void reset_and_edit_selected() {
   for (int pulse=0; pulse<pl_max; pulse++)
     if (selected_pulses & (1 << pulse)) {
@@ -1978,21 +1951,6 @@ void set_time_unit_and_inform(unsigned long new_value) {
   MENU.out(F("Set time unit to "));
   MENU.out(time_unit);
   MENU.outln(F(" microseconds"));
-}
-
-
-// menu interface to reset a pulse and prepare it to be edited:
-void reset_and_edit_pulse(int pulse) {
-  PULSES.init_pulse(pulse);
-  PULSES.pulses[pulse].flags |= SCRATCH;	// set SCRATCH flag
-  PULSES.pulses[pulse].flags &= ~ACTIVE;	// remove ACTIVE
-
-  // set a default pulse length:
-  struct time scratch;
-  scratch.time = time_unit;
-  scratch.overflow = 0;
-  // PULSES.mul_time(&scratch, 12);		// 12 looks like a usable default	FIXME: change to 1
-  PULSES.pulses[pulse].period = scratch;
 }
 
 
@@ -2634,9 +2592,11 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'M':	// "mute", no deactivate all clicks, see 'N'
-    deactivate_all_clicks();
-    PULSES.fix_global_next();
+    PULSES.deactivate_all_clicks();
     PULSES.check_maybe_do();	// maybe do it *first*
+
+    if (MENU.verbosity)
+      MENU.outln(F("deactivated all pulses"));
     break;
 
   case '*':	// multiply destination
@@ -2764,9 +2724,9 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case 'n':	// synchronise to now
+  case 'n':	// synchronize to now
     // we work on pulses anyway, regardless dest
-    activate_selected_synced_now(sync);	// sync and activate
+    PULSES.activate_selected_synced_now(sync, selected_pulses);	// sync and activate
 
     if (MENU.maybe_display_more()) {	// *then* info ;)
       MENU.ln();
@@ -3549,7 +3509,7 @@ bool menu_pulses_reaction(char menu_input) {
     case 19:	// TUNING
       selected_pulses=1;
       sweep_up=1;
-      reset_and_edit_pulse(0);
+      PULSES.reset_and_edit_pulse(0, time_unit);
       PULSES.divide_period(0, 1024);
       en_tuned_sweep_click(0);
 
@@ -3620,7 +3580,7 @@ bool menu_pulses_reaction(char menu_input) {
     case 17:
     case 18:
       // FIXME:	maybe make that default?
-      activate_selected_synced_now(sync);	// sync and activate
+      PULSES.activate_selected_synced_now(sync, selected_pulses);	// sync and activate
 
       if (MENU.maybe_display_more()) {		// *then* maybe info ;)
 	MENU.ln();
