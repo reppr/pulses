@@ -44,7 +44,7 @@ Menu::Menu(int bufSize, int menuPages, int (*maybeInput)(void), Stream & port):
   men_selected(0),
   cb_buf(NULL),
   men_pages(NULL),
-  echo_switch(false),
+  echo_switch(true),
   verbosity(VERBOSITY_SOME)
 {
   cb_buf = (char *) malloc(cb_size);

@@ -20,6 +20,7 @@
 
 #include "examples/pulses/pulses_systems_and_boards.h"
 
+#include <Menu.h>
 
 /* **************************************************************** */
 /* Some basic #define's						    */
@@ -131,7 +132,7 @@ struct pulse_t {
 /* **************************************************************** */
 class Pulses {
  public:
-  Pulses(int pl_max);
+  Pulses(int pl_max, Menu *MENU);
   ~Pulses();
   void init_time();
   struct time get_now();	// *always* use get_now() to get current time!
@@ -188,8 +189,31 @@ class Pulses {
 			 struct time when, unsigned long unit,
 			 unsigned long factor, unsigned long divisor, int sync);
   void init_click_pulses();
+
+  unsigned long time_unit;
+
+  // Menu output, info
+  const float overflow_sec;				// overflow time in seconds
+  void display_now();					// display current time
+  void time_info();					// same with digital details and global next
+  float display_realtime_sec(struct time duration);	// display duration in seconds
+  void display_real_ovfl_and_sec(struct time then);	//
+  void print_period_in_time_units(int pulse);
+  void pulse_info_1line(int pulse);
+  void selected_pulses_info_lines();
+  void selected_or_flagged_pulses_info_lines();
+
+  void reset_and_edit_selected();
+  void print_selected_mask();				// show mask of selected pulses
+  void maybe_show_selected_mask();			// maybe show that
+  void flagged_pulses_info();
+  void set_time_unit_and_inform(unsigned long new_value);
+
   unsigned int get_pl_max() { return pl_max; }	// inlined
+
+  unsigned long selected_pulses;
   pulse_t * pulses;		// data pointer for pulses
+  Menu *MENU;			// pointer to the menu
 
  private:
   int pulse;			// pulse index	// DO WE NEED THAT? ################

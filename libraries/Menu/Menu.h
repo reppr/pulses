@@ -22,6 +22,8 @@
 #endif
 
 
+class Pulses;
+
 /* **************************************************************** */
 /* GET_FREE_RAM  and  USE_F_MACRO
  * compile a working Menu::get_free_RAM() function or just a dummy?
@@ -254,6 +256,8 @@ class Menu {
   int drop_input_token();	// drops and return next input token, only use if you must
   int restore_input_token();	// restore and return last input token, only use if you *really must*
 				// *dangerous* no checks, you *can* restore a just-read-token
+
+  friend class Pulses;
 
  protected:
   // Act on buffer content tokens after seeing 'end token':

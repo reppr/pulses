@@ -34,19 +34,36 @@
 
 
 /* **************************************************************** */
+// time_unit that the user sees.
+// it has no influence on inner working, but is a menu I/O thing only
+// the user sees and edits times in time_units.
+//
+// I want time_unit to be dividable by a semi random selection of small integers
+// avoiding rounding errors as much as possible.
+//
+// I consider factorials as a good choice:
+// #define TIME_UNIT    40320L		// scaling timer to  8!, 0.040320s
+// #define TIME_UNIT   362880L		// scaling timer to  9!, 0,362880s
+#define TIME_UNIT	3628800L	// scaling timer to 10!, 3.628800s
+
+/* **************************************************************** */
 // Constructor/Destructor:
 
 //	#ifndef ARDUINO		// WARNING: Using Stream MACRO hack when not on ARDUINO!
 //	  #define Stream ostream
 //	#endif
 
-Pulses::Pulses(int pl_max):
+Pulses::Pulses(int pl_max, Menu *MENU):
   pl_max(pl_max),
+  MENU(MENU),
   pulse(0),
   global_octave(0),
   global_octave_mask(1),
   current_global_octave_mask(1),
-  global_next_count(0)
+  global_next_count(0),
+  selected_pulses(0),
+  time_unit(TIME_UNIT),
+  overflow_sec(4294.9672851562600)	// overflow time in seconds
 #ifdef IMPLEMENT_TUNING
   , tuning(1.0)
 #endif
@@ -373,7 +390,7 @@ void Pulses::activate_selected_synced_now(int sync, unsigned long selected_pulse
 
 
 // menu interface to reset a pulse and prepare it to be edited:
-void Pulses::reset_and_edit_pulse(int pulse, unsigned long time_unit) {	// FIXME: time_unit as struct time
+void Pulses::reset_and_edit_pulse(int pulse, unsigned long time_unit) {
   init_pulse(pulse);
   pulses[pulse].flags |= SCRATCH;	// set SCRATCH flag
   pulses[pulse].flags &= ~ACTIVE;	// remove ACTIVE
@@ -630,6 +647,250 @@ void Pulses::init_click_pulses() {
 /* **************************************************************** */
 /* **************************************************************** */
 
+/* **************************************************************** */
+//	void Pulses::init_click_pins() {
+//	  /* pins for click_pulses:
+//	     It is a bit obscure to held them in an array indexed by [pulse]
+//	     but it's simple and working well...
+//	     uint_8_t click_pin[CLICK_PULSES];				*/
+//
+//	  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+//	    pinMode(click_pin[pulse], OUTPUT);
+//	    digitalWrite(click_pin[pulse], LOW);
+//	  }
+//	}
+
+
+/* **************************************************************** */
+// Menu output, info
+
+
+void Pulses::display_now() {
+  (*MENU).out(F("now  "));
+  get_now();
+  display_real_ovfl_and_sec(now);
+}
+
+
+void Pulses::time_info() {
+  (*MENU).out(F("*** TIME info\t"));
+  display_now();
+  (*MENU).tab();
+  (*MENU).out(F("next  "));
+  display_real_ovfl_and_sec(global_next);
+  (*MENU).ln();
+}
+
+
+// display a time in seconds:
+float Pulses::display_realtime_sec(struct time duration) {
+  float seconds=((float) ((unsigned long) duration.time) / 1000000.0);
+
+  if (duration.overflow != ~0)		// ILLEGAL	FIXME: hmm? what about multiple negative overflows?
+    seconds += overflow_sec * (float) duration.overflow;
+  // seconds += overflow_sec * (float) ((signed long) duration.overflow);	// FIXME: overflow
+
+  float scratch = 1000.0;
+  while (scratch > max(abs(seconds), (float) 1.0)) {	// (float) for Linux PC tests
+    (*MENU).space();
+    scratch /= 10.0;
+  }
+
+//  if (seconds >= 0)	// line up with automatic '-' sign
+//    (*MENU).out('+');
+
+  (*MENU).out(seconds , 6);
+  (*MENU).out('s');
+
+  return seconds;
+}
+
+
+void Pulses::print_period_in_time_units(int pulse) {
+  float time_units = ((float) pulses[pulse].period.time / (float) time_unit);
+
+  (*MENU).out(F("pulse "));
+
+  float scratch = 1000.0;
+  while (scratch > max(time_units, (float) 1.0)) {
+    (*MENU).space();
+    scratch /= 10.0;
+  }
+
+  (*MENU).out((float) time_units, 6);
+  (*MENU).out(F(" time units"));
+}
+
+
+void Pulses::pulse_info_1line(int pulse) {	// one line pulse info, short version
+  unsigned long realtime=micros();		// let's take time *before* serial output
+
+  (*MENU).out(F("PULSE "));
+  if (pulse<100)	// left padding 'pulse'
+    (*MENU).space();
+  if (pulse<10)
+    (*MENU).space();
+  (*MENU).out(pulse);
+  (*MENU).slash();
+  (*MENU).out((unsigned int) pulses[pulse].counter);
+  // right padding 'pulses[pulse].counter'
+  if (pulses[pulse].counter<100000)
+    (*MENU).space();
+  if (pulses[pulse].counter<10000)
+    (*MENU).space();
+  if (pulses[pulse].counter<1000)
+    (*MENU).space();
+  if (pulses[pulse].counter<100)
+    (*MENU).space();
+  if (pulses[pulse].counter<10)
+    (*MENU).space();
+  (*MENU).space();
+
+  (*MENU).out_flags_();
+  (*MENU).outBIN(pulses[pulse].flags, 8);
+
+  (*MENU).tab();
+  print_period_in_time_units(pulse);
+
+  (*MENU).tab();
+  //  display_action(pulse);	// ################
+
+  (*MENU).tab();
+  (*MENU).out(F("expected "));
+  display_realtime_sec(pulses[pulse].next);
+
+  (*MENU).tab();
+  (*MENU).out(F("now "));
+
+  get_now();
+
+  struct time scratch = now;
+  scratch.time = realtime;
+  display_realtime_sec(scratch);
+
+  if (selected_pulses & (1 << pulse)) {
+    (*MENU).space();
+    (*MENU).out('*');
+  }
+
+  (*MENU).ln();
+}
+
+
+void Pulses::display_real_ovfl_and_sec(struct time then) {
+  (*MENU).out(F("tic/ofl "));
+  (*MENU).out(then.time);
+  (*MENU).slash();
+  (*MENU).out((signed long) then.overflow);
+  (*MENU).space();
+  (*MENU).out('=');
+  display_realtime_sec(then);
+}
+
+
+void Pulses::selected_pulses_info_lines() {
+  int count=0;
+
+  for (int pulse=0; pulse<pl_max; ++pulse) {
+    if (selected_pulses & (1 << pulse)) {
+      pulse_info_1line(pulse);
+      count++;
+      (*MENU).outln(count);
+    }
+  }
+
+  if (count)
+    (*MENU).ln();
+}
+
+
+void Pulses::selected_or_flagged_pulses_info_lines() {
+  int count=0;
+  for (int pulse=0; pulse<pl_max; ++pulse)
+    if (pulses[pulse].flags || (selected_pulses & (1 << pulse))) { // any flags || selected
+      pulse_info_1line(pulse);
+      count++;
+    }
+
+  if (count == 0) {
+    (*MENU).outln(F("no selected or flagged pulses"));
+    if(selected_pulses)		// special feature ;)
+      print_selected_mask();
+  }
+
+  (*MENU).ln();
+}
+
+
+void Pulses::reset_and_edit_selected() {	// FIXME: replace
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if (selected_pulses & (1 << pulse)) {
+      reset_and_edit_pulse(pulse, time_unit);
+    }
+}
+
+
+void Pulses::print_selected_mask() {
+  const int hex_pulses=min(pl_max,16);  // displayed as hex chiffres
+
+  if((*MENU).is_chiffre((*MENU).cb_peek()))	// more numeric input, so no display yet...
+    return;
+
+  (*MENU).out_selected_();
+  for (int pulse=0; pulse<hex_pulses; pulse++) {
+    if (selected_pulses & (1 << pulse))
+      (*MENU).out_hex_chiffre(pulse);
+    else
+      (*MENU).out('.');
+  }
+
+  // more than 16 pulses?
+  if (hex_pulses == pl_max) {	// no,
+    (*MENU).ln();
+    return;			// done
+  }
+
+  (*MENU).space();
+  for (int pulse=16; pulse<pl_max; pulse++) {
+    if (selected_pulses & (1 << pulse))
+      (*MENU).out('+');
+    else
+      (*MENU).out('.');
+  }
+  (*MENU).ln();
+}
+
+
+void Pulses::maybe_show_selected_mask() {
+  if ((*MENU).maybe_display_more())
+    print_selected_mask();
+}
+
+
+void Pulses::flagged_pulses_info() {
+  int count=0;
+
+  for (int pulse=0; pulse<pl_max; ++pulse)
+    if (pulses[pulse].flags) {		// any flags set?
+//      pulse_info(pulse);	// FIXME: was like that before, check
+      pulse_info_1line(pulse);
+      count++;
+    }
+
+  if (count == 0)
+    (*MENU).outln(F("no flagged pulses"));
+}
+
+
+void Pulses::set_time_unit_and_inform(unsigned long new_value) {
+  time_unit = new_value;
+  (*MENU).out(F("Set time unit to "));
+  (*MENU).out(time_unit);
+  (*MENU).outln(F(" microseconds"));
+}
+
+
+/* **************************************************************** */
 
 
 /* **************************************************************** */

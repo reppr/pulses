@@ -44,6 +44,9 @@ using namespace std;	// ESP8266 needs that
 
 #include "pulses_systems_and_boards.h"
 
+// class Pulses;
+class Menu;
+
 
 /* **************** Menu **************** */
 #include <Menu.h>
@@ -93,7 +96,7 @@ Menu MENU(32, 3, &men_getchar, MENU_OUTSTREAM);
 /* **************** Pulses **************** */
 #include <Pulses.h>
 
-Pulses PULSES(pl_max);
+Pulses PULSES(pl_max, &MENU);
 
 
 /* **************** Harmonical **************** */
@@ -191,8 +194,6 @@ unsigned long divisor=1;
 
 int experiment=-1;
 int voices=CLICK_PULSES;
-
-unsigned long selected_pulses=0L;	// pulse bitmask for user interface
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
   #include <math.h>
@@ -444,8 +445,8 @@ void setup() {
   //  divisor=5800;
   //  en_click(0);
   //  en_sweep_click(1);
-  //  selected_pulses = 3;
-  //  reset_and_edit_selected();
+  //  PULSES.selected_pulses = 3;
+  //  PULSES.reset_and_edit_selected();
   //  activate_selected_synced_now(sync);	// FIXME:	something's wrong :(	################
 
 
@@ -455,12 +456,12 @@ void setup() {
 //	  // ratios = european_pentatonic;
 //	  // ratios = ratios_quot;
 //	  // ratios = ratios_int;
-//	  selected_pulses=~0;
+//	  PULSES.selected_pulses=~0;
 //	  // or: if nothing is selected all pulses with flags==0 get selected.
 //	  int prepared = prepare_ratios(false, 8, 1, 1, 0, ratios);
 //	  if (prepared != 8)
 //	    MENU.out(F("prepared ")); MENU.out(prepared); MENU.slash(); MENU.outln(voices);
-//	  //  selected_pulses=0;
+//	  //  PULSES.selected_pulses=0;
 
 
 // working on:
@@ -476,7 +477,7 @@ void setup() {
 
   // informations about alive pulses:
   MENU.ln();
-  selected_or_flagged_pulses_info_lines();
+  PULSES.selected_or_flagged_pulses_info_lines();
 }
 
 
@@ -572,7 +573,7 @@ int main() {
 
   // informations about alive pulses:
   MENU.ln();
-  selected_or_flagged_pulses_info_lines();
+  PULSES.selected_or_flagged_pulses_info_lines();
 
   // main program loop:
   while (true) {
@@ -733,7 +734,7 @@ void sweep_info() {
   MENU.out(F("\ttime/octave "));
   duration.time = (unsigned long) PULSES.ticks_per_octave;
   duration.overflow=0;
-  display_realtime_sec(duration);
+  PULSES.display_realtime_sec(duration);
 
   MENU.tab();
   tuning_info();
@@ -776,7 +777,7 @@ bool maybe_display_tuning_steps() {
       if (is_octave((int) tuning_step) != -1)
 	MENU.out(F("<<"));
       MENU.tab();
-      display_realtime_sec(now); MENU.tab();
+      PULSES.display_realtime_sec(now); MENU.tab();
       sweep_info();
       did_something = true;
     }
@@ -789,7 +790,7 @@ bool maybe_display_tuning_steps() {
       if (is_octave((int) current_fraction) != -1)
 	MENU.out(F("<<"));
       MENU.tab();
-      display_realtime_sec(now); MENU.tab();
+      PULSES.display_realtime_sec(now); MENU.tab();
       sweep_info();
       did_something = true;
     }
@@ -931,82 +932,13 @@ int setup_click_synced(struct time when, unsigned long unit, unsigned long multi
 }
 
 
-// FIXME: ################
-const float overflow_sec = 4294.9672851562600;	// overflow time in seconds
-
-// display a time in seconds:
-float display_realtime_sec(struct time duration) {
-  float seconds=((float) ((unsigned long) duration.time) / 1000000.0);
-
-  if (duration.overflow != ~0)		// ILLEGAL	FIXME: hmm? what about multiple negative overflows?
-    seconds += overflow_sec * (float) duration.overflow;
-    // seconds += overflow_sec * (float) ((signed long) duration.overflow);
-
-  float scratch = 1000.0;
-  while (scratch > max(abs(seconds), (float) 1.0)) {	// (float) for Linux PC tests
-    MENU.space();
-    scratch /= 10.0;
-  }
-
-//  if (seconds >= 0)	// line up with automatic '-' sign
-//    MENU.out('+');
-
-  MENU.out(seconds , 6);
-  MENU.out('s');
-
-  return seconds;
-}
-
-
-// time unit that the user sees.
-// it has no influence on inner working, but is a menu I/O thing only
-// the user sees and edits times in time units.
-// unsigned long time_unit = 100000L;		// scaling timer to 10/s 0.1s
-
-// I want time_unit to be dividable by a semi random selection of small integers
-// avoiding rounding errors as much as possible.
-//
-// I consider factorials as a good choice:
-// unsigned long time_unit =    40320L;		// scaling timer to  8!, 0.040320s
-// unsigned long time_unit =   362880L;		// scaling timer to  9!, 0,362880s
-unsigned long time_unit =  3628800L;		// scaling timer to 10!, 3.628800s
-// const char arrays[]  to save RAM:
-
-void display_real_ovfl_and_sec(struct time then) {
-  MENU.out(F("tic/ofl "));
-  MENU.out(then.time);
-  MENU.slash();
-  MENU.out((signed long) then.overflow);
-  MENU.space();
-  MENU.out('=');
-  display_realtime_sec(then);
-}
-
-
-void display_now() {
-  MENU.out(F("now  "));
-  PULSES.get_now();
-  display_real_ovfl_and_sec(PULSES.now);
-}
-
-
-void time_info() {
-  MENU.out(F("*** TIME info\t"));
-  display_now();
-  MENU.tab();
-  MENU.out(F("next  "));
-  display_real_ovfl_and_sec(PULSES.global_next);
-  MENU.ln();
-}
-
-
 /* **************************************************************** */
 // playing with chords:
 
 //   init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
 void init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
 //	  const unsigned long divisor=1L;
-  unsigned long unit=multiplier*time_unit;
+  unsigned long unit = multiplier * PULSES.time_unit;
   unit /= divisor;
 
   display_name5pars("init_div_123456", inverse, voices, multiplier, divisor, sync);
@@ -1033,7 +965,7 @@ void init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned
 }
 
 void init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
-  unsigned long unit = multiplier*time_unit;
+  unsigned long unit = multiplier * PULSES.time_unit;
   unit /= divisor;
 
   display_name5pars("init123456", inverse, voices, multiplier, divisor, sync);
@@ -1085,7 +1017,7 @@ void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned
     no_inverse();
     return;
   }
-  unsigned long unit=time_unit*multiplier;
+  unsigned long unit = multiplier * PULSES.time_unit;
   unit /= divisor;
 
   display_name5pars("init_pentatonic", inverse, voices, multiplier, divisor, sync);
@@ -1134,8 +1066,8 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
 #define COMPATIBILITY_PERIOD_3110	// sets the period directly
 #ifdef COMPATIBILITY_PERIOD_3110
   for (int pulse=0; pulse<voices; pulse++)
-    if (selected_pulses & (1 << pulse)) {
-      PULSES.reset_and_edit_pulse(pulse, time_unit);
+    if (PULSES.selected_pulses & (1 << pulse)) {
+      PULSES.reset_and_edit_pulse(pulse, PULSES.time_unit);
       PULSES.pulses[pulse].period.time = 3110;	// brute force for compatibility ;)
       PULSES.pulses[pulse].period.overflow = 0;	// brute force for compatibility ;)
       en_jiffle_thrower(pulse, jiffle);
@@ -1146,48 +1078,79 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
   prepare_ratios(false, voices, multiplier, divisor, sync, ratios, true);
 #endif
 
+  // int apply_ratios_on_periode(int voices, unsigned int *ratios) {
+
+  // prepare_ratios(false, voices, 4096*12, 41724, 0, ratios);
+  // prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+//	  for (int pulse=0; pulse<pl_max; pulse++)
+//	    if (PULSES.selected_pulses & (1 << pulse)) {
+//	      PULSES.reset_and_edit_pulse(pulse, PULSES.time_unit);
+//	    }
+
+  //  apply_ratios_on_periode(voices, ratios);
+
+  // jiffle=jiff4096;
+//  prepare_ratios(false, voices, 1, 1, 0, ratios);
+//  apply_ratios_on_periode(voices, ratios);
+//  prepare_ratios(false, 8, 32768, 41727, 0, ratios);
+//	 ratios = pentatonic_minor;
+//	  PULSES.selected_pulses=~0;
+//	  int prepared = prepare_ratios(false, 8, 32768, 41727, 0, ratios);
+//	  if (prepared != 8)
+//	    MENU.out(F("prepared ")); MENU.out(prepared); MENU.slash(); MENU.outln(voices);
+//	  select_flagged();
+//	  //  PULSES.reset_and_edit_selected();
+//	//	  for (int pulse=0; pulse<pl_max; pulse++)
+//	//	    if (PULSES.selected_pulses & (1 << pulse))
+//	//	      PULSES.divide_period(pulse, 41724);
+//
+//	  //  select_flagged();
+  //jiffle=harmonics4;
+  // unsigned int harmonics4 = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0};
+
+//  PULSES.selected_or_flagged_pulses_info_lines();
 }
 
 
 // ****************************************************************
 int select_flagged() {
-  selected_pulses=0;
+  PULSES.selected_pulses=0;
   for (int pulse=0; pulse<pl_max; pulse++)
     if (PULSES.pulses[pulse].flags)
-      selected_pulses |= (1 << pulse);
+      PULSES.selected_pulses |= (1 << pulse);
 
-  return selected_pulses;
+  return PULSES.selected_pulses;
 }
 
 
 int select_all() {
-  selected_pulses=0;
+  PULSES.selected_pulses=0;
   for (int pulse=0; pulse<pl_max; pulse++)
-    selected_pulses |= (1 << pulse);
+    PULSES.selected_pulses |= (1 << pulse);
 
-  return selected_pulses;
+  return PULSES.selected_pulses;
 }
 
 
 int select_alive() {
-  selected_pulses=0;
+  PULSES.selected_pulses=0;
   for (int pulse=0; pulse<pl_max; pulse++)
     if(PULSES.pulses[pulse].flags && (PULSES.pulses[pulse].flags != SCRATCH))
-      selected_pulses |= (1 << pulse);
+      PULSES.selected_pulses |= (1 << pulse);
 
-  return selected_pulses;
+  return PULSES.selected_pulses;
 }
 
 
 int select_n(unsigned int n) {
-  selected_pulses=0;
+  PULSES.selected_pulses=0;
   if (n == 0)
-    return selected_pulses;
+    return PULSES.selected_pulses;
 
   for (int pulse=0; pulse<n; pulse++)
-    selected_pulses |= (1 << pulse);
+    PULSES.selected_pulses |= (1 << pulse);
 
-  return selected_pulses;
+  return PULSES.selected_pulses;
 }
 
 
@@ -1210,7 +1173,7 @@ int prepare_ratios(bool inverse, int voices, unsigned long multiplier, unsigned 
   }
 
   int prepared=0;
-  unsigned long unit=time_unit*multiplier;
+  unsigned long unit = multiplier * PULSES.time_unit;
   unit /= divisor;
 
   if (octaves)
@@ -1242,7 +1205,7 @@ int prepare_ratios(bool inverse, int voices, unsigned long multiplier, unsigned 
     divisor *= octave;
 
     for (; pulse<pl_max; pulse++) {
-      if (selected_pulses & (1 << pulse)) {
+      if (PULSES.selected_pulses & (1 << pulse)) {
 	this_period = unit;
 	this_period *= multiplier;
 	this_period /= divisor;
@@ -1290,7 +1253,7 @@ int apply_ratios_on_periode(int voices, unsigned int *ratios, bool octaves=true)
     divisor *= octave;
 
     for (; pulse<pl_max; pulse++) {
-      if (selected_pulses & (1 << pulse)) {
+      if (PULSES.selected_pulses & (1 << pulse)) {
 	new_period = PULSES.pulses[pulse].period;
 	PULSES.mul_time(&new_period, multiplier);
 	PULSES.div_time(&new_period, divisor);
@@ -1311,7 +1274,7 @@ int apply_ratios_on_periode(int voices, unsigned int *ratios, bool octaves=true)
 
 // ****************************************************************
 void init_chord_1345689a(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
-  unsigned long unit=multiplier*time_unit;
+  unsigned long unit = multiplier * PULSES.time_unit;
   unit /= divisor;
 
   display_name5pars("init_chord_1345689a", inverse, voices, multiplier, divisor, sync);
@@ -1369,7 +1332,7 @@ void init_ratio_sequence(struct time when,
 // 3,5,7,9 pattern	init_ratio_sequence(now, 3, 2, 1, 0, 4, scaling, sync)
 // 1/2, 2/3, 3/4, 4/5	init_ratio_sequence(now, 1, 1, 2, 1, 4, scaling, sync)
 {
-  const unsigned long unit=scaling*time_unit;
+  const unsigned long unit = scaling * PULSES.time_unit;
   unsigned long multiplier=multiplier0;
   unsigned long divisor=divisor0;
 
@@ -1387,7 +1350,7 @@ void init_ratio_sequence(struct time when,
 // some pre-defined patterns:
 
 void init_rhythm_1(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
-  unsigned long unit=multiplier*time_unit;
+  unsigned long unit = multiplier * PULSES.time_unit;
   unit /= divisor;
 
   struct time now;
@@ -1410,7 +1373,7 @@ void init_rhythm_1(bool inverse, int voices, unsigned int multiplier, unsigned i
 
 // frequencies ratio 1, 4, 6, 8, 10
 void init_rhythm_2(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
-  unsigned long unit= multiplier*time_unit;
+  unsigned long unit = multiplier * PULSES.time_unit;
   unit /= divisor;
 
   display_name5pars("init_rhythm_2", inverse, voices, multiplier, divisor, sync);
@@ -1431,7 +1394,7 @@ void init_rhythm_2(bool inverse, int voices, unsigned int multiplier, unsigned i
 
 // nice 2 to 3 to 4 to 5 pattern with phase offsets
 void init_rhythm_3(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
-  unsigned long unit=multiplier*time_unit;
+  unsigned long unit = multiplier * PULSES.time_unit;
   unit /= divisor;
 
   display_name5pars("init_rhythm_3", inverse, voices, multiplier, divisor, sync);
@@ -1461,7 +1424,7 @@ void init_rhythm_3(bool inverse, int voices, unsigned int multiplier, unsigned i
 
 
 void init_rhythm_4(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
-  unsigned long unit = multiplier*time_unit;
+  unsigned long unit = multiplier * PULSES.time_unit;
   unit /= divisor;
 
   struct time now;
@@ -1482,138 +1445,23 @@ void init_rhythm_4(bool inverse, int voices, unsigned int multiplier, unsigned i
 
 
 // dest codes:
-#define CODE_PULSES	0		// dest code pulses: apply selected_pulses
-#define CODE_TIME_UNIT	1		// dest code time_unit
+#define CODE_PULSES	0		// dest code pulses: apply PULSES.selected_pulses
+#define CODE_TIME_UNIT	1		// dest code PULSES.time_unit
 unsigned char dest = CODE_PULSES;
 
 
 /* **************************************************************** */
 /* Menu UI							*/
 
-void print_period_in_time_units(int pulse) {
-  float time_units, scratch;
-
-  MENU.out(F("pulse "));
-  time_units = ((float) PULSES.pulses[pulse].period.time / (float) time_unit);
-
-  scratch = 1000.0;
-  while (scratch > max(time_units, (float) 1.0)) {
-    MENU.space();
-    scratch /= 10.0;
-  }
-
-  MENU.out((float) time_units, 6);
-  MENU.out(F(" time units"));
-}
-
-
-// pulse_info_1line(pulse):	one line pulse info, short version
-void pulse_info_1line(int pulse) {
-  PULSES.get_now();	// let's take time *before* serial output
-  struct time now = PULSES.now;
-  struct time next = PULSES.pulses[pulse].next;
-
-  MENU.out(F("PULSE "));
-  if (selected_pulses & (1 << pulse))
-    MENU.out('*');
-  else
-    MENU.space();
-
-  if (pulse<100)	// left padding 'pulse'
-    MENU.space();
-  if (pulse<10)
-    MENU.space();
-  MENU.out(pulse);
-  MENU.slash();
-  MENU.out((unsigned int) PULSES.pulses[pulse].counter);
-  // right padding 'PULSES.pulses[pulse].counter'
-  if (PULSES.pulses[pulse].counter<100000)
-    MENU.space();
-  if (PULSES.pulses[pulse].counter<10000)
-    MENU.space();
-  if (PULSES.pulses[pulse].counter<1000)
-    MENU.space();
-  if (PULSES.pulses[pulse].counter<100)
-    MENU.space();
-  if (PULSES.pulses[pulse].counter<10)
-    MENU.space();
-  MENU.space();
-
-  MENU.out_flags_();
-  MENU.outBIN(PULSES.pulses[pulse].flags, 8);
-
-  MENU.tab();
-  print_period_in_time_units(pulse);
-
-  MENU.tab();
-  display_action(pulse);
-
-  MENU.tab();
-  MENU.out(F("expected "));
-  PULSES.sub_time(&now, &next);
-  display_realtime_sec(next);
-
-  if (selected_pulses & (1 << pulse)) {
-    MENU.space();
-    MENU.out('*');
-  }
-
-  MENU.ln();
-}
-
-
 // make an existing pulse to display 1 info line:
 void en_info(int pulse)
 {
   if (pulse != ILLEGAL) {
-    PULSES.pulses[pulse].periodic_do = (void (*)(int)) &pulse_info_1line;
+    PULSES.pulses[pulse].periodic_do = (void (*)(int)) &Pulses::pulse_info_1line;
     //    PULSES.pulses[pulse].periodic_do = (void (*)(int)) &Pulses::pulse_info_1line;
   }
 }
 
-
-void selected_or_flagged_pulses_info_lines()
-{
-  int count=0;
-
-  for (int pulse=0; pulse<pl_max; ++pulse)
-    if (PULSES.pulses[pulse].flags || (selected_pulses & (1 << pulse))) { // any flags || selected
-      pulse_info_1line(pulse);
-      count++;
-    }
-
-  if (count == 0) {
-    MENU.outln(F("no selected or flagged pulses"));
-    if(selected_pulses)		// special feature ;)
-      print_selected_mask();
-  }
-
-  MENU.ln();
-}
-
-
-void reset_and_edit_selected() {
-  for (int pulse=0; pulse<pl_max; pulse++)
-    if (selected_pulses & (1 << pulse)) {
-      reset_and_edit_pulse(pulse);
-    }
-}
-
-
-void selected_pulses_info_lines()
-{
-  int count=0;
-
-  for (int pulse=0; pulse<pl_max; ++pulse) {
-    if (selected_pulses & (1 << pulse)) {
-      pulse_info_1line(pulse);
-      count++;
-    }
-  }
-
-  if (count)
-    MENU.ln();
-}
 
 // pulse_info() as paylod for pulses: print pulse info:
 void pulse_info(int pulse) {
@@ -1639,7 +1487,7 @@ void pulse_info(int pulse) {
 
   MENU.ln();		// start next line
 
-  MENU.out((float) PULSES.pulses[pulse].period.time / (float) time_unit,6);
+  MENU.out((float) PULSES.pulses[pulse].period.time / (float) PULSES.time_unit, 6);
   MENU.out(F(" time units"));
 
   MENU.out(F("\tpulse/ovf "));
@@ -1648,7 +1496,7 @@ void pulse_info(int pulse) {
   MENU.out(PULSES.pulses[pulse].period.overflow);
 
   MENU.tab();
-  display_realtime_sec(PULSES.pulses[pulse].period);
+  PULSES.display_realtime_sec(PULSES.pulses[pulse].period);
   MENU.space();
   MENU.out(F("pulse "));
 
@@ -1666,42 +1514,26 @@ void pulse_info(int pulse) {
 
   MENU.tab();
   MENU.out(F("expected "));
-  display_realtime_sec(PULSES.pulses[pulse].next);
+  PULSES.display_realtime_sec(PULSES.pulses[pulse].next);
 
   MENU.ln();		// start last line
-  time_info();
+  PULSES.time_info();
 
   MENU.ln();		// traling empty line
 }
 
 
 // make an existing pulse to display multiline pulse info:
-void en_INFO(int pulse)
-{
+void en_INFO(int pulse) {	// FIXME: to lib Pulses
   if (pulse != ILLEGAL) {
     PULSES.pulses[pulse].periodic_do = (void (*)(int)) &pulse_info;
   }
 }
 
 
-void flagged_pulses_info()
-{
-  int count=0;
-
-  for (int pulse=0; pulse<pl_max; ++pulse)
-    if (PULSES.pulses[pulse].flags) {		// any flags set?
-      pulse_info(pulse);
-      count++;
-    }
-
-  if (count == 0)
-    MENU.outln(F("no flagged pulses"));
-}
-
-
 void display_action(int pulse) {
   void (*scratch)(int);
-
+  //  void (*scratchPM)(Menu, int);
   scratch=&click;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out("click  ");
@@ -1751,11 +1583,12 @@ void display_action(int pulse) {
     return;
   }
 
-  scratch=&pulse_info_1line;
-  if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out(F("info line"));
-    return;
-  }
+//	  //  scratchPM=&Pulses::pulse_info_1line;
+//	  scratch=&pulse_info_1line;
+//	  if (PULSES.pulses[pulse].periodic_do == scratch) {
+//	    MENU.out(F("info line"));
+//	    return;
+//	  }
 
   scratch=NULL;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
@@ -1823,41 +1656,10 @@ void do_throw_a_jiffle(int pulse) {		// for pulse_do
 
 // what is selected?
 
-void print_selected_mask() {
-  const int hex_pulses=min(pl_max,16);  // displayed as hex chiffres
-
-  if(MENU.is_chiffre(MENU.cb_peek()))	// more numeric input, so no display yet...
-    return;
-
-  MENU.out_selected_();
-  for (int pulse=0; pulse<hex_pulses; pulse++) {
-    if (selected_pulses & (1 << pulse))
-      MENU.out_hex_chiffre(pulse);
-    else
-      MENU.out('.');
-  }
-
-  // more than 16 pulses?
-  if (hex_pulses == pl_max) {	// no,
-    MENU.ln();
-    return;			// done
-  }
-
-  MENU.space();
-  for (int pulse=16; pulse<pl_max; pulse++) {
-    if (selected_pulses & (1 << pulse))
-      MENU.out('+');
-    else
-      MENU.out('.');
-  }
-  MENU.ln();
-}
-
-
 void print_selected() {
   switch (dest) {
   case CODE_PULSES:
-    print_selected_mask();
+    PULSES.print_selected_mask();
     break;
 
   case CODE_TIME_UNIT:
@@ -1920,10 +1722,10 @@ void menu_pulses_display() {
 
   MENU.out(F("u=select "));  MENU.out(F("time unit"));
   MENU.out("  (");
-  MENU.out(time_unit);
+  MENU.out(PULSES.time_unit);
   MENU.out(F(" microseconds"));
   MENU.out(F(" = "));
-  MENU.out((float) (1000000.0 / (float) time_unit),6);
+  MENU.out((float) (1000000.0 / (float) PULSES.time_unit), 6);
   MENU.outln(F(" per second)"));
 
   MENU.ln();
@@ -1943,14 +1745,6 @@ void menu_pulses_display() {
 
   MENU.out(F("Scale (")); MENU.out(multiplier);MENU.slash();  MENU.out(divisor);
   MENU.out(F(")\tm=multiplier d=divisor"));
-}
-
-
-void set_time_unit_and_inform(unsigned long new_value) {
-  time_unit = new_value;
-  MENU.out(F("Set time unit to "));
-  MENU.out(time_unit);
-  MENU.outln(F(" microseconds"));
 }
 
 
@@ -2172,7 +1966,7 @@ void setup_jiffles2345(bool inverse, int voices, unsigned int multiplier, unsign
     no_inverse();
     return;
   }
-  unsigned long unit=multiplier*time_unit;
+  unsigned long unit = multiplier * PULSES.time_unit;
   unit /= divisor;
 
   display_name5pars("jiffles2345", inverse, voices, multiplier, divisor, sync);
@@ -2241,7 +2035,7 @@ void setup_jifflesNEW(bool inverse, int voices, unsigned int multiplier, unsigne
     no_inverse();
     return;
   }
-  unsigned long unit=multiplier*time_unit;
+  unsigned long unit = multiplier * PULSES.time_unit;
   unit /= divisor;
 
   display_name5pars("setup_jifflesNEW", inverse, voices, multiplier, divisor, sync);
@@ -2273,12 +2067,12 @@ void setup_jifflesNEW(bool inverse, int voices, unsigned int multiplier, unsigne
 void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   /*
   multiplier and divisor are used twice:
-  first to scale unit from time_unit
+  first to scale unit from PULSES.time_unit
   then reset to build the jiffle thrower pulses
     multiplier=1
     divisor = 1, 2, 3, 4, ...
   */
-  unsigned long unit=multiplier*time_unit;
+  unsigned long unit = multiplier * PULSES.time_unit;
   unit /= divisor;
 
   display_name5pars("setup_jiffle128", inverse, voices, multiplier, divisor, sync);
@@ -2308,7 +2102,7 @@ void setup_jiffles0(bool inverse, int voices, unsigned int multiplier, unsigned 
     no_inverse();
     return;
   }
-  unsigned long unit=multiplier*time_unit;
+  unsigned long unit = multiplier * PULSES.time_unit;
   unit /= divisor;
 
   display_name5pars("setup_jiffles0", inverse, voices, multiplier, divisor, sync);
@@ -2370,10 +2164,10 @@ void reverse_click_pins() {
 // display helper functions:
 void short_info() {
   MENU.ln();
-  time_info();
+  PULSES.time_info();
 
   MENU.ln();
-  selected_or_flagged_pulses_info_lines();
+  PULSES.selected_or_flagged_pulses_info_lines();
 }
 
 
@@ -2414,11 +2208,6 @@ void show_scale() {
   MENU.out(multiplier); MENU.slash(); MENU.outln(divisor);
 }
 
-void maybe_show_selected_mask() {
-  if (MENU.maybe_display_more())
-    print_selected_mask();
-}
-
 // for old style 'experiment'
 void Press_toStart() {
   MENU.outln(F("Press '!' to start"));
@@ -2443,10 +2232,10 @@ bool menu_pulses_reaction(char menu_input) {
 
   case ':':
     MENU.ln();
-    time_info();
+    PULSES.time_info();
     MENU.ln();
-    maybe_show_selected_mask();
-    selected_pulses_info_lines();
+    PULSES.maybe_show_selected_mask();
+    PULSES.selected_pulses_info_lines();
     break;
 
   case ',':	// accept as noop in normal mode. used as delimiter to input data, displaying info. see 'menu_mode'
@@ -2472,9 +2261,9 @@ bool menu_pulses_reaction(char menu_input) {
 	return false;		// *only* responsible if pulse exists
 
       // existing pulse:
-      selected_pulses ^= (1 << (menu_input - '0'));
+      PULSES.selected_pulses ^= (1 << (menu_input - '0'));
 
-      maybe_show_selected_mask();
+      PULSES.maybe_show_selected_mask();
       break;
 
     case JIFFLE_ENTRY_UNTIL_ZERO_MODE:	// first chiffre already seen
@@ -2487,12 +2276,12 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case 'u':	// calculating or select destination: time_unit
+  case 'u':	// calculating or select destination: PULSES.time_unit
     {
-      unsigned long input_value=time_unit;
+      unsigned long input_value=PULSES.time_unit;
       if (MENU.maybe_calculate_input(&input_value)) {
 	MENU.out("==> "), MENU.outln(input_value);
-	time_unit=input_value;
+	PULSES.time_unit=input_value;
       }
       else
 	dest = CODE_TIME_UNIT;		// FIXME: obsolete?
@@ -2501,49 +2290,49 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'a':	// select destination: all pulses with flags
     select_flagged();
-    maybe_show_selected_mask();
+    PULSES.maybe_show_selected_mask();
 
     if (MENU.maybe_display_more())
-      selected_or_flagged_pulses_info_lines();
+      PULSES.selected_or_flagged_pulses_info_lines();
 
     break;
 
   case 'A':	// select destination: *all* pulses
     select_all();
-    maybe_show_selected_mask();
+    PULSES.maybe_show_selected_mask();
     break;
 
   case 'l':	// select destination: alive voices
-    selected_pulses=0;
+    PULSES.selected_pulses=0;
     for (int pulse=0; pulse<voices; pulse++)
       if(PULSES.pulses[pulse].flags && (PULSES.pulses[pulse].flags != SCRATCH))
-	selected_pulses |= (1 << pulse);
+	PULSES.selected_pulses |= (1 << pulse);
 
-    maybe_show_selected_mask();
+    PULSES.maybe_show_selected_mask();
     break;
 
   case 'L':	// select destination: all alive pulses
     select_alive();
-    maybe_show_selected_mask();
+    PULSES.maybe_show_selected_mask();
     break;
 
   case '~':	// invert destination selection
-    selected_pulses = ~selected_pulses;
+    PULSES.selected_pulses = ~PULSES.selected_pulses;
     bitmask=0;
     for (int pulse=0; pulse<pl_max; pulse++)
       bitmask |= (1 << pulse);
-    selected_pulses &= bitmask;
-    maybe_show_selected_mask();
+    PULSES.selected_pulses &= bitmask;
+    PULSES.maybe_show_selected_mask();
     break;
 
   case 'x':	// clear destination selection
-    selected_pulses = 0;
-    maybe_show_selected_mask();
+    PULSES.selected_pulses = 0;
+    PULSES.maybe_show_selected_mask();
     break;
 
   case 's':	// switch pulse ACTIVE on/off
     for (int pulse=0; pulse<pl_max; pulse++) {
-      if (selected_pulses & (1 << pulse)) {
+      if (PULSES.selected_pulses & (1 << pulse)) {
 	// special case: switching on an edited SCRATCH pulse:
 	if((PULSES.pulses[pulse].flags & ACTIVE) == 0)	// was off
 	  if (PULSES.pulses[pulse].flags & SCRATCH)	// SCRATCH set, like activating after edit
@@ -2564,7 +2353,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      selected_or_flagged_pulses_info_lines();			// *then* info ;)
+      PULSES.selected_or_flagged_pulses_info_lines();			// *then* info ;)
     }
     // info_select_destination_with(false);	// DADA ################
     break;
@@ -2586,9 +2375,9 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'i':	// info
     MENU.ln();
-    time_info();
+    PULSES.time_info();
     MENU.ln();	// ################################################################
-    flagged_pulses_info();
+    PULSES.flagged_pulses_info();
     break;
 
   case 'M':	// "mute", no deactivate all clicks, see 'N'
@@ -2605,7 +2394,7 @@ bool menu_pulses_reaction(char menu_input) {
       input_value = MENU.numeric_input(1);
       if (input_value>=0) {
 	for (int pulse=0; pulse<pl_max; pulse++)
-	  if (selected_pulses & (1 << pulse))
+	  if (PULSES.selected_pulses & (1 << pulse))
 	    PULSES.multiply_period(pulse, input_value);
 
 	PULSES.fix_global_next();
@@ -2613,7 +2402,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	if (MENU.maybe_display_more()) {
 	  MENU.ln();
-	  selected_or_flagged_pulses_info_lines();
+	  PULSES.selected_or_flagged_pulses_info_lines();
 	}
       } else
 	MENU.outln_invalid();
@@ -2622,7 +2411,7 @@ bool menu_pulses_reaction(char menu_input) {
     case CODE_TIME_UNIT:
       input_value = MENU.numeric_input(1);
       if (input_value>0)
-	set_time_unit_and_inform(time_unit*input_value);
+	PULSES.set_time_unit_and_inform(PULSES.time_unit * input_value);
       else
 	MENU.outln_invalid();
       break;
@@ -2635,7 +2424,7 @@ bool menu_pulses_reaction(char menu_input) {
       input_value = MENU.numeric_input(1);
       if (input_value>=0) {
 	for (int pulse=0; pulse<pl_max; pulse++)
-	  if (selected_pulses & (1 << pulse))
+	  if (PULSES.selected_pulses & (1 << pulse))
 	    PULSES.divide_period(pulse, input_value);
 
 	PULSES.fix_global_next();
@@ -2643,7 +2432,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	if (MENU.maybe_display_more()) {
 	  MENU.ln();
-	  selected_or_flagged_pulses_info_lines();
+	  PULSES.selected_or_flagged_pulses_info_lines();
 	}
       } else
 	MENU.outln_invalid();
@@ -2652,7 +2441,7 @@ bool menu_pulses_reaction(char menu_input) {
     case CODE_TIME_UNIT:
       input_value = MENU.numeric_input(1);
       if (input_value>0)
-	set_time_unit_and_inform(time_unit/input_value);
+	PULSES.set_time_unit_and_inform(PULSES.time_unit / input_value);
       else
 	MENU.outln_invalid();
       break;
@@ -2665,8 +2454,8 @@ bool menu_pulses_reaction(char menu_input) {
       input_value = MENU.numeric_input(1);
       if (input_value>=0) {
 	for (int pulse=0; pulse<pl_max; pulse++)
-	  if (selected_pulses & (1 << pulse)) {
-	    time_scratch.time = time_unit;
+	  if (PULSES.selected_pulses & (1 << pulse)) {
+	    time_scratch.time = PULSES.time_unit;
 	    time_scratch.overflow = 0;
 	    PULSES.mul_time(&time_scratch, input_value);
 	    PULSES.set_new_period(pulse, time_scratch);
@@ -2677,7 +2466,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	if (MENU.maybe_display_more()) {
 	  MENU.ln();
-	  selected_or_flagged_pulses_info_lines();
+	  PULSES.selected_or_flagged_pulses_info_lines();
 	}
       } else
 	MENU.outln_invalid();
@@ -2686,7 +2475,7 @@ bool menu_pulses_reaction(char menu_input) {
     case CODE_TIME_UNIT:
       input_value = MENU.numeric_input(1);
       if (input_value>0)
-	set_time_unit_and_inform(input_value);
+	PULSES.set_time_unit_and_inform(input_value);
       else
 	MENU.outln_invalid();
       break;
@@ -2694,10 +2483,10 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'K':	// kill selected pulses
-    if (selected_pulses) {
+    if (PULSES.selected_pulses) {
       MENU.out(F("kill pulse "));
       for (int pulse=0; pulse<pl_max; pulse++)
-	if (selected_pulses & (1 << pulse)) {
+	if (PULSES.selected_pulses & (1 << pulse)) {
 	  PULSES.init_pulse(pulse);
 	  if (MENU.maybe_display_more()) {
 	    MENU.out(pulse);
@@ -2711,33 +2500,33 @@ bool menu_pulses_reaction(char menu_input) {
     }
 
     if (MENU.maybe_display_more()) {
-      selected_or_flagged_pulses_info_lines();
+      PULSES.selected_or_flagged_pulses_info_lines();
       MENU.ln();
     }
     break;
 
   case 'P':	// pulse create and edit
-    reset_and_edit_selected();
+    PULSES.reset_and_edit_selected();
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      selected_or_flagged_pulses_info_lines();
+      PULSES.selected_or_flagged_pulses_info_lines();
     }
     break;
 
   case 'n':	// synchronize to now
     // we work on pulses anyway, regardless dest
-    PULSES.activate_selected_synced_now(sync, selected_pulses);	// sync and activate
+    PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate
 
     if (MENU.maybe_display_more()) {	// *then* info ;)
       MENU.ln();
-      selected_or_flagged_pulses_info_lines();
+      PULSES.selected_or_flagged_pulses_info_lines();
     }
     break;
 
   case 'N':	// NULLs payload
     // we work on pulses anyway, regardless dest
     for (int pulse=0; pulse<voices; pulse++)
-      if (selected_pulses & (1 << pulse)) {
+      if (PULSES.selected_pulses & (1 << pulse)) {
 	PULSES.pulses[pulse].periodic_do = NULL;
 	if (pulse<CLICK_PULSES)		// set clicks on LOW
 	  digitalWrite(click_pin[pulse], LOW);
@@ -2748,21 +2537,21 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {	// *then* info ;)
       MENU.ln();
-      selected_or_flagged_pulses_info_lines();
+      PULSES.selected_or_flagged_pulses_info_lines();
     }
     break;
 
   case 'c':	// en_click
     // we work on voices anyway, regardless dest
     for (int pulse=0; pulse<voices; pulse++)
-      if (selected_pulses & (1 << pulse))
+      if (PULSES.selected_pulses & (1 << pulse))
 	en_click(pulse);
 
     PULSES.check_maybe_do();	// maybe do it *first*
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      selected_pulses_info_lines();
+      PULSES.selected_pulses_info_lines();
     }
 
     break;
@@ -2838,7 +2627,7 @@ bool menu_pulses_reaction(char menu_input) {
   case 't':	// en_sweep_click
     // we work on voices anyway, regardless dest
     for (int pulse=0; pulse<voices; pulse++)
-      if (selected_pulses & (1 << pulse))
+      if (PULSES.selected_pulses & (1 << pulse))
 	en_sweep_click(pulse);
 
     PULSES.fix_global_next();	// just in case?
@@ -2846,7 +2635,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      selected_or_flagged_pulses_info_lines();
+      PULSES.selected_or_flagged_pulses_info_lines();
     }
 
     break;
@@ -2854,7 +2643,7 @@ bool menu_pulses_reaction(char menu_input) {
   case 'o':	// en_sweep_click_0
     // we work on voices anyway, regardless dest
     for (int pulse=0; pulse<voices; pulse++)
-      if (selected_pulses & (1 << pulse))
+      if (PULSES.selected_pulses & (1 << pulse))
 	en_sweep_click_0(pulse);
 
     PULSES.fix_global_next();	// just in case?
@@ -2862,7 +2651,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      selected_or_flagged_pulses_info_lines();
+      PULSES.selected_or_flagged_pulses_info_lines();
     }
 
     break;
@@ -2870,7 +2659,7 @@ bool menu_pulses_reaction(char menu_input) {
   case 'p':	// en_tuned_sweep_click
     // we work on voices anyway, regardless dest
     for (int pulse=0; pulse<voices; pulse++)
-      if (selected_pulses & (1 << pulse))
+      if (PULSES.selected_pulses & (1 << pulse))
 	en_tuned_sweep_click(pulse);
 
     PULSES.fix_global_next();	// just in case?
@@ -2878,7 +2667,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      selected_or_flagged_pulses_info_lines();
+      PULSES.selected_or_flagged_pulses_info_lines();
     }
 
     break;
@@ -2893,7 +2682,7 @@ bool menu_pulses_reaction(char menu_input) {
     } else {	// toggle TUNED on selected pulses
       // we work on voices anyway, regardless dest
       for (int pulse=0; pulse<voices; pulse++)
-	if (selected_pulses & (1 << pulse))
+	if (PULSES.selected_pulses & (1 << pulse))
 	  if (PULSES.pulses[pulse].flags & TUNED)
 	    PULSES.stop_tuning(pulse);
 	  else
@@ -2905,7 +2694,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      selected_or_flagged_pulses_info_lines();
+      PULSES.selected_or_flagged_pulses_info_lines();
     }
     break;
 #endif	// #ifdef IMPLEMENT_TUNING	implies floating point
@@ -2913,7 +2702,7 @@ bool menu_pulses_reaction(char menu_input) {
   case 'j':	// en_jiffle_thrower
     // we work on voices anyway, regardless dest
     for (int pulse=0; pulse<voices; pulse++)
-      if (selected_pulses & (1 << pulse))
+      if (PULSES.selected_pulses & (1 << pulse))
 	en_jiffle_thrower(pulse, jiffle);
 
     PULSES.fix_global_next();	// just in case?
@@ -2921,7 +2710,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      selected_or_flagged_pulses_info_lines();
+      PULSES.selected_or_flagged_pulses_info_lines();
     }
     break;
 
@@ -3011,24 +2800,24 @@ bool menu_pulses_reaction(char menu_input) {
   case 'f':	// en_info
     // we work on pulses anyway, regardless dest
     for (int pulse=0; pulse<pl_max; pulse++)
-      if (selected_pulses & (1 << pulse))
+      if (PULSES.selected_pulses & (1 << pulse))
 	en_info(pulse);
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      selected_or_flagged_pulses_info_lines();
+      PULSES.selected_or_flagged_pulses_info_lines();
     }
     break;
 
   case 'F':	// en_INFO
     // we work on pulses anyway, regardless dest
     for (int pulse=0; pulse<pl_max; pulse++)
-      if (selected_pulses & (1 << pulse))
+      if (PULSES.selected_pulses & (1 << pulse))
 	en_INFO(pulse);
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      selected_or_flagged_pulses_info_lines();
+      PULSES.selected_or_flagged_pulses_info_lines();
     }
     break;
 
@@ -3088,6 +2877,11 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'D':	// DADA debug
+    MENU.outln(F("'D' 1"));
+
+    PULSES.pulse_info_1line(0);
+
+    MENU.outln(F("'D' 2"));
     //    MENU.outln(HARMONICAL.harmonical_base);
 
     //    MENU.outln(F("small primes:"));
@@ -3099,17 +2893,17 @@ bool menu_pulses_reaction(char menu_input) {
     {
       unsigned long lcm=1L;
       for (int pulse=0; pulse<pl_max; pulse++)
-	if (selected_pulses & (1 << pulse))
+	if (PULSES.selected_pulses & (1 << pulse))
 	  lcm = HARMONICAL.LCM(lcm, PULSES.pulses[pulse].period.time);
       MENU.out(F("lcm ")); MENU.out(lcm);
       struct time length;
       length.time = lcm;
       length.overflow = 0;
-      display_realtime_sec(length);
+      PULSES.display_realtime_sec(length);
       MENU.ln();
 
       for (int pulse=0; pulse<pl_max; pulse++)
-	if ((selected_pulses & (1 << pulse)) && PULSES.pulses[pulse].period.time) {
+	if ((PULSES.selected_pulses & (1 << pulse)) && PULSES.pulses[pulse].period.time) {
 	  MENU.out(pulse);
 	  MENU.tab();
 	  MENU.outln(lcm/PULSES.pulses[pulse].period.time);
@@ -3120,7 +2914,7 @@ bool menu_pulses_reaction(char menu_input) {
 //	    unsigned int lcm=1;
 //	    // simplest case for test: 0 to voices-1
 //	    for (int pulse=voices-1; pulse>-1; pulse--)
-//	      if (selected_pulses & (1 << pulse)) {
+//	      if (PULSES.selected_pulses & (1 << pulse)) {
 //		lcm = LCM(PULSES.pulses[pulse].period.time, lcm);
 //		MENU.outln(lcm/PULSES.pulses[0].period.time);
 //	      }
@@ -3225,8 +3019,9 @@ bool menu_pulses_reaction(char menu_input) {
 
       // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
       PULSES.init_click_pulses();
+//      PULSES.init_click_pins_OutLow();	// switch them on LOW, output	current off, i.e. magnets
       init_click_pins();		// switch them on LOW, output	current off, i.e. magnets
-      selected_pulses=0L;		// restart selections at none
+      PULSES.selected_pulses=0L;		// restart selections at none
 
       PULSES.fix_global_next();
 
@@ -3410,7 +3205,7 @@ bool menu_pulses_reaction(char menu_input) {
       prepare_magnets(inverse, voices, multiplier, divisor, sync);
 
       if (MENU.maybe_display_more()) {
-	selected_or_flagged_pulses_info_lines();
+	PULSES.selected_or_flagged_pulses_info_lines();
 	Press_toStart();
       }
       break;
@@ -3429,7 +3224,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E14", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.maybe_display_more())
-	selected_or_flagged_pulses_info_lines();
+	PULSES.selected_or_flagged_pulses_info_lines();
       break;
 
     case 15:
@@ -3446,7 +3241,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E15", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.verbosity >= VERBOSITY_SOME)
-	selected_or_flagged_pulses_info_lines();
+	PULSES.selected_or_flagged_pulses_info_lines();
       break;
 
     case 16:
@@ -3463,7 +3258,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E16 european_pent", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.verbosity >= VERBOSITY_SOME)
-	selected_or_flagged_pulses_info_lines();
+	PULSES.selected_or_flagged_pulses_info_lines();
       break;
 
     case 17:
@@ -3479,7 +3274,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E17 mimic japan", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.verbosity >= VERBOSITY_SOME)
-	selected_or_flagged_pulses_info_lines();
+	PULSES.selected_or_flagged_pulses_info_lines();
 
       break;
 
@@ -3501,15 +3296,15 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E18 pentatonic minor", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.verbosity >= VERBOSITY_SOME)
-	selected_or_flagged_pulses_info_lines();
+	PULSES.selected_or_flagged_pulses_info_lines();
 
       break;
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
     case 19:	// TUNING
-      selected_pulses=1;
+      PULSES.selected_pulses=1;
       sweep_up=1;
-      PULSES.reset_and_edit_pulse(0, time_unit);
+      PULSES.reset_and_edit_pulse(0, PULSES.time_unit);
       PULSES.divide_period(0, 1024);
       en_tuned_sweep_click(0);
 
@@ -3518,7 +3313,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if (MENU.maybe_display_more()) {
 	MENU.ln();
-	selected_or_flagged_pulses_info_lines();
+	PULSES.selected_or_flagged_pulses_info_lines();
       }
       break;
 #endif
@@ -3580,11 +3375,11 @@ bool menu_pulses_reaction(char menu_input) {
     case 17:
     case 18:
       // FIXME:	maybe make that default?
-      PULSES.activate_selected_synced_now(sync, selected_pulses);	// sync and activate
+      PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses); // sync and activate
 
       if (MENU.maybe_display_more()) {		// *then* maybe info ;)
 	MENU.ln();
-	selected_or_flagged_pulses_info_lines();
+	PULSES.selected_or_flagged_pulses_info_lines();
       }
       break;
 
