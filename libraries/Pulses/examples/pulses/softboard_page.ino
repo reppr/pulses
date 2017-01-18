@@ -170,6 +170,10 @@ char PIN_analog = 0;		// 0 is save as default for analog pins
 // Comment next line out if you do not want the analog2tone functionality:
 #define has_PIEZZO_SOUND
 
+#if defined(__SAM3X8E__) || defined(ESP32)
+  #undef has_PIEZZO_SOUND
+#endif
+
 #ifdef has_PIEZZO_SOUND
 char PIN_tone = ILLEGAL;	// pin for tone output on a piezzo
 #endif
@@ -229,18 +233,25 @@ void pin_info_digital(uint8_t pin) {
   MENU.out(pin_);
   MENU.out((int) pin);
   MENU.tab();
+  #if defined(ESP32)
+    #warning "I/O pin configuration info *not implemented on ESP32*."
+    // MENU.out(F("(pin_info_digital() not implemented on ESP32)"));
+    if (digitalRead(pin))
+     MENU.out(high_);
+    else
+      MENU.out(low_);
 
-#ifdef __SAM3X8E__	// FIXME: !!! ################
-  #warning "I/O pin configuration info *not implemented on Arduino DUE yet*."
-  MENU.out(F("(pin_info_digital() not implemented on DUE yet)"));
-#else
-  #ifdef ESP8266	// FIXME: ################
+  #elif defined(ESP8266)		// FIXME: ################
     #warning "I/O pin configuration info *not implemented on ESP8266*."
     // MENU.out(F("(pin_info_digital() not implemented on ESP8266)"));
-  if (digitalRead(pin))
-    MENU.out(high_);
-  else
-    MENU.out(low_);
+    if (digitalRead(pin))
+     MENU.out(high_);
+    else
+      MENU.out(low_);
+
+  #elif defined(__SAM3X8E__)	// FIXME: !!! ################
+    #warning "I/O pin configuration info *not implemented on Arduino DUE yet*."
+    MENU.out(F("(pin_info_digital() not implemented on DUE yet)"));
 
   #else		// old style Arduino hardware
   // see: <Arduino.h>
@@ -281,7 +292,6 @@ void pin_info_digital(uint8_t pin) {
     }
   }
   #endif
-#endif
   MENU.ln();
 }
 
@@ -543,7 +553,7 @@ void toggle_tone() {
       MENU.outln(F("off"));
   }
 }
-#endif
+#endif // has_PIEZZO_SOUND
 
 
 /*
@@ -705,7 +715,7 @@ const char analogWrite_[] = "\tanalogWrite(";
 
 bool softboard_reaction(char token) {
   long newValue;
-#ifdef ESP8266
+#ifdef ESP8266	// FIXME: ESP32	################
   const int pwm_maX=1024;
 #else
   const int pwm_maX=256;
@@ -767,6 +777,7 @@ bool softboard_reaction(char token) {
     }
     break;
 
+#ifndef ESP32	// FIXME: ESP32
   case 'W':
     if (digital_pin_ok()) {
 
@@ -794,6 +805,7 @@ bool softboard_reaction(char token) {
       }
     }
     break;
+#endif	// ESP32
 
   case 'a':
     MENU.outln(analog_reads_title);

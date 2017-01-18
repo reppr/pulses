@@ -13,8 +13,15 @@
 
   /* **************************************************************** */
   // Arduino board specific configutation:
+  #if defined(ESP32)				// ESP32 :)
+    const int pl_max=64;
+    #define JIFFLE_RAM_SIZE	256*3+1
+    #define RATIOS_RAM_SIZE	256*2+1
+    // must be defined before including Pulses
+    #define IMPLEMENT_TUNING		// needs float
+    #undef USE_F_MACRO			// F() does not work here
 
-  #if defined(ESP8266)				// ESP8266: "a lot of RAM"
+  #elif defined(ESP8266)			// ESP8266: "a lot of RAM"
     const int pl_max=32;
     #define JIFFLE_RAM_SIZE	256*3+1
     #define RATIOS_RAM_SIZE	256*2+1

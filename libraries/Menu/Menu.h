@@ -44,6 +44,10 @@ class Pulses;
   // normally we *do* use F() macro on Arduino to save RAM:
   #define USE_F_MACRO	// comment out for RAM tests	// FIXME: ???, really?
 
+  #if defined(ESP32)	// FIXME: F() on ESP32	################
+    #undef USE_F_MACRO
+  #endif
+
 #else	// *ARDUINO ONLY*
   // GET_FREE_RAM
   #ifdef GET_FREE_RAM

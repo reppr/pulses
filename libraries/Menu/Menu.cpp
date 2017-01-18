@@ -458,7 +458,10 @@ bool Menu::maybe_display_more() {	// avoid too much output
    * when the menu does not know how to determine RAM properly.
    */
 
-  // FIXME: ESP8266 RAM functions?	################
+  // FIXME: ESP8266 and ESP32 RAM functions?	################
+  #if defined(ESP8266) || defined(ESP32)
+    #undef GET_FREE_RAM
+  #endif
   #if defined(GET_FREE_RAM) && ! defined(ESP8266)	// REAL free RAM functions:
 
     /* int get_free_RAM(): determine free RAM on Arduino:		*/

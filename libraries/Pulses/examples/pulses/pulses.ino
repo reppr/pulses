@@ -260,9 +260,11 @@ void setup() {
   MENU.add_page("pulses", 'P', \
 		&menu_pulses_display, &menu_pulses_reaction, 'P');
 
+#ifndef ESP32
   // add softboard page:
   softboard_page = MENU.add_page("Arduino Softboard", 'H',	\
 		&softboard_display, &softboard_reaction, 'H');
+#endif
 
   // display menu at startup:
   MENU.menu_display();

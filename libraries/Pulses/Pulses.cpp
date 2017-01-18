@@ -113,8 +113,8 @@ Pulses::~Pulses() {
 
 // do this once from setup()	################
 void Pulses::init_time() {
-#if defined(ESP8266)
-  static unsigned long timer0_overflow_count=0;
+#if defined(ESP8266) || defined(ESP32)
+  static unsigned long timer0_overflow_count=0;	// FIXME: hmm, really?
 #else
   #if defined(ARDUINO)
     extern volatile unsigned long timer0_overflow_count;
