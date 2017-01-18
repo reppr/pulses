@@ -186,7 +186,7 @@ unsigned int arpeggio4096[] = {64,4096,1, 1,4096,256,  64,4096*2,1, 1,4096*2,256
 
 
 /* **************************************************************** */
-// variables:
+// user interface variables:
 
 int sync=1;			// syncing edges or middles of square pulses
 unsigned long multiplier=1;
@@ -219,7 +219,6 @@ int voices=CLICK_PULSES;
 //
 
 #endif
-// #endif
 
 
 /* **************************************************************** */
@@ -378,9 +377,10 @@ void setup() {
       #endif
     #endif
 
-    init_click_pins();		// set them OUTPUT, LOW
+    init_click_pins_OutLow();		// make them OUTPUT, LOW
   #endif
 
+  // ESP8266: switch WiFi OFF
   #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
     #ifdef WIFI_OFF_hackster
       // see: https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
@@ -623,7 +623,7 @@ int main() {
 
 // Click_pulses are a sub-group of pulses that control an arduino
 // digital output each.  By design they must be initiated first to get
-// the low pulse indices. The pins are configured as outputs by init_click_pins()
+// the low pulse indices. The pins are configured as outputs by init_click_pins_OutLow()
 // and get used by clicks, jiffles and the like.
 
 // It's best to always leave click_pulses in memory.
@@ -692,7 +692,6 @@ void sweep_click_0(int pulse) {	// can be called from a sweeping pulse
     break;
   }
 }
-
 
 
 double low_sweep_limit = 0.0;	// no limits, please ;)
@@ -844,7 +843,7 @@ void display_fraction(struct fraction *f) {
 // but it's simple and working well...
 // uint_8_t click_pin[CLICK_PULSES];
 
-void init_click_pins() {		// set them OUTPUT, LOW
+void init_click_pins_OutLow() {		// make them OUTPUT, LOW
   for (int pulse=0; pulse<CLICK_PULSES; pulse++) {	// FIXME: ################
     pinMode(click_pin[pulse], OUTPUT);
     digitalWrite(click_pin[pulse], LOW);
@@ -1585,12 +1584,12 @@ void display_action(int pulse) {
     return;
   }
 
-//	  //  scratchPM=&Pulses::pulse_info_1line;
-//	  scratch=&pulse_info_1line;
-//	  if (PULSES.pulses[pulse].periodic_do == scratch) {
-//	    MENU.out(F("info line"));
-//	    return;
-//	  }
+//  scratchPM=&Pulses::pulse_info_1line;
+//  // scratch=&pulse_info_1line;
+//  if (PULSES.pulses[pulse].periodic_do == scratchPM) {
+//    MENU.out(F("info line"));
+//    return;
+//  }
 
   scratch=NULL;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
@@ -3021,8 +3020,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
       PULSES.init_click_pulses();
-//      PULSES.init_click_pins_OutLow();	// switch them on LOW, output	current off, i.e. magnets
-      init_click_pins();		// switch them on LOW, output	current off, i.e. magnets
+      init_click_pins_OutLow();		// switch them on LOW, output	current off, i.e. magnets
       PULSES.selected_pulses=0L;		// restart selections at none
 
       PULSES.fix_global_next();
@@ -3287,10 +3285,15 @@ bool menu_pulses_reaction(char menu_input) {
       // divisor=2048;
 
       // string tuning on 8/9
-//      multiplier=8;
-//      divisor=9*1024;
-      multiplier=1;
-      divisor=9*128;
+      //   multiplier=8;
+      //   divisor=9*1024;
+      // multiplier=1;
+      // divisor=9*128;
+
+      // multiplier=8*4096;	// jiffle ting4096
+      // divisor=9*1024;
+      multiplier=32;	// reduced
+      divisor=9;	// reduced
       jiffle=ting4096;
 
       select_n(voices);
@@ -3437,10 +3440,3 @@ Testing Pulses library in an early stage
 
 */
 /* **************************************************************** */
-
-
-
-
-
-
-
