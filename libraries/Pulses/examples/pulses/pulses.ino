@@ -479,7 +479,7 @@ void setup() {
 
   // informations about alive pulses:
   MENU.ln();
-  PULSES.selected_or_flagged_pulses_info_lines();
+  selected_or_flagged_pulses_info_lines();
 }
 
 
@@ -575,7 +575,7 @@ int main() {
 
   // informations about alive pulses:
   MENU.ln();
-  PULSES.selected_or_flagged_pulses_info_lines();
+  selected_or_flagged_pulses_info_lines();
 
   // main program loop:
   while (true) {
@@ -838,13 +838,12 @@ void display_fraction(struct fraction *f) {
 
 
 /* **************************************************************** */
-// pins for click_pulses:
-// It is a bit obscure to held them in an array indexed by [pulse]
-// but it's simple and working well...
-// uint_8_t click_pin[CLICK_PULSES];
-
 void init_click_pins_OutLow() {		// make them OUTPUT, LOW
-  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {	// FIXME: ################
+/* uint8_t click_pin[CLICK_PULSES];
+   hardware pins for click_pulses:
+   It is a bit obscure to hold them in an array indexed by [pulse]
+   but it's simple and working well	*/
+  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
     pinMode(click_pin[pulse], OUTPUT);
     digitalWrite(click_pin[pulse], LOW);
   }
@@ -1109,7 +1108,7 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
   //jiffle=harmonics4;
   // unsigned int harmonics4 = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0};
 
-//  PULSES.selected_or_flagged_pulses_info_lines();
+//  selected_or_flagged_pulses_info_lines();
 }
 
 
@@ -1458,9 +1457,61 @@ unsigned char dest = CODE_PULSES;
 void en_info(int pulse)
 {
   if (pulse != ILLEGAL) {
-    PULSES.pulses[pulse].periodic_do = (void (*)(int)) &Pulses::pulse_info_1line;
-    //    PULSES.pulses[pulse].periodic_do = (void (*)(int)) &Pulses::pulse_info_1line;
+    PULSES.pulses[pulse].periodic_do = (void (*)(int)) &pulse_info_1line;
   }
+}
+
+void pulse_info_1line(int pulse) {	// one line pulse info, short version
+  unsigned long realtime=micros();		// let's take time *before* serial output
+
+  MENU.out(F("PULSE "));
+  if (pulse<100)	// left padding 'pulse'
+    MENU.space();
+  if (pulse<10)
+    MENU.space();
+  MENU.out(pulse);
+  MENU.slash();
+  MENU.out((unsigned int) PULSES.pulses[pulse].counter);
+  // right padding 'PULSES.pulses[pulse].counter'
+  if (PULSES.pulses[pulse].counter<100000)
+    MENU.space();
+  if (PULSES.pulses[pulse].counter<10000)
+    MENU.space();
+  if (PULSES.pulses[pulse].counter<1000)
+    MENU.space();
+  if (PULSES.pulses[pulse].counter<100)
+    MENU.space();
+  if (PULSES.pulses[pulse].counter<10)
+    MENU.space();
+  MENU.space();
+
+  MENU.out_flags_();
+  MENU.outBIN(PULSES.pulses[pulse].flags, 8);
+
+  MENU.tab();
+  PULSES.print_period_in_time_units(pulse);
+
+  MENU.tab();
+  display_payload(pulse);
+
+  MENU.tab();
+  MENU.out(F("expected "));
+  PULSES.display_realtime_sec(PULSES.pulses[pulse].next);
+
+  MENU.tab();
+  MENU.out(F("now "));
+
+  PULSES.get_now();
+  struct time scratch = PULSES.now;
+  scratch.time = realtime;
+  PULSES.display_realtime_sec(scratch);
+
+  if (PULSES.selected_pulses & (1 << pulse)) {
+    MENU.space();
+    MENU.out('*');
+  }
+
+  MENU.ln();
 }
 
 
@@ -1473,7 +1524,7 @@ void pulse_info(int pulse) {
   MENU.out((unsigned int) PULSES.pulses[pulse].counter);
 
   MENU.tab();
-  display_action(pulse);
+  display_payload(pulse);
 
   MENU.out_flags_();
   MENU.outBIN(PULSES.pulses[pulse].flags, 8);
@@ -1532,9 +1583,8 @@ void en_INFO(int pulse) {	// FIXME: to lib Pulses
 }
 
 
-void display_action(int pulse) {
+void display_payload(int pulse) {
   void (*scratch)(int);
-  //  void (*scratchPM)(Menu, int);
   scratch=&click;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out("click  ");
@@ -1584,12 +1634,11 @@ void display_action(int pulse) {
     return;
   }
 
-//  scratchPM=&Pulses::pulse_info_1line;
-//  // scratch=&pulse_info_1line;
-//  if (PULSES.pulses[pulse].periodic_do == scratchPM) {
-//    MENU.out(F("info line"));
-//    return;
-//  }
+  scratch=&pulse_info_1line;
+  if (PULSES.pulses[pulse].periodic_do == scratch) {
+    MENU.out(F("info line"));
+    return;
+  }
 
   scratch=NULL;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
@@ -1601,6 +1650,56 @@ void display_action(int pulse) {
 }
 
 
+void selected_pulses_info_lines() {
+  int count=0;
+
+  for (int pulse=0; pulse<pl_max; ++pulse) {
+    if (PULSES.selected_pulses & (1 << pulse)) {
+      pulse_info_1line(pulse);
+      count++;
+      MENU.outln(count);
+    }
+  }
+
+  if (count)
+    MENU.ln();
+}
+
+
+void flagged_pulses_info() {
+  int count=0;
+
+  for (int pulse=0; pulse<pl_max; ++pulse)
+    if (PULSES.pulses[pulse].flags) {		// any flags set?
+//    pulse_info(pulse);	// FIXME: was like that before, check
+      pulse_info_1line(pulse);
+      count++;
+    }
+
+  if (count == 0)
+    MENU.outln(F("no flagged pulses"));
+}
+
+
+void selected_or_flagged_pulses_info_lines() {
+  int count=0;
+  for (int pulse=0; pulse<pl_max; ++pulse)
+    if (PULSES.pulses[pulse].flags || (PULSES.selected_pulses & (1 << pulse))) { // any flags || selected
+      pulse_info_1line(pulse);
+      count++;
+    }
+
+  if (count == 0) {
+    MENU.outln(F("no selected or flagged pulses"));
+    if(PULSES.selected_pulses)		// special feature ;)
+      PULSES.print_selected_mask();
+  }
+
+  MENU.ln();
+}
+
+
+/* **************************************************************** */
 // make an existing pulse to a jiffle thrower pulse:
 void en_jiffle_thrower(int pulse, unsigned int *jiffletab)
 {
@@ -2168,7 +2267,7 @@ void short_info() {
   PULSES.time_info();
 
   MENU.ln();
-  PULSES.selected_or_flagged_pulses_info_lines();
+  selected_or_flagged_pulses_info_lines();
 }
 
 
@@ -2236,7 +2335,7 @@ bool menu_pulses_reaction(char menu_input) {
     PULSES.time_info();
     MENU.ln();
     PULSES.maybe_show_selected_mask();
-    PULSES.selected_pulses_info_lines();
+    selected_pulses_info_lines();
     break;
 
   case ',':	// accept as noop in normal mode. used as delimiter to input data, displaying info. see 'menu_mode'
@@ -2294,7 +2393,7 @@ bool menu_pulses_reaction(char menu_input) {
     PULSES.maybe_show_selected_mask();
 
     if (MENU.maybe_display_more())
-      PULSES.selected_or_flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
 
     break;
 
@@ -2354,7 +2453,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      PULSES.selected_or_flagged_pulses_info_lines();			// *then* info ;)
+      selected_or_flagged_pulses_info_lines();			// *then* info ;)
     }
     // info_select_destination_with(false);	// DADA ################
     break;
@@ -2378,7 +2477,7 @@ bool menu_pulses_reaction(char menu_input) {
     MENU.ln();
     PULSES.time_info();
     MENU.ln();	// ################################################################
-    PULSES.flagged_pulses_info();
+    flagged_pulses_info();
     break;
 
   case 'M':	// "mute", no deactivate all clicks, see 'N'
@@ -2403,7 +2502,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	if (MENU.maybe_display_more()) {
 	  MENU.ln();
-	  PULSES.selected_or_flagged_pulses_info_lines();
+	  selected_or_flagged_pulses_info_lines();
 	}
       } else
 	MENU.outln_invalid();
@@ -2433,7 +2532,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	if (MENU.maybe_display_more()) {
 	  MENU.ln();
-	  PULSES.selected_or_flagged_pulses_info_lines();
+	  selected_or_flagged_pulses_info_lines();
 	}
       } else
 	MENU.outln_invalid();
@@ -2467,7 +2566,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	if (MENU.maybe_display_more()) {
 	  MENU.ln();
-	  PULSES.selected_or_flagged_pulses_info_lines();
+	  selected_or_flagged_pulses_info_lines();
 	}
       } else
 	MENU.outln_invalid();
@@ -2501,7 +2600,7 @@ bool menu_pulses_reaction(char menu_input) {
     }
 
     if (MENU.maybe_display_more()) {
-      PULSES.selected_or_flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
       MENU.ln();
     }
     break;
@@ -2510,7 +2609,7 @@ bool menu_pulses_reaction(char menu_input) {
     PULSES.reset_and_edit_selected();
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      PULSES.selected_or_flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
     break;
 
@@ -2520,7 +2619,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {	// *then* info ;)
       MENU.ln();
-      PULSES.selected_or_flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
     break;
 
@@ -2538,7 +2637,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {	// *then* info ;)
       MENU.ln();
-      PULSES.selected_or_flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
     break;
 
@@ -2552,7 +2651,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      PULSES.selected_pulses_info_lines();
+      selected_pulses_info_lines();
     }
 
     break;
@@ -2636,7 +2735,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      PULSES.selected_or_flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
 
     break;
@@ -2652,7 +2751,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      PULSES.selected_or_flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
 
     break;
@@ -2668,7 +2767,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      PULSES.selected_or_flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
 
     break;
@@ -2695,7 +2794,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      PULSES.selected_or_flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
     break;
 #endif	// #ifdef IMPLEMENT_TUNING	implies floating point
@@ -2711,7 +2810,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      PULSES.selected_or_flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
     break;
 
@@ -2806,7 +2905,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      PULSES.selected_or_flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
     break;
 
@@ -2818,7 +2917,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (MENU.maybe_display_more()) {
       MENU.ln();
-      PULSES.selected_or_flagged_pulses_info_lines();
+      selected_or_flagged_pulses_info_lines();
     }
     break;
 
@@ -2880,7 +2979,7 @@ bool menu_pulses_reaction(char menu_input) {
   case 'D':	// DADA debug
     MENU.outln(F("'D' 1"));
 
-    PULSES.pulse_info_1line(0);
+    pulse_info_1line(0);
 
     MENU.outln(F("'D' 2"));
     //    MENU.outln(HARMONICAL.harmonical_base);
@@ -3205,7 +3304,7 @@ bool menu_pulses_reaction(char menu_input) {
       prepare_magnets(inverse, voices, multiplier, divisor, sync);
 
       if (MENU.maybe_display_more()) {
-	PULSES.selected_or_flagged_pulses_info_lines();
+	selected_or_flagged_pulses_info_lines();
 	Press_toStart();
       }
       break;
@@ -3224,7 +3323,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E14", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.maybe_display_more())
-	PULSES.selected_or_flagged_pulses_info_lines();
+	selected_or_flagged_pulses_info_lines();
       break;
 
     case 15:
@@ -3241,7 +3340,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E15", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.verbosity >= VERBOSITY_SOME)
-	PULSES.selected_or_flagged_pulses_info_lines();
+	selected_or_flagged_pulses_info_lines();
       break;
 
     case 16:
@@ -3258,7 +3357,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E16 european_pent", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.verbosity >= VERBOSITY_SOME)
-	PULSES.selected_or_flagged_pulses_info_lines();
+	selected_or_flagged_pulses_info_lines();
       break;
 
     case 17:
@@ -3274,7 +3373,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E17 mimic japan", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.verbosity >= VERBOSITY_SOME)
-	PULSES.selected_or_flagged_pulses_info_lines();
+	selected_or_flagged_pulses_info_lines();
 
       break;
 
@@ -3301,7 +3400,7 @@ bool menu_pulses_reaction(char menu_input) {
       display_name5pars("E18 pentatonic minor", inverse, voices, multiplier, divisor, sync);
 
       if (MENU.verbosity >= VERBOSITY_SOME)
-	PULSES.selected_or_flagged_pulses_info_lines();
+	selected_or_flagged_pulses_info_lines();
 
       break;
 
@@ -3318,7 +3417,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if (MENU.maybe_display_more()) {
 	MENU.ln();
-	PULSES.selected_or_flagged_pulses_info_lines();
+	selected_or_flagged_pulses_info_lines();
       }
       break;
 #endif
@@ -3384,7 +3483,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if (MENU.maybe_display_more()) {		// *then* maybe info ;)
 	MENU.ln();
-	PULSES.selected_or_flagged_pulses_info_lines();
+	selected_or_flagged_pulses_info_lines();
       }
       break;
 

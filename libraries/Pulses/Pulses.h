@@ -199,14 +199,10 @@ class Pulses {
   float display_realtime_sec(struct time duration);	// display duration in seconds
   void display_real_ovfl_and_sec(struct time then);	//
   void print_period_in_time_units(int pulse);
-  void pulse_info_1line(int pulse);
-  void selected_pulses_info_lines();
-  void selected_or_flagged_pulses_info_lines();
 
   void reset_and_edit_selected();
   void print_selected_mask();				// show mask of selected pulses
   void maybe_show_selected_mask();			// maybe show that
-  void flagged_pulses_info();
   void set_time_unit_and_inform(unsigned long new_value);
 
   unsigned int get_pl_max() { return pl_max; }	// inlined

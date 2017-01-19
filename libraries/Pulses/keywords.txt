@@ -41,8 +41,6 @@ reset_and_edit_pulse	KEYWORD2
 setup_pulse_synced	KEYWORD2
 init_click_pulses	KEYWORD2
 print_period_in_time_units	KEYWORD2
-pulse_info_1line	KEYWORD2
-selected_pulses_info_lines	KEYWORD2
 pulse	KEYWORD2
 pl_max	KEYWORD2
 pulses	KEYWORD2
@@ -55,13 +53,9 @@ time_info	KEYWORD2
 display_realtime_sec	KEYWORD2
 display_real_ovfl_and_sec	KEYWORD2
 print_period_in_time_units	KEYWORD2
-pulse_info_1line	KEYWORD2
-selected_pulses_info_lines	KEYWORD2
-selected_or_flagged_pulses_info_lines	KEYWORD2
 reset_and_edit_selected	KEYWORD2
 print_selected_mask	KEYWORD2
 maybe_show_selected_mask	KEYWORD2
-flagged_pulses_info	KEYWORD2
 set_time_unit_and_inform	KEYWORD2
 selected_pulses	KEYWORD2
 MENU	KEYWORD2
