@@ -168,13 +168,13 @@ char PIN_digital = ILLEGAL;	// would be dangerous to default to zero
 char PIN_analog = 0;		// 0 is save as default for analog pins
 
 // Comment next line out if you do not want the analog2tone functionality:
-#define has_PIEZZO_SOUND
+#define has_ARDUINO_TONE
 
 #if defined(__SAM3X8E__) || defined(ESP32)
-  #undef has_PIEZZO_SOUND
+  #undef has_ARDUINO_TONE
 #endif
 
-#ifdef has_PIEZZO_SOUND
+#ifdef has_ARDUINO_TONE
 char PIN_tone = ILLEGAL;	// pin for tone output on a piezzo
 #endif
 
@@ -484,7 +484,7 @@ void bar_graph_VU(int pin) {
 }
 
 
-#ifdef has_PIEZZO_SOUND
+#ifdef has_ARDUINO_TONE
 /*
   analog2tone(int analogPIN, int PIN_tone):
   Simple acoustical feedback of analog readings using arduino tone()
@@ -553,7 +553,7 @@ void toggle_tone() {
       MENU.outln(F("off"));
   }
 }
-#endif // has_PIEZZO_SOUND
+#endif // has_ARDUINO_TONE
 
 
 /*
@@ -564,7 +564,7 @@ void maybe_run_continuous() {
   if (run_VU)
     bar_graph_VU(PIN_analog);
 
-#ifdef has_PIEZZO_SOUND
+#ifdef has_ARDUINO_TONE
   if(run_analog2tone)
     analog2tone(PIN_analog, PIN_tone);
 #endif
@@ -577,7 +577,7 @@ void maybe_run_continuous() {
 void stop_continuous() {	// unused
   run_VU=false;
   run_watch_dI=false;
-#ifdef has_PIEZZO_SOUND
+#ifdef has_ARDUINO_TONE
   if(run_analog2tone)
     toggle_tone();
 #endif
@@ -638,7 +638,7 @@ void _select_analog(bool key) {
   MENU.out(select_);
   MENU.out(F("analog"));
   MENU.out(pinFor);
-#ifdef has_PIEZZO_SOUND
+#ifdef has_ARDUINO_TONE
   MENU.out(F("'a, v, t'"));
 #else
   MENU.out(F("'a, v'"));
@@ -666,7 +666,7 @@ void softboard_display() {
   MENU.out((int) PIN_analog);
   MENU.outln(')');
 
-#ifdef has_PIEZZO_SOUND
+#ifdef has_ARDUINO_TONE
   MENU.out(F("watch over time:\tv=VU bar  r=read\tt=tone\tT=TonePIN ("));
   MENU.out(( int) PIN_tone);
   MENU.outln(F(")"));
@@ -822,7 +822,7 @@ bool softboard_reaction(char token) {
     break;
 
   case '+':
-#ifdef has_PIEZZO_SOUND
+#ifdef has_ARDUINO_TONE
     if (!run_VU && !run_analog2tone)
       return false;    // *only* responsible if (run_VU || run_analog2tone)
 
@@ -839,7 +839,7 @@ bool softboard_reaction(char token) {
     break;
 
   case '-':
-#ifdef has_PIEZZO_SOUND
+#ifdef has_ARDUINO_TONE
     if (!run_VU && !run_analog2tone)
       return false;    // *only* responsible if (run_VU || run_analog2tone)
 
@@ -870,7 +870,7 @@ bool softboard_reaction(char token) {
     }
     break;
 
-#ifdef has_PIEZZO_SOUND
+#ifdef has_ARDUINO_TONE
   case 't':
     toggle_tone();
     break;
