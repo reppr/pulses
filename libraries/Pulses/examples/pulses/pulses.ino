@@ -1657,7 +1657,6 @@ void selected_pulses_info_lines() {
     if (PULSES.selected_pulses & (1 << pulse)) {
       pulse_info_1line(pulse);
       count++;
-      MENU.outln(count);
     }
   }
 
