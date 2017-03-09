@@ -48,14 +48,15 @@ class Pulses;
     #undef USE_F_MACRO
   #endif
 
-#else	// *ARDUINO ONLY*
+#else	// NO GET_FREE_RAM on PC	(*ARDUINO ONLY*)
+
   // GET_FREE_RAM
   #ifdef GET_FREE_RAM
     #undef GET_FREE_RAM
     #warning GET_FREE_RAM *ARDUINO ONLY* #undef
   #endif
 
-#endif
+#endif	// ARDUINO or PC
 
 
 // use Arduino F() macro to save RAM or just a NOOP?
