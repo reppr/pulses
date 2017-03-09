@@ -458,23 +458,25 @@ bool Menu::maybe_display_more() {	// avoid too much output
    * when the menu does not know how to determine RAM properly.
    */
 
-  // FIXME: ESP8266 and ESP32 RAM functions?	################
-  #if defined(ESP8266) || defined(ESP32)
-    #undef GET_FREE_RAM
-  #endif
-  #if defined(GET_FREE_RAM) && ! defined(ESP8266)	// REAL free RAM functions:
-
-    /* int get_free_RAM(): determine free RAM on Arduino:		*/
-    int Menu::get_free_RAM() const {
-      int free;
-      extern int __bss_end;
-      extern void *__brkval;
-
-      if ((int) __brkval == 0)
-        return ((int) &free) - ((int) &__bss_end);
-      else
-        return ((int) &free) - ((int) __brkval);
-    }
+  #if defined(GET_FREE_RAM)		// REAL free RAM functions:
+    #if defined(ESP8266) || defined(ESP32)
+      /* int get_free_RAM(): determine free RAM on ESP8266 and ESP32:	*/
+      int Menu::get_free_RAM() const {
+	return ESP.getFreeHeap();
+      }
+    #else // ARDUINO, but not ESPxx
+      /* int get_free_RAM(): determine free RAM on ARDUINO:		*/
+      int Menu::get_free_RAM() const {
+        int free;
+        extern int __bss_end;
+        extern void *__brkval;
+  
+        if ((int) __brkval == 0)
+          return ((int) &free) - ((int) &__bss_end);
+        else
+          return ((int) &free) - ((int) __brkval);
+      }
+    #endif
 
     void Menu::print_free_RAM() const {
       out(F("free RAM:")); space(); out((int) get_free_RAM());
