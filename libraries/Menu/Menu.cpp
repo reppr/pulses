@@ -470,7 +470,7 @@ bool Menu::maybe_display_more() {	// avoid too much output
         int free;
         extern int __bss_end;
         extern void *__brkval;
-  
+
         if ((int) __brkval == 0)
           return ((int) &free) - ((int) &__bss_end);
         else
@@ -776,6 +776,27 @@ int Menu::restore_input_token() {	// restores last input token	only use if you *
   return cb_buf[cb_start];
 }
 
+
+void Menu::play_KB_macro(char *macro) {
+  outln("play_KB_macro");
+
+  for (char c=*macro++; c; c=*macro++) {
+    if (cb_is_full()) {
+      // Inform user:
+      if (verbosity) {
+	out(F("buffer "));
+	out_Error_();
+	OutOfRange();
+      }
+    } else {
+      cb_write(c);
+
+      if (echo_switch)	// echo input back to ouput?
+	out(c);		// *not* depending verbosity
+    }
+  }
+  //  cb_write('\n');
+}
 
 /* **************************************************************** */
 // lurk_then_do() main Menu user interface:
