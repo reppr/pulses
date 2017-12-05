@@ -252,6 +252,10 @@ void pin_info_digital(uint8_t pin) {
   #elif defined(__SAM3X8E__)	// FIXME: !!! ################
     #warning "I/O pin configuration info *not implemented on Arduino DUE yet*."
     MENU.out(F("(pin_info_digital() not implemented on DUE yet)"));
+    if (digitalRead(pin))
+     MENU.out(high_);
+    else
+      MENU.out(low_);
 
   #else		// old style Arduino hardware
   // see: <Arduino.h>
