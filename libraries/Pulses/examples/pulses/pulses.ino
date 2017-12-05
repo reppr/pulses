@@ -112,8 +112,10 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 
 
 /* **************************************************************** */
-uint8_t click_pin[CLICK_PULSES];
-
+// define uint8_t click_pin[CLICK_PULSES]
+#ifdef CLICK_PULSES
+  #include "pulses_CLICK_PIN_configuration.h"	// defines click_pin[]
+#endif
 
 /* **************************************************************** */
 #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
@@ -259,124 +261,14 @@ void setup() {
   MENU.add_page("pulses", 'P', \
 		&menu_pulses_display, &menu_pulses_reaction, 'P');
 
-#ifndef ESP32
   // add softboard page:
   softboard_page = MENU.add_page("Arduino Softboard", 'H',	\
 		&softboard_display, &softboard_reaction, 'H');
-#endif
 
   // display menu at startup:
   MENU.menu_display();
 
-
-  // setup pulses, click pulses first:	// FIXME: ################
   #ifdef CLICK_PULSES
-  /*
-    click_pin[0] = 13;		// configure PINs here	inbuilt LED
-
-    click_pin[1] = 2; 		// configure PINs here
-    click_pin[2] = 3; 		// configure PINs here
-    click_pin[3] = 4; 		// configure PINs here
-    click_pin[4] = 5; 		// configure PINs here
-    click_pin[5] = 6; 		// configure PINs here
-    click_pin[6] = 7; 		// configure PINs here
-  */
-
-    #ifdef ESP8266	// configure PINs here
-      /*
-        // on NodeMCU ESP8266 board Arduino defines digital pins
-        static const uint8_t D0   = 16;
-        static const uint8_t D1   = 5;
-        static const uint8_t D2   = 4;
-        static const uint8_t D3   = 0;
-        static const uint8_t D4   = 2;
-        static const uint8_t D5   = 14;
-        static const uint8_t D6   = 12;
-        static const uint8_t D7   = 13;
-        static const uint8_t D8   = 15;
-        static const uint8_t D9   = 3;
-        static const uint8_t D10  = 1;
-      */
-      // on ESP8266	// old 6 click  configuration:
-      //	click_pin[0] = D0;	// D0 = 16
-      //	click_pin[1] = D1;	// D1 = 5
-      //	click_pin[2] = D6;	// D6 = 12
-      //	click_pin[3] = D7;	// D7 = 13
-      //	click_pin[4] = D4;	// D4 = 2
-      //	click_pin[5] = D5;	// D5 = 14
-
-      // 8 clicks, using D1 to D8:
-      click_pin[0] = D1;	// D1 = 5
-      click_pin[1] = D2;	// D2 = 4
-      click_pin[2] = D3;	// D3 = 0
-      click_pin[3] = D4;	// D4 = 2	must be HIGH on boot	board blue led on LOW
-      click_pin[4] = D5;	// D5 = 14
-      click_pin[5] = D6;	// D6 = 12
-      click_pin[6] = D7;	// D7 = 13	LED?
-      click_pin[7] = D8;	// D8 = 15
-
-   #elif defined(__SAM3X8E__)			// Arduino DUE
-      click_pin[0] = 22;		// configure PINs here
-      click_pin[1] = 23; 		// configure PINs here
-      click_pin[2] = 24; 		// configure PINs here
-      click_pin[3] = 25; 		// configure PINs here
-      click_pin[4] = 26; 		// configure PINs here
-      click_pin[5] = 27; 		// configure PINs here
-      #if CLICK_PULSES > 6	// up to 8
-	click_pin[6] = 28; 		// configure PINs here
-	click_pin[7] = 29; 		// configure PINs here
-	#if CLICK_PULSES >8	// for a test with 16 clicks
-	  click_pin[8] = 30; 		// configure PINs here
-	  click_pin[9] = 31; 		// configure PINs here
-	  click_pin[10] = 32; 		// configure PINs here
-	  click_pin[11] = 33; 		// configure PINs here
-	  click_pin[12] = 34; 		// configure PINs here
-	  click_pin[13] = 35; 		// configure PINs here
-	  click_pin[14] = 36; 		// configure PINs here
-	  click_pin[15] = 37; 		// configure PINs here
-	  #if CLICK_PULSES >16	// for a test with 32 clicks
-	  click_pin[16] = 38; 		// configure PINs here
-	  click_pin[17] = 39; 		// configure PINs here
-	  click_pin[18] = 40; 		// configure PINs here
-	  click_pin[19] = 41; 		// configure PINs here
-	  click_pin[20] = 42; 		// configure PINs here
-	  click_pin[21] = 43; 		// configure PINs here
-	  click_pin[22] = 44; 		// configure PINs here
-	  click_pin[23] = 45; 		// configure PINs here
-	  click_pin[24] = 46; 		// configure PINs here
-	  click_pin[25] = 47; 		// configure PINs here
-	  click_pin[26] = 48; 		// configure PINs here
-	  click_pin[27] = 49; 		// configure PINs here
-	  click_pin[28] = 50; 		// configure PINs here
-	  click_pin[29] = 51; 		// configure PINs here
-	  click_pin[30] = 52; 		// configure PINs here
-	  click_pin[31] = 53; 		// configure PINs here
-	  #endif
-        #endif
-      #endif
-   #else // *not* on ESP8266 i.e. Arduino
-      click_pin[0] = 2;			// configure PINs here
-      click_pin[1] = 3; 		// configure PINs here
-      click_pin[2] = 4; 		// configure PINs here
-      click_pin[3] = 5; 		// configure PINs here
-      click_pin[4] = 6; 		// configure PINs here
-      click_pin[5] = 7; 		// configure PINs here
-      #if CLICK_PULSES > 6	// up to 8
-	click_pin[6] = 8; 		// configure PINs here
-	click_pin[7] = 9; 		// configure PINs here
-	#if CLICK_PULSES >8	// for a test with 16 clicks on the mega2560 ;)
-	  click_pin[8] = 10; 		// configure PINs here
-	  click_pin[9] = 11; 		// configure PINs here
-	  click_pin[10] = 12; 		// configure PINs here
-	  click_pin[11] = 13; 		// configure PINs here
-	  click_pin[12] = 14; 		// configure PINs here
-	  click_pin[13] = 15; 		// configure PINs here
-	  click_pin[14] = 16; 		// configure PINs here
-	  click_pin[15] = 17; 		// configure PINs here
-	#endif
-      #endif
-    #endif
-
     init_click_pins_OutLow();		// make them OUTPUT, LOW
   #endif
 
