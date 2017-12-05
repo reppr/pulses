@@ -1701,9 +1701,6 @@ void print_selected() {
 
 
 void info_select_destination_with(bool extended_destinations) {
-  MENU.out(F("pulses "));
-  MENU.out(PULSES.get_pl_max());
-  MENU.tab();
   MENU.out(F("SELECT DESTINATION for '= * / s K P n c j :' to work on:\t"));
   print_selected();
   MENU.out(F("select pulse with "));
@@ -1745,6 +1742,10 @@ int menu_mode=0;
 /* **************************************************************** */
 void menu_pulses_display() {
   MENU.outln(F("http://github.com/reppr/pulses/\n"));
+
+  MENU.out(F("pulses "));
+  MENU.out(PULSES.get_pl_max());
+  MENU.tab();
   MENU.outln(F("?=help\ti=info\t.=flagged info\t:=selected info"));
 
   MENU.ln();
@@ -1761,7 +1762,7 @@ void menu_pulses_display() {
   MENU.ln();
   MENU.out(F("s=switch pulse on/off"));
   MENU.tab();
-  MENU.out(F("M=deactivate all\tR=remove all\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tf=en-info\tF=en-INFO\tn=sync now\nS=sync "));
+  MENU.out(F("M=deactivate ALL\tR=remove ALL\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tN=en-noop\tf=en-info\tF=en-INFO\nS=sync\tn=sync now "));
   MENU.outln(sync);
 
   MENU.out(F("E=enter experiment (")); MENU.out(experiment); MENU.out(F(")"));
@@ -2155,16 +2156,17 @@ void setup_jiffles0(bool inverse, int voices, unsigned int multiplier, unsigned 
   multiplier=5;
   setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
 
-  if (voices>4) {
-    // 2*3*2*5	(the 4 needs only another multiplier of 2)
-    multiplier=2*3*2*5;
-    setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
+  multiplier=6;
+  setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
 
-    if (voices>5) {
-      multiplier=16;
-      setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
-    }
-  }
+//	  multiplier=8;
+//	  setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
+//
+//	  multiplier=9;
+//	  setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
+//
+//	  multiplier=10;
+//	  setup_jiffle_thrower_synced(when, unit, multiplier, divisor, sync, jiffletab0);
 
   PULSES.fix_global_next();
 }
@@ -2178,6 +2180,7 @@ void setup_jiffles0(bool inverse, int voices, unsigned int multiplier, unsigned 
   'reverse_click_pins()' works on the global click_pin[] array
  			 the pulses won't notice but play with new pin mapping */
 
+bool click_pins_inverted=false;
 void reverse_click_pins() {
   uint8_t scratch;
   for (int i=0, j=CLICK_PULSES-1; i<j; i++, j--) {
@@ -2185,6 +2188,8 @@ void reverse_click_pins() {
       click_pin[i]=click_pin[j];
       click_pin[j]=scratch;
   }
+
+  click_pins_inverted=!click_pins_inverted;
 }
 
 // ****************************************************************
@@ -3127,8 +3132,9 @@ bool menu_pulses_reaction(char menu_input) {
 
     case 3:
       sync=1;
-      multiplier=2;
+      multiplier=8;
       divisor=3;
+      reverse_click_pins();	// ################ FIXME: not here ################
 
       if (MENU.maybe_display_more()) {
 	// display_name5pars("setup_jiffles0", inverse, voices, multiplier, divisor, sync);
