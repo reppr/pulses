@@ -271,7 +271,7 @@ int softboard_page=-1;		// see: maybe_run_continuous()
 void setup() {
   Serial.begin(BAUDRATE);	// Start serial communication.
 
-#if defined(__AVR_ATmega32U4__) || defined(ESP8266)
+#if defined(__AVR_ATmega32U4__) || defined(ESP8266) || defined(ESP32)	// FIXME: test ESP32  ################
   /* on ATmega32U4		Leonardo, Mini, LilyPad Arduino USB
      to be able to use Serial.print() from setup()
      we *must* do that before:
@@ -411,7 +411,11 @@ void setup() {
 
 
 // stress_emergency:  looks like the value does not matter too much
+//#if defined(ESP32)	// ################ FIXME: ESP32 stress ################
+//unsigned int stress_emergency=4096*4096;	// high value seems appropriate
+//#else
 unsigned int stress_emergency=4096;	// high value seems appropriate
+//#endif
 unsigned int stress_count=0;
 
 void loop() {	// ARDUINO
@@ -3340,6 +3344,10 @@ bool menu_pulses_reaction(char menu_input) {
       // multiplier=8*4096;	// jiffle ting4096
       // divisor=9*1024;
       multiplier=32;	// reduced
+//#if defined(ESP32)	// used as test setup with 16 clicks
+// ################ FIXME: ESP32 16 click ################
+//      multiplier *= 4;
+//#endif
       divisor=9;	// reduced
       jiffle=ting4096;
 

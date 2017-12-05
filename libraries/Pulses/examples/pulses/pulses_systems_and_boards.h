@@ -1,7 +1,7 @@
 #ifndef PULSES_SYSTEMS_AND_BOARDS_H
 #define PULSES_SYSTEMS_AND_BOARDS_H
 
-#ifdef ARDUINO		// ARDUINO, ESP8266 and similar boards
+#ifdef ARDUINO		// ARDUINO, ESP32, ESP8266 and similar boards
   #define STREAMTYPE	Stream
 
   #if ARDUINO >= 100
@@ -14,12 +14,13 @@
   /* **************************************************************** */
   // Arduino board specific configutation:
   #if defined(ESP32)				// ESP32 :)
-    const int pl_max=64;
+    const int pl_max=32;
+// const int pl_max=64;	// FIXME: mask limitations ################
     #define JIFFLE_RAM_SIZE	256*3+1
     #define RATIOS_RAM_SIZE	256*2+1
     // must be defined before including Pulses
     #define IMPLEMENT_TUNING		// needs float
-    #undef USE_F_MACRO			// F() does not work here
+    #undef USE_F_MACRO			// F() does not work here, FIXME: see also Menu.h
 
   #elif defined(ESP8266)			// ESP8266: "a lot of RAM"
     const int pl_max=32;
@@ -54,7 +55,10 @@
 
   // default number of CLICK_PULSES controlling an associated hardware pin each
   #ifndef CLICK_PULSES
-    #if defined(ESP8266)		// ESP8266: "a lot of RAM"
+    #if defined(ESP32)			// ESP32: many pins, a lot of RAM :)
+      #define CLICK_PULSES	8
+//      #define CLICK_PULSES	16	//  ################ FIXME: 16 pulses on ESP32 broken
+    #elif defined(ESP8266)		// ESP8266: "a lot of RAM", 8 pins
       #define CLICK_PULSES	8
     #elif defined(__AVR_ATmega2560__)
       #define CLICK_PULSES	16      // mega2560 test with 16 pins ;)
