@@ -673,7 +673,11 @@ float Pulses::display_realtime_sec(struct time duration) {
   // seconds += overflow_sec * (float) ((signed long) duration.overflow);	// FIXME: overflow
 
   float scratch = 1000.0;
-  while (scratch > max(abs(seconds), (float) 1.0)) {	// (float) for Linux PC tests
+  float limit = abs(seconds);
+  if (limit < (float) 1.0)	// (float) was once needed for Linux PC tests
+    limit = 1.0;
+
+  while (scratch > limit) {
     (*MENU).space();
     scratch /= 10.0;
   }
@@ -694,7 +698,11 @@ void Pulses::print_period_in_time_units(int pulse) {
   (*MENU).out(F("pulse "));
 
   float scratch = 1000.0;
-  while (scratch > max(time_units, (float) 1.0)) {
+  float limit = time_units;
+  if (limit < (float) 1.0)	// (float) was once needed for Linux PC tests
+    limit = 1.0;
+
+  while (scratch > limit) {
     (*MENU).space();
     scratch /= 10.0;
   }
@@ -724,7 +732,9 @@ void Pulses::reset_and_edit_selected() {	// FIXME: replace
 
 
 void Pulses::print_selected_mask() {
-  const int hex_pulses=min(pl_max,16);  // displayed as hex chiffres
+  int hex_pulses=pl_max;// displayed as hex chiffres
+  if (hex_pulses > 16)
+    hex_pulses=16;
 
   if((*MENU).is_chiffre((*MENU).cb_peek()))	// more numeric input, so no display yet...
     return;
