@@ -281,6 +281,15 @@ char Menu::cb_read() {
   void Menu::equals() const { port_.print('='); }	// Output char '='
   void Menu::slash() const { port_.print('/'); }	// Output char '/'
 
+  void Menu::IPstring(int ip) const {			// Output an IP as 192.168.1.2
+    for(int i=0; i<4; i++) {
+      port_.print(ip & 0xff);
+      ip >>= 8;
+      if (i<3)
+	port_.print('.');
+    }
+  }
+
 
 bool Menu::maybe_display_more() {	// avoid too much output
   /* output control, avoid errors caused by serial menu output

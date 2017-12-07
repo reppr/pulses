@@ -230,7 +230,9 @@ class Menu {
   void equals()	const;		// output char '='
   void slash()	const;		// output char '/'
 
-  /* Output Control						*/
+  void IPstring(int ip) const;	// output an ip like "192.168.0.1"
+
+/* Output Control						*/
   bool maybe_display_more();	// avoid too much output
 
 /* Input							*/
