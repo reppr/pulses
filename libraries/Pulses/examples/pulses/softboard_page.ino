@@ -59,7 +59,7 @@
 
 /*
   >>>>>>>>>>>>>>>> PUT this *BEFORE*  Arduino loop() <<<<<<<<<<<<<<<<
-  void maybe_run_continuous();	// defined later on
+  bool maybe_run_continuous();	// defined later on
   >>>>>>>>>>>>>>>> PUT this *BEFORE*  Arduino loop() <<<<<<<<<<<<<<<<
 */
 
@@ -326,18 +326,23 @@ void watch_digital_start(uint8_t pin) {
 }
 
 
-void watch_digital_input(int pin) {
+bool watch_digital_input(int pin) {	// return if there was *output*
   int value=digitalRead(PIN_digital);
 
   if (value != watch_seen) {
     watch_seen = value;
+
     MENU.out(F("*D"));  MENU.out((int) pin);
     MENU.tab();
     if (value)
       MENU.outln(high_);
     else
       MENU.outln(low_);
+
+    return true;	// there was *output*
   }
+
+  return false;		// only mandatory digital read, but *no output*
 }
 
 
@@ -464,7 +469,7 @@ void toggle_VU() {
 }
 
 /*
-  bar_graph_VU(pin):
+  bool bar_graph_VU(pin):
   Continuous display changes exceeding a tolerance on an analogue input.
   Display a scrolling bar graph over the readings.
   A new line is displayed as soon as the reading changes for more
@@ -473,8 +478,9 @@ void toggle_VU() {
   tolerance can be changed by sending '+' or '-'
 
   run-through, don't wait...
+  returns true, if there was *output*
 */
-void bar_graph_VU(int pin) {
+bool bar_graph_VU(int pin) {	// return true, if there was output
   int value;
 
   value =  analogRead(pin);
@@ -484,13 +490,17 @@ void bar_graph_VU(int pin) {
     MENU.tab();
     bar_graph(value);
     VU_last = value;
+
+    return true; // there was *output*  			 return true;
   }
+
+  return false;  // analog read *had to be done*, but no output	 return false;
 }
 
 
 #ifdef has_ARDUINO_TONE
 /*
-  analog2tone(int analogPIN, int PIN_tone):
+  bool analog2tone(int analogPIN, int PIN_tone):
   Simple acoustical feedback of analog readings using arduino tone()
 
   This very simple version is probably not compatible with pulses.
@@ -498,6 +508,8 @@ void bar_graph_VU(int pin) {
   Arduino tone() gives me some garbage below 32hz and is unusable below 16hz
   So analog2tone switches tone off for analog reading 0 and
   adds an offset of 31hz starting from analog reading 1.
+
+  returns true  if an analog read had to be taken which might trigger tone change and output
 */
 bool run_analog2tone = false;
 
@@ -509,35 +521,42 @@ int lastToneReading = -1;
 const int unusable_tones = 31;		// tone() plays some garbage below 32hz :(
 // const int unusable_tones = 15;	// tone() plays garbage below 16hz :(
 
-void analog2tone(int analogPIN, int PIN_tone) {
-  if (PIN_tone == ILLEGAL)
-    return;
+bool analog2tone(int analogPIN, int PIN_tone) {
+  if (PIN_tone == ILLEGAL)		// ILLEGAL *pin*	return false;
+    return false;
 
   static unsigned long lastToneTime = 0;
   unsigned long now = millis();
 
-  if (now - lastToneTime >= analog2tone_timeInterval) {
-    lastToneTime = now;
+  if (! now - lastToneTime >= analog2tone_timeInterval)
+      return false;		// not the right *time* yet	return false;
 
-    int ToneReading=analogRead(analogPIN);
-    if (abs(ToneReading - lastToneReading) > analog2tone_tolerance) {
-      lastToneReading = ToneReading;
+  // time to take a reading and check
+  lastToneTime = now;
+  int ToneReading=analogRead(analogPIN);
+  if (!abs(ToneReading - lastToneReading) > analog2tone_tolerance)
+    return false;		// inside *tolerance*		return false;
 
-      // unsigned int hz = ToneReading*1;	// arbitrary factor
-      unsigned int hz = ToneReading;		// arbitrary factor==1
-      // arduino tone() delivers garbage below 16hz,
-      // so we mend that a bit:
-      if(hz) {
-	hz += unusable_tones;	// start at lowest ok tone=16hz)
-	tone(PIN_tone, hz);
-      } else			// switch tone off for zero
-	noTone(PIN_tone);
-      if(MENU.verbosity >= VERBOSITY_CHATTY) {
-	MENU.out(F("tone hz="));
-	MENU.outln(hz);
-      }
-    }
+  lastToneReading = ToneReading;
+
+  // unsigned int hz = ToneReading*1;	// arbitrary factor
+  unsigned int hz = ToneReading;		// arbitrary factor==1
+
+  // ################ FIXME: make Arduino tone mending a compile time option ################
+  // arduino tone() delivers garbage below 16hz,
+  // so we mend that a bit:
+  if(hz) {
+    hz += unusable_tones;	// start at lowest ok tone=16hz)
+    tone(PIN_tone, hz);
+  } else			// switch tone off for zero
+    noTone(PIN_tone);
+
+  if(MENU.verbosity >= VERBOSITY_CHATTY) {
+    MENU.out(F("tone hz="));
+    MENU.outln(hz);
   }
+
+  return true;			// something done (at least an analog reading)
 }
 
 
@@ -561,20 +580,27 @@ void toggle_tone() {
 
 
 /*
-  void maybe_run_continuous():
-  Check if to continuously show/sound analog/digital input changes:
+  bool maybe_run_continuous():
+  Check if to continuously show/sound analog/digital input changes
+
+  return true  if any time consuming action like menu output was done
 */
-void maybe_run_continuous() {
+bool maybe_run_continuous() {
   if (run_VU)
-    bar_graph_VU(PIN_analog);
+    if (bar_graph_VU(PIN_analog))
+      return true;		// there was *output*
 
 #ifdef has_ARDUINO_TONE
   if(run_analog2tone)
-    analog2tone(PIN_analog, PIN_tone);
+    if(analog2tone(PIN_analog, PIN_tone))
+      return true;		// *tone* changed and *output*
 #endif
 
   if (run_watch_dI)
-    watch_digital_input(PIN_digital);
+    if (watch_digital_input(PIN_digital))
+      return true;		// there was *output*
+
+  return false;
 }
 
 

@@ -44,6 +44,19 @@ using namespace std;	// ESP8266 needs that
 
 #include "pulses_systems_and_boards.h"
 
+#ifdef USE_WIFI_telnet_menu
+  // put your WLAN ssid and password here:
+  const char* ssid     = "WLAN_SSID";
+  const char* password = "topSecret7";
+
+  //  //how many clients should be able to telnet to this ESP8266
+  //  #define MAX_SRV_CLIENTS 1
+  //  WiFiClient server_client[MAX_SRV_CLIENTS];
+  WiFiClient server_client;
+
+  WiFiServer telnet_server(23);
+#endif
+
 // class Pulses;
 class Menu;
 
@@ -59,13 +72,25 @@ class Menu;
 #ifdef ARDUINO	// FIXME: why doesn't it work from pulses_systems_and_boards.h???
   #define MENU_OUTSTREAM	Serial
 
-  int men_getchar() {
-    if (!Serial.available())	// ARDUINO
+  #ifndef USE_WIFI_telnet_menu	// serial menu only
+    int men_getchar() {
+      if (!Serial.available())	// ARDUINO
+        return EOF;
+
+      return Serial.read();
+
+    }
+  #else				// serial *and* WLAN menu
+    int men_getchar() {
+      if (Serial.available())
+        return Serial.read();
+
+      if (server_client && server_client.connected() && server_client.available())
+	return server_client.read();
+
       return EOF;
-
-    return Serial.read();
-
-  }
+    }
+  #endif
 #endif
 
 /* BAUDRATE for Serial:	uncomment one of the following lines:	*/
@@ -258,6 +283,84 @@ int voices=CLICK_PULSES;
 #endif
 
 
+#ifdef USE_WIFI_telnet_menu
+// see: WiFi Telnet Server for Serial Monitor use - provided #1169
+//      https://github.com/esp8266/Arduino/issues/1169
+
+// strings for WiFi status
+const char *str_status[]= {
+  "WL_IDLE_STATUS",
+  "WL_NO_SSID_AVAIL",
+  "WL_SCAN_COMPLETED",
+  "WL_CONNECTED",
+  "WL_CONNECT_FAILED",
+  "WL_CONNECTION_LOST",
+  "WL_DISCONNECTED"
+};
+
+// strings for WiFi mode
+const char *str_mode[]= { "WIFI_OFF", "WIFI_STA", "WIFI_AP", "WIFI_AP_STA" };
+
+
+bool connectWifi() {
+  MENU.out("connecting WiFi to SSID: ");
+  MENU.out(ssid); MENU.tab();
+
+  // use in case of mode problem
+  WiFi.disconnect();
+  // switch to Station mode
+  if (WiFi.getMode() != WIFI_STA) {
+    WiFi.mode(WIFI_STA);
+  }
+
+  WiFi.begin (ssid, password);
+  // WiFi.printDiag(Serial);	// debugging
+
+  // 10 seconds to establish connection
+  unsigned long startTime = millis();
+  while (WiFi.status() != WL_CONNECTED && millis() - startTime < 10000) {
+    delay(333);
+    MENU.out(".");
+  }
+  // Check connection
+  if (WiFi.status() == WL_CONNECTED) {
+    MENU.outln(" connected");
+    MENU.out("IP address: ");
+    MENU.IPstring(WiFi.localIP());
+    MENU.tab();
+    return true;	// connected :)
+  }
+
+  // failed:
+  MENU.outln("connect FAILED");
+  return false;
+}  // connectWiFi()
+
+
+bool setup_wifi_telnet() {
+  if(! connectWifi())
+    return false;
+
+  if (WiFi.status() == WL_CONNECTED) {
+    MENU.out("WiFi mode: ");
+    MENU.out(str_mode[WiFi.getMode()]);
+    MENU.out("\tstatus: " );
+    MENU.outln (str_status[WiFi.status()]);
+
+    telnet_server.begin();
+    telnet_server.setNoDelay(true);
+    MENU.out("\nWLAN MENU  telnet ");
+    MENU.IPstring(WiFi.localIP());
+    MENU.outln(" port 23");
+
+    return true;
+  } else
+    MENU.outln("WiFi connect FAILED.");
+  return false;
+}
+#endif // USE_WIFI_telnet_menu
+
+
 /* **************************************************************** */
 #ifdef ARDUINO
 /* Arduino setup() and loop():					*/
@@ -282,6 +385,41 @@ void setup() {
 
   MENU.outln(F("http://github.com/reppr/pulses/\n"));
 
+// ################ FIXME: not here ################
+//#if defined(ESP8266) || defined(ESP32)		// show ESP chip id
+//  delay(1500);	// ################ FIXME: ################
+//  MENU.out("ESP chip ID: 0x");
+//  Serial.println(ESP.getChipId(), HEX);
+//#endif
+
+#ifdef USE_WIFI_telnet_menu
+  setup_wifi_telnet();
+#else // WiFi not in use, switch it off:
+
+  #if defined(ESP8266) || defined(ESP32)	// ################ FIXME: test ################
+    MENU.outln("switch WiFi off");
+
+    #ifdef WIFI_OFF_hackster
+      // see: https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
+      WiFi.forceSleepBegin();                  // turn off ESP8266 RF
+      delay(1);                                // give RF section time to shutdown
+
+      #ifdef FREQUENCY
+        system_update_cpu_freq(FREQUENCY);
+      #endif
+    #endif
+
+    #ifdef WIFI_OFF_mysensors
+      // see:	https://forum.mysensors.org/topic/5120/esp8266-with-wifi-off/3
+      WiFi.disconnect();
+      WiFi.mode(WIFI_OFF);
+      WiFi.forceSleepBegin();
+      delay(1);
+    #endif
+  #endif	// ESP8266
+#endif // to WiFi or not
+
+  MENU.ln();
   MENU.out(F("sizeof(pulse_t) "));
   MENU.out(sizeof(pulse_t));
   MENU.out(F(" * "));
@@ -307,30 +445,9 @@ void setup() {
     init_click_pins_OutLow();		// make them OUTPUT, LOW
   #endif
 
-  // ESP8266: switch WiFi OFF
-  #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
-    #ifdef WIFI_OFF_hackster
-      // see: https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
-      WiFi.forceSleepBegin();                  // turn off ESP8266 RF
-      delay(1);                                // give RF section time to shutdown
-
-      #ifdef FREQUENCY
-	system_update_cpu_freq(FREQUENCY);
-      #endif
-    #endif
-
-    #ifdef WIFI_OFF_mysensors
-      // see:	https://forum.mysensors.org/topic/5120/esp8266-with-wifi-off/3
-      WiFi.disconnect();
-      WiFi.mode(WIFI_OFF);
-      WiFi.forceSleepBegin();
-      delay(1);
-    #endif
+  #ifdef IMPLEMENT_TUNING		// implies floating point
+    PULSES.ticks_per_octave = ticks_per_octave;
   #endif
-
-#ifdef IMPLEMENT_TUNING		// implies floating point
-  PULSES.ticks_per_octave = ticks_per_octave;
-#endif
 
   // time and pulses *must* get initialized before setting up pulses:
   PULSES.init_time();		// start time
@@ -410,6 +527,81 @@ void setup() {
 }
 
 
+// bool lower_priority_tasks();
+// check lower priority tasks and do the first one that needs to be done
+// return true if something was done
+bool third_priority_tasks() {
+
+#ifdef IMPLEMENT_TUNING		// tuning, sweeping priority below menu		*implies floating point*
+  tuning = PULSES.tuning;	// FIXME: workaround for having all 3 sweep implementations in parallel
+  if (maybe_stop_sweeping())		// low priority control sweep range
+    return true;
+
+  if(maybe_display_tuning_steps())	// low priority tuning steps info
+    return true;
+#endif
+
+  if (maybe_run_continuous())	        // even lower priority: maybe display input state changes.
+    return true;
+
+  return false;
+}
+
+
+bool lowest_priority_tasks() {
+
+#ifdef USE_WIFI_telnet_menu
+// ################ FIXME: cleanup old code ################
+  // check telnet connection
+//  MENU.out("check TELNET:	");
+
+  // look for telnet client connect trial
+//	  MENU.out("telnet server ");
+//	  if (telnet_server.available())
+//	    MENU.out("running	");
+//	  else {
+//	    MENU.out("trying to start	");
+//	    telnet_server.begin();
+//	    telnet_server.setNoDelay(true);
+//	//    delay(1000);
+//	    if (telnet_server.available()) {
+//	      MENU.out("OK	");
+//	//      delay(8000);
+//	    }
+//	    else
+//	      MENU.out("still dead 	");
+//	    }
+
+  if (telnet_server.hasClient()) {
+    MENU.out("telnet client	");
+
+    // ################  FIXME: something sends "exit" to the menu ;)  ################
+    if (!server_client || !server_client.connected()) {
+      if (server_client) {
+	MENU.out("server_client.stop()\t");
+	server_client.stop();
+      }
+      server_client = telnet_server.available();
+      server_client.flush();
+      MENU.out("new telnet client	");
+    }
+// don't know about 'else', runs well without:
+//	    else
+//	      {
+//		MENU.outln("telnet client disconnect");
+//		//      server_client.flush();
+//		telnet_server.available().stop();
+//	      }
+
+    MENU.ln();
+  }
+#endif // USE_WIFI_telnet_menu
+
+  return false;		// ################ FIXME: return values ################
+}
+
+
+
 // stress_emergency:  looks like the value does not matter too much
 //#if defined(ESP32)	// ################ FIXME: ESP32 stress ################
 //unsigned int stress_emergency=4096*4096;	// high value seems appropriate
@@ -452,17 +644,11 @@ void loop() {	// ARDUINO
     }
   }
 
-  if(! MENU.lurk_then_do()) {		// MENU comes second in priority.
-      // if MENU had nothing to do, then:	// 3rd priority
-#ifdef IMPLEMENT_TUNING		// tuning, sweeping priority below menu		*implies floating point*
-      tuning = PULSES.tuning;	// FIXME: workaround for having all 3 sweep implementations in parallel
-      if (!maybe_stop_sweeping())		// low priority control sweep range
-	if(! maybe_display_tuning_steps())	// low priority tuning steps info
-	  maybe_run_continuous();	// lowest priority: maybe display input state changes.
-#else	// no tuning:
-      maybe_run_continuous();		// lowest priority: maybe display input state changes.
-#endif
-  } // no menu action
+  // descend through priorities and do first thing found
+  if(! MENU.lurk_then_do())		// MENU second in priority, check if something to do,
+    if (! third_priority_tasks())	// if not, check third_priority_tasks()
+      lowest_priority_tasks();		// if still nothing done, check lowest_priority_tasks()
+
 } // ARDUINO loop()
 
 #else		// c++ Linux PC test version

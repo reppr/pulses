@@ -22,12 +22,16 @@
     #define IMPLEMENT_TUNING		// needs float
     #undef USE_F_MACRO			// F() does not work here, FIXME: see also Menu.h
 
+    #define USE_WIFI_telnet_menu	// use WIFI as menu over telnet?
+
   #elif defined(ESP8266)			// ESP8266: "a lot of RAM"
     const int pl_max=32;
     #define JIFFLE_RAM_SIZE	256*3+1
     #define RATIOS_RAM_SIZE	256*2+1
     // must be defined before including Pulses
     #define IMPLEMENT_TUNING		// needs float
+
+    #define USE_WIFI_telnet_menu	// use WIFI as menu over telnet?
 
   #elif defined(__SAM3X8E__)			// Arduino DUE
     const int pl_max=64;
@@ -53,7 +57,14 @@
     const int pl_max=16;
   #endif
 
-  // default number of CLICK_PULSES controlling an associated hardware pin each
+
+// do we need WiFi?
+  #ifdef USE_WIFI_telnet_menu	// use WIFI as menu over telnet?
+     #include <ESP8266WiFi.h>
+  #endif
+
+
+// default number of CLICK_PULSES controlling an associated hardware pin each
   #ifndef CLICK_PULSES
     #if defined(ESP32)			// ESP32: many pins, a lot of RAM :)
       #define CLICK_PULSES	8
