@@ -34,10 +34,11 @@
   #warning Using Stream MACRO HACK when not on ARDUINO!
 #endif
 
-Menu::Menu(int bufSize, int menuPages, int (*maybeInput)(void), Stream & port):
+Menu::Menu(int bufSize, int menuPages, int (*maybeInput)(void), Stream & port, Stream & port2):
   cb_size(bufSize),
   maybe_input(maybeInput),
   port_(port),
+  port2_(port2),
   men_max(menuPages),
   cb_start(0),
   cb_count(0),
@@ -167,15 +168,28 @@ char Menu::cb_read() {
     This version definines the menu INPUT routine int men_getchar();
     in the *program* not inside the Menu class.
   */
-  //	/* int men_getchar();		// ARDUINO version
-  //	   Read next char of menu input, if available.
-  //	   Does not block, returns EOF or char.			*/
-  //	int Menu::men_getchar() {		// ARDUINO version
-  //	  if (!Serial.available())
-  //	    return EOF;
-  //
-  //	  return Serial.read();
-  //	}
+
+  /*
+    #ifndef USE_WIFI_telnet_menu	// serial menu only
+      int men_getchar() {
+        if (!Serial.available())	// ARDUINO
+          return EOF;
+
+        return Serial.read();
+
+      }
+    #else				// serial *and* WLAN menu
+      int men_getchar() {
+        if (Serial.available())
+          return Serial.read();
+
+        if (server_client && server_client.connected() && server_client.available())
+  	return server_client.read();
+
+        return EOF;
+      }
+    #endif
+  */
 
 
   #ifndef BAUDRATE
@@ -189,33 +203,51 @@ char Menu::cb_read() {
 
 
   /* void Menu::out(); overloaded menu output function family:	*/
+
+// #define MEN_OUT(X)  ( port_.print((X)); port2_.print((X)) )	//  embedded ';' does not work
+// see: https://wiki.sei.cmu.edu/confluence/display/c/PRE10-C.+Wrap+multistatement+macros+in+a+do-while+loop
+//      see: Compliant Solution
+//      do { ... } while (0)     keep preprocessor happy ;)
+
+#define MENU_OUT(X) \
+  do { \
+    port_.print((X)); \
+    port2_.print((X)); \
+  } while (0)
+
+#define MENU_OUTln(X) \
+  do { \
+    port_.println((X)); \
+    port2_.println((X)); \
+  } while (0)
+
   // Simple versions  void Menu::out():
-  void Menu::out(const char c)		const	{ port_.print(c); }	// ARDUINO
-  void Menu::out(const int i)		const	{ port_.print(i); }
-  void Menu::out(const long l)		const	{ port_.print(l); }
-  void Menu::out(const char *str)	const	{ port_.print(str); }
+  void Menu::out(const char c)		const	{ MENU_OUT(c); }	// ARDUINO
+  void Menu::out(const int i)		const	{ MENU_OUT(i); }
+  void Menu::out(const long l)		const	{ MENU_OUT(l); }
+  void Menu::out(const char *str)	const	{ MENU_OUT(str); }
 #ifndef INTEGER_ONLY
-  void Menu::out(const double d)	const	{ port_.print(d); }
+  void Menu::out(const double d)	const	{ MENU_OUT(d); }
 #endif
 
   // unsigned versions:
-  void Menu::out(const unsigned char c)	const	{ port_.print(c); }
-  void Menu::out(const unsigned int i)	const	{ port_.print(i); }
-  void Menu::out(const unsigned long l)	const	{ port_.print(l); }
+  void Menu::out(const unsigned char c)	const	{ MENU_OUT(c); }
+  void Menu::out(const unsigned int i)	const	{ MENU_OUT(i); }
+  void Menu::out(const unsigned long l)	const	{ MENU_OUT(l); }
 
   // End of line versions  void outln():
-  void Menu::outln(const char c)	const	{ port_.println(c); }
-  void Menu::outln(const int i)		const	{ port_.println(i); }
-  void Menu::outln(const long l)	const	{ port_.println(l); }
-  void Menu::outln(const char *str)	const	{ port_.println(str); }
+  void Menu::outln(const char c)	const	{ MENU_OUTln(c); }
+  void Menu::outln(const int i)		const	{ MENU_OUTln(i); }
+  void Menu::outln(const long l)	const	{ MENU_OUTln(l); }
+  void Menu::outln(const char *str)	const	{ MENU_OUTln(str); }
 #ifndef INTEGER_ONLY
-  void Menu::outln(const double d)	const	{ port_.println(d); }
+  void Menu::outln(const double d)	const	{ MENU_OUTln(d); }
 #endif
 
   // unsigned versions:
-  void Menu::outln(const unsigned char c)	const	{ port_.println(c); }
-  void Menu::outln(const unsigned int i)	const	{ port_.println(i); }
-  void Menu::outln(const unsigned long l)	const	{ port_.println(l); }
+  void Menu::outln(const unsigned char c)	const	{ MENU_OUTln(c); }
+  void Menu::outln(const unsigned int i)	const	{ MENU_OUTln(i); }
+  void Menu::outln(const unsigned long l)	const	{ MENU_OUTln(l); }
 
   // Print a value and pad with spaces to field width 'pad'.
   // At least one space will always be printed.
@@ -241,24 +273,31 @@ char Menu::cb_read() {
 #ifdef USE_F_MACRO
   // *DO* use Arduino F() MACRO for string output to save RAM:
   void Menu::out(const __FlashStringHelper* str) const {
-    port_.print(str);
+    MENU_OUT(str);
   }
 
   // End of line version:
   // Arduino F() macro: outln(F("string");
   void Menu::outln(const __FlashStringHelper* str) const {
-    port_.println(str);
+    MENU_OUTln(str);
   }
 #endif
 
   void Menu::out(const float f, int places)	const {	// formatted float output
+//    char c[16];
+//    sprintf(c, "%g", places);  // as the macro takes one argument convert to a string first
+//    MENU_OUT(c);
+//    MENU_OUT((f, places));
+
+    // ################ FIXME: use macro MENU_OUT(); ################
     port_.print(f, places);
+    port2_.print(f, places);
   }
 
 
   /* void ticked(char c)	Char output with ticks like 'A'	*/
   void Menu::ticked(const char c) const {
-    port_.print("'"); port_.print(c); port_.print("'");
+    MENU_OUT((char) 39); MENU_OUT(c); MENU_OUT((char) 39);
   }
 
 
@@ -275,18 +314,18 @@ char Menu::cb_read() {
 
   /* Output a newline, tab, space, '='
      ln(), tab(), space(), equals():			*/
-  void Menu::ln()     const { port_.println(); }	// Output a newline
-  void Menu::tab()    const { port_.print('\t'); }	// Output a tab
-  void Menu::space()  const { port_.print(' '); }	// Output a space
-  void Menu::equals() const { port_.print('='); }	// Output char '='
-  void Menu::slash() const { port_.print('/'); }	// Output char '/'
+  void Menu::ln()     const { MENU_OUT('\n'); }	// Output a newline
+  void Menu::tab()    const { MENU_OUT('\t'); }	// Output a tab
+  void Menu::space()  const { MENU_OUT(' '); }	// Output a space
+  void Menu::equals() const { MENU_OUT('='); }	// Output char '='
+  void Menu::slash()  const { MENU_OUT('/'); }	// Output char '/'[1~
 
   void Menu::IPstring(int ip) const {			// Output an IP as 192.168.1.2
     for(int i=0; i<4; i++) {
-      port_.print(ip & 0xff);
+      MENU_OUT(ip & 0xff);
       ip >>= 8;
       if (i<3)
-	port_.print('.');
+	MENU_OUT('.');
     }
   }
 

@@ -118,7 +118,7 @@ class Menu {
 /* high level API:							*/
 
   // construct a Menu:
-  Menu(int size, int menuPages, int (*maybeInput)(void), STREAMTYPE & port);
+  Menu(int size, int menuPages, int (*maybeInput)(void), STREAMTYPE & port, STREAMTYPE & port2);
 
   // "run-through" routine for main loop:
   bool lurk_then_do(void);
@@ -291,7 +291,8 @@ class Menu {
   void cb_write(char value);	// save a byte in buffer,  no checks
   char cb_read();		// get oldest byte from the buffer.
 				//   does *not* check if buffer is empty.
-  STREAMTYPE & port_;		// output stream
+  STREAMTYPE & port_;		// output stream	Serial
+  STREAMTYPE & port2_;		// output stream2	WiFi telnet client
   bool echo_switch;		// switch echo of input to output
 
   // Menu pages:

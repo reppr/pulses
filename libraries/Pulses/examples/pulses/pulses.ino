@@ -55,7 +55,7 @@ using namespace std;	// ESP8266 needs that
   WiFiClient server_client;
 
   WiFiServer telnet_server(23);
-#endif
+#endif //  USE_WIFI_telnet_menu
 
 // class Pulses;
 class Menu;
@@ -71,6 +71,10 @@ class Menu;
 */
 #ifdef ARDUINO	// FIXME: why doesn't it work from pulses_systems_and_boards.h???
   #define MENU_OUTSTREAM	Serial
+
+  #ifdef USE_WIFI_telnet_menu
+    #define MENU_OUTSTREAM2	server_client
+  #endif
 
   #ifndef USE_WIFI_telnet_menu	// serial menu only
     int men_getchar() {
@@ -115,7 +119,7 @@ class Menu;
   }
 #endif
 
-Menu MENU(32, 3, &men_getchar, MENU_OUTSTREAM);
+Menu MENU(32, 3, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
 
 
 /* **************** Pulses **************** */
