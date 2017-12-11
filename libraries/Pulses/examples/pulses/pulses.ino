@@ -45,11 +45,15 @@ using namespace std;	// ESP8266 needs that
 #include "pulses_systems_and_boards.h"
 
 #ifdef USE_WIFI_telnet_menu
-  // put your WLAN ssid and password here:
-  const char* ssid     = "WLAN_SSID";
-  const char* password = "topSecret7";
+  // ***EITHER*** put your WLAN ssid and password in next 2 lines and uncomment:
 
-  //  //how many clients should be able to telnet to this ESP8266
+const char* ssid     = "WLAN_SSID";
+const char* password = "topSecret77";
+
+  // *** OR *** comment out above 2 lines,  put that stuff in a file and #include it:
+// #include "/home/dada/WiFi-credentials.h"	// let the name be <something>.h
+
+  //  // how many clients should be able to telnet to this ESP8266
   //  #define MAX_SRV_CLIENTS 1
   //  WiFiClient server_client[MAX_SRV_CLIENTS];
   WiFiClient server_client;
@@ -74,6 +78,28 @@ class Menu;
 
   #ifdef USE_WIFI_telnet_menu
     #define MENU_OUTSTREAM2	server_client
+
+// for another possible implementation see:
+//	    // see:  http://wordaligned.org/articles/cpp-streambufs  tee
+//	    #undef MENU_OUTSTREAM
+//
+//	#include <streambuf>
+//
+//	class teebuf: public std::streambuf
+//	{
+//	public:
+//	    // Construct a streambuf which tees output to both input
+//	    // streambufs.
+//	    teebuf(std::streambuf * sb1, std::streambuf * sb2);
+//	protected:
+//	    virtual int overflow(int c);
+//	private:
+//	    std::streambuf * sb1;
+//	    std::streambuf * sb2;
+//	};
+//
+//	teebuf MENU_OUTSTREAM(Serial, WiFiClient);
+
   #endif
 
   #ifndef USE_WIFI_telnet_menu	// serial menu only
@@ -336,7 +362,8 @@ bool connectWifi() {
   }
 
   // failed:
-  MENU.outln("connect FAILED");
+  MENU.outln("connect FAILED\tsee instructions in 'pulses.ino'");
+
   return false;
 }  // connectWiFi()
 
@@ -3124,11 +3151,6 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'D':	// DADA debug
-    MENU.outln(F("'D' 1"));
-
-    pulse_info_1line(0);
-
-    MENU.outln(F("'D' 2"));
     //    MENU.outln(HARMONICAL.harmonical_base);
 
     //    MENU.outln(F("small primes:"));
