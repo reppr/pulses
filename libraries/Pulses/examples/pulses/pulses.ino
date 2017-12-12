@@ -227,10 +227,10 @@ unsigned int mimic_japan_pentatonic[] = {1,1, 8,9, 5,6, 2,3, 2*15,3*16, 0,0 };	/
 #ifndef JIFFLE_RAM_SIZE
   #define JIFFLE_RAM_SIZE 9*3+1	// small buffer might fit on simple hardware
 #endif
-unsigned int jiffle_data[JIFFLE_RAM_SIZE];
-unsigned int jiffle_data_length = JIFFLE_RAM_SIZE;
+unsigned int jiffle_RAM[JIFFLE_RAM_SIZE];
+unsigned int jiffle_RAM_length = JIFFLE_RAM_SIZE;
 unsigned int jiffle_write_index=0;
-unsigned int *jiffle=jiffle_data;
+unsigned int *jiffle=jiffle_RAM;
 
 // pre defined jiffles:
 unsigned int harmonics4[] = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0};	// magnets on strings experiments
@@ -2085,11 +2085,11 @@ unsigned int jiffletab_december_pizzicato[] =
   {1,1024,4, 1,64,4, 1,28,16, 1,512,8, 1,1024,128, 1,2048,8, 0 };
 
 
-void store_jiffle_data(int new_value) {
+void set_jiffle_RAM_value(int new_value) {		// ################ FIXME: ################
   jiffle[jiffle_write_index]=new_value;
 
-  if (++jiffle_write_index >= jiffle_data_length) {	// array is full
-    store_jiffle_zero_stop();
+  if (++jiffle_write_index >= jiffle_RAM_length) {	// array is full
+    set_jiffle_RAM_value_0_stop();
 
     // drop all remaining numbers and delimiters from input
     bool yes=true;
@@ -2110,23 +2110,23 @@ void store_jiffle_data(int new_value) {
 }
 
 
-void store_jiffle_zero_stop() {
-  if (jiffle_write_index>=jiffle_data_length)
-    jiffle_write_index=jiffle_data_length-1;
+void set_jiffle_RAM_value_0_stop() {
+  if (jiffle_write_index>=jiffle_RAM_length)
+    jiffle_write_index=jiffle_RAM_length-1;
   jiffle[jiffle_write_index]=0;	   // store a trailing zero
-  jiffle[jiffle_data_length-1]=0;  // and last arry element (as a savety net)
+  jiffle[jiffle_RAM_length-1]=0;  // and last arry element (as a savety net)
   menu_mode=0;			   // stop numeric data input
-  jiffle_write_index=0;		   // aesthetics, but hmm...
+  //  jiffle_write_index=0;		   // aesthetics, but hmm...
 
   display_jiffletab(jiffle);		  // put that here for now
 }
 
 
-void copy_jiffle_data(unsigned int *source) {	// zero terminated
+void load2_jiffle_RAM(unsigned int *source) {	// zero terminated
   unsigned int data;
-  for (int d=0, i=jiffle_write_index; i<jiffle_data_length; i++) {
+  for (int d=0, i=jiffle_write_index; i<jiffle_RAM_length; i++) {
     data=source[d++];
-    store_jiffle_data(data);
+    set_jiffle_RAM_value(data);
     if (data==0) {
       break;
     }
@@ -2177,7 +2177,7 @@ void display_jiffletab(unsigned int *jiffletab) {
   }
 
   MENU.out(F(" }  buffer "));
-  MENU.out(jiffle_write_index); MENU.slash(); MENU.out(jiffle_data_length);
+  MENU.out(jiffle_write_index); MENU.slash(); MENU.out(jiffle_RAM_length);
 
   sum = jiffletab_len(jiffletab);
   MENU.tab();
@@ -2558,11 +2558,13 @@ bool menu_pulses_reaction(char menu_input) {
       break;
 
     case JIFFLE_ENTRY_UNTIL_ZERO_MODE:	// first chiffre already seen
+MENU.out("DADA0 "); MENU.outln(menu_input);
       input_value = MENU.numeric_input(menu_input - '0');
+MENU.out("DADA2 "); MENU.outln(input_value);
       if (input_value)
-	store_jiffle_data(input_value);
+	set_jiffle_RAM_value(input_value);
       else	// zero stops the input mode
-	store_jiffle_zero_stop();
+	set_jiffle_RAM_value_0_stop();
       break;
     }
     break;
@@ -3010,7 +3012,7 @@ bool menu_pulses_reaction(char menu_input) {
     // FIXME:	review and delete	################
     switch (MENU.numeric_input(0)) {
     case 0:	// temporary interface to some jiffles from source, some very old
-      jiffle = jiffle_data;
+      jiffle = jiffle_RAM;
       break;
     case 1:
       jiffle=gling128;
@@ -3136,7 +3138,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   case '{':	// enter_jiffletab
     menu_mode=JIFFLE_ENTRY_UNTIL_ZERO_MODE;
-    jiffle = jiffle_data;
+    jiffle = jiffle_RAM;
     jiffle_write_index=0;
     if(MENU.cb_peek()==EOF)
       if (MENU.verbosity)
@@ -3241,8 +3243,8 @@ bool menu_pulses_reaction(char menu_input) {
 //    MENU.out(bruch2.multiplier); MENU.slash(); MENU.outln(bruch2.divisor);
 
 
-    // copy_jiffle_data(gling128);	// zero terminated
-    // copy_jiffle_data(jiffletab_december_pizzicato);
+    // load2_jiffle_RAM(gling128);	// zero terminated
+    // load2_jiffle_RAM(jiffletab_december_pizzicato);
     // display_jiffletab(jiffle);
 
     //    tuning = PULSES.tuning; // FIXME: workaround for having all 3 sweep implementations in parallel
