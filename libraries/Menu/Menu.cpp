@@ -554,9 +554,9 @@ bool Menu::maybe_display_more() {	// avoid too much output
 
   /* void Menu::out(); overloaded menu output function family:	*/
   // Simple versions  void Menu::out():
-  void Menu::out(const char c)	const	{ putchar(c); }
-  void Menu::out(const int i)	const	{ printf("%i", i); }
-  void Menu::out(const long l)	const	{ printf("%d", l); }
+  void Menu::out(const char c)		const	{ putchar(c); }
+  void Menu::out(const int i)		const	{ printf("%i", i); }
+  void Menu::out(const long l)		const	{ printf("%d", l); }
   void Menu::out(const char *str)	const	{ printf("%s", str); }
 
   // unsigned versions:
@@ -566,9 +566,9 @@ bool Menu::maybe_display_more() {	// avoid too much output
 
   // End of line versions  void outln():
   void Menu::outln(const char c)	const	{ printf("%c\n", c); }
-  void Menu::outln(const int i)	const	{ printf("%i\n", i); }
+  void Menu::outln(const int i)		const	{ printf("%i\n", i); }
   void Menu::outln(const long l)	const	{ printf("%d\n", l); }
-  void Menu::outln(const char *str) const { printf("%s\n", str); }
+  void Menu::outln(const char *str) 	const   { printf("%s\n", str); }
 
   // unsigned versions:
   void Menu::outln(const unsigned char c)	const { printf("%c\n", c); }

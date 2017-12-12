@@ -466,7 +466,7 @@ void setup() {
 		&menu_pulses_display, &menu_pulses_reaction, 'P');
 
   // add softboard page:
-  softboard_page = MENU.add_page("Arduino Softboard", 'H',	\
+  softboard_page = MENU.add_page("Hardware Softboard", 'H',	\
 		&softboard_display, &softboard_reaction, 'H');
 
   // display menu at startup:
@@ -2503,12 +2503,13 @@ void Press_toStart() {
   MENU.outln(F("Press '!' to start"));
 }
 
+
 bool menu_pulses_reaction(char menu_input) {
   static unsigned long input_value=0;
   static unsigned long calc_result=0;
   struct time now, time_scratch;
   unsigned long bitmask;
-  char next_token;	// for multichar commandos
+  char next_token;	// for multichar commands
 
   switch (menu_input) {
   case '?':	// help, overrides common menu entry for '?'

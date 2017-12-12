@@ -156,7 +156,7 @@
   *not* counting analog inputs:
 */
 
-#define DIGITAL_IOs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)
+#define DIGITAL_IOs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)	// FIXME:
 
 
 /* **************************************************************** */
@@ -314,7 +314,7 @@ void pins_info_digital() {
   whenever the input changes:
 */
 
-#define IMPOSSIBLE	-9785	// just a value not possible on analog input
+#define IMPOSSIBLE	-9785	// FIXME:  just a value not possible on analog input
 
 int watch_seen=IMPOSSIBLE;
 void watch_digital_start(uint8_t pin) {
