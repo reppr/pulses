@@ -44,16 +44,20 @@
     const int pl_max=32;	// test with more pins than 8 ;)
     #define JIFFLE_RAM_SIZE	256*3+1
     #define RATIOS_RAM_SIZE	256*2+1
-    // must be defined before including Pulses
+//  #define RAM_IS_SCARE	// ################ FIXME: RAM_IS_SCARE ??? mega2560 ################
+
+    // must be defined before including Pulses:
     // #define IMPLEMENT_TUNING		// *does not work on mega2560*
     // problem:
     //  double detune_number = PULSES.ticks_per_octave / PULSES.pulses[pulse].period.time;
     //  double detune = pow(2.0, 1.0/detune_number);	// crashes Arduino Mega2560
 
   #elif defined(__AVR_ATmega328P__)		// saving RAM on 328P	no recent tests
+    #define RAM_IS_SCARE
     const int pl_max=12;
 
   #else						// unknown board, defaults
+    #define RAM_IS_SCARE	// ################ FIXME: RAM_IS_SCARE (other boards) ################
     const int pl_max=16;
   #endif
 

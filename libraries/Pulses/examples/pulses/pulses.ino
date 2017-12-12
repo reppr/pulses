@@ -1940,76 +1940,42 @@ void info_select_destination_with(bool extended_destinations) {
 
 // variables used to setup the experiments
 
-// assuming enough RAM here	// ################ FIXME: RAM usage ################
-const char * experiment_names[] = {
-    "(invalid)",				// 0
-    "setup_jiffle128",				// 1
-    "init_div_123456",				// 2
-    "ESP8266 Frogs",				// 3
-    "setup_jiffles2345",			// 4
-    "init_123456",				// 5
-    "init_chord_1345689a",			// 6
-    "init_rhythm_1",				// 7
-    "init_rhythm_2",				// 8
-    "init_rhythm_3",				// 9
-    "init_rhythm_4",				// 10
-    "setup_jifflesNEW",				// 11
-    "init_pentatonic",				// 12
-    "magnets: The Harmonical Strings Christmas Evening Sounds",	// 13
-    "magnets on strings 2",			// 14
-    "magnets on strings 3",			// 15
-    "piezzos on low strings 2016-12-28",	// 16
-    "magnets on steel strings, japanese",	// 17
-    "nylon stringed wooden box, piezzos",	// 18
-    "TUNING",					// 19
-    "arpeggio4096\tpentatonic",			// 20
-    "arpeggio4096down\tpentatonic",		// 21
-    "arpeggio_cont\tpentatonic",		// 22
-    "arpeggio_and_down\tpentatonic",		// 23
-    "stepping_down\tpentatonic",		// 24
-    "back_to_ground\tpentatonic rhythm slowdown", // 25
-    "arpeggio_and_sayling\tpentatonic",		// 26
-    "simple_theme\tpentatonic",			// 27
-    "peepeep4096\tpentatonic\tfor tuning",	// 28
-    "(invalid)",				// 29
-};
+#ifndef RAM_IS_SCARE	// enough RAM?
+  const char * experiment_names[] = {
+      "(invalid)",				// 0
+      "setup_jiffle128",				// 1
+      "init_div_123456",				// 2
+      "ESP8266 Frogs",				// 3
+      "setup_jiffles2345",			// 4
+      "init_123456",				// 5
+      "init_chord_1345689a",			// 6
+      "init_rhythm_1",				// 7
+      "init_rhythm_2",				// 8
+      "init_rhythm_3",				// 9
+      "init_rhythm_4",				// 10
+      "setup_jifflesNEW",				// 11
+      "init_pentatonic",				// 12
+      "magnets: The Harmonical Strings Christmas Evening Sounds",	// 13
+      "magnets on strings 2",			// 14
+      "magnets on strings 3",			// 15
+      "piezzos on low strings 2016-12-28",	// 16
+      "magnets on steel strings, japanese",	// 17
+      "nylon stringed wooden box, piezzos",	// 18
+      "TUNING",					// 19
+      "arpeggio4096\tpentatonic",			// 20
+      "arpeggio4096down\tpentatonic",		// 21
+      "arpeggio_cont\tpentatonic",		// 22
+      "arpeggio_and_down\tpentatonic",		// 23
+      "stepping_down\tpentatonic",		// 24
+      "back_to_ground\tpentatonic rhythm slowdown", // 25
+      "arpeggio_and_sayling\tpentatonic",		// 26
+      "simple_theme\tpentatonic",			// 27
+      "peepeep4096\tpentatonic\tfor tuning",	// 28
+      "(invalid)",				// 29
+  };
 
-#define n_experiment_names (sizeof (experiment_names) / sizeof (const char *))
-
-/*
-experiment_names[0]="(invalid)";
-experiment_names[1]="setup_jiffle128";
-experiment_names[2]="init_div_123456";
-experiment_names[3]="ESP8266 Frogs";
-experiment_names[4]="setup_jiffles2345";
-experiment_names[5]="init_123456";
-experiment_names[6]="init_chord_1345689a";
-experiment_names[7]="init_rhythm_1";
-experiment_names[8]="init_rhythm_2";
-experiment_names[9]="init_rhythm_3";
-experiment_names[10]="init_rhythm_4";
-experiment_names[11]="setup_jifflesNEW";
-experiment_names[12]="init_pentatonic";
-experiment_names[13]="magnets: The Harmonical Strings Christmas Evening Sounds";
-experiment_names[14]="magnets on strings 2";
-experiment_names[15]="magnets on strings 3";
-experiment_names[16]="piezzos on low strings 2016-12-28";
-experiment_names[17]="magnets on steel strings, japanese";
-experiment_names[18]="nylon stringed wooden box, piezzos";
-experiment_names[19]="TUNING";
-experiment_names[20]="arpeggio4096\tpentatonic";
-experiment_names[21]="arpeggio4096down\tpentatonic";
-experiment_names[22]="arpeggio_cont\tpentatonic";
-experiment_names[23]="arpeggio_and_down\tpentatonic";
-experiment_names[24]="stepping_down\tpentatonic";
-experiment_names[25]="back_to_ground\tpentatonic rhythm slowdown";
-experiment_names[26]="arpeggio_and_sayling\tpentatonic";
-experiment_names[27]="simple_theme\tpentatonic";
-experiment_names[28]="peepeep4096\tpentatonic\tfor tuning";
-experiment_names[29]="(invalid)";
-experiment_names[30]="(invalid)";
-experiment_names[31]="(invalid)";
-*/
+  #define n_experiment_names (sizeof (experiment_names) / sizeof (const char *))
+#endif // ! RAM_IS_SCARE
 
 
 bool inverse=false;	// bottom DOWN/up click-pin mapping
@@ -3382,10 +3348,13 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'E':	// enter experiment
     if (MENU.maybe_display_more()) {
-      MENU.out(F("experiments "));
+      MENU.out(F("experiment "));
+
+    #ifndef RAM_IS_SCARE	// enough RAM?
       for (int i = 0; i < n_experiment_names; i++) {
 	MENU.out(i); MENU.tab(); MENU.outln(experiment_names[i]);
       }
+    #endif
     }
 
     input_value = MENU.numeric_input(experiment);
