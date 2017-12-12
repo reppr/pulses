@@ -47,7 +47,7 @@ using namespace std;	// ESP8266 needs that
 #ifdef USE_WIFI_telnet_menu
   // ***EITHER*** put your WLAN ssid and password in next 2 lines and uncomment:
 
-const char* ssid     = "WLAN_SSID";
+const char* ssid     = "please_set_your_WiFi_SSID";
 const char* password = "topSecret77";
 
   // *** OR *** comment out above 2 lines,  put that stuff in a file and #include it:
