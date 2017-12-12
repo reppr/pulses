@@ -230,6 +230,8 @@ unsigned int mimic_japan_pentatonic[] = {1,1, 8,9, 5,6, 2,3, 2*15,3*16, 0,0 };	/
 unsigned int jiffle_RAM[JIFFLE_RAM_SIZE];
 unsigned int jiffle_RAM_length = JIFFLE_RAM_SIZE;
 unsigned int jiffle_write_index=0;
+unsigned int jiffle_range_bottom=0;
+unsigned int jiffle_range_top=0;
 unsigned int *jiffle=jiffle_RAM;
 
 // pre defined jiffles:
@@ -263,7 +265,7 @@ unsigned int arpeggio_and_down3[] = {64,4096,1, 1,4096,256,  64,4096*2,1, 1,4096
 
 unsigned int arpeggio_and_sayling[] = {64,4096,1, 1,4096,256,  64,4096*2,1, 1,4096*2,256, 64,4096*3,1, 1,4096*3,256,  64,4096*4,1, 1,4096*4,256, 64,4096*5,1, 1,4096*5,256, 64,4096*6,1, 1,4096*6,256, 64,4096*8,1, 1,4096*8,256, 1,5*4096,512, 1,12,1 , 1,6*4096,1024, 6,5*6*4096,1024, 1,5*4096,1024, 1,4*4096,1024, 1,3*4096,1024, 1,2*4096,1024, 1,1024,128, 1,128,4, 1,64,4, 1,32,2, 0};
 
-// unsigned int halfway[] = {1,2,1, 1,4,1, 1,8,1, 1,16,1, 1,32,1, 1,64,1, 1,128,1, 1,256,1, 1,512,1, 1,1024,1, 1,2048,1, 1,4096,1, 1,8192,1, 1,16384, 0};
+// unsigned int halfway[] = {1,2,1, 1,4,1, 1,8,1, 1,16,1, 1,32,1, 1,64,1, 1,128,1, 1,256,1, 1,512,1, 1,1024,1, 1,2048,1, 1,4096,1, 1,8192,1, 1,16384,1, 0};
 
 // unsigned int back_to_ground[] = {3,128*2,8, 1,128,4, 1,64,3, 0};
 unsigned int stepping_down[] = {1,4096*8,512+256, 1,4096*7,512,  1,4096*6,512,  1,4096*5,512,  1,4096*4,512,  1,4096*3,512,  1,4096*2,512,  1,4096,512, 0};
@@ -276,6 +278,11 @@ unsigned int simple_theme[] = {1,128,8, 1,2*128,8, 1,3*128,8, 1,4*128,8, 5,6*4*1
 			       3,4*2048,256*3/4, 5,6*2048,256*3/4, 2,3*2048,256*3/4, 1,2048,128,
 			       1,128,3, 1,64,3, 1,32,4,
 			       0};
+
+#ifndef RAM_IS_SCARE	// enough RAM?
+  #include "jiffles.h"
+#endif
+
 
 /* **************************************************************** */
 // user interface variables:
@@ -2166,6 +2173,9 @@ void display_jiffletab(unsigned int *jiffletab) {
   for (int i=0; i <= JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP; i++) {
     if ((i % JIFFLETAB_INDEX_STEP) == 0)
       MENU.space();
+    if (i==jiffle_range_bottom)
+      if (jiffle_range_top)	// no range, no sign
+	MENU.out('|');
     if (i==jiffle_write_index)
       MENU.out("<");
     MENU.out(jiffletab[i]);
@@ -2173,6 +2183,10 @@ void display_jiffletab(unsigned int *jiffletab) {
       MENU.out(">");
     if (jiffletab[i] == 0)
       break;
+
+    if (i==jiffle_range_top)
+      if (jiffle_range_top)	// no range, no sign
+	MENU.out('"');
     MENU.out(",");
   }
 
@@ -2532,6 +2546,25 @@ bool menu_pulses_reaction(char menu_input) {
   case ',':	// accept as noop in normal mode. used as delimiter to input data, displaying info. see 'menu_mode'
     if (menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE)
 	display_jiffletab(jiffle);
+    else
+      if (MENU.verbosity >= VERBOSITY_SOME)
+	MENU.outln(F("noop"));
+    break;
+
+  case '|':	// accept as noop in normal mode. used as range bottom delimiter in arrays
+    if (menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE)
+      jiffle_range_bottom = jiffle_write_index;
+    else
+      if (MENU.verbosity >= VERBOSITY_SOME)
+	MENU.outln(F("noop"));
+    break;
+
+  case '"': // '"'  accept as reserved noop in normal mode. used as range top delimiter in arrays
+    if (menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE)
+      jiffle_range_top = jiffle_write_index;
+    else
+      if (MENU.verbosity >= VERBOSITY_SOME)
+	MENU.outln(F("reserved"));	// reserved for string input
     break;
 
   // in normal mode toggle pulse selection with chiffres
@@ -2558,14 +2591,40 @@ bool menu_pulses_reaction(char menu_input) {
       break;
 
     case JIFFLE_ENTRY_UNTIL_ZERO_MODE:	// first chiffre already seen
-MENU.out("DADA0 "); MENU.outln(menu_input);
-      input_value = MENU.numeric_input(menu_input - '0');
-MENU.out("DADA2 "); MENU.outln(input_value);
+      MENU.restore_input_token();
+      input_value = MENU.numeric_input(0);
       if (input_value)
 	set_jiffle_RAM_value(input_value);
+//      if (MENU.maybe_display_more())
+// 	  display_jiffletab(jiffle);
+
       else	// zero stops the input mode
 	set_jiffle_RAM_value_0_stop();
       break;
+    }
+    break;
+
+  case '<':
+    switch (menu_mode) {
+    case JIFFLE_ENTRY_UNTIL_ZERO_MODE:
+      if (jiffle_write_index)
+	jiffle_write_index--;
+      break;
+    default:
+      if (MENU.verbosity >= VERBOSITY_SOME)
+	MENU.outln(F("noop"));
+    }
+    break;
+
+  case '>':
+    switch (menu_mode) {
+    case JIFFLE_ENTRY_UNTIL_ZERO_MODE:
+      if (++jiffle_write_index >= jiffle_RAM_length)
+	jiffle_write_index = jiffle_RAM_length - 1;
+      break;
+    default:
+      if (MENU.verbosity >= VERBOSITY_SOME)
+	MENU.outln(F("noop"));
     }
     break;
 
@@ -3010,8 +3069,20 @@ MENU.out("DADA2 "); MENU.outln(input_value);
   case 'J':	// select jiffle
     // temporary interface to some jiffles from source, some very old
     // FIXME:	review and delete	################
-    switch (MENU.numeric_input(0)) {
-    case 0:	// temporary interface to some jiffles from source, some very old
+    if (MENU.maybe_display_more()) {
+      MENU.out(F("jiffle "));
+
+     #ifndef RAM_IS_SCARE	// enough RAM?
+      for (int i = 0; i < n_jiffle_names; i++) {
+	MENU.out(i); MENU.tab(); MENU.outln(jiffle_names[i]);
+      }
+     #endif
+    }
+
+    // temporary interface to some jiffles from source, some very old
+    input_value=MENU.numeric_input(0);	// remember as index for experiment_names[]
+    switch (input_value) {
+    case 0:
       jiffle = jiffle_RAM;
       break;
     case 1:
@@ -3103,13 +3174,19 @@ MENU.out("DADA2 "); MENU.outln(input_value);
       jiffle = pentatonic_rising;
       break;
     default:
+      input_value=0;	// as jiffle_names[] index
+
       if (MENU.verbosity >= VERBOSITY_SOME)
 	MENU.outln_invalid();
     }
 
-    if (MENU.maybe_display_more())
-      display_jiffletab(jiffle);
+    if (MENU.maybe_display_more()) {
+     #ifndef RAM_IS_SCARE	// enough RAM?
+	MENU.outln(jiffle_names[input_value]);
+     #endif
 
+      display_jiffletab(jiffle);
+    }
     break;
 
   case 'f':	// en_info
