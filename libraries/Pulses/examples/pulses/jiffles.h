@@ -33,6 +33,9 @@
       "(invalid)",	// 29
   };
 
+  // remember selected jiffle number for name display (only)
+  unsigned int jiffle_n=0;
+
   #define n_jiffle_names (sizeof (jiffle_names) / sizeof (const char *))
 
   //      "// jiffle = mimic_japan_pentatonic",	// was 21

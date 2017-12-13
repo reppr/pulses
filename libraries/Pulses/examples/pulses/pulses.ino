@@ -2106,52 +2106,64 @@ unsigned int jiffletab_december_pizzicato[] =
 
 
 void set_jiffle_RAM_value(int new_value) {
-  jiffle[jiffle_write_index]=new_value;
+  char input;
+  jiffle[jiffle_write_index++]=new_value;
 
   // jiffletabs *MUST* have 2 trailing zeros	// ################ FIXME: ################
-  if (++jiffle_write_index < (JIFFLE_RAM_SIZE - 2)) {	// array is not full?
-    set_jiffle_RAM_value_0_stop();
+  if (jiffle_write_index >= (JIFFLE_RAM_SIZE - 2)) {	// array full?
+    jiffle[jiffle_write_index--]=0;
 
     // drop all remaining numbers and delimiters from input
     bool yes=true;
     while (yes) {
-      switch (MENU.drop_input_token()) {
+      input=MENU.drop_input_token();
+      switch (input) {
       case ' ':  case ',':
       case '0':  case '1':  case '2':  case '3':  case '4':
       case '5':  case '6':  case '7':  case '8':  case '9':
 	yes=true;
-      break;
+	break;
 
       default:
-	MENU.restore_input_token();
 	yes=false;
       }
     }
-  } else jiffle_write_index--;	// array was full
+  } else
+    if (new_value==0)	// value was zero, stop input
+      set_jiffle_RAM_value_0_stop();
 }
 
 
+// as a zero was written stop receiving further input, cleanup
 void set_jiffle_RAM_value_0_stop() {
   if (jiffle_write_index >= (JIFFLE_RAM_SIZE - 2))
     jiffle_write_index = JIFFLE_RAM_SIZE - 2;
-  jiffle[jiffle_write_index] = 0;	// store a trailing zero
-  jiffle[JIFFLE_RAM_SIZE-1] = 0;	// and last arry element (as a savety net)
+//  jiffle[jiffle_write_index] = 0;	// store a trailing zero
+
+  jiffle[JIFFLE_RAM_SIZE - 1 ] = 0;	// zero out last 2 array elements (savety net)
+  jiffle[JIFFLE_RAM_SIZE - 2 ] = 0;
   menu_mode=0;				// stop numeric data input
-  //  jiffle_write_index=0;		// aesthetics, but hmm...
+  //  jiffle_write_index=0;		// no, we leave write index as is
 
   display_jiffletab(jiffle);		// put that here for now
 }
 
 
-void load2_jiffle_RAM(unsigned int *source) {	// zero terminated
+void load2_jiffle_RAM(unsigned int *source) {	// double zero terminated
   unsigned int data;
-  for (int d=0, i=jiffle_write_index; i < (JIFFLE_RAM_SIZE - 2); i++) {
-    data=source[d++];
-    set_jiffle_RAM_value(data);
+  unsigned int cnt=0;	// data counter
+
+  while (jiffle_write_index < (JIFFLE_RAM_SIZE - 2)) {
+    data=source[cnt++];
     if (data==0) {
+      --cnt;
       break;
     }
+
+    set_jiffle_RAM_value(data);
   }
+
+  //  jiffle_write_index += cnt;
 }
 
 
@@ -2183,8 +2195,23 @@ void display_jiffletab(unsigned int *jiffletab) {
   sum.multiplier = 0;
   sum.divisor = 1;
 
+  // first line:
+#ifndef RAM_IS_SCARE
+  MENU.out(jiffle_names[jiffle_n]); MENU.tab(); MENU.out(F("ID: ")); MENU.out(jiffle_n); MENU.tab();
+#endif
+  MENU.out(F("editing "));
+  if (menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE) {
+    MENU.out(F("on\tclose with '}'"));
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      MENU.out(F("\tmove cursor < >\trange borders | \""));
+  } else
+    MENU.out(F("off\tstart edit with '{'"));
+
+  MENU.ln();
+
+  // second line:
   MENU.out("{");
-  for (int i=0; i <= JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP; i++) {
+  for (int i=0; ; i++) {
     if ((i % JIFFLETAB_INDEX_STEP) == 0)
       MENU.space();
     if (i==jiffle_range_bottom)
@@ -2196,9 +2223,10 @@ void display_jiffletab(unsigned int *jiffletab) {
     if (i==jiffle_write_index)
       MENU.out(">");
     if (jiffletab[i] == 0)
-      if (jiffletab[i+1] == 0)	// continue reading beyond a single zero
-	break;
-
+      if (jiffletab[i+1] == 0) {	// continue reading *including* two zeroes
+	MENU.out(",0");			// display second zero
+	break;				// data done
+      }
     if (i==jiffle_range_top)
       if (jiffle_range_top)	// no range, no sign
 	MENU.out('"');
@@ -2206,7 +2234,7 @@ void display_jiffletab(unsigned int *jiffletab) {
   }
 
   MENU.out(F(" }  cursor "));
-  MENU.out(jiffle_write_index); MENU.slash(); MENU.out(JIFFLE_RAM_SIZE);
+  MENU.out(jiffle_write_index); MENU.slash(); MENU.out(JIFFLE_RAM_SIZE);	// ################ FIXME: ################
 
   sum = jiffletab_len(jiffletab);
   MENU.tab();
@@ -2620,8 +2648,6 @@ bool menu_pulses_reaction(char menu_input) {
       input_value = MENU.numeric_input(0);
       if (input_value)
 	set_jiffle_RAM_value(input_value);
-//      if (MENU.maybe_display_more())
-// 	  display_jiffletab(jiffle);
 
       else	// zero stops the input mode
 	set_jiffle_RAM_value_0_stop();
@@ -3110,32 +3136,40 @@ bool menu_pulses_reaction(char menu_input) {
       MENU.drop_input_token();
       if(jiffle != jiffle_RAM) {
 	unsigned int * source=jiffle;
-	jiffle_write_index=0;
-	jiffle=jiffle_RAM;
-	//load2_jiffle_RAM(jiffletab_december_pizzicato);
-	// ################ FIXME: ################
+	// jiffle_write_index=0;	// no, write starting at jiffle_write_index #### FIXME: ####
+
+	jiffle = jiffle_RAM;
+	jiffle_n = 0;
 	load2_jiffle_RAM(source);
-	jiffle = jiffle_RAM;	// hmm? ################
       }
     } else {	// select jiffle
       if (MENU.maybe_display_more()) {
 	MENU.out(F("jiffle "));
 
-       #ifndef RAM_IS_SCARE	// enough RAM?
+       #ifndef RAM_IS_SCARE	// enough RAM?	display jiffle names
+	MENU.ln();
 	for (int i = 0; i < n_jiffle_names; i++) {
-	  MENU.out(i); MENU.tab(); MENU.outln(jiffle_names[i]);
+	  if (i==jiffle_n)
+	    MENU.out('*');
+	  else
+	    MENU.space();
+	  MENU.space();
+
+	  MENU.out(i);
+	  MENU.tab(); MENU.outln(jiffle_names[i]);
 	}
+	MENU.ln();
        #endif
       }
 
       // temporary interface to some jiffles from source, some very old
-      input_value=MENU.numeric_input(0);	// remember as index for experiment_names[]
-      switch (input_value) {
+      jiffle_n=MENU.numeric_input(jiffle_n);	// remember as index for experiment_names[jiffle_n]
+      switch (jiffle_n) {
       case 0:
 	jiffle = jiffle_RAM;
 	break;
       case 1:
-	jiffle=gling128;
+	jiffle = gling128;
 	break;
       case 2:
 	jiffle = jiffletab;
@@ -3223,19 +3257,13 @@ bool menu_pulses_reaction(char menu_input) {
 	jiffle = pentatonic_rising;
 	break;
       default:
-	input_value=0;	// as jiffle_names[] index
+	jiffle_n=0;	// as jiffle_names[jiffle_n] index
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  MENU.outln_invalid();
       }
-
-      if (MENU.maybe_display_more()) {
-#ifndef RAM_IS_SCARE	// enough RAM?
-	MENU.outln(jiffle_names[input_value]);
-#endif
-      }
-      display_jiffletab(jiffle);
     }
+    display_jiffletab(jiffle);
     break;
 
   case 'f':	// en_info
@@ -3265,13 +3293,13 @@ bool menu_pulses_reaction(char menu_input) {
   case '{':	// enter_jiffletab
     menu_mode=JIFFLE_ENTRY_UNTIL_ZERO_MODE;
     jiffle = jiffle_RAM;
-    jiffle_write_index=0;
+    jiffle_write_index=0;	// ################ FIXME: ################
     if(MENU.cb_peek()==EOF)
       if (MENU.verbosity)
 	display_jiffletab(jiffle);
     break;
 
-  case '}':	// display jiffletab / end editing jiffletab
+  case '}':	// display jiffletab, stop editing jiffletab
     if (MENU.verbosity)
       display_jiffletab(jiffle);
 
