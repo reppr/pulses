@@ -37,3 +37,5 @@
 
   //      "// jiffle = mimic_japan_pentatonic",	// was 21
 #endif
+
+// jiffletabs *MUST* have 2 trailing zeros

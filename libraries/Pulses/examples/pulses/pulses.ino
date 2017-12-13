@@ -225,24 +225,38 @@ unsigned int mimic_japan_pentatonic[] = {1,1, 8,9, 5,6, 2,3, 2*15,3*16, 0,0 };	/
 // if we have enough RAM, we work in an int array[]
 // pre defined jiffletabs can be copied there before using and editing
 #ifndef JIFFLE_RAM_SIZE
-  #define JIFFLE_RAM_SIZE 9*3+1	// small buffer might fit on simple hardware
+  // jiffletabs *MUST* have 2 trailing zeros
+  #define JIFFLE_RAM_SIZE 9*3+2	// small buffer might fit on simple hardware
 #endif
-unsigned int jiffle_RAM[JIFFLE_RAM_SIZE];
-unsigned int jiffle_RAM_length = JIFFLE_RAM_SIZE;
+unsigned int jiffle_RAM[JIFFLE_RAM_SIZE] = {0};
 unsigned int jiffle_write_index=0;
 unsigned int jiffle_range_bottom=0;
 unsigned int jiffle_range_top=0;
 unsigned int *jiffle=jiffle_RAM;
 
+
+void fix_jiffle_range() {
+  unsigned int i;
+
+  if (jiffle_range_top >= JIFFLE_RAM_SIZE)
+    jiffle_range_top=JIFFLE_RAM_SIZE-1;
+
+  if (jiffle_range_bottom > jiffle_range_top) {		// swap
+    i = jiffle_range_bottom;
+    jiffle_range_bottom = jiffle_range_top;
+    jiffle_range_top = i;
+  }
+};
+
 // pre defined jiffles:
-unsigned int harmonics4[] = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0};	// magnets on strings experiments
-unsigned int ting1024[] = {1,4096,64, 1,1024,128, 1,1024*3,128, 1,1024*2,128, 1,1024*8,64, 1,1024,64, 0}; // magnet strings experiments 2
-// unsigned int ting1024[] = {1,4096,64, 1,1024,128, 0};			// magnet strings experiments 2
-unsigned int ting4096[] = {1,4096,1024, 0};			// magnet strings experiments 2
+unsigned int harmonics4[] = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0,0};	// magnets on strings experiments
+unsigned int ting1024[] = {1,4096,64, 1,1024,128, 1,1024*3,128, 1,1024*2,128, 1,1024*8,64, 1,1024,64, 0,0}; // magnet strings experiments 2
+// unsigned int ting1024[] = {1,4096,64, 1,1024,128, 0,0};			// magnet strings experiments 2
+unsigned int ting4096[] = {1,4096,1024, -1,0,0};			// magnet strings experiments 2
 
 // peepeep4096[] for tuning
-unsigned int peepeep4096[] = {1,4096,2048, 1,8*4096,1, 1,4096,256, 1,8*4096,1, 1,4096,256, 1,8*4096,1, 1,4096,256, 1,8*4096,1, 0};
-// unsigned int arpeggio4096[] = {4,4096*4,128, 4,4096*3,128, 4,4096*4,128, 4,4096*5,128, 4,4096*6,64, 0}; // pezzo strings E16
+unsigned int peepeep4096[] = {1,4096,2048, 1,8*4096,1, 1,4096,256, 1,8*4096,1, 1,4096,256, 1,8*4096,1, 1,4096,256, 1,8*4096,1, 0,0};
+// unsigned int arpeggio4096[] = {4,4096*4,128, 4,4096*3,128, 4,4096*4,128, 4,4096*5,128, 4,4096*6,64, 0,0}; // pezzo strings E16
 
 unsigned int arpeggio4096[] = {
   64,4096,1, 1,4096,256,  64,4096*2,1, 1,4096*2,256, 64,4096*3,1, 1,4096*3,256, 64,4096*5,1, 1,4096*5,256,
@@ -251,33 +265,33 @@ unsigned int arpeggio4096[] = {
 unsigned int arpeggio4096down[] = {
   64,4096*8,1, 1,4096*8,256, 64,4096*6,1, 1,4096*6,256, 64,4096*5,1, 1,4096*5,256, 64,4096*4,1, 1,4096*4,256,
   64,4096*3,1, 1,4096*3,256, 64,4096*2,1, 1,4096*2,256, 64,4096*1,1, 1,4096*1,256, 1,512,16, 1,128,8, 1,64,4, 1,32,2,
-  0};
+  0,0};
 
-unsigned int arpeggio_cont[] = {64,4096,1, 1,4096,256,  64,4096*2,1, 1,4096*2,256, 64,4096*3,1, 1,4096*3,256,  64,4096*4,1, 1,4096*4,256, 64,4096*5,1, 1,4096*5,256, 64,4096*6,1, 1,4096*6,256, 64,4096*8,1, 1,4096*8,256, 1,4096*5,512, 1,12*6,6, 1,4096*6,24, 1,48,2, 1,4096*8,256, 1,6,1, 1,256,2, 1,12,3, 0};
+unsigned int arpeggio_cont[] = {64,4096,1, 1,4096,256,  64,4096*2,1, 1,4096*2,256, 64,4096*3,1, 1,4096*3,256,  64,4096*4,1, 1,4096*4,256, 64,4096*5,1, 1,4096*5,256, 64,4096*6,1, 1,4096*6,256, 64,4096*8,1, 1,4096*8,256, 1,4096*5,512, 1,12*6,6, 1,4096*6,24, 1,48,2, 1,4096*8,256, 1,6,1, 1,256,2, 1,12,3, 0,0};
 
-unsigned int arpeggio_and_down0[] = {64,4096,1, 1,4096,256,  64,4096*2,1, 1,4096*2,256, 64,4096*3,1, 1,4096*3,256,  64,4096*4,1, 1,4096*4,256, 64,4096*5,1, 1,4096*5,256, 64,4096*6,1, 1,4096*6,256, 64,4096*8,1, 1,4096*8,256, 1,4096*5,512, 1,12,4, 1,2048,128, 1,4096*4,128, 0};
+unsigned int arpeggio_and_down0[] = {64,4096,1, 1,4096,256,  64,4096*2,1, 1,4096*2,256, 64,4096*3,1, 1,4096*3,256,  64,4096*4,1, 1,4096*4,256, 64,4096*5,1, 1,4096*5,256, 64,4096*6,1, 1,4096*6,256, 64,4096*8,1, 1,4096*8,256, 1,4096*5,512, 1,12,4, 1,2048,128, 1,4096*4,128, 0,0};
 
-unsigned int arpeggio_and_down1[] = {64,4096,1, 1,4096,256,  64,4096*2,1, 1,4096*2,256, 64,4096*3,1, 1,4096*3,256,  64,4096*4,1, 1,4096*4,256, 64,4096*5,1, 1,4096*5,256, 64,4096*6,1, 1,4096*6,256, 64,4096*8,1, 1,4096*8,256, 1,4096*5,512, 1,12,2, 1,1024,64, 1,256,8, 1,2048,128, 1,4096*8,128, 1,4096*6,128, 1,4096*5,128, 1,4096*4,128, 1,4096*3,128, 1,4096*2,128, 1,4096,128, 0};
+unsigned int arpeggio_and_down1[] = {64,4096,1, 1,4096,256,  64,4096*2,1, 1,4096*2,256, 64,4096*3,1, 1,4096*3,256,  64,4096*4,1, 1,4096*4,256, 64,4096*5,1, 1,4096*5,256, 64,4096*6,1, 1,4096*6,256, 64,4096*8,1, 1,4096*8,256, 1,4096*5,512, 1,12,2, 1,1024,64, 1,256,8, 1,2048,128, 1,4096*8,128, 1,4096*6,128, 1,4096*5,128, 1,4096*4,128, 1,4096*3,128, 1,4096*2,128, 1,4096,128, 0,0};
 
-unsigned int arpeggio_and_down[] = {64,4096,1, 1,4096,256,  64,4096*2,1, 1,4096*2,256, 64,4096*3,1, 1,4096*3,256,  64,4096*4,1, 1,4096*4,256, 64,4096*5,1, 1,4096*5,256, 64,4096*6,1, 1,4096*6,256, 64,4096*8,1, 1,4096*8,256, 1,4096*5,512, 1,12,2, 1,1024,64, 1,256,8, 1,2048,128, 1,4096*8,128, 1,4096*6,128, 1,4096*5,128, 1,4096*4,128, 1,4096*3,128, 1,4096*2,128, 1,4096,128, 1,1024,64, 0};
+unsigned int arpeggio_and_down[] = {64,4096,1, 1,4096,256,  64,4096*2,1, 1,4096*2,256, 64,4096*3,1, 1,4096*3,256,  64,4096*4,1, 1,4096*4,256, 64,4096*5,1, 1,4096*5,256, 64,4096*6,1, 1,4096*6,256, 64,4096*8,1, 1,4096*8,256, 1,4096*5,512, 1,12,2, 1,1024,64, 1,256,8, 1,2048,128, 1,4096*8,128, 1,4096*6,128, 1,4096*5,128, 1,4096*4,128, 1,4096*3,128, 1,4096*2,128, 1,4096,128, 1,1024,64, 0,0};
 
-unsigned int arpeggio_and_down3[] = {64,4096,1, 1,4096,256,  64,4096*2,1, 1,4096*2,256, 64,4096*3,1, 1,4096*3,256,  64,4096*4,1, 1,4096*4,256, 64,4096*5,1, 1,4096*5,256, 64,4096*6,1, 1,4096*6,256, 64,4096*8,1, 1,4096*8,256, 1,4096*5,512, 1,12,2, 1,1024,64, 1,256,8, 1,2048,128, 1,4096*8,128, 1,4096*6,128, 1,4096*5,128, 1,4096*4,128, 1,4096*3,128, 1,4096*2,128, 1,4096,128, 1,1024,128, 3,1024*2,128, 1,512,16, 1,256,16, 1,128,8, 0};
+unsigned int arpeggio_and_down3[] = {64,4096,1, 1,4096,256,  64,4096*2,1, 1,4096*2,256, 64,4096*3,1, 1,4096*3,256,  64,4096*4,1, 1,4096*4,256, 64,4096*5,1, 1,4096*5,256, 64,4096*6,1, 1,4096*6,256, 64,4096*8,1, 1,4096*8,256, 1,4096*5,512, 1,12,2, 1,1024,64, 1,256,8, 1,2048,128, 1,4096*8,128, 1,4096*6,128, 1,4096*5,128, 1,4096*4,128, 1,4096*3,128, 1,4096*2,128, 1,4096,128, 1,1024,128, 3,1024*2,128, 1,512,16, 1,256,16, 1,128,8, 0,0};
 
-unsigned int arpeggio_and_sayling[] = {64,4096,1, 1,4096,256,  64,4096*2,1, 1,4096*2,256, 64,4096*3,1, 1,4096*3,256,  64,4096*4,1, 1,4096*4,256, 64,4096*5,1, 1,4096*5,256, 64,4096*6,1, 1,4096*6,256, 64,4096*8,1, 1,4096*8,256, 1,5*4096,512, 1,12,1 , 1,6*4096,1024, 6,5*6*4096,1024, 1,5*4096,1024, 1,4*4096,1024, 1,3*4096,1024, 1,2*4096,1024, 1,1024,128, 1,128,4, 1,64,4, 1,32,2, 0};
+unsigned int arpeggio_and_sayling[] = {64,4096,1, 1,4096,256,  64,4096*2,1, 1,4096*2,256, 64,4096*3,1, 1,4096*3,256,  64,4096*4,1, 1,4096*4,256, 64,4096*5,1, 1,4096*5,256, 64,4096*6,1, 1,4096*6,256, 64,4096*8,1, 1,4096*8,256, 1,5*4096,512, 1,12,1 , 1,6*4096,1024, 6,5*6*4096,1024, 1,5*4096,1024, 1,4*4096,1024, 1,3*4096,1024, 1,2*4096,1024, 1,1024,128, 1,128,4, 1,64,4, 1,32,2, 0,0};
 
-// unsigned int halfway[] = {1,2,1, 1,4,1, 1,8,1, 1,16,1, 1,32,1, 1,64,1, 1,128,1, 1,256,1, 1,512,1, 1,1024,1, 1,2048,1, 1,4096,1, 1,8192,1, 1,16384,1, 0};
+// unsigned int halfway[] = {1,2,1, 1,4,1, 1,8,1, 1,16,1, 1,32,1, 1,64,1, 1,128,1, 1,256,1, 1,512,1, 1,1024,1, 1,2048,1, 1,4096,1, 1,8192,1, 1,16384,1, 0,0};
 
-// unsigned int back_to_ground[] = {3,128*2,8, 1,128,4, 1,64,3, 0};
-unsigned int stepping_down[] = {1,4096*8,512+256, 1,4096*7,512,  1,4096*6,512,  1,4096*5,512,  1,4096*4,512,  1,4096*3,512,  1,4096*2,512,  1,4096,512, 0};
+// unsigned int back_to_ground[] = {3,128*2,8, 1,128,4, 1,64,3, 0,0};
+unsigned int stepping_down[] = {1,4096*8,512+256, 1,4096*7,512,  1,4096*6,512,  1,4096*5,512,  1,4096*4,512,  1,4096*3,512,  1,4096*2,512,  1,4096,512, 0,0};
 
-unsigned int back_to_ground[] = {1,2048,32, 3,1024*2,32, 1,1024,32, 1,512,32, 2,512*3,32, 1,256,16, 1,128,8, 1,64,4, 0};
+unsigned int back_to_ground[] = {1,2048,32, 3,1024*2,32, 1,1024,32, 1,512,32, 2,512*3,32, 1,256,16, 1,128,8, 1,64,4, 0,0};
 
-unsigned int pentatonic_rising[] = {1,4096,256, 5,6*4096,256, 3,4*4096,256, 2,3*4096,256, 5*2,6*3*4096,256, 1,2*4096,256, 0};
+unsigned int pentatonic_rising[] = {1,4096,256, 5,6*4096,256, 3,4*4096,256, 2,3*4096,256, 5*2,6*3*4096,256, 1,2*4096,256, 0,0};
 
 unsigned int simple_theme[] = {1,128,8, 1,2*128,8, 1,3*128,8, 1,4*128,8, 5,6*4*128,3*8, 1,12,3,
 			       3,4*2048,256*3/4, 5,6*2048,256*3/4, 2,3*2048,256*3/4, 1,2048,128,
 			       1,128,3, 1,64,3, 1,32,4,
-			       0};
+			       0,0};
 
 #ifndef RAM_IS_SCARE	// enough RAM?
   #include "jiffles.h"
@@ -1150,10 +1164,10 @@ void init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int
 }
 
 
-unsigned int gling128_0[] = {1,128,16, 0};
-unsigned int gling128_1[] = {1,256,2, 1,128,16, 0};
-unsigned int gling128_2[] = {1,512,4, 1,256,4, 1,128,16, 0};
-unsigned int gling128[]   = {1,512,8, 1,256,4, 1,128,16, 0};
+unsigned int gling128_0[] = {1,128,16, 0,0};
+unsigned int gling128_1[] = {1,256,2, 1,128,16, 0,0};
+unsigned int gling128_2[] = {1,512,4, 1,256,4, 1,128,16, 0,0};
+unsigned int gling128[]   = {1,512,8, 1,256,4, 1,128,16, 0,0};
 
 void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   /*
@@ -1261,7 +1275,7 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
 //
 //	  //  select_flagged();
   //jiffle=harmonics4;
-  // unsigned int harmonics4 = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0};
+  // unsigned int harmonics4 = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0,0};
 
 //  selected_or_flagged_pulses_info_lines();
 }
@@ -2075,27 +2089,27 @@ int setup_jiffle_thrower_synced(struct time when,
 
 #define JIFFLETAB_INDEX_STEP	3
 
-// FIXME: ################
-#define JIFFLETAB_ENTRIES	8	// how many triplets
+#define JIFFLETAB_ENTRIES	8	// how many triplets // ???????????????? FIXME: ################
 
-// there *MUST* be a trailing zero in all jiffletabs.
+// jiffletabs *MUST* have 2 trailing zeros
 unsigned int jiffletab[] =
-  {1,16,2, 1,256,32, 1,128,8, 1,64,2, 1,32,1, 1,16,1, 1,8,2, 0,0,0, 0};	// there *must* be a trailing zero.
+  {1,16,2, 1,256,32, 1,128,8, 1,64,2, 1,32,1, 1,16,1, 1,8,2, 0,0};
 
 unsigned int jiffletab_december[] =
-  {1,1024,4, 1,64,4, 1,28,16, 1,512,8, 1,1024,128, 0 };
+  {1,1024,4, 1,64,4, 1,28,16, 1,512,8, 1,1024,128, 0,0};
 
 unsigned int jiffletab_december128[] =
-  {1,1024,4, 1,64,4, 1,128,16, 1,512,8, 1,1024,128, 0 };
+  {1,1024,4, 1,64,4, 1,128,16, 1,512,8, 1,1024,128, 0,0};
 
 unsigned int jiffletab_december_pizzicato[] =
-  {1,1024,4, 1,64,4, 1,28,16, 1,512,8, 1,1024,128, 1,2048,8, 0 };
+  {1,1024,4, 1,64,4, 1,28,16, 1,512,8, 1,1024,128, 1,2048,8, 0,0};
 
 
-void set_jiffle_RAM_value(int new_value) {		// ################ FIXME: ################
+void set_jiffle_RAM_value(int new_value) {
   jiffle[jiffle_write_index]=new_value;
 
-  if (++jiffle_write_index >= jiffle_RAM_length) {	// array is full
+  // jiffletabs *MUST* have 2 trailing zeros	// ################ FIXME: ################
+  if (++jiffle_write_index < (JIFFLE_RAM_SIZE - 2)) {	// array is not full?
     set_jiffle_RAM_value_0_stop();
 
     // drop all remaining numbers and delimiters from input
@@ -2113,25 +2127,25 @@ void set_jiffle_RAM_value(int new_value) {		// ################ FIXME: #########
 	yes=false;
       }
     }
-  }
+  } else jiffle_write_index--;	// array was full
 }
 
 
 void set_jiffle_RAM_value_0_stop() {
-  if (jiffle_write_index>=jiffle_RAM_length)
-    jiffle_write_index=jiffle_RAM_length-1;
-  jiffle[jiffle_write_index]=0;	   // store a trailing zero
-  jiffle[jiffle_RAM_length-1]=0;  // and last arry element (as a savety net)
-  menu_mode=0;			   // stop numeric data input
-  //  jiffle_write_index=0;		   // aesthetics, but hmm...
+  if (jiffle_write_index >= (JIFFLE_RAM_SIZE - 2))
+    jiffle_write_index = JIFFLE_RAM_SIZE - 2;
+  jiffle[jiffle_write_index] = 0;	// store a trailing zero
+  jiffle[JIFFLE_RAM_SIZE-1] = 0;	// and last arry element (as a savety net)
+  menu_mode=0;				// stop numeric data input
+  //  jiffle_write_index=0;		// aesthetics, but hmm...
 
-  display_jiffletab(jiffle);		  // put that here for now
+  display_jiffletab(jiffle);		// put that here for now
 }
 
 
 void load2_jiffle_RAM(unsigned int *source) {	// zero terminated
   unsigned int data;
-  for (int d=0, i=jiffle_write_index; i<jiffle_RAM_length; i++) {
+  for (int d=0, i=jiffle_write_index; i < (JIFFLE_RAM_SIZE - 2); i++) {
     data=source[d++];
     set_jiffle_RAM_value(data);
     if (data==0) {
@@ -2182,7 +2196,8 @@ void display_jiffletab(unsigned int *jiffletab) {
     if (i==jiffle_write_index)
       MENU.out(">");
     if (jiffletab[i] == 0)
-      break;
+      if (jiffletab[i+1] == 0)	// continue reading beyond a single zero
+	break;
 
     if (i==jiffle_range_top)
       if (jiffle_range_top)	// no range, no sign
@@ -2190,8 +2205,8 @@ void display_jiffletab(unsigned int *jiffletab) {
     MENU.out(",");
   }
 
-  MENU.out(F(" }  buffer "));
-  MENU.out(jiffle_write_index); MENU.slash(); MENU.out(jiffle_RAM_length);
+  MENU.out(F(" }  cursor "));
+  MENU.out(jiffle_write_index); MENU.slash(); MENU.out(JIFFLE_RAM_SIZE);
 
   sum = jiffletab_len(jiffletab);
   MENU.tab();
@@ -2201,14 +2216,14 @@ void display_jiffletab(unsigned int *jiffletab) {
 
 
 
-unsigned int jiffletab01[] = {1,512,8, 1,1024,16, 1,2048,32, 1,1024,16, 0};
-unsigned int jiffletab02[] = {1,128,2, 1,256,6, 1,512,10, 1,1024,32, 1,3*128,20, 1,64,8, 0};
-unsigned int jiffletab03[] = {1,32,4, 1,64,8, 1,128,16, 1,256,32, 1,512,64, 1,1024,128, 0};	// testing octaves
+unsigned int jiffletab01[] = {1,512,8, 1,1024,16, 1,2048,32, 1,1024,16, 0,0};
+unsigned int jiffletab02[] = {1,128,2, 1,256,6, 1,512,10, 1,1024,32, 1,3*128,20, 1,64,8, 0,0};
+unsigned int jiffletab03[] = {1,32,4, 1,64,8, 1,128,16, 1,256,32, 1,512,64, 1,1024,128, 0,0};	// testing octaves
 unsigned int jiffletab04[] =
-  {1,2096,4, 1,512,2, 1,128,2, 1,256,2, 1,512,8, 1,1024,32, 1,512,4, 1,256,3, 1,128,2, 1,64,1, 0};
-unsigned int jiffletab05[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,2, 1,64,1, 1,32,1, 1,16,2, 0};
-unsigned int jiffletab06[] = {1,32,2, 0};	// doubleclick
-unsigned int jiffletab1[]  = {1,1024,64, 1,512,4, 1,128,2, 1,64,1, 1,32,1, 1,16,1, 0};
+  {1,2096,4, 1,512,2, 1,128,2, 1,256,2, 1,512,8, 1,1024,32, 1,512,4, 1,256,3, 1,128,2, 1,64,1, 0,0};
+unsigned int jiffletab05[] = {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,2, 1,64,1, 1,32,1, 1,16,2, 0,0};
+unsigned int jiffletab06[] = {1,32,2, 0,0};	// doubleclick
+unsigned int jiffletab1[]  = {1,1024,64, 1,512,4, 1,128,2, 1,64,1, 1,32,1, 1,16,1, 0,0};
 
 
 void do_jiffle (int pulse) {	// to be called by pulse_do
@@ -2318,16 +2333,16 @@ void setup_jiffles2345(bool inverse, int voices, unsigned int multiplier, unsign
 
 // jiffletab0 is obsolete	DADA ################
 unsigned int jiffletab0[] =
-  {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,4, 1,64,3, 1,32,1, 1,16,2, 0};	// nice short jiffy
+  {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,4, 1,64,3, 1,32,1, 1,16,2, 0,0};	// nice short jiffy
 
 unsigned int jiff0[] =
-  {1,16,4, 1,24,6, 1,128,16, 1,1024,64, 1,2048,128, 1,4096,256, 1,2048,64, 1,4096,128, 1,32,2, 0}; // there *must* be a trailing zero.);
+  {1,16,4, 1,24,6, 1,128,16, 1,1024,64, 1,2048,128, 1,4096,256, 1,2048,64, 1,4096,128, 1,32,2, 0,0}; // there *must* be a trailing zero.);
 
 unsigned int jiff1[] =
-  {1,512,8, 1,1024,16, 1,2048,32, 1,1024,16, 0};
+  {1,512,8, 1,1024,16, 1,2048,32, 1,1024,16, 0,0};
 
 unsigned int jiff2[] =
-  {1,2096,4, 1,512,2, 1,128,2, 1,256,2, 1,512,8, 1,1024,32, 1,512,4, 1,256,3, 1,128,2, 1,64,1, 0};
+  {1,2096,4, 1,512,2, 1,128,2, 1,256,2, 1,512,8, 1,1024,32, 1,512,4, 1,256,3, 1,128,2, 1,64,1, 0,0};
 
 
 void setup_jifflesNEW(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
@@ -2552,17 +2567,27 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case '|':	// accept as noop in normal mode. used as range bottom delimiter in arrays
-    if (menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE)
+    if (menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE) {
       jiffle_range_bottom = jiffle_write_index;
-    else
+      fix_jiffle_range();
+
+      if(MENU.cb_peek()==EOF)
+	if (MENU.verbosity)
+	  display_jiffletab(jiffle);
+    } else
       if (MENU.verbosity >= VERBOSITY_SOME)
 	MENU.outln(F("noop"));
     break;
 
-  case '"': // '"'  accept as reserved noop in normal mode. used as range top delimiter in arrays
-    if (menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE)
+  case '"':	// accept as reserved noop in normal mode. used as range top delimiter in arrays
+    if (menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE) {
       jiffle_range_top = jiffle_write_index;
-    else
+      fix_jiffle_range();
+
+      if(MENU.cb_peek()==EOF)
+	if (MENU.verbosity)
+	  display_jiffletab(jiffle);
+    } else
       if (MENU.verbosity >= VERBOSITY_SOME)
 	MENU.outln(F("reserved"));	// reserved for string input
     break;
@@ -2609,6 +2634,10 @@ bool menu_pulses_reaction(char menu_input) {
     case JIFFLE_ENTRY_UNTIL_ZERO_MODE:
       if (jiffle_write_index)
 	jiffle_write_index--;
+
+      if(MENU.cb_peek()==EOF)
+	if (MENU.verbosity)
+	  display_jiffletab(jiffle);
       break;
     default:
       if (MENU.verbosity >= VERBOSITY_SOME)
@@ -2619,8 +2648,12 @@ bool menu_pulses_reaction(char menu_input) {
   case '>':
     switch (menu_mode) {
     case JIFFLE_ENTRY_UNTIL_ZERO_MODE:
-      if (++jiffle_write_index >= jiffle_RAM_length)
-	jiffle_write_index = jiffle_RAM_length - 1;
+      if (++jiffle_write_index >= (JIFFLE_RAM_SIZE - 2))
+	jiffle_write_index = JIFFLE_RAM_SIZE - 2;
+
+      if(MENU.cb_peek()==EOF)
+	if (MENU.verbosity)
+	  display_jiffletab(jiffle);
       break;
     default:
       if (MENU.verbosity >= VERBOSITY_SOME)
@@ -3066,125 +3099,141 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case 'J':	// select jiffle
-    // temporary interface to some jiffles from source, some very old
-    // FIXME:	review and delete	################
-    if (MENU.maybe_display_more()) {
-      MENU.out(F("jiffle "));
-
-     #ifndef RAM_IS_SCARE	// enough RAM?
-      for (int i = 0; i < n_jiffle_names; i++) {
-	MENU.out(i); MENU.tab(); MENU.outln(jiffle_names[i]);
+  case 'J':	// select, edit, load jiffle
+    /*
+      'J'  shows jiffle_names and display_jiffletab(jiffle) selected jiffle
+      'J7' selects jiffle #7 and display_jiffletab(7)
+      'J!' loads selected jiffle in jiffle_RAM and display_jiffletab(jiffle_RAM)
+    */
+    // some jiffles from source, some very old FIXME:	review and delete	################
+    if (MENU.cb_peek() == '!') {  // 'J!' copies an already selected jiffletab to RAM
+      MENU.drop_input_token();
+      if(jiffle != jiffle_RAM) {
+	unsigned int * source=jiffle;
+	jiffle_write_index=0;
+	jiffle=jiffle_RAM;
+	//load2_jiffle_RAM(jiffletab_december_pizzicato);
+	// ################ FIXME: ################
+	load2_jiffle_RAM(source);
+	jiffle = jiffle_RAM;	// hmm? ################
       }
-     #endif
-    }
+    } else {	// select jiffle
+      if (MENU.maybe_display_more()) {
+	MENU.out(F("jiffle "));
 
-    // temporary interface to some jiffles from source, some very old
-    input_value=MENU.numeric_input(0);	// remember as index for experiment_names[]
-    switch (input_value) {
-    case 0:
-      jiffle = jiffle_RAM;
-      break;
-    case 1:
-      jiffle=gling128;
-      break;
-    case 2:
-      jiffle = jiffletab;
-      break;
-    case 3:
-      jiffle = jiffletab_december;
-      break;
-    case 4:
-      jiffle = jiffletab_december128;
-      break;
-    case 5:
-      jiffle = jiffletab_december_pizzicato;
-      break;
-    case 6:
-      jiffle = jiffletab01;
-      break;
-    case 7:
-      jiffle = jiffletab01;
-      break;
-    case 8:
-      jiffle = jiffletab02;
-      break;
-    case 9:
-      jiffle = jiffletab03;
-      break;
-    case 10:
-      jiffle = jiffletab04;
-      break;
-    case 11:
-      jiffle = jiffletab05;
-      break;
-    case 12:
-      jiffle = jiffletab06;
-      break;
-    case 13:
-      jiffle = jiffletab06;
-      break;
-    case 14:
-      jiffle = gling128_0;
-      break;
-    case 15:
-      jiffle = gling128_1;
-      break;
-    case 16:
-      jiffle = gling128_2;
-      break;
-    case 17:
-      jiffle = harmonics4;
-      break;
-    case 18:
-      jiffle = ting1024;
-      break;
-    case 19:
-      jiffle = ting4096;
-      break;
-    case 20:
-      jiffle = arpeggio4096;
-      break;
-    case 21:
-      jiffle = arpeggio4096down;
-      break;
-//    case 21:
-//      jiffle = mimic_japan_pentatonic;
-//      break;
+       #ifndef RAM_IS_SCARE	// enough RAM?
+	for (int i = 0; i < n_jiffle_names; i++) {
+	  MENU.out(i); MENU.tab(); MENU.outln(jiffle_names[i]);
+	}
+       #endif
+      }
 
-    case 22:
-      jiffle = arpeggio_cont;
-      break;
-    case 23:
-      jiffle = arpeggio_and_down;
-      break;
-    case 24:
-      jiffle = stepping_down;
-      break;
-    case 25:
-      jiffle = back_to_ground;
-      break;
-    case 26:
-      jiffle = arpeggio_and_sayling;
-      break;
-    case 27:
-      jiffle = simple_theme;
-      break;
-    case 28:
-      jiffle = pentatonic_rising;
-      break;
-    default:
-      input_value=0;	// as jiffle_names[] index
+      // temporary interface to some jiffles from source, some very old
+      input_value=MENU.numeric_input(0);	// remember as index for experiment_names[]
+      switch (input_value) {
+      case 0:
+	jiffle = jiffle_RAM;
+	break;
+      case 1:
+	jiffle=gling128;
+	break;
+      case 2:
+	jiffle = jiffletab;
+	break;
+      case 3:
+	jiffle = jiffletab_december;
+	break;
+      case 4:
+	jiffle = jiffletab_december128;
+	break;
+      case 5:
+	jiffle = jiffletab_december_pizzicato;
+	break;
+      case 6:
+	jiffle = jiffletab01;
+	break;
+      case 7:
+	jiffle = jiffletab01;
+	break;
+      case 8:
+	jiffle = jiffletab02;
+	break;
+      case 9:
+	jiffle = jiffletab03;
+	break;
+      case 10:
+	jiffle = jiffletab04;
+	break;
+      case 11:
+	jiffle = jiffletab05;
+	break;
+      case 12:
+	jiffle = jiffletab06;
+	break;
+      case 13:
+	jiffle = jiffletab06;
+	break;
+      case 14:
+	jiffle = gling128_0;
+	break;
+      case 15:
+	jiffle = gling128_1;
+	break;
+      case 16:
+	jiffle = gling128_2;
+	break;
+      case 17:
+	jiffle = harmonics4;
+	break;
+      case 18:
+	jiffle = ting1024;
+	break;
+      case 19:
+	jiffle = ting4096;
+	break;
+      case 20:
+	jiffle = arpeggio4096;
+	break;
+      case 21:
+	jiffle = arpeggio4096down;
+	break;
+	//    case 21:
+	//      jiffle = mimic_japan_pentatonic;
+	//      break;
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	MENU.outln_invalid();
-    }
+      case 22:
+	jiffle = arpeggio_cont;
+	break;
+      case 23:
+	jiffle = arpeggio_and_down;
+	break;
+      case 24:
+	jiffle = stepping_down;
+	break;
+      case 25:
+	jiffle = back_to_ground;
+	break;
+      case 26:
+	jiffle = arpeggio_and_sayling;
+	break;
+      case 27:
+	jiffle = simple_theme;
+	break;
+      case 28:
+	jiffle = pentatonic_rising;
+	break;
+      default:
+	input_value=0;	// as jiffle_names[] index
 
-    if (MENU.maybe_display_more()) {
-     #ifndef RAM_IS_SCARE	// enough RAM?
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  MENU.outln_invalid();
+      }
+
+      if (MENU.maybe_display_more()) {
+#ifndef RAM_IS_SCARE	// enough RAM?
 	MENU.outln(jiffle_names[input_value]);
-     #endif
-
+#endif
+      }
       display_jiffletab(jiffle);
     }
     break;
@@ -3591,7 +3640,7 @@ bool menu_pulses_reaction(char menu_input) {
       divisor=1;
       voices=8;	//just for 'The Harmonical Strings Christmas Evening Sounds'
       inverse=false;
-      // unsigned int harmonics4 = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0};
+      // unsigned int harmonics4 = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0,0};
       jiffle=harmonics4;
       select_n(voices);
       display_name5pars("prepare_magnets", inverse, voices, multiplier, divisor, sync);
