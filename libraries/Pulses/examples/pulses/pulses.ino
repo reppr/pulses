@@ -370,7 +370,10 @@ bool connectWifi() {
   // 10 seconds to establish connection
   unsigned long startTime = millis();
   while (WiFi.status() != WL_CONNECTED && millis() - startTime < 10000) {
-    delay(333);
+    delay(100);
+    #if defined(ESP32) || defined(ESP8266)
+      yield();	// delay should do that, but who knows...
+    #endif
     MENU.out(".");
   }
   // Check connection
@@ -758,6 +761,10 @@ int main() {
      let the UI starve, when there is not enough time for everything.
   */
   while (PULSES.check_maybe_do()) { }	// in stress PULSES get's *first* priority.
+
+#if defined(ESP32) || defined(ESP8266)
+  yield();	// maybe good to do that, who knows?
+#endif
 
   if(! MENU.lurk_then_do())		// MENU comes second in priority.
     {					// if MENU had nothing to do, then
