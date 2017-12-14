@@ -445,7 +445,9 @@ void setup() {
 //#endif
 
 #ifdef USE_WIFI_telnet_menu
-  setup_wifi_telnet();
+  #ifdef AUTO_CONNECT_WIFI			// start wifi on booting?
+    setup_wifi_telnet();
+  #endif
 #else // WiFi not in use, switch it off:
 
   #if defined(ESP8266) || defined(ESP32)	// ################ FIXME: test ################
