@@ -208,22 +208,23 @@ int selected_ratio=ILLEGAL;
 
 #ifdef RATIOS_RAM_SIZE
   // ratios:
-  unsigned int ratios_data[RATIOS_RAM_SIZE] = {0};
-  unsigned int ratios_data_length = RATIOS_RAM_SIZE;
+  unsigned int ratios_RAM[RATIOS_RAM_SIZE] = {0};
+  unsigned int ratios_RAM_length = RATIOS_RAM_SIZE;
   unsigned int ratios_write_index=0;
-  unsigned int *ratios=ratios_data;
+  unsigned int *ratios=ratios_RAM;
+#else
+  #error RATIOS_RAM_SIZE is not defined
 #endif // RATIOS_RAM_SIZE
 
 #ifndef RAM_IS_SCARE	// enough RAM?
 char * ratio_names[] = {
-      "ratio_RAM",		// 0
+      "ratios_RAM",		// 0
       "pentatonic_minor",	// 1
       "european_pentatonic",	// 2
       "mimic_japan_pentatonic",	// 3
       "ratios_quot",		// 4
       "ratios_int",		// 5
       "ratios_rationals",	// 6
-      "(invalid)",		// 7
   };
 
   #define n_ratio_names (sizeof (ratio_names) / sizeof (const char *))
@@ -3205,7 +3206,7 @@ bool menu_pulses_reaction(char menu_input) {
 #endif
       }
 
-      // temporary interface to some jiffles from source, some very old
+      // some jiffles in the source are very old   FIXME: check
       selected_jiffle=MENU.numeric_input(selected_jiffle);	// remember as index for jiffle_names[selected_jiffle]
       switch (selected_jiffle) {
       case 0:
@@ -3307,6 +3308,31 @@ bool menu_pulses_reaction(char menu_input) {
       }
     }
     display_jiffletab(jiffle);
+    break;
+
+  case 'R':	// ratio
+    if (MENU.maybe_display_more()) {
+      MENU.out(F("ratio "));
+
+#ifndef RAM_IS_SCARE	// enough RAM?	display jiffle names
+      display_names(ratio_names, n_ratio_names, selected_ratio);
+#endif
+    }
+    selected_ratio=MENU.numeric_input(selected_ratio);	// remember as index for ratio_names[selected_ratio]
+    switch (selected_ratio) {
+    case 0:
+      ratios = ratios_RAM;
+      break;
+    default:
+      if (selected_ratio >= n_ratio_names) {
+	selected_ratio=0;
+
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  MENU.outln_invalid();
+      }
+      break;
+    }
+//    display_ratio(selected_ratio);
     break;
 
   case 'f':	// en_info
@@ -3500,7 +3526,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     break;
 
-  case 'X':	// reset, remove all (flagged) pulses, restart selections at none
+  case 'X':	// PANIC BUTTON  reset, remove all (flagged) pulses, restart selections at none
 /* DEACTIVATED 'X!' reboot ESP8266
 // not very useful, you cannot continue on the same serial line, deactivated
 #ifdef ESP8266	// 'X!' reboot ESP8266		hope it works on all ESP8266 boards, FIXME: test
