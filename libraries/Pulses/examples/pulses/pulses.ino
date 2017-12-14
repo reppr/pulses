@@ -2144,8 +2144,6 @@ int setup_jiffle_thrower_synced(struct time when,
 
 #define JIFFLETAB_INDEX_STEP	3
 
-#define JIFFLETAB_ENTRIES	8	// how many triplets // ???????????????? FIXME: ################
-
 // jiffletabs *MUST* have 2 trailing zeros
 unsigned int jiffletab[] =
   {1,16,2, 1,256,32, 1,128,8, 1,64,2, 1,32,1, 1,16,1, 1,8,2, 0,0};
@@ -2229,7 +2227,7 @@ struct fraction jiffletab_len(unsigned int *jiffletab) {
 
   f.multiplier = 0;
   f.divisor=1;
-  for (int i=0; i <= JIFFLETAB_ENTRIES*JIFFLETAB_INDEX_STEP; i+=JIFFLETAB_INDEX_STEP) {
+  for (int i=0;; i+=JIFFLETAB_INDEX_STEP) {
     multiplier = jiffletab[i];
     divisor    = jiffletab[i+1];
     count      = jiffletab[i+2];
@@ -2249,6 +2247,7 @@ void display_jiffletab(unsigned int *jiffletab) {
   struct fraction sum;
   sum.multiplier = 0;
   sum.divisor = 1;
+  bool was_zero=false;
 
   // first line:
 #ifndef RAM_IS_SCARE
@@ -2264,7 +2263,7 @@ void display_jiffletab(unsigned int *jiffletab) {
 
   MENU.ln();
 
-  // second line:
+  // second line {data,data, ...}:
   MENU.out("{");
   for (int i=0; ; i++) {
     if ((i % JIFFLETAB_INDEX_STEP) == 0)
@@ -2277,15 +2276,17 @@ void display_jiffletab(unsigned int *jiffletab) {
     MENU.out(jiffletab[i]);
     if (i==jiffle_write_index)
       MENU.out(">");
-    if (jiffletab[i] == 0)
-      if (jiffletab[i+1] == 0) {	// continue reading *including* two zeroes
-	MENU.out(",0");			// display second zero
-	break;				// data done
-      }
     if (i==jiffle_range_top)
       if (jiffle_range_top)	// no range, no sign
 	MENU.out('"');
     MENU.out(",");
+    if (jiffletab[i] == 0) {
+      if (was_zero)	// second zero done, stop it
+	break;
+
+      was_zero=true;	// first zero, continue *including* both zeroes
+    } else
+      was_zero=false;
   }
 
   MENU.out(F(" }  cursor "));
@@ -3310,7 +3311,7 @@ bool menu_pulses_reaction(char menu_input) {
     display_jiffletab(jiffle);
     break;
 
-  case 'R':	// ratio
+  case 'R':	// ratios
     if (MENU.maybe_display_more()) {
       MENU.out(F("ratio "));
 
