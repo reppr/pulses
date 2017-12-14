@@ -1,6 +1,6 @@
 #ifndef RAM_IS_SCARE	// enough RAM?
 
-  const char * jiffle_names[] = {
+char * jiffle_names[] = {
       "jiffle_RAM",	// 0
       "gling128",	// 1
       "jiffletab",	// 2

@@ -198,9 +198,14 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 #endif	// ESP8266
 
 
+/* **************************************************************** */
+// ratios, scales
+int selected_ratio=ILLEGAL;
+
 #ifndef RATIOS_RAM_SIZE	// ratios on small harware ressources, FIXME: test	################
-  #define RATIOS_RAM_SIZE 9*2+1	// small buffer might fit on simple hardware
+  #define RATIOS_RAM_SIZE 9*2+2	// small buffer might fit on simple hardware
 #endif
+
 #ifdef RATIOS_RAM_SIZE
   // ratios:
   unsigned int ratios_data[RATIOS_RAM_SIZE] = {0};
@@ -209,8 +214,29 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
   unsigned int *ratios=ratios_data;
 #endif // RATIOS_RAM_SIZE
 
-// unsigned int ratios_quot[] = {1,1, 1,2, 1,3, 1,4, 1,5, 1,6, 1,7, 1,8, 0,0};  // zero terminated
-// unsigned int ratios_int[]  = {1,1, 2,1, 3,1, 4,1, 5,1, 6,1, 7,1, 8,1, 0,0};  // zero terminated
+#ifndef RAM_IS_SCARE	// enough RAM?
+char * ratio_names[] = {
+      "ratio_RAM",		// 0
+      "pentatonic_minor",	// 1
+      "european_pentatonic",	// 2
+      "mimic_japan_pentatonic",	// 3
+      "ratios_quot",		// 4
+      "ratios_int",		// 5
+      "ratios_rationals",	// 6
+      "(invalid)",		// 7
+  };
+
+  #define n_ratio_names (sizeof (ratio_names) / sizeof (const char *))
+#endif
+
+
+// ratiotabs *MUST* have 2 trailing zeros
+
+
+unsigned int ratios_quot[] = {1,1, 1,2, 1,3, 1,4, 1,5, 1,6, 1,7, 1,8, 0,0};  // zero terminated
+unsigned int ratios_int[]  = {1,1, 2,1, 3,1, 4,1, 5,1, 6,1, 7,1, 8,1, 0,0};  // zero terminated
+unsigned int ratios_rationals[]  = {1,1, 1,2, 2,3, 3,4, 5,6, 6,7, 7,8, 8,9, 9,10, 0,0};  // zero terminated
+
 unsigned int european_pentatonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 0,0};	// scale each octave	zero terminated
 
 unsigned int pentatonic_minor[] = {1,1, 5,6, 3,4, 2,3, 5*2,6*3, 0,0};	// scale each octave	zero terminated
@@ -221,6 +247,8 @@ unsigned int mimic_japan_pentatonic[] = {1,1, 8,9, 5,6, 2,3, 2*15,3*16, 0,0 };	/
 
 
 /* **************************************************************** */
+int selected_jiffle = ILLEGAL;
+
 // editing jiffle data
 // if we have enough RAM, we work in an int array[]
 // pre defined jiffletabs can be copied there before using and editing
@@ -247,6 +275,7 @@ void fix_jiffle_range() {
     jiffle_range_top = i;
   }
 };
+
 
 // pre defined jiffles:
 unsigned int harmonics4[] = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0,0};	// magnets on strings experiments
@@ -299,13 +328,28 @@ unsigned int simple_theme[] = {1,128,8, 1,2*128,8, 1,3*128,8, 1,4*128,8, 5,6*4*1
 
 
 /* **************************************************************** */
+void display_names(char ** names, int count, int selected) {
+  MENU.ln();
+  for (int i = 0; i < count; i++) {
+    if (i==selected)
+      MENU.out('*');
+    else
+      MENU.space();
+    MENU.space();
+
+    MENU.out(i);
+    MENU.tab(); MENU.outln(names[i]);
+  }
+  MENU.ln();
+}
+/* **************************************************************** */
 // user interface variables:
 
 int sync=1;			// syncing edges or middles of square pulses
 unsigned long multiplier=1;
 unsigned long divisor=1;
 
-int experiment=-1;
+int selected_experiment=-1;
 int voices=CLICK_PULSES;
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
@@ -376,6 +420,7 @@ bool connectWifi() {
     #endif
     MENU.out(".");
   }
+
   // Check connection
   if (WiFi.status() == WL_CONNECTED) {
     MENU.outln(" connected");
@@ -1971,7 +2016,7 @@ void info_select_destination_with(bool extended_destinations) {
 // variables used to setup the experiments
 
 #ifndef RAM_IS_SCARE	// enough RAM?
-  const char * experiment_names[] = {
+char * experiment_names[] = {		// FIXME: const char * experiment_names would be better
       "(invalid)",				// 0
       "setup_jiffle128",				// 1
       "init_div_123456",				// 2
@@ -2047,10 +2092,10 @@ void menu_pulses_display() {
   MENU.ln();
   MENU.out(F("s=switch pulse on/off"));
   MENU.tab();
-  MENU.out(F("M=deactivate ALL\tR=remove ALL\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tN=en-noop\tf=en-info\tF=en-INFO\nS=sync\tn=sync now "));
+  MENU.out(F("M=deactivate ALL\tX=remove ALL\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tN=en-noop\tf=en-info\tF=en-INFO\nS=sync\tn=sync now "));
   MENU.outln(sync);
 
-  MENU.out(F("E=enter experiment (")); MENU.out(experiment); MENU.out(F(")"));
+  MENU.out(F("E=enter experiment (")); MENU.out(selected_experiment); MENU.out(F(")"));
   MENU.out(F("\t\tV=voices for experiment (")); MENU.out(voices); MENU.outln(F(")"));
    MENU.out(F("b=toggle pin mapping (bottom "));
   if (inverse)
@@ -2206,7 +2251,7 @@ void display_jiffletab(unsigned int *jiffletab) {
 
   // first line:
 #ifndef RAM_IS_SCARE
-  MENU.out(jiffle_names[jiffle_n]); MENU.tab(); MENU.out(F("ID: ")); MENU.out(jiffle_n); MENU.tab();
+  MENU.out(jiffle_names[selected_jiffle]); MENU.tab(); MENU.out(F("ID: ")); MENU.out(selected_jiffle); MENU.tab();
 #endif
   MENU.out(F("editing "));
   if (menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE) {
@@ -3148,32 +3193,21 @@ bool menu_pulses_reaction(char menu_input) {
 	// jiffle_write_index=0;	// no, write starting at jiffle_write_index #### FIXME: ####
 
 	jiffle = jiffle_RAM;
-	jiffle_n = 0;
+	selected_jiffle = 0;
 	load2_jiffle_RAM(source);
       }
     } else {	// select jiffle
       if (MENU.maybe_display_more()) {
 	MENU.out(F("jiffle "));
 
-       #ifndef RAM_IS_SCARE	// enough RAM?	display jiffle names
-	MENU.ln();
-	for (int i = 0; i < n_jiffle_names; i++) {
-	  if (i==jiffle_n)
-	    MENU.out('*');
-	  else
-	    MENU.space();
-	  MENU.space();
-
-	  MENU.out(i);
-	  MENU.tab(); MENU.outln(jiffle_names[i]);
-	}
-	MENU.ln();
-       #endif
+#ifndef RAM_IS_SCARE	// enough RAM?	display jiffle names
+	display_names(jiffle_names, n_jiffle_names, selected_jiffle);
+#endif
       }
 
       // temporary interface to some jiffles from source, some very old
-      jiffle_n=MENU.numeric_input(jiffle_n);	// remember as index for experiment_names[jiffle_n]
-      switch (jiffle_n) {
+      selected_jiffle=MENU.numeric_input(selected_jiffle);	// remember as index for jiffle_names[selected_jiffle]
+      switch (selected_jiffle) {
       case 0:
 	jiffle = jiffle_RAM;
 	break;
@@ -3266,7 +3300,7 @@ bool menu_pulses_reaction(char menu_input) {
 	jiffle = pentatonic_rising;
 	break;
       default:
-	jiffle_n=0;	// as jiffle_names[jiffle_n] index
+	selected_jiffle=0;	// as jiffle_names[selected_jiffle] index
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  MENU.outln_invalid();
@@ -3466,14 +3500,14 @@ bool menu_pulses_reaction(char menu_input) {
 
     break;
 
-  case 'R':	// reset, remove all (flagged) pulses, restart selections at none
-/* DEACTIVATED 'R!' reboot ESP8266
+  case 'X':	// reset, remove all (flagged) pulses, restart selections at none
+/* DEACTIVATED 'X!' reboot ESP8266
 // not very useful, you cannot continue on the same serial line, deactivated
-#ifdef ESP8266	// 'R!' reboot ESP8266		hope it works on all ESP8266 boards, FIXME: test
-    // 'R!' reboots ESP8266
+#ifdef ESP8266	// 'X!' reboot ESP8266		hope it works on all ESP8266 boards, FIXME: test
+    // 'X!' reboots ESP8266
     next_token = MENU.cb_peek();
     switch(next_token) {	// examine following input token
-    case '!':	// 'R!' reboots ESP8266
+    case '!':	// 'X!' reboots ESP8266
       MENU.drop_input_token();	// ;)
       MENU.outln(F("HARDWARE RESET"));
       pinMode(7, OUTPUT);	// setting pin 7 to output reboots my board
@@ -3516,20 +3550,18 @@ bool menu_pulses_reaction(char menu_input) {
     if (MENU.maybe_display_more()) {
       MENU.out(F("experiment "));
 
-    #ifndef RAM_IS_SCARE	// enough RAM?
-      for (int i = 0; i < n_experiment_names; i++) {
-	MENU.out(i); MENU.tab(); MENU.outln(experiment_names[i]);
-      }
-    #endif
+#ifndef RAM_IS_SCARE	// enough RAM?
+      display_names(experiment_names, n_experiment_names, selected_experiment);
+#endif
     }
 
-    input_value = MENU.numeric_input(experiment);
+    input_value = MENU.numeric_input(selected_experiment);
     if (input_value>=0 )
-      experiment = input_value;
+      selected_experiment = input_value;
     else
       MENU.outln_invalid();
 
-    switch (experiment) {	// initialize defaults, but do not start yet
+    switch (selected_experiment) {	// initialize defaults, but do not start yet
     case 1:
       multiplier=2;
       divisor=1;
@@ -3808,47 +3840,47 @@ bool menu_pulses_reaction(char menu_input) {
 
     case 20:
       jiffle = arpeggio4096;
-      MENU.play_KB_macro("R E12!aN *8 J20-.");
+      MENU.play_KB_macro("X E12!aN *8 J20-.");
       break;
 
     case 21:
       jiffle = arpeggio4096down;
-      MENU.play_KB_macro("R E12!aN *16 J21-.");
+      MENU.play_KB_macro("X E12!aN *16 J21-.");
       break;
 
     case 22:
       jiffle = arpeggio_cont;				// :)	with pizzs
-      MENU.play_KB_macro("R E12!aN *16 J22-.");
+      MENU.play_KB_macro("X E12!aN *16 J22-.");
       break;
 
     case 23:
       jiffle = arpeggio_and_down;			// :) :)  arpeggio down instead pizzs
-      MENU.play_KB_macro("R E12!aN *16 J23-.");
+      MENU.play_KB_macro("X E12!aN *16 J23-.");
       break;
 
     case 24:
       jiffle = stepping_down;				// :) :)  stepping down
-      MENU.play_KB_macro("R E12 S=0 !aN *16 J24-.");
+      MENU.play_KB_macro("X E12 S=0 !aN *16 J24-.");
       break;
 
     case 25:
       jiffle = back_to_ground;		// rhythm slowdown
-      MENU.play_KB_macro("R E12!aN *32 J25-.");		// :)	rhythm slowdown
+      MENU.play_KB_macro("X E12!aN *32 J25-.");		// :)	rhythm slowdown
       break;
 
     case 26:
       jiffle = arpeggio_and_sayling;
-      MENU.play_KB_macro("R E12!aN *32 J26-.");
+      MENU.play_KB_macro("X E12!aN *32 J26-.");
       break;
 
     case 27:
       jiffle = simple_theme;
-      MENU.play_KB_macro("R E12!aN *2 -.");
+      MENU.play_KB_macro("X E12!aN *2 -.");
       break;
 
     case 28:				// for tuning
       jiffle = peepeep4096;
-      MENU.play_KB_macro("R E12!aN *2 -.");
+      MENU.play_KB_macro("X E12!aN *2 -.");
 
       break;
 
@@ -3856,13 +3888,13 @@ bool menu_pulses_reaction(char menu_input) {
       if (MENU.verbosity >= VERBOSITY_SOME)
 	MENU.outln_invalid();
 
-      experiment=0;
+      selected_experiment=0;
       break;
     }
     break;
 
   case '!':			// '!' setup and start experiment
-    switch (experiment) {
+    switch (selected_experiment) {
     case -1:
     case 0:
       break;
@@ -3918,7 +3950,7 @@ bool menu_pulses_reaction(char menu_input) {
       break;
 
     default:	// invalid
-      experiment=0;
+      selected_experiment=0;
 
       if (MENU.verbosity)
 	MENU.outln_invalid();
