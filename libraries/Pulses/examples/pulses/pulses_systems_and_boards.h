@@ -64,7 +64,13 @@
 
 // do we need WiFi?
   #ifdef USE_WIFI_telnet_menu	// use WIFI as menu over telnet?
-     #include <ESP8266WiFi.h>
+    #if defined(ESP8266)
+      #include <ESP8266WiFi.h>
+    #elif defined(ESP32)
+        #include <WiFi.h>
+    #else
+        #error "WiFi code unknown,  see: pulses_systems_and_boards.h"
+    #endif
   #endif
 
 
