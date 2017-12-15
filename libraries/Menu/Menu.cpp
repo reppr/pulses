@@ -1164,6 +1164,11 @@ void Menu::outln_invalid() {
 }
 
 
+void Menu::out_noop() {
+  out(F("noop"));
+}
+
+
 /* **************************************************************** */
 // menu input interpreter:
 

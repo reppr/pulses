@@ -2646,8 +2646,10 @@ bool menu_pulses_reaction(char menu_input) {
     if (menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE)
 	display_jiffletab(jiffle);
     else
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	MENU.outln(F("noop"));
+      if (MENU.verbosity >= VERBOSITY_SOME) {
+	MENU.out_noop();
+	MENU.ln();
+      }
     break;
 
   case '|':	// accept as noop in normal mode. used as range bottom delimiter in arrays
@@ -2659,8 +2661,10 @@ bool menu_pulses_reaction(char menu_input) {
 	if (MENU.verbosity)
 	  display_jiffletab(jiffle);
     } else
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	MENU.outln(F("noop"));
+      if (MENU.verbosity >= VERBOSITY_SOME) {
+	MENU.out_noop();
+	MENU.ln();
+      }
     break;
 
   case '"':	// accept as reserved noop in normal mode. used as range top delimiter in arrays
@@ -2722,8 +2726,10 @@ bool menu_pulses_reaction(char menu_input) {
 	  display_jiffletab(jiffle);
       break;
     default:
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	MENU.outln(F("noop"));
+      if (MENU.verbosity >= VERBOSITY_SOME) {
+	MENU.out_noop();
+	MENU.ln();
+      }
     }
     break;
 
@@ -2738,8 +2744,10 @@ bool menu_pulses_reaction(char menu_input) {
 	  display_jiffletab(jiffle);
       break;
     default:
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	MENU.outln(F("noop"));
+      if (MENU.verbosity >= VERBOSITY_SOME) {
+	MENU.out_noop();
+	MENU.ln();
+      }
     }
     break;
 
