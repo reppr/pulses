@@ -3,14 +3,11 @@
 			pulses.ino
 
             http://github.com/reppr/pulses/
-        Given as an example for the Menu library.
-
 
 Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
 
-
-    Please do read README_pulses at the end of this file
+		Please do read README_pulses
 */
 
 /* **************************************************************** */
@@ -33,6 +30,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 */
 
 
+/* **************************************************************** */
 /* **************************************************************** */
 // SOURCE CODE STARTS HERE:
 /* **************************************************************** */
@@ -329,7 +327,12 @@ unsigned int simple_theme[] = {1,128,8, 1,2*128,8, 1,3*128,8, 1,4*128,8, 5,6*4*1
 
 
 /* **************************************************************** */
-void display_names(char ** names, int count, int selected) {
+/*
+  void display_names(char** names, int count, int selected);
+  display an array of strings like names of ratios, jiffles, experiments
+  mark the selected one with an asterisk
+*/
+void display_names(char** names, int count, int selected) {
   MENU.ln();
   for (int i = 0; i < count; i++) {
     if (i==selected)
@@ -343,6 +346,8 @@ void display_names(char ** names, int count, int selected) {
   }
   MENU.ln();
 }
+
+
 /* **************************************************************** */
 // user interface variables:
 
@@ -3982,23 +3987,30 @@ bool menu_pulses_reaction(char menu_input) {
 #endif
 
 /* **************************************************************** */
-/* **************************************************************** */
-/* **************************************************************** */
 
 
 /* **************************************************************** */
-/* README_pulses
+/* **************************************************************** */
 
+/* please se README_pulses					    */
 
-README_pulses
-
-Testing Pulses library in an early stage
-
-
-
+/*
    Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
-
    http://github.com/reppr/pulses
+*/
+
+/* **************************************************************** */
+/* **************************************************************** */
+/*				END OF CODE			    */
+/* **************************************************************** */
+/* **************************************************************** */
+
+
+
+
+
+
+
 
 
 */
