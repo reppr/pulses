@@ -3423,21 +3423,23 @@ bool menu_pulses_reaction(char menu_input) {
 
     break;
 
-  case 'D':	// DADA debug
-    //    MENU.outln(HARMONICAL.harmonical_base);
+  case 'D':	// DADA reserved for temporary code   testing debugging ...
+    MENU.out_noop(); MENU.ln();
+    break;
 
-    //    MENU.outln(F("small primes:"));
-    //    for (int i=0; HARMONICAL.small_primes[i]; i++) {
-    //      MENU.out(i+1);
-    //      MENU.tab();
-    //      MENU.outln(HARMONICAL.small_primes[i]);
-    //    }
+  case 'y':	// DADA reserved for temporary code   testing debugging ...
     {
+      // temporary least-common-multiple  test code, unfinished...	// ################ FIXME: ################
       unsigned long lcm=1L;
-      for (int pulse=0; pulse<pl_max; pulse++)
-	if (PULSES.selected_pulses & (1 << pulse))
+      for (int pulse=0; pulse<pl_max; pulse++) {
+	if (PULSES.selected_pulses & (1 << pulse)) {
+	  MENU.out(pulse); MENU.tab(); PULSES.pulses[pulse].period.time; MENU.tab();
 	  lcm = HARMONICAL.LCM(lcm, PULSES.pulses[pulse].period.time);
-      MENU.out(F("lcm ")); MENU.out(lcm);
+	  MENU.outln(lcm);
+	}
+      }
+
+      MENU.out(F("==> lcm ")); MENU.out(lcm);
       struct time length;
       length.time = lcm;
       length.overflow = 0;
@@ -3451,42 +3453,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  MENU.outln(lcm/PULSES.pulses[pulse].period.time);
 	}
     }
-
-//	    {
-//	    unsigned int lcm=1;
-//	    // simplest case for test: 0 to voices-1
-//	    for (int pulse=voices-1; pulse>-1; pulse--)
-//	      if (PULSES.selected_pulses & (1 << pulse)) {
-//		lcm = LCM(PULSES.pulses[pulse].period.time, lcm);
-//		MENU.outln(lcm/PULSES.pulses[0].period.time);
-//	      }
-//	    }
-//
-
-//    fraction bruch1;
-//    fraction bruch2;
-//    bruch1.multiplier=11;
-//    bruch1.divisor=44;
-//    //    reduce_fraction(&bruch1);
-//    bruch2.multiplier=100;
-//    bruch2.divisor=300;
-//
-//    HARMONICAL.add_fraction(&bruch1, &bruch2);
-//    MENU.out(bruch2.multiplier); MENU.slash(); MENU.outln(bruch2.divisor);
-
-
-    // load2_jiffle_RAM(gling128);	// zero terminated
-    // load2_jiffle_RAM(jiffletab_december_pizzicato);
-    // display_jiffletab(jiffle);
-
-    //    tuning = PULSES.tuning; // FIXME: workaround for having all 3 sweep implementations in parallel
-    //    sweep_info();
-    //    {
-    //      int fastest=PULSES.fastest_pulse();
-    //      MENU.ln();
-    //      PULSES.deactivate_pulse(fastest);
-    //    }
-    break;
+  break;
 
   case 'm':	// multiplier
     if(MENU.cb_peek()==EOF)
