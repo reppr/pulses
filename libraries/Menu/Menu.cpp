@@ -161,54 +161,14 @@ char Menu::cb_read() {
 
 
 /* **************************************************************** */
-// #define I/O for ARDUINO:
-#ifdef ARDUINO			// OUTPUT functions: out() family
-
-  /*
-    This version definines the menu INPUT routine int men_getchar();
-    in the *program* not inside the Menu class.
-  */
-
-  /*
-    #ifndef USE_WIFI_telnet_menu	// serial menu only
-      int men_getchar() {
-        if (!Serial.available())	// ARDUINO
-          return EOF;
-
-        return Serial.read();
-
-      }
-    #else				// serial *and* WLAN menu
-      int men_getchar() {
-        if (Serial.available())
-          return Serial.read();
-
-        if (server_client && server_client.connected() && server_client.available())
-  	return server_client.read();
-
-        return EOF;
-      }
-    #endif
-  */
-
-
-  #ifndef BAUDRATE
-    #define BAUDRATE	115200	// works fine here
-    // #define BAUDRATE	57600
-    // #define BAUDRATE	38400
-    // #define BAUDRATE	19200
-    // #define BAUDRATE	9600	// failsafe
-    // #define BAUDRATE	31250	// MIDI
-  #endif
-
-
-  /* void Menu::out(); overloaded menu output function family:	*/
-
-// #define MEN_OUT(X)  ( port_.print((X)); port2_.print((X)) )	//  embedded ';' does not work
-// see: https://wiki.sei.cmu.edu/confluence/display/c/PRE10-C.+Wrap+multistatement+macros+in+a+do-while+loop
-//      see: Compliant Solution
-//      do { ... } while (0)     keep preprocessor happy ;)
-
+#ifdef ARDUINO
+/* void Menu::out(); overloaded menu output function family:	*/
+/*
+  #define MEN_OUT(X)  ( port_.print((X)); port2_.print((X)) )	//  embedded ';' does not work
+  see: https://wiki.sei.cmu.edu/confluence/display/c/PRE10-C.+Wrap+multistatement+macros+in+a+do-while+loop
+    see: Compliant Solution
+  do { ... } while (0)     keep preprocessor happy ;)
+*/
 #define MENU_OUT(X) \
   do { \
     port_.print((X)); \

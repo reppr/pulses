@@ -42,9 +42,8 @@ using namespace std;	// ESP8266 needs that
 
 #include "pulses_systems_and_boards.h"
 
-#ifdef USE_WIFI_telnet_menu
-  #define AUTO_CONNECT_WIFI			// start wifi on booting?
 
+#ifdef USE_WIFI_telnet_menu
 // ***EITHER*** put your WLAN ssid and password in next 2 lines:
   const char* ssid     = "please_set_your_WiFi_SSID";
   const char* password = "topSecret77";
@@ -54,98 +53,52 @@ using namespace std;	// ESP8266 needs that
 //#include "/home/you/WiFi-credentials.h"	// let the name be <something>.h
 
 
-  //  // how many clients should be able to telnet to this ESP8266
-  //  #define MAX_SRV_CLIENTS 1
-  //  WiFiClient server_client[MAX_SRV_CLIENTS];
-  WiFiClient server_client;
 
-  WiFiServer telnet_server(23);
+  #define AUTO_CONNECT_WIFI			// start WiFi on booting?
 #endif //  USE_WIFI_telnet_menu
 
-// class Pulses;
-class Menu;
-
-
 /* **************** Menu **************** */
-#include <Menu.h>
-
-//  Menu(int size, int menuPages, int (*maybeInput)(void), STREAMTYPE & port);
+class Menu;
+#include "menu_IO_configuration.h"
+// FIXME: why doesn't it work from pulses_systems_and_boards.h?
 /*
   This version definines the menu INPUT routine int men_getchar();
-  in the *program* not inside the Menu class.
+  and the menu OUTPUT streams
+  from the *program*
+  not inside the Menu class
 */
-#ifdef ARDUINO	// FIXME: why doesn't it work from pulses_systems_and_boards.h???
-  #define MENU_OUTSTREAM	Serial
 
-  #ifdef USE_WIFI_telnet_menu
-    #define MENU_OUTSTREAM2	server_client
 
-// for another possible implementation see:
-//	    // see:  http://wordaligned.org/articles/cpp-streambufs  tee
-//	    #undef MENU_OUTSTREAM
-//
-//	#include <streambuf>
-//
-//	class teebuf: public std::streambuf
-//	{
-//	public:
-//	    // Construct a streambuf which tees output to both input
-//	    // streambufs.
-//	    teebuf(std::streambuf * sb1, std::streambuf * sb2);
-//	protected:
-//	    virtual int overflow(int c);
-//	private:
-//	    std::streambuf * sb1;
-//	    std::streambuf * sb2;
-//	};
-//
-//	teebuf MENU_OUTSTREAM(Serial, WiFiClient);
+/*
+#undef MENU_OUTSTREAM2
+// see: https://stackoverflow.com/questions/11826554/standard-no-op-output-stream
+#include <iostream>
+class NullBuffer :  public std::streambuf
+{
+public:
+  int overflow(int c) { return c; }
+  // streambuf::overflow is the function called when the buffer has to output data to the actual destination of the stream.
+  // The NullBuffer class above does nothing when overflow is called so any stream using it will not produce any output.
+};
 
-  #endif
+NullBuffer null_buffer;
 
-  #ifndef USE_WIFI_telnet_menu	// serial menu only
-    int men_getchar() {
-      if (!Serial.available())	// ARDUINO
-        return EOF;
+// std::ostream null_stream(&null_buffer);
 
-      return Serial.read();
+// #define MENU_OUTSTREAM2	null_buffer
 
-    }
-  #else				// serial *and* WLAN menu
-    int men_getchar() {
-      if (Serial.available())
-        return Serial.read();
 
-      if (server_client && server_client.connected() && server_client.available())
-	return server_client.read();
+// see: https://stackoverflow.com/questions/11826554/standard-no-op-output-stream
+// – Sjoerd Aug 6 '12
+class NullStream : public std::ostream
+{ public: NullStream() : std::ostream(&m_sb) {}
+   private: NullBuffer m_sb; };
 
-      return EOF;
-    }
-  #endif
-#endif
+NullStream null_stream;
+#define MENU_OUTSTREAM2	null_stream
+*/
 
-/* BAUDRATE for Serial:	uncomment one of the following lines:	*/
-#define BAUDRATE	115200		// works fine here
-//#define BAUDRATE	57600
-//#define BAUDRATE	38400
-//#define BAUDRATE	19200
-//#define BAUDRATE	9600		// failsafe
-//#define BAUDRATE	31250		// MIDI
-
-#ifndef ARDUINO		// Linux PC test version  *NOT SUPPORTED*
-  #include <Menu/Menu.h>
-  #include <Pulses/Pulses.h>
-
-  #include "Pulses/Pulses.cpp"		// why that?
-  #include "Menu/Menu.cpp"		// why that?
-
-  #define MENU_OUTSTREAM	cout
-
-  int men_getchar() {
-    return getchar();		// c++ Linux PC test version
-  }
-#endif
-
+#include <Menu.h>
 Menu MENU(32, 3, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
 
 

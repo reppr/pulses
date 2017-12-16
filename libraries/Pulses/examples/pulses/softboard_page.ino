@@ -1081,7 +1081,7 @@ Configure your terminal program:
    line ending code, usual culprits should work.
 
    Set arduino baud rate by editing the line starting with
-   #define BAUDRATE in softboard.ino
+   #define BAUDRATE in menu_IO_configuration.h
    and set it to the same value in your terminal software.
 
    So if for example you use the Arduino 'Serial Monitor' window
