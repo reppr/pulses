@@ -366,25 +366,33 @@ void toggle_watch() {
 const char value_[] = "value ";
 
 void bar_graph(int value) {
-  int i, length=64, scale=1023;
+  int i, length=64;
+
+  #ifdef ESP8266
+    int scale=1024;	// on ESP8266 it really is ;)
+  #elif defined(ESP32)
+    int scale=4095;
+  #else
+    int scale=1023;
+  #endif
+
   int stars = ((long) value * (long) length) / scale + 1 ;
 
-
-  if (value >=0 && value <= 1024) {
-    MENU.out(value); MENU.tab();
+  MENU.out(value); MENU.tab();
+  if (value >=0) {
     for (i=0; i<stars; i++) {
-      if (i == 0 && value == 0)		// zero
+      if (i == 0 && value == 0)		// zero?
 	MENU.out('0');
-					// middle or top
-      else if \
+					// middle or top?
+      else if								\
 	((i == length/2 && value == 512) || (i == length && value == scale))
 	MENU.out('|');
       else
-	MENU.out('*');
+	MENU.out('*');			// all other values '*'
     }
     MENU.ln();
   } else {
-    MENU.out(F("value "));
+    MENU.out(F("negative value "));
     MENU.out(value);
     MENU.OutOfRange();
   }
