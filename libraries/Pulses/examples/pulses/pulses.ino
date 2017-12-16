@@ -43,13 +43,16 @@ using namespace std;	// ESP8266 needs that
 #include "pulses_systems_and_boards.h"
 
 #ifdef USE_WIFI_telnet_menu
-  // ***EITHER*** put your WLAN ssid and password in next 2 lines and uncomment:
+  #define AUTO_CONNECT_WIFI			// start wifi on booting?
 
-const char* ssid     = "please_set_your_WiFi_SSID";
-const char* password = "topSecret77";
+// ***EITHER*** put your WLAN ssid and password in next 2 lines:
+  const char* ssid     = "please_set_your_WiFi_SSID";
+  const char* password = "topSecret77";
 
-  // *** OR *** comment out above 2 lines,  put that stuff in a file and #include it:
-// #include "/home/dada/WiFi-credentials.h"	// let the name be <something>.h
+  // *** OR *** comment out above 2 lines,
+  //  put that stuff in a file and #include it:
+//#include "/home/you/WiFi-credentials.h"	// let the name be <something>.h
+
 
   //  // how many clients should be able to telnet to this ESP8266
   //  #define MAX_SRV_CLIENTS 1
