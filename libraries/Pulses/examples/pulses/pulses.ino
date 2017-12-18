@@ -427,7 +427,6 @@ bool setup_wifi_telnet() {
 
   #include <Inputs.h>
   Inputs INPUTS(12);
-  unsigned long selected_inputs=0;
 #endif
 /* **************************************************************** */
 #ifdef ARDUINO

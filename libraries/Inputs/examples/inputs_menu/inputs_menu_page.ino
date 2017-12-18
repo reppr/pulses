@@ -38,7 +38,7 @@ void inputs_display() {
 
   how_to_select();
 
-  if(selected_inputs) {
+  if(INPUTS.selected_inputs) {
     MENU.outln(F("Set parameters with  A B S + * / > O Q #"));
     MENU.outln(F("!=activate s=samples t<n>=test T=tests"));
   }
@@ -47,7 +47,7 @@ void inputs_display() {
 
 // reaction function for the inputs_menu page:
 bool inputs_reaction(char token) {
-  bool was_no_selection = (selected_inputs == 0);
+  bool was_no_selection = (INPUTS.selected_inputs == 0);
   long newValue;
   unsigned long bitmask;
   int bit;
@@ -68,7 +68,7 @@ bool inputs_reaction(char token) {
       return false;	// *not* responsible
 
     // existing input:
-    selected_inputs ^= (1 << bit);
+    INPUTS.selected_inputs ^= (1 << bit);
     if (MENU.verbosity >= VERBOSITY_SOME)
       print_selected_inputs();
     break;
@@ -84,23 +84,23 @@ bool inputs_reaction(char token) {
       return false;	// *not* responsible
 
     // existing input:
-    selected_inputs ^= (1 << bit);
+    INPUTS.selected_inputs ^= (1 << bit);
     if (MENU.verbosity >= VERBOSITY_SOME)
       print_selected_inputs();
     break;
 
   case '~':
-    selected_inputs = ~selected_inputs;
+    INPUTS.selected_inputs = ~INPUTS.selected_inputs;
     bitmask=0;
     for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
       bitmask |= (1 << inp);
-    selected_inputs &= bitmask;
+    INPUTS.selected_inputs &= bitmask;
     if (MENU.verbosity >= VERBOSITY_SOME)
       print_selected_inputs();
     break;
 
   case 'x':
-    selected_inputs = 0;
+    INPUTS.selected_inputs = 0;
     if (MENU.verbosity >= VERBOSITY_SOME)
       print_selected_inputs();
     break;
@@ -108,7 +108,7 @@ bool inputs_reaction(char token) {
   case 'N':
     newValue = MENU.numeric_input(ILLEGAL);
     if ((newValue >= 0) && (newValue < INPUTS.get_inputs_allocated())) {
-      selected_inputs = 1 << newValue;
+      INPUTS.selected_inputs = 1 << newValue;
     if (MENU.verbosity >= VERBOSITY_SOME)
       print_selected_inputs();
     } else MENU.OutOfRange();
@@ -121,7 +121,7 @@ bool inputs_reaction(char token) {
       newValue = MENU.numeric_input(ILLEGAL);
       if (newValue == (uint8_t) newValue) {
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (selected_inputs & ( 1 << inp))
+	  if (INPUTS.selected_inputs & ( 1 << inp))
 	    INPUTS.set_inp_A(inp, newValue);
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  inputs_info();
@@ -134,7 +134,7 @@ bool inputs_reaction(char token) {
       newValue = MENU.numeric_input(ILLEGAL);
       if (newValue == (uint8_t) newValue) {
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (selected_inputs & ( 1 << inp))
+	  if (INPUTS.selected_inputs & ( 1 << inp))
 	    INPUTS.set_inp_B(inp, newValue);
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  inputs_info();
@@ -143,13 +143,13 @@ bool inputs_reaction(char token) {
     break;
 
   case '+':
-    if (!selected_inputs)
+    if (!INPUTS.selected_inputs)
       return false;			// unhide verbosity '+'
 
     newValue = MENU.numeric_input(ILLEGAL);
     if (newValue == (ioP_t) newValue) {
       for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	if (selected_inputs & ( 1 << inp))
+	if (INPUTS.selected_inputs & ( 1 << inp))
 	  INPUTS.set_in_offset(inp, newValue);
       if (MENU.verbosity >= VERBOSITY_SOME)
 	inputs_info();
@@ -161,7 +161,7 @@ bool inputs_reaction(char token) {
       newValue = MENU.numeric_input(ILLEGAL);
       if (newValue == (ioP_t) newValue) {
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (selected_inputs & ( 1 << inp))
+	  if (INPUTS.selected_inputs & ( 1 << inp))
 	    INPUTS.set_mul(inp, newValue);
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  inputs_info();
@@ -174,7 +174,7 @@ bool inputs_reaction(char token) {
       newValue = MENU.numeric_input(ILLEGAL);
       if (newValue == (ioP_t) newValue) {
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (selected_inputs & ( 1 << inp))
+	  if (INPUTS.selected_inputs & ( 1 << inp))
 	    INPUTS.set_div(inp, newValue);
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  inputs_info();
@@ -187,7 +187,7 @@ bool inputs_reaction(char token) {
       newValue = MENU.numeric_input(ILLEGAL);
       if (newValue == (ioV_t) newValue) {
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (selected_inputs & ( 1 << inp))
+	  if (INPUTS.selected_inputs & ( 1 << inp))
 	    INPUTS.set_out_offset(inp, newValue);
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  inputs_info();
@@ -200,7 +200,7 @@ bool inputs_reaction(char token) {
       newValue = MENU.numeric_input(ILLEGAL);
       if (newValue == (uint8_t) newValue) {
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (selected_inputs & ( 1 << inp))
+	  if (INPUTS.selected_inputs & ( 1 << inp))
 	    INPUTS.set_out_A(inp, newValue);
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  inputs_info();
@@ -213,7 +213,7 @@ bool inputs_reaction(char token) {
       newValue = MENU.numeric_input(ILLEGAL);
       if (newValue == (uint8_t) newValue) {
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (selected_inputs & ( 1 << inp))
+	  if (INPUTS.selected_inputs & ( 1 << inp))
 	    INPUTS.set_out_B(inp, newValue);
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  inputs_info();
@@ -226,7 +226,7 @@ bool inputs_reaction(char token) {
       newValue = MENU.numeric_input(ILLEGAL);
       if (newValue > 0) {
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (selected_inputs & ( 1 << inp))
+	  if (INPUTS.selected_inputs & ( 1 << inp))
 	    if (!INPUTS.malloc_samples(inp, newValue)) {
 	      MENU.OutOfRange();
 	      break;
@@ -242,7 +242,7 @@ bool inputs_reaction(char token) {
       newValue = MENU.numeric_input(ILLEGAL);
       if (newValue == (unsigned long) newValue) {
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (selected_inputs & ( 1 << inp))
+	  if (INPUTS.selected_inputs & ( 1 << inp))
 	    INPUTS.set_counter(inp, newValue);
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  inputs_info();
@@ -254,7 +254,7 @@ bool inputs_reaction(char token) {
   case 's':
     if(anything_selected()) {	// if not, tell the user how to select
       for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	if (selected_inputs & ( 1 << inp))
+	if (INPUTS.selected_inputs & ( 1 << inp))
 	  show_samples(inp);
     }
     break;
@@ -269,7 +269,7 @@ bool inputs_reaction(char token) {
       newValue = MENU.numeric_input(0);
       if (newValue == (int) newValue) {
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (selected_inputs & ( 1 << inp))
+	  if (INPUTS.selected_inputs & ( 1 << inp))
 	    test_in2o_calculation(inp, (int) newValue);
       } else MENU.OutOfRange();
     }
@@ -279,7 +279,7 @@ bool inputs_reaction(char token) {
     if(anything_selected()) {	// if not, tell the user how to select
       for (int newValue=0; newValue<1024; newValue++)
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (selected_inputs & ( 1 << inp))
+	  if (INPUTS.selected_inputs & ( 1 << inp))
 	    test_in2o_calculation(inp, (int) newValue);
     }
     break;
@@ -287,7 +287,7 @@ bool inputs_reaction(char token) {
   case '!':
     if(anything_selected()) {	// if not, tell the user how to select
       for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++) {
-	if (selected_inputs & ( 1 << inp)) {
+	if (INPUTS.selected_inputs & ( 1 << inp)) {
 	  INPUTS.set_flags(inp, (INPUTS.get_flags(inp) ^ INPUT_ACTIVE));
 	}
       }
@@ -301,7 +301,7 @@ bool inputs_reaction(char token) {
   }
 
   if (was_no_selection)	// some menu items have not been displayed before
-    if (selected_inputs) {
+    if (INPUTS.selected_inputs) {
       if (MENU.verbosity >= VERBOSITY_SOME)
 	MENU.menu_display();	// display full menu now
     }
@@ -321,7 +321,7 @@ void how_to_select(void) {	// inform user about keys for selection
 // If nothing is selected inform the user how to select items.
 // return true if there *is*  a selection.
 bool anything_selected(void) {
-  if (selected_inputs)
+  if (INPUTS.selected_inputs)
     return true;
 
   how_to_select();
@@ -341,7 +341,7 @@ void show_flag_mnemonics(unsigned int flags, unsigned int bits) {
 // show an info line for an (existing) input:
 void input_info(int inp) {
   MENU.space();
-  if (selected_inputs & (1 << inp))
+  if (INPUTS.selected_inputs & (1 << inp))
     MENU.out('*');			// '*' means selected
   else
     MENU.space();
@@ -407,7 +407,7 @@ void print_selected_inputs() {
   const int hex_inputs=_min(inputs, 16);	// displayed as hex chiffres
   MENU.out_selected_();
   for (int inp=0; inp < hex_inputs; inp++) {
-    if (selected_inputs & (1 << inp))
+    if (INPUTS.selected_inputs & (1 << inp))
       MENU.out_hex_chiffre(inp);
     else
       MENU.out('.');
@@ -415,7 +415,7 @@ void print_selected_inputs() {
 
   MENU.space();
   for (int inp=16; inp < inputs; inp++) {
-    if (selected_inputs & (1 << inp))
+    if (INPUTS.selected_inputs & (1 << inp))
       MENU.out('+');
     else
       MENU.out('.');

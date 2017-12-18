@@ -18,8 +18,6 @@
 #include <Inputs.h>
 Inputs INPUTS(12);
 
-unsigned long selected_inputs=0;
-
 /* **************************************************************** */
 
 

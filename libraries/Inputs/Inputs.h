@@ -389,6 +389,8 @@ class Inputs {
     in2o_method(int inp)
   */
 
+  unsigned long selected_inputs;
+
   const char * flag_mnemonics_on  = "AO:LR..C:=+*.W.!";
   const char * flag_mnemonics_off = "________________";
 

@@ -35,7 +35,10 @@
 
 /* **************************************************************** */
 // Constructor:
-Inputs::Inputs(int inputs_to_allocate) {
+Inputs::Inputs(int inputs_to_allocate):
+  selected_inputs(0)
+{
+
   inputs = (input_t *) malloc(inputs_to_allocate * sizeof(input_t));
   if (inputs == NULL)
     inputs_allocated=0;
