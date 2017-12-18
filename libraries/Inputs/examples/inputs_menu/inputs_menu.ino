@@ -20,8 +20,6 @@
 #endif
 
 #include <Inputs.h>
-#include <Menu.h>
-
 
 /* **************************************************************** */
 /* BAUDRATE for Serial:	uncomment one of the following lines:	*/
@@ -46,19 +44,19 @@ Inputs INPUTS(12);
 unsigned long selected_inputs=0;
 
 /* **************************************************************** */
-// MENU:
+
+
+#define USE_WIFI_telnet_menu	// ################ FIXME: always active WiFi
+#include "menu_IO_configuration.h"
 /*
   This version definines the menu INPUT routine int men_getchar();
-  in the *program* not inside the Menu class.
+  and the menu OUTPUT streams
+  from the *program*
+  not inside the Menu class
 */
-int men_getchar() {
-  if (!Serial.available())	// ARDUINO
-    return EOF;
 
-  return Serial.read();
-}
-
-Menu MENU(32, 1, &men_getchar, Serial);
+#include <Menu.h>
+Menu MENU(32, 1, &men_getchar, Serial, MENU_OUTSTREAM2);
 /* **************************************************************** */
 
 
@@ -590,7 +588,7 @@ void inputs_info() {
 // show which inputs are selected in the menu:
 void print_selected_inputs() {
   const int inputs=INPUTS.get_inputs_allocated();
-  const int hex_inputs=min(inputs, 16);	// displayed as hex chiffres
+  const int hex_inputs=_min(inputs, 16);	// displayed as hex chiffres
   MENU.out_selected_();
   for (int inp=0; inp < hex_inputs; inp++) {
     if (selected_inputs & (1 << inp))
