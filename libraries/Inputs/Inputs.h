@@ -106,37 +106,38 @@ struct input_t {
 // inputs[inp].flags bitmasks:
 
 // special input types flags:
-#define INPUT_ANALOG_internal	1
+#define INPUT_ANALOG_internal	1	//				A
 
 // *input oversampling* flags
-#define OVERSAMLE_AVERAGE	2
+#define OVERSAMLE_AVERAGE	2	//				O
 
 // *input processing* flags:
-#define INPUT_PROCESSING	4	// any type, not really needed
-#define PROCESS_LINEAR		8	// linear
-#define PROCESS_INVERSE		16	// reziprocal
+#define INPUT_PROCESSING	4	// any type, not really needed	:
+#define PROCESS_LINEAR		8	// linear			L
+#define PROCESS_INVERSE		16	// reziprocal			R
 // 32
 // 64
-#define PROCESS_CUSTOM		128	// custom processing function
+#define PROCESS_CUSTOM		128	// custom processing function	C
 
 // *output method* flags:
-#define INPUT_OUTPUT_REACTION	256	// any type, not really needed
-//#define SET_TO_VALUE		512
-//#define ADD_TO_VALUE		1024
-//#define MUL_VALUE	        2048
+#define INPUT_OUTPUT_REACTION	256	// any type, not really needed	:
+//#define SET_TO_VALUE		512				=
+//#define ADD_TO_VALUE		1024				+
+//#define MUL_VALUE	        2048				*
 //  4096
 
 // *inbuilt reaction flags:
-#define SET_PWM			8192	// output PWM internal
+#define SET_PWM			8192	// output PWM internal		W
 //  16384
 
 // general flags:
-#define INPUT_ACTIVE	32768		// leading bit in the menu
+#define INPUT_ACTIVE	32768		// leading bit in the menu	!
 
 
 // aliases for io_calculation
 #define PROPORTIONAL	false
 #define INVERSE		true
+
 
 
 class Inputs {
@@ -388,6 +389,8 @@ class Inputs {
     in2o_method(int inp)
   */
 
+  const char * flag_mnemonics_on  = "AO:LR..C:=+*.W.!";
+  const char * flag_mnemonics_off = "________________";
 
  private:
   int inputs_allocated;		// allocated inputs
