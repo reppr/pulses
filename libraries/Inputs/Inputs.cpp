@@ -140,6 +140,8 @@ bool Inputs::sample_and_react(int inp) {
   } else
     inputs[inp].out_reaction(inp, output_value);	// custom output
 
+  inputs[inp].last_output=output_value;
+  
   return true;
 }
 

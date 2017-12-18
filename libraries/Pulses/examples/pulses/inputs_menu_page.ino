@@ -386,6 +386,9 @@ void input_info(int inp) {
   MENU.out('#');
   MENU.out(INPUTS.get_counter(inp));	// not padded
 
+  MENU.tab();
+  MENU.out(INPUTS.get_last_output(inp));
+
 //  INPUTS.get_out_reaction(inp);
 
   MENU.ln();

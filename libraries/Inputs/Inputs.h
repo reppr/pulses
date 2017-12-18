@@ -100,6 +100,7 @@ struct input_t {
   void (*out_reaction)(int inp, ioV_t output_value);
   uint8_t out_A;	// output address like pin, pulse, etc.
   uint8_t out_B;	// second output parameter, like second pin, index, etc.
+  unsigned int last_output;	// for display
 };
 
 
@@ -193,6 +194,14 @@ class Inputs {
   */
   int get_last_sampled(int inp) const {			// inlined
     return inputs[inp].samples[((inputs[inp].counter - 1) % inputs[inp].oversample)];
+  }
+
+  /*
+    int get_last_output(int inp)
+    for display
+  */
+  int get_last_output(int inp) const {			// inlined
+    return inputs[inp].last_output ;
   }
 
   /*
