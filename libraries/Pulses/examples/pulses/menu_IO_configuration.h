@@ -63,6 +63,17 @@
   #endif	  ################ FIXME: temporary:  use Serial unconditionally
 */
 
+// do we need WiFi?
+  #ifdef USE_WIFI_telnet_menu	// use WIFI as menu over telnet?
+    #if defined(ESP8266)
+  #include <ESP8266WiFi.h>	// breaks:  min() max()   use:  _min() _max()
+    #elif defined(ESP32)
+        #include <WiFi.h>	// might break:  min() max()   use:  _min() _max()
+    #else
+        #error "WiFi code unknown,  see: pulses_systems_and_boards.h"
+    #endif
+  #endif
+
   #ifdef USE_WIFI_telnet_menu	/* ################ FIXME: #ifdef MENU_USE_WiFi_TELNET_OUT */
     /* ********************************
        ==> WiFi menu output

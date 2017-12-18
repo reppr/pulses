@@ -62,18 +62,6 @@
   #endif
 
 
-// do we need WiFi?
-  #ifdef USE_WIFI_telnet_menu	// use WIFI as menu over telnet?
-    #if defined(ESP8266)
-      #include <ESP8266WiFi.h>
-    #elif defined(ESP32)
-        #include <WiFi.h>
-    #else
-        #error "WiFi code unknown,  see: pulses_systems_and_boards.h"
-    #endif
-  #endif
-
-
 // default number of CLICK_PULSES controlling an associated hardware pin each
   #ifndef CLICK_PULSES
     #if defined(ESP32)			// ESP32: many pins, a lot of RAM :)
