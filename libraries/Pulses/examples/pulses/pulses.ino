@@ -422,7 +422,13 @@ bool setup_wifi_telnet() {
 }
 #endif // USE_WIFI_telnet_menu
 
+#ifndef RAM_IS_SCARE
+  #define USE_INPUTS
 
+  #include <Inputs.h>
+  Inputs INPUTS(12);
+  unsigned long selected_inputs=0;
+#endif
 /* **************************************************************** */
 #ifdef ARDUINO
 /* Arduino setup() and loop():					*/
@@ -501,6 +507,11 @@ void setup() {
   // add softboard page:
   softboard_page = MENU.add_page("Hardware Softboard", 'H',	\
 		&softboard_display, &softboard_reaction, 'H');
+
+#ifdef USE_INPUTS
+  // add inputs page:
+  MENU.add_page("Inputs", 'I', &inputs_display, &inputs_reaction, 'I');
+#endif
 
   // display menu at startup:
   MENU.menu_display();

@@ -10,15 +10,12 @@
 #include <stdlib.h>
 #include <inttypes.h>
 
-#include <Inputs.h>
-
 /* **************************************************************** */
+// INPUTS:
 // debugging:
 // #define INPUTS_DEBUGGING_SAMPLE_REACTION
 /* **************************************************************** */
-
-
-// INPUTS:
+#include <Inputs.h>
 Inputs INPUTS(12);
 
 unsigned long selected_inputs=0;
