@@ -59,45 +59,13 @@ using namespace std;	// ESP8266 needs that
 
 /* **************** Menu **************** */
 class Menu;
-#include "menu_IO_configuration.h"
-// FIXME: why doesn't it work from pulses_systems_and_boards.h?
 /*
   This version definines the menu INPUT routine int men_getchar();
   and the menu OUTPUT streams
   from the *program*
   not inside the Menu class
 */
-
-
-/*
-#undef MENU_OUTSTREAM2
-// see: https://stackoverflow.com/questions/11826554/standard-no-op-output-stream
-#include <iostream>
-class NullBuffer :  public std::streambuf
-{
-public:
-  int overflow(int c) { return c; }
-  // streambuf::overflow is the function called when the buffer has to output data to the actual destination of the stream.
-  // The NullBuffer class above does nothing when overflow is called so any stream using it will not produce any output.
-};
-
-NullBuffer null_buffer;
-
-// std::ostream null_stream(&null_buffer);
-
-// #define MENU_OUTSTREAM2	null_buffer
-
-
-// see: https://stackoverflow.com/questions/11826554/standard-no-op-output-stream
-// – Sjoerd Aug 6 '12
-class NullStream : public std::ostream
-{ public: NullStream() : std::ostream(&m_sb) {}
-   private: NullBuffer m_sb; };
-
-NullStream null_stream;
-#define MENU_OUTSTREAM2	null_stream
-*/
-
+#include "menu_IO_configuration.h"
 #include <Menu.h>
 Menu MENU(32, 3, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
 
@@ -3944,15 +3912,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 
 /* **************************************************************** */
-// include softboard on arduinos:
-#ifdef ARDUINO
-//  #include "libraries/Pulses/examples/pulses/softboard_page.ino"
-//  #include <examples/softboard/softboard_page.ino>
-#else
-  #warning "Not compiling softboard_page on PC."
-#endif
 
-/* **************************************************************** */
 
 
 /* **************************************************************** */

@@ -1,0 +1,195 @@
+
+/*
+// test hardware connections on CLICK_PULSES		// test, normally not needed
+void click_connection_test(int wait) {	// wait==0 steps through the first round, then normal
+  char next_token;
+  MENU.outln(F("pulse@pin"));
+
+  for (int pulse=0; pulse<CLICK_PULSES; pulse++)	// start all LOW
+    digitalWrite(click_pin[pulse], LOW);
+
+  MENU.ln();
+  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+//    if (wait)
+//      delay(wait);
+//    else {
+//      while (!Serial.available()) { ;}	// simple minded ;)
+//      Serial.read();
+//    }
+    delay(wait);
+    MENU.out(pulse); MENU.out('@'); MENU.out(click_pin[pulse]); MENU.tab();
+    digitalWrite(click_pin[pulse], HIGH);
+  }
+
+  MENU.ln();
+  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+    delay(wait);
+    MENU.out(pulse); MENU.out('@'); MENU.out(click_pin[pulse]); MENU.tab();
+    digitalWrite(click_pin[pulse], LOW);
+  }
+
+  MENU.ln();
+  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+    delay(wait);
+    MENU.out(pulse); MENU.out('@'); MENU.out(click_pin[pulse]); MENU.tab();
+    digitalWrite(click_pin[pulse], HIGH);
+  }
+  MENU.ln();
+}							// leave all HIGH
+*/
+
+
+
+/*
+char wait_for_input() {
+  MENU.outln(F("waits for input"));
+    //  char next_token=(char) MENU.cb_peek();
+  int next_token=MENU.next_input_token();
+  while (next_token == EOF) {
+    next_token=MENU.next_input_token();
+  }
+  return (char) next_token;
+}
+*/
+
+
+// left over test code	################ FIXME: look over and delete ################
+//  case 'D':	// DADA debug
+// for tuning
+//	    int INP;
+//	    for (int pulse=0; pulse<pl_max; pulse++)
+//	      if ((PULSES.selected_pulses & (1 << pulse)) && PULSES.pulses[pulse].period.time) {
+//		MENU.outln(pulse);
+//
+//		while (MENU.cb_peek()==EOF)
+//		  delay(0.1);
+//
+//		INP=MENU.cb_peek();
+//		MENU.out("DADA	");
+//		MENU.outln(INP);
+//		MENU.drop_input_token();
+//	      }
+//	MENU.outln("done");
+
+    //    MENU.play_KB_macro("");
+    //    MENU.play_KB_macro("X E12!ac *16 J22-");
+    //    MENU.play_KB_macro("X E12!aN *16 J23-");		// :)
+
+    // MENU.play_KB_macro("X E12!ac *16 J24-");
+    // MENU.play_KB_macro("X E12!aN *16 J25-");		// :)
+    // MENU.play_KB_macro("X E12!aN *16 J26-");
+    // MENU.play_KB_macro("X E12!aN *32 J27-.");		// :)
+
+    //    click_connection_test(5000);
+    //    click_connection_test(0);	// steps through the first round, then normal
+    //     MENU.outln(F("'D' 1"));
+    //     pulse_info_1line(0);
+    //     MENU.outln(F("'D' 2"));
+    //    MENU.outln(HARMONICAL.harmonical_base);
+
+    //    MENU.outln(F("small primes:"));
+    //    for (int i=0; HARMONICAL.small_primes[i]; i++) {
+    //      MENU.out(i+1);
+    //      MENU.tab();
+    //      MENU.outln(HARMONICAL.small_primes[i]);
+    //    }
+//	    {
+//	      unsigned long lcm=1L;
+//	      for (int pulse=0; pulse<pl_max; pulse++) {
+//		if (PULSES.selected_pulses & (1 << pulse)) {
+//		  MENU.out(pulse); MENU.tab(); PULSES.pulses[pulse].period.time; MENU.tab();
+//		  lcm = HARMONICAL.LCM(lcm, PULSES.pulses[pulse].period.time);
+//		  MENU.outln(lcm);
+//		}
+//	      }
+//
+//	      MENU.out(F("==> lcm ")); MENU.out(lcm);
+//	      struct time length;
+//	      length.time = lcm;
+//	      length.overflow = 0;
+//	      PULSES.display_realtime_sec(length);
+//	      MENU.ln();
+//
+//	      for (int pulse=0; pulse<pl_max; pulse++)
+//		if ((PULSES.selected_pulses & (1 << pulse)) && PULSES.pulses[pulse].period.time) {
+//		  MENU.out(pulse);
+//		  MENU.tab();
+//		  MENU.outln(lcm/PULSES.pulses[pulse].period.time);
+//		}
+//	    }
+
+//	    {
+//	    unsigned int lcm=1;
+//	    // simplest case for test: 0 to voices-1
+//	    for (int pulse=voices-1; pulse>-1; pulse--)
+//	      if (PULSES.selected_pulses & (1 << pulse)) {
+//		lcm = LCM(PULSES.pulses[pulse].period.time, lcm);
+//		MENU.outln(lcm/PULSES.pulses[0].period.time);
+//	      }
+//	    }
+//
+
+//    fraction bruch1;
+//    fraction bruch2;
+//    bruch1.multiplier=11;
+//    bruch1.divisor=44;
+//    //    reduce_fraction(&bruch1);
+//    bruch2.multiplier=100;
+//    bruch2.divisor=300;
+//
+//    HARMONICAL.add_fraction(&bruch1, &bruch2);
+//    MENU.out(bruch2.multiplier); MENU.slash(); MENU.outln(bruch2.divisor);
+
+
+    // load2_jiffle_RAM(gling128);	// zero terminated
+    // load2_jiffle_RAM(jiffletab_december_pizzicato);
+    // display_jiffletab(jiffle);
+
+    //    tuning = PULSES.tuning; // FIXME: workaround for having all 3 sweep implementations in parallel
+    //    sweep_info();
+    //    {
+    //      int fastest=PULSES.fastest_pulse();
+    //      MENU.ln();
+    //      PULSES.deactivate_pulse(fastest);
+    //    }
+//    break;
+
+
+/* **************************************************************** */
+
+/* **************** Inputs **************** */
+/*
+#include <Inputs.h>
+Inputs INPUTS(2);
+*/
+/* **************************************************************** */
+
+
+/*
+#undef MENU_OUTSTREAM2
+// see: https://stackoverflow.com/questions/11826554/standard-no-op-output-stream
+#include <iostream>
+class NullBuffer :  public std::streambuf
+{
+public:
+  int overflow(int c) { return c; }
+  // streambuf::overflow is the function called when the buffer has to output data to the actual destination of the stream.
+  // The NullBuffer class above does nothing when overflow is called so any stream using it will not produce any output.
+};
+
+NullBuffer null_buffer;
+
+// std::ostream null_stream(&null_buffer);
+
+// #define MENU_OUTSTREAM2	null_buffer
+
+
+// see: https://stackoverflow.com/questions/11826554/standard-no-op-output-stream
+// – Sjoerd Aug 6 '12
+class NullStream : public std::ostream
+{ public: NullStream() : std::ostream(&m_sb) {}
+   private: NullBuffer m_sb; };
+
+NullStream null_stream;
+#define MENU_OUTSTREAM2	null_stream
+*/
