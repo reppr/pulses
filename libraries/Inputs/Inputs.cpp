@@ -36,7 +36,8 @@
 /* **************************************************************** */
 // Constructor:
 Inputs::Inputs(int inputs_to_allocate):
-  selected_inputs(0)
+  selected_inputs(0),
+  active_inputs(0)
 {
 
   inputs = (input_t *) malloc(inputs_to_allocate * sizeof(input_t));
@@ -85,7 +86,7 @@ bool Inputs::do_next_input(void) {
     if(inputs[inp].flags & INPUT_ACTIVE)	// active inputs only
       return sample_and_react(inp);		// take sample, maybe react...
   }
-    
+
   return false;		// *no* inputs active
 }
 
@@ -112,7 +113,7 @@ bool Inputs::sample_and_react(int inp) {
   // ok, so let's prepare for reaction:
   // first get sample_value from oversampling and friends:
   int sample_value;
-  if(inputs[inp].flags & OVERSAMLE_AVERAGE )
+  if(inputs[inp].flags & OVERSAMPLE_AVERAGE)
     sample_value = oversamples_average(inp);
   else
     sample_value = get_last_sampled(inp);
@@ -137,11 +138,12 @@ bool Inputs::sample_and_react(int inp) {
 #else
     #error "PWM not available."
 #endif
-  } else
-    inputs[inp].out_reaction(inp, output_value);	// custom output
+  }
+//  else
+//    inputs[inp].out_reaction(inp, output_value);	// custom output	FIXME: todo ################
 
   inputs[inp].last_output=output_value;
-  
+
   return true;
 }
 
@@ -174,10 +176,10 @@ bool Inputs::malloc_samples(int inp, unsigned int oversample) {
 bool Inputs::sample(int inp) {
   int value;
   unsigned int cyclic_index;
-
   if (inputs[inp].flags & INPUT_ANALOG_internal)	// analogRead
     value = analogRead(inputs[inp].inp_A);
   else {
+    Serial.println("ERROR"); // ################################################################
     // check for misconfigured input, not really needed.
     if (inputs[inp].sample_method == NULL)	// ERROR no sample method known
       return false;	// Silently return, no further error treatment here...
@@ -194,6 +196,13 @@ bool Inputs::sample(int inp) {
     return false;		// oversampling continues
 }
 
+void Inputs::fix_active_inputs() {
+  active_inputs=0;
+  for (int inp=0; inp<inputs_allocated ; inp++) {
+    if(inputs[inp].flags & INPUT_ACTIVE)	// active inputs only
+      active_inputs |= (1 << inp);
+  }
+}
 
 /* ****************  setup sampling functions:  **************** */
 /*
@@ -207,6 +216,8 @@ bool Inputs::setup_analog_read(int inp, uint8_t addr, unsigned int oversample) {
   if (malloc_samples(inp, oversample)) {
     inputs[inp].flags |= INPUT_ANALOG_internal;
     inputs[inp].inp_A = addr;
+    if(oversample>1)
+      inputs[inp].flags |= OVERSAMPLE_AVERAGE;
     return true;	// everything ok
   } else
     return false;	// not enough RAM
@@ -266,7 +277,7 @@ unsigned int Inputs::oversamples_deviation(int inp) const {
 }
 
 
-/* ****************  input to output calcukation:  **************** */
+/* ****************  input to output calculation:  **************** */
 /*
   ioV_t Inputs::in2o_calculation(int inp, ioV_t value)
   Calculate and return the output value from an input value
@@ -320,6 +331,7 @@ bool Inputs::setup_raw(int inp) {
   if ((inp < 0) or (inp >= inputs_allocated))
     return false;	// inp out of range
 
+  inputs[inp].flags |= INPUT_OUTPUT_REACTION;
   inputs[inp].flags &= ~INPUT_PROCESSING;
   return true;
 }

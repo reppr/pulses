@@ -383,10 +383,13 @@ void input_info(int inp) {
   MENU.out(F("Q="));
   MENU.pad(INPUTS.get_out_B(inp), 4);
 
+#ifdef DEBUG_INPUTS
   MENU.out('#');
   MENU.out(INPUTS.get_counter(inp));	// not padded
+#endif
 
   MENU.tab();
+  MENU.out(F("=> "));
   MENU.out(INPUTS.get_last_output(inp));
 
 //  INPUTS.get_out_reaction(inp);

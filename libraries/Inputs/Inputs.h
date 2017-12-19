@@ -110,7 +110,7 @@ struct input_t {
 #define INPUT_ANALOG_internal	1	//				A
 
 // *input oversampling* flags
-#define OVERSAMLE_AVERAGE	2	//				O
+#define OVERSAMPLE_AVERAGE	2	//				O
 
 // *input processing* flags:
 #define INPUT_PROCESSING	4	// any type, not really needed	:
@@ -132,7 +132,9 @@ struct input_t {
 //  16384
 
 // general flags:
-#define INPUT_ACTIVE	32768		// leading bit in the menu	!
+
+// ==> if you change INPUT_ACTIVE you *must* call fix_active_inputs() <==
+#define INPUT_ACTIVE		32768	// leading bit in the menu	!
 
 
 // aliases for io_calculation
@@ -349,6 +351,7 @@ class Inputs {
 
   void set_flags(int inp, uint16_t flags) {		// inlined
     inputs[inp].flags = flags;
+    fix_active_inputs();
   }
 
   void set_inp_A(int inp, uint8_t addr) {		// inlined
@@ -398,7 +401,10 @@ class Inputs {
     in2o_method(int inp)
   */
 
+  void fix_active_inputs();
+
   unsigned long selected_inputs;
+  unsigned long active_inputs;			// as a check from outside
 
   const char * flag_mnemonics_on  = "AO:LR..C:=+*.W.!";
   const char * flag_mnemonics_off = "________________";

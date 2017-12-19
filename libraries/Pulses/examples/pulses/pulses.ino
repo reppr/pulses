@@ -390,12 +390,30 @@ bool setup_wifi_telnet() {
 }
 #endif // USE_WIFI_telnet_menu
 
-#ifndef RAM_IS_SCARE
+#ifndef RAM_IS_SCARE	// ################ FIXME: USE_INPUTS default condition ################
   #define USE_INPUTS
+#endif
 
+#ifdef USE_INPUTS
   #include <Inputs.h>
   Inputs INPUTS(12);
-#endif
+
+  bool maybe_check_inputs() {
+    static unsigned long maybe_check_inputs_cnt=0;
+    static unsigned long input_priority_part=3;	// check inputs every 3rd time, priority slice
+
+    if(INPUTS.active_inputs==0)			// something active?
+      return false;
+
+    if (++maybe_check_inputs_cnt % input_priority_part == 0 ) {	// an input's turn?
+      INPUTS.do_next_input();
+      return true;				// at least a sample was taken, maybe more actions
+    }
+
+    return false;				// i can wait for my turn ;)
+  }
+#endif // USE_INPUTS
+
 /* **************************************************************** */
 #ifdef ARDUINO
 /* Arduino setup() and loop():					*/
@@ -478,6 +496,18 @@ void setup() {
 #ifdef USE_INPUTS
   // add inputs page:
   MENU.add_page("Inputs", 'I', &inputs_display, &inputs_reaction, 'I');
+
+  int inp=0;
+  INPUTS.setup_analog_read(inp, 0, 8);				// A0, oversample=0
+  INPUTS.setup_raw(inp);					// no calculations
+  INPUTS.selected_inputs |= ++inp;				// selected for editor
+
+  INPUTS.setup_analog_read(inp, 0, 8);				// A0, oversample=0
+  INPUTS.setup_raw(inp);					// no calculations
+  INPUTS.setup_linear(inp, 0, 255, 1023, 0, PROPORTIONAL);	// 255*x/1023
+  INPUTS.selected_inputs |= ++inp;				// selected for editor
+//  MENU.play_KB_macro("I!.");
+
 #endif
 
   // display menu at startup:
@@ -572,7 +602,7 @@ void setup() {
 // bool lower_priority_tasks();
 // check lower priority tasks and do the first one that needs to be done
 // return true if something was done
-bool third_priority_tasks() {
+bool low_priority_tasks() {
 
 #ifdef IMPLEMENT_TUNING		// tuning, sweeping priority below menu		*implies floating point*
   tuning = PULSES.tuning;	// FIXME: workaround for having all 3 sweep implementations in parallel
@@ -687,9 +717,12 @@ void loop() {	// ARDUINO
   }
 
   // descend through priorities and do first thing found
-  if(! MENU.lurk_then_do())		// MENU second in priority, check if something to do,
-    if (! third_priority_tasks())	// if not, check third_priority_tasks()
-      lowest_priority_tasks();		// if still nothing done, check lowest_priority_tasks()
+#ifdef USE_INPUTS
+  if(! maybe_check_inputs())		// reading inputs can be time critical, so check early
+#endif
+    if(! MENU.lurk_then_do())		// MENU second in priority, check if something to do,
+      if (! low_priority_tasks())		// if not, check low_priority_tasks()
+	lowest_priority_tasks();		// if still nothing done, check lowest_priority_tasks()
 
 } // ARDUINO loop()
 
