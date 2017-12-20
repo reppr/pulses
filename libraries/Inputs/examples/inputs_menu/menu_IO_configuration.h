@@ -70,7 +70,7 @@
     #elif defined(ESP32)
         #include <WiFi.h>	// might break:  min() max()   use:  _min() _max()
     #else
-        #error "WiFi code unknown,  see: pulses_systems_and_boards.h"
+        #error "WiFi code unknown"
     #endif
   #endif
 

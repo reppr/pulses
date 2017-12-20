@@ -18,7 +18,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "examples/pulses/pulses_systems_and_boards.h"
+#include "examples/pulses/pulses_systems.h"
+#include "examples/pulses/pulses_boards.h"
 
 #include <Menu.h>
 

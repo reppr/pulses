@@ -3,9 +3,6 @@
 #ifndef CLICK_PIN_CONFIGURATION.H
 #define CLICK_PIN_CONFIGURATION.H
 
-#include "pulses_systems_and_boards.h"
-
-
 #if defined(CLICK_PULSES)
 
 #if defined(ESP32)				// which board?

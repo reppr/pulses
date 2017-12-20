@@ -1,21 +1,16 @@
-#ifndef PULSES_SYSTEMS_AND_BOARDS_H
-#define PULSES_SYSTEMS_AND_BOARDS_H
+/*
+  pulses_boards.h
+  initialize Pulses depending the board it is running on
+*/
 
-#ifdef ARDUINO		// ARDUINO, ESP32, ESP8266 and similar boards
-  #define STREAMTYPE	Stream
-
-  #if ARDUINO >= 100
-    #include "Arduino.h"
-  #else
-    #include "WProgram.h"
-  #endif
-
-
+#ifndef PULSES_BOARDS_H
   /* **************************************************************** */
-  // Arduino board specific configutation:
+  // Arduino board specific Pulses configuration:
+
+#ifdef ARDUINO
   #if defined(ESP32)				// ESP32 :)
     const int pl_max=32;
-// const int pl_max=64;	// FIXME: mask limitations ################
+// const int const int pl_max=64;	// FIXME: mask limitations ################
     #define JIFFLE_RAM_SIZE	256*3+2
     #define RATIOS_RAM_SIZE	256*2+2
     // must be defined before including Pulses
@@ -31,7 +26,7 @@
     // must be defined before including Pulses
     #define IMPLEMENT_TUNING		// needs float
 
-    #define USE_WIFI_telnet_menu	// use WIFI as menu over telnet?
+    #define USE_WIFI_telnet_menu	// use WIFI as menu over telnet?[A
 
   #elif defined(__SAM3X8E__)			// Arduino DUE
     const int pl_max=64;
@@ -57,7 +52,8 @@
     const int pl_max=12;
 
   #else						// unknown board, defaults
-    #define RAM_IS_SCARE	// ################ FIXME: RAM_IS_SCARE (other boards) ################
+    #warning unknown Arduino board
+//  #define RAM_IS_SCARE	// ################ FIXME: RAM_IS_SCARE (other boards) ################
     const int pl_max=16;
   #endif
 
@@ -74,35 +70,21 @@
     #elif defined(__SAM3X8E__)
       #define CLICK_PULSES	32      // Arduino DUE test with 32 pins ;)
     #else
-      #define CLICK_PULSES	6       // default number of click frequencies on unknown boards
+      #warning unknown Arduino board, edit  __FILE__:__LINE__
+      #define CLICK_PULSES	8       // default number of click frequencies on unknown boards
     #endif
   #endif
 
   #define MENU_OUTSTREAM	Serial
 
-// FIXME: why does this not work here?
-//	  // for Menu
-//	  int men_getchar() {
-//	    if (!Serial.available())	// ARDUINO
-//	      return EOF;
-//
-//	    return Serial.read();
-//	  }
+#else	// not ARDUINO, PC
+  #warning: "PC version not supported, out of date"
 
-#else	// #include's for Linux PC test version	*NOT SUPPORTED*
-  #include <iostream>
-
-  const int pl_max=64;		// Linux PC test version
+const int pl_max=64;		// Linux PC test version
 
   #ifndef CLICK_PULSES		// default number of click frequencies
      #define CLICK_PULSES	0  // default number of click frequencies on PC, untested
   #endif
-
-  #ifndef STREAMTYPE		// could have been #define'd in Menu.h
-    using namespace std;
-    ostream & Serial=cout;	// nice trick from johncc
-  #endif
-  #define STREAMTYPE	ostream
 
   #ifndef INPUT
     #define INPUT	0
@@ -139,6 +121,8 @@
 #endif	// *not* ARDUINO, c++ Linux PC test version
 
 
+
+/* **************************************************************** */
 // use Arduino F() macro to save RAM or just a NOOP?
 #ifndef USE_F_MACRO	// NOOP fake
   // For tests and on PC:  Fake Arduino F("string") macro as NOOP:
@@ -147,5 +131,7 @@
   #warning "using a NOOP fake F() macro."
 #endif
 
+/* **************************************************************** */
 
-#endif	// no PULSES_SYSTEMS_AND_BOARDS_H
+#define PULSES_BOARDS_H
+#endif	// no PULSES_BOARDS_H

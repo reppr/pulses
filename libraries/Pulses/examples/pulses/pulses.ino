@@ -40,7 +40,8 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 #include <inttypes.h>
 using namespace std;	// ESP8266 needs that
 
-#include "pulses_systems_and_boards.h"
+#include "pulses_systems.h"
+#include "pulses_boards.h"
 
 
 #ifdef USE_WIFI_telnet_menu

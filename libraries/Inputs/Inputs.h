@@ -28,6 +28,7 @@
   #endif
 #endif // ARDUINO
 
+#include "pulses_boards.h"
 
 /* **************************************************************** */
 /*
@@ -401,10 +402,9 @@ class Inputs {
     in2o_method(int inp)
   */
 
-  void fix_active_inputs();
-
   unsigned long selected_inputs;
   unsigned long active_inputs;			// as a check from outside
+  void fix_active_inputs();
 
   const char * flag_mnemonics_on  = "AO:LR..C:=+*.W.!";
   const char * flag_mnemonics_off = "________________";
