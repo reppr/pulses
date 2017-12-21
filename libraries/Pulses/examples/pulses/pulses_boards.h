@@ -9,7 +9,26 @@
 
 #ifdef ARDUINO
   #if defined(ESP32)				// ESP32 :)
-    const int pl_max=32;
+
+/*
+ // based on
+ // https://github.com/espressif/arduino-esp32/blob/master/libraries/ESP32/examples/AnalogOut/LEDCSoftwareFade/LEDCSoftwareFade.ino
+
+  // I did not have to define it, already there :)
+  // Arduino like analogWrite
+  // value has to be between 0 and valueMax
+  void ledcAnalogWrite(uint8_t channel, uint32_t value, uint32_t valueMax = 255) {
+    // calculate duty, 8191 from 2 ^ 13 - 1
+    uint32_t duty = (8191 / valueMax) * min(value, valueMax);
+
+    // write duty to LEDC
+    ledcWrite(channel, duty);
+   }
+*/
+
+#define analogWrite	ledcAnalogWrite
+
+const int pl_max=32;
 // const int const int pl_max=64;	// FIXME: mask limitations ################
     #define JIFFLE_RAM_SIZE	256*3+2
     #define RATIOS_RAM_SIZE	256*2+2

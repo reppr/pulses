@@ -133,14 +133,23 @@ bool Inputs::sample_and_react(int inp) {
       // ################	FIXME: add analogWriteResolution(12) on the DUE
       if (output_value > 255)
 	output_value=255;
-#ifdef ARDUINO
-    analogWrite(inputs[inp].out_A, output_value);	// inbuilt PWM
-#else
-    #error "PWM not available."
-#endif
   }
 //  else
 //    inputs[inp].out_reaction(inp, output_value);	// custom output	FIXME: todo ################
+
+#if defined(ARDUINO)
+  #ifdef ESP32	// ################ FIXME: anbalogWrite() on ESP32 ################
+    // Setup timer and attach timer to a led pin
+    #define LEDC_CHANNEL_0	0
+    #define LEDC_BASE_FREQ	5000
+    #define LEDC_TIMER_13_BIT	13
+    #define LED_PIN		2
+    ledcSetup(LEDC_CHANNEL_0, LEDC_BASE_FREQ, LEDC_TIMER_13_BIT);	// ################ FIXME:
+    ledcAttachPin(LED_PIN, LEDC_CHANNEL_0);
+  #endif
+
+  analogWrite(inputs[inp].out_A, output_value);	// inbuilt PWM
+#endif
 
   inputs[inp].last_output=output_value;
 
@@ -416,8 +425,10 @@ bool Inputs::setup_PWM(int inp, uint8_t pin) {
   inputs[inp].flags |= INPUT_OUTPUT_REACTION;
 
   // on ARDUINO initialize pin:
-#ifdef ARDUINO
-  pinMode(pin, OUTPUT);
+#if defined(ARDUINO)
+  #if ! defined(ESP32)	// ################ FIXME: anbalogWrite() on ESP32 ################
+    pinMode(pin, OUTPUT);
+  #endif
   analogWrite(pin, 0);
 #endif
 
