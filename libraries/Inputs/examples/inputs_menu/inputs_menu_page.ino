@@ -62,7 +62,7 @@ bool inputs_reaction(char token) {
   case '6':
   case '7':
   case '8':
-  case '9':
+  case '9':	// togle selection 0-9
     bit = token -'0';
     if (bit >= INPUTS.get_inputs_allocated())
       return false;	// *not* responsible
@@ -78,7 +78,7 @@ bool inputs_reaction(char token) {
   case 'c':
   case 'd':
   case 'e':
-  case 'f':
+  case 'f':	// togle selection a-f
     bit = token -'a' + 10;
     if (bit >= INPUTS.get_inputs_allocated())
       return false;	// *not* responsible
@@ -89,7 +89,7 @@ bool inputs_reaction(char token) {
       print_selected_inputs();
     break;
 
-  case '~':
+  case '~':	// invert selection
     INPUTS.selected_inputs = ~INPUTS.selected_inputs;
     bitmask=0;
     for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
@@ -99,13 +99,13 @@ bool inputs_reaction(char token) {
       print_selected_inputs();
     break;
 
-  case 'x':
+  case 'x':	// clear selection
     INPUTS.selected_inputs = 0;
     if (MENU.verbosity >= VERBOSITY_SOME)
       print_selected_inputs();
     break;
 
-  case 'N':
+  case 'N':	// set selection	do i want that at all?
     newValue = MENU.numeric_input(ILLEGAL);
     if ((newValue >= 0) && (newValue < INPUTS.get_inputs_allocated())) {
       INPUTS.selected_inputs = 1 << newValue;
@@ -116,7 +116,7 @@ bool inputs_reaction(char token) {
     break;
 
 
-  case 'A':
+  case 'A':	// set_inp A
     if(anything_selected()) {	// if not, tell the user how to select
       newValue = MENU.numeric_input(ILLEGAL);
       if (newValue == (uint8_t) newValue) {
@@ -129,7 +129,7 @@ bool inputs_reaction(char token) {
     }
     break;
 
-  case 'B':
+  case 'B':	// set_inp B
     if(anything_selected()) {	// if not, tell the user how to select
       newValue = MENU.numeric_input(ILLEGAL);
       if (newValue == (uint8_t) newValue) {
@@ -142,7 +142,7 @@ bool inputs_reaction(char token) {
     }
     break;
 
-  case '+':
+  case '+':	// set-in_offset
     if (!INPUTS.selected_inputs)
       return false;			// unhide verbosity '+'
 
@@ -156,7 +156,7 @@ bool inputs_reaction(char token) {
     } else MENU.OutOfRange();
     break;
 
-  case '*':
+  case '*':	// set_mul
     if(anything_selected()) {	// if not, tell the user how to select
       newValue = MENU.numeric_input(ILLEGAL);
       if (newValue == (ioP_t) newValue) {
@@ -169,7 +169,7 @@ bool inputs_reaction(char token) {
     }
     break;
 
-  case '/':
+  case '/':	// set_div
     if(anything_selected()) {	// if not, tell the user how to select
       newValue = MENU.numeric_input(ILLEGAL);
       if (newValue == (ioP_t) newValue) {
@@ -182,7 +182,7 @@ bool inputs_reaction(char token) {
     }
     break;
 
-  case '>':
+  case '>':	// set_out_offset
     if(anything_selected()) {	// if not, tell the user how to select
       newValue = MENU.numeric_input(ILLEGAL);
       if (newValue == (ioV_t) newValue) {
@@ -208,7 +208,7 @@ bool inputs_reaction(char token) {
     }
     break;
 
-  case 'Q':
+  case 'Q':	 // set_out_B
     if(anything_selected()) {	// if not, tell the user how to select
       newValue = MENU.numeric_input(ILLEGAL);
       if (newValue == (uint8_t) newValue) {
@@ -221,7 +221,7 @@ bool inputs_reaction(char token) {
     }
     break;
 
-  case 'S':
+  case 'S':	// malloc_samples
     if(anything_selected()) {	// if not, tell the user how to select
       newValue = MENU.numeric_input(ILLEGAL);
       if (newValue > 0) {
@@ -237,7 +237,7 @@ bool inputs_reaction(char token) {
     }
     break;
 
-  case '#':
+  case '#':	// set_counter	do i want that at all?
     if(anything_selected()) {	// if not, tell the user how to select
       newValue = MENU.numeric_input(ILLEGAL);
       if (newValue == (unsigned long) newValue) {
@@ -251,7 +251,7 @@ bool inputs_reaction(char token) {
     break;
 
 
-  case 's':
+  case 's':	// show_samples
     if(anything_selected()) {	// if not, tell the user how to select
       for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
 	if (INPUTS.selected_inputs & ( 1 << inp))
@@ -259,12 +259,12 @@ bool inputs_reaction(char token) {
     }
     break;
 
-  case 'i': case '.':
+  case 'i': case '.':	// inputs_info
     inputs_info();
     MENU.ln();
     break;
 
-  case 't':
+  case 't':	// test_in2o_calculation
     if(anything_selected()) {	// if not, tell the user how to select
       newValue = MENU.numeric_input(0);
       if (newValue == (int) newValue) {
@@ -275,7 +275,7 @@ bool inputs_reaction(char token) {
     }
     break;
 
-  case 'T':
+  case 'T':	// test_in2o_calculation range
     if(anything_selected()) {	// if not, tell the user how to select
       for (int newValue=0; newValue<1024; newValue++)
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
@@ -284,7 +284,7 @@ bool inputs_reaction(char token) {
     }
     break;
 
-  case '!':
+  case '!':	// toggle activity
     if(anything_selected()) {	// if not, tell the user how to select
       for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++) {
 	if (INPUTS.selected_inputs & ( 1 << inp)) {
@@ -353,7 +353,7 @@ void input_info(int inp) {
   MENU.out(INPUTS.get_inputs_allocated());
 
   MENU.out_flags_();
-  show_flag_mnemonics(INPUTS.get_flags(inp), 16);		// was:  MENU.outBIN(INPUTS.get_flags(inp), 16);
+  show_flag_mnemonics(INPUTS.get_flags(inp), 16);
   MENU.tab();
 
   MENU.out(F("iA="));

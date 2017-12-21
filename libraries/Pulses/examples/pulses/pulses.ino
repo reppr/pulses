@@ -108,7 +108,7 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
     #define FREQUENCY    80	// valid 80, 160
     //#define FREQUENCY    160	// valid 80, 160
 
-    #include "ESP8266WiFi.h"  // after that min() and max() do not work any more. Say: std::min() std::max()
+    #include "ESP8266WiFi.h"  // after that min() and max() do not work any more. Say: std::min() std::max() or _min _max
     extern "C" {
       #include "user_interface.h"
     }
@@ -116,7 +116,7 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 
   #ifdef WIFI_OFF_mysensors
     // see: https://forum.mysensors.org/topic/5120/esp8266-with-wifi-off/3
-    #include <ESP8266WiFi.h>  // after that min() and max() do not work any more. Say: std::min() std::max()
+    #include <ESP8266WiFi.h>  // after that min() and max() do not work any more. Say: std::min() std::max() or _min _max
   #endif
 #endif	// ESP8266
 

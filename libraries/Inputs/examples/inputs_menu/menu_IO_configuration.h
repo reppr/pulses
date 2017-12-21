@@ -68,7 +68,7 @@
     #if defined(ESP8266)
   #include <ESP8266WiFi.h>	// breaks:  min() max()   use:  _min() _max()
     #elif defined(ESP32)
-        #include <WiFi.h>	// might break:  min() max()   use:  _min() _max()
+        #include <ESP32WiFi.h>	// might break:  min() max()   use:  _min() _max()
     #else
         #error "WiFi code unknown"
     #endif

@@ -27,7 +27,7 @@
 //	  uint8_t click_pin[CLICK_PULSES] =		// FIXME: test only 8 ################
 //	    {19, 18, 5, 17, 16, 4, 0, 15};			// FIXME: test only 8 higher ################
 
-#elif defined(ESP8266)	// configure PINs here
+#elif defined(ESP8266)	// configure PINs on ESP8266
    /*
      // on NodeMCU ESP8266 board Arduino defines digital pins
      static const uint8_t D0   = 16;
