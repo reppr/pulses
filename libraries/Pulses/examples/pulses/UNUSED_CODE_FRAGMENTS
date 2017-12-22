@@ -193,3 +193,22 @@ class NullStream : public std::ostream
 NullStream null_stream;
 #define MENU_OUTSTREAM2	null_stream
 */
+
+
+
+/*
+  analogWrite_ESP32.h
+*/
+
+#ifdef ESP32	// ESP32 has no analogWrite() yet
+  #ifndef ANALOGWRITE_ESP32_H
+    #define ANALOGWRITE_ESP32_H
+
+    void analogWrite(int channel, int value) {
+      ledcWrite(channel, value);
+    }
+#endif
+
+
+  #endif // ! ANALOGWRITE_ESP32_H
+#endif // ESP32

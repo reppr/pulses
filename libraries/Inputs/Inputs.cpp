@@ -33,6 +33,13 @@
 #endif
 
 
+#ifdef ESP32	// ESP32 has no analogWrite() yet
+  void analogWrite(int channel, int value) {
+    ledcWrite(channel, value);
+  }
+#endif
+
+
 /* **************************************************************** */
 // Constructor:
 Inputs::Inputs(int inputs_to_allocate):
