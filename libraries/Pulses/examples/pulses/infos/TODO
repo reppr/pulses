@@ -1,0 +1,15 @@
+// DADA TODO:  #error "sorry this module is temporary switched off"
+switched off all older menu examples to decide about menu api changes
+
+softboard  should be done soon
+
+
+
+analogReadResolution(12);
+
+~/Arduino/hardware/arduino/sam/variants/arduino_due_x/
+
+~/Arduino/hardware/arduino/avr/variants/leonardo/
+__AVR_ATmega32U4__
+
+test float output on PC.

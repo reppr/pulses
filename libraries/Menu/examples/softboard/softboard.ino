@@ -1,3 +1,4 @@
+#error "sorry this module is temporary switched off"
 /* **************************************************************** */
 /*
 			Softboard
@@ -69,6 +70,8 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
 
 /* **************************************************************** */
+// DADA TODO:  #error "sorry this module is temporary switched off"
+
 /*
   This version definines the menu INPUT routine int men_getchar();
   in the *program* not inside the Menu class.
