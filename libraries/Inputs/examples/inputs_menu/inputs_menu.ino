@@ -15,6 +15,8 @@
 // debugging:
 // #define INPUTS_DEBUGGING_SAMPLE_REACTION
 /* **************************************************************** */
+#define USE_INPUTS
+
 #include <Inputs.h>
 Inputs INPUTS(12);
 

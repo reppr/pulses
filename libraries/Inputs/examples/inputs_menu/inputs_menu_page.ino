@@ -4,6 +4,8 @@
 
 /* **************************************************************** */
 #ifndef INPUTS_MENU_PAGE_INO
+#ifdef USE_INPUTS
+
 /*
 #include <stdio.h>
 #include <stdlib.h>
@@ -486,8 +488,9 @@ void show_samples(int inp) {
   MENU.outln(INPUTS.oversamples_deviation(inp));
 }
 
+#endif // USE_INPUTS
 
 #define INPUTS_MENU_PAGE_INO
-#endif
+#endif // ! INPUTS_MENU_PAGE_INO
 /* **************************************************************** */
 
