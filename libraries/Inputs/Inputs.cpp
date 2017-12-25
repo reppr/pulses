@@ -134,22 +134,21 @@ bool Inputs::sample_and_react(int inp) {
 
   // call the reaction of that input with that output_value
   if (inputs[inp].flags & SET_PWM) {
-    if (output_value < 0)
-      output_value=0;
+    if (output_value > PWMRANGE)
+      output_value=PWMRANGE;
     else
-      // ################	FIXME: add analogWriteResolution(12) on the DUE
-      if (output_value > 255)
-	output_value=255;
+      if (output_value < 0)
+	output_value=0;
   }
 //  else
 //    inputs[inp].out_reaction(inp, output_value);	// custom output	FIXME: todo ################
 
 #if defined(ARDUINO)
-  #ifdef ESP32	// ################ FIXME: anbalogWrite() on ESP32 ################
+  #ifdef ESP32
     // Setup timer and attach timer to a led pin
     #define LEDC_CHANNEL_0	0
     #define LEDC_BASE_FREQ	5000
-    #define LEDC_TIMER_13_BIT	13
+    #define LEDC_TIMER_13_BIT	13	// ################ FIXME: test PWMBASE
     #define LED_PIN		2
     ledcSetup(LEDC_CHANNEL_0, LEDC_BASE_FREQ, LEDC_TIMER_13_BIT);	// ################ FIXME:
     ledcAttachPin(LED_PIN, LEDC_CHANNEL_0);
@@ -195,8 +194,6 @@ bool Inputs::sample(int inp) {
   if (inputs[inp].flags & INPUT_ANALOG_internal)	// analogRead
     value = analogRead(inputs[inp].inp_A);
   else {
-    Serial.println("ERROR"); // ################################################################
-    // check for misconfigured input, not really needed.
     if (inputs[inp].sample_method == NULL)	// ERROR no sample method known
       return false;	// Silently return, no further error treatment here...
 

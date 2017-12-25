@@ -35,15 +35,17 @@ void inputs_display() {
   MENU.out(sizeof(input_t));
   MENU.outln(F(" bytes RAM each"));
 
-
-  MENU.outln(F("'i'=info"));
+  MENU.outln(F(". i=info"));
 
   how_to_select();
 
   if(INPUTS.selected_inputs) {
-    MENU.outln(F("Set parameters with  A B S + * / > O Q #"));
+    MENU.outln(F("I=init  L=linear  Z=inverse   Set parameters with  A B S + * / > O Q #"));
     MENU.outln(F("!=activate s=samples t<n>=test T=tests"));
+    MENU.outln(F(":=react  W=PWM  "));
   }
+
+  inputs_info();
 }
 
 
@@ -71,8 +73,11 @@ bool inputs_reaction(char token) {
 
     // existing input:
     INPUTS.selected_inputs ^= (1 << bit);
-    if (MENU.verbosity >= VERBOSITY_SOME)
+
+    if (MENU.verbosity >= VERBOSITY_SOME) {
       print_selected_inputs();
+      inputs_info();
+    }
     break;
 
   case 'a':
@@ -87,8 +92,11 @@ bool inputs_reaction(char token) {
 
     // existing input:
     INPUTS.selected_inputs ^= (1 << bit);
-    if (MENU.verbosity >= VERBOSITY_SOME)
+
+    if (MENU.verbosity >= VERBOSITY_SOME) {
       print_selected_inputs();
+      inputs_info();
+    }
     break;
 
   case '~':	// invert selection
@@ -97,26 +105,67 @@ bool inputs_reaction(char token) {
     for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
       bitmask |= (1 << inp);
     INPUTS.selected_inputs &= bitmask;
-    if (MENU.verbosity >= VERBOSITY_SOME)
+
+    if (MENU.verbosity >= VERBOSITY_SOME) {
       print_selected_inputs();
+      inputs_info();
+    }
     break;
 
   case 'x':	// clear selection
     INPUTS.selected_inputs = 0;
+
     if (MENU.verbosity >= VERBOSITY_SOME)
-      print_selected_inputs();
+      inputs_info();
     break;
 
   case 'N':	// set selection	do i want that at all?
     newValue = MENU.numeric_input(ILLEGAL);
     if ((newValue >= 0) && (newValue < INPUTS.get_inputs_allocated())) {
       INPUTS.selected_inputs = 1 << newValue;
-    if (MENU.verbosity >= VERBOSITY_SOME)
-      print_selected_inputs();
+
+      if (MENU.verbosity >= VERBOSITY_SOME) {
+	print_selected_inputs();
+	inputs_info();
+      }
     } else MENU.OutOfRange();
 
     break;
 
+  case 'I': 	// Initialize (raw)
+    for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+      if (INPUTS.selected_inputs & ( 1 << inp)) {
+	INPUTS.setup_analog_read(inp, 0, 0);			// A0, oversample=0
+	INPUTS.setup_raw(inp);					// no calculations
+      }
+
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      inputs_info();
+
+    break;
+
+  case 'L': 	// linear
+    for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+      if (INPUTS.selected_inputs & ( 1 << inp)) {
+	INPUTS.setup_analog_read(inp, 0, 0);			// A0, oversample=0
+	INPUTS.setup_raw(inp);					// no calculations
+	INPUTS.setup_linear(inp, 0, 0, 0, 0, PROPORTIONAL);
+      }
+
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      inputs_info();
+
+    break;
+
+  case 'Z': 	// inverse
+    for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+      if (INPUTS.selected_inputs & ( 1 << inp))
+	INPUTS.set_flags(inp, (INPUTS.get_flags(inp) ^ PROCESS_INVERSE));
+
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      inputs_info();
+
+    break;
 
   case 'A':	// set_inp A
     if(anything_selected()) {	// if not, tell the user how to select
@@ -125,6 +174,7 @@ bool inputs_reaction(char token) {
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
 	  if (INPUTS.selected_inputs & ( 1 << inp))
 	    INPUTS.set_inp_A(inp, newValue);
+
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  inputs_info();
       } else MENU.OutOfRange();
@@ -138,6 +188,7 @@ bool inputs_reaction(char token) {
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
 	  if (INPUTS.selected_inputs & ( 1 << inp))
 	    INPUTS.set_inp_B(inp, newValue);
+
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  inputs_info();
       } else MENU.OutOfRange();
@@ -153,8 +204,10 @@ bool inputs_reaction(char token) {
       for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
 	if (INPUTS.selected_inputs & ( 1 << inp))
 	  INPUTS.set_in_offset(inp, newValue);
+
       if (MENU.verbosity >= VERBOSITY_SOME)
 	inputs_info();
+
     } else MENU.OutOfRange();
     break;
 
@@ -169,6 +222,10 @@ bool inputs_reaction(char token) {
 	  inputs_info();
       } else MENU.OutOfRange();
     }
+
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      inputs_info();
+
     break;
 
   case '/':	// set_div
@@ -182,6 +239,10 @@ bool inputs_reaction(char token) {
 	  inputs_info();
       } else MENU.OutOfRange();
     }
+
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      inputs_info();
+
     break;
 
   case '>':	// set_out_offset
@@ -195,9 +256,55 @@ bool inputs_reaction(char token) {
 	  inputs_info();
       } else MENU.OutOfRange();
     }
+
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      inputs_info();
+
     break;
 
-  case 'O':
+  case ':':	// toggle output reaction
+    if(anything_selected()) {	// if not, tell the user how to select
+      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	if (INPUTS.selected_inputs & ( 1 << inp))
+	  INPUTS.set_flags(inp, (INPUTS.get_flags(inp) ^ INPUT_OUTPUT_REACTION));
+    }
+
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      inputs_info();
+
+    break;
+    
+  case 'W':  // analogWrite
+    /*
+      'W' toggle SET_PWM flag
+      'W<number>' set pwm pin and SET_PWM
+     */
+    if(anything_selected()) {	// if not, tell the user how to select
+      if(MENU.cb_peek()==EOF) {
+	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	  if (INPUTS.selected_inputs & ( 1 << inp)) {
+	    INPUTS.set_flags(inp, (INPUTS.get_flags(inp) ^ SET_PWM ));
+	    //INPUTS.fix_output_reaction_flag(inp);
+	  }
+      } else {
+	newValue = MENU.numeric_input(ILLEGAL);
+	if (newValue!=ILLEGAL) {
+	  for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++) {
+	    if (INPUTS.selected_inputs & ( 1 << inp)) {
+	      INPUTS.set_flags(inp, (INPUTS.get_flags(inp) | SET_PWM ));
+	      INPUTS.set_out_A(inp, newValue);
+	    }
+	  }
+	}
+      }
+    }
+
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      inputs_info();
+
+    break;
+
+  case 'O':	// set_out_A
     if(anything_selected()) {	// if not, tell the user how to select
       newValue = MENU.numeric_input(ILLEGAL);
       if (newValue == (uint8_t) newValue) {
@@ -208,6 +315,10 @@ bool inputs_reaction(char token) {
 	  inputs_info();
       } else MENU.OutOfRange();
     }
+
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      inputs_info();
+
     break;
 
   case 'Q':	 // set_out_B
@@ -221,6 +332,10 @@ bool inputs_reaction(char token) {
 	  inputs_info();
       } else MENU.OutOfRange();
     }
+
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      inputs_info();
+
     break;
 
   case 'S':	// malloc_samples
@@ -237,6 +352,10 @@ bool inputs_reaction(char token) {
 	  inputs_info();
       } else MENU.OutOfRange();
     }
+
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      inputs_info();
+
     break;
 
   case '#':	// set_counter	do i want that at all?
@@ -250,6 +369,10 @@ bool inputs_reaction(char token) {
 	  inputs_info();
       } else MENU.OutOfRange();
     }
+
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      inputs_info();
+
     break;
 
 
@@ -263,7 +386,7 @@ bool inputs_reaction(char token) {
 
   case 'i': case '.':	// inputs_info
     inputs_info();
-    MENU.ln();
+
     break;
 
   case 't':	// test_in2o_calculation
@@ -275,15 +398,23 @@ bool inputs_reaction(char token) {
 	    test_in2o_calculation(inp, (int) newValue);
       } else MENU.OutOfRange();
     }
+
     break;
 
   case 'T':	// test_in2o_calculation range
     if(anything_selected()) {	// if not, tell the user how to select
-      for (int newValue=0; newValue<1024; newValue++)
-	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (INPUTS.selected_inputs & ( 1 << inp))
+      for (int newValue=0; newValue<1024; newValue++) {
+	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++) {
+	  if (INPUTS.selected_inputs & ( 1 << inp)) {
 	    test_in2o_calculation(inp, (int) newValue);
+            #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
+	      wdt_reset();
+            #endif
+	  }
+	}
+      }
     }
+
     break;
 
   case '!':	// toggle activity
@@ -293,9 +424,11 @@ bool inputs_reaction(char token) {
 	  INPUTS.set_flags(inp, (INPUTS.get_flags(inp) ^ INPUT_ACTIVE));
 	}
       }
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	inputs_info();
     }
+
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      inputs_info();
+
     break;
 
   default:
@@ -379,6 +512,11 @@ void input_info(int inp) {
   MENU.out(F(">+"));
   MENU.pad(INPUTS.get_out_offset(inp), 6);
 
+  if(INPUTS.get_flags(inp) & SET_PWM)
+    MENU.out(F("PWM "));
+  else
+    MENU.out(F("    "));
+
   MENU.out(F("O="));
   MENU.pad(INPUTS.get_out_A(inp), 4);
 
@@ -437,7 +575,7 @@ void test_in2o_calculation(int inp, int value) {
   MENU.pad(inp, 4);
   MENU.out(F("in="));
   MENU.out(value);
-  MENU.out(F("\tout="));
+  MENU.out(F(" \tout="));
 #ifdef I2O_PARAMETER_IS_FLOAT
       Serial.println(INPUTS.in2o_calculation(inp, value), 4);
 #else

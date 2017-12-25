@@ -121,10 +121,10 @@ struct input_t {
 #define PROCESS_CUSTOM		128	// custom processing function	C
 
 // *output method* flags:
-#define INPUT_OUTPUT_REACTION	256	// any type, not really needed	:
-//#define SET_TO_VALUE		512				=
-//#define ADD_TO_VALUE		1024				+
-//#define MUL_VALUE	        2048				*
+#define INPUT_OUTPUT_REACTION	256	//				:
+#define SET_TO_VALUE		512	//				=
+#define ADD_TO_VALUE		1024	//				+
+#define MUL_VALUE	        2048	//				*
 //  4096
 
 // *inbuilt reaction flags:
@@ -356,6 +356,7 @@ class Inputs {
 
   void set_inp_A(int inp, uint8_t addr) {		// inlined
     inputs[inp].inp_A = addr;
+    inputs[inp].flags |= INPUT_ANALOG_internal;
   }
 
   void set_inp_B(int inp, uint8_t i2) {			// inlined
