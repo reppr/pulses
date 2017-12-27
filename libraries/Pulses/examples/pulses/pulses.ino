@@ -44,20 +44,6 @@ using namespace std;	// ESP8266 needs that
 #include "pulses_boards.h"
 
 
-#ifdef USE_WIFI_telnet_menu
-// ***EITHER*** put your WLAN ssid and password in next 2 lines:
-  const char* ssid     = "please_set_your_WiFi_SSID";
-  const char* password = "topSecret77";
-
-  // *** OR *** comment out above 2 lines,
-  //  put that stuff in a file and #include it:
-//#include "/home/you/WiFi-credentials.h"	// let the name be <something>.h
-
-
-
-  #define AUTO_CONNECT_WIFI			// start WiFi on booting?
-#endif //  USE_WIFI_telnet_menu
-
 /* **************** Menu **************** */
 class Menu;
 /*
@@ -68,7 +54,7 @@ class Menu;
 */
 #include "menu_IO_configuration.h"
 #include <Menu.h>
-Menu MENU(32, 3, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
+Menu MENU(32, 4, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
 
 
 /* **************** Pulses **************** */
@@ -309,95 +295,13 @@ int voices=CLICK_PULSES;
 #endif
 
 
-#ifdef USE_WIFI_telnet_menu
-// see: WiFi Telnet Server for Serial Monitor use - provided #1169
-//      https://github.com/esp8266/Arduino/issues/1169
-
-// strings for WiFi status
-const char *str_status[]= {
-  "WL_IDLE_STATUS",
-  "WL_NO_SSID_AVAIL",
-  "WL_SCAN_COMPLETED",
-  "WL_CONNECTED",
-  "WL_CONNECT_FAILED",
-  "WL_CONNECTION_LOST",
-  "WL_DISCONNECTED"
-};
-
-// strings for WiFi mode
-const char *str_mode[]= { "WIFI_OFF", "WIFI_STA", "WIFI_AP", "WIFI_AP_STA" };
-
-
-bool connectWifi() {
-  MENU.out("connecting WiFi to SSID: ");
-  MENU.out(ssid); MENU.tab();
-
-  // use in case of mode problem
-  WiFi.disconnect();
-  // switch to Station mode
-  if (WiFi.getMode() != WIFI_STA) {
-    WiFi.mode(WIFI_STA);
-  }
-
-  WiFi.begin (ssid, password);
-  // WiFi.printDiag(Serial);	// debugging
-
-  // 10 seconds to establish connection
-  unsigned long startTime = millis();
-  while (WiFi.status() != WL_CONNECTED && millis() - startTime < 10000) {
-    delay(100);
-    #if defined(ESP32) || defined(ESP8266)
-      yield();	// delay should do that, but who knows...
-    #endif
-    MENU.out(".");
-  }
-
-  // Check connection
-  if (WiFi.status() == WL_CONNECTED) {
-    MENU.outln(" connected");
-    MENU.out("IP address: ");
-    MENU.IPstring(WiFi.localIP());
-    MENU.tab();
-    return true;	// connected :)
-  }
-
-  // failed:
-  MENU.outln("connect FAILED\tsee instructions in 'pulses.ino'");
-
-  return false;
-}  // connectWiFi()
-
-
-bool setup_wifi_telnet() {
-  if(! connectWifi())
-    return false;
-
-  if (WiFi.status() == WL_CONNECTED) {
-    MENU.out("WiFi mode: ");
-    MENU.out(str_mode[WiFi.getMode()]);
-    MENU.out("\tstatus: " );
-    MENU.outln (str_status[WiFi.status()]);
-
-    telnet_server.begin();
-    telnet_server.setNoDelay(true);
-    MENU.out("\nWLAN MENU  telnet ");
-    MENU.IPstring(WiFi.localIP());
-    MENU.outln(" port 23");
-
-    return true;
-  } else
-    MENU.outln("WiFi connect FAILED.");
-  return false;
-}
-#endif // USE_WIFI_telnet_menu
-
 #ifndef RAM_IS_SCARE	// ################ FIXME: USE_INPUTS default condition ################
   #define USE_INPUTS
 #endif
 
 #ifdef USE_INPUTS
   #include <Inputs.h>
-  Inputs INPUTS(12);
+  Inputs INPUTS(4);
 
   bool maybe_check_inputs() {
     static unsigned long maybe_check_inputs_cnt=0;
@@ -420,8 +324,8 @@ bool setup_wifi_telnet() {
 /* Arduino setup() and loop():					*/
 
 // needed for MENU.add_page();
-void softboard_display();		// defined later on
-bool softboard_reaction(char token);	// defined later on
+// void softboard_display();
+// bool softboard_reaction(char token);
 int softboard_page=-1;		// see: maybe_run_continuous()
 
 
@@ -434,8 +338,9 @@ void setup() {
      we *must* do that before:
   */
   while (!Serial) { ;}		// wait for Serial to open
-  MENU.ln();	// new line after possible garbage
 #endif
+
+  Serial.flush();
 
   MENU.outln(F("http://github.com/reppr/pulses/\n"));
 
@@ -492,7 +397,7 @@ void setup() {
 
   // add softboard page:
   softboard_page = MENU.add_page("Hardware Softboard", 'H',	\
-		&softboard_display, &softboard_reaction, 'H');
+		 &softboard_display, &softboard_reaction, 'H');
 
 #ifdef USE_INPUTS
   // add inputs page:
@@ -507,8 +412,12 @@ void setup() {
   INPUTS.setup_raw(inp);					// no calculations
   INPUTS.setup_linear(inp, 0, 255, 1023, 0, PROPORTIONAL);	// 255*x/1023
   INPUTS.selected_inputs |= ++inp;				// selected for editor
-//  MENU.play_KB_macro("I!.");
+#endif
 
+
+#ifdef USE_WIFI_telnet_menu
+  // add WiFi page:
+  MENU.add_page("WIFI", 'Y', &WiFi_menu_display, &WiFi_menu_reaction, 'Y');
 #endif
 
   // display menu at startup:

@@ -20,6 +20,7 @@
     #undef USE_F_MACRO			// F() does not work here, FIXME: see also Menu.h
 
     #define USE_WIFI_telnet_menu	// use WIFI as menu over telnet?
+    #define AUTO_CONNECT_WIFI			// start wifi on booting?
 
   #elif defined(ESP8266)			// ESP8266: "a lot of RAM"
     const int pl_max=32;
@@ -29,6 +30,7 @@
     #define IMPLEMENT_TUNING		// needs float
 
     #define USE_WIFI_telnet_menu	// use WIFI as menu over telnet?[A
+    #define AUTO_CONNECT_WIFI			// start wifi on booting?
 
   #elif defined(__SAM3X8E__)			// Arduino DUE
     const int pl_max=64;
