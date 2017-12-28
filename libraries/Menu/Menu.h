@@ -154,7 +154,9 @@ class Menu {
   void out(const char c)	const;	// char output
   void out(const int i)		const;	// int output
   void out(const long l)	const;	// long output
-  void out(const char *str)	const;	// string
+  void out(const char *str)	const;	// c-style character string
+  void out(const String s)	const;	// c++ String
+
 #ifndef INTEGER_ONLY
   void out(const double d)	const;	// double float
 #endif

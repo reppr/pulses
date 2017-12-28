@@ -105,26 +105,25 @@ bool setup_wifi_telnet() {
 }
 
 
-//	void WiFi_scan() {
-//	  int n = WiFi.scanNetworks();
-//	
-//	  MENU.outln(F("scanning WiFi"));	
-//	
-//	  if (n == 0)
-//	    MENU.outln(F("no networks found"));
-//	  else {
-//	    for (int i = 0; i < n; ++i) {
-//	      // Print SSID and RSSI for each network found
-//	      MENU.out(i + 1);
-//	      MENU.out(": ");
-//	      MENU.out(WiFi.SSID(i));
-//	      MENU.out(" (");
-//	      MENU.out(WiFi.RSSI(i));
-//	      MENU.out(")");
-//	      MENU.outln((WiFi.encryptionType(i) == ENC_TYPE_NONE)?" ":"*");
-//	    }
-//	  }
-//	}
+void WiFi_scan() {
+  MENU.outln(F("scanning WiFi"));
+
+  int n = WiFi.scanNetworks();
+  if (n == 0)
+    MENU.outln(F("no networks found"));
+  else {
+    for (int i = 0; i < n; ++i) {
+      // Print SSID and RSSI for each network found
+      MENU.out(i + 1);
+      MENU.out(": ");
+      MENU.out(WiFi.SSID(i));
+      MENU.out("       \t(");
+      MENU.out(WiFi.RSSI(i));
+      MENU.out(")");
+      MENU.outln((WiFi.encryptionType(i) == ENC_TYPE_NONE)?" ":"*");
+    }
+  }
+}
 
 
 /* **************************************************************** */
@@ -167,7 +166,7 @@ bool WiFi_menu_reaction(char token) {
     break;
 
   case 's':	// scan
-//    WiFi_scan();
+    WiFi_scan();
     break;
 
   default:

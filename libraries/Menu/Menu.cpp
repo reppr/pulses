@@ -185,7 +185,9 @@ char Menu::cb_read() {
   void Menu::out(const char c)		const	{ MENU_OUT(c); }	// ARDUINO
   void Menu::out(const int i)		const	{ MENU_OUT(i); }
   void Menu::out(const long l)		const	{ MENU_OUT(l); }
-  void Menu::out(const char *str)	const	{ MENU_OUT(str); }
+  void Menu::out(const char *str)	const	{ MENU_OUT(str); }	// c-style character string
+  void Menu::out(const String s)	const	{ MENU_OUT(s); }	// c++ String
+
 #ifndef INTEGER_ONLY
   void Menu::out(const double d)	const	{ MENU_OUT(d); }
 #endif
