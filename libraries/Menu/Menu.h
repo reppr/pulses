@@ -208,6 +208,9 @@ class Menu {
   // Print a hex chiffre:
   void out_hex_chiffre(unsigned char chiffre) const; // output 1 hex chiffre
 
+  // Print a uint32_t in hex:
+  void out_hex(uint32_t n) const;		// uint32_t  hex output
+
   /*
   void out_ticked_hexs(unsigned int count) const;
   Print a sequence of ticked ascending hex chiffres: '0' '1' ... '9' 'a' 'b'

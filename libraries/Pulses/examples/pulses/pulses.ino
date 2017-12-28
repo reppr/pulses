@@ -344,13 +344,6 @@ void setup() {
 
   MENU.outln(F("http://github.com/reppr/pulses/\n"));
 
-// ################ FIXME: not here ################
-//#if defined(ESP8266) || defined(ESP32)		// show ESP chip id
-//  delay(1500);	// ################ FIXME: ################
-//  MENU.out("ESP chip ID: 0x");
-//  Serial.println(ESP.getChipId(), HEX);
-//#endif
-
 #ifdef USE_WIFI_telnet_menu
   #ifdef AUTO_CONNECT_WIFI			// start wifi on booting?
     setup_wifi_telnet();

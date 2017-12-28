@@ -687,6 +687,14 @@ void _select_analog(bool key) {
 void softboard_display() {
   MENU.outln(F("Arduino Softboard  http://github.com/reppr/pulses/\n"));
 
+#if defined(ESP8266) || defined(ESP32)		// show ESP chip id
+  MENU.out("ESP chip ID: ");
+  MENU.out_hex(ESP.getChipId());
+  MENU.ln();
+  MENU.ln();
+#endif
+
+
   _select_digital(true);
   MENU.out(toWork_);
   MENU.out(pin__);
