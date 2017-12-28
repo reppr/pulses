@@ -59,7 +59,7 @@
 
 /*
   >>>>>>>>>>>>>>>> PUT this *BEFORE*  Arduino loop() <<<<<<<<<<<<<<<<
-  void maybe_run_continuous();	// defined later on
+  bool maybe_run_continuous();	// defined later on
   >>>>>>>>>>>>>>>> PUT this *BEFORE*  Arduino loop() <<<<<<<<<<<<<<<<
 */
 
@@ -156,7 +156,7 @@
   *not* counting analog inputs:
 */
 
-#define DIGITAL_IOs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)
+#define DIGITAL_IOs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)	// FIXME:
 
 
 /* **************************************************************** */
@@ -169,6 +169,10 @@ char PIN_analog = 0;		// 0 is save as default for analog pins
 
 // Comment next line out if you do not want the analog2tone functionality:
 #define has_ARDUINO_TONE
+
+#if defined(__SAM3X8E__) || defined(ESP32)
+  #undef has_ARDUINO_TONE
+#endif
 
 #ifdef has_ARDUINO_TONE
 char PIN_tone = ILLEGAL;	// pin for tone output on a piezzo
@@ -229,18 +233,29 @@ void pin_info_digital(uint8_t pin) {
   MENU.out(pin_);
   MENU.out((int) pin);
   MENU.tab();
+  #if defined(ESP32)
+    #warning "I/O pin configuration info *not implemented on ESP32*."
+    // MENU.out(F("(pin_info_digital() not implemented on ESP32)"));
+    if (digitalRead(pin))
+     MENU.out(high_);
+    else
+      MENU.out(low_);
 
-#ifdef __SAM3X8E__	// FIXME: !!! ################
-  #warning "I/O pin configuration info *not implemented on Arduino DUE yet*."
-  MENU.out(F("(pin_info_digital() not implemented on DUE yet)"));
-#else
-  #ifdef ESP8266	// FIXME: ################
+  #elif defined(ESP8266)		// FIXME: ################
     #warning "I/O pin configuration info *not implemented on ESP8266*."
     // MENU.out(F("(pin_info_digital() not implemented on ESP8266)"));
-  if (digitalRead(pin))
-    MENU.out(high_);
-  else
-    MENU.out(low_);
+    if (digitalRead(pin))
+     MENU.out(high_);
+    else
+      MENU.out(low_);
+
+  #elif defined(__SAM3X8E__)	// FIXME: !!! ################
+    #warning "I/O pin configuration info *not implemented on Arduino DUE yet*."
+    MENU.out(F("(pin_info_digital() not implemented on DUE yet)"));
+    if (digitalRead(pin))
+     MENU.out(high_);
+    else
+      MENU.out(low_);
 
   #else		// old style Arduino hardware
   // see: <Arduino.h>
@@ -281,7 +296,6 @@ void pin_info_digital(uint8_t pin) {
     }
   }
   #endif
-#endif
   MENU.ln();
 }
 
@@ -300,7 +314,7 @@ void pins_info_digital() {
   whenever the input changes:
 */
 
-#define IMPOSSIBLE	-9785	// just a value not possible on analog input
+#define IMPOSSIBLE	-9785	// FIXME:  just a value not possible on analog input
 
 int watch_seen=IMPOSSIBLE;
 void watch_digital_start(uint8_t pin) {
@@ -312,18 +326,23 @@ void watch_digital_start(uint8_t pin) {
 }
 
 
-void watch_digital_input(int pin) {
+bool watch_digital_input(int pin) {	// return if there was *output*
   int value=digitalRead(PIN_digital);
 
   if (value != watch_seen) {
     watch_seen = value;
+
     MENU.out(F("*D"));  MENU.out((int) pin);
     MENU.tab();
     if (value)
       MENU.outln(high_);
     else
       MENU.outln(low_);
+
+    return true;	// there was *output*
   }
+
+  return false;		// only mandatory digital read, but *no output*
 }
 
 
@@ -347,25 +366,33 @@ void toggle_watch() {
 const char value_[] = "value ";
 
 void bar_graph(int value) {
-  int i, length=64, scale=1023;
+  int i, length=64;
+
+  #ifdef ESP8266
+    int scale=1024;	// on ESP8266 it really is ;)
+  #elif defined(ESP32)
+    int scale=4095;
+  #else
+    int scale=1023;
+  #endif
+
   int stars = ((long) value * (long) length) / scale + 1 ;
 
-
-  if (value >=0 && value <= 1024) {
-    MENU.out(value); MENU.tab();
+  MENU.out(value); MENU.tab();
+  if (value >=0) {
     for (i=0; i<stars; i++) {
-      if (i == 0 && value == 0)		// zero
+      if (i == 0 && value == 0)		// zero?
 	MENU.out('0');
-					// middle or top
-      else if \
+					// middle or top?
+      else if								\
 	((i == length/2 && value == 512) || (i == length && value == scale))
 	MENU.out('|');
       else
-	MENU.out('*');
+	MENU.out('*');			// all other values '*'
     }
     MENU.ln();
   } else {
-    MENU.out(F("value "));
+    MENU.out(F("negative value "));
     MENU.out(value);
     MENU.OutOfRange();
   }
@@ -450,7 +477,7 @@ void toggle_VU() {
 }
 
 /*
-  bar_graph_VU(pin):
+  bool bar_graph_VU(pin):
   Continuous display changes exceeding a tolerance on an analogue input.
   Display a scrolling bar graph over the readings.
   A new line is displayed as soon as the reading changes for more
@@ -459,8 +486,9 @@ void toggle_VU() {
   tolerance can be changed by sending '+' or '-'
 
   run-through, don't wait...
+  returns true, if there was *output*
 */
-void bar_graph_VU(int pin) {
+bool bar_graph_VU(int pin) {	// return true, if there was output
   int value;
 
   value =  analogRead(pin);
@@ -470,13 +498,17 @@ void bar_graph_VU(int pin) {
     MENU.tab();
     bar_graph(value);
     VU_last = value;
+
+    return true; // there was *output*  			 return true;
   }
+
+  return false;  // analog read *had to be done*, but no output	 return false;
 }
 
 
 #ifdef has_ARDUINO_TONE
 /*
-  analog2tone(int analogPIN, int PIN_tone):
+  bool analog2tone(int analogPIN, int PIN_tone):
   Simple acoustical feedback of analog readings using arduino tone()
 
   This very simple version is probably not compatible with pulses.
@@ -484,6 +516,8 @@ void bar_graph_VU(int pin) {
   Arduino tone() gives me some garbage below 32hz and is unusable below 16hz
   So analog2tone switches tone off for analog reading 0 and
   adds an offset of 31hz starting from analog reading 1.
+
+  returns true  if an analog read had to be taken which might trigger tone change and output
 */
 bool run_analog2tone = false;
 
@@ -495,35 +529,42 @@ int lastToneReading = -1;
 const int unusable_tones = 31;		// tone() plays some garbage below 32hz :(
 // const int unusable_tones = 15;	// tone() plays garbage below 16hz :(
 
-void analog2tone(int analogPIN, int PIN_tone) {
-  if (PIN_tone == ILLEGAL)
-    return;
+bool analog2tone(int analogPIN, int PIN_tone) {
+  if (PIN_tone == ILLEGAL)		// ILLEGAL *pin*	return false;
+    return false;
 
   static unsigned long lastToneTime = 0;
   unsigned long now = millis();
 
-  if (now - lastToneTime >= analog2tone_timeInterval) {
-    lastToneTime = now;
+  if (! now - lastToneTime >= analog2tone_timeInterval)
+      return false;		// not the right *time* yet	return false;
 
-    int ToneReading=analogRead(analogPIN);
-    if (abs(ToneReading - lastToneReading) > analog2tone_tolerance) {
-      lastToneReading = ToneReading;
+  // time to take a reading and check
+  lastToneTime = now;
+  int ToneReading=analogRead(analogPIN);
+  if (!abs(ToneReading - lastToneReading) > analog2tone_tolerance)
+    return false;		// inside *tolerance*		return false;
 
-      // unsigned int hz = ToneReading*1;	// arbitrary factor
-      unsigned int hz = ToneReading;		// arbitrary factor==1
-      // arduino tone() delivers garbage below 16hz,
-      // so we mend that a bit:
-      if(hz) {
-	hz += unusable_tones;	// start at lowest ok tone=16hz)
-	tone(PIN_tone, hz);
-      } else			// switch tone off for zero
-	noTone(PIN_tone);
-      if(MENU.verbosity >= VERBOSITY_CHATTY) {
-	MENU.out(F("tone hz="));
-	MENU.outln(hz);
-      }
-    }
+  lastToneReading = ToneReading;
+
+  // unsigned int hz = ToneReading*1;	// arbitrary factor
+  unsigned int hz = ToneReading;		// arbitrary factor==1
+
+  // ################ FIXME: make Arduino tone mending a compile time option ################
+  // arduino tone() delivers garbage below 16hz,
+  // so we mend that a bit:
+  if(hz) {
+    hz += unusable_tones;	// start at lowest ok tone=16hz)
+    tone(PIN_tone, hz);
+  } else			// switch tone off for zero
+    noTone(PIN_tone);
+
+  if(MENU.verbosity >= VERBOSITY_CHATTY) {
+    MENU.out(F("tone hz="));
+    MENU.outln(hz);
   }
+
+  return true;			// something done (at least an analog reading)
 }
 
 
@@ -543,24 +584,31 @@ void toggle_tone() {
       MENU.outln(F("off"));
   }
 }
-#endif
+#endif // has_ARDUINO_TONE
 
 
 /*
-  void maybe_run_continuous():
-  Check if to continuously show/sound analog/digital input changes:
+  bool maybe_run_continuous():
+  Check if to continuously show/sound analog/digital input changes
+
+  return true  if any time consuming action like menu output was done
 */
-void maybe_run_continuous() {
+bool maybe_run_continuous() {
   if (run_VU)
-    bar_graph_VU(PIN_analog);
+    if (bar_graph_VU(PIN_analog))
+      return true;		// there was *output*
 
 #ifdef has_ARDUINO_TONE
   if(run_analog2tone)
-    analog2tone(PIN_analog, PIN_tone);
+    if(analog2tone(PIN_analog, PIN_tone))
+      return true;		// *tone* changed and *output*
 #endif
 
   if (run_watch_dI)
-    watch_digital_input(PIN_digital);
+    if (watch_digital_input(PIN_digital))
+      return true;		// there was *output*
+
+  return false;
 }
 
 
@@ -705,7 +753,7 @@ const char analogWrite_[] = "\tanalogWrite(";
 
 bool softboard_reaction(char token) {
   long newValue;
-#ifdef ESP8266
+#ifdef ESP8266	// FIXME: ESP32	################
   const int pwm_maX=1024;
 #else
   const int pwm_maX=256;
@@ -767,6 +815,7 @@ bool softboard_reaction(char token) {
     }
     break;
 
+#ifndef ESP32	// FIXME: ESP32
   case 'W':
     if (digital_pin_ok()) {
 
@@ -794,6 +843,7 @@ bool softboard_reaction(char token) {
       }
     }
     break;
+#endif	// ESP32
 
   case 'a':
     MENU.outln(analog_reads_title);
@@ -1031,7 +1081,7 @@ Configure your terminal program:
    line ending code, usual culprits should work.
 
    Set arduino baud rate by editing the line starting with
-   #define BAUDRATE in softboard.ino
+   #define BAUDRATE in menu_IO_configuration.h
    and set it to the same value in your terminal software.
 
    So if for example you use the Arduino 'Serial Monitor' window
