@@ -708,7 +708,7 @@ void Pulses::print_period_in_time_units(int pulse) {
   }
 
   (*MENU).out((float) time_units, 6);
-  (*MENU).out(F(" time units"));
+  (*MENU).out(F(" time"));
 }
 
 
