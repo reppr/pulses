@@ -794,7 +794,7 @@ int Menu::restore_input_token() {	// restores last input token	only use if you *
 
 
 void Menu::play_KB_macro(char *macro) {
-  outln("play_KB_macro");
+  out("play_KB_macro  ");
 
   for (char c=*macro++; c; c=*macro++) {
     if (cb_is_full()) {
