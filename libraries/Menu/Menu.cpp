@@ -807,11 +807,15 @@ void Menu::play_KB_macro(char *macro) {
     } else {
       cb_write(c);
 
-      if (echo_switch)	// echo input back to ouput?
-	out(c);		// *not* depending verbosity
+      if (echo_switch)		// echo input back to ouput?
+	out(c);			// *not* depending verbosity
     }
   }
-  //  cb_write('\n');
+
+  space();			// separe macro from its output
+
+  interpret_men_input();	// Menu input interpreter
+  ln();
 }
 
 /* **************************************************************** */
