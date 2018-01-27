@@ -56,11 +56,33 @@
    // click_pin[7] = D8;	// D8 = 15
    */
 
+  #elif defined ESP32	// configure PINs on ESP32	general case
+    #undef CLICK_PULSES
+    #define CLICK_PULSES	15
+    // ################	FIXME: do not use GPIO12 as click pin	################
+    /*
+      using GPIO12 as click pin gives error
+      rst:0x10 (RTCWDT_RTC_RESET),boot:0x33 (SPI_FAST_FLASH_BOOT)
+      flash read err, 1000
+    */
+
+    // TODO: ################ FIXME: check pins on ESP32 ################
+    /*
+      uint8_t click_pin[CLICK_PULSES] =
+      {26, 27, 14, 12, 13, 21, 19, 18, 5, 17, 16, 4, 0, 15};	// 16 clicks
+    */
+
+   uint8_t click_pin[CLICK_PULSES] =
+     {26, 27, 14, 13, 23, 22, 21, 19, 18, 5, 17, 16, 4, 0, 15};	// 15 clicks
+
+   #endif
+// done with ESPxx versions
+
 #elif defined(__SAM3X8E__)			// Arduino DUE
   uint8_t click_pin[CLICK_PULSES] =		// 32 clicks ;)
     {22, 23, 24, 25, 26, 27, 28, 29,
      30, 31, 32, 33, 34, 35, 36, 37,
-     38, 39, 40, 41, 42, 43, 44, 45.
+     38, 39, 40, 41, 42, 43, 44, 45,
      46, 47, 48, 49, 50, 51, 52, 53};		// 32 clicks
 
 #elif defined(__AVR_ATmega2560__)		// Mega2560
