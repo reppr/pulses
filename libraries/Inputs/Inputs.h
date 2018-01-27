@@ -415,4 +415,16 @@ class Inputs {
   input_t * inputs;		// data pointer for inputs
 };
 
+
+#ifndef PWMRANGE
+
+  #ifdef ESP32	// ESP32 does not know PWMRANGE
+    #define PWMRANGE	(2^13 - 1)
+  #else
+//    #error Inputs.h 'PWMRANGE' is not defined
+    #define PWMRANGE	255
+  #endif
+
+#endif	//  ! PWMRANGE
+
 #endif	// ifndef INPUTS_h

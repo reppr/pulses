@@ -81,6 +81,10 @@
 
   #define MENU_OUTSTREAM	Serial
 
+  #ifndef PWMRANGE	// old style arduino hardware
+    #define PWMRANGE	255
+  #endif
+
 #else	// not ARDUINO, PC
   #warning: "PC version not supported, out of date"
 
