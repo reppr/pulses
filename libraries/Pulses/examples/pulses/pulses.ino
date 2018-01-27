@@ -1550,7 +1550,13 @@ void en_info(int pulse)
 void pulse_info_1line(int pulse) {	// one line pulse info, short version
   unsigned long realtime=micros();		// let's take time *before* serial output
 
-  MENU.out(F("PULSE "));
+  if (PULSES.selected_pulses & (1 << pulse))
+    MENU.out('*');
+  else
+    MENU.space();
+
+
+  MENU.out(F(" PULSE "));
   if (pulse<100)	// left padding 'pulse'
     MENU.space();
   if (pulse<10)
@@ -1581,16 +1587,19 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
   display_payload(pulse);
 
   MENU.tab();
-  MENU.out(F("expected "));
-  PULSES.display_realtime_sec(PULSES.pulses[pulse].next);
 
-  MENU.tab();
-  MENU.out(F("now "));
+  if (MENU.verbosity >= VERBOSITY_SOME) {
+    MENU.out(F("expected "));
+    PULSES.display_realtime_sec(PULSES.pulses[pulse].next);
 
-  PULSES.get_now();
-  struct time scratch = PULSES.now;
-  scratch.time = realtime;
-  PULSES.display_realtime_sec(scratch);
+    MENU.tab();
+    MENU.out(F("now "));
+
+    PULSES.get_now();
+    struct time scratch = PULSES.now;
+    scratch.time = realtime;
+    PULSES.display_realtime_sec(scratch);
+  }
 
   if (PULSES.selected_pulses & (1 << pulse)) {
     MENU.space();
@@ -1626,7 +1635,7 @@ void pulse_info(int pulse) {
   MENU.ln();		// start next line
 
   MENU.out((float) PULSES.pulses[pulse].period.time / (float) PULSES.time_unit, 6);
-  MENU.out(F(" time units"));
+  MENU.out(F(" time"));
 
   MENU.out(F("\tpulse/ovf "));
   MENU.out((unsigned int) PULSES.pulses[pulse].period.time);
