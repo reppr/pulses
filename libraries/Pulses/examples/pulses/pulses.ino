@@ -547,7 +547,9 @@ unsigned int stress_emergency=4096;	// high value seems appropriate
 //#endif
 unsigned int stress_count=0;
 
+
 void loop() {	// ARDUINO
+
   #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
     #ifdef WIFI_OFF_hackster
       // see: https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
