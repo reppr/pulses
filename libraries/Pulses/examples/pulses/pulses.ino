@@ -54,7 +54,13 @@ class Menu;
 */
 #include "menu_IO_configuration.h"
 #include <Menu.h>
-Menu MENU(32, 4, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
+
+#if defined RAM_IS_SCARE
+  #define CB_SIZE	32
+#else
+  #define CB_SIZE	128
+#endif
+Menu MENU(CB_SIZE, 4, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
 
 
 /* **************** Pulses **************** */
@@ -191,7 +197,8 @@ void fix_jiffle_range() {
 unsigned int harmonics4[] = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0,0};	// magnets on strings experiments
 unsigned int ting1024[] = {1,4096,64, 1,1024,128, 1,1024*3,128, 1,1024*2,128, 1,1024*8,64, 1,1024,64, 0,0}; // magnet strings experiments 2
 // unsigned int ting1024[] = {1,4096,64, 1,1024,128, 0,0};			// magnet strings experiments 2
-unsigned int ting4096[] = {1,4096,1024, -1,0,0};			// magnet strings experiments 2
+// unsigned int ting4096[] = {1,4096,1024, -1,0,0};			// magnet strings experiments 2
+unsigned int ting4096[] = {1,4096,1024, 0,0,0};			// magnet strings experiments 2, KALIMBA7
 
 // peepeep4096[] for tuning
 unsigned int peepeep4096[] = {1,4096,2048, 1,8*4096,1, 1,4096,256, 1,8*4096,1, 1,4096,256, 1,8*4096,1, 1,4096,256, 1,8*4096,1, 0,0};
@@ -231,6 +238,11 @@ unsigned int simple_theme[] = {1,128,8, 1,2*128,8, 1,3*128,8, 1,4*128,8, 5,6*4*1
 			       3,4*2048,256*3/4, 5,6*2048,256*3/4, 2,3*2048,256*3/4, 1,2048,128,
 			       1,128,3, 1,64,3, 1,32,4,
 			       0,0};
+
+unsigned int tingeling4096[] = {1,4096,512, 1,4,2, 1,4096,64, 1,16,4, 1,4096,16, 0,0,0};	// magnets on KALIMBA7
+unsigned int ding1024[] = {1,1024,192, 0,0,0};							// KALIMBA7, four times faster
+unsigned int kalimbaxyl[] = {1,1024,32, 1,16,2, 1,32,8, 1,1024,4, 1,32,2, 0, 0, 0};		// KALIMBA7, very silent jiffle
+
 
 #ifndef RAM_IS_SCARE	// enough RAM?
   #include "jiffles.h"
@@ -3100,6 +3112,8 @@ bool menu_pulses_reaction(char menu_input) {
       // some jiffles in the source are very old   FIXME: check
       selected_jiffle=MENU.numeric_input(selected_jiffle);	// remember as index for jiffle_names[selected_jiffle]
       switch (selected_jiffle) {
+      case -1:
+	break;
       case 0:
 	jiffle = jiffle_RAM;
 	break;
@@ -3155,7 +3169,7 @@ bool menu_pulses_reaction(char menu_input) {
 	jiffle = harmonics4;
 	break;
       case 18:
-	jiffle = ting1024;
+	jiffle = ding1024;
 	break;
       case 19:
 	jiffle = ting4096;
@@ -3191,14 +3205,29 @@ bool menu_pulses_reaction(char menu_input) {
       case 28:
 	jiffle = pentatonic_rising;
 	break;
+      case 29:
+	jiffle = tingeling4096;	// KALIMBA7
+	break;
+      case 30:
+	jiffle = ding1024;	// KALIMBA7, 4 times faster
+	break;
+      case 31:
+	jiffle = kalimbaxyl;	// KALIMBA7, very silent "xylo" jiffle
+	break;
+
       default:
-	selected_jiffle=0;	// as jiffle_names[selected_jiffle] index
+	selected_jiffle=-1;	// as jiffle_names[selected_jiffle] index
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  MENU.outln_invalid();
       }
+  #ifndef RAM_IS_SCARE	// enough RAM?	display jiffle names
+      display_names(jiffle_names, n_jiffle_names, selected_jiffle);
+  #endif
     }
-    display_jiffletab(jiffle);
+
+    if (selected_jiffle != -1)
+      display_jiffletab(jiffle);
     break;
 
   case 'R':	// ratios

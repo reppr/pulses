@@ -30,7 +30,10 @@ char * jiffle_names[] = {
       "arpeggio_and_sayling", // 26
       "simple_theme",	// 27
       "pentatonic_rising", // 28
-      "(invalid)",	// 29
+      "tingeling4096",	// 29
+      "ding1024",	// 30
+      "kalimbaxyl",	// 31
+      "(invalid)",	// 32
   };
 
   // remember selected jiffle number for name display (only)
