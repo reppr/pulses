@@ -155,9 +155,13 @@
   number of arduino pins configured for digital I/O
   *not* counting analog inputs:
 */
-
-#define DIGITAL_IOs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)	// FIXME:
-
+#if defined ESP8266
+  #define DIGITAL_IOs	28	// ??? ################ FIXME: ################
+#elif defined ESP32
+  #define DIGITAL_IOs	40	// ??? ################ FIXME: ################
+#else
+  #define DIGITAL_IOs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)	// FIXME:
+#endif
 
 /* **************************************************************** */
 /* define some things early: */
@@ -183,7 +187,7 @@ char PIN_tone = ILLEGAL;	// pin for tone output on a piezzo
   bool extra_switch=false;	// extra functionality on digital pins
   int visible_digital_pins=DIGITAL_IOs;		// extra_switch==false
 // or:
-  // bool extra_switch=false;	// extra functionality on digital pins
+  // bool extra_switch=true;	// extra functionality on digital pins
   // int visible_digital_pins=NUM_DIGITAL_PINS;	// extra_switch==true
 
 
@@ -687,7 +691,7 @@ void _select_analog(bool key) {
 void softboard_display() {
   MENU.outln(F("Arduino Softboard  http://github.com/reppr/pulses/\n"));
 
-#if defined(ESP8266) || defined(ESP32)		// show ESP chip id
+#if defined(ESP8266)	// ################ FIXME: ESP32 ################
   MENU.out("ESP chip ID: ");
   MENU.out_hex(ESP.getChipId());
   MENU.ln();
