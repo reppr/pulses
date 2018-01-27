@@ -329,7 +329,12 @@ int voices=CLICK_PULSES;
 int softboard_page=-1;		// see: maybe_run_continuous()
 
 
+#ifndef STARTUP_DELAY
+  #define STARTUP_DELAY	0	// noop or yield()
+#endif
+
 void setup() {
+  delay(STARTUP_DELAY);		// yield()
   Serial.begin(BAUDRATE);	// Start serial communication.
 
 #if defined(__AVR_ATmega32U4__) || defined(ESP8266) || defined(ESP32)	// FIXME: test ESP32  ################
@@ -340,7 +345,9 @@ void setup() {
   while (!Serial) { ;}		// wait for Serial to open
 #endif
 
+  delay(STARTUP_DELAY);
   Serial.flush();
+  delay(STARTUP_DELAY);
 
   MENU.outln(F("http://github.com/reppr/pulses/\n"));
 

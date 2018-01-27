@@ -9,6 +9,7 @@
 
 #ifdef ARDUINO
   #if defined(ESP32)				// ESP32 :)
+    #define STARTUP_DELAY	256	// ESP32 seems to need that for successful booting
 
     const int pl_max=32;
     // const int const int pl_max=64;	// FIXME: mask limitations ################
@@ -23,6 +24,8 @@
     #define AUTO_CONNECT_WIFI			// start wifi on booting?
 
   #elif defined(ESP8266)			// ESP8266: "a lot of RAM"
+    #define STARTUP_DELAY	64	// ESP8266 maybe does not need that, but...
+
     const int pl_max=32;
     #define JIFFLE_RAM_SIZE	256*3+2
     #define RATIOS_RAM_SIZE	256*2+2
