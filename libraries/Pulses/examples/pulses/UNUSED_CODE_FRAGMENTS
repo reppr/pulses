@@ -212,3 +212,130 @@ NullStream null_stream;
 
   #endif // ! ANALOGWRITE_ESP32_H
 #endif // ESP32
+
+
+/* **************************************************************** */
+// http://www.cs.technion.ac.il/~imaman/programs/teestream.html
+
+#include <iostream>
+#include <fstream>
+
+template<typename Elem, typename Traits = std::char_traits<Elem> >
+struct basic_TeeStream : std::basic_ostream<Elem,Traits>
+{
+   typedef std::basic_ostream<Elem,Traits> SuperType;
+
+   basic_TeeStream(std::ostream& o1, std::ostream& o2)
+      :  SuperType(o1.rdbuf()), o1_(o1), o2_(o2) { }
+
+   basic_TeeStream& operator<<(SuperType& (__cdecl *manip)(SuperType& ))
+   {
+      o1_ << manip;
+      o2_ << manip;
+      return *this;
+   }
+
+   template<typename T>
+   basic_TeeStream& operator<<(const T& t)
+   {
+      o1_ << t;
+      o2_ << t;
+      return *this;
+   }
+
+private:
+   std::ostream& o1_;
+   std::ostream& o2_;
+};
+/* **************************************************************** */
+
+/* **************************************************************** */
+// http://wordaligned.org/articles/cpp-streambufs
+
+#include <streambuf>
+
+class teebuf: public std::streambuf
+{
+public:
+    // Construct a streambuf which tees output to both input
+    // streambufs.
+    teebuf(std::streambuf * sb1, std::streambuf * sb2);
+protected:
+    virtual int overflow(int);
+private:
+    std::streambuf * sb1;
+    std::streambuf * sb2;
+};
+
+// teebuf TEE_OUTSTREAM(std::cout, std::cout);
+
+/* **************************************************************** */
+
+
+
+/* **************************************************************** */
+// as we have AUTOSTART now  I remove the following very old code from late in setup()
+
+/* ****************  DEMO SETUPS  **************** */
+  // for a demo one of these could be called from here:
+
+  // void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync)
+  // setup_jiffle128(false, CLICK_PULSES, 2, 1, 15);	// 12345678 slow beginning of voices, nice
+
+  // init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
+  // init_div_123456(false, CLICK_PULSES, 1, 1, 0);
+
+  // setup_jiffles0(false, CLICK_PULSES, 2, 3, 1);	// setup for ESP8266 Frog Orchester
+
+  //       void setup_jiffles2345(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
+  // setup_jiffles2345(0, CLICK_PULSES, 1, 2, 0);
+
+  // init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
+  // init_123456(false, CLICK_PULSES, 1, 1, 0);
+
+  // init_chord_1345689a(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
+  // init_chord_1345689a(0, CLICK_PULSES, 1, 1, 0);
+
+  // init_rhythm_1   (0, CLICK_PULSES, 1, 6*7, 1);
+  // init_rhythm_2(0, CLICK_PULSES, 1, 1, 5);
+  // init_rhythm_3(0, CLICK_PULSES, 1, 1, 3);
+  // init_rhythm_4(0, CLICK_PULSES, 1, 7*3, 1);
+
+  // void setup_jifflesNEW(int sync, unsigned int multiplier, unsigned int divisor);
+  // setup_jifflesNEW(0, CLICK_PULSES, 3, 1, 3);
+
+  // init_pentatonic(0, CLICK_PULSES, 1, 1, 1);	// Harmonical Frogs Choir	Frogs set 2
+  // init_pentatonic(0, CLICK_PULSES, 1, 6, 1);	// 8 strings on piezzos 2016-12-12
+
+  // 2 strings setup 2016-12-15 sweep and drone on piezzos
+  //  multiplier=1;
+  //  divisor=5800;
+  //  en_click(0);
+  //  en_sweep_click(1);
+  //  PULSES.selected_pulses = 3;
+  //  PULSES.reset_and_edit_selected();
+  //  activate_selected_synced_now(sync);	// FIXME:	something's wrong :(	################
+
+
+//	  // testing ratios, prepare_ratios():
+//	  // void prepare_ratios(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync, unsigned int *ratios)
+//	  ratios = pentatonic_minor;
+//	  // ratios = european_pentatonic;
+//	  // ratios = ratios_quot;
+//	  // ratios = ratios_int;
+//	  PULSES.selected_pulses=~0;
+//	  // or: if nothing is selected all pulses with flags==0 get selected.
+//	  int prepared = prepare_ratios(false, 8, 1, 1, 0, ratios);
+//	  if (prepared != 8)
+//	    MENU.out(F("prepared ")); MENU.out(prepared); MENU.slash(); MENU.outln(voices);
+//	  //  PULSES.selected_pulses=0;
+
+
+// working on:
+// prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
+// pentatonic steel strings on 8 magnets
+//			  ratios = pentatonic_minor;
+
+
+/* ****************  END DEMO SETUPS  **************** */
+/* **************************************************************** */

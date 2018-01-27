@@ -448,76 +448,15 @@ void setup() {
   #endif
 
   // time and pulses *must* get initialized before setting up pulses:
-  PULSES.init_time();		// start time
-  PULSES.init_pulses();		// init pulses
-
+  PULSES.init_time();			// start time
+  PULSES.init_pulses();			// init pulses
   MENU.ln();
 
-  /* ****************  DEMO SETUPS  **************** */
-  // for a demo one of these could be called from here:
+  PULSES.fix_global_next();		// we *must* call that here late in setup();
 
-  // void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync)
-  // setup_jiffle128(false, CLICK_PULSES, 2, 1, 15);	// 12345678 slow beginning of voices, nice
-
-  // init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-  // init_div_123456(false, CLICK_PULSES, 1, 1, 0);
-
-  // setup_jiffles0(false, CLICK_PULSES, 2, 3, 1);	// setup for ESP8266 Frog Orchester
-
-  //       void setup_jiffles2345(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-  // setup_jiffles2345(0, CLICK_PULSES, 1, 2, 0);
-
-  // init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-  // init_123456(false, CLICK_PULSES, 1, 1, 0);
-
-  // init_chord_1345689a(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-  // init_chord_1345689a(0, CLICK_PULSES, 1, 1, 0);
-
-  // init_rhythm_1   (0, CLICK_PULSES, 1, 6*7, 1);
-  // init_rhythm_2(0, CLICK_PULSES, 1, 1, 5);
-  // init_rhythm_3(0, CLICK_PULSES, 1, 1, 3);
-  // init_rhythm_4(0, CLICK_PULSES, 1, 7*3, 1);
-
-  // void setup_jifflesNEW(int sync, unsigned int multiplier, unsigned int divisor);
-  // setup_jifflesNEW(0, CLICK_PULSES, 3, 1, 3);
-
-  // init_pentatonic(0, CLICK_PULSES, 1, 1, 1);	// Harmonical Frogs Choir	Frogs set 2
-  // init_pentatonic(0, CLICK_PULSES, 1, 6, 1);	// 8 strings on piezzos 2016-12-12
-
-  // 2 strings setup 2016-12-15 sweep and drone on piezzos
-  //  multiplier=1;
-  //  divisor=5800;
-  //  en_click(0);
-  //  en_sweep_click(1);
-  //  PULSES.selected_pulses = 3;
-  //  PULSES.reset_and_edit_selected();
-  //  activate_selected_synced_now(sync);	// FIXME:	something's wrong :(	################
-
-
-//	  // testing ratios, prepare_ratios():
-//	  // void prepare_ratios(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync, unsigned int *ratios)
-//	  ratios = pentatonic_minor;
-//	  // ratios = european_pentatonic;
-//	  // ratios = ratios_quot;
-//	  // ratios = ratios_int;
-//	  PULSES.selected_pulses=~0;
-//	  // or: if nothing is selected all pulses with flags==0 get selected.
-//	  int prepared = prepare_ratios(false, 8, 1, 1, 0, ratios);
-//	  if (prepared != 8)
-//	    MENU.out(F("prepared ")); MENU.out(prepared); MENU.slash(); MENU.outln(voices);
-//	  //  PULSES.selected_pulses=0;
-
-
-// working on:
-// prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
-// pentatonic steel strings on 8 magnets
-//			  ratios = pentatonic_minor;
-
-
-/* ****************  END DEMO SETUPS  **************** */
-
-
-  PULSES.fix_global_next();	// we *must* call that here late in setup();
+  #ifdef AUTOSTART			// see: pulses_project_conf.h
+    AUTOSTART
+  #endif
 
   // informations about alive pulses:
   MENU.ln();
