@@ -69,3 +69,9 @@ click_pin[6] = D7;	// D7 = 13	LED?
 click_pin[7] = D8;	// D8 = 15
 
 */
+
+http://www.esp8266.com/wiki/doku.php?id=esp8266_gpio_pin_allocations
+// http://www.esp8266.com/wiki/lib/exe/detail.php?id=esp8266_gpio_pin_allocations&media=pin_functions.png
+
+maybe see also:
+https://nodemcu.readthedocs.io/en/master/en/modules/gpio/

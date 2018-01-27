@@ -3,6 +3,8 @@ ESP32_Dev_Board_PINMAP.txt
 https://github.com/espressif/arduino-esp32
 https://github.com/espressif/arduino-esp32/blob/master/doc/esp32_pinmap.png
 
+http://wiki.ai-thinker.com/_media/esp32/docs/esp32_chip_pin_list_en.pdf
+
 
 3.3V
 EN	RESET				(pu)
@@ -10,13 +12,13 @@ GPIO36		ADC0			SVP
 GPIO39		ADC3			SVN
 GPIO34		ADC6
 GPIO35		ADC7
-GPIO32		ADC4	TOUCH9
+GPIO32		ADC4	TOUCH9			(CS MICROSD)
 GPIO33		ADC5	TOUCH8
-GPIO25		ADC18			DAC1
-GPIO26		ADC19			DAC2
-GPIO27		ADC17	TOUCH7
-GPIO14 HSPI SCK ADC16	TOUCH6	TMS
-GPIO12 HSPI MISO ADC15	TOUCH5	TDI	(pd)
+GPIO25		ADC18			DAC1	(I2S codec LRCK)
+GPIO26		ADC19			DAC2	(I2S codec BCK)
+GPIO27		ADC17	TOUCH7			(SCK MICROSD)
+GPIO14 HSPI SCK ADC16	TOUCH6	TMS		(MOSI MICROSD)
+GPIO12 HSPI MISO ADC15	TOUCH5	TDI	(pd)	(MISO MICROSD)
 GND
 GPIO13 HSPI MOSI ADC14	TOUCH4	TCK
 GPIO9 FLASH D2
@@ -27,8 +29,8 @@ GPI11 FLASH CMD
 
 
 GND
-GPIO23  VSPI MOSI				SPI MOSI		
-GPIO22	 					Wire SCL
+GPIO23  VSPI MOSI				SPI MOSI
+GPIO22	 					Wire SCL	(I2S codec DATA)
 GPIO1	TX0					Serial TX
 GPIO3	RX0					Serial RX
 GPIO21	 					Wire SDA
@@ -40,29 +42,155 @@ GPIO17
 GPIO16
 GPIO4		ADC10	TOUCH0		(pd)
 GPIO0	BOOT	ADC11	TOUCH1		(pu)
-GPIO2		ADC12	TOUCH2		(pd)
+GPIO2	LED	ADC12	TOUCH2		(pd)
 GPIO15	HSPI SS	ADC13	TOUCH3	TDO	(pu)
 GPIO8 FLASH D1
 GPIO7 FLASH D0
 GPIO6 FLASH SCK
 
 
+/* **************************************************************** */
 suggestion for 16 click pins:
-(25)
+(25)  26 27 14 12 13 23 22 21 19 18 5 17 16 4 0 15
+/* **************************************************************** */
 
-26
-27
-14
-12
-13
-23
-22
-21
-19
-18
-5
-17
-16
-4
-0
-15
+
+
+/* **************************************************************** */
+/* **************************************************************** */
+// Possible use cases:
+
+
+/* **************************************************************** */
+3.3V	3.3V             | 7C7T
+EN	reset
+GPIO36	SVP				ADC0		SVP
+GPIO39	SVN				ADC3		SVN
+GPIO34					ADC6
+GPIO35			 InPLL		ADC7
+GPIO32			 T	TOUCH9	ADC4		(CS MICROSD)
+GPIO33			 T	TOUCH8	ADC5
+GPIO25	(DAC1)		CA		ADC18	DAC1	(I2S codec LRCK)		*AUDIO OUT*
+GPIO26	(DAC2)		CA		ADC19	DAC2	(I2S codec BCK)			*AUDIO OUT*
+GPIO27			CT	TOUCH7	ADC17		(SCK MICROSD)
+GPIO14	HSPI SCK	C*	TOUCH6	ADC16	TMS	(MOSI MICROSD)
+GPIO12	HSPI MISO	!	TOUCH5	ADC15	TDI pd	(MISO MICROSD)				\
+	error, maybe related, maybe not...
+	error as click pin:	rst:0x10 (RTCWDT_RTC_RESET),boot:0x33 (SPI_FAST_FLASH_BOOT)	flash read err, 1000
+
+GND	GND
+GPIO13	HSPI MOSI	C*	TOUCH4	ADC14	TCK
+GPIO9	FLASH D2
+GPI10	FLASH D3				CMD
+GPI11	FLASH CMD
+5V   	5V
+
+/* **************************************************************** */
+GND	GND
+GPI03			Serial RX				*RX*
+GPIO21			C			Wire SDA	*i2s0 DATA out*		*i2c SDA*
+GND	GND
+GPIO19	VSPI MISO	C			SPI MISO	*i2s0 WS*
+GPIO18	VSPI SCK	C?			SPI SCK		*i2s1 DATA IN*
+GPIO5	VSPI SS		C*			SPI SS		(pu)
+GPIO17			C*			    		*i2s1 BCK*
+GPIO16			C*					*i2s1 WS*
+GPIO4			CT	ADC10	TOUCH0			(pd)
+GPIO0	BOOT		CT	ADC11	TOUCH1			(pu)
+GPIO2	LED		CT	ADC12	TOUCH2			(pd)
+GPIO15	HSPI SS		CT	ADC13	TOUCH3	TDO		(pu)
+GPIO8	FLASH D1
+GPIO7	FLASH D0
+GPIO6	FLASH SCK
+
+
+
+/* **************************************************************** */
+
+Kalimba with 7 notes and 7 touch pins
+/*
+click pins { 14, 12, 13, 23, 5, 17, 16 }	// 12 gives error
+*/
+
+click pins { 14, 18, 13, 23, 5, 17, 16 }
+                 ??          ?                 	// SPI ??
+						// maybe 27 T?,
+
+touch pins { 32, 33, 27,  4, 0,  2, 15 }
+
+audio out { 25, 26 }
+
+i2c { 21 SDA ,  22 SCL }			3x accelero/gyro MPU-6050
+
+SPI { 19 MISO, 18 MOSI, 5 SS }			// e-Ink display
+
+digital input for PLL microphone or similar { 35 }
+
+
+/* planed for 7 note KALIMBA v3	*/
+
+
+/* **************************************************************** */
+	(used)	custom
+GPIO0	(boot) 	T			pu
+GPIO1	TX
+GPIO2	(led)	T			pd
+GPIO3	RX
+GPIO4		T or C			pd
+GPIO5		C			pu		(spi SS display?)
+GPIO6	FLASH
+GPIO7	FLASH
+GPIO8	FLASH
+GPIO9	FLASH
+GPIO10	FLASH
+GPIO11	FLASH
+GPIO12		(maybe error)				(MISO microSD)
+GPIO13		C
+GPIO14		C					(MOSI microSD)
+GPIO15		T			pu
+GPIO16		C					(i2s1 WS)
+GPIO17		C					(i2s1 BCK)
+GPIO18		DISPLAY spi MOSI
+GPIO19		DISPLAY spi MISO, i2s WS
+GPIO20	--
+GPIO21		ACCELERO/GYRO i2c i2s SDA
+GPIO22		ACCELERO/GYRO i2c SCL
+GPIO23		C
+GPIO24	--
+GPIO25		AUDIO out
+GPIO26		AUDIO out
+GPIO27		T					(SCK microSD)
+GPIO28	--
+GPIO29	--
+GPIO30	--
+GPIO31	--
+GPIO32		T
+GPIO33		T
+GPIO34	i					ADC6
+GPIO35	i	INPUT PLL
+GPIO36	i					SVP	ADC0
+GPIO37	--
+GPIO38	--
+GPIO39	i					SVN	ADC3
+
+/* **************************************************************** */
+
+
+
+/* **************************************************************** */
+// regarding pin compatibility to ESP8266 nodemcu versions:
+
+   /*
+     // on NodeMCU ESP8266 board Arduino defines digital pins
+     static const uint8_t D0   = 16;
+     static const uint8_t D1   = 5;
+     static const uint8_t D2   = 4;
+     static const uint8_t D3   = 0;
+     static const uint8_t D4   = 2;
+     static const uint8_t D5   = 14;
+     static const uint8_t D6   = 12;	// on ESP32 maybe problematic, avoid
+     static const uint8_t D7   = 13;
+     static const uint8_t D8   = 15;
+     static const uint8_t D9   = 3;
+     static const uint8_t D10  = 1;
+   */

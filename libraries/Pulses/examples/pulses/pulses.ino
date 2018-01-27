@@ -40,8 +40,12 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 #include <inttypes.h>
 using namespace std;	// ESP8266 needs that
 
-#include "pulses_systems.h"
-#include "pulses_boards.h"
+
+#include "pulses_project_conf.h"	// define special projects like instruments
+
+#include "pulses_systems.h"		// different software systems
+#include "pulses_boards.h"		// different boards
+
 
 
 /* **************** Menu **************** */
@@ -354,14 +358,14 @@ void setup() {
      to be able to use Serial.print() from setup()
      we *must* do that before:
   */
-  while (!Serial) { ;}		// wait for Serial to open
+  while (!Serial) { yield(); }		// wait for Serial to open
 #endif
 
   delay(STARTUP_DELAY);
   Serial.flush();
   delay(STARTUP_DELAY);
 
-  MENU.outln(F("http://github.com/reppr/pulses/\n"));
+  MENU.outln(F("\nhttp://github.com/reppr/pulses/\n"));
 
 #ifdef USE_WIFI_telnet_menu
   #ifdef AUTO_CONNECT_WIFI			// start wifi on booting?
@@ -436,7 +440,7 @@ void setup() {
   MENU.menu_display();
 
   #ifdef CLICK_PULSES
-    init_click_pins_OutLow();		// make them OUTPUT, LOW
+    init_click_pins_OutLow();		// make them GPIO, OUTPUT, LOW
   #endif
 
   #ifdef IMPLEMENT_TUNING		// implies floating point
@@ -956,12 +960,35 @@ void display_fraction(struct fraction *f) {
 
 
 /* **************************************************************** */
-void init_click_pins_OutLow() {		// make them OUTPUT, LOW
+void init_click_pins_OutLow() {		// make them GPIO, OUTPUT, LOW
 /* uint8_t click_pin[CLICK_PULSES];
    hardware pins for click_pulses:
    It is a bit obscure to hold them in an array indexed by [pulse]
-   but it's simple and working well	*/
+   but it's simple and working well
+*/
+  int pin;
+
   for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+#ifdef ESP8266	// pin 14 must be switched to GPIO on ESP8266
+    // http://www.esp8266.com/wiki/lib/exe/detail.php?id=esp8266_gpio_pin_allocations&media=pin_functions.png
+    if (click_pin[pulse]==14)
+      pinMode(click_pin[pulse], FUNCTION_3); // pin 14 must be switched to GPIO on ESP8266
+#elif defined ESP32
+    // see http://wiki.ai-thinker.com/_media/esp32/docs/esp32_chip_pin_list_en.pdf
+    //    uint8_t click_pin[CLICK_PULSES] = { 36, 39, 34, 13, 23, 5, 17, 16};	//  ESP32  KALIMBA7_v2  8 clicks, 7 used
+    // PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[click_pin[pulse]], PIN_FUNC_GPIO);
+    pin=click_pin[pulse];
+    switch (pin) {
+    case 13:
+    case 14:
+    case 15:
+    case 17:
+    case 12:	// maybe error?
+      pinMode(pin, FUNCTION_3);
+      break;
+    }
+#endif
+
     pinMode(click_pin[pulse], OUTPUT);
     digitalWrite(click_pin[pulse], LOW);
   }
@@ -1913,8 +1940,8 @@ void info_select_destination_with(bool extended_destinations) {
 #ifndef RAM_IS_SCARE	// enough RAM?
 char * experiment_names[] = {		// FIXME: const char * experiment_names would be better
       "(invalid)",				// 0
-      "setup_jiffle128",				// 1
-      "init_div_123456",				// 2
+      "setup_jiffle128",			// 1
+      "init_div_123456",			// 2
       "ESP8266 Frogs",				// 3
       "setup_jiffles2345",			// 4
       "init_123456",				// 5
@@ -1923,25 +1950,27 @@ char * experiment_names[] = {		// FIXME: const char * experiment_names would be 
       "init_rhythm_2",				// 8
       "init_rhythm_3",				// 9
       "init_rhythm_4",				// 10
-      "setup_jifflesNEW",				// 11
-      "init_pentatonic",				// 12
-      "magnets: The Harmonical Strings Christmas Evening Sounds",	// 13
+      "setup_jifflesNEW",			// 11
+      "init_pentatonic",			// 12
+      "magnets: The Harmonical Strings Christmas Evening Sounds",  // 13
       "magnets on strings 2",			// 14
       "magnets on strings 3",			// 15
       "piezzos on low strings 2016-12-28",	// 16
       "magnets on steel strings, japanese",	// 17
       "nylon stringed wooden box, piezzos",	// 18
-      "TUNING",					// 19
-      "arpeggio4096\tpentatonic",			// 20
+      "tuned sweep",				// 19
+      "arpeggio4096\tpentatonic",		// 20
       "arpeggio4096down\tpentatonic",		// 21
       "arpeggio_cont\tpentatonic",		// 22
       "arpeggio_and_down\tpentatonic",		// 23
       "stepping_down\tpentatonic",		// 24
       "back_to_ground\tpentatonic rhythm slowdown", // 25
-      "arpeggio_and_sayling\tpentatonic",		// 26
-      "simple_theme\tpentatonic",			// 27
+      "arpeggio_and_sayling\tpentatonic",	// 26
+      "simple_theme\tpentatonic",		// 27
       "peepeep4096\tpentatonic\tfor tuning",	// 28
-      "(invalid)",				// 29
+      "KALIMBA7 tuning",			// 29
+      "KALIMBA7 jiff",				// 30
+      "(invalid)",				// 31
   };
 
   #define n_experiment_names (sizeof (experiment_names) / sizeof (const char *))
@@ -3469,340 +3498,414 @@ bool menu_pulses_reaction(char menu_input) {
     }
 
     input_value = MENU.numeric_input(selected_experiment);
-    if (input_value>=0 )
+
+ if (input_value==-1)
+      display_names(experiment_names, n_experiment_names, selected_experiment);
+
+ if (input_value>=0 ) {
       selected_experiment = input_value;
-    else
-      MENU.outln_invalid();
+      switch (selected_experiment) {	// initialize defaults, but do not start yet
+      case 1:
+	multiplier=2;
+	divisor=1;
+	sync=15;
 
-    switch (selected_experiment) {	// initialize defaults, but do not start yet
-    case 1:
-      multiplier=2;
-      divisor=1;
-      sync=15;
+	if (MENU.maybe_display_more()) {
+	  display_name5pars("setup_jiffle128", inverse, voices, multiplier, divisor, sync);
+	  Press_toStart();
+	}
+	break;
 
-      if (MENU.maybe_display_more()) {
-	display_name5pars("setup_jiffle128", inverse, voices, multiplier, divisor, sync);
-	Press_toStart();
-      }
-      break;
+      case 2:
+	sync=0;
+	multiplier=1;
+	divisor=1;
 
-    case 2:
-      sync=0;
-      multiplier=1;
-      divisor=1;
+	if (MENU.maybe_display_more()) {
+	  display_name5pars("init_div_123456", inverse, voices, multiplier, divisor, sync);
+	  Press_toStart();
+	}
+	break;
 
-      if (MENU.maybe_display_more()) {
-	display_name5pars("init_div_123456", inverse, voices, multiplier, divisor, sync);
-	Press_toStart();
-      }
-      break;
+      case 3:
+	sync=1;
+	multiplier=8;
+	divisor=3;
+	reverse_click_pins();	// ################ FIXME: not here ################
 
-    case 3:
-      sync=1;
-      multiplier=8;
-      divisor=3;
-      reverse_click_pins();	// ################ FIXME: not here ################
-
-      if (MENU.maybe_display_more()) {
-	// display_name5pars("setup_jiffles0", inverse, voices, multiplier, divisor, sync);
-	MENU.out(F("setup_jiffles0("));
-	MENU.out(inverse);
-	display_next_par(voices);
-	display_next_par(multiplier);
-	display_next_par(divisor);
-	display_next_par(sync);
-	MENU.outln(F(")  ESP8266 Frogs"));
-	Press_toStart();
-      }
-      break;
+	if (MENU.maybe_display_more()) {
+	  // display_name5pars("setup_jiffles0", inverse, voices, multiplier, divisor, sync);
+	  MENU.out(F("setup_jiffles0("));
+	  MENU.out(inverse);
+	  display_next_par(voices);
+	  display_next_par(multiplier);
+	  display_next_par(divisor);
+	  display_next_par(sync);
+	  MENU.outln(F(")  ESP8266 Frogs"));
+	  Press_toStart();
+	}
+	break;
 
       case 4:
-      multiplier=1;
-      divisor=2;
-      sync=0;
-      jiffle=jiffletab;
+	multiplier=1;
+	divisor=2;
+	sync=0;
+	jiffle=jiffletab;
 
-      if (MENU.maybe_display_more()) {
-	display_name5pars("setup_jiffles2345", inverse, voices, multiplier, divisor, sync);
-	Press_toStart();
-      }
-      break;
+	if (MENU.maybe_display_more()) {
+	  display_name5pars("setup_jiffles2345", inverse, voices, multiplier, divisor, sync);
+	  Press_toStart();
+	}
+	break;
 
-    case 5:
-      sync=0;		// FIXME: test and select ################
-      multiplier=3;
-      divisor=1;
+      case 5:
+	sync=0;		// FIXME: test and select ################
+	multiplier=3;
+	divisor=1;
 
-      if (MENU.maybe_display_more()) {
-	display_name5pars("init_123456", inverse, voices, multiplier, divisor, sync);
-	Press_toStart();
-      }
-      break;
+	if (MENU.maybe_display_more()) {
+	  display_name5pars("init_123456", inverse, voices, multiplier, divisor, sync);
+	  Press_toStart();
+	}
+	break;
 
-    case 6:
-      sync=0;		// FIXME: test and select ################
-      multiplier=1;
-      divisor=1;
+      case 6:
+	sync=0;		// FIXME: test and select ################
+	multiplier=1;
+	divisor=1;
 
-      if (MENU.maybe_display_more()) {
-	display_name5pars("init_chord_1345689a", inverse, voices, multiplier, divisor, sync);
-	Press_toStart();
-      }
-      break;
+	if (MENU.maybe_display_more()) {
+	  display_name5pars("init_chord_1345689a", inverse, voices, multiplier, divisor, sync);
+	  Press_toStart();
+	}
+	break;
 
-    case 7:
-      sync=1;
-      multiplier=1;
-      divisor=6*7;
+      case 7:
+	sync=1;
+	multiplier=1;
+	divisor=6*7;
 
-      if (MENU.maybe_display_more()) {
-	display_name5pars("init_rhythm_1", inverse, voices, multiplier, divisor, sync);
-	Press_toStart();
-      }
-      break;
+	if (MENU.maybe_display_more()) {
+	  display_name5pars("init_rhythm_1", inverse, voices, multiplier, divisor, sync);
+	  Press_toStart();
+	}
+	break;
 
-    case 8:
-      sync=5;
-      multiplier=1;
-      divisor=1;
+      case 8:
+	sync=5;
+	multiplier=1;
+	divisor=1;
 
-      if (MENU.maybe_display_more()) {
-	display_name5pars("init_rhythm_2", inverse, voices, multiplier, divisor, sync);
-	Press_toStart();
-      }
-      break;
+	if (MENU.maybe_display_more()) {
+	  display_name5pars("init_rhythm_2", inverse, voices, multiplier, divisor, sync);
+	  Press_toStart();
+	}
+	break;
 
-    case 9:
-      sync=3;
-      multiplier=1;
-      divisor=1;
+      case 9:
+	sync=3;
+	multiplier=1;
+	divisor=1;
 
-      if (MENU.maybe_display_more()) {
-	display_name5pars("init_rhythm_3", inverse, voices, multiplier, divisor, sync);
-	Press_toStart();
-      }
-      break;
+	if (MENU.maybe_display_more()) {
+	  display_name5pars("init_rhythm_3", inverse, voices, multiplier, divisor, sync);
+	  Press_toStart();
+	}
+	break;
 
-    case 10:
-      sync=1;
-      multiplier=1;
-      divisor=7L*3L;
+      case 10:
+	sync=1;
+	multiplier=1;
+	divisor=7L*3L;
 
-      if (MENU.maybe_display_more()) {
-	display_name5pars("init_rhythm_4", inverse, voices, multiplier, divisor, sync);
-	Press_toStart();
-      }
-      break;
+	if (MENU.maybe_display_more()) {
+	  display_name5pars("init_rhythm_4", inverse, voices, multiplier, divisor, sync);
+	  Press_toStart();
+	}
+	break;
 
-    case 11:
-      sync=3;
-      multiplier=3;
-      divisor=1;
+      case 11:
+	sync=3;
+	multiplier=3;
+	divisor=1;
 
-      if (MENU.maybe_display_more()) {
-	display_name5pars("setup_jifflesNEW", inverse, voices, multiplier, divisor, sync);
-	Press_toStart();
-      }
-      break;
+	if (MENU.maybe_display_more()) {
+	  display_name5pars("setup_jifflesNEW", inverse, voices, multiplier, divisor, sync);
+	  Press_toStart();
+	}
+	break;
 
-    case 12:
-      sync=1;
-      multiplier=1;
-      divisor=1;
+      case 12:
+	sync=1;	// or: sync=0;
+	multiplier=1;
+	divisor=1;
 
-      if (MENU.maybe_display_more()) {
-	display_name5pars("init_pentatonic", inverse, voices, multiplier, divisor, sync);
-	Press_toStart();
-      }
-      break;
+	if (MENU.maybe_display_more()) {
+	  display_name5pars("init_pentatonic", inverse, voices, multiplier, divisor, sync);
+	  Press_toStart();
+	}
+	break;
 
-    case 13:
-      sync=1;	// or: sync=0;
-      multiplier=1;
-      divisor=1;
-      voices=8;	//just for 'The Harmonical Strings Christmas Evening Sounds'
-      inverse=false;
-      // unsigned int harmonics4 = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0,0};
-      jiffle=harmonics4;
-      select_n(voices);
-      display_name5pars("prepare_magnets", inverse, voices, multiplier, divisor, sync);
-      prepare_magnets(inverse, voices, multiplier, divisor, sync);
+      case 13:
+	sync=1;	// or: sync=0;
+	multiplier=1;
+	divisor=1;
+	voices=8;	//just for 'The Harmonical Strings Christmas Evening Sounds'
+	inverse=false;
+	// unsigned int harmonics4 = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0,0};
+	jiffle=harmonics4;
+	select_n(voices);
+	display_name5pars("prepare_magnets", inverse, voices, multiplier, divisor, sync);
+	prepare_magnets(inverse, voices, multiplier, divisor, sync);
 
-      if (MENU.maybe_display_more()) {
-	selected_or_flagged_pulses_info_lines();
-	Press_toStart();
-      }
-      break;
+	if (MENU.maybe_display_more()) {
+	  selected_or_flagged_pulses_info_lines();
+	  Press_toStart();
+	}
+	break;
 
-    case 14:
-      // magnets on strings, second take
-      multiplier=1;
-      divisor=1;
-      inverse=false;
+      case 14:
+	// magnets on strings, second take
+	multiplier=1;
+	divisor=1;
+	inverse=false;
 
-      ratios = pentatonic_minor;
-      select_n(voices);
-      prepare_ratios(false, voices, multiplier * 1024 , divisor * 1167, sync, ratios);
-      jiffle=ting1024;
-      select_n(voices);
-      display_name5pars("E14", inverse, voices, multiplier, divisor, sync);
+	ratios = pentatonic_minor;
+	select_n(voices);
+	prepare_ratios(false, voices, multiplier * 1024 , divisor * 1167, sync, ratios);
+	jiffle=ting1024;
+	select_n(voices);
+	display_name5pars("E14", inverse, voices, multiplier, divisor, sync);
 
-      if (MENU.maybe_display_more())
-	selected_or_flagged_pulses_info_lines();
-      break;
+	if (MENU.maybe_display_more())
+	  selected_or_flagged_pulses_info_lines();
+	break;
 
-    case 15:
-      // magnets on strings, third take
-      multiplier=1;
-      divisor=1;
-      inverse=false;
+      case 15:
+	// magnets on strings, third take
+	multiplier=1;
+	divisor=1;
+	inverse=false;
 
-      ratios = pentatonic_minor;
-      select_n(voices);
-      prepare_ratios(false, voices, multiplier * 4096 , divisor * 1167, sync, ratios);
-      jiffle=ting4096;
-      select_n(voices);
-      display_name5pars("E15", inverse, voices, multiplier, divisor, sync);
+	ratios = pentatonic_minor;
+	select_n(voices);
+	prepare_ratios(false, voices, multiplier * 4096 , divisor * 1167, sync, ratios);
+	jiffle=ting4096;
+	select_n(voices);
+	display_name5pars("E15", inverse, voices, multiplier, divisor, sync);
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	selected_or_flagged_pulses_info_lines();
-      break;
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  selected_or_flagged_pulses_info_lines();
+	break;
 
-    case 16:
-      // piezzos on low strings 2016-12-28
-      multiplier=4096;
-      divisor=256;
-      inverse=false;
+      case 16:
+	// piezzos on low strings 2016-12-28
+	multiplier=4096;
+	divisor=256;
+	inverse=false;
 
-      ratios = european_pentatonic;
-      select_n(voices);
-      prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
-      jiffle=ting4096;
-      // jiffle = arpeggio4096;
-      display_name5pars("E16 european_pent", inverse, voices, multiplier, divisor, sync);
+	ratios = european_pentatonic;
+	select_n(voices);
+	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	jiffle=ting4096;
+	// jiffle = arpeggio4096;
+	display_name5pars("E16 european_pent", inverse, voices, multiplier, divisor, sync);
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	selected_or_flagged_pulses_info_lines();
-      break;
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  selected_or_flagged_pulses_info_lines();
+	break;
 
-    case 17:
-      // magnets on steel strings, "japanese"
-      multiplier=1;	// click
-      // multiplier=4096;	// jiffle ting4096
-      divisor=256*5;
+      case 17:
+	// magnets on steel strings, "japanese"
+	multiplier=1;	// click
+	// multiplier=4096;	// jiffle ting4096
+	divisor=256*5;
 
-      ratios = mimic_japan_pentatonic;
-      select_n(voices);
-      prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
-      jiffle=ting4096;
-      display_name5pars("E17 mimic japan", inverse, voices, multiplier, divisor, sync);
+	ratios = mimic_japan_pentatonic;
+	select_n(voices);
+	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	jiffle=ting4096;
+	display_name5pars("E17 mimic japan", inverse, voices, multiplier, divisor, sync);
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	selected_or_flagged_pulses_info_lines();
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  selected_or_flagged_pulses_info_lines();
 
-      break;
+	break;
 
-    case 18:	// nylon stringed wooden box, piezzos
-      ratios = pentatonic_minor;
-      multiplier=1;	// click
-      // multiplier=4096;	// jiffle ting4096
-      // divisor=2048;
+      case 18:	// nylon stringed wooden box, piezzos
+	ratios = pentatonic_minor;
+	multiplier=1;	// click
+	// multiplier=4096;	// jiffle ting4096
+	// divisor=2048;
 
-      // string tuning on 8/9
-      //   multiplier=8;
-      //   divisor=9*1024;
-      // multiplier=1;
-      // divisor=9*128;
+	// string tuning on 8/9
+	//   multiplier=8;
+	//   divisor=9*1024;
+	// multiplier=1;
+	// divisor=9*128;
 
-      // multiplier=8*4096;	// jiffle ting4096
-      // divisor=9*1024;
-      multiplier=32;	// reduced
-//#if defined(ESP32)	// used as test setup with 16 clicks
-// ################ FIXME: ESP32 16 click ################
-//      multiplier *= 4;
-//#endif
-      divisor=9;	// reduced
-      jiffle=ting4096;
+	// multiplier=8*4096;	// jiffle ting4096
+	// divisor=9*1024;
+	multiplier=32;	// reduced
+	//#if defined(ESP32)	// used as test setup with 16 clicks
+	// ################ FIXME: ESP32 16 click ################
+	//      multiplier *= 4;
+	//#endif
+	divisor=9;	// reduced
+	jiffle=ting4096;
 
-      select_n(voices);
-      prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
-      display_name5pars("E18 pentatonic minor", inverse, voices, multiplier, divisor, sync);
+	select_n(voices);
+	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	display_name5pars("E18 pentatonic minor", inverse, voices, multiplier, divisor, sync);
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	selected_or_flagged_pulses_info_lines();
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  selected_or_flagged_pulses_info_lines();
 
-      break;
+	break;
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
-    case 19:	// TUNING
-      PULSES.selected_pulses=1;
-      sweep_up=1;
-      PULSES.reset_and_edit_pulse(0, PULSES.time_unit);
-      PULSES.divide_period(0, 1024);
-      en_tuned_sweep_click(0);
+      case 19:	// TUNING: tuned sweep
+	PULSES.selected_pulses=1;
+	sweep_up=1;
+	PULSES.reset_and_edit_pulse(0, PULSES.time_unit);
+	PULSES.divide_period(0, 1024);
+	en_tuned_sweep_click(0);
 
-      PULSES.fix_global_next();	// just in case?
-      PULSES.check_maybe_do();	// maybe do it *first*
+	PULSES.fix_global_next();	// just in case?
+	PULSES.check_maybe_do();	// maybe do it *first*
 
-      if (MENU.maybe_display_more()) {
-	MENU.ln();
-	selected_or_flagged_pulses_info_lines();
-      }
-      break;
+	if (MENU.maybe_display_more()) {
+	  MENU.ln();
+	  selected_or_flagged_pulses_info_lines();
+	}
+	break;
 #endif
 
-    case 20:
-      jiffle = arpeggio4096;
-      MENU.play_KB_macro("X E12!aN *8 J20-.");
-      break;
+      case 20:
+	jiffle = arpeggio4096;
+	MENU.play_KB_macro("X E12!aN *8 J20-.");
+	break;
 
-    case 21:
-      jiffle = arpeggio4096down;
-      MENU.play_KB_macro("X E12!aN *16 J21-.");
-      break;
+      case 21:
+	jiffle = arpeggio4096down;
+	MENU.play_KB_macro("X E12!aN *16 J21-.");
+	break;
 
-    case 22:
-      jiffle = arpeggio_cont;				// :)	with pizzs
-      MENU.play_KB_macro("X E12!aN *16 J22-.");
-      break;
+      case 22:
+	jiffle = arpeggio_cont;				// :)	with pizzs
+	MENU.play_KB_macro("X E12!aN *16 J22-.");
+	break;
 
-    case 23:
-      jiffle = arpeggio_and_down;			// :) :)  arpeggio down instead pizzs
-      MENU.play_KB_macro("X E12!aN *16 J23-.");
-      break;
+      case 23:
+	jiffle = arpeggio_and_down;			// :) :)  arpeggio down instead pizzs
+	MENU.play_KB_macro("X E12!aN *16 J23-.");
+	break;
 
-    case 24:
-      jiffle = stepping_down;				// :) :)  stepping down
-      MENU.play_KB_macro("X E12 S=0 !aN *16 J24-.");
-      break;
+      case 24:
+	jiffle = stepping_down;				// :) :)  stepping down
+	MENU.play_KB_macro("X E12 S=0 !aN *16 J24-.");
+	break;
 
-    case 25:
-      jiffle = back_to_ground;		// rhythm slowdown
-      MENU.play_KB_macro("X E12!aN *32 J25-.");		// :)	rhythm slowdown
-      break;
+      case 25:
+	jiffle = back_to_ground;		// rhythm slowdown
+	MENU.play_KB_macro("X E12!aN *32 J25-.");		// :)	rhythm slowdown
+	break;
 
-    case 26:
-      jiffle = arpeggio_and_sayling;
-      MENU.play_KB_macro("X E12!aN *32 J26-.");
-      break;
+      case 26:
+	jiffle = arpeggio_and_sayling;
+	MENU.play_KB_macro("X E12!aN *32 J26-.");
+	break;
 
-    case 27:
-      jiffle = simple_theme;
-      MENU.play_KB_macro("X E12!aN *2 -.");
-      break;
+      case 27:
+	jiffle = simple_theme;
+	MENU.play_KB_macro("X E12!aN *2 -.");
+	break;
 
-    case 28:				// for tuning
-      jiffle = peepeep4096;
-      MENU.play_KB_macro("X E12!aN *2 -.");
+      case 28:				// for tuning
+	jiffle = peepeep4096;
+	MENU.play_KB_macro("X E12!aN *2 -.");
 
-      break;
+	break;
 
-    default:
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	MENU.outln_invalid();
+      case 29:				// KALIMBA7 tuning
+	MENU.play_KB_macro("X");
 
-      selected_experiment=0;
-      break;
+#if defined KALIMBA7_v2	// ESP32 version  european_pentatonic
+	ratios = european_pentatonic;
+	voices=7;
+#else
+	ratios = pentatonic_minor;	// default, including KALIMBA7_v1
+#endif
+#if defined  KALIMBA7_v1
+	voices=7;
+#endif
+
+	multiplier=1;
+	divisor=1024;
+	select_n(voices);
+	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	display_name5pars("E29 KALIMBA7 tuning", inverse, voices, multiplier, divisor, sync);
+	// PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate
+	//      MENU.play_KB_macro("j -.");
+	MENU.play_KB_macro("cn.");		// for tuning ;)
+	MENU.ln();
+
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  selected_or_flagged_pulses_info_lines();
+
+	break;
+
+      case 30:				// KALIMBA7 jiffle
+	ratios = pentatonic_minor;
+	voices=7;
+	// voices=8;
+	multiplier=4;
+	divisor=1;
+	// jiffle = peepeep4096;
+	jiffle = ting4096;
+	// jiffle = tingeling4096;
+	select_n(voices);
+	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	display_name5pars("E30 KALIMBA7 jiff", inverse, voices, multiplier, divisor, sync);
+	// PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate
+	//      MENU.play_KB_macro("j -.");
+	MENU.play_KB_macro("jn");
+	MENU.ln();
+
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  selected_or_flagged_pulses_info_lines();
+
+	break;
+
+      case 31:				// KALIMBA7 jiffle
+	ratios = european_pentatonic;
+	voices=8;
+	multiplier=4;
+	divisor=1;
+	jiffle = ting4096;
+	select_n(voices);
+	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	display_name5pars("E31 KALIMBA7 jiff", inverse, voices, multiplier, divisor, sync);
+	// PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate
+	//      MENU.play_KB_macro("j -.");
+	MENU.play_KB_macro("jn");
+	MENU.ln();
+
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  selected_or_flagged_pulses_info_lines();
+
+	break;
+
+      default:
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  MENU.outln_invalid();
+
+	selected_experiment=0;
+	break;
+      }
+    } else {
+      display_names(experiment_names, n_experiment_names, selected_experiment);
+      // MENU.outln("DADA else");	// ################ FIXME: obsolete? ################
     }
     break;
 

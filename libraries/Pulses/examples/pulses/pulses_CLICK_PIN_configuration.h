@@ -5,29 +5,25 @@
 
 #if defined(CLICK_PULSES)
 
-#if defined(ESP32)				// which board?
-/*
-  uint8_t click_pin[CLICK_PULSES] =
-    {26, 27, 14, 12, 13, 21, 19, 18, 5, 17, 16, 4, 0, 15};	// 16 clicks
- */
+// which board?
+#if defined ESP32 || defined ESP8266			// ESPxx boards
 
-//  uint8_t click_pin[CLICK_PULSES] =
-//    {26, 27, 14, 12, 13, 23, 22, 21, 19, 18, 5, 17, 16, 4, 0, 15};	// 16 clicks
+// KALIMBA ESPxx versions:
+  #ifdef KALIMBA7_v2		// KALIMBA version 2 on ESP32
+    #undef CLICK_PULSES
+      #define CLICK_PULSES	8	// 7 used for kalimba magnets
 
-// ################ FIXME: more click pins on ESP32 ################
-  uint8_t click_pin[CLICK_PULSES] =
-    {26, 27, 14, 12, 13, 23, 22, 21};	// 8 clicks, first try
-//    {26, 27, 14, 12, 13, 23, 22, 21, 19, 18, 5, 17, 16, 4, 0, 15};	// 16 clicks
+    // ESP32s module 2x19 pins
+    uint8_t click_pin[CLICK_PULSES] = { 32, 33, 14, 13, 23, 5, 17, 16};	//  ESP32  KALIMBA7_v2  8 clicks, 7 used
 
-//	// FIXME: test only ################
-//	    #undef CLICK_PULSES		// FIXME: test only ################
-//	    #define CLICK_PULSES	8	// test like ESP8266 ################
-//	//uint8_t click_pin[CLICK_PULSES] =		// FIXME: test only ################
-//	//   {26, 27, 14, 12, 13, 23, 22, 21};		// 8 lower clicks		// FIXME: test only ################
-//	  uint8_t click_pin[CLICK_PULSES] =		// FIXME: test only 8 ################
-//	    {19, 18, 5, 17, 16, 4, 0, 15};			// FIXME: test only 8 higher ################
+  #elif defined KALIMBA7_v1	// KALIMBA version 1 on ESP8266
+    #undef CLICK_PULSES
+    #define CLICK_PULSES	7	// number 8 unused, so far
 
-#elif defined(ESP8266)	// configure PINs on ESP8266
+    uint8_t click_pin[CLICK_PULSES] = {5,  4,  0,  2,  14, 13, 15 };	// ESP8266  KALIMBA7_v1  7 clicks, 3rd try
+//  uint8_t click_pin[CLICK_PULSES] = {D1, D2, D3, D4, D5, D7, D8 };	// 7 clicks, 3rd try
+
+  #elif defined ESP8266	// configure PINs on ESP8266	general case
    /*
      // on NodeMCU ESP8266 board Arduino defines digital pins
      static const uint8_t D0   = 16;

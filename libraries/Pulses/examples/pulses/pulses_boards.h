@@ -68,8 +68,12 @@
 // default number of CLICK_PULSES controlling an associated hardware pin each
   #ifndef CLICK_PULSES
     #if defined(ESP32)			// ESP32: many pins, a lot of RAM :)
-      #define CLICK_PULSES	8
+      #if defined(KALIMBA7_v2)
+	#define CLICK_PULSES	8	// only 7 used
+      #else	// ESP32 generic
+        #define CLICK_PULSES	8
 //      #define CLICK_PULSES	16	//  ################ FIXME: 16 pulses on ESP32 broken
+      #endif
     #elif defined(ESP8266)		// ESP8266: "a lot of RAM", 8 pins
       #define CLICK_PULSES	8
     #elif defined(__AVR_ATmega2560__)
