@@ -1919,8 +1919,10 @@ char * experiment_names[] = {		// FIXME: const char * experiment_names would be 
       "simple_theme\tpentatonic",		// 27
       "peepeep4096\tpentatonic\tfor tuning",	// 28
       "KALIMBA7 tuning",			// 29
-      "KALIMBA7 jiff",				// 30
-      "(invalid)",				// 31
+      "KALIMBA7 jiff pent minor",		// 30
+      "KALIMBA7 jiff pent euro",		// 31
+      "ESP32_12 pent euro",			// 32
+      "(invalid)",				// over
   };
 
   #define n_experiment_names (sizeof (experiment_names) / sizeof (const char *))
@@ -3836,8 +3838,23 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
 	display_name5pars("E31 KALIMBA7 jiff", inverse, voices, multiplier, divisor, sync);
-	// PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate
-	//      MENU.play_KB_macro("j -.");
+	MENU.play_KB_macro("jn");
+	MENU.ln();
+
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  selected_or_flagged_pulses_info_lines();
+
+	break;
+
+      case 32:				// ESP32_12
+	ratios = european_pentatonic;
+	voices=12;
+	multiplier=4;
+	divisor=1;
+	jiffle = ting4096;
+	select_n(voices);
+	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	display_name5pars("E32 ESP32_12", inverse, voices, multiplier, divisor, sync);
 	MENU.play_KB_macro("jn");
 	MENU.ln();
 
@@ -3859,6 +3876,7 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
+  // ################ FIXME: that's a mess!	################
   case '!':			// '!' setup and start experiment
     switch (selected_experiment) {
     case -1:

@@ -168,10 +168,10 @@ GPIO32		T
 GPIO33		T
 GPIO34	i					ADC6
 GPIO35	i	INPUT PLL
-GPIO36	i					SVP	ADC0
+GPIO36	i	mpc3008				SVP	ADC0	HALL?
 GPIO37	--
 GPIO38	--
-GPIO39	i					SVN	ADC3
+GPIO39	i	mpc3008				SVN	ADC3	HALL?
 
 /* **************************************************************** */
 

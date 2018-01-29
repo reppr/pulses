@@ -8,8 +8,18 @@
 // which board?
 #if defined ESP32 || defined ESP8266			// ESPxx boards
 
-// KALIMBA ESPxx versions:
-  #ifdef KALIMBA7_v2		// KALIMBA version 2 on ESP32
+  #if defined ESP32_12_v0
+  // testing ESP32_12 version
+    #undef CLICK_PULSES
+      #define CLICK_PULSES	12
+
+  // testing pins, out of order
+    uint8_t click_pin[CLICK_PULSES] =
+      {5, 4, 2, 14, 13, 15, 27, 23, 17, 16, 32, 33, };		// 12 clicks?	OUT OF ORDER
+
+
+  // KALIMBA ESPxx versions:
+  #elif defined KALIMBA7_v2		// KALIMBA version 2 on ESP32
     #undef CLICK_PULSES
       #define CLICK_PULSES	8	// 7 used for kalimba magnets
 
@@ -54,7 +64,7 @@
 
   #elif defined ESP32	// configure PINs on ESP32	general case
     #undef CLICK_PULSES
-    #define CLICK_PULSES	15
+    #define CLICK_PULSES	12
     // ################	FIXME: do not use GPIO12 as click pin	################
     /*
       using GPIO12 as click pin gives error
