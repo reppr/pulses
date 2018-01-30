@@ -13,10 +13,14 @@
     #undef CLICK_PULSES
       #define CLICK_PULSES	12
 
-  // testing pins, out of order
+  // pin  layout:  ESP32-WROOM-32
+  //               also for heltec WIFI_Kit_32 (with OLED) https://robotzero.one/heltec-wifi-kit-32/
     uint8_t click_pin[CLICK_PULSES] =
-      {5, 4, 2, 14, 13, 15, 27, 23, 17, 16, 32, 33, };		// 12 clicks?	OUT OF ORDER
-
+      {23, 5, 17, 16, 4, 2, 15,		32, 33, 27, 14, 13, };	//  ESP32_12_v0  12 clicks
+  /* layout ESP-WROOM-32	heltec WIFI_Kit_32 (OLED)
+   GND 1,  2, ...	    6     |     7               12
+   WIFI                      USB  |  WIFI		    USB  |
+  */
 
   // KALIMBA ESPxx versions:
   #elif defined KALIMBA7_v2		// KALIMBA version 2 on ESP32
@@ -65,24 +69,31 @@
   #elif defined ESP32	// configure PINs on ESP32	general case
     #undef CLICK_PULSES
     #define CLICK_PULSES	12
-    // ################	FIXME: do not use GPIO12 as click pin	################
-    /*
-      using GPIO12 as click pin gives error
-      rst:0x10 (RTCWDT_RTC_RESET),boot:0x33 (SPI_FAST_FLASH_BOOT)
-      flash read err, 1000
-    */
 
-    // TODO: ################ FIXME: check pins on ESP32 ################
-    /*
-      uint8_t click_pin[CLICK_PULSES] =
-      {26, 27, 14, 12, 13, 21, 19, 18, 5, 17, 16, 4, 0, 15};	// 16 clicks
-    */
+  /* using ESP32_12 as default for now */
+  // pin  layout:  ESP32-WROOM-32
+  //               also for heltec WIFI_Kit_32 (with OLED) https://robotzero.one/heltec-wifi-kit-32/
+    uint8_t click_pin[CLICK_PULSES] =
+      {23, 5, 17, 16, 4, 2, 15,		32, 33, 27, 14, 13, };	//  ESP32_12_v0  12 clicks
+  /* layout ESP-WROOM-32	heltec WIFI_Kit_32 (OLED)
+   GND 1,  2, ...	    6     |     7               12
+   WIFI                      USB  |  WIFI		    USB  |
+  */
 
-   uint8_t click_pin[CLICK_PULSES] =
-     {26, 27, 14, 13, 23, 22, 21, 19, 18, 5, 17, 16, 4, 0, 15};	// 15 clicks
+  // ################	FIXME: do not use GPIO12 as click pin	################
+  /*
+    using GPIO12 as click pin gives error
+    rst:0x10 (RTCWDT_RTC_RESET),boot:0x33 (SPI_FAST_FLASH_BOOT)
+    flash read err, 1000
+  */
 
-   #endif
-// done with ESPxx versions
+  // check this list for more pins you do not need otherwise
+  // uint8_t click_pin[CLICK_PULSES] =
+  //   {5, 4, /* 0,*/ 2, ,14, /* 12 */ 13, 15, /* 25, 26, */ 27, 23, /* 22, 21, *//* 19, 18, */ 17, 16,   32, 33, }; // 12 (to 20) clicks
+  //   {D1 D2  D3?    D4  D5     D6    D7  D8                            i2c
+  //                  LED      error               AUDIO               acc/gyro      e-paper
+
+  #endif	// done with ESPxx versions now
 
 #elif defined(__SAM3X8E__)			// Arduino DUE
   uint8_t click_pin[CLICK_PULSES] =		// 32 clicks ;)
