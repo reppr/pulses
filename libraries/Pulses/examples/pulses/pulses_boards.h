@@ -9,6 +9,17 @@
 
 #ifdef ARDUINO
   #if defined(ESP32)				// ESP32 :)
+    #define BOARD_has_DACs		2
+    #define BOARD_DAC_RESOLUTION	8
+    #define BOARD_DAC1			25	// DAC1 gpio
+    #define BOARD_DAC2			26	// DAC2 gpio
+
+    #if true	// change that if you do not want to use the dacs
+       #define USE_DACs		BOARD_has_DACs
+    #else
+    #endif
+
+
     #define STARTUP_DELAY	256	// ESP32 seems to need that for successful booting
 
     const int pl_max=32;

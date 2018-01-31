@@ -547,6 +547,10 @@ unsigned int stress_emergency=4096;	// high value seems appropriate
 //#endif
 unsigned int stress_count=0;
 
+#if defined USE_DACs
+  uint8_t dac1_value;
+  uint8_t dac2_value;
+#endif
 
 void loop() {	// ARDUINO
 
@@ -566,6 +570,7 @@ void loop() {	// ARDUINO
      let the UI starve, when there is not enough time for everything.
   */
   stress_count=0;
+
   while (PULSES.check_maybe_do()) {	// in stress PULSES get's *first* priority.
     if (++stress_count >= stress_emergency) {
       // EMERGENCY
@@ -581,6 +586,21 @@ void loop() {	// ARDUINO
       stress_count=0;				// seems best, maybe
       // stress_count = stress_emergency / 2;	// FIXME: further tests	################
     }
+
+#if defined USE_DACs
+    dac1_value=0;
+    dac2_value=0;
+    for (int pulse=12; pulse<24; pulse++) {
+      if (PULSES.pulses[pulse].flags & ACTIVE) {
+	if (PULSES.pulses[pulse].counter & 1)
+	  dac1_value += 256/12;
+      }
+    }
+
+    dacWrite(BOARD_DAC1, dac1_value);
+    dacWrite(BOARD_DAC2, dac2_value);
+#endif
+
   }
 
   // descend through priorities and do first thing found
@@ -3316,7 +3336,12 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'D':	// DADA reserved for temporary code   testing debugging ...
-    MENU.out_noop(); MENU.ln();
+//    MENU.out_noop(); MENU.ln();
+
+    // ESP32 DAC test
+    MENU.out(F("DAC test "));
+    dacWrite(BOARD_DAC1, input_value=MENU.numeric_input(-1));
+    MENU.outln(input_value);
     break;
 
   case 'y':	// DADA reserved for temporary code   testing debugging ...
