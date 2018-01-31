@@ -1942,7 +1942,11 @@ char * experiment_names[] = {		// FIXME: const char * experiment_names would be 
       "KALIMBA7 jiff pent minor",		// 30
       "KALIMBA7 jiff pent euro",		// 31
       "ESP32_12 pent euro",			// 32
-      "(invalid)",				// over
+      "minor scale",				// 33
+      "major scale",				// 34
+      "tetrachord",				// 35
+
+//    "(invalid)",				// over
   };
 
   #define n_experiment_names (sizeof (experiment_names) / sizeof (const char *))
@@ -3104,17 +3108,11 @@ bool menu_pulses_reaction(char menu_input) {
     } else {	// select jiffle
       if (MENU.maybe_display_more()) {
 	MENU.out(F("jiffle "));
-
-#ifndef RAM_IS_SCARE	// enough RAM?	display jiffle names
-	display_names(jiffle_names, n_jiffle_names, selected_jiffle);
-#endif
       }
 
       // some jiffles in the source are very old   FIXME: check
-      selected_jiffle=MENU.numeric_input(selected_jiffle);	// remember as index for jiffle_names[selected_jiffle]
-      switch (selected_jiffle) {
-      case -1:
-	break;
+      input_value=MENU.numeric_input(-1);
+      switch (input_value) {
       case 0:
 	jiffle = jiffle_RAM;
 	break;
@@ -3221,14 +3219,18 @@ bool menu_pulses_reaction(char menu_input) {
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  MENU.outln_invalid();
+
+#ifndef RAM_IS_SCARE	// enough RAM?	display jiffle names
+	display_names(jiffle_names, n_jiffle_names, selected_jiffle);
+#endif
       }
-  #ifndef RAM_IS_SCARE	// enough RAM?	display jiffle names
-      display_names(jiffle_names, n_jiffle_names, selected_jiffle);
-  #endif
     }
 
-    if (selected_jiffle != -1)
+    if (input_value != -1) {
+      selected_jiffle=input_value;
+
       display_jiffletab(jiffle);
+    }
     break;
 
   case 'R':	// ratios
@@ -3468,18 +3470,14 @@ bool menu_pulses_reaction(char menu_input) {
   case 'E':	// enter experiment
     if (MENU.maybe_display_more()) {
       MENU.out(F("experiment "));
-
-#ifndef RAM_IS_SCARE	// enough RAM?
-      display_names(experiment_names, n_experiment_names, selected_experiment);
-#endif
     }
 
-    input_value = MENU.numeric_input(selected_experiment);
+    input_value = MENU.numeric_input(-1);
 
  if (input_value==-1)
       display_names(experiment_names, n_experiment_names, selected_experiment);
 
- if (input_value>=0 ) {
+ else if (input_value>=0 ) {
       selected_experiment = input_value;
       switch (selected_experiment) {	// initialize defaults, but do not start yet
       case 1:
@@ -3888,6 +3886,57 @@ bool menu_pulses_reaction(char menu_input) {
 
 	break;
 
+      case 33:
+	ratios = minor_scale;
+	voices=12;
+	multiplier=4;
+	divisor=1;
+	jiffle = ting4096;
+	select_n(voices);
+	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	display_name5pars("minor", inverse, voices, multiplier, divisor, sync);
+	MENU.play_KB_macro("jn");
+	MENU.ln();
+
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  selected_or_flagged_pulses_info_lines();
+
+	break;
+
+      case 34:
+	ratios = major_scale;
+	voices=12;
+	multiplier=4;
+	divisor=1;
+	jiffle = ting4096;
+	select_n(voices);
+	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	display_name5pars("minor", inverse, voices, multiplier, divisor, sync);
+	MENU.play_KB_macro("jn");
+	MENU.ln();
+
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  selected_or_flagged_pulses_info_lines();
+
+	break;
+
+      case 35:
+	ratios=tetrachord;
+	voices=12;
+	multiplier=4;
+	divisor=1;
+	jiffle = ting4096;
+	select_n(voices);
+	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	display_name5pars("minor", inverse, voices, multiplier, divisor, sync);
+	MENU.play_KB_macro("jn");
+	MENU.ln();
+
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  selected_or_flagged_pulses_info_lines();
+
+	break;
+
       default:
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  MENU.outln_invalid();
@@ -3895,11 +3944,8 @@ bool menu_pulses_reaction(char menu_input) {
 	selected_experiment=0;
 	break;
       }
-    } else {
-      display_names(experiment_names, n_experiment_names, selected_experiment);
-      // MENU.outln("DADA else");	// ################ FIXME: obsolete? ################
-    }
-    break;
+ }
+ break;
 
   // ################ FIXME: that's a mess!	################
   case '!':			// '!' setup and start experiment
