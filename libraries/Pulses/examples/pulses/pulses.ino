@@ -141,9 +141,12 @@ char * ratio_names[] = {
       "pentatonic_minor",	// 1
       "european_pentatonic",	// 2
       "mimic_japan_pentatonic",	// 3
-      "ratios_quot",		// 4
-      "ratios_int",		// 5
-      "ratios_rationals",	// 6
+      "minor_scale",		// 4
+      "major_scale",		// 5
+      "tetrachord",		// 6
+      "ratios_quot",		// 7
+      "ratios_int",		// 8
+      "ratios_rationals",	// 9
   };
 
   #define n_ratio_names (sizeof (ratio_names) / sizeof (const char *))
@@ -165,6 +168,15 @@ unsigned int pentatonic_minor[] = {1,1, 5,6, 3,4, 2,3, 5*2,6*3, 0,0};	// scale e
 // second try:
 unsigned int mimic_japan_pentatonic[] = {1,1, 8,9, 5,6, 2,3, 2*15,3*16, 0,0 };	// scale each octave	zero terminated
 
+
+unsigned int minor_scale[] = {1,1, 8,9, 5,6, 3,4, 2,3, 5,8, 5,9, 0,0};	// scale each octave	zero terminated
+// 1/1	9/8	6/5	4/3	3/2	8/5	9/5	2/1
+
+unsigned int major_scale[] = {1,1, 8,9, 4,5, 3,4, 2,3, 3,5, 8,15, 0,0};	// scale each octave	zero terminated
+// 24	27	30	32	36	40	45	48
+// 1:1	9:8	5:4	4:3	3:2	5:3	15:8	2:1
+
+unsigned int tetrachord[] = {1,1, 8,9, 4,5, 3,4, 0,0};			// scale each octave	zero terminated
 
 /* **************************************************************** */
 int selected_jiffle = ILLEGAL;
@@ -3234,14 +3246,10 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'R':	// ratios
-    if (MENU.maybe_display_more()) {
+    if (MENU.maybe_display_more())
       MENU.out(F("ratio "));
 
-#ifndef RAM_IS_SCARE	// enough RAM?	display jiffle names
-      display_names(ratio_names, n_ratio_names, selected_ratio);
-#endif
-    }
-    selected_ratio=MENU.numeric_input(selected_ratio);	// remember as index for ratio_names[selected_ratio]
+    selected_ratio=MENU.numeric_input(-1);
     switch (selected_ratio) {
     case 0:
       ratios = ratios_RAM;
@@ -3249,10 +3257,12 @@ bool menu_pulses_reaction(char menu_input) {
     default:
       if (selected_ratio >= n_ratio_names) {
 	selected_ratio=0;
-
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  MENU.outln_invalid();
       }
+#ifndef RAM_IS_SCARE	// enough RAM?	display jiffle names
+	display_names(ratio_names, n_ratio_names, selected_ratio);
+#endif
       break;
     }
 //    display_ratio(selected_ratio);
