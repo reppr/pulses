@@ -1190,13 +1190,13 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
       PULSES.pulses[pulse].period.overflow = 0;	// brute force for compatibility ;)
       en_jiffle_thrower(pulse, jiffle);
     }
-  int apply_ratios_on_periode(int voices, unsigned int *ratios, bool octaves=true);	// this code is obsolete anyway ################
-  apply_ratios_on_periode(voices, ratios, true);
+  int apply_ratios_on_period(int voices, unsigned int *ratios, bool octaves=true);	// this code is obsolete anyway ################
+  apply_ratios_on_period(voices, ratios, true);
 #else	// compatibility problems
   prepare_ratios(false, voices, multiplier, divisor, sync, ratios, true);
 #endif
 
-  // int apply_ratios_on_periode(int voices, unsigned int *ratios) {
+  // int apply_ratios_on_period(int voices, unsigned int *ratios) {
 
   // prepare_ratios(false, voices, 4096*12, 41724, 0, ratios);
   // prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
@@ -1205,11 +1205,11 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
 //	      PULSES.reset_and_edit_pulse(pulse, PULSES.time_unit);
 //	    }
 
-  //  apply_ratios_on_periode(voices, ratios);
+  //  apply_ratios_on_period(voices, ratios);
 
   // jiffle=jiff4096;
 //  prepare_ratios(false, voices, 1, 1, 0, ratios);
-//  apply_ratios_on_periode(voices, ratios);
+//  apply_ratios_on_period(voices, ratios);
 //  prepare_ratios(false, 8, 32768, 41727, 0, ratios);
 //	 ratios = pentatonic_minor;
 //	  PULSES.selected_pulses=~0;
@@ -1345,7 +1345,7 @@ int prepare_ratios(bool inverse, int voices, unsigned long multiplier, unsigned 
 }
 
 
-int apply_ratios_on_periode(int voices, unsigned int *ratios, bool octaves=true) {
+int apply_ratios_on_period(int voices, unsigned int *ratios, bool octaves=true) {
   // FIXME: octaves are untested here ################
   if(ratios[0]==0)  return 0;	// error, no data
 
@@ -3921,7 +3921,7 @@ bool menu_pulses_reaction(char menu_input) {
 	jiffle = ting4096;
 	select_n(voices);
 	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
-	display_name5pars("minor", inverse, voices, multiplier, divisor, sync);
+	display_name5pars("tetra", inverse, voices, multiplier, divisor, sync);
 	MENU.play_KB_macro("jn");
 	MENU.ln();
 
@@ -3938,7 +3938,7 @@ bool menu_pulses_reaction(char menu_input) {
 	jiffle = ting4096;
 	select_n(voices);
 	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
-	display_name5pars("minor", inverse, voices, multiplier, divisor, sync);
+	display_name5pars("major", inverse, voices, multiplier, divisor, sync);
 	MENU.play_KB_macro("jn");
 	MENU.ln();
 
