@@ -33,8 +33,12 @@ char * jiffle_names[] = {
       "tingeling4096",	// 29
       "ding1024",	// 30
       "kalimbaxyl",	// 31
-      "(invalid)",	// 32
-  };
+      "ting_tick4096",	// 32
+      "tigg_ding4096",	// 33
+      "tumtum",		// 34
+      "piip2048",	// 35
+      "tanboura",	// 36
+};
 
   // remember selected jiffle number for name display (only)
   unsigned int jiffle_n=0;

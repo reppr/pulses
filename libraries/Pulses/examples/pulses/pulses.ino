@@ -259,6 +259,16 @@ unsigned int tingeling4096[] = {1,4096,512, 1,4,2, 1,4096,64, 1,16,4, 1,4096,16,
 unsigned int ding1024[] = {1,1024,192, 0,0,0};							// KALIMBA7, four times faster
 unsigned int kalimbaxyl[] = {1,1024,32, 1,16,2, 1,32,8, 1,1024,4, 1,32,2, 0, 0, 0};		// KALIMBA7, very silent jiffle
 
+unsigned int ting_tick4096[] = {1,4096,1024, 1,2,1, 1,8192,3, 0,0,0};
+unsigned int tigg_ding4096[] = {1,8192,3, 1,2,1, 1,4096,1024, 0,0,0};
+
+//unsigned int tumtumdumdum[] = {1,1024,1024/16, 1,16,1, 1,1024,1024/16, 1,16,1, 1,1024,1024/16, 1,16,1, 1,1024,1024/16, 0,0,0};
+unsigned int tumtum[] = {1,2048,2048/16, 7,16,1, 1,2048,2048/16, 0,0,0};
+
+unsigned int piip2048[] ={1,2048,128, 0,0,0, };		// length 1/16
+unsigned int tanboura[] ={1,2048,1536, 0,0,0, };	// length 3/4
+
+
 
 #ifndef RAM_IS_SCARE	// enough RAM?
   #include "jiffles.h"
@@ -1745,6 +1755,11 @@ void display_payload(int pulse) {
   scratch=&do_jiffle;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out(F("do_jiffle "));
+
+//	#ifndef RAM_IS_SCARE
+//	    MENU.out(jiffle_names[JIFFLE_ID]); MENU.tab();
+//	#endif
+
     MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
     return;
   }
@@ -2159,6 +2174,11 @@ void display_jiffletab(unsigned int *jiffletab) {
   sum.multiplier = 0;
   sum.divisor = 1;
   bool was_zero=false;
+
+  if (selected_jiffle==ILLEGAL) {
+    MENU.outln(F("(nothing selected)"));
+    return;
+  }
 
   // first line:
 #ifndef RAM_IS_SCARE
@@ -3225,6 +3245,20 @@ bool menu_pulses_reaction(char menu_input) {
       case 31:
 	jiffle = kalimbaxyl;	// KALIMBA7, very silent "xylo" jiffle
 	break;
+      case 32:
+	jiffle = ting4096;
+	// jiffle = ting_tick4096;
+	break;
+      case 33:
+	jiffle = tigg_ding4096;
+	break;
+      case 34:
+	jiffle = tumtum;
+	break;
+      case 35:
+	jiffle = piip2048;
+      case 36:
+	jiffle = tanboura;
 
       default:
 	selected_jiffle=-1;	// as jiffle_names[selected_jiffle] index
@@ -3296,6 +3330,7 @@ bool menu_pulses_reaction(char menu_input) {
     menu_mode=JIFFLE_ENTRY_UNTIL_ZERO_MODE;
     jiffle = jiffle_RAM;
     jiffle_write_index=0;	// ################ FIXME: ################
+    selected_jiffle = 0;
     if(MENU.cb_peek()==EOF)
       if (MENU.verbosity)
 	display_jiffletab(jiffle);
@@ -3921,7 +3956,7 @@ bool menu_pulses_reaction(char menu_input) {
 	jiffle = ting4096;
 	select_n(voices);
 	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
-	display_name5pars("tetra", inverse, voices, multiplier, divisor, sync);
+	display_name5pars("major", inverse, voices, multiplier, divisor, sync);
 	MENU.play_KB_macro("jn");
 	MENU.ln();
 
