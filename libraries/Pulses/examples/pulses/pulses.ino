@@ -629,7 +629,7 @@ void loop() {	// ARDUINO
     }
 
     dacWrite(BOARD_DAC1, dac1_value);
-    dacWrite(BOARD_DAC2, dac2_value);
+    dacWrite(BOARD_DAC2, dac1_value);	// test is mono, unisono
 #endif
 
   }
@@ -3397,6 +3397,7 @@ bool menu_pulses_reaction(char menu_input) {
     // ESP32 DAC test
     MENU.out(F("DAC test "));
     dacWrite(BOARD_DAC1, input_value=MENU.numeric_input(-1));
+    dacWrite(BOARD_DAC2, input_value);
     MENU.outln(input_value);
     break;
 
