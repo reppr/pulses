@@ -1981,6 +1981,7 @@ char * experiment_names[] = {		// FIXME: const char * experiment_names would be 
       "minor scale",				// 33
       "major scale",				// 34
       "tetrachord",				// 35
+      "more voices please",			// 36
 
 //    "(invalid)",				// over
   };
@@ -3529,10 +3530,10 @@ bool menu_pulses_reaction(char menu_input) {
 
     input_value = MENU.numeric_input(-1);
 
- if (input_value==-1)
+    if (input_value==-1)
       display_names(experiment_names, n_experiment_names, selected_experiment);
 
- else if (input_value>=0 ) {
+    else if (input_value>=0 ) {
       selected_experiment = input_value;
       switch (selected_experiment) {	// initialize defaults, but do not start yet
       case 1:
@@ -3925,7 +3926,7 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 32:				// ESP32_12
-	ratios = european_pentatonic;
+	ratios = major_scale;
 	voices=12;
 	multiplier=4;
 	divisor=1;
@@ -3983,7 +3984,25 @@ bool menu_pulses_reaction(char menu_input) {
 	jiffle = ting4096;
 	select_n(voices);
 	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
-	display_name5pars("major", inverse, voices, multiplier, divisor, sync);
+	display_name5pars("tetra", inverse, voices, multiplier, divisor, sync);
+	MENU.play_KB_macro("jn");
+	MENU.ln();
+
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  selected_or_flagged_pulses_info_lines();
+
+	break;
+
+      case 36:
+	//ratios=major_scale;
+	ratios = pentatonic_minor;
+	voices=16;	//	################ FIXME: more voices, please ;) ################
+	multiplier=6;
+	divisor=1;
+	jiffle = ting4096;
+	select_n(voices);
+	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	display_name5pars("BIG major", inverse, voices, multiplier, divisor, sync);
 	MENU.play_KB_macro("jn");
 	MENU.ln();
 
@@ -3999,8 +4018,8 @@ bool menu_pulses_reaction(char menu_input) {
 	selected_experiment=0;
 	break;
       }
- }
- break;
+    }
+    break;
 
   // ################ FIXME: that's a mess!	################
   case '!':			// '!' setup and start experiment
