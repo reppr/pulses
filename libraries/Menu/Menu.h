@@ -272,6 +272,7 @@ class Menu {
 
   void play_KB_macro(char *macro );	//  keyboard input from a string
 
+  int menu_mode;		// currently only used to edit data arrays
   friend class Pulses;
 
  protected:

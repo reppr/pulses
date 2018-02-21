@@ -2040,7 +2040,6 @@ bool inverse=false;	// bottom DOWN/up click-pin mapping
 
 /* **************************************************************** */
 // special menu modes, like numeric input for jiffletabs
-int menu_mode=0;
 #define JIFFLE_ENTRY_UNTIL_ZERO_MODE	1	// menu_mode for unsigned integer data entry, stop at zero
 
 /* **************************************************************** */
@@ -2168,7 +2167,7 @@ void set_jiffle_RAM_value_0_stop() {
 
   jiffle[JIFFLE_RAM_SIZE - 1 ] = 0;	// zero out last 2 array elements (savety net)
   jiffle[JIFFLE_RAM_SIZE - 2 ] = 0;
-  menu_mode=0;				// stop numeric data input
+  MENU.menu_mode=0;				// stop numeric data input
   //  jiffle_write_index=0;		// no, we leave write index as is
 
   display_jiffletab(jiffle);		// put that here for now
@@ -2232,7 +2231,7 @@ void display_jiffletab(unsigned int *jiffletab) {
   MENU.out(jiffle_names[selected_jiffle]); MENU.tab(); MENU.out(F("ID: ")); MENU.out(selected_jiffle); MENU.tab();
 #endif
   MENU.out(F("editing "));
-  if (menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE) {
+  if (MENU.menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE) {
     MENU.out(F("on\tclose with '}'"));
     if (MENU.verbosity >= VERBOSITY_SOME)
       MENU.out(F("\tmove cursor < >\trange borders | \""));
@@ -2621,7 +2620,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case ',':	// accept as noop in normal mode. used as delimiter to input data, displaying info. see 'menu_mode'
-    if (menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE)
+    if (MENU.menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE)
 	display_jiffletab(jiffle);
     else
       if (MENU.verbosity >= VERBOSITY_SOME) {
@@ -2631,7 +2630,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case '|':	// accept as noop in normal mode. used as range bottom delimiter in arrays
-    if (menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE) {
+    if (MENU.menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE) {
       jiffle_range_bottom = jiffle_write_index;
       fix_jiffle_range();
 
@@ -2646,7 +2645,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case '"':	// accept as reserved noop in normal mode. used as range top delimiter in arrays
-    if (menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE) {
+    if (MENU.menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE) {
       jiffle_range_top = jiffle_write_index;
       fix_jiffle_range();
 
@@ -2670,7 +2669,7 @@ bool menu_pulses_reaction(char menu_input) {
   case '7':
   case '8':
   case '9':
-    switch (menu_mode) {
+    switch (MENU.menu_mode) {
     case 0:	// normal input, no special menu_mode
       if((menu_input -'0') >= pl_max)
 	return false;		// *only* responsible if pulse exists
@@ -2694,7 +2693,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case '<':
-    switch (menu_mode) {
+    switch (MENU.menu_mode) {
     case JIFFLE_ENTRY_UNTIL_ZERO_MODE:
       if (jiffle_write_index)
 	jiffle_write_index--;
@@ -2712,7 +2711,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case '>':
-    switch (menu_mode) {
+    switch (MENU.menu_mode) {
     case JIFFLE_ENTRY_UNTIL_ZERO_MODE:
       if (++jiffle_write_index >= (JIFFLE_RAM_SIZE - 2))
 	jiffle_write_index = JIFFLE_RAM_SIZE - 2;
@@ -3374,7 +3373,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case '{':	// enter_jiffletab
-    menu_mode=JIFFLE_ENTRY_UNTIL_ZERO_MODE;
+    MENU.menu_mode=JIFFLE_ENTRY_UNTIL_ZERO_MODE;
     jiffle = jiffle_RAM;
     jiffle_write_index=0;	// ################ FIXME: ################
     selected_jiffle = 0;
@@ -3387,7 +3386,7 @@ bool menu_pulses_reaction(char menu_input) {
     if (MENU.verbosity)
       display_jiffletab(jiffle);
 
-    menu_mode=0;
+    MENU.menu_mode=0;
     jiffle_write_index=0;
     break;
 
