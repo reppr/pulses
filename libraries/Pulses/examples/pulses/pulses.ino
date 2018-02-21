@@ -621,10 +621,10 @@ void loop() {	// ARDUINO
 #if defined USE_DACs
     dac1_value=0;
     dac2_value=0;
-    for (int pulse=12; pulse<24; pulse++) {
+    for (int pulse=CLICK_PULSES; pulse<pl_max; pulse++) {
       if (PULSES.pulses[pulse].flags & ACTIVE) {
 	if (PULSES.pulses[pulse].counter & 1)
-	  dac1_value += 256/12;
+	  dac1_value += 256/CLICK_PULSES;
       }
     }
 
@@ -4043,6 +4043,105 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
 	display_name5pars("BIG major", inverse, voices, multiplier, divisor, sync);
+	MENU.play_KB_macro("jn");
+	MENU.ln();
+
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  selected_or_flagged_pulses_info_lines();
+
+	break;
+
+      case 37:	// Guitar
+	MENU.play_KB_macro("X");
+
+	PULSES.time_unit=1000000;
+
+	// default tuning e
+	multiplier=4096;
+	// divisor=440;			// a4
+	divisor=330; // 329.36		// e4  ***not*** harmonical
+	// divisor=165; // 164.81		// e3  ***not*** harmonical
+
+	selected_ratio = 4;
+	ratios = minor_scale;		// default e minor
+
+	jiffle = ting4096;		// default jiffle
+	voices = 16;			// for DAC output
+	select_n(voices);
+
+	if(MENU.cb_peek()!=EOF) {		// second letters e E a A	e|a  minor|major
+	  switch (MENU.cb_peek()) {
+	  case 'e':
+	    MENU.drop_input_token();
+	    selected_ratio = 4;
+	    ratios=minor_scale;
+
+	  case 'E':
+	    MENU.drop_input_token();
+	    selected_ratio = 5;
+	    ratios=major_scale;
+	    break;
+
+	  case 'a':
+	    MENU.drop_input_token();
+	    selected_ratio = 4;
+	    ratios=minor_scale;
+	    break;
+
+	  case 'A':
+	    MENU.drop_input_token();
+	    selected_ratio = 5;
+	    ratios=major_scale;
+	    break;
+	  }
+	}
+
+	switch (MENU.cb_peek()) {	// (second or) third letters for other scales
+	case EOF:
+	  break;
+	case '5':			// 5  pentatonic (minor|major)
+	  MENU.drop_input_token();
+	  if (ratios==major_scale | ratios==tetrachord) {
+	    selected_ratio = 2;
+	    ratios = european_pentatonic;
+	  } else {
+	    selected_ratio = 1;
+	    ratios = pentatonic_minor;
+	  }
+	  break;
+	case '4':			// 4  tetrachord
+	  MENU.drop_input_token();
+	  selected_ratio = 6;
+	  ratios = tetrachord;
+	  break;
+	case '3':			// 3  octaves fourths fifths
+	  MENU.drop_input_token();
+	  selected_ratio = 13;
+	  ratios = ratios_octaves_fourths_fifths;
+	  break;
+	case '2':			// 2  octaves fifths
+	  MENU.drop_input_token();
+	  selected_ratio = 11;
+	  ratios = ratios_octaves_fifths;
+	  break;
+	case '1':			// 1  octaves
+	  MENU.drop_input_token();
+	  selected_ratio = 10;
+	  ratios = ratios_octaves;
+	  break;
+	}
+
+	// jiffle = ting4096;
+	// jiffle = piip2048;
+	// jiffle = tanboura; divisor *= 2;
+
+	// ################ FIXME: remove redundant code ################
+//	select_n(voices);
+//	prepare_ratios(false, voices, multiplier, divisor, 0, ratios);
+//	display_name5pars("GUITAR", inverse, voices, multiplier, divisor, sync);
+
+	tune_2_scale(voices, multiplier, divisor, sync, selected_ratio, ratios);
+
 	MENU.play_KB_macro("jn");
 	MENU.ln();
 
