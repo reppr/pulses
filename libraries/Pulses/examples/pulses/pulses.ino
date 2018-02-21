@@ -496,7 +496,7 @@ void setup() {
   // informations about alive pulses:
   MENU.ln();
   selected_or_flagged_pulses_info_lines();
-}
+};
 
 
 // bool lower_priority_tasks();
