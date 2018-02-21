@@ -1409,6 +1409,46 @@ int apply_ratios_on_period(int voices, unsigned int *ratios, bool octaves=true) 
   return applied;
 }
 
+
+bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, int sync, unsigned int selected_ratio, unsigned int *ratios) {
+  int pulse;
+  struct time base_period;
+  base_period.overflow = 0;
+  base_period.time = multiplier * PULSES.time_unit;
+  base_period.time /= divisor;
+
+  if (selected_ratio != ILLEGAL) {
+    if (MENU.verbosity >= VERBOSITY_SOME) {
+      MENU.out(F("tune to scale "));
+      MENU.out(selected_ratio);
+      MENU.space();
+      MENU.out(ratio_names[selected_ratio]);
+      MENU.tab();
+      MENU.out(voices);
+      MENU.outln(F(" voices"));
+    }
+
+    if (voices>0) {
+      select_n(voices);
+
+      for (pulse=0; pulse<voices; pulse++) {
+	//	PULSES.init_pulse(pulse);			// initialize new
+	PULSES.pulses[pulse].period = base_period;		// set all voices to base note
+	//	PULSES.pulses[pulse].period.overflow = 0;
+      }
+
+      // now apply ratio scale:
+      apply_ratios_on_period(voices, ratios, true);
+      return true;
+    }
+  } else
+    if (MENU.verbosity >= VERBOSITY_ERROR)
+      MENU.outln(F("no ratio"));
+
+  return false;
+};
+
+
 // ****************************************************************
 void init_chord_1345689a(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   unsigned long unit = multiplier * PULSES.time_unit;
