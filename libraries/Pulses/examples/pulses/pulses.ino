@@ -79,6 +79,9 @@ Pulses PULSES(pl_max, &MENU);
 Harmonical HARMONICAL(3628800uL);	// old style for a first test
 
 
+#include "int_edit.h"			// displaying and editing unsigned int arrays
+#include "array_descriptors.h"		// make data arrays accessible for the menu, give names to the data arrays
+
 /* **************************************************************** */
 // some #define's:
 #define ILLEGAL		-1
@@ -396,6 +399,7 @@ void setup() {
   Serial.flush();
   delay(STARTUP_DELAY);
 
+  #include "array_descriptor_setup.h"
   MENU.outln(F("\nhttp://github.com/reppr/pulses/\n"));
 
 #ifdef USE_WIFI_telnet_menu
@@ -942,13 +946,6 @@ bool maybe_stop_sweeping() {
   return false;
 }
 #endif // ifdef IMPLEMENT_TUNING	implies floating point
-
-
-void display_fraction(struct fraction *f) {
-  MENU.out((*f).multiplier);
-  MENU.slash();
-  MENU.out((*f).divisor);
-}
 
 
 /* **************************************************************** */
