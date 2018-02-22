@@ -3966,7 +3966,8 @@ bool menu_pulses_reaction(char menu_input) {
 	voices=12;
 	multiplier=4;
 	divisor=1;
-	jiffle = ting4096;
+	// jiffle = ting4096;
+	jiffle = tigg_ding4096;
 	select_n(voices);
 	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
 	display_name5pars("E32 ESP32_12", inverse, voices, multiplier, divisor, sync);
