@@ -5,21 +5,34 @@
 #ifndef WiFi_STUFF_INO
 #ifdef USE_WIFI_telnet_menu	// do we need WiFi at all?
 
+#define WIFI_DEBUG
 
 /* **************************************************************** */
 /* **************************************************************** */
 
+// if the harmonical connects to your wavelan as STATION these are the credentials:
 // ***EITHER*** put your WLAN ssid and password in next 2 lines:
-char ssid[32] = "please_set_your_WiFi_SSID";
-char password[32] = "LetItBeSTRONG";
+//char STA_ssid[32] = "please_set_your_WiFi_SSID";
+//char password[32] = "LetItBeSTRONG";
 
 // *** OR *** comment out above 2 lines,  put that stuff in a file and #include it:
-//#include "/home/you/WiFi-credentials.h"	// let the name be <something>.h
+#include "/home/dada/WiFi-credentials.h"	// let the name be <something>.h
+
+
+// if the harmonical acts as ACCESS POINT these are the credentials:
+char AP_ssid[32] = "HARMONICAL generic";
+char AP_password[32] = "open";
 
 /* **************************************************************** */
 /* **************************************************************** */
 
-  #define AUTO_CONNECT_WIFI			// start WiFi on booting?
+//#define WIFI_DEFAULT_MODE	WIFI_AP		// WORK IN PROGRESS ################ FIXME: ################
+
+#define WIFI_DEFAULT_MODE	WIFI_STA	// working
+
+
+//  #define AUTOSTART_WIFI	// start WiFi when booting?  ***configure the following line***
+//#define AUTOSTART_WIFI	// start WiFi when booting
 
 
 /* **************************************************************** */
@@ -42,66 +55,161 @@ const char *str_status[]= {
 const char *str_mode[]= { "WIFI_OFF", "WIFI_STA", "WIFI_AP", "WIFI_AP_STA" };
 
 
-bool connectWifi() {
-  MENU.out("connecting WiFi to SSID: ");
+WiFiMode_t selected_wifi_mode=WIFI_DEFAULT_MODE;
+
+bool connectWifi(WiFiMode_t selected_wifi_mode, const char* ssid, const char* password) {
+  switch (selected_wifi_mode) {
+  case WIFI_AP:
+    // IP 0x0707A8C0	// 192.168.7.7
+    break;
+  case WIFI_STA:
+    break;
+
+  default:
+    MENU.outln(F("ERROR: selected_wifi_mode"));	// ################ FIXME: ################
+  }
+
+
+  MENU.out(F("connecting to SSID: "));
   MENU.out(ssid); MENU.tab();
 
   // use in case of mode problem
   WiFi.disconnect();
-  // switch to Station mode
-  if (WiFi.getMode() != WIFI_STA) {
-    WiFi.mode(WIFI_STA);
+  // switch to selected_wifi_mode
+  if (WiFi.getMode() != selected_wifi_mode) {
+    WiFi.mode(selected_wifi_mode);
   }
 
   WiFi.begin (ssid, password);
-  // WiFi.printDiag(Serial);	// debugging
+  yield();
+  if (WiFi.getMode() != selected_wifi_mode) {
+    WiFi.mode(selected_wifi_mode);
+    yield();
+  }
 
-  // 10 seconds to establish connection
+  WiFi.printDiag(Serial);	// debugging	// ################ FIXME: ################
+
+  // 20 seconds to establish connection
   unsigned long startTime = millis();
-  while (WiFi.status() != WL_CONNECTED && millis() - startTime < 10000) {
+  while (WiFi.status() != WL_CONNECTED && millis() - startTime < 20000) {
     delay(100);
-    #if defined(ESP32) || defined(ESP8266)
-      yield();	// delay should do that, but who knows...
-    #endif
     MENU.out(".");
+    yield();	// delay should do that, but who knows...
   }
 
   // Check connection
   if (WiFi.status() == WL_CONNECTED) {
     MENU.outln(" connected");
+
+    MENU.out(F("WiFi: "));
+    MENU.out(ssid); MENU.tab();
     MENU.out("IP address: ");
     MENU.IPstring(WiFi.localIP());
     MENU.tab();
+
     return true;	// connected :)
   }
 
   // failed:
   MENU.outln("\nconnect FAILED\tsee file 'WiFi_stuff.ino'");
 
+#if defined WIFI_DEBUG
+  WiFi.printDiag(Serial);	// debugging	// ################ FIXME: ################
+#endif
+
   return false;
-}  // connectWiFi()
+}  // connectWiFi(...)
 
 
-bool setup_wifi_telnet() {
-  if(! connectWifi())
-    return false;
+// setup_wifi_telnet(?)  might be called (void) from AUTOSTART_WIFI
+bool setup_wifi_telnet(WiFiMode_t selected_wifi_mode=WIFI_DEFAULT_MODE) {
+  switch_wifi_mode(selected_wifi_mode);
+
+  switch (selected_wifi_mode) {
+  case WIFI_AP:
+//	    if (! WiFi.softAP(AP_ssid, AP_password))
+//	      return false;
+    return WiFi.softAP("AP_ssid", "AP_password");
+    return WiFi.softAP(AP_ssid, AP_password);
+    break;
+
+  case WIFI_STA:
+    if(! connectWifi(selected_wifi_mode, STA_ssid, password))
+      return false;
+    break;
+
+  default:
+    MENU.outln("setup_wifi_telnet ERROR: wifi_mode");	// ################ FIXME:	################
+  }
 
   if (WiFi.status() == WL_CONNECTED) {
-    MENU.out("WiFi mode: ");
-    MENU.out(str_mode[WiFi.getMode()]);
-    MENU.out("\tstatus: " );
-    MENU.outln (str_status[WiFi.status()]);
+
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      MENU.outln(F("starting telnet server"));
 
     telnet_server.begin();
     telnet_server.setNoDelay(true);
-    MENU.out("\nWLAN MENU  telnet ");
-    MENU.IPstring(WiFi.localIP());
-    MENU.outln(" port 23");
+
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      WiFi_info();
 
     return true;
-  } else
+
+  } else {
     MENU.outln("WiFi connect FAILED.");
+    WiFi_info();
+  }
+
   return false;
+}
+
+
+#include "esp_wifi.h"
+bool setup_AP() {
+  MENU.out(F("start WiFi AP\t"));
+  // see:  viewtopic.php?f=13&t=1317&p=5942&hilit=c+initializer#p5942
+  MENU.out(AP_ssid);
+  MENU.tab();
+  MENU.outln(AP_password);
+
+  // esp_wifi_set_mode(WIFI_MODE_AP);
+  WiFi.mode(selected_wifi_mode);
+  yield();
+
+  wifi_config_t ap_config = { };
+  strcpy((char*) ap_config.ap.ssid, AP_ssid);
+  strcpy((char*) ap_config.ap.password, AP_password);
+
+//  ap_config.ap.ssid = (uint8_t) AP_ssid;
+//  ap_config.ap.password = (uint8_t) AP_password;
+
+
+
+//  // esp_wifi_set_mode(WIFI_MODE_AP);
+//  WiFi.mode(selected_wifi_mode);
+//  yield();
+
+  esp_wifi_set_config(WIFI_IF_AP, &ap_config);
+  yield();
+
+  esp_wifi_start();
+  yield();
+}
+
+
+bool switch_wifi_mode(WiFiMode_t selected_wifi_mode) {
+  if (WiFi.getMode() == selected_wifi_mode)
+    return true;
+
+  WiFi.mode(selected_wifi_mode);
+  if (WiFi.getMode() == selected_wifi_mode)
+    return true;
+
+  // insist in case of mode problems:
+  WiFi.disconnect();
+  WiFi.mode(selected_wifi_mode);
+
+  return(WiFi.getMode() == selected_wifi_mode);
 }
 
 
@@ -120,53 +228,137 @@ void WiFi_scan() {
       MENU.out("       \t(");
       MENU.out(WiFi.RSSI(i));
       MENU.out(")");
+#ifndef ESP32	// ################ FIXME: ESP32 ################
       MENU.outln((WiFi.encryptionType(i) == ENC_TYPE_NONE)?" ":"*");
+#endif
     }
   }
 }
 
+void WiFi_info() {
+  int status;
+
+  MENU.out(F("mode"));
+  MENU.tab();
+  int mode=WiFi.getMode();
+  MENU.out(mode);
+  MENU.tab();
+  MENU.outln(str_mode[mode]);
+  if (mode) {	// mode==0 would crash
+    MENU.out(F("status"));
+    MENU.tab();
+    yield();
+    status=WiFi.status();
+    MENU.out(status);
+
+    MENU.tab();
+    if (status == 255)
+      MENU.outln(F("(none)"));
+    else {
+      MENU.outln(str_status[status]);
+    }
+  }
+
+//	MENU.IPstring(WiFi.localIP());
+//	MENU.outln(" port 23");
+
+  MENU.ln();
+
+#if defined WIFI_DEBUG
+  WiFi.printDiag(Serial);	// debugging	// ################ FIXME: ################
+#endif
+}
+
+//	wifi_config_t APconfig = {
+//	  .ap = {
+//	    .ssid="GUGUseli",
+//	    .ssid_id=0,
+//	  }
+//	};
+
 
 /* **************************************************************** */
 // WiFi menu:
+
 // display function for the WiFi_menu page:
 void WiFi_menu_display() {
-  MENU.outln(F("WiFi menu"));
+  MENU.ln();
+  WiFi_info();
+  MENU.ln();
 
-  MENU.out(F("S=ssid  P=passwd  c=connect  x=disconnect  X=stop  s=scan"));
+  MENU.out(F("selected mode: "));
+  MENU.out(str_mode[selected_wifi_mode]);
+  MENU.tab();
+  MENU.ln();
 
-  //  WiFi_info();
+  MENU.outln(F(".=info a=API  b=STA  c=connect  x=disconnect  X=stop  s=scan  S=ssid  p=passwd"));
 }
 
 
 // reaction function for the WiFi_menu page:
 bool WiFi_menu_reaction(char token) {
   switch (token) {
-  case 'S':	// enter SSID
+
+  case 'A':
+    setup_AP();
+    WiFi_info();
     break;
 
-  case 'P':	// enter password
+  case 'D':	// debugging
+    WiFi.softAP("GUGUS", "dadadeli88");
+    WiFi_info();
+    break;
+
+  case '.':
+    WiFi_info();
+    break;
+
+  case 'a':
+    selected_wifi_mode=WIFI_AP;
+    switch_wifi_mode(selected_wifi_mode);
+    WiFi_info();
+    break;
+
+  case 'b':
+    selected_wifi_mode=WIFI_STA;
+    switch_wifi_mode(selected_wifi_mode);
+    WiFi_info();
     break;
 
   case 'c':	// connect
-    setup_wifi_telnet();
-
-    if (MENU.verbosity >= VERBOSITY_SOME)
-      ;
-//      WiFi_info();
+    setup_wifi_telnet(selected_wifi_mode);
     break;
 
   case 'x':	// disconnect
     WiFi.disconnect();
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      WiFi_info();
     break;
 
-  case 'X':	// stop
+  case 'X':	// stop!
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      MENU.outln(F("STOP wifi"));
+
     WiFi.disconnect();
     WiFi.mode(WIFI_OFF);
+#ifndef ESP32	// ################ FIXME: ESP32 ################
     WiFi.forceSleepBegin();
+#endif
+
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      WiFi_info();
     break;
 
   case 's':	// scan
     WiFi_scan();
+    break;
+
+  case 'S':	// enter SSID
+    MENU.outln(F("not implemented yet"));	// ################ FIXME:  ################
+    break;
+
+  case 'p':	// enter password
+    MENU.outln(F("not implemented yet"));	// ################ FIXME:  ################
     break;
 
   default:

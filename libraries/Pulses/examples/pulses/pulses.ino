@@ -402,9 +402,9 @@ void setup() {
   #include "array_descriptor_setup.h"
   MENU.outln(F("\nhttp://github.com/reppr/pulses/\n"));
 
-#ifdef USE_WIFI_telnet_menu
-  #ifdef AUTO_CONNECT_WIFI			// start wifi on booting?
-    setup_wifi_telnet();
+#ifdef USE_WIFI_telnet_menu		// do we use WIFI?
+  #ifdef AUTOSTART_WIFI		// start wifi on booting? see: WiFi_stuff.ino
+    AUTOSTART_WIFI
   #endif
 #else // WiFi not in use, switch it off:
 
