@@ -949,6 +949,7 @@ bool maybe_stop_sweeping() {
 
 
 /* **************************************************************** */
+// ################ FIXME: FIXME! ################
 void init_click_pins_OutLow() {		// make them GPIO, OUTPUT, LOW
 /* uint8_t click_pin[CLICK_PULSES];
    hardware pins for click_pulses:
@@ -958,28 +959,74 @@ void init_click_pins_OutLow() {		// make them GPIO, OUTPUT, LOW
   int pin;
 
   for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+    pin=click_pin[pulse];
+
 #ifdef ESP8266	// pin 14 must be switched to GPIO on ESP8266
     // http://www.esp8266.com/wiki/lib/exe/detail.php?id=esp8266_gpio_pin_allocations&media=pin_functions.png
-    if (click_pin[pulse]==14)
-      pinMode(click_pin[pulse], FUNCTION_3); // pin 14 must be switched to GPIO on ESP8266
+    if (pin==14)
+      pinMode(pin, FUNCTION_3); // pin 14 must be switched to GPIO on ESP8266
 #elif defined ESP32
     // see http://wiki.ai-thinker.com/_media/esp32/docs/esp32_chip_pin_list_en.pdf
     //    uint8_t click_pin[CLICK_PULSES] = { 36, 39, 34, 13, 23, 5, 17, 16};	//  ESP32  KALIMBA7_v2  8 clicks, 7 used
-    // PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[click_pin[pulse]], PIN_FUNC_GPIO);
-    pin=click_pin[pulse];
+//    PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[pin], PIN_FUNC_GPIO);
+
+    //    gpio_pad_select_gpio(pin);
+    //    PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[pin], PIN_FUNC_GPIO);
+    //    if (pin==14)
+    //     pinMode(pin, FUNCTION_3); // pin 14 must be switched to GPIO on ESP8266
+
+    // https://github.com/espressif/esp-idf/issues/143
+    #include "driver/gpio.h"
+
+//    if (GPIO_IS_VALID_OUTPUT_GPIO(pin) && (pin < 6 || pin > 11))
+//      {
+//	MENU.out("valid "); MENU.outln(pin);
+//	gpio_set_direction(pin, GPIO_MODE_OUTPUT);  //Latch
+//      }
+//    else
+//      MENU.out("invalid "); MENU.outln(pin);
+
+
+
     switch (pin) {
-    case 13:
+    case 2:
+      pinMode(pin, FUNCTION_3); 	// does not help here?
+      //      gpio_pad_select_gpio(pin);
+      //      PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[GPIO_NUM_2], PIN_FUNC_GPIO);
+////      /* gpio2 route to digital io_mux */
+// esp32/tools/sdk/include/soc/soc/rtc_io_reg.h
+      #include "soc/rtc_io_reg.h"
+      //      #include "soc/rtc.h"
+      //      #include "soc/io_mux_reg.h"
+
+      // REG_CLR_BIT(RTC_IO_XTAL_32K_PAD_REG, RTC_IO_X2P_MUX_SEL);
+      break;
+//    case 12:	// maybe error?
+//      pinMode(pin, FUNCTION_3);
+//      break;
     case 14:
-    case 15:
-    case 17:
-    case 12:	// maybe error?
-      pinMode(pin, FUNCTION_3);
+      //      PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[GPIO_NUM_14], PIN_FUNC_GPIO);
+//
+//      gpio_config(GPIO_NUM_14);
+      pinMode(pin, FUNCTION_3); 	// does not help here?
+      break;
+    case 32:
+      //      PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[GPIO_NUM_32], PIN_FUNC_GPIO);
+      pinMode(pin, FUNCTION_3); 	// does not help here?
+////      /* gpio32 route to digital io_mux */
+      REG_CLR_BIT(RTC_IO_XTAL_32K_PAD_REG, RTC_IO_X32P_MUX_SEL);
+      break;
+    case 33:
+      //      PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[GPIO_NUM_33], PIN_FUNC_GPIO);
+      pinMode(pin, FUNCTION_3); 	// does not help here?
+////      /* gpio33 route to digital io_mux */
+////      REG_CLR_BIT(RTC_IO_XTAL_32K_PAD_REG, RTC_IO_X33N_MUX_SEL);
       break;
     }
 #endif
 
-    pinMode(click_pin[pulse], OUTPUT);
-    digitalWrite(click_pin[pulse], LOW);
+    pinMode(pin, OUTPUT);
+    digitalWrite(pin, LOW);
   }
 }
 
