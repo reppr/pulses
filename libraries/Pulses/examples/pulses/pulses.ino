@@ -309,6 +309,69 @@ void display_names(char** names, int count, int selected) {
 }
 
 
+// reset, remove all (flagged) pulses, restart selections at none
+int reset_all_flagged_pulses_GPIO_OFF() {
+  int cnt=0;
+  for (int pulse=0; pulse<pl_max; pulse++) {  // tabula rasa
+    if (PULSES.pulses[pulse].flags) {
+      PULSES.init_pulse(pulse);
+      cnt++;
+    }
+  }
+
+  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
+  PULSES.init_click_pulses();
+  init_click_pins_OutLow();		// switch them on LOW, output	current off, i.e. magnets
+  PULSES.selected_pulses=0L;		// restart selections at none
+
+  PULSES.fix_global_next();
+
+  if (MENU.verbosity) {
+    MENU.out(F("\nremoved all pulses ")); MENU.outln(cnt);
+    MENU.outln(F("switched pins off."));
+  }
+
+  return cnt;
+};
+
+
+// make selected pulses jiffle throwers
+void en_jiffle_throw_selected() {
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if (PULSES.selected_pulses & (1 << pulse))
+      en_jiffle_thrower(pulse, jiffle);
+
+  PULSES.fix_global_next();	// just in case?
+  PULSES.check_maybe_do();	// maybe do it *first*
+
+  if (MENU.maybe_display_more()) {
+    MENU.ln();
+    selected_or_flagged_pulses_info_lines();
+  }
+};
+
+
+// make selected pulses click
+int en_click_selected() {
+  int cnt=0;
+
+  // we work on voices anyway, regardless dest
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if (PULSES.selected_pulses & (1 << pulse))
+      if (en_click(pulse))
+	cnt++;
+
+  PULSES.check_maybe_do();	// maybe do it *first*
+
+  if (MENU.maybe_display_more()) {
+    MENU.ln();
+    selected_pulses_info_lines();
+  }
+
+  return cnt;
+	  };
+
+
 /* **************************************************************** */
 // user interface variables:
 
@@ -1053,46 +1116,55 @@ void out_noFreePulses() {
 
 
 // make an existing pulse to a click pulse:
-void en_click(int pulse)
-{
+bool en_click(int pulse) {
   if (pulse != ILLEGAL) {
-    PULSES.pulses[pulse].periodic_do = (void (*)(int)) &click;
-    PULSES.pulses[pulse].char_parameter_1 = click_pin[pulse];
-    pinMode(PULSES.pulses[pulse].char_parameter_1, OUTPUT);
-    // digitalWrite(PULSES.pulses[pulse].char_parameter_1, LOW);	// ################
+    if (pulse < CLICK_PULSES) {
+      PULSES.pulses[pulse].periodic_do = (void (*)(int)) &click;
+      PULSES.pulses[pulse].char_parameter_1 = click_pin[pulse];
+      pinMode(PULSES.pulses[pulse].char_parameter_1, OUTPUT);
+      return true;
+    }
   }
-}
 
+  return false;
+};
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
 // make an existing pulse to a sweep click pulse:
-void en_sweep_click(int pulse)
+int en_sweep_click(int pulse)
 {
+  int cnt=0;
+
   if (pulse != ILLEGAL) {
-    en_click(pulse);
-    PULSES.pulses[pulse].periodic_do = (void (*)(int)) &sweep_click;
+    if (en_click(pulse)) {
+      PULSES.pulses[pulse].periodic_do = (void (*)(int)) &sweep_click;
+      cnt++;
+    }
   }
-}
+
+  return cnt;
+};
+
 
 
 // make an existing pulse to a sweep_click_0 pulse:
 void en_sweep_click_0(int pulse)
 {
-  if (pulse != ILLEGAL) {
-    en_click(pulse);
-    PULSES.pulses[pulse].ulong_parameter_1 = PULSES.pulses[pulse].period.time;
-    PULSES.pulses[pulse].periodic_do = (void (*)(int)) &sweep_click_0;
-  }
-}
+  if (pulse != ILLEGAL)
+    if (en_click(pulse)) {
+      PULSES.pulses[pulse].ulong_parameter_1 = PULSES.pulses[pulse].period.time;
+      PULSES.pulses[pulse].periodic_do = (void (*)(int)) &sweep_click_0;
+    }
+};
 
 
 void en_tuned_sweep_click(int pulse)
 {
-  if (pulse != ILLEGAL) {
-    en_click(pulse);
-    PULSES.activate_tuning(pulse);
-    PULSES.pulses[pulse].periodic_do = (void (*)(int)) &tuned_sweep_click;
-  }
+  if (pulse != ILLEGAL)
+    if (en_click(pulse)) {
+      PULSES.activate_tuning(pulse);
+      PULSES.pulses[pulse].periodic_do = (void (*)(int)) &tuned_sweep_click;
+    }
 }
 #endif	// #ifdef IMPLEMENT_TUNING	implies floating point
 
@@ -3041,18 +3113,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'c':	// en_click
-    // we work on voices anyway, regardless dest
-    for (int pulse=0; pulse<voices; pulse++)
-      if (PULSES.selected_pulses & (1 << pulse))
-	en_click(pulse);
-
-    PULSES.check_maybe_do();	// maybe do it *first*
-
-    if (MENU.maybe_display_more()) {
-      MENU.ln();
-      selected_pulses_info_lines();
-    }
-
+    en_click_selected();
     break;
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
@@ -3199,18 +3260,7 @@ bool menu_pulses_reaction(char menu_input) {
 #endif	// #ifdef IMPLEMENT_TUNING	implies floating point
 
   case 'j':	// en_jiffle_thrower
-    // we work on voices anyway, regardless dest
-    for (int pulse=0; pulse<voices; pulse++)
-      if (PULSES.selected_pulses & (1 << pulse))
-	en_jiffle_thrower(pulse, jiffle);
-
-    PULSES.fix_global_next();	// just in case?
-    PULSES.check_maybe_do();	// maybe do it *first*
-
-    if (MENU.maybe_display_more()) {
-      MENU.ln();
-      selected_or_flagged_pulses_info_lines();
-    }
+    en_jiffle_throw_selected();
     break;
 
   case 'J':	// select, edit, load jiffle
@@ -3576,26 +3626,7 @@ bool menu_pulses_reaction(char menu_input) {
 #endif
 */
     // reset, remove all (flagged) pulses, restart selections at none
-    { int cnt=0;
-      for (int pulse=0; pulse<pl_max; pulse++) {  // tabula rasa
-	if (PULSES.pulses[pulse].flags) {
-	  PULSES.init_pulse(pulse);
-	  cnt++;
-	}
-      }
-
-      // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-      PULSES.init_click_pulses();
-      init_click_pins_OutLow();		// switch them on LOW, output	current off, i.e. magnets
-      PULSES.selected_pulses=0L;		// restart selections at none
-
-      PULSES.fix_global_next();
-
-      if (MENU.verbosity) {
-	MENU.out(F("\nremoved all pulses ")); MENU.outln(cnt);
-	MENU.outln(F("switched pins off."));
-      }
-    }
+    reset_all_flagged_pulses_GPIO_OFF();
     break;
 
   case 'Z':
@@ -3942,7 +3973,7 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 29:				// KALIMBA7 tuning
-	MENU.play_KB_macro("X");
+	reset_all_flagged_pulses_GPIO_OFF();
 
 #if defined KALIMBA7_v2	// ESP32 version  european_pentatonic
 	ratios = european_pentatonic;
@@ -3959,9 +3990,8 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
 	display_name5pars("E29 KALIMBA7 tuning", inverse, voices, multiplier, divisor, sync);
-	// PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate
-	//      MENU.play_KB_macro("j -.");
-	MENU.play_KB_macro("cn.");		// for tuning ;)
+	en_click_selected();							// for tuning ;)
+	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate
 	MENU.ln();
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -3981,9 +4011,9 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
 	display_name5pars("E30 KALIMBA7 jiff", inverse, voices, multiplier, divisor, sync);
-	// PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate
-	//      MENU.play_KB_macro("j -.");
-	MENU.play_KB_macro("jn");
+	en_jiffle_throw_selected();
+	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate
+
 	MENU.ln();
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -4000,7 +4030,8 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
 	display_name5pars("E31 KALIMBA7 jiff", inverse, voices, multiplier, divisor, sync);
-	MENU.play_KB_macro("jn");
+	en_jiffle_throw_selected();
+	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -4018,7 +4049,8 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
 	display_name5pars("E32 ESP32_12", inverse, voices, multiplier, divisor, sync);
-	MENU.play_KB_macro("jn");
+	en_jiffle_throw_selected();
+	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -4035,7 +4067,8 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
 	display_name5pars("minor", inverse, voices, multiplier, divisor, sync);
-	MENU.play_KB_macro("jn");
+	en_jiffle_throw_selected();
+	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -4052,7 +4085,8 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
 	display_name5pars("major", inverse, voices, multiplier, divisor, sync);
-	MENU.play_KB_macro("jn");
+	en_jiffle_throw_selected();
+	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -4069,7 +4103,8 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
 	display_name5pars("tetra", inverse, voices, multiplier, divisor, sync);
-	MENU.play_KB_macro("jn");
+	en_jiffle_throw_selected();
+	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -4087,7 +4122,8 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
 	display_name5pars("BIG major", inverse, voices, multiplier, divisor, sync);
-	MENU.play_KB_macro("jn");
+	en_jiffle_throw_selected();
+	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -4096,7 +4132,7 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 37:	// Guitar
-	MENU.play_KB_macro("X");
+	reset_all_flagged_pulses_GPIO_OFF();
 
 	PULSES.time_unit=1000000;
 
@@ -4195,8 +4231,8 @@ bool menu_pulses_reaction(char menu_input) {
 //	display_name5pars("GUITAR", inverse, voices, multiplier, divisor, sync);
 
 	tune_2_scale(voices, multiplier, divisor, sync, selected_ratio, ratios);
-
-	MENU.play_KB_macro("jn");
+	en_jiffle_throw_selected();
+	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
