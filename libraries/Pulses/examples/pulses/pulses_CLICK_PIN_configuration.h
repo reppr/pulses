@@ -17,7 +17,9 @@
   //               also for heltec WIFI_Kit_32 (with OLED) https://robotzero.one/heltec-wifi-kit-32/
     uint8_t click_pin[CLICK_PULSES] =
       {23, 5, 17, 16, 4, 2, 15,		32, 33, 27, 14, 13, };	//  ESP32_12_v0  12 clicks
-  /* layout ESP-WROOM-32	heltec WIFI_Kit_32 (OLED)
+  //                     ?               ?   ?       ?          // these pins need configuration FIXME: ################
+
+/* layout ESP-WROOM-32	heltec WIFI_Kit_32 (OLED)
    GND 1,  2, ...	    6     |     7               12
    WIFI                      USB  |  WIFI		    USB  |
   */
@@ -36,6 +38,14 @@
 
     uint8_t click_pin[CLICK_PULSES] = {5,  4,  0,  2,  14, 13, 15 };	// ESP8266  KALIMBA7_v1  7 clicks, 3rd try
 //  uint8_t click_pin[CLICK_PULSES] = {D1, D2, D3, D4, D5, D7, D8 };	// 7 clicks, 3rd try
+
+  #elif defined GUITAR_v0
+    #undef CLICK_PULSES
+    #define CLICK_PULSES	16	// fake for DAC output ;)
+
+    // ESP32s module 2x19 pins
+    uint8_t click_pin[CLICK_PULSES] = { 32, 33, 14, 13, 23, 5, 17, 16};	//  GUITAR_v0 == KALIMBA7_v2  8 clicks
+
 
   #elif defined ESP8266	// configure PINs on ESP8266	general case
    /*
