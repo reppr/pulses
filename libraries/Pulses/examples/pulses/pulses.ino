@@ -4066,10 +4066,12 @@ bool menu_pulses_reaction(char menu_input) {
 	ratios = minor_scale;		// default e minor
 
 	jiffle = ting4096;		// default jiffle
-	voices = 16;			// for DAC output
+	//	voices = 16;			// for DAC output
+	voices = 15;			// default (diatonic)	// for DAC output
 	select_n(voices);
 
 	if(MENU.cb_peek()!=EOF) {		// second letters e E a A	e|a  minor|major
+	  //	 ################ FIXME: ################
 	  switch (MENU.cb_peek()) {
 	  case 'e':
 	    MENU.drop_input_token();
@@ -4085,12 +4087,14 @@ bool menu_pulses_reaction(char menu_input) {
 	  case 'a':
 	    MENU.drop_input_token();
 	    selected_ratio = 4;
+	    divisor = 440;
 	    ratios=minor_scale;
 	    break;
 
 	  case 'A':
 	    MENU.drop_input_token();
 	    selected_ratio = 5;
+	    divisor = 440;
 	    ratios=major_scale;
 	    break;
 	  }
