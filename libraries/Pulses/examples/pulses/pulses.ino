@@ -147,13 +147,12 @@ char * ratio_names[] = {
       "minor_scale",		// 4
       "major_scale",		// 5
       "tetrachord",		// 6
-      "ratios_quot",		// 7
-      "ratios_int",		// 8
-      "ratios_rationals",	// 9
-      "octaves",		// 10
-      "octaves_fifths",		// 11
-      "octaves_fourths",	// 12
-      "octaves_fourths_fifths",	// 13
+      "ratios_int",		// 7
+      "ratios_rationals",	// 8
+      "octaves",		// 9
+      "octaves_fifths",		// 10
+      "octaves_fourths",	// 11
+      "octaves_fourths_fifths",	// 12
   };
 
   #define n_ratio_names (sizeof (ratio_names) / sizeof (const char *))
@@ -169,6 +168,7 @@ unsigned int ratios_octaves_fourths[] = {1,1, 3,4, 0,0};		// zero terminated
 unsigned int ratios_octaves_fourths_fifths[] = {1,1, 3,4, 2,3, 0,0};	// zero terminated
 
 unsigned int ratios_int[]  = {1,1, 2,1, 3,1, 4,1, 5,1, 6,1, 7,1, 8,1, 0,0};  // zero terminated
+unsigned int overnotes[]  = {1,1, 1,2, 1,3, 1,4, 1,5, 1,6, 1,7, 1,8, 1,9, 1,10, 1,11, 1,12, 1,13, 1,14, 1,15, 1,16, 0,0};
 unsigned int ratios_rationals[]  = {1,1, 1,2, 2,3, 3,4, 5,6, 6,7, 7,8, 8,9, 9,10, 0,0};  // zero terminated
 
 unsigned int european_pentatonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 0,0};	// scale each octave	zero terminated
@@ -1422,8 +1422,7 @@ int select_n(unsigned int n) {
    each is the integer representation of a rational number
    very useful for all kind of things like scales, chords, rhythms */
 
-int prepare_ratios(bool inverse, int voices, unsigned long multiplier, unsigned long divisor, int sync, unsigned int *ratios,
-		   bool octaves=true) {
+int prepare_ratios(bool inverse, int voices, unsigned long multiplier, unsigned long divisor, int sync, unsigned int *ratios, bool octaves=true) {
 /* prepare a couple of pulses based on a ratio array.
    up to 'voices' pulses are created among the selected ones.
    return number of prepared pulses */
@@ -3435,23 +3434,31 @@ bool menu_pulses_reaction(char menu_input) {
     if (MENU.maybe_display_more())
       MENU.out(F("ratio "));
 
-    selected_ratio=MENU.numeric_input(-1);
-    switch (selected_ratio) {
-    case 0:
-      ratios = ratios_RAM;
-      break;
-    default:
-      if (selected_ratio >= n_ratio_names) {
-	selected_ratio=0;
-	if (MENU.verbosity >= VERBOSITY_SOME)
-	  MENU.outln_invalid();
+    // 'R!' tune selected pulses to ratio starting from lowest
+    if (MENU.cb_peek()=='!') {
+      tune_2_scale(voices, multiplier, divisor, sync, selected_ratio, ratios);
+    } else {
+      selected_ratio=MENU.numeric_input(-1);
+      switch (selected_ratio) {
+      case ILLEGAL:
+      case 0:
+	ratios = ratios_RAM;
+	break;
+      default:
+	if (selected_ratio >= n_ratio_names) {
+	  selected_ratio=0;
+	  if (MENU.verbosity >= VERBOSITY_SOME)
+	    MENU.outln_invalid();
+	} else				// trailing '!' applies tuning
+	  if (MENU.cb_peek()=='!')
+	    tune_2_scale(voices, multiplier, divisor, sync, selected_ratio, ratios);
       }
 #ifndef RAM_IS_SCARE	// enough RAM?	display jiffle names
-	display_names(ratio_names, n_ratio_names, selected_ratio);
+      display_names(ratio_names, n_ratio_names, selected_ratio);
 #endif
-      break;
     }
-//    display_ratio(selected_ratio);
+    display_arr(ratios, 2);
+
     break;
 
   case 'f':	// en_info
