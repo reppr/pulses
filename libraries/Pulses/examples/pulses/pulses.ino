@@ -4122,16 +4122,22 @@ bool menu_pulses_reaction(char menu_input) {
 	  MENU.drop_input_token();
 	  selected_ratio = 13;
 	  ratios = ratios_octaves_fourths_fifths;
+	  multiplier *=8;
+	  divisor /= 2;
 	  break;
 	case '2':			// 2  octaves fifths
 	  MENU.drop_input_token();
 	  selected_ratio = 11;
 	  ratios = ratios_octaves_fifths;
+	  multiplier *= 4;
+	  divisor /= 4;
 	  break;
 	case '1':			// 1  octaves
 	  MENU.drop_input_token();
 	  selected_ratio = 10;
 	  ratios = ratios_octaves;
+	  multiplier *= 8;	// ################ FIXME: ################
+	  divisor /= 8;
 	  break;
 	}
 
