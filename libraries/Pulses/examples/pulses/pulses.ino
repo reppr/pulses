@@ -4193,6 +4193,22 @@ bool menu_pulses_reaction(char menu_input) {
 	    divisor = 440;
 	    scale=major_scale;
 	    break;
+
+	  case 'd':
+	    MENU.drop_input_token();
+	    selected_scale = 4;
+	    divisor = 294;	// 293.66 = D4
+	    // divisor = 147;	// 146.83 = D3
+	    scale=minor_scale;
+	    break;
+
+	  case 'D':
+	    MENU.drop_input_token();
+	    selected_scale = 5;
+	    divisor = 294;	// 293.66 = D4
+	    // divisor = 147;	// 146.83 = D3
+	    scale=major_scale;
+	    break;
 	  }
 	}
 
