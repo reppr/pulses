@@ -459,10 +459,15 @@ void setup() {
 #endif
 
   delay(STARTUP_DELAY);
-  Serial.flush();
+
+  // try to get rid of menu input garbage, "dopplet gnaeht hebt vilicht besser" ;)
+  while (Serial.available())  { Serial.read(); yield(); }
+  while (MENU.cb_peek() != EOF) { MENU.drop_input_token(); yield(); }
+
   delay(STARTUP_DELAY);
 
   #include "array_descriptor_setup.h"
+
   MENU.outln(F("\nhttp://github.com/reppr/pulses/\n"));
 
 #ifdef USE_WIFI_telnet_menu		// do we use WIFI?
@@ -559,6 +564,10 @@ void setup() {
   // informations about alive pulses:
   MENU.ln();
   selected_or_flagged_pulses_info_lines();
+
+  // try to get rid of menu input garbage, "dopplet gnaeht hebt vilicht besser" ;)
+  while (Serial.available())  { Serial.read(); yield(); }
+  while (MENU.cb_peek() != EOF) { MENU.drop_input_token(); yield(); }
 };
 
 
