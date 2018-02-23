@@ -121,55 +121,55 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 
 
 /* **************************************************************** */
-// ratios, scales
-int selected_ratio=ILLEGAL;
+// scales
+int selected_scale=ILLEGAL;
 
-#ifndef RATIOS_RAM_SIZE	// ratios on small harware ressources, FIXME: test	################
-  #define RATIOS_RAM_SIZE 9*2+2	// small buffer might fit on simple hardware
+#ifndef SCALES_RAM_SIZE	// scales on small harware ressources, FIXME: test	################
+  #define SCALES_RAM_SIZE 9*2+2	// small buffer might fit on simple hardware
 #endif
 
-#ifdef RATIOS_RAM_SIZE
-  // ratios:
-  unsigned int ratios_RAM[RATIOS_RAM_SIZE] = {0};
-  unsigned int ratios_RAM_length = RATIOS_RAM_SIZE;
-  unsigned int ratios_write_index=0;
-  unsigned int *ratios=ratios_RAM;
+#ifdef SCALES_RAM_SIZE
+  // scales:
+  unsigned int scale_RAM[SCALES_RAM_SIZE] = {0};
+  unsigned int scale_RAM_length = SCALES_RAM_SIZE;
+  unsigned int scale_write_index=0;
+  unsigned int *scale=scale_RAM;
 #else
-  #error RATIOS_RAM_SIZE is not defined
-#endif // RATIOS_RAM_SIZE
+  #error SCALES_RAM_SIZE is not defined
+#endif // SCALES_RAM_SIZE
 
 #ifndef RAM_IS_SCARE	// enough RAM?
-char * ratio_names[] = {
-      "ratios_RAM",		// 0
+char * scale_names[] = {
+      "scale_RAM",		// 0
       "pentatonic_minor",	// 1
       "european_pentatonic",	// 2
       "mimic_japan_pentatonic",	// 3
       "minor_scale",		// 4
       "major_scale",		// 5
       "tetrachord",		// 6
-      "ratios_int",		// 7
-      "ratios_rationals",	// 8
+      "scale_int",		// 7
+      "scale_rationals",	// 8
       "octaves",		// 9
       "octaves_fifths",		// 10
       "octaves_fourths",	// 11
       "octaves_fourths_fifths",	// 12
   };
 
-  #define n_ratio_names (sizeof (ratio_names) / sizeof (const char *))
+  #define n_scale_names (sizeof (scale_names) / sizeof (const char *))
 #endif
 
 
-// ratiotabs *MUST* have 2 trailing zeros
+// scaletabs *MUST* have 2 trailing zeros
 
 
-unsigned int ratios_octaves[] = {1,1, 0,0};  				// zero terminated
-unsigned int ratios_octaves_fifths[] = {1,1, 2,3, 0,0};			// zero terminated
-unsigned int ratios_octaves_fourths[] = {1,1, 3,4, 0,0};		// zero terminated
-unsigned int ratios_octaves_fourths_fifths[] = {1,1, 3,4, 2,3, 0,0};	// zero terminated
+unsigned int octaves[] = {1,1, 0,0};  				// zero terminated
+unsigned int octaves_fifths[] = {1,1, 2,3, 0,0};			// zero terminated
+unsigned int octaves_fourths[] = {1,1, 3,4, 0,0};		// zero terminated
+unsigned int octaves_fourths_fifths[] = {1,1, 3,4, 2,3, 0,0};	// zero terminated
 
-unsigned int ratios_int[]  = {1,1, 2,1, 3,1, 4,1, 5,1, 6,1, 7,1, 8,1, 0,0};  // zero terminated
+unsigned int scale_int[]  = {1,1, 2,1, 3,1, 4,1, 5,1, 6,1, 7,1, 8,1, 0,0};  // zero terminated
 unsigned int overnotes[]  = {1,1, 1,2, 1,3, 1,4, 1,5, 1,6, 1,7, 1,8, 1,9, 1,10, 1,11, 1,12, 1,13, 1,14, 1,15, 1,16, 0,0};
-unsigned int ratios_rationals[]  = {1,1, 1,2, 2,3, 3,4, 5,6, 6,7, 7,8, 8,9, 9,10, 0,0};  // zero terminated
+unsigned int scale_rationals[]  = {1,1, 1,2, 2,3, 3,4, 5,6, 6,7, 7,8, 8,9, 9,10, 0,0};  // zero terminated
 
 unsigned int european_pentatonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 0,0};	// scale each octave	zero terminated
 
@@ -290,7 +290,7 @@ unsigned int tanboura[] ={1,2048,1536, 0,0,0, };	// length 3/4
 /* **************************************************************** */
 /*
   void display_names(char** names, int count, int selected);
-  display an array of strings like names of ratios, jiffles, experiments
+  display an array of strings like names of scales, jiffles, experiments
   mark the selected one with an asterisk
 */
 void display_names(char** names, int count, int selected) {
@@ -1322,7 +1322,7 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
     return 0;
   }
 
-  ratios = pentatonic_minor;
+  scale = pentatonic_minor;
   select_n(voices);
 
 #define COMPATIBILITY_PERIOD_3110	// sets the period directly
@@ -1334,30 +1334,30 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
       PULSES.pulses[pulse].period.overflow = 0;	// brute force for compatibility ;)
       en_jiffle_thrower(pulse, jiffle);
     }
-  int apply_ratios_on_period(int voices, unsigned int *ratios, bool octaves=true);	// this code is obsolete anyway ################
-  apply_ratios_on_period(voices, ratios, true);
+  int apply_scale_on_period(int voices, unsigned int *scale, bool octaves=true);	// this code is obsolete anyway ################
+  apply_scale_on_period(voices, scale, true);
 #else	// compatibility problems
-  prepare_ratios(false, voices, multiplier, divisor, sync, ratios, true);
+  prepare_scale(false, voices, multiplier, divisor, sync, scale, true);
 #endif
 
-  // int apply_ratios_on_period(int voices, unsigned int *ratios) {
+  // int apply_scale_on_period(int voices, unsigned int *scale) {
 
-  // prepare_ratios(false, voices, 4096*12, 41724, 0, ratios);
-  // prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+  // prepare_scale(false, voices, 4096*12, 41724, 0, scale);
+  // prepare_scale(false, voices, multiplier, divisor, sync, scale);
 //	  for (int pulse=0; pulse<pl_max; pulse++)
 //	    if (PULSES.selected_pulses & (1 << pulse)) {
 //	      PULSES.reset_and_edit_pulse(pulse, PULSES.time_unit);
 //	    }
 
-  //  apply_ratios_on_period(voices, ratios);
+  //  apply_scale_on_period(voices, scale);
 
   // jiffle=jiff4096;
-//  prepare_ratios(false, voices, 1, 1, 0, ratios);
-//  apply_ratios_on_period(voices, ratios);
-//  prepare_ratios(false, 8, 32768, 41727, 0, ratios);
-//	 ratios = pentatonic_minor;
+//  prepare_scale(false, voices, 1, 1, 0, scale);
+//  apply_scale_on_period(voices, scale);
+//  prepare_scale(false, 8, 32768, 41727, 0, scale);
+//	 scale = pentatonic_minor;
 //	  PULSES.selected_pulses=~0;
-//	  int prepared = prepare_ratios(false, 8, 32768, 41727, 0, ratios);
+//	  int prepared = prepare_scale(false, 8, 32768, 41727, 0, scale);
 //	  if (prepared != 8)
 //	    MENU.out(F("prepared ")); MENU.out(prepared); MENU.slash(); MENU.outln(voices);
 //	  select_flagged();
@@ -1417,16 +1417,16 @@ int select_n(unsigned int n) {
 
 
 // ****************************************************************
-/* ratios[]
-/* a ratios array has elements of multiplier/divisor pairs
+/* scale[]
+/* a scale array has elements of multiplier/divisor pairs
    each is the integer representation of a rational number
    very useful for all kind of things like scales, chords, rhythms */
 
-int prepare_ratios(bool inverse, int voices, unsigned long multiplier, unsigned long divisor, int sync, unsigned int *ratios, bool octaves=true) {
-/* prepare a couple of pulses based on a ratio array.
+int prepare_scale(bool inverse, int voices, unsigned long multiplier, unsigned long divisor, int sync, unsigned int *scale, bool octaves=true) {
+/* prepare a couple of pulses based on a scale array.
    up to 'voices' pulses are created among the selected ones.
    return number of prepared pulses */
-  if(ratios[0]==0)  return 0;	// error, no data
+  if(scale[0]==0)  return 0;	// error, no data
 
   if (inverse) {
     no_inverse();
@@ -1438,9 +1438,9 @@ int prepare_ratios(bool inverse, int voices, unsigned long multiplier, unsigned 
   unit /= divisor;
 
   if (octaves)
-    display_name5pars("prepare_ratios fill octaves", inverse, voices, multiplier, divisor, sync);
+    display_name5pars("prepare_scale fill octaves", inverse, voices, multiplier, divisor, sync);
   else
-    display_name5pars("prepare_ratios", inverse, voices, multiplier, divisor, sync);
+    display_name5pars("prepare_scale", inverse, voices, multiplier, divisor, sync);
 
   struct time now;
   PULSES.get_now();
@@ -1450,18 +1450,18 @@ int prepare_ratios(bool inverse, int voices, unsigned long multiplier, unsigned 
   struct time new_period;
   int pulse=0;
   int octave=1;	// 1,2,4,8,...
-  for (int ratio=0; prepared<=voices; ratio++) {
-    multiplier = ratios[ratio*2];
+  for (int note=0; prepared<=voices; note++) {
+    multiplier = scale[note*2];
     if (multiplier==0) {
       if (octaves) {
 	octave *= 2;	// one octave higher
-	ratio = 0;	// restart at first ratio
-	multiplier = ratios[ratio*2];
+	note = 0;		// restart at first note
+	multiplier = scale[note*2];
       } else
 	goto global_next;		// multiplier==0, end
     }
 
-    divisor = ratios[ratio*2+1];
+    divisor = scale[note*2+1];
     if (divisor==0)  goto global_next;	// divisor==0, error, end
     divisor *= octave;
 
@@ -1488,27 +1488,27 @@ int prepare_ratios(bool inverse, int voices, unsigned long multiplier, unsigned 
 }
 
 
-int apply_ratios_on_period(int voices, unsigned int *ratios, bool octaves=true) {
+int apply_scale_on_period(int voices, unsigned int *scale, bool octaves=true) {
   // FIXME: octaves are untested here ################
-  if(ratios[0]==0)  return 0;	// error, no data
+  if(scale[0]==0)  return 0;	// error, no data
 
   struct time new_period;
   int applied=0;
 
 //  int pulse=0;
   int octave=1;	// 1,2,4,8,...
-  for (int ratio=0, pulse=0; applied<voices; ratio++) {
-    multiplier = ratios[ratio*2];
+  for (int note=0, pulse=0; applied<voices; note++) {
+    multiplier = scale[note*2];
     if (multiplier==0) {
       if (octaves) {
 	octave *= 2;	// one octave higher
-	ratio = 0;	// restart at first ratio
-	multiplier = ratios[ratio*2];
+	note = 0;	// restart at first note
+	multiplier = scale[note*2];
       } else
 	goto global_next;		// multiplier==0, end
     }
 
-    divisor=ratios[ratio*2+1];
+    divisor=scale[note*2+1];
     if (divisor==0)
       goto global_next;		// divisor==0: error, end
     divisor *= octave;
@@ -1534,19 +1534,19 @@ int apply_ratios_on_period(int voices, unsigned int *ratios, bool octaves=true) 
 }
 
 
-bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, int sync, unsigned int selected_ratio, unsigned int *ratios) {
+bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, int sync, unsigned int selected_scale, unsigned int *scale) {
   int pulse;
   struct time base_period;
   base_period.overflow = 0;
   base_period.time = multiplier * PULSES.time_unit;
   base_period.time /= divisor;
 
-  if (selected_ratio != ILLEGAL) {
+  if (selected_scale != ILLEGAL) {
     if (MENU.verbosity >= VERBOSITY_SOME) {
       MENU.out(F("tune to scale "));
-      MENU.out(selected_ratio);
+      MENU.out(selected_scale);
       MENU.space();
-      MENU.out(ratio_names[selected_ratio]);
+      MENU.out(scale_names[selected_scale]);
       MENU.tab();
       MENU.out(voices);
       MENU.outln(F(" voices"));
@@ -1561,13 +1561,13 @@ bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, i
 	//	PULSES.pulses[pulse].period.overflow = 0;
       }
 
-      // now apply ratio scale:
-      apply_ratios_on_period(voices, ratios, true);
+      // now apply scale:
+      apply_scale_on_period(voices, scale, true);
       return true;
     }
   } else
     if (MENU.verbosity >= VERBOSITY_ERROR)
-      MENU.outln(F("no ratio"));
+      MENU.outln(F("no scale"));
 
   return false;
 };
@@ -3430,34 +3430,34 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case 'R':	// ratios
+  case 'R':	// scale  was: ratio
     if (MENU.maybe_display_more())
-      MENU.out(F("ratio "));
+      MENU.out(F("scale "));
 
-    // 'R!' tune selected pulses to ratio starting from lowest
+    // 'R!' tune selected pulses to a scale starting from lowest
     if (MENU.cb_peek()=='!') {
-      tune_2_scale(voices, multiplier, divisor, sync, selected_ratio, ratios);
+      tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
     } else {
-      selected_ratio=MENU.numeric_input(-1);
-      switch (selected_ratio) {
+      selected_scale=MENU.numeric_input(-1);
+      switch (selected_scale) {
       case ILLEGAL:
       case 0:
-	ratios = ratios_RAM;
+	scale = scale_RAM;
 	break;
       default:
-	if (selected_ratio >= n_ratio_names) {
-	  selected_ratio=0;
+	if (selected_scale >= n_scale_names) {
+	  selected_scale=0;
 	  if (MENU.verbosity >= VERBOSITY_SOME)
 	    MENU.outln_invalid();
 	} else				// trailing '!' applies tuning
 	  if (MENU.cb_peek()=='!')
-	    tune_2_scale(voices, multiplier, divisor, sync, selected_ratio, ratios);
+	    tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
       }
 #ifndef RAM_IS_SCARE	// enough RAM?	display jiffle names
-      display_names(ratio_names, n_ratio_names, selected_ratio);
+      display_names(scale_names, n_scale_names, selected_scale);
 #endif
     }
-    display_arr(ratios, 2);
+    display_arr(scale, 2);
 
     break;
 
@@ -3831,9 +3831,9 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=1;
 	inverse=false;
 
-	ratios = pentatonic_minor;
+	scale = pentatonic_minor;
 	select_n(voices);
-	prepare_ratios(false, voices, multiplier * 1024 , divisor * 1167, sync, ratios);
+	prepare_scale(false, voices, multiplier * 1024 , divisor * 1167, sync, scale);
 	jiffle=ting1024;
 	select_n(voices);
 	display_name5pars("E14", inverse, voices, multiplier, divisor, sync);
@@ -3848,9 +3848,9 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=1;
 	inverse=false;
 
-	ratios = pentatonic_minor;
+	scale = pentatonic_minor;
 	select_n(voices);
-	prepare_ratios(false, voices, multiplier * 4096 , divisor * 1167, sync, ratios);
+	prepare_scale(false, voices, multiplier * 4096 , divisor * 1167, sync, scale);
 	jiffle=ting4096;
 	select_n(voices);
 	display_name5pars("E15", inverse, voices, multiplier, divisor, sync);
@@ -3865,9 +3865,9 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=256;
 	inverse=false;
 
-	ratios = european_pentatonic;
+	scale = european_pentatonic;
 	select_n(voices);
-	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	jiffle=ting4096;
 	// jiffle = arpeggio4096;
 	display_name5pars("E16 european_pent", inverse, voices, multiplier, divisor, sync);
@@ -3882,9 +3882,9 @@ bool menu_pulses_reaction(char menu_input) {
 	// multiplier=4096;	// jiffle ting4096
 	divisor=256*5;
 
-	ratios = mimic_japan_pentatonic;
+	scale = mimic_japan_pentatonic;
 	select_n(voices);
-	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	jiffle=ting4096;
 	display_name5pars("E17 mimic japan", inverse, voices, multiplier, divisor, sync);
 
@@ -3894,7 +3894,7 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 18:	// nylon stringed wooden box, piezzos
-	ratios = pentatonic_minor;
+	scale = pentatonic_minor;
 	multiplier=1;	// click
 	// multiplier=4096;	// jiffle ting4096
 	// divisor=2048;
@@ -3916,7 +3916,7 @@ bool menu_pulses_reaction(char menu_input) {
 	jiffle=ting4096;
 
 	select_n(voices);
-	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("E18 pentatonic minor", inverse, voices, multiplier, divisor, sync);
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -3992,10 +3992,10 @@ bool menu_pulses_reaction(char menu_input) {
 	reset_all_flagged_pulses_GPIO_OFF();
 
 #if defined KALIMBA7_v2	// ESP32 version  european_pentatonic
-	ratios = european_pentatonic;
+	scale = european_pentatonic;
 	voices=7;
 #else
-	ratios = pentatonic_minor;	// default, including KALIMBA7_v1
+	scale = pentatonic_minor;	// default, including KALIMBA7_v1
 #endif
 #if defined  KALIMBA7_v1
 	voices=7;
@@ -4004,7 +4004,7 @@ bool menu_pulses_reaction(char menu_input) {
 	multiplier=1;
 	divisor=1024;
 	select_n(voices);
-	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("E29 KALIMBA7 tuning", inverse, voices, multiplier, divisor, sync);
 	en_click_selected();							// for tuning ;)
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate
@@ -4016,7 +4016,7 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 30:				// KALIMBA7 jiffle
-	ratios = pentatonic_minor;
+	scale = pentatonic_minor;
 	voices=7;
 	// voices=8;
 	multiplier=4;
@@ -4025,7 +4025,7 @@ bool menu_pulses_reaction(char menu_input) {
 	jiffle = ting4096;
 	// jiffle = tingeling4096;
 	select_n(voices);
-	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("E30 KALIMBA7 jiff", inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected();
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate
@@ -4038,13 +4038,13 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 31:				// KALIMBA7 jiffle
-	ratios = european_pentatonic;
+	scale = european_pentatonic;
 	voices=8;
 	multiplier=4;
 	divisor=1;
 	jiffle = ting4096;
 	select_n(voices);
-	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("E31 KALIMBA7 jiff", inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected();
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
@@ -4056,14 +4056,14 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 32:				// ESP32_12
-	ratios = major_scale;
+	scale = major_scale;
 	voices=12;
 	multiplier=4;
 	divisor=1;
 	// jiffle = ting4096;
 	jiffle = tigg_ding4096;
 	select_n(voices);
-	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("E32 ESP32_12", inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected();
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
@@ -4075,13 +4075,13 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 33:
-	ratios = minor_scale;
+	scale = minor_scale;
 	voices=12;
 	multiplier=4;
 	divisor=1;
 	jiffle = ting4096;
 	select_n(voices);
-	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("minor", inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected();
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
@@ -4093,13 +4093,13 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 34:
-	ratios = major_scale;
+	scale = major_scale;
 	voices=12;
 	multiplier=4;
 	divisor=1;
 	jiffle = ting4096;
 	select_n(voices);
-	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("major", inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected();
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
@@ -4111,13 +4111,13 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 35:
-	ratios=tetrachord;
+	scale=tetrachord;
 	voices=12;
 	multiplier=4;
 	divisor=1;
 	jiffle = ting4096;
 	select_n(voices);
-	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("tetra", inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected();
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
@@ -4129,14 +4129,14 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 36:
-	//ratios=major_scale;
-	ratios = pentatonic_minor;
+	//scale=major_scale;
+	scale = pentatonic_minor;
 	voices=16;	//	################ FIXME: more voices, please ;) ################
 	multiplier=6;
 	divisor=1;
 	jiffle = ting4096;
 	select_n(voices);
-	prepare_ratios(false, voices, multiplier, divisor, sync, ratios);
+	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("BIG major", inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected();
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
@@ -4158,8 +4158,8 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=330; // 329.36		// e4  ***not*** harmonical
 	// divisor=165; // 164.81		// e3  ***not*** harmonical
 
-	selected_ratio = 4;
-	ratios = minor_scale;		// default e minor
+	selected_scale = 4;
+	scale = minor_scale;		// default e minor
 
 	jiffle = ting4096;		// default jiffle
 	//	voices = 16;			// for DAC output
@@ -4171,27 +4171,27 @@ bool menu_pulses_reaction(char menu_input) {
 	  switch (MENU.cb_peek()) {
 	  case 'e':
 	    MENU.drop_input_token();
-	    selected_ratio = 4;
-	    ratios=minor_scale;
+	    selected_scale = 4;
+	    scale=minor_scale;
 
 	  case 'E':
 	    MENU.drop_input_token();
-	    selected_ratio = 5;
-	    ratios=major_scale;
+	    selected_scale = 5;
+	    scale=major_scale;
 	    break;
 
 	  case 'a':
 	    MENU.drop_input_token();
-	    selected_ratio = 4;
+	    selected_scale = 4;
 	    divisor = 440;
-	    ratios=minor_scale;
+	    scale=minor_scale;
 	    break;
 
 	  case 'A':
 	    MENU.drop_input_token();
-	    selected_ratio = 5;
+	    selected_scale = 5;
 	    divisor = 440;
-	    ratios=major_scale;
+	    scale=major_scale;
 	    break;
 	  }
 	}
@@ -4201,37 +4201,37 @@ bool menu_pulses_reaction(char menu_input) {
 	  break;
 	case '5':			// 5  pentatonic (minor|major)
 	  MENU.drop_input_token();
-	  if (ratios==major_scale | ratios==tetrachord) {
-	    selected_ratio = 2;
-	    ratios = european_pentatonic;
+	  if (scale==major_scale | scale==tetrachord) {
+	    selected_scale = 2;
+	    scale = european_pentatonic;
 	  } else {
-	    selected_ratio = 1;
-	    ratios = pentatonic_minor;
+	    selected_scale = 1;
+	    scale = pentatonic_minor;
 	  }
 	  break;
 	case '4':			// 4  tetrachord
 	  MENU.drop_input_token();
-	  selected_ratio = 6;
-	  ratios = tetrachord;
+	  selected_scale = 6;
+	  scale = tetrachord;
 	  break;
 	case '3':			// 3  octaves fourths fifths
 	  MENU.drop_input_token();
-	  selected_ratio = 13;
-	  ratios = ratios_octaves_fourths_fifths;
+	  selected_scale = 13;
+	  scale = octaves_fourths_fifths;
 	  multiplier *=8;
 	  divisor /= 2;
 	  break;
 	case '2':			// 2  octaves fifths
 	  MENU.drop_input_token();
-	  selected_ratio = 11;
-	  ratios = ratios_octaves_fifths;
+	  selected_scale = 11;
+	  scale = octaves_fifths;
 	  multiplier *= 4;
 	  divisor /= 4;
 	  break;
 	case '1':			// 1  octaves
 	  MENU.drop_input_token();
-	  selected_ratio = 10;
-	  ratios = ratios_octaves;
+	  selected_scale = 10;
+	  scale = octaves;
 	  multiplier *= 8;	// ################ FIXME: ################
 	  divisor /= 8;
 	  break;
@@ -4243,10 +4243,10 @@ bool menu_pulses_reaction(char menu_input) {
 
 	// ################ FIXME: remove redundant code ################
 //	select_n(voices);
-//	prepare_ratios(false, voices, multiplier, divisor, 0, ratios);
+//	prepare_scale(false, voices, multiplier, divisor, 0, scale);
 //	display_name5pars("GUITAR", inverse, voices, multiplier, divisor, sync);
 
-	tune_2_scale(voices, multiplier, divisor, sync, selected_ratio, ratios);
+	tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
 	en_jiffle_throw_selected();
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
