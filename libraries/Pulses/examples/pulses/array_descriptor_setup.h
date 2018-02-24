@@ -18,6 +18,7 @@ REGISTER_SCALE(overnotes);			// 11
 REGISTER_SCALE(scale_rationals);		// 12
 REGISTER_SCALE(octaves_fourths);		// 13
 
+/*
 // void display_scales();
 MENU.ln();
 for (int i=0; SCALES[i].len ; i++)
@@ -36,3 +37,4 @@ for (int i=0; SCALES[i].len ; i++)
     MENU.out(SCALES[i].len);
     MENU.ln();
   }
+*/

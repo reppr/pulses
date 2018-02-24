@@ -15,7 +15,7 @@ char* notype="no type";
 struct arr_descriptor {
   unsigned int* pointer=NULL;
   unsigned int len=0;
-  unsigned int step;
+  unsigned int step=0;
   char* name = noname;
   char* type = notype;	// like scale, jiffle
 };
@@ -25,9 +25,6 @@ arr_descriptor SCALES[SCALE_DESCRIPTORS];
 
 #define JIFFLE_DESCRIPTORS	100	// FIXME: ################
 arr_descriptor JIFFLES[JIFFLE_DESCRIPTORS];
-
-#define EDIT_RAM_SIZE	4*64		// FIXME: ################
-unsigned int edit_RAM[EDIT_RAM_SIZE];
 
 /*
   ie:  register_scale(european_pentatonic, sizeof(european_pentatonic), "european_pentatonic");
@@ -43,7 +40,7 @@ bool register_scale(unsigned int* scale, unsigned int len, char* name) {
 
   registered_scales++;	// FIXME: check ################
   return true;
-};
+}
 /*
   see:  https://stackoverflow.com/questions/20631922/expand-macro-inside-string-literal
 */
@@ -64,4 +61,6 @@ bool register_jiffle(unsigned int* jiffle, unsigned int len, char* name) {
 
   registered_jiffles++;
   return true;
-};
+}
+
+#define REGISTER_JIFFLE(X)	register_jiffle((X), sizeof((X)), STRINGIFY(X))
