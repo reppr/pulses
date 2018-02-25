@@ -3,6 +3,9 @@
 #define EDIT_SCALE_RAM_SIZE	31+1	// FIXME: maybe ;)
 unsigned int edit_scale_RAM[EDIT_SCALE_RAM_SIZE] = {0};
 
+
+init_arr_DB(SCALES, sizeof(SCALES), "SCALES-DB");
+
 REGISTER_SCALE(edit_scale_RAM);			// 0
 REGISTER_SCALE(octaves);			// 1
 REGISTER_SCALE(octaves_fifths);			// 2
