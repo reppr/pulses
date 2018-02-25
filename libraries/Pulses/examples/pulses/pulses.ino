@@ -1,3 +1,5 @@
+#define DEBUG_GPIO_OUTPUT_INITIALISATION
+
 /* **************************************************************** */
 /*
 			pulses.ino
@@ -1042,7 +1044,9 @@ void init_click_pins_OutLow() {		// make them GPIO, OUTPUT, LOW
   for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
     pin=click_pin[pulse];
 
+  #if defined DEBUG_GPIO_OUTPUT_INITIALISATION
     MENU.out(" gpio init "); MENU.out(pin); MENU.tab();
+  #endif
 
 #ifdef ESP8266	// pin 14 must be switched to GPIO on ESP8266
     // http://www.esp8266.com/wiki/lib/exe/detail.php?id=esp8266_gpio_pin_allocations&media=pin_functions.png
@@ -1063,11 +1067,13 @@ void init_click_pins_OutLow() {		// make them GPIO, OUTPUT, LOW
 //    gpio_pad_select_gpio(pin);
 
     if (GPIO_IS_VALID_OUTPUT_GPIO(pin) && (pin < 6 || pin > 11)) {
-      MENU.out(F("GPIO_IS_VALID_OUTPUT_GPIO\t"));
 //      MENU.out(F("gpio_set_direction\t"));
 //      gpio_set_direction((gpio_num_t) pin, GPIO_MODE_OUTPUT);  //Latch
 
+  #if defined DEBUG_GPIO_OUTPUT_INITIALISATION
+      MENU.out(F("GPIO_IS_VALID_OUTPUT_GPIO\t"));
       MENU.out(F("PIN_FUNC_SELECT(..., PIN_FUNC_GPIO)\t"));
+  #endif
       PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[pin], PIN_FUNC_GPIO);
 
 //    switch (pin) {
@@ -1095,17 +1101,20 @@ void init_click_pins_OutLow() {		// make them GPIO, OUTPUT, LOW
 //    }
 
     } else {
+  #if defined DEBUG_GPIO_OUTPUT_INITIALISATION
       MENU.out(F("invalid gpio for output\t"));
       MENU.out(pin);
+  #endif
     }
-#endif
 
     pinMode(pin, OUTPUT);	// on oldstyle Arduinos this is enough
     digitalWrite(pin, LOW);	// on oldstyle Arduinos this is enough
-    MENU.ln();
-  }
 
-#ifdef ESP32
+  #if defined DEBUG_GPIO_OUTPUT_INITIALISATION
+    MENU.ln();
+  #endif
+ }
+
   gpio_config_t gpioConfig;
   gpioConfig.pin_bit_mask = (1 << 2) | (1 << 14) | (1 << 32) | (1 << 33);
   gpioConfig.mode = GPIO_MODE_OUTPUT;
@@ -1113,8 +1122,12 @@ void init_click_pins_OutLow() {		// make them GPIO, OUTPUT, LOW
   gpioConfig.pull_down_en = GPIO_PULLDOWN_DISABLE;
   gpioConfig.intr_type = GPIO_INTR_DISABLE;
 
+  #if defined DEBUG_GPIO_OUTPUT_INITIALISATION
+    MENU.outln(" gpio_config(&gpioConfig)");
+  #endif
+
   gpio_config(&gpioConfig);
-#endif
+#endif	// ESP32
 }
 
 
