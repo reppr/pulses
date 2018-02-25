@@ -375,7 +375,7 @@ void Pulses::deactivate_all_clicks() {
 }
 
 
-void Pulses::activate_selected_synced_now(int sync, unsigned long selected_pulses) {
+void Pulses::activate_selected_synced_now(int sync, pulses_mask_t selected_pulses) {
   if (selected_pulses==0)
     return;
 
@@ -520,7 +520,7 @@ int Pulses::setup_pulse(void (*pulse_do)(int), unsigned char new_flags, \
     return ILLEGAL;				//   should not happen
 
   for (pulse=0; pulse<pl_max; pulse++) {	// search first free pulse
-    if (pulses[pulse].flags == 0)			// flags==0 means empty pulse
+    if (pulses[pulse].flags == 0)		// flags==0 means empty pulse
       break;					//   found one
   }
   if (pulse == pl_max) {			// no pulse free :(

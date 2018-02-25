@@ -22,8 +22,8 @@
 
     #define STARTUP_DELAY	256	// ESP32 seems to need that for successful booting
 
-    const int pl_max=32;
-    // const int const int pl_max=64;	// FIXME: mask limitations ################
+    // #define PL_MAX	64	// FIXME: mask limitations ################
+    #define PL_MAX	32
 
     #define JIFFLE_RAM_SIZE	256*3+2
     #define SCALES_RAM_SIZE	256*2+2
@@ -37,7 +37,7 @@
   #elif defined(ESP8266)			// ESP8266: "a lot of RAM"
     #define STARTUP_DELAY	64	// ESP8266 maybe does not need that, but...
 
-    const int pl_max=32;
+    #define PL_MAX	32
     #define JIFFLE_RAM_SIZE	256*3+2
     #define SCALES_RAM_SIZE	256*2+2
     // must be defined before including Pulses
@@ -47,14 +47,14 @@
     //#define AUTOSTART_WIFI		// start wifi on booting?  see: WiFi_stuff.ino
 
   #elif defined(__SAM3X8E__)			// Arduino DUE
-    const int pl_max=64;
+    #define PL_MAX	64
     #define JIFFLE_RAM_SIZE	256*3+2
     #define SCALES_RAM_SIZE	256*2+2
     // must be defined before including Pulses
     #define IMPLEMENT_TUNING		// needs float
 
   #elif defined(__AVR_ATmega2560__)		// mega2560
-    const int pl_max=32;	// test with more pins than 8 ;)
+    #define PL_MAX	32	// test with more pins than 8 ;)
     #define JIFFLE_RAM_SIZE	256*3+2
     #define SCALES_RAM_SIZE	256*2+2
 //  #define RAM_IS_SCARE	// ################ FIXME: RAM_IS_SCARE ??? mega2560 ################
@@ -67,12 +67,12 @@
 
   #elif defined(__AVR_ATmega328P__)		// saving RAM on 328P	no recent tests
     #define RAM_IS_SCARE
-    const int pl_max=12;
+    #define PL_MAX	12
 
   #else						// unknown board, defaults
     #warning unknown Arduino board
 //  #define RAM_IS_SCARE	// ################ FIXME: RAM_IS_SCARE (other boards) ################
-    const int pl_max=16;
+    #define PL_MAX	16
   #endif
 
 
@@ -106,7 +106,7 @@
 #else	// not ARDUINO, PC
   #warning: "PC version not supported, out of date"
 
-const int pl_max=64;		// Linux PC test version
+#define PL_MAX	64		// Linux PC test version
 
   #ifndef CLICK_PULSES		// default number of click frequencies
      #define CLICK_PULSES	0  // default number of click frequencies on PC, untested
@@ -145,6 +145,20 @@ const int pl_max=64;		// Linux PC test version
   }
 
 #endif	// *not* ARDUINO, c++ Linux PC test version
+
+
+/* **************************************************************** */
+const int pl_max=PL_MAX;
+
+/* **************************************************************** */
+// type
+// pulses_mask_t	// masks with a bit for each pulse
+
+#if (PL_MAX<=32)
+  #define pulses_mask_t  uint32_t
+#else
+  #define pulses_mask_t  uint64_t
+#endif
 
 
 
