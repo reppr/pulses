@@ -1,4 +1,4 @@
-#define DEBUG_GPIO_OUTPUT_INITIALISATION
+// #define DEBUG_GPIO_OUTPUT_INITIALISATION	// FIXME: TODO: remove debug code
 
 /* **************************************************************** */
 /*
