@@ -50,7 +50,7 @@
 
 #if defined ESP32	// KALIMBA7_v2 ESP32 version
   #if defined GUITAR_v0	// GUITAR with surface vibration speaker on ESP32 DACs
-    #define AUTOSTART	MENU.play_KB_macro("- E37"); selected_experiment=-1;
+    #define AUTOSTART	MENU.play_KB_macro("- E37e5 *2"); selected_experiment=-1;
   #elif defined ESP32_12	// more voices, please
     #define AUTOSTART	MENU.play_KB_macro("E32 -"); selected_experiment=-1;
   #elif defined KALIMBA7_v2	// KALIMBA ESP32 version

@@ -4164,7 +4164,6 @@ bool menu_pulses_reaction(char menu_input) {
 	jiffle = ting4096;		// default jiffle
 	//	voices = 16;			// for DAC output
 	voices = 15;			// default (diatonic)	// for DAC output
-	select_n(voices);
 
 	if(MENU.cb_peek()!=EOF) {		// second letters e E a A	e|a  minor|major
 	  //	 ################ FIXME: ################
@@ -4173,6 +4172,7 @@ bool menu_pulses_reaction(char menu_input) {
 	    MENU.drop_input_token();
 	    selected_scale = 4;
 	    scale=minor_scale;
+	    break;
 
 	  case 'E':
 	    MENU.drop_input_token();
@@ -4220,9 +4220,11 @@ bool menu_pulses_reaction(char menu_input) {
 	  if (scale==major_scale | scale==tetrachord) {
 	    selected_scale = 2;
 	    scale = european_pentatonic;
+	    voices = 16;	// default (pentatonic)	// for DAC output
 	  } else {
 	    selected_scale = 1;
 	    scale = pentatonic_minor;
+	    voices = 16;	// default (pentatonic)	// for DAC output
 	  }
 	  break;
 	case '4':			// 4  tetrachord
@@ -4258,10 +4260,9 @@ bool menu_pulses_reaction(char menu_input) {
 	// jiffle = tanboura; divisor *= 2;
 
 	// ################ FIXME: remove redundant code ################
-//	select_n(voices);
+	select_n(voices);
 //	prepare_scale(false, voices, multiplier, divisor, 0, scale);
 //	display_name5pars("GUITAR", inverse, voices, multiplier, divisor, sync);
-
 	tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
 	en_jiffle_throw_selected();
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
