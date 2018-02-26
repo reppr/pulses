@@ -4,8 +4,7 @@
 unsigned int edit_scale_RAM[EDIT_SCALE_RAM_SIZE] = {0};
 
 
-init_arr_DB(SCALES, sizeof(SCALES), "SCALES-DB");
-
+init_arr_DB(SCALES, sizeof(SCALES), "SCALES");
 REGISTER_SCALE(edit_scale_RAM);			// 0
 REGISTER_SCALE(octaves);			// 1
 REGISTER_SCALE(octaves_fifths);			// 2
@@ -21,23 +20,55 @@ REGISTER_SCALE(overnotes);			// 11
 REGISTER_SCALE(scale_rationals);		// 12
 REGISTER_SCALE(octaves_fourths);		// 13
 
-/*
-// void display_scales();
-MENU.ln();
-for (int i=0; SCALES[i].len ; i++)
-  {
-    MENU.out(i);
-    MENU.space();
-    if (i<10)
-      MENU.space();
 
-    MENU.out(SCALES[i].type);
-    MENU.tab();
+#include "jiffles.h"
+init_arr_DB(JIFFLES, sizeof(JIFFLES), "JIFFLES");
+REGISTER_JIFFLE(jiffle_RAM);		// 0
+//REGISTER_JIFFLE(gling128);		// 1
+REGISTER_JIFFLE(jiffletab);		// 2
+REGISTER_JIFFLE(jiffletab_december);	// 3
+REGISTER_JIFFLE(jiffletab_december128);	// 4
+REGISTER_JIFFLE(jiffletab_december_pizzicato); // 5
+REGISTER_JIFFLE(jiffletab01);		// 6
+REGISTER_JIFFLE(jiffletab01);		// 7 ==6 ??? FIXME:
+REGISTER_JIFFLE(jiffletab02);		// 8
+REGISTER_JIFFLE(jiffletab03);		// 9
+REGISTER_JIFFLE(jiffletab04);		// 10
+REGISTER_JIFFLE(jiffletab05);		// 11
+REGISTER_JIFFLE(jiffletab06);		// 12
+REGISTER_JIFFLE(jiffletab06);		// 13 ==12 ??? FIXME:
+REGISTER_JIFFLE(gling128_0);		// 14
+REGISTER_JIFFLE(gling128_1);		// 15
+REGISTER_JIFFLE(gling128_2);		// 16
+REGISTER_JIFFLE(harmonics4);		// 17
+REGISTER_JIFFLE(ting1024);		// 18
+REGISTER_JIFFLE(ting4096);		// 19
+REGISTER_JIFFLE(arpeggio4096);		// 20
+REGISTER_JIFFLE(arpeggio4096down);	// 21
+REGISTER_JIFFLE(arpeggio_cont);		// 22
+REGISTER_JIFFLE(arpeggio_and_down);	// 23
+REGISTER_JIFFLE(stepping_down);		// 24
+REGISTER_JIFFLE(back_to_ground);	// 25
+REGISTER_JIFFLE(arpeggio_and_sayling);	// 26
+REGISTER_JIFFLE(simple_theme);		// 27
+REGISTER_JIFFLE(pentatonic_rising);	// 28
+REGISTER_JIFFLE(tingeling4096);		// 29
+REGISTER_JIFFLE(ding1024);		// 30
+REGISTER_JIFFLE(kalimbaxyl);		// 31
+REGISTER_JIFFLE(ting_tick4096);		// 32
+REGISTER_JIFFLE(tigg_ding4096);		// 33
+REGISTER_JIFFLE(tumtum);		// 34
+REGISTER_JIFFLE(piip2048);		// 35
+REGISTER_JIFFLE(tanboura);		// 36
 
-    MENU.out(SCALES[i].name);
-    MENU.tab();
 
-    MENU.out(SCALES[i].len);
-    MENU.ln();
-  }
-*/
+#define DEBUG_ARRAY_IMPLEMENTATION	// ################ FIXME: TODO: remove ################
+#if defined DEBUG_ARRAY_IMPLEMENTATION
+  MENU.outln("\nDEBUG_ARRAY_IMPLEMENTATION to be removed");
+
+  select_array_in_DB(SCALES, european_pentatonic);
+  display_arr_names(SCALES);
+
+  select_array_in_DB(JIFFLES, tanboura);
+  display_arr_names(JIFFLES);
+#endif

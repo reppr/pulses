@@ -29,7 +29,7 @@ void init_arr_DB(arr_descriptor * DB, unsigned int len, char* name) {
   DB[0].len=len;	// data base length in bytes
   DB[0].item=1;		// DB[0].item is used as registration counter
   DB[0].name=name;
-  DB[0].type="DB";
+  DB[0].type="database";
 }
 
 void select_array_in_DB(arr_descriptor* DB, unsigned int* array) {
@@ -73,7 +73,7 @@ arr_descriptor JIFFLES[JIFFLE_DESCRIPTORS];
 
 // register_scale(european_pentatonic, sizeof(european_pentatonic), "european_pentatonic");
 bool register_scale(unsigned int* scale, unsigned int len, char* name) {
-  register_array_in_DB(SCALES, scale, len, 2, name, "scale");
+  return register_array_in_DB(SCALES, scale, len, 2, name, "scale");
 }
 
 #ifndef STRINGIFY2
@@ -85,20 +85,10 @@ bool register_scale(unsigned int* scale, unsigned int len, char* name) {
 #define REGISTER_SCALE(X)	register_scale((X), sizeof((X)), STRINGIFY(X))
 
 
+// register_jiffle(european_pentatonic, sizeof(european_pentatonic), "european_pentatonic");
 bool register_jiffle(unsigned int* jiffle, unsigned int len, char* name) {
-  static unsigned int registered_jiffles=0;
-
-  JIFFLES[registered_jiffles].pointer = jiffle;
-  JIFFLES[registered_jiffles].len = len;	// bytes
-  JIFFLES[registered_jiffles].item = 3;		// 3 for 'multiplier, divisor, count' data items
-  JIFFLES[registered_jiffles].name = name;
-  JIFFLES[registered_jiffles].type = "jiffle";
-
-  registered_jiffles++;
-  return true;
+  return register_array_in_DB(JIFFLES, jiffle, len, 3, name, "jiffle");
 }
-
-
 
 #ifdef MENU_h
   void display_arr_names(arr_descriptor* DB) {
@@ -116,9 +106,13 @@ bool register_jiffle(unsigned int* jiffle, unsigned int len, char* name) {
       MENU.tab();
       MENU.out(DB[i].type);
       MENU.tab();
-      MENU.outln(DB[i].name);
+      MENU.out(DB[i].name);
+      if (i==0) {
+	MENU.tab();
+	MENU.out(DB[0].item);	// number of items in data base
+      }
+      MENU.ln();
     }
-    MENU.ln();
   }
 #endif // MENU_h
 
