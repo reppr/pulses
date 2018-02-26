@@ -62,7 +62,7 @@ REGISTER_JIFFLE(piip2048);		// 35
 REGISTER_JIFFLE(tanboura);		// 36
 
 
-#define DEBUG_ARRAY_IMPLEMENTATION	// ################ FIXME: TODO: remove ################
+// #define DEBUG_ARRAY_IMPLEMENTATION	// ################ FIXME: TODO: remove ################
 #if defined DEBUG_ARRAY_IMPLEMENTATION
   MENU.outln("\nDEBUG_ARRAY_IMPLEMENTATION to be removed");
 
