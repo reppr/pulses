@@ -166,34 +166,33 @@ bool setup_wifi_telnet(WiFiMode_t selected_wifi_mode=WIFI_DEFAULT_MODE) {
 
 #include "esp_wifi.h"
 bool setup_AP() {
-  MENU.out(F("start WiFi AP\t"));
+  selected_wifi_mode=WIFI_MODE_AP;	// ################ FIXME: OBSOLETE: ################
   // see:  viewtopic.php?f=13&t=1317&p=5942&hilit=c+initializer#p5942
+  // ################ FIXME: VERBOSITY ################
+  MENU.out(F("start WiFi AP\t"));
   MENU.out(AP_ssid);
   MENU.tab();
   MENU.outln(AP_password);
 
-  // esp_wifi_set_mode(WIFI_MODE_AP);
-  WiFi.mode(selected_wifi_mode);
+  esp_wifi_set_mode(WIFI_MODE_AP);
   yield();
 
   wifi_config_t ap_config = { };
   strcpy((char*) ap_config.ap.ssid, AP_ssid);
+  ap_config.ap.ssid_len=0;
   strcpy((char*) ap_config.ap.password, AP_password);
-
-//  ap_config.ap.ssid = (uint8_t) AP_ssid;
-//  ap_config.ap.password = (uint8_t) AP_password;
-
-
-
-//  // esp_wifi_set_mode(WIFI_MODE_AP);
-//  WiFi.mode(selected_wifi_mode);
-//  yield();
-
-  esp_wifi_set_config(WIFI_IF_AP, &ap_config);
-  yield();
+  ap_config.ap.channel=0;
+  ap_config.ap.authmode=WIFI_AUTH_OPEN;
+  ap_config.ap.ssid_hidden=0;
+  ap_config.ap.max_connection=4;
+  ap_config.ap.beacon_interval=100;
+  esp_wifi_set_config(WIFI_IF_AP, (wifi_config_t *)&ap_config);
 
   esp_wifi_start();
   yield();
+
+  // ################ FIXME: VERBOSITY ################
+  MENU.outln(F("started"));
 }
 
 
