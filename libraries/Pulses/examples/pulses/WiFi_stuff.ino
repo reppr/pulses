@@ -5,7 +5,7 @@
 #ifndef WiFi_STUFF_INO
 #ifdef USE_WIFI_telnet_menu	// do we need WiFi at all?
 
-#define WIFI_DEBUG
+#define WIFI_DEBUG	// ################ FIXME: remove ################
 
 /* **************************************************************** */
 /* **************************************************************** */
@@ -19,6 +19,7 @@
 #include "/home/dada/WiFi-credentials.h"	// let the name be <something>.h
 
 
+/* **************************************************************** */
 // if the harmonical acts as ACCESS POINT these are the credentials:
 char AP_ssid[32] = "HARMONICAL generic";
 char AP_password[32] = "open";
@@ -26,9 +27,9 @@ char AP_password[32] = "open";
 /* **************************************************************** */
 /* **************************************************************** */
 
-//#define WIFI_DEFAULT_MODE	WIFI_AP		// WORK IN PROGRESS ################ FIXME: ################
+#define WIFI_DEFAULT_MODE	WIFI_AP		// WORK IN PROGRESS ################ FIXME: ################
 
-#define WIFI_DEFAULT_MODE	WIFI_STA	// working
+//#define WIFI_DEFAULT_MODE	WIFI_STA	// working
 
 
 //  #define AUTOSTART_WIFI	// start WiFi when booting?  ***configure the following line***
@@ -60,6 +61,7 @@ WiFiMode_t selected_wifi_mode=WIFI_DEFAULT_MODE;
 bool connectWifi(WiFiMode_t selected_wifi_mode, const char* ssid, const char* password) {
   switch (selected_wifi_mode) {
   case WIFI_AP:
+MENU.outln("DADA AP FIXME: ################");
     // IP 0x0707A8C0	// 192.168.7.7
     break;
   case WIFI_STA:
@@ -68,7 +70,6 @@ bool connectWifi(WiFiMode_t selected_wifi_mode, const char* ssid, const char* pa
   default:
     MENU.outln(F("ERROR: selected_wifi_mode"));	// ################ FIXME: ################
   }
-
 
   MENU.out(F("connecting to SSID: "));
   MENU.out(ssid); MENU.tab();
@@ -87,7 +88,10 @@ bool connectWifi(WiFiMode_t selected_wifi_mode, const char* ssid, const char* pa
     yield();
   }
 
-  WiFi.printDiag(Serial);	// debugging	// ################ FIXME: ################
+#ifdef WIFI_DEBUG	// ################ FIXME: remove ################
+  MENU.outln("WIFI_DEBUG remove ################");
+  WiFi.printDiag(Serial);
+#endif
 
   // 20 seconds to establish connection
   unsigned long startTime = millis();
@@ -114,6 +118,7 @@ bool connectWifi(WiFiMode_t selected_wifi_mode, const char* ssid, const char* pa
   MENU.outln("\nconnect FAILED\tsee file 'WiFi_stuff.ino'");
 
 #if defined WIFI_DEBUG
+  MENU.outln("WIFI_DEBUG remove ################");
   WiFi.printDiag(Serial);	// debugging	// ################ FIXME: ################
 #endif
 
@@ -163,8 +168,16 @@ bool setup_wifi_telnet(WiFiMode_t selected_wifi_mode=WIFI_DEFAULT_MODE) {
   return false;
 }
 
-
+// #include <esp_system.h>
 #include "esp_wifi.h"
+#include "WiFi.h"
+#include "WiFiAP.h"	// softap
+#include <lwip/sockets.h>
+/*
+int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
+
+*/
+
 bool setup_AP() {
   selected_wifi_mode=WIFI_MODE_AP;	// ################ FIXME: OBSOLETE: ################
   // see:  viewtopic.php?f=13&t=1317&p=5942&hilit=c+initializer#p5942
@@ -174,6 +187,8 @@ bool setup_AP() {
   MENU.tab();
   MENU.outln(AP_password);
 
+  wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
+  esp_wifi_init(&config);
   esp_wifi_set_mode(WIFI_MODE_AP);
   yield();
 
@@ -188,11 +203,40 @@ bool setup_AP() {
   ap_config.ap.beacon_interval=100;
   esp_wifi_set_config(WIFI_IF_AP, (wifi_config_t *)&ap_config);
 
+/*
+MENU.outln(F("tcpip_adapter_set_ip_info()"));
+  tcpip_adapter_ip_info_t ipInfo;
+  inet_pton(AF_INET, "192.168.7.7", &ipInfo.ip);
+  inet_pton(AF_INET, "192.168.7.1", &ipInfo.gw);
+  inet_pton(AF_INET, "255.255.255.0", &ipInfo.netmask);
+  tcpip_adapter_set_ip_info(TCPIP_ADAPTER_IF_STA, &ipInfo);
+*/
+
+MENU.outln(F("esp_wifi_start()"));
   esp_wifi_start();
   yield();
 
+MENU.outln(F("telnet_server.begin()"));
+  telnet_server.begin();
+  telnet_server.setNoDelay(true);
+  yield();
+/*
+  MENU.outln(F("wifi_softap_dhcps_start()"));
+  #include <apps/dhcpserver.h>
+  wifi_softap_dhcps_start();
+  yield();
+*/
+
+  // MENU.outln(F("WiFiClient.connect()"));
+  // WiFi.connect(0x0707A8C0, 23); // 192.168.7.7
+  MENU.outln(F("esp_wifi_connect()"));
+  // Connect to the given host at the given port using TCP.
+  // int connect(const char* host, uint16_t port)
+  // int connect(IPAddress ip, uint16_t port)
+  esp_wifi_connect();
+  yield();
   // ################ FIXME: VERBOSITY ################
-  MENU.outln(F("started"));
+  MENU.outln(F("done"));
 }
 
 
@@ -228,17 +272,19 @@ void WiFi_scan() {
       MENU.out(WiFi.RSSI(i));
       MENU.out(")");
 #ifndef ESP32	// ################ FIXME: ESP32 ################
-      MENU.outln((WiFi.encryptionType(i) == ENC_TYPE_NONE)?" ":"*");
+      MENU.out((WiFi.encryptionType(i) == ENC_TYPE_NONE)?" ":"*");
 #endif
+      MENU.ln();
     }
   }
 }
 
+
 void WiFi_info() {
   int status;
 
-  MENU.out(F("mode"));
-  MENU.tab();
+  MENU.out(F("\nwifi_info:  mode "));
+  yield();
   int mode=WiFi.getMode();
   MENU.out(mode);
   MENU.tab();
@@ -256,24 +302,22 @@ void WiFi_info() {
     else {
       MENU.outln(str_status[status]);
     }
-  }
 
-//	MENU.IPstring(WiFi.localIP());
+    // MENU.IPstring(WiFi.localIP()); MENU.ln();
+
+    // IPAddress softAPIP();
+    MENU.IPstring(WiFi.softAPIP()); MENU.ln();
 //	MENU.outln(" port 23");
 
   MENU.ln();
+  }
 
-#if defined WIFI_DEBUG
+#if defined WIFI_DEBUG_REMOVED
+  MENU.outln("WIFI_DEBUG ################ remove!");
   WiFi.printDiag(Serial);	// debugging	// ################ FIXME: ################
+  MENU.outln("WIFI_DEBUG ################");
 #endif
 }
-
-//	wifi_config_t APconfig = {
-//	  .ap = {
-//	    .ssid="GUGUseli",
-//	    .ssid_id=0,
-//	  }
-//	};
 
 
 /* **************************************************************** */
@@ -290,7 +334,8 @@ void WiFi_menu_display() {
   MENU.tab();
   MENU.ln();
 
-  MENU.outln(F(".=info a=API  b=STA  c=connect  x=disconnect  X=stop  s=scan  S=ssid  p=passwd"));
+  MENU.outln(F(".=info A=API  b=STA  c=connect  x=disconnect  X=stop  s=scan"));
+  //  MENU.outln(F(".=info a=API  b=STA  c=connect  x=disconnect  X=stop  s=scan  S=ssid  p=passwd"));
 }
 
 
