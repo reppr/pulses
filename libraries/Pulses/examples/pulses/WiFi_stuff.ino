@@ -314,7 +314,7 @@ void WiFi_menu_display() {
   MENU.tab();
   MENU.ln();
 
-  MENU.outln(F(".=info A=API  b=STA  c=connect  x=disconnect  X=stop  s=scan"));
+  MENU.outln(F(".=info A=API  B=STA  x=disconnect  X=stop  s=scan"));
   //  MENU.outln(F(".=info a=API  b=STA  c=connect  x=disconnect  X=stop  s=scan  S=ssid  p=passwd"));
 }
 
@@ -328,7 +328,11 @@ bool WiFi_menu_reaction(char token) {
     WiFi_info();
     break;
 
-  case 'D':	// debugging
+  case 'B':
+    setup_wifi_telnet(WIFI_STA);
+    break;
+
+  case 'D':	// testing, debugging
     WiFi.softAP("GUGUS", "dadadeli88");
     WiFi_info();
     break;
@@ -350,10 +354,13 @@ bool WiFi_menu_reaction(char token) {
     break;
 
   case 'c':	// connect
+    // ################ FIXME: obsolete ################
     setup_wifi_telnet(selected_wifi_mode);
     break;
 
   case 'x':	// disconnect
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      MENU.outln(F("disconnect wifi"));
     WiFi.disconnect();
     if (MENU.verbosity >= VERBOSITY_SOME)
       WiFi_info();
