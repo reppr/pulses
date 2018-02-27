@@ -27,7 +27,7 @@ char AP_password[32] = "open";
 /* **************************************************************** */
 /* **************************************************************** */
 
-#define WIFI_DEFAULT_MODE	WIFI_AP		// WORK IN PROGRESS ################ FIXME: ################
+#define WIFI_DEFAULT_MODE	WIFI_AP		// working
 
 //#define WIFI_DEFAULT_MODE	WIFI_STA	// working
 
@@ -54,7 +54,6 @@ const char *str_status[]= {
 
 // strings for WiFi mode
 const char *str_mode[]= { "WIFI_OFF", "WIFI_STA", "WIFI_AP", "WIFI_AP_STA" };
-
 
 WiFiMode_t selected_wifi_mode=WIFI_DEFAULT_MODE;
 
@@ -168,24 +167,23 @@ bool setup_wifi_telnet(WiFiMode_t selected_wifi_mode=WIFI_DEFAULT_MODE) {
   return false;
 }
 
-// #include <esp_system.h>
 #include "esp_wifi.h"
 #include "WiFi.h"
 #include "WiFiAP.h"	// softap
-#include <lwip/sockets.h>
 /*
-int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
-
+  #include <lwip/sockets.h>
+  int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
 */
 
 bool setup_AP() {
   selected_wifi_mode=WIFI_MODE_AP;	// ################ FIXME: OBSOLETE: ################
   // see:  viewtopic.php?f=13&t=1317&p=5942&hilit=c+initializer#p5942
-  // ################ FIXME: VERBOSITY ################
-  MENU.out(F("start WiFi AP\t"));
-  MENU.out(AP_ssid);
-  MENU.tab();
-  MENU.outln(AP_password);
+  if (MENU.verbosity >= VERBOSITY_SOME) {
+    MENU.out(F("start WiFi AP\t"));
+    MENU.out(AP_ssid);
+    MENU.tab();
+    MENU.outln(AP_password);
+  }
 
   wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
   esp_wifi_init(&config);
@@ -203,40 +201,24 @@ bool setup_AP() {
   ap_config.ap.beacon_interval=100;
   esp_wifi_set_config(WIFI_IF_AP, (wifi_config_t *)&ap_config);
 
-/*
-MENU.outln(F("tcpip_adapter_set_ip_info()"));
-  tcpip_adapter_ip_info_t ipInfo;
-  inet_pton(AF_INET, "192.168.7.7", &ipInfo.ip);
-  inet_pton(AF_INET, "192.168.7.1", &ipInfo.gw);
-  inet_pton(AF_INET, "255.255.255.0", &ipInfo.netmask);
-  tcpip_adapter_set_ip_info(TCPIP_ADAPTER_IF_STA, &ipInfo);
-*/
-
-MENU.outln(F("esp_wifi_start()"));
+  if (MENU.verbosity > VERBOSITY_SOME)
+    MENU.outln(F("esp_wifi_start()"));
   esp_wifi_start();
   yield();
 
-MENU.outln(F("telnet_server.begin()"));
+  if (MENU.verbosity > VERBOSITY_SOME)
+    MENU.outln(F("telnet_server.begin()"));
   telnet_server.begin();
   telnet_server.setNoDelay(true);
   yield();
-/*
-  MENU.outln(F("wifi_softap_dhcps_start()"));
-  #include <apps/dhcpserver.h>
-  wifi_softap_dhcps_start();
-  yield();
-*/
 
-  // MENU.outln(F("WiFiClient.connect()"));
-  // WiFi.connect(0x0707A8C0, 23); // 192.168.7.7
-  MENU.outln(F("esp_wifi_connect()"));
-  // Connect to the given host at the given port using TCP.
-  // int connect(const char* host, uint16_t port)
-  // int connect(IPAddress ip, uint16_t port)
+  if (MENU.verbosity > VERBOSITY_SOME)
+    MENU.outln(F("esp_wifi_connect()"));
   esp_wifi_connect();
   yield();
-  // ################ FIXME: VERBOSITY ################
-  MENU.outln(F("done"));
+
+  if (MENU.verbosity >= VERBOSITY_SOME)
+    MENU.outln(F("done"));
 }
 
 
@@ -302,8 +284,6 @@ void WiFi_info() {
     else {
       MENU.outln(str_status[status]);
     }
-
-    // MENU.IPstring(WiFi.localIP()); MENU.ln();
 
     // IPAddress softAPIP();
     MENU.IPstring(WiFi.softAPIP()); MENU.ln();
