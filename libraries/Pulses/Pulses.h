@@ -180,7 +180,11 @@ class Pulses {
   unsigned int global_next_count; // how many tasks wait to be activated at the same time?
 
 #if (defined USE_DACs) && (USE_DACs > 0)
-  void DAC_output();
+  void DAC_output();			// calculate and output on DAC
+
+// Functions for  adcX_value_function(int pulse, int dac /* must be 0 or 1 */ )
+  int function_square_wave(int pulse, int dac /* must be 0 or 1 */ );	// simple square
+  int function_wave_OFF(int pulse, int dac /* must be 0 or 1 */ );	// ZERO
 #endif
 
 #ifdef IMPLEMENT_TUNING		// implies floating point

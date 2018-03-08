@@ -506,6 +506,25 @@ void Pulses::DAC_output() {
 }
 
 
+// Functions for  adcX_value_function(int pulse, int dac /* must be 0 or 1 */ )
+
+// off
+int Pulses::function_wave_OFF(int pulse, int dac /* must be 0 or 1 */ ) {	// ZERO
+  return 0;
+}
+
+// square wave
+int Pulses::function_square_wave(int pulse, int dac /* must be 0 or 1 */ ) {	// simple square
+  if (pulses[pulse].counter & 1)
+    if (dac==0)
+      return pulses[pulse].adc0_intensity;
+    else //      if (dac==1)
+      return pulses[pulse].adc1_intensity;
+  else
+    return 0;
+}
+
+
 // bool check_maybe_do();
 // check if it's time to do something and do it if it's time
 // calls wake_pulse(pulse); to do one life step of the pulse
