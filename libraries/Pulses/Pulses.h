@@ -65,8 +65,8 @@ struct pulse_t {
 	// SCRATCH		edit (or similar) in progress
 	// DO_NOT_DELETE	dummy to avoid being thrown out
 	// TUNED		do not set directly, use activate_tuning(pulse)
-	// CUSTOM_1		can be used by periodic_do()
-	// CUSTOM_2		can be used by periodic_do()
+	// CLICKs		inbuilt GPIO toggling
+	// DACs			DAC will output value
 
   // internal parameter:
   unsigned int int1;		// if COUNTED, gives number of executions
@@ -125,6 +125,20 @@ struct pulse_t {
   //					do_jiffle(pulse)
   //					do_throw_a_jiffle(pulse)
   // ============>>> adapt init_pulse() IF YOU CHANGE SOMETHING HERE <<<============
+
+#if defined USE_DACs
+#if (USE_DACs > 0 )
+  int (*adc0_value_function)(int);
+  int adc0_intensity;
+ #if (USE_DACs > 1)
+  int (*adc1_value_function)(int);
+  int adc1_intensity;
+ #endif
+ #if (USE_DACs > 2)
+  #error only 2 DACs supported
+ #endif
+#endif
+#endif
 };
 
 // #define pulses.flags masks:
@@ -164,6 +178,10 @@ class Pulses {
 				// DO WE NEED OVERFLOW PART of that? ################
   struct time global_next;	// next time that a pulse wants to be waken up
   unsigned int global_next_count; // how many tasks wait to be activated at the same time?
+
+#if (defined USE_DACs) && (USE_DACs > 0)
+  void DAC_output();
+#endif
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
   unsigned long ticks_per_octave;

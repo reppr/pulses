@@ -9,6 +9,7 @@
 
 #ifdef ARDUINO
   #if defined(ESP32)				// ESP32 :)
+    // #define USE_DACs in your configuration files to use ESP32 DAC output
     #define BOARD_has_DACs		2
     #define BOARD_DAC_RESOLUTION	8
     #define BOARD_DAC1			25	// DAC1 gpio

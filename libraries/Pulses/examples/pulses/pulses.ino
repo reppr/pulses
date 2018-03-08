@@ -45,7 +45,7 @@ using namespace std;	// ESP8266 needs that
 
 #include "pulses_systems.h"		// different software systems
 #include "pulses_boards.h"		// different boards
-
+#include "pulses_configuration.h"	// your configuration
 
 
 /* **************** Menu **************** */
@@ -596,10 +596,12 @@ unsigned int stress_emergency=4096;	// high value seems appropriate
 //#endif
 unsigned int stress_count=0;
 
+/*	// HACK for testing only
 #if defined USE_DACs
   uint8_t dac1_value;
   uint8_t dac2_value;
 #endif
+*/
 
 void loop() {	// ARDUINO
 
@@ -636,6 +638,7 @@ void loop() {	// ARDUINO
       // stress_count = stress_emergency / 2;	// FIXME: further tests	################
     }
 
+/*	// HACK for testing only
 #if defined USE_DACs
     dac1_value=0;
     dac2_value=0;
@@ -649,6 +652,7 @@ void loop() {	// ARDUINO
     dacWrite(BOARD_DAC1, dac1_value);
     dacWrite(BOARD_DAC2, dac1_value);	// test is mono, unisono
 #endif
+*/
 
   }
 

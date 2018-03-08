@@ -301,6 +301,16 @@ void Pulses::global_shift(int global_octave) {
 void Pulses::init_pulse(int pulse) {
   pulses[pulse].flags = 0;
   pulses[pulse].periodic_do = NULL;
+
+#if defined USE_DACs
+#if (USE_DACs > 0 )
+  pulses[pulse].adc0_value_function = NULL;
+ #if (USE_DACs > 1 )
+  pulses[pulse].adc1_value_function = NULL;
+ #endif
+#endif
+#endif
+
   pulses[pulse].counter = 0;
   pulses[pulse].int1 = 0;
   pulses[pulse].period.time = 0;
@@ -481,6 +491,21 @@ void Pulses::fix_global_next() {
 }
 
 
+void Pulses::DAC_output() {
+  static int dac0_last=~0;	// ILLEGAL
+  static int dac1_last=~0;	// ILLEGAL
+
+  int dac0_value=0;
+  int dac1_value=0;
+
+  for(int p=0; p < pl_max; p++)
+    if ((pulses[p].flags & (ACTIVE | DACs) == (ACTIVE | DACs))) {
+      dac0_value += pulses[p].adc0_value_function(p);
+      dac1_value += pulses[p].adc1_value_function(p);
+    }
+}
+
+
 // bool check_maybe_do();
 // check if it's time to do something and do it if it's time
 // calls wake_pulse(pulse); to do one life step of the pulse
@@ -494,6 +519,10 @@ bool Pulses::check_maybe_do() {
       for (unsigned int i=0; i<global_next_count; i++)	//     yes:
 	wake_pulse(global_next_pulses[i]);	//     wake next pulses up
 
+#if defined USE_DACs
+      DAC_output();
+#endif
+
       fix_global_next();			// determine next event[s] serie
       return true;		// *did* do something
     }
@@ -501,6 +530,10 @@ bool Pulses::check_maybe_do() {
     if (global_next.overflow < now.overflow) {	// earlier overflow period?
       for (unsigned int i=0; i<global_next_count; i++)	//   yes, we're late...
 	wake_pulse(global_next_pulses[i]);	//     wake next pulses up
+
+#if defined USE_DACs
+      DAC_output();
+#endif
 
       fix_global_next();			// determine next event[s] serie
       return true;		// *did* do something
