@@ -128,11 +128,11 @@ struct pulse_t {
 
 #if defined USE_DACs
 #if (USE_DACs > 0 )
-  int (*adc0_value_function)(int);
-  int adc0_intensity;
+  int (*dac1_wave_function)(int pulse, int volume);
+  int dac1_intensity;
  #if (USE_DACs > 1)
-  int (*adc1_value_function)(int);
-  int adc1_intensity;
+  int (*dac2_wave_function)(int pulse, int volume);
+  int dac2_intensity;
  #endif
  #if (USE_DACs > 2)
   #error only 2 DACs supported
@@ -179,13 +179,25 @@ class Pulses {
   struct time global_next;	// next time that a pulse wants to be waken up
   unsigned int global_next_count; // how many tasks wait to be activated at the same time?
 
+
 #if (defined USE_DACs) && (USE_DACs > 0)
   void DAC_output();			// calculate and output on DAC
+ #if (USE_DACs == 1)
+  int en_DAC(int pulse, int DACs_count /* must be 1 or 2 */,
+	     int (*dac1_wave_function)(int pulse), int volume);
+ #elif (USE_DACs == 2)
+  int en_DAC(int pulse, int DACs_count /* must be 1 or 2 */,
+	     int (*dac1_wave_function)(int pulse, int volume0),
+	     int (*dac2_wave_function)(int pulse, int volume1));
+#else
+#error NO DACs FIXME: REMOVE DEBUG CODE ################
+#endif	// USE_DACś
 
-// Functions for  adcX_value_function(int pulse, int dac /* must be 0 or 1 */ )
-  int function_square_wave(int pulse, int dac /* must be 0 or 1 */ );	// simple square
-  int function_wave_OFF(int pulse, int dac /* must be 0 or 1 */ );	// ZERO
+// Functions for  adcX_wave_function(int pulse, int volume )
+  int function_square_wave(int pulse, int volume);	// simple square
+  int function_wave_OFF(int pulse, int volume);		// ZERO
 #endif
+
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
   unsigned long ticks_per_octave;

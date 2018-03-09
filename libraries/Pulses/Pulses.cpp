@@ -304,9 +304,9 @@ void Pulses::init_pulse(int pulse) {
 
 #if defined USE_DACs
 #if (USE_DACs > 0 )
-  pulses[pulse].adc0_value_function = NULL;
+  pulses[pulse].dac1_wave_function = NULL;
  #if (USE_DACs > 1 )
-  pulses[pulse].adc1_value_function = NULL;
+  pulses[pulse].dac2_wave_function = NULL;
  #endif
 #endif
 #endif
@@ -494,50 +494,68 @@ void Pulses::fix_global_next() {
 void Pulses::DAC_output() {
   // for speed reasons i compile different versions for different numbers of DACs
 #if (USE_DACs != 0)
-  static int dac0_last=0;
   static int dac1_last=0;
+  static int dac2_last=0;
 
-  int dac0_value=0;
   int dac1_value=0;
+  int dac2_value=0;
 
   for(int p=0; p < pl_max; p++)
     if ((pulses[p].flags & (ACTIVE | DACs) == (ACTIVE | DACs))) {
 
-#if (USE_DACs == 1)
-      if (pulses[p].adc0_value_function != NULL) {
-	dac0_value += pulses[p].adc0_value_function(p);
+ #if (USE_DACs == 1)
+      if (pulses[p].dac1_wave_function != NULL) {
+	dac1_value += pulses[p].dac1_wave_function(p, pulses[p].dac1_intensity);
       }
-#elif (USE_DACs == 2)
-      if (pulses[p].adc1_value_function != NULL) {
-	dac1_value += pulses[p].adc1_value_function(p);
+ #elif (USE_DACs == 2)
+      if (pulses[p].dac2_wave_function != NULL) {
+	dac2_value += pulses[p].dac2_wave_function(p, pulses[p].dac2_intensity);
       }
-#else	// too many DACs
+ #else	// too many DACs
   #error only 2 DACs supported
-#endif
+ #endif
 
     }
 #endif	// (USE_DACs != 0)
 }
 
 
-// Functions for  adcX_value_function(int pulse, int dac /* must be 0 or 1 */ )
+#if (USE_DACs != 0)
+ #if (USE_DACs == 1)
+int Pulses::en_DAC(int pulse, int DACs_count /* must be 1 or 2 */,
+		   int (*wave_function1)(int pulse, int volume)) {
+  pulses[pulse].dac1_wave_function = wave_function1;
+  pulses[pulse].flags |= DACs;
+}
+
+ #elif (USE_DACs == 2)
+int Pulses::en_DAC(int pulse, int DACs_count /* must be 1 or 2 */,
+		   int (*wave_function1)(int pulse, int volume) ,
+		   int (*wave_function2)(int pulse, int volume)) {
+  pulses[pulse].dac1_wave_function = wave_function1;
+  pulses[pulse].dac2_wave_function = wave_function2;
+  pulses[pulse].flags |= DACs;
+}
+ #endif // allowed number of DACs
+
+
+// Functions for  adcX_wave_function(int pulse)
 
 // off
-int Pulses::function_wave_OFF(int pulse, int dac /* must be 0 or 1 */ ) {	// ZERO
+int Pulses::function_wave_OFF(int pulse, int volume) {	// ZERO
   return 0;
 }
 
 // square wave
-int Pulses::function_square_wave(int pulse, int dac /* must be 0 or 1 */ ) {	// simple square
+int Pulses::function_square_wave(int pulse, int volume) {	// simple square
   if (pulses[pulse].counter & 1)
-    if (dac==0)
-      return pulses[pulse].adc0_intensity;
-    else //      if (dac==1)
-      return pulses[pulse].adc1_intensity;
+    return volume;
   else
     return 0;
 }
+#endif // (USE_DACs > 0)
 #endif // USE_DACs
+
 
 // bool check_maybe_do();
 // check if it's time to do something and do it if it's time
