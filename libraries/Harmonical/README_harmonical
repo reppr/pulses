@@ -4,22 +4,28 @@ README_harmonical
 
   http://github.com/reppr/pulses
 
-  Arduino library collection to raise actions in harmonical time intervals.
+  Software library collection to raise actions in harmonical time intervals.
   Periodically do multiple independent tasks named 'pulses'.
+
+  Pulses is a harmonical experiment
+    exploring analogies in topics like music, mathematics, aesthetics,
+    just to name a few.
+
+  pulses runs on ESP32 and ESP8266 (i.e. NodeMCU) boards
+  compiled using Arduino IDE
+
+  FIXME: TODO: ARDUINO (Mega, Due) boards are not quite supported any more
 
 
 
 ************************************************************
 ****************	Harmonicality	    ****************
+
 ************************************************************
 
-Pulses is a harmonical experiment
-running on ESP8266 NodeMCU and ARDUINO (Mega, Due) boards.
-
-It explores analogies in topics like music, mathematics, aesthetics,
-just to name a few.
 
 
+This is a very short description of what I mean when I say 'harmonicality'
 I use the terms 'harmonical' or 'harmonicality' in a broader sense,
 not restricted to the musical scope.
 
@@ -31,7 +37,7 @@ I'm not aware of any English term for that, German 'Harmonik' comes close,
 
 
 
-In music a chord uses certain selected tones fitting aesthetically.
+In music a chord uses certain exactly tuned tones fitting aesthetically.
 If we look at the frequencies we see *simple* rational number relationships,
 frequeny relationships like 4:5:6 or 2:3:4:5
 
@@ -55,26 +61,43 @@ Slowing it down it will produce bass notes, deeper and deeper
 until we can hear the individual clicks rumble
 somewhere between bass and rhythm.
 
-With slow vibrations we get rhythms.
+With even slower vibrations we get rhythms.
 hmm?
 
-interesting
+interesting...
 
 
-Tuning the drums of the rhythm to a short note in the original pitch
-while the drum keeps beating slow,  in a very low octave of the same note
-we get fascinating melody patterns, chord progressions,
+Let's take the numerical relationship from something like a musical scale or chord
+and tune some strings to the scale.
+
+Now we can take a very low octave of the note as the individual metrum of this note
+and repeat each note in it's own speed.
+ (Pulses can drive piezzos, magnets, surface vibration speakers or something similar
+  to play the notes)
+
+Lower notes will repeat slower and higher notes faster
+so an octave higher will repeat twice as fast,
+all exactly tuned to the numeric time relationships of the scale.
+
+This will play fascinating rhythmic melody patterns depending the scale,
+chord progressions,
 fractal-like structures.
 
 
 What rhythm, what melody patterns match a minor chord?
-a pentatonic scale? a chord progression?
+a pentatonic scale? a tetrachord? a chord progression?
 
-Or the other way round: How do the numbers sound together?
+Or the other way round: How do numbers sound together?
+Let the dance of numbers surprize you.
 
 
-That's the kind of questions pulses gives an instrument to try and play with.
+That's the kind of experiments pulses gives an instrument to try and play with.
 
-I hope some will have fun with it :)
+Pulses let's the time dance and sing...
+I hope some will have fun with it
 
+Robert Epprecht
+
+
+music is time art
 ****************************************************************
