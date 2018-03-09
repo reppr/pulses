@@ -46,6 +46,7 @@ using namespace std;	// ESP8266 needs that
 #include "pulses_systems.h"		// different software systems
 #include "pulses_boards.h"		// different boards
 #include "pulses_configuration.h"	// your configuration
+#include "pulses_sanity_checks.h"	// check some pp macros
 
 
 /* **************** Menu **************** */
