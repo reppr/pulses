@@ -98,12 +98,23 @@ struct pulse_t {
     used by do_jiffle	as pin
   */
 
-  char char_parameter_2;		// index
+  char char_parameter_2;		// index	################ FIXME: unsigned int
   /*
     used by do_jiffle as jiffletab index
   */
 
-  // pointers on  void something(int pulse)  functions:
+  char parameter_3;				// ################ FIXME: pointer
+  /*
+    used by do_jiffle jiffle_ID		// index selecting jiffletab
+  */
+
+  char parameter_4;
+  /*
+    not used
+  */
+
+
+  // pointer on  void something(int pulse)  functions:
   // the pulses will do that, if the pointer is not NULL
   void (*periodic_do)(int);
   //					some example functions:
@@ -122,12 +133,8 @@ struct pulse_t {
 #define SCRATCH			8	// edit (or similar) in progress
 #define DO_NOT_DELETE	       16	// dummy to avoid being thrown out
 #define TUNED		       32	// do not set directly, use activate_tuning(pulse)
-#define CUSTOM_1	       64	// can be used by periodic_do()
-#define CUSTOM_2	      128	// can be used by periodic_do()
-
-//	// ################comment
-//	#define pACTIVE	1
-//	#define pMUTE	2
+// #define CLICKs	       64	// inbuilt GPIO click
+#define DACs		      128	// uses DAC output
 
 
 /* **************************************************************** */
