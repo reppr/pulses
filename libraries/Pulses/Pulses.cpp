@@ -490,19 +490,33 @@ void Pulses::fix_global_next() {
   } // pulse loop
 }
 
-
+#if defined USE_DACs
 void Pulses::DAC_output() {
-  static int dac0_last=~0;	// ILLEGAL
-  static int dac1_last=~0;	// ILLEGAL
+  // for speed reasons i compile different versions for different numbers of DACs
+#if (USE_DACs != 0)
+  static int dac0_last=0;
+  static int dac1_last=0;
 
   int dac0_value=0;
   int dac1_value=0;
 
   for(int p=0; p < pl_max; p++)
     if ((pulses[p].flags & (ACTIVE | DACs) == (ACTIVE | DACs))) {
-      dac0_value += pulses[p].adc0_value_function(p);
-      dac1_value += pulses[p].adc1_value_function(p);
+
+#if (USE_DACs == 1)
+      if (pulses[p].adc0_value_function != NULL) {
+	dac0_value += pulses[p].adc0_value_function(p);
+      }
+#elif (USE_DACs == 2)
+      if (pulses[p].adc1_value_function != NULL) {
+	dac1_value += pulses[p].adc1_value_function(p);
+      }
+#else	// too many DACs
+  #error only 2 DACs supported
+#endif
+
     }
+#endif	// (USE_DACs != 0)
 }
 
 
@@ -523,7 +537,7 @@ int Pulses::function_square_wave(int pulse, int dac /* must be 0 or 1 */ ) {	// 
   else
     return 0;
 }
-
+#endif // USE_DACs
 
 // bool check_maybe_do();
 // check if it's time to do something and do it if it's time
