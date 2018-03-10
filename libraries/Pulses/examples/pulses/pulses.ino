@@ -2112,7 +2112,7 @@ char * experiment_names[] = {		// FIXME: const char * experiment_names would be 
       "major scale",				// 34
       "tetrachord",				// 35
       "more voices please",			// 36
-
+      "Guitar and other Instruments"		// 37
 //    "(invalid)",				// over
   };
 
