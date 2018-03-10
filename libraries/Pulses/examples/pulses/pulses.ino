@@ -185,6 +185,11 @@ unsigned int mimic_japan_pentatonic[] = {1,1, 8,9, 5,6, 2,3, 2*15,3*16, 0,0 };	/
 unsigned int minor_scale[] = {1,1, 8,9, 5,6, 3,4, 2,3, 5,8, 5,9, 0,0};	// scale each octave	zero terminated
 // 1/1	9/8	6/5	4/3	3/2	8/5	9/5	2/1
 
+// for doric_scale i try minor scale with major scale's sixth:
+unsigned int doric_scale[] = {1,1, 8,9, 5,6, 3,4, 2,3, 3,5, 5,9, 0,0};	// scale each octave	zero terminated
+// 1/1	9/8	6/5	4/3	3/2	8/5	9/5	2/1
+
+
 unsigned int major_scale[] = {1,1, 8,9, 4,5, 3,4, 2,3, 3,5, 8,15, 0,0};	// scale each octave	zero terminated
 // 24	27	30	32	36	40	45	48
 // 1:1	9:8	5:4	4:3	3:2	5:3	15:8	2:1
@@ -4150,6 +4155,10 @@ bool menu_pulses_reaction(char menu_input) {
 
 	switch (MENU.cb_peek()) {	// (second or) third letters for other scales
 	case EOF:
+	  break;
+	case '6':
+	  scale = doric_scale;
+//	  selected_scale=;
 	  break;
 	case '5':			// 5  pentatonic (minor|major)
 	  MENU.drop_input_token();

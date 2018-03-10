@@ -19,6 +19,7 @@ REGISTER_SCALE(scale_int);			// 10
 REGISTER_SCALE(overnotes);			// 11
 REGISTER_SCALE(scale_rationals);		// 12
 REGISTER_SCALE(octaves_fourths);		// 13
+REGISTER_SCALE(doric_scale);			// 14
 
 
 #include "jiffles.h"
