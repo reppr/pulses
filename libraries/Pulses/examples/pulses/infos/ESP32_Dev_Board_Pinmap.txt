@@ -131,10 +131,13 @@ digital input for PLL microphone or similar { 35 }
 
 
 /* **************************************************************** */
+
+// BOOT: see  https://github.com/espressif/esptool/wiki/ESP32-Boot-Mode-Selection
+
 	(used)	custom
-GPIO0	(boot) 	T			pu
+GPIO0	(boot) 	T			pu			BOOT: low boots to flash mode
 GPIO1	TX
-GPIO2	(led)	T			pd
+GPIO2	(led)	T			pd			BOOT: low or unconnected-floating
 GPIO3	RX
 GPIO4		T or C			pd
 GPIO5		C			pu		(spi SS display?)
@@ -144,10 +147,10 @@ GPIO8	FLASH
 GPIO9	FLASH
 GPIO10	FLASH
 GPIO11	FLASH
-GPIO12		(maybe error)				(MISO microSD)
+GPIO12		(maybe error)				(MISO microSD)	BOOT: flash voltage
 GPIO13		C
 GPIO14		C					(MOSI microSD)
-GPIO15		T			pu
+GPIO15		T			pu			BOOT: low silences boot messages
 GPIO16		C					(i2s1 WS)
 GPIO17		C					(i2s1 BCK)
 GPIO18		DISPLAY spi MOSI
