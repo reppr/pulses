@@ -1,4 +1,9 @@
 // #define DEBUG_GPIO_OUTPUT_INITIALISATION	// FIXME: TODO: remove debug code
+#define ESP32_13_clicks_v0
+/*
+ESP32_13_clicks_v0	// ################ TESTING ################
+      {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, };	//  ESP32_13_clicks_v0 untested!
+*/
 
 /* **************************************************************** */
 /*
@@ -4104,7 +4109,8 @@ bool menu_pulses_reaction(char menu_input) {
 
 	jiffle = ting4096;		// default jiffle
 	//	voices = 16;			// for DAC output
-	voices = 15;			// default (diatonic)	// for DAC output
+	if (voices == 0)
+	  voices = 15;			// default (diatonic)	// for DAC output
 
 	if(MENU.cb_peek()!=EOF) {		// second letters e E a A	e|a  minor|major
 	  //	 ################ FIXME: ################
