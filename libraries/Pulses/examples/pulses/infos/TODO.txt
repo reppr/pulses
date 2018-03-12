@@ -13,3 +13,8 @@ analogReadResolution(12);
 __AVR_ATmega32U4__
 
 test float output on PC.
+
+
+IMAGES of used dev boards
+
+PIN STICKERS of used dev boards
