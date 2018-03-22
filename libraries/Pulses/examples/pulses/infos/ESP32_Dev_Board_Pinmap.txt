@@ -216,9 +216,6 @@ ESP32_12_v0
       {23, 5, 17, 16, 4, 2, 15,		32, 33, 27, 14, 13, };	//  ESP32_12_v0  12 clicks
   //                     ?               ?   ?       ?          // these pins need configuration FIX
 
-ESP32_13_clicks_v0
-      {23, 5, 17, 16, 4, 0, 2, 15,		32, 33, 27, 14, 13, };	//  ESP32_13_clicks_v0
-  //                     +  ?                    ?   ?       ?          //
 
 ESP32_more_clicks_v0	// ################ TODO: UNTESTED! ################
       {23, (22), (21), 5, (19), (18), 17, 16, 4, 0, 2, 15,		32, 33, 27, 14, 13, };  // sample board layout
@@ -226,12 +223,12 @@ ESP32_more_clicks_v0	// ################ TODO: UNTESTED! ################
       {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, (18), (19), (21), (22), };	//  ESP32_more_clicks_v0, 13|15|17 clicks untested!
                                                         (DISPLAY)  (ACC/GYRO)
 
-ESP32_13_clicks_v0	//  ESP32_13_clicks_v0 tested
-      {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, };	//  ESP32_13_clicks_v0 tested
+ESP32_13_clicks	//  ESP32_13_clicks tested
+      {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, };	//  ESP32_13_clicks tested
 
 
-ESP32_more_clicks_no_display_v0		//  ESP32_more_clicks_no_display_v0	15 clicks TESTED
-      {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, 18, 19, };	//  ESP32_more_clicks_no_display_v0	15 clicks TESTED
+ESP32_15_clicks_no_display		//  ESP32_15_clicks_no_display	15 clicks TESTED
+      {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, 18, 19, };	//  ESP32_15_clicks_no_display	15 clicks TESTED
 
 
 ESP32_more_clicks_no_display_no_gyro_v0	// ################ TODO: UNTESTED! ################

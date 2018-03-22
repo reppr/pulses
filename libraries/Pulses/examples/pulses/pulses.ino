@@ -1,13 +1,5 @@
-// #define ESP32_13_clicks_v0
-/*
-ESP32_13_clicks_v0	// ################ TESTING ################
-      {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, };	//  ESP32_13_clicks_v0	TESTED!
-//    ok,ok,ok,ok. ok, ok, ok, ok, ok, ok, ok, ok, ok
-
-*/
-
-#define ESP32_more_clicks_no_display_v0	// ################ TESTING ################
-//       {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, 18, 19, };	//  ESP32_more_clicks_no_display_v0 15 clicks TESTED :)
+#define ESP32_15_clicks_no_display	// ################ TESTING ################
+//       {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, 18, 19, };	//  ESP32_15_clicks_no_display 15 clicks TESTED :)
 
 /* **************************************************************** */
 /*
