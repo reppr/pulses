@@ -59,6 +59,13 @@
     // ESP32s module 2x19 pins
     uint8_t click_pin[CLICK_PULSES] = { 32, 33, 14, 13, 23, 5, 17, 16};	//  GUITAR_v0 == KALIMBA7_v2  8 clicks
 
+  #elif defined ESP32	// DEFAULT on ESP32
+    #define ESP32_15_clicks_no_display	// why not?
+
+    #undef CLICK_PULSES
+    #define CLICK_PULSES	15
+    uint8_t click_pin[CLICK_PULSES] =				//  ESP32_15_clicks_no_display	15 clicks
+      {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, 18, 19, };
 
   #elif defined ESP8266	// configure PINs on ESP8266	general case
    /*
