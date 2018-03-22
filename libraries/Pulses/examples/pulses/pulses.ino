@@ -1004,47 +1004,8 @@ void init_click_pins_OutLow() {		// make them GPIO, OUTPUT, LOW
 #elif defined ESP32
     // see http://wiki.ai-thinker.com/_media/esp32/docs/esp32_chip_pin_list_en.pdf
 
-//    gpio_pad_select_gpio(pin);
-    //    PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[pin], PIN_FUNC_GPIO);
-    //    if (pin==14)
-    //     pinMode(pin, FUNCTION_3); // pin 14 must be switched to GPIO on ESP8266
-
-    // https://github.com/espressif/esp-idf/issues/143
-
-//    MENU.out(F("gpio_pad_select_gpio "));
-//    gpio_pad_select_gpio(pin);
-
-    if (GPIO_IS_VALID_OUTPUT_GPIO(pin) && (pin < 6 || pin > 11)) {
-//      MENU.out(F("gpio_set_direction\t"));
-//      gpio_set_direction((gpio_num_t) pin, GPIO_MODE_OUTPUT);  //Latch
-
+    if (GPIO_IS_VALID_OUTPUT_GPIO(pin) && (pin < 6 || pin > 11))
       PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[pin], PIN_FUNC_GPIO);
-
-//    switch (pin) {
-//    case 2:
-//      pinMode(pin, FUNCTION_3); 					// does not help
-//      //      PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[GPIO_NUM_2], PIN_FUNC_GPIO);	// does not help
-//      break;
-////	//    case 12:	// maybe error?
-////	//      pinMode(pin, FUNCTION_3);
-////	//      break;
-//    case 14:
-//      //      PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[GPIO_NUM_14], PIN_FUNC_GPIO);	// does not help
-//      //      pinMode(pin, FUNCTION_3); 	// does not help here?
-//      break;
-//    case 32:
-//      PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[GPIO_NUM_32], PIN_FUNC_GPIO);	// does not help
-//      pinMode(pin, FUNCTION_3);					 	// does not help
-//      /* gpio32 route to digital io_mux */
-//      REG_CLR_BIT(RTC_IO_XTAL_32K_PAD_REG, RTC_IO_X32P_MUX_SEL);	// does not help
-//      break;
-//    case 33:
-//      PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[GPIO_NUM_33], PIN_FUNC_GPIO);
-//      pinMode(pin, FUNCTION_3); 	// does not help
-//      break;
-//    }
-
-    }
 
     pinMode(pin, OUTPUT);	// on oldstyle Arduinos this is enough
     digitalWrite(pin, LOW);	// on oldstyle Arduinos this is enough
@@ -1062,6 +1023,8 @@ void init_click_pins_OutLow() {		// make them GPIO, OUTPUT, LOW
   #endif
 
   gpio_config(&gpioConfig);
+#elif
+  #error TODO: fix init_click_pins_OutLow() for non ESP boards	################
 #endif	// ESP32
 }
 
