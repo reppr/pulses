@@ -1,9 +1,15 @@
 // #define DEBUG_GPIO_OUTPUT_INITIALISATION	// FIXME: TODO: remove debug code
-#define ESP32_13_clicks_v0
+
+// #define ESP32_13_clicks_v0
 /*
 ESP32_13_clicks_v0	// ################ TESTING ################
-      {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, };	//  ESP32_13_clicks_v0 untested!
+      {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, };	//  ESP32_13_clicks_v0	TESTED!
+//    ok,ok,ok,ok. ok, ok, ok, ok, ok, ok, ok, ok, ok
+
 */
+
+#define ESP32_more_clicks_no_display_v0	// ################ TESTING ################
+//       {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, 18, 19, };	//  ESP32_more_clicks_no_display_v0 15 clicks TESTED :)
 
 /* **************************************************************** */
 /*
@@ -979,6 +985,8 @@ bool maybe_stop_sweeping() {
   //#include "soc/rtc.h"
   //#include "soc/io_mux_reg.h"
 #endif
+
+#define DEBUG_GPIO_OUTPUT_INITIALISATION	// ################ FIXME: TODO: remove debugging code  ################
 
 void init_click_pins_OutLow() {		// make them GPIO, OUTPUT, LOW
 /* uint8_t click_pin[CLICK_PULSES];

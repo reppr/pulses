@@ -9,11 +9,17 @@
 #if defined ESP32 || defined ESP8266			// ESPxx boards
 
 
-  #if defined ESP32_13_clicks_v0	// ################ TESTING ################
+  #if defined ESP32_13_clicks_v0		//  ESP32_13_clicks_v0	TESTED
     #undef CLICK_PULSES
     #define CLICK_PULSES	13
     uint8_t click_pin[CLICK_PULSES] =
-      {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, };	//  ESP32_13_clicks_v0 untested!
+      {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, };	//  ESP32_13_clicks_v0	TESTED
+//    ok,ok,ok,ok. ok, ok, ok, ok, ok, ok, ok, ok, ok,
+  #elif defined ESP32_more_clicks_no_display_v0	//  ESP32_more_clicks_no_display_v0, 15 clicks TESTED
+    #undef CLICK_PULSES
+    #define CLICK_PULSES	15
+    uint8_t click_pin[CLICK_PULSES] =				//  ESP32_more_clicks_no_display_v0	15 clicks TESTED
+      {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, 18, 19, };
 
   #elif defined ESP32_12_v0
   // testing ESP32_12 version

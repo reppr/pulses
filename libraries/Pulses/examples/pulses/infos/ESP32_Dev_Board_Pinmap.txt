@@ -199,6 +199,18 @@ GPIO39	i	mpc3008				SVN	ADC3	HALL?
    */
 
 
+
+IMPORTANT:	HARDWARE KOMPATIBILITY BREAK
+	*not* following physical board layout any more
+	  (i have to look up the pins for each individual board anyway)
+	so the mapping is done by wiring the hardware
+	BREAKS HARDWARE KOMPATIBILITY to my older ESP32 instruments (i.e. KALIMBAS)
+
+	i start with the unproblematical pins in ascending numerical order
+	followed by pin pairs for DISPLAY and GYRO/ACCELERO
+	to have some hardware compatibility between different instruments
+
+
 ESP32_12_v0
     uint8_t click_pin[CLICK_PULSES] =
       {23, 5, 17, 16, 4, 2, 15,		32, 33, 27, 14, 13, };	//  ESP32_12_v0  12 clicks
@@ -214,22 +226,12 @@ ESP32_more_clicks_v0	// ################ TODO: UNTESTED! ################
       {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, (18), (19), (21), (22), };	//  ESP32_more_clicks_v0, 13|15|17 clicks untested!
                                                         (DISPLAY)  (ACC/GYRO)
 
-not following physical board layout any more
-i have to look up the pins for each individual board anyway
-so the mapping is done by wiring the hardware
-this breaks hardware kompatibility to my older ESP32 instruments (i.e. kalimbas)
-
-i start with the unproblematical pins in ascending numerical order
-followed by pin pairs for DISPLAY and GYRO/ACCELERO
-to keep some hardware compatibility between different instruments
+ESP32_13_clicks_v0	//  ESP32_13_clicks_v0 tested
+      {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, };	//  ESP32_13_clicks_v0 tested
 
 
-ESP32_13_clicks_v0	// ################ TODO: UNTESTED! ################
-      {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, };	//  ESP32_13_clicks_v0 untested!
-
-
-ESP32_more_clicks_no_display_v0	// ################ TODO: UNTESTED! ################
-      {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, 18, 19, };	//  ESP32_more_clicks_no_display_v0, 15 clicks untested!
+ESP32_more_clicks_no_display_v0		//  ESP32_more_clicks_no_display_v0	15 clicks TESTED
+      {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, 18, 19, };	//  ESP32_more_clicks_no_display_v0	15 clicks TESTED
 
 
 ESP32_more_clicks_no_display_no_gyro_v0	// ################ TODO: UNTESTED! ################
