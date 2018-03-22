@@ -1,5 +1,3 @@
-// #define DEBUG_GPIO_OUTPUT_INITIALISATION	// FIXME: TODO: remove debug code
-
 // #define ESP32_13_clicks_v0
 /*
 ESP32_13_clicks_v0	// ################ TESTING ################
@@ -977,7 +975,6 @@ bool maybe_stop_sweeping() {
 
 
 /* **************************************************************** */
-// ################ FIXME: FIXME! ################
 #ifdef ESP32
   #include "driver/gpio.h"
   //#include "driver/rtc_io.h"
@@ -986,7 +983,6 @@ bool maybe_stop_sweeping() {
   //#include "soc/io_mux_reg.h"
 #endif
 
-#define DEBUG_GPIO_OUTPUT_INITIALISATION	// ################ FIXME: TODO: remove debugging code  ################
 
 void init_click_pins_OutLow() {		// make them GPIO, OUTPUT, LOW
 /* uint8_t click_pin[CLICK_PULSES];
@@ -999,10 +995,6 @@ void init_click_pins_OutLow() {		// make them GPIO, OUTPUT, LOW
 
   for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
     pin=click_pin[pulse];
-
-  #if defined DEBUG_GPIO_OUTPUT_INITIALISATION
-    MENU.out(" gpio init "); MENU.out(pin); MENU.tab();
-  #endif
 
 #ifdef ESP8266	// pin 14 must be switched to GPIO on ESP8266
     // http://www.esp8266.com/wiki/lib/exe/detail.php?id=esp8266_gpio_pin_allocations&media=pin_functions.png
@@ -1026,10 +1018,6 @@ void init_click_pins_OutLow() {		// make them GPIO, OUTPUT, LOW
 //      MENU.out(F("gpio_set_direction\t"));
 //      gpio_set_direction((gpio_num_t) pin, GPIO_MODE_OUTPUT);  //Latch
 
-  #if defined DEBUG_GPIO_OUTPUT_INITIALISATION
-      MENU.out(F("GPIO_IS_VALID_OUTPUT_GPIO\t"));
-      MENU.out(F("PIN_FUNC_SELECT(..., PIN_FUNC_GPIO)\t"));
-  #endif
       PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[pin], PIN_FUNC_GPIO);
 
 //    switch (pin) {
@@ -1056,19 +1044,10 @@ void init_click_pins_OutLow() {		// make them GPIO, OUTPUT, LOW
 //      break;
 //    }
 
-    } else {
-  #if defined DEBUG_GPIO_OUTPUT_INITIALISATION
-      MENU.out(F("invalid gpio for output\t"));
-      MENU.out(pin);
-  #endif
     }
 
     pinMode(pin, OUTPUT);	// on oldstyle Arduinos this is enough
     digitalWrite(pin, LOW);	// on oldstyle Arduinos this is enough
-
-  #if defined DEBUG_GPIO_OUTPUT_INITIALISATION
-    MENU.ln();
-  #endif
  }
 
   gpio_config_t gpioConfig;
