@@ -52,7 +52,9 @@
 
 #if defined ESP32	// KALIMBA7_v2 ESP32 version
   #if defined ESP32_15_clicks_no_display
-    #define AUTOSTART	MENU.play_KB_macro("V15 - E37D"); selected_experiment=-1;
+    #define AUTOSTART	MENU.play_KB_macro("V15 - E37D"); selected_experiment=-1;	// about 5'34"
+    //#define AUTOSTART	MENU.play_KB_macro("V15 - E37A"); selected_experiment=-1;	// about 3'44"
+    //#define AUTOSTART	MENU.play_KB_macro("V15 - E37E"); selected_experiment=-1;	// about 4'57"
   #elif defined ESP32_13_clicks_v0
     #define AUTOSTART	MENU.play_KB_macro("V13 - E37A"); selected_experiment=-1;
   #elif defined GUITAR_v0	// GUITAR with surface vibration speaker on ESP32 DACs
