@@ -139,6 +139,10 @@
   #endif
 #endif
 
+#if defined ESP32	// it's a hack, does not check if the pin *can* do that...
+  #undef  NUM_ANALOG_INPUTS
+  #define NUM_ANALOG_INPUTS	NUM_DIGITAL_PINS
+#endif
 
 #ifndef digitalPinHasPWM	// ################
   #ifdef __SAM3X8E__		// FIXME: ################
@@ -160,7 +164,7 @@
 #elif defined ESP32
   #define DIGITAL_IOs	40	// ??? ################ FIXME: ################
 #else
-  #define DIGITAL_IOs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)	// FIXME:
+  #define DIGITAL_IOs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)	// FIXME: ################
 #endif
 
 /* **************************************************************** */
@@ -697,7 +701,6 @@ void softboard_display() {
   MENU.ln();
   MENU.ln();
 #endif
-
 
   _select_digital(true);
   MENU.out(toWork_);
