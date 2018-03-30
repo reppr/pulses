@@ -9,7 +9,7 @@ README_harmonical
 
   Pulses is a harmonical experiment
     exploring analogies in topics like music, mathematics, aesthetics,
-    just to name a few.
+    just to name a few
 
   pulses runs on ESP32 and ESP8266 (i.e. NodeMCU) boards
   compiled using Arduino IDE
@@ -88,7 +88,7 @@ What rhythm, what melody patterns match a minor chord?
 a pentatonic scale? a tetrachord? a chord progression?
 
 Or the other way round: How do numbers sound together?
-Let the dance of numbers surprize you.
+Let the dance of numbers surprise you.
 
 
 That's the kind of experiments pulses gives an instrument to try and play with.
