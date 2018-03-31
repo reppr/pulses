@@ -11,6 +11,9 @@
 char* noname="no name";
 char* notype="no type";
 
+// void display_jiffletab(unsigned int *);	// see: pulses.ino
+
+/* **************************************************************** */
 // store infos about data arrays, like name, type, item size
 // (used by the user interface)
 struct arr_descriptor {
@@ -29,7 +32,7 @@ void init_arr_DB(arr_descriptor * DB, unsigned int len, char* name) {
   DB[0].len=len;	// data base length in bytes
   DB[0].item=1;		// DB[0].item is used as registration counter
   DB[0].name=name;
-  DB[0].type="database";
+  DB[0].type="DB";
 }
 
 void select_array_in_DB(arr_descriptor* DB, unsigned int* array) {
@@ -56,13 +59,29 @@ bool register_array_in_DB(arr_descriptor* DB, \
 
 char* array2name(arr_descriptor * DB, unsigned int* array) {
   arr_descriptor * arr= DB;
-  for(int i=0; i < DB[0].item; i++)
+
+  // do *not* start at 0,  if the array is selected. you would get DB name ;)
+  for(int i=1; i < DB[0].item; i++)
     if (DB[i].pointer == array)
       return DB[i].name;
 
   return "";
 }
 
+unsigned int* index2pointer(arr_descriptor * DB, unsigned int index) {
+  if (index > 0  &&  index < DB[0].item )
+    return DB[index].pointer;
+
+  return NULL;
+}
+
+int pointer2index(arr_descriptor * DB, unsigned int* array) {
+  for (int i=1; i < DB[0].item ; i++)
+    if (DB[i].pointer == array)
+      return i;
+
+  return ILLEGAL;
+}
 
 #define SCALE_DESCRIPTORS	64	// FIXME: ################
 arr_descriptor SCALES[SCALE_DESCRIPTORS];
@@ -96,24 +115,60 @@ bool register_jiffle(unsigned int* jiffle, unsigned int len, char* name) {
 
     MENU.ln();
     for (int i = 0; i < DB[0].item; i++) {
-      if (i && (DB[i].pointer == selected_array))	// ignore DB[0] array DB descriptor
-        MENU.out('*');
-      else
-        MENU.space();
+      if(i) {					// *not for database DB[0]
+	if (DB[i].pointer == selected_array)
+	  MENU.out('*');
+	else
+	  MENU.space();
 
-      MENU.space();
-      MENU.out(i);
-      MENU.tab();
+	MENU.space();
+	MENU.out(i-1);
+	MENU.tab();
+      }
+
       MENU.out(DB[i].type);
       MENU.tab();
       MENU.out(DB[i].name);
+
       if (i==0) {
 	MENU.tab();
-	MENU.out(DB[0].item);	// number of items in data base
+	MENU.out(DB[0].item - 1);	// number of items in data base
       }
+
       MENU.ln();
     }
   }
+
+  // menu helper function: select from DB
+  unsigned int* select_from_DB(arr_descriptor* DB) {
+    int input_value;
+    unsigned int* p = NULL;
+
+    if (MENU.cb_peek() == EOF) {	// no further input:
+      display_arr_names(DB);		//   display list
+      return NULL;			//   return
+    }
+
+    input_value=MENU.numeric_input(-1);
+
+    if (input_value != -1) {
+      p = index2pointer(DB, input_value + 1);
+      if (p == NULL)
+	MENU.outln_invalid();
+      else {
+	MENU.outln(array2name(DB, p));
+	DB[0].pointer = p;	// selected
+      }
+    }
+
+/*  see: pulses.ino
+    if (MENU.verbosity >= VERBOSITY_SOME)
+      display_jiffletab(p);
+*/
+
+    return p;
+  }
+
 #endif // MENU_h
 
 #define REGISTER_JIFFLE(X)	register_jiffle((X), sizeof((X)), STRINGIFY(X))

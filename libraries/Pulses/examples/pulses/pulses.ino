@@ -196,7 +196,6 @@ unsigned int tetrachord[] = {1,1, 8,9, 4,5, 3,4, 0,0};			// scale each octave	ze
 
 
 /* **************************************************************** */
-int selected_jiffle = ILLEGAL;
 
 // editing jiffle data
 // if we have enough RAM, we work in an int array[]
@@ -2238,20 +2237,24 @@ struct fraction jiffletab_len(unsigned int *jiffletab) {
 }
 
 
-void display_jiffletab(unsigned int *jiffletab) {
+void display_jiffletab(unsigned int *jiffle) {
+  if (jiffle == NULL)	// silently ignore undefined
+    return;
+
   struct fraction sum;
   sum.multiplier = 0;
   sum.divisor = 1;
   bool was_zero=false;
 
-  if (selected_jiffle==ILLEGAL) {
-    MENU.outln(F("(nothing selected)"));
-    return;
-  }
+  int i = pointer2index(JIFFLES, jiffle);	// check DB first
+  unsigned int len=0;
+  if (i > 0)
+    len = JIFFLES[i].len/sizeof(int);		// len is known
 
   // first line:
-#ifndef RAM_IS_SCARE
-  MENU.out(jiffle_names[selected_jiffle]); MENU.tab(); MENU.out(F("ID: ")); MENU.out(selected_jiffle); MENU.tab();
+#ifndef RAM_IS_SCARE	// FIXME: ?? ################
+  MENU.out(JIFFLES[0].name); MENU.out(':'); MENU.space();
+  MENU.out(array2name(JIFFLES, jiffle));  MENU.tab();
 #endif
   MENU.out(F("editing "));
   if (MENU.menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE) {
@@ -2264,7 +2267,7 @@ void display_jiffletab(unsigned int *jiffletab) {
   MENU.ln();
 
   // second line {data,data, ...}:
-  MENU.out("{");
+  MENU.out('{');
   for (int i=0; ; i++) {
     if ((i % JIFFLETAB_INDEX_STEP) == 0)
       MENU.space();
@@ -2273,14 +2276,14 @@ void display_jiffletab(unsigned int *jiffletab) {
 	MENU.out('|');
     if (i==jiffle_write_index)
       MENU.out("<");
-    MENU.out(jiffletab[i]);
+    MENU.out(jiffle[i]);
     if (i==jiffle_write_index)
       MENU.out(">");
     if (i==jiffle_range_top)
       if (jiffle_range_top)	// no range, no sign
 	MENU.out('"');
     MENU.out(",");
-    if (jiffletab[i] == 0) {
+    if (jiffle[i] == 0) {
       if (was_zero)	// second zero done, stop it
 	break;
 
@@ -2288,13 +2291,14 @@ void display_jiffletab(unsigned int *jiffletab) {
     } else
       was_zero=false;
   }
+  MENU.space(); MENU.out('}');
 
-  MENU.out(F(" }  cursor "));
-  MENU.out(jiffle_write_index); MENU.slash(); MENU.out(JIFFLE_RAM_SIZE);	// ################ FIXME: ################
-
-  sum = jiffletab_len(jiffletab);
+  sum = jiffletab_len(jiffle);
   MENU.tab();
   MENU.out(F("length ")); display_fraction(&sum);
+  MENU.tab();
+  MENU.out(F("cursor "));
+  MENU.out(jiffle_write_index); MENU.slash(); MENU.out(len);
   MENU.ln();
 }
 
@@ -2633,7 +2637,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   case ',':	// accept as noop in normal mode. used as delimiter to input data, displaying info. see 'menu_mode'
     if (MENU.menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE)
-	display_jiffletab(jiffle);
+      display_jiffletab(jiffle);
     else
       if (MENU.verbosity >= VERBOSITY_SOME) {
 	MENU.out_noop();
@@ -3159,8 +3163,8 @@ bool menu_pulses_reaction(char menu_input) {
   case 'J':	// select, edit, load jiffle
     /*
       'J'  shows jiffle_names and display_jiffletab(jiffle) selected jiffle
-      'J7' selects jiffle #7 and display_jiffletab(7)
-      'J!' loads selected jiffle in jiffle_RAM and display_jiffletab(jiffle_RAM)
+      'J7' selects jiffle #7 and display_jiffletab()
+      'J!' loads selected jiffle in jiffle_RAM and display_jiffletab(jiffle_RAM, JIFFLES)
     */
     // some jiffles from source, some very old FIXME:	review and delete	################
     if (MENU.cb_peek() == '!') {  // 'J!' copies an already selected jiffletab to RAM
@@ -3170,149 +3174,17 @@ bool menu_pulses_reaction(char menu_input) {
 	// jiffle_write_index=0;	// no, write starting at jiffle_write_index #### FIXME: ####
 
 	jiffle = jiffle_RAM;
-	selected_jiffle = 0;
+	select_array_in_DB(JIFFLES, jiffle_RAM);
 	load2_jiffle_RAM(source);
       }
     } else {	// select jiffle
-      if (MENU.maybe_display_more()) {
-	MENU.out(F("jiffle "));
-      }
-
-      // some jiffles in the source are very old   FIXME: check
-      input_value=MENU.numeric_input(-1);
-      switch (input_value) {
-      case 0:
-	jiffle = jiffle_RAM;
-	break;
-      case 1:
-	jiffle = gling128;
-	break;
-      case 2:
-	jiffle = jiffletab;
-	break;
-      case 3:
-	jiffle = jiffletab_december;
-	break;
-      case 4:
-	jiffle = jiffletab_december128;
-	break;
-      case 5:
-	jiffle = jiffletab_december_pizzicato;
-	break;
-      case 6:
-	jiffle = jiffletab01;
-	break;
-      case 7:
-	jiffle = jiffletab01;
-	break;
-      case 8:
-	jiffle = jiffletab02;
-	break;
-      case 9:
-	jiffle = jiffletab03;
-	break;
-      case 10:
-	jiffle = jiffletab04;
-	break;
-      case 11:
-	jiffle = jiffletab05;
-	break;
-      case 12:
-	jiffle = jiffletab06;
-	break;
-      case 13:
-	jiffle = jiffletab06;
-	break;
-      case 14:
-	jiffle = gling128_0;
-	break;
-      case 15:
-	jiffle = gling128_1;
-	break;
-      case 16:
-	jiffle = gling128_2;
-	break;
-      case 17:
-	jiffle = harmonics4;
-	break;
-      case 18:
-	jiffle = ding1024;
-	break;
-      case 19:
-	jiffle = ting4096;
-	break;
-      case 20:
-	jiffle = arpeggio4096;
-	break;
-      case 21:
-	jiffle = arpeggio4096down;
-	break;
-	//    case 21:
-	//      jiffle = mimic_japan_pentatonic;
-	//      break;
-
-      case 22:
-	jiffle = arpeggio_cont;
-	break;
-      case 23:
-	jiffle = arpeggio_and_down;
-	break;
-      case 24:
-	jiffle = stepping_down;
-	break;
-      case 25:
-	jiffle = back_to_ground;
-	break;
-      case 26:
-	jiffle = arpeggio_and_sayling;
-	break;
-      case 27:
-	jiffle = simple_theme;
-	break;
-      case 28:
-	jiffle = pentatonic_rising;
-	break;
-      case 29:
-	jiffle = tingeling4096;	// KALIMBA7
-	break;
-      case 30:
-	jiffle = ding1024;	// KALIMBA7, 4 times faster
-	break;
-      case 31:
-	jiffle = kalimbaxyl;	// KALIMBA7, very silent "xylo" jiffle
-	break;
-      case 32:
-	jiffle = ting4096;
-	// jiffle = ting_tick4096;
-	break;
-      case 33:
-	jiffle = tigg_ding4096;
-	break;
-      case 34:
-	jiffle = tumtum;
-	break;
-      case 35:
-	jiffle = piip2048;
-      case 36:
-	jiffle = tanboura;
-
-      default:
-	selected_jiffle=-1;	// as jiffle_names[selected_jiffle] index
-
-	if (MENU.verbosity >= VERBOSITY_SOME)
-	  MENU.outln_invalid();
-
-#ifndef RAM_IS_SCARE	// enough RAM?	display jiffle names
-	display_names(jiffle_names, n_jiffle_names, selected_jiffle);
-#endif
-      }
+      unsigned int* p = select_from_DB(JIFFLES);
+      if (p != NULL)
+	jiffle = p;
     }
 
-    if (input_value != -1) {
-      selected_jiffle=input_value;
-
-      display_jiffletab(jiffle);
-    }
+    if (MENU.verbosity >= VERBOSITY_SOME)
+	display_jiffletab(jiffle);
     break;
 
   case 'R':	// scale  was: ratio
@@ -3374,18 +3246,18 @@ bool menu_pulses_reaction(char menu_input) {
     MENU.menu_mode=JIFFLE_ENTRY_UNTIL_ZERO_MODE;
     jiffle = jiffle_RAM;
     jiffle_write_index=0;	// ################ FIXME: ################
-    selected_jiffle = 0;
+    select_array_in_DB(JIFFLES, jiffle_RAM);
     if(MENU.cb_peek()==EOF)
       if (MENU.verbosity)
 	display_jiffletab(jiffle);
     break;
 
   case '}':	// display jiffletab, stop editing jiffletab
+    MENU.menu_mode=0;
     if (MENU.verbosity)
       display_jiffletab(jiffle);
 
-    MENU.menu_mode=0;
-    jiffle_write_index=0;
+    jiffle_write_index=0;	// ################ FIXME: ################
     break;
 
   case 'd':	// divisor
