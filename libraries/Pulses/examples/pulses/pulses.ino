@@ -1699,10 +1699,12 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
     MENU.space();
   if (PULSES.pulses[pulse].counter<10)
     MENU.space();
-  MENU.space();
 
-  MENU.out_flags_();
-  MENU.outBIN(PULSES.pulses[pulse].flags, 8);
+  if (MENU.verbosity >= VERBOSITY_SOME) {
+    MENU.space();
+    MENU.out_flags_();
+    MENU.outBIN(PULSES.pulses[pulse].flags, 8);
+  }
 
   MENU.tab();
   PULSES.print_period_in_time_units(pulse);
@@ -1836,7 +1838,7 @@ void display_payload(int pulse) {
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out(F("do_jiffle:"));
     MENU.out(array2name(JIFFLES, (unsigned int*) PULSES.pulses[pulse].parameter_2));
-    MENU.tab();
+    MENU.space(2);
     MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
     return;
   }
@@ -1845,7 +1847,7 @@ void display_payload(int pulse) {
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out(F("seed jiff:"));
     MENU.out(array2name(JIFFLES, (unsigned int*) PULSES.pulses[pulse].parameter_2));
-    MENU.tab();
+    MENU.space(2);
     MENU.out((int) click_pin[pulse]);
     return;
   }
