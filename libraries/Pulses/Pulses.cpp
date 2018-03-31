@@ -657,8 +657,12 @@ void Pulses::time_info() {
   (*MENU).out(F("*** TIME info\t"));
   display_now();
   (*MENU).tab();
-  (*MENU).out(F("next  "));
-  display_real_ovfl_and_sec(global_next);
+
+  struct time sum = global_next;
+  struct time delta = now;
+  sub_time(&delta, &sum);
+  (*MENU).out(F("global next in"));
+  display_realtime_sec(sum);
   (*MENU).ln();
 }
 
