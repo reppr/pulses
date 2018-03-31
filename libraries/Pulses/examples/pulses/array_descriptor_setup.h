@@ -25,19 +25,19 @@ REGISTER_SCALE(doric_scale);			// 14
 #include "jiffles.h"
 init_arr_DB(JIFFLES, sizeof(JIFFLES), "JIFFLES");
 REGISTER_JIFFLE(jiffle_RAM);		// 0
-//REGISTER_JIFFLE(gling128);		// 1
+REGISTER_JIFFLE(gling128);		// 1	FIXME: replace ################
 REGISTER_JIFFLE(jiffletab);		// 2
-REGISTER_JIFFLE(jiffletab_december);	// 3
-REGISTER_JIFFLE(jiffletab_december128);	// 4
-REGISTER_JIFFLE(jiffletab_december_pizzicato); // 5
+REGISTER_JIFFLE(jiff_december);		// 3
+REGISTER_JIFFLE(jiff_dec128);		// 4
+REGISTER_JIFFLE(jiff_dec_pizzicato);	// 5
 REGISTER_JIFFLE(jiffletab01);		// 6
-REGISTER_JIFFLE(jiffletab01);		// 7 ==6 ??? FIXME:
+REGISTER_JIFFLE(jiffletab01);		// 7 ==6 ??? FIXME: replace
 REGISTER_JIFFLE(jiffletab02);		// 8
 REGISTER_JIFFLE(jiffletab03);		// 9
 REGISTER_JIFFLE(jiffletab04);		// 10
 REGISTER_JIFFLE(jiffletab05);		// 11
 REGISTER_JIFFLE(jiffletab06);		// 12
-REGISTER_JIFFLE(jiffletab06);		// 13 ==12 ??? FIXME:
+REGISTER_JIFFLE(jiffletab06);		// 13 ==12 ??? FIXME: replace
 REGISTER_JIFFLE(gling128_0);		// 14
 REGISTER_JIFFLE(gling128_1);		// 15
 REGISTER_JIFFLE(gling128_2);		// 16

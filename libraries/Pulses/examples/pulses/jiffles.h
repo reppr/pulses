@@ -69,13 +69,13 @@ unsigned int tanboura[] ={1,2048,1536, 0,0,0, };	// length 3/4
 unsigned int jiffletab[] =
   {1,16,2, 1,256,32, 1,128,8, 1,64,2, 1,32,1, 1,16,1, 1,8,2, 0,0};
 
-unsigned int jiffletab_december[] =
+unsigned int jiff_december[] =
   {1,1024,4, 1,64,4, 1,28,16, 1,512,8, 1,1024,128, 0,0};
 
-unsigned int jiffletab_december128[] =
+unsigned int jiff_dec128[] =
   {1,1024,4, 1,64,4, 1,128,16, 1,512,8, 1,1024,128, 0,0};
 
-unsigned int jiffletab_december_pizzicato[] =
+unsigned int jiff_dec_pizzicato[] =
   {1,1024,4, 1,64,4, 1,28,16, 1,512,8, 1,1024,128, 1,2048,8, 0,0};
 
 // very old jiffles
