@@ -671,9 +671,8 @@ void Pulses::time_info() {
 float Pulses::display_realtime_sec(struct time duration) {
   float seconds=((float) ((unsigned long) duration.time) / 1000000.0);
 
-  if (duration.overflow != ~0)		// ILLEGAL	FIXME: hmm? what about multiple negative overflows?
-    seconds += overflow_sec * (float) duration.overflow;
-  // seconds += overflow_sec * (float) ((signed long) duration.overflow);	// FIXME: overflow
+  if (duration.overflow != 0)
+    seconds += overflow_sec * (float) ((signed long) duration.overflow);
 
   float scratch = 1000.0;
   float limit = abs(seconds);
@@ -715,6 +714,7 @@ void Pulses::print_period_in_time_units(int pulse) {
 }
 
 
+// mainly for debugging
 void Pulses::display_real_ovfl_and_sec(struct time then) {
   (*MENU).out(F("tic/ofl "));
   (*MENU).out(then.time);

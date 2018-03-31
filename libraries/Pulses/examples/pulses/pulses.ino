@@ -1713,16 +1713,14 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
   MENU.tab();
 
   if (MENU.verbosity >= VERBOSITY_SOME) {
-    MENU.out(F("expected "));
-    PULSES.display_realtime_sec(PULSES.pulses[pulse].next);
-
-    MENU.tab();
-    MENU.out(F("now "));
-
+    struct time sum = PULSES.pulses[pulse].next;
     PULSES.get_now();
-    struct time scratch = PULSES.now;
-    scratch.time = realtime;
-    PULSES.display_realtime_sec(scratch);
+    struct time delta =PULSES.now;
+    PULSES.sub_time(&delta, &sum);
+
+    MENU.out(F("expected in"));
+    PULSES.display_realtime_sec(sum);
+    // PULSES.display_real_ovfl_and_sec(sum);	// debugging
   }
 
   if (PULSES.selected_pulses & (1 << pulse)) {
