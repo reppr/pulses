@@ -2085,6 +2085,9 @@ void menu_pulses_display() {
   MENU.out(F("pulses "));
   MENU.out(PULSES.get_pl_max());
   MENU.tab();
+  MENU.out(F("GPIO "));
+  MENU.out(CLICK_PULSES);
+  MENU.tab();
   MENU.outln(F("?=help\ti=info\t.=flagged info\t:=selected info"));
 
   MENU.ln();
