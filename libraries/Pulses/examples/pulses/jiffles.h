@@ -42,7 +42,7 @@ unsigned int stepping_down[] = {1,4096*8,512+256, 1,4096*7,512,  1,4096*6,512,  
 
 unsigned int back_to_ground[] = {1,2048,32, 3,1024*2,32, 1,1024,32, 1,512,32, 2,512*3,32, 1,256,16, 1,128,8, 1,64,4, 0,0};
 
-unsigned int pentatonic_rising[] = 
+unsigned int pentatonic_rising[] =
   {1,4096,256, 5,6*4096,256, 3,4*4096,256, 2,3*4096,256, 5*2,6*3*4096,256, 1,2*4096,256, 0,0};
 
 unsigned int simple_theme[] =
@@ -93,53 +93,6 @@ unsigned int gling128_1[] = {1,256,2, 1,128,16, 0,0};
 unsigned int gling128_2[] = {1,512,4, 1,256,4, 1,128,16, 0,0};
 unsigned int gling128[]   = {1,512,8, 1,256,4, 1,128,16, 0,0};
 
-char * jiffle_names[] = {
-      "jiffle_RAM",	// 0
-      "gling128",	// 1
-      "jiffletab",	// 2
-      "jiffletab_december",	// 3
-      "jiffletab_december128",	// 4
-      "jiffletab_december_pizzicato", // 5
-      "jiffletab01",	// 6
-      "jiffletab01",	// 7 ==6 ??? FIXME:
-      "jiffletab02",	// 8
-      "jiffletab03",	// 9
-      "jiffletab04",	// 10
-      "jiffletab05",	// 11
-      "jiffletab06",	// 12
-      "jiffletab06",	// 13 ==12 ??? FIXME:
-      "gling128_0",	// 14
-      "gling128_1",	// 15
-      "gling128_2",	// 16
-      "harmonics4",	// 17
-      "ting1024",	// 18
-      "ting4096",	// 19
-      "arpeggio4096",	// 20
-      "arpeggio4096down", // 21
-      "arpeggio_cont",	// 22
-      "arpeggio_and_down", // 23
-      "stepping_down",	// 24
-      "back_to_ground",	// 25
-      "arpeggio_and_sayling", // 26
-      "simple_theme",	// 27
-      "pentatonic_rising", // 28
-      "tingeling4096",	// 29
-      "ding1024",	// 30
-      "kalimbaxyl",	// 31
-      "ting_tick4096",	// 32
-      "tigg_ding4096",	// 33
-      "tumtum",		// 34
-      "piip2048",	// 35
-      "tanboura",	// 36
-};
-
-  // remember selected jiffle number for name display (only)
-  unsigned int jiffle_n=0;
-
-  #define n_jiffle_names (sizeof (jiffle_names) / sizeof (const char *))
-
-  //      "// jiffle = mimic_japan_pentatonic",	// was 21
-#endif
-
+#endif	// ! RAM_IS_SCARE
 #define JIFFLES_h
 #endif

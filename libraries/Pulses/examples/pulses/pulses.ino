@@ -1837,11 +1837,6 @@ void display_payload(int pulse) {
   scratch=&do_jiffle;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out(F("do_jiffle "));
-
-//	#ifndef RAM_IS_SCARE
-//	    MENU.out(jiffle_names[JIFFLE_ID]); MENU.tab();
-//	#endif
-
     MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
     return;
   }
@@ -3162,9 +3157,9 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'J':	// select, edit, load jiffle
     /*
-      'J'  shows jiffle_names and display_jiffletab(jiffle) selected jiffle
+      'J'  shows registered jiffle names and display_jiffletab(<selected_jiffle>)
       'J7' selects jiffle #7 and display_jiffletab()
-      'J!' loads selected jiffle in jiffle_RAM and display_jiffletab(jiffle_RAM, JIFFLES)
+      'J!' copy selected jiffle in jiffle_RAM and display_jiffletab(jiffle_RAM)
     */
     // some jiffles from source, some very old FIXME:	review and delete	################
     if (MENU.cb_peek() == '!') {  // 'J!' copies an already selected jiffletab to RAM
