@@ -3354,7 +3354,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     break;
 
-  case 'V':	// set voices
+  case 'V':	// set voices	V[num]! select_n_voices
     if(MENU.cb_peek()==EOF)
       MENU.out(F("voices "));
 
@@ -3364,8 +3364,14 @@ bool menu_pulses_reaction(char menu_input) {
     else
       MENU.outln_invalid();
 
+    if (voices==0)
+      voices=CLICK_PULSES;
+
     if (MENU.maybe_display_more())
       MENU.outln(voices);
+
+    if(MENU.cb_peek()=='!')
+      select_n(voices);
 
     break;
 
