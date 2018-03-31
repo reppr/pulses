@@ -470,7 +470,7 @@ void feedback_tolerance(unsigned int tolerance) {
 void VU_init(int pin) {
   VU_last=IMPOSSIBLE;	// just an impossible value
 
-  MENU.out(F("pin\tval\t+/- set "));
+  MENU.out(F("pin\tval\t'+' '-' '*' '/' set "));
   feedback_tolerance(bar_graph_tolerance);
 }
 
@@ -889,6 +889,27 @@ bool softboard_reaction(char token) {
 
     feedback_tolerance(++bar_graph_tolerance);
 #endif
+    break;
+
+  case '*':	// increase tolerance
+    if (!run_VU)
+      return false;    // *only* responsible if (run_VU)
+
+    bar_graph_tolerance++;
+    bar_graph_tolerance *= 10;
+    bar_graph_tolerance /= 9;
+    MENU.tab(); MENU.outln(bar_graph_tolerance);
+    feedback_tolerance(bar_graph_tolerance);
+    break;
+
+  case '/':	// decrease tolerance
+    if (!run_VU)
+      return false;    // *only* responsible if (run_VU)
+
+    bar_graph_tolerance *= 9;
+    bar_graph_tolerance /= 10;
+
+    feedback_tolerance(bar_graph_tolerance);
     break;
 
   case '-':
