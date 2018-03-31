@@ -1836,14 +1836,19 @@ void display_payload(int pulse) {
 
   scratch=&do_jiffle;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out(F("do_jiffle "));
+    MENU.out(F("do_jiffle:"));
+    MENU.out(array2name(JIFFLES, (unsigned int*) PULSES.pulses[pulse].parameter_2));
+    MENU.tab();
     MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
     return;
   }
 
   scratch=&do_throw_a_jiffle;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out(F("seed jiffle ")); MENU.out((int) click_pin[pulse]);
+    MENU.out(F("seed jiff:"));
+    MENU.out(array2name(JIFFLES, (unsigned int*) PULSES.pulses[pulse].parameter_2));
+    MENU.tab();
+    MENU.out((int) click_pin[pulse]);
     return;
   }
 
