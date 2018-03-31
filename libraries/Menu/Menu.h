@@ -232,6 +232,7 @@ class Menu {
   void ln()	const;		// output a newline
   void tab()	const;		// output a tab
   void space()	const;		// output a space
+  void space(unsigned int n)	const;		// output n spaces
   void equals()	const;		// output char '='
   void slash()	const;		// output char '/'
 

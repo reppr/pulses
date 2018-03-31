@@ -280,6 +280,11 @@ char Menu::cb_read() {
   void Menu::ln()     const { MENU_OUT('\n'); }	// Output a newline
   void Menu::tab()    const { MENU_OUT('\t'); }	// Output a tab
   void Menu::space()  const { MENU_OUT(' '); }	// Output a space	// but telnet seems to eat some of them...
+  void Menu::space(unsigned int n)  const {	// Output n spaces
+    for (; n; n--)
+      space();
+  }
+
   void Menu::equals() const { MENU_OUT('='); }	// Output char '='
   void Menu::slash()  const { MENU_OUT('/'); }	// Output char '/'[1~
 
