@@ -1,0 +1,12 @@
+https://forum.arduino.cc/index.php?topic=499432.0
+
+lorensiuswlt
+
+Re: ESP8266-01 Flash Mode, Need Help
+#1
+Sep 12, 2017, 04:08 am 
+Btw i've managed to flash the firmware. I added "--before no_reset" into esptool.py command line 
+
+sudo esptool.py --port /dev/cu.usbmodem1421 --before no_reset flash_id
+
+And before flashing, disconnect and the connect the power source. it works.
