@@ -599,8 +599,7 @@ void show_samples(int inp) {
     if (s == last)
       MENU.out(F("=>"));	// "=>" sign on last sample
     else {
-      MENU.space();
-      MENU.space();
+      MENU.space(2);
     }
 
     MENU.pad(inp, 4);
@@ -618,8 +617,7 @@ void show_samples(int inp) {
   }
 
   MENU.tab();
-  MENU.space();
-  MENU.space();
+  MENU.space(2);
   MENU.out(average);
   MENU.tab();
 // MENU.out('±');		// plusminus sign, does not work here...

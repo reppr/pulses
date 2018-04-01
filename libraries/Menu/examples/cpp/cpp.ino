@@ -310,8 +310,7 @@ int maybe_display_An(uint8_t pin) {
   // found analog input, display:
   MENU.out('A');
   MENU.out(analog_input);
-  MENU.space();
-  MENU.space();
+  MENU.space(2);
   return true;
 }
 
@@ -403,7 +402,7 @@ void  arduino_pins_info() {
 
     #ifdef ARDUINO_ESP8266_NODEMCU
       if (pinA2NODEMCU(pin)<0) {
-        MENU.space(); MENU.space();
+        MENU.space(2);
       } else {
         MENU.out('D'); MENU.out(pinA2NODEMCU(pin));
       }
@@ -515,7 +514,7 @@ void  arduino_pins_info() {
     #else
       MENU.out('?');
     #endif
-    MENU.space(); MENU.space();
+    MENU.space(2);
 
     #ifdef digitalPinToBitMask
       #ifdef ESP8266
