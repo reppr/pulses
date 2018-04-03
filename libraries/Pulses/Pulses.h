@@ -66,7 +66,7 @@ struct pulse_t {
 	// DO_NOT_DELETE	dummy to avoid being thrown out
 	// TUNED		do not set directly, use activate_tuning(pulse)
 	// CLICKs		inbuilt GPIO toggling
-	// DACs			DAC will output value
+	// DACsq		DACs output value as square wave with harmonical timing
 
   // internal parameter:
   unsigned int int1;		// if COUNTED, gives number of executions
@@ -148,7 +148,7 @@ struct pulse_t {
 #define DO_NOT_DELETE	       16	// dummy to avoid being thrown out
 #define TUNED		       32	// do not set directly, use activate_tuning(pulse)
 // #define CLICKs	       64	// inbuilt GPIO click
-#define DACs		      128	// uses DAC output
+#define DACsq		      128	// DAC output value as square wave, harmonical timing
 
 
 /* **************************************************************** */

@@ -501,7 +501,7 @@ void Pulses::DAC_output() {
   int dac2_value=0;
 
   for(int p=0; p < pl_max; p++)
-    if ((pulses[p].flags & (ACTIVE | DACs) == (ACTIVE | DACs))) {
+    if ((pulses[p].flags & (ACTIVE | DACsq) == (ACTIVE | DACsq))) {
 
  #if (USE_DACs == 1)
       if (pulses[p].dac1_wave_function != NULL) {
@@ -525,7 +525,7 @@ void Pulses::DAC_output() {
 int Pulses::en_DAC(int pulse, int DACs_count /* must be 1 or 2 */,
 		   int (*wave_function1)(int pulse, int volume)) {
   pulses[pulse].dac1_wave_function = wave_function1;
-  pulses[pulse].flags |= DACs;
+  pulses[pulse].flags |= DACsq;
 }
 
  #elif (USE_DACs == 2)
@@ -534,7 +534,7 @@ int Pulses::en_DAC(int pulse, int DACs_count /* must be 1 or 2 */,
 		   int (*wave_function2)(int pulse, int volume)) {
   pulses[pulse].dac1_wave_function = wave_function1;
   pulses[pulse].dac2_wave_function = wave_function2;
-  pulses[pulse].flags |= DACs;
+  pulses[pulse].flags |= DACsq;
 }
  #endif // allowed number of DACs
 
