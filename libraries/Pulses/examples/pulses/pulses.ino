@@ -280,15 +280,45 @@ void en_jiffle_throw_selected() {
     if (PULSES.selected_pulses & (1 << pulse))
       en_jiffle_thrower(pulse, jiffle);
 
-  PULSES.fix_global_next();	// just in case?
-  PULSES.check_maybe_do();	// maybe do it *first*
+  PULSES.fix_global_next();		// just in case?
 
-  if (MENU.maybe_display_more()) {
-    MENU.ln();
-    selected_or_flagged_pulses_info_lines();
-  }
+  if (!PULSES.check_maybe_do())		// maybe do it *first*
+    if (MENU.maybe_display_more()) {	// else
+      MENU.ln();
+      selected_or_flagged_pulses_info_lines();
+    }
 };
 
+// make an existing pulse produce a square wave with harmonical timing
+bool en_DACsq(int pulse) {
+  if (pulse != ILLEGAL) {
+    if (pulse < pl_max) {
+      PULSES.pulses[pulse].flags = PULSES.pulses[pulse].flags | DACsq;
+
+      return true;
+    }
+  }
+
+  return false;
+};
+
+// make selected pulses produce square waves with harmonical timing
+int en_DACsq_selected() {
+  int cnt=0;
+
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if (PULSES.selected_pulses & (1 << pulse))
+      if (en_DACsq(pulse))
+	cnt++;
+
+  if (!PULSES.check_maybe_do())		// maybe do it *first*
+    if (MENU.maybe_display_more()) {	// else
+      MENU.ln();
+      selected_pulses_info_lines();
+    }
+
+  return cnt;
+};
 
 // make selected pulses click
 int en_click_selected() {
@@ -300,12 +330,11 @@ int en_click_selected() {
       if (en_click(pulse))
 	cnt++;
 
-  PULSES.check_maybe_do();	// maybe do it *first*
-
-  if (MENU.maybe_display_more()) {
-    MENU.ln();
-    selected_pulses_info_lines();
-  }
+  if (!PULSES.check_maybe_do())		// maybe do it *first*
+    if (MENU.maybe_display_more()) {	// else
+      MENU.ln();
+      selected_pulses_info_lines();
+    }
 
   return cnt;
 };
@@ -597,13 +626,6 @@ unsigned int stress_emergency=4096;	// high value seems appropriate
 //#endif
 unsigned int stress_count=0;
 
-/*	// HACK for testing only
-#if defined USE_DACs
-  uint8_t dac1_value;
-  uint8_t dac2_value;
-#endif
-*/
-
 void loop() {	// ARDUINO
 
   #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
@@ -638,23 +660,6 @@ void loop() {	// ARDUINO
       stress_count=0;				// seems best, maybe
       // stress_count = stress_emergency / 2;	// FIXME: further tests	################
     }
-
-/*	// HACK for testing only
-#if defined USE_DACs
-    dac1_value=0;
-    dac2_value=0;
-    for (int pulse=CLICK_PULSES; pulse<pl_max; pulse++) {
-      if (PULSES.pulses[pulse].flags & ACTIVE) {
-	if (PULSES.pulses[pulse].counter & 1)
-	  dac1_value += 256/CLICK_PULSES;
-      }
-    }
-
-    dacWrite(BOARD_DAC1, dac1_value);
-    dacWrite(BOARD_DAC2, dac1_value);	// test is mono, unisono
-#endif
-*/
-
   }
 
   // descend through priorities and do first thing found

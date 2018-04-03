@@ -7,21 +7,18 @@
 #include "pulses_boards.h"
 
 #if defined USE_DACs
- #if (USE_DACs > 2)
-   #error only 2 DACs supported
- #endif
-
- #if defined BOARD_has_DACs
-  #if (USE_DACs > BOARD_has_DACs)
-   #error looks like your board has not enough DACs:	BOARD_has_DACs
+  #if (USE_DACs == 0)	// deactivate
+    #undef USE_DACs
+    #warning USE_DACs == 0:  undefined USE_DACs
+  #elif (USE_DACs > 2)	// not supported
+    #error USE_DACs: only 1 or 2 DACs supported
+  #else
+    #if defined BOARD_has_DACs
+      #if (USE_DACs > BOARD_has_DACs)
+        #error BOARD_has_DACs:  looks like your board has not enough DACs
+      #endif
+    #else	// BOARD_has_DACs is not defined
+      #error BOARD_has_DACs is not defined
+    #endif
   #endif
-
- #else	// BOARD_has_DACs is not defined
-  #error BOARD_has_DACs is not defined
- #endif
-
- #if (USE_DACs == 0)
-  #undef USE_DACs
-  #warning USE_DACs == 0 undefined USE_DACs
- #endif
 #endif // USE_DACs
