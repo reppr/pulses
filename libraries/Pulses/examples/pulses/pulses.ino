@@ -289,11 +289,19 @@ void en_jiffle_throw_selected() {
     }
 };
 
-// make an existing pulse produce a square wave with harmonical timing
-bool en_DACsq(int pulse) {
+// make an existing pulse produce a DAC square wave with harmonical timing
+bool en_DACsq(int pulse, unsigned int channel_mask) {
+  unsigned int channelfl=0;
+
+  if (channel_mask & 1)
+    channelfl |= DACsq1;
+
+  if (channel_mask & 1)
+    channelfl |= DACsq2;
+
   if (pulse != ILLEGAL) {
     if (pulse < pl_max) {
-      PULSES.pulses[pulse].flags = PULSES.pulses[pulse].flags | DACsq;
+      PULSES.pulses[pulse].flags = (PULSES.pulses[pulse].flags | channelfl);
 
       return true;
     }
@@ -303,12 +311,12 @@ bool en_DACsq(int pulse) {
 };
 
 // make selected pulses produce square waves with harmonical timing
-int en_DACsq_selected() {
+int en_DACsq_selected(unsigned int channel_mask) {
   int cnt=0;
 
   for (int pulse=0; pulse<pl_max; pulse++)
     if (PULSES.selected_pulses & (1 << pulse))
-      if (en_DACsq(pulse))
+      if (en_DACsq(pulse, channel_mask))
 	cnt++;
 
   if (!PULSES.check_maybe_do())		// maybe do it *first*

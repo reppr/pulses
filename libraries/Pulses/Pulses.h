@@ -65,8 +65,10 @@ struct pulse_t {
 	// SCRATCH		edit (or similar) in progress
 	// DO_NOT_DELETE	dummy to avoid being thrown out
 	// TUNED		do not set directly, use activate_tuning(pulse)
-	// CLICKs		inbuilt GPIO toggling
-	// DACsq		DACs output value as square wave with harmonical timing
+	// DACsq1		DACs output value as square wave with harmonical timing
+	// DACsq2		DACs output value as square wave with harmonical timing
+
+	// CLICKs		inbuilt GPIO toggling		TODO: not implemented yet
 
   // internal parameter:
   unsigned int int1;		// if COUNTED, gives number of executions
@@ -129,10 +131,10 @@ struct pulse_t {
 
 #if defined USE_DACs
   //  int (*dac1_wave_function)(int pulse, int volume);
-  int dac1_intensity;
+  int dac1_intensity=0;
   #if (USE_DACs > 1)	// only 1 or 2 DACs supported
     //  int (*dac2_wave_function)(int pulse, int volume);
-    int dac2_intensity;
+    int dac2_intensity=0;
   #endif
 #endif
 };
@@ -143,9 +145,10 @@ struct pulse_t {
 #define SCRATCH			8	// edit (or similar) in progress
 #define DO_NOT_DELETE	       16	// dummy to avoid being thrown out
 #define TUNED		       32	// do not set directly, use activate_tuning(pulse)
-// #define CLICKs	       64	// inbuilt GPIO click
-#define DACsq		      128	// DAC output value as square wave, harmonical timing
+#define DACsq1		       64	// DAC output value as square wave, harmonical timing
+#define DACsq2		      128	// DAC output value as square wave, harmonical timing
 
+// #define CLICKs	      		// inbuilt GPIO click	TODO: not implemented yet
 
 /* **************************************************************** */
 class Pulses {
@@ -177,8 +180,9 @@ class Pulses {
 
 
 #if defined USE_DACs
-  void DAC_output();			// calculate and output on DAC
+  void DAC_output();		// calculate and output on DAC
 
+// TODO: use or remove code later
 //	 #if (USE_DACs == 1)
 //	  int en_DAC(int pulse, int DACs_count /* must be 1 or 2 */,
 //		     int (*dac1_wave_function)(int pulse), int volume);

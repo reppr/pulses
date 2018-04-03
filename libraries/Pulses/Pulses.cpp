@@ -302,6 +302,7 @@ void Pulses::init_pulse(int pulse) {
   pulses[pulse].flags = 0;
   pulses[pulse].periodic_do = NULL;
 
+// TODO: use or remove code later
 //	#if defined USE_DACs
 //	#if (USE_DACs > 0 )
 //	  pulses[pulse].dac1_wave_function = NULL;
@@ -494,7 +495,7 @@ void Pulses::fix_global_next() {
 void Pulses::DAC_output() {
   // for speed reasons i compile different versions for different numbers of DACs
 
-  #if (USE_DACs > 2)	// too many DACs?
+  #if (USE_DACs > 2)	// too many DACs?  remind me if i use more then implemented ;)
     #error DAC_output():  only 2 DACs supported...
   #endif
 
@@ -505,13 +506,16 @@ void Pulses::DAC_output() {
   int dac2_value=0;
 
   for(int p=0; p < pl_max; p++)
-    if ((pulses[p].flags & (ACTIVE | DACsq) == (ACTIVE | DACsq))) {
-      dac1_value += pulses[p].dac1_intensity;
+    if (pulses[p].flags & ACTIVE) {
+      if (pulses[p].flags & DACsq1)
+	dac1_value += pulses[p].dac1_intensity;
 
     #if (USE_DACs > 1)	// only 2 DACs implemented
-      dac2_value += pulses[p].dac2_intensity;
+      if (pulses[p].flags & DACsq2)
+	dac2_value += pulses[p].dac2_intensity;
     #endif
 
+      // TODO: use or remove code later
       /*
       if (pulses[p].dac1_wave_function != NULL) {
 	dac1_value += pulses[p].dac1_wave_function(p, pulses[p].dac1_intensity);
@@ -537,6 +541,7 @@ void Pulses::DAC_output() {
 #endif	// USE_DACs
 
 
+// TODO: use or remove code later
 //	#if (USE_DACs != 0)
 //	 #if (USE_DACs == 1)
 //	int Pulses::en_DAC(int pulse, int DACs_count /* must be 1 or 2 */,
