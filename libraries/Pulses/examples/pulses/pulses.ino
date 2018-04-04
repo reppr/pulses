@@ -855,7 +855,7 @@ int main() {
 
 
 void click(int pulse) {	// can be called from a pulse
-  digitalWrite(PULSES.pulses[pulse].char_parameter_1, PULSES.pulses[pulse].counter & 1);
+  digitalWrite(PULSES.pulses[pulse].gpio, PULSES.pulses[pulse].counter & 1);
 }
 
 
@@ -902,7 +902,7 @@ void tuned_sweep_click(int pulse) {	// can be called from a pulse
 
 // first try: octave is reached by a fixed number of steps:
 void sweep_click_0(int pulse) {	// can be called from a sweeping pulse
-  PULSES.pulses[pulse].period.time = PULSES.pulses[pulse].ulong_parameter_1 * tuning;
+  PULSES.pulses[pulse].period.time = PULSES.pulses[pulse].base_time * tuning;
   PULSES.pulses[pulse].period.overflow = 0;
   click(pulse);
 
@@ -1113,9 +1113,9 @@ void init_click_pins_OutLow() {		// make them GPIO, OUTPUT, LOW
 //  		     struct time when, struct time new_period) {
 //    int pulse = PULSES.setup_pulse(pulse_do, new_flags, when, new_period);
 //    if (pulse != ILLEGAL) {
-//      PULSES.pulses[pulse].char_parameter_1 = click_pin[pulse];
-//      pinMode(PULSES.pulses[pulse].char_parameter_1, OUTPUT);
-//      digitalWrite(PULSES.pulses[pulse].char_parameter_1, LOW);
+//      PULSES.pulses[pulse].gpio = click_pin[pulse];
+//      pinMode(PULSES.pulses[pulse].gpio, OUTPUT);
+//      digitalWrite(PULSES.pulses[pulse].gpio, LOW);
 //    } else {
 //      out_noFreePulses();
 //    }
@@ -1134,8 +1134,8 @@ bool en_click(int pulse) {
   if (pulse != ILLEGAL) {
     if (pulse < CLICK_PULSES) {
       PULSES.pulses[pulse].periodic_do = (void (*)(int)) &click;
-      PULSES.pulses[pulse].char_parameter_1 = click_pin[pulse];
-      pinMode(PULSES.pulses[pulse].char_parameter_1, OUTPUT);
+      PULSES.pulses[pulse].gpio = click_pin[pulse];
+      pinMode(PULSES.pulses[pulse].gpio, OUTPUT);
       return true;
     }
   }
@@ -1166,7 +1166,7 @@ void en_sweep_click_0(int pulse)
 {
   if (pulse != ILLEGAL)
     if (en_click(pulse)) {
-      PULSES.pulses[pulse].ulong_parameter_1 = PULSES.pulses[pulse].period.time;
+      PULSES.pulses[pulse].base_time = PULSES.pulses[pulse].period.time;
       PULSES.pulses[pulse].periodic_do = (void (*)(int)) &sweep_click_0;
     }
 };
@@ -1188,9 +1188,9 @@ int setup_click_synced(struct time when, unsigned long unit, unsigned long multi
   int pulse= PULSES.setup_pulse_synced(&click, ACTIVE, when, unit, multiplier, divisor, sync);
 
   if (pulse != ILLEGAL) {
-    PULSES.pulses[pulse].char_parameter_1 = click_pin[pulse];
-    pinMode(PULSES.pulses[pulse].char_parameter_1, OUTPUT);
-    digitalWrite(PULSES.pulses[pulse].char_parameter_1, LOW);
+    PULSES.pulses[pulse].gpio = click_pin[pulse];
+    pinMode(PULSES.pulses[pulse].gpio, OUTPUT);
+    digitalWrite(PULSES.pulses[pulse].gpio, LOW);
   } else {
     out_noFreePulses();
   }
@@ -1840,12 +1840,12 @@ void pulse_info(int pulse) {
   MENU.outBIN(PULSES.pulses[pulse].flags, 8);
   MENU.ln();
 
-  MENU.out(F("pin ")); MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
-  MENU.out(F("\tindex ")); MENU.out((int) PULSES.pulses[pulse].char_parameter_2);
-  MENU.out(F("\ttimes ")); MENU.out(PULSES.pulses[pulse].int1);
-  MENU.out(F("\tp1 "));	MENU.out(PULSES.pulses[pulse].parameter_1);
-  MENU.out(F("\tp2 "));	MENU.out(PULSES.pulses[pulse].parameter_2);
-  MENU.out(F("\tul1 ")); MENU.out(PULSES.pulses[pulse].ulong_parameter_1);
+  MENU.out(F("pin ")); MENU.out((int) PULSES.pulses[pulse].gpio);
+  MENU.out(F("\tindex ")); MENU.out(PULSES.pulses[pulse].index);
+  MENU.out(F("\ttimes ")); MENU.out(PULSES.pulses[pulse].count);
+  MENU.out(F("\tcntd ")); MENU.out(PULSES.pulses[pulse].countdown);
+  MENU.out(F("\tdata ")); MENU.out(PULSES.pulses[pulse].data);
+  MENU.out(F("\ttime ")); MENU.out(PULSES.pulses[pulse].base_time);
 
   MENU.ln();		// start next line
 
@@ -1898,7 +1898,7 @@ void display_payload(int pulse) {
   scratch=&click;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out("click  ");
-    MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
+    MENU.out((int) PULSES.pulses[pulse].gpio);
     return;
   }
 
@@ -1906,21 +1906,21 @@ void display_payload(int pulse) {
   scratch=&tuned_sweep_click;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out(F("tuned_sweep_click "));
-    MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
+    MENU.out((int) PULSES.pulses[pulse].gpio);
     return;
   }
 
   scratch=&sweep_click;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out(F("sweep_click "));
-    MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
+    MENU.out((int) PULSES.pulses[pulse].gpio);
     return;
   }
 
   scratch=&sweep_click_0;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out(F("sweep_click_0 "));
-    MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
+    MENU.out((int) PULSES.pulses[pulse].gpio);
     return;
   }
 #endif	// #ifdef IMPLEMENT_TUNING	implies floating point
@@ -1928,16 +1928,16 @@ void display_payload(int pulse) {
   scratch=&do_jiffle;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out(F("do_jiffle:"));
-    MENU.out(array2name(JIFFLES, (unsigned int*) PULSES.pulses[pulse].parameter_2));
+    MENU.out(array2name(JIFFLES, (unsigned int*) PULSES.pulses[pulse].data));
     MENU.space(2);
-    MENU.out((int) PULSES.pulses[pulse].char_parameter_1);
+    MENU.out((int) PULSES.pulses[pulse].gpio);
     return;
   }
 
   scratch=&do_throw_a_jiffle;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out(F("seed jiff:"));
-    MENU.out(array2name(JIFFLES, (unsigned int*) PULSES.pulses[pulse].parameter_2));
+    MENU.out(array2name(JIFFLES, (unsigned int*) PULSES.pulses[pulse].data));
     MENU.space(2);
     MENU.out((int) click_pin[pulse]);
     return;
@@ -2019,7 +2019,7 @@ void en_jiffle_thrower(int pulse, unsigned int *jiffletab)
 {
   if (pulse != ILLEGAL) {
     PULSES.pulses[pulse].periodic_do = &do_throw_a_jiffle;
-    PULSES.pulses[pulse].parameter_2 = (unsigned int) jiffletab;
+    PULSES.pulses[pulse].data = (unsigned int) jiffletab;
   }
 }
 
@@ -2044,12 +2044,11 @@ int init_jiffle(unsigned int *jiffletab, struct time when, struct time new_perio
 
   pulse = PULSES.setup_pulse(&do_jiffle, ACTIVE, when, jiffle_period);
   if (pulse != ILLEGAL) {
-    PULSES.pulses[pulse].char_parameter_1 = click_pin[origin_pulse];	// set pin
-    // pinMode(click_pin[pulse], OUTPUT);				// should be ok already
-    PULSES.pulses[pulse].char_parameter_2 = 0;				// init phase 0
-    PULSES.pulses[pulse].parameter_1 = jiffletab[2];			// count of first phase
-    PULSES.pulses[pulse].parameter_2 = (unsigned int) jiffletab;
-    PULSES.pulses[pulse].ulong_parameter_1 = new_period.time;
+    PULSES.pulses[pulse].gpio = click_pin[origin_pulse];	// set pin
+    PULSES.pulses[pulse].index = 0;			// init phase 0
+    PULSES.pulses[pulse].countdown = jiffletab[2];		// count of first phase
+    PULSES.pulses[pulse].data = (unsigned int) jiffletab;
+    PULSES.pulses[pulse].base_time = new_period.time;
   }
 
   return pulse;
@@ -2057,10 +2056,10 @@ int init_jiffle(unsigned int *jiffletab, struct time when, struct time new_perio
 
 
 void do_throw_a_jiffle(int pulse) {		// for pulse_do
-  // pulses[pulse].parameter_2	= (unsigned int) jiffletab;
+  // pulses[pulse].data	= (unsigned int) jiffletab;
 
   // start a new jiffling pulse now (next [pulse] is not yet updated):
-  unsigned int *this_jiff=(unsigned int *) PULSES.pulses[pulse].parameter_2;
+  unsigned int *this_jiff=(unsigned int *) PULSES.pulses[pulse].data;
 
   // check for empty jiffle first:
   bool has_data=true;
@@ -2069,7 +2068,7 @@ void do_throw_a_jiffle(int pulse) {		// for pulse_do
       has_data=false;
 
   if (has_data)	// there *is* jiffle data
-    init_jiffle((unsigned int *) PULSES.pulses[pulse].parameter_2,	\
+    init_jiffle((unsigned int *) PULSES.pulses[pulse].data,	\
 	      PULSES.pulses[pulse].next, PULSES.pulses[pulse].period, pulse);
   else	// zero in first triplet, *invalid* jiffle table.
     MENU.outln(F("no jiffle"));
@@ -2231,7 +2230,7 @@ int setup_jiffle_thrower_synced(struct time when,
   int pulse= PULSES.setup_pulse_synced(&do_throw_a_jiffle, ACTIVE,
 			       when, unit, multiplier, divisor, sync);
   if (pulse != ILLEGAL) {
-    PULSES.pulses[pulse].parameter_2 = (unsigned int) jiffletab;
+    PULSES.pulses[pulse].data = (unsigned int) jiffletab;
   } else {
     out_noFreePulses();
   }
@@ -2409,21 +2408,21 @@ void display_jiffletab(unsigned int *jiffle) {
 
 
 void do_jiffle (int pulse) {	// to be called by pulse_do
-  // PULSES.pulses[pulse].char_parameter_1	click pin
-  // PULSES.pulses[pulse].char_parameter_2	jiffletab index
-  // PULSES.pulses[pulse].parameter_1		count down
-  // PULSES.pulses[pulse].parameter_2		jiffletab[] pointer
-  // PULSES.pulses[pulse].ulong_parameter_1	base period = period of starting pulse
+  // PULSES.pulses[pulse].gpio	click pin
+  // PULSES.pulses[pulse].index	jiffletab index
+  // PULSES.pulses[pulse].countdown		count down
+  // PULSES.pulses[pulse].data			jiffletab[] pointer
+  // PULSES.pulses[pulse].base_time		base period = period of starting pulse
 
-  digitalWrite(PULSES.pulses[pulse].char_parameter_1, PULSES.pulses[pulse].counter & 1);	// click
+  digitalWrite(PULSES.pulses[pulse].gpio, PULSES.pulses[pulse].counter & 1);	// click
 
-  if (--PULSES.pulses[pulse].parameter_1 > 0)				// countdown, phase endid?
+  if (--PULSES.pulses[pulse].countdown > 0)				// countdown, phase endid?
     return;						//   no: return immediately
 
   // if we arrive here, phase endid, start next phase if any:
-  unsigned int* jiffletab = (unsigned int *) PULSES.pulses[pulse].parameter_2;	// read jiffletab[]
-  PULSES.pulses[pulse].char_parameter_2 += JIFFLETAB_INDEX_STEP;
-  int base_index = PULSES.pulses[pulse].char_parameter_2;		// readability
+  unsigned int* jiffletab = (unsigned int *) PULSES.pulses[pulse].data;	// read jiffletab[]
+  PULSES.pulses[pulse].index += JIFFLETAB_INDEX_STEP;
+  int base_index = PULSES.pulses[pulse].index;		// readability
   long multiplier=jiffletab[base_index];
   if (multiplier == 0) {	// multiplier==0 no next phase, return
     PULSES.init_pulse(pulse);	// remove pulse
@@ -2441,8 +2440,8 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
     return;				// and return
   }
   PULSES.pulses[pulse].period.time =
-    PULSES.pulses[pulse].ulong_parameter_1 * jiffletab[base_index] / jiffletab[base_index+1];
-  PULSES.pulses[pulse].parameter_1 = jiffletab[base_index+2];		// count of next phase
+    PULSES.pulses[pulse].base_time * jiffletab[base_index] / jiffletab[base_index+1];
+  PULSES.pulses[pulse].countdown = jiffletab[base_index+2];		// count of next phase
 }
 
 
@@ -2451,7 +2450,7 @@ void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, stru
   int pulse = PULSES.setup_pulse(&do_throw_a_jiffle, new_flags, when, new_period);
 
   if (pulse != ILLEGAL)
-    PULSES.pulses[pulse].parameter_2 = (unsigned int) jiffletab;
+    PULSES.pulses[pulse].data = (unsigned int) jiffletab;
   else
     out_noFreePulses();
 }

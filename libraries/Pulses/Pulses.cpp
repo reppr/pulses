@@ -298,8 +298,9 @@ void Pulses::global_shift(int global_octave) {
 
 // init, reset or kill a pulse:	// fill with zero??? ################
 // memset(&arr[0], 0, sizeof(arr)); ################
-void Pulses::init_pulse(int pulse) {
+void Pulses::init_pulse(int pulse) {	// ################ TODO: use memset ################
   pulses[pulse].flags = 0;
+  pulses[pulse].action_flags = 0;
   pulses[pulse].periodic_do = NULL;
 
 // TODO: use or remove code later
@@ -313,17 +314,27 @@ void Pulses::init_pulse(int pulse) {
 //	#endif
 
   pulses[pulse].counter = 0;
-  pulses[pulse].int1 = 0;
+  pulses[pulse].count = 0;
   pulses[pulse].period.time = 0;
+  pulses[pulse].period.overflow = 0;
   pulses[pulse].last.time = 0;
   pulses[pulse].last.overflow = 0;
   pulses[pulse].next.time = 0;
   pulses[pulse].next.overflow = ~0;	// ILLEGAL
-  pulses[pulse].parameter_1 = 0;
-  pulses[pulse].parameter_2 = 0;
-  pulses[pulse].ulong_parameter_1 = 0L;
-  pulses[pulse].char_parameter_1 = 0;
-  pulses[pulse].char_parameter_2 = 0;
+  pulses[pulse].countdown = 0;
+  pulses[pulse].data = 0;
+  pulses[pulse].base_time = 0L;
+  pulses[pulse].gpio = ~0;		// ILLEGAL
+  pulses[pulse].index = 0;
+
+#if defined USE_DACs
+  //  int (*dac1_wave_function)(int pulse, int volume);
+  pulses[pulse].dac1_intensity=0;
+  #if (USE_DACs > 1)	// only 1 or 2 DACs supported
+  //  int (*dac2_wave_function)(int pulse, int volume);
+  pulses[pulse].dac2_intensity=0;
+  #endif
+#endif
 }
 
 // called from constructor:
@@ -361,7 +372,7 @@ void Pulses::wake_pulse(int pulse) {
 
   //						// COUNTED pulse && end reached?
   if ((pulses[pulse].flags & COUNTED) && \
-      ((pulses[pulse].counter +1) == pulses[pulse].int1 )) {
+      ((pulses[pulse].counter +1) == pulses[pulse].count )) {
     if (pulses[pulse].flags & DO_NOT_DELETE)	//   yes: DO_NOT_DELETE?
       pulses[pulse].flags &= ~ACTIVE;		//     yes: just deactivate
     else
@@ -653,7 +664,7 @@ int Pulses::setup_counted_pulse(void (*pulse_do)(int), unsigned char new_flags, 
   int pulse;
 
   pulse= setup_pulse(pulse_do, new_flags|COUNTED, when, new_period);
-  pulses[pulse].int1= count;
+  pulses[pulse].count= count;
 
   return pulse;
 }

@@ -59,62 +59,64 @@ struct pulse_t {
   struct time other_time;	// used by tuning, maybe others to come
 #endif
 
-  uint8_t flags;
-	// ACTIVE		switches pulse on/off
-	// COUNTED		repeats 'int1[]' times, then vanishes
-	// SCRATCH		edit (or similar) in progress
-	// DO_NOT_DELETE	dummy to avoid being thrown out
-	// TUNED		do not set directly, use activate_tuning(pulse)
-	// DACsq1		DACs output value as square wave with harmonical timing
-	// DACsq2		DACs output value as square wave with harmonical timing
 
-	// CLICKs		inbuilt GPIO toggling		TODO: not implemented yet
+  uint8_t flags;
+
+// #define pulses.flags masks:
+#define ACTIVE			1	// switches pulse on/off
+#define COUNTED			2	// repeats 'count[]' times, then vanishes
+#define SCRATCH			8	// edit (or similar) in progress
+#define DO_NOT_DELETE	       16	// dummy to avoid being thrown out
+#define TUNED		       32	// do not set directly, use activate_tuning(pulse)
+
+//#define INVERSE_LOGIC	      128	// TODO: implement
+
+
+  uint8_t action_flags;
+
+// #define pulses.action_flags masks:
+#define CLICKs	      		1	// GPIO 'click' inbuilt GPIO toggling
+#define DACsq1			2	// DAC1 output value as square wave, harmonical timing
+#define DACsq2			4	// DAC2 output value as square wave, harmonical timing
+
+//#define PAYLOAD		8	// do periodic_do(pulse)	TODO: implement
+//#define noACTION	      128	// 'mutes' all actions		TODO: implement
 
   // internal parameter:
-  unsigned int int1;		// if COUNTED, gives number of executions
+  unsigned int count;		// if COUNTED, gives number of executions
   //				// else free for other *internal* use
 
   // custom parameters[pulse]	//  comment/uncomment as appropriate:
   // ============>>> adapt init_pulse() IF YOU CHANGE SOMETHING HERE <<<============
   // these parameters can be used by periodic_do(pulse):
-  int parameter_1;
+  int countdown;
   /*
     used by do_jiffle for count down
   */
 
-  int parameter_2;
+  int data;
   /*
     used by do_jiffle *jiffletab
   */
 
-  unsigned long ulong_parameter_1;
+  int index;		// index
+  /*
+    used by do_jiffle as jiffletab index
+  */
+
+  unsigned long base_time;
   /*
     used by do_jiffle as base period
     used by tuned_click_0 as base period
   */
 
-  char char_parameter_1;		// pin
+  char gpio;		// pin
   /*
+    used by CLICKs	as pin
     used by click	as pin
     used by tuned_click	as pin
     used by do_jiffle	as pin
   */
-
-  char char_parameter_2;		// index	################ FIXME: unsigned int
-  /*
-    used by do_jiffle as jiffletab index
-  */
-
-  char parameter_3;				// ################ FIXME: pointer
-  /*
-    used by do_jiffle jiffle_ID		// index selecting jiffletab
-  */
-
-  char parameter_4;
-  /*
-    not used
-  */
-
 
   // pointer on  void something(int pulse)  functions:
   // the pulses will do that, if the pointer is not NULL
@@ -138,17 +140,6 @@ struct pulse_t {
   #endif
 #endif
 };
-
-// #define pulses.flags masks:
-#define ACTIVE			1	// switches pulse on/off
-#define COUNTED			2	// repeats 'int1[]' times, then vanishes
-#define SCRATCH			8	// edit (or similar) in progress
-#define DO_NOT_DELETE	       16	// dummy to avoid being thrown out
-#define TUNED		       32	// do not set directly, use activate_tuning(pulse)
-#define DACsq1		       64	// DAC output value as square wave, harmonical timing
-#define DACsq2		      128	// DAC output value as square wave, harmonical timing
-
-// #define CLICKs	      		// inbuilt GPIO click	TODO: not implemented yet
 
 /* **************************************************************** */
 class Pulses {
