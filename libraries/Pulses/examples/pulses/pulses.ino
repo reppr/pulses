@@ -289,44 +289,10 @@ void en_jiffle_throw_selected() {
     }
 };
 
-// make an existing pulse produce a DAC square wave with harmonical timing
-bool en_DACsq(int pulse, unsigned int channel_mask) {
-  unsigned int channelfl=0;
-
-  if (channel_mask & 1)
-    channelfl |= DACsq1;
-
-  if (channel_mask & 1)
-    channelfl |= DACsq2;
-
-  if (pulse != ILLEGAL) {
-    if (pulse < pl_max) {
-      PULSES.pulses[pulse].flags = (PULSES.pulses[pulse].flags | channelfl);
-
-      return true;
-    }
-  }
-
-  return false;
-};
-
-// make selected pulses produce square waves with harmonical timing
-int en_DACsq_selected(unsigned int channel_mask) {
-  int cnt=0;
-
-  for (int pulse=0; pulse<pl_max; pulse++)
-    if (PULSES.selected_pulses & (1 << pulse))
-      if (en_DACsq(pulse, channel_mask))
-	cnt++;
-
-  if (!PULSES.check_maybe_do())		// maybe do it *first*
-    if (MENU.maybe_display_more()) {	// else
-      MENU.ln();
-      selected_pulses_info_lines();
-    }
-
-  return cnt;
-};
+// ################ TODO: implement or remove ################
+void en_jiffle_throw_selected(unsigned int mask) {
+  ;
+}
 
 // make selected pulses click
 int en_click_selected() {
@@ -346,6 +312,113 @@ int en_click_selected() {
 
   return cnt;
 };
+
+#if defined USE_DACs
+// make an existing pulse produce a DAC square wave with harmonical timing
+bool en_DACsq(int pulse, unsigned int channel_mask) {
+  unsigned int channelfl=0;
+
+  if ((channel_mask==0) || (pulse==ILLEGAL))
+    return false;
+
+  if (channel_mask & 1)
+    channelfl |= DACsq1;
+
+  if (channel_mask & 1)
+    channelfl |= DACsq2;
+
+  if (pulse < pl_max) {
+    PULSES.pulses[pulse].flags = (PULSES.pulses[pulse].flags | channelfl);
+
+    return true;
+  }
+
+  return false;
+};
+
+// make selected pulses produce square waves with harmonical timing
+int en_DACsq_selected(unsigned int channel_mask) {
+  int cnt=0;
+
+  if (channel_mask==0)
+    return 0;
+
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if (PULSES.selected_pulses & (1 << pulse))
+      if (en_DACsq(pulse, channel_mask))
+	cnt++;
+
+  if (!PULSES.check_maybe_do())		// maybe do it *first*
+    if (MENU.maybe_display_more()) {	// else
+      MENU.ln();
+      selected_pulses_info_lines();
+    }
+
+  return cnt;
+};
+
+// share DAC intensity between selected pulses
+int selected_share_DACsq_intensity(int intensity, int channel) {
+  int cnt=0;
+
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if (PULSES.selected_pulses & (1 << pulse))
+      cnt++;
+
+  if (cnt) {
+    intensity /= cnt;
+
+    for (int pulse=0; pulse<pl_max; pulse++) {
+      if (PULSES.selected_pulses & (1 << pulse)) {
+	switch (channel) {
+	case 1:
+	  PULSES.pulses[pulse].dac1_intensity=intensity;
+	  break;
+	case 2:
+	  PULSES.pulses[pulse].dac2_intensity=intensity;
+	  break;
+	}
+      }
+    }
+  } else
+    intensity=0;
+
+  return intensity;
+};
+
+// share DAC intensity of selected pulses, proportional to period
+void selected_share_DACsq_intensity_proportional(int intensity, int channel) {
+  struct time sum;
+  sum.time=0;
+  sum.overflow=0;
+  float factor;
+
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if (PULSES.selected_pulses & (1 << pulse))
+      PULSES.add_time(&PULSES.pulses[pulse].period, &sum);
+
+  if (sum.overflow)	// FIXME: if ever needed ;)
+    MENU.outln(F("ERROR: sum.overflow"));
+
+  if (sum.time) {
+    for (int pulse=0; pulse<pl_max; pulse++) {
+      if (PULSES.selected_pulses & (1 << pulse)) {
+	factor = PULSES.pulses[pulse].period.time / sum.time;
+
+	switch (channel) {
+	case 1:
+	  PULSES.pulses[pulse].dac1_intensity = factor * intensity;
+	  break;
+	case 2:
+	  PULSES.pulses[pulse].dac2_intensity = factor * intensity;
+	  break;
+	}
+      }
+    }
+  }
+}
+#endif // USE_DACs
+
 
 
 /* **************************************************************** */
@@ -1950,6 +2023,17 @@ void en_jiffle_thrower(int pulse, unsigned int *jiffletab)
   }
 }
 
+/* DADA
+void en_jiffle_thrower_DACs(int pulse, unsigned int *jiffletab, unsigned int action_mask)
+{
+  if (pulse != ILLEGAL) {
+    en_jiffle_thrower(pulse);
+    if (action_mask & 1) {
+      PULSES.pulses[pulse].flags |= DADA;
+    }
+  }
+}
+*/
 
 int init_jiffle(unsigned int *jiffletab, struct time when, struct time new_period, int origin_pulse)
 {
@@ -4053,7 +4137,17 @@ bool menu_pulses_reaction(char menu_input) {
 //	prepare_scale(false, voices, multiplier, divisor, 0, scale);
 //	display_name5pars("GUITAR", inverse, voices, multiplier, divisor, sync);
 	tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
+
+  #if defined USE_DACs
+	selected_share_DACsq_intensity(255, 1);
+    #if (USE_DACs > 1)
+	selected_share_DACsq_intensity_proportional(255, 2);
+    #endif
+	en_jiffle_throw_selected(DACsq1 | DACsq2);
+  #else
 	en_jiffle_throw_selected();
+  #endif
+
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
