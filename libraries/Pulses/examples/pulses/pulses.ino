@@ -1774,7 +1774,7 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
   if (PULSES.pulses[pulse].action_flags) {
     MENU.tab();
     MENU.out(F("Af:"));
-    MENU.outBIN(PULSES.pulses[pulse].action_flags, 3);
+    MENU.outBIN(PULSES.pulses[pulse].action_flags, 4);
     MENU.space();
     if (PULSES.pulses[pulse].action_flags & CLICKs)
       MENU.out('C');
@@ -1792,7 +1792,7 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
      || (PULSES.pulses[pulse].dac1_intensity) || (PULSES.pulses[pulse].dac2_intensity)) {
     MENU.tab();
     MENU.out(F("daf:"));
-    MENU.outBIN(PULSES.pulses[pulse].dest_action_flags, 3);
+    MENU.outBIN(PULSES.pulses[pulse].dest_action_flags, 4);
 
     MENU.out(F("i1:"));
     MENU.pad(PULSES.pulses[pulse].dac1_intensity, 4);
@@ -2173,6 +2173,8 @@ bool inverse=false;	// bottom DOWN/up click-pin mapping
 #define JIFFLE_ENTRY_UNTIL_ZERO_MODE	1	// menu_mode for unsigned integer data entry, stop at zero
 
 /* **************************************************************** */
+uint8_t selected_actions = DACsq1 | DACsq2;
+
 void menu_pulses_display() {
   MENU.outln(F("http://github.com/reppr/pulses/\n"));
 
@@ -2201,9 +2203,10 @@ void menu_pulses_display() {
   MENU.out(F("M=deactivate ALL\tX=remove ALL\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tN=en-noop\tf=en-info\tF=en-INFO\nS=sync\tn=sync now "));
   MENU.outln(sync);
 
-  MENU.out(F("E=enter experiment (")); MENU.out(selected_experiment); MENU.out(F(")"));
-  MENU.out(F("\t\tV=voices for experiment (")); MENU.out(voices); MENU.outln(F(")"));
-   MENU.out(F("b=toggle pin mapping (bottom "));
+  MENU.out(F("E=enter experiment (")); MENU.out(selected_experiment); MENU.out(')');
+  MENU.out(F("\tV=voices for experiment (")); MENU.out(voices); MENU.out(F(")"));
+  MENU.out(F("\tO=action_flags (")); MENU.outBIN(selected_actions, 4); MENU.outln(')');
+  MENU.out(F("b=toggle pin mapping (bottom "));
   if (inverse)
     MENU.out(F("up"));
   else
@@ -2212,6 +2215,8 @@ void menu_pulses_display() {
 
   MENU.out(F("Scale (")); MENU.out(multiplier);MENU.slash();  MENU.out(divisor);
   MENU.out(F(")\tm=multiplier d=divisor"));
+
+  MENU.ln();
 }
 
 
@@ -2698,8 +2703,6 @@ void Press_toStart() {
 int s1=0;
 int s2=0;
 #endif
-
-uint8_t default_actions = DACsq1 | DACsq2;	//################ FIXME: TODO: menu interface
 
 bool menu_pulses_reaction(char menu_input) {
   static unsigned long input_value=0;
@@ -3248,7 +3251,7 @@ bool menu_pulses_reaction(char menu_input) {
 #endif	// #ifdef IMPLEMENT_TUNING	implies floating point
 
   case 'j':	// en_jiffle_thrower
-    en_jiffle_throw_selected(default_actions);
+    en_jiffle_throw_selected(selected_actions);
     break;
 
   case 'J':	// select, edit, load jiffle
@@ -3490,6 +3493,24 @@ bool menu_pulses_reaction(char menu_input) {
       }
     }
 
+    break;
+
+  case 'O':	// configure selected_actions
+    if (MENU.cb_peek() == EOF) {
+      MENU.out(F("action flags "));
+      MENU.outBIN(selected_actions, 4);
+      MENU.ln();
+    } else {
+      input_value = MENU.numeric_input(selected_actions);
+      if (input_value != selected_actions)
+	selected_actions = input_value;
+
+      if (MENU.verbosity >= VERBOSITY_SOME) {
+	MENU.out(F("action flags "));
+	MENU.outBIN(selected_actions, 4);
+	MENU.ln();
+      }
+    }
     break;
 
   case 'X':	// PANIC BUTTON  reset, remove all (flagged) pulses, restart selections at none
@@ -3893,7 +3914,7 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("E30 KALIMBA7 jiff", inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected(default_actions);
+	en_jiffle_throw_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate
 
 	MENU.ln();
@@ -3912,7 +3933,7 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("E31 KALIMBA7 jiff", inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected(default_actions);
+	en_jiffle_throw_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
@@ -3931,7 +3952,7 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("E32 ESP32_12", inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected(default_actions);
+	en_jiffle_throw_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
@@ -3949,7 +3970,7 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("minor", inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected(default_actions);
+	en_jiffle_throw_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
@@ -3967,7 +3988,7 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("major", inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected(default_actions);
+	en_jiffle_throw_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
@@ -3985,7 +4006,7 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("tetra", inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected(default_actions);
+	en_jiffle_throw_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
@@ -4004,7 +4025,7 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("BIG major", inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected(default_actions);
+	en_jiffle_throw_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
@@ -4137,7 +4158,7 @@ bool menu_pulses_reaction(char menu_input) {
 	tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
 
   #ifndef USE_DACs	// TODO: review and use test code
-	en_jiffle_throw_selected(default_actions);
+	en_jiffle_throw_selected(selected_actions);
   #else // *do* use dac
 	selected_share_DACsq_intensity(255, 1);
 

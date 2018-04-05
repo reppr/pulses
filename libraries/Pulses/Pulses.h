@@ -75,12 +75,15 @@ struct pulse_t {
   uint8_t action_flags;
 
 // #define pulses.action_flags masks:
-#define CLICKs	      		1	// GPIO 'click' inbuilt GPIO toggling
-#define DACsq1			2	// DAC1 output value as square wave, harmonical timing
-#define DACsq2			4	// DAC2 output value as square wave, harmonical timing
-
-//#define PAYLOAD		8	// do periodic_do(pulse)	TODO: implement
-  #define noACTION	      128	// 'mutes' all actions
+// for easy menu interfacing:	1,2 DACsq
+//				noACTION should be highest
+//	>>>>>>>	change all flag display code if something changes here <<<<<<<
+#define DACsq1			1	// DAC1 output value as square wave, harmonical timing
+#define DACsq2			2	// DAC2 output value as square wave, harmonical timing
+#define CLICKs	      		4	// GPIO 'click' inbuilt GPIO toggling
+//#define PAYLOAD			// do periodic_do(pulse)	TODO: implement
+#define noACTION		8	// 'mutes' all actions	>>>> must be last <<<<
+//	>>>>>>>	change all flag display code if something changes here <<<<<<<
 
   // internal parameter:
   unsigned int count;		// if COUNTED, gives number of executions
