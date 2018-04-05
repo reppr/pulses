@@ -409,14 +409,25 @@ void Pulses::deactivate_all_clicks() {
   fix_global_next();
 }
 
+void Pulses::select_pulse(int pulse) {
+  selected_pulses |= (pulses_mask_t) (1 << pulse);
+}
 
-void Pulses::activate_selected_synced_now(int sync, pulses_mask_t selected_pulses) {
+bool Pulses::pulse_is_selected(int pulse, pulses_mask_t mask) {
+  return (mask & (pulses_mask_t) (1 << pulse));
+}
+
+bool Pulses::pulse_is_selected(int pulse) {
+  return (selected_pulses & (pulses_mask_t) (1 << pulse));
+}
+
+void Pulses::activate_selected_synced_now(int sync) {
   if (selected_pulses==0)
     return;
 
   get_now();
   for (int pulse=0; pulse<pl_max; pulse++)
-    if (selected_pulses & (1 << pulse))
+    if (pulse_is_selected(pulse))
       activate_pulse_synced(pulse, now, abs(sync));
 
   fix_global_next();
@@ -862,7 +873,7 @@ void Pulses::display_real_ovfl_and_sec(struct time then) {
 
 void Pulses::reset_and_edit_selected() {	// FIXME: replace
   for (int pulse=0; pulse<pl_max; pulse++)
-    if (selected_pulses & (1 << pulse)) {
+    if (pulse_is_selected(pulse)) {
       reset_and_edit_pulse(pulse, time_unit);
     }
 }
@@ -878,7 +889,7 @@ void Pulses::print_selected_mask() {
 
   (*MENU).out_selected_();
   for (int pulse=0; pulse<hex_pulses; pulse++) {
-    if (selected_pulses & (1 << pulse))
+    if (pulse_is_selected(pulse))
       (*MENU).out_hex_chiffre(pulse);
     else
       (*MENU).out('.');
@@ -890,9 +901,10 @@ void Pulses::print_selected_mask() {
     return;			// done
   }
 
-  (*MENU).space();
   for (int pulse=16; pulse<pl_max; pulse++) {
-    if (selected_pulses & (1 << pulse))
+    if ((pulse % 16)==0)
+      (*MENU).space();
+    if (pulse_is_selected(pulse))
       (*MENU).out('+');
     else
       (*MENU).out('.');

@@ -23,8 +23,8 @@
 
     #define STARTUP_DELAY	256	// ESP32 seems to need that for successful booting
 
-    // #define PL_MAX	64	// FIXME: mask limitations ################
-    #define PL_MAX	32
+    #define PL_MAX	64	// FIXME: mask limitations ################
+// #define PL_MAX	32
 
     #define JIFFLE_RAM_SIZE	256*3+2
     #define SCALES_RAM_SIZE	256*2+2

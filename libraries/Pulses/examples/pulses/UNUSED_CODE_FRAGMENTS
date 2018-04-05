@@ -58,7 +58,7 @@ char wait_for_input() {
 // for tuning
 //	    int INP;
 //	    for (int pulse=0; pulse<pl_max; pulse++)
-//	      if ((PULSES.selected_pulses & (1 << pulse)) && PULSES.pulses[pulse].period.time) {
+//	      if ((PULSES.pulse_is_selected(pulse))) && PULSES.pulses[pulse].period.time) {
 //		MENU.outln(pulse);
 //
 //		while (MENU.cb_peek()==EOF)
@@ -96,7 +96,7 @@ char wait_for_input() {
 //	    {
 //	      unsigned long lcm=1L;
 //	      for (int pulse=0; pulse<pl_max; pulse++) {
-//		if (PULSES.selected_pulses & (1 << pulse)) {
+//		if (PULSES.pulse_is_selected(pulse)) {
 //		  MENU.out(pulse); MENU.tab(); PULSES.pulses[pulse].period.time; MENU.tab();
 //		  lcm = HARMONICAL.LCM(lcm, PULSES.pulses[pulse].period.time);
 //		  MENU.outln(lcm);
@@ -111,7 +111,7 @@ char wait_for_input() {
 //	      MENU.ln();
 //
 //	      for (int pulse=0; pulse<pl_max; pulse++)
-//		if ((PULSES.selected_pulses & (1 << pulse)) && PULSES.pulses[pulse].period.time) {
+//		if ((PULSES.pulse_is_selected(pulse))) && PULSES.pulses[pulse].period.time) {
 //		  MENU.out(pulse);
 //		  MENU.tab();
 //		  MENU.outln(lcm/PULSES.pulses[pulse].period.time);
@@ -122,7 +122,7 @@ char wait_for_input() {
 //	    unsigned int lcm=1;
 //	    // simplest case for test: 0 to voices-1
 //	    for (int pulse=voices-1; pulse>-1; pulse--)
-//	      if (PULSES.selected_pulses & (1 << pulse)) {
+//	      if (PULSES.pulse_is_selected(pulse)) {
 //		lcm = LCM(PULSES.pulses[pulse].period.time, lcm);
 //		MENU.outln(lcm/PULSES.pulses[0].period.time);
 //	      }
@@ -312,7 +312,7 @@ private:
   //  divisor=5800;
   //  en_click(0);
   //  en_sweep_click(1);
-  //  PULSES.selected_pulses = 3;
+  //  PULSES.selected_pulses = (pulses_mask_t) 3;
   //  PULSES.reset_and_edit_selected();
   //  activate_selected_synced_now(sync);	// FIXME:	something's wrong :(	################
 
@@ -323,7 +323,7 @@ private:
 //	  // ratios = european_pentatonic;
 //	  // ratios = ratios_quot;
 //	  // ratios = ratios_int;
-//	  PULSES.selected_pulses=~0;
+//	  PULSES.selected_pulses = (pulses_mask_t) ~0;
 //	  // or: if nothing is selected all pulses with flags==0 get selected.
 //	  int prepared = prepare_ratios(false, 8, 1, 1, 0, ratios);
 //	  if (prepared != 8)
