@@ -1771,29 +1771,35 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
   MENU.tab();
   display_payload(pulse);
 
-  // TODO: use code
-MENU.tab(); MENU.out(PULSES.pulses[pulse].dac1_intensity); MENU.space(); MENU.out(PULSES.pulses[pulse].dac2_intensity); MENU.space(); MENU.outBIN(PULSES.pulses[pulse].dest_action_flags, 3);
-
   if (PULSES.pulses[pulse].action_flags) {
     MENU.tab();
-    MENU.out(F(" A:"));
+    MENU.out(F("Af:"));
     MENU.outBIN(PULSES.pulses[pulse].action_flags, 3);
     MENU.space();
     if (PULSES.pulses[pulse].action_flags & CLICKs)
       MENU.out('C');
     if (PULSES.pulses[pulse].action_flags & DACsq1) {
       MENU.out(F("Q1:"));
-      MENU.out(PULSES.pulses[pulse].dac1_intensity);
-      MENU.space();
+      MENU.pad(PULSES.pulses[pulse].dac1_intensity, 4);
     }
     if (PULSES.pulses[pulse].action_flags & DACsq2) {
       MENU.out(F("Q2:"));
-      MENU.out(PULSES.pulses[pulse].dac2_intensity);
-      MENU.space();
+      MENU.pad(PULSES.pulses[pulse].dac2_intensity, 4);
     }
   }
 
-  MENU.tab();
+  if(PULSES.pulses[pulse].dest_action_flags \
+     || (PULSES.pulses[pulse].dac1_intensity) || (PULSES.pulses[pulse].dac2_intensity)) {
+    MENU.tab();
+    MENU.out(F("daf:"));
+    MENU.outBIN(PULSES.pulses[pulse].dest_action_flags, 3);
+
+    MENU.out(F("i1:"));
+    MENU.pad(PULSES.pulses[pulse].dac1_intensity, 4);
+
+    MENU.out(F("i2:"));
+    MENU.pad(PULSES.pulses[pulse].dac2_intensity, 4);
+  }
 
   if (MENU.verbosity >= VERBOSITY_SOME) {
     struct time sum = PULSES.pulses[pulse].next;
@@ -1801,6 +1807,7 @@ MENU.tab(); MENU.out(PULSES.pulses[pulse].dac1_intensity); MENU.space(); MENU.ou
     struct time delta =PULSES.now;
     PULSES.sub_time(&delta, &sum);
 
+    MENU.tab();
     MENU.out(F("expected in"));
     PULSES.display_realtime_sec(sum);
     // PULSES.display_real_ovfl_and_sec(sum);	// debugging
