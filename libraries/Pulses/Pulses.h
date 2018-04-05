@@ -80,7 +80,7 @@ struct pulse_t {
 #define DACsq2			4	// DAC2 output value as square wave, harmonical timing
 
 //#define PAYLOAD		8	// do periodic_do(pulse)	TODO: implement
-//#define noACTION	      128	// 'mutes' all actions		TODO: implement
+  #define noACTION	      128	// 'mutes' all actions
 
   // internal parameter:
   unsigned int count;		// if COUNTED, gives number of executions
@@ -116,6 +116,11 @@ struct pulse_t {
     used by click	as pin
     used by tuned_click	as pin
     used by do_jiffle	as pin
+  */
+
+  uint8_t dest_action_flags;
+  /*
+    used by TODO: ################################################################
   */
 
   // pointer on  void something(int pulse)  functions:

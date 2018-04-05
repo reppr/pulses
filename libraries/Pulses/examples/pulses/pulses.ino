@@ -249,7 +249,8 @@ void display_names(char** names, int count, int selected) {
 
 
 // reset, remove all (flagged) pulses, restart selections at none
-int reset_all_flagged_pulses_GPIO_OFF() {
+// switch GPIO and DACs off
+int reset_all_flagged_pulses_GPIO_OFF() {	// reset pulses, switches GPIO and DACs off
   int cnt=0;
   for (int pulse=0; pulse<pl_max; pulse++) {  // tabula rasa
     if (PULSES.pulses[pulse].flags) {
@@ -263,6 +264,13 @@ int reset_all_flagged_pulses_GPIO_OFF() {
   init_click_pins_OutLow();		// switch them on LOW, output	current off, i.e. magnets
   PULSES.selected_pulses=0L;		// restart selections at none
 
+#if defined USE_DACs			// reset DACs
+  dacWrite(BOARD_DAC1, 0);
+#if (USE_DACs > 1)
+  dacWrite(BOARD_DAC2, 0);
+#endif
+#endif
+
   PULSES.fix_global_next();
 
   if (MENU.verbosity) {
@@ -275,10 +283,10 @@ int reset_all_flagged_pulses_GPIO_OFF() {
 
 
 // make selected pulses jiffle throwers
-void en_jiffle_throw_selected() {
+void en_jiffle_throw_selected(uint8_t action_flags) {
   for (int pulse=0; pulse<pl_max; pulse++)
     if (PULSES.selected_pulses & (1 << pulse))
-      en_jiffle_thrower(pulse, jiffle);
+      en_jiffle_thrower(pulse, jiffle, action_flags);
 
   PULSES.fix_global_next();		// just in case?
 
@@ -288,11 +296,6 @@ void en_jiffle_throw_selected() {
       selected_or_flagged_pulses_info_lines();
     }
 };
-
-// ################ TODO: implement or remove ################
-void en_jiffle_throw_selected(unsigned int mask) {
-  ;
-}
 
 // make selected pulses click
 int en_click_selected() {
@@ -314,45 +317,27 @@ int en_click_selected() {
 };
 
 #if defined USE_DACs
-// make an existing pulse produce a DAC square wave with harmonical timing
-bool en_DACsq(int pulse, unsigned int channel_mask) {
-  unsigned int channelfl=0;
-
-  if ((channel_mask==0) || (pulse==ILLEGAL))
-    return false;
-
-  if (channel_mask & 1)
-    channelfl |= DACsq1;
-
-  if (channel_mask & 1)
-    channelfl |= DACsq2;
-
-  if (pulse < pl_max) {
-    PULSES.pulses[pulse].flags = (PULSES.pulses[pulse].flags | channelfl);
-
-    return true;
+// set_action_flags(pulse, DACsq1 | DACsq2) activates both DACs
+bool set_action_flags(int pulse, unsigned int action_flags) {
+  if (pulse != ILLEGAL) {
+    if (pulse < pl_max) {
+      PULSES.pulses[pulse].action_flags = (PULSES.pulses[pulse].action_flags | action_flags);
+      return true;
+    }
   }
 
   return false;
 };
 
 // make selected pulses produce square waves with harmonical timing
-int en_DACsq_selected(unsigned int channel_mask) {
-  int cnt=0;
 
-  if (channel_mask==0)
-    return 0;
+int selected_set_action_flags(unsigned int action_flags) {
+  int cnt=0;
 
   for (int pulse=0; pulse<pl_max; pulse++)
     if (PULSES.selected_pulses & (1 << pulse))
-      if (en_DACsq(pulse, channel_mask))
+      if (set_action_flags(pulse, action_flags))
 	cnt++;
-
-  if (!PULSES.check_maybe_do())		// maybe do it *first*
-    if (MENU.maybe_display_more()) {	// else
-      MENU.ln();
-      selected_pulses_info_lines();
-    }
 
   return cnt;
 };
@@ -367,7 +352,6 @@ int selected_share_DACsq_intensity(int intensity, int channel) {
 
   if (cnt) {
     intensity /= cnt;
-
     for (int pulse=0; pulse<pl_max; pulse++) {
       if (PULSES.selected_pulses & (1 << pulse)) {
 	switch (channel) {
@@ -387,7 +371,7 @@ int selected_share_DACsq_intensity(int intensity, int channel) {
 };
 
 // share DAC intensity of selected pulses, proportional to period
-void selected_share_DACsq_intensity_proportional(int intensity, int channel) {
+void selected_DACsq_intensity_proportional(int intensity, int channel) {
   struct time sum;
   sum.time=0;
   sum.overflow=0;
@@ -403,7 +387,7 @@ void selected_share_DACsq_intensity_proportional(int intensity, int channel) {
   if (sum.time) {
     for (int pulse=0; pulse<pl_max; pulse++) {
       if (PULSES.selected_pulses & (1 << pulse)) {
-	factor = PULSES.pulses[pulse].period.time / sum.time;
+	factor = (float) PULSES.pulses[pulse].period.time / (float) sum.time;
 
 	switch (channel) {
 	case 1:
@@ -1108,22 +1092,6 @@ void init_click_pins_OutLow() {		// make them GPIO, OUTPUT, LOW
 }
 
 
-////  // unused? (I use the synced version more often)
-//  int setup_click_pulse(void (*pulse_do)(int), unsigned char new_flags,
-//  		     struct time when, struct time new_period) {
-//    int pulse = PULSES.setup_pulse(pulse_do, new_flags, when, new_period);
-//    if (pulse != ILLEGAL) {
-//      PULSES.pulses[pulse].gpio = click_pin[pulse];
-//      pinMode(PULSES.pulses[pulse].gpio, OUTPUT);
-//      digitalWrite(PULSES.pulses[pulse].gpio, LOW);
-//    } else {
-//      out_noFreePulses();
-//    }
-//
-//    return pulse;
-//  }
-
-
 void out_noFreePulses() {
   MENU.out(F("no free pulses"));
 }
@@ -1315,7 +1283,7 @@ void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned
 }
 
 
-// old style, obsolete
+// old style, obsolete	// TODO: remove?
 int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   if (inverse) {
     no_inverse();
@@ -1326,13 +1294,13 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
   select_n(voices);
 
 #define COMPATIBILITY_PERIOD_3110	// sets the period directly
-#ifdef COMPATIBILITY_PERIOD_3110
+#ifdef COMPATIBILITY_PERIOD_3110	// TODO: remove
   for (int pulse=0; pulse<voices; pulse++)
     if (PULSES.selected_pulses & (1 << pulse)) {
       PULSES.reset_and_edit_pulse(pulse, PULSES.time_unit);
       PULSES.pulses[pulse].period.time = 3110;	// brute force for compatibility ;)
       PULSES.pulses[pulse].period.overflow = 0;	// brute force for compatibility ;)
-      en_jiffle_thrower(pulse, jiffle);
+      en_jiffle_thrower(pulse, jiffle, 0);
     }
   int apply_scale_on_period(int voices, unsigned int *scale, bool octaves=true);	// this code is obsolete anyway ################
   apply_scale_on_period(voices, scale, true);
@@ -1803,6 +1771,28 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
   MENU.tab();
   display_payload(pulse);
 
+  // TODO: use code
+MENU.tab(); MENU.out(PULSES.pulses[pulse].dac1_intensity); MENU.space(); MENU.out(PULSES.pulses[pulse].dac2_intensity); MENU.space(); MENU.outBIN(PULSES.pulses[pulse].dest_action_flags, 3);
+
+  if (PULSES.pulses[pulse].action_flags) {
+    MENU.tab();
+    MENU.out(F(" A:"));
+    MENU.outBIN(PULSES.pulses[pulse].action_flags, 3);
+    MENU.space();
+    if (PULSES.pulses[pulse].action_flags & CLICKs)
+      MENU.out('C');
+    if (PULSES.pulses[pulse].action_flags & DACsq1) {
+      MENU.out(F("Q1:"));
+      MENU.out(PULSES.pulses[pulse].dac1_intensity);
+      MENU.space();
+    }
+    if (PULSES.pulses[pulse].action_flags & DACsq2) {
+      MENU.out(F("Q2:"));
+      MENU.out(PULSES.pulses[pulse].dac2_intensity);
+      MENU.space();
+    }
+  }
+
   MENU.tab();
 
   if (MENU.verbosity >= VERBOSITY_SOME) {
@@ -2015,25 +2005,15 @@ void selected_or_flagged_pulses_info_lines() {
 
 /* **************************************************************** */
 // make an existing pulse to a jiffle thrower pulse:
-void en_jiffle_thrower(int pulse, unsigned int *jiffletab)
+void en_jiffle_thrower(int pulse, unsigned int *jiffletab, uint8_t action_mask)
 {
   if (pulse != ILLEGAL) {
     PULSES.pulses[pulse].periodic_do = &do_throw_a_jiffle;
     PULSES.pulses[pulse].data = (unsigned int) jiffletab;
+    PULSES.pulses[pulse].dest_action_flags |= action_mask;
   }
 }
 
-/* DADA
-void en_jiffle_thrower_DACs(int pulse, unsigned int *jiffletab, unsigned int action_mask)
-{
-  if (pulse != ILLEGAL) {
-    en_jiffle_thrower(pulse);
-    if (action_mask & 1) {
-      PULSES.pulses[pulse].flags |= DADA;
-    }
-  }
-}
-*/
 
 int init_jiffle(unsigned int *jiffletab, struct time when, struct time new_period, int origin_pulse)
 {
@@ -2044,11 +2024,18 @@ int init_jiffle(unsigned int *jiffletab, struct time when, struct time new_perio
 
   pulse = PULSES.setup_pulse(&do_jiffle, ACTIVE, when, jiffle_period);
   if (pulse != ILLEGAL) {
+    PULSES.pulses[pulse].action_flags = PULSES.pulses[origin_pulse].dest_action_flags; // set actions
     PULSES.pulses[pulse].gpio = click_pin[origin_pulse];	// set pin
-    PULSES.pulses[pulse].index = 0;			// init phase 0
+    PULSES.pulses[pulse].index = 0;				// init phase 0
     PULSES.pulses[pulse].countdown = jiffletab[2];		// count of first phase
     PULSES.pulses[pulse].data = (unsigned int) jiffletab;
     PULSES.pulses[pulse].base_time = new_period.time;
+#if defined USE_DACs
+    PULSES.pulses[pulse].dac1_intensity = PULSES.pulses[origin_pulse].dac1_intensity;
+  #if (USE_DACs > 1)
+    PULSES.pulses[pulse].dac2_intensity = PULSES.pulses[origin_pulse].dac2_intensity;
+  #endif
+#endif
   }
 
   return pulse;
@@ -2713,6 +2700,7 @@ void Press_toStart() {
   MENU.outln(F("Press '!' to start"));
 }
 
+uint8_t default_actions = DACsq1 | DACsq2;	//################ FIXME: TODO: menu interface
 
 bool menu_pulses_reaction(char menu_input) {
   static unsigned long input_value=0;
@@ -3261,7 +3249,7 @@ bool menu_pulses_reaction(char menu_input) {
 #endif	// #ifdef IMPLEMENT_TUNING	implies floating point
 
   case 'j':	// en_jiffle_thrower
-    en_jiffle_throw_selected();
+    en_jiffle_throw_selected(default_actions);
     break;
 
   case 'J':	// select, edit, load jiffle
@@ -3894,7 +3882,7 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("E30 KALIMBA7 jiff", inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected();
+	en_jiffle_throw_selected(default_actions);
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate
 
 	MENU.ln();
@@ -3913,7 +3901,7 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("E31 KALIMBA7 jiff", inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected();
+	en_jiffle_throw_selected(default_actions);
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
@@ -3932,7 +3920,7 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("E32 ESP32_12", inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected();
+	en_jiffle_throw_selected(default_actions);
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
@@ -3950,7 +3938,7 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("minor", inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected();
+	en_jiffle_throw_selected(default_actions);
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
@@ -3968,7 +3956,7 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("major", inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected();
+	en_jiffle_throw_selected(default_actions);
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
@@ -3986,7 +3974,7 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("tetra", inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected();
+	en_jiffle_throw_selected(default_actions);
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
@@ -4005,7 +3993,7 @@ bool menu_pulses_reaction(char menu_input) {
 	select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("BIG major", inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected();
+	en_jiffle_throw_selected(default_actions);
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();
 
@@ -4137,15 +4125,21 @@ bool menu_pulses_reaction(char menu_input) {
 //	display_name5pars("GUITAR", inverse, voices, multiplier, divisor, sync);
 	tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
 
-  #if defined USE_DACs
+#ifndef USE_DACs	// TODO: review and use test code
+	en_jiffle_throw_selected(default_actions);
+  #else // *do* use dac
 	selected_share_DACsq_intensity(255, 1);
-    #if (USE_DACs > 1)
-	selected_share_DACsq_intensity_proportional(255, 2);
-    #endif
+
+    #if (USE_DACs == 1)
+	en_jiffle_throw_selected(DACsq1);
+    #else
+	selected_DACsq_intensity_proportional(255, 2);
+	// selected_set_action_flags(DACsq2);
+
 	en_jiffle_throw_selected(DACsq1 | DACsq2);
-  #else
-	en_jiffle_throw_selected();
+    #endif
   #endif
+
 
 	PULSES.activate_selected_synced_now(sync, PULSES.selected_pulses);	// sync and activate;
 	MENU.ln();

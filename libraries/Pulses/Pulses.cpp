@@ -326,6 +326,7 @@ void Pulses::init_pulse(int pulse) {	// ################ TODO: use memset ######
   pulses[pulse].base_time = 0L;
   pulses[pulse].gpio = ~0;		// ILLEGAL
   pulses[pulse].index = 0;
+  pulses[pulse].dest_action_flags = 0;
 
 #if defined USE_DACs
   //  int (*dac1_wave_function)(int pulse, int volume);
@@ -356,6 +357,19 @@ void Pulses::wake_pulse(int pulse) {
     // period lengths with overflow are *not* supported with tuning
   }
 #endif
+
+  if (pulses[pulse].action_flags && !(pulses[pulse].action_flags & noACTION)) {	// unmuted action?
+    int action_flags = pulses[pulse].action_flags;
+
+    if (action_flags & CLICKs)
+      digitalWrite(pulses[pulse].gpio, pulses[pulse].counter & 1);
+
+    if (action_flags & DACsq1)
+      dacWrite(BOARD_DAC1, pulses[pulse].dac1_intensity);
+
+    if (action_flags & DACsq2)
+      dacWrite(BOARD_DAC2, pulses[pulse].dac2_intensity);
+  }
 
   if (pulses[pulse].periodic_do != NULL) {	// there *is* something else to do?
     (*pulses[pulse].periodic_do)(pulse);	//   yes: do it
@@ -814,7 +828,7 @@ float Pulses::display_realtime_sec(struct time duration) {
 void Pulses::print_period_in_time_units(int pulse) {
   float time_units = ((float) pulses[pulse].period.time / (float) time_unit);
 
-  (*MENU).out(F("pulse "));
+  // (*MENU).out(F("pulse "));
 
   float scratch = 1000.0;
   float limit = time_units;
