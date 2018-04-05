@@ -2707,6 +2707,11 @@ void Press_toStart() {
   MENU.outln(F("Press '!' to start"));
 }
 
+#if defined USE_DACs	// ################ TODO: remove
+int s1=0;
+int s2=0;
+#endif
+
 uint8_t default_actions = DACsq1 | DACsq2;	//################ FIXME: TODO: menu interface
 
 bool menu_pulses_reaction(char menu_input) {
@@ -3400,11 +3405,23 @@ bool menu_pulses_reaction(char menu_input) {
   case 'D':	// DADA reserved for temporary code   testing debugging ...
 //    MENU.out_noop(); MENU.ln();
 
+/*
     // ESP32 DAC test
     MENU.out(F("DAC test "));
     dacWrite(BOARD_DAC1, input_value=MENU.numeric_input(-1));
     dacWrite(BOARD_DAC2, input_value);
     MENU.outln(input_value);
+*/
+
+    // display DACsq max intensity
+    s1=0;
+    s2=0;
+    for(int p=0; p<CLICK_PULSES; p++) {
+      s1 += PULSES.pulses[p].dac1_intensity;
+      s2 += PULSES.pulses[p].dac2_intensity;
+    }
+    MENU.out(F("max DACsq intensity")); MENU.tab(); MENU.out(s1); MENU.tab(); MENU.outln(s2);
+
     break;
 
   case 'y':	// DADA reserved for temporary code   testing debugging ...
