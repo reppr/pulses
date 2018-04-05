@@ -364,11 +364,10 @@ void Pulses::wake_pulse(int pulse) {
     if (action_flags & CLICKs)
       digitalWrite(pulses[pulse].gpio, pulses[pulse].counter & 1);
 
-    if (action_flags & DACsq1)
-      dacWrite(BOARD_DAC1, pulses[pulse].dac1_intensity);
-
-    if (action_flags & DACsq2)
-      dacWrite(BOARD_DAC2, pulses[pulse].dac2_intensity);
+#if defined USE_DACs
+    if (action_flags & (DACsq1|DACsq2))
+      DAC_output();
+#endif
   }
 
   if (pulses[pulse].periodic_do != NULL) {	// there *is* something else to do?
@@ -517,6 +516,7 @@ void Pulses::fix_global_next() {
 }
 
 #if defined USE_DACs
+//#define DEBUG_DACsq
 void Pulses::DAC_output() {
   // for speed reasons i compile different versions for different numbers of DACs
 
@@ -530,16 +530,20 @@ void Pulses::DAC_output() {
   int dac1_value=0;
   int dac2_value=0;
 
-  for(int p=0; p < pl_max; p++)
+  for(int p=0; p < pl_max; p++) {
     if (pulses[p].flags & ACTIVE) {
-      if (pulses[p].flags & DACsq1)
-	dac1_value += pulses[p].dac1_intensity;
-
+      if (pulses[p].counter & 1) {
+	if (pulses[p].action_flags & DACsq1)
+	  {
+	    dac1_value += pulses[p].dac1_intensity;
+#if defined DEBUG_DACsq
+	    Serial.print("p:"); Serial.print(p); Serial.print(' '); Serial.print(dac1_value); Serial.print(' ');
+#endif
+	  }
     #if (USE_DACs > 1)	// only 2 DACs implemented
-      if (pulses[p].flags & DACsq2)
-	dac2_value += pulses[p].dac2_intensity;
+	if (pulses[p].action_flags & DACsq2)
+	  dac2_value += pulses[p].dac2_intensity;
     #endif
-
       // TODO: use or remove code later
       /*
       if (pulses[p].dac1_wave_function != NULL) {
@@ -551,17 +555,24 @@ void Pulses::DAC_output() {
         }
       #endif
       */
-    }
+      } // counter & 1
+    } // ACTIVE
+  } // loop
+#if defined DEBUG_DACsq
+Serial.println();
+#endif
+  if(dac1_value != dac1_last) {
+#if defined DEBUG_DACsq
+//Serial.print(dac1_value); Serial.print(' ');
+#endif
+    dacWrite(BOARD_DAC1, dac1_value);
+    dac1_last = dac1_value;
+  }
 
-    if(dac1_value != dac1_last) {
-      dacWrite(BOARD_DAC1, dac1_value);
-      dac1_last = dac1_value;
-    }
-
-    if(dac2_value != dac2_last) {
-      dacWrite(BOARD_DAC2, dac2_value);
-      dac2_last = dac2_value;
-    }
+  if(dac2_value != dac2_last) {
+    dacWrite(BOARD_DAC2, dac2_value);
+    dac2_last = dac2_value;
+  }
 }
 #endif	// USE_DACs
 
@@ -572,7 +583,7 @@ void Pulses::DAC_output() {
 //	int Pulses::en_DAC(int pulse, int DACs_count /* must be 1 or 2 */,
 //			   int (*wave_function1)(int pulse, int volume)) {
 //	  pulses[pulse].dac1_wave_function = wave_function1;
-//	  pulses[pulse].flags |= DACsq;
+//	  pulses[pulse].action_flags |= DACsq;
 //	}
 //
 //	 #elif (USE_DACs == 2)
@@ -581,7 +592,7 @@ void Pulses::DAC_output() {
 //			   int (*wave_function2)(int pulse, int volume)) {
 //	  pulses[pulse].dac1_wave_function = wave_function1;
 //	  pulses[pulse].dac2_wave_function = wave_function2;
-//	  pulses[pulse].flags |= DACsq;
+//	  pulses[pulse].action_flags |= DACsq;
 //	}
 //	 #endif // allowed number of DACs
 //
@@ -617,10 +628,6 @@ bool Pulses::check_maybe_do() {
       for (unsigned int i=0; i<global_next_count; i++)	//     yes:
 	wake_pulse(global_next_pulses[i]);	//     wake next pulses up
 
-#if defined USE_DACs
-      DAC_output();
-#endif
-
       fix_global_next();			// determine next event[s] serie
       return true;		// *did* do something
     }
@@ -628,10 +635,6 @@ bool Pulses::check_maybe_do() {
     if (global_next.overflow < now.overflow) {	// earlier overflow period?
       for (unsigned int i=0; i<global_next_count; i++)	//   yes, we're late...
 	wake_pulse(global_next_pulses[i]);	//     wake next pulses up
-
-#if defined USE_DACs
-      DAC_output();
-#endif
 
       fix_global_next();			// determine next event[s] serie
       return true;		// *did* do something
