@@ -120,7 +120,10 @@ struct pulse_t {
 
   uint8_t dest_action_flags;
   /*
-    used by TODO: ################################################################
+    used by:
+    pulse_info_1line(int pulse)
+    en_jiffle_thrower(int pulse, unsigned int *jiffletab, uint8_t action_mask)
+    init_jiffle(unsigned int *jiffletab, struct time when, struct time new_period, int origin_pulse)
   */
 
   // pointer on  void something(int pulse)  functions:

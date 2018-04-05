@@ -22,6 +22,7 @@ now	KEYWORD2
 last_now	KEYWORD2
 global_next	KEYWORD2
 global_next_count	KEYWORD2
+DAC_output	KEYWORD2
 ticks_per_octave	KEYWORD2
 tuning	KEYWORD2
 activate_tuning	KEYWORD2

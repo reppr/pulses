@@ -1982,7 +1982,6 @@ void flagged_pulses_info() {
 
   for (int pulse=0; pulse<pl_max; ++pulse)
     if (PULSES.pulses[pulse].flags) {		// any flags set?
-//    pulse_info(pulse);	// FIXME: was like that before, check
       pulse_info_1line(pulse);
       count++;
     }
@@ -2437,18 +2436,6 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
     PULSES.pulses[pulse].base_time * jiffletab[base_index] / jiffletab[base_index+1];
   PULSES.pulses[pulse].countdown = jiffletab[base_index+2];		// count of next phase
 }
-
-
-// huch, unused?	FIXME: unused?
-void setup_jiffle_thrower(unsigned int *jiffletab, unsigned char new_flags, struct time when, struct time new_period) {
-  int pulse = PULSES.setup_pulse(&do_throw_a_jiffle, new_flags, when, new_period);
-
-  if (pulse != ILLEGAL)
-    PULSES.pulses[pulse].data = (unsigned int) jiffletab;
-  else
-    out_noFreePulses();
-}
-
 
 // pre-defined jiffle pattern:
 void setup_jiffles2345(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
@@ -4149,7 +4136,7 @@ bool menu_pulses_reaction(char menu_input) {
 //	display_name5pars("GUITAR", inverse, voices, multiplier, divisor, sync);
 	tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
 
-#ifndef USE_DACs	// TODO: review and use test code
+  #ifndef USE_DACs	// TODO: review and use test code
 	en_jiffle_throw_selected(default_actions);
   #else // *do* use dac
 	selected_share_DACsq_intensity(255, 1);
@@ -4158,7 +4145,6 @@ bool menu_pulses_reaction(char menu_input) {
 	en_jiffle_throw_selected(DACsq1);
     #else
 	selected_DACsq_intensity_proportional(255, 2);
-	// selected_set_action_flags(DACsq2);
 
 	en_jiffle_throw_selected(DACsq1 | DACsq2);
     #endif
