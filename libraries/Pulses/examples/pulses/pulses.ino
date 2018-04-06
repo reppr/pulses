@@ -1291,7 +1291,7 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
   }
 
   scale = pentatonic_minor;
-  select_n(voices);
+  PULSES.select_n(voices);
 
 #define COMPATIBILITY_PERIOD_3110	// sets the period directly
 #ifdef COMPATIBILITY_PERIOD_3110	// TODO: remove
@@ -1367,18 +1367,6 @@ int select_alive() {
   for (int pulse=0; pulse<pl_max; pulse++)
     if(PULSES.pulses[pulse].flags && (PULSES.pulses[pulse].flags != SCRATCH))
       PULSES.select_pulse(pulse);
-
-  return PULSES.selected_pulses;
-}
-
-
-int select_n(unsigned int n) {
-  PULSES.selected_pulses=0;
-  if (n == 0)
-    return PULSES.selected_pulses;
-
-  for (int pulse=0; pulse<n; pulse++)
-    PULSES.select_pulse(pulse);
 
   return PULSES.selected_pulses;
 }
@@ -1521,7 +1509,7 @@ bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, i
     }
 
     if (voices>0) {
-      select_n(voices);
+      PULSES.select_n(voices);
 
       for (pulse=0; pulse<voices; pulse++) {
 	//	PULSES.init_pulse(pulse);			// initialize new
@@ -3457,7 +3445,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     break;
 
-  case 'V':	// set voices	V[num]! select_n_voices
+  case 'V':	// set voices	V[num]! PULSES.select_n_voices
     if(MENU.cb_peek()==EOF)
       MENU.out(F("voices "));
 
@@ -3479,7 +3467,7 @@ bool menu_pulses_reaction(char menu_input) {
       MENU.outln(voices);
 
     if(MENU.cb_peek()=='!')
-      select_n(voices);
+      PULSES.select_n(voices);
 
     break;
 
@@ -3707,7 +3695,7 @@ bool menu_pulses_reaction(char menu_input) {
 	inverse=false;
 	// unsigned int harmonics4 = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0,0};
 	jiffle=harmonics4;
-	select_n(voices);
+	PULSES.select_n(voices);
 	display_name5pars("prepare_magnets", inverse, voices, multiplier, divisor, sync);
 	prepare_magnets(inverse, voices, multiplier, divisor, sync);
 
@@ -3724,10 +3712,10 @@ bool menu_pulses_reaction(char menu_input) {
 	inverse=false;
 
 	scale = pentatonic_minor;
-	select_n(voices);
+	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier * 1024 , divisor * 1167, sync, scale);
 	jiffle=ting1024;
-	select_n(voices);
+	PULSES.select_n(voices);
 	display_name5pars("E14", inverse, voices, multiplier, divisor, sync);
 
 	if (MENU.maybe_display_more())
@@ -3741,10 +3729,10 @@ bool menu_pulses_reaction(char menu_input) {
 	inverse=false;
 
 	scale = pentatonic_minor;
-	select_n(voices);
+	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier * 4096 , divisor * 1167, sync, scale);
 	jiffle=ting4096;
-	select_n(voices);
+	PULSES.select_n(voices);
 	display_name5pars("E15", inverse, voices, multiplier, divisor, sync);
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -3758,7 +3746,7 @@ bool menu_pulses_reaction(char menu_input) {
 	inverse=false;
 
 	scale = european_pentatonic;
-	select_n(voices);
+	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	jiffle=ting4096;
 	// jiffle = arpeggio4096;
@@ -3775,7 +3763,7 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=256*5;
 
 	scale = mimic_japan_pentatonic;
-	select_n(voices);
+	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	jiffle=ting4096;
 	display_name5pars("E17 mimic japan", inverse, voices, multiplier, divisor, sync);
@@ -3807,7 +3795,7 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=9;	// reduced
 	jiffle=ting4096;
 
-	select_n(voices);
+	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("E18 pentatonic minor", inverse, voices, multiplier, divisor, sync);
 
@@ -3895,7 +3883,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	multiplier=1;
 	divisor=1024;
-	select_n(voices);
+	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("E29 KALIMBA7 tuning", inverse, voices, multiplier, divisor, sync);
 	en_click_selected();							// for tuning ;)
@@ -3916,7 +3904,7 @@ bool menu_pulses_reaction(char menu_input) {
 	// jiffle = peepeep4096;
 	jiffle = ting4096;
 	// jiffle = tingeling4096;
-	select_n(voices);
+	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("E30 KALIMBA7 jiff", inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected(selected_actions);
@@ -3935,7 +3923,7 @@ bool menu_pulses_reaction(char menu_input) {
 	multiplier=4;
 	divisor=1;
 	jiffle = ting4096;
-	select_n(voices);
+	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("E31 KALIMBA7 jiff", inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected(selected_actions);
@@ -3954,7 +3942,7 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=1;
 	// jiffle = ting4096;
 	jiffle = tigg_ding4096;
-	select_n(voices);
+	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("E32 ESP32_12", inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected(selected_actions);
@@ -3972,7 +3960,7 @@ bool menu_pulses_reaction(char menu_input) {
 	multiplier=4;
 	divisor=1;
 	jiffle = ting4096;
-	select_n(voices);
+	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("minor", inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected(selected_actions);
@@ -3990,7 +3978,7 @@ bool menu_pulses_reaction(char menu_input) {
 	multiplier=4;
 	divisor=1;
 	jiffle = ting4096;
-	select_n(voices);
+	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("major", inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected(selected_actions);
@@ -4008,7 +3996,7 @@ bool menu_pulses_reaction(char menu_input) {
 	multiplier=4;
 	divisor=1;
 	jiffle = ting4096;
-	select_n(voices);
+	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("tetra", inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected(selected_actions);
@@ -4027,7 +4015,7 @@ bool menu_pulses_reaction(char menu_input) {
 	multiplier=6;
 	divisor=1;
 	jiffle = ting4096;
-	select_n(voices);
+	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("BIG major", inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected(selected_actions);
@@ -4157,7 +4145,7 @@ bool menu_pulses_reaction(char menu_input) {
 	// jiffle = tanboura; divisor *= 2;
 
 	// ################ FIXME: remove redundant code ################
-	select_n(voices);
+	PULSES.select_n(voices);
 //	prepare_scale(false, voices, multiplier, divisor, 0, scale);
 //	display_name5pars("GUITAR", inverse, voices, multiplier, divisor, sync);
 	tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);

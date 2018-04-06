@@ -215,6 +215,8 @@ class Pulses {
   void deactivate_pulse(int pulse);	// clear ACTIVE flag, keep data
   void deactivate_all_clicks();
   void select_pulse(int pulse);
+  pulses_mask_t select_n(unsigned int n);
+  pulses_mask_t select_from_to(unsigned int from, unsigned int to);
   bool pulse_is_selected(int pulse, pulses_mask_t mask);
   bool pulse_is_selected(int pulse);
   void activate_selected_synced_now(int sync);

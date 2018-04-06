@@ -23,8 +23,8 @@
 
     #define STARTUP_DELAY	256	// ESP32 seems to need that for successful booting
 
-    #define PL_MAX	64	// FIXME: mask limitations ################
-// #define PL_MAX	32
+  //#define PL_MAX	64	// FIXME: mask limitations does not work with uint64_t mask
+    #define PL_MAX	32
 
     #define JIFFLE_RAM_SIZE	256*3+2
     #define SCALES_RAM_SIZE	256*2+2
@@ -158,7 +158,7 @@ const int pl_max=PL_MAX;
 #if (PL_MAX<=32)
   #define pulses_mask_t  uint32_t
 #else
-  #define pulses_mask_t  uint64_t
+  #define pulses_mask_t  uint64_t	// does not work???
 #endif
 
 

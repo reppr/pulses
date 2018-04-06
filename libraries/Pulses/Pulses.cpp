@@ -413,6 +413,38 @@ void Pulses::select_pulse(int pulse) {
   selected_pulses |= (pulses_mask_t) (1 << pulse);
 }
 
+pulses_mask_t Pulses::select_n(unsigned int n) {
+  selected_pulses=0;
+  if (n) {
+    if (n>pl_max)	// sanity check
+      n=pl_max;
+
+    for (int pulse=0; pulse<n; pulse++)
+      select_pulse(pulse);
+  }
+
+  return selected_pulses;
+}
+
+pulses_mask_t Pulses::select_from_to(unsigned int from, unsigned int to) {
+  selected_pulses=0;
+
+  if(from > to) {	// sanity checks: swap?
+    unsigned int scratch = from;
+    from = to;
+    to = scratch;
+  }
+  if(from >= pl_max)		// insane?
+    return selected_pulses;	// 0
+
+  // ok:
+  for (pulse=from; pulse<=to && pulse<pl_max; pulse++)
+    select_pulse(pulse);
+
+  return selected_pulses;
+}
+
+
 bool Pulses::pulse_is_selected(int pulse, pulses_mask_t mask) {
   return (mask & (pulses_mask_t) (1 << pulse));
 }
