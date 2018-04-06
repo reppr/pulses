@@ -4176,6 +4176,11 @@ bool menu_pulses_reaction(char menu_input) {
     #endif
   #endif
 
+	/*	################ TODO: try bass octaves on DACsq ################
+	if(voices > CLICK_PULSES) {	// try bass octaves on DACsq
+	  MENU.outln(F("DADA"));
+	}
+	*/
 
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
 	MENU.ln();
