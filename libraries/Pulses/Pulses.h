@@ -214,11 +214,15 @@ class Pulses {
   void wake_pulse(int pulse);		// wake a pulse up, called from check_maybe_do()
   void deactivate_pulse(int pulse);	// clear ACTIVE flag, keep data
   void deactivate_all_clicks();
-  void select_pulse(int pulse);
-  pulses_mask_t select_n(unsigned int n);
-  pulses_mask_t select_from_to(unsigned int from, unsigned int to);
+  void select_pulse(int pulse);		// select in user interface
+  void deselect_pulse(int pulse);
+  void toggle_selection(int pulse);
+  void clear_selection(void);
+  int select_n(unsigned int n);
+  int select_from_to(unsigned int from, unsigned int to);
   bool pulse_is_selected(int pulse, pulses_mask_t mask);
   bool pulse_is_selected(int pulse);
+  bool anything_selected(void);
   void activate_selected_synced_now(int sync);
   void reset_and_edit_pulse(int pulse, unsigned long time_unit);	// FIXME: time_unit as struct time
   int  fastest_pulse();			// fastest pulse, *not* dealing with overflow...

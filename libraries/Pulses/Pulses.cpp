@@ -61,7 +61,6 @@ Pulses::Pulses(int pl_max, Menu *MENU):
   global_octave_mask(1),
   current_global_octave_mask(1),
   global_next_count(0),
-  selected_pulses(0),
   time_unit(TIME_UNIT),
   overflow_sec(4294.9672851562600)	// overflow time in seconds
 #ifdef IMPLEMENT_TUNING
@@ -74,6 +73,7 @@ Pulses::Pulses(int pl_max, Menu *MENU):
   global_next_pulses = (int*) malloc(pl_max * sizeof(int));
   // ERROR ################
 
+  clear_selection();
   init_time();
   init_pulses();
 }
@@ -393,6 +393,7 @@ void Pulses::wake_pulse(int pulse) {
   }
 }
 
+
 void Pulses::deactivate_pulse(int pulse) {	// clear ACTIVE flag, keep data
   if (pulse == ILLEGAL)	// invalid?
     return;
@@ -409,12 +410,30 @@ void Pulses::deactivate_all_clicks() {
   fix_global_next();
 }
 
+
+// selection for user interface
 void Pulses::select_pulse(int pulse) {
   selected_pulses |= (pulses_mask_t) (1 << pulse);
 }
 
-pulses_mask_t Pulses::select_n(unsigned int n) {
-  selected_pulses=0;
+
+void Pulses::deselect_pulse(int pulse) {
+  selected_pulses &= (pulses_mask_t) ~(1 << pulse);
+}
+
+
+void Pulses::toggle_selection(int pulse) {
+  selected_pulses ^= (pulses_mask_t) (1 << pulse);
+}
+
+
+void Pulses::clear_selection() {
+  selected_pulses = 0L;
+}
+
+
+int Pulses::select_n(unsigned int n) {
+  clear_selection();
   if (n) {
     if (n>pl_max)	// sanity check
       n=pl_max;
@@ -423,25 +442,28 @@ pulses_mask_t Pulses::select_n(unsigned int n) {
       select_pulse(pulse);
   }
 
-  return selected_pulses;
+  return n;
 }
 
-pulses_mask_t Pulses::select_from_to(unsigned int from, unsigned int to) {
-  selected_pulses=0;
 
+int Pulses::select_from_to(unsigned int from, unsigned int to) {
   if(from > to) {	// sanity checks: swap?
     unsigned int scratch = from;
     from = to;
     to = scratch;
   }
   if(from >= pl_max)		// insane?
-    return selected_pulses;	// 0
+    return 0;	// 0
 
   // ok:
-  for (pulse=from; pulse<=to && pulse<pl_max; pulse++)
+  clear_selection();
+  int n=0;
+  for (pulse=from; pulse<=to && pulse<pl_max; pulse++) {
     select_pulse(pulse);
+    n++;
+  }
 
-  return selected_pulses;
+  return n;
 }
 
 
@@ -453,10 +475,13 @@ bool Pulses::pulse_is_selected(int pulse) {
   return (selected_pulses & (pulses_mask_t) (1 << pulse));
 }
 
-void Pulses::activate_selected_synced_now(int sync) {
-  if (selected_pulses==0)
-    return;
 
+bool Pulses::anything_selected() {
+  return selected_pulses != 0;
+}
+
+
+void Pulses::activate_selected_synced_now(int sync) {
   get_now();
   for (int pulse=0; pulse<pl_max; pulse++)
     if (pulse_is_selected(pulse))

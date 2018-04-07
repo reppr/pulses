@@ -38,9 +38,13 @@ activate_pulse_synced	KEYWORD2
 deactivate_pulse	KEYWORD2
 deactivate_all_clicks	KEYWORD2
 select_pulse	KEYWORD2
+deselect_pulse	KEYWORD2
+clear_selection	KEYWORD2
+toggle_selection	KEYWORD2
 select_n	KEYWORD2
 select_from_to	KEYWORD2
 pulse_is_selected	KEYWORD2
+anything_selected	KEYWORD2
 activate_selected_synced_now	KEYWORD2
 reset_and_edit_pulse	KEYWORD2
 setup_pulse_synced	KEYWORD2

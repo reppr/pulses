@@ -262,7 +262,7 @@ int reset_all_flagged_pulses_GPIO_OFF() {	// reset pulses, switches GPIO and DAC
   // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
   PULSES.init_click_pulses();
   init_click_pins_OutLow();		// switch them on LOW, output	current off, i.e. magnets
-  PULSES.selected_pulses=0L;		// restart selections at none
+  PULSES.clear_selection();		// restart selections at none
 
 #if defined USE_DACs			// reset DACs
   dacWrite(BOARD_DAC1, 0);
@@ -1343,32 +1343,26 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
 
 
 // ****************************************************************
-int select_flagged() {
-  PULSES.selected_pulses=0;
+void select_flagged() {
+  PULSES.clear_selection();
   for (int pulse=0; pulse<pl_max; pulse++)
     if (PULSES.pulses[pulse].flags)
       PULSES.select_pulse(pulse);
-
-  return PULSES.selected_pulses;
 }
 
 
-int select_all() {
-  PULSES.selected_pulses=0;
+void select_all() {
+  PULSES.clear_selection();
   for (int pulse=0; pulse<pl_max; pulse++)
     PULSES.select_pulse(pulse);
-
-  return PULSES.selected_pulses;
 }
 
 
-int select_alive() {
-  PULSES.selected_pulses=0;
+void select_alive() {
+  PULSES.clear_selection();
   for (int pulse=0; pulse<pl_max; pulse++)
     if(PULSES.pulses[pulse].flags && (PULSES.pulses[pulse].flags != SCRATCH))
       PULSES.select_pulse(pulse);
-
-  return PULSES.selected_pulses;
 }
 
 
@@ -1989,7 +1983,7 @@ void selected_or_flagged_pulses_info_lines() {
 
   if (count == 0) {
     MENU.outln(F("no selected or flagged pulses"));
-    if(PULSES.selected_pulses)		// special feature ;)
+    if(PULSES.anything_selected())
       PULSES.print_selected_mask();
   }
 
@@ -2769,11 +2763,12 @@ bool menu_pulses_reaction(char menu_input) {
   case '9':
     switch (MENU.menu_mode) {
     case 0:	// normal input, no special menu_mode
-      if((menu_input -'0') >= pl_max)
+      menu_input -= '0';
+      if((menu_input < 0) || (menu_input >= pl_max))
 	return false;		// *only* responsible if pulse exists
 
       // existing pulse:
-      PULSES.selected_pulses ^= (pulses_mask_t) (1 << (menu_input - '0'));
+      PULSES.toggle_selection(menu_input);
 
       PULSES.maybe_show_selected_mask();
       break;
@@ -2853,7 +2848,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'l':	// select destination: alive voices
-    PULSES.selected_pulses=0;
+    PULSES.clear_selection();
     for (int pulse=0; pulse<voices; pulse++)
       if(PULSES.pulses[pulse].flags && (PULSES.pulses[pulse].flags != SCRATCH))
 	PULSES.select_pulse(pulse);
@@ -2867,16 +2862,13 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case '~':	// invert destination selection
-    PULSES.selected_pulses = (pulses_mask_t) ~PULSES.selected_pulses;
-    bitmask=0;
     for (int pulse=0; pulse<pl_max; pulse++)
-      bitmask |= (1 << pulse);
-    PULSES.selected_pulses &= bitmask;
+      PULSES.toggle_selection(pulse);
     PULSES.maybe_show_selected_mask();
     break;
 
   case 'x':	// clear destination selection
-    PULSES.selected_pulses = 0;
+    PULSES.clear_selection();
     PULSES.maybe_show_selected_mask();
     break;
 
@@ -3033,7 +3025,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'K':	// kill selected pulses
-    if (PULSES.selected_pulses) {
+    if (PULSES.anything_selected()) {
       MENU.out(F("kill pulse "));
       for (int pulse=0; pulse<pl_max; pulse++)
 	if (PULSES.pulse_is_selected(pulse)) {
@@ -3806,7 +3798,8 @@ bool menu_pulses_reaction(char menu_input) {
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
       case 19:	// TUNING: tuned sweep
-	PULSES.selected_pulses=1;
+	PULSES.clear_selection();
+	PULSES.select_pulse(0);
 	sweep_up=1;
 	PULSES.reset_and_edit_pulse(0, PULSES.time_unit);
 	PULSES.divide_period(0, 1024);
