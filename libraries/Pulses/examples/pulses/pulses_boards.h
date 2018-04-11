@@ -85,7 +85,7 @@
 	#define CLICK_PULSES	8	// only 7 used
       #else	// ESP32 generic
         #define CLICK_PULSES	8
-//      #define CLICK_PULSES	16	//  ################ FIXME: 16 pulses on ESP32 broken
+//      #define CLICK_PULSES	16	//  ################ FIXME: CLICK_PULSES  16 pulses on ESP32 broken
       #endif
     #elif defined(ESP8266)		// ESP8266: "a lot of RAM", 8 pins
       #define CLICK_PULSES	8

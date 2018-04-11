@@ -281,7 +281,7 @@ void Pulses::divide_period(int pulse, unsigned long divisor) {	// integer math
 }
 
 
-// FIXME: comment	################
+// FIXME: CLICK_PULSES	comment		################
 void Pulses::global_shift(int global_octave) {
   if (global_octave>0)
     current_global_octave_mask = global_octave_mask >> global_octave;
@@ -410,7 +410,7 @@ void Pulses::deactivate_pulse(int pulse) {	// clear ACTIVE flag, keep data
 
 
 void Pulses::deactivate_all_clicks() {
-  for (int pulse=0; pulse<CLICK_PULSES; pulse++)
+  for (int pulse=0; pulse<CLICK_PULSES; pulse++)	// FIXME: CLICK_PULSES	################
     pulses[pulse].flags &= ~ACTIVE;
 
   fix_global_next();
@@ -889,8 +889,8 @@ int Pulses::setup_pulse_synced(void (*pulse_do)(int), unsigned char new_flags,
 }
 
 
-// By design click pulses *HAVE* to be defined *BEFORE* any other pulses:	// FIXME: obsolete?
-void Pulses::init_click_pulses() {	// FIXME:
+// By design click pulses *HAVE* to be defined *BEFORE* any other pulses:	// FIXME: CLICK_PULSES obsolete?  ########
+void Pulses::init_click_pulses() {	// FIXME: CLICK_PULSES	  ################
   for (int pulse=0; pulse<CLICK_PULSES; pulse++)
     init_pulse(pulse);
 }

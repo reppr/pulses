@@ -90,7 +90,7 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 
 
 /* **************************************************************** */
-// define uint8_t click_pin[CLICK_PULSES]	// see: pulses_boards.h
+// define uint8_t click_pin[CLICK_PULSES]	// see: pulses_boards.h		FIXME: CLICK_PULSES
 #ifdef CLICK_PULSES
   #include "pulses_CLICK_PIN_configuration.h"	// defines click_pin[]
 #endif
@@ -259,9 +259,9 @@ int reset_all_flagged_pulses_GPIO_OFF() {	// reset pulses, switches GPIO and DAC
     }
   }
 
-  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-  PULSES.init_click_pulses();
-  init_click_pins_OutLow();		// switch them on LOW, output	current off, i.e. magnets
+  // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:		FIXME: CLICK_PULSES ################
+  PULSES.init_click_pulses();		//						FIXME: CLICK_PULSES ################
+  init_click_pins_OutLow();		// switch them on LOW, output	current off, i.e. magnets    FIXME: CLICK_PULSES ################
   PULSES.clear_selection();		// restart selections at none
 
 #if defined USE_DACs			// reset DACs
@@ -828,6 +828,7 @@ int main() {
 //   or connect LEDs, MOSFETs, MIDI, whatever...
 //   these are just FlipFlop pins.
 
+// FIXME: CLICK_PULSES	comment
 // Click_pulses are a sub-group of pulses that control an arduino
 // digital output each.  By design they must be initiated first to get
 // the low pulse indices. The pins are configured as outputs by init_click_pins_OutLow()
@@ -1050,13 +1051,14 @@ bool maybe_stop_sweeping() {
 void init_click_pins_OutLow() {		// make them GPIO, OUTPUT, LOW
 /* uint8_t click_pin[CLICK_PULSES];
    hardware pins for click_pulses:
+// FIXME: CLICK_PULSES comment
    It is a bit obscure to hold them in an array indexed by [pulse]
    but it's simple and working well
 */
 
   int pin;
 
-  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {	// FIXME: CLICK_PULSES
     pin=click_pin[pulse];
 
 #ifdef ESP8266	// pin 14 must be switched to GPIO on ESP8266
@@ -1100,7 +1102,7 @@ void out_noFreePulses() {
 // make an existing pulse to a click pulse:
 bool en_click(int pulse) {
   if (pulse != ILLEGAL) {
-    if (pulse < CLICK_PULSES) {
+    if (pulse < CLICK_PULSES) {	// FIXME: CLICK_PULSES
       PULSES.pulses[pulse].periodic_do = (void (*)(int)) &click;
       PULSES.pulses[pulse].gpio = click_pin[pulse];
       pinMode(PULSES.pulses[pulse].gpio, OUTPUT);
@@ -3177,7 +3179,7 @@ bool menu_pulses_reaction(char menu_input) {
     for (int pulse=0; pulse<voices; pulse++)
       if (PULSES.pulse_is_selected(pulse)) {
 	PULSES.pulses[pulse].periodic_do = NULL;
-	if (pulse<CLICK_PULSES)		// set clicks on LOW
+	if (pulse<CLICK_PULSES)		// set clicks on LOW	// FIXME: CLICK_PULSES
 	  digitalWrite(click_pin[pulse], LOW);
       }
 
@@ -3486,7 +3488,7 @@ bool menu_pulses_reaction(char menu_input) {
     // display DACsq max intensity
     s1=0;
     s2=0;
-    for(int p=0; p<CLICK_PULSES; p++) {
+    for(int p=0; p<CLICK_PULSES; p++) {	// FIXME: CLICK_PULSES
       s1 += PULSES.pulses[p].dac1_intensity;
       s2 += PULSES.pulses[p].dac2_intensity;
     }
@@ -3530,7 +3532,7 @@ bool menu_pulses_reaction(char menu_input) {
     input_value = MENU.numeric_input(voices);
     if (input_value>0 && input_value<=pl_max) {
       voices = input_value;
-      if (voices>CLICK_PULSES) {
+      if (voices>CLICK_PULSES) {	// FIXME: CLICK_PULSES
 	if (MENU.verbosity)
 	  MENU.outln(F("WARNING: voices > gpio"));
       }
@@ -3633,7 +3635,7 @@ bool menu_pulses_reaction(char menu_input) {
 	sync=1;
 	multiplier=8;
 	divisor=3;
-	reverse_click_pins();	// ################ FIXME: not here ################
+	reverse_click_pins();	// ################ FIXME: CLICK_PULSES not here ################
 
 	if (MENU.maybe_display_more()) {
 	  // display_name5pars("setup_jiffles0", g_inverse, voices, multiplier, divisor, sync);
@@ -4227,7 +4229,7 @@ bool menu_pulses_reaction(char menu_input) {
   #endif
 
 	/*	################ TODO: try bass octaves on DACsq ################
-	if(voices > CLICK_PULSES) {	// try bass octaves on DACsq
+	if(voices > CLICK_PULSES) {	// try bass octaves on DACsq		// FIXME: CLICK_PULSES
 	  MENU.outln(F("DADA"));
 	}
 	*/
