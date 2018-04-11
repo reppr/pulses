@@ -220,7 +220,7 @@ class Pulses {
   void clear_selection(void);
   int select_n(unsigned int n);
   int select_from_to(unsigned int from, unsigned int to);
-  bool pulse_is_selected(int pulse, pulses_mask_t mask);
+  bool pulse_is_selected(int pulse, pulses_mask_t mask);	// FIXME: pulses_mask
   bool pulse_is_selected(int pulse);
   bool anything_selected(void);
   void activate_selected_synced_now(int sync);
@@ -261,7 +261,7 @@ class Pulses {
 
   unsigned int get_pl_max() { return pl_max; }	// inlined
 
-  pulses_mask_t selected_pulses;		// a bit for each selected pulse
+  pulses_mask_t selected_pulses;		// a bit for each selected pulse	// FIXME: pulses_mask
   pulse_t * pulses;		// data pointer for pulses
   Menu *MENU;			// pointer to the menu
 

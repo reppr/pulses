@@ -413,21 +413,21 @@ void Pulses::deactivate_all_clicks() {
 
 // selection for user interface
 void Pulses::select_pulse(int pulse) {
-  selected_pulses |= (pulses_mask_t) (1 << pulse);
+  selected_pulses |= (pulses_mask_t) (1 << pulse);	// FIXME: pulses_mask
 }
 
 
 void Pulses::deselect_pulse(int pulse) {
-  selected_pulses &= (pulses_mask_t) ~(1 << pulse);
+  selected_pulses &= (pulses_mask_t) ~(1 << pulse);	// FIXME: pulses_mask
 }
 
 
 void Pulses::toggle_selection(int pulse) {
-  selected_pulses ^= (pulses_mask_t) (1 << pulse);
+  selected_pulses ^= (pulses_mask_t) (1 << pulse);	// FIXME: pulses_mask
 }
 
 
-void Pulses::clear_selection() {
+void Pulses::clear_selection() {	// FIXME: pulses_mask
   selected_pulses = 0L;
 }
 
@@ -467,16 +467,16 @@ int Pulses::select_from_to(unsigned int from, unsigned int to) {
 }
 
 
-bool Pulses::pulse_is_selected(int pulse, pulses_mask_t mask) {
+bool Pulses::pulse_is_selected(int pulse, pulses_mask_t mask) {	// FIXME: pulses_mask
   return (mask & (pulses_mask_t) (1 << pulse));
 }
 
-bool Pulses::pulse_is_selected(int pulse) {
+bool Pulses::pulse_is_selected(int pulse) {	// FIXME: pulses_mask
   return (selected_pulses & (pulses_mask_t) (1 << pulse));
 }
 
 
-bool Pulses::anything_selected() {
+bool Pulses::anything_selected() {	// FIXME: pulses_mask
   return selected_pulses != 0;
 }
 
@@ -837,8 +837,8 @@ int Pulses::setup_pulse_synced(void (*pulse_do)(int), unsigned char new_flags,
 }
 
 
-// By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
-void Pulses::init_click_pulses() {
+// By design click pulses *HAVE* to be defined *BEFORE* any other pulses:	// FIXME: obsolete?
+void Pulses::init_click_pulses() {	// FIXME:
   for (int pulse=0; pulse<CLICK_PULSES; pulse++)
     init_pulse(pulse);
 }

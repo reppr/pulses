@@ -90,7 +90,7 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 
 
 /* **************************************************************** */
-// define uint8_t click_pin[CLICK_PULSES]
+// define uint8_t click_pin[CLICK_PULSES]	// see: pulses_boards.h
 #ifdef CLICK_PULSES
   #include "pulses_CLICK_PIN_configuration.h"	// defines click_pin[]
 #endif
@@ -2690,7 +2690,7 @@ bool menu_pulses_reaction(char menu_input) {
   static unsigned long input_value=0;
   static unsigned long calc_result=0;
   struct time now, time_scratch;
-  pulses_mask_t bitmask;
+  pulses_mask_t bitmask;	// FIXME: pulses_mask
   char next_token;	// for multichar commands
 
   switch (menu_input) {
