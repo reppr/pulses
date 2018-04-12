@@ -26,6 +26,8 @@
 /* **************************************************************** */
 /* Some basic #define's						    */
 
+#define pulses_mask_t  uint32_t		// ???	uint64_t compiles, but does not work
+
 #define ILLEGAL			-1	// illegal value for many topics
 
 
@@ -261,7 +263,6 @@ class Pulses {
 
   unsigned int get_pl_max() { return pl_max; }	// inlined
 
-  pulses_mask_t selected_pulses;		// a bit for each selected pulse	// FIXME: pulses_mask
   pulse_t * pulses;		// data pointer for pulses
   Menu *MENU;			// pointer to the menu
 
@@ -272,6 +273,8 @@ class Pulses {
   int * global_next_pulses;	// indices of all pulses involved @ coming 'next'
 				//   pulses that want to be waken up at the same time.
 				//   (there can't be more then pl_max)
+
+  pulses_mask_t selected_pulses;  // bitmask, a bit for each selected pulse
 };
 
 /* **************************************************************** */

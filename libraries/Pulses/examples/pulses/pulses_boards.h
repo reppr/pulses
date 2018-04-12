@@ -151,18 +151,6 @@
 /* **************************************************************** */
 const int pl_max=PL_MAX;
 
-/* **************************************************************** */
-// type
-// pulses_mask_t	// masks with a bit for each pulse	// FIXME: pulses_mask
-
-// FIXME: pulses_mask
-#if (PL_MAX<=32)
-  #define pulses_mask_t  uint32_t
-#else
-  #define pulses_mask_t  uint64_t	// does not work???
-#endif
-
-
 
 /* **************************************************************** */
 // use Arduino F() macro to save RAM or just a NOOP?
