@@ -1,4 +1,3 @@
-#define DEBUG_SELECTION	// ################ TODO: remove debug code ################
 /* **************************************************************** */
 /*
   Pulses.cpp
@@ -421,35 +420,18 @@ void Pulses::deactivate_all_clicks() {
 }
 
 
-// #define DEBUG_SELECTION	// ################ TODO: remove debug code ################
 // selection for user interface
 bool Pulses::select_pulse(int pulse) {
   if ((pulse < pl_max) && (pulse > -1)) {
     short i = ( pulse / (sizeof(pulses_mask_t) * 8));	// mask index
-#if defined DEBUG_SELECTION
-    (*MENU).out("\nselect mask "); (*MENU).out((unsigned int) selected_pulses_p);
-    (*MENU).out("="); (*MENU).outBIN(*selected_pulses_p, 32);
-#endif
     pulses_mask_t * mask = selected_pulses_p + i;	// mask pointer
-
-#if defined DEBUG_SELECTION
-    (*MENU).out("\tm+ "); (*MENU).out((unsigned int) mask);
-    (*MENU).out("\tp "); (*MENU).out(pulse);
-#endif
 
     pulse %= sizeof(pulses_mask_t) * 8;
     *mask |= (pulses_mask_t) (1 << pulse);
-#if defined DEBUG_SELECTION
-     (*MENU).out("\tp% "); (*MENU).out(pulse);
-     (*MENU).out("\ti "); (*MENU).out(i);
-     (*MENU).out("\tm "); (*MENU).outBIN(*mask, 32); (*MENU).ln();
-#endif
 
     return true;
   }
-#if defined DEBUG_SELECTION
-  (*MENU).outln("ERROR");
-#endif
+
   return false;
 }
 
@@ -519,30 +501,15 @@ int Pulses::select_from_to(unsigned int from, unsigned int to) {
 }
 
 
-// #define DEBUG_SELECTION	// ################ TODO: remove debug code ################
 bool Pulses::pulse_is_selected(int pulse, pulses_mask_t * mask) {
   if ((pulse < pl_max) && (pulse > -1)) {
     short i = (pulse / (sizeof(pulses_mask_t) * 8));	// mask index
-#if defined DEBUG_SELECTION
-    // (*MENU).out((unsigned int) selected_pulses_p);
-    (*MENU).out("\nask mask "); (*MENU).out((unsigned int) mask); (*MENU).out("\tm+ ");
-#endif
     mask += i;						// mask pointer
-#if defined DEBUG_SELECTION
-    (*MENU).out((unsigned int) mask); (*MENU).out("\tp ");
-    (*MENU).out(pulse); (*MENU).out("\tp% ");
-#endif
     pulse %= sizeof(pulses_mask_t) * 8;			// pulse bit in mask
-#if defined DEBUG_SELECTION
-    (*MENU).out(pulse); (*MENU).out("\ti "); (*MENU).out(i); (*MENU).out("\tm "); (*MENU).outBIN((unsigned int) *mask, 32); (*MENU).ln();
-#endif
 
     return (*mask & (1 << pulse));
   }
 
-#if defined DEBUG_SELECTION
-  (*MENU).outln("ERROR");
-#endif
  return false;
 }
 
