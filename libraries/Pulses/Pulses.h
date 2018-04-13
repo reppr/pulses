@@ -216,15 +216,17 @@ class Pulses {
   void wake_pulse(int pulse);		// wake a pulse up, called from check_maybe_do()
   void deactivate_pulse(int pulse);	// clear ACTIVE flag, keep data
   void deactivate_all_clicks();
-  void select_pulse(int pulse);		// select in user interface
+
+  bool select_pulse(int pulse);		// select in user interface
   void deselect_pulse(int pulse);
   void toggle_selection(int pulse);
   void clear_selection(void);
   int select_n(unsigned int n);
   int select_from_to(unsigned int from, unsigned int to);
-  bool pulse_is_selected(int pulse, pulses_mask_t mask);	// FIXME: pulses_mask
+  bool pulse_is_selected(int pulse, pulses_mask_t * mask);
   bool pulse_is_selected(int pulse);
-  bool anything_selected(void);
+  short how_many_selected(void);
+
   void activate_selected_synced_now(int sync);
   void reset_and_edit_pulse(int pulse, unsigned long time_unit);	// FIXME: time_unit as struct time
   int  fastest_pulse();			// fastest pulse, *not* dealing with overflow...
@@ -274,7 +276,7 @@ class Pulses {
 				//   pulses that want to be waken up at the same time.
 				//   (there can't be more then pl_max)
 
-  pulses_mask_t selected_pulses;  // bitmask, a bit for each selected pulse
+  pulses_mask_t * selected_pulses_p;  // bitmask pointer, a bit for each selected pulse
 };
 
 /* **************************************************************** */

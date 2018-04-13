@@ -1983,7 +1983,7 @@ void selected_or_flagged_pulses_info_lines() {
 
   if (count == 0) {
     MENU.outln(F("no selected or flagged pulses"));
-    if(PULSES.anything_selected())
+    if(PULSES.how_many_selected())
       PULSES.print_selected_mask();
   }
 
@@ -2158,14 +2158,14 @@ bool inverse=false;	// bottom DOWN/up click-pin mapping
 uint8_t selected_actions = DACsq1 | DACsq2;
 
 void menu_pulses_display() {
-  MENU.outln(F("http://github.com/reppr/pulses/\n"));
+  MENU.outln(F("http://github.com/reppr/pulses/"));
 
   MENU.out(F("pulses "));
   MENU.out(PULSES.get_pl_max());
-  MENU.tab();
+  MENU.space(2);
   MENU.out(F("GPIO "));
-  MENU.out(CLICK_PULSES);
-  MENU.tab();
+  MENU.outln(CLICK_PULSES);
+  MENU.ln();
   MENU.outln(F("?=help\ti=info\t.=flagged info\t:=selected info"));
 
   MENU.ln();
@@ -3025,7 +3025,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'K':	// kill selected pulses
-    if (PULSES.anything_selected()) {
+    if (PULSES.how_many_selected()) {
       MENU.out(F("kill pulse "));
       for (int pulse=0; pulse<pl_max; pulse++)
 	if (PULSES.pulse_is_selected(pulse)) {
@@ -3375,6 +3375,9 @@ bool menu_pulses_reaction(char menu_input) {
   case 'D':	// DADA reserved for temporary code   testing debugging ...
 //    MENU.out_noop(); MENU.ln();
 
+    input_value=MENU.numeric_input(-1);
+    if (input_value > -1)
+      PULSES.select_pulse(input_value);
 /*
     // ESP32 DAC test
     MENU.out(F("DAC test "));
@@ -3383,6 +3386,7 @@ bool menu_pulses_reaction(char menu_input) {
     MENU.outln(input_value);
 */
 
+/*
     // display DACsq max intensity
     s1=0;
     s2=0;
@@ -3391,6 +3395,7 @@ bool menu_pulses_reaction(char menu_input) {
       s2 += PULSES.pulses[p].dac2_intensity;
     }
     MENU.out(F("max DACsq intensity")); MENU.tab(); MENU.out(s1); MENU.tab(); MENU.outln(s2);
+*/
 
     break;
 
@@ -3442,7 +3447,7 @@ bool menu_pulses_reaction(char menu_input) {
       MENU.out(F("voices "));
 
     input_value = MENU.numeric_input(voices);
-    if (input_value>0 && input_value<pl_max) {
+    if (input_value>0 && input_value<=pl_max) {
       voices = input_value;
       if (voices>CLICK_PULSES) {
 	if (MENU.verbosity)

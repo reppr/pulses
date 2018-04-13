@@ -1,3 +1,4 @@
+#define DEBUG_SELECTION	// ################ TODO: remove debug code ################
 /* **************************************************************** */
 /*
   Pulses.cpp
@@ -67,13 +68,20 @@ Pulses::Pulses(int pl_max, Menu *MENU):
   , tuning(1.0)
 #endif
 {
-  pulses = (pulse_t *) malloc(pl_max * sizeof(pulse_t));
+  pulses = (pulse_t*) malloc(pl_max * sizeof(pulse_t));
   // ERROR ################
 
   global_next_pulses = (int*) malloc(pl_max * sizeof(int));
   // ERROR ################
 
+  int size = pl_max;
+  size += (sizeof(pulses_mask_t) * 8) - 1 ;	// add room for any remaining bits in next mask
+  size /= sizeof(pulses_mask_t) * 8;		// how many masks needed?
+  size *= sizeof(pulses_mask_t);		// size in bytes
+  selected_pulses_p = (pulses_mask_t*) malloc(size);
+  // ERROR ################
   clear_selection();
+
   init_time();
   init_pulses();
 }
@@ -85,6 +93,8 @@ Pulses::Pulses(int pl_max, Menu *MENU):
 
 Pulses::~Pulses() {
   free(pulses);
+  free(global_next_pulses);
+  free(selected_pulses_p);
 }
 
 
@@ -411,24 +421,66 @@ void Pulses::deactivate_all_clicks() {
 }
 
 
+// #define DEBUG_SELECTION	// ################ TODO: remove debug code ################
 // selection for user interface
-void Pulses::select_pulse(int pulse) {
-  selected_pulses |= (pulses_mask_t) (1 << pulse);	// FIXME: pulses_mask
+bool Pulses::select_pulse(int pulse) {
+  if ((pulse < pl_max) && (pulse > -1)) {
+    short i = ( pulse / (sizeof(pulses_mask_t) * 8));	// mask index
+#if defined DEBUG_SELECTION
+    (*MENU).out("\nselect mask "); (*MENU).out((unsigned int) selected_pulses_p);
+    (*MENU).out("="); (*MENU).outBIN(*selected_pulses_p, 32);
+#endif
+    pulses_mask_t * mask = selected_pulses_p + i;	// mask pointer
+
+#if defined DEBUG_SELECTION
+    (*MENU).out("\tm+ "); (*MENU).out((unsigned int) mask);
+    (*MENU).out("\tp "); (*MENU).out(pulse);
+#endif
+
+    pulse %= sizeof(pulses_mask_t) * 8;
+    *mask |= (pulses_mask_t) (1 << pulse);
+#if defined DEBUG_SELECTION
+     (*MENU).out("\tp% "); (*MENU).out(pulse);
+     (*MENU).out("\ti "); (*MENU).out(i);
+     (*MENU).out("\tm "); (*MENU).outBIN(*mask, 32); (*MENU).ln();
+#endif
+
+    return true;
+  }
+#if defined DEBUG_SELECTION
+  (*MENU).outln("ERROR");
+#endif
+  return false;
 }
 
 
 void Pulses::deselect_pulse(int pulse) {
-  selected_pulses &= (pulses_mask_t) ~(1 << pulse);	// FIXME: pulses_mask
+  if (pulse < pl_max) {
+    short i = (pulse / (sizeof(pulses_mask_t) * 8));	// mask index
+    pulses_mask_t * mask = selected_pulses_p + i;	// mask pointer
+
+    pulse %= sizeof(pulses_mask_t) * 8;
+    *mask &= (pulses_mask_t) (1 << pulse);
+  }
 }
 
 
 void Pulses::toggle_selection(int pulse) {
-  selected_pulses ^= (pulses_mask_t) (1 << pulse);	// FIXME: pulses_mask
+  if (pulse < pl_max) {
+    short i = (pulse / (sizeof(pulses_mask_t) * 8));	// mask index
+    pulses_mask_t * mask = selected_pulses_p + i;	// mask pointer
+
+    pulse %= sizeof(pulses_mask_t) * 8;
+    *mask ^= (pulses_mask_t) (1 << pulse);
+  }
 }
 
 
-void Pulses::clear_selection() {	// FIXME: pulses_mask
-  selected_pulses = 0L;
+void Pulses::clear_selection() {
+  int size = pl_max;
+  size += 7;	// add room for remaining bits in next mask
+  size /= 8;
+  memset(selected_pulses_p, 0, size);
 }
 
 
@@ -467,17 +519,46 @@ int Pulses::select_from_to(unsigned int from, unsigned int to) {
 }
 
 
-bool Pulses::pulse_is_selected(int pulse, pulses_mask_t mask) {	// FIXME: pulses_mask
-  return (mask & (pulses_mask_t) (1 << pulse));
+// #define DEBUG_SELECTION	// ################ TODO: remove debug code ################
+bool Pulses::pulse_is_selected(int pulse, pulses_mask_t * mask) {
+  if ((pulse < pl_max) && (pulse > -1)) {
+    short i = (pulse / (sizeof(pulses_mask_t) * 8));	// mask index
+#if defined DEBUG_SELECTION
+    // (*MENU).out((unsigned int) selected_pulses_p);
+    (*MENU).out("\nask mask "); (*MENU).out((unsigned int) mask); (*MENU).out("\tm+ ");
+#endif
+    mask += i;						// mask pointer
+#if defined DEBUG_SELECTION
+    (*MENU).out((unsigned int) mask); (*MENU).out("\tp ");
+    (*MENU).out(pulse); (*MENU).out("\tp% ");
+#endif
+    pulse %= sizeof(pulses_mask_t) * 8;			// pulse bit in mask
+#if defined DEBUG_SELECTION
+    (*MENU).out(pulse); (*MENU).out("\ti "); (*MENU).out(i); (*MENU).out("\tm "); (*MENU).outBIN((unsigned int) *mask, 32); (*MENU).ln();
+#endif
+
+    return (*mask & (1 << pulse));
+  }
+
+#if defined DEBUG_SELECTION
+  (*MENU).outln("ERROR");
+#endif
+ return false;
 }
 
-bool Pulses::pulse_is_selected(int pulse) {	// FIXME: pulses_mask
-  return (selected_pulses & (pulses_mask_t) (1 << pulse));
+
+bool Pulses::pulse_is_selected(int pulse) {
+  return pulse_is_selected(pulse, (pulses_mask_t *) selected_pulses_p);
 }
 
 
-bool Pulses::anything_selected() {	// FIXME: pulses_mask
-  return selected_pulses != 0;
+short Pulses::how_many_selected() {
+  short n=0;
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if (pulse_is_selected(pulse))
+      n++;
+
+  return n;
 }
 
 

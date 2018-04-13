@@ -23,8 +23,8 @@
 
     #define STARTUP_DELAY	256	// ESP32 seems to need that for successful booting
 
- //#define PL_MAX	64	// FIXME: pulses_mask	mask limitations does not work with uint64_t mask
-    #define PL_MAX	32
+    #define PL_MAX		64
+    //#define PL_MAX		256	// TEST :)
 
     #define JIFFLE_RAM_SIZE	256*3+2
     #define SCALES_RAM_SIZE	256*2+2
@@ -150,7 +150,6 @@
 
 /* **************************************************************** */
 const int pl_max=PL_MAX;
-
 
 /* **************************************************************** */
 // use Arduino F() macro to save RAM or just a NOOP?
