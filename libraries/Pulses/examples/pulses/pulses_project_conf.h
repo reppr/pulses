@@ -34,7 +34,7 @@
 
   this has *no* influence on autostarting WiFi
 */
-#define NO_AUTOSTART_INSTRUMENT
+// #define NO_AUTOSTART_INSTRUMENT
 
 
 // WiFi autostart on ESP8266 and ESP32?
