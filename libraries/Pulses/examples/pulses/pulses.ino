@@ -2699,11 +2699,11 @@ bool menu_pulses_reaction(char menu_input) {
     short_info();		// + short info
     break;
 
-  case '.':	// time and flagged pulses info
+  case '.':	// short info: time and flagged pulses info
     short_info();
     break;
 
-  case ':':
+  case ':':	// info
     MENU.ln();
     PULSES.time_info();
     MENU.ln();
@@ -2751,16 +2751,16 @@ bool menu_pulses_reaction(char menu_input) {
 
   // in normal mode toggle pulse selection with chiffres
   // else input data. see 'menu_mode'
-  case '0':
-  case '1':
-  case '2':
-  case '3':
-  case '4':
-  case '5':
-  case '6':
-  case '7':
-  case '8':
-  case '9':
+  case '0':	// toggle selection
+  case '1':	// toggle selection
+  case '2':	// toggle selection
+  case '3':	// toggle selection
+  case '4':	// toggle selection
+  case '5':	// toggle selection
+  case '6':	// toggle selection
+  case '7':	// toggle selection
+  case '8':	// toggle selection
+  case '9':	// toggle selection
     switch (MENU.menu_mode) {
     case 0:	// normal input, no special menu_mode
       menu_input -= '0';
@@ -2785,7 +2785,7 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case '<':
+  case '<':	// cursor left
     switch (MENU.menu_mode) {
     case JIFFLE_ENTRY_UNTIL_ZERO_MODE:
       if (jiffle_write_index)
@@ -2803,7 +2803,7 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case '>':
+  case '>':	// cursor right
     switch (MENU.menu_mode) {
     case JIFFLE_ENTRY_UNTIL_ZERO_MODE:
       if (++jiffle_write_index >= (JIFFLE_RAM_SIZE - 2))
@@ -3088,7 +3088,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
-  case 'w':
+  case 'w':	// sweep activate or toggle direction
     sweep_up *= -1;	// toggle direction up down
 
     if (sweep_up==0)	// start sweeping if it was disabled
@@ -3122,26 +3122,26 @@ bool menu_pulses_reaction(char menu_input) {
     } else {	// no numeric input (except '0') follows 'W'
       next_token = MENU.cb_peek();
       switch(next_token) {	// examine following input token
-      case '~': case 't':
+      case '~': case 't':	// 'W~' 'Wt'  start sweep or toggle direction
 	MENU.drop_input_token();
 	if(sweep_up==0)			// start if not active
 	  sweep_up = 1;
 	else
 	  sweep_up *= -1;		// or toggle sweep direction up down
 	break;
-      case '0':				// 'W0' switches sweeping off
+      case '0':			// 'W0' switches sweeping off
 	MENU.drop_input_token();
-	sweep_up = 0;		// sweep off
+	sweep_up = 0;			// sweep off
 	break;
-      case '+': case '1':
+      case '+': case '1':	// 'W+' 'W1"  sweep up
 	MENU.drop_input_token();
-	sweep_up = 1;		// sweep up
+	sweep_up = 1;			// sweep up
 	break;
-      case '-':
+      case '-':			// 'W-' sweep down
 	MENU.drop_input_token();
-	sweep_up = -1;		// sweep down
+	sweep_up = -1;			// sweep down
 	break;
-      case '?':			// info only
+      case '?':			// 'W?' info only
 	MENU.drop_input_token();
 	// if verbosity is too low sweep_info will not be called below,
 	// so we do it here
@@ -3522,7 +3522,7 @@ bool menu_pulses_reaction(char menu_input) {
     reset_all_flagged_pulses_GPIO_OFF();
     break;
 
-  case 'Z':
+  case 'Z':	// reverse_click_pins
     reverse_click_pins();
 
     if (MENU.maybe_display_more())
@@ -4047,33 +4047,33 @@ bool menu_pulses_reaction(char menu_input) {
 	if(MENU.cb_peek()!=EOF) {		// second letters e E a A	e|a  minor|major
 	  //	 ################ FIXME: ################
 	  switch (MENU.cb_peek()) {
-	  case 'e':
+	  case 'e':	// e minor scale
 	    MENU.drop_input_token();
 	    selected_scale = 4;
 	    scale=minor_scale;
 	    break;
 
-	  case 'E':
+	  case 'E':	// E major scale
 	    MENU.drop_input_token();
 	    selected_scale = 5;
 	    scale=major_scale;
 	    break;
 
-	  case 'a':
+	  case 'a':	// a minor scale
 	    MENU.drop_input_token();
 	    selected_scale = 4;
 	    divisor = 440;
 	    scale=minor_scale;
 	    break;
 
-	  case 'A':
+	  case 'A':	// A major scale
 	    MENU.drop_input_token();
 	    selected_scale = 5;
 	    divisor = 440;
 	    scale=major_scale;
 	    break;
 
-	  case 'd':
+	  case 'd':	// d minor scale
 	    MENU.drop_input_token();
 	    selected_scale = 4;
 	    divisor = 294;	// 293.66 = D4
@@ -4081,7 +4081,7 @@ bool menu_pulses_reaction(char menu_input) {
 	    scale=minor_scale;
 	    break;
 
-	  case 'D':
+	  case 'D':	// D major scale
 	    MENU.drop_input_token();
 	    selected_scale = 5;
 	    divisor = 294;	// 293.66 = D4
@@ -4094,11 +4094,11 @@ bool menu_pulses_reaction(char menu_input) {
 	switch (MENU.cb_peek()) {	// (second or) third letters for other scales
 	case EOF:
 	  break;
-	case '6':
+	case '6':	// doric scale
 	  scale = doric_scale;
 //	  selected_scale=;
 	  break;
-	case '5':			// 5  pentatonic (minor|major)
+	case '5':	// 5  pentatonic (minor|major) scale
 	  MENU.drop_input_token();
 	  if (scale==major_scale | scale==tetrachord) {
 	    selected_scale = 2;
@@ -4110,26 +4110,26 @@ bool menu_pulses_reaction(char menu_input) {
 	    voices = 16;	// default (pentatonic)	// for DAC output
 	  }
 	  break;
-	case '4':			// 4  tetrachord
+	case '4':	// 4  tetrachord
 	  MENU.drop_input_token();
 	  selected_scale = 6;
 	  scale = tetrachord;
 	  break;
-	case '3':			// 3  octaves fourths fifths
+	case '3':	// 3  octaves fourths fifths
 	  MENU.drop_input_token();
 	  selected_scale = 13;
 	  scale = octaves_fourths_fifths;
 	  multiplier *=8;
 	  divisor /= 2;
 	  break;
-	case '2':			// 2  octaves fifths
+	case '2':	// 2  octaves fifths
 	  MENU.drop_input_token();
 	  selected_scale = 11;
 	  scale = octaves_fifths;
 	  multiplier *= 4;
 	  divisor /= 4;
 	  break;
-	case '1':			// 1  octaves
+	case '1':	// 1  octaves
 	  MENU.drop_input_token();
 	  selected_scale = 10;
 	  scale = octaves;
