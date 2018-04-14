@@ -267,7 +267,7 @@ class Pulses {
 
   pulse_t * pulses;		// data pointer for pulses
   Menu *MENU;			// pointer to the menu
-
+  short hex_input_mask_index;
  private:
   int pulse;			// pulse index	// DO WE NEED THAT? ################
   int pl_max;			// max pulses possible

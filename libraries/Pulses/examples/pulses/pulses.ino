@@ -2070,7 +2070,7 @@ void print_selected() {
 
 
 void info_select_destination_with(bool extended_destinations) {
-  MENU.out(F("SELECT DESTINATION for '= * / s K P n c j :' to work on:\t"));
+  MENU.outln(F("SELECT DESTINATION for '= * / s K P n c j :' to work on:"));
   print_selected();
   MENU.out(F("select pulse with "));
 
@@ -2699,8 +2699,30 @@ bool menu_pulses_reaction(char menu_input) {
     short_info();		// + short info
     break;
 
-  case '.':	// short info: time and flagged pulses info
-    short_info();
+  case '.':	// ".xxx" select 16bit pulses masks  or  "." short info: time and flagged pulses info
+    switch (MENU.cb_peek()) {
+    case ' ':
+      MENU.drop_input_token();	// ' ' no break, display short_info
+    case EOF:			// '.' and ". ", display short_info
+      short_info();
+      break;
+    case 'M':  case 'm':	// ".M<num>" select HEX 16bit mask
+      MENU.drop_input_token();
+      input_value = PULSES.hex_input_mask_index;
+      if (MENU.maybe_calculate_input(&input_value)) {
+	if (input_value >= 0) {
+	  int masks = PULSES.get_pl_max();
+	  masks += (sizeof(pulses_mask_t) * 8) - 1 ;	// with room for any remaining bits in next mask
+	  masks /= sizeof(pulses_mask_t) * 8;		// how many masks needed?
+	  if (input_value <= masks)
+	    PULSES.hex_input_mask_index = input_value;
+	  else
+	    MENU.outln_invalid();
+	} else
+	  MENU.outln_invalid();
+      }
+      break;
+    }
     break;
 
   case ':':	// info
@@ -2761,6 +2783,7 @@ bool menu_pulses_reaction(char menu_input) {
   case '7':	// toggle selection
   case '8':	// toggle selection
   case '9':	// toggle selection
+//case 'a':	// hex toggle selection		TODO: hex selection ################
     switch (MENU.menu_mode) {
     case 0:	// normal input, no special menu_mode
       menu_input -= '0';
@@ -2833,7 +2856,7 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case 'a':	// select destination: all pulses with flags
+  case 'a':	// TODO: reserved for hex input ################
     select_flagged();
     PULSES.maybe_show_selected_mask();
 
@@ -3083,7 +3106,7 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case 'c':	// en_click
+  case 'c':	// en_click	// TODO: reserved for hex input ################
     en_click_selected();
     break;
 
@@ -3292,7 +3315,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     break;
 
-  case 'f':	// en_info
+  case 'f':	// en_info	// TODO: reserved for hex input ################
     // we work on pulses anyway, regardless dest
     for (int pulse=0; pulse<pl_max; pulse++)
       if (PULSES.pulse_is_selected(pulse))
@@ -3334,7 +3357,7 @@ bool menu_pulses_reaction(char menu_input) {
     jiffle_write_index=0;	// ################ FIXME: ################
     break;
 
-  case 'd':	// divisor
+  case 'd':	// divisor	// TODO: reserved for hex input ################
     if(MENU.cb_peek()==EOF)
       MENU.outln(F("divisor"));
 
@@ -3468,7 +3491,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     break;
 
-  case 'b':	// toggle bottom down/up click-pin mapping bottom up/down
+  case 'b':	// toggle bottom down/up click-pin mapping bottom up/down	// TODO: reserved for hex input ################
     if (MENU.verbosity)
       MENU.out(F("pin mapping bottom "));
 

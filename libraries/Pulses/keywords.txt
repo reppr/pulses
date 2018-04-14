@@ -68,3 +68,4 @@ maybe_show_selected_mask	KEYWORD2
 set_time_unit_and_inform	KEYWORD2
 selected_pulses	KEYWORD2
 MENU	KEYWORD2
+hex_input_mask_index	KEYWORD2

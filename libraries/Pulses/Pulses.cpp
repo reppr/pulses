@@ -62,6 +62,7 @@ Pulses::Pulses(int pl_max, Menu *MENU):
   current_global_octave_mask(1),
   global_next_count(0),
   time_unit(TIME_UNIT),
+  hex_input_mask_index(0),
   overflow_sec(4294.9672851562600)	// overflow time in seconds
 #ifdef IMPLEMENT_TUNING
   , tuning(1.0)
@@ -989,31 +990,41 @@ void Pulses::print_selected_mask() {
   if (hex_pulses > 16)
     hex_pulses=16;
 
-  if((*MENU).is_chiffre((*MENU).cb_peek()))	// more numeric input, so no display yet...
+  if((*MENU).is_chiffre((*MENU).cb_peek()))	// more numeric input, so no display yet...	FIXME: not here
     return;
 
   (*MENU).out_selected_();
-  for (int pulse=0; pulse<hex_pulses; pulse++) {
-    if (pulse_is_selected(pulse))
-      (*MENU).out_hex_chiffre(pulse);
+
+  for (int pulse=0, i=0; pulse<pl_max;) {
+    (*MENU).space();
+
+    if (i == hex_input_mask_index)
+      (*MENU).out('*');
     else
-      (*MENU).out('.');
-  }
-
-  // more than 16 pulses?
-  if (hex_pulses == pl_max) {	// no,
-    (*MENU).ln();
-    return;			// done
-  }
-
-  for (int pulse=16; pulse<pl_max; pulse++) {
-    if ((pulse % 16)==0)
       (*MENU).space();
-    if (pulse_is_selected(pulse))
-      (*MENU).out('+');
+    (*MENU).space();
+
+    int p;
+    for (p=0; (p<hex_pulses) && ((pulse+p)<pl_max); p++) {
+      if (pulse_is_selected(pulse + p))
+	(*MENU).out_hex_chiffre(p);
+      else
+	(*MENU).out('.');
+    }
+    pulse += p;
+
+    if (i == hex_input_mask_index)
+      (*MENU).out('*');
     else
-      (*MENU).out('.');
+      (*MENU).space();
+    i++;		// hex mask index
+
+    if(i%4 == 0) {		//   start a new line and indent
+      (*MENU).out(F("\n"));
+      (*MENU).space(9);	//   (displaying a tab can differ from 8 spaces)
+    }
   }
+
   (*MENU).ln();
 }
 
