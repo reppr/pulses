@@ -3852,47 +3852,47 @@ bool menu_pulses_reaction(char menu_input) {
 
       case 20:
 	jiffle = arpeggio4096;
-	MENU.play_KB_macro("X E12!aN *8 J20-.");
+	MENU.play_KB_macro("X E12! .a N *8 J20-.");
 	break;
 
       case 21:
 	jiffle = arpeggio4096down;
-	MENU.play_KB_macro("X E12!aN *16 J21-.");
+	MENU.play_KB_macro("X E12! .a N *16 J21-.");
 	break;
 
       case 22:
 	jiffle = arpeggio_cont;				// :)	with pizzs
-	MENU.play_KB_macro("X E12!aN *16 J22-.");
+	MENU.play_KB_macro("X E12! .a N *16 J22-.");
 	break;
 
       case 23:
 	jiffle = arpeggio_and_down;			// :) :)  arpeggio down instead pizzs
-	MENU.play_KB_macro("X E12!aN *16 J23-.");
+	MENU.play_KB_macro("X E12! .a N *16 J23-.");
 	break;
 
       case 24:
 	jiffle = stepping_down;				// :) :)  stepping down
-	MENU.play_KB_macro("X E12 S=0 !aN *16 J24-.");
+	MENU.play_KB_macro("X E12 S=0 ! .a N *16 J24-.");
 	break;
 
       case 25:
 	jiffle = back_to_ground;		// rhythm slowdown
-	MENU.play_KB_macro("X E12!aN *32 J25-.");		// :)	rhythm slowdown
+	MENU.play_KB_macro("X E12! .a N *32 J25-.");		// :)	rhythm slowdown
 	break;
 
       case 26:
 	jiffle = arpeggio_and_sayling;
-	MENU.play_KB_macro("X E12!aN *32 J26-.");
+	MENU.play_KB_macro("X E12! .a N *32 J26-.");
 	break;
 
       case 27:
 	jiffle = simple_theme;
-	MENU.play_KB_macro("X E12!aN *2 -.");
+	MENU.play_KB_macro("X E12! .a N *2 -.");
 	break;
 
       case 28:				// for tuning
 	jiffle = peepeep4096;
-	MENU.play_KB_macro("X E12!aN *2 -.");
+	MENU.play_KB_macro("X E12! .a N *2 -.");
 
 	break;
 
