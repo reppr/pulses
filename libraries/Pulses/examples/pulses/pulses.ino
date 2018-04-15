@@ -2702,10 +2702,12 @@ bool menu_pulses_reaction(char menu_input) {
   case '.':	// ".xxx" select 16bit pulses masks  or  "." short info: time and flagged pulses info
     switch (MENU.cb_peek()) {
     case ' ':
-      MENU.drop_input_token();	// ' ' no break, display short_info
-    case EOF:			// '.' and ". ", display short_info
+      MENU.drop_input_token();	// ' ' no 'break;'  display short_info
+
+    case EOF:			// '.' and ". ",    display short_info
       short_info();
       break;
+
     case 'M':  case 'm':	// ".M<num>" select HEX 16bit mask
       MENU.drop_input_token();
       input_value = PULSES.hex_input_mask_index;
@@ -2714,14 +2716,47 @@ bool menu_pulses_reaction(char menu_input) {
 	  int masks = PULSES.get_pl_max();
 	  masks += (sizeof(pulses_mask_t) * 8) - 1 ;	// with room for any remaining bits in next mask
 	  masks /= sizeof(pulses_mask_t) * 8;		// how many masks needed?
-	  if (input_value <= masks)
+	  if (input_value <= masks) {
 	    PULSES.hex_input_mask_index = input_value;
-	  else
+	    PULSES.maybe_show_selected_mask();
+	  } else
 	    MENU.outln_invalid();
 	} else
 	  MENU.outln_invalid();
       }
       break;
+
+    case 'a':	// '.a' select_flagged
+      MENU.drop_input_token();
+      select_flagged();
+      PULSES.maybe_show_selected_mask();			// TODO: factor that out {
+
+      if (MENU.maybe_display_more())
+	selected_or_flagged_pulses_info_lines();		// TODO: factor that out }
+      break;
+
+    case 'A':	// '.A' select destination: *all* pulses
+      MENU.drop_input_token();
+      select_all();
+      PULSES.maybe_show_selected_mask();
+      break;
+
+    case 'l':	// '.l' select destination: alive voices	// TODO: maybe use '.V' alive voices '.v' for voices?
+      MENU.drop_input_token();
+      PULSES.clear_selection();
+      for (int pulse=0; pulse<voices; pulse++)
+	if(PULSES.pulses[pulse].flags && (PULSES.pulses[pulse].flags != SCRATCH))
+	  PULSES.select_pulse(pulse);
+
+      PULSES.maybe_show_selected_mask();
+      break;
+
+    case 'L':	// '.L' select destination: all alive pulses
+      MENU.drop_input_token();
+      select_alive();
+      PULSES.maybe_show_selected_mask();
+      break;
+
     }
     break;
 
@@ -2856,41 +2891,13 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case 'a':	// TODO: reserved for hex input ################
-    select_flagged();
-    PULSES.maybe_show_selected_mask();
-
-    if (MENU.maybe_display_more())
-      selected_or_flagged_pulses_info_lines();
-
-    break;
-
-  case 'A':	// select destination: *all* pulses
-    select_all();
-    PULSES.maybe_show_selected_mask();
-    break;
-
-  case 'l':	// select destination: alive voices
-    PULSES.clear_selection();
-    for (int pulse=0; pulse<voices; pulse++)
-      if(PULSES.pulses[pulse].flags && (PULSES.pulses[pulse].flags != SCRATCH))
-	PULSES.select_pulse(pulse);
-
-    PULSES.maybe_show_selected_mask();
-    break;
-
-  case 'L':	// select destination: all alive pulses
-    select_alive();
-    PULSES.maybe_show_selected_mask();
-    break;
-
-  case '~':	// invert destination selection
+  case '~':	// invert destination selection		// TODO: alias to .~  ################
     for (int pulse=0; pulse<pl_max; pulse++)
       PULSES.toggle_selection(pulse);
     PULSES.maybe_show_selected_mask();
     break;
 
-  case 'x':	// clear destination selection
+  case 'x':	// clear destination selection		// TODO: alias to .x  ################
     PULSES.clear_selection();
     PULSES.maybe_show_selected_mask();
     break;
