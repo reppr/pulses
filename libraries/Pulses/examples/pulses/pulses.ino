@@ -2704,11 +2704,16 @@ bool menu_pulses_reaction(char menu_input) {
     case ' ':
       MENU.drop_input_token();	// ' ' no 'break;'  display short_info
 
-    case EOF:			// '.' and ". ",    display short_info
+    case EOF:			// '.' and '. ' display short_info
       short_info();
       break;
 
-    case 'M':  case 'm':	// ".M<num>" select HEX 16bit mask
+    case '?':			// '.?' PULSES.print_selected_mask();
+      MENU.drop_input_token();
+      PULSES.print_selected_mask();
+      break;
+
+    case 'M':  case 'm':	// '.M<num>' select HEX 16bit mask
       MENU.drop_input_token();
       input_value = PULSES.hex_input_mask_index;
       if (MENU.maybe_calculate_input(&input_value)) {
@@ -2818,10 +2823,10 @@ bool menu_pulses_reaction(char menu_input) {
   case '7':	// toggle selection
   case '8':	// toggle selection
   case '9':	// toggle selection
-//case 'a':	// hex toggle selection		TODO: hex selection ################
     switch (MENU.menu_mode) {
     case 0:	// normal input, no special menu_mode
       menu_input -= '0';
+      menu_input += (PULSES.hex_input_mask_index * 16);
       if((menu_input < 0) || (menu_input >= pl_max))
 	return false;		// *only* responsible if pulse exists
 
@@ -2841,6 +2846,34 @@ bool menu_pulses_reaction(char menu_input) {
 	set_jiffle_RAM_value_0_stop();
       break;
     }
+    break;
+
+  case 'a':	// hex toggle selection
+    //  case 'b':	// hex toggle selection
+    //  case 'c':	// hex toggle selection
+    //  case 'd':	// hex toggle selection
+  case 'e':	// hex toggle selection
+    //  case 'f':	// hex toggle selection
+    switch (MENU.menu_mode) {
+    case 0:	// normal input, no special menu_mode
+      menu_input -= 'a';
+      menu_input += (PULSES.hex_input_mask_index * 16);
+      if((menu_input < 0) || (menu_input >= pl_max))
+	return false;		// *only* responsible if pulse exists
+
+      // existing pulse:
+      PULSES.toggle_selection(menu_input);
+
+      PULSES.maybe_show_selected_mask();
+      break;
+
+    default:	// 'a' to 'f' keys not used here
+      if (MENU.verbosity >= VERBOSITY_SOME) {
+	MENU.out_noop();
+	MENU.ln();
+      }
+    }
+
     break;
 
   case '<':	// cursor left
