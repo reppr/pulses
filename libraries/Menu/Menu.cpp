@@ -1116,7 +1116,7 @@ void Menu::menu_display() const {
   }
 
   // Display internal key bindings:
-  out(F("\n'?' for menu  'e' toggle echo  '+-' verbosity"));
+  out(F("\n'?' for menu  '_' toggle echo  '+-' verbosity"));
   if (men_selected)
     out(F("  'q' quit page"));
   ln();
@@ -1346,7 +1346,7 @@ void Menu::interpret_men_input() {
       did_something = true;
       break;
 
-    case 'e':	// toggle echo
+    case '_':	// toggle echo		// underscore toggles echo
       echo_switch = !echo_switch;
       did_something = true;
       break;
