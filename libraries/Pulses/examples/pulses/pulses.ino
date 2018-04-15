@@ -2070,12 +2070,11 @@ void print_selected() {
 
 
 void info_select_destination_with(bool extended_destinations) {
-  MENU.outln(F("SELECT DESTINATION for '= * / s K P n c j :' to work on:"));
+  MENU.outln(F("SELECT DESTINATION for '= * / s K P n g j :' to work on:"));
   print_selected();
   MENU.out(F("select pulse with "));
 
-  // FIXME: use 16 here, when reaction will be prepared for a,b,c,d,e,f too.
-  MENU.out_ticked_hexs(min(pl_max,10));
+  MENU.out_ticked_hexs(min(pl_max,16));
 
   MENU.outln(F("\na=select *all* click pulses\tA=*all* pulses\tl=alive click voices\tL=all alive\tx=none\t~=invert selection"));
 
@@ -2182,13 +2181,13 @@ void menu_pulses_display() {
   MENU.ln();
   MENU.out(F("s=switch pulse on/off"));
   MENU.tab();
-  MENU.out(F("M=deactivate ALL\tX=remove ALL\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tc=en-click\tj=en-jiffle\tN=en-noop\tf=en-info\tF=en-INFO\nS=sync\tn=sync now "));
+  MENU.out(F("M=deactivate ALL\tX=remove ALL\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tg=en-click\tj=en-jiffle\tN=en-noop\ti=en-info\tF=en-INFO\nS=sync\tn=sync now "));
   MENU.outln(sync);
 
   MENU.out(F("E=enter experiment (")); MENU.out(selected_experiment); MENU.out(')');
   MENU.out(F("\tV=voices for experiment (")); MENU.out(voices); MENU.out(F(")"));
   MENU.out(F("\tO=action_flags (")); MENU.outBIN(selected_actions, 4); MENU.outln(')');
-  MENU.out(F("b=toggle pin mapping (bottom "));
+  MENU.out(F("g~=toggle pin mapping (bottom "));
   if (inverse)
     MENU.out(F("up"));
   else
@@ -2670,8 +2669,8 @@ void no_inverse() {
     inverse=false;
 }
 
-// display factor function show_scale();
-void show_scale() {
+// display factor function show_scaling();
+void show_scaling() {
   MENU.out(F("multiplier/divisor "));
   MENU.out(multiplier); MENU.slash(); MENU.outln(divisor);
 }
@@ -2849,11 +2848,11 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'a':	// hex toggle selection
-    //  case 'b':	// hex toggle selection
-    //  case 'c':	// hex toggle selection
-    //  case 'd':	// hex toggle selection
+  case 'b':	// hex toggle selection
+  case 'c':	// hex toggle selection
+  case 'd':	// hex toggle selection
   case 'e':	// hex toggle selection
-    //  case 'f':	// hex toggle selection
+  case 'f':	// hex toggle selection
     switch (MENU.menu_mode) {
     case 0:	// normal input, no special menu_mode
       menu_input -= 'a';
@@ -2980,10 +2979,14 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'i':	// info
-    MENU.ln();
-    PULSES.time_info();
-    MENU.ln();	// ################################################################
-    flagged_pulses_info();
+    for (int pulse=0; pulse<pl_max; pulse++)
+      if (PULSES.pulse_is_selected(pulse))
+	en_info(pulse);
+
+    if (MENU.maybe_display_more()) {
+      MENU.ln();
+      selected_or_flagged_pulses_info_lines();
+    }
     break;
 
   case 'M':	// "mute", no deactivate all clicks, see 'N'
@@ -3024,33 +3027,50 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case '/':	// divide destination
-    switch (dest) {
-    case CODE_PULSES:
-      input_value = MENU.numeric_input(1);
-      if (input_value>=0) {
-	for (int pulse=0; pulse<pl_max; pulse++)
-	  if (PULSES.pulse_is_selected(pulse))
-	    PULSES.divide_period(pulse, input_value);
+ case '/':	// '/' divide destination  '/!<num>' set divisor
+    if(MENU.cb_peek() == '!') {		// '/!<num>' set divisor
+      MENU.drop_input_token();
 
-	PULSES.fix_global_next();
-	PULSES.check_maybe_do();	// maybe do it *first*
+      if(MENU.cb_peek()==EOF)
+	MENU.outln(F("divisor"));
 
-	if (MENU.maybe_display_more()) {
-	  MENU.ln();
-	  selected_or_flagged_pulses_info_lines();
-	}
-      } else
-	MENU.outln_invalid();
-      break;
-
-    case CODE_TIME_UNIT:
-      input_value = MENU.numeric_input(1);
-      if (input_value>0)
-	PULSES.set_time_unit_and_inform(PULSES.time_unit / input_value);
+      input_value = MENU.numeric_input(divisor);
+      if (input_value>0 )
+	divisor = input_value;
       else
-	MENU.outln_invalid();
-      break;
+	MENU.outln(F("small positive integer only"));
+
+      if (MENU.maybe_display_more())
+	show_scaling();
+
+    } else {	// '/' divide destination
+      switch (dest) {
+      case CODE_PULSES:
+	input_value = MENU.numeric_input(1);
+	if (input_value>=0) {
+	  for (int pulse=0; pulse<pl_max; pulse++)
+	    if (PULSES.pulse_is_selected(pulse))
+	      PULSES.divide_period(pulse, input_value);
+
+	  PULSES.fix_global_next();
+	  PULSES.check_maybe_do();	// maybe do it *first*
+
+	  if (MENU.maybe_display_more()) {
+	    MENU.ln();
+	    selected_or_flagged_pulses_info_lines();
+	  }
+	} else
+	  MENU.outln_invalid();
+	break;
+
+      case CODE_TIME_UNIT:
+	input_value = MENU.numeric_input(1);
+	if (input_value>0)
+	  PULSES.set_time_unit_and_inform(PULSES.time_unit / input_value);
+	else
+	  MENU.outln_invalid();
+	break;
+      }
     }
     break;
 
@@ -3147,8 +3167,23 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case 'c':	// en_click	// TODO: reserved for hex input ################
-    en_click_selected();
+  case 'g':	// 'g' en_click  "GPIO"  'g~' toggle up/down pin mapping
+    if(MENU.cb_peek() == '~') {	      // 'g~' toggle up/down pin mapping
+          if (MENU.verbosity)
+	    MENU.out(F("pin mapping bottom "));
+
+	  inverse = !inverse;	// toggle bottom up/down click-pin mapping
+
+	  if (MENU.maybe_display_more()) {
+	    if (MENU.verbosity) {
+	      if (inverse)
+		MENU.outln(F("up"));
+	      else
+		MENU.outln(F("down"));
+	    }
+	  }
+    } else
+      en_click_selected();	// 'g' en_click  "GPIO"
     break;
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
@@ -3356,18 +3391,6 @@ bool menu_pulses_reaction(char menu_input) {
 
     break;
 
-  case 'f':	// en_info	// TODO: reserved for hex input ################
-    // we work on pulses anyway, regardless dest
-    for (int pulse=0; pulse<pl_max; pulse++)
-      if (PULSES.pulse_is_selected(pulse))
-	en_info(pulse);
-
-    if (MENU.maybe_display_more()) {
-      MENU.ln();
-      selected_or_flagged_pulses_info_lines();
-    }
-    break;
-
   case 'F':	// en_INFO
     // we work on pulses anyway, regardless dest
     for (int pulse=0; pulse<pl_max; pulse++)
@@ -3396,20 +3419,6 @@ bool menu_pulses_reaction(char menu_input) {
       display_jiffletab(jiffle);
 
     jiffle_write_index=0;	// ################ FIXME: ################
-    break;
-
-  case 'd':	// divisor	// TODO: reserved for hex input ################
-    if(MENU.cb_peek()==EOF)
-      MENU.outln(F("divisor"));
-
-    input_value = MENU.numeric_input(divisor);
-    if (input_value>0 )
-      divisor = input_value;
-    else
-      MENU.outln(F("small positive integer only"));
-
-    if (MENU.maybe_display_more())
-      show_scale();
     break;
 
   case 'C':	// Calculator simply *left to right*	*positive integers only*
@@ -3502,7 +3511,7 @@ bool menu_pulses_reaction(char menu_input) {
       MENU.outln(F("small positive integer only"));
 
     if (MENU.maybe_display_more())
-      show_scale();
+      show_scaling();
 
     break;
 
@@ -3529,23 +3538,6 @@ bool menu_pulses_reaction(char menu_input) {
 
     if(MENU.cb_peek()=='!')
       PULSES.select_n(voices);
-
-    break;
-
-  case 'b':	// toggle bottom down/up click-pin mapping bottom up/down	// TODO: reserved for hex input ################
-    if (MENU.verbosity)
-      MENU.out(F("pin mapping bottom "));
-
-    inverse = !inverse;	// toggle bottom up/down click-pin mapping
-
-    if (MENU.maybe_display_more()) {
-      if (MENU.verbosity) {
-	if (inverse)
-	  MENU.outln(F("up"));
-	else
-	  MENU.outln(F("down"));
-      }
-    }
 
     break;
 

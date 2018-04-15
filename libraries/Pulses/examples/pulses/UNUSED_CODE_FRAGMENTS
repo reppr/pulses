@@ -72,10 +72,10 @@ char wait_for_input() {
 //	MENU.outln("done");
 
     //    MENU.play_KB_macro("");
-    //    MENU.play_KB_macro("X E12! .a c *16 J22-");
+    //    MENU.play_KB_macro("X E12! .a g *16 J22-");
     //    MENU.play_KB_macro("X E12! .a N *16 J23-");		// :)
 
-    // MENU.play_KB_macro("X E12! .a c *16 J24-");
+    // MENU.play_KB_macro("X E12! .a g *16 J24-");
     // MENU.play_KB_macro("X E12! .a N *16 J25-");		// :)
     // MENU.play_KB_macro("X E12! .a N *16 J26-");
     // MENU.play_KB_macro("X E12! .a N *32 J27-.");		// :)
