@@ -2857,6 +2857,7 @@ bool menu_pulses_reaction(char menu_input) {
     switch (MENU.menu_mode) {
     case 0:	// normal input, no special menu_mode
       menu_input -= 'a';
+      menu_input += 10;	// 'a' == 10
       menu_input += (PULSES.hex_input_mask_index * 16);
       if((menu_input < 0) || (menu_input >= pl_max))
 	return false;		// *only* responsible if pulse exists
@@ -2867,7 +2868,7 @@ bool menu_pulses_reaction(char menu_input) {
       PULSES.maybe_show_selected_mask();
       break;
 
-    default:	// 'a' to 'f' keys not used here
+    default:	// 'a' to 'f' keys not used in other menu modes
       if (MENU.verbosity >= VERBOSITY_SOME) {
 	MENU.out_noop();
 	MENU.ln();
