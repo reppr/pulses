@@ -1100,6 +1100,7 @@ void Menu::menu_display() const {
 
   (*men_pages[men_selected].display)();
 
+  /*	keep that code for possible re-use
   // Display menu page key bindings:
   if ( men_known > 1 ) {
     ln();
@@ -1114,6 +1115,7 @@ void Menu::menu_display() const {
     }
     ln();
   }
+  */
 
   // Display internal key bindings:
   out(F("\n'?' for menu  '_' toggle echo  '+-' verbosity"));

@@ -73,12 +73,8 @@ Pulses::Pulses(int pl_max, Menu *MENU):
 
   global_next_pulses = (int*) malloc(pl_max * sizeof(int));
   // ERROR ################
-
-  int size = pl_max;
-  size += (sizeof(pulses_mask_t) * 8) - 1 ;	// add room for any remaining bits in next mask
-  size /= sizeof(pulses_mask_t) * 8;		// how many masks needed?
-  size *= sizeof(pulses_mask_t);		// size in bytes
-  selected_pulses_p = (pulses_mask_t*) malloc(size);
+  
+  selected_pulses_p = (pulses_mask_t*) malloc((selection_masks() * sizeof(pulses_mask_t)));	// size in bytes
   // ERROR ################
   clear_selection();
 
@@ -420,6 +416,13 @@ void Pulses::deactivate_all_clicks() {
   fix_global_next();
 }
 
+
+short Pulses::selection_masks(void) {
+  short masks = pl_max;
+  masks += (sizeof(pulses_mask_t) * 8) - 1 ;	// add room for any remaining bits in next mask
+  masks /= sizeof(pulses_mask_t) * 8;		// how many masks needed?
+  return masks;
+}
 
 // selection for user interface
 bool Pulses::select_pulse(int pulse) {
@@ -985,7 +988,7 @@ void Pulses::reset_and_edit_selected() {	// FIXME: replace
 }
 
 
-void Pulses::print_selected_mask() {
+void Pulses::show_selected_mask() {
   int hex_pulses=pl_max;// displayed as hex chiffres
   if (hex_pulses > 16)
     hex_pulses=16;
@@ -1002,7 +1005,12 @@ void Pulses::print_selected_mask() {
       (*MENU).out('*');
     else
       (*MENU).space();
-    (*MENU).space();
+
+    (*MENU).out('[');
+    (*MENU).out(i);
+    (*MENU).out(F("] "));
+    if (i < 10)
+      (*MENU).space();
 
     int p;
     for (p=0; (p<hex_pulses) && ((pulse+p)<pl_max); p++) {
@@ -1031,7 +1039,7 @@ void Pulses::print_selected_mask() {
 
 void Pulses::maybe_show_selected_mask() {
   if ((*MENU).maybe_display_more())
-    print_selected_mask();
+    show_selected_mask();
 }
 
 

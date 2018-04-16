@@ -63,9 +63,10 @@ display_realtime_sec	KEYWORD2
 display_real_ovfl_and_sec	KEYWORD2
 print_period_in_time_units	KEYWORD2
 reset_and_edit_selected	KEYWORD2
-print_selected_mask	KEYWORD2
+show_selected_mask	KEYWORD2
 maybe_show_selected_mask	KEYWORD2
 set_time_unit_and_inform	KEYWORD2
 selected_pulses	KEYWORD2
 MENU	KEYWORD2
 hex_input_mask_index	KEYWORD2
+selection_masks	KEYWORD2

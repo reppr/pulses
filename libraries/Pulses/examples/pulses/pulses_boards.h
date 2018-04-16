@@ -23,8 +23,9 @@
 
     #define STARTUP_DELAY	256	// ESP32 seems to need that for successful booting
 
-//#define PL_MAX		64
-    #define PL_MAX		256	// TEST :)
+  //#define PL_MAX		64
+    #define PL_MAX		128
+  //#define PL_MAX		256	// TEST :)
 
     #define JIFFLE_RAM_SIZE	256*3+2
     #define SCALES_RAM_SIZE	256*2+2

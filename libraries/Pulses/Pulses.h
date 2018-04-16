@@ -259,7 +259,7 @@ class Pulses {
   void print_period_in_time_units(int pulse);
 
   void reset_and_edit_selected();
-  void print_selected_mask();				// show mask of selected pulses
+  void show_selected_mask();				// show mask of selected pulses
   void maybe_show_selected_mask();			// maybe show that
   void set_time_unit_and_inform(unsigned long new_value);
 
@@ -268,6 +268,8 @@ class Pulses {
   pulse_t * pulses;		// data pointer for pulses
   Menu *MENU;			// pointer to the menu
   short hex_input_mask_index;
+  short selection_masks(void);	// how many selection masks
+
  private:
   int pulse;			// pulse index	// DO WE NEED THAT? ################
   int pl_max;			// max pulses possible

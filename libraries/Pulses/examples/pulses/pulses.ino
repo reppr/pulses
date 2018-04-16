@@ -1984,7 +1984,7 @@ void selected_or_flagged_pulses_info_lines() {
   if (count == 0) {
     MENU.outln(F("no selected or flagged pulses"));
     if(PULSES.how_many_selected())
-      PULSES.print_selected_mask();
+      PULSES.show_selected_mask();
   }
 
   MENU.ln();
@@ -2058,7 +2058,7 @@ void do_throw_a_jiffle(int pulse) {		// for pulse_do
 void print_selected() {
   switch (dest) {
   case CODE_PULSES:
-    PULSES.print_selected_mask();
+    PULSES.show_selected_mask();
     break;
 
   case CODE_TIME_UNIT:
@@ -2070,13 +2070,13 @@ void print_selected() {
 
 
 void info_select_destination_with(bool extended_destinations) {
-  MENU.outln(F("SELECT DESTINATION for '= * / s K P n g j :' to work on:"));
+  MENU.outln(F("SELECT DESTINATION for '= * / s K P n g i F j :' to work on:"));
   print_selected();
   MENU.out(F("select pulse with "));
 
   MENU.out_ticked_hexs(min(pl_max,16));
 
-  MENU.outln(F("\na=select *all* click pulses\tA=*all* pulses\tl=alive click voices\tL=all alive\tx=none\t~=invert selection"));
+  MENU.outln(F("\n'.a'=select *all* click pulses\t'.A'=*all* pulses\t'.v'=voices\t'.L'=all alive\t'x'=none\t'.~'=invert selection"));
 
   if(extended_destinations) {	// FIXME: will that ever be used??? ################
     MENU.out(F("u=select "));  MENU.out(F("time unit"));
@@ -2165,7 +2165,7 @@ void menu_pulses_display() {
   MENU.out(F("GPIO "));
   MENU.outln(CLICK_PULSES);
   MENU.ln();
-  MENU.outln(F("?=help\ti=info\t.=flagged info\t:=selected info"));
+  MENU.outln(F("?=help\t.=flagged info\t:=selected info"));
 
   MENU.ln();
   info_select_destination_with(false);
@@ -2195,7 +2195,7 @@ void menu_pulses_display() {
   MENU.outln(F(")\tZ=reverse_click_pins"));
 
   MENU.out(F("Scale (")); MENU.out(multiplier);MENU.slash();  MENU.out(divisor);
-  MENU.out(F(")\tm=multiplier d=divisor"));
+  MENU.out(F(")\t'*!'=multiplier '/!'=divisor"));
 
   MENU.ln();
 }
@@ -2689,7 +2689,7 @@ bool menu_pulses_reaction(char menu_input) {
   static unsigned long input_value=0;
   static unsigned long calc_result=0;
   struct time now, time_scratch;
-  pulses_mask_t bitmask;	// FIXME: pulses_mask
+  pulses_mask_t bitmask;
   char next_token;	// for multichar commands
 
   switch (menu_input) {
@@ -2707,9 +2707,9 @@ bool menu_pulses_reaction(char menu_input) {
       short_info();
       break;
 
-    case '?':			// '.?' PULSES.print_selected_mask();
+    case '?':			// '.?' PULSES.show_selected_mask();
       MENU.drop_input_token();
-      PULSES.print_selected_mask();
+      PULSES.show_selected_mask();
       break;
 
     case 'M':  case 'm':	// '.M<num>' select HEX 16bit mask
@@ -2717,10 +2717,7 @@ bool menu_pulses_reaction(char menu_input) {
       input_value = PULSES.hex_input_mask_index;
       if (MENU.maybe_calculate_input(&input_value)) {
 	if (input_value >= 0) {
-	  int masks = PULSES.get_pl_max();
-	  masks += (sizeof(pulses_mask_t) * 8) - 1 ;	// with room for any remaining bits in next mask
-	  masks /= sizeof(pulses_mask_t) * 8;		// how many masks needed?
-	  if (input_value <= masks) {
+	  if (input_value < (PULSES.selection_masks() * sizeof(pulses_mask_t) / 2)) {	// two bytes 16bit hex masks
 	    PULSES.hex_input_mask_index = input_value;
 	    PULSES.maybe_show_selected_mask();
 	  } else
@@ -2728,6 +2725,19 @@ bool menu_pulses_reaction(char menu_input) {
 	} else
 	  MENU.outln_invalid();
       }
+      break;
+
+    case '~':	// '.~' invert destination selection
+      MENU.drop_input_token();
+      for (int pulse=0; pulse<pl_max; pulse++)
+	PULSES.toggle_selection(pulse);
+      PULSES.maybe_show_selected_mask();
+      break;
+
+    case 'x':	// '.x' clear destination selection	also on 'x'
+      MENU.drop_input_token();
+      PULSES.clear_selection();
+      PULSES.maybe_show_selected_mask();
       break;
 
     case 'a':	// '.a' select_flagged
@@ -2745,7 +2755,12 @@ bool menu_pulses_reaction(char menu_input) {
       PULSES.maybe_show_selected_mask();
       break;
 
-    case 'l':	// '.l' select destination: alive voices	// TODO: maybe use '.V' alive voices '.v' for voices?
+    case 'v':	// '.v' select destination: select_n(voices)
+      MENU.drop_input_token();
+      PULSES.select_n(voices);
+      break;
+
+    case 'V':	// '.V' select destination: alive voices
       MENU.drop_input_token();
       PULSES.clear_selection();
       for (int pulse=0; pulse<voices; pulse++)
@@ -2760,7 +2775,6 @@ bool menu_pulses_reaction(char menu_input) {
       select_alive();
       PULSES.maybe_show_selected_mask();
       break;
-
     }
     break;
 
@@ -2924,13 +2938,7 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case '~':	// invert destination selection		// TODO: alias to .~  ################
-    for (int pulse=0; pulse<pl_max; pulse++)
-      PULSES.toggle_selection(pulse);
-    PULSES.maybe_show_selected_mask();
-    break;
-
-  case 'x':	// clear destination selection		// TODO: alias to .x  ################
+  case 'x':	// clear destination selection  also on '.x'
     PULSES.clear_selection();
     PULSES.maybe_show_selected_mask();
     break;
@@ -2978,7 +2986,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     break;
 
-  case 'i':	// info
+  case 'i':	// en_info
     for (int pulse=0; pulse<pl_max; pulse++)
       if (PULSES.pulse_is_selected(pulse))
 	en_info(pulse);
@@ -2998,32 +3006,47 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case '*':	// multiply destination
-    switch (dest) {
-    case CODE_PULSES:
-      input_value = MENU.numeric_input(1);
-      if (input_value>=0) {
-	for (int pulse=0; pulse<pl_max; pulse++)
-	  if (PULSES.pulse_is_selected(pulse))
-	    PULSES.multiply_period(pulse, input_value);
+    if(MENU.cb_peek() != '!') {		// '*' (*not* '*!<num>' set multiplier)
+      switch (dest) {
+      case CODE_PULSES:
+	input_value = MENU.numeric_input(1);
+	if (input_value>=0) {
+	  for (int pulse=0; pulse<pl_max; pulse++)
+	    if (PULSES.pulse_is_selected(pulse))
+	      PULSES.multiply_period(pulse, input_value);
 
-	PULSES.fix_global_next();
-	PULSES.check_maybe_do();	// maybe do it *first*
+	  PULSES.fix_global_next();
+	  PULSES.check_maybe_do();	// maybe do it *first*
 
-	if (MENU.maybe_display_more()) {
-	  MENU.ln();
-	  selected_or_flagged_pulses_info_lines();
-	}
-      } else
-	MENU.outln_invalid();
-      break;
+	  if (MENU.maybe_display_more()) {
+	    MENU.ln();
+	    selected_or_flagged_pulses_info_lines();
+	  }
+	} else
+	  MENU.outln_invalid();
+	break;
 
-    case CODE_TIME_UNIT:
-      input_value = MENU.numeric_input(1);
-      if (input_value>0)
-	PULSES.set_time_unit_and_inform(PULSES.time_unit * input_value);
+      case CODE_TIME_UNIT:
+	input_value = MENU.numeric_input(1);
+	if (input_value>0)
+	  PULSES.set_time_unit_and_inform(PULSES.time_unit * input_value);
+	else
+	  MENU.outln_invalid();
+	break;
+      }
+    } else {		// '*!<num>' set multiplier
+      MENU.drop_input_token();
+      if(MENU.cb_peek()==EOF)
+	MENU.outln(F("multiplier"));
+
+      input_value = MENU.numeric_input(multiplier);
+      if (input_value>0 )
+	multiplier = input_value;
       else
-	MENU.outln_invalid();
-      break;
+	MENU.outln(F("small positive integer only"));
+
+      if (MENU.maybe_display_more())
+	show_scaling();
     }
     break;
 
@@ -3499,21 +3522,6 @@ bool menu_pulses_reaction(char menu_input) {
 	}
     }
   break;
-
-  case 'm':	// multiplier
-    if(MENU.cb_peek()==EOF)
-      MENU.outln(F("multiplier"));
-
-    input_value = MENU.numeric_input(multiplier);
-    if (input_value>0 )
-      multiplier = input_value;
-    else
-      MENU.outln(F("small positive integer only"));
-
-    if (MENU.maybe_display_more())
-      show_scaling();
-
-    break;
 
   case 'V':	// set voices	V[num]! PULSES.select_n_voices
     if(MENU.cb_peek()==EOF)
