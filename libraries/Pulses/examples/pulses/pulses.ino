@@ -1244,7 +1244,7 @@ void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned
     1         :         2
   */
   if (inverse) {
-    no_inverse();
+    no_g_inverse();
     return;
   }
   unsigned long unit = multiplier * PULSES.time_unit;
@@ -1286,7 +1286,7 @@ void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned
 // old style, obsolete	// TODO: remove?
 int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   if (inverse) {
-    no_inverse();
+    no_g_inverse();
     return 0;
   }
 
@@ -1379,7 +1379,7 @@ int prepare_scale(bool inverse, int voices, unsigned long multiplier, unsigned l
   if(scale[0]==0)  return 0;	// error, no data
 
   if (inverse) {
-    no_inverse();
+    no_g_inverse();
     return 0;
   }
 
@@ -2138,11 +2138,11 @@ char * experiment_names[] = {		// FIXME: const char * experiment_names would be 
 #endif // ! RAM_IS_SCARE
 
 
-bool inverse=false;	// bottom DOWN/up click-pin mapping
+bool g_inverse=false;	// bottom DOWN/up GPIO click-pin mapping
 /*
-  'inverse' works when setting up an experiment creating pulses
- 	    other pulses aren't affected
-	    some experiments do not implement that
+  'g_inverse' works when setting up an experiment creating pulses
+	      other pulses aren't affected
+	      some experiments do not implement that
 
   'reverse_click_pins()' as alternative:
   'reverse_click_pins()' works on the global click_pin[] array
@@ -2188,7 +2188,7 @@ void menu_pulses_display() {
   MENU.out(F("\tV=voices for experiment (")); MENU.out(voices); MENU.out(F(")"));
   MENU.out(F("\tO=action_flags (")); MENU.outBIN(selected_actions, 4); MENU.outln(')');
   MENU.out(F("g~=toggle pin mapping (bottom "));
-  if (inverse)
+  if (g_inverse)
     MENU.out(F("up"));
   else
     MENU.out(F("down"));
@@ -2424,15 +2424,15 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
 }
 
 // pre-defined jiffle pattern:
-void setup_jiffles2345(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
-  if (inverse) {
-    no_inverse();
+void setup_jiffles2345(bool g_inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
+  if (g_inverse) {
+    no_g_inverse();
     return;
   }
   unsigned long unit = multiplier * PULSES.time_unit;
   unit /= divisor;
 
-  display_name5pars("jiffles2345", inverse, voices, multiplier, divisor, sync);
+  display_name5pars("jiffles2345", g_inverse, voices, multiplier, divisor, sync);
 
   struct time when;
   PULSES.get_now();
@@ -2493,15 +2493,15 @@ unsigned int jiff2[] =
   {1,2096,4, 1,512,2, 1,128,2, 1,256,2, 1,512,8, 1,1024,32, 1,512,4, 1,256,3, 1,128,2, 1,64,1, 0,0};
 
 
-void setup_jifflesNEW(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
-  if (inverse) {
-    no_inverse();
+void setup_jifflesNEW(bool g_inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
+  if (g_inverse) {
+    no_g_inverse();
     return;
   }
   unsigned long unit = multiplier * PULSES.time_unit;
   unit /= divisor;
 
-  display_name5pars("setup_jifflesNEW", inverse, voices, multiplier, divisor, sync);
+  display_name5pars("setup_jifflesNEW", g_inverse, voices, multiplier, divisor, sync);
 
   struct time when;
   PULSES.get_now();
@@ -2560,15 +2560,15 @@ void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned
 }
 
 // setup for ESP8266 Frog Orchester
-void setup_jiffles0(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
-  if (inverse) {
-    no_inverse();
+void setup_jiffles0(bool g_inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
+  if (g_inverse) {
+    no_g_inverse();
     return;
   }
   unsigned long unit = multiplier * PULSES.time_unit;
   unit /= divisor;
 
-  display_name5pars("setup_jiffles0", inverse, voices, multiplier, divisor, sync);
+  display_name5pars("setup_jiffles0", g_inverse, voices, multiplier, divisor, sync);
 
   struct time when;
   PULSES.get_now();
@@ -2604,9 +2604,9 @@ void setup_jiffles0(bool inverse, int voices, unsigned int multiplier, unsigned 
 }
 
 /*
-  'inverse' works when setting up an experiment creating pulses
- 	    other pulses aren't affected
-	    some experiments do not implement that
+  'g_inverse' works when setting up an experiment creating pulses
+ 	      other pulses aren't affected
+	      some experiments do not implement that
 
   'reverse_click_pins()' as alternative:
   'reverse_click_pins()' works on the global click_pin[] array
@@ -2650,11 +2650,11 @@ void display_last_par(long parameter) {
   MENU.outln(F(")"));
 }
 
-void display_name5pars(char* name, bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
+void display_name5pars(char* name, bool g_inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   if (MENU.verbosity) {
     MENU.out((char *) name);
     MENU.out("(");
-    MENU.out(inverse);
+    MENU.out(g_inverse);
     display_next_par(voices);
     display_next_par(multiplier);
     display_next_par(divisor);
@@ -2662,11 +2662,11 @@ void display_name5pars(char* name, bool inverse, int voices, unsigned int multip
   }
 }
 
-// display helper function no_inverse()
-void no_inverse() {
-    MENU.outln(F("no 'inverse'\ttry 'Z' instead"));
-    extern bool inverse;
-    inverse=false;
+// display helper function no_g_inverse()
+void no_g_inverse() {
+    MENU.outln(F("no 'g_inverse'\ttry 'Z' instead"));
+    extern bool g_inverse;
+    g_inverse=false;
 }
 
 // display factor function show_scaling();
@@ -3167,16 +3167,16 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case 'g':	// 'g' en_click  "GPIO"  'g~' toggle up/down pin mapping
+  case 'g':	// 'g' "GPIO" [was: en_click]	'g~' toggle up/down pin mapping
     if(MENU.cb_peek() == '~') {	      // 'g~' toggle up/down pin mapping
           if (MENU.verbosity)
 	    MENU.out(F("pin mapping bottom "));
 
-	  inverse = !inverse;	// toggle bottom up/down click-pin mapping
+	  g_inverse = !g_inverse;	// toggle bottom up/down click-pin mapping
 
 	  if (MENU.maybe_display_more()) {
 	    if (MENU.verbosity) {
-	      if (inverse)
+	      if (g_inverse)
 		MENU.outln(F("up"));
 	      else
 		MENU.outln(F("down"));
@@ -3605,7 +3605,7 @@ bool menu_pulses_reaction(char menu_input) {
 	sync=15;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("setup_jiffle128", inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("setup_jiffle128", g_inverse, voices, multiplier, divisor, sync);
 	  Press_toStart();
 	}
 	break;
@@ -3616,7 +3616,7 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=1;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_div_123456", inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("init_div_123456", g_inverse, voices, multiplier, divisor, sync);
 	  Press_toStart();
 	}
 	break;
@@ -3628,9 +3628,9 @@ bool menu_pulses_reaction(char menu_input) {
 	reverse_click_pins();	// ################ FIXME: not here ################
 
 	if (MENU.maybe_display_more()) {
-	  // display_name5pars("setup_jiffles0", inverse, voices, multiplier, divisor, sync);
+	  // display_name5pars("setup_jiffles0", g_inverse, voices, multiplier, divisor, sync);
 	  MENU.out(F("setup_jiffles0("));
-	  MENU.out(inverse);
+	  MENU.out(g_inverse);
 	  display_next_par(voices);
 	  display_next_par(multiplier);
 	  display_next_par(divisor);
@@ -3647,7 +3647,7 @@ bool menu_pulses_reaction(char menu_input) {
 	jiffle=jiffletab;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("setup_jiffles2345", inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("setup_jiffles2345", g_inverse, voices, multiplier, divisor, sync);
 	  Press_toStart();
 	}
 	break;
@@ -3658,7 +3658,7 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=1;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_123456", inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("init_123456", g_inverse, voices, multiplier, divisor, sync);
 	  Press_toStart();
 	}
 	break;
@@ -3669,7 +3669,7 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=1;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_chord_1345689a", inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("init_chord_1345689a", g_inverse, voices, multiplier, divisor, sync);
 	  Press_toStart();
 	}
 	break;
@@ -3680,7 +3680,7 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=6*7;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_rhythm_1", inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("init_rhythm_1", g_inverse, voices, multiplier, divisor, sync);
 	  Press_toStart();
 	}
 	break;
@@ -3691,7 +3691,7 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=1;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_rhythm_2", inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("init_rhythm_2", g_inverse, voices, multiplier, divisor, sync);
 	  Press_toStart();
 	}
 	break;
@@ -3702,7 +3702,7 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=1;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_rhythm_3", inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("init_rhythm_3", g_inverse, voices, multiplier, divisor, sync);
 	  Press_toStart();
 	}
 	break;
@@ -3713,7 +3713,7 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=7L*3L;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_rhythm_4", inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("init_rhythm_4", g_inverse, voices, multiplier, divisor, sync);
 	  Press_toStart();
 	}
 	break;
@@ -3724,7 +3724,7 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=1;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("setup_jifflesNEW", inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("setup_jifflesNEW", g_inverse, voices, multiplier, divisor, sync);
 	  Press_toStart();
 	}
 	break;
@@ -3735,7 +3735,7 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=1;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_pentatonic", inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("init_pentatonic", g_inverse, voices, multiplier, divisor, sync);
 	  Press_toStart();
 	}
 	break;
@@ -3745,12 +3745,12 @@ bool menu_pulses_reaction(char menu_input) {
 	multiplier=1;
 	divisor=1;
 	voices=8;	//just for 'The Harmonical Strings Christmas Evening Sounds'
-	inverse=false;
+	g_inverse=false;
 	// unsigned int harmonics4 = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0,0};
 	jiffle=harmonics4;
 	PULSES.select_n(voices);
-	display_name5pars("prepare_magnets", inverse, voices, multiplier, divisor, sync);
-	prepare_magnets(inverse, voices, multiplier, divisor, sync);
+	display_name5pars("prepare_magnets", g_inverse, voices, multiplier, divisor, sync);
+	prepare_magnets(g_inverse, voices, multiplier, divisor, sync);
 
 	if (MENU.maybe_display_more()) {
 	  selected_or_flagged_pulses_info_lines();
@@ -3762,14 +3762,14 @@ bool menu_pulses_reaction(char menu_input) {
 	// magnets on strings, second take
 	multiplier=1;
 	divisor=1;
-	inverse=false;
+	g_inverse=false;
 
 	scale = pentatonic_minor;
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier * 1024 , divisor * 1167, sync, scale);
 	jiffle=ting1024;
 	PULSES.select_n(voices);
-	display_name5pars("E14", inverse, voices, multiplier, divisor, sync);
+	display_name5pars("E14", g_inverse, voices, multiplier, divisor, sync);
 
 	if (MENU.maybe_display_more())
 	  selected_or_flagged_pulses_info_lines();
@@ -3779,14 +3779,14 @@ bool menu_pulses_reaction(char menu_input) {
 	// magnets on strings, third take
 	multiplier=1;
 	divisor=1;
-	inverse=false;
+	g_inverse=false;
 
 	scale = pentatonic_minor;
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier * 4096 , divisor * 1167, sync, scale);
 	jiffle=ting4096;
 	PULSES.select_n(voices);
-	display_name5pars("E15", inverse, voices, multiplier, divisor, sync);
+	display_name5pars("E15", g_inverse, voices, multiplier, divisor, sync);
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  selected_or_flagged_pulses_info_lines();
@@ -3796,14 +3796,14 @@ bool menu_pulses_reaction(char menu_input) {
 	// piezzos on low strings 2016-12-28
 	multiplier=4096;
 	divisor=256;
-	inverse=false;
+	g_inverse=false;
 
 	scale = european_pentatonic;
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	jiffle=ting4096;
 	// jiffle = arpeggio4096;
-	display_name5pars("E16 european_pent", inverse, voices, multiplier, divisor, sync);
+	display_name5pars("E16 european_pent", g_inverse, voices, multiplier, divisor, sync);
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  selected_or_flagged_pulses_info_lines();
@@ -3819,7 +3819,7 @@ bool menu_pulses_reaction(char menu_input) {
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	jiffle=ting4096;
-	display_name5pars("E17 mimic japan", inverse, voices, multiplier, divisor, sync);
+	display_name5pars("E17 mimic japan", g_inverse, voices, multiplier, divisor, sync);
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  selected_or_flagged_pulses_info_lines();
@@ -3850,7 +3850,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
-	display_name5pars("E18 pentatonic minor", inverse, voices, multiplier, divisor, sync);
+	display_name5pars("E18 pentatonic minor", g_inverse, voices, multiplier, divisor, sync);
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  selected_or_flagged_pulses_info_lines();
@@ -3939,7 +3939,7 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=1024;
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
-	display_name5pars("E29 KALIMBA7 tuning", inverse, voices, multiplier, divisor, sync);
+	display_name5pars("E29 KALIMBA7 tuning", g_inverse, voices, multiplier, divisor, sync);
 	en_click_selected();							// for tuning ;)
 	PULSES.activate_selected_synced_now(sync);	// sync and activate
 	MENU.ln();
@@ -3960,7 +3960,7 @@ bool menu_pulses_reaction(char menu_input) {
 	// jiffle = tingeling4096;
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
-	display_name5pars("E30 KALIMBA7 jiff", inverse, voices, multiplier, divisor, sync);
+	display_name5pars("E30 KALIMBA7 jiff", g_inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate
 
@@ -3979,7 +3979,7 @@ bool menu_pulses_reaction(char menu_input) {
 	jiffle = ting4096;
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
-	display_name5pars("E31 KALIMBA7 jiff", inverse, voices, multiplier, divisor, sync);
+	display_name5pars("E31 KALIMBA7 jiff", g_inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
 	MENU.ln();
@@ -3998,7 +3998,7 @@ bool menu_pulses_reaction(char menu_input) {
 	jiffle = tigg_ding4096;
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
-	display_name5pars("E32 ESP32_12", inverse, voices, multiplier, divisor, sync);
+	display_name5pars("E32 ESP32_12", g_inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
 	MENU.ln();
@@ -4016,7 +4016,7 @@ bool menu_pulses_reaction(char menu_input) {
 	jiffle = ting4096;
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
-	display_name5pars("minor", inverse, voices, multiplier, divisor, sync);
+	display_name5pars("minor", g_inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
 	MENU.ln();
@@ -4034,7 +4034,7 @@ bool menu_pulses_reaction(char menu_input) {
 	jiffle = ting4096;
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
-	display_name5pars("major", inverse, voices, multiplier, divisor, sync);
+	display_name5pars("major", g_inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
 	MENU.ln();
@@ -4052,7 +4052,7 @@ bool menu_pulses_reaction(char menu_input) {
 	jiffle = ting4096;
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
-	display_name5pars("tetra", inverse, voices, multiplier, divisor, sync);
+	display_name5pars("tetra", g_inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
 	MENU.ln();
@@ -4071,7 +4071,7 @@ bool menu_pulses_reaction(char menu_input) {
 	jiffle = ting4096;
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
-	display_name5pars("BIG major", inverse, voices, multiplier, divisor, sync);
+	display_name5pars("BIG major", g_inverse, voices, multiplier, divisor, sync);
 	en_jiffle_throw_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
 	MENU.ln();
@@ -4201,7 +4201,7 @@ bool menu_pulses_reaction(char menu_input) {
 	// ################ FIXME: remove redundant code ################
 	PULSES.select_n(voices);
 //	prepare_scale(false, voices, multiplier, divisor, 0, scale);
-//	display_name5pars("GUITAR", inverse, voices, multiplier, divisor, sync);
+//	display_name5pars("GUITAR", g_inverse, voices, multiplier, divisor, sync);
 	tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
 
   #ifndef USE_DACs	// TODO: review and use test code
@@ -4249,40 +4249,40 @@ bool menu_pulses_reaction(char menu_input) {
     case 0:
       break;
     case 1:
-      setup_jiffle128(inverse, voices, multiplier, divisor, sync);
+      setup_jiffle128(g_inverse, voices, multiplier, divisor, sync);
       break;
     case 2:
-      init_div_123456(inverse, voices, multiplier, divisor, sync);
+      init_div_123456(g_inverse, voices, multiplier, divisor, sync);
       break;
     case 3:
-      setup_jiffles0(inverse, voices, multiplier, divisor, sync);    // ESP8266 Frog Orchester
+      setup_jiffles0(g_inverse, voices, multiplier, divisor, sync);    // ESP8266 Frog Orchester
       break;
     case 4:
-      setup_jiffles2345(inverse, voices, multiplier, divisor, sync);
+      setup_jiffles2345(g_inverse, voices, multiplier, divisor, sync);
       break;
     case 5:
-      init_123456(inverse, voices, multiplier, divisor, sync);
+      init_123456(g_inverse, voices, multiplier, divisor, sync);
       break;
     case 6:
-      init_chord_1345689a(inverse, voices, multiplier, divisor, sync);
+      init_chord_1345689a(g_inverse, voices, multiplier, divisor, sync);
       break;
     case 7:
-      init_rhythm_1(inverse, voices, multiplier, divisor, sync);
+      init_rhythm_1(g_inverse, voices, multiplier, divisor, sync);
       break;
     case 8:
-      init_rhythm_2(inverse, voices, multiplier, divisor, sync);
+      init_rhythm_2(g_inverse, voices, multiplier, divisor, sync);
       break;
     case 9:
-      init_rhythm_3(inverse, voices, multiplier, divisor, sync);
+      init_rhythm_3(g_inverse, voices, multiplier, divisor, sync);
       break;
     case 10:
-      init_rhythm_4(inverse, voices, multiplier, divisor, sync);
+      init_rhythm_4(g_inverse, voices, multiplier, divisor, sync);
       break;
     case 11:
-      setup_jifflesNEW(inverse, voices, multiplier, divisor, sync);
+      setup_jifflesNEW(g_inverse, voices, multiplier, divisor, sync);
       break;
     case 12:
-      init_pentatonic(inverse, voices, multiplier, divisor, sync);
+      init_pentatonic(g_inverse, voices, multiplier, divisor, sync);
       break;
     case 13:
     case 14:
