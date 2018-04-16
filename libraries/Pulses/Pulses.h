@@ -18,6 +18,19 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#ifndef pulse_flags_t
+  #define pulse_flags_t		uint8_t
+#endif
+
+#ifndef actions_flags_t
+  #define actions_flags_t	uint8_t
+#endif
+
+#ifndef gpio_pin_t
+  #define gpio_pin_t	int8_t			// negative values might be used for pin extensions
+//  #define gpio_pin_t		short		// negative values might be used for pin extensions
+#endif
+
 #include "examples/pulses/pulses_systems.h"
 #include "examples/pulses/pulses_boards.h"
 
@@ -62,7 +75,7 @@ struct pulse_t {
 #endif
 
 
-  uint8_t flags;
+  pulse_flags_t flags;
 
 // #define pulses.flags masks:
 #define ACTIVE			1	// switches pulse on/off
@@ -74,7 +87,7 @@ struct pulse_t {
 //#define INVERSE_LOGIC	      128	// TODO: implement
 
 
-  uint8_t action_flags;
+  actions_flags_t action_flags;
 
 // #define pulses.action_flags masks:
 // for easy menu interfacing:	1,2 DACsq
@@ -83,9 +96,11 @@ struct pulse_t {
 #define DACsq1			1	// DAC1 output value as square wave, harmonical timing
 #define DACsq2			2	// DAC2 output value as square wave, harmonical timing
 #define CLICKs	      		4	// GPIO 'click' inbuilt GPIO toggling
-//#define PAYLOAD			// do periodic_do(pulse)	TODO: implement
-#define noACTION		8	// 'mutes' all actions	>>>> must be last <<<<
-//	>>>>>>>	change all flag display code if something changes here <<<<<<<
+#define PAYLOAD			8	// do periodic_do(pulse)	TODO: implement
+#define noACTION		16	// 'mutes' all actions	>>>> must be last <<<<
+
+#define ACTION_MASK_BITS	5	// >>>>>>>> *DO CHANGE* number of flags changes here <<<<<<<
+					// ACTION_MASK_BITS is used by mask displaying code (only)
 
   // internal parameter:
   unsigned int count;		// if COUNTED, gives number of executions
@@ -123,11 +138,11 @@ struct pulse_t {
     used by do_jiffle	as pin
   */
 
-  uint8_t dest_action_flags;
+  actions_flags_t dest_action_flags;
   /*
     used by:
     pulse_info_1line(int pulse)
-    en_jiffle_thrower(int pulse, unsigned int *jiffletab, uint8_t action_mask)
+    en_jiffle_thrower(int pulse, unsigned int *jiffletab, actions_flags_t action_mask)
     init_jiffle(unsigned int *jiffletab, struct time when, struct time new_period, int origin_pulse)
   */
 
@@ -235,15 +250,15 @@ class Pulses {
 				// for *all* pulses that wait for this exact time
 				// they will be called in fast sequence then
   bool check_maybe_do();	// FIXME; comment ################
-  int setup_pulse(void (*pulse_do)(int), unsigned char new_flags, \
+  int setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
 		  struct time when, struct time new_period);
-  int setup_counted_pulse(void (*pulse_do)(int), unsigned char new_flags, \
+  int setup_counted_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
 			  struct time when, struct time new_period, unsigned int count);
   void set_new_period(int pulse, struct time new_period);
 
   void activate_pulse_synced(int pulse,			\
 			    struct time when, int sync);	// ################
-  int setup_pulse_synced(void (*pulse_do)(int), unsigned char new_flags,
+  int setup_pulse_synced(void (*pulse_do)(int), pulse_flags_t new_flags,
 			 struct time when, unsigned long unit,
 			 unsigned long factor, unsigned long divisor, int sync);
   void init_click_pulses();

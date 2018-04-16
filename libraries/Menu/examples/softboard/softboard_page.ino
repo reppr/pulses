@@ -22,6 +22,11 @@
   #include <iostream>
 #endif
 
+#ifndef gpio_pin_t
+  #define gpio_pin_t	int8_t		// negative values might be used for pin extensions
+//  #define gpio_pin_t	short			// negative values might be used for pin extensions
+#endif
+
 /* ****   CODE TO INSERT TO THE START OF YOUR PROGRAM ends:    **** */
 /* **************************************************************** */
 
@@ -87,17 +92,17 @@
 // NodeMCU ESP8266 board
 /*
   // on NodeMCU ESP8266 board Arduino defines digital pins
-  static const uint8_t D0   = 16;
-  static const uint8_t D1   = 5;
-  static const uint8_t D2   = 4;
-  static const uint8_t D3   = 0;
-  static const uint8_t D4   = 2;
-  static const uint8_t D5   = 14;
-  static const uint8_t D6   = 12;
-  static const uint8_t D7   = 13;
-  static const uint8_t D8   = 15;
-  static const uint8_t D9   = 3;
-  static const uint8_t D10  = 1;
+  static const gpio_pin_t D0   = 16;
+  static const gpio_pin_t D1   = 5;
+  static const gpio_pin_t D2   = 4;
+  static const gpio_pin_t D3   = 0;
+  static const gpio_pin_t D4   = 2;
+  static const gpio_pin_t D5   = 14;
+  static const gpio_pin_t D6   = 12;
+  static const gpio_pin_t D7   = 13;
+  static const gpio_pin_t D8   = 15;
+  static const gpio_pin_t D9   = 3;
+  static const gpio_pin_t D10  = 1;
  */
 
 #ifndef NUM_DIGITAL_PINS		// try harder... ?
@@ -213,7 +218,7 @@ const char pin_[] = "pin ";
 const char high_[] = "HIGH";
 const char low_[] = "LOW";
 
-void pin_info_digital(uint8_t pin) {
+void pin_info_digital(gpio_pin_t pin) {
   uint8_t mask = digitalPinToBitMask(pin);
 #ifdef __SAM3X8E__	// FIXME: ################
   #warning "softboard does not run on Arduino Due yet! ################"
@@ -310,7 +315,7 @@ void pin_info_digital(uint8_t pin) {
 
 // display configuration and state of all digital pins:
 void pins_info_digital() {
-  for (uint8_t pin=0; pin<visible_digital_pins; pin++)
+  for (gpio_pin_t pin=0; pin<visible_digital_pins; pin++)
     pin_info_digital(pin);
 }
 
@@ -325,7 +330,7 @@ void pins_info_digital() {
 #define IMPOSSIBLE	-9785	// FIXME:  just a value not possible on analog input
 
 int watch_seen=IMPOSSIBLE;
-void watch_digital_start(uint8_t pin) {
+void watch_digital_start(gpio_pin_t pin) {
   watch_seen=IMPOSSIBLE;
 
   MENU.out(F("watching pin D"));
@@ -408,7 +413,7 @@ void bar_graph(int value) {
 
 
 // Display analog pin name and value as number and bar graph:
-void pin_info_analog(uint8_t pin) {
+void pin_info_analog(gpio_pin_t pin) {
   if (pin == PIN_analog)
     MENU.out(F("*A"));
   else

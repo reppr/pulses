@@ -764,7 +764,7 @@ bool Pulses::check_maybe_do() {
 }
 
 
-int Pulses::setup_pulse(void (*pulse_do)(int), unsigned char new_flags, \
+int Pulses::setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
 			struct time when, struct time new_period)
 {
   int pulse;
@@ -795,7 +795,7 @@ int Pulses::setup_pulse(void (*pulse_do)(int), unsigned char new_flags, \
 
 
 // unused?
-int Pulses::setup_counted_pulse(void (*pulse_do)(int), unsigned char new_flags, \
+int Pulses::setup_counted_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
 			struct time when, struct time new_period, unsigned int count)
 {
   int pulse;
@@ -863,7 +863,7 @@ void Pulses::activate_pulse_synced(int pulse, \
 // negative values should not reach into the past
 // (that's why the menu only allows positive. it syncs now related,
 //  so a negative sync value would always reach into past.)
-int Pulses::setup_pulse_synced(void (*pulse_do)(int), unsigned char new_flags,
+int Pulses::setup_pulse_synced(void (*pulse_do)(int), pulse_flags_t new_flags,
 		       struct time when, unsigned long unit,
 		       unsigned long factor, unsigned long divisor, int sync)
 {

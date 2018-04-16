@@ -170,7 +170,7 @@ bool inputs_reaction(char token) {
   case 'A':	// set_inp A
     if(anything_selected()) {	// if not, tell the user how to select
       newValue = MENU.numeric_input(ILLEGAL);
-      if (newValue == (uint8_t) newValue) {
+      if (newValue == (gpio_pin_t) newValue) {
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
 	  if (INPUTS.selected_inputs & ( 1 << inp))
 	    INPUTS.set_inp_A(inp, newValue);
@@ -184,7 +184,7 @@ bool inputs_reaction(char token) {
   case 'B':	// set_inp B
     if(anything_selected()) {	// if not, tell the user how to select
       newValue = MENU.numeric_input(ILLEGAL);
-      if (newValue == (uint8_t) newValue) {
+      if (newValue == (gpio_pin_t) newValue) {
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
 	  if (INPUTS.selected_inputs & ( 1 << inp))
 	    INPUTS.set_inp_B(inp, newValue);
@@ -307,7 +307,7 @@ bool inputs_reaction(char token) {
   case 'O':	// set_out_A
     if(anything_selected()) {	// if not, tell the user how to select
       newValue = MENU.numeric_input(ILLEGAL);
-      if (newValue == (uint8_t) newValue) {
+      if (newValue == (gpio_pin_t) newValue) {
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
 	  if (INPUTS.selected_inputs & ( 1 << inp))
 	    INPUTS.set_out_A(inp, newValue);
@@ -324,7 +324,7 @@ bool inputs_reaction(char token) {
   case 'Q':	 // set_out_B
     if(anything_selected()) {	// if not, tell the user how to select
       newValue = MENU.numeric_input(ILLEGAL);
-      if (newValue == (uint8_t) newValue) {
+      if (newValue == (gpio_pin_t) newValue) {
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
 	  if (INPUTS.selected_inputs & ( 1 << inp))
 	    INPUTS.set_out_B(inp, newValue);

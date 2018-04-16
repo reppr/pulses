@@ -185,17 +185,17 @@ GPIO39	i	mpc3008				SVN	ADC3	HALL?
 
    /*
      // on NodeMCU ESP8266 board Arduino defines digital pins
-     static const uint8_t D0   = 16;
-     static const uint8_t D1   = 5;
-     static const uint8_t D2   = 4;
-     static const uint8_t D3   = 0;
-     static const uint8_t D4   = 2;
-     static const uint8_t D5   = 14;
-     static const uint8_t D6   = 12;	// on ESP32 maybe problematic, avoid
-     static const uint8_t D7   = 13;
-     static const uint8_t D8   = 15;
-     static const uint8_t D9   = 3;
-     static const uint8_t D10  = 1;
+     static const gpio_pin_t D0   = 16;
+     static const gpio_pin_t D1   = 5;
+     static const gpio_pin_t D2   = 4;
+     static const gpio_pin_t D3   = 0;
+     static const gpio_pin_t D4   = 2;
+     static const gpio_pin_t D5   = 14;
+     static const gpio_pin_t D6   = 12;	// on ESP32 maybe problematic, avoid
+     static const gpio_pin_t D7   = 13;
+     static const gpio_pin_t D8   = 15;
+     static const gpio_pin_t D9   = 3;
+     static const gpio_pin_t D10  = 1;
    */
 
 
@@ -212,7 +212,7 @@ IMPORTANT:	HARDWARE KOMPATIBILITY BREAK
 
 
 ESP32_12_v0
-    uint8_t click_pin[CLICK_PULSES] =
+    gpio_pin_t click_pin[CLICK_PULSES] =
       {23, 5, 17, 16, 4, 2, 15,		32, 33, 27, 14, 13, };	//  ESP32_12_v0  12 clicks
   //                     ?               ?   ?       ?          // these pins need configuration FIX
 

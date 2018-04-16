@@ -219,10 +219,10 @@ void Inputs::fix_active_inputs() {
 
 /* ****************  setup sampling functions:  **************** */
 /*
-  bool setup_analog_read(int inp, uint8_t addr, unsigned int oversample);
+  bool setup_analog_read(int inp, gpio_pin_t addr, unsigned int oversample);
   Setup internal analogRead(pin), and reserve memory for oversampling:
 */
-bool Inputs::setup_analog_read(int inp, uint8_t addr, unsigned int oversample) {
+bool Inputs::setup_analog_read(int inp, gpio_pin_t addr, unsigned int oversample) {
   if ((inp < 0) or (inp >= inputs_allocated))
     return false;	// inp out of range
 
@@ -239,11 +239,11 @@ bool Inputs::setup_analog_read(int inp, uint8_t addr, unsigned int oversample) {
 
 /*
   bool setup_sample_method(int inp, int (*sample_method)(int addr), \
-			   uint8_t addr, unsigned int oversample)
+			   gpio_pin_t addr, unsigned int oversample)
   Setup a custom input sample method and reserve memory for oversampling:
 */
 bool Inputs::setup_sample_method(int inp, int (*take_sample)(int addr), \
-				 uint8_t addr, unsigned int oversample)
+				 gpio_pin_t addr, unsigned int oversample)
 {
   if ((inp < 0) or (inp >= inputs_allocated))
     return false;	// inp out of range
@@ -416,11 +416,11 @@ bool Inputs::setup_io_reaction(int inp, void (*reaction)(int inp, ioV_t value)) 
 
 
 /*
-  bool setup_PWM(int inp, uint8_t pin);
+  bool setup_PWM(int inp, gpio_pin_t pin);
   Setup PWM output on input inp, using PWM pin (no checks...).
   On ARDUINO initialize pin.
 */
-bool Inputs::setup_PWM(int inp, uint8_t pin) {
+bool Inputs::setup_PWM(int inp, gpio_pin_t pin) {
   if ((inp < 0) or (inp >= inputs_allocated))
     return false;	// inp out of range
 

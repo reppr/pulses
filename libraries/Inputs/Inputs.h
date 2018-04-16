@@ -29,6 +29,12 @@
 #endif // ARDUINO
 
 
+#ifndef gpio_pin_t
+  #define gpio_pin_t	int8_t		// negative values might be used for pin extensions
+//  #define gpio_pin_t	short			// negative values might be used for pin extensions
+#endif
+
+
 /* **************************************************************** */
 /*
   Parameter types for input 2 output value calculation
@@ -40,47 +46,47 @@
 // UNCOMMENT *ONE* OF THE FOLLOWING TRIPLETS:
 
 // *small* unsigned integer range 0 to 255, save RAM:
-//#define I2O_PARAMETER_TYPE	uint8_t
-//#define I2O_VALUE_TYPE	unsigned int
+//#define I2O_parameter_t	uint8_t
+//#define I2O_value_t	unsigned int
 //#undef I2O_PARAMETER_IS_FLOAT		// see: inputs_test.ino
 
 // *small* signed integer range -128 to 127, save RAM:
-//#define I2O_PARAMETER_TYPE	int8_t
-//#define I2O_VALUE_TYPE	int
+//#define I2O_parameter_t	int8_t
+//#define I2O_value_t	int
 //#undef I2O_PARAMETER_IS_FLOAT		// see: inputs_test.ino
 
 // normal signed integer range, save some RAM:
-//#define I2O_PARAMETER_TYPE	int
-//#define I2O_VALUE_TYPE		long
+//#define I2O_parameter_t	int
+//#define I2O_value_t		long
 //#undef I2O_PARAMETER_IS_FLOAT		// see: inputs_test.ino
 
 // integer, bigger range:
-#define I2O_PARAMETER_TYPE	long
-#define I2O_VALUE_TYPE		long
+#define I2O_parameter_t	long
+#define I2O_value_t		long
 #undef  I2O_PARAMETER_IS_FLOAT	// see: inputs_test.ino
 
 // floating point:
-//#define I2O_PARAMETER_TYPE	double
-//#define I2O_VALUE_TYPE		double
-//#define I2O_PARAMETER_IS_FLOAT		// see: inputs_test.ino
+//#define I2O_parameter_t	double
+//#define I2O_value_t		double
+//#define I2O_PARAMETER_IS_FLOAT	// see: inputs_test.ino
 
 
-#ifndef I2O_PARAMETER_TYPE
-  #error "#define I2O_PARAMETER_TYPE"
+#ifndef I2O_parameter_t
+  #error "#define I2O_parameter_t"
 #endif
-#ifndef I2O_VALUE_TYPE
-  #error "#define I2O_VALUE_TYPE"
+#ifndef I2O_value_t
+  #error "#define I2O_value_t"
 #endif
-typedef I2O_PARAMETER_TYPE ioP_t;	// ioP_t is 'input 2 output parameter type'
-typedef I2O_VALUE_TYPE ioV_t;		// ioV_t is 'input 2 output value type', possibly longer
+typedef I2O_parameter_t ioP_t;	// ioP_t is 'input 2 output parameter type'
+typedef I2O_value_t ioV_t;	// ioV_t is 'input 2 output value type', possibly longer
 
 
 /* **************************************************************** */
 struct input_t {
   unsigned long counter;		// counts taken samples
   uint16_t flags;
-  uint8_t inp_A;			// address where to get data from, i.e: pin, i2c address
-  uint8_t inp_B;			// second input parameter, second pin, i2c register, etc.
+  gpio_pin_t inp_A;			// address where to get data from, i.e: pin, i2c address
+  gpio_pin_t inp_B;			// second input parameter, second pin, i2c register, etc.
   unsigned int oversample;		// total samples kept in memory
   int (*sample_method)(int addr);	// method to take a sample, i.e. analogRead(pin)
 
@@ -98,8 +104,8 @@ struct input_t {
 
   // function pointer to void out_reaction(int inp, ioV_t value)
   void (*out_reaction)(int inp, ioV_t output_value);
-  uint8_t out_A;	// output address like pin, pulse, etc.
-  uint8_t out_B;	// second output parameter, like second pin, index, etc.
+  gpio_pin_t out_A;	// output address like pin, pulse, etc.
+  gpio_pin_t out_B;	// second output parameter, like second pin, index, etc.
   unsigned int last_output;	// for display
 };
 
@@ -207,18 +213,18 @@ class Inputs {
   }
 
   /*
-    bool setup_analog_read(int inp, uint8_t addr, unsigned int oversample);
+    bool setup_analog_read(int inp, gpio_pin_t addr, unsigned int oversample);
     Setup internal analogRead(pin), and reserve memory for oversampling:
   */
-  bool setup_analog_read(int inp, uint8_t addr, unsigned int oversample);
+  bool setup_analog_read(int inp, gpio_pin_t addr, unsigned int oversample);
 
   /*
     bool setup_sample_method(int inp, int (*sample_method)(int addr), \
-    					   uint8_t addr, unsigned int oversample)
+					   gpio_pin_t addr, unsigned int oversample)
     Setup a custom input sample method and reserve memory for oversampling:
   */
   bool setup_sample_method(int inp, int (*sample_method)(int addr), \
-			   uint8_t addr, unsigned int oversample);
+			   gpio_pin_t addr, unsigned int oversample);
 
 
   /*
@@ -274,11 +280,11 @@ class Inputs {
 
 
   /*
-    bool setup_PWM(int inp, uint8_t pin);
+    bool setup_PWM(int inp, gpio_pin_t pin);
     Setup PWM output on input inp, using PWM pin (no checks...).
     On ARDUINO initialize pin.
   */
-  bool setup_PWM(int inp, uint8_t pin);
+  bool setup_PWM(int inp, gpio_pin_t pin);
 
 
   /*
@@ -299,11 +305,11 @@ class Inputs {
     return inputs[inp].flags;
   }
 
-  uint8_t get_inp_A(int inp) const {			// inlined
+  gpio_pin_t get_inp_A(int inp) const {			// inlined
     return inputs[inp].inp_A;
   }
 
-  uint8_t get_inp_B(int inp) const {			// inlined
+  gpio_pin_t get_inp_B(int inp) const {			// inlined
     return inputs[inp].inp_B;
   }
 
@@ -333,11 +339,11 @@ class Inputs {
 //   sample_method(int inp)
 //   in2o_method(int inp)
 
-  uint8_t get_out_A(int inp) const {			// inlined
+  gpio_pin_t get_out_A(int inp) const {			// inlined
     return inputs[inp].out_A;
   }
 
-  uint8_t get_out_B(int inp) const {			// inlined
+  gpio_pin_t get_out_B(int inp) const {			// inlined
     return inputs[inp].out_B;
   }
 
@@ -354,12 +360,12 @@ class Inputs {
     fix_active_inputs();
   }
 
-  void set_inp_A(int inp, uint8_t addr) {		// inlined
+  void set_inp_A(int inp, gpio_pin_t addr) {		// inlined
     inputs[inp].inp_A = addr;
     inputs[inp].flags |= INPUT_ANALOG_internal;
   }
 
-  void set_inp_B(int inp, uint8_t i2) {			// inlined
+  void set_inp_B(int inp, gpio_pin_t i2) {			// inlined
     inputs[inp].inp_B = i2;
   }
 
@@ -386,11 +392,11 @@ class Inputs {
     inputs[inp].out_offset = out_offset;
   }
 
-  void set_out_A(int inp, uint8_t out_A) {		// inlined
+  void set_out_A(int inp, gpio_pin_t out_A) {		// inlined
     inputs[inp].out_A = out_A;
   }
 
-  void set_out_B(int inp, uint8_t o2) {			// inlined
+  void set_out_B(int inp, gpio_pin_t o2) {		// inlined
     inputs[inp].out_B = o2;
   }
 
