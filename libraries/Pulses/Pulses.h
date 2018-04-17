@@ -230,7 +230,10 @@ class Pulses {
   void init_pulses();			// init all pulses
   void wake_pulse(int pulse);		// wake a pulse up, called from check_maybe_do()
   void deactivate_pulse(int pulse);	// clear ACTIVE flag, keep data
-  void deactivate_all_clicks();
+  void put_payload(int pulse, void (*payload)(int)); // set and activate payload
+  void set_gpio(int pulse, gpio_pin_t pin);
+
+  void mute_all_actions();
 
   bool select_pulse(int pulse);		// select in user interface
   void deselect_pulse(int pulse);

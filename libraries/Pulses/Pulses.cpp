@@ -73,7 +73,7 @@ Pulses::Pulses(int pl_max, Menu *MENU):
 
   global_next_pulses = (int*) malloc(pl_max * sizeof(int));
   // ERROR ################
-  
+
   selected_pulses_p = (pulses_mask_t*) malloc((selection_masks() * sizeof(pulses_mask_t)));	// size in bytes
   // ERROR ################
   clear_selection();
@@ -301,46 +301,11 @@ void Pulses::global_shift(int global_octave) {
 /* **************************************************************** */
 // init pulses:
 
-// init, reset or kill a pulse:	// fill with zero??? ################
-// memset(&arr[0], 0, sizeof(arr)); ################
-void Pulses::init_pulse(int pulse) {	// ################ TODO: use memset ################
-  pulses[pulse].flags = 0;
-  pulses[pulse].action_flags = 0;
-  pulses[pulse].periodic_do = NULL;
+void Pulses::init_pulse(int pulse) {
+  memset(&pulses[pulse], 0, sizeof(pulse_t));
 
-// TODO: use or remove code later
-//	#if defined USE_DACs
-//	#if (USE_DACs > 0 )
-//	  pulses[pulse].dac1_wave_function = NULL;
-//	 #if (USE_DACs > 1 )
-//	  pulses[pulse].dac2_wave_function = NULL;
-//	 #endif
-//	#endif
-//	#endif
-
-  pulses[pulse].counter = 0;
-  pulses[pulse].count = 0;
-  pulses[pulse].period.time = 0;
-  pulses[pulse].period.overflow = 0;
-  pulses[pulse].last.time = 0;
-  pulses[pulse].last.overflow = 0;
-  pulses[pulse].next.time = 0;
   pulses[pulse].next.overflow = ~0;	// ILLEGAL
-  pulses[pulse].countdown = 0;
-  pulses[pulse].data = 0;
-  pulses[pulse].base_time = 0L;
   pulses[pulse].gpio = ~0;		// ILLEGAL
-  pulses[pulse].index = 0;
-  pulses[pulse].dest_action_flags = 0;
-
-#if defined USE_DACs
-  //  int (*dac1_wave_function)(int pulse, int volume);
-  pulses[pulse].dac1_intensity=0;
-  #if (USE_DACs > 1)	// only 1 or 2 DACs supported
-  //  int (*dac2_wave_function)(int pulse, int volume);
-  pulses[pulse].dac2_intensity=0;
-  #endif
-#endif
 }
 
 // called from constructor:
@@ -373,10 +338,9 @@ void Pulses::wake_pulse(int pulse) {
     if (action_flags & (DACsq1|DACsq2))
       DAC_output();
 #endif
-  }
 
-  if (pulses[pulse].periodic_do != NULL) {	// there *is* something else to do?
-    (*pulses[pulse].periodic_do)(pulse);	//   yes: do it
+    if (action_flags & PAYLOAD)
+      (*pulses[pulse].periodic_do)(pulse);	// do payload
   }
 
   // prepare future:
@@ -408,11 +372,27 @@ void Pulses::deactivate_pulse(int pulse) {	// clear ACTIVE flag, keep data
 }
 
 
-void Pulses::deactivate_all_clicks() {
-  for (int pulse=0; pulse<CLICK_PULSES; pulse++)	// FIXME: CLICK_PULSES	################
-    pulses[pulse].flags &= ~ACTIVE;
+void Pulses::put_payload(int pulse, void (*payload)(int)) { 	// set and activate payload
+  pulses[pulse].periodic_do = payload;
+  pulses[pulse].action_flags |= PAYLOAD;
 
-  fix_global_next();
+  if (payload == NULL)
+    pulses[pulse].action_flags &= ~PAYLOAD;	// clear payload bit if payload==NULL
+}
+
+
+void Pulses::set_gpio(int pulse, gpio_pin_t pin) {
+  pulses[pulse].gpio = pin;
+
+  if (pulses[pulse].gpio != ILLEGAL)	// TODO: yes or no?
+    pulses[pulse].flags |= HAS_GPIO;
+}
+
+
+void Pulses::mute_all_actions() {
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if(pulses[pulse].action_flags)
+      pulses[pulse].action_flags |= noACTION;
 }
 
 
@@ -422,6 +402,7 @@ short Pulses::selection_masks(void) {
   masks /= sizeof(pulses_mask_t) * 8;		// how many masks needed?
   return masks;
 }
+
 
 // selection for user interface
 bool Pulses::select_pulse(int pulse) {

@@ -36,7 +36,9 @@ set_new_period	KEYWORD2
 check_maybe_do	KEYWORD2
 activate_pulse_synced	KEYWORD2
 deactivate_pulse	KEYWORD2
-deactivate_all_clicks	KEYWORD2
+put_payload	KEYWORD2
+set_gpio	KEYWORD2
+mute_all_actions	KEYWORD2
 select_pulse	KEYWORD2
 deselect_pulse	KEYWORD2
 clear_selection	KEYWORD2

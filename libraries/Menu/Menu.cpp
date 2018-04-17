@@ -277,10 +277,14 @@ char Menu::cb_read() {
 
   /* Output a newline, tab, space, '='
      ln(), tab(), space(), equals():			*/
-  void Menu::ln()     const { MENU_OUT('\n'); }	// Output a newline
-  void Menu::tab()    const { MENU_OUT('\t'); }	// Output a tab
-  void Menu::space()  const { MENU_OUT(' '); }	// Output a space	// but telnet seems to eat some of them...
-  void Menu::space(unsigned int n)  const {	// Output n spaces
+  void Menu::ln()     const { MENU_OUT('\n'); }	// output a newline
+  void Menu::tab()    const { MENU_OUT('\t'); }	// output a tab
+  void Menu::tab(unsigned int n)  const {	// output n tabs
+    for (; n; n--)
+      tab();
+  }
+  void Menu::space()  const { MENU_OUT(' '); }	// output a space	// but telnet seems to eat some of them...
+  void Menu::space(unsigned int n)  const {	// output n spaces
     for (; n; n--)
       space();
   }
