@@ -281,7 +281,6 @@ void Pulses::divide_period(int pulse, unsigned long divisor) {	// integer math
 }
 
 
-// FIXME: CLICK_PULSES	comment		################
 void Pulses::global_shift(int global_octave) {
   if (global_octave>0)
     current_global_octave_mask = global_octave_mask >> global_octave;

@@ -90,7 +90,7 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 
 
 /* **************************************************************** */
-// define gpio_pin_t click_pin[CLICK_PULSES]	// see: pulses_boards.h		FIXME: CLICK_PULSES
+// define gpio_pin_t click_pin[CLICK_PULSES]	// see: pulses_boards.h
 #ifdef CLICK_PULSES
   #include "pulses_CLICK_PIN_configuration.h"	// defines click_pin[]
 #endif
@@ -262,7 +262,7 @@ int reset_all_flagged_pulses_GPIO_OFF() {	// reset pulses, switches GPIO and DAC
 
 // By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
 //  PULSES.init_click_pulses();
-  init_click_pins_OutLow();		// switch them on LOW, output	current off, i.e. magnets
+  init_click_GPIOs_OutLow();		// switch them on LOW, output	current off, i.e. magnets
   PULSES.clear_selection();		// restart selections at none
 
 #if defined USE_DACs			// reset DACs
@@ -302,7 +302,6 @@ void en_jiffle_throw_selected(actions_flags_t action_flags) {
 int en_click_selected() {
   int cnt=0;
 
-  // we work on voices anyway, regardless dest
   for (int pulse=0; pulse<pl_max; pulse++)
     if (PULSES.pulse_is_selected(pulse))
       if (en_click(pulse))
@@ -581,7 +580,7 @@ void setup() {
   MENU.menu_display();
 
   #ifdef CLICK_PULSES
-    init_click_pins_OutLow();		// make them GPIO, OUTPUT, LOW
+    init_click_GPIOs_OutLow();		// make them GPIO, OUTPUT, LOW
   #endif
 
   #ifdef IMPLEMENT_TUNING		// implies floating point
@@ -817,27 +816,16 @@ int main() {
 // piezzo clicks on arduino i/o pins to *hear* the result:
 // great help when debugging and a lot of fun to play with :)
 
-/*
-  This is the *old 'periodics' style* implementation
-  copied over to the Pulses library.
-  Click tasks have to be defined first to get the low index range.
-
-  I plan to change the implementation soon.
-
-*/
-
 //   or connect LEDs, MOSFETs, MIDI, whatever...
 //   these are just FlipFlop pins.
 
-// FIXME: CLICK_PULSES	comment
 // Click_pulses are a sub-group of pulses that control an arduino
-// digital output each.  By design they must be initiated first to get
-// the low pulse indices. The pins are configured as outputs by init_click_pins_OutLow()
+// digital output each.
+// The pins are configured as outputs by init_click_GPIOs_OutLow()
 // and get used by clicks, jiffles and the like.
 
 // It's best to always leave click_pulses in memory.
 // You can set DO_NOT_DELETE to achieve this.
-// By design click pulses *HAVE* to be defined *BEFORE* any other pulses:
 
 
 void click(int pulse) {	// can be called from a pulse
@@ -1049,18 +1037,14 @@ bool maybe_stop_sweeping() {
 #endif
 
 
-void init_click_pins_OutLow() {		// make them GPIO, OUTPUT, LOW
+void init_click_GPIOs_OutLow() {		// make them GPIO, OUTPUT, LOW
 /* gpio_pin_t click_pin[CLICK_PULSES];
-   hardware pins for click_pulses:
-// FIXME: CLICK_PULSES comment
-   It is a bit obscure to hold them in an array indexed by [pulse]
-   but it's simple and working well
+   hardware pins for click_pulses
 */
+  gpio_pin_t pin;
 
-  int pin;
-
-  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {	// FIXME: CLICK_PULSES
-    pin=click_pin[pulse];
+  for (int i=0; i<CLICK_PULSES; i++) {	// FIXME: CLICK_PULSES
+    pin=click_pin[i];
 
 #ifdef ESP8266	// pin 14 must be switched to GPIO on ESP8266
     // http://www.esp8266.com/wiki/lib/exe/detail.php?id=esp8266_gpio_pin_allocations&media=pin_functions.png
@@ -1089,9 +1073,18 @@ void init_click_pins_OutLow() {		// make them GPIO, OUTPUT, LOW
   #endif
 
   gpio_config(&gpioConfig);
-#elif
-  #error TODO: fix init_click_pins_OutLow() for non ESP boards	################
-#endif	// ESP32
+
+#elif defined ARDUINO	// *non* ESP, Arduino
+
+  for (int i=0; i<CLICK_PULSES; i++) {
+    pin=click_pin[i];
+    pinMode(pin, OUTPUT);	// on oldstyle Arduinos this is enough
+    digitalWrite(pin, LOW);	// on oldstyle Arduinos this is enough
+  }
+
+#else
+  #error TODO: fix init_click_GPIOs_OutLow()
+#endif	// board
 }
 
 
@@ -1099,14 +1092,40 @@ void out_noFreePulses() {
   MENU.out(F("no free pulses"));
 }
 
+// gpio_pin_t next_click()	return next unused GPIO click pin (or ILLEGAL)
+// gpio_pin_t next_click(index)	*reset* to give click_pin[index] on next call
+gpio_pin_t next_click(gpio_pin_t set_i=-1) {
+  static gpio_pin_t last_used_gpio_i = ILLEGAL;
 
-// make an existing pulse to a click pulse:
+  gpio_pin_t ret=ILLEGAL;
+
+  if (set_i == -1) {	// normal use: next_click()  get next unused gpio pin
+    if(++last_used_gpio_i < CLICK_PULSES)
+      ret = click_pin[last_used_gpio_i];	// return next free pin
+    else
+      MENU.outln(F("no free GPIO"));
+  } else {		// next_click(set_i)   reset to return 'set_i' on next next_click() call
+    if ((set_i < CLICK_PULSES) && (set_i >= 0)) {
+      last_used_gpio_i = set_i - 1;
+      ret = click_pin[set_i];	// rarely used, same as next call to next_click()
+    } else {
+      MENU.out(F("GPIO pin "));
+      MENU.outln_invalid();
+    }
+  }
+  return ret;
+}
+
+
+// make an existing pulse an old style click pulse:
 bool en_click(int pulse) {
   if (pulse != ILLEGAL) {
-    if (pulse < CLICK_PULSES) {	// FIXME: CLICK_PULSES
+    if (pulse < pl_max) {
       PULSES.pulses[pulse].periodic_do = (void (*)(int)) &click;
+      PULSES.pulses[pulse].flags |= HAS_GPIO;
       PULSES.pulses[pulse].gpio = click_pin[pulse];
-      pinMode(PULSES.pulses[pulse].gpio, OUTPUT);
+      //      pinMode(PULSES.pulses[pulse].gpio, OUTPUT);	// TODO: we don't need that?
+      //      digitalWrite(PULSES.pulses[pulse].gpio, LOW);	// TODO: maybe, maybe not...
       return true;
     }
   }
@@ -1159,12 +1178,14 @@ int setup_click_synced(struct time when, unsigned long unit, unsigned long multi
   int pulse= PULSES.setup_pulse_synced(&click, ACTIVE, when, unit, multiplier, divisor, sync);
 
   if (pulse != ILLEGAL) {
-    PULSES.pulses[pulse].gpio = click_pin[pulse];
-    pinMode(PULSES.pulses[pulse].gpio, OUTPUT);
-    digitalWrite(PULSES.pulses[pulse].gpio, LOW);
-  } else {
+    PULSES.pulses[pulse].gpio = next_click();
+    if (PULSES.pulses[pulse].gpio != ILLEGAL) {
+      PULSES.pulses[pulse].flags |= HAS_GPIO;
+      // pinMode(PULSES.pulses[pulse].gpio, OUTPUT);	// TODO: do we really need that?
+      // digitalWrite(PULSES.pulses[pulse].gpio, LOW);	// TODO: or maybe not?
+    }
+  } else // no free pulse
     out_noFreePulses();
-  }
 
   return pulse;
 }
@@ -2016,9 +2037,10 @@ int init_jiffle(unsigned int *jiffletab, struct time when, struct time new_perio
   pulse = PULSES.setup_pulse(&do_jiffle, ACTIVE, when, jiffle_period);
   if (pulse != ILLEGAL) {
     PULSES.pulses[pulse].action_flags = PULSES.pulses[origin_pulse].dest_action_flags; // set actions
-    PULSES.pulses[pulse].gpio = click_pin[origin_pulse];	// set pin
-    PULSES.pulses[pulse].index = 0;				// init phase 0
-    PULSES.pulses[pulse].countdown = jiffletab[2];		// count of first phase
+    PULSES.pulses[pulse].gpio = PULSES.pulses[origin_pulse].gpio;	// copy pin from origin pulse
+    PULSES.pulses[pulse].flags |= HAS_GPIO;
+    PULSES.pulses[pulse].index = 0;					// init phase 0
+    PULSES.pulses[pulse].countdown = jiffletab[2];			// count of first phase
     PULSES.pulses[pulse].data = (unsigned int) jiffletab;
     PULSES.pulses[pulse].base_time = new_period.time;
 #if defined USE_DACs
@@ -3000,7 +3022,8 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case 'M':	// "mute", no deactivate all clicks, see 'N'	// FIXME: CLICK_PULSES	wrong
+  case 'M':	// "mute",
+		// for *no* deactivate all clicks, see 'N'
     PULSES.deactivate_all_clicks();				// FIXME: CLICK_PULSES	???
     PULSES.check_maybe_do();	// maybe do it *first*
 
@@ -3180,7 +3203,8 @@ bool menu_pulses_reaction(char menu_input) {
     for (int pulse=0; pulse<voices; pulse++)
       if (PULSES.pulse_is_selected(pulse)) {
 	PULSES.pulses[pulse].periodic_do = NULL;
-	if (pulse<CLICK_PULSES)		// set clicks on LOW	// FIXME: CLICK_PULSES
+
+	if ((click_pin[pulse] != ILLEGAL) && (click_pin[pulse] >= 0))	// set clicks on LOW	// FIXME: CLICK_PULSES
 	  digitalWrite(click_pin[pulse], LOW);
       }
 
@@ -3193,7 +3217,7 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case 'g':	// 'g' "GPIO" [was: en_click]	'g~' toggle up/down pin mapping
+  case 'g':	// 'g' "GPIO"	'g~' toggle up/down pin mapping
     if(MENU.cb_peek() == '~') {	      // 'g~' toggle up/down pin mapping
           if (MENU.verbosity)
 	    MENU.out(F("pin mapping bottom "));
@@ -3472,9 +3496,22 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'D':	// DADA reserved for temporary code   testing debugging ...
-//    MENU.out_noop(); MENU.ln();
+    MENU.out_noop(); MENU.ln();
 
-    MENU.outln(sizeof(click_pin));
+    // MENU.outln(sizeof(click_pin) / sizeof(gpio_pin_t));
+
+    /*
+    MENU.outln(next_click());
+    MENU.outln(next_click());
+    MENU.outln(next_click());
+    MENU.outln(next_click());
+
+    MENU.outln(next_click(2));
+    MENU.outln(next_click());
+
+    MENU.outln(next_click(-123));
+    MENU.outln(next_click(999));
+    */
 
 /*
     input_value=MENU.numeric_input(-1);
@@ -3538,7 +3575,7 @@ bool menu_pulses_reaction(char menu_input) {
     input_value = MENU.numeric_input(voices);
     if (input_value>0 && input_value<=pl_max) {
       voices = input_value;
-      if (voices>CLICK_PULSES) {	// FIXME: CLICK_PULSES
+      if (voices>CLICK_PULSES) {
 	if (MENU.verbosity)
 	  MENU.outln(F("WARNING: voices > gpio"));
       }
@@ -3641,7 +3678,7 @@ bool menu_pulses_reaction(char menu_input) {
 	sync=1;
 	multiplier=8;
 	divisor=3;
-	reverse_click_pins();	// ################ FIXME: CLICK_PULSES not here ################
+	reverse_click_pins();
 
 	if (MENU.maybe_display_more()) {
 	  // display_name5pars("setup_jiffles0", g_inverse, voices, multiplier, divisor, sync);
@@ -4233,12 +4270,6 @@ bool menu_pulses_reaction(char menu_input) {
 	en_jiffle_throw_selected(DACsq1 | DACsq2);
     #endif
   #endif
-
-	/*	################ TODO: try bass octaves on DACsq ################
-	if(voices > CLICK_PULSES) {	// try bass octaves on DACsq		// FIXME: CLICK_PULSES
-	  MENU.outln(F("DADA"));
-	}
-	*/
 
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
 	MENU.ln();

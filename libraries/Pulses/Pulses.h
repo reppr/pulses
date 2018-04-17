@@ -80,10 +80,10 @@ struct pulse_t {
 // #define pulses.flags masks:
 #define ACTIVE			1	// switches pulse on/off
 #define COUNTED			2	// repeats 'count[]' times, then vanishes
+#define HAS_GPIO		4	// has an associated GPIO pin
 #define SCRATCH			8	// edit (or similar) in progress
 #define DO_NOT_DELETE	       16	// dummy to avoid being thrown out
 #define TUNED		       32	// do not set directly, use activate_tuning(pulse)
-
 //#define INVERSE_LOGIC	      128	// TODO: implement
 
 
@@ -130,7 +130,7 @@ struct pulse_t {
     used by tuned_click_0 as base period
   */
 
-  char gpio;		// pin
+  gpio_pin_t gpio;		// pin
   /*
     used by CLICKs	as pin
     used by click	as pin
