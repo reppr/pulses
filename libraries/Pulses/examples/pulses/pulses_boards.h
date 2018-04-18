@@ -78,24 +78,24 @@
   #endif
 
 
-// default number of CLICK_PULSES controlling an associated hardware pin each
-  #ifndef CLICK_PULSES
+// default number of GPIO_PINS controlling an associated hardware pin each
+  #ifndef GPIO_PINS
     #if defined(ESP32)			// ESP32: many pins, a lot of RAM :)
       #if defined(KALIMBA7_v2)
-	#define CLICK_PULSES	8	// only 7 used
+	#define GPIO_PINS	8	// only 7 used
       #else	// ESP32 generic
-        #define CLICK_PULSES	8
-//      #define CLICK_PULSES	16	//  ################ FIXME: CLICK_PULSES  16 pulses on ESP32 broken
+        #define GPIO_PINS	8
+//      #define GPIO_PINS	16	//  ################ FIXME: GPIO_PINS  16 pulses on ESP32 broken
       #endif
     #elif defined(ESP8266)		// ESP8266: "a lot of RAM", 8 pins
-      #define CLICK_PULSES	8
+      #define GPIO_PINS	8
     #elif defined(__AVR_ATmega2560__)
-      #define CLICK_PULSES	16      // mega2560 test with 16 pins ;)
+      #define GPIO_PINS	16      // mega2560 test with 16 pins ;)
     #elif defined(__SAM3X8E__)
-      #define CLICK_PULSES	32      // Arduino DUE test with 32 pins ;)
+      #define GPIO_PINS	32      // Arduino DUE test with 32 pins ;)
     #else
       #warning unknown Arduino board, edit  __FILE__:__LINE__
-      #define CLICK_PULSES	8       // default number of click frequencies on unknown boards
+      #define GPIO_PINS	8       // default number of click frequencies on unknown boards
     #endif
   #endif
 
@@ -110,8 +110,8 @@
 
 #define PL_MAX	64		// Linux PC test version
 
-  #ifndef CLICK_PULSES		// default number of click frequencies
-     #define CLICK_PULSES	0  // default number of click frequencies on PC, untested
+  #ifndef GPIO_PINS		// default number of click frequencies
+     #define GPIO_PINS	0  // default number of click frequencies on PC, untested
   #endif
 
   #ifndef INPUT

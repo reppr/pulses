@@ -188,16 +188,16 @@ void Pulses::pulse_info_1line(int pulse) {	// one line pulse info, short version
 
 
 /*
-// test hardware connections on CLICK_PULSES		// test, normally not needed
+// test hardware connections on GPIO_PINS		// test, normally not needed
 void click_connection_test(int wait) {	// wait==0 steps through the first round, then normal
   char next_token;
   MENU.outln(F("pulse@pin"));
 
-  for (int pulse=0; pulse<CLICK_PULSES; pulse++)	// start all LOW
+  for (int pulse=0; pulse<GPIO_PINS; pulse++)	// start all LOW
     digitalWrite(click_pin[pulse], LOW);
 
   MENU.ln();
-  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+  for (int pulse=0; pulse<GPIO_PINS; pulse++) {
 //    if (wait)
 //      delay(wait);
 //    else {
@@ -210,14 +210,14 @@ void click_connection_test(int wait) {	// wait==0 steps through the first round,
   }
 
   MENU.ln();
-  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+  for (int pulse=0; pulse<GPIO_PINS; pulse++) {
     delay(wait);
     MENU.out(pulse); MENU.out('@'); MENU.out(click_pin[pulse]); MENU.tab();
     digitalWrite(click_pin[pulse], LOW);
   }
 
   MENU.ln();
-  for (int pulse=0; pulse<CLICK_PULSES; pulse++) {
+  for (int pulse=0; pulse<GPIO_PINS; pulse++) {
     delay(wait);
     MENU.out(pulse); MENU.out('@'); MENU.out(click_pin[pulse]); MENU.tab();
     digitalWrite(click_pin[pulse], HIGH);
@@ -468,32 +468,32 @@ private:
   // for a demo one of these could be called from here:
 
   // void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync)
-  // setup_jiffle128(false, CLICK_PULSES, 2, 1, 15);	// 12345678 slow beginning of voices, nice
+  // setup_jiffle128(false, GPIO_PINS, 2, 1, 15);	// 12345678 slow beginning of voices, nice
 
   // init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-  // init_div_123456(false, CLICK_PULSES, 1, 1, 0);
+  // init_div_123456(false, GPIO_PINS, 1, 1, 0);
 
-  // setup_jiffles0(false, CLICK_PULSES, 2, 3, 1);	// setup for ESP8266 Frog Orchester
+  // setup_jiffles0(false, GPIO_PINS, 2, 3, 1);	// setup for ESP8266 Frog Orchester
 
   //       void setup_jiffles2345(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-  // setup_jiffles2345(0, CLICK_PULSES, 1, 2, 0);
+  // setup_jiffles2345(0, GPIO_PINS, 1, 2, 0);
 
   // init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-  // init_123456(false, CLICK_PULSES, 1, 1, 0);
+  // init_123456(false, GPIO_PINS, 1, 1, 0);
 
   // init_chord_1345689a(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync);
-  // init_chord_1345689a(0, CLICK_PULSES, 1, 1, 0);
+  // init_chord_1345689a(0, GPIO_PINS, 1, 1, 0);
 
-  // init_rhythm_1   (0, CLICK_PULSES, 1, 6*7, 1);
-  // init_rhythm_2(0, CLICK_PULSES, 1, 1, 5);
-  // init_rhythm_3(0, CLICK_PULSES, 1, 1, 3);
-  // init_rhythm_4(0, CLICK_PULSES, 1, 7*3, 1);
+  // init_rhythm_1   (0, GPIO_PINS, 1, 6*7, 1);
+  // init_rhythm_2(0, GPIO_PINS, 1, 1, 5);
+  // init_rhythm_3(0, GPIO_PINS, 1, 1, 3);
+  // init_rhythm_4(0, GPIO_PINS, 1, 7*3, 1);
 
   // void setup_jifflesNEW(int sync, unsigned int multiplier, unsigned int divisor);
-  // setup_jifflesNEW(0, CLICK_PULSES, 3, 1, 3);
+  // setup_jifflesNEW(0, GPIO_PINS, 3, 1, 3);
 
-  // init_pentatonic(0, CLICK_PULSES, 1, 1, 1);	// Harmonical Frogs Choir	Frogs set 2
-  // init_pentatonic(0, CLICK_PULSES, 1, 6, 1);	// 8 strings on piezzos 2016-12-12
+  // init_pentatonic(0, GPIO_PINS, 1, 1, 1);	// Harmonical Frogs Choir	Frogs set 2
+  // init_pentatonic(0, GPIO_PINS, 1, 6, 1);	// 8 strings on piezzos 2016-12-12
 
   // 2 strings setup 2016-12-15 sweep and drone on piezzos
   //  multiplier=1;

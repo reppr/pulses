@@ -212,7 +212,7 @@ IMPORTANT:	HARDWARE KOMPATIBILITY BREAK
 
 
 ESP32_12_v0
-    gpio_pin_t click_pin[CLICK_PULSES] =
+    gpio_pin_t click_pin[GPIO_PINS] =
       {23, 5, 17, 16, 4, 2, 15,		32, 33, 27, 14, 13, };	//  ESP32_12_v0  12 clicks
   //                     ?               ?   ?       ?          // these pins need configuration FIX
 

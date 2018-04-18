@@ -90,8 +90,8 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 
 
 /* **************************************************************** */
-// define gpio_pin_t click_pin[CLICK_PULSES]	// see: pulses_boards.h
-#ifdef CLICK_PULSES
+// define gpio_pin_t click_pin[GPIO_PINS]	// see: pulses_boards.h
+#ifdef GPIO_PINS
   #include "pulses_CLICK_PIN_configuration.h"	// defines click_pin[]
 #endif
 
@@ -290,12 +290,12 @@ gpio_pin_t next_gpio(gpio_pin_t set_i=-1) {
   gpio_pin_t ret=ILLEGAL;
 
   if (set_i == -1) {	// normal use: next_gpio()  get next unused gpio pin
-    if(++last_used_gpio_i < CLICK_PULSES)
+    if(++last_used_gpio_i < GPIO_PINS)
       ret = click_pin[last_used_gpio_i];	// return next free pin
     else
       MENU.outln(F("no free GPIO"));
   } else {		// next_gpio(set_i)   reset to return 'set_i' on next next_gpio() call
-    if ((set_i < CLICK_PULSES) && (set_i >= 0)) {
+    if ((set_i < GPIO_PINS) && (set_i >= 0)) {
       last_used_gpio_i = set_i - 1;
       ret = click_pin[set_i];	// rarely used, same as next call to next_gpio()
     } else {
@@ -439,7 +439,7 @@ unsigned long multiplier=1;
 unsigned long divisor=1;
 
 int selected_experiment=-1;
-int voices=CLICK_PULSES;
+int voices=GPIO_PINS;
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
   #include <math.h>
@@ -605,7 +605,7 @@ void setup() {
   // display menu at startup:
   MENU.menu_display();
 
-  #ifdef CLICK_PULSES
+  #ifdef GPIO_PINS
     init_click_GPIOs_OutLow();		// make them GPIO, OUTPUT, LOW
   #endif
 
@@ -1065,12 +1065,12 @@ bool maybe_stop_sweeping() {
 
 // TODO: move to library Pulses
 void init_click_GPIOs_OutLow() {		// make them GPIO, OUTPUT, LOW
-/* gpio_pin_t click_pin[CLICK_PULSES];
+/* gpio_pin_t click_pin[GPIO_PINS];
    hardware pins for click_pulses
 */
   gpio_pin_t pin;
 
-  for (int i=0; i<CLICK_PULSES; i++) {
+  for (int i=0; i<GPIO_PINS; i++) {
     pin=click_pin[i];
 
 #ifdef ESP8266	// pin 14 must be switched to GPIO on ESP8266
@@ -1103,7 +1103,7 @@ void init_click_GPIOs_OutLow() {		// make them GPIO, OUTPUT, LOW
 
 #elif defined ARDUINO	// *non* ESP, Arduino
 
-  for (int i=0; i<CLICK_PULSES; i++) {
+  for (int i=0; i<GPIO_PINS; i++) {
     pin=click_pin[i];
     pinMode(pin, OUTPUT);	// on oldstyle Arduinos this is enough
     digitalWrite(pin, LOW);	// on oldstyle Arduinos this is enough
@@ -2162,7 +2162,7 @@ void menu_pulses_display() {
   MENU.out(PULSES.get_pl_max());
   MENU.space(2);
   MENU.out(F("GPIO "));
-  MENU.outln(CLICK_PULSES);
+  MENU.outln(GPIO_PINS);
   MENU.ln();
   MENU.outln(F("?=help\t.=flagged info\t:=selected info"));
 
@@ -2616,7 +2616,7 @@ void setup_jiffles0(bool g_inverse, int voices, unsigned int multiplier, unsigne
 bool click_pins_inverted=false;
 void reverse_click_pins() {
   gpio_pin_t scratch;
-  for (int i=0, j=CLICK_PULSES-1; i<j; i++, j--) {
+  for (int i=0, j=GPIO_PINS-1; i<j; i++, j--) {
       scratch=click_pin[i];
       click_pin[i]=click_pin[j];
       click_pin[j]=scratch;
@@ -3547,7 +3547,7 @@ bool menu_pulses_reaction(char menu_input) {
     input_value = MENU.numeric_input(voices);
     if (input_value>0 && input_value<=pl_max) {
       voices = input_value;
-      if (voices>CLICK_PULSES) {
+      if (voices>GPIO_PINS) {
 	if (MENU.verbosity)
 	  MENU.outln(F("WARNING: voices > gpio"));
       }
@@ -3556,7 +3556,7 @@ bool menu_pulses_reaction(char menu_input) {
       MENU.outln_invalid();
 
     if (voices==0)
-      voices=CLICK_PULSES;	// just a guess
+      voices=GPIO_PINS;	// just a guess
 
     if (MENU.maybe_display_more())
       MENU.outln(voices);
