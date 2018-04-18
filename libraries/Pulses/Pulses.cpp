@@ -390,9 +390,7 @@ void Pulses::put_payload_with_pin(int pulse, void (*payload)(int), gpio_pin_t pi
 
 void Pulses::set_gpio(int pulse, gpio_pin_t pin) {
   pulses[pulse].gpio = pin;
-
-  //  if (pulses[pulse].gpio != ILLEGAL)	// TODO: yes or no?
-    pulses[pulse].flags |= HAS_GPIO;
+  pulses[pulse].flags |= HAS_GPIO;
 }
 
 
@@ -427,7 +425,8 @@ void Pulses::show_action_flags(action_flags_t flags) {
   if(flags & noACTION)
     (*MENU).out('X');
   else
-    (*MENU).out('!');
+    (*MENU).space();
+  (*MENU).space();
 }
 
 

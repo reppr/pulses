@@ -574,7 +574,7 @@ void setup() {
   // setting up the menu:
 
   // add pulses main page:
-  MENU.add_page("pulses", 'P', \
+  MENU.add_page("Pulses", 'P', \
 		&menu_pulses_display, &menu_pulses_reaction, 'P');
 
   // add softboard page:
@@ -658,7 +658,7 @@ bool low_priority_tasks() {
 bool lowest_priority_tasks() {
 
 #ifdef USE_WIFI_telnet_menu
-// ################ FIXME: cleanup old code ################
+// ################ FIXME: cleanup old WIFI code ################
   // check telnet connection
 //  MENU.out("check TELNET:	");
 
@@ -1708,7 +1708,10 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
 
   if (PULSES.pulses[pulse].flags & HAS_GPIO) {
     MENU.out(F(" p"));
-    MENU.out((int) PULSES.pulses[pulse].gpio);
+    if(PULSES.pulses[pulse].gpio != ILLEGAL)
+      MENU.out((int) PULSES.pulses[pulse].gpio);
+    else
+      MENU.out(F("XX"));
   } else
     MENU.space(3);
 
@@ -2158,11 +2161,21 @@ action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actio
 void menu_pulses_display() {
   MENU.outln(F("http://github.com/reppr/pulses/"));
 
-  MENU.out(F("pulses "));
+  MENU.out(F("\npulses "));
   MENU.out(PULSES.get_pl_max());
   MENU.space(2);
   MENU.out(F("GPIO "));
   MENU.outln(GPIO_PINS);
+  if (MENU.verbosity > VERBOSITY_SOME) {	// maybe display gpio_pins[]
+    MENU.out(F("gpio_pins {"));
+    for (int i=0; i<GPIO_PINS; i++) {
+      if(i)
+	MENU.out(F(", "));
+      MENU.out(click_pin[i]);
+    }
+    MENU.outln('}');
+  }
+
   MENU.ln();
   MENU.outln(F("?=help\t.=flagged info\t:=selected info"));
 
@@ -3006,7 +3019,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'M':	// "mute", see 'N' as alternative
-    PULSES.mute_all_actions();
+    PULSES.mute_all_actions();	// TODO: dead end street
 
     if (MENU.verbosity)
       MENU.outln(F("muted all actions"));
