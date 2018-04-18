@@ -1,3 +1,191 @@
+/* more functions to move to library Pulses:
+void Pulses::short_info(void) {
+  if ((*MENU).verbosity > VERBOSITY_SOME) {
+    (*MENU).ln();
+    time_info();
+  }
+
+  if ((*MENU).verbosity >= VERBOSITY_SOME) {
+    (*MENU).ln();
+    show_selected_mask();
+  }
+
+  (*MENU).ln();
+  selected_or_flagged_pulses_info_lines();
+}
+
+
+void Pulses::selected_or_flagged_pulses_info_lines(void) {
+  int count=0;
+  for (int pulse=0; pulse<pl_max; ++pulse)
+    if (pulses[pulse].flags || pulse_is_selected(pulse)) { // any flags || selected
+      pulse_info_1line(pulse);
+      count++;
+    }
+
+  if (count == 0) {
+    (*MENU).outln(F("no selected or flagged pulses"));
+
+    if(how_many_selected())
+      show_selected_mask();
+  }
+
+  (*MENU).ln();
+}
+
+
+void display_payload(int pulse) {
+  void (*scratch)(int);
+  scratch=&click;
+  if (pulses[pulse].periodic_do == scratch) {
+    (*MENU).out("click  ");
+    (*MENU).out((int) pulses[pulse].gpio);
+    return;
+  }
+
+#ifdef IMPLEMENT_TUNING		// implies floating point
+  scratch=&tuned_sweep_click;
+  if (pulses[pulse].periodic_do == scratch) {
+    (*MENU).out(F("tuned_sweep_click "));
+    (*MENU).out((int) pulses[pulse].gpio);
+    return;
+  }
+
+  scratch=&sweep_click;
+  if (pulses[pulse].periodic_do == scratch) {
+    (*MENU).out(F("sweep_click "));
+    (*MENU).out((int) pulses[pulse].gpio);
+    return;
+  }
+
+  scratch=&sweep_click_0;
+  if (pulses[pulse].periodic_do == scratch) {
+    (*MENU).out(F("sweep_click_0 "));
+    (*MENU).out((int) pulses[pulse].gpio);
+    return;
+  }
+#endif	// #ifdef IMPLEMENT_TUNING	implies floating point
+
+  scratch=&do_jiffle;
+  if (pulses[pulse].periodic_do == scratch) {
+    (*MENU).out(F("do_jiffle:"));
+    (*MENU).out(array2name(JIFFLES, (unsigned int*) pulses[pulse].data));
+    (*MENU).space(2);
+    (*MENU).out((int) pulses[pulse].gpio);
+    return;
+  }
+
+  scratch=&do_throw_a_jiffle;
+  if (pulses[pulse].periodic_do == scratch) {
+    (*MENU).out(F("seed jiff:"));
+    (*MENU).out(array2name(JIFFLES, (unsigned int*) pulses[pulse].data));
+    (*MENU).space(2);
+    (*MENU).out((int) click_pin[pulse]);
+    return;
+  }
+
+  scratch=&pulse_info;
+  if (pulses[pulse].periodic_do == scratch) {
+    (*MENU).out(F("pulse_info"));
+    return;
+  }
+
+  scratch=&pulse_info_1line;
+  if (pulses[pulse].periodic_do == scratch) {
+    (*MENU).out(F("info line"));
+    (*MENU).tab(2);
+    return;
+  }
+
+  scratch=NULL;
+  if (pulses[pulse].periodic_do == scratch) {
+    (*MENU).out(F("NULL\t"));		// 8 char positions at least
+    return;
+  }
+
+  (*MENU).out(F("UNKNOWN\t"));
+}
+
+
+void Pulses::pulse_info_1line(int pulse) {	// one line pulse info, short version
+  unsigned long realtime=micros();		// let's take time *before* serial output
+
+  if (pulse_is_selected(pulse))
+    (*MENU).out('*');
+  else
+    (*MENU).space();
+
+
+  (*MENU).out(F(" PULSE "));
+  if (pulse<100)	// left padding 'pulse'
+    (*MENU).space();
+  if (pulse<10)
+    (*MENU).space();
+  (*MENU).out(pulse);
+  (*MENU).slash();
+  (*MENU).out((unsigned int) pulses[pulse].counter);
+  // right padding 'pulses[pulse].counter'
+  if (pulses[pulse].counter<100000)
+    (*MENU).space();
+  if (pulses[pulse].counter<10000)
+    (*MENU).space();
+  if (pulses[pulse].counter<1000)
+    (*MENU).space();
+  if (pulses[pulse].counter<100)
+    (*MENU).space();
+  if (pulses[pulse].counter<10)
+    (*MENU).space();
+
+  (*MENU).space();
+  (*MENU).out_flags_();
+  (*MENU).outBIN(pulses[pulse].flags, sizeof(pulse_flags_t) * 8);	// TODO: mnemonic output
+
+  if (pulses[pulse].action_flags) {
+    (*MENU).out(F(" Af: "));
+    show_action_flags(pulses[pulse].action_flags);
+  }
+
+  (*MENU).tab();
+  display_payload(pulse);
+
+  if(pulses[pulse].dest_action_flags || \
+     pulses[pulse].dac1_intensity || pulses[pulse].dac2_intensity) {
+    (*MENU).tab();
+    (*MENU).out(F("dAf: "));
+    show_action_flags(pulses[pulse].dest_action_flags);
+
+    (*MENU).out(F(" i1:"));
+    (*MENU).pad(pulses[pulse].dac1_intensity, 4);
+
+    (*MENU).out(F("i2:"));
+    (*MENU).pad(pulses[pulse].dac2_intensity, 4);
+  }
+
+  if ((*MENU).verbosity >= VERBOSITY_SOME) {
+    (*MENU).tab();
+    print_period_in_time_units(pulse);
+  }
+
+  if ((*MENU).verbosity > VERBOSITY_SOME) {
+    struct time sum = pulses[pulse].next;
+    get_now();
+    struct time delta =now;
+    sub_time(&delta, &sum);
+
+    (*MENU).tab();
+    (*MENU).out(F("expected in"));
+    display_realtime_sec(sum);
+  }
+
+  if (pulse_is_selected(pulse)) {
+    (*MENU).space();
+    (*MENU).out('*');
+  }
+
+  (*MENU).ln();
+}
+*/
+
 
 /*
 // test hardware connections on CLICK_PULSES		// test, normally not needed

@@ -259,8 +259,6 @@ int reset_all_flagged_pulses_GPIO_OFF() {	// reset pulses, switches GPIO and DAC
     }
   }
 
-
-//  PULSES.init_click_pulses();
   init_click_GPIOs_OutLow();		// switch them on LOW, output	current off, i.e. magnets
   PULSES.clear_selection();		// restart selections at none
 
@@ -282,7 +280,7 @@ int reset_all_flagged_pulses_GPIO_OFF() {	// reset pulses, switches GPIO and DAC
 };
 
 
-/*
+/*	TODO: move to library Pulses
   gpio_pin_t next_gpio()	return next unused GPIO click pin (or ILLEGAL)
   gpio_pin_t next_gpio(index)	*reset* to give click_pin[index] on next call
 */
@@ -320,8 +318,7 @@ gpio_pin_t this_or_next_gpio(int pulse) {
 // make an existing pulse an old style click pulse:
 bool en_click(int pulse, gpio_pin_t pin) {
   if ((pulse > ILLEGAL) && (pulse < pl_max)) {
-    PULSES.put_payload(pulse, &click);
-    PULSES.set_gpio(pulse, pin);
+    PULSES.put_payload_with_pin(pulse, &click, pin);
     return true;
   }
 
@@ -351,7 +348,7 @@ int en_click_selected() {
 // set_action_flags(pulse, DACsq1 | DACsq2) activates both DACs
 bool set_action_flags(int pulse, unsigned int action_flags) {
   if ((pulse > ILLEGAL) && (pulse < pl_max)) {
-    PULSES.pulses[pulse].action_flags = (PULSES.pulses[pulse].action_flags | action_flags);
+    PULSES.pulses[pulse].action_flags |= action_flags;
     return true;
   }
 
@@ -1066,6 +1063,7 @@ bool maybe_stop_sweeping() {
 #endif
 
 
+// TODO: move to library Pulses
 void init_click_GPIOs_OutLow() {		// make them GPIO, OUTPUT, LOW
 /* gpio_pin_t click_pin[CLICK_PULSES];
    hardware pins for click_pulses
@@ -1125,9 +1123,10 @@ void out_noFreePulses() {
 #ifdef IMPLEMENT_TUNING		// implies floating point
 // make an existing pulse to a sweep click pulse:
 bool en_sweep_click(int pulse) {
-  if ((pulse > ILLEGAL) && (pulse < pl_max)) {
+  if ((pulse > ILLEGAL) && (pulse < pl_max)) {	// gpio set
     if (en_click(pulse, this_or_next_gpio(pulse))) {
-      PULSES.put_payload(pulse, &sweep_click);
+      PULSES.put_payload(pulse, &sweep_click);	// gpio set
+
       return true;
     }
   }
@@ -1139,9 +1138,9 @@ bool en_sweep_click(int pulse) {
 // make an existing pulse to a sweep_click_0 pulse:
 bool en_sweep_click_0(int pulse) {
   if ((pulse > ILLEGAL) && (pulse < pl_max)) {
-    if (en_click(pulse, this_or_next_gpio(pulse))) {
+    if (en_click(pulse, this_or_next_gpio(pulse))) {	// gpio set
       PULSES.pulses[pulse].base_time = PULSES.pulses[pulse].period.time;
-      PULSES.put_payload(pulse, &sweep_click_0);
+      PULSES.put_payload(pulse, &sweep_click_0);	// gpio set
       return true;
     }
   }
@@ -1152,9 +1151,9 @@ bool en_sweep_click_0(int pulse) {
 
 bool en_tuned_sweep_click(int pulse) {
   if ((pulse > ILLEGAL) && (pulse < pl_max)) {
-    if (en_click(pulse, this_or_next_gpio(pulse))) {
+    if (en_click(pulse, this_or_next_gpio(pulse))) {	// gpio set
       PULSES.activate_tuning(pulse);
-      PULSES.put_payload(pulse, &tuned_sweep_click);
+      PULSES.put_payload(pulse, &tuned_sweep_click);	// gpio set
       return true;
     }
   }
@@ -1667,6 +1666,7 @@ bool en_info(int pulse) {
   return false;
 }
 
+// TODO: move to Pulses.cpp
 void pulse_info_1line(int pulse) {	// one line pulse info, short version
   unsigned long realtime=micros();		// let's take time *before* serial output
 
@@ -1696,42 +1696,32 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
   if (PULSES.pulses[pulse].counter<10)
     MENU.space();
 
-  if (MENU.verbosity >= VERBOSITY_SOME) {
-    MENU.space();
-    MENU.out_flags_();
-    MENU.outBIN(PULSES.pulses[pulse].flags, sizeof(pulse_flags_t) * 8);
-  }
+  MENU.space();
+  MENU.out_flags_();
+  MENU.outBIN(PULSES.pulses[pulse].flags, sizeof(pulse_flags_t) * 8);	// TODO: mnemonic output
 
-  MENU.tab();
-  PULSES.print_period_in_time_units(pulse);
+  if (PULSES.pulses[pulse].action_flags) {
+    MENU.out(F(" Af: "));
+    PULSES.show_action_flags(PULSES.pulses[pulse].action_flags);
+  } else
+    MENU.tab();
+
+  if (PULSES.pulses[pulse].flags & HAS_GPIO) {
+    MENU.out(F(" p"));
+    MENU.out((int) PULSES.pulses[pulse].gpio);
+  } else
+    MENU.space(3);
 
   MENU.tab();
   display_payload(pulse);
 
-  if (PULSES.pulses[pulse].action_flags) {
+  if(PULSES.pulses[pulse].dest_action_flags || \
+     PULSES.pulses[pulse].dac1_intensity || PULSES.pulses[pulse].dac2_intensity) {
     MENU.tab();
-    MENU.out(F("Af:"));
-    MENU.outBIN(PULSES.pulses[pulse].action_flags, ACTION_MASK_BITS);
-    MENU.space();
-    if (PULSES.pulses[pulse].action_flags & CLICKs)
-      MENU.out('C');
-    if (PULSES.pulses[pulse].action_flags & DACsq1) {
-      MENU.out(F("Q1:"));
-      MENU.pad(PULSES.pulses[pulse].dac1_intensity, 4);
-    }
-    if (PULSES.pulses[pulse].action_flags & DACsq2) {
-      MENU.out(F("Q2:"));
-      MENU.pad(PULSES.pulses[pulse].dac2_intensity, 4);
-    }
-  }
+    MENU.out(F("dAf: "));
+    PULSES.show_action_flags(PULSES.pulses[pulse].dest_action_flags);
 
-  if(PULSES.pulses[pulse].dest_action_flags \
-     || (PULSES.pulses[pulse].dac1_intensity) || (PULSES.pulses[pulse].dac2_intensity)) {
-    MENU.tab();
-    MENU.out(F("daf:"));
-    MENU.outBIN(PULSES.pulses[pulse].dest_action_flags, ACTION_MASK_BITS);
-
-    MENU.out(F("i1:"));
+    MENU.out(F(" i1:"));
     MENU.pad(PULSES.pulses[pulse].dac1_intensity, 4);
 
     MENU.out(F("i2:"));
@@ -1739,6 +1729,11 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
   }
 
   if (MENU.verbosity >= VERBOSITY_SOME) {
+    MENU.tab();
+    PULSES.print_period_in_time_units(pulse);
+  }
+
+  if (MENU.verbosity > VERBOSITY_SOME) {
     struct time sum = PULSES.pulses[pulse].next;
     PULSES.get_now();
     struct time delta =PULSES.now;
@@ -1829,35 +1824,31 @@ bool en_INFO(int pulse) {	// FIXME: to lib Pulses
   return false;
 }
 
-
+// TODO: move to Pulses.cpp ################
 void display_payload(int pulse) {
   void (*scratch)(int);
   scratch=&click;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out("click  ");
-    MENU.out((int) PULSES.pulses[pulse].gpio);
+    MENU.out("click");
     return;
   }
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
   scratch=&tuned_sweep_click;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out(F("tuned_sweep_click "));
-    MENU.out((int) PULSES.pulses[pulse].gpio);
+    MENU.out(F("tuned_sweep_click"));
     return;
   }
 
   scratch=&sweep_click;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out(F("sweep_click "));
-    MENU.out((int) PULSES.pulses[pulse].gpio);
+    MENU.out(F("sweep_click"));
     return;
   }
 
   scratch=&sweep_click_0;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out(F("sweep_click_0 "));
-    MENU.out((int) PULSES.pulses[pulse].gpio);
+    MENU.out(F("sweep_click_0"));
     return;
   }
 #endif	// #ifdef IMPLEMENT_TUNING	implies floating point
@@ -1866,8 +1857,6 @@ void display_payload(int pulse) {
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out(F("do_jiffle:"));
     MENU.out(array2name(JIFFLES, (unsigned int*) PULSES.pulses[pulse].data));
-    MENU.space(2);
-    MENU.out((int) PULSES.pulses[pulse].gpio);
     return;
   }
 
@@ -1875,8 +1864,6 @@ void display_payload(int pulse) {
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out(F("seed jiff:"));
     MENU.out(array2name(JIFFLES, (unsigned int*) PULSES.pulses[pulse].data));
-    MENU.space(2);
-    MENU.out((int) click_pin[pulse]);
     return;
   }
 
@@ -1952,14 +1939,12 @@ void selected_or_flagged_pulses_info_lines() {
 
 /* **************************************************************** */
 // make an existing pulse to a jiffle thrower pulse:
-bool en_jiffle_thrower(int pulse, unsigned int *jiffletab, gpio_pin_t pin, actions_flags_t action_mask)
+bool en_jiffle_thrower(int pulse, unsigned int *jiffletab, gpio_pin_t pin, action_flags_t action_mask)
 {
   if ((pulse > ILLEGAL) && (pulse < pl_max)) {
-    PULSES.put_payload(pulse, &do_throw_a_jiffle);
-
-    PULSES.pulses[pulse].data = (unsigned int) jiffletab;
     PULSES.pulses[pulse].dest_action_flags |= action_mask;
-    PULSES.set_gpio(pulse, pin);
+    PULSES.put_payload_with_pin(pulse, &do_throw_a_jiffle, pin);
+    PULSES.pulses[pulse].data = (unsigned int) jiffletab;
 
     return true;
   }
@@ -1969,7 +1954,7 @@ bool en_jiffle_thrower(int pulse, unsigned int *jiffletab, gpio_pin_t pin, actio
 
 
 // make selected pulses jiffle throwers
-int en_jiffle_throw_selected(actions_flags_t action_flags) {
+int en_jiffle_throw_selected(action_flags_t action_flags) {
   int cnt=0;
 
   for (int pulse=0; pulse<pl_max; pulse++)
@@ -1999,7 +1984,7 @@ int init_jiffle(unsigned int *jiffletab, struct time when, struct time new_perio
 
   pulse = PULSES.setup_pulse(&do_jiffle, ACTIVE, when, jiffle_period);
   if ((pulse > ILLEGAL) && (pulse < pl_max)) {
-    PULSES.pulses[pulse].action_flags = PULSES.pulses[origin_pulse].dest_action_flags; // set actions
+    PULSES.pulses[pulse].action_flags |= PULSES.pulses[origin_pulse].dest_action_flags; // set actions
     PULSES.set_gpio(pulse, PULSES.pulses[origin_pulse].gpio);	// copy pin from origin pulse
     PULSES.pulses[pulse].index = 0;				// init phase 0
     PULSES.pulses[pulse].countdown = jiffletab[2];		// count of first phase
@@ -2168,7 +2153,7 @@ bool g_inverse=false;	// bottom DOWN/up GPIO click-pin mapping
 #define JIFFLE_ENTRY_UNTIL_ZERO_MODE	1	// menu_mode for unsigned integer data entry, stop at zero
 
 /* **************************************************************** */
-actions_flags_t selected_actions = DACsq1 | DACsq2;
+action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actions
 
 void menu_pulses_display() {
   MENU.outln(F("http://github.com/reppr/pulses/"));
@@ -2200,7 +2185,8 @@ void menu_pulses_display() {
 
   MENU.out(F("E=enter experiment (")); MENU.out(selected_experiment); MENU.out(')');
   MENU.out(F("\tV=voices for experiment (")); MENU.out(voices); MENU.out(F(")"));
-  MENU.out(F("\tO=action_flags (")); MENU.outBIN(selected_actions, ACTION_MASK_BITS); MENU.outln(')');
+  MENU.out(F("\tO=action_flags (")); PULSES.show_action_flags(selected_actions); MENU.outln(')');
+
   MENU.out(F("g~=toggle pin mapping (bottom "));
   if (g_inverse)
     MENU.out(F("up"));
@@ -2401,14 +2387,14 @@ void display_jiffletab(unsigned int *jiffle) {
 
 
 void do_jiffle (int pulse) {	// to be called by pulse_do
-  // PULSES.pulses[pulse].gpio	click pin
-  // PULSES.pulses[pulse].index	jiffletab index
-  // PULSES.pulses[pulse].countdown		count down
-  // PULSES.pulses[pulse].data			jiffletab[] pointer
-  // PULSES.pulses[pulse].base_time		base period = period of starting pulse
-
+/*
+  PULSES.pulses[pulse].gpio		click pin
+  PULSES.pulses[pulse].index		jiffletab index
+  PULSES.pulses[pulse].countdown	count down
+  PULSES.pulses[pulse].data		jiffletab[] pointer
+  PULSES.pulses[pulse].base_time	base period = period of starting pulse
+*/
   digitalWrite(PULSES.pulses[pulse].gpio, PULSES.pulses[pulse].counter & 1);	// click
-
   if (--PULSES.pulses[pulse].countdown > 0)				// countdown, phase endid?
     return;						//   no: return immediately
 
@@ -2626,6 +2612,7 @@ void setup_jiffles0(bool g_inverse, int voices, unsigned int multiplier, unsigne
   'reverse_click_pins()' works on the global click_pin[] array
  			 the pulses won't notice but play with new pin mapping */
 
+// TODO: move to library Pulses
 bool click_pins_inverted=false;
 void reverse_click_pins() {
   gpio_pin_t scratch;
@@ -2644,8 +2631,15 @@ void reverse_click_pins() {
 
 // display helper functions:
 void short_info() {
-  MENU.ln();
-  PULSES.time_info();
+  if (MENU.verbosity > VERBOSITY_SOME) {
+    MENU.ln();
+    PULSES.time_info();
+  }
+
+  if (MENU.verbosity >= VERBOSITY_SOME) {
+    MENU.ln();
+    print_selected();
+  }
 
   MENU.ln();
   selected_or_flagged_pulses_info_lines();
@@ -3516,17 +3510,6 @@ bool menu_pulses_reaction(char menu_input) {
     MENU.outln(input_value);
 */
 
-/*
-    // display DACsq max intensity
-    s1=0;
-    s2=0;
-    for(int p=0; p<CLICK_PULSES; p++) {	// FIXME: CLICK_PULSES
-      s1 += PULSES.pulses[p].dac1_intensity;
-      s2 += PULSES.pulses[p].dac2_intensity;
-    }
-    MENU.out(F("max DACsq intensity")); MENU.tab(); MENU.out(s1); MENU.tab(); MENU.outln(s2);
-*/
-
     break;
 
   case 'y':	// DADA reserved for temporary code   testing debugging ...
@@ -3586,16 +3569,17 @@ bool menu_pulses_reaction(char menu_input) {
   case 'O':	// configure selected_actions
     if (MENU.cb_peek() == EOF) {
       MENU.out(F("action flags "));
-      MENU.outBIN(selected_actions, ACTION_MASK_BITS);
+      PULSES.show_action_flags(selected_actions);
       MENU.ln();
     } else {
+      // TODO: allow mnemonics ################
       input_value = MENU.numeric_input(selected_actions);
       if (input_value != selected_actions)
 	selected_actions = input_value;
 
       if (MENU.verbosity >= VERBOSITY_SOME) {
 	MENU.out(F("action flags "));
-	MENU.outBIN(selected_actions, ACTION_MASK_BITS);
+	PULSES.show_action_flags(selected_actions);
 	MENU.ln();
       }
     }
@@ -3618,6 +3602,7 @@ bool menu_pulses_reaction(char menu_input) {
 */
     // reset, remove all (flagged) pulses, restart selections at none
     reset_all_flagged_pulses_GPIO_OFF();
+    next_gpio(0);	// reset used gpio
     break;
 
   case 'Z':	// reverse_click_pins

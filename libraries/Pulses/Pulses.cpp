@@ -381,10 +381,17 @@ void Pulses::put_payload(int pulse, void (*payload)(int)) { 	// set and activate
 }
 
 
+// put_payload_with_pin(int pulse, void (*payload)(int), gpio_pin_t pin)  set and activate payload with gpio
+void Pulses::put_payload_with_pin(int pulse, void (*payload)(int), gpio_pin_t pin) {
+  put_payload(pulse, payload);
+  set_gpio(pulse, pin);
+}
+
+
 void Pulses::set_gpio(int pulse, gpio_pin_t pin) {
   pulses[pulse].gpio = pin;
 
-  if (pulses[pulse].gpio != ILLEGAL)	// TODO: yes or no?
+  //  if (pulses[pulse].gpio != ILLEGAL)	// TODO: yes or no?
     pulses[pulse].flags |= HAS_GPIO;
 }
 
@@ -394,6 +401,35 @@ void Pulses::mute_all_actions() {
     if(pulses[pulse].action_flags)
       pulses[pulse].action_flags |= noACTION;
 }
+
+
+void Pulses::show_action_flags(action_flags_t flags) {
+  if(flags & DACsq1)
+    (*MENU).out('D');
+  else
+    (*MENU).out('.');
+
+  if(flags & DACsq2)
+    (*MENU).out('D');
+  else
+    (*MENU).out('.');
+
+  if(flags & CLICKs)
+    (*MENU).out('C');
+  else
+    (*MENU).out('.');
+
+  if(flags & PAYLOAD)
+    (*MENU).out('P');
+  else
+    (*MENU).out('.');
+
+  if(flags & noACTION)
+    (*MENU).out('X');
+  else
+    (*MENU).out('!');
+}
+
 
 
 short Pulses::selection_masks(void) {
@@ -757,12 +793,13 @@ int Pulses::setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
       break;					//   found one
   }
   if (pulse == pl_max) {			// no pulse free :(
-    return ILLEGAL;			// ERROR
+    return ILLEGAL;				// ERROR
   }
 
   // initiaize new pulse				// yes, found a free pulse
   pulses[pulse].flags = new_flags;			// initialize pulse
-  pulses[pulse].periodic_do = pulse_do;			// payload
+  put_payload(pulse, pulse_do);
+
   pulses[pulse].next.time = when.time;			// next wake up time
   pulses[pulse].next.overflow = when.overflow;
   pulses[pulse].period.time = new_period.time;
@@ -866,13 +903,6 @@ int Pulses::setup_pulse_synced(void (*pulse_do)(int), pulse_flags_t new_flags,
   div_time(&new_period, divisor);
 
   return setup_pulse(pulse_do, new_flags, when, new_period);
-}
-
-
-// By design click pulses *HAVE* to be defined *BEFORE* any other pulses:	// FIXME: CLICK_PULSES obsolete?  ########
-void Pulses::init_click_pulses() {	// FIXME: CLICK_PULSES	  ################
-  for (int pulse=0; pulse<CLICK_PULSES; pulse++)
-    init_pulse(pulse);
 }
 
 

@@ -22,8 +22,8 @@
   #define pulse_flags_t		uint8_t
 #endif
 
-#ifndef actions_flags_t
-  #define actions_flags_t	uint8_t
+#ifndef action_flags_t
+  #define action_flags_t	uint8_t
 #endif
 
 #ifndef gpio_pin_t
@@ -80,14 +80,14 @@ struct pulse_t {
 // #define pulses.flags masks:
 #define ACTIVE			1	// switches pulse on/off
 #define COUNTED			2	// repeats 'count[]' times, then vanishes
-#define HAS_GPIO		4	// has an associated GPIO pin
+#define HAS_GPIO		4	// has an associated GPIO pin	use set_gpio(pulse, pin)
 #define SCRATCH			8	// edit (or similar) in progress
 #define DO_NOT_DELETE	       16	// dummy to avoid being thrown out
 #define TUNED		       32	// do not set directly, use activate_tuning(pulse)
 //#define INVERSE_LOGIC	      128	// TODO: implement
 
 
-  actions_flags_t action_flags;
+  action_flags_t action_flags;
 
 // #define pulses.action_flags masks:
 // for easy menu interfacing:	1,2 DACsq
@@ -95,7 +95,7 @@ struct pulse_t {
 //	>>>>>>>	change all flag display code if something changes here <<<<<<<
 #define DACsq1			1	// DAC1 output value as square wave, harmonical timing
 #define DACsq2			2	// DAC2 output value as square wave, harmonical timing
-#define CLICKs	      		4	// GPIO 'click' inbuilt GPIO toggling
+#define CLICKs	      		4	// GPIO 'click' inbuilt GPIO toggling	see: set_gpio(pulse, pin)
 #define PAYLOAD			8	// do periodic_do(pulse)	TODO: implement
 #define noACTION		16	// 'mutes' all actions	>>>> must be last <<<<
 
@@ -130,7 +130,7 @@ struct pulse_t {
     used by tuned_click_0 as base period
   */
 
-  gpio_pin_t gpio;		// pin
+  gpio_pin_t gpio;		// pin	use set_gpio(pulse, pin)
   /*
     used by CLICKs	as pin
     used by click	as pin
@@ -138,11 +138,11 @@ struct pulse_t {
     used by do_jiffle	as pin
   */
 
-  actions_flags_t dest_action_flags;
+  action_flags_t dest_action_flags;
   /*
     used by:
     pulse_info_1line(int pulse)
-    en_jiffle_thrower(int pulse, unsigned int *jiffletab, actions_flags_t action_mask)
+    en_jiffle_thrower(int pulse, unsigned int *jiffletab, action_flags_t action_mask)
     init_jiffle(unsigned int *jiffletab, struct time when, struct time new_period, int origin_pulse)
   */
 
@@ -231,9 +231,11 @@ class Pulses {
   void wake_pulse(int pulse);		// wake a pulse up, called from check_maybe_do()
   void deactivate_pulse(int pulse);	// clear ACTIVE flag, keep data
   void put_payload(int pulse, void (*payload)(int)); // set and activate payload
+  void put_payload_with_pin(int pulse, void (*payload)(int), gpio_pin_t pin); // set and activate payload with gpio
   void set_gpio(int pulse, gpio_pin_t pin);
 
   void mute_all_actions();
+  void show_action_flags(action_flags_t flags);
 
   bool select_pulse(int pulse);		// select in user interface
   void deselect_pulse(int pulse);
@@ -264,7 +266,6 @@ class Pulses {
   int setup_pulse_synced(void (*pulse_do)(int), pulse_flags_t new_flags,
 			 struct time when, unsigned long unit,
 			 unsigned long factor, unsigned long divisor, int sync);
-  void init_click_pulses();
 
   unsigned long time_unit;
 
@@ -274,6 +275,9 @@ class Pulses {
   void time_info();					// same with digital details and global next
   float display_realtime_sec(struct time duration);	// display duration in seconds
   void display_real_ovfl_and_sec(struct time then);	//
+  void short_info(void);				// give some infos, depending verbosity
+  //  void selected_or_flagged_pulses_info_lines(void);
+  //  void pulse_info_1line(int pulse);			// 1 line pulse info, depending verbosity
   void print_period_in_time_units(int pulse);
 
   void reset_and_edit_selected();
