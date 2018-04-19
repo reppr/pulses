@@ -273,7 +273,7 @@ int reset_all_flagged_pulses_GPIO_OFF() {	// reset pulses, switches GPIO and DAC
 
   if (MENU.verbosity) {
     MENU.out(F("\nremoved all pulses ")); MENU.outln(cnt);
-    MENU.outln(F("switched pins off."));
+    MENU.outln(F("switched pins off"));
   }
 
   return cnt;
@@ -318,7 +318,7 @@ gpio_pin_t this_or_next_gpio(int pulse) {
 // make an existing pulse an old style click pulse:
 bool en_click(int pulse, gpio_pin_t pin) {
   if ((pulse > ILLEGAL) && (pulse < pl_max)) {
-    PULSES.put_payload_with_pin(pulse, &click, pin);
+    PULSES.set_payload_with_pin(pulse, &click, pin);
     return true;
   }
 
@@ -344,7 +344,7 @@ int en_click_selected() {
   return cnt;
 };
 
-#if defined USE_DACs
+#if defined USE_DACs	// TODO: move to library Pulses
 // set_action_flags(pulse, DACsq1 | DACsq2) activates both DACs
 bool set_action_flags(int pulse, unsigned int action_flags) {
   if ((pulse > ILLEGAL) && (pulse < pl_max)) {
@@ -427,7 +427,7 @@ void selected_DACsq_intensity_proportional(int intensity, int channel) {
     }
   }
 }
-#endif // USE_DACs
+#endif // USE_DACs	// TODO: move to library Pulses
 
 
 
@@ -1125,7 +1125,7 @@ void out_noFreePulses() {
 bool en_sweep_click(int pulse) {
   if ((pulse > ILLEGAL) && (pulse < pl_max)) {	// gpio set
     if (en_click(pulse, this_or_next_gpio(pulse))) {
-      PULSES.put_payload(pulse, &sweep_click);	// gpio set
+      PULSES.set_payload(pulse, &sweep_click);	// gpio set
 
       return true;
     }
@@ -1140,7 +1140,7 @@ bool en_sweep_click_0(int pulse) {
   if ((pulse > ILLEGAL) && (pulse < pl_max)) {
     if (en_click(pulse, this_or_next_gpio(pulse))) {	// gpio set
       PULSES.pulses[pulse].base_time = PULSES.pulses[pulse].period.time;
-      PULSES.put_payload(pulse, &sweep_click_0);	// gpio set
+      PULSES.set_payload(pulse, &sweep_click_0);	// gpio set
       return true;
     }
   }
@@ -1153,7 +1153,7 @@ bool en_tuned_sweep_click(int pulse) {
   if ((pulse > ILLEGAL) && (pulse < pl_max)) {
     if (en_click(pulse, this_or_next_gpio(pulse))) {	// gpio set
       PULSES.activate_tuning(pulse);
-      PULSES.put_payload(pulse, &tuned_sweep_click);	// gpio set
+      PULSES.set_payload(pulse, &tuned_sweep_click);	// gpio set
       return true;
     }
   }
@@ -1659,7 +1659,7 @@ unsigned char dest = CODE_PULSES;
 // make an existing pulse to display 1 info line:
 bool en_info(int pulse) {
   if ((pulse > ILLEGAL) && (pulse < pl_max)) {
-    PULSES.put_payload(pulse, &pulse_info_1line);
+    PULSES.set_payload(pulse, &pulse_info_1line);
     return true;
   }
 
@@ -1820,7 +1820,7 @@ void pulse_info(int pulse) {
 // make an existing pulse to display multiline pulse info:
 bool en_INFO(int pulse) {	// FIXME: to lib Pulses
   if ((pulse > ILLEGAL) && (pulse < pl_max)) {
-    PULSES.put_payload(pulse, &pulse_info);
+    PULSES.set_payload(pulse, &pulse_info);
     return true;
   }
 
@@ -1946,7 +1946,7 @@ bool en_jiffle_thrower(int pulse, unsigned int *jiffletab, gpio_pin_t pin, actio
 {
   if ((pulse > ILLEGAL) && (pulse < pl_max)) {
     PULSES.pulses[pulse].dest_action_flags |= action_mask;
-    PULSES.put_payload_with_pin(pulse, &do_throw_a_jiffle, pin);
+    PULSES.set_payload_with_pin(pulse, &do_throw_a_jiffle, pin);
     PULSES.pulses[pulse].data = (unsigned int) jiffletab;
 
     return true;
@@ -2132,7 +2132,8 @@ char * experiment_names[] = {		// FIXME: const char * experiment_names would be 
       "major scale",				// 34
       "tetrachord",				// 35
       "more voices please",			// 36
-      "Guitar and other Instruments"		// 37
+      "Guitar and other Instruments",		// 37
+      "old 'E12'",				// 38
 //    "(invalid)",				// over
   };
 
@@ -2219,9 +2220,10 @@ int setup_jiffle_thrower_synced(struct time when,
 				unsigned long multiplier, unsigned long divisor,
 				int sync, unsigned int *jiffletab)
 {
-  int pulse= PULSES.setup_pulse_synced(&do_throw_a_jiffle, ACTIVE,
+ int pulse= PULSES.setup_pulse_synced(&do_throw_a_jiffle, ACTIVE,
 			       when, unit, multiplier, divisor, sync);
   if ((pulse > ILLEGAL) && (pulse < pl_max)) {
+    PULSES.set_gpio(pulse, this_or_next_gpio(pulse));
     PULSES.pulses[pulse].data = (unsigned int) jiffletab;
   } else {
     out_noFreePulses();
@@ -2627,7 +2629,7 @@ void setup_jiffles0(bool g_inverse, int voices, unsigned int multiplier, unsigne
 
 // TODO: move to library Pulses
 bool gpio_pins_inverted=false;
-void reverse_gpio_pins() {
+void reverse_gpio_pins() {	// TODO: fix next_gpio()  ???? ################
   gpio_pin_t scratch;
   for (int i=0, j=GPIO_PINS-1; i<j; i++, j--) {
       scratch=gpio_pins[i];
@@ -3198,7 +3200,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (PULSES.pulse_is_selected(pulse)) {
 	if ((PULSES.pulses[pulse].flags & HAS_GPIO) && (PULSES.pulses[pulse].gpio != ILLEGAL))
 	  digitalWrite(PULSES.pulses[pulse].gpio, LOW);	// set clicks on LOW
-	PULSES.put_payload(pulse, NULL);
+	PULSES.set_payload(pulse, NULL);
       }
 
     PULSES.fix_global_next();	// just in case?
@@ -3491,7 +3493,7 @@ bool menu_pulses_reaction(char menu_input) {
   case 'D':	// DADA reserved for temporary code   testing debugging ...
     // MENU.out_noop(); MENU.ln();
 
-    // PULSES.put_payload(2, &pulse_info_1line); // test: set and activate payload
+    // PULSES.set_payload(2, &pulse_info_1line); // test: set and activate payload
 
     /*
     MENU.outln(next_gpio());
@@ -3599,27 +3601,27 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'X':	// PANIC BUTTON  reset, remove all (flagged) pulses, restart selections at none
-/* DEACTIVATED 'X!' reboot ESP8266
-// not very useful, you cannot continue on the same serial line, deactivated
-#ifdef ESP8266	// 'X!' reboot ESP8266		hope it works on all ESP8266 boards, FIXME: test
-    // 'X!' reboots ESP8266
-    next_token = MENU.cb_peek();
-    switch(next_token) {	// examine following input token
-    case '!':	// 'X!' reboots ESP8266
-      MENU.drop_input_token();	// ;)
-      MENU.outln(F("HARDWARE RESET"));
-      pinMode(7, OUTPUT);	// setting pin 7 to output reboots my board
-      break;
-    }
-#endif
-*/
     // reset, remove all (flagged) pulses, restart selections at none
+    if(MENU.cb_peek() == '!') {		// 'X!' resets time_unit and does 'X'
+      MENU.drop_input_token();
+
+      if(PULSES.time_unit != TIME_UNIT)
+	MENU.outln(F("reset time_unit"));
+      PULSES.time_unit = TIME_UNIT;
+    }
+
     reset_all_flagged_pulses_GPIO_OFF();
     next_gpio(0);	// reset used gpio
+    if (MENU.verbosity)
+      MENU.outln(F("freed GPIOs"));
+
+    if(PULSES.time_unit != TIME_UNIT)	// reset time_unit
+      MENU.outln(F("'X!' to reset time_unit"));
+
     break;
 
   case 'Z':	// reverse_gpio_pins
-    reverse_gpio_pins();
+    reverse_gpio_pins();	// TODO: fix next_gpio()  ???? ################
 
     if (MENU.maybe_display_more())
       MENU.outln(F("reverse_gpio_pins"));
@@ -3770,6 +3772,51 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 12:
+//	multiplier=4;
+	multiplier=1;
+	divisor=1;
+
+	selected_scale = 4;
+	scale = minor_scale;		// default e minor
+
+//	if (MENU.maybe_display_more()) {
+//	  display_name5pars("init_pentatonic", g_inverse, voices, multiplier, divisor, sync);
+//	}
+
+//	init_pentatonic(g_inverse, voices, multiplier, divisor, sync);
+	jiffle = piip2048;		// default jiffle FIXME: ################
+
+	if (voices == 0)
+	  voices = GPIO_PINS;
+
+	PULSES.select_n(voices);
+	tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
+
+  #ifndef USE_DACs	// TODO: review and use test code
+	en_jiffle_throw_selected(selected_actions);
+  #else // *do* use dac		// TODO: not here ################
+	selected_share_DACsq_intensity(255, 1);
+
+    #if (USE_DACs == 1)
+	en_jiffle_throw_selected(DACsq1);
+    #else
+	selected_DACsq_intensity_proportional(255, 2);
+//	selected_share_DACsq_intensity(255, 2);
+
+	en_jiffle_throw_selected(DACsq1 | DACsq2);
+    #endif
+  #endif
+
+	PULSES.activate_selected_synced_now(sync);	// sync and activate;
+	MENU.ln();
+
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  selected_or_flagged_pulses_info_lines();
+
+	break;
+
+      case 38:	// old 'E12'	TODO: remove ################
+	MENU.outln(F("old 'E12' TODO: remove"));
 	sync=1;	// or: sync=0;
 	multiplier=1;
 	divisor=1;
@@ -4029,9 +4076,9 @@ bool menu_pulses_reaction(char menu_input) {
 
 	break;
 
-      case 32:				// ESP32_12
+      case 32:				// ESP32_12 ff
 	scale = major_scale;
-	voices=12;
+	voices=GPIO_PINS;
 	multiplier=4;
 	divisor=1;
 	// jiffle = ting4096;
@@ -4050,7 +4097,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       case 33:
 	scale = minor_scale;
-	voices=12;
+	voices=GPIO_PINS;
 	multiplier=4;
 	divisor=1;
 	jiffle = ting4096;
@@ -4068,7 +4115,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       case 34:
 	scale = major_scale;
-	voices=12;
+	voices=GPIO_PINS;
 	multiplier=4;
 	divisor=1;
 	jiffle = ting4096;
@@ -4086,7 +4133,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       case 35:
 	scale=tetrachord;
-	voices=12;
+	voices=GPIO_PINS;
 	multiplier=4;
 	divisor=1;
 	jiffle = ting4096;
@@ -4105,7 +4152,7 @@ bool menu_pulses_reaction(char menu_input) {
       case 36:
 	//scale=major_scale;
 	scale = pentatonic_minor;
-	voices=16;	//	################ FIXME: more voices, please ;) ################
+	voices=GPIO_PINS;
 	multiplier=6;
 	divisor=1;
 	jiffle = ting4096;
@@ -4121,8 +4168,9 @@ bool menu_pulses_reaction(char menu_input) {
 
 	break;
 
-      case 37:	// Guitar
+      case 37:	// Guitar and other instruments
 	reset_all_flagged_pulses_GPIO_OFF();
+	next_gpio(0);	// reset gpio usage
 
 	PULSES.time_unit=1000000;
 
@@ -4246,13 +4294,14 @@ bool menu_pulses_reaction(char menu_input) {
 
   #ifndef USE_DACs	// TODO: review and use test code
 	en_jiffle_throw_selected(selected_actions);
-  #else // *do* use dac
+  #else // *do* use dac		// TODO: not here ################
 	selected_share_DACsq_intensity(255, 1);
 
     #if (USE_DACs == 1)
 	en_jiffle_throw_selected(DACsq1);
     #else
 	selected_DACsq_intensity_proportional(255, 2);
+//	selected_share_DACsq_intensity(255, 2);
 
 	en_jiffle_throw_selected(DACsq1 | DACsq2);
     #endif
@@ -4315,7 +4364,8 @@ bool menu_pulses_reaction(char menu_input) {
     case 11:
       setup_jifflesNEW(g_inverse, voices, multiplier, divisor, sync);
       break;
-    case 12:
+    case 38:	// old 'E12'
+      MENU.outln(F("old 'E12' TODO: remove"));
       init_pentatonic(g_inverse, voices, multiplier, divisor, sync);
       break;
     case 13:

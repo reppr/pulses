@@ -230,8 +230,8 @@ class Pulses {
   void init_pulses();			// init all pulses
   void wake_pulse(int pulse);		// wake a pulse up, called from check_maybe_do()
   void deactivate_pulse(int pulse);	// clear ACTIVE flag, keep data
-  void put_payload(int pulse, void (*payload)(int)); // set and activate payload
-  void put_payload_with_pin(int pulse, void (*payload)(int), gpio_pin_t pin); // set and activate payload with gpio
+  void set_payload(int pulse, void (*payload)(int)); // set and activate payload
+  void set_payload_with_pin(int pulse, void (*payload)(int), gpio_pin_t pin); // set and activate payload with gpio
   void set_gpio(int pulse, gpio_pin_t pin);
 
   void mute_all_actions();
@@ -302,6 +302,19 @@ class Pulses {
 
   pulses_mask_t * selected_pulses_p;  // bitmask pointer, a bit for each selected pulse
 };
+
+/* **************************************************************** */
+// time_unit that the user sees.
+// it has no influence on inner working, but is a menu I/O thing only
+// the user sees and edits times in time_units.
+//
+// I want time_unit to be dividable by a semi random selection of small integers
+// avoiding rounding errors as much as possible.
+//
+// I consider factorials as a good choice:
+// #define TIME_UNIT    40320L		// scaling timer to  8!, 0.040320s
+// #define TIME_UNIT   362880L		// scaling timer to  9!, 0,362880s
+#define TIME_UNIT	3628800L	// scaling timer to 10!, 3.628800s
 
 /* **************************************************************** */
 #endif

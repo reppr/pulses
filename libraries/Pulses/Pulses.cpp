@@ -34,19 +34,6 @@
 
 
 /* **************************************************************** */
-// time_unit that the user sees.
-// it has no influence on inner working, but is a menu I/O thing only
-// the user sees and edits times in time_units.
-//
-// I want time_unit to be dividable by a semi random selection of small integers
-// avoiding rounding errors as much as possible.
-//
-// I consider factorials as a good choice:
-// #define TIME_UNIT    40320L		// scaling timer to  8!, 0.040320s
-// #define TIME_UNIT   362880L		// scaling timer to  9!, 0,362880s
-#define TIME_UNIT	3628800L	// scaling timer to 10!, 3.628800s
-
-/* **************************************************************** */
 // Constructor/Destructor:
 
 //	#ifndef ARDUINO		// WARNING: Using Stream MACRO hack when not on ARDUINO!
@@ -372,7 +359,7 @@ void Pulses::deactivate_pulse(int pulse) {	// clear ACTIVE flag, keep data
 }
 
 
-void Pulses::put_payload(int pulse, void (*payload)(int)) { 	// set and activate payload
+void Pulses::set_payload(int pulse, void (*payload)(int)) { 	// set and activate payload
   pulses[pulse].periodic_do = payload;
   pulses[pulse].action_flags |= PAYLOAD;
 
@@ -381,9 +368,9 @@ void Pulses::put_payload(int pulse, void (*payload)(int)) { 	// set and activate
 }
 
 
-// put_payload_with_pin(int pulse, void (*payload)(int), gpio_pin_t pin)  set and activate payload with gpio
-void Pulses::put_payload_with_pin(int pulse, void (*payload)(int), gpio_pin_t pin) {
-  put_payload(pulse, payload);
+// set_payload_with_pin(int pulse, void (*payload)(int), gpio_pin_t pin)  set and activate payload with gpio
+void Pulses::set_payload_with_pin(int pulse, void (*payload)(int), gpio_pin_t pin) {
+  set_payload(pulse, payload);
   set_gpio(pulse, pin);
 }
 
@@ -782,6 +769,8 @@ bool Pulses::check_maybe_do() {
 int Pulses::setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
 			struct time when, struct time new_period)
 {
+//  (*MENU).outln("PULSES.setup_pulse");
+
   int pulse;
 
   if (new_flags == 0)				// illegal new_flags parameter
@@ -797,7 +786,7 @@ int Pulses::setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
 
   // initiaize new pulse				// yes, found a free pulse
   pulses[pulse].flags = new_flags;			// initialize pulse
-  put_payload(pulse, pulse_do);
+  set_payload(pulse, pulse_do);
 
   pulses[pulse].next.time = when.time;			// next wake up time
   pulses[pulse].next.overflow = when.overflow;
@@ -883,6 +872,7 @@ int Pulses::setup_pulse_synced(void (*pulse_do)(int), pulse_flags_t new_flags,
 		       struct time when, unsigned long unit,
 		       unsigned long factor, unsigned long divisor, int sync)
 {
+  (*MENU).outln("PULSES.setup_pulse_synced");
   struct time new_period;
 
   if (sync) {
