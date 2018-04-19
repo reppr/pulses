@@ -80,7 +80,7 @@ void display_payload(int pulse) {
     (*MENU).out(F("seed jiff:"));
     (*MENU).out(array2name(JIFFLES, (unsigned int*) pulses[pulse].data));
     (*MENU).space(2);
-    (*MENU).out((int) click_pin[pulse]);
+    (*MENU).out((int) gpio_pins[pulse]);
     return;
   }
 
@@ -194,7 +194,7 @@ void click_connection_test(int wait) {	// wait==0 steps through the first round,
   MENU.outln(F("pulse@pin"));
 
   for (int pulse=0; pulse<GPIO_PINS; pulse++)	// start all LOW
-    digitalWrite(click_pin[pulse], LOW);
+    digitalWrite(gpio_pins[pulse], LOW);
 
   MENU.ln();
   for (int pulse=0; pulse<GPIO_PINS; pulse++) {
@@ -205,22 +205,22 @@ void click_connection_test(int wait) {	// wait==0 steps through the first round,
 //      Serial.read();
 //    }
     delay(wait);
-    MENU.out(pulse); MENU.out('@'); MENU.out(click_pin[pulse]); MENU.tab();
-    digitalWrite(click_pin[pulse], HIGH);
+    MENU.out(pulse); MENU.out('@'); MENU.out(gpio_pins[pulse]); MENU.tab();
+    digitalWrite(gpio_pins[pulse], HIGH);
   }
 
   MENU.ln();
   for (int pulse=0; pulse<GPIO_PINS; pulse++) {
     delay(wait);
-    MENU.out(pulse); MENU.out('@'); MENU.out(click_pin[pulse]); MENU.tab();
-    digitalWrite(click_pin[pulse], LOW);
+    MENU.out(pulse); MENU.out('@'); MENU.out(gpio_pins[pulse]); MENU.tab();
+    digitalWrite(gpio_pins[pulse], LOW);
   }
 
   MENU.ln();
   for (int pulse=0; pulse<GPIO_PINS; pulse++) {
     delay(wait);
-    MENU.out(pulse); MENU.out('@'); MENU.out(click_pin[pulse]); MENU.tab();
-    digitalWrite(click_pin[pulse], HIGH);
+    MENU.out(pulse); MENU.out('@'); MENU.out(gpio_pins[pulse]); MENU.tab();
+    digitalWrite(gpio_pins[pulse], HIGH);
   }
   MENU.ln();
 }							// leave all HIGH

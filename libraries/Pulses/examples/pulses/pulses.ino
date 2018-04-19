@@ -90,9 +90,9 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 
 
 /* **************************************************************** */
-// define gpio_pin_t click_pin[GPIO_PINS]	// see: pulses_boards.h
+// define gpio_pin_t gpio_pins[GPIO_PINS]	// see: pulses_boards.h
 #ifdef GPIO_PINS
-  #include "pulses_CLICK_PIN_configuration.h"	// defines click_pin[]
+  #include "pulses_CLICK_PIN_configuration.h"	// defines gpio_pins[]	// TODO: rename
 #endif
 
 /* **************************************************************** */
@@ -282,7 +282,7 @@ int reset_all_flagged_pulses_GPIO_OFF() {	// reset pulses, switches GPIO and DAC
 
 /*	TODO: move to library Pulses
   gpio_pin_t next_gpio()	return next unused GPIO click pin (or ILLEGAL)
-  gpio_pin_t next_gpio(index)	*reset* to give click_pin[index] on next call
+  gpio_pin_t next_gpio(index)	*reset* to give gpio_pins[index] on next call
 */
 gpio_pin_t next_gpio(gpio_pin_t set_i=-1) {
   static gpio_pin_t last_used_gpio_i = ILLEGAL;
@@ -291,13 +291,13 @@ gpio_pin_t next_gpio(gpio_pin_t set_i=-1) {
 
   if (set_i == -1) {	// normal use: next_gpio()  get next unused gpio pin
     if(++last_used_gpio_i < GPIO_PINS)
-      ret = click_pin[last_used_gpio_i];	// return next free pin
+      ret = gpio_pins[last_used_gpio_i];	// return next free pin
     else
       MENU.outln(F("no free GPIO"));
   } else {		// next_gpio(set_i)   reset to return 'set_i' on next next_gpio() call
     if ((set_i < GPIO_PINS) && (set_i >= 0)) {
       last_used_gpio_i = set_i - 1;
-      ret = click_pin[set_i];	// rarely used, same as next call to next_gpio()
+      ret = gpio_pins[set_i];	// rarely used, same as next call to next_gpio()
     } else {
       MENU.out(F("GPIO pin "));
       MENU.outln_invalid();
@@ -1065,13 +1065,13 @@ bool maybe_stop_sweeping() {
 
 // TODO: move to library Pulses
 void init_click_GPIOs_OutLow() {		// make them GPIO, OUTPUT, LOW
-/* gpio_pin_t click_pin[GPIO_PINS];
+/* gpio_pin_t gpio_pins[GPIO_PINS];
    hardware pins for click_pulses
 */
   gpio_pin_t pin;
 
   for (int i=0; i<GPIO_PINS; i++) {
-    pin=click_pin[i];
+    pin=gpio_pins[i];
 
 #ifdef ESP8266	// pin 14 must be switched to GPIO on ESP8266
     // http://www.esp8266.com/wiki/lib/exe/detail.php?id=esp8266_gpio_pin_allocations&media=pin_functions.png
@@ -1104,7 +1104,7 @@ void init_click_GPIOs_OutLow() {		// make them GPIO, OUTPUT, LOW
 #elif defined ARDUINO	// *non* ESP, Arduino
 
   for (int i=0; i<GPIO_PINS; i++) {
-    pin=click_pin[i];
+    pin=gpio_pins[i];
     pinMode(pin, OUTPUT);	// on oldstyle Arduinos this is enough
     digitalWrite(pin, LOW);	// on oldstyle Arduinos this is enough
   }
@@ -2146,8 +2146,8 @@ bool g_inverse=false;	// bottom DOWN/up GPIO click-pin mapping
 	      other pulses aren't affected
 	      some experiments do not implement that
 
-  'reverse_click_pins()' as alternative:
-  'reverse_click_pins()' works on the global click_pin[] array
+  'reverse_gpio_pins()' as alternative:
+  'reverse_gpio_pins()' works on the global gpio_pins[] array
  			 the pulses won't notice but play with new pin mapping */
 
 
@@ -2171,7 +2171,7 @@ void menu_pulses_display() {
     for (int i=0; i<GPIO_PINS; i++) {
       if(i)
 	MENU.out(F(", "));
-      MENU.out(click_pin[i]);
+      MENU.out(gpio_pins[i]);
     }
     MENU.outln('}');
   }
@@ -2205,7 +2205,7 @@ void menu_pulses_display() {
     MENU.out(F("up"));
   else
     MENU.out(F("down"));
-  MENU.outln(F(")\tZ=reverse_click_pins"));
+  MENU.outln(F(")\tZ=reverse_gpio_pins"));
 
   MENU.out(F("Scale (")); MENU.out(multiplier);MENU.slash();  MENU.out(divisor);
   MENU.out(F(")\t'*!'=multiplier '/!'=divisor"));
@@ -2621,21 +2621,21 @@ void setup_jiffles0(bool g_inverse, int voices, unsigned int multiplier, unsigne
  	      other pulses aren't affected
 	      some experiments do not implement that
 
-  'reverse_click_pins()' as alternative:
-  'reverse_click_pins()' works on the global click_pin[] array
+  'reverse_gpio_pins)' as alternative:
+  'reverse_gpio_pins()' works on the global gpio_pins[] array
  			 the pulses won't notice but play with new pin mapping */
 
 // TODO: move to library Pulses
-bool click_pins_inverted=false;
-void reverse_click_pins() {
+bool gpio_pins_inverted=false;
+void reverse_gpio_pins() {
   gpio_pin_t scratch;
   for (int i=0, j=GPIO_PINS-1; i<j; i++, j--) {
-      scratch=click_pin[i];
-      click_pin[i]=click_pin[j];
-      click_pin[j]=scratch;
+      scratch=gpio_pins[i];
+      gpio_pins[i]=gpio_pins[j];
+      gpio_pins[j]=scratch;
   }
 
-  click_pins_inverted=!click_pins_inverted;
+  gpio_pins_inverted=!gpio_pins_inverted;
 }
 
 // ****************************************************************
@@ -3506,7 +3506,7 @@ bool menu_pulses_reaction(char menu_input) {
     MENU.outln(next_gpio(999));
     */
 
-    // MENU.outln(sizeof(click_pin) / sizeof(gpio_pin_t));
+    // MENU.outln(sizeof(gpio_pins) / sizeof(gpio_pin_t));
 
 
 /*
@@ -3618,11 +3618,11 @@ bool menu_pulses_reaction(char menu_input) {
     next_gpio(0);	// reset used gpio
     break;
 
-  case 'Z':	// reverse_click_pins
-    reverse_click_pins();
+  case 'Z':	// reverse_gpio_pins
+    reverse_gpio_pins();
 
     if (MENU.maybe_display_more())
-      MENU.outln(F("reverse_click_pins"));
+      MENU.outln(F("reverse_gpio_pins"));
 
     break;
 
@@ -3665,7 +3665,7 @@ bool menu_pulses_reaction(char menu_input) {
 	sync=1;
 	multiplier=8;
 	divisor=3;
-	reverse_click_pins();
+	reverse_gpio_pins();
 
 	if (MENU.maybe_display_more()) {
 	  // display_name5pars("setup_jiffles0", g_inverse, voices, multiplier, divisor, sync);
