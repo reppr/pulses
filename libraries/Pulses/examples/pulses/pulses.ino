@@ -2133,7 +2133,7 @@ char * experiment_names[] = {		// FIXME: const char * experiment_names would be 
       "tetrachord",				// 35
       "more voices please",			// 36
       "Guitar and other Instruments",		// 37
-      "old 'E12'",				// 38
+      "Time Machine 1",				// 38
 //    "(invalid)",				// over
   };
 
@@ -2141,7 +2141,7 @@ char * experiment_names[] = {		// FIXME: const char * experiment_names would be 
 #endif // ! RAM_IS_SCARE
 
 
-bool g_inverse=false;	// bottom DOWN/up GPIO click-pin mapping
+bool g_inverse=false;	// bottom DOWN/up GPIO click-pin mapping	// TODO: update!
 /*
   'g_inverse' works when setting up an experiment creating pulses
 	      other pulses aren't affected
@@ -3815,17 +3815,6 @@ bool menu_pulses_reaction(char menu_input) {
 
 	break;
 
-      case 38:	// old 'E12'	TODO: remove ################
-	MENU.outln(F("old 'E12' TODO: remove"));
-	sync=1;	// or: sync=0;
-	multiplier=1;
-	divisor=1;
-
-	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_pentatonic", g_inverse, voices, multiplier, divisor, sync);
-	  Press_toStart();
-	}
-	break;
 
       case 13:
 	sync=1;	// or: sync=0;
@@ -4321,9 +4310,52 @@ bool menu_pulses_reaction(char menu_input) {
 
 	selected_experiment=0;
 	break;
-      }
+
+
+      case 38:	// 'E38' time machine setup
+    // ESP32_15_clicks_no_display_TIME_MACHINE1
+
+    // if (voices == 0)	// maybe, maybe not...
+    voices = 31;	// init *all* primary pulses
+    PULSES.select_n(voices);
+
+    PULSES.time_unit=1000000;	// TODO:  maybe, maybe not...
+
+    // default tuning e
+    multiplier=4096 * 2 ;	// bas octave added
+    // divisor=440;			// a4
+    divisor=330; // 329.36		// e4  ***not*** harmonical
+    // divisor=165; // 164.81		// e3  ***not*** harmonical
+
+    selected_scale = 4;
+    scale = minor_scale;		// default e minor
+
+    jiffle = ting4096;		// default jiffle
+
+    // tune *all* primary pulses
+    tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
+
+    // no dac TEST VERSION ################################
+    en_jiffle_throw_selected(selected_actions);
+
+    // prepare primary pulse groups:
+    // bass on DAC1 and broad angle LED lamps
+
+    // 2 middle octaves on 15 gpios and DAC2
+
+    // high octave on DAC2
+
+    // maybe start?
+    if(MENU.cb_peek() == '!') {		// 'E38!' starts E38
+      MENU.drop_input_token();
+      PULSES.activate_selected_synced_now(sync);	// sync and activate;
     }
     break;
+
+      } // switch (selected_experiment)
+    } // if experiment >= 0
+    break;
+
 
   // ################ FIXME: that's a mess!	################
   case '!':			// '!' setup and start experiment
@@ -4363,10 +4395,6 @@ bool menu_pulses_reaction(char menu_input) {
       break;
     case 11:
       setup_jifflesNEW(g_inverse, voices, multiplier, divisor, sync);
-      break;
-    case 38:	// old 'E12'
-      MENU.outln(F("old 'E12' TODO: remove"));
-      init_pentatonic(g_inverse, voices, multiplier, divisor, sync);
       break;
     case 13:
     case 14:

@@ -9,7 +9,16 @@
 #if defined ESP32 || defined ESP8266			// ESPxx boards
 
 
-  #if defined ESP32_13_clicks		//  ESP32_13_clicks	TESTED
+  #if defined ESP32_15_clicks_no_display_TIME_MACHINE1
+    #undef GPIO_PINS
+    #define GPIO_PINS	15
+    gpio_pin_t gpio_pins[GPIO_PINS] =				//  ESP32_15_clicks_no_display
+      {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, 18, 19, };
+
+    #undef PL_MAX
+    #define PL_MAX	64
+
+  #elif defined ESP32_13_clicks		//  ESP32_13_clicks	TESTED
     #undef GPIO_PINS
     #define GPIO_PINS	13
     gpio_pin_t gpio_pins[GPIO_PINS] =

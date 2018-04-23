@@ -18,8 +18,9 @@
   in most cases you can let all these lines inactive, commented out
 */
 
-#define ESP32_15_clicks_no_display	// new DEFAULT on ESP32
+#define ESP32_15_clicks_no_display_TIME_MACHINE1	// new DEFAULT on ESP32
 
+// #define ESP32_15_clicks_no_display
 // #define GUITAR_v0	// autostart guitar E37  on ESP32 DAC
 // #define KALIMBA7_v2	// autostart KALIMBA ESP32 version
 // #define ESP32_12	// autostart 12 click ESP32 mode
@@ -34,7 +35,7 @@
 
   this has *no* influence on autostarting WiFi
 */
-#define NO_AUTOSTART_INSTRUMENT
+//#define NO_AUTOSTART_INSTRUMENT
 
 
 // WiFi autostart on ESP8266 and ESP32?
@@ -51,7 +52,9 @@
 // do not change the following code
 
 #if defined ESP32	// KALIMBA7_v2 ESP32 version
-  #if defined ESP32_15_clicks_no_display
+  #if defined ESP32_15_clicks_no_display_TIME_MACHINE1
+    #define AUTOSTART	MENU.play_KB_macro("E38!"); selected_experiment=-1;
+  #elif defined ESP32_15_clicks_no_display
     #define AUTOSTART	MENU.play_KB_macro("V15 - E37D"); selected_experiment=-1;	// about 5'34"
     //#define AUTOSTART	MENU.play_KB_macro("V15 - E37A"); selected_experiment=-1;	// about 3'44"
     //#define AUTOSTART	MENU.play_KB_macro("V15 - E37E"); selected_experiment=-1;	// about 4'57"
