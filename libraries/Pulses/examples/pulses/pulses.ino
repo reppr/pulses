@@ -71,7 +71,7 @@ Menu MENU(CB_SIZE, 4, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
 /* **************** Pulses **************** */
 #include <Pulses.h>
 
-Pulses PULSES(pl_max, &MENU);
+Pulses PULSES(PL_MAX, &MENU);
 
 
 /* **************** Harmonical **************** */
@@ -252,7 +252,7 @@ void display_names(char** names, int count, int selected) {
 // switch GPIO and DACs off
 int reset_all_flagged_pulses_GPIO_OFF() {	// reset pulses, switches GPIO and DACs off
   int cnt=0;
-  for (int pulse=0; pulse<pl_max; pulse++) {  // tabula rasa
+  for (int pulse=0; pulse<PL_MAX; pulse++) {  // tabula rasa
     if (PULSES.pulses[pulse].flags) {
       PULSES.init_pulse(pulse);
       cnt++;
@@ -317,7 +317,7 @@ gpio_pin_t this_or_next_gpio(int pulse) {
 
 // make an existing pulse an old style click pulse:
 bool en_click(int pulse, gpio_pin_t pin) {
-  if ((pulse > ILLEGAL) && (pulse < pl_max)) {
+  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
     PULSES.set_payload_with_pin(pulse, &click, pin);
     return true;
   }
@@ -330,7 +330,7 @@ bool en_click(int pulse, gpio_pin_t pin) {
 int en_click_selected() {
   int cnt=0;
 
-  for (int pulse=0; pulse<pl_max; pulse++)
+  for (int pulse=0; pulse<PL_MAX; pulse++)
     if (PULSES.pulse_is_selected(pulse))
       if (en_click(pulse, this_or_next_gpio(pulse)))
 	cnt++;
@@ -347,7 +347,7 @@ int en_click_selected() {
 #if defined USE_DACs	// TODO: move to library Pulses
 // set_action_flags(pulse, DACsq1 | DACsq2) activates both DACs
 bool set_action_flags(int pulse, unsigned int action_flags) {
-  if ((pulse > ILLEGAL) && (pulse < pl_max)) {
+  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
     PULSES.pulses[pulse].action_flags |= action_flags;
     return true;
   }
@@ -360,7 +360,7 @@ bool set_action_flags(int pulse, unsigned int action_flags) {
 int selected_set_action_flags(unsigned int action_flags) {
   int cnt=0;
 
-  for (int pulse=0; pulse<pl_max; pulse++)
+  for (int pulse=0; pulse<PL_MAX; pulse++)
     if (PULSES.pulse_is_selected(pulse))
       if (set_action_flags(pulse, action_flags))
 	cnt++;
@@ -372,13 +372,13 @@ int selected_set_action_flags(unsigned int action_flags) {
 int selected_share_DACsq_intensity(int intensity, int channel) {
   int cnt=0;
 
-  for (int pulse=0; pulse<pl_max; pulse++)
+  for (int pulse=0; pulse<PL_MAX; pulse++)
     if (PULSES.pulse_is_selected(pulse))
       cnt++;
 
   if (cnt) {
     intensity /= cnt;
-    for (int pulse=0; pulse<pl_max; pulse++) {
+    for (int pulse=0; pulse<PL_MAX; pulse++) {
       if (PULSES.pulse_is_selected(pulse)) {
 	switch (channel) {
 	case 1:
@@ -403,7 +403,7 @@ void selected_DACsq_intensity_proportional(int intensity, int channel) {
   sum.overflow=0;
   float factor;
 
-  for (int pulse=0; pulse<pl_max; pulse++)
+  for (int pulse=0; pulse<PL_MAX; pulse++)
     if (PULSES.pulse_is_selected(pulse))
       PULSES.add_time(&PULSES.pulses[pulse].period, &sum);
 
@@ -411,7 +411,7 @@ void selected_DACsq_intensity_proportional(int intensity, int channel) {
     MENU.outln(F("ERROR: sum.overflow"));
 
   if (sum.time) {
-    for (int pulse=0; pulse<pl_max; pulse++) {
+    for (int pulse=0; pulse<PL_MAX; pulse++) {
       if (PULSES.pulse_is_selected(pulse)) {
 	factor = (float) PULSES.pulses[pulse].period.time / (float) sum.time;
 
@@ -566,9 +566,9 @@ void setup() {
   MENU.out(F("sizeof(pulse_t) "));
   MENU.out(sizeof(pulse_t));
   MENU.out(F(" * "));
-  MENU.out(pl_max);
+  MENU.out(PL_MAX);
   MENU.out(F(" pulses = \t"));
-  MENU.outln(sizeof(pulse_t)*pl_max);
+  MENU.outln(sizeof(pulse_t)*PL_MAX);
 
 
   // setting up the menu:
@@ -769,7 +769,7 @@ int main() {
 
   printf("\nTesting pulses.ino\n");
 
-  printf("\nNumber of pulses: %d\n", pl_max);
+  printf("\nNumber of pulses: %d\n", PL_MAX);
 
   printf("\nPULSES.init_pulses();\n");
   PULSES.init_pulses();
@@ -777,7 +777,7 @@ int main() {
 
 
   printf("sizeof(pulse_t) %d * %d = \t%d\n\n",	\
-	 sizeof(pulse_t), pl_max, sizeof(pulse_t)*pl_max );
+	 sizeof(pulse_t), PL_MAX, sizeof(pulse_t)*PL_MAX );
 
 
   // setting up the menu:
@@ -1123,7 +1123,7 @@ void out_noFreePulses() {
 #ifdef IMPLEMENT_TUNING		// implies floating point
 // make an existing pulse to a sweep click pulse:
 bool en_sweep_click(int pulse) {
-  if ((pulse > ILLEGAL) && (pulse < pl_max)) {	// gpio set
+  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {	// gpio set
     if (en_click(pulse, this_or_next_gpio(pulse))) {
       PULSES.set_payload(pulse, &sweep_click);	// gpio set
 
@@ -1137,7 +1137,7 @@ bool en_sweep_click(int pulse) {
 
 // make an existing pulse to a sweep_click_0 pulse:
 bool en_sweep_click_0(int pulse) {
-  if ((pulse > ILLEGAL) && (pulse < pl_max)) {
+  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
     if (en_click(pulse, this_or_next_gpio(pulse))) {	// gpio set
       PULSES.pulses[pulse].base_time = PULSES.pulses[pulse].period.time;
       PULSES.set_payload(pulse, &sweep_click_0);	// gpio set
@@ -1150,7 +1150,7 @@ bool en_sweep_click_0(int pulse) {
 
 
 bool en_tuned_sweep_click(int pulse) {
-  if ((pulse > ILLEGAL) && (pulse < pl_max)) {
+  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
     if (en_click(pulse, this_or_next_gpio(pulse))) {	// gpio set
       PULSES.activate_tuning(pulse);
       PULSES.set_payload(pulse, &tuned_sweep_click);	// gpio set
@@ -1167,7 +1167,7 @@ int setup_click_synced(struct time when, unsigned long unit, unsigned long multi
 		       unsigned long divisor, int sync) {
   int pulse= PULSES.setup_pulse_synced(&click, ACTIVE, when, unit, multiplier, divisor, sync);
 
-  if ((pulse > ILLEGAL) && (pulse < pl_max))
+  if ((pulse > ILLEGAL) && (pulse < PL_MAX))
     PULSES.set_gpio(pulse, this_or_next_gpio(pulse));
   else // no free pulse
     out_noFreePulses();
@@ -1297,7 +1297,7 @@ void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned
 // ****************************************************************
 void select_flagged() {
   PULSES.clear_selection();
-  for (int pulse=0; pulse<pl_max; pulse++)
+  for (int pulse=0; pulse<PL_MAX; pulse++)
     if (PULSES.pulses[pulse].flags)
       PULSES.select_pulse(pulse);
 }
@@ -1305,14 +1305,14 @@ void select_flagged() {
 
 void select_all() {
   PULSES.clear_selection();
-  for (int pulse=0; pulse<pl_max; pulse++)
+  for (int pulse=0; pulse<PL_MAX; pulse++)
     PULSES.select_pulse(pulse);
 }
 
 
 void select_alive() {
   PULSES.clear_selection();
-  for (int pulse=0; pulse<pl_max; pulse++)
+  for (int pulse=0; pulse<PL_MAX; pulse++)
     if(PULSES.pulses[pulse].flags && (PULSES.pulses[pulse].flags != SCRATCH))
       PULSES.select_pulse(pulse);
 }
@@ -1367,7 +1367,7 @@ int prepare_scale(bool inverse, int voices, unsigned long multiplier, unsigned l
     if (divisor==0)  goto global_next;	// divisor==0, error, end
     divisor *= octave;
 
-    for (; pulse<pl_max; pulse++) {
+    for (; pulse<PL_MAX; pulse++) {
       if (PULSES.pulse_is_selected(pulse)) {
 	this_period = unit;
 	this_period *= multiplier;
@@ -1380,7 +1380,7 @@ int prepare_scale(bool inverse, int voices, unsigned long multiplier, unsigned l
 	break;
       }
     }
-    if (pulse==pl_max)	// all available pulses have been tried, give up
+    if (pulse==PL_MAX)	// all available pulses have been tried, give up
       break;
   }
 
@@ -1415,7 +1415,7 @@ int apply_scale_on_period(int voices, unsigned int *scale, bool octaves=true) {
       goto global_next;		// divisor==0: error, end
     divisor *= octave;
 
-    for (; pulse<pl_max; pulse++) {
+    for (; pulse<PL_MAX; pulse++) {
       if (PULSES.pulse_is_selected(pulse)) {
 	new_period = PULSES.pulses[pulse].period;
 	PULSES.mul_time(&new_period, multiplier);
@@ -1426,7 +1426,7 @@ int apply_scale_on_period(int voices, unsigned int *scale, bool octaves=true) {
 	break;
       }
     }
-    if (pulse==pl_max)	// all available pulses have been tried, give up
+    if (pulse==PL_MAX)	// all available pulses have been tried, give up
       break;
   }
 
@@ -1658,7 +1658,7 @@ unsigned char dest = CODE_PULSES;
 
 // make an existing pulse to display 1 info line:
 bool en_info(int pulse) {
-  if ((pulse > ILLEGAL) && (pulse < pl_max)) {
+  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
     PULSES.set_payload(pulse, &pulse_info_1line);
     return true;
   }
@@ -1819,7 +1819,7 @@ void pulse_info(int pulse) {
 
 // make an existing pulse to display multiline pulse info:
 bool en_INFO(int pulse) {	// FIXME: to lib Pulses
-  if ((pulse > ILLEGAL) && (pulse < pl_max)) {
+  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
     PULSES.set_payload(pulse, &pulse_info);
     return true;
   }
@@ -1896,7 +1896,7 @@ void display_payload(int pulse) {
 void selected_pulses_info_lines() {
   int count=0;
 
-  for (int pulse=0; pulse<pl_max; ++pulse) {
+  for (int pulse=0; pulse<PL_MAX; ++pulse) {
     if (PULSES.pulse_is_selected(pulse)) {
       pulse_info_1line(pulse);
       count++;
@@ -1911,7 +1911,7 @@ void selected_pulses_info_lines() {
 void flagged_pulses_info() {
   int count=0;
 
-  for (int pulse=0; pulse<pl_max; ++pulse)
+  for (int pulse=0; pulse<PL_MAX; ++pulse)
     if (PULSES.pulses[pulse].flags) {		// any flags set?
       pulse_info_1line(pulse);
       count++;
@@ -1924,7 +1924,7 @@ void flagged_pulses_info() {
 
 void selected_or_flagged_pulses_info_lines() {
   int count=0;
-  for (int pulse=0; pulse<pl_max; ++pulse)
+  for (int pulse=0; pulse<PL_MAX; ++pulse)
     if (PULSES.pulses[pulse].flags || (PULSES.pulse_is_selected(pulse))) { // any flags || selected
       pulse_info_1line(pulse);
       count++;
@@ -1944,7 +1944,7 @@ void selected_or_flagged_pulses_info_lines() {
 // make an existing pulse to a jiffle thrower pulse:
 bool en_jiffle_thrower(int pulse, unsigned int *jiffletab, gpio_pin_t pin, action_flags_t action_mask)
 {
-  if ((pulse > ILLEGAL) && (pulse < pl_max)) {
+  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
     PULSES.pulses[pulse].dest_action_flags |= action_mask;
     PULSES.set_payload_with_pin(pulse, &do_throw_a_jiffle, pin);
     PULSES.pulses[pulse].data = (unsigned int) jiffletab;
@@ -1960,7 +1960,7 @@ bool en_jiffle_thrower(int pulse, unsigned int *jiffletab, gpio_pin_t pin, actio
 int en_jiffle_throw_selected(action_flags_t action_flags) {
   int cnt=0;
 
-  for (int pulse=0; pulse<pl_max; pulse++)
+  for (int pulse=0; pulse<PL_MAX; pulse++)
     if (PULSES.pulse_is_selected(pulse))
       if(en_jiffle_thrower(pulse, jiffle, this_or_next_gpio(pulse), action_flags))
 	cnt++;
@@ -1986,7 +1986,7 @@ int init_jiffle(unsigned int *jiffletab, struct time when, struct time new_perio
   jiffle_period.time = new_period.time * jiffletab[0] / jiffletab[1];
 
   pulse = PULSES.setup_pulse(&do_jiffle, ACTIVE, when, jiffle_period);
-  if ((pulse > ILLEGAL) && (pulse < pl_max)) {
+  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
     PULSES.pulses[pulse].action_flags |= PULSES.pulses[origin_pulse].dest_action_flags; // set actions
     PULSES.set_gpio(pulse, PULSES.pulses[origin_pulse].gpio);	// copy pin from origin pulse
     PULSES.pulses[pulse].index = 0;				// init phase 0
@@ -2076,7 +2076,7 @@ void info_select_destination_with(bool extended_destinations) {
   print_selected();
   MENU.out(F("select pulse with "));
 
-  MENU.out_ticked_hexs(min(pl_max,16));
+  MENU.out_ticked_hexs(min(PL_MAX,16));
 
   MENU.outln(F("\n'.a'=select *all* click pulses\t'.A'=*all* pulses\t'.v'=voices\t'.L'=all alive\t'x'=none\t'.~'=invert selection"));
 
@@ -2222,7 +2222,7 @@ int setup_jiffle_thrower_synced(struct time when,
 {
  int pulse= PULSES.setup_pulse_synced(&do_throw_a_jiffle, ACTIVE,
 			       when, unit, multiplier, divisor, sync);
-  if ((pulse > ILLEGAL) && (pulse < pl_max)) {
+  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
     PULSES.set_gpio(pulse, this_or_next_gpio(pulse));
     PULSES.pulses[pulse].data = (unsigned int) jiffletab;
   } else {
@@ -2752,7 +2752,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     case '~':	// '.~' invert destination selection
       MENU.drop_input_token();
-      for (int pulse=0; pulse<pl_max; pulse++)
+      for (int pulse=0; pulse<PL_MAX; pulse++)
 	PULSES.toggle_selection(pulse);
       PULSES.maybe_show_selected_mask();
       break;
@@ -2863,7 +2863,7 @@ bool menu_pulses_reaction(char menu_input) {
     case 0:	// normal input, no special menu_mode
       menu_input -= '0';
       menu_input += (PULSES.hex_input_mask_index * 16);
-      if((menu_input < 0) || (menu_input >= pl_max))
+      if((menu_input < 0) || (menu_input >= PL_MAX))
 	return false;		// *only* responsible if pulse exists
 
       // existing pulse:
@@ -2895,7 +2895,7 @@ bool menu_pulses_reaction(char menu_input) {
       menu_input -= 'a';
       menu_input += 10;	// 'a' == 10
       menu_input += (PULSES.hex_input_mask_index * 16);
-      if((menu_input < 0) || (menu_input >= pl_max))
+      if((menu_input < 0) || (menu_input >= PL_MAX))
 	return false;		// *only* responsible if pulse exists
 
       // existing pulse:
@@ -2967,7 +2967,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 's':	// switch pulse ACTIVE on/off
-    for (int pulse=0; pulse<pl_max; pulse++) {
+    for (int pulse=0; pulse<PL_MAX; pulse++) {
       if (PULSES.pulse_is_selected(pulse)) {
 	// special case: switching on an edited SCRATCH pulse:
 	if((PULSES.pulses[pulse].flags & ACTIVE) == 0)	// was off
@@ -3010,7 +3010,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'i':	// en_info
-    for (int pulse=0; pulse<pl_max; pulse++)
+    for (int pulse=0; pulse<PL_MAX; pulse++)
       if (PULSES.pulse_is_selected(pulse))
 	en_info(pulse);
 
@@ -3033,7 +3033,7 @@ bool menu_pulses_reaction(char menu_input) {
       case CODE_PULSES:
 	input_value = MENU.numeric_input(1);
 	if (input_value>=0) {
-	  for (int pulse=0; pulse<pl_max; pulse++)
+	  for (int pulse=0; pulse<PL_MAX; pulse++)
 	    if (PULSES.pulse_is_selected(pulse))
 	      PULSES.multiply_period(pulse, input_value);
 
@@ -3093,7 +3093,7 @@ bool menu_pulses_reaction(char menu_input) {
       case CODE_PULSES:
 	input_value = MENU.numeric_input(1);
 	if (input_value>=0) {
-	  for (int pulse=0; pulse<pl_max; pulse++)
+	  for (int pulse=0; pulse<PL_MAX; pulse++)
 	    if (PULSES.pulse_is_selected(pulse))
 	      PULSES.divide_period(pulse, input_value);
 
@@ -3124,7 +3124,7 @@ bool menu_pulses_reaction(char menu_input) {
     case CODE_PULSES:
       input_value = MENU.numeric_input(1);
       if (input_value>=0) {
-	for (int pulse=0; pulse<pl_max; pulse++)
+	for (int pulse=0; pulse<PL_MAX; pulse++)
 	  if (PULSES.pulse_is_selected(pulse)) {
 	    time_scratch.time = PULSES.time_unit;
 	    time_scratch.overflow = 0;
@@ -3156,7 +3156,7 @@ bool menu_pulses_reaction(char menu_input) {
   case 'K':	// kill selected pulses
     if (PULSES.how_many_selected()) {
       MENU.out(F("kill pulse "));
-      for (int pulse=0; pulse<pl_max; pulse++)
+      for (int pulse=0; pulse<PL_MAX; pulse++)
 	if (PULSES.pulse_is_selected(pulse)) {
 	  PULSES.init_pulse(pulse);
 	  if (MENU.maybe_display_more()) {
@@ -3196,7 +3196,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'N':	// NULLs payload
     // we work on pulses anyway, regardless dest
-    for (int pulse=0; pulse<pl_max; pulse++)
+    for (int pulse=0; pulse<PL_MAX; pulse++)
       if (PULSES.pulse_is_selected(pulse)) {
 	if ((PULSES.pulses[pulse].flags & HAS_GPIO) && (PULSES.pulses[pulse].gpio != ILLEGAL))
 	  digitalWrite(PULSES.pulses[pulse].gpio, LOW);	// set clicks on LOW
@@ -3438,7 +3438,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'F':	// en_INFO
     // we work on pulses anyway, regardless dest
-    for (int pulse=0; pulse<pl_max; pulse++)
+    for (int pulse=0; pulse<PL_MAX; pulse++)
       if (PULSES.pulse_is_selected(pulse))
 	en_INFO(pulse);
 
@@ -3531,7 +3531,7 @@ bool menu_pulses_reaction(char menu_input) {
     {
       // temporary least-common-multiple  test code, unfinished...	// ################ FIXME: ################
       unsigned long lcm=1L;
-      for (int pulse=0; pulse<pl_max; pulse++) {
+      for (int pulse=0; pulse<PL_MAX; pulse++) {
 	if (PULSES.pulse_is_selected(pulse)) {
 	  MENU.out(pulse); MENU.tab(); PULSES.pulses[pulse].period.time; MENU.tab();
 	  lcm = HARMONICAL.LCM(lcm, PULSES.pulses[pulse].period.time);
@@ -3546,7 +3546,7 @@ bool menu_pulses_reaction(char menu_input) {
       PULSES.display_realtime_sec(length);
       MENU.ln();
 
-      for (int pulse=0; pulse<pl_max; pulse++)
+      for (int pulse=0; pulse<PL_MAX; pulse++)
 	if ((PULSES.pulse_is_selected(pulse)) && PULSES.pulses[pulse].period.time) {
 	  MENU.out(pulse);
 	  MENU.tab();
@@ -3560,7 +3560,7 @@ bool menu_pulses_reaction(char menu_input) {
       MENU.out(F("voices "));
 
     input_value = MENU.numeric_input(voices);
-    if (input_value>0 && input_value<=pl_max) {
+    if (input_value>0 && input_value<=PL_MAX) {
       voices = input_value;
       if (voices>GPIO_PINS) {
 	if (MENU.verbosity)

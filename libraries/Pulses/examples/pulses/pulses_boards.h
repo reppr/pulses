@@ -23,9 +23,11 @@
 
     #define STARTUP_DELAY	256	// ESP32 seems to need that for successful booting
 
+#if ! defined PL_MAX	// see: pulses_project_conf.h
   //#define PL_MAX		64
     #define PL_MAX		128
   //#define PL_MAX		256	// TEST :)
+#endif
 
     #define JIFFLE_RAM_SIZE	256*3+2
     #define SCALES_RAM_SIZE	256*2+2
@@ -148,9 +150,6 @@
 
 #endif	// *not* ARDUINO, c++ Linux PC test version
 
-
-/* **************************************************************** */
-const int pl_max=PL_MAX;
 
 /* **************************************************************** */
 // use Arduino F() macro to save RAM or just a NOOP?
