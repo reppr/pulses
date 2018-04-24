@@ -3185,7 +3185,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'n':	// synchronize to now
-    // we work on pulses anyway, regardless dest
+    // see also '!'	one of 'n' and '!' is obsolete...
     PULSES.activate_selected_synced_now(sync);	// sync and activate
 
     if (MENU.maybe_display_more()) {	// *then* info ;)
@@ -4323,7 +4323,11 @@ bool menu_pulses_reaction(char menu_input) {
 
 	// default tuning a
 	multiplier=4096;	// bass octave added and one lower...
-	divisor=220;		// a
+	//	divisor=440;		// a
+	//	divisor=220;		// a
+	divisor=110;		// a
+	// divisor=55;		// a
+
 	// divisor=330; // 329.36		// e4  ***not*** harmonical
 	// divisor=165; // 164.81		// e3  ***not*** harmonical
 
@@ -4342,28 +4346,32 @@ bool menu_pulses_reaction(char menu_input) {
 	for(int pulse=0; pulse<=6; pulse++) {
 	  en_jiffle_thrower(pulse, jiffle, ILLEGAL, DACsq1);	// FIXME: use inbuilt click
 	}
-	selected_DACsq_intensity_proportional(255, 1);
-	// selected_share_DACsq_intensity(255, 1);
+	PULSES.select_from_to(0,7);
+	// selected_DACsq_intensity_proportional(255, 1);
+	selected_share_DACsq_intensity(255, 1);
 
 	// 2 middle octaves on 15 gpios and DAC2
-	PULSES.select_from_to(7,6+15);	// overwrites pule 7
-	setup_jiffle_thrower_selected(0);
+	PULSES.select_from_to(7,6+15);
+	setup_jiffle_thrower_selected(0);	// overwrites pulse[7]
 	//	setup_jiffle_thrower_selected(DACsq2);
 	//	selected_share_DACsq_intensity(255, 2);
 
-	// fix pulse 7 that belongs to both groups:
+	// fix pulse[7] that belongs to both groups:
 	PULSES.pulses[7].dest_action_flags |= DACsq1;
 
-//	// high octave on DAC2
-//	PULSES.select_from_to(22, 31);
-//	for(int pulse=22; pulse<=31; pulse++) {
-//	  PULSES.pulses[pulse].dest_action_flags |= DACsq2;
+	// high octave on DAC2
+	PULSES.select_from_to(21, 31);
+	for(int pulse=22; pulse<=31; pulse++) {	// pulse[21] belongs to both groups
+	  en_jiffle_thrower(pulse, jiffle, ILLEGAL, DACsq2);	// FIXME: use inbuilt click
+//	  PULSES.pulses[pulse].dest_action_flags |= (DACsq2);
 //	  PULSES.set_payload(pulse, &do_throw_a_jiffle);
 //	  PULSES.pulses[pulse].data = (unsigned int) jiffle;
-//	}
-//	selected_DACsq_intensity_proportional(255, 2);
+	}
+	// fix pulse[21] belonging to both groups
+	PULSES.pulses[21].dest_action_flags |= DACsq2;
+	selected_DACsq_intensity_proportional(255, 2);
 
-	PULSES.select_n(voices);	// activate all primary voices
+	PULSES.select_n(voices);	// select all primary voices
 
 	// maybe start?
 	if(MENU.cb_peek() == '!') {		// 'E38!' starts E38
@@ -4377,9 +4385,11 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
 
-  // ################ FIXME: that's a mess!	################
-  case '!':			// '!' setup and start experiment
-    switch (selected_experiment) {
+  case '!':	// '!' sync and activate selected  (or: setup and start old style experiments)
+    // see also 'n'
+    // one of 'n' and '!' is obsolete...
+
+    switch (selected_experiment) {	// setup some old style experiments:
     case -1:
     case 0:
       break;
@@ -4416,26 +4426,14 @@ bool menu_pulses_reaction(char menu_input) {
     case 11:
       setup_jifflesNEW(g_inverse, voices, multiplier, divisor, sync);
       break;
-    case 13:
-    case 14:
-    case 15:
-    case 16:
-    case 17:
-    case 18:
-      // FIXME:	maybe make that default?
+
+    default:	// normal use case: sync and activate
       PULSES.activate_selected_synced_now(sync); // sync and activate
 
       if (MENU.maybe_display_more()) {		// *then* maybe info ;)
 	MENU.ln();
 	selected_or_flagged_pulses_info_lines();
       }
-      break;
-
-    default:	// invalid
-      selected_experiment=0;
-
-      if (MENU.verbosity)
-	MENU.outln_invalid();
       break;
     }
 
@@ -4448,8 +4446,9 @@ bool menu_pulses_reaction(char menu_input) {
     return false;	// menu entry not found
     break;
   }
+
   return true;		// menu entry found
-}
+}  // menu_pulses_reaction()
 
 
 /* **************************************************************** */
@@ -4459,7 +4458,7 @@ bool menu_pulses_reaction(char menu_input) {
 /* **************************************************************** */
 /* **************************************************************** */
 
-/* please se README_pulses					    */
+/* please see: README_pulses					    */
 
 /*
    Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
