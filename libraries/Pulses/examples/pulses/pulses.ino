@@ -1711,7 +1711,7 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
     if(PULSES.pulses[pulse].gpio != ILLEGAL)
       MENU.out((int) PULSES.pulses[pulse].gpio);
     else
-      MENU.out(F("XX"));
+      MENU.out(F(" _"));
   } else
     MENU.space(3);
 
@@ -1956,8 +1956,8 @@ bool en_jiffle_thrower(int pulse, unsigned int *jiffletab, gpio_pin_t pin, actio
 }
 
 
-// make selected pulses jiffle throwers
-int en_jiffle_throw_selected(action_flags_t action_flags) {
+// make selected pulses jiffle throwers with gpio pin
+int setup_jiffle_thrower_selected(action_flags_t action_flags) {
   int cnt=0;
 
   for (int pulse=0; pulse<PL_MAX; pulse++)
@@ -3375,7 +3375,7 @@ bool menu_pulses_reaction(char menu_input) {
 #endif	// #ifdef IMPLEMENT_TUNING	implies floating point
 
   case 'j':	// en_jiffle_thrower
-    en_jiffle_throw_selected(selected_actions);
+    setup_jiffle_thrower_selected(selected_actions);
     break;
 
   case 'J':	// select, edit, load jiffle
@@ -3793,17 +3793,17 @@ bool menu_pulses_reaction(char menu_input) {
 	tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
 
   #ifndef USE_DACs	// TODO: review and use test code
-	en_jiffle_throw_selected(selected_actions);
+	setup_jiffle_thrower_selected(selected_actions);
   #else // *do* use dac		// TODO: not here ################
 	selected_share_DACsq_intensity(255, 1);
 
     #if (USE_DACs == 1)
-	en_jiffle_throw_selected(DACsq1);
+	setup_jiffle_thrower_selected(DACsq1);
     #else
 	selected_DACsq_intensity_proportional(255, 2);
 //	selected_share_DACsq_intensity(255, 2);
 
-	en_jiffle_throw_selected(DACsq1 | DACsq2);
+	setup_jiffle_thrower_selected(DACsq1 | DACsq2);
     #endif
   #endif
 
@@ -4037,7 +4037,7 @@ bool menu_pulses_reaction(char menu_input) {
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("E30 KALIMBA7 jiff", g_inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected(selected_actions);
+	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate
 
 	MENU.ln();
@@ -4056,7 +4056,7 @@ bool menu_pulses_reaction(char menu_input) {
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("E31 KALIMBA7 jiff", g_inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected(selected_actions);
+	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
 	MENU.ln();
 
@@ -4075,7 +4075,7 @@ bool menu_pulses_reaction(char menu_input) {
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("E32 ESP32_12", g_inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected(selected_actions);
+	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
 	MENU.ln();
 
@@ -4093,7 +4093,7 @@ bool menu_pulses_reaction(char menu_input) {
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("minor", g_inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected(selected_actions);
+	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
 	MENU.ln();
 
@@ -4111,7 +4111,7 @@ bool menu_pulses_reaction(char menu_input) {
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("major", g_inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected(selected_actions);
+	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
 	MENU.ln();
 
@@ -4129,7 +4129,7 @@ bool menu_pulses_reaction(char menu_input) {
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("tetra", g_inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected(selected_actions);
+	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
 	MENU.ln();
 
@@ -4148,7 +4148,7 @@ bool menu_pulses_reaction(char menu_input) {
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, scale);
 	display_name5pars("BIG major", g_inverse, voices, multiplier, divisor, sync);
-	en_jiffle_throw_selected(selected_actions);
+	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
 	MENU.ln();
 
@@ -4282,17 +4282,17 @@ bool menu_pulses_reaction(char menu_input) {
 	tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
 
   #ifndef USE_DACs	// TODO: review and use test code
-	en_jiffle_throw_selected(selected_actions);
+	setup_jiffle_thrower_selected(selected_actions);
   #else // *do* use dac		// TODO: not here ################
 	selected_share_DACsq_intensity(255, 1);
 
     #if (USE_DACs == 1)
-	en_jiffle_throw_selected(DACsq1);
+	setup_jiffle_thrower_selected(DACsq1);
     #else
 	selected_DACsq_intensity_proportional(255, 2);
 //	selected_share_DACsq_intensity(255, 2);
 
-	en_jiffle_throw_selected(DACsq1 | DACsq2);
+	setup_jiffle_thrower_selected(DACsq1 | DACsq2);
     #endif
   #endif
 
@@ -4313,44 +4313,64 @@ bool menu_pulses_reaction(char menu_input) {
 
 
       case 38:	// 'E38' time machine setup
-    // ESP32_15_clicks_no_display_TIME_MACHINE1
+	// ESP32_15_clicks_no_display_TIME_MACHINE1
 
-    // if (voices == 0)	// maybe, maybe not...
-    voices = 31;	// init *all* primary pulses
-    PULSES.select_n(voices);
+	// if (voices == 0)	// maybe, maybe not...
+	voices = 32;	// init *all* primary pulses
+	PULSES.select_n(voices);
 
-    PULSES.time_unit=1000000;	// TODO:  maybe, maybe not...
+	PULSES.time_unit=1000000;	// TODO:  maybe, maybe not...
 
-    // default tuning e
-    multiplier=4096 * 2 ;	// bas octave added
-    // divisor=440;			// a4
-    divisor=330; // 329.36		// e4  ***not*** harmonical
-    // divisor=165; // 164.81		// e3  ***not*** harmonical
+	// default tuning a
+	multiplier=4096;	// bass octave added and one lower...
+	divisor=220;		// a
+	// divisor=330; // 329.36		// e4  ***not*** harmonical
+	// divisor=165; // 164.81		// e3  ***not*** harmonical
 
-    selected_scale = 4;
-    scale = minor_scale;		// default e minor
+	selected_scale = 4;
+	scale = minor_scale;		// default e minor
 
-    jiffle = ting4096;		// default jiffle
+	jiffle = ting4096;		// default jiffle
 
-    // tune *all* primary pulses
-    tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
+	// tune *all* primary pulses
+	tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
 
-    // no dac TEST VERSION ################################
-    en_jiffle_throw_selected(selected_actions);
+	// prepare primary pulse groups:
 
-    // prepare primary pulse groups:
-    // bass on DAC1 and broad angle LED lamps
+	// bass on DAC1 and broad angle LED lamps
+	PULSES.select_from_to(0,6);
+	for(int pulse=0; pulse<=6; pulse++) {
+	  en_jiffle_thrower(pulse, jiffle, ILLEGAL, DACsq1);	// FIXME: use inbuilt click
+	}
+	selected_DACsq_intensity_proportional(255, 1);
+	// selected_share_DACsq_intensity(255, 1);
 
-    // 2 middle octaves on 15 gpios and DAC2
+	// 2 middle octaves on 15 gpios and DAC2
+	PULSES.select_from_to(7,6+15);	// overwrites pule 7
+	setup_jiffle_thrower_selected(0);
+	//	setup_jiffle_thrower_selected(DACsq2);
+	//	selected_share_DACsq_intensity(255, 2);
 
-    // high octave on DAC2
+	// fix pulse 7 that belongs to both groups:
+	PULSES.pulses[7].dest_action_flags |= DACsq1;
 
-    // maybe start?
-    if(MENU.cb_peek() == '!') {		// 'E38!' starts E38
-      MENU.drop_input_token();
-      PULSES.activate_selected_synced_now(sync);	// sync and activate;
-    }
-    break;
+//	// high octave on DAC2
+//	PULSES.select_from_to(22, 31);
+//	for(int pulse=22; pulse<=31; pulse++) {
+//	  PULSES.pulses[pulse].dest_action_flags |= DACsq2;
+//	  PULSES.set_payload(pulse, &do_throw_a_jiffle);
+//	  PULSES.pulses[pulse].data = (unsigned int) jiffle;
+//	}
+//	selected_DACsq_intensity_proportional(255, 2);
+
+	PULSES.select_n(voices);	// activate all primary voices
+
+	// maybe start?
+	if(MENU.cb_peek() == '!') {		// 'E38!' starts E38
+	  MENU.drop_input_token();
+	  PULSES.activate_selected_synced_now(sync);	// sync and activate;
+	}
+	break;
 
       } // switch (selected_experiment)
     } // if experiment >= 0
