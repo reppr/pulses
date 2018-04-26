@@ -53,6 +53,9 @@ void display_fraction(struct fraction *f) {
   MENU.out((*f).multiplier);
   MENU.slash();
   MENU.out((*f).divisor);
+
+  MENU.space(2);
+  MENU.out((float) (*f).multiplier / (float) (*f).divisor);
 }
 
 
@@ -62,6 +65,12 @@ void display_arr(unsigned int *arr, unsigned int step) {
   sum.multiplier = 0;
   sum.divisor = 1;
   bool was_zero=false;
+
+  if (arr==0) {		// debugging ;)  TODO: remove
+    MENU.out(F("ERROR: "));
+    MENU.outln_invalid();
+    return;
+  }
 
   bool edit_mode = (MENU.menu_mode==ARRAY_ENTRY_UNTIL_ZERO_MODE);
 //  if (selected_jiffle==ILLEGAL) {
@@ -79,7 +88,7 @@ void display_arr(unsigned int *arr, unsigned int step) {
     if (MENU.verbosity >= VERBOSITY_SOME)
       MENU.out(F("\tmove cursor < >\trange borders | \""));
   } else
-    MENU.out(F("off\tstart edit with '{'"));
+    MENU.out(F("off\tstart edit with '{'"));	// FIXME: in both int_edit.h and pulses.ino ################
 
   MENU.ln();
 
@@ -118,6 +127,6 @@ void display_arr(unsigned int *arr, unsigned int step) {
 
   sum = arr_len(arr, step);
   MENU.tab();
-  MENU.out(F("length ")); display_fraction(&sum);
+  MENU.out(F("length ")); display_fraction(&sum);	// FIXME: in both int_edit.h and pulses.ino ################
   MENU.ln();
 }

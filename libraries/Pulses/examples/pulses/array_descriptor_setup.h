@@ -21,6 +21,8 @@ REGISTER_SCALE(scale_rationals);		// 12
 REGISTER_SCALE(octaves_fourths);		// 13
 REGISTER_SCALE(doric_scale);			// 14
 
+select_array_in(SCALES, pentatonic_minor);  	// default scale
+
 
 #include "jiffles.h"
 init_arr_DB(JIFFLES, sizeof(JIFFLES), "JIFFLES");
@@ -61,15 +63,15 @@ REGISTER_JIFFLE(tigg_ding4096);		// 33
 REGISTER_JIFFLE(tumtum);		// 34
 REGISTER_JIFFLE(piip2048);		// 35
 REGISTER_JIFFLE(tanboura);		// 36
+REGISTER_JIFFLE(d2_4096);		// 37
+REGISTER_JIFFLE(d4_4096);		// 38
+REGISTER_JIFFLE(d8_4096);		// 39
+REGISTER_JIFFLE(d16_4096);		// 40
+REGISTER_JIFFLE(d32_4096);		// 41
+REGISTER_JIFFLE(d64_4096);		// 42
+REGISTER_JIFFLE(d128_4096);		// 43
+REGISTER_JIFFLE(d256_4096);		// 44
+REGISTER_JIFFLE(d512_4096);		// 45
+REGISTER_JIFFLE(d1024_4096);		// 46
 
-
-// #define DEBUG_ARRAY_IMPLEMENTATION	// ################ FIXME: TODO: remove ################
-#if defined DEBUG_ARRAY_IMPLEMENTATION
-  MENU.outln("\nDEBUG_ARRAY_IMPLEMENTATION to be removed");
-
-  select_array_in_DB(SCALES, european_pentatonic);
-  display_arr_names(SCALES);
-
-  select_array_in_DB(JIFFLES, tanboura);
-  display_arr_names(JIFFLES);
-#endif
+select_array_in(JIFFLES, d1024_4096);  	// default jiffle

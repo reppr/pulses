@@ -35,27 +35,6 @@ void init_arr_DB(arr_descriptor * DB, unsigned int len, char* name) {
   DB[0].type="DB";
 }
 
-void select_array_in_DB(arr_descriptor* DB, unsigned int* array) {
-  DB[0].pointer=array;	// DB[0].pointer points to selected array
-}
-
-bool register_array_in_DB(arr_descriptor* DB, \
-	unsigned int* array, unsigned int len, unsigned int item, char* name, char* type) {
-  // DB[0] describes the database itself
-  unsigned int next=DB[0].item;
-  if((next * sizeof(arr_descriptor)) < DB[0].len) {
-    DB[next].pointer=array;
-    DB[next].len=len;
-    DB[next].item=item;
-    DB[next].name=name;
-    DB[next].type=type;
-
-    DB[0].item++;	// count registrations in DB[0].item
-    return true;
-  }
-
-  return false;
-}
 
 char* array2name(arr_descriptor * DB, unsigned int* array) {
   arr_descriptor * arr= DB;
@@ -72,7 +51,7 @@ unsigned int* index2pointer(arr_descriptor * DB, unsigned int index) {
   if (index > 0  &&  index < DB[0].item )
     return DB[index].pointer;
 
-  return NULL;
+  return NULL;	// TIP: use to check if DB has the indexed item
 }
 
 int pointer2index(arr_descriptor * DB, unsigned int* array) {
@@ -80,7 +59,39 @@ int pointer2index(arr_descriptor * DB, unsigned int* array) {
     if (DB[i].pointer == array)
       return i;
 
-  return ILLEGAL;
+  return ILLEGAL;	// TIP: use to check if array is in db ;)
+}
+
+
+void select_array_in(arr_descriptor* DB, unsigned int* array) {
+  if (pointer2index(DB, array) != ILLEGAL)	// TODO: remove debugging code
+    DB[0].pointer=array;	// DB[0].pointer points to selected array
+  else {					// TODO: remove debugging code
+    MENU.out(F("ERROR: "));			// TODO: remove debugging code
+    MENU.outln_invalid();			// TODO: remove debugging code
+  }
+}
+
+unsigned int* selected_in(arr_descriptor* DB) {
+  return DB[0].pointer;
+}
+
+bool register_array_in_DB(arr_descriptor* DB,	\
+	unsigned int* array, unsigned int len, unsigned int item, char* name, char* type) {
+  // DB[0] describes the database itself
+  unsigned int next=DB[0].item;
+  if((next * sizeof(arr_descriptor)) < DB[0].len) {
+    DB[next].pointer=array;
+    DB[next].len=len;
+    DB[next].item=item;
+    DB[next].name=name;
+    DB[next].type=type;
+
+    DB[0].item++;	// count registrations in DB[0].item
+    return true;
+  }
+
+  return false;
 }
 
 #define SCALE_DESCRIPTORS	64	// FIXME: ################
@@ -139,35 +150,32 @@ bool register_jiffle(unsigned int* jiffle, unsigned int len, char* name) {
     }
   }
 
-  // menu helper function: select from DB
-  unsigned int* select_from_DB(arr_descriptor* DB) {
-    int input_value;
-    unsigned int* p = NULL;
 
-    if (MENU.cb_peek() == EOF) {	// no further input:
-      display_arr_names(DB);		//   display list
-      return NULL;			//   return
-    }
+// menu helper function: UI to select array from a DB
+bool UI_select_from_DB(arr_descriptor* DB) {
+  int input_value;
+  unsigned int* p = NULL;
 
-    input_value=MENU.numeric_input(-1);
-
-    if (input_value != -1) {
-      p = index2pointer(DB, input_value + 1);
-      if (p == NULL)
-	MENU.outln_invalid();
-      else {
-	MENU.outln(array2name(DB, p));
-	DB[0].pointer = p;	// selected
-      }
-    }
-
-/*  see: pulses.ino
-    if (MENU.verbosity >= VERBOSITY_SOME)
-      display_jiffletab(p);
-*/
-
-    return p;
+  if (MENU.cb_peek() == EOF) {	// no further input:
+    display_arr_names(DB);		//   display list
+    return false;			//   return
   }
+
+  input_value=MENU.numeric_input(-1);
+  if (input_value != -1) {
+    p = index2pointer(DB, input_value + 1);
+    if (p == NULL) {
+      MENU.outln_invalid();
+      return false;
+    } else {
+      MENU.outln(array2name(DB, p));
+      DB[0].pointer = p;	// selected in DB
+      return true;
+    }
+  }
+
+  return false;
+}
 
 #endif // MENU_h
 

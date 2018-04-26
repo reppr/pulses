@@ -123,7 +123,6 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 
 /* **************************************************************** */
 // scales
-int selected_scale=ILLEGAL;
 
 #ifndef SCALES_RAM_SIZE	// scales on small harware ressources, FIXME: test	################
   #define SCALES_RAM_SIZE 9*2+2	// small buffer might fit on simple hardware
@@ -134,34 +133,13 @@ int selected_scale=ILLEGAL;
   unsigned int scale_RAM[SCALES_RAM_SIZE] = {0};
   unsigned int scale_RAM_length = SCALES_RAM_SIZE;
   unsigned int scale_write_index=0;
-  unsigned int *scale=scale_RAM;
+//  unsigned int *scale=scale_RAM;	// OBSOLETE? see: selected_in(SCALES)
 #else
   #error SCALES_RAM_SIZE is not defined
 #endif // SCALES_RAM_SIZE
 
-#ifndef RAM_IS_SCARE	// enough RAM?
-char * scale_names[] = {
-      "scale_RAM",		// 0
-      "pentatonic_minor",	// 1
-      "european_pentatonic",	// 2
-      "mimic_japan_pentatonic",	// 3
-      "minor_scale",		// 4
-      "major_scale",		// 5
-      "tetrachord",		// 6
-      "scale_int",		// 7
-      "scale_rationals",	// 8
-      "octaves",		// 9
-      "octaves_fifths",		// 10
-      "octaves_fourths",	// 11
-      "octaves_fourths_fifths",	// 12
-  };
-
-  #define n_scale_names (sizeof (scale_names) / sizeof (const char *))
-#endif
-
 
 // scaletabs *MUST* have 2 trailing zeros
-
 
 unsigned int octaves[] = {1,1, 0,0};  				// zero terminated
 unsigned int octaves_fifths[] = {1,1, 2,3, 0,0};			// zero terminated
@@ -209,10 +187,9 @@ unsigned int jiffle_RAM[JIFFLE_RAM_SIZE] = {0};
 unsigned int jiffle_write_index=0;
 unsigned int jiffle_range_bottom=0;
 unsigned int jiffle_range_top=0;
-unsigned int *jiffle=jiffle_RAM;
 
 
-void fix_jiffle_range() {
+void fix_jiffle_range() {	// FIXME: use new implementation
   unsigned int i;
 
   if (jiffle_range_top >= JIFFLE_RAM_SIZE)
@@ -232,7 +209,7 @@ void fix_jiffle_range() {
   display an array of strings like names of scales, jiffles, experiments
   mark the selected one with an asterisk
 */
-void display_names(char** names, int count, int selected) {
+void display_names(char** names, int count, int selected) {	// TODO: maybe obsolete?  (only for experiment names)
   MENU.ln();
   for (int i = 0; i < count; i++) {
     if (i==selected)
@@ -1390,7 +1367,7 @@ int prepare_scale(bool inverse, int voices, unsigned long multiplier, unsigned l
 }
 
 
-int apply_scale_on_period(int voices, unsigned int *scale, bool octaves=true) {
+int selected_apply_scale_on_period(int voices, unsigned int *scale, bool octaves=true) {
   // FIXME: octaves are untested here ################
   if(scale[0]==0)  return 0;	// error, no data
 
@@ -1436,19 +1413,18 @@ int apply_scale_on_period(int voices, unsigned int *scale, bool octaves=true) {
 }
 
 
-bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, int sync, unsigned int selected_scale, unsigned int *scale) {
+bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, int sync, unsigned int *scale)
+{
   int pulse;
   struct time base_period;
   base_period.overflow = 0;
   base_period.time = multiplier * PULSES.time_unit;
   base_period.time /= divisor;
 
-  if (selected_scale != ILLEGAL) {
+  if (scale != NULL) {
     if (MENU.verbosity >= VERBOSITY_SOME) {
       MENU.out(F("tune to scale "));
-      MENU.out(selected_scale);
-      MENU.space();
-      MENU.out(scale_names[selected_scale]);
+      MENU.out(array2name(SCALES, scale));
       MENU.tab();
       MENU.out(voices);
       MENU.outln(F(" voices"));
@@ -1464,7 +1440,7 @@ bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, i
       }
 
       // now apply scale:
-      apply_scale_on_period(voices, scale, true);
+      selected_apply_scale_on_period(voices, scale, true);
       return true;
     }
   } else
@@ -1718,9 +1694,9 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
   MENU.tab();
   display_payload(pulse);
 
+  MENU.tab();
   if(PULSES.pulses[pulse].dest_action_flags || \
      PULSES.pulses[pulse].dac1_intensity || PULSES.pulses[pulse].dac2_intensity) {
-    MENU.tab();
     MENU.out(F("dAf: "));
     PULSES.show_action_flags(PULSES.pulses[pulse].dest_action_flags);
 
@@ -1729,7 +1705,8 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
 
     MENU.out(F("i2:"));
     MENU.pad(PULSES.pulses[pulse].dac2_intensity, 4);
-  }
+  } else
+    MENU.tab(2);
 
   if (MENU.verbosity >= VERBOSITY_SOME) {
     MENU.tab();
@@ -1942,12 +1919,12 @@ void selected_or_flagged_pulses_info_lines() {
 
 /* **************************************************************** */
 // make an existing pulse to a jiffle thrower pulse:
-bool en_jiffle_thrower(int pulse, unsigned int *jiffletab, gpio_pin_t pin, action_flags_t action_mask)
+bool en_jiffle_thrower(int pulse, unsigned int *jiffle, gpio_pin_t pin, action_flags_t action_mask)
 {
   if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
     PULSES.pulses[pulse].dest_action_flags |= action_mask;
     PULSES.set_payload_with_pin(pulse, &do_throw_a_jiffle, pin);
-    PULSES.pulses[pulse].data = (unsigned int) jiffletab;
+    PULSES.pulses[pulse].data = (unsigned int) jiffle;
 
     return true;
   }
@@ -1957,12 +1934,12 @@ bool en_jiffle_thrower(int pulse, unsigned int *jiffletab, gpio_pin_t pin, actio
 
 
 // make selected pulses jiffle throwers with gpio pin
-int setup_jiffle_thrower_selected(action_flags_t action_flags) {
+int setup_jiffle_thrower_selected(action_flags_t action_flags) {	// FIXME: obsolete? ################
   int cnt=0;
 
   for (int pulse=0; pulse<PL_MAX; pulse++)
     if (PULSES.pulse_is_selected(pulse))
-      if(en_jiffle_thrower(pulse, jiffle, this_or_next_gpio(pulse), action_flags))
+      if(en_jiffle_thrower(pulse, selected_in(JIFFLES), this_or_next_gpio(pulse), action_flags))
 	cnt++;
 
   PULSES.fix_global_next();		// just in case?
@@ -1978,20 +1955,20 @@ int setup_jiffle_thrower_selected(action_flags_t action_flags) {
 
 
 
-int init_jiffle(unsigned int *jiffletab, struct time when, struct time new_period, int origin_pulse)
+int init_jiffle(unsigned int *jiffle, struct time when, struct time new_period, int origin_pulse)
 {
   int pulse;
   struct time jiffle_period=new_period;
 
-  jiffle_period.time = new_period.time * jiffletab[0] / jiffletab[1];
+  jiffle_period.time = new_period.time * jiffle[0] / jiffle[1];
 
   pulse = PULSES.setup_pulse(&do_jiffle, ACTIVE, when, jiffle_period);
   if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
     PULSES.pulses[pulse].action_flags |= PULSES.pulses[origin_pulse].dest_action_flags; // set actions
     PULSES.set_gpio(pulse, PULSES.pulses[origin_pulse].gpio);	// copy pin from origin pulse
     PULSES.pulses[pulse].index = 0;				// init phase 0
-    PULSES.pulses[pulse].countdown = jiffletab[2];		// count of first phase
-    PULSES.pulses[pulse].data = (unsigned int) jiffletab;
+    PULSES.pulses[pulse].countdown = jiffle[2];			// count of first phase
+    PULSES.pulses[pulse].data = (unsigned int) jiffle;
     PULSES.pulses[pulse].base_time = new_period.time;
 #if defined USE_DACs
     PULSES.pulses[pulse].dac1_intensity = PULSES.pulses[origin_pulse].dac1_intensity;
@@ -2006,7 +1983,7 @@ int init_jiffle(unsigned int *jiffletab, struct time when, struct time new_perio
 
 
 void do_throw_a_jiffle(int pulse) {		// for pulse_do
-  // pulses[pulse].data	= (unsigned int) jiffletab;
+  // pulses[pulse].data	= (unsigned int) jiffle;
 
   // start a new jiffling pulse now (next [pulse] is not yet updated):
   unsigned int *this_jiff=(unsigned int *) PULSES.pulses[pulse].data;
@@ -2032,7 +2009,7 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
     return 0;
   }
 
-  scale = pentatonic_minor;
+  select_array_in(SCALES, pentatonic_minor);
   PULSES.select_n(voices);
 
 #define COMPATIBILITY_PERIOD_3110	// sets the period directly
@@ -2042,12 +2019,12 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
       PULSES.reset_and_edit_pulse(pulse, PULSES.time_unit);
       PULSES.pulses[pulse].period.time = 3110;	// brute force for compatibility ;)
       PULSES.pulses[pulse].period.overflow = 0;	// brute force for compatibility ;)
-      en_jiffle_thrower(pulse, jiffle, this_or_next_gpio(pulse), 0);
+      en_jiffle_thrower(pulse, selected_in(JIFFLES), this_or_next_gpio(pulse), 0);
     }
-  int apply_scale_on_period(int voices, unsigned int *scale, bool octaves=true);	// this code is obsolete anyway ################
-  apply_scale_on_period(voices, scale, true);
+  //  int selected_apply_scale_on_period(int voices, unsigned int *scale, bool octaves=true);
+  selected_apply_scale_on_period(voices, selected_in(SCALES), true);
 #else	// compatibility problems
-  prepare_scale(false, voices, multiplier, divisor, sync, scale, true);
+  prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES), true);
 #endif
 }
 
@@ -2074,11 +2051,13 @@ void print_selected() {
 void info_select_destination_with(bool extended_destinations) {
   MENU.outln(F("SELECT DESTINATION for '= * / s K P n g i F j :' to work on:"));
   print_selected();
-  MENU.out(F("select pulse with "));
+  MENU.out(F("select Pulse with "));
 
   MENU.out_ticked_hexs(min(PL_MAX,16));
+  MENU.space();
+  MENU.outln(F("select Mask with '.m<num>'"));
 
-  MENU.outln(F("\n'.a'=select *all* click pulses\t'.A'=*all* pulses\t'.v'=voices\t'.L'=all alive\t'x'=none\t'.~'=invert selection"));
+  MENU.outln(F("'.a'=select *all* click pulses\t'.A'=*all* pulses\t'.v'=voices\t'.L'=all alive\t'x'=none\t'.~'=invert selection"));
 
   if(extended_destinations) {	// FIXME: will that ever be used??? ################
     MENU.out(F("u=select "));  MENU.out(F("time unit"));
@@ -2153,7 +2132,7 @@ bool g_inverse=false;	// bottom DOWN/up GPIO click-pin mapping	// TODO: update!
 
 
 /* **************************************************************** */
-// special menu modes, like numeric input for jiffletabs
+// special menu modes, like numeric input for jiffles
 #define JIFFLE_ENTRY_UNTIL_ZERO_MODE	1	// menu_mode for unsigned integer data entry, stop at zero
 
 /* **************************************************************** */
@@ -2215,16 +2194,17 @@ void menu_pulses_display() {
 }
 
 
+// FIXME: obsolete? ################
 int setup_jiffle_thrower_synced(struct time when,
 				unsigned long unit,
 				unsigned long multiplier, unsigned long divisor,
-				int sync, unsigned int *jiffletab)
+				int sync, unsigned int *jiffle)
 {
  int pulse= PULSES.setup_pulse_synced(&do_throw_a_jiffle, ACTIVE,
 			       when, unit, multiplier, divisor, sync);
   if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
     PULSES.set_gpio(pulse, this_or_next_gpio(pulse));
-    PULSES.pulses[pulse].data = (unsigned int) jiffletab;
+    PULSES.pulses[pulse].data = (unsigned int) jiffle;
   } else {
     out_noFreePulses();
   }
@@ -2237,13 +2217,14 @@ int setup_jiffle_thrower_synced(struct time when,
 // jiffles:
 // jiffles are (click) patterns defined in jiffletabs and based on a base period
 //
+// jiffletabs are unsigned int arrays
 // the base period is multiplied/divided by two int values
 // the following jiffletab value counts how many times the pulse will get
 // woken up with this new computed period
 // then continue with next jiffletab entries
 // a zero multiplier ends the jiffle
 
-// jiffletabs define melody:
+// jiffletabs can define melodies:
 // up to 256 triplets of {multiplier, divisor, count}
 // multiplier and divisor determine period based on the starting pulses period
 // a multiplier of zero indicates end of jiffle
@@ -2252,11 +2233,13 @@ int setup_jiffle_thrower_synced(struct time when,
 
 void set_jiffle_RAM_value(int new_value) {
   char input;
-  jiffle[jiffle_write_index++]=new_value;
+  //  unsigned int* jiffle = selected_in(JIFFLES);
+
+  jiffle_RAM[jiffle_write_index++]=new_value;
 
   // jiffletabs *MUST* have 2 trailing zeros	// ################ FIXME: ################
   if (jiffle_write_index >= (JIFFLE_RAM_SIZE - 2)) {	// array full?
-    jiffle[jiffle_write_index--]=0;
+    jiffle_RAM[jiffle_write_index--]=0;
 
     // drop all remaining numbers and delimiters from input
     bool yes=true;
@@ -2283,14 +2266,13 @@ void set_jiffle_RAM_value(int new_value) {
 void set_jiffle_RAM_value_0_stop() {
   if (jiffle_write_index >= (JIFFLE_RAM_SIZE - 2))
     jiffle_write_index = JIFFLE_RAM_SIZE - 2;
-//  jiffle[jiffle_write_index] = 0;	// store a trailing zero
 
-  jiffle[JIFFLE_RAM_SIZE - 1 ] = 0;	// zero out last 2 array elements (savety net)
-  jiffle[JIFFLE_RAM_SIZE - 2 ] = 0;
+  jiffle_RAM[JIFFLE_RAM_SIZE - 1 ] = 0;		// zero out last 2 array elements (savety net)
+  jiffle_RAM[JIFFLE_RAM_SIZE - 2 ] = 0;
   MENU.menu_mode=0;				// stop numeric data input
   //  jiffle_write_index=0;		// no, we leave write index as is
 
-  display_jiffletab(jiffle);		// put that here for now
+  display_jiffletab(jiffle_RAM);		// put that here for now
 }
 
 
@@ -2307,8 +2289,6 @@ void load2_jiffle_RAM(unsigned int *source) {	// double zero terminated
 
     set_jiffle_RAM_value(data);
   }
-
-  //  jiffle_write_index += cnt;
 }
 
 
@@ -2350,17 +2330,15 @@ void display_jiffletab(unsigned int *jiffle) {
     len = JIFFLES[i].len/sizeof(int);		// len is known
 
   // first line:
-#ifndef RAM_IS_SCARE	// FIXME: ?? ################
   MENU.out(JIFFLES[0].name); MENU.out(':'); MENU.space();
   MENU.out(array2name(JIFFLES, jiffle));  MENU.tab();
-#endif
   MENU.out(F("editing "));
   if (MENU.menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE) {
     MENU.out(F("on\tclose with '}'"));
     if (MENU.verbosity >= VERBOSITY_SOME)
       MENU.out(F("\tmove cursor < >\trange borders | \""));
   } else
-    MENU.out(F("off\tstart edit with '{'"));
+    MENU.out(F("off\tstart edit with '{'"));	// FIXME: in both int_edit.h and pulses.ino ################
 
   MENU.ln();
 
@@ -2393,7 +2371,7 @@ void display_jiffletab(unsigned int *jiffle) {
 
   sum = jiffletab_len(jiffle);
   MENU.tab();
-  MENU.out(F("length ")); display_fraction(&sum);
+  MENU.out(F("length ")); display_fraction(&sum);// FIXME: in both int_edit.h and pulses.ino ################
   MENU.tab();
   MENU.out(F("cursor "));
   MENU.out(jiffle_write_index); MENU.slash(); MENU.out(len);
@@ -2494,7 +2472,7 @@ void setup_jiffles2345(bool g_inverse, int voices, unsigned int multiplier, unsi
 // triplets {multiplier, divisor, count}
 // multiplier==0 means end
 
-// jiffletab0 is obsolete	DADA ################
+// jiffletab0 is obsolete	FIXME: jiffletab0 is obsolete ################
 unsigned int jiffletab0[] =
   {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,4, 1,64,3, 1,32,1, 1,16,2, 0,0};	// nice short jiffy
 
@@ -2811,7 +2789,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   case ',':	// accept as noop in normal mode. used as delimiter to input data, displaying info. see 'menu_mode'
     if (MENU.menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE)
-      display_jiffletab(jiffle);
+      display_jiffletab(selected_in(JIFFLES));
     else
       if (MENU.verbosity >= VERBOSITY_SOME) {
 	MENU.out_noop();
@@ -2826,7 +2804,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if(MENU.cb_peek()==EOF)
 	if (MENU.verbosity)
-	  display_jiffletab(jiffle);
+	  display_jiffletab(selected_in(JIFFLES));
     } else
       if (MENU.verbosity >= VERBOSITY_SOME) {
 	MENU.out_noop();
@@ -2841,7 +2819,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if(MENU.cb_peek()==EOF)
 	if (MENU.verbosity)
-	  display_jiffletab(jiffle);
+	  display_jiffletab(selected_in(JIFFLES));
     } else
       if (MENU.verbosity >= VERBOSITY_SOME)
 	MENU.outln(F("reserved"));	// reserved for string input
@@ -2921,7 +2899,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if(MENU.cb_peek()==EOF)
 	if (MENU.verbosity)
-	  display_jiffletab(jiffle);
+	  display_jiffletab(selected_in(JIFFLES));
       break;
     default:
       if (MENU.verbosity >= VERBOSITY_SOME) {
@@ -2939,7 +2917,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       if(MENU.cb_peek()==EOF)
 	if (MENU.verbosity)
-	  display_jiffletab(jiffle);
+	  display_jiffletab(selected_in(JIFFLES));
       break;
     default:
       if (MENU.verbosity >= VERBOSITY_SOME) {
@@ -3382,27 +3360,25 @@ bool menu_pulses_reaction(char menu_input) {
     /*
       'J'  shows registered jiffle names and display_jiffletab(<selected_jiffle>)
       'J7' selects jiffle #7 and display_jiffletab()
-      'J!' copy selected jiffle in jiffle_RAM and display_jiffletab(jiffle_RAM)
+      'J!' copy selected jiffle in jiffle_RAM, select jiffle_RAM, display_jiffletab(jiffle_RAM)
+      'J9!' copy jiffle #9 in jiffle_RAM, select jiffle_RAM, display_jiffletab(jiffle_RAM)
     */
     // some jiffles from source, some very old FIXME:	review and delete	################
-    if (MENU.cb_peek() == '!') {  // 'J!' copies an already selected jiffletab to RAM
-      MENU.drop_input_token();
-      if(jiffle != jiffle_RAM) {
-	unsigned int * source=jiffle;
-	// jiffle_write_index=0;	// no, write starting at jiffle_write_index #### FIXME: ####
+    if (MENU.cb_peek() != '!')		// 'J<num>' selects jiffle
+      UI_select_from_DB(JIFFLES);	// select jiffle UI
 
-	jiffle = jiffle_RAM;
-	select_array_in_DB(JIFFLES, jiffle_RAM);
+    if (MENU.cb_peek() == '!') {  	// 'J[<num>]!' copies an already selected jiffletab to RAM, selects RAM
+      MENU.drop_input_token();
+      if(selected_in(JIFFLES) != jiffle_RAM) {
+	unsigned int * source=selected_in(JIFFLES);
+	// jiffle_write_index=0;	// no, write starting at jiffle_write_index #### FIXME: ####
 	load2_jiffle_RAM(source);
       }
-    } else {	// select jiffle
-      unsigned int* p = select_from_DB(JIFFLES);
-      if (p != NULL)
-	jiffle = p;
+      select_array_in(JIFFLES, jiffle_RAM);
     }
 
     if (MENU.verbosity >= VERBOSITY_SOME)
-	display_jiffletab(jiffle);
+	display_jiffletab(selected_in(JIFFLES));
     break;
 
   case 'R':	// scale  was: ratio
@@ -3410,29 +3386,12 @@ bool menu_pulses_reaction(char menu_input) {
       MENU.out(F("scale "));
 
     // 'R!' tune selected pulses to a scale starting from lowest
-    if (MENU.cb_peek()=='!') {
-      tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
-    } else {
-      selected_scale=MENU.numeric_input(-1);
-      switch (selected_scale) {
-      case ILLEGAL:
-      case 0:
-	scale = scale_RAM;
-	break;
-      default:
-	if (selected_scale >= n_scale_names) {
-	  selected_scale=0;
-	  if (MENU.verbosity >= VERBOSITY_SOME)
-	    MENU.outln_invalid();
-	} else				// trailing '!' applies tuning
-	  if (MENU.cb_peek()=='!')
-	    tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
-      }
-#ifndef RAM_IS_SCARE	// enough RAM?	display jiffle names
-      display_names(scale_names, n_scale_names, selected_scale);
-#endif
-    }
-    display_arr(scale, 2);
+    if (MENU.cb_peek()=='!')
+      tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));	// tune-2-scale
+    else	// ui select a scale
+      UI_select_from_DB(SCALES);	// select scale
+
+    display_arr(selected_in(SCALES), 2);
 
     break;
 
@@ -3450,18 +3409,18 @@ bool menu_pulses_reaction(char menu_input) {
 
   case '{':	// enter_jiffletab
     MENU.menu_mode=JIFFLE_ENTRY_UNTIL_ZERO_MODE;
-    jiffle = jiffle_RAM;
+    select_array_in(JIFFLES, jiffle_RAM);
     jiffle_write_index=0;	// ################ FIXME: ################
-    select_array_in_DB(JIFFLES, jiffle_RAM);
+    select_array_in(JIFFLES, jiffle_RAM);
     if(MENU.cb_peek()==EOF)
       if (MENU.verbosity)
-	display_jiffletab(jiffle);
+	display_jiffletab(selected_in(JIFFLES));
     break;
 
   case '}':	// display jiffletab, stop editing jiffletab
     MENU.menu_mode=0;
     if (MENU.verbosity)
-      display_jiffletab(jiffle);
+      display_jiffletab(selected_in(JIFFLES));
 
     jiffle_write_index=0;	// ################ FIXME: ################
     break;
@@ -3601,22 +3560,24 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'X':	// PANIC BUTTON  reset, remove all (flagged) pulses, restart selections at none
-    // reset, remove all (flagged) pulses, restart selections at none
-    if(MENU.cb_peek() == '!') {		// 'X!' resets time_unit and does 'X'
-      MENU.drop_input_token();
-
-      if(PULSES.time_unit != TIME_UNIT)
-	MENU.outln(F("reset time_unit"));
-      PULSES.time_unit = TIME_UNIT;
-    }
-
+    // reset, remove all (flagged) pulses, restart selections at none, reset selection mask
     reset_all_flagged_pulses_GPIO_OFF();
+    PULSES.hex_input_mask_index = 0;	// for convenience
+
     next_gpio(0);	// reset used gpio
     if (MENU.verbosity)
       MENU.outln(F("freed GPIOs"));
 
-    if(PULSES.time_unit != TIME_UNIT)	// reset time_unit
-      MENU.outln(F("'X!' to reset time_unit"));
+    if(MENU.cb_peek() == '!') {		// 'X!' does 'X' *and* resets time_unit
+      MENU.drop_input_token();
+
+      if(PULSES.time_unit != TIME_UNIT) {
+	MENU.outln(F("reset time_unit"));
+	PULSES.time_unit = TIME_UNIT;
+      }
+    } else
+      if(PULSES.time_unit != TIME_UNIT)	// reset time_unit
+	MENU.outln(F("'X!' to reset time_unit"));
 
     break;
 
@@ -3686,7 +3647,7 @@ bool menu_pulses_reaction(char menu_input) {
 	multiplier=1;
 	divisor=2;
 	sync=0;
-	jiffle=jiffletab;
+	select_array_in(JIFFLES, jiffletab);
 
 	if (MENU.maybe_display_more()) {
 	  display_name5pars("setup_jiffles2345", g_inverse, voices, multiplier, divisor, sync);
@@ -3776,21 +3737,20 @@ bool menu_pulses_reaction(char menu_input) {
 	multiplier=1;
 	divisor=1;
 
-	selected_scale = 4;
-	scale = minor_scale;		// default e minor
+	select_array_in(SCALES, minor_scale);		// default e minor
 
 //	if (MENU.maybe_display_more()) {
 //	  display_name5pars("init_pentatonic", g_inverse, voices, multiplier, divisor, sync);
 //	}
 
 //	init_pentatonic(g_inverse, voices, multiplier, divisor, sync);
-	jiffle = piip2048;		// default jiffle FIXME: ################
+	select_array_in(JIFFLES, piip2048);		// default jiffle FIXME: ################
 
 	if (voices == 0)
 	  voices = GPIO_PINS;
 
 	PULSES.select_n(voices);
-	tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
+	tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
 
   #ifndef USE_DACs	// TODO: review and use test code
 	setup_jiffle_thrower_selected(selected_actions);
@@ -3823,7 +3783,7 @@ bool menu_pulses_reaction(char menu_input) {
 	voices=8;	//just for 'The Harmonical Strings Christmas Evening Sounds'
 	g_inverse=false;
 	// unsigned int harmonics4 = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0,0};
-	jiffle=harmonics4;
+	select_array_in(JIFFLES, harmonics4);
 	PULSES.select_n(voices);
 	display_name5pars("prepare_magnets", g_inverse, voices, multiplier, divisor, sync);
 	prepare_magnets(g_inverse, voices, multiplier, divisor, sync);
@@ -3840,10 +3800,10 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=1;
 	g_inverse=false;
 
-	scale = pentatonic_minor;
+	select_array_in(SCALES, pentatonic_minor);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier * 1024 , divisor * 1167, sync, scale);
-	jiffle=ting1024;
+	prepare_scale(false, voices, multiplier * 1024 , divisor * 1167, sync, selected_in(SCALES));
+	select_array_in(JIFFLES, ting1024);
 	PULSES.select_n(voices);
 	display_name5pars("E14", g_inverse, voices, multiplier, divisor, sync);
 
@@ -3857,10 +3817,10 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=1;
 	g_inverse=false;
 
-	scale = pentatonic_minor;
+	select_array_in(SCALES, pentatonic_minor);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier * 4096 , divisor * 1167, sync, scale);
-	jiffle=ting4096;
+	prepare_scale(false, voices, multiplier * 4096 , divisor * 1167, sync, selected_in(SCALES));
+	select_array_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
 	display_name5pars("E15", g_inverse, voices, multiplier, divisor, sync);
 
@@ -3874,11 +3834,11 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=256;
 	g_inverse=false;
 
-	scale = european_pentatonic;
+	select_array_in(SCALES, european_pentatonic);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, scale);
-	jiffle=ting4096;
-	// jiffle = arpeggio4096;
+	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
+	select_array_in(JIFFLES, ting4096);
+	// select_array_in(JIFFLES, arpeggio4096);
 	display_name5pars("E16 european_pent", g_inverse, voices, multiplier, divisor, sync);
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -3891,10 +3851,10 @@ bool menu_pulses_reaction(char menu_input) {
 	// multiplier=4096;	// jiffle ting4096
 	divisor=256*5;
 
-	scale = mimic_japan_pentatonic;
+	select_array_in(SCALES, mimic_japan_pentatonic);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, scale);
-	jiffle=ting4096;
+	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
+	select_array_in(JIFFLES, ting4096);
 	display_name5pars("E17 mimic japan", g_inverse, voices, multiplier, divisor, sync);
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -3903,7 +3863,7 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 18:	// nylon stringed wooden box, piezzos
-	scale = pentatonic_minor;
+	select_array_in(SCALES, pentatonic_minor);
 	multiplier=1;	// click
 	// multiplier=4096;	// jiffle ting4096
 	// divisor=2048;
@@ -3922,10 +3882,10 @@ bool menu_pulses_reaction(char menu_input) {
 	//      multiplier *= 4;
 	//#endif
 	divisor=9;	// reduced
-	jiffle=ting4096;
+	select_array_in(JIFFLES, ting4096);
 
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, scale);
+	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
 	display_name5pars("E18 pentatonic minor", g_inverse, voices, multiplier, divisor, sync);
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -3953,47 +3913,47 @@ bool menu_pulses_reaction(char menu_input) {
 #endif
 
       case 20:
-	jiffle = arpeggio4096;
+	select_array_in(JIFFLES, arpeggio4096);
 	MENU.play_KB_macro("X E12! .a N *8 J20-.");
 	break;
 
       case 21:
-	jiffle = arpeggio4096down;
+	select_array_in(JIFFLES, arpeggio4096down);
 	MENU.play_KB_macro("X E12! .a N *16 J21-.");
 	break;
 
       case 22:
-	jiffle = arpeggio_cont;				// :)	with pizzs
+	select_array_in(JIFFLES, arpeggio_cont);				// :)	with pizzs
 	MENU.play_KB_macro("X E12! .a N *16 J22-.");
 	break;
 
       case 23:
-	jiffle = arpeggio_and_down;			// :) :)  arpeggio down instead pizzs
+	select_array_in(JIFFLES, arpeggio_and_down);			// :) :)  arpeggio down instead pizzs
 	MENU.play_KB_macro("X E12! .a N *16 J23-.");
 	break;
 
       case 24:
-	jiffle = stepping_down;				// :) :)  stepping down
+	select_array_in(JIFFLES, stepping_down);				// :) :)  stepping down
 	MENU.play_KB_macro("X E12 S=0 ! .a N *16 J24-.");
 	break;
 
       case 25:
-	jiffle = back_to_ground;		// rhythm slowdown
+	select_array_in(JIFFLES, back_to_ground);		// rhythm slowdown
 	MENU.play_KB_macro("X E12! .a N *32 J25-.");		// :)	rhythm slowdown
 	break;
 
       case 26:
-	jiffle = arpeggio_and_sayling;
+	select_array_in(JIFFLES, arpeggio_and_sayling);
 	MENU.play_KB_macro("X E12! .a N *32 J26-.");
 	break;
 
       case 27:
-	jiffle = simple_theme;
+	select_array_in(JIFFLES, simple_theme);
 	MENU.play_KB_macro("X E12! .a N *2 -.");
 	break;
 
       case 28:				// for tuning
-	jiffle = peepeep4096;
+	select_array_in(JIFFLES, peepeep4096);
 	MENU.play_KB_macro("X E12! .a N *2 -.");
 
 	break;
@@ -4002,10 +3962,10 @@ bool menu_pulses_reaction(char menu_input) {
 	reset_all_flagged_pulses_GPIO_OFF();
 
 #if defined KALIMBA7_v2	// ESP32 version  european_pentatonic
-	scale = european_pentatonic;
+	select_array_in(SCALES, european_pentatonic);
 	voices=7;
 #else
-	scale = pentatonic_minor;	// default, including KALIMBA7_v1
+	select_array_in(SCALES, pentatonic_minor);	// default, including KALIMBA7_v1
 #endif
 #if defined  KALIMBA7_v1
 	voices=7;
@@ -4014,7 +3974,7 @@ bool menu_pulses_reaction(char menu_input) {
 	multiplier=1;
 	divisor=1024;
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, scale);
+	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
 	display_name5pars("E29 KALIMBA7 tuning", g_inverse, voices, multiplier, divisor, sync);
 	en_click_selected();							// for tuning ;)
 	PULSES.activate_selected_synced_now(sync);	// sync and activate
@@ -4026,16 +3986,16 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 30:				// KALIMBA7 jiffle
-	scale = pentatonic_minor;
+	select_array_in(SCALES, pentatonic_minor);
 	voices=7;
 	// voices=8;
 	multiplier=4;
 	divisor=1;
-	// jiffle = peepeep4096;
-	jiffle = ting4096;
-	// jiffle = tingeling4096;
+	// select_array_in(JIFFLES, peepeep4096);
+	select_array_in(JIFFLES, ting4096);
+	// select_array_in(JIFFLES, tingeling4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, scale);
+	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
 	display_name5pars("E30 KALIMBA7 jiff", g_inverse, voices, multiplier, divisor, sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate
@@ -4048,13 +4008,13 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 31:				// KALIMBA7 jiffle
-	scale = european_pentatonic;
+	select_array_in(SCALES, european_pentatonic);
 	voices=8;
 	multiplier=4;
 	divisor=1;
-	jiffle = ting4096;
+	select_array_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, scale);
+	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
 	display_name5pars("E31 KALIMBA7 jiff", g_inverse, voices, multiplier, divisor, sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
@@ -4066,14 +4026,14 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 32:				// ESP32_12 ff
-	scale = major_scale;
+	select_array_in(SCALES, major_scale);
 	voices=GPIO_PINS;
 	multiplier=4;
 	divisor=1;
-	// jiffle = ting4096;
-	jiffle = tigg_ding4096;
+	// select_array_in(JIFFLES, ting4096);
+	select_array_in(JIFFLES, tigg_ding4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, scale);
+	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
 	display_name5pars("E32 ESP32_12", g_inverse, voices, multiplier, divisor, sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
@@ -4085,13 +4045,13 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 33:
-	scale = minor_scale;
+	select_array_in(SCALES, minor_scale);
 	voices=GPIO_PINS;
 	multiplier=4;
 	divisor=1;
-	jiffle = ting4096;
+	select_array_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, scale);
+	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
 	display_name5pars("minor", g_inverse, voices, multiplier, divisor, sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
@@ -4103,13 +4063,13 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 34:
-	scale = major_scale;
+	select_array_in(SCALES, major_scale);
 	voices=GPIO_PINS;
 	multiplier=4;
 	divisor=1;
-	jiffle = ting4096;
+	select_array_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, scale);
+	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
 	display_name5pars("major", g_inverse, voices, multiplier, divisor, sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
@@ -4121,13 +4081,13 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 35:
-	scale=tetrachord;
+	select_array_in(SCALES, tetrachord);
 	voices=GPIO_PINS;
 	multiplier=4;
 	divisor=1;
-	jiffle = ting4096;
+	select_array_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, scale);
+	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
 	display_name5pars("tetra", g_inverse, voices, multiplier, divisor, sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
@@ -4139,14 +4099,13 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 36:
-	//scale=major_scale;
-	scale = pentatonic_minor;
+	select_array_in(SCALES, pentatonic_minor);
 	voices=GPIO_PINS;
 	multiplier=6;
 	divisor=1;
-	jiffle = ting4096;
+	select_array_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, scale);
+	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
 	display_name5pars("BIG major", g_inverse, voices, multiplier, divisor, sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
@@ -4169,10 +4128,9 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=330; // 329.36		// e4  ***not*** harmonical
 	// divisor=165; // 164.81		// e3  ***not*** harmonical
 
-	selected_scale = 4;
-	scale = minor_scale;		// default e minor
+	select_array_in(SCALES, minor_scale);	// default e minor
 
-	jiffle = ting4096;		// default jiffle
+	select_array_in(JIFFLES, ting4096);	// default jiffle
 	//	voices = 16;			// for DAC output
 	if (voices == 0)
 	  voices = 15;			// default (diatonic)	// for DAC output
@@ -4182,44 +4140,38 @@ bool menu_pulses_reaction(char menu_input) {
 	  switch (MENU.cb_peek()) {
 	  case 'e':	// e minor scale
 	    MENU.drop_input_token();
-	    selected_scale = 4;
-	    scale=minor_scale;
+	    select_array_in(SCALES, minor_scale);
 	    break;
 
 	  case 'E':	// E major scale
 	    MENU.drop_input_token();
-	    selected_scale = 5;
-	    scale=major_scale;
+	    select_array_in(SCALES, major_scale);
 	    break;
 
 	  case 'a':	// a minor scale
 	    MENU.drop_input_token();
-	    selected_scale = 4;
 	    divisor = 440;
-	    scale=minor_scale;
+	    select_array_in(SCALES, minor_scale);
 	    break;
 
 	  case 'A':	// A major scale
 	    MENU.drop_input_token();
-	    selected_scale = 5;
 	    divisor = 440;
-	    scale=major_scale;
+	    select_array_in(SCALES, major_scale);
 	    break;
 
 	  case 'd':	// d minor scale
 	    MENU.drop_input_token();
-	    selected_scale = 4;
 	    divisor = 294;	// 293.66 = D4
 	    // divisor = 147;	// 146.83 = D3
-	    scale=minor_scale;
+	    select_array_in(SCALES, minor_scale);
 	    break;
 
 	  case 'D':	// D major scale
 	    MENU.drop_input_token();
-	    selected_scale = 5;
 	    divisor = 294;	// 293.66 = D4
 	    // divisor = 147;	// 146.83 = D3
-	    scale=major_scale;
+	    select_array_in(SCALES, major_scale);
 	    break;
 	  }
 	}
@@ -4228,58 +4180,51 @@ bool menu_pulses_reaction(char menu_input) {
 	case EOF:
 	  break;
 	case '6':	// doric scale
-	  scale = doric_scale;
-//	  selected_scale=;
+	  select_array_in(SCALES, doric_scale);
 	  break;
 	case '5':	// 5  pentatonic (minor|major) scale
 	  MENU.drop_input_token();
-	  if (scale==major_scale | scale==tetrachord) {
-	    selected_scale = 2;
-	    scale = european_pentatonic;
+	  if ((selected_in(SCALES) == major_scale) || (selected_in(SCALES) == tetrachord)) {
+	    select_array_in(SCALES, european_pentatonic);
 	    voices = 16;	// default (pentatonic)	// for DAC output
 	  } else {
-	    selected_scale = 1;
-	    scale = pentatonic_minor;
+	    select_array_in(SCALES, pentatonic_minor);
 	    voices = 16;	// default (pentatonic)	// for DAC output
 	  }
 	  break;
 	case '4':	// 4  tetrachord
 	  MENU.drop_input_token();
-	  selected_scale = 6;
-	  scale = tetrachord;
+          select_array_in(SCALES, tetrachord);
 	  break;
 	case '3':	// 3  octaves fourths fifths
 	  MENU.drop_input_token();
-	  selected_scale = 13;
-	  scale = octaves_fourths_fifths;
+	  select_array_in(SCALES, octaves_fourths_fifths);
 	  multiplier *=8;
 	  divisor /= 2;
 	  break;
 	case '2':	// 2  octaves fifths
 	  MENU.drop_input_token();
-	  selected_scale = 11;
-	  scale = octaves_fifths;
+	  select_array_in(SCALES, octaves_fifths);
 	  multiplier *= 4;
 	  divisor /= 4;
 	  break;
 	case '1':	// 1  octaves
 	  MENU.drop_input_token();
-	  selected_scale = 10;
-	  scale = octaves;
+	  select_array_in(SCALES, octaves);
 	  multiplier *= 8;	// ################ FIXME: ################
 	  divisor /= 8;
 	  break;
 	}
 
-	// jiffle = ting4096;
-	// jiffle = piip2048;
-	// jiffle = tanboura; divisor *= 2;
+	// select_array_in(JIFFLES, ting4096);
+	// select_array_in(JIFFLES, piip2048);
+	// select_array_in(JIFFLES, tanboura); divisor *= 2;
 
 	// ################ FIXME: remove redundant code ################
 	PULSES.select_n(voices);
-//	prepare_scale(false, voices, multiplier, divisor, 0, scale);
+//	prepare_scale(false, voices, multiplier, divisor, 0, selected_in(SCALES));
 //	display_name5pars("GUITAR", g_inverse, voices, multiplier, divisor, sync);
-	tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
+	tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
 
   #ifndef USE_DACs	// TODO: review and use test code
 	setup_jiffle_thrower_selected(selected_actions);
@@ -4331,26 +4276,26 @@ bool menu_pulses_reaction(char menu_input) {
 	// divisor=330; // 329.36		// e4  ***not*** harmonical
 	// divisor=165; // 164.81		// e3  ***not*** harmonical
 
-	selected_scale = 4;
-	scale = minor_scale;		// default e minor
-
-	jiffle = ting4096;		// default jiffle
-
+	select_array_in(SCALES, minor_scale);		// default e minor
 	// tune *all* primary pulses
-	tune_2_scale(voices, multiplier, divisor, sync, selected_scale, scale);
+	tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
 
 	// prepare primary pulse groups:
+	select_array_in(JIFFLES, d1024_4096);
 
-	// bass on DAC1 and broad angle LED lamps
+	// bass on DAC1 and planed broad angle LED lamps
+	// select_array_in(JIFFLES, d512_4096);
 	PULSES.select_from_to(0,6);
 	for(int pulse=0; pulse<=6; pulse++) {
-	  en_jiffle_thrower(pulse, jiffle, ILLEGAL, DACsq1);	// FIXME: use inbuilt click
+	  en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL, DACsq1);	// FIXME: use inbuilt click
 	}
 	PULSES.select_from_to(0,7);
 	// selected_DACsq_intensity_proportional(255, 1);
 	selected_share_DACsq_intensity(255, 1);
 
-	// 2 middle octaves on 15 gpios and DAC2
+	// 2 middle octaves on 15 gpios
+	// select_array_in(JIFFLES, d512_4096);
+	//	select_array_in(JIFFLES, d256_4096);
 	PULSES.select_from_to(7,6+15);
 	setup_jiffle_thrower_selected(0);	// overwrites pulse[7]
 	//	setup_jiffle_thrower_selected(DACsq2);
@@ -4360,16 +4305,20 @@ bool menu_pulses_reaction(char menu_input) {
 	PULSES.pulses[7].dest_action_flags |= DACsq1;
 
 	// high octave on DAC2
+	//	select_array_in(JIFFLES, d64_4096);
+	//select_array_in(JIFFLES, d256_4096);
+
 	PULSES.select_from_to(21, 31);
 	for(int pulse=22; pulse<=31; pulse++) {	// pulse[21] belongs to both groups
-	  en_jiffle_thrower(pulse, jiffle, ILLEGAL, DACsq2);	// FIXME: use inbuilt click
+	  en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL, DACsq2);	// FIXME: use inbuilt click
 //	  PULSES.pulses[pulse].dest_action_flags |= (DACsq2);
 //	  PULSES.set_payload(pulse, &do_throw_a_jiffle);
 //	  PULSES.pulses[pulse].data = (unsigned int) jiffle;
 	}
 	// fix pulse[21] belonging to both groups
 	PULSES.pulses[21].dest_action_flags |= DACsq2;
-	selected_DACsq_intensity_proportional(255, 2);
+	selected_share_DACsq_intensity(255, 2);
+	//	selected_DACsq_intensity_proportional(255, 2);
 
 	PULSES.select_n(voices);	// select all primary voices
 

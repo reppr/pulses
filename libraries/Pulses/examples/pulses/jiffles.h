@@ -10,6 +10,19 @@ unsigned int ting1024[] = {1,4096,64, 1,1024,128, 1,1024*3,128, 1,1024*2,128, 1,
 // unsigned int ting4096[] = {1,4096,1024, -1,0,0};			// magnet strings experiments 2
 unsigned int ting4096[] = {1,4096,1024, 0,0,0};			// magnet strings experiments 2, KALIMBA7
 
+unsigned int d1024_4096[] = {1,4096,512, 0,0,0};	// == ting4096
+unsigned int d512_4096[] = {1,4096,512, 0,0,0};
+unsigned int d256_4096[] = {1,4096,256, 0,0,0};
+unsigned int d128_4096[] = {1,4096,128, 0,0,0};
+unsigned int d64_4096[] = {1,4096,64, 0,0,0};
+unsigned int d32_4096[] = {1,4096,32, 0,0,0};
+
+unsigned int d16_4096[] = {1,4096,16, 0,0,0};
+unsigned int d8_4096[] = {1,4096,8, 0,0,0};
+
+unsigned int d4_4096[] = {1,4096,4, 0,0,0};
+unsigned int d2_4096[] = {1,4096,2, 0,0,0};
+
 // peepeep4096[] for tuning
 unsigned int peepeep4096[] = {1,4096,2048, 1,8*4096,1, 1,4096,256, 1,8*4096,1, 1,4096,256, 1,8*4096,1, 1,4096,256, 1,8*4096,1, 0,0};
 // unsigned int arpeggio4096[] = {4,4096*4,128, 4,4096*3,128, 4,4096*4,128, 4,4096*5,128, 4,4096*6,64, 0,0}; // pezzo strings E16

@@ -96,7 +96,7 @@ struct pulse_t {
 #define DACsq1			1	// DAC1 output value as square wave, harmonical timing
 #define DACsq2			2	// DAC2 output value as square wave, harmonical timing
 #define CLICKs	      		4	// GPIO 'click' inbuilt GPIO toggling	see: set_gpio(pulse, pin)
-#define PAYLOAD			8	// do periodic_do(pulse)	TODO: implement
+#define PAYLOAD			8	// do periodic_do(pulse)
 #define noACTION		16	// 'mutes' all actions	>>>> must be last <<<<
 
 #define ACTION_MASK_BITS	5	// >>>>>>>> *DO CHANGE* number of flags changes here <<<<<<<
