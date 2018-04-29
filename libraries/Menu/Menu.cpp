@@ -909,7 +909,7 @@ bool Menu::lurk_then_do() {
       outln(F("lurk_then_do() INTERPRETed INPUT BUFFER."));
 #endif
 
-      if (verbosity >= VERBOSITY_CHATTY)
+      if (verbosity == VERBOSITY_HIGH)
 	menu_display();
 
       return true;		// true means *reaction was triggered*.
@@ -931,7 +931,7 @@ bool Menu::lurk_then_do() {
       outln(F("lurk_then_do() INTERPRETed INPUT BUFFER."));
 #endif
 
-      if (verbosity >= VERBOSITY_CHATTY)
+      if (verbosity == VERBOSITY_HIGH)
 	menu_display();
 
       return true;	// true means *reaction was triggered*.
@@ -1143,14 +1143,14 @@ void Menu::verbosity_info() {
   if (verbosity) {
     out(F("verbosity "));
     switch (verbosity) {
-    case VERBOSITY_ERROR:
+    case VERBOSITY_LOWEST:
       outln(F("low"));
       break;
     case VERBOSITY_SOME:
       outln(F("some"));
       break;
-    case VERBOSITY_CHATTY:
-      outln(F("chatty"));
+    case VERBOSITY_MORE:
+      outln(F("more"));
       break;
     case VERBOSITY_HIGH:
       outln(F("high"));
@@ -1301,7 +1301,7 @@ void Menu::interpret_men_input() {
 	men_selected = pg;			// switch to page
 
 	// often menu_display() will be called anyway, depending verbosity
-	if (verbosity < VERBOSITY_CHATTY)	// if verbosity is too low
+	if (verbosity <= VERBOSITY_MORE)	// if verbosity is too low	// TODO: test!
 	  menu_display();			//   we do it from here
 
 	did_something = true;			// yes, did switch
@@ -1326,7 +1326,7 @@ void Menu::interpret_men_input() {
 #endif
     switch (token) {
     case '?':
-      if (verbosity < VERBOSITY_CHATTY)	// if verbosity is too low
+      if (verbosity <= VERBOSITY_MORE)	// if verbosity is too low	// TODO: test!
 	menu_display();			//   we do it from here
 
       did_something = true;
@@ -1343,7 +1343,7 @@ void Menu::interpret_men_input() {
 #ifdef DEBUGGING_MENU
       out(F("==>* switch to ")); menu_page_info(men_selected);
 #endif
-      if (verbosity < VERBOSITY_CHATTY)	// if verbosity is too low
+      if (verbosity <= VERBOSITY_MORE)	// if verbosity is too low	// TODO: test!
 	menu_display();			//   we do it from here
 
       did_something = true;
@@ -1357,8 +1357,8 @@ void Menu::interpret_men_input() {
       break;
 
     case '-':
-      if (--verbosity < VERBOSITY_ERROR) // no UI access of verbosity=0
-	verbosity = VERBOSITY_ERROR;
+      if (--verbosity < VERBOSITY_LOWEST) // no UI access of verbosity=0
+	verbosity = VERBOSITY_LOWEST;
       verbosity_info();
       did_something = true;
       break;
@@ -1378,10 +1378,10 @@ void Menu::interpret_men_input() {
     // token still not found, give up...
     if (! did_something ) {
       // maybe display menu and *then* the "UNKNOWN TOKEN line"
-      if(verbosity >= VERBOSITY_CHATTY)
+      if(verbosity == VERBOSITY_HIGH)
 	menu_display();
 
-      if (verbosity >= VERBOSITY_ERROR) {
+      if (verbosity >= VERBOSITY_LOWEST) {
 	out(F("\nUNKNOWN TOKEN "));
 	ticked(token);
 	tab();

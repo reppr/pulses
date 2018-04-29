@@ -122,6 +122,14 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 
 
 /* **************************************************************** */
+bool DO_or_maybe_display(unsigned char verbosity_level) { // the flag tells *if* to display
+  if (PULSES.check_maybe_do())
+    return false;		// no time to display anything...
+
+  return MENU.maybe_display_more(verbosity_level);	// flag depending verbosity and menu input
+}
+
+/* **************************************************************** */
 // scales
 
 #ifndef SCALES_RAM_SIZE	// scales on small harware ressources, FIXME: test	################
@@ -312,11 +320,10 @@ int en_click_selected() {
       if (en_click(pulse, this_or_next_gpio(pulse)))
 	cnt++;
 
-  if (!PULSES.check_maybe_do())		// maybe do it *first*
-    if (MENU.maybe_display_more()) {	// else
-      MENU.ln();
-      selected_pulses_info_lines();
-    }
+  if (DO_or_maybe_display(VERBOSITY_MORE)) {
+    MENU.ln();
+    selected_or_flagged_pulses_info_lines();
+  }
 
   return cnt;
 };
@@ -718,7 +725,7 @@ void loop() {	// ARDUINO
       // EMERGENCY
       // kill fastest pulse might do it? (i.e. fast sweeping up)
 
-      if (MENU.maybe_display_more()) {
+      if (MENU.maybe_display_more()) {	// TODO: rethink that
 	MENU.out((int) PULSES.fastest_pulse());
 	MENU.out(F(" deactivated  "));
       }
@@ -1444,7 +1451,7 @@ bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, i
       return true;
     }
   } else
-    if (MENU.verbosity >= VERBOSITY_ERROR)
+    if (MENU.verbosity >= VERBOSITY_LOWEST)
       MENU.outln(F("no scale"));
 
   return false;
@@ -1870,21 +1877,6 @@ void display_payload(int pulse) {
 }
 
 
-void selected_pulses_info_lines() {
-  int count=0;
-
-  for (int pulse=0; pulse<PL_MAX; ++pulse) {
-    if (PULSES.pulse_is_selected(pulse)) {
-      pulse_info_1line(pulse);
-      count++;
-    }
-  }
-
-  if (count)
-    MENU.ln();
-}
-
-
 void flagged_pulses_info() {
   int count=0;
 
@@ -1944,11 +1936,10 @@ int setup_jiffle_thrower_selected(action_flags_t action_flags) {	// FIXME: obsol
 
   PULSES.fix_global_next();		// just in case?
 
-  if (!PULSES.check_maybe_do())		// maybe do it *first*
-    if (MENU.maybe_display_more()) {	// else
-      MENU.ln();
-      selected_or_flagged_pulses_info_lines();
-    }
+  if (DO_or_maybe_display(VERBOSITY_MORE)) {
+    MENU.ln();
+    selected_or_flagged_pulses_info_lines();
+  }
 
   return cnt;
 };
@@ -2619,7 +2610,7 @@ void reverse_gpio_pins() {	// TODO: fix next_gpio()  ???? ################
 }
 
 // ****************************************************************
-// menu_serial_program_reaction()
+// menu_pulses_reaction()
 
 
 // display helper functions:
@@ -2744,21 +2735,25 @@ bool menu_pulses_reaction(char menu_input) {
     case 'a':	// '.a' select_flagged
       MENU.drop_input_token();
       select_flagged();
-      PULSES.maybe_show_selected_mask();			// TODO: factor that out {
 
-      if (MENU.maybe_display_more())
-	selected_or_flagged_pulses_info_lines();		// TODO: factor that out }
+      PULSES.maybe_show_selected_mask();
+      if (DO_or_maybe_display(VERBOSITY_LOWEST))
+	selected_or_flagged_pulses_info_lines();
       break;
 
     case 'A':	// '.A' select destination: *all* pulses
       MENU.drop_input_token();
       select_all();
       PULSES.maybe_show_selected_mask();
+      if (DO_or_maybe_display(VERBOSITY_LOWEST))
+	selected_or_flagged_pulses_info_lines();
       break;
 
     case 'v':	// '.v' select destination: select_n(voices)
       MENU.drop_input_token();
       PULSES.select_n(voices);
+      if (DO_or_maybe_display(VERBOSITY_LOWEST))
+	selected_or_flagged_pulses_info_lines();
       break;
 
     case 'V':	// '.V' select destination: alive voices
@@ -2769,29 +2764,36 @@ bool menu_pulses_reaction(char menu_input) {
 	  PULSES.select_pulse(pulse);
 
       PULSES.maybe_show_selected_mask();
+      if (DO_or_maybe_display(VERBOSITY_LOWEST))
+	selected_or_flagged_pulses_info_lines();
       break;
 
     case 'L':	// '.L' select destination: all alive pulses
       MENU.drop_input_token();
       select_alive();
       PULSES.maybe_show_selected_mask();
+      if (DO_or_maybe_display(VERBOSITY_LOWEST))
+	selected_or_flagged_pulses_info_lines();
       break;
     }
     break;
 
-  case ':':	// info
-    MENU.ln();
-    PULSES.time_info();
+  case ':':	// info		// TODO: review (or remove?)
+    if (DO_or_maybe_display(VERBOSITY_MORE)) {
+      MENU.ln();
+      PULSES.time_info();
+    }
+
     MENU.ln();
     PULSES.maybe_show_selected_mask();
-    selected_pulses_info_lines();
+    selected_or_flagged_pulses_info_lines();
     break;
 
   case ',':	// accept as noop in normal mode. used as delimiter to input data, displaying info. see 'menu_mode'
     if (MENU.menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE)
       display_jiffletab(selected_in(JIFFLES));
     else
-      if (MENU.verbosity >= VERBOSITY_SOME) {
+      if (DO_or_maybe_display(VERBOSITY_MORE)) {
 	MENU.out_noop();
 	MENU.ln();
       }
@@ -2961,15 +2963,12 @@ bool menu_pulses_reaction(char menu_input) {
 	}
       }
     }
-
     PULSES.fix_global_next();
-    PULSES.check_maybe_do();			// maybe do it *first*
 
-    if (MENU.maybe_display_more()) {
+    if (DO_or_maybe_display(VERBOSITY_MORE)) {
       MENU.ln();
-      selected_or_flagged_pulses_info_lines();			// *then* info ;)
+      selected_or_flagged_pulses_info_lines();
     }
-    // info_select_destination_with(false);	// DADA ################
     break;
 
   case 'S':	// enter sync
@@ -2980,7 +2979,7 @@ bool menu_pulses_reaction(char menu_input) {
 	MENU.out(F("positive integer only"));
     }
 
-    if (MENU.maybe_display_more()) {
+    if (DO_or_maybe_display(VERBOSITY_LOWEST)) {
       MENU.out(F("sync "));
       MENU.outln(sync);
     }
@@ -2992,7 +2991,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (PULSES.pulse_is_selected(pulse))
 	en_info(pulse);
 
-    if (MENU.maybe_display_more()) {
+    if (DO_or_maybe_display(VERBOSITY_LOWEST)) {
       MENU.ln();
       selected_or_flagged_pulses_info_lines();
     }
@@ -3001,7 +3000,7 @@ bool menu_pulses_reaction(char menu_input) {
   case 'M':	// "mute", see 'N' as alternative
     PULSES.mute_all_actions();	// TODO: dead end street
 
-    if (MENU.verbosity)
+    if (DO_or_maybe_display(VERBOSITY_LOWEST))
       MENU.outln(F("muted all actions"));
     break;
 
@@ -3016,9 +3015,8 @@ bool menu_pulses_reaction(char menu_input) {
 	      PULSES.multiply_period(pulse, input_value);
 
 	  PULSES.fix_global_next();
-	  PULSES.check_maybe_do();	// maybe do it *first*
 
-	  if (MENU.maybe_display_more()) {
+	  if (DO_or_maybe_display(VERBOSITY_MORE)) {	// TODO: '*' maybe VERBOSITY_SOME
 	    MENU.ln();
 	    selected_or_flagged_pulses_info_lines();
 	  }
@@ -3045,7 +3043,7 @@ bool menu_pulses_reaction(char menu_input) {
       else
 	MENU.outln(F("small positive integer only"));
 
-      if (MENU.maybe_display_more())
+      if (DO_or_maybe_display(VERBOSITY_LOWEST))
 	show_scaling();
     }
     break;
@@ -3063,7 +3061,7 @@ bool menu_pulses_reaction(char menu_input) {
       else
 	MENU.outln(F("small positive integer only"));
 
-      if (MENU.maybe_display_more())
+      if (DO_or_maybe_display(VERBOSITY_LOWEST))
 	show_scaling();
 
     } else {	// '/' divide destination
@@ -3076,9 +3074,8 @@ bool menu_pulses_reaction(char menu_input) {
 	      PULSES.divide_period(pulse, input_value);
 
 	  PULSES.fix_global_next();
-	  PULSES.check_maybe_do();	// maybe do it *first*
 
-	  if (MENU.maybe_display_more()) {
+	  if (DO_or_maybe_display(VERBOSITY_MORE)) {
 	    MENU.ln();
 	    selected_or_flagged_pulses_info_lines();
 	  }
@@ -3111,9 +3108,8 @@ bool menu_pulses_reaction(char menu_input) {
 	  }
 
 	PULSES.fix_global_next();
-	PULSES.check_maybe_do();	// maybe do it *first*
 
-	if (MENU.maybe_display_more()) {
+	if (DO_or_maybe_display(VERBOSITY_MORE)) {
 	  MENU.ln();
 	  selected_or_flagged_pulses_info_lines();
 	}
@@ -3148,7 +3144,7 @@ bool menu_pulses_reaction(char menu_input) {
       MENU.ln();
     }
 
-    if (MENU.maybe_display_more()) {
+    if (DO_or_maybe_display(VERBOSITY_SOME)) {
       selected_or_flagged_pulses_info_lines();
       MENU.ln();
     }
@@ -3156,7 +3152,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'P':	// pulse create and edit
     PULSES.reset_and_edit_selected();
-    if (MENU.maybe_display_more()) {
+    if (DO_or_maybe_display(VERBOSITY_LOWEST)) {
       MENU.ln();
       selected_or_flagged_pulses_info_lines();
     }
@@ -3165,6 +3161,11 @@ bool menu_pulses_reaction(char menu_input) {
   case 'n':	// synchronize to now
     // see also '!'	one of 'n' and '!' is obsolete...
     PULSES.activate_selected_synced_now(sync);	// sync and activate
+
+    if (DO_or_maybe_display(VERBOSITY_HIGH)) {
+      MENU.ln();
+      selected_or_flagged_pulses_info_lines();
+    }
     break;
 
   case 'N':	// NULLs payload
@@ -3176,10 +3177,7 @@ bool menu_pulses_reaction(char menu_input) {
 	PULSES.set_payload(pulse, NULL);
       }
 
-    PULSES.fix_global_next();	// just in case?
-    PULSES.check_maybe_do();	// maybe do it *first*
-
-    if (MENU.maybe_display_more()) {	// *then* info ;)
+    if (DO_or_maybe_display(VERBOSITY_SOME)) {
       MENU.ln();
       selected_or_flagged_pulses_info_lines();
     }
@@ -3192,13 +3190,11 @@ bool menu_pulses_reaction(char menu_input) {
 
 	  g_inverse = !g_inverse;	// toggle bottom up/down click-pin mapping
 
-	  if (MENU.maybe_display_more()) {
-	    if (MENU.verbosity) {
-	      if (g_inverse)
-		MENU.outln(F("up"));
-	      else
-		MENU.outln(F("down"));
-	    }
+	  if (DO_or_maybe_display(VERBOSITY_LOWEST)) {
+	    if (g_inverse)
+	      MENU.outln(F("up"));
+	    else
+	      MENU.outln(F("down"));
 	  }
     } else
       en_click_selected();	// 'g' en_click  "GPIO"
@@ -3211,9 +3207,7 @@ bool menu_pulses_reaction(char menu_input) {
     if (sweep_up==0)	// start sweeping if it was disabled
       sweep_up=1;
 
-    PULSES.check_maybe_do();	// maybe do it *first*
-
-    if (MENU.maybe_display_more())
+    if (DO_or_maybe_display(VERBOSITY_LOWEST))
       sweep_info();
 
     break;
@@ -3224,7 +3218,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (sweep_up==0)
 	sweep_up=1;		//    start sweeping up if disabled
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
+      if (DO_or_maybe_display(VERBOSITY_LOWEST))
 	sweep_info();
       break;		// done
     }
@@ -3268,7 +3262,7 @@ bool menu_pulses_reaction(char menu_input) {
       }
     }
 
-    if (MENU.verbosity >= VERBOSITY_SOME)
+    if (DO_or_maybe_display(VERBOSITY_LOWEST))
       sweep_info();
     break;
 
@@ -3279,9 +3273,8 @@ bool menu_pulses_reaction(char menu_input) {
 	en_sweep_click(pulse);
 
     PULSES.fix_global_next();	// just in case?
-    PULSES.check_maybe_do();	// maybe do it *first*
 
-    if (MENU.maybe_display_more()) {
+    if (DO_or_maybe_display(VERBOSITY_MORE)) {
       MENU.ln();
       selected_or_flagged_pulses_info_lines();
     }
@@ -3295,9 +3288,8 @@ bool menu_pulses_reaction(char menu_input) {
 	en_sweep_click_0(pulse);
 
     PULSES.fix_global_next();	// just in case?
-    PULSES.check_maybe_do();	// maybe do it *first*
 
-    if (MENU.maybe_display_more()) {
+    if (DO_or_maybe_display(VERBOSITY_MORE)) {
       MENU.ln();
       selected_or_flagged_pulses_info_lines();
     }
@@ -3311,9 +3303,8 @@ bool menu_pulses_reaction(char menu_input) {
 	en_tuned_sweep_click(pulse);
 
     PULSES.fix_global_next();	// just in case?
-    PULSES.check_maybe_do();	// maybe do it *first*
 
-    if (MENU.maybe_display_more()) {
+    if (DO_or_maybe_display(VERBOSITY_MORE)) {
       MENU.ln();
       selected_or_flagged_pulses_info_lines();
     }
@@ -3338,9 +3329,8 @@ bool menu_pulses_reaction(char menu_input) {
     }
 
     PULSES.fix_global_next();	// just in case?
-    PULSES.check_maybe_do();	// maybe do it *first*
 
-    if (MENU.maybe_display_more()) {
+    if (DO_or_maybe_display(VERBOSITY_MORE)) {
       MENU.ln();
       selected_or_flagged_pulses_info_lines();
     }
@@ -3377,7 +3367,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'R':	// scale  was: ratio
-    if (MENU.maybe_display_more())
+    if (DO_or_maybe_display(VERBOSITY_SOME))
       MENU.out(F("scale "));
 
     // 'R!' tune selected pulses to a scale starting from lowest
@@ -3386,7 +3376,8 @@ bool menu_pulses_reaction(char menu_input) {
     else	// ui select a scale
       UI_select_from_DB(SCALES);	// select scale
 
-    display_arr(selected_in(SCALES), 2);
+    if (DO_or_maybe_display(VERBOSITY_LOWEST))
+      display_arr(selected_in(SCALES), 2);
 
     break;
 
@@ -3396,7 +3387,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (PULSES.pulse_is_selected(pulse))
 	en_INFO(pulse);
 
-    if (MENU.maybe_display_more()) {
+    if (DO_or_maybe_display(VERBOSITY_MORE)) {
       MENU.ln();
       selected_or_flagged_pulses_info_lines();
     }
@@ -3517,7 +3508,7 @@ bool menu_pulses_reaction(char menu_input) {
     if (input_value>0 && input_value<=PL_MAX) {
       voices = input_value;
       if (voices>GPIO_PINS) {
-	if (MENU.verbosity)
+	if (DO_or_maybe_display(VERBOSITY_LOWEST))
 	  MENU.outln(F("WARNING: voices > gpio"));
       }
     }
@@ -3527,7 +3518,7 @@ bool menu_pulses_reaction(char menu_input) {
     if (voices==0)
       voices=GPIO_PINS;	// just a guess
 
-    if (MENU.maybe_display_more())
+    if (DO_or_maybe_display(VERBOSITY_LOWEST))
       MENU.outln(voices);
 
     if(MENU.cb_peek()=='!')
@@ -3579,7 +3570,7 @@ bool menu_pulses_reaction(char menu_input) {
   case 'Z':	// reverse_gpio_pins
     reverse_gpio_pins();	// TODO: fix next_gpio()  ???? ################
 
-    if (MENU.maybe_display_more())
+    if (DO_or_maybe_display(VERBOSITY_LOWEST))
       MENU.outln(F("reverse_gpio_pins"));
 
     break;
@@ -3765,7 +3756,7 @@ bool menu_pulses_reaction(char menu_input) {
 	PULSES.activate_selected_synced_now(sync);	// sync and activate;
 	MENU.ln();
 
-	if (MENU.verbosity >= VERBOSITY_SOME)
+	if (MENU.maybe_display_more())
 	  selected_or_flagged_pulses_info_lines();
 
 	break;
@@ -4374,7 +4365,7 @@ bool menu_pulses_reaction(char menu_input) {
     default:	// normal use case: sync and activate
       PULSES.activate_selected_synced_now(sync); // sync and activate
 
-      if (MENU.maybe_display_more()) {		// *then* maybe info ;)
+      if (DO_or_maybe_display(VERBOSITY_HIGH)) {
 	MENU.ln();
 	selected_or_flagged_pulses_info_lines();
       }

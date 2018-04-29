@@ -24,9 +24,9 @@
 
 /* **************************************************************** */
 // verbosity:	Levels of menu feedback:
-#define VERBOSITY_ERROR		1
+#define VERBOSITY_LOWEST	1
 #define VERBOSITY_SOME		2
-#define VERBOSITY_CHATTY	3
+#define VERBOSITY_MORE		3
 #define VERBOSITY_HIGH		4
 
 
@@ -116,13 +116,6 @@ struct menupage {
 			// '+' means *always* active,  '-' *never* active
 };
 
-
-/* **************************************************************** */
-// verbosity:	Levels of menu feedback:
-#define VERBOSITY_ERROR		1
-#define VERBOSITY_SOME		2
-#define VERBOSITY_CHATTY	3
-#define VERBOSITY_HIGH		4
 
 /* **************************************************************** */
 /* class Menu {}							*/
@@ -273,11 +266,11 @@ class Menu {
   // Levels of menu feedback:
   unsigned char verbosity;
   /* verbosity codes:
-    #define VERBOSITY_ERROR	1
+    #define VERBOSITY_LOWEST	1
        errors and *requested* informations
     #define VERBOSITY_SOME	2
        include feedback, i.e. new values
-    #define VERBOSITY_CHATTY	3
+    #define VERBOSITY_MORE	3
        some more infos, for novice users
     #define VERBOSITY_HIGH	4
        more than you want to see
