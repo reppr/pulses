@@ -67,8 +67,7 @@ void display_arr(unsigned int *arr, unsigned int step) {
   bool was_zero=false;
 
   if (arr==0) {		// debugging ;)  TODO: remove
-    MENU.out(F("ERROR: "));
-    MENU.outln_invalid();
+    MENU.error_ln(F("(invalid)"));
     return;
   }
 

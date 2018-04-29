@@ -302,22 +302,22 @@ char Menu::cb_read() {
   }
 
 
-bool Menu::maybe_display_more() {	// avoid too much output
+bool Menu::maybe_display_more(unsigned char verbosity_level) {	// avoid too much output
   /* output control, avoid errors caused by serial menu output
      looks at verbosity *and* input buffer
      can be fooled to skip output by a terminating ',' on most input lines	*/
 
-   if (verbosity < VERBOSITY_SOME)
+   if (verbosity < verbosity_level)
      return false;
 
-   if (verbosity >= VERBOSITY_CHATTY)
+   if (verbosity > verbosity_level)
      return true;
 
-   // verbosity is VERBOSITY_SOME: display only if no other input is waiting
+   // if verbosity is == verbosity_level: display only if no other input is waiting
    if(cb_peek()==EOF)
      return true;
    return false;		// there is more input, do not display info yet
-  }
+}
 
 
 
@@ -718,8 +718,13 @@ void Menu::bar_graph(long value, unsigned int scale, char c) {
 // void OutOfRange(): output "out of range\n"
 void Menu::OutOfRange()	const { out(F("out of range\n")); }
 
-// void out_Error_(): output "ERROR: "
 void Menu::out_Error_()	const { out(F("ERROR: ")); }
+
+// void error_ln(char * str): output "ERROR: xxxxxxxx"
+void Menu::error_ln(const char * str)	const {
+  out_Error_();
+  outln(str);
+}
 
 // void out_selected_(): output "selected "
 void Menu::out_selected_() const { out(F("selected ")); }
@@ -1134,11 +1139,23 @@ void Menu::menu_display() const {
 
 
 /* **************************************************************** */
-// helper function, unused
 void Menu::verbosity_info() {
   if (verbosity) {
     out(F("verbosity "));
-    outln((int) verbosity);
+    switch (verbosity) {
+    case VERBOSITY_ERROR:
+      outln(F("low"));
+      break;
+    case VERBOSITY_SOME:
+      outln(F("some"));
+      break;
+    case VERBOSITY_CHATTY:
+      outln(F("chatty"));
+      break;
+    case VERBOSITY_HIGH:
+      outln(F("high"));
+      break;
+    }
   }
 }
 
@@ -1335,20 +1352,14 @@ void Menu::interpret_men_input() {
     case '+':
       if (++verbosity > VERBOSITY_HIGH)
 	verbosity = VERBOSITY_HIGH;
-      if (verbosity) {
-	out(F("verbosity "));
-	outln((int) verbosity);
-      }
+      verbosity_info();
       did_something = true;
       break;
 
     case '-':
       if (--verbosity < VERBOSITY_ERROR) // no UI access of verbosity=0
 	verbosity = VERBOSITY_ERROR;
-      if (verbosity) {
-	out(F("verbosity "));
-	outln((int) verbosity);
-      }
+      verbosity_info();
       did_something = true;
       break;
 

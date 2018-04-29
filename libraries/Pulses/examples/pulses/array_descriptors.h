@@ -66,10 +66,8 @@ int pointer2index(arr_descriptor * DB, unsigned int* array) {
 void select_array_in(arr_descriptor* DB, unsigned int* array) {
   if (pointer2index(DB, array) != ILLEGAL)	// TODO: remove debugging code
     DB[0].pointer=array;	// DB[0].pointer points to selected array
-  else {					// TODO: remove debugging code
-    MENU.out(F("ERROR: "));			// TODO: remove debugging code
-    MENU.outln_invalid();			// TODO: remove debugging code
-  }
+  else						// TODO: remove debugging code
+    MENU.error_ln(F("(invalid)"));		// TODO: remove debugging code
 }
 
 unsigned int* selected_in(arr_descriptor* DB) {

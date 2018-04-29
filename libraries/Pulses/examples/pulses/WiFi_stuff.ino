@@ -67,7 +67,7 @@ MENU.outln("DADA AP FIXME: ################");
     break;
 
   default:
-    MENU.outln(F("ERROR: selected_wifi_mode"));	// ################ FIXME: ################
+    MENU.error_ln(F("selected_wifi_mode"));	// ################ FIXME: ################
   }
 
   MENU.out(F("connecting to SSID: "));
@@ -143,7 +143,7 @@ bool setup_wifi_telnet(WiFiMode_t selected_wifi_mode=WIFI_DEFAULT_MODE) {
     break;
 
   default:
-    MENU.outln("setup_wifi_telnet ERROR: wifi_mode");	// ################ FIXME:	################
+    MENU.error_ln(F("wifi_mode"));	// ################ FIXME:	################
   }
 
   if (WiFi.status() == WL_CONNECTED) {

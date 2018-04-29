@@ -46,7 +46,7 @@ verbosity	KEYWORD2
 get_free_RAM	KEYWORD2
 print_free_RAM	KEYWORD2
 OutOfRange	KEYWORD2
-out_Error_	KEYWORD2
+error_ln	KEYWORD2
 out_selected_	KEYWORD2
 out_flags_	KEYWORD2
 bar_graph	KEYWORD2

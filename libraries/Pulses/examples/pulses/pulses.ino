@@ -385,7 +385,7 @@ void selected_DACsq_intensity_proportional(int intensity, int channel) {
       PULSES.add_time(&PULSES.pulses[pulse].period, &sum);
 
   if (sum.overflow)	// FIXME: if ever needed ;)
-    MENU.outln(F("ERROR: sum.overflow"));
+    MENU.error_ln(F("sum.overflow"));
 
   if (sum.time) {
     for (int pulse=0; pulse<PL_MAX; pulse++) {
@@ -3165,11 +3165,6 @@ bool menu_pulses_reaction(char menu_input) {
   case 'n':	// synchronize to now
     // see also '!'	one of 'n' and '!' is obsolete...
     PULSES.activate_selected_synced_now(sync);	// sync and activate
-
-    if (MENU.maybe_display_more()) {	// *then* info ;)
-      MENU.ln();
-      selected_or_flagged_pulses_info_lines();
-    }
     break;
 
   case 'N':	// NULLs payload

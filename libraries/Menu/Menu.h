@@ -22,6 +22,15 @@
 #endif
 
 
+/* **************************************************************** */
+// verbosity:	Levels of menu feedback:
+#define VERBOSITY_ERROR		1
+#define VERBOSITY_SOME		2
+#define VERBOSITY_CHATTY	3
+#define VERBOSITY_HIGH		4
+
+
+/* **************************************************************** */
 class Pulses;
 
 /* **************************************************************** */
@@ -107,6 +116,13 @@ struct menupage {
 			// '+' means *always* active,  '-' *never* active
 };
 
+
+/* **************************************************************** */
+// verbosity:	Levels of menu feedback:
+#define VERBOSITY_ERROR		1
+#define VERBOSITY_SOME		2
+#define VERBOSITY_CHATTY	3
+#define VERBOSITY_HIGH		4
 
 /* **************************************************************** */
 /* class Menu {}							*/
@@ -224,6 +240,7 @@ class Menu {
   /* String recycling:						*/
   void OutOfRange() const;	// output "out of range\n"
   void out_Error_() const;	// output "ERROR: "
+  void error_ln(const char * str) const; // output "ERROR: xxxxxxxx"
   void out_selected_() const;	// output "selected "
   void out_flags_() const;	// output "\tflags ";
 
@@ -240,7 +257,7 @@ class Menu {
   void IPstring(int ip) const;	// output an ip like "192.168.0.1"
 
 /* Output Control						*/
-  bool maybe_display_more();	// avoid too much output
+  bool maybe_display_more(unsigned char verbosity_level=VERBOSITY_SOME); // avoid too much output
 
 /* Input							*/
   int is_chiffre(char token);			// is token a chiffre?
@@ -254,7 +271,8 @@ class Menu {
   void print_free_RAM() const;
 
   // Levels of menu feedback:
-  unsigned char verbosity;	/* verbosity codes:
+  unsigned char verbosity;
+  /* verbosity codes:
     #define VERBOSITY_ERROR	1
        errors and *requested* informations
     #define VERBOSITY_SOME	2
@@ -263,8 +281,8 @@ class Menu {
        some more infos, for novice users
     #define VERBOSITY_HIGH	4
        more than you want to see
-*/
-  void verbosity_info();	// helper function, unused
+  */
+  void verbosity_info();	// helper function
   void outln_invalid();		// displays '(invalid)'
   void out_noop();		// displays 'noop'
 
@@ -309,13 +327,6 @@ class Menu {
   char men_known;		// initialized pages
   menupage *men_pages;		// pages' data
 };
-
-/* **************************************************************** */
-// verbosity:	Levels of menu feedback:
-#define VERBOSITY_ERROR		1
-#define VERBOSITY_SOME		2
-#define VERBOSITY_CHATTY	3
-#define VERBOSITY_HIGH		4
 
 /* **************************************************************** */
 #endif
