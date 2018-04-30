@@ -283,6 +283,7 @@ class Pulses {
   void reset_and_edit_selected();
   void show_selected_mask();				// show mask of selected pulses
   void maybe_show_selected_mask();			// maybe show that
+  void show_time_unit();
   void set_time_unit_and_inform(unsigned long new_value);
 
   unsigned int get_pl_max() { return pl_max; }	// inlined

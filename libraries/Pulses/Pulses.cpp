@@ -1042,6 +1042,17 @@ void Pulses::maybe_show_selected_mask() {
 }
 
 
+void Pulses::show_time_unit() {
+  (*MENU).out(F("time unit"));
+  (*MENU).out("  (");
+  (*MENU).out(time_unit);
+  (*MENU).out(F(" microseconds"));
+  (*MENU).out(F(" = "));
+  (*MENU).out((float) (1000000.0 / (float) time_unit), 6);
+  (*MENU).outln(F(" per second)"));
+}
+
+
 void Pulses::set_time_unit_and_inform(unsigned long new_value) {
   time_unit = new_value;
   (*MENU).out(F("Set time unit to "));

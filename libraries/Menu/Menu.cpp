@@ -1144,16 +1144,16 @@ void Menu::verbosity_info() {
     out(F("verbosity "));
     switch (verbosity) {
     case VERBOSITY_LOWEST:
-      outln(F("low"));
+      out(F("lowest"));
       break;
     case VERBOSITY_SOME:
-      outln(F("some"));
+      out(F("some"));
       break;
     case VERBOSITY_MORE:
-      outln(F("more"));
+      out(F("more"));
       break;
     case VERBOSITY_HIGH:
-      outln(F("high"));
+      out(F("high"));
       break;
     }
   }
@@ -1353,6 +1353,8 @@ void Menu::interpret_men_input() {
       if (++verbosity > VERBOSITY_HIGH)
 	verbosity = VERBOSITY_HIGH;
       verbosity_info();
+      ln();
+
       did_something = true;
       break;
 
@@ -1360,6 +1362,8 @@ void Menu::interpret_men_input() {
       if (--verbosity < VERBOSITY_LOWEST) // no UI access of verbosity=0
 	verbosity = VERBOSITY_LOWEST;
       verbosity_info();
+      ln();
+
       did_something = true;
       break;
 

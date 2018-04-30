@@ -2153,13 +2153,8 @@ void menu_pulses_display() {
   MENU.ln();
   info_select_destination_with(false);
 
-  MENU.out(F("u=select "));  MENU.out(F("time unit"));
-  MENU.out("  (");
-  MENU.out(PULSES.time_unit);
-  MENU.out(F(" microseconds"));
-  MENU.out(F(" = "));
-  MENU.out((float) (1000000.0 / (float) PULSES.time_unit), 6);
-  MENU.outln(F(" per second)"));
+  MENU.out(F("u=select "));
+  PULSES.show_time_unit();
 
   MENU.ln();
   MENU.out(F("s=switch pulse on/off"));
@@ -2664,7 +2659,50 @@ void no_g_inverse() {
 // display factor function show_scaling();
 void show_scaling() {
   MENU.out(F("multiplier/divisor "));
-  MENU.out(multiplier); MENU.slash(); MENU.outln(divisor);
+  MENU.out(multiplier); MENU.slash(); MENU.out(divisor);
+}
+
+void show_UI_settings() {
+  MENU.ln();
+  MENU.out(F("scale "));
+  MENU.out(array2name(SCALES, selected_in(SCALES)));
+  MENU.tab();
+
+  MENU.out(F("jiffle "));
+  MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
+  MENU.tab();
+
+  MENU.out(F("gpio bottom "));	// TODO: check where that *is* used
+  if (g_inverse)
+    MENU.out(F("up"));
+  else
+    MENU.out(F("down"));
+  MENU.tab();
+
+  MENU.out(F("scaling "));
+  MENU.out(multiplier);
+  MENU.slash();
+  MENU.out(divisor);
+  MENU.tab();
+
+  MENU.out(F("sync "));
+  MENU.out(sync);
+  MENU.ln();
+
+
+  MENU.out(F("Af:"));
+  PULSES.show_action_flags(selected_actions);
+  MENU.tab();
+
+  MENU.out(F("voices "));
+  MENU.out(voices);
+  MENU.tab();
+
+  MENU.verbosity_info();
+  MENU.ln();
+
+  PULSES.show_time_unit();
+  PULSES.show_selected_mask();
 }
 
 // for old style 'experiment'
@@ -3043,8 +3081,10 @@ bool menu_pulses_reaction(char menu_input) {
       else
 	MENU.outln(F("small positive integer only"));
 
-      if (DO_or_maybe_display(VERBOSITY_LOWEST))
+      if (DO_or_maybe_display(VERBOSITY_LOWEST)) {
 	show_scaling();
+	MENU.ln();
+      }
     }
     break;
 
@@ -3061,8 +3101,10 @@ bool menu_pulses_reaction(char menu_input) {
       else
 	MENU.outln(F("small positive integer only"));
 
-      if (DO_or_maybe_display(VERBOSITY_LOWEST))
+      if (DO_or_maybe_display(VERBOSITY_LOWEST)) {
 	show_scaling();
+	MENU.ln();
+      }
 
     } else {	// '/' divide destination
       switch (dest) {
@@ -3372,7 +3414,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     // 'R!' tune selected pulses to a scale starting from lowest
     if (MENU.cb_peek()=='!')
-      tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));	// tune-2-scale
+      tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));	// tune-2-scale FIXME: *selected*
     else	// ui select a scale
       UI_select_from_DB(SCALES);	// select scale
 
@@ -3438,6 +3480,7 @@ bool menu_pulses_reaction(char menu_input) {
   case 'D':	// DADA reserved for temporary code   testing debugging ...
     // MENU.out_noop(); MENU.ln();
 
+    show_UI_settings();
     // PULSES.set_payload(2, &pulse_info_1line); // test: set and activate payload
 
     /*

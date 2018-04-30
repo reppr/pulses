@@ -52,3 +52,4 @@ out_flags_	KEYWORD2
 bar_graph	KEYWORD2
 ticked_chars	KEYWORD2
 out_ticked_hexs	KEYWORD2
+verbosity_info	KEYWORD2
