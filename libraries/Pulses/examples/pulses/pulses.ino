@@ -270,21 +270,23 @@ int reset_all_flagged_pulses_GPIO_OFF() {	// reset pulses, switches GPIO and DAC
   gpio_pin_t next_gpio(index)	*reset* to give gpio_pins[index] on next call
 */
 gpio_pin_t next_gpio(gpio_pin_t set_i=-1) {
-  static gpio_pin_t last_used_gpio_i = ILLEGAL;
+  static gpio_pin_t next_free_gpio_i=0;
 
   gpio_pin_t ret=ILLEGAL;
 
-  if (set_i == -1) {	// normal use: next_gpio()  get next unused gpio pin
-    if(++last_used_gpio_i < GPIO_PINS)
-      ret = gpio_pins[last_used_gpio_i];	// return next free pin
+  if (set_i == -1) {	// normal use: next_gpio()  *get next unused gpio pin**
+    if(next_free_gpio_i < GPIO_PINS)
+      ret = gpio_pins[next_free_gpio_i];	// return next free pin
     else
-      MENU.outln(F("no free GPIO"));
-  } else {		// next_gpio(set_i)   reset to return 'set_i' on next next_gpio() call
+      if (MENU.verbosity > VERBOSITY_LOWEST)
+	MENU.outln(F("no free GPIO"));
+    next_free_gpio_i++;				// count pins, available or not
+  } else {		// next_gpio(set_i != ILLEGAL)   *reset* to return 'set_i' on next next_gpio() call
     if ((set_i < GPIO_PINS) && (set_i >= 0)) {
-      last_used_gpio_i = set_i - 1;
-      ret = gpio_pins[set_i];	// rarely used, same as next call to next_gpio()
-    } else {
-      MENU.out(F("GPIO pin "));
+      next_free_gpio_i = set_i;
+      ret = gpio_pins[next_free_gpio_i];	// rarely used, same as next call to next_gpio()
+    } else {	// should not happen!
+      MENU.out(F("ERROR: GPIO "));
       MENU.outln_invalid();
     }
   }
