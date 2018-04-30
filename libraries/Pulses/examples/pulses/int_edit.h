@@ -39,7 +39,6 @@ struct fraction arr_len(unsigned int *arr, unsigned int step) {
     if (step > 2)
       count = arr[i+2];
 
-    MENU.out(multiplier); MENU.tab();     MENU.out(divisor); MENU.tab();    MENU.outln(count);
     scratch.multiplier = multiplier * count;
     scratch.divisor = divisor;
     HARMONICAL.add_fraction(&scratch, &f);

@@ -1458,6 +1458,42 @@ bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, i
 };
 
 
+// if shortest period of selected pulses is too short, shift all periods by octaves
+int lower_audio_if_too_high(unsigned long limit) {
+  unsigned int shortest=~0;		// shortest period.time (no overflow implemented here)
+  unsigned int fastest_pulse=~0;	// pulse index with shortest period.time
+  int octave_shift=0;
+  int pulse;
+
+  for (pulse=0; pulse<PL_MAX; pulse++) {	// find fastest selected pulse
+    if (PULSES.pulse_is_selected(pulse)) {
+      if(shortest > PULSES.pulses[pulse].period.time) {
+	fastest_pulse =  pulse;
+	shortest =  PULSES.pulses[pulse].period.time;
+      }
+    }
+  }
+
+  while (PULSES.pulses[fastest_pulse].period.time < limit) {	// too fast?
+    octave_shift--;
+    for (pulse=0; pulse<PL_MAX; pulse++) {
+      if (PULSES.pulse_is_selected(pulse)) {
+	PULSES.mul_time(&PULSES.pulses[pulse].period, 2);	// octave shift down
+      }
+    }
+  }
+
+  if (octave_shift) {
+    if (MENU.verbosity > VERBOSITY_LOWEST) {
+      MENU.out(octave_shift);
+      MENU.outln(F(" octaves shifted"));
+    }
+  }
+
+  return octave_shift;
+}
+
+
 // ****************************************************************
 void init_chord_1345689a(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   unsigned long unit = multiplier * PULSES.time_unit;
@@ -2710,6 +2746,92 @@ void Press_toStart() {
   MENU.outln(F("Press '!' to start"));
 }
 
+void select_scale__UI() {
+  switch (MENU.cb_peek()) {
+  case EOF:
+    break;
+
+  case 'e':	// e minor scale
+    MENU.drop_input_token();
+    select_array_in(SCALES, minor_scale);
+    PULSES.time_unit=1000000;	// switch to metric time unit
+    divisor=330; // 329.36	// e4  ***not*** harmonical
+    break;
+
+  case 'E':	// E major scale
+    MENU.drop_input_token();
+    select_array_in(SCALES, major_scale);
+    PULSES.time_unit=1000000;	// switch to metric time unit
+    divisor=330; // 329.36	// e4  ***not*** harmonical
+    break;
+
+  case 'a':	// a minor scale
+    MENU.drop_input_token();
+    PULSES.time_unit=1000000;	// switch to metric time unit
+    divisor = 440;
+    select_array_in(SCALES, minor_scale);
+    break;
+
+  case 'A':	// A major scale
+    MENU.drop_input_token();
+    PULSES.time_unit=1000000;	// switch to metric time unit
+    divisor = 440;
+    select_array_in(SCALES, major_scale);
+    break;
+
+  case 'd':	// d minor scale
+    MENU.drop_input_token();
+    PULSES.time_unit=1000000;	// switch to metric time unit
+    divisor = 294;		// 293.66 = D4
+    // divisor = 147;		// 146.83 = D3
+    select_array_in(SCALES, minor_scale);
+    break;
+
+  case 'D':	// D major scale
+    MENU.drop_input_token();
+    PULSES.time_unit=1000000;	// switch to metric time unit
+    divisor = 294;		// 293.66 = D4
+    // divisor = 147;		// 146.83 = D3
+    select_array_in(SCALES, major_scale);
+    break;
+  }
+
+  switch (MENU.cb_peek()) {	// (second or) third letters for other scales
+  case EOF:
+    break;
+  case '6':	// doric scale
+    select_array_in(SCALES, doric_scale);
+    break;
+  case '5':	// 5  pentatonic (minor|major) scale
+    MENU.drop_input_token();
+    if ((selected_in(SCALES) == major_scale) || (selected_in(SCALES) == tetrachord)) {
+      select_array_in(SCALES, european_pentatonic);
+//      voices = 16;	// default (pentatonic)	// for DAC output	// TODO: FIXME:
+    } else {
+      select_array_in(SCALES, pentatonic_minor);
+//      voices = 16;	// default (pentatonic)	// for DAC output	// TODO: FIXME:
+    }
+    break;
+  case '4':	// 4  tetrachord
+    MENU.drop_input_token();
+    select_array_in(SCALES, tetrachord);
+    break;
+  case '3':	// 3  octaves fourths fifths
+    MENU.drop_input_token();
+    select_array_in(SCALES, octaves_fourths_fifths);
+    break;
+  case '2':	// 2  octaves fifths
+    MENU.drop_input_token();
+    select_array_in(SCALES, octaves_fifths);
+    break;
+  case '1':	// 1  octaves
+    MENU.drop_input_token();
+    select_array_in(SCALES, octaves);
+    break;
+  }
+}
+
+
 #if defined USE_DACs	// ################ TODO: remove
 int s1=0;
 int s2=0;
@@ -3479,6 +3601,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'D':	// DADA reserved for temporary code   testing debugging ...
     // MENU.out_noop(); MENU.ln();
+    lower_audio_if_too_high(409600);
 
     show_UI_settings();
     // PULSES.set_payload(2, &pulse_info_1line); // test: set and activate payload
@@ -4164,86 +4287,7 @@ bool menu_pulses_reaction(char menu_input) {
 	if (voices == 0)
 	  voices = 15;			// default (diatonic)	// for DAC output
 
-	if(MENU.cb_peek()!=EOF) {		// second letters e E a A	e|a  minor|major
-	  //	 ################ FIXME: ################
-	  switch (MENU.cb_peek()) {
-	  case 'e':	// e minor scale
-	    MENU.drop_input_token();
-	    select_array_in(SCALES, minor_scale);
-	    break;
-
-	  case 'E':	// E major scale
-	    MENU.drop_input_token();
-	    select_array_in(SCALES, major_scale);
-	    break;
-
-	  case 'a':	// a minor scale
-	    MENU.drop_input_token();
-	    divisor = 440;
-	    select_array_in(SCALES, minor_scale);
-	    break;
-
-	  case 'A':	// A major scale
-	    MENU.drop_input_token();
-	    divisor = 440;
-	    select_array_in(SCALES, major_scale);
-	    break;
-
-	  case 'd':	// d minor scale
-	    MENU.drop_input_token();
-	    divisor = 294;	// 293.66 = D4
-	    // divisor = 147;	// 146.83 = D3
-	    select_array_in(SCALES, minor_scale);
-	    break;
-
-	  case 'D':	// D major scale
-	    MENU.drop_input_token();
-	    divisor = 294;	// 293.66 = D4
-	    // divisor = 147;	// 146.83 = D3
-	    select_array_in(SCALES, major_scale);
-	    break;
-	  }
-	}
-
-	switch (MENU.cb_peek()) {	// (second or) third letters for other scales
-	case EOF:
-	  break;
-	case '6':	// doric scale
-	  select_array_in(SCALES, doric_scale);
-	  break;
-	case '5':	// 5  pentatonic (minor|major) scale
-	  MENU.drop_input_token();
-	  if ((selected_in(SCALES) == major_scale) || (selected_in(SCALES) == tetrachord)) {
-	    select_array_in(SCALES, european_pentatonic);
-	    voices = 16;	// default (pentatonic)	// for DAC output
-	  } else {
-	    select_array_in(SCALES, pentatonic_minor);
-	    voices = 16;	// default (pentatonic)	// for DAC output
-	  }
-	  break;
-	case '4':	// 4  tetrachord
-	  MENU.drop_input_token();
-          select_array_in(SCALES, tetrachord);
-	  break;
-	case '3':	// 3  octaves fourths fifths
-	  MENU.drop_input_token();
-	  select_array_in(SCALES, octaves_fourths_fifths);
-	  multiplier *=8;
-	  divisor /= 2;
-	  break;
-	case '2':	// 2  octaves fifths
-	  MENU.drop_input_token();
-	  select_array_in(SCALES, octaves_fifths);
-	  multiplier *= 4;
-	  divisor /= 4;
-	  break;
-	case '1':	// 1  octaves
-	  MENU.drop_input_token();
-	  select_array_in(SCALES, octaves);
-	  multiplier *= 8;	// ################ FIXME: ################
-	  divisor /= 8;
-	  break;
-	}
+	select_scale__UI();	// second/third letters choose metric scales
 
 	// select_array_in(JIFFLES, ting4096);
 	// select_array_in(JIFFLES, piip2048);
@@ -4254,6 +4298,7 @@ bool menu_pulses_reaction(char menu_input) {
 //	prepare_scale(false, voices, multiplier, divisor, 0, selected_in(SCALES));
 //	display_name5pars("GUITAR", g_inverse, voices, multiplier, divisor, sync);
 	tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
+	lower_audio_if_too_high(409600);
 
   #ifndef USE_DACs	// TODO: review and use test code
 	setup_jiffle_thrower_selected(selected_actions);
@@ -4306,8 +4351,11 @@ bool menu_pulses_reaction(char menu_input) {
 	// divisor=165; // 164.81		// e3  ***not*** harmonical
 
 	select_array_in(SCALES, minor_scale);		// default e minor
+	select_scale__UI();	// second/third letters choose metric scales
+
 	// tune *all* primary pulses
 	tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
+	lower_audio_if_too_high(409600);
 
 	// prepare primary pulse groups:
 	select_array_in(JIFFLES, d1024_4096);
