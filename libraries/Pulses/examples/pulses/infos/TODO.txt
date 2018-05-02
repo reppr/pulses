@@ -1,3 +1,7 @@
+no dest action flags in jiffle player needed?
+
+
+
 // DADA TODO:  #error "sorry this module is temporary switched off"
 switched off all older menu examples to decide about menu api changes
 

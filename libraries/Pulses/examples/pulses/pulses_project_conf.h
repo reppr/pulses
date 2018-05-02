@@ -18,7 +18,8 @@
   in most cases you can let all these lines inactive, commented out
 */
 
-#define ESP32_15_clicks_no_display_TIME_MACHINE1	// new DEFAULT on ESP32
+#define ESP32_15_clicks_no_display_TIME_MACHINE2	// ESP32 new default
+// #define ESP32_15_clicks_no_display_TIME_MACHINE1	// ESP32 (prior default)
 
 // #define ESP32_15_clicks_no_display
 // #define GUITAR_v0	// autostart guitar E37  on ESP32 DAC
@@ -52,7 +53,10 @@
 // do not change the following code
 
 #if defined ESP32	// KALIMBA7_v2 ESP32 version
-  #if defined ESP32_15_clicks_no_display_TIME_MACHINE1
+  #if defined ESP32_15_clicks_no_display_TIME_MACHINE2
+    #define AUTOSTART	MENU.play_KB_macro("E39!"); selected_experiment=-1;
+    #define PL_MAX	96	// *deactivates*  #define in pulses_boards.h
+  #elif defined ESP32_15_clicks_no_display_TIME_MACHINE1
     #define AUTOSTART	MENU.play_KB_macro("E38!"); selected_experiment=-1;
     #define PL_MAX	64	// *deactivates*  #define in pulses_boards.h
   #elif defined ESP32_15_clicks_no_display

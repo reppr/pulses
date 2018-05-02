@@ -1,3 +1,5 @@
+// #define ESP32_15_clicks_no_display_TIME_MACHINE2	new default for ESP32
+
 /* **************************************************************** */
 /*
 			pulses.ino
@@ -2142,6 +2144,7 @@ char * experiment_names[] = {		// FIXME: const char * experiment_names would be 
       "more voices please",			// 36
       "Guitar and other Instruments",		// 37
       "Time Machine 1",				// 38
+      "Time Machine 2",				// 39
 //    "(invalid)",				// over
   };
 
@@ -4415,7 +4418,78 @@ bool menu_pulses_reaction(char menu_input) {
 	  MENU.drop_input_token();
 	  PULSES.activate_selected_synced_now(sync);	// sync and activate;
 	}
+	break; // E38
+
+      case 39:	// 'E39' time machine 2 setup
+	// #define ESP32_15_clicks_no_display_TIME_MACHINE2
+	{ // local scope only right now
+	  short bass_pulses=14;
+	  // short bass_octaves=2;
+	  short middle_pulses=15;
+	  short high_pulses=7;
+
+	  voices = bass_pulses + middle_pulses + high_pulses;	// init *all* primary pulses
+	  PULSES.select_n(voices);
+
+	  PULSES.time_unit=1000000;	// default metric
+	  multiplier=4096;		// uses 1/4096 jiffles
+	  divisor = 294;		// 293.66 = D4	// default tuning D4
+	  // divisor = 147;	// 146.83 = D3
+	  // divisor=55;	// default tuning a
+
+	  select_array_in(SCALES, minor_scale);		// default e minor
+	  // tune *all* primary pulses
+	  tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
+	  lower_audio_if_too_high(409600*2);	// 2 bass octaves
+
+	  // prepare primary pulse groups:
+	  select_array_in(JIFFLES, d1024_4096);		// default jiffle
+
+	  // bass on DAC1 and planed broad angle LED lamps
+	  // select_array_in(JIFFLES, d512_4096);
+	  PULSES.select_from_to(0, bass_pulses - 1);
+	  for(int pulse=0; pulse<bass_pulses; pulse++)
+	    en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL, DACsq1);	// TODO: FIXME: use inbuilt click
+	  PULSES.select_from_to(0,bass_pulses);			// pulse[bass_pulses] belongs to both groups
+	  // selected_DACsq_intensity_proportional(255, 1);
+	  selected_share_DACsq_intensity(255, 1);		// bass DAC1 intensity
+
+	  // 2 middle octaves on 15 gpios
+	  // select_array_in(JIFFLES, d512_4096);
+	  //	select_array_in(JIFFLES, d256_4096);
+	  PULSES.select_from_to(bass_pulses, bass_pulses + middle_pulses -1);
+	  setup_jiffle_thrower_selected(selected_actions=0);		// overwrites topmost bass pulse
+									// TODO: 'selected_actions=...' or '|='
+	  // fix topmost bass pulse pulse[bass_pulses] that belongs to both groups:
+	  PULSES.pulses[bass_pulses].dest_action_flags |= DACsq1;
+
+	  // high octave on DAC2
+	  //	select_array_in(JIFFLES, d64_4096);
+	  //select_array_in(JIFFLES, d256_4096);
+	  PULSES.select_from_to(bass_pulses + middle_pulses -1, bass_pulses + middle_pulses + high_pulses -1);
+	  for(int pulse = bass_pulses + middle_pulses; pulse<voices; pulse++) {	// pulse[21] belongs to both groups
+	    en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL, DACsq2);	// FIXME: use inbuilt click
+	    //	  PULSES.pulses[pulse].dest_action_flags |= (DACsq2);
+	    //	  PULSES.set_payload(pulse, &do_throw_a_jiffle);
+	    //	  PULSES.pulses[pulse].data = (unsigned int) jiffle;
+	  }
+	  // fix pulse[21] belonging to both groups
+	  PULSES.pulses[bass_pulses + middle_pulses - 1].dest_action_flags |= DACsq2;
+	  selected_share_DACsq_intensity(255, 2);
+	  //	selected_DACsq_intensity_proportional(255, 2);
+
+	  PULSES.select_n(voices);	// select all primary voices
+
+	  // maybe start?
+	  if(MENU.cb_peek() == '!') {		// 'E39!' starts E39
+	    MENU.drop_input_token();
+	    PULSES.activate_selected_synced_now(sync);	// sync and activate, no display
+	  } else
+	    if (DO_or_maybe_display(VERBOSITY_LOWEST))	// maybe ok for here?
+	      selected_or_flagged_pulses_info_lines();
+	} // case E39 { }
 	break;
+
 
       } // switch (selected_experiment)
     } // if experiment >= 0

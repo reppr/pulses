@@ -1,3 +1,71 @@
+/*
+   new implementation of fix_global_next()
+   seems clearer
+
+   was written, as i suspected a bug in the old version
+   it turned out to be elsewhere
+
+   the new version looks better to me,
+   but the old one is tested for a much longer time
+   so i kept it for now
+*/
+// void fix_global_next();
+// determine when the next event[s] will happen:
+//
+// to start properly you *must* call this once, late in setup()
+// will automagically get updated later on
+void Pulses::fix_global_next() {
+#if defined DEBUG_S0_crash	// TODO: DEBUG_S0_crash remove debugging code
+  (*MENU).outln("\nFIX_GLOBAL_NEXT2:");
+#endif
+  /* This version calculates global next event[s] *once* when the next
+     event could possibly have changed.
+
+     If a series of pulses are sceduled for the same time they will
+     be called in fast sequence *without* fix_global_next() in between them.
+     After all pulse with the same time are done fix_global_next() is called.
+
+     If a pulse sets up another pulse with the same next it *can* decide to do
+     the fix itself, if it seems appropriate. Normally this is not required.
+  */
+
+  // we work directly on the global variables here:
+  global_next_count=0;
+
+  for (int pulse=0; pulse<pl_max; pulse++) {	// check all pulses
+    if (pulses[pulse].flags & ACTIVE) {		   // pulse active?
+      if(global_next_count==0) {	// very first pulse
+	global_next_pulses[global_next_count++] = pulse;	// initialize FIRST
+	global_next.overflow = pulses[pulse].next.overflow;
+	global_next.time = pulses[pulse].next.time;
+      } else {				// all following pulses
+	if (global_next.overflow == pulses[pulse].next.overflow) {	// SAME OVERFLOW
+	  if (global_next.time == pulses[pulse].next.time) {		//  same time :)
+	    global_next_pulses[global_next_count++] = pulse;		//  INITIALISE following
+	  } else if(global_next.time > pulses[pulse].next.time) {	//  earlier?
+	    global_next_count = 0;					//   RESTART
+	    global_next_pulses[global_next_count++] = pulse;		//   re-initialise
+	    global_next.time = pulses[pulse].next.time;			//   new time
+	  } // else later time: noop
+	} else if (global_next.overflow > pulses[pulse].next.overflow) { // EARLIER OVERFLOW
+	    global_next_count = 0;					//   RESTART all
+	    global_next_pulses[global_next_count++] = pulse;		//   re-initialise
+	    global_next.overflow = pulses[pulse].next.overflow;		//   new overflow
+	    global_next.time = pulses[pulse].next.time;			//   new time
+	} // else noop	later overflows are later anyway...		// LATER OVERFLOWS noop
+      } // all pulses but first
+    } // active?
+  } // pulse loop
+
+#if defined DEBUG_S0_crash	// TODO: DEBUG_S0_crash remove debugging code
+  (*MENU).out("\nEND fix_global_next, cnt: ");
+  (*MENU).outln(global_next_count);
+#endif
+} // fix_global_next
+
+
+/* **************************************************************** */
+
 /* more functions to move to library Pulses:
 void Pulses::short_info(void) {
   if ((*MENU).verbosity > VERBOSITY_SOME) {
