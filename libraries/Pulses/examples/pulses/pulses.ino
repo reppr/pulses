@@ -1739,7 +1739,7 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
   MENU.tab();
   display_payload(pulse);
 
-  MENU.tab();
+  MENU.space(); MENU.tab();
   if(PULSES.pulses[pulse].dest_action_flags || \
      PULSES.pulses[pulse].dac1_intensity || PULSES.pulses[pulse].dac2_intensity) {
     MENU.out(F("dAf: "));
@@ -3743,19 +3743,28 @@ bool menu_pulses_reaction(char menu_input) {
 
     break;
 
-  case 'E':	// enter experiment
+  case 'E':	// experiment, setups, instruments
     if (MENU.maybe_display_more()) {
       MENU.out(F("experiment "));
     }
 
-    input_value = MENU.numeric_input(-1);
+    input_value = MENU.numeric_input(-1);	// select experiment
 
     if (input_value==-1)
       display_names(experiment_names, n_experiment_names, selected_experiment);
 
-    else if (input_value>=0 ) {
+    else if (input_value>=0 ) {	// select, initialize experiment
       selected_experiment = input_value;
-      switch (selected_experiment) {	// initialize defaults, but do not start yet
+      switch (selected_experiment) {
+	/* some old style setups just initialise defaults,  but do not start yet, press '!'
+	   others do start if you add a '!' as last char
+	   you can edit and then press '!' or 'n' (== synchronise to *now*)
+	   sorry, it's messy!	TODO: unmess
+	*/
+
+//      case 0:	// free setup planed
+//	  break;
+
       case 1:
 	multiplier=2;
 	divisor=1;
