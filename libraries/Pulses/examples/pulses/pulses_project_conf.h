@@ -54,7 +54,8 @@
 
 #if defined ESP32	// KALIMBA7_v2 ESP32 version
   #if defined ESP32_15_clicks_no_display_TIME_MACHINE2
-    #define AUTOSTART	MENU.play_KB_macro("E39!"); selected_experiment=-1;
+//    #define AUTOSTART	MENU.play_KB_macro("E39!"); selected_experiment=-1;
+    #define AUTOSTART	MENU.play_KB_macro("E40!"); selected_experiment=-1;
     #define PL_MAX	96	// *deactivates*  #define in pulses_boards.h
   #elif defined ESP32_15_clicks_no_display_TIME_MACHINE1
     #define AUTOSTART	MENU.play_KB_macro("E38!"); selected_experiment=-1;

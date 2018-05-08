@@ -39,6 +39,10 @@ deactivate_pulse	KEYWORD2
 set_payload	KEYWORD2
 set_payload_with_pin	KEYWORD2
 set_gpio	KEYWORD2
+set_icode_p	KEYWORD2
+icode		KEYWORD2
+play_icode	KEYWORD2
+show_icode_mnemonic	KEYWORD2
 mute_all_actions	KEYWORD2
 show_action_flags	KEYWORD2
 select_pulse	KEYWORD2

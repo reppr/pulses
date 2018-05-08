@@ -18,6 +18,17 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+typedef int icode_t;
+
+//#include <limits.h>
+enum icode {
+  KILL=INT_MIN,
+  INFO,
+  WAIT,
+//LAMP,
+  DONE,
+};
+
 #ifndef pulse_flags_t
   #define pulse_flags_t		uint8_t
 #endif
@@ -30,6 +41,8 @@
   #define gpio_pin_t	int8_t			// negative values might be used for pin extensions
 //  #define gpio_pin_t		short		// negative values might be used for pin extensions
 #endif
+
+#define JIFFLETAB_INDEX_STEP	3
 
 #include "examples/pulses/pulses_systems.h"
 #include "examples/pulses/pulses_boards.h"
@@ -77,29 +90,31 @@ struct pulse_t {
 
   pulse_flags_t flags;
 
-// #define pulses.flags masks:
+// #define pulses[pulse].flags masks:
 #define ACTIVE			1	// switches pulse on/off
 #define COUNTED			2	// repeats 'count[]' times, then vanishes
 #define HAS_GPIO		4	// has an associated GPIO pin	use set_gpio(pulse, pin)
 #define SCRATCH			8	// edit (or similar) in progress
 #define DO_NOT_DELETE	       16	// dummy to avoid being thrown out
 #define TUNED		       32	// do not set directly, use activate_tuning(pulse)
-//#define INVERSE_LOGIC	      128	// TODO: implement
+#define HAS_ICODE	       64	// do not set directly, use set_icode_p(int pulse, icode_t* icode_p)
+  //#define INVERSE_LOGIC	      128	// TODO: implement
 
 
   action_flags_t action_flags;
 
 // #define pulses.action_flags masks:
 // for easy menu interfacing:	1,2 DACsq
-//				noACTION should be highest
+
 //	>>>>>>>	change all flag display code if something changes here <<<<<<<
 #define DACsq1			1	// DAC1 output value as square wave, harmonical timing
 #define DACsq2			2	// DAC2 output value as square wave, harmonical timing
 #define CLICKs	      		4	// GPIO 'click' inbuilt GPIO toggling	see: set_gpio(pulse, pin)
 #define PAYLOAD			8	// do periodic_do(pulse)
-#define noACTION		16	// 'mutes' all actions	>>>> must be last <<<<
+#define doesICODE		16	// plays icode
 
-#define ACTION_MASK_BITS	5	// >>>>>>>> *DO CHANGE* number of flags changes here <<<<<<<
+#define noACTION		32	// 'mutes' all actions
+#define ACTION_MASK_BITS	6	// >>>>>>>> *DO CHANGE* number of flags changes here <<<<<<<
 					// ACTION_MASK_BITS is used by mask displaying code (only)
 
   // internal parameter:
@@ -123,6 +138,18 @@ struct pulse_t {
   /*
     used by do_jiffle as jiffletab index
   */
+
+  int* icode_p;
+  /*
+    used by icode_player *icode_array
+  */
+
+
+  int icode_index;
+  /*
+    used by icode_player as array index
+  */
+
 
   unsigned long base_time;
   /*
@@ -230,14 +257,22 @@ class Pulses {
   void init_pulses();			// init all pulses
   void wake_pulse(int pulse);		// wake a pulse up, called from check_maybe_do()
   void deactivate_pulse(int pulse);	// clear ACTIVE flag, keep data
-  void set_payload(int pulse, void (*payload)(int)); // set and activate payload
-  void set_payload_with_pin(int pulse, void (*payload)(int), gpio_pin_t pin); // set and activate payload with gpio
-  void set_gpio(int pulse, gpio_pin_t pin);
+  void set_payload(int pulse, void (*payload)(int));	// set and activate payload
+  void set_payload_with_pin(int pulse, void (*payload)(int), gpio_pin_t pin);	// set and activate payload with gpio
+  void set_gpio(int pulse, gpio_pin_t pin);		// set gpio
+  void set_icode_p(int pulse, icode_t* icode_p, bool activate);			// set icode. maybe activate
 
-  void mute_all_actions();
-  void show_action_flags(action_flags_t flags);
+  void play_icode(int pulse);			// payload to play icode
+  void show_icode_mnemonic(icode_t icode);	// display icode mnemonic
 
-  bool select_pulse(int pulse);		// select in user interface
+//  DOES NOT WORK: non static member function	TODO: fix or remove ################
+//  void seed_icode_player(int pulse);		// used as payload to seed play_icode() pulses
+//  bool setup_icode_seeder(int pulse, struct time period, icode_t* icode_p, action_flags_t dest_action_flags);
+
+  void mute_all_actions();			// mute action flags
+  void show_action_flags(action_flags_t flags);	// show action flags as mnemonics
+
+  bool select_pulse(int pulse);			// select in user interface
   void deselect_pulse(int pulse);
   void toggle_selection(int pulse);
   void clear_selection(void);
@@ -263,6 +298,7 @@ class Pulses {
 
   void activate_pulse_synced(int pulse,			\
 			    struct time when, int sync);	// ################
+
   int setup_pulse_synced(void (*pulse_do)(int), pulse_flags_t new_flags,
 			 struct time when, unsigned long unit,
 			 unsigned long factor, unsigned long divisor, int sync);

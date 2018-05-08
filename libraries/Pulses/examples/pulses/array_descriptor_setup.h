@@ -75,3 +75,10 @@ REGISTER_JIFFLE(d512_4096);		// 45
 REGISTER_JIFFLE(d1024_4096);		// 46
 
 select_array_in(JIFFLES, d1024_4096);  	// default jiffle
+
+
+#include "iCODE.h"
+init_arr_DB(iCODEs, sizeof(iCODEs), "iCODEs");
+REGISTER_iCODE(TEST_ICODE);		// 0
+
+select_array_in(iCODEs, (unsigned int *) TEST_ICODE);  	// default jiffle

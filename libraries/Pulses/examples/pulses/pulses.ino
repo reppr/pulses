@@ -81,7 +81,8 @@ Pulses PULSES(PL_MAX, &MENU);
 
 Harmonical HARMONICAL(3628800uL);	// old style for a first test
 
-#include "jiffles.h"
+#include "iCODE.h"			// icode programs
+#include "jiffles.h"			// old style jiffles (could also be used as icode)
 #include "int_edit.h"			// displaying and editing unsigned int arrays
 #include "array_descriptors.h"		// make data arrays accessible for the menu, give names to the data arrays
 
@@ -129,6 +130,44 @@ bool DO_or_maybe_display(unsigned char verbosity_level) { // the flag tells *if*
     return false;		// no time to display anything...
 
   return MENU.maybe_display_more(verbosity_level);	// flag depending verbosity and menu input
+}
+
+
+/* **************************************************************** */
+// iCode
+
+bool setup_icode_seeder(int pulse, struct time period, icode_t* icode_p, action_flags_t dest_action_flags) {
+  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
+    PULSES.pulses[pulse].period = period;
+    PULSES.set_icode_p(pulse, icode_p, false);		// icode inactive in seeder
+    PULSES.set_payload(pulse, seed_icode_player);
+    PULSES.pulses[pulse].dest_action_flags |= dest_action_flags;
+    return true;
+  }
+  return false;
+}
+
+
+void seed_icode_player(int seeder_pulse) {	// as payload for seeder
+  int dest_pulse = PULSES.setup_pulse(NULL, ACTIVE, PULSES.pulses[seeder_pulse].next, PULSES.pulses[seeder_pulse].period);
+  if (dest_pulse != ILLEGAL) {
+    /*
+      pulses[pulse].icode_p	icode start pointer
+      pulses[pulse].icode_index	icode index
+      pulses[pulse].countdown	count down
+      pulses[pulse].base_time	base period = period of starting pulse
+      pulses[pulse].gpio	maybe click pin
+    */
+    PULSES.set_icode_p(dest_pulse, TEST_ICODE, true);	// set (and activate) icode
+    PULSES.pulses[dest_pulse].base_time   = PULSES.pulses[seeder_pulse].period.time;
+    PULSES.pulses[dest_pulse].action_flags = PULSES.pulses[seeder_pulse].dest_action_flags;
+    if(PULSES.pulses[seeder_pulse].flags & HAS_GPIO)		// if the seeder has gpio,
+      PULSES.set_gpio(dest_pulse, PULSES.pulses[seeder_pulse].gpio);	// copy gpio
+    if(PULSES.pulses[seeder_pulse].dac1_intensity)		// if the seeder has dac1_intensity
+      PULSES.pulses[dest_pulse].dac1_intensity = PULSES.pulses[seeder_pulse].dac1_intensity; // set intensity
+    if(PULSES.pulses[seeder_pulse].dac2_intensity)		// if the seeder has dac2_intensity
+      PULSES.pulses[dest_pulse].dac2_intensity = PULSES.pulses[seeder_pulse].dac2_intensity; // set intensity
+  }
 }
 
 /* **************************************************************** */
@@ -725,6 +764,11 @@ void loop() {	// ARDUINO
   stress_count=0;
 
   while (PULSES.check_maybe_do()) {	// in stress PULSES get's *first* priority.
+
+/*
+  // stress release code written to kill sweep pulses getting to fast
+  // in time machine this makes the situation worse, so deactivated for now
+
     if (++stress_count >= stress_emergency) {
       // EMERGENCY
       // kill fastest pulse might do it? (i.e. fast sweeping up)
@@ -739,6 +783,7 @@ void loop() {	// ARDUINO
       stress_count=0;				// seems best, maybe
       // stress_count = stress_emergency / 2;	// FIXME: further tests	################
     }
+*/
   }
 
   // descend through priorities and do first thing found
@@ -1731,14 +1776,16 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
 
   if (PULSES.pulses[pulse].flags & HAS_GPIO) {
     MENU.out(F(" p"));
-    if(PULSES.pulses[pulse].gpio != ILLEGAL)
+    if(PULSES.pulses[pulse].gpio != ILLEGAL) {
       MENU.out((int) PULSES.pulses[pulse].gpio);
-    else
+      if (PULSES.pulses[pulse].gpio<10)	// padding?
+	MENU.space();
+    } else
       MENU.out(F(" _"));
   } else
-    MENU.space(3);
+    MENU.space(4);
+  MENU.space();
 
-  MENU.tab();
   display_payload(pulse);
 
   MENU.space(); MENU.tab();
@@ -1854,6 +1901,7 @@ bool en_INFO(int pulse) {	// FIXME: to lib Pulses
 // TODO: move to Pulses.cpp ################
 void display_payload(int pulse) {
   void (*scratch)(int);
+
   scratch=&click;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out("click");
@@ -1879,6 +1927,12 @@ void display_payload(int pulse) {
     return;
   }
 #endif	// #ifdef IMPLEMENT_TUNING	implies floating point
+
+  scratch=&seed_icode_player;
+  if (PULSES.pulses[pulse].periodic_do == scratch) {
+    MENU.out("seed_icode");
+    return;
+  }
 
   scratch=&do_jiffle;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
@@ -2145,6 +2199,7 @@ char * experiment_names[] = {		// FIXME: const char * experiment_names would be 
       "Guitar and other Instruments",		// 37
       "Time Machine 1",				// 38
       "Time Machine 2",				// 39
+      "Time Machine iCodeplayer",		// 40
 //    "(invalid)",				// over
   };
 
@@ -2189,7 +2244,7 @@ void menu_pulses_display() {
   }
 
   MENU.ln();
-  MENU.outln(F("?=help\t.=flagged info\t:=selected info"));
+  MENU.outln(F("?=help\t.=flagged info\t:=UI selections"));
 
   MENU.ln();
   info_select_destination_with(false);
@@ -2752,36 +2807,23 @@ void Press_toStart() {
 }
 
 void select_scale__UI() {
+MENU.outln(MENU.cb_peek());
   switch (MENU.cb_peek()) {
   case EOF:
     break;
 
-  case 'e':	// e minor scale
+  case 'c':	// c minor
     MENU.drop_input_token();
     select_array_in(SCALES, minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
-    divisor=330; // 329.36	// e4  ***not*** harmonical
+    divisor=262; // 261.63	// C4  ***not*** harmonical
     break;
 
-  case 'E':	// E major scale
+  case 'C':	// c major
     MENU.drop_input_token();
     select_array_in(SCALES, major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
-    divisor=330; // 329.36	// e4  ***not*** harmonical
-    break;
-
-  case 'a':	// a minor scale
-    MENU.drop_input_token();
-    PULSES.time_unit=1000000;	// switch to metric time unit
-    divisor = 440;
-    select_array_in(SCALES, minor_scale);
-    break;
-
-  case 'A':	// A major scale
-    MENU.drop_input_token();
-    PULSES.time_unit=1000000;	// switch to metric time unit
-    divisor = 440;
-    select_array_in(SCALES, major_scale);
+    divisor=262; // 261.63	// C4  ***not*** harmonical
     break;
 
   case 'd':	// d minor scale
@@ -2799,6 +2841,76 @@ void select_scale__UI() {
     // divisor = 147;		// 146.83 = D3
     select_array_in(SCALES, major_scale);
     break;
+
+  case 'e':	// e minor scale
+    MENU.drop_input_token();
+    select_array_in(SCALES, minor_scale);
+    PULSES.time_unit=1000000;	// switch to metric time unit
+    divisor=330; // 329.36	// e4  ***not*** harmonical
+    break;
+
+  case 'E':	// E major scale
+    MENU.drop_input_token();
+    select_array_in(SCALES, major_scale);
+    PULSES.time_unit=1000000;	// switch to metric time unit
+    divisor=330; // 329.36	// e4  ***not*** harmonical
+    break;
+
+  case 'f':	// f minor
+    MENU.drop_input_token();
+    select_array_in(SCALES, minor_scale);
+    PULSES.time_unit=1000000;	// switch to metric time unit
+    divisor=175; // 174.16	// F3  ***not*** harmonical
+    break;
+
+  case 'F':	// f major
+    MENU.drop_input_token();
+    select_array_in(SCALES, major_scale);
+    PULSES.time_unit=1000000;	// switch to metric time unit
+    divisor=175; // 174.16	// F3  ***not*** harmonical
+    break;
+
+  case 'g':	// g minor
+    MENU.drop_input_token();
+    select_array_in(SCALES, minor_scale);
+    PULSES.time_unit=1000000;	// switch to metric time unit
+    divisor=196; // 196.00	// G3  ***not*** harmonical
+    break;
+
+  case 'G':	// g major
+    MENU.drop_input_token();
+    select_array_in(SCALES, major_scale);
+    PULSES.time_unit=1000000;	// switch to metric time unit
+    divisor=196; // 196.00	// G3  ***not*** harmonical
+    break;
+
+  case 'a':	// a minor scale
+    MENU.drop_input_token();
+    PULSES.time_unit=1000000;	// switch to metric time unit
+    divisor = 440;
+    select_array_in(SCALES, minor_scale);
+    break;
+
+  case 'A':	// A major scale
+    MENU.drop_input_token();
+    PULSES.time_unit=1000000;	// switch to metric time unit
+    divisor = 440;
+    select_array_in(SCALES, major_scale);
+    break;
+
+  case 'b':	// b minor
+    MENU.drop_input_token();
+    select_array_in(SCALES, minor_scale);
+    PULSES.time_unit=1000000;	// switch to metric time unit
+    divisor=247; // 246.94	// B3  ***not*** harmonical
+    break;
+
+  case 'B':	// b major
+    MENU.drop_input_token();
+    select_array_in(SCALES, major_scale);
+    PULSES.time_unit=1000000;	// switch to metric time unit
+    divisor=247; // 246.94	// B3  ***not*** harmonical
+    break;
   }
 
   switch (MENU.cb_peek()) {	// (second or) third letters for other scales
@@ -2811,10 +2923,8 @@ void select_scale__UI() {
     MENU.drop_input_token();
     if ((selected_in(SCALES) == major_scale) || (selected_in(SCALES) == tetrachord)) {
       select_array_in(SCALES, european_pentatonic);
-//      voices = 16;	// default (pentatonic)	// for DAC output	// TODO: FIXME:
     } else {
       select_array_in(SCALES, pentatonic_minor);
-//      voices = 16;	// default (pentatonic)	// for DAC output	// TODO: FIXME:
     }
     break;
   case '4':	// 4  tetrachord
@@ -2943,15 +3053,8 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case ':':	// info		// TODO: review (or remove?)
-    if (DO_or_maybe_display(VERBOSITY_MORE)) {
-      MENU.ln();
-      PULSES.time_info();
-    }
-
-    MENU.ln();
-    PULSES.maybe_show_selected_mask();
-    selected_or_flagged_pulses_info_lines();
+  case ':':	// info
+    show_UI_settings();
     break;
 
   case ',':	// accept as noop in normal mode. used as delimiter to input data, displaying info. see 'menu_mode'
@@ -3605,10 +3708,19 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'D':	// DADA reserved for temporary code   testing debugging ...
-    // MENU.out_noop(); MENU.ln();
-    lower_audio_if_too_high(409600);
+    MENU.out_noop(); MENU.ln();
+    // lower_audio_if_too_high(409600);
 
-    show_UI_settings();
+    /*
+    MENU.play_KB_macro("X 0");
+    PULSES.setup_pulse_synced(NULL, ACTIVE, PULSES.get_now(), 4000000, 1, 1, sync);
+    PULSES.pulses[0].base_time = PULSES.pulses[0].period.time;
+
+    PULSES.set_icode_p(0, TEST_ICODE, true);	// set (and activate) icode
+    //    PULSES.set_icode_p(0, (icode_t*) d1024_4096, true);
+    MENU.play_KB_macro("n.");	// TODO: why do we need that?
+    */
+
     // PULSES.set_payload(2, &pulse_info_1line); // test: set and activate payload
 
     /*
@@ -3730,10 +3842,10 @@ bool menu_pulses_reaction(char menu_input) {
 
       if(PULSES.time_unit != TIME_UNIT) {
 	MENU.outln(F("reset time_unit"));
-	PULSES.time_unit = TIME_UNIT;
+	PULSES.time_unit = TIME_UNIT;	// reset time_unit
       }
     } else
-      if(PULSES.time_unit != TIME_UNIT)	// reset time_unit
+      if(PULSES.time_unit != TIME_UNIT)	// info time_unit not reset
 	MENU.outln(F("'X!' to reset time_unit"));
 
     break;
@@ -4488,6 +4600,86 @@ bool menu_pulses_reaction(char menu_input) {
 	    if (DO_or_maybe_display(VERBOSITY_LOWEST))	// maybe ok for here?
 	      selected_or_flagged_pulses_info_lines();
 	} // case E39 { }
+	break;
+
+      case 40:	// 'E40' time machine with icode player
+	// #define ESP32_15_clicks_no_display_TIME_MACHINE2
+	reset_all_flagged_pulses_GPIO_OFF();
+	next_gpio(0);	// reset used gpio
+	{ // local scope 'E40' only right now
+	  short bass_pulses=14;
+	  // short bass_octaves=2;
+	  short middle_pulses=15;
+	  short high_pulses=7;
+
+	  voices = bass_pulses + middle_pulses + high_pulses;	// init *all* primary pulses
+	  PULSES.select_n(voices);
+
+	  PULSES.time_unit=1000000;	// default metric
+	  multiplier=4096;		// uses 1/4096 jiffles
+	  multiplier *= 2;	// TODO: adjust appropriate...
+	  divisor = 294;		// 293.66 = D4	// default tuning D4
+	  // divisor = 147;	// 146.83 = D3
+	  // divisor=55;	// default tuning a
+
+	  select_array_in(SCALES, minor_scale);		// default e minor
+	  // tune *all* primary pulses
+
+	  select_scale__UI();	// second/third letters choose metric scales
+	  tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
+	  lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
+
+	  // prepare primary pulse groups:
+	  select_array_in(JIFFLES, d1024_4096);		// default jiffle
+	  // bass on DAC1 and planed broad angle LED lamps
+	  // select_array_in(JIFFLES, d512_4096);
+	  PULSES.select_from_to(0, bass_pulses - 1);
+	  for(int pulse=0; pulse<bass_pulses; pulse++) {
+//	    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, TEST_ICODE_WAIT, DACsq1 | doesICODE);
+	    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(iCODEs) , DACsq1 | doesICODE);
+	  }
+
+	  PULSES.select_from_to(0,bass_pulses);			// pulse[bass_pulses] belongs to both groups
+	  // selected_DACsq_intensity_proportional(255, 1);
+	  selected_share_DACsq_intensity(255, 1);		// bass DAC1 intensity
+
+	  // 2 middle octaves on 15 gpios
+	  // select_array_in(JIFFLES, d512_4096);
+	  //	select_array_in(JIFFLES, d256_4096);
+	  PULSES.select_from_to(bass_pulses, bass_pulses + middle_pulses -1);
+
+	  for(int pulse=bass_pulses; pulse<bass_pulses+middle_pulses; pulse++) {
+	    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, TEST_ICODE, DACsq1 | doesICODE | CLICKs);
+//	    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(JIFFLES), DACsq1 | doesICODE | CLICKs);
+	    PULSES.set_gpio(pulse, next_gpio());
+	  }
+
+	  // fix topmost bass pulse pulse[bass_pulses] that belongs to both groups:
+	  PULSES.pulses[bass_pulses].dest_action_flags |= DACsq1;
+
+	  // high octave on DAC2
+	  //	select_array_in(JIFFLES, d64_4096);
+	  //select_array_in(JIFFLES, d256_4096);
+	  PULSES.select_from_to(bass_pulses + middle_pulses -1, bass_pulses + middle_pulses + high_pulses -1);
+	  for(int pulse = bass_pulses + middle_pulses; pulse<voices; pulse++) {	// pulse[21] belongs to both groups
+	    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) d256_4096, DACsq2 | doesICODE);
+	  }
+
+	  // fix pulse[21] belonging to both groups
+	  PULSES.pulses[bass_pulses + middle_pulses - 1].dest_action_flags |= DACsq2;
+	  selected_share_DACsq_intensity(255, 2);
+	  //	selected_DACsq_intensity_proportional(255, 2);
+
+	  PULSES.select_n(voices);	// select all primary voices again
+
+	  // maybe start?
+	  if(MENU.cb_peek() == '!') {		// 'E40!' starts E40
+	    MENU.drop_input_token();
+	    PULSES.activate_selected_synced_now(sync);	// sync and activate, no display
+	  } else
+	    if (DO_or_maybe_display(VERBOSITY_LOWEST))	// maybe ok for here?
+	      selected_or_flagged_pulses_info_lines();
+	} // case 'E40' { }
 	break;
 
 

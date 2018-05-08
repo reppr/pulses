@@ -98,6 +98,9 @@ arr_descriptor SCALES[SCALE_DESCRIPTORS];
 #define JIFFLE_DESCRIPTORS	100	// FIXME: ################
 arr_descriptor JIFFLES[JIFFLE_DESCRIPTORS];
 
+#define iCODE_DESCRIPTORS	64	// FIXME: ################
+arr_descriptor iCODEs[iCODE_DESCRIPTORS];
+
 
 // register_scale(european_pentatonic, sizeof(european_pentatonic), "european_pentatonic");
 bool register_scale(unsigned int* scale, unsigned int len, char* name) {
@@ -178,3 +181,10 @@ bool UI_select_from_DB(arr_descriptor* DB) {
 #endif // MENU_h
 
 #define REGISTER_JIFFLE(X)	register_jiffle((X), sizeof((X)), STRINGIFY(X))
+
+
+bool register_iCODE(int* icode, unsigned int len, char* name) {
+  return register_array_in_DB(iCODEs, (unsigned int *) icode, len, 1, name, "icode");
+}
+
+#define REGISTER_iCODE(X)	register_iCODE((X), sizeof((X)), STRINGIFY(X))

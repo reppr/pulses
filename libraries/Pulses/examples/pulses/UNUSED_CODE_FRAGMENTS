@@ -1,3 +1,40 @@
+/* **************************************************************** */
+/*
+  DOES NOT WORK: non static member function	TODO: fix or remove ################
+*/
+bool Pulses::setup_icode_seeder(int pulse, struct time period, icode_t* icode_p, action_flags_t dest_action_flags) {
+  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
+    pulses[pulse].period = period;
+    set_icode_p(pulse, icode_p, false);		// icode inactive in seeder
+    set_payload(pulse, seed_icode_player);
+    pulses[pulse].dest_action_flags |= dest_action_flags;
+    return true;
+  }
+  return false;
+}
+
+
+void Pulses::seed_icode_player(int seeder_pulse) {	// as payload for seeder
+  int dest_pulse = setup_pulse(NULL, ACTIVE, pulses[seeder_pulse].next, pulses[seeder_pulse].period);
+  if (dest_pulse != ILLEGAL) {
+    /*
+      pulses[pulse].icode_p	icode start pointer
+      pulses[pulse].icode_index	icode index
+      pulses[pulse].countdown	count down
+      pulses[pulse].base_time	base period = period of starting pulse
+      pulses[pulse].gpio	maybe click pin
+    */
+    pulses[dest_pulse].icode_p     = pulses[seeder_pulse].icode_p;
+    pulses[dest_pulse].icode_index = 0;
+    pulses[dest_pulse].countdown   = 0;
+    pulses[dest_pulse].base_time   = pulses[seeder_pulse].period.time;
+    if(pulses[seeder_pulse].flags & HAS_GPIO)		// if the seeder has gpio,
+      set_gpio(dest_pulse, pulses[seeder_pulse].gpio);	//   copy gpio
+  }
+}
+
+
+/* **************************************************************** */
 /*
    new implementation of fix_global_next()
    seems clearer
