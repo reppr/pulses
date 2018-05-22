@@ -1,3 +1,6 @@
+#define USE_MCP23017	Adafruit
+int testmcp=0;
+
 // #define ESP32_15_clicks_no_display_TIME_MACHINE2	new default for ESP32
 
 /* **************************************************************** */
@@ -50,6 +53,9 @@ using namespace std;	// ESP8266 needs that
 #include "pulses_configuration.h"	// your configuration
 #include "pulses_sanity_checks.h"	// check some pp macros
 
+#if defined USE_MCP23017
+  #include "MCP23017.h"
+#endif
 
 /* **************** Menu **************** */
 class Menu;
@@ -588,6 +594,11 @@ void setup() {
     #endif
   #endif	// ESP8266
 #endif // to WiFi or not
+
+#if defined USE_MCP23017
+  MCP23017.begin();
+  MCP23017_OUT_LOW();
+#endif
 
   MENU.ln();
   MENU.out(F("sizeof(pulse_t) "));
@@ -3708,7 +3719,13 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'D':	// DADA reserved for temporary code   testing debugging ...
-    MENU.out_noop(); MENU.ln();
+    //    MENU.out_noop(); MENU.ln();
+
+#if defined USE_MCP23017
+    MCP23017.digitalWrite(0, ++testmcp & 1);
+#endif
+
+
     // lower_audio_if_too_high(409600);
 
     /*
@@ -3830,7 +3847,13 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'X':	// PANIC BUTTON  reset, remove all (flagged) pulses, restart selections at none
     // reset, remove all (flagged) pulses, restart selections at none, reset selection mask
+    // set MCP23017 pins low
     reset_all_flagged_pulses_GPIO_OFF();
+
+#if defined USE_MCP23017
+    MCP23017_OUT_LOW();
+#endif
+
     PULSES.hex_input_mask_index = 0;	// for convenience
 
     next_gpio(0);	// reset used gpio
