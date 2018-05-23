@@ -25,7 +25,7 @@ enum icode {
   KILL=INT_MIN,
   INFO,
   WAIT,
-//LAMP,
+  doA2,	// function A, taking 2 int parameters
   DONE,
 };
 
@@ -328,6 +328,10 @@ class Pulses {
   Menu *MENU;			// pointer to the menu
   short hex_input_mask_index;
   short selection_masks(void);	// how many selection masks
+
+  // pointer on  void something(int, int) functions:
+  // used by iCODE doA2, if not NULL
+  void (*do_A2)(int, int);
 
  private:
   int pulse;			// pulse index	// DO WE NEED THAT? ################

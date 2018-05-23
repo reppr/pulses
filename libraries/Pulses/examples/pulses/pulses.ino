@@ -164,7 +164,7 @@ void seed_icode_player(int seeder_pulse) {	// as payload for seeder
       pulses[pulse].base_time	base period = period of starting pulse
       pulses[pulse].gpio	maybe click pin
     */
-    PULSES.set_icode_p(dest_pulse, TEST_ICODE, true);	// set (and activate) icode
+    PULSES.set_icode_p(dest_pulse, PULSES.pulses[seeder_pulse].icode_p, true);	// set (and activate) icode
     PULSES.pulses[dest_pulse].base_time   = PULSES.pulses[seeder_pulse].period.time;
     PULSES.pulses[dest_pulse].action_flags = PULSES.pulses[seeder_pulse].dest_action_flags;
     if(PULSES.pulses[seeder_pulse].flags & HAS_GPIO)		// if the seeder has gpio,
@@ -598,6 +598,7 @@ void setup() {
 #if defined USE_MCP23017
   MCP23017.begin();
   MCP23017_OUT_LOW();
+  PULSES.do_A2 = &MCP23017_write;
 #endif
 
   MENU.ln();
@@ -4654,14 +4655,13 @@ bool menu_pulses_reaction(char menu_input) {
 
 	  // prepare primary pulse groups:
 	  select_array_in(JIFFLES, d1024_4096);		// default jiffle
-	  // bass on DAC1 and planed broad angle LED lamps
+	  // bass on DAC1 and broad angle LED lamps:
 	  // select_array_in(JIFFLES, d512_4096);
+	  select_array_in(iCODEs, (unsigned int*) d1024_4096_LED);
 	  PULSES.select_from_to(0, bass_pulses - 1);
 	  for(int pulse=0; pulse<bass_pulses; pulse++) {
-//	    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, TEST_ICODE_WAIT, DACsq1 | doesICODE);
 	    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(iCODEs) , DACsq1 | doesICODE);
 	  }
-
 	  PULSES.select_from_to(0,bass_pulses);			// pulse[bass_pulses] belongs to both groups
 	  // selected_DACsq_intensity_proportional(255, 1);
 	  selected_share_DACsq_intensity(255, 1);		// bass DAC1 intensity
@@ -4672,8 +4672,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  PULSES.select_from_to(bass_pulses, bass_pulses + middle_pulses -1);
 
 	  for(int pulse=bass_pulses; pulse<bass_pulses+middle_pulses; pulse++) {
-	    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, TEST_ICODE, DACsq1 | doesICODE | CLICKs);
-//	    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(JIFFLES), DACsq1 | doesICODE | CLICKs);
+	    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(JIFFLES), DACsq1 | doesICODE | CLICKs);
 	    PULSES.set_gpio(pulse, next_gpio());
 	  }
 

@@ -16,5 +16,9 @@
     }
   }
 
+  void MCP23017_write(int pin, int value) {	// keep the compiler happy ;)
+    MCP23017.digitalWrite(pin, value);
+  }
+
 #define MCP23017_H
 #endif

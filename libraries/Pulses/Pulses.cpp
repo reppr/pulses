@@ -50,6 +50,7 @@ Pulses::Pulses(int pl_max, Menu *MENU):
   global_next_count(0),
   time_unit(TIME_UNIT),
   hex_input_mask_index(0),
+  do_A2(NULL),
   overflow_sec(4294.9672851562600)	// overflow time in seconds
 #ifdef IMPLEMENT_TUNING
   , tuning(1.0)
@@ -898,7 +899,9 @@ void Pulses::show_icode_mnemonic(icode_t icode) {
   case WAIT:
     (*MENU).out(F("WAIT"));
     break;
-
+  case doA2:
+    (*MENU).out(F("doA2"));
+    break;
   default:
     (*MENU).out(icode);
   }
@@ -971,6 +974,20 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	init_pulse(pulse);
 	icode_p = pulses[pulse].icode_p;	// programmers aesthetics...
 	busy = false;
+	break;
+
+      case doA2:
+	{
+	  int parameter1 = *icode_p++;
+	  int parameter2 = *icode_p++;
+	  if (*do_A2 != NULL)
+	    (*do_A2)(parameter1, parameter2);
+	  else
+	    if((*MENU).verbosity > VERBOSITY_SOME) {
+	      (*MENU).out(F("doA2 code not set\tp="));
+	      (*MENU).outln(pulse);
+	    }
+	}
 	break;
 
       case INFO:
