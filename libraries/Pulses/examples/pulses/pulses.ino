@@ -1,6 +1,3 @@
-#define USE_MCP23017	Adafruit
-int testmcp=0;
-
 // #define ESP32_15_clicks_no_display_TIME_MACHINE2	new default for ESP32
 
 /* **************************************************************** */
@@ -51,11 +48,12 @@ using namespace std;	// ESP8266 needs that
 #include "pulses_systems.h"		// different software systems
 #include "pulses_boards.h"		// different boards
 #include "pulses_configuration.h"	// your configuration
-#include "pulses_sanity_checks.h"	// check some pp macros
 
 #if defined USE_MCP23017
   #include "MCP23017.h"
 #endif
+
+#include "pulses_sanity_checks.h"	// check some pp macros
 
 /* **************** Menu **************** */
 class Menu;
@@ -173,6 +171,10 @@ void seed_icode_player(int seeder_pulse) {	// as payload for seeder
       PULSES.pulses[dest_pulse].dac1_intensity = PULSES.pulses[seeder_pulse].dac1_intensity; // set intensity
     if(PULSES.pulses[seeder_pulse].dac2_intensity)		// if the seeder has dac2_intensity
       PULSES.pulses[dest_pulse].dac2_intensity = PULSES.pulses[seeder_pulse].dac2_intensity; // set intensity
+#if defined USE_MCP23017
+    if(PULSES.pulses[seeder_pulse].flags & HAS_I2C_ADDR_PIN)	// if the seeder has i2c_addr and i2c_pin
+      PULSES.set_i2c_addr_pin(dest_pulse, PULSES.pulses[seeder_pulse].i2c_addr, PULSES.pulses[seeder_pulse].i2c_pin);
+#endif
   }
 }
 
@@ -597,6 +599,7 @@ void setup() {
 
 #if defined USE_MCP23017
   MCP23017.begin();
+  Wire.setClock(100000L);	// must be *after* Wire.begin()
   MCP23017_OUT_LOW();
   PULSES.do_A2 = &MCP23017_write;
 #endif
@@ -3720,12 +3723,13 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'D':	// DADA reserved for temporary code   testing debugging ...
-    //    MENU.out_noop(); MENU.ln();
+    MENU.out_noop(); MENU.ln();
 
-#if defined USE_MCP23017
-    MCP23017.digitalWrite(0, ++testmcp & 1);
-#endif
-
+    /*
+    #if defined USE_MCP23017
+      MCP23017.digitalWrite(0, ++testmcp & 1);
+    #endif
+    */
 
     // lower_audio_if_too_high(409600);
 
@@ -4641,7 +4645,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	  PULSES.time_unit=1000000;	// default metric
 	  multiplier=4096;		// uses 1/4096 jiffles
-	  multiplier *= 2;	// TODO: adjust appropriate...
+	  multiplier *= 4;	// TODO: adjust appropriate...
 	  divisor = 294;		// 293.66 = D4	// default tuning D4
 	  // divisor = 147;	// 146.83 = D3
 	  // divisor=55;	// default tuning a
@@ -4661,6 +4665,10 @@ bool menu_pulses_reaction(char menu_input) {
 	  PULSES.select_from_to(0, bass_pulses - 1);
 	  for(int pulse=0; pulse<bass_pulses; pulse++) {
 	    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(iCODEs) , DACsq1 | doesICODE);
+
+#if defined USE_MCP23017
+	    PULSES.set_i2c_addr_pin(pulse, 0x20, pulse);
+#endif
 	  }
 	  PULSES.select_from_to(0,bass_pulses);			// pulse[bass_pulses] belongs to both groups
 	  // selected_DACsq_intensity_proportional(255, 1);

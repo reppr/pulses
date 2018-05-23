@@ -4,7 +4,8 @@
 
 #ifndef ICODE_H
 
-icode_t d1024_4096_LED[] = { doA2,0,1, 1,4096,1024, doA2,0,0, KILL, };	// time machine bass icode with LED spots
+icode_t d1024_4096_LED[] = { i2cW,1, 1,4096,1024, i2cW,0, KILL, };	// time machine bass icode with LED spots
+//icode_t d1024_4096_LED[] = { doA2,0,1, 1,4096,1024, doA2,0,0, KILL, };	// time machine bass icode with LED spots
 
 // TODO: remove debug code
 // icode_t TEST_ICODE[] = { INFO, 1, 1, 4 , INFO, 4, 3, 2, 0, 0, 0, INFO, KILL, };

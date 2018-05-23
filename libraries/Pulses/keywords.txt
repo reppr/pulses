@@ -42,6 +42,7 @@ set_gpio	KEYWORD2
 set_icode_p	KEYWORD2
 icode		KEYWORD2
 play_icode	KEYWORD2
+set_i2c_addr_pin	KEYWORD2
 show_icode_mnemonic	KEYWORD2
 mute_all_actions	KEYWORD2
 show_action_flags	KEYWORD2

@@ -6,6 +6,8 @@ https://github.com/espressif/arduino-esp32/blob/master/doc/esp32_pinmap.png
 http://wiki.ai-thinker.com/_media/esp32/docs/esp32_chip_pin_list_en.pdf
 
 
+
+[|- "WIFI" side]
 3.3V
 EN	RESET				(pu)
 GPIO36		ADC0			SVP
@@ -14,7 +16,7 @@ GPIO34		ADC6
 GPIO35		ADC7
 GPIO32		ADC4	TOUCH9			(CS MICROSD)
 GPIO33		ADC5	TOUCH8
-GPIO25		ADC18			DAC1	(I2S codec LRCK)
+       GPIO25		ADC18			DAC1	(I2S codec LRCK)
 GPIO26		ADC19			DAC2	(I2S codec BCK)
 GPIO27		ADC17	TOUCH7			(SCK MICROSD)
 GPIO14 HSPI SCK ADC16	TOUCH6	TMS		(MOSI MICROSD)
@@ -25,9 +27,11 @@ GPIO9 FLASH D2
 GPI10 FLASH D3
 GPI11 FLASH CMD
 5V
+[|- "USB" side]
 
+-------------------------------------------------------------
 
-
+["WIFI" side -|]
 GND
 GPIO23  VSPI MOSI				SPI MOSI
 GPIO22	 					Wire SCL	(I2S codec DATA)
@@ -47,7 +51,15 @@ GPIO15	HSPI SS	ADC13	TOUCH3	TDO	(pu)
 GPIO8 FLASH D1
 GPIO7 FLASH D0
 GPIO6 FLASH SCK
+["USB" side -|]
 
+
+#if defined ESP32_15_clicks_no_display_TIME_MACHINE2
+  #undef GPIO_PINS
+  #define GPIO_PINS	15
+  gpio_pin_t gpio_pins[GPIO_PINS] =				//  ESP32_15_clicks_no_display
+      {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, 18, 19, };
+#endif
 
 /* **************************************************************** */
 suggestion for 16 click pins:

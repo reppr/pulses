@@ -399,6 +399,13 @@ void Pulses::set_icode_p(int pulse, icode_t* icode_p, bool activate=false) {
     pulses[pulse].action_flags |= doesICODE;
 }
 
+#if defined USE_MCP23017
+void Pulses::set_i2c_addr_pin(int pulse, uint8_t i2c_addr, uint8_t i2c_pin) {
+  pulses[pulse].i2c_addr = i2c_addr;
+  pulses[pulse].i2c_pin = i2c_pin;
+  pulses[pulse].flags |= HAS_I2C_ADDR_PIN;
+}
+#endif
 
 void Pulses::mute_all_actions() {
   for (int pulse=0; pulse<pl_max; pulse++)
@@ -887,20 +894,23 @@ void Pulses::activate_pulse_synced(int pulse, \
 
 void Pulses::show_icode_mnemonic(icode_t icode) {
   switch(icode) {
+  case KILL:
+    (*MENU).out(F("KILL"));
+    break;
+  case i2cW:
+    (*MENU).out(F("i2cW"));
+    break;
+  case doA2:
+    (*MENU).out(F("doA2"));
+    break;
+  case WAIT:
+    (*MENU).out(F("WAIT"));
+    break;
   case INFO:
     (*MENU).out(F("INFO"));
     break;
   case DONE:
     (*MENU).out(F("DONE"));
-    break;
-  case KILL:
-    (*MENU).out(F("KILL"));
-    break;
-  case WAIT:
-    (*MENU).out(F("WAIT"));
-    break;
-  case doA2:
-    (*MENU).out(F("doA2"));
     break;
   default:
     (*MENU).out(icode);
@@ -975,6 +985,27 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	icode_p = pulses[pulse].icode_p;	// programmers aesthetics...
 	busy = false;
 	break;
+
+#if defined USE_MCP23017
+      case i2cW:
+	{
+	  int value = *icode_p++;
+	  if(pulses[pulse].flags & HAS_I2C_ADDR_PIN) {
+	    if (*do_A2 != NULL)
+	      (*do_A2)(pulses[pulse].i2c_pin, value);
+	    else
+	      if((*MENU).verbosity > VERBOSITY_SOME) {
+		(*MENU).out(F("doA2 code for i2cW not set\tp="));
+		(*MENU).outln(pulse);
+	      }
+	  } else
+	    if((*MENU).verbosity > VERBOSITY_SOME) {
+	      (*MENU).out(F("i2cW pulse does not have i2c_pin\t p="));
+	      (*MENU).outln(pulse);
+	    }
+	}
+	break;
+#endif
 
       case doA2:
 	{
