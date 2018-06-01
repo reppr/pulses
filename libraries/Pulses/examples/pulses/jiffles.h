@@ -20,6 +20,8 @@ unsigned int d32_4096[] = {1,4096,32, 0,0,0};
 unsigned int d16_4096[] = {1,4096,16, 0,0,0};
 unsigned int d8_4096[] = {1,4096,8, 0,0,0};
 
+unsigned int d6_4096[] = {1,4096,8, 0,0,0};
+
 unsigned int d4_4096[] = {1,4096,4, 0,0,0};
 unsigned int d2_4096[] = {1,4096,2, 0,0,0};
 
@@ -78,6 +80,10 @@ unsigned int tumtum[] = {1,2048,2048/16, 7,16,1, 1,2048,2048/16, 0,0,0};
 
 unsigned int piip2048[] ={1,2048,128, 0,0,0, };		// length 1/16
 unsigned int tanboura[] ={1,2048,1536, 0,0,0, };	// length 3/4
+
+unsigned int loong[]{1,4096,4080, 0,0,0, };		// length 255/256
+unsigned int looong[]{1,4096,4088, 0,0,0, };		// length 511/512
+unsigned int loooong[]{1,4096,4092, 0,0,0, };		// length 1023/1024
 
 unsigned int jiffletab[] =
   {1,16,2, 1,256,32, 1,128,8, 1,64,2, 1,32,1, 1,16,1, 1,8,2, 0,0};
