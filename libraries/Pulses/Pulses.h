@@ -154,14 +154,16 @@ struct pulse_t {
     used by icode_player as array index
   */
 
-#if defined USE_MCP23017
-  uint8_t i2c_addr;
-  uint8_t i2c_pin;
-  /*
-    see: HAS_I2C_ADDR_PIN, set_i2c_addr_pin(uint8_t adr, uint8_t pin)
-    used by icode_player i2cW
-    and custom functions
-  */
+#if defined USE_i2c
+  #if defined USE_MCP23017
+    uint8_t i2c_addr;
+    uint8_t i2c_pin;
+    /*
+      see: HAS_I2C_ADDR_PIN, set_i2c_addr_pin(uint8_t adr, uint8_t pin)
+      used by icode_player i2cW
+      and custom functions
+    */
+  #endif
 #endif
 
   unsigned long base_time;
@@ -274,9 +276,13 @@ class Pulses {
   void set_payload_with_pin(int pulse, void (*payload)(int), gpio_pin_t pin);	// set and activate payload with gpio
   void set_gpio(int pulse, gpio_pin_t pin);		// set gpio
   void set_icode_p(int pulse, icode_t* icode_p, bool activate);			// set icode. maybe activate
-#if defined USE_MCP23017
-  void set_i2c_addr_pin(int pulse, uint8_t i2c_addr, uint8_t i2c_pin);
+
+#if defined USE_i2c
+  #if defined USE_MCP23017
+    void set_i2c_addr_pin(int pulse, uint8_t i2c_addr, uint8_t i2c_pin);
+  #endif
 #endif
+
   void play_icode(int pulse);			// payload to play icode
   void show_icode_mnemonic(icode_t icode);	// display icode mnemonic
 

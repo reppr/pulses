@@ -83,6 +83,11 @@ select_array_in(JIFFLES, d1024_4096);  	// default jiffle
 
 #include "iCODE.h"
 init_arr_DB(iCODEs, sizeof(iCODEs), "iCODEs");
-REGISTER_iCODE(d1024_4096_LED);		// 0
+REGISTER_iCODE(d1024_4096_i2cLED);		// 0
+REGISTER_iCODE(d1024_4096_icode_jiff);
 
-select_array_in(iCODEs, (unsigned int *) d1024_4096_LED);  	// default iCODE
+#if defined USE_i2c
+  select_array_in(iCODEs, (unsigned int *) d1024_4096_i2cLED); 		// default iCODE LED spots on i2c
+#else
+  select_array_in(iCODEs, (unsigned int *) d1024_4096_icode_jiff);  	// default iCODE, jiffling, *no* i2c
+#endif

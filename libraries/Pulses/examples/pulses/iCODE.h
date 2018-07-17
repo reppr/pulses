@@ -4,7 +4,8 @@
 
 #ifndef ICODE_H
 
-icode_t d1024_4096_LED[] = { i2cW,1, 1,4096,1024, i2cW,0, KILL, };	// time machine bass icode with LED spots
+icode_t d1024_4096_i2cLED[] = { i2cW,1, 1,4096,1024, i2cW,0, KILL, };	// time machine bass icode with LED spots on i2c
+icode_t d1024_4096_icode_jiff[] = { 1,4096,1024, KILL, };	// temporally duplicating jiffle, *no* i2c	TODO: soon obsolete
 //icode_t d1024_4096_LED[] = { doA2,0,1, 1,4096,1024, doA2,0,0, KILL, };	// time machine bass icode with LED spots
 
 // TODO: remove debug code

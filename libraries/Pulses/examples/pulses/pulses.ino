@@ -49,8 +49,10 @@ using namespace std;	// ESP8266 needs that
 #include "pulses_boards.h"		// different boards
 #include "pulses_configuration.h"	// your configuration
 
-#if defined USE_MCP23017
-  #include "MCP23017.h"
+#if defined USE_i2c
+  #if defined USE_MCP23017
+    #include "MCP23017.h"			// Adafruit, simple test version only
+  #endif
 #endif
 
 #include "pulses_sanity_checks.h"	// check some pp macros
@@ -171,10 +173,14 @@ void seed_icode_player(int seeder_pulse) {	// as payload for seeder
       PULSES.pulses[dest_pulse].dac1_intensity = PULSES.pulses[seeder_pulse].dac1_intensity; // set intensity
     if(PULSES.pulses[seeder_pulse].dac2_intensity)		// if the seeder has dac2_intensity
       PULSES.pulses[dest_pulse].dac2_intensity = PULSES.pulses[seeder_pulse].dac2_intensity; // set intensity
-#if defined USE_MCP23017
-    if(PULSES.pulses[seeder_pulse].flags & HAS_I2C_ADDR_PIN)	// if the seeder has i2c_addr and i2c_pin
-      PULSES.set_i2c_addr_pin(dest_pulse, PULSES.pulses[seeder_pulse].i2c_addr, PULSES.pulses[seeder_pulse].i2c_pin);
+
+#if defined USE_i2c
+  #if defined USE_MCP23017
+      if(PULSES.pulses[seeder_pulse].flags & HAS_I2C_ADDR_PIN)	// if the seeder has i2c_addr and i2c_pin
+        PULSES.set_i2c_addr_pin(dest_pulse, PULSES.pulses[seeder_pulse].i2c_addr, PULSES.pulses[seeder_pulse].i2c_pin);
+  #endif
 #endif
+
   }
 }
 
@@ -597,11 +603,13 @@ void setup() {
   #endif	// ESP8266
 #endif // to WiFi or not
 
-#if defined USE_MCP23017
-  MCP23017.begin();
-  Wire.setClock(100000L);	// must be *after* Wire.begin()
-  MCP23017_OUT_LOW();
-  PULSES.do_A2 = &MCP23017_write;
+#if defined USE_i2c
+  #if defined USE_MCP23017
+    MCP23017.begin();
+    Wire.setClock(100000L);	// must be *after* Wire.begin()
+    MCP23017_OUT_LOW();
+    PULSES.do_A2 = &MCP23017_write;
+  #endif
 #endif
 
   MENU.ln();
@@ -3855,8 +3863,10 @@ bool menu_pulses_reaction(char menu_input) {
     // set MCP23017 pins low
     reset_all_flagged_pulses_GPIO_OFF();
 
-#if defined USE_MCP23017
-    MCP23017_OUT_LOW();
+#if defined USE_i2c
+  #if defined USE_MCP23017
+      MCP23017_OUT_LOW();
+  #endif
 #endif
 
     PULSES.hex_input_mask_index = 0;	// for convenience
@@ -4645,7 +4655,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	  PULSES.time_unit=1000000;	// default metric
 	  multiplier=4096;		// uses 1/4096 jiffles
-	  multiplier *= 4;	// TODO: adjust appropriate...
+	  multiplier *= 8;	// TODO: adjust appropriate...
 	  divisor = 294;		// 293.66 = D4	// default tuning D4
 	  // divisor = 147;	// 146.83 = D3
 	  // divisor=55;	// default tuning a
@@ -4661,15 +4671,22 @@ bool menu_pulses_reaction(char menu_input) {
 	  select_array_in(JIFFLES, d1024_4096);		// default jiffle
 	  // bass on DAC1 and broad angle LED lamps:
 	  // select_array_in(JIFFLES, d512_4096);
-	  select_array_in(iCODEs, (unsigned int*) d1024_4096_LED);
+
+#if defined USE_i2c
+	  select_array_in(iCODEs, (unsigned int*) d1024_4096_i2cLED);
+#else
+	  select_array_in(iCODEs, (unsigned int*) d1024_4096_icode_jiff);
+#endif
 	  PULSES.select_from_to(0, bass_pulses - 1);
 	  for(int pulse=0; pulse<bass_pulses; pulse++) {
 	    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(iCODEs) , DACsq1 | doesICODE);
-
-#if defined USE_MCP23017
+#if defined USE_i2c
+  #if defined USE_MCP23017
 	    PULSES.set_i2c_addr_pin(pulse, 0x20, pulse);
+  #endif
 #endif
 	  }
+
 	  PULSES.select_from_to(0,bass_pulses);			// pulse[bass_pulses] belongs to both groups
 	  // selected_DACsq_intensity_proportional(255, 1);
 	  selected_share_DACsq_intensity(255, 1);		// bass DAC1 intensity
