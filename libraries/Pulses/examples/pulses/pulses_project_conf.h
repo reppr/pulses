@@ -56,6 +56,7 @@
 
 #if defined ESP32	// KALIMBA7_v2 ESP32 version
   #if defined ESP32_15_clicks_no_display_TIME_MACHINE2
+// planed:  #define AUTOSTART	MENU.play_KB_macro("-E40U5 *64 n"); selected_experiment=-1;	// rhythm! PENTATONIC
 #define AUTOSTART	MENU.play_KB_macro("-E40a5 *2 n"); selected_experiment=-1;	// Lichterfest	a5 == TIME MACHINE
 // reused for LIVING ROOM 2018	"TIME MACHINE"  Robert Epprecht / Jürg Baruffol
 

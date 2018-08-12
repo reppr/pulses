@@ -2830,9 +2830,24 @@ void Press_toStart() {
 }
 
 void select_scale__UI() {
-MENU.outln(MENU.cb_peek());
   switch (MENU.cb_peek()) {
   case EOF:
+    break;
+
+  case 'u':	// harmonical time unit, minor
+    MENU.drop_input_token();
+    select_array_in(SCALES, minor_scale);
+    PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
+    multiplier=1;
+    divisor=1;
+    break;
+
+  case 'U':	// harmonical time unit, major
+    MENU.drop_input_token();
+    select_array_in(SCALES, minor_scale);
+    PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
+    multiplier=1;
+    divisor=1;
     break;
 
   case 'c':	// c minor
