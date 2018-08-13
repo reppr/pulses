@@ -4522,7 +4522,7 @@ bool menu_pulses_reaction(char menu_input) {
 	lower_audio_if_too_high(409600);
 
 	// prepare primary pulse groups:
-	select_array_in(JIFFLES, d1024_4096);
+	select_array_in(JIFFLES, d512_4096);
 
 	// bass on DAC1 and planed broad angle LED lamps
 	// select_array_in(JIFFLES, d512_4096);
@@ -4593,7 +4593,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  lower_audio_if_too_high(409600*2);	// 2 bass octaves
 
 	  // prepare primary pulse groups:
-	  select_array_in(JIFFLES, d1024_4096);		// default jiffle
+	  select_array_in(JIFFLES, d512_4096);		// default jiffle
 
 	  // bass on DAC1 and planed broad angle LED lamps
 	  // select_array_in(JIFFLES, d512_4096);
@@ -4668,7 +4668,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
 
 	  // prepare primary pulse groups:
-	  select_array_in(JIFFLES, d1024_4096);		// default jiffle
+	  select_array_in(JIFFLES, d512_4096);		// default jiffle
 	  // bass on DAC1 and broad angle LED lamps:
 	  // select_array_in(JIFFLES, d512_4096);
 

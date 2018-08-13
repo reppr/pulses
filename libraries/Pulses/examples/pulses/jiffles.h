@@ -10,7 +10,8 @@ unsigned int ting1024[] = {1,4096,64, 1,1024,128, 1,1024*3,128, 1,1024*2,128, 1,
 // unsigned int ting4096[] = {1,4096,1024, -1,0,0};			// magnet strings experiments 2
 unsigned int ting4096[] = {1,4096,1024, 0,0,0};			// magnet strings experiments 2, KALIMBA7
 
-unsigned int d1024_4096[] = {1,4096,512, 0,0,0};	// == ting4096
+unsigned int d2048_4096[] = {1,4096,2048, 0,0,0};	// == 1/2
+unsigned int d1024_4096[] = {1,4096,1024, 0,0,0};	// == 1/4
 unsigned int d512_4096[] = {1,4096,512, 0,0,0};
 unsigned int d256_4096[] = {1,4096,256, 0,0,0};
 unsigned int d128_4096[] = {1,4096,128, 0,0,0};
