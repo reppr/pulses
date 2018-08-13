@@ -1809,6 +1809,17 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
     MENU.space(4);
   MENU.space();
 
+  if (PULSES.pulses[pulse].action_flags & doesICODE) {
+    MENU.out(':');
+    char * name=array2name(iCODEs, (unsigned int *) PULSES.pulses[pulse].icode_p);
+    if (name != "")
+      MENU.out(name);
+    else	// maybe it is a jiffle, played as iCode?
+      MENU.out("J:");
+    MENU.out(array2name(JIFFLES, (unsigned int *) PULSES.pulses[pulse].icode_p));
+    MENU.space();
+  }
+
   display_payload(pulse);
 
   MENU.space(); MENU.tab();
@@ -1851,7 +1862,7 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
 }
 
 
-// pulse_info() as paylod for pulses: print pulse info:
+// pulse_info() as paylod for pulses: print pulse info:	// ################ TODO: update ################
 void pulse_info(int pulse) {
 
   MENU.out(F("*** PULSE info "));
@@ -1925,6 +1936,8 @@ bool en_INFO(int pulse) {	// FIXME: to lib Pulses
 void display_payload(int pulse) {
   void (*scratch)(int);
 
+  MENU.out(F(" P:"));
+
   scratch=&click;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out("click");
@@ -1953,7 +1966,27 @@ void display_payload(int pulse) {
 
   scratch=&seed_icode_player;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out("seed_icode");
+    MENU.out("seed_iCode ");
+//    if (MENU.verbosity > VERBOSITY_LOWEST) {	// normally we *want* to see the names
+//      char * name=array2name(iCODEs, (unsigned int *) PULSES.pulses[pulse].icode_p);
+//      if (name != "")
+//	MENU.out(name);
+//      else	// maybe it is a jiffle, played as iCode?
+//	MENU.out("J:");
+//	MENU.out(array2name(JIFFLES, (unsigned int *) PULSES.pulses[pulse].icode_p));
+//    }
+    if (MENU.verbosity > VERBOSITY_LOWEST) {	// normally we *want* to see the names
+      char * name=array2name(iCODEs, (unsigned int *) PULSES.pulses[pulse].icode_p);
+      if (name != "")
+	MENU.out(name);		// display iCode name
+      else {			// maybe it is a jiffle, played as iCode?
+	name=array2name(JIFFLES, (unsigned int *) PULSES.pulses[pulse].icode_p);
+	if (name != "")
+	  MENU.out(name);	// name of jiffle, played as iCode
+	else
+	  MENU.outln(F("(none)"));
+      }
+    }
     return;
   }
 
@@ -1986,7 +2019,8 @@ void display_payload(int pulse) {
 
   scratch=NULL;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
-    MENU.out(F("NULL\t"));		// 8 char positions at least
+    MENU.tab();
+    //    MENU.out(F("NULL"));
     return;
   }
 
@@ -3872,6 +3906,12 @@ bool menu_pulses_reaction(char menu_input) {
       }
     }
     break;
+
+#if defined AUTOSTART
+  case 'A':	// autostart
+    AUTOSTART
+    break;
+#endif
 
   case 'X':	// PANIC BUTTON  reset, remove all (flagged) pulses, restart selections at none
     // reset, remove all (flagged) pulses, restart selections at none, reset selection mask
