@@ -92,3 +92,6 @@ REGISTER_iCODE(d1024_4096_icode_jiff);
 #else
   select_array_in(iCODEs, (unsigned int *) d1024_4096_icode_jiff);  	// default iCODE, jiffling, *no* i2c
 #endif
+
+include_DB_in_DB(iCODEs, JIFFLES, 1);
+// display_arr_names(iCODEs);

@@ -36,6 +36,9 @@ void init_arr_DB(arr_descriptor * DB, unsigned int len, char* name) {
 }
 
 
+int DB_items(arr_descriptor * DB) {
+  return DB[0].item - 1;	// returns number of enties, (-1 if not initialised)
+}
 char* array2name(arr_descriptor * DB, unsigned int* array) {
   arr_descriptor * arr= DB;
 
@@ -92,13 +95,37 @@ bool register_array_in_DB(arr_descriptor* DB,	\
   return false;
 }
 
+bool include_DB_in_DB(arr_descriptor* DB, arr_descriptor* DB_include, int first) {
+  MENU.out("include ");
+  MENU.out(DB_include[0].name);
+  MENU.out(" in ");
+  MENU.out(DB[0].name);
+  MENU.space();
+
+  for(int i=first+1; i <= DB_items(DB_include); i++) {
+    /*
+    MENU.out(i);
+    MENU.tab();
+    MENU.out(DB_include[i].name);
+    MENU.tab();
+    MENU.out(DB_include[i].type);
+    MENU.ln();
+    */
+    if (! register_array_in_DB(DB, DB_include[i].pointer, DB_include[i].len, DB_include[i].item, DB_include[i].name, DB_include[i].type))
+      return false;
+  }
+
+  MENU.outln(DB_include[0].item - first - 1);
+  return true;
+}
+
 #define SCALE_DESCRIPTORS	64	// FIXME: ################
 arr_descriptor SCALES[SCALE_DESCRIPTORS];
 
-#define JIFFLE_DESCRIPTORS	100	// FIXME: ################
+#define JIFFLE_DESCRIPTORS	96	// FIXME: ################
 arr_descriptor JIFFLES[JIFFLE_DESCRIPTORS];
 
-#define iCODE_DESCRIPTORS	64	// FIXME: ################
+#define iCODE_DESCRIPTORS	(64+JIFFLE_DESCRIPTORS)	// FIXME: ################
 arr_descriptor iCODEs[iCODE_DESCRIPTORS];
 
 
