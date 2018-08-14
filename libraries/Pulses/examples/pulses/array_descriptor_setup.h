@@ -63,34 +63,35 @@ REGISTER_JIFFLE(tigg_ding4096);		// 33
 REGISTER_JIFFLE(tumtum);		// 34
 REGISTER_JIFFLE(piip2048);		// 35
 REGISTER_JIFFLE(tanboura);		// 36
-REGISTER_JIFFLE(d2_4096);		// 37
-REGISTER_JIFFLE(d4_4096);		// 38
-REGISTER_JIFFLE(d6_4096);		// 39
-REGISTER_JIFFLE(d8_4096);		// 39
-REGISTER_JIFFLE(d16_4096);		// 40
-REGISTER_JIFFLE(d32_4096);		// 41
-REGISTER_JIFFLE(d64_4096);		// 42
-REGISTER_JIFFLE(d128_4096);		// 43
-REGISTER_JIFFLE(d256_4096);		// 44
-REGISTER_JIFFLE(d512_4096);		// 45
-REGISTER_JIFFLE(d1024_4096);		// 46
-REGISTER_JIFFLE(d2048_4096);		// 47
-REGISTER_JIFFLE(loong);			// 48
-REGISTER_JIFFLE(looong);		// 49
-REGISTER_JIFFLE(loooong);		// 50
+REGISTER_JIFFLE(d4096_2);		// 37
+REGISTER_JIFFLE(d4096_4);		// 38
+REGISTER_JIFFLE(d4096_6);		// 39
+REGISTER_JIFFLE(d4096_8);		// 39
+REGISTER_JIFFLE(d4096_16);		// 40
+REGISTER_JIFFLE(d4096_12);		// 41
+REGISTER_JIFFLE(d4096_32);		// 42
+REGISTER_JIFFLE(d4096_64);		// 43
+REGISTER_JIFFLE(d4096_128);		// 44
+REGISTER_JIFFLE(d4096_256);		// 45
+REGISTER_JIFFLE(d4096_512);		// 46
+REGISTER_JIFFLE(d4096_1024);		// 47
+REGISTER_JIFFLE(d4096_2048);		// 48
+REGISTER_JIFFLE(loong);			// 49
+REGISTER_JIFFLE(looong);		// 50
+REGISTER_JIFFLE(loooong);		// 51
 
-select_array_in(JIFFLES, d1024_4096);  	// default jiffle
+select_array_in(JIFFLES, d4096_1024);  	// default jiffle
 
 
 #include "iCODE.h"
 init_arr_DB(iCODEs, sizeof(iCODEs), "iCODEs");
-REGISTER_iCODE(d1024_4096_i2cLED);		// 0
-REGISTER_iCODE(d1024_4096_icode_jiff);
+REGISTER_iCODE(d4096_1024_i2cLED);		// 0
+REGISTER_iCODE(d4096_1024_icode_jiff);
 
 #if defined USE_i2c
-  select_array_in(iCODEs, (unsigned int *) d1024_4096_i2cLED); 		// default iCODE LED spots on i2c
+  select_array_in(iCODEs, (unsigned int *) d4096_1024_i2cLED); 		// default iCODE LED spots on i2c
 #else
-  select_array_in(iCODEs, (unsigned int *) d1024_4096_icode_jiff);  	// default iCODE, jiffling, *no* i2c
+  select_array_in(iCODEs, (unsigned int *) d4096_1024_icode_jiff);  	// default iCODE, jiffling, *no* i2c
 #endif
 
 include_DB_in_DB(iCODEs, JIFFLES, 1);

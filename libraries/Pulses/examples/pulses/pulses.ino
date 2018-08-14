@@ -570,9 +570,10 @@ void setup() {
 
   delay(STARTUP_DELAY);
 
+  MENU.outln("\nstartup...");
   #include "array_descriptor_setup.h"
 
-  MENU.outln(F("\nhttp://github.com/reppr/pulses/\n"));
+  MENU.outln(F("\nPULSES  http://github.com/reppr/pulses/\n"));
 
 #ifdef USE_WIFI_telnet_menu		// do we use WIFI?
   #ifdef AUTOSTART_WIFI		// start wifi on booting? see: WiFi_stuff.ino
@@ -3796,7 +3797,7 @@ bool menu_pulses_reaction(char menu_input) {
     PULSES.pulses[0].base_time = PULSES.pulses[0].period.time;
 
     PULSES.set_icode_p(0, TEST_ICODE, true);	// set (and activate) icode
-    //    PULSES.set_icode_p(0, (icode_t*) d1024_4096, true);
+    //    PULSES.set_icode_p(0, (icode_t*) d4096_1024, true);
     MENU.play_KB_macro("n.");	// TODO: why do we need that?
     */
 
@@ -4577,10 +4578,10 @@ bool menu_pulses_reaction(char menu_input) {
 	lower_audio_if_too_high(409600);
 
 	// prepare primary pulse groups:
-	select_array_in(JIFFLES, d512_4096);
+	select_array_in(JIFFLES, d4096_512);
 
 	// bass on DAC1 and planed broad angle LED lamps
-	// select_array_in(JIFFLES, d512_4096);
+	// select_array_in(JIFFLES, d4096_512);
 	PULSES.select_from_to(0,6);
 	for(int pulse=0; pulse<=6; pulse++) {
 	  en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL, DACsq1);	// FIXME: use inbuilt click
@@ -4590,8 +4591,8 @@ bool menu_pulses_reaction(char menu_input) {
 	selected_share_DACsq_intensity(255, 1);
 
 	// 2 middle octaves on 15 gpios
-	// select_array_in(JIFFLES, d512_4096);
-	//	select_array_in(JIFFLES, d256_4096);
+	// select_array_in(JIFFLES, d4096_512);
+	//	select_array_in(JIFFLES, d4096_256);
 	PULSES.select_from_to(7,6+15);
 	setup_jiffle_thrower_selected(0);	// overwrites pulse[7]
 	//	setup_jiffle_thrower_selected(DACsq2);
@@ -4601,8 +4602,8 @@ bool menu_pulses_reaction(char menu_input) {
 	PULSES.pulses[7].dest_action_flags |= DACsq1;
 
 	// high octave on DAC2
-	//	select_array_in(JIFFLES, d64_4096);
-	//select_array_in(JIFFLES, d256_4096);
+	//	select_array_in(JIFFLES, d4096_64);
+	//select_array_in(JIFFLES, d4096_256);
 
 	PULSES.select_from_to(21, 31);
 	for(int pulse=22; pulse<=31; pulse++) {	// pulse[21] belongs to both groups
@@ -4629,7 +4630,6 @@ bool menu_pulses_reaction(char menu_input) {
 	// #define ESP32_15_clicks_no_display_TIME_MACHINE2
 	{ // local scope only right now
 	  short bass_pulses=14;
-	  // short bass_octaves=2;
 	  short middle_pulses=15;
 	  short high_pulses=7;
 
@@ -4648,10 +4648,10 @@ bool menu_pulses_reaction(char menu_input) {
 	  lower_audio_if_too_high(409600*2);	// 2 bass octaves
 
 	  // prepare primary pulse groups:
-	  select_array_in(JIFFLES, d512_4096);		// default jiffle
+	  select_array_in(JIFFLES, d4096_512);		// default jiffle
 
 	  // bass on DAC1 and planed broad angle LED lamps
-	  // select_array_in(JIFFLES, d512_4096);
+	  // select_array_in(JIFFLES, d4096_512);
 	  PULSES.select_from_to(0, bass_pulses - 1);
 	  for(int pulse=0; pulse<bass_pulses; pulse++)
 	    en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL, DACsq1);	// TODO: FIXME: use inbuilt click
@@ -4660,8 +4660,8 @@ bool menu_pulses_reaction(char menu_input) {
 	  selected_share_DACsq_intensity(255, 1);		// bass DAC1 intensity
 
 	  // 2 middle octaves on 15 gpios
-	  // select_array_in(JIFFLES, d512_4096);
-	  //	select_array_in(JIFFLES, d256_4096);
+	  // select_array_in(JIFFLES, d4096_512);
+	  //	select_array_in(JIFFLES, d4096_256);
 	  PULSES.select_from_to(bass_pulses, bass_pulses + middle_pulses -1);
 	  setup_jiffle_thrower_selected(selected_actions=0);		// overwrites topmost bass pulse
 									// TODO: 'selected_actions=...' or '|='
@@ -4669,8 +4669,8 @@ bool menu_pulses_reaction(char menu_input) {
 	  PULSES.pulses[bass_pulses].dest_action_flags |= DACsq1;
 
 	  // high octave on DAC2
-	  //	select_array_in(JIFFLES, d64_4096);
-	  //select_array_in(JIFFLES, d256_4096);
+	  //	select_array_in(JIFFLES, d4096_64);
+	  //select_array_in(JIFFLES, d4096_256);
 	  PULSES.select_from_to(bass_pulses + middle_pulses -1, bass_pulses + middle_pulses + high_pulses -1);
 	  for(int pulse = bass_pulses + middle_pulses; pulse<voices; pulse++) {	// pulse[21] belongs to both groups
 	    en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL, DACsq2);	// FIXME: use inbuilt click
@@ -4701,7 +4701,6 @@ bool menu_pulses_reaction(char menu_input) {
 	next_gpio(0);	// reset used gpio
 	{ // local scope 'E40' only right now
 	  short bass_pulses=14;
-	  // short bass_octaves=2;
 	  short middle_pulses=15;
 	  short high_pulses=7;
 
@@ -4723,14 +4722,14 @@ bool menu_pulses_reaction(char menu_input) {
 	  lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
 
 	  // prepare primary pulse groups:
-	  select_array_in(JIFFLES, d512_4096);		// default jiffle
+	  select_array_in(JIFFLES, d4096_512);		// default jiffle
 	  // bass on DAC1 and broad angle LED lamps:
-	  // select_array_in(JIFFLES, d512_4096);
+	  // select_array_in(JIFFLES, d4096_512);
 
 #if defined USE_i2c
-	  select_array_in(iCODEs, (unsigned int*) d1024_4096_i2cLED);
+	  select_array_in(iCODEs, (unsigned int*) d4096_1024_i2cLED);
 #else
-	  select_array_in(iCODEs, (unsigned int*) d1024_4096_icode_jiff);
+	  select_array_in(iCODEs, (unsigned int*) d4096_1024_icode_jiff);
 #endif
 	  PULSES.select_from_to(0, bass_pulses - 1);
 	  for(int pulse=0; pulse<bass_pulses; pulse++) {
@@ -4747,8 +4746,8 @@ bool menu_pulses_reaction(char menu_input) {
 	  selected_share_DACsq_intensity(255, 1);		// bass DAC1 intensity
 
 	  // 2 middle octaves on 15 gpios
-	  // select_array_in(JIFFLES, d512_4096);
-	  //	select_array_in(JIFFLES, d256_4096);
+	  // select_array_in(JIFFLES, d4096_512);
+	  //	select_array_in(JIFFLES, d4096_256);
 	  PULSES.select_from_to(bass_pulses, bass_pulses + middle_pulses -1);
 
 	  for(int pulse=bass_pulses; pulse<bass_pulses+middle_pulses; pulse++) {
@@ -4760,11 +4759,11 @@ bool menu_pulses_reaction(char menu_input) {
 	  PULSES.pulses[bass_pulses].dest_action_flags |= DACsq1;
 
 	  // high octave on DAC2
-	  //	select_array_in(JIFFLES, d64_4096);
-	  //select_array_in(JIFFLES, d256_4096);
+	  //	select_array_in(JIFFLES, d4096_64);
+	  //select_array_in(JIFFLES, d4096_256);
 	  PULSES.select_from_to(bass_pulses + middle_pulses -1, bass_pulses + middle_pulses + high_pulses -1);
 	  for(int pulse = bass_pulses + middle_pulses; pulse<voices; pulse++) {	// pulse[21] belongs to both groups
-	    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) d256_4096, DACsq2 | doesICODE);
+	    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) d4096_256, DACsq2 | doesICODE);
 	  }
 
 	  // fix pulse[21] belonging to both groups
