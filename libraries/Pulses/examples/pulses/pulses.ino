@@ -571,7 +571,7 @@ void setup() {
   delay(STARTUP_DELAY);
 
   MENU.outln("\nstartup...");
-  #include "array_descriptor_setup.h"
+  #include "array_descriptors_setup.h"
 
   MENU.outln(F("\nPULSES  http://github.com/reppr/pulses/\n"));
 
@@ -3270,7 +3270,7 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case 'u':	// calculating or select destination: PULSES.time_unit
+  case 'u':	// PULSES.time_unit calculate or else select time_unit as destination
     {
       unsigned long input_value=PULSES.time_unit;
       if (MENU.maybe_calculate_input(&input_value)) {
@@ -3282,7 +3282,7 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case 'x':	// clear destination selection  also on '.x'
+  case 'x':	// clear destination selection  same as '.x'
     PULSES.clear_selection();
     PULSES.maybe_show_selected_mask();
     break;
@@ -3344,6 +3344,12 @@ bool menu_pulses_reaction(char menu_input) {
     if (DO_or_maybe_display(VERBOSITY_LOWEST))
       MENU.outln(F("muted all actions"));
     break;
+
+#if defined USE_MORSE
+  case 'm':	// toggle MORSE on/off
+    morse = ! morse;
+    break;
+#endif
 
   case '*':	// multiply destination
     if(MENU.cb_peek() != '!') {		// '*' (*not* '*!<num>' set multiplier)
@@ -3974,7 +3980,7 @@ bool menu_pulses_reaction(char menu_input) {
 //      case 0:	// free setup planed
 //	  break;
 
-      case 1:
+      case 1:	// setup_jiffle128
 	multiplier=2;
 	divisor=1;
 	sync=15;
@@ -3985,7 +3991,7 @@ bool menu_pulses_reaction(char menu_input) {
 	}
 	break;
 
-      case 2:
+      case 2:	// init_div_123456
 	sync=0;
 	multiplier=1;
 	divisor=1;
@@ -3996,7 +4002,7 @@ bool menu_pulses_reaction(char menu_input) {
 	}
 	break;
 
-      case 3:
+      case 3:	// setup_jiffles0
 	sync=1;
 	multiplier=8;
 	divisor=3;
@@ -4015,7 +4021,7 @@ bool menu_pulses_reaction(char menu_input) {
 	}
 	break;
 
-      case 4:
+      case 4:	// setup_jiffles2345
 	multiplier=1;
 	divisor=2;
 	sync=0;
@@ -4027,7 +4033,7 @@ bool menu_pulses_reaction(char menu_input) {
 	}
 	break;
 
-      case 5:
+      case 5:	// init_123456
 	sync=0;		// FIXME: test and select ################
 	multiplier=3;
 	divisor=1;
@@ -4038,7 +4044,7 @@ bool menu_pulses_reaction(char menu_input) {
 	}
 	break;
 
-      case 6:
+      case 6:	// init_chord_1345689a
 	sync=0;		// FIXME: test and select ################
 	multiplier=1;
 	divisor=1;
@@ -4049,7 +4055,7 @@ bool menu_pulses_reaction(char menu_input) {
 	}
 	break;
 
-      case 7:
+      case 7:	// init_rhythm_1
 	sync=1;
 	multiplier=1;
 	divisor=6*7;
@@ -4060,7 +4066,7 @@ bool menu_pulses_reaction(char menu_input) {
 	}
 	break;
 
-      case 8:
+      case 8:	// init_rhythm_2
 	sync=5;
 	multiplier=1;
 	divisor=1;
@@ -4071,7 +4077,7 @@ bool menu_pulses_reaction(char menu_input) {
 	}
 	break;
 
-      case 9:
+      case 9:  // init_rhythm_3
 	sync=3;
 	multiplier=1;
 	divisor=1;
@@ -4082,7 +4088,7 @@ bool menu_pulses_reaction(char menu_input) {
 	}
 	break;
 
-      case 10:
+      case 10:	// init_rhythm_4
 	sync=1;
 	multiplier=1;
 	divisor=7L*3L;
@@ -4093,7 +4099,7 @@ bool menu_pulses_reaction(char menu_input) {
 	}
 	break;
 
-      case 11:
+      case 11:	// setup_jifflesNEW
 	sync=3;
 	multiplier=3;
 	divisor=1;
@@ -4104,7 +4110,7 @@ bool menu_pulses_reaction(char menu_input) {
 	}
 	break;
 
-      case 12:
+      case 12:	// init_pentatonic
 //	multiplier=4;
 	multiplier=1;
 	divisor=1;
@@ -4148,7 +4154,7 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
 
-      case 13:
+      case 13:	// prepare_magnets
 	sync=1;	// or: sync=0;
 	multiplier=1;
 	divisor=1;
@@ -4166,7 +4172,7 @@ bool menu_pulses_reaction(char menu_input) {
 	}
 	break;
 
-      case 14:
+      case 14:	// E14
 	// magnets on strings, second take
 	multiplier=1;
 	divisor=1;
@@ -4183,7 +4189,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  selected_or_flagged_pulses_info_lines();
 	break;
 
-      case 15:
+      case 15:	// E15
 	// magnets on strings, third take
 	multiplier=1;
 	divisor=1;
@@ -4200,7 +4206,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  selected_or_flagged_pulses_info_lines();
 	break;
 
-      case 16:
+      case 16:	// E16 european_pent
 	// piezzos on low strings 2016-12-28
 	multiplier=4096;
 	divisor=256;
@@ -4217,7 +4223,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  selected_or_flagged_pulses_info_lines();
 	break;
 
-      case 17:
+      case 17:	// E17 mimic japan
 	// magnets on steel strings, "japanese"
 	multiplier=1;	// click
 	// multiplier=4096;	// jiffle ting4096
@@ -4234,7 +4240,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	break;
 
-      case 18:	// nylon stringed wooden box, piezzos
+      case 18:	// E18 pentatonic minor  nylon stringed wooden box, piezzos
 	select_array_in(SCALES, pentatonic_minor);
 	multiplier=1;	// click
 	// multiplier=4096;	// jiffle ting4096
@@ -4284,53 +4290,53 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 #endif
 
-      case 20:
+      case 20:	// macro
 	select_array_in(JIFFLES, arpeggio4096);
 	MENU.play_KB_macro("X E12! .a N *8 J20-.");
 	break;
 
-      case 21:
+      case 21:	// macro
 	select_array_in(JIFFLES, arpeggio4096down);
 	MENU.play_KB_macro("X E12! .a N *16 J21-.");
 	break;
 
-      case 22:
+      case 22:	// macro
 	select_array_in(JIFFLES, arpeggio_cont);				// :)	with pizzs
 	MENU.play_KB_macro("X E12! .a N *16 J22-.");
 	break;
 
-      case 23:
+      case 23:	// macro
 	select_array_in(JIFFLES, arpeggio_and_down);			// :) :)  arpeggio down instead pizzs
 	MENU.play_KB_macro("X E12! .a N *16 J23-.");
 	break;
 
-      case 24:
+      case 24:	// macro
 	select_array_in(JIFFLES, stepping_down);				// :) :)  stepping down
 	MENU.play_KB_macro("X E12 S=0 ! .a N *16 J24-.");
 	break;
 
-      case 25:
+      case 25:	// macro
 	select_array_in(JIFFLES, back_to_ground);		// rhythm slowdown
 	MENU.play_KB_macro("X E12! .a N *32 J25-.");		// :)	rhythm slowdown
 	break;
 
-      case 26:
+      case 26:	// macro
 	select_array_in(JIFFLES, arpeggio_and_sayling);
 	MENU.play_KB_macro("X E12! .a N *32 J26-.");
 	break;
 
-      case 27:
+      case 27:	// macro
 	select_array_in(JIFFLES, simple_theme);
 	MENU.play_KB_macro("X E12! .a N *2 -.");
 	break;
 
-      case 28:				// for tuning
+      case 28:	// macro   for tuning
 	select_array_in(JIFFLES, peepeep4096);
 	MENU.play_KB_macro("X E12! .a N *2 -.");
 
 	break;
 
-      case 29:				// KALIMBA7 tuning
+      case 29:	// E29 KALIMBA7 tuning
 	reset_all_flagged_pulses_GPIO_OFF();
 
 #if defined KALIMBA7_v2	// ESP32 version  european_pentatonic
@@ -4357,7 +4363,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	break;
 
-      case 30:				// KALIMBA7 jiffle
+      case 30:	// KALIMBA7 jiff
 	select_array_in(SCALES, pentatonic_minor);
 	voices=7;
 	// voices=8;
@@ -4379,7 +4385,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	break;
 
-      case 31:				// KALIMBA7 jiffle
+      case 31:	// E31 KALIMBA7 jiff
 	select_array_in(SCALES, european_pentatonic);
 	voices=8;
 	multiplier=4;
@@ -4397,7 +4403,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	break;
 
-      case 32:				// ESP32_12 ff
+      case 32:	// ESP32_12 ff
 	select_array_in(SCALES, major_scale);
 	voices=GPIO_PINS;
 	multiplier=4;
@@ -4416,7 +4422,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	break;
 
-      case 33:
+      case 33:	// variation
 	select_array_in(SCALES, minor_scale);
 	voices=GPIO_PINS;
 	multiplier=4;
@@ -4434,7 +4440,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	break;
 
-      case 34:
+      case 34:	// same, major?
 	select_array_in(SCALES, major_scale);
 	voices=GPIO_PINS;
 	multiplier=4;
@@ -4452,7 +4458,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	break;
 
-      case 35:
+      case 35:	// tetra
 	select_array_in(SCALES, tetrachord);
 	voices=GPIO_PINS;
 	multiplier=4;
@@ -4470,7 +4476,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	break;
 
-      case 36:
+      case 36:	// BIG major
 	select_array_in(SCALES, pentatonic_minor);
 	voices=GPIO_PINS;
 	multiplier=6;

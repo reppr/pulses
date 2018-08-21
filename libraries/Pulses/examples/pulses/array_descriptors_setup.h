@@ -1,4 +1,6 @@
-// array_descriptor_setup.h
+/*
+  array_descriptors_setup.h
+*/
 
 #define EDIT_SCALE_RAM_SIZE	31+1	// FIXME: maybe ;)
 unsigned int edit_scale_RAM[EDIT_SCALE_RAM_SIZE] = {0};

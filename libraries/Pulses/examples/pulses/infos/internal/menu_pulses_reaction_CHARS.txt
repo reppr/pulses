@@ -1,0 +1,152 @@
+154 matches in 151 lines for "case" in buffer: pulses.ino
+      9:  case '?':	// help, overrides common menu entry for '?'
+     14:  case '.':	// ".xxx" select 16bit pulses masks  or  "." short info: time and flagged pulses info
+     16:    case ' ':
+     19:    case EOF:			// '.' and '. ' display short_info
+     23:    case '?':			// '.?' PULSES.show_selected_mask();
+     28:    case 'M':  case 'm':	// '.M<num>' select HEX 16bit mask
+     43:    case '~':	// '.~' invert destination selection
+     50:    case 'x':	// '.x' clear destination selection	also on 'x'
+     56:    case 'a':	// '.a' select_flagged
+     65:    case 'A':	// '.A' select destination: *all* pulses
+     73:    case 'v':	// '.v' select destination: select_n(voices)
+     80:    case 'V':	// '.V' select destination: alive voices
+     92:    case 'L':	// '.L' select destination: all alive pulses
+    102:  case ':':	// info
+    106:  case ',':	// accept as noop in normal mode. used as delimiter to input data, displaying info. see 'menu_mode'
+    116:  case '|':	// accept as noop in normal mode. used as range bottom delimiter in arrays
+    131:  case '"':	// accept as reserved noop in normal mode. used as range top delimiter in arrays
+    146:  case '0':	// toggle selection
+    147:  case '1':	// toggle selection
+    148:  case '2':	// toggle selection
+    149:  case '3':	// toggle selection
+    150:  case '4':	// toggle selection
+    151:  case '5':	// toggle selection
+    152:  case '6':	// toggle selection
+    153:  case '7':	// toggle selection
+    154:  case '8':	// toggle selection
+    155:  case '9':	// toggle selection
+    157:    case 0:	// normal input, no special menu_mode
+    169:    case JIFFLE_ENTRY_UNTIL_ZERO_MODE:	// first chiffre already seen
+    181:  case 'a':	// hex toggle selection
+    182:  case 'b':	// hex toggle selection
+    183:  case 'c':	// hex toggle selection
+    184:  case 'd':	// hex toggle selection
+    185:  case 'e':	// hex toggle selection
+    186:  case 'f':	// hex toggle selection
+    188:    case 0:	// normal input, no special menu_mode
+    210:  case '<':	// cursor left
+    212:    case JIFFLE_ENTRY_UNTIL_ZERO_MODE:
+    228:  case '>':	// cursor right
+    230:    case JIFFLE_ENTRY_UNTIL_ZERO_MODE:
+    246:  case 'u':	// PULSES.time_unit calculate or else select time_unit as destination
+    258:  case 'x':	// clear destination selection  same as '.x'
+    263:  case 's':	// switch pulse ACTIVE on/off
+    266:	// special case: switching on an edited SCRATCH pulse:
+    288:  case 'S':	// enter sync
+    303:  case 'i':	// en_info
+    314:  case 'M':	// "mute", see 'N' as alternative
+    321:  case '*':	// multiply destination
+    324:      case CODE_PULSES:
+    341:      case CODE_TIME_UNIT:
+    367: case '/':	// '/' divide destination  '/!<num>' set divisor
+    387:      case CODE_PULSES:
+    404:      case CODE_TIME_UNIT:
+    415:  case '=':	// set destination to value
+    417:    case CODE_PULSES:
+    438:    case CODE_TIME_UNIT:
+    448:  case 'K':	// kill selected pulses
+    471:  case 'P':	// pulse create and edit
+    479:  case 'n':	// synchronize to now
+    489:  case 'N':	// NULLs payload
+    504:  case 'g':	// 'g' "GPIO"	'g~' toggle up/down pin mapping
+    522:  case 'w':	// sweep activate or toggle direction
+    533:  case 'W':	// sweep info and control
+    554:      case '~': case 't':	// 'W~' 'Wt'  start sweep or toggle direction
+    561:      case '0':			// 'W0' switches sweeping off
+    565:      case '+': case '1':	// 'W+' 'W1"  sweep up
+    569:      case '-':			// 'W-' sweep down
+    573:      case '?':			// 'W?' info only
+    587:  case 't':	// en_sweep_click
+    593:    PULSES.fix_global_next();	// just in case?
+    602:  case 'o':	// en_sweep_click_0
+    608:    PULSES.fix_global_next();	// just in case?
+    617:  case 'p':	// en_tuned_sweep_click
+    623:    PULSES.fix_global_next();	// just in case?
+    632:  case 'T':	// 'T<integer-number>' sets tuning, 'T' toggles TUNED
+    649:    PULSES.fix_global_next();	// just in case?
+    658:  case 'j':	// en_jiffle_thrower
+    662:  case 'J':	// select, edit, load jiffle
+    687:  case 'R':	// scale  was: ratio
+    702:  case 'F':	// en_INFO
+    714:  case '{':	// enter_jiffletab
+    724:  case '}':	// display jiffletab, stop editing jiffletab
+    732:  case 'C':	// Calculator simply *left to right*	*positive integers only*
+    756:  case 'D':	// DADA reserved for temporary code   testing debugging ...
+    811:  case 'y':	// DADA reserved for temporary code   testing debugging ...
+    839:  case 'V':	// set voices	V[num]! PULSES.select_n_voices
+    865:  case 'O':	// configure selected_actions
+    885:  case 'A':	// autostart
+    890:  case 'X':	// PANIC BUTTON  reset, remove all (flagged) pulses, restart selections at none
+    920:  case 'Z':	// reverse_gpio_pins
+    928:  case 'E':	// experiment, setups, instruments
+    947://      case 0:	// free setup planed
+    950:      case 1:	// setup_jiffle128
+    961:      case 2:	// init_div_123456
+    972:      case 3:	// setup_jiffles0
+    991:      case 4:	// setup_jiffles2345
+   1003:      case 5:	// init_123456
+   1014:      case 6:	// init_chord_1345689a
+   1025:      case 7:	// init_rhythm_1
+   1036:      case 8:	// init_rhythm_2
+   1047:      case 9:  // init_rhythm_3
+   1058:      case 10:	// init_rhythm_4
+   1069:      case 11:	// setup_jifflesNEW
+   1080:      case 12:	// init_pentatonic
+   1124:      case 13:	// prepare_magnets
+   1142:      case 14:	// E14
+   1159:      case 15:	// E15
+   1176:      case 16:	// E16 european_pent
+   1193:      case 17:	// E17 mimic japan
+   1210:      case 18:	// E18 pentatonic minor  nylon stringed wooden box, piezzos
+   1242:      case 19:	// TUNING: tuned sweep
+   1250:	PULSES.fix_global_next();	// just in case?
+   1260:      case 20:	// macro
+   1265:      case 21:	// macro
+   1270:      case 22:	// macro
+   1275:      case 23:	// macro
+   1280:      case 24:	// macro
+   1285:      case 25:	// macro
+   1290:      case 26:	// macro
+   1295:      case 27:	// macro
+   1300:      case 28:	// macro   for tuning
+   1306:      case 29:	// E29 KALIMBA7 tuning
+   1333:      case 30:	// KALIMBA7 jiff
+   1355:      case 31:	// E31 KALIMBA7 jiff
+   1373:      case 32:	// ESP32_12 ff
+   1392:      case 33:	// variation
+   1410:      case 34:	// same, major?
+   1428:      case 35:	// tetra
+   1446:      case 36:	// BIG major
+   1464:      case 37:	// Guitar and other instruments
+   1527:      case 38:	// 'E38' time machine setup
+   1602:      case 39:	// 'E39' time machine 2 setup
+   1668:	} // case E39 { }
+   1671:      case 40:	// 'E40' time machine with icode player
+   1756:	} // case 'E40' { }
+   1765:  case '!':	// '!' sync and activate selected  (or: setup and start old style experiments)
+   1770:    case -1:
+   1771:    case 0:
+   1773:    case 1:
+   1776:    case 2:
+   1779:    case 3:
+   1782:    case 4:
+   1785:    case 5:
+   1788:    case 6:
+   1791:    case 7:
+   1794:    case 8:
+   1797:    case 9:
+   1800:    case 10:
+   1803:    case 11:
+   1807:    default:	// normal use case: sync and activate
+   1817:    PULSES.fix_global_next();	// just in case?
