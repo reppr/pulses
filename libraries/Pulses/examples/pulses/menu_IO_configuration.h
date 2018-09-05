@@ -47,7 +47,7 @@
     /* BAUDRATE for Serial:	uncomment one of the following lines:	*/
     //#define BAUDRATE	1000000	// (I get many errors on some ESP32 boards)
     //#define BAUDRATE	500000	// fine on ESP32 with bad USB cable
-#if defined defined ESP32
+#if defined ESP32
   #define BAUDRATE	500000	// TODO: test with better USB connection and also ESP8266
 #else
   #define BAUDRATE	115200	// works fine here on all tested Arduinos

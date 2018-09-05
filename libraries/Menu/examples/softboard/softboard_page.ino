@@ -1,6 +1,6 @@
 /*
  * ****************************************************************
- * included from softboard_page.ino
+ * softboard_page.ino
  * ****************************************************************
  */
 
@@ -378,15 +378,21 @@ void toggle_watch() {
 */
 const char value_[] = "value ";
 
+bool touch_VU=false;	// show touchRead(pin) instead of analogRead(pin)
 void bar_graph(int value) {
-  int i, length=64;
+  int i, scale, length=64;
 
-  #ifdef ESP8266
-    int scale=1024;	// on ESP8266 it really is ;)
-  #elif defined(ESP32)
-    int scale=4095;
+  #if defined ESP32
+    if(touch_VU)
+      scale=160;	// read touch sensor
+    else
+      scale=4095;	// normal analogRead()
   #else
-    int scale=1023;
+    #if defined ESP8266
+      scale=1024;	// on ESP8266 it really is ;)
+    #else
+      scale=1023;
+    #endif
   #endif
 
   int stars = ((long) value * (long) length) / scale + 1 ;
@@ -428,13 +434,13 @@ void pin_info_analog(gpio_pin_t pin) {
   pins_info_analog()
   Display analog snapshot read values and bar graphs, a line each analog input:
 */
-const char analog_reads_title[] =	\
+const char bar_graph_header[] =	\
   "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
 
 void pins_info_analog() {
   int i;
 
-  MENU.outln(analog_reads_title);
+  MENU.outln(bar_graph_header);
 
   for (i=0; i<NUM_ANALOG_INPUTS; i++)
     pin_info_analog(i);
@@ -442,6 +448,28 @@ void pins_info_analog() {
   MENU.ln();
 }
 
+#if defined ESP32	// touch interface
+  void pin_info_touch(int pin) {
+    bool VU_type_was=touch_VU;
+    MENU.out(F(" T "));
+    MENU.out(pin);
+    MENU.tab();
+    touch_VU=true;
+    bar_graph(touchRead(pin));
+    touch_VU=VU_type_was;
+  }
+
+  void pins_info_touch() {
+    int i;
+
+    MENU.outln(bar_graph_header);
+
+    for (i=0; i<40; i++)
+      pin_info_touch(i);
+
+    MENU.ln();
+  }
+#endif
 
 /* **************************************************************** */
 /*
@@ -501,10 +529,15 @@ void toggle_VU() {
   run-through, don't wait...
   returns true, if there was *output*
 */
+//bool touch_VU=false;	// show touchRead(pin) instead of analogRead(pin)
 bool bar_graph_VU(int pin) {	// return true, if there was output
   int value;
 
-  value =  analogRead(pin);
+  if(touch_VU)
+    value =  touchRead(pin);
+  else
+    value =  analogRead(pin);
+
   if (abs(value - VU_last) > bar_graph_tolerance) {
     MENU.out(F("*A"));
     MENU.out((int) pin);
@@ -608,6 +641,10 @@ void toggle_tone() {
 */
 bool maybe_run_continuous() {
   if (run_VU)
+    if (touch_VU) {	// touchRead()
+      if (bar_graph_VU(PIN_digital))
+	return true;		// there was *output*
+    } else		// analogRead()
     if (bar_graph_VU(PIN_analog))
       return true;		// there was *output*
 
@@ -805,6 +842,8 @@ bool softboard_reaction(char token) {
     } else
       if (newValue != ILLEGAL)
 	MENU.OutOfRange();
+
+    touch_VU=false;
     break;
 
   case 'O':
@@ -866,7 +905,7 @@ bool softboard_reaction(char token) {
 #endif	// ESP32
 
   case 'a':
-    MENU.outln(analog_reads_title);
+    MENU.outln(bar_graph_header);
     pin_info_analog(PIN_analog);
     break;
 
@@ -949,12 +988,26 @@ bool softboard_reaction(char token) {
     }
     break;
 
+  case 'T':	// ################ TODO: clashes with 'T' for Arduino style tone();
+    newValue = MENU.numeric_input(PIN_digital);
+    if (newValue>=0 && newValue<visible_digital_pins) {
+      PIN_digital = newValue;
+    } else {
+      if (newValue != ILLEGAL)
+	MENU.OutOfRange();
+    }
+    
+    touch_VU=true;
+    run_VU=true;
+    VU_init(PIN_digital);	// ??? touch!
+    break;
+
 #ifdef has_ARDUINO_TONE
   case 't':
     toggle_tone();
     break;
 
-  case 'T':
+  case 'T':	// ################ TODO: clashes with 'T' for touch interface
     if(run_analog2tone)
       toggle_tone();	// switch old tone off
 
@@ -980,10 +1033,19 @@ bool softboard_reaction(char token) {
     pins_info_analog();
     break;
 
-  case ';':	// both ;)
+#if defined ESP32
+  case ':':	// all touch
+    pins_info_touch();
+    break;
+#endif
+
+  case ';':	// all ;)
     MENU.ln();
     pins_info_analog();
     pins_info_digital();
+#if defined ESP32
+    pins_info_touch();
+#endif
     MENU.ln();
     break;
 

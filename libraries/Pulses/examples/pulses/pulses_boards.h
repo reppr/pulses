@@ -9,7 +9,9 @@
 
 #ifdef ARDUINO
   #if defined(ESP32)				// ESP32 :)
-    // #define USE_DACs in your configuration files to use ESP32 DAC output
+
+/* ESP32 DAC
+   #define USE_DACs in your configuration files to use ESP32 DAC output	*/
     #define BOARD_has_DACs		2
     #define BOARD_DAC_RESOLUTION	8
     #define BOARD_DAC1			25	// DAC1 gpio
@@ -17,7 +19,16 @@
 
     #if true	// change that if you do not want to use the dacs
        #define USE_DACs		BOARD_has_DACs
-    #else
+    #endif
+
+/* ESP32 touch sensors
+   #define USE_TOUCH in your configuration files to use ESP32 touch sensors	*/
+
+    #define BOARD_has_TOUCH		10
+
+    #if true	// change that if you do not want to use touch interfaces
+      //#define USE_TOUCH	BOARD_has_TOUCH		// to use all touch pads
+      #define USE_TOUCH		1			// actually used
     #endif
 
 
