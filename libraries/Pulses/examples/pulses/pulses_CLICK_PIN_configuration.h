@@ -7,8 +7,10 @@
 
 // which board?
 #if defined ESP32 || defined ESP8266			// ESPxx boards
+  #if defined ESP32_G15_T01
+     #include "boards_layout/G15-T1-esp32_dev.h"
 
-  #if defined ESP32_15_clicks_no_display_TIME_MACHINE2
+  #elif defined ESP32_15_clicks_no_display_TIME_MACHINE2
     #undef GPIO_PINS
     #define GPIO_PINS	15
     gpio_pin_t gpio_pins[GPIO_PINS] =				//  ESP32_15_clicks_no_display
