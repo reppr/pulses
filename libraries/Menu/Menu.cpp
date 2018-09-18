@@ -202,7 +202,9 @@ char Menu::cb_read() {
   void Menu::outln(const char c)	const	{ MENU_OUTln(c); }
   void Menu::outln(const int i)		const	{ MENU_OUTln(i); }
   void Menu::outln(const long l)	const	{ MENU_OUTln(l); }
-  void Menu::outln(const char *str)	const	{ MENU_OUTln(str); }
+  void Menu::outln(const char *str)	const	{ MENU_OUTln(str); }	// c-style character string and newline
+  void Menu::outln(const String s)	const	{ MENU_OUTln(s); }	// c++ String and newline
+
 #ifndef INTEGER_ONLY
   void Menu::outln(const double d)	const	{ MENU_OUTln(d); }
 #endif

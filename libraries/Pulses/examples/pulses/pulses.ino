@@ -1,4 +1,7 @@
-// #define ESP32_15_clicks_no_display_TIME_MACHINE2	new default for ESP32
+#define USE_NVS		// very first tests...
+#include <Preferences.h>
+// char * coded_NAME[]=NULL;
+char * coded_NAME[] = {"Rumpelstilzchen"};	// 15 chars
 
 /* **************************************************************** */
 /*
@@ -574,6 +577,10 @@ void setup() {
   #include "array_descriptors_setup.h"
 
   MENU.outln(F("\nPULSES  http://github.com/reppr/pulses/\n"));
+
+#ifdef USE_NVS
+  #include "nvs_pulses_setup.h"
+#endif
 
 #ifdef USE_WIFI_telnet_menu		// do we use WIFI?
   #ifdef AUTOSTART_WIFI		// start wifi on booting? see: WiFi_stuff.ino

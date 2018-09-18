@@ -179,7 +179,9 @@ class Menu {
   void outln(const char c)	const;	// char output and newline
   void outln(const int i)	const;	// int output  and newline
   void outln(const long l)	const;	// long output and newline
-  void outln(const char *str)	const;	// string and newline
+  void outln(const char *str)	const;	// c-style character string and newline
+  void outln(const String s)	const;	// c++ String
+
 #ifndef INTEGER_ONLY
   void outln(const double d)	const;	// double float
 #endif
