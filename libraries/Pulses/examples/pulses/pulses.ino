@@ -3,7 +3,7 @@
 // char * coded_NAME[]=NULL;
 char * coded_NAME[] = {"Rumpelstilzchen"};	// 15 chars
 
-#define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
+// #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
 
 /* **************************************************************** */
 /*
@@ -2637,10 +2637,6 @@ void setup_jiffles2345(bool g_inverse, int voices, unsigned int multiplier, unsi
 
 // triplets {multiplier, divisor, count}
 // multiplier==0 means end
-
-// jiffletab0 is obsolete	FIXME: jiffletab0 is obsolete ################
-unsigned int jiffletab0[] =
-  {2,1024*3,4, 1,1024,64, 1,2048,64, 1,512,4, 1,64,3, 1,32,1, 1,16,2, 0,0};	// nice short jiffy
 
 unsigned int jiff0[] =
   {1,16,4, 1,24,6, 1,128,16, 1,1024,64, 1,2048,128, 1,4096,256, 1,2048,64, 1,4096,128, 1,32,2, 0,0}; // there *must* be a trailing zero.);
