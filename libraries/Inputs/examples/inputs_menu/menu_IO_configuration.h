@@ -68,9 +68,9 @@
     #if defined(ESP8266)
   #include <ESP8266WiFi.h>	// breaks:  min() max()   use:  _min() _max()
     #elif defined(ESP32)
-        #include <ESP32WiFi.h>	// might break:  min() max()   use:  _min() _max()
+	#include <ESP32WiFi.h>	// might break:  min() max()   use:  _min() _max()
     #else
-        #error "WiFi code unknown"
+	#error "WiFi code unknown"
     #endif
   #endif
 
@@ -108,7 +108,7 @@
 
     #ifdef MENU_USE_WiFi_TELNET_IN
       if (server_client && server_client.connected() && server_client.available())
-        return server_client.read();
+	return server_client.read();
     #endif
 */
     return EOF;

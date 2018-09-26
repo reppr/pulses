@@ -1,7 +1,7 @@
 #error "sorry this module is temporary switched off"
 /* **************************************************************** */
 /*
-            http://github.com/reppr/pulses/
+	    http://github.com/reppr/pulses/
 
     Please do read the README, at the end of this file
 
@@ -107,7 +107,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 			give infos,
 			tell the user about active keys.
      action function	checks if it is responsible for a token,
-     	    		if so do its trick and return true,
+			if so do its trick and return true,
 			else return false.
 
    This example includes a small collection of pre-made Menu pages.

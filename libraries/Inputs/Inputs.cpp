@@ -369,7 +369,7 @@ bool Inputs::setup_in2o_custom(int inp, ioV_t (*method)(int inp, ioV_t value)) {
 
 /*
   bool Inputs::setup_linear(int inp,\
-         ioP_t in_offset, ioP_t mul, ioP_t div, ioV_t out_offset, bool inverse)
+	 ioP_t in_offset, ioP_t mul, ioP_t div, ioV_t out_offset, bool inverse)
   Configure a linear or reverse linear in2out function on input inp.
 
   // aliases for io_calculation

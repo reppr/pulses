@@ -10,7 +10,7 @@
 
 
 /* Start a namespace "CONFIG"
-  in Read-Write mode: set second parameter to false 
+  in Read-Write mode: set second parameter to false
   Note: Namespace name is limited to 15 chars */
 Preferences CONF_nvs;
 CONF_nvs.begin("CONFIG", false);

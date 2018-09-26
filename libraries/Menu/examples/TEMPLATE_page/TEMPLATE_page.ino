@@ -4,7 +4,7 @@
  * ****************************************************************
  * TEMPLATE_page.ino
  * ****************************************************************
- */	
+ */
 
 
 /* **************************************************************** */
@@ -136,7 +136,7 @@ void loop() {	// ARDUINO
     #else
       #warning "#define MISING NUM_DIGITAL_PINS	// FIXME: ################"
       #warning "#define NUM_DIGITAL_PINS 79	// FIXME: ################"
-      #define NUM_DIGITAL_PINS	79 		// FIXME: DUE ################
+      #define NUM_DIGITAL_PINS	79		// FIXME: DUE ################
     #endif
   #else						// FIXME: 168/328 boards ???
     #define NUM_DIGITAL_PINS	20
@@ -155,7 +155,7 @@ void loop() {	// ARDUINO
     #define NUM_ANALOG_INPUTS	16
   #elif defined(__SAM3X8E__)
      #define NUM_ANALOG_INPUTS	16		// FIXME: DUE ################
-  #else 					// FIXME: 168/328 boards ???
+  #else						// FIXME: 168/328 boards ???
     #define NUM_ANALOG_INPUTS	6
   #endif
 

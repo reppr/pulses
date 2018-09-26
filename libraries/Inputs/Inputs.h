@@ -130,7 +130,7 @@ struct input_t {
 #define INPUT_OUTPUT_REACTION	256	//				:
 #define SET_TO_VALUE		512	//				=
 #define ADD_TO_VALUE		1024	//				+
-#define MUL_VALUE	        2048	//				*
+#define MUL_VALUE		2048	//				*
 //  4096
 
 // *inbuilt reaction flags:
@@ -265,7 +265,7 @@ class Inputs {
 
   /*
     bool Inputs::setup_linear(int inp,	\
-           ioP_t in_offset, ioP_t mul, ioP_t div, ioV_t out_offset, bool inverse)
+	   ioP_t in_offset, ioP_t mul, ioP_t div, ioV_t out_offset, bool inverse)
     Configure a linear or reverse linear in2out function on input inp.
   */
   bool setup_linear(int inp, ioP_t in_offset, ioP_t mul, ioP_t div, ioV_t out_offset, bool inverse);

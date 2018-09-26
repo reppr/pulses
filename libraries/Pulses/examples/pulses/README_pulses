@@ -27,7 +27,7 @@ README pulses
 
   * library 'Pulses'	daily used
   * library 'Menu'	quite usable, see below
-  * library 'Inputs'	experimental state, working, but not used recently 
+  * library 'Inputs'	experimental state, working, but not used recently
   * library 'Harmonics' in statu nascendi
   * 'softboard'	Arduino software breadbord, see below
 

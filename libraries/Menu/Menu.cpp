@@ -133,9 +133,9 @@ char Menu::cb_read() {
       out(F("\t"));
       out((char) value);
       if ( is_numeric() )
-        outln(F("  numeric CHIFFRE"));
+	outln(F("  numeric CHIFFRE"));
       else
-        outln(F("  NAN"));
+	outln(F("  NAN"));
     } else
       outln(F("(none)"));
 
@@ -489,14 +489,14 @@ bool Menu::maybe_display_more(unsigned char verbosity_level) {	// avoid too much
     #else // ARDUINO, but not ESPxx
       /* int get_free_RAM(): determine free RAM on ARDUINO:		*/
       int Menu::get_free_RAM() const {
-        int free;
-        extern int __bss_end;
-        extern void *__brkval;
+	int free;
+	extern int __bss_end;
+	extern void *__brkval;
 
-        if ((int) __brkval == 0)
-          return ((int) &free) - ((int) &__bss_end);
-        else
-          return ((int) &free) - ((int) __brkval);
+	if ((int) __brkval == 0)
+	  return ((int) &free) - ((int) &__bss_end);
+	else
+	  return ((int) &free) - ((int) __brkval);
       }
     #endif
 
@@ -542,7 +542,7 @@ bool Menu::maybe_display_more(unsigned char verbosity_level) {	// avoid too much
   void Menu::outln(const char c)	const	{ printf("%c\n", c); }
   void Menu::outln(const int i)		const	{ printf("%i\n", i); }
   void Menu::outln(const long l)	const	{ printf("%d\n", l); }
-  void Menu::outln(const char *str) 	const   { printf("%s\n", str); }
+  void Menu::outln(const char *str)	const   { printf("%s\n", str); }
 
   // unsigned versions:
   void Menu::outln(const unsigned char c)	const { printf("%c\n", c); }
@@ -641,34 +641,34 @@ void Menu::out_ticked_hexs(unsigned int count) const {
 
   example output:  MENU.bar_graph(value, 1023, '*');
 
-value -1112 	---------------------------------------------------------------XXXXXX
-value -1040 	---------------------------------------------------------------XX
-value -1039 	---------------------------------------------------------------X
-value -1024 	---------------------------------------------------------------X
-value -1023 	---------------------------------------------------------------|
-value -1022 	---------------------------------------------------------------
-value -319 	-------------------
-value -32  	--
-value -31  	-
-value -16  	-
-value -15  	!
-value -1   	!
-value 0    	0
-value 1    	.
-value 15   	.
-value 16   	*
-value 32   	**
-value 256  	****************
-value 368  	***********************
-value 496  	*******************************
-value 608  	**************************************
-value 832  	****************************************************
-value 1008 	***************************************************************
-value 1022 	***************************************************************
-value 1023 	**************************************************************|
-value 1024 	***************************************************************X
-value 1072 	***************************************************************XXXX
-value 1104 	***************************************************************XXXXXX
+value -1112	---------------------------------------------------------------XXXXXX
+value -1040	---------------------------------------------------------------XX
+value -1039	---------------------------------------------------------------X
+value -1024	---------------------------------------------------------------X
+value -1023	---------------------------------------------------------------|
+value -1022	---------------------------------------------------------------
+value -319	-------------------
+value -32	--
+value -31	-
+value -16	-
+value -15	!
+value -1	!
+value 0		0
+value 1		.
+value 15	.
+value 16	*
+value 32	**
+value 256	****************
+value 368	***********************
+value 496	*******************************
+value 608	**************************************
+value 832	****************************************************
+value 1008	***************************************************************
+value 1022	***************************************************************
+value 1023	**************************************************************|
+value 1024	***************************************************************X
+value 1072	***************************************************************XXXX
+value 1104	***************************************************************XXXXXX
 */
 void Menu::bar_graph(long value, unsigned int scale, char c) {
   const long length=64;
@@ -1308,7 +1308,7 @@ void Menu::interpret_men_input() {
 
 	did_something = true;			// yes, did switch
 #ifdef DEBUGGING_MENU
-    	out(F("FOUND ")); menu_page_info(pg);
+	out(F("FOUND ")); menu_page_info(pg);
 #endif
 	break;
       }

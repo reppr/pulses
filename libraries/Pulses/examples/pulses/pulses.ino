@@ -9,7 +9,7 @@ char * coded_NAME[] = {"Rumpelstilzchen"};	// 15 chars
 /*
 			pulses.ino
 
-            http://github.com/reppr/pulses/
+	    http://github.com/reppr/pulses/
 
 Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
@@ -182,7 +182,7 @@ void seed_icode_player(int seeder_pulse) {	// as payload for seeder
 #if defined USE_i2c
   #if defined USE_MCP23017
       if(PULSES.pulses[seeder_pulse].flags & HAS_I2C_ADDR_PIN)	// if the seeder has i2c_addr and i2c_pin
-        PULSES.set_i2c_addr_pin(dest_pulse, PULSES.pulses[seeder_pulse].i2c_addr, PULSES.pulses[seeder_pulse].i2c_pin);
+	PULSES.set_i2c_addr_pin(dest_pulse, PULSES.pulses[seeder_pulse].i2c_addr, PULSES.pulses[seeder_pulse].i2c_pin);
   #endif
 #endif
 
@@ -209,7 +209,7 @@ void seed_icode_player(int seeder_pulse) {	// as payload for seeder
 
 // scaletabs *MUST* have 2 trailing zeros
 
-unsigned int octaves[] = {1,1, 0,0};  				// zero terminated
+unsigned int octaves[] = {1,1, 0,0};				// zero terminated
 unsigned int octaves_fifths[] = {1,1, 2,3, 0,0};			// zero terminated
 unsigned int octaves_fourths[] = {1,1, 3,4, 0,0};		// zero terminated
 unsigned int octaves_fourths_fifths[] = {1,1, 3,4, 2,3, 0,0};	// zero terminated
@@ -599,7 +599,7 @@ void setup() {
       delay(1);                                // give RF section time to shutdown
 
       #ifdef FREQUENCY
-        system_update_cpu_freq(FREQUENCY);
+	system_update_cpu_freq(FREQUENCY);
       #endif
     #endif
 
@@ -708,7 +708,7 @@ bool low_priority_tasks() {
     return true;
 #endif
 
-  if (maybe_run_continuous())	        // even lower priority: maybe display input state changes.
+  if (maybe_run_continuous())		// even lower priority: maybe display input state changes.
     return true;
 
   return false;
@@ -736,7 +736,7 @@ bool lowest_priority_tasks() {
 //	//      delay(8000);
 //	    }
 //	    else
-//	      MENU.out("still dead 	");
+//	      MENU.out("still dead	");
 //	    }
 
   if (telnet_server.hasClient()) {
@@ -893,7 +893,7 @@ int main() {
 	if(! maybe_display_tuning_steps()) {	// low priority tuning steps info
 	  ;
 #ifdef ARDUINO
-          maybe_run_continuous();		//    lowest priority:
+	  maybe_run_continuous();		//    lowest priority:
 #endif					//    maybe display input state changes.
       }
     }
@@ -2282,7 +2282,7 @@ bool g_inverse=false;	// bottom DOWN/up GPIO click-pin mapping	// TODO: update!
 
   'reverse_gpio_pins()' as alternative:
   'reverse_gpio_pins()' works on the global gpio_pins[] array
- 			 the pulses won't notice but play with new pin mapping */
+			 the pulses won't notice but play with new pin mapping */
 
 
 /* **************************************************************** */
@@ -2747,12 +2747,12 @@ void setup_jiffles0(bool g_inverse, int voices, unsigned int multiplier, unsigne
 
 /*
   'g_inverse' works when setting up an experiment creating pulses
- 	      other pulses aren't affected
+	      other pulses aren't affected
 	      some experiments do not implement that
 
   'reverse_gpio_pins)' as alternative:
   'reverse_gpio_pins()' works on the global gpio_pins[] array
- 			 the pulses won't notice but play with new pin mapping */
+			 the pulses won't notice but play with new pin mapping */
 
 // TODO: move to library Pulses
 bool gpio_pins_inverted=false;
@@ -3545,7 +3545,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'g':	// 'g' "GPIO"	'g~' toggle up/down pin mapping
     if(MENU.cb_peek() == '~') {	      // 'g~' toggle up/down pin mapping
-          if (MENU.verbosity)
+	  if (MENU.verbosity)
 	    MENU.out(F("pin mapping bottom "));
 
 	  g_inverse = !g_inverse;	// toggle bottom up/down click-pin mapping
@@ -3712,7 +3712,7 @@ bool menu_pulses_reaction(char menu_input) {
     if (MENU.cb_peek() != '!')		// 'J<num>' selects jiffle
       UI_select_from_DB(JIFFLES);	// select jiffle UI
 
-    if (MENU.cb_peek() == '!') {  	// 'J[<num>]!' copies an already selected jiffletab to RAM, selects RAM
+    if (MENU.cb_peek() == '!') {	// 'J[<num>]!' copies an already selected jiffletab to RAM, selects RAM
       MENU.drop_input_token();
       if(selected_in(JIFFLES) != jiffle_RAM) {
 	unsigned int * source=selected_in(JIFFLES);
@@ -3777,7 +3777,7 @@ bool menu_pulses_reaction(char menu_input) {
     if (MENU.maybe_display_more()) {
       MENU.out("==> "), MENU.outln(calc_result);
 
-      if (calc_result > 1) {   	// show prime factors if(result >= 2)
+      if (calc_result > 1) {	// show prime factors if(result >= 2)
 	int p_factors_size=6;	// for harmonics I rarely use more than three, sometimes four ;)
 	unsigned int p_factors[p_factors_size];
 	MENU.out(F("prime factors of ")); MENU.out(calc_result);

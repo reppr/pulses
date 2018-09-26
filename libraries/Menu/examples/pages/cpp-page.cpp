@@ -2,8 +2,8 @@
 /*
 			cpp-page
 
-            http://github.com/reppr/pulses/
-        Given as an example for the Menu library.
+	    http://github.com/reppr/pulses/
+	Given as an example for the Menu library.
 
 
 Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
@@ -154,7 +154,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
      title		identifies page to the user.
      display function	displays the menu page.
      action function	checks if it is responsible for a token,
-     	    		if so do its trick and return true,
+			if so do its trick and return true,
 			else return false.
 */
 

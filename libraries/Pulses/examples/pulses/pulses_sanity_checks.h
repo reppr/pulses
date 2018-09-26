@@ -15,7 +15,7 @@
   #else
     #if defined BOARD_has_DACs
       #if (USE_DACs > BOARD_has_DACs)
-        #error BOARD_has_DACs:  looks like your board has not enough DACs
+	#error BOARD_has_DACs:  looks like your board has not enough DACs
       #endif
     #else	// BOARD_has_DACs is not defined
       #error BOARD_has_DACs is not defined

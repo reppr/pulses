@@ -132,7 +132,7 @@ bool inputs_reaction(char token) {
 
     break;
 
-  case 'I': 	// Initialize (raw)
+  case 'I':	// Initialize (raw)
     for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
       if (INPUTS.selected_inputs & ( 1 << inp)) {
 	INPUTS.setup_analog_read(inp, 0, 0);			// A0, oversample=0
@@ -144,7 +144,7 @@ bool inputs_reaction(char token) {
 
     break;
 
-  case 'L': 	// linear
+  case 'L':	// linear
     for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
       if (INPUTS.selected_inputs & ( 1 << inp)) {
 	INPUTS.setup_analog_read(inp, 0, 0);			// A0, oversample=0
@@ -157,7 +157,7 @@ bool inputs_reaction(char token) {
 
     break;
 
-  case 'Z': 	// inverse
+  case 'Z':	// inverse
     for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
       if (INPUTS.selected_inputs & ( 1 << inp))
 	INPUTS.set_flags(inp, (INPUTS.get_flags(inp) ^ PROCESS_INVERSE));
@@ -273,7 +273,7 @@ bool inputs_reaction(char token) {
       inputs_info();
 
     break;
-    
+
   case 'W':  // analogWrite
     /*
       'W' toggle SET_PWM flag
@@ -407,9 +407,9 @@ bool inputs_reaction(char token) {
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++) {
 	  if (INPUTS.selected_inputs & ( 1 << inp)) {
 	    test_in2o_calculation(inp, (int) newValue);
-            #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
+	    #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
 	      wdt_reset();
-            #endif
+	    #endif
 	  }
 	}
       }
@@ -629,4 +629,3 @@ void show_samples(int inp) {
 #define INPUTS_MENU_PAGE_INO
 #endif // ! INPUTS_MENU_PAGE_INO
 /* **************************************************************** */
-

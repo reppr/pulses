@@ -18,7 +18,7 @@ static const gpio_pin_t D10  = 1;
 
 MCU=pin	pwm	1st	2nd	internal	remark
 
-D0 = 16 - 	D0		pull-down	[*]
+D0 = 16 -	D0		pull-down	[*]
 D1 = 5  ~	D1
 D2 = 4  ~	D2
 D3 = 0  ~	D3				suggested pullup, LOW boot FLASH
@@ -35,7 +35,7 @@ D10= 1	?	>TX	D10
 
 [**] D5(14) and D6(12) must be selected as GPIO first.
 
-setting pin 7 to output reboots my board 
+setting pin 7 to output reboots my board
 
 // for 6 clicks on ESP8266 NodeMCU I have used:
 //   gpio_pins[0] = D0;	// D0 = 16

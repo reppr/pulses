@@ -34,10 +34,10 @@ GPI11 FLASH CMD
 ["WIFI" side -|]
 GND
 GPIO23  VSPI MOSI				SPI MOSI
-GPIO22	 					Wire SCL	(I2S codec DATA)
+GPIO22						Wire SCL	(I2S codec DATA)
 GPIO1	TX0					Serial TX
 GPIO3	RX0					Serial RX
-GPIO21	 					Wire SDA
+GPIO21						Wire SDA
 GND
 GPIO19	VSPI MISO				SPI MISO
 GPIO18	VSPI SCK				SPI SCK
@@ -97,7 +97,7 @@ GPIO13	HSPI MOSI	C*	TOUCH4	ADC14	TCK
 GPIO9	FLASH D2
 GPI10	FLASH D3				CMD
 GPI11	FLASH CMD
-5V   	5V
+5V	5V
 
 /* **************************************************************** */
 GND	GND
@@ -107,7 +107,7 @@ GND	GND
 GPIO19	VSPI MISO	C			SPI MISO	*i2s0 WS*
 GPIO18	VSPI SCK	C?			SPI SCK		*i2s1 DATA IN*
 GPIO5	VSPI SS		C*			SPI SS		(pu)
-GPIO17			C*			    		*i2s1 BCK*
+GPIO17			C*					*i2s1 BCK*
 GPIO16			C*					*i2s1 WS*
 GPIO4			CT	ADC10	TOUCH0			(pd)
 GPIO0	BOOT		CT	ADC11	TOUCH1			(pu)
@@ -127,7 +127,7 @@ click pins { 14, 12, 13, 23, 5, 17, 16 }	// 12 gives error
 */
 
 click pins { 14, 18, 13, 23, 5, 17, 16 }
-                 ??          ?                 	// SPI ??
+		 ??          ?			// SPI ??
 						// maybe 27 T?,
 
 touch pins { 32, 33, 27,  4, 0,  2, 15 }
@@ -149,7 +149,7 @@ digital input for PLL microphone or similar { 35 }
 // BOOT: see  https://github.com/espressif/esptool/wiki/ESP32-Boot-Mode-Selection
 
 	(used)	custom
-GPIO0	(boot) 	T			pu			BOOT: low boots to flash mode
+GPIO0	(boot)	T			pu			BOOT: low boots to flash mode
 GPIO1	TX
 GPIO2	(led)	T			pd			BOOT: low or unconnected-floating
 GPIO3	RX
@@ -235,7 +235,7 @@ ESP32_more_clicks_v0	// ################ TODO: UNTESTED! ################
       {23, (22), (21), 5, (19), (18), 17, 16, 4, 0, 2, 15,		32, 33, 27, 14, 13, };  // sample board layout
       {0, 2, 4, 5, 13, 14, 15, 16, 17, (18), (19), (21), (22), 23, 27, 32, 33, };	//  ESP32_more_clicks_v0, untested...
       {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, (18), (19), (21), (22), };	//  ESP32_more_clicks_v0, 13|15|17 clicks untested!
-                                                        (DISPLAY)  (ACC/GYRO)
+							(DISPLAY)  (ACC/GYRO)
 
 ESP32_13_clicks	//  ESP32_13_clicks tested
       {0, 2, 4, 5, 13, 14, 15, 16, 17, 23, 27, 32, 33, };	//  ESP32_13_clicks tested

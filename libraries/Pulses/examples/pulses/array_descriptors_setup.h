@@ -23,7 +23,7 @@ REGISTER_SCALE(scale_rationals);		// 12
 REGISTER_SCALE(octaves_fourths);		// 13
 REGISTER_SCALE(doric_scale);			// 14
 
-select_array_in(SCALES, pentatonic_minor);  	// default scale
+select_array_in(SCALES, pentatonic_minor);	// default scale
 
 
 #include "jiffles.h"
@@ -82,7 +82,7 @@ REGISTER_JIFFLE(loong);			// 49
 REGISTER_JIFFLE(looong);		// 50
 REGISTER_JIFFLE(loooong);		// 51
 
-select_array_in(JIFFLES, d4096_1024);  	// default jiffle
+select_array_in(JIFFLES, d4096_1024);	// default jiffle
 
 
 #include "iCODE.h"
@@ -91,9 +91,9 @@ REGISTER_iCODE(d4096_1024_i2cLED);		// 0
 REGISTER_iCODE(d4096_1024_icode_jiff);
 
 #if defined USE_i2c
-  select_array_in(iCODEs, (unsigned int *) d4096_1024_i2cLED); 		// default iCODE LED spots on i2c
+  select_array_in(iCODEs, (unsigned int *) d4096_1024_i2cLED);		// default iCODE LED spots on i2c
 #else
-  select_array_in(iCODEs, (unsigned int *) d4096_1024_icode_jiff);  	// default iCODE, jiffling, *no* i2c
+  select_array_in(iCODEs, (unsigned int *) d4096_1024_icode_jiff);	// default iCODE, jiffling, *no* i2c
 #endif
 
 include_DB_in_DB(iCODEs, JIFFLES, 1);

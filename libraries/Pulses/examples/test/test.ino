@@ -2,8 +2,8 @@
 /*
 			test.ino
 
-            http://github.com/reppr/pulses/
-        Given as an example for the Menu library.
+	    http://github.com/reppr/pulses/
+	Given as an example for the Menu library.
 
 
 Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2

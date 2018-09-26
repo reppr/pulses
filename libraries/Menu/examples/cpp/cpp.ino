@@ -3,8 +3,8 @@
 /*
 			cpp test
 
-            http://github.com/reppr/pulses/
-        Given as an example for the Menu library.
+	    http://github.com/reppr/pulses/
+	Given as an example for the Menu library.
 
 
 Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
@@ -202,7 +202,7 @@ int main() {
      title		identifies page to the user.
      display function	displays the menu page.
      action function	checks if it is responsible for a token,
-     	    		if so do its trick and return true,
+			if so do its trick and return true,
 			else return false.
 */
 
@@ -402,9 +402,9 @@ void  arduino_pins_info() {
 
     #ifdef ARDUINO_ESP8266_NODEMCU
       if (pinA2NODEMCU(pin)<0) {
-        MENU.space(2);
+	MENU.space(2);
       } else {
-        MENU.out('D'); MENU.out(pinA2NODEMCU(pin));
+	MENU.out('D'); MENU.out(pinA2NODEMCU(pin));
       }
       MENU.tab();
     #endif
@@ -416,9 +416,9 @@ void  arduino_pins_info() {
     // timer?
     #ifdef digitalPinToTimer
       #ifdef __SAM3X8E__	// FIXME: ################
-         #warning "no timer info on Arduino Due yet. ################"
+	 #warning "no timer info on Arduino Due yet. ################"
       #else
-        timer= digitalPinToTimer(pin);
+	timer= digitalPinToTimer(pin);
 	if(timer) {
 	  // FIXME: ################
 	  MENU.out(TIMER_);
@@ -509,7 +509,7 @@ void  arduino_pins_info() {
       #ifdef __SAM3X8E__	// FIXME: ################
 	MENU.out(int digitalPinToPort(pin));
       #else
-        MENU.out(uint8_t digitalPinToPort(pin));
+	MENU.out(uint8_t digitalPinToPort(pin));
       #endif
     #else
       MENU.out('?');
@@ -518,9 +518,9 @@ void  arduino_pins_info() {
 
     #ifdef digitalPinToBitMask
       #ifdef ESP8266
-        MENU.outBIN(digitalPinToBitMask(pin), 16);
+	MENU.outBIN(digitalPinToBitMask(pin), 16);
       #else
-        MENU.outBIN(digitalPinToBitMask(pin), 8);
+	MENU.outBIN(digitalPinToBitMask(pin), 8);
       #endif
     #else
       MENU.out(Question3_);

@@ -116,7 +116,7 @@
     #else
       #warning "#define MISING NUM_DIGITAL_PINS	// FIXME: ################"
       #warning "#define NUM_DIGITAL_PINS 79	// FIXME: ################"
-      #define NUM_DIGITAL_PINS	79 		// FIXME: DUE ################
+      #define NUM_DIGITAL_PINS	79		// FIXME: DUE ################
     #endif
   #else						// FIXME: 168/328 boards ???
     #define NUM_DIGITAL_PINS	20
@@ -135,7 +135,7 @@
     #define NUM_ANALOG_INPUTS	16
   #elif defined(__SAM3X8E__)
      #define NUM_ANALOG_INPUTS	16		// FIXME: DUE ################
-  #else 					// FIXME: 168/328 boards ???
+  #else						// FIXME: 168/328 boards ???
     #define NUM_ANALOG_INPUTS	6
   #endif
 
@@ -545,7 +545,7 @@ bool bar_graph_VU(int pin) {	// return true, if there was output
     bar_graph(value);
     VU_last = value;
 
-    return true; // there was *output*  			 return true;
+    return true; // there was *output*				 return true;
   }
 
   return false;  // analog read *had to be done*, but no output	 return false;
@@ -696,7 +696,7 @@ void stop_continuous() {	// unused
      title		identifies page to the user.
      display function	displays the menu page.
      action function	checks if it is responsible for a token,
-     	    		if so do its trick and return true,
+			if so do its trick and return true,
 			else return false.
 */
 
@@ -886,7 +886,7 @@ bool softboard_reaction(char token) {
 
 	MENU.skip_numeric_input();
       } else {					// pin *can* do PWM
-        MENU.out(pin_); MENU.out((int) PIN_digital);
+	MENU.out(pin_); MENU.out((int) PIN_digital);
 	MENU.tab();
 	MENU.out(pwm_); MENU.out(F("write "));
 	newValue = MENU.numeric_input(ILLEGAL);
@@ -996,7 +996,7 @@ bool softboard_reaction(char token) {
       if (newValue != ILLEGAL)
 	MENU.OutOfRange();
     }
-    
+
     touch_VU=true;
     run_VU=true;
     VU_init(PIN_digital);	// ??? touch!
@@ -1210,26 +1210,26 @@ Some examples:
 
 
    Example 1:  'D13 OH' switch LED on   (D select pin, O output, H high)
-               'L'      off again       (L low)
+	       'L'      off again       (L low)
 
 
    Example 2:  writing high to an input activates internal pullup resistor
 
 	       'D13 IH' pullup LED pin  (D select pin, I input, H high)
 
-                                        LED glows at low level
-               'O'      LED as OUTPUT   now the LED is on
+					LED glows at low level
+	       'O'      LED as OUTPUT   now the LED is on
 
 
    Example 3:  Watch an analog input like a VU meter, changing over time.
-               See electric noise on unconnected floating A0 input
-               scrolling over your serial terminal.
-               (Touch the input if there is no visible signal.)
+	       See electric noise on unconnected floating A0 input
+	       scrolling over your serial terminal.
+	       (Touch the input if there is no visible signal.)
 
-               Or connect a sensor to the input and explore its data...
+	       Or connect a sensor to the input and explore its data...
 
-               'A0 v'      A=select pin (both analog or digital)
-                           v=display analog read values and bar graphs
+	       'A0 v'      A=select pin (both analog or digital)
+			   v=display analog read values and bar graphs
 
 			   Stop it by pressing 'v' again.
 
@@ -1263,10 +1263,10 @@ Some examples:
 
 
    Example 4:  Listen to an analog input value changing the pitch of a piezzo tone.
-   	       This example does a similar thing as #3 playing an analog value back
+	       This example does a similar thing as #3 playing an analog value back
 	       as the pitch of a sound on a Piezzo connected from pin 8 to ground:
 
-   	       'A0 T8'	Select analog input and the pin for the piezzo.
+	       'A0 T8'	Select analog input and the pin for the piezzo.
 	       't'	toggles the tone on and off.
 
 	       You will hear a sound on the piezzo now. The pitch will change
@@ -1275,7 +1275,7 @@ Some examples:
 
    Example 5:  ','  Display snapshot values of all analog inputs.
 
-                        [fixed font only]
+			[fixed font only]
 
 pin     value   |                               |                               |
 *A0     609     ***************************************
@@ -1305,7 +1305,7 @@ pin     value   |                               |                               
  pin 13	I  floating
 
    btw: The example output was generated after 'D2OLD3OHD5IH'.
-        'D2OL D3OH D5IH' is the same, but easier to read.
+	'D2OL D3OH D5IH' is the same, but easier to read.
 
 
 

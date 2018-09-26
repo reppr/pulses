@@ -177,7 +177,7 @@ int main() {	// c++ Linux PC test version
      title		identifies page to the user.
      display function	displays the menu page.
      action function	checks if it is responsible for a token,
-     	    		if so do its trick and return true,
+			if so do its trick and return true,
 			else return false.
 */
 

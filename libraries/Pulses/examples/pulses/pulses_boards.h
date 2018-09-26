@@ -97,7 +97,7 @@
       #if defined(KALIMBA7_v2)
 	#define GPIO_PINS	8	// only 7 used
       #else	// ESP32 generic
-        #define GPIO_PINS	8
+	#define GPIO_PINS	8
 //      #define GPIO_PINS	16	//  ################ FIXME: GPIO_PINS  16 pulses on ESP32 broken
       #endif
     #elif defined(ESP8266)		// ESP8266: "a lot of RAM", 8 pins

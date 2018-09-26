@@ -7,7 +7,7 @@
 
     Copyright © Robert Epprecht  www.RobertEpprecht.ch  GPLv2
 
-              http://github.com/reppr/pulses
+	      http://github.com/reppr/pulses
 */
 /* **************************************************************** */
 
@@ -368,7 +368,7 @@ void Pulses::deactivate_pulse(int pulse) {	// clear ACTIVE flag, keep data
 }
 
 
-void Pulses::set_payload(int pulse, void (*payload)(int)) { 	// set and activate payload
+void Pulses::set_payload(int pulse, void (*payload)(int)) {	// set and activate payload
   pulses[pulse].periodic_do = payload;
   pulses[pulse].action_flags |= PAYLOAD;
 
@@ -703,9 +703,9 @@ void Pulses::DAC_output() {
 	dac1_value += pulses[p].dac1_wave_function(p, pulses[p].dac1_intensity);
       }
       #if (USE_DACs > 1)
-        if (pulses[p].dac2_wave_function != NULL) {
+	if (pulses[p].dac2_wave_function != NULL) {
 	  dac2_value += pulses[p].dac2_wave_function(p, pulses[p].dac2_intensity);
-        }
+	}
       #endif
       */
       } // counter & 1

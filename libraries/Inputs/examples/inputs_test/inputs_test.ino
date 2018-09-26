@@ -6,7 +6,7 @@
    (The different tests can be activated by pp #define's.)
 
 
-            http://github.com/reppr/pulses/
+	    http://github.com/reppr/pulses/
 
 Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
@@ -217,7 +217,7 @@ int read_HCSR04_ultrasonic(int dummy) {
   digitalWrite(HCSR04_TRIGGER_PIN, LOW);			// end trigger
 
 
-  while (digitalRead(HCSR04_ECHO_PIN) == LOW)  	// wait for echo
+  while (digitalRead(HCSR04_ECHO_PIN) == LOW)	// wait for echo
     ;
 
   time = micros();				// echo started
@@ -351,7 +351,7 @@ void setup() {
 #ifdef INPUTS_DEBUGGING_SAMPLING
   /*
   bool Inputs::setup_sample_method(int inp,\
-         int (*take_sample)(int addr), uint8_t addr, unsigned int oversample)
+	 int (*take_sample)(int addr), uint8_t addr, unsigned int oversample)
   */
   INPUTS.setup_sample_method(0, &test_sample_method, 0, 4);	// A0
   INPUTS.setup_sample_method(1, &test_sample_method, 1, 4);	// A1
@@ -388,7 +388,7 @@ void setup() {
   test_ioP_t();
 
   // bool Inputs::setup_linear(int inp,\
-            ioP_t in_offset, ioP_t mul, ioP_t div, ioV_t out_offset, bool inverse)
+	    ioP_t in_offset, ioP_t mul, ioP_t div, ioV_t out_offset, bool inverse)
 
   if(i2o_p_type_is_int8) {
     INPUTS.setup_linear(0, 0, 1, -2, 0, PROPORTIONAL);			// linear, -128 to 127, -50%
