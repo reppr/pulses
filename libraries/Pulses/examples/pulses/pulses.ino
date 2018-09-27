@@ -555,7 +555,13 @@ int softboard_page=-1;		// see: maybe_run_continuous()
   #include "jiffles.h"
 #endif
 
+#include "random_entropy.h"
+// #include "furzification.h"
+
 void setup() {
+#if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
+  random_entropy();	// start gathering entropy before initialisation
+#endif
   delay(STARTUP_DELAY);		// yield()
   Serial.begin(BAUDRATE);	// Start serial communication.
 
@@ -573,6 +579,9 @@ void setup() {
   while (Serial.available())  { Serial.read(); yield(); }
   while (MENU.cb_peek() != EOF) { MENU.drop_input_token(); yield(); }
 
+#if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
+  random_entropy();	// gathering entropy fromserial noise
+#endif
   delay(STARTUP_DELAY);
 
   MENU.outln("\nstartup...");
@@ -620,6 +629,10 @@ void setup() {
     MCP23017_OUT_LOW();
     PULSES.do_A2 = &MCP23017_write;
   #endif
+#endif
+
+#if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
+  random_entropy();	// more entropy from hardware like wifi, etc
 #endif
 
   MENU.ln();
@@ -691,6 +704,10 @@ void setup() {
   // try to get rid of menu input garbage, "dopplet gnaeht hebt vilicht besser" ;)
   while (Serial.available())  { Serial.read(); yield(); }
   while (MENU.cb_peek() != EOF) { MENU.drop_input_token(); yield(); }
+
+#if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
+  random_entropy();	// entropy from thit and that
+#endif
 };
 
 
@@ -3792,11 +3809,17 @@ bool menu_pulses_reaction(char menu_input) {
 	MENU.ln();
       }
     }
-
     break;
 
   case 'D':	// DADA reserved for temporary code   testing debugging ...
-    MENU.out_noop(); MENU.ln();
+    //MENU.out_noop(); MENU.ln();
+
+    MENU.outln(random_entropy());
+
+//    if(musicbox_incarnation & 1)
+//      furzificate();
+//    else
+//      start_musicbox();
 
     /*
     #if defined USE_MCP23017
