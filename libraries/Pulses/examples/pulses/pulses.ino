@@ -1,8 +1,3 @@
-#define USE_NVS		// very first tests...
-#include <Preferences.h>
-// char * coded_NAME[]=NULL;
-char * coded_NAME[] = {"Rumpelstilzchen"};	// 15 chars
-
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
 
 /* **************************************************************** */

@@ -2,6 +2,10 @@
   nvs_pulses_setup.h
 */
 
+
+// char * coded_NAME[]=NULL;
+char * coded_NAME[] = {"Rumpelstilzchen"};	// 15 chars
+
 #ifndef STRINGIFY2
   // see:  https://stackoverflow.com/questions/20631922/expand-macro-inside-string-literal
   #define STRINGIFY2(X) #X
@@ -23,7 +27,7 @@ MENU.outln(CONF_nvs.getString("nvs_GPIO", ""));
 MENU.out("nvs_AUTOSTART:\t");
 MENU.outln(CONF_nvs.getString("nvs_AUTOSTART", ""));
 
-MENU.out("NVS freeEntries():\t");
+MENU.out("nvs freeEntries():\t");
 MENU.outln(CONF_nvs.freeEntries());
 
 if (coded_NAME == 0)

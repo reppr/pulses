@@ -9,9 +9,12 @@
 
 #ifdef ARDUINO
   #if defined(ESP32)				// ESP32 :)
+    /* ESP32 NVS	*/
+    #define USE_NVS	// default is ON FOR TESTING
+    #include "nvs_pulses.h"
 
-/* ESP32 DAC
-   #define USE_DACs in your configuration files to use ESP32 DAC output	*/
+    /* ESP32 DAC
+       #define USE_DACs in your configuration files to use ESP32 DAC output	*/
     #define BOARD_has_DACs		2
     #define BOARD_DAC_RESOLUTION	8
     #define BOARD_DAC1			25	// DAC1 gpio
