@@ -101,6 +101,12 @@ REGISTER_JIFFLE(diing_ditditdit);
 REGISTER_JIFFLE(pentatonic_thirds_falling_5);	// TODO: re order
 REGISTER_JIFFLE(pentatonic_thirds_rising);
 
+REGISTER_JIFFLE(up_THRD);			// TODO: re order
+REGISTER_JIFFLE(up_THRD_dn);
+REGISTER_JIFFLE(top_RETurn);
+REGISTER_JIFFLE(dwn_THRD);
+REGISTER_JIFFLE(dwn_THRD_up);
+
 select_array_in(JIFFLES, d4096_1024);	// default jiffle
 
 

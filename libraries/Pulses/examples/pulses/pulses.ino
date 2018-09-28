@@ -92,6 +92,8 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 #include "int_edit.h"			// displaying and editing unsigned int arrays
 #include "array_descriptors.h"		// make data arrays accessible for the menu, give names to the data arrays
 
+action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actions
+
 /* **************************************************************** */
 // some #define's:
 #define ILLEGAL		-1
@@ -551,7 +553,7 @@ int softboard_page=-1;		// see: maybe_run_continuous()
 #endif
 
 #include "random_entropy.h"
-// #include "furzification.h"
+#include "magigal_music_box.h"
 
 void setup() {
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
@@ -587,6 +589,8 @@ void setup() {
 #ifdef USE_NVS
   #include "nvs_pulses_setup.h"
 #endif
+
+#include "melody_jiffles.h"	// TODO: test only
 
 #ifdef USE_WIFI_telnet_menu		// do we use WIFI?
   #ifdef AUTOSTART_WIFI		// start wifi on booting? see: WiFi_stuff.ino
@@ -2302,7 +2306,6 @@ bool g_inverse=false;	// bottom DOWN/up GPIO click-pin mapping	// TODO: update!
 #define JIFFLE_ENTRY_UNTIL_ZERO_MODE	1	// menu_mode for unsigned integer data entry, stop at zero
 
 /* **************************************************************** */
-action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actions
 
 void menu_pulses_display() {
   MENU.outln(F("http://github.com/reppr/pulses/"));
