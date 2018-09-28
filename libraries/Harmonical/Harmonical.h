@@ -44,6 +44,7 @@ class Harmonical {
 
   unsigned int GCD(unsigned int a, unsigned int b);	// greatest common divisor, Euklid
   unsigned long LCM(unsigned int a, unsigned int b);	// least common multiple
+  //  fraction * fraction_LCM(fraction * F, fraction *LCM);	// LCM for fractions
   void reduce_fraction(struct fraction *f);
   void expand_fractions(struct fraction * a, struct fraction * b);
   fraction * add_fraction(struct fraction * delta, struct fraction * sum);

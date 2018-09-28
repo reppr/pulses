@@ -107,7 +107,10 @@ REGISTER_JIFFLE(top_RETurn);
 REGISTER_JIFFLE(dwn_THRD);
 REGISTER_JIFFLE(dwn_THRD_up);
 
-select_array_in(JIFFLES, d4096_1024);	// default jiffle
+REGISTER_JIFFLE(doDe_i);	// test only, remove?
+REGISTER_JIFFLE(asdfg);		// test only, remove?
+
+select_array_in(JIFFLES, din_dididi);	// default jiffle
 
 
 #include "iCODE.h"

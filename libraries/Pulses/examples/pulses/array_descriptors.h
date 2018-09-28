@@ -95,6 +95,10 @@ bool register_array_in_DB(arr_descriptor* DB,	\
   return false;
 }
 
+char* selected_name(arr_descriptor* DB) {
+  return array2name(DB, selected_in(DB));
+}
+
 bool include_DB_in_DB(arr_descriptor* DB, arr_descriptor* DB_include, int first) {
   MENU.out("include ");
   MENU.out(DB_include[0].name);

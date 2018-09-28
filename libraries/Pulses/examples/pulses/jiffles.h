@@ -158,7 +158,7 @@ unsigned int jiff_december[] =
 unsigned int jiff_dec128[] =
   {1,1024,4, 1,64,4, 1,128,16, 1,512,8, 1,1024,128, 0,0};
 
-unsigned int jiff_dec_pizzicato[] =
+unsigned int jiff_dec_pizzicato[] =	// dirty!
   {1,1024,4, 1,64,4, 1,28,16, 1,512,8, 1,1024,128, 1,2048,8, 0,0};
 
 // very old jiffles
@@ -177,6 +177,11 @@ unsigned int gling128_0[] = {1,128,16, 0,0};
 unsigned int gling128_1[] = {1,256,2, 1,128,16, 0,0};
 unsigned int gling128_2[] = {1,512,4, 1,256,4, 1,128,16, 0,0};
 unsigned int gling128[]   = {1,512,8, 1,256,4, 1,128,16, 0,0};
+
+// try on doric scale
+unsigned int doDe_i[] = {1,512,16, 1,1024,16, 1,8,1, 1,2084,11, 0,0};	// test only, remove?
+
+unsigned int asdfg[] = {1,64,3, 1,128,3, 1,256,3, 1,512,3, 1,4,1, 1,2084,11, 1,3,1, 1,8192,16, 0,0};	// test only, remove?
 
 #endif	// ! RAM_IS_SCARE
 #define JIFFLES_h

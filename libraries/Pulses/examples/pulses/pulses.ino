@@ -1,4 +1,5 @@
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
+#define MAGICAL_MUSIC_BOX
 
 /* **************************************************************** */
 /*
@@ -314,7 +315,8 @@ int reset_all_flagged_pulses_GPIO_OFF() {	// reset pulses, switches GPIO and DAC
   PULSES.fix_global_next();
 
   if (MENU.verbosity) {
-    MENU.out(F("\nremoved all pulses ")); MENU.outln(cnt);
+    MENU.out(F("removed all pulses "));
+    MENU.outln(cnt);
     MENU.outln(F("switched pins off"));
   }
 
@@ -552,8 +554,11 @@ int softboard_page=-1;		// see: maybe_run_continuous()
   #include "jiffles.h"
 #endif
 
-#include "random_entropy.h"
-#include "magigal_music_box.h"
+#include "random_entropy.h"	// TODO: only if used
+
+#if defined MAGICAL_MUSIC_BOX
+  #include "magical_music_box.h"
+#endif
 
 void setup() {
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
@@ -590,7 +595,7 @@ void setup() {
   #include "nvs_pulses_setup.h"
 #endif
 
-#include "melody_jiffles.h"	// TODO: test only
+// #include "melody_jiffles.h"	// TODO: test only
 
 #ifdef USE_WIFI_telnet_menu		// do we use WIFI?
   #ifdef AUTOSTART_WIFI		// start wifi on booting? see: WiFi_stuff.ino
@@ -633,6 +638,8 @@ void setup() {
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
   random_entropy();	// more entropy from hardware like wifi, etc
 #endif
+
+  #include "magical_music_box_setup.h"
 
   MENU.ln();
   MENU.out(F("sizeof(pulse_t) "));
@@ -693,12 +700,15 @@ void setup() {
   PULSES.fix_global_next();		// we *must* call that here late in setup();
 
   #ifdef AUTOSTART			// see: pulses_project_conf.h
+    MENU.outln(F("AUTOSTART"));
     AUTOSTART
   #endif
 
   // informations about alive pulses:
-  MENU.ln();
-  selected_or_flagged_pulses_info_lines();
+  if(MENU.verbosity >= VERBOSITY_SOME) { // can be switched of by autostart ;)
+    MENU.ln();
+    selected_or_flagged_pulses_info_lines();
+  }
 
   // try to get rid of menu input garbage, "dopplet gnaeht hebt vilicht besser" ;)
   while (Serial.available())  { Serial.read(); yield(); }
@@ -785,12 +795,7 @@ bool lowest_priority_tasks() {
 
 
 
-// stress_emergency:  looks like the value does not matter too much
-//#if defined(ESP32)	// ################ FIXME: ESP32 stress ################
-//unsigned int stress_emergency=4096*4096;	// high value seems appropriate
-//#else
-unsigned int stress_emergency=4096;	// high value seems appropriate
-//#endif
+unsigned int stress_emergency=4096*8;	// magical musicbox test
 unsigned int stress_count=0;
 
 void loop() {	// ARDUINO
@@ -813,12 +818,20 @@ void loop() {	// ARDUINO
   stress_count=0;
 
   while (PULSES.check_maybe_do()) {	// in stress PULSES get's *first* priority.
+    ++stress_count;
 
-/*
+#if defined MAGICAL_MUSIC_BOX    // magical_stress_release();
+    if (stress_count >= stress_emergency) {
+      magical_stress_release();
+      stress_count = 0;
+    }
+#endif
+
+    /*
   // stress release code written to kill sweep pulses getting to fast
   // in time machine this makes the situation worse, so deactivated for now
 
-    if (++stress_count >= stress_emergency) {
+    if (stress_count >= stress_emergency) {
       // EMERGENCY
       // kill fastest pulse might do it? (i.e. fast sweeping up)
 
@@ -3808,12 +3821,14 @@ bool menu_pulses_reaction(char menu_input) {
   case 'D':	// DADA reserved for temporary code   testing debugging ...
     //MENU.out_noop(); MENU.ln();
 
-    MENU.outln(random_entropy());
+    //    MENU.outln(random_entropy());
 
-//    if(musicbox_incarnation & 1)
-//      furzificate();
-//    else
-//      start_musicbox();
+#if defined MAGICAL_MUSIC_BOX
+    if(musicbox_incarnation & 1)
+      furzificate();
+    else
+      start_musicbox();
+#endif
 
     /*
     #if defined USE_MCP23017
@@ -3894,6 +3909,15 @@ bool menu_pulses_reaction(char menu_input) {
 	}
     }
   break;
+
+  case 'z':	// DADA reserved for temporary code   testing debugging ...
+    MENU.out_noop(); MENU.ln();
+#if defined MAGICAL_MUSIC_BOX
+    attachInterrupt(digitalPinToInterrupt(MAGICAL_TRIGGER_PIN), magical_trigger_ISR, RISING);
+    MENU.outln(magical_trigger_cnt);
+    // magical_trigger_ISR();
+#endif
+    break;
 
   case 'V':	// set voices	V[num]! PULSES.select_n_voices
     if(MENU.cb_peek()==EOF)
