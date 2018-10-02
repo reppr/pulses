@@ -99,6 +99,15 @@ char* selected_name(arr_descriptor* DB) {
   return array2name(DB, selected_in(DB));
 }
 
+void DB_info(arr_descriptor* DB) {	// TODO: use
+  MENU.out(DB[0].name);
+  MENU.tab();
+  MENU.out(DB_items(DB));
+  MENU.tab();
+  MENU.out('*');
+  MENU.outln(selected_name(DB));
+}
+
 bool include_DB_in_DB(arr_descriptor* DB, arr_descriptor* DB_include, int first) {
   MENU.out("include ");
   MENU.out(DB_include[0].name);

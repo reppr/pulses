@@ -54,7 +54,7 @@
 /* **************************************************************** */
 // do not change the following code
 
-#if defined ESP32	// KALIMBA7_v2 ESP32 version
+#if defined ESP32
   #if defined ESP32_15_clicks_no_display_TIME_MACHINE2
 // planed:  #define AUTOSTART	MENU.play_KB_macro("-E40U5 *64 n"); selected_experiment=-1;	// rhythm! PENTATONIC
   #if defined MAGICAL_MUSIC_BOX
@@ -94,7 +94,8 @@
     #define AUTOSTART	MENU.play_KB_macro("E32 -"); selected_experiment=-1;
   #elif defined KALIMBA7_v2	// KALIMBA ESP32 version
     #define AUTOSTART	MENU.play_KB_macro("E31 -"); selected_experiment=-1;
-  #endif
+    // #define MORSE_TOUCH_INPUT_PIN	13
+#endif
 
 #elif defined ESP8266	// DEFAULT ON ESP8266  KALIMBA7_v1 ESP8266 nodemcu version
   #define KALIMBA7_v1	// KALIMBA7_v1 ESP8266 nodemcu version

@@ -24,11 +24,21 @@ MENU.outln(CONF_nvs.getString("nvs_NAME", ""));
 MENU.out("nvs_GPIO:\t");
 MENU.outln(CONF_nvs.getString("nvs_GPIO", ""));
 
+MENU.out("nvs_AUDIO:\t");
+MENU.outln(CONF_nvs.getString("nvs_AUDIO", ""));
+
+MENU.out("nvs_MORSE:\t");
+MENU.outln(CONF_nvs.getString("nvs_MORSE", ""));
+
 MENU.out("nvs_AUTOSTART:\t");
 MENU.outln(CONF_nvs.getString("nvs_AUTOSTART", ""));
 
 MENU.out("nvs freeEntries():\t");
 MENU.outln(CONF_nvs.freeEntries());
+
+/*
+  nvs_DATE
+*/
 
 if (coded_NAME == 0)
   MENU.outln("NULL");
@@ -39,15 +49,13 @@ if (coded_NAME == 0)
 
 // CONF_nvs.putString("nvs_GPIO", "{32, 33, 14, 13, 23, 5, 17, 16}");
 
+// MORSE_TOUCH_INPUT_PIN,  MORSE_GPIO_INPUT_PIN, MORSE_OUTPUT_PIN
+// CONF_nvs.putString("nvs_MORSE", "mTI=13 mGI=34 mO=2");
+
+
 #if defined AUTOSTART
 //  CONF_nvs.putString("nvs_AUTOSTART", STRINGIFY(AUTOSTART));
 #endif
-/*
-  nvs_NAME
-  nvs_GPIO
-  nvs_AUTOSTART
-  nvs_DATE
-*/
 
 CONF_nvs.end();
 MENU.ln();

@@ -22,3 +22,12 @@
     #endif
   #endif
 #endif // USE_DACs
+
+// USE_MORSE
+#if (defined(MORSE_GPIO_INPUT_PIN) || defined(MORSE_OUTPUT_PIN) || defined(MORSE_TOUCH_INPUT_PIN))
+  #define USE_MORSE
+#endif
+
+#if (defined(MORSE_TOUCH_INPUT_PIN) && ! defined(BOARD_has_TOUCH))
+  #error MORSE_TOUCH_INPUT_PIN:  undefined BOARD_has_TOUCH
+#endif

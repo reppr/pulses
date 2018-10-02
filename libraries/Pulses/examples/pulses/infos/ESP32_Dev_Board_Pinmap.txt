@@ -10,10 +10,10 @@ http://wiki.ai-thinker.com/_media/esp32/docs/esp32_chip_pin_list_en.pdf
 [|- "WIFI" side]
 3.3V
 EN	RESET				(pu)
-GPIO36		ADC0			SVP
-GPIO39		ADC3			SVN
-GPIO34		ADC6
-GPIO35		ADC7
+GPIO36		ADC0			SVP				Input only
+GPIO39		ADC3			SVN				Input only
+GPIO34		ADC6							Input only
+GPIO35		ADC7							Input only
 GPIO32		ADC4	TOUCH9			(CS MICROSD)
 GPIO33		ADC5	TOUCH8
 GPIO25		ADC18			DAC1	(I2S codec LRCK)
@@ -78,10 +78,10 @@ suggestion for 16 click pins:
 /* **************************************************************** */
 3.3V	3.3V             | 7C7T
 EN	reset
-GPIO36	SVP				ADC0		SVP
-GPIO39	SVN				ADC3		SVN
-GPIO34					ADC6
-GPIO35			 InPLL		ADC7
+GPIO36	SVP				ADC0		SVP				Input only
+GPIO39	SVN				ADC3		SVN				Input only
+GPIO34			 InMorse	ADC6						Input only
+GPIO35			 InPLL		ADC7						Input only
 GPIO32			 T	TOUCH9	ADC4		(CS MICROSD)
 GPIO33			 T	TOUCH8	ADC5
 GPIO25	(DAC1)		CA		ADC18	DAC1	(I2S codec LRCK)		*AUDIO OUT*

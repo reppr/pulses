@@ -24,6 +24,7 @@ REGISTER_SCALE(octaves_fourths);		// 13
 REGISTER_SCALE(doric_scale);			// 14
 
 select_array_in(SCALES, pentatonic_minor);	// default scale
+DB_info(SCALES);
 
 
 #include "jiffles.h"
@@ -111,6 +112,7 @@ REGISTER_JIFFLE(doDe_i);	// test only, remove?
 REGISTER_JIFFLE(asdfg);		// test only, remove?
 
 select_array_in(JIFFLES, din_dididi);	// default jiffle
+DB_info(JIFFLES);
 
 
 #include "iCODE.h"
@@ -125,4 +127,6 @@ REGISTER_iCODE(d4096_1024_icode_jiff);
 #endif
 
 include_DB_in_DB(iCODEs, JIFFLES, 1);
-// display_arr_names(iCODEs);
+
+DB_info(iCODEs);
+MENU.ln();

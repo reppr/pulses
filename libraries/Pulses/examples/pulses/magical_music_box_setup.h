@@ -4,7 +4,7 @@
 
 // setup MAGICAL_TRIGGER_PIN ISR
 #if defined MAGICAL_TRIGGER_PIN
-MENU.out(F("magical trigger: "));
+MENU.out(F("MAGICAL TRIGGER: "));
 MENU.outln(MAGICAL_TRIGGER_PIN);
 
 pinMode(MAGICAL_TRIGGER_PIN, INPUT);

@@ -4,6 +4,8 @@
 
 #include "random_entropy.h"
 
+portMUX_TYPE magical_MUX = portMUX_INITIALIZER_UNLOCKED;
+
 short musicbox_incarnation=0;	// debugging only
 enum music_box_state {OFF=0, SLEEPING, SNORING, AWAKE, FADE};
 
@@ -241,9 +243,11 @@ void furzificate() {	// switch to a quiet, farting patterns, u.a.
 
 unsigned int magical_trigger_cnt=0;
 void magical_trigger_ISR() {
+  portENTER_CRITICAL_ISR(&magical_MUX);
   magical_trigger_cnt++;
 
-  //MENU.outln(F("magical_trigger_ISR()"));	// TODO: remove
+  MENU.out(F("magical_trigger_ISR()\t"));	// TODO: remove
+  MENU.outln(magical_trigger_cnt);		// TODO: remove
 
 //  switch (music_box_state) {
 //  case SNORING:
@@ -255,4 +259,5 @@ void magical_trigger_ISR() {
 //  default:
 //    MENU.outln(F("???"));	// TODO: remove
 //  }
+    portEXIT_CRITICAL_ISR(&magical_MUX);
 }

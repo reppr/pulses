@@ -1,5 +1,8 @@
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
 #define MAGICAL_MUSIC_BOX
+//#define USE_MORSE	// incomplete
+//#define USE_LEDC	// to be written ;)
+// rename: gpio_pins GPIO_pins
 
 /* **************************************************************** */
 /*
@@ -389,6 +392,18 @@ int en_click_selected() {
   return cnt;
 };
 
+#if defined GPIO_PINS
+void show_GPIOs() {
+  MENU.out(GPIO_PINS);
+  MENU.out(F(" GPIO pins\t{"));
+  for(int i=0; i < GPIO_PINS; i++) {
+    MENU.out(gpio_pins[i]);
+    MENU.out(F(", "));
+  }
+  MENU.outln('}');
+}
+#endif //  GPIO_PINS
+
 #if defined USE_DACs	// TODO: move to library Pulses
 // set_action_flags(pulse, DACsq1 | DACsq2) activates both DACs
 bool set_action_flags(int pulse, unsigned int action_flags) {
@@ -536,6 +551,14 @@ int voices=GPIO_PINS;
   }
 #endif // USE_INPUTS
 
+#if defined USE_MORSE
+  #include "morse.h"
+#endif
+
+#if defined USE_LEDC
+  #include "ledc_tone.h"
+#endif
+
 /* **************************************************************** */
 #ifdef ARDUINO
 /* Arduino setup() and loop():					*/
@@ -586,13 +609,25 @@ void setup() {
 #endif
   delay(STARTUP_DELAY);
 
-  MENU.outln("\nstartup...");
-  #include "array_descriptors_setup.h"
+  MENU.outln(F("\n\nPULSES  http://github.com/reppr/pulses/\ninitialising\n"));
 
-  MENU.outln(F("\nPULSES  http://github.com/reppr/pulses/\n"));
+  #include "array_descriptors_setup.h"
 
 #ifdef USE_NVS
   #include "nvs_pulses_setup.h"
+#endif
+
+#ifdef GPIO_PINS
+  show_GPIOs();
+#endif
+
+#ifdef MORSE_GPIO_INPUT_PIN	// use GPIO with pulldown as morse input
+  // #ifdef USE_MORSE	// use GPIO with pulldown as morse input
+  #include "morse_setup.h"
+#endif
+
+#if defined USE_LEDC
+  #include "ledc_tone_setup.h"
 #endif
 
 // #include "melody_jiffles.h"	// TODO: test only
@@ -641,7 +676,6 @@ void setup() {
 
   #include "magical_music_box_setup.h"
 
-  MENU.ln();
   MENU.out(F("sizeof(pulse_t) "));
   MENU.out(sizeof(pulse_t));
   MENU.out(F(" * "));
@@ -681,8 +715,10 @@ void setup() {
   MENU.add_page("WIFI", 'Y', &WiFi_menu_display, &WiFi_menu_reaction, 'Y');
 #endif
 
-  // display menu at startup:
-  MENU.menu_display();
+  // display menu at startup, but not in music box
+  #if ! defined MAGICAL_MUSIC_BOX
+    MENU.menu_display();
+  #endif
 
   #ifdef GPIO_PINS
     init_click_GPIOs_OutLow();		// make them GPIO, OUTPUT, LOW
@@ -742,6 +778,31 @@ bool low_priority_tasks() {
 
 
 bool lowest_priority_tasks() {
+#if defined USE_MORSE
+  if(MENU.verbosity >= VERBOSITY_MORE) {
+    if(morse_stat_ID != morse_stat_seen_ID) {
+      morse_show_saved_stats();	// sets morse_stat_seen_ID
+      return true;
+    }
+  }
+
+  // morse auto adapt
+  if(MENU.verbosity >= VERBOSITY_SOME) {
+    if(morse_stats_mean_dash_factor != 1.0) {
+      morse_stats_mean_dash_factor += 1.0;
+      morse_stats_mean_dash_factor /= 2.0;
+      morse_TimeUnit *= morse_stats_mean_dash_factor;
+
+      MENU.out(F("morse auto adapt "));
+      MENU.out(morse_stats_mean_dash_factor);
+      MENU.tab();
+      MENU.outln(morse_TimeUnit);
+
+      morse_stats_mean_dash_factor = 1.0;	// reset and switch display off
+      return true;
+    }
+  }
+#endif // defined USE_MORSE
 
 #ifdef USE_WIFI_telnet_menu
 // ################ FIXME: cleanup old WIFI code ################
@@ -2328,15 +2389,8 @@ void menu_pulses_display() {
   MENU.space(2);
   MENU.out(F("GPIO "));
   MENU.outln(GPIO_PINS);
-  if (MENU.verbosity > VERBOSITY_SOME) {	// maybe display gpio_pins[]
-    MENU.out(F("gpio_pins {"));
-    for (int i=0; i<GPIO_PINS; i++) {
-      if(i)
-	MENU.out(F(", "));
-      MENU.out(gpio_pins[i]);
-    }
-    MENU.outln('}');
-  }
+  if (MENU.verbosity > VERBOSITY_SOME)		// maybe display gpio_pins[]
+    show_GPIOs();
 
   MENU.ln();
   MENU.outln(F("?=help\t.=flagged info\t:=UI selections"));
@@ -3378,11 +3432,11 @@ bool menu_pulses_reaction(char menu_input) {
       MENU.outln(F("muted all actions"));
     break;
 
-#if defined USE_MORSE
-  case 'm':	// toggle MORSE on/off
-    morse = ! morse;
-    break;
-#endif
+//	#if defined USE_MORSE	// TODO: fix or remove
+//	  case 'm':	// toggle MORSE on/off
+//	    morse = ! morse;
+//	    break;
+//	#endif
 
   case '*':	// multiply destination
     if(MENU.cb_peek() != '!') {		// '*' (*not* '*!<num>' set multiplier)
@@ -3830,6 +3884,49 @@ bool menu_pulses_reaction(char menu_input) {
       start_musicbox();
 #endif
 
+#ifdef USE_MORSE
+    morse_show_tokens();
+    MENU.ln();
+  #if defined MORSE_TOKEN_DEBUG		// a *lot* of debug info...
+    morse_debug_token_info();
+    morse_show_tokens();
+    MENU.ln();
+  #endif
+
+  /*
+  #if defined MORSE_OUTPUT_PIN
+    morse_play_out_tokens();	// play saved tokens in current morse speed ;)
+  #endif
+  */
+
+  MENU.outln("DADA morse77");
+  show_morse_output_buffer();
+  morse_2ACTION();
+  //    morse_tokens2meaning_state();	// obsolete?
+
+  morse_OUTPUT_cnt=0;
+
+  /*
+  #if defined MORSE_TOKEN_DEBUG
+    morse_show_tokens();
+    MENU.ln();
+
+    morse_debug_token_info();
+
+    morse_show_tokens();
+    MENU.ln();
+
+    morse_token_cnt=0;
+  #else
+    morse_show_tokens();
+    MENU.ln();
+
+    morse_token_cnt=0;
+  #endif
+  */
+
+#endif // USE_MORSE
+
     /*
     #if defined USE_MCP23017
       MCP23017.digitalWrite(0, ++testmcp & 1);
@@ -3883,6 +3980,30 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'y':	// DADA reserved for temporary code   testing debugging ...
+#if defined USE_MORSE
+    /*
+    for(int i = 0; i<MORSE_DEFINITIONS; i++) {
+      string definition = morse_definitions_tab[i];
+      morse_reset_definition(definition);
+      morse_read_definition(i);
+      morse_show_definition();
+    }
+    */
+    morse_find_definition("-.-");
+    morse_find_definition("-.---");
+    morse_find_definition(".-.");
+
+    /*
+    for(int i = 0; i<MORSE_DEFINITIONS; i++) {
+      morse_read_definition(i);
+      morse_definition_set_show(morse_uppercase);
+    }
+    */
+    //
+    //    morse_2ACTION();
+//  morse_play_out_tokens();	// play and show saved tokens in current morse speed
+#endif // USE_MORSE
+
     {
       // temporary least-common-multiple  test code, unfinished...	// ################ FIXME: ################
       unsigned long lcm=1L;
@@ -3911,10 +4032,15 @@ bool menu_pulses_reaction(char menu_input) {
   break;
 
   case 'z':	// DADA reserved for temporary code   testing debugging ...
-    MENU.out_noop(); MENU.ln();
+    //MENU.out_noop(); MENU.ln();
+
 #if defined MAGICAL_MUSIC_BOX
-    attachInterrupt(digitalPinToInterrupt(MAGICAL_TRIGGER_PIN), magical_trigger_ISR, RISING);
+    MENU.out("MAGICAL_TRIGGER\t");
+    MENU.out(MAGICAL_TRIGGER_PIN);
+    MENU.tab();
     MENU.outln(magical_trigger_cnt);
+    pinMode(MAGICAL_TRIGGER_PIN, INPUT);
+    attachInterrupt(digitalPinToInterrupt(MAGICAL_TRIGGER_PIN), magical_trigger_ISR, RISING);
     // magical_trigger_ISR();
 #endif
     break;
@@ -3979,6 +4105,10 @@ bool menu_pulses_reaction(char menu_input) {
   #if defined USE_MCP23017
       MCP23017_OUT_LOW();
   #endif
+#endif
+
+#if defined MAGICAL_MUSIC_BOX
+    musicbox_incarnation=0;	// debugging only
 #endif
 
     PULSES.hex_input_mask_index = 0;	// for convenience
@@ -4437,7 +4567,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       case 31:	// E31 KALIMBA7 jiff
 	select_array_in(SCALES, european_pentatonic);
-	voices=8;
+	voices=7;
 	multiplier=4;
 	divisor=1;
 	select_array_in(JIFFLES, ting4096);
@@ -4790,9 +4920,10 @@ bool menu_pulses_reaction(char menu_input) {
 	  PULSES.select_from_to(0, bass_pulses - 1);
 	  for(int pulse=0; pulse<bass_pulses; pulse++) {
 	    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(iCODEs) , DACsq1 | doesICODE);
+
 #if defined USE_i2c
   #if defined USE_MCP23017
-	    PULSES.set_i2c_addr_pin(pulse, 0x20, pulse);
+	    PULSES.set_i2c_addr_pin(pulse, 0x20, pulse);	// ???
   #endif
 #endif
 	  }
