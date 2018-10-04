@@ -11,11 +11,12 @@
 
 // ################ TODO: MOVE: configuration
 // use GPIO with pulldown as morse input
-#define MORSE_GPIO_INPUT_PIN	34	// Morse input GPIO pin, 34 needs hardware pulldown
+// #define MORSE_GPIO_INPUT_PIN	34	// Morse input GPIO pin, 34 needs hardware pulldown
 #define MORSE_OUTPUT_PIN	2	// 2 is often blue onboard led, hang a led, a piezzo on that one :)
 
 #ifndef MORSE_TOUCH_INPUT_PIN
-  #define MORSE_TOUCH_INPUT_PIN	13	// use ESP32 touch sensor as morse input
+//#define MORSE_TOUCH_INPUT_PIN	13	// use ESP32 touch sensor as morse input
+  #define MORSE_TOUCH_INPUT_PIN	12	// use ESP32 touch sensor as morse input
 #endif
 
 
@@ -230,9 +231,11 @@ void IRAM_ATTR morse_separation_check_OFF() {
 /* **************************************************************** */
 // GPIO ISR
 
-void IRAM_ATTR morse_GPIO_ISR_falling();	// declaration is needed...
-
 float scaled_low_duration;	// microseconds/morse_TimeUnit
+float scaled_high_duration;
+
+#if defined MORSE_GPIO_INPUT_PIN
+void IRAM_ATTR morse_GPIO_ISR_falling();	// declaration is needed...
 
 void IRAM_ATTR morse_GPIO_ISR_rising() {	// MORSE INPUT on GPIO
   static unsigned long morse_low_time=0;
@@ -261,7 +264,7 @@ void IRAM_ATTR morse_GPIO_ISR_rising() {	// MORSE INPUT on GPIO
  } else
    morse_received_token(MORSE_TOKEN_separe_OTHER, scaled_low_duration);
 
-  if(!digitalRead(MORSE_TOKEN_INPUT_PIN)) {	// DOUBLE CHECK if MORSE_GPIO_INPUT_PIN is still high...
+  if(!digitalRead(MORSE_GPIO_INPUT_PIN)) {	// DOUBLE CHECK if MORSE_GPIO_INPUT_PIN is still high...
      morse_received_token('i', -1);
      MENU.outln("pin is LOW!");		// ################ sorry ;)
   }
@@ -270,9 +273,8 @@ void IRAM_ATTR morse_GPIO_ISR_rising() {	// MORSE INPUT on GPIO
 
   attachInterrupt(digitalPinToInterrupt(MORSE_GPIO_INPUT_PIN), morse_GPIO_ISR_falling, FALLING);
   portEXIT_CRITICAL_ISR(&morse_MUX);
-}
+} // morse_GPIO_ISR_rising()
 
-float scaled_high_duration;
 
 void IRAM_ATTR morse_GPIO_ISR_falling() {			// MORSE INPUT on GPIO morse_GPIO_ISR_falling()
   static unsigned long morse_high_time=0L;
@@ -315,11 +317,14 @@ void IRAM_ATTR morse_GPIO_ISR_falling() {			// MORSE INPUT on GPIO morse_GPIO_IS
   morse_separation_check_ON();
 
   portEXIT_CRITICAL_ISR(&morse_MUX);
-}
+} // morse_GPIO_ISR_falling()
+#endif // MORSE_GPIO_INPUT_PIN
+
+
 /* **************************************************************** */
 // touch ISR
 
-//#define DEBUG_MORSE_TOUCH_INTERRUPT
+#define DEBUG_MORSE_TOUCH_INTERRUPT
 void IRAM_ATTR morse_endOfLetter() {
   morse_separation_check_OFF();
 

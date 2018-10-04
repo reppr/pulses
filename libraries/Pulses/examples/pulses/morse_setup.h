@@ -21,7 +21,6 @@ limit_loong_overlong	= (float) (loongTim + overlongTim + 1)/2;
 #ifdef MORSE_TOUCH_INPUT_PIN	// use ESP32 touch sensor as morse input
   MENU.out(F("MORSE touch pin "));
   MENU.outln(MORSE_TOUCH_INPUT_PIN);
-
   // touchAttachInterrupt(MORSE_TOUCH_INPUT_PIN, touch_morse_ISR, touch_threshold);	// do that last
 #endif
 

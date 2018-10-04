@@ -8,6 +8,7 @@ portMUX_TYPE magical_MUX = portMUX_INITIALIZER_UNLOCKED;
 
 short musicbox_incarnation=0;	// debugging only
 enum music_box_state {OFF=0, SLEEPING, SNORING, AWAKE, FADE};
+music_box_state MagicalMusicState=OFF;
 
 #ifndef MAGICAL_TRIGGER_PIN
 //#define MAGICAL_TRIGGER_PIN	35	// == PLL
@@ -15,12 +16,78 @@ enum music_box_state {OFF=0, SLEEPING, SNORING, AWAKE, FADE};
   #define MAGICAL_TRIGGER_PIN	34	// == InMorse
 #endif
 
+#ifndef MAGICAL_PERFORMACE_SECONDS
+  #define MAGICAL_PERFORMACE_SECONDS	6*60
+#endif
+
+bool magic_autochanges=true;	// switch if to end normal playing (farting) after MAGICAL_PERFORMACE_SECONDS
+
+// very simple one shot implementation:
+//void furzificate(int dummy=0) {	// switch to a quiet, farting patterns, u.a.
+//  /* with the dummy int parameter it passes as payload for a pulse */
+void furzificate() {	// switch to a quiet, farting patterns, u.a.
+  MENU.outln(F("furzificate()"));
+  musicbox_incarnation++;	// debugging only
+  MagicalMusicState = SNORING;
+
+  switch (random(10)) {
+  case 0:	// kalimbaxyl
+    select_array_in(JIFFLES, kalimbaxyl);
+    MENU.play_KB_macro("j");
+    break;
+  case 1:	// back_to_ground
+    select_array_in(JIFFLES, back_to_ground);
+    MENU.play_KB_macro("j");
+    break;
+  case 2:	// *3 jiffletab0	"Frosch"
+    select_array_in(JIFFLES, jiffletab0);
+    MENU.play_KB_macro(F("*3 j"));
+    break;
+  case 3:	// J3j jiff_december
+    select_array_in(JIFFLES, jiff_december);
+    MENU.play_KB_macro(F("*4/3 j"));
+    break;
+  case 4:	// jiff_dec128  the drummer in the cathedral
+    select_array_in(JIFFLES, jiff_dec128);
+    MENU.play_KB_macro(F("*3/2 j S0n"));
+    break;
+  case 5:	// jiffletab, silent rhythmes
+    select_array_in(JIFFLES, jiffletab);
+    MENU.play_KB_macro("j");
+    break;
+  case 6:	// jiff_dec_pizzicato	dirty!
+    select_array_in(JIFFLES, jiff_dec_pizzicato);
+    MENU.play_KB_macro(F("*3 j"));
+    break;
+  case 7:	// jiffletab0	fröhliches Knatterfurzkonzert explodiert
+    select_array_in(JIFFLES,jiffletab0 );
+    MENU.play_KB_macro(F("*6 j S0n"));
+    break;
+  case 8:	// aktivitätswellen  jiffletab01
+    select_array_in(JIFFLES, jiffletab01);
+    MENU.play_KB_macro(F("*3 j"));
+    break;
+  case 9:	// d4096_6 churzi plipps
+    select_array_in(JIFFLES, d4096_6);
+    MENU.play_KB_macro("j");
+    break;
+  }
+  MENU.out(F("jiffle: "));
+  MENU.outln(selected_name(JIFFLES));
+
+  // magic_trigger_ON();
+}
+
 void magic_trigger_ON();	// forward declaration
+
+struct time musicbox_start_time;
+struct time musicbox_end_time;
 
 void start_musicbox() {
   // magic_trigger_OFF();
   musicbox_incarnation++;	// debugging only
   MENU.outln(F("start_musicbox()"));
+  MagicalMusicState = AWAKE;
 
   MENU.play_KB_macro(F("-E40,")); // initialize, the comma avoids output from E40
   sync = random(6);		// random sync
@@ -78,19 +145,16 @@ void start_musicbox() {
   lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
 
   // random pitch shift down
-  switch(random(7)) {
+  switch(random(9)) {
   case 0: case 1:
     break;
-  case 2: case 3:
+  case 2: case 3: case 4:  case 5:
     MENU.play_KB_macro(F("*2"));
     break;
-   case 4:
+  case 6:
     MENU.play_KB_macro(F("*4"));
     break;
-   case 5:
-    MENU.play_KB_macro(F("*6"));
-    break;
-  case 6:
+  case 8:
     MENU.play_KB_macro(F("/2"));
     break;
   }
@@ -181,6 +245,26 @@ void start_musicbox() {
   MENU.outln(selected_name(JIFFLES));
 
   setup_jiffle_thrower_selected(selected_actions);
+
+//  // setup end of playing ;)
+//  /*
+//  int setup_counted_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
+//			  struct time when, struct time new_period, unsigned int count);
+//  */
+//  struct time when = PULSES.now;
+//  when.time += 1*60*1000000;
+//
+//  struct time period;
+//  period.overflow = 0;
+//  period.time = 1*60*1000000;
+//
+//  PULSES.setup_counted_pulse(&payload_furzificate, ACTIVE, when, period, 1);
+
+  musicbox_start_time = musicbox_end_time = PULSES.get_now();	// keep musicbox_start_time
+  struct time duration;
+  duration.overflow=0;
+  duration.time=MAGICAL_PERFORMACE_SECONDS*1000000;		// how long to play
+  PULSES.add_time(&duration, &musicbox_end_time);		// keep musicbox_end_time
   PULSES.activate_selected_synced_now(sync);	// 'n' sync and activate
 }
 
@@ -190,59 +274,6 @@ void magical_stress_release() {		// special stress release for magical music box
   MENU.out(F("magical_stress_release() "));
   MENU.outln(voices);
   // magic_trigger_ON();	// TODO: test if we might need this...
-}
-
-// very simple one shot implementation:
-void furzificate() {	// switch to a quiet, farting patterns, u.a.
-  MENU.outln(F("furzificate()"));
-  musicbox_incarnation++;	// debugging only
-
-  switch (random(10)) {
-  case 0:	// kalimbaxyl
-    select_array_in(JIFFLES, kalimbaxyl);
-    MENU.play_KB_macro("j");
-    break;
-  case 1:	// back_to_ground
-    select_array_in(JIFFLES, back_to_ground);
-    MENU.play_KB_macro("j");
-    break;
-  case 2:	// *3 jiffletab0	"Frosch"
-    select_array_in(JIFFLES, jiffletab0);
-    MENU.play_KB_macro(F("*3 j"));
-    break;
-  case 3:	// J3j jiff_december
-    select_array_in(JIFFLES, jiff_december);
-    MENU.play_KB_macro(F("*4/3 j"));
-    break;
-  case 4:	// jiff_dec128  the drummer in the cathedral
-    select_array_in(JIFFLES, jiff_dec128);
-    MENU.play_KB_macro(F("*3/2 j S0n"));
-    break;
-  case 5:	// jiffletab, silent rhythmes
-    select_array_in(JIFFLES, jiffletab);
-    MENU.play_KB_macro("j");
-    break;
-  case 6:	// jiff_dec_pizzicato	dirty!
-    select_array_in(JIFFLES, jiff_dec_pizzicato);
-    MENU.play_KB_macro(F("*3 j"));
-    break;
-  case 7:	// jiffletab0	fröhliches Knatterfurzkonzert explodiert
-    select_array_in(JIFFLES,jiffletab0 );
-    MENU.play_KB_macro(F("*6 j S0n"));
-    break;
-  case 8:	// aktivitätswellen  jiffletab01
-    select_array_in(JIFFLES, jiffletab01);
-    MENU.play_KB_macro(F("*3 j"));
-    break;
-  case 9:	// d4096_6 churzi plipps
-    select_array_in(JIFFLES, d4096_6);
-    MENU.play_KB_macro("j");
-    break;
-  }
-  MENU.out(F("jiffle: "));
-  MENU.outln(selected_name(JIFFLES));
-
-  // magic_trigger_ON();
 }
 
 
@@ -261,15 +292,20 @@ void magical_trigger_ISR() {	// can also be used on the non interrupt version :)
   struct time duration = new_trigger;			// remember
 
   bool triggered=false;
-  //MENU.outln('t');	// TODO: remove
-  //MENU.out(F("magical_trigger_ISR()\t"));	// TODO: remove
-  //MENU.outln(magical_trigger_cnt);		// TODO: remove
-
-  PULSES.sub_time(&triggered_at, &duration);
-  if(duration.overflow)
-    triggered=true;
-  else if (duration.time > 30*1000000)	// block trigger for 30 seconds
+  switch (MagicalMusicState) {
+  case SNORING:
+    triggered = true;
+    break;
+  case AWAKE:	// was it awake long enough for triggering again?
+    PULSES.sub_time(&triggered_at, &duration);
+    if(duration.overflow)
       triggered=true;
+    else if (duration.time > 30*1000000)	// block trigger for 30 seconds
+      triggered=true;
+    break;
+  default:
+    MENU.outln(F("magical_trigger_ISR unknown"));
+  }
 
   if(triggered) {
     //magic_trigger_OFF();		// dopplet gnäht
@@ -322,7 +358,7 @@ void magic_trigger_OFF() {
 void magical_trigger_is_hot() {
   magical_trigger_ISR();	// *not* as ISR
   if (switch_magical_trigger_off) {
-    MENU.outln(F("TRIGGERED!"));
+    MENU.outln(F("\nTRIGGERED!"));
     start_musicbox();
   }
   switch_magical_trigger_off=false;

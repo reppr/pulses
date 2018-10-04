@@ -623,8 +623,7 @@ void setup() {
   show_GPIOs();
 #endif
 
-#ifdef MORSE_GPIO_INPUT_PIN	// use GPIO with pulldown as morse input
-  // #ifdef USE_MORSE	// use GPIO with pulldown as morse input
+#ifdef USE_MORSE
   #include "morse_setup.h"
 #endif
 
@@ -773,6 +772,11 @@ void setup() {
 // return true if something was done
 bool low_priority_tasks() {
 
+#ifdef MAGICAL_TOILET_HACKS	// *VERY* dirty hack to stop music box :(
+  struct time when = PULSES.now;
+  when.time += 1*60*1000000;
+#endif
+
 #ifdef IMPLEMENT_TUNING		// tuning, sweeping priority below menu		*implies floating point*
   tuning = PULSES.tuning;	// FIXME: workaround for having all 3 sweep implementations in parallel
   if (maybe_stop_sweeping())		// low priority control sweep range
@@ -790,6 +794,21 @@ bool low_priority_tasks() {
 
 
 bool lowest_priority_tasks() {
+
+#if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
+  if(magic_autochanges) {
+    if(MagicalMusicState == AWAKE) {	// is it time to stop?
+      struct time justNow = PULSES.get_now();
+      struct time scratch = musicbox_end_time;
+      PULSES.sub_time(&justNow, &scratch);
+      if(scratch.overflow) {	// it's hacky negative
+	furzificate();
+	return true;
+      }
+    }
+  }
+#endif
+
 #if defined USE_MORSE
   if(MENU.verbosity >= VERBOSITY_MORE) {
     if(morse_stat_ID != morse_stat_seen_ID) {
@@ -864,11 +883,12 @@ bool lowest_priority_tasks() {
 #endif // USE_WIFI_telnet_menu
 
   return false;		// ################ FIXME: return values ################
-}
+} // lowest_priority_tasks()
 
 
 
-unsigned int stress_emergency=4096*8;	// magical musicbox test
+//unsigned int stress_emergency=4096*8;	// magical musicbox test
+unsigned int stress_emergency=4096*6;	// magical musicbox test
 unsigned int stress_count=0;
 
 void loop() {	// ARDUINO
@@ -925,13 +945,15 @@ void loop() {	// ARDUINO
   }
 
 #if defined MAGICAL_MUSIC_BOX
+ #if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
+  if(digitalRead(MAGICAL_TRIGGER_PIN)) {
+    digitalWrite(2,HIGH);	// REMOVE: for field testing only
+    magical_trigger_is_hot();
+  }
+ #else
   if(switch_magical_trigger_off) {
     magic_trigger_OFF();
   }
-
- #if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
-  if(digitalRead(MAGICAL_TRIGGER_PIN))
-    magical_trigger_is_hot();
  #endif
 #endif
 
@@ -4067,10 +4089,14 @@ bool menu_pulses_reaction(char menu_input) {
   break;
 
   case 'z':	// DADA reserved for temporary code   testing debugging ...
-    //MENU.out_noop(); MENU.ln();
-
+    // MENU.out_noop(); MENU.ln();
 #if defined MAGICAL_MUSIC_BOX
-    magic_trigger_ON();
+    MENU.out(F("autoMagic end "));
+    if(magic_autochanges = !magic_autochanges)
+      MENU.out(F("ON\t"));
+    else
+      MENU.out(F("OFF\t"));
+    MENU.outln(MAGICAL_PERFORMACE_SECONDS);
 #endif
     break;
 
