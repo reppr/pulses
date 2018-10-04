@@ -1,6 +1,8 @@
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
 #define MAGICAL_MUSIC_BOX
+#define MAGICAL_TOILET_HACKS	// some quick dirty hacks
 //#define USE_MORSE	// incomplete
+//#define USE_INPUTS
 //#define USE_LEDC	// to be written ;)
 // rename: gpio_pins GPIO_pins
 
@@ -674,8 +676,6 @@ void setup() {
   random_entropy();	// more entropy from hardware like wifi, etc
 #endif
 
-  #include "magical_music_box_setup.h"
-
   MENU.out(F("sizeof(pulse_t) "));
   MENU.out(sizeof(pulse_t));
   MENU.out(F(" * "));
@@ -724,6 +724,10 @@ void setup() {
     init_click_GPIOs_OutLow();		// make them GPIO, OUTPUT, LOW
   #endif
 
+  #ifdef MAGICAL_MUSIC_BOX
+    #include "magical_music_box_setup.h"
+  #endif
+
   #ifdef IMPLEMENT_TUNING		// implies floating point
     PULSES.ticks_per_octave = ticks_per_octave;
   #endif
@@ -752,6 +756,14 @@ void setup() {
 
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
   random_entropy();	// entropy from thit and that
+#endif
+
+#ifdef MAGICAL_MUSIC_BOX
+  #if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks, *no* interrupt
+    magic_trigger_ON();
+  #else
+    pinMode(MAGICAL_TRIGGER_PIN, INPUT);
+  #endif
 #endif
 };
 
@@ -885,6 +897,9 @@ void loop() {	// ARDUINO
     if (stress_count >= stress_emergency) {
       magical_stress_release();
       stress_count = 0;
+      if(switch_magical_trigger_off) {
+	magic_trigger_OFF();
+      }
     }
 #endif
 
@@ -909,7 +924,18 @@ void loop() {	// ARDUINO
 */
   }
 
-  // descend through priorities and do first thing found
+#if defined MAGICAL_MUSIC_BOX
+  if(switch_magical_trigger_off) {
+    magic_trigger_OFF();
+  }
+
+ #if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
+  if(digitalRead(MAGICAL_TRIGGER_PIN))
+    magical_trigger_is_hot();
+ #endif
+#endif
+
+// descend through priorities and do first thing found
 #ifdef USE_INPUTS
   if(! maybe_check_inputs())		// reading inputs can be time critical, so check early
 #endif
@@ -3875,13 +3901,16 @@ bool menu_pulses_reaction(char menu_input) {
   case 'D':	// DADA reserved for temporary code   testing debugging ...
     //MENU.out_noop(); MENU.ln();
 
-    //    MENU.outln(random_entropy());
-
 #if defined MAGICAL_MUSIC_BOX
+ #if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
+    MENU.out(F("trigger pin state is "));
+    MENU.outln(digitalRead(MAGICAL_TRIGGER_PIN));
+ #else
     if(musicbox_incarnation & 1)
       furzificate();
     else
       start_musicbox();
+ #endif
 #endif
 
 #ifdef USE_MORSE
@@ -3980,6 +4009,10 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'y':	// DADA reserved for temporary code   testing debugging ...
+#if defined MAGICAL_MUSIC_BOX
+    magical_fart_setup(12, 15);		// ;)
+#endif
+
 #if defined USE_MORSE
     /*
     for(int i = 0; i<MORSE_DEFINITIONS; i++) {
@@ -4004,6 +4037,7 @@ bool menu_pulses_reaction(char menu_input) {
 //  morse_play_out_tokens();	// play and show saved tokens in current morse speed
 #endif // USE_MORSE
 
+    /*
     {
       // temporary least-common-multiple  test code, unfinished...	// ################ FIXME: ################
       unsigned long lcm=1L;
@@ -4029,19 +4063,14 @@ bool menu_pulses_reaction(char menu_input) {
 	  MENU.outln(lcm/PULSES.pulses[pulse].period.time);
 	}
     }
+    */
   break;
 
   case 'z':	// DADA reserved for temporary code   testing debugging ...
     //MENU.out_noop(); MENU.ln();
 
 #if defined MAGICAL_MUSIC_BOX
-    MENU.out("MAGICAL_TRIGGER\t");
-    MENU.out(MAGICAL_TRIGGER_PIN);
-    MENU.tab();
-    MENU.outln(magical_trigger_cnt);
-    pinMode(MAGICAL_TRIGGER_PIN, INPUT);
-    attachInterrupt(digitalPinToInterrupt(MAGICAL_TRIGGER_PIN), magical_trigger_ISR, RISING);
-    // magical_trigger_ISR();
+    magic_trigger_ON();
 #endif
     break;
 

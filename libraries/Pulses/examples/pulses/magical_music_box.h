@@ -10,11 +10,15 @@ short musicbox_incarnation=0;	// debugging only
 enum music_box_state {OFF=0, SLEEPING, SNORING, AWAKE, FADE};
 
 #ifndef MAGICAL_TRIGGER_PIN
-//  #define MAGICAL_TRIGGER_PIN	35	// == PLL
-  #define MAGICAL_TRIGGER_PIN	12	// just a test...
+//#define MAGICAL_TRIGGER_PIN	35	// == PLL
+//#define MAGICAL_TRIGGER_PIN	12	// just a test...
+  #define MAGICAL_TRIGGER_PIN	34	// == InMorse
 #endif
 
+void magic_trigger_ON();	// forward declaration
+
 void start_musicbox() {
+  // magic_trigger_OFF();
   musicbox_incarnation++;	// debugging only
   MENU.outln(F("start_musicbox()"));
 
@@ -185,6 +189,7 @@ void magical_stress_release() {		// special stress release for magical music box
   PULSES.select_n(--voices);
   MENU.out(F("magical_stress_release() "));
   MENU.outln(voices);
+  // magic_trigger_ON();	// TODO: test if we might need this...
 }
 
 // very simple one shot implementation:
@@ -236,18 +241,42 @@ void furzificate() {	// switch to a quiet, farting patterns, u.a.
   }
   MENU.out(F("jiffle: "));
   MENU.outln(selected_name(JIFFLES));
+
+  // magic_trigger_ON();
 }
 
 
 // enum music_box_state {OFF=0, SLEEPING, SNORING, AWAKE, FADE};
 
 unsigned int magical_trigger_cnt=0;
-void magical_trigger_ISR() {
-  portENTER_CRITICAL_ISR(&magical_MUX);
-  magical_trigger_cnt++;
+void magic_trigger_OFF();
+bool switch_magical_trigger_off=false;
 
-  MENU.out(F("magical_trigger_ISR()\t"));	// TODO: remove
-  MENU.outln(magical_trigger_cnt);		// TODO: remove
+void magical_trigger_ISR() {	// can also be used on the non interrupt version :)
+  portENTER_CRITICAL_ISR(&magical_MUX);
+  // magic_trigger_OFF();
+  static struct time triggered_at=PULSES.get_now();	// preserves last seen fresh trigger time
+
+  struct time new_trigger = PULSES.get_now();		// new trigger time
+  struct time duration = new_trigger;			// remember
+
+  bool triggered=false;
+  //MENU.outln('t');	// TODO: remove
+  //MENU.out(F("magical_trigger_ISR()\t"));	// TODO: remove
+  //MENU.outln(magical_trigger_cnt);		// TODO: remove
+
+  PULSES.sub_time(&triggered_at, &duration);
+  if(duration.overflow)
+    triggered=true;
+  else if (duration.time > 30*1000000)	// block trigger for 30 seconds
+      triggered=true;
+
+  if(triggered) {
+    //magic_trigger_OFF();		// dopplet gnäht
+    switch_magical_trigger_off = true;	// dopplet gnäht
+    magical_trigger_cnt++;
+    triggered_at = new_trigger;
+  }
 
 //  switch (music_box_state) {
 //  case SNORING:
@@ -260,4 +289,70 @@ void magical_trigger_ISR() {
 //    MENU.outln(F("???"));	// TODO: remove
 //  }
     portEXIT_CRITICAL_ISR(&magical_MUX);
+}
+
+void magic_trigger_ON() {
+#if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks *NOT* using the interrupt
+  MENU.out(F("MAGICAL_TRIGGER ON\t"));
+  MENU.out(MAGICAL_TRIGGER_PIN);
+  MENU.tab();
+  MENU.outln(magical_trigger_cnt);
+  pinMode(MAGICAL_TRIGGER_PIN, INPUT);
+  attachInterrupt(digitalPinToInterrupt(MAGICAL_TRIGGER_PIN), magical_trigger_ISR, RISING);
+#else
+  ;
+#endif
+}
+
+// TODO: ################  DOES NOT WORK: isr is *not* called any more BUT THE SYSTEM BECOMES STRESSED!
+void magic_trigger_OFF() {
+#if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks *NOT* using the interrupt
+  MENU.outln(F("magic_trigger_OFF\t"));
+  detachInterrupt(digitalPinToInterrupt(MAGICAL_TRIGGER_PIN));
+  //  esp_intr_free(digitalPinToInterrupt(MAGICAL_TRIGGER_PIN));
+  switch_magical_trigger_off = false;
+#else
+  ;
+#endif
+}
+
+
+#if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
+//digitalRead(MAGICAL_TRIGGER_PIN)
+void magical_trigger_is_hot() {
+  magical_trigger_ISR();	// *not* as ISR
+  if (switch_magical_trigger_off) {
+    MENU.outln(F("TRIGGERED!"));
+    start_musicbox();
+  }
+  switch_magical_trigger_off=false;
+}
+#endif
+
+
+// magical fart on reading a floating GPIO pin ;)
+portMUX_TYPE magical_fart_MUX = portMUX_INITIALIZER_UNLOCKED;
+unsigned int magical_fart_cnt=0;
+gpio_pin_t magical_fart_output_pin=ILLEGAL;
+
+void magical_fart_ISR() {
+  portENTER_CRITICAL_ISR(&magical_fart_MUX);
+  magical_fart_cnt++;
+
+  if(magical_fart_output_pin != ILLEGAL)
+    digitalWrite(magical_fart_output_pin, ! digitalRead(magical_fart_output_pin));
+
+  //MENU.out(F("magical_fart_ISR()\t"));
+  //MENU.outln(magical_fart_cnt);
+  portEXIT_CRITICAL_ISR(&magical_fart_MUX);
+}
+
+void magical_fart_setup(gpio_pin_t sense_pin, gpio_pin_t output_pin) {
+  magical_fart_output_pin = output_pin;
+  MENU.out("magical_FART\t");
+  MENU.out(sense_pin);
+  MENU.out('>');
+  MENU.outln(output_pin);
+  pinMode(sense_pin, INPUT);
+  attachInterrupt(digitalPinToInterrupt(sense_pin), magical_fart_ISR, CHANGE);
 }
