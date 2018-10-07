@@ -31,3 +31,10 @@
 #if (defined(MORSE_TOUCH_INPUT_PIN) && ! defined(BOARD_has_TOUCH))
   #error MORSE_TOUCH_INPUT_PIN:  undefined BOARD_has_TOUCH
 #endif
+
+// i2c
+#if ! defined USE_i2c
+#if defined(USE_MCP23017) || defined(USE_RTC_MODULE) || defined(USE_i2c_SCANNER)
+    #define USE_i2c
+  #endif
+#endif

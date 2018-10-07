@@ -1,10 +1,13 @@
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
 #define MAGICAL_MUSIC_BOX
 #define MAGICAL_TOILET_HACKS	// some quick dirty hacks
+
 //#define USE_MORSE	// incomplete
 //#define USE_INPUTS
 //#define USE_LEDC	// to be written ;)
 // rename: gpio_pins GPIO_pins
+
+#define USE_i2c_SCANNER
 
 /* **************************************************************** */
 /*
@@ -55,13 +58,25 @@ using namespace std;	// ESP8266 needs that
 #include "pulses_boards.h"		// different boards
 #include "pulses_configuration.h"	// your configuration
 
+#include "pulses_sanity_checks.h"	// check some pp macros
+
+
 #if defined USE_i2c
   #if defined USE_MCP23017
     #include "MCP23017.h"			// Adafruit, simple test version only
   #endif
-#endif
 
-#include "pulses_sanity_checks.h"	// check some pp macros
+//  #if defined USE_DS1307_RTC
+//    // #include <Wire.h>
+//    #include <Time.h>
+//    #include <DS1307RTC.h>
+//  #endif
+
+  #if defined USE_i2c_scanner
+    #include "i2c_scan.h"
+  #endif
+#endif // USE_i2c
+
 
 /* **************** Menu **************** */
 class Menu;
