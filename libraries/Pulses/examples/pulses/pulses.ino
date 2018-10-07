@@ -6,9 +6,8 @@
 //#define USE_MORSE	// incomplete
 //#define USE_INPUTS
 //#define USE_LEDC	// to be written ;)
-//#define USE_RTC_MODULE
-//#define USE_i2c_SCANNER
-//#define USE_BATTERY_CONTROL
+#define USE_RTC_MODULE
+#define USE_i2c_SCANNER
 
 /* **************************************************************** */
 /*
@@ -63,6 +62,7 @@ using namespace std;	// ESP8266 needs that
 
 
 #if defined USE_i2c
+  #include <Wire.h>
   #if defined USE_MCP23017
     #include "MCP23017.h"			// Adafruit, simple test version only
   #endif
@@ -734,12 +734,19 @@ void setup() {
 #endif // to WiFi or not
 
 #if defined USE_i2c
+  Wire.begin();
+
   #if defined USE_MCP23017
     MCP23017.begin();
     Wire.setClock(100000L);	// must be *after* Wire.begin()
     MCP23017_OUT_LOW();
     PULSES.do_A2 = &MCP23017_write;
   #endif
+
+  #if defined USE_RTC_MODULE
+    // nothing to do?
+  #endif
+
 #endif
 
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
