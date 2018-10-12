@@ -2,32 +2,49 @@
   magical_musicbox.h
 */
 
+#if false	// DEBUGGING ONLY
+ #define MAGICAL_PERFORMACE_SECONDS	20
+ #define MAGICAL_MUSICBOX_TRIGGER_BLOCK_SECONDS	4
+#endif
+
+#include <esp_sleep.h>
+// #include "rom/gpio.h"
+// #include "driver/gpio.h"
+
 #include "random_entropy.h"
 
-portMUX_TYPE magical_MUX = portMUX_INITIALIZER_UNLOCKED;
-
-short musicbox_incarnation=0;	// debugging only
-enum music_box_state {OFF=0, ENDING, SLEEPING, SNORING, AWAKE, FADE};
-music_box_state MagicalMusicState=OFF;
-
 #ifndef MAGICAL_TRIGGER_PIN
-//#define MAGICAL_TRIGGER_PIN	35	// == PLL
-//#define MAGICAL_TRIGGER_PIN	12	// just a test...
-  #define MAGICAL_TRIGGER_PIN	34	// == InMorse
+  #define MAGICAL_TRIGGER_PIN	34
 #endif
 
 #ifndef MAGICAL_PERFORMACE_SECONDS
   #define MAGICAL_PERFORMACE_SECONDS	6*60
 #endif
 
-bool magic_autochanges=true;	// switch if to end normal playing (farting) after MAGICAL_PERFORMACE_SECONDS
+#if ! defined MAGICAL_MUSICBOX_TRIGGER_BLOCK_SECONDS
+  #define MAGICAL_MUSICBOX_TRIGGER_BLOCK_SECONDS	30
+#endif
+
+#if ! defined MAGICAL_MUSICBOX_ENDING	// *one* of the following:
+  #define  MAGICAL_MUSICBOX_ENDING	light_sleep();	// works fine
+  //#define  MAGICAL_MUSICBOX_ENDING	deep_sleep();	// still DAC noise!!!
+  //#define  MAGICAL_MUSICBOX_ENDING	ESP.restart();	// works fine
+#endif
+
+// #define PERIPHERAL_POWER_SWITCH_PIN		12	// == MORSE_TOUCH_INPUT_PIN
+
+enum music_box_state {OFF=0, ENDING, SLEEPING, SNORING, AWAKE, FADE};
+music_box_state MagicalMusicState=OFF;
+
+bool magic_autochanges=true;	// switch if to end normal playing after MAGICAL_PERFORMACE_SECONDS
+
+portMUX_TYPE magical_MUX = portMUX_INITIALIZER_UNLOCKED;
 
 // very simple one shot implementation:
 //void furzificate(int dummy=0) {	// switch to a quiet, farting patterns, u.a.
 //  /* with the dummy int parameter it passes as payload for a pulse */
 void furzificate() {	// switch to a quiet, farting patterns, u.a.
   MENU.outln(F("furzificate()"));
-  musicbox_incarnation++;	// debugging only
   MagicalMusicState = SNORING;
 
   switch (random(10)) {
@@ -74,8 +91,6 @@ void furzificate() {	// switch to a quiet, farting patterns, u.a.
   }
   MENU.out(F("jiffle: "));
   MENU.outln(selected_name(JIFFLES));
-
-  // magic_trigger_ON();
 }
 
 void magic_trigger_ON();	// forward declaration
@@ -84,15 +99,20 @@ struct time musicbox_start_time;
 struct time musicbox_end_time;
 
 void start_musicbox() {
-  // magic_trigger_OFF();
-  musicbox_incarnation++;	// debugging only
   MENU.outln(F("start_musicbox()"));
   MagicalMusicState = AWAKE;
 
-  MENU.play_KB_macro(F("-E40,")); // initialize, the comma avoids output from E40
-  sync = random(6);		// random sync
-  MENU.out(F("sync "));
-  MENU.outln(sync);
+#if defined PERIPHERAL_POWER_SWITCH_PIN
+  if(! digitalRead(PERIPHERAL_POWER_SWITCH_PIN)) {	// power off?
+    digitalWrite(PERIPHERAL_POWER_SWITCH_PIN, HIGH);
+    MENU.out(F("peripheral POWER ON "));
+    MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
+
+    delay(250);	// give peripheral supply voltage time to stabilise
+  }
+#endif
+
+  MENU.play_KB_macro(F("-E40,"), false); // initialize, the comma avoids output from E40, no newline
 
   switch(random(23)) {		// random scale
   case 0: case 1: case 3: case 4:
@@ -123,41 +143,8 @@ void start_musicbox() {
     select_array_in(SCALES, octaves_fourths);
     break;
   }
-  MENU.out(F("scale: "));
+  MENU.out(F("SCALE: "));
   MENU.outln(selected_name(SCALES));
-
-  // random pitch
-  PULSES.time_unit=1000000;	// default metric
-  multiplier=4096;		// uses 1/4096 jiffles
-  multiplier *= 8;	// TODO: adjust appropriate...
-  //  divisor = 294;		// 293.66 = D4	// default tuning D4
-
-  divisor = random(160, 450);	// *not* tuned for other instruments
-  MENU.out("time_unit: ");
-  MENU.out(PULSES.time_unit);
-  MENU.tab();
-  MENU.out('*');
-  MENU.out(multiplier);
-  MENU.slash();
-  MENU.outln(divisor);
-
-  tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
-  lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
-
-  // random pitch shift down
-  switch(random(9)) {
-  case 0: case 1:
-    break;
-  case 2: case 3: case 4:  case 5:
-    MENU.play_KB_macro(F("*2"));
-    break;
-  case 6:
-    MENU.play_KB_macro(F("*4"));
-    break;
-  case 8:
-    MENU.play_KB_macro(F("/2"));
-    break;
-  }
 
   // random jiffle
   switch(random(99)) {
@@ -241,10 +228,46 @@ void start_musicbox() {
     select_array_in(JIFFLES, pent_top_wave_0);
     break;
   }
-  MENU.out(F("jiffle: "));
+  MENU.out(F("JIFFLE: "));
   MENU.outln(selected_name(JIFFLES));
-
   setup_jiffle_thrower_selected(selected_actions);
+
+  sync = random(6);		// random sync
+  MENU.out(F("sync "));
+  MENU.outln(sync);
+
+  // random pitch
+  PULSES.time_unit=1000000;	// default metric
+  multiplier=4096;		// uses 1/4096 jiffles
+  multiplier *= 8;	// TODO: adjust appropriate...
+  //  divisor = 294;		// 293.66 = D4	// default tuning D4
+
+  divisor = random(160, 450);	// *not* tuned for other instruments
+  MENU.out("time_unit: ");
+  MENU.out(PULSES.time_unit);
+  MENU.tab();
+  MENU.out('*');
+  MENU.out(multiplier);
+  MENU.slash();
+  MENU.outln(divisor);
+
+  tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
+  lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
+
+  // random pitch shift down
+  switch(random(9)) {
+  case 0: case 1:
+    break;
+  case 2: case 3: case 4:  case 5:
+    MENU.play_KB_macro(F("*2"));
+    break;
+  case 6:
+    MENU.play_KB_macro(F("*4"));
+    break;
+  case 8:
+    MENU.play_KB_macro(F("/2"));
+    break;
+  }
 
 //  // setup end of playing ;)
 //  /*
@@ -269,11 +292,12 @@ void start_musicbox() {
 }
 
 void magical_stress_release() {		// special stress release for magical music box
-  PULSES.deactivate_pulse(voices);	// *remove* topmost voice
-  PULSES.select_n(--voices);
-  MENU.out(F("magical_stress_release() "));
-  MENU.outln(voices);
-  // magic_trigger_ON();	// TODO: test if we might need this...
+  if (voices) {	// normal case, I have never seen exceptions
+    PULSES.init_pulse(--voices);		// *remove* topmost voice
+    PULSES.select_n(voices);
+    MENU.out(F("magical_stress_release() "));
+    MENU.outln(voices);
+  } else MENU.play_KB_macro("X");		// *could* happen some time, maybe *SAVETY NET*
 }
 
 
@@ -285,7 +309,6 @@ bool switch_magical_trigger_off=false;
 
 void magical_trigger_ISR() {	// can also be used on the non interrupt version :)
   portENTER_CRITICAL_ISR(&magical_MUX);
-  // magic_trigger_OFF();
   static struct time triggered_at=PULSES.get_now();	// preserves last seen fresh trigger time
 
   struct time new_trigger = PULSES.get_now();		// new trigger time
@@ -293,6 +316,8 @@ void magical_trigger_ISR() {	// can also be used on the non interrupt version :)
 
   bool triggered=false;
   switch (MagicalMusicState) {
+  case OFF:
+  case ENDING:
   case SNORING:
     triggered = true;
     break;
@@ -300,31 +325,23 @@ void magical_trigger_ISR() {	// can also be used on the non interrupt version :)
     PULSES.sub_time(&triggered_at, &duration);
     if(duration.overflow)
       triggered=true;
-    else if (duration.time > 30*1000000)	// block trigger for 30 seconds
+    else if (duration.time > MAGICAL_MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000)	// block trigger for 30 seconds
       triggered=true;
+//    else
+//      MENU.out('t');	// feedback: 't' blocked trigger
     break;
   default:
+    triggered = true;	// not save... but
     MENU.outln(F("magical_trigger_ISR unknown"));
   }
 
   if(triggered) {
-    //magic_trigger_OFF();		// dopplet gnäht
     switch_magical_trigger_off = true;	// dopplet gnäht
     magical_trigger_cnt++;
     triggered_at = new_trigger;
   }
 
-//  switch (music_box_state) {
-//  case SNORING:
-//    MENU.outln(F("SNORING"));	// TODO: remove
-//    break;
-//  case AWAKE:
-//    MENU.outln(F("AWAKE"));	// TODO: remove
-//    break;
-//  default:
-//    MENU.outln(F("???"));	// TODO: remove
-//  }
-    portEXIT_CRITICAL_ISR(&magical_MUX);
+  portEXIT_CRITICAL_ISR(&magical_MUX);
 }
 
 void magic_trigger_ON() {
@@ -393,27 +410,148 @@ void magical_fart_setup(gpio_pin_t sense_pin, gpio_pin_t output_pin) {
   attachInterrupt(digitalPinToInterrupt(sense_pin), magical_fart_ISR, CHANGE);
 }
 
+
+// #include <bt/bluedroid/api/include/api/esp_bt_main.h>
+#include <esp_bt_main.h>
+#include <esp_bt.h>
+#include "esp_wifi.h"
+#include "WiFi.h"
+#include "driver/rtc_io.h"
+#include "driver/dac.h"
+
+void light_sleep() {
+  MENU.out(F("light_sleep()\t"));
+
+  esp_bluedroid_disable();
+  esp_bt_controller_disable();
+  esp_wifi_stop();
+
+  /*
+    there was an ugly noise on DACs during sleep
+    among a lot of other things i tried all the following without in vain:
+
+    rtc_gpio_isolate((gpio_num_t) 25);	// no influence on noise :(
+    rtc_gpio_isolate((gpio_num_t) 26);	// no influence on noise :(
+    pinMode(25, INPUT);	// no influence on noise :(
+    pinMode(26, INPUT);	// no influence on noise :(
+
+    dacWrite(25,0);	// no influence on noise :(
+    dacWrite(26,0);	// no influence on noise :(
+
+    if(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF))
+      MENU.error_ln(F("esp_sleep_pd_config()"));
+
+    if(esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_OFF))
+      MENU.error_ln(F("esp_sleep_pd_config()"));
+
+    dac_i2s_disable();
+
+    nothing helped against the noise
+  */
+
+  // kill the ugly noise on DACs during sleep modes:
+  pinMode(25, OUTPUT);		// avoid ugly noise on DAC during sleep
+  digitalWrite(25, LOW);
+
+  pinMode(26, OUTPUT);		// avoid ugly noise on DAC during sleep
+  digitalWrite(26, LOW);
+
+  if (esp_sleep_enable_ext0_wakeup((gpio_num_t) MAGICAL_TRIGGER_PIN, 1))
+    MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
+
+//  if(gpio_wakeup_enable((gpio_num_t) MAGICAL_TRIGGER_PIN, GPIO_INTR_LOW_LEVEL))
+//    MENU.error_ln(F("gpio_wakeup_enable()"));
+//
+//  if (esp_sleep_enable_gpio_wakeup())
+//    MENU.error_ln(F("esp_sleep_enable_gpio_wakeup"));
+
+  MENU.outln(F("sleep well..."));
+  delay(1500);
+
+  if (esp_light_sleep_start())
+    MENU.error_ln(F("esp_light_sleep_start()"));
+
+  MENU.out(F("AWOKE\t"));
+  // ESP_SLEEP_WAKEUP_GPIO	7
+  MENU.outln(esp_sleep_get_wakeup_cause());
+}
+
+
+void deep_sleep() {
+  MENU.out(F("deep_sleep()\t"));
+
+  // TODO: conditionally...
+  esp_bluedroid_disable();
+  esp_bt_controller_disable();
+  esp_wifi_stop();
+
+  if (esp_sleep_enable_ext0_wakeup((gpio_num_t) MAGICAL_TRIGGER_PIN, 1))
+    MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
+
+  /* ONLY HELPS in light_sleep()
+  // kill the ugly noise on DACs during sleep modes:
+  pinMode(25, OUTPUT);		// avoid ugly noise on DAC during sleep
+  digitalWrite(25, LOW);
+
+  pinMode(26, OUTPUT);		// avoid ugly noise on DAC during sleep
+  digitalWrite(26, LOW);
+  */				// DOES NOT HELP HERE :(
+
+  MENU.outln(F("esp_deep_sleep_start()"));
+  delay(1500);
+
+  esp_deep_sleep_start();	// sleep well ... ... ...
+
+  // TODO: it will never get here, FIXME: ################
+  MENU.out(F("AWOKE\t"));
+  // ESP_SLEEP_WAKEUP_GPIO	7
+  MENU.outln(esp_sleep_get_wakeup_cause());
+
+  rtc_gpio_deinit((gpio_num_t) MAGICAL_TRIGGER_PIN);  // TODO: it will never get here, FIXME: ################
+}
+
+
 void soft_end_playing() {	// set all selected to be counted pulses with 1 repeat
-  if(MagicalMusicState > ENDING) {
+  if(MagicalMusicState == OFF)
+    return;
+
+  if(MagicalMusicState > ENDING) {		// initiate end
     MagicalMusicState = ENDING;
     MENU.outln(F("soft_end_playing()"));
 
-    for (int pulse=0; pulse<PL_MAX; pulse++) {
+    for (int pulse=0; pulse<PL_MAX; pulse++) {	// 1 shot generating pulses
       if (PULSES.pulse_is_selected(pulse)) {
 	if(PULSES.pulses[pulse].counter) {	// pulse was already awake: still 1 repeat, then vanish
 	  PULSES.pulses[pulse].remaining = 1;
 	  PULSES.pulses[pulse].flags |= COUNTED;
-	} else
+	} else {
 	  PULSES.init_pulse(pulse);		// pulse have not been awake yet, just remove
+	}
       }
     }
-  } else if (MagicalMusicState != OFF) {	// ENDING, but not OFF yet
-    for (int pulse=0; pulse<PL_MAX; pulse++) {	//   check for any survivors
-      if (PULSES.pulse_is_selected(pulse))
-	if (PULSES.pulses[pulse].flags & ACTIVE)
+  } else {
+    if(MagicalMusicState == ENDING) {		// ENDING
+      for (int pulse=0; pulse<PL_MAX; pulse++) {	// check for any active pulses
+	if (PULSES.pulses[pulse].flags & ACTIVE)	//   still something active?
 	  return;
+      }
+      // no activity remaining
+
+      MagicalMusicState = OFF;
+      MENU.outln(F("playing ended"));
+
+#if defined PERIPHERAL_POWER_SWITCH_PIN
+      MENU.out(F("peripheral POWER OFF "));
+      MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
+
+      digitalWrite(PERIPHERAL_POWER_SWITCH_PIN, LOW);
+      delay(1200); // we need some time for voltage to go down before switching off
+#endif
+
+      reset_all_flagged_pulses_GPIO_OFF();
+      delay(600);		// send remaining output
+
+      MAGICAL_MUSICBOX_ENDING;	// sleep, restart or somesuch	// *ENDED*
     }
-    MagicalMusicState = OFF;	// no more active pulses, we're done
-    MENU.outln(F("playing ended"));
   }
 }

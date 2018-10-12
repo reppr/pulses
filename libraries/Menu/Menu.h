@@ -285,7 +285,7 @@ class Menu {
   int restore_input_token();	// restore and return last input token, only use if you *really must*
 				// *dangerous* no checks, you *can* restore a just-read-token
 
-  void play_KB_macro(char *macro );	//  keyboard input from a string
+  void play_KB_macro(char *macro, bool newline=true);	//  keyboard input from a string
 
   int menu_mode;		// currently only used to edit data arrays
   friend class Pulses;

@@ -810,7 +810,7 @@ int Menu::restore_input_token() {	// restores last input token	only use if you *
 }
 
 
-void Menu::play_KB_macro(char *macro) {
+void Menu::play_KB_macro(char *macro, bool newline) {
   out("play_KB_macro  ");
 
   for (char c=*macro++; c; c=*macro++) {
@@ -832,7 +832,8 @@ void Menu::play_KB_macro(char *macro) {
   space();			// separe macro from its output
 
   interpret_men_input();	// Menu input interpreter
-  ln();
+  if(newline)
+    ln();
 }
 
 /* **************************************************************** */

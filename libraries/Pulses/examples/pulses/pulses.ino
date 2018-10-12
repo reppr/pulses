@@ -1,13 +1,14 @@
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
 #define MAGICAL_MUSIC_BOX
 #define MAGICAL_TOILET_HACKS	// some quick dirty hacks
+#define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_TOUCH_INPUT_PIN
 
 //#define USE_MORSE	// incomplete
 //#define USE_INPUTS
 //#define USE_LEDC	// to be written ;)
-// rename: gpio_pins GPIO_pins
-
-#define USE_i2c_SCANNER
+//#define USE_RTC_MODULE
+//#define USE_i2c_SCANNER
+//#define USE_BATTERY_CONTROL
 
 /* **************************************************************** */
 /*
@@ -311,39 +312,6 @@ void display_names(char** names, int count, int selected) {	// TODO: maybe obsol
 }
 
 
-// reset, remove all (flagged) pulses, restart selections at none
-// switch GPIO and DACs off
-int reset_all_flagged_pulses_GPIO_OFF() {	// reset pulses, switches GPIO and DACs off
-  int cnt=0;
-  for (int pulse=0; pulse<PL_MAX; pulse++) {  // tabula rasa
-    if (PULSES.pulses[pulse].flags) {
-      PULSES.init_pulse(pulse);
-      cnt++;
-    }
-  }
-
-  init_click_GPIOs_OutLow();		// switch them on LOW, output	current off, i.e. magnets
-  PULSES.clear_selection();		// restart selections at none
-
-#if defined USE_DACs			// reset DACs
-  dacWrite(BOARD_DAC1, 0);
-#if (USE_DACs > 1)
-  dacWrite(BOARD_DAC2, 0);
-#endif
-#endif
-
-  PULSES.fix_global_next();
-
-  if (MENU.verbosity) {
-    MENU.out(F("removed all pulses "));
-    MENU.outln(cnt);
-    MENU.outln(F("switched pins off"));
-  }
-
-  return cnt;
-};
-
-
 /*	TODO: move to library Pulses
   gpio_pin_t next_gpio()	return next unused GPIO click pin (or ILLEGAL)
   gpio_pin_t next_gpio(index)	*reset* to give gpio_pins[index] on next call
@@ -379,6 +347,58 @@ gpio_pin_t this_or_next_gpio(int pulse) {
 
   return next_gpio();				// else return  next_gpio()  or ILLEGAL
 }
+
+
+// reset, remove all (flagged) pulses, restart selections at none
+// switch GPIO and DACs off
+int reset_all_flagged_pulses_GPIO_OFF() {
+  /*
+    reset pulses, switches GPIO and DACs off
+    MCP23017_OUT_LOW();
+  */
+  int cnt=0;
+  for (int pulse=0; pulse<PL_MAX; pulse++) {  // tabula rasa
+    if (PULSES.pulses[pulse].flags) {
+      PULSES.init_pulse(pulse);
+      cnt++;
+    }
+  }
+
+  init_click_GPIOs_OutLow();		// switch them on LOW, output	current off, i.e. magnets
+  PULSES.clear_selection();		// restart selections at none
+
+#if defined USE_DACs			// reset DACs
+  dacWrite(BOARD_DAC1, 0);
+#if (USE_DACs > 1)
+  dacWrite(BOARD_DAC2, 0);
+#endif
+#endif
+
+#if defined USE_i2c
+  #if defined USE_MCP23017
+    MCP23017_OUT_LOW();
+  #endif
+#endif
+
+  PULSES.fix_global_next();
+  next_gpio(0);				// reset used gpio
+  PULSES.hex_input_mask_index = 0;	// for convenience
+
+  if (MENU.verbosity) {
+    MENU.out(F("removed all pulses "));
+    MENU.out(cnt);
+    MENU.out(F("  switched pins off"));
+    MENU.out(F("  freed GPIOs"));
+#if defined USE_i2c
+  #if defined USE_MCP23017
+    MENU.out(F("  MCP23017_OUT_LOW();"));
+  #endif
+#endif
+    MENU.ln();
+  }
+
+  return cnt;
+};
 
 
 // make an existing pulse an old style click pulse:
@@ -600,10 +620,31 @@ int softboard_page=-1;		// see: maybe_run_continuous()
   #include "magical_music_box.h"
 #endif
 
+#if defined USE_BATTERY_CONTROL
+  #include "battery_control.h"
+#endif
+
+#if defined ESP32
+    // ESP32  int getChipRevision()	see: Andreas Spiess ESP32_Version.ino, register names updated
+    #include "soc/efuse_reg.h"
+    int get_ESP32_ChipRevision() {
+      return (REG_READ(EFUSE_BLK0_RDATA3_REG) >> (EFUSE_RD_CHIP_VER_REV1_S)&&EFUSE_RD_CHIP_VER_REV1_V) ;
+    }
+#endif
+
+
 void setup() {
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
   random_entropy();	// start gathering entropy before initialisation
 #endif
+
+#if defined PERIPHERAL_POWER_SWITCH_PIN	// output not possible yet, but switch peripheral power on already
+  pinMode(PERIPHERAL_POWER_SWITCH_PIN, OUTPUT);
+  //  digitalWrite(PERIPHERAL_POWER_SWITCH_PIN, HIGH);	// default peripheral power supply ON
+  digitalWrite(PERIPHERAL_POWER_SWITCH_PIN, LOW);	// default peripheral power supply OFF
+  delay(100);	// wait a bit longer
+#endif
+
   delay(STARTUP_DELAY);		// yield()
   Serial.begin(BAUDRATE);	// Start serial communication.
 
@@ -622,13 +663,28 @@ void setup() {
   while (MENU.cb_peek() != EOF) { MENU.drop_input_token(); yield(); }
 
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
-  random_entropy();	// gathering entropy fromserial noise
+  random_entropy();	// gathering entropy from serial noise
 #endif
   delay(STARTUP_DELAY);
 
   MENU.outln(F("\n\nPULSES  http://github.com/reppr/pulses/\ninitialising\n"));
 
-  #include "array_descriptors_setup.h"
+#if defined PERIPHERAL_POWER_SWITCH_PIN	// output now possible, so give info now
+  MENU.out(F("peripheral POWER "));
+  if(digitalRead(PERIPHERAL_POWER_SWITCH_PIN))
+    MENU.out(F("ON "));
+  else
+    MENU.out(F("OFF "));
+  MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
+#endif
+
+#if defined ESP32
+  MENU.out(F("ESP32 revision "));
+  MENU.outln(get_ESP32_ChipRevision());
+  MENU.ln();
+#endif
+
+#include "array_descriptors_setup.h"
 
 #ifdef USE_NVS
   #include "nvs_pulses_setup.h"
@@ -690,7 +746,7 @@ void setup() {
   random_entropy();	// more entropy from hardware like wifi, etc
 #endif
 
-  MENU.out(F("sizeof(pulse_t) "));
+  MENU.out(F("\nsizeof(pulse_t) "));
   MENU.out(sizeof(pulse_t));
   MENU.out(F(" * "));
   MENU.out(PL_MAX);
@@ -812,7 +868,7 @@ bool lowest_priority_tasks() {
 
 #if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
   if(magic_autochanges) {
-    if(MagicalMusicState == AWAKE) {	// is it time to stop?
+    if(MagicalMusicState != OFF) {	// is it time to stop?
       struct time justNow = PULSES.get_now();
       struct time scratch = musicbox_end_time;
       PULSES.sub_time(&justNow, &scratch);
@@ -3938,18 +3994,6 @@ bool menu_pulses_reaction(char menu_input) {
   case 'D':	// DADA reserved for temporary code   testing debugging ...
     //MENU.out_noop(); MENU.ln();
 
-#if defined MAGICAL_MUSIC_BOX
- #if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
-    MENU.out(F("trigger pin state is "));
-    MENU.outln(digitalRead(MAGICAL_TRIGGER_PIN));
- #else
-    if(musicbox_incarnation & 1)
-      furzificate();
-    else
-      start_musicbox();
- #endif
-#endif
-
 #ifdef USE_MORSE
     morse_show_tokens();
     MENU.ln();
@@ -4171,21 +4215,9 @@ bool menu_pulses_reaction(char menu_input) {
     // set MCP23017 pins low
     reset_all_flagged_pulses_GPIO_OFF();
 
-#if defined USE_i2c
-  #if defined USE_MCP23017
-      MCP23017_OUT_LOW();
-  #endif
-#endif
-
 #if defined MAGICAL_MUSIC_BOX
-    musicbox_incarnation=0;	// debugging only
+    MagicalMusicState=OFF;
 #endif
-
-    PULSES.hex_input_mask_index = 0;	// for convenience
-
-    next_gpio(0);	// reset used gpio
-    if (MENU.verbosity)
-      MENU.outln(F("freed GPIOs"));
 
     if(MENU.cb_peek() == '!') {		// 'X!' does 'X' *and* resets time_unit
       MENU.drop_input_token();
