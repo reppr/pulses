@@ -2,9 +2,12 @@ Harmonical	KEYWORD1
 ~Harmonical	KEYWORD2
 GCD	KEYWORD2
 LCM	KEYWORD2
+fraction_LCM	KEYWORD2
 reduce_fraction	KEYWORD2
 expand_fractions	KEYWORD2
 add_fraction	KEYWORD2
 prime_factors	KEYWORD2
 harmonical_base	KEYWORD2
 small_primes	KEYWORD2
+small_primes_cnt	KEYWORD2
+USED_primes	KEYWORD2

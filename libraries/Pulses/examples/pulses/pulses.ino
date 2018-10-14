@@ -4016,23 +4016,20 @@ bool menu_pulses_reaction(char menu_input) {
   case 'C':	// Calculator simply *left to right*	*positive integers only*
     MENU.maybe_calculate_input(&calc_result);
 
-    if (MENU.maybe_display_more()) {
-      MENU.out("==> "), MENU.outln(calc_result);
-
-      if (calc_result > 1) {	// show prime factors if(result >= 2)
-	int p_factors_size=6;	// for harmonics I rarely use more than three, sometimes four ;)
-	unsigned int p_factors[p_factors_size];
-	MENU.out(F("prime factors of ")); MENU.out(calc_result);
-	int highest = HARMONICAL.prime_factors(p_factors, p_factors_size, calc_result);
-	for (int i=0; HARMONICAL.small_primes[i]<=highest; i++) {
-	  MENU.tab();
-	  MENU.out(F("("));
-	  MENU.out(HARMONICAL.small_primes[i]);
-	  MENU.out(F(")^"));
-	  MENU.out(p_factors[i]);
-	}
-	MENU.ln();
+    MENU.out(F("Calc => ")), MENU.outln(calc_result);
+    if (calc_result > 1) {	// show prime factors if(result >= 2)
+      int p_factors_size=6;	// for harmonics I rarely use more than three, sometimes four ;)
+      unsigned int p_factors[p_factors_size];
+      MENU.out(F("prime factors of ")); MENU.out(calc_result);
+      int highest = HARMONICAL.prime_factors(p_factors, calc_result);
+      for (int i=0; HARMONICAL.small_primes[i]<=highest; i++) {
+	MENU.tab();
+	MENU.out(F("("));
+	MENU.out(HARMONICAL.small_primes[i]);
+	MENU.out(F(")^"));
+	MENU.out(p_factors[i]);
       }
+      MENU.ln();
     }
     break;
 
