@@ -9,6 +9,7 @@
 #define USE_RTC_MODULE
 #define USE_i2c_SCANNER
 
+// #define USE_BATTERY_CONTROL
 /* **************************************************************** */
 /*
 			pulses.ino
@@ -700,6 +701,10 @@ void setup() {
 
 #if defined USE_LEDC
   #include "ledc_tone_setup.h"
+#endif
+
+#if defined USE_BATTERY_CONTROL
+  #include "battery_control_setup.h"
 #endif
 
 // #include "melody_jiffles.h"	// TODO: test only
