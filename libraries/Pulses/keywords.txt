@@ -62,6 +62,7 @@ pulse	KEYWORD2
 pl_max	KEYWORD2
 pulses	KEYWORD2
 global_next_pulses	KEYWORD2
+remaining	KEYWORD2
 F	KEYWORD2
 time_unit	KEYWORD2
 overflow_sec	KEYWORD2

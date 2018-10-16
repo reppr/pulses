@@ -348,13 +348,13 @@ void Pulses::wake_pulse(int pulse) {
   if (pulses[pulse].last.time > pulses[pulse].next.time)
     pulses[pulse].next.overflow++;
 
-  //						// COUNTED pulse && end reached?
-  if ((pulses[pulse].flags & COUNTED) && \
-      ((pulses[pulse].counter +1) == pulses[pulse].count )) {
-    if (pulses[pulse].flags & DO_NOT_DELETE)	//   yes: DO_NOT_DELETE?
-      pulses[pulse].flags &= ~ACTIVE;		//     yes: just deactivate
-    else
-      init_pulse(pulse);			//     no:  DELETE pulse
+  if (pulses[pulse].flags & COUNTED) {	// COUNTED pulse && end reached?
+    if(--pulses[pulse].remaining == 0) {		// END REACHED
+      if (pulses[pulse].flags & DO_NOT_DELETE)	//   yes: DO_NOT_DELETE?
+	pulses[pulse].flags &= ~ACTIVE;		//     yes: just deactivate
+      else
+	init_pulse(pulse);			//     no:  DELETE pulse
+    }
   }
 }
 
@@ -832,12 +832,12 @@ int Pulses::setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
 
 // unused?
 int Pulses::setup_counted_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
-			struct time when, struct time new_period, unsigned int count)
+			struct time when, struct time new_period, unsigned int remaining)
 {
   int pulse;
 
   pulse= setup_pulse(pulse_do, new_flags|COUNTED, when, new_period);
-  pulses[pulse].count= count;
+  pulses[pulse].remaining = remaining;
 
   return pulse;
 }

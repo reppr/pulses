@@ -2027,7 +2027,7 @@ void pulse_info(int pulse) {
 
   MENU.out(F("pin ")); MENU.out((int) PULSES.pulses[pulse].gpio);
   MENU.out(F("\tindex ")); MENU.out(PULSES.pulses[pulse].index);
-  MENU.out(F("\ttimes ")); MENU.out(PULSES.pulses[pulse].count);
+  MENU.out(F("\ttimes ")); MENU.out(PULSES.pulses[pulse].remaining);
   MENU.out(F("\tcntd ")); MENU.out(PULSES.pulses[pulse].countdown);
   MENU.out(F("\tdata ")); MENU.out(PULSES.pulses[pulse].data);
   MENU.out(F("\ttime ")); MENU.out(PULSES.pulses[pulse].base_time);

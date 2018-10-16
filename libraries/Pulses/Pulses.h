@@ -95,7 +95,7 @@ struct pulse_t {
 
 // #define pulses[pulse].flags masks:
 #define ACTIVE			1	// switches pulse on/off
-#define COUNTED			2	// repeats 'count[]' times, then vanishes
+#define COUNTED			2	// repeats 'pulses[p].remaining' times, then vanishes
 #define HAS_GPIO		4	// has an associated GPIO pin	use set_gpio(pulse, pin)
 #define SCRATCH			8	// edit (or similar) in progress
 #define DO_NOT_DELETE	       16	// dummy to avoid being thrown out
@@ -123,8 +123,7 @@ struct pulse_t {
 					// ACTION_MASK_BITS is used by mask displaying code (only)
 
   // internal parameter:
-  unsigned int count;		// if COUNTED, gives number of executions
-  //				// else free for other *internal* use
+  unsigned int remaining;		// if COUNTED, gives number of remaining executions
 
   // custom parameters[pulse]	//  comment/uncomment as appropriate:
   // ============>>> adapt init_pulse() IF YOU CHANGE SOMETHING HERE <<<============
