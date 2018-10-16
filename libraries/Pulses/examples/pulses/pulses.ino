@@ -802,7 +802,8 @@ bool lowest_priority_tasks() {
       struct time scratch = musicbox_end_time;
       PULSES.sub_time(&justNow, &scratch);
       if(scratch.overflow) {	// it's hacky negative
-	furzificate();
+	//furzificate();
+	soft_end_playing();
 	return true;
       }
     }
@@ -2012,7 +2013,6 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
 
 // pulse_info() as paylod for pulses: print pulse info:	// ################ TODO: update ################
 void pulse_info(int pulse) {
-
   MENU.out(F("*** PULSE info "));
   MENU.out(pulse);
   MENU.slash();

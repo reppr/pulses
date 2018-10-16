@@ -7,7 +7,7 @@
 portMUX_TYPE magical_MUX = portMUX_INITIALIZER_UNLOCKED;
 
 short musicbox_incarnation=0;	// debugging only
-enum music_box_state {OFF=0, SLEEPING, SNORING, AWAKE, FADE};
+enum music_box_state {OFF=0, ENDING, SLEEPING, SNORING, AWAKE, FADE};
 music_box_state MagicalMusicState=OFF;
 
 #ifndef MAGICAL_TRIGGER_PIN
@@ -385,10 +385,35 @@ void magical_fart_ISR() {
 
 void magical_fart_setup(gpio_pin_t sense_pin, gpio_pin_t output_pin) {
   magical_fart_output_pin = output_pin;
-  MENU.out("magical_FART\t");
+  MENU.out(F("magical_FART\t"));
   MENU.out(sense_pin);
   MENU.out('>');
   MENU.outln(output_pin);
   pinMode(sense_pin, INPUT);
   attachInterrupt(digitalPinToInterrupt(sense_pin), magical_fart_ISR, CHANGE);
+}
+
+void soft_end_playing() {	// set all selected to be counted pulses with 1 repeat
+  if(MagicalMusicState > ENDING) {
+    MagicalMusicState = ENDING;
+    MENU.outln(F("soft_end_playing()"));
+
+    for (int pulse=0; pulse<PL_MAX; pulse++) {
+      if (PULSES.pulse_is_selected(pulse)) {
+	if(PULSES.pulses[pulse].counter) {	// pulse was already awake: still 1 repeat, then vanish
+	  PULSES.pulses[pulse].remaining = 1;
+	  PULSES.pulses[pulse].flags |= COUNTED;
+	} else
+	  PULSES.init_pulse(pulse);		// pulse have not been awake yet, just remove
+      }
+    }
+  } else if (MagicalMusicState != OFF) {	// ENDING, but not OFF yet
+    for (int pulse=0; pulse<PL_MAX; pulse++) {	//   check for any survivors
+      if (PULSES.pulse_is_selected(pulse))
+	if (PULSES.pulses[pulse].flags & ACTIVE)
+	  return;
+    }
+    MagicalMusicState = OFF;	// no more active pulses, we're done
+    MENU.outln(F("playing ended"));
+  }
 }
