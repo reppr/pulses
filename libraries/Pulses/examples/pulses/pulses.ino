@@ -617,6 +617,10 @@ int softboard_page=-1;		// see: maybe_run_continuous()
 
 #include "random_entropy.h"	// TODO: only if used
 
+#if defined PERIPHERAL_POWER_SWITCH_PIN
+  #include "peripheral_power_switch.h"
+#endif
+
 #if defined MAGICAL_MUSIC_BOX
   #include "magical_music_box.h"
 #endif
@@ -640,9 +644,9 @@ void setup() {
 #endif
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN	// output not possible yet, but switch peripheral power on already
-  pinMode(PERIPHERAL_POWER_SWITCH_PIN, OUTPUT);
-  //  digitalWrite(PERIPHERAL_POWER_SWITCH_PIN, HIGH);	// default peripheral power supply ON
-  digitalWrite(PERIPHERAL_POWER_SWITCH_PIN, LOW);	// default peripheral power supply OFF
+  // for some strange reason i had to repeat this at the end of setup(), see below
+  peripheral_power_switch_ON();		// default peripheral power supply ON
+  //  peripheral_power_switch_OFF();	// default peripheral power supply OFF
   delay(100);	// wait a bit longer
 #endif
 
@@ -846,6 +850,12 @@ void setup() {
   #else
     pinMode(MAGICAL_TRIGGER_PIN, INPUT);
   #endif
+#endif
+
+
+#if defined PERIPHERAL_POWER_SWITCH_PIN	// no idea why this is needed again, but it is
+  peripheral_power_switch_ON();		// default peripheral power supply ON
+  //  peripheral_power_switch_OFF();	// default peripheral power supply OFF
 #endif
 };
 
@@ -4099,7 +4109,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'y':	// DADA reserved for temporary code   testing debugging ...
 #if defined MAGICAL_MUSIC_BOX
-    magical_fart_setup(12, 15);		// ;)
+    //    magical_fart_setup(12, 15);		// ;)
 #endif
 
 #if defined USE_MORSE

@@ -13,6 +13,10 @@
 
 #include "random_entropy.h"
 
+#if defined PERIPHERAL_POWER_SWITCH_PIN
+  #include "peripheral_power_switch.h"
+#endif
+
 #ifndef MAGICAL_TRIGGER_PIN
   #define MAGICAL_TRIGGER_PIN	34
 #endif
@@ -31,7 +35,7 @@
   //#define  MAGICAL_MUSICBOX_ENDING	ESP.restart();	// works fine
 #endif
 
-// #define PERIPHERAL_POWER_SWITCH_PIN		12	// == MORSE_TOUCH_INPUT_PIN
+// #define PERIPHERAL_POWER_SWITCH_PIN		// TODO: file?
 
 enum music_box_state {OFF=0, ENDING, SLEEPING, SNORING, AWAKE, FADE};
 music_box_state MagicalMusicState=OFF;
@@ -103,13 +107,12 @@ void start_musicbox() {
   MagicalMusicState = AWAKE;
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
-  if(! digitalRead(PERIPHERAL_POWER_SWITCH_PIN)) {	// power off?
-    digitalWrite(PERIPHERAL_POWER_SWITCH_PIN, HIGH);
-    MENU.out(F("peripheral POWER ON "));
-    MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
+  peripheral_power_switch_ON();
 
-    delay(250);	// give peripheral supply voltage time to stabilise
-  }
+  MENU.out(F("peripheral POWER ON "));
+  MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
+
+  delay(250);	// give peripheral supply voltage time to stabilise
 #endif
 
   MENU.play_KB_macro(F("-E40,"), false); // initialize, the comma avoids output from E40, no newline
@@ -283,6 +286,10 @@ void start_musicbox() {
 //
 //  PULSES.setup_counted_pulse(&payload_furzificate, ACTIVE, when, period, 1);
 
+#if defined PERIPHERAL_POWER_SWITCH_PIN		// FIXME: try again... ################################################################
+  peripheral_power_switch_ON();
+#endif
+
   musicbox_start_time = musicbox_end_time = PULSES.get_now();	// keep musicbox_start_time
   struct time duration;
   duration.overflow=0;
@@ -377,6 +384,9 @@ void magical_trigger_is_hot() {
   if (switch_magical_trigger_off) {
     MENU.outln(F("\nTRIGGERED!"));
     start_musicbox();
+#if defined PERIPHERAL_POWER_SWITCH_PIN		// FIXME: try again... ################################################################
+    peripheral_power_switch_ON();
+#endif
   }
   switch_magical_trigger_off=false;
 }
@@ -543,13 +553,12 @@ void soft_end_playing() {	// set all selected to be counted pulses with 1 repeat
 #if defined PERIPHERAL_POWER_SWITCH_PIN
       MENU.out(F("peripheral POWER OFF "));
       MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
-
-      digitalWrite(PERIPHERAL_POWER_SWITCH_PIN, LOW);
-      delay(1200); // we need some time for voltage to go down before switching off
+      peripheral_power_switch_OFF();
+      delay(600);	// let power go down softly
 #endif
 
       reset_all_flagged_pulses_GPIO_OFF();
-      delay(600);		// send remaining output
+      delay(600);	// send remaining output
 
       MAGICAL_MUSICBOX_ENDING;	// sleep, restart or somesuch	// *ENDED*
     }
