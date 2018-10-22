@@ -3036,22 +3036,18 @@ void show_scaling() {
 
 void show_UI_settings() {
   MENU.ln();
-  MENU.out(F("scale "));
+  MENU.out(F("SCALE "));
   MENU.out(array2name(SCALES, selected_in(SCALES)));
   MENU.tab();
 
-  MENU.out(F("jiffle "));
+  MENU.out(F("JIFFLE "));
   MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
   MENU.tab();
 
-  MENU.out(F("gpio bottom "));	// TODO: check where that *is* used
-  if (g_inverse)
-    MENU.out(F("up"));
-  else
-    MENU.out(F("down"));
-  MENU.tab();
+  if (g_inverse)	// FIXME: TODO: check where that *is* used ################
+    MENU.out(F("GPIO BOTTOM UP\t"));
 
-  MENU.out(F("scaling "));
+  MENU.out(F("scaling "));	// FIXME: TODO: check where that *is* used ################
   MENU.out(multiplier);
   MENU.slash();
   MENU.out(divisor);
