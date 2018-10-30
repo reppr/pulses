@@ -286,6 +286,7 @@ class Menu {
 				// *dangerous* no checks, you *can* restore a just-read-token
 
   void play_KB_macro(char *macro, bool newline=true);	//  keyboard input from a string
+				// most often you might do  'men_selected=0;'  before
 
   int menu_mode;		// currently only used to edit data arrays
   friend class Pulses;

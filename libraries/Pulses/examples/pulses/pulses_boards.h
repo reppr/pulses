@@ -10,8 +10,10 @@
 #ifdef ARDUINO
   #if defined(ESP32)				// ESP32 :)
     /* ESP32 NVS	*/
-    #define USE_NVS	// default is ON FOR TESTING
-    #include "nvs_pulses.h"
+    // #define USE_NVS	// TODO: use it
+    #if defined USE_NVS
+      #include "nvs_pulses.h"
+    #endif
 
     /* ESP32 DAC
        #define USE_DACs in your configuration files to use ESP32 DAC output	*/

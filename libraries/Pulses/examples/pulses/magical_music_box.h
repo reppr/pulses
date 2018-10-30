@@ -2,9 +2,11 @@
   magical_musicbox.h
 */
 
-#if false	// DEBUGGING ONLY
+//#define DEBUGGING_MAGICAL_MUSICBOX
+#if defined DEBUGGING_MAGICAL_MUSICBOX
  #define MAGICAL_PERFORMACE_SECONDS	20
- #define MAGICAL_MUSICBOX_TRIGGER_BLOCK_SECONDS	4
+ #define MAGICAL_TRIGGER_BLOCK_SECONDS	2
+ #define MUSICBOX_HARD_END_SECONDS	30
 #endif
 
 #include <esp_sleep.h>
@@ -22,11 +24,29 @@
 #endif
 
 #ifndef MAGICAL_PERFORMACE_SECONDS
-  #define MAGICAL_PERFORMACE_SECONDS	6*60
+  #if defined BRACHE_NOV_2018_SETTINGS
+    #define MAGICAL_PERFORMACE_SECONDS	6*60	// BRACHE
+  #else
+    #define MAGICAL_PERFORMACE_SECONDS	12*60
+  #endif
 #endif
 
-#if ! defined MAGICAL_MUSICBOX_TRIGGER_BLOCK_SECONDS
-  #define MAGICAL_MUSICBOX_TRIGGER_BLOCK_SECONDS	30
+#if ! defined MAGICAL_TRIGGER_BLOCK_SECONDS
+  #if defined BRACHE_NOV_2018_SETTINGS
+    #define MAGICAL_TRIGGER_BLOCK_SECONDS	30	// BRACHE
+  #else
+    #define MAGICAL_TRIGGER_BLOCK_SECONDS	3
+  #endif
+#endif
+
+bool blocked_trigger_shown=false;	// show only once a run
+
+#if ! defined MUSICBOX_HARD_END_SECONDS
+  #if defined BRACHE_NOV_2018_SETTINGS
+    #define  MUSICBOX_HARD_END_SECONDS	9*60	// BRACHE
+  #else
+    #define  MUSICBOX_HARD_END_SECONDS	15*60
+  #endif
 #endif
 
 #if ! defined MAGICAL_MUSICBOX_ENDING	// *one* of the following:
@@ -101,10 +121,24 @@ void magic_trigger_ON();	// forward declaration
 
 struct time musicbox_start_time;
 struct time musicbox_end_time;
+struct time musicbox_hard_end_time;
 
 void start_musicbox() {
   MENU.outln(F("start_musicbox()"));
   MagicalMusicState = AWAKE;
+
+  blocked_trigger_shown = false;	// show only once a run
+
+#if defined USE_BATTERY_CONTROL
+  show_battery_level();
+  void HARD_END_playing();	// defined below
+  if(assure_battery_level())
+    MENU.outln(F("power accepted"));
+  else {
+    MENU.outln(F(">>> NO POWER <<<"));
+    HARD_END_playing();
+  }
+#endif
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   peripheral_power_switch_ON();
@@ -115,6 +149,8 @@ void start_musicbox() {
   delay(250);	// give peripheral supply voltage time to stabilise
 #endif
 
+  MENU.outln(F(" >>> * <<<"));
+  MENU.men_selected = 0;
   MENU.play_KB_macro(F("-E40,"), false); // initialize, the comma avoids output from E40, no newline
 
   switch(random(23)) {		// random scale
@@ -272,20 +308,7 @@ void start_musicbox() {
     break;
   }
 
-//  // setup end of playing ;)
-//  /*
-//  int setup_counted_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
-//			  struct time when, struct time new_period, unsigned int count);
-//  */
-//  struct time when = PULSES.now;
-//  when.time += 1*60*1000000;
-//
-//  struct time period;
-//  period.overflow = 0;
-//  period.time = 1*60*1000000;
-//
-//  PULSES.setup_counted_pulse(&payload_furzificate, ACTIVE, when, period, 1);
-
+  MENU.outln(F(" <<< * >>>"));
 #if defined PERIPHERAL_POWER_SWITCH_PIN		// FIXME: try again... ################################################################
   peripheral_power_switch_ON();
 #endif
@@ -293,8 +316,14 @@ void start_musicbox() {
   musicbox_start_time = musicbox_end_time = PULSES.get_now();	// keep musicbox_start_time
   struct time duration;
   duration.overflow=0;
-  duration.time=MAGICAL_PERFORMACE_SECONDS*1000000;		// how long to play
-  PULSES.add_time(&duration, &musicbox_end_time);		// keep musicbox_end_time
+  duration.time=MAGICAL_PERFORMACE_SECONDS*1000000;	// how long to play
+  PULSES.add_time(&duration, &musicbox_end_time);	// keep musicbox_end_time
+
+  duration.overflow=0;					// compute musicbox_hard_end_time
+  duration.time=MUSICBOX_HARD_END_SECONDS*1000000;	// how long to play before hard end
+  musicbox_hard_end_time = PULSES.get_now();
+  PULSES.add_time(&duration, &musicbox_hard_end_time);	// keep hard end time
+
   PULSES.activate_selected_synced_now(sync);	// 'n' sync and activate
 }
 
@@ -332,14 +361,17 @@ void magical_trigger_ISR() {	// can also be used on the non interrupt version :)
     PULSES.sub_time(&triggered_at, &duration);
     if(duration.overflow)
       triggered=true;
-    else if (duration.time > MAGICAL_MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000)	// block trigger for 30 seconds
+    else if (duration.time > MAGICAL_TRIGGER_BLOCK_SECONDS*1000000)	// block trigger for some time
       triggered=true;
-//    else
-//      MENU.out('t');	// feedback: 't' blocked trigger
+    else {					// trigger was blocked
+      if(! blocked_trigger_shown)		//  show *only once* a run
+	MENU.outln(F("trigger blocked"));	//  i know it is *bad*, i do it the same...
+      blocked_trigger_shown = true;
+    }
     break;
   default:
     triggered = true;	// not save... but
-    MENU.outln(F("magical_trigger_ISR unknown"));
+    MENU.outln(F("magical_trigger_ISR unknown state"));	// should not happen
   }
 
   if(triggered) {
@@ -482,8 +514,21 @@ void light_sleep() {
     MENU.error_ln(F("esp_light_sleep_start()"));
 
   MENU.out(F("AWOKE\t"));
-  // ESP_SLEEP_WAKEUP_GPIO	7
-  MENU.outln(esp_sleep_get_wakeup_cause());
+  int cause = esp_sleep_get_wakeup_cause();
+  switch (cause = esp_sleep_get_wakeup_cause()) {
+  case 0:	// ESP_SLEEP_WAKEUP_UNDEFINED	0
+    MENU.outln(F("wakeup undefined"));
+#if defined AUTOSTART
+    MENU.out(F("HACK: restart anyway "));
+    AUTOSTART
+#endif
+    break;
+  case 7:	// ESP_SLEEP_WAKEUP_GPIO	7
+    MENU.outln(F("wakeup gpio"));
+    break;
+  default:
+    MENU.outln(cause);
+  }
 }
 
 
@@ -563,4 +608,24 @@ void soft_end_playing() {	// set all selected to be counted pulses with 1 repeat
       MAGICAL_MUSICBOX_ENDING;	// sleep, restart or somesuch	// *ENDED*
     }
   }
+}
+
+void HARD_END_playing() {	// switch off peripheral power and hard end playing
+  if(MagicalMusicState == OFF)
+    return;
+
+  MENU.outln(F("HARD_END_playing()"));
+
+#if defined PERIPHERAL_POWER_SWITCH_PIN
+  MENU.out(F("peripheral POWER OFF "));
+  MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
+  peripheral_power_switch_OFF();
+  delay(600);	// let power go down softly
+#endif
+
+  reset_all_flagged_pulses_GPIO_OFF();
+  MagicalMusicState = OFF;
+  delay(600);	// send remaining output
+
+  MAGICAL_MUSICBOX_ENDING;	// sleep, restart or somesuch	// *ENDED*
 }

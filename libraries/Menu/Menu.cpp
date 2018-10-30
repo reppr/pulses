@@ -810,7 +810,7 @@ int Menu::restore_input_token() {	// restores last input token	only use if you *
 }
 
 
-void Menu::play_KB_macro(char *macro, bool newline) {
+void Menu::play_KB_macro(char *macro, bool newline) {	// most often you might do  'men_selected=0;'  before
   out("play_KB_macro  ");
 
   for (char c=*macro++; c; c=*macro++) {

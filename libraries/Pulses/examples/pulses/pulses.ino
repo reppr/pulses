@@ -1,6 +1,8 @@
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
 #define MAGICAL_MUSIC_BOX
 #define MAGICAL_TOILET_HACKS	// some quick dirty hacks
+//#define BRACHE_NOV_2018_SETTINGS	// temporary defaults
+
 #define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_TOUCH_INPUT_PIN
 
 //#define USE_MORSE	// incomplete
@@ -9,7 +11,7 @@
 #define USE_RTC_MODULE
 #define USE_i2c_SCANNER
 
-// #define USE_BATTERY_CONTROL
+#define USE_BATTERY_CONTROL
 /* **************************************************************** */
 /*
 			pulses.ino
@@ -621,12 +623,12 @@ int softboard_page=-1;		// see: maybe_run_continuous()
   #include "peripheral_power_switch.h"
 #endif
 
-#if defined MAGICAL_MUSIC_BOX
-  #include "magical_music_box.h"
-#endif
-
 #if defined USE_BATTERY_CONTROL
   #include "battery_control.h"
+#endif
+
+#if defined MAGICAL_MUSIC_BOX
+  #include "magical_music_box.h"
 #endif
 
 #if defined ESP32
@@ -697,6 +699,7 @@ void setup() {
 
 #ifdef GPIO_PINS
   show_GPIOs();
+  MENU.ln();
 #endif
 
 #ifdef USE_MORSE
@@ -709,6 +712,14 @@ void setup() {
 
 #if defined USE_BATTERY_CONTROL
   #include "battery_control_setup.h"
+#endif
+
+#ifdef MAGICAL_MUSIC_BOX
+  #include "magical_music_box_setup.h"
+#endif
+
+#ifdef GPIO_PINS
+  init_click_GPIOs_OutLow();		// make them GPIO, OUTPUT, LOW
 #endif
 
 // #include "melody_jiffles.h"	// TODO: test only
@@ -806,14 +817,6 @@ void setup() {
     MENU.menu_display();
   #endif
 
-  #ifdef GPIO_PINS
-    init_click_GPIOs_OutLow();		// make them GPIO, OUTPUT, LOW
-  #endif
-
-  #ifdef MAGICAL_MUSIC_BOX
-    #include "magical_music_box_setup.h"
-  #endif
-
   #ifdef IMPLEMENT_TUNING		// implies floating point
     PULSES.ticks_per_octave = ticks_per_octave;
   #endif
@@ -864,12 +867,6 @@ void setup() {
 // check lower priority tasks and do the first one that needs to be done
 // return true if something was done
 bool low_priority_tasks() {
-
-#ifdef MAGICAL_TOILET_HACKS	// *VERY* dirty hack to stop music box :(
-  struct time when = PULSES.now;
-  when.time += 1*60*1000000;
-#endif
-
 #ifdef IMPLEMENT_TUNING		// tuning, sweeping priority below menu		*implies floating point*
   tuning = PULSES.tuning;	// FIXME: workaround for having all 3 sweep implementations in parallel
   if (maybe_stop_sweeping())		// low priority control sweep range
@@ -890,14 +887,28 @@ bool lowest_priority_tasks() {
 
 #if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
   if(magic_autochanges) {
-    if(MagicalMusicState != OFF) {	// is it time to stop?
+    if(MagicalMusicState != OFF) {	// running?  is it time to stop?
       struct time justNow = PULSES.get_now();
-      struct time scratch = musicbox_end_time;
-      PULSES.sub_time(&justNow, &scratch);
-      if(scratch.overflow) {	// it's hacky negative
-	//furzificate();
-	soft_end_playing();
-	return true;
+      struct time scratch;
+      switch (MagicalMusicState) {
+      case ENDING:  // normally called from ENDING state to check for musicbox_hard_end_time
+      case SLEEPING:
+      case SNORING:
+      case FADE:
+	scratch = musicbox_hard_end_time;
+	PULSES.sub_time(&justNow, &scratch);
+	if(scratch.overflow) {	// it's hacky negative
+	  HARD_END_playing();
+	  return true;
+	}
+	break;
+      default:
+	scratch = musicbox_end_time;
+	PULSES.sub_time(&justNow, &scratch);
+	if(scratch.overflow) {	// it's hacky negative
+	  soft_end_playing();	//   or maybe something like furzificate()
+	  return true;
+	}
       }
     }
   }
@@ -4108,6 +4119,10 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'y':	// DADA reserved for temporary code   testing debugging ...
+#if defined USE_BATTERY_CONTROL
+    show_battery_level();
+#endif
+
 #if defined MAGICAL_MUSIC_BOX
     //    magical_fart_setup(12, 15);		// ;)
 #endif
