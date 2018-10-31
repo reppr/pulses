@@ -673,6 +673,45 @@ void stop_continuous() {	// unused
 
 
 /* **************************************************************** */
+// *very* simple i2c scanner
+#if defined USE_i2c
+#include <Wire.h>
+
+int i2c_scan() {
+  int found=0;
+  int error;
+
+  for(int adr = 1; adr < 127; adr++ ) {
+    // The i2c_scanner uses the return value of
+    // the Write.endTransmisstion to see if
+    // a device did acknowledge to the adr.
+    Wire.beginTransmission(adr);
+    error = Wire.endTransmission();
+
+    if (error == 0) {
+      MENU.out("I2C device at 0x");
+      if (adr<16)
+	MENU.out('0');
+      MENU.out_hex(adr);
+      MENU.outln("  !");
+      found++;
+    } else if (error==4) {
+      MENU.out("Unknown error at address 0x");
+      if (adr<16)
+	MENU.out("0");
+      MENU.out_hex(adr);
+      MENU.ln();
+    }
+  }
+
+  MENU.out(found);
+  MENU.outln(F(" I2C devices found"));
+
+  return found;
+}
+#endif
+
+/* **************************************************************** */
 /*
    Menu softboard display and reaction:
 */
@@ -769,7 +808,14 @@ void softboard_display() {
   MENU.outln(F("watch over time:\tv=VU bar\tr=read"));
 #endif
 
-  MENU.outln(F("\n.=all digital\t,=all analog\t;=both\tx=extra"));
+  MENU.out(F("\n.=all digital\t,=all analog\t;=both\tx=extra\t"));
+#if defined USE_i2c
+  MENU.outln(F("C=i2c scan"));
+#endif
+
+#if defined USE_RTC_MODULE
+  MENU.outln(F("t=time\tt! <year> <month> <day> <hour> <minute> =set time"));
+#endif
 }
 
 
@@ -988,6 +1034,72 @@ bool softboard_reaction(char token) {
     }
     break;
 
+#if defined USE_RTC_MODULE
+  case 't':
+    show_DS1307_time_stamp();
+    MENU.ln();
+    if(MENU.cb_peek() == '!') {
+      MENU.drop_input_token();
+      uint8_t year=2018;
+      uint8_t month=11;
+      uint8_t day=11;
+      uint8_t hour=11;
+      uint8_t minute=11;
+      uint8_t second=0;
+      uint8_t dayOfWeek=0;	// invalid
+
+      // year
+      newValue = MENU.numeric_input(year);
+      if ( newValue >= 2100 || newValue < 0 || (newValue > 99 && newValue < 2000))
+	MENU.outln_invalid();		// *all* invalid cases...
+      else {
+	if (newValue < 100)
+	  year = newValue;
+	else
+	  year = newValue - 2000;
+
+	// month
+	newValue = MENU.numeric_input(month);
+	if ( newValue > 12 || newValue < 1)
+	  MENU.outln_invalid();		// *all* invalid cases...
+	else {
+	  month = newValue;
+
+	  // day
+	  newValue = MENU.numeric_input(day);
+	  if ( newValue < 1 || newValue > 31)
+	    MENU.outln_invalid();		// invalid cases, but no check 31...
+	  else {
+	    day = newValue;
+
+	    // hour
+	    newValue = MENU.numeric_input(hour);
+	    if ( newValue > 23 || newValue < 1)
+	      MENU.outln_invalid();		// *all* invalid cases...
+	    else {
+	      hour = newValue;
+
+	      // minute
+	      newValue = MENU.numeric_input(minute);
+	      if ( newValue > 60 || newValue < 0)
+		MENU.outln_invalid();		// *all* invalid cases...
+	      else {
+		minute = newValue;
+		second = 0;
+
+		// void set_DS1307_time(byte second, byte minute, byte hour, byte month, byte year)
+		set_DS1307_time(second, minute, hour, day, month, year);
+		show_DS1307_time_stamp();
+		MENU.ln();
+	      }
+	    }
+	  }
+	}
+      }
+    }
+    break;
+#endif
+
   case 'T':	// ################ TODO: clashes with 'T' for Arduino style tone();
     newValue = MENU.numeric_input(PIN_digital);
     if (newValue>=0 && newValue<visible_digital_pins) {
@@ -1056,6 +1168,12 @@ bool softboard_reaction(char token) {
       MENU.outln(visible_digital_pins);
     }
     break;
+
+#if defined USE_i2c
+  case 'C':	// i2c_scan()	#define USE_i2c to activate
+    i2c_scan();
+    break;
+#endif
 
   default:
     return 0;		// token not found in this menu

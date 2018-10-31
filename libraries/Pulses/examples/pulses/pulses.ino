@@ -599,6 +599,10 @@ int voices=GPIO_PINS;
   #include "ledc_tone.h"
 #endif
 
+#if defined USE_RTC_MODULE
+  #include "RTC_DS1307_module.h"
+#endif
+
 /* **************************************************************** */
 #ifdef ARDUINO
 /* Arduino setup() and loop():					*/
@@ -763,11 +767,13 @@ void setup() {
     PULSES.do_A2 = &MCP23017_write;
   #endif
 
-  #if defined USE_RTC_MODULE
-    // nothing to do?
+  #if defined  USE_RTC_MODULE
+    MENU.ln();
+    show_DS1307_time_stamp();
+    MENU.ln();
   #endif
 
-#endif
+#endif // USE_i2c
 
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
   random_entropy();	// more entropy from hardware like wifi, etc

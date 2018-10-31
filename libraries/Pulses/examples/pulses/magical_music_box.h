@@ -129,6 +129,11 @@ void start_musicbox() {
 
   blocked_trigger_shown = false;	// show only once a run
 
+#if defined  USE_RTC_MODULE
+  show_DS1307_time_stamp();
+  MENU.ln();
+#endif
+
 #if defined USE_BATTERY_CONTROL
   show_battery_level();
   void HARD_END_playing();	// defined below
