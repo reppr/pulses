@@ -12,6 +12,8 @@
 #define USE_i2c_SCANNER
 
 #define USE_BATTERY_CONTROL
+#define USE_LEDC_AUDIO
+
 /* **************************************************************** */
 /*
 			pulses.ino
@@ -631,6 +633,10 @@ int softboard_page=-1;		// see: maybe_run_continuous()
   #include "battery_control.h"
 #endif
 
+#if defined USE_LEDC_AUDIO
+  #include "ledc_audio.h"
+#endif
+
 #if defined MAGICAL_MUSIC_BOX
   #include "magical_music_box.h"
 #endif
@@ -774,6 +780,10 @@ void setup() {
   #endif
 
 #endif // USE_i2c
+
+#ifdef USE_LEDC_AUDIO
+  ledc_audio_setup();
+#endif
 
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
   random_entropy();	// more entropy from hardware like wifi, etc
