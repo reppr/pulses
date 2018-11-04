@@ -711,11 +711,11 @@ void setup() {
 #endif
 
 #if defined USE_BATTERY_CONTROL
-  #include "battery_control_setup.h"
+  battery_control_setup();
 #endif
 
 #ifdef MAGICAL_MUSIC_BOX
-  #include "magical_music_box_setup.h"
+  magical_music_box_setup();
 #endif
 
 #ifdef GPIO_PINS
@@ -4021,175 +4021,18 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'D':	// DADA reserved for temporary code   testing debugging ...
-    //MENU.out_noop(); MENU.ln();
-
-#ifdef USE_MORSE
-    morse_show_tokens();
-    MENU.ln();
-  #if defined MORSE_TOKEN_DEBUG		// a *lot* of debug info...
-    morse_debug_token_info();
-    morse_show_tokens();
-    MENU.ln();
-  #endif
-
-  /*
-  #if defined MORSE_OUTPUT_PIN
-    morse_play_out_tokens();	// play saved tokens in current morse speed ;)
-  #endif
-  */
-
-  MENU.outln("DADA morse77");
-  show_morse_output_buffer();
-  morse_2ACTION();
-  //    morse_tokens2meaning_state();	// obsolete?
-
-  morse_OUTPUT_cnt=0;
-
-  /*
-  #if defined MORSE_TOKEN_DEBUG
-    morse_show_tokens();
-    MENU.ln();
-
-    morse_debug_token_info();
-
-    morse_show_tokens();
-    MENU.ln();
-
-    morse_token_cnt=0;
-  #else
-    morse_show_tokens();
-    MENU.ln();
-
-    morse_token_cnt=0;
-  #endif
-  */
-
-#endif // USE_MORSE
-
-    /*
-    #if defined USE_MCP23017
-      MCP23017.digitalWrite(0, ++testmcp & 1);
-    #endif
-    */
-
-    // lower_audio_if_too_high(409600);
-
-    /*
-    MENU.play_KB_macro("X 0");
-    PULSES.setup_pulse_synced(NULL, ACTIVE, PULSES.get_now(), 4000000, 1, 1, sync);
-    PULSES.pulses[0].base_time = PULSES.pulses[0].period.time;
-
-    PULSES.set_icode_p(0, TEST_ICODE, true);	// set (and activate) icode
-    //    PULSES.set_icode_p(0, (icode_t*) d4096_1024, true);
-    MENU.play_KB_macro("n.");	// TODO: why do we need that?
-    */
-
-    // PULSES.set_payload(2, &pulse_info_1line); // test: set and activate payload
-
-    /*
-    MENU.outln(next_gpio());
-    MENU.outln(next_gpio());
-    MENU.outln(next_gpio());
-    MENU.outln(next_gpio());
-
-    MENU.outln(next_gpio(2));
-    MENU.outln(next_gpio());
-
-    MENU.outln(next_gpio(-123));
-    MENU.outln(next_gpio(999));
-    */
-
-    // MENU.outln(sizeof(gpio_pins) / sizeof(gpio_pin_t));
-
-
-/*
-    input_value=MENU.numeric_input(-1);
-    if (input_value > -1)
-      PULSES.select_pulse(input_value);
-*/
-
-/*
-    // ESP32 DAC test
-    MENU.out(F("DAC test "));
-    dacWrite(BOARD_DAC1, input_value=MENU.numeric_input(-1));
-    dacWrite(BOARD_DAC2, input_value);
-    MENU.outln(input_value);
-*/
-
+    // MENU.out_noop(); MENU.ln();
+    #include "menu_D_tmp.h"
     break;
 
   case 'y':	// DADA reserved for temporary code   testing debugging ...
-#if defined USE_BATTERY_CONTROL
-    show_battery_level();
-#endif
-
-#if defined MAGICAL_MUSIC_BOX
-    //    magical_fart_setup(12, 15);		// ;)
-#endif
-
-#if defined USE_MORSE
-    /*
-    for(int i = 0; i<MORSE_DEFINITIONS; i++) {
-      string definition = morse_definitions_tab[i];
-      morse_reset_definition(definition);
-      morse_read_definition(i);
-      morse_show_definition();
-    }
-    */
-    morse_find_definition("-.-");
-    morse_find_definition("-.---");
-    morse_find_definition(".-.");
-
-    /*
-    for(int i = 0; i<MORSE_DEFINITIONS; i++) {
-      morse_read_definition(i);
-      morse_definition_set_show(morse_uppercase);
-    }
-    */
-    //
-    //    morse_2ACTION();
-//  morse_play_out_tokens();	// play and show saved tokens in current morse speed
-#endif // USE_MORSE
-
-    /*
-    {
-      // temporary least-common-multiple  test code, unfinished...	// ################ FIXME: ################
-      unsigned long lcm=1L;
-      for (int pulse=0; pulse<PL_MAX; pulse++) {
-	if (PULSES.pulse_is_selected(pulse)) {
-	  MENU.out(pulse); MENU.tab(); PULSES.pulses[pulse].period.time; MENU.tab();
-	  lcm = HARMONICAL.LCM(lcm, PULSES.pulses[pulse].period.time);
-	  MENU.outln(lcm);
-	}
-      }
-
-      MENU.out(F("==> lcm ")); MENU.out(lcm);
-      struct time length;
-      length.time = lcm;
-      length.overflow = 0;
-      PULSES.display_realtime_sec(length);
-      MENU.ln();
-
-      for (int pulse=0; pulse<PL_MAX; pulse++)
-	if ((PULSES.pulse_is_selected(pulse)) && PULSES.pulses[pulse].period.time) {
-	  MENU.out(pulse);
-	  MENU.tab();
-	  MENU.outln(lcm/PULSES.pulses[pulse].period.time);
-	}
-    }
-    */
-  break;
+    // MENU.out_noop(); MENU.ln();
+    #include "menu_y_tmp.h"
+    break;
 
   case 'z':	// DADA reserved for temporary code   testing debugging ...
     // MENU.out_noop(); MENU.ln();
-#if defined MAGICAL_MUSIC_BOX
-    MENU.out(F("autoMagic end "));
-    if(magic_autochanges = !magic_autochanges)
-      MENU.out(F("ON\t"));
-    else
-      MENU.out(F("OFF\t"));
-    MENU.outln(MAGICAL_PERFORMACE_SECONDS);
-#endif
+    #include "menu_z_tmp.h"
     break;
 
   case 'V':	// set voices	V[num]! PULSES.select_n_voices

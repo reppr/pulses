@@ -188,17 +188,17 @@ void start_musicbox() {
   // random jiffle
   switch(random(99)) {
   case 0: case 1: case 2: case 3: case 4:
-    select_array_in(JIFFLES, PENTAtonic_rising);
+    select_array_in(JIFFLES, PENTAtonic_rise);
     break;
   case 5: case 6: case 7: case 8: case 9:
-    select_array_in(JIFFLES, PENTAtonic_descending);
+    select_array_in(JIFFLES, PENTAtonic_descend);
     break;
 
   case 10: case 11: case 12: case 13: case 14:
-    select_array_in(JIFFLES, pentatonic_rising);
+    select_array_in(JIFFLES, pentatonic_rise);
     break;
   case 15: case 16: case 17: case 18: case 19:
-    select_array_in(JIFFLES, pentatonic_descending);
+    select_array_in(JIFFLES, pentatonic_descend);
     break;
 
   case 20: case 21: case 22: case 23: case 24:
@@ -221,7 +221,7 @@ void start_musicbox() {
     break;
 
   case 50: case 51: case 52: case 53:
-    select_array_in(JIFFLES, PENTAtonic_thirds_rising);
+    select_array_in(JIFFLES, PENTA_3rd_rise);
     break;
   case 54: case 55: case 56: case 57:
     select_array_in(JIFFLES, up_THRD);
@@ -236,16 +236,16 @@ void start_musicbox() {
     select_array_in(JIFFLES, dwn_THRD_up);
     break;
   case 70: case 71: case 72: case 73:
-    select_array_in(JIFFLES, PENTAtonic_thirds_falling_5);
+    select_array_in(JIFFLES, PENTA_3rd_down_5);
     break;
   case 74: case 75: case 76: case 77:
-    select_array_in(JIFFLES, pentatonic_thirds_falling_5);
+    select_array_in(JIFFLES, penta_3rd_down_5);
     break;
   case 78: case 79: case 80: case 81:
     select_array_in(JIFFLES, rising_pent_theme);
     break;
   case 82: case 83: case 84: case 85:
-    select_array_in(JIFFLES, pentatonic_thirds_rising);
+    select_array_in(JIFFLES, penta_3rd_rise);
     break;
   case 86: case 87: case 88: case 89:
     select_array_in(JIFFLES, simple_theme);
@@ -628,4 +628,29 @@ void HARD_END_playing() {	// switch off peripheral power and hard end playing
   delay(600);	// send remaining output
 
   MAGICAL_MUSICBOX_ENDING;	// sleep, restart or somesuch	// *ENDED*
+}
+
+
+void  magical_music_box_setup() {
+  MENU.ln();
+
+#if defined MAGICAL_TRIGGER_PIN
+  MENU.out(F("MAGICAL TRIGGER PIN:\t"));
+  MENU.outln(MAGICAL_TRIGGER_PIN);
+#endif	// MAGICAL_TRIGGER_PIN
+
+#if defined MAGICAL_PERFORMACE_SECONDS
+  MENU.out(F("performance seconds:\t"));
+  MENU.outln(MAGICAL_PERFORMACE_SECONDS);
+#endif
+
+#if defined MAGICAL_TRIGGER_BLOCK_SECONDS
+  MENU.out(F("disable retriggering:\t"));
+  MENU.outln(MAGICAL_TRIGGER_BLOCK_SECONDS);
+#endif
+
+#if defined MUSICBOX_HARD_END_SECONDS
+  MENU.out(F("hard stop:\t\t"));
+  MENU.outln(MUSICBOX_HARD_END_SECONDS);
+#endif
 }

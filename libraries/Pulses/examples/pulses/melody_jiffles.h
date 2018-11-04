@@ -3,12 +3,6 @@
   just a first test with pp
 */
 
-/*
-unsigned int PENTAtonic_rising[] =	// european pentatonic
-  {1,4096,256, 8,9*4096,256, 4,5*4096,256, 2,3*4096,256, 3,5*4096,256, 1,2*4096,512, 0,0};
-*/
-
-
 
 // #define RAT
 #define DIV	4096

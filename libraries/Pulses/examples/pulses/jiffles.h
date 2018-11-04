@@ -66,17 +66,17 @@ unsigned int stepping_down[] = {1,4096*8,512+256, 1,4096*7,512,  1,4096*6,512,  
 unsigned int back_to_ground[] = {1,2048,32, 3,1024*2,32, 1,1024,32, 1,512,32, 2,512*3,32, 1,256,16, 1,128,8, 1,64,4, 0,0};
 
 // see: pentatonic_minor[] = {1,1, 5,6, 3,4, 2,3, 5*2,6*3, 0,0};
-unsigned int pentatonic_rising[] =
+unsigned int pentatonic_rise[] =
   {1,4096,256, 5,6*4096,256, 3,4*4096,256, 2,3*4096,256, 5*2,6*3*4096,256, 1,2*4096,256, 0,0};
 
-unsigned int pentatonic_descending[] =
+unsigned int pentatonic_descend[] =
   {1,2*4096,256, 5*2,6*3*4096,256, 2,3*4096,256, 3,4*4096,256, 5,6*4096,256, 1,4096,256, 0,0};
 
-unsigned int pentatonic_thirds_falling_5[] =
+unsigned int penta_3rd_down_5[] =
   {1,2*4096,256, 2,3*4096,256, 5*2,6*3*4096,256, 3,4*4096,256, 2,3*4096,256, 5,6*4096,256, 3,4*4096,256, 1,4096,256,
    3,2*4096,256, 1,4096,512, 0,0};
 
-unsigned int pentatonic_thirds_rising[] =
+unsigned int penta_3rd_rise[] =
   {1,4096,256, 3,4*4096,256, 5,6*4096,256, 2,3*4096,256, 3,4*4096,256, 5*2,6*3*4096,256, 2,3*4096,256,
    1,2*4096,512, 0,0};
 
@@ -99,14 +99,14 @@ unsigned int pent_patternB[] =
    1,2*4096,256, 1,4096,256, 0,0};
 
 // PENTAtonic see:  european_pentatonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 0,0};
-unsigned int PENTAtonic_rising[] =	// european pentatonic
+unsigned int PENTAtonic_rise[] =	// european pentatonic
   {1,4096,256, 8,9*4096,256, 4,5*4096,256, 2,3*4096,256, 3,5*4096,256, 1,2*4096,512, 0,0};
-unsigned int PENTAtonic_descending[] =	// european pentatonic
+unsigned int PENTAtonic_descend[] =	// european pentatonic
   {1,2*4096,256, 3,5*4096,256, 2,3*4096,256, 4,5*4096,256, 8,9*4096,256, 1,4096,512, 0,0};
-unsigned int PENTAtonic_thirds_falling_5[] =
+unsigned int PENTA_3rd_down_5[] =
   {1,2*4096,256, 2,3*4096,256, 3,5*4096,256, 4,5*4096,256, 2,3*4096,256, 8,9*4096,256, 4,5*4096,256,
    1,4096,256, 8,9*4096,256, 1,4096,256, 3,2*4096,256, 1,4096,512, 0,0};
-unsigned int PENTAtonic_thirds_rising[] =
+unsigned int PENTA_3rd_rise[] =
   {1,4096,256, 4,5*4096,256, 8,9*4096,256, 2,3*4096,256, 4,5*4096,256, 3,5*4096,256, 2,3*4096,256, 1,2*4096,256,
    3,5*4096,256, 4,5*4096,256, 1,2*4096,512, 0,0};
 

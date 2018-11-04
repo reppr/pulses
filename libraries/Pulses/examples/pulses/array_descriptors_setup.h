@@ -57,17 +57,17 @@ REGISTER_JIFFLE(stepping_down);
 REGISTER_JIFFLE(back_to_ground);
 REGISTER_JIFFLE(arpeggio_and_sayling);
 REGISTER_JIFFLE(simple_theme);
-REGISTER_JIFFLE(pentatonic_rising);
-REGISTER_JIFFLE(pentatonic_descending);
+REGISTER_JIFFLE(pentatonic_rise);
+REGISTER_JIFFLE(pentatonic_descend);
 REGISTER_JIFFLE(rising_pent_theme);
 REGISTER_JIFFLE(pent_top_wave_0);
 REGISTER_JIFFLE(pent_top_wave);
 REGISTER_JIFFLE(pent_patternA);
 REGISTER_JIFFLE(pent_patternB);
-REGISTER_JIFFLE(PENTAtonic_rising);
-REGISTER_JIFFLE(PENTAtonic_descending);
-REGISTER_JIFFLE(PENTAtonic_thirds_falling_5);
-REGISTER_JIFFLE(PENTAtonic_thirds_rising);
+REGISTER_JIFFLE(PENTAtonic_rise);
+REGISTER_JIFFLE(PENTAtonic_descend);
+REGISTER_JIFFLE(PENTA_3rd_down_5);
+REGISTER_JIFFLE(PENTA_3rd_rise);
 REGISTER_JIFFLE(tingeling4096);
 REGISTER_JIFFLE(ding1024);
 REGISTER_JIFFLE(kalimbaxyl);
@@ -99,8 +99,8 @@ REGISTER_JIFFLE(din_dididi);
 REGISTER_JIFFLE(ding_ditditdit);
 REGISTER_JIFFLE(diing_ditditdit);
 
-REGISTER_JIFFLE(pentatonic_thirds_falling_5);	// TODO: re order
-REGISTER_JIFFLE(pentatonic_thirds_rising);
+REGISTER_JIFFLE(penta_3rd_down_5);		// TODO: re order
+REGISTER_JIFFLE(penta_3rd_rise);
 
 REGISTER_JIFFLE(up_THRD);			// TODO: re order
 REGISTER_JIFFLE(up_THRD_dn);
