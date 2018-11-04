@@ -1007,10 +1007,11 @@ bool lowest_priority_tasks() {
 } // lowest_priority_tasks()
 
 
-
-//unsigned int stress_emergency=4096*8;	// magical musicbox test
 unsigned int stress_emergency=4096*6;	// magical musicbox test
-unsigned int stress_count=0;
+unsigned int stress_event_level=256;		// just TESTING...
+int stress_event_cnt=0;			// counting stress_event_level events
+uint8_t stress_event_cnt_MAX=4;		// if the count reaches MAX stress release needed
+unsigned int stress_count=0;		// low level stress count
 
 void loop() {	// ARDUINO
 
@@ -1038,6 +1039,7 @@ void loop() {	// ARDUINO
     if (stress_count >= stress_emergency) {
       magical_stress_release();
       stress_count = 0;
+      stress_event_cnt = -1;	// one heavy stress event expected after magical_stress_release()...
       if(switch_magical_trigger_off) {
 	magic_trigger_OFF();
       }
@@ -1063,6 +1065,37 @@ void loop() {	// ARDUINO
       // stress_count = stress_emergency / 2;	// FIXME: further tests	################
     }
 */
+  }
+
+#define STRESS_MONITOR_LEVEL	64
+#if defined STRESS_MONITOR_LEVEL
+  if (stress_count > STRESS_MONITOR_LEVEL) {	// just a test
+    MENU.out(F("stress "));
+    int s=STRESS_MONITOR_LEVEL;
+    while(stress_count > s) {
+      MENU.out('!');
+      s *= 2;
+    }
+    MENU.tab();
+    MENU.outln(stress_count);
+  }
+#endif
+
+  if (stress_count > stress_event_level) {
+    if(++stress_event_cnt > stress_event_cnt_MAX) {
+#if defined MAGICAL_MUSIC_BOX    // magical_stress_release();
+      magical_stress_release();
+      stress_count = 0;
+      stress_event_cnt = -1;	// one heavy stress event expected after magical_stress_release()...
+//      if(switch_magical_trigger_off) {
+//	magic_trigger_OFF();
+//      }
+#else
+      MENU.outln(F("need stress release"));
+#endif
+      ;
+    }
+
   }
 
 #if defined MAGICAL_MUSIC_BOX
