@@ -399,6 +399,7 @@ void Pulses::set_icode_p(int pulse, icode_t* icode_p, bool activate=false) {
     pulses[pulse].action_flags |= doesICODE;
 }
 
+
 #if defined USE_MCP23017
 void Pulses::set_i2c_addr_pin(int pulse, uint8_t i2c_addr, uint8_t i2c_pin) {
   pulses[pulse].i2c_addr = i2c_addr;
@@ -406,6 +407,7 @@ void Pulses::set_i2c_addr_pin(int pulse, uint8_t i2c_addr, uint8_t i2c_pin) {
   pulses[pulse].flags |= HAS_I2C_ADDR_PIN;
 }
 #endif
+
 
 void Pulses::mute_all_actions() {
   for (int pulse=0; pulse<pl_max; pulse++)
@@ -894,6 +896,12 @@ void Pulses::activate_pulse_synced(int pulse, \
   pulses[pulse].flags &= ~SCRATCH;	// clear SCRATCH
 }
 
+
+void Pulses::show_pulse_flag_mnemonics(pulse_flags_t flags) {	// show pulse flags as mnemonics
+  char* pulses_ON_mnemonics  =	"!NGsdTIi";
+  char* pulses_OFF_mnemonics =	"........";
+  (*MENU).show_flag_mnemonics(flags, sizeof(pulse_flags_t)*8, pulses_ON_mnemonics, pulses_OFF_mnemonics);
+}
 
 /* **************************************************************** */
 /* int icode player	*/

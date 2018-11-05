@@ -182,6 +182,8 @@ class Menu {
   void outln(const char *str)	const;	// c-style character string and newline
   void outln(const String s)	const;	// c++ String
 
+  void outln(void) { ln(); }		// outln(void), inlined
+
 #ifndef INTEGER_ONLY
   void outln(const double d)	const;	// double float
 #endif
@@ -215,6 +217,9 @@ class Menu {
 
   // Print binary numbers with leading zeroes and a trailing space:
   void outBIN(unsigned long l, int bits ) const; // binary output
+
+  // show one letter mnemonics for flag state
+  void show_flag_mnemonics(unsigned long l, int bits, char* ON_chars, char* OFF_chars) const;
 
   // Print a hex chiffre:
   void out_hex_chiffre(unsigned char chiffre) const; // output 1 hex chiffre

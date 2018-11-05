@@ -596,6 +596,17 @@ void Menu::outBIN(unsigned long value, int bits ) const {
   space();
 }
 
+// show one letter mnemonics for flag state and a trailing space
+void Menu::show_flag_mnemonics(unsigned long flags, int bits, char* ON_chars, char* OFF_chars) const {
+  for (int i = bits - 1; i >= 0; i--) {
+    if (flags & (1 << i))
+      out(ON_chars[i]);
+    else
+      out(OFF_chars[i]);
+  }
+  space();
+}
+
 void Menu::out_hex_chiffre(unsigned char chiffre) const { // output 1 hex chiffre
   char c='?';
 

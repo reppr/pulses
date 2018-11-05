@@ -53,3 +53,4 @@ bar_graph	KEYWORD2
 ticked_chars	KEYWORD2
 out_ticked_hexs	KEYWORD2
 verbosity_info	KEYWORD2
+show_flag_mnemonics	KEYWORD2

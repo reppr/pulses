@@ -13,8 +13,6 @@ div_time	KEYWORD2
 multiply_period	KEYWORD2
 divide_period	KEYWORD2
 global_shift	KEYWORD2
-start_pulse	KEYWORD2
-stop_pulse	KEYWORD2
 global_octave	KEYWORD2
 global_octave_mask	KEYWORD2
 current_global_octave_mask	KEYWORD2
@@ -81,3 +79,4 @@ selected_pulses	KEYWORD2
 MENU	KEYWORD2
 hex_input_mask_index	KEYWORD2
 selection_masks	KEYWORD2
+show_pulse_flag_mnemonics	KEYWORD2

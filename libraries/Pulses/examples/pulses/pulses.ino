@@ -2089,10 +2089,8 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
   if (PULSES.pulses[pulse].counter<10)
     MENU.space();
 
-  MENU.space();
-  MENU.out_flags_();
-  MENU.outBIN(PULSES.pulses[pulse].flags, sizeof(pulse_flags_t) * 8);	// TODO: mnemonic output
-
+  MENU.out(F(" Pf:"));
+  PULSES.show_pulse_flag_mnemonics(PULSES.pulses[pulse].flags);
   if (PULSES.pulses[pulse].action_flags) {
     MENU.out(F(" Af: "));
     PULSES.show_action_flags(PULSES.pulses[pulse].action_flags);

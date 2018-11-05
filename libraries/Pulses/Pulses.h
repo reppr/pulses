@@ -64,9 +64,7 @@ enum icode {
 // Preprocessor macro logic:
 
 /* Debugging macros:		*/
-#ifdef DEBUGGING_ALL
 
-#endif
 
 /* **************************************************************** */
 // time:
@@ -227,8 +225,6 @@ class Pulses {
   void multiply_period(int pulse, unsigned long factor);
   void divide_period(int pulse, unsigned long factor);
   void global_shift(int global_octave);
-  int start_pulse(int pulse);
-  void stop_pulse(int pulse);
   int global_octave;			    // global octave shift. ONLY negative shifts atm
   unsigned long global_octave_mask;	    // this mask gets shifted and then actually used
   unsigned long current_global_octave_mask; // actually used mask to switch oscillators
@@ -289,8 +285,9 @@ class Pulses {
 //  void seed_icode_player(int pulse);		// used as payload to seed play_icode() pulses
 //  bool setup_icode_seeder(int pulse, struct time period, icode_t* icode_p, action_flags_t dest_action_flags);
 
-  void mute_all_actions();			// mute action flags
+  void show_pulse_flag_mnemonics(pulse_flags_t flags);	// show pulse flags as mnemonics
   void show_action_flags(action_flags_t flags);	// show action flags as mnemonics
+  void mute_all_actions();			// mute action flags
 
   bool select_pulse(int pulse);			// select in user interface
   void deselect_pulse(int pulse);
