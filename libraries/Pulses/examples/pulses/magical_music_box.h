@@ -4,9 +4,15 @@
 
 //#define DEBUGGING_MAGICAL_MUSICBOX
 #if defined DEBUGGING_MAGICAL_MUSICBOX
- #define MAGICAL_PERFORMACE_SECONDS	20
- #define MAGICAL_TRIGGER_BLOCK_SECONDS	2
- #define MUSICBOX_HARD_END_SECONDS	30
+ #define MAGICAL_PERFORMACE_SECONDS	30
+ #define MAGICAL_TRIGGER_BLOCK_SECONDS	6
+ #define MUSICBOX_HARD_END_SECONDS	2*60
+#endif
+
+#if defined BRACHE_NOV_2018_SETTINGS
+  #define MAGICAL_PERFORMACE_SECONDS	6*60	// BRACHE
+  #define MAGICAL_TRIGGER_BLOCK_SECONDS	20	// BRACHE
+  #define  MUSICBOX_HARD_END_SECONDS	8*60	// BRACHE
 #endif
 
 #include <esp_sleep.h>
@@ -24,29 +30,17 @@
 #endif
 
 #ifndef MAGICAL_PERFORMACE_SECONDS
-  #if defined BRACHE_NOV_2018_SETTINGS
-    #define MAGICAL_PERFORMACE_SECONDS	6*60	// BRACHE
-  #else
-    #define MAGICAL_PERFORMACE_SECONDS	12*60
-  #endif
+  #define MAGICAL_PERFORMACE_SECONDS	12*60
 #endif
 
 #if ! defined MAGICAL_TRIGGER_BLOCK_SECONDS
-  #if defined BRACHE_NOV_2018_SETTINGS
-    #define MAGICAL_TRIGGER_BLOCK_SECONDS	30	// BRACHE
-  #else
-    #define MAGICAL_TRIGGER_BLOCK_SECONDS	3
-  #endif
+  #define MAGICAL_TRIGGER_BLOCK_SECONDS	3
 #endif
 
 bool blocked_trigger_shown=false;	// show only once a run
 
 #if ! defined MUSICBOX_HARD_END_SECONDS
-  #if defined BRACHE_NOV_2018_SETTINGS
-    #define  MUSICBOX_HARD_END_SECONDS	9*60	// BRACHE
-  #else
-    #define  MUSICBOX_HARD_END_SECONDS	15*60
-  #endif
+  #define  MUSICBOX_HARD_END_SECONDS	15*60
 #endif
 
 #if ! defined MAGICAL_MUSICBOX_ENDING	// *one* of the following:
@@ -57,10 +51,35 @@ bool blocked_trigger_shown=false;	// show only once a run
 
 // #define PERIPHERAL_POWER_SWITCH_PIN		// TODO: file?
 
-enum music_box_state {OFF=0, ENDING, SLEEPING, SNORING, AWAKE, FADE};
-music_box_state MagicalMusicState=OFF;
 
+// MagicalMusicState
+enum magicalmusicbox_state_t {OFF=0, ENDING, SLEEPING, SNORING, AWAKE, FADE};
+magicalmusicbox_state_t MagicalMusicState=OFF;
+void set_MagicalMusicState(magicalmusicbox_state_t state) {	// sets the state unconditionally
+  switch (state) {			// initializes state if necessary
+  case OFF:
+    break;
+  case ENDING:
+    break;
+  case SLEEPING:
+    break;
+  case SNORING:
+    break;
+  case AWAKE:
+    break;
+  case FADE:
+    break;
+  default:
+    MENU.outln(F("unknown MagicalMusicState"));	// should not happen
+    return;					// error, return
+  }
+
+  MagicalMusicState = state;		// OK
+}
+
+// TODO: check&fix
 bool magic_autochanges=true;	// switch if to end normal playing after MAGICAL_PERFORMACE_SECONDS
+
 
 portMUX_TYPE magical_MUX = portMUX_INITIALIZER_UNLOCKED;
 
@@ -69,7 +88,7 @@ portMUX_TYPE magical_MUX = portMUX_INITIALIZER_UNLOCKED;
 //  /* with the dummy int parameter it passes as payload for a pulse */
 void furzificate() {	// switch to a quiet, farting patterns, u.a.
   MENU.outln(F("furzificate()"));
-  MagicalMusicState = SNORING;
+  set_MagicalMusicState(SNORING);
 
   switch (random(10)) {
   case 0:	// kalimbaxyl
@@ -118,15 +137,15 @@ void furzificate() {	// switch to a quiet, farting patterns, u.a.
 }
 
 void magic_trigger_ON();	// forward declaration
+bool magical_trigger_enabled=false;
 
 struct time musicbox_start_time;
-struct time musicbox_end_time;
-struct time musicbox_hard_end_time;
 
+void magical_butler(int p);		// pre declare payload
 void start_musicbox() {
   MENU.outln(F("start_musicbox()"));
-  MagicalMusicState = AWAKE;
-
+  set_MagicalMusicState(AWAKE);
+  magical_trigger_enabled=false;
   blocked_trigger_shown = false;	// show only once a run
 
 #if defined  USE_RTC_MODULE
@@ -136,12 +155,12 @@ void start_musicbox() {
 
 #if defined USE_BATTERY_CONTROL
   show_battery_level();
-  void HARD_END_playing();	// defined below
+  void HARD_END_playing(bool);	// defined below
   if(assure_battery_level())
     MENU.outln(F("power accepted"));
   else {
     MENU.outln(F(">>> NO POWER <<<"));
-    HARD_END_playing();
+    HARD_END_playing(false);
   }
 #endif
 
@@ -280,6 +299,7 @@ void start_musicbox() {
   MENU.out(F("sync "));
   MENU.outln(sync);
 
+  // TODO: fixed pitch lists like E A D G C F B
   // random pitch
   PULSES.time_unit=1000000;	// default metric
   multiplier=4096;		// uses 1/4096 jiffles
@@ -318,35 +338,37 @@ void start_musicbox() {
   peripheral_power_switch_ON();
 #endif
 
-  musicbox_start_time = musicbox_end_time = PULSES.get_now();	// keep musicbox_start_time
-  struct time duration;
-  duration.overflow=0;
-  duration.time=MAGICAL_PERFORMACE_SECONDS*1000000;	// how long to play
-  PULSES.add_time(&duration, &musicbox_end_time);	// keep musicbox_end_time
-
-  duration.overflow=0;					// compute musicbox_hard_end_time
-  duration.time=MUSICBOX_HARD_END_SECONDS*1000000;	// how long to play before hard end
-  musicbox_hard_end_time = PULSES.get_now();
-  PULSES.add_time(&duration, &musicbox_hard_end_time);	// keep hard end time
-
+  musicbox_start_time = PULSES.get_now();	// keep musicbox_start_time
   PULSES.activate_selected_synced_now(sync);	// 'n' sync and activate
+
+  struct time duration;	// dummy, *the butler knows* when to do what...
+  duration.overflow=0;
+  duration.time=0;
+  PULSES.setup_pulse(&magical_butler, ACTIVE, PULSES.get_now(), duration);
+
+  stress_event_cnt = -1;	// one stress event will often happen after starting the musicbox 
 }
+
 
 void magical_stress_release() {		// special stress release for magical music box
   if (voices) {	// normal case, I have never seen exceptions
     PULSES.init_pulse(--voices);		// *remove* topmost voice
     PULSES.select_n(voices);
-    MENU.out(F("magical_stress_release() "));
+    MENU.out(F("magical_stress_release() V"));
     MENU.outln(voices);
-  } else MENU.play_KB_macro("X");		// *could* happen some time, maybe *SAVETY NET*
+
+    stress_count = 0;		// configure pulses stress managment
+    stress_event_cnt = -3;	// some *heavy* stress event expected after magical_stress_release()...
+  } else {
+    MENU.play_KB_macro("X");	// *could* happen some time, maybe *SAVETY NET*
+    stress_count = 0;		// configure pulses stress managment
+    stress_event_cnt = 0;
+  }
 }
 
 
-// enum music_box_state {OFF=0, SLEEPING, SNORING, AWAKE, FADE};
-
 unsigned int magical_trigger_cnt=0;
 void magic_trigger_OFF();
-bool switch_magical_trigger_off=false;
 
 void magical_trigger_ISR() {	// can also be used on the non interrupt version :)
   portENTER_CRITICAL_ISR(&magical_MUX);
@@ -360,29 +382,26 @@ void magical_trigger_ISR() {	// can also be used on the non interrupt version :)
   case OFF:
   case ENDING:
   case SNORING:
-    triggered = true;
+    triggered = true;			// always accept trigger in these states
     break;
-  case AWAKE:	// was it awake long enough for triggering again?
-    PULSES.sub_time(&triggered_at, &duration);
-    if(duration.overflow)
-      triggered=true;
-    else if (duration.time > MAGICAL_TRIGGER_BLOCK_SECONDS*1000000)	// block trigger for some time
-      triggered=true;
-    else {					// trigger was blocked
-      if(! blocked_trigger_shown)		//  show *only once* a run
-	MENU.outln(F("trigger blocked"));	//  i know it is *bad*, i do it the same...
+  case AWAKE:
+    if(magical_trigger_enabled)		// enabled?  was it awake long enough for triggering again?
+      triggered=true;			//   accept
+    else if(!blocked_trigger_shown) {
+      MENU.outln(F("trigger blocked"));	// FIXME: ################
       blocked_trigger_shown = true;
     }
     break;
   default:
-    triggered = true;	// not save... but
     MENU.outln(F("magical_trigger_ISR unknown state"));	// should not happen
+    triggered = true;	// not save... but
   }
 
   if(triggered) {
-    switch_magical_trigger_off = true;	// dopplet gnäht
-    magical_trigger_cnt++;
+    magical_trigger_enabled = false;
+    blocked_trigger_shown = false;
     triggered_at = new_trigger;
+    magical_trigger_cnt++;
   }
 
   portEXIT_CRITICAL_ISR(&magical_MUX);
@@ -407,25 +426,23 @@ void magic_trigger_OFF() {
   MENU.outln(F("magic_trigger_OFF\t"));
   detachInterrupt(digitalPinToInterrupt(MAGICAL_TRIGGER_PIN));
   //  esp_intr_free(digitalPinToInterrupt(MAGICAL_TRIGGER_PIN));
-  switch_magical_trigger_off = false;
-#else
-  ;
 #endif
+  magical_trigger_enabled=false;
 }
 
 
 #if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
 //digitalRead(MAGICAL_TRIGGER_PIN)
-void magical_trigger_is_hot() {
-  magical_trigger_ISR();	// *not* as ISR
-  if (switch_magical_trigger_off) {
+void magical_trigger_got_hot() {	// must be called when magical trigger was detected high
+  if(magical_trigger_enabled) {
+    magical_trigger_ISR();	// *not* as ISR
     MENU.outln(F("\nTRIGGERED!"));
     start_musicbox();
 #if defined PERIPHERAL_POWER_SWITCH_PIN		// FIXME: try again... ################################################################
     peripheral_power_switch_ON();
 #endif
   }
-  switch_magical_trigger_off=false;
+  magical_trigger_enabled=false;
 }
 #endif
 
@@ -469,9 +486,14 @@ void magical_fart_setup(gpio_pin_t sense_pin, gpio_pin_t output_pin) {
 void light_sleep() {
   MENU.out(F("light_sleep()\t"));
 
+#if defined USE_BLUETOOTH
   esp_bluedroid_disable();
   esp_bt_controller_disable();
+#endif
+
+#if defined USE_WIFI_telnet_menu
   esp_wifi_stop();
+#endif
 
   /*
     there was an ugly noise on DACs during sleep
@@ -518,8 +540,9 @@ void light_sleep() {
   if (esp_light_sleep_start())
     MENU.error_ln(F("esp_light_sleep_start()"));
 
-  MENU.out(F("AWOKE\t"));
+  MENU.out(F("\nAWOKE\t"));
   int cause = esp_sleep_get_wakeup_cause();
+  // see  https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/system/sleep_modes.html#_CPPv218esp_sleep_source_t
   switch (cause = esp_sleep_get_wakeup_cause()) {
   case 0:	// ESP_SLEEP_WAKEUP_UNDEFINED	0
     MENU.outln(F("wakeup undefined"));
@@ -528,8 +551,19 @@ void light_sleep() {
     AUTOSTART
 #endif
     break;
+  case 2:	// ESP_SLEEP_WAKEUP_EXT0	2
+    MENU.out(F("wakeup EXT0\t"));
+    // TODO: gpio?
+    break;
   case 7:	// ESP_SLEEP_WAKEUP_GPIO	7
-    MENU.outln(F("wakeup gpio"));
+    /*	// TODO: FIXME: GPIO?
+    MENU.outln(F("wakeup gpio\t"));
+    unsigned int bits;
+    bits = esp_sleep_get_ext1_wakeup_status();
+    MENU.outBIN(bits, 40);
+    MENU.ln();
+    MENU.outln(bits);	// ################
+    */
     break;
   default:
     MENU.outln(cause);
@@ -576,7 +610,7 @@ void soft_end_playing() {	// set all selected to be counted pulses with 1 repeat
     return;
 
   if(MagicalMusicState > ENDING) {		// initiate end
-    MagicalMusicState = ENDING;
+    set_MagicalMusicState(ENDING);
     MENU.outln(F("soft_end_playing()"));
 
     for (int pulse=0; pulse<PL_MAX; pulse++) {	// 1 shot generating pulses
@@ -615,11 +649,12 @@ void soft_end_playing() {	// set all selected to be counted pulses with 1 repeat
   }
 }
 
-void HARD_END_playing() {	// switch off peripheral power and hard end playing
+void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard end playing
   if(MagicalMusicState == OFF)
     return;
 
-  MENU.outln(F("HARD_END_playing()"));
+  if(with_title)
+    MENU.outln(F("HARD_END_playing()"));
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   MENU.out(F("peripheral POWER OFF "));
@@ -635,6 +670,96 @@ void HARD_END_playing() {	// switch off peripheral power and hard end playing
   MAGICAL_MUSICBOX_ENDING;	// sleep, restart or somesuch	// *ENDED*
 }
 
+//#define DEBUG_CLEANUP  TODO: remove debug code
+void magical_cleanup(int p) {	// deselect unused primary pulses, check if playing has ended
+  if(!magic_autochanges)	// completely switched off by magic_autochanges==false
+    return;			// noop
+
+#if defined DEBUG_CLEANUP
+  MENU.out(F("CLEANUP "));
+#endif
+  PULSES.deselect_unused_pulses();	// deselect unused primary pulses
+
+  int cnt=0;
+  for(int pulse=0; pulse<PL_MAX; pulse++) {
+    if(PULSES.pulses[pulse].flags) {	// check if playing has ended  activity?
+#if defined DEBUG_CLEANUP
+      MENU.out('p');
+      MENU.out(pulse);
+#endif
+      if(PULSES.pulses[pulse].periodic_do == &magical_butler) {
+#if defined DEBUG_CLEANUP
+	MENU.out(" butler");
+#endif
+	;
+      } else if(PULSES.pulses[pulse].periodic_do == &magical_cleanup) {
+#if defined DEBUG_CLEANUP
+	MENU.out(" cleanup");
+#endif
+	;
+      } else
+	cnt++;
+#if defined DEBUG_CLEANUP
+      MENU.tab();
+#endif
+    }
+  }
+#if defined DEBUG_CLEANUP
+  MENU.ln();
+#endif
+
+  if(cnt==0) {
+    MENU.outln(F("END reached"));
+    HARD_END_playing(false);
+  }
+}
+
+
+/*
+  void magical_butler(int p)
+
+  enables trigger when due
+  then if(magic_autochanges) {
+    start soft_end_playing() and start magical_cleanup()
+    start HARD_END_playing() if cleanup did not detect END already
+*/
+//#define DEBUG_BUTLER	TODO: remove debug code
+void magical_butler(int p) {
+#if defined DEBUG_BUTLER
+  MENU.out(F("BUTLER: "));
+#endif
+  switch(PULSES.pulses[p].counter) {
+  case 1:	// prepare enable trigger
+    PULSES.pulses[p].period.time = MAGICAL_TRIGGER_BLOCK_SECONDS*1000000L;
+    break;
+  case 2:	// enable trigger and prepare soft end
+    magical_trigger_enabled = true;
+    MENU.outln(F("trigger enabled"));
+    PULSES.pulses[p].period.time = (MAGICAL_PERFORMACE_SECONDS - MAGICAL_TRIGGER_BLOCK_SECONDS)*1000000L;
+    break;
+  case 3:	// start soft ending and cleanup pulse, prepare for butler hard end
+    if(magic_autochanges)
+      soft_end_playing();
+    // prepare hard end
+    PULSES.pulses[p].period.time =
+      (MUSICBOX_HARD_END_SECONDS - MAGICAL_PERFORMACE_SECONDS - MAGICAL_TRIGGER_BLOCK_SECONDS)*1000000L;
+    // start magical_cleanup() pulse taking care of selections, check for end, stop *if* end reached
+    struct time duration;
+    duration.overflow=0;
+    duration.time=2*1000000;	// magical_cleanup all 2 seconds
+    PULSES.setup_pulse(&magical_cleanup, ACTIVE, PULSES.get_now(), duration);	// start magical_cleanup() pulse
+    break;
+  case 4:	// hard end playing
+    if(magic_autochanges) {
+      // the end was not reached by magical_cleanup(), so we abort playing now
+      MENU.out(F("butler: "));
+      HARD_END_playing(true);
+    }
+    break;
+  default:	// we should never get here...	savety net
+    PULSES.init_pulse(p);	// with  magic_autochanges==false it's normal
+  }
+}
 
 void  magical_music_box_setup() {
   MENU.ln();
@@ -658,4 +783,7 @@ void  magical_music_box_setup() {
   MENU.out(F("hard stop:\t\t"));
   MENU.outln(MUSICBOX_HARD_END_SECONDS);
 #endif
+
+  if (esp_sleep_enable_ext0_wakeup((gpio_num_t) MAGICAL_TRIGGER_PIN, 1))
+    MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
 }

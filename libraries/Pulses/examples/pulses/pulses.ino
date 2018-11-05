@@ -84,6 +84,16 @@ using namespace std;	// ESP8266 needs that
 #endif // USE_i2c
 
 
+// some early definitions keep compiler happy
+
+// stress managment
+unsigned int stress_emergency=4096*6;	// magical musicbox test			  TODO: fine tune
+unsigned int stress_event_level=512;	// just TESTING...				  TODO: fine tune
+int stress_event_cnt=0;			// counting stress_event_level events
+uint8_t stress_event_cnt_MAX=3;		// if the count reaches MAX stress release needed TODO: fine tune
+unsigned int stress_count=0;		// low level stress count
+
+
 /* **************** Menu **************** */
 class Menu;
 /*
@@ -901,34 +911,34 @@ bool low_priority_tasks() {
 
 bool lowest_priority_tasks() {
 
-#if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
-  if(magic_autochanges) {
-    if(MagicalMusicState != OFF) {	// running?  is it time to stop?
-      struct time justNow = PULSES.get_now();
-      struct time scratch;
-      switch (MagicalMusicState) {
-      case ENDING:  // normally called from ENDING state to check for musicbox_hard_end_time
-      case SLEEPING:
-      case SNORING:
-      case FADE:
-	scratch = musicbox_hard_end_time;
-	PULSES.sub_time(&justNow, &scratch);
-	if(scratch.overflow) {	// it's hacky negative
-	  HARD_END_playing();
-	  return true;
-	}
-	break;
-      default:
-	scratch = musicbox_end_time;
-	PULSES.sub_time(&justNow, &scratch);
-	if(scratch.overflow) {	// it's hacky negative
-	  soft_end_playing();	//   or maybe something like furzificate()
-	  return true;
-	}
-      }
-    }
-  }
-#endif
+//#if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
+//  if(magic_autochanges) {
+//    if(MagicalMusicState != OFF) {	// running?  is it time to stop?
+//      struct time justNow = PULSES.get_now();
+//      struct time scratch;
+//      switch (MagicalMusicState) {
+//      case ENDING:  // normally called from ENDING state to check for musicbox_hard_end_time
+//      case SLEEPING:
+//      case SNORING:
+//      case FADE:
+//	scratch = musicbox_hard_end_time;
+//	PULSES.sub_time(&justNow, &scratch);
+//	if(scratch.overflow) {	// it's hacky negative
+//	  HARD_END_playing();
+//	  return true;
+//	}
+//	break;
+//      default:
+//	scratch = musicbox_end_time;
+//	PULSES.sub_time(&justNow, &scratch);
+//	if(scratch.overflow) {	// it's hacky negative
+////	  soft_end_playing();	//   or maybe something like furzificate()
+//	  return true;
+//	}
+//      }
+//    }
+//  }
+//#endif
 
 #if defined USE_MORSE
   if(MENU.verbosity >= VERBOSITY_MORE) {
@@ -1007,12 +1017,6 @@ bool lowest_priority_tasks() {
 } // lowest_priority_tasks()
 
 
-unsigned int stress_emergency=4096*6;	// magical musicbox test
-unsigned int stress_event_level=256;		// just TESTING...
-int stress_event_cnt=0;			// counting stress_event_level events
-uint8_t stress_event_cnt_MAX=4;		// if the count reaches MAX stress release needed
-unsigned int stress_count=0;		// low level stress count
-
 void loop() {	// ARDUINO
 
   #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
@@ -1040,9 +1044,6 @@ void loop() {	// ARDUINO
       magical_stress_release();
       stress_count = 0;
       stress_event_cnt = -1;	// one heavy stress event expected after magical_stress_release()...
-      if(switch_magical_trigger_off) {
-	magic_trigger_OFF();
-      }
     }
 #endif
 
@@ -1069,40 +1070,41 @@ void loop() {	// ARDUINO
 
 #define STRESS_MONITOR_LEVEL	64
 #if defined STRESS_MONITOR_LEVEL
-  if (stress_count > STRESS_MONITOR_LEVEL) {	// just a test
-    MENU.out(F("stress "));
+  if (stress_count > STRESS_MONITOR_LEVEL) {	// just a simple test tool
+    if (stress_count > stress_event_level) {
+      MENU.out(F("STRESS "));
+      MENU.out(stress_event_cnt);
+      MENU.space();
+    } else
+      MENU.out(F("stress   "));
+
     int s=STRESS_MONITOR_LEVEL;
     while(stress_count > s) {
       MENU.out('!');
       s *= 2;
     }
     MENU.tab();
-    MENU.outln(stress_count);
+    MENU.out(stress_count);
+    MENU.ln();
   }
 #endif
 
   if (stress_count > stress_event_level) {
     if(++stress_event_cnt > stress_event_cnt_MAX) {
-#if defined MAGICAL_MUSIC_BOX    // magical_stress_release();
+#if defined MAGICAL_MUSIC_BOX			// magical_stress_release();
       magical_stress_release();
-      stress_count = 0;
-      stress_event_cnt = -1;	// one heavy stress event expected after magical_stress_release()...
-//      if(switch_magical_trigger_off) {
-//	magic_trigger_OFF();
-//      }
 #else
-      MENU.outln(F("need stress release"));
+      MENU.outln(F("need stress release"));	// TODO: other stress release strategies
 #endif
-      ;
     }
-
-  }
+  } else if(stress_event_cnt < 0)	// stress event was expected, but did not happen
+    stress_event_cnt = 0;		// reset expectations
 
 #if defined MAGICAL_MUSIC_BOX
  #if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
   if(digitalRead(MAGICAL_TRIGGER_PIN)) {
     digitalWrite(2,HIGH);	// REMOVE: for field testing only
-    magical_trigger_is_hot();
+    magical_trigger_got_hot();	// must be called when magical trigger was detected high
   }
  #else
   if(switch_magical_trigger_off) {
@@ -1115,8 +1117,10 @@ void loop() {	// ARDUINO
 #ifdef USE_INPUTS
   if(! maybe_check_inputs())		// reading inputs can be time critical, so check early
 #endif
-    if(! MENU.lurk_then_do())		// MENU second in priority, check if something to do,
-      if (! low_priority_tasks())		// if not, check low_priority_tasks()
+    if(MENU.lurk_then_do()) {		// MENU second in priority, check if something to do,
+      stress_event_cnt = -1;		//   after many menu actions there will be a stress event, ignore that
+    } else					// no, menu did not do much
+      if (! low_priority_tasks())		// check low_priority_tasks()
 	lowest_priority_tasks();		// if still nothing done, check lowest_priority_tasks()
 
 } // ARDUINO loop()
@@ -2242,6 +2246,20 @@ void display_payload(int pulse) {
     MENU.out("click");
     return;
   }
+
+#if defined MAGICAL_MUSIC_BOX
+  scratch=&magical_butler;
+  if (PULSES.pulses[pulse].periodic_do == scratch) {
+    MENU.out("magical_butler");
+    return;
+  }
+
+  scratch=&magical_cleanup;
+  if (PULSES.pulses[pulse].periodic_do == scratch) {
+    MENU.out("magical_cleanup");
+    return;
+  }
+#endif
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
   scratch=&tuned_sweep_click;
