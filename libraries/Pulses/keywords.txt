@@ -51,6 +51,7 @@ deselect_pulse	KEYWORD2
 clear_selection	KEYWORD2
 toggle_selection	KEYWORD2
 select_n	KEYWORD2
+deselect_unused_pulses	KEYWORD2
 select_from_to	KEYWORD2
 pulse_is_selected	KEYWORD2
 how_many_selected	KEYWORD2
