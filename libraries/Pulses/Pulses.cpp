@@ -634,6 +634,29 @@ int Pulses::fastest_pulse() {	// *not* dealing with period overflow here...
 }
 
 
+int Pulses::fastest_from_selected() {	// no overflow here...
+  double min_period=0;
+  int fast_pulse=-1;
+
+  for (int pulse=pl_max-1; pulse>-1; pulse--) {	// start with *highest* pulse index downwards
+    if(pulse_is_selected(pulse)) {		// SELECTED IS ENOUGH, *no need to be ACTIVE*
+      if(min_period) {	// not first date
+	if(pulses[pulse].period.time < min_period) {
+	  min_period = pulses[pulse].period.time;
+	  fast_pulse = pulse;
+	}
+      } else {		// first one
+	min_period = pulses[pulse].period.time;
+	fast_pulse = pulse;
+      }
+    }
+  }
+
+  return fast_pulse;
+}
+
+
+
 // void fix_global_next();
 // determine when the next event[s] will happen:
 //
@@ -1241,6 +1264,43 @@ float Pulses::display_realtime_sec(struct time duration) {
   (*MENU).out('s');
 
   return seconds;
+}
+
+
+// void display_time_human(struct time duration);
+void Pulses::display_time_human(struct time duration) {  // everyday time format d h m s
+  unsigned long seconds = (((float) duration.time / 1000000.0) + 0.5);
+  if (duration.overflow)
+    seconds += duration.overflow * 4295;
+
+  unsigned int days = seconds / 86400;
+  seconds %= 86400;
+  unsigned int hours = seconds / 3600;
+  seconds %= 3600;
+  unsigned int minutes = seconds / 60;
+  seconds %= 60;
+
+  if(days) {
+    (*MENU).out(days);
+    (*MENU).out(F("d "));
+  }
+  if(hours) {
+    (*MENU).out(hours);
+    (*MENU).out(F("h "));
+  } else (*MENU).space(3);
+
+  if(minutes<10)
+    (*MENU).space();
+  (*MENU).out(minutes);
+  (*MENU).out(F("\' "));
+
+  if(seconds<10)
+    (*MENU).space();
+  (*MENU).out(seconds);
+  (*MENU).out(F("\" "));
+
+  if(seconds<10 && minutes==0 && hours==0 && days==0)	// fall back to float time display below 1 second
+    display_realtime_sec(duration);
 }
 
 

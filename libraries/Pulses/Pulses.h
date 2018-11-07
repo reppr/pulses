@@ -69,6 +69,7 @@ enum icode {
 /* **************************************************************** */
 // time:
 
+// TODO: time (and related stuff should move to Harmonics::
 struct time {
   unsigned long time;
   unsigned int overflow;
@@ -302,8 +303,8 @@ class Pulses {
 
   void activate_selected_synced_now(int sync);
   void reset_and_edit_pulse(int pulse, unsigned long time_unit);	// FIXME: time_unit as struct time
-  int  fastest_pulse();			// fastest pulse, *not* dealing with overflow...
-
+  int fastest_pulse();			// fastest pulse, *not* dealing with overflow...
+  int fastest_from_selected();		// fastest from selected, no overflow...
   void fix_global_next();	// determine next event, prepare everything
 				// for *all* pulses that wait for this exact time
 				// they will be called in fast sequence then
@@ -328,6 +329,7 @@ class Pulses {
   void display_now();					// display current time
   void time_info();					// same with digital details and global next
   float display_realtime_sec(struct time duration);	// display duration in seconds
+  void display_time_human(struct time duration);	// everyday time format	d h m s
   void display_real_ovfl_and_sec(struct time then);	//
   void short_info(void);				// give some infos, depending verbosity
   //  void selected_or_flagged_pulses_info_lines(void);

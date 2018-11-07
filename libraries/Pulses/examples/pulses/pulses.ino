@@ -276,6 +276,45 @@ unsigned int major_scale[] = {1,1, 8,9, 4,5, 3,4, 2,3, 3,5, 8,15, 0,0};	// scale
 unsigned int tetrachord[] = {1,1, 8,9, 4,5, 3,4, 0,0};			// scale each octave	zero terminated
 
 
+// TODO: time (and related stuff should move to Harmonics::
+struct time harmonical_cycle;
+
+// TODO: move to Harmonical::scale2harmonical_cycle()	################
+struct fraction harmonical_cycle_fraction={1, 1 };
+
+//#define SCALE2CYCLE_INFO	// for debugging, but interesting to watch anyway ;)
+struct time scale2harmonical_cycle(unsigned int* scale, struct time* duration) {		// returns harmonical cycle of a scale
+  fraction f_LCM;
+  f_LCM.multiplier = 1;
+  f_LCM.divisor = 1;
+
+  fraction f_F2;
+
+  for(int i=0; scale[i]; i+=2) {
+    f_F2.multiplier = selected_in(SCALES)[i];
+    f_F2.divisor = selected_in(SCALES)[i+1];
+#if defined SCALE2CYCLE_INFO
+    display_fraction(&f_F2);
+    MENU.tab();
+#endif
+
+    HARMONICAL.fraction_LCM(&f_F2, &f_LCM);
+
+#if defined SCALE2CYCLE_INFO
+    display_fraction(&f_LCM);
+      MENU.ln();
+#endif
+  }
+
+  harmonical_cycle_fraction = f_LCM;		// remember as a side effect
+
+  PULSES.mul_time(duration, f_LCM.multiplier);
+  PULSES.div_time(duration, f_LCM.divisor);
+
+  harmonical_cycle = *duration;
+  return harmonical_cycle;
+}
+
 /* **************************************************************** */
 
 // editing jiffle data

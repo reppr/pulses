@@ -173,7 +173,7 @@ void start_musicbox() {
   delay(250);	// give peripheral supply voltage time to stabilise
 #endif
 
-  MENU.outln(F(" >>> * <<<"));
+  MENU.outln(F("\n >>> * <<<"));
   MENU.men_selected = 0;
   MENU.play_KB_macro(F("-E40,"), false); // initialize, the comma avoids output from E40, no newline
 
@@ -337,6 +337,30 @@ void start_musicbox() {
 #if defined PERIPHERAL_POWER_SWITCH_PIN		// FIXME: try again... ################################################################
   peripheral_power_switch_ON();
 #endif
+
+  MENU.outln(F("\nharmonical cycle"));
+  // TODO: do *not* expect it on pulse pulses[0]
+  struct time cycle = scale2harmonical_cycle(selected_in(SCALES), &PULSES.pulses[0].period);
+  // TODO: do *not* expect it on pulse pulses[voices-1]
+  struct time shortest = scale2harmonical_cycle(selected_in(SCALES), &PULSES.pulses[voices-1].period);
+
+  //  PULSES.display_time_human(PULSES.pulses[PULSES.fastest_from_selected()].period);
+  MENU.out(F("fastest * pulse"));
+  //  PULSES.display_realtime_sec(PULSES.pulses[PULSES.fastest_from_selected()].period);
+  PULSES.display_realtime_sec(shortest);
+  MENU.ln();
+
+  int i=0;
+  while(cycle.time >= (shortest.time - 128/*tolerance*/) || cycle.overflow) {	// display cycle and relevant octaves
+    MENU.out(F("2^"));
+    MENU.out(i--);
+    MENU.tab();
+    PULSES.display_time_human(cycle);
+    MENU.ln();
+
+    PULSES.div_time(&cycle, 2);
+  }
+  MENU.ln();
 
   musicbox_start_time = PULSES.get_now();	// keep musicbox_start_time
   PULSES.activate_selected_synced_now(sync);	// 'n' sync and activate

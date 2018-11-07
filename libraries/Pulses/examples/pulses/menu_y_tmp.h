@@ -4,36 +4,6 @@
   temporary test code for pulses menu 'y'
 */
 
-// HARMONICAL.fraction_LCM(&f_2, &f_LCM); TESTING
-    fraction f_LCM;
-    f_LCM.multiplier = 3;
-    f_LCM.divisor = 4;
-
-    fraction f_2;
-    f_2.multiplier = 2;
-    f_2.divisor = 3;
-
-    HARMONICAL.fraction_LCM(&f_2, &f_LCM);
-    MENU.out(f_LCM.multiplier);
-    MENU.out('/');
-    MENU.outln(f_LCM.divisor);
-/*
-    f_LCM.multiplier = 1;
-    f_LCM.divisor = 1;
-    for(int i=0; selected_in(SCALES)[i]; i+=2) {
-      f_2.multiplier = selected_in(SCALES)[i];
-      f_2.divisor = selected_in(SCALES)[i+1];
-      display_fraction(&f_2);
-      MENU.tab();
-      HARMONICAL.fraction_LCM(&f_2, &f_LCM);
-      display_fraction(&f_LCM);
-      MENU.ln();
-    }
-    display_fraction(&f_LCM);
-    MENU.ln();
-*/
-
-
 #if defined USE_BATTERY_CONTROL
     show_battery_level();
 #endif
