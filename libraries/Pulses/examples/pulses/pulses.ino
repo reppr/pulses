@@ -315,6 +315,12 @@ struct time scale2harmonical_cycle(unsigned int* scale, struct time* duration) {
   return harmonical_cycle;
 }
 
+// TODO: move to Harmonical::	################
+void scale_time(struct time *duration, fraction * F) {
+  PULSES.mul_time(duration, (*F).multiplier);
+  PULSES.div_time(duration, (*F).divisor);
+}
+
 /* **************************************************************** */
 
 // editing jiffle data

@@ -221,6 +221,8 @@ class Pulses {
 
   void add_time(struct time *delta, struct time *sum);
   void sub_time(struct time *delta, struct time *sum);
+  void add_time(unsigned long time, struct time *sum);	// only unsigned long
+  void sub_time(unsigned long time, struct time *sum);	// only unsigned long
   void mul_time(struct time *duration, unsigned int factor);
   void div_time(struct time *duration, unsigned int divisor);
   void multiply_period(int pulse, unsigned long factor);

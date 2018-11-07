@@ -178,6 +178,28 @@ void Pulses::sub_time(struct time *delta, struct time *sum)
 }
 
 
+void Pulses::add_time(unsigned long time, struct time *sum)
+{
+  unsigned long last=(*sum).time;
+
+  (*sum).time += time;
+  if (last > (*sum).time)
+    (*sum).overflow++;
+}
+
+
+// As time is unsigned we need a separate sub_time()
+// to have access to the full unsigned value range.
+void Pulses::sub_time(unsigned long time, struct time *sum)
+{
+  unsigned long last=(*sum).time;
+
+  (*sum).time -= time;
+  if (last < (*sum).time)
+    (*sum).overflow--;
+}
+
+
 // #define OLD_BROKEN_ESP8266_COMPATIBILITY  // switches bug back on, might influence old setups ;)
 //
 void Pulses::mul_time(struct time *duration, unsigned int factor)
