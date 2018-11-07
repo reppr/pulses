@@ -2,6 +2,8 @@
   magical_musicbox.h
 */
 
+#define AUTOMAGIC_CYCLE_TIMING_MINUTES	7	// *max minutes*, sets performance timing based on cycle
+
 //#define DEBUGGING_MAGICAL_MUSICBOX
 #if defined DEBUGGING_MAGICAL_MUSICBOX
  #define MAGICAL_PERFORMACE_SECONDS	30
@@ -140,6 +142,10 @@ void magic_trigger_ON();	// forward declaration
 bool magical_trigger_enabled=false;
 
 struct time musicbox_start_time;
+
+#if defined AUTOMAGIC_CYCLE_TIMING_MINUTES
+struct time longest_used;
+#endif
 
 void magical_butler(int p);		// pre declare payload
 void start_musicbox() {
@@ -350,6 +356,24 @@ void start_musicbox() {
   PULSES.display_realtime_sec(shortest);
   MENU.ln();
 
+  //  #define AUTOMAGIC_CYCLE_TIMING_MINUTES	7	// *max minutes*, sets performance timing based on cycle
+#if defined AUTOMAGIC_CYCLE_TIMING_MINUTES
+  longest_used={AUTOMAGIC_CYCLE_TIMING_MINUTES*60*1000000L,0};
+  {
+    struct time scratch=cycle;
+    while(true) {
+      if(scratch.time <= longest_used.time && scratch.overflow==longest_used.overflow) {
+	longest_used = scratch;
+	break;
+      }
+      PULSES.div_time(&scratch, 2);
+    }
+  }
+  MENU.out(F("longest used:"));
+  PULSES.display_time_human(longest_used);
+  MENU.ln();
+#endif
+
   int i=0;
   while(cycle.time >= (shortest.time - 128/*tolerance*/) || cycle.overflow) {	// display cycle and relevant octaves
     MENU.out(F("2^"));
@@ -368,6 +392,7 @@ void start_musicbox() {
   struct time duration;	// dummy, *the butler knows* when to do what...
   duration.overflow=0;
   duration.time=0;
+
   PULSES.setup_pulse(&magical_butler, ACTIVE, PULSES.get_now(), duration);
 
   stress_event_cnt = -1;	// one stress event will often happen after starting the musicbox 
@@ -759,7 +784,15 @@ void magical_butler(int p) {
   case 2:	// enable trigger and prepare soft end
     magical_trigger_enabled = true;
     MENU.outln(F("trigger enabled"));
+#if defined AUTOMAGIC_CYCLE_TIMING_MINUTES	// MAX minutes
+    {
+      struct time til_end_time=longest_used;
+      PULSES.sub_time(MAGICAL_TRIGGER_BLOCK_SECONDS*1000000L, &til_end_time);
+      PULSES.pulses[p].period = til_end_time;
+    }
+#else
     PULSES.pulses[p].period.time = (MAGICAL_PERFORMACE_SECONDS - MAGICAL_TRIGGER_BLOCK_SECONDS)*1000000L;
+#endif
     break;
   case 3:	// start soft ending and cleanup pulse, prepare for butler hard end
     if(magic_autochanges)
