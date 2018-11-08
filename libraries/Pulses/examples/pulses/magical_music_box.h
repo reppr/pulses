@@ -3,6 +3,7 @@
 */
 
 #define AUTOMAGIC_CYCLE_TIMING_MINUTES	36	// *max minutes*, sets performance timing based on cycle
+#define SOME_FIXED_TUNINGS_ONLY			// fixed pitchs only like E A D G C F B		// TODO: 11.11.
 
 //#define DEBUGGING_MAGICAL_MUSICBOX
 #if defined DEBUGGING_MAGICAL_MUSICBOX
@@ -313,14 +314,51 @@ void start_musicbox() {
   MENU.out(F("sync "));
   MENU.outln(sync);
 
-  // TODO: fixed pitch lists like E A D G C F B		// TODO: 11.11.
-  // random pitch
+  // pitch
   PULSES.time_unit=1000000;	// default metric
   multiplier=4096;		// uses 1/4096 jiffles
   multiplier *= 8;	// TODO: adjust appropriate...
-  //  divisor = 294;		// 293.66 = D4	// default tuning D4
 
+#if defined SOME_FIXED_TUNINGS_ONLY	// TODO: fixed pitch lists like E A D G C F B		// TODO: 11.11.
+  MENU.out(F("fixed tuning "));
+  switch (random(17)) {
+  case 0:
+  case 1:
+  case 3:
+    MENU.outln('a');
+    divisor = 220; // 220	// A 220  ***not*** harmonical
+    break;
+  case 4:
+  case 5:
+  case 6:
+    MENU.outln('e');
+    divisor=330; // 329.36	// E4  ***not*** harmonical
+    break;
+  case 7:
+  case 8:
+    MENU.outln('d');
+    divisor = 294;		// 293.66 = D4
+    break;
+  case 9:
+  case 11:
+    MENU.outln('g');
+    divisor=196; // 196.00	// G3  ***not*** harmonical
+  case 12:
+  case 13:
+    MENU.outln('c');
+    divisor=262; // 261.63	// C4  ***not*** harmonical
+  case 14:
+  case 15:
+    MENU.outln('f');
+    divisor=175; // 174.16	// F3  ***not*** harmonical
+  case 16:
+    MENU.outln('b');
+    divisor=247; // 246.94	// B3  ***not*** harmonical
+  }
+#else
   divisor = random(160, 450);	// *not* tuned for other instruments
+#endif
+
   MENU.out("time_unit: ");
   MENU.out(PULSES.time_unit);
   MENU.tab();
