@@ -371,7 +371,7 @@ void Pulses::wake_pulse(int pulse) {
     pulses[pulse].next.overflow++;
 
   if (pulses[pulse].flags & COUNTED) {	// COUNTED pulse && end reached?
-    if(--pulses[pulse].remaining == 0) {		// END REACHED
+    if(--pulses[pulse].remaining < 1) {		// END REACHED with 0,	(below just as savety net ;)
       if (pulses[pulse].flags & DO_NOT_DELETE)	//   yes: DO_NOT_DELETE?
 	pulses[pulse].flags &= ~ACTIVE;		//     yes: just deactivate
       else

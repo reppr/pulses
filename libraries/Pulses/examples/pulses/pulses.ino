@@ -956,35 +956,6 @@ bool low_priority_tasks() {
 
 bool lowest_priority_tasks() {
 
-//#if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
-//  if(magic_autochanges) {
-//    if(MagicalMusicState != OFF) {	// running?  is it time to stop?
-//      struct time justNow = PULSES.get_now();
-//      struct time scratch;
-//      switch (MagicalMusicState) {
-//      case ENDING:  // normally called from ENDING state to check for musicbox_hard_end_time
-//      case SLEEPING:
-//      case SNORING:
-//      case FADE:
-//	scratch = musicbox_hard_end_time;
-//	PULSES.sub_time(&justNow, &scratch);
-//	if(scratch.overflow) {	// it's hacky negative
-//	  HARD_END_playing();
-//	  return true;
-//	}
-//	break;
-//      default:
-//	scratch = musicbox_end_time;
-//	PULSES.sub_time(&justNow, &scratch);
-//	if(scratch.overflow) {	// it's hacky negative
-////	  soft_end_playing();	//   or maybe something like furzificate()
-//	  return true;
-//	}
-//      }
-//    }
-//  }
-//#endif
-
 #if defined USE_MORSE
   if(MENU.verbosity >= VERBOSITY_MORE) {
     if(morse_stat_ID != morse_stat_seen_ID) {
@@ -1113,7 +1084,7 @@ void loop() {	// ARDUINO
 */
   }
 
-#define STRESS_MONITOR_LEVEL	64
+//#define STRESS_MONITOR_LEVEL	64	// TODO: menu interface
 #if defined STRESS_MONITOR_LEVEL
   if (stress_count > STRESS_MONITOR_LEVEL) {	// just a simple test tool
     if (stress_count > stress_event_level) {

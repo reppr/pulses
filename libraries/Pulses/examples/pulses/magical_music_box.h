@@ -2,7 +2,7 @@
   magical_musicbox.h
 */
 
-#define AUTOMAGIC_CYCLE_TIMING_MINUTES	7	// *max minutes*, sets performance timing based on cycle
+#define AUTOMAGIC_CYCLE_TIMING_MINUTES	36	// *max minutes*, sets performance timing based on cycle
 
 //#define DEBUGGING_MAGICAL_MUSICBOX
 #if defined DEBUGGING_MAGICAL_MUSICBOX
@@ -14,7 +14,7 @@
 #if defined BRACHE_NOV_2018_SETTINGS
   #define MAGICAL_PERFORMACE_SECONDS	6*60	// BRACHE
   #define MAGICAL_TRIGGER_BLOCK_SECONDS	20	// BRACHE
-  #define  MUSICBOX_HARD_END_SECONDS	8*60	// BRACHE
+  #define MUSICBOX_HARD_END_SECONDS	8*60	// BRACHE
 #endif
 
 #include <esp_sleep.h>
@@ -144,7 +144,7 @@ bool magical_trigger_enabled=false;
 struct time musicbox_start_time;
 
 #if defined AUTOMAGIC_CYCLE_TIMING_MINUTES
-struct time longest_used;
+struct time used_subcycle;
 #endif
 
 void magical_butler(int p);		// pre declare payload
@@ -358,19 +358,19 @@ void start_musicbox() {
 
   //  #define AUTOMAGIC_CYCLE_TIMING_MINUTES	7	// *max minutes*, sets performance timing based on cycle
 #if defined AUTOMAGIC_CYCLE_TIMING_MINUTES
-  longest_used={AUTOMAGIC_CYCLE_TIMING_MINUTES*60*1000000L,0};
+  used_subcycle={AUTOMAGIC_CYCLE_TIMING_MINUTES*60*1000000L,0};
   {
     struct time scratch=cycle;
     while(true) {
-      if(scratch.time <= longest_used.time && scratch.overflow==longest_used.overflow) {
-	longest_used = scratch;
+      if(scratch.time <= used_subcycle.time && scratch.overflow==used_subcycle.overflow) {
+	used_subcycle = scratch;
 	break;
       }
       PULSES.div_time(&scratch, 2);
     }
   }
   MENU.out(F("longest used:"));
-  PULSES.display_time_human(longest_used);
+  PULSES.display_time_human(used_subcycle);
   MENU.ln();
 #endif
 
@@ -395,7 +395,7 @@ void start_musicbox() {
 
   PULSES.setup_pulse(&magical_butler, ACTIVE, PULSES.get_now(), duration);
 
-  stress_event_cnt = -1;	// one stress event will often happen after starting the musicbox 
+  stress_event_cnt = -3;	// some stress events will often happen after starting the musicbox
 }
 
 
@@ -654,24 +654,48 @@ void deep_sleep() {
 }
 
 
-void soft_end_playing() {	// set all selected to be counted pulses with 1 repeat
+unsigned short soft_end_days_to_live = 1;	// remaining days of life after soft end
+unsigned short soft_end_survive_level = 2;	// the level a pulse must have reached to survive soft end
+
+void soft_end_playing(int days_to_live, int survive_level) {	// soft ending of magical musicbox
+/*
+  void soft_end_playing(int days_to_live, int survive_level);
+
+  (primary pulses are selected)
+  if(MagicalMusicState)
+    if(MagicalMusicState > ENDING) {		// in a play mode: initiate end
+      kill all selected pulses that have not been used yet
+      also kill all selected p that have not been alive yet for least survive_level times
+
+      set survivers to be COUNTED pulses with 'days_to_live' repeats
+      set_MagicalMusicState(ENDING);
+    } else
+    if(MagicalMusicState == ENDING) {		// in a play mode: initiate end
+      check for survivors
+      when no one is left, then *SWITCH OFF* musicbox
+*/
   if(MagicalMusicState == OFF)
     return;
 
   if(MagicalMusicState > ENDING) {		// initiate end
     set_MagicalMusicState(ENDING);
-    MENU.outln(F("soft_end_playing()"));
+    MENU.out(F("soft_end_playing("));		// info
+    MENU.out(soft_end_days_to_live);
+    MENU.out(F(", "));
+    MENU.out(soft_end_survive_level);
+    MENU.outln(')');
 
-    for (int pulse=0; pulse<PL_MAX; pulse++) {	// 1 shot generating pulses
+    for (int pulse=0; pulse<PL_MAX; pulse++) {	// make days_to_live COUNTED generating pulses
       if (PULSES.pulse_is_selected(pulse)) {
-	if(PULSES.pulses[pulse].counter) {	// pulse was already awake: still 1 repeat, then vanish
-	  PULSES.pulses[pulse].remaining = 1;
+	if(PULSES.pulses[pulse].counter > survive_level) {	// pulse was already awake (long enough)?
+	  PULSES.pulses[pulse].remaining = days_to_live;	//   still repeat, then vanish
 	  PULSES.pulses[pulse].flags |= COUNTED;
 	} else {
-	  PULSES.init_pulse(pulse);		// pulse have not been awake yet, just remove
+	  PULSES.init_pulse(pulse);			// unborn pulse or too young, just remove
 	}
       }
     }
+    stress_event_cnt = -1;	// stress event expected after switching to ENDING
   } else {
     if(MagicalMusicState == ENDING) {		// ENDING
       for (int pulse=0; pulse<PL_MAX; pulse++) {	// check for any active pulses
@@ -727,7 +751,7 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
 #if defined DEBUG_CLEANUP
   MENU.out(F("CLEANUP "));
 #endif
-  PULSES.deselect_unused_pulses();	// deselect unused primary pulses
+  PULSES.deselect_unused_pulses();	// deselect unused (primary) pulses
 
   int cnt=0;
   for(int pulse=0; pulse<PL_MAX; pulse++) {
@@ -753,6 +777,7 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
 #endif
     }
   }
+  PULSES.deselect_unused_pulses();	// dopplet gnäht... nütztabernüt
 #if defined DEBUG_CLEANUP
   MENU.ln();
 #endif
@@ -786,9 +811,10 @@ void magical_butler(int p) {
     MENU.outln(F("trigger enabled"));
 #if defined AUTOMAGIC_CYCLE_TIMING_MINUTES	// MAX minutes
     {
-      struct time til_end_time=longest_used;
-      PULSES.sub_time(MAGICAL_TRIGGER_BLOCK_SECONDS*1000000L, &til_end_time);
-      PULSES.pulses[p].period = til_end_time;
+      struct time til_soft_end_time=used_subcycle;
+      PULSES.sub_time(MAGICAL_TRIGGER_BLOCK_SECONDS*1000000L, &til_soft_end_time);
+      PULSES.add_time(100, &til_soft_end_time);	// tolerance
+      PULSES.pulses[p].period = til_soft_end_time;
     }
 #else
     PULSES.pulses[p].period.time = (MAGICAL_PERFORMACE_SECONDS - MAGICAL_TRIGGER_BLOCK_SECONDS)*1000000L;
@@ -796,10 +822,18 @@ void magical_butler(int p) {
     break;
   case 3:	// start soft ending and cleanup pulse, prepare for butler hard end
     if(magic_autochanges)
-      soft_end_playing();
+      soft_end_playing(soft_end_days_to_live, soft_end_survive_level);
     // prepare hard end
+#if defined AUTOMAGIC_CYCLE_TIMING_MINUTES
+    {
+      struct time til_hard_end_time = used_subcycle;
+      PULSES.div_time(&til_hard_end_time, 2);	// cycle/2 for soft end, then HARD end	// TODO: test&adjust
+      PULSES.pulses[p].period = til_hard_end_time;
+    }
+#else
     PULSES.pulses[p].period.time =
       (MUSICBOX_HARD_END_SECONDS - MAGICAL_PERFORMACE_SECONDS - MAGICAL_TRIGGER_BLOCK_SECONDS)*1000000L;
+#endif
     // start magical_cleanup() pulse taking care of selections, check for end, stop *if* end reached
     struct time duration;
     duration.overflow=0;
