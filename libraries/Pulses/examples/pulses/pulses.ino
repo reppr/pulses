@@ -900,7 +900,7 @@ void setup() {
   PULSES.fix_global_next();		// we *must* call that here late in setup();
 
   #ifdef AUTOSTART			// see: pulses_project_conf.h
-    MENU.outln(F("AUTOSTART"));
+    MENU.outln(F("\nAUTOSTART"));
     AUTOSTART
   #endif
 

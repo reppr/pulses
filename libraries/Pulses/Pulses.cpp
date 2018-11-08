@@ -885,6 +885,13 @@ int Pulses::setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
 }
 
 
+int Pulses::setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags,	\
+			struct time when, unsigned long new_period) {	// unsigned long *only* version
+  struct time period = {new_period, 0};	// no overflow in period
+  setup_pulse(pulse_do, new_flags, when, period);
+}
+
+
 // unused?
 int Pulses::setup_counted_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
 			struct time when, struct time new_period, unsigned int remaining)

@@ -148,6 +148,14 @@ struct time used_subcycle;
 #endif
 
 void magical_butler(int p);		// pre declare payload
+void cycle_shower(int p);		// pre declare payload
+// unsigned short cycle_show_divisions = 72;	// test&adapt   classical aesthetics?
+// unsigned short cycle_show_divisions = 120;	// test&adapt   classical aesthetics?
+// unsigned short cycle_show_divisions = 90*3;	// test&adapt   simplified keeping important details?
+// unsigned short cycle_show_divisions = 180*3;	// test&adapt	interesting lot of detail
+unsigned short cycle_show_divisions = 180;	// test&adapt	sometimes less is more
+// unsigned short cycle_show_divisions = 360;	// test&adapt   classical aesthetics?
+
 void start_musicbox() {
   MENU.outln(F("start_musicbox()"));
   set_MagicalMusicState(AWAKE);
@@ -305,7 +313,7 @@ void start_musicbox() {
   MENU.out(F("sync "));
   MENU.outln(sync);
 
-  // TODO: fixed pitch lists like E A D G C F B
+  // TODO: fixed pitch lists like E A D G C F B		// TODO: 11.11.
   // random pitch
   PULSES.time_unit=1000000;	// default metric
   multiplier=4096;		// uses 1/4096 jiffles
@@ -395,6 +403,10 @@ void start_musicbox() {
 
   PULSES.setup_pulse(&magical_butler, ACTIVE, PULSES.get_now(), duration);
 
+  duration = used_subcycle;
+  PULSES.div_time(&duration, cycle_show_divisions);
+
+  PULSES.setup_pulse(&cycle_shower, ACTIVE, PULSES.get_now(), duration);
   stress_event_cnt = -3;	// some stress events will often happen after starting the musicbox
 }
 
@@ -852,7 +864,38 @@ void magical_butler(int p) {
   }
 }
 
-void  magical_music_box_setup() {
+
+// cycle_shower(p)  payload to give infos where in the cycle we are
+void cycle_shower(int pulse) {	// show markers at important cycle divisions
+  static uint8_t last_seen_division;
+
+  if(PULSES.pulses[pulse].counter==1) {		// TODO: maybe, maybe not?
+    struct time raster = used_subcycle;		//        automagically sets cycle/divisions as period
+    PULSES.div_time(&raster, cycle_show_divisions);
+    PULSES.pulses[pulse].period = raster;
+  }
+
+  MENU.out(F("* "));
+
+  struct time this_time = PULSES.get_now();
+  PULSES.sub_time(&PULSES.pulses[pulse].last, &this_time);	// so long inside this cycle
+  if(this_time.overflow != PULSES.pulses[pulse].last.overflow)
+    MENU.outln(F("over"));
+  else {
+    fraction phase = {this_time.time, PULSES.pulses[pulse].period.time};
+    float float_phase = this_time.time / PULSES.pulses[pulse].period.time;
+    fraction this_division = {last_seen_division, cycle_show_divisions};
+    HARMONICAL.reduce_fraction(&this_division);
+    MENU.out(this_division.multiplier);
+    MENU.out('/');
+    MENU.outln(this_division.divisor);
+
+    last_seen_division++;
+    last_seen_division %= cycle_show_divisions;
+  }
+}
+
+void magical_music_box_setup() {
   MENU.ln();
 
 #if defined MAGICAL_TRIGGER_PIN

@@ -82,7 +82,7 @@ struct time {
 struct pulse_t {
   unsigned long counter;	// counts wake up's
   struct time period;		// period (including overflow count)
-  struct time last;		// convenient, but not really needed
+  struct time last;		// convenient, but not really needed...	maybe yes :)
   struct time next;		// next time the pulse wants to wake up
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
@@ -313,6 +313,8 @@ class Pulses {
   bool check_maybe_do();	// FIXME; comment ################
   int setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
 		  struct time when, struct time new_period);
+  int setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
+		  struct time when, unsigned long new_period);	// unsigned long *only* version
   int setup_counted_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
 			  struct time when, struct time new_period, unsigned int count);
   void set_new_period(int pulse, struct time new_period);
