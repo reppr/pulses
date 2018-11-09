@@ -14,11 +14,12 @@
 // #define MORSE_GPIO_INPUT_PIN	34	// Morse input GPIO pin, 34 needs hardware pulldown
 #define MORSE_OUTPUT_PIN	2	// 2 is often blue onboard led, hang a led, a piezzo on that one :)
 
-#ifndef MORSE_TOUCH_INPUT_PIN
-//#define MORSE_TOUCH_INPUT_PIN	13	// use ESP32 touch sensor as morse input
-  #define MORSE_TOUCH_INPUT_PIN	12	// use ESP32 touch sensor as morse input
+#if ! defined HACK_11_11_11_11	// normal use case
+  #ifndef MORSE_TOUCH_INPUT_PIN
+    #define MORSE_TOUCH_INPUT_PIN	12	// use ESP32 touch sensor as morse input
+    //#define MORSE_TOUCH_INPUT_PIN	13	// use ESP32 touch sensor as morse input
+  #endif
 #endif
-
 
 // menu interface is case sensitive, so I need lowercase
 // maybe also COMMAND mode?	TODO: rethink
@@ -28,7 +29,11 @@ hw_timer_t * morse_separation_timer = NULL;
 portMUX_TYPE morse_MUX = portMUX_INITIALIZER_UNLOCKED;
 
 // morse tick
-unsigned long morse_TimeUnit=100000;
+#if ! defined HACK_11_11_11_11	// normal case
+  unsigned long morse_TimeUnit=100000;
+#else
+  unsigned long morse_TimeUnit=200000;	// veery sloow for 11.11. onboard LED
+#endif
 
 unsigned long morse_start_ON_time=0;
 unsigned long morse_start_OFF_time=0;
@@ -345,6 +350,7 @@ void IRAM_ATTR morse_endOfLetter() {
 // touch ISR:	touch_morse_ISR()
 void IRAM_ATTR morse_stats_gather(char token, float duration);	// forwards declaration
 
+#if defined MORSE_TOUCH_INPUT_PIN
 void IRAM_ATTR touch_morse_ISR(void) {	// ISR for ESP32 touch sensor as morse input
   portENTER_CRITICAL_ISR(&morse_MUX);	// MAYBE: a separated mux for touch?
 
@@ -429,6 +435,7 @@ void IRAM_ATTR touch_morse_ISR(void) {	// ISR for ESP32 touch sensor as morse in
 
   portEXIT_CRITICAL_ISR(&morse_MUX);	// MAYBE: a separated mux for touch?
 }
+#endif // MORSE_TOUCH_INPUT_PIN
 /* **************************************************************** */
 
 

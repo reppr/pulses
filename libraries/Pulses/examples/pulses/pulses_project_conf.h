@@ -8,6 +8,16 @@
 /* **************************************************************** */
 #ifndef PROJECT_CONFIGURATION_H
 
+#if defined HACK_11_11_11_11	// hacked a setup for MagicalGuitar 11.11.2018 Zürich ;)
+  #if ! defined USE_MORSE
+    #define USE_MORSE
+  #endif
+
+  #if ! defined SOME_FIXED_TUNINGS_ONLY	// for jam sessions with metric tuned instruments
+    #define SOME_FIXED_TUNINGS_ONLY
+  #endif
+#endif
+
 /*  TIME_MACHINE did *not* use i2c	*i2c DEACTIVATED* see below */
 
 /* **************************************************************** */

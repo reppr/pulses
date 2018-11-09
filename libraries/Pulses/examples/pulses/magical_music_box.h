@@ -3,7 +3,7 @@
 */
 
 #define AUTOMAGIC_CYCLE_TIMING_MINUTES	36	// *max minutes*, sets performance timing based on cycle
-#define SOME_FIXED_TUNINGS_ONLY			// fixed pitchs only like E A D G C F B		// TODO: 11.11.
+// #define SOME_FIXED_TUNINGS_ONLY		// fixed pitchs only like E A D G C F B  see: HACK_11_11_11_11
 
 //#define DEBUGGING_MAGICAL_MUSICBOX
 #if defined DEBUGGING_MAGICAL_MUSICBOX
@@ -149,7 +149,7 @@ struct time used_subcycle;
 #endif
 
 void magical_butler(int p);		// pre declare payload
-void cycle_shower(int p);		// pre declare payload
+void cycle_monitor(int p);		// pre declare payload
 // unsigned short cycle_show_divisions = 72;	// test&adapt   classical aesthetics?
 // unsigned short cycle_show_divisions = 120;	// test&adapt   classical aesthetics?
 // unsigned short cycle_show_divisions = 90*3;	// test&adapt   simplified keeping important details?
@@ -319,44 +319,116 @@ void start_musicbox() {
   multiplier=4096;		// uses 1/4096 jiffles
   multiplier *= 8;	// TODO: adjust appropriate...
 
-#if defined SOME_FIXED_TUNINGS_ONLY	// TODO: fixed pitch lists like E A D G C F B		// TODO: 11.11.
+#if ! defined SOME_FIXED_TUNINGS_ONLY	// random tuning
+  divisor = random(160, 450);	// *not* tuned for other instruments
+#else				// some randomly selected metric A=440 tunings for jam sessions like in HACK_11_11_11_11
   MENU.out(F("fixed tuning "));
   switch (random(17)) {
   case 0:
   case 1:
   case 3:
-    MENU.outln('a');
+    MENU.out('a');
     divisor = 220; // 220	// A 220  ***not*** harmonical
+  #if defined HACK_11_11_11_11
+    #define MoRep	2	// MoRep morse fixed key output repetitions
+
+    for(int i=0; i<MoRep; i++) {	// TODO: borrows really *old* morse_out_xxx() functions for 11.11. ;)
+	   // TODO: borrows really *old* morse_out_xxx() functions for 11.11. ;)
+      morse_out_dot();
+      morse_out_dash();
+      morse_out_separeWord();
+    }
+  #endif
     break;
   case 4:
   case 5:
   case 6:
-    MENU.outln('e');
+    MENU.out('e');
     divisor=330; // 329.36	// E4  ***not*** harmonical
+  #if defined HACK_11_11_11_11
+    for(int i=0; i<MoRep; i++) {	// TODO: borrows really *old* morse_out_xxx() functions for 11.11. ;)
+
+      morse_out_dot();
+      morse_out_separeWord();
+    }
+  #endif
     break;
   case 7:
   case 8:
-    MENU.outln('d');
+    MENU.out('d');
     divisor = 294;		// 293.66 = D4
+  #if defined HACK_11_11_11_11
+    for(int i=0; i<MoRep; i++) {	// TODO: borrows really *old* morse_out_xxx() functions for 11.11. ;)
+
+      morse_out_dash();
+      morse_out_dot();
+      morse_out_dot();
+      morse_out_separeWord();
+    }
+  #endif
     break;
   case 9:
   case 11:
-    MENU.outln('g');
+    MENU.out('g');
     divisor=196; // 196.00	// G3  ***not*** harmonical
+  #if defined HACK_11_11_11_11
+    for(int i=0; i<MoRep; i++) {	// TODO: borrows really *old* morse_out_xxx() functions for 11.11. ;)
+
+      morse_out_dash();
+      morse_out_dash();
+      morse_out_dot();
+      morse_out_separeWord();
+    }
+  #endif
+    break;
   case 12:
   case 13:
-    MENU.outln('c');
+    MENU.out('c');
     divisor=262; // 261.63	// C4  ***not*** harmonical
+  #if defined HACK_11_11_11_11
+    for(int i=0; i<MoRep; i++) {	// TODO: borrows really *old* morse_out_xxx() functions for 11.11. ;)
+
+      morse_out_dash();
+      morse_out_dot();
+      morse_out_dash();
+      morse_out_dot();
+      morse_out_separeWord();
+    }
+  #endif
+    break;
   case 14:
   case 15:
-    MENU.outln('f');
+    MENU.out('f');
     divisor=175; // 174.16	// F3  ***not*** harmonical
+  #if defined HACK_11_11_11_11
+    for(int i=0; i<MoRep; i++) {	// TODO: borrows really *old* morse_out_xxx() functions for 11.11. ;)
+
+      morse_out_dot();
+      morse_out_dot();
+      morse_out_dash();
+      morse_out_dot();
+      morse_out_separeWord();
+    }
+  #endif
+    break;
   case 16:
-    MENU.outln('b');
-    divisor=247; // 246.94	// B3  ***not*** harmonical
+    MENU.out('b');
+    divisor=233; // 233.08	// Bb3 ***not*** harmonical
+
+  #if defined HACK_11_11_11_11
+    for(int i=0; i<MoRep; i++) {	// TODO: borrows really *old* morse_out_xxx() functions for 11.11. ;)
+      morse_out_dash();
+      morse_out_dot();
+      morse_out_dot();
+      morse_out_dot();
+      morse_out_separeWord();
+    }
+  #endif
+    break;
+    //    divisor=247; // 246.94	// B3  ***not*** harmonical  }
+  MENU.tab();
+  MENU.outln(divisor);
   }
-#else
-  divisor = random(160, 450);	// *not* tuned for other instruments
 #endif
 
   MENU.out("time_unit: ");
@@ -444,7 +516,7 @@ void start_musicbox() {
   duration = used_subcycle;
   PULSES.div_time(&duration, cycle_show_divisions);
 
-  PULSES.setup_pulse(&cycle_shower, ACTIVE, PULSES.get_now(), duration);
+  PULSES.setup_pulse(&cycle_monitor, ACTIVE, PULSES.get_now(), duration);
   stress_event_cnt = -3;	// some stress events will often happen after starting the musicbox
 }
 
@@ -626,12 +698,13 @@ void light_sleep() {
 
   if (esp_sleep_enable_ext0_wakeup((gpio_num_t) MAGICAL_TRIGGER_PIN, 1))
     MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
+/*
+  if(gpio_wakeup_enable((gpio_num_t) MAGICAL_TRIGGER_PIN, GPIO_INTR_LOW_LEVEL))
+    MENU.error_ln(F("gpio_wakeup_enable()"));
 
-//  if(gpio_wakeup_enable((gpio_num_t) MAGICAL_TRIGGER_PIN, GPIO_INTR_LOW_LEVEL))
-//    MENU.error_ln(F("gpio_wakeup_enable()"));
-//
-//  if (esp_sleep_enable_gpio_wakeup())
-//    MENU.error_ln(F("esp_sleep_enable_gpio_wakeup"));
+  if (esp_sleep_enable_gpio_wakeup())
+    MENU.error_ln(F("esp_sleep_enable_gpio_wakeup"));
+*/
 
   MENU.outln(F("sleep well..."));
   delay(1500);
@@ -903,15 +976,9 @@ void magical_butler(int p) {
 }
 
 
-// cycle_shower(p)  payload to give infos where in the cycle we are
-void cycle_shower(int pulse) {	// show markers at important cycle divisions
+// cycle_monitor(p)  payload to give infos where in the cycle we are
+void cycle_monitor(int pulse) {	// show markers at important cycle divisions
   static uint8_t last_seen_division;
-
-  if(PULSES.pulses[pulse].counter==1) {		// TODO: maybe, maybe not?
-    struct time raster = used_subcycle;		//        automagically sets cycle/divisions as period
-    PULSES.div_time(&raster, cycle_show_divisions);
-    PULSES.pulses[pulse].period = raster;
-  }
 
   MENU.out(F("* "));
 
