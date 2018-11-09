@@ -707,6 +707,8 @@ int softboard_page=-1;		// see: maybe_run_continuous()
 #endif
 
 
+int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very first one
+
 void setup() {
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
   random_entropy();	// start gathering entropy before initialisation
@@ -902,7 +904,10 @@ void setup() {
   PULSES.fix_global_next();		// we *must* call that here late in setup();
 
   #ifdef AUTOSTART			// see: pulses_project_conf.h
-    MENU.outln(F("\nAUTOSTART"));
+    autostart_counter++;
+    MENU.out(F("\nAUTOSTART "));
+    MENU.outln(autostart_counter);
+
     AUTOSTART
   #endif
 
