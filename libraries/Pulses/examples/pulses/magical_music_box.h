@@ -322,6 +322,12 @@ void start_musicbox() {
 #if ! defined SOME_FIXED_TUNINGS_ONLY	// random tuning
   divisor = random(160, 450);	// *not* tuned for other instruments
 #else				// some randomly selected metric A=440 tunings for jam sessions like in HACK_11_11_11_11
+
+#if defined HACK_11_11_11_11	// does not work without that, why?
+  pinMode(MORSE_OUTPUT_PIN, OUTPUT);
+  digitalWrite(MORSE_OUTPUT_PIN, LOW);
+#endif
+
   MENU.out(F("fixed tuning "));
   switch (random(17)) {
   case 0:
@@ -426,9 +432,9 @@ void start_musicbox() {
   #endif
     break;
     //    divisor=247; // 246.94	// B3  ***not*** harmonical  }
+  }
   MENU.tab();
   MENU.outln(divisor);
-  }
 #endif
 
   MENU.out("time_unit: ");

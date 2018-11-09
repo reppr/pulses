@@ -16,6 +16,11 @@
   #if ! defined SOME_FIXED_TUNINGS_ONLY	// for jam sessions with metric tuned instruments
     #define SOME_FIXED_TUNINGS_ONLY
   #endif
+
+  #undef MORSE_OUTPUT_PIN
+  #define MORSE_OUTPUT_PIN	12
+  #undef PERIPHERAL_POWER_SWITCH_PIN	// unused, was 12
+
 #endif
 
 /*  TIME_MACHINE did *not* use i2c	*i2c DEACTIVATED* see below */

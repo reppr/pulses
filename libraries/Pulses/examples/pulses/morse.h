@@ -12,9 +12,10 @@
 // ################ TODO: MOVE: configuration
 // use GPIO with pulldown as morse input
 // #define MORSE_GPIO_INPUT_PIN	34	// Morse input GPIO pin, 34 needs hardware pulldown
-#define MORSE_OUTPUT_PIN	2	// 2 is often blue onboard led, hang a led, a piezzo on that one :)
 
-#if ! defined HACK_11_11_11_11	// normal use case
+#if ! defined HACK_11_11_11_11	// *normal use case*  the hack disables the code
+  #define MORSE_OUTPUT_PIN	2 // 2 is often blue onboard led, hang a led, a piezzo on that one :)
+
   #ifndef MORSE_TOUCH_INPUT_PIN
     #define MORSE_TOUCH_INPUT_PIN	12	// use ESP32 touch sensor as morse input
     //#define MORSE_TOUCH_INPUT_PIN	13	// use ESP32 touch sensor as morse input
