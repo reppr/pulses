@@ -899,6 +899,11 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
 	MENU.out(" cleanup");
 #endif
 	;
+      } else if(PULSES.pulses[pulse].periodic_do == &cycle_monitor) {
+#if defined DEBUG_CLEANUP
+	MENU.out(" cycle_monitor");
+#endif
+	;
       } else
 	cnt++;
 #if defined DEBUG_CLEANUP

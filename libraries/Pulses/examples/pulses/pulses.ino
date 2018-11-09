@@ -2277,6 +2277,13 @@ void display_payload(int pulse) {
     MENU.out("magical_cleanup");
     return;
   }
+
+  scratch=&cycle_monitor;
+  if (PULSES.pulses[pulse].periodic_do == scratch) {
+    MENU.out("cycle_monitor");
+    return;
+  }
+
 #endif
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
