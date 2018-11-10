@@ -2,7 +2,7 @@
   magical_musicbox.h
 */
 
-#define AUTOMAGIC_CYCLE_TIMING_MINUTES	36	// *max minutes*, sets performance timing based on cycle
+#define AUTOMAGIC_CYCLE_TIMING_MINUTES	65	// *max minutes*, sets performance timing based on cycle
 // #define SOME_FIXED_TUNINGS_ONLY		// fixed pitchs only like E A D G C F B  see: HACK_11_11_11_11
 
 //#define DEBUGGING_MAGICAL_MUSICBOX
@@ -47,8 +47,15 @@ bool blocked_trigger_shown=false;	// show only once a run
 #endif
 
 #if ! defined MAGICAL_MUSICBOX_ENDING	// *one* of the following:
+//  #define  MAGICAL_MUSICBOX_ENDING	light_sleep();	// works fine
+
+#if defined HACK_11_11_11_11		// never ending jam session
+  #define  MAGICAL_MUSICBOX_ENDING	;	// just deactivated ;) 11.11.
+#else
   #define  MAGICAL_MUSICBOX_ENDING	light_sleep();	// works fine
-  //#define  MAGICAL_MUSICBOX_ENDING	deep_sleep();	// still DAC noise!!!
+#endif
+
+//#define  MAGICAL_MUSICBOX_ENDING	deep_sleep();	// still DAC noise!!!
   //#define  MAGICAL_MUSICBOX_ENDING	ESP.restart();	// works fine
 #endif
 
@@ -81,8 +88,11 @@ void set_MagicalMusicState(magicalmusicbox_state_t state) {	// sets the state un
 }
 
 // TODO: check&fix
+#if defined HACK_11_11_11_11
+  bool magic_autochanges=false;	// never ending jam sessions...
+#else
 bool magic_autochanges=true;	// switch if to end normal playing after MAGICAL_PERFORMACE_SECONDS
-
+#endif
 
 portMUX_TYPE magical_MUX = portMUX_INITIALIZER_UNLOCKED;
 
@@ -329,7 +339,7 @@ void start_musicbox() {
 #endif
 
   MENU.out(F("fixed tuning "));
-  switch (random(17)) {
+  switch (random(20)) {
   case 0:
   case 1:
   case 3:
@@ -374,6 +384,7 @@ void start_musicbox() {
   #endif
     break;
   case 9:
+  case 10:
   case 11:
     MENU.out('g');
     divisor=196; // 196.00	// G3  ***not*** harmonical
@@ -418,6 +429,9 @@ void start_musicbox() {
   #endif
     break;
   case 16:
+  case 17:	// 11.11. ;)
+  case 18:	// 11.11. ;)
+  case 19:	// 11.11. ;)
     MENU.out('b');
     divisor=233; // 233.08	// Bb3 ***not*** harmonical
 
