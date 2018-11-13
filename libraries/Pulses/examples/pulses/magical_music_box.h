@@ -154,19 +154,81 @@ bool magical_trigger_enabled=false;
 
 struct time musicbox_start_time;
 
+struct time cycle;	// TODO: move to Harmonical?
+
 #if defined AUTOMAGIC_CYCLE_TIMING_MINUTES
 struct time used_subcycle;
 #endif
 
-void magical_butler(int p);		// pre declare payload
-void cycle_monitor(int p);		// pre declare payload
-// unsigned short cycle_show_divisions = 72;	// test&adapt   classical aesthetics?
-// unsigned short cycle_show_divisions = 120;	// test&adapt   classical aesthetics?
-// unsigned short cycle_show_divisions = 90*3;	// test&adapt   simplified keeping important details?
-// unsigned short cycle_show_divisions = 180*3;	// test&adapt	interesting lot of detail
-unsigned short cycle_show_divisions = 180;	// test&adapt	sometimes less is more
-// unsigned short cycle_show_divisions = 360;	// test&adapt   classical aesthetics?
+void show_cycle(struct time cycle) {
+  MENU.out(F("\nharmonical cycle "));
+  if(selected_in(SCALES)==NULL) {
+    MENU.outln(F("no scale"));
+    return;
+  }
 
+  PULSES.display_time_human(cycle);
+  MENU.ln();
+
+  // TODO: do *not* expect it on pulse pulses[voices-1]
+  struct time period = PULSES.pulses[voices-1].period;
+  struct time shortest = scale2harmonical_cycle(selected_in(SCALES), &period);
+
+  //  PULSES.display_time_human(PULSES.pulses[PULSES.fastest_from_selected()].period);
+  MENU.out(F("fastest * pulse"));
+  //  PULSES.display_realtime_sec(PULSES.pulses[PULSES.fastest_from_selected()].period);
+  PULSES.display_time_human(shortest);
+  MENU.ln();
+
+  int i=0;
+  //                                   !!!  a tolerance of 128 seemed *not* to be enough
+  while(cycle.time >= (shortest.time - 256/*tolerance*/) || cycle.overflow) {	// display cycle and relevant octaves
+    MENU.out(F("2^"));
+    MENU.out(i--);
+    MENU.tab();
+    PULSES.display_time_human(cycle);
+    if(cycle.time == used_subcycle.time)
+      MENU.out(F("\t| subcycle |"));
+    MENU.ln();
+
+    PULSES.div_time(&cycle, 2);
+  }
+  MENU.ln();
+}
+
+// cycle_monitor(p)  payload to give infos where in the cycle we are
+unsigned short cycle_show_divisions = 180;	// test&adapt	sometimes less is more
+/*
+   unsigned short cycle_show_divisions = 72;	// test&adapt   classical aesthetics?
+   unsigned short cycle_show_divisions = 120;	// test&adapt   classical aesthetics?
+   unsigned short cycle_show_divisions = 90*3;	// test&adapt   simplified keeping important details?
+   unsigned short cycle_show_divisions = 180*3;	// test&adapt	interesting lot of detail
+   unsigned short cycle_show_divisions = 180;	// test&adapt	sometimes less is more
+   unsigned short cycle_show_divisions = 360;	// test&adapt   classical aesthetics?
+*/
+uint8_t cycle_monitor_last_seen_division=0;	// reset that on a start
+void cycle_monitor(int pulse) {	// show markers at important cycle divisions
+  MENU.out(F("* "));
+
+  struct time this_time = PULSES.get_now();
+  PULSES.sub_time(&PULSES.pulses[pulse].last, &this_time);	// so long inside this cycle
+  /* TESTED: works fine disregarding overflow :)
+  if(this_time.overflow != PULSES.pulses[pulse].last.overflow)
+    MENU.outln(F("over"));
+  */
+  fraction phase = {this_time.time, PULSES.pulses[pulse].period.time};
+  // float float_phase = this_time.time / PULSES.pulses[pulse].period.time;	// not used
+  fraction this_division = {cycle_monitor_last_seen_division, cycle_show_divisions};
+  HARMONICAL.reduce_fraction(&this_division);
+  MENU.out(this_division.multiplier);
+  MENU.out('/');
+  MENU.outln(this_division.divisor);
+
+  cycle_monitor_last_seen_division++;
+  cycle_monitor_last_seen_division %= cycle_show_divisions;
+}
+
+void magical_butler(int p);		// pre declare payload
 void start_musicbox() {
   MENU.outln(F("start_musicbox()"));
   set_MagicalMusicState(AWAKE);
@@ -373,6 +435,7 @@ void start_musicbox() {
   case 8:
     MENU.out('d');
     divisor = 294;		// 293.66 = D4
+
   #if defined HACK_11_11_11_11
     for(int i=0; i<MoRep; i++) {	// TODO: borrows really *old* morse_out_xxx() functions for 11.11. ;)
 
@@ -481,19 +544,10 @@ void start_musicbox() {
 #if defined PERIPHERAL_POWER_SWITCH_PIN		// FIXME: try again... ################################################################
   peripheral_power_switch_ON();
 #endif
-
-  MENU.outln(F("\nharmonical cycle"));
   // TODO: do *not* expect it on pulse pulses[0]
-  struct time cycle = scale2harmonical_cycle(selected_in(SCALES), &PULSES.pulses[0].period);
-  // TODO: do *not* expect it on pulse pulses[voices-1]
-  struct time shortest = scale2harmonical_cycle(selected_in(SCALES), &PULSES.pulses[voices-1].period);
-
-  //  PULSES.display_time_human(PULSES.pulses[PULSES.fastest_from_selected()].period);
-  MENU.out(F("fastest * pulse"));
-  //  PULSES.display_realtime_sec(PULSES.pulses[PULSES.fastest_from_selected()].period);
-  PULSES.display_realtime_sec(shortest);
-  MENU.ln();
-
+  struct time period = PULSES.pulses[0].period;
+  cycle = scale2harmonical_cycle(selected_in(SCALES), &period);
+  used_subcycle = cycle;
   //  #define AUTOMAGIC_CYCLE_TIMING_MINUTES	7	// *max minutes*, sets performance timing based on cycle
 #if defined AUTOMAGIC_CYCLE_TIMING_MINUTES
   used_subcycle={AUTOMAGIC_CYCLE_TIMING_MINUTES*60*1000000L,0};
@@ -507,22 +561,11 @@ void start_musicbox() {
       PULSES.div_time(&scratch, 2);
     }
   }
-  MENU.out(F("longest used:"));
+#endif
+  MENU.out(F("used subcycle:"));
   PULSES.display_time_human(used_subcycle);
   MENU.ln();
-#endif
-
-  int i=0;
-  while(cycle.time >= (shortest.time - 128/*tolerance*/) || cycle.overflow) {	// display cycle and relevant octaves
-    MENU.out(F("2^"));
-    MENU.out(i--);
-    MENU.tab();
-    PULSES.display_time_human(cycle);
-    MENU.ln();
-
-    PULSES.div_time(&cycle, 2);
-  }
-  MENU.ln();
+  show_cycle(cycle);
 
   musicbox_start_time = PULSES.get_now();	// keep musicbox_start_time
   PULSES.activate_selected_synced_now(sync);	// 'n' sync and activate
@@ -536,6 +579,7 @@ void start_musicbox() {
   duration = used_subcycle;
   PULSES.div_time(&duration, cycle_show_divisions);
 
+  cycle_monitor_last_seen_division=0;
   PULSES.setup_pulse(&cycle_monitor, ACTIVE, PULSES.get_now(), duration);
   stress_event_cnt = -3;	// some stress events will often happen after starting the musicbox
 }
@@ -798,7 +842,7 @@ void deep_sleep() {
 
 
 unsigned short soft_end_days_to_live = 1;	// remaining days of life after soft end
-unsigned short soft_end_survive_level = 2;	// the level a pulse must have reached to survive soft end
+unsigned short soft_end_survive_level = 4;	// the level a pulse must have reached to survive soft end
 
 void soft_end_playing(int days_to_live, int survive_level) {	// soft ending of magical musicbox
 /*
@@ -1001,30 +1045,6 @@ void magical_butler(int p) {
 }
 
 
-// cycle_monitor(p)  payload to give infos where in the cycle we are
-void cycle_monitor(int pulse) {	// show markers at important cycle divisions
-  static uint8_t last_seen_division;
-
-  MENU.out(F("* "));
-
-  struct time this_time = PULSES.get_now();
-  PULSES.sub_time(&PULSES.pulses[pulse].last, &this_time);	// so long inside this cycle
-  if(this_time.overflow != PULSES.pulses[pulse].last.overflow)
-    MENU.outln(F("over"));
-  else {
-    fraction phase = {this_time.time, PULSES.pulses[pulse].period.time};
-    float float_phase = this_time.time / PULSES.pulses[pulse].period.time;
-    fraction this_division = {last_seen_division, cycle_show_divisions};
-    HARMONICAL.reduce_fraction(&this_division);
-    MENU.out(this_division.multiplier);
-    MENU.out('/');
-    MENU.outln(this_division.divisor);
-
-    last_seen_division++;
-    last_seen_division %= cycle_show_divisions;
-  }
-}
-
 void magical_music_box_setup() {
   MENU.ln();
 
@@ -1050,4 +1070,66 @@ void magical_music_box_setup() {
 
   if (esp_sleep_enable_ext0_wakeup((gpio_num_t) MAGICAL_TRIGGER_PIN, 1))
     MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
+}
+
+/* **************************************************************** */
+// musicBox menu
+
+void musicBox_display() {
+  MENU.outln(F("The Harmonical Music Box  http://github.com/reppr/pulses/\n"));
+
+  MENU.out(F("autochanges "));
+  if(magic_autochanges)
+    MENU.out(F("ON"));
+  else
+    MENU.out(F("off"));
+  MENU.out(F(" 'a' to toggle"));
+
+  MENU.tab();
+  MENU.out(F("'c' cycle "));
+  // TODO: do *not* expect it on pulse pulses[0]
+  struct time period = PULSES.pulses[0].period;
+  PULSES.display_time_human(scale2harmonical_cycle(selected_in(SCALES), &period));
+  MENU.ln();
+
+  MENU.out(F("soft_end("));
+  MENU.out(soft_end_days_to_live);	// remaining days of life after soft end
+  MENU.out(F(", "));
+  MENU.out(soft_end_survive_level);	// the level a pulse must have reached to survive soft en
+  MENU.outln(F(")\t'd'=days to survive  'l'=level minimal age 'E'= start soft end now"));
+  MENU.outln(F("hard end='H'"));
+}
+
+
+bool musicBox_reaction(char token) {
+  int input_value;
+
+  switch(token) {
+  case 'a':
+    magic_autochanges = !magic_autochanges;
+    break;
+  case 'c':
+    show_cycle(cycle);
+    break;
+  case 'E':
+    soft_end_playing(soft_end_days_to_live, soft_end_survive_level);
+    break;
+  case 'd':
+    input_value = MENU.numeric_input(soft_end_days_to_live);
+    if(input_value >= 0)
+      soft_end_days_to_live = input_value;
+    break;
+  case 'l':
+    input_value = MENU.numeric_input(soft_end_survive_level);
+    if(input_value >= 0)
+      soft_end_survive_level = input_value;
+    break;
+  case 'H':
+    HARD_END_playing(true);
+    break;
+  default:
+    return false;
+  }
+
+  return true;
 }

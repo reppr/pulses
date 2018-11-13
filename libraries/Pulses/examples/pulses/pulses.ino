@@ -14,7 +14,7 @@
 #define USE_i2c_SCANNER
 
 #define USE_BATTERY_CONTROL
-#define USE_LEDC_AUDIO
+//#define USE_LEDC_AUDIO	// not written yet ;)
 
 /* **************************************************************** */
 /*
@@ -112,7 +112,7 @@ class Menu;
 #else
   #define CB_SIZE	128
 #endif
-Menu MENU(CB_SIZE, 4, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
+Menu MENU(CB_SIZE, 5, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
 
 
 /* **************** Pulses **************** */
@@ -889,6 +889,10 @@ void setup() {
   // add WiFi page:
   MENU.add_page("WiFi", 'W', &WiFi_menu_display, &WiFi_menu_reaction, 'W');
 #endif
+
+  #ifdef MAGICAL_MUSIC_BOX
+    MENU.add_page("musicBox", 'M', &musicBox_display, &musicBox_reaction, 'P');
+  #endif
 
   // display menu at startup, but not in music box
   #if ! defined MAGICAL_MUSIC_BOX
