@@ -200,7 +200,7 @@ void start_musicbox() {
 
   MENU.outln(F("\n >>> * <<<"));
   MENU.men_selected = 0;
-  MENU.play_KB_macro(F("-E40,"), false); // initialize, the comma avoids output from E40, no newline
+  MENU.play_KB_macro(F("-E40 "), false); // initialize, the space avoids output from E40, no newline
 
   switch(random(23)) {		// random scale
   case 0: case 1: case 3: case 4:

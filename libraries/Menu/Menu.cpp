@@ -1040,7 +1040,7 @@ void Menu::menu_page_info(char pg) const {
   else
     space();
   out(F("menupage ")); out((int) pg);
-  tab(); out(("hotk ")); ticked(men_pages[pg].hotkey);
+  space(2); out('\''); out((char) MENU_MENU_PAGES_KEY); out(men_pages[pg].page_key); out('\'');
   tab(); out(F("group ")); ticked(men_pages[pg].active_group);
   tab(); out('"'); out(men_pages[pg].title); outln('"');
 }
@@ -1056,7 +1056,7 @@ void Menu::menu_pages_info() const {
 /* **************************************************************** */
 // menu handling:
 
-int Menu::add_page(const char *pageTitle, const char hotkey,		\
+int Menu::add_page(const char *pageTitle, const char page_key,		\
 		     void (*pageDisplay)(void), bool (*pageReaction)(char), const char ActiveGroup) {
 
   // Delayed MALLOC ERROR CHECKING from constructor:
@@ -1077,14 +1077,14 @@ int Menu::add_page(const char *pageTitle, const char hotkey,		\
 
   if (men_known < men_max) {
     men_pages[men_known].title = (char *) pageTitle;
-    men_pages[men_known].hotkey = hotkey;
+    men_pages[men_known].page_key = page_key;
     men_pages[men_known].display = pageDisplay;
     men_pages[men_known].interpret = pageReaction;
     men_pages[men_known].active_group = ActiveGroup;
     men_known++;
 #ifdef DEBUGGING_MENU
     out(F("add_page(\""));  out(pageTitle);
-    out(F("\", "));  ticked(hotkey);  out(F(",..) \t"));
+    out(F("\", "));  ticked(page_key);  out(F(",..) \t"));
     outln((int) men_known - 1);
 #endif
     return (men_known - 1);
@@ -1129,8 +1129,8 @@ void Menu::menu_display() const {
     ln();
     for (pg = 0; pg < men_known; pg++) {
       if ( pg != men_selected )		     // burried pages only
-	if ( men_pages[pg].hotkey != ' ') {  // selectable pages only
-	  out(men_pages[pg].hotkey);
+	if ( men_pages[pg].page_key != ' ') {  // selectable pages only
+	  out(men_pages[pg].page_key);
 	  equals();
 	  out(men_pages[pg].title);
 	  space(); space();
@@ -1141,6 +1141,8 @@ void Menu::menu_display() const {
   */
 
   // Display internal key bindings:
+  //   on a PC i use a broken configuration sends 'ß' instead of '?'
+  //   just accept that as '?' without telling anybody ;)
   out(F("\n'?' for menu  '_' toggle echo  '+-' verbosity"));
   if (men_selected)
     out(F("  'q' quit page"));
@@ -1217,6 +1219,7 @@ void Menu::interpret_men_input() {
   // interpreter loop over each token:
   // read all tokens:
   //   skip spaces
+  //   check for MENU_MENU_PAGES_KEY and react
   //   search for first responsible menu entity:
   //     search selected menu page first
   //     search page 0 then if not done already
@@ -1240,7 +1243,60 @@ void Menu::interpret_men_input() {
     if ( token == ' ' )
       continue;
 
+    if (token==MENU_MENU_PAGES_KEY) {	// ':'
+#ifdef DEBUGGING_MENU
+      outln(F("* MENU PAGES KEY"));
+#endif
+      switch(token = cb_peek()) {	// read next token
+      case 255:		// 255 is EOF as char	':' only	display menu pages
+	menu_pages_info();
+	return;
+	break;
+      case '?':		// maybe also on ":?" too?  drop one of 2 tokens
+      case 'ß':		// some broken configuration sends 'ß' instead of '?', silently accept
+	drop_input_token();
+	menu_pages_info();	// then info, like ':' only
+	continue;
+	break;
+      default:	// search if it is a menupage page_key
+    // search menu page page_keys:
+#ifdef DEBUGGING_MENU
+	out(F("* search page_keys\t"));
+	out(token);
+	tab();
+	outln((int) token);
+#endif
+	for (pg = 0; pg < men_known; pg++) {	// search menu page page_keys
+	  if (token == men_pages[pg].page_key) {
+	    drop_input_token();
+	    men_selected = pg;			// switch to page
+	    did_something = true;		// yes, did switch
+#ifdef DEBUGGING_MENU
+	    out(F("   found page "));
+	    out((int) pg); tab(); ticked(token);
+	    tab(); ticked(men_pages[pg].page_key); ln();
+#endif
+	    // often menu_display() will be called anyway, depending verbosity
+	    // if verbosity is too low, (but still not zero,)  we do it from here
+	    if (verbosity <= VERBOSITY_MORE)
+	      if (maybe_display_more(VERBOSITY_LOWEST))
+		menu_display();
 
+#ifdef DEBUGGING_MENU
+	    out(F("FOUND ")); menu_page_info(pg);
+#endif
+	    break;
+	  }
+	}	// search menu page page_keys
+	if (did_something) {
+#ifdef DEBUGGING_MENU
+	  out(F("SWITCH to ")); menu_page_info(men_selected);
+#endif
+	  continue;
+	}
+      } // check token *after* MENU_MENU_PAGES_KEY
+    }
+    // token not found yet...
     // search selected page first:
 #ifdef DEBUGGING_MENU
     out(F("* try selected"));
@@ -1294,52 +1350,13 @@ void Menu::interpret_men_input() {
       continue;
     // token not found yet...
 
-
-    // search menu page hotkeys:
-#ifdef DEBUGGING_MENU
-    outln(F("* search menu page hotkeys"));
-#endif
-    for (pg = 0; pg < men_known; pg++) {
-      if (token == men_pages[pg].hotkey) {
-#ifdef DEBUGGING_MENU
-	out(F("   found page "));
-	out((int) pg); tab(); ticked(token);
-	tab(); ticked(men_pages[pg].hotkey); ln();
-#endif
-
-	// FIXME: ??? ################
-	// I did this before, no idea why...
-	// seems wrong, most of the time, so deactivated for testing:
-	// (*men_pages[pg].interpret)(token);	// *might* do more, return is irrelevant
-
-	men_selected = pg;			// switch to page
-
-	// often menu_display() will be called anyway, depending verbosity
-	if (verbosity <= VERBOSITY_MORE)	// if verbosity is too low	// TODO: test!
-	  menu_display();			//   we do it from here
-
-	did_something = true;			// yes, did switch
-#ifdef DEBUGGING_MENU
-	out(F("FOUND ")); menu_page_info(pg);
-#endif
-	break;
-      }
-    }
-    if (did_something) {
-#ifdef DEBUGGING_MENU
-      out(F("SWITCH to ")); menu_page_info(men_selected);
-#endif
-      continue;
-    }
-    // token not found yet...
-
-
     // check for internal bindings next:
 #ifdef DEBUGGING_MENU
     outln(F("* search internal key bindings"));
 #endif
     switch (token) {
     case '?':
+    case 'ß':	// some broken configuration sends 'ß' instead of '?'
       if (verbosity <= VERBOSITY_MORE)	// if verbosity is too low	// TODO: test!
 	menu_display();			//   we do it from here
 

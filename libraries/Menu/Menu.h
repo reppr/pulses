@@ -29,7 +29,7 @@
 #define VERBOSITY_MORE		3
 #define VERBOSITY_HIGH		4
 
-
+#define MENU_MENU_PAGES_KEY	':'	// menu token for menupage switch
 /* **************************************************************** */
 class Pulses;
 
@@ -108,7 +108,7 @@ struct menupage {
   void (*display)(void);
   bool (*interpret)(char token);
   char *title;
-  char hotkey;
+  char page_key;
   // Configure which pages burried below men_selected remain active:
   char active_group;	// tokens on pages with the same active_group
 			// as men_selected remain active below page actions
@@ -133,7 +133,7 @@ class Menu {
   bool lurk_then_do(void);
 
   // add a menu page, return page number or -1
-  int add_page(const char *pageTitle, const char hotkey, \
+  int add_page(const char *pageTitle, const char page_key, \
 		void (*pageDisplay)(), bool (*pageReaction)(char), \
 		const char ActiveGroup);
 

@@ -884,7 +884,7 @@ void setup() {
 
 #ifdef USE_WIFI_telnet_menu
   // add WiFi page:
-  MENU.add_page("WIFI", 'Y', &WiFi_menu_display, &WiFi_menu_reaction, 'Y');
+  MENU.add_page("WiFi", 'W', &WiFi_menu_display, &WiFi_menu_reaction, 'W');
 #endif
 
   // display menu at startup, but not in music box
@@ -3456,18 +3456,17 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case ':':	// info
-    show_UI_settings();
+/*
+  case ':':		// reserved for MENU_MENU_PAGES_KEY
+    show_UI_settings();	// is on ',' now
     break;
+*/
 
   case ',':	// accept as noop in normal mode. used as delimiter to input data, displaying info. see 'menu_mode'
     if (MENU.menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE)
       display_jiffletab(selected_in(JIFFLES));
     else
-      if (DO_or_maybe_display(VERBOSITY_MORE)) {
-	MENU.out_noop();
-	MENU.ln();
-      }
+      show_UI_settings();
     break;
 
   case '|':	// accept as noop in normal mode. used as range bottom delimiter in arrays

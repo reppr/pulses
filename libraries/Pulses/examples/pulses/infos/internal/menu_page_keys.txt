@@ -1,0 +1,16 @@
+P	Pulses
+
+H	Hardware Softboard	==> 'B' (BreadBord) would be nice to free 'H' for Harmonical...
+
+I	Inputs
+
+Y	WiFi			==> W
+
+M	Magical Musicbox	new, planed
+
+S	System			new, planed:	nvs, time, internal switches and settings,
+						monitoring, maybe esp_now(),
+
+C	Compiler Configuration	planed:  sizeof(), RAM, some #define info
+
+X	Extensions		planed
