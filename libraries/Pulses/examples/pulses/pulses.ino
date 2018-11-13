@@ -7,7 +7,7 @@
 
 #define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_TOUCH_INPUT_PIN
 
-#define USE_MORSE	// incomplete
+//#define USE_MORSE	// incomplete	DEACTIVATED MORSE OUTPUT, (== PERIPHERAL_POWER_SWITCH_PIN ;)
 //#define USE_INPUTS
 //#define USE_LEDC	// to be written ;)
 #define USE_RTC_MODULE
