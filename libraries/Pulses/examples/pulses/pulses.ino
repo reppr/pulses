@@ -446,7 +446,7 @@ int reset_all_flagged_pulses_GPIO_OFF() {
   next_gpio(0);				// reset used gpio
   PULSES.hex_input_mask_index = 0;	// for convenience
 
-  if (MENU.verbosity) {
+  if (MENU.verbosity > VERBOSITY_LOWEST) {
     MENU.out(F("removed all pulses "));
     MENU.out(cnt);
     MENU.out(F("  switched pins off"));
@@ -457,6 +457,9 @@ int reset_all_flagged_pulses_GPIO_OFF() {
   #endif
 #endif
     MENU.ln();
+  } else if(MENU.verbosity) {
+    MENU.out(F("tabula rasa "));
+    MENU.outln(cnt);
   }
 
   return cnt;
