@@ -9,16 +9,9 @@
 #ifndef PROJECT_CONFIGURATION_H
 
 #if defined HACK_11_11_11_11	// hacked a setup for MagicalGuitar 11.11.2018 Zürich ;)
-  #if ! defined USE_MORSE
-//    #define USE_MORSE	// DEACTIVATED MORSE OUTPUT, (== PERIPHERAL_POWER_SWITCH_PIN ;)
-  #endif
-
   #if ! defined SOME_FIXED_TUNINGS_ONLY	// for jam sessions with metric tuned instruments
     #define SOME_FIXED_TUNINGS_ONLY
   #endif
-
-  #undef MORSE_OUTPUT_PIN
-  #define MORSE_OUTPUT_PIN	12
 
 // DEACTIVATED, PERIPHERAL_POWER_SWITCH_PIN  is *in use again* on pin 12
 // #undef PERIPHERAL_POWER_SWITCH_PIN	// unused, was 12

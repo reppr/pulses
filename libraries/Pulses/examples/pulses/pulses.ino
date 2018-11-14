@@ -3,7 +3,7 @@
 #define MAGICAL_TOILET_HACKS	// some quick dirty hacks
 //#define BRACHE_NOV_2018_SETTINGS	// temporary defaults
 
-#define HACK_11_11_11_11	// setup for MagicalGuitar 11.11.2018 Zürich ;)
+//#define HACK_11_11_11_11	// setup for MagicalGuitar 11.11.2018 Zürich ;)
 
 #define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_TOUCH_INPUT_PIN
 

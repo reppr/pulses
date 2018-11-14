@@ -13,13 +13,11 @@
 // use GPIO with pulldown as morse input
 // #define MORSE_GPIO_INPUT_PIN	34	// Morse input GPIO pin, 34 needs hardware pulldown
 
-#if ! defined HACK_11_11_11_11	// *normal use case*  the hack disables the code
-  #define MORSE_OUTPUT_PIN	2 // 2 is often blue onboard led, hang a led, a piezzo on that one :)
+#define MORSE_OUTPUT_PIN	2 // 2 is often blue onboard led, hang a led, a piezzo on that one :)
 
-  #ifndef MORSE_TOUCH_INPUT_PIN
-    #define MORSE_TOUCH_INPUT_PIN	12	// use ESP32 touch sensor as morse input
-    //#define MORSE_TOUCH_INPUT_PIN	13	// use ESP32 touch sensor as morse input
-  #endif
+#ifndef MORSE_TOUCH_INPUT_PIN
+  #define MORSE_TOUCH_INPUT_PIN	12	// use ESP32 touch sensor as morse input
+  //#define MORSE_TOUCH_INPUT_PIN	13	// use ESP32 touch sensor as morse input
 #endif
 
 // menu interface is case sensitive, so I need lowercase
@@ -30,11 +28,7 @@ hw_timer_t * morse_separation_timer = NULL;
 portMUX_TYPE morse_MUX = portMUX_INITIALIZER_UNLOCKED;
 
 // morse tick
-#if ! defined HACK_11_11_11_11	// normal case
-  unsigned long morse_TimeUnit=100000;
-#else
-  unsigned long morse_TimeUnit=200000;	// veery sloow for 11.11. onboard LED
-#endif
+unsigned long morse_TimeUnit=100000;
 
 unsigned long morse_start_ON_time=0;
 unsigned long morse_start_OFF_time=0;

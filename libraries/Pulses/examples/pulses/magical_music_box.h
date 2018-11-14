@@ -88,7 +88,7 @@ void set_MagicalMusicState(magicalmusicbox_state_t state) {	// sets the state un
 }
 
 // TODO: check&fix
-#if defined HACK_11_11_11_11
+#if defined HACK_11_11_11_11	// magic_autochanges=false;
   bool magic_autochanges=false;	// never ending jam sessions...
 #else
 bool magic_autochanges=true;	// switch if to end normal playing after MAGICAL_PERFORMACE_SECONDS
@@ -395,11 +395,6 @@ void start_musicbox() {
   divisor = random(160, 450);	// *not* tuned for other instruments
 #else				// some randomly selected metric A=440 tunings for jam sessions like in HACK_11_11_11_11
 
-#if defined HACK_11_11_11_11	// does not work without that, why?
-  pinMode(MORSE_OUTPUT_PIN, OUTPUT);
-  digitalWrite(MORSE_OUTPUT_PIN, LOW);
-#endif
-
   MENU.out(F("fixed tuning "));
   switch (random(20)) {
   case 0:
@@ -407,89 +402,33 @@ void start_musicbox() {
   case 3:
     MENU.out('a');
     divisor = 220; // 220	// A 220  ***not*** harmonical
-  #if defined HACK_11_11_11_11
-    #define MoRep	2	// MoRep morse fixed key output repetitions
-
-    for(int i=0; i<MoRep; i++) {	// TODO: borrows really *old* morse_out_xxx() functions for 11.11. ;)
-	   // TODO: borrows really *old* morse_out_xxx() functions for 11.11. ;)
-      morse_out_dot();
-      morse_out_dash();
-      morse_out_separeWord();
-    }
-  #endif
     break;
   case 4:
   case 5:
   case 6:
     MENU.out('e');
     divisor=330; // 329.36	// E4  ***not*** harmonical
-  #if defined HACK_11_11_11_11
-    for(int i=0; i<MoRep; i++) {	// TODO: borrows really *old* morse_out_xxx() functions for 11.11. ;)
-
-      morse_out_dot();
-      morse_out_separeWord();
-    }
-  #endif
     break;
   case 7:
   case 8:
     MENU.out('d');
     divisor = 294;		// 293.66 = D4
-
-  #if defined HACK_11_11_11_11
-    for(int i=0; i<MoRep; i++) {	// TODO: borrows really *old* morse_out_xxx() functions for 11.11. ;)
-
-      morse_out_dash();
-      morse_out_dot();
-      morse_out_dot();
-      morse_out_separeWord();
-    }
-  #endif
     break;
   case 9:
   case 10:
   case 11:
     MENU.out('g');
     divisor=196; // 196.00	// G3  ***not*** harmonical
-  #if defined HACK_11_11_11_11
-    for(int i=0; i<MoRep; i++) {	// TODO: borrows really *old* morse_out_xxx() functions for 11.11. ;)
-
-      morse_out_dash();
-      morse_out_dash();
-      morse_out_dot();
-      morse_out_separeWord();
-    }
-  #endif
     break;
   case 12:
   case 13:
     MENU.out('c');
     divisor=262; // 261.63	// C4  ***not*** harmonical
-  #if defined HACK_11_11_11_11
-    for(int i=0; i<MoRep; i++) {	// TODO: borrows really *old* morse_out_xxx() functions for 11.11. ;)
-
-      morse_out_dash();
-      morse_out_dot();
-      morse_out_dash();
-      morse_out_dot();
-      morse_out_separeWord();
-    }
-  #endif
     break;
   case 14:
   case 15:
     MENU.out('f');
     divisor=175; // 174.16	// F3  ***not*** harmonical
-  #if defined HACK_11_11_11_11
-    for(int i=0; i<MoRep; i++) {	// TODO: borrows really *old* morse_out_xxx() functions for 11.11. ;)
-
-      morse_out_dot();
-      morse_out_dot();
-      morse_out_dash();
-      morse_out_dot();
-      morse_out_separeWord();
-    }
-  #endif
     break;
   case 16:
   case 17:	// 11.11. ;)
@@ -497,16 +436,6 @@ void start_musicbox() {
   case 19:	// 11.11. ;)
     MENU.out('b');
     divisor=233; // 233.08	// Bb3 ***not*** harmonical
-
-  #if defined HACK_11_11_11_11
-    for(int i=0; i<MoRep; i++) {	// TODO: borrows really *old* morse_out_xxx() functions for 11.11. ;)
-      morse_out_dash();
-      morse_out_dot();
-      morse_out_dot();
-      morse_out_dot();
-      morse_out_separeWord();
-    }
-  #endif
     break;
     //    divisor=247; // 246.94	// B3  ***not*** harmonical  }
   }
