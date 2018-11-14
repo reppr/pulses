@@ -94,14 +94,17 @@ void show_battery_level() {
     break;
   }
 
-  MENU.out(F("\t(off <= "));
-  MENU.out(battery_off_level);
-  MENU.out(F("  low < "));
-  MENU.out(battery_low_level);
-  MENU.out(F("  high >= "));
-  MENU.out(battery_high_level);
-  MENU.out(F("  HIGH = 4095"));
-  MENU.outln(')');
+  if (MENU.verbosity > VERBOSITY_SOME) {
+    MENU.out(F("\t(off <= "));
+    MENU.out(battery_off_level);
+    MENU.out(F("  low < "));
+    MENU.out(battery_low_level);
+    MENU.out(F("  high >= "));
+    MENU.out(battery_high_level);
+    MENU.out(F("  HIGH = 4095"));
+    MENU.outln(')');
+  } else
+    MENU.ln();
 }
 
 bool assure_battery_level() {
