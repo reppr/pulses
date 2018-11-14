@@ -12,6 +12,8 @@
 
 #include "Wire.h"
 
+bool rtc_module_is_usable=true;	// to *get* a test read on first read, we fake it to be there
+
 #define DS1307_I2C_ADDRESS 0x68
 
 byte decToBcd(byte val) {	// convert normal decimal numbers to binary coded decimal
@@ -64,16 +66,24 @@ bool read_DS1307_time(byte *second, byte *minute, byte *hour,
   *month = bcdToDec(Wire.read());
   *year = bcdToDec(Wire.read());
 
-  if (*month==0 && *day==0 && *weekday==0)	// invalid, no module reached or not initialized
+  if (*month==0 && *day==0 && *weekday==0) {	// invalid, no module reached or not initialized
+    rtc_module_is_usable = false;
     return true;	// ERROR
-  return false;
+  }
+
+  rtc_module_is_usable = true;
+  return false;	// ok
 }
 
+// if(rtc_module_is_usable) show time stamp, else be quiet :)
 void show_DS1307_time_stamp() {		// format like  "2018-11-11_11h11m11s"
+  if(! rtc_module_is_usable)
+    return;	// be quiet if the system considers the module to be missing or not initialized
+
   byte second, minute, hour, weekday, day, month, year;
   if(read_DS1307_time(&second, &minute, &hour, &weekday, &day, &month, &year)) {
     MENU.out_Error_();
-    MENU.out(F("read_DS1307_time()"));
+    MENU.out(F("read_DS1307_time()\t*deactivated*"));
     return;	// ERROR
   }
 
