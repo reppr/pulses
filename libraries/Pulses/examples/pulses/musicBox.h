@@ -54,11 +54,9 @@
   #define  MUSICBOX_ENDING_FUNCTION	light_sleep();	// works fine
 #endif
 
-//#define  MUSICBOX_ENDING_FUNCTION	deep_sleep();	// still DAC noise!!!
+  //#define  MUSICBOX_ENDING_FUNCTION	deep_sleep();	// still DAC noise!!!
   //#define  MUSICBOX_ENDING_FUNCTION	ESP.restart();	// works fine
 #endif
-
-// #define PERIPHERAL_POWER_SWITCH_PIN		// TODO: file?
 
 
 // some pre declarations:
@@ -367,7 +365,7 @@ void musicBox_trigger_got_hot() {	// must be called when magical trigger was det
     musicBox_trigger_ISR();	// *not* as ISR
     MENU.outln(F("\nTRIGGERED!"));
     start_musicBox();
-#if defined PERIPHERAL_POWER_SWITCH_PIN		// FIXME: try again... ################################################################
+#if defined PERIPHERAL_POWER_SWITCH_PIN
     peripheral_power_switch_ON();
 #endif
   }
@@ -449,6 +447,16 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
     PULSES.add_time(MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000, &trigger_enable_time);
     PULSES.setup_counted_pulse(&activate_musicBox_trigger, ACTIVE, trigger_enable_time, slice_tick_period/*dummy*/, 1);
   } else {	// all later wakeups
+
+#if defined USE_BATTERY_CONTROL
+    if((PULSES.pulses[p].counter % 5) == 0) {	// keep an eye on the battery
+      if(!assure_battery_level()) {
+	MENU.outln(F("POWER LOW"));
+	HARD_END_playing(true);
+      }
+    }
+#endif
+
     if(magic_autochanges) {
       if(soft_end_cnt==0) {
 	// soft end time could be reprogrammed by user interaction, always compute new:
@@ -800,18 +808,19 @@ void start_musicBox() {
   tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
   lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
 
-
   random_octave_shift();  // random octave shift
 
   MENU.outln(F(" <<< * >>>"));
-#if defined PERIPHERAL_POWER_SWITCH_PIN		// FIXME: try again... ################################################################
-  peripheral_power_switch_ON();
+#if defined PERIPHERAL_POWER_SWITCH_PIN
+    peripheral_power_switch_ON();
 #endif
+
   // TODO: do *not* expect it on pulse pulses[0]
   struct time base_period = PULSES.pulses[0].period;
   cycle = scale2harmonical_cycle(selected_in(SCALES), &base_period);
   used_subcycle = cycle;
   //  #define AUTOMAGIC_CYCLE_TIMING_MINUTES	7	// *max minutes*, sets performance timing based on cycle
+
 #if defined AUTOMAGIC_CYCLE_TIMING_MINUTES
   used_subcycle={AUTOMAGIC_CYCLE_TIMING_MINUTES*60*1000000L,0};
   {
@@ -825,6 +834,7 @@ void start_musicBox() {
     }
   }
 #endif
+
   MENU.out(F("used subcycle:"));
   PULSES.display_time_human(used_subcycle);
   MENU.ln();
