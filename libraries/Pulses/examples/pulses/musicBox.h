@@ -1,5 +1,5 @@
 /*
-  magical_musicbox.h
+  magical_musicBox.h
 */
 
 #define AUTOMAGIC_CYCLE_TIMING_MINUTES	65	// *max minutes*, sets performance timing based on cycle
@@ -40,8 +40,6 @@
   #define MAGICAL_TRIGGER_BLOCK_SECONDS	3
 #endif
 
-bool blocked_trigger_shown=false;	// show only once a run
-
 #if ! defined MUSICBOX_HARD_END_SECONDS
   #define  MUSICBOX_HARD_END_SECONDS	15*60
 #endif
@@ -65,12 +63,13 @@ bool blocked_trigger_shown=false;	// show only once a run
 
 // some pre declarations:
 void musicBox_butler(int);
-void magical_butler(int);
+void magical_butler(int);	// old version, obsolete?
 
-// MagicalMusicState
-enum magicalmusicbox_state_t {OFF=0, ENDING, SLEEPING, SNORING, AWAKE, FADE};
-magicalmusicbox_state_t MagicalMusicState=OFF;
-void set_MagicalMusicState(magicalmusicbox_state_t state) {	// sets the state unconditionally
+
+// MusicBoxState
+enum musicbox_state_t {OFF=0, ENDING, SLEEPING, SNORING, AWAKE, FADE};
+musicbox_state_t MusicBoxState=OFF;
+void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditionally
   switch (state) {			// initializes state if necessary
   case OFF:
     break;
@@ -85,11 +84,11 @@ void set_MagicalMusicState(magicalmusicbox_state_t state) {	// sets the state un
   case FADE:
     break;
   default:
-    MENU.outln(F("unknown MagicalMusicState"));	// should not happen
+    MENU.outln(F("unknown MusicBoxState"));	// should not happen
     return;					// error, return
   }
 
-  MagicalMusicState = state;		// OK
+  MusicBoxState = state;		// OK
 }
 
 // TODO: check&fix
@@ -99,72 +98,12 @@ void set_MagicalMusicState(magicalmusicbox_state_t state) {	// sets the state un
 bool magic_autochanges=true;	// switch if to end normal playing after MAGICAL_PERFORMACE_SECONDS
 #endif
 
-portMUX_TYPE magical_MUX = portMUX_INITIALIZER_UNLOCKED;
-
-// very simple one shot implementation:
-//void furzificate(int dummy=0) {	// switch to a quiet, farting patterns, u.a.
-//  /* with the dummy int parameter it passes as payload for a pulse */
-void furzificate() {	// switch to a quiet, farting patterns, u.a.
-  MENU.outln(F("furzificate()"));
-  set_MagicalMusicState(SNORING);
-
-  switch (random(10)) {
-  case 0:	// kalimbaxyl
-    select_array_in(JIFFLES, kalimbaxyl);
-    MENU.play_KB_macro("j");
-    break;
-  case 1:	// back_to_ground
-    select_array_in(JIFFLES, back_to_ground);
-    MENU.play_KB_macro("j");
-    break;
-  case 2:	// *3 jiffletab0	"Frosch"
-    select_array_in(JIFFLES, jiffletab0);
-    MENU.play_KB_macro(F("*3 j"));
-    break;
-  case 3:	// J3j jiff_december
-    select_array_in(JIFFLES, jiff_december);
-    MENU.play_KB_macro(F("*4/3 j"));
-    break;
-  case 4:	// jiff_dec128  the drummer in the cathedral
-    select_array_in(JIFFLES, jiff_dec128);
-    MENU.play_KB_macro(F("*3/2 j S0n"));
-    break;
-  case 5:	// jiffletab, silent rhythmes
-    select_array_in(JIFFLES, jiffletab);
-    MENU.play_KB_macro("j");
-    break;
-  case 6:	// jiff_dec_pizzicato	dirty!
-    select_array_in(JIFFLES, jiff_dec_pizzicato);
-    MENU.play_KB_macro(F("*3 j"));
-    break;
-  case 7:	// jiffletab0	fröhliches Knatterfurzkonzert explodiert
-    select_array_in(JIFFLES,jiffletab0 );
-    MENU.play_KB_macro(F("*6 j S0n"));
-    break;
-  case 8:	// aktivitätswellen  jiffletab01
-    select_array_in(JIFFLES, jiffletab01);
-    MENU.play_KB_macro(F("*3 j"));
-    break;
-  case 9:	// d4096_6 churzi plipps
-    select_array_in(JIFFLES, d4096_6);
-    MENU.play_KB_macro("j");
-    break;
-  }
-  MENU.out(F("jiffle: "));
-  MENU.outln(selected_name(JIFFLES));
-}
-
-void magic_trigger_ON();	// forward declaration
-bool magical_trigger_enabled=false;
-
 struct time musicbox_start_time;
+struct time cycle;		// TODO: move to Harmonical?
+struct time used_subcycle;	// TODO: move to Harmonical? ? ?
 
-struct time cycle;	// TODO: move to Harmonical?
-
-struct time used_subcycle;
-
-unsigned short cycle_slices = 180;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
 /*
+  select something like
    unsigned short cycle_slices = 72;	// test&adapt   classical aesthetics?
    unsigned short cycle_slices = 120;	// test&adapt   classical aesthetics?
    unsigned short cycle_slices = 90*3;	// test&adapt   simplified keeping important details?
@@ -172,6 +111,7 @@ unsigned short cycle_slices = 180;	// *DO NOT SET DIRECTLY* use set_cycle_slice_
    unsigned short cycle_slices = 180;	// test&adapt	sometimes less is more
    unsigned short cycle_slices = 360;	// test&adapt   classical aesthetics?
 */
+unsigned short cycle_slices = 180;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
 
 struct time slice_tick_period;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
 
@@ -255,23 +195,23 @@ void soft_end_playing(int days_to_live, int survive_level) {	// soft ending of m
   void soft_end_playing(int days_to_live, int survive_level);
 
   (primary pulses are selected)
-  if(MagicalMusicState)
-    if(MagicalMusicState > ENDING) {		// in a play mode: initiate end
+  if(MusicBoxState)
+    if(MusicBoxState > ENDING) {		// in a play mode: initiate end
       kill all selected pulses that have not been used yet
       also kill all selected p that have not been alive yet for least survive_level times
 
       set survivers to be COUNTED pulses with 'days_to_live' repeats
-      set_MagicalMusicState(ENDING);
+      set_MusicBoxState(ENDING);
     } else
-    if(MagicalMusicState == ENDING) {		// in a play mode: initiate end
+    if(MusicBoxState == ENDING) {		// in a play mode: initiate end
       check for survivors
       when no one is left, then *SWITCH OFF* musicbox
 */
-  if(MagicalMusicState == OFF)
+  if(MusicBoxState == OFF)
     return;
 
-  if(MagicalMusicState > ENDING) {		// initiate end
-    set_MagicalMusicState(ENDING);
+  if(MusicBoxState > ENDING) {		// initiate end
+    set_MusicBoxState(ENDING);
     MENU.out(F("soft_end_playing("));		// info
     MENU.out(soft_end_days_to_live);
     MENU.out(F(", "));
@@ -290,14 +230,14 @@ void soft_end_playing(int days_to_live, int survive_level) {	// soft ending of m
     }
     stress_event_cnt = -1;	// stress event expected after switching to ENDING
   } else {
-    if(MagicalMusicState == ENDING) {		// ENDING
+    if(MusicBoxState == ENDING) {		// ENDING
       for (int pulse=0; pulse<PL_MAX; pulse++) {	// check for any active pulses
 	if (PULSES.pulses[pulse].flags & ACTIVE)	//   still something active?
 	  return;
       }
       // no activity remaining
 
-      MagicalMusicState = OFF;
+      MusicBoxState = OFF;
       MENU.outln(F("playing ended"));
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
@@ -316,8 +256,10 @@ void soft_end_playing(int days_to_live, int survive_level) {	// soft ending of m
 }
 
 void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard end playing
-  if(MagicalMusicState == OFF)
+  /*	TODO: TEST:	i'd rather deactivate that, so that it works in abnormal situations too
+  if(MusicBoxState == OFF)
     return;
+  */
 
   if(with_title)
     MENU.outln(F("HARD_END_playing()"));
@@ -332,20 +274,107 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
 #endif
 
   reset_all_flagged_pulses_GPIO_OFF();
-  MagicalMusicState = OFF;
+  MusicBoxState = OFF;
   delay(600);	// send remaining output
 
   MAGICAL_MUSICBOX_ENDING;	// sleep, restart or somesuch	// *ENDED*
 }
 
+portMUX_TYPE musicBox_trigger_MUX = portMUX_INITIALIZER_UNLOCKED;
+
+void musicBox_trigger_ON();	// forward declaration
+bool musicBox_trigger_enabled=false;
+bool blocked_trigger_shown=false;	// show only once a run
+
 void activate_musicBox_trigger(int dummy_p) {
-  magical_trigger_enabled = true;
+  musicBox_trigger_enabled = true;
   if(MENU.verbosity >= VERBOSITY_LOWEST)
     MENU.outln(F("trigger enabled"));
 }
 
 
-//#define DEBUG_CLEANUP  TODO: remove debug code
+unsigned int magical_trigger_cnt=0;
+void musicBox_trigger_OFF();
+
+void magical_trigger_ISR() {	// can also be used on the non interrupt version :)
+  portENTER_CRITICAL_ISR(&musicBox_trigger_MUX);
+  static struct time triggered_at=PULSES.get_now();	// preserves last seen fresh trigger time
+
+  struct time new_trigger = PULSES.get_now();		// new trigger time
+  struct time duration = new_trigger;			// remember
+
+  bool triggered=false;
+  switch (MusicBoxState) {
+  case OFF:
+  case ENDING:
+  case SNORING:
+    triggered = true;			// always accept trigger in these states
+    break;
+  case AWAKE:
+    if(musicBox_trigger_enabled)		// enabled?  was it awake long enough for triggering again?
+      triggered=true;			//   accept
+    else if(!blocked_trigger_shown) {
+      MENU.outln(F("trigger blocked"));	// FIXME: ################
+      blocked_trigger_shown = true;
+    }
+    break;
+  default:
+    MENU.outln(F("magical_trigger_ISR unknown state"));	// should not happen
+    triggered = true;	// not save... but
+  }
+
+  if(triggered) {
+    musicBox_trigger_enabled = false;
+    blocked_trigger_shown = false;
+    triggered_at = new_trigger;
+    magical_trigger_cnt++;
+  }
+
+  portEXIT_CRITICAL_ISR(&musicBox_trigger_MUX);
+}
+
+void musicBox_trigger_ON() {
+#if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks *NOT* using the interrupt
+  MENU.out(F("MAGICAL_TRIGGER ON\t"));
+  MENU.out(MAGICAL_TRIGGER_PIN);
+  MENU.tab();
+  MENU.outln(magical_trigger_cnt);
+  pinMode(MAGICAL_TRIGGER_PIN, INPUT);
+  attachInterrupt(digitalPinToInterrupt(MAGICAL_TRIGGER_PIN), magical_trigger_ISR, RISING);
+#else
+  ;
+#endif
+}
+
+// TODO: ################  DOES NOT WORK: isr is *not* called any more BUT THE SYSTEM BECOMES STRESSED!
+void musicBox_trigger_OFF() {
+#if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks *NOT* using the interrupt
+  MENU.outln(F("musicBox_trigger_OFF\t"));
+  detachInterrupt(digitalPinToInterrupt(MAGICAL_TRIGGER_PIN));
+  //  esp_intr_free(digitalPinToInterrupt(MAGICAL_TRIGGER_PIN));
+#endif
+  musicBox_trigger_enabled=false;
+}
+
+
+#if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
+void start_musicBox();			// forward declaration
+//
+void magical_trigger_got_hot() {	// must be called when magical trigger was detected high
+  if(musicBox_trigger_enabled) {
+    magical_trigger_ISR();	// *not* as ISR
+    MENU.outln(F("\nTRIGGERED!"));
+    start_musicBox();
+#if defined PERIPHERAL_POWER_SWITCH_PIN		// FIXME: try again... ################################################################
+    peripheral_power_switch_ON();
+#endif
+  }
+  musicBox_trigger_enabled=false;
+}
+#endif
+
+
+//#define DEBUG_CLEANUP  TODO: maybe remove debug code, but can give interesting insights...
 void magical_cleanup(int p) {	// deselect unused primary pulses, check if playing has ended
   if(!magic_autochanges)	// completely switched off by magic_autochanges==false
     return;			// noop
@@ -414,14 +443,14 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
     MENU.outln(F("butler second init "));
     if(MENU.verbosity)
       MENU.outln(F("butler: prepare trigger"));
-    struct time trigger_enable_time = musicbox_start_time;
+    struct time trigger_enable_time = musicBox_start_time;
     PULSES.add_time(MAGICAL_TRIGGER_BLOCK_SECONDS*1000000, &trigger_enable_time);
     PULSES.setup_counted_pulse(&activate_musicBox_trigger, ACTIVE, trigger_enable_time, slice_tick_period/*dummy*/, 1);
   } else {	// all later wakeups
     if(magic_autochanges) {
       if(soft_end_cnt==0) {
 	// soft end time could be reprogrammed by user interaction, always compute new:
-	struct time soft_end_time=musicbox_start_time;
+	struct time soft_end_time=musicBox_start_time;
 	PULSES.add_time(&used_subcycle, &soft_end_time);
 	PULSES.add_time(100, &soft_end_time);		// tolerance
 	struct time thisNow = PULSES.pulses[p].next;	// still unchanged?
@@ -436,16 +465,16 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
   } // all later wakeups
 }
 
-void magical_butler(int p);	// pre declare payload	soon obsolete
+// void magical_butler(int p);	// pre declare payload	soon obsolete ################################################################
 
 // remember pulse index of the butler, so we can call him, if we need him ;)
-int musicbox_butler_i=ILLEGAL;	// pulse index of musicBox_butler(p)
-
-void start_musicbox() {
-  MENU.outln(F("start_musicbox()"));
-  set_MagicalMusicState(AWAKE);
-  magical_trigger_enabled=false;
+int musicBox_butler_i=ILLEGAL;	// pulse index of musicBox_butler(p)
+void start_musicBox() {
+  MENU.outln(F("start_musicBox()"));
+  set_MusicBoxState(AWAKE);
+  musicBox_trigger_enabled=false;
   blocked_trigger_shown = false;	// show only once a run
+  musicBox_butler_i=ILLEGAL;
 
 #if defined  USE_RTC_MODULE
   show_DS1307_time_stamp();
@@ -709,7 +738,7 @@ void start_musicbox() {
   MENU.ln();
   show_cycle(cycle);
 
-  musicbox_start_time = PULSES.get_now();	// keep musicbox_start_time
+  musicBox_start_time = PULSES.get_now();	// keep musicBox_start_time
   PULSES.activate_selected_synced_now(sync);	// 'n' sync and activate
 
   struct time dummy;	// dummy, *the butler knows* when to do what...
@@ -720,8 +749,8 @@ void start_musicbox() {
 
   set_cycle_slice_number(cycle_slices);
   // remember pulse index of the butler, so we can call him, if we need him ;)
-  musicbox_butler_i =	\
-    PULSES.setup_pulse(&musicBox_butler, ACTIVE, musicbox_start_time, slice_tick_period);
+  musicBox_butler_i =	\
+    PULSES.setup_pulse(&musicBox_butler, ACTIVE, musicBox_start_time, slice_tick_period);
 
   /*
     when starting cycle_monitor() always *reset cycle_monitor_last_seen_division*
@@ -729,7 +758,7 @@ void start_musicbox() {
   */
   cycle_monitor_last_seen_division=0;	// TODO: HERE? #################
   PULSES.setup_pulse(&cycle_monitor, ACTIVE, PULSES.get_now(), slice_tick_period);
-  stress_event_cnt = -3;	// some stress events will often happen after starting the musicbox
+  stress_event_cnt = -3;	// some stress events will often happen after starting the musicBox
 }
 
 
@@ -748,86 +777,6 @@ void magical_stress_release() {		// special stress release for magical music box
     stress_event_cnt = 0;
   }
 }
-
-
-unsigned int magical_trigger_cnt=0;
-void magic_trigger_OFF();
-
-void magical_trigger_ISR() {	// can also be used on the non interrupt version :)
-  portENTER_CRITICAL_ISR(&magical_MUX);
-  static struct time triggered_at=PULSES.get_now();	// preserves last seen fresh trigger time
-
-  struct time new_trigger = PULSES.get_now();		// new trigger time
-  struct time duration = new_trigger;			// remember
-
-  bool triggered=false;
-  switch (MagicalMusicState) {
-  case OFF:
-  case ENDING:
-  case SNORING:
-    triggered = true;			// always accept trigger in these states
-    break;
-  case AWAKE:
-    if(magical_trigger_enabled)		// enabled?  was it awake long enough for triggering again?
-      triggered=true;			//   accept
-    else if(!blocked_trigger_shown) {
-      MENU.outln(F("trigger blocked"));	// FIXME: ################
-      blocked_trigger_shown = true;
-    }
-    break;
-  default:
-    MENU.outln(F("magical_trigger_ISR unknown state"));	// should not happen
-    triggered = true;	// not save... but
-  }
-
-  if(triggered) {
-    magical_trigger_enabled = false;
-    blocked_trigger_shown = false;
-    triggered_at = new_trigger;
-    magical_trigger_cnt++;
-  }
-
-  portEXIT_CRITICAL_ISR(&magical_MUX);
-}
-
-void magic_trigger_ON() {
-#if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks *NOT* using the interrupt
-  MENU.out(F("MAGICAL_TRIGGER ON\t"));
-  MENU.out(MAGICAL_TRIGGER_PIN);
-  MENU.tab();
-  MENU.outln(magical_trigger_cnt);
-  pinMode(MAGICAL_TRIGGER_PIN, INPUT);
-  attachInterrupt(digitalPinToInterrupt(MAGICAL_TRIGGER_PIN), magical_trigger_ISR, RISING);
-#else
-  ;
-#endif
-}
-
-// TODO: ################  DOES NOT WORK: isr is *not* called any more BUT THE SYSTEM BECOMES STRESSED!
-void magic_trigger_OFF() {
-#if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks *NOT* using the interrupt
-  MENU.outln(F("magic_trigger_OFF\t"));
-  detachInterrupt(digitalPinToInterrupt(MAGICAL_TRIGGER_PIN));
-  //  esp_intr_free(digitalPinToInterrupt(MAGICAL_TRIGGER_PIN));
-#endif
-  magical_trigger_enabled=false;
-}
-
-
-#if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
-//digitalRead(MAGICAL_TRIGGER_PIN)
-void magical_trigger_got_hot() {	// must be called when magical trigger was detected high
-  if(magical_trigger_enabled) {
-    magical_trigger_ISR();	// *not* as ISR
-    MENU.outln(F("\nTRIGGERED!"));
-    start_musicbox();
-#if defined PERIPHERAL_POWER_SWITCH_PIN		// FIXME: try again... ################################################################
-    peripheral_power_switch_ON();
-#endif
-  }
-  magical_trigger_enabled=false;
-}
-#endif
 
 
 // magical fart on reading a floating GPIO pin ;)
@@ -1007,7 +956,7 @@ void magical_butler(int p) {
     PULSES.pulses[p].period.time = MAGICAL_TRIGGER_BLOCK_SECONDS*1000000L;
     break;
   case 2:	// enable trigger and prepare soft end
-    magical_trigger_enabled = true;
+    musicBox_trigger_enabled = true;
     MENU.outln(F("trigger enabled"));
 #if defined AUTOMAGIC_CYCLE_TIMING_MINUTES	// MAX minutes
     {
@@ -1144,7 +1093,7 @@ bool musicBox_reaction(char token) {
   case 'n':
     if((input_value = MENU.numeric_input(cycle_slices) > 0)) {
       set_cycle_slice_number(input_value);
-      PULSES.pulses[musicbox_butler_i].period = slice_tick_period;	// a bit adventurous ;)
+      PULSES.pulses[musicBox_butler_i].period = slice_tick_period;	// a bit adventurous ;)
     }
     break;
   default:
@@ -1152,4 +1101,59 @@ bool musicBox_reaction(char token) {
   }
 
   return true;
+}
+
+
+// TODO: furzificate()	*NOT USED ANY MORE*
+// very simple one shot implementation:
+//void furzificate(int dummy=0) {	// switch to a quiet, farting patterns, u.a.
+//  /* with the dummy int parameter it passes as payload for a pulse */
+void furzificate() {	// switch to a quiet, farting patterns, u.a.
+  MENU.outln(F("furzificate()"));
+  set_MusicBoxState(SNORING);
+
+  switch (random(10)) {
+  case 0:	// kalimbaxyl
+    select_array_in(JIFFLES, kalimbaxyl);
+    MENU.play_KB_macro("j");
+    break;
+  case 1:	// back_to_ground
+    select_array_in(JIFFLES, back_to_ground);
+    MENU.play_KB_macro("j");
+    break;
+  case 2:	// *3 jiffletab0	"Frosch"
+    select_array_in(JIFFLES, jiffletab0);
+    MENU.play_KB_macro(F("*3 j"));
+    break;
+  case 3:	// J3j jiff_december
+    select_array_in(JIFFLES, jiff_december);
+    MENU.play_KB_macro(F("*4/3 j"));
+    break;
+  case 4:	// jiff_dec128  the drummer in the cathedral
+    select_array_in(JIFFLES, jiff_dec128);
+    MENU.play_KB_macro(F("*3/2 j S0n"));
+    break;
+  case 5:	// jiffletab, silent rhythmes
+    select_array_in(JIFFLES, jiffletab);
+    MENU.play_KB_macro("j");
+    break;
+  case 6:	// jiff_dec_pizzicato	dirty!
+    select_array_in(JIFFLES, jiff_dec_pizzicato);
+    MENU.play_KB_macro(F("*3 j"));
+    break;
+  case 7:	// jiffletab0	fröhliches Knatterfurzkonzert explodiert
+    select_array_in(JIFFLES,jiffletab0 );
+    MENU.play_KB_macro(F("*6 j S0n"));
+    break;
+  case 8:	// aktivitätswellen  jiffletab01
+    select_array_in(JIFFLES, jiffletab01);
+    MENU.play_KB_macro(F("*3 j"));
+    break;
+  case 9:	// d4096_6 churzi plipps
+    select_array_in(JIFFLES, d4096_6);
+    MENU.play_KB_macro("j");
+    break;
+  }
+  MENU.out(F("jiffle: "));
+  MENU.outln(selected_name(JIFFLES));
 }

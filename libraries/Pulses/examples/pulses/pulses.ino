@@ -89,7 +89,7 @@ using namespace std;	// ESP8266 needs that
 // some early definitions keep compiler happy
 
 // stress managment
-unsigned int stress_emergency=4096*6;	// magical musicbox test			  TODO: fine tune
+unsigned int stress_emergency=4096*6;	// magical musicBox test			  TODO: fine tune
 unsigned int stress_event_level=512;	// just TESTING...				  TODO: fine tune
 int stress_event_cnt=0;			// counting stress_event_level events
 uint8_t stress_event_cnt_MAX=3;		// if the count reaches MAX stress release needed TODO: fine tune
@@ -698,7 +698,7 @@ int softboard_page=-1;		// see: maybe_run_continuous()
 #endif
 
 #if defined MAGICAL_MUSIC_BOX
-  #include "magical_music_box.h"
+  #include "musicBox.h"
 #endif
 
 #if defined ESP32
@@ -4196,7 +4196,8 @@ bool menu_pulses_reaction(char menu_input) {
     reset_all_flagged_pulses_GPIO_OFF();
 
 #if defined MAGICAL_MUSIC_BOX
-    MagicalMusicState=OFF;
+    MusicBoxState=OFF;	// use function ################################################################
+    musicBox_butler_i=ILLEGAL;	// pulse index of musicBox_butler(p)
 #endif
 
     if(MENU.cb_peek() == '!') {		// 'X!' does 'X' *and* resets time_unit
