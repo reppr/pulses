@@ -67,9 +67,9 @@
 #if defined ESP32
   #if defined ESP32_15_clicks_no_display_TIME_MACHINE2
 // planed:  #define AUTOSTART	MENU.play_KB_macro("-E40U5 *64 n"); selected_experiment=-1;	// rhythm! PENTATONIC
-  #if defined MAGICAL_MUSIC_BOX
-    #define AUTOSTART	start_musicbox();
-//    #define AUTOSTART	start_musicbox(); magic_trigger_ON();
+  #if defined HARMONICAL_MUSIC_BOX
+    #define AUTOSTART	start_musicBox();
+//    #define AUTOSTART	start_musicBox(); magic_trigger_ON();
   #else
 // #define AUTOSTART	MENU.play_KB_macro("E40a5 S3 *2 J64j -n"); selected_experiment=-1;	// furzification test ;)
     #define AUTOSTART	MENU.play_KB_macro("-E40a5 *2 n"); selected_experiment=-1;	// Lichterfest	a5 == TIME MACHINE

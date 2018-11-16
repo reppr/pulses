@@ -1,5 +1,5 @@
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
-#define MAGICAL_MUSIC_BOX
+#define HARMONICAL_MUSIC_BOX
 #define MAGICAL_TOILET_HACKS	// some quick dirty hacks
 //#define BRACHE_NOV_2018_SETTINGS	// temporary defaults
 
@@ -697,7 +697,7 @@ int softboard_page=-1;		// see: maybe_run_continuous()
   #include "ledc_audio.h"
 #endif
 
-#if defined MAGICAL_MUSIC_BOX
+#if defined HARMONICAL_MUSIC_BOX
   #include "musicBox.h"
 #endif
 
@@ -786,8 +786,8 @@ void setup() {
   battery_control_setup();
 #endif
 
-#ifdef MAGICAL_MUSIC_BOX
-  magical_music_box_setup();
+#ifdef HARMONICAL_MUSIC_BOX
+  musicBox_setup();
 #endif
 
 #ifdef GPIO_PINS
@@ -890,12 +890,12 @@ void setup() {
   MENU.add_page("WiFi", 'W', &WiFi_menu_display, &WiFi_menu_reaction, 'W');
 #endif
 
-  #ifdef MAGICAL_MUSIC_BOX
+  #ifdef HARMONICAL_MUSIC_BOX
     MENU.add_page("musicBox", 'M', &musicBox_display, &musicBox_reaction, 'P');
   #endif
 
   // display menu at startup, but not in music box
-  #if ! defined MAGICAL_MUSIC_BOX
+  #if ! defined HARMONICAL_MUSIC_BOX
     MENU.menu_display();
   #endif
 
@@ -932,11 +932,11 @@ void setup() {
   random_entropy();	// entropy from thit and that
 #endif
 
-#ifdef MAGICAL_MUSIC_BOX
+#ifdef HARMONICAL_MUSIC_BOX
   #if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks, *no* interrupt
     magic_trigger_ON();
   #else
-    pinMode(MAGICAL_TRIGGER_PIN, INPUT);
+    pinMode(MUSICBOX_TRIGGER_PIN, INPUT);
   #endif
 #endif
 
@@ -1069,7 +1069,7 @@ void loop() {	// ARDUINO
   while (PULSES.check_maybe_do()) {	// in stress PULSES get's *first* priority.
     ++stress_count;
 
-#if defined MAGICAL_MUSIC_BOX    // magical_stress_release();
+#if defined HARMONICAL_MUSIC_BOX    // magical_stress_release();
     if (stress_count >= stress_emergency) {
       magical_stress_release();
       stress_count = 0;
@@ -1121,7 +1121,7 @@ void loop() {	// ARDUINO
 
   if (stress_count > stress_event_level) {
     if(++stress_event_cnt > stress_event_cnt_MAX) {
-#if defined MAGICAL_MUSIC_BOX			// magical_stress_release();
+#if defined HARMONICAL_MUSIC_BOX			// magical_stress_release();
       magical_stress_release();
 #else
       MENU.outln(F("need stress release"));	// TODO: other stress release strategies
@@ -1130,11 +1130,11 @@ void loop() {	// ARDUINO
   } else if(stress_event_cnt < 0)	// stress event was expected, but did not happen
     stress_event_cnt = 0;		// reset expectations
 
-#if defined MAGICAL_MUSIC_BOX
+#if defined HARMONICAL_MUSIC_BOX
  #if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
-  if(digitalRead(MAGICAL_TRIGGER_PIN)) {
+  if(digitalRead(MUSICBOX_TRIGGER_PIN)) {
     digitalWrite(2,HIGH);	// REMOVE: for field testing only
-    magical_trigger_got_hot();	// must be called when magical trigger was detected high
+    musicBox_trigger_got_hot();	// must be called when musicBox trigger was detected high
   }
  #else
   if(switch_magical_trigger_off) {
@@ -2277,7 +2277,7 @@ void display_payload(int pulse) {
     return;
   }
 
-#if defined MAGICAL_MUSIC_BOX
+#if defined HARMONICAL_MUSIC_BOX
   scratch=&musicBox_butler;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out("musicBox_butler");
@@ -4195,7 +4195,7 @@ bool menu_pulses_reaction(char menu_input) {
     // set MCP23017 pins low
     reset_all_flagged_pulses_GPIO_OFF();
 
-#if defined MAGICAL_MUSIC_BOX
+#if defined HARMONICAL_MUSIC_BOX
     MusicBoxState=OFF;	// use function ################################################################
     musicBox_butler_i=ILLEGAL;	// pulse index of musicBox_butler(p)
 #endif

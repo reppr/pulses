@@ -1,20 +1,20 @@
 /*
-  magical_musicBox.h
+  musicBox.h
 */
 
 #define AUTOMAGIC_CYCLE_TIMING_MINUTES	65	// *max minutes*, sets performance timing based on cycle
 // #define SOME_FIXED_TUNINGS_ONLY		// fixed pitchs only like E A D G C F B  see: HACK_11_11_11_11
 
-//#define DEBUGGING_MAGICAL_MUSICBOX
-#if defined DEBUGGING_MAGICAL_MUSICBOX
- #define MAGICAL_PERFORMACE_SECONDS	30
- #define MAGICAL_TRIGGER_BLOCK_SECONDS	6
+//#define DEBUGGING_MUSICBOX
+#if defined DEBUGGING_MUSICBOX
+ #define MUSICBOX_PERFORMACE_SECONDS	30
+ #define MUSICBOX_TRIGGER_BLOCK_SECONDS	6
  #define MUSICBOX_HARD_END_SECONDS	2*60
 #endif
 
 #if defined BRACHE_NOV_2018_SETTINGS
-  #define MAGICAL_PERFORMACE_SECONDS	6*60	// BRACHE
-  #define MAGICAL_TRIGGER_BLOCK_SECONDS	20	// BRACHE
+  #define MUSICBOX_PERFORMACE_SECONDS	6*60	// BRACHE
+  #define MUSICBOX_TRIGGER_BLOCK_SECONDS	20	// BRACHE
   #define MUSICBOX_HARD_END_SECONDS	8*60	// BRACHE
 #endif
 
@@ -28,34 +28,34 @@
   #include "peripheral_power_switch.h"
 #endif
 
-#ifndef MAGICAL_TRIGGER_PIN
-  #define MAGICAL_TRIGGER_PIN	34
+#ifndef MUSICBOX_TRIGGER_PIN
+  #define MUSICBOX_TRIGGER_PIN	34
 #endif
 
-#ifndef MAGICAL_PERFORMACE_SECONDS
-  #define MAGICAL_PERFORMACE_SECONDS	12*60
+#ifndef MUSICBOX_PERFORMACE_SECONDS
+  #define MUSICBOX_PERFORMACE_SECONDS	12*60
 #endif
 
-#if ! defined MAGICAL_TRIGGER_BLOCK_SECONDS
-  #define MAGICAL_TRIGGER_BLOCK_SECONDS	3
+#if ! defined MUSICBOX_TRIGGER_BLOCK_SECONDS
+  #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3
 #endif
 
 #if ! defined MUSICBOX_HARD_END_SECONDS
   #define  MUSICBOX_HARD_END_SECONDS	15*60
 #endif
 
-#if ! defined MAGICAL_MUSICBOX_ENDING	// *one* of the following:
-//  #define  MAGICAL_MUSICBOX_ENDING	light_sleep();	// works fine
+#if ! defined MUSICBOX_ENDING_FUNCTION	// *one* of the following:
+//  #define  MUSICBOX_ENDING_FUNCTION	light_sleep();	// works fine
 
 #if defined HACK_11_11_11_11		// never ending jam session
-  #define  MAGICAL_MUSICBOX_ENDING	;	// just deactivated ;) 11.11.
+  #define  MUSICBOX_ENDING_FUNCTION	;	// just deactivated ;) 11.11.
 #else
   void light_sleep();	// early declaration
-  #define  MAGICAL_MUSICBOX_ENDING	light_sleep();	// works fine
+  #define  MUSICBOX_ENDING_FUNCTION	light_sleep();	// works fine
 #endif
 
-//#define  MAGICAL_MUSICBOX_ENDING	deep_sleep();	// still DAC noise!!!
-  //#define  MAGICAL_MUSICBOX_ENDING	ESP.restart();	// works fine
+//#define  MUSICBOX_ENDING_FUNCTION	deep_sleep();	// still DAC noise!!!
+  //#define  MUSICBOX_ENDING_FUNCTION	ESP.restart();	// works fine
 #endif
 
 // #define PERIPHERAL_POWER_SWITCH_PIN		// TODO: file?
@@ -95,10 +95,10 @@ void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditional
 #if defined HACK_11_11_11_11	// magic_autochanges=false;
   bool magic_autochanges=false;	// never ending jam sessions...
 #else
-bool magic_autochanges=true;	// switch if to end normal playing after MAGICAL_PERFORMACE_SECONDS
+bool magic_autochanges=true;	// switch if to end normal playing after MUSICBOX_PERFORMACE_SECONDS
 #endif
 
-struct time musicbox_start_time;
+struct time musicBox_start_time;
 struct time cycle;		// TODO: move to Harmonical?
 struct time used_subcycle;	// TODO: move to Harmonical? ? ?
 
@@ -190,7 +190,7 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
 unsigned short soft_end_days_to_live = 1;	// remaining days of life after soft end
 unsigned short soft_end_survive_level = 4;	// the level a pulse must have reached to survive soft end
 
-void soft_end_playing(int days_to_live, int survive_level) {	// soft ending of magical musicbox
+void soft_end_playing(int days_to_live, int survive_level) {	// soft ending of musicBox
 /*
   void soft_end_playing(int days_to_live, int survive_level);
 
@@ -250,7 +250,7 @@ void soft_end_playing(int days_to_live, int survive_level) {	// soft ending of m
       reset_all_flagged_pulses_GPIO_OFF();
       delay(600);	// send remaining output
 
-      MAGICAL_MUSICBOX_ENDING;	// sleep, restart or somesuch	// *ENDED*
+      MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch	// *ENDED*
     }
   }
 }
@@ -277,7 +277,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
   MusicBoxState = OFF;
   delay(600);	// send remaining output
 
-  MAGICAL_MUSICBOX_ENDING;	// sleep, restart or somesuch	// *ENDED*
+  MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch	// *ENDED*
 }
 
 portMUX_TYPE musicBox_trigger_MUX = portMUX_INITIALIZER_UNLOCKED;
@@ -293,10 +293,10 @@ void activate_musicBox_trigger(int dummy_p) {
 }
 
 
-unsigned int magical_trigger_cnt=0;
+unsigned int musicbox_trigger_cnt=0;
 void musicBox_trigger_OFF();
 
-void magical_trigger_ISR() {	// can also be used on the non interrupt version :)
+void musicBox_trigger_ISR() {	// can also be used on the non interrupt version :)
   portENTER_CRITICAL_ISR(&musicBox_trigger_MUX);
   static struct time triggered_at=PULSES.get_now();	// preserves last seen fresh trigger time
 
@@ -319,7 +319,7 @@ void magical_trigger_ISR() {	// can also be used on the non interrupt version :)
     }
     break;
   default:
-    MENU.outln(F("magical_trigger_ISR unknown state"));	// should not happen
+    MENU.outln(F("musicBox_trigger_ISR unknown state"));	// should not happen
     triggered = true;	// not save... but
   }
 
@@ -327,7 +327,7 @@ void magical_trigger_ISR() {	// can also be used on the non interrupt version :)
     musicBox_trigger_enabled = false;
     blocked_trigger_shown = false;
     triggered_at = new_trigger;
-    magical_trigger_cnt++;
+    musicbox_trigger_cnt++;
   }
 
   portEXIT_CRITICAL_ISR(&musicBox_trigger_MUX);
@@ -335,12 +335,12 @@ void magical_trigger_ISR() {	// can also be used on the non interrupt version :)
 
 void musicBox_trigger_ON() {
 #if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks *NOT* using the interrupt
-  MENU.out(F("MAGICAL_TRIGGER ON\t"));
-  MENU.out(MAGICAL_TRIGGER_PIN);
+  MENU.out(F("MUSICBOX_TRIGGER ON\t"));
+  MENU.out(MUSICBOX_TRIGGER_PIN);
   MENU.tab();
-  MENU.outln(magical_trigger_cnt);
-  pinMode(MAGICAL_TRIGGER_PIN, INPUT);
-  attachInterrupt(digitalPinToInterrupt(MAGICAL_TRIGGER_PIN), magical_trigger_ISR, RISING);
+  MENU.outln(musicbox_trigger_cnt);
+  pinMode(MUSICBOX_TRIGGER_PIN, INPUT);
+  attachInterrupt(digitalPinToInterrupt(MUSICBOX_TRIGGER_PIN), musicBox_trigger_ISR, RISING);
 #else
   ;
 #endif
@@ -350,8 +350,8 @@ void musicBox_trigger_ON() {
 void musicBox_trigger_OFF() {
 #if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks *NOT* using the interrupt
   MENU.outln(F("musicBox_trigger_OFF\t"));
-  detachInterrupt(digitalPinToInterrupt(MAGICAL_TRIGGER_PIN));
-  //  esp_intr_free(digitalPinToInterrupt(MAGICAL_TRIGGER_PIN));
+  detachInterrupt(digitalPinToInterrupt(MUSICBOX_TRIGGER_PIN));
+  //  esp_intr_free(digitalPinToInterrupt(MUSICBOX_TRIGGER_PIN));
 #endif
   musicBox_trigger_enabled=false;
 }
@@ -360,9 +360,9 @@ void musicBox_trigger_OFF() {
 #if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
 void start_musicBox();			// forward declaration
 //
-void magical_trigger_got_hot() {	// must be called when magical trigger was detected high
+void musicBox_trigger_got_hot() {	// must be called when magical trigger was detected high
   if(musicBox_trigger_enabled) {
-    magical_trigger_ISR();	// *not* as ISR
+    musicBox_trigger_ISR();	// *not* as ISR
     MENU.outln(F("\nTRIGGERED!"));
     start_musicBox();
 #if defined PERIPHERAL_POWER_SWITCH_PIN		// FIXME: try again... ################################################################
@@ -444,7 +444,7 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
     if(MENU.verbosity)
       MENU.outln(F("butler: prepare trigger"));
     struct time trigger_enable_time = musicBox_start_time;
-    PULSES.add_time(MAGICAL_TRIGGER_BLOCK_SECONDS*1000000, &trigger_enable_time);
+    PULSES.add_time(MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000, &trigger_enable_time);
     PULSES.setup_counted_pulse(&activate_musicBox_trigger, ACTIVE, trigger_enable_time, slice_tick_period/*dummy*/, 1);
   } else {	// all later wakeups
     if(magic_autochanges) {
@@ -857,10 +857,10 @@ void light_sleep() {
   pinMode(26, OUTPUT);		// avoid ugly noise on DAC during sleep
   digitalWrite(26, LOW);
 
-  if (esp_sleep_enable_ext0_wakeup((gpio_num_t) MAGICAL_TRIGGER_PIN, 1))
+  if (esp_sleep_enable_ext0_wakeup((gpio_num_t) MUSICBOX_TRIGGER_PIN, 1))
     MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
 /*
-  if(gpio_wakeup_enable((gpio_num_t) MAGICAL_TRIGGER_PIN, GPIO_INTR_LOW_LEVEL))
+  if(gpio_wakeup_enable((gpio_num_t) MUSICBOX_TRIGGER_PIN, GPIO_INTR_LOW_LEVEL))
     MENU.error_ln(F("gpio_wakeup_enable()"));
 
   if (esp_sleep_enable_gpio_wakeup())
@@ -912,7 +912,7 @@ void deep_sleep() {
   esp_bt_controller_disable();
   esp_wifi_stop();
 
-  if (esp_sleep_enable_ext0_wakeup((gpio_num_t) MAGICAL_TRIGGER_PIN, 1))
+  if (esp_sleep_enable_ext0_wakeup((gpio_num_t) MUSICBOX_TRIGGER_PIN, 1))
     MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
 
   /* ONLY HELPS in light_sleep()
@@ -934,7 +934,7 @@ void deep_sleep() {
   // ESP_SLEEP_WAKEUP_GPIO	7
   MENU.outln(esp_sleep_get_wakeup_cause());
 
-  rtc_gpio_deinit((gpio_num_t) MAGICAL_TRIGGER_PIN);  // TODO: it will never get here, FIXME: ################
+  rtc_gpio_deinit((gpio_num_t) MUSICBOX_TRIGGER_PIN);  // TODO: it will never get here, FIXME: ################
 }
 
 
@@ -953,7 +953,7 @@ void magical_butler(int p) {
 #endif
   switch(PULSES.pulses[p].counter) {
   case 1:	// prepare enable trigger
-    PULSES.pulses[p].period.time = MAGICAL_TRIGGER_BLOCK_SECONDS*1000000L;
+    PULSES.pulses[p].period.time = MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000L;
     break;
   case 2:	// enable trigger and prepare soft end
     musicBox_trigger_enabled = true;
@@ -961,12 +961,12 @@ void magical_butler(int p) {
 #if defined AUTOMAGIC_CYCLE_TIMING_MINUTES	// MAX minutes
     {
       struct time til_soft_end_time=used_subcycle;
-      PULSES.sub_time(MAGICAL_TRIGGER_BLOCK_SECONDS*1000000L, &til_soft_end_time);
+      PULSES.sub_time(MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000L, &til_soft_end_time);
       PULSES.add_time(100, &til_soft_end_time);	// tolerance
       PULSES.pulses[p].period = til_soft_end_time;
     }
 #else
-    PULSES.pulses[p].period.time = (MAGICAL_PERFORMACE_SECONDS - MAGICAL_TRIGGER_BLOCK_SECONDS)*1000000L;
+    PULSES.pulses[p].period.time = (MUSICBOX_PERFORMACE_SECONDS - MUSICBOX_TRIGGER_BLOCK_SECONDS)*1000000L;
 #endif
     break;
   case 3:	// start soft ending and cleanup pulse, prepare for butler hard end
@@ -981,7 +981,7 @@ void magical_butler(int p) {
     }
 #else
     PULSES.pulses[p].period.time =
-      (MUSICBOX_HARD_END_SECONDS - MAGICAL_PERFORMACE_SECONDS - MAGICAL_TRIGGER_BLOCK_SECONDS)*1000000L;
+      (MUSICBOX_HARD_END_SECONDS - MUSICBOX_PERFORMACE_SECONDS - MUSICBOX_TRIGGER_BLOCK_SECONDS)*1000000L;
 #endif
     // start magical_cleanup() pulse taking care of selections, check for end, stop *if* end reached
     struct time duration;
@@ -1002,22 +1002,22 @@ void magical_butler(int p) {
 }
 
 
-void magical_music_box_setup() {
+void musicBox_setup() {
   MENU.ln();
 
-#if defined MAGICAL_TRIGGER_PIN
-  MENU.out(F("MAGICAL TRIGGER PIN:\t"));
-  MENU.outln(MAGICAL_TRIGGER_PIN);
-#endif	// MAGICAL_TRIGGER_PIN
-
-#if defined MAGICAL_PERFORMACE_SECONDS
-  MENU.out(F("performance seconds:\t"));
-  MENU.outln(MAGICAL_PERFORMACE_SECONDS);
+#if defined MUSICBOX_TRIGGER_PIN
+  MENU.out(F("musicBox trigger pin:\t"));
+  MENU.outln(MUSICBOX_TRIGGER_PIN);
 #endif
 
-#if defined MAGICAL_TRIGGER_BLOCK_SECONDS
+#if defined MUSICBOX_PERFORMACE_SECONDS
+  MENU.out(F("performance seconds:\t"));
+  MENU.outln(MUSICBOX_PERFORMACE_SECONDS);
+#endif
+
+#if defined MUSICBOX_TRIGGER_BLOCK_SECONDS
   MENU.out(F("disable retriggering:\t"));
-  MENU.outln(MAGICAL_TRIGGER_BLOCK_SECONDS);
+  MENU.outln(MUSICBOX_TRIGGER_BLOCK_SECONDS);
 #endif
 
 #if defined MUSICBOX_HARD_END_SECONDS
@@ -1025,7 +1025,7 @@ void magical_music_box_setup() {
   MENU.outln(MUSICBOX_HARD_END_SECONDS);
 #endif
 
-  if (esp_sleep_enable_ext0_wakeup((gpio_num_t) MAGICAL_TRIGGER_PIN, 1))
+  if (esp_sleep_enable_ext0_wakeup((gpio_num_t) MUSICBOX_TRIGGER_PIN, 1))
     MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
 }
 
