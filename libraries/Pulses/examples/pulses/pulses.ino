@@ -2278,6 +2278,12 @@ void display_payload(int pulse) {
   }
 
 #if defined MAGICAL_MUSIC_BOX
+  scratch=&musicBox_butler;
+  if (PULSES.pulses[pulse].periodic_do == scratch) {
+    MENU.out("musicBox_butler");
+    return;
+  }
+
   scratch=&magical_butler;
   if (PULSES.pulses[pulse].periodic_do == scratch) {
     MENU.out("magical_butler");

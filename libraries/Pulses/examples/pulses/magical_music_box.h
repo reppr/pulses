@@ -52,6 +52,7 @@ bool blocked_trigger_shown=false;	// show only once a run
 #if defined HACK_11_11_11_11		// never ending jam session
   #define  MAGICAL_MUSICBOX_ENDING	;	// just deactivated ;) 11.11.
 #else
+  void light_sleep();	// early declaration
   #define  MAGICAL_MUSICBOX_ENDING	light_sleep();	// works fine
 #endif
 
@@ -61,6 +62,10 @@ bool blocked_trigger_shown=false;	// show only once a run
 
 // #define PERIPHERAL_POWER_SWITCH_PIN		// TODO: file?
 
+
+// some pre declarations:
+void musicBox_butler(int);
+void magical_butler(int);
 
 // MagicalMusicState
 enum magicalmusicbox_state_t {OFF=0, ENDING, SLEEPING, SNORING, AWAKE, FADE};
@@ -156,9 +161,25 @@ struct time musicbox_start_time;
 
 struct time cycle;	// TODO: move to Harmonical?
 
-#if defined AUTOMAGIC_CYCLE_TIMING_MINUTES
 struct time used_subcycle;
-#endif
+
+unsigned short cycle_slices = 180;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
+/*
+   unsigned short cycle_slices = 72;	// test&adapt   classical aesthetics?
+   unsigned short cycle_slices = 120;	// test&adapt   classical aesthetics?
+   unsigned short cycle_slices = 90*3;	// test&adapt   simplified keeping important details?
+   unsigned short cycle_slices = 180*3;	// test&adapt	interesting lot of detail
+   unsigned short cycle_slices = 180;	// test&adapt	sometimes less is more
+   unsigned short cycle_slices = 360;	// test&adapt   classical aesthetics?
+*/
+
+struct time slice_tick_period;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
+
+void set_cycle_slice_number(short ticks_a_cycle) {
+  cycle_slices = ticks_a_cycle;
+  slice_tick_period = used_subcycle;
+  PULSES.div_time(&slice_tick_period, cycle_slices);
+}
 
 void show_cycle(struct time cycle) {
   MENU.out(F("\nharmonical cycle "));
@@ -182,7 +203,9 @@ void show_cycle(struct time cycle) {
 
   int i=0;
   //                                   !!!  a tolerance of 128 seemed *not* to be enough
-  while(cycle.time >= (shortest.time - 256/*tolerance*/) || cycle.overflow) {	// display cycle and relevant octaves
+  while(cycle.time >= (used_subcycle.time - 256/*tolerance*/) || \
+	cycle.time >= (shortest.time - 256/*tolerance*/) || \
+	cycle.overflow) {	// display cycle and relevant octaves
     MENU.out(F("2^"));
     MENU.out(i--);
     MENU.tab();
@@ -197,15 +220,6 @@ void show_cycle(struct time cycle) {
 }
 
 // cycle_monitor(p)  payload to give infos where in the cycle we are
-unsigned short cycle_slices = 180;	// test&adapt	sometimes less is more
-/*
-   unsigned short cycle_slices = 72;	// test&adapt   classical aesthetics?
-   unsigned short cycle_slices = 120;	// test&adapt   classical aesthetics?
-   unsigned short cycle_slices = 90*3;	// test&adapt   simplified keeping important details?
-   unsigned short cycle_slices = 180*3;	// test&adapt	interesting lot of detail
-   unsigned short cycle_slices = 180;	// test&adapt	sometimes less is more
-   unsigned short cycle_slices = 360;	// test&adapt   classical aesthetics?
-*/
 unsigned short cycle_monitor_last_seen_division=0;	// reset that on a start
 void cycle_monitor(int pulse) {	// show markers at important cycle divisions
   /*
@@ -232,7 +246,201 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
   cycle_monitor_last_seen_division %= cycle_slices;
 }
 
-void magical_butler(int p);		// pre declare payload
+
+unsigned short soft_end_days_to_live = 1;	// remaining days of life after soft end
+unsigned short soft_end_survive_level = 4;	// the level a pulse must have reached to survive soft end
+
+void soft_end_playing(int days_to_live, int survive_level) {	// soft ending of magical musicbox
+/*
+  void soft_end_playing(int days_to_live, int survive_level);
+
+  (primary pulses are selected)
+  if(MagicalMusicState)
+    if(MagicalMusicState > ENDING) {		// in a play mode: initiate end
+      kill all selected pulses that have not been used yet
+      also kill all selected p that have not been alive yet for least survive_level times
+
+      set survivers to be COUNTED pulses with 'days_to_live' repeats
+      set_MagicalMusicState(ENDING);
+    } else
+    if(MagicalMusicState == ENDING) {		// in a play mode: initiate end
+      check for survivors
+      when no one is left, then *SWITCH OFF* musicbox
+*/
+  if(MagicalMusicState == OFF)
+    return;
+
+  if(MagicalMusicState > ENDING) {		// initiate end
+    set_MagicalMusicState(ENDING);
+    MENU.out(F("soft_end_playing("));		// info
+    MENU.out(soft_end_days_to_live);
+    MENU.out(F(", "));
+    MENU.out(soft_end_survive_level);
+    MENU.outln(')');
+
+    for (int pulse=0; pulse<PL_MAX; pulse++) {	// make days_to_live COUNTED generating pulses
+      if (PULSES.pulse_is_selected(pulse)) {
+	if(PULSES.pulses[pulse].counter > survive_level) {	// pulse was already awake (long enough)?
+	  PULSES.pulses[pulse].remaining = days_to_live;	//   still repeat, then vanish
+	  PULSES.pulses[pulse].flags |= COUNTED;
+	} else {
+	  PULSES.init_pulse(pulse);			// unborn pulse or too young, just remove
+	}
+      }
+    }
+    stress_event_cnt = -1;	// stress event expected after switching to ENDING
+  } else {
+    if(MagicalMusicState == ENDING) {		// ENDING
+      for (int pulse=0; pulse<PL_MAX; pulse++) {	// check for any active pulses
+	if (PULSES.pulses[pulse].flags & ACTIVE)	//   still something active?
+	  return;
+      }
+      // no activity remaining
+
+      MagicalMusicState = OFF;
+      MENU.outln(F("playing ended"));
+
+#if defined PERIPHERAL_POWER_SWITCH_PIN
+      MENU.out(F("peripheral POWER OFF "));
+      MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
+      peripheral_power_switch_OFF();
+      delay(600);	// let power go down softly
+#endif
+
+      reset_all_flagged_pulses_GPIO_OFF();
+      delay(600);	// send remaining output
+
+      MAGICAL_MUSICBOX_ENDING;	// sleep, restart or somesuch	// *ENDED*
+    }
+  }
+}
+
+void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard end playing
+  if(MagicalMusicState == OFF)
+    return;
+
+  if(with_title)
+    MENU.outln(F("HARD_END_playing()"));
+
+  delay(777);
+
+#if defined PERIPHERAL_POWER_SWITCH_PIN
+  MENU.out(F("peripheral POWER OFF "));
+  MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
+  peripheral_power_switch_OFF();
+  delay(800);	// let power go down softly
+#endif
+
+  reset_all_flagged_pulses_GPIO_OFF();
+  MagicalMusicState = OFF;
+  delay(600);	// send remaining output
+
+  MAGICAL_MUSICBOX_ENDING;	// sleep, restart or somesuch	// *ENDED*
+}
+
+void activate_musicBox_trigger(int dummy_p) {
+  magical_trigger_enabled = true;
+  if(MENU.verbosity >= VERBOSITY_LOWEST)
+    MENU.outln(F("trigger enabled"));
+}
+
+
+//#define DEBUG_CLEANUP  TODO: remove debug code
+void magical_cleanup(int p) {	// deselect unused primary pulses, check if playing has ended
+  if(!magic_autochanges)	// completely switched off by magic_autochanges==false
+    return;			// noop
+
+#if defined DEBUG_CLEANUP
+  MENU.out(F("CLEANUP "));
+#endif
+
+  PULSES.deselect_unused_pulses();	// deselect unused (primary) pulses
+
+  int cnt=0;
+  for(int pulse=0; pulse<PL_MAX; pulse++) {
+    if(PULSES.pulses[pulse].flags) {	// check if playing has ended  activity?
+#if defined DEBUG_CLEANUP
+      MENU.out('p');
+      MENU.out(pulse);
+#endif
+      if(PULSES.pulses[pulse].periodic_do == &musicBox_butler) {
+#if defined DEBUG_CLEANUP
+	MENU.out(" musicBox butler");
+#endif
+	;
+      } else if(PULSES.pulses[pulse].periodic_do == &magical_butler) {
+#if defined DEBUG_CLEANUP
+	MENU.out(" magical butler");
+#endif
+	;
+      } else if(PULSES.pulses[pulse].periodic_do == &magical_cleanup) {
+#if defined DEBUG_CLEANUP
+	MENU.out(" cleanup");
+#endif
+	;
+      } else if(PULSES.pulses[pulse].periodic_do == &cycle_monitor) {
+#if defined DEBUG_CLEANUP
+	MENU.out(" cycle_monitor");
+#endif
+	;
+      } else
+	cnt++;
+#if defined DEBUG_CLEANUP
+      MENU.tab();
+#endif
+    }
+  }
+  PULSES.deselect_unused_pulses();	// dopplet gnäht... nütztabernüt
+#if defined DEBUG_CLEANUP
+  MENU.ln();
+#endif
+
+  if(cnt==0) {
+    MENU.outln(F("END reached"));
+    delay(3200); // aesthetics
+    HARD_END_playing(false);
+  }
+}
+
+void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with slice_tick_period
+  static uint8_t soft_end_cnt=0;
+
+  //  MENU.out(F("musicBox_butler "));
+//  MENU.outln(PULSES.pulses[p].counter);
+  if(PULSES.pulses[p].counter==1) {	// the butler initializes himself
+    soft_end_cnt=0;
+    cycle_monitor_last_seen_division = 0;	// start musicBox clock
+  } else if(PULSES.pulses[p].counter==2) {	// now we might have more time for some initialization
+    MENU.outln(F("butler second init "));
+    if(MENU.verbosity)
+      MENU.outln(F("butler: prepare trigger"));
+    struct time trigger_enable_time = musicbox_start_time;
+    PULSES.add_time(MAGICAL_TRIGGER_BLOCK_SECONDS*1000000, &trigger_enable_time);
+    PULSES.setup_counted_pulse(&activate_musicBox_trigger, ACTIVE, trigger_enable_time, slice_tick_period/*dummy*/, 1);
+  } else {	// all later wakeups
+    if(magic_autochanges) {
+      if(soft_end_cnt==0) {
+	// soft end time could be reprogrammed by user interaction, always compute new:
+	struct time soft_end_time=musicbox_start_time;
+	PULSES.add_time(&used_subcycle, &soft_end_time);
+	PULSES.add_time(100, &soft_end_time);		// tolerance
+	struct time thisNow = PULSES.pulses[p].next;	// still unchanged?
+	PULSES.sub_time(&thisNow, &soft_end_time);	// is it time?
+	if(soft_end_time.overflow) {			//   negative, so it *is*
+	  if(soft_end_cnt++ == 0)
+	    soft_end_playing(soft_end_days_to_live, soft_end_survive_level); // start soft end
+	}
+      } else
+	magical_cleanup(p/*dummy*/);
+    }
+  } // all later wakeups
+}
+
+void magical_butler(int p);	// pre declare payload	soon obsolete
+
+// remember pulse index of the butler, so we can call him, if we need him ;)
+int musicbox_butler_i=ILLEGAL;	// pulse index of musicBox_butler(p)
+
 void start_musicbox() {
   MENU.outln(F("start_musicbox()"));
   set_MagicalMusicState(AWAKE);
@@ -265,8 +473,9 @@ void start_musicbox() {
 #endif
 
   MENU.outln(F("\n >>> * <<<"));
-  MENU.men_selected = 0;
-  MENU.play_KB_macro(F("-E40 "), false); // initialize, the space avoids output from E40, no newline
+  MENU.men_selected = 0;	// ################
+  //  MENU.play_KB_macro(F("-E40 "), false); // initialize, the space avoids output from E40, no newline
+  MENU.play_KB_macro(F("-E40:M "), false); // initialize, the space avoids output from :M, no newline
 
   switch(random(23)) {		// random scale
   case 0: case 1: case 3: case 4:
@@ -507,16 +716,19 @@ void start_musicbox() {
   dummy.overflow=0;
   dummy.time=0;
 
-  PULSES.setup_pulse(&magical_butler, ACTIVE, PULSES.get_now(), dummy);
+  //  PULSES.setup_pulse(&magical_butler, ACTIVE, PULSES.get_now(), dummy);	// soon obsolete
 
-  struct time slice_duration = used_subcycle;
-  PULSES.div_time(&slice_duration, cycle_slices);
+  set_cycle_slice_number(cycle_slices);
+  // remember pulse index of the butler, so we can call him, if we need him ;)
+  musicbox_butler_i =	\
+    PULSES.setup_pulse(&musicBox_butler, ACTIVE, musicbox_start_time, slice_tick_period);
+
   /*
     when starting cycle_monitor() always *reset cycle_monitor_last_seen_division*
     and maybe reset stress_event_cnt
   */
-  cycle_monitor_last_seen_division=0;
-  PULSES.setup_pulse(&cycle_monitor, ACTIVE, PULSES.get_now(), slice_duration);
+  cycle_monitor_last_seen_division=0;	// TODO: HERE? #################
+  PULSES.setup_pulse(&cycle_monitor, ACTIVE, PULSES.get_now(), slice_tick_period);
   stress_event_cnt = -3;	// some stress events will often happen after starting the musicbox
 }
 
@@ -777,146 +989,6 @@ void deep_sleep() {
 }
 
 
-unsigned short soft_end_days_to_live = 1;	// remaining days of life after soft end
-unsigned short soft_end_survive_level = 4;	// the level a pulse must have reached to survive soft end
-
-void soft_end_playing(int days_to_live, int survive_level) {	// soft ending of magical musicbox
-/*
-  void soft_end_playing(int days_to_live, int survive_level);
-
-  (primary pulses are selected)
-  if(MagicalMusicState)
-    if(MagicalMusicState > ENDING) {		// in a play mode: initiate end
-      kill all selected pulses that have not been used yet
-      also kill all selected p that have not been alive yet for least survive_level times
-
-      set survivers to be COUNTED pulses with 'days_to_live' repeats
-      set_MagicalMusicState(ENDING);
-    } else
-    if(MagicalMusicState == ENDING) {		// in a play mode: initiate end
-      check for survivors
-      when no one is left, then *SWITCH OFF* musicbox
-*/
-  if(MagicalMusicState == OFF)
-    return;
-
-  if(MagicalMusicState > ENDING) {		// initiate end
-    set_MagicalMusicState(ENDING);
-    MENU.out(F("soft_end_playing("));		// info
-    MENU.out(soft_end_days_to_live);
-    MENU.out(F(", "));
-    MENU.out(soft_end_survive_level);
-    MENU.outln(')');
-
-    for (int pulse=0; pulse<PL_MAX; pulse++) {	// make days_to_live COUNTED generating pulses
-      if (PULSES.pulse_is_selected(pulse)) {
-	if(PULSES.pulses[pulse].counter > survive_level) {	// pulse was already awake (long enough)?
-	  PULSES.pulses[pulse].remaining = days_to_live;	//   still repeat, then vanish
-	  PULSES.pulses[pulse].flags |= COUNTED;
-	} else {
-	  PULSES.init_pulse(pulse);			// unborn pulse or too young, just remove
-	}
-      }
-    }
-    stress_event_cnt = -1;	// stress event expected after switching to ENDING
-  } else {
-    if(MagicalMusicState == ENDING) {		// ENDING
-      for (int pulse=0; pulse<PL_MAX; pulse++) {	// check for any active pulses
-	if (PULSES.pulses[pulse].flags & ACTIVE)	//   still something active?
-	  return;
-      }
-      // no activity remaining
-
-      MagicalMusicState = OFF;
-      MENU.outln(F("playing ended"));
-
-#if defined PERIPHERAL_POWER_SWITCH_PIN
-      MENU.out(F("peripheral POWER OFF "));
-      MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
-      peripheral_power_switch_OFF();
-      delay(600);	// let power go down softly
-#endif
-
-      reset_all_flagged_pulses_GPIO_OFF();
-      delay(600);	// send remaining output
-
-      MAGICAL_MUSICBOX_ENDING;	// sleep, restart or somesuch	// *ENDED*
-    }
-  }
-}
-
-void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard end playing
-  if(MagicalMusicState == OFF)
-    return;
-
-  if(with_title)
-    MENU.outln(F("HARD_END_playing()"));
-
-#if defined PERIPHERAL_POWER_SWITCH_PIN
-  MENU.out(F("peripheral POWER OFF "));
-  MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
-  peripheral_power_switch_OFF();
-  delay(600);	// let power go down softly
-#endif
-
-  reset_all_flagged_pulses_GPIO_OFF();
-  MagicalMusicState = OFF;
-  delay(600);	// send remaining output
-
-  MAGICAL_MUSICBOX_ENDING;	// sleep, restart or somesuch	// *ENDED*
-}
-
-//#define DEBUG_CLEANUP  TODO: remove debug code
-void magical_cleanup(int p) {	// deselect unused primary pulses, check if playing has ended
-  if(!magic_autochanges)	// completely switched off by magic_autochanges==false
-    return;			// noop
-
-#if defined DEBUG_CLEANUP
-  MENU.out(F("CLEANUP "));
-#endif
-  PULSES.deselect_unused_pulses();	// deselect unused (primary) pulses
-
-  int cnt=0;
-  for(int pulse=0; pulse<PL_MAX; pulse++) {
-    if(PULSES.pulses[pulse].flags) {	// check if playing has ended  activity?
-#if defined DEBUG_CLEANUP
-      MENU.out('p');
-      MENU.out(pulse);
-#endif
-      if(PULSES.pulses[pulse].periodic_do == &magical_butler) {
-#if defined DEBUG_CLEANUP
-	MENU.out(" butler");
-#endif
-	;
-      } else if(PULSES.pulses[pulse].periodic_do == &magical_cleanup) {
-#if defined DEBUG_CLEANUP
-	MENU.out(" cleanup");
-#endif
-	;
-      } else if(PULSES.pulses[pulse].periodic_do == &cycle_monitor) {
-#if defined DEBUG_CLEANUP
-	MENU.out(" cycle_monitor");
-#endif
-	;
-      } else
-	cnt++;
-#if defined DEBUG_CLEANUP
-      MENU.tab();
-#endif
-    }
-  }
-  PULSES.deselect_unused_pulses();	// dopplet gnäht... nütztabernüt
-#if defined DEBUG_CLEANUP
-  MENU.ln();
-#endif
-
-  if(cnt==0) {
-    MENU.outln(F("END reached"));
-    HARD_END_playing(false);
-  }
-}
-
-
 /*
   void magical_butler(int p)
 
@@ -1034,6 +1106,12 @@ void musicBox_display() {
   MENU.out(soft_end_survive_level);	// the level a pulse must have reached to survive soft en
   MENU.outln(F(")\t'd'=days to survive  'l'=level minimal age 'E'= start soft end now"));
   MENU.outln(F("hard end='H'"));
+
+  MENU.out(F("show position in subcycle\t"));
+  MENU.out(cycle_slices);
+  MENU.out(F(" slices='n'\t"));
+  PULSES.display_time_human(slice_tick_period);
+  MENU.ln();
 }
 
 
@@ -1062,6 +1140,12 @@ bool musicBox_reaction(char token) {
     break;
   case 'H':
     HARD_END_playing(true);
+    break;
+  case 'n':
+    if((input_value = MENU.numeric_input(cycle_slices) > 0)) {
+      set_cycle_slice_number(input_value);
+      PULSES.pulses[musicbox_butler_i].period = slice_tick_period;	// a bit adventurous ;)
+    }
     break;
   default:
     return false;
