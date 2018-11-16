@@ -171,8 +171,8 @@ void show_cycle(struct time cycle) {
   MENU.ln();
 
   // TODO: do *not* expect it on pulse pulses[voices-1]
-  struct time period = PULSES.pulses[voices-1].period;
-  struct time shortest = scale2harmonical_cycle(selected_in(SCALES), &period);
+  struct time base_period = PULSES.pulses[voices-1].period;
+  struct time shortest = scale2harmonical_cycle(selected_in(SCALES), &base_period);
 
   //  PULSES.display_time_human(PULSES.pulses[PULSES.fastest_from_selected()].period);
   MENU.out(F("fastest * pulse"));
@@ -197,17 +197,21 @@ void show_cycle(struct time cycle) {
 }
 
 // cycle_monitor(p)  payload to give infos where in the cycle we are
-unsigned short cycle_show_divisions = 180;	// test&adapt	sometimes less is more
+unsigned short cycle_slices = 180;	// test&adapt	sometimes less is more
 /*
-   unsigned short cycle_show_divisions = 72;	// test&adapt   classical aesthetics?
-   unsigned short cycle_show_divisions = 120;	// test&adapt   classical aesthetics?
-   unsigned short cycle_show_divisions = 90*3;	// test&adapt   simplified keeping important details?
-   unsigned short cycle_show_divisions = 180*3;	// test&adapt	interesting lot of detail
-   unsigned short cycle_show_divisions = 180;	// test&adapt	sometimes less is more
-   unsigned short cycle_show_divisions = 360;	// test&adapt   classical aesthetics?
+   unsigned short cycle_slices = 72;	// test&adapt   classical aesthetics?
+   unsigned short cycle_slices = 120;	// test&adapt   classical aesthetics?
+   unsigned short cycle_slices = 90*3;	// test&adapt   simplified keeping important details?
+   unsigned short cycle_slices = 180*3;	// test&adapt	interesting lot of detail
+   unsigned short cycle_slices = 180;	// test&adapt	sometimes less is more
+   unsigned short cycle_slices = 360;	// test&adapt   classical aesthetics?
 */
-uint8_t cycle_monitor_last_seen_division=0;	// reset that on a start
+unsigned short cycle_monitor_last_seen_division=0;	// reset that on a start
 void cycle_monitor(int pulse) {	// show markers at important cycle divisions
+  /*
+    ON FIRST START cycle_monitor() RESET cycle_monitor_last_seen_division
+    and maybe reset stress_event_cnt
+  */
   MENU.out(F("* "));
 
   struct time this_time = PULSES.get_now();
@@ -218,14 +222,14 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
   */
   fraction phase = {this_time.time, PULSES.pulses[pulse].period.time};
   // float float_phase = this_time.time / PULSES.pulses[pulse].period.time;	// not used
-  fraction this_division = {cycle_monitor_last_seen_division, cycle_show_divisions};
+  fraction this_division = {cycle_monitor_last_seen_division, cycle_slices};
   HARMONICAL.reduce_fraction(&this_division);
   MENU.out(this_division.multiplier);
   MENU.out('/');
   MENU.outln(this_division.divisor);
 
   cycle_monitor_last_seen_division++;
-  cycle_monitor_last_seen_division %= cycle_show_divisions;
+  cycle_monitor_last_seen_division %= cycle_slices;
 }
 
 void magical_butler(int p);		// pre declare payload
@@ -474,20 +478,20 @@ void start_musicbox() {
   peripheral_power_switch_ON();
 #endif
   // TODO: do *not* expect it on pulse pulses[0]
-  struct time period = PULSES.pulses[0].period;
-  cycle = scale2harmonical_cycle(selected_in(SCALES), &period);
+  struct time base_period = PULSES.pulses[0].period;
+  cycle = scale2harmonical_cycle(selected_in(SCALES), &base_period);
   used_subcycle = cycle;
   //  #define AUTOMAGIC_CYCLE_TIMING_MINUTES	7	// *max minutes*, sets performance timing based on cycle
 #if defined AUTOMAGIC_CYCLE_TIMING_MINUTES
   used_subcycle={AUTOMAGIC_CYCLE_TIMING_MINUTES*60*1000000L,0};
   {
-    struct time scratch=cycle;
+    struct time this_subcycle=cycle;
     while(true) {
-      if(scratch.time <= used_subcycle.time && scratch.overflow==used_subcycle.overflow) {
-	used_subcycle = scratch;
+      if(this_subcycle.time <= used_subcycle.time && this_subcycle.overflow==used_subcycle.overflow) {
+	used_subcycle = this_subcycle;
 	break;
       }
-      PULSES.div_time(&scratch, 2);
+      PULSES.div_time(&this_subcycle, 2);
     }
   }
 #endif
@@ -499,17 +503,20 @@ void start_musicbox() {
   musicbox_start_time = PULSES.get_now();	// keep musicbox_start_time
   PULSES.activate_selected_synced_now(sync);	// 'n' sync and activate
 
-  struct time duration;	// dummy, *the butler knows* when to do what...
-  duration.overflow=0;
-  duration.time=0;
+  struct time dummy;	// dummy, *the butler knows* when to do what...
+  dummy.overflow=0;
+  dummy.time=0;
 
-  PULSES.setup_pulse(&magical_butler, ACTIVE, PULSES.get_now(), duration);
+  PULSES.setup_pulse(&magical_butler, ACTIVE, PULSES.get_now(), dummy);
 
-  duration = used_subcycle;
-  PULSES.div_time(&duration, cycle_show_divisions);
-
+  struct time slice_duration = used_subcycle;
+  PULSES.div_time(&slice_duration, cycle_slices);
+  /*
+    when starting cycle_monitor() always *reset cycle_monitor_last_seen_division*
+    and maybe reset stress_event_cnt
+  */
   cycle_monitor_last_seen_division=0;
-  PULSES.setup_pulse(&cycle_monitor, ACTIVE, PULSES.get_now(), duration);
+  PULSES.setup_pulse(&cycle_monitor, ACTIVE, PULSES.get_now(), slice_duration);
   stress_event_cnt = -3;	// some stress events will often happen after starting the musicbox
 }
 
@@ -1017,8 +1024,8 @@ void musicBox_display() {
   MENU.tab();
   MENU.out(F("'c' cycle "));
   // TODO: do *not* expect it on pulse pulses[0]
-  struct time period = PULSES.pulses[0].period;
-  PULSES.display_time_human(scale2harmonical_cycle(selected_in(SCALES), &period));
+  struct time base_period = PULSES.pulses[0].period;
+  PULSES.display_time_human(scale2harmonical_cycle(selected_in(SCALES), &base_period));
   MENU.ln();
 
   MENU.out(F("soft_end("));
