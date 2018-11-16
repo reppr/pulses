@@ -465,47 +465,11 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
   } // all later wakeups
 }
 
-// void magical_butler(int p);	// pre declare payload	soon obsolete ################################################################
 
-// remember pulse index of the butler, so we can call him, if we need him ;)
-int musicBox_butler_i=ILLEGAL;	// pulse index of musicBox_butler(p)
-void start_musicBox() {
-  MENU.outln(F("start_musicBox()"));
-  set_MusicBoxState(AWAKE);
-  musicBox_trigger_enabled=false;
-  blocked_trigger_shown = false;	// show only once a run
-  musicBox_butler_i=ILLEGAL;
-
-#if defined  USE_RTC_MODULE
-  show_DS1307_time_stamp();
-  MENU.ln();
+void select_random_scale() {
+#if defined RANDOM_ENTROPY_H
+  random_entropy();	// entropy from hardware
 #endif
-
-#if defined USE_BATTERY_CONTROL
-  show_battery_level();
-  void HARD_END_playing(bool);	// defined below
-  if(assure_battery_level())
-    MENU.outln(F("power accepted"));
-  else {
-    MENU.outln(F(">>> NO POWER <<<"));
-    HARD_END_playing(false);
-  }
-#endif
-
-#if defined PERIPHERAL_POWER_SWITCH_PIN
-  peripheral_power_switch_ON();
-
-  MENU.out(F("peripheral POWER ON "));
-  MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
-
-  delay(250);	// give peripheral supply voltage time to stabilise
-#endif
-
-  MENU.outln(F("\n >>> * <<<"));
-  MENU.men_selected = 0;	// ################
-  //  MENU.play_KB_macro(F("-E40 "), false); // initialize, the space avoids output from E40, no newline
-  MENU.play_KB_macro(F("-E40:M "), false); // initialize, the space avoids output from :M, no newline
-
   switch(random(23)) {		// random scale
   case 0: case 1: case 3: case 4:
     select_array_in(SCALES, pentatonic_minor);
@@ -535,10 +499,13 @@ void start_musicBox() {
     select_array_in(SCALES, octaves_fourths);
     break;
   }
-  MENU.out(F("SCALE: "));
-  MENU.outln(selected_name(SCALES));
+}
 
-  // random jiffle
+
+void select_random_jiffle(void) {
+#if defined RANDOM_ENTROPY_H
+  random_entropy();	// entropy from hardware
+#endif
   switch(random(99)) {
   case 0: case 1: case 2: case 3: case 4:
     select_array_in(JIFFLES, PENTAtonic_rise);
@@ -620,24 +587,14 @@ void start_musicBox() {
     select_array_in(JIFFLES, pent_top_wave_0);
     break;
   }
-  MENU.out(F("JIFFLE: "));
-  MENU.outln(selected_name(JIFFLES));
-  setup_jiffle_thrower_selected(selected_actions);
+}
 
-  sync = random(6);		// random sync
-  MENU.out(F("sync "));
-  MENU.outln(sync);
-
-  // pitch
-  PULSES.time_unit=1000000;	// default metric
-  multiplier=4096;		// uses 1/4096 jiffles
-  multiplier *= 8;	// TODO: adjust appropriate...
-
-#if ! defined SOME_FIXED_TUNINGS_ONLY	// random tuning
-  divisor = random(160, 450);	// *not* tuned for other instruments
-#else				// some randomly selected metric A=440 tunings for jam sessions like in HACK_11_11_11_11
-
+void random_fixed_pitches(void) {
   MENU.out(F("fixed tuning "));
+#if defined RANDOM_ENTROPY_H
+  random_entropy();	// entropy from hardware
+#endif
+
   switch (random(20)) {
   case 0:
   case 1:
@@ -681,6 +638,91 @@ void start_musicBox() {
     break;
     //    divisor=247; // 246.94	// B3  ***not*** harmonical  }
   }
+}
+
+void random_octave_shift(void) {
+  switch(random(9)) {
+  case 0: case 1:
+    break;
+  case 2: case 3: case 4:  case 5:
+    MENU.play_KB_macro(F("*2"));
+    break;
+  case 6:
+    MENU.play_KB_macro(F("*4"));
+    break;
+  case 8:
+    MENU.play_KB_macro(F("/2"));
+    break;
+  }
+}
+
+
+// remember pulse index of the butler, so we can call him, if we need him ;)
+int musicBox_butler_i=ILLEGAL;	// pulse index of musicBox_butler(p)
+void start_musicBox() {
+  MENU.outln(F("start_musicBox()"));
+  set_MusicBoxState(AWAKE);
+  musicBox_trigger_enabled=false;
+  blocked_trigger_shown = false;	// show only once a run
+  musicBox_butler_i=ILLEGAL;
+
+#if defined  USE_RTC_MODULE
+  show_DS1307_time_stamp();
+  MENU.ln();
+#endif
+
+#if defined USE_BATTERY_CONTROL
+  show_battery_level();
+  void HARD_END_playing(bool);	// defined below
+  if(assure_battery_level())
+    MENU.outln(F("power accepted"));
+  else {
+    MENU.outln(F(">>> NO POWER <<<"));
+    HARD_END_playing(false);
+  }
+#endif
+
+#if defined PERIPHERAL_POWER_SWITCH_PIN
+  peripheral_power_switch_ON();
+
+  MENU.out(F("peripheral POWER ON "));
+  MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
+
+  delay(250);	// give peripheral supply voltage time to stabilise
+#endif
+
+  MENU.outln(F("\n >>> * <<<"));
+  MENU.men_selected = 0;	// ################
+  //  MENU.play_KB_macro(F("-E40 "), false); // initialize, the space avoids output from E40, no newline
+  MENU.play_KB_macro(F("-E40:M "), false); // initialize, the space avoids output from :M, no newline
+
+  select_random_scale();	// random scale
+  MENU.out(F("SCALE: "));
+  MENU.outln(selected_name(SCALES));
+
+  select_random_jiffle(); 	// random jiffle
+  MENU.out(F("JIFFLE: "));
+  MENU.outln(selected_name(JIFFLES));
+  setup_jiffle_thrower_selected(selected_actions);
+
+  sync = random(6);		// random sync
+  MENU.out(F("sync "));
+  MENU.outln(sync);
+
+  // pitch
+  PULSES.time_unit=1000000;	// default metric
+  multiplier=4096;		// uses 1/4096 jiffles
+  multiplier *= 8;	// TODO: adjust appropriate...
+
+  // random pitch
+#if ! defined SOME_FIXED_TUNINGS_ONLY	// random tuning
+  #if defined RANDOM_ENTROPY_H
+    random_entropy();	// entropy from hardware
+  #endif
+  divisor = random(160, 450);	// *not* tuned for other instruments
+#else				// some randomly selected metric A=440 tunings for jam sessions like in HACK_11_11_11_11
+  // random fixed pitches
+  random_fixed_pitches(void);	// random fixed pitches
   MENU.tab();
   MENU.outln(divisor);
 #endif
@@ -696,20 +738,8 @@ void start_musicBox() {
   tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
   lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
 
-  // random pitch shift down
-  switch(random(9)) {
-  case 0: case 1:
-    break;
-  case 2: case 3: case 4:  case 5:
-    MENU.play_KB_macro(F("*2"));
-    break;
-  case 6:
-    MENU.play_KB_macro(F("*4"));
-    break;
-  case 8:
-    MENU.play_KB_macro(F("/2"));
-    break;
-  }
+
+  random_octave_shift();  // random octave shift
 
   MENU.outln(F(" <<< * >>>"));
 #if defined PERIPHERAL_POWER_SWITCH_PIN		// FIXME: try again... ################################################################
