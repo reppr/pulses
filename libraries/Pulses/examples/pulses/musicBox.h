@@ -207,8 +207,10 @@ void soft_end_playing(int days_to_live, int survive_level) {	// soft ending of m
       check for survivors
       when no one is left, then *SWITCH OFF* musicbox
 */
+  /*	*no* let it always *try* to work...
   if(MusicBoxState == OFF)
     return;
+  */
 
   if(MusicBoxState > ENDING) {		// initiate end
     set_MusicBoxState(ENDING);
@@ -657,6 +659,66 @@ void random_octave_shift(void) {
 }
 
 
+/*
+void furzificate() {	// switch to a quiet, farting patterns, u.a.
+  very simple one shot implementation
+  does not work as is with musicBox any more
+  adapt or remove?
+*/
+void furzificate() {	// switch to a quiet, farting patterns, u.a.
+  MENU.outln(F("furzificate()"));
+  set_MusicBoxState(SNORING);
+
+#if defined RANDOM_ENTROPY_H
+  random_entropy();	// entropy from hardware
+#endif
+  switch (random(10)) {
+  case 0:	// kalimbaxyl
+    select_array_in(JIFFLES, kalimbaxyl);
+    MENU.play_KB_macro("j");
+    break;
+  case 1:	// back_to_ground
+    select_array_in(JIFFLES, back_to_ground);
+    MENU.play_KB_macro("j");
+    break;
+  case 2:	// *3 jiffletab0	"Frosch"
+    select_array_in(JIFFLES, jiffletab0);
+    MENU.play_KB_macro(F("*3 j"));
+    break;
+  case 3:	// J3j jiff_december
+    select_array_in(JIFFLES, jiff_december);
+    MENU.play_KB_macro(F("*4/3 j"));
+    break;
+  case 4:	// jiff_dec128  the drummer in the cathedral
+    select_array_in(JIFFLES, jiff_dec128);
+    MENU.play_KB_macro(F("*3/2 j S0n"));
+    break;
+  case 5:	// jiffletab, silent rhythmes
+    select_array_in(JIFFLES, jiffletab);
+    MENU.play_KB_macro("j");
+    break;
+  case 6:	// jiff_dec_pizzicato	dirty!
+    select_array_in(JIFFLES, jiff_dec_pizzicato);
+    MENU.play_KB_macro(F("*3 j"));
+    break;
+  case 7:	// jiffletab0	fröhliches Knatterfurzkonzert explodiert
+    select_array_in(JIFFLES,jiffletab0 );
+    MENU.play_KB_macro(F("*6 j S0n"));
+    break;
+  case 8:	// aktivitätswellen  jiffletab01
+    select_array_in(JIFFLES, jiffletab01);
+    MENU.play_KB_macro(F("*3 j"));
+    break;
+  case 9:	// d4096_6 churzi plipps
+    select_array_in(JIFFLES, d4096_6);
+    MENU.play_KB_macro("j");
+    break;
+  }
+  MENU.out(F("jiffle: "));
+  MENU.outln(selected_name(JIFFLES));
+}
+
+
 // remember pulse index of the butler, so we can call him, if we need him ;)
 int musicBox_butler_i=ILLEGAL;	// pulse index of musicBox_butler(p)
 void start_musicBox() {
@@ -1032,6 +1094,7 @@ void magical_butler(int p) {
 }
 
 
+/* **************************************************************** */
 void musicBox_setup() {
   MENU.ln();
 
@@ -1091,6 +1154,11 @@ void musicBox_display() {
   MENU.out(F(" slices='n'\t"));
   PULSES.display_time_human(slice_tick_period);
   MENU.ln();
+
+/*	*deactivated*
+  MENU.outln(F("fart='f'"));
+*/
+
 }
 
 
@@ -1126,64 +1194,21 @@ bool musicBox_reaction(char token) {
       PULSES.pulses[musicBox_butler_i].period = slice_tick_period;	// a bit adventurous ;)
     }
     break;
+
+/*
+  void furzificate() {	// switch to a quiet, farting patterns, u.a.
+  very simple one shot implementation
+  does not work as is with musicBox any more
+  adapt or remove?
+
+  case'f':
+    furzificate();
+    break;
+*/
+
   default:
     return false;
   }
 
   return true;
-}
-
-
-// TODO: furzificate()	*NOT USED ANY MORE*
-// very simple one shot implementation:
-//void furzificate(int dummy=0) {	// switch to a quiet, farting patterns, u.a.
-//  /* with the dummy int parameter it passes as payload for a pulse */
-void furzificate() {	// switch to a quiet, farting patterns, u.a.
-  MENU.outln(F("furzificate()"));
-  set_MusicBoxState(SNORING);
-
-  switch (random(10)) {
-  case 0:	// kalimbaxyl
-    select_array_in(JIFFLES, kalimbaxyl);
-    MENU.play_KB_macro("j");
-    break;
-  case 1:	// back_to_ground
-    select_array_in(JIFFLES, back_to_ground);
-    MENU.play_KB_macro("j");
-    break;
-  case 2:	// *3 jiffletab0	"Frosch"
-    select_array_in(JIFFLES, jiffletab0);
-    MENU.play_KB_macro(F("*3 j"));
-    break;
-  case 3:	// J3j jiff_december
-    select_array_in(JIFFLES, jiff_december);
-    MENU.play_KB_macro(F("*4/3 j"));
-    break;
-  case 4:	// jiff_dec128  the drummer in the cathedral
-    select_array_in(JIFFLES, jiff_dec128);
-    MENU.play_KB_macro(F("*3/2 j S0n"));
-    break;
-  case 5:	// jiffletab, silent rhythmes
-    select_array_in(JIFFLES, jiffletab);
-    MENU.play_KB_macro("j");
-    break;
-  case 6:	// jiff_dec_pizzicato	dirty!
-    select_array_in(JIFFLES, jiff_dec_pizzicato);
-    MENU.play_KB_macro(F("*3 j"));
-    break;
-  case 7:	// jiffletab0	fröhliches Knatterfurzkonzert explodiert
-    select_array_in(JIFFLES,jiffletab0 );
-    MENU.play_KB_macro(F("*6 j S0n"));
-    break;
-  case 8:	// aktivitätswellen  jiffletab01
-    select_array_in(JIFFLES, jiffletab01);
-    MENU.play_KB_macro(F("*3 j"));
-    break;
-  case 9:	// d4096_6 churzi plipps
-    select_array_in(JIFFLES, d4096_6);
-    MENU.play_KB_macro("j");
-    break;
-  }
-  MENU.out(F("jiffle: "));
-  MENU.outln(selected_name(JIFFLES));
 }
