@@ -53,6 +53,7 @@ class Harmonical {
   void expand_fractions(struct fraction * a, struct fraction * b);
   fraction * add_fraction(struct fraction * delta, struct fraction * sum);
   int prime_factors(unsigned int p_factors[], unsigned long number);	// returns index-1 of highest used prime, -1 is error
+  bool is_small_prime(unsigned long number);
 
   unsigned long harmonical_base;
   static const uint8_t small_primes[];

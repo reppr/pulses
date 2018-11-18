@@ -152,3 +152,12 @@ int Harmonical::prime_factors(unsigned int p_factors[], unsigned long number) {
     return ILLEGAL;	// not enough small primes, ILLEGAL, abort
   }
 }
+
+
+bool Harmonical::is_small_prime(unsigned long number) {
+  for(int i=0; i<small_primes_cnt; i++)
+    if(number == small_primes[i])
+      return true;
+
+  return false;
+}
