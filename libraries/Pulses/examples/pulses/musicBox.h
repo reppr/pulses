@@ -109,7 +109,10 @@ struct time used_subcycle;	// TODO: move to Harmonical? ? ?
    unsigned short cycle_slices = 180;	// test&adapt	sometimes less is more
    unsigned short cycle_slices = 360;	// test&adapt   classical aesthetics?
 */
-unsigned short cycle_slices = 180;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
+unsigned short cycle_slices = 540;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
+
+//unsigned short cycle_slices = 3600;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
+//unsigned short cycle_slices = 5400;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
 
 struct time slice_tick_period;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
 
@@ -157,14 +160,106 @@ void show_cycle(struct time cycle) {
   MENU.ln();
 }
 
+int slice_weighting(fraction F) {
+  int weighting=0;
+
+  if(F.multiplier<9)
+    if(F.divisor<=128)
+      weighting += 9 - F.multiplier;
+
+  if(F.divisor<9)
+    weighting += 9 - F.divisor;
+
+  switch(F.divisor) {	// octaves get higher ratings
+  case 1:
+    weighting++;
+  case 2:
+    weighting++;
+  case 4:
+    weighting++;
+  case 8:
+    weighting++;
+  }
+
+  switch(F.divisor) {	// some divisors get higher ratings
+  case 6:
+    weighting++;
+    break;
+  case 9:
+    weighting++;
+    break;
+  case 10:
+    weighting++;
+    break;
+  case 12:
+    weighting++;
+    weighting++;
+    break;
+  case 15:
+    weighting++;
+    break;
+  case 20:
+    weighting++;
+    break;
+  case 24:
+    weighting++;
+    break;
+  case 30:
+    weighting++;
+    break;
+  case 36:
+    weighting++;
+    break;
+  case 45:
+    weighting++;
+    break;
+  }
+
+  if(F.multiplier + 1 == F.divisor)
+    if(F.divisor <= 128)
+      weighting++;
+
+  switch(F.multiplier) {	// octaves get higher ranking
+  case 1: weighting++;
+    if(F.divisor>128) {		// but less so, if divisor is too large
+      break;
+    }
+  case 2: weighting++;
+    if(F.divisor>64) {		// ...
+      break;
+    }
+  case 4: weighting++;
+    if(F.divisor>32) {
+      break;
+    }
+  case 8: weighting++;
+  case 16: weighting++;
+  case 32: weighting++;
+  case 64: weighting++;
+  }
+
+  if(F.multiplier > 5 && HARMONICAL.is_small_prime(F.multiplier))
+    weighting--;
+
+  return weighting;
+}
+
+void show_n_stars(int n) {
+  if(n<0)
+    MENU.out('-');
+  else
+    while (n--) { MENU.out('*'); }
+}
+
 // cycle_monitor(p)  payload to give infos where in the cycle we are
+bool show_subcycle_position=true;
 unsigned short cycle_monitor_last_seen_division=0;	// reset that on a start
 void cycle_monitor(int pulse) {	// show markers at important cycle divisions
   /*
     ON FIRST START cycle_monitor() RESET cycle_monitor_last_seen_division
     and maybe reset stress_event_cnt
   */
-  MENU.out(F("* "));
+  //MENU.out(F("* "));
 
   struct time this_time = PULSES.get_now();
   PULSES.sub_time(&PULSES.pulses[pulse].last, &this_time);	// so long inside this cycle
@@ -176,9 +271,17 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
   // float float_phase = this_time.time / PULSES.pulses[pulse].period.time;	// not used
   fraction this_division = {cycle_monitor_last_seen_division, cycle_slices};
   HARMONICAL.reduce_fraction(&this_division);
-  MENU.out(this_division.multiplier);
-  MENU.out('/');
-  MENU.outln(this_division.divisor);
+
+  if(show_subcycle_position && slice_weighting(this_division) > 0) {
+    MENU.out(F("* "));
+    MENU.out(this_division.multiplier);
+    MENU.out('/');
+    MENU.out(this_division.divisor);
+
+    MENU.tab();
+    show_n_stars(slice_weighting(this_division));
+    MENU.ln();
+  }
 
   cycle_monitor_last_seen_division++;
   cycle_monitor_last_seen_division %= cycle_slices;
@@ -440,9 +543,9 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
     soft_end_cnt=0;
     cycle_monitor_last_seen_division = 0;	// start musicBox clock
   } else if(PULSES.pulses[p].counter==2) {	// now we might have more time for some initialization
-    MENU.outln(F("butler second init "));
     if(MENU.verbosity)
       MENU.outln(F("butler: prepare trigger"));
+
     struct time trigger_enable_time = musicBox_start_time;
     PULSES.add_time(MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000, &trigger_enable_time);
     PULSES.setup_counted_pulse(&activate_musicBox_trigger, ACTIVE, trigger_enable_time, slice_tick_period/*dummy*/, 1);
@@ -458,7 +561,7 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
 #endif
 
     if(magic_autochanges) {
-      if(soft_end_cnt==0) {
+      if(soft_end_cnt==0) {	// first time
 	// soft end time could be reprogrammed by user interaction, always compute new:
 	struct time soft_end_time=musicBox_start_time;
 	PULSES.add_time(&used_subcycle, &soft_end_time);
@@ -469,11 +572,12 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
 	  if(soft_end_cnt++ == 0)
 	    soft_end_playing(soft_end_days_to_live, soft_end_survive_level); // start soft end
 	}
-      } else
+      } else {	// soft end was called already
 	magical_cleanup(p/*dummy*/);
-    }
+      }
+    } // magic_autochanges?
   } // all later wakeups
-}
+}  // musicBox_butler()
 
 
 void select_random_scale() {
@@ -770,7 +874,7 @@ void start_musicBox() {
   MENU.out(F("SCALE: "));
   MENU.outln(selected_name(SCALES));
 
-  select_random_jiffle(); 	// random jiffle
+  select_random_jiffle();	// random jiffle
   MENU.out(F("JIFFLE: "));
   MENU.outln(selected_name(JIFFLES));
   setup_jiffle_thrower_selected(selected_actions);
@@ -1159,16 +1263,20 @@ void musicBox_display() {
   MENU.outln(F(")\t'd'=days to survive  'l'=level minimal age 'E'= start soft end now"));
   MENU.outln(F("hard end='H'"));
 
-  MENU.out(F("show position in subcycle\t"));
   MENU.out(cycle_slices);
   MENU.out(F(" slices='n'\t"));
   PULSES.display_time_human(slice_tick_period);
   MENU.ln();
 
+  MENU.out(F("'o' show position ticker "));
+  if(show_subcycle_position)
+    MENU.outln(F("ON"));
+  else
+    MENU.outln(F("off"));
+
 /*	*deactivated*
   MENU.outln(F("fart='f'"));
 */
-
 }
 
 
@@ -1204,7 +1312,6 @@ bool musicBox_reaction(char token) {
       PULSES.pulses[musicBox_butler_i].period = slice_tick_period;	// a bit adventurous ;)
     }
     break;
-
 /*
   void furzificate() {	// switch to a quiet, farting patterns, u.a.
   very simple one shot implementation
@@ -1215,7 +1322,16 @@ bool musicBox_reaction(char token) {
     furzificate();
     break;
 */
-
+  case 'o':
+    show_subcycle_position ^= 1 ;
+    if(MENU.maybe_display_more(VERBOSITY_SOME)) {
+      if(show_subcycle_position)
+	MENU.out(F("SHOW"));
+      else
+	MENU.out(F("do *not show*"));
+      MENU.outln(F(" position in circle"));
+    }
+    break;
   default:
     return false;
   }
