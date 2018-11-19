@@ -603,6 +603,14 @@ unsigned long divisor=1;
 int selected_experiment=-1;
 int voices=GPIO_PINS;
 
+bool scale_was_set_by_menu=false;
+bool jiffle_was_set_by_menu=false;
+bool pitch_was_set_by_menu=false;	// TODO: not really implemented yet
+bool octave_was_set_by_menu=false;
+bool icode_was_set_by_menu=false;
+bool sync_was_set_by_menu=false;
+
+
 #ifdef IMPLEMENT_TUNING		// implies floating point
   #include <math.h>
 
@@ -3108,7 +3116,6 @@ void reverse_gpio_pins() {	// TODO: fix next_gpio()  ???? ################
 // ****************************************************************
 // menu_pulses_reaction()
 
-
 // display helper functions:
 void short_info() {
   if (MENU.verbosity > VERBOSITY_SOME) {
@@ -3656,8 +3663,10 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'S':	// enter sync
     if (MENU.maybe_calculate_input(&input_value)) {
-      if (input_value>=0 )
+      if (input_value>=0 ) {
 	sync = input_value;
+	sync_was_set_by_menu = true;
+      }
       else
 	MENU.out(F("positive integer only"));
     }
@@ -3669,7 +3678,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     break;
 
-  case 'i':	// en_info
+  case 'i':	// en_info	TODO: free for '*' en_iCode_thrower
     for (int pulse=0; pulse<PL_MAX; pulse++)
       if (PULSES.pulse_is_selected(pulse))
 	en_info(pulse);
@@ -3679,7 +3688,12 @@ bool menu_pulses_reaction(char menu_input) {
       selected_or_flagged_pulses_info_lines();
     }
     break;
-
+/*
+  // RESERVED
+  case 'I':	// iCode
+    // icode_was_set_by_menu = true;
+    break;
+*/
   case 'M':	// "mute", see 'N' as alternative
     PULSES.mute_all_actions();	// TODO: dead end street
 
@@ -4043,7 +4057,8 @@ bool menu_pulses_reaction(char menu_input) {
     */
     // some jiffles from source, some very old FIXME:	review and delete	################
     if (MENU.cb_peek() != '!')		// 'J<num>' selects jiffle
-      UI_select_from_DB(JIFFLES);	// select jiffle UI
+      if (UI_select_from_DB(JIFFLES))	// select jiffle UI
+	jiffle_was_set_by_menu = true;
 
     if (MENU.cb_peek() == '!') {	// 'J[<num>]!' copies an already selected jiffletab to RAM, selects RAM
       MENU.drop_input_token();
@@ -4053,6 +4068,7 @@ bool menu_pulses_reaction(char menu_input) {
 	load2_jiffle_RAM(source);
       }
       select_array_in(JIFFLES, jiffle_RAM);
+      jiffle_was_set_by_menu = true;
     }
 
     if (MENU.verbosity >= VERBOSITY_SOME)
@@ -4064,10 +4080,13 @@ bool menu_pulses_reaction(char menu_input) {
       MENU.out(F("scale "));
 
     // 'R!' tune selected pulses to a scale starting from lowest
-    if (MENU.cb_peek()=='!')
+    if (MENU.cb_peek()=='!') {
       tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));	// tune-2-scale FIXME: *selected*
+      scale_was_set_by_menu = true;
+    }
     else	// ui select a scale
-      UI_select_from_DB(SCALES);	// select scale
+      if(UI_select_from_DB(SCALES))	// select scale
+	scale_was_set_by_menu = true;
 
     if (DO_or_maybe_display(VERBOSITY_LOWEST))
       display_arr(selected_in(SCALES), 2);

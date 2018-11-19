@@ -65,43 +65,6 @@
 #endif
 
 
-// some pre declarations:
-void musicBox_butler(int);
-void magical_butler(int);	// old version, obsolete?
-
-
-// MusicBoxState
-enum musicbox_state_t {OFF=0, ENDING, SLEEPING, SNORING, AWAKE, FADE};
-musicbox_state_t MusicBoxState=OFF;
-void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditionally
-  switch (state) {			// initializes state if necessary
-  case OFF:
-    break;
-  case ENDING:
-    break;
-  case SLEEPING:
-    break;
-  case SNORING:
-    break;
-  case AWAKE:
-    break;
-  case FADE:
-    break;
-  default:
-    MENU.outln(F("unknown MusicBoxState"));	// should not happen
-    return;					// error, return
-  }
-
-  MusicBoxState = state;		// OK
-}
-
-// TODO: check&fix
-#if defined HACK_11_11_11_11	// magic_autochanges=false;
-  bool magic_autochanges=false;	// never ending jam sessions...
-#else
-bool magic_autochanges=true;	// switch if to end normal playing after MUSICBOX_PERFORMACE_SECONDS
-#endif
-
 struct time musicBox_start_time;
 struct time musicBox_hard_end_time;
 
@@ -129,6 +92,46 @@ void set_cycle_slice_number(short ticks_a_cycle) {
   slice_tick_period = used_subcycle;
   PULSES.div_time(&slice_tick_period, cycle_slices);
 }
+
+// some pre declarations:
+void musicBox_butler(int);
+void magical_butler(int);	// old version, obsolete?
+
+
+// MusicBoxState
+enum musicbox_state_t {OFF=0, ENDING, SLEEPING, SNORING, AWAKE, FADE};
+musicbox_state_t MusicBoxState=OFF;
+void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditionally
+  switch (state) {			// initializes state if necessary
+  case OFF:
+//    musicBox_hard_end_time = {-1, -1};	// far far in the future
+//    musicBox_start_time = {-1, -1};
+    break;
+  case ENDING:
+    break;
+  case SLEEPING:
+    break;
+  case SNORING:
+    break;
+  case AWAKE:
+    break;
+  case FADE:
+    break;
+  default:
+    MENU.outln(F("unknown MusicBoxState"));	// should not happen
+    return;					// error, return
+  }
+
+  MusicBoxState = state;		// OK
+}
+
+// TODO: check&fix
+#if defined HACK_11_11_11_11	// magic_autochanges=false;
+  bool magic_autochanges=false;	// never ending jam sessions...
+#else
+bool magic_autochanges=true;	// switch if to end normal playing after MUSICBOX_PERFORMACE_SECONDS
+#endif
+
 
 void show_cycle(struct time cycle) {
   MENU.out(F("\nharmonical cycle "));
@@ -282,12 +285,20 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
   HARMONICAL.reduce_fraction(&this_division);
 
   if(show_subcycle_position && slice_weighting(this_division) > 0) {
-    MENU.out(F("* "));
+    MENU.out('*');
+    if(this_division.multiplier<100)
+      MENU.space();
+    if(this_division.multiplier<10)
+      MENU.space();
     MENU.out(this_division.multiplier);
     MENU.out('/');
     MENU.out(this_division.divisor);
-
-    MENU.tab();
+    if(this_division.divisor<10)
+      MENU.space();
+    if(this_division.divisor<100)
+      MENU.space();
+    if(this_division.divisor<1000)
+      MENU.space();
     show_n_stars(slice_weighting(this_division));
     MENU.ln();
   }
@@ -351,7 +362,7 @@ void soft_end_playing(int days_to_live, int survive_level) {	// initiate soft en
       }
       // no activity remaining
 
-      MusicBoxState = OFF;
+      set_MusicBoxState(OFF);
       MENU.outln(F("playing ended"));
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
@@ -374,7 +385,6 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
   if(MusicBoxState == OFF)
     return;
   */
-
   if(with_title)
     MENU.outln(F("HARD_END_playing()"));
 
@@ -388,7 +398,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
 #endif
 
   reset_all_flagged_pulses_GPIO_OFF();
-  MusicBoxState = OFF;
+  set_MusicBoxState(OFF);
   delay(600);	// send remaining output
 
   MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch	// *ENDED*
@@ -586,7 +596,7 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
   static bool soft_cleanup_started=false;
   static int soft_cleanup_minimal_fraction_weighting;
   static short current_slice=0;
-
+  static struct time butler_start_time;
   struct time this_start_time =  PULSES.pulses[p].next;	// still unchanged?
   struct fraction current_fraction;
   int current_fraction_weighting;
@@ -594,7 +604,8 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
 //  MENU.outln(PULSES.pulses[p].counter);
   if(PULSES.pulses[p].counter==1) {	// the butler initializes himself
     PULSES.pulses[p].flags |= DO_NOT_DELETE;				// TODO: use groups instead of DO_NOT_DELETE
-      current_slice=0;			// start musicBox clock
+    current_slice=0;			// start musicBox clock
+    butler_start_time =  PULSES.pulses[p].next;	// still unchanged?
     soft_end_cnt=0;
     soft_cleanup_started=false;
   } else if(PULSES.pulses[p].counter==2) {	// now we might have more time for some initialization
@@ -623,9 +634,9 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
 
 #if defined MUSICBOX_HARD_END_SECONDS		// SAVETY NET
     {
-      struct time scratch = this_start_time;
-      PULSES.sub_time(MUSICBOX_HARD_END_SECONDS*1000000, &scratch);	// is it time?
-      if(scratch.overflow==0) {			//   not negative, so it *is*
+      struct time scratch = musicBox_hard_end_time;
+      PULSES.sub_time(&this_start_time, &scratch);	// is it time?
+      if(scratch.overflow) {			//   negative, so it *is*
 	MENU.out(F("butler: "));
 	HARD_END_playing(true);
       }
@@ -703,6 +714,7 @@ void select_random_scale() {
     select_array_in(SCALES, octaves_fourths);
     break;
   }
+  scale_was_set_by_menu = false;
 }
 
 
@@ -791,6 +803,8 @@ void select_random_jiffle(void) {
     select_array_in(JIFFLES, pent_top_wave_0);
     break;
   }
+
+  jiffle_was_set_by_menu = false;
 }
 
 void random_fixed_pitches(void) {
@@ -842,6 +856,7 @@ void random_fixed_pitches(void) {
     break;
     //    divisor=247; // 246.94	// B3  ***not*** harmonical  }
   }
+  pitch_was_set_by_menu = false;
 }
 
 void random_octave_shift(void) {
@@ -858,6 +873,7 @@ void random_octave_shift(void) {
     MENU.play_KB_macro(F("/2"));
     break;
   }
+  octave_was_set_by_menu = false;
 }
 
 
@@ -960,16 +976,19 @@ void start_musicBox() {
   //  MENU.play_KB_macro(F("-E40 "), false); // initialize, the space avoids output from E40, no newline
   MENU.play_KB_macro(F("-E40:M "), false); // initialize, the space avoids output from :M, no newline
 
-  select_random_scale();	// random scale
+  if(!scale_was_set_by_menu)	// if *not* set by user interaction
+    select_random_scale();	//   random scale
   MENU.out(F("SCALE:\t"));
   MENU.outln(selected_name(SCALES));
 
-  select_random_jiffle();	// random jiffle
+  if(!jiffle_was_set_by_menu)	// if *not* set by user interaction
+    select_random_jiffle();	//   random jiffle
   MENU.out(F("JIFFLE:\t"));
   MENU.outln(selected_name(JIFFLES));
   setup_jiffle_thrower_selected(selected_actions);
 
-  sync = random(6);		// random sync
+  if(!sync_was_set_by_menu)	// if *not* set by user interaction
+    sync = random(6);		// random sync
   MENU.out(F("SYNC:\t"));
   MENU.outln(sync);
 
@@ -988,10 +1007,11 @@ void start_musicBox() {
   #if defined RANDOM_ENTROPY_H
     random_entropy();	// entropy from hardware
   #endif
-  divisor = random(160, 450);	// *not* tuned for other instruments
+  if(!pitch_was_set_by_menu)	// if *not* set by user interaction
+    divisor = random(160, 450);	// *not* tuned for other instruments
 #else				// some randomly selected metric A=440 tunings for jam sessions like in HACK_11_11_11_11
-  // random fixed pitches
-  random_fixed_pitches(void);	// random fixed pitches
+  if(!pitch_was_set_by_menu)	// if *not* set by user interaction
+    random_fixed_pitches(void);	// random fixed pitches
   MENU.tab();
   MENU.outln(divisor);	// TODO: define role of multiplier, divisor
 #endif
