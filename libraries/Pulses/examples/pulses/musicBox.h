@@ -1167,6 +1167,15 @@ void light_sleep() {
     MENU.error_ln(F("esp_light_sleep_start()"));
 
   MENU.out(F("\nAWOKE\t"));
+
+  /*
+    in some rare cases the trigger woke up the system, but playing was not started
+    so i try calling  musicBox_trigger_got_hot()  from here
+    just pretending trigger was high ;)
+    TODO: test...
+  */
+  musicBox_trigger_got_hot();	// must be called when musicBox trigger was detected high
+
   int cause = esp_sleep_get_wakeup_cause();
   // see  https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/system/sleep_modes.html#_CPPv218esp_sleep_source_t
   switch (cause = esp_sleep_get_wakeup_cause()) {
