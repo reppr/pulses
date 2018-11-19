@@ -2,8 +2,9 @@
   musicBox.h
 */
 
-#define AUTOMAGIC_CYCLE_TIMING_MINUTES	6	// *max minutes*, produce short sample pieces
-//#define AUTOMAGIC_CYCLE_TIMING_MINUTES	65	// *max minutes*, sets performance timing based on cycle
+#define AUTOMAGIC_CYCLE_TIMING_SECONDS	6*60	// *max seconds*, produce short sample pieces
+//#define AUTOMAGIC_CYCLE_TIMING_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
+
 // #define SOME_FIXED_TUNINGS_ONLY		// fixed pitchs only like E A D G C F B  see: HACK_11_11_11_11
 
 //#define DEBUGGING_MUSICBOX
@@ -41,8 +42,12 @@
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3
 #endif
 
-#if ! defined MUSICBOX_HARD_END_SECONDS
-  #define  MUSICBOX_HARD_END_SECONDS	15*60
+#if ! defined MUSICBOX_HARD_END_SECONDS		// savety net
+  #if defined AUTOMAGIC_CYCLE_TIMING_SECONDS
+    #define  MUSICBOX_HARD_END_SECONDS	(AUTOMAGIC_CYCLE_TIMING_SECONDS*4)	// TODO: first try, FIXME: determine at run time
+  #else
+    #define  MUSICBOX_HARD_END_SECONDS	90*60	// TODO: review that
+  #endif
 #endif
 
 #if ! defined MUSICBOX_ENDING_FUNCTION	// *one* of the following:
@@ -98,6 +103,8 @@ bool magic_autochanges=true;	// switch if to end normal playing after MUSICBOX_P
 #endif
 
 struct time musicBox_start_time;
+struct time musicBox_hard_end_time;
+
 struct time cycle;		// TODO: move to Harmonical?
 struct time used_subcycle;	// TODO: move to Harmonical? ? ?
 
@@ -573,12 +580,14 @@ int stop_on_LOW_H1(void) {
   return was_high;
 }
 
+
 void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with slice_tick_period
   static uint8_t soft_end_cnt=0;
   static bool soft_cleanup_started=false;
   static int soft_cleanup_minimal_fraction_weighting;
   static short current_slice=0;
 
+  struct time this_start_time =  PULSES.pulses[p].next;	// still unchanged?
   struct fraction current_fraction;
   int current_fraction_weighting;
   //  MENU.out(F("musicBox_butler "));
@@ -595,6 +604,12 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
     struct time trigger_enable_time = musicBox_start_time;
     PULSES.add_time(MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000, &trigger_enable_time);
     PULSES.setup_counted_pulse(&activate_musicBox_trigger, ACTIVE, trigger_enable_time, slice_tick_period/*dummy*/, 1);
+
+    if(MENU.verbosity)
+      MENU.outln(F("butler: prepare hard end"));
+    musicBox_hard_end_time = musicBox_start_time;
+    PULSES.add_time(MUSICBOX_HARD_END_SECONDS*1000000, &musicBox_hard_end_time);
+
   } else {	// all later wakeups
 
 #if defined USE_BATTERY_CONTROL
@@ -606,13 +621,24 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
     }
 #endif
 
+#if defined MUSICBOX_HARD_END_SECONDS		// SAVETY NET
+    {
+      struct time scratch = this_start_time;
+      PULSES.sub_time(MUSICBOX_HARD_END_SECONDS*1000000, &scratch);	// is it time?
+      if(scratch.overflow==0) {			//   not negative, so it *is*
+	MENU.out(F("butler: "));
+	HARD_END_playing(true);
+      }
+    }
+#endif
+
     if(magic_autochanges) {
       if(soft_end_cnt==0) {	// first time
 	// soft end time could be reprogrammed by user interaction, always compute new:
 	struct time soft_end_time=musicBox_start_time;
 	PULSES.add_time(&used_subcycle, &soft_end_time);
 	PULSES.add_time(100, &soft_end_time);		// tolerance
-	struct time thisNow = PULSES.pulses[p].next;	// still unchanged?
+	struct time thisNow = this_start_time;
 	PULSES.sub_time(&thisNow, &soft_end_time);	// is it time?
 	if(soft_end_time.overflow) {			//   negative, so it *is*
 	  if(soft_end_cnt++ == 0)
@@ -989,10 +1015,10 @@ void start_musicBox() {
   struct time base_period = PULSES.pulses[0].period;
   cycle = scale2harmonical_cycle(selected_in(SCALES), &base_period);
   used_subcycle = cycle;
-  //  #define AUTOMAGIC_CYCLE_TIMING_MINUTES	7	// *max minutes*, sets performance timing based on cycle
+  //  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// *max seconds*, sets performance timing based on cycle
 
-#if defined AUTOMAGIC_CYCLE_TIMING_MINUTES
-  used_subcycle={AUTOMAGIC_CYCLE_TIMING_MINUTES*60*1000000L,0};
+#if defined AUTOMAGIC_CYCLE_TIMING_SECONDS
+  used_subcycle={AUTOMAGIC_CYCLE_TIMING_SECONDS*1000000L,0};
   {
     struct time this_subcycle=cycle;
     while(true) {
@@ -1010,16 +1036,11 @@ void start_musicBox() {
   MENU.ln();
   show_cycle(cycle);
 
+  set_cycle_slice_number(cycle_slices);
+
   musicBox_start_time = PULSES.get_now();	// keep musicBox_start_time
   PULSES.activate_selected_synced_now(sync);	// 'n' sync and activate
 
-  struct time dummy;	// dummy, *the butler knows* when to do what...
-  dummy.overflow=0;
-  dummy.time=0;
-
-  //  PULSES.setup_pulse(&magical_butler, ACTIVE, PULSES.get_now(), dummy);	// soon obsolete
-
-  set_cycle_slice_number(cycle_slices);
   // remember pulse index of the butler, so we can call him, if we need him ;)
   musicBox_butler_i =	\
     PULSES.setup_pulse(&musicBox_butler, ACTIVE, musicBox_start_time, slice_tick_period);
@@ -1157,7 +1178,7 @@ void light_sleep() {
 #endif
     break;
   case 2:	// ESP_SLEEP_WAKEUP_EXT0	2
-    MENU.out(F("wakeup EXT0\t"));
+    MENU.outln(F("wakeup EXT0\t"));
     // TODO: gpio?
     break;
   case 7:	// ESP_SLEEP_WAKEUP_GPIO	7
@@ -1211,7 +1232,7 @@ void deep_sleep() {
 
 
 /*
-  void magical_butler(int p)
+  void magical_butler(int p)	 OBSOLETE
 
   enables trigger when due
   then if(magic_autochanges) {
@@ -1219,7 +1240,7 @@ void deep_sleep() {
     start HARD_END_playing() if cleanup did not detect END already
 */
 //#define DEBUG_BUTLER	TODO: remove debug code
-void magical_butler(int p) {
+void magical_butler(int p) {	// TODO: OBSOLETE?
 #if defined DEBUG_BUTLER
   MENU.out(F("BUTLER: "));
 #endif
@@ -1230,7 +1251,7 @@ void magical_butler(int p) {
   case 2:	// enable trigger and prepare soft end
     musicBox_trigger_enabled = true;
     MENU.outln(F("trigger enabled"));
-#if defined AUTOMAGIC_CYCLE_TIMING_MINUTES	// MAX minutes
+#if defined AUTOMAGIC_CYCLE_TIMING_SECONDS	// MAX seconds
     {
       struct time til_soft_end_time=used_subcycle;
       PULSES.sub_time(MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000L, &til_soft_end_time);
@@ -1245,7 +1266,7 @@ void magical_butler(int p) {
     if(magic_autochanges)
       soft_end_playing(soft_end_days_to_live, soft_end_survive_level);
     // prepare hard end
-#if defined AUTOMAGIC_CYCLE_TIMING_MINUTES
+#if defined AUTOMAGIC_CYCLE_TIMING_SECONDS
     {
       struct time til_hard_end_time = used_subcycle;
       PULSES.div_time(&til_hard_end_time, 2);	// cycle/2 for soft end, then HARD end	// TODO: test&adjust
@@ -1271,16 +1292,21 @@ void magical_butler(int p) {
   default:	// we should never get here...	savety net
     PULSES.init_pulse(p);	// with  magic_autochanges==false it's normal
   }
-}
+} // magical_butler()	OBSOLETE
 
 
 /* **************************************************************** */
-void musicBox_setup() {
+void musicBox_setup() {	// TODO:update
   MENU.ln();
 
 #if defined MUSICBOX_TRIGGER_PIN
   MENU.out(F("musicBox trigger pin:\t"));
   MENU.outln(MUSICBOX_TRIGGER_PIN);
+#endif
+
+#if defined AUTOMAGIC_CYCLE_TIMING_SECONDS
+  MENU.out(F("cycle time used max:\t"));
+    MENU.outln(AUTOMAGIC_CYCLE_TIMING_SECONDS);
 #endif
 
 #if defined MUSICBOX_PERFORMACE_SECONDS
