@@ -2,7 +2,8 @@
   musicBox.h
 */
 
-#define AUTOMAGIC_CYCLE_TIMING_MINUTES	65	// *max minutes*, sets performance timing based on cycle
+#define AUTOMAGIC_CYCLE_TIMING_MINUTES	6	// *max minutes*, produce short sample pieces
+//#define AUTOMAGIC_CYCLE_TIMING_MINUTES	65	// *max minutes*, sets performance timing based on cycle
 // #define SOME_FIXED_TUNINGS_ONLY		// fixed pitchs only like E A D G C F B  see: HACK_11_11_11_11
 
 //#define DEBUGGING_MUSICBOX
@@ -251,6 +252,7 @@ void show_n_stars(int n) {
     while (n--) { MENU.out('*'); }
 }
 
+
 // cycle_monitor(p)  payload to give infos where in the cycle we are
 bool show_subcycle_position=true;
 unsigned short cycle_monitor_last_seen_division=0;	// reset that on a start
@@ -290,8 +292,9 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
 
 unsigned short soft_end_days_to_live = 1;	// remaining days of life after soft end
 unsigned short soft_end_survive_level = 4;	// the level a pulse must have reached to survive soft end
-
-void soft_end_playing(int days_to_live, int survive_level) {	// soft ending of musicBox
+struct time soft_end_start_time;
+unsigned long soft_end_cleanup_wait=60*1000000L;	// default 60"
+void soft_end_playing(int days_to_live, int survive_level) {	// initiate soft ending of musicBox
 /*
   void soft_end_playing(int days_to_live, int survive_level);
 
@@ -314,6 +317,7 @@ void soft_end_playing(int days_to_live, int survive_level) {	// soft ending of m
   */
 
   if(MusicBoxState > ENDING) {		// initiate end
+    soft_end_start_time = PULSES.get_now();
     set_MusicBoxState(ENDING);
     MENU.out(F("soft_end_playing("));		// info
     MENU.out(soft_end_days_to_live);
@@ -479,6 +483,8 @@ void musicBox_trigger_got_hot() {	// must be called when magical trigger was det
 
 //#define DEBUG_CLEANUP  TODO: maybe remove debug code, but can give interesting insights...
 void magical_cleanup(int p) {	// deselect unused primary pulses, check if playing has ended
+  PULSES.pulses[p].flags |= DO_NOT_DELETE;	// TODO: use groups instead of DO_NOT_DELETE
+
   if(!magic_autochanges)	// completely switched off by magic_autochanges==false
     return;			// noop
 
@@ -534,14 +540,54 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
   }
 }
 
+int stop_on_LOW(void) {
+  int was_high=0;
+  if(MENU.verbosity)
+    MENU.out(F("stop_on_LOW "));
+
+  for(int pulse=0; pulse<PL_MAX; pulse++) {
+    if(PULSES.pulses[pulse].flags && (PULSES.pulses[pulse].flags & DO_NOT_DELETE) == 0) { // TODO: use groups instead of DO_NOT_DELETE
+      if(PULSES.pulses[pulse].counter & 1)
+	was_high++;
+      else
+	PULSES.init_pulse(pulse);
+    }
+  }
+  return was_high;
+}
+
+int stop_on_LOW_H1(void) {
+  int was_high;
+  if(MENU.verbosity)
+    MENU.out(F("stop_on_LOW_H1 "));
+
+  if(was_high=stop_on_LOW()) {
+    for(int pulse=0; pulse<PL_MAX; pulse++) {
+      if(PULSES.pulses[pulse].flags && (PULSES.pulses[pulse].flags & DO_NOT_DELETE) == 0) { // TODO: use groups instead of DO_NOT_DELETE
+	PULSES.pulses[pulse].flags |= COUNTED;
+	PULSES.pulses[pulse].remaining = 1;
+	was_high++;
+      }
+    }
+  }
+  return was_high;
+}
+
 void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with slice_tick_period
   static uint8_t soft_end_cnt=0;
+  static bool soft_cleanup_started=false;
+  static int soft_cleanup_minimal_fraction_weighting;
+  static short current_slice=0;
 
+  struct fraction current_fraction;
+  int current_fraction_weighting;
   //  MENU.out(F("musicBox_butler "));
 //  MENU.outln(PULSES.pulses[p].counter);
   if(PULSES.pulses[p].counter==1) {	// the butler initializes himself
+    PULSES.pulses[p].flags |= DO_NOT_DELETE;				// TODO: use groups instead of DO_NOT_DELETE
+      current_slice=0;			// start musicBox clock
     soft_end_cnt=0;
-    cycle_monitor_last_seen_division = 0;	// start musicBox clock
+    soft_cleanup_started=false;
   } else if(PULSES.pulses[p].counter==2) {	// now we might have more time for some initialization
     if(MENU.verbosity)
       MENU.outln(F("butler: prepare trigger"));
@@ -573,7 +619,25 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
 	    soft_end_playing(soft_end_days_to_live, soft_end_survive_level); // start soft end
 	}
       } else {	// soft end was called already
+
 	magical_cleanup(p/*dummy*/);
+
+	if(MusicBoxState == ENDING) {
+	  if(soft_cleanup_started) {
+	    //if(soft_cleanup_minimal_fraction_weighting)
+	    ; //    stop_on_LOW_H1();
+
+	  } else {
+	    struct time scratch = PULSES.get_now();
+	    PULSES.sub_time(&soft_end_start_time, &scratch);
+	    PULSES.sub_time(soft_end_cleanup_wait, &scratch);
+	    if(!scratch.overflow) {
+	      MENU.outln(F("butler: time to stop"));
+	      soft_cleanup_started=true;
+	      soft_cleanup_minimal_fraction_weighting = slice_weighting({1,4});	// start quite high, then descend
+	    }
+	  }
+	} // ENDING
       }
     } // magic_autochanges?
   } // all later wakeups
@@ -714,7 +778,7 @@ void random_fixed_pitches(void) {
   case 1:
   case 3:
     MENU.out('a');
-    divisor = 220; // 220	// A 220  ***not*** harmonical
+    divisor = 220; // 220	// A 220  ***not*** harmonical	// TODO: define role of multiplier, divisor
     break;
   case 4:
   case 5:
@@ -871,23 +935,28 @@ void start_musicBox() {
   MENU.play_KB_macro(F("-E40:M "), false); // initialize, the space avoids output from :M, no newline
 
   select_random_scale();	// random scale
-  MENU.out(F("SCALE: "));
+  MENU.out(F("SCALE:\t"));
   MENU.outln(selected_name(SCALES));
 
   select_random_jiffle();	// random jiffle
-  MENU.out(F("JIFFLE: "));
+  MENU.out(F("JIFFLE:\t"));
   MENU.outln(selected_name(JIFFLES));
   setup_jiffle_thrower_selected(selected_actions);
 
   sync = random(6);		// random sync
-  MENU.out(F("sync "));
+  MENU.out(F("SYNC:\t"));
   MENU.outln(sync);
 
-  // pitch
+  // time_unit
   PULSES.time_unit=1000000;	// default metric
-  multiplier=4096;		// uses 1/4096 jiffles
+  MENU.out("TIME_u:\t");
+  MENU.out(PULSES.time_unit);
+  MENU.tab();
+
+  multiplier=4096;	// uses 1/4096 jiffles		// TODO: define role of multiplier, divisor
   multiplier *= 8;	// TODO: adjust appropriate...
 
+  // pitch
   // random pitch
 #if ! defined SOME_FIXED_TUNINGS_ONLY	// random tuning
   #if defined RANDOM_ENTROPY_H
@@ -898,18 +967,15 @@ void start_musicBox() {
   // random fixed pitches
   random_fixed_pitches(void);	// random fixed pitches
   MENU.tab();
-  MENU.outln(divisor);
+  MENU.outln(divisor);	// TODO: define role of multiplier, divisor
 #endif
 
-  MENU.out("time_unit: ");
-  MENU.out(PULSES.time_unit);
-  MENU.tab();
   MENU.out('*');
-  MENU.out(multiplier);
+  MENU.out(multiplier);	// TODO: define role of multiplier, divisor
   MENU.slash();
-  MENU.outln(divisor);
+  MENU.outln(divisor);	// TODO: define role of multiplier, divisor
 
-  tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
+  tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));	// TODO: define role of multiplier, divisor
   lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
 
   random_octave_shift();  // random octave shift
@@ -939,7 +1005,7 @@ void start_musicBox() {
   }
 #endif
 
-  MENU.out(F("used subcycle:"));
+  MENU.out(F("used SUBCYCLE:"));
   PULSES.display_time_human(used_subcycle);
   MENU.ln();
   show_cycle(cycle);
@@ -1274,6 +1340,7 @@ void musicBox_display() {
   else
     MENU.outln(F("off"));
 
+  MENU.outln(F("'L'=stop on low\t'S'=stop on next low"));
 /*	*deactivated*
   MENU.outln(F("fart='f'"));
 */
@@ -1331,6 +1398,14 @@ bool musicBox_reaction(char token) {
 	MENU.out(F("do *not show*"));
       MENU.outln(F(" position in circle"));
     }
+    break;
+  case 'L':
+    MENU.out(stop_on_LOW());
+    MENU.outln(F(" were high "));
+    break;
+  case 'S':
+    MENU.out(stop_on_LOW_H1());
+    MENU.outln(F(" were high "));
     break;
   default:
     return false;
