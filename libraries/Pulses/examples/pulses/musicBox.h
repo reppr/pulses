@@ -56,8 +56,11 @@
 #if defined HACK_11_11_11_11		// never ending jam session
   #define  MUSICBOX_ENDING_FUNCTION	;	// just deactivated ;) 11.11.
 #else
-  void light_sleep();	// early declaration
-  #define  MUSICBOX_ENDING_FUNCTION	light_sleep();	// works fine
+  void light_sleep();	// pre declaration
+  #define  MUSICBOX_ENDING_FUNCTION	light_sleep();	// works fine as default for triggered musicBox
+
+  void start_musicBox();	// pre declaration
+  //#define  MUSICBOX_ENDING_FUNCTION	delay(6*1000); start_musicBox();	// sound recording loop?
 #endif
 
   //#define  MUSICBOX_ENDING_FUNCTION	deep_sleep();	// still DAC noise!!!
@@ -343,6 +346,14 @@ void soft_end_playing(int days_to_live, int survive_level) {	// initiate soft en
     MENU.out(soft_end_survive_level);
     MENU.outln(')');
 
+    if(MENU.verbosity) {
+      struct time main_part_duration = soft_end_start_time;
+      PULSES.sub_time(&musicBox_start_time, &main_part_duration);
+      MENU.out(F("main part "));
+      PULSES.display_time_human(main_part_duration);
+      MENU.ln();
+    }
+
     for (int pulse=0; pulse<PL_MAX; pulse++) {	// make days_to_live COUNTED generating pulses
       if (PULSES.pulse_is_selected(pulse)) {
 	if(PULSES.pulses[pulse].counter > survive_level) {	// pulse was already awake (long enough)?
@@ -363,7 +374,13 @@ void soft_end_playing(int days_to_live, int survive_level) {	// initiate soft en
       // no activity remaining
 
       set_MusicBoxState(OFF);
-      MENU.outln(F("playing ended"));
+      if(MENU.verbosity) {
+	MENU.out(F("playing ended "));
+	struct time play_time = PULSES.get_now();
+	PULSES.sub_time(&musicBox_start_time, &play_time);
+	PULSES.display_time_human(play_time);
+	MENU.ln();
+      }
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
       MENU.out(F("peripheral POWER OFF "));
@@ -373,6 +390,11 @@ void soft_end_playing(int days_to_live, int survive_level) {	// initiate soft en
 #endif
 
       reset_all_flagged_pulses_GPIO_OFF();
+
+      if(MENU.verbosity) {
+	MENU.ln();
+	MENU.outln(F(STRINGIFY(MUSICBOX_ENDING_FUNCTION)));
+      }
       delay(600);	// send remaining output
 
       MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch	// *ENDED*
@@ -388,6 +410,14 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
   if(with_title)
     MENU.outln(F("HARD_END_playing()"));
 
+  if (MENU.verbosity){
+    struct time play_time = PULSES.get_now();
+    PULSES.sub_time(&musicBox_start_time, &play_time);
+    MENU.out(F("played "));
+    PULSES.display_time_human(play_time);
+    MENU.ln();
+  }
+
   delay(777);
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
@@ -401,7 +431,8 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
   set_MusicBoxState(OFF);
   delay(600);	// send remaining output
 
-  MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch	// *ENDED*
+  MENU.ln();
+  light_sleep(); // *ENDED*
 }
 
 portMUX_TYPE musicBox_trigger_MUX = portMUX_INITIALIZER_UNLOCKED;
@@ -509,49 +540,62 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
   MENU.out(F("CLEANUP "));
 #endif
 
-  PULSES.deselect_unused_pulses();	// deselect unused (primary) pulses
+  unsigned int deselected = PULSES.deselect_unused_pulses();	// deselect unused (primary) pulses
 
-  int cnt=0;
-  for(int pulse=0; pulse<PL_MAX; pulse++) {
-    if(PULSES.pulses[pulse].flags) {	// check if playing has ended  activity?
-#if defined DEBUG_CLEANUP
-      MENU.out('p');
-      MENU.out(pulse);
-#endif
-      if(PULSES.pulses[pulse].periodic_do == &musicBox_butler) {
-#if defined DEBUG_CLEANUP
-	MENU.out(" musicBox butler");
-#endif
-	;
-      } else if(PULSES.pulses[pulse].periodic_do == &magical_butler) {
-#if defined DEBUG_CLEANUP
-	MENU.out(" magical butler");
-#endif
-	;
-      } else if(PULSES.pulses[pulse].periodic_do == &magical_cleanup) {
-#if defined DEBUG_CLEANUP
-	MENU.out(" cleanup");
-#endif
-	;
-      } else if(PULSES.pulses[pulse].periodic_do == &cycle_monitor) {
-#if defined DEBUG_CLEANUP
-	MENU.out(" cycle_monitor");
-#endif
-	;
-      } else
-	cnt++;
-#if defined DEBUG_CLEANUP
-      MENU.tab();
-#endif
+  bool do_display = MENU.maybe_display_more(VERBOSITY_SOME);
+  if(do_display) {
+    if(deselected) {
+      MENU.out(F("removed unused "));
+      MENU.outln(deselected);
     }
   }
-  PULSES.deselect_unused_pulses();	// dopplet gnäht... nütztabernüt
-#if defined DEBUG_CLEANUP
-  MENU.ln();
-#endif
 
-  if(cnt==0) {
-    MENU.outln(F("END reached"));
+  int skipped=0;
+  int flagged=0;
+  for(int pulse=0; pulse<PL_MAX; pulse++) {
+    if(PULSES.pulses[pulse].flags) {	// check if playing has ended  activity?
+      if(do_display) {
+	MENU.out('p');
+	MENU.out(pulse);
+      }
+      if(PULSES.pulses[pulse].periodic_do == &musicBox_butler) {
+	if(do_display) {
+	  MENU.out(" butler");
+	}
+	skipped++;
+      } else if(PULSES.pulses[pulse].periodic_do == &magical_butler) {
+	if(do_display) {
+	  MENU.out(" magBut");
+	}
+	skipped++;
+      } else if(PULSES.pulses[pulse].periodic_do == &magical_cleanup) {
+	if(do_display) {
+	  MENU.out(" cleanup");
+	}
+	skipped++;
+      } else if(PULSES.pulses[pulse].periodic_do == &cycle_monitor) {
+	if(do_display) {
+	  MENU.out(" monitor");
+	}
+	skipped++;
+      } else {
+	flagged++;
+      }
+
+      if(do_display)
+	MENU.space();
+    } // flags?
+  } // pulse
+  PULSES.deselect_unused_pulses();	// dopplet gnäht... nütztabernüt
+
+  if(do_display) {
+    MENU.out(F("\nsurvivors "));
+    MENU.outln(flagged);
+  }
+
+  if(flagged==0) {
+    if(MENU.verbosity)
+      MENU.outln(F("END reached"));
     delay(3200); // aesthetics
     HARD_END_playing(false);
   }
@@ -605,9 +649,21 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
   if(PULSES.pulses[p].counter==1) {	// the butler initializes himself
     PULSES.pulses[p].flags |= DO_NOT_DELETE;				// TODO: use groups instead of DO_NOT_DELETE
     current_slice=0;			// start musicBox clock
-    butler_start_time =  PULSES.pulses[p].next;	// still unchanged?
+    butler_start_time = PULSES.pulses[p].next;	// still unchanged?
     soft_end_cnt=0;
     soft_cleanup_started=false;
+/*
+    // TODO: FIXME: does not work right ################
+    if(sync) {
+      if(MENU.verbosity) {
+	struct time pause = butler_start_time;
+	//PULSES.sub_time(&musicBox_start_time, &pause);
+	MENU.out(F("sync pause "));
+	PULSES.display_time_human(pause);
+	MENU.ln(); MENU.ln();
+      }
+    }
+*/
   } else if(PULSES.pulses[p].counter==2) {	// now we might have more time for some initialization
     if(MENU.verbosity)
       MENU.outln(F("butler: prepare trigger"));
@@ -669,9 +725,16 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
 	    PULSES.sub_time(&soft_end_start_time, &scratch);
 	    PULSES.sub_time(soft_end_cleanup_wait, &scratch);
 	    if(!scratch.overflow) {
-	      MENU.outln(F("butler: time to stop"));
 	      soft_cleanup_started=true;
 	      soft_cleanup_minimal_fraction_weighting = slice_weighting({1,4});	// start quite high, then descend
+
+	      if (MENU.verbosity){
+		MENU.out(F("butler: time to stop "));
+		struct time time_to_stop = PULSES.get_now();
+		PULSES.sub_time(&musicBox_start_time, &time_to_stop);
+		PULSES.display_time_human(time_to_stop);
+		MENU.ln();
+	      }
 	    }
 	  }
 	} // ENDING
@@ -940,7 +1003,7 @@ void furzificate() {	// switch to a quiet, farting patterns, u.a.
 // remember pulse index of the butler, so we can call him, if we need him ;)
 int musicBox_butler_i=ILLEGAL;	// pulse index of musicBox_butler(p)
 void start_musicBox() {
-  MENU.outln(F("start_musicBox()"));
+  MENU.outln(F("\nstart_musicBox()"));
   set_MusicBoxState(AWAKE);
   musicBox_trigger_enabled=false;
   blocked_trigger_shown = false;	// show only once a run
@@ -1026,7 +1089,7 @@ void start_musicBox() {
 
   random_octave_shift();  // random octave shift
 
-  MENU.outln(F(" <<< * >>>"));
+  MENU.outln(F(" <<< * >>>\n"));
 #if defined PERIPHERAL_POWER_SWITCH_PIN
     peripheral_power_switch_ON();
 #endif
@@ -1053,7 +1116,6 @@ void start_musicBox() {
 
   MENU.out(F("used SUBCYCLE:"));
   PULSES.display_time_human(used_subcycle);
-  MENU.ln();
   show_cycle(cycle);
 
   set_cycle_slice_number(cycle_slices);
