@@ -1313,7 +1313,7 @@ void Pulses::display_time_human(struct time duration) {  // everyday time format
     (*MENU).out(days);
     (*MENU).out(F("d "));
   }
-  if(hours) {
+  if(hours || days) {	// so 1d 0h 22' 13"  *will* show "0h"
     (*MENU).out(hours);
     (*MENU).out(F("h "));
   } else (*MENU).space(3);
@@ -1328,7 +1328,7 @@ void Pulses::display_time_human(struct time duration) {  // everyday time format
   (*MENU).out(seconds);
   (*MENU).out(F("\" "));
 
-  if(seconds<10 && minutes==0 && hours==0 && days==0)	// fall back to float time display below 1 second
+  if(seconds<10 && minutes==0 && hours==0 && days==0)	// fall back to float time display below 10 seconds
     display_realtime_sec(duration);
 }
 
