@@ -3214,7 +3214,7 @@ void Press_toStart() {
   MENU.outln(F("Press '!' to start"));
 }
 
-void select_scale__UI() {
+void select_scale__UI() {	// TODO: scale_was_set_by_menu	see musicBox
   switch (MENU.cb_peek()) {
   case EOF:
     break;
@@ -4983,11 +4983,11 @@ bool menu_pulses_reaction(char menu_input) {
 	} // case E39 { }
 	break;
 
-      case 40:	// 'E40' time machine with icode player
+      case 40:	// 'E40' time machine with icode player   *adapted to musicBox*
 	// #define ESP32_15_clicks_no_display_TIME_MACHINE2
 	reset_all_flagged_pulses_GPIO_OFF();
 	next_gpio(0);	// reset used gpio
-	{ // local scope 'E40' only right now
+	{ // local scope 'E40' only right now	// TODO: factor out
 	  short bass_pulses=14;
 	  short middle_pulses=15;
 	  short high_pulses=7;
@@ -5001,8 +5001,8 @@ bool menu_pulses_reaction(char menu_input) {
 	  divisor = 294;		// 293.66 = D4	// default tuning D4
 	  // divisor = 147;	// 146.83 = D3
 	  // divisor=55;	// default tuning a
-
-	  select_array_in(SCALES, minor_scale);		// default e minor
+	  if(!scale_was_set_by_menu)	// see musicBox
+	    select_array_in(SCALES, minor_scale);		// default e minor
 	  // tune *all* primary pulses
 
 	  select_scale__UI();	// second/third letters choose metric scales
@@ -5010,15 +5010,19 @@ bool menu_pulses_reaction(char menu_input) {
 	  lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
 
 	  // prepare primary pulse groups:
-	  select_array_in(JIFFLES, d4096_512);		// default jiffle
+	  if(!jiffle_was_set_by_menu)	// see musicBox
+	    select_array_in(JIFFLES, d4096_512);		// default jiffle
 	  // bass on DAC1 and broad angle LED lamps:
 	  // select_array_in(JIFFLES, d4096_512);
 
+	  if(!icode_was_set_by_menu) {	// see musicBox
 #if defined USE_i2c
 	  select_array_in(iCODEs, (unsigned int*) d4096_1024_i2cLED);
 #else
 	  select_array_in(iCODEs, (unsigned int*) d4096_1024_icode_jiff);
 #endif
+	  }
+
 	  PULSES.select_from_to(0, bass_pulses - 1);
 	  for(int pulse=0; pulse<bass_pulses; pulse++) {
 	    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(iCODEs) , DACsq1 | doesICODE);
