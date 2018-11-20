@@ -16,6 +16,7 @@ is_chiffre	KEYWORD2
 is_operator	KEYWORD2
 get_numeric_input	KEYWORD2
 maybe_calculate_input	KEYWORD2
+string_match	KEYWORD2
 ticked	KEYWORD2
 cb_peek	KEYWORD2
 skip_spaces	KEYWORD2

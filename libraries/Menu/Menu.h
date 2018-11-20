@@ -143,8 +143,7 @@ class Menu {
 
   int cb_peek() const;			// peek at next if any, else return EOL
   int cb_peek(int offset) const;	// peek at next, overnext... if any, else EOL
-
-  void skip_spaces();			// skip leading spaces from the buffer
+  unsigned int skip_spaces();			// skip leading spaces from the buffer
   int next_input_token() const;		// next non space input token if any, else EOL
   bool is_numeric() const;		// test if next token will be a numeric chiffre
   long numeric_input(long default_value);  // read a number from the buffer
@@ -265,6 +264,10 @@ class Menu {
   bool get_numeric_input(unsigned long *result);	// if there's a number, read it
   bool maybe_calculate_input(unsigned long *result);	// check for & calculate positive integer input
 							// calculates simply left to right
+
+  bool string_match(const char *test_str);			// c-style character string
+//  bool string_match(const String test_str);			// c++ String
+//  bool string_match(const __FlashStringHelper* test_str);	// Arduino macro: F("string")
 
 /* int get_free_RAM(): determine RAM usage, maybe only a dummy	*/
   int get_free_RAM() const;

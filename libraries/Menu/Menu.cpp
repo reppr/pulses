@@ -473,6 +473,38 @@ bool Menu::maybe_display_more(unsigned char verbosity_level) {	// avoid too much
     return is_result;
   }
 
+/*
+  bool Menu::string_match(const char * teststring)
+    check for a leading string match (skipping leading spaces) in the input buffer
+    on a match  remove string (and leading spaces) from input and return true
+
+    else  restore any leading spaces and return false
+
+  the teststring itself can not begin with a string ;)
+*/
+bool Menu::string_match(const char * teststring) {
+  int len;
+  unsigned int leading_spaces = skip_spaces();	// remove leading spaces, can be restored
+
+  if(len = strlen(teststring)) { // *if* there is a string
+    if(cb_count >= len) {		// compare strings
+      for(int i=0; i<len; i++)
+	if(cb_peek(i) != *(teststring +i)) {
+	  // restore leading spaces, as they could be *essential* for the menu parser
+	  while (leading_spaces--)  restore_input_token();	// restore leading spaces
+	  return false;			// strings are different
+	}
+      // teststring *matches* input buffer
+      while(len--) drop_input_token();	// *remove* string from input buffer
+					// (leading spaces remain skipped too)
+      return true;			// OK	*matches* input buffer
+    }
+  }
+
+  // restore leading spaces, as they could be *essential* for the menu parser
+  while (leading_spaces--)  restore_input_token();	// restore leading spaces
+  return false;		// no string, no match
+}
 
   /*
    * Menu tries to determine free RAM and to display free RAM in the title line:
@@ -774,11 +806,14 @@ int Menu::cb_peek(int offset) const {
 
 
 /* void skip_spaces(): remove leading spaces from input buffer:	*/
-void Menu::skip_spaces() {
-  while (cb_peek() == ' ')  //  EOF != ' ' end of buffer case ok
+unsigned int Menu::skip_spaces() {
+  unsigned int space_count=0;
+  while (cb_peek() == ' ') {  //  EOF != ' ' end of buffer case ok
+    space_count++;
     cb_read();
+  }
+  return space_count;
 }
-
 
 /* int next_input_token()
    return next non space input token if any
