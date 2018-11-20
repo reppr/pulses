@@ -1468,6 +1468,9 @@ bool musicBox_reaction(char token) {
   int input_value;
 
   switch(token) {
+  case '?':
+    musicBox_display();
+    break;
   case 'a':
     magic_autochanges = !magic_autochanges;
     break;
