@@ -1119,3 +1119,102 @@ fastest * pulse    1' 33"
 2^-3	    6' 14"
 2^-4	    3'  7"	| subcycle |
 2^-5	    1' 33"
+
+
+chileglogge?
+*************
+
+AUTOSTART 1
+start_musicBox()
+2018-11-20_11h40m15s	TUE
+battery control pin: 36	1252	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+play_KB_macro  -E40:M  verbosity lowest
+tabula rasa 0
+SCALE:	pentatonic_minor
+JIFFLE:	up_THRD
+SYNC:	1
+TIME_u:	1000000	*32768/172
+play_KB_macro  *2
+ <<< * >>>
+used SUBCYCLE:    3' 56"
+
+harmonical cycle 2h  5' 44"
+fastest * pulse    0' 59"
+2^0	2h  5' 44"
+2^-1	1h  2' 52"
+2^-2	   31' 26"
+2^-3	   15' 43"
+2^-4	    7' 51"
+2^-5	    3' 56"	| subcycle |
+2^-6	    1' 58"
+2^-7	    0' 59"
+
+
+lesley
+*******
+
+start_musicBox()
+2018-11-20_14h34m14s	TUE
+battery control pin: 36	1239	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+play_KB_macro  -E40:M  verbosity lowest
+tabula rasa 0
+SCALE:	minor_scale
+JIFFLE:	rising_pent_theme
+SYNC:	4
+TIME_u:	1000000	*32768/195
+play_KB_macro  *2
+ <<< * >>>
+used SUBCYCLE:    3' 28"
+
+harmonical cycle 1h 50' 54"
+fastest * pulse    3' 28"
+2^0	1h 50' 54"
+2^-1	   55' 27"
+2^-2	   27' 44"
+2^-3	   13' 52"
+2^-4	    6' 56"
+2^-5	    3' 28"	| subcycle |
+
+
+vorbereitige zum abflug?
+**************************
+
+oderso,
+  muesdeaafangnomallose ;)
+
+AUTOSTART 1
+
+start_musicBox()
+2018-11-20_15h15m48s	TUE
+battery control pin: 36	1234	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+play_KB_macro  -E40:M  verbosity lowest
+tabula rasa 0
+SCALE:	european_pentatonic
+JIFFLE:	up_THRD_dn
+SYNC:	1
+TIME_u:	1000000	*32768/225
+ <<< * >>>
+
+used SUBCYCLE:    4' 48"
+harmonical cycle 1h 16' 54"
+fastest * pulse    0' 36"
+2^0	1h 16' 54"
+2^-1	   38' 27"
+2^-2	   19' 13"
+2^-3	    9' 37"
+2^-4	    4' 48" 	| subcycle |
+2^-5	    2' 24"
+2^-6	    1' 12"
+2^-7	    0' 36"
