@@ -298,7 +298,7 @@ class Pulses {
   void clear_selection(void);
   int select_n(unsigned int n);
   int select_from_to(unsigned int from, unsigned int to);
-  void deselect_unused_pulses();
+  unsigned int deselect_unused_pulses();
   bool pulse_is_selected(int pulse, pulses_mask_t * mask);
   bool pulse_is_selected(int pulse);
   short how_many_selected(void);

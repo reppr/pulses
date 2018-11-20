@@ -541,13 +541,18 @@ int Pulses::select_n(unsigned int n) {
 }
 
 
-void Pulses::deselect_unused_pulses() {
+unsigned int Pulses::deselect_unused_pulses() {
+  unsigned int deselected=0;
   for (int pulse=0; pulse<PL_MAX; pulse++) {
     if (pulse_is_selected(pulse))
-      if(pulses[pulse].flags==0)
+      if(pulses[pulse].flags==0) {
 	deselect_pulse(pulse);		// deselect unused pulses
+	deselected++;
+      }
   }
+  return deselected;
 }
+
 
 int Pulses::select_from_to(unsigned int from, unsigned int to) {
   if(from > to) {	// sanity checks: swap?
