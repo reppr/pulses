@@ -1076,7 +1076,7 @@ void Menu::menu_page_info(char pg) const {
     space();
   out(F("menupage ")); out((int) pg);
   space(2); out('\''); out((char) MENU_MENU_PAGES_KEY); out(men_pages[pg].page_key); out('\'');
-  tab(); out(F("group ")); ticked(men_pages[pg].active_group);
+  out(F(" (sees ")); ticked(men_pages[pg].active_group); out(')');
   tab(); out('"'); out(men_pages[pg].title); outln('"');
 }
 
