@@ -349,6 +349,7 @@ void Pulses::wake_pulse(int pulse) {
       DAC_output();
 #endif
 
+    // TODO: rename periodic_do to payload ################
     if (action_flags & PAYLOAD) {	// for flexibility payload comes *before* icode
       (*pulses[pulse].periodic_do)(pulse);		// do payload
       action_flags = pulses[pulse].action_flags;	// re-read (pulse might be changed)
@@ -390,6 +391,7 @@ void Pulses::deactivate_pulse(int pulse) {	// clear ACTIVE flag, keep data
 }
 
 
+// TODO: rename periodic_do to payload ################
 void Pulses::set_payload(int pulse, void (*payload)(int)) {	// set and activate payload
   pulses[pulse].periodic_do = payload;
   pulses[pulse].action_flags |= PAYLOAD;

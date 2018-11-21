@@ -96,6 +96,9 @@ void set_cycle_slice_number(short ticks_a_cycle) {
   PULSES.div_time(&slice_tick_period, cycle_slices);
 }
 
+// remember pulse index of the butler, so we can call him, if we need him ;)
+int musicBox_butler_i=ILLEGAL;	// pulse index of musicBox_butler(p)
+
 // some pre declarations:
 void musicBox_butler(int);
 void magical_butler(int);	// old version, obsolete?
@@ -104,28 +107,70 @@ void magical_butler(int);	// old version, obsolete?
 // MusicBoxState
 enum musicbox_state_t {OFF=0, ENDING, SLEEPING, SNORING, AWAKE, FADE};
 musicbox_state_t MusicBoxState=OFF;
+char * MusicBoxState_name;
 void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditionally
+  int butler_survivors=0;	// checks for stray butler pulses when state switched to OFF
+
   switch (state) {			// initializes state if necessary
   case OFF:
+    MusicBoxState_name = F("OFF");
 //    musicBox_hard_end_time = {-1, -1};	// far far in the future
 //    musicBox_start_time = {-1, -1};
-    break;
+
+    // control if the butler is still running || musicBox_butler_i != ILLEGAL
+    if(musicBox_butler_i != ILLEGAL) {	// musicBox_butler(p) seems running?
+      if(PULSES.pulses[musicBox_butler_i].periodic_do == &musicBox_butler) {
+	PULSES.init_pulse(musicBox_butler_i);
+	if(MENU.maybe_display_more(VERBOSITY_MORE))
+	  MENU.outln(F("set_MusicBoxState: butler removed"));	// butler still running on musicBox_butler_i
+      } else {
+	if(MENU.maybe_display_more(VERBOSITY_SOME)) {
+	  MENU.out(F("butler not at id "));			// musicBox_butler_i was set, but no butler there
+	  MENU.outln(musicBox_butler_i);
+	}
+      }
+      musicBox_butler_i = ILLEGAL;				// invalidate pulse index of musicBox_butler(p)
+    }
+
+    // test if there is really no butler left:
+    for(int p=0; p<PL_MAX; p++) {
+      if(PULSES.pulses[musicBox_butler_i].periodic_do == &musicBox_butler)
+	butler_survivors++;	// checks for stray butler pulses when state switched to OFF
+    }
+    if(butler_survivors) {
+      if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
+	MENU.out(F("set_MusicBoxState: surviving butlers: "));	// strange, made by user interaction?
+	MENU.outln(butler_survivors);
+      }
+    }
+
+    break; // OFF
+
   case ENDING:
+    MusicBoxState_name = F("ENDING");
     break;
   case SLEEPING:
+    MusicBoxState_name = F("SLEEPING");
     break;
   case SNORING:
+    MusicBoxState_name = F("SNORING");
     break;
   case AWAKE:
+    MusicBoxState_name = F("AWAKE");
     break;
   case FADE:
+    MusicBoxState_name = F("FADE");
     break;
   default:
-    MENU.outln(F("unknown MusicBoxState"));	// should not happen
-    return;					// error, return
+    MusicBoxState_name = F("(unknown)");
+    MENU.outln(F("unknown MusicBoxState"));	// should not happen ;)
   }
-
   MusicBoxState = state;		// OK
+
+  if(MENU.maybe_display_more(VERBOSITY_SOME)) {
+    MENU.out(F("MusicBoxState "));
+    MENU.outln(MusicBoxState_name);
+  }
 }
 
 // TODO: check&fix
@@ -403,12 +448,11 @@ void soft_end_playing(int days_to_live, int survive_level) {	// initiate soft en
 }
 
 void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard end playing
-  /*	TODO: TEST:	i'd rather deactivate that, so that it works in abnormal situations too
-  if(MusicBoxState == OFF)
-    return;
-  */
-  if(with_title)
+  if(with_title)	// TODO: maybe use MENU.verbosity, but see also 'o'
     MENU.outln(F("HARD_END_playing()"));
+
+  if(MusicBoxState != OFF)
+    set_MusicBoxState(OFF);
 
   if (MENU.verbosity){
     struct time play_time = PULSES.get_now();
@@ -428,6 +472,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
 #endif
 
   reset_all_flagged_pulses_GPIO_OFF();
+  musicBox_butler_i = ILLEGAL;
   set_MusicBoxState(OFF);
   delay(600);	// send remaining output
 
@@ -594,7 +639,7 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
   }
 
   if(flagged==0) {
-    if(MENU.verbosity)
+    if(MENU.verbosity)	// TODO: review
       MENU.outln(F("END reached"));
     delay(3200); // aesthetics
     HARD_END_playing(false);
@@ -1000,14 +1045,12 @@ void furzificate() {	// switch to a quiet, farting patterns, u.a.
 }
 
 
-// remember pulse index of the butler, so we can call him, if we need him ;)
-int musicBox_butler_i=ILLEGAL;	// pulse index of musicBox_butler(p)
 void start_musicBox() {
   MENU.outln(F("\nstart_musicBox()"));
   set_MusicBoxState(AWAKE);
   musicBox_trigger_enabled=false;
   blocked_trigger_shown = false;	// show only once a run
-  musicBox_butler_i=ILLEGAL;
+  musicBox_butler_i=ILLEGAL;	// TODO: use that?
 
 #if defined  USE_RTC_MODULE
   show_DS1307_time_stamp();
@@ -1425,6 +1468,36 @@ void musicBox_setup() {	// TODO:update
 void musicBox_display() {
   MENU.outln(F("The Harmonical Music Box  http://github.com/reppr/pulses/\n"));
 
+  MENU.out(F("MusicBoxState "));
+  MENU.out(MusicBoxState_name);
+  MENU.tab();
+  MENU.out(F("butler "));
+  if(musicBox_butler_i == ILLEGAL)
+    MENU.outln('-');
+  else
+    MENU.outln(musicBox_butler_i);
+
+  MENU.out(F("harmonical cycle 'c'\t"));
+  PULSES.display_time_human(cycle);
+  MENU.ln();
+
+  MENU.out(F("subcycle\t\t"));
+  PULSES.display_time_human(used_subcycle);
+  MENU.ln();
+
+  MENU.out(cycle_slices);
+  MENU.out(F(" slices='n'\t"));
+  PULSES.display_time_human(slice_tick_period);
+  MENU.ln();
+
+  MENU.ln();
+
+  MENU.out(F("'o' show position ticker "));
+  if(show_subcycle_position)
+    MENU.outln(F("ON"));
+  else
+    MENU.outln(F("off"));
+
   MENU.out(F("autochanges "));
   if(magic_autochanges)
     MENU.out(F("ON"));
@@ -1445,17 +1518,6 @@ void musicBox_display() {
   MENU.out(soft_end_survive_level);	// the level a pulse must have reached to survive soft en
   MENU.outln(F(")\t'd'=days to survive  'l'=level minimal age 'E'= start soft end now"));
   MENU.outln(F("hard end='H'"));
-
-  MENU.out(cycle_slices);
-  MENU.out(F(" slices='n'\t"));
-  PULSES.display_time_human(slice_tick_period);
-  MENU.ln();
-
-  MENU.out(F("'o' show position ticker "));
-  if(show_subcycle_position)
-    MENU.outln(F("ON"));
-  else
-    MENU.outln(F("off"));
 
   MENU.outln(F("'L'=stop on low\t'S'=stop on next low"));
 /*	*deactivated*

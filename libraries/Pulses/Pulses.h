@@ -186,6 +186,7 @@ struct pulse_t {
     init_jiffle(unsigned int *jiffletab, struct time when, struct time new_period, int origin_pulse)
   */
 
+  // TODO: rename periodic_do to payload ################
   // pointer on  void something(int pulse)  functions:
   // the pulses will do that, if the pointer is not NULL
   void (*periodic_do)(int);

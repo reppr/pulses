@@ -5,6 +5,7 @@
 
 //#define HACK_11_11_11_11	// setup for MagicalGuitar 11.11.2018 Zürich ;)
 
+// TODO: change PERIPHERAL_POWER_SWITCH_PIN as GPIO12 is active during boot process...
 #define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_TOUCH_INPUT_PIN
 
 //#define USE_MORSE	// incomplete	DEACTIVATED MORSE OUTPUT, (== PERIPHERAL_POWER_SWITCH_PIN ;)
@@ -4215,8 +4216,7 @@ bool menu_pulses_reaction(char menu_input) {
     reset_all_flagged_pulses_GPIO_OFF();
 
 #if defined HARMONICAL_MUSIC_BOX
-    MusicBoxState=OFF;	// use function ################################################################
-    musicBox_butler_i=ILLEGAL;	// pulse index of musicBox_butler(p)
+    set_MusicBoxState(OFF);
 #endif
 
     if(MENU.cb_peek() == '!') {		// 'X!' does 'X' *and* resets time_unit
