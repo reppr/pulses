@@ -58,6 +58,13 @@ void display_fraction(struct fraction *f) {
 }
 
 
+void display_fraction_int(struct fraction F) {
+  MENU.out(F.multiplier);
+  MENU.out('/');
+  MENU.out(F.divisor);
+}
+
+
 #define ARRAY_ENTRY_UNTIL_ZERO_MODE	1	// menu_mode for unsigned integer data entry, stop at multiple zeros
 void display_arr(unsigned int *arr, unsigned int step) {
   struct fraction sum;

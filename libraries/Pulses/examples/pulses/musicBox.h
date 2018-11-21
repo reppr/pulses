@@ -85,9 +85,6 @@ struct time used_subcycle;	// TODO: move to Harmonical? ? ?
 */
 unsigned short cycle_slices = 540;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
 
-//unsigned short cycle_slices = 3600;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
-//unsigned short cycle_slices = 5400;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
-
 struct time slice_tick_period;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
 
 void set_cycle_slice_number(short ticks_a_cycle) {
@@ -311,13 +308,10 @@ void show_n_stars(int n) {
 
 // cycle_monitor(p)  payload to give infos where in the cycle we are
 bool show_subcycle_position=true;
-unsigned short cycle_monitor_last_seen_division=0;	// reset that on a start
 void cycle_monitor(int pulse) {	// show markers at important cycle divisions
-  /*
-    ON FIRST START cycle_monitor() RESET cycle_monitor_last_seen_division
-    and maybe reset stress_event_cnt
-  */
-  //MENU.out(F("* "));
+  static unsigned short cycle_monitor_last_seen_division=0;
+  if(PULSES.pulses[pulse].counter == 0 )
+    cycle_monitor_last_seen_division =  0;
 
   struct time this_time = PULSES.get_now();
   PULSES.sub_time(&PULSES.pulses[pulse].last, &this_time);	// so long inside this cycle
@@ -464,7 +458,9 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   MENU.out(F("peripheral POWER OFF "));
-  MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
+  MENU.out(PERIPHERAL_POWER_SWITCH_PIN);
+  MENU.tab();
+  MENU.outln(read_battery_level());
   peripheral_power_switch_OFF();
   delay(800);	// let power go down softly
 #endif
@@ -644,9 +640,9 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
   }
 }
 
-int stop_on_LOW(void) {
+int stop_on_LOW(void) {	// stops *only* pulses that are low
   int was_high=0;
-  if(MENU.verbosity)
+  if(MENU.verbosity)	// TODO: rethink output
     MENU.out(F("stop_on_LOW "));
 
   for(int pulse=0; pulse<PL_MAX; pulse++) {
@@ -657,12 +653,12 @@ int stop_on_LOW(void) {
 	PULSES.init_pulse(pulse);
     }
   }
-  return was_high;
+  return was_high;	// TODO: rethink output
 }
 
 int stop_on_LOW_H1(void) {
   int was_high;
-  if(MENU.verbosity)
+  if(MENU.verbosity)	// TODO: rethink output
     MENU.out(F("stop_on_LOW_H1 "));
 
   if(was_high=stop_on_LOW()) {
@@ -674,7 +670,7 @@ int stop_on_LOW_H1(void) {
       }
     }
   }
-  return was_high;
+  return was_high;	// TODO: rethink output
 }
 
 
@@ -1191,15 +1187,11 @@ void start_musicBox() {
 
   PULSES.activate_selected_synced_now(sync);	// 'n' sync and activate
 
+  // the butler starts just a pad *after* musicBox_start_time
   // remember pulse index of the butler, so we can call him, if we need him ;)
   musicBox_butler_i =	\
-    PULSES.setup_pulse(&musicBox_butler, ACTIVE, musicBox_start_time, slice_tick_period);
+    PULSES.setup_pulse(&musicBox_butler, ACTIVE, PULSES.get_now(), slice_tick_period);
 
-  /*
-    when starting cycle_monitor() always *reset cycle_monitor_last_seen_division*
-    and maybe reset stress_event_cnt
-  */
-  cycle_monitor_last_seen_division=0;	// TODO: HERE? #################
   PULSES.setup_pulse(&cycle_monitor, ACTIVE, PULSES.get_now(), slice_tick_period);
   stress_event_cnt = -3;	// some stress events will often happen after starting the musicBox
 }
@@ -1309,6 +1301,12 @@ void light_sleep() {
   if (esp_sleep_enable_gpio_wakeup())
     MENU.error_ln(F("esp_sleep_enable_gpio_wakeup"));
 */
+
+//  if(esp_sleep_enable_uart_wakeup(0))
+//    MENU.error_ln(F("esp_sleep_enable_uart_wakeup(0)"));
+//
+//  if(esp_sleep_enable_uart_wakeup(1))
+//    MENU.error_ln(F("esp_sleep_enable_uart_wakeup(1)"));
 
   MENU.outln(F("sleep well..."));
   delay(1500);
@@ -1488,6 +1486,7 @@ void musicBox_setup() {	// TODO:update
     MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
 }
 
+
 /* **************************************************************** */
 // musicBox menu
 
@@ -1499,9 +1498,26 @@ void musicBox_display() {
   MENU.tab();
   MENU.out(F("butler "));
   if(musicBox_butler_i == ILLEGAL)
-    MENU.outln('-');
-  else
-    MENU.outln(musicBox_butler_i);
+    MENU.out('-');
+  else {
+    MENU.out(musicBox_butler_i);
+    MENU.tab();
+
+    struct fraction current_phase = {PULSES.pulses[musicBox_butler_i].counter, cycle_slices};
+    MENU.out('[');
+    display_fraction_int(current_phase);
+
+    HARMONICAL.reduce_fraction(&current_phase);
+    if(current_phase.divisor != cycle_slices) {	// fraction has been reduced
+      MENU.out(F(" = "));
+      display_fraction_int(current_phase);
+    }
+
+    MENU.out(F(" = "));
+    MENU.out((float) current_phase.multiplier / current_phase.divisor, 6);
+    MENU.out(']');
+  }
+  MENU.ln();
 
   MENU.out(F("harmonical cycle 'c'\t"));
   PULSES.display_time_human_format(cycle);
@@ -1546,7 +1562,14 @@ void musicBox_display() {
   MENU.outln(F(")\t'd'=days to survive  'l'=level minimal age 'E'= start soft end now"));
   MENU.outln(F("hard end='H'"));
 
-  MENU.outln(F("'L'=stop on low\t'S'=stop on next low"));
+  MENU.out(F("\"L\"=stop when low\t\"LL\"=stop only low\t'S'="));
+
+  if(MusicBoxState == OFF)
+    MENU.outln(F("START"));
+  else {
+    MENU.outln(F("STOP"));
+  }
+
 /*	*deactivated*
   MENU.outln(F("fart='f'"));
 */
@@ -1557,37 +1580,69 @@ bool musicBox_reaction(char token) {
   int input_value;
 
   switch(token) {
-  case '?':
+  case '?': // musicBox_display();
     musicBox_display();
     break;
-  case 'a':
+  case 'a': // magic_autochanges
     magic_autochanges = !magic_autochanges;
     break;
-  case 'c':
+  case 'c': // show cycle
     show_cycle(cycle);
     break;
-  case 'E':
+  case 'E': // soft_end_playing(soft_end_days_to_live, soft_end_survive_level);
     soft_end_playing(soft_end_days_to_live, soft_end_survive_level);
     break;
-  case 'd':
+  case 'd': // soft_end_days_to_live
     input_value = MENU.numeric_input(soft_end_days_to_live);
     if(input_value >= 0)
       soft_end_days_to_live = input_value;
     break;
-  case 'l':
+  case 'l': // soft_end_survive_level
     input_value = MENU.numeric_input(soft_end_survive_level);
     if(input_value >= 0)
       soft_end_survive_level = input_value;
     break;
-  case 'H':
+  case 'H': // HARD_END_playing(true);
     HARD_END_playing(true);
     break;
-  case 'n':
+  case 'n': // TODO: review, fix cycle_slices
     if((input_value = MENU.numeric_input(cycle_slices) > 0)) {
       set_cycle_slice_number(input_value);
       PULSES.pulses[musicBox_butler_i].period = slice_tick_period;	// a bit adventurous ;)
     }
     break;
+  case 'o': // show_subcycle_position
+    show_subcycle_position ^= 1 ;
+    if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
+      if(show_subcycle_position)
+	MENU.out(F("SHOW"));
+      else
+	MENU.out(F("do *not show*"));
+      MENU.outln(F(" position in circle"));
+    }
+    break;
+
+  case 'L': // 'L' == stop_on_LOW_H1()  ||  "LL" == stop_on_LOW()/*only*/)
+    if(MENU.cb_peek() != 'L') {	// 'L' case	stop_on_LOW_H1()
+      MENU.out(stop_on_LOW_H1());
+      MENU.outln(F(" were high "));
+    } else {			// "LL" case	stop_on_LOW()/*only*/
+      MENU.drop_input_token();
+      MENU.out(stop_on_LOW()/*only*/);
+      MENU.outln(F(" were high "));
+    }
+    break;
+
+  case 'S': // 'S' Start/Stop	// FIXME: clashes with 'S' in pulses menu ################################
+    if(MusicBoxState != OFF) {
+      reset_all_flagged_pulses_GPIO_OFF();
+      set_MusicBoxState(OFF);
+      if(MENU.maybe_display_more(VERBOSITY_LOWEST))
+	musicBox_display();
+    } else
+      start_musicBox();
+    break;
+
 /*
   void furzificate() {	// switch to a quiet, farting patterns, u.a.
   very simple one shot implementation
@@ -1598,24 +1653,7 @@ bool musicBox_reaction(char token) {
     furzificate();
     break;
 */
-  case 'o':
-    show_subcycle_position ^= 1 ;
-    if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
-      if(show_subcycle_position)
-	MENU.out(F("SHOW"));
-      else
-	MENU.out(F("do *not show*"));
-      MENU.outln(F(" position in circle"));
-    }
-    break;
-  case 'L':
-    MENU.out(stop_on_LOW());
-    MENU.outln(F(" were high "));
-    break;
-  case 'S':
-    MENU.out(stop_on_LOW_H1());
-    MENU.outln(F(" were high "));
-    break;
+
   default:
     return false;
   }
