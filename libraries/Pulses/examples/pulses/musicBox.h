@@ -177,7 +177,7 @@ void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditional
 #if defined HACK_11_11_11_11	// magic_autochanges=false;
   bool magic_autochanges=false;	// never ending jam sessions...
 #else
-bool magic_autochanges=true;	// switch if to end normal playing after MUSICBOX_PERFORMACE_SECONDS
+  bool magic_autochanges=true;	// switch if to end normal playing after MUSICBOX_PERFORMACE_SECONDS
 #endif
 
 
@@ -198,7 +198,7 @@ void show_cycle(struct time cycle) {
   //  PULSES.display_time_human(PULSES.pulses[PULSES.fastest_from_selected()].period);
   MENU.out(F("fastest * pulse"));
   //  PULSES.display_realtime_sec(PULSES.pulses[PULSES.fastest_from_selected()].period);
-  PULSES.display_time_human(shortest);
+  PULSES.display_realtime_sec(shortest);
   MENU.ln();
 
   int i=0;
@@ -1077,10 +1077,15 @@ void start_musicBox() {
   delay(250);	// give peripheral supply voltage time to stabilise
 #endif
 
-  MENU.outln(F("\n >>> * <<<"));
+  MENU.outln(F("\n >>> * <<<"));	// start output block with configurations
+#if defined  USE_RTC_MODULE		// repeat that in here, keeping first one for power failing cases
+  show_DS1307_time_stamp();
+  MENU.ln();
+#endif
   MENU.men_selected = 0;	// ################
   //  MENU.play_KB_macro(F("-E40 "), false); // initialize, the space avoids output from E40, no newline
   MENU.play_KB_macro(F("-E40:M "), false); // initialize, the space avoids output from :M, no newline
+  MENU.ln();
 
   if(!scale_was_set_by_menu)	// if *not* set by user interaction
     select_random_scale();	//   random scale
@@ -1100,7 +1105,7 @@ void start_musicBox() {
 
   // time_unit
   PULSES.time_unit=1000000;	// default metric
-  MENU.out("TIME_u:\t");
+  MENU.out("TIME_U:\t");
   MENU.out(PULSES.time_unit);
   MENU.tab();
 
@@ -1132,7 +1137,6 @@ void start_musicBox() {
 
   random_octave_shift();  // random octave shift
 
-  MENU.outln(F(" <<< * >>>\n"));
 #if defined PERIPHERAL_POWER_SWITCH_PIN
     peripheral_power_switch_ON();
 #endif
@@ -1159,11 +1163,15 @@ void start_musicBox() {
 
   MENU.out(F("used SUBCYCLE:"));
   PULSES.display_time_human(used_subcycle);
+  MENU.ln();
+  MENU.outln(F(" <<< * >>>"));	// end output block
+
   show_cycle(cycle);
 
   set_cycle_slice_number(cycle_slices);
 
   musicBox_start_time = PULSES.get_now();	// keep musicBox_start_time
+
   PULSES.activate_selected_synced_now(sync);	// 'n' sync and activate
 
   // remember pulse index of the butler, so we can call him, if we need him ;)

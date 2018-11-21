@@ -3173,24 +3173,24 @@ void show_scaling() {
 
 void show_UI_settings() {
   MENU.ln();
-  MENU.out(F("SCALE "));
+  MENU.out(F("SCALE:\t"));
   MENU.out(array2name(SCALES, selected_in(SCALES)));
   MENU.tab();
 
-  MENU.out(F("JIFFLE "));
+  MENU.out(F("JIFFLE:\t"));
   MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
   MENU.tab();
 
   if (g_inverse)	// FIXME: TODO: check where that *is* used ################
     MENU.out(F("GPIO BOTTOM UP\t"));
 
-  MENU.out(F("scaling "));	// FIXME: TODO: check where that *is* used ################
+  MENU.out(F("SCALING: "));	// FIXME: TODO: check where that *is* used ################
   MENU.out(multiplier);
   MENU.slash();
   MENU.out(divisor);
   MENU.tab();
 
-  MENU.out(F("sync "));
+  MENU.out(F("SYNC: "));
   MENU.out(sync);
   MENU.ln();
 
@@ -3199,7 +3199,7 @@ void show_UI_settings() {
   PULSES.show_action_flags(selected_actions);
   MENU.tab();
 
-  MENU.out(F("voices "));
+  MENU.out(F("voices: "));
   MENU.out(voices);
   MENU.tab();
 
