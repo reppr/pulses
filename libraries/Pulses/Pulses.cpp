@@ -1303,8 +1303,8 @@ float Pulses::display_realtime_sec(struct time duration) {
 }
 
 
-// void display_time_human(struct time duration);
-void Pulses::display_time_human(struct time duration) {  // everyday time format d h m s
+// void display_time_human(struct time duration);	// everyday time format	d h m s  formatted with spaces
+void Pulses::display_time_human(struct time duration) {
   unsigned long seconds = (((float) duration.time / 1000000.0) + 0.5);
   if (duration.overflow)
     seconds += duration.overflow * 4295;
@@ -1337,6 +1337,42 @@ void Pulses::display_time_human(struct time duration) {  // everyday time format
 
   if(seconds<10 && minutes==0 && hours==0 && days==0)	// fall back to float time display below 10 seconds
     display_realtime_sec(duration);
+}
+
+
+// void display_time_human(struct time duration);	// everyday time format	d h m s  short formatting
+void Pulses::display_time_human_short(struct time duration) {  // everyday time format d h m s
+  unsigned long seconds = (((float) duration.time / 1000000.0) + 0.5);
+  if (duration.overflow)
+    seconds += duration.overflow * 4295;
+
+  unsigned int days = seconds / 86400;
+  seconds %= 86400;
+  unsigned int hours = seconds / 3600;
+  seconds %= 3600;
+  unsigned int minutes = seconds / 60;
+  seconds %= 60;
+
+  if(minutes==0 && hours==0 && days==0 && seconds && seconds < 20) {
+    display_realtime_sec(duration);
+    return;	// done
+  }
+  // seconds >= 20 only
+
+  if(days) {
+    (*MENU).out(days);
+    (*MENU).out(F("d "));
+  }
+  if(hours || days) {
+    (*MENU).out(hours);
+    (*MENU).out(F("h "));
+  }
+  if(minutes || hours || days) {
+    (*MENU).out(minutes);
+    (*MENU).out(F("\' "));
+  }
+  (*MENU).out(seconds);
+  (*MENU).out(F("\" "));
 }
 
 
