@@ -1303,8 +1303,8 @@ float Pulses::display_realtime_sec(struct time duration) {
 }
 
 
-// void display_time_human(struct time duration);	// everyday time format	d h m s  formatted with spaces
-void Pulses::display_time_human(struct time duration) {
+// void display_time_human_format(struct time duration);	// everyday time format	d h m s  formatted with spaces
+void Pulses::display_time_human_format(struct time duration) {
   unsigned long seconds = (((float) duration.time / 1000000.0) + 0.5);
   if (duration.overflow)
     seconds += duration.overflow * 4295;
@@ -1340,8 +1340,7 @@ void Pulses::display_time_human(struct time duration) {
 }
 
 
-// void display_time_human(struct time duration);	// everyday time format	d h m s  short formatting
-void Pulses::display_time_human_short(struct time duration) {  // everyday time format d h m s
+void Pulses::display_time_human(struct time duration) {  // everyday time format d h m s short
   unsigned long seconds = (((float) duration.time / 1000000.0) + 0.5);
   if (duration.overflow)
     seconds += duration.overflow * 4295;

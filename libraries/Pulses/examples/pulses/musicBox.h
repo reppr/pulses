@@ -182,7 +182,7 @@ void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditional
 
 
 void show_cycle(struct time cycle) {
-  MENU.out(F("\nharmonical cycle "));
+  MENU.out(F("\nharmonical cycle:  "));
   if(selected_in(SCALES)==NULL) {
     MENU.outln(F("no scale"));
     return;
@@ -195,10 +195,8 @@ void show_cycle(struct time cycle) {
   struct time base_period = PULSES.pulses[voices-1].period;
   struct time shortest = scale2harmonical_cycle(selected_in(SCALES), &base_period);
 
-  //  PULSES.display_time_human(PULSES.pulses[PULSES.fastest_from_selected()].period);
-  MENU.out(F("fastest * pulse"));
-  //  PULSES.display_realtime_sec(PULSES.pulses[PULSES.fastest_from_selected()].period);
-  PULSES.display_realtime_sec(shortest);
+  MENU.out(F("shortest pulse's harmonical cycle: "));
+  PULSES.display_time_human(shortest);
   MENU.ln();
 
   int i=0;
@@ -209,7 +207,7 @@ void show_cycle(struct time cycle) {
     MENU.out(F("2^"));
     MENU.out(i--);
     MENU.tab();
-    PULSES.display_time_human(cycle);
+    PULSES.display_time_human_format(cycle);
     if(cycle.time == used_subcycle.time)
       MENU.out(F("\t| subcycle |"));
     MENU.ln();
@@ -1161,7 +1159,7 @@ void start_musicBox() {
   }
 #endif
 
-  MENU.out(F("used SUBCYCLE:"));
+  MENU.out(F("used SUBCYCLE:\t"));
   PULSES.display_time_human(used_subcycle);
   MENU.ln();
   MENU.outln(F(" <<< * >>>"));	// end output block
@@ -1486,15 +1484,16 @@ void musicBox_display() {
     MENU.outln(musicBox_butler_i);
 
   MENU.out(F("harmonical cycle 'c'\t"));
-  PULSES.display_time_human(cycle);
+  PULSES.display_time_human_format(cycle);
   MENU.ln();
 
   MENU.out(F("subcycle\t\t"));
-  PULSES.display_time_human(used_subcycle);
+  PULSES.display_time_human_format(used_subcycle);
   MENU.ln();
 
   MENU.out(cycle_slices);
   MENU.out(F(" slices='n'\t"));
+  set_cycle_slice_number(cycle_slices);	// make sure slice_tick_period is ok
   PULSES.display_time_human(slice_tick_period);
   MENU.ln();
 
@@ -1581,7 +1580,7 @@ bool musicBox_reaction(char token) {
 */
   case 'o':
     show_subcycle_position ^= 1 ;
-    if(MENU.maybe_display_more(VERBOSITY_SOME)) {
+    if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
       if(show_subcycle_position)
 	MENU.out(F("SHOW"));
       else

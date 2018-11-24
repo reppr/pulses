@@ -4,14 +4,6 @@
   temporary test code for pulses menu 'y'
 */
 
-{
-  struct time scratch={1000000, 0};
-  struct fraction sc{3, 4};
-  scale_time(&scratch, &sc);
-  PULSES.display_time_human(scratch);
-}
-
-
 #if defined USE_BATTERY_CONTROL
     show_battery_level();
 #endif

@@ -24,7 +24,6 @@ periodic_do	KEYWORD2
 dac1_intensity	KEYWORD2
 dac2intensity	KEYWORD2
 get_now	KEYWORD2
-
 init_time	KEYWORD2
 get_now	KEYWORD2
 add_time	KEYWORD2
@@ -86,6 +85,7 @@ display_now	KEYWORD2
 time_info	KEYWORD2
 display_realtime_sec	KEYWORD2
 display_time_human	KEYWORD2
+display_time_human_format	KEYWORD2
 display_real_ovfl_and_sec	KEYWORD2
 short_info	KEYWORD2
 print_period_in_time_units	KEYWORD2
