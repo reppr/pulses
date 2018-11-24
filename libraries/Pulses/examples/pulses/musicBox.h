@@ -791,6 +791,9 @@ void select_random_scale() {
 #if defined RANDOM_ENTROPY_H
   random_entropy();	// entropy from hardware
 #endif
+  if(MENU.maybe_display_more(VERBOSITY_LOWEST))
+    MENU.outln(F("random scale"));
+
   switch(random(23)) {		// random scale
   case 0: case 1: case 3: case 4:
     select_array_in(SCALES, pentatonic_minor);
@@ -828,6 +831,9 @@ void select_random_jiffle(void) {
 #if defined RANDOM_ENTROPY_H
   random_entropy();	// entropy from hardware
 #endif
+  if(MENU.maybe_display_more(VERBOSITY_LOWEST))
+    MENU.outln(F("random jiffle"));
+
   switch(random(99)) {
   case 0: case 1: case 2: case 3: case 4:
     select_array_in(JIFFLES, PENTAtonic_rise);
@@ -914,7 +920,9 @@ void select_random_jiffle(void) {
 }
 
 void random_fixed_pitches(void) {
-  MENU.out(F("fixed tuning "));
+  if(MENU.maybe_display_more(VERBOSITY_LOWEST))
+    MENU.out(F("fixed random tuning "));
+
 #if defined RANDOM_ENTROPY_H
   random_entropy();	// entropy from hardware
 #endif
@@ -966,8 +974,13 @@ void random_fixed_pitches(void) {
 }
 
 void random_octave_shift(void) {
+  if(MENU.maybe_display_more(VERBOSITY_LOWEST))
+    MENU.out(F("random octave shift: "));
+
   switch(random(9)) {
   case 0: case 1:
+    if(MENU.maybe_display_more(VERBOSITY_LOWEST))
+      MENU.ln();
     break;
   case 2: case 3: case 4:  case 5:
     MENU.play_KB_macro(F("*2"));
@@ -1096,28 +1109,34 @@ void start_musicBox() {
   MENU.outln(selected_name(JIFFLES));
   setup_jiffle_thrower_selected(selected_actions);
 
-  if(!sync_was_set_by_menu)	// if *not* set by user interaction
-    sync = random(6);		// random sync
+  if(!sync_was_set_by_menu) {	// if *not* set by user interaction
+    sync = random(6);		// random sync	// MAYBE: define  select_random_sync()  ???
+    if(MENU.maybe_display_more(VERBOSITY_LOWEST))
+      MENU.outln(F("random sync"));
+  }
+
   MENU.out(F("SYNC:\t"));
   MENU.outln(sync);
 
   // time_unit
   PULSES.time_unit=1000000;	// default metric
   MENU.out("TIME_U:\t");
-  MENU.out(PULSES.time_unit);
-  MENU.tab();
+  MENU.outln(PULSES.time_unit);
 
+  // pitch
   multiplier=4096;	// uses 1/4096 jiffles		// TODO: define role of multiplier, divisor
   multiplier *= 8;	// TODO: adjust appropriate...
 
-  // pitch
   // random pitch
-#if ! defined SOME_FIXED_TUNINGS_ONLY	// random tuning
+#if ! defined SOME_FIXED_TUNINGS_ONLY	// random tuning // TODO: make that a run time option
   #if defined RANDOM_ENTROPY_H
     random_entropy();	// entropy from hardware
   #endif
-  if(!pitch_was_set_by_menu)	// if *not* set by user interaction
-    divisor = random(160, 450);	// *not* tuned for other instruments
+    if(!pitch_was_set_by_menu) {	// if *not* set by user interaction
+      divisor = random(160, 450);	// *not* tuned for other instruments
+      if(MENU.maybe_display_more(VERBOSITY_LOWEST))
+	MENU.outln(F("random pitch"));
+    }
 #else				// some randomly selected metric A=440 tunings for jam sessions like in HACK_11_11_11_11
   if(!pitch_was_set_by_menu)	// if *not* set by user interaction
     random_fixed_pitches(void);	// random fixed pitches
@@ -1444,19 +1463,20 @@ void musicBox_setup() {	// TODO:update
   MENU.outln(MUSICBOX_TRIGGER_PIN);
 #endif
 
+#if defined MUSICBOX_TRIGGER_BLOCK_SECONDS
+  MENU.out(F("disable retriggering:\t"));
+  MENU.outln(MUSICBOX_TRIGGER_BLOCK_SECONDS);
+  MENU.ln();
+#endif
+
 #if defined AUTOMAGIC_CYCLE_TIMING_SECONDS
-  MENU.out(F("cycle time used max:\t"));
+  MENU.out(F("cycle used max seconds:\t"));
     MENU.outln(AUTOMAGIC_CYCLE_TIMING_SECONDS);
 #endif
 
 #if defined MUSICBOX_PERFORMACE_SECONDS
   MENU.out(F("performance seconds:\t"));
   MENU.outln(MUSICBOX_PERFORMACE_SECONDS);
-#endif
-
-#if defined MUSICBOX_TRIGGER_BLOCK_SECONDS
-  MENU.out(F("disable retriggering:\t"));
-  MENU.outln(MUSICBOX_TRIGGER_BLOCK_SECONDS);
 #endif
 
 #if defined MUSICBOX_HARD_END_SECONDS
