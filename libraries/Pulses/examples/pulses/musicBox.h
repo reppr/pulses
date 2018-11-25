@@ -310,7 +310,7 @@ void show_n_stars(int n) {
 bool show_subcycle_position=true;
 void cycle_monitor(int pulse) {	// show markers at important cycle divisions
   static unsigned short cycle_monitor_last_seen_division=0;
-  if(PULSES.pulses[pulse].counter == 0 )
+  if(PULSES.pulses[pulse].counter == 1)
     cycle_monitor_last_seen_division =  0;
 
   struct time this_time = PULSES.get_now();
