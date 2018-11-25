@@ -1852,3 +1852,92 @@ shortest pulse's harmonical cycle:   12.312192s
 2^-6	    1'  6"
 2^-7	    0' 33"
 2^-8	    0' 16"
+
+
+Baldrian
+*********
+
+entspannig pur
+
+try longer cycles ;)
+
+AWOKE
+TRIGGERED!
+
+start_musicBox()
+2018-11-25_19h14m10s	SUN
+battery control pin: 36	1235	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-11-25_19h14m10s	SUN
+play_KB_macro  -E40:M  verbosity lowest
+tabula rasa 0
+
+random scale
+SCALE:	octaves_fourths_fifths
+random jiffle
+JIFFLE:	PENTA_3rd_down_5
+random sync
+SYNC:	2
+TIME_U:	1000000
+random pitch
+*32768/296
+random octave shift: play_KB_macro  *2
+used SUBCYCLE:	3' 39"
+ <<< * >>>
+
+harmonical cycle:  15h 35' 11"
+shortest pulse's harmonical cycle:   18.259968s
+2^0	15h 35' 11"
+2^-1	7h 47' 35"
+2^-2	3h 53' 48"
+2^-3	1h 56' 54"
+2^-4	   58' 27"
+2^-5	   29' 13"
+2^-6	   14' 37"
+2^-7	    7' 18"
+2^-8	    3' 39" 	| subcycle |
+2^-9	    1' 50"
+2^-10	    0' 55"
+2^-11	    0' 27"
+
+
+dorisch
+********
+
+AWOKE
+TRIGGERED!
+
+start_musicBox()
+2018-11-25_19h24m23s	SUN
+battery control pin: 36	1238	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-11-25_19h24m24s	SUN
+play_KB_macro  -E40:M  verbosity lowest
+tabula rasa 0
+
+random scale
+SCALE:	doric_scale
+random jiffle
+JIFFLE:	din_dididi
+random sync
+SYNC:	0
+TIME_U:	1000000
+random pitch
+*32768/219
+random octave shift: used SUBCYCLE:	3' 5"
+ <<< * >>>
+
+harmonical cycle:  1h 38' 45"
+shortest pulse's harmonical cycle: 3' 5"
+2^0	1h 38' 45"
+2^-1	   49' 22"
+2^-2	   24' 41"
+2^-3	   12' 21"
+2^-4	    6' 10"
+2^-5	    3'  5" 	| subcycle |
