@@ -111,8 +111,6 @@ void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditional
   switch (state) {			// initializes state if necessary
   case OFF:
     MusicBoxState_name = F("OFF");
-//    musicBox_hard_end_time = {-1, -1};	// far far in the future
-//    musicBox_start_time = {-1, -1};
 
     // control if the butler is still running || musicBox_butler_i != ILLEGAL
     if(musicBox_butler_i != ILLEGAL) {	// musicBox_butler(p) seems running?
@@ -188,9 +186,8 @@ void show_cycle(struct time cycle) {
   PULSES.display_time_human(cycle);
   MENU.ln();
 
-  // TODO: do *not* expect it on pulse pulses[voices-1]
-  struct time base_period = PULSES.pulses[voices-1].period;
-  struct time shortest = scale2harmonical_cycle(selected_in(SCALES), &base_period);
+  struct time period_x = PULSES.pulses[voices-1].period;	// TODO: do *not* expect it on pulse pulses[voices-1]
+  struct time shortest = scale2harmonical_cycle(selected_in(SCALES), &period_x);
 
   MENU.out(F("shortest pulse's harmonical cycle: "));
   PULSES.display_time_human(shortest);
@@ -683,8 +680,7 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
   struct time this_start_time =  PULSES.pulses[p].next;	// still unchanged?
   struct fraction current_fraction;
   int current_fraction_weighting;
-  //  MENU.out(F("musicBox_butler "));
-//  MENU.outln(PULSES.pulses[p].counter);
+
   if(PULSES.pulses[p].counter==1) {	// the butler initializes himself
     PULSES.pulses[p].flags |= DO_NOT_DELETE;				// TODO: use groups instead of DO_NOT_DELETE
     current_slice=0;			// start musicBox clock
@@ -1057,7 +1053,7 @@ void start_musicBox() {
   set_MusicBoxState(AWAKE);
   musicBox_trigger_enabled=false;
   blocked_trigger_shown = false;	// show only once a run
-  musicBox_butler_i=ILLEGAL;	// TODO: use that?
+  musicBox_butler_i=ILLEGAL;
 
 #if defined  USE_RTC_MODULE
   show_DS1307_time_stamp();
@@ -1085,13 +1081,14 @@ void start_musicBox() {
 #endif
 
   MENU.outln(F("\n >>> * <<<"));	// start output block with configurations
+
 #if defined  USE_RTC_MODULE		// repeat that in here, keeping first one for power failing cases
   show_DS1307_time_stamp();
   MENU.ln();
 #endif
-  MENU.men_selected = 0;	// ################
-  //  MENU.play_KB_macro(F("-E40 "), false); // initialize, the space avoids output from E40, no newline
-  MENU.play_KB_macro(F("-E40:M "), false); // initialize, the space avoids output from :M, no newline
+
+  MENU.men_selected = 0;	// starting point (might be changed by kb macro)
+  MENU.play_KB_macro(F("-:M E40 "), false); // initialize, the space avoids output from :M and E40, no newline
   MENU.ln();
 
   if(!scale_was_set_by_menu)	// if *not* set by user interaction
@@ -1154,9 +1151,8 @@ void start_musicBox() {
     peripheral_power_switch_ON();
 #endif
 
-  // TODO: do *not* expect it on pulse pulses[0]
-  struct time base_period = PULSES.pulses[0].period;
-  cycle = scale2harmonical_cycle(selected_in(SCALES), &base_period);
+  struct time period_x = PULSES.pulses[0].period;	// TODO: do *not* expect it on pulse pulses[0]
+  cycle = scale2harmonical_cycle(selected_in(SCALES), &period_x);
   used_subcycle = cycle;
   //  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// *max seconds*, sets performance timing based on cycle
 
@@ -1528,7 +1524,7 @@ void musicBox_display() {
   MENU.ln();
 
   MENU.out(cycle_slices);
-  MENU.out(F(" slices='n'\t"));
+  MENU.out(F(" slices='n'  "));
   set_cycle_slice_number(cycle_slices);	// make sure slice_tick_period is ok
   PULSES.display_time_human(slice_tick_period);
   MENU.ln();
@@ -1550,9 +1546,9 @@ void musicBox_display() {
 
   MENU.tab();
   MENU.out(F("'c' cycle "));
-  // TODO: do *not* expect it on pulse pulses[0]
-  struct time base_period = PULSES.pulses[0].period;
-  PULSES.display_time_human(scale2harmonical_cycle(selected_in(SCALES), &base_period));
+
+  struct time period_x = PULSES.pulses[0].period;	// TODO: do *not* expect it on pulse pulses[0]
+  PULSES.display_time_human(scale2harmonical_cycle(selected_in(SCALES), &period_x));
   MENU.ln();
 
   MENU.out(F("soft_end("));
