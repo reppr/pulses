@@ -345,6 +345,7 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
 }
 
 
+int soft_cleanup_minimal_fraction_weighting=1;	// TODO: adjust default
 unsigned short soft_end_days_to_live = 1;	// remaining days of life after soft end
 unsigned short soft_end_survive_level = 4;	// the level a pulse must have reached to survive soft end
 struct time soft_end_start_time;
@@ -674,7 +675,6 @@ int stop_on_LOW_H1(void) {
 void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with slice_tick_period
   static uint8_t soft_end_cnt=0;
   static bool soft_cleanup_started=false;
-  static int soft_cleanup_minimal_fraction_weighting;
   static short current_slice=0;
   static struct time butler_start_time;
   struct time this_start_time =  PULSES.pulses[p].next;	// still unchanged?
@@ -752,9 +752,10 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
 
 	if(MusicBoxState == ENDING) {
 	  if(soft_cleanup_started) {
-	    //if(soft_cleanup_minimal_fraction_weighting)
-	    ; //    stop_on_LOW_H1();
-
+	    if(soft_cleanup_minimal_fraction_weighting) {
+	      // MENU.out(F("Dada"));
+	      ;	//    stop_on_LOW_H1();
+	    }
 	  } else {
 	    struct time scratch = PULSES.get_now();
 	    PULSES.sub_time(&soft_end_start_time, &scratch);
@@ -1556,7 +1557,9 @@ void musicBox_display() {
   MENU.out(F(", "));
   MENU.out(soft_end_survive_level);	// the level a pulse must have reached to survive soft en
   MENU.outln(F(")\t'd'=days to survive  'l'=level minimal age 'E'= start soft end now"));
-  MENU.outln(F("hard end='H'"));
+  MENU.outln(F("'w' minimal weigh "));
+  MENU.out(soft_cleanup_minimal_fraction_weighting);
+  MENU.outln(F("\thard end='H'"));
 
   MENU.out(F("\"L\"=stop when low\t\"LL\"=stop only low\t'S'="));
 
@@ -1597,6 +1600,9 @@ bool musicBox_reaction(char token) {
     input_value = MENU.numeric_input(soft_end_survive_level);
     if(input_value >= 0)
       soft_end_survive_level = input_value;
+    break;
+  case 'w': // soft_cleanup_minimal_fraction_weighting
+    soft_cleanup_minimal_fraction_weighting = MENU.numeric_input(soft_cleanup_minimal_fraction_weighting);
     break;
   case 'H': // HARD_END_playing(true);
     HARD_END_playing(true);
