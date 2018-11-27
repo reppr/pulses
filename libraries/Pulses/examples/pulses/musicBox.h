@@ -1049,6 +1049,10 @@ void furzificate() {	// switch to a quiet, farting patterns, u.a.
 }
 
 
+short bass_pulses;	// see  setup_bass_middle_high()
+short middle_pulses;	// see  setup_bass_middle_high()
+short high_pulses;	// see  setup_bass_middle_high()
+
 void start_musicBox() {
   MENU.outln(F("\nstart_musicBox()"));
   set_MusicBoxState(AWAKE);
@@ -1089,8 +1093,10 @@ void start_musicBox() {
 #endif
 
   MENU.men_selected = 0;	// starting point (might be changed by kb macro)
-  MENU.play_KB_macro(F("-:M E40 "), false); // initialize, the space avoids output from :M and E40, no newline
+  MENU.play_KB_macro(F("-:M "), false); // initialize, the space avoids output from :M , no newline
   MENU.ln();
+
+  setup_bass_middle_high(bass_pulses, middle_pulses, high_pulses);
 
   if(!scale_was_set_by_menu)	// if *not* set by user interaction
     select_random_scale();	//   random scale
@@ -1481,6 +1487,10 @@ void musicBox_setup() {	// TODO:update
 
   if (esp_sleep_enable_ext0_wakeup((gpio_num_t) MUSICBOX_TRIGGER_PIN, 1))
     MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
+
+  bass_pulses=14;	// see  setup_bass_middle_high()
+  middle_pulses=15;	// see  setup_bass_middle_high()
+  high_pulses=7;	// see  setup_bass_middle_high()
 }
 
 

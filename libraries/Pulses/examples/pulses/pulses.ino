@@ -2916,6 +2916,71 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
   PULSES.pulses[pulse].countdown = jiffletab[base_index+2];		// count of next phase
 }
 
+
+void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_pulses) {
+  {
+    MENU.out(F("setup_bass_middle_high("));	// ################ verbosity
+    MENU.out(bass_pulses);
+    MENU.out(F(", "));
+    MENU.out(middle_pulses);
+    MENU.out(F(", "));
+    MENU.out(high_pulses);
+    MENU.outln(')');
+  }
+
+  voices = bass_pulses + middle_pulses + high_pulses;	// init *all* primary pulses
+  PULSES.select_n(voices);
+
+  // tune *all* primary pulses
+  tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
+  lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
+
+  // prepare primary pulse groups:
+
+  // bass on DAC1 and broad angle LED lamps:
+  // select_array_in(JIFFLES, d4096_512);
+
+  PULSES.select_from_to(0, bass_pulses - 1);
+  for(int pulse=0; pulse<bass_pulses; pulse++) {
+    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(iCODEs) , DACsq1 | doesICODE);
+
+#if defined USE_i2c
+  #if defined USE_MCP23017
+    PULSES.set_i2c_addr_pin(pulse, 0x20, pulse);	// ???
+  #endif
+#endif
+  }
+
+  PULSES.select_from_to(0,bass_pulses);			// pulse[bass_pulses] belongs to both groups
+  // selected_DACsq_intensity_proportional(255, 1);
+  selected_share_DACsq_intensity(255, 1);		// bass DAC1 intensity
+
+  // 2 middle octaves on 15 gpios
+  PULSES.select_from_to(bass_pulses, bass_pulses + middle_pulses -1);
+
+  for(int pulse=bass_pulses; pulse<bass_pulses+middle_pulses; pulse++) {
+    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(JIFFLES), DACsq1 | doesICODE | CLICKs);
+    PULSES.set_gpio(pulse, next_gpio());
+  }
+
+  // fix topmost bass pulse pulse[bass_pulses] that belongs to both groups:
+  PULSES.pulses[bass_pulses].dest_action_flags |= DACsq1;
+
+  // high octave on DAC2
+  PULSES.select_from_to(bass_pulses + middle_pulses -1, bass_pulses + middle_pulses + high_pulses -1);
+  for(int pulse = bass_pulses + middle_pulses; pulse<voices; pulse++) {	// pulse[21] belongs to both groups
+    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) d4096_256, DACsq2 | doesICODE);
+  }
+
+  // fix pulse[21] belonging to both groups
+  PULSES.pulses[bass_pulses + middle_pulses - 1].dest_action_flags |= DACsq2;
+  selected_share_DACsq_intensity(255, 2);
+  //	selected_DACsq_intensity_proportional(255, 2);
+
+  PULSES.select_n(voices);	// select all primary voices again
+}
+
+
 // pre-defined jiffle pattern:
 void setup_jiffles2345(bool g_inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   if (g_inverse) {
@@ -4986,15 +5051,7 @@ bool menu_pulses_reaction(char menu_input) {
       case 40:	// 'E40' time machine with icode player   *adapted to musicBox*
 	// #define ESP32_15_clicks_no_display_TIME_MACHINE2
 	reset_all_flagged_pulses_GPIO_OFF();
-	next_gpio(0);	// reset used gpio
 	{ // local scope 'E40' only right now	// TODO: factor out
-	  short bass_pulses=14;
-	  short middle_pulses=15;
-	  short high_pulses=7;
-
-	  voices = bass_pulses + middle_pulses + high_pulses;	// init *all* primary pulses
-	  PULSES.select_n(voices);
-
 	  PULSES.time_unit=1000000;	// default metric
 	  multiplier=4096;		// uses 1/4096 jiffles
 	  multiplier *= 8;	// TODO: adjust appropriate...
@@ -5003,68 +5060,21 @@ bool menu_pulses_reaction(char menu_input) {
 	  // divisor=55;	// default tuning a
 	  if(!scale_was_set_by_menu)	// see musicBox
 	    select_array_in(SCALES, minor_scale);		// default e minor
-	  // tune *all* primary pulses
 
 	  select_scale__UI();	// second/third letters choose metric scales
-	  tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
-	  lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
 
-	  // prepare primary pulse groups:
-	  if(!jiffle_was_set_by_menu)	// see musicBox
+	  if(!jiffle_was_set_by_menu)				// see musicBox
 	    select_array_in(JIFFLES, d4096_512);		// default jiffle
-	  // bass on DAC1 and broad angle LED lamps:
-	  // select_array_in(JIFFLES, d4096_512);
 
 	  if(!icode_was_set_by_menu) {	// see musicBox
 #if defined USE_i2c
-	  select_array_in(iCODEs, (unsigned int*) d4096_1024_i2cLED);
+	    select_array_in(iCODEs, (unsigned int*) d4096_1024_i2cLED);
 #else
-	  select_array_in(iCODEs, (unsigned int*) d4096_1024_icode_jiff);
+	    select_array_in(iCODEs, (unsigned int*) d4096_1024_icode_jiff);
 #endif
 	  }
 
-	  PULSES.select_from_to(0, bass_pulses - 1);
-	  for(int pulse=0; pulse<bass_pulses; pulse++) {
-	    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(iCODEs) , DACsq1 | doesICODE);
-
-#if defined USE_i2c
-  #if defined USE_MCP23017
-	    PULSES.set_i2c_addr_pin(pulse, 0x20, pulse);	// ???
-  #endif
-#endif
-	  }
-
-	  PULSES.select_from_to(0,bass_pulses);			// pulse[bass_pulses] belongs to both groups
-	  // selected_DACsq_intensity_proportional(255, 1);
-	  selected_share_DACsq_intensity(255, 1);		// bass DAC1 intensity
-
-	  // 2 middle octaves on 15 gpios
-	  // select_array_in(JIFFLES, d4096_512);
-	  //	select_array_in(JIFFLES, d4096_256);
-	  PULSES.select_from_to(bass_pulses, bass_pulses + middle_pulses -1);
-
-	  for(int pulse=bass_pulses; pulse<bass_pulses+middle_pulses; pulse++) {
-	    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(JIFFLES), DACsq1 | doesICODE | CLICKs);
-	    PULSES.set_gpio(pulse, next_gpio());
-	  }
-
-	  // fix topmost bass pulse pulse[bass_pulses] that belongs to both groups:
-	  PULSES.pulses[bass_pulses].dest_action_flags |= DACsq1;
-
-	  // high octave on DAC2
-	  //	select_array_in(JIFFLES, d4096_64);
-	  //select_array_in(JIFFLES, d4096_256);
-	  PULSES.select_from_to(bass_pulses + middle_pulses -1, bass_pulses + middle_pulses + high_pulses -1);
-	  for(int pulse = bass_pulses + middle_pulses; pulse<voices; pulse++) {	// pulse[21] belongs to both groups
-	    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) d4096_256, DACsq2 | doesICODE);
-	  }
-
-	  // fix pulse[21] belonging to both groups
-	  PULSES.pulses[bass_pulses + middle_pulses - 1].dest_action_flags |= DACsq2;
-	  selected_share_DACsq_intensity(255, 2);
-	  //	selected_DACsq_intensity_proportional(255, 2);
-
-	  PULSES.select_n(voices);	// select all primary voices again
+	  setup_bass_middle_high(bass_pulses, middle_pulses, high_pulses);
 
 	  // maybe start?
 	  if(MENU.cb_peek() == '!') {		// 'E40!' starts E40
