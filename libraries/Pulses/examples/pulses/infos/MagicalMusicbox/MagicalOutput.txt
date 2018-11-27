@@ -1941,3 +1941,91 @@ shortest pulse's harmonical cycle: 3' 5"
 2^-3	   12' 21"
 2^-4	    6' 10"
 2^-5	    3'  5" 	| subcycle |
+
+
+no meh melodie :)
+******************
+
+AUTOSTART 1
+
+start_musicBox()
+MusicBoxState AWAKE
+
+2018-11-27_17h22m20s	TUE
+battery control pin: 36	1238	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-11-27_17h22m21s	TUE
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+random scale
+SCALE:	octaves_fourths_fifths
+random jiffle
+JIFFLE:	dwn_THRD_up
+random sync
+SYNC:	0
+TIME_U:	1000000
+random pitch
+*32768/357
+random octave shift: used SUBCYCLE:	3' 2"
+ <<< * >>>
+
+harmonical cycle:  6h 27' 42"
+shortest pulse's harmonical cycle:    7.569408s
+2^0	6h 27' 42"
+2^-1	3h 13' 51"
+2^-2	1h 36' 55"
+2^-3	   48' 28"
+2^-4	   24' 14"
+2^-5	   12'  7"
+2^-6	    6'  3"
+2^-7	    3'  2" 	| subcycle |
+2^-8	    1' 31"
+2^-9	    0' 45"
+2^-10	    0' 23"
+2^-11	    0' 11"
+
+
+lost title
+***********
+
+SCALE:	pentatonic_minor
+random jiffle
+JIFFLE:	PENTAtonic_rise
+random sync
+SYNC:	4
+TIME_U:	1000000
+random pitch
+*32768/211
+random octave shift: play_KB_macro  *2
+used SUBCYCLE:	3' 12"
+ <<< * >>>
+
+harmonical cycle:  3h 24' 59"
+shortest pulse's harmonical cycle: 1' 36"
+2^0	3h 24' 59"
+2^-1	1h 42' 30"
+2^-2	   51' 15"
+2^-3	   25' 37"
+2^-4	   12' 49"
+2^-5	    6' 24"
+2^-6	    3' 12" 	| subcycle |
+2^-7	    1' 36"
+
+
+eigenartigi harmonischi melodiegebilde
+***************************************
+
+SCALE:	pentatonic_minor
+JIFFLE:	pentatonic_rise
+SCALING: 1/128
+SYNC: 4
+
+
+au sehr schön:
+***************
+
+SCALE:	tetrachord	JIFFLE:	PENTA_3rd_rise	SCALING: 3/1024	SYNC: 2
