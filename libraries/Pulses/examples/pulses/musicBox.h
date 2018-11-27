@@ -672,19 +672,26 @@ int stop_on_LOW_H1(void) {
 }
 
 
-void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with slice_tick_period
+void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking with slice_tick_period
   static uint8_t soft_end_cnt=0;
   static bool soft_cleanup_started=false;
   static short current_slice=0;
   static struct time butler_start_time;
-  struct time this_start_time =  PULSES.pulses[p].next;	// still unchanged?
-  struct fraction current_fraction;
-  int current_fraction_weighting;
+  struct time this_start_time =  PULSES.pulses[pulse].next;	// still unchanged?
 
-  if(PULSES.pulses[p].counter==1) {	// the butler initializes himself
-    PULSES.pulses[p].flags |= DO_NOT_DELETE;				// TODO: use groups instead of DO_NOT_DELETE
+  struct time this_time = PULSES.pulses[pulse].next;		// TODO: verify ################
+  PULSES.sub_time(&PULSES.pulses[pulse].last, &this_time);	// so long inside this cycle
+
+  // fraction phase = {this_time.time, PULSES.pulses[pulse].period.time};	// not used
+  // float float_phase = this_time.time / PULSES.pulses[pulse].period.time;	// not used
+  fraction this_division = {PULSES.pulses[pulse].counter -1 , cycle_slices};
+  HARMONICAL.reduce_fraction(&this_division);
+  int this_weighting = slice_weighting(this_division);
+
+  if(PULSES.pulses[pulse].counter==1) {	// the butler initializes himself
+    PULSES.pulses[pulse].flags |= DO_NOT_DELETE;				// TODO: use groups instead of DO_NOT_DELETE
     current_slice=0;			// start musicBox clock
-    butler_start_time = PULSES.pulses[p].next;	// still unchanged?
+    butler_start_time = PULSES.pulses[pulse].next;	// still unchanged?
     soft_end_cnt=0;
     soft_cleanup_started=false;
 /*
@@ -699,7 +706,7 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
       }
     }
 */
-  } else if(PULSES.pulses[p].counter==2) {	// now we might have more time for some initialization
+  } else if(PULSES.pulses[pulse].counter==2) {	// now we might have more time for some initialization
     if(MENU.verbosity)
       MENU.outln(F("butler: prepare trigger"));
 
@@ -715,7 +722,7 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
   } else {	// all later wakeups
 
 #if defined USE_BATTERY_CONTROL
-    if((PULSES.pulses[p].counter % 5) == 0) {	// keep an eye on the battery
+    if((PULSES.pulses[pulse].counter % 5) == 0) {	// keep an eye on the battery
       if(!assure_battery_level()) {
 	MENU.outln(F("POWER LOW"));
 	HARD_END_playing(true);
@@ -748,13 +755,16 @@ void musicBox_butler(int p) {	// payload taking care of musicBox	ticking with sl
 	}
       } else {	// soft end was called already
 
-	magical_cleanup(p/*dummy*/);
+	magical_cleanup(pulse/*dummy*/);
 
 	if(MusicBoxState == ENDING) {
 	  if(soft_cleanup_started) {
-	    if(soft_cleanup_minimal_fraction_weighting) {
-	      // MENU.out(F("Dada"));
-	      ;	//    stop_on_LOW_H1();
+	    if(this_weighting >= soft_cleanup_minimal_fraction_weighting) {
+	      MENU.out(F(" aha! "));
+	      if(this_weighting >= soft_cleanup_minimal_fraction_weighting)
+		stop_on_LOW_H1();				// STOP now
+	      else
+		soft_cleanup_minimal_fraction_weighting--;	// relax stop condition
 	    }
 	  } else {
 	    struct time scratch = PULSES.get_now();
