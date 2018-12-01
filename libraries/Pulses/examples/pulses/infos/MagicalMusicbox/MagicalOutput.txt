@@ -1097,7 +1097,7 @@ jazzig
 
 und übrigens:	harmonical cycle    49' 50"
 
-AUTOSTART 1
+AUTOSTART 1
 start_musicBox()
 2018-11-19_20h29m59s	MON
 battery control pin: 36	1249	GOOD
@@ -1543,7 +1543,7 @@ fastest * pulse 101.370956s
 2^-1	   27'  2"
 2^-2	   13' 31"
 2^-3	    6' 45"
-2^-4	    3' 23" 	| subcycle |
+2^-4	    3' 23"	| subcycle |
 2^-5	    1' 41"
 
 
@@ -1578,7 +1578,7 @@ fastest * pulse  45.868801s
 2^-2	   24' 28"
 2^-3	   12' 14"
 2^-4	    6'  7"
-2^-5	    3'  3" 	| subcycle |
+2^-5	    3'  3"	| subcycle |
 2^-6	    1' 32"
 2^-7	    0' 46"
 
@@ -1641,7 +1641,7 @@ used SUBCYCLE:    3' 31"
 harmonical cycle     7'  1"
 fastest * pulse  13.165056s
 2^0	    7'  1"
-2^-1	    3' 31" 	| subcycle |
+2^-1	    3' 31"	| subcycle |
 2^-2	    1' 45"
 2^-3	    0' 53"
 2^-4	    0' 26"
@@ -1677,7 +1677,7 @@ fastest * pulse  49.298882s
 2^0	   26' 18"
 2^-1	   13'  9"
 2^-2	    6' 34"
-2^-3	    3' 17" 	| subcycle |
+2^-3	    3' 17"	| subcycle |
 2^-4	    1' 39"
 2^-5	    0' 49"
 
@@ -1714,7 +1714,7 @@ harmonical cycle    22'  1"
 fastest * pulse  41.270592s
 2^0	   22'  1"
 2^-1	   11'  0"
-2^-2	    5' 30" 	| subcycle |
+2^-2	    5' 30"	| subcycle |
 2^-3	    2' 45"
 2^-4	    1' 23"
 2^-5	    0' 41"
@@ -1757,7 +1757,7 @@ shortest pulse's harmonical cycle: 1' 1"
 2^-2	   32' 22"
 2^-3	   16' 11"
 2^-4	    8'  6"
-2^-5	    4'  3" 	| subcycle |
+2^-5	    4'  3"	| subcycle |
 2^-6	    2'  1"
 2^-7	    1'  1"
 
@@ -1800,7 +1800,7 @@ shortest pulse's harmonical cycle: 2' 4"
 2^-3	   33'  9"
 2^-4	   16' 34"
 2^-5	    8' 17"
-2^-6	    4'  9" 	| subcycle |
+2^-6	    4'  9"	| subcycle |
 2^-7	    2'  4"
 
 wakeup EXT0
@@ -1847,7 +1847,7 @@ shortest pulse's harmonical cycle:   12.312192s
 2^-1	   35'  1"
 2^-2	   17' 31"
 2^-3	    8' 45"
-2^-4	    4' 23" 	| subcycle |
+2^-4	    4' 23"	| subcycle |
 2^-5	    2' 11"
 2^-6	    1'  6"
 2^-7	    0' 33"
@@ -1898,7 +1898,7 @@ shortest pulse's harmonical cycle:   18.259968s
 2^-5	   29' 13"
 2^-6	   14' 37"
 2^-7	    7' 18"
-2^-8	    3' 39" 	| subcycle |
+2^-8	    3' 39"	| subcycle |
 2^-9	    1' 50"
 2^-10	    0' 55"
 2^-11	    0' 27"
@@ -1940,7 +1940,7 @@ shortest pulse's harmonical cycle: 3' 5"
 2^-2	   24' 41"
 2^-3	   12' 21"
 2^-4	    6' 10"
-2^-5	    3'  5" 	| subcycle |
+2^-5	    3'  5"	| subcycle |
 
 
 no meh melodie :)
@@ -1982,7 +1982,7 @@ shortest pulse's harmonical cycle:    7.569408s
 2^-4	   24' 14"
 2^-5	   12'  7"
 2^-6	    6'  3"
-2^-7	    3'  2" 	| subcycle |
+2^-7	    3'  2"	| subcycle |
 2^-8	    1' 31"
 2^-9	    0' 45"
 2^-10	    0' 23"
@@ -2012,7 +2012,7 @@ shortest pulse's harmonical cycle: 1' 36"
 2^-3	   25' 37"
 2^-4	   12' 49"
 2^-5	    6' 24"
-2^-6	    3' 12" 	| subcycle |
+2^-6	    3' 12"	| subcycle |
 2^-7	    1' 36"
 
 
@@ -2029,3 +2029,316 @@ au sehr schön:
 ***************
 
 SCALE:	tetrachord	JIFFLE:	PENTA_3rd_rise	SCALING: 3/1024	SYNC: 2
+
+
+no ohni name
+*************
+
+AUTOSTART 1
+
+start_musicBox()
+MusicBoxState AWAKE
+2018-11-28_21h02m41s	WED
+battery control pin: 36	1228	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-11-28_21h02m41s	WED
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+random scale
+SCALE:	octaves_fifths
+random jiffle
+JIFFLE:	PENTA_3rd_rise
+random sync
+SYNC:	3
+TIME_U:	1000000
+random pitch
+*32768/375
+random octave shift:
+used SUBCYCLE:	7' 41"
+ <<< * >>>
+
+harmonical cycle:  5d 11h 13' 47"
+shortest pulse's harmonical cycle:    2.359296s
+2^0	5d 11h 13' 47"
+2^-1	2d 17h 36' 53"
+2^-2	1d 8h 48' 27"
+2^-3	16h 24' 13"
+2^-4	8h 12'  7"
+2^-5	4h  6'  3"
+2^-6	2h  3'  2"
+2^-7	1h  1' 31"
+2^-8	   30' 45"
+2^-9	   15' 23"
+2^-10	    7' 41"	| subcycle |
+2^-11	    3' 51"
+2^-12	    1' 55"
+2^-13	    0' 58"
+2^-14	    0' 29"
+2^-15	    0' 14"
+2^-16	    0'  7"    7.208610s
+2^-17	    0'  4"    3.604305s
+
+
+sehr eifach & schön
+********************
+
+AUTOSTART 1
+
+start_musicBox()
+MusicBoxState AWAKE
+2018-11-29_14h14m38s	THU
+battery control pin: 36	1294	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-11-29_14h14m39s	THU
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+random scale
+SCALE:	octaves_fifths
+random jiffle
+JIFFLE:	PENTAtonic_descend
+random sync
+SYNC:	2
+TIME_U:	1000000
+random pitch
+*32768/172
+random octave shift:
+used SUBCYCLE:	4' 11"
+ <<< * >>>
+
+harmonical cycle:  5d 23h 3' 20"
+shortest pulse's harmonical cycle:    2.588672s
+2^0	5d 23h  3' 20"
+2^-1	2d 23h 31' 40"
+2^-2	1d 11h 45' 50"
+2^-3	17h 52' 55"
+2^-4	8h 56' 28"
+2^-5	4h 28' 14"
+2^-6	2h 14'  7"
+2^-7	1h  7'  3"
+2^-8	   33' 32"
+2^-9	   16' 46"
+2^-10	    8' 23"
+2^-11	    4' 11"	| subcycle |
+2^-12	    2'  6"
+2^-13	    1'  3"
+2^-14	    0' 31"
+2^-15	    0' 16"
+2^-16	    0'  8"    7.858223s
+2^-17	    0'  4"    3.929111s
+
+
+wow
+****
+
+AWOKE
+TRIGGERED!
+
+start_musicBox()
+2018-12-01_12h11m13s	SAT
+battery control pin: 36	1249	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-01_12h11m13s	SAT
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+random scale
+SCALE:	doric_scale
+random jiffle
+JIFFLE:	ding_ditditdit
+random sync
+SYNC:	4
+TIME_U:	1000000
+random pitch
+*32768/288
+random octave shift: play_KB_macro  *2
+used SUBCYCLE:	4' 42"
+ <<< * >>>
+
+harmonical cycle:  2h 30' 11"
+shortest pulse's harmonical cycle: 4' 42"
+2^0	2h 30' 11"
+2^-1	1h 15'  5"
+2^-2	   37' 33"
+2^-3	   18' 46"
+2^-4	    9' 23"
+2^-5	    4' 42"	| subcycle |
+
+
+schön melodisch, mit recht guetem schluss
+******************************************
+
+de schluss chönnt no chli schneller fertig sii
+
+AUTOSTART 1
+
+start_musicBox()
+MusicBoxState AWAKE
+2018-12-02_20h43m32s	SUN
+battery control pin: 36	1234	*NO POWER*	<< ?????????????
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-02_20h43m32s	SUN
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+random scale
+SCALE:	major_scale
+random jiffle
+JIFFLE:	pentatonic_descend
+random sync
+SYNC:	2
+TIME_U:	1000000
+random pitch
+*32768/379
+random octave shift: play_KB_macro  *4
+used SUBCYCLE:	5' 42"
+ <<< * >>>
+
+harmonical cycle:  45' 39"
+shortest pulse's harmonical cycle: 1' 26"
+2^0	   45' 39"
+2^-1	   22' 49"
+2^-2	   11' 25"
+2^-3	    5' 42"	| subcycle |
+2^-4	    2' 51"
+2^-5	    1' 26"
+
+
+PENTAtheme
+***********
+
+A
+
+start_musicBox()
+MusicBoxState AWAKE
+2018-12-03_08h30m24s	MON
+battery control pin: 36	1232	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-03_08h30m25s	MON
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	european_PENTAtonic
+JIFFLE:	up_THRD
+SYNC:	0
+TIME_U:	1000000
+*32768/230
+play_KB_macro  *2
+used SUBCYCLE:	4' 42"
+ <<< * >>>
+
+harmonical cycle:  2h 30' 26"
+shortest pulse's harmonical cycle: 1' 11"
+2^0	2h 30' 26"
+2^-1	1h 15' 13"
+2^-2	   37' 37"
+2^-3	   18' 48"
+2^-4	    9' 24"
+2^-5	    4' 42"	| subcycle |
+2^-6	    2' 21"
+2^-7	    1' 11"
+
+
+elfechinde
+***********
+
+
+AUTOSTART 1
+
+start_musicBox()
+MusicBoxState AWAKE
+2018-12-04_10h16m55s	TUE
+battery control pin: 36	1221	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-04_10h16m55s	TUE
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+lower_audio_if_too_high 28350
+SCALE:	tetrachord
+JIFFLE:	dwn_THRD
+SYNC:	3
+TIME_U:	1000000
+*32768/410
+lower_audio_if_too_high 19316
+play_KB_macro  *2
+used SUBCYCLE:	5' 16"
+ <<< * >>>
+
+harmonical cycle:  5h 37' 35"
+shortest pulse's harmonical cycle: 59"
+2^0	5h 37' 35"
+2^-1	2h 48' 47"
+2^-2	1h 24' 24"
+2^-3	   42' 12"
+2^-4	   21'  6"
+2^-5	   10' 33"
+2^-6	    5' 16"	| subcycle |
+2^-7	    2' 38"
+2^-8	    1' 19"
+
+
+elfechinde 2
+*************
+
+
+AWOKE	wakeup EXT0
+
+start_musicBox()
+2018-12-04_10h24m23s	TUE
+battery control pin: 36	1223	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-04_10h24m24s	TUE
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+lower_audio_if_too_high 8
+SCALE:	tetrachord
+JIFFLE:	pent_top_wave
+SYNC:	3
+TIME_U:	1000000
+*32768/375
+lower_audio_if_too_high 21118
+play_KB_macro  *2
+used SUBCYCLE:	5' 46"
+ <<< * >>>
+
+harmonical cycle:  6h 9' 5"
+shortest pulse's harmonical cycle: 1' 5"
+2^0	6h  9'  5"
+2^-1	3h  4' 32"
+2^-2	1h 32' 16"
+2^-3	   46'  8"
+2^-4	   23'  4"
+2^-5	   11' 32"
+2^-6	    5' 46"	| subcycle |
+2^-7	    2' 53"
+2^-8	    1' 27"
+
+
+klassisch und simpel schön
+***************************
+
+SCALE:	tetrachord	JIFFLE:	pentatonic_descend	SCALING: 3/1024	SYNC: 0
