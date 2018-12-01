@@ -681,7 +681,9 @@ bool sync_was_set_by_menu=false;
 // needed for MENU.add_page();
 // void softboard_display();
 // bool softboard_reaction(char token);
-int softboard_page=-1;		// see: maybe_run_continuous()
+int8_t softboard_page=-1;	// see: maybe_run_continuous()
+int8_t musicBox_page=ILLEGAL;	// NOTE: musicBox_page is not used
+
 
 
 #ifndef STARTUP_DELAY
@@ -900,7 +902,8 @@ void setup() {
 #endif
 
   #ifdef HARMONICAL_MUSIC_BOX
-    MENU.add_page("musicBox", 'M', &musicBox_display, &musicBox_reaction, 'P');
+    // NOTE: musicBox_page is not used
+    musicBox_page = MENU.add_page("musicBox", 'M', &musicBox_display, &musicBox_reaction, 'P');
   #endif
 
   // display menu at startup, but not in music box
@@ -2132,6 +2135,11 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
   if (PULSES.pulses[pulse].counter<10)
     MENU.space();
 
+  if(PULSES.pulses[pulse].flags & COUNTED)	// if COUNTED
+    MENU.out(PULSES.pulses[pulse].remaining);	//   show remaining
+  else
+    MENU.space();
+
   MENU.out(F(" Pf:"));
   PULSES.show_pulse_flag_mnemonics(PULSES.pulses[pulse].flags);
   if (PULSES.pulses[pulse].action_flags) {
@@ -3272,7 +3280,6 @@ void show_UI_settings() {
   MENU.ln();
 
   PULSES.show_time_unit();
-  PULSES.show_selected_mask();
 }
 
 // for old style 'experiment'
@@ -3543,16 +3550,17 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
 /*
-  case ':':		// reserved for MENU_MENU_PAGES_KEY
-    show_UI_settings();	// is on ',' now
+  case ':':	// reserved for MENU_MENU_PAGES_KEY
     break;
 */
 
-  case ',':	// accept as noop in normal mode. used as delimiter to input data, displaying info. see 'menu_mode'
-    if (MENU.menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE)
+  case ',':	// in normal mode show_UI_settings and selected_mask, else data input delimiter	see: 'menu_mode'
+    if (MENU.menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE)	// TODO: REVIEW:
       display_jiffletab(selected_in(JIFFLES));
-    else
+    else {
       show_UI_settings();
+      PULSES.show_selected_mask();	// if called from here (not musicBox) *do* show selected mask
+    }
     break;
 
   case '|':	// accept as noop in normal mode. used as range bottom delimiter in arrays
@@ -3727,7 +3735,7 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case 'S':	// enter sync
+  case 'S':	// enter sync	FIXME: clashes with 'S' Start/Stop in musicBox menu
     if (MENU.maybe_calculate_input(&input_value)) {
       if (input_value>=0 ) {
 	sync = input_value;

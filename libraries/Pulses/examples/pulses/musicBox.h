@@ -2,7 +2,8 @@
   musicBox.h
 */
 
-#define AUTOMAGIC_CYCLE_TIMING_SECONDS	6*60	// *max seconds*, produce short sample pieces
+//#define AUTOMAGIC_CYCLE_TIMING_SECONDS	9*60	// *max seconds*, produce short sample pieces
+#define AUTOMAGIC_CYCLE_TIMING_SECONDS	6*60	// *max seconds*, produce *short* sample pieces
 //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
 
 // #define SOME_FIXED_TUNINGS_ONLY		// fixed pitchs only like E A D G C F B  see: HACK_11_11_11_11
@@ -336,7 +337,11 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
       MENU.space();
     if(this_division.divisor<1000)
       MENU.space();
-    show_n_stars(slice_weighting(this_division));
+
+    if(MENU.verbosity >= VERBOSITY_SOME)
+      MENU.out(slice_weighting(this_division));
+    //show_n_stars(slice_weighting(this_division));	// nice for debugging
+
     MENU.ln();
   }
 
@@ -432,7 +437,10 @@ void soft_end_playing(int days_to_live, int survive_level) {	// initiate soft en
       }
       delay(600);	// send remaining output
 
-      MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch	// *ENDED*
+      MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch	// *ENDED*  // TODO: review that ################
+
+      if(MENU.verbosity >= VERBOSITY_LOWEST)
+	MENU.outln(F("returned after soft end\n"));	// FIXME: TODO: soft end uses hard end, so what?
     }
   }
 }
@@ -466,10 +474,16 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
   reset_all_flagged_pulses_GPIO_OFF();
   musicBox_butler_i = ILLEGAL;
   set_MusicBoxState(OFF);
+  MENU.ln();
+  if(MENU.verbosity) {
+    MENU.outln(F(STRINGIFY(MUSICBOX_ENDING_FUNCTION)));
+  }
   delay(600);	// send remaining output
 
-  MENU.ln();
-  light_sleep(); // *ENDED*
+  // TODO: review that ################
+  MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch	// *ENDED*  // TODO: review that ################
+  if(MENU.verbosity >= VERBOSITY_LOWEST)
+    MENU.outln(F("returned after hard end\n"));
 }
 
 portMUX_TYPE musicBox_trigger_MUX = portMUX_INITIALIZER_UNLOCKED;
@@ -602,7 +616,7 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
 	skipped++;
       } else if(PULSES.pulses[pulse].periodic_do == &magical_butler) {
 	if(do_display) {
-	  MENU.out(" magBut");
+	  MENU.out(" magButler");
 	}
 	skipped++;
       } else if(PULSES.pulses[pulse].periodic_do == &magical_cleanup) {
@@ -626,7 +640,7 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
   PULSES.deselect_unused_pulses();	// dopplet gnäht... nütztabernüt
 
   if(do_display) {
-    MENU.out(F("\nsurvivors "));
+    MENU.out(F(" survivors "));
     MENU.outln(flagged);
   }
 
@@ -675,6 +689,7 @@ int stop_on_LOW_H1(void) {
 void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking with slice_tick_period
   static uint8_t soft_end_cnt=0;
   static bool soft_cleanup_started=false;
+  static int fast_cleanup_minimal_fraction_weighting=slice_weighting({1,4});
   static short current_slice=0;
   static struct time butler_start_time;
   struct time this_start_time =  PULSES.pulses[pulse].next;	// still unchanged?
@@ -758,21 +773,14 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 	magical_cleanup(pulse/*dummy*/);
 
 	if(MusicBoxState == ENDING) {
-	  if(soft_cleanup_started) {
-	    if(this_weighting >= soft_cleanup_minimal_fraction_weighting) {
-	      MENU.out(F(" aha! "));
-	      if(this_weighting >= soft_cleanup_minimal_fraction_weighting)
-		stop_on_LOW_H1();				// STOP now
-	      else
-		soft_cleanup_minimal_fraction_weighting--;	// relax stop condition
-	    }
-	  } else {
+	  if(!soft_cleanup_started) {
 	    struct time scratch = PULSES.get_now();
 	    PULSES.sub_time(&soft_end_start_time, &scratch);
 	    PULSES.sub_time(soft_end_cleanup_wait, &scratch);
 	    if(!scratch.overflow) {
 	      soft_cleanup_started=true;
-	      soft_cleanup_minimal_fraction_weighting = slice_weighting({1,4});	// start quite high, then descend
+	      fast_cleanup_minimal_fraction_weighting = slice_weighting({1,4});	// start quite high, then descend
+	      //fast_cleanup_minimal_fraction_weighting = 10;	// start here, then descend
 
 	      if (MENU.verbosity){
 		MENU.out(F("butler: time to stop "));
@@ -781,6 +789,20 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 		PULSES.display_time_human(time_to_stop);
 		MENU.ln();
 	      }
+	    }
+	    else
+	      MENU.out('.');	// waiting	// TODO: remove or verbosity
+	  } else {	// soft_cleanup_started  already
+	    MENU.out(F("s clean "));
+	    //if(this_weighting >= soft_cleanup_minimal_fraction_weighting) {
+	    if(true) {	// FIXME: ################
+	      MENU.out(fast_cleanup_minimal_fraction_weighting);
+	      MENU.out(F(" | "));
+	      MENU.outln(this_weighting);
+	      if(this_weighting >= fast_cleanup_minimal_fraction_weighting)
+		stop_on_LOW_H1();				// STOP now
+	      else
+		fast_cleanup_minimal_fraction_weighting--;	// relax stop condition
 	    }
 	  }
 	} // ENDING
@@ -1601,6 +1623,12 @@ bool musicBox_reaction(char token) {
   switch(token) {
   case '?': // musicBox_display();
     musicBox_display();
+    break;
+  case ',':
+    if (MENU.menu_mode == 0)	// exclude special cases
+      show_UI_settings();	// if called from here, do *not* show selected mask
+    else
+      return false;	// for other menu modes let pulses menu do the work ;)	// TODO: TEST:
     break;
   case 'a': // magic_autochanges
     magic_autochanges = !magic_autochanges;
