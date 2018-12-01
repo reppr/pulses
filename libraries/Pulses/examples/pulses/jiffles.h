@@ -98,7 +98,7 @@ unsigned int pent_patternB[] =
    1,4096,256, 1,2*4096,256, 5,6*4096,256, 1,2*4096,256, 3,4*4096,256, 1,2*4096,256, 2,3*4096,256, 1,2*4096,256, 5*2,6*3*4096,256,
    1,2*4096,256, 1,4096,256, 0,0};
 
-// PENTAtonic see:  european_pentatonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 0,0};
+// PENTAtonic see:  european_PENTAtonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 0,0};
 unsigned int PENTAtonic_rise[] =	// european pentatonic
   {1,4096,256, 8,9*4096,256, 4,5*4096,256, 2,3*4096,256, 3,5*4096,256, 1,2*4096,512, 0,0};
 unsigned int PENTAtonic_descend[] =	// european pentatonic

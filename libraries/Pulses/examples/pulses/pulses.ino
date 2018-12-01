@@ -255,7 +255,7 @@ unsigned int scale_int[]  = {1,1, 2,1, 3,1, 4,1, 5,1, 6,1, 7,1, 8,1, 0,0};  // z
 unsigned int overnotes[]  = {1,1, 1,2, 1,3, 1,4, 1,5, 1,6, 1,7, 1,8, 1,9, 1,10, 1,11, 1,12, 1,13, 1,14, 1,15, 1,16, 0,0};
 unsigned int scale_rationals[]  = {1,1, 1,2, 2,3, 3,4, 5,6, 6,7, 7,8, 8,9, 9,10, 0,0};  // zero terminated
 
-unsigned int european_pentatonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 0,0};	// scale each octave	zero terminated
+unsigned int european_PENTAtonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 0,0};	// scale each octave	zero terminated
 
 unsigned int pentatonic_minor[] = {1,1, 5,6, 3,4, 2,3, 5*2,6*3, 0,0};	// scale each octave	zero terminated
 // nice first try with "wrong" note:
@@ -3411,7 +3411,7 @@ void select_scale__UI() {	// TODO: scale_was_set_by_menu	see musicBox
   case '5':	// 5  pentatonic (minor|major) scale
     MENU.drop_input_token();
     if ((selected_in(SCALES) == major_scale) || (selected_in(SCALES) == tetrachord)) {
-      select_array_in(SCALES, european_pentatonic);
+      select_array_in(SCALES, european_PENTAtonic);
     } else {
       select_array_in(SCALES, pentatonic_minor);
     }
@@ -4553,18 +4553,18 @@ bool menu_pulses_reaction(char menu_input) {
 	  selected_or_flagged_pulses_info_lines();
 	break;
 
-      case 16:	// E16 european_pent
+      case 16:	// E16 european_PENTAtonic
 	// piezzos on low strings 2016-12-28
 	multiplier=4096;
 	divisor=256;
 	g_inverse=false;
 
-	select_array_in(SCALES, european_pentatonic);
+	select_array_in(SCALES, european_PENTAtonic);
 	PULSES.select_n(voices);
 	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
 	select_array_in(JIFFLES, ting4096);
 	// select_array_in(JIFFLES, arpeggio4096);
-	display_name5pars("E16 european_pent", g_inverse, voices, multiplier, divisor, sync);
+	display_name5pars("E16 PENTAtonic", g_inverse, voices, multiplier, divisor, sync);
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  selected_or_flagged_pulses_info_lines();
@@ -4686,8 +4686,8 @@ bool menu_pulses_reaction(char menu_input) {
       case 29:	// E29 KALIMBA7 tuning
 	reset_all_flagged_pulses_GPIO_OFF();
 
-#if defined KALIMBA7_v2	// ESP32 version  european_pentatonic
-	select_array_in(SCALES, european_pentatonic);
+#if defined KALIMBA7_v2	// ESP32 version  european_PENTAtonic
+	select_array_in(SCALES, european_PENTAtonic);
 	voices=7;
 #else
 	select_array_in(SCALES, pentatonic_minor);	// default, including KALIMBA7_v1
@@ -4733,7 +4733,7 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 31:	// E31 KALIMBA7 jiff
-	select_array_in(SCALES, european_pentatonic);
+	select_array_in(SCALES, european_PENTAtonic);
 	voices=7;
 	multiplier=4;
 	divisor=1;

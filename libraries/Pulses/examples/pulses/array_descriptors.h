@@ -142,7 +142,7 @@ arr_descriptor JIFFLES[JIFFLE_DESCRIPTORS];
 arr_descriptor iCODEs[iCODE_DESCRIPTORS];
 
 
-// register_scale(european_pentatonic, sizeof(european_pentatonic), "european_pentatonic");
+// register_scale(european_PENTAtonic, sizeof(european_PENTAtonic), "european_PENTAtonic");
 bool register_scale(unsigned int* scale, unsigned int len, char* name) {
   return register_array_in_DB(SCALES, scale, len, 2, name, "scale");
 }
@@ -156,7 +156,7 @@ bool register_scale(unsigned int* scale, unsigned int len, char* name) {
 #define REGISTER_SCALE(X)	register_scale((X), sizeof((X)), STRINGIFY(X))
 
 
-// register_jiffle(european_pentatonic, sizeof(european_pentatonic), "european_pentatonic");
+// i.e.  register_jiffle(pentatonic_rise, sizeof(pentatonic_rise), "pentatonic_rise");
 bool register_jiffle(unsigned int* jiffle, unsigned int len, char* name) {
   return register_array_in_DB(JIFFLES, jiffle, len, 3, name, "jiffle");
 }

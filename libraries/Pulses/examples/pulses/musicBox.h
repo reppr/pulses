@@ -792,7 +792,7 @@ void select_random_scale() {
     select_array_in(SCALES, pentatonic_minor);
     break;
   case 5: case 6: case 7: case 8:
-    select_array_in(SCALES, european_pentatonic);
+    select_array_in(SCALES, european_PENTAtonic);
     break;
   case 9: case 10: case 11:
     select_array_in(SCALES, minor_scale);

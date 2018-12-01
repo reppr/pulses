@@ -613,7 +613,7 @@ private:
 //	  // testing ratios, prepare_ratios():
 //	  // void prepare_ratios(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync, unsigned int *ratios)
 //	  ratios = pentatonic_minor;
-//	  // ratios = european_pentatonic;
+//	  // ratios = european_PENTAtonic;
 //	  // ratios = ratios_quot;
 //	  // ratios = ratios_int;
 //	  PULSES.selected_pulses = (pulses_mask_t) ~0;
