@@ -722,17 +722,20 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     }
 */
   } else if(PULSES.pulses[pulse].counter==2) {	// now we might have more time for some initialization
-    if(MENU.verbosity)
-      MENU.outln(F("butler: prepare trigger"));
-
-    struct time trigger_enable_time = musicBox_start_time;
-    PULSES.add_time(MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000, &trigger_enable_time);
-    PULSES.setup_counted_pulse(&activate_musicBox_trigger, ACTIVE, trigger_enable_time, slice_tick_period/*dummy*/, 1);
 
     if(MENU.verbosity)
-      MENU.outln(F("butler: prepare hard end"));
-    musicBox_hard_end_time = musicBox_start_time;
-    PULSES.add_time(MUSICBOX_HARD_END_SECONDS*1000000, &musicBox_hard_end_time);
+      MENU.out(F("butler: prepare trigger\t"));
+    struct time trigger_enable_time = {MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000, 0};
+    PULSES.display_time_human(trigger_enable_time);
+    MENU.ln();
+    PULSES.add_time(&musicBox_start_time, &trigger_enable_time);
+
+    if(MENU.verbosity)
+      MENU.out(F("butler: prepare hard end\t"));
+    musicBox_hard_end_time = {MUSICBOX_HARD_END_SECONDS*1000000, 0};
+    PULSES.display_time_human(musicBox_hard_end_time);
+    MENU.ln();
+    PULSES.add_time(&musicBox_start_time, &musicBox_hard_end_time);
 
   } else {	// all later wakeups
 
@@ -779,8 +782,8 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 	    PULSES.sub_time(soft_end_cleanup_wait, &scratch);
 	    if(!scratch.overflow) {
 	      soft_cleanup_started=true;
-	      fast_cleanup_minimal_fraction_weighting = slice_weighting({1,4});	// start quite high, then descend
-	      //fast_cleanup_minimal_fraction_weighting = 10;	// start here, then descend
+	      //fast_cleanup_minimal_fraction_weighting = slice_weighting({1,4});	// start quite high, then descend
+	      fast_cleanup_minimal_fraction_weighting = 12;	// start here, then descend
 
 	      if (MENU.verbosity){
 		MENU.out(F("butler: time to stop "));
@@ -791,7 +794,8 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 	      }
 	    }
 	    else
-	      MENU.out('.');	// waiting	// TODO: remove or verbosity
+	      if(MENU.maybe_display_more(VERBOSITY_MORE))
+		MENU.out('.');	// waiting
 	  } else {	// soft_cleanup_started  already
 	    MENU.out(F("s clean "));
 	    //if(this_weighting >= soft_cleanup_minimal_fraction_weighting) {
@@ -800,7 +804,8 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 	      MENU.out(F(" | "));
 	      MENU.outln(this_weighting);
 	      if(this_weighting >= fast_cleanup_minimal_fraction_weighting)
-		stop_on_LOW_H1();				// STOP now
+		stop_on_LOW();				// STOP all low
+		//stop_on_LOW_H1();				// STOP now
 	      else
 		fast_cleanup_minimal_fraction_weighting--;	// relax stop condition
 	    }
@@ -816,7 +821,7 @@ void select_random_scale() {
 #if defined RANDOM_ENTROPY_H
   random_entropy();	// entropy from hardware
 #endif
-  if(MENU.maybe_display_more(VERBOSITY_LOWEST))
+  if(MENU.maybe_display_more(VERBOSITY_SOME))
     MENU.outln(F("random scale"));
 
   switch(random(23)) {		// random scale
@@ -856,7 +861,7 @@ void select_random_jiffle(void) {
 #if defined RANDOM_ENTROPY_H
   random_entropy();	// entropy from hardware
 #endif
-  if(MENU.maybe_display_more(VERBOSITY_LOWEST))
+  if(MENU.maybe_display_more(VERBOSITY_SOME))
     MENU.outln(F("random jiffle"));
 
   switch(random(99)) {
@@ -999,12 +1004,12 @@ void random_fixed_pitches(void) {
 }
 
 void random_octave_shift(void) {
-  if(MENU.maybe_display_more(VERBOSITY_LOWEST))
+  if(MENU.maybe_display_more(VERBOSITY_SOME))
     MENU.out(F("random octave shift: "));
 
   switch(random(9)) {
   case 0: case 1:
-    if(MENU.maybe_display_more(VERBOSITY_LOWEST))
+    if(MENU.maybe_display_more(VERBOSITY_SOME))
       MENU.ln();
     break;
   case 2: case 3: case 4:  case 5:
@@ -1143,7 +1148,7 @@ void start_musicBox() {
 
   if(!sync_was_set_by_menu) {	// if *not* set by user interaction
     sync = random(6);		// random sync	// MAYBE: define  select_random_sync()  ???
-    if(MENU.maybe_display_more(VERBOSITY_LOWEST))
+    if(MENU.maybe_display_more(VERBOSITY_SOME))
       MENU.outln(F("random sync"));
   }
 
@@ -1166,7 +1171,7 @@ void start_musicBox() {
   #endif
     if(!pitch_was_set_by_menu) {	// if *not* set by user interaction
       divisor = random(160, 450);	// *not* tuned for other instruments
-      if(MENU.maybe_display_more(VERBOSITY_LOWEST))
+      if(MENU.maybe_display_more(VERBOSITY_SOME))
 	MENU.outln(F("random pitch"));
     }
 #else				// some randomly selected metric A=440 tunings for jam sessions like in HACK_11_11_11_11
