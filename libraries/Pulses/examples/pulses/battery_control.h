@@ -36,34 +36,38 @@ unsigned int read_battery_level(unsigned int oversampling=15) {
   return data / oversampling;
 }
 
-// TODO: enum battery_levels ################
-int check_battery_level() {
+enum battery_levels {unknown,	// probably USB
+		     too_LOW,	// automatic installations should better switch off
+		     MEDIOCRE,	// low, but no danger for battery
+		     GOOD,	// good working condition
+		     CHARGE,	// above about 13.8V (if calibrated accordingly)
+		     OVER};	// reads max value 4095 probably pin connected to 3.3V to deactivate vu control
+
+battery_levels check_battery_level() {
   unsigned int value = read_battery_level();
 
-#if defined ACCEPT_USB_LEVEL
-  if(value < ACCEPT_USB_LEVEL)	// probably running from USB, so let that pass.... *** !!! DANGEROUS !!! ***
-    return 0;		// 0 unknown
-#endif
+  if(value < ACCEPT_USB_LEVEL)	// probably running from USB, on automatic installations this is *** !!! DANGEROUS !!! ***
+    return unknown;		// 0 unknown
 
   if(value == 4095)	// *FULL* LEVEL, probably pin connected to high to deactivate vu control
-    return 5;
+    return OVER;
 
   if(value > battery_high_level)
-    return 4;		// 4 *OVER* 13.8V
+    return CHARGE;		// 4 *OVER* 13.8V
 
   if(value > battery_low_level)
-    return 1;		// 1 looks OK
+    return GOOD;
 
   // else:
   MENU.out(F("BATTERY "));
   if(value <= battery_off_level) {
-    MENU.out(F("OFF "));
+    MENU.out(F("> OFF !!! "));
     MENU.outln(value);
-    return 3;		// 3 SWITCH OFF
+    return too_LOW;		// *BATTERY LOW*	automatic installations better switch off...
   } else {
     MENU.out(F("LOW "));
     MENU.outln(value);
-    return 2;		// 2 LOW
+    return MEDIOCRE;
   }
 }
 
@@ -74,22 +78,22 @@ void show_battery_level() {
   MENU.out(read_battery_level());
   MENU.tab();
   switch (check_battery_level()) {
-  case 0:
-    MENU.out(F("?? USB ??"));
+  case unknown:
+    MENU.out(F("?USB?"));
     break;
-  case 1:
+  case GOOD:
     MENU.out(F("GOOD"));
     break;
-  case 2:
+  case MEDIOCRE:
     MENU.out(F("LOW"));
     break;
-  case 3:
-    MENU.out(F("*NO POWER*"));
+  case too_LOW:
+    MENU.out(F("*BATTERY LOW*"));
     break;
-  case 4:
+  case CHARGE:
     MENU.out(F("*HIGH*"));
     break;
-  case 5:
+  case OVER:
     MENU.out(F("*4095*"));	// *FULL* LEVEL, probably pin connected to high to deactivate vu control
     break;
   }
@@ -109,20 +113,23 @@ void show_battery_level() {
 
 bool assure_battery_level() {
   switch(check_battery_level()) {
-  case 0:   // probably running from USB, so let that pass....     *** !!! DANGEROUS !!! ***
-    return true;						// *** !!! DANGEROUS !!! ***
+  case unknown:   // probably running from USB, so let that pass....     *** !!! DANGEROUS !!! ***
+#if defined ACCEPT_USB_LEVEL	// probably running from USB, so let that pass...
+    return true;		// *** !!! DANGEROUS !!! *** do better *not* use on automatic installations
+#else
+    return false;
+#endif
     break;
-  case 1:
-    return true;	// OK
+  case too_LOW:
+    return false;	// automatic installations should switch off
     break;
-  case 2:		// LOW
+  case MEDIOCRE:	// LOW
     // TODO: start a battery watcher job  ################
     return true;	// user has been warned, but start the same...	################ TODO: real life test
     break;
-  case 3:
-    return false;
-    break;
-  case 4:
+  case GOOD:
+  case CHARGE:
+  case OVER:
     return true;
     break;
   }
