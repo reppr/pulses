@@ -2950,6 +2950,7 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
 }
 
 
+// TODO: REWORK:  setup_bass_middle_high()  used in musicBox, but not really compatible
 void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_pulses) {
   {
     MENU.out(F("setup_bass_middle_high("));	// ################ verbosity

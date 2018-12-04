@@ -582,8 +582,10 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
   MENU.out(F("CLEANUP "));
 #endif
 
+//MENU.outln("DADA");	// FIXME: TODO: does *not* do what it should...	IMPLEMENT: groups
+//short_info();
   unsigned int deselected = PULSES.deselect_unused_pulses();	// deselect unused (primary) pulses
-
+//short_info();
   bool do_display = MENU.maybe_display_more(VERBOSITY_SOME);
   if(do_display) {
     if(deselected) {
@@ -1158,6 +1160,7 @@ void start_musicBox() {
   MENU.play_KB_macro(F("-:M "), false); // initialize, the space avoids output from :M , no newline
   MENU.ln();
 
+  // TODO: REWORK:  setup_bass_middle_high()  used in musicBox, but not really compatible
   setup_bass_middle_high(bass_pulses, middle_pulses, high_pulses);
 
   if(!scale_was_set_by_menu)	// if *not* set by user interaction
