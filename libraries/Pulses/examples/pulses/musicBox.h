@@ -596,42 +596,37 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
   int flagged=0;
   for(int pulse=0; pulse<PL_MAX; pulse++) {
     if(PULSES.pulses[pulse].flags) {	// check if playing has ended  activity?
-      if(do_display) {
-	MENU.out('p');
-	MENU.out(pulse);
-      }
       if(PULSES.pulses[pulse].periodic_do == &musicBox_butler) {
 	if(do_display) {
-	  MENU.out(" butler");
+	  MENU.out('B');
 	}
 	skipped++;
       } else if(PULSES.pulses[pulse].periodic_do == &magical_butler) {
 	if(do_display) {
-	  MENU.out(" magButler");
+	  MENU.out('u');
 	}
 	skipped++;
       } else if(PULSES.pulses[pulse].periodic_do == &magical_cleanup) {
 	if(do_display) {
-	  MENU.out(" cleanup");
+	  MENU.out('C');
 	}
 	skipped++;
       } else if(PULSES.pulses[pulse].periodic_do == &cycle_monitor) {
 	if(do_display) {
-	  MENU.out(" monitor");
+	  MENU.out('M');
 	}
 	skipped++;
       } else {
+	if(do_display)
+	  MENU.out('.');
 	flagged++;
       }
-
-      if(do_display)
-	MENU.space();
     } // flags?
   } // pulse
-  PULSES.deselect_unused_pulses();	// dopplet gnäht... nütztabernüt
+  // PULSES.deselect_unused_pulses();	// dopplet gnäht... nütztabernüt
 
   if(do_display) {
-    MENU.out(F(" survivors "));
+    MENU.out(F(" = "));
     MENU.outln(flagged);
   }
 
@@ -1149,7 +1144,8 @@ void start_musicBox() {
   // time_unit
   PULSES.time_unit=1000000;	// default metric
   MENU.out("TIME_U:\t");
-  MENU.outln(PULSES.time_unit);
+  MENU.out(PULSES.time_unit);
+  MENU.tab();
 
   // pitch
   multiplier=4096;	// uses 1/4096 jiffles		// TODO: define role of multiplier, divisor
