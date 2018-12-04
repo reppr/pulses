@@ -1087,6 +1087,17 @@ void loop() {	// ARDUINO
       stress_count = 0;
       stress_event_cnt = -1;	// one heavy stress event expected after magical_stress_release()...
     }
+
+    if(go_light_sleep) {
+      MENU.outln(F(STRINGIFY(MUSICBOX_ENDING_FUNCTION)));
+      go_light_sleep = false;
+      stress_count = 0;
+      stress_event_cnt = 0;
+      delay(600);	// send remaining output
+
+      MUSICBOX_ENDING_FUNCTION
+      start_musicBox();
+    }
 #endif
 
     /*
@@ -1892,6 +1903,20 @@ int lower_audio_if_too_high(unsigned long limit) {
 	shortest =  PULSES.pulses[pulse].period.time;
       }
     }
+  }
+
+  if(MENU.verbosity >= VERBOSITY_SOME || shortest==0) {
+    MENU.out(F("lower_audio_if_too_high "));
+    MENU.outln(shortest);
+  }
+
+  // FIXME: DEBUG: try to catch this rare error condition for debugging...
+  if(shortest==0) {
+    MENU.out('>',5);
+    MENU.outln(F(" DEBUG: shortest==0 "));
+    MENU.out('<',31);
+    MENU.ln();
+    return 0;	// FIXME: DEBUG: ################
   }
 
   while (PULSES.pulses[fastest_pulse].period.time < limit) {	// too fast?

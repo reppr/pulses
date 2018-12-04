@@ -350,6 +350,8 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
 }
 
 
+bool go_light_sleep=false;	// triggers MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch
+
 int soft_cleanup_minimal_fraction_weighting=1;	// TODO: adjust default
 unsigned short soft_end_days_to_live = 1;	// remaining days of life after soft end
 unsigned short soft_end_survive_level = 4;	// the level a pulse must have reached to survive soft end
@@ -380,18 +382,19 @@ void soft_end_playing(int days_to_live, int survive_level) {	// initiate soft en
   if(MusicBoxState > ENDING) {		// initiate end
     soft_end_start_time = PULSES.get_now();
     set_MusicBoxState(ENDING);
-    MENU.out(F("soft_end_playing("));		// info
-    MENU.out(soft_end_days_to_live);
-    MENU.out(F(", "));
-    MENU.out(soft_end_survive_level);
-    MENU.outln(')');
 
-    if(MENU.verbosity) {
+    if(MENU.verbosity >= VERBOSITY_LOWEST) {
       struct time main_part_duration = soft_end_start_time;
       PULSES.sub_time(&musicBox_start_time, &main_part_duration);
       MENU.out(F("main part "));
       PULSES.display_time_human(main_part_duration);
       MENU.ln();
+
+      MENU.out(F("soft_end_playing("));		// info
+      MENU.out(soft_end_days_to_live);
+      MENU.out(F(", "));
+      MENU.out(soft_end_survive_level);
+      MENU.outln(')');
     }
 
     for (int pulse=0; pulse<PL_MAX; pulse++) {	// make days_to_live COUNTED generating pulses
@@ -431,16 +434,11 @@ void soft_end_playing(int days_to_live, int survive_level) {	// initiate soft en
 
       reset_all_flagged_pulses_GPIO_OFF();
 
-      if(MENU.verbosity) {
+      /* ???
+      if(MENU.verbosity)
 	MENU.ln();
-	MENU.outln(F(STRINGIFY(MUSICBOX_ENDING_FUNCTION)));
-      }
-      delay(600);	// send remaining output
-
-      MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch	// *ENDED*  // TODO: review that ################
-
-      if(MENU.verbosity >= VERBOSITY_LOWEST)
-	MENU.outln(F("returned after soft end\n"));	// FIXME: TODO: soft end uses hard end, so what?
+      */
+      go_light_sleep = true;	// triggers MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch	*ENDED*
     }
   }
 }
@@ -475,15 +473,8 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
   musicBox_butler_i = ILLEGAL;
   set_MusicBoxState(OFF);
   MENU.ln();
-  if(MENU.verbosity) {
-    MENU.outln(F(STRINGIFY(MUSICBOX_ENDING_FUNCTION)));
-  }
-  delay(600);	// send remaining output
 
-  // TODO: review that ################
-  MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch	// *ENDED*  // TODO: review that ################
-  if(MENU.verbosity >= VERBOSITY_LOWEST)
-    MENU.outln(F("returned after hard end\n"));
+  go_light_sleep = true;	//  triggers MUSICBOX_ENDING_FUNCTION;	sleep, restart or somesuch	// *ENDED*
 }
 
 portMUX_TYPE musicBox_trigger_MUX = portMUX_INITIALIZER_UNLOCKED;
@@ -1290,7 +1281,7 @@ void magical_fart_setup(gpio_pin_t sense_pin, gpio_pin_t output_pin) {
 #include "driver/rtc_io.h"
 #include "driver/dac.h"
 
-void light_sleep() {
+void light_sleep() {	// see: bool go_light_sleep	flag to go sleeping from main loop
   MENU.out(F("light_sleep()\t"));
 
 #if defined USE_BLUETOOTH
@@ -1361,8 +1352,11 @@ void light_sleep() {
     so i try calling  musicBox_trigger_got_hot()  from here
     just pretending trigger was high ;)
     TODO: test...
+
+    //  musicBox_trigger_got_hot();	// must be called when musicBox trigger was detected high  TODO: TEST: ################
+    deactivated, was probably unrelated
+    TODO: test, remove
   */
-  musicBox_trigger_got_hot();	// must be called when musicBox trigger was detected high
 
   int cause = esp_sleep_get_wakeup_cause();
   // see  https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/system/sleep_modes.html#_CPPv218esp_sleep_source_t
