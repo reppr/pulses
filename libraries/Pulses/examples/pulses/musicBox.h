@@ -2,8 +2,8 @@
   musicBox.h
 */
 
-//#define AUTOMAGIC_CYCLE_TIMING_SECONDS	9*60	// *max seconds*, produce short sample pieces
-#define AUTOMAGIC_CYCLE_TIMING_SECONDS	6*60	// *max seconds*, produce *short* sample pieces
+#define AUTOMAGIC_CYCLE_TIMING_SECONDS		9*60	// *max seconds*, produce short sample pieces
+//#define AUTOMAGIC_CYCLE_TIMING_SECONDS	6*60	// *max seconds*, produce *short* sample pieces
 //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
 
 // #define SOME_FIXED_TUNINGS_ONLY		// fixed pitchs only like E A D G C F B  see: HACK_11_11_11_11
@@ -810,7 +810,7 @@ void select_random_scale() {
   if(MENU.maybe_display_more(VERBOSITY_SOME))
     MENU.outln(F("random scale"));
 
-  switch(random(23)) {		// random scale
+  switch(random(27)) {		// random scale
   case 0: case 1: case 3: case 4:
     select_array_in(SCALES, pentatonic_minor);
     break;
@@ -824,19 +824,25 @@ void select_random_scale() {
     select_array_in(SCALES, major_scale);
     break;
   case 15: case 16: case 17:
-    select_array_in(SCALES, doric_scale);
+    select_array_in(SCALES, doric_scale);	// +1 for doric_scale, see below
     break;
-  case 18: case 19:
+  case 18: case 19: case 20:
+    select_array_in(SCALES, tetrachord);	// +1 for tetrachord, see below
+    break;
+  case 21: case 22:
     select_array_in(SCALES, octaves_fourths_fifths);
     break;
-  case 20: case 21:
-    select_array_in(SCALES, tetrachord);
-    break;
-  case 22:
+  case 23:
     select_array_in(SCALES, octaves_fifths);
     break;
-  case 23:
+  case 24:
     select_array_in(SCALES, octaves_fourths);
+    break;
+  case 25:
+    select_array_in(SCALES, doric_scale);	// +1 for doric_scale
+    break;
+  case 26:
+    select_array_in(SCALES, tetrachord);	// +1 for tetrachord
     break;
   }
   scale_was_set_by_menu = false;
@@ -850,7 +856,7 @@ void select_random_jiffle(void) {
   if(MENU.maybe_display_more(VERBOSITY_SOME))
     MENU.outln(F("random jiffle"));
 
-  switch(random(99)) {
+  switch(random(109)) {
   case 0: case 1: case 2: case 3: case 4:
     select_array_in(JIFFLES, PENTAtonic_rise);
     break;
@@ -915,20 +921,53 @@ void select_random_jiffle(void) {
     select_array_in(JIFFLES, simple_theme);
     break;
 
-  case 90: case 91:
+  case 90:
     select_array_in(JIFFLES, jiff_dec_pizzicato);
     break;
-  case 92: case 93:
+  case 91: case 92:
     select_array_in(JIFFLES, pent_patternA);
     break;
-  case 94: case 95:
+  case 93: case 94:
     select_array_in(JIFFLES, pent_patternB);
     break;
-  case 96: case 97:
+  case 95: case 96:
     select_array_in(JIFFLES, pent_top_wave);
     break;
-  case 98:
+  case 97:
     select_array_in(JIFFLES, pent_top_wave_0);
+    break;
+  case 98:	// add some very simple jiffles:
+    select_array_in(JIFFLES, d4096_3072);
+    break;
+  case 99:
+    select_array_in(JIFFLES, d4096_2048);
+    break;
+  case 100:
+    select_array_in(JIFFLES, d4096_1024);
+    break;
+  case 101:
+    select_array_in(JIFFLES, d4096_512);
+    break;
+  case 102:
+    select_array_in(JIFFLES, d4096_256);
+    break;
+  case 103:
+    select_array_in(JIFFLES, d4096_128);
+    break;
+  case 104:
+    select_array_in(JIFFLES, d4096_64);
+    break;
+  case 105:
+    select_array_in(JIFFLES, d4096_32);
+    break;
+  case 106:
+    select_array_in(JIFFLES, d4096_16);
+    break;
+  case 107:
+    select_array_in(JIFFLES, d4096_12);
+    break;
+  case 108:
+    select_array_in(JIFFLES, tanboura);
     break;
   }
 
