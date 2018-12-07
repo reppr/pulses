@@ -722,18 +722,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     butler_start_time = PULSES.pulses[pulse].next;	// still unchanged?
     soft_end_cnt=0;
     soft_cleanup_started=false;
-/*
-    // TODO: FIXME: does not work right ################
-    if(sync) {
-      if(MENU.verbosity) {
-	struct time pause = butler_start_time;
-	//PULSES.sub_time(&musicBox_start_time, &pause);
-	MENU.out(F("sync pause "));
-	PULSES.display_time_human(pause);
-	MENU.ln(); MENU.ln();
-      }
-    }
-*/
+
   } else if(PULSES.pulses[pulse].counter==2) {	// now we might have more time for some initialization
 
     if(MENU.verbosity)
@@ -795,10 +784,8 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 	    PULSES.sub_time(soft_end_cleanup_wait, &scratch);
 	    if(!scratch.overflow) {
 	      soft_cleanup_started=true;
-	      remove_all_primary_but_butlers();
 	      //fast_cleanup_minimal_fraction_weighting = slice_weighting({1,4});	// start quite high, then descend
 	      fast_cleanup_minimal_fraction_weighting = 12;	// start here, then descend
-
 	      if (MENU.verbosity){
 		MENU.out(F("butler: time to stop "));
 		struct time time_to_stop = PULSES.get_now();
@@ -806,6 +793,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 		PULSES.display_time_human(time_to_stop);
 		MENU.ln();
 	      }
+	      remove_all_primary_but_butlers();
 	    }
 	    else
 	      if(MENU.maybe_display_more(VERBOSITY_MORE))
@@ -1281,6 +1269,17 @@ void start_musicBox() {
   musicBox_start_time = PULSES.get_now();	// keep musicBox_start_time
 
   PULSES.activate_selected_synced_now(sync);	// 'n' sync and activate
+
+  if(sync) {
+    if(MENU.verbosity >= VERBOSITY_LOWEST) {
+      PULSES.fix_global_next();			// cannot understand why i need that here...
+      struct time pause = PULSES.global_next;
+      PULSES.sub_time(&musicBox_start_time, &pause);
+      MENU.out(F("sync pause "));
+      PULSES.display_time_human(pause);
+      MENU.ln(); MENU.ln();
+    }
+  }
 
   // the butler starts just a pad *after* musicBox_start_time
   // remember pulse index of the butler, so we can call him, if we need him ;)
