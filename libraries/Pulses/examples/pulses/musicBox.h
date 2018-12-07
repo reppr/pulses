@@ -1034,19 +1034,17 @@ void random_octave_shift(void) {
   if(MENU.maybe_display_more(VERBOSITY_SOME))
     MENU.out(F("random octave shift: "));
 
-  switch(random(9)) {
-  case 0: case 1:
+  switch(random(7)) {
+  case 0: case 1:			// leave as is
     if(MENU.maybe_display_more(VERBOSITY_SOME))
       MENU.ln();
+    return;	// (do not change octave_was_set_by_menu)
     break;
-  case 2: case 3: case 4:  case 5:
+  case 2: case 3: case 4:  case 5:	// down
     MENU.play_KB_macro(F("*2"));
     break;
   case 6:
-    MENU.play_KB_macro(F("*4"));
-    break;
-  case 8:
-    MENU.play_KB_macro(F("/2"));
+    MENU.play_KB_macro(F("/2"));	// up
     break;
   }
   octave_was_set_by_menu = false;
