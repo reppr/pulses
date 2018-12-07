@@ -2342,3 +2342,221 @@ klassisch und simpel schön
 ***************************
 
 SCALE:	tetrachord	JIFFLE:	pentatonic_descend	SCALING: 3/1024	SYNC: 0
+
+
+fractal time web
+*****************
+
+2018-12-05 15h40m
+
+SCALE:	doric_scale	JIFFLE:	up_THRD_dn	SCALING: 1/32	SYNC: 1
+
+
+simplistic
+*************
+
+AWOKE	wakeup EXT0
+
+start_musicBox()
+MusicBoxState AWAKE
+2018-12-05_19h18m09s	WED
+battery control pin: 36	1213	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-05_19h18m09s	WED
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	octaves_fifths
+JIFFLE:	din_dididi
+SYNC:	5
+TIME_U:	1000000	*32768/256
+play_KB_macro  /2
+used SUBCYCLE:	5' 38"
+ <<< * >>>
+
+harmonical cycle:  2d 0h 3' 28"
+shortest pulse's harmonical cycle:    0.868352s
+2^0	2d 0h  3' 28"
+2^-1	1d 0h  1' 44"
+2^-2	12h  0' 52"
+2^-3	6h  0' 26"
+2^-4	3h  0' 13"
+2^-5	1h 30'  6"
+2^-6	   45'  3"
+2^-7	   22' 32"
+2^-8	   11' 16"
+2^-9	    5' 38" 	| subcycle |
+2^-10	    2' 49"
+2^-11	    1' 24"
+2^-12	    0' 42"
+2^-13	    0' 21"
+2^-14	    0' 11"
+2^-15	    0'  5"    5.279744s
+2^-16	    0'  3"    2.639872s
+2^-17	    0'  1"    1.319936s
+
+
+rhythms
+********
+
+very good example for note-metrum interval analogy :)
+
+will be a good test case for a better end algorithm ;)
+
+
+AUTOSTART 1
+
+start_musicBox()
+MusicBoxState AWAKE
+2018-12-06_08h14m01s	THU
+battery control pin: 36	1216	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-06_08h14m01s	THU
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	octaves_fourths
+JIFFLE:	tumtum
+SYNC:	0
+TIME_U:	1000000	*32768/413
+play_KB_macro  *2
+used SUBCYCLE:	5' 14"
+ <<< * >>>
+
+harmonical cycle:  14d 21h 27' 58"
+shortest pulse's harmonical cycle:    7.274496s
+2^0	14d 21h 27' 58"
+2^-1	7d 10h 43' 59"
+2^-2	3d 17h 21' 59"
+2^-3	1d 20h 41'  0"
+2^-4	22h 20' 30"
+2^-5	11h 10' 15"
+2^-6	5h 35'  7"
+2^-7	2h 47' 34"
+2^-8	1h 23' 47"
+2^-9	   41' 53"
+2^-10	   20' 57"
+2^-11	   10' 28"
+2^-12	    5' 14"	| subcycle |
+2^-13	    2' 37"
+2^-14	    1' 19"
+2^-15	    0' 39"
+2^-16	    0' 20"
+2^-17	    0' 10"
+
+
+ruhig schwebend
+*****************
+
+AUTOSTART 1
+
+start_musicBox()
+MusicBoxState AWAKE
+2018-12-07_09h44m49s	FRI
+battery control pin: 36	1200	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-07_09h44m49s	FRI
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	pentatonic_minor
+JIFFLE:	PENTA_3rd_down_5
+SYNC:	3
+TIME_U:	1000000	*32768/176
+play_KB_macro  *4
+used SUBCYCLE:	7' 41"
+ <<< * >>>
+
+harmonical cycle:  4h 5' 45"
+shortest pulse's harmonical cycle: 1' 55"
+2^0	4h  5' 45"
+2^-1	2h  2' 52"
+2^-2	1h  1' 26"
+2^-3	   30' 43"
+2^-4	   15' 22"
+2^-5	    7' 41"	| subcycle |
+2^-6	    3' 50"
+2^-7	    1' 55"
+
+
+magical tree
+**************
+
+maybe as music for the tree woman from Theaterspektakel, Zürich 2018
+
+AWOKE	wakeup EXT0	
+
+start_musicBox()
+MusicBoxState AWAKE
+2018-12-07_13h03m35s	FRI
+battery control pin: 36	1191	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-07_13h03m35s	FRI
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	european_PENTAtonic
+JIFFLE:	dwn_THRD
+SYNC:	1
+TIME_U:	1000000	*32768/357
+used SUBCYCLE:	6' 3"
+ <<< * >>>
+
+harmonical cycle:  48' 28"
+shortest pulse's harmonical cycle: 23"
+2^0	   48' 28"
+2^-1	   24' 14"
+2^-2	   12'  7"
+2^-3	    6'  3"	| subcycle |
+2^-4	    3'  2"
+2^-5	    1' 31"
+2^-6	    0' 45"
+2^-7	    0' 23"
+
+
+tanboura
+*********
+
+
+AUTOSTART 1
+
+start_musicBox()
+MusicBoxState AWAKE
+2018-12-07_13h53m28s	FRI
+battery control pin: 36	1186	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-07_13h53m29s	FRI
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	doric_scale
+JIFFLE:	tanboura
+SYNC:	5
+TIME_U:	1000000	*32768/299
+play_KB_macro  *2
+used SUBCYCLE:	9' 2"
+ <<< * >>>
+
+harmonical cycle:  2h 24' 39"
+shortest pulse's harmonical cycle: 4' 31"
+2^0	2h 24' 39"
+2^-1	1h 12' 20"
+2^-2	   36' 10"
+2^-3	   18'  5"
+2^-4	    9'  2"	| subcycle |
+2^-5	    4' 31"

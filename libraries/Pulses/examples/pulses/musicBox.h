@@ -2,7 +2,8 @@
   musicBox.h
 */
 
-#define AUTOMAGIC_CYCLE_TIMING_SECONDS		9*60	// *max seconds*, produce short sample pieces
+#define AUTOMAGIC_CYCLE_TIMING_SECONDS		12*60	// *max seconds*, produce sample pieces
+//#define AUTOMAGIC_CYCLE_TIMING_SECONDS	9*60	// *max seconds*, produce short sample pieces
 //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	6*60	// *max seconds*, produce *short* sample pieces
 //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
 
