@@ -307,6 +307,8 @@ void show_n_stars(int n) {
 
 // cycle_monitor(p)  payload to give infos where in the cycle we are
 bool show_subcycle_position=true;
+int cycle_monitor_i=ILLEGAL;	// pulse index of cycle_monitor(p)
+
 void cycle_monitor(int pulse) {	// show markers at important cycle divisions
   static unsigned short cycle_monitor_last_seen_division=0;
   if(PULSES.pulses[pulse].counter == 1)
@@ -573,6 +575,7 @@ void musicBox_trigger_got_hot() {	// must be called when magical trigger was det
 
 
 //#define DEBUG_CLEANUP  TODO: maybe remove debug code, but can give interesting insights...
+// TODO: rethink
 void magical_cleanup(int p) {	// deselect unused primary pulses, check if playing has ended
   PULSES.pulses[p].groups |= g_PRIMARY;	// TODO: rethink: maybe, maybe not
 
@@ -588,13 +591,14 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
   unsigned int deselected = PULSES.deselect_unused_pulses();	// deselect unused (primary) pulses
 //short_info();
   bool do_display = MENU.maybe_display_more(VERBOSITY_SOME);
+  /*
   if(do_display) {
     if(deselected) {
       MENU.out(F("removed unused "));
       MENU.outln(deselected);
     }
   }
-
+  */
   int skipped=0;
   int flagged=0;
   for(int pulse=0; pulse<PL_MAX; pulse++) {
@@ -674,6 +678,26 @@ int stop_on_LOW_H1(void) {
   return was_high;	// TODO: rethink output
 }
 
+
+void remove_all_primary_but_butlers() {
+  if(MENU.verbosity >= VERBOSITY_SOME)
+    MENU.out(F("remove primary"));
+
+  for(int pulse=0; pulse<PL_MAX; pulse++) {
+    if(pulse != musicBox_butler_i && pulse != cycle_monitor_i)	// do *not* kill the butlers!
+      if(PULSES.pulses[pulse].flags && PULSES.pulses[pulse].groups & g_PRIMARY) {
+	PULSES.init_pulse(pulse);
+
+	if(MENU.verbosity >= VERBOSITY_SOME) {
+	  MENU.space();
+	  MENU.out(pulse);
+	}
+      }
+  }
+
+  if(MENU.verbosity >= VERBOSITY_SOME)
+    MENU.ln();
+}
 
 void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking with slice_tick_period
   static uint8_t soft_end_cnt=0;
@@ -771,6 +795,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 	    PULSES.sub_time(soft_end_cleanup_wait, &scratch);
 	    if(!scratch.overflow) {
 	      soft_cleanup_started=true;
+	      remove_all_primary_but_butlers();
 	      //fast_cleanup_minimal_fraction_weighting = slice_weighting({1,4});	// start quite high, then descend
 	      fast_cleanup_minimal_fraction_weighting = 12;	// start here, then descend
 
@@ -1259,11 +1284,15 @@ void start_musicBox() {
 
   // the butler starts just a pad *after* musicBox_start_time
   // remember pulse index of the butler, so we can call him, if we need him ;)
-  musicBox_butler_i =	\
+  musicBox_butler_i = \
     PULSES.setup_pulse(&musicBox_butler, ACTIVE, PULSES.get_now(), slice_tick_period);
-  PULSES.pulses[musicBox_butler_i].groups |= g_PRIMARY;	// savety net, befor butler has initialised itself
+  PULSES.pulses[musicBox_butler_i].groups |= g_PRIMARY;	// savety net, until butler has initialised itself
 
-  PULSES.setup_pulse(&cycle_monitor, ACTIVE, PULSES.get_now(), slice_tick_period);
+  cycle_monitor_i = \
+    PULSES.setup_pulse(&cycle_monitor, ACTIVE, PULSES.get_now(), slice_tick_period);
+  // TODO: do we need a g_BUTLERS group?
+  //   PULSES.pulses[musicBox_butler_i].groups |= g_PRIMARY;	???
+
   stress_event_cnt = -3;	// some stress events will often happen after starting the musicBox
 }
 
