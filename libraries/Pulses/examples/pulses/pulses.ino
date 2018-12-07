@@ -2138,7 +2138,8 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
     MENU.out('*');
   else
     MENU.space();
-
+  MENU.space();
+  PULSES.show_group_mnemonics(pulse);
 
   MENU.out(F(" PULSE "));
   if (pulse<100)	// left padding 'pulse'
@@ -2965,6 +2966,8 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   voices = bass_pulses + middle_pulses + high_pulses;	// init *all* primary pulses
   PULSES.select_n(voices);
 
+  PULSES.add_selected_to_group(g_PRIMARY);
+
   // tune *all* primary pulses
   tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
   lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
@@ -2984,8 +2987,9 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   #endif
 #endif
   }
+  PULSES.add_selected_to_group(g_LOW_END);
 
-  PULSES.select_from_to(0,bass_pulses);			// pulse[bass_pulses] belongs to both groups
+  PULSES.select_from_to(0,bass_pulses);			// pulse[bass_pulses] belongs to both output groups
   // selected_DACsq_intensity_proportional(255, 1);
   selected_share_DACsq_intensity(255, 1);		// bass DAC1 intensity
 
@@ -2996,6 +3000,7 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
     setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(JIFFLES), DACsq1 | doesICODE | CLICKs);
     PULSES.set_gpio(pulse, next_gpio());
   }
+  PULSES.add_selected_to_group(g_MIDDLE);
 
   // fix topmost bass pulse pulse[bass_pulses] that belongs to both groups:
   PULSES.pulses[bass_pulses].dest_action_flags |= DACsq1;
@@ -3005,8 +3010,9 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   for(int pulse = bass_pulses + middle_pulses; pulse<voices; pulse++) {	// pulse[21] belongs to both groups
     setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) d4096_256, DACsq2 | doesICODE);
   }
+  PULSES.add_selected_to_group(g_HIGH_END);
 
-  // fix pulse[21] belonging to both groups
+  // fix pulse[21] belonging to both output groups
   PULSES.pulses[bass_pulses + middle_pulses - 1].dest_action_flags |= DACsq2;
   selected_share_DACsq_intensity(255, 2);
   //	selected_DACsq_intensity_proportional(255, 2);

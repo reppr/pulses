@@ -573,7 +573,7 @@ void musicBox_trigger_got_hot() {	// must be called when magical trigger was det
 
 //#define DEBUG_CLEANUP  TODO: maybe remove debug code, but can give interesting insights...
 void magical_cleanup(int p) {	// deselect unused primary pulses, check if playing has ended
-  PULSES.pulses[p].flags |= DO_NOT_DELETE;	// TODO: use groups instead of DO_NOT_DELETE
+  PULSES.pulses[p].groups |= g_PRIMARY;	// TODO: rethink: maybe, maybe not
 
   if(!magic_autochanges)	// completely switched off by magic_autochanges==false
     return;			// noop
@@ -646,7 +646,7 @@ int stop_on_LOW(void) {	// stops *only* pulses that are low
     MENU.out(F("stop_on_LOW "));
 
   for(int pulse=0; pulse<PL_MAX; pulse++) {
-    if(PULSES.pulses[pulse].flags && (PULSES.pulses[pulse].flags & DO_NOT_DELETE) == 0) { // TODO: use groups instead of DO_NOT_DELETE
+    if(PULSES.pulses[pulse].flags && !(PULSES.pulses[pulse].groups & g_PRIMARY)) {
       if(PULSES.pulses[pulse].counter & 1)
 	was_high++;
       else
@@ -663,7 +663,7 @@ int stop_on_LOW_H1(void) {
 
   if(was_high=stop_on_LOW()) {
     for(int pulse=0; pulse<PL_MAX; pulse++) {
-      if(PULSES.pulses[pulse].flags && (PULSES.pulses[pulse].flags & DO_NOT_DELETE) == 0) { // TODO: use groups instead of DO_NOT_DELETE
+      if(PULSES.pulses[pulse].flags && !(PULSES.pulses[pulse].groups & g_PRIMARY)) {
 	PULSES.pulses[pulse].flags |= COUNTED;
 	PULSES.pulses[pulse].remaining = 1;
 	was_high++;
@@ -691,8 +691,8 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
   HARMONICAL.reduce_fraction(&this_division);
   int this_weighting = slice_weighting(this_division);
 
-  if(PULSES.pulses[pulse].counter==1) {	// the butler initializes himself
-    PULSES.pulses[pulse].flags |= DO_NOT_DELETE;				// TODO: use groups instead of DO_NOT_DELETE
+  if(PULSES.pulses[pulse].counter==1) {	// the butler initializes himself:
+    PULSES.pulses[pulse].groups |= g_PRIMARY;
     current_slice=0;			// start musicBox clock
     butler_start_time = PULSES.pulses[pulse].next;	// still unchanged?
     soft_end_cnt=0;
@@ -1174,6 +1174,8 @@ void start_musicBox() {
   MENU.outln(selected_name(JIFFLES));
   setup_jiffle_thrower_selected(selected_actions);
 
+  PULSES.add_selected_to_group(g_PRIMARY);
+
   if(!sync_was_set_by_menu) {	// if *not* set by user interaction
     sync = random(6);		// random sync	// MAYBE: define  select_random_sync()  ???
     if(MENU.maybe_display_more(VERBOSITY_SOME))
@@ -1260,6 +1262,7 @@ void start_musicBox() {
   // remember pulse index of the butler, so we can call him, if we need him ;)
   musicBox_butler_i =	\
     PULSES.setup_pulse(&musicBox_butler, ACTIVE, PULSES.get_now(), slice_tick_period);
+  PULSES.pulses[musicBox_butler_i].groups |= g_PRIMARY;	// savety net, befor butler has initialised itself
 
   PULSES.setup_pulse(&cycle_monitor, ACTIVE, PULSES.get_now(), slice_tick_period);
   stress_event_cnt = -3;	// some stress events will often happen after starting the musicBox
