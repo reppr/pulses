@@ -93,7 +93,7 @@ using namespace std;	// ESP8266 needs that
 unsigned int stress_emergency=4096*6;	// magical musicBox test			  TODO: fine tune
 unsigned int stress_event_level=512;	// just TESTING...				  TODO: fine tune
 int stress_event_cnt=0;			// counting stress_event_level events
-uint8_t stress_event_cnt_MAX=3;		// if the count reaches MAX stress release needed TODO: fine tune
+uint8_t stress_event_cnt_MAX=2;		// if the count reaches MAX stress release needed TODO: fine tune
 unsigned int stress_count=0;		// low level stress count
 
 
