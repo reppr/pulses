@@ -9,6 +9,8 @@ pulse_flags_t	KEYWORD1
 action_flags_t	KEYWORD1
 gpio_pin_t	KEYWORD1
 pulse_mask_t	KEYWORD1
+group_flags_t	KEYWORD1
+groups	KEYWORD2
 remaining	KEYWORD2
 countdown	KEYWORD2
 data	KEYWORD2
@@ -72,6 +74,9 @@ activate_selected_synced_now	KEYWORD2
 reset_and_edit_pulse	KEYWORD2
 fastest_pulse	KEYWORD2
 fastest_from_selected	KEYWORD2
+add_selected_to_group	KEYWORD2
+remove_selected_from_group	KEYWORD2
+show_group_mnemonics	KEYWORD2
 fix_global_next	KEYWORD2
 check_maybe_do	KEYWORD2
 setup_pulse	KEYWORD2

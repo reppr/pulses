@@ -684,7 +684,45 @@ int Pulses::fastest_from_selected() {	// no overflow here...
   return fast_pulse;
 }
 
+int Pulses::add_selected_to_group(group_flags_t groups_to_set) {	// add selected pulses to groups
+  int set=0;
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if (pulse_is_selected(pulse)) {
+      pulses[pulse].groups |= groups_to_set;
+      set++;
+    }
 
+  return set;
+}
+
+int Pulses::remove_selected_from_group(group_flags_t groups_to_remove) { // remove selected pulses from groups
+  int cleared=0;
+
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if (pulse_is_selected(pulse)) {
+      pulses[pulse].groups &= ~groups_to_remove;
+      cleared++;
+    }
+
+  return cleared;
+}
+
+void Pulses::show_group_mnemonics(int pulse) {
+  //  char * mnemonics = "012..5.7OLMH";
+  char * mnemonics = "12..5.7OLMHxxxyz";
+  char c;
+  int i=0;
+
+  while (c = *mnemonics) {
+    if(pulses[pulse].groups & (1 << i))
+      (*MENU).out(c);
+    mnemonics++;
+    i++;
+  }
+
+  (*MENU).space();
+  (*MENU).tab();	// works only as long as i do not use too many groups
+}
 
 // void fix_global_next();
 // determine when the next event[s] will happen:

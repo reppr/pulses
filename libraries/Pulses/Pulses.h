@@ -40,6 +40,10 @@ enum icode {
   #define action_flags_t	uint8_t
 #endif
 
+#ifndef group_flags_t
+  #define group_flags_t		uint16_t
+#endif
+
 #ifndef gpio_pin_t
   #define gpio_pin_t	int8_t			// negative values might be used for pin extensions
 //  #define gpio_pin_t		short		// negative values might be used for pin extensions
@@ -120,6 +124,27 @@ struct pulse_t {
 #define noACTION		32	// 'mutes' all actions
 #define ACTION_MASK_BITS	6	// >>>>>>>> *DO CHANGE* number of flags changes here <<<<<<<
 					// ACTION_MASK_BITS is used by mask displaying code (only)
+
+  group_flags_t groups;			// flags like primary pulse, pentatonic, bass, octave and the like
+
+// role groups:
+//#define g_MASTER	0	// not used yet
+#define g_PRIMARY	1	// primary pulse that generates other pulses, i.e. jiffle_thrower
+#define g_SECONDARY	2	// like a jiffle player, started by a primary pulse
+
+// tuning groups:
+#define g_TRIAD		4	// (any) tree note subset of a scale
+#define g_TETRA		8	// subset of pulses tuned to a tetrachord (or similar)
+#define g_PENTA		16	// pentatonic subset of tuned pulses
+#define g_HEXA		32	// (any) 6 tone subset
+#define g_HEPTA		64	// heptatonic (sub)set
+
+#define g_OCTAVE	128	// tuned to (any) octave of the root note
+
+// voice groups:
+#define g_LOW_END	256	// deep bass & rhytm & structure & below ;)
+#define g_MIDDLE	512	// bass & melody
+#define g_HIGH_END	1024	// high up in the skies
 
   // internal parameter:
   unsigned int remaining;		// if COUNTED, gives number of remaining executions
@@ -308,6 +333,9 @@ class Pulses {
   void reset_and_edit_pulse(int pulse, unsigned long time_unit);	// FIXME: time_unit as struct time
   int fastest_pulse();			// fastest pulse, *not* dealing with overflow...
   int fastest_from_selected();		// fastest from selected, no overflow...
+  int add_selected_to_group(group_flags_t groups);	// add selected pulses to groups
+  int remove_selected_from_group(group_flags_t groups);	// remove selected pulses from groups
+  void show_group_mnemonics(int pulse);		// show group mnemonics
   void fix_global_next();	// determine next event, prepare everything
 				// for *all* pulses that wait for this exact time
 				// they will be called in fast sequence then
