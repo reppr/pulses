@@ -2,6 +2,8 @@
   musicBox.h
 */
 
+#define MUSICBOX_VERSION	alpha 0.004
+
 #define AUTOMAGIC_CYCLE_TIMING_SECONDS		12*60	// *max seconds*, produce sample pieces
 //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	9*60	// *max seconds*, produce short sample pieces
 //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// *max seconds*, produce short sample pieces	BRACHE Dez 2018
@@ -1189,8 +1191,10 @@ short bass_pulses;	// see  setup_bass_middle_high()
 short middle_pulses;	// see  setup_bass_middle_high()
 short high_pulses;	// see  setup_bass_middle_high()
 
+
 void start_musicBox() {
-  MENU.outln(F("\nstart_musicBox()"));
+  MENU.out(F("\nstart_musicBox()\t"));
+  MENU.outln(F(STRINGIFY(MUSICBOX_VERSION)));
   set_MusicBoxState(AWAKE);
   musicBox_trigger_enabled=false;
   blocked_trigger_shown = false;	// show only once a run
