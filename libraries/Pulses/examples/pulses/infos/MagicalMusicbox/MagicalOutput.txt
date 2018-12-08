@@ -2560,3 +2560,459 @@ shortest pulse's harmonical cycle: 4' 31"
 2^-3	   18'  5"
 2^-4	    9'  2"	| subcycle |
 2^-5	    4' 31"
+
+
+melodischs Netz uf I IV V
+**************************
+
+AWOKE	wakeup EXT0
+
+start_musicBox()
+MusicBoxState AWAKE
+2018-12-07_16h22m20s	FRI
+battery control pin: 36	1263	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-07_16h22m20s	FRI
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	octaves_fourths_fifths
+JIFFLE:	pent_top_wave
+SYNC:	3
+TIME_U:	1000000	*32768/257
+play_KB_macro  *2
+used SUBCYCLE:	8' 25"
+ <<< * >>>
+
+harmonical cycle:  8h 58' 33"
+shortest pulse's harmonical cycle:   10.515456s
+2^0	8h 58' 33"
+2^-1	4h 29' 16"
+2^-2	2h 14' 38"
+2^-3	1h  7' 19"
+2^-4	   33' 40"
+2^-5	   16' 50"
+2^-6	    8' 25"	| subcycle |
+2^-7	    4' 12"
+2^-8	    2'  6"
+2^-9	    1'  3"
+2^-10	    0' 32"
+2^-11	    0' 16"
+
+
+Aurora
+*******
+
+very dense pulsating web
+good ending ;)
+
+AUTOSTART 1
+
+start_musicBox()
+MusicBoxState AWAKE
+2018-12-07_15h57m55s	FRI
+battery control pin: 36	1263	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-07_15h57m55s	FRI
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	minor_scale
+JIFFLE:	PENTA_3rd_down_5
+SYNC:	3
+TIME_U:	1000000	*32768/300
+used SUBCYCLE:	9' 1"
+ <<< * >>>
+
+harmonical cycle:  1h 12' 5"
+shortest pulse's harmonical cycle: 2' 15"
+2^0	1h 12'  5"
+2^-1	   36'  3"
+2^-2	   18'  1"
+2^-3	    9'  1"	| subcycle |
+2^-4	    4' 30"
+2^-5	    2' 15"
+
+
+Aurora mit Tänzelde Liechter
+*****************************
+
+AWOKE	wakeup EXT0
+
+start_musicBox()
+MusicBoxState AWAKE
+2018-12-07_16h32m24s	FRI
+battery control pin: 36	1264	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-07_16h32m24s	FRI
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+lower_audio_if_too_high 0
+62.00000 DEBUG: shortest==0
+60.0000000000000000000000000000000
+SCALE:	pentatonic_minor
+JIFFLE:	PENTA_3rd_down_5
+SYNC:	1
+TIME_U:	1000000	*32768/195
+play_KB_macro  *2
+used SUBCYCLE:	6' 56"
+ <<< * >>>
+
+harmonical cycle:  1h 50' 54"
+shortest pulse's harmonical cycle: 52"
+2^0	1h 50' 54"
+2^-1	   55' 27"
+2^-2	   27' 44"
+2^-3	   13' 52"
+2^-4	    6' 56"	| subcycle |
+2^-5	    3' 28"
+2^-6	    1' 44"
+2^-7	    0' 52"
+
+
+Melodie Kabinet
+****************
+
+wunderschön tänzelnds Melodienetz
+wo sich langsam au i di undere Stimme uusdehnt
+
+A
+
+start_musicBox()
+2018-12-07_17h23m46s	FRI
+battery control pin: 36	1205	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-07_17h23m46s	FRI
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	european_PENTAtonic
+JIFFLE:	PENTA_3rd_rise
+SYNC:	3
+TIME_U:	1000000	*32768/355
+play_KB_macro  *2
+used SUBCYCLE:	6' 6"
+ <<< * >>>
+
+harmonical cycle:  1h 37' 28"
+shortest pulse's harmonical cycle: 46"
+2^0	1h 37' 28"
+2^-1	   48' 44"
+2^-2	   24' 22"
+2^-3	   12' 11"
+2^-4	    6'  6"	| subcycle |
+2^-5	    3'  3"
+2^-6	    1' 31"
+2^-7	    0' 46"
+
+sync pause 0"	<<< ??? vilicht verwirrt weg em start dur 'A'
+
+
+Akkordeon
+**********
+
+AUTOSTART 1
+
+start_musicBox()
+MusicBoxState AWAKE
+2018-12-07_17h34m18s	FRI
+battery control pin: 36	1217	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-07_17h34m18s	FRI
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	tetrachord
+JIFFLE:	PENTAtonic_descend
+SYNC:	5
+TIME_U:	1000000	*32768/260
+play_KB_macro  /2
+used SUBCYCLE:	8' 19"
+ <<< * >>>
+
+harmonical cycle:  1h 6' 32"
+shortest pulse's harmonical cycle:   11.696640s
+2^0	1h  6' 32"
+2^-1	   33' 16"
+2^-2	   16' 38"
+2^-3	    8' 19"	| subcycle |
+2^-4	    4' 10"
+2^-5	    2'  5"
+2^-6	    1'  2"
+2^-7	    0' 31"
+2^-8	    0' 16"
+
+sync pause    1.218401s
+
+
+MusikdoseTraum
+***************
+
+für langi, vertröimti szene
+
+
+AUTOSTART 1
+
+start_musicBox()
+MusicBoxState AWAKE
+2018-12-07_17h45m57s	FRI
+battery control pin: 36	1214	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-07_17h45m57s	FRI
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	tetrachord
+JIFFLE:	din__dididi_dixi
+SYNC:	3
+TIME_U:	1000000	*32768/195
+play_KB_macro  *2
+used SUBCYCLE:	11' 5"
+ <<< * >>>
+
+harmonical cycle:  5h 54' 53"
+shortest pulse's harmonical cycle: 1' 2"
+2^0	5h 54' 53"
+2^-1	2h 57' 27"
+2^-2	1h 28' 43"
+2^-3	   44' 22"
+2^-4	   22' 11"
+2^-5	   11'  5"	| subcycle |
+2^-6	    5' 33"
+2^-7	    2' 46"
+2^-8	    1' 23"
+
+sync pause    3.898849s
+
+
+Klangschwade mit Puls
+**********************
+
+AWOKE	wakeup EXT0
+
+start_musicBox()
+2018-12-07_18h34m01s	FRI
+battery control pin: 36	1210	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-07_18h34m01s	FRI
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+lower_audio_if_too_high 0
+62.00000 DEBUG: shortest==0
+60.0000000000000000000000000000000
+SCALE:	european_PENTAtonic
+JIFFLE:	tanboura
+SYNC:	0
+TIME_U:	1000000	*32768/275
+play_KB_macro  *2
+used SUBCYCLE:	7' 52"
+ <<< * >>>
+
+harmonical cycle:  2h 5' 49"
+shortest pulse's harmonical cycle: 59"
+2^0	2h  5' 49"
+2^-1	1h  2' 55"
+2^-2	   31' 27"
+2^-3	   15' 44"
+2^-4	    7' 52"	| subcycle |
+2^-5	    3' 56"
+2^-6	    1' 58"
+2^-7	    0' 59"
+
+
+Pentaweb
+*********
+
+stimmigsvoll
+mit sehnsucht ufs ziel zue
+
+SCALE:	pentatonic_minor	JIFFLE:	PENTAtonic_descend	SCALING: 1/128	SYNC: 2
+Af:DD...  	voices: 34	verbosity lowest
+TIME_U:	1000000 microseconds = 1.000000 per second
+
+harmonical cycle 'c'	1h  9' 59" 
+subcycle		    8' 45" 
+540 slices='n'     0.972034s
+
+
+Schwester Pentaweb
+*******************
+
+e ZwillingsPentawebSchwöster :)
+
+AWOKE	wakeup EXT0
+
+start_musicBox()
+MusicBoxState AWAKE
+2018-12-07_19h04m44s	FRI
+battery control pin: 36	1259	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-07_19h04m44s	FRI
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	european_PENTAtonic
+JIFFLE:	penta_3rd_rise
+SYNC:	1
+TIME_U:	1000000	*32768/423
+used SUBCYCLE:	10' 13"
+ <<< * >>>
+
+harmonical cycle:  1h 21' 48"
+shortest pulse's harmonical cycle: 38"
+2^0	1h 21' 48"
+2^-1	   40' 54"
+2^-2	   20' 27"
+2^-3	   10' 13"	| subcycle |
+2^-4	    5'  7"
+2^-5	    2' 33"
+2^-6	    1' 17"
+2^-7	    0' 38"
+
+sync pause    0.798817s
+
+
+PentaMusicBox
+**************
+
+
+AWOKE	wakeup EXT0
+
+start_musicBox()
+MusicBoxState AWAKE
+2018-12-07_19h16m36s	FRI
+battery control pin: 36	1257	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-07_19h16m36s	FRI
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	pentatonic_minor
+JIFFLE:	din__dididi_dixi
+SYNC:	1
+TIME_U:	1000000	*32768/187
+play_KB_macro  *2
+used SUBCYCLE:	7' 14"
+ <<< * >>>
+
+harmonical cycle:  1h 55' 39"
+shortest pulse's harmonical cycle: 54"
+2^0	1h 55' 39"
+2^-1	   57' 49"
+2^-2	   28' 55"
+2^-3	   14' 27"
+2^-4	    7' 14"	| subcycle |
+2^-5	    3' 37"
+2^-6	    1' 48"
+2^-7	    0' 54"
+
+sync pause    0.903481s
+
+
+I_IV_V mit Knatterrhytheme
+***************************
+
+AWOKE	wakeup EXT0
+
+start_musicBox()
+2018-12-07_19h48m57s	FRI
+battery control pin: 36	1267	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-07_19h48m58s	FRI
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	octaves_fourths_fifths
+JIFFLE:	d4096_512
+SYNC:	1
+TIME_U:	1000000	*32768/187
+used SUBCYCLE:	11' 34"
+ <<< * >>>
+
+harmonical cycle:  6h 10' 4"
+shortest pulse's harmonical cycle:    7.226880s
+2^0	6h 10'  4"
+2^-1	3h  5'  2"
+2^-2	1h 32' 31"
+2^-3	   46' 16"
+2^-4	   23'  8"
+2^-5	   11' 34"	| subcycle |
+2^-6	    5' 47"
+2^-7	    2' 53"
+2^-8	    1' 27"
+2^-9	    0' 43"
+2^-10	    0' 22"
+2^-11	    0' 11"
+
+sync pause    0.602241s
+
+
+The Landing Of The Sound Space Ship
+*************************************
+
+AWOKE	wakeup EXT0
+
+start_musicBox()
+2018-12-07_20h03m19s	FRI
+battery control pin: 36	1267	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-07_20h03m19s	FRI
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+lower_audio_if_too_high 0
+62.00000 DEBUG: shortest==0
+60.0000000000000000000000000000000
+SCALE:	doric_scale
+JIFFLE:	dwn_THRD_up
+SYNC:	1
+TIME_U:	1000000	*32768/189
+play_KB_macro  *2
+used SUBCYCLE:	7' 9"
+ <<< * >>>
+
+harmonical cycle:  1h 54' 25"
+shortest pulse's harmonical cycle: 3' 35"
+2^0	1h 54' 25"
+2^-1	   57' 13"
+2^-2	   28' 36"
+2^-3	   14' 18"
+2^-4	    7'  9"	| subcycle |
+2^-5	    3' 35"
+
+sync pause    0.893925s
