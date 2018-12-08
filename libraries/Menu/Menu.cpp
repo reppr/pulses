@@ -304,6 +304,14 @@ char Menu::cb_read() {
   }
 
 
+void Menu::out_ON_off(bool flag) {	// output either "ON" or "off" depending flag
+  if(flag)
+    MENU_OUT(F("ON"));
+  else
+    MENU_OUT(F("off"));
+}
+
+
 bool Menu::maybe_display_more(unsigned char verbosity_level) {	// avoid too much output
   /* output control, avoid errors caused by serial menu output
      looks at verbosity *and* input buffer

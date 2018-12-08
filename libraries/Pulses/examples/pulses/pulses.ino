@@ -761,10 +761,8 @@ void setup() {
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN	// output now possible, so give info now
   MENU.out(F("peripheral POWER "));
-  if(digitalRead(PERIPHERAL_POWER_SWITCH_PIN))
-    MENU.out(F("ON "));
-  else
-    MENU.out(F("OFF "));
+  MENU.out_ON_off(digitalRead(PERIPHERAL_POWER_SWITCH_PIN));
+  MENU.space();
   MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
 #endif
 

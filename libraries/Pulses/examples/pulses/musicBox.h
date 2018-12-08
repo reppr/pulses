@@ -1642,16 +1642,13 @@ void musicBox_display() {
   MENU.ln();
 
   MENU.out(F("'o' show position ticker "));
-  if(show_subcycle_position)
-    MENU.outln(F("ON"));
-  else
-    MENU.outln(F("off"));
+  MENU.out_ON_off(show_subcycle_position);
 
-  MENU.out(F("autochanges "));
-  if(magic_autochanges)
-    MENU.out(F("ON"));
-  else
-    MENU.out(F("off"));
+  MENU.out(F("\t'p' show cycle pattern "));
+  MENU.out_ON_off(show_cycle_pattern);
+
+  MENU.out(F("\tautochanges "));
+  MENU.out_ON_off(magic_autochanges)
   MENU.out(F(" 'a' to toggle"));
 
   MENU.tab();

@@ -11,6 +11,8 @@ tab	KEYWORD2
 space	KEYWORD2
 equals	KEYWORD2
 slash	KEYWORD2
+IPstring	KEYWORD2
+out_ON_off	KEYWORD2
 maybe_display_more	KEYWORD2
 is_chiffre	KEYWORD2
 is_operator	KEYWORD2
