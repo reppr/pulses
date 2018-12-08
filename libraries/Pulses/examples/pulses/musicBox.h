@@ -4,6 +4,7 @@
 
 #define AUTOMAGIC_CYCLE_TIMING_SECONDS		12*60	// *max seconds*, produce sample pieces
 //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	9*60	// *max seconds*, produce short sample pieces
+//#define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// *max seconds*, produce short sample pieces	BRACHE Dez 2018
 //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	6*60	// *max seconds*, produce *short* sample pieces
 //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
 
@@ -41,7 +42,8 @@
 #endif
 
 #if ! defined MUSICBOX_TRIGGER_BLOCK_SECONDS
-  #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3
+  #define MUSICBOX_TRIGGER_BLOCK_SECONDS	20	// DEFAULT: BRACHE, JÜRG, etc
+//#define MUSICBOX_TRIGGER_BLOCK_SECONDS	3	// DEBUGGING
 #endif
 
 #if ! defined MUSICBOX_HARD_END_SECONDS		// savety net
@@ -86,6 +88,7 @@ struct time used_subcycle;	// TODO: move to Harmonical? ? ?
    unsigned short cycle_slices = 360;	// test&adapt   classical aesthetics?
 */
 unsigned short cycle_slices = 540;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
+//unsigned short cycle_slices = 540*3;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
 
 struct time slice_tick_period;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
 
@@ -177,6 +180,43 @@ void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditional
   bool magic_autochanges=true;	// switch if to end normal playing after MUSICBOX_PERFORMACE_SECONDS
 #endif
 
+
+unsigned long primary_counters[PL_MAX] = { 0 };	// preserve last seen counters
+
+void init_primary_counters() {
+  memset(&primary_counters, 0, sizeof(primary_counters));
+}
+
+bool show_cycle_pattern=true;
+
+void watch_primary_pulses() {
+  long diff;
+
+  for(int pulse=0; pulse<PL_MAX; pulse++) {
+    if(pulse == musicBox_butler_i)	// for all but the butler ;)
+      continue;
+
+    if(PULSES.pulses[pulse].groups & g_PRIMARY) {
+      diff = PULSES.pulses[pulse].counter - primary_counters[pulse];	// has the counter changed?
+      primary_counters[pulse]=PULSES.pulses[pulse].counter;		// update to new counter
+      if(show_cycle_pattern) {
+	switch(diff) {
+	case 0:		// no change
+	  MENU.space();
+	  break;
+	case 1:		// primary pulse was called *once*
+	  MENU.out('*');
+	  break;
+	default:
+	  if(diff > 1)	// slice too long to see all the individual wakeups
+	    MENU.out(diff);
+	  else	// could possibly happen after some reset???
+	    MENU.out(diff);	// DEBUGGING: avoid that to happen
+	}
+      } // show pattern
+    }
+  }
+}
 
 void show_cycle(struct time cycle) {
   MENU.out(F("\nharmonical cycle:  "));
@@ -325,8 +365,11 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
   fraction this_division = {cycle_monitor_last_seen_division, cycle_slices};
   HARMONICAL.reduce_fraction(&this_division);
 
-  if(show_subcycle_position && slice_weighting(this_division) > 0) {
-    MENU.out('*');
+  if(show_subcycle_position /*&& slice_weighting(this_division) > 0*/) {	// weighting influence switched off
+    if(this_division.multiplier<10000)
+      MENU.space();
+    if(this_division.multiplier<1000)
+      MENU.space();
     if(this_division.multiplier<100)
       MENU.space();
     if(this_division.multiplier<10)
@@ -340,12 +383,16 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
       MENU.space();
     if(this_division.divisor<1000)
       MENU.space();
+    if(this_division.divisor<10000)
+      MENU.space();
+    MENU.space();
+
+    MENU.out((float) this_division.multiplier/this_division.divisor, 6);
+    MENU.space(2);
 
     if(MENU.verbosity >= VERBOSITY_SOME)
       MENU.out(slice_weighting(this_division));
     //show_n_stars(slice_weighting(this_division));	// nice for debugging
-
-    MENU.ln();
   }
 
   cycle_monitor_last_seen_division++;
@@ -720,6 +767,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     PULSES.pulses[pulse].groups |= g_PRIMARY;
     current_slice=0;			// start musicBox clock
     butler_start_time = PULSES.pulses[pulse].next;	// still unchanged?
+    init_primary_counters();
     soft_end_cnt=0;
     soft_cleanup_started=false;
 
@@ -816,6 +864,18 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
       }
     } // magic_autochanges?
   } // all later wakeups
+
+  // (all wakeups)
+  if(show_cycle_pattern) {
+    watch_primary_pulses();
+    MENU.tab();
+  }
+
+  if(show_subcycle_position)
+    cycle_monitor(pulse);
+
+  if(show_cycle_pattern || show_subcycle_position)
+    MENU.ln();
 }  // musicBox_butler()
 
 
@@ -1285,12 +1345,9 @@ void start_musicBox() {
   // remember pulse index of the butler, so we can call him, if we need him ;)
   musicBox_butler_i = \
     PULSES.setup_pulse(&musicBox_butler, ACTIVE, PULSES.get_now(), slice_tick_period);
-  PULSES.pulses[musicBox_butler_i].groups |= g_PRIMARY;	// savety net, until butler has initialised itself
 
-  cycle_monitor_i = \
-    PULSES.setup_pulse(&cycle_monitor, ACTIVE, PULSES.get_now(), slice_tick_period);
-  // TODO: do we need a g_BUTLERS group?
-  //   PULSES.pulses[musicBox_butler_i].groups |= g_PRIMARY;	???
+  // TODO: RETHINK: group of butler, it is closer to a master then a primary...
+  PULSES.pulses[musicBox_butler_i].groups |= g_PRIMARY;	// savety net, until butler has initialised itself
 
   stress_event_cnt = -3;	// some stress events will often happen after starting the musicBox
 }
@@ -1648,7 +1705,7 @@ void musicBox_display() {
   MENU.out_ON_off(show_cycle_pattern);
 
   MENU.out(F("\tautochanges "));
-  MENU.out_ON_off(magic_autochanges)
+  MENU.out_ON_off(magic_autochanges);
   MENU.out(F(" 'a' to toggle"));
 
   MENU.tab();
@@ -1755,6 +1812,10 @@ bool musicBox_reaction(char token) {
 	musicBox_display();
     } else
       start_musicBox();
+    break;
+
+  case 'p': // 'p' switch
+    show_cycle_pattern ^= 1;
     break;
 
 /*
