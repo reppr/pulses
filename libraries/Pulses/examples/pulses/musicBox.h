@@ -727,12 +727,14 @@ int stop_on_LOW_H1(void) {	// TODO: DEBUG ################
   if(/*were_high=*/stop_on_LOW()) {
     for(int pulse=0; pulse<PL_MAX; pulse++) {
       if(PULSES.pulses[pulse].flags  &&  PULSES.pulses[pulse].groups & g_SECONDARY  &&  PULSES.pulses[pulse].counter & 1) {
-	PULSES.pulses[pulse].flags |= COUNTED;
-	PULSES.pulses[pulse].remaining = 1;
-	were_high++;
-	if(MENU.verbosity >= VERBOSITY_SOME) {
-	  MENU.out(pulse);
-	  MENU.space();
+	if(! PULSES.pulses[pulse].flags & COUNTED) {
+	  PULSES.pulses[pulse].flags |= COUNTED;
+	  PULSES.pulses[pulse].remaining = 1;
+	  were_high++;
+	  if(MENU.verbosity >= VERBOSITY_SOME) {
+	    MENU.out(pulse);
+	    MENU.space();
+	  }
 	}
       }
     }
