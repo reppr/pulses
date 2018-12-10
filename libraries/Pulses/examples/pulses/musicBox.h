@@ -3,6 +3,7 @@
 */
 
 #define MUSICBOX_VERSION	alpha 0.004
+#define MUSICBOX_SUB_VERSION	BRACHE_2018-12
 
 #define AUTOMAGIC_CYCLE_TIMING_SECONDS		12*60	// *max seconds*, produce sample pieces
 //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	9*60	// *max seconds*, produce short sample pieces
@@ -1212,7 +1213,15 @@ short high_pulses;	// see  setup_bass_middle_high()
 
 void start_musicBox() {
   MENU.out(F("\nstart_musicBox()\t"));
-  MENU.outln(F(STRINGIFY(MUSICBOX_VERSION)));
+  MENU.out(F(STRINGIFY(MUSICBOX_VERSION)));
+
+#if defined MUSICBOX_SUB_VERSION
+  MENU.tab();
+  MENU.outln(F(STRINGIFY(MUSICBOX_SUB_VERSION)));
+#else
+  MENU.ln();
+#endif
+
   set_MusicBoxState(AWAKE);
   musicBox_trigger_enabled=false;
   blocked_trigger_shown = false;	// show only once a run
@@ -1754,6 +1763,28 @@ void musicBox_display() {
     MENU.outln(F("STOP"));
   }
 
+  // TODO: this is duplicated code from void show_UI_settings()...
+  MENU.ln();
+  MENU.out(F("SCALE:\t"));
+  MENU.out(array2name(SCALES, selected_in(SCALES)));
+  MENU.tab();
+
+  MENU.out(F("JIFFLE:\t"));
+  MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
+  MENU.tab();
+
+  /*
+  MENU.out(F("SCALING: "));	// FIXME: TODO: check where that *is* used ################
+  MENU.out(multiplier);
+  MENU.slash();
+  MENU.out(divisor);
+  MENU.tab();
+  */
+
+  MENU.out(F("SYNC: "));
+  MENU.outln(sync);
+  MENU.ln();
+
 /*	*deactivated*
   MENU.outln(F("fart='f'"));
 */
@@ -1806,7 +1837,7 @@ bool musicBox_reaction(char token) {
     break;
   case 'o': // show_subcycle_position
     show_subcycle_position ^= 1 ;
-    if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
+    if(MENU.verbosity > VERBOSITY_LOWEST) {
       if(show_subcycle_position)
 	MENU.out(F("SHOW"));
       else
@@ -1838,6 +1869,14 @@ bool musicBox_reaction(char token) {
 
   case 'p': // 'p' switch
     show_cycle_pattern ^= 1;
+
+    if(MENU.verbosity > VERBOSITY_LOWEST) {
+      if(show_subcycle_position)
+	MENU.out(F("SHOW"));
+      else
+	MENU.out(F("do *not show*"));
+      MENU.outln(F(" position in circle"));
+    }
     break;
 
 /*
