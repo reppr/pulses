@@ -673,8 +673,16 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
 	}
 	skipped++;
       } else {
-	if(do_display)
-	  MENU.out('.');
+	if(do_display) {	// show (only) most important group	TODO: make group mnemonics r/w and use here
+	  if(PULSES.pulses[pulse].groups & g_MASTER)
+	    MENU.out('0');
+	  else if(PULSES.pulses[pulse].groups & g_PRIMARY)
+	    MENU.out('1');
+	  else if(PULSES.pulses[pulse].groups & g_SECONDARY)
+	    MENU.out('2');
+	  else	// TODO: keep that always up to date ;)	or better:	TODO: make group mnemonics r/w and use here
+	    MENU.out('.');
+	}
 	flagged++;
       }
     } // flags?
@@ -695,36 +703,42 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
 }
 
 int stop_on_LOW(void) {	// stops *only* pulses that are low
-  int was_high=0;
-  if(MENU.verbosity)	// TODO: rethink output
+  int were_high=0;
+  if(MENU.verbosity >= VERBOSITY_LOWEST)	// TODO: rethink output
     MENU.out(F("stop_on_LOW "));
 
   for(int pulse=0; pulse<PL_MAX; pulse++) {
-    if(PULSES.pulses[pulse].flags && !(PULSES.pulses[pulse].groups & g_PRIMARY)) {
+    if(PULSES.pulses[pulse].flags && PULSES.pulses[pulse].groups & g_SECONDARY) {
       if(PULSES.pulses[pulse].counter & 1)
-	was_high++;
+	were_high++;
       else
 	PULSES.init_pulse(pulse);
     }
   }
-  return was_high;	// TODO: rethink output
+  return were_high;	// TODO: rethink output
 }
 
-int stop_on_LOW_H1(void) {
-  int was_high;
-  if(MENU.verbosity)	// TODO: rethink output
+int stop_on_LOW_H1(void) {	// TODO: DEBUG ################
+  int were_high=0;
+
+  if(MENU.verbosity >= VERBOSITY_SOME)	// TODO: rethink output
     MENU.out(F("stop_on_LOW_H1 "));
 
-  if(was_high=stop_on_LOW()) {
+  if(/*were_high=*/stop_on_LOW()) {
     for(int pulse=0; pulse<PL_MAX; pulse++) {
-      if(PULSES.pulses[pulse].flags && !(PULSES.pulses[pulse].groups & g_PRIMARY)) {
+      if(PULSES.pulses[pulse].flags  &&  PULSES.pulses[pulse].groups & g_SECONDARY  &&  PULSES.pulses[pulse].counter & 1) {
 	PULSES.pulses[pulse].flags |= COUNTED;
 	PULSES.pulses[pulse].remaining = 1;
-	was_high++;
+	were_high++;
+	if(MENU.verbosity >= VERBOSITY_SOME) {
+	  MENU.out(pulse);
+	  MENU.space();
+	}
       }
     }
   }
-  return was_high;	// TODO: rethink output
+
+  return were_high;
 }
 
 
@@ -766,7 +780,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
   int this_weighting = slice_weighting(this_division);
 
   if(PULSES.pulses[pulse].counter==1) {	// the butler initializes himself:
-    PULSES.pulses[pulse].groups |= g_PRIMARY;
+    PULSES.pulses[pulse].groups |= g_MASTER;
     current_slice=0;			// start musicBox clock
     butler_start_time = PULSES.pulses[pulse].next;	// still unchanged?
     init_primary_counters();
@@ -775,18 +789,20 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 
   } else if(PULSES.pulses[pulse].counter==2) {	// now we might have more time for some initialization
 
-    if(MENU.verbosity)
-      MENU.out(F("butler: prepare trigger\t"));
     struct time trigger_enable_time = {MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000, 0};
-    PULSES.display_time_human(trigger_enable_time);
-    MENU.ln();
+    if(MENU.verbosity >= VERBOSITY_SOME) {
+      MENU.out(F("butler: prepare trigger  "));
+      PULSES.display_time_human(trigger_enable_time);
+      MENU.ln();
+    }
     PULSES.add_time(&musicBox_start_time, &trigger_enable_time);
 
-    if(MENU.verbosity)
-      MENU.out(F("butler: prepare hard end\t"));
     musicBox_hard_end_time = {MUSICBOX_HARD_END_SECONDS*1000000, 0};
-    PULSES.display_time_human(musicBox_hard_end_time);
-    MENU.ln();
+    if(MENU.verbosity >= VERBOSITY_SOME) {
+      MENU.out(F("butler: prepare hard end "));
+      PULSES.display_time_human(musicBox_hard_end_time);
+      MENU.ln();
+    }
     PULSES.add_time(&musicBox_start_time, &musicBox_hard_end_time);
 
   } else {	// all later wakeups
@@ -856,8 +872,8 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 	      MENU.out(F(" | "));
 	      MENU.outln(this_weighting);
 	      if(this_weighting >= fast_cleanup_minimal_fraction_weighting)
-		stop_on_LOW();				// STOP all low
-		//stop_on_LOW_H1();				// STOP now
+		// stop_on_LOW();				// STOP all low
+		stop_on_LOW_H1();				// STOP now
 	      else
 		fast_cleanup_minimal_fraction_weighting--;	// relax stop condition
 	    }
@@ -1351,7 +1367,7 @@ void start_musicBox() {
     PULSES.setup_pulse(&musicBox_butler, ACTIVE, PULSES.get_now(), slice_tick_period);
 
   // TODO: RETHINK: group of butler, it is closer to a master then a primary...
-  PULSES.pulses[musicBox_butler_i].groups |= g_PRIMARY;	// savety net, until butler has initialised itself
+  PULSES.pulses[musicBox_butler_i].groups |= g_MASTER;	// savety net, until butler has initialised itself
 
   stress_event_cnt = -3;	// some stress events will often happen after starting the musicBox
 }

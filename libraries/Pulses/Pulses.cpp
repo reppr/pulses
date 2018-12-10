@@ -708,16 +708,14 @@ int Pulses::remove_selected_from_group(group_flags_t groups_to_remove) { // remo
 }
 
 void Pulses::show_group_mnemonics(int pulse) {
-  //  char * mnemonics = "012..5.7OLMH";
-  char * mnemonics = "12..5.7OLMHxxxyz";
+  char * mnemonics = "012345678LMH";
   char c;
-  int i=0;
 
+  int i=0;
   while (c = *mnemonics) {
-    if(pulses[pulse].groups & (1 << i))
+    if(pulses[pulse].groups & (1 << i++))
       (*MENU).out(c);
     mnemonics++;
-    i++;
   }
 
   (*MENU).space();

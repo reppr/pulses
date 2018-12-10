@@ -128,23 +128,23 @@ struct pulse_t {
   group_flags_t groups;			// flags like primary pulse, pentatonic, bass, octave and the like
 
 // role groups:
-//#define g_MASTER	0	// not used yet
-#define g_PRIMARY	1	// primary pulse that generates other pulses, i.e. jiffle_thrower
-#define g_SECONDARY	2	// like a jiffle player, started by a primary pulse
+#define g_MASTER	1	// master pulse that generates and controls other pulses that perform a piece
+#define g_PRIMARY	2	// a pulse that seeds 'throws' other pulses like do_throw_a_jiffle(p)
+#define g_SECONDARY	4	// a one shot player like do_jiffle(p);
 
 // tuning groups:
-#define g_TRIAD		4	// (any) tree note subset of a scale
-#define g_TETRA		8	// subset of pulses tuned to a tetrachord (or similar)
-#define g_PENTA		16	// pentatonic subset of tuned pulses
-#define g_HEXA		32	// (any) 6 tone subset
-#define g_HEPTA		64	// heptatonic (sub)set
+//#define g_TRIAD		8	// (any) 3 note subset of a scale
+//#define g_TETRA		16	// 4 note subset of pulses tuned to a tetrachord (or similar)
+//#define g_PENTA		32	// pentatonic 5 note subset of tuned pulses
+//#define g_HEXA		64	// (any) 6 tone subset
+//#define g_HEPTA		128	// 7 tone heptatonic (sub)set
 
-#define g_OCTAVE	128	// tuned to (any) octave of the root note
+//#define g_OCTAVE	256	// tuned to (any) octave of the root note
 
 // voice groups:
-#define g_LOW_END	256	// deep bass & rhytm & structure & below ;)
-#define g_MIDDLE	512	// bass & melody
-#define g_HIGH_END	1024	// high up in the skies
+#define g_LOW_END	512	// deep bass & rhytm & structure & below ;)
+#define g_MIDDLE	1024	// bass & melody	TODO: split in 2 g_BASS and g_MELODY
+#define g_HIGH_END	2048	// high up in the skies
 
   // internal parameter:
   unsigned int remaining;		// if COUNTED, gives number of remaining executions

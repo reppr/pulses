@@ -2469,7 +2469,6 @@ bool en_jiffle_thrower(int pulse, unsigned int *jiffle, gpio_pin_t pin, action_f
     PULSES.pulses[pulse].dest_action_flags |= action_mask;
     PULSES.set_payload_with_pin(pulse, &do_throw_a_jiffle, pin);
     PULSES.pulses[pulse].data = (unsigned int) jiffle;
-
     return true;
   }
 
@@ -2537,10 +2536,12 @@ void do_throw_a_jiffle(int pulse) {		// for pulse_do
     if (this_jiff[i]==0)
       has_data=false;
 
-  if (has_data)	// there *is* jiffle data
-    init_jiffle((unsigned int *) PULSES.pulses[pulse].data,	\
+  if (has_data)	{ // there *is* jiffle data
+    int p = init_jiffle((unsigned int *) PULSES.pulses[pulse].data,	\
 	      PULSES.pulses[pulse].next, PULSES.pulses[pulse].period, pulse);
-  else	// zero in first triplet, *invalid* jiffle table.
+    PULSES.pulses[p].groups |= g_SECONDARY;
+
+  } else	// zero in first triplet, *invalid* jiffle table.
     MENU.outln(F("no jiffle"));
 }
 
