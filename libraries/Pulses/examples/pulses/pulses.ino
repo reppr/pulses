@@ -1,7 +1,6 @@
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
 #define HARMONICAL_MUSIC_BOX
 #define MAGICAL_TOILET_HACKS	// some quick dirty hacks
-//#define BRACHE_NOV_2018_SETTINGS	// temporary defaults
 
 //#define HACK_11_11_11_11	// setup for MagicalGuitar 11.11.2018 Zürich ;)
 
@@ -3275,8 +3274,12 @@ void show_scaling() {
   MENU.out(multiplier); MENU.slash(); MENU.out(divisor);
 }
 
-void show_UI_settings() {
-  MENU.ln();
+void show_UI_basic_setup() {
+  MENU.out(F("SYNC: "));
+  MENU.out(sync);
+  MENU.space();
+  MENU.tab();
+
   MENU.out(F("SCALE:\t"));
   MENU.out(array2name(SCALES, selected_in(SCALES)));
   MENU.tab();
@@ -3285,19 +3288,20 @@ void show_UI_settings() {
   MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
   MENU.tab();
 
-  if (g_inverse)	// FIXME: TODO: check where that *is* used ################
-    MENU.out(F("GPIO BOTTOM UP\t"));
-
   MENU.out(F("SCALING: "));	// FIXME: TODO: check where that *is* used ################
   MENU.out(multiplier);
   MENU.slash();
   MENU.out(divisor);
   MENU.tab();
 
-  MENU.out(F("SYNC: "));
-  MENU.out(sync);
-  MENU.ln();
+  if (g_inverse)	// FIXME: TODO: check where that *is* used ################
+    MENU.out(F("GPIO BOTTOM UP\t"));
+  MENU.ln();	// maybe...
+}
 
+void show_UI_settings() {
+  MENU.ln();
+  show_UI_basic_setup();
 
   MENU.out(F("Af:"));
   PULSES.show_action_flags(selected_actions);

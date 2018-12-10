@@ -2,29 +2,46 @@
   musicBox.h
 */
 
-#define MUSICBOX_VERSION	alpha 0.004
-#define MUSICBOX_SUB_VERSION	BRACHE_2018-12
+#define MUSICBOX_VERSION	alpha 0.005
 
-#define AUTOMAGIC_CYCLE_TIMING_SECONDS		12*60	// *max seconds*, produce sample pieces
-//#define AUTOMAGIC_CYCLE_TIMING_SECONDS	9*60	// *max seconds*, produce short sample pieces
-//#define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// *max seconds*, produce short sample pieces	BRACHE Dez 2018
-//#define AUTOMAGIC_CYCLE_TIMING_SECONDS	6*60	// *max seconds*, produce *short* sample pieces
-//#define AUTOMAGIC_CYCLE_TIMING_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
+// PRESETS: uncomment *one* (or zero) of the following setups:
+//#define SETUP_BRACHE		BRACHE_2018-12
+//#define SETUP_BAHNPARKPLATZ	BahnParkPlatz 18
+#define SETUP_CHAMBER_ORCHESTRA	The Harmonical Chamber Orchestra 2018-12
+
+
+// pre defined SETUPS:
+#if defined SETUP_BRACHE
+  #define MUSICBOX_SUB_VERSION	SETUP_BRACHE
+  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// *max seconds*, produce short sample pieces	BRACHE Dez 2018
+  #define MUSICBOX_HARD_END_SECONDS		15*60	// SAVETY NET, we're low on energy...
+  #define MUSICBOX_TRIGGER_BLOCK_SECONDS	30	// BRACHE
+
+#elif defined SETUP_BAHNPARKPLATZ
+  #define MUSICBOX_SUB_VERSION			SETUP_BAHNPARKPLATZ
+  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces		BahnParkPlatz 18
+  #define MUSICBOX_TRIGGER_BLOCK_SECONDS	13	// BahnParkPlatz
+
+#elif defined SETUP_CHAMBER_ORCHESTRA
+  #define MUSICBOX_SUB_VERSION			SETUP_CHAMBER_ORCHESTRA
+
+//#define AUTOMAGIC_CYCLE_TIMING_SECONDS	21*60	// *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
+//#define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
+  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// DEBUG *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
+
+  #define MUSICBOX_TRIGGER_BLOCK_SECONDS	1	// debounce only
+
+#endif	// (pre defined setups)
+
+#if ! defined AUTOMAGIC_CYCLE_TIMING_SECONDS
+  //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// *max seconds*, produce short sample pieces	BRACHE Dez 2018
+  //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces		BahnParkPlatz 18
+  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	18*60	// *max seconds*, produce moderate length sample pieces  DEFAULT
+  //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
+#endif
 
 // #define SOME_FIXED_TUNINGS_ONLY		// fixed pitchs only like E A D G C F B  see: HACK_11_11_11_11
 
-//#define DEBUGGING_MUSICBOX
-#if defined DEBUGGING_MUSICBOX
- #define MUSICBOX_PERFORMACE_SECONDS	30
- #define MUSICBOX_TRIGGER_BLOCK_SECONDS	6
- #define MUSICBOX_HARD_END_SECONDS	2*60
-#endif
-
-#if defined BRACHE_NOV_2018_SETTINGS
-  #define MUSICBOX_PERFORMACE_SECONDS	6*60	// BRACHE
-  #define MUSICBOX_TRIGGER_BLOCK_SECONDS	20	// BRACHE
-  #define MUSICBOX_HARD_END_SECONDS	8*60	// BRACHE
-#endif
 
 #include <esp_sleep.h>
 // #include "rom/gpio.h"
@@ -45,13 +62,12 @@
 #endif
 
 #if ! defined MUSICBOX_TRIGGER_BLOCK_SECONDS
-  #define MUSICBOX_TRIGGER_BLOCK_SECONDS	20	// DEFAULT: BRACHE, JÜRG, etc
-//#define MUSICBOX_TRIGGER_BLOCK_SECONDS	3	// DEBUGGING
+  #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3	// just playing, DEBUGGING
 #endif
 
 #if ! defined MUSICBOX_HARD_END_SECONDS		// savety net
   #if defined AUTOMAGIC_CYCLE_TIMING_SECONDS
-    #define  MUSICBOX_HARD_END_SECONDS	(AUTOMAGIC_CYCLE_TIMING_SECONDS*4)	// TODO: first try, FIXME: determine at run time
+    #define  MUSICBOX_HARD_END_SECONDS	(AUTOMAGIC_CYCLE_TIMING_SECONDS*2)	// TODO: first try, FIXME: determine at run time
   #else
     #define  MUSICBOX_HARD_END_SECONDS	90*60	// TODO: review that
   #endif
@@ -196,7 +212,7 @@ void watch_primary_pulses() {
   long diff;
 
   for(int pulse=0; pulse<PL_MAX; pulse++) {
-    if(pulse == musicBox_butler_i)	// for all but the butler ;)
+    if(pulse == musicBox_butler_i)	// for all but the butler ;)	obsolete
       continue;
 
     if(PULSES.pulses[pulse].groups & g_PRIMARY) {
@@ -509,6 +525,9 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
     MENU.out(F("played "));
     PULSES.display_time_human(play_time);
     MENU.ln();
+
+    show_UI_basic_setup();
+    MENU.ln();
   }
 
   delay(777);
@@ -636,10 +655,7 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
   MENU.out(F("CLEANUP "));
 #endif
 
-//MENU.outln("DADA");	// FIXME: TODO: does *not* do what it should...	IMPLEMENT: groups
-//short_info();
   unsigned int deselected = PULSES.deselect_unused_pulses();	// deselect unused (primary) pulses
-//short_info();
   bool do_display = MENU.maybe_display_more(VERBOSITY_SOME);
   /*
   if(do_display) {
@@ -769,6 +785,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
   static uint8_t soft_end_cnt=0;
   static bool soft_cleanup_started=false;
   static int fast_cleanup_minimal_fraction_weighting=slice_weighting({1,4});
+  static uint8_t stop_on_low_cnt=0;
   static short current_slice=0;
   static struct time butler_start_time;
   struct time this_start_time =  PULSES.pulses[pulse].next;	// still unchanged?
@@ -789,6 +806,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     init_primary_counters();
     soft_end_cnt=0;
     soft_cleanup_started=false;
+    stop_on_low_cnt=0;
 
   } else if(PULSES.pulses[pulse].counter==2) {	// now we might have more time for some initialization
 
@@ -869,15 +887,39 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 		MENU.out('.');	// waiting
 	  } else {	// soft_cleanup_started  already
 	    MENU.out(F("s clean "));
-	    //if(this_weighting >= soft_cleanup_minimal_fraction_weighting) {
 	    if(true) {	// FIXME: ################
+	      // TODO: VERBOSITY
 	      MENU.out(fast_cleanup_minimal_fraction_weighting);
 	      MENU.out(F(" | "));
 	      MENU.outln(this_weighting);
-	      if(this_weighting >= fast_cleanup_minimal_fraction_weighting)
-		// stop_on_LOW();				// STOP all low
-		stop_on_LOW_H1();				// STOP now
-	      else
+	      if(this_weighting >= fast_cleanup_minimal_fraction_weighting) {
+		if(stop_on_low_cnt++ == 0) {
+		  // stop_on_LOW();				// STOP all low
+		  stop_on_LOW_H1();				// STOP now
+		}
+
+		if(stop_on_low_cnt > 3) {	// TODO: test&trimm
+		  // remove g_SECONDARY pulses, if gpio is high: one by one
+		  for(int pulse=0; pulse<PL_MAX; pulse++) {
+		    if(PULSES.pulses[pulse].flags && PULSES.pulses[pulse].groups & g_SECONDARY) {
+		      if(MENU.verbosity > VERBOSITY_LOWEST) {
+			MENU.out('X');
+			MENU.out(pulse);
+			MENU.space();
+		      }
+		      if(PULSES.pulses[pulse].flags & HAS_GPIO && PULSES.pulses[pulse].counter & 1) {
+			digitalWrite(PULSES.pulses[pulse].gpio, LOW);	// set GPIO LOW
+			if(MENU.verbosity > VERBOSITY_LOWEST)
+			  MENU.ln();
+			break;						// if was high, then set low *one by one*...
+		      }
+		      PULSES.init_pulse(pulse);				// remove
+		    }
+		  }
+		  if(MENU.verbosity > VERBOSITY_LOWEST)
+		    MENU.ln();
+		}
+	      } else
 		fast_cleanup_minimal_fraction_weighting--;	// relax stop condition
 	    }
 	  }
@@ -1800,7 +1842,7 @@ bool musicBox_reaction(char token) {
     break;
   case ',':
     if (MENU.menu_mode == 0)	// exclude special cases
-      show_UI_settings();	// if called from here, do *not* show selected mask
+      show_UI_basic_setup();
     else
       return false;	// for other menu modes let pulses menu do the work ;)	// TODO: TEST:
     break;
@@ -1871,11 +1913,11 @@ bool musicBox_reaction(char token) {
     show_cycle_pattern ^= 1;
 
     if(MENU.verbosity > VERBOSITY_LOWEST) {
-      if(show_subcycle_position)
+      if(show_cycle_pattern)
 	MENU.out(F("SHOW"));
       else
 	MENU.out(F("do *not show*"));
-      MENU.outln(F(" position in circle"));
+      MENU.outln(F(" cycle pattern"));
     }
     break;
 
