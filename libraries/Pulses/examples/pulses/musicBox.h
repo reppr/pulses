@@ -967,10 +967,10 @@ void select_random_jiffle(void) {
     select_array_in(JIFFLES, pentatonic_descend);
     break;
 
-  case 20: case 21: case 22: case 23: case 24:
+  case 20: case 21: case 22: case 23: case 24: case 29:	// was: too many, see below
     select_array_in(JIFFLES, tumtum);
     break;
-  case 25: case 26: case 27: case 28: case 29:
+  case 25: case 26: case 27:	// case 28: case 29:	// too many, see below
     select_array_in(JIFFLES, jiff_dec128);
     break;
   case 30: case 31: case 32: case 33: case 34:
@@ -1038,7 +1038,7 @@ void select_random_jiffle(void) {
   case 99:
     select_array_in(JIFFLES, d4096_2048);
     break;
-  case 100:
+  case 100: case 28:	// was: too many, see above
     select_array_in(JIFFLES, d4096_1024);
     break;
   case 101:
