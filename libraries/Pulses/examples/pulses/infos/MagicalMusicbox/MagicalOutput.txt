@@ -3175,3 +3175,82 @@ shortest pulse's harmonical cycle: 1' 23"
 2^-7	    1' 23"
 
 sync pause    4.154546s
+
+
+Saiteresonanze
+***************
+
+git grad zuefellig wonderschöni Saiteresonanze uf de Gitarre &co
+AWOKE	wakeup EXT0
+
+start_musicBox()	alpha 0.005	BRACHE_2018-12
+MusicBoxState AWAKE
+2018-12-11_13h29m08s	TUE
+battery control pin: 36	1221	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-11_13h29m08s	TUE
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	european_PENTAtonic
+JIFFLE:	pentatonic_rise
+SYNC:	5
+TIME_U:	1000000	*32768/217
+used SUBCYCLE:	4' 59"
+ <<< * >>>
+
+harmonical cycle:  1h 19' 44"
+shortest pulse's harmonical cycle: 37"
+2^0	1h 19' 44"
+2^-1	   39' 52"
+2^-2	   19' 56"
+2^-3	    9' 58"
+2^-4	    4' 59"	| subcycle |
+2^-5	    2' 29"
+2^-6	    1' 15"
+2^-7	    0' 37"
+
+sync pause    3.892882s
+
+
+Lift Off
+*********
+
+:) :) :) :) :)
+AWOKE	wakeup EXT0
+
+start_musicBox()	alpha 0.005	The Harmonical Chamber Orchestra 2018-12
+2018-12-11_20h48m37s	TUE
+battery control pin: 36	1209	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-11_20h48m37s	TUE
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+lower_audio_if_too_high 0
+62.00000 DEBUG: shortest==0
+60.0000000000000000000000000000000
+SCALE:	doric_scale
+JIFFLE:	PENTAtonic_rise
+SYNC:	5
+TIME_U:	1000000	*32768/217
+play_KB_macro  /2
+used SUBCYCLE:	6' 14"
+ <<< * >>>
+
+harmonical cycle:  49' 50"
+shortest pulse's harmonical cycle: 1' 33"
+2^0	   49' 50"
+2^-1	   24' 55"
+2^-2	   12' 27"
+2^-3	    6' 14"	| subcycle |
+2^-4	    3'  7"
+2^-5	    1' 33"
+
+sync pause    1.946447s
