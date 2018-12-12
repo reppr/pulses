@@ -16,6 +16,8 @@
 #define USE_BATTERY_CONTROL
 //#define USE_LEDC_AUDIO	// not written yet ;)
 
+//#define USE_BLUETOOTH_SERIAL_MENU	// SKETCH GETS TOO BIG ;)
+
 /* **************************************************************** */
 /*
 			pulses.ino
@@ -719,6 +721,10 @@ int8_t musicBox_page=ILLEGAL;	// NOTE: musicBox_page is not used
 #endif
 
 
+#if defined USE_BLUETOOTH_SERIAL_MENU
+  #include "bluetoothSerialMenu.h"
+#endif
+
 int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very first one
 
 void setup() {
@@ -768,6 +774,10 @@ void setup() {
   MENU.out(F("ESP32 revision "));
   MENU.outln(get_ESP32_ChipRevision());
   MENU.ln();
+#endif
+
+#if defined USE_BLUETOOTH_SERIAL_MENU
+  bluetooth_setup();
 #endif
 
 #include "array_descriptors_setup.h"
