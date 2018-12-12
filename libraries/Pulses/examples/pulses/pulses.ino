@@ -279,7 +279,7 @@ unsigned int tetrachord[] = {1,1, 8,9, 4,5, 3,4, 0,0};			// scale each octave	ze
 
 
 // TODO: time (and related stuff should move to Harmonics::
-struct time harmonical_cycle;
+struct time harmonical_cycle;		// TODO: move to Harmonical?
 
 // TODO: move to Harmonical::scale2harmonical_cycle()	################
 struct fraction harmonical_cycle_fraction={1, 1 };
@@ -3277,25 +3277,24 @@ void show_scaling() {
 void show_UI_basic_setup() {
   MENU.out(F("SYNC: "));
   MENU.out(sync);
-  MENU.space();
-  MENU.tab();
+  MENU.space(3);
 
-  MENU.out(F("SCALE:\t"));
+  MENU.out(F("SCALE: "));
   MENU.out(array2name(SCALES, selected_in(SCALES)));
-  MENU.tab();
+  MENU.space(3);
 
-  MENU.out(F("JIFFLE:\t"));
+  MENU.out(F("JIFFLE: "));
   MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
-  MENU.tab();
+  MENU.space(3);
 
   MENU.out(F("SCALING: "));	// FIXME: TODO: check where that *is* used ################
   MENU.out(multiplier);
   MENU.slash();
   MENU.out(divisor);
-  MENU.tab();
+  MENU.space(3);
 
   if (g_inverse)	// FIXME: TODO: check where that *is* used ################
-    MENU.out(F("GPIO BOTTOM UP\t"));
+    MENU.out(F("GPIO BOTTOM UP"));
   MENU.ln();	// maybe...
 }
 

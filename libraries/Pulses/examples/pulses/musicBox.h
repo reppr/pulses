@@ -94,7 +94,7 @@
 struct time musicBox_start_time;
 struct time musicBox_hard_end_time;
 
-struct time cycle;		// TODO: move to Harmonical?
+// struct time harmonical_cycle;	// is in pulses.ino now TODO: move to Harmonical?
 struct time used_subcycle;	// TODO: move to Harmonical? ? ?
 
 /*
@@ -237,10 +237,27 @@ void watch_primary_pulses() {
   }
 }
 
-void show_cycle(struct time cycle) {
+void show_cycles_1line() {	// no scale, no cycle
+  if(selected_in(SCALES)==NULL) {
+    MENU.outln(F("no scale, no cycle"));
+    return;
+  } // else
+
+  // this version assumes harmonical_cycle and used_subcycle *are* set
+  MENU.out(F("harmonical CYCLE: "));
+  PULSES.display_time_human(harmonical_cycle);
+  MENU.out(F("\tSUBCYCLE: | "));
+  PULSES.display_time_human(used_subcycle);
+  MENU.outln('|');
+
+  // TODO: show current position (float)
+  return;
+}
+
+void show_cycle(struct time cycle) {	// maybe obsolete?
   MENU.out(F("\nharmonical cycle:  "));
   if(selected_in(SCALES)==NULL) {
-    MENU.outln(F("no scale"));
+    MENU.outln(F("no scale, no cycle"));
     return;
   }
 
@@ -250,8 +267,10 @@ void show_cycle(struct time cycle) {
   struct time period_x = PULSES.pulses[voices-1].period;	// TODO: do *not* expect it on pulse pulses[voices-1]
   struct time shortest = scale2harmonical_cycle(selected_in(SCALES), &period_x);
 
-  MENU.out(F("shortest pulse's harmonical cycle: "));
-  PULSES.display_time_human(shortest);
+  if(MENU.verbosity >= VERBOSITY_MORE) {
+    MENU.out(F("shortest pulse's harmonical cycle: "));
+    PULSES.display_time_human(shortest);
+  }
   MENU.ln();
 
   int i=0;
@@ -527,6 +546,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
     MENU.ln();
 
     show_UI_basic_setup();
+    show_cycles_1line();
     MENU.ln();
   }
 
@@ -1372,14 +1392,13 @@ void start_musicBox() {
 #endif
 
   struct time period_x = PULSES.pulses[0].period;	// TODO: do *not* expect it on pulse pulses[0]
-  cycle = scale2harmonical_cycle(selected_in(SCALES), &period_x);
-  used_subcycle = cycle;
-  //  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// *max seconds*, sets performance timing based on cycle
+  harmonical_cycle = scale2harmonical_cycle(selected_in(SCALES), &period_x);
+  used_subcycle = harmonical_cycle;
 
 #if defined AUTOMAGIC_CYCLE_TIMING_SECONDS
   used_subcycle={AUTOMAGIC_CYCLE_TIMING_SECONDS*1000000L,0};
   {
-    struct time this_subcycle=cycle;
+    struct time this_subcycle=harmonical_cycle;
     while(true) {
       if(this_subcycle.time <= used_subcycle.time && this_subcycle.overflow==used_subcycle.overflow) {
 	used_subcycle = this_subcycle;
@@ -1390,12 +1409,11 @@ void start_musicBox() {
   }
 #endif
 
-  MENU.out(F("used SUBCYCLE:\t"));
-  PULSES.display_time_human(used_subcycle);
-  MENU.ln();
+  show_cycles_1line();
   MENU.outln(F(" <<< * >>>"));	// end output block
 
-  show_cycle(cycle);
+  if(MENU.verbosity >= VERBOSITY_SOME)
+    show_cycle(harmonical_cycle);	// shows multiple cycle octaves
 
   set_cycle_slice_number(cycle_slices);
 
@@ -1756,7 +1774,7 @@ void musicBox_display() {
   MENU.ln();
 
   MENU.out(F("harmonical cycle 'c'\t"));
-  PULSES.display_time_human_format(cycle);
+  PULSES.display_time_human_format(harmonical_cycle);
   MENU.ln();
 
   MENU.out(F("subcycle\t\t"));
@@ -1841,16 +1859,17 @@ bool musicBox_reaction(char token) {
     musicBox_display();
     break;
   case ',':
-    if (MENU.menu_mode == 0)	// exclude special cases
+    if (MENU.menu_mode == 0) {	// exclude special cases
       show_UI_basic_setup();
-    else
+      show_cycles_1line();
+    } else
       return false;	// for other menu modes let pulses menu do the work ;)	// TODO: TEST:
     break;
   case 'a': // magic_autochanges
     magic_autochanges = !magic_autochanges;
     break;
   case 'c': // show cycle
-    show_cycle(cycle);
+    show_cycle(harmonical_cycle);
     break;
   case 'E': // soft_end_playing(soft_end_days_to_live, soft_end_survive_level);
     soft_end_playing(soft_end_days_to_live, soft_end_survive_level);
