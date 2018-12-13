@@ -3216,7 +3216,7 @@ shortest pulse's harmonical cycle: 37"
 sync pause    3.892882s
 
 
-Lift Off
+LIFT OFF
 *********
 
 :) :) :) :) :)
@@ -3254,3 +3254,47 @@ shortest pulse's harmonical cycle: 1' 33"
 2^-5	    1' 33"
 
 sync pause    1.946447s
+
+
+Chindertanz -- Children's Dance
+*********************************
+
+fröhlich gspunnene chindertanz
+
+
+WOKE	wakeup EXT0
+
+start_musicBox()	alpha 0.005	The Harmonical Chamber Orchestra 2018-12
+MusicBoxState AWAKE
+2018-12-13_10h24m06s	THU
+battery control pin: 36	1204	GOOD	(off <= 1140  low < 1175  high >= 1402  HIGH = 4095)
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-13_10h24m06s	THU
+play_KB_macro  -:M  verbosity more
+setup_bass_middle_high(14, 15, 7)
+tune to scale octaves_fourths_fifths	36 voices
+lower_audio_if_too_high 0
+62.00000 DEBUG: shortest==0
+60.0000000000000000000000000000000
+random scale
+SCALE:	tetrachord
+random jiffle
+JIFFLE:	rising_pent_theme
+random sync
+SYNC:	4
+TIME_U:	1000000	random pitch
+*32768/302
+tune to scale tetrachord	36 voices
+lower_audio_if_too_high 26223
+-5 octaves shifted
+harmonical CYCLE: 57' 17"	SUBCYCLE: | 3' 35" |
+ <<< * >>>
+
+harmonical cycle:  57' 17"
+(2^0) 57' 17"	(2^-1) 28' 39"	(2^-2) 14' 19"	(2^-3) 7' 10"
+|(2^-4) 3' 35" |	(2^-5) 1' 47"	(2^-6) 54"	(2^-7) 27"
+(2^-8)   13.426633s
+sync pause    0.839139s
