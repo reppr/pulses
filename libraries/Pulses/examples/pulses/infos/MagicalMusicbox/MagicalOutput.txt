@@ -3364,3 +3364,70 @@ harmonical cycle:  20' 48"
 (2^-4) 1' 18"	(2^-5) 39"
 
 sync pause    0.812270s
+
+
+Jazzigi Rhythme mit schnarrend schnarchende KnatterKläng
+**********************************************************
+
+
+AUTOSTART 1
+
+start_musicBox()	alpha 0.006	BRACHE_2018-12
+MusicBoxState AWAKE
+2018-12-13_19h42m01s	THU
+battery control pin: 36	1287	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-13_19h42m02s	THU
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	octaves_fifths
+JIFFLE:	diing_ditditdit
+SYNC:	2
+TIME_U:	1000000	*32768/449
+harmonical CYCLE: 4d 13h 36' 6"		SUBCYCLE: | 6' 25" |
+ <<< * >>>
+
+harmonical cycle:  4d 13h 36' 6"
+
+(2^0) 4d 13h 36' 6"	(2^-1) 2d 6h 48' 3"	(2^-2) 1d 3h 24' 1"	(2^-3) 13h 42' 1"
+(2^-4) 6h 51' 0"	(2^-5) 3h 25' 30"	(2^-6) 1h 42' 45"	(2^-7) 51' 23"
+(2^-8) 25' 41"	(2^-9) 12' 51"	|(2^-10) 6' 25" |	(2^-11) 3' 13"
+(2^-12) 1' 36"	(2^-13) 48"	(2^-14) 24"	(2^-15)   12.041108s
+(2^-16)    6.020554s	(2^-17)    3.010277s
+
+sync pause    0.983043s
+
+
+Harmonikale Schrittanz
+************************
+
+AUTOSTART 1
+
+start_musicBox()	alpha 0.006	BRACHE_2018-12
+MusicBoxState AWAKE
+2018-12-13_21h35m38s	THU
+battery control pin: 36	1302	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-13_21h35m38s	THU
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	minor_scale
+JIFFLE:	pentatonic_rise
+SYNC:	0
+TIME_U:	1000000	*32768/234
+play_KB_macro  *2
+harmonical CYCLE: 3h 4' 50"	SUBCYCLE: | 5' 47" |
+ <<< * >>>
+
+harmonical cycle:  3h 4' 50"
+
+(2^0) 3h 4' 50"		(2^-1) 1h 32' 25"	(2^-2) 46' 13"	(2^-3) 23' 6"
+(2^-4) 11' 33"	|(2^-5) 5' 47" |
