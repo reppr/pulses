@@ -254,17 +254,26 @@ void show_cycles_1line() {	// no scale, no cycle
   return;
 }
 
-void show_cycle(struct time cycle) {	// maybe obsolete?
+void show_cycle(struct time cycle) {
   MENU.out(F("\nharmonical cycle:  "));
   if(selected_in(SCALES)==NULL) {
     MENU.outln(F("no scale, no cycle"));
     return;
   }
 
+  int lowest_primary=ILLEGAL, highest_primary=ILLEGAL;
+  for(int pulse=0; pulse<PL_MAX; pulse++) {
+    if(PULSES.pulses[pulse].groups & g_PRIMARY) {
+      if(lowest_primary == ILLEGAL)
+	lowest_primary = pulse;
+      highest_primary = pulse;
+    }
+  }
+
   PULSES.display_time_human(cycle);
   MENU.ln();
 
-  struct time period_x = PULSES.pulses[voices-1].period;	// TODO: do *not* expect it on pulse pulses[voices-1]
+  struct time period_x = PULSES.pulses[highest_primary].period;
   struct time shortest = scale2harmonical_cycle(selected_in(SCALES), &period_x);
 
   if(MENU.verbosity >= VERBOSITY_MORE) {
@@ -277,18 +286,29 @@ void show_cycle(struct time cycle) {	// maybe obsolete?
   //                                   !!!  a tolerance of 128 seemed *not* to be enough
   while(cycle.time >= (used_subcycle.time - 256/*tolerance*/) || \
 	cycle.time >= (shortest.time - 256/*tolerance*/) || \
-	cycle.overflow) {	// display cycle and relevant octaves
-    MENU.out(F("2^"));
-    MENU.out(i--);
-    MENU.tab();
-    PULSES.display_time_human_format(cycle);
-    if(cycle.time == used_subcycle.time)
-      MENU.out(F("\t| subcycle |"));
-    MENU.ln();
+	cycle.overflow)		// display cycle and relevant octaves
+    {
+      if(cycle.time == used_subcycle.time)
+	MENU.out('|');
 
-    PULSES.div_time(&cycle, 2);
-  }
-  MENU.ln();
+      MENU.out(F("(2^"));
+      MENU.out(i--);
+      MENU.out(F(") "));
+      PULSES.display_time_human(cycle);
+
+      if(cycle.time == used_subcycle.time)
+	MENU.out('|');
+
+      if(i % 4)	// 4 items a line
+	MENU.tab();
+      else
+	MENU.ln();
+
+      PULSES.div_time(&cycle, 2);
+    }
+
+  if(i % 4)	// 4 items a line
+    MENU.ln();
 }
 
 int slice_weighting(fraction F) {
@@ -369,17 +389,10 @@ int slice_weighting(fraction F) {
   case 64: weighting++;
   }
 
-  if(F.multiplier > 5 && HARMONICAL.is_small_prime(F.multiplier))
-    weighting--;
+  if(HARMONICAL.is_small_prime(F.multiplier))
+    weighting++;
 
   return weighting;
-}
-
-void show_n_stars(int n) {
-  if(n<0)
-    MENU.out('-');
-  else
-    while (n--) { MENU.out('*'); }
 }
 
 
@@ -430,7 +443,6 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
 
     if(MENU.verbosity >= VERBOSITY_SOME)
       MENU.out(slice_weighting(this_division));
-    //show_n_stars(slice_weighting(this_division));	// nice for debugging
   }
 
   cycle_monitor_last_seen_division++;
@@ -1412,8 +1424,10 @@ void start_musicBox() {
   show_cycles_1line();
   MENU.outln(F(" <<< * >>>"));	// end output block
 
-  if(MENU.verbosity >= VERBOSITY_SOME)
+  if(MENU.verbosity >= VERBOSITY_SOME || true) {
     show_cycle(harmonical_cycle);	// shows multiple cycle octaves
+    MENU.ln();
+  }
 
   set_cycle_slice_number(cycle_slices);
 
