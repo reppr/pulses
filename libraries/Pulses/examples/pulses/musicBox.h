@@ -2,17 +2,17 @@
   musicBox.h
 */
 
-#define MUSICBOX_VERSION	alpha 0.005
+#define MUSICBOX_VERSION	alpha 0.006
 
 // PRESETS: uncomment *one* (or zero) of the following setups:
-//#define SETUP_BRACHE		BRACHE_2018-12
+#define SETUP_BRACHE				BRACHE_2018-12
 //#define SETUP_BAHNPARKPLATZ	BahnParkPlatz 18
-#define SETUP_CHAMBER_ORCHESTRA	The Harmonical Chamber Orchestra 2018-12
+//#define SETUP_CHAMBER_ORCHESTRA	The Harmonical Chamber Orchestra 2018-12
 
 
 // pre defined SETUPS:
 #if defined SETUP_BRACHE
-  #define MUSICBOX_SUB_VERSION	SETUP_BRACHE
+  #define MUSICBOX_SUB_VERSION			SETUP_BRACHE
   #define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// *max seconds*, produce short sample pieces	BRACHE Dez 2018
   #define MUSICBOX_HARD_END_SECONDS		15*60	// SAVETY NET, we're low on energy...
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	30	// BRACHE
@@ -25,9 +25,9 @@
 #elif defined SETUP_CHAMBER_ORCHESTRA
   #define MUSICBOX_SUB_VERSION			SETUP_CHAMBER_ORCHESTRA
 
-//#define AUTOMAGIC_CYCLE_TIMING_SECONDS	21*60	// *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
-//#define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
-  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// DEBUG *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
+  //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	21*60	// *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
+  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
+  //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// DEBUG *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
 
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	1	// debounce only
 
@@ -208,20 +208,32 @@ void init_primary_counters() {
 
 bool show_cycle_pattern=true;
 
+int lowest_primary=ILLEGAL, highest_primary=ILLEGAL;	// remember start configuration
+
+void set_primary_block_bounds() {	// remember where the primary block starts and stops
+  lowest_primary=ILLEGAL;
+  for(int pulse=0; pulse<PL_MAX; pulse++) {
+    if(PULSES.pulses[pulse].groups & g_PRIMARY) {
+      if(lowest_primary == ILLEGAL)
+	lowest_primary = pulse;
+      highest_primary = pulse;
+    }
+  }
+}
+
 void watch_primary_pulses() {
   long diff;
-
-  for(int pulse=0; pulse<PL_MAX; pulse++) {
-    if(pulse == musicBox_butler_i)	// for all but the butler ;)	obsolete
-      continue;
-
+  for(int pulse=highest_primary; pulse>=lowest_primary; pulse--) {
     if(PULSES.pulses[pulse].groups & g_PRIMARY) {
       diff = PULSES.pulses[pulse].counter - primary_counters[pulse];	// has the counter changed?
       primary_counters[pulse]=PULSES.pulses[pulse].counter;		// update to new counter
       if(show_cycle_pattern) {
 	switch(diff) {
 	case 0:		// no change
-	  MENU.space();
+	  if(PULSES.pulses[pulse].flags & COUNTED)
+	    MENU.out(PULSES.pulses[pulse].remaining);	// counted pulse waiting for it's turn
+	  else
+	    MENU.space();
 	  break;
 	case 1:		// primary pulse was called *once*
 	  MENU.out('*');
@@ -233,7 +245,8 @@ void watch_primary_pulses() {
 	    MENU.out(diff);	// DEBUGGING: avoid that to happen
 	}
       } // show pattern
-    }
+    } else	// is *not* g_PRIMARY
+      MENU.out('-');	// was removed, replaced or something
   }
 }
 
@@ -1352,6 +1365,7 @@ void start_musicBox() {
   setup_jiffle_thrower_selected(selected_actions);
 
   PULSES.add_selected_to_group(g_PRIMARY);
+  set_primary_block_bounds();	// remember where the primary block starts and stops
 
   if(!sync_was_set_by_menu) {	// if *not* set by user interaction
     sync = random(6);		// random sync	// MAYBE: define  select_random_sync()  ???
