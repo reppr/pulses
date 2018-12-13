@@ -3298,3 +3298,37 @@ harmonical cycle:  57' 17"
 |(2^-4) 3' 35" |	(2^-5) 1' 47"	(2^-6) 54"	(2^-7) 27"
 (2^-8)   13.426633s
 sync pause    0.839139s
+
+
+Good Old Major Sync3
+**********************
+
+use whole cycle :)
+
+AUTOSTART 1
+
+start_musicBox()	alpha 0.006	The Harmonical Chamber Orchestra 2018-12
+MusicBoxState AWAKE
+2018-12-13_10h47m46s	THU
+battery control pin: 36	1204	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-13_10h47m46s	THU
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	major_scale
+JIFFLE:	d4096_1024
+SYNC:	3
+TIME_U:	1000000	*32768/164
+harmonical CYCLE: 13' 11"	SUBCYCLE: | 6' 36" |
+ <<< * >>>
+
+harmonical cycle:  13' 11"
+
+(2^0) 13' 11"	|(2^-1) 6' 36" |	(2^-2) 3' 18"	(2^-3) 1' 39"
+(2^-4) 49"	(2^-5) 25"
+
+sync pause    1.545290s
