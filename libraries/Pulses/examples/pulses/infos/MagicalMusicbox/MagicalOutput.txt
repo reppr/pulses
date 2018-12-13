@@ -3332,3 +3332,35 @@ harmonical cycle:  13' 11"
 (2^-4) 49"	(2^-5) 25"
 
 sync pause    1.545290s
+
+
+Cosmic SoundWave Visiting Earth
+********************************
+
+WOKE	wakeup EXT0
+
+start_musicBox()	alpha 0.006	BRACHE_2018-12
+MusicBoxState AWAKE
+2018-12-13_16h59m40s	THU
+battery control pin: 36	1262	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-13_16h59m40s	THU
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	major_scale
+JIFFLE:	PENTA_3rd_down_5
+SYNC:	1
+TIME_U:	1000000	*32768/208
+harmonical CYCLE: 20' 48"	SUBCYCLE: | 5' 12" |
+ <<< * >>>
+
+harmonical cycle:  20' 48"
+
+(2^0) 20' 48"	(2^-1) 10' 24"	|(2^-2) 5' 12" |	(2^-3) 2' 36"
+(2^-4) 1' 18"	(2^-5) 39"
+
+sync pause    0.812270s
