@@ -72,6 +72,7 @@
 
 #if defined USE_BLUETOOTH_SERIAL_MENU
   #define MENU_OUTSTREAM2	BLUEtoothSerial
+  #undef USE_WIFI_telnet_menu	// brute force!
 #endif
 
 // do we need WiFi?

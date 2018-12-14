@@ -324,7 +324,7 @@ class Menu {
   char cb_read();		// get oldest byte from the buffer.
 				//   does *not* check if buffer is empty.
   STREAMTYPE & port_;		// output stream	Serial
-  STREAMTYPE & port2_;		// output stream2	WiFi telnet client
+  STREAMTYPE & port2_;		// output stream2	BLUEtoothSerial	   WiFi telnet client
   bool echo_switch;		// switch echo of input to output
 
   // Menu pages:

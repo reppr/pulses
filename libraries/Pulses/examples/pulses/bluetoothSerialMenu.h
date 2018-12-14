@@ -10,10 +10,10 @@
 
 //BluetoothSerial BLUEtoothSerial;
 
-#define BLUETOOTH_NAME	TimePort	// the BT name of the esp32
+#define BLUETOOTH_NAME	HarmonicalSoundWave	// the BT name of the esp32
 
 void bluetooth_setup() {
-  MENU.out(F("BLUETOOTH "));
+  MENU.out(F("BLUETOOTH: "));
   MENU.outln(STRINGIFY(BLUETOOTH_NAME));
   BLUEtoothSerial.begin(STRINGIFY(BLUETOOTH_NAME)); //Bluetooth device name
 }
