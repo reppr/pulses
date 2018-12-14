@@ -279,7 +279,7 @@ unsigned int tetrachord[] = {1,1, 8,9, 4,5, 3,4, 0,0};			// scale each octave	ze
 
 
 // TODO: time (and related stuff should move to Harmonics::
-struct time harmonical_cycle;		// TODO: move to Harmonical?
+struct time harmonical_CYCLE;		// TODO: move to Harmonical?
 
 // TODO: move to Harmonical::scale2harmonical_cycle()	################
 struct fraction harmonical_cycle_fraction={1, 1 };
@@ -313,8 +313,7 @@ struct time scale2harmonical_cycle(unsigned int* scale, struct time* duration) {
   PULSES.mul_time(duration, f_LCM.multiplier);
   PULSES.div_time(duration, f_LCM.divisor);
 
-  harmonical_cycle = *duration;
-  return harmonical_cycle;
+  return *duration;
 }
 
 // TODO: move to Harmonical::	################
