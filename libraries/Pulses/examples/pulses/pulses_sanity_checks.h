@@ -38,3 +38,8 @@
     #define USE_i2c
   #endif
 #endif
+
+#if defined USE_BLUETOOTH_SERIAL_MENU && defined USE_WIFI_telnet_menu
+  #undef USE_WIFI_telnet_menu
+  #warning USE_BLUETOOTH_SERIAL_MENU so #undef USE_WIFI_telnet_menu
+#endif
