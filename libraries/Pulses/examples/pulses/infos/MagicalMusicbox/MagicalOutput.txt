@@ -3493,3 +3493,37 @@ harmonical CYCLE: 2h 41' 19"	SUBCYCLE: | 5' 2" |
  <<< * >>>
 
 harmonical cycle:  2h 41' 19"
+
+
+Good Night Choir
+*****************
+
+AUTOSTART 1
+
+start_musicBox()	alpha 0.007	BRACHE_2018-12
+MusicBoxState AWAKE
+2018-12-14_19h03m53s	FRI
+battery control pin: 36	1247	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-14_19h03m54s	FRI
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	octaves_fourths
+JIFFLE:	pentatonic_descend
+SYNC:	0
+TIME_U:	1000000	*32768/352
+play_KB_macro  *2
+harmonical CYCLE: 17d 11h 24' 48"	SUBCYCLE: | 6' 9" |
+ <<< * >>>
+
+harmonical cycle:  17d 11h 24' 48"
+
+(2^0) 17d 11h 24' 48"	(2^-1) 8d 17h 42' 24"	(2^-2) 4d 8h 51' 12"	(2^-3) 2d 4h 25' 36"
+(2^-4) 1d 2h 12' 48"	(2^-5) 13h 6' 24"	(2^-6) 6h 33' 12"	(2^-7) 3h 16' 36"
+(2^-8) 1h 38' 18"	(2^-9) 49' 9"	(2^-10) 24' 34"		(2^-11) 12' 17"
+|(2^-12) 6' 9" |	(2^-13) 3' 4"	(2^-14) 1' 32"	(2^-15) 46"
+(2^-16) 23"	(2^-17)   11.519440s
