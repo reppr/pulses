@@ -1,5 +1,4 @@
 #define USE_BLUETOOTH_SERIAL_MENU	// SKETCH GETS TOO BIG ;)
-#define SMALL_SKETCH_SIZE_TEST		// keep it small enough to pass ;)
 
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
 #define HARMONICAL_MUSIC_BOX
@@ -895,7 +894,6 @@ void setup() {
   MENU.add_page("Pulses", 'P', \
 		&menu_pulses_display, &menu_pulses_reaction, 'P');
 
-#if ! defined SMALL_SKETCH_SIZE_TEST
   // add softboard page:
   softboard_page = MENU.add_page("Hardware Softboard", 'H',		\
 			 &softboard_display, &softboard_reaction, 'H');
@@ -920,7 +918,6 @@ void setup() {
     // add WiFi page:
   MENU.add_page("WiFi", 'W', &WiFi_menu_display, &WiFi_menu_reaction, 'W');
   #endif
-#endif //  SMALL_SKETCH_SIZE_TEST
 
   #ifdef HARMONICAL_MUSIC_BOX
     // NOTE: musicBox_page is not used

@@ -10,7 +10,7 @@
 
 //BluetoothSerial BLUEtoothSerial;
 
-#define BLUETOOTH_NAME	HarmonicalSoundWave	// the BT name of the esp32
+#define BLUETOOTH_NAME	alpha 0.007	// the BT name of the esp32
 
 void bluetooth_setup() {
   MENU.out(F("BLUETOOTH: "));

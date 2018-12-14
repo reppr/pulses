@@ -2,7 +2,7 @@
   musicBox.h
 */
 
-#define MUSICBOX_VERSION	alpha 0.006
+#define MUSICBOX_VERSION	alpha 0.007
 
 // PRESETS: uncomment *one* (or zero) of the following setups:
 #define SETUP_BRACHE				BRACHE_2018-12
