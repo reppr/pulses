@@ -3560,3 +3560,36 @@ harmonical cycle:  3h 21' 10"
 (2^-4) 12' 34"	|(2^-5) 6' 17" |
 
 sync pause    1.571648s
+
+
+PENTA Classic
+**************
+
+AUTOSTART 1
+
+start_musicBox()	alpha 0.007	BRACHE_2018-12
+MusicBoxState AWAKE
+2018-12-14_19h48m35s	FRI
+battery control pin: 36	1243	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-14_19h48m35s	FRI
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	european_PENTAtonic
+JIFFLE:	up_THRD
+SYNC:	2
+TIME_U:	1000000	*32768/333
+play_KB_macro  *2
+harmonical CYCLE: 1h 43' 55"	SUBCYCLE: | 6' 30" |
+ <<< * >>>
+
+harmonical cycle:  1h 43' 55"
+
+(2^0) 1h 43' 55"	(2^-1) 51' 57"	(2^-2) 25' 59"	(2^-3) 12' 59"
+|(2^-4) 6' 30" |	(2^-5) 3' 15"	(2^-6) 1' 37"	(2^-7) 49"
+
+sync pause    2.029444s
