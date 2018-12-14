@@ -3527,3 +3527,36 @@ harmonical cycle:  17d 11h 24' 48"
 (2^-8) 1h 38' 18"	(2^-9) 49' 9"	(2^-10) 24' 34"		(2^-11) 12' 17"
 |(2^-12) 6' 9" |	(2^-13) 3' 4"	(2^-14) 1' 32"	(2^-15) 46"
 (2^-16) 23"	(2^-17)   11.519440s
+
+
+Classical Beauty
+******************
+
+AUTOSTART 1
+
+start_musicBox()	alpha 0.007	BRACHE_2018-12
+MusicBoxState AWAKE
+2018-12-14_19h37m48s	FRI
+battery control pin: 36	1236	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-14_19h37m49s	FRI
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	doric_scale
+JIFFLE:	d4096_1024
+SYNC:	1
+TIME_U:	1000000	*32768/215
+play_KB_macro  *2
+harmonical CYCLE: 3h 21' 10"	SUBCYCLE: | 6' 17" |
+ <<< * >>>
+
+harmonical cycle:  3h 21' 10"
+
+(2^0) 3h 21' 10"	(2^-1) 1h 40' 35"	(2^-2) 50' 18"	(2^-3) 25' 9"
+(2^-4) 12' 34"	|(2^-5) 6' 17" |
+
+sync pause    1.571648s
