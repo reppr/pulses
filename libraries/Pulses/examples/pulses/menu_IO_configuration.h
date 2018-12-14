@@ -70,10 +70,14 @@
   #endif	  ################ FIXME: temporary:  use Serial unconditionally
 */
 
+#if defined USE_BLUETOOTH_SERIAL_MENU
+  #define MENU_OUTSTREAM2	BLUEtoothSerial
+#endif
+
 // do we need WiFi?
   #ifdef USE_WIFI_telnet_menu	// use WIFI as menu over telnet?
     #if defined(ESP8266)
-  #include <ESP8266WiFi.h>	// breaks:  min() max()   use:  _min() _max()
+	#include <ESP8266WiFi.h>	// breaks:  min() max()   use:  _min() _max()
     #elif defined(ESP32)
 	#include <WiFi.h>	// might break:  min() max()   use:  _min() _max()
     #else
@@ -102,6 +106,11 @@
     if (Serial.available())
       return Serial.read();
 
+  #if defined USE_BLUETOOTH_SERIAL_MENU
+    if (BLUEtoothSerial.available())
+      return BLUEtoothSerial.read();
+  #endif
+
   #ifdef USE_WIFI_telnet_menu
       if (server_client && server_client.connected() && server_client.available())
 	return server_client.read();
@@ -111,11 +120,6 @@
     #ifdef MENU_USE_SERIAL_IN
       if (Serial.available())
 	return Serial.read();
-    #endif
-
-    #ifdef MENU_USE_WiFi_TELNET_IN
-      if (server_client && server_client.connected() && server_client.available())
-	return server_client.read();
     #endif
 */
     return EOF;

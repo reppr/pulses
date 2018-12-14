@@ -1,3 +1,6 @@
+#define USE_BLUETOOTH_SERIAL_MENU	// SKETCH GETS TOO BIG ;)
+#define SMALL_SKETCH_SIZE_TEST		// keep it small enough to pass ;)
+
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
 #define HARMONICAL_MUSIC_BOX
 #define MAGICAL_TOILET_HACKS	// some quick dirty hacks
@@ -10,13 +13,12 @@
 //#define USE_MORSE	// incomplete	DEACTIVATED MORSE OUTPUT, (== PERIPHERAL_POWER_SWITCH_PIN ;)
 //#define USE_INPUTS
 //#define USE_LEDC	// to be written ;)
+
 #define USE_RTC_MODULE
-#define USE_i2c_SCANNER
+//#define USE_i2c_SCANNER
 
 #define USE_BATTERY_CONTROL
 //#define USE_LEDC_AUDIO	// not written yet ;)
-
-//#define USE_BLUETOOTH_SERIAL_MENU	// SKETCH GETS TOO BIG ;)
 
 /* **************************************************************** */
 /*
@@ -69,6 +71,10 @@ using namespace std;	// ESP8266 needs that
 
 #include "pulses_sanity_checks.h"	// check some pp macros
 
+#if defined USE_BLUETOOTH_SERIAL_MENU
+  #include "BluetoothSerial.h"
+  BluetoothSerial BLUEtoothSerial;
+#endif
 
 #if defined USE_i2c
   #include <Wire.h>
@@ -639,7 +645,9 @@ bool sync_was_set_by_menu=false;
 
 
 #ifndef RAM_IS_SCARE	// ################ FIXME: USE_INPUTS default condition ################
-  #define USE_INPUTS
+  #if ! defined SMALL_SKETCH_SIZE_TEST
+    #define USE_INPUTS
+  #endif
 #endif
 
 #ifdef USE_INPUTS
@@ -778,6 +786,7 @@ void setup() {
 
 #if defined USE_BLUETOOTH_SERIAL_MENU
   bluetooth_setup();
+  MENU.ln();
 #endif
 
 #include "array_descriptors_setup.h"
@@ -842,6 +851,10 @@ void setup() {
   #endif	// ESP8266
 #endif // to WiFi or not
 
+#if defined USE_BLUETOOTH_SERIAL_MENU
+  bluetooth_setup();
+#endif
+
 #if defined USE_i2c
   Wire.begin();
 
@@ -882,30 +895,32 @@ void setup() {
   MENU.add_page("Pulses", 'P', \
 		&menu_pulses_display, &menu_pulses_reaction, 'P');
 
+#if ! defined SMALL_SKETCH_SIZE_TEST
   // add softboard page:
-  softboard_page = MENU.add_page("Hardware Softboard", 'H',	\
-		 &softboard_display, &softboard_reaction, 'H');
+  softboard_page = MENU.add_page("Hardware Softboard", 'H',		\
+			 &softboard_display, &softboard_reaction, 'H');
 
-#ifdef USE_INPUTS
-  // add inputs page:
-  MENU.add_page("Inputs", 'I', &inputs_display, &inputs_reaction, 'I');
+  #ifdef USE_INPUTS
+    // add inputs page:
+    MENU.add_page("Inputs", 'I', &inputs_display, &inputs_reaction, 'I');
 
-  int inp=0;
-  INPUTS.setup_analog_read(inp, 0, 8);				// A0, oversample=0
-  INPUTS.setup_raw(inp);					// no calculations
-  INPUTS.selected_inputs |= ++inp;				// selected for editor
+    int inp=0;
+    INPUTS.setup_analog_read(inp, 0, 8);			// A0, oversample=0
+    INPUTS.setup_raw(inp);					// no calculations
+    INPUTS.selected_inputs |= ++inp;				// selected for editor
 
-  INPUTS.setup_analog_read(inp, 0, 8);				// A0, oversample=0
-  INPUTS.setup_raw(inp);					// no calculations
-  INPUTS.setup_linear(inp, 0, 255, 1023, 0, PROPORTIONAL);	// 255*x/1023
-  INPUTS.selected_inputs |= ++inp;				// selected for editor
-#endif
+    INPUTS.setup_analog_read(inp, 0, 8);				// A0, oversample=0
+    INPUTS.setup_raw(inp);					// no calculations
+    INPUTS.setup_linear(inp, 0, 255, 1023, 0, PROPORTIONAL);	// 255*x/1023
+    INPUTS.selected_inputs |= ++inp;				// selected for editor
+  #endif
 
 
-#ifdef USE_WIFI_telnet_menu
-  // add WiFi page:
+  #ifdef USE_WIFI_telnet_menu
+    // add WiFi page:
   MENU.add_page("WiFi", 'W', &WiFi_menu_display, &WiFi_menu_reaction, 'W');
-#endif
+  #endif
+#endif //  SMALL_SKETCH_SIZE_TEST
 
   #ifdef HARMONICAL_MUSIC_BOX
     // NOTE: musicBox_page is not used

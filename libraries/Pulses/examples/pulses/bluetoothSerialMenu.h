@@ -8,13 +8,12 @@
   #error BluetoothSerialMenu.h  bluetooth is not enabled!  please run `make menuconfig` to and enable it
 #endif
 
-BluetoothSerial BluetoothSerial;
+//BluetoothSerial BLUEtoothSerial;
 
 #define BLUETOOTH_NAME	TimePort	// the BT name of the esp32
 
 void bluetooth_setup() {
-  MENU.out(F("Bluetooth "));
+  MENU.out(F("BLUETOOTH "));
   MENU.outln(STRINGIFY(BLUETOOTH_NAME));
-  BluetoothSerial.begin("TimePort"); //Bluetooth device name
-  //  BluetoothSerial.begin(STRINGIFY(BLUETOOTH_NAME)); //Bluetooth device name
+  BLUEtoothSerial.begin(STRINGIFY(BLUETOOTH_NAME)); //Bluetooth device name
 }

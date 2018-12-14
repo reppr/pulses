@@ -63,7 +63,7 @@
     // must be defined before including Pulses
     #define IMPLEMENT_TUNING		// needs float
 
-    #define USE_WIFI_telnet_menu	// use WIFI as menu over telnet?
+    //#define USE_WIFI_telnet_menu	// use WIFI as menu over telnet?
     //#define AUTOSTART_WIFI		// start wifi on booting?  see: WiFi_stuff.ino
 
   #elif defined(__SAM3X8E__)			// Arduino DUE
