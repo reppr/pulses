@@ -3465,3 +3465,31 @@ harmonical cycle:  1h 40' 21"
 |(2^-4) 6' 16" |	(2^-5) 3' 8"	(2^-6) 1' 34"	(2^-7) 47"
 
 sync pause    3.919924s
+
+
+PENTAtonic Clock Organ
+************************
+
+AUTOSTART 1
+
+start_musicBox()	alpha 0.007	BRACHE_2018-12
+MusicBoxState AWAKE
+2018-12-14_18h51m01s	FRI
+battery control pin: 36	1244	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-14_18h51m01s	FRI
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	european_PENTAtonic
+JIFFLE:	diing_ditditdit
+SYNC:	3
+TIME_U:	1000000	*32768/429
+play_KB_macro  *2
+harmonical CYCLE: 2h 41' 19"	SUBCYCLE: | 5' 2" |
+ <<< * >>>
+
+harmonical cycle:  2h 41' 19"
