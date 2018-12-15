@@ -3593,3 +3593,65 @@ harmonical cycle:  1h 43' 55"
 |(2^-4) 6' 30" |	(2^-5) 3' 15"	(2^-6) 1' 37"	(2^-7) 49"
 
 sync pause    2.029444s
+
+
+pentatonic reaching down to rhythm
+************************************
+
+
+AUTOSTART 1
+
+start_musicBox()	alpha 0.007	BRACHE_2018-12
+MusicBoxState AWAKE
+2018-12-15_12h58m14s	SAT
+battery control pin: 36	1219	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-15_12h58m14s	SAT
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	pentatonic_minor
+JIFFLE:	tumtum
+SYNC:	2
+TIME_U:	1000000	*32768/222
+harmonical CYCLE: 1h 37' 25"	SUBCYCLE: | 6' 5" |
+ <<< * >>>
+
+harmonical cycle:  1h 37' 25"
+
+(2^0) 1h 37' 25"	(2^-1) 48' 42"	(2^-2) 24' 21"	(2^-3) 12' 11"
+|(2^-4) 6' 5" |	(2^-5) 3' 3"	(2^-6) 1' 31"	(2^-7) 46"
+
+sync pause    1.522085s
+
+
+Nameless Beauty
+****************
+
+AWOKE	wakeup EXT0
+
+start_musicBox()	alpha 0.007	BRACHE_2018-12
+2018-12-15_15h06m14s	SAT
+battery control pin: 36	1216	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-15_15h06m14s	SAT
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	minor_scale
+JIFFLE:	pentatonic_rise
+SYNC:	0
+TIME_U:	1000000	*32768/223
+harmonical CYCLE: 1h 36' 59"	SUBCYCLE: | 6' 4" |
+ <<< * >>>
+
+harmonical cycle:  1h 36' 59"
+
+(2^0) 1h 36' 59"	(2^-1) 48' 29"	(2^-2) 24' 15"	(2^-3) 12' 7"
+|(2^-4) 6' 4" |	(2^-5) 3' 2"
