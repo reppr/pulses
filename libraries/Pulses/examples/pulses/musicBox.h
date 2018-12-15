@@ -1528,9 +1528,11 @@ void magical_fart_setup(gpio_pin_t sense_pin, gpio_pin_t output_pin) {
 void light_sleep() {	// see: bool go_light_sleep	flag to go sleeping from main loop
   MENU.out(F("light_sleep()\t"));
 
-#if defined USE_BLUETOOTH
-  esp_bluedroid_disable();
-  esp_bt_controller_disable();
+#if defined USE_BLUETOOTH || true	// TODO: fix ################
+  // BLUEtoothSerial.end();	// reboots instaed of sleeping
+  esp_bluedroid_disable();	// without that crashes instead of sleeping
+  //esp_bt_controller_disable();
+  //*BLUEtoothSerial.end();	// accepted here, but still no BT after wakeup
 #endif
 
 #if defined USE_WIFI_telnet_menu
@@ -1588,6 +1590,13 @@ void light_sleep() {	// see: bool go_light_sleep	flag to go sleeping from main l
 
   if (esp_light_sleep_start())
     MENU.error_ln(F("esp_light_sleep_start()"));
+
+#if defined USE_BLUETOOTH || true	// TODO: fix ################
+  esp_bluedroid_enable();	// did not wake up with this one here, now does
+  void bluetooth_setup();	// TODO: fix #include structure
+  //*bluetooth_setup();
+  //esp_bluedroid_enable();	// wakes up *if* after bluetooth_setup(), but no BT
+#endif
 
   MENU.out(F("\nAWOKE\t"));
 
