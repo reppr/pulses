@@ -715,6 +715,10 @@ int8_t musicBox_page=ILLEGAL;	// NOTE: musicBox_page is not used
   #include "ledc_audio.h"
 #endif
 
+#if defined USE_BLUETOOTH_SERIAL_MENU
+  #include "bluetoothSerialMenu.h"
+#endif
+
 #if defined HARMONICAL_MUSIC_BOX
   #include "musicBox.h"
 #endif
@@ -727,10 +731,6 @@ int8_t musicBox_page=ILLEGAL;	// NOTE: musicBox_page is not used
     }
 #endif
 
-
-#if defined USE_BLUETOOTH_SERIAL_MENU
-  #include "bluetoothSerialMenu.h"
-#endif
 
 int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very first one
 
