@@ -1532,11 +1532,11 @@ void light_sleep() {	// see: bool go_light_sleep	flag to go sleeping from main l
 #if defined USE_BLUETOOTH_SERIAL_MENU
   // BLUEtoothSerial.end();	// reboots instead of sleeping
 
-  if(esp_bluedroid_disable())	// without that crashes instead of sleeping
-    MENU.error_ln(F("esp_bluedroid_disable()"));
+  // without esp_bluedroid_disable() crashes instead of sleeping...
+  MENU.ok_or_error_ln(F("esp_bluedroid_disable()"), esp_bluedroid_disable());
 
-  if(esp_bt_controller_disable())	// does no good nor harm
-    MENU.error_ln(F("esp_bt_controller_disable()"));
+  // esp_bt_controller_disable() does no good nor harm
+  MENU.ok_or_error_ln(F("esp_bt_controller_disable()"), esp_bt_controller_disable());
 
   // BLUEtoothSerial.end();	// accepted here, but still no BT after wakeup
 #endif

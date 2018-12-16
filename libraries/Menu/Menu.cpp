@@ -779,6 +779,19 @@ void Menu::error_ln(const char * str)	const {
   outln(str);
 }
 
+// void ok_or_error_ln(char * str, errorflag): output "ERROR: xxxxxxxx nn" or "xxxxxxxx ok"
+void Menu::ok_or_error_ln(const char * str, int error) const {
+  if(error) {
+    out_Error_();
+    out(str);
+    space();
+    outln(error);
+  } else {
+    out(str);
+    outln(" ok");
+  }
+}
+
 // void out_selected_(): output "selected "
 void Menu::out_selected_() const { out(F("selected ")); }
 
