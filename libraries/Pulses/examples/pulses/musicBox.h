@@ -826,6 +826,7 @@ void remove_all_primary_but_butlers() {
     MENU.ln();
 }
 
+// TODO: musicBox_butler(p) LONELY BUTLER CHECK	################
 void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking with slice_tick_period
   static uint8_t soft_end_cnt=0;
   static bool soft_cleanup_started=false;
@@ -1529,10 +1530,15 @@ void light_sleep() {	// see: bool go_light_sleep	flag to go sleeping from main l
   MENU.out(F("light_sleep()\t"));
 
 #if defined USE_BLUETOOTH_SERIAL_MENU
-  // BLUEtoothSerial.end();	// reboots instaed of sleeping
-  esp_bluedroid_disable();	// without that crashes instead of sleeping
-  //esp_bt_controller_disable();
-  //*BLUEtoothSerial.end();	// accepted here, but still no BT after wakeup
+  // BLUEtoothSerial.end();	// reboots instead of sleeping
+
+  if(esp_bluedroid_disable())	// without that crashes instead of sleeping
+    MENU.error_ln(F("esp_bluedroid_disable()"));
+
+  if(esp_bt_controller_disable())	// does no good nor harm
+    MENU.error_ln(F("esp_bt_controller_disable()"));
+
+  // BLUEtoothSerial.end();	// accepted here, but still no BT after wakeup
 #endif
 
 #if defined USE_WIFI_telnet_menu
@@ -1592,10 +1598,17 @@ void light_sleep() {	// see: bool go_light_sleep	flag to go sleeping from main l
     MENU.error_ln(F("esp_light_sleep_start()"));
 
 #if defined USE_BLUETOOTH_SERIAL_MENU
-  esp_bluedroid_enable();	// did not wake up with this one here, now does
-  void bluetooth_setup();	// TODO: fix #include structure
-  //*bluetooth_setup();
-  //esp_bluedroid_enable();	// wakes up *if* after bluetooth_setup(), but no BT
+  /*
+  if(esp_bluedroid_enable())	// did not wake up with this one here, now does, or not ;)
+    MENU.error_ln(F("esp_bluedroid_enable()"));
+  */
+
+  bluetooth_setup();		// does no good, does no harm
+
+  /*
+  if(esp_bluedroid_enable())	// wakes up *if* after bluetooth_setup(), but still no BT
+    MENU.error_ln(F("esp_bluedroid_enable()"));
+  */
 #endif
 
   MENU.out(F("\nAWOKE\t"));
@@ -1832,15 +1845,14 @@ void musicBox_display() {
   MENU.out(F("\t'p' show cycle pattern "));
   MENU.out_ON_off(show_cycle_pattern);
 
-  MENU.out(F("\tautochanges "));
+  MENU.out(F("\t'a' autochanges "));
   MENU.out_ON_off(magic_autochanges);
-  MENU.out(F(" 'a' to toggle"));
 
   MENU.tab();
   MENU.out(F("'c' cycle "));
 
   struct time period_lowest = PULSES.pulses[lowest_primary].period;
-  harmonical_CYCLE = scale2harmonical_cycle(selected_in(SCALES), &period_lowest);
+  harmonical_CYCLE = scale2harmonical_cycle(selected_in(SCALES), &period_lowest); // TODO: rethink ################
   PULSES.display_time_human(harmonical_CYCLE);
   MENU.ln();
 
@@ -1853,7 +1865,7 @@ void musicBox_display() {
   MENU.out(soft_cleanup_minimal_fraction_weighting);
   MENU.outln(F("\thard end='H'"));
 
-  MENU.out(F("\"L\"=stop when low\t\"LL\"=stop only low\t'S'="));
+  MENU.out(F("\"L\"=stop when low\t\"LL\"=stop only low\t'P'="));
 
   if(MusicBoxState == OFF)
     MENU.outln(F("START"));
@@ -1861,31 +1873,12 @@ void musicBox_display() {
     MENU.outln(F("STOP"));
   }
 
-  // TODO: this is duplicated code from void show_UI_settings()...
-  MENU.ln();
-  MENU.out(F("SCALE:\t"));
-  MENU.out(array2name(SCALES, selected_in(SCALES)));
-  MENU.tab();
-
-  MENU.out(F("JIFFLE:\t"));
-  MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
-  MENU.tab();
-
-  /*
-  MENU.out(F("SCALING: "));	// FIXME: TODO: check where that *is* used ################
-  MENU.out(multiplier);
-  MENU.slash();
-  MENU.out(divisor);
-  MENU.tab();
-  */
-
-  MENU.out(F("SYNC: "));
-  MENU.outln(sync);
-  MENU.ln();
+  show_UI_basic_setup();
 
 /*	*deactivated*
   MENU.outln(F("fart='f'"));
 */
+  MENU.ln();
 }
 
 
@@ -1956,7 +1949,7 @@ bool musicBox_reaction(char token) {
     }
     break;
 
-  case 'S': // 'S' Start/Stop	// FIXME: clashes with 'S' in pulses menu ################################
+  case 'P': // 'P' Play start/stop
     if(MusicBoxState != OFF) {
       reset_all_flagged_pulses_GPIO_OFF();
       set_MusicBoxState(OFF);
@@ -1966,7 +1959,7 @@ bool musicBox_reaction(char token) {
       start_musicBox();
     break;
 
-  case 'p': // 'p' switch
+  case 'p': // 'p' switch cycle pattern display
     show_cycle_pattern ^= 1;
 
     if(MENU.verbosity > VERBOSITY_LOWEST) {
