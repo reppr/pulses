@@ -1532,7 +1532,7 @@ void light_sleep() {	// see: bool go_light_sleep	flag to go sleeping from main l
 #if defined USE_BLUETOOTH_SERIAL_MENU
   // BLUEtoothSerial.end();	// reboots instead of sleeping
 
-  // without esp_bluedroid_disable() crashes instead of sleeping...
+  // without esp_bluedroid_disable() crashes instead of sleeping, or crashes soon after waking up
   MENU.ok_or_error_ln(F("esp_bluedroid_disable()"), esp_bluedroid_disable());
 
   // esp_bt_controller_disable() does no good nor harm
@@ -1602,6 +1602,10 @@ void light_sleep() {	// see: bool go_light_sleep	flag to go sleeping from main l
   if(esp_bluedroid_enable())	// did not wake up with this one here, now does, or not ;)
     MENU.error_ln(F("esp_bluedroid_enable()"));
   */
+
+  // TODO: ################ comment?
+  MENU.ok_or_error_ln(F("esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT)"), \
+		      esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT));
 
   bluetooth_setup();		// does no good, does no harm
 
