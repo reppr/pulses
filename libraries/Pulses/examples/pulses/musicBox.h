@@ -1597,13 +1597,15 @@ void light_sleep() {	// see: bool go_light_sleep	flag to go sleeping from main l
   if (esp_light_sleep_start())
     MENU.error_ln(F("esp_light_sleep_start()"));
 
+  MENU.out(F("\nAWOKE\t"));
+
 #if defined USE_BLUETOOTH_SERIAL_MENU
   /*
   if(esp_bluedroid_enable())	// did not wake up with this one here, now does, or not ;)
     MENU.error_ln(F("esp_bluedroid_enable()"));
   */
 
-  // TODO: ################ comment?
+  // first boot: ERROR	TODO: ################ comment?
   MENU.ok_or_error_ln(F("esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT)"), \
 		      esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT));
 
@@ -1614,8 +1616,6 @@ void light_sleep() {	// see: bool go_light_sleep	flag to go sleeping from main l
     MENU.error_ln(F("esp_bluedroid_enable()"));
   */
 #endif
-
-  MENU.out(F("\nAWOKE\t"));
 
   /*
     in some rare cases the trigger woke up the system, but playing was not started

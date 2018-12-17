@@ -785,7 +785,11 @@ void Menu::ok_or_error_ln(const char * str, int error) const {
     out_Error_();
     out(str);
     space();
+#if defined ESP32
+    outln(esp_err_to_name(error));	// display ESP32 ERROR NAMES
+#else
     outln(error);
+#endif
   } else {
     out(str);
     outln(" ok");

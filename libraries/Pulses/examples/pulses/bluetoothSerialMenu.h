@@ -17,17 +17,17 @@ void bluetooth_setup() {
   MENU.out(F("BLUETOOTH: "));
   MENU.outln(STRINGIFY(BLUETOOTH_NAME));
 
-  //
-  if(esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT))
-    MENU.error_ln(F("esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT)"));
+  //	################ comment?
+  MENU.ok_or_error_ln(F("esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT)"), \
+		      esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT));
   //
 
-  /*
-  if(esp_bt_controller_enable(ESP_BT_MODE_BTDM))
-    MENU.error_ln(F("esp_bt_controller_enable(ESP_BT_MODE_BTDM)"));	// ERROR: *only* first time
+  /*	does not help anyway
+  MENU.ok_or_error_ln(F("esp_bt_controller_enable(ESP_BT_MODE_BTDM)"), \
+		      esp_bt_controller_enable(ESP_BT_MODE_BTDM));	// ERROR: *only* first time
   */
 
-  if(BLUEtoothSerial.begin(STRINGIFY(BLUETOOTH_NAME))) //Bluetooth device name
+  if(BLUEtoothSerial.begin(STRINGIFY(BLUETOOTH_NAME))) // Bluetooth device name
     MENU.outln("DADA BEGIN");
   else
     MENU.outln("DADA begin");
