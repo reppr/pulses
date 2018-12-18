@@ -3655,3 +3655,37 @@ harmonical cycle:  1h 36' 59"
 
 (2^0) 1h 36' 59"	(2^-1) 48' 29"	(2^-2) 24' 15"	(2^-3) 12' 7"
 |(2^-4) 6' 4" |	(2^-5) 3' 2"
+
+
+melodischs gfüeg
+******************
+
+AUTOSTART 1
+
+start_musicBox()	alpha 0.007++	BRACHE_2018-12
+MusicBoxState AWAKE
+2018-12-18_11h56m09s	TUE
+battery control pin: 36	1320	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-18_11h56m09s	TUE
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	tetrachord
+JIFFLE:	rising_pent_theme
+SYNC:	1
+TIME_U:	1000000	*32768/420
+play_KB_macro  *2
+harmonical CYCLE: 5h 29' 32"	SUBCYCLE: | 5' 9" |
+ <<< * >>>
+
+harmonical cycle:  5h 29' 32"
+
+(2^0) 5h 29' 32"	(2^-1) 2h 44' 46"	(2^-2) 1h 22' 23"	(2^-3) 41' 12"
+(2^-4) 20' 36"	(2^-5) 10' 18"	|(2^-6) 5' 9" |	(2^-7) 2' 34"
+(2^-8) 1' 17"
+
+sync pause    1.206785s
