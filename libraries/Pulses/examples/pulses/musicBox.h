@@ -1529,15 +1529,21 @@ void light_sleep() {	// see: bool go_light_sleep	flag to go sleeping from main l
   MENU.out(F("light_sleep()\t"));
 
 #if defined USE_BLUETOOTH_SERIAL_MENU
+  bt_status_before_sleeping = show_bt_status();
+
   // BLUEtoothSerial.end();	// reboots instead of sleeping
 
   // without esp_bluedroid_disable() crashes instead of sleeping, or crashes soon after waking up
   MENU.ok_or_error_ln(F("esp_bluedroid_disable()"), esp_bluedroid_disable());
 
+  /*
   // esp_bt_controller_disable() does no good nor harm
   MENU.ok_or_error_ln(F("esp_bt_controller_disable()"), esp_bt_controller_disable());
+  */
 
   // BLUEtoothSerial.end();	// accepted here, but still no BT after wakeup
+
+  show_bt_status();
 #endif
 
 #if defined USE_WIFI_telnet_menu
@@ -1593,8 +1599,7 @@ void light_sleep() {	// see: bool go_light_sleep	flag to go sleeping from main l
   MENU.outln(F("sleep well..."));
   delay(1500);
 
-  if (esp_light_sleep_start())
-    MENU.error_ln(F("esp_light_sleep_start()"));
+  MENU.ok_or_error_ln(F("esp_light_sleep_start()"), esp_light_sleep_start());
 
   MENU.out(F("\nAWOKE\t"));
 
@@ -1604,9 +1609,15 @@ void light_sleep() {	// see: bool go_light_sleep	flag to go sleeping from main l
     MENU.error_ln(F("esp_bluedroid_enable()"));
   */
 
-  // first boot: ERROR	TODO: ################ comment?
+  /* first boot: ERROR	TODO: ################ comment?
   MENU.ok_or_error_ln(F("esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT)"), \
 		      esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT));
+  */
+
+  /*	// is in bluetooth_setup();
+  MENU.ok_or_error_ln(F("esp_bt_controller_enable((esp_bt_mode_t) 0x02)"), \
+		      esp_bt_controller_enable((esp_bt_mode_t) 0x02));
+  */
 
   bluetooth_setup();		// does no good, does no harm
 
