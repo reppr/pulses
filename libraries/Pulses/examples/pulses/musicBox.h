@@ -2,7 +2,7 @@
   musicBox.h
 */
 
-#define MUSICBOX_VERSION	alpha 0.007
+#define MUSICBOX_VERSION	alpha 0.007++
 
 // PRESETS: uncomment *one* (or zero) of the following setups:
 #define SETUP_BRACHE				BRACHE_2018-12
@@ -980,8 +980,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     MENU.tab();
   }
 
-  if(show_subcycle_position)
-    cycle_monitor(pulse);
+  cycle_monitor(pulse);
 
   if(show_cycle_pattern || show_subcycle_position)
     MENU.ln();
