@@ -2,7 +2,7 @@
   musicBox.h
 */
 
-#define MUSICBOX_VERSION	alpha 0.007++
+#define MUSICBOX_VERSION	alpha 0.007+++
 
 // PRESETS: uncomment *one* (or zero) of the following setups:
 #define SETUP_BRACHE				BRACHE_2018-12
@@ -487,9 +487,9 @@ unsigned short soft_end_days_to_live = 1;	// remaining days of life after soft e
 unsigned short soft_end_survive_level = 4;	// the level a pulse must have reached to survive soft end
 struct time soft_end_start_time;
 unsigned long soft_end_cleanup_wait=60*1000000L;	// default 60"
-void soft_end_playing(int days_to_live, int survive_level) {	// initiate soft ending of musicBox
+void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft ending of musicBox
 /*
-  void soft_end_playing(int days_to_live, int survive_level);
+  void start_soft_ending(int days_to_live, int survive_level);
 
   (primary pulses are selected)
   if(MusicBoxState)
@@ -508,7 +508,6 @@ void soft_end_playing(int days_to_live, int survive_level) {	// initiate soft en
   if(MusicBoxState == OFF)
     return;
   */
-
   if(MusicBoxState > ENDING) {		// initiate end
     soft_end_start_time = PULSES.get_now();
     set_MusicBoxState(ENDING);
@@ -520,7 +519,7 @@ void soft_end_playing(int days_to_live, int survive_level) {	// initiate soft en
       PULSES.display_time_human(main_part_duration);
       MENU.ln();
 
-      MENU.out(F("soft_end_playing("));		// info
+      MENU.out(F("start_soft_ending("));		// info
       MENU.out(soft_end_days_to_live);
       MENU.out(F(", "));
       MENU.out(soft_end_survive_level);
@@ -873,7 +872,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     soft_cleanup_started=false;
     stop_on_low_cnt=0;
 
-  } else if(PULSES.pulses[pulse].counter==2) {	// now we might have more time for some initialization
+  } else if(PULSES.pulses[pulse].counter==2) {	// now we might have more time for some setup
 
     struct time trigger_enable_time = {MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000, 0};
     if(MENU.verbosity >= VERBOSITY_SOME) {
@@ -883,7 +882,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     }
     PULSES.add_time(&musicBox_start_time, &trigger_enable_time);
 
-    musicBox_hard_end_time = {MUSICBOX_HARD_END_SECONDS*1000000, 0};
+    musicBox_hard_end_time = {MUSICBOX_HARD_END_SECONDS*1000000, 0};	// savety net: fixed maximal performance duration
     if(MENU.verbosity >= VERBOSITY_SOME) {
       MENU.out(F("butler: prepare hard end "));
       PULSES.display_time_human(musicBox_hard_end_time);
@@ -891,10 +890,10 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     }
     PULSES.add_time(&musicBox_start_time, &musicBox_hard_end_time);
 
-  } else {	// all later wakeups
+  } else {	// all later wakeups, everything is initialised and set up
 
 #if defined USE_BATTERY_CONTROL
-    if((PULSES.pulses[pulse].counter % 5) == 0) {	// keep an eye on the battery
+    if((PULSES.pulses[pulse].counter % 13) == 0) {	// keep an eye on the battery
       if(!assure_battery_level()) {
 	MENU.outln(F("POWER LOW"));
 	HARD_END_playing(true);
@@ -907,13 +906,13 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
       struct time scratch = musicBox_hard_end_time;
       PULSES.sub_time(&this_start_time, &scratch);	// is it time?
       if(scratch.overflow) {			//   negative, so it *is*
-	MENU.out(F("butler: "));
+	MENU.out(F("butler: MUSICBOX_HARD_END_SECONDS "));
 	HARD_END_playing(true);
       }
     }
 #endif
 
-    if(magic_autochanges) {
+    if(magic_autochanges) {	// the butler influences performance and changes phases like ending
       if(soft_end_cnt==0) {	// first time
 	// soft end time could be reprogrammed by user interaction, always compute new:
 	struct time soft_end_time=musicBox_start_time;
@@ -923,7 +922,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 	PULSES.sub_time(&thisNow, &soft_end_time);	// is it time?
 	if(soft_end_time.overflow) {			//   negative, so it *is*
 	  if(soft_end_cnt++ == 0)
-	    soft_end_playing(soft_end_days_to_live, soft_end_survive_level); // start soft end
+	    start_soft_ending(soft_end_days_to_live, soft_end_survive_level); // start soft end
 	}
       } else {	// soft end was called already
 
@@ -1726,7 +1725,7 @@ void deep_sleep() {
 
   enables trigger when due
   then if(magic_autochanges) {
-    start soft_end_playing() and start magical_cleanup()
+    start start_soft_ending() and start magical_cleanup()
     start HARD_END_playing() if cleanup did not detect END already
 */
 //#define DEBUG_BUTLER	TODO: remove debug code
@@ -1754,7 +1753,7 @@ void magical_butler(int p) {	// TODO: OBSOLETE?
     break;
   case 3:	// start soft ending and cleanup pulse, prepare for butler hard end
     if(magic_autochanges)
-      soft_end_playing(soft_end_days_to_live, soft_end_survive_level);
+      start_soft_ending(soft_end_days_to_live, soft_end_survive_level);
     // prepare hard end
 #if defined AUTOMAGIC_CYCLE_TIMING_SECONDS
     {
@@ -1935,8 +1934,8 @@ bool musicBox_reaction(char token) {
   case 'c': // show cycle
     show_cycle(harmonical_CYCLE);
     break;
-  case 'E': // soft_end_playing(soft_end_days_to_live, soft_end_survive_level);
-    soft_end_playing(soft_end_days_to_live, soft_end_survive_level);
+  case 'E': // start_soft_ending(soft_end_days_to_live, soft_end_survive_level);
+    start_soft_ending(soft_end_days_to_live, soft_end_survive_level);
     break;
   case 'd': // soft_end_days_to_live
     input_value = MENU.numeric_input(soft_end_days_to_live);

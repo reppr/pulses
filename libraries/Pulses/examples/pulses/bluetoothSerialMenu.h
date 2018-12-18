@@ -14,7 +14,7 @@
 #if defined MUSICBOX_VERSION
   #define BLUETOOTH_NAME	MUSICBOX_VERSION	// the BT name of esp32
 #else
-  #define BLUETOOTH_NAME	ESP 0.007		// the BT name of esp32
+  #define BLUETOOTH_NAME	ESP 0.007+++		// the BT name of esp32
 #endif
 
 esp_bt_controller_status_t bt_status_before_sleeping = (esp_bt_controller_status_t) 0;
@@ -30,31 +30,24 @@ void bluetooth_setup() {
   MENU.out(F("BLUETOOTH: "));
   MENU.outln(STRINGIFY(BLUETOOTH_NAME));
 
-  /*
-  if(bt_status_before_sleeping) {
-    MENU.ok_or_error_ln(F("esp_bt_controller_enable(bt_status_before_sleeping)"), \
-			esp_bt_controller_enable(bt_status_before_sleeping));
-  }
+  /* debugging
+  show_bt_status();	// reboot: zero, then 2 forever...
+  MENU.tab();
   */
 
   /*
-    MENU.ok_or_error_ln(F("esp_bt_controller_enable(ESP_BT_MODE_BTDM)"), \
-		      esp_bt_controller_enable(ESP_BT_MODE_BTDM));
-  */
-
-  /*	################ comment?
   MENU.ok_or_error_ln(F("esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT)"), \
 		      esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT));
-  */
-
-  /* not even that helps
-  MENU.ok_or_error_ln(F("esp_bt_controller_enable((esp_bt_mode_t) 0x02)"), \
-		      esp_bt_controller_enable((esp_bt_mode_t) 0x02));
   */
 
   /*	does not help anyway
   MENU.ok_or_error_ln(F("esp_bt_controller_enable(ESP_BT_MODE_BTDM)"), \
 		      esp_bt_controller_enable(ESP_BT_MODE_BTDM));	// ERROR: *only* first time
+  */
+
+  /* not even that helps
+  MENU.ok_or_error_ln(F("esp_bt_controller_enable((esp_bt_mode_t) 0x02)"), \
+		      esp_bt_controller_enable((esp_bt_mode_t) 0x02));
   */
 
   MENU.out(F("BLUEtoothSerial.begin("));
