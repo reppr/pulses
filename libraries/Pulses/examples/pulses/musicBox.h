@@ -223,8 +223,12 @@ void set_primary_block_bounds() {	// remember where the primary block starts and
 
 void watch_primary_pulses() {
   long diff;
+  int primary_cnt=0;
+  int secondary_cnt=ILLEGAL;
+
   for(int pulse=highest_primary; pulse>=lowest_primary; pulse--) {
     if(PULSES.pulses[pulse].groups & g_PRIMARY) {
+      primary_cnt++;
       diff = PULSES.pulses[pulse].counter - primary_counters[pulse];	// has the counter changed?
       primary_counters[pulse]=PULSES.pulses[pulse].counter;		// update to new counter
       if(show_cycle_pattern) {
@@ -247,6 +251,19 @@ void watch_primary_pulses() {
       } // show pattern
     } else	// is *not* g_PRIMARY
       MENU.out('-');	// was removed, replaced or something
+  }
+
+  if(primary_cnt == 0 || MENU.verbosity >= VERBOSITY_SOME) {
+    secondary_cnt=0;
+
+    for(int pulse=0; pulse < PL_MAX; pulse++) {
+      if(PULSES.pulses[pulse].groups & g_SECONDARY)
+	secondary_cnt++;
+    }
+
+    MENU.out(F(" S("));
+    MENU.out(secondary_cnt);
+    MENU.out(')');
   }
 }
 
@@ -767,7 +784,7 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
 int stop_on_LOW(void) {	// stops *only* pulses that are low
   int were_high=0;
   if(MENU.verbosity >= VERBOSITY_LOWEST)	// TODO: rethink output
-    MENU.out(F("stop_on_LOW "));
+    MENU.outln(F("stop_on_LOW"));
 
   for(int pulse=0; pulse<PL_MAX; pulse++) {
     if(PULSES.pulses[pulse].flags && PULSES.pulses[pulse].groups & g_SECONDARY) {
@@ -801,6 +818,9 @@ int stop_on_LOW_H1(void) {	// TODO: DEBUG ################
       }
     }
   }
+
+  if(MENU.verbosity >= VERBOSITY_SOME)
+    MENU.ln();
 
   return were_high;
 }
