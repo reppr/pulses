@@ -708,7 +708,7 @@ void musicBox_trigger_got_hot() {	// must be called when magical trigger was det
 //#define DEBUG_CLEANUP  TODO: maybe remove debug code, but can give interesting insights...
 // TODO: rethink
 void magical_cleanup(int p) {	// deselect unused primary pulses, check if playing has ended
-  PULSES.pulses[p].groups |= g_PRIMARY;	// TODO: rethink: maybe, maybe not
+  // PULSES.pulses[p].groups |= g_PRIMARY;	// TODO: rethink: maybe, maybe not
 
   if(!magic_autochanges)	// completely switched off by magic_autochanges==false
     return;			// noop
@@ -717,7 +717,7 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
   MENU.out(F("CLEANUP "));
 #endif
 
-  unsigned int deselected = PULSES.deselect_unused_pulses();	// deselect unused (primary) pulses
+  unsigned int deselected = PULSES.deselect_zombie_primaries();	// deselect deleted primary pulses
   bool do_display = MENU.maybe_display_more(VERBOSITY_SOME);
   /*
   if(do_display) {
@@ -766,7 +766,6 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
       }
     } // flags?
   } // pulse
-  // PULSES.deselect_unused_pulses();	// dopplet gnäht... nütztabernüt
 
   if(do_display) {
     MENU.out(F(" = "));

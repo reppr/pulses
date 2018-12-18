@@ -67,7 +67,6 @@ toggle_selection	KEYWORD2
 clear_selection	KEYWORD2
 select_n	KEYWORD2
 select_from_to	KEYWORD2
-deselect_unused_pulses	KEYWORD2
 pulse_is_selected	KEYWORD2
 how_many_selected	KEYWORD2
 activate_selected_synced_now	KEYWORD2
@@ -125,7 +124,7 @@ deselect_pulse	KEYWORD2
 clear_selection	KEYWORD2
 toggle_selection	KEYWORD2
 select_n	KEYWORD2
-deselect_unused_pulses	KEYWORD2
+deselect_zombie_primaries	KEYWORD2
 select_from_to	KEYWORD2
 pulse_is_selected	KEYWORD2
 how_many_selected	KEYWORD2

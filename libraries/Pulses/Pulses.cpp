@@ -543,12 +543,12 @@ int Pulses::select_n(unsigned int n) {
 }
 
 
-unsigned int Pulses::deselect_unused_pulses() {
+unsigned int Pulses::deselect_zombie_primaries() {
   unsigned int deselected=0;
   for (int pulse=0; pulse<PL_MAX; pulse++) {
     if (pulse_is_selected(pulse))
-      if(pulses[pulse].flags==0) {
-	deselect_pulse(pulse);		// deselect unused pulses
+      if(pulses[pulse].flags==0 && pulses[pulse].groups & g_PRIMARY) {
+	deselect_pulse(pulse);		// deselect unused primary pulses
 	deselected++;
       }
   }
