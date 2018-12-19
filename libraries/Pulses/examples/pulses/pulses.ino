@@ -3298,7 +3298,7 @@ void show_scaling() {
 void show_UI_basic_setup() {
   MENU.out(F("SYNC: "));
   MENU.out(sync);
-  MENU.space(3);
+  MENU.space(4);
 
   MENU.out(F("SCALE: "));
   MENU.out(array2name(SCALES, selected_in(SCALES)));

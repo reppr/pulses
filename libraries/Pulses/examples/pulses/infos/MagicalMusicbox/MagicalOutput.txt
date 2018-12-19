@@ -2388,7 +2388,7 @@ shortest pulse's harmonical cycle:    0.868352s
 2^-6	   45'  3"
 2^-7	   22' 32"
 2^-8	   11' 16"
-2^-9	    5' 38" 	| subcycle |
+2^-9	    5' 38"	| subcycle |
 2^-10	    2' 49"
 2^-11	    1' 24"
 2^-12	    0' 42"
@@ -2493,7 +2493,7 @@ magical tree
 
 maybe as music for the tree woman from Theaterspektakel, Zürich 2018
 
-AWOKE	wakeup EXT0	
+AWOKE	wakeup EXT0
 
 start_musicBox()
 MusicBoxState AWAKE
@@ -2850,11 +2850,11 @@ stimmigsvoll
 mit sehnsucht ufs ziel zue
 
 SCALE:	pentatonic_minor	JIFFLE:	PENTAtonic_descend	SCALING: 1/128	SYNC: 2
-Af:DD...  	voices: 34	verbosity lowest
+Af:DD...	voices: 34	verbosity lowest
 TIME_U:	1000000 microseconds = 1.000000 per second
 
-harmonical cycle 'c'	1h  9' 59" 
-subcycle		    8' 45" 
+harmonical cycle 'c'	1h  9' 59"
+subcycle		    8' 45"
 540 slices='n'     0.972034s
 
 
@@ -3141,7 +3141,7 @@ sync pause    2.275444s
 de Reige vo de Dezämberfee
 ***************************
 
-AWOKE	wakeup EXT0	
+AWOKE	wakeup EXT0
 
 start_musicBox()	alpha 0.004	BRACHE_2018-12
 MusicBoxState AWAKE
@@ -3689,3 +3689,217 @@ harmonical cycle:  5h 29' 32"
 (2^-8) 1' 17"
 
 sync pause    1.206785s
+
+
+
+RhythmicalTroubadourBordun
+****************************
+
+
+AUTOSTART 1
+
+start_musicBox()	alpha 0.007+++	BRACHE_2018-12
+MusicBoxState AWAKE
+2018-12-19_14h13m01s	WED
+battery control pin: 36	1317	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-19_14h13m02s	WED
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	octaves_fourths_fifths
+JIFFLE:	tumtum
+SYNC:	0
+TIME_U:	1000000	*32768/413
+play_KB_macro  *2
+harmonical CYCLE: 11h 10' 15"	SUBCYCLE: | 5' 14" |
+ <<< * >>>
+
+harmonical cycle:  11h 10' 15"
+
+(2^0) 11h 10' 15"	(2^-1) 5h 35' 7"	(2^-2) 2h 47' 34"	(2^-3) 1h 23' 47"
+(2^-4) 41' 53"	(2^-5) 20' 57"	(2^-6) 10' 28"	|(2^-7) 5' 14" |
+(2^-8) 2' 37"	(2^-9) 1' 19"	(2^-10) 39"	(2^-11) 20"
+
+
+
+another melody net
+*******************
+
+esp_light_sleep_start() ok
+
+AWOKE	BLUETOOTH: ESP 0.007+++
+BLUEtoothSerial.begin(ESP 0.007+++) ok
+esp_bt_controller_get_status() 2
+
+wakeup EXT0
+
+start_musicBox()	alpha 0.007+++	BRACHE_2018-12
+2018-12-19_15h29m35s	WED
+battery control pin: 36	1316	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-19_15h29m35s	WED
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	tetrachord
+JIFFLE:	pentatonic_rise
+SYNC:	5
+TIME_U:	1000000	*32768/323
+play_KB_macro  /2
+harmonical CYCLE: 1h 47' 8"	SUBCYCLE: | 6' 42" |
+ <<< * >>>
+
+harmonical cycle:  1h 47' 8"
+
+(2^0) 1h 47' 8"		(2^-1) 53' 34"	(2^-2) 26' 47"	(2^-3) 13' 23"
+|(2^-4) 6' 42" |	(2^-5) 3' 21"	(2^-6) 1' 40"	(2^-7) 50"
+(2^-8) 25"
+
+sync pause    1.961443s
+
+
+
+eifache schöne reige
+**********************
+
+wakeup EXT0
+
+start_musicBox()	alpha 0.007+++	BRACHE_2018-12
+MusicBoxState AWAKE
+2018-12-19_15h49m12s	WED
+battery control pin: 36	1314	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-19_15h49m12s	WED
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	octaves_fourths_fifths
+JIFFLE:	dwn_THRD_up
+SYNC:	4
+TIME_U:	1000000	*32768/354
+play_KB_macro  *2
+harmonical CYCLE: 13h 1' 57"	SUBCYCLE: | 6' 7" |
+ <<< * >>>
+
+harmonical cycle:  13h 1' 57"
+
+(2^0) 13h 1' 57"	(2^-1) 6h 30' 59"	(2^-2) 3h 15' 29"	(2^-3) 1h 37' 45"
+(2^-4) 48' 52"	(2^-5) 24' 26"	(2^-6) 12' 13"	|(2^-7) 6' 7" |
+(2^-8) 3' 3"	(2^-9) 1' 32"	(2^-10) 46"	(2^-11) 23"
+
+sync pause    5.089284s
+
+
+
+another nice simple one
+************************
+
+
+AUTOSTART 1
+
+start_musicBox()	alpha 0.007+++	BRACHE_2018-12
+MusicBoxState AWAKE
+2018-12-19_15h42m05s	WED
+battery control pin: 36	1314	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-19_15h42m05s	WED
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	minor_scale
+JIFFLE:	d4096_512
+SYNC:	5
+TIME_U:	1000000	*32768/228
+play_KB_macro  /2
+harmonical CYCLE: 47' 26"	SUBCYCLE: | 5' 56" |
+ <<< * >>>
+
+harmonical cycle:  47' 26"
+
+(2^0) 47' 26"	(2^-1) 23' 43"	(2^-2) 11' 51"	|(2^-3) 5' 56" |
+(2^-4) 2' 58"	(2^-5) 1' 29"
+
+sync pause    1.852543s
+
+
+
+descending ascending whirles
+******************************
+
+wakeup EXT0
+
+start_musicBox()	alpha 0.007+++	BRACHE_2018-12
+MusicBoxState AWAKE
+2018-12-19_15h57m43s	WED
+battery control pin: 36	1317	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-19_15h57m43s	WED
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+lower_audio_if_too_high 0
+62.00000 DEBUG: shortest==0
+60.0000000000000000000000000000000
+SCALE:	doric_scale
+JIFFLE:	pentatonic_rise
+SYNC:	5
+TIME_U:	1000000	*32768/373
+play_KB_macro  *2
+harmonical CYCLE: 1h 55' 57"	SUBCYCLE: | 3' 37" |
+ <<< * >>>
+
+harmonical cycle:  1h 55' 57"
+
+(2^0) 1h 55' 57"	(2^-1) 57' 59"	(2^-2) 28' 59"	(2^-3) 14' 30"
+(2^-4) 7' 15"	|(2^-5) 3' 37" |
+
+sync pause    4.529522s
+
+
+im Zaubergarte
+****************
+
+TRIGGERED!
+
+start_musicBox()	alpha 0.008	BRACHE_2018-12
+MusicBoxState AWAKE
+2018-12-20_13h11m49s	THU
+battery control pin: 36	1309	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-20_13h11m49s	THU
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	major_scale
+JIFFLE:	penta_3rd_down_5
+SYNC:	1
+TIME_U:	1000000	*32768/262
+play_KB_macro  /2
+harmonical CYCLE: 8' 15"	SUBCYCLE: | 4' 8" |
+ <<< * >>>
+
+harmonical cycle:  8' 15"
+
+(2^0) 8' 15"	|(2^-1) 4' 8" |	(2^-2) 2' 4"	(2^-3) 1' 2"
+(2^-4) 31"	(2^-5)   15.476500s
+
+sync pause 49710d 6h 27' 28"

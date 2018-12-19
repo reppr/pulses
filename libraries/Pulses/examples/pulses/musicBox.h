@@ -2,7 +2,7 @@
   musicBox.h
 */
 
-#define MUSICBOX_VERSION	alpha 0.007+++
+#define MUSICBOX_VERSION	alpha 0.008
 
 // PRESETS: uncomment *one* (or zero) of the following setups:
 #define SETUP_BRACHE				BRACHE_2018-12
@@ -106,8 +106,9 @@ struct time used_subcycle;	// TODO: move to Harmonical? ? ?
    unsigned short cycle_slices = 180;	// test&adapt	sometimes less is more
    unsigned short cycle_slices = 360;	// test&adapt   classical aesthetics?
 */
-unsigned short cycle_slices = 540;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
-//unsigned short cycle_slices = 540*3;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
+unsigned short cycle_slices = 540;	// *DO NOT CHANGE DIRECTLY* use set_cycle_slice_number(n);
+//unsigned short cycle_slices = 540*2;	// *DO NOT CHANGE DIRECTLY* use set_cycle_slice_number(n);
+//unsigned short cycle_slices = 540*3;	// *DO NOT CHANGE DIRECTLY* use set_cycle_slice_number(n);
 
 struct time slice_tick_period;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
 
@@ -148,6 +149,7 @@ void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditional
 	  MENU.outln(musicBox_butler_i);
 	}
       }
+
       musicBox_butler_i = ILLEGAL;				// invalidate pulse index of musicBox_butler(p)
     }
 
@@ -471,8 +473,10 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
     MENU.out((float) this_division.multiplier/this_division.divisor, 6);
     MENU.space(2);
 
-    if(MENU.verbosity >= VERBOSITY_SOME)
+    if(MENU.verbosity >= VERBOSITY_SOME) {
+      MENU.out(F("w="));
       MENU.out(slice_weighting(this_division));
+    }
   }
 
   cycle_monitor_last_seen_division++;
@@ -591,7 +595,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
     MENU.ln();
   }
 
-  delay(777);
+  delay(3200); // aesthetics
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   MENU.out(F("peripheral POWER OFF "));
@@ -599,11 +603,10 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
   MENU.tab();
   MENU.outln(read_battery_level());
   peripheral_power_switch_OFF();
-  delay(800);	// let power go down softly
+  delay(1200);	// let power go down softly
 #endif
 
   reset_all_flagged_pulses_GPIO_OFF();
-  musicBox_butler_i = ILLEGAL;
   set_MusicBoxState(OFF);
   MENU.ln();
 
@@ -711,23 +714,32 @@ void musicBox_trigger_got_hot() {	// must be called when magical trigger was det
 #endif
 
 
+// simple (not absolutely bullet proof) inactivity detection:
+int last_counter_sum=0;	// sum of counters of all relevant pulses
+#define INACTIVITY_LIMIT_TIME	6*1000000	// seconds default inactivity limit	// TODO: trimm
+
 //#define DEBUG_CLEANUP  TODO: maybe remove debug code, but can give interesting insights...
-// TODO: rethink
+
 void magical_cleanup(int p) {	// deselect unused primary pulses, check if playing has ended
-  // PULSES.pulses[p].groups |= g_PRIMARY;	// TODO: rethink: maybe, maybe not
+  static struct time inactivity_limit_time={0,0};
 
   if(!magic_autochanges)	// completely switched off by magic_autochanges==false
     return;			// noop
 
-#if defined DEBUG_CLEANUP
-  MENU.out(F("CLEANUP "));
+#if ! defined DEBUG_CLEANUP
+  if(MENU.verbosity >= VERBOSITY_MORE)
 #endif
+    MENU.out(F("magical_cleanup() "));
 
   unsigned int deselected = PULSES.deselect_zombie_primaries();	// deselect deleted primary pulses
   bool do_display = MENU.maybe_display_more(VERBOSITY_MORE);
   int skipped=0;
   int flagged=0;
+  int counter_sum=0;
   for(int pulse=0; pulse<PL_MAX; pulse++) {
+    if(pulse == p)	// it's always good to exclude the host pulse...
+      continue;
+
     if(PULSES.pulses[pulse].flags) {	// check if playing has ended  activity?
       if(PULSES.pulses[pulse].periodic_do == &musicBox_butler) {
 	if(do_display) {
@@ -750,6 +762,8 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
 	}
 	skipped++;
       } else {
+	counter_sum += PULSES.pulses[pulse].counter;	// sums up all relevant counters to detect inactivity
+
 	if(do_display) {	// show (only) most important group	TODO: make group mnemonics r/w and use here
 	  if(PULSES.pulses[pulse].groups & g_MASTER)
 	    MENU.out('0');
@@ -770,17 +784,39 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
     MENU.outln(flagged);
   }
 
-  if(flagged==0) {
+  if(flagged) {
+    if(counter_sum == last_counter_sum) {	// inactivity detected
+      // long enough?
+      struct time scratch = inactivity_limit_time;
+      struct time just_now = PULSES.get_now();
+      PULSES.sub_time(&just_now, &scratch);	// is it time?
+      if(scratch.overflow) {			//   negative, so it *is*
+	MENU.out(F("inactivity stop\t"));
+	HARD_END_playing(true);			// END
+      }
+      else
+	MENU.out(F("waiting "));
+
+      MENU.out(F("inactive("));
+      MENU.out(counter_sum);
+      MENU.outln(F(") "));
+    } else {					// *something* was awake
+      inactivity_limit_time = PULSES.get_now();
+      PULSES.add_time(INACTIVITY_LIMIT_TIME, &inactivity_limit_time);
+    }
+
+    last_counter_sum = counter_sum;
+  } else { // flagged==0
     if(MENU.verbosity)	// TODO: review
       MENU.outln(F("END reached"));
-    delay(3200); // aesthetics
-    HARD_END_playing(false);
+    HARD_END_playing(false);			// END
   }
-}
+} // magical_cleanup(p)
+
 
 int stop_on_LOW(void) {	// stops *only* pulses that are low
   int were_high=0;
-  if(MENU.verbosity >= VERBOSITY_LOWEST)	// TODO: rethink output
+  if(MENU.verbosity >= VERBOSITY_SOME)
     MENU.outln(F("stop_on_LOW"));
 
   for(int pulse=0; pulse<PL_MAX; pulse++) {
@@ -797,7 +833,7 @@ int stop_on_LOW(void) {	// stops *only* pulses that are low
 int stop_on_LOW_H1(void) {	// TODO: DEBUG ################
   int were_high=0;
 
-  if(MENU.verbosity >= VERBOSITY_SOME)	// TODO: rethink output
+  if(MENU.verbosity >= VERBOSITY_SOME)
     MENU.out(F("stop_on_LOW_H1 "));
 
   if(/*were_high=*/stop_on_LOW()) {
@@ -939,7 +975,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 	}
       } else {	// soft end was called already
 
-	magical_cleanup(pulse/*dummy*/);
+	magical_cleanup(pulse);
 
 	if(MusicBoxState == ENDING) {
 	  if(!soft_cleanup_started) {
@@ -1352,7 +1388,6 @@ void start_musicBox() {
 
 #if defined USE_BATTERY_CONTROL
   show_battery_level();
-  void HARD_END_playing(bool);	// defined below
   if(assure_battery_level())
     MENU.outln(F("power accepted"));
   else {
@@ -1659,17 +1694,6 @@ void light_sleep() {	// see: bool go_light_sleep	flag to go sleeping from main l
     MENU.error_ln(F("esp_bluedroid_enable()"));
   */
 #endif
-
-  /*
-    in some rare cases the trigger woke up the system, but playing was not started
-    so i try calling  musicBox_trigger_got_hot()  from here
-    just pretending trigger was high ;)
-    TODO: test...
-
-    //  musicBox_trigger_got_hot();	// must be called when musicBox trigger was detected high  TODO: TEST: ################
-    deactivated, was probably unrelated
-    TODO: test, remove
-  */
 
   int cause = esp_sleep_get_wakeup_cause();
   // see  https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/system/sleep_modes.html#_CPPv218esp_sleep_source_t

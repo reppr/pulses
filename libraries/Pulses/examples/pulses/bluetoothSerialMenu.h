@@ -14,7 +14,7 @@
 #if defined MUSICBOX_VERSION
   #define BLUETOOTH_NAME	MUSICBOX_VERSION	// the BT name of esp32
 #else
-  #define BLUETOOTH_NAME	ESP 0.007+++		// the BT name of esp32
+  #define BLUETOOTH_NAME	ESP alpha 0.008		// the BT name of esp32
 #endif
 
 esp_bt_controller_status_t bt_status_before_sleeping = (esp_bt_controller_status_t) 0;
