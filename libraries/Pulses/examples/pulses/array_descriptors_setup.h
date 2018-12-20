@@ -112,6 +112,14 @@ REGISTER_JIFFLE(top_RETurn);
 REGISTER_JIFFLE(dwn_THRD);
 REGISTER_JIFFLE(dwn_THRD_up);
 
+REGISTER_JIFFLE(major_rise);
+REGISTER_JIFFLE(major_descend);
+REGISTER_JIFFLE(minor_rise);
+REGISTER_JIFFLE(minor_descend);
+REGISTER_JIFFLE(doric_rise);
+REGISTER_JIFFLE(doric_descend);
+
+
 REGISTER_JIFFLE(doDe_i);	// test only, remove?
 REGISTER_JIFFLE(asdfg);		// test only, remove?
 
