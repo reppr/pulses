@@ -616,7 +616,7 @@ void musicBox_trigger_ON();	// forward declaration
 bool musicBox_trigger_enabled=false;
 bool blocked_trigger_shown=false;	// show only once a run
 
-void activate_musicBox_trigger(int dummy_p) {
+void activate_musicBox_trigger(int dummy_p=ILLEGAL) {
   musicBox_trigger_enabled = true;
   if(MENU.verbosity >= VERBOSITY_LOWEST)
     MENU.outln(F("trigger enabled"));
@@ -694,12 +694,19 @@ void musicBox_trigger_got_hot() {	// must be called when magical trigger was det
   if(musicBox_trigger_enabled) {
     musicBox_trigger_ISR();	// *not* as ISR
     MENU.outln(F("\nTRIGGERED!"));
+
+    if(MusicBoxState != OFF) {
+      reset_all_flagged_pulses_GPIO_OFF();
+      set_MusicBoxState(OFF);
+    }
+
     start_musicBox();
 #if defined PERIPHERAL_POWER_SWITCH_PIN
     peripheral_power_switch_ON();
 #endif
+
+    musicBox_trigger_enabled=false;
   }
-  musicBox_trigger_enabled=false;
 }
 #endif
 
@@ -717,15 +724,7 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
 #endif
 
   unsigned int deselected = PULSES.deselect_zombie_primaries();	// deselect deleted primary pulses
-  bool do_display = MENU.maybe_display_more(VERBOSITY_SOME);
-  /*
-  if(do_display) {
-    if(deselected) {
-      MENU.out(F("removed unused "));
-      MENU.outln(deselected);
-    }
-  }
-  */
+  bool do_display = MENU.maybe_display_more(VERBOSITY_MORE);
   int skipped=0;
   int flagged=0;
   for(int pulse=0; pulse<PL_MAX; pulse++) {
@@ -852,6 +851,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
   static uint8_t stop_on_low_cnt=0;
   static short current_slice=0;
   static struct time butler_start_time;
+  static struct time trigger_enable_time;
   struct time this_start_time =  PULSES.pulses[pulse].next;	// still unchanged?
 
   struct time this_time = PULSES.pulses[pulse].next;		// TODO: verify ################
@@ -871,10 +871,11 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     soft_end_cnt=0;
     soft_cleanup_started=false;
     stop_on_low_cnt=0;
+    musicBox_trigger_enabled=false;	// do we need that?
 
   } else if(PULSES.pulses[pulse].counter==2) {	// now we might have more time for some setup
 
-    struct time trigger_enable_time = {MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000, 0};
+    trigger_enable_time = {MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000, 0};
     if(MENU.verbosity >= VERBOSITY_SOME) {
       MENU.out(F("butler: prepare trigger  "));
       PULSES.display_time_human(trigger_enable_time);
@@ -908,6 +909,18 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
       if(scratch.overflow) {			//   negative, so it *is*
 	MENU.out(F("butler: MUSICBOX_HARD_END_SECONDS "));
 	HARD_END_playing(true);
+      }
+    }
+#endif
+
+#if defined MUSICBOX_TRIGGER_BLOCK_SECONDS
+    if(! musicBox_trigger_enabled) {
+      struct time scratch = trigger_enable_time;
+      PULSES.sub_time(&this_start_time, &scratch);	// is it time?
+      if(scratch.overflow) {				//   negative, so it *is*
+	if(MENU.verbosity >= VERBOSITY_LOWEST)
+	  MENU.out(F("butler: "));
+	activate_musicBox_trigger();
       }
     }
 #endif
@@ -1380,7 +1393,9 @@ void start_musicBox() {
     select_random_jiffle();	//   random jiffle
   MENU.out(F("JIFFLE:\t"));
   MENU.outln(selected_name(JIFFLES));
-  setup_jiffle_thrower_selected(selected_actions);
+
+  next_gpio(0);			// FIXME: TODO: HACK  would destroy an already running configuration....
+  setup_jiffle_thrower_selected(selected_actions);	// FIXME: why does this give 'no free GPIO' ???
 
   PULSES.add_selected_to_group(g_PRIMARY);
   set_primary_block_bounds();	// remember where the primary block starts and stops
