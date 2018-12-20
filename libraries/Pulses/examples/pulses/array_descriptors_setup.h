@@ -22,6 +22,10 @@ REGISTER_SCALE(overnotes);			// 11
 REGISTER_SCALE(scale_rationals);		// 12
 REGISTER_SCALE(octaves_fourths);		// 13
 REGISTER_SCALE(doric_scale);			// 14
+REGISTER_SCALE(pentachord);			// 15
+REGISTER_SCALE(trichord);			// 16
+REGISTER_SCALE(TRIAD);				// 17
+REGISTER_SCALE(triad);				// 18
 
 select_array_in(SCALES, pentatonic_minor);	// default scale
 DB_info(SCALES);

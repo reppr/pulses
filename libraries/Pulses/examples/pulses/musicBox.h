@@ -1061,7 +1061,7 @@ void select_random_scale() {
   if(MENU.maybe_display_more(VERBOSITY_SOME))
     MENU.outln(F("random scale"));
 
-  switch(random(27)) {		// random scale
+  switch(random(32)) {		// random scale
   case 0: case 1: case 3: case 4:
     select_array_in(SCALES, pentatonic_minor);
     break;
@@ -1095,6 +1095,18 @@ void select_random_scale() {
   case 26:
     select_array_in(SCALES, tetrachord);	// +1 for tetrachord
     break;
+  case 27: case 28: case 29:
+    select_array_in(SCALES, pentachord);
+    break;
+  case 30:
+    select_array_in(SCALES, trichord);
+    break;
+  case 31:
+    select_array_in(SCALES, triad);
+    break;
+//  case 32:	// too simple in most cases
+//    select_array_in(SCALES, TRIAD);
+//    break;
   }
   scale_was_set_by_menu = false;
 }
