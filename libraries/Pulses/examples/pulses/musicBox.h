@@ -1119,7 +1119,7 @@ void select_random_jiffle(void) {
   if(MENU.maybe_display_more(VERBOSITY_SOME))
     MENU.outln(F("random jiffle"));
 
-  switch(random(137)) {
+  switch(random(131)) {
   case 0: case 1: case 2: case 3: case 4:
     select_array_in(JIFFLES, PENTAtonic_rise);
     break;
@@ -1232,23 +1232,32 @@ void select_random_jiffle(void) {
   case 108:
     select_array_in(JIFFLES, tanboura);
     break;
-  case 109: case 110: case 111: case 112: case 113:
+  case 109: case 110: case 111:
     select_array_in(JIFFLES, doric_rise);
     break;
-  case 114: case 115: case 116: case 117: case 118:
+  case 112: case 113:
     select_array_in(JIFFLES, minor_rise);
     break;
-  case 119: case 120: case 121: case 122: case 123:
+  case 114:
     select_array_in(JIFFLES, doric_descend);
     break;
-  case 124: case 125: case 126: case 127: case 128:
+  case 115:
     select_array_in(JIFFLES, minor_descend);
     break;
-  case 129: case 130: case 131: case 132: case 133:
+  case 116:
     select_array_in(JIFFLES, major_descend);
     break;
-  case 134: case 135: case 136:
+  case 117: case 118:
     select_array_in(JIFFLES, major_rise);
+    break;
+  case 119: case 120:
+    select_array_in(JIFFLES, pentachord_rise);
+    break;
+  case 121: case 122: case 123: case 124: case 125:
+    select_array_in(JIFFLES, tumtumtum);
+    break;
+  case 126: case 127: case 128: case 129: case 130:
+    select_array_in(JIFFLES, tumtumtumtum);
     break;
   }
 
