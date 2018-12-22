@@ -2,7 +2,7 @@
   musicBox.h
 */
 
-#define MUSICBOX_VERSION	alpha 0.008+	// (maybe used also as BLUETOOTH_NAME)
+#define MUSICBOX_VERSION	alpha 0.009	// (maybe used also as BLUETOOTH_NAME)
 
 // PRESETS: uncomment *one* (or zero) of the following setups:
 #define SETUP_BRACHE				BRACHE_2018-12
@@ -262,7 +262,7 @@ void watch_primary_pulses() {
       MENU.out('-');	// was removed, replaced or something
   }
 
-  if(primary_cnt == 0 || MENU.verbosity >= VERBOSITY_SOME) {
+  if(primary_cnt <= 4 || MENU.verbosity >= VERBOSITY_SOME) {	// test&trimm: 4
     secondary_cnt=0;
 
     for(int pulse=0; pulse < PL_MAX; pulse++) {
@@ -596,6 +596,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
     MENU.out(F("played "));
     PULSES.display_time_human(play_time);
     MENU.ln();
+    MENU.ln();
 
     show_UI_basic_setup();
     show_cycles_1line();
@@ -802,11 +803,14 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
 	HARD_END_playing(true);			// END
       }
       else
-	MENU.out(F("waiting "));
+	if(MENU.verbosity >= VERBOSITY_SOME)
+	  MENU.out(F("waiting "));
 
-      MENU.out(F("inactive("));
-      MENU.out(counter_sum);
-      MENU.outln(F(") "));
+      if(MENU.verbosity >= VERBOSITY_SOME) {
+	MENU.out(F("inactive("));
+	MENU.out(counter_sum);
+	MENU.outln(F(") "));
+      }
     } else {					// *something* was awake
       inactivity_limit_time = PULSES.get_now();
       PULSES.add_time(INACTIVITY_LIMIT_TIME, &inactivity_limit_time);
@@ -814,7 +818,7 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
 
     last_counter_sum = counter_sum;
   } else { // flagged==0
-    if(MENU.verbosity)	// TODO: review
+    if(MENU.verbosity >= VERBOSITY_LOWEST)	// TODO: review
       MENU.outln(F("END reached"));
     HARD_END_playing(false);			// END
   }
@@ -1006,12 +1010,17 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 	      if(MENU.maybe_display_more(VERBOSITY_MORE))
 		MENU.out('.');	// waiting
 	  } else {	// soft_cleanup_started  already
-	    MENU.out(F("s clean "));
+
+	    if(MENU.verbosity >= VERBOSITY_SOME)
+	      MENU.out(F("s clean "));
+
 	    if(true) {	// FIXME: ################
-	      // TODO: VERBOSITY
-	      MENU.out(fast_cleanup_minimal_fraction_weighting);
-	      MENU.out(F(" | "));
-	      MENU.outln(this_weighting);
+	      if(MENU.verbosity >= VERBOSITY_SOME) {
+		MENU.out(fast_cleanup_minimal_fraction_weighting);
+		MENU.out(F(" | "));
+		MENU.outln(this_weighting);
+	      }
+
 	      if(this_weighting >= fast_cleanup_minimal_fraction_weighting) {
 		if(stop_on_low_cnt++ == 0) {
 		  // stop_on_LOW();				// STOP all low
