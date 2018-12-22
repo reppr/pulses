@@ -119,7 +119,7 @@ class Menu;
 #else
   #define CB_SIZE	128
 #endif
-Menu MENU(CB_SIZE, 5, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
+Menu MENU(CB_SIZE, 6, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
 
 
 /* **************** Pulses **************** */
@@ -722,6 +722,7 @@ int8_t musicBox_page=ILLEGAL;	// NOTE: musicBox_page is not used
 
 #if defined USE_BLUETOOTH_SERIAL_MENU
   #include "bluetoothSerialMenu.h"
+  #include "bluetooth_menu_page.h"	// hi jacking USE_BLUETOOTH_SERIAL_MENU
 #endif
 
 #if defined HARMONICAL_MUSIC_BOX
@@ -927,6 +928,10 @@ void setup() {
   #ifdef HARMONICAL_MUSIC_BOX
     // NOTE: musicBox_page is not used
     musicBox_page = MENU.add_page("musicBox", 'M', &musicBox_display, &musicBox_reaction, 'P');
+  #endif
+
+  #if defined  USE_BLUETOOTH_SERIAL_MENU	// hi jacking USE_BLUETOOTH_SERIAL_MENU
+    MENU.add_page("bluetooth", 'B', &bluetooth_menu_display, &bluetooth_menu_reaction, 'P');
   #endif
 
   // display menu at startup, but not in music box

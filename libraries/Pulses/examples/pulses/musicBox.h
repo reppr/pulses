@@ -2,7 +2,7 @@
   musicBox.h
 */
 
-#define MUSICBOX_VERSION	alpha 0.008
+#define MUSICBOX_VERSION	alpha 0.008+	// (maybe used also as BLUETOOTH_NAME)
 
 // PRESETS: uncomment *one* (or zero) of the following setups:
 #define SETUP_BRACHE				BRACHE_2018-12
@@ -46,6 +46,13 @@
 #include <esp_sleep.h>
 // #include "rom/gpio.h"
 // #include "driver/gpio.h"
+// #include <bt/bluedroid/api/include/api/esp_bt_main.h>
+#include <esp_bt_main.h>
+#include <esp_bt.h>
+#include "esp_wifi.h"
+#include "WiFi.h"
+#include "driver/rtc_io.h"
+#include "driver/dac.h"
 
 #include "random_entropy.h"
 
@@ -1624,24 +1631,20 @@ void magical_fart_setup(gpio_pin_t sense_pin, gpio_pin_t output_pin) {
 }
 
 
-// #include <bt/bluedroid/api/include/api/esp_bt_main.h>
-#include <esp_bt_main.h>
-#include <esp_bt.h>
-#include "esp_wifi.h"
-#include "WiFi.h"
-#include "driver/rtc_io.h"
-#include "driver/dac.h"
-
 void light_sleep() {	// see: bool go_light_sleep	flag to go sleeping from main loop
   MENU.out(F("light_sleep()\t"));
 
 #if defined USE_BLUETOOTH_SERIAL_MENU
   bt_status_before_sleeping = show_bt_status();
 
-  // BLUEtoothSerial.end();	// reboots instead of sleeping
+  /*
+  BLUEtoothSerial.end();	// reboots instead of sleeping
+  yield();
+  */
 
   // without esp_bluedroid_disable() crashes instead of sleeping, or crashes soon after waking up
   MENU.ok_or_error_ln(F("esp_bluedroid_disable()"), esp_bluedroid_disable());
+  yield();
 
   /*
   // esp_bt_controller_disable() does no good nor harm
@@ -1709,6 +1712,7 @@ void light_sleep() {	// see: bool go_light_sleep	flag to go sleeping from main l
   MENU.ok_or_error_ln(F("esp_light_sleep_start()"), esp_light_sleep_start());
 
   MENU.out(F("\nAWOKE\t"));
+  yield();
 
 #if defined USE_BLUETOOTH_SERIAL_MENU
   /*

@@ -14,16 +14,34 @@
 #if defined MUSICBOX_VERSION
   #define BLUETOOTH_NAME	MUSICBOX_VERSION	// the BT name of esp32
 #else
-  #define BLUETOOTH_NAME	ESP alpha 0.008		// the BT name of esp32
+  #define BLUETOOTH_NAME	ESP alpha 0.008+	// the BT name of esp32
 #endif
 
-esp_bt_controller_status_t bt_status_before_sleeping = (esp_bt_controller_status_t) 0;
+esp_bt_controller_status_t bt_status_before_sleeping = (esp_bt_controller_status_t) 0;	// debugging only
 
 esp_bt_controller_status_t show_bt_status() {
   MENU.out(F("esp_bt_controller_get_status() "));
   esp_bt_controller_status_t bt_c_status = esp_bt_controller_get_status();
   MENU.outln(bt_c_status);
   return bt_c_status;
+}
+
+bool bluetoothSerialBEGIN() {
+  bool ok;
+
+  MENU.out(F("BLUEtoothSerial.begin("));
+  MENU.out(F(STRINGIFY(BLUETOOTH_NAME)));
+  MENU.out(F(") "));
+
+  ok = BLUEtoothSerial.begin(STRINGIFY(BLUETOOTH_NAME));	// Bluetooth device name
+  yield();
+  if(ok)
+    MENU.outln(F("ok"));
+  else {
+    MENU.outln(F("FAILED"));
+  }
+
+  return ok;
 }
 
 void bluetooth_setup() {
@@ -50,14 +68,8 @@ void bluetooth_setup() {
 		      esp_bt_controller_enable((esp_bt_mode_t) 0x02));
   */
 
-  MENU.out(F("BLUEtoothSerial.begin("));
-  MENU.out(F(STRINGIFY(BLUETOOTH_NAME)));
-  MENU.out(F(") "));
-  if(BLUEtoothSerial.begin(STRINGIFY(BLUETOOTH_NAME))) // Bluetooth device name
-    MENU.outln(F("ok"));
-  else {
-    MENU.outln(F("FAILED"));
-  }
+  bluetoothSerialBEGIN();
+  yield();
 
   show_bt_status();
   MENU.ln();
