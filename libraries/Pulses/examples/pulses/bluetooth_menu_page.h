@@ -6,13 +6,20 @@
 #include <esp_bt.h>
 
 void bluetooth_menu_display() {
-  MENU.outln(F("bluetooth debugging *test interface*\thttp://github.com/reppr/pulses/\n"));
+  MENU.outln(F("simple bluetooth debugging  *test interface*\thttp://github.com/reppr/pulses/\n"));
 
   MENU.outln(STRINGIFY(BLUETOOTH_NAME));
 
-  show_bt_status();	// reboot: zero, then 2 forever...
+  MENU.out(F("BLUEtoothSerial.hasClient() "));
+  if(BLUEtoothSerial.hasClient())
+    MENU.outln(F("YES"));
+  else
+    MENU.outln(F("no"));
 
-  MENU.outln(F("btSerial begin 'S' end 's'\tbluedroid disable 'b' enable 'B'"));
+  show_bt_status();	// reboot: zero, then 2 forever...
+  MENU.ln();
+
+  MENU.outln(F("btSerial begin 'S' end 's' flush 'f'	bluedroid disable 'b' enable 'B'"));
   MENU.outln(F("bt controller enable 'CI' 'CE' 'CB' 'CD'"));
 
   MENU.ln();
@@ -20,6 +27,9 @@ void bluetooth_menu_display() {
 
 bool bluetooth_menu_reaction(char token) {
   switch(token) {
+  case '?':	// hide pulses '?' and restore common reaction
+    MENU.menu_display();
+
   case 'S':
     bluetoothSerialBEGIN();
     yield();
@@ -29,6 +39,10 @@ bool bluetooth_menu_reaction(char token) {
     BLUEtoothSerial.end();
     yield();
     break;
+  case 'f':	// flush();
+    BLUEtoothSerial.flush();
+    break;
+
   case 'b':
     MENU.ok_or_error_ln(F("esp_bluedroid_disable()"), esp_bluedroid_disable());
     yield();
@@ -37,6 +51,7 @@ bool bluetooth_menu_reaction(char token) {
     MENU.ok_or_error_ln(F("esp_bluedroid_enable()"), esp_bluedroid_enable());
     yield();
     break;
+
   case 'C':
     switch (MENU.cb_peek()) {
     case 'I':
@@ -77,7 +92,7 @@ bool bluetooth_menu_reaction(char token) {
     default:
       MENU.restore_input_token();
       return false;
-    }
+    } // Cx compound commands, switch(x) second lettere
     break;
 
   default:
