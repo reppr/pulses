@@ -819,7 +819,7 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
     last_counter_sum = counter_sum;
   } else { // flagged==0
     if(MENU.verbosity >= VERBOSITY_LOWEST)	// TODO: review
-      MENU.outln(F("END reached"));
+      MENU.out(F("END reached\t"));
     HARD_END_playing(false);			// END
   }
 } // magical_cleanup(p)
@@ -1948,18 +1948,20 @@ void musicBox_display() {
 
   MENU.out(F("harmonical cycle 'c'\t"));
   PULSES.display_time_human_format(harmonical_CYCLE);
-  MENU.ln();
+  MENU.tab();
 
-  MENU.out(F("subcycle\t\t"));
-  PULSES.display_time_human_format(used_subcycle);
-  MENU.ln();
-
+  MENU.out(F("subcycle  | "));
+  PULSES.display_time_human(used_subcycle);
+  MENU.outln(F("| \tslices 'N' "));
   MENU.out(cycle_slices);
-  MENU.out(F(" slices='n'  "));
+  MENU.tab();
+
   set_cycle_slice_number(cycle_slices);	// make sure slice_tick_period is ok
   PULSES.display_time_human(slice_tick_period);
   MENU.ln();
+  MENU.ln();
 
+  MENU.outln(F("resync/restart now 'n'"));
   MENU.ln();
 
   MENU.out(F("'o' show position ticker "));
@@ -1983,18 +1985,19 @@ void musicBox_display() {
   MENU.out(soft_end_days_to_live);	// remaining days of life after soft end
   MENU.out(F(", "));
   MENU.out(soft_end_survive_level);	// the level a pulse must have reached to survive soft en
-  MENU.outln(F(")\t'd'=days to survive  'l'=level minimal age 'E'= start soft end now"));
-  MENU.outln(F("'w' minimal weigh "));
-  MENU.out(soft_cleanup_minimal_fraction_weighting);
-  MENU.outln(F("\thard end='H'"));
+  MENU.out(F(")\t'd'=days to survive  'l'=level minimal age 'E'= start soft end now  'w' minimal weigh "));
+  MENU.outln(soft_cleanup_minimal_fraction_weighting);
 
-  MENU.out(F("\"L\"=stop when low\t\"LL\"=stop only low\t'P'="));
+  MENU.outln(F("\"L\"=stop when low\t\"LL\"=stop only low\thard end='H'"));
+  MENU.ln();
 
+  MENU.out(F("'P'="));
   if(MusicBoxState == OFF)
     MENU.outln(F("START"));
   else {
     MENU.outln(F("STOP"));
   }
+  MENU.ln();
 
   show_UI_basic_setup();
 
@@ -2044,7 +2047,29 @@ bool musicBox_reaction(char token) {
   case 'H': // HARD_END_playing(true);
     HARD_END_playing(true);
     break;
-  case 'n': // TODO: review, fix cycle_slices
+
+  case 'n':	// restart now	(like menu pulses 'n')
+    if(musicBox_butler_i != ILLEGAL)	// remove butler
+      PULSES.init_pulse(musicBox_butler_i);
+
+    for(int pulse=0; pulse<PL_MAX; pulse++)
+      if (PULSES.pulse_is_selected(pulse))
+	PULSES.pulses[pulse].counter = 0;	// reset counters of selected pulses
+
+    set_MusicBoxState(AWAKE);
+    musicBox_start_time = PULSES.get_now();
+
+    PULSES.activate_selected_synced_now(sync);	// sync and activate
+
+    // the butler starts just a pad *after* musicBox_start_time
+    musicBox_butler_i =							\
+      PULSES.setup_pulse(&musicBox_butler, ACTIVE, PULSES.get_now(), slice_tick_period);
+    PULSES.pulses[musicBox_butler_i].groups |= g_MASTER;	// savety net, until butler has initialised itself
+
+    stress_event_cnt = -3;	// some stress events will often happen after starting the musicBox
+    break;
+
+  case 'N': // TODO: review, fix cycle_slices
     if((input_value = MENU.numeric_input(cycle_slices) > 0)) {
       set_cycle_slice_number(input_value);
       PULSES.pulses[musicBox_butler_i].period = slice_tick_period;	// a bit adventurous ;)
