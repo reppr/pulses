@@ -786,6 +786,9 @@ void setup() {
 #if defined ESP32
   MENU.out(F("ESP32 revision "));
   MENU.outln(get_ESP32_ChipRevision());
+
+  MENU.out(F("ESP IDF version "));
+  MENU.outln(esp_get_idf_version());
   MENU.ln();
 #endif
 
