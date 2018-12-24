@@ -1644,7 +1644,7 @@ void light_sleep() {	// see: bool go_light_sleep	flag to go sleeping from main l
   MENU.out(F("light_sleep()\t"));
 
 #if defined USE_BLUETOOTH_SERIAL_MENU
-  bt_status_before_sleeping = show_bt_status();
+  bt_status_before_sleeping = esp_bt_controller_get_status();
 
   /*
   BLUEtoothSerial.end();	// reboots instead of sleeping
@@ -1662,7 +1662,8 @@ void light_sleep() {	// see: bool go_light_sleep	flag to go sleeping from main l
 
   // BLUEtoothSerial.end();	// accepted here, but still no BT after wakeup
 
-  show_bt_status();
+  if(MENU.verbosity >= VERBOSITY_SOME)
+    show_bt_controller_status();
 #endif
 
 #if defined USE_WIFI_telnet_menu

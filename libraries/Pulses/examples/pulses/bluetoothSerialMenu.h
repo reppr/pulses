@@ -19,7 +19,7 @@
 
 esp_bt_controller_status_t bt_status_before_sleeping = (esp_bt_controller_status_t) 0;	// debugging only
 
-esp_bt_controller_status_t show_bt_status() {
+esp_bt_controller_status_t show_bt_controller_status() {
   MENU.out(F("esp_bt_controller_get_status() "));
   esp_bt_controller_status_t bt_c_status = esp_bt_controller_get_status();
   MENU.outln(bt_c_status);
@@ -49,7 +49,7 @@ void bluetooth_setup() {
   MENU.outln(STRINGIFY(BLUETOOTH_NAME));
 
   /* debugging
-  show_bt_status();	// reboot: zero, then 2 forever...
+  show_bt_controller_status();	// reboot: zero, then 2 forever...
   MENU.tab();
   */
 
@@ -71,6 +71,8 @@ void bluetooth_setup() {
   bluetoothSerialBEGIN();
   yield();
 
-  show_bt_status();
+  if(MENU.verbosity >= VERBOSITY_SOME)
+    show_bt_controller_status();
+
   MENU.ln();
 }

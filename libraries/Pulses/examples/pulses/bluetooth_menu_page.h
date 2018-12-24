@@ -16,7 +16,7 @@ void bluetooth_menu_display() {
   else
     MENU.outln(F("no"));
 
-  show_bt_status();	// reboot: zero, then 2 forever...
+  show_bt_controller_status();	// reboot: zero, then 2 forever...
   MENU.ln();
 
   MENU.outln(F("btSerial begin 'S' end 's' flush 'f'	bluedroid disable 'b' enable 'B'"));
