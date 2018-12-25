@@ -40,7 +40,7 @@
   //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
 #endif
 
-// #define SOME_FIXED_TUNINGS_ONLY		// fixed pitchs only like E A D G C F B  see: HACK_11_11_11_11
+#define SOME_FIXED_TUNINGS_ONLY		// fixed pitchs only like E A D G C F B  see: HACK_11_11_11_11
 
 
 #include <esp_sleep.h>
@@ -1521,7 +1521,7 @@ void start_musicBox() {
     }
 #else				// some randomly selected metric A=440 tunings for jam sessions like in HACK_11_11_11_11
   if(!pitch_was_set_by_menu)	// if *not* set by user interaction
-    random_fixed_pitches(void);	// random fixed pitches
+    random_fixed_pitches();	// random fixed pitches
   MENU.tab();
   MENU.outln(divisor);	// TODO: define role of multiplier, divisor
 #endif
