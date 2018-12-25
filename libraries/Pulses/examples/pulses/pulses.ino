@@ -777,7 +777,7 @@ void setup() {
   MENU.outln(F("\n\nPULSES  http://github.com/reppr/pulses/\ninitialising\n"));
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN	// output now possible, so give info now
-  MENU.out(F("peripheral POWER "));
+  MENU.out(F("peripheral POWER"));
   MENU.out_ON_off(digitalRead(PERIPHERAL_POWER_SWITCH_PIN));
   MENU.space();
   MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);

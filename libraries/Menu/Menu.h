@@ -256,7 +256,7 @@ class Menu {
   void slash()	const;		// output char '/'
 
   void IPstring(int ip) const;	// output an ip like "192.168.0.1"
-  void out_ON_off(bool flag);	// output either "ON" or "off" depending flag
+  void out_ON_off(bool flag);	// output either " ON" or " off" depending flag
 
   /* Output Control						*/
   bool maybe_display_more(unsigned char verbosity_level=VERBOSITY_SOME); // avoid too much output

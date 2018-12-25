@@ -1965,13 +1965,13 @@ void musicBox_display() {
   MENU.outln(F("resync/restart now 'n'"));
   MENU.ln();
 
-  MENU.out(F("'o' show position ticker "));
+  MENU.out(F("'o' show position ticker"));
   MENU.out_ON_off(show_subcycle_position);
 
-  MENU.out(F("\t'p' show cycle pattern "));
+  MENU.out(F("\t'p' show cycle pattern"));
   MENU.out_ON_off(show_cycle_pattern);
 
-  MENU.out(F("\t'a' autochanges "));
+  MENU.out(F("\t'a' autochanges"));
   MENU.out_ON_off(magic_autochanges);
 
   MENU.tab();
@@ -2024,7 +2024,8 @@ bool musicBox_reaction(char token) {
       return false;	// for other menu modes let pulses menu do the work ;)	// TODO: TEST:
     break;
   case 'a': // magic_autochanges
-    magic_autochanges = !magic_autochanges;
+    MENU.out(F("autochanges"));
+    MENU.out_ON_off(magic_autochanges = !magic_autochanges);
     break;
   case 'c': // show cycle
     show_cycle(harmonical_CYCLE);

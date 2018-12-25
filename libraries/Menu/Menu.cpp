@@ -304,7 +304,8 @@ char Menu::cb_read() {
   }
 
 
-void Menu::out_ON_off(bool flag) {	// output either "ON" or "off" depending flag
+void Menu::out_ON_off(bool flag) {	// output either " ON" or " off" depending flag
+  space();
   if(flag)
     MENU_OUT(F("ON"));
   else
