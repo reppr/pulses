@@ -1996,7 +1996,11 @@ void musicBox_display() {
 
   MENU.out(F("subcycle octave 'O+' 'O-'\tresync/restart now 'n'\t't' metric tuning"));
   MENU.out_ON_off(some_fixed_tunings_only);
-  MENU.ln();
+  MENU.out(F("  'F' "));
+  if(scale_was_set_by_menu && sync_was_set_by_menu && jiffle_was_set_by_menu && pitch_was_set_by_menu && subcycle_was_set_by_menu)
+    MENU.out(F("un"));
+  MENU.outln(F("freeze parameters"));
+
   MENU.ln();
 
   MENU.out(F("'o' show position ticker"));
@@ -2035,11 +2039,7 @@ void musicBox_display() {
   MENU.ln();
 
   show_basic_musicBox_parameters();	// was: show_UI_basic_setup();
-
-  MENU.out(F("'F' "));
-  if(scale_was_set_by_menu && sync_was_set_by_menu && jiffle_was_set_by_menu && pitch_was_set_by_menu && subcycle_was_set_by_menu)
-    MENU.out(F("un"));
-  MENU.outln(F("freeze parameters"));
+  MENU.ln();
 
 /*	*deactivated*
   MENU.outln(F("fart='f'"));
@@ -2181,6 +2181,9 @@ bool musicBox_reaction(char token) {
       jiffle_was_set_by_menu = true;
       pitch_was_set_by_menu = true;
       subcycle_was_set_by_menu=true;
+
+      show_basic_musicBox_parameters();
+      show_cycles_1line();
     }
     break;
 
