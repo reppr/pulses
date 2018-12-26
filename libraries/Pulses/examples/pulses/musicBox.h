@@ -34,9 +34,9 @@
 #endif	// (pre defined setups)
 
 #if ! defined AUTOMAGIC_CYCLE_TIMING_SECONDS
-  //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// *max seconds*, produce short sample pieces	BRACHE Dez 2018
+  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// *max seconds*, produce short sample pieces	BRACHE Dez 2018
   //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces		BahnParkPlatz 18
-  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	18*60	// *max seconds*, produce moderate length sample pieces  DEFAULT
+  //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	18*60	// *max seconds*, produce moderate length sample pieces  DEFAULT
   //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
 #endif
 
@@ -103,6 +103,7 @@ struct time musicBox_hard_end_time;
 
 // struct time harmonical_CYCLE;	// is in pulses.ino now TODO: move to Harmonical?
 struct time used_subcycle;	// TODO: move to Harmonical? ? ?
+bool subcycle_was_set_by_menu=false;
 
 /*
   select something like
@@ -1125,6 +1126,7 @@ void select_random_scale() {
 //    break;
   }
   scale_was_set_by_menu = false;
+  subcycle_was_set_by_menu = false;
 }
 
 
@@ -1332,6 +1334,7 @@ void random_fixed_pitches(void) {
     //    divisor=247; // 246.94	// B3  ***not*** harmonical  }
   }
   pitch_was_set_by_menu = false;
+  subcycle_was_set_by_menu = false;
 }
 
 void random_octave_shift(void) {
@@ -1517,13 +1520,12 @@ void start_musicBox() {
     if(!pitch_was_set_by_menu) {	// if *not* set by user interaction
       divisor = random(160, 450);	// *not* tuned for other instruments
       if(MENU.maybe_display_more(VERBOSITY_SOME))
-	MENU.outln(F("random pitch"));
+	MENU.out(F("random pitch\t"));
     }
 #else				// some randomly selected metric A=440 tunings for jam sessions like in HACK_11_11_11_11
   if(!pitch_was_set_by_menu)	// if *not* set by user interaction
     random_fixed_pitches();	// random fixed pitches
   MENU.tab();
-  MENU.outln(divisor);	// TODO: define role of multiplier, divisor
 #endif
 
   MENU.out('*');
@@ -1532,9 +1534,10 @@ void start_musicBox() {
   MENU.outln(divisor);	// TODO: define role of multiplier, divisor
 
   tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));	// TODO: define role of multiplier, divisor
-  lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
-
-  random_octave_shift();  // random octave shift
+  if(!pitch_was_set_by_menu) {		// if *not* set by user interaction
+    random_octave_shift();		// random octave shift
+    lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
+  }
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
     peripheral_power_switch_ON();
@@ -1542,11 +1545,11 @@ void start_musicBox() {
 
   struct time period_lowest = PULSES.pulses[lowest_primary].period;
   harmonical_CYCLE = scale2harmonical_cycle(selected_in(SCALES), &period_lowest);
-  used_subcycle = harmonical_CYCLE;
 
+  if(!subcycle_was_set_by_menu) {
+    used_subcycle = harmonical_CYCLE;
 #if defined AUTOMAGIC_CYCLE_TIMING_SECONDS
-  used_subcycle={AUTOMAGIC_CYCLE_TIMING_SECONDS*1000000L,0};
-  {
+    used_subcycle={AUTOMAGIC_CYCLE_TIMING_SECONDS*1000000L,0};
     struct time this_subcycle=harmonical_CYCLE;
     while(true) {
       if(this_subcycle.time <= used_subcycle.time && this_subcycle.overflow==used_subcycle.overflow) {
@@ -1555,8 +1558,8 @@ void start_musicBox() {
       }
       PULSES.div_time(&this_subcycle, 2);
     }
-  }
 #endif
+  }
 
   show_cycles_1line();
   MENU.outln(F(" <<< * >>>"));	// end output block
@@ -1876,6 +1879,38 @@ void magical_butler(int p) {	// TODO: OBSOLETE?
 } // magical_butler()	OBSOLETE
 
 
+void tag_randomness(bool user_selected) {
+  if(user_selected)
+    MENU.out('!');
+  else
+    MENU.out('~');
+  MENU.space();
+}
+
+void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
+  tag_randomness(scale_was_set_by_menu);
+  MENU.out(F("SCALE: "));
+  MENU.out(array2name(SCALES, selected_in(SCALES)));
+  MENU.space(5);
+
+  tag_randomness(sync_was_set_by_menu);
+  MENU.out(F("SYNC: "));
+  MENU.out(sync);
+  MENU.space(5);
+
+  tag_randomness(jiffle_was_set_by_menu);
+  MENU.out(F("JIFFLE: "));
+  MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
+  MENU.space(5);
+
+  tag_randomness(pitch_was_set_by_menu);
+  MENU.out(F("SCALING: "));	// FIXME: TODO: check where that *is* used ################
+  MENU.out(multiplier);
+  MENU.slash();
+  MENU.out(divisor);
+  MENU.space(5);
+}
+
 /* **************************************************************** */
 void musicBox_setup() {	// TODO:update
   MENU.ln();
@@ -1953,16 +1988,15 @@ void musicBox_display() {
 
   MENU.out(F("subcycle  | "));
   PULSES.display_time_human(used_subcycle);
-  MENU.outln(F("| \tslices 'N' "));
+  MENU.out(F("| \tslices 'N' "));
   MENU.out(cycle_slices);
   MENU.tab();
 
   set_cycle_slice_number(cycle_slices);	// make sure slice_tick_period is ok
   PULSES.display_time_human(slice_tick_period);
   MENU.ln();
-  MENU.ln();
 
-  MENU.outln(F("resync/restart now 'n'"));
+  MENU.outln(F("subcycle octave 'O+' 'O-'\tresync/restart now 'n'"));
   MENU.ln();
 
   MENU.out(F("'o' show position ticker"));
@@ -2000,7 +2034,12 @@ void musicBox_display() {
   }
   MENU.ln();
 
-  show_UI_basic_setup();
+  show_basic_musicBox_parameters();	// was: show_UI_basic_setup();
+
+  MENU.out(F("'F' "));
+  if(scale_was_set_by_menu && sync_was_set_by_menu && jiffle_was_set_by_menu && pitch_was_set_by_menu && subcycle_was_set_by_menu)
+    MENU.out(F("un"));
+  MENU.outln(F("freeze parameters"));
 
 /*	*deactivated*
   MENU.outln(F("fart='f'"));
@@ -2121,6 +2160,42 @@ bool musicBox_reaction(char token) {
     }
     break;
 
+  case 'F':	// freeze-unfreeze parameters
+    if(scale_was_set_by_menu && sync_was_set_by_menu && jiffle_was_set_by_menu && pitch_was_set_by_menu && subcycle_was_set_by_menu) {
+      MENU.outln(F("unfixed"));
+      scale_was_set_by_menu = false;
+      sync_was_set_by_menu = false;
+      jiffle_was_set_by_menu = false;
+      pitch_was_set_by_menu = false;
+      subcycle_was_set_by_menu=false;
+    } else {
+      MENU.outln(F("fixed"));
+      scale_was_set_by_menu = true;
+      sync_was_set_by_menu = true;
+      jiffle_was_set_by_menu = true;
+      pitch_was_set_by_menu = true;
+      subcycle_was_set_by_menu=true;
+    }
+    break;
+
+  case 'O':
+    if(MENU.cb_peek() == '-') {
+      MENU.drop_input_token();
+      PULSES.div_time(&used_subcycle,2);
+    } else {
+      PULSES.mul_time(&used_subcycle,2);
+      if(MENU.cb_peek() == '+')		// '+' is default, anyway
+	MENU.drop_input_token();
+    }
+    show_cycles_1line();
+    subcycle_was_set_by_menu=true;
+    set_cycle_slice_number(cycle_slices);	// make sure slice_tick_period is ok
+    break;
+
+  case 'D':	// REMOVE: ################
+    pitch_was_set_by_menu = true;
+    MENU.outln(F("pitch freezed"));
+    break;
 /*
   void furzificate() {	// switch to a quiet, farting patterns, u.a.
   very simple one shot implementation
