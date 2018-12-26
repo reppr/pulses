@@ -9,6 +9,7 @@
 #ifndef PROJECT_CONFIGURATION_H
 
 #if defined HACK_11_11_11_11	// hacked a setup for MagicalGuitar 11.11.2018 Zürich ;)
+#error remove HACK_11_11_11_11
   #if ! defined SOME_FIXED_TUNINGS_ONLY	// for jam sessions with metric tuned instruments
     #define SOME_FIXED_TUNINGS_ONLY
   #endif

@@ -40,8 +40,7 @@
   //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
 #endif
 
-#define SOME_FIXED_TUNINGS_ONLY		// fixed pitchs only like E A D G C F B  see: HACK_11_11_11_11
-
+bool some_fixed_tunings_only=false;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY  see: HACK_11_11_11_11
 
 #include <esp_sleep.h>
 // #include "rom/gpio.h"
@@ -1513,21 +1512,20 @@ void start_musicBox() {
   multiplier *= 8;	// TODO: adjust appropriate...
 
   // random pitch
-#if ! defined SOME_FIXED_TUNINGS_ONLY	// random tuning // TODO: make that a run time option
-  #if defined RANDOM_ENTROPY_H
-    random_entropy();	// entropy from hardware
-  #endif
-    if(!pitch_was_set_by_menu) {	// if *not* set by user interaction
+  if(!pitch_was_set_by_menu) {	// if *not* set by user interaction
+    if(!some_fixed_tunings_only) {	// RANDOM tuning?
+#if defined RANDOM_ENTROPY_H
+      random_entropy();	// entropy from hardware
+#endif
+
       divisor = random(160, 450);	// *not* tuned for other instruments
       if(MENU.maybe_display_more(VERBOSITY_SOME))
 	MENU.out(F("random pitch\t"));
+    } else {			// *some RANDOMLY selected METRIC A=440 tunings* for jam sessions like in HACK_11_11_11_11
+      random_fixed_pitches();	// random *fixed* pitches
+      MENU.tab();
     }
-#else				// some randomly selected metric A=440 tunings for jam sessions like in HACK_11_11_11_11
-  if(!pitch_was_set_by_menu)	// if *not* set by user interaction
-    random_fixed_pitches();	// random fixed pitches
-  MENU.tab();
-#endif
-
+  }
   MENU.out('*');
   MENU.out(multiplier);	// TODO: define role of multiplier, divisor
   MENU.slash();
@@ -1996,7 +1994,9 @@ void musicBox_display() {
   PULSES.display_time_human(slice_tick_period);
   MENU.ln();
 
-  MENU.outln(F("subcycle octave 'O+' 'O-'\tresync/restart now 'n'"));
+  MENU.out(F("subcycle octave 'O+' 'O-'\tresync/restart now 'n'\t't' metric tuning"));
+  MENU.out_ON_off(some_fixed_tunings_only);
+  MENU.ln();
   MENU.ln();
 
   MENU.out(F("'o' show position ticker"));
@@ -2158,6 +2158,12 @@ bool musicBox_reaction(char token) {
 	MENU.out(F("do *not show*"));
       MENU.outln(F(" cycle pattern"));
     }
+    break;
+
+  case 't':	// tuning: toggle some_fixed_tunings_only
+    MENU.out(F("fixed metric tunings"));
+    MENU.out_ON_off(some_fixed_tunings_only = !some_fixed_tunings_only);
+    MENU.ln();
     break;
 
   case 'F':	// freeze-unfreeze parameters
