@@ -228,6 +228,13 @@ void set_primary_block_bounds() {	// remember where the primary block starts and
       highest_primary = pulse;
     }
   }
+
+  if(MENU.verbosity >= VERBOSITY_MORE) {
+    MENU.out("primaries from ");
+    MENU.out(lowest_primary);
+    MENU.out(" to ");
+    MENU.outln(highest_primary);
+  }
 }
 
 void watch_primary_pulses() {
@@ -240,24 +247,26 @@ void watch_primary_pulses() {
       primary_cnt++;
       diff = PULSES.pulses[pulse].counter - primary_counters[pulse];	// has the counter changed?
       primary_counters[pulse]=PULSES.pulses[pulse].counter;		// update to new counter
+
       if(show_cycle_pattern) {
-	switch(diff) {
-	case 0:		// no change
+	if(diff == 0) {		// no change
 	  if(PULSES.pulses[pulse].flags & COUNTED)
-	    MENU.out(PULSES.pulses[pulse].remaining);	// counted pulse waiting for it's turn
+	    MENU.out(PULSES.pulses[pulse].remaining);	// counted pulse waiting for it's turn	 no change
 	  else
-	    MENU.space();
-	  break;
-	case 1:		// primary pulse was called *once*
-	  MENU.out('*');
-	  break;
-	default:
-	  if(diff > 1)	// slice too long to see all the individual wakeups
-	    MENU.out(diff);
-	  else	// could possibly happen after some reset???
-	    MENU.out(diff);	// DEBUGGING: avoid that to happen
-	}
+	    MENU.space();	// no change
+	} else {		// change (any)
+	  if(diff == 1)
+	    MENU.out('*');	// '*' was alive *once*
+	  else if(diff > 1) {
+	    if (diff < 16)
+	      MENU.out_hex_chiffre(diff);
+	    else	// slice too long to display individual wakeup counts
+	      MENU.out('#');
+	  } else		// diff negative??? (could possibly happen after some reset?)
+	    MENU.out(diff);	// DEBUGGING: catch that, if it ever happens...
+	} // counter changed
       } // show pattern
+
     } else	// is *not* g_PRIMARY
       MENU.out('-');	// was removed, replaced or something
   }
@@ -300,14 +309,7 @@ void show_cycle(struct time cycle) {
     return;
   }
 
-  int lowest_primary=ILLEGAL, highest_primary=ILLEGAL;
-  for(int pulse=0; pulse<PL_MAX; pulse++) {
-    if(PULSES.pulses[pulse].groups & g_PRIMARY) {
-      if(lowest_primary == ILLEGAL)
-	lowest_primary = pulse;
-      highest_primary = pulse;
-    }
-  }
+  set_primary_block_bounds();
 
   PULSES.display_time_human(cycle);
   MENU.ln();
@@ -1538,7 +1540,7 @@ void start_musicBox() {
   }
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
-    peripheral_power_switch_ON();
+  peripheral_power_switch_ON();
 #endif
 
   struct time period_lowest = PULSES.pulses[lowest_primary].period;
@@ -1905,8 +1907,7 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   MENU.out(F("SCALING: "));	// FIXME: TODO: check where that *is* used ################
   MENU.out(multiplier);
   MENU.slash();
-  MENU.out(divisor);
-  MENU.space(5);
+  MENU.outln(divisor);
 }
 
 /* **************************************************************** */
@@ -2039,7 +2040,6 @@ void musicBox_display() {
   MENU.ln();
 
   show_basic_musicBox_parameters();	// was: show_UI_basic_setup();
-  MENU.ln();
 
 /*	*deactivated*
   MENU.outln(F("fart='f'"));
