@@ -792,7 +792,7 @@ void setup() {
   MENU.ln();
 #endif
 
-#if defined USE_BLUETOOTH_SERIAL_MENU
+#if defined USE_BLUETOOTH_SERIAL_MENU && true	// double, 1/2	test brownout recognition
   bluetooth_setup();
   MENU.ln();
 #endif
@@ -859,7 +859,7 @@ void setup() {
   #endif	// ESP8266
 #endif // to WiFi or not
 
-#if defined USE_BLUETOOTH_SERIAL_MENU
+#if defined USE_BLUETOOTH_SERIAL_MENU && false	// double, 2/2	test brownout recognition
   bluetooth_setup();
 #endif
 
