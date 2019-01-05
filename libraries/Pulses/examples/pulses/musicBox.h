@@ -79,15 +79,12 @@ bool some_fixed_tunings_only=false;	// fixed pitchs only like E A D G C F B  was
   #endif
 #endif
 
-void light_sleep();	// pre declaration
-//void (*musicBox_when_done)(void)=&light_sleep;
-
 //#define  MUSICBOX_ENDING_FUNCTION	light_sleep();	// works fine as default for triggered musicBox	  bluetooth does *not* wake up
 //#define  MUSICBOX_ENDING_FUNCTION	deep_sleep();	// still DAC noise!!!
 //#define  MUSICBOX_ENDING_FUNCTION	ESP.restart();	// works fine
 
 //#define  MUSICBOX_ENDING_FUNCTION	;	// never ending jam session...
-void noop() { ; }	// never ending jam session...
+void noop() { ; }	// endless loop...
 
 int musicBox_pause_seconds=10;
 
@@ -102,7 +99,13 @@ void hibernate() {	// see: https://esp32.com/viewtopic.php?t=3083
   esp_deep_sleep_start();
 }
 
-void (*musicBox_when_done)(void)=&hibernate;	// TEST ################
+void light_sleep();	// pre declaration
+void deep_sleep();	// pre declaration
+
+//void (*musicBox_when_done)(void)=&light_sleep;
+void (*musicBox_when_done)(void)=&deep_sleep;
+//void (*musicBox_when_done)(void)=&hibernate;	// TEST ################
+//void (*musicBox_when_done)(void)=&noop;		// TEST ################
 
 //void start_musicBox();	// pre declaration
 //#define  MUSICBOX_ENDING_FUNCTION	delay(6*1000); start_musicBox();	// sound recording loop?
@@ -1790,10 +1793,14 @@ void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from mai
 void deep_sleep() {
   MENU.out(F("deep_sleep()\t"));
 
-  // TODO: conditionally...
+#if defined USE_BLUETOOTH_SERIAL_MENU	// do we use bluetooth?
   esp_bluedroid_disable();
   esp_bt_controller_disable();
+#endif
+
+#if defined USE_WIFI_telnet_menu	// do we use WIFI?
   esp_wifi_stop();
+#endif
 
   if (esp_sleep_enable_ext0_wakeup((gpio_num_t) MUSICBOX_TRIGGER_PIN, 1))
     MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
