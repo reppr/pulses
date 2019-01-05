@@ -40,7 +40,7 @@
   //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
 #endif
 
-bool some_fixed_tunings_only=false;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY  see: HACK_11_11_11_11
+bool some_fixed_tunings_only=false;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
 
 #include <esp_sleep.h>
 // #include "rom/gpio.h"
@@ -79,22 +79,33 @@ bool some_fixed_tunings_only=false;	// fixed pitchs only like E A D G C F B  was
   #endif
 #endif
 
-#if ! defined MUSICBOX_ENDING_FUNCTION	// *one* of the following:
-//  #define  MUSICBOX_ENDING_FUNCTION	light_sleep();	// works fine
+void light_sleep();	// pre declaration
+//void (*musicBox_when_done)(void)=&light_sleep;
 
-#if defined HACK_11_11_11_11		// never ending jam session
-  #define  MUSICBOX_ENDING_FUNCTION	;	// just deactivated ;) 11.11.
-#else
-  void light_sleep();	// pre declaration
-  #define  MUSICBOX_ENDING_FUNCTION	light_sleep();	// works fine as default for triggered musicBox
+//#define  MUSICBOX_ENDING_FUNCTION	light_sleep();	// works fine as default for triggered musicBox	  bluetooth does *not* wake up
+//#define  MUSICBOX_ENDING_FUNCTION	deep_sleep();	// still DAC noise!!!
+//#define  MUSICBOX_ENDING_FUNCTION	ESP.restart();	// works fine
 
-  void start_musicBox();	// pre declaration
-  //#define  MUSICBOX_ENDING_FUNCTION	delay(6*1000); start_musicBox();	// sound recording loop?
-#endif
+//#define  MUSICBOX_ENDING_FUNCTION	;	// never ending jam session...
+void noop() { ; }	// never ending jam session...
 
-  //#define  MUSICBOX_ENDING_FUNCTION	deep_sleep();	// still DAC noise!!!
-  //#define  MUSICBOX_ENDING_FUNCTION	ESP.restart();	// works fine
-#endif
+int musicBox_pause_seconds=10;
+
+void hibernate() {	// see: https://esp32.com/viewtopic.php?t=3083
+  if(MENU.verbosity >= VERBOSITY_LOWEST)
+    MENU.outln(F("hibernate()"));
+
+  esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);
+  esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
+  esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
+  esp_sleep_enable_timer_wakeup(1000000 * musicBox_pause_seconds);
+  esp_deep_sleep_start();
+}
+
+void (*musicBox_when_done)(void)=&hibernate;	// TEST ################
+
+//void start_musicBox();	// pre declaration
+//#define  MUSICBOX_ENDING_FUNCTION	delay(6*1000); start_musicBox();	// sound recording loop?
 
 
 struct time musicBox_start_time;
@@ -201,13 +212,8 @@ void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditional
   }
 }
 
-// TODO: check&fix
-#if defined HACK_11_11_11_11	// magic_autochanges=false;
-  bool magic_autochanges=false;	// never ending jam sessions...
-#else
-  bool magic_autochanges=true;	// switch if to end normal playing after MUSICBOX_PERFORMACE_SECONDS
-#endif
-
+// TODO: magic_autochanges default?
+bool magic_autochanges=true;	// switch if to end normal playing after MUSICBOX_PERFORMACE_SECONDS
 
 unsigned long primary_counters[PL_MAX] = { 0 };	// preserve last seen counters
 
@@ -493,7 +499,7 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
 }
 
 
-bool go_light_sleep=false;	// triggers MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch
+bool do_pause_musicBox=false;	// triggers MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch
 
 int soft_cleanup_minimal_fraction_weighting=1;	// TODO: adjust default
 unsigned short soft_end_days_to_live = 1;	// remaining days of life after soft end
@@ -580,7 +586,7 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
       if(MENU.verbosity)
 	MENU.ln();
       */
-      go_light_sleep = true;	// triggers MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch	*ENDED*
+      do_pause_musicBox = true;	// triggers MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch	*ENDED*
     }
   }
 }
@@ -620,7 +626,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
   set_MusicBoxState(OFF);
   MENU.ln();
 
-  go_light_sleep = true;	//  triggers MUSICBOX_ENDING_FUNCTION;	sleep, restart or somesuch	// *ENDED*
+  do_pause_musicBox = true;	//  triggers MUSICBOX_ENDING_FUNCTION;	sleep, restart or somesuch	// *ENDED*
 }
 
 portMUX_TYPE musicBox_trigger_MUX = portMUX_INITIALIZER_UNLOCKED;
@@ -1523,7 +1529,7 @@ void start_musicBox() {
       divisor = random(160, 450);	// *not* tuned for other instruments
       if(MENU.maybe_display_more(VERBOSITY_SOME))
 	MENU.out(F("random pitch\t"));
-    } else {			// *some RANDOMLY selected METRIC A=440 tunings* for jam sessions like in HACK_11_11_11_11
+    } else {			// *some RANDOMLY selected METRIC A=440 tunings*
       random_fixed_pitches();	// random *fixed* pitches
       MENU.tab();
     }
@@ -1643,7 +1649,7 @@ void magical_fart_setup(gpio_pin_t sense_pin, gpio_pin_t output_pin) {
 }
 
 
-void light_sleep() {	// see: bool go_light_sleep	flag to go sleeping from main loop
+void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from main loop
   MENU.out(F("light_sleep()\t"));
 
 #if defined USE_BLUETOOTH_SERIAL_MENU

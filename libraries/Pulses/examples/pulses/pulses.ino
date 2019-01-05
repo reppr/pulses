@@ -4,8 +4,6 @@
 #define HARMONICAL_MUSIC_BOX
 #define MAGICAL_TOILET_HACKS	// some quick dirty hacks
 
-//#define HACK_11_11_11_11	// setup for MagicalGuitar 11.11.2018 Zürich ;)
-
 // TODO: change PERIPHERAL_POWER_SWITCH_PIN as GPIO12 is active during boot process...
 #define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_TOUCH_INPUT_PIN
 
@@ -1119,14 +1117,15 @@ void loop() {	// ARDUINO
       stress_event_cnt = -1;	// one heavy stress event expected after magical_stress_release()...
     }
 
-    if(go_light_sleep) {
-      MENU.outln(F(STRINGIFY(MUSICBOX_ENDING_FUNCTION)));
-      go_light_sleep = false;
+    if(do_pause_musicBox) {
+      //      MENU.outln(F(STRINGIFY(MUSICBOX_ENDING_FUNCTION)));
+      do_pause_musicBox = false;
       stress_count = 0;
       stress_event_cnt = 0;
       delay(600);	// send remaining output
 
-      MUSICBOX_ENDING_FUNCTION
+      (*musicBox_when_done)();      //      MUSICBOX_ENDING_FUNCTION
+
       start_musicBox();
     }
 #endif
