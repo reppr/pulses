@@ -281,7 +281,8 @@ unsigned int major_scale[] = {1,1, 8,9, 4,5, 3,4, 2,3, 3,5, 8,15, 0,0};	// scale
 // 1:1	9:8	5:4	4:3	3:2	5:3	15:8	2:1
 
 unsigned int tetrachord[] = {1,1, 8,9, 4,5, 3,4, 0,0};		// scale each octave	zero terminated
-unsigned int pentachord[] = {1,1, 8,9, 4,5, 3,4, 2,3, 0,0};	// major
+unsigned int pentaCHORD[] = {1,1, 8,9, 4,5, 3,4, 2,3, 0,0};	// major
+unsigned int pentachord[] = {1,1, 8,9, 5,6, 3,4, 2,3, 0,0};	// minor
 
 unsigned int trichord[] = {1,1, 8,9, 4,5, 0,0};			// major
 

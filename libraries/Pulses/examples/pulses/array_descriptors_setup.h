@@ -22,10 +22,11 @@ REGISTER_SCALE(overnotes);			// 11
 REGISTER_SCALE(scale_rationals);		// 12
 REGISTER_SCALE(octaves_fourths);		// 13
 REGISTER_SCALE(doric_scale);			// 14
-REGISTER_SCALE(pentachord);			// 15
-REGISTER_SCALE(trichord);			// 16
-REGISTER_SCALE(TRIAD);				// 17
-REGISTER_SCALE(triad);				// 18
+REGISTER_SCALE(pentaCHORD);			// 15
+REGISTER_SCALE(pentachord);			// 16
+REGISTER_SCALE(trichord);			// 17
+REGISTER_SCALE(TRIAD);				// 18
+REGISTER_SCALE(triad);				// 19
 
 select_array_in(SCALES, pentatonic_minor);	// default scale
 DB_info(SCALES);
@@ -118,6 +119,8 @@ REGISTER_JIFFLE(minor_rise);
 REGISTER_JIFFLE(minor_descend);
 REGISTER_JIFFLE(doric_rise);
 REGISTER_JIFFLE(doric_descend);
+REGISTER_JIFFLE(pentaCHORD_rise);
+REGISTER_JIFFLE(pentaCHORD_descend);
 REGISTER_JIFFLE(pentachord_rise);
 REGISTER_JIFFLE(pentachord_descend);
 

@@ -1088,7 +1088,7 @@ void select_random_scale() {
   if(MENU.maybe_display_more(VERBOSITY_SOME))
     MENU.outln(F("random scale"));
 
-  switch(random(32)) {		// random scale
+  switch(random(36)) {		// random scale
   case 0: case 1: case 3: case 4:
     select_array_in(SCALES, pentatonic_minor);
     break;
@@ -1123,17 +1123,20 @@ void select_random_scale() {
     select_array_in(SCALES, tetrachord);	// +1 for tetrachord
     break;
   case 27: case 28: case 29:
+    select_array_in(SCALES, pentaCHORD);
+    break;
+  case 30: case 31: case 32:
     select_array_in(SCALES, pentachord);
     break;
-  case 30:
+  case 33:
     select_array_in(SCALES, trichord);
     break;
-  case 31:
+  case 34:
     select_array_in(SCALES, triad);
     break;
-//  case 32:	// too simple in most cases
-//    select_array_in(SCALES, TRIAD);
-//    break;
+  case 35:	// too simple in most cases
+    select_array_in(SCALES, TRIAD);
+    break;
   }
   scale_was_set_by_menu = false;
   subcycle_was_set_by_menu = false;
@@ -1147,7 +1150,7 @@ void select_random_jiffle(void) {
   if(MENU.maybe_display_more(VERBOSITY_SOME))
     MENU.outln(F("random jiffle"));
 
-  switch(random(131)) {
+  switch(random(135)) {
   case 0: case 1: case 2: case 3: case 4:
     select_array_in(JIFFLES, PENTAtonic_rise);
     break;
@@ -1279,13 +1282,22 @@ void select_random_jiffle(void) {
     select_array_in(JIFFLES, major_rise);
     break;
   case 119: case 120:
-    select_array_in(JIFFLES, pentachord_rise);
+    select_array_in(JIFFLES, pentaCHORD_rise);
     break;
   case 121: case 122: case 123: case 124: case 125:
     select_array_in(JIFFLES, tumtumtum);
     break;
   case 126: case 127: case 128: case 129: case 130:
     select_array_in(JIFFLES, tumtumtumtum);
+    break;
+  case 131: case 132:
+    select_array_in(JIFFLES, pentachord_rise);
+    break;
+  case 133:
+    select_array_in(JIFFLES, pentaCHORD_descend);	// TODO: test
+    break;
+  case 134:
+    select_array_in(JIFFLES, pentachord_descend);	// TODO: test
     break;
   }
 

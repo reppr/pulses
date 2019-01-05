@@ -204,17 +204,22 @@ unsigned int doric_rise[] =
 unsigned int doric_descend[] =
   {1,4096,256, 5,9*2048,256, 3,5*2048,256, 2,3*2048,256, 3,4*2048,256, 5,6*2048,256, 8,9*2048,256, 1,2*2048,256, 0,0};
 
-unsigned int pentachord_rise[] =
+unsigned int pentaCHORD_rise[] =
   {1,4096,256, 1,9*512,256, 1,5*1024,256, 3,4*4096,256, 1,3*2048,256*2, 0,0};
 
-unsigned int pentachord_descend[] =
+unsigned int pentaCHORD_descend[] =
   {1,3*1024,256, 3,2*4096,256, 1,5*512,256, 1,9*156,256, 1,1048,256*2, 0,0};
 
+unsigned int pentachord_rise[] =
+  {1,4096,256, 1,9*512,256, 5,6*4096,256, 3,4*4096,256, 1,3*2048,256*2, 0,0};
+
+unsigned int pentachord_descend[] =
+  {1,3*1024,256, 3,4*2048,256, 5,6*2048,256, 1,9*256,256, 1,2048,256*2, 0,0};
 
 // try on doric scale
-unsigned int doDe_i[] = {1,512,16, 1,1024,16, 1,8,1, 1,2084,11, 0,0};	// test only, remove?
+unsigned int doDe_i[] = {1,512,16, 1,1024,16, 1,8,1, 1,2084,11, 0,0};	// TODO: test only, remove?
 
-unsigned int asdfg[] = {1,64,3, 1,128,3, 1,256,3, 1,512,3, 1,4,1, 1,2084,11, 1,3,1, 1,8192,16, 0,0};	// test only, remove?
+unsigned int asdfg[] = {1,64,3, 1,128,3, 1,256,3, 1,512,3, 1,4,1, 1,2084,11, 1,3,1, 1,8192,16, 0,0};	// TODO: test only, remove?
 
 #endif	// ! RAM_IS_SCARE
 #define JIFFLES_h
