@@ -2,7 +2,7 @@
   musicBox.h
 */
 
-#define MUSICBOX_VERSION	alpha 0.009	// (maybe used also as BLUETOOTH_NAME)
+#define MUSICBOX_VERSION	alpha 0.010	// (maybe used also as BLUETOOTH_NAME)
 
 // PRESETS: uncomment *one* (or zero) of the following setups:
 #define SETUP_BRACHE				BRACHE_2019-01

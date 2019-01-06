@@ -3953,7 +3953,7 @@ sync pause    2.314404s
 Chläderrose
 *************
 
-wakeup EXT0	
+wakeup EXT0
 
 start_musicBox()	alpha 0.008	BRACHE_2018-12
 2018-12-19_20h43m45s	WED
@@ -3970,14 +3970,14 @@ SCALE:	minor_scale
 JIFFLE:	up_THRD
 SYNC:	3
 TIME_U:	1000000	*32768/400
-play_KB_macro  *2 
-harmonical CYCLE: 1h 48' 8" 	SUBCYCLE: | 6' 45" |
+play_KB_macro  *2
+harmonical CYCLE: 1h 48' 8"	SUBCYCLE: | 6' 45" |
  <<< * >>>
 
-harmonical cycle:  1h 48' 8" 
+harmonical cycle:  1h 48' 8"
 
-(2^0) 1h 48' 8" 	(2^-1) 54' 4" 	(2^-2) 27' 2" 	(2^-3) 13' 31" 
-|(2^-4) 6' 45" |	(2^-5) 3' 23" 	
+(2^0) 1h 48' 8"		(2^-1) 54' 4"	(2^-2) 27' 2"	(2^-3) 13' 31"
+|(2^-4) 6' 45" |	(2^-5) 3' 23"
 
 sync pause    2.534274s
 
@@ -4206,7 +4206,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	pentachord
+SCALE:	pentaCHORD
 JIFFLE:	din_dididi
 SYNC:	2
 TIME_U:	1000000	*32768/416
@@ -4316,18 +4316,18 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	pentachord
+SCALE:	pentaCHORD
 JIFFLE:	pentatonic_descend
 SYNC:	5
 TIME_U:	1000000	*32768/181
 play_KB_macro  *2
-harmonical CYCLE: 1h 35' 35" 	SUBCYCLE: | 5' 58" |
+harmonical CYCLE: 1h 35' 35"	SUBCYCLE: | 5' 58" |
  <<< * >>>
 
 harmonical cycle:  1h 35' 35"
 
-(2^0) 1h 35' 35" 	(2^-1) 47' 48" 	(2^-2) 23' 54" 	(2^-3) 11' 57"
-|(2^-4) 5' 58" |	(2^-5) 2' 59" 	(2^-6) 1' 30" 	(2^-7) 45"
+(2^0) 1h 35' 35"	(2^-1) 47' 48"	(2^-2) 23' 54"	(2^-3) 11' 57"
+|(2^-4) 5' 58" |	(2^-5) 2' 59"	(2^-6) 1' 30"	(2^-7) 45"
 
 sync pause    4.667161s
 
@@ -4358,13 +4358,13 @@ JIFFLE:	tumtum
 SYNC:	2
 TIME_U:	1000000	*32768/257
 play_KB_macro  *2
-harmonical CYCLE: 2h 48' 18" 	SUBCYCLE: | 5' 16" |
+harmonical CYCLE: 2h 48' 18"	SUBCYCLE: | 5' 16" |
  <<< * >>>
 
 harmonical cycle:  2h 48' 18"
 
-(2^0) 2h 48' 18" 	(2^-1) 1h 24' 9" 	(2^-2) 42' 4" 	(2^-3) 21' 2"
-(2^-4) 10' 31" 	|(2^-5) 5' 16" |	(2^-6) 2' 38" 	(2^-7) 1' 19"
+(2^0) 2h 48' 18"	(2^-1) 1h 24' 9"	(2^-2) 42' 4"	(2^-3) 21' 2"
+(2^-4) 10' 31"	|(2^-5) 5' 16" |	(2^-6) 2' 38"	(2^-7) 1' 19"
 
 sync pause    2.629601s
 
@@ -4460,13 +4460,13 @@ JIFFLE:	PENTAtonic_descend
 SYNC:	2
 TIME_U:	1000000	*32768/263
 play_KB_macro  *2
-harmonical CYCLE: 4h 23' 8" 	SUBCYCLE: | 4' 7" |
+harmonical CYCLE: 4h 23' 8"	SUBCYCLE: | 4' 7" |
  <<< * >>>
 
 harmonical cycle:  4h 23' 8"
 
-(2^0) 4h 23' 8" 	(2^-1) 2h 11' 34" 	(2^-2) 1h 5' 47" 	(2^-3) 32' 53"
-(2^-4) 16' 27" 	(2^-5) 8' 13" 	|(2^-6) 4' 7" |	(2^-7) 2' 3"
+(2^0) 4h 23' 8"		(2^-1) 2h 11' 34"	(2^-2) 1h 5' 47"	(2^-3) 32' 53"
+(2^-4) 16' 27"	(2^-5) 8' 13"	|(2^-6) 4' 7" |	(2^-7) 2' 3"
 (2^-8) 1' 2"
 
 sync pause    1.927169s
@@ -4510,3 +4510,393 @@ harmonical cycle:  9d 13h 14' 40"
 (2^-16)   12.592680s	(2^-17)    6.296340s
 
 sync pause    3.932161s
+
+
+
+clear winter sky
+******************
+
+TRIGGERED!
+tabula rasa 43
+
+start_musicBox()	alpha 0.009	BRACHE_2018-12
+2018-12-23_18h45m37s	SUN
+battery control pin: 36	1296	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-23_18h45m37s	SUN
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	pentatonic_minor
+JIFFLE:	PENTAtonic_descend
+SYNC:	1
+TIME_U:	1000000	*32768/444
+harmonical CYCLE: 1h 37' 25"	SUBCYCLE: | 6' 5" |
+ <<< * >>>
+
+harmonical cycle:  1h 37' 25"
+
+(2^0) 1h 37' 25"	(2^-1) 48' 42"	(2^-2) 24' 21"	(2^-3) 12' 11"
+|(2^-4) 6' 5" |	(2^-5) 3' 3"	(2^-6) 1' 31"	(2^-7) 46"
+
+sync pause    0.761041s
+
+
+
+the mad old jazz piano man
+****************************
+
+AWOKE	BLUETOOTH: ESP alpha 0.009
+BLUEtoothSerial.begin(ESP alpha 0.009) ok
+esp_bt_controller_get_status() 2
+
+wakeup EXT0
+
+start_musicBox()	alpha 0.009	BRACHE_2018-12
+2018-12-23_18h53m20s	SUN
+battery control pin: 36	1306	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-23_18h53m20s	SUN
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	pentatonic_minor
+JIFFLE:	tumtumtum
+SYNC:	4
+TIME_U:	1000000	*32768/398
+play_KB_macro  *2
+harmonical CYCLE: 1h 48' 40"	SUBCYCLE: | 6' 48" |
+ <<< * >>>
+
+harmonical cycle:  1h 48' 40"
+
+(2^0) 1h 48' 40"	(2^-1) 54' 20"	(2^-2) 27' 10"	(2^-3) 13' 35"
+|(2^-4) 6' 48" |	(2^-5) 3' 24"	(2^-6) 1' 42"	(2^-7) 51"
+
+sync pause    3.395968s
+
+
+
+nameless beauty
+****************
+
+
+AWOKE	BLUETOOTH: ESP alpha 0.009
+BLUEtoothSerial.begin(ESP alpha 0.009) ok
+
+wakeup EXT0
+
+start_musicBox()	alpha 0.009	BRACHE_2018-12
+2018-12-24_20h35m07s	MON
+battery control pin: 36	1307	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-24_20h35m07s	MON
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	trichord
+JIFFLE:	pentatonic_rise
+SYNC:	2
+TIME_U:	1000000	*32768/286
+play_KB_macro  *2
+harmonical CYCLE: 10h 45' 15"	SUBCYCLE: | 5' 2" |
+ <<< * >>>
+
+harmonical cycle:  10h 45' 15"
+
+(2^0) 10h 45' 15"	(2^-1) 5h 22' 38"	(2^-2) 2h 41' 19"	(2^-3) 1h 20' 39"
+(2^-4) 40' 20"	(2^-5) 20' 10"	(2^-6) 10' 5"	|(2^-7) 5' 2" |
+(2^-8) 2' 31"	(2^-9) 1' 16"	(2^-10) 38"	(2^-11)   18.903698s
+
+
+
+penta trichord
+****************
+
+
+AWOKE	BLUETOOTH: ESP alpha 0.009
+BLUEtoothSerial.begin(ESP alpha 0.009) ok
+
+wakeup EXT0
+
+start_musicBox()	alpha 0.009	BRACHE_2018-12
+2018-12-24_20h49m58s	MON
+battery control pin: 36	1306	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-24_20h49m58s	MON
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	trichord
+JIFFLE:	PENTAtonic_descend
+SYNC:	2
+TIME_U:	1000000	*32768/288
+play_KB_macro  *2
+harmonical CYCLE: 10h 40' 46"	SUBCYCLE: | 5' 0" |
+ <<< * >>>
+
+harmonical cycle:  10h 40' 46"
+
+(2^0) 10h 40' 46"	(2^-1) 5h 20' 23"	(2^-2) 2h 40' 12"	(2^-3) 1h 20' 6"
+(2^-4) 40' 3"	(2^-5) 20' 1"	(2^-6) 10' 1"	|(2^-7) 5' 0" |
+(2^-8) 2' 30"	(2^-9) 1' 15"	(2^-10) 38"	(2^-11)   18.772423s
+
+sync pause    1.876992s
+
+
+Santa Claus
+************
+
+start_musicBox()	alpha 0.009	BRACHE_2018-12
+2018-12-25_19h16m25s	TUE
+battery control pin: 36	1300	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-25_19h16m25s	TUE
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+lower_audio_if_too_high 0
+62.00000 DEBUG: shortest==0
+60.0000000000000000000000000000000
+SCALE:	octaves_fourths_fifths
+JIFFLE:	penta_3rd_rise
+SYNC:	1
+TIME_U:	1000000	fixed random tuning b	233
+*32768/233
+play_KB_macro  *2
+harmonical CYCLE: 9h 54' 1"	SUBCYCLE: | 4' 38" |
+ <<< * >>>
+
+harmonical cycle:  9h 54' 1"
+
+(2^0) 9h 54' 1"		(2^-1) 4h 57' 1"	(2^-2) 2h 28' 30"	(2^-3) 1h 14' 15"
+(2^-4) 37' 8"	(2^-5) 18' 34"	(2^-6) 9' 17"	|(2^-7) 4' 38" |
+(2^-8) 2' 19"	(2^-9) 1' 10"	(2^-10) 35"	(2^-11)   17.402760s
+
+sync pause    0.966657s
+
+
+(recorded) 2018-12-25_20h28m58s
+***********
+
+start_musicBox()	alpha 0.009	BRACHE_2018-12
+2018-12-25_20h28m58s	TUE
+battery control pin: 36	1299	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-25_20h28m58s	TUE
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	doric_scale
+JIFFLE:	din__dididi_dix
+SYNC:	2
+TIME_U:	1000000		32
+*32768/32
+harmonical CYCLE: 2h 48' 57"	SUBCYCLE: | 5' 17" |
+ <<< * >>>
+
+harmonical cycle:  2h 48' 57"
+
+(2^0) 2h 48' 57"	(2^-1) 1h 24' 29"	(2^-2) 42' 14"	(2^-3) 21' 7"
+(2^-4) 10' 34"	|(2^-5) 5' 17" |
+
+sync pause    2.639874s
+
+
+
+sound waves like ever descending rain
+***************************************
+
+
+wakeup EXT0
+
+start_musicBox()	alpha 0.009	BRACHE_2018-12
+2019-01-04_18h44m08s	FRI
+battery control pin: 36	1281	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2019-01-04_18h44m09s	FRI
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	tetrachord
+JIFFLE:	PENTAtonic_descend
+SYNC:	2
+TIME_U:	1000000	*32768/234
+harmonical CYCLE: 2h 27' 52"	SUBCYCLE: | 4' 37" |
+ <<< * >>>
+
+harmonical cycle:  2h 27' 52"
+
+(2^0) 2h 27' 52"	(2^-1) 1h 13' 56"	(2^-2) 36' 58"	(2^-3) 18' 29"
+(2^-4) 9' 15"	|(2^-5) 4' 37" |	(2^-6) 2' 19"	(2^-7) 1' 9"
+(2^-8) 35"
+
+sync pause    1.083011s
+
+
+
+Childrens Christmas Night
+**************************
+
+start_musicBox()	alpha 0.009	BRACHE_2018-12
+2018-12-25_19h42m27s	TUE
+battery control pin: 36	1299	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2018-12-25_19h42m27s	TUE
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	pentaCHORD
+JIFFLE:	din__dididi_dixi
+SYNC:	4
+TIME_U:	1000000		128
+*32768/128
+play_KB_macro  *2
+harmonical CYCLE: 2h 15' 10"	SUBCYCLE: | 4' 13" |
+ <<< * >>>
+
+harmonical cycle:  2h 15' 10"
+
+(2^0) 2h 15' 10"	(2^-1) 1h 7' 35"	(2^-2) 33' 47"	(2^-3) 16' 54"
+(2^-4) 8' 27"	|(2^-5) 4' 13" |	(2^-6) 2' 7"	(2^-7) 1' 3"
+
+sync pause    5.279747s
+
+
+
+daydreams
+***********
+
+AUTOSTART 1
+
+start_musicBox()	alpha 0.009	BRACHE_2018-12
+MusicBoxState AWAKE
+2019-01-06_16h16m56s	SUN
+battery control pin: 36	1277	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2019-01-06_16h16m57s	SUN
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	pentatonic_minor
+JIFFLE:	penta_3rd_down_5
+SYNC:	3
+TIME_U:	1000000	*32768/301
+play_KB_macro  *2
+harmonical CYCLE: 1h 11' 51"	SUBCYCLE: | 4' 29" |
+ <<< * >>>
+
+harmonical cycle:  1h 11' 51"
+
+(2^0) 1h 11' 51"	(2^-1) 35' 55"	(2^-2) 17' 58"	(2^-3) 8' 59"
+|(2^-4) 4' 29" |	(2^-5) 2' 15"	(2^-6) 1' 7"	(2^-7) 34"
+
+sync pause    1.683889s
+
+
+
+Harmonical Musicbox alpha 0.010
+*********************************
+SYNC: 5    SCALE: pentaCHORD   JIFFLE: tumtum   SCALING: 1/128
+harmonical CYCLE: 51' 48" 	SUBCYCLE: | 6' 28" |
+
+
+
+
+a love like the morning birds
+*******************************
+
+
+AUTOSTART 1
+
+start_musicBox()	alpha 0.010	BRACHE_2019-01
+MusicBoxState AWAKE
+2019-01-06_21h29m36s	SUN
+battery control pin: 36	1272	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2019-01-06_21h29m36s	SUN
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	octaves_fourths
+JIFFLE:	PENTAtonic_descend
+SYNC:	4
+TIME_U:	1000000	*32768/371
+play_KB_macro  *2
+harmonical CYCLE: 8d 6h 58' 1"	SUBCYCLE: | 5' 50" |
+ <<< * >>>
+
+harmonical cycle:  8d 6h 58' 1"
+
+(2^0) 8d 6h 58' 1"	(2^-1) 4d 3h 29' 0"	(2^-2) 2d 1h 44' 30"	(2^-3) 1d 0h 52' 15"
+(2^-4) 12h 26' 8"	(2^-5) 6h 13' 4"	(2^-6) 3h 6' 32"	(2^-7) 1h 33' 16"
+(2^-8) 46' 38"	(2^-9) 23' 19"	(2^-10) 11' 39"		|(2^-11) 5' 50" |
+(2^-12) 2' 55"	(2^-13) 1' 27"	(2^-14) 44"	(2^-15) 22"
+(2^-16)   10.929496s	(2^-17)    5.464748s
+
+sync pause    2.686977s
+
+
+
+TRIAD
+*******
+
+AUTOSTART 1
+
+start_musicBox()	alpha 0.010	BRACHE_2019-01
+MusicBoxState AWAKE
+2019-01-06_22h12m45s	SUN
+battery control pin: 36	1271	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2019-01-06_22h12m45s	SUN
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	TRIAD
+JIFFLE:	rising_pent_theme
+SYNC:	1
+TIME_U:	1000000	*32768/428
+play_KB_macro  /2
+harmonical CYCLE: 3h 35' 35"	SUBCYCLE: | 6' 44" |
+ <<< * >>>
+
+harmonical cycle:  3h 35' 35"
+
+(2^0) 3h 35' 35"	(2^-1) 1h 47' 48"	(2^-2) 53' 54"	(2^-3) 26' 57"
+(2^-4) 13' 28"	|(2^-5) 6' 44" |	(2^-6) 3' 22"	(2^-7) 1' 41"
+(2^-8) 51"	(2^-9) 25"	(2^-10)   12.631908s	(2^-11)    6.315954s
+
+sync pause    0.525825s
