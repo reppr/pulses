@@ -5,7 +5,7 @@
 #define MUSICBOX_VERSION	alpha 0.009	// (maybe used also as BLUETOOTH_NAME)
 
 // PRESETS: uncomment *one* (or zero) of the following setups:
-#define SETUP_BRACHE				BRACHE_2018-12
+#define SETUP_BRACHE				BRACHE_2019-01
 //#define SETUP_BAHNPARKPLATZ	BahnParkPlatz 18
 //#define SETUP_CHAMBER_ORCHESTRA	The Harmonical Chamber Orchestra 2018-12
 
@@ -13,9 +13,9 @@
 // pre defined SETUPS:
 #if defined SETUP_BRACHE
   #define MUSICBOX_SUB_VERSION			SETUP_BRACHE
-  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// *max seconds*, produce short sample pieces	BRACHE Dez 2018
-  #define MUSICBOX_HARD_END_SECONDS		15*60	// SAVETY NET, we're low on energy...
-  #define MUSICBOX_TRIGGER_BLOCK_SECONDS	30	// BRACHE
+  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// *max seconds*, produce short sample pieces	BRACHE 2019-01
+  #define MUSICBOX_HARD_END_SECONDS		13*60	// SAVETY NET, we're low on energy...
+  #define MUSICBOX_TRIGGER_BLOCK_SECONDS	30	// BRACHE 2019-01
 
 #elif defined SETUP_BAHNPARKPLATZ
   #define MUSICBOX_SUB_VERSION			SETUP_BAHNPARKPLATZ
@@ -34,7 +34,7 @@
 #endif	// (pre defined setups)
 
 #if ! defined AUTOMAGIC_CYCLE_TIMING_SECONDS
-  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// *max seconds*, produce short sample pieces	BRACHE Dez 2018
+  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// *max seconds*, produce short sample pieces	BRACHE 2019-01
   //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces		BahnParkPlatz 18
   //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	18*60	// *max seconds*, produce moderate length sample pieces  DEFAULT
   //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
@@ -1592,9 +1592,21 @@ void start_musicBox() {
 
   set_cycle_slice_number(cycle_slices);
 
+
+/*  I was testing syncing primaries and butler in *one* activate_selected_synced_now() call
+  //    but decided to stay with the old implementation...
+
+  // setup butler:
+  // remember pulse index of the butler, so we can call him, if we need him ;)
+  musicBox_butler_i =							\
+    PULSES.setup_pulse(&musicBox_butler, ACTIVE, PULSES.get_now(), slice_tick_period);
+  PULSES.pulses[musicBox_butler_i].groups |= g_MASTER;	// savety net, until butler has initialised itself
+  PULSES.select_pulse(musicBox_butler_i);	// select butler for syncing
+*/
   musicBox_start_time = PULSES.get_now();	// keep musicBox_start_time
 
   PULSES.activate_selected_synced_now(sync);	// 'n' sync and activate
+  //  PULSES.deselect_pulse(musicBox_butler_i);	// deselect butler after syncing,  see above
 
   if(sync) {
     if(MENU.verbosity >= VERBOSITY_LOWEST) {
@@ -1607,12 +1619,10 @@ void start_musicBox() {
     }
   }
 
-  // the butler starts just a pad *after* musicBox_start_time
+  // setup butler:	works better if activated a tad later than the primary pulses...
   // remember pulse index of the butler, so we can call him, if we need him ;)
-  musicBox_butler_i = \
+  musicBox_butler_i =	\
     PULSES.setup_pulse(&musicBox_butler, ACTIVE, PULSES.get_now(), slice_tick_period);
-
-  // TODO: RETHINK: group of butler, it is closer to a master then a primary...
   PULSES.pulses[musicBox_butler_i].groups |= g_MASTER;	// savety net, until butler has initialised itself
 
   stress_event_cnt = -3;	// some stress events will often happen after starting the musicBox
