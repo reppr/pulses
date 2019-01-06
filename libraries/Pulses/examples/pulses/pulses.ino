@@ -2346,32 +2346,32 @@ void display_payload(int pulse) {
   MENU.out(F(" P:"));
 
   scratch=&click;
-  if (PULSES.pulses[pulse].periodic_do == scratch) {
+  if (PULSES.pulses[pulse].payload == scratch) {
     MENU.out("click");
     return;
   }
 
 #if defined HARMONICAL_MUSIC_BOX
   scratch=&musicBox_butler;
-  if (PULSES.pulses[pulse].periodic_do == scratch) {
+  if (PULSES.pulses[pulse].payload == scratch) {
     MENU.out("musicBox_butler");
     return;
   }
 
   scratch=&magical_butler;
-  if (PULSES.pulses[pulse].periodic_do == scratch) {
+  if (PULSES.pulses[pulse].payload == scratch) {
     MENU.out("magical_butler");
     return;
   }
 
   scratch=&magical_cleanup;
-  if (PULSES.pulses[pulse].periodic_do == scratch) {
+  if (PULSES.pulses[pulse].payload == scratch) {
     MENU.out("magical_cleanup");
     return;
   }
 
   scratch=&cycle_monitor;
-  if (PULSES.pulses[pulse].periodic_do == scratch) {
+  if (PULSES.pulses[pulse].payload == scratch) {
     MENU.out("cycle_monitor");
     return;
   }
@@ -2380,26 +2380,26 @@ void display_payload(int pulse) {
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
   scratch=&tuned_sweep_click;
-  if (PULSES.pulses[pulse].periodic_do == scratch) {
+  if (PULSES.pulses[pulse].payload == scratch) {
     MENU.out(F("tuned_sweep_click"));
     return;
   }
 
   scratch=&sweep_click;
-  if (PULSES.pulses[pulse].periodic_do == scratch) {
+  if (PULSES.pulses[pulse].payload == scratch) {
     MENU.out(F("sweep_click"));
     return;
   }
 
   scratch=&sweep_click_0;
-  if (PULSES.pulses[pulse].periodic_do == scratch) {
+  if (PULSES.pulses[pulse].payload == scratch) {
     MENU.out(F("sweep_click_0"));
     return;
   }
 #endif	// #ifdef IMPLEMENT_TUNING	implies floating point
 
   scratch=&seed_icode_player;
-  if (PULSES.pulses[pulse].periodic_do == scratch) {
+  if (PULSES.pulses[pulse].payload == scratch) {
     MENU.out("seed_iCode ");
 //    if (MENU.verbosity > VERBOSITY_LOWEST) {	// normally we *want* to see the names
 //      char * name=array2name(iCODEs, (unsigned int *) PULSES.pulses[pulse].icode_p);
@@ -2425,34 +2425,34 @@ void display_payload(int pulse) {
   }
 
   scratch=&do_jiffle;
-  if (PULSES.pulses[pulse].periodic_do == scratch) {
+  if (PULSES.pulses[pulse].payload == scratch) {
     MENU.out(F("do_jiffle:"));
     MENU.out(array2name(JIFFLES, (unsigned int*) PULSES.pulses[pulse].data));
     return;
   }
 
   scratch=&do_throw_a_jiffle;
-  if (PULSES.pulses[pulse].periodic_do == scratch) {
+  if (PULSES.pulses[pulse].payload == scratch) {
     MENU.out(F("seed jiff:"));
     MENU.out(array2name(JIFFLES, (unsigned int*) PULSES.pulses[pulse].data));
     return;
   }
 
   scratch=&pulse_info;
-  if (PULSES.pulses[pulse].periodic_do == scratch) {
+  if (PULSES.pulses[pulse].payload == scratch) {
     MENU.out(F("pulse_info"));
     return;
   }
 
   scratch=&pulse_info_1line;
-  if (PULSES.pulses[pulse].periodic_do == scratch) {
+  if (PULSES.pulses[pulse].payload == scratch) {
     MENU.out(F("info line"));
     MENU.tab(2);
     return;
   }
 
   scratch=NULL;
-  if (PULSES.pulses[pulse].periodic_do == scratch) {
+  if (PULSES.pulses[pulse].payload == scratch) {
     MENU.tab();
     //    MENU.out(F("NULL"));
     return;

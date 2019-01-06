@@ -142,7 +142,7 @@ void Pulses::selected_or_flagged_pulses_info_lines(void) {
 void display_payload(int pulse) {
   void (*scratch)(int);
   scratch=&click;
-  if (pulses[pulse].periodic_do == scratch) {
+  if (pulses[pulse].payload == scratch) {
     (*MENU).out("click  ");
     (*MENU).out((int) pulses[pulse].gpio);
     return;
@@ -150,21 +150,21 @@ void display_payload(int pulse) {
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
   scratch=&tuned_sweep_click;
-  if (pulses[pulse].periodic_do == scratch) {
+  if (pulses[pulse].payload == scratch) {
     (*MENU).out(F("tuned_sweep_click "));
     (*MENU).out((int) pulses[pulse].gpio);
     return;
   }
 
   scratch=&sweep_click;
-  if (pulses[pulse].periodic_do == scratch) {
+  if (pulses[pulse].payload == scratch) {
     (*MENU).out(F("sweep_click "));
     (*MENU).out((int) pulses[pulse].gpio);
     return;
   }
 
   scratch=&sweep_click_0;
-  if (pulses[pulse].periodic_do == scratch) {
+  if (pulses[pulse].payload == scratch) {
     (*MENU).out(F("sweep_click_0 "));
     (*MENU).out((int) pulses[pulse].gpio);
     return;
@@ -172,7 +172,7 @@ void display_payload(int pulse) {
 #endif	// #ifdef IMPLEMENT_TUNING	implies floating point
 
   scratch=&do_jiffle;
-  if (pulses[pulse].periodic_do == scratch) {
+  if (pulses[pulse].payload == scratch) {
     (*MENU).out(F("do_jiffle:"));
     (*MENU).out(array2name(JIFFLES, (unsigned int*) pulses[pulse].data));
     (*MENU).space(2);
@@ -181,7 +181,7 @@ void display_payload(int pulse) {
   }
 
   scratch=&do_throw_a_jiffle;
-  if (pulses[pulse].periodic_do == scratch) {
+  if (pulses[pulse].payload == scratch) {
     (*MENU).out(F("seed jiff:"));
     (*MENU).out(array2name(JIFFLES, (unsigned int*) pulses[pulse].data));
     (*MENU).space(2);
@@ -190,20 +190,20 @@ void display_payload(int pulse) {
   }
 
   scratch=&pulse_info;
-  if (pulses[pulse].periodic_do == scratch) {
+  if (pulses[pulse].payload == scratch) {
     (*MENU).out(F("pulse_info"));
     return;
   }
 
   scratch=&pulse_info_1line;
-  if (pulses[pulse].periodic_do == scratch) {
+  if (pulses[pulse].payload == scratch) {
     (*MENU).out(F("info line"));
     (*MENU).tab(2);
     return;
   }
 
   scratch=NULL;
-  if (pulses[pulse].periodic_do == scratch) {
+  if (pulses[pulse].payload == scratch) {
     (*MENU).out(F("NULL\t"));		// 8 char positions at least
     return;
   }

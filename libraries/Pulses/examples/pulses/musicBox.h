@@ -160,7 +160,7 @@ void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditional
 
     // control if the butler is still running || musicBox_butler_i != ILLEGAL
     if(musicBox_butler_i != ILLEGAL) {	// musicBox_butler(p) seems running?
-      if(PULSES.pulses[musicBox_butler_i].periodic_do == &musicBox_butler) {
+      if(PULSES.pulses[musicBox_butler_i].payload == &musicBox_butler) {
 	PULSES.init_pulse(musicBox_butler_i);
 	if(MENU.maybe_display_more(VERBOSITY_MORE))
 	  MENU.outln(F("set_MusicBoxState: butler removed"));	// butler still running on musicBox_butler_i
@@ -176,7 +176,7 @@ void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditional
 
     // test if there is really no butler left:
     for(int p=0; p<PL_MAX; p++) {
-      if(PULSES.pulses[musicBox_butler_i].periodic_do == &musicBox_butler)
+      if(PULSES.pulses[musicBox_butler_i].payload == &musicBox_butler)
 	butler_survivors++;	// checks for stray butler pulses when state switched to OFF
     }
     if(butler_survivors) {
@@ -760,22 +760,22 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
       continue;
 
     if(PULSES.pulses[pulse].flags) {	// check if playing has ended  activity?
-      if(PULSES.pulses[pulse].periodic_do == &musicBox_butler) {
+      if(PULSES.pulses[pulse].payload == &musicBox_butler) {
 	if(do_display) {
 	  MENU.out('B');
 	}
 	skipped++;
-      } else if(PULSES.pulses[pulse].periodic_do == &magical_butler) {
+      } else if(PULSES.pulses[pulse].payload == &magical_butler) {
 	if(do_display) {
 	  MENU.out('u');
 	}
 	skipped++;
-      } else if(PULSES.pulses[pulse].periodic_do == &magical_cleanup) {
+      } else if(PULSES.pulses[pulse].payload == &magical_cleanup) {
 	if(do_display) {
 	  MENU.out('C');
 	}
 	skipped++;
-      } else if(PULSES.pulses[pulse].periodic_do == &cycle_monitor) {
+      } else if(PULSES.pulses[pulse].payload == &cycle_monitor) {
 	if(do_display) {
 	  MENU.out('M');
 	}

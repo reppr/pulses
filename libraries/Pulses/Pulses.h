@@ -118,7 +118,7 @@ struct pulse_t {
 #define DACsq1			1	// DAC1 output value as square wave, harmonical timing
 #define DACsq2			2	// DAC2 output value as square wave, harmonical timing
 #define CLICKs			4	// GPIO 'click' inbuilt GPIO toggling	see: set_gpio(pulse, pin)
-#define PAYLOAD			8	// do periodic_do(pulse)
+#define PAYLOAD			8	// do payload(pulse)
 #define doesICODE		16	// plays icode
 
 #define noACTION		32	// 'mutes' all actions
@@ -151,7 +151,7 @@ struct pulse_t {
 
   // custom parameters[pulse]	//  comment/uncomment as appropriate:
   // ============>>> adapt init_pulse() IF YOU CHANGE SOMETHING HERE <<<============
-  // these parameters can be used by periodic_do(pulse):
+  // these parameters can be used by payload(pulse):
   int countdown;
   /*
     used by do_jiffle for count down
@@ -211,10 +211,9 @@ struct pulse_t {
     init_jiffle(unsigned int *jiffletab, struct time when, struct time new_period, int origin_pulse)
   */
 
-  // TODO: rename periodic_do to payload ################
   // pointer on  void something(int pulse)  functions:
   // the pulses will do that, if the pointer is not NULL
-  void (*periodic_do)(int);
+  void (*payload)(int);
   //					some example functions:
   //
   //					click(pulse)

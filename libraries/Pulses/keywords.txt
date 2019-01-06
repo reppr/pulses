@@ -22,7 +22,7 @@ i2c_pin	KEYWORD2
 base-time	KEYWORD2
 gpio	KEYWORD2
 dest_action_flags	KEYWORD2
-periodic_do	KEYWORD2
+payload	KEYWORD2
 dac1_intensity	KEYWORD2
 dac2intensity	KEYWORD2
 get_now	KEYWORD2
