@@ -613,12 +613,12 @@ unsigned long divisor=1;
 int selected_experiment=-1;
 int voices=GPIO_PINS;
 
-bool scale_was_set_by_menu=false;
-bool jiffle_was_set_by_menu=false;
-bool pitch_was_set_by_menu=false;	// TODO: not really implemented yet
-bool octave_was_set_by_menu=false;
-bool icode_was_set_by_menu=false;
-bool sync_was_set_by_menu=false;
+bool scale_user_selected=false;
+bool jiffle_user_selected=false;
+bool pitch_user_selected=false;	// TODO: not really implemented yet
+bool octave_user_selected=false;
+bool icode_user_selected=false;
+bool sync_user_selected=false;
 
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
@@ -3355,7 +3355,7 @@ void Press_toStart() {
   MENU.outln(F("Press '!' to start"));
 }
 
-void select_scale__UI() {	// TODO: scale_was_set_by_menu	see musicBox
+void select_scale__UI() {	// TODO: scale_user_selected	see musicBox
   switch (MENU.cb_peek()) {
   case EOF:
     break;
@@ -3807,7 +3807,7 @@ bool menu_pulses_reaction(char menu_input) {
     if (MENU.maybe_calculate_input(&input_value)) {
       if (input_value>=0 ) {
 	sync = input_value;
-	sync_was_set_by_menu = true;
+	sync_user_selected = true;
       }
       else
 	MENU.out(F("positive integer only"));
@@ -3833,7 +3833,7 @@ bool menu_pulses_reaction(char menu_input) {
 /*
   // RESERVED
   case 'I':	// iCode
-    // icode_was_set_by_menu = true;
+    // icode_user_selected = true;
     break;
 */
   case 'M':	// "mute", see 'N' as alternative
@@ -4200,7 +4200,7 @@ bool menu_pulses_reaction(char menu_input) {
     // some jiffles from source, some very old FIXME:	review and delete	################
     if (MENU.cb_peek() != '!')		// 'J<num>' selects jiffle
       if (UI_select_from_DB(JIFFLES))	// select jiffle UI
-	jiffle_was_set_by_menu = true;
+	jiffle_user_selected = true;
 
     if (MENU.cb_peek() == '!') {	// 'J[<num>]!' copies an already selected jiffletab to RAM, selects RAM
       MENU.drop_input_token();
@@ -4210,7 +4210,7 @@ bool menu_pulses_reaction(char menu_input) {
 	load2_jiffle_RAM(source);
       }
       select_array_in(JIFFLES, jiffle_RAM);
-      jiffle_was_set_by_menu = true;
+      jiffle_user_selected = true;
     }
 
     if (MENU.verbosity >= VERBOSITY_SOME)
@@ -4224,11 +4224,11 @@ bool menu_pulses_reaction(char menu_input) {
     // 'R!' tune selected pulses to a scale starting from lowest
     if (MENU.cb_peek()=='!') {
       tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));	// tune-2-scale FIXME: *selected*
-      scale_was_set_by_menu = true;
+      scale_user_selected = true;
     }
     else	// ui select a scale
       if(UI_select_from_DB(SCALES))	// select scale
-	scale_was_set_by_menu = true;
+	scale_user_selected = true;
 
     if (DO_or_maybe_display(VERBOSITY_LOWEST))
       display_arr(selected_in(SCALES), 2);
@@ -5134,15 +5134,15 @@ bool menu_pulses_reaction(char menu_input) {
 	  divisor = 294;		// 293.66 = D4	// default tuning D4
 	  // divisor = 147;	// 146.83 = D3
 	  // divisor=55;	// default tuning a
-	  if(!scale_was_set_by_menu)	// see musicBox
+	  if(!scale_user_selected)	// see musicBox
 	    select_array_in(SCALES, minor_scale);		// default e minor
 
 	  select_scale__UI();	// second/third letters choose metric scales
 
-	  if(!jiffle_was_set_by_menu)				// see musicBox
+	  if(!jiffle_user_selected)				// see musicBox
 	    select_array_in(JIFFLES, d4096_512);		// default jiffle
 
-	  if(!icode_was_set_by_menu) {	// see musicBox
+	  if(!icode_user_selected) {	// see musicBox
 #if defined USE_i2c
 	    select_array_in(iCODEs, (unsigned int*) d4096_1024_i2cLED);
 #else

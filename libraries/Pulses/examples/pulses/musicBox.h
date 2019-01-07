@@ -116,7 +116,7 @@ struct time musicBox_hard_end_time;
 
 // struct time harmonical_CYCLE;	// is in pulses.ino now TODO: move to Harmonical?
 struct time used_subcycle;	// TODO: move to Harmonical? ? ?
-bool subcycle_was_set_by_menu=false;
+bool subcycle_user_selected=false;
 
 /*
   select something like
@@ -1138,8 +1138,8 @@ void select_random_scale() {
     select_array_in(SCALES, TRIAD);
     break;
   }
-  scale_was_set_by_menu = false;
-  subcycle_was_set_by_menu = false;
+  scale_user_selected = false;
+  subcycle_user_selected = false;
 }
 
 
@@ -1301,7 +1301,7 @@ void select_random_jiffle(void) {
     break;
   }
 
-  jiffle_was_set_by_menu = false;
+  jiffle_user_selected = false;
 }
 
 void random_fixed_pitches(void) {
@@ -1355,8 +1355,8 @@ void random_fixed_pitches(void) {
     break;
     //    divisor=247; // 246.94	// B3  ***not*** harmonical  }
   }
-  pitch_was_set_by_menu = false;
-  subcycle_was_set_by_menu = false;
+  pitch_user_selected = false;
+  subcycle_user_selected = false;
 }
 
 void random_octave_shift(void) {
@@ -1367,7 +1367,7 @@ void random_octave_shift(void) {
   case 0: case 1:			// leave as is
     if(MENU.maybe_display_more(VERBOSITY_SOME))
       MENU.ln();
-    return;	// (do not change octave_was_set_by_menu)
+    return;	// (do not change octave_user_selected)
     break;
   case 2: case 3: case 4:  case 5:	// down
     MENU.play_KB_macro(F("*2"));
@@ -1376,7 +1376,7 @@ void random_octave_shift(void) {
     MENU.play_KB_macro(F("/2"));	// up
     break;
   }
-  octave_was_set_by_menu = false;
+  octave_user_selected = false;
 }
 
 
@@ -1440,6 +1440,81 @@ void furzificate() {	// switch to a quiet, farting patterns, u.a.
 }
 
 
+// save and restore _user_selected configuration over deep sleep (*only*):
+/*
+  see: https://lastminuteengineers.com/esp32-sleep-modes-power-consumption/
+  store fixed configuration options in RTC memory during deep_sleep (*only*)
+*/
+RTC_DATA_ATTR unsigned int * scale_stored_RTC=NULL;
+RTC_DATA_ATTR unsigned int * jiffle_stored_RTC=NULL;
+RTC_DATA_ATTR int sync_stored_RTC=ILLEGAL;
+RTC_DATA_ATTR unsigned long multiplier_stored_RTC=0;
+RTC_DATA_ATTR unsigned long divisor_stored_RTC=0;
+
+void rtc_save_configuration () {
+  MENU.out(F("save to RTCmem\t"));
+
+  scale_stored_RTC	=NULL;
+  jiffle_stored_RTC	=NULL;
+  sync_stored_RTC	=ILLEGAL;	// hmmm, not bullet proof	TODO: sync_stored_RTC
+  divisor_stored_RTC	=ILLEGAL;	// !=0 after wake up flags deep sleep wakeup
+  multiplier_stored_RTC	=ILLEGAL;
+
+  if(scale_user_selected)
+    scale_stored_RTC = selected_in(SCALES);
+  
+  if(sync_user_selected)
+    sync_stored_RTC = sync;
+
+  if(jiffle_user_selected)
+    jiffle_stored_RTC = selected_in(JIFFLES);
+
+  if(pitch_user_selected) {
+    multiplier_stored_RTC = multiplier;
+    divisor_stored_RTC = divisor;
+  }
+
+//if(subcycle_user_selected) ;
+//if(octave_user_selected) ;
+}
+
+
+void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless waking up from *deep sleep*
+  if(divisor_stored_RTC) {	// divisor == 0 when *not* waking up from deep sleep, ignore
+    MENU.out(F("restore from RTCmem "));
+
+    if(scale_stored_RTC != NULL) {
+      MENU.out(F("SCALE "));
+      select_array_in(SCALES, scale_stored_RTC);
+      scale_user_selected = true;
+    }
+
+    if(sync_stored_RTC != ILLEGAL) {
+      MENU.out(F("SYNC "));
+      sync = sync_stored_RTC;
+      sync_user_selected = true;
+    }
+
+    if(jiffle_stored_RTC != NULL) {
+      MENU.out(F("JIFFLE "));
+      select_array_in(JIFFLES, jiffle_stored_RTC);
+      jiffle_user_selected = true;
+    }
+
+    if((multiplier_stored_RTC != ILLEGAL) && divisor_stored_RTC != ILLEGAL) {
+      MENU.out(F("PITCH "));
+      multiplier = multiplier_stored_RTC;
+      divisor = divisor_stored_RTC;
+      pitch_user_selected = true;
+    }
+
+    MENU.ln();
+  } // *not* wake up from deep sleep, ignored
+}
+
+
+
+// configure and start musicBox:
 short bass_pulses;	// see  setup_bass_middle_high()
 short middle_pulses;	// see  setup_bass_middle_high()
 short high_pulses;	// see  setup_bass_middle_high()
@@ -1485,6 +1560,9 @@ void start_musicBox() {
   delay(250);	// give peripheral supply voltage time to stabilise
 #endif
 
+  maybe_restore_from_RTCmem();		// only after deep sleep, else noop    MENU.out(F("restore from RTCmem "));
+
+
   MENU.outln(F("\n >>> * <<<"));	// start output block with configurations
 
 #if defined  USE_RTC_MODULE		// repeat that in here, keeping first one for power failing cases
@@ -1499,12 +1577,12 @@ void start_musicBox() {
   // TODO: REWORK:  setup_bass_middle_high()  used in musicBox, but not really compatible
   setup_bass_middle_high(bass_pulses, middle_pulses, high_pulses);
 
-  if(!scale_was_set_by_menu)	// if *not* set by user interaction
+  if(!scale_user_selected)	// if *not* set by user interaction
     select_random_scale();	//   random scale
   MENU.out(F("SCALE:\t"));
   MENU.outln(selected_name(SCALES));
 
-  if(!jiffle_was_set_by_menu)	// if *not* set by user interaction
+  if(!jiffle_user_selected)	// if *not* set by user interaction
     select_random_jiffle();	//   random jiffle
   MENU.out(F("JIFFLE:\t"));
   MENU.outln(selected_name(JIFFLES));
@@ -1515,7 +1593,7 @@ void start_musicBox() {
   PULSES.add_selected_to_group(g_PRIMARY);
   set_primary_block_bounds();	// remember where the primary block starts and stops
 
-  if(!sync_was_set_by_menu) {	// if *not* set by user interaction
+  if(!sync_user_selected) {	// if *not* set by user interaction
     sync = random(6);		// random sync	// MAYBE: define  select_random_sync()  ???
     if(MENU.maybe_display_more(VERBOSITY_SOME))
       MENU.outln(F("random sync"));
@@ -1535,7 +1613,7 @@ void start_musicBox() {
   multiplier *= 8;	// TODO: adjust appropriate...
 
   // random pitch
-  if(!pitch_was_set_by_menu) {	// if *not* set by user interaction
+  if(!pitch_user_selected) {	// if *not* set by user interaction
     if(!some_fixed_tunings_only) {	// RANDOM tuning?
 #if defined RANDOM_ENTROPY_H
       random_entropy();	// entropy from hardware
@@ -1555,7 +1633,7 @@ void start_musicBox() {
   MENU.outln(divisor);	// TODO: define role of multiplier, divisor
 
   tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));	// TODO: define role of multiplier, divisor
-  if(!pitch_was_set_by_menu) {		// if *not* set by user interaction
+  if(!pitch_user_selected) {		// if *not* set by user interaction
     random_octave_shift();		// random octave shift
     lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
   }
@@ -1567,7 +1645,7 @@ void start_musicBox() {
   struct time period_lowest = PULSES.pulses[lowest_primary].period;
   harmonical_CYCLE = scale2harmonical_cycle(selected_in(SCALES), &period_lowest);
 
-  if(!subcycle_was_set_by_menu) {
+  if(!subcycle_user_selected) {
     used_subcycle = harmonical_CYCLE;
 #if defined AUTOMAGIC_CYCLE_TIMING_SECONDS
     used_subcycle={AUTOMAGIC_CYCLE_TIMING_SECONDS*1000000L,0};
@@ -1815,6 +1893,8 @@ void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from mai
 void deep_sleep() {
   MENU.out(F("deep_sleep()\t"));
 
+  rtc_save_configuration();
+
 #if defined USE_BLUETOOTH_SERIAL_MENU	// do we use bluetooth?
   esp_bluedroid_disable();
   esp_bt_controller_disable();
@@ -1923,22 +2003,22 @@ void tag_randomness(bool user_selected) {
 }
 
 void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
-  tag_randomness(scale_was_set_by_menu);
+  tag_randomness(scale_user_selected);
   MENU.out(F("SCALE: "));
   MENU.out(array2name(SCALES, selected_in(SCALES)));
   MENU.space(5);
 
-  tag_randomness(sync_was_set_by_menu);
+  tag_randomness(sync_user_selected);
   MENU.out(F("SYNC: "));
   MENU.out(sync);
   MENU.space(5);
 
-  tag_randomness(jiffle_was_set_by_menu);
+  tag_randomness(jiffle_user_selected);
   MENU.out(F("JIFFLE: "));
   MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
   MENU.space(5);
 
-  tag_randomness(pitch_was_set_by_menu);
+  tag_randomness(pitch_user_selected);
   MENU.out(F("SCALING: "));	// FIXME: TODO: check where that *is* used ################
   MENU.out(multiplier);
   MENU.slash();
@@ -2033,7 +2113,7 @@ void musicBox_display() {
   MENU.out(F("subcycle octave 'O+' 'O-'\tresync/restart now 'n'\t't' metric tuning"));
   MENU.out_ON_off(some_fixed_tunings_only);
   MENU.out(F("  'F' "));
-  if(scale_was_set_by_menu && sync_was_set_by_menu && jiffle_was_set_by_menu && pitch_was_set_by_menu && subcycle_was_set_by_menu)
+  if(scale_user_selected && sync_user_selected && jiffle_user_selected && pitch_user_selected && subcycle_user_selected)
     MENU.out(F("un"));
   MENU.outln(F("freeze parameters"));
 
@@ -2202,20 +2282,20 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'F':	// freeze-unfreeze parameters
-    if(scale_was_set_by_menu && sync_was_set_by_menu && jiffle_was_set_by_menu && pitch_was_set_by_menu && subcycle_was_set_by_menu) {
+    if(scale_user_selected && sync_user_selected && jiffle_user_selected && pitch_user_selected && subcycle_user_selected) {
       MENU.outln(F("unfixed"));
-      scale_was_set_by_menu = false;
-      sync_was_set_by_menu = false;
-      jiffle_was_set_by_menu = false;
-      pitch_was_set_by_menu = false;
-      subcycle_was_set_by_menu=false;
+      scale_user_selected = false;
+      sync_user_selected = false;
+      jiffle_user_selected = false;
+      pitch_user_selected = false;
+      subcycle_user_selected=false;
     } else {
       MENU.outln(F("fixed"));
-      scale_was_set_by_menu = true;
-      sync_was_set_by_menu = true;
-      jiffle_was_set_by_menu = true;
-      pitch_was_set_by_menu = true;
-      subcycle_was_set_by_menu=true;
+      scale_user_selected = true;
+      sync_user_selected = true;
+      jiffle_user_selected = true;
+      pitch_user_selected = true;
+      subcycle_user_selected=true;
 
       show_basic_musicBox_parameters();
       show_cycles_1line();
@@ -2232,12 +2312,12 @@ bool musicBox_reaction(char token) {
 	MENU.drop_input_token();
     }
     show_cycles_1line();
-    subcycle_was_set_by_menu=true;
+    subcycle_user_selected=true;
     set_cycle_slice_number(cycle_slices);	// make sure slice_tick_period is ok
     break;
 
-  case 'D':	// REMOVE: ################
-    pitch_was_set_by_menu = true;
+  case 'D':	// TODO: REMOVE: ################
+    pitch_user_selected = true;
     MENU.outln(F("pitch freezed"));
     break;
 /*
