@@ -40,7 +40,7 @@
   //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
 #endif
 
-bool some_fixed_tunings_only=false;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
+bool some_metric_tunings_only=false;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
 
 #include <esp_sleep.h>
 // #include "rom/gpio.h"
@@ -1304,9 +1304,11 @@ void select_random_jiffle(void) {
   jiffle_user_selected = false;
 }
 
-void random_fixed_pitches(void) {
+char * metric_mnemonic = {"  "};
+
+void random_metric_pitches(void) {
   if(MENU.maybe_display_more(VERBOSITY_LOWEST))
-    MENU.out(F("fixed random tuning "));
+    MENU.out(F("random *metric* tuning "));
 
 #if defined RANDOM_ENTROPY_H
   random_entropy();	// entropy from hardware
@@ -1316,45 +1318,47 @@ void random_fixed_pitches(void) {
   case 0:
   case 1:
   case 3:
-    MENU.out('a');
+    metric_mnemonic = "a ";
     divisor = 220; // 220	// A 220  ***not*** harmonical	// TODO: define role of multiplier, divisor
     break;
   case 4:
   case 5:
   case 6:
-    MENU.out('e');
+    metric_mnemonic = "e ";
     divisor=330; // 329.36	// E4  ***not*** harmonical
     break;
   case 7:
   case 8:
-    MENU.out('d');
+    metric_mnemonic = "d ";
     divisor = 294;		// 293.66 = D4
     break;
   case 9:
   case 10:
   case 11:
-    MENU.out('g');
+    metric_mnemonic = "g ";
     divisor=196; // 196.00	// G3  ***not*** harmonical
     break;
   case 12:
   case 13:
-    MENU.out('c');
+    metric_mnemonic = "c ";
     divisor=262; // 261.63	// C4  ***not*** harmonical
     break;
   case 14:
   case 15:
-    MENU.out('f');
+    metric_mnemonic = "f ";
     divisor=175; // 174.16	// F3  ***not*** harmonical
     break;
   case 16:
   case 17:	// 11.11. ;)
   case 18:	// 11.11. ;)
   case 19:	// 11.11. ;)
-    MENU.out('b');
+    metric_mnemonic = "b ";
     divisor=233; // 233.08	// Bb3 ***not*** harmonical
     break;
     //    divisor=247; // 246.94	// B3  ***not*** harmonical  }
   }
+  MENU.out(metric_mnemonic);
+
   pitch_user_selected = false;
   subcycle_user_selected = false;
 }
@@ -1450,6 +1454,7 @@ RTC_DATA_ATTR unsigned int * jiffle_stored_RTC=NULL;
 RTC_DATA_ATTR int sync_stored_RTC=ILLEGAL;
 RTC_DATA_ATTR unsigned long multiplier_stored_RTC=0;
 RTC_DATA_ATTR unsigned long divisor_stored_RTC=0;
+RTC_DATA_ATTR bool metric_tunings_stored_RTC=false;
 
 void rtc_save_configuration () {
   MENU.out(F("save to RTCmem\t"));
@@ -1460,9 +1465,11 @@ void rtc_save_configuration () {
   divisor_stored_RTC	=ILLEGAL;	// !=0 after wake up flags deep sleep wakeup
   multiplier_stored_RTC	=ILLEGAL;
 
+  metric_tunings_stored_RTC = some_metric_tunings_only;
+
   if(scale_user_selected)
     scale_stored_RTC = selected_in(SCALES);
-  
+
   if(sync_user_selected)
     sync_stored_RTC = sync;
 
@@ -1482,6 +1489,9 @@ void rtc_save_configuration () {
 void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless waking up from *deep sleep*
   if(divisor_stored_RTC) {	// divisor == 0 when *not* waking up from deep sleep, ignore
     MENU.out(F("restore from RTCmem "));
+
+    if(metric_tunings_stored_RTC)
+      some_metric_tunings_only=true;
 
     if(scale_stored_RTC != NULL) {
       MENU.out(F("SCALE "));
@@ -1614,7 +1624,7 @@ void start_musicBox() {
 
   // random pitch
   if(!pitch_user_selected) {	// if *not* set by user interaction
-    if(!some_fixed_tunings_only) {	// RANDOM tuning?
+    if(!some_metric_tunings_only) {	// RANDOM tuning?
 #if defined RANDOM_ENTROPY_H
       random_entropy();	// entropy from hardware
 #endif
@@ -1623,7 +1633,7 @@ void start_musicBox() {
       if(MENU.maybe_display_more(VERBOSITY_SOME))
 	MENU.out(F("random pitch\t"));
     } else {			// *some RANDOMLY selected METRIC A=440 tunings*
-      random_fixed_pitches();	// random *fixed* pitches
+      random_metric_pitches();	// random *metric* pitches
       MENU.tab();
     }
   }
@@ -2022,7 +2032,13 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   MENU.out(F("SCALING: "));	// FIXME: TODO: check where that *is* used ################
   MENU.out(multiplier);
   MENU.slash();
-  MENU.outln(divisor);
+  MENU.out(divisor);
+
+  if(some_metric_tunings_only) {
+    MENU.out(F(" \t*metric* "));
+    MENU.out(metric_mnemonic);
+  }
+  MENU.ln();
 }
 
 /* **************************************************************** */
@@ -2111,7 +2127,7 @@ void musicBox_display() {
   MENU.ln();
 
   MENU.out(F("subcycle octave 'O+' 'O-'\tresync/restart now 'n'\t't' metric tuning"));
-  MENU.out_ON_off(some_fixed_tunings_only);
+  MENU.out_ON_off(some_metric_tunings_only);
   MENU.out(F("  'F' "));
   if(scale_user_selected && sync_user_selected && jiffle_user_selected && pitch_user_selected && subcycle_user_selected)
     MENU.out(F("un"));
@@ -2275,9 +2291,9 @@ bool musicBox_reaction(char token) {
     }
     break;
 
-  case 't':	// tuning: toggle some_fixed_tunings_only
+  case 't':	// tuning: toggle some_metric_tunings_only
     MENU.out(F("fixed metric tunings"));
-    MENU.out_ON_off(some_fixed_tunings_only = !some_fixed_tunings_only);
+    MENU.out_ON_off(some_metric_tunings_only = !some_metric_tunings_only);
     MENU.ln();
     break;
 

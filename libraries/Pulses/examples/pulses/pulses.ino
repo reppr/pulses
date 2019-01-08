@@ -3321,14 +3321,18 @@ void show_UI_basic_setup() {
   MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
   MENU.space(3);
 
-  MENU.out(F("SCALING: "));	// FIXME: TODO: check where that *is* used ################
+  MENU.out(F("SCALING: "));
   MENU.out(multiplier);
   MENU.slash();
   MENU.out(divisor);
   MENU.space(3);
+  if(some_metric_tunings_only) {
+    MENU.out(F("*metric* "));
+    MENU.out(metric_mnemonic);
+  }
 
   if (g_inverse)	// FIXME: TODO: check where that *is* used ################
-    MENU.out(F("GPIO BOTTOM UP"));
+    MENU.out(F("\tGPIO BOTTOM UP"));
   MENU.ln();	// maybe...
 }
 
