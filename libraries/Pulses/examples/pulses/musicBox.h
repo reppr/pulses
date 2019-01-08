@@ -502,6 +502,34 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
 }
 
 
+unsigned int kill_secondary() {
+  unsigned int cnt=0;
+
+  for(int pulse=0; pulse < PL_MAX; pulse++) {
+    if(PULSES.pulses[pulse].groups & g_SECONDARY) {
+      if(PULSES.pulses[pulse].flags & HAS_GPIO)		// maybe set GPIO low?
+	digitalWrite(PULSES.pulses[pulse].gpio, LOW);
+      PULSES.init_pulse(pulse);				// remove all secondary pulses
+      cnt++;
+    }
+  }
+  return cnt;
+}
+
+
+unsigned int kill_primary() {
+  unsigned int cnt=0;
+
+  for(int pulse=0; pulse < PL_MAX; pulse++) {
+    if(PULSES.pulses[pulse].groups & g_PRIMARY) {
+      PULSES.init_pulse(pulse);				// remove all secondary pulses
+      cnt++;
+    }
+  }
+  return cnt;
+}
+
+
 bool do_pause_musicBox=false;	// triggers MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch
 
 int soft_cleanup_minimal_fraction_weighting=1;	// TODO: adjust default
@@ -961,7 +989,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 #endif
 
 #if defined MUSICBOX_HARD_END_SECONDS		// SAVETY NET
-    {
+    if(magic_autochanges) {
       struct time scratch = musicBox_hard_end_time;
       PULSES.sub_time(&this_start_time, &scratch);	// is it time?
       if(scratch.overflow) {			//   negative, so it *is*
@@ -1457,7 +1485,7 @@ RTC_DATA_ATTR unsigned long divisor_stored_RTC=0;
 RTC_DATA_ATTR bool metric_tunings_stored_RTC=false;
 
 void rtc_save_configuration () {
-  MENU.out(F("save to RTCmem\t"));
+  MENU.out(F("save to RTC memory\t"));
 
   scale_stored_RTC	=NULL;
   jiffle_stored_RTC	=NULL;
@@ -2168,6 +2196,7 @@ void musicBox_display() {
   else {
     MENU.outln(F("STOP"));
   }
+  MENU.out(F("'P2'= stop secondary"));
   MENU.ln();
 
   show_basic_musicBox_parameters();	// was: show_UI_basic_setup();
@@ -2180,7 +2209,7 @@ void musicBox_display() {
 
 
 bool musicBox_reaction(char token) {
-  int input_value;
+  int input_value, cnt;
 
   switch(token) {
   case '?': // musicBox_display();
@@ -2196,6 +2225,7 @@ bool musicBox_reaction(char token) {
   case 'a': // magic_autochanges
     MENU.out(F("autochanges"));
     MENU.out_ON_off(magic_autochanges = !magic_autochanges);
+    MENU.ln();
     break;
   case 'c': // show cycle
     show_cycle(harmonical_CYCLE);
@@ -2270,13 +2300,32 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'P': // 'P' Play start/stop
-    if(MusicBoxState != OFF) {
-      reset_all_flagged_pulses_GPIO_OFF();
-      set_MusicBoxState(OFF);
-      if(MENU.maybe_display_more(VERBOSITY_LOWEST))
-	musicBox_display();
-    } else
-      start_musicBox();
+    switch(MENU.cb_peek()) {
+    case '1':	// 'P1' kill primary pulses
+      MENU.drop_input_token();
+      cnt = kill_primary();
+      if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
+	MENU.out(F("kill primary "));
+	MENU.outln(cnt);
+      }
+      break;
+    case '2':	// 'P2' kill secondary pulses
+      MENU.drop_input_token();
+      cnt = kill_secondary();
+      if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
+	MENU.out(F("kill secondary "));
+	MENU.outln(cnt);
+      }
+      break;
+    default:	// 'P' start/stop musicBox
+      if(MusicBoxState != OFF) {
+	reset_all_flagged_pulses_GPIO_OFF();
+	set_MusicBoxState(OFF);
+	if(MENU.maybe_display_more(VERBOSITY_LOWEST))
+	  musicBox_display();
+      } else
+	start_musicBox();
+    }
     break;
 
   case 'p': // 'p' switch cycle pattern display

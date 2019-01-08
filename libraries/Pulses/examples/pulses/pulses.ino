@@ -147,7 +147,7 @@ action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actio
 /* **************************************************************** */
 // define gpio_pin_t gpio_pins[GPIO_PINS]	// see: pulses_boards.h
 #ifdef GPIO_PINS
-  #include "pulses_CLICK_PIN_configuration.h"	// defines gpio_pins[]	// TODO: rename
+  #include "pulses_CLICK_PIN_configuration.h"	// defines gpio_pins[]
 #endif
 
 /* **************************************************************** */
