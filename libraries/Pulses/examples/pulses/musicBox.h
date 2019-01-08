@@ -1483,6 +1483,7 @@ RTC_DATA_ATTR int sync_stored_RTC=ILLEGAL;
 RTC_DATA_ATTR unsigned long multiplier_stored_RTC=0;
 RTC_DATA_ATTR unsigned long divisor_stored_RTC=0;
 RTC_DATA_ATTR bool metric_tunings_stored_RTC=false;
+RTC_DATA_ATTR bool magic_autochanges_OFF_stored_RTC=false;
 
 void rtc_save_configuration () {
   MENU.out(F("save to RTC memory\t"));
@@ -1494,6 +1495,7 @@ void rtc_save_configuration () {
   multiplier_stored_RTC	=ILLEGAL;
 
   metric_tunings_stored_RTC = some_metric_tunings_only;
+  magic_autochanges_OFF_stored_RTC = ! magic_autochanges;
 
   if(scale_user_selected)
     scale_stored_RTC = selected_in(SCALES);
@@ -1520,6 +1522,9 @@ void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless wakin
 
     if(metric_tunings_stored_RTC)
       some_metric_tunings_only=true;
+
+    if(magic_autochanges_OFF_stored_RTC)
+      magic_autochanges = false;
 
     if(scale_stored_RTC != NULL) {
       MENU.out(F("SCALE "));
