@@ -40,7 +40,7 @@
   //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
 #endif
 
-bool some_fixed_tunings_only=false;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
+bool some_metric_tunings_only=false;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
 
 #include <esp_sleep.h>
 // #include "rom/gpio.h"
@@ -1450,6 +1450,7 @@ RTC_DATA_ATTR unsigned int * jiffle_stored_RTC=NULL;
 RTC_DATA_ATTR int sync_stored_RTC=ILLEGAL;
 RTC_DATA_ATTR unsigned long multiplier_stored_RTC=0;
 RTC_DATA_ATTR unsigned long divisor_stored_RTC=0;
+RTC_DATA_ATTR bool metric_tunings_stored_RTC=false;
 
 void rtc_save_configuration () {
   MENU.out(F("save to RTCmem\t"));
@@ -1460,9 +1461,11 @@ void rtc_save_configuration () {
   divisor_stored_RTC	=ILLEGAL;	// !=0 after wake up flags deep sleep wakeup
   multiplier_stored_RTC	=ILLEGAL;
 
+  metric_tunings_stored_RTC = some_metric_tunings_only;
+
   if(scale_user_selected)
     scale_stored_RTC = selected_in(SCALES);
-  
+
   if(sync_user_selected)
     sync_stored_RTC = sync;
 
@@ -1482,6 +1485,9 @@ void rtc_save_configuration () {
 void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless waking up from *deep sleep*
   if(divisor_stored_RTC) {	// divisor == 0 when *not* waking up from deep sleep, ignore
     MENU.out(F("restore from RTCmem "));
+
+    if(metric_tunings_stored_RTC)
+      some_metric_tunings_only=true;
 
     if(scale_stored_RTC != NULL) {
       MENU.out(F("SCALE "));
@@ -1614,7 +1620,7 @@ void start_musicBox() {
 
   // random pitch
   if(!pitch_user_selected) {	// if *not* set by user interaction
-    if(!some_fixed_tunings_only) {	// RANDOM tuning?
+    if(!some_metric_tunings_only) {	// RANDOM tuning?
 #if defined RANDOM_ENTROPY_H
       random_entropy();	// entropy from hardware
 #endif
@@ -2111,7 +2117,7 @@ void musicBox_display() {
   MENU.ln();
 
   MENU.out(F("subcycle octave 'O+' 'O-'\tresync/restart now 'n'\t't' metric tuning"));
-  MENU.out_ON_off(some_fixed_tunings_only);
+  MENU.out_ON_off(some_metric_tunings_only);
   MENU.out(F("  'F' "));
   if(scale_user_selected && sync_user_selected && jiffle_user_selected && pitch_user_selected && subcycle_user_selected)
     MENU.out(F("un"));
@@ -2275,9 +2281,9 @@ bool musicBox_reaction(char token) {
     }
     break;
 
-  case 't':	// tuning: toggle some_fixed_tunings_only
+  case 't':	// tuning: toggle some_metric_tunings_only
     MENU.out(F("fixed metric tunings"));
-    MENU.out_ON_off(some_fixed_tunings_only = !some_fixed_tunings_only);
+    MENU.out_ON_off(some_metric_tunings_only = !some_metric_tunings_only);
     MENU.ln();
     break;
 
