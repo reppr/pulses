@@ -2,7 +2,7 @@
   musicBox.h
 */
 
-#define MUSICBOX_VERSION	alpha 0.010	// (maybe used also as BLUETOOTH_NAME)
+#define MUSICBOX_VERSION	alpha 0.011	// (maybe used also as BLUETOOTH_NAME)
 
 // PRESETS: uncomment *one* (or zero) of the following setups:
 #define SETUP_BRACHE				BRACHE_2019-01
@@ -78,6 +78,7 @@ bool some_metric_tunings_only=false;	// fixed pitchs only like E A D G C F B  wa
     #define  MUSICBOX_HARD_END_SECONDS	90*60	// TODO: review that
   #endif
 #endif
+
 
 //#define  MUSICBOX_ENDING_FUNCTION	light_sleep();	// works fine as default for triggered musicBox	  bluetooth does *not* wake up
 //#define  MUSICBOX_ENDING_FUNCTION	deep_sleep();	// still DAC noise!!!
@@ -620,6 +621,45 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
   }
 }
 
+void tag_randomness(bool user_selected) {
+  if(user_selected)
+    MENU.out('!');
+  else
+    MENU.out('~');
+  MENU.space();
+}
+
+char * metric_mnemonic = {"? "};
+
+void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
+  tag_randomness(scale_user_selected);
+  MENU.out(F("SCALE: "));
+  MENU.out(array2name(SCALES, selected_in(SCALES)));
+  MENU.space(5);
+
+  tag_randomness(sync_user_selected);
+  MENU.out(F("SYNC: "));
+  MENU.out(sync);
+  MENU.space(5);
+
+  tag_randomness(jiffle_user_selected);
+  MENU.out(F("JIFFLE: "));
+  MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
+  MENU.space(5);
+
+  tag_randomness(pitch_user_selected);
+  MENU.out(F("SCALING: "));	// FIXME: TODO: check where that *is* used ################
+  MENU.out(multiplier);
+  MENU.slash();
+  MENU.out(divisor);
+
+  if(some_metric_tunings_only) {
+    MENU.out(F(" \t*metric* "));
+    MENU.out(metric_mnemonic);
+  }
+  MENU.ln();
+}
+
 void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard end playing
   if(with_title)	// TODO: maybe use MENU.verbosity, but see also 'o'
     MENU.out(F("HARD_END_playing()\t"));
@@ -635,7 +675,8 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
     MENU.ln();
     MENU.ln();
 
-    show_UI_basic_setup();
+    show_basic_musicBox_parameters();
+    MENU.space(2);
     show_cycles_1line();
     MENU.ln();
   }
@@ -1330,8 +1371,6 @@ void select_random_jiffle(void) {
   jiffle_user_selected = false;
 }
 
-char * metric_mnemonic = {"  "};
-
 void random_metric_pitches(void) {
   if(MENU.maybe_display_more(VERBOSITY_LOWEST))
     MENU.out(F("random *metric* tuning "));
@@ -1483,7 +1522,7 @@ RTC_DATA_ATTR unsigned long divisor_stored_RTC=0;
 RTC_DATA_ATTR bool metric_tunings_stored_RTC=false;
 RTC_DATA_ATTR bool magic_autochanges_OFF_stored_RTC=false;
 
-void rtc_save_configuration () {
+void rtc_save_configuration() {
   MENU.out(F("save to RTC memory\t"));
 
   scale_stored_RTC	=NULL;
@@ -2035,43 +2074,6 @@ void magical_butler(int p) {	// TODO: OBSOLETE?
 } // magical_butler()	OBSOLETE
 
 
-void tag_randomness(bool user_selected) {
-  if(user_selected)
-    MENU.out('!');
-  else
-    MENU.out('~');
-  MENU.space();
-}
-
-void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
-  tag_randomness(scale_user_selected);
-  MENU.out(F("SCALE: "));
-  MENU.out(array2name(SCALES, selected_in(SCALES)));
-  MENU.space(5);
-
-  tag_randomness(sync_user_selected);
-  MENU.out(F("SYNC: "));
-  MENU.out(sync);
-  MENU.space(5);
-
-  tag_randomness(jiffle_user_selected);
-  MENU.out(F("JIFFLE: "));
-  MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
-  MENU.space(5);
-
-  tag_randomness(pitch_user_selected);
-  MENU.out(F("SCALING: "));	// FIXME: TODO: check where that *is* used ################
-  MENU.out(multiplier);
-  MENU.slash();
-  MENU.out(divisor);
-
-  if(some_metric_tunings_only) {
-    MENU.out(F(" \t*metric* "));
-    MENU.out(metric_mnemonic);
-  }
-  MENU.ln();
-}
-
 /* **************************************************************** */
 void musicBox_setup() {	// TODO:update
   MENU.ln();
@@ -2190,16 +2192,29 @@ void musicBox_display() {
   MENU.out(F(")\t'd'=days to survive  'l'=level minimal age 'E'= start soft end now  'w' minimal weight "));
   MENU.outln(soft_cleanup_minimal_fraction_weighting);
 
-  MENU.outln(F("\"L\"=stop when low\t\"LL\"=stop only low\thard end='H'"));
+  MENU.outln(F("'L'=stop when low\t'LL'=stop only low\thard end='H'"));
+  MENU.ln();
+
+  MENU.out(F("'EF[dlhn]' when done do:  deep_sleep, light_sleep, hibernate, noop\t"));
+  if(musicBox_when_done == &deep_sleep)
+    MENU.out("deep_sleep");
+  else if(musicBox_when_done == &light_sleep)
+    MENU.out("light_sleep");
+  else if(musicBox_when_done == &hibernate)
+    MENU.out("hibernate");
+  else if(musicBox_when_done == &noop)
+    MENU.out("noop");
+  else
+    MENU.out("(unknown)");
+  MENU.outln(F("();"));
   MENU.ln();
 
   MENU.out(F("'P'="));
   if(MusicBoxState == OFF)
-    MENU.outln(F("START"));
-  else {
-    MENU.outln(F("STOP"));
-  }
-  MENU.out(F("'P2'= stop secondary"));
+    MENU.out(F("START"));
+  else
+    MENU.out(F("STOP"));
+  MENU.out(F("\t'P1'= stop primary\t'P2'= stop secondary"));
   MENU.ln();
 
   show_basic_musicBox_parameters();	// was: show_UI_basic_setup();
@@ -2218,9 +2233,10 @@ bool musicBox_reaction(char token) {
   case '?': // musicBox_display();
     musicBox_display();
     break;
-  case ',':
+  case ',': // show parameters
     if (MENU.menu_mode == 0) {	// exclude special cases
       show_basic_musicBox_parameters();
+      MENU.space(2);
       show_cycles_1line();
     } else
       return false;	// for other menu modes let pulses menu do the work ;)	// TODO: TEST:
@@ -2234,7 +2250,32 @@ bool musicBox_reaction(char token) {
     show_cycle(harmonical_CYCLE);
     break;
   case 'E': // start_soft_ending(soft_end_days_to_live, soft_end_survive_level);
-    start_soft_ending(soft_end_days_to_live, soft_end_survive_level);
+    if(MENU.cb_peek() == 'F') {		// case "EFx" configure function musicBox_when_done();
+      MENU.drop_input_token();
+      MENU.out(F("when done do: "));
+      switch(MENU.cb_peek()) {
+      case 'd':
+	MENU.out(F("deep_sleep"));
+	musicBox_when_done=&deep_sleep;		// "EFd" deep_sleep()
+	break;
+      case 'l':
+	MENU.out(F("light_sleep"));
+	musicBox_when_done=&light_sleep;	// "EFl" light_sleep()
+	break;
+      case 'h':
+	MENU.out(F("*DEACTIVATED* "));		// "EFh" hibernate()	TODO: CRASH: DEBUG: ################
+	MENU.out(F("hibernate"));
+	//musicBox_when_done=&hibernate;	// "EFh" hibernate()	TODO: CRASH: DEBUG: ################
+	break;
+      case 'n':
+	MENU.out(F("noop"));
+	musicBox_when_done=&noop;		// "EFn" noop()
+	break;
+      }
+      MENU.drop_input_token();
+      MENU.outln(F("();"));
+    } else	// plain 'E' start_soft_ending(...)
+      start_soft_ending(soft_end_days_to_live, soft_end_survive_level);
     break;
   case 'd': // soft_end_days_to_live
     input_value = MENU.numeric_input(soft_end_days_to_live);

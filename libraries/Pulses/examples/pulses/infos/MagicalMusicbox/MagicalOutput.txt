@@ -4900,3 +4900,41 @@ harmonical cycle:  3h 35' 35"
 (2^-8) 51"	(2^-9) 25"	(2^-10)   12.631908s	(2^-11)    6.315954s
 
 sync pause    0.525825s
+
+
+
+rhythm tuned in
+*****************
+
+very nice, simple octaves_fourths pattern, deep down to rhythmical roots
+
+
+AUTOSTART 1
+
+start_musicBox()	alpha 0.010	BRACHE_2019-01
+MusicBoxState AWAKE
+2019-01-08_08h45m59s	TUE
+battery control pin: 36	1274	GOOD
+power accepted
+peripheral POWER ON 12
+restore from RTCmem
+
+ >>> * <<<
+2019-01-08_08h46m00s	TUE
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	octaves_fourths
+JIFFLE:	din_dididi
+SYNC:	0
+TIME_U:	1000000	fixed random tuning a	*32768/220
+harmonical CYCLE: 6d 23h 45' 55"	SUBCYCLE: | 4' 55" |
+ <<< * >>>
+
+harmonical cycle:  6d 23h 45' 55"
+
+(2^0) 6d 23h 45' 55"	(2^-1) 3d 11h 52' 58"	(2^-2) 1d 17h 56' 29"	(2^-3) 20h 58' 14"
+(2^-4) 10h 29' 7"	(2^-5) 5h 14' 34"	(2^-6) 2h 37' 17"	(2^-7) 1h 18' 38"
+(2^-8) 39' 19"	(2^-9) 19' 40"	(2^-10) 9' 50"	|(2^-11) 4' 55" |
+(2^-12) 2' 27"	(2^-13) 1' 14"	(2^-14) 37"	(2^-15)   18.431107s
+(2^-16)    9.215553s	(2^-17)    4.607776s
