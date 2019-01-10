@@ -2270,10 +2270,16 @@ bool musicBox_reaction(char token) {
     } else
       return false;	// for other menu modes let pulses menu do the work ;)	// TODO: TEST:
     break;
-  case 'a': // magic_autochanges
+  case 'a': // magic_autochanges    // 'a'	FIXME: TODO: deal with soft_end_time ################
     MENU.out(F("autochanges"));
     MENU.out_ON_off(magic_autochanges = !magic_autochanges);
     MENU.ln();
+#if defined MUSICBOX_HARD_END_SECONDS
+    if(magic_autochanges) {	// magic_autochanges was switched *on*
+      musicBox_hard_end_time = PULSES.get_now();	// setup savety net: fixed maximal performance duration
+      PULSES.add_time(MUSICBOX_HARD_END_SECONDS*1000000, &musicBox_hard_end_time);
+    }
+#endif
     break;
   case 'c': // show cycle
     show_cycle(harmonical_CYCLE);
