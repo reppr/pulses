@@ -89,7 +89,11 @@ bool some_metric_tunings_only=true;	// fixed pitchs only like E A D G C F B  was
 //#define  MUSICBOX_ENDING_FUNCTION	ESP.restart();	// works fine
 
 //#define  MUSICBOX_ENDING_FUNCTION	;	// never ending jam session...
-void noop() { ; }	// endless loop...
+void restart() { ; }	// endless loop...
+
+void user() {	// manual musicBox interaction
+  MENU.outln(F("menu interaction"));
+}
 
 int musicBox_pause_seconds=10;
 
@@ -104,17 +108,9 @@ void hibernate() {	// see: https://esp32.com/viewtopic.php?t=3083
   esp_deep_sleep_start();
 }
 
-void light_sleep();	// pre declaration
+
 void deep_sleep();	// pre declaration
-
-//void (*musicBox_when_done)(void)=&light_sleep;
-void (*musicBox_when_done)(void)=&deep_sleep;
-//void (*musicBox_when_done)(void)=&hibernate;	// TEST ################
-//void (*musicBox_when_done)(void)=&noop;		// TEST ################
-
-//void start_musicBox();	// pre declaration
-//#define  MUSICBOX_ENDING_FUNCTION	delay(6*1000); start_musicBox();	// sound recording loop?
-
+void (*musicBox_when_done)(void)=&deep_sleep;	// function* called when musicBox ends
 
 struct time musicBox_start_time;
 struct time musicBox_hard_end_time;
@@ -2225,15 +2221,17 @@ void musicBox_display() {
   MENU.outln(F("'L'=stop when low\t'LL'=stop only low\thard end='H'"));
   MENU.ln();
 
-  MENU.out(F("'EF[dlhn]' when done do:  deep_sleep, light_sleep, hibernate, noop\t"));
+  MENU.out(F("'EF[dlhru]' when done do:  deep_sleep, light_sleep, hibernate, restart, user\t"));
   if(musicBox_when_done == &deep_sleep)
     MENU.out("deep_sleep");
   else if(musicBox_when_done == &light_sleep)
     MENU.out("light_sleep");
   else if(musicBox_when_done == &hibernate)
     MENU.out("hibernate");
-  else if(musicBox_when_done == &noop)
-    MENU.out("noop");
+  else if(musicBox_when_done == &restart)
+    MENU.out("restart");
+  else if(musicBox_when_done == &user)
+    MENU.out("user");
   else
     MENU.out("(unknown)");
   MENU.outln(F("();"));
@@ -2305,8 +2303,8 @@ bool musicBox_reaction(char token) {
   case 'c': // show cycle
     show_cycle(harmonical_CYCLE);
     break;
-  case 'E': // start_soft_ending(soft_end_days_to_live, soft_end_survive_level);
-    if(MENU.cb_peek() == 'F') {		// case "EFx" configure function musicBox_when_done();
+  case 'E': // 'E' (bare):  start_soft_ending(soft_end_days_to_live, soft_end_survive_level);
+    if(MENU.cb_peek() == 'F') {			// case "EFx" configure function musicBox_when_done();
       MENU.drop_input_token();
       MENU.out(F("when done do: "));
       switch(MENU.cb_peek()) {
@@ -2323,9 +2321,13 @@ bool musicBox_reaction(char token) {
 	MENU.out(F("hibernate"));
 	//musicBox_when_done=&hibernate;	// "EFh" hibernate()	TODO: CRASH: DEBUG: ################
 	break;
-      case 'n':
-	MENU.out(F("noop"));
-	musicBox_when_done=&noop;		// "EFn" noop()
+      case 'r':
+	MENU.out(F("restart"));
+	musicBox_when_done=&restart;		// "EFr" restart()
+	break;
+      case 'u':
+	MENU.out(F("user"));
+	musicBox_when_done=&user;		// "EFu" user()
 	break;
       }
       MENU.drop_input_token();

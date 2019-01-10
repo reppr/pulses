@@ -1125,9 +1125,10 @@ void loop() {	// ARDUINO
       stress_event_cnt = 0;
       delay(600);	// send remaining output
 
-      (*musicBox_when_done)();      //      MUSICBOX_ENDING_FUNCTION
+      (*musicBox_when_done)();      	//      MUSICBOX_ENDING_FUNCTION
 
-      start_musicBox();
+      if(musicBox_when_done != &user)	// user() is a flag *NOT to autostart* musicBox
+	start_musicBox();
     }
 #endif
 
