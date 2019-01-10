@@ -4,6 +4,9 @@
 
 #define MUSICBOX_VERSION	alpha 0.011	// (maybe used also as BLUETOOTH_NAME)
 
+#define LONELY_BUTLER_QUITS			// lonely butler detect SAVETY NET, TODO: will be completely *wrong* in other situations
+
+
 // PRESETS: uncomment *one* (or zero) of the following setups:
 #define SETUP_BRACHE				BRACHE_2019-01
 //#define SETUP_BAHNPARKPLATZ	BahnParkPlatz 18
@@ -1033,6 +1036,32 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
       PULSES.sub_time(&this_start_time, &scratch);	// is it time?
       if(scratch.overflow) {			//   negative, so it *is*
 	MENU.out(F("butler: MUSICBOX_HARD_END_SECONDS "));
+	HARD_END_playing(true);
+      }
+    }
+#endif
+
+#if defined LONELY_BUTLER_QUITS    // lonely butler detect SAVETY NET, TODO: will be completely *wrong* in other situations
+    if((PULSES.pulses[pulse].counter % 11) == 0) {	// lonely butler detect
+      bool survivor=false;
+      for(int p=0; p<PL_MAX; p++) {
+	if(PULSES.pulses[p].groups & g_PRIMARY) {	// any primary survivor?
+	  survivor=true;
+	  break;
+	}
+      }
+
+      if(!survivor) {
+	for(int p=0; p<PL_MAX; p++) {
+	  if(PULSES.pulses[p].groups & g_SECONDARY) {	// any seconary survivor?
+	    survivor=true;
+	    break;
+	  }
+	}
+      }
+
+      if(!survivor) {	// lonely butler detect SAVETY NET, TODO: will be completely *wrong* in other situations
+	MENU.out(F("butler: lonely butler quits "));
 	HARD_END_playing(true);
       }
     }
