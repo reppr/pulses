@@ -90,7 +90,8 @@ struct pulse_t {
   struct time next;		// next time the pulse wants to wake up
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
-  struct time other_time;	// used by tuning, maybe others to come
+  struct time other_time;	// used by tuning,	TODO: CONFLICTS with musicBox_butler(p)
+				// used by musicBox_butler(p) as soft_end_time	TODO: CONFLICTS with tuning
 #endif
 
 
@@ -221,6 +222,7 @@ struct pulse_t {
   //					pulse_info(pulse)
   //					do_jiffle(pulse)
   //					do_throw_a_jiffle(pulse)
+  //					musicBox_butler(pulse)
   // ============>>> adapt init_pulse() IF YOU CHANGE SOMETHING HERE <<<============
 
 

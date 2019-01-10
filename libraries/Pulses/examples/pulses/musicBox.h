@@ -1000,7 +1000,12 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     soft_end_cnt=0;
     soft_cleanup_started=false;
     stop_on_low_cnt=0;
-    musicBox_trigger_enabled=false;	// do we need that?
+
+    struct time soft_end_time=musicBox_start_time;
+    PULSES.add_time(&used_subcycle, &soft_end_time);
+    PULSES.add_time(100/*tolerance*/, &soft_end_time);	// tolerance	TODO: rethink&check
+    PULSES.pulses[pulse].other_time = soft_end_time;	// TODO: musicBox_butler(p) CONFLICTS with tuning
+    musicBox_trigger_enabled=false;			// do we need that?
 
   } else if(PULSES.pulses[pulse].counter==2) {	// now we might have more time for some setup
 
@@ -1083,9 +1088,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     if(magic_autochanges) {	// the butler influences performance and changes phases like ending
       if(soft_end_cnt==0) {	// first time
 	// soft end time could be reprogrammed by user interaction, always compute new:
-	struct time soft_end_time=musicBox_start_time;
-	PULSES.add_time(&used_subcycle, &soft_end_time);
-	PULSES.add_time(100, &soft_end_time);		// tolerance
+	struct time soft_end_time = PULSES.pulses[pulse].other_time;
 	struct time thisNow = this_start_time;
 	PULSES.sub_time(&thisNow, &soft_end_time);	// is it time?
 	if(soft_end_time.overflow) {			//   negative, so it *is*
@@ -2268,16 +2271,36 @@ bool musicBox_reaction(char token) {
     } else
       return false;	// for other menu modes let pulses menu do the work ;)	// TODO: TEST:
     break;
-  case 'a': // magic_autochanges    // 'a'	FIXME: TODO: deal with soft_end_time ################
+  case 'a': // magic_autochanges    // 'a'
     MENU.out(F("autochanges"));
     MENU.out_ON_off(magic_autochanges = !magic_autochanges);
     MENU.ln();
-#if defined MUSICBOX_HARD_END_SECONDS
+
     if(magic_autochanges) {	// magic_autochanges was switched *on*
-      musicBox_hard_end_time = PULSES.get_now();	// setup savety net: fixed maximal performance duration
+      if(musicBox_butler_i != ILLEGAL) {	// deal with soft_end_time
+	struct time thisNow = PULSES.get_now();
+	struct time soft_end_time;
+	int cnt=0;
+	while (true)
+	  {
+	    soft_end_time = PULSES.pulses[musicBox_butler_i].other_time;
+	    PULSES.sub_time(&thisNow, &soft_end_time);
+	    if(soft_end_time.overflow) {	// add subcycles until soft_end_time is in future
+	      PULSES.add_time(&used_subcycle, &PULSES.pulses[musicBox_butler_i].other_time);
+	      cnt++;
+	    } else
+	      break;
+	  }
+	if(MENU.verbosity >= VERBOSITY_LOWEST) {
+	  MENU.out(cnt);
+	  MENU.outln(F(" subcycles added 'til soft_end"));
+	}
+      }
+#if defined MUSICBOX_HARD_END_SECONDS
+      musicBox_hard_end_time = PULSES.get_now(); // setup *savety net*  resceduled maximal performance duration
       PULSES.add_time(MUSICBOX_HARD_END_SECONDS*1000000, &musicBox_hard_end_time);
-    }
 #endif
+    }
     break;
   case 'c': // show cycle
     show_cycle(harmonical_CYCLE);
