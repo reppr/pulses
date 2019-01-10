@@ -43,7 +43,8 @@
   //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
 #endif
 
-bool some_metric_tunings_only=false;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
+//bool some_metric_tunings_only=false;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
+bool some_metric_tunings_only=true;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
 
 #include <esp_sleep.h>
 // #include "rom/gpio.h"
@@ -1408,7 +1409,7 @@ void random_metric_pitches(void) {
   random_entropy();	// entropy from hardware
 #endif
 
-  switch (random(20)) {
+  switch (random(17)) {
   case 0:
   case 1:
   case 3:
@@ -1443,9 +1444,6 @@ void random_metric_pitches(void) {
     divisor=175; // 174.16	// F3  ***not*** harmonical
     break;
   case 16:
-  case 17:	// 11.11. ;)
-  case 18:	// 11.11. ;)
-  case 19:	// 11.11. ;)
     metric_mnemonic = "b ";
     divisor=233; // 233.08	// Bb3 ***not*** harmonical
     break;
