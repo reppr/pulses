@@ -3368,14 +3368,23 @@ void Press_toStart() {
   MENU.outln(F("Press '!' to start"));
 }
 
-void select_scale__UI() {	// TODO: scale_user_selected	see musicBox
+
+void user_select_scale(unsigned int* scale) {
+  if(scale != NULL) {
+    select_array_in(SCALES, scale);
+    scale_user_selected = true;
+    pitch_user_selected = true;	// not sure about this	TODO: rethink
+  }
+}
+
+void select_scale__UI() {
   switch (MENU.cb_peek()) {
   case EOF:
     break;
 
   case 'u':	// harmonical time unit, minor
     MENU.drop_input_token();
-    select_array_in(SCALES, minor_scale);
+    user_select_scale(minor_scale);
     PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
     multiplier=1;
     divisor=1;
@@ -3383,7 +3392,7 @@ void select_scale__UI() {	// TODO: scale_user_selected	see musicBox
 
   case 'U':	// harmonical time unit, major
     MENU.drop_input_token();
-    select_array_in(SCALES, minor_scale);
+    user_select_scale(minor_scale);
     PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
     multiplier=1;
     divisor=1;
@@ -3391,14 +3400,14 @@ void select_scale__UI() {	// TODO: scale_user_selected	see musicBox
 
   case 'c':	// c minor
     MENU.drop_input_token();
-    select_array_in(SCALES, minor_scale);
+    user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor=262; // 261.63	// C4  ***not*** harmonical
     break;
 
   case 'C':	// c major
     MENU.drop_input_token();
-    select_array_in(SCALES, major_scale);
+    user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor=262; // 261.63	// C4  ***not*** harmonical
     break;
@@ -3408,7 +3417,7 @@ void select_scale__UI() {	// TODO: scale_user_selected	see musicBox
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor = 294;		// 293.66 = D4
     // divisor = 147;		// 146.83 = D3
-    select_array_in(SCALES, minor_scale);
+    user_select_scale(minor_scale);
     break;
 
   case 'D':	// D major scale
@@ -3416,47 +3425,47 @@ void select_scale__UI() {	// TODO: scale_user_selected	see musicBox
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor = 294;		// 293.66 = D4
     // divisor = 147;		// 146.83 = D3
-    select_array_in(SCALES, major_scale);
+    user_select_scale(major_scale);
     break;
 
   case 'e':	// e minor scale
     MENU.drop_input_token();
-    select_array_in(SCALES, minor_scale);
+    user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor=330; // 329.36	// e4  ***not*** harmonical
     break;
 
   case 'E':	// E major scale
     MENU.drop_input_token();
-    select_array_in(SCALES, major_scale);
+    user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor=330; // 329.36	// e4  ***not*** harmonical
     break;
 
   case 'f':	// f minor
     MENU.drop_input_token();
-    select_array_in(SCALES, minor_scale);
+    user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor=175; // 174.16	// F3  ***not*** harmonical
     break;
 
   case 'F':	// f major
     MENU.drop_input_token();
-    select_array_in(SCALES, major_scale);
+    user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor=175; // 174.16	// F3  ***not*** harmonical
     break;
 
   case 'g':	// g minor
     MENU.drop_input_token();
-    select_array_in(SCALES, minor_scale);
+    user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor=196; // 196.00	// G3  ***not*** harmonical
     break;
 
   case 'G':	// g major
     MENU.drop_input_token();
-    select_array_in(SCALES, major_scale);
+    user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor=196; // 196.00	// G3  ***not*** harmonical
     break;
@@ -3465,26 +3474,26 @@ void select_scale__UI() {	// TODO: scale_user_selected	see musicBox
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor = 440;
-    select_array_in(SCALES, minor_scale);
+    user_select_scale(minor_scale);
     break;
 
   case 'A':	// A major scale
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor = 440;
-    select_array_in(SCALES, major_scale);
+    user_select_scale(major_scale);
     break;
 
   case 'b':	// b minor
     MENU.drop_input_token();
-    select_array_in(SCALES, minor_scale);
+    user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor=247; // 246.94	// B3  ***not*** harmonical
     break;
 
   case 'B':	// b major
     MENU.drop_input_token();
-    select_array_in(SCALES, major_scale);
+    user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor=247; // 246.94	// B3  ***not*** harmonical
     break;
@@ -3494,31 +3503,31 @@ void select_scale__UI() {	// TODO: scale_user_selected	see musicBox
   case EOF:
     break;
   case '6':	// doric scale
-    select_array_in(SCALES, doric_scale);
+    user_select_scale(doric_scale);
     break;
   case '5':	// 5  pentatonic (minor|major) scale
     MENU.drop_input_token();
     if ((selected_in(SCALES) == major_scale) || (selected_in(SCALES) == tetrachord)) {
-      select_array_in(SCALES, european_PENTAtonic);
+      user_select_scale(european_PENTAtonic);
     } else {
-      select_array_in(SCALES, pentatonic_minor);
+      user_select_scale(pentatonic_minor);
     }
     break;
   case '4':	// 4  tetrachord
     MENU.drop_input_token();
-    select_array_in(SCALES, tetrachord);
+    user_select_scale(tetrachord);
     break;
   case '3':	// 3  octaves fourths fifths
     MENU.drop_input_token();
-    select_array_in(SCALES, octaves_fourths_fifths);
+    user_select_scale(octaves_fourths_fifths);
     break;
   case '2':	// 2  octaves fifths
     MENU.drop_input_token();
-    select_array_in(SCALES, octaves_fifths);
+    user_select_scale(octaves_fifths);
     break;
   case '1':	// 1  octaves
     MENU.drop_input_token();
-    select_array_in(SCALES, octaves);
+    user_select_scale(octaves);
     break;
   }
 }
@@ -3816,7 +3825,7 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-  case 'S':	// enter sync	FIXME: clashes with 'S' Start/Stop in musicBox menu
+  case 'S':	// enter sync
     if (MENU.maybe_calculate_input(&input_value)) {
       if (input_value>=0 ) {
 	sync = input_value;

@@ -2496,10 +2496,6 @@ bool musicBox_reaction(char token) {
     set_cycle_slice_number(cycle_slices);	// make sure slice_tick_period is ok
     break;
 
-  case 'D':	// TODO: REMOVE: ################
-    pitch_user_selected = true;
-    MENU.outln(F("pitch freezed"));
-    break;
 /*
   void furzificate() {	// switch to a quiet, farting patterns, u.a.
   very simple one shot implementation
