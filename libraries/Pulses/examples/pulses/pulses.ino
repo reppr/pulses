@@ -791,9 +791,14 @@ void setup() {
   MENU.ln();
 #endif
 
-#if defined USE_BLUETOOTH_SERIAL_MENU && true	// double, 1/2	test brownout recognition
-  bluetooth_setup();
-  MENU.ln();
+#if defined USE_BLUETOOTH_SERIAL_MENU	// double, 1/2	test brownout recognition	TODO: review
+  #if defined BLUETOOTH_ENABLE_PIN
+  if(bluetooth_switch_())
+  #endif
+    {
+      bluetooth_setup();
+      MENU.ln();
+    }
 #endif
 
 #include "array_descriptors_setup.h"
@@ -858,8 +863,11 @@ void setup() {
   #endif	// ESP8266
 #endif // to WiFi or not
 
-#if defined USE_BLUETOOTH_SERIAL_MENU && false	// double, 2/2	test brownout recognition
-  bluetooth_setup();
+#if defined USE_BLUETOOTH_SERIAL_MENU && false	// double, 2/2	test brownout recognition	TODO: review
+  #if defined BLUETOOTH_ENABLE_PIN
+  if(bluetooth_switch_())
+  #endif
+    bluetooth_setup();
 #endif
 
 #if defined USE_i2c

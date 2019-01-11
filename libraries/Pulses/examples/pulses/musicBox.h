@@ -2,7 +2,7 @@
   musicBox.h
 */
 
-#define MUSICBOX_VERSION	alpha 0.011	// (maybe used also as BLUETOOTH_NAME)
+#define MUSICBOX_VERSION	alpha 0.012	// (maybe used also as BLUETOOTH_NAME)
 
 #define LONELY_BUTLER_QUITS			// lonely butler detect SAVETY NET, TODO: will be completely *wrong* in other situations
 
@@ -84,11 +84,6 @@ bool some_metric_tunings_only=true;	// fixed pitchs only like E A D G C F B  was
 #endif
 
 
-//#define  MUSICBOX_ENDING_FUNCTION	light_sleep();	// works fine as default for triggered musicBox	  bluetooth does *not* wake up
-//#define  MUSICBOX_ENDING_FUNCTION	deep_sleep();	// still DAC noise!!!
-//#define  MUSICBOX_ENDING_FUNCTION	ESP.restart();	// works fine
-
-//#define  MUSICBOX_ENDING_FUNCTION	;	// never ending jam session...
 void restart() { ; }	// endless loop...
 
 void user() {	// manual musicBox interaction
@@ -109,8 +104,34 @@ void hibernate() {	// see: https://esp32.com/viewtopic.php?t=3083
 }
 
 
-void deep_sleep();	// pre declaration
+//#define  MUSICBOX_ENDING_FUNCTION	light_sleep();	// works fine as default for triggered musicBox	  bluetooth does *not* wake up
+//#define  MUSICBOX_ENDING_FUNCTION	deep_sleep();	// still DAC noise!!!
+//#define  MUSICBOX_ENDING_FUNCTION	ESP.restart();	// works fine
+
+void deep_sleep(); 	// pre declaration
+void light_sleep(); 	// pre declaration
+
 void (*musicBox_when_done)(void)=&deep_sleep;	// function* called when musicBox ends
+
+void show_when_done_function() {
+  MENU.out(F("when done do: "));
+
+  if(musicBox_when_done == &deep_sleep)
+    MENU.out("deep_sleep");
+  else if(musicBox_when_done == &light_sleep)
+    MENU.out("light_sleep");
+  else if(musicBox_when_done == &hibernate)
+    MENU.out("hibernate");
+  else if(musicBox_when_done == &restart)
+    MENU.out("restart");
+  else if(musicBox_when_done == &user)
+    MENU.out("user");
+  else
+    MENU.out("(unknown)");
+
+  MENU.out(F("();"));
+}
+
 
 struct time musicBox_start_time;
 struct time musicBox_hard_end_time;
@@ -1858,6 +1879,7 @@ void magical_fart_setup(gpio_pin_t sense_pin, gpio_pin_t output_pin) {
 }
 
 
+// light_sleep();  works fine as default for triggered musicBox	  but bluetooth does *not* wake up
 void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from main loop
   MENU.out(F("light_sleep()\t"));
 
@@ -1958,7 +1980,10 @@ void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from mai
 		      esp_bt_controller_enable((esp_bt_mode_t) 0x02));
   */
 
-  bluetooth_setup();		// does no good, does no harm
+#if defined BLUETOOTH_ENABLE_PIN
+  if(bluetooth_switch_())
+#endif
+    bluetooth_setup();		// does no good, does no harm
 
   /*
   if(esp_bluedroid_enable())	// wakes up *if* after bluetooth_setup(), but still no BT
@@ -2221,20 +2246,9 @@ void musicBox_display() {
   MENU.outln(F("'L'=stop when low\t'LL'=stop only low\thard end='H'"));
   MENU.ln();
 
-  MENU.out(F("'EF[dlhru]' when done do:  deep_sleep, light_sleep, hibernate, restart, user\t"));
-  if(musicBox_when_done == &deep_sleep)
-    MENU.out("deep_sleep");
-  else if(musicBox_when_done == &light_sleep)
-    MENU.out("light_sleep");
-  else if(musicBox_when_done == &hibernate)
-    MENU.out("hibernate");
-  else if(musicBox_when_done == &restart)
-    MENU.out("restart");
-  else if(musicBox_when_done == &user)
-    MENU.out("user");
-  else
-    MENU.out("(unknown)");
-  MENU.outln(F("();"));
+  MENU.out(F("'EF[dlhru]'  deep_sleep, light_sleep, hibernate, restart, user\t"));
+  show_when_done_function();
+  MENU.ln();
   MENU.ln();
 
   MENU.out(F("'P'="));
@@ -2306,32 +2320,31 @@ bool musicBox_reaction(char token) {
   case 'E': // 'E' (bare):  start_soft_ending(soft_end_days_to_live, soft_end_survive_level);
     if(MENU.cb_peek() == 'F') {			// case "EFx" configure function musicBox_when_done();
       MENU.drop_input_token();
-      MENU.out(F("when done do: "));
-      switch(MENU.cb_peek()) {
-      case 'd':
-	MENU.out(F("deep_sleep"));
-	musicBox_when_done=&deep_sleep;		// "EFd" deep_sleep()
-	break;
-      case 'l':
-	MENU.out(F("light_sleep"));
-	musicBox_when_done=&light_sleep;	// "EFl" light_sleep()
-	break;
-      case 'h':
-	MENU.out(F("*DEACTIVATED* "));		// "EFh" hibernate()	TODO: CRASH: DEBUG: ################
-	MENU.out(F("hibernate"));
-	//musicBox_when_done=&hibernate;	// "EFh" hibernate()	TODO: CRASH: DEBUG: ################
-	break;
-      case 'r':
-	MENU.out(F("restart"));
-	musicBox_when_done=&restart;		// "EFr" restart()
-	break;
-      case 'u':
-	MENU.out(F("user"));
-	musicBox_when_done=&user;		// "EFu" user()
-	break;
-      }
-      MENU.drop_input_token();
-      MENU.outln(F("();"));
+      if(MENU.cb_peek() != EOF) {
+	switch(MENU.cb_peek()) {
+	case 'd':
+	  musicBox_when_done=&deep_sleep;		// "EFd" deep_sleep()
+	  break;
+	case 'l':
+	  musicBox_when_done=&light_sleep;	// "EFl" light_sleep()
+	  break;
+	case 'h':
+	  MENU.out(F("hibernate() *DEACTIVATED* "));		// "EFh" hibernate()	TODO: CRASH: DEBUG: ################
+	  //musicBox_when_done=&hibernate;	// "EFh" hibernate()	TODO: CRASH: DEBUG: ################
+	  break;
+	case 'r':
+	  musicBox_when_done=&restart;		// "EFr" restart()
+	  break;
+	case 'u':
+	  musicBox_when_done=&user;		// "EFu" user()
+	  break;
+	default:
+	  MENU.outln_invalid();
+	}
+	MENU.drop_input_token();
+      } // else	// bare "EF"  just show configured function
+      show_when_done_function();
+      MENU.ln();
     } else	// plain 'E' start_soft_ending(...)
       start_soft_ending(soft_end_days_to_live, soft_end_survive_level);
     break;

@@ -14,7 +14,30 @@
 #if defined MUSICBOX_VERSION
   #define BLUETOOTH_NAME	MUSICBOX_VERSION	// the BT name of esp32
 #else
-  #define BLUETOOTH_NAME	ESP alpha 0.011		// the BT name of esp32
+  #define BLUETOOTH_NAME	ESP alpha 0.012		// the BT name of esp32
+#endif
+
+
+#define BLUETOOTH_ENABLE_PIN	35	// check pin to see if bluetooth is enabled
+
+#if defined BLUETOOTH_ENABLE_PIN
+  bool bluetooth_switch_() {
+    bool on;
+    pinMode(BLUETOOTH_ENABLE_PIN, INPUT);
+    digitalRead(BLUETOOTH_ENABLE_PIN);		// i do not trust the very first reading...
+    on = digitalRead(BLUETOOTH_ENABLE_PIN);	// read again
+    if(MENU.verbosity >= VERBOSITY_LOWEST) {
+      MENU.out(F("bluetooth is switched"));
+      MENU.out_ON_off(on);
+      if(on)
+	MENU.tab();
+      else {
+	MENU.ln();
+	MENU.ln();
+      }
+    }
+    return on;
+  }
 #endif
 
 esp_bt_controller_status_t bt_status_before_sleeping = (esp_bt_controller_status_t) 0;	// debugging only
@@ -28,6 +51,13 @@ esp_bt_controller_status_t show_bt_controller_status() {
 
 bool bluetoothSerialBEGIN() {
   bool ok;
+
+#if defined BLUETOOTH_ENABLE_PIN
+  if(! bluetooth_switch_()) {	// savety net, should not happen...
+    MENU.error_ln(F("BT is disabled"));
+    return false;
+  }
+#endif
 
   MENU.out(F("BLUEtoothSerial.begin("));
   MENU.out(F(STRINGIFY(BLUETOOTH_NAME)));
