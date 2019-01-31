@@ -650,7 +650,7 @@ void tag_randomness(bool user_selected) {
   MENU.space();
 }
 
-char * metric_mnemonic = {"? "};
+char * metric_mnemonic = "? ";
 
 void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   tag_randomness(scale_user_selected);
@@ -2453,6 +2453,12 @@ bool musicBox_reaction(char token) {
 	MENU.out(F("do *not show*"));
       MENU.outln(F(" cycle pattern"));
     }
+    break;
+
+  case 'R':
+    select_scale__UI();		// TODO: see pulses.ino 'R'	make them identical? ################
+    MENU.out(F("SCALE: "));
+    MENU.outln(selected_name(SCALES));
     break;
 
   case 't':	// tuning: toggle some_metric_tunings_only

@@ -3378,11 +3378,21 @@ void user_select_scale(unsigned int* scale) {
 }
 
 void select_scale__UI() {
+  /*
+    void select_scale__UI() examples:
+    "a"		metric a=440 *minor* scale
+    "E"		metric E=330 *major* scale
+    "d5"	metric d *minor pentatonic* scale
+    "C5"	metric C *european pentatonic* scale
+    "F4"	*tetrachord* (as a scale) on metric F
+  */
+
   switch (MENU.cb_peek()) {
   case EOF:
     break;
 
   case 'u':	// harmonical time unit, minor
+    metric_mnemonic = "u ";
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
@@ -3391,14 +3401,16 @@ void select_scale__UI() {
     break;
 
   case 'U':	// harmonical time unit, major
+    metric_mnemonic = "U ";
     MENU.drop_input_token();
-    user_select_scale(minor_scale);
+    user_select_scale(major_scale);
     PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
     multiplier=1;
     divisor=1;
     break;
 
   case 'c':	// c minor
+    metric_mnemonic = "c ";
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3406,13 +3418,16 @@ void select_scale__UI() {
     break;
 
   case 'C':	// c major
+    metric_mnemonic = "C ";
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor=262; // 261.63	// C4  ***not*** harmonical
+    MENU.outln(" ok");
     break;
 
   case 'd':	// d minor scale
+    metric_mnemonic = "d ";
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor = 294;		// 293.66 = D4
@@ -3421,6 +3436,7 @@ void select_scale__UI() {
     break;
 
   case 'D':	// D major scale
+    metric_mnemonic = "D ";
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor = 294;		// 293.66 = D4
@@ -3429,6 +3445,7 @@ void select_scale__UI() {
     break;
 
   case 'e':	// e minor scale
+    metric_mnemonic = "e ";
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3436,6 +3453,7 @@ void select_scale__UI() {
     break;
 
   case 'E':	// E major scale
+    metric_mnemonic = "E ";
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3443,6 +3461,7 @@ void select_scale__UI() {
     break;
 
   case 'f':	// f minor
+    metric_mnemonic = "f ";
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3450,6 +3469,7 @@ void select_scale__UI() {
     break;
 
   case 'F':	// f major
+    metric_mnemonic = "F ";
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3457,6 +3477,7 @@ void select_scale__UI() {
     break;
 
   case 'g':	// g minor
+    metric_mnemonic = "g ";
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3464,6 +3485,7 @@ void select_scale__UI() {
     break;
 
   case 'G':	// g major
+    metric_mnemonic = "G ";
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3471,6 +3493,7 @@ void select_scale__UI() {
     break;
 
   case 'a':	// a minor scale
+    metric_mnemonic = "a ";
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor = 440;
@@ -3478,6 +3501,7 @@ void select_scale__UI() {
     break;
 
   case 'A':	// A major scale
+    metric_mnemonic = "A ";
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor = 440;
@@ -3485,6 +3509,7 @@ void select_scale__UI() {
     break;
 
   case 'b':	// b minor
+    metric_mnemonic = "b ";
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3492,6 +3517,7 @@ void select_scale__UI() {
     break;
 
   case 'B':	// b major
+    metric_mnemonic = "B ";
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3502,7 +3528,7 @@ void select_scale__UI() {
   switch (MENU.cb_peek()) {	// (second or) third letters for other scales
   case EOF:
     break;
-  case '6':	// doric scale
+  case '6':	// doric scale	// TODO: check 14
     user_select_scale(doric_scale);
     break;
   case '5':	// 5  pentatonic (minor|major) scale
@@ -4239,7 +4265,7 @@ bool menu_pulses_reaction(char menu_input) {
 	display_jiffletab(selected_in(JIFFLES));
     break;
 
-  case 'R':	// scale  was: ratio
+  case 'R':	// scale  was: ratio	// TODO: see musicBox 'R'	make them identical? ################
     if (DO_or_maybe_display(VERBOSITY_SOME))
       MENU.out(F("scale "));
 
