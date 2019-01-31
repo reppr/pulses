@@ -11,7 +11,7 @@ REGISTER_SCALE(edit_scale_RAM);			// 0
 REGISTER_SCALE(octaves);			// 1
 REGISTER_SCALE(octaves_fifths);			// 2
 REGISTER_SCALE(octaves_fourths_fifths);		// 3
-REGISTER_SCALE(tetrachord);			// 4
+REGISTER_SCALE(tetraCHORD);			// 4
 REGISTER_SCALE(pentatonic_minor);		// 5
 REGISTER_SCALE(european_PENTAtonic);		// 6
 REGISTER_SCALE(mimic_japan_pentatonic);		// 7

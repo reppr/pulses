@@ -280,7 +280,7 @@ unsigned int major_scale[] = {1,1, 8,9, 4,5, 3,4, 2,3, 3,5, 8,15, 0,0};	// scale
 // 24	27	30	32	36	40	45	48
 // 1:1	9:8	5:4	4:3	3:2	5:3	15:8	2:1
 
-unsigned int tetrachord[] = {1,1, 8,9, 4,5, 3,4, 0,0};		// scale each octave	zero terminated
+unsigned int tetraCHORD[] = {1,1, 8,9, 4,5, 3,4, 0,0};		// scale each octave	zero terminated
 unsigned int pentaCHORD[] = {1,1, 8,9, 4,5, 3,4, 2,3, 0,0};	// major
 unsigned int pentachord[] = {1,1, 8,9, 5,6, 3,4, 2,3, 0,0};	// minor
 
@@ -2695,7 +2695,7 @@ char * experiment_names[] = {		// FIXME: const char * experiment_names would be 
       "ESP32_12 pent euro",			// 32
       "minor scale",				// 33
       "major scale",				// 34
-      "tetrachord",				// 35
+      "tetraCHORD",				// 35
       "more voices please",			// 36
       "Guitar and other Instruments",		// 37
       "Time Machine 1",				// 38
@@ -3384,7 +3384,7 @@ void select_scale__UI() {
     "E"		metric E=330 *major* scale
     "d5"	metric d *minor pentatonic* scale
     "C5"	metric C *european pentatonic* scale
-    "F4"	*tetrachord* (as a scale) on metric F
+    "F4"	*tetraCHORD* (as a scale) on metric F
   */
 
   switch (MENU.cb_peek()) {
@@ -3533,15 +3533,15 @@ void select_scale__UI() {
     break;
   case '5':	// 5  pentatonic (minor|major) scale
     MENU.drop_input_token();
-    if ((selected_in(SCALES) == major_scale) || (selected_in(SCALES) == tetrachord)) {
+    if ((selected_in(SCALES) == major_scale) || (selected_in(SCALES) == tetraCHORD)) {
       user_select_scale(european_PENTAtonic);
     } else {
       user_select_scale(pentatonic_minor);
     }
     break;
-  case '4':	// 4  tetrachord
+  case '4':	// 4  tetraCHORD
     MENU.drop_input_token();
-    user_select_scale(tetrachord);
+    user_select_scale(tetraCHORD);
     break;
   case '3':	// 3  octaves fourths fifths
     MENU.drop_input_token();
@@ -4930,7 +4930,7 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 35:	// tetra
-	select_array_in(SCALES, tetrachord);
+	select_array_in(SCALES, tetraCHORD);
 	voices=GPIO_PINS;
 	multiplier=4;
 	divisor=1;

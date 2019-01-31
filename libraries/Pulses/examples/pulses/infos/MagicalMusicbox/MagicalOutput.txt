@@ -367,7 +367,7 @@ peripheral POWER ON 12
  >>> * <<<
 play_KB_macro  -E40, verbosity lowest
 removed all pulses 48  switched pins off  freed GPIOs
-SCALE: tetrachord
+SCALE: tetraCHORD
 JIFFLE: dwn_THRD_up
 sync 1
 fixed tuning g	196
@@ -736,7 +736,7 @@ peripheral POWER ON 12
  >>> * <<<
 play_KB_macro  -E40  verbosity lowest
 tabula rasa 0
-SCALE: tetrachord
+SCALE: tetraCHORD
 JIFFLE: pentatonic_rise
 sync 3
 fixed tuning g	196
@@ -1829,7 +1829,7 @@ play_KB_macro  -E40:M  verbosity lowest
 tabula rasa 0
 
 random scale
-SCALE:	tetrachord
+SCALE:	tetraCHORD
 random jiffle
 JIFFLE:	dwn_THRD_up
 random sync
@@ -2028,7 +2028,7 @@ SYNC: 4
 au sehr schön:
 ***************
 
-SCALE:	tetrachord	JIFFLE:	PENTA_3rd_rise	SCALING: 3/1024	SYNC: 2
+SCALE:	tetraCHORD	JIFFLE:	PENTA_3rd_rise	SCALING: 3/1024	SYNC: 2
 
 
 no ohni name
@@ -2274,7 +2274,7 @@ play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
 lower_audio_if_too_high 28350
-SCALE:	tetrachord
+SCALE:	tetraCHORD
 JIFFLE:	dwn_THRD
 SYNC:	3
 TIME_U:	1000000
@@ -2315,7 +2315,7 @@ play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
 lower_audio_if_too_high 8
-SCALE:	tetrachord
+SCALE:	tetraCHORD
 JIFFLE:	pent_top_wave
 SYNC:	3
 TIME_U:	1000000
@@ -2341,7 +2341,7 @@ shortest pulse's harmonical cycle: 1' 5"
 klassisch und simpel schön
 ***************************
 
-SCALE:	tetrachord	JIFFLE:	pentatonic_descend	SCALING: 3/1024	SYNC: 0
+SCALE:	tetraCHORD	JIFFLE:	pentatonic_descend	SCALING: 3/1024	SYNC: 0
 
 
 fractal time web
@@ -2738,7 +2738,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	tetrachord
+SCALE:	tetraCHORD
 JIFFLE:	PENTAtonic_descend
 SYNC:	5
 TIME_U:	1000000	*32768/260
@@ -2781,7 +2781,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	tetrachord
+SCALE:	tetraCHORD
 JIFFLE:	din__dididi_dixi
 SYNC:	3
 TIME_U:	1000000	*32768/195
@@ -3280,14 +3280,14 @@ lower_audio_if_too_high 0
 62.00000 DEBUG: shortest==0
 60.0000000000000000000000000000000
 random scale
-SCALE:	tetrachord
+SCALE:	tetraCHORD
 random jiffle
 JIFFLE:	rising_pent_theme
 random sync
 SYNC:	4
 TIME_U:	1000000	random pitch
 *32768/302
-tune to scale tetrachord	36 voices
+tune to scale tetraCHORD	36 voices
 lower_audio_if_too_high 26223
 -5 octaves shifted
 harmonical CYCLE: 57' 17"	SUBCYCLE: | 3' 35" |
@@ -3674,7 +3674,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	tetrachord
+SCALE:	tetraCHORD
 JIFFLE:	rising_pent_theme
 SYNC:	1
 TIME_U:	1000000	*32768/420
@@ -3748,7 +3748,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	tetrachord
+SCALE:	tetraCHORD
 JIFFLE:	pentatonic_rise
 SYNC:	5
 TIME_U:	1000000	*32768/323
@@ -4065,7 +4065,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	tetrachord
+SCALE:	tetraCHORD
 JIFFLE:	pentatonic_descend
 SYNC:	0
 TIME_U:	1000000	*32768/411
@@ -4455,7 +4455,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	tetrachord
+SCALE:	tetraCHORD
 JIFFLE:	PENTAtonic_descend
 SYNC:	2
 TIME_U:	1000000	*32768/263
@@ -4739,7 +4739,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	tetrachord
+SCALE:	tetraCHORD
 JIFFLE:	PENTAtonic_descend
 SYNC:	2
 TIME_U:	1000000	*32768/234

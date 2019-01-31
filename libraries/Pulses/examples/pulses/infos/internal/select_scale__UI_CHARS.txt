@@ -19,7 +19,7 @@
     124:  case EOF:
     126:  case '6':	// doric scale
     129:  case '5':	// 5  pentatonic (minor|major) scale
-    137:  case '4':	// 4  tetrachord
+    137:  case '4':	// 4  tetraCHORD
     141:  case '3':	// 3  octaves fourths fifths
     145:  case '2':	// 2  octaves fifths
     149:  case '1':	// 1  octaves

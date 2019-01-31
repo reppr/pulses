@@ -1222,7 +1222,7 @@ void select_random_scale() {
     select_array_in(SCALES, doric_scale);	// +1 for doric_scale, see below
     break;
   case 18: case 19: case 20:
-    select_array_in(SCALES, tetrachord);	// +1 for tetrachord, see below
+    select_array_in(SCALES, tetraCHORD);	// +1 for tetraCHORD, see below
     break;
   case 21: case 22:
     select_array_in(SCALES, octaves_fourths_fifths);
@@ -1237,7 +1237,7 @@ void select_random_scale() {
     select_array_in(SCALES, doric_scale);	// +1 for doric_scale
     break;
   case 26:
-    select_array_in(SCALES, tetrachord);	// +1 for tetrachord
+    select_array_in(SCALES, tetraCHORD);	// +1 for tetraCHORD
     break;
   case 27: case 28: case 29:
     select_array_in(SCALES, pentaCHORD);
