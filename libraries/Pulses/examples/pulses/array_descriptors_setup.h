@@ -27,6 +27,7 @@ REGISTER_SCALE(pentachord);			// 16
 REGISTER_SCALE(trichord);			// 17
 REGISTER_SCALE(TRIAD);				// 18
 REGISTER_SCALE(triad);				// 19
+REGISTER_SCALE(tetrachord);			// 20
 
 select_array_in(SCALES, pentatonic_minor);	// default scale
 DB_info(SCALES);

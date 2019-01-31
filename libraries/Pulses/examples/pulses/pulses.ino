@@ -280,7 +280,8 @@ unsigned int major_scale[] = {1,1, 8,9, 4,5, 3,4, 2,3, 3,5, 8,15, 0,0};	// scale
 // 24	27	30	32	36	40	45	48
 // 1:1	9:8	5:4	4:3	3:2	5:3	15:8	2:1
 
-unsigned int tetraCHORD[] = {1,1, 8,9, 4,5, 3,4, 0,0};		// scale each octave	zero terminated
+unsigned int tetraCHORD[] = {1,1, 8,9, 4,5, 3,4, 0,0};		// scale major tetraCHORD
+unsigned int tetrachord[] = {1,1, 8,9, 5,6, 3,4, 0,0};		// scale minor tetrachord
 unsigned int pentaCHORD[] = {1,1, 8,9, 4,5, 3,4, 2,3, 0,0};	// major
 unsigned int pentachord[] = {1,1, 8,9, 5,6, 3,4, 2,3, 0,0};	// minor
 
@@ -3539,9 +3540,13 @@ void select_scale__UI() {
       user_select_scale(pentatonic_minor);
     }
     break;
-  case '4':	// 4  tetraCHORD
+  case '4':	// 4  tetraCHORD | tetrachord
     MENU.drop_input_token();
-    user_select_scale(tetraCHORD);
+    if ((selected_in(SCALES) == minor_scale) || (selected_in(SCALES) == pentatonic_minor) || \
+	(selected_in(SCALES) == doric_scale) || (selected_in(SCALES) == triad))
+      user_select_scale(tetrachord);
+    else
+      user_select_scale(tetraCHORD);
     break;
   case '3':	// 3  octaves fourths fifths
     MENU.drop_input_token();
