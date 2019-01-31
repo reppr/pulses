@@ -1760,10 +1760,11 @@ void start_musicBox() {
   MENU.outln(divisor);	// TODO: define role of multiplier, divisor
 
   tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));	// TODO: define role of multiplier, divisor
-  if(!pitch_user_selected) {		// if *not* set by user interaction
+  if(!pitch_user_selected)		// if *not* set by user interaction
     random_octave_shift();		// random octave shift
-    lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
-  }
+
+  // *not* regarding pitch_user_selected as selected frequencies might be too high, check anyway...
+  lower_audio_if_too_high(409600*2);	// 2 bass octaves	// TODO: adjust appropriate...
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   peripheral_power_switch_ON();
