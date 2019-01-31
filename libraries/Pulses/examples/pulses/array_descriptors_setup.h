@@ -124,6 +124,8 @@ REGISTER_JIFFLE(pentaCHORD_rise);
 REGISTER_JIFFLE(pentaCHORD_descend);
 REGISTER_JIFFLE(pentachord_rise);
 REGISTER_JIFFLE(pentachord_descend);
+REGISTER_JIFFLE(tetraCHORD_rise);
+REGISTER_JIFFLE(tetraCHORD_descend);
 
 REGISTER_JIFFLE(tumtumtum);
 REGISTER_JIFFLE(tumtumtumtum);
