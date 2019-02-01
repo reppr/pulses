@@ -2268,7 +2268,10 @@ void musicBox_display() {
   else
     MENU.out(F("STOP"));
   MENU.out(F("\t'P1'= stop primary\t'P2'= stop secondary"));
+  if(MusicBoxState == OFF)
+    MENU.out(F("\t'W<seconds>' = wait&start"));
   MENU.ln();
+
 
   show_basic_musicBox_parameters();	// was: show_UI_basic_setup();
 
@@ -2453,7 +2456,16 @@ bool musicBox_reaction(char token) {
 	start_musicBox();
     }
     break;
-
+  case 'W':
+    if(MENU.is_numeric()) {	// "P<number>" wait <number> seconds before starting musicBox, *see below*
+      input_value = MENU.numeric_input(-1);	// *do* read number anyway
+      if(MusicBoxState == OFF) {	// act *only* if musicBox is *not* running
+	if(input_value > 0)			// delay(sic!) *only* if positive
+	  delay(input_value * 1000);		// FIXME:  quickHACK: using delay as nothing is running, *probably* ;)
+	start_musicBox();
+      } // ignore if musicBox is running, hmm (there *could* be a use case while it is running...)
+    } // not numeric, ignore
+    break;
   case 'p': // 'p' switch cycle pattern display
     show_cycle_pattern ^= 1;
 
