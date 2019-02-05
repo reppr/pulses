@@ -597,12 +597,13 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
     }
 
     for (int pulse=0; pulse<PL_MAX; pulse++) {	// make days_to_live COUNTED generating pulses
-      if (PULSES.pulse_is_selected(pulse)) {
-	if(PULSES.pulses[pulse].counter > survive_level) {	// pulse was already awake (long enough)?
-	  PULSES.pulses[pulse].remaining = days_to_live;	//   still repeat, then vanish
+      if(PULSES.pulses[pulse].groups & g_PRIMARY) {
+	//         pulse was already awake long enough?   && days_to_live positive?
+	if((PULSES.pulses[pulse].counter > survive_level) && days_to_live > 0) {
+	  PULSES.pulses[pulse].remaining = days_to_live;  // repeat, then vanish
 	  PULSES.pulses[pulse].flags |= COUNTED;
 	} else {
-	  PULSES.init_pulse(pulse);			// unborn pulse or too young, just remove
+	  PULSES.init_pulse(pulse);	// unborn pulse or too young, or days==0	just remove
 	}
       }
     }
