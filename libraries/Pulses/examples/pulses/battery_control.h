@@ -23,7 +23,8 @@ const unsigned int battery_12V_level=1200;	// calibrated reading for 12.00V
 //float battery_level_scaling = battery_12V_level / 12.00 ;	// NO, it's too far from being linear...
 
 unsigned int battery_low_level=1175;	// ~ 11.8V
-unsigned int battery_off_level=1140;	// ~ 11.5V
+//unsigned int battery_off_level=1140;	// ~ 11.5V
+unsigned int battery_off_level=1130;	// ~ ????? justaTEST ################
 unsigned int battery_high_level=1402;	// ~ 13.8V
 
 unsigned int read_battery_level(unsigned int oversampling=15) {

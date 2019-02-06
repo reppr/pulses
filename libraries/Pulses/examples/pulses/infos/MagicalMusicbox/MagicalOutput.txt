@@ -4825,7 +4825,7 @@ sync pause    1.683889s
 Harmonical Musicbox alpha 0.010
 *********************************
 SYNC: 5    SCALE: pentaCHORD   JIFFLE: tumtum   SCALING: 1/128
-harmonical CYCLE: 51' 48" 	SUBCYCLE: | 6' 28" |
+harmonical CYCLE: 51' 48"	SUBCYCLE: | 6' 28" |
 
 
 
@@ -4938,3 +4938,178 @@ harmonical cycle:  6d 23h 45' 55"
 (2^-8) 39' 19"	(2^-9) 19' 40"	(2^-10) 9' 50"	|(2^-11) 4' 55" |
 (2^-12) 2' 27"	(2^-13) 1' 14"	(2^-14) 37"	(2^-15)   18.431107s
 (2^-16)    9.215553s	(2^-17)    4.607776s
+
+
+
+2019-02-01 ardour5 noname
+***************************
+
+! SCALE: doric_scale     ! SYNC: 1     ! JIFFLE: PENTA_3rd_rise     ! SCALING: 1/32	*metric* ?
+  harmonical CYCLE: 1h 24' 29"	SUBCYCLE: | 5' 17" |
+
+
+
+2019-02-01_aRainOfJoy
+***********************
+
+
+AUTOSTART 1
+
+start_musicBox()	alpha 0.012	BRACHE_2019-01
+MusicBoxState AWAKE
+2019-02-02_12h12m11s	SAT
+battery control pin: 36	1232	GOOD
+power accepted
+peripheral POWER ON 12
+restore from RTCmem
+
+ >>> * <<<
+2019-02-02_12h12m11s	SAT
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	european_PENTAtonic
+JIFFLE:	penta_3rd_down_5
+SYNC:	1
+TIME_U:	1000000	random *metric* tuning d	*32768/294
+play_KB_macro  *2
+harmonical CYCLE: 58' 51"	SUBCYCLE: | 3' 41" |
+ <<< * >>>
+
+harmonical cycle:  58' 51"
+
+(2^0) 58' 51"	(2^-1) 29' 25"	(2^-2) 14' 43"	(2^-3) 7' 21"
+|(2^-4) 3' 41" |	(2^-5) 1' 50"	(2^-6) 55"	(2^-7) 28"
+
+sync pause    0.574666s
+
+
+
+2019-02-02 ardour5 noname
+***************************
+
+
+W12
+
+start_musicBox()	alpha 0.012	BRACHE_2019-01
+2019-02-02_17h49m06s	SAT
+battery control pin: 36	1257	GOOD
+power accepted
+peripheral POWER ON 12
+restore from RTCmem
+
+ >>> * <<<
+2019-02-02_17h49m06s	SAT
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	doric_scale
+JIFFLE:	pentatonic_rise
+SYNC:	0
+TIME_U:	1000000	*32768/32
+harmonical CYCLE: 2h 48' 57"	SUBCYCLE: | 3' 41" |
+ <<< * >>>
+
+harmonical cycle:  2h 48' 57"
+
+(2^0) 2h 48' 57"	(2^-1) 1h 24' 29"	(2^-2) 42' 14"	(2^-3) 21' 7"
+(2^-4) 10' 34"	(2^-5) 5' 17"
+
+
+
+2019-02-04_slow_doric_cycle
+*****************************
+
+ardour5
+
+
+! SCALE: doric_scale     ! SYNC: 0     ! JIFFLE: d4096_1024     ! SCALING: 1/32		*metric* a
+  harmonical CYCLE: 2h 48' 57"	SUBCYCLE: | 2' 38" |
+
+
+
+2019-02-04_doric_cycle_S1
+**************************
+
+ardour 5
+
+
+! SCALE: doric_scale     ! SYNC: 1     ! JIFFLE: d4096_1024     ! SCALING: 1/32		*metric* a
+  harmonical CYCLE: 2h 48' 57"	SUBCYCLE: | 2' 38" |
+
+
+2019-02-04_bordun
+*******************
+
+ardour5
+
+! SCALE: octaves_fourths_fifths     ! SYNC: 0     ! JIFFLE: tumtumtum     ! SCALING: 2/6144	*metric* a
+  harmonical CYCLE: 6h 0' 26"	SUBCYCLE: | 2' 38" |
+
+
+
+2019-02-06_major_doric_rise
+*****************************
+
+ardour 5
+
+W10
+
+start_musicBox()	alpha 0.012	BRACHE_2019-01
+2019-02-06_13h32m52s	WED
+battery control pin: 36	1317	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2019-02-06_13h32m52s	WED
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	major_scale
+JIFFLE:	doric_rise
+SYNC:	4
+TIME_U:	1000000	*32768/32
+harmonical CYCLE: 33' 47"	SUBCYCLE: | 5' 31" |
+ <<< * >>>
+
+harmonical cycle:  33' 47"
+
+(2^0) 33' 47"	(2^-1) 16' 54"	(2^-2) 8' 27"	(2^-3) 4' 13"
+(2^-4) 2' 7"	(2^-5) 1' 3"
+
+sync pause    5.279746s
+
+
+2019-02-06_major_doric_rise_d2
+********************************
+
+ardour 5	no reverb
+
+skipping # 2019-02-06_major_doric_rise_d2
+W12
+
+start_musicBox()	alpha 0.012	BRACHE_2019-01
+2019-02-06_13h45m51s	WED
+battery control pin: 36	1327	GOOD
+power accepted
+peripheral POWER ON 12
+
+ >>> * <<<
+2019-02-06_13h45m51s	WED
+play_KB_macro  -:M  verbosity lowest
+
+setup_bass_middle_high(14, 15, 7)
+SCALE:	major_scale
+JIFFLE:	doric_rise
+SYNC:	4
+TIME_U:	1000000	*32768/32
+harmonical CYCLE: 33' 47"	SUBCYCLE: | 5' 31" |
+ <<< * >>>
+
+harmonical cycle:  33' 47"
+
+(2^0) 33' 47"	(2^-1) 16' 54"	(2^-2) 8' 27"	(2^-3) 4' 13"
+(2^-4) 2' 7"	(2^-5) 1' 3"
+
+sync pause    5.279746s

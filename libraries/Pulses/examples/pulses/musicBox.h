@@ -2,7 +2,7 @@
   musicBox.h
 */
 
-#define MUSICBOX_VERSION	alpha 0.012	// (maybe used also as BLUETOOTH_NAME)
+#define MUSICBOX_VERSION	alpha 0.013	// (maybe used also as BLUETOOTH_NAME)
 
 #define LONELY_BUTLER_QUITS			// lonely butler detect SAVETY NET, TODO: will be completely *wrong* in other situations
 
@@ -2513,6 +2513,7 @@ bool musicBox_reaction(char token) {
     break;
   case 'W':
     if(MENU.is_numeric()) {	// "P<number>" wait <number> seconds before starting musicBox, *see below*
+      musicBox_short_info();
       input_value = MENU.numeric_input(-1);	// *do* read number anyway
       if(MusicBoxState == OFF) {	// act *only* if musicBox is *not* running
 	if(input_value > 0)			// delay(sic!) *only* if positive
