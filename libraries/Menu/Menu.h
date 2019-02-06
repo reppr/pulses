@@ -248,6 +248,7 @@ class Menu {
 /* Output a newline, tab, space, '='
   ln(), tab(), space(), equals():				*/
   void ln()	const;		// output a newline
+  void ln(unsigned int n)	const;		// output n newlines
   void tab()	const;		// output a tab
   void tab(unsigned int n) const;  // output n tabs
   void space()	const;		// output a space

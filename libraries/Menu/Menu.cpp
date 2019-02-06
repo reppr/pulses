@@ -280,6 +280,10 @@ char Menu::cb_read() {
   /* Output a newline, tab, space, '='
      ln(), tab(), space(), equals():			*/
   void Menu::ln()     const { MENU_OUT('\n'); }	// output a newline
+  void Menu::ln(unsigned int n)  const {	// output n newlines
+    for (; n; n--)
+      ln();
+  }
   void Menu::tab()    const { MENU_OUT('\t'); }	// output a tab
   void Menu::tab(unsigned int n)  const {	// output n tabs
     for (; n; n--)

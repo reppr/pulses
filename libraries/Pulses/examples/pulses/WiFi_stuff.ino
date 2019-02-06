@@ -286,10 +286,10 @@ void WiFi_info() {
     }
 
     // IPAddress softAPIP();
-    MENU.IPstring(WiFi.softAPIP()); MENU.ln();
+    MENU.IPstring(WiFi.softAPIP());
 //	MENU.outln(" port 23");
 
-  MENU.ln();
+  MENU.ln(2);
   }
 
 #if defined WIFI_DEBUG_REMOVED

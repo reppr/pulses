@@ -779,8 +779,7 @@ void softboard_display() {
 #if defined(ESP8266)	// ################ FIXME: ESP32 ################
   MENU.out("ESP chip ID: ");
   MENU.out_hex(ESP.getChipId());
-  MENU.ln();
-  MENU.ln();
+  MENU.ln(2);
 #endif
 
   _select_digital(true);

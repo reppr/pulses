@@ -31,10 +31,8 @@
       MENU.out_ON_off(on);
       if(on)
 	MENU.tab();
-      else {
-	MENU.ln();
-	MENU.ln();
-      }
+      else
+	MENU.ln(2);
     }
     return on;
   }

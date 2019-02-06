@@ -754,8 +754,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
     PULSES.sub_time(&musicBox_start_time, &play_time);
     MENU.out(F("played "));
     PULSES.display_time_human(play_time);
-    MENU.ln();
-    MENU.ln();
+    MENU.ln(2);
     musicBox_short_info();
     MENU.ln();
   }
@@ -1889,7 +1888,7 @@ void start_musicBox() {
       PULSES.sub_time(&musicBox_start_time, &pause);
       MENU.out(F("sync pause "));
       PULSES.display_time_human(pause);
-      MENU.ln(); MENU.ln();
+      MENU.ln(2);
     }
   }
 
@@ -2317,8 +2316,7 @@ void musicBox_display() {
 
   MENU.out(F("'EF[dlhru]'  deep_sleep, light_sleep, hibernate, restart, user\t"));
   show_when_done_function();
-  MENU.ln();
-  MENU.ln();
+  MENU.ln(2);
 
   MENU.out(F("'P'="));
   if(MusicBoxState == OFF)
@@ -2331,9 +2329,8 @@ void musicBox_display() {
   MENU.ln();
 
   MENU.outln(F("'m'= set mode\t'mm' 'mM'= manual\t'ma' 'mA'= automagic"));
-  MENU.ln();
+  MENU.ln(2);
 
-  MENU.ln();
   musicBox_short_info();
 
 /*	*deactivated*
