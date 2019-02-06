@@ -1445,6 +1445,15 @@ void Menu::interpret_men_input() {
       did_something = true;
       break;
 
+    case '#': // one line comment
+      out('#');
+      while (cb_peek() != EOF) {
+	out((char) drop_input_token());	// echo # comment line
+      }
+      ln();
+      did_something = true;
+      break;
+
     case '+':
       if (++verbosity > VERBOSITY_HIGH)
 	verbosity = VERBOSITY_HIGH;
