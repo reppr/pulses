@@ -84,6 +84,10 @@ bool some_metric_tunings_only=true;	// fixed pitchs only like E A D G C F B  was
 #endif
 
 
+// functions to call when musicBox has reached the end:
+void deep_sleep();	// pre declaration
+void light_sleep();	// pre declaration
+
 void restart() { ; }	// endless loop...
 
 void user() {	// manual musicBox interaction
@@ -104,14 +108,16 @@ void hibernate() {	// see: https://esp32.com/viewtopic.php?t=3083
 }
 
 
-//#define  MUSICBOX_ENDING_FUNCTION	light_sleep();	// works fine as default for triggered musicBox	  bluetooth does *not* wake up
-//#define  MUSICBOX_ENDING_FUNCTION	deep_sleep();	// still DAC noise!!!
-//#define  MUSICBOX_ENDING_FUNCTION	ESP.restart();	// works fine
+#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&deep_sleep	// do test for dac noise...	BT checks BLUETOOTH_ENABLE_PIN on boot
+//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&light_sleep	// fine as default for triggered musicBox    bluetooth does *not* wake up
+//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&restart	// endless loop
+//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&ESP.restart	// works fine
+//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&hibernate	// wakes up after musicBox_pause_seconds	BT should work, test
+//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user		// works fine
 
-void deep_sleep(); 	// pre declaration
-void light_sleep(); 	// pre declaration
 
-void (*musicBox_when_done)(void)=&deep_sleep;	// function* called when musicBox ends
+// void (*musicBox_when_done)(void)=&deep_sleep;	// function* called when musicBox ends
+void (*musicBox_when_done)(void)=MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT;	// function* called when musicBox ends
 
 void show_when_done_function() {
   MENU.out(F("when done do: "));
@@ -643,6 +649,24 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
   }
 }
 
+void parameters_by_user() {
+  MENU.outln(F("manual mode"));
+  scale_user_selected = true;
+  sync_user_selected = true;
+  jiffle_user_selected = true;
+  pitch_user_selected = true;
+  subcycle_user_selected=true;	// TODO: ################################################################
+}
+
+void parameters_get_randomised() {
+  MENU.outln(F("random mode"));
+  scale_user_selected = false;
+  sync_user_selected = false;
+  jiffle_user_selected = false;
+  pitch_user_selected = false;
+  subcycle_user_selected=false;	// TODO: ################################################################
+}
+
 void tag_randomness(bool user_selected) {
   if(user_selected)
     MENU.out('!');
@@ -650,6 +674,35 @@ void tag_randomness(bool user_selected) {
     MENU.out('~');
   MENU.space();
 }
+
+void toggle_magic_autochanges() {
+  if(magic_autochanges = !magic_autochanges) {	// if magic_autochanges got *SWITCHED ON*
+    if(musicBox_butler_i != ILLEGAL) {	// deal with soft_end_time
+      struct time thisNow = PULSES.get_now();
+      struct time soft_end_time;
+      int cnt=0;
+      while (true)
+	{
+	  soft_end_time = PULSES.pulses[musicBox_butler_i].other_time;
+	  PULSES.sub_time(&thisNow, &soft_end_time);
+	  if(soft_end_time.overflow) {	// add subcycles until soft_end_time is in future
+	    PULSES.add_time(&used_subcycle, &PULSES.pulses[musicBox_butler_i].other_time);
+	    cnt++;
+	  } else
+	    break;
+	}
+      if(MENU.verbosity >= VERBOSITY_LOWEST) {
+	MENU.out(cnt);
+	MENU.outln(F(" subcycles added 'til soft_end"));
+      }
+    }
+#if defined MUSICBOX_HARD_END_SECONDS
+    musicBox_hard_end_time = PULSES.get_now(); // setup *savety net*  resceduled maximal performance duration
+    PULSES.add_time(MUSICBOX_HARD_END_SECONDS*1000000, &musicBox_hard_end_time);
+#endif
+  } // else (switched *off*) nothing needs mending
+}
+
 
 char * metric_mnemonic = "? ";
 
@@ -682,6 +735,13 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   MENU.ln();
 }
 
+void musicBox_short_info() {
+  show_basic_musicBox_parameters();
+  MENU.space(2);  // indent
+  show_cycles_1line();
+}
+
+
 void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard end playing
   if(with_title)	// TODO: maybe use MENU.verbosity, but see also 'o'
     MENU.out(F("HARD_END_playing()\t"));
@@ -696,10 +756,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
     PULSES.display_time_human(play_time);
     MENU.ln();
     MENU.ln();
-
-    show_basic_musicBox_parameters();
-    MENU.space(2);
-    show_cycles_1line();
+    musicBox_short_info();
     MENU.ln();
   }
 
@@ -2273,8 +2330,11 @@ void musicBox_display() {
     MENU.out(F("\t'W<seconds>' = wait&start"));
   MENU.ln();
 
+  MENU.outln(F("'m'= set mode\t'mm' 'mM'= manual\t'ma' 'mA'= automagic"));
+  MENU.ln();
 
-  show_basic_musicBox_parameters();	// was: show_UI_basic_setup();
+  MENU.ln();
+  musicBox_short_info();
 
 /*	*deactivated*
   MENU.outln(F("fart='f'"));
@@ -2291,43 +2351,17 @@ bool musicBox_reaction(char token) {
     musicBox_display();
     break;
   case ',': // show parameters
-    if (MENU.menu_mode == 0) {	// exclude special cases
-      show_basic_musicBox_parameters();
-      MENU.space(2);
-      show_cycles_1line();
-    } else
+    if (MENU.menu_mode)	{ // *exclude* special menu modes
+      MENU.restore_input_token();
       return false;	// for other menu modes let pulses menu do the work ;)	// TODO: TEST:
+    } else
+      musicBox_short_info();
     break;
   case 'a': // magic_autochanges    // 'a'
     MENU.out(F("autochanges"));
-    MENU.out_ON_off(magic_autochanges = !magic_autochanges);
+    toggle_magic_autochanges();
+    MENU.out_ON_off(magic_autochanges);
     MENU.ln();
-
-    if(magic_autochanges) {	// magic_autochanges was switched *on*
-      if(musicBox_butler_i != ILLEGAL) {	// deal with soft_end_time
-	struct time thisNow = PULSES.get_now();
-	struct time soft_end_time;
-	int cnt=0;
-	while (true)
-	  {
-	    soft_end_time = PULSES.pulses[musicBox_butler_i].other_time;
-	    PULSES.sub_time(&thisNow, &soft_end_time);
-	    if(soft_end_time.overflow) {	// add subcycles until soft_end_time is in future
-	      PULSES.add_time(&used_subcycle, &PULSES.pulses[musicBox_butler_i].other_time);
-	      cnt++;
-	    } else
-	      break;
-	  }
-	if(MENU.verbosity >= VERBOSITY_LOWEST) {
-	  MENU.out(cnt);
-	  MENU.outln(F(" subcycles added 'til soft_end"));
-	}
-      }
-#if defined MUSICBOX_HARD_END_SECONDS
-      musicBox_hard_end_time = PULSES.get_now(); // setup *savety net*  resceduled maximal performance duration
-      PULSES.add_time(MUSICBOX_HARD_END_SECONDS*1000000, &musicBox_hard_end_time);
-#endif
-    }
     break;
   case 'c': // show cycle
     show_cycle(harmonical_CYCLE);
@@ -2373,6 +2407,29 @@ bool musicBox_reaction(char token) {
     if(input_value >= 0)
       soft_end_survive_level = input_value;
     break;
+
+  case 'm': // mode
+    switch(MENU.cb_peek()) {	// second letter
+    case 'M':	// 'mM' fully manual, like manual, but even more so ;)
+      MENU.out(F("fully "));
+      magic_autochanges = false;
+    case 'm':	// 'mm' manual mode
+      MENU.drop_input_token();
+      parameters_by_user();
+      musicBox_when_done = &user;
+      musicBox_short_info();
+      break;
+    case 'A':
+    case 'a':
+      MENU.drop_input_token();
+      musicBox_when_done = MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT;
+      if(!magic_autochanges)
+	toggle_magic_autochanges();
+      parameters_get_randomised();
+      break;
+    }	// known second letters
+    break;
+
   case 'w': // soft_cleanup_minimal_fraction_weighting
     soft_cleanup_minimal_fraction_weighting = MENU.numeric_input(soft_cleanup_minimal_fraction_weighting);
     break;
@@ -2493,22 +2550,10 @@ bool musicBox_reaction(char token) {
 
   case 'F':	// freeze-unfreeze parameters
     if(scale_user_selected && sync_user_selected && jiffle_user_selected && pitch_user_selected && subcycle_user_selected) {
-      MENU.outln(F("unfixed"));
-      scale_user_selected = false;
-      sync_user_selected = false;
-      jiffle_user_selected = false;
-      pitch_user_selected = false;
-      subcycle_user_selected=false;
+      parameters_get_randomised();
     } else {
-      MENU.outln(F("fixed"));
-      scale_user_selected = true;
-      sync_user_selected = true;
-      jiffle_user_selected = true;
-      pitch_user_selected = true;
-      subcycle_user_selected=true;
-
-      show_basic_musicBox_parameters();
-      show_cycles_1line();
+      parameters_by_user();
+      musicBox_short_info();
     }
     break;
 
