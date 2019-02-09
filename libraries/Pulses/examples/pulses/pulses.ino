@@ -177,6 +177,10 @@ action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actio
 
 
 /* **************************************************************** */
+fraction pitch={1,1};	// pitch to tune a scale
+
+
+/* **************************************************************** */
 bool DO_or_maybe_display(unsigned char verbosity_level) { // the flag tells *if* to display
   if (PULSES.check_maybe_do())
     return false;		// no time to display anything...
@@ -3374,7 +3378,6 @@ void user_select_scale(unsigned int* scale) {
   if(scale != NULL) {
     select_array_in(SCALES, scale);
     scale_user_selected = true;
-    pitch_user_selected = true;	// not sure about this	TODO: rethink
   }
 }
 
@@ -4270,6 +4273,7 @@ bool menu_pulses_reaction(char menu_input) {
 	display_jiffletab(selected_in(JIFFLES));
     break;
 
+  // 'R' OBSOLETE????	################
   case 'R':	// scale  was: ratio	// TODO: see musicBox 'R'	make them identical? ################
     if (DO_or_maybe_display(VERBOSITY_SOME))
       MENU.out(F("scale "));

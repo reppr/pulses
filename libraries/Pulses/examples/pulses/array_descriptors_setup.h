@@ -13,21 +13,21 @@ REGISTER_SCALE(octaves_fifths);			// 2
 REGISTER_SCALE(octaves_fourths_fifths);		// 3
 REGISTER_SCALE(tetraCHORD);			// 4
 REGISTER_SCALE(pentatonic_minor);		// 5
-REGISTER_SCALE(european_PENTAtonic);		// 6
-REGISTER_SCALE(mimic_japan_pentatonic);		// 7
-REGISTER_SCALE(minor_scale);			// 8
-REGISTER_SCALE(major_scale);			// 9
-REGISTER_SCALE(scale_int);			// 10
-REGISTER_SCALE(overnotes);			// 11
-REGISTER_SCALE(scale_rationals);		// 12
-REGISTER_SCALE(octaves_fourths);		// 13
-REGISTER_SCALE(doric_scale);			// 14
-REGISTER_SCALE(pentaCHORD);			// 15
-REGISTER_SCALE(pentachord);			// 16
-REGISTER_SCALE(trichord);			// 17
-REGISTER_SCALE(TRIAD);				// 18
-REGISTER_SCALE(triad);				// 19
-REGISTER_SCALE(tetrachord);			// 20
+REGISTER_SCALE(doric_scale);			// 6
+REGISTER_SCALE(minor_scale);			// 7
+REGISTER_SCALE(major_scale);			// 8
+REGISTER_SCALE(triad);				// 9
+REGISTER_SCALE(TRIAD);				// 10
+REGISTER_SCALE(octaves_fourths);		// 11
+REGISTER_SCALE(pentachord);			// 12
+REGISTER_SCALE(pentaCHORD);			// 13
+REGISTER_SCALE(tetrachord);			// 14
+REGISTER_SCALE(european_PENTAtonic);		// 15
+REGISTER_SCALE(trichord);			// 16
+REGISTER_SCALE(mimic_japan_pentatonic);		// 17
+REGISTER_SCALE(scale_int);			// 18
+REGISTER_SCALE(overnotes);			// 19
+REGISTER_SCALE(scale_rationals);		// 20
 
 select_array_in(SCALES, pentatonic_minor);	// default scale
 DB_info(SCALES);

@@ -654,8 +654,8 @@ void parameters_by_user() {
   scale_user_selected = true;
   sync_user_selected = true;
   jiffle_user_selected = true;
-  pitch_user_selected = true;
-  subcycle_user_selected=true;	// TODO: ################################################################
+  pitch_user_selected = true;	// TODO: ################################################################
+  // subcycle_user_selected=true;	// TODO: ################################################################
 }
 
 void parameters_get_randomised() {
@@ -664,7 +664,7 @@ void parameters_get_randomised() {
   sync_user_selected = false;
   jiffle_user_selected = false;
   pitch_user_selected = false;
-  subcycle_user_selected=false;	// TODO: ################################################################
+  // subcycle_user_selected=false;	// TODO: ################################################################
 }
 
 void tag_randomness(bool user_selected) {
@@ -727,6 +727,10 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   MENU.out(multiplier);
   MENU.slash();
   MENU.out(divisor);
+  MENU.space(2);
+  MENU.out(pitch.multiplier);
+  MENU.slash();
+  MENU.out(pitch.divisor);
 
   if(some_metric_tunings_only) {
     MENU.out(F(" \t*metric* "));
@@ -1501,40 +1505,47 @@ void random_metric_pitches(void) {
   case 1:
   case 3:
     metric_mnemonic = "a ";
-    divisor = 220; // 220	// A 220  ***not*** harmonical	// TODO: define role of multiplier, divisor
+    pitch.multiplier = 1;
+    pitch.divisor = 220; // 220	// A 220  ***not*** harmonical	// TODO: define role of multiplier, pitch.divisor
     break;
   case 4:
   case 5:
   case 6:
     metric_mnemonic = "e ";
-    divisor=330; // 329.36	// E4  ***not*** harmonical
+    pitch.multiplier = 1;
+    pitch.divisor=330; // 329.36	// E4  ***not*** harmonical
     break;
   case 7:
   case 8:
     metric_mnemonic = "d ";
-    divisor = 294;		// 293.66 = D4
+    pitch.multiplier = 1;
+    pitch.divisor = 294;		// 293.66 = D4
     break;
   case 9:
   case 10:
   case 11:
     metric_mnemonic = "g ";
-    divisor=196; // 196.00	// G3  ***not*** harmonical
+    pitch.multiplier = 1;
+    pitch.divisor=196; // 196.00	// G3  ***not*** harmonical
     break;
   case 12:
   case 13:
     metric_mnemonic = "c ";
-    divisor=262; // 261.63	// C4  ***not*** harmonical
+    pitch.multiplier = 1;
+    pitch.divisor=262; // 261.63	// C4  ***not*** harmonical
     break;
   case 14:
   case 15:
     metric_mnemonic = "f ";
-    divisor=175; // 174.16	// F3  ***not*** harmonical
+    pitch.multiplier = 1;
+    pitch.divisor=175; // 174.16	// F3  ***not*** harmonical
     break;
   case 16:
     metric_mnemonic = "b ";
-    divisor=233; // 233.08	// Bb3 ***not*** harmonical
+    pitch.multiplier = 1;
+    pitch.divisor=233; // 233.08	// Bb3 ***not*** harmonical
     break;
-    //    divisor=247; // 246.94	// B3  ***not*** harmonical  }
+    //    pitch.divisor=247; // 246.94	// B3  ***not*** harmonical  }
   }
   MENU.out(metric_mnemonic);
 
@@ -1657,9 +1668,9 @@ void rtc_save_configuration() {
   if(jiffle_user_selected)
     jiffle_stored_RTC = selected_in(JIFFLES);
 
-  if(pitch_user_selected) {
-    multiplier_stored_RTC = multiplier;
-    divisor_stored_RTC = divisor;
+  if(pitch_user_selected) {	// TODO: ################################################################
+    multiplier_stored_RTC = pitch.multiplier;
+    divisor_stored_RTC = pitch.divisor;
   }
 
 //if(subcycle_user_selected) ;
@@ -1697,8 +1708,8 @@ void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless wakin
 
     if((multiplier_stored_RTC != ILLEGAL) && divisor_stored_RTC != ILLEGAL) {
       MENU.out(F("PITCH "));
-      multiplier = multiplier_stored_RTC;
-      divisor = divisor_stored_RTC;
+      pitch.multiplier = multiplier_stored_RTC;
+      pitch.divisor = divisor_stored_RTC;
       pitch_user_selected = true;
     }
 
@@ -1756,30 +1767,25 @@ void start_musicBox() {
 
   maybe_restore_from_RTCmem();		// only after deep sleep, else noop    MENU.out(F("restore from RTCmem "));
 
-
-  MENU.outln(F("\n >>> * <<<"));	// start output block with configurations
-
-#if defined  USE_RTC_MODULE		// repeat that in here, keeping first one for power failing cases
-  show_DS1307_time_stamp();
   MENU.ln();
-#endif
-
   MENU.men_selected = 0;	// starting point (might be changed by kb macro)
   MENU.play_KB_macro(F("-:M "), false); // initialize, the space avoids output from :M , no newline
-  MENU.ln();
 
   // TODO: REWORK:  setup_bass_middle_high()  used in musicBox, but not really compatible
   setup_bass_middle_high(bass_pulses, middle_pulses, high_pulses);
 
+  MENU.outln(F("\n >>> * <<<"));	// start output block with configurations
+#if defined  USE_RTC_MODULE		// repeat that in here, keeping first one for power failing cases
+  MENU.out(F("DATE: "));
+  show_DS1307_time_stamp();
+  MENU.ln();
+#endif
+
   if(!scale_user_selected)	// if *not* set by user interaction
     select_random_scale();	//   random scale
-  MENU.out(F("SCALE:\t"));
-  MENU.outln(selected_name(SCALES));
 
   if(!jiffle_user_selected)	// if *not* set by user interaction
     select_random_jiffle();	//   random jiffle
-  MENU.out(F("JIFFLE:\t"));
-  MENU.outln(selected_name(JIFFLES));
 
   next_gpio(0);			// FIXME: TODO: HACK  would destroy an already running configuration....
   setup_jiffle_thrower_selected(selected_actions);	// FIXME: why does this give 'no free GPIO' ???
@@ -1787,20 +1793,11 @@ void start_musicBox() {
   PULSES.add_selected_to_group(g_PRIMARY);
   set_primary_block_bounds();	// remember where the primary block starts and stops
 
-  if(!sync_user_selected) {	// if *not* set by user interaction
+  if(!sync_user_selected)	// if *not* set by user interaction
     sync = random(6);		// random sync	// MAYBE: define  select_random_sync()  ???
-    if(MENU.maybe_display_more(VERBOSITY_SOME))
-      MENU.outln(F("random sync"));
-  }
-
-  MENU.out(F("SYNC:\t"));
-  MENU.outln(sync);
 
   // time_unit
   PULSES.time_unit=1000000;	// default metric
-  MENU.out("TIME_U:\t");
-  MENU.out(PULSES.time_unit);
-  MENU.tab();
 
   // pitch
   multiplier=4096;	// uses 1/4096 jiffles		// TODO: define role of multiplier, divisor
@@ -1813,7 +1810,7 @@ void start_musicBox() {
       random_entropy();	// entropy from hardware
 #endif
 
-      divisor = random(160, 450);	// *not* tuned for other instruments
+      pitch.divisor = random(160, 450);	// *not* tuned for other instruments
       if(MENU.maybe_display_more(VERBOSITY_SOME))
 	MENU.out(F("random pitch\t"));
     } else {			// *some RANDOMLY selected METRIC A=440 tunings*
@@ -1821,12 +1818,9 @@ void start_musicBox() {
       MENU.tab();
     }
   }
-  MENU.out('*');
-  MENU.out(multiplier);	// TODO: define role of multiplier, divisor
-  MENU.slash();
-  MENU.outln(divisor);	// TODO: define role of multiplier, divisor
 
-  tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));	// TODO: define role of multiplier, divisor
+  // HACK: backwards compatibility for multiplier/divisor	################
+  tune_2_scale(voices, multiplier*pitch.multiplier, divisor*pitch.divisor, sync, selected_in(SCALES));	// TODO: define role of multiplier, divisor
   if(!pitch_user_selected)		// if *not* set by user interaction
     random_octave_shift();		// random octave shift
 
@@ -1855,7 +1849,8 @@ void start_musicBox() {
 #endif
   }
 
-  show_cycles_1line();
+  MENU.ln();
+  musicBox_short_info();
   MENU.outln(F(" <<< * >>>"));	// end output block
 
   if(MENU.verbosity >= VERBOSITY_SOME || true) {
@@ -2281,7 +2276,7 @@ void musicBox_display() {
   MENU.out(F("subcycle octave 'O+' 'O-'\tresync/restart now 'n'\t't' metric tuning"));
   MENU.out_ON_off(some_metric_tunings_only);
   MENU.out(F("  'F' "));
-  if(scale_user_selected && sync_user_selected && jiffle_user_selected && pitch_user_selected && subcycle_user_selected)
+  if(scale_user_selected && sync_user_selected && jiffle_user_selected  && pitch_user_selected /* && subcycle_user_selected*/)
     MENU.out(F("un"));
   MENU.outln(F("freeze parameters"));
 
@@ -2318,6 +2313,13 @@ void musicBox_display() {
   show_when_done_function();
   MENU.ln(2);
 
+  MENU.out(F("'T' tune pitch, scale"));
+#if defined PERIPHERAL_POWER_SWITCH_PIN
+  MENU.out(F("\t'v' peripheral power"));
+  MENU.out_ON_off(peripheral_power_on);
+#endif
+  MENU.ln();
+
   MENU.out(F("'P'="));
   if(MusicBoxState == OFF)
     MENU.out(F("START"));
@@ -2339,9 +2341,10 @@ void musicBox_display() {
   MENU.ln();
 }
 
-
 bool musicBox_reaction(char token) {
   int input_value, cnt;
+  bool done;
+  char next_token;
 
   switch(token) {
   case '?': // musicBox_display();
@@ -2511,6 +2514,14 @@ bool musicBox_reaction(char token) {
 	start_musicBox();
     }
     break;
+
+  case 'v':
+    if(peripheral_power_on)
+      peripheral_power_switch_OFF();
+    else
+      peripheral_power_switch_ON();
+    break;
+
   case 'W':
     if(MENU.is_numeric()) {	// "P<number>" wait <number> seconds before starting musicBox, *see below*
       musicBox_short_info();
@@ -2540,6 +2551,101 @@ bool musicBox_reaction(char token) {
     MENU.outln(selected_name(SCALES));
     break;
 
+  case 'T':	// Tuning pitch and scale	// TODO: move to pulses.ino
+    if(MENU.cb_peek()==EOF) {		// bare 'T'?
+      display_arr_names(SCALES);	// display SCALES list
+      MENU.ln();
+      musicBox_short_info();
+    } else {				// more input?
+      done=false;
+      while(!done) {
+	switch(MENU.cb_peek()) {
+	case ' ':	// a space ends a 'T... ' input sequence
+	  MENU.drop_input_token();
+	case EOF:	// EOF done
+	  done = true;
+	  break;
+	default:	// numbers or known letters
+	  if(MENU.is_numeric()) {
+	    if(UI_select_from_DB(SCALES))	// select scale
+	      scale_user_selected = true;
+	  } else {			// not numeric
+	    switch(MENU.cb_peek()) {	// test for known letters
+	    case 'u':	// harmonical time unit
+	      metric_mnemonic = "u ";
+	      MENU.drop_input_token();
+	      PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
+	      pitch.multiplier=1;
+	      pitch.divisor=1;
+	      pitch_user_selected = true;
+	      break;
+	    case 'c':
+	      metric_mnemonic = "c ";
+	      MENU.drop_input_token();
+	      PULSES.time_unit=1000000;	// switch to metric time unit
+	      pitch.multiplier=1;
+	      pitch.divisor=262; // 261.63	// C4  ***not*** harmonical
+	      pitch_user_selected = true;
+	      break;
+	    case 'd':
+	      metric_mnemonic = "d ";
+	      MENU.drop_input_token();
+	      PULSES.time_unit=1000000;	// switch to metric time unit
+	      pitch.multiplier=1;
+	      pitch.divisor = 294;		// 293.66 = D4
+	      // divisor = 147;		// 146.83 = D3
+	      pitch_user_selected = true;
+	      break;
+	    case 'e':
+	      metric_mnemonic = "e ";
+	      MENU.drop_input_token();
+	      PULSES.time_unit=1000000;	// switch to metric time unit
+	      pitch.multiplier=1;
+	      pitch.divisor=330; // 329.36	// e4  ***not*** harmonical
+	      pitch_user_selected = true;
+	      break;
+	    case 'f':
+	      metric_mnemonic = "f ";
+	      MENU.drop_input_token();
+	      PULSES.time_unit=1000000;	// switch to metric time unit
+	      pitch.multiplier=1;
+	      pitch.divisor=175; // 174.16	// F3  ***not*** harmonical
+	      pitch_user_selected = true;
+	      break;
+	    case 'g':
+	      metric_mnemonic = "g ";
+	      MENU.drop_input_token();
+	      PULSES.time_unit=1000000;	// switch to metric time unit
+	      pitch.multiplier=1;
+	      pitch.divisor=196; // 196.00	// G3  ***not*** harmonical
+	      pitch_user_selected = true;
+	      break;
+	    case 'a':
+	      metric_mnemonic = "a ";
+	      MENU.drop_input_token();
+	      PULSES.time_unit=1000000;	// switch to metric time unit
+	      pitch.multiplier=1;
+	      pitch.divisor = 440;
+	      pitch_user_selected = true;
+	      break;
+	    case 'b':
+	      metric_mnemonic = "b ";
+	      MENU.drop_input_token();
+	      PULSES.time_unit=1000000;	// switch to metric time unit
+	      pitch.multiplier=1;
+	      pitch.divisor=247; // 246.94	// B3  ***not*** harmonical
+	      pitch_user_selected = true;
+	      break;
+
+	    default:	//	unknown input, not for the 'T' interface
+	      done=true;
+	    }
+	  } //  known letters?
+	}
+      }
+    }
+    break;
+
   case 't':	// tuning: toggle some_metric_tunings_only
     MENU.out(F("fixed metric tunings"));
     MENU.out_ON_off(some_metric_tunings_only = !some_metric_tunings_only);
@@ -2547,7 +2653,7 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'F':	// freeze-unfreeze parameters
-    if(scale_user_selected && sync_user_selected && jiffle_user_selected && pitch_user_selected && subcycle_user_selected) {
+    if(scale_user_selected && sync_user_selected && jiffle_user_selected && pitch_user_selected /* && subcycle_user_selected*/) {
       parameters_get_randomised();
     } else {
       parameters_by_user();
@@ -2565,7 +2671,7 @@ bool musicBox_reaction(char token) {
 	MENU.drop_input_token();
     }
     show_cycles_1line();
-    subcycle_user_selected=true;
+    //subcycle_user_selected=true;
     set_cycle_slice_number(cycle_slices);	// make sure slice_tick_period is ok
     break;
 
