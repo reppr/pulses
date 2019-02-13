@@ -1820,7 +1820,9 @@ void start_musicBox() {
   }
 
   // HACK: backwards compatibility for multiplier/divisor	################
-  tune_2_scale(voices, multiplier*pitch.multiplier, divisor*pitch.divisor, sync, selected_in(SCALES));	// TODO: define role of multiplier, divisor
+  if(tune_2_scale(voices, multiplier*pitch.multiplier, divisor*pitch.divisor, sync, selected_in(SCALES))) // TODO: define role of multiplier, divisor
+    MENU.error_ln(F("tune_2_scale()"));
+
   if(!pitch_user_selected)		// if *not* set by user interaction
     random_octave_shift();		// random octave shift
 
@@ -2345,6 +2347,7 @@ bool musicBox_reaction(char token) {
   int input_value, cnt;
   bool done;
   char next_token;
+  struct time T_scratch;
 
   switch(token) {
   case '?': // musicBox_display();
@@ -2641,8 +2644,29 @@ bool musicBox_reaction(char token) {
 	      done=true;
 	    }
 	  } //  known letters?
-	}
-      }
+	} // treat input
+      }	// input loop		'Tx'
+
+      // FIXME:	DEBUGGING:	start ################################################################
+      T_scratch.time = PULSES.time_unit*multiplier*pitch.multiplier;
+      T_scratch.time /= divisor*pitch.divisor;
+      T_scratch.overflow = 0;
+      MENU.outln("T_scratch");
+      MENU.outln(T_scratch.time);
+      MENU.outln(T_scratch.overflow);
+
+      MENU.outln(PULSES.time_unit);
+      MENU.outln('*');
+      MENU.outln(multiplier);
+      MENU.outln(pitch.multiplier);
+      MENU.outln('/');
+      MENU.outln(multiplier);
+      MENU.outln(pitch.multiplier);
+      PULSES.display_time_human(T_scratch); MENU.ln();
+      harmonical_CYCLE = scale2harmonical_cycle(selected_in(SCALES), &T_scratch);
+
+      musicBox_short_info();	// remove ################################################################
+      // DEBUGGING:	end	################################################################
     }
     break;
 

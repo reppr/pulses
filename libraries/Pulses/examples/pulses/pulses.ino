@@ -1917,7 +1917,6 @@ bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, i
       PULSES.select_n(voices);
 
       for (pulse=0; pulse<voices; pulse++) {
-	//	PULSES.init_pulse(pulse);			// initialize new
 	PULSES.pulses[pulse].period = base_period;		// set all voices to base note
 	//	PULSES.pulses[pulse].period.overflow = 0;
       }
@@ -1925,10 +1924,11 @@ bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, i
       // now apply scale:
       selected_apply_scale_on_period(voices, scale, true);
       return true;
-    }
+
+    } else
+      MENU.error_ln(F("no voices"));
   } else
-    if (MENU.verbosity >= VERBOSITY_LOWEST)
-      MENU.outln(F("no scale"));
+      MENU.error_ln(F("no scale"));
 
   return false;
 };
@@ -1950,18 +1950,16 @@ int lower_audio_if_too_high(unsigned long limit) {
     }
   }
 
-  if(MENU.verbosity >= VERBOSITY_SOME || shortest==0) {
-    MENU.out(F("lower_audio_if_too_high "));
+  if(MENU.verbosity >= VERBOSITY_SOME || shortest==0) {	// DEBUGGING and normal feedback
+    MENU.out(F("lower_audio_if_too_high shortest "));
+    MENU.out(fastest_pulse);
+    MENU.tab();
     MENU.outln(shortest);
-  }
-
-  // FIXME: DEBUG: try to catch this rare error condition for debugging...
-  if(shortest==0) {
-    MENU.out('>',5);
-    MENU.outln(F(" DEBUG: shortest==0 "));
-    MENU.out('<',31);
-    MENU.ln();
-    return 0;	// FIXME: DEBUG: ################
+    if(shortest==0) {
+      // MENU.play_KB_macro(".");	// REMOVE: DEBUGGING:	################
+      MENU.outln(F(" DEBUG: shortest==0 "));
+      MENU.ln();
+    }
   }
 
   while (PULSES.pulses[fastest_pulse].period.time < limit) {	// too fast?
