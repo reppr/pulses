@@ -1820,7 +1820,7 @@ void start_musicBox() {
   }
 
   // HACK: backwards compatibility for multiplier/divisor	################
-  if(tune_2_scale(voices, multiplier*pitch.multiplier, divisor*pitch.divisor, sync, selected_in(SCALES))) // TODO: define role of multiplier, divisor
+  if(tune_2_scale(voices, multiplier*pitch.multiplier, divisor*pitch.divisor, selected_in(SCALES))) // TODO: define role of multiplier, divisor
     MENU.error_ln(F("tune_2_scale()"));
 
   if(!pitch_user_selected)		// if *not* set by user interaction

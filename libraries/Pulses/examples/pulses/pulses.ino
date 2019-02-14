@@ -1138,7 +1138,7 @@ void loop() {	// ARDUINO
       stress_event_cnt = 0;
       delay(600);	// send remaining output
 
-      (*musicBox_when_done)();      	//      MUSICBOX_ENDING_FUNCTION
+      (*musicBox_when_done)();		//      MUSICBOX_ENDING_FUNCTION
 
       if(musicBox_when_done != &user)	// user() is a flag *NOT to autostart* musicBox
 	start_musicBox();
@@ -1896,7 +1896,7 @@ int selected_apply_scale_on_period(int voices, unsigned int *scale, bool octaves
 }
 
 
-bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, int sync, unsigned int *scale)
+bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, unsigned int *scale)
 {
   int pulse;
   struct time base_period;
@@ -3013,7 +3013,7 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   PULSES.add_selected_to_group(g_PRIMARY);
 
   // tune *all* primary pulses
-  tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
+  tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));
   lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
 
   // prepare primary pulse groups:
@@ -4278,7 +4278,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     // 'R!' tune selected pulses to a scale starting from lowest
     if (MENU.cb_peek()=='!') {
-      tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));	// tune-2-scale FIXME: *selected*
+      tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));	// tune-2-scale FIXME: *selected*
       scale_user_selected = true;
     }
     else	// ui select a scale
@@ -4606,7 +4606,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  voices = GPIO_PINS;
 
 	PULSES.select_n(voices);
-	tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
+	tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));
 
   #ifndef USE_DACs	// TODO: review and use test code
 	setup_jiffle_thrower_selected(selected_actions);
@@ -5001,7 +5001,7 @@ bool menu_pulses_reaction(char menu_input) {
 	PULSES.select_n(voices);
 //	prepare_scale(false, voices, multiplier, divisor, 0, selected_in(SCALES));
 //	display_name5pars("GUITAR", g_inverse, voices, multiplier, divisor, sync);
-	tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
+	tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));
 	lower_audio_if_too_high(409600);
 
   #ifndef USE_DACs	// TODO: review and use test code
@@ -5058,7 +5058,7 @@ bool menu_pulses_reaction(char menu_input) {
 	select_scale__UI();	// second/third letters choose metric scales
 
 	// tune *all* primary pulses
-	tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
+	tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));
 	lower_audio_if_too_high(409600);
 
 	// prepare primary pulse groups:
@@ -5128,7 +5128,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	  select_array_in(SCALES, minor_scale);		// default e minor
 	  // tune *all* primary pulses
-	  tune_2_scale(voices, multiplier, divisor, sync, selected_in(SCALES));
+	  tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));
 	  lower_audio_if_too_high(409600*2);	// 2 bass octaves
 
 	  // prepare primary pulse groups:
