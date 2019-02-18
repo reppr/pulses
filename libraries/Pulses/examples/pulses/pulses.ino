@@ -1850,6 +1850,7 @@ int prepare_scale(bool inverse, int voices, unsigned long multiplier, unsigned l
 }
 
 
+// TODO: OBSOLETE?	################
 int selected_apply_scale_on_period(int voices, unsigned int *scale, bool octaves=true) {
   // FIXME: octaves are untested here ################
   if(scale[0]==0)  return 0;	// error, no data
@@ -1896,6 +1897,83 @@ int selected_apply_scale_on_period(int voices, unsigned int *scale, bool octaves
 }
 
 
+int tune_selected_2_scale_limited(fraction scaling, unsigned int *scale, unsigned long shortest_limit) {
+/*
+  tune all selected pulses to the scale, start with lowest selected
+  scale 'PULSES.time_unit' by 'scaling' for base_period
+
+  check if shortest period is longer than 'shortest_limit',
+  else repeat 1 octave lower setting
+
+  shortest limit *can* be zero to switch it off
+
+  return octave_hift
+*/
+
+  int octave_shift=0;
+
+  if (MENU.verbosity >= VERBOSITY_LOWEST) {
+    MENU.out(F("tune_selected_2_scale_limited("));
+    display_fraction(&scaling);
+    MENU.out(F(", "));
+    MENU.out(array2name(SCALES, selected_in(SCALES)));
+    MENU.out(F(", "));
+    MENU.out(shortest_limit);
+    MENU.outln(')');
+  }
+
+  if ((scale != NULL) && scale[0] && scaling.divisor) {
+    struct time base_period = {PULSES.time_unit, 0};
+    base_period.time *= scaling.multiplier;
+    base_period.time /= scaling.divisor;
+
+    // check if highest note is within limit
+    struct time this_period = {0, 0};	// bluff the very first test to pass
+    while (this_period.time <= shortest_limit) { // SHORTEST LIMIT *CAN* BE ZERO (to switch it off)
+      int octave=1;  // 1,2,4,8,...	the octave of this note   (*not* octave_shift)
+      int note = 0;
+      int multiplier=0;
+      int divisor=0;
+
+      for(int pulse=0; pulse<PL_MAX; pulse++) {
+	if (PULSES.pulse_is_selected(pulse)) {
+	  if ((multiplier = scale[note*2]) == 0) {	// next octave?
+	    octave *= 2;	// one octave higher
+	    note = 0;	// restart at first note
+	    multiplier = scale[note*2];
+	  }
+
+	  divisor=scale[note*2+1];
+//	if (divisor==0)
+//	  goto global_next;		// divisor==0: error, end
+	  divisor *= octave;
+
+	  this_period = base_period;
+	  PULSES.mul_time(&this_period, multiplier);
+	  PULSES.div_time(&this_period, divisor);
+	  PULSES.pulses[pulse].period = this_period;
+	  note++;
+	} // selected
+      } // pulse
+
+      if(this_period.time > shortest_limit) {
+	if (octave_shift || MENU.verbosity > VERBOSITY_SOME) {
+	  MENU.out(octave_shift);
+	  MENU.outln(F(" octaves shifted"));
+	}
+	return octave_shift;		// OK, tuning fine and within limit, RETURN
+      }
+      // else repeat one octave lower...
+      PULSES.mul_time(&base_period, 2);
+      octave_shift--;
+    } // while off limit, tune octaves down...
+  } else MENU.error_ln(F("invalid tuning"));
+
+  return octave_shift;
+}
+
+
+// TODO: OBSOLETE?	################
 bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, unsigned int *scale)
 {
   int pulse;
@@ -1935,6 +2013,7 @@ bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, u
 
 
 // if shortest period of selected pulses is too short, shift all periods by octaves
+// TODO: OBSOLETE?	################
 int lower_audio_if_too_high(unsigned long limit) {
   unsigned int shortest=~0;		// shortest period.time (no overflow implemented here)
   unsigned int fastest_pulse=~0;	// pulse index with shortest period.time

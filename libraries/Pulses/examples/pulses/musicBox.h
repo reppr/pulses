@@ -8,8 +8,8 @@
 
 
 // PRESETS: uncomment *one* (or zero) of the following setups:
-#define SETUP_BRACHE				BRACHE_2019-01
-//#define SETUP_BAHNPARKPLATZ	BahnParkPlatz 18
+#define SETUP_BRACHE				BRACHE_2019-02
+//#define SETUP_BAHNPARKPLATZ	BahnParkPlatz 2018/2019
 //#define SETUP_CHAMBER_ORCHESTRA	The Harmonical Chamber Orchestra 2018-12
 
 
@@ -732,8 +732,8 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   MENU.slash();
   MENU.out(pitch.divisor);
 
-  if(some_metric_tunings_only) {
-    MENU.out(F(" \t*metric* "));
+  if(some_metric_tunings_only) { // TODO: FIXME: (could be set by user...) ################
+    MENU.out(F(" *metric "));
     MENU.out(metric_mnemonic);
   }
   MENU.ln();
@@ -2556,19 +2556,22 @@ bool musicBox_reaction(char token) {
 
   case 'T':	// Tuning pitch and scale	// TODO: move to pulses.ino
     if(MENU.cb_peek()==EOF) {		// bare 'T'?
-      display_arr_names(SCALES);	// display SCALES list
+      display_arr_names(SCALES);	//   display SCALES list
       MENU.ln();
       musicBox_short_info();
     } else {				// more input?
       done=false;
       while(!done) {
 	switch(MENU.cb_peek()) {
-	case ' ':	// a space ends a 'T... ' input sequence
+	case '!':	// 'Txyz!'	trailing '!': *do* tune and quit
+	  tune_selected_2_scale_limited(pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves // TODO: adjust appropriate...
+	case ' ':	// a space ends a 'T... ' input sequence, quit
 	  MENU.drop_input_token();
-	case EOF:	// EOF done
+	case EOF:	// EOF done		quit
 	  done = true;
 	  break;
-	default:	// numbers or known letters
+
+	default:	// numbers or known letters?
 	  if(MENU.is_numeric()) {
 	    if(UI_select_from_DB(SCALES))	// select scale
 	      scale_user_selected = true;
@@ -2647,7 +2650,7 @@ bool musicBox_reaction(char token) {
 	} // treat input
       }	// input loop		'Tx'
 
-      // FIXME:	DEBUGGING:	start ################################################################
+      // FIXME:	DEBUGGING: TODO: REMOVE:	start ################################################################
       T_scratch.time = PULSES.time_unit*multiplier*pitch.multiplier;
       T_scratch.time /= divisor*pitch.divisor;
       T_scratch.overflow = 0;
