@@ -801,6 +801,10 @@ void Menu::ok_or_error_ln(const char * str, int error) const {
   }
 }
 
+//  void out_comma_() const;	// output ", "  for parameter lists
+void Menu::out_comma_() const { out(F(", ")); }
+
+
 // void out_selected_(): output "selected "
 void Menu::out_selected_() const { out(F("selected ")); }
 

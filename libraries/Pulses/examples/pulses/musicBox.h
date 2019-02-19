@@ -593,7 +593,7 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
     if(MENU.verbosity >= VERBOSITY_LOWEST) {
       MENU.out(F("start_soft_ending("));		// info
       MENU.out(soft_end_days_to_live);
-      MENU.out(F(", "));
+      MENU.out_comma_();
       MENU.out(soft_end_survive_level);
       MENU.out(F(")\tmain part "));
       struct time main_part_duration = soft_end_start_time;
@@ -2303,7 +2303,7 @@ void musicBox_display() {
 
   MENU.out(F("soft_end("));
   MENU.out(soft_end_days_to_live);	// remaining days of life after soft end
-  MENU.out(F(", "));
+  MENU.out_comma_();
   MENU.out(soft_end_survive_level);	// the level a pulse must have reached to survive soft en
   MENU.out(F(")\t'd'=days to survive  'l'=level minimal age 'E'= start soft end now  'w' minimal weight "));
   MENU.outln(soft_cleanup_minimal_fraction_weighting);

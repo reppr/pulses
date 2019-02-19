@@ -940,7 +940,8 @@ bool softboard_reaction(char token) {
 
 	  analogWrite(PIN_digital, newValue);
 	  MENU.out(F("\tanalogWrite(")); MENU.out((int) PIN_digital);
-	  MENU.out(F(", ")); MENU.out(newValue);
+	  MENU.out_comma_();
+	  MENU.out(newValue);
 	  MENU.outln(')');
 	} else
 	  MENU.OutOfRange();

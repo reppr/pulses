@@ -241,6 +241,7 @@ class Menu {
   void out_Error_() const;	// output "ERROR: "
   void error_ln(const char * str) const;		// output "ERROR: xxxxxxxx"
   void ok_or_error_ln(const char * str, int error) const; // output "ERROR: xxxxxxxx nn" or "xxxxxxxx ok"
+  void out_comma_() const;	// output ", "  for parameter lists
 
   void out_selected_() const;	// output "selected "
   void out_flags_() const;	// output "\tflags ";

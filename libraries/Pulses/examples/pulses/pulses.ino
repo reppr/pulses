@@ -515,7 +515,7 @@ void show_GPIOs() {
   MENU.out(F(" GPIO pins\t{"));
   for(int i=0; i < GPIO_PINS; i++) {
     MENU.out(gpio_pins[i]);
-    MENU.out(F(", "));
+    MENU.out_comma_();
   }
   MENU.outln('}');
 }
@@ -1915,9 +1915,9 @@ int tune_selected_2_scale_limited(fraction scaling, unsigned int *scale, unsigne
   if (MENU.verbosity >= VERBOSITY_LOWEST) {
     MENU.out(F("tune_selected_2_scale_limited("));
     display_fraction(&scaling);
-    MENU.out(F(", "));
+    MENU.out_comma_();
     MENU.out(array2name(SCALES, selected_in(SCALES)));
-    MENU.out(F(", "));
+    MENU.out_comma_();
     MENU.out(shortest_limit);
     MENU.outln(')');
   }
@@ -1983,12 +1983,16 @@ bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, u
   base_period.time /= divisor;
 
   if (scale != NULL) {
-    if (MENU.verbosity >= VERBOSITY_SOME) {
-      MENU.out(F("tune to scale "));
-      MENU.out(array2name(SCALES, scale));
-      MENU.tab();
+    if (MENU.verbosity >= VERBOSITY_LOWEST) {	// debug output
+      MENU.out(F("tune_2_scale("));
       MENU.out(voices);
-      MENU.outln(F(" voices"));
+      MENU.out_comma_();
+      MENU.out(multiplier);
+      MENU.out_comma_();
+      MENU.out(divisor);
+      MENU.out_comma_();
+      MENU.out(array2name(SCALES, scale));
+      MENU.outln(')');
     }
 
     if (voices>0) {
@@ -3079,9 +3083,9 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   {
     MENU.out(F("setup_bass_middle_high("));	// ################ verbosity
     MENU.out(bass_pulses);
-    MENU.out(F(", "));
+    MENU.out_comma_();
     MENU.out(middle_pulses);
-    MENU.out(F(", "));
+    MENU.out_comma_();
     MENU.out(high_pulses);
     MENU.outln(')');
   }
@@ -3364,12 +3368,12 @@ void short_info() {
 
 // helper functions to display parameters of menu functions:
 void display_next_par(long parameter) {
-  MENU.out(F(", "));
+  MENU.out_comma_();
   MENU.out(parameter);
 }
 
 void display_last_par(long parameter) {
-  MENU.out(F(", "));
+  MENU.out_comma_();
   MENU.out(parameter);
   MENU.outln(F(")"));
 }

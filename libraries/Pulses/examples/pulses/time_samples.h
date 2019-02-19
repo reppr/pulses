@@ -22,7 +22,7 @@ volatile int time_samp_index=0;
 #define EXTERNAL_INTERRUPT_PIN	25
     MENU.out("time_sampling_init(");
     MENU.out(TIME_SAMPLES);
-    MENU.out(F(", "));
+    MENU.out_comma_();
     MENU.out(EXTERNAL_INTERRUPT_PIN);
     MENU.outln(F(");"));
 
