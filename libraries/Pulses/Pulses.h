@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "examples/pulses/pulses_project_conf.h"
+#include "../../pulses/pulses_project_conf.h"
 
 typedef int icode_t;
 
@@ -51,8 +51,8 @@ enum icode {
 
 #define JIFFLETAB_INDEX_STEP	3
 
-#include "examples/pulses/pulses_systems.h"
-#include "examples/pulses/pulses_boards.h"
+#include "../../pulses/pulses_systems.h"
+#include "../../pulses/pulses_boards.h"
 
 #include <Menu.h>
 

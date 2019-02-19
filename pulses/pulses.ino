@@ -121,7 +121,11 @@ Menu MENU(CB_SIZE, 6, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
 
 
 /* **************** Pulses **************** */
+
 #include <Pulses.h>
+#include "pulses_project_conf.h"
+#include "pulses_systems.h"
+#include "pulses_boards.h"
 
 Pulses PULSES(PL_MAX, &MENU);
 
