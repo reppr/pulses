@@ -5,11 +5,6 @@
 */
 
 
-//   TODO: did not touch the multiplier/divisor mess	################
-tune_selected_2_scale_limited(pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves // TODO: adjust appropriate...
-//tune_selected_2_scale_limited({multiplier*2048, divisor}, selected_in(SCALES), 409600*2L);	// 2 bass octaves // TODO: adjust appropriate...
-
-
 #if defined USE_BATTERY_CONTROL
     show_battery_level();
 #endif

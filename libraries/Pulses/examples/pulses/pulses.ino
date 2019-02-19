@@ -2055,7 +2055,7 @@ int lower_audio_if_too_high(unsigned long limit) {
   }
 
   if (octave_shift) {
-    if (MENU.verbosity > VERBOSITY_LOWEST) {
+    if (MENU.verbosity >= VERBOSITY_LOWEST) {
       MENU.out(octave_shift);
       MENU.outln(F(" octaves shifted"));
     }

@@ -2,7 +2,7 @@
   musicBox.h
 */
 
-#define MUSICBOX_VERSION	alpha 0.013	// (maybe used also as BLUETOOTH_NAME)
+#define MUSICBOX_VERSION	alpha 0.014	// (maybe used also as BLUETOOTH_NAME)
 
 #define LONELY_BUTLER_QUITS			// lonely butler detect SAVETY NET, TODO: will be completely *wrong* in other situations
 
@@ -1821,7 +1821,7 @@ void start_musicBox() {
 
   // HACK: backwards compatibility for multiplier/divisor	################
   if(tune_2_scale(voices, multiplier*pitch.multiplier, divisor*pitch.divisor, selected_in(SCALES))) // TODO: define role of multiplier, divisor
-    MENU.error_ln(F("tune_2_scale()"));
+    ;	// MENU.error_ln(F("tune_2_scale()"));	// TODO: meaningless error...
 
   if(!pitch_user_selected)		// if *not* set by user interaction
     random_octave_shift();		// random octave shift
@@ -2320,7 +2320,7 @@ void musicBox_display() {
   MENU.out(F("\t'v' peripheral power"));
   MENU.out_ON_off(peripheral_power_on);
 #endif
-  MENU.ln();
+  MENU.ln(2);
 
   MENU.out(F("'P'="));
   if(MusicBoxState == OFF)
@@ -2650,6 +2650,7 @@ bool musicBox_reaction(char token) {
 	} // treat input
       }	// input loop		'Tx'
 
+/*
       // FIXME:	DEBUGGING: TODO: REMOVE:	start ################################################################
       T_scratch.time = PULSES.time_unit*multiplier*pitch.multiplier;
       T_scratch.time /= divisor*pitch.divisor;
@@ -2670,6 +2671,7 @@ bool musicBox_reaction(char token) {
 
       musicBox_short_info();	// remove ################################################################
       // DEBUGGING:	end	################################################################
+*/
     }
     break;
 
