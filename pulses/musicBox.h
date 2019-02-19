@@ -2,7 +2,7 @@
   musicBox.h
 */
 
-#define MUSICBOX_VERSION	alpha 0.014	// (maybe used also as BLUETOOTH_NAME)
+#define MUSICBOX_VERSION	alpha 0.015	// (maybe used also as BLUETOOTH_NAME)
 
 #define LONELY_BUTLER_QUITS			// lonely butler detect SAVETY NET, TODO: will be completely *wrong* in other situations
 
