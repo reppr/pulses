@@ -196,7 +196,7 @@ bool DO_or_maybe_display(unsigned char verbosity_level) { // the flag tells *if*
 /* **************************************************************** */
 // iCode
 
-bool setup_icode_seeder(int pulse, struct time period, icode_t* icode_p, action_flags_t dest_action_flags) {
+bool setup_icode_seeder(int pulse, pulse_time_t period, icode_t* icode_p, action_flags_t dest_action_flags) {
   if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
     PULSES.pulses[pulse].period = period;
     PULSES.set_icode_p(pulse, icode_p, false);		// icode inactive in seeder
@@ -299,13 +299,13 @@ unsigned int TRIAD[] ={1,1, 4,5, 2,3, 0,0};
 unsigned int triad[] ={1,1, 5,6, 2,3, 0,0};
 
 // TODO: time (and related stuff should move to Harmonics::
-struct time harmonical_CYCLE;		// TODO: move to Harmonical?
+pulse_time_t harmonical_CYCLE;		// TODO: move to Harmonical?
 
 // TODO: move to Harmonical::scale2harmonical_cycle()	################
 struct fraction harmonical_cycle_fraction={1, 1 };
 
 //#define SCALE2CYCLE_INFO	// for debugging, but interesting to watch anyway ;)
-struct time scale2harmonical_cycle(unsigned int* scale, struct time* duration) {		// returns harmonical cycle of a scale
+pulse_time_t scale2harmonical_cycle(unsigned int* scale, pulse_time_t* duration) {		// returns harmonical cycle of a scale
   fraction f_LCM;
   f_LCM.multiplier = 1;
   f_LCM.divisor = 1;
@@ -337,7 +337,7 @@ struct time scale2harmonical_cycle(unsigned int* scale, struct time* duration) {
 }
 
 // TODO: move to Harmonical::	################
-void scale_time(struct time *duration, fraction * F) {
+void scale_time(pulse_time_t *duration, fraction * F) {
   PULSES.mul_time(duration, (*F).multiplier);
   PULSES.div_time(duration, (*F).divisor);
 }
@@ -579,7 +579,7 @@ int selected_share_DACsq_intensity(int intensity, int channel) {
 
 // share DAC intensity of selected pulses, proportional to period
 void selected_DACsq_intensity_proportional(int intensity, int channel) {
-  struct time sum;
+  pulse_time_t sum;
   sum.time=0;
   sum.overflow=0;
   float factor;
@@ -1404,7 +1404,7 @@ void tuning_info() {
 }
 
 void sweep_info() {
-  struct time duration;
+  pulse_time_t duration;
 
   MENU.out(F("sweep "));
   switch (sweep_up) {
@@ -1451,7 +1451,7 @@ bool maybe_display_tuning_steps() {
 
   if (last_tuning != tuning) {
     last_tuning = tuning;
-    struct time now = PULSES.get_now();
+    pulse_time_t now = PULSES.get_now();
 
     int tuning_step = tuning;			// integer part
     int current_fraction = 1.0/(double) tuning;	// integer part
@@ -1627,7 +1627,7 @@ bool en_tuned_sweep_click(int pulse) {
 #endif	// #ifdef IMPLEMENT_TUNING	implies floating point
 
 
-int setup_click_synced(struct time when, unsigned long unit, unsigned long multiplier,
+int setup_click_synced(pulse_time_t when, unsigned long unit, unsigned long multiplier,
 		       unsigned long divisor, int sync) {
   int pulse= PULSES.setup_pulse_synced(&click, ACTIVE, when, unit, multiplier, divisor, sync);
 
@@ -1651,7 +1651,7 @@ void init_div_123456(bool inverse, int voices, unsigned int multiplier, unsigned
 
   display_name5pars("init_div_123456", inverse, voices, multiplier, divisor, sync);
 
-  struct time now;
+  pulse_time_t now;
   PULSES.get_now();
   now=PULSES.now;
 
@@ -1678,7 +1678,7 @@ void init_123456(bool inverse, int voices, unsigned int multiplier, unsigned int
 
   display_name5pars("init123456", inverse, voices, multiplier, divisor, sync);
 
-  struct time now;
+  pulse_time_t now;
   PULSES.get_now();
   now=PULSES.now;
 
@@ -1725,7 +1725,7 @@ void init_pentatonic(bool inverse, int voices, unsigned int multiplier, unsigned
 
   display_name5pars("init_pentatonic", inverse, voices, multiplier, divisor, sync);
 
-  struct time now;
+  pulse_time_t now;
   PULSES.get_now();
   now=PULSES.now;
 
@@ -1808,12 +1808,12 @@ int prepare_scale(bool inverse, int voices, unsigned long multiplier, unsigned l
   else
     display_name5pars("prepare_scale", inverse, voices, multiplier, divisor, sync);
 
-  struct time now;
+  pulse_time_t now;
   PULSES.get_now();
   now=PULSES.now;
 
   unsigned long this_period;
-  struct time new_period;
+  pulse_time_t new_period;
   int pulse=0;
   int octave=1;	// 1,2,4,8,...
   for (int note=0; prepared<=voices; note++) {
@@ -1858,7 +1858,7 @@ int selected_apply_scale_on_period(int voices, unsigned int *scale, bool octaves
   // FIXME: octaves are untested here ################
   if(scale[0]==0)  return 0;	// error, no data
 
-  struct time new_period;
+  pulse_time_t new_period;
   int applied=0;
 
 //  int pulse=0;
@@ -1926,12 +1926,12 @@ int tune_selected_2_scale_limited(fraction scaling, unsigned int *scale, unsigne
   }
 
   if ((scale != NULL) && scale[0] && scaling.divisor) {
-    struct time base_period = {PULSES.time_unit, 0};
+    pulse_time_t base_period = {PULSES.time_unit, 0};
     base_period.time *= scaling.multiplier;
     base_period.time /= scaling.divisor;
 
     // check if highest note is within limit
-    struct time this_period = {0, 0};	// bluff the very first test to pass
+    pulse_time_t this_period = {0, 0};	// bluff the very first test to pass
     while (this_period.time <= shortest_limit) { // SHORTEST LIMIT *CAN* BE ZERO (to switch it off)
       int octave=1;  // 1,2,4,8,...	the octave of this note   (*not* octave_shift)
       int note = 0;
@@ -1984,7 +1984,7 @@ int tune_selected_2_scale_limited(fraction scaling, unsigned int *scale, unsigne
 bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, unsigned int *scale)	// TODO: OBSOLETE? #########
 {
   int pulse;
-  struct time base_period;
+  pulse_time_t base_period;
   base_period.overflow = 0;
   base_period.time = multiplier * PULSES.time_unit;
   base_period.time /= divisor;
@@ -2079,7 +2079,7 @@ void init_chord_1345689a(bool inverse, int voices, unsigned int multiplier, unsi
 
   display_name5pars("init_chord_1345689a", inverse, voices, multiplier, divisor, sync);
 
-  struct time now;
+  pulse_time_t now;
   PULSES.get_now();
   now=PULSES.now;
 
@@ -2120,7 +2120,7 @@ void init_chord_1345689a(bool inverse, int voices, unsigned int multiplier, unsi
 // helper function to generate certain types of sequences of harmonic relations:
 // for harmonics I use rational number sequences a lot.
 // this is a versatile function to create them:
-void init_ratio_sequence(struct time when,
+void init_ratio_sequence(pulse_time_t when,
 			 int multiplier0, int multiplier_step,
 			 int divisor0, int divisor_step, int count,
 			 unsigned int scaling, int sync
@@ -2153,7 +2153,7 @@ void init_rhythm_1(bool inverse, int voices, unsigned int multiplier, unsigned i
   unsigned long unit = multiplier * PULSES.time_unit;
   unit /= divisor;
 
-  struct time now;
+  pulse_time_t now;
 
   display_name5pars("init_rhythm_1", inverse, voices, multiplier, divisor, sync);
 
@@ -2178,7 +2178,7 @@ void init_rhythm_2(bool inverse, int voices, unsigned int multiplier, unsigned i
 
   display_name5pars("init_rhythm_2", inverse, voices, multiplier, divisor, sync);
 
-  struct time now;
+  pulse_time_t now;
   PULSES.get_now();
   now=PULSES.now;
 
@@ -2199,7 +2199,7 @@ void init_rhythm_3(bool inverse, int voices, unsigned int multiplier, unsigned i
 
   display_name5pars("init_rhythm_3", inverse, voices, multiplier, divisor, sync);
 
-  struct time now;
+  pulse_time_t now;
   PULSES.get_now();
   now=PULSES.now;
 
@@ -2227,7 +2227,7 @@ void init_rhythm_4(bool inverse, int voices, unsigned int multiplier, unsigned i
   unsigned long unit = multiplier * PULSES.time_unit;
   unit /= divisor;
 
-  struct time now;
+  pulse_time_t now;
 
   display_name5pars("init_rhythm_4", inverse, voices, multiplier, divisor, sync);
 
@@ -2352,9 +2352,9 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
   }
 
   if (MENU.verbosity > VERBOSITY_SOME) {
-    struct time sum = PULSES.pulses[pulse].next;
+    pulse_time_t sum = PULSES.pulses[pulse].next;
     PULSES.get_now();
-    struct time delta =PULSES.now;
+    pulse_time_t delta =PULSES.now;
     PULSES.sub_time(&delta, &sum);
 
     MENU.tab();
@@ -2632,10 +2632,10 @@ int setup_jiffle_thrower_selected(action_flags_t action_flags) {	// FIXME: obsol
 
 
 
-int init_jiffle(unsigned int *jiffle, struct time when, struct time new_period, int origin_pulse)
+int init_jiffle(unsigned int *jiffle, pulse_time_t when, pulse_time_t new_period, int origin_pulse)
 {
   int pulse;
-  struct time jiffle_period=new_period;
+  pulse_time_t jiffle_period=new_period;
 
   jiffle_period.time = new_period.time * jiffle[0] / jiffle[1];
 
@@ -2863,7 +2863,7 @@ void menu_pulses_display() {
 
 
 // FIXME: obsolete? ################
-int setup_jiffle_thrower_synced(struct time when,
+int setup_jiffle_thrower_synced(pulse_time_t when,
 				unsigned long unit,
 				unsigned long multiplier, unsigned long divisor,
 				int sync, unsigned int *jiffle)
@@ -3166,7 +3166,7 @@ void setup_jiffles2345(bool g_inverse, int voices, unsigned int multiplier, unsi
 
   display_name5pars("jiffles2345", g_inverse, voices, multiplier, divisor, sync);
 
-  struct time when;
+  pulse_time_t when;
   PULSES.get_now();
   when=PULSES.now;
 
@@ -3231,7 +3231,7 @@ void setup_jifflesNEW(bool g_inverse, int voices, unsigned int multiplier, unsig
 
   display_name5pars("setup_jifflesNEW", g_inverse, voices, multiplier, divisor, sync);
 
-  struct time when;
+  pulse_time_t when;
   PULSES.get_now();
   when=PULSES.now;
 
@@ -3269,7 +3269,7 @@ void setup_jiffle128(bool inverse, int voices, unsigned int multiplier, unsigned
   display_name5pars("setup_jiffle128", inverse, voices, multiplier, divisor, sync);
 
   PULSES.get_now();
-  struct time when=PULSES.now;
+  pulse_time_t when=PULSES.now;
 
   multiplier=1;
   if (!inverse) {
@@ -3298,7 +3298,7 @@ void setup_jiffles0(bool g_inverse, int voices, unsigned int multiplier, unsigne
 
   display_name5pars("setup_jiffles0", g_inverse, voices, multiplier, divisor, sync);
 
-  struct time when;
+  pulse_time_t when;
   PULSES.get_now();
   when=PULSES.now;
 
@@ -3663,7 +3663,7 @@ int s2=0;
 bool menu_pulses_reaction(char menu_input) {
   static unsigned long input_value=0;
   static unsigned long calc_result=0;
-  struct time now, time_scratch;
+  pulse_time_t now, time_scratch;
   pulses_mask_t bitmask;
   char next_token;	// for multichar commands
 

@@ -74,10 +74,10 @@ enum icode {
 // time:
 
 // TODO: time (and related stuff should move to Harmonics::
-struct time {
+typedef struct {
   unsigned long time;
   unsigned int overflow;
-};
+} pulse_time_t;
 
 
 /* **************************************************************** */
@@ -85,12 +85,12 @@ struct time {
 
 struct pulse_t {
   unsigned long counter;	// counts wake up's
-  struct time period;		// period (including overflow count)
-  struct time last;		// convenient, but not really needed...	maybe yes :)
-  struct time next;		// next time the pulse wants to wake up
+  pulse_time_t period;		// period (including overflow count)
+  pulse_time_t last;		// convenient, but not really needed...	maybe yes :)
+  pulse_time_t next;		// next time the pulse wants to wake up
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
-  struct time other_time;	// used by tuning,	TODO: CONFLICTS with musicBox_butler(p)
+  pulse_time_t other_time;	// used by tuning,	TODO: CONFLICTS with musicBox_butler(p)
 				// used by musicBox_butler(p) as soft_end_time	TODO: CONFLICTS with tuning
 #endif
 
@@ -209,7 +209,7 @@ struct pulse_t {
     used by:
     pulse_info_1line(int pulse)
     en_jiffle_thrower(int pulse, unsigned int *jiffletab, action_flags_t action_mask)
-    init_jiffle(unsigned int *jiffletab, struct time when, struct time new_period, int origin_pulse)
+    init_jiffle(unsigned int *jiffletab, pulse_time_t when, pulse_time_t new_period, int origin_pulse)
   */
 
   // pointer on  void something(int pulse)  functions:
@@ -242,26 +242,26 @@ class Pulses {
   Pulses(int pl_max, Menu *MENU);
   ~Pulses();
   void init_time();
-  struct time get_now();	// *always* use get_now() to get current time!
+  pulse_time_t get_now();	// *always* use get_now() to get current time!
 				// get_now() works directly on 'now'
 				// also returns a pointer to 'now'
 
-  void add_time(struct time *delta, struct time *sum);
-  void sub_time(struct time *delta, struct time *sum);
-  void add_time(unsigned long time, struct time *sum);	// only unsigned long
-  void sub_time(unsigned long time, struct time *sum);	// only unsigned long
-  void mul_time(struct time *duration, unsigned int factor);
-  void div_time(struct time *duration, unsigned int divisor);
+  void add_time(pulse_time_t *delta, pulse_time_t *sum);
+  void sub_time(pulse_time_t *delta, pulse_time_t *sum);
+  void add_time(unsigned long time, pulse_time_t *sum);	// only unsigned long
+  void sub_time(unsigned long time, pulse_time_t *sum);	// only unsigned long
+  void mul_time(pulse_time_t *duration, unsigned int factor);
+  void div_time(pulse_time_t *duration, unsigned int divisor);
   void multiply_period(int pulse, unsigned long factor);
   void divide_period(int pulse, unsigned long factor);
   void global_shift(int global_octave);
   int global_octave;			    // global octave shift. ONLY negative shifts atm
   unsigned long global_octave_mask;	    // this mask gets shifted and then actually used
   unsigned long current_global_octave_mask; // actually used mask to switch oscillators
-  struct time now;
-  struct time last_now;		// for simple overflow detection
+  pulse_time_t now;
+  pulse_time_t last_now;		// for simple overflow detection
 				// DO WE NEED OVERFLOW PART of that? ################
-  struct time global_next;	// next time that a pulse wants to be waken up
+  pulse_time_t global_next;	// next time that a pulse wants to be waken up
   unsigned int global_next_count; // how many tasks wait to be activated at the same time?
 
 
@@ -313,7 +313,7 @@ class Pulses {
 
 //  DOES NOT WORK: non static member function	TODO: fix or remove ################
 //  void seed_icode_player(int pulse);		// used as payload to seed play_icode() pulses
-//  bool setup_icode_seeder(int pulse, struct time period, icode_t* icode_p, action_flags_t dest_action_flags);
+//  bool setup_icode_seeder(int pulse, pulse_time_t period, icode_t* icode_p, action_flags_t dest_action_flags);
 
   void show_pulse_flag_mnemonics(pulse_flags_t flags);	// show pulse flags as mnemonics
   void show_action_flags(action_flags_t flags);	// show action flags as mnemonics
@@ -331,7 +331,7 @@ class Pulses {
   short how_many_selected(void);
 
   void activate_selected_synced_now(int sync);
-  void reset_and_edit_pulse(int pulse, unsigned long time_unit);	// FIXME: time_unit as struct time
+  void reset_and_edit_pulse(int pulse, unsigned long time_unit);	// FIXME: time_unit as time_t
   int fastest_pulse();			// fastest pulse, *not* dealing with overflow...
   int fastest_from_selected();		// fastest from selected, no overflow...
   int add_selected_to_group(group_flags_t groups);	// add selected pulses to groups
@@ -342,18 +342,18 @@ class Pulses {
 				// they will be called in fast sequence then
   bool check_maybe_do();	// FIXME; comment ################
   int setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
-		  struct time when, struct time new_period);
+		  pulse_time_t when, pulse_time_t new_period);
   int setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
-		  struct time when, unsigned long new_period);	// unsigned long *only* version
+		  pulse_time_t when, unsigned long new_period);	// unsigned long *only* version
   int setup_counted_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
-			  struct time when, struct time new_period, unsigned int count);
-  void set_new_period(int pulse, struct time new_period);
+			  pulse_time_t when, pulse_time_t new_period, unsigned int count);
+  void set_new_period(int pulse, pulse_time_t new_period);
 
   void activate_pulse_synced(int pulse,			\
-			    struct time when, int sync);	// ################
+			    pulse_time_t when, int sync);	// ################
 
   int setup_pulse_synced(void (*pulse_do)(int), pulse_flags_t new_flags,
-			 struct time when, unsigned long unit,
+			 pulse_time_t when, unsigned long unit,
 			 unsigned long factor, unsigned long divisor, int sync);
 
   unsigned long time_unit;
@@ -362,10 +362,10 @@ class Pulses {
   const float overflow_sec;				// overflow time in seconds
   void display_now();					// display current time
   void time_info();					// same with digital details and global next
-  float display_realtime_sec(struct time duration);	// display duration in seconds
-  void display_time_human(struct time duration);	// everyday time format	d h m s  short
-  void display_time_human_format(struct time duration);	// everyday time format	d h m s  formatted with spaces
-  void display_real_ovfl_and_sec(struct time then);	//
+  float display_realtime_sec(pulse_time_t duration);	// display duration in seconds
+  void display_time_human(pulse_time_t duration);	// everyday time format	d h m s  short
+  void display_time_human_format(pulse_time_t duration);	// everyday time format	d h m s  formatted with spaces
+  void display_real_ovfl_and_sec(pulse_time_t then);	//
   void short_info(void);				// give some infos, depending verbosity
   //  void selected_or_flagged_pulses_info_lines(void);
   //  void pulse_info_1line(int pulse);			// 1 line pulse info, depending verbosity

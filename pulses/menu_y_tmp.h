@@ -50,7 +50,7 @@
       }
 
       MENU.out(F("==> lcm ")); MENU.out(lcm);
-      struct time length;
+      time_t length;
       length.time = lcm;
       length.overflow = 0;
       PULSES.display_realtime_sec(length);

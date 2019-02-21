@@ -142,11 +142,11 @@ void show_when_done_function() {
 }
 
 
-struct time musicBox_start_time;
-struct time musicBox_hard_end_time;
+pulse_time_t musicBox_start_time;
+pulse_time_t musicBox_hard_end_time;
 
-// struct time harmonical_CYCLE;	// is in pulses.ino now TODO: move to Harmonical?
-struct time used_subcycle;	// TODO: move to Harmonical? ? ?
+// pulse_time_t harmonical_CYCLE;	// is in pulses.ino now TODO: move to Harmonical?
+pulse_time_t used_subcycle;	// TODO: move to Harmonical? ? ?
 bool subcycle_user_selected=false;
 
 /*
@@ -162,7 +162,7 @@ unsigned short cycle_slices = 540;	// *DO NOT CHANGE DIRECTLY* use set_cycle_sli
 //unsigned short cycle_slices = 540*2;	// *DO NOT CHANGE DIRECTLY* use set_cycle_slice_number(n);
 //unsigned short cycle_slices = 540*3;	// *DO NOT CHANGE DIRECTLY* use set_cycle_slice_number(n);
 
-struct time slice_tick_period;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
+pulse_time_t slice_tick_period;	// *DO NOT SET DIRECTLY* use set_cycle_slice_number(n);
 
 void set_cycle_slice_number(short ticks_a_cycle) {
   cycle_slices = ticks_a_cycle;
@@ -345,7 +345,7 @@ void show_cycles_1line() {	// no scale, no cycle
   return;
 }
 
-void show_cycle(struct time cycle) {
+void show_cycle(pulse_time_t cycle) {
   MENU.out(F("\nharmonical cycle:  "));
   if(selected_in(SCALES)==NULL) {
     MENU.outln(F("no scale, no cycle"));
@@ -357,8 +357,8 @@ void show_cycle(struct time cycle) {
   PULSES.display_time_human(cycle);
   MENU.ln();
 
-  struct time period_highest = PULSES.pulses[highest_primary].period;
-  struct time shortest = scale2harmonical_cycle(selected_in(SCALES), &period_highest);
+  pulse_time_t period_highest = PULSES.pulses[highest_primary].period;
+  pulse_time_t shortest = scale2harmonical_cycle(selected_in(SCALES), &period_highest);
 
   if(MENU.verbosity >= VERBOSITY_MORE) {
     MENU.out(F("shortest pulse's harmonical cycle: "));
@@ -489,7 +489,7 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
   if(PULSES.pulses[pulse].counter == 1)
     cycle_monitor_last_seen_division =  0;
 
-  struct time this_time = PULSES.get_now();
+  pulse_time_t this_time = PULSES.get_now();
   PULSES.sub_time(&PULSES.pulses[pulse].last, &this_time);	// so long inside this cycle
   /* TESTED: works fine disregarding overflow :)
   if(this_time.overflow != PULSES.pulses[pulse].last.overflow)
@@ -569,7 +569,7 @@ bool do_pause_musicBox=false;	// triggers MUSICBOX_ENDING_FUNCTION;	// sleep, re
 int soft_cleanup_minimal_fraction_weighting=1;	// TODO: adjust default
 unsigned short soft_end_days_to_live = 1;	// remaining days of life after soft end
 unsigned short soft_end_survive_level = 4;	// the level a pulse must have reached to survive soft end
-struct time soft_end_start_time;
+pulse_time_t soft_end_start_time;
 unsigned long soft_end_cleanup_wait=60*1000000L;	// default 60"
 void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft ending of musicBox
 /*
@@ -602,7 +602,7 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
       MENU.out_comma_();
       MENU.out(soft_end_survive_level);
       MENU.out(F(")\tmain part "));
-      struct time main_part_duration = soft_end_start_time;
+      pulse_time_t main_part_duration = soft_end_start_time;
       PULSES.sub_time(&musicBox_start_time, &main_part_duration);
       PULSES.display_time_human(main_part_duration);
       MENU.ln();
@@ -631,7 +631,7 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
       set_MusicBoxState(OFF);
       if(MENU.verbosity) {
 	MENU.out(F("playing ended "));
-	struct time play_time = PULSES.get_now();
+	pulse_time_t play_time = PULSES.get_now();
 	PULSES.sub_time(&musicBox_start_time, &play_time);
 	PULSES.display_time_human(play_time);
 	MENU.ln();
@@ -684,8 +684,8 @@ void tag_randomness(bool user_selected) {
 void toggle_magic_autochanges() {
   if(magic_autochanges = !magic_autochanges) {	// if magic_autochanges got *SWITCHED ON*
     if(musicBox_butler_i != ILLEGAL) {	// deal with soft_end_time
-      struct time thisNow = PULSES.get_now();
-      struct time soft_end_time;
+      pulse_time_t thisNow = PULSES.get_now();
+      pulse_time_t soft_end_time;
       int cnt=0;
       while (true)
 	{
@@ -760,7 +760,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
     set_MusicBoxState(OFF);
 
   if (MENU.verbosity){
-    struct time play_time = PULSES.get_now();
+    pulse_time_t play_time = PULSES.get_now();
     PULSES.sub_time(&musicBox_start_time, &play_time);
     MENU.out(F("played "));
     PULSES.display_time_human(play_time);
@@ -805,10 +805,10 @@ void musicBox_trigger_OFF();
 
 void musicBox_trigger_ISR() {	// can also be used on the non interrupt version :)
   portENTER_CRITICAL_ISR(&musicBox_trigger_MUX);
-  static struct time triggered_at=PULSES.get_now();	// preserves last seen fresh trigger time
+  static pulse_time_t triggered_at=PULSES.get_now();	// preserves last seen fresh trigger time
 
-  struct time new_trigger = PULSES.get_now();		// new trigger time
-  struct time duration = new_trigger;			// remember
+  pulse_time_t new_trigger = PULSES.get_now();		// new trigger time
+  pulse_time_t duration = new_trigger;			// remember
 
   bool triggered=false;
   switch (MusicBoxState) {
@@ -895,7 +895,7 @@ int last_counter_sum=0;	// sum of counters of all relevant pulses
 //#define DEBUG_CLEANUP  TODO: maybe remove debug code, but can give interesting insights...
 
 void magical_cleanup(int p) {	// deselect unused primary pulses, check if playing has ended
-  static struct time inactivity_limit_time={0,0};
+  static pulse_time_t inactivity_limit_time={0,0};
 
   if(!magic_autochanges)	// completely switched off by magic_autochanges==false
     return;			// noop
@@ -961,8 +961,8 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
   if(flagged) {
     if(counter_sum == last_counter_sum) {	// inactivity detected
       // long enough?
-      struct time scratch = inactivity_limit_time;
-      struct time just_now = PULSES.get_now();
+      pulse_time_t scratch = inactivity_limit_time;
+      pulse_time_t just_now = PULSES.get_now();
       PULSES.sub_time(&just_now, &scratch);	// is it time?
       if(scratch.overflow) {			//   negative, so it *is*
 	MENU.out(F("inactivity stop\t"));
@@ -1063,11 +1063,11 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
   static int fast_cleanup_minimal_fraction_weighting=slice_weighting({1,4});
   static uint8_t stop_on_low_cnt=0;
   static short current_slice=0;
-  static struct time butler_start_time;
-  static struct time trigger_enable_time;
-  struct time this_start_time =  PULSES.pulses[pulse].next;	// still unchanged?
+  static pulse_time_t butler_start_time;
+  static pulse_time_t trigger_enable_time;
+  pulse_time_t this_start_time =  PULSES.pulses[pulse].next;	// still unchanged?
 
-  struct time this_time = PULSES.pulses[pulse].next;		// TODO: verify ################
+  pulse_time_t this_time = PULSES.pulses[pulse].next;		// TODO: verify ################
   PULSES.sub_time(&PULSES.pulses[pulse].last, &this_time);	// so long inside this cycle
 
   // fraction phase = {this_time.time, PULSES.pulses[pulse].period.time};	// not used
@@ -1085,7 +1085,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     soft_cleanup_started=false;
     stop_on_low_cnt=0;
 
-    struct time soft_end_time=musicBox_start_time;
+    pulse_time_t soft_end_time=musicBox_start_time;
     PULSES.add_time(&used_subcycle, &soft_end_time);
     PULSES.add_time(100/*tolerance*/, &soft_end_time);	// tolerance	TODO: rethink&check
     PULSES.pulses[pulse].other_time = soft_end_time;	// TODO: musicBox_butler(p) CONFLICTS with tuning
@@ -1124,7 +1124,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 
 #if defined MUSICBOX_HARD_END_SECONDS		// SAVETY NET
     if(magic_autochanges) {
-      struct time scratch = musicBox_hard_end_time;
+      pulse_time_t scratch = musicBox_hard_end_time;
       PULSES.sub_time(&this_start_time, &scratch);	// is it time?
       if(scratch.overflow) {			//   negative, so it *is*
 	MENU.out(F("butler: MUSICBOX_HARD_END_SECONDS "));
@@ -1161,7 +1161,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 
 #if defined MUSICBOX_TRIGGER_BLOCK_SECONDS
     if(! musicBox_trigger_enabled) {
-      struct time scratch = trigger_enable_time;
+      pulse_time_t scratch = trigger_enable_time;
       PULSES.sub_time(&this_start_time, &scratch);	// is it time?
       if(scratch.overflow) {				//   negative, so it *is*
 	if(MENU.verbosity >= VERBOSITY_LOWEST)
@@ -1174,8 +1174,8 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     if(magic_autochanges) {	// the butler influences performance and changes phases like ending
       if(soft_end_cnt==0) {	// first time
 	// soft end time could be reprogrammed by user interaction, always compute new:
-	struct time soft_end_time = PULSES.pulses[pulse].other_time;
-	struct time thisNow = this_start_time;
+	pulse_time_t soft_end_time = PULSES.pulses[pulse].other_time;
+	pulse_time_t thisNow = this_start_time;
 	PULSES.sub_time(&thisNow, &soft_end_time);	// is it time?
 	if(soft_end_time.overflow) {			//   negative, so it *is*
 	  if(soft_end_cnt++ == 0)
@@ -1187,7 +1187,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 
 	if(MusicBoxState == ENDING) {
 	  if(!soft_cleanup_started) {
-	    struct time scratch = PULSES.get_now();
+	    pulse_time_t scratch = PULSES.get_now();
 	    PULSES.sub_time(&soft_end_start_time, &scratch);
 	    PULSES.sub_time(soft_end_cleanup_wait, &scratch);
 	    if(!scratch.overflow) {
@@ -1196,7 +1196,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 	      fast_cleanup_minimal_fraction_weighting = 12;	// start here, then descend
 	      if (MENU.verbosity){
 		MENU.out(F("butler: time to stop "));
-		struct time time_to_stop = PULSES.get_now();
+		pulse_time_t time_to_stop = PULSES.get_now();
 		PULSES.sub_time(&musicBox_start_time, &time_to_stop);
 		PULSES.display_time_human(time_to_stop);
 		MENU.ln();
@@ -1848,14 +1848,14 @@ void start_musicBox() {
   peripheral_power_switch_ON();
 #endif
 
-  struct time period_lowest = PULSES.pulses[lowest_primary].period;
+  pulse_time_t period_lowest = PULSES.pulses[lowest_primary].period;
   harmonical_CYCLE = scale2harmonical_cycle(selected_in(SCALES), &period_lowest);
 
   if(!subcycle_user_selected) {
     used_subcycle = harmonical_CYCLE;
 #if defined AUTOMAGIC_CYCLE_TIMING_SECONDS
     used_subcycle={AUTOMAGIC_CYCLE_TIMING_SECONDS*1000000L,0};
-    struct time this_subcycle=harmonical_CYCLE;
+    pulse_time_t this_subcycle=harmonical_CYCLE;
     while(true) {
       if(this_subcycle.time <= used_subcycle.time && this_subcycle.overflow==used_subcycle.overflow) {
 	used_subcycle = this_subcycle;
@@ -1896,7 +1896,7 @@ void start_musicBox() {
   if(sync) {
     if(MENU.verbosity >= VERBOSITY_LOWEST) {
       PULSES.fix_global_next();			// cannot understand why i need that here...
-      struct time pause = PULSES.global_next;
+      pulse_time_t pause = PULSES.global_next;
       PULSES.sub_time(&musicBox_start_time, &pause);
       MENU.out(F("sync pause "));
       PULSES.display_time_human(pause);
@@ -2163,7 +2163,7 @@ void magical_butler(int p) {	// TODO: OBSOLETE?
     MENU.outln(F("trigger enabled"));
 #if defined AUTOMAGIC_CYCLE_TIMING_SECONDS	// MAX seconds
     {
-      struct time til_soft_end_time=used_subcycle;
+      pulse_time_t til_soft_end_time=used_subcycle;
       PULSES.sub_time(MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000L, &til_soft_end_time);
       PULSES.add_time(100, &til_soft_end_time);	// tolerance
       PULSES.pulses[p].period = til_soft_end_time;
@@ -2178,7 +2178,7 @@ void magical_butler(int p) {	// TODO: OBSOLETE?
     // prepare hard end
 #if defined AUTOMAGIC_CYCLE_TIMING_SECONDS
     {
-      struct time til_hard_end_time = used_subcycle;
+      pulse_time_t til_hard_end_time = used_subcycle;
       PULSES.div_time(&til_hard_end_time, 2);	// cycle/2 for soft end, then HARD end	// TODO: test&adjust
       PULSES.pulses[p].period = til_hard_end_time;
     }
@@ -2187,7 +2187,7 @@ void magical_butler(int p) {	// TODO: OBSOLETE?
       (MUSICBOX_HARD_END_SECONDS - MUSICBOX_PERFORMACE_SECONDS - MUSICBOX_TRIGGER_BLOCK_SECONDS)*1000000L;
 #endif
     // start magical_cleanup() pulse taking care of selections, check for end, stop *if* end reached
-    struct time duration;
+    pulse_time_t duration;
     duration.overflow=0;
     duration.time=2*1000000;	// magical_cleanup all 2 seconds
     PULSES.setup_pulse(&magical_cleanup, ACTIVE, PULSES.get_now(), duration);	// start magical_cleanup() pulse
@@ -2311,7 +2311,7 @@ void musicBox_display() {
   MENU.tab();
   MENU.out(F("'c' cycle "));
 
-  struct time period_lowest = PULSES.pulses[lowest_primary].period;
+  pulse_time_t period_lowest = PULSES.pulses[lowest_primary].period;
   harmonical_CYCLE = scale2harmonical_cycle(selected_in(SCALES), &period_lowest); // TODO: rethink ################
   PULSES.display_time_human(harmonical_CYCLE);
   MENU.ln();
@@ -2362,7 +2362,7 @@ bool musicBox_reaction(char token) {
   int input_value, cnt;
   bool done;
   char next_token;
-  struct time T_scratch;
+  pulse_time_t T_scratch;
 
   switch(token) {
   case '?': // musicBox_display();

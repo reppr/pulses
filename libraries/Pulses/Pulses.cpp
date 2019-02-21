@@ -87,7 +87,7 @@ Pulses::~Pulses() {
      TIME
 
 
-   all times get stored in 'struct time', taking care of time overflow
+   all times get stored in 'pulse_time_t', taking care of time overflow
    *always* get time by calling get_now() to have overflow treated correctly.
 
    in this version init_time() is called from constructor.
@@ -97,7 +97,7 @@ Pulses::~Pulses() {
    check with check_maybe_do() if it's time to do something
    else return immediately.
 
-   pulses know when their next turn will be, see 'struct time next[pulse]'.
+   pulses know when their next turn will be, see 'pulse_time_t next[pulse]'.
    fix_global_next() determines which event will be next globally
    fix_global_next() is updated automatically when appropriate.
 
@@ -140,7 +140,7 @@ void Pulses::init_time() {
 
 
 // *always* get time through get_now()
-struct time Pulses::get_now() {	// get time, set now.time and now.overflow
+pulse_time_t Pulses::get_now() {	// get time, set now.time and now.overflow
   now.time = micros();
 
   if (now.time < last_now.time)	// manage now.overflow
@@ -154,7 +154,7 @@ struct time Pulses::get_now() {	// get time, set now.time and now.overflow
 
 // add_time(), sub_time(), mul_time(), div_time():
 
-void Pulses::add_time(struct time *delta, struct time *sum)
+void Pulses::add_time(pulse_time_t *delta, pulse_time_t *sum)
 {
   unsigned long last=(*sum).time;
 
@@ -167,7 +167,7 @@ void Pulses::add_time(struct time *delta, struct time *sum)
 
 // As time is unsigned we need a separate sub_time()
 // to have access to the full unsigned value range.
-void Pulses::sub_time(struct time *delta, struct time *sum)
+void Pulses::sub_time(pulse_time_t *delta, pulse_time_t *sum)
 {
   unsigned long last=(*sum).time;
 
@@ -178,7 +178,7 @@ void Pulses::sub_time(struct time *delta, struct time *sum)
 }
 
 
-void Pulses::add_time(unsigned long time, struct time *sum)
+void Pulses::add_time(unsigned long time, pulse_time_t *sum)
 {
   unsigned long last=(*sum).time;
 
@@ -190,7 +190,7 @@ void Pulses::add_time(unsigned long time, struct time *sum)
 
 // As time is unsigned we need a separate sub_time()
 // to have access to the full unsigned value range.
-void Pulses::sub_time(unsigned long time, struct time *sum)
+void Pulses::sub_time(unsigned long time, pulse_time_t *sum)
 {
   unsigned long last=(*sum).time;
 
@@ -202,7 +202,7 @@ void Pulses::sub_time(unsigned long time, struct time *sum)
 
 // #define OLD_BROKEN_ESP8266_COMPATIBILITY  // switches bug back on, might influence old setups ;)
 //
-void Pulses::mul_time(struct time *duration, unsigned int factor)
+void Pulses::mul_time(pulse_time_t *duration, unsigned int factor)
  {
   unsigned long scratch;
   unsigned long result=0;
@@ -239,7 +239,7 @@ void Pulses::mul_time(struct time *duration, unsigned int factor)
 }
 
 
-void Pulses::div_time(struct time *duration, unsigned int divisor)
+void Pulses::div_time(pulse_time_t *duration, unsigned int divisor)
 {
   unsigned long scratch;
   unsigned long result=0;
@@ -274,7 +274,7 @@ void Pulses::div_time(struct time *duration, unsigned int divisor)
 
 
 void Pulses::multiply_period(int pulse, unsigned long factor) {	// integer math
-  struct time new_period;
+  pulse_time_t new_period;
 
   new_period=pulses[pulse].period;
   mul_time(&new_period, factor);
@@ -283,7 +283,7 @@ void Pulses::multiply_period(int pulse, unsigned long factor) {	// integer math
 
 
 void Pulses::divide_period(int pulse, unsigned long divisor) {	// integer math
-  struct time new_period;
+  pulse_time_t new_period;
 
   new_period=pulses[pulse].period;
   div_time(&new_period, divisor);
@@ -621,7 +621,7 @@ void Pulses::reset_and_edit_pulse(int pulse, unsigned long time_unit) {
   pulses[pulse].flags &= ~ACTIVE;	// remove ACTIVE
 
   // set a default pulse length:
-  struct time scratch;
+  pulse_time_t scratch;
   scratch.time = time_unit;
   scratch.overflow = 0;
   pulses[pulse].period = scratch;
@@ -894,7 +894,7 @@ bool Pulses::check_maybe_do() {
 
 
 int Pulses::setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
-			struct time when, struct time new_period)
+			pulse_time_t when, pulse_time_t new_period)
 {
 //  (*MENU).outln("PULSES.setup_pulse");
 
@@ -927,15 +927,15 @@ int Pulses::setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
 
 
 int Pulses::setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags,	\
-			struct time when, unsigned long new_period) {	// unsigned long *only* version
-  struct time period = {new_period, 0};	// no overflow in period
+			pulse_time_t when, unsigned long new_period) {	// unsigned long *only* version
+  pulse_time_t period = {new_period, 0};	// no overflow in period
   setup_pulse(pulse_do, new_flags, when, period);
 }
 
 
 // unused?
 int Pulses::setup_counted_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
-			struct time when, struct time new_period, unsigned int remaining)
+			pulse_time_t when, pulse_time_t new_period, unsigned int remaining)
 {
   int pulse;
 
@@ -946,7 +946,7 @@ int Pulses::setup_counted_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, 
 }
 
 
-void Pulses::set_new_period(int pulse, struct time new_period) {
+void Pulses::set_new_period(int pulse, pulse_time_t new_period) {
   pulses[pulse].period.time = new_period.time;
   pulses[pulse].period.overflow = new_period.overflow;
 
@@ -969,13 +969,13 @@ void Pulses::set_new_period(int pulse, struct time new_period) {
    can also be used to sync running pulses on a given time		*/
 // currently only used in menu
 void Pulses::activate_pulse_synced(int pulse, \
-				   struct time when, int sync)
+				   pulse_time_t when, int sync)
 {
   if (pulses[pulse].period.time==0)	// ignore invalid pulses with period==0
     return;
 
   if (sync) {
-    struct time delta = pulses[pulse].period;
+    pulse_time_t delta = pulses[pulse].period;
     mul_time(&delta, sync);
     div_time(&delta, 2);
     add_time(&delta, &when);
@@ -1259,14 +1259,14 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 // (that's why the menu only allows positive. it syncs now related,
 //  so a negative sync value would always reach into past.)
 int Pulses::setup_pulse_synced(void (*pulse_do)(int), pulse_flags_t new_flags,
-		       struct time when, unsigned long unit,
+		       pulse_time_t when, unsigned long unit,
 		       unsigned long factor, unsigned long divisor, int sync)
 {
   (*MENU).outln("PULSES.setup_pulse_synced");
-  struct time new_period;
+  pulse_time_t new_period;
 
   if (sync) {
-    struct time delta;
+    pulse_time_t delta;
     delta.time = sync*unit/2L;
     delta.overflow = 0;
 
@@ -1301,8 +1301,8 @@ void Pulses::time_info() {
   display_now();
   (*MENU).tab();
 
-  struct time sum = global_next;
-  struct time delta = now;
+  pulse_time_t sum = global_next;
+  pulse_time_t delta = now;
   sub_time(&delta, &sum);
   (*MENU).out(F("global next in"));
   display_realtime_sec(sum);
@@ -1311,7 +1311,7 @@ void Pulses::time_info() {
 
 
 // display a time in seconds:
-float Pulses::display_realtime_sec(struct time duration) {
+float Pulses::display_realtime_sec(pulse_time_t duration) {
   float seconds=((float) ((unsigned long) duration.time) / 1000000.0);
 
   if (duration.overflow != 0)
@@ -1337,8 +1337,8 @@ float Pulses::display_realtime_sec(struct time duration) {
 }
 
 
-// void display_time_human_format(struct time duration);	// everyday time format	d h m s  formatted with spaces
-void Pulses::display_time_human_format(struct time duration) {
+// void display_time_human_format(pulse_time_t duration);	// everyday time format	d h m s  formatted with spaces
+void Pulses::display_time_human_format(pulse_time_t duration) {
   unsigned long seconds = (((float) duration.time / 1000000.0) + 0.5);
   if (duration.overflow)
     seconds += duration.overflow * 4295;
@@ -1374,7 +1374,7 @@ void Pulses::display_time_human_format(struct time duration) {
 }
 
 
-void Pulses::display_time_human(struct time duration) {  // everyday time format d h m s short
+void Pulses::display_time_human(pulse_time_t duration) {  // everyday time format d h m s short
   unsigned long seconds = (((float) duration.time / 1000000.0) + 0.5);
   if (duration.overflow)
     seconds += duration.overflow * 4295;
@@ -1430,7 +1430,7 @@ void Pulses::print_period_in_time_units(int pulse) {
 
 
 // mainly for debugging
-void Pulses::display_real_ovfl_and_sec(struct time then) {
+void Pulses::display_real_ovfl_and_sec(pulse_time_t then) {
   (*MENU).out(F("tic/ofl "));
   (*MENU).out(then.time);
   (*MENU).slash();

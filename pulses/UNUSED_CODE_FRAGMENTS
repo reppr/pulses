@@ -2,7 +2,7 @@
 /*
   DOES NOT WORK: non static member function	TODO: fix or remove ################
 */
-bool Pulses::setup_icode_seeder(int pulse, struct time period, icode_t* icode_p, action_flags_t dest_action_flags) {
+bool Pulses::setup_icode_seeder(int pulse, pulse_time_t period, icode_t* icode_p, action_flags_t dest_action_flags) {
   if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
     pulses[pulse].period = period;
     set_icode_p(pulse, icode_p, false);		// icode inactive in seeder
@@ -272,9 +272,9 @@ void Pulses::pulse_info_1line(int pulse) {	// one line pulse info, short version
   }
 
   if ((*MENU).verbosity > VERBOSITY_SOME) {
-    struct time sum = pulses[pulse].next;
+    pulse_time_t sum = pulses[pulse].next;
     get_now();
-    struct time delta =now;
+    pulse_time_t delta =now;
     sub_time(&delta, &sum);
 
     (*MENU).tab();
@@ -397,7 +397,7 @@ char wait_for_input() {
 //	      }
 //
 //	      MENU.out(F("==> lcm ")); MENU.out(lcm);
-//	      struct time length;
+//	      pulse_time_t length;
 //	      length.time = lcm;
 //	      length.overflow = 0;
 //	      PULSES.display_realtime_sec(length);
