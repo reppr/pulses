@@ -12,6 +12,9 @@
 //#define SETUP_BAHNPARKPLATZ	BahnParkPlatz 2018/2019
 //#define SETUP_CHAMBER_ORCHESTRA	The Harmonical Chamber Orchestra 2018-12
 
+// TODO: REMOVE OLDSTYLE_TUNE_AND_LIMIT
+// compatibility: use (buggy) old style tuning and lowering mechanism for backwards compatibility reproducing older setups?
+//#define OLDSTYLE_TUNE_AND_LIMIT	// use (buggy) old style tuning and lowering mechanism for backwards compatibility
 
 // pre defined SETUPS:
 #if defined SETUP_BRACHE
@@ -1822,15 +1825,21 @@ void start_musicBox() {
     }
   }
 
+// #define OLDSTYLE_TUNE_AND_LIMIT	// use (buggy) old style tuning and lowering mechanism, for recording old setups
+#if defined OLDSTYLE_TUNE_AND_LIMIT	// use (buggy) old style tuning and lowering mechanism?
   // HACK: backwards compatibility for multiplier/divisor	################
-  if(tune_2_scale(voices, multiplier*pitch.multiplier, divisor*pitch.divisor, selected_in(SCALES))) // TODO: define role of multiplier, divisor
-    ;	// MENU.error_ln(F("tune_2_scale()"));	// TODO: meaningless error...
+  tune_2_scale(voices, multiplier*pitch.multiplier, divisor*pitch.divisor, selected_in(SCALES));	// TODO: OBSOLETE?
+#else	// working on new style tune_selected_2_scale_limited(pitch, selected_in(SCALES), limit);
+  tune_selected_2_scale_limited(pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves // TODO: adjust limit appropriate...
+#endif
 
   if(!pitch_user_selected)		// if *not* set by user interaction
     random_octave_shift();		// random octave shift
 
+#if defined OLDSTYLE_TUNE_AND_LIMIT
   // *not* regarding pitch_user_selected as selected frequencies might be too high, check anyway...
   lower_audio_if_too_high(409600*2);	// 2 bass octaves	// TODO: adjust appropriate...
+#endif
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   peripheral_power_switch_ON();

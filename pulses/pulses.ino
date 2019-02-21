@@ -1854,8 +1854,7 @@ int prepare_scale(bool inverse, int voices, unsigned long multiplier, unsigned l
 }
 
 
-// TODO: OBSOLETE?	################
-int selected_apply_scale_on_period(int voices, unsigned int *scale, bool octaves=true) {
+int selected_apply_scale_on_period(int voices, unsigned int *scale, bool octaves=true) { // TODO: OBSOLETE? ################
   // FIXME: octaves are untested here ################
   if(scale[0]==0)  return 0;	// error, no data
 
@@ -1977,8 +1976,7 @@ int tune_selected_2_scale_limited(fraction scaling, unsigned int *scale, unsigne
 }
 
 
-// TODO: OBSOLETE?	################
-bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, unsigned int *scale)
+bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, unsigned int *scale)	// TODO: OBSOLETE? #########
 {
   int pulse;
   struct time base_period;
@@ -2008,7 +2006,7 @@ bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, u
       }
 
       // now apply scale:
-      selected_apply_scale_on_period(voices, scale, true);
+      selected_apply_scale_on_period(voices, scale, true);	// TODO: OBSOLETE?	################
       return true;
 
     } else
@@ -2698,7 +2696,7 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
       en_jiffle_thrower(pulse, selected_in(JIFFLES), this_or_next_gpio(pulse), 0);
     }
   //  int selected_apply_scale_on_period(int voices, unsigned int *scale, bool octaves=true);
-  selected_apply_scale_on_period(voices, selected_in(SCALES), true);
+  selected_apply_scale_on_period(voices, selected_in(SCALES), true);	// TODO: OBSOLETE?	################
 #else	// compatibility problems
   prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES), true);
 #endif
@@ -3100,7 +3098,7 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   PULSES.add_selected_to_group(g_PRIMARY);
 
   // tune *all* primary pulses
-  tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));
+  tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));	// TODO: OBSOLETE?
   lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
 
   // prepare primary pulse groups:
@@ -4365,7 +4363,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     // 'R!' tune selected pulses to a scale starting from lowest
     if (MENU.cb_peek()=='!') {
-      tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));	// tune-2-scale FIXME: *selected*
+      tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));	// tune-2-scale FIXME: *selected*  // TODO: OBSOLETE?
       scale_user_selected = true;
     }
     else	// ui select a scale
@@ -4693,7 +4691,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  voices = GPIO_PINS;
 
 	PULSES.select_n(voices);
-	tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));
+	tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));	// TODO: OBSOLETE?
 
   #ifndef USE_DACs	// TODO: review and use test code
 	setup_jiffle_thrower_selected(selected_actions);
@@ -5088,7 +5086,7 @@ bool menu_pulses_reaction(char menu_input) {
 	PULSES.select_n(voices);
 //	prepare_scale(false, voices, multiplier, divisor, 0, selected_in(SCALES));
 //	display_name5pars("GUITAR", g_inverse, voices, multiplier, divisor, sync);
-	tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));
+	tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));	// TODO: OBSOLETE?
 	lower_audio_if_too_high(409600);
 
   #ifndef USE_DACs	// TODO: review and use test code
@@ -5145,7 +5143,7 @@ bool menu_pulses_reaction(char menu_input) {
 	select_scale__UI();	// second/third letters choose metric scales
 
 	// tune *all* primary pulses
-	tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));
+	tune_2_scale(voices, multiplier, divisor, selected_in(SCALES))	// TODO: OBSOLETE?;
 	lower_audio_if_too_high(409600);
 
 	// prepare primary pulse groups:
@@ -5215,7 +5213,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	  select_array_in(SCALES, minor_scale);		// default e minor
 	  // tune *all* primary pulses
-	  tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));
+	  tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));	// TODO: OBSOLETE?
 	  lower_audio_if_too_high(409600*2);	// 2 bass octaves
 
 	  // prepare primary pulse groups:
