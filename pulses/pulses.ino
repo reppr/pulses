@@ -1955,6 +1955,11 @@ int tune_selected_2_scale_limited(fraction scaling, unsigned int *scale, unsigne
 	  PULSES.mul_time(&this_period, multiplier);
 	  PULSES.div_time(&this_period, divisor);
 	  PULSES.pulses[pulse].period = this_period;
+	  if(note)
+	    PULSES.pulses[pulse].groups &= ~g_OCTAVE;
+	  else
+	    PULSES.pulses[pulse].groups |= g_OCTAVE;	// tuned to an octave
+
 	  note++;
 	} // selected
       } // pulse
@@ -5143,7 +5148,7 @@ bool menu_pulses_reaction(char menu_input) {
 	select_scale__UI();	// second/third letters choose metric scales
 
 	// tune *all* primary pulses
-	tune_2_scale(voices, multiplier, divisor, selected_in(SCALES))	// TODO: OBSOLETE?;
+	tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));	// TODO: OBSOLETE?
 	lower_audio_if_too_high(409600);
 
 	// prepare primary pulse groups:

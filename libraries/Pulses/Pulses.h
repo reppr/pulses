@@ -140,7 +140,7 @@ struct pulse_t {
 //#define g_HEXA		64	// (any) 6 tone subset
 //#define g_HEPTA		128	// 7 tone heptatonic (sub)set
 
-//#define g_OCTAVE	256	// tuned to (any) octave of the root note
+#define g_OCTAVE	256	// tuned to (any) octave of the root note
 
 // voice groups:
 #define g_LOW_END	512	// deep bass & rhytm & structure & below ;)
