@@ -718,8 +718,83 @@ void toggle_magic_autochanges() {
 }
 
 
-bool pitch_is_metric=false;
-char * metric_mnemonic = "? ";
+// TODO: chromatic_pitch	move to Harmonical or Pulses
+uint8_t chromatic_pitch = 0;	// 0: pitch is not metric
+/*
+  0  *not* metric
+  1  a
+  2  a#|bb
+  3  b	=german "h"
+  4  c
+  5  c#|db
+  6  d
+  7  d#|eb
+  8  e
+  9  f
+  10 f#|gb
+  11 g
+  12 g#|ab
+  13 u		/ harmonical time unit
+*/
+
+void show_metric_mnemonic() {	// TODO: move to Harmonical or Pulses
+  char second_letter = ' ';
+
+  switch (chromatic_pitch) {
+  case 0:			// not metric
+    MENU.out(F("free"));
+    return;			// return
+  case 1:
+    MENU.out('a');
+    break;
+  case 2:
+    MENU.out('a');
+    second_letter = '#';
+    break;
+  case 3:
+    MENU.out('b');
+    break;
+  case 4:
+    MENU.out('c');
+    break;
+  case 5:
+    MENU.out('c');
+    second_letter = '#';
+    break;
+  case 6:
+    MENU.out('d');
+    break;
+  case 7:
+    MENU.out('d');
+    second_letter = '#';
+    break;
+  case 8:
+    MENU.out('e');
+    break;
+  case 9:
+    MENU.out('f');
+    break;
+  case 10:
+    MENU.out('f');
+    second_letter = '#';
+    break;
+  case 11:
+    MENU.out('g');
+    break;
+  case 12:
+    MENU.out('g');
+    second_letter = '#';
+    break;
+  case 13:
+    MENU.out('u');
+    break;
+  default:
+    MENU.out('?');
+    second_letter = '?';
+  }
+  MENU.out(second_letter);
+}
+
 
 void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   tag_randomness(scale_user_selected);
@@ -747,10 +822,11 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   MENU.slash();
   MENU.out(pitch.divisor);
 
-  if(pitch_is_metric) {
-    MENU.out(F(" metric "));
-    MENU.out(metric_mnemonic);
-  }
+  if(chromatic_pitch)
+    MENU.out(F(" metric"));
+  MENU.space();
+  show_metric_mnemonic();
+
   MENU.ln();
 }
 
@@ -1521,52 +1597,51 @@ void random_metric_pitches(void) {
   case 0:
   case 1:
   case 3:
-    metric_mnemonic = "a ";
+    chromatic_pitch = 1;
     pitch.multiplier = 1;
     pitch.divisor = 220; // 220	// A 220  ***not*** harmonical	// TODO: define role of multiplier, pitch.divisor
     break;
   case 4:
   case 5:
   case 6:
-    metric_mnemonic = "e ";
+    chromatic_pitch = 8;
     pitch.multiplier = 1;
     pitch.divisor=330; // 329.36	// E4  ***not*** harmonical
     break;
   case 7:
   case 8:
-    metric_mnemonic = "d ";
+    chromatic_pitch = 6;
     pitch.multiplier = 1;
     pitch.divisor = 294;		// 293.66 = D4
     break;
   case 9:
   case 10:
   case 11:
-    metric_mnemonic = "g ";
+    chromatic_pitch = 11;
     pitch.multiplier = 1;
     pitch.divisor=196; // 196.00	// G3  ***not*** harmonical
     break;
   case 12:
   case 13:
-    metric_mnemonic = "c ";
+    chromatic_pitch = 4;
     pitch.multiplier = 1;
     pitch.divisor=262; // 261.63	// C4  ***not*** harmonical
     break;
   case 14:
   case 15:
-    metric_mnemonic = "f ";
+    chromatic_pitch = 9;
     pitch.multiplier = 1;
     pitch.divisor=175; // 174.16	// F3  ***not*** harmonical
     break;
   case 16:
-    metric_mnemonic = "b ";
+    chromatic_pitch = 2;
     pitch.multiplier = 1;
     pitch.divisor=233; // 233.08	// Bb3 ***not*** harmonical
     break;
     //    pitch.divisor=247; // 246.94	// B3  ***not*** harmonical  }
   }
-  MENU.out(metric_mnemonic);
+  show_metric_mnemonic();
 
-  pitch_is_metric = true;
   pitch_user_selected = false;
   subcycle_user_selected = false;
 }
@@ -1830,7 +1905,7 @@ void start_musicBox() {
   // random pitch
   if(!pitch_user_selected) {	// if *not* set by user interaction
     if(!some_metric_tunings_only) {	// RANDOM tuning?
-      pitch_is_metric = false;
+      chromatic_pitch = false;
 
 #if defined RANDOM_ENTROPY_H
       random_entropy();	// entropy from hardware
@@ -2586,8 +2661,8 @@ bool musicBox_reaction(char token) {
     }
     break;
 
-  case 'R':
-    select_scale__UI();		// TODO: see pulses.ino 'R'	make them identical? ################
+  case 'R':	// OBSOLETE?: ################
+    select_scale__UI();		// TODO: see pulses.ino 'R'	make them identical? ################	// OBSOLETE?:
     MENU.out(F("SCALE: "));
     MENU.outln(selected_name(SCALES));
     break;
@@ -2616,77 +2691,69 @@ bool musicBox_reaction(char token) {
 	  } else {			// not numeric
 	    switch(MENU.cb_peek()) {	// test for known letters
 	    case 'u':	// harmonical time unit
-	      metric_mnemonic = "u ";
+	      chromatic_pitch = 13;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
 	      pitch.multiplier=1;
 	      pitch.divisor=1;
 	      pitch_user_selected = true;
-	      pitch_is_metric = true;		// 'u' is accepted as "metric", maybe?
 	      break;
 	    case 'c':
-	      metric_mnemonic = "c ";
+	      chromatic_pitch = 4;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
 	      pitch.multiplier=1;
 	      pitch.divisor=262; // 261.63	// C4  ***not*** harmonical
 	      pitch_user_selected = true;
-	      pitch_is_metric = true;
 	      break;
 	    case 'd':
-	      metric_mnemonic = "d ";
+	      chromatic_pitch = 6;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
 	      pitch.multiplier=1;
 	      pitch.divisor = 294;		// 293.66 = D4
 	      // divisor = 147;		// 146.83 = D3
 	      pitch_user_selected = true;
-	      pitch_is_metric = true;
 	      break;
 	    case 'e':
-	      metric_mnemonic = "e ";
+	      chromatic_pitch = 8;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
 	      pitch.multiplier=1;
 	      pitch.divisor=330; // 329.36	// e4  ***not*** harmonical
 	      pitch_user_selected = true;
-	      pitch_is_metric = true;
 	      break;
 	    case 'f':
-	      metric_mnemonic = "f ";
+	      chromatic_pitch = 9;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
 	      pitch.multiplier=1;
 	      pitch.divisor=175; // 174.16	// F3  ***not*** harmonical
 	      pitch_user_selected = true;
-	      pitch_is_metric = true;
 	      break;
 	    case 'g':
-	      metric_mnemonic = "g ";
+	      chromatic_pitch = 11;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
 	      pitch.multiplier=1;
 	      pitch.divisor=196; // 196.00	// G3  ***not*** harmonical
 	      pitch_user_selected = true;
-	      pitch_is_metric = true;
 	      break;
 	    case 'a':
-	      metric_mnemonic = "a ";
+	      chromatic_pitch = 1;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
 	      pitch.multiplier=1;
 	      pitch.divisor = 440;
 	      pitch_user_selected = true;
-	      pitch_is_metric = true;
 	      break;
 	    case 'b':
-	      metric_mnemonic = "b ";
+	      chromatic_pitch = 3;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
 	      pitch.multiplier=1;
 	      pitch.divisor=247; // 246.94	// B3  ***not*** harmonical
 	      pitch_user_selected = true;
-	      pitch_is_metric = true;
 	      break;
 
 	    default:	//	unknown input, not for the 'T' interface

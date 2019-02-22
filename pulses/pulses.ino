@@ -3445,10 +3445,10 @@ void show_UI_basic_setup() {
   MENU.slash();
   MENU.out(divisor);
   MENU.space(3);
-  if(some_metric_tunings_only) {
-    MENU.out(F("*metric* "));
-    MENU.out(metric_mnemonic);
-  }
+  if(some_metric_tunings_only)
+    MENU.out(F("*metric*"));
+  MENU.space();
+  show_metric_mnemonic();
 
   if (g_inverse)	// FIXME: TODO: check where that *is* used ################
     MENU.out(F("\tGPIO BOTTOM UP"));
@@ -3486,7 +3486,7 @@ void user_select_scale(unsigned int* scale) {
   }
 }
 
-void select_scale__UI() {
+void select_scale__UI() {	// OBSOLETE?:
   /*
     void select_scale__UI() examples:
     "a"		metric a=440 *minor* scale
@@ -3501,7 +3501,7 @@ void select_scale__UI() {
     break;
 
   case 'u':	// harmonical time unit, minor
-    metric_mnemonic = "u ";
+    chromatic_pitch = 13;
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
@@ -3510,7 +3510,7 @@ void select_scale__UI() {
     break;
 
   case 'U':	// harmonical time unit, major
-    metric_mnemonic = "U ";
+    chromatic_pitch = 13;
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
@@ -3519,7 +3519,7 @@ void select_scale__UI() {
     break;
 
   case 'c':	// c minor
-    metric_mnemonic = "c ";
+    chromatic_pitch = 4;
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3527,7 +3527,7 @@ void select_scale__UI() {
     break;
 
   case 'C':	// c major
-    metric_mnemonic = "C ";
+    chromatic_pitch = 4;
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3536,7 +3536,7 @@ void select_scale__UI() {
     break;
 
   case 'd':	// d minor scale
-    metric_mnemonic = "d ";
+    chromatic_pitch = 6;
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor = 294;		// 293.66 = D4
@@ -3545,7 +3545,7 @@ void select_scale__UI() {
     break;
 
   case 'D':	// D major scale
-    metric_mnemonic = "D ";
+    chromatic_pitch = 6;
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor = 294;		// 293.66 = D4
@@ -3554,7 +3554,7 @@ void select_scale__UI() {
     break;
 
   case 'e':	// e minor scale
-    metric_mnemonic = "e ";
+    chromatic_pitch = 8;
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3562,7 +3562,7 @@ void select_scale__UI() {
     break;
 
   case 'E':	// E major scale
-    metric_mnemonic = "E ";
+    chromatic_pitch = 8;
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3570,7 +3570,7 @@ void select_scale__UI() {
     break;
 
   case 'f':	// f minor
-    metric_mnemonic = "f ";
+    chromatic_pitch = 9;
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3578,7 +3578,7 @@ void select_scale__UI() {
     break;
 
   case 'F':	// f major
-    metric_mnemonic = "F ";
+    chromatic_pitch = 9;
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3586,7 +3586,7 @@ void select_scale__UI() {
     break;
 
   case 'g':	// g minor
-    metric_mnemonic = "g ";
+    chromatic_pitch = 11;
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3594,7 +3594,7 @@ void select_scale__UI() {
     break;
 
   case 'G':	// g major
-    metric_mnemonic = "G ";
+    chromatic_pitch = 11;
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3602,7 +3602,7 @@ void select_scale__UI() {
     break;
 
   case 'a':	// a minor scale
-    metric_mnemonic = "a ";
+    chromatic_pitch = 1;
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor = 440;
@@ -3610,7 +3610,7 @@ void select_scale__UI() {
     break;
 
   case 'A':	// A major scale
-    metric_mnemonic = "A ";
+    chromatic_pitch = 1;
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor = 440;
@@ -3618,7 +3618,7 @@ void select_scale__UI() {
     break;
 
   case 'b':	// b minor
-    metric_mnemonic = "b ";
+    chromatic_pitch = 3;
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3626,7 +3626,7 @@ void select_scale__UI() {
     break;
 
   case 'B':	// b major
-    metric_mnemonic = "B ";
+    chromatic_pitch = 3;
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -5098,7 +5098,7 @@ bool menu_pulses_reaction(char menu_input) {
 	if (voices == 0)
 	  voices = 15;			// default (diatonic)	// for DAC output
 
-	select_scale__UI();	// second/third letters choose metric scales
+	select_scale__UI();	// second/third letters choose metric scales	// OBSOLETE?:
 
 	// select_array_in(JIFFLES, ting4096);
 	// select_array_in(JIFFLES, piip2048);
@@ -5162,7 +5162,7 @@ bool menu_pulses_reaction(char menu_input) {
 	// divisor=165; // 164.81		// e3  ***not*** harmonical
 
 	select_array_in(SCALES, minor_scale);		// default e minor
-	select_scale__UI();	// second/third letters choose metric scales
+	select_scale__UI();	// second/third letters choose metric scales	// OBSOLETE?:
 
 	// tune *all* primary pulses
 	tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));	// TODO: OBSOLETE?
@@ -5299,7 +5299,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  if(!scale_user_selected)	// see musicBox
 	    select_array_in(SCALES, minor_scale);		// default e minor
 
-	  select_scale__UI();	// second/third letters choose metric scales
+	  select_scale__UI();	// second/third letters choose metric scales	// OBSOLETE?:
 
 	  if(!jiffle_user_selected)				// see musicBox
 	    select_array_in(JIFFLES, d4096_512);		// default jiffle
