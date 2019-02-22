@@ -298,6 +298,10 @@ void watch_primary_pulses() {
 	  if(diff == 1) {
 	    if(PULSES.pulses[pulse].groups & g_OCTAVE)
 	      MENU.out('^');	// '^' OCTAVE was alive *once*
+	    else if(PULSES.pulses[pulse].groups & g_FOURTH)
+	      MENU.out('{');	// '{' FOURTH was alive *once*
+	    else if(PULSES.pulses[pulse].groups & g_FIFTH)
+	      MENU.out('}');	// '}' FIFTH was alive *once*
 	    else
 	      MENU.out('*');	// '*' was alive *once*
 	  } else if(diff > 1) {

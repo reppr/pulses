@@ -1949,16 +1949,33 @@ int tune_selected_2_scale_limited(fraction scaling, unsigned int *scale, unsigne
 	  divisor=scale[note*2+1];
 //	if (divisor==0)
 //	  goto global_next;		// divisor==0: error, end
+
+	  // check for some very basic tuning intervals
+	  PULSES.pulses[pulse].groups &= ~g_OCTAVE;	// clear all tuning groups
+	  PULSES.pulses[pulse].groups &= ~g_FOURTH;
+	  PULSES.pulses[pulse].groups &= ~g_FIFTH;
+
+	  if(note==0)
+	    PULSES.pulses[pulse].groups |= g_OCTAVE;		// tuned to an octave
+	  else {
+	    switch(multiplier) {
+	    case 3:
+	      if (divisor==4)
+		PULSES.pulses[pulse].groups |= g_FOURTH;	// tuned to a fourth
+	      break;
+	    case 2:
+	      if (divisor==3)
+		PULSES.pulses[pulse].groups |= g_FIFTH;		// tuned to a fifth
+	      break;
+	    }
+	  }
+
 	  divisor *= octave;
 
 	  this_period = base_period;
 	  PULSES.mul_time(&this_period, multiplier);
 	  PULSES.div_time(&this_period, divisor);
 	  PULSES.pulses[pulse].period = this_period;
-	  if(note)
-	    PULSES.pulses[pulse].groups &= ~g_OCTAVE;
-	  else
-	    PULSES.pulses[pulse].groups |= g_OCTAVE;	// tuned to an octave
 
 	  note++;
 	} // selected
