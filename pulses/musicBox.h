@@ -256,6 +256,7 @@ void init_primary_counters() {
 }
 
 bool show_cycle_pattern=true;
+bool show_cycle_pattern_intervals=false;
 
 int lowest_primary=ILLEGAL, highest_primary=ILLEGAL;	// remember start configuration
 
@@ -296,13 +297,16 @@ void watch_primary_pulses() {
 	    MENU.space();	// no change
 	} else {		// change (any)
 	  if(diff == 1) {
-	    if(PULSES.pulses[pulse].groups & g_OCTAVE)
-	      MENU.out('^');	// '^' OCTAVE was alive *once*
-	    else if(PULSES.pulses[pulse].groups & g_FOURTH)
-	      MENU.out('{');	// '{' FOURTH was alive *once*
-	    else if(PULSES.pulses[pulse].groups & g_FIFTH)
-	      MENU.out('}');	// '}' FIFTH was alive *once*
-	    else
+	    if(show_cycle_pattern_intervals) {		// show interval symbols?
+	      if(PULSES.pulses[pulse].groups & g_OCTAVE)
+		MENU.out('^');	// '^' OCTAVE was alive *once*
+	      else if(PULSES.pulses[pulse].groups & g_FOURTH)
+		MENU.out('{');	// '{' FOURTH was alive *once*
+	      else if(PULSES.pulses[pulse].groups & g_FIFTH)
+		MENU.out('}');	// '}' FIFTH was alive *once*
+	      else
+		MENU.out('*');	// '*' was alive *once*
+	    } else					// simple all stars pattern :)
 	      MENU.out('*');	// '*' was alive *once*
 	  } else if(diff > 1) {
 	    if (diff < 16)
@@ -2306,10 +2310,11 @@ void musicBox_display() {
   MENU.out(F("'o' show position ticker"));
   MENU.out_ON_off(show_subcycle_position);
 
-  MENU.out(F("\t'p' show cycle pattern"));
+  MENU.out(F("\t'p' show cycle pattern 'p*' toggle"));
   MENU.out_ON_off(show_cycle_pattern);
+  MENU.ln();
 
-  MENU.out(F("\t'a' autochanges"));
+  MENU.out(F("'a' autochanges"));
   MENU.out_ON_off(magic_autochanges);
 
   MENU.tab();
@@ -2556,7 +2561,12 @@ bool musicBox_reaction(char token) {
     } // not numeric, ignore
     break;
   case 'p': // 'p' switch cycle pattern display
-    show_cycle_pattern ^= 1;
+    if(MENU.cb_peek()=='*') {	// 'p*' toggle interval symbols in cycle pattern
+      MENU.drop_input_token();
+      show_cycle_pattern_intervals ^= 1;
+      show_cycle_pattern = 1;
+    } else
+      show_cycle_pattern ^= 1;
 
     if(MENU.verbosity > VERBOSITY_LOWEST) {
       if(show_cycle_pattern)
