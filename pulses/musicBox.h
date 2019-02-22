@@ -718,6 +718,7 @@ void toggle_magic_autochanges() {
 }
 
 
+bool pitch_is_metric=false;
 char * metric_mnemonic = "? ";
 
 void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
@@ -746,8 +747,8 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   MENU.slash();
   MENU.out(pitch.divisor);
 
-  if(some_metric_tunings_only) { // TODO: FIXME: (could be set by user...) ################
-    MENU.out(F(" *metric "));
+  if(pitch_is_metric) {
+    MENU.out(F(" metric "));
     MENU.out(metric_mnemonic);
   }
   MENU.ln();
@@ -1565,6 +1566,7 @@ void random_metric_pitches(void) {
   }
   MENU.out(metric_mnemonic);
 
+  pitch_is_metric = true;
   pitch_user_selected = false;
   subcycle_user_selected = false;
 }
@@ -1660,7 +1662,7 @@ RTC_DATA_ATTR unsigned int * jiffle_stored_RTC=NULL;
 RTC_DATA_ATTR int sync_stored_RTC=ILLEGAL;
 RTC_DATA_ATTR unsigned long multiplier_stored_RTC=0;
 RTC_DATA_ATTR unsigned long divisor_stored_RTC=0;
-RTC_DATA_ATTR bool metric_tunings_stored_RTC=false;
+RTC_DATA_ATTR uint8_t metric_tunings_stored_RTC=2;	// 2 means off (&1)
 RTC_DATA_ATTR bool magic_autochanges_OFF_stored_RTC=false;
 
 void rtc_save_configuration() {
@@ -1672,7 +1674,10 @@ void rtc_save_configuration() {
   divisor_stored_RTC	=ILLEGAL;	// !=0 after wake up flags deep sleep wakeup
   multiplier_stored_RTC	=ILLEGAL;
 
-  metric_tunings_stored_RTC = some_metric_tunings_only;
+  metric_tunings_stored_RTC = 2;	// 2 means off (&1)
+  if(some_metric_tunings_only)
+    metric_tunings_stored_RTC |= 1;	// 2 means off (&1)
+
   magic_autochanges_OFF_stored_RTC = ! magic_autochanges;
 
   if(scale_user_selected)
@@ -1698,8 +1703,10 @@ void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless wakin
   if(divisor_stored_RTC) {	// divisor == 0 when *not* waking up from deep sleep, ignore
     MENU.out(F("restore from RTCmem "));
 
-    if(metric_tunings_stored_RTC)
+    if(metric_tunings_stored_RTC & 1)	// 2 means off, &1
       some_metric_tunings_only=true;
+    else
+      some_metric_tunings_only=false;	// 2 means off
 
     if(magic_autochanges_OFF_stored_RTC)
       magic_autochanges = false;
@@ -1823,6 +1830,8 @@ void start_musicBox() {
   // random pitch
   if(!pitch_user_selected) {	// if *not* set by user interaction
     if(!some_metric_tunings_only) {	// RANDOM tuning?
+      pitch_is_metric = false;
+
 #if defined RANDOM_ENTROPY_H
       random_entropy();	// entropy from hardware
 #endif
@@ -2613,6 +2622,7 @@ bool musicBox_reaction(char token) {
 	      pitch.multiplier=1;
 	      pitch.divisor=1;
 	      pitch_user_selected = true;
+	      pitch_is_metric = true;		// 'u' is accepted as "metric", maybe?
 	      break;
 	    case 'c':
 	      metric_mnemonic = "c ";
@@ -2621,6 +2631,7 @@ bool musicBox_reaction(char token) {
 	      pitch.multiplier=1;
 	      pitch.divisor=262; // 261.63	// C4  ***not*** harmonical
 	      pitch_user_selected = true;
+	      pitch_is_metric = true;
 	      break;
 	    case 'd':
 	      metric_mnemonic = "d ";
@@ -2630,6 +2641,7 @@ bool musicBox_reaction(char token) {
 	      pitch.divisor = 294;		// 293.66 = D4
 	      // divisor = 147;		// 146.83 = D3
 	      pitch_user_selected = true;
+	      pitch_is_metric = true;
 	      break;
 	    case 'e':
 	      metric_mnemonic = "e ";
@@ -2638,6 +2650,7 @@ bool musicBox_reaction(char token) {
 	      pitch.multiplier=1;
 	      pitch.divisor=330; // 329.36	// e4  ***not*** harmonical
 	      pitch_user_selected = true;
+	      pitch_is_metric = true;
 	      break;
 	    case 'f':
 	      metric_mnemonic = "f ";
@@ -2646,6 +2659,7 @@ bool musicBox_reaction(char token) {
 	      pitch.multiplier=1;
 	      pitch.divisor=175; // 174.16	// F3  ***not*** harmonical
 	      pitch_user_selected = true;
+	      pitch_is_metric = true;
 	      break;
 	    case 'g':
 	      metric_mnemonic = "g ";
@@ -2654,6 +2668,7 @@ bool musicBox_reaction(char token) {
 	      pitch.multiplier=1;
 	      pitch.divisor=196; // 196.00	// G3  ***not*** harmonical
 	      pitch_user_selected = true;
+	      pitch_is_metric = true;
 	      break;
 	    case 'a':
 	      metric_mnemonic = "a ";
@@ -2662,6 +2677,7 @@ bool musicBox_reaction(char token) {
 	      pitch.multiplier=1;
 	      pitch.divisor = 440;
 	      pitch_user_selected = true;
+	      pitch_is_metric = true;
 	      break;
 	    case 'b':
 	      metric_mnemonic = "b ";
@@ -2670,6 +2686,7 @@ bool musicBox_reaction(char token) {
 	      pitch.multiplier=1;
 	      pitch.divisor=247; // 246.94	// B3  ***not*** harmonical
 	      pitch_user_selected = true;
+	      pitch_is_metric = true;
 	      break;
 
 	    default:	//	unknown input, not for the 'T' interface
