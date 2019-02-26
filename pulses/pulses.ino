@@ -94,7 +94,8 @@ using namespace std;	// ESP8266 needs that
 // some early definitions keep compiler happy
 
 // stress managment
-unsigned int stress_emergency=4096*6;	// magical musicBox test			  TODO: fine tune
+unsigned int stress_emergency=4096*48;	// magical musicBox test			  TODO: fine tune ################
+//unsigned int stress_emergency=4096*6;	// magical musicBox test			  TODO: fine tune
 unsigned int stress_event_level=512;	// just TESTING...				  TODO: fine tune
 int stress_event_cnt=0;			// counting stress_event_level events
 uint8_t stress_event_cnt_MAX=2;		// if the count reaches MAX stress release needed TODO: fine tune
@@ -1170,7 +1171,7 @@ void loop() {	// ARDUINO
 */
   }
 
-//#define STRESS_MONITOR_LEVEL	64	// TODO: menu interface
+#define STRESS_MONITOR_LEVEL	64	// TODO: menu interface	// TODO: REMOVE: ################
 #if defined STRESS_MONITOR_LEVEL
   if (stress_count > STRESS_MONITOR_LEVEL) {	// just a simple test tool
     if (stress_count > stress_event_level) {

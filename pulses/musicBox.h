@@ -800,24 +800,24 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   tag_randomness(scale_user_selected);
   MENU.out(F("SCALE: "));
   MENU.out(array2name(SCALES, selected_in(SCALES)));
-  MENU.space(5);
+  MENU.space(3);
 
   tag_randomness(sync_user_selected);
   MENU.out(F("SYNC: "));
   MENU.out(sync);
-  MENU.space(5);
+  MENU.space(3);
 
   tag_randomness(jiffle_user_selected);
   MENU.out(F("JIFFLE: "));
   MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
-  MENU.space(5);
+  MENU.space(3);
 
   tag_randomness(pitch_user_selected);
   MENU.out(F("SCALING: "));	// FIXME: TODO: check where that *is* used ################
   MENU.out(multiplier);
   MENU.slash();
   MENU.out(divisor);
-  MENU.space(2);
+  MENU.space();
   MENU.out(pitch.multiplier);
   MENU.slash();
   MENU.out(pitch.divisor);
