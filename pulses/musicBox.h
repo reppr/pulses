@@ -880,8 +880,10 @@ bool blocked_trigger_shown=false;	// show only once a run
 
 void activate_musicBox_trigger(int dummy_p=ILLEGAL) {
   musicBox_trigger_enabled = true;
-  if(MENU.verbosity >= VERBOSITY_LOWEST)
-    MENU.outln(F("trigger enabled"));
+  if(MENU.verbosity >= VERBOSITY_LOWEST) {
+    MENU.out(F("trigger enabled "));
+    MENU.outln(MUSICBOX_TRIGGER_PIN);
+  }
 }
 
 
@@ -1993,6 +1995,8 @@ void start_musicBox() {
       MENU.out(F("sync pause "));
       PULSES.display_time_human(pause);
       MENU.ln(2);
+      musicBox_short_info();
+      MENU.ln(2);
     }
   }
 
@@ -2252,7 +2256,8 @@ void magical_butler(int p) {	// TODO: OBSOLETE?
     break;
   case 2:	// enable trigger and prepare soft end
     musicBox_trigger_enabled = true;
-    MENU.outln(F("trigger enabled"));
+    MENU.out(F("trigger enabled "));
+    MENU.outln(MUSICBOX_TRIGGER_PIN);
 #if defined AUTOMAGIC_CYCLE_TIMING_SECONDS	// MAX seconds
     {
       pulse_time_t til_soft_end_time=used_subcycle;
