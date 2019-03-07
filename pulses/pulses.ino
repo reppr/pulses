@@ -79,12 +79,6 @@ using namespace std;	// ESP8266 needs that
     #include "MCP23017.h"			// Adafruit, simple test version only
   #endif
 
-//  #if defined USE_DS1307_RTC
-//    // #include <Wire.h>
-//    #include <Time.h>
-//    #include <DS1307RTC.h>
-//  #endif
-
   #if defined USE_i2c_scanner
     #include "i2c_scan.h"
   #endif
@@ -3111,6 +3105,7 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
 
 
 // TODO: REWORK:  setup_bass_middle_high()  used in musicBox, but not really compatible
+// TODO: fix corner cases belonging to 2 groups, see: ESP32_USB_DAC_ONLY	################
 void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_pulses) {
   {
     MENU.out(F("setup_bass_middle_high("));	// ################ verbosity

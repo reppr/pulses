@@ -17,7 +17,16 @@
 //#define OLDSTYLE_TUNE_AND_LIMIT	// use (buggy) old style tuning and lowering mechanism for backwards compatibility
 
 // pre defined SETUPS:
-#if defined SETUP_BRACHE
+#if defined ESP32_USB_DAC_ONLY
+  #define MUSICBOX_SUB_VERSION			ESP32_USB_DAC_ONLY
+  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces   ESP32_USB_DAC_ONLY
+
+  #if defined USE_RTC_MODULE
+    #warning *NOT* using rtc module
+    #undef USE_RTC_MODULE
+  #endif
+
+#elif defined SETUP_BRACHE
   #define MUSICBOX_SUB_VERSION			SETUP_BRACHE
   #define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// *max seconds*, produce short sample pieces	BRACHE 2019-01
   #define MUSICBOX_HARD_END_SECONDS		13*60	// SAVETY NET, we're low on energy...
@@ -37,10 +46,6 @@
 
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	1	// debounce only
 
-#elif defined ESP32_USB_DAC_ONLY
-  #define MUSICBOX_SUB_VERSION			ESP32_USB_DAC_ONLY
-  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces   ESP32_USB_DAC_ONLY
-
 #endif	// (pre defined setups)
 
 #if ! defined AUTOMAGIC_CYCLE_TIMING_SECONDS
@@ -51,7 +56,11 @@
 #endif
 
 //bool some_metric_tunings_only=false;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
-bool some_metric_tunings_only=true;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
+#if ! defined ESP32_USB_DAC_ONLY
+  bool some_metric_tunings_only=true;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
+#else
+  bool some_metric_tunings_only=false;	// free pitch tuning
+#endif
 
 #include <esp_sleep.h>
 // #include "rom/gpio.h"
@@ -1200,6 +1209,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 
   } else if(PULSES.pulses[pulse].counter==2) {	// now we might have more time for some setup
 
+#if defined MUSICBOX_TRIGGER_BLOCK_SECONDS
     trigger_enable_time = {MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000, 0};
     if(MENU.verbosity >= VERBOSITY_SOME) {
       MENU.out(F("butler: prepare trigger  "));
@@ -1207,6 +1217,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
       MENU.ln();
     }
     PULSES.add_time(&musicBox_start_time, &trigger_enable_time);
+#endif
 
     musicBox_hard_end_time = {MUSICBOX_HARD_END_SECONDS*1000000, 0};	// savety net: fixed maximal performance duration
     if(MENU.verbosity >= VERBOSITY_SOME) {
@@ -2297,7 +2308,9 @@ void magical_butler(int p) {	// TODO: OBSOLETE?
 #endif
   switch(PULSES.pulses[p].counter) {
   case 1:	// prepare enable trigger
+#if defined MUSICBOX_TRIGGER_BLOCK_SECONDS
     PULSES.pulses[p].period.time = MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000L;
+#endif
     break;
   case 2:	// enable trigger and prepare soft end
 #if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
@@ -2307,12 +2320,14 @@ void magical_butler(int p) {	// TODO: OBSOLETE?
 #endif
 
 #if defined AUTOMAGIC_CYCLE_TIMING_SECONDS	// MAX seconds
+  #if defined MUSICBOX_TRIGGER_BLOCK_SECONDS
     {
       pulse_time_t til_soft_end_time=used_subcycle;
       PULSES.sub_time(MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000L, &til_soft_end_time);
       PULSES.add_time(100, &til_soft_end_time);	// tolerance
       PULSES.pulses[p].period = til_soft_end_time;
     }
+  #endif
 #else
     PULSES.pulses[p].period.time = (MUSICBOX_PERFORMACE_SECONDS - MUSICBOX_TRIGGER_BLOCK_SECONDS)*1000000L;
 #endif
@@ -2385,9 +2400,17 @@ void musicBox_setup() {	// TODO:update
     MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
 #endif
 
+
+#if ! defined ESP32_USB_DAC_ONLY	// most setups:
   bass_pulses=14;	// see  setup_bass_middle_high()
   middle_pulses=15;	// see  setup_bass_middle_high()
   high_pulses=7;	// see  setup_bass_middle_high()
+
+#else	// ESP32_USB_DAC_ONLY	a *minimal* usb powered *DAC only* setup
+  bass_pulses=14;	// see  setup_bass_middle_high()
+  middle_pulses=0;	// see  setup_bass_middle_high()
+  high_pulses=22;	// see  setup_bass_middle_high()
+#endif
 }
 
 
