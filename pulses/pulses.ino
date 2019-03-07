@@ -996,10 +996,12 @@ void setup() {
 #endif
 
 #ifdef HARMONICAL_MUSIC_BOX
-  #if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks, *no* interrupt
-    magic_trigger_ON();
-  #else
-    pinMode(MUSICBOX_TRIGGER_PIN, INPUT);
+  #if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
+    #if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks, *no* interrupt
+      magic_trigger_ON();
+    #else
+      pinMode(MUSICBOX_TRIGGER_PIN, INPUT);
+    #endif
   #endif
 #endif
 
@@ -1207,16 +1209,18 @@ void loop() {	// ARDUINO
     stress_event_cnt = 0;		// reset expectations
 
 #if defined HARMONICAL_MUSIC_BOX
- #if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
-  if(digitalRead(MUSICBOX_TRIGGER_PIN)) {
-    digitalWrite(2,HIGH);	// REMOVE: for field testing only
-    musicBox_trigger_got_hot();	// must be called when musicBox trigger was detected high
-  }
- #else
-  if(switch_magical_trigger_off) {
-    magic_trigger_OFF();
-  }
- #endif
+  #if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
+    #if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
+     if(digitalRead(MUSICBOX_TRIGGER_PIN)) {
+       digitalWrite(2,HIGH);	// REMOVE: for field testing only
+       musicBox_trigger_got_hot();	// must be called when musicBox trigger was detected high
+     }
+    #else
+     if(switch_magical_trigger_off) {
+       magic_trigger_OFF();
+     }
+    #endif
+  #endif
 #endif
 
 // descend through priorities and do first thing found

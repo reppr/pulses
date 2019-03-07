@@ -21,7 +21,10 @@
   in most cases you can let all these lines inactive, commented out
 */
 
-#define ESP32_15_clicks_no_display_TIME_MACHINE2	// ESP32 new default
+// #define ESP32_15_clicks_no_display_TIME_MACHINE2	// ESP32 new default
+
+#define ESP32_USB_DAC_ONLY				// minimal setup to play on DACs onlx
+
 // #define ESP32_15_clicks_no_display_TIME_MACHINE1	// ESP32 (prior default)
 
 // #define ESP32_15_clicks_no_display
@@ -56,20 +59,18 @@
 // do not change the following code
 
 #if defined ESP32
-  #if defined ESP32_15_clicks_no_display_TIME_MACHINE2
-// planed:  #define AUTOSTART	MENU.play_KB_macro("-E40U5 *64 n"); selected_experiment=-1;	// rhythm! PENTATONIC
-  #if defined HARMONICAL_MUSIC_BOX
-    #define AUTOSTART	start_musicBox();
+  #if defined ESP32_15_clicks_no_display_TIME_MACHINE2 || defined ESP32_USB_DAC_ONLY
+    #if defined HARMONICAL_MUSIC_BOX
+      #define AUTOSTART	start_musicBox();
 //    #define AUTOSTART	start_musicBox(); magic_trigger_ON();
-  #else
-// #define AUTOSTART	MENU.play_KB_macro("E40a5 S3 *2 J64j -n"); selected_experiment=-1;	// furzification test ;)
-    #define AUTOSTART	MENU.play_KB_macro("-E40a5 *2 n"); selected_experiment=-1;	// Lichterfest	a5 == TIME MACHINE
-// reused for LIVING ROOM 2018	"TIME MACHINE"  Robert Epprecht / Jürg Baruffol
+    #else
+      #define AUTOSTART	MENU.play_KB_macro("-E40a5 *2 n"); selected_experiment=-1;	// Lichterfest	a5 == TIME MACHINE
+	// reused for LIVING ROOM 2018	"TIME MACHINE"  Robert Epprecht / Jürg Baruffol
 
-// #define AUTOSTART	MENU.play_KB_macro("-E40F5 *2 n"); selected_experiment=-1;	// Lichterfest	F5
-// #define AUTOSTART	MENU.play_KB_macro("-E40D *2S0 n"); selected_experiment=-1;	// Lichterfest	D BIG BANG
-// #define AUTOSTART	MENU.play_KB_macro("-E40 *2 n"); selected_experiment=-1;	// Lichterfest	a	default
-  #endif
+	// #define AUTOSTART	MENU.play_KB_macro("-E40F5 *2 n"); selected_experiment=-1;	// Lichterfest	F5
+	// #define AUTOSTART	MENU.play_KB_macro("-E40D *2S0 n"); selected_experiment=-1;	// Lichterfest	D BIG BANG
+	// #define AUTOSTART	MENU.play_KB_macro("-E40 *2 n"); selected_experiment=-1;	// Lichterfest	a	default
+    #endif
 //    #define AUTOSTART	MENU.play_KB_macro("-E40 S0 n"); selected_experiment=-1;	// the big bang
     #define PL_MAX	96	// *deactivates*  #define in pulses_boards.h
 

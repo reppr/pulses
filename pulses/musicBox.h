@@ -37,6 +37,10 @@
 
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	1	// debounce only
 
+#elif defined ESP32_USB_DAC_ONLY
+  #define MUSICBOX_SUB_VERSION			ESP32_USB_DAC_ONLY
+  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces   ESP32_USB_DAC_ONLY
+
 #endif	// (pre defined setups)
 
 #if ! defined AUTOMAGIC_CYCLE_TIMING_SECONDS
@@ -67,15 +71,19 @@ bool some_metric_tunings_only=true;	// fixed pitchs only like E A D G C F B  was
 #endif
 
 #ifndef MUSICBOX_TRIGGER_PIN
-  #define MUSICBOX_TRIGGER_PIN	34
+  #ifndef ESP32_USB_DAC_ONLY	// ESP32_USB_DAC_ONLY has no trigger
+    #define MUSICBOX_TRIGGER_PIN	34
+  #endif
+#endif
+
+#if defined MUSICBOX_TRIGGER_PIN
+  #if ! defined MUSICBOX_TRIGGER_BLOCK_SECONDS
+    #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3	// just playing, DEBUGGING
+  #endif
 #endif
 
 #ifndef MUSICBOX_PERFORMACE_SECONDS
   #define MUSICBOX_PERFORMACE_SECONDS	12*60
-#endif
-
-#if ! defined MUSICBOX_TRIGGER_BLOCK_SECONDS
-  #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3	// just playing, DEBUGGING
 #endif
 
 #if ! defined MUSICBOX_HARD_END_SECONDS		// savety net
@@ -118,6 +126,14 @@ void hibernate() {	// see: https://esp32.com/viewtopic.php?t=3083
 //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&hibernate	// wakes up after musicBox_pause_seconds	BT should work, test
 //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user		// works fine
 
+
+#if defined ESP32_USB_DAC_ONLY
+  #if defined MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
+    #warning redefining MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT to menu interaction
+    #undef MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
+  #endif
+  #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user	// DAC snoring workaround
+#endif
 
 // void (*musicBox_when_done)(void)=&deep_sleep;	// function* called when musicBox ends
 void (*musicBox_when_done)(void)=MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT;	// function* called when musicBox ends
@@ -879,11 +895,15 @@ bool musicBox_trigger_enabled=false;
 bool blocked_trigger_shown=false;	// show only once a run
 
 void activate_musicBox_trigger(int dummy_p=ILLEGAL) {
+#if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
   musicBox_trigger_enabled = true;
   if(MENU.verbosity >= VERBOSITY_LOWEST) {
     MENU.out(F("trigger enabled "));
     MENU.outln(MUSICBOX_TRIGGER_PIN);
   }
+#else					// else noop
+  ;
+#endif
 }
 
 
@@ -1246,7 +1266,8 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     }
 #endif
 
-#if defined MUSICBOX_TRIGGER_BLOCK_SECONDS
+#if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
+  #if defined MUSICBOX_TRIGGER_BLOCK_SECONDS
     if(! musicBox_trigger_enabled) {
       pulse_time_t scratch = trigger_enable_time;
       PULSES.sub_time(&this_start_time, &scratch);	// is it time?
@@ -1256,6 +1277,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 	activate_musicBox_trigger();
       }
     }
+  #endif
 #endif
 
     if(magic_autochanges) {	// the butler influences performance and changes phases like ending
@@ -2116,6 +2138,7 @@ void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from mai
   pinMode(26, OUTPUT);		// avoid ugly noise on DAC during sleep
   digitalWrite(26, LOW);
 
+#if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
   if (esp_sleep_enable_ext0_wakeup((gpio_num_t) MUSICBOX_TRIGGER_PIN, 1))
     MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
 /*
@@ -2125,8 +2148,9 @@ void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from mai
   if (esp_sleep_enable_gpio_wakeup())
     MENU.error_ln(F("esp_sleep_enable_gpio_wakeup"));
 */
+#endif
 
-//  if(esp_sleep_enable_uart_wakeup(0))
+//  if(esp_sleep_enable_uart_wakeup(0))		// TODO: ################
 //    MENU.error_ln(F("esp_sleep_enable_uart_wakeup(0)"));
 //
 //  if(esp_sleep_enable_uart_wakeup(1))
@@ -2211,8 +2235,10 @@ void deep_sleep() {
   esp_wifi_stop();
 #endif
 
+#if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
   if (esp_sleep_enable_ext0_wakeup((gpio_num_t) MUSICBOX_TRIGGER_PIN, 1))
     MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
+#endif
 
   /* ONLY HELPS in light_sleep()
   // kill the ugly noise on DACs during sleep modes:
@@ -2250,7 +2276,9 @@ void deep_sleep() {
   // ESP_SLEEP_WAKEUP_GPIO	7
   MENU.outln(esp_sleep_get_wakeup_cause());
 
+#if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
   rtc_gpio_deinit((gpio_num_t) MUSICBOX_TRIGGER_PIN);  // TODO: it will never get here, FIXME: ################
+#endif
 }
 
 
@@ -2272,9 +2300,12 @@ void magical_butler(int p) {	// TODO: OBSOLETE?
     PULSES.pulses[p].period.time = MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000L;
     break;
   case 2:	// enable trigger and prepare soft end
+#if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
     musicBox_trigger_enabled = true;
     MENU.out(F("trigger enabled "));
     MENU.outln(MUSICBOX_TRIGGER_PIN);
+#endif
+
 #if defined AUTOMAGIC_CYCLE_TIMING_SECONDS	// MAX seconds
     {
       pulse_time_t til_soft_end_time=used_subcycle;
@@ -2349,8 +2380,10 @@ void musicBox_setup() {	// TODO:update
   MENU.outln(MUSICBOX_HARD_END_SECONDS);
 #endif
 
+#if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
   if (esp_sleep_enable_ext0_wakeup((gpio_num_t) MUSICBOX_TRIGGER_PIN, 1))
     MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
+#endif
 
   bass_pulses=14;	// see  setup_bass_middle_high()
   middle_pulses=15;	// see  setup_bass_middle_high()
