@@ -2223,6 +2223,23 @@ void deep_sleep() {
   digitalWrite(26, LOW);
   */				// DOES NOT HELP HERE :(
 
+  /* testing rtc_gpio_isolate(),	trying different sequences...
+  if(MENU.verbosity >= VERBOSITY_LOWEST)
+    MENU.outln(F("rtc_gpio_isolate DAC"));
+
+  // does *not* work
+  rtc_gpio_isolate((gpio_num_t) 25);   // DOES NOT HELP  TODO: rtc_gpio_hold_dis
+  rtc_gpio_isolate((gpio_num_t) 26);   // DOES NOT HELP  TODO: rtc_gpio_hold_dis
+
+  // does *not* work either
+  pinMode(25, OUTPUT);		// avoid ugly noise on DAC during sleep?
+  digitalWrite(25, LOW);
+  pinMode(26, OUTPUT);		// avoid ugly noise on DAC during sleep?
+  digitalWrite(26, LOW);
+  rtc_gpio_isolate((gpio_num_t) 25);   // DOES NOT HELP  TODO: rtc_gpio_hold_dis
+  rtc_gpio_isolate((gpio_num_t) 26);   // DOES NOT HELP  TODO: rtc_gpio_hold_dis
+  */
+
   MENU.outln(F("esp_deep_sleep_start()"));
   delay(1500);
 
