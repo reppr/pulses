@@ -104,17 +104,23 @@
 #endif
 
 
+int musicBox_pause_seconds=10;	// SEE: hibernate(); and restart();
+
 // functions to call when musicBox has reached the end:
 void deep_sleep();	// pre declaration
 void light_sleep();	// pre declaration
 
-void restart() { ; }	// endless loop...
+void restart() {	// pause and loop, endlessly
+  MENU.out(F("restarting after "));
+  MENU.out(musicBox_pause_seconds);
+  MENU.outln(F(" seconds"));
+
+  delay(musicBox_pause_seconds*1000);	// *not* meant for any background activity to go on
+}
 
 void user() {	// manual musicBox interaction
   MENU.outln(F("menu interaction"));
 }
-
-int musicBox_pause_seconds=10;
 
 void hibernate() {	// see: https://esp32.com/viewtopic.php?t=3083
   if(MENU.verbosity >= VERBOSITY_LOWEST)
@@ -154,11 +160,15 @@ void show_when_done_function() {
     MENU.out("deep_sleep");
   else if(musicBox_when_done == &light_sleep)
     MENU.out("light_sleep");
-  else if(musicBox_when_done == &hibernate)
-    MENU.out("hibernate");
-  else if(musicBox_when_done == &restart)
-    MENU.out("restart");
-  else if(musicBox_when_done == &user)
+  else if(musicBox_when_done == &hibernate) {
+    MENU.out("pause(");
+    MENU.out(musicBox_pause_seconds);
+    MENU.out("); hibernate");
+  } else if(musicBox_when_done == &restart) {
+    MENU.out("pause(");
+    MENU.out(musicBox_pause_seconds);
+    MENU.out("); restart");
+  } else if(musicBox_when_done == &user)
     MENU.out("user");
   else
     MENU.out("(unknown)");
@@ -634,7 +644,7 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
       MENU.out(soft_end_days_to_live);
       MENU.out_comma_();
       MENU.out(soft_end_survive_level);
-      MENU.out(F(")\tmain part "));
+      MENU.out(F(")   main part "));
       pulse_time_t main_part_duration = soft_end_start_time;
       PULSES.sub_time(&musicBox_start_time, &main_part_duration);
       PULSES.display_time_human(main_part_duration);
@@ -2569,9 +2579,16 @@ bool musicBox_reaction(char token) {
 	case 'h':
 	  MENU.out(F("hibernate() *DEACTIVATED* "));		// "EFh" hibernate()	TODO: CRASH: DEBUG: ################
 	  //musicBox_when_done=&hibernate;	// "EFh" hibernate()	TODO: CRASH: DEBUG: ################
+	  // TODO: interface to int musicBox_pause_seconds, see: 'r'
 	  break;
 	case 'r':
 	  musicBox_when_done=&restart;		// "EFr" restart()
+
+	  MENU.drop_input_token();		// "EFr<nn>" set musicBox_pause_seconds
+	  input_value = MENU.numeric_input(musicBox_pause_seconds);	// drop 'r' first
+	  if(input_value >= 0)
+	    musicBox_pause_seconds = input_value;
+	  MENU.restore_input_token();		// dummy, see below
 	  break;
 	case 'u':
 	  musicBox_when_done=&user;		// "EFu" user()
