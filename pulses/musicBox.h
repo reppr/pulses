@@ -21,9 +21,19 @@
   #define MUSICBOX_SUB_VERSION			ESP32_USB_DAC_ONLY
   #define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces   ESP32_USB_DAC_ONLY
 
+  #if defined USE_BLUETOOTH_SERIAL_MENU
+    #warning *NOT* using bluetooth serial menu
+    #undef USE_BLUETOOTH_SERIAL_MENU
+  #endif
+
   #if defined USE_RTC_MODULE
     #warning *NOT* using rtc module
     #undef USE_RTC_MODULE
+  #endif
+
+  #if defined USE_BATTERY_CONTROL
+    #warning *NOT* using battery control
+    #undef USE_BATTERY_CONTROL
   #endif
 
 #elif defined SETUP_BRACHE
