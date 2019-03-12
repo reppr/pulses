@@ -27,7 +27,9 @@
     digitalRead(BLUETOOTH_ENABLE_PIN);		// i do not trust the very first reading...
     on = digitalRead(BLUETOOTH_ENABLE_PIN);	// read again
     if(MENU.verbosity >= VERBOSITY_LOWEST) {
-      MENU.out(F("bluetooth is switched"));
+      MENU.out(F("bluetooth "));
+      MENU.out(BLUETOOTH_ENABLE_PIN);
+      MENU.out(F(" is switched"));
       MENU.out_ON_off(on);
       if(on)
 	MENU.tab();

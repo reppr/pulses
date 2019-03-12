@@ -21,7 +21,7 @@
   #define MUSICBOX_SUB_VERSION			ESP32_USB_DAC_ONLY
   #define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces   ESP32_USB_DAC_ONLY
 
-  #if defined USE_BLUETOOTH_SERIAL_MENU
+  #if defined USE_BLUETOOTH_SERIAL_MENU		// will probably be removed?
     #warning *NOT* using bluetooth serial menu
     #undef USE_BLUETOOTH_SERIAL_MENU
   #endif
@@ -66,7 +66,7 @@
 #endif
 
 //bool some_metric_tunings_only=false;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
-#if ! defined ESP32_USB_DAC_ONLY
+#if ! defined ESP32_USB_DAC_ONLY	// TODO: rethink, not flexible enaugh
   bool some_metric_tunings_only=true;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
 #else
   bool some_metric_tunings_only=false;	// free pitch tuning
@@ -144,12 +144,12 @@ void hibernate() {	// see: https://esp32.com/viewtopic.php?t=3083
 }
 
 
-#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&deep_sleep	// do test for dac noise...	BT checks BLUETOOTH_ENABLE_PIN on boot
+//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&deep_sleep	// do test for dac noise...	BT checks BLUETOOTH_ENABLE_PIN on boot
 //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&light_sleep	// fine as default for triggered musicBox    bluetooth does *not* wake up
 //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&restart	// endless loop
 //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&ESP.restart	// works fine
 //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&hibernate	// wakes up after musicBox_pause_seconds	BT should work, test
-//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user		// works fine
+#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user		// works fine, a possible snoring workaround
 
 
 #if defined ESP32_USB_DAC_ONLY
@@ -2853,6 +2853,14 @@ bool musicBox_reaction(char token) {
 	      pitch_user_selected = true;
 	      break;
 	    case 'b':
+	      chromatic_pitch = 2;
+	      MENU.drop_input_token();
+	      PULSES.time_unit=1000000;	// switch to metric time unit
+	      pitch.multiplier=1;
+	      pitch.divisor=233; // 	// 233.08 Bb3  ***not*** harmonical
+	      pitch_user_selected = true;
+	      break;
+	    case 'h':
 	      chromatic_pitch = 3;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
