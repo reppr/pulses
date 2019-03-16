@@ -2,30 +2,42 @@
   musicBox.h
 */
 
-#define MUSICBOX_VERSION	alpha 0.015	// (maybe used also as BLUETOOTH_NAME)
+#define MUSICBOX_VERSION	alpha 0.016	// (maybe used also as BLUETOOTH_NAME)
 
 #define LONELY_BUTLER_QUITS			// lonely butler detect SAVETY NET, TODO: will be completely *wrong* in other situations
 
 
 // PRESETS: uncomment *one* (or zero) of the following setups:
-#define SETUP_BRACHE				BRACHE_2019-02
-//#define SETUP_BAHNPARKPLATZ	BahnParkPlatz 2018/2019
+//#define SETUP_BRACHE				BRACHE_2019-02
+#define SETUP_BAHNPARKPLATZ	BahnParkPlatz 2018/2019
 //#define SETUP_CHAMBER_ORCHESTRA	The Harmonical Chamber Orchestra 2018-12
 
 // TODO: REMOVE OLDSTYLE_TUNE_AND_LIMIT
 // compatibility: use (buggy) old style tuning and lowering mechanism for backwards compatibility reproducing older setups?
 //#define OLDSTYLE_TUNE_AND_LIMIT	// use (buggy) old style tuning and lowering mechanism for backwards compatibility
 
+
+/* **************************************************************** */
+// some DEFAULTs, setups might change them
+
+//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&deep_sleep	// do test for dac noise...	BT checks BLUETOOTH_ENABLE_PIN on boot
+//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&light_sleep	// fine as default for triggered musicBox    bluetooth does *not* wake up
+//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&restart	// endless loop
+//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&ESP.restart	// works fine
+//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&hibernate	// wakes up after musicBox_pause_seconds	BT should work, test
+#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user		// works fine, a possible snoring workaround
+
+
+/* **************************************************************** */
 // pre defined SETUPS:
 #if defined ESP32_USB_DAC_ONLY
-  #define MUSICBOX_SUB_VERSION			ESP32_USB_DAC_ONLY
-  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces   ESP32_USB_DAC_ONLY
-
+  #define MUSICBOX_SUB_VERSION			ESP32_usb_DAC_only
+/*
   #if defined USE_BLUETOOTH_SERIAL_MENU		// will probably be removed?
     #warning *NOT* using bluetooth serial menu
     #undef USE_BLUETOOTH_SERIAL_MENU
   #endif
-
+*/
   #if defined USE_RTC_MODULE
     #warning *NOT* using rtc module
     #undef USE_RTC_MODULE
@@ -143,22 +155,6 @@ void hibernate() {	// see: https://esp32.com/viewtopic.php?t=3083
   esp_deep_sleep_start();
 }
 
-
-//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&deep_sleep	// do test for dac noise...	BT checks BLUETOOTH_ENABLE_PIN on boot
-//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&light_sleep	// fine as default for triggered musicBox    bluetooth does *not* wake up
-//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&restart	// endless loop
-//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&ESP.restart	// works fine
-//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&hibernate	// wakes up after musicBox_pause_seconds	BT should work, test
-#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user		// works fine, a possible snoring workaround
-
-
-#if defined ESP32_USB_DAC_ONLY
-  #if defined MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
-    #warning redefining MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT to menu interaction
-    #undef MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
-  #endif
-  #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user	// DAC snoring workaround
-#endif
 
 // void (*musicBox_when_done)(void)=&deep_sleep;	// function* called when musicBox ends
 void (*musicBox_when_done)(void)=MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT;	// function* called when musicBox ends
@@ -618,6 +614,7 @@ unsigned int kill_primary() {
 
 
 bool do_pause_musicBox=false;	// triggers MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch
+// MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
 
 int soft_cleanup_minimal_fraction_weighting=1;	// TODO: adjust default
 unsigned short soft_end_days_to_live = 1;	// remaining days of life after soft end
@@ -704,6 +701,7 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
 	MENU.ln();
       */
       do_pause_musicBox = true;	// triggers MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch	*ENDED*
+      // MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
     }
   }
 }
@@ -915,6 +913,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
   MENU.ln();
 
   do_pause_musicBox = true;	//  triggers MUSICBOX_ENDING_FUNCTION;	sleep, restart or somesuch	// *ENDED*
+  // MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
 }
 
 portMUX_TYPE musicBox_trigger_MUX = portMUX_INITIALIZER_UNLOCKED;

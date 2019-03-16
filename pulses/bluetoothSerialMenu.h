@@ -14,7 +14,7 @@
 #if defined MUSICBOX_VERSION
   #define BLUETOOTH_NAME	MUSICBOX_VERSION	// the BT name of esp32
 #else
-  #define BLUETOOTH_NAME	ESP alpha 0.015		// the BT name of esp32
+  #define BLUETOOTH_NAME	ESP alpha 0.016		// the BT name of esp32
 #endif
 
 

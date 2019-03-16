@@ -1136,13 +1136,13 @@ void loop() {	// ARDUINO
     }
 
     if(do_pause_musicBox) {
-      //      MENU.outln(F(STRINGIFY(MUSICBOX_ENDING_FUNCTION)));
+      //      MENU.outln(F(STRINGIFY(MUSICBOX_ENDING_FUNCTION)));	// MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
       do_pause_musicBox = false;
       stress_count = 0;
       stress_event_cnt = 0;
       delay(600);	// send remaining output
 
-      (*musicBox_when_done)();		//      MUSICBOX_ENDING_FUNCTION
+      (*musicBox_when_done)();		//      MUSICBOX_ENDING_FUNCTION	MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
 
       if(musicBox_when_done != &user)	// user() is a flag *NOT to autostart* musicBox
 	start_musicBox();
