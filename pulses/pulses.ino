@@ -1,4 +1,6 @@
 #define USE_BLUETOOTH_SERIAL_MENU	// SKETCH GETS TOO BIG ;)
+#define USE_MONOCHROME_DISPLAY
+#define NO_GPIO_PINS
 
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
 #define HARMONICAL_MUSIC_BOX
@@ -138,6 +140,11 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 #include "int_edit.h"			// displaying and editing unsigned int arrays
 #include "array_descriptors.h"		// make data arrays accessible for the menu, give names to the data arrays
 
+#if defined USE_MONOCHROME_DISPLAY
+  #include <U8x8lib.h>
+  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16);
+#endif
+
 action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actions
 
 /* **************************************************************** */
@@ -148,7 +155,12 @@ action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actio
 
 /* **************************************************************** */
 // define gpio_pin_t gpio_pins[GPIO_PINS]	// see: pulses_boards.h
-#ifdef GPIO_PINS
+#if defined NO_GPIO_PINS
+  #undef GPIO_PINS
+  #define GPIO_PINS	0
+#endif
+
+#if defined GPIO_PINS
   #include "pulses_CLICK_PIN_configuration.h"	// defines gpio_pins[]
 #endif
 
@@ -391,6 +403,7 @@ void display_names(char** names, int count, int selected) {	// TODO: maybe obsol
 }
 
 
+#if GPIO_PINS > 0
 /*	TODO: move to library Pulses
   gpio_pin_t next_gpio()	return next unused GPIO click pin (or ILLEGAL)
   gpio_pin_t next_gpio(index)	*reset* to give gpio_pins[index] on next call
@@ -427,6 +440,16 @@ gpio_pin_t this_or_next_gpio(int pulse) {
   return next_gpio();				// else return  next_gpio()  or ILLEGAL
 }
 
+#else	// NO_GPIO_PINS
+  gpio_pin_t next_gpio(gpio_pin_t set_i=-1) {		// dummy: NO_GPIO_PINS
+    return (gpio_pin_t) ILLEGAL;
+  }
+
+  gpio_pin_t this_or_next_gpio(gpio_pin_t set_i=-1) {	// dummy: NO_GPIO_PINS
+    return (gpio_pin_t) ILLEGAL;
+  }
+#endif // GPIO_PINS
+
 
 // reset, remove all (flagged) pulses, restart selections at none
 // switch GPIO and DACs off
@@ -443,7 +466,10 @@ int reset_all_flagged_pulses_GPIO_OFF() {
     }
   }
 
+#if GPIO_PINS > 0
   init_click_GPIOs_OutLow();		// switch them on LOW, output	current off, i.e. magnets
+#endif
+
   PULSES.clear_selection();		// restart selections at none
 
 #if defined USE_DACs			// reset DACs
@@ -511,17 +537,17 @@ int en_click_selected() {
   return cnt;
 };
 
-#if defined GPIO_PINS
 void show_GPIOs() {
   MENU.out(GPIO_PINS);
   MENU.out(F(" GPIO pins\t{"));
+#if GPIO_PINS > 0	// *does* work for GPIO_PINS==0
   for(int i=0; i < GPIO_PINS; i++) {
     MENU.out(gpio_pins[i]);
     MENU.out_comma_();
   }
+#endif //  GPIO_PINS
   MENU.outln('}');
 }
-#endif //  GPIO_PINS
 
 #if defined USE_DACs	// TODO: move to library Pulses
 // set_action_flags(pulse, DACsq1 | DACsq2) activates both DACs
@@ -692,6 +718,7 @@ bool sync_user_selected=false;
   #include "RTC_DS1307_module.h"
 #endif
 
+
 /* **************************************************************** */
 #ifdef ARDUINO
 /* Arduino setup() and loop():					*/
@@ -775,6 +802,12 @@ void setup() {
   while (Serial.available())  { Serial.read(); yield(); }
   while (MENU.cb_peek() != EOF) { MENU.drop_input_token(); yield(); }
 
+#if defined USE_MONOCHROME_DISPLAY
+  u8x8.begin();
+  u8x8.setFont(u8x8_font_chroma48medium8_r);
+  //  u8x8.drawString(0, 2, "HARMONICAL");
+#endif
+
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
   random_entropy();	// gathering entropy from serial noise
 #endif
@@ -814,10 +847,8 @@ void setup() {
   #include "nvs_pulses_setup.h"
 #endif
 
-#ifdef GPIO_PINS
-  show_GPIOs();
-  MENU.ln();
-#endif
+show_GPIOs();	// *does* work for GPIO_PINS==0
+MENU.ln();
 
 #ifdef USE_MORSE
   #include "morse_setup.h"
@@ -835,7 +866,7 @@ void setup() {
   musicBox_setup();
 #endif
 
-#ifdef GPIO_PINS
+#if GPIO_PINS > 0
   init_click_GPIOs_OutLow();		// make them GPIO, OUTPUT, LOW
 #endif
 
@@ -1529,6 +1560,7 @@ bool maybe_stop_sweeping() {
 #endif
 
 
+#if GPIO_PINS > 0
 // TODO: move to library Pulses
 void init_click_GPIOs_OutLow() {		// make them GPIO, OUTPUT, LOW
 /* gpio_pin_t gpio_pins[GPIO_PINS];
@@ -1579,7 +1611,7 @@ void init_click_GPIOs_OutLow() {		// make them GPIO, OUTPUT, LOW
   #error TODO: fix init_click_GPIOs_OutLow()
 #endif	// board
 }
-
+#endif	// GPIO_PINS > 0
 
 void out_noFreePulses() {
   MENU.out(F("no free pulses"));
@@ -2846,7 +2878,7 @@ void menu_pulses_display() {
   MENU.out(F("GPIO "));
   MENU.outln(GPIO_PINS);
   if (MENU.verbosity > VERBOSITY_SOME)		// maybe display gpio_pins[]
-    show_GPIOs();
+    show_GPIOs();	// *does* work for GPIO_PINS==0
 
   MENU.ln();
   MENU.outln(F("?=help\t.=flagged info\t:=UI selections"));
@@ -3360,6 +3392,8 @@ void setup_jiffles0(bool g_inverse, int voices, unsigned int multiplier, unsigne
   'reverse_gpio_pins()' works on the global gpio_pins[] array
 			 the pulses won't notice but play with new pin mapping */
 
+
+#if GPIO_PINS > 0
 // TODO: move to library Pulses
 bool gpio_pins_inverted=false;
 void reverse_gpio_pins() {	// TODO: fix next_gpio()  ???? ################
@@ -3372,6 +3406,7 @@ void reverse_gpio_pins() {	// TODO: fix next_gpio()  ???? ################
 
   gpio_pins_inverted=!gpio_pins_inverted;
 }
+#endif
 
 // ****************************************************************
 // menu_pulses_reaction()
@@ -4538,6 +4573,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     break;
 
+#if GPIO_PINS > 0
   case 'Z':	// reverse_gpio_pins
     reverse_gpio_pins();	// TODO: fix next_gpio()  ???? ################
 
@@ -4545,6 +4581,7 @@ bool menu_pulses_reaction(char menu_input) {
       MENU.outln(F("reverse_gpio_pins"));
 
     break;
+#endif
 
   case 'E':	// experiment, setups, instruments
     if (MENU.maybe_display_more()) {
@@ -4594,8 +4631,9 @@ bool menu_pulses_reaction(char menu_input) {
 	sync=1;
 	multiplier=8;
 	divisor=3;
+#if GPIO_PINS > 0
 	reverse_gpio_pins();
-
+#endif
 	if (MENU.maybe_display_more()) {
 	  // display_name5pars("setup_jiffles0", g_inverse, voices, multiplier, divisor, sync);
 	  MENU.out(F("setup_jiffles0("));

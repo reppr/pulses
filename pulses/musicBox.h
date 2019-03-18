@@ -838,6 +838,25 @@ void show_metric_mnemonic() {	// TODO: move to Harmonical or Pulses
   MENU.out(second_letter);
 }
 
+#if defined USE_MONOCHROME_DISPLAY
+void display_basic_musicBox_parameters() {	// ATTENTION: takes too long to be used while playing
+  u8x8.clear();
+
+  u8x8.drawString(0, 1, array2name(SCALES, selected_in(SCALES)));
+
+  u8x8.drawString(0, 3, array2name(JIFFLES, selected_in(JIFFLES)));
+
+  u8x8.setCursor(0,5);
+  // u8x8.print(F("SYNC: "));
+  u8x8.print('S');		// sync
+  u8x8.print(sync);
+  u8x8.print(F("   "));
+  u8x8.print(pitch.multiplier);	// pitch
+  u8x8.print('/');
+  u8x8.print(pitch.divisor);
+}
+#endif
+
 
 void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   tag_randomness(scale_user_selected);
@@ -871,6 +890,10 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   show_metric_mnemonic();
 
   MENU.ln();
+
+#if defined USE_MONOCHROME_DISPLAY
+  display_basic_musicBox_parameters();	// Heltec oled test	// ATTENTION: takes too long to be used while playing
+#endif
 }
 
 void musicBox_short_info() {

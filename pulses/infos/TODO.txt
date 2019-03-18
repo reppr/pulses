@@ -26,3 +26,10 @@ test float output on PC.
 IMAGES of used dev boards
 
 PIN STICKERS of used dev boards
+
+
+avoid multiplier/divisor in musicBox
+
+show pp configuration
+
+re organize pp configuration (files), do not forget NO_GPIO_PINS

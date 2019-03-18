@@ -3,7 +3,7 @@
 #ifndef GPIO_PINS_CONFIGURATION.H
 #define GPIO_PINS_CONFIGURATION.H
 
-#if defined(GPIO_PINS)
+#if defined(GPIO_PINS) && ! defined NO_GPIO_PINS
 
 // which board?
 #if defined ESP32 || defined ESP8266			// ESPxx boards
@@ -160,5 +160,5 @@
 #endif // which board?
 
 
-#endif // GPIO_PINS
+#endif // GPIO_PINS && ! NO_GPIO_PINS
 #endif // GPIO_PINS_CONFIGURATION.H

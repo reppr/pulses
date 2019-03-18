@@ -97,7 +97,7 @@
 
 
 // default number of GPIO_PINS controlling an associated hardware pin each
-  #ifndef GPIO_PINS
+  #ifndef GPIO_PINS && ! defined NO_GPIO_PINS
     #if defined(ESP32)			// ESP32: many pins, a lot of RAM :)
       #if defined(KALIMBA7_v2)
 	#define GPIO_PINS	8	// only 7 used
