@@ -10,7 +10,7 @@ init_arr_DB(SCALES, sizeof(SCALES), "SCALES");
 REGISTER_SCALE(edit_scale_RAM);			// 0
 REGISTER_SCALE(octaves);			// 1
 REGISTER_SCALE(octaves_fifths);			// 2
-REGISTER_SCALE(octaves_fourths_fifths);		// 3
+REGISTER_SCALE(octave_4th_5th);			// 3
 REGISTER_SCALE(tetraCHORD);			// 4
 REGISTER_SCALE(pentatonic_minor);		// 5
 REGISTER_SCALE(doric_scale);			// 6
@@ -22,7 +22,7 @@ REGISTER_SCALE(octaves_fourths);		// 11
 REGISTER_SCALE(pentachord);			// 12
 REGISTER_SCALE(pentaCHORD);			// 13
 REGISTER_SCALE(tetrachord);			// 14
-REGISTER_SCALE(european_PENTAtonic);		// 15
+REGISTER_SCALE(europ_PENTAtonic);		// 15
 REGISTER_SCALE(trichord);			// 16
 REGISTER_SCALE(mimic_japan_pentatonic);		// 17
 REGISTER_SCALE(scale_int);			// 18
@@ -64,14 +64,14 @@ REGISTER_JIFFLE(back_to_ground);
 REGISTER_JIFFLE(arpeggio_and_sayling);
 REGISTER_JIFFLE(simple_theme);
 REGISTER_JIFFLE(pentatonic_rise);
-REGISTER_JIFFLE(pentatonic_descend);
-REGISTER_JIFFLE(rising_pent_theme);
+REGISTER_JIFFLE(pentatonic_desc);
+REGISTER_JIFFLE(rising_pent_them);
 REGISTER_JIFFLE(pent_top_wave_0);
 REGISTER_JIFFLE(pent_top_wave);
 REGISTER_JIFFLE(pent_patternA);
 REGISTER_JIFFLE(pent_patternB);
 REGISTER_JIFFLE(PENTAtonic_rise);
-REGISTER_JIFFLE(PENTAtonic_descend);
+REGISTER_JIFFLE(PENTAtonic_desc);
 REGISTER_JIFFLE(PENTA_3rd_down_5);
 REGISTER_JIFFLE(PENTA_3rd_rise);
 REGISTER_JIFFLE(tingeling4096);
@@ -121,11 +121,11 @@ REGISTER_JIFFLE(minor_descend);
 REGISTER_JIFFLE(doric_rise);
 REGISTER_JIFFLE(doric_descend);
 REGISTER_JIFFLE(pentaCHORD_rise);
-REGISTER_JIFFLE(pentaCHORD_descend);
+REGISTER_JIFFLE(pentaCHORD_desc);
 REGISTER_JIFFLE(pentachord_rise);
 REGISTER_JIFFLE(pentachord_descend);
 REGISTER_JIFFLE(tetraCHORD_rise);
-REGISTER_JIFFLE(tetraCHORD_descend);
+REGISTER_JIFFLE(tetraCHORD_desc);
 
 REGISTER_JIFFLE(tumtumtum);
 REGISTER_JIFFLE(tumtumtumtum);

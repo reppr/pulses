@@ -32,6 +32,8 @@
 // pre defined SETUPS:
 #if defined ESP32_USB_DAC_ONLY
   #define MUSICBOX_SUB_VERSION			ESP32_usb_DAC_only
+
+  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	21*60	// *max seconds*, produce sample pieces	ESP32_usb_DAC_only
 /*
   #if defined USE_BLUETOOTH_SERIAL_MENU		// will probably be removed?
     #warning *NOT* using bluetooth serial menu
@@ -1441,7 +1443,7 @@ void select_random_scale() {
     select_array_in(SCALES, pentatonic_minor);
     break;
   case 5: case 6: case 7: case 8:
-    select_array_in(SCALES, european_PENTAtonic);
+    select_array_in(SCALES, europ_PENTAtonic);
     break;
   case 9: case 10: case 11:
     select_array_in(SCALES, minor_scale);
@@ -1456,7 +1458,7 @@ void select_random_scale() {
     select_array_in(SCALES, tetraCHORD);	// +1 for tetraCHORD, see below
     break;
   case 21: case 22:
-    select_array_in(SCALES, octaves_fourths_fifths);
+    select_array_in(SCALES, octave_4th_5th);
     break;
   case 23:
     select_array_in(SCALES, octaves_fifths);
@@ -1507,14 +1509,14 @@ void select_random_jiffle(void) {
     select_array_in(JIFFLES, PENTAtonic_rise);
     break;
   case 5: case 6: case 7: case 8: case 9:
-    select_array_in(JIFFLES, PENTAtonic_descend);
+    select_array_in(JIFFLES, PENTAtonic_desc);
     break;
 
   case 10: case 11: case 12: case 13: case 14:
     select_array_in(JIFFLES, pentatonic_rise);
     break;
   case 15: case 16: case 17: case 18: case 19:
-    select_array_in(JIFFLES, pentatonic_descend);
+    select_array_in(JIFFLES, pentatonic_desc);
     break;
 
   case 20: case 21: case 22: case 23: case 24: case 29:	// was: too many, see below
@@ -1558,7 +1560,7 @@ void select_random_jiffle(void) {
     select_array_in(JIFFLES, penta_3rd_down_5);
     break;
   case 78: case 79: case 80: case 81:
-    select_array_in(JIFFLES, rising_pent_theme);
+    select_array_in(JIFFLES, rising_pent_them);
     break;
   case 82: case 83: case 84: case 85:
     select_array_in(JIFFLES, penta_3rd_rise);
@@ -1646,7 +1648,7 @@ void select_random_jiffle(void) {
     select_array_in(JIFFLES, pentachord_rise);
     break;
   case 133:
-    select_array_in(JIFFLES, pentaCHORD_descend);	// TODO: test
+    select_array_in(JIFFLES, pentaCHORD_desc);	// TODO: test
     break;
   case 134:
     select_array_in(JIFFLES, pentachord_descend);	// TODO: test
@@ -1655,7 +1657,7 @@ void select_random_jiffle(void) {
     select_array_in(JIFFLES, tetraCHORD_rise);
     break;
   case 137:
-    select_array_in(JIFFLES, tetraCHORD_descend);
+    select_array_in(JIFFLES, tetraCHORD_desc);
     break;
   }
 

@@ -33,3 +33,5 @@ avoid multiplier/divisor in musicBox
 show pp configuration
 
 re organize pp configuration (files), do not forget NO_GPIO_PINS
+
+remove stress indicators, UI?

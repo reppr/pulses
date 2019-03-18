@@ -142,7 +142,7 @@ arr_descriptor JIFFLES[JIFFLE_DESCRIPTORS];
 arr_descriptor iCODEs[iCODE_DESCRIPTORS];
 
 
-// register_scale(european_PENTAtonic, sizeof(european_PENTAtonic), "european_PENTAtonic");
+// register_scale(europ_PENTAtonic, sizeof(europ_PENTAtonic), "europ_PENTAtonic");
 bool register_scale(unsigned int* scale, unsigned int len, char* name) {
   return register_array_in_DB(SCALES, scale, len, 2, name, "scale");
 }

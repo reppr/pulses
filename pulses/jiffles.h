@@ -69,7 +69,7 @@ unsigned int back_to_ground[] = {1,2048,32, 3,1024*2,32, 1,1024,32, 1,512,32, 2,
 unsigned int pentatonic_rise[] =
   {1,4096,256, 5,6*4096,256, 3,4*4096,256, 2,3*4096,256, 5*2,6*3*4096,256, 1,2*4096,256, 0,0};
 
-unsigned int pentatonic_descend[] =
+unsigned int pentatonic_desc[] =
   {1,2*4096,256, 5*2,6*3*4096,256, 2,3*4096,256, 3,4*4096,256, 5,6*4096,256, 1,4096,256, 0,0};
 
 unsigned int penta_3rd_down_5[] =
@@ -80,7 +80,8 @@ unsigned int penta_3rd_rise[] =
   {1,4096,256, 3,4*4096,256, 5,6*4096,256, 2,3*4096,256, 3,4*4096,256, 5*2,6*3*4096,256, 2,3*4096,256,
    1,2*4096,512, 0,0};
 
-unsigned int rising_pent_theme[] =
+// was: rising_pent_theme
+unsigned int rising_pent_them[] =
   {1,4096,256, 3,4*4096,256, 5,6*4096,256, 2,3*4096,256, 3,4*4096,1024, 1,4,1 ,1,1024,32, 1,32,1, 1,1024,32, 1,32,1, 1,1024,64, 0,0};
 
 unsigned int pent_top_wave_0[] =
@@ -98,10 +99,10 @@ unsigned int pent_patternB[] =
    1,4096,256, 1,2*4096,256, 5,6*4096,256, 1,2*4096,256, 3,4*4096,256, 1,2*4096,256, 2,3*4096,256, 1,2*4096,256, 5*2,6*3*4096,256,
    1,2*4096,256, 1,4096,256, 0,0};
 
-// PENTAtonic see:  european_PENTAtonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 0,0};
+// PENTAtonic see:  europ_PENTAtonic[] = {1,1, 8,9, 4,5, 2,3, 3,5, 0,0};
 unsigned int PENTAtonic_rise[] =	// european pentatonic
   {1,4096,256, 8,9*4096,256, 4,5*4096,256, 2,3*4096,256, 3,5*4096,256, 1,2*4096,512, 0,0};
-unsigned int PENTAtonic_descend[] =	// european pentatonic
+unsigned int PENTAtonic_desc[] =	// european pentatonic
   {1,2*4096,256, 3,5*4096,256, 2,3*4096,256, 4,5*4096,256, 8,9*4096,256, 1,4096,512, 0,0};
 unsigned int PENTA_3rd_down_5[] =
   {1,2*4096,256, 2,3*4096,256, 3,5*4096,256, 4,5*4096,256, 2,3*4096,256, 8,9*4096,256, 4,5*4096,256,
@@ -207,7 +208,7 @@ unsigned int doric_descend[] =
 unsigned int pentaCHORD_rise[] =
   {1,4096,256, 1,9*512,256, 1,5*1024,256, 3,4*4096,256, 1,3*2048,256*2, 0,0};
 
-unsigned int pentaCHORD_descend[] =
+unsigned int pentaCHORD_desc[] =
   {1,3*1024,256, 3,2*4096,256, 1,5*512,256, 1,9*156,256, 1,1048,256*2, 0,0};
 
 unsigned int pentachord_rise[] =
@@ -219,7 +220,7 @@ unsigned int pentachord_descend[] =
 unsigned int tetraCHORD_rise[] =
   {1,4096,256, 1,9*512,256, 1,5*1024,256, 3,4*4096,256*2, 0,0};
 
-unsigned int tetraCHORD_descend[] =
+unsigned int tetraCHORD_desc[] =
   {3,2*4096,256, 1,5*512,256, 1,9*156,256, 1,1048,256*2, 0,0};
 
 // try on doric scale

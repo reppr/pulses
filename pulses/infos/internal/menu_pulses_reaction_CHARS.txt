@@ -106,7 +106,7 @@
    1124:      case 13:	// prepare_magnets
    1142:      case 14:	// E14
    1159:      case 15:	// E15
-   1176:      case 16:	// E16 european_PENTAtonic
+   1176:      case 16:	// E16 europ_PENTAtonic
    1193:      case 17:	// E17 mimic japan
    1210:      case 18:	// E18 pentatonic minor  nylon stringed wooden box, piezzos
    1242:      case 19:	// TUNING: tuned sweep

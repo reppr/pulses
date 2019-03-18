@@ -113,7 +113,7 @@ peripheral POWER ON 12
  >>> * <<<
 play_KB_macro  -E40, verbosity lowest
 removed all pulses 0  switched pins off  freed GPIOs
-SCALE: octaves_fourths_fifths
+SCALE: octave_4th_5th
 JIFFLE: diing_ditditdit
 sync 1
 time_unit: 1000000	*32768/410
@@ -319,8 +319,8 @@ peripheral POWER ON 12
  >>> * <<<
 play_KB_macro  -E40, verbosity lowest
 removed all pulses 59  switched pins off  freed GPIOs
-SCALE: octaves_fourths_fifths
-JIFFLE: pentatonic_descend
+SCALE: octave_4th_5th
+JIFFLE: pentatonic_desc
 sync 0
 fixed tuning g	196
 time_unit: 1000000	*32768/196
@@ -441,7 +441,7 @@ peripheral POWER ON 12
  >>> * <<<
 play_KB_macro  -E40, verbosity lowest
 removed all pulses 0  switched pins off  freed GPIOs
-SCALE: european_pentatonic
+SCALE: europ_pentatonic
 JIFFLE: pentatonic_rise
 sync 5
 fixed tuning b	233
@@ -562,7 +562,7 @@ peripheral POWER ON 12
 play_KB_macro  -E40, verbosity lowest
 removed all pulses 0  switched pins off  freed GPIOs
 
-SCALE: european_pentatonic
+SCALE: europ_pentatonic
 JIFFLE: ding_ditditdit
 sync 1
 fixed tuning b	233
@@ -600,7 +600,7 @@ peripheral POWER ON 12
  >>> * <<<
 play_KB_macro  -E40  verbosity lowest
 removed all pulses 0  switched pins off  freed GPIOs
-SCALE: european_pentatonic
+SCALE: europ_pentatonic
 JIFFLE: ding_ditditdit
 sync 5
 fixed tuning a	220
@@ -699,7 +699,7 @@ peripheral POWER ON 12
  >>> * <<<
 play_KB_macro  -E40  verbosity lowest
 tabula rasa 40
-SCALE: european_pentatonic
+SCALE: europ_pentatonic
 JIFFLE: dwn_THRD_up
 sync 1
 fixed tuning a	220
@@ -800,7 +800,7 @@ peripheral POWER ON 12
  >>> * <<<
 play_KB_macro  -E40  verbosity lowest
 tabula rasa 53
-SCALE: european_pentatonic
+SCALE: europ_pentatonic
 JIFFLE: dwn_THRD_up
 sync 5
 fixed tuning b	233
@@ -876,7 +876,7 @@ peripheral POWER ON 12
  >>> * <<<
 play_KB_macro  -E40:M  verbosity lowest
 tabula rasa 38
-SCALE: european_pentatonic
+SCALE: europ_pentatonic
 JIFFLE: ding_ditditdit
 sync 0
 time_unit: 1000000	*32768/207
@@ -913,8 +913,8 @@ peripheral POWER ON 12
  >>> * <<<
 play_KB_macro  -E40:M  verbosity lowest
 tabula rasa 46
-SCALE: european_pentatonic
-JIFFLE: PENTAtonic_descend
+SCALE: europ_pentatonic
+JIFFLE: PENTAtonic_desc
 sync 0
 time_unit: 1000000	*32768/379
 play_KB_macro  *2
@@ -1171,7 +1171,7 @@ peripheral POWER ON 12
 play_KB_macro  -E40:M  verbosity lowest
 tabula rasa 0
 SCALE:	minor_scale
-JIFFLE:	rising_pent_theme
+JIFFLE:	rising_pent_them
 SYNC:	4
 TIME_u:	1000000	*32768/195
 play_KB_macro  *2
@@ -1205,7 +1205,7 @@ peripheral POWER ON 12
  >>> * <<<
 play_KB_macro  -E40:M  verbosity lowest
 tabula rasa 0
-SCALE:	european_pentatonic
+SCALE:	europ_pentatonic
 JIFFLE:	up_THRD_dn
 SYNC:	1
 TIME_u:	1000000	*32768/225
@@ -1241,7 +1241,7 @@ peripheral POWER ON 12
  >>> * <<<
 play_KB_macro  -E40:M  verbosity lowest
 tabula rasa 0
-SCALE:	european_pentatonic
+SCALE:	europ_pentatonic
 JIFFLE:	pent_top_wave
 SYNC:	5
 TIME_u:	1000000	*32768/323
@@ -1276,7 +1276,7 @@ peripheral POWER ON 12
 play_KB_macro  -E40:M  verbosity lowest
 tabula rasa 0
 SCALE:	doric_scale
-JIFFLE:	rising_pent_theme
+JIFFLE:	rising_pent_them
 SYNC:	1
 TIME_u:	1000000	*32768/295
  <<< * >>>
@@ -1298,7 +1298,7 @@ rising ostinatos over rhythmic bordun
 
 very nice ending :)
 
-SCALE octaves_fourths_fifths	JIFFLE pentatonic_rise	scaling 2/6144	sync 0
+SCALE octave_4th_5th	JIFFLE pentatonic_rise	scaling 2/6144	sync 0
 harmonical cycle 'c'	12h 24'  7"
 subcycle		    5' 49"
 
@@ -1317,8 +1317,8 @@ peripheral POWER ON 12
  >>> * <<<
 play_KB_macro  -E40:M  verbosity lowest
 tabula rasa 5
-SCALE:	octaves_fourths_fifths
-JIFFLE:	pentatonic_descend
+SCALE:	octave_4th_5th
+JIFFLE:	pentatonic_desc
 SYNC:	2
 TIME_u:	1000000	*32768/354
 play_KB_macro  *4
@@ -1418,7 +1418,7 @@ peripheral POWER ON 12
 play_KB_macro  -E40:M  verbosity lowest
 tabula rasa 0
 
-SCALE:	european_pentatonic
+SCALE:	europ_pentatonic
 JIFFLE:	pent_patternA
 SYNC:	5
 TIME_U:	1000000	*32768/266
@@ -1457,7 +1457,7 @@ play_KB_macro  -E40:M  verbosity lowest
 tabula rasa 47
 
 SCALE:	doric_scale
-JIFFLE:	rising_pent_theme
+JIFFLE:	rising_pent_them
 SYNC:	5
 TIME_U:	1000000	*32768/266
 play_KB_macro  /2
@@ -1665,7 +1665,7 @@ play_KB_macro  -E40:M  verbosity lowest
 tabula rasa 0
 
 SCALE:	major_scale
-JIFFLE:	pentatonic_descend
+JIFFLE:	pentatonic_desc
 SYNC:	2
 TIME_U:	1000000	*32768/329
 play_KB_macro  *2
@@ -1780,7 +1780,7 @@ play_KB_macro  -E40:M  verbosity lowest
 tabula rasa 0
 
 random scale
-SCALE:	european_pentatonic
+SCALE:	europ_pentatonic
 random jiffle
 JIFFLE:	PENTAtonic_rise
 random sync
@@ -1876,7 +1876,7 @@ play_KB_macro  -E40:M  verbosity lowest
 tabula rasa 0
 
 random scale
-SCALE:	octaves_fourths_fifths
+SCALE:	octave_4th_5th
 random jiffle
 JIFFLE:	PENTA_3rd_down_5
 random sync
@@ -1962,7 +1962,7 @@ play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
 random scale
-SCALE:	octaves_fourths_fifths
+SCALE:	octave_4th_5th
 random jiffle
 JIFFLE:	dwn_THRD_up
 random sync
@@ -2103,7 +2103,7 @@ setup_bass_middle_high(14, 15, 7)
 random scale
 SCALE:	octaves_fifths
 random jiffle
-JIFFLE:	PENTAtonic_descend
+JIFFLE:	PENTAtonic_desc
 random sync
 SYNC:	2
 TIME_U:	1000000
@@ -2197,7 +2197,7 @@ setup_bass_middle_high(14, 15, 7)
 random scale
 SCALE:	major_scale
 random jiffle
-JIFFLE:	pentatonic_descend
+JIFFLE:	pentatonic_desc
 random sync
 SYNC:	2
 TIME_U:	1000000
@@ -2234,7 +2234,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	european_PENTAtonic
+SCALE:	europ_PENTAtonic
 JIFFLE:	up_THRD
 SYNC:	0
 TIME_U:	1000000
@@ -2341,7 +2341,7 @@ shortest pulse's harmonical cycle: 1' 5"
 klassisch und simpel schön
 ***************************
 
-SCALE:	tetraCHORD	JIFFLE:	pentatonic_descend	SCALING: 3/1024	SYNC: 0
+SCALE:	tetraCHORD	JIFFLE:	pentatonic_desc	SCALING: 3/1024	SYNC: 0
 
 
 fractal time web
@@ -2507,7 +2507,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	european_PENTAtonic
+SCALE:	europ_PENTAtonic
 JIFFLE:	dwn_THRD
 SYNC:	1
 TIME_U:	1000000	*32768/357
@@ -2579,7 +2579,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	octaves_fourths_fifths
+SCALE:	octave_4th_5th
 JIFFLE:	pent_top_wave
 SYNC:	3
 TIME_U:	1000000	*32768/257
@@ -2699,7 +2699,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	european_PENTAtonic
+SCALE:	europ_PENTAtonic
 JIFFLE:	PENTA_3rd_rise
 SYNC:	3
 TIME_U:	1000000	*32768/355
@@ -2739,7 +2739,7 @@ play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
 SCALE:	tetraCHORD
-JIFFLE:	PENTAtonic_descend
+JIFFLE:	PENTAtonic_desc
 SYNC:	5
 TIME_U:	1000000	*32768/260
 play_KB_macro  /2
@@ -2823,7 +2823,7 @@ setup_bass_middle_high(14, 15, 7)
 lower_audio_if_too_high 0
 62.00000 DEBUG: shortest==0
 60.0000000000000000000000000000000
-SCALE:	european_PENTAtonic
+SCALE:	europ_PENTAtonic
 JIFFLE:	tanboura
 SYNC:	0
 TIME_U:	1000000	*32768/275
@@ -2849,7 +2849,7 @@ Pentaweb
 stimmigsvoll
 mit sehnsucht ufs ziel zue
 
-SCALE:	pentatonic_minor	JIFFLE:	PENTAtonic_descend	SCALING: 1/128	SYNC: 2
+SCALE:	pentatonic_minor	JIFFLE:	PENTAtonic_desc	SCALING: 1/128	SYNC: 2
 Af:DD...	voices: 34	verbosity lowest
 TIME_U:	1000000 microseconds = 1.000000 per second
 
@@ -2877,7 +2877,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	european_PENTAtonic
+SCALE:	europ_PENTAtonic
 JIFFLE:	penta_3rd_rise
 SYNC:	1
 TIME_U:	1000000	*32768/423
@@ -2954,7 +2954,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	octaves_fourths_fifths
+SCALE:	octave_4th_5th
 JIFFLE:	d4096_512
 SYNC:	1
 TIME_U:	1000000	*32768/187
@@ -3038,7 +3038,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	octaves_fourths_fifths
+SCALE:	octave_4th_5th
 JIFFLE:	PENTAtonic_rise
 SYNC:	0
 TIME_U:	1000000	*32768/375
@@ -3195,7 +3195,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	european_PENTAtonic
+SCALE:	europ_PENTAtonic
 JIFFLE:	pentatonic_rise
 SYNC:	5
 TIME_U:	1000000	*32768/217
@@ -3275,14 +3275,14 @@ peripheral POWER ON 12
 2018-12-13_10h24m06s	THU
 play_KB_macro  -:M  verbosity more
 setup_bass_middle_high(14, 15, 7)
-tune to scale octaves_fourths_fifths	36 voices
+tune to scale octave_4th_5th	36 voices
 lower_audio_if_too_high 0
 62.00000 DEBUG: shortest==0
 60.0000000000000000000000000000000
 random scale
 SCALE:	tetraCHORD
 random jiffle
-JIFFLE:	rising_pent_theme
+JIFFLE:	rising_pent_them
 random sync
 SYNC:	4
 TIME_U:	1000000	random pitch
@@ -3484,7 +3484,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	european_PENTAtonic
+SCALE:	europ_PENTAtonic
 JIFFLE:	diing_ditditdit
 SYNC:	3
 TIME_U:	1000000	*32768/429
@@ -3513,7 +3513,7 @@ play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
 SCALE:	octaves_fourths
-JIFFLE:	pentatonic_descend
+JIFFLE:	pentatonic_desc
 SYNC:	0
 TIME_U:	1000000	*32768/352
 play_KB_macro  *2
@@ -3579,7 +3579,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	european_PENTAtonic
+SCALE:	europ_PENTAtonic
 JIFFLE:	up_THRD
 SYNC:	2
 TIME_U:	1000000	*32768/333
@@ -3675,7 +3675,7 @@ play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
 SCALE:	tetraCHORD
-JIFFLE:	rising_pent_theme
+JIFFLE:	rising_pent_them
 SYNC:	1
 TIME_U:	1000000	*32768/420
 play_KB_macro  *2
@@ -3710,7 +3710,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	octaves_fourths_fifths
+SCALE:	octave_4th_5th
 JIFFLE:	tumtum
 SYNC:	0
 TIME_U:	1000000	*32768/413
@@ -3783,7 +3783,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	octaves_fourths_fifths
+SCALE:	octave_4th_5th
 JIFFLE:	dwn_THRD_up
 SYNC:	4
 TIME_U:	1000000	*32768/354
@@ -4066,7 +4066,7 @@ play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
 SCALE:	tetraCHORD
-JIFFLE:	pentatonic_descend
+JIFFLE:	pentatonic_desc
 SYNC:	0
 TIME_U:	1000000	*32768/411
 play_KB_macro  *2
@@ -4098,7 +4098,7 @@ play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
 SCALE:	octaves_fifths
-JIFFLE:	pentatonic_descend
+JIFFLE:	pentatonic_desc
 SYNC:	4
 TIME_U:	1000000	*32768/271
 harmonical CYCLE: 3d 18h 47' 44"	SUBCYCLE: | 5' 19" |
@@ -4172,7 +4172,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	european_PENTAtonic
+SCALE:	europ_PENTAtonic
 JIFFLE:	dwn_THRD
 SYNC:	2
 TIME_U:	1000000	*32768/300
@@ -4244,7 +4244,7 @@ verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
 SCALE:	octaves_fourths
-JIFFLE:	PENTAtonic_descend
+JIFFLE:	PENTAtonic_desc
 SYNC:	2
 TIME_U:	1000000	*32768/350
 play_KB_macro  *2
@@ -4317,7 +4317,7 @@ play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
 SCALE:	pentaCHORD
-JIFFLE:	pentatonic_descend
+JIFFLE:	pentatonic_desc
 SYNC:	5
 TIME_U:	1000000	*32768/181
 play_KB_macro  *2
@@ -4419,7 +4419,7 @@ peripheral POWER ON 12
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	european_PENTAtonic
+SCALE:	europ_PENTAtonic
 JIFFLE:	din_dididi
 SYNC:	5
 TIME_U:	1000000	*32768/354
@@ -4456,7 +4456,7 @@ play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
 SCALE:	tetraCHORD
-JIFFLE:	PENTAtonic_descend
+JIFFLE:	PENTAtonic_desc
 SYNC:	2
 TIME_U:	1000000	*32768/263
 play_KB_macro  *2
@@ -4495,7 +4495,7 @@ play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
 SCALE:	octaves_fourths
-JIFFLE:	rising_pent_theme
+JIFFLE:	rising_pent_them
 SYNC:	5
 TIME_U:	1000000	*32768/322
 harmonical CYCLE: 9d 13h 14' 40"	SUBCYCLE: | 6' 43" |
@@ -4531,7 +4531,7 @@ play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
 SCALE:	pentatonic_minor
-JIFFLE:	PENTAtonic_descend
+JIFFLE:	PENTAtonic_desc
 SYNC:	1
 TIME_U:	1000000	*32768/444
 harmonical CYCLE: 1h 37' 25"	SUBCYCLE: | 6' 5" |
@@ -4640,7 +4640,7 @@ play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
 SCALE:	trichord
-JIFFLE:	PENTAtonic_descend
+JIFFLE:	PENTAtonic_desc
 SYNC:	2
 TIME_U:	1000000	*32768/288
 play_KB_macro  *2
@@ -4673,7 +4673,7 @@ setup_bass_middle_high(14, 15, 7)
 lower_audio_if_too_high 0
 62.00000 DEBUG: shortest==0
 60.0000000000000000000000000000000
-SCALE:	octaves_fourths_fifths
+SCALE:	octave_4th_5th
 JIFFLE:	penta_3rd_rise
 SYNC:	1
 TIME_U:	1000000	fixed random tuning b	233
@@ -4740,7 +4740,7 @@ play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
 SCALE:	tetraCHORD
-JIFFLE:	PENTAtonic_descend
+JIFFLE:	PENTAtonic_desc
 SYNC:	2
 TIME_U:	1000000	*32768/234
 harmonical CYCLE: 2h 27' 52"	SUBCYCLE: | 4' 37" |
@@ -4849,7 +4849,7 @@ play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
 SCALE:	octaves_fourths
-JIFFLE:	PENTAtonic_descend
+JIFFLE:	PENTAtonic_desc
 SYNC:	4
 TIME_U:	1000000	*32768/371
 play_KB_macro  *2
@@ -4886,7 +4886,7 @@ play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
 SCALE:	TRIAD
-JIFFLE:	rising_pent_theme
+JIFFLE:	rising_pent_them
 SYNC:	1
 TIME_U:	1000000	*32768/428
 play_KB_macro  /2
@@ -4968,7 +4968,7 @@ restore from RTCmem
 play_KB_macro  -:M  verbosity lowest
 
 setup_bass_middle_high(14, 15, 7)
-SCALE:	european_PENTAtonic
+SCALE:	europ_PENTAtonic
 JIFFLE:	penta_3rd_down_5
 SYNC:	1
 TIME_U:	1000000	random *metric* tuning d	*32768/294
@@ -5043,7 +5043,7 @@ ardour 5
 
 ardour5
 
-! SCALE: octaves_fourths_fifths     ! SYNC: 0     ! JIFFLE: tumtumtum     ! SCALING: 2/6144	*metric* a
+! SCALE: octave_4th_5th     ! SYNC: 0     ! JIFFLE: tumtumtum     ! SCALING: 2/6144	*metric* a
   harmonical CYCLE: 6h 0' 26"	SUBCYCLE: | 2' 38" |
 
 
@@ -5194,7 +5194,7 @@ sync pause 0"
 
 #2019-02-06_RG3_S0_d64_melody-rhythm
 W12
-! SCALE: octaves_fourths_fifths     ! SYNC: 0     ! JIFFLE: d4096_64     ! SCALING: 2/6144	*metric* G
+! SCALE: octave_4th_5th     ! SYNC: 0     ! JIFFLE: d4096_64     ! SCALING: 2/6144	*metric* G
   harmonical CYCLE: 0"	SUBCYCLE: | 5' 38" |
 
 start_musicBox()	alpha 0.013	BRACHE_2019-01
@@ -5211,7 +5211,7 @@ setup_bass_middle_high(14, 15, 7)
 lower_audio_if_too_high 0
 62.00000 DEBUG: shortest==0
 60.0000000000000000000000000000000
-SCALE:	octaves_fourths_fifths
+SCALE:	octave_4th_5th
 JIFFLE:	d4096_64
 SYNC:	0
 TIME_U:	1000000	*32768/6144
@@ -5229,7 +5229,7 @@ harmonical cycle:  6h 0' 26"
 noname_a
 **********
 
- SCALE: octaves_fourths_fifths     ! SYNC: 0     ! JIFFLE: d4096_64     ! SCALING: 2/6144	*metric* d
+ SCALE: octave_4th_5th     ! SYNC: 0     ! JIFFLE: d4096_64     ! SCALING: 2/6144	*metric* d
   harmonical CYCLE: 0"	SUBCYCLE: | 3' 41" |
 
 
@@ -5243,14 +5243,14 @@ noname_b
 noname_c
 **********
 
-~ SCALE: european_PENTAtonic     ~ SYNC: 4     ~ JIFFLE: tumtumtumtum     ~ SCALING: 1/128	*metric* f
+~ SCALE: europ_PENTAtonic     ~ SYNC: 4     ~ JIFFLE: tumtumtumtum     ~ SCALING: 1/128	*metric* f
   harmonical CYCLE: 49' 26"	SUBCYCLE: | 6' 11" |
 
 
 veryverybad
 *************
 ,
-~ SCALE: european_PENTAtonic     ~ SYNC: 3     ~ JIFFLE: tetraCHORD_descend     ~ SCALING: 1/128	*metric* c
+~ SCALE: europ_PENTAtonic     ~ SYNC: 3     ~ JIFFLE: tetraCHORD_desc     ~ SCALING: 1/128	*metric* c
   harmonical CYCLE: 1h 6' 2"	SUBCYCLE: | 4' 8" |
 
 
@@ -5310,5 +5310,5 @@ noname_
 
 try variations in SYNC :)
 
-~ SCALE: european_PENTAtonic     ~ SYNC: 5     ~ JIFFLE: pentaCHORD_rise     ~ SCALING: 1/128  1/175	*metric* f
+~ SCALE: europ_PENTAtonic     ~ SYNC: 5     ~ JIFFLE: pentaCHORD_rise     ~ SCALING: 1/128  1/175	*metric* f
   harmonical CYCLE: 49' 26"	SUBCYCLE: | 6' 11" |
