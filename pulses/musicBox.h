@@ -190,6 +190,7 @@ pulse_time_t musicBox_hard_end_time;
 
 // pulse_time_t harmonical_CYCLE;	// is in pulses.ino now TODO: move to Harmonical?
 pulse_time_t used_subcycle;	// TODO: move to Harmonical? ? ?
+int subcycle_octave=0;
 bool subcycle_user_selected=false;
 
 /*
@@ -388,7 +389,9 @@ void show_cycles_1line() {	// no scale, no cycle
   // this version assumes harmonical_CYCLE and used_subcycle *are* set
   MENU.out(F("harmonical CYCLE: "));
   PULSES.display_time_human(harmonical_CYCLE);
-  MENU.out(F("\tSUBCYCLE: | "));
+  MENU.out(F("\t2^"));
+  MENU.out(subcycle_octave);
+  MENU.out(F(" SUBCYCLE: | "));
   PULSES.display_time_human(used_subcycle);
   MENU.outln('|');
 
@@ -856,8 +859,41 @@ void display_basic_musicBox_parameters() {	// ATTENTION: takes too long to be us
   u8x8.print(pitch.multiplier);	// pitch
   u8x8.print('/');
   u8x8.print(pitch.divisor);
+
+  if(selected_in(SCALES) != NULL) {
+    u8x8.setCursor(0,7);
+    u8x8.print(F("2^"));
+    u8x8.print(subcycle_octave);
+    u8x8.print(F("  "));
+
+    unsigned long seconds = (((float) used_subcycle.time / 1000000.0) + 0.5);	// TODO: factor out, build a string
+    if (used_subcycle.overflow)
+      seconds += used_subcycle.overflow * 4295;	// FIXME: (float) and round *after* overflow correction
+
+    unsigned int days = seconds / 86400;
+    seconds %= 86400;
+    unsigned int hours = seconds / 3600;
+    seconds %= 3600;
+    unsigned int minutes = seconds / 60;
+    seconds %= 60;
+    if(days) {
+      u8x8.print(days);
+      u8x8.print(F("d "));
+    }
+    if(hours || days) {
+      u8x8.print(hours);
+      u8x8.print(F("h "));
+    }
+    if(minutes || hours || days) {
+      u8x8.print(minutes);
+      u8x8.print(F("\' "));
+    }
+    u8x8.print(seconds);
+    u8x8.print(F("\" "));
+  } else									// TODO: factor out
+    u8x8.print('-');
 }
-#endif
+#endif // USE_MONOCHROME_DISPLAY
 
 
 void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
@@ -2025,6 +2061,8 @@ void start_musicBox() {
 
   if(!subcycle_user_selected) {
     used_subcycle = harmonical_CYCLE;
+    subcycle_octave = 0;
+
 #if defined AUTOMAGIC_CYCLE_TIMING_SECONDS
     used_subcycle={AUTOMAGIC_CYCLE_TIMING_SECONDS*1000000L,0};
     pulse_time_t this_subcycle=harmonical_CYCLE;
@@ -2034,6 +2072,7 @@ void start_musicBox() {
 	break;
       }
       PULSES.div_time(&this_subcycle, 2);
+      subcycle_octave++;
     }
 #endif
   }
@@ -2495,7 +2534,9 @@ void musicBox_display() {
   PULSES.display_time_human_format(harmonical_CYCLE);
   MENU.tab();
 
-  MENU.out(F("subcycle  | "));
+  MENU.out(F("2^"));
+  MENU.out(subcycle_octave);
+  MENU.out(F(" subcycle  | "));
   PULSES.display_time_human(used_subcycle);
   MENU.out(F("| \tslices 'N' "));
   MENU.out(cycle_slices);
@@ -2918,13 +2959,15 @@ bool musicBox_reaction(char token) {
     }
     break;
 
-  case 'O':
-    if(MENU.cb_peek() == '-') {
+  case 'O':	// subcycle_octave TODO: what to do while playing???
+    if(MENU.cb_peek() == '+') {		// higher octave is shorter
       MENU.drop_input_token();
       PULSES.div_time(&used_subcycle,2);
-    } else {
+      subcycle_octave++;
+    } else {				// default and '-' is longer
       PULSES.mul_time(&used_subcycle,2);
-      if(MENU.cb_peek() == '+')		// '+' is default, anyway
+      subcycle_octave--;
+      if(MENU.cb_peek() == '-')		// '-' is default
 	MENU.drop_input_token();
     }
     show_cycles_1line();
