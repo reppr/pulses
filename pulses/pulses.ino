@@ -640,8 +640,8 @@ void selected_DACsq_intensity_proportional(int intensity, int channel) {
 // user interface variables:
 
 int sync=1;			// syncing edges or middles of square pulses
-unsigned long multiplier=1;
-unsigned long divisor=1;
+unsigned long multiplier=1;	// TODO: define role of multiplier, divisor
+unsigned long divisor=1;	// TODO: define role of multiplier, divisor
 
 int selected_experiment=-1;
 int voices=GPIO_PINS;

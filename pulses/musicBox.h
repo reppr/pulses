@@ -878,9 +878,9 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
 
   tag_randomness(pitch_user_selected);
   MENU.out(F("SCALING: "));	// FIXME: TODO: check where that *is* used ################
-  MENU.out(multiplier);
+  MENU.out(multiplier);		// TODO: define role of multiplier, divisor
   MENU.slash();
-  MENU.out(divisor);
+  MENU.out(divisor);		// TODO: define role of multiplier, divisor
   MENU.space();
   MENU.out(pitch.multiplier);
   MENU.slash();
@@ -1979,7 +1979,7 @@ void start_musicBox() {
 
   // pitch
   multiplier=4096;	// uses 1/4096 jiffles		// TODO: define role of multiplier, divisor
-  multiplier *= 8;	// TODO: adjust appropriate...
+  multiplier *= 8;	// TODO: adjust appropriate...	// TODO: define role of multiplier, divisor
 
   // random pitch
   if(!pitch_user_selected) {	// if *not* set by user interaction
@@ -2000,9 +2000,10 @@ void start_musicBox() {
   }
 
 // #define OLDSTYLE_TUNE_AND_LIMIT	// use (buggy) old style tuning and lowering mechanism, for recording old setups
-#if defined OLDSTYLE_TUNE_AND_LIMIT	// use (buggy) old style tuning and lowering mechanism?
+#if defined OLDSTYLE_TUNE_AND_LIMIT	// use (buggy) old style tuning and lowering mechanism?	// TODO: OBSOLETE?
   // HACK: backwards compatibility for multiplier/divisor	################
-  tune_2_scale(voices, multiplier*pitch.multiplier, divisor*pitch.divisor, selected_in(SCALES));	// TODO: OBSOLETE?
+  tune_2_scale(voices, multiplier*pitch.multiplier, divisor*pitch.divisor, selected_in(SCALES)); // TODO: OBSOLETE? TODO: define role of multiplier, divisor
+
 #else	// working on new style tune_selected_2_scale_limited(pitch, selected_in(SCALES), limit);
   tune_selected_2_scale_limited(pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves // TODO: adjust limit appropriate...
 #endif
@@ -2899,29 +2900,6 @@ bool musicBox_reaction(char token) {
 	  } //  known letters?
 	} // treat input
       }	// input loop		'Tx'
-
-/*
-      // FIXME:	DEBUGGING: TODO: REMOVE:	start ################################################################
-      T_scratch.time = PULSES.time_unit*multiplier*pitch.multiplier;
-      T_scratch.time /= divisor*pitch.divisor;
-      T_scratch.overflow = 0;
-      MENU.outln("T_scratch");
-      MENU.outln(T_scratch.time);
-      MENU.outln(T_scratch.overflow);
-
-      MENU.outln(PULSES.time_unit);
-      MENU.outln('*');
-      MENU.outln(multiplier);
-      MENU.outln(pitch.multiplier);
-      MENU.outln('/');
-      MENU.outln(multiplier);
-      MENU.outln(pitch.multiplier);
-      PULSES.display_time_human(T_scratch); MENU.ln();
-      harmonical_CYCLE = scale2harmonical_cycle(selected_in(SCALES), &T_scratch);
-
-      musicBox_short_info();	// remove ################################################################
-      // DEBUGGING:	end	################################################################
-*/
     }
     break;
 
