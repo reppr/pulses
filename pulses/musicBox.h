@@ -960,7 +960,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
 
   delay(3200); // aesthetics
 
-#if defined PERIPHERAL_POWER_SWITCH_PIN
+#if defined PERIPHERAL_POWER_SWITCH_PIN && defined USE_BATTERY_CONTROL
   MENU.out(F("peripheral POWER OFF "));
   MENU.out(PERIPHERAL_POWER_SWITCH_PIN);
   MENU.tab();
