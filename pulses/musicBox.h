@@ -2,8 +2,6 @@
   musicBox.h
 */
 
-#define MUSICBOX_VERSION	alpha 0.016	// (maybe used also as BLUETOOTH_NAME)
-
 #define LONELY_BUTLER_QUITS			// lonely butler detect SAVETY NET, TODO: will be completely *wrong* in other situations
 
 
@@ -31,7 +29,7 @@
 /* **************************************************************** */
 // pre defined SETUPS:
 #if defined ESP32_USB_DAC_ONLY
-  #define MUSICBOX_SUB_VERSION			ESP32_usb_DAC_only
+  #define PROGRAM_SUB_VERSION			ESP32_usb_DAC_only
 
   #define AUTOMAGIC_CYCLE_TIMING_SECONDS	21*60	// *max seconds*, produce sample pieces	ESP32_usb_DAC_only
 /*
@@ -51,7 +49,7 @@
   #endif
 
 #elif defined SETUP_BRACHE
-  #define MUSICBOX_SUB_VERSION			SETUP_BRACHE
+  #define PROGRAM_SUB_VERSION			SETUP_BRACHE
   #define AUTOMAGIC_CYCLE_TIMING_SECONDS	5*60	// *max seconds*, produce short sample pieces	BRACHE 2019-01
   #define MUSICBOX_HARD_END_SECONDS		10*60	// SAVETY NET, we're low on energy...
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	30	// BRACHE 2019-01
@@ -59,12 +57,12 @@
   #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&deep_sleep	// do test for dac noise...	BT checks BLUETOOTH_ENABLE_PIN on boot
 
 #elif defined SETUP_BAHNPARKPLATZ
-  #define MUSICBOX_SUB_VERSION			SETUP_BAHNPARKPLATZ
+  #define PROGRAM_SUB_VERSION			SETUP_BAHNPARKPLATZ
   #define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces		BahnParkPlatz 18
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	13	// BahnParkPlatz
 
 #elif defined SETUP_CHAMBER_ORCHESTRA
-  #define MUSICBOX_SUB_VERSION			SETUP_CHAMBER_ORCHESTRA
+  #define PROGRAM_SUB_VERSION			SETUP_CHAMBER_ORCHESTRA
 
   //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	21*60	// *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
   #define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
@@ -1944,17 +1942,9 @@ short bass_pulses;	// see  setup_bass_middle_high()
 short middle_pulses;	// see  setup_bass_middle_high()
 short high_pulses;	// see  setup_bass_middle_high()
 
-
 void start_musicBox() {
   MENU.out(F("\nstart_musicBox()\t"));
-  MENU.out(F(STRINGIFY(MUSICBOX_VERSION)));
-
-#if defined MUSICBOX_SUB_VERSION
-  MENU.tab();
-  MENU.outln(F(STRINGIFY(MUSICBOX_SUB_VERSION)));
-#else
-  MENU.ln();
-#endif
+  show_program_version();
 
   set_MusicBoxState(AWAKE);
   musicBox_trigger_enabled=false;

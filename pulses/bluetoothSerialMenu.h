@@ -11,10 +11,10 @@
 
 // BluetoothSerial BLUEtoothSerial;
 
-#if defined MUSICBOX_VERSION
-  #define BLUETOOTH_NAME	MUSICBOX_VERSION	// the BT name of esp32
+#if defined PROGRAM_VERSION
+  #define BLUETOOTH_NAME	PROGRAM_VERSION	// the BT name of esp32
 #else
-  #define BLUETOOTH_NAME	ESP alpha 0.016		// the BT name of esp32
+  #define BLUETOOTH_NAME	ESP32 alpha	// the BT name of esp32
 #endif
 
 

@@ -1,13 +1,15 @@
-//	#define USE_BLUETOOTH_SERIAL_MENU
-//	#define USE_MONOCHROME_DISPLAY
-//	#define NO_GPIO_PINS
+#define PROGRAM_VERSION		alpha 0.017
+
+#define USE_BLUETOOTH_SERIAL_MENU
+#define USE_MONOCHROME_DISPLAY
+#define NO_GPIO_PINS
 
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
 #define HARMONICAL_MUSIC_BOX
 #define MAGICAL_TOILET_HACKS	// some quick dirty hacks
 
 // TODO: change PERIPHERAL_POWER_SWITCH_PIN as GPIO12 is active during boot process...
-#define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_TOUCH_INPUT_PIN
+#define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_TOUCH_INPUT_PIN	green LED in many musicBoxes
 
 //#define USE_MORSE	// incomplete	DEACTIVATED MORSE OUTPUT, (== PERIPHERAL_POWER_SWITCH_PIN ;)
 //#define USE_INPUTS
@@ -16,7 +18,7 @@
 #define USE_RTC_MODULE
 //#define USE_i2c_SCANNER
 
-#define USE_BATTERY_CONTROL
+// #define USE_BATTERY_CONTROL switched on in SETUP_BRACHE
 //#define USE_LEDC_AUDIO	// not written yet ;)
 
 /* **************************************************************** */
@@ -193,6 +195,34 @@ action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actio
 /* **************************************************************** */
 fraction pitch={1,1};	// pitch to tune a scale
 
+
+/* **************************************************************** */
+#if defined USE_MONOCHROME_DISPLAY
+void display_program_version() {
+  u8x8.clear();
+  u8x8.setCursor(0,1);
+  u8x8.print(F(STRINGIFY(PROGRAM_VERSION)));
+  #if defined PROGRAM_SUB_VERSION
+    u8x8.setCursor(0,3);
+    u8x8.print(F(STRINGIFY(PROGRAM_SUB_VERSION)));
+  #endif
+}
+#endif
+
+void show_program_version() {
+  MENU.out(F(STRINGIFY(PROGRAM_VERSION)));
+
+#if defined PROGRAM_SUB_VERSION
+  MENU.tab();
+  MENU.outln(F(STRINGIFY(PROGRAM_SUB_VERSION)));
+#else
+  MENU.ln();
+#endif
+
+#if defined USE_MONOCHROME_DISPLAY
+  display_program_version();
+#endif
+}
 
 /* **************************************************************** */
 bool DO_or_maybe_display(unsigned char verbosity_level) { // the flag tells *if* to display
@@ -814,6 +844,7 @@ void setup() {
   delay(STARTUP_DELAY);
 
   MENU.outln(F("\n\nPULSES  http://github.com/reppr/pulses/\ninitialising\n"));
+  show_program_version();
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN	// output now possible, so give info now
   MENU.out(F("peripheral POWER"));
