@@ -1,6 +1,6 @@
-#define USE_BLUETOOTH_SERIAL_MENU	// SKETCH GETS TOO BIG ;)
-#define USE_MONOCHROME_DISPLAY
-#define NO_GPIO_PINS
+//	#define USE_BLUETOOTH_SERIAL_MENU
+//	#define USE_MONOCHROME_DISPLAY
+//	#define NO_GPIO_PINS
 
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
 #define HARMONICAL_MUSIC_BOX

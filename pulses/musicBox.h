@@ -8,8 +8,8 @@
 
 
 // PRESETS: uncomment *one* (or zero) of the following setups:
-//#define SETUP_BRACHE				BRACHE_2019-02
-#define SETUP_BAHNPARKPLATZ	BahnParkPlatz 2018/2019
+#define SETUP_BRACHE		BRACHE_2019-03
+//#define SETUP_BAHNPARKPLATZ	BahnParkPlatz 2018/2019
 //#define SETUP_CHAMBER_ORCHESTRA	The Harmonical Chamber Orchestra 2018-12
 
 // TODO: REMOVE OLDSTYLE_TUNE_AND_LIMIT
@@ -52,9 +52,11 @@
 
 #elif defined SETUP_BRACHE
   #define MUSICBOX_SUB_VERSION			SETUP_BRACHE
-  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// *max seconds*, produce short sample pieces	BRACHE 2019-01
-  #define MUSICBOX_HARD_END_SECONDS		13*60	// SAVETY NET, we're low on energy...
+  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	5*60	// *max seconds*, produce short sample pieces	BRACHE 2019-01
+  #define MUSICBOX_HARD_END_SECONDS		10*60	// SAVETY NET, we're low on energy...
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	30	// BRACHE 2019-01
+  #define SOFT_END_DAYS_TO_LIVE_DEFAULT		0	// fast ending, as there are more people now that it get's warmer
+  #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&deep_sleep	// do test for dac noise...	BT checks BLUETOOTH_ENABLE_PIN on boot
 
 #elif defined SETUP_BAHNPARKPLATZ
   #define MUSICBOX_SUB_VERSION			SETUP_BAHNPARKPLATZ
@@ -621,8 +623,13 @@ unsigned int kill_primary() {
 bool do_pause_musicBox=false;	// triggers MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch
 // MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
 
-int soft_cleanup_minimal_fraction_weighting=1;	// TODO: adjust default
-unsigned short soft_end_days_to_live = 1;	// remaining days of life after soft end
+int soft_cleanup_minimal_fraction_weighting=1;		// TODO: adjust default
+
+#if ! defined SOFT_END_DAYS_TO_LIVE_DEFAULT
+  #define SOFT_END_DAYS_TO_LIVE_DEFAULT		1	// default
+#endif
+unsigned short soft_end_days_to_live = SOFT_END_DAYS_TO_LIVE_DEFAULT;	// remaining days of life after soft end
+
 unsigned short soft_end_survive_level = 4;	// the level a pulse must have reached to survive soft end
 pulse_time_t soft_end_start_time;
 unsigned long soft_end_cleanup_wait=60*1000000L;	// default 60"
