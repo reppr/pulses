@@ -21,9 +21,10 @@
   in most cases you can let all these lines inactive, commented out
 */
 
-#define ESP32_15_clicks_no_display_TIME_MACHINE2	// ESP32 new default
+//#define ESP32_15_clicks_no_display_TIME_MACHINE2	// ESP32 new default
 
-// #define ESP32_USB_DAC_ONLY				// minimal setup to play on DACs only
+#define ESP32_USB_DAC_ONLY				// minimal setup to play on DACs only
+// #define ESP32_USB_DAC_ONLY_OLED			// minimal setup to play on DACs only with OLED display	// TODO: use ########
 
 // #define ESP32_15_clicks_no_display_TIME_MACHINE1	// ESP32 (prior default)
 

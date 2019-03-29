@@ -29,15 +29,12 @@
 /* **************************************************************** */
 // pre defined SETUPS:
 #if defined ESP32_USB_DAC_ONLY
-  #define PROGRAM_SUB_VERSION			ESP32_usb_DAC_only
+  #define PROGRAM_SUB_VERSION			DAC_only_usb
 
   #define AUTOMAGIC_CYCLE_TIMING_SECONDS	21*60	// *max seconds*, produce sample pieces	ESP32_usb_DAC_only
-/*
-  #if defined USE_BLUETOOTH_SERIAL_MENU		// will probably be removed?
-    #warning *NOT* using bluetooth serial menu
-    #undef USE_BLUETOOTH_SERIAL_MENU
-  #endif
-*/
+
+  #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
+
   #if defined USE_RTC_MODULE
     #warning *NOT* using rtc module
     #undef USE_RTC_MODULE
@@ -56,10 +53,13 @@
   #define SOFT_END_DAYS_TO_LIVE_DEFAULT		0	// fast ending, as there are more people now that it get's warmer
   #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&deep_sleep	// do test for dac noise...	BT checks BLUETOOTH_ENABLE_PIN on boot
 
+  #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
+
 #elif defined SETUP_BAHNPARKPLATZ
   #define PROGRAM_SUB_VERSION			SETUP_BAHNPARKPLATZ
   #define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces		BahnParkPlatz 18
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	13	// BahnParkPlatz
+  #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
 
 #elif defined SETUP_CHAMBER_ORCHESTRA
   #define PROGRAM_SUB_VERSION			SETUP_CHAMBER_ORCHESTRA
@@ -68,6 +68,7 @@
   #define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
   //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// DEBUG *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
 
+  #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	1	// debounce only
 
 #endif	// (pre defined setups)
@@ -101,12 +102,6 @@
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   #include "peripheral_power_switch.h"
-#endif
-
-#ifndef MUSICBOX_TRIGGER_PIN
-  #ifndef ESP32_USB_DAC_ONLY	// ESP32_USB_DAC_ONLY has no trigger
-    #define MUSICBOX_TRIGGER_PIN	34
-  #endif
 #endif
 
 #if defined MUSICBOX_TRIGGER_PIN
@@ -857,7 +852,6 @@ void display_basic_musicBox_parameters() {	// ATTENTION: takes too long to be us
   u8x8.drawString(0, 3, array2name(JIFFLES, selected_in(JIFFLES)));
 
   u8x8.setCursor(0,5);
-  // u8x8.print(F("SYNC: "));
   u8x8.print('S');		// sync
   u8x8.print(sync);
   u8x8.print(F("   "));
@@ -1947,14 +1941,20 @@ void start_musicBox() {
   show_program_version();
 
   set_MusicBoxState(AWAKE);
-  musicBox_trigger_enabled=false;
-  blocked_trigger_shown = false;	// show only once a run
-  musicBox_butler_i=ILLEGAL;
 
 #if defined  USE_RTC_MODULE
   show_DS1307_time_stamp();
   MENU.ln();
 #endif
+
+#if defined MUSICBOX_TRIGGER_PIN
+  pinMode(MUSICBOX_TRIGGER_PIN, INPUT);	// looks like we need that ???
+  MENU.out(F("trigger pin: "));
+  MENU.outln(MUSICBOX_TRIGGER_PIN);
+#endif
+  musicBox_trigger_enabled=false;
+  blocked_trigger_shown = false;	// show only once a run
+  musicBox_butler_i=ILLEGAL;
 
 #if defined USE_BATTERY_CONTROL
   show_battery_level();

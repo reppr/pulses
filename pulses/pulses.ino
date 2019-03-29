@@ -1,4 +1,5 @@
-#define PROGRAM_VERSION		alpha 0.017
+#define PROGRAM_VERSION		HARMONICAL 0.017
+/*				0123456789abcdef   */
 
 #define USE_BLUETOOTH_SERIAL_MENU
 #define USE_MONOCHROME_DISPLAY
@@ -145,6 +146,7 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 #if defined USE_MONOCHROME_DISPLAY
   #include <U8x8lib.h>
   U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16);
+//  bool monochrome_display_on=true;	// TODO: fix&use monochrome_display detection
 #endif
 
 action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actions
@@ -195,34 +197,6 @@ action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actio
 /* **************************************************************** */
 fraction pitch={1,1};	// pitch to tune a scale
 
-
-/* **************************************************************** */
-#if defined USE_MONOCHROME_DISPLAY
-void display_program_version() {
-  u8x8.clear();
-  u8x8.setCursor(0,1);
-  u8x8.print(F(STRINGIFY(PROGRAM_VERSION)));
-  #if defined PROGRAM_SUB_VERSION
-    u8x8.setCursor(0,3);
-    u8x8.print(F(STRINGIFY(PROGRAM_SUB_VERSION)));
-  #endif
-}
-#endif
-
-void show_program_version() {
-  MENU.out(F(STRINGIFY(PROGRAM_VERSION)));
-
-#if defined PROGRAM_SUB_VERSION
-  MENU.tab();
-  MENU.outln(F(STRINGIFY(PROGRAM_SUB_VERSION)));
-#else
-  MENU.ln();
-#endif
-
-#if defined USE_MONOCHROME_DISPLAY
-  display_program_version();
-#endif
-}
 
 /* **************************************************************** */
 bool DO_or_maybe_display(unsigned char verbosity_level) { // the flag tells *if* to display
@@ -800,6 +774,33 @@ int8_t musicBox_page=ILLEGAL;	// NOTE: musicBox_page is not used
     }
 #endif
 
+/* **************************************************************** */
+#if defined USE_MONOCHROME_DISPLAY
+void display_program_version() {	// monochrome oled display
+    u8x8.clear();
+    u8x8.setCursor(0,1);
+    u8x8.print(F(STRINGIFY(PROGRAM_VERSION)));
+    #if defined PROGRAM_SUB_VERSION
+      u8x8.setCursor(0,3);
+      u8x8.print(F(STRINGIFY(PROGRAM_SUB_VERSION)));
+    #endif
+  }
+#endif
+
+void show_program_version() {
+  MENU.out(F(STRINGIFY(PROGRAM_VERSION)));
+
+#if defined PROGRAM_SUB_VERSION
+  MENU.tab();
+  MENU.outln(F(STRINGIFY(PROGRAM_SUB_VERSION)));
+#else
+  MENU.ln();
+#endif
+
+#if defined USE_MONOCHROME_DISPLAY
+  display_program_version();
+#endif
+}
 
 int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very first one
 
@@ -835,23 +836,36 @@ void setup() {
 #if defined USE_MONOCHROME_DISPLAY
   u8x8.begin();
   u8x8.setFont(u8x8_font_chroma48medium8_r);
-  //  u8x8.drawString(0, 2, "HARMONICAL");
+
+  /* 	// TODO: fix&use monochrome_display detection
+  MENU.ln();	// try to detect display...
+  MENU.out(F("################	display ################ "));
+  MENU.outln(u8x8.getCols());
+  MENU.outln(u8x8.getRows());
+  monochrome_display_on = u8x8.getCols();
+  MENU.out_ON_off(monochrome_display_on);
+  MENU.ln();
+  */
 #endif
 
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
   random_entropy();	// gathering entropy from serial noise
 #endif
+
+  MENU.ln();	// there might be garbage
+  show_program_version();
+  MENU.ln();
+
   delay(STARTUP_DELAY);
+#if defined USE_MONOCHROME_DISPLAY
+  /* 	// TODO: fix&use monochrome_display detection
+  if(monochrome_display_on)
+    delay(2000);	// give a chance to read version on oled display
+  */
+  delay(2000);	// give a chance to read version on oled display
+#endif
 
   MENU.outln(F("\n\nPULSES  http://github.com/reppr/pulses/\ninitialising\n"));
-  show_program_version();
-
-#if defined PERIPHERAL_POWER_SWITCH_PIN	// output now possible, so give info now
-  MENU.out(F("peripheral POWER"));
-  MENU.out_ON_off(digitalRead(PERIPHERAL_POWER_SWITCH_PIN));
-  MENU.space();
-  MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
-#endif
 
 #if defined ESP32
   MENU.out(F("ESP32 revision "));
@@ -860,6 +874,17 @@ void setup() {
   MENU.out(F("ESP IDF version "));
   MENU.outln(esp_get_idf_version());
   MENU.ln();
+#endif
+
+#if defined MUSICBOX_TRIGGER_PIN
+  pinMode(MUSICBOX_TRIGGER_PIN, INPUT);
+#endif
+
+#if defined PERIPHERAL_POWER_SWITCH_PIN	// output now possible, so give info now
+  MENU.out(F("peripheral POWER"));
+  MENU.out_ON_off(digitalRead(PERIPHERAL_POWER_SWITCH_PIN));
+  MENU.space();
+  MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
 #endif
 
 #if defined USE_BLUETOOTH_SERIAL_MENU	// double, 1/2	test brownout recognition	TODO: review
