@@ -888,6 +888,9 @@ void setup() {
     delay(2000);	// give a chance to read version on oled display
   */
   delay(2000);	// give a chance to read version on oled display
+
+  pinMode(0, INPUT);	// holding GPIO00 switch holds program version display on screen
+  while(digitalRead(0) == LOW) { ; }	// ATTENTION: a bit dangerous, *not* tested with GPIO00 as click or such...
 #endif
 
 #if defined ESP32
