@@ -808,6 +808,28 @@ void display_program_version() {	// monochrome oled display
       u8x8.print(' ');
       u8x8.print(' ');
     #endif	// USE_BLUETOOTH_SERIAL_MENU
+
+    #if defined USE_RTC_MODULE
+      if(rtc_module_is_usable)
+	u8x8.print('R');
+      else
+	u8x8.print('r');
+      u8x8.print(' ');
+    #else
+      u8x8.print(' ');
+      u8x8.print(' ');
+    #endif
+
+    #if defined USE_BATTERY_CONTROL
+      u8x8.print(F("V "));
+    #endif
+
+    #if ! defined NO_GPIO_PINS
+      #if GPIO_PINS > 0
+	u8x8.print('G');
+	u8x8.print((int) GPIO_PINS);
+      #endif
+    #endif
 }
 #endif
 
