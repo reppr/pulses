@@ -1,9 +1,7 @@
-#define PROGRAM_VERSION		HARMONICAL 0.017
+#define PROGRAM_VERSION		PULSESalpha0.017
 /*				0123456789abcdef   */
 
 #define USE_BLUETOOTH_SERIAL_MENU
-#define USE_MONOCHROME_DISPLAY
-#define NO_GPIO_PINS
 
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
 #define HARMONICAL_MUSIC_BOX
@@ -837,7 +835,7 @@ void setup() {
   u8x8.begin();
   u8x8.setFont(u8x8_font_chroma48medium8_r);
 
-  /* 	// TODO: fix&use monochrome_display detection
+  /*	// TODO: fix&use monochrome_display detection
   MENU.ln();	// try to detect display...
   MENU.out(F("################	display ################ "));
   MENU.outln(u8x8.getCols());
@@ -852,20 +850,19 @@ void setup() {
   random_entropy();	// gathering entropy from serial noise
 #endif
 
-  MENU.ln();	// there might be garbage
+  delay(STARTUP_DELAY);
+
+  MENU.outln(F("\n\nPULSES  http://github.com/reppr/pulses/"));
   show_program_version();
   MENU.ln();
 
-  delay(STARTUP_DELAY);
 #if defined USE_MONOCHROME_DISPLAY
-  /* 	// TODO: fix&use monochrome_display detection
+  /*	// TODO: fix&use monochrome_display detection
   if(monochrome_display_on)
     delay(2000);	// give a chance to read version on oled display
   */
   delay(2000);	// give a chance to read version on oled display
 #endif
-
-  MENU.outln(F("\n\nPULSES  http://github.com/reppr/pulses/\ninitialising\n"));
 
 #if defined ESP32
   MENU.out(F("ESP32 revision "));

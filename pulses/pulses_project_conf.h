@@ -23,8 +23,8 @@
 
 //#define ESP32_15_clicks_no_display_TIME_MACHINE2	// ESP32 new default
 
-#define ESP32_USB_DAC_ONLY				// minimal setup to play on DACs only
-// #define ESP32_USB_DAC_ONLY_OLED			// minimal setup to play on DACs only with OLED display	// TODO: use ########
+// #define ESP32_USB_DAC_ONLY			// minimal setup to play on DACs only
+#define ESP32_USB_DAC_ONLY_OLED			// minimal setup to play on DACs only with OLED display	// TODO: use ########
 
 // #define ESP32_15_clicks_no_display_TIME_MACHINE1	// ESP32 (prior default)
 
@@ -60,7 +60,69 @@
 // do not change the following code
 
 #if defined ESP32
-  #if defined ESP32_15_clicks_no_display_TIME_MACHINE2 || defined ESP32_USB_DAC_ONLY
+  #if defined ESP32_USB_DAC_ONLY
+    #define PROGRAM_SUB_VERSION			DAC_only_usb
+
+    #define AUTOMAGIC_CYCLE_TIMING_SECONDS	21*60	// *max seconds*, produce sample pieces	ESP32_usb_DAC_only
+
+    // TODO: more flexibility, please
+    #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
+
+    // TODO: more flexibility, please
+    #if defined USE_RTC_MODULE
+      #warning *NOT* using rtc module
+      #undef USE_RTC_MODULE
+    #endif
+
+    // TODO: more flexibility, please
+    #if defined USE_BATTERY_CONTROL
+      #warning *NOT* using battery control
+      #undef USE_BATTERY_CONTROL
+    #endif
+
+    #if defined USE_MONOCHROME_DISPLAY
+      #warning *NOT* using monochrome control
+      #undef USE_MONOCHROME_DISPLAY
+    #endif
+
+    #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user	// a possible snoring workaround on usb dac only models
+
+  #elif defined ESP32_USB_DAC_ONLY_OLED
+    #define PROGRAM_SUB_VERSION			DAC_only_OLED
+
+    #define AUTOMAGIC_CYCLE_TIMING_SECONDS	21*60	// *max seconds*, produce sample pieces	ESP32_usb_DAC_only
+
+    #if ! defined NO_GPIO_PINS
+      #define NO_GPIO_PINS
+    #endif
+
+    #if ! defined USE_MONOCHROME_DISPLAY
+      #define USE_MONOCHROME_DISPLAY
+    #endif
+
+    // TODO: more flexibility, please
+    #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
+
+    // TODO: more flexibility, please
+    #if defined USE_RTC_MODULE
+      #warning *NOT* using rtc module
+      #undef USE_RTC_MODULE
+    #endif
+
+    // TODO: more flexibility, please
+    #if defined USE_BATTERY_CONTROL
+      #warning *NOT* using battery control
+      #undef USE_BATTERY_CONTROL
+    #endif
+
+    #if ! defined USE_MONOCHROME_DISPLAY
+      #define USE_MONOCHROME_DISPLAY
+    #endif
+
+    #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user	// a possible snoring workaround on usb dac only models
+  #endif
+
+  #if defined ESP32_15_clicks_no_display_TIME_MACHINE2 || defined ESP32_USB_DAC_ONLY || defined ESP32_USB_DAC_ONLY_OLED
     #if defined HARMONICAL_MUSIC_BOX
       #define AUTOSTART	start_musicBox();
 //    #define AUTOSTART	start_musicBox(); magic_trigger_ON();
@@ -80,14 +142,25 @@
     #define USE_MCP23017	Adafruit
 */
 
+    #if defined ESP32_USB_DAC_ONLY || defined ESP32_USB_DAC_ONLY_OLED
+      #define NO_GPIO_PINS
+    #endif
+
+    #if defined ESP32_USB_DAC_ONLY_OLED
+      #define USE_MONOCHROME_DISPLAY
+    #endif
+
   #elif defined ESP32_15_clicks_no_display_TIME_MACHINE1
+    #define PROGRAM_SUB_VERSION	TIME_MACHINE1
     #define AUTOSTART	MENU.play_KB_macro("E38!"); selected_experiment=-1;
     #define PL_MAX	64	// *deactivates*  #define in pulses_boards.h
   #elif defined ESP32_15_clicks_no_display
+    #define PROGRAM_SUB_VERSION	15_clicks_no_dis
     #define AUTOSTART	MENU.play_KB_macro("V15 - E37D"); selected_experiment=-1;	// about 5'34"
     //#define AUTOSTART	MENU.play_KB_macro("V15 - E37A"); selected_experiment=-1;	// about 3'44"
     //#define AUTOSTART	MENU.play_KB_macro("V15 - E37E"); selected_experiment=-1;	// about 4'57"
   #elif defined ESP32_13_clicks_v0
+    #define PROGRAM_SUB_VERSION	13_clicks_v0
     #define AUTOSTART	MENU.play_KB_macro("V13 - E37A"); selected_experiment=-1;
   #elif defined GUITAR_v0	// GUITAR with surface vibration speaker on ESP32 DACs
     //#define AUTOSTART	MENU.play_KB_macro("- E37e5 *2"); selected_experiment=-1; // Guitar
@@ -95,14 +168,17 @@
     //#define AUTOSTART	MENU.play_KB_macro("- E37G"); selected_experiment=-1; // Santur in G
     #define AUTOSTART	MENU.play_KB_macro("- E37f"); selected_experiment=-1; // Santur in f	// GUITAR default is SANTUR ;)
   #elif defined ESP32_12	// more voices, please
+    #define PROGRAM_SUB_VERSION	ESP32_12_old
     #define AUTOSTART	MENU.play_KB_macro("E32 -"); selected_experiment=-1;
   #elif defined KALIMBA7_v2	// KALIMBA ESP32 version
+    #define PROGRAM_SUB_VERSION	ESP32KALIMBA7_v2
     #define AUTOSTART	MENU.play_KB_macro("E31 -"); selected_experiment=-1;
     // #define MORSE_TOUCH_INPUT_PIN	13
 #endif
 
 #elif defined ESP8266	// DEFAULT ON ESP8266  KALIMBA7_v1 ESP8266 nodemcu version
   #define KALIMBA7_v1	// KALIMBA7_v1 ESP8266 nodemcu version
+  #define PROGRAM_SUB_VERSION	E8266KALIMBA7_v1
   #define AUTOSTART	MENU.play_KB_macro("E30 -"); selected_experiment=-1;
 #endif
 

@@ -5312,3 +5312,15 @@ try variations in SYNC :)
 
 ~ SCALE: europ_PENTAtonic     ~ SYNC: 5     ~ JIFFLE: pentaCHORD_rise     ~ SCALING: 1/128  1/175	*metric* f
   harmonical CYCLE: 49' 26"	SUBCYCLE: | 6' 11" |
+
+
+
+eifach wunderschön
+********************
+
+sehr ruhig
+
+2019-02-26_12h46m19s	TUE
+
+~ SCALE: doric_scale   ~ SYNC: 1   ~ JIFFLE: diing_ditditdit   ~ SCALING: 32768/128 1/330 metric e
+  harmonical CYCLE: 3h 18' 35" 	SUBCYCLE: | 6' 12" |

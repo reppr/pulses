@@ -1,0 +1,90 @@
+ESP32_pulses_PIN_usage.txt
+
+
+GPIO00	button
+
+GPIO01  TX0	Serial TX
+
+GPIO02	[touch]	MORSE_OUTPUT_PIN	[often blue onboard led, add piezzo?]
+	TODO: test as touch (led!)
+
+GPIO03	RX0	Serial RX
+
+GPIO04	[touch]	OLED_SDA, ePaper
+	TODO: test as touch (with display?)
+
+GPIO05
+
+GPIO06 FLASH SCK
+
+GPIO07 FLASH D0
+
+GPIO08 FLASH D1
+
+GPIO09 FLASH D2
+
+GPIO10 FLASH D3
+
+GPIO11 FLASH CMD
+
+GPIO12	[touch]	PERIPHERAL_POWER_SWITCH_PIN, MORSE_TOUCH_INPUT_PIN (ESP32 touch sensor as morse input)	(MISO MICROSD)
+
+GPIO13	[touch]	TOUCH
+
+GPIO14	[touch]	TOUCH			(MOSI MICROSD)
+
+GPIO15	[touch]	OLED_SCL
+
+GPIO16	OLED_RST, ePaper
+
+GPIO17
+
+GPIO18
+
+GPIO19
+
+GPIO21	   i2c SDA	Wire SDA
+
+GPIO22	   i2c SCL	Wire SCL	(I2S codec DATA)
+
+GPIO23
+
+
+
+GPIO25	DAC (low, right)
+
+GPIO26	DAC (high, left)
+
+GPIO27	[touch]	TOUCH			(SCK MICROSD)
+
+
+
+GPI_32	[INPUT, adc, touch]	TOUCH	(CS MICROSD)
+
+GPI_33	[INPUT, adc, touch]	TOUCH
+
+GPI_34	[INPUT, adc]	MUSICBOX_TRIGGER_PIN, MORSE_GPIO_INPUT_PIN (needs hw pulldown)
+
+GPI_35	[INPUT, adc]	BLUETOOTH_ENABLE_PIN
+
+GPIO36	[INPUT, adc]	BATTERY_LEVEL_CONTROL_PIN
+
+GPIO37	[INPUT, adc]
+
+GPIO38	[INPUT, adc]
+
+GPIO39	[INPUT, adc]
+
+
+
+ePaper (driver board)	(weather)
+PIN_SPI_SCK	13	SCK	18
+PIN_SPI_DIN	14
+PIN_SPI_CS	15
+PIN_SPI_BUSY	25(!)	BUSY	4
+PIN_SPI_RST	26(!)	RST	16
+PIN_SPI_DC	27
+			SS	5
+			DC	17
+			MISO	19 (*not used*)
+			MOSI	23

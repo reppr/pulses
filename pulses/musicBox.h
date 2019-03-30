@@ -4,7 +4,6 @@
 
 #define LONELY_BUTLER_QUITS			// lonely butler detect SAVETY NET, TODO: will be completely *wrong* in other situations
 
-
 // PRESETS: uncomment *one* (or zero) of the following setups:
 #define SETUP_BRACHE		BRACHE_2019-03
 //#define SETUP_BAHNPARKPLATZ	BahnParkPlatz 2018/2019
@@ -23,35 +22,21 @@
 //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&restart	// endless loop
 //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&ESP.restart	// works fine
 //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&hibernate	// wakes up after musicBox_pause_seconds	BT should work, test
-#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user		// works fine, a possible snoring workaround
+#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user		// works fine, a possible snoring workaround on usb dac only models
 
 
 /* **************************************************************** */
 // pre defined SETUPS:
-#if defined ESP32_USB_DAC_ONLY
-  #define PROGRAM_SUB_VERSION			DAC_only_usb
 
-  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	21*60	// *max seconds*, produce sample pieces	ESP32_usb_DAC_only
-
-  #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
-
-  #if defined USE_RTC_MODULE
-    #warning *NOT* using rtc module
-    #undef USE_RTC_MODULE
-  #endif
-
-  #if defined USE_BATTERY_CONTROL
-    #warning *NOT* using battery control
-    #undef USE_BATTERY_CONTROL
-  #endif
-
-#elif defined SETUP_BRACHE
+#if defined SETUP_BRACHE
   #define PROGRAM_SUB_VERSION			SETUP_BRACHE
   #define AUTOMAGIC_CYCLE_TIMING_SECONDS	5*60	// *max seconds*, produce short sample pieces	BRACHE 2019-01
   #define MUSICBOX_HARD_END_SECONDS		10*60	// SAVETY NET, we're low on energy...
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	30	// BRACHE 2019-01
   #define SOFT_END_DAYS_TO_LIVE_DEFAULT		0	// fast ending, as there are more people now that it get's warmer
-  #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&deep_sleep	// do test for dac noise...	BT checks BLUETOOTH_ENABLE_PIN on boot
+  #if ! defined MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
+    #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&deep_sleep	// do test for dac noise...	BT checks BLUETOOTH_ENABLE_PIN on boot
+  #endif
 
   #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
 
@@ -80,13 +65,6 @@
   //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
 #endif
 
-//bool some_metric_tunings_only=false;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
-#if ! defined ESP32_USB_DAC_ONLY	// TODO: rethink, not flexible enaugh
-  bool some_metric_tunings_only=true;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
-#else
-  bool some_metric_tunings_only=false;	// free pitch tuning
-#endif
-
 #include <esp_sleep.h>
 // #include "rom/gpio.h"
 // #include "driver/gpio.h"
@@ -100,13 +78,20 @@
 
 #include "random_entropy.h"
 
+//bool some_metric_tunings_only=false;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
+#if ! defined ESP32_USB_DAC_ONLY	// TODO: rethink, not flexible enough	// TODO: move to pulses.ino
+  bool some_metric_tunings_only=true;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
+#else
+  bool some_metric_tunings_only=false;	// free pitch tuning
+#endif
+
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   #include "peripheral_power_switch.h"
 #endif
 
 #if defined MUSICBOX_TRIGGER_PIN
   #if ! defined MUSICBOX_TRIGGER_BLOCK_SECONDS
-    #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3	// just playing, DEBUGGING
+    #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3	// just playing, DEBUGGING	// TODO: not flexible enough
   #endif
 #endif
 
@@ -118,7 +103,7 @@
   #if defined AUTOMAGIC_CYCLE_TIMING_SECONDS
     #define  MUSICBOX_HARD_END_SECONDS	(AUTOMAGIC_CYCLE_TIMING_SECONDS*2)	// TODO: first try, FIXME: determine at run time
   #else
-    #define  MUSICBOX_HARD_END_SECONDS	90*60	// TODO: review that
+    #define  MUSICBOX_HARD_END_SECONDS	90*60	// FIXME: TODO: review that	################
   #endif
 #endif
 
