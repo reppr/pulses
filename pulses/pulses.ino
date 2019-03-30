@@ -782,7 +782,33 @@ void display_program_version() {	// monochrome oled display
       u8x8.setCursor(0,3);
       u8x8.print(F(STRINGIFY(PROGRAM_SUB_VERSION)));
     #endif
-  }
+
+    u8x8.setCursor(0,5);	// option mnemonics
+    #if defined MUSICBOX_TRIGGER_PIN
+      if(musicBox_trigger_enabled)
+	u8x8.print('I');
+      else
+	u8x8.print('i');
+    #else
+      u8x8.print(' ');
+    #endif
+    u8x8.print(' ');
+
+    #if defined USE_BLUETOOTH_SERIAL_MENU
+      #if defined BLUETOOTH_ENABLE_PIN
+	if(bluetooth_switch_())
+	  u8x8.print('B');
+	else
+	  u8x8.print('b');
+      #else
+	  u8x8.print('B');
+      #endif
+      u8x8.print(' ');
+    #else
+      u8x8.print(' ');
+      u8x8.print(' ');
+    #endif	// USE_BLUETOOTH_SERIAL_MENU
+}
 #endif
 
 void show_program_version() {
