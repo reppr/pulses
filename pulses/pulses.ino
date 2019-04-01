@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION		PULSESalpha0.017
+#define PROGRAM_VERSION		PULSES alpha.018
 /*				0123456789abcdef   */
 
 #define USE_BLUETOOTH_SERIAL_MENU
@@ -143,8 +143,8 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 
 #if defined USE_MONOCHROME_DISPLAY
   #include <U8x8lib.h>
-  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16);
-//  bool monochrome_display_on=true;	// TODO: fix&use monochrome_display detection
+  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16);	// TODO: move to setup()
+  // bool monochrome_display_on=true;	// TODO: fix&use monochrome_display detection
 #endif
 
 action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actions
@@ -667,7 +667,7 @@ bool pitch_user_selected=false;	// TODO: not really implemented yet
 bool octave_user_selected=false;
 bool icode_user_selected=false;
 bool sync_user_selected=false;
-
+bool stack_sync_user_selected=false;
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
   #include <math.h>
@@ -3279,6 +3279,10 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   PULSES.select_n(voices);
 
   PULSES.add_selected_to_group(g_PRIMARY);
+
+  base_pulse=0;		// a human perceived base pulse, see 'stack_sync_slices'
+  if(bass_pulses && (middle_pulses || high_pulses))
+    base_pulse = bass_pulses +1;	// FIXME: HACK: first pulse above bass, but should respect tuning (octave)
 
   // tune *all* primary pulses
   tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));	// TODO: OBSOLETE?

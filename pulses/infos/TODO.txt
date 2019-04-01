@@ -54,3 +54,9 @@ mnemonics for gpio usage like
 	  DAC1
 	  DAC2
 	  ... etc
+
+additional instant stress release
+
+tuning groups octaves for ending, base_pulse, etc
+
+stereo DACs

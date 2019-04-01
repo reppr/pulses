@@ -161,7 +161,7 @@ unsigned int jiff_december[] =
 unsigned int jiff_dec128[] =
   {1,1024,4, 1,64,4, 1,128,16, 1,512,8, 1,1024,128, 0,0};
 
-unsigned int jiff_dec_pizzicato[] =	// dirty!
+unsigned int jiff_dec_pizzica[] =	// dirty!
   {1,1024,4, 1,64,4, 1,28,16, 1,512,8, 1,1024,128, 1,2048,8, 0,0};
 
 // very old jiffles

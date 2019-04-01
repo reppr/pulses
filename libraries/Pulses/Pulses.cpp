@@ -614,6 +614,38 @@ void Pulses::activate_selected_synced_now(int sync) {
 }
 
 
+void Pulses::activate_selected_stack_sync_now(pulse_time_t tick /*sign inverts direction*/, int sync) {
+  pulse_time_t next_now = get_now();
+
+  if(tick.overflow >= 0) {	// positive tick: ascending pulse order
+    for (int pulse=0; pulse<pl_max; pulse++)
+      if (pulse_is_selected(pulse)) {
+	activate_pulse_synced(pulse, next_now, abs(sync));
+	add_time(&tick, &next_now);
+      }
+  } else {	// negativetive tick: descending pulse order
+    tick.overflow = 0;	// make it positive, disregarding overflow
+    for (int pulse=(pl_max-1); pulse>=0; pulse--)
+      if (pulse_is_selected(pulse)) {
+	activate_pulse_synced(pulse, next_now, abs(sync));
+	add_time(&tick, &next_now);
+      }
+    // set stack_sync_slices negative??? // TODO: ################
+  }
+
+  fix_global_next();
+  check_maybe_do();	  // maybe do it *first*
+}
+
+void Pulses::time_skip_selected(pulse_time_t time_skip) {	// positive time intervall only
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if (pulse_is_selected(pulse))
+      sub_time(&time_skip, &pulses[pulse].next);
+
+  fix_global_next();
+  //  check_maybe_do();	  // maybe do it *first*	// TODO: maybe not...
+}
+
 // menu interface to reset a pulse and prepare it to be edited:
 void Pulses::reset_and_edit_pulse(int pulse, unsigned long time_unit) {
   init_pulse(pulse);

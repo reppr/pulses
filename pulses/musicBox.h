@@ -5,8 +5,8 @@
 #define LONELY_BUTLER_QUITS			// lonely butler detect SAVETY NET, TODO: will be completely *wrong* in other situations
 
 // PRESETS: uncomment *one* (or zero) of the following setups:
-#define SETUP_BRACHE		BRACHE_2019-03
-//#define SETUP_BAHNPARKPLATZ	BahnParkPlatz 2018/2019
+//#define SETUP_BRACHE		BRACHE_2019-03
+#define SETUP_BAHNPARKPLATZ	BahnParkPlatz 2018/2019
 //#define SETUP_CHAMBER_ORCHESTRA	The Harmonical Chamber Orchestra 2018-12
 
 // TODO: REMOVE OLDSTYLE_TUNE_AND_LIMIT
@@ -84,6 +84,9 @@
 #else
   bool some_metric_tunings_only=false;	// free pitch tuning
 #endif
+
+int base_pulse=ILLEGAL;		// a human perceived base pulse, see 'stack_sync_slices'
+int stack_sync_slices=0;	// 0 is off	// positive: upwards,	negative: downwards
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   #include "peripheral_power_switch.h"
@@ -700,6 +703,7 @@ void parameters_by_user() {
   MENU.outln(F("manual mode"));
   scale_user_selected = true;
   sync_user_selected = true;
+  stack_sync_user_selected = true;
   jiffle_user_selected = true;
   pitch_user_selected = true;	// TODO: ################################################################
   // subcycle_user_selected=true;	// TODO: ################################################################
@@ -709,6 +713,7 @@ void parameters_get_randomised() {
   MENU.outln(F("random mode"));
   scale_user_selected = false;
   sync_user_selected = false;
+  stack_sync_user_selected = false;
   jiffle_user_selected = false;
   pitch_user_selected = false;
   // subcycle_user_selected=false;	// TODO: ################################################################
@@ -839,10 +844,22 @@ void display_basic_musicBox_parameters() {	// ATTENTION: takes too long to be us
   u8x8.setCursor(0,5);
   u8x8.print('S');		// sync
   u8x8.print(sync);
-  u8x8.print(F("   "));
+  if(stack_sync_slices) {	// stack_sync_slices
+    u8x8.print('|');
+    u8x8.print(stack_sync_slices);
+  }
+  u8x8.print(F("  "));
   u8x8.print(pitch.multiplier);	// pitch
   u8x8.print('/');
   u8x8.print(pitch.divisor);
+
+  if(stack_sync_slices && base_pulse != ILLEGAL) {
+    u8x8.setCursor(0,6);
+    u8x8.print(F("p["));
+    u8x8.print(base_pulse);
+    u8x8.print(F("]|"));
+    u8x8.print(stack_sync_slices);
+  }
 
   if(selected_in(SCALES) != NULL) {
     u8x8.setCursor(0,7);
@@ -889,12 +906,20 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   tag_randomness(sync_user_selected);
   MENU.out(F("SYNC: "));
   MENU.out(sync);
-  MENU.space(3);
+  if(stack_sync_slices) {	// /stack_sync_slices
+    MENU.out(F(" p["));
+    MENU.out(base_pulse);
+    MENU.out(F("]|"));
+    MENU.out(stack_sync_slices);
+    MENU.space();
+    tag_randomness(stack_sync_user_selected);
+  }
+  MENU.space(2);
 
   tag_randomness(jiffle_user_selected);
   MENU.out(F("JIFFLE: "));
   MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
-  MENU.space(3);
+  MENU.space(2);
 
   tag_randomness(pitch_user_selected);
   MENU.out(F("SCALING: "));	// FIXME: TODO: check where that *is* used ################
@@ -1516,6 +1541,16 @@ void select_random_scale() {
   subcycle_user_selected = false;
 }
 
+void  select_random_stack_sync(void) {
+  stack_sync_slices = 2 ;	// 2 very slow start
+
+  int o = random(11);
+  while (o--) stack_sync_slices *= 2;
+  if(random(4) == 1)		// 75% up, 25% downwards
+    stack_sync_slices *= -1;	// *more up*  as up did not exist in previous sync implementation
+
+  stack_sync_user_selected = false;
+}
 
 void select_random_jiffle(void) {
 #if defined RANDOM_ENTROPY_H
@@ -1590,7 +1625,7 @@ void select_random_jiffle(void) {
     break;
 
   case 90:
-    select_array_in(JIFFLES, jiff_dec_pizzicato);
+    select_array_in(JIFFLES, jiff_dec_pizzica);
     break;
   case 91: case 92:
     select_array_in(JIFFLES, pent_patternA);
@@ -1804,8 +1839,8 @@ void furzificate() {	// switch to a quiet, farting patterns, u.a.
     select_array_in(JIFFLES, jiffletab);
     MENU.play_KB_macro("j");
     break;
-  case 6:	// jiff_dec_pizzicato	dirty!
-    select_array_in(JIFFLES, jiff_dec_pizzicato);
+  case 6:	// jiff_dec_pizzica	dirty!
+    select_array_in(JIFFLES, jiff_dec_pizzica);
     MENU.play_KB_macro(F("*3 j"));
     break;
   case 7:	// jiffletab0	fröhliches Knatterfurzkonzert explodiert
@@ -1834,6 +1869,7 @@ void furzificate() {	// switch to a quiet, farting patterns, u.a.
 RTC_DATA_ATTR unsigned int * scale_stored_RTC=NULL;
 RTC_DATA_ATTR unsigned int * jiffle_stored_RTC=NULL;
 RTC_DATA_ATTR int sync_stored_RTC=ILLEGAL;
+RTC_DATA_ATTR int stack_sync_slices_stored_RTC=0;
 RTC_DATA_ATTR unsigned long multiplier_stored_RTC=0;
 RTC_DATA_ATTR unsigned long divisor_stored_RTC=0;
 RTC_DATA_ATTR uint8_t metric_tunings_stored_RTC=2;	// 2 means off (&1)
@@ -1845,6 +1881,7 @@ void rtc_save_configuration() {
   scale_stored_RTC	=NULL;
   jiffle_stored_RTC	=NULL;
   sync_stored_RTC	=ILLEGAL;	// hmmm, not bullet proof	TODO: sync_stored_RTC
+  stack_sync_slices_stored_RTC	=0;
   divisor_stored_RTC	=ILLEGAL;	// !=0 after wake up flags deep sleep wakeup
   multiplier_stored_RTC	=ILLEGAL;
 
@@ -1859,6 +1896,9 @@ void rtc_save_configuration() {
 
   if(sync_user_selected)
     sync_stored_RTC = sync;
+
+  if(stack_sync_user_selected)
+    stack_sync_slices_stored_RTC = stack_sync_slices;
 
   if(jiffle_user_selected)
     jiffle_stored_RTC = selected_in(JIFFLES);
@@ -1895,6 +1935,12 @@ void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless wakin
       MENU.out(F("SYNC "));
       sync = sync_stored_RTC;
       sync_user_selected = true;
+    }
+
+    if(stack_sync_slices_stored_RTC) {
+      MENU.out(F("stack | "));
+      stack_sync_slices = stack_sync_slices_stored_RTC;
+      stack_sync_user_selected = true;
     }
 
     if(jiffle_stored_RTC != NULL) {
@@ -1992,6 +2038,14 @@ void start_musicBox() {
   if(!sync_user_selected)	// if *not* set by user interaction
     sync = random(6);		// random sync	// MAYBE: define  select_random_sync()  ???
 
+  // stack_sync
+  if(!stack_sync_user_selected) {	// if *not* set by user interaction
+    if (random(2) == 1)		// stack_sync in 50%
+      select_random_stack_sync();
+    else
+      stack_sync_slices = 0;	// 50% normal sync only, still automagic, but sync stacking is off
+  }
+
   // time_unit
   PULSES.time_unit=1000000;	// default metric
 
@@ -2083,19 +2137,26 @@ void start_musicBox() {
 */
   musicBox_start_time = PULSES.get_now();	// keep musicBox_start_time
 
-  PULSES.activate_selected_synced_now(sync);	// 'n' sync and activate
-  //  PULSES.deselect_pulse(musicBox_butler_i);	// deselect butler after syncing,  see above
+  if (stack_sync_slices)
+    PULSES.activate_selected_stack_sync_now((pulse_time_t) {PULSES.pulses[base_pulse].period.time/stack_sync_slices, 0}, sync);
+  else
+    PULSES.activate_selected_synced_now(sync);	// 'n' sync and activate
 
-  if(sync) {
-    if(MENU.verbosity >= VERBOSITY_LOWEST) {
-      PULSES.fix_global_next();			// cannot understand why i need that here...
-      pulse_time_t pause = PULSES.global_next;
-      PULSES.sub_time(&musicBox_start_time, &pause);
-      MENU.out(F("sync pause "));
-      PULSES.display_time_human(pause);
-      MENU.ln(2);
-      musicBox_short_info();
-      MENU.ln(2);
+  if(sync || stack_sync_slices) {	// TODO: REVIEW: ################
+    PULSES.fix_global_next();			// cannot understand why i need that here...
+    pulse_time_t pause = PULSES.global_next;
+    if(stack_sync_slices) {			// TODO: fix quick hack... depending pause length is better
+      PULSES.sub_time(&musicBox_start_time, &pause);	// just skip pause, HACK: ################
+      PULSES.time_skip_selected(pause);
+      MENU.outln(F("pause skipped"));
+    } else {
+      if(MENU.verbosity >= VERBOSITY_LOWEST) {
+	MENU.out(F("sync pause "));
+	PULSES.display_time_human(pause);
+	MENU.ln(2);
+	musicBox_short_info();
+	MENU.ln(2);
+      }
     }
   }
 
@@ -2532,7 +2593,7 @@ void musicBox_display() {
   MENU.out(F("subcycle octave 'O+' 'O-'\tresync/restart now 'n'\t't' metric tuning"));
   MENU.out_ON_off(some_metric_tunings_only);
   MENU.out(F("  'F' "));
-  if(scale_user_selected && sync_user_selected && jiffle_user_selected  && pitch_user_selected /* && subcycle_user_selected*/)
+  if(scale_user_selected && sync_user_selected && jiffle_user_selected  && pitch_user_selected && stack_sync_user_selected /* && subcycle_user_selected*/)
     MENU.out(F("un"));
   MENU.outln(F("freeze parameters"));
 
@@ -2575,6 +2636,10 @@ void musicBox_display() {
   MENU.out(F("\t'v' peripheral power"));
   MENU.out_ON_off(peripheral_power_on);
 #endif
+  MENU.out(F("   '|' sync slices ="));
+  MENU.out(stack_sync_slices);
+  MENU.out(F(" '|b' base  ="));
+  MENU.out(base_pulse);
   MENU.ln(2);
 
   MENU.out(F("'P'="));
@@ -2906,7 +2971,7 @@ bool musicBox_reaction(char token) {
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
 	      pitch.multiplier=1;
-	      pitch.divisor=233; // 	// 233.08 Bb3  ***not*** harmonical
+	      pitch.divisor=233; //	// 233.08 Bb3  ***not*** harmonical
 	      pitch_user_selected = true;
 	      break;
 	    case 'h':
@@ -2934,7 +2999,7 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'F':	// freeze-unfreeze parameters
-    if(scale_user_selected && sync_user_selected && jiffle_user_selected && pitch_user_selected /* && subcycle_user_selected*/) {
+    if(scale_user_selected && sync_user_selected && jiffle_user_selected && pitch_user_selected && stack_sync_user_selected /* && subcycle_user_selected*/) {
       parameters_get_randomised();
     } else {
       parameters_by_user();
@@ -2964,10 +3029,34 @@ bool musicBox_reaction(char token) {
   does not work as is with musicBox any more
   adapt or remove?
 
-  case'f':
+  case'f':	// furzificate
     furzificate();
     break;
 */
+
+  case '|':	// '|' stack_sync_slices	(and '|b' base_pulse)
+    if(MENU.cb_peek() == 'b') {		// '|b' base_pulse
+      MENU.drop_input_token();
+      input_value = MENU.numeric_input(base_pulse);
+      if(input_value >= 0 && input_value < PL_MAX) {
+	base_pulse = input_value;
+	stack_sync_user_selected=true;	// RETHINK: maybe, maybe not?
+      }
+    } else {	// bare '|'
+      input_value = MENU.numeric_input(stack_sync_slices);
+      if(input_value >= 0 ) {
+	stack_sync_slices = input_value;
+	stack_sync_user_selected=true;
+      }
+    }
+
+    if(MENU.verbosity >= VERBOSITY_LOWEST) {
+      MENU.out(F("stacked_sync | "));
+      MENU.out(stack_sync_slices);
+      MENU.out(F("  base_pulse "));
+      MENU.outln(base_pulse);
+    }
+    break;
 
   default:
     return false;

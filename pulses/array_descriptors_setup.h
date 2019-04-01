@@ -40,7 +40,7 @@ REGISTER_JIFFLE(gling128);		// FIXME: replace ################
 REGISTER_JIFFLE(jiffletab);
 REGISTER_JIFFLE(jiff_december);
 REGISTER_JIFFLE(jiff_dec128);	// jiff_dec128 with sync=0 to hear the big drum in the cathedral ;)
-REGISTER_JIFFLE(jiff_dec_pizzicato);
+REGISTER_JIFFLE(jiff_dec_pizzica);
 REGISTER_JIFFLE(jiffletab0);
 REGISTER_JIFFLE(jiffletab01);
 REGISTER_JIFFLE(jiffletab02);

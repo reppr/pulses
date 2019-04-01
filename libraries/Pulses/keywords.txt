@@ -70,6 +70,8 @@ select_from_to	KEYWORD2
 pulse_is_selected	KEYWORD2
 how_many_selected	KEYWORD2
 activate_selected_synced_now	KEYWORD2
+activate_selected_stack_sync_now	KEYWORD2
+time_skip_selected	KEYWORD2
 reset_and_edit_pulse	KEYWORD2
 fastest_pulse	KEYWORD2
 fastest_from_selected	KEYWORD2

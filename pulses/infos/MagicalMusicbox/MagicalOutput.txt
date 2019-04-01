@@ -5323,4 +5323,13 @@ sehr ruhig
 2019-02-26_12h46m19s	TUE
 
 ~ SCALE: doric_scale   ~ SYNC: 1   ~ JIFFLE: diing_ditditdit   ~ SCALING: 32768/128 1/330 metric e
-  harmonical CYCLE: 3h 18' 35" 	SUBCYCLE: | 6' 12" |
+  harmonical CYCLE: 3h 18' 35"	SUBCYCLE: | 6' 12" |
+
+
+
+2019-04-01 doric stack
+************************
+
+~ SCALE: doric_scale   ~ SYNC: 1 p[15]|8 ~   ~ JIFFLE: din__dididi_dixi  ~ SCALING: 32768/128 1/175 metric f
+
+  harmonical CYCLE: 3h 7' 14"	2^4 SUBCYCLE: | 11' 42" |

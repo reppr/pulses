@@ -333,6 +333,8 @@ class Pulses {
   short how_many_selected(void);
 
   void activate_selected_synced_now(int sync);
+  void activate_selected_stack_sync_now(pulse_time_t tick, int sync);
+  void time_skip_selected(pulse_time_t time_shift);
   void reset_and_edit_pulse(int pulse, unsigned long time_unit);	// FIXME: time_unit as time_t
   int fastest_pulse();			// fastest pulse, *not* dealing with overflow...
   int fastest_from_selected();		// fastest from selected, no overflow...
