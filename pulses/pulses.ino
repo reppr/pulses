@@ -195,6 +195,19 @@ action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actio
 /* **************************************************************** */
 fraction pitch={1,1};	// pitch to tune a scale
 
+/* did not really help...	// instant_stress_release DEACTIVATED
+void instant_stress_release() {
+  MENU.out("&");
+  int cnt=0;
+
+  for(int pulse = (PL_MAX -1); pulse>=0; pulse--)
+    if(PULSES.pulses[pulse].groups & g_SECONDARY) {
+      PULSES.init_pulse(pulse);
+      if(++cnt == 2)
+	return;
+    }
+}
+*/
 
 /* **************************************************************** */
 bool DO_or_maybe_display(unsigned char verbosity_level) { // the flag tells *if* to display
@@ -1262,6 +1275,10 @@ void loop() {	// ARDUINO
 
   while (PULSES.check_maybe_do()) {	// in stress PULSES get's *first* priority.
     ++stress_count;
+    /*		// instant_stress_release DEACTIVATED
+    if(stress_count > (stress_emergency/8))
+      instant_stress_release();
+    */
 
 #if defined HARMONICAL_MUSIC_BOX    // magical_stress_release();
     if (stress_count >= stress_emergency) {
@@ -1322,6 +1339,10 @@ void loop() {	// ARDUINO
     }
     MENU.tab();
     MENU.out(stress_count);
+    /*		// instant_stress_release DEACTIVATED
+      MENU.space();
+      instant_stress_release();
+    */
     MENU.ln();
   }
 #endif
@@ -1332,6 +1353,7 @@ void loop() {	// ARDUINO
       magical_stress_release();
 #else
       MENU.outln(F("need stress release"));	// TODO: other stress release strategies
+      // instant_stress_release();	// instant_stress_release DEACTIVATED
 #endif
     }
   } else if(stress_event_cnt < 0)	// stress event was expected, but did not happen

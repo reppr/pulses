@@ -2123,6 +2123,7 @@ void magical_stress_release() {		// special stress release for magical music box
     stress_count = 0;		// configure pulses stress managment
     stress_event_cnt = 0;
   }
+  // instant_stress_release();	// DEACTIVATED
 }
 
 
