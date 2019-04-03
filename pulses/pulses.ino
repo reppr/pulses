@@ -91,14 +91,11 @@ using namespace std;	// ESP8266 needs that
 // some early definitions keep compiler happy
 
 // stress managment
-unsigned int stress_emergency=4096*48;	// magical musicBox test	TODO: fine tune, maybe UI
-//unsigned int stress_emergency=4096*6;	// magical musicBox test
-
+// TODO: stress configuration struct conf_stress_t
+unsigned int stress_emergency=4096*6;	// magical musicBox test	TODO: fine tune, maybe UI
 unsigned int stress_event_level=1024;	// continue TESTING:  TODO: fine tune, maybe UI
-
 int stress_event_cnt=0;			// counting stress_event_level events
-uint8_t stress_event_cnt_MAX=2;		// if the count reaches MAX stress release needed TODO: fine tune
-
+uint8_t stress_event_cnt_MAX=1;		// if the count reaches MAX stress release needed TODO: fine tune
 unsigned int stress_count=0;		// low level stress count
 
 
@@ -1325,25 +1322,27 @@ void loop() {	// ARDUINO
 #define STRESS_MONITOR_LEVEL	64*2	// TODO: menu interface	// TODO: REMOVE: ################
 #if defined STRESS_MONITOR_LEVEL
   if (stress_count > STRESS_MONITOR_LEVEL) {	// just a simple test tool
-    if (stress_count > stress_event_level) {
-      MENU.out(F("STRESS "));
-      MENU.out(stress_event_cnt);
-      MENU.space();
-    } else
-      MENU.out(F("stress   "));
+    if(stress_event_cnt >= 0) {			// only *unexpected* stress
+      if (stress_count > stress_event_level) {
+	MENU.out(F("STRESS "));
+	MENU.out(stress_event_cnt);
+	MENU.space();
+      } else
+	MENU.out(F("stress   "));
 
-    int s=STRESS_MONITOR_LEVEL;
-    while(stress_count > s) {
-      MENU.out('!');
-      s *= 2;
+      int s=STRESS_MONITOR_LEVEL;
+      while(stress_count > s) {
+	MENU.out('!');
+	s *= 2;
+      }
+      MENU.tab();
+      MENU.out(stress_count);
+      /*		// instant_stress_release DEACTIVATED
+	MENU.space();
+	instant_stress_release();
+      */
+      MENU.ln();
     }
-    MENU.tab();
-    MENU.out(stress_count);
-    /*		// instant_stress_release DEACTIVATED
-      MENU.space();
-      instant_stress_release();
-    */
-    MENU.ln();
   }
 #endif
 

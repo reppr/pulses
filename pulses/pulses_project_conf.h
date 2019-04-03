@@ -2,8 +2,11 @@
 /*
   project_configuration.ino
 
-  prepare compiling for special projects like the kalimbas
+  prepare compiling for special projects like the kalimbas,
+  dac only minimal boards, dac with OLED, etc.
+
   (for default just leave this file untouched)
+
 */
 /* **************************************************************** */
 #ifndef PROJECT_CONFIGURATION_H
@@ -23,7 +26,7 @@
 
 //#define ESP32_15_clicks_no_display_TIME_MACHINE2	// ESP32 new default
 
-// #define ESP32_USB_DAC_ONLY			// minimal setup to play on DACs only
+//#define ESP32_USB_DAC_ONLY			// minimal setup to play on DACs only
 #define ESP32_USB_DAC_ONLY_OLED			// minimal setup to play on DACs only with OLED display	// TODO: use ########
 
 // #define ESP32_15_clicks_no_display_TIME_MACHINE1	// ESP32 (prior default)
