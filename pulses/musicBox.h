@@ -44,7 +44,7 @@
   #define PROGRAM_SUB_VERSION			SETUP_BAHNPARKPLATZ
   #define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces		BahnParkPlatz 18
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	13	// BahnParkPlatz
-  #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
+  // #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
 
 #elif defined SETUP_CHAMBER_ORCHESTRA
   #define PROGRAM_SUB_VERSION			SETUP_CHAMBER_ORCHESTRA

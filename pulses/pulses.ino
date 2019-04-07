@@ -788,15 +788,6 @@ void display_program_version() {	// monochrome oled display
     #endif
 
     u8x8.setCursor(0,5);	// option mnemonics
-    #if defined MUSICBOX_TRIGGER_PIN
-      if(musicBox_trigger_enabled)
-	u8x8.print('I');
-      else
-	u8x8.print('i');
-    #else
-      u8x8.print(' ');
-    #endif
-    u8x8.print(' ');
 
     #if defined USE_BLUETOOTH_SERIAL_MENU
       #if defined BLUETOOTH_ENABLE_PIN
@@ -813,16 +804,25 @@ void display_program_version() {	// monochrome oled display
       u8x8.print(' ');
     #endif	// USE_BLUETOOTH_SERIAL_MENU
 
+    #if defined MUSICBOX_TRIGGER_PIN
+      if(musicBox_trigger_enabled)
+	u8x8.print('I');
+      else
+	u8x8.print('i');
+    #else
+      u8x8.print(' ');
+    #endif
+    u8x8.print(' ');
+
     #if defined USE_RTC_MODULE
       if(rtc_module_is_usable)
 	u8x8.print('R');
       else
 	u8x8.print('r');
-      u8x8.print(' ');
-    #else
-      u8x8.print(' ');
+     #else
       u8x8.print(' ');
     #endif
+    u8x8.print(' ');
 
     #if defined USE_BATTERY_CONTROL
       u8x8.print(F("V "));
