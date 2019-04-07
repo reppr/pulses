@@ -29,7 +29,7 @@ GPIO11 FLASH CMD
 
 GPIO12	[touch]	PERIPHERAL_POWER_SWITCH_PIN, MORSE_TOUCH_INPUT_PIN (ESP32 touch sensor as morse input)	(MISO MICROSD)
 
-GPIO13	[touch]	TOUCH
+GPIO13	[touch]	TOUCH	(LyraT:touch TP5"Vol-")
 
 GPIO14	[touch]	TOUCH			(MOSI MICROSD)
 
@@ -55,13 +55,13 @@ GPIO25	DAC (low, right)
 
 GPIO26	DAC (high, left)
 
-GPIO27	[touch]	TOUCH			(SCK MICROSD)
+GPIO27	[touch]	TOUCH			(SCK MICROSD)	(LyraT:touch TP6"Vol+")
 
 
 
-GPI_32	[INPUT, adc, touch]	TOUCH	(CS MICROSD)
+GPI_32	[INPUT, adc, touch]	TOUCH	(CS MICROSD)	(LyraT:touch TP4"SET")
 
-GPI_33	[INPUT, adc, touch]	TOUCH
+GPI_33	[INPUT, adc, touch]	TOUCH	(LyraT:touch TP3"Play")
 
 GPI_34	[INPUT, adc]	MUSICBOX_TRIGGER_PIN, MORSE_GPIO_INPUT_PIN (needs hw pulldown)
 

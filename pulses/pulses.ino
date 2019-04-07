@@ -1,6 +1,10 @@
 #define PROGRAM_VERSION		PULSES alpha.018
 /*				0123456789abcdef   */
 
+
+#define DO_STRESS_MANAGMENT
+#define STRESS_MONITOR_LEVEL	64*2	// TODO: menu interface	// TODO: REMOVE: ################
+
 #define USE_BLUETOOTH_SERIAL_MENU
 
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
@@ -86,17 +90,6 @@ using namespace std;	// ESP8266 needs that
     #include "i2c_scan.h"
   #endif
 #endif // USE_i2c
-
-
-// some early definitions keep compiler happy
-
-// stress managment
-// TODO: stress configuration struct conf_stress_t
-unsigned int stress_emergency=4096*6;	// magical musicBox test	TODO: fine tune, maybe UI
-unsigned int stress_event_level=1024;	// continue TESTING:  TODO: fine tune, maybe UI
-int stress_event_cnt=0;			// counting stress_event_level events
-uint8_t stress_event_cnt_MAX=1;		// if the count reaches MAX stress release needed TODO: fine tune
-unsigned int stress_count=0;		// low level stress count
 
 
 /* **************** Menu **************** */
@@ -190,21 +183,8 @@ action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actio
 
 
 /* **************************************************************** */
-fraction pitch={1,1};	// pitch to tune a scale
+fraction pitch={1,1};	// pitch to tune a scale	// TODO: gather basic settings in the code	################
 
-/* did not really help...	// instant_stress_release DEACTIVATED
-void instant_stress_release() {
-  MENU.out("&");
-  int cnt=0;
-
-  for(int pulse = (PL_MAX -1); pulse>=0; pulse--)
-    if(PULSES.pulses[pulse].groups & g_SECONDARY) {
-      PULSES.init_pulse(pulse);
-      if(++cnt == 2)
-	return;
-    }
-}
-*/
 
 /* **************************************************************** */
 bool DO_or_maybe_display(unsigned char verbosity_level) { // the flag tells *if* to display
@@ -770,6 +750,20 @@ int8_t musicBox_page=ILLEGAL;	// NOTE: musicBox_page is not used
   #include "bluetooth_menu_page.h"	// hi jacking USE_BLUETOOTH_SERIAL_MENU
 #endif
 
+
+// declaring these, even if they are not used, makes compiling easier ;)
+// TODO: stress configuration struct conf_stress_t
+unsigned int stress_emergency=4096*6;	// magical musicBox test	TODO: fine tune, maybe UI
+unsigned int stress_event_level=1024;	// continue TESTING:  TODO: fine tune, maybe UI
+int stress_event_cnt=0;			// counting stress_event_level events
+uint8_t stress_event_cnt_MAX=1;		// if the count reaches MAX stress release needed TODO: fine tune
+unsigned int stress_count=0;		// low level stress count
+
+#if defined DO_STRESS_MANAGMENT
+  #include "stress_managment.h"
+#endif
+
+
 #if defined HARMONICAL_MUSIC_BOX
   #include "musicBox.h"
 #endif
@@ -1252,7 +1246,7 @@ bool lowest_priority_tasks() {
 
 
 void loop() {	// ARDUINO
-
+  unsigned int this_todo_cnt=0;
   #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
     #ifdef WIFI_OFF_hackster
       // see: https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
@@ -1268,16 +1262,21 @@ void loop() {	// ARDUINO
      The intention is to have PULSES continue functioning and
      let the UI starve, when there is not enough time for everything.
   */
+
+  this_todo_cnt=0;
   stress_count=0;
 
   while (PULSES.check_maybe_do()) {	// in stress PULSES get's *first* priority.
+    ++this_todo_cnt;
+
+#if defined STRESS_MANAGMENT_H
     ++stress_count;
     /*		// instant_stress_release DEACTIVATED
     if(stress_count > (stress_emergency/8))
       instant_stress_release();
     */
 
-#if defined HARMONICAL_MUSIC_BOX    // magical_stress_release();
+  #if defined HARMONICAL_MUSIC_BOX    // magical_stress_release();
     if (stress_count >= stress_emergency) {
       magical_stress_release();
       stress_count = 0;
@@ -1296,9 +1295,9 @@ void loop() {	// ARDUINO
       if(musicBox_when_done != &user)	// user() is a flag *NOT to autostart* musicBox
 	start_musicBox();
     }
-#endif
+  #endif // HARMONICAL_MUSIC_BOX
 
-    /*
+/*
   // stress release code written to kill sweep pulses getting to fast
   // in time machine this makes the situation worse, so deactivated for now
 
@@ -1317,9 +1316,9 @@ void loop() {	// ARDUINO
       // stress_count = stress_emergency / 2;	// FIXME: further tests	################
     }
 */
+#endif	// DO_STRESS_MANAGMENT
   }
 
-#define STRESS_MONITOR_LEVEL	64*2	// TODO: menu interface	// TODO: REMOVE: ################
 #if defined STRESS_MONITOR_LEVEL
   if (stress_count > STRESS_MONITOR_LEVEL) {	// just a simple test tool
     if(stress_event_cnt >= 0) {			// only *unexpected* stress
@@ -1336,12 +1335,7 @@ void loop() {	// ARDUINO
 	s *= 2;
       }
       MENU.tab();
-      MENU.out(stress_count);
-      /*		// instant_stress_release DEACTIVATED
-	MENU.space();
-	instant_stress_release();
-      */
-      MENU.ln();
+      MENU.outln(stress_count);
     }
   }
 #endif
