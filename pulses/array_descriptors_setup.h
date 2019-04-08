@@ -130,6 +130,8 @@ REGISTER_JIFFLE(tetraCHORD_desc);
 REGISTER_JIFFLE(tumtumtum);
 REGISTER_JIFFLE(tumtumtumtum);
 
+REGISTER_JIFFLE(mechanical);
+
 REGISTER_JIFFLE(doDe_i);	// test only, remove?
 REGISTER_JIFFLE(asdfg);		// test only, remove?
 

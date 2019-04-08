@@ -1619,7 +1619,7 @@ void select_random_jiffle(void) {
   if(MENU.maybe_display_more(VERBOSITY_SOME))
     MENU.outln(F("random jiffle"));
 
-  switch(random(138)) {
+  switch(random(142)) {
   case 0: case 1: case 2: case 3: case 4:
     select_array_in(JIFFLES, PENTAtonic_rise);
     break;
@@ -1773,6 +1773,9 @@ void select_random_jiffle(void) {
     break;
   case 137:
     select_array_in(JIFFLES, tetraCHORD_desc);
+    break;
+  case 138: case 139: case 140: case 141:
+    select_array_in(JIFFLES, mechanical);
     break;
   }
 

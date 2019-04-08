@@ -62,3 +62,5 @@ tuning groups octaves for ending, base_pulse, etc
 stereo DACs
 
 SPIFFS https://randomnerdtutorials.com/install-esp32-filesystem-uploader-arduino-ide/
+
+fix jiffle editor
