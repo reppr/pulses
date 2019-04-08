@@ -85,8 +85,8 @@
   bool some_metric_tunings_only=false;	// free pitch tuning
 #endif
 
-int base_pulse=ILLEGAL;		// a human perceived base pulse, see 'stack_sync_slices'
-int stack_sync_slices=0;	// 0 is off	// positive: upwards,	negative: downwards
+int base_pulse=ILLEGAL;		// a human perceived base pulse, see 'stack_sync_slices'	// TODO: make it short?
+int stack_sync_slices=0;	// 0 is off	// positive: upwards,	negative: downwards	// TODO: make it short?
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   #include "peripheral_power_switch.h"
@@ -168,12 +168,71 @@ void show_when_done_function() {
 }
 
 
+// configuration
+typedef struct {
+  unsigned short version = ILLEGAL;
+
+  unsigned int* scale=NULL;
+  unsigned int* jiffle=NULL;
+  unsigned int* iCode=NULL;
+  fraction pitch = {1,1};
+  uint8_t chromatic_pitch = 0;	// 0: pitch is not metric
+
+  int sync=1;			// old default, seems still ok ;)
+  short stack_sync_slices=0;
+
+  short bass_pulses;		// see  setup_bass_middle_high()
+  short middle_pulses;		// see  setup_bass_middle_high()
+  short high_pulses;		// see  setup_bass_middle_high()
+  int lowest_primary=ILLEGAL;	// TODO: make it short?
+  int highest_primary=ILLEGAL;	// TODO: make it short?
+  int base_pulse=ILLEGAL;	// TODO: make it short?
+  short subcycle_octave;
+} musicBox_conf_t;
+
+musicBox_conf_t musicBoxConf;
+
+
+typedef struct {
+  bool magic_autochanges=true;		// TODO: switch that logic
+  bool some_metric_tunings_only=false;
+
+  unsigned short cycle_slices;		// set slice_tick_period accordingly
+  void (*musicBox_when_done)(void)=NULL;
+
+  int soft_cleanup_minimal_fraction_weighting=1;	// TODO: adjust default
+  unsigned short soft_end_days_to_live=1;
+  unsigned short soft_end_survive_level = 4;		// the level a pulse must have reached to survive soft end
+  unsigned long soft_end_cleanup_wait=60*1000000L;	// default 60"	// TODO: rethink ################
+} magical_conf_t;
+
+magical_conf_t magicalConf;
+
+
+typedef struct {
+  // voices=0;	// maybe not?
+
+  bool show_cycle_pattern=false;
+  bool show_cycle_pattern_intervals=false;
+  bool show_subcycle_position=false;
+
+  bool scale_user_selected = false;
+  bool sync_user_selected = false;
+  bool stack_sync_user_selected = false;
+  bool jiffle_user_selected = false;
+  bool pitch_user_selected = false;	// TODO: ################################################################
+  bool subcycle_user_selected=false;
+} ui_conf_t;
+
+ui_conf_t uiConf;
+
+
 pulse_time_t musicBox_start_time;
 pulse_time_t musicBox_hard_end_time;
 
 // pulse_time_t harmonical_CYCLE;	// is in pulses.ino now TODO: move to Harmonical?
 pulse_time_t used_subcycle;	// TODO: move to Harmonical? ? ?
-int subcycle_octave=0;
+short subcycle_octave=0;
 bool subcycle_user_selected=false;
 
 /*
@@ -285,7 +344,7 @@ void init_primary_counters() {
 bool show_cycle_pattern=true;
 bool show_cycle_pattern_intervals=false;
 
-int lowest_primary=ILLEGAL, highest_primary=ILLEGAL;	// remember start configuration
+int lowest_primary=ILLEGAL, highest_primary=ILLEGAL;	// remember start configuration	// TODO: make it short?
 
 void set_primary_block_bounds() {	// remember where the primary block starts and stops
   lowest_primary=ILLEGAL;
@@ -939,7 +998,8 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   MENU.ln();
 
 #if defined USE_MONOCHROME_DISPLAY
-  display_basic_musicBox_parameters();	// Heltec oled test	// ATTENTION: takes too long to be used while playing
+  if(MusicBoxState != AWAKE && MusicBoxState != ENDING)	// avoid destroying performance...
+    display_basic_musicBox_parameters();	// Heltec oled test	// ATTENTION: takes too long to be used while playing
 #endif
 }
 
@@ -1869,7 +1929,7 @@ void furzificate() {	// switch to a quiet, farting patterns, u.a.
 RTC_DATA_ATTR unsigned int * scale_stored_RTC=NULL;
 RTC_DATA_ATTR unsigned int * jiffle_stored_RTC=NULL;
 RTC_DATA_ATTR int sync_stored_RTC=ILLEGAL;
-RTC_DATA_ATTR int stack_sync_slices_stored_RTC=0;
+RTC_DATA_ATTR int stack_sync_slices_stored_RTC=0;		// TODO: make it short?
 RTC_DATA_ATTR unsigned long multiplier_stored_RTC=0;
 RTC_DATA_ATTR unsigned long divisor_stored_RTC=0;
 RTC_DATA_ATTR uint8_t metric_tunings_stored_RTC=2;	// 2 means off (&1)
@@ -2834,6 +2894,7 @@ bool musicBox_reaction(char token) {
 	MENU.outln(cnt);
       }
       break;
+
     default:	// 'P' start/stop musicBox
       if(MusicBoxState != OFF) {
 	reset_all_flagged_pulses_GPIO_OFF();
@@ -3056,6 +3117,10 @@ bool musicBox_reaction(char token) {
       MENU.out(F("  base_pulse "));
       MENU.outln(base_pulse);
     }
+    break;
+
+  case 'y':
+    #include "menu_y_magic_tmp.h"
     break;
 
   default:
