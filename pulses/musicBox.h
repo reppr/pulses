@@ -2178,6 +2178,10 @@ void start_musicBox() {
 
   MENU.ln();
   musicBox_short_info();
+#if defined USE_MONOCHROME_DISPLAY
+  // on OLED it is blocked after set_MusicBoxState(AWAKE)
+  display_basic_musicBox_parameters();	// Heltec oled test	// ATTENTION: takes too long to be used while playing
+#endif
   MENU.outln(F(" <<< * >>>"));	// end output block
 
   if(MENU.verbosity >= VERBOSITY_SOME || true) {
