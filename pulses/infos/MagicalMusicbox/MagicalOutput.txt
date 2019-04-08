@@ -5187,6 +5187,8 @@ harmonical cycle:  2h 15' 10"
 sync pause 0"
 
 
+************ DADA CONFIGURAED ALL NEWER FROM HERE ON *************************************************
+
 
 2019-02-06_RG3_S0_d64_melody-rhythm
 *************************************
@@ -5249,12 +5251,10 @@ noname_c
 
 veryverybad
 *************
-,
+
 ~ SCALE: europ_PENTAtonic     ~ SYNC: 3     ~ JIFFLE: tetraCHORD_desc     ~ SCALING: 1/128	*metric* c
   harmonical CYCLE: 1h 6' 2"	SUBCYCLE: | 4' 8" |
 
-
-**************** DADA CONFIGURAED ALL NEWER FROM HERE ON *************************************************
 
 simplicistic_d0
 *****************

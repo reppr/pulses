@@ -11,14 +11,13 @@
       MENU.outln(sizeof(uiConf));
 
     case 1:
-      MENU.outln(F("Marianne Pletscher 1 sync unleserlich"));
-      /*
-	tetraCHORD
-	tetraCHORD_rise
-	S unleserlich, 4?
-	p[15]|1024
-      */
+      MENU.outln(F("Marianne Pletscher 1 sync? 4|1024"));
+      select_array_in(SCALES, tetraCHORD);
+      select_array_in(JIFFLES,tetraCHORD_rise);
+      sync = 4;		// S unleserlich, 4?
+      // p[15]|1024	// unleserlich, 1024?
       chromatic_pitch = 0;
+      stack_sync_slices=1024;
       parameters_by_user();
       break;
 
@@ -29,7 +28,7 @@
       sync=0;
       stack_sync_slices=64;
       pitch={1, 175};		// f
-      chromatic_pitch = 9;		// f
+      chromatic_pitch = 9;	// f
       // 11'42"
       parameters_by_user();
       break;
@@ -92,7 +91,7 @@
       stack_sync_slices=0;
       pitch={32768*2, 263};
       chromatic_pitch = 0;		// u
-      // 4' 7"
+      // SUBCYCLE: 4' 7"
       parameters_by_user();
       break;
 
@@ -128,7 +127,7 @@
       stack_sync_slices = 0;
       pitch = {1, 128};		// u
       chromatic_pitch = 0;	// u
-      // 
+      // SUBCYCLE: | 6' 9" |
       parameters_by_user();
       break;
 
@@ -138,7 +137,7 @@
       select_array_in(JIFFLES, d4096_1024);
       sync = 4;
       stack_sync_slices = 0;
-      pitch = {32768, 262};		// 
+      pitch = {32768, 262};		//
       chromatic_pitch = 0;		// u
       // 2^-4 SUBCYCLE: | 5' 10" |
       parameters_by_user();
@@ -156,14 +155,73 @@
       parameters_by_user();
       break;
 
+    case 13:
+      MENU.outln(F("veryverybad"));
+      select_array_in(SCALES, europ_PENTAtonic);
+      select_array_in(JIFFLES, tetraCHORD_desc);
+      sync = 3;
+      stack_sync_slices = 0;
+      pitch = {1, 128};		// c?
+      chromatic_pitch = 0;	// u, c?
+      // SUBCYCLE: | 5' 31" |
+      parameters_by_user();
+      break;
+
+    case 14:
+      MENU.outln(F("noname_c"));
+      select_array_in(SCALES, europ_PENTAtonic);
+      select_array_in(JIFFLES, tumtumtumtum);
+      sync = 4;
+      stack_sync_slices = 0;
+      pitch = {1, 128};		//
+      chromatic_pitch = 0;		// u
+      // SUBCYCLE: | 6' 11" |
+      parameters_by_user();
+      break;
+
+    case 15:
+      MENU.outln(F("noname_b"));
+      select_array_in(SCALES, tetraCHORD);
+      select_array_in(JIFFLES, pentachord_rise);
+      sync = 1;
+      stack_sync_slices = 0;
+      pitch = {3, 1024};		// a???
+      chromatic_pitch = 0;		// u
+      // SUBCYCLE: | 4' 55" |
+      parameters_by_user();
+      break;
+
+    case 16:
+      MENU.outln(F("noname_a"));
+      select_array_in(SCALES, octave_4th_5th);
+      select_array_in(JIFFLES, d4096_64);
+      sync = 0;
+      stack_sync_slices = 0;
+      pitch = {2, 6144};		// d???
+      chromatic_pitch = 0;		// u
+      // SUBCYCLE: | 3' 41" |
+
+    case 17:
+      MENU.outln(F("2019-02-06_RG3_S0_d64_melody-rhythm"));
+      select_array_in(SCALES, octave_4th_5th);
+      select_array_in(JIFFLES, d4096_64);
+      sync = 0;
+      stack_sync_slices = 0;
+      pitch = {2, 6144};		// G???
+      chromatic_pitch = 0;		// u
+      // SUBCYCLE: | 5' 38" |
+      parameters_by_user();
+      break;
+
 /*
+
     case :
       MENU.outln(F(""));
       select_array_in(SCALES, );
       select_array_in(JIFFLES, );
       sync = ;
       stack_sync_slices = ;
-      pitch = {, };		// 
+      pitch = {, };		//
       chromatic_pitch = ;		// u
       // 2^ SUBCYCLE: | ' " |
       parameters_by_user();
