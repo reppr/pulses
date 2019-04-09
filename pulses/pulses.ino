@@ -185,6 +185,7 @@ action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actio
 /* **************************************************************** */
 fraction pitch={1,1};	// pitch to tune a scale	// TODO: gather basic settings in the code	################
 
+bool no_octave_shift=false;	// see: tune_selected_2_scale_limited()
 
 /* **************************************************************** */
 bool DO_or_maybe_display(unsigned char verbosity_level) { // the flag tells *if* to display
@@ -2054,7 +2055,7 @@ int selected_apply_scale_on_period(int voices, unsigned int *scale, bool octaves
   return applied;
 }
 
-
+// see: bool no_octave_shift=false;
 int tune_selected_2_scale_limited(fraction scaling, unsigned int *scale, unsigned long shortest_limit) {
 /*
   tune all selected pulses to the scale, start with lowest selected
@@ -2135,6 +2136,12 @@ int tune_selected_2_scale_limited(fraction scaling, unsigned int *scale, unsigne
 	  note++;
 	} // selected
       } // pulse
+
+      if(no_octave_shift) {	// no_octave_shift, so we're done
+	no_octave_shift = false;
+	MENU.outln(F("MENU.out(octave_shift)"));
+	return 0;
+      }
 
       if(this_period.time > shortest_limit) {
 	if (octave_shift || MENU.verbosity > VERBOSITY_SOME) {

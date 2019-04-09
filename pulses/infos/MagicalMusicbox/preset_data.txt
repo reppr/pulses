@@ -885,6 +885,14 @@ subcycle_octave = -4;	// 7' 52"	| subcycle |
 
 
 title = F("Pentaweb");
+/*
+SCALE:	pentatonic_minor	JIFFLE:	PENTAtonic_desc	SCALING: 1/128	SYNC: 2
+Af:DD...	voices: 34	verbosity lowest
+TIME_U:	1000000 microseconds = 1.000000 per second
+
+harmonical cycle 'c'	1h  9' 59"
+subcycle		    8' 45"
+*/
 comment: stimmigsvoll
 comment: mit sehnsucht ufs ziel zue
 sync = 2;
