@@ -3,6 +3,9 @@
   temporary development file
 */
 
+    MENU.ln(2);
+    MENU.outln(F("PRESET"));
+
     switch(MENU.numeric_input(ILLEGAL)) {
     case ILLEGAL:
       MENU.outln(F("sizeof() config musicBox, magical, UI:" ));
@@ -11,18 +14,19 @@
       MENU.outln(sizeof(uiConf));
 
     case 1:
-      MENU.outln(F("Marianne Pletscher 1 sync? 4|1024"));
+      MENU.outln(F("Marianne 1	eingesperrt<->Freiheit	1 sync? 4|1024"));
       select_array_in(SCALES, tetraCHORD);
       select_array_in(JIFFLES,tetraCHORD_rise);
       sync = 4;		// S unleserlich, 4?
+      stack_sync_slices=1024;
       // p[15]|1024	// unleserlich, 1024?
       chromatic_pitch = 0;
-      stack_sync_slices=1024;
+      pitch={1, 294};		// d just a random default
       parameters_by_user();
       break;
 
     case 2:
-      MENU.outln(F("Marianne Pletscher 2"));
+      MENU.outln(F("Marianne 2	warten"));
       select_array_in(SCALES, pentatonic_minor);
       select_array_in(JIFFLES, ding_ditditdit);
       sync=0;
@@ -34,7 +38,7 @@
       break;
 
     case 3:
-      MENU.outln(F("Marianne Pletscher 3"));
+      MENU.outln(F("Marianne 3	s erst Mal underwägs"));
       select_array_in(SCALES, doric_scale);
       select_array_in(JIFFLES, d4096_128);
       sync=1;
@@ -46,7 +50,7 @@
       break;
 
     case 4:
-      MENU.outln(F("Marianne Pletscher 4"));
+      MENU.outln(F("Marianne 4	Chatzemusik!!"));
       select_array_in(SCALES, pentaCHORD);	// unleserlich,,,
       select_array_in(JIFFLES, pent_top_wave_0);
       sync=2;
@@ -58,7 +62,7 @@
       break;
 
     case 5:
-      MENU.outln(F("Marianne Pletscher 5"));
+      MENU.outln(F("Marianne 5	Gefängnisgeburt"));
       select_array_in(SCALES, octave_4th_5th);
       select_array_in(JIFFLES, simple_theme);
       sync=3;
