@@ -776,6 +776,8 @@ unsigned int stress_count=0;		// low level stress count
     }
 #endif
 
+#include "preset_data.h"	// FIXME: TODO: just a compile test
+
 /* **************************************************************** */
 #if defined USE_MONOCHROME_DISPLAY
 void display_program_version() {	// monochrome oled display
