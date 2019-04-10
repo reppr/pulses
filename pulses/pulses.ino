@@ -447,13 +447,13 @@ gpio_pin_t this_or_next_gpio(int pulse) {
 
 // reset, remove all (flagged) pulses, restart selections at none
 // switch GPIO and DACs off
-int reset_all_flagged_pulses_GPIO_OFF() {
+int reset_all_flagged_pulses_GPIO_OFF() {	  // see: tabula_rasa()
   /*
     reset pulses, switches GPIO and DACs off
     MCP23017_OUT_LOW();
   */
   int cnt=0;
-  for (int pulse=0; pulse<PL_MAX; pulse++) {  // tabula rasa
+  for (int pulse=0; pulse<PL_MAX; pulse++) {
     if (PULSES.pulses[pulse].flags) {
       PULSES.init_pulse(pulse);
       cnt++;
@@ -495,7 +495,7 @@ int reset_all_flagged_pulses_GPIO_OFF() {
 #endif
     MENU.ln();
   } else if(MENU.verbosity) {
-    MENU.out(F("tabula rasa "));
+    MENU.out(F("freed GPIOs "));
     MENU.outln(cnt);
   }
 
@@ -760,6 +760,8 @@ unsigned int stress_event_level=1024;	// continue TESTING:  TODO: fine tune, may
 int stress_event_cnt=0;			// counting stress_event_level events
 uint8_t stress_event_cnt_MAX=1;		// if the count reaches MAX stress release needed TODO: fine tune
 unsigned int stress_count=0;		// low level stress count
+unsigned int relax_level=200;		// see: relax()	 (ILLEGAL should switch that off)
+uint8_t relaxmax=4;			// up to how many relax() in one todo chain
 
 #if defined DO_STRESS_MANAGMENT
   #include "stress_managment.h"
@@ -1274,6 +1276,7 @@ void loop() {	// ARDUINO
   this_todo_cnt=0;
   stress_count=0;
 
+  uint8_t relax_cnt=0;
   while (PULSES.check_maybe_do()) {	// in stress PULSES get's *first* priority.
     ++this_todo_cnt;
 
@@ -1289,6 +1292,13 @@ void loop() {	// ARDUINO
       magical_stress_release();
       stress_count = 0;
       stress_event_cnt = -1;	// one heavy stress event expected after magical_stress_release()...
+      relax_cnt = 0;
+    }
+
+    if((stress_count >= relax_level) && (relax_cnt < relaxmax)) {
+      relax();
+      relax_cnt++;
+      stress_count = 0;
     }
 
     if(do_pause_musicBox) {
@@ -4695,11 +4705,8 @@ bool menu_pulses_reaction(char menu_input) {
   case 'X':	// PANIC BUTTON  reset, remove all (flagged) pulses, restart selections at none
     // reset, remove all (flagged) pulses, restart selections at none, reset selection mask
     // set MCP23017 pins low
-    reset_all_flagged_pulses_GPIO_OFF();
 
-#if defined HARMONICAL_MUSIC_BOX
-    set_MusicBoxState(OFF);
-#endif
+    tabula_rasa();
 
     if(MENU.cb_peek() == '!') {		// 'X!' does 'X' *and* resets time_unit
       MENU.drop_input_token();
@@ -5104,7 +5111,7 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 29:	// E29 KALIMBA7 tuning
-	reset_all_flagged_pulses_GPIO_OFF();
+	tabula_rasa();
 
 #if defined KALIMBA7_v2	// ESP32 version  europ_PENTAtonic
 	select_array_in(SCALES, europ_PENTAtonic);
@@ -5262,9 +5269,7 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 37:	// Guitar and other instruments
-	reset_all_flagged_pulses_GPIO_OFF();
-	next_gpio(0);	// reset gpio usage
-
+	tabula_rasa();
 	PULSES.time_unit=1000000;
 
 	// default tuning e
@@ -5470,7 +5475,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       case 40:	// 'E40' time machine with icode player   *adapted to musicBox*
 	// #define ESP32_15_clicks_no_display_TIME_MACHINE2
-	reset_all_flagged_pulses_GPIO_OFF();
+	tabula_rasa();
 	{ // local scope 'E40' only right now	// TODO: factor out
 	  PULSES.time_unit=1000000;	// default metric
 	  multiplier=4096;		// uses 1/4096 jiffles

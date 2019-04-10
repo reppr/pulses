@@ -63,4 +63,11 @@ stereo DACs
 
 SPIFFS https://randomnerdtutorials.com/install-esp32-filesystem-uploader-arduino-ide/
 
-fix jiffle editor
+fix jiffle editor in :M
+
+stress configuration
+
+fix DAC only configuration of middle voices! ################
+extend to 4 voice groups
+
+bereichsregister

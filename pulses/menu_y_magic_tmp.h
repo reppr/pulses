@@ -12,7 +12,8 @@
   stack_sync_slices = 0;	// sorry, i just reset that
   chromatic_pitch = 0;		// sorry, i just reset that
 
-  MENU.ln(2);
+  tabula_rasa();
+  MENU.ln();
   MENU.out(F("PRESET "));
 
   input_value = MENU.numeric_input(1);

@@ -334,6 +334,18 @@ void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditional
   }
 }
 
+void tabula_rasa() {
+  if (MENU.verbosity > VERBOSITY_LOWEST)
+    MENU.outln(F("tabula rasa"));
+
+  reset_all_flagged_pulses_GPIO_OFF();
+  if(MusicBoxState != OFF)	// avoid possible side effects
+    set_MusicBoxState(OFF);
+
+  title=NULL;
+  date=NULL;
+}
+
 // TODO: magic_autochanges default?
 bool magic_autochanges=true;	// switch if to end normal playing after MUSICBOX_PERFORMACE_SECONDS
 
@@ -748,12 +760,7 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
       delay(600);	// let power go down softly
 #endif
 
-      reset_all_flagged_pulses_GPIO_OFF();
-
-      /* ???
-      if(MENU.verbosity)
-	MENU.ln();
-      */
+      tabula_rasa();
       do_pause_musicBox = true;	// triggers MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch	*ENDED*
       // MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
     }
@@ -1088,8 +1095,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
   delay(1200);	// let power go down softly
 #endif
 
-  reset_all_flagged_pulses_GPIO_OFF();
-  set_MusicBoxState(OFF);
+  tabula_rasa();
   MENU.ln();
 
   do_pause_musicBox = true;	//  triggers MUSICBOX_ENDING_FUNCTION;	sleep, restart or somesuch	// *ENDED*
@@ -1187,10 +1193,8 @@ void musicBox_trigger_got_hot() {	// must be called when magical trigger was det
     musicBox_trigger_ISR();	// *not* as ISR
     MENU.outln(F("\nTRIGGERED!"));
 
-    if(MusicBoxState != OFF) {
-      reset_all_flagged_pulses_GPIO_OFF();
-      set_MusicBoxState(OFF);
-    }
+    if(MusicBoxState != OFF)
+      tabula_rasa();
 
     start_musicBox();
 #if defined PERIPHERAL_POWER_SWITCH_PIN
@@ -2294,14 +2298,16 @@ void relax() {		// kill highest secondary pulse
   for(int pulse=PL_MAX ; pulse >= 0; pulse--) {
     if(PULSES.pulses[pulse].groups & g_SECONDARY) {
       if(PULSES.pulses[pulse].flags & ACTIVE) {			// highest active secondary pulse
-	if(PULSES.pulses[pulse].flags & HAS_GPIO)		// maybe set GPIO low?
-	  digitalWrite(PULSES.pulses[pulse].gpio, LOW);
+	// if(PULSES.pulses[pulse].flags & HAS_GPIO)		// set GPIO low?  maybe MAKES NOISE?
+	//   digitalWrite(PULSES.pulses[pulse].gpio, LOW);
 	PULSES.init_pulse(pulse);				// remove highest secondary pulses
 
 #if defined STRESS_MONITOR_LEVEL		// *any* stress monitoring level triggers notice
-	MENU.out(F("relax "));
-	MENU.outln(pulse);
+	MENU.out(F("relax p["));
+	MENU.out(pulse);
+	MENU.outln(']');
 #endif
+
 	return;		// removed just the highest one
       }
     }
@@ -2976,9 +2982,8 @@ bool musicBox_reaction(char token) {
 
     default:	// 'P' start/stop musicBox
       if(MusicBoxState != OFF) {
-	reset_all_flagged_pulses_GPIO_OFF();
-	set_MusicBoxState(OFF);
-	if(MENU.maybe_display_more(VERBOSITY_LOWEST))
+	tabula_rasa();
+	if(MENU.maybe_display_more(VERBOSITY_SOME))
 	  musicBox_display();
       } else
 	start_musicBox();
