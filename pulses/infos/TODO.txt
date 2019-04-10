@@ -67,7 +67,8 @@ fix jiffle editor in :M
 
 stress configuration
 
-fix DAC only configuration of middle voices! ################
 extend to 4 voice groups
 
 bereichsregister
+
+fix sync pause display
