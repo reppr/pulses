@@ -10,8 +10,9 @@
 #endif
 
 // BluetoothSerial BLUEtoothSerial;
-
-#if defined PROGRAM_VERSION
+#if defined PRENAME
+  #define  BLUETOOTH_NAME	PRENAME
+#elif defined PROGRAM_VERSION
   #define BLUETOOTH_NAME	PROGRAM_VERSION	// the BT name of esp32
 #else
   #define BLUETOOTH_NAME	ESP32 alpha	// the BT name of esp32

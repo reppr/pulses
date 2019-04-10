@@ -1,6 +1,7 @@
 #define PROGRAM_VERSION		PULSES alpha.018
 /*				0123456789abcdef   */
 
+#define PRENAME		SoundShip1	// individual name	// TODO: move to a configuration file
 
 #define DO_STRESS_MANAGMENT
 #define STRESS_MONITOR_LEVEL	64*2	// TODO: menu interface	// TODO: REMOVE: ################
@@ -785,8 +786,11 @@ void display_program_version() {	// monochrome oled display
     u8x8.clear();
     u8x8.setCursor(0,1);
     u8x8.print(F(STRINGIFY(PROGRAM_VERSION)));
-    #if defined PROGRAM_SUB_VERSION
-      u8x8.setCursor(0,3);
+
+    u8x8.setCursor(0,3);
+    #if defined PRENAME
+      u8x8.print(F(STRINGIFY(PRENAME)));
+    #elif defined PROGRAM_SUB_VERSION
       u8x8.print(F(STRINGIFY(PROGRAM_SUB_VERSION)));
     #endif
 
@@ -842,12 +846,13 @@ void display_program_version() {	// monochrome oled display
 
 void show_program_version() {
   MENU.out(F(STRINGIFY(PROGRAM_VERSION)));
-
-#if defined PROGRAM_SUB_VERSION
   MENU.tab();
-  MENU.outln(F(STRINGIFY(PROGRAM_SUB_VERSION)));
-#else
-  MENU.ln();
+#if defined PROGRAM_SUB_VERSION
+  MENU.out(F(STRINGIFY(PROGRAM_SUB_VERSION)));
+  MENU.tab();
+#endif
+#if defined PRENAME
+  MENU.outln(F(STRINGIFY(PRENAME)));
 #endif
 
 #if defined USE_MONOCHROME_DISPLAY
