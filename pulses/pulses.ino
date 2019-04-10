@@ -1349,6 +1349,10 @@ void loop() {	// ARDUINO
 #endif
 
   if (stress_count > stress_event_level) {
+#if defined HARMONICAL_MUSIC_BOX			// magical_stress_release();
+    relax();	// kill highest secondary pulse
+#endif
+
     if(++stress_event_cnt > stress_event_cnt_MAX) {
 #if defined HARMONICAL_MUSIC_BOX			// magical_stress_release();
       magical_stress_release();

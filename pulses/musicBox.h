@@ -632,7 +632,7 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
 }
 
 
-unsigned int kill_secondary() {
+unsigned int kill_secondary() {	// kill all secondary
   unsigned int cnt=0;
 
   for(int pulse=0; pulse < PL_MAX; pulse++) {
@@ -2234,6 +2234,25 @@ void start_musicBox() {
   PULSES.pulses[musicBox_butler_i].groups |= g_MASTER;	// savety net, until butler has initialised itself
 
   stress_event_cnt = -3;	// some stress events will often happen after starting the musicBox
+}
+
+
+void relax() {		// kill highest secondary pulse
+  for(int pulse=PL_MAX ; pulse >= 0; pulse--) {
+    if(PULSES.pulses[pulse].groups & g_SECONDARY) {
+      if(PULSES.pulses[pulse].flags & ACTIVE) {			// highest active secondary pulse
+	if(PULSES.pulses[pulse].flags & HAS_GPIO)		// maybe set GPIO low?
+	  digitalWrite(PULSES.pulses[pulse].gpio, LOW);
+	PULSES.init_pulse(pulse);				// remove highest secondary pulses
+
+#if defined STRESS_MONITOR_LEVEL		// *any* stress monitoring level triggers notice
+	MENU.out(F("relax "));
+	MENU.outln(pulse);
+#endif
+	return;		// removed just the highest one
+      }
+    }
+  }
 }
 
 
