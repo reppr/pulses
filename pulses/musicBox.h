@@ -2184,7 +2184,7 @@ void start_musicBox() {
 #endif
   MENU.outln(F(" <<< * >>>"));	// end output block
 
-  if(MENU.verbosity >= VERBOSITY_SOME || true) {
+  if(MENU.verbosity > VERBOSITY_SOME) {
     show_cycle(harmonical_CYCLE);	// shows multiple cycle octaves
     MENU.ln();
   }
@@ -3127,7 +3127,7 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'y':
-    #include "menu_y_magic_tmp.h"
+    #include "menu_y_magic_tmp.h"	// temporary file for musicBox preset testing
     break;
 
   default:

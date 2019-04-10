@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION		PULSES alpha.018
+#define PROGRAM_VERSION		PULSES alpha.019
 /*				0123456789abcdef   */
 
 #define PRENAME		SoundShip1	// individual name	// TODO: move to a configuration file

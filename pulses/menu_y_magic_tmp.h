@@ -6,17 +6,21 @@
 {
   char* title="";
   char* name="";
-  char* date="";
+  char* date=NULL;
   // pitch = {1, 1};	// TODO: set as default
 
   PULSES.time_unit = 1000000;	// sorry, i just reset that
   stack_sync_slices = 0;	// sorry, i just reset that
+  chromatic_pitch = 0;		// sorry, i just reset that
 
   MENU.ln(2);
   MENU.out(F("PRESET "));
 
+  input_value = MENU.numeric_input(1);
+  if(input_value == 0)		// selecting zero gives random preset
+    input_value = random(164) + 1;
   bool valid_selection = true;
-  switch(input_value=MENU.numeric_input(1)) {
+  switch(input_value) {
   case 1:
     title = F("wunderschön melodisch :) :) :)");
     //comment: mit schönem, aberendlosem schluss ;)
@@ -1929,15 +1933,63 @@
     // zeit unleserlich
     break;
 
+  case 160:
+    title = F("rising ostinatos over rhythmic bordun");
+    //comment: very nice ending :)
+    sync = 0;
+    select_array_in(SCALES, octave_4th_5th);
+    select_array_in(JIFFLES, pentatonic_rise);
+    pitch = {2, 6144};
+    // harmonical cycle 'c'	12h 24'  7"	subcycle    5' 49"
+    break;
+
+  case 161:
+    title = F("au sehr schön:");
+    sync = 2;
+    select_array_in(SCALES, tetraCHORD);
+    select_array_in(JIFFLES, PENTA_3rd_rise);
+    pitch = {3, 1024};
+    break;
+
+  case 162:
+    title = F("klassisch und simpel schön");
+    sync = 0;
+    select_array_in(SCALES, tetraCHORD);
+    select_array_in(JIFFLES, pentatonic_desc);
+    pitch = {3, 1024};
+    break;
+
+  case 163:
+    title = F("fractal time web");
+    date = F("2018-12-05 15h40m");
+    sync = 1;
+    select_array_in(SCALES, doric_scale);
+    select_array_in(JIFFLES, up_THRD_dn);
+    pitch = {1, 32};
+  break;
+
+  case 164:
+    title = F("busy soundscape");
+    date = F("");
+    sync = 5;
+    stack_sync_slices = 16;
+    select_array_in(SCALES,europ_PENTAtonic );
+    select_array_in(JIFFLES, pent_patternA);
+    pitch = {1, 262};	// metric c
+    chromatic_pitch = 4;
+    break;
+
   default:
     valid_selection = false;
   }
 
   if(valid_selection) {
+    HARMONICAL.reduce_fraction(&pitch);		// ;)
+
     MENU.out(input_value);
     MENU.tab();
     MENU.out(title);
-    if(date) {	// TODO: TEST ################################################################
+    if(date) {
       MENU.tab();
       MENU.out(date);
     }
