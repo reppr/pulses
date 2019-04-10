@@ -4,9 +4,8 @@
 */
 
 {
-  char* title="";
-  char* name="";
-  char* date=NULL;
+  title=NULL;
+  date=NULL;
   // pitch = {1, 1};	// TODO: set as default
 
   PULSES.time_unit = 1000000;	// sorry, i just reset that
@@ -18,7 +17,7 @@
 
   input_value = MENU.numeric_input(1);
   if(input_value == 0)		// selecting zero gives random preset
-    input_value = random(164) + 1;
+    input_value = random(165) + 1;
   bool valid_selection = true;
   switch(input_value) {
   case 1:
@@ -1979,6 +1978,19 @@
     chromatic_pitch = 4;
     break;
 
+  case 165:
+    title = F("stacked clicks");
+    //comment: interesting start ;)
+    select_array_in(SCALES,europ_PENTAtonic);
+    select_array_in(JIFFLES,d4096_32);
+    sync=0;
+    stack_sync_slices=64;
+    base_pulse=15;
+    pitch={1, 262};
+    chromatic_pitch=4;	// c
+    // subcycle_octave = -1;	// TODO: select a short piece ################
+    break;
+
   default:
     valid_selection = false;
   }
@@ -1987,8 +1999,10 @@
     HARMONICAL.reduce_fraction(&pitch);		// ;)
 
     MENU.out(input_value);
-    MENU.tab();
-    MENU.out(title);
+    if(title) {
+      MENU.tab();
+      MENU.out(title);
+    }
     if(date) {
       MENU.tab();
       MENU.out(date);

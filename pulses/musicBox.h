@@ -87,6 +87,8 @@
 
 int base_pulse=ILLEGAL;		// a human perceived base pulse, see 'stack_sync_slices'	// TODO: make it short?
 int stack_sync_slices=0;	// 0 is off	// positive: upwards,	negative: downwards	// TODO: make it short?
+char* title=NULL;		// title of a piece, a preset
+char* date=NULL;		// date  of a piece, preset or whatever
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   #include "peripheral_power_switch.h"
@@ -1007,6 +1009,54 @@ void musicBox_short_info() {
   show_basic_musicBox_parameters();
   MENU.space(2);  // indent
   show_cycles_1line();
+}
+
+void show_configuration_code() {	// show code, similar show_UI_basic_setup()
+  MENU.out(F("title = \""));
+  if(title)
+    MENU.out(title);
+  else
+    MENU.out('"');
+  MENU.outln(F("\";"));
+
+  MENU.out(F("date = \""));
+  if(date)
+    MENU.out(date);
+  else
+    MENU.out('"');
+  MENU.outln(';');
+
+  MENU.out(F("select_array_in(SCALES, "));
+  MENU.out(array2name(SCALES, selected_in(SCALES)));
+  MENU.outln(F(");"));
+
+  MENU.out(F("select_array_in(JIFFLES, "));	// TODO: iCode
+  MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
+  MENU.outln(F(");"));
+
+  MENU.out(F("sync = "));
+  MENU.out(sync);
+  MENU.outln(';');
+
+  MENU.out(F("stack_sync_slices = "));
+  MENU.out(stack_sync_slices);
+  MENU.outln(';');
+
+  MENU.out(F("// base_pulse = "));	// commented out, must rethink that
+  MENU.out(base_pulse);
+  MENU.outln(F(";\t// TODO: rethink that"));
+
+  MENU.out(F("pitch = {"));
+  MENU.out(pitch.multiplier);
+  MENU.out(F(", "));
+  MENU.out(pitch.divisor);
+  MENU.outln(F("};"));
+
+  MENU.out(F("chromatic_pitch = "));
+  MENU.out(chromatic_pitch);
+  MENU.out(F(";\t// "));
+  show_metric_mnemonic();
+  MENU.ln();
 }
 
 
@@ -2079,13 +2129,6 @@ void start_musicBox() {
   // TODO: REWORK:  setup_bass_middle_high()  used in musicBox, but not really compatible
   setup_bass_middle_high(bass_pulses, middle_pulses, high_pulses);
 
-  MENU.outln(F("\n >>> * <<<"));	// start output block with configurations
-#if defined  USE_RTC_MODULE		// repeat that in here, keeping first one for power failing cases
-  MENU.out(F("DATE: "));
-  show_DS1307_time_stamp();
-  MENU.ln();
-#endif
-
   if(!scale_user_selected)	// if *not* set by user interaction
     select_random_scale();	//   random scale
 
@@ -2182,9 +2225,19 @@ void start_musicBox() {
   // on OLED it is blocked after set_MusicBoxState(AWAKE)
   display_basic_musicBox_parameters();	// Heltec oled test	// ATTENTION: takes too long to be used while playing
 #endif
-  MENU.outln(F(" <<< * >>>"));	// end output block
 
-  if(MENU.verbosity > VERBOSITY_SOME) {
+  MENU.outln(F("\n >>> * <<<"));	// start output block with configurations
+
+#if defined  USE_RTC_MODULE		// repeat that in here, keeping first one for power failing cases
+  MENU.out(F("date="));
+  show_DS1307_time_stamp();
+  MENU.ln();
+#endif
+
+  show_configuration_code();
+  MENU.outln(F(" <<< * >>>\n"));	// end output block
+
+  if(MENU.verbosity >= VERBOSITY_MORE) {
     show_cycle(harmonical_CYCLE);	// shows multiple cycle octaves
     MENU.ln();
   }
