@@ -3206,6 +3206,49 @@ bool musicBox_reaction(char token) {
     }
     break;
 
+  // TODO: REPLACE: this is just a *proof of concept* test, works, but is not usable ################
+  case 's':	// in musicBox toggle voice groups 'sb' 'sm' 'st'
+    {
+      int start=0;
+      int end =0;
+      switch(MENU.cb_peek()) {
+      case 'b':	// 'sb' toggle bottom voices
+	start = lowest_primary;
+	end = start + 7;	// TODO: FIXME: 7 just a test
+	break;
+      case 'm':	// 'sm' toggle middle voices
+	start = lowest_primary + 7;
+	end = highest_primary - 7;	// TODO: FIXME: 7 just a test
+	break;
+      case 't':	// 'st' 'sh' toggle top=high voices
+      case 'h':	// 'st' 'sh' toggle top=high voices
+	start = highest_primary -7 ;	// TODO: FIXME: 7 just a test
+	end = highest_primary;
+	break;
+      case '~':	// 's~' toggle all voices
+	start = lowest_primary;
+	end = highest_primary;
+	break;
+
+      default:	// EOF or invalid
+	MENU.restore_input_token();
+	return false;	// bare 's' see: pulses menu	*RETURN*
+	break;
+      }
+      // invalid input and EOF do *not* get here
+      MENU.drop_input_token();	// second letter from above
+      for(int pulse = start; pulse <= end; pulse++)
+	PULSES.pulses[pulse].action_flags ^= noACTION;		// toggle action_flags
+
+      if(MENU.verbosity >= VERBOSITY_LOWEST) {
+	MENU.out(F("toggled pulses "));
+	MENU.out(start);
+	MENU.out(F(" to "));
+	MENU.outln(end);
+      }
+    }
+    break;
+
   case 't':	// tuning: toggle some_metric_tunings_only
     MENU.out(F("fixed metric tunings"));
     MENU.out_ON_off(some_metric_tunings_only = !some_metric_tunings_only);
