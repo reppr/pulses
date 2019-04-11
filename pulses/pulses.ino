@@ -1295,7 +1295,7 @@ void loop() {	// ARDUINO
       relax_cnt = 0;
     }
 
-    if((stress_count >= relax_level) && (relax_cnt < relaxmax)) {
+    if((stress_event_cnt >= 0) && (stress_count >= relax_level) && (relax_cnt < relaxmax)) {
       relax();
       relax_cnt++;
       stress_count = 0;
@@ -3057,6 +3057,8 @@ void menu_pulses_display() {
   MENU.out(F(")\t'*!'=multiplier '/!'=divisor"));
 
   MENU.ln();
+
+  stress_event_cnt = -3;	// heavy stress expected
 }
 
 
@@ -3576,6 +3578,8 @@ void short_info() {
 
   MENU.ln();
   selected_or_flagged_pulses_info_lines();
+
+  stress_event_cnt = -3;	// heavy stress expected
 }
 
 

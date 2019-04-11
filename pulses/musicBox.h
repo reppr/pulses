@@ -2804,6 +2804,8 @@ void musicBox_display() {
   MENU.outln(F("fart='f'"));
 */
   MENU.ln();
+
+  stress_event_cnt = -3;	// heavy stress expected after musicBox_display
 }
 
 bool musicBox_reaction(char token) {
