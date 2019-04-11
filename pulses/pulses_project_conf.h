@@ -69,12 +69,6 @@
     #define AUTOMAGIC_CYCLE_TIMING_SECONDS	21*60	// *max seconds*, produce sample pieces	ESP32_usb_DAC_only
 
     // TODO: more flexibility, please
-    #if defined USE_RTC_MODULE
-      #warning *NOT* using rtc module
-      #undef USE_RTC_MODULE
-    #endif
-
-    // TODO: more flexibility, please
     #if defined USE_BATTERY_CONTROL
       #warning *NOT* using battery control
       #undef USE_BATTERY_CONTROL
@@ -98,12 +92,6 @@
 
     #if ! defined USE_MONOCHROME_DISPLAY
       #define USE_MONOCHROME_DISPLAY
-    #endif
-
-    // TODO: more flexibility, please
-    #if defined USE_RTC_MODULE
-      #warning *NOT* using rtc module
-      #undef USE_RTC_MODULE
     #endif
 
     // TODO: more flexibility, please

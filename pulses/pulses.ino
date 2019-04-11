@@ -4,7 +4,7 @@
 #define PRENAME		SoundShip1	// individual name	// TODO: move to a configuration file
 
 #define DO_STRESS_MANAGMENT
-#define STRESS_MONITOR_LEVEL	64*2	// TODO: menu interface	// TODO: REMOVE: ################
+//#define STRESS_MONITOR_LEVEL	64*2	// TODO: menu interface	// TODO: move to a configuration file
 
 #define USE_BLUETOOTH_SERIAL_MENU
 
@@ -494,7 +494,7 @@ int reset_all_flagged_pulses_GPIO_OFF() {	  // see: tabula_rasa()
   #endif
 #endif
     MENU.ln();
-  } else if(MENU.verbosity) {
+  } else if(MENU.verbosity && cnt) {
     MENU.out(F("freed GPIOs "));
     MENU.outln(cnt);
   }

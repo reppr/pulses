@@ -72,3 +72,11 @@ extend to 4 voice groups
 bereichsregister
 
 fix sync pause display
+
+array2name(SCALES, selected_in(SCALES))		array2selected_name() ?
+
+MENU,out_scanf(....);
+
+show selected icode in show basic parameters
+
+'::Ht' to switch menu just for a line

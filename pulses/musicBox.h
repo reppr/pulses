@@ -87,7 +87,7 @@
 
 int base_pulse=ILLEGAL;		// a human perceived base pulse, see 'stack_sync_slices'	// TODO: make it short?
 int stack_sync_slices=0;	// 0 is off	// positive: upwards,	negative: downwards	// TODO: make it short?
-char* title=NULL;		// title of a piece, a preset
+char* name=NULL;		// name of a piece, a preset
 char* date=NULL;		// date  of a piece, preset or whatever
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
@@ -342,7 +342,7 @@ void tabula_rasa() {
   if(MusicBoxState != OFF)	// avoid possible side effects
     set_MusicBoxState(OFF);
 
-  title=NULL;
+  name=NULL;
   date=NULL;
 }
 
@@ -421,6 +421,7 @@ void watch_primary_pulses() {
     } else	// is *not* g_PRIMARY
       MENU.out('-');	// was removed, replaced or something
   }
+  MENU.out(F("' "));	// mark end of low pulses by ' space
 
   if(primary_cnt <= 4 || MENU.verbosity >= VERBOSITY_SOME) {	// test&trimm: 4
     secondary_cnt=0;
@@ -430,7 +431,7 @@ void watch_primary_pulses() {
 	secondary_cnt++;
     }
 
-    MENU.out(F(" S("));
+    MENU.out(F("S("));
     MENU.out(secondary_cnt);
     MENU.out(')');
   }
@@ -1019,19 +1020,15 @@ void musicBox_short_info() {
 }
 
 void show_configuration_code() {	// show code, similar show_UI_basic_setup()
-  MENU.out(F("title = \""));
-  if(title)
-    MENU.out(title);
-  else
-    MENU.out('"');
-  MENU.outln(F("\";"));
+  MENU.out(F("name = F(\""));
+  if(name)
+    MENU.out(name);
+  MENU.outln(F("\");"));
 
-  MENU.out(F("date = \""));
+  MENU.out(F("date = F(\""));
   if(date)
     MENU.out(date);
-  else
-    MENU.out('"');
-  MENU.outln(';');
+  MENU.outln(F("\");"));
 
   MENU.out(F("select_array_in(SCALES, "));
   MENU.out(array2name(SCALES, selected_in(SCALES)));
@@ -1064,6 +1061,75 @@ void show_configuration_code() {	// show code, similar show_UI_basic_setup()
   MENU.out(F(";\t// "));
   show_metric_mnemonic();
   MENU.ln();
+
+  MENU.out(F("// subcycle_octave = "));	// commented out, must rethink that
+  MENU.out(subcycle_octave);
+  MENU.outln(F(";\t// TODO: rethink that"));
+
+  MENU.out(F("// cycle "));	// commented out, redundant info
+  PULSES.display_time_human(harmonical_CYCLE);
+  MENU.out(F(" subcycle | "));
+  PULSES.display_time_human(used_subcycle);
+  MENU.outln('|');
+}
+
+
+void show_configuration_as_string() {	// file representation, similar show_configuration_code()
+  MENU.out(F("name:"));
+  if(name)
+    MENU.out(name);
+  MENU.out('\t');
+
+  MENU.out(F("date:"));
+  if(date)
+    MENU.out(date);
+  MENU.out('\t');
+
+  MENU.out(F("SCALE:"));
+  MENU.out(array2name(SCALES, selected_in(SCALES)));
+  MENU.out('\t');
+
+  MENU.out(F("JIFF:"));
+  MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
+  MENU.out('\t');
+
+  MENU.out(F("iCODE:"));
+  MENU.out(array2name(iCODEs, selected_in(iCODEs)));
+  MENU.out('\t');
+
+  MENU.out(F("SYNC:"));
+  MENU.out(sync);
+  MENU.out('\t');
+
+  MENU.out(F("synS:"));
+  MENU.out(stack_sync_slices);
+  MENU.out('\t');
+
+  MENU.out(F("pul*:"));
+  MENU.out(base_pulse);
+  MENU.out('\t');
+
+  MENU.out(F("PITCH:"));
+  MENU.out(pitch.multiplier);
+  MENU.out(',');
+  MENU.out(pitch.divisor);
+  MENU.out('\t');
+
+  MENU.out(F("chrom:"));
+  MENU.out(chromatic_pitch);
+  MENU.out('\t');
+
+  /* metric mnemonic is shown, but *ignored* when reading */
+  MENU.out(F("chmnm:"));
+  show_metric_mnemonic();
+  MENU.out('\t');
+
+  /* decide on loading to respekt that or not */
+  MENU.out(F("cyc_o:"));
+  MENU.out(subcycle_octave);
+  MENU.out('\t');
+
+  MENU.ln();
 }
 
 
@@ -1081,6 +1147,8 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
     PULSES.display_time_human(play_time);
     MENU.ln(2);
     musicBox_short_info();
+    MENU.ln();
+    show_configuration_code();
     MENU.ln();
   }
 
@@ -1578,10 +1646,8 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
   } // all later wakeups
 
   // (all wakeups)
-  if(show_cycle_pattern) {
+  if(show_cycle_pattern)
     watch_primary_pulses();
-    MENU.tab();
-  }
 
   cycle_monitor(pulse);
 
@@ -1656,9 +1722,9 @@ void select_random_scale() {
 }
 
 void  select_random_stack_sync(void) {
-  stack_sync_slices = 2 ;	// 2 very slow start
+  stack_sync_slices = 4 ;	// 4 slow start
 
-  int o = random(11);
+  int o = random(10);
   while (o--) stack_sync_slices *= 2;
   if(random(4) == 1)		// 75% up, 25% downwards
     stack_sync_slices *= -1;	// *more up*  as up did not exist in previous sync implementation
@@ -2240,6 +2306,9 @@ void start_musicBox() {
 
   show_configuration_code();
   MENU.outln(F(" <<< * >>>\n"));	// end output block
+
+  show_configuration_as_string();	// TODO: REMOVE: test only ################
+  MENU.ln();
 
   if(MENU.verbosity >= VERBOSITY_MORE) {
     show_cycle(harmonical_CYCLE);	// shows multiple cycle octaves
