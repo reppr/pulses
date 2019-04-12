@@ -186,7 +186,7 @@ action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actio
 
 /* **************************************************************** */
 fraction pitch={1,1};	// pitch to tune a scale	// TODO: gather basic settings in the code	################
-
+int octave_shift=0;
 bool no_octave_shift=false;	// see: tune_selected_2_scale_limited()
 
 /* **************************************************************** */
@@ -781,7 +781,6 @@ uint8_t relaxmax=4;			// up to how many relax() in one todo chain
     }
 #endif
 
-#include "preset_data.h"	// FIXME: TODO: just a compile test
 
 /* **************************************************************** */
 #if defined USE_MONOCHROME_DISPLAY
@@ -922,9 +921,9 @@ void setup() {
 #if defined USE_MONOCHROME_DISPLAY
   /*	// TODO: fix&use monochrome_display detection
   if(monochrome_display_on)
-    delay(2000);	// give a chance to read version on oled display
+    delay(1500);	// give a chance to read version on oled display
   */
-  delay(2000);	// give a chance to read version on oled display
+  delay(1500);	// give a chance to read version on oled display
 
   pinMode(0, INPUT);	// holding GPIO00 switch holds program version display on screen
   while(digitalRead(0) == LOW) { ; }	// ATTENTION: a bit dangerous, *not* tested with GPIO00 as click or such...
@@ -2037,7 +2036,6 @@ int selected_apply_scale_on_period(int voices, unsigned int *scale, bool octaves
   pulse_time_t new_period;
   int applied=0;
 
-//  int pulse=0;
   int octave=1;	// 1,2,4,8,...
   for (int note=0, pulse=0; applied<voices; note++) {
     multiplier = scale[note*2];
@@ -2088,8 +2086,6 @@ int tune_selected_2_scale_limited(fraction scaling, unsigned int *scale, unsigne
 
   return octave_hift
 */
-
-  int octave_shift=0;
 
   if (MENU.verbosity >= VERBOSITY_LOWEST) {
     MENU.out(F("tune_selected_2_scale_limited("));

@@ -359,8 +359,9 @@ void tabula_rasa() {
   if(MusicBoxState != OFF)	// avoid possible side effects
     set_MusicBoxState(OFF);
 
-  name=NULL;
-  date=NULL;
+  name=NULL;	// TODO: TEST: hmm?
+  date=NULL;	// TODO: TEST: hmm?
+  // preset=ILLEGAL;	// no!
 }
 
 // TODO: magic_autochanges default?

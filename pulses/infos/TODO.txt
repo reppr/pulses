@@ -80,3 +80,11 @@ MENU,out_scanf(....);
 show selected icode in show basic parameters
 
 '::Ht' to switch menu just for a line
+
+PR 140 broken
+
+maximal times run time configurable
+
+BT detection when idle?, muBo start?
+
+BUG often plays 2 subcycles
