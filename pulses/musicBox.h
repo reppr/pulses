@@ -22,8 +22,8 @@
 //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&restart	// endless loop
 //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&ESP.restart	// works fine
 //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&hibernate	// wakes up after musicBox_pause_seconds	BT should work, test
-#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user		// works fine, a possible snoring workaround on usb dac only models
-
+//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user		// works fine, a possible snoring workaround on usb dac only models
+#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&random_preset	// muzak forever?
 
 /* **************************************************************** */
 // pre defined SETUPS:
@@ -113,7 +113,7 @@ char* date=NULL;		// date  of a piece, preset or whatever
 #endif
 
 
-int musicBox_pause_seconds=10;	// SEE: hibernate(); and restart();
+int musicBox_pause_seconds=10;	// SEE: hibernate(), restart(), random_preset()
 
 // functions to call when musicBox has reached the end:
 void deep_sleep();	// pre declaration
@@ -129,6 +129,11 @@ void restart() {	// pause and loop, endlessly
 
 void user() {	// manual musicBox interaction
   MENU.outln(F("menu interaction"));
+}
+
+void random_preset() {
+  delay(musicBox_pause_seconds*1000);	// *not* meant for any background activity to go on
+  MENU.play_KB_macro(F("y0"));		// start random preset
 }
 
 void hibernate() {	// see: https://esp32.com/viewtopic.php?t=3083
@@ -161,9 +166,13 @@ void show_when_done_function() {
     MENU.out("pause(");
     MENU.out(musicBox_pause_seconds);
     MENU.out("); restart");
-  } else if(musicBox_when_done == &user)
+  } else if(musicBox_when_done == &user) {
     MENU.out("user");
-  else
+  } else if(musicBox_when_done == & random_preset) {
+    MENU.out("pause(");
+    MENU.out(musicBox_pause_seconds);
+    MENU.out("); random_preset");
+  } else
     MENU.out("(unknown)");
 
   MENU.out(F("();"));
