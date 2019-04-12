@@ -22,8 +22,8 @@
 //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&restart	// endless loop
 //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&ESP.restart	// works fine
 //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&hibernate	// wakes up after musicBox_pause_seconds	BT should work, test
-//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user		// works fine, a possible snoring workaround on usb dac only models
-#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&random_preset	// muzak forever?
+#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user		// works fine, a possible snoring workaround on usb dac only models
+//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&random_preset	// muzak forever?  >>>> RANDOM_PRESET_PLAYER sets this automagically <<<<
 
 /* **************************************************************** */
 // pre defined SETUPS:
@@ -58,6 +58,12 @@
 
 #endif	// (pre defined setups)
 
+// additional feature	// TODO: MOVE: where appropriate
+#if defined RANDOM_PRESET_PLAYER
+  #undef  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
+  #define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&random_preset	// muzak forever?
+#endif
+
 #if ! defined AUTOMAGIC_CYCLE_TIMING_SECONDS
   #define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// *max seconds*, produce short sample pieces	BRACHE 2019-01
   //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces		BahnParkPlatz 18
@@ -89,6 +95,8 @@ int base_pulse=ILLEGAL;		// a human perceived base pulse, see 'stack_sync_slices
 int stack_sync_slices=0;	// 0 is off	// positive: upwards,	negative: downwards	// TODO: make it short?
 char* name=NULL;		// name of a piece, a preset
 char* date=NULL;		// date  of a piece, preset or whatever
+
+short preset=ILLEGAL;
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   #include "peripheral_power_switch.h"
@@ -131,7 +139,7 @@ void user() {	// manual musicBox interaction
   MENU.outln(F("menu interaction"));
 }
 
-void random_preset() {
+void random_preset() {	// TODO: sets preset, how to unset?
   delay(musicBox_pause_seconds*1000);	// *not* meant for any background activity to go on
   MENU.play_KB_macro(F("y0"));		// start random preset
 }
@@ -915,10 +923,20 @@ void show_metric_mnemonic() {	// TODO: move to Harmonical or Pulses
 void display_basic_musicBox_parameters() {	// ATTENTION: takes too long to be used while playing
   u8x8.clear();
 
+  if(preset > 0) {
+    u8x8.setCursor(0,0);
+    u8x8.setInverseFont(1);
+    u8x8.print(F("PRESET "));
+    u8x8.print(preset);
+    u8x8.print(' ');
+    u8x8.setInverseFont(0);
+  }
+
   u8x8.drawString(0, 1, array2name(SCALES, selected_in(SCALES)));
 
   u8x8.drawString(0, 3, array2name(JIFFLES, selected_in(JIFFLES)));
 
+  u8x8.setCursor(0,5);
   u8x8.setCursor(0,5);
   u8x8.print('S');		// sync
   u8x8.print(sync);
@@ -2206,6 +2224,7 @@ void start_musicBox() {
   MENU.play_KB_macro(F("-:M "), false); // initialize, the space avoids output from :M , no newline
 
   // TODO: REWORK:  setup_bass_middle_high()  used in musicBox, but not really compatible
+  MENU.ln();	// start setup sequence output "block"
   setup_bass_middle_high(bass_pulses, middle_pulses, high_pulses);
 
   if(!scale_user_selected)	// if *not* set by user interaction
@@ -3325,6 +3344,7 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'y':
+    // TODO: sets preset, how to unset?	################
     #include "menu_y_magic_tmp.h"	// temporary file for musicBox preset testing
     break;
 

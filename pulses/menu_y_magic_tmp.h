@@ -3,19 +3,20 @@
   temporary development file
 */
 
-#define MUSICBOX_PRESETS	170
+#define MUSICBOX_PRESETs	170
 
 {
-  short preset;
   MENU.ln();
   MENU.out(F("PRESET "));
 
   input_value = MENU.numeric_input(1);
-  if(input_value == 0)		// selecting zero gives random preset  see: random_preset()
-    input_value = random(MUSICBOX_PRESETS) + 1;
+  if(input_value == 0) {		// selecting zero gives random preset  see: random_preset()
+    input_value = random(MUSICBOX_PRESETs) + 1;
+    MENU.out(F("(random) "));
+  }
 
-  if((input_value <= MUSICBOX_PRESETS) && (input_value >0)) {
-    preset = input_value;
+  if((input_value <= MUSICBOX_PRESETs) && (input_value >0)) {
+    preset = input_value;	// TODO: sets preset, how to unset? ################
 
     name=NULL;		// initialisation and defaults:
     date=NULL;
@@ -2062,10 +2063,10 @@
       // cycle 9h 59' 10"  subcycle | 9' 22" |
       break;
 
+      // >>>> *DO NOT FORGET* to update MUSICBOX_PRESETs <<<<
     } // switch(input)
 
     HARMONICAL.reduce_fraction(&pitch);		// ;)
-    parameters_by_user();
 
     MENU.out(preset);
     if(name) {
@@ -2079,6 +2080,7 @@
     MENU.ln();
 
     tabula_rasa();
+    parameters_by_user();
 
     start_musicBox();
   } else

@@ -167,6 +167,11 @@
   #define AUTOSTART	MENU.play_KB_macro("E30 -"); selected_experiment=-1;
 #endif
 
+#if defined RANDOM_PRESET_PLAYER
+  #undef AUTOSTART
+  #define AUTOSTART	  MENU.play_KB_macro(F(":M y0"));		// start random preset
+#endif
+
 #ifdef NO_AUTOSTART_INSTRUMENT
   #undef AUTOSTART
 #endif

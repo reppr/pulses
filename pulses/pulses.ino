@@ -2,6 +2,7 @@
 /*				0123456789abcdef   */
 
 #define PRENAME		SoundShip1	// individual name	// TODO: move to a configuration file
+#define RANDOM_PRESET_PLAYER	// FIXME: move to configuration
 
 #define DO_STRESS_MANAGMENT
 //#define STRESS_MONITOR_LEVEL	64*2	// TODO: menu interface	// TODO: move to a configuration file
