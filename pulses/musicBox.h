@@ -122,17 +122,23 @@ short preset=ILLEGAL;
 
 
 int musicBox_pause_seconds=10;	// SEE: hibernate(), restart(), random_preset()
+void delay_pause() {
+  if(musicBox_pause_seconds) {
+    if(MENU.verbosity >= VERBOSITY_LOWEST); {
+      MENU.out(F("restarting after "));
+      MENU.out(musicBox_pause_seconds);
+      MENU.outln(F(" seconds"));
+    }
+    delay(musicBox_pause_seconds*1000);	// *not* meant for any background activity to go on
+  }
+}
 
 // functions to call when musicBox has reached the end:
 void deep_sleep();	// pre declaration
 void light_sleep();	// pre declaration
 
-void restart() {	// pause and loop, endlessly
-  MENU.out(F("restarting after "));
-  MENU.out(musicBox_pause_seconds);
-  MENU.outln(F(" seconds"));
-
-  delay(musicBox_pause_seconds*1000);	// *not* meant for any background activity to go on
+void restart() {	// alias, pause and loop, endlessly
+  delay_pause();
 }
 
 void user() {	// manual musicBox interaction
@@ -140,13 +146,17 @@ void user() {	// manual musicBox interaction
 }
 
 void random_preset() {	// TODO: sets preset, how to unset?
-  delay(musicBox_pause_seconds*1000);	// *not* meant for any background activity to go on
+  delay_pause();
   MENU.play_KB_macro(F("y0"));		// start random preset
 }
 
 void hibernate() {	// see: https://esp32.com/viewtopic.php?t=3083
-  if(MENU.verbosity >= VERBOSITY_LOWEST)
+  if(MENU.verbosity >= VERBOSITY_LOWEST) {
     MENU.outln(F("hibernate()"));
+    MENU.out(F("restarting after "));
+    MENU.out(musicBox_pause_seconds);
+    MENU.outln(F(" seconds"));
+  }
 
   esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);
   esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
