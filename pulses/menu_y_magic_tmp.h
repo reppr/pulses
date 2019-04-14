@@ -1725,7 +1725,7 @@
       break;
 
     case 142:
-      name = F("2019-02-04_bordun");
+      name = F("2019-02-04_bordun");	// with rhythm
       //comment: ardour5
       select_array_in(SCALES, octave_4th_5th);
       sync = 0;
@@ -1945,6 +1945,7 @@
       break;
 
     case 160:
+      // start may be probletatic
       name = F("rising ostinatos over rhythmic bordun");  // nice and harmonic, humming, good ending
       //comment: very nice ending :)
       sync = 0;
@@ -1991,7 +1992,7 @@
       break;
 
     case 165:
-      name = F("stacked clicks");
+      name = F("stacked clicks");	// stacked start :)
       //comment: interesting start ;)
       select_array_in(SCALES,europ_PENTAtonic);
       select_array_in(JIFFLES,d4096_32);
@@ -2101,6 +2102,7 @@
   name = F("motivtanz");
   name = F("langsam sprudelnd");
   name = F("Good Night Choir");
+
   name = F("Marianne 1	eingesperrt<->Freiheit	sync? 4|1024");
 	what am i doing here?
 	i can here the birds outside
@@ -2116,5 +2118,8 @@
   name = F("e psinnlichi ziit");	// some morningbirds too
   name = F("klassisch TIMEMACHINE style");
   name = F("eifach und schön");	// harmonical cycle    55' 27"
+
+  name = F("stacked clicks");	// stacked start :)
+	make a very short piece?
 
 */

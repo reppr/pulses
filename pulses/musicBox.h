@@ -96,7 +96,7 @@ int stack_sync_slices=0;	// 0 is off	// positive: upwards,	negative: downwards	/
 char* name=NULL;		// name of a piece, a preset
 char* date=NULL;		// date  of a piece, preset or whatever
 
-short preset=ILLEGAL;
+short preset=0;
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   #include "peripheral_power_switch.h"
@@ -369,9 +369,7 @@ void tabula_rasa() {
   if(MusicBoxState != OFF)	// avoid possible side effects
     set_MusicBoxState(OFF);
 
-  name=NULL;	// TODO: TEST: hmm?
   date=NULL;	// TODO: TEST: hmm?
-  // preset=ILLEGAL;	// no!
 }
 
 // TODO: magic_autochanges default?
@@ -934,7 +932,7 @@ void show_metric_mnemonic() {	// TODO: move to Harmonical or Pulses
 void display_basic_musicBox_parameters() {	// ATTENTION: takes too long to be used while playing
   u8x8.clear();
 
-  if(preset > 0) {
+  if(preset) {
     u8x8.setCursor(0,0);
     u8x8.setInverseFont(1);
     u8x8.print(F("PRESET "));
@@ -1005,6 +1003,16 @@ void display_basic_musicBox_parameters() {	// ATTENTION: takes too long to be us
 
 
 void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
+  if(preset) {
+    MENU.out(F("PRESET: "));
+    MENU.out(preset);
+    if(name) {
+      MENU.tab();
+      MENU.out(name);
+    }
+    MENU.ln();
+  }
+
   tag_randomness(scale_user_selected);
   MENU.out(F("SCALE: "));
   MENU.out(array2name(SCALES, selected_in(SCALES)));
