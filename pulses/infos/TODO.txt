@@ -28,8 +28,6 @@ IMAGES of used dev boards
 PIN STICKERS of used dev boards
 
 
-avoid multiplier/divisor in musicBox, should be ok
-
 show pp configuration
 
 re organize pp configuration (files), do not forget NO_GPIO_PINS
@@ -88,3 +86,7 @@ maximal times run time configurable
 BT detection when idle?, muBo start?
 
 BUG often plays 2 subcycles
+
+TODO: REMOVE: multiplier, divisor	################################################################
+
+// TODO: FIXME: MUSICBOX_HARD_END_SECONDS		// savety net	################

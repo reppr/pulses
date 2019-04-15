@@ -1,0 +1,58 @@
+      //# TOP
+      //# FAVORITE
+      //# FAVORITE-
+      //# favorite+
+      //# favorite
+      //# favorite-
+
+      //# shortIsOk
+      //# fullCycleIsOk
+
+      //# motives
+      //# melodies
+      //# harmonies
+      //# rhytm&pulse
+      //# structure
+
+      //# dropouts
+      //# systemStress
+      //# heavyStart
+
+      //# classicHarmonical
+      //# aesthetic
+      //# nice
+      //# happy
+      //# melancholic
+      //# dramatic
+      //# strange
+      //# nervous
+      //# crazy
+      //# funny
+      //# simple
+      //# simlicistic
+      //# dense
+      //# chaotic
+      //# mystic
+      //# cosmic
+      //# SoundSpaceShip
+      //# fractal
+      //# soundscape
+      //# elementary
+      //# bigBang
+
+      //# birds
+      //# fairies
+      //# aurora
+      //# clock
+      //# jazz
+      //# peep
+      //# alarm
+      //# robot
+
+      //# lesley
+      //# delay
+      //# noise
+      //# humming
+      //# rumble
+      //# hasSlowPulse
+      //# lyric

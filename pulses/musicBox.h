@@ -2273,6 +2273,7 @@ void start_musicBox() {
   PULSES.time_unit=1000000;	// default metric
 
   // pitch
+  // TODO: REMOVE: multiplier, divisor	################################################################
   multiplier=4096;	// uses 1/4096 jiffles		// TODO: define role of multiplier, divisor
   multiplier *= 8;	// TODO: adjust appropriate...	// TODO: define role of multiplier, divisor
 
