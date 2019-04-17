@@ -2,7 +2,10 @@
 /*				0123456789abcdef   */
 
 #define PRENAME		SoundShip1	// individual name	// TODO: move to a configuration file
-#define RANDOM_PRESET_PLAYER	// FIXME: move to configuration
+#define RANDOM_PRESET_PLAYER	// FIXME: move to configuration	// TODO: move to a configuration file
+
+//#define BATTERY_OLED_BOARD	// LiPo battery OLED BOARD	// TODO: move to a configuration file
+#define HELTEC_OLED_BOARD	// Heltec OLED BOARD		// TODO: move to a configuration file
 
 #define DO_STRESS_MANAGMENT
 //#define STRESS_MONITOR_LEVEL	64*2	// TODO: menu interface	// TODO: move to a configuration file
@@ -133,11 +136,19 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 #include "int_edit.h"			// displaying and editing unsigned int arrays
 #include "array_descriptors.h"		// make data arrays accessible for the menu, give names to the data arrays
 
-#if defined USE_MONOCHROME_DISPLAY
+
+#if defined USE_MONOCHROME_DISPLAY	// TODO: move to setup
   #include <U8x8lib.h>
-  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16);	// TODO: move to setup()
+
+  #if defined BATTERY_OLED_BOARD
+    U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 4, /* data=*/ 5, /* reset=*/ 16);  // BATTERY_OLED_BOARD	TODO: move to setup()
+  #elif defined HELTEC_OLED_BOARD		// heltec
+    U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16); // HELTEC_OLED_BOARD	TODO: move to setup()
+  #else
+    #error MONOCHROME DISPLAY BOARD TYPE UNKNOWN
+  #endif
   // bool monochrome_display_on=true;	// TODO: fix&use monochrome_display detection
-#endif
+#endif	// USE_MONOCHROME_DISPLAY
 
 action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actions
 
