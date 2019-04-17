@@ -2,6 +2,7 @@
 /*				0123456789abcdef   */
 
 #define PRENAME		SoundShip1	// individual name	// TODO: move to a configuration file
+
 #define RANDOM_PRESET_PLAYER	// FIXME: move to configuration	// TODO: move to a configuration file
 
 //#define BATTERY_OLED_BOARD	// LiPo battery OLED BOARD	// TODO: move to a configuration file
@@ -14,7 +15,6 @@
 
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
 #define HARMONICAL_MUSIC_BOX
-#define MAGICAL_TOILET_HACKS	// some quick dirty hacks
 
 // TODO: change PERIPHERAL_POWER_SWITCH_PIN as GPIO12 is active during boot process...
 #define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_TOUCH_INPUT_PIN	green LED in many musicBoxes
@@ -69,6 +69,8 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
+#include <limits.h>	// just in case
+
 using namespace std;	// ESP8266 needs that
 
 
@@ -2229,13 +2231,31 @@ bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, u
 };
 
 
-// if shortest period of selected pulses is too short, shift all periods by octaves
-// TODO: OBSOLETE?	################
 int lower_audio_if_too_high(unsigned long limit) {
+/*
+  int lower_audio_if_too_high(unsigned long limit)
+  if shortest period of selected pulses is too short, shift all periods by octaves
+  return octave_shift	if ok
+  return ERROR INT_MIN	if first selected pulse has no period data	(not used yet)
+  return ERROR INT_MAX	if shortest==0					(not used yet)
+  TODO: OBSOLETE?	################
+*/
   unsigned int shortest=~0;		// shortest period.time (no overflow implemented here)
   unsigned int fastest_pulse=~0;	// pulse index with shortest period.time
   int octave_shift=0;
   int pulse;
+
+  for (pulse=0; pulse<PL_MAX; pulse++) {		// check if there *is* period data at all:
+    if (PULSES.pulse_is_selected(pulse)) {		//   in the first selected pulse
+      if(PULSES.pulses[pulse].period.time == 0) {	//     (disregarding overflow)
+	MENU.error_ln(F("no period data"));
+	MENU.out(F("PRESET "));
+	MENU.outln(F(preset));
+	return INT_MIN;			//   return ERROR INT_MIN  if first selected pulse has no period data (not used yet)
+      }
+    }
+  }
+  // data ok
 
   for (pulse=0; pulse<PL_MAX; pulse++) {	// find fastest selected pulse
     if (PULSES.pulse_is_selected(pulse)) {
@@ -2258,13 +2278,20 @@ int lower_audio_if_too_high(unsigned long limit) {
     }
   }
 
-  while (PULSES.pulses[fastest_pulse].period.time < limit) {	// too fast?
-    octave_shift--;
-    for (pulse=0; pulse<PL_MAX; pulse++) {
-      if (PULSES.pulse_is_selected(pulse)) {
-	PULSES.mul_time(&PULSES.pulses[pulse].period, 2);	// octave shift down
+  if(shortest) {	// ok
+    while (PULSES.pulses[fastest_pulse].period.time < limit) {	// too fast?
+      octave_shift--;
+      for (pulse=0; pulse<PL_MAX; pulse++) {
+	if (PULSES.pulse_is_selected(pulse)) {
+	  PULSES.mul_time(&PULSES.pulses[pulse].period, 2);	// octave shift down
+	}
       }
     }
+  } else {		// catch the shortest == 0, ERROR	return INT_MAX, not used yet
+    MENU.outln(F("shortest period 0"));
+    MENU.outln(F("PRESET "));
+    MENU.outln(F(preset));
+    return INT_MAX;	// catch the shortest == 0, ERROR	return INT_MAX, not used yet
   }
 
   if (octave_shift) {
@@ -3293,7 +3320,8 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
 }
 
 
-// TODO: REWORK:  setup_bass_middle_high()  used in musicBox, but not really compatible
+// ################################################################
+// TODO: FIXME: REWORK:  setup_bass_middle_high()  used in musicBox, but not really compatible
 // TODO: fix corner cases belonging to 2 groups, see: ESP32_USB_DAC_ONLY	################
 void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_pulses) {
   {
@@ -3316,8 +3344,10 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
     base_pulse = bass_pulses +1;	// FIXME: HACK: first pulse above bass, but should respect tuning (octave)
 
   // tune *all* primary pulses
+#if ! defined MAGICAL_TOILET_HACK_2
   tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));	// TODO: OBSOLETE?
   lower_audio_if_too_high(409600*2);	// 2 bass octaves  // TODO: adjust appropriate...
+#endif
 
   // prepare primary pulse groups:
 
