@@ -6,7 +6,8 @@
 
 // PRESETS: uncomment *one* (or zero) of the following setups:
 //#define SETUP_BRACHE		BRACHE_2019-03
-#define SETUP_BAHNPARKPLATZ	BahnParkPlatz 2018/2019
+#define SETUP_BRACHE_TRIGGERED_PRESETs		BRACHE_2019-04
+//#define SETUP_BAHNPARKPLATZ	BahnParkPlatz 2018/2019
 //#define SETUP_CHAMBER_ORCHESTRA	The Harmonical Chamber Orchestra 2018-12
 
 // TODO: REMOVE OLDSTYLE_TUNE_AND_LIMIT
@@ -28,7 +29,21 @@
 /* **************************************************************** */
 // pre defined SETUPS:
 
-#if defined SETUP_BRACHE
+#if defined SETUP_BRACHE_TRIGGERED_PRESETs
+  #define PROGRAM_SUB_VERSION			TRIGGERED_PLAYER
+  #define MAX_SUBCYCLE_SECONDS	120		// *max seconds*, produce very short sample pieces	BRACHE 2019-04
+  #define MUSICBOX_HARD_END_SECONDS		5*60	// SAVETY NET
+  #define MUSICBOX_TRIGGER_BLOCK_SECONDS	30	// BRACHE 2019-01
+  #define SOFT_END_DAYS_TO_LIVE_DEFAULT		0	// fast ending, as there are more people now that it get's warmer
+  #if ! defined MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
+    #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&deep_sleep	// do test for dac noise...	BT checks BLUETOOTH_ENABLE_PIN on boot
+  #endif
+  #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
+  #define MUSICBOX_TRIGGERED_FUNCTION		MENU.play_KB_macro(F("y0"));	// start random preset
+  #define MAGICAL_TOILET_HACKS	// some quick dirty hacks around fake triggering
+  #define MAGICAL_TOILET_HACK_2	// continue using (parts of) setup_bass_middle_high() to setup musicbox
+
+#elif defined SETUP_BRACHE
   #define PROGRAM_SUB_VERSION			SETUP_BRACHE
   #define MAX_SUBCYCLE_SECONDS	5*60		// *max seconds*, produce short sample pieces	BRACHE 2019-01
   #define MUSICBOX_HARD_END_SECONDS		10*60	// SAVETY NET, we're low on energy...
@@ -37,8 +52,9 @@
   #if ! defined MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
     #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&deep_sleep	// do test for dac noise...	BT checks BLUETOOTH_ENABLE_PIN on boot
   #endif
-
   #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
+  #define MUSICBOX_TRIGGERED_FUNCTION		start_musicBox();
+  #define MAGICAL_TOILET_HACKS	// some quick dirty hacks around fake triggering
 
 #elif defined SETUP_BAHNPARKPLATZ
   #define PROGRAM_SUB_VERSION			SETUP_BAHNPARKPLATZ
@@ -69,11 +85,6 @@
   //#define MAX_SUBCYCLE_SECONDS	12*60	// *max seconds*, produce sample pieces		BahnParkPlatz 18
   //#define MAX_SUBCYCLE_SECONDS	18*60	// *max seconds*, produce moderate length sample pieces  DEFAULT
   //#define MAX_SUBCYCLE_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
-#endif
-
-#if defined SHORT_PRESET_TEST_SEC	// max duration of subcycle
-  #undef MAX_SUBCYCLE_SECONDS
-  #define MAX_SUBCYCLE_SECONDS	SHORT_PRESET_TEST_SEC
 #endif
 
 #include <esp_sleep.h>
@@ -1313,6 +1324,9 @@ void musicBox_trigger_OFF() {
 #if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
 void start_musicBox();			// forward declaration
 //
+#if ! defined MUSICBOX_TRIGGERED_FUNCTION
+  #define MUSICBOX_TRIGGERED_FUNCTION	start_musicBox();
+#endif
 void musicBox_trigger_got_hot() {	// must be called when magical trigger was detected high
   if(musicBox_trigger_enabled) {
     musicBox_trigger_ISR();	// *not* as ISR
@@ -1321,7 +1335,8 @@ void musicBox_trigger_got_hot() {	// must be called when magical trigger was det
     if(MusicBoxState != OFF)
       tabula_rasa();
 
-    start_musicBox();
+    MUSICBOX_TRIGGERED_FUNCTION		// start MUSICBOX_TRIGGERED_FUNCTION
+
 #if defined PERIPHERAL_POWER_SWITCH_PIN
     peripheral_power_switch_ON();
 #endif
@@ -2365,9 +2380,6 @@ void start_musicBox() {
 
   show_configuration_code();
   MENU.outln(F(" <<< * >>>\n"));	// end output block
-
-  show_configuration_as_string();	// TODO: REMOVE: test only ################
-  MENU.ln();
 
   if(MENU.verbosity >= VERBOSITY_MORE) {
     show_cycle(harmonical_CYCLE);	// shows multiple cycle octaves
