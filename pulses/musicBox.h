@@ -30,7 +30,7 @@
 
 #if defined SETUP_BRACHE
   #define PROGRAM_SUB_VERSION			SETUP_BRACHE
-  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	5*60	// *max seconds*, produce short sample pieces	BRACHE 2019-01
+  #define MAX_SUBCYCLE_SECONDS	5*60		// *max seconds*, produce short sample pieces	BRACHE 2019-01
   #define MUSICBOX_HARD_END_SECONDS		10*60	// SAVETY NET, we're low on energy...
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	30	// BRACHE 2019-01
   #define SOFT_END_DAYS_TO_LIVE_DEFAULT		0	// fast ending, as there are more people now that it get's warmer
@@ -42,16 +42,16 @@
 
 #elif defined SETUP_BAHNPARKPLATZ
   #define PROGRAM_SUB_VERSION			SETUP_BAHNPARKPLATZ
-  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces		BahnParkPlatz 18
+  #define MAX_SUBCYCLE_SECONDS	12*60		// *max seconds*, produce sample pieces		BahnParkPlatz 18
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	13	// BahnParkPlatz
   // #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
 
 #elif defined SETUP_CHAMBER_ORCHESTRA
   #define PROGRAM_SUB_VERSION			SETUP_CHAMBER_ORCHESTRA
 
-  //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	21*60	// *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
-  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
-  //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// DEBUG *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
+  //#define MAX_SUBCYCLE_SECONDS	21*60		// *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
+  #define MAX_SUBCYCLE_SECONDS		12*60		// *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
+  //#define MAX_SUBCYCLE_SECONDS	7*60		// DEBUG *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
 
   #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	1	// debounce only
@@ -64,11 +64,16 @@
   #define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&random_preset	// muzak forever?
 #endif
 
-#if ! defined AUTOMAGIC_CYCLE_TIMING_SECONDS
-  #define AUTOMAGIC_CYCLE_TIMING_SECONDS	7*60	// *max seconds*, produce short sample pieces	BRACHE 2019-01
-  //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	12*60	// *max seconds*, produce sample pieces		BahnParkPlatz 18
-  //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	18*60	// *max seconds*, produce moderate length sample pieces  DEFAULT
-  //#define AUTOMAGIC_CYCLE_TIMING_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
+#if ! defined MAX_SUBCYCLE_SECONDS
+  #define MAX_SUBCYCLE_SECONDS	7*60		// *max seconds*, produce short sample pieces	BRACHE 2019-01
+  //#define MAX_SUBCYCLE_SECONDS	12*60	// *max seconds*, produce sample pieces		BahnParkPlatz 18
+  //#define MAX_SUBCYCLE_SECONDS	18*60	// *max seconds*, produce moderate length sample pieces  DEFAULT
+  //#define MAX_SUBCYCLE_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
+#endif
+
+#if defined SHORT_PRESET_TEST_SEC	// max duration of subcycle
+  #undef MAX_SUBCYCLE_SECONDS
+  #define MAX_SUBCYCLE_SECONDS	SHORT_PRESET_TEST_SEC
 #endif
 
 #include <esp_sleep.h>
@@ -91,12 +96,17 @@
   bool some_metric_tunings_only=false;	// free pitch tuning
 #endif
 
-int base_pulse=ILLEGAL;		// a human perceived base pulse, see 'stack_sync_slices'	// TODO: make it short?
 int stack_sync_slices=0;	// 0 is off	// positive: upwards,	negative: downwards	// TODO: make it short?
 char* name=NULL;		// name of a piece, a preset
 char* date=NULL;		// date  of a piece, preset or whatever
+int base_pulse=ILLEGAL;		// a human perceived base pulse, see 'stack_sync_slices'	// TODO: make it short?
 
 short preset=0;
+
+#if ! defined MAX_SUBCYCLE_SECONDS
+  #define MAX_SUBCYCLE_SECONDS	0	// default: off, use whole harmonical cycle
+#endif
+int max_subcycle_seconds=MAX_SUBCYCLE_SECONDS;
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   #include "peripheral_power_switch.h"
@@ -112,9 +122,10 @@ short preset=0;
   #define MUSICBOX_PERFORMACE_SECONDS	12*60
 #endif
 
+// TODO: FIXME: MUSICBOX_HARD_END_SECONDS		// savety net	################
 #if ! defined MUSICBOX_HARD_END_SECONDS		// savety net
-  #if defined AUTOMAGIC_CYCLE_TIMING_SECONDS
-    #define  MUSICBOX_HARD_END_SECONDS	(AUTOMAGIC_CYCLE_TIMING_SECONDS*2)	// TODO: first try, FIXME: determine at run time
+  #if defined MAX_SUBCYCLE_SECONDS && MAX_SUBCYCLE_SECONDS > 0
+    #define  MUSICBOX_HARD_END_SECONDS	(MAX_SUBCYCLE_SECONDS*2)	// TODO: first try, FIXME: determine at run time
   #else
     #define  MUSICBOX_HARD_END_SECONDS	90*60	// FIXME: TODO: review that	################
   #endif
@@ -2323,18 +2334,18 @@ void start_musicBox() {
     used_subcycle = harmonical_CYCLE;
     subcycle_octave = 0;
 
-#if defined AUTOMAGIC_CYCLE_TIMING_SECONDS
-    used_subcycle={AUTOMAGIC_CYCLE_TIMING_SECONDS*1000000L,0};
-    pulse_time_t this_subcycle=harmonical_CYCLE;
-    while(true) {
-      if(this_subcycle.time <= used_subcycle.time && this_subcycle.overflow==used_subcycle.overflow) {
-	used_subcycle = this_subcycle;
-	break;
+    if(max_subcycle_seconds) {
+      used_subcycle={MAX_SUBCYCLE_SECONDS*1000000L,0};
+      pulse_time_t this_subcycle=harmonical_CYCLE;
+      while(true) {
+	if(this_subcycle.time <= used_subcycle.time && this_subcycle.overflow==used_subcycle.overflow) {
+	  used_subcycle = this_subcycle;
+	  break;
+	}
+	PULSES.div_time(&this_subcycle, 2);
+	subcycle_octave++;
       }
-      PULSES.div_time(&this_subcycle, 2);
-      subcycle_octave++;
     }
-#endif
   }
 
   MENU.ln();
@@ -2709,24 +2720,19 @@ void magical_butler(int p) {	// TODO: OBSOLETE?
     MENU.outln(MUSICBOX_TRIGGER_PIN);
 #endif
 
-#if defined AUTOMAGIC_CYCLE_TIMING_SECONDS	// MAX seconds
-  #if defined MUSICBOX_TRIGGER_BLOCK_SECONDS
-    {
+    if(MAX_SUBCYCLE_SECONDS) {	// MAX seconds
       pulse_time_t til_soft_end_time=used_subcycle;
       PULSES.sub_time(MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000L, &til_soft_end_time);
       PULSES.add_time(100, &til_soft_end_time);	// tolerance
       PULSES.pulses[p].period = til_soft_end_time;
-    }
-  #endif
-#else
-    PULSES.pulses[p].period.time = (MUSICBOX_PERFORMACE_SECONDS - MUSICBOX_TRIGGER_BLOCK_SECONDS)*1000000L;
-#endif
+    } else
+      PULSES.pulses[p].period.time = (MUSICBOX_PERFORMACE_SECONDS - MUSICBOX_TRIGGER_BLOCK_SECONDS)*1000000L;
     break;
   case 3:	// start soft ending and cleanup pulse, prepare for butler hard end
     if(magic_autochanges)
       start_soft_ending(soft_end_days_to_live, soft_end_survive_level);
     // prepare hard end
-#if defined AUTOMAGIC_CYCLE_TIMING_SECONDS
+#if defined MAX_SUBCYCLE_SECONDS
     {
       pulse_time_t til_hard_end_time = used_subcycle;
       PULSES.div_time(&til_hard_end_time, 2);	// cycle/2 for soft end, then HARD end	// TODO: test&adjust
@@ -2770,9 +2776,9 @@ void musicBox_setup() {	// TODO:update
   MENU.ln();
 #endif
 
-#if defined AUTOMAGIC_CYCLE_TIMING_SECONDS
+#if defined MAX_SUBCYCLE_SECONDS
   MENU.out(F("cycle used max seconds:\t"));
-    MENU.outln(AUTOMAGIC_CYCLE_TIMING_SECONDS);
+    MENU.outln(MAX_SUBCYCLE_SECONDS);
 #endif
 
 #if defined MUSICBOX_PERFORMACE_SECONDS

@@ -66,7 +66,7 @@
   #if defined ESP32_USB_DAC_ONLY
     #define PROGRAM_SUB_VERSION			DAC_only_usb
 
-    #define AUTOMAGIC_CYCLE_TIMING_SECONDS	21*60	// *max seconds*, produce sample pieces	ESP32_usb_DAC_only
+    #define MAX_SUBCYCLE_SECONDS		21*60	// *max seconds*, produce sample pieces	ESP32_usb_DAC_only
 
     // TODO: more flexibility, please
     #if defined USE_BATTERY_CONTROL
@@ -84,7 +84,7 @@
   #elif defined ESP32_USB_DAC_ONLY_OLED
     #define PROGRAM_SUB_VERSION			DAC_only_OLED
 
-    #define AUTOMAGIC_CYCLE_TIMING_SECONDS	21*60	// *max seconds*, produce sample pieces	ESP32_usb_DAC_only
+    #define MAX_SUBCYCLE_SECONDS		21*60	// *max seconds*, produce sample pieces	ESP32_usb_DAC_only
 
     #if ! defined NO_GPIO_PINS
       #define NO_GPIO_PINS
