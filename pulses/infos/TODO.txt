@@ -90,3 +90,11 @@ BUG often plays 2 subcycles
 TODO: REMOVE: multiplier, divisor	################################################################
 
 // TODO: FIXME: MUSICBOX_HARD_END_SECONDS		// savety net	################
+
+power save mode for OLED deep_sleep()
+
+FIXME: debug power off noise
+
+FIXME:
+    //# harmonie
+    //# harmonies

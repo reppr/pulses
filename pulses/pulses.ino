@@ -1,12 +1,13 @@
-#define PROGRAM_VERSION		PULSES alpha.019
+#define PROGRAM_VERSION		PULSES alpha.020
 /*				0123456789abcdef   */
 
-#define PRENAME		SoundShip1	// individual name	// TODO: move to a configuration file
+#define PRENAME			SoundShipPresets	// individual name	// TODO: move to a configuration file
+/*				0123456789abcdef   */
 
-#define RANDOM_PRESET_PLAYER	// FIXME: move to configuration	// TODO: move to a configuration file
+#define RANDOM_PRESET_LOOP	// FIXME: move to configuration	// TODO: move to a configuration file
 
 //#define BATTERY_OLED_BOARD	// LiPo battery OLED BOARD	// TODO: move to a configuration file
-#define HELTEC_OLED_BOARD	// Heltec OLED BOARD		// TODO: move to a configuration file
+//#define HELTEC_OLED_BOARD	// Heltec OLED BOARD		// TODO: move to a configuration file
 
 #define DO_STRESS_MANAGMENT
 //#define STRESS_MONITOR_LEVEL	64*2	// TODO: menu interface	// TODO: move to a configuration file
@@ -147,7 +148,9 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
   #elif defined HELTEC_OLED_BOARD		// heltec
     U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16); // HELTEC_OLED_BOARD	TODO: move to setup()
   #else
-    #error MONOCHROME DISPLAY BOARD TYPE UNKNOWN
+    //#error MONOCHROME DISPLAY BOARD TYPE UNKNOWN
+    #undef USE_MONOCHROME_DISPLAY
+    #warning *NOT* using monochrome display, type is unlnown
   #endif
   // bool monochrome_display_on=true;	// TODO: fix&use monochrome_display detection
 #endif	// USE_MONOCHROME_DISPLAY
@@ -1132,7 +1135,9 @@ MENU.ln();
   #ifdef AUTOSTART			// see: pulses_project_conf.h
     autostart_counter++;
     MENU.out(F("\nAUTOSTART "));
-    MENU.outln(autostart_counter);
+    MENU.out(autostart_counter);
+    MENU.tab();
+    MENU.outln(STRINGIFY(AUTOSTART));
 
     AUTOSTART
   #endif
@@ -1154,7 +1159,7 @@ MENU.ln();
 #ifdef HARMONICAL_MUSIC_BOX
   #if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
     #if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks, *no* interrupt
-      magic_trigger_ON();
+//    magic_trigger_ON();
     #else
       pinMode(MUSICBOX_TRIGGER_PIN, INPUT);
     #endif
@@ -1391,13 +1396,13 @@ void loop() {	// ARDUINO
   #if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
     #if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
      if(digitalRead(MUSICBOX_TRIGGER_PIN)) {
-       digitalWrite(2,HIGH);	// REMOVE: for field testing only
+//     digitalWrite(2,HIGH);	// REMOVE: for field testing only
        musicBox_trigger_got_hot();	// must be called when musicBox trigger was detected high
      }
     #else
-     if(switch_magical_trigger_off) {
-       magic_trigger_OFF();
-     }
+//     if(switch_magical_trigger_off) {
+//       magic_trigger_OFF();
+//     }
     #endif
   #endif
 #endif

@@ -24,10 +24,10 @@
   in most cases you can let all these lines inactive, commented out
 */
 
-//#define ESP32_15_clicks_no_display_TIME_MACHINE2	// ESP32 new default
+#define ESP32_15_clicks_no_display_TIME_MACHINE2	// ESP32 new default
 
 //#define ESP32_USB_DAC_ONLY			// minimal setup to play on DACs only
-#define ESP32_USB_DAC_ONLY_OLED			// minimal setup to play on DACs only with OLED display	// TODO: use ########
+//#define ESP32_USB_DAC_ONLY_OLED			// minimal setup to play on DACs only with OLED display
 
 // #define ESP32_15_clicks_no_display_TIME_MACHINE1	// ESP32 (prior default)
 
@@ -167,7 +167,7 @@
   #define AUTOSTART	MENU.play_KB_macro("E30 -"); selected_experiment=-1;
 #endif
 
-#if defined RANDOM_PRESET_PLAYER
+#if defined RANDOM_PRESET_LOOP
   #undef AUTOSTART
   #define AUTOSTART	  MENU.play_KB_macro(F(":M y0"));		// start random preset
 #endif
@@ -176,6 +176,10 @@
   #undef AUTOSTART
 #endif
 
+#if defined SETUP_BRACHE_TRIGGERED_PRESETs	// same as musicBox.h
+  #undef AUTOSTART
+  #define AUTOSTART	play_random_preset();	// same as musicBox.h
+#endif
 /* **************************************************************** */
 #define PROJECT_CONFIGURATION_H
 #endif

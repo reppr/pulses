@@ -24,24 +24,26 @@
 //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&ESP.restart	// works fine
 //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&hibernate	// wakes up after musicBox_pause_seconds	BT should work, test
 #define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user		// works fine, a possible snoring workaround on usb dac only models
-//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&random_preset	// muzak forever?  >>>> RANDOM_PRESET_PLAYER sets this automagically <<<<
+//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&random_preset	// muzak forever?  >>>> RANDOM_PRESET_LOOP sets this automagically <<<<
 
 /* **************************************************************** */
 // pre defined SETUPS:
 
 #if defined SETUP_BRACHE_TRIGGERED_PRESETs
   #define PROGRAM_SUB_VERSION			TRIGGERED_PLAYER
-  #define MAX_SUBCYCLE_SECONDS	120		// *max seconds*, produce very short sample pieces	BRACHE 2019-04
+  #define MAX_SUBCYCLE_SECONDS	120		// *max seconds*, PRODUCES *VERY SHORT PRESET PIECES*	BRACHE 2019-04
   #define MUSICBOX_HARD_END_SECONDS		5*60	// SAVETY NET
-  #define MUSICBOX_TRIGGER_BLOCK_SECONDS	30	// BRACHE 2019-01
-  #define SOFT_END_DAYS_TO_LIVE_DEFAULT		0	// fast ending, as there are more people now that it get's warmer
-  #if ! defined MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
-    #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&deep_sleep	// do test for dac noise...	BT checks BLUETOOTH_ENABLE_PIN on boot
-  #endif
+//#define MUSICBOX_TRIGGER_BLOCK_SECONDS	30	// *DEACTIVATED* BRACHE 2019-01 FIXME: retriggering while playing is buggy
+  #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3600	// *DEACTIVATED* BRACHE 2019-04 FIXME: retriggering while playing is buggy
+  #define SOFT_END_DAYS_TO_LIVE_DEFAULT		1	// quite fast ending
+  #undef RANDOM_PRESET_LOOP				// just in case, does not work well together
+  #undef MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
+  #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&deep_sleep	// do test for dac noise...	BT checks BLUETOOTH_ENABLE_PIN on boot
   #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
-  #define MUSICBOX_TRIGGERED_FUNCTION		MENU.play_KB_macro(F("y0"));	// start random preset
-  #define MAGICAL_TOILET_HACKS	// some quick dirty hacks around fake triggering
+//#define MAGICAL_TOILET_HACKS	// some quick dirty hacks around fake triggering
   #define MAGICAL_TOILET_HACK_2	// continue using (parts of) setup_bass_middle_high() to setup musicbox
+  #undef AUTOSTART
+  #define AUTOSTART	play_random_preset();		// same as pulses_project_conf.h
 
 #elif defined SETUP_BRACHE
   #define PROGRAM_SUB_VERSION			SETUP_BRACHE
@@ -75,7 +77,7 @@
 #endif	// (pre defined setups)
 
 // additional feature	// TODO: MOVE: where appropriate
-#if defined RANDOM_PRESET_PLAYER
+#if defined RANDOM_PRESET_LOOP
   #undef  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
   #define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&random_preset	// muzak forever?
 #endif
@@ -155,9 +157,13 @@ void delay_pause() {
   }
 }
 
+
+void start_musicBox();		// forward declaration
+void play_random_preset();	// pre declaration	see: AUTOSTART
+
 // functions to call when musicBox has reached the end:
-void deep_sleep();	// pre declaration
-void light_sleep();	// pre declaration
+void deep_sleep();		// pre declaration
+void light_sleep();		// pre declaration
 
 void restart() {	// alias, pause and loop, endlessly
   delay_pause();
@@ -1228,7 +1234,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
   MENU.tab();
   MENU.outln(read_battery_level());
   peripheral_power_switch_OFF();
-  delay(1200);	// let power go down softly
+  delay(3000);	// let power go down softly, do *not* shorten that without testing...
 #endif
 
   tabula_rasa();
@@ -1322,10 +1328,9 @@ void musicBox_trigger_OFF() {
 
 
 #if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
-void start_musicBox();			// forward declaration
-//
+
 #if ! defined MUSICBOX_TRIGGERED_FUNCTION
-  #define MUSICBOX_TRIGGERED_FUNCTION	start_musicBox();
+  #define MUSICBOX_TRIGGERED_FUNCTION	// dummy, noop	was: start_musicBox();
 #endif
 void musicBox_trigger_got_hot() {	// must be called when magical trigger was detected high
   if(musicBox_trigger_enabled) {
@@ -2168,7 +2173,13 @@ void rtc_save_configuration() {
 }
 
 
+bool no_restore_from_RTCmem=false;	// one shot, gets reset
 void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless waking up from *deep sleep*
+  if(no_restore_from_RTCmem) {
+    no_restore_from_RTCmem = false;	// one shot
+    return;
+  }
+
   if(divisor_stored_RTC) {	// divisor == 0 when *not* waking up from deep sleep, ignore
     MENU.out(F("restore from RTCmem "));
 
@@ -2691,7 +2702,7 @@ void deep_sleep() {
   */
 
   MENU.outln(F("esp_deep_sleep_start()"));
-  delay(1500);
+  delay(3000);	// beware of DAC snoring! let power go down enough
 
   esp_deep_sleep_start();	// sleep well ... ... ...
 
@@ -3392,3 +3403,5 @@ bool musicBox_reaction(char token) {
 
   return true;
 }
+
+#include "play_random_preset.h"		// TODO: include code and data (*once*)

@@ -3,8 +3,13 @@
   temporary development file
 */
 
-#define MUSICBOX_PRESETs	170	// all presets
-#define SHORT_PRESET_COLLECTION	50	// means only the first <nn> presets are at choice
+#define MUSICBOX_PRESETs	170	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
+#define SHORT_PRESET_COLLECTION	50	// only the first <nn> presets are at choice, redefines MUSICBOX_PRESETs
+
+#if defined SHORT_PRESET_COLLECTION
+  #undef MUSICBOX_PRESETs
+  #define MUSICBOX_PRESETs	SHORT_PRESET_COLLECTION		// use only first <n> presets
+#endif
 
 {
   MENU.ln();
@@ -17,7 +22,9 @@
 #else
     input_value = random(MUSICBOX_PRESETs) + 1;
 #endif
-    MENU.out(F("(random) "));
+    MENU.out(F("random("));
+    MENU.out(MUSICBOX_PRESETs);
+    MENU.out(F(")  "));
   }
 
   if((input_value <= MUSICBOX_PRESETs) && (input_value >0)) {
