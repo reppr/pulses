@@ -2,6 +2,9 @@
   battery_control.h
 */
 
+
+#if ! defined BATTERY_CONTROL_H
+
 #if ! defined BATTERY_LEVEL_CONTROL_PIN
   #define BATTERY_LEVEL_CONTROL_PIN	36
 #endif
@@ -142,3 +145,7 @@ void battery_control_setup() {
 
   show_battery_level();
 }
+
+
+#define BATTERY_CONTROL_H
+#endif // BATTERY_CONTROL_H

@@ -68,13 +68,7 @@
 
     #define MAX_SUBCYCLE_SECONDS		21*60	// *max seconds*, produce sample pieces	ESP32_usb_DAC_only
 
-    // TODO: more flexibility, please
-    #if defined USE_BATTERY_CONTROL
-      #warning *NOT* using battery control
-      #undef USE_BATTERY_CONTROL
-    #endif
-
-    #if defined USE_MONOCHROME_DISPLAY
+    #if defined USE_MONOCHROME_DISPLAY		// hmm, do we want this or not?
       #warning *NOT* using monochrome control
       #undef USE_MONOCHROME_DISPLAY
     #endif
@@ -94,17 +88,7 @@
       #define USE_MONOCHROME_DISPLAY
     #endif
 
-    // TODO: more flexibility, please
-    #if defined USE_BATTERY_CONTROL
-      #warning *NOT* using battery control
-      #undef USE_BATTERY_CONTROL
-    #endif
-
-    #if ! defined USE_MONOCHROME_DISPLAY
-      #define USE_MONOCHROME_DISPLAY
-    #endif
-
-    #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user	// a possible snoring workaround on usb dac only models
+    #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT		&user	// a possible snoring workaround on usb dac only models
   #endif
 
   #if defined ESP32_15_clicks_no_display_TIME_MACHINE2 || defined ESP32_USB_DAC_ONLY || defined ESP32_USB_DAC_ONLY_OLED

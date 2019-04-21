@@ -30,6 +30,8 @@
 // pre defined SETUPS:
 
 #if defined SETUP_BRACHE_TRIGGERED_PRESETs
+  #define USE_BATTERY_CONTROL
+  #define PERIPHERAL_POWER_SWITCH_PIN		12	// switch power, often green LED
   #define PROGRAM_SUB_VERSION			TRIGGERED_PLAYER
   #define MAX_SUBCYCLE_SECONDS	120		// *max seconds*, PRODUCES *VERY SHORT PRESET PIECES*	BRACHE 2019-04
   #define MUSICBOX_HARD_END_SECONDS		5*60	// SAVETY NET
@@ -46,6 +48,8 @@
   #define AUTOSTART	play_random_preset();		// same as pulses_project_conf.h
 
 #elif defined SETUP_BRACHE
+  #define USE_BATTERY_CONTROL
+  #define PERIPHERAL_POWER_SWITCH_PIN		12	// switch power, often green LED
   #define PROGRAM_SUB_VERSION			SETUP_BRACHE
   #define MAX_SUBCYCLE_SECONDS	5*60		// *max seconds*, produce short sample pieces	BRACHE 2019-01
   #define MUSICBOX_HARD_END_SECONDS		10*60	// SAVETY NET, we're low on energy...
@@ -101,6 +105,10 @@
 #include "driver/dac.h"
 
 #include "random_entropy.h"
+
+#if defined USE_BATTERY_CONTROL
+  #include "battery_control.h"
+#endif
 
 //bool some_metric_tunings_only=false;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
 #if ! defined ESP32_USB_DAC_ONLY	// TODO: rethink, not flexible enough	// TODO: move to pulses.ino
@@ -2701,19 +2709,14 @@ void deep_sleep() {
   rtc_gpio_isolate((gpio_num_t) 26);   // DOES NOT HELP  TODO: rtc_gpio_hold_dis
   */
 
+#if defined USE_BATTERY_CONTROL
+  MENU.out(F("pausing...\t"));
+  delay(1600);	// beware of DAC snoring! let power go down enough
+#endif
   MENU.outln(F("esp_deep_sleep_start()"));
-  delay(3000);	// beware of DAC snoring! let power go down enough
 
   esp_deep_sleep_start();	// sleep well ... ... ...
-
-  // TODO: it will never get here, FIXME: ################
-  MENU.out(F("AWOKE\t"));
-  // ESP_SLEEP_WAKEUP_GPIO	7
-  MENU.outln(esp_sleep_get_wakeup_cause());
-
-#if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
-  rtc_gpio_deinit((gpio_num_t) MUSICBOX_TRIGGER_PIN);  // TODO: it will never get here, FIXME: ################
-#endif
+  // it will never get here
 }
 
 
