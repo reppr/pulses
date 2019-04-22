@@ -13,6 +13,7 @@
     //# harmonies
     //# rhytm&pulse
     //# bourdon
+    //# whirles
     //# structure
 
     //# dropouts
@@ -61,8 +62,19 @@
     //# hasSlowPulse
     //# lyric
 
+    //# dream
+    //# angels
+    //# heaven
+    //# hell
+    //# earth
+    //# fire
     //# water
+    //# air
     //# children
     //# dance
     //# festive
+    //# boring
     //# floating
+    //# slow
+    //# fast
+    //# steady
