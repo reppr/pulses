@@ -1,25 +1,18 @@
 /*
-  play_random_preset.h			// TODO: include code and data (*once*)
-  temporary development file
+  preset_data.h
+
+  also see: preset-hashtags.txt
 */
 
 #define MUSICBOX_PRESETs	170	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
 #define SHORT_PRESET_COLLECTION	50	// only the first <nn> presets are at choice, redefines MUSICBOX_PRESETs
 
-#if defined SHORT_PRESET_COLLECTION
-  #undef MUSICBOX_PRESETs
-  #define MUSICBOX_PRESETs	SHORT_PRESET_COLLECTION		// use only first <n> presets
-#endif
+bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset? ################
+  if(new_preset < 1 || new_preset >= MUSICBOX_PRESETs)
+    return true;	// *ERROR*
 
-void play_random_preset() {
-  tabula_rasa();
-  MENU.ln();
-
-  MENU.out(F("random preset ("));
-  MENU.out(MUSICBOX_PRESETs);
-  MENU.out(F(")  "));
-
-  preset = random(MUSICBOX_PRESETs) + 1;	// TODO: sets preset, how to unset? ################
+  preset = new_preset;
+  MENU.out(F("load preset "));
   MENU.out(preset);
   
   name=NULL;		// initialisation and defaults:
@@ -2698,13 +2691,13 @@ void play_random_preset() {
     // >>>> *DO NOT FORGET* to update MUSICBOX_PRESETs <<<<
 
   default:
-    MENU.error_ln(F("invalid preset"));
-  } // switch(input)
+    MENU.error_ln(F("invalid preset"));		// ERROR, should not happen
+    return true;
+  }
 
   parameters_by_user();
   HARMONICAL.reduce_fraction(&pitch);		// ;)
 
-  MENU.out(preset);
   if(name) {
     MENU.tab();
     MENU.out(name);
@@ -2714,10 +2707,9 @@ void play_random_preset() {
     MENU.out(date);
   }
   MENU.ln();
-
   musicBox_short_info();
-  no_restore_from_RTCmem = true;	// one shot, gets reset
-  start_musicBox();
+
+  return false;		// ok, no error
 }
 
 

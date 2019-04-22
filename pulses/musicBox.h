@@ -2834,6 +2834,8 @@ void musicBox_setup() {	// TODO:update
 }
 
 
+#include "presets.h" // TODO: #define HAS_PRESETS	################
+
 /* **************************************************************** */
 // musicBox menu
 
@@ -3395,9 +3397,8 @@ bool musicBox_reaction(char token) {
     }
     break;
 
-  case 'y':
-    // TODO: sets preset, how to unset?	################
-    #include "menu_y_magic_tmp.h"	// temporary file for musicBox preset testing
+  case 'y':    // TODO: sets preset, how to unset?	################
+#include "menu_y_magic_tmp.h"		// TODO: insert file here
     break;
 
   default:
@@ -3406,5 +3407,3 @@ bool musicBox_reaction(char token) {
 
   return true;
 }
-
-#include "play_random_preset.h"		// TODO: include code and data (*once*)
