@@ -5,7 +5,7 @@
 */
 
 #define MUSICBOX_PRESETs	170	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
-#define SHORT_PRESET_COLLECTION	50	// only the first <nn> presets are at choice, redefines MUSICBOX_PRESETs
+#define SHORT_PRESET_COLLECTION	104	// only the first <nn> presets are at choice, redefines MUSICBOX_PRESETs
 
 bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset? ################
   if(new_preset < 1 || new_preset >= MUSICBOX_PRESETs)
@@ -14,7 +14,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   preset = new_preset;
   MENU.out(F("load preset "));
   MENU.out(preset);
-  
+
   name=NULL;		// initialisation and defaults:
   date=NULL;
   octave_shift = 0;
@@ -901,7 +901,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 39:
-    name = F("näbel");	// DADA: FIXME: did sound different...
+    name = F("näbel");	// DADA: FIXME: did sound different...	################
     //# systemStress
     date = F("2018-11-19_10h30m25s	MON");
     select_array_in(SCALES, minor_scale);
@@ -1237,34 +1237,69 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     subcycle_octave = -3;	// 5'  5"	| subcycle |
     break;
 
-    // DADA2	todo: CHECK FROM HERE <<<====	====>>>   #define SHORT_PRESET_COLLECTION	50
   case 51:
-    // check start
-    name = F("mad accordeon players whichdance with old indio's flute babbling");
-    date = F("2018-11-21_17h35m59s	WED");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, dwn_THRD_up);
-    sync = 0;
-    pitch = {32768, 384};
-    // fix:	play_KB_macro  *2
-    // CYC: 2^0	1h 52' 38"
-    subcycle_octave = -5;	// 3' 31"	| subcycle |
+    name = F("langsam sprudelnd");
+    //# favorite+
+    //# shortIsOk
+    //# fullCycleIsOk
+    //# motives
+    //# melodies
+    //# harmonies
+    //# structure
+    //# aesthetic
+    //# nice
+    //# mystic
+    //# fractal
+    //# soundscapey
+    //# lyric
+    //# water
+    date = F("2019-04-11_10h");
+    select_array_in(SCALES, tetraCHORD);
+    select_array_in(JIFFLES, up_THRD_dn);
+    sync = 2;
+    stack_sync_slices = -16;
+    // base_pulse = 15;	// TODO: rethink that
+    pitch = {1, 196};
+    chromatic_pitch = 11;	// g
+    // subcycle_octave = 5;	// TODO: rethink that
     break;
 
   case 52:
-    name = F("harmonikali jazzsession");
-    //comment: harmonical cycle    54'  4"
-    date = F("2018-11-21_20h21m11s	WED");
-    select_array_in(SCALES, minor_scale);
-    select_array_in(JIFFLES, tumtum);
-    sync = 5;
-    pitch = {32768, 200};
-    // CYC: 2^0	   54'  4"
-    subcycle_octave = -4;	// 3' 23"	| subcycle |
+    name = F("fractal time web");
+    //# favorite
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 28' 21"
+    //# motives
+    //# harmonies
+    //# structure
+    //# classicHarmonical
+    //# aesthetic
+    //# nice
+    //# fractal
+    //# birds
+    //# lesley
+    //# hasSlowPulse
+    //# lyric
+    date = F("2018-12-05 15h40m");
+    sync = 1;
+    select_array_in(SCALES, doric_scale);
+    select_array_in(JIFFLES, up_THRD_dn);
+    pitch = {1, 32};
     break;
 
   case 53:
     name = F("church bells are still ringing");
+    //# favorite+
+    //# shortIsOk
+    //# motives
+    //# harmonies
+    //# dense
+    //# chaotic
+    //# soundscape
+    //# churchbells
+    //# birds
+    //# delay
+    //# hasSlowPulse
     date = F("2018-11-21_21h12m38s	WED");
     select_array_in(SCALES, pentatonic_minor);
     select_array_in(JIFFLES, pent_patternA);
@@ -1276,6 +1311,17 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 54:
     name = F("kid's room");
+    //# favorite
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 28' 21"
+    //# motives
+    //# melodies
+    //# harmonies
+    //# aesthetic
+    //# nice
+    //# simple
+    //# fractal
+    //# hasSlowPulse
     date = F("2018-11-22_08h48m23s	THU");
     select_array_in(SCALES, octaves_fifths);
     select_array_in(JIFFLES, pent_top_wave_0);
@@ -1287,6 +1333,24 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 55:
     name = F("uufregig im hüehnerstall weg de chileglogge");
+    //# favorite
+    //# shortIsOk
+    //# motives
+    //# melodies
+    //# harmonies
+    //# structure
+    //# dropouts	?
+    //# systemStress	?
+    //# crazy
+    //# funny
+    //# dense
+    //# chaotic
+    //# soundscape
+    //# birds
+    //# churchbells
+    //# alarm
+    //# hasSlowPulse
+    //# lyric
     //comment: //comment: ;) ;)
     //comment: harmonical cycle     7'  1"
     date = F("2018-11-22_09h26m06s	THU");
@@ -1301,6 +1365,20 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 56:
     name = F("klassischi harmonikali aesthetik");
+    //# favorite
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 13' 9"
+    //# motives
+    //# melodies
+    //# harmonies
+    //# systemStress	some
+    //# classicHarmonical
+    //# aesthetic
+    //# nice
+    //# simple
+    //# fractal
+    //# hasSlowPulse
+    //# lyric
     //comment: harmonical cycle    26' 18"	...
     date = F("2018-11-22_10h44m17s	THU");
     select_array_in(SCALES, major_scale);
@@ -1314,6 +1392,19 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 57:
     name = F("klassisch, schön, als grundlag zu eme 22' 1\" stuck");
+    // FIXME: is double speed on chamber orchestra
+    //# favorite+
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 11' 0" or 22' 01"
+    //# melodies
+    //# harmonies
+    //# classicHarmonical
+    //# aesthetic
+    //# nice
+    //# simple
+    //# fractal
+    //# hasSlowPulse
+    //# lyric
     //comment: harmonical cycle    22'  1"
     //comment: jiffle no uusprobiere ;)
     date = F("2018-11-22_11h45m56s	THU");
@@ -1328,6 +1419,16 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 58:
     name = F("eifach und eigenartig schön");
+    //# favorite
+    //# shortIsOk
+    //# motives
+    //# melodies
+    //# classicHarmonical
+    //# aesthetic
+    //# nice
+    //# simple
+    //# fractal
+    //# hasSlowPulse
     date = F("2018-11-25_16h18m50s	SUN");
     select_array_in(SCALES, pentatonic_minor);
     select_array_in(JIFFLES, pentatonic_rise);
@@ -1340,6 +1441,20 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 59:
     name = F("gradnomal wunderschön :)");
+    //# favorite+
+    //# shortIsOk
+    //# motives
+    //# melodies
+    //# harmonies
+    //# classicHarmonical
+    //# aesthetic
+    //# nice
+    //# simple	quite
+    //# bigBang
+    //# birds
+    //# churchbells
+    //# hasSlowPulse
+    //# lyric
     date = F("2018-11-25_16h31m56s	SUN");
     select_array_in(SCALES, europ_PENTAtonic);
     select_array_in(JIFFLES, PENTAtonic_rise);
@@ -1353,6 +1468,23 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 60:
     name = F("landing, seed, growth, ....");
     //comment: strong beginning ;)
+    //# favorite+
+    //# shortIsOk
+    //# motives
+    //# melodies
+    //# harmonies
+    //# aesthetic
+    //# nice
+    //# simple	not really, but easy to understand
+    //# mystic
+    //# cosmic
+    //# SoundSpaceShip
+    //# fractal
+    //# fairies
+    //# aurora
+    //# lesley
+    //# hasSlowPulse
+    //# lyric
     date = F("2018-11-25_18h49m01s	SUN");
     select_array_in(SCALES, tetraCHORD);
     select_array_in(JIFFLES, dwn_THRD_up);
@@ -1367,6 +1499,18 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     name = F("Baldrian");
     //comment: entspannig pur
     //comment: try longer cycles ;)
+    //# favorite
+    //# shortIsOk
+    //# motives
+    //# melodies
+    //# harmonies
+    //# mystic	a bit
+    //# fractal
+    //# soundscape
+    //# churchbells
+    //# aurora
+    //# hasSlowPulse
+    //# lyric
     date = F("2018-11-25_19h14m10s	SUN");
     select_array_in(SCALES, octave_4th_5th);
     select_array_in(JIFFLES, PENTA_3rd_down_5);
@@ -1375,21 +1519,46 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // random octave shift: // fix:	play_KB_macro  *2
     // CYC: 2^0	15h 35' 11"
     subcycle_octave = -8;	// 3' 39"	| subcycle |
+    break;
 
   case 62:
     name = F("dorisch");
+    //# favorite
+    //# shortIsOk
+    //# harmonies
+    //# classicHarmonical
+    //# aesthetic
+    //# simple
+    //# cosmic
+    //# fractal
+    //# hasSlowPulse
+    //# lyric
     date = F("2018-11-25_19h24m24s	SUN");
     select_array_in(SCALES, doric_scale);
     select_array_in(JIFFLES, din_dididi);
     sync = 0;
     pitch = {32768, 219};
-    // random octave shift: used SUBCYCLE:	3' 5"
+    // random octave shift: used SUBCYCLE:	3' 5"y61
     // CYC: 2^0	1h 38' 45"
     subcycle_octave = -5;	// 3'  5"	| subcycle |
     break;
 
   case 63:
     name = F("no meh melodie :)");
+    //# favorite+
+    //# shortIsOk
+    //# motives
+    //# melodies
+    //# aesthetic
+    //# nice
+    //# simple
+    //# fractal
+    //# soundscape
+    //# bigBang
+    //# churchbells
+    //# fairies
+    //# hasSlowPulse
+    //# lyric
     date = F("2018-11-27_17h22m21s	TUE");
     select_array_in(SCALES, octave_4th_5th);
     select_array_in(JIFFLES, dwn_THRD_up);
@@ -1402,6 +1571,22 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 64:
     name = F("lost name");
+    //# favorite+
+    //# shortIsOk
+    //# motives
+    //# melodies
+    //# harmonies
+    //# classicHarmonical
+    //# aesthetic
+    //# nice
+    //# strange
+    //# simple	quite
+    //# mystic
+    //# fractal
+    //# soundscape
+    //# birds	some
+    //# hasSlowPulse
+    //# lyric
     select_array_in(SCALES, pentatonic_minor);
     select_array_in(JIFFLES, PENTAtonic_rise);
     sync = 4;
@@ -1414,6 +1599,25 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 65:
     name = F("eigenartigi harmonischi melodiegebilde");
+    //# favorite+
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 1h 4' 0"
+    //# motives
+    //# melodies
+    //# harmonies
+    //# classicHarmonical
+    //# aesthetic
+    //# nice
+    //# strange
+    //# mystic
+    //# cosmic
+    //# fractal
+    //# soundscape
+    //# birds
+    //# fairies
+    //# aurora
+    //# hasSlowPulse
+    //# lyric
     select_array_in(SCALES, pentatonic_minor);
     select_array_in(JIFFLES, pentatonic_rise);
     pitch = {1, 128};
@@ -1422,6 +1626,19 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 66:
     name = F("no ohni name");
+    //# favorite+
+    //# shortIsOk
+    //# motives		!
+    //# melodies
+    //# harmonies
+    //# aesthetic
+    //# nice
+    //# mystic
+    //# fractal
+    //# soundscape
+    //# birds
+    //# hasSlowPulse
+    //# lyric
     date = F("2018-11-28_21h02m41s	WED");
     select_array_in(SCALES, octaves_fifths);
     select_array_in(JIFFLES, PENTA_3rd_rise);
@@ -1434,6 +1651,22 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 67:
     name = F("sehr eifach & schön");		// ähnlich love like a morning bird
+    //# favorite+
+    //# shortIsOk
+    //# melodies
+    //# harmonies
+    //# classicHarmonical
+    //# aesthetic
+    //# nice
+    //# happy
+    //# simple
+    //# mystic
+    //# cosmic
+    //# fractal
+    //# birds
+    //# fairies
+    //# hasSlowPulse
+    //# lyric
     date = F("2018-11-29_14h14m39s	THU");
     select_array_in(SCALES, octaves_fifths);
     select_array_in(JIFFLES, PENTAtonic_desc);
@@ -1446,6 +1679,19 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 68:
     name = F("wow");
+    //# FAVORITE
+    //# shortIsOk
+    //# melodies
+    //# harmonies
+    //# structure
+    //# classicHarmonical
+    //# aesthetic
+    //# nice
+    //# simple
+    //# cosmic
+    //# fractal
+    //# hasSlowPulse
+    //# lyric
     date = F("2018-12-01_12h11m13s	SAT");
     select_array_in(SCALES, doric_scale);
     select_array_in(JIFFLES, ding_ditditdit);
@@ -1459,6 +1705,27 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 69:
     name = F("schön melodisch, mit recht guetem schluss");
     //comment: de schluss chönnt no chli schneller fertig sii
+    //# favorite+
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 11' 25"
+    //# systemStress
+    //# motives
+    //# melodies
+    //# harmonies
+    //# structure
+    //# aesthetic
+    //# nice
+    //# strange
+    //# mystic
+    //# cosmic
+    //# fractal
+    //# birds
+    //# churchbells
+    //# fairies
+    //# aurora
+    //# lesley
+    //# hasSlowPulse
+    //# lyric
     date = F("2018-12-02_20h43m32s	SUN");
     select_array_in(SCALES, major_scale);
     select_array_in(JIFFLES, pentatonic_desc);
@@ -1471,6 +1738,22 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 70:
     name = F("PENTAtheme");
+    //# favorite
+    //# shortIsOk
+    //# motives
+    //# melodies
+    //# harmonies
+    //# heavyStart
+    //# aesthetic
+    //# strange
+    //# mystic
+    //# cosmic
+    //# fractal
+    //# soundscape
+    //# churchbells
+    //# fairies
+    //# hasSlowPulse
+    //# lyric
     date = F("2018-12-03_08h30m25s	MON");
     select_array_in(SCALES, europ_PENTAtonic);
     select_array_in(JIFFLES, up_THRD);
@@ -1483,6 +1766,22 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 71:
     name = F("elfechinde");
+    //# favorite
+    //# shortIsOk
+    //# motives
+    //# melodies
+    //# harmonies
+    //# dense	not too much
+    //# chaotic	some
+    //# mystic
+    //# fractal
+    //# soundscape
+    //# churchbells
+    //# fairies
+    //# aurora
+    //# lesley
+    //# hasSlowPulse
+    //# lyric
     date = F("2018-12-04_10h16m55s	TUE");
     select_array_in(SCALES, tetraCHORD);
     select_array_in(JIFFLES, dwn_THRD);
@@ -1495,6 +1794,20 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 72:
     name = F("elfechinde 2");
+    //# favorite
+    //# shortIsOk
+    //# motives
+    //# melodies
+    //# harmonies
+    //# aesthetic
+    //# nice
+    //# strange
+    //# mystic
+    //# birds
+    //# churchbells
+    //# fairies
+    //# hasSlowPulse
+    //# lyric
     date = F("2018-12-04_10h24m24s	TUE");
     select_array_in(SCALES, tetraCHORD);
     select_array_in(JIFFLES, pent_top_wave);
@@ -1519,6 +1832,23 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 74:
     name = F("rhythms");
+    //# favorite+
+    //# shortIsOk
+    //# motives
+    //# harmonies
+    //# rhytm&pulse
+    //# structure
+    //# heavyStart
+    //# simple
+    //# simlicistic
+    //# soundscape
+    //# elementary
+    //# bigBang
+    //# clock
+    //# peep
+    //# robot
+    //# rumble
+    //# hasSlowPulse
     //comment: very good example for note-metrum interval analogy :)
     //comment: will be a good test case for a better end algorithm ;)
     date = F("2018-12-06_08h14m01s	THU");
@@ -1533,6 +1863,26 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 75:
     name = F("ruhig schwebend");
+    //# favorite+
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 1h 33' 5"
+    //# motives
+    //# harmonies
+    //# aesthetic
+    //# nice
+    //# quiet
+    //# strange
+    //# dense	but harmonic
+    //# mystic
+    //# cosmic
+    //# fractal
+    //# soundscape
+    //# churchbells
+    //# fairies
+    //# aurora
+    //# lesley
+    //# hasSlowPulse
+    //# lyric
     date = F("2018-12-07_09h44m49s	FRI");
     select_array_in(SCALES, pentatonic_minor);
     select_array_in(JIFFLES, PENTA_3rd_down_5);
@@ -1546,6 +1896,25 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 76:
     name = F("magical tree");
     //comment: maybe as music for the tree woman from Theaterspektakel, Zürich 2018
+    //# favorite
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 48' 28"
+    //# motives
+    //# melodies
+    //# harmonies
+    //# aesthetic
+    //# quiet
+    //# strange	little
+    //# mystic
+    //# fractal
+    //# soundscape
+    //# birds
+    //# churchbells
+    //# fairies
+    //# aurora
+    //# lesley
+    //# hasSlowPulse
+    //# lyric
     date = F("2018-12-07_13h03m35s	FRI");
     select_array_in(SCALES, europ_PENTAtonic);
     select_array_in(JIFFLES, dwn_THRD);
@@ -1557,6 +1926,20 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 77:
     name = F("tanboura");
+    //# favorite
+    //# shortIsOk	even very short ;)
+    //# melodies
+    //# harmonies	dense
+    //# bourdon
+    //# classicHarmonical
+    //# aesthetic
+    //# nice		can get boring
+    //# quiet
+    //# simple
+    //# simlicistic
+    //# dense		harmonies
+    //# elementary
+    //# robot
     date = F("2018-12-07_13h53m29s	FRI");
     select_array_in(SCALES, doric_scale);
     select_array_in(JIFFLES, tanboura);
@@ -1569,6 +1952,23 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 78:
     name = F("melodischs Netz uf I IV V");
+    //# favorite+
+    //# shortIsOk
+    //# motives
+    //# melodies	very nice
+    //# harmonies
+    //# bourdon		some included
+    //# structure
+    //# aesthetic
+    //# nice
+    //# happy
+    //# melancholic
+    //# quiet
+    //# simple
+    //# fractal
+    //# birds
+    //# fairies
+    //# lyric
     date = F("2018-12-07_16h22m20s	FRI");
     select_array_in(SCALES, octave_4th_5th);
     select_array_in(JIFFLES, pent_top_wave);
@@ -1583,6 +1983,30 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     name = F("Aurora");
     //comment: very dense pulsating web
     //comment: good ending ;)
+    //# FAVORITE
+    //# favorite+
+    //# shortIsOk
+    //# motives
+    //# melodies	dense net of melodies
+    //# harmonies
+    //# bourdon
+    //# structure	dense net of melodies
+    //# aesthetic
+    //# nice
+    //# quiet
+    //# strange
+    //# simple		somehow yes ;)
+    //# dense
+    //# mystic
+    //# cosmic
+    //# SoundSpaceShip
+    //# fractal
+    //# soundscape
+    //# fairies
+    //# aurora		AURORA
+    //# lesley
+    //# hasSlowPulse
+    //# lyric
     date = F("2018-12-07_15h57m55s	FRI");
     select_array_in(SCALES, minor_scale);
     select_array_in(JIFFLES, PENTA_3rd_down_5);
@@ -1594,6 +2018,30 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 80:
     name = F("Aurora mit Tänzelde Liechter");
+    //# FAVORITE
+    //# fullCycleIsOk	harmonical CYCLE: 55' 27"
+    //# motives
+    //# melodies
+    //# harmonies
+    //# bourdon
+    //# structure
+    //# aesthetic
+    //# happy
+    //# melancholic
+    //# strange
+    //# dense
+    //# mystic
+    //# cosmic
+    //# fractal
+    //# soundscape
+    //# birds
+    //# churchbells
+    //# fairies
+    //# aurora
+    //# lesley
+    //# hasSlowPulse	soft and not always
+    //# lyric
+    //# water		why not?
     date = F("2018-12-07_16h32m24s	FRI");
     select_array_in(SCALES, pentatonic_minor);
     select_array_in(JIFFLES, PENTA_3rd_down_5);
@@ -1608,6 +2056,27 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     name = F("Melodie Kabinet");
     //comment: wunderschön tänzelnds Melodienetz
     //comment: wo sich langsam au i di undere Stimme uusdehnt
+    //# favorite
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 48' 44"
+    //# motives
+    //# melodies
+    //# harmonies
+    //# bourdon
+    //# structure	dancing web of melodies
+    //# aesthetic
+    //# nice		but complicated
+    //# quiet		but busy
+    //# strange
+    //# dense
+    //# chaotic		sometimes
+    //# mystic
+    //# cosmic
+    //# fractal
+    //# soundscape
+    //# hasSlowPulse	subtle
+    //# lyric
+    //# water		possible, bubbles?
     date = F("2018-12-07_17h23m46s	FRI");
     select_array_in(SCALES, europ_PENTAtonic);
     select_array_in(JIFFLES, PENTA_3rd_rise);
@@ -1620,6 +2089,24 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 82:
     name = F("Akkordeon");
+    //# favorite
+    //# shortIsOk
+    //# motives
+    //# melodies
+    //# harmonies
+    //# happy
+    //# melancholic
+    //# quiet		but busy spinning around
+    //# strange
+    //# nervous
+    //# dense
+    //# chaotic
+    //# mystic
+    //# fractal
+    //# soundscape
+    //# hasSlowPulse	subtle
+    //# lyric
+    //# water
     date = F("2018-12-07_17h34m18s	FRI");
     select_array_in(SCALES, tetraCHORD);
     select_array_in(JIFFLES, PENTAtonic_desc);
@@ -1633,6 +2120,20 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 83:
     name = F("MusikdoseTraum");
     //comment: für langi, vertröimti szene
+    //# favorite+
+    //# shortIsOk
+    //# melodies	simplicistic
+    //# harmonies
+    //# bourdon		a bit
+    //# structure	simplicistic
+    //# aesthetic	but simplicistic
+    //# nice		maybe too simple
+    //# simple
+    //# simlicistic
+    //# clock
+    //# delay
+    //# hasSlowPulse
+    //# lyric		maybe too simple
     date = F("2018-12-07_17h45m57s	FRI");
     select_array_in(SCALES, tetraCHORD);
     select_array_in(JIFFLES, din__dididi_dixi);
@@ -1644,8 +2145,28 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 84:
-    // heavy big bang
     name = F("Klangschwade mit Puls");
+    // heavy big bang
+    //# favorite-
+    //# shortIsOk
+    //# motives
+    //# harmonies	static, more like bourdon
+    //# bourdon		permanent
+    //# heavyStart
+    //# quiet
+    //# static
+    //# dramatic
+    //# nervous
+    //# simple
+    //# simlicistic
+    //# dense		harmonies more like bourdon
+    //# elementary
+    //# bigBang
+    //# clock
+    //# robot
+    //# humming
+    //# hasSlowPulse	soft and not steady
+    //# lyric		but very simple, static
     date = F("2018-12-07_18h34m01s	FRI");
     select_array_in(SCALES, europ_PENTAtonic);
     select_array_in(JIFFLES, tanboura);
@@ -1660,9 +2181,36 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     name = F("Pentaweb");
     //comment: stimmigsvoll
     //comment: mit sehnsucht ufs ziel zue
+    //# favorite
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 1h 4' 0"
+    //# motives
+    //# melodies
+    //# harmonies
+    //# bourdon		some
+    //# structure	pentaweb
+    //# aesthetic
+    //# nice
+    //# happy
+    //# melancholic
+    //# quiet
+    //# strange		yes
+    //# dense		melody patterns, but still nice
+    //# mystic
+    //# cosmic
+    //# SoundSpaceShip
+    //# fractal
+    //# birds
+    //# churchbells
+    //# fairies
+    //# aurora
+    //# lesley
+    //# humming		bourdon
+    //# hasSlowPulse	slow and subtle
+    //# lyric		poetic
     sync = 2;
     select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES,	PENTAtonic_desc);
+    select_array_in(JIFFLES, PENTAtonic_desc);
     pitch = {1, 128};
     // harmonical cycle 1h  9' 59"	subcycle    8' 45"
     break;
@@ -1670,6 +2218,27 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 86:
     name = F("Schwester Pentaweb");
     //comment: e ZwillingsPentawebSchwöster :)
+    //# favorite+
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 1h 21' 48"
+    //# motives
+    //# melodies
+    //# harmonies
+    //# structure	PENTAweb sister
+    //# aesthetic
+    //# nice
+    //# happy
+    //# strange		only little
+    //# fractal
+    //# soundscape
+    //# birds
+    //# churchbells
+    //# fairies
+    //# aurora
+    //# lesley		a bit
+    //# hasSlowPulse	some
+    //# lyric		maybe?
+    //# water		why not?
     date = F("2018-12-07_19h04m44s	FRI");
     select_array_in(SCALES, europ_PENTAtonic);
     select_array_in(JIFFLES, penta_3rd_rise);
@@ -1681,6 +2250,24 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 87:
     name = F("PentaMusicBox");
+    //# favorite
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 57' 49"
+    //# motives
+    //# harmonies
+    //# bourdon
+    //# classicHarmonical
+    //# aesthetic
+    //# nice
+    //# quiet
+    //# static
+    //# simple
+    //# simlicistic
+    //# clock
+    //# robot
+    //# humming
+    //# hasSlowPulse	by a melody motive
+    //# lyric
     date = F("2018-12-07_19h16m36s	FRI");
     select_array_in(SCALES, pentatonic_minor);
     select_array_in(JIFFLES, din__dididi_dixi);
@@ -1693,6 +2280,20 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 88:
     name = F("I_IV_V mit Knatterrhytheme");
+    //# favorite
+    //# shortIsOk	rhythm will probably not start yet
+    //# motives		rhythmical melodies
+    //# melodies	simplicistic
+    //# rhytm&pulse	takes it's time
+    //# bourdon
+    //# structure	simple, static
+    //# quiet
+    //# static
+    //# simple
+    //# simlicistic
+    //# elementary
+    //# robot
+    //# hasSlowPulse	by motives
     date = F("2018-12-07_19h48m57s	FRI");
     select_array_in(SCALES, octave_4th_5th);
     select_array_in(JIFFLES, d4096_512);
@@ -1704,6 +2305,26 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 89:
     name = F("The Landing Of The Sound Space Ship");
+    //# favorite+
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 57' 13"
+    //# motives
+    //# melodies
+    //# harmonies	nice and strangeP
+    //# aesthetic
+    //# nice		yet complex
+    //# strange
+    //# dense		but still nice
+    //# mystic
+    //# cosmic
+    //# SoundSpaceShip
+    //# fractal
+    //# fairies
+    //# aurora
+    //# lesley
+    //# hasSlowPulse	has slow structures
+    //# lyric
+    //# water		everything is possible
     date = F("2018-12-07_20h03m19s	FRI");
     select_array_in(SCALES, doric_scale);
     select_array_in(JIFFLES, dwn_THRD_up);
@@ -1717,6 +2338,30 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 90:
     name = F("Striicherbordun");
     //comment: dichts melodienetz mit tüüfem stehendem bass, wi tüüfi striicher
+    //# favorite
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 16' 28" !!!
+    //# motives
+    //# melodies
+    //# bourdon		deep string like bass
+    //# structure	dense melody net
+    //# aesthetic	advanced
+    //# happy
+    //# melancholic
+    //# quiet		but dense
+    //# static		little
+    //# dense
+    //# mystic
+    //# fractal
+    //# soundscape
+    //# birds
+    //# churchbells
+    //# fairies
+    //# aurora
+    //# humming		deep string like bass
+    //# hasSlowPulse	simple
+    //# lyric
+    //# water		slow waves
     date = F("2018-12-09_20h14m56s	SUN");
     select_array_in(SCALES, major_scale);
     select_array_in(JIFFLES, penta_3rd_rise);
@@ -1741,6 +2386,31 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 92:
     name = F("de Reige vo de Dezämberfee");
+    //# favorite+
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 1h 3' 53"
+    //# motives
+    //# melodies
+    //# bourdon		often
+    //# structure	light net of dancing december fairies dancing in a circle
+    //# aesthetic
+    //# nice		ritch
+    //# quiet
+    //# static		somehow, dancing in a circle
+    //# strange		mystic
+    //# dense		not too much
+    //# mystic
+    //# cosmic
+    //# SoundSpaceShip
+    //# fractal
+    //# birds
+    //# churchbells
+    //# fairies
+    //# aurora
+    //# lesley
+    //# hasSlowPulse	you can always hear something, subtle
+    //# lyric
+    //# water
     date = F("2018-12-10_17h27m01s	MON");
     select_array_in(SCALES, pentatonic_minor);
     select_array_in(JIFFLES, dwn_THRD_up);
@@ -1754,6 +2424,25 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 93:
     name = F("Saiteresonanze");
     //comment: git grad zuefellig wonderschöni Saiteresonanze uf de Gitarre &co
+    //# favorite+
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 1h 19' 44"
+    //# motives
+    //# melodies	busy rising melodies like air bubbles in water
+    //# harmonies
+    //# aesthetic
+    //# nice
+    //# happy		busy
+    //# quiet		but busy
+    //# fractal
+    //# birds
+    //# churchbells
+    //# fairies
+    //# aurora
+    //# lesley
+    //# hasSlowPulse	not really, but quite
+    //# lyric
+    //# water	busy rising melodies like air bubbles in water
     date = F("2018-12-11_13h29m08s	TUE");
     select_array_in(SCALES, europ_PENTAtonic);
     select_array_in(JIFFLES, pentatonic_rise);
@@ -1766,6 +2455,29 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 94:
     name = F("Chindertanz -- Children's Dance");
     //comment: fröhlich gspunnene chindertanz
+    //# favorite+
+    //# shortIsOk
+    //# motives
+    //# melodies
+    //# harmonies	a bit crazy
+    //# rhytm&pulse	simple
+    //# bourdon		yes
+    //# structure	simplicistic
+    //# happy
+    //# static		turning in cyrcles
+    //# strange
+    //# funny
+    //# mystic
+    //# clock		not so much
+    //# peep
+    //# robot
+    //# lesley
+    //# delay
+    //# rumble
+    //# hasSlowPulse	simle motiv ostinatos
+    //# lyric
+    //# children
+    //# dance
     date = F("2018-12-13_10h24m06s	THU");
     select_array_in(SCALES, tetraCHORD);
     select_array_in(JIFFLES, rising_pent_them);
@@ -1773,10 +2485,27 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     pitch = {32768, 302};
     // CYC: 2^0	57' 17"
     subcycle_octave = -4;	// 3' 35"	| subcycle |
+    break;
 
   case 95:
     name = F("Good Old Major Sync3");
     //comment: use whole cycle :)
+    //# FAVORITE
+    //# shortIsOk	maybe use whole cycle instead?
+    //# fullCycleIsOk	harmonical CYCLE: 12' 48"
+    //# melodies
+    //# harmonies
+    //# structure	classical harmonical cycle sync=3
+    //# classicHarmonical
+    //# aesthetic
+    //# nice	and profound
+    //# happy	and profound
+    //# quiet
+    //# cosmic
+    //# clock	if you want you can hear it like this...
+    //# lyric
+    //# dance
+    //# festive
     date = F("2018-12-13_10h47m46s	THU");
     select_array_in(SCALES, major_scale);
     select_array_in(JIFFLES, d4096_1024);
@@ -1787,6 +2516,25 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 96:
     name = F("Cosmic SoundWave Visiting Earth");
+    //# favorite+
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 1h 3' 1"
+    //# harmonies	slow and dense
+    //# bourdon		quite steady
+    //# structure	slow waves and whirls
+    //# aesthetic
+    //# melancholic	maybe a bit
+    //# quiet
+    //# static
+    //# dense
+    //# mystic
+    //# cosmic
+    //# SoundSpaceShip
+    //# fractal
+    //# soundscape
+    //# fairies
+    //# aurora
+    //# lesley
     date = F("2018-12-13_16h59m40s	THU");
     select_array_in(SCALES, major_scale);
     select_array_in(JIFFLES, PENTA_3rd_down_5);
@@ -1797,7 +2545,27 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 97:
-    name = F("Jazzigi Rhythme mit schnarrend schnarchende KnatterKläng");
+    name = F("Jazzigi Rhythme mit schnarrend schnarchende KnatterKläng");	// really???
+    // meh wi e musikdose	steady endless looping
+    //# favorite
+    //# shortIsOk
+    //# motives		simplicistic
+    //# melodies	simplicistic
+    //# harmonies	simplicistic
+    //# rhytm&pulse	simplicistic
+    //# bourdon		yes
+    //# structure	simplicistic
+    //# aesthetic
+    //# nice
+    //# quiet		steady endless looping
+    //# static		steady endless looping
+    //# simple
+    //# simlicistic
+    //# fractal
+    //# clock
+    //# hasSlowPulse	simplicistic
+    //# lyric
+    //# children
     date = F("2018-12-13_19h42m01s	THU");
     select_array_in(SCALES, octaves_fifths);
     select_array_in(JIFFLES, diing_ditditdit);
@@ -1809,6 +2577,30 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 98:
     name = F("Harmonikale Schrittanz");
+    //# FAVORITE
+    //# shortIsOk
+    //# fullCycleIsOk	armonical CYCLE: 59' 49"
+    //# melodies
+    //# harmonies	strange and blue ;)
+    //# structure	blue chord progression
+    //# heavyStart
+    //# aesthetic	blue, strange and rich
+    //# nice
+    //# strange
+    //# dense		a bit
+    //# mystic
+    //# fractal
+    //# soundscape
+    //# bigBang
+    //# fairies
+    //# aurora
+    //# jazz
+    //# lesley
+    //# hasSlowPulse	chord progression
+    //# lyric
+    //# water		possible
+    //# dance		slowly progressing
+    //# festive		blue night festival
     date = F("2018-12-13_21h35m38s	THU");
     select_array_in(SCALES, minor_scale);
     select_array_in(JIFFLES, pentatonic_rise);
@@ -1822,6 +2614,28 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 99:
     name = F("Church Bells, blue jay way");
     //comment: es paar Alphörner het s glaub au no ;)
+    //# favorite
+    //# shortIsOk
+    //# motives
+    //# melodies
+    //# harmonies	floating
+    //# rhytm&pulse	pulsating, vibrating
+    //# bourdon
+    //# structure	church bells
+    //# aesthetic	advanced
+    //# static		static waving
+    //# dense		quite
+    //# mystic
+    //# cosmic		cosmic waiting
+    //# fractal
+    //# soundscape
+    //# churchbells
+    //# fairies
+    //# aurora
+    //# delay
+    //# lyric
+    //# water
+    //# floating
     date = F("2018-12-14_18h24m10s	FRI");
     select_array_in(SCALES, pentatonic_minor);
     select_array_in(JIFFLES, pent_patternA);
@@ -1833,6 +2647,30 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 100:
     name = F("PENTAtonic Clock Organ");
+    //# favorite
+    //# shortIsOk
+    //# motives
+    //# melodies
+    //# harmonies
+    //# rhytm&pulse
+    //# bourdon
+    //# aesthetic
+    //# structure
+    //# quiet
+    //# static
+    //# nervous		can be perceived as
+    //# simple
+    //# simlicistic
+    //# fractal
+    //# elementary
+    //# fairies
+    //# aurora
+    //# clock
+    //# peep
+    //# robot
+    //# hasSlowPulse	archaic
+    //# children
+    //# dance
     date = F("2018-12-14_18h51m01s	FRI");
     select_array_in(SCALES, europ_PENTAtonic);
     select_array_in(JIFFLES, diing_ditditdit);
@@ -1844,6 +2682,29 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 101:
     name = F("Good Night Choir");
+    //# favorite+
+    //# shortIsOk
+    //# motives
+    //# melodies
+    //# harmonies
+    //# rhytm&pulse
+    //# bourdon
+    //# structure	chord progression
+    //# aesthetic
+    //# nice	and a bit blue
+    //# quiet	spare and slow
+    //# mystic
+    //# cosmic
+    //# fractal
+    //# bigBang
+    //# fairies
+    //# aurora
+    //# lesley
+    //# rumble
+    //# hasSlowPulse	chord progression and others
+    //# lyric
+    //# dance		very slow, quiet but strong dance
+    //# festive		somehow yes, but quietly so
     date = F("2018-12-14_19h03m53s	FRI");
     select_array_in(SCALES, octaves_fourths);
     select_array_in(JIFFLES, pentatonic_desc);
@@ -1856,6 +2717,17 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 102:
     name = F("Classical Beauty");
+    //# favorite
+    //# shortIsOk
+    //# melodies
+    //# harmonies
+    //# structure	harmonical progression
+    //# classicHarmonical
+    //# aesthetic
+    //# nice
+    //# quiet
+    //# simple
+    //# hasSlowPulse	somehow
     date = F("2018-12-14_19h37m48s	FRI");
     select_array_in(SCALES, doric_scale);
     select_array_in(JIFFLES, d4096_1024);
@@ -1868,6 +2740,27 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 103:
     name = F("PENTA Classic");
+    //# favorite+
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 51' 57"
+    //# motives
+    //# melodies
+    //# harmonies
+    //# structure	chord progression
+    //# classicHarmonical
+    //# aesthetic
+    //# nice
+    //# strange		some strange blueness
+    //# mystic
+    //# fairies
+    //# aurora
+    //# lesley
+    //# hasSlowPulse	chord progression
+    //# lyric
+    //# water		possible
+    //# children	maybe also
+    //# dance		quiet, slow and strong
+    //# festive		somehow
     date = F("2018-12-14_19h48m35s	FRI");
     select_array_in(SCALES, europ_PENTAtonic);
     select_array_in(JIFFLES, up_THRD);
@@ -1880,6 +2773,24 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 104:
     name = F("pentatonic reaching down to rhythm");
+    //# favorite+
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 1h 3' 3"
+    //# melodies	jazz like
+    //# harmonies
+    //# rhytm&pulse
+    //# aesthetic	jazz aesthetics
+    //# dramatic
+    //# nervous
+    //# crazy
+    //# funny
+    //# dense		not too much
+    //# chaotic		there's order in the chaos ;)
+    //# fractal
+    //# jazz
+    //# rumble
+    //# hasSlowPulse	jazzy, and not steady
+    //# dance		crazy dance
     date = F("2018-12-15_12h58m14s	SAT");
     select_array_in(SCALES, pentatonic_minor);
     select_array_in(JIFFLES, tumtum);
@@ -1888,6 +2799,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // harmonical CYCLE: 1h 37' 25"	SUBCYCLE: | 6' 5" |
     subcycle_octave = -4;
     break;
+
+    // DADA2+	todo: CHECK FROM HERE <<<====	====>>>   #define SHORT_PRESET_COLLECTION	104
 
   case 105:
     name = F("Nameless Beauty");
@@ -2576,12 +3489,16 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 163:
-    name = F("fractal time web");
-    date = F("2018-12-05 15h40m");
-    sync = 1;
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, up_THRD_dn);
-    pitch = {1, 32};
+    name = F("harmonikali jazzsession");
+    // laaaaangi pause!		sehr laaaangsam TODO: FIXME: ################
+    //comment: harmonical cycle    54'  4"
+    date = F("2018-11-21_20h21m11s	WED");
+    select_array_in(SCALES, minor_scale);
+    select_array_in(JIFFLES, tumtum);
+    sync = 5;
+    pitch = {32768, 200};
+    // CYC: 2^0	   54'  4"
+    subcycle_octave = -4;	// 3' 23"	| subcycle |
     break;
 
   case 164:
@@ -2621,16 +3538,16 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 167:
-    name = F("langsam sprudelnd");
-    date = F("2019-04-11_10h");
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES, up_THRD_dn);
-    sync = 2;
-    stack_sync_slices = -16;
-    // base_pulse = 15;	// TODO: rethink that
-    pitch = {1, 196};
-    chromatic_pitch = 11;	// g
-    // subcycle_octave = 5;	// TODO: rethink that
+    // check start
+    name = F("mad accordeon players whichdance with old indio's flute babbling");
+    date = F("2018-11-21_17h35m59s	WED");
+    select_array_in(SCALES, pentatonic_minor);
+    select_array_in(JIFFLES, dwn_THRD_up);
+    sync = 0;
+    pitch = {32768, 384};
+    // fix:	play_KB_macro  *2
+    // CYC: 2^0	1h 52' 38"
+    subcycle_octave = -5;	// 3' 31"	| subcycle |
     break;
 
   case 168:
@@ -2695,6 +3612,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     return true;
   }
 
+  MENU.tab();
   parameters_by_user();
   HARMONICAL.reduce_fraction(&pitch);		// ;)
 

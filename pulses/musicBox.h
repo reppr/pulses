@@ -3398,7 +3398,15 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'y':    // TODO: sets preset, how to unset?	################
-#include "menu_y_magic_tmp.h"		// TODO: insert file here
+    MENU.ln();
+    MENU.out(F("PRESET "));
+    if(input_value = MENU.numeric_input(1)) {
+      if(! load_preset(input_value))	// no error?
+	start_musicBox();		// play preset
+      else
+	MENU.outln_invalid();
+    } else
+      play_random_preset();	// selecting zero plays a *random* preset
     break;
 
   default:
