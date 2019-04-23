@@ -954,6 +954,15 @@ void setup() {
   MENU.ln();
 #endif
 
+  /*
+    maybe_restore_from_RTCmem();
+    *either* from
+    pulses.ino setup()	would be better, but does not work?
+    *or* from
+    start_musicBox();	must be blocked if appropriate
+  */
+  //  maybe_restore_from_RTCmem();		// only after deep sleep, else noop
+
 #if defined MUSICBOX_TRIGGER_PIN
   pinMode(MUSICBOX_TRIGGER_PIN, INPUT);
 #endif

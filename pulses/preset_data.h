@@ -1,6 +1,9 @@
 /*
   preset_data.h
 
+  this is a *temporary* file version to test sample configurations
+	collected over developping time
+
   also see: preset-hashtags.txt
 */
 

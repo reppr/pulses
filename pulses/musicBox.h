@@ -2183,14 +2183,15 @@ void rtc_save_configuration() {
 
 bool no_restore_from_RTCmem=false;	// one shot, gets reset
 void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless waking up from *deep sleep*
+  MENU.out(F("restore from RTCmem "));
   if(no_restore_from_RTCmem) {
+    MENU.outln(F("blocked"));
     no_restore_from_RTCmem = false;	// one shot
     return;
   }
 
   if(divisor_stored_RTC) {	// divisor == 0 when *not* waking up from deep sleep, ignore
-    MENU.out(F("restore from RTCmem "));
-
+    MENU.out(F("data ok "));
     if(metric_tunings_stored_RTC & 1)	// 2 means off, &1
       some_metric_tunings_only=true;
     else
@@ -2231,7 +2232,9 @@ void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless wakin
     }
 
     MENU.ln();
-  } // *not* wake up from deep sleep, ignored
+  }
+  else	// *not* wake up from deep sleep
+    MENU.outln_invalid();
 }
 
 
@@ -2281,7 +2284,14 @@ void start_musicBox() {
   delay(250);	// give peripheral supply voltage time to stabilise
 #endif
 
-  maybe_restore_from_RTCmem();		// only after deep sleep, else noop    MENU.out(F("restore from RTCmem "));
+  /*
+    maybe_restore_from_RTCmem();
+    *either* from
+    pulses.ino setup()	would be better, but does not work?
+    *or* from
+    start_musicBox();	must be blocked if appropriate
+  */
+  maybe_restore_from_RTCmem();		// only after deep sleep, else noop
 
   MENU.ln();
   MENU.men_selected = 0;	// starting point (might be changed by kb macro)
