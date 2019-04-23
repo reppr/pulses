@@ -2931,7 +2931,7 @@ void musicBox_display() {
   MENU.outln(F("'L'=stop when low\t'LL'=stop only low\thard end='H'"));
   MENU.ln();
 
-  MENU.out(F("'EF[dlhru]'  deep_sleep, light_sleep, hibernate, restart, user\t"));
+  MENU.out(F("'EF[dlhru]'  deep_sleep, light_sleep, hibernate, restart, user, presets\t"));
   show_when_done_function();
   MENU.ln(2);
 
@@ -3022,6 +3022,9 @@ bool musicBox_reaction(char token) {
 	  break;
 	case 'u':
 	  musicBox_when_done=&user;		// "EFu" user()
+	  break;
+	case 'p':
+	  musicBox_when_done=&random_preset;	// "EFp" random_preset()
 	  break;
 	default:
 	  MENU.outln_invalid();
