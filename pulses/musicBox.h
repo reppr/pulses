@@ -2,19 +2,6 @@
   musicBox.h
 */
 
-#define LONELY_BUTLER_QUITS			// lonely butler detect SAVETY NET, TODO: will be completely *wrong* in other situations
-
-// PRESETS: uncomment *one* (or zero) of the following setups:
-//#define SETUP_BRACHE		BRACHE_2019-03
-#define SETUP_BRACHE_TRIGGERED_PRESETs		BRACHE_2019-04
-//#define SETUP_BAHNPARKPLATZ	BahnParkPlatz 2018/2019
-//#define SETUP_CHAMBER_ORCHESTRA	The Harmonical Chamber Orchestra 2018-12
-
-// TODO: REMOVE OLDSTYLE_TUNE_AND_LIMIT
-// compatibility: use (buggy) old style tuning and lowering mechanism for backwards compatibility reproducing older setups?
-//#define OLDSTYLE_TUNE_AND_LIMIT	// use (buggy) old style tuning and lowering mechanism for backwards compatibility
-
-
 /* **************************************************************** */
 // some DEFAULTs, setups might change them
 
@@ -87,7 +74,7 @@
 #endif
 
 #if ! defined MAX_SUBCYCLE_SECONDS
-  #define MAX_SUBCYCLE_SECONDS	7*60		// *max seconds*, produce short sample pieces	BRACHE 2019-01
+  #define MAX_SUBCYCLE_SECONDS		7*60	// *max seconds*, produce short sample pieces	BRACHE 2019-01
   //#define MAX_SUBCYCLE_SECONDS	12*60	// *max seconds*, produce sample pieces		BahnParkPlatz 18
   //#define MAX_SUBCYCLE_SECONDS	18*60	// *max seconds*, produce moderate length sample pieces  DEFAULT
   //#define MAX_SUBCYCLE_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
@@ -110,11 +97,10 @@
   #include "battery_control.h"
 #endif
 
-//bool some_metric_tunings_only=false;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
-#if ! defined ESP32_USB_DAC_ONLY	// TODO: rethink, not flexible enough	// TODO: move to pulses.ino
-  bool some_metric_tunings_only=true;	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
+#if defined SOME_METRIC_TUNINGS_ONLY_DEFAULT
+  bool some_metric_tunings_only=SOME_METRIC_TUNINGS_ONLY_DEFAULT;	// free or fixed pitchs (like E A D G C F B) *only*
 #else
-  bool some_metric_tunings_only=false;	// free pitch tuning
+  bool some_metric_tunings_only=false;	// free pitch tuning is default
 #endif
 
 int stack_sync_slices=0;	// 0 is off	// positive: upwards,	negative: downwards	// TODO: make it short?

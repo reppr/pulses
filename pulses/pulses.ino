@@ -58,14 +58,16 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 using namespace std;	// ESP8266 needs that
 
 
+/* **************************************************************** */
 // configuration sequence:
-#include "pulses_engine_config.h"		// inner program configuration file, do not change
+#include "pulses_engine_config.h"	// pulses engine configuration file, do not change
 #include "pulses_systems.h"		// different software systems
 #include "pulses_boards.h"		// different boards
-#include "my_pulses_config.h"	// your configuration
+#include "musicBox_config.h"		// basic musicBox configuration
+#include "my_pulses_config.h"		// your configuration
 #include "pulses_project_conf.h"	// predefined special projects like instruments
 
-#include "pulses_sanity_checks.h"	// check some pp macro compatibilities
+#include "pulses_sanity_checks.h"	// check some pp macro incompatibilities
 
 #if defined USE_BLUETOOTH_SERIAL_MENU
   #include "BluetoothSerial.h"
