@@ -1,34 +1,17 @@
 #define PROGRAM_VERSION		PULSES alpha.020
 /*				0123456789abcdef   */
 
-#define PRENAME			SoundShipPresets	// individual name	// TODO: move to a configuration file
+#define PRENAME			SoundShip1	// individual name	// TODO: move to a configuration file
 /*				0123456789abcdef   */
 
 #define RANDOM_PRESET_LOOP	// FIXME: move to configuration	// TODO: move to a configuration file
 
 //#define BATTERY_OLED_BOARD	// LiPo battery OLED BOARD	// TODO: move to a configuration file
-//#define HELTEC_OLED_BOARD	// Heltec OLED BOARD		// TODO: move to a configuration file
-
-#define DO_STRESS_MANAGMENT
-//#define STRESS_MONITOR_LEVEL	64*2	// TODO: menu interface	// TODO: move to a configuration file
-
-#define USE_BLUETOOTH_SERIAL_MENU
-
-// #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	//
-#define HARMONICAL_MUSIC_BOX
+//#define HELTEC_OLED_BOARD	// Heltec OLED BOARD		// FIXME: display_basic_musicBox_parameters() *DOES NOT WORK*
 
 // TODO: change PERIPHERAL_POWER_SWITCH_PIN as GPIO12 is active during boot process...
 #define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_TOUCH_INPUT_PIN	green LED in many musicBoxes
 
-//#define USE_MORSE	// incomplete	DEACTIVATED MORSE OUTPUT, (== PERIPHERAL_POWER_SWITCH_PIN ;)
-//#define USE_INPUTS
-//#define USE_LEDC	// to be written ;)
-
-#define USE_RTC_MODULE
-//#define USE_i2c_SCANNER
-
-// #define USE_BATTERY_CONTROL switched on in SETUP_BRACHE
-//#define USE_LEDC_AUDIO	// not written yet ;)
 
 /* **************************************************************** */
 /*
@@ -75,13 +58,14 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 using namespace std;	// ESP8266 needs that
 
 
-#include "pulses_project_conf.h"	// define special projects like instruments
-
+// configuration sequence:
+#include "pulses_engine_config.h"		// inner program configuration file, do not change
 #include "pulses_systems.h"		// different software systems
 #include "pulses_boards.h"		// different boards
-#include "pulses_configuration.h"	// your configuration
+#include "my_pulses_config.h"	// your configuration
+#include "pulses_project_conf.h"	// predefined special projects like instruments
 
-#include "pulses_sanity_checks.h"	// check some pp macros
+#include "pulses_sanity_checks.h"	// check some pp macro compatibilities
 
 #if defined USE_BLUETOOTH_SERIAL_MENU
   #include "BluetoothSerial.h"
@@ -142,15 +126,10 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 
 #if defined USE_MONOCHROME_DISPLAY	// TODO: move to setup
   #include <U8x8lib.h>
-
   #if defined BATTERY_OLED_BOARD
     U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 4, /* data=*/ 5, /* reset=*/ 16);  // BATTERY_OLED_BOARD	TODO: move to setup()
   #elif defined HELTEC_OLED_BOARD		// heltec
     U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16); // HELTEC_OLED_BOARD	TODO: move to setup()
-  #else
-    //#error MONOCHROME DISPLAY BOARD TYPE UNKNOWN
-    #undef USE_MONOCHROME_DISPLAY
-    #warning *NOT* using monochrome display, type is unlnown
   #endif
   // bool monochrome_display_on=true;	// TODO: fix&use monochrome_display detection
 #endif	// USE_MONOCHROME_DISPLAY
@@ -171,7 +150,7 @@ action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actio
 #endif
 
 #if defined GPIO_PINS
-  #include "pulses_CLICK_PIN_configuration.h"	// defines gpio_pins[]
+  #include "pulses_CLICK_PIN_configuration.h"	// defines gpio_pins[]	// move to configuration sequence?
 #endif
 
 /* **************************************************************** */
@@ -859,6 +838,11 @@ void display_program_version() {	// monochrome oled display
 	u8x8.print((int) GPIO_PINS);
       #endif
     #endif
+
+#if defined OLED_HALT_PIN0
+    // do *not* change pin mode (0) here...
+    while(digitalRead(0) == LOW) { delay(1000); MENU.out('°'); }  // ATTENTION: dangerous *not* tested with GPIO00 as click or such...
+#endif
 }
 #endif
 
@@ -941,8 +925,10 @@ void setup() {
   */
   delay(1500);	// give a chance to read version on oled display
 
-  pinMode(0, INPUT);	// holding GPIO00 switch holds program version display on screen
-  while(digitalRead(0) == LOW) { ; }	// ATTENTION: a bit dangerous, *not* tested with GPIO00 as click or such...
+  #if defined OLED_HALT_PIN0
+    pinMode(0, INPUT);	// holding GPIO00 switch holds program version display on screen
+    while(digitalRead(0) == LOW) { delay(1000); MENU.out('°'); }  // ATTENTION: dangerous *not* tested with GPIO00 as click or such...
+  #endif
 #endif
 
 #if defined ESP32

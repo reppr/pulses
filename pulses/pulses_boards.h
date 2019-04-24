@@ -9,6 +9,20 @@
 
 #ifdef ARDUINO
   #if defined(ESP32)				// ESP32 :)
+    /* OLED boards	*/
+    #if defined BATTERY_OLED_BOARD || defined HELTEC_OLED_BOARD
+      #if ! defined USE_MONOCHROME_DISPLAY
+        #define USE_MONOCHROME_DISPLAY
+      #endif
+      #define ESP32_USB_DAC_ONLY_OLED	// not very flexible, but ok for now
+    #else
+      #if defined USE_MONOCHROME_DISPLAY
+        //#error MONOCHROME DISPLAY BOARD TYPE UNKNOWN
+        #undef USE_MONOCHROME_DISPLAY
+        #warning *NOT* using monochrome display, type is unlnown
+      #endif
+    #endif
+
     /* ESP32 NVS	*/
     // #define USE_NVS	// TODO: use it
     #if defined USE_NVS
@@ -26,7 +40,7 @@
        #define USE_DACs		BOARD_has_DACs
     #endif
 
-/* ESP32 touch sensors
+   /* ESP32 touch sensors
    #define USE_TOUCH in your configuration files to use ESP32 touch sensors	*/
 
     #define BOARD_has_TOUCH		10
@@ -49,7 +63,7 @@
     #define SCALES_RAM_SIZE	256*2+2
     // must be defined before including Pulses
     #define IMPLEMENT_TUNING		// needs float
-    #undef USE_F_MACRO			// F() does not work here, FIXME: see also Menu.h
+    #undef USE_F_MACRO			// F() does not work here, FIXME: see also Menu.h  TODO: test again	################
 
     #define USE_WIFI_telnet_menu	// use WIFI as menu over telnet?
     //#define AUTOSTART_WIFI	// start wifi on booting?  see: WiFi_stuff.ino
@@ -126,7 +140,7 @@
 #else	// not ARDUINO, PC
   #warning: "PC version not supported, out of date"
 
-#define PL_MAX	64		// Linux PC test version
+  #define PL_MAX	64		// Linux PC test version
 
   #ifndef GPIO_PINS		// default number of click frequencies
      #define GPIO_PINS	0  // default number of click frequencies on PC, untested
