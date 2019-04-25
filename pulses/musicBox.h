@@ -2,25 +2,44 @@
   musicBox.h
 */
 
+#include "musicBox_config.h"	// included in the configuration sequence
+
 /* **************************************************************** */
 // some DEFAULTs, setups might change them
 
-//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&deep_sleep	// do test for dac noise...	BT checks BLUETOOTH_ENABLE_PIN on boot
-//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&light_sleep	// fine as default for triggered musicBox    bluetooth does *not* wake up
-//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&restart	// endless loop
-//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&ESP.restart	// works fine
-//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&hibernate	// wakes up after musicBox_pause_seconds	BT should work, test
-#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user		// works fine, a possible snoring workaround on usb dac only models
-//#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&random_preset	// muzak forever?  >>>> RANDOM_PRESET_LOOP sets this automagically <<<<
+#if ! defined MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
+  //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&deep_sleep	// test for dac noise...  BT checks BLUETOOTH_ENABLE_PIN on boot
+  //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&light_sleep	// fine as default for triggered musicBox  bluetooth does *not* wake up
+  //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&restart	// endless loop
+  //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&ESP.restart	// works fine
+  //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&hibernate	// wakes up after musicBox_pause_seconds  BT should work, test
+  #define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user		// works fine, a possible snoring workaround on usb dac only models
+  //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&random_preset	// muzak forever? >>>RANDOM_PRESET_LOOP sets this automagically <<<
+#endif
 
 /* **************************************************************** */
 // pre defined SETUPS:
 
-#if defined SETUP_BRACHE_TRIGGERED_PRESETs
+#if defined SETUP_PORTABLE_DAC_ONLY
+  #define USE_BATTERY_CONTROL				// *pseudo* for green LED
+  #define PERIPHERAL_POWER_SWITCH_PIN		12	// switch power, often green LED
+  #define PROGRAM_SUB_VERSION			miniHarmonical 0	//
+  #define MAX_SUBCYCLE_SECONDS			60*6	// *max seconds*, PRODUCES *VERY SHORT PRESET PIECES*	BRACHE 2019-04
+  #define MUSICBOX_HARD_END_SECONDS		60*100	// SAVETY NET shut down after 100'
+  #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3600*12	// *DEACTIVATED*
+  #define SOFT_END_DAYS_TO_LIVE_DEFAULT		1	// quite fast ending
+  #undef RANDOM_PRESET_LOOP				// just in case, does not work well together	TODO: TEST: ################
+  #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&random_preset
+//  #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
+  #define MAGICAL_TOILET_HACK_2	// continue using (parts of) setup_bass_middle_high() to setup musicbox
+  #undef AUTOSTART
+  #define AUTOSTART	play_random_preset();		// same as pulses_project_conf.h
+
+#elif defined SETUP_BRACHE_TRIGGERED_PRESETs
   #define USE_BATTERY_CONTROL
   #define PERIPHERAL_POWER_SWITCH_PIN		12	// switch power, often green LED
   #define PROGRAM_SUB_VERSION			TRIGGERED_PLAYER
-  #define MAX_SUBCYCLE_SECONDS	120		// *max seconds*, PRODUCES *VERY SHORT PRESET PIECES*	BRACHE 2019-04
+  #define MAX_SUBCYCLE_SECONDS			120	// *max seconds*, PRODUCES *VERY SHORT PRESET PIECES*	BRACHE 2019-04
   #define MUSICBOX_HARD_END_SECONDS		5*60	// SAVETY NET
 //#define MUSICBOX_TRIGGER_BLOCK_SECONDS	30	// *DEACTIVATED* BRACHE 2019-01 FIXME: retriggering while playing is buggy
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3600	// *DEACTIVATED* BRACHE 2019-04 FIXME: retriggering while playing is buggy
@@ -1300,11 +1319,15 @@ void musicBox_trigger_ISR() {	// can also be used on the non interrupt version :
 void musicBox_trigger_ON() {
 #if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks *NOT* using the interrupt
   MENU.out(F("MUSICBOX_TRIGGER ON\t"));
-  MENU.out(MUSICBOX_TRIGGER_PIN);
-  MENU.tab();
-  MENU.outln(musicbox_trigger_cnt);
-  pinMode(MUSICBOX_TRIGGER_PIN, INPUT);
-  attachInterrupt(digitalPinToInterrupt(MUSICBOX_TRIGGER_PIN), musicBox_trigger_ISR, RISING);
+  #if defined MUSICBOX_TRIGGER_PIN
+    pinMode(MUSICBOX_TRIGGER_PIN, INPUT);
+    attachInterrupt(digitalPinToInterrupt(MUSICBOX_TRIGGER_PIN), musicBox_trigger_ISR, RISING);
+    MENU.out(MUSICBOX_TRIGGER_PIN);
+    MENU.tab();
+    MENU.outln(musicbox_trigger_cnt);
+  #else
+    MENU.ln();
+  #endif
 #else
   ;
 #endif
@@ -1314,8 +1337,10 @@ void musicBox_trigger_ON() {
 void musicBox_trigger_OFF() {
 #if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks *NOT* using the interrupt
   MENU.outln(F("musicBox_trigger_OFF\t"));
-  detachInterrupt(digitalPinToInterrupt(MUSICBOX_TRIGGER_PIN));
+  #if defined MUSICBOX_TRIGGER_PIN
+    detachInterrupt(digitalPinToInterrupt(MUSICBOX_TRIGGER_PIN));
   //  esp_intr_free(digitalPinToInterrupt(MUSICBOX_TRIGGER_PIN));
+  #endif
 #endif
   musicBox_trigger_enabled=false;
 }

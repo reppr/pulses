@@ -63,6 +63,14 @@
 // do not change the following code
 
 #if defined ESP32
+  /* OLED boards	*/
+  #if defined BATTERY_OLED_BOARD || defined HELTEC_OLED_BOARD
+    #if ! defined USE_MONOCHROME_DISPLAY
+      #define USE_MONOCHROME_DISPLAY
+    #endif
+    #define ESP32_USB_DAC_ONLY_OLED	// not very flexible, but ok for now
+  #endif // _OLED_BOARD
+
   #if defined ESP32_USB_DAC_ONLY
     #define PROGRAM_SUB_VERSION			DAC_only_usb
 

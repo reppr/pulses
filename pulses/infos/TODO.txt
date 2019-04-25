@@ -98,3 +98,7 @@ FIXME: debug power off noise
 FIXME:
     //# harmonie
     //# harmonies
+
+separe USE_BATTERY_CONTROL and signal LED
+
+SWITCH 1-4

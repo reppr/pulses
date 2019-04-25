@@ -1,17 +1,11 @@
-#define PROGRAM_VERSION		PULSES alpha.020
+#define PROGRAM_VERSION		PULSES alpha.021
 /*				0123456789abcdef   */
 
 #define PRENAME			SoundShip1	// individual name	// TODO: move to a configuration file
 /*				0123456789abcdef   */
 
-#define RANDOM_PRESET_LOOP	// FIXME: move to configuration	// TODO: move to a configuration file
-
-//#define BATTERY_OLED_BOARD	// LiPo battery OLED BOARD	// TODO: move to a configuration file
-//#define HELTEC_OLED_BOARD	// Heltec OLED BOARD		// FIXME: display_basic_musicBox_parameters() *DOES NOT WORK*
-
 // TODO: change PERIPHERAL_POWER_SWITCH_PIN as GPIO12 is active during boot process...
 #define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_TOUCH_INPUT_PIN	green LED in many musicBoxes
-
 
 /* **************************************************************** */
 /*
