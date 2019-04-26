@@ -120,15 +120,14 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 #include "array_descriptors.h"		// make data arrays accessible for the menu, give names to the data arrays
 
 
-#if defined USE_MONOCHROME_DISPLAY	// TODO: move to setup
+#if defined USE_MONOCHROME_DISPLAY
   #include <U8x8lib.h>
   #if defined BATTERY_OLED_BOARD
     U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 4, /* data=*/ 5, /* reset=*/ 16);  // BATTERY_OLED_BOARD	TODO: move to setup()
   #elif defined HELTEC_OLED_BOARD		// heltec
     U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16); // HELTEC_OLED_BOARD	TODO: move to setup()
   #endif
-  // bool monochrome_display_on=true;	// TODO: fix&use monochrome_display detection
-#endif	// USE_MONOCHROME_DISPLAY
+#endif
 
 action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actions
 
@@ -774,74 +773,6 @@ uint8_t relaxmax=4;			// up to how many relax() in one todo chain
 
 
 /* **************************************************************** */
-#if defined USE_MONOCHROME_DISPLAY
-void display_program_version() {	// monochrome oled display
-    u8x8.clear();
-    u8x8.setCursor(0,1);
-    u8x8.print(F(STRINGIFY(PROGRAM_VERSION)));
-
-    u8x8.setCursor(0,3);
-    #if defined PRENAME
-      u8x8.print(F(STRINGIFY(PRENAME)));
-    #elif defined PROGRAM_SUB_VERSION
-      u8x8.print(F(STRINGIFY(PROGRAM_SUB_VERSION)));
-    #endif
-
-    u8x8.setCursor(0,5);	// option mnemonics
-
-    #if defined USE_BLUETOOTH_SERIAL_MENU
-      #if defined BLUETOOTH_ENABLE_PIN
-	if(bluetooth_switch_())
-	  u8x8.print('B');
-	else
-	  u8x8.print('b');
-      #else
-	  u8x8.print('B');
-      #endif
-      u8x8.print(' ');
-    #else
-      u8x8.print(' ');
-      u8x8.print(' ');
-    #endif	// USE_BLUETOOTH_SERIAL_MENU
-
-    #if defined MUSICBOX_TRIGGER_PIN
-      if(musicBox_trigger_enabled)
-	u8x8.print('I');
-      else
-	u8x8.print('i');
-    #else
-      u8x8.print(' ');
-    #endif
-    u8x8.print(' ');
-
-    #if defined USE_RTC_MODULE
-      if(rtc_module_is_usable)
-	u8x8.print('R');
-      else
-	u8x8.print('r');
-     #else
-      u8x8.print(' ');
-    #endif
-    u8x8.print(' ');
-
-    #if defined USE_BATTERY_CONTROL
-      u8x8.print(F("V "));
-    #endif
-
-    #if ! defined NO_GPIO_PINS
-      #if GPIO_PINS > 0
-	u8x8.print('G');
-	u8x8.print((int) GPIO_PINS);
-      #endif
-    #endif
-
-#if defined OLED_HALT_PIN0
-    // do *not* change pin mode (0) here...
-    while(digitalRead(0) == LOW) { delay(1000); MENU.out('°'); }  // ATTENTION: dangerous *not* tested with GPIO00 as click or such...
-#endif
-}
-#endif
-
 void show_program_version() {
   MENU.out(F(STRINGIFY(PROGRAM_VERSION)));
   MENU.tab();
@@ -854,7 +785,7 @@ void show_program_version() {
 #endif
 
 #if defined USE_MONOCHROME_DISPLAY
-  display_program_version();
+  monochrome_show_program_version();
 #endif
 }
 
@@ -892,7 +823,7 @@ void setup() {
 #if defined USE_MONOCHROME_DISPLAY
   u8x8.begin();
   u8x8.setFont(u8x8_font_chroma48medium8_r);
-
+  // bool monochrome_display_on=true;	// TODO: fix&use monochrome_display detection
   /*	// TODO: fix&use monochrome_display detection
   MENU.ln();	// try to detect display...
   MENU.out(F("################	display ################ "));

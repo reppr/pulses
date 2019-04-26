@@ -8,7 +8,7 @@
 */
 
 #define MUSICBOX_PRESETs	170	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
-#define SHORT_PRESET_COLLECTION	169	// only the first <nn> presets are at choice, redefines MUSICBOX_PRESETs
+#define SHORT_PRESET_COLLECTION	166	// only the first <nn> presets are at choice, redefines MUSICBOX_PRESETs
 
 bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset? ################
   if(new_preset < 1 || new_preset >= MUSICBOX_PRESETs)
@@ -1549,29 +1549,46 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 63:
-    name = F("no meh melodie :)");
-    //# favorite+
+    name = F("rising ostinatos over rhythmic bordun");  // nice and harmonic, humming, good ending
+    //comment: very nice ending :)
+    //# FAVORITE
+    //# SPECIALITY	from rhythm, beat to sound effects, everything's there
+
+    //# heavyStart	but ok
     //# shortIsOk
+    //# bigBang
+    //# fractal		from rhythm, beat to sound effects, everything's there
+    //# soundscape
+    //# slow
+    //# fast
+    //# ticking		strongly audible very steady, driving pulse
+    //# steady
+    //# busy
     //# motives
     //# melodies
+    //# harmonies	often strange and staccato
+    //# rhytm&pulse	strongly audible very steady, driving pulse
+    //# beat
+    //# whirles
+    //# waves
+    //# structure
     //# aesthetic
     //# nice
-    //# simple
-    //# fractal
-    //# soundscape
-    //# bigBang
-    //# churchbells
-    //# fairies
+    //# dramatic	no, but very steady, driving pulse
+    //# sound
+    //# noise
+    //# humming
+    //# rumble
     //# hasSlowPulse
     //# lyric
-    date = F("2018-11-27_17h22m21s	TUE");
-    select_array_in(SCALES, octave_4th_5th);
-    select_array_in(JIFFLES, dwn_THRD_up);
+    //# children
+    //# dance
+    //# ritual
     sync = 0;
-    pitch = {32768, 357};
-    // random octave shift: used SUBCYCLE:	3' 2"
-    // CYC: 2^0	6h 27' 42"
-    subcycle_octave = -7;	// 3'  2"	| subcycle |
+    select_array_in(SCALES, octave_4th_5th);
+    select_array_in(JIFFLES, pentatonic_rise);
+    pitch = {2, 6144};
+    // harmonical cycle 'c'	12h 24'  7"	subcycle    5' 49"
     break;
 
   case 64:
@@ -4793,7 +4810,33 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     subcycle_octave = -5;	// 3' 31"	| subcycle |
     break;
 
+    // DADA2+	todo: CHECK FROM HERE <<<====	====>>>   #define SHORT_PRESET_COLLECTION	166
+
   case 167:
+    name = F("no meh melodie :)");
+    //# favorite-
+    //# heavyStart	problematic...
+    //# shortIsOk
+    //# motives
+    //# melodies
+    //# aesthetic
+    //# nice
+    //# simple
+    //# fractal
+    //# soundscape
+    //# bigBang
+    //# churchbells
+    //# fairies
+    //# hasSlowPulse
+    //# lyric
+    date = F("2018-11-27_17h22m21s	TUE");
+    select_array_in(SCALES, octave_4th_5th);
+    select_array_in(JIFFLES, dwn_THRD_up);
+    sync = 0;
+    pitch = {32768, 357};
+    // random octave shift: used SUBCYCLE:	3' 2"
+    // CYC: 2^0	6h 27' 42"
+    subcycle_octave = -7;	// 3'  2"	| subcycle |
     break;
 
   case 168:
@@ -4817,6 +4860,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# RECORDED	name = F("2019-02-02 ardour5 noname");	// TODO: broken?
     //# favorite-
     //# ISSUE	was broken, set *random* pitch {1,128} as workaround
+    //# ISSUE heavyStart is problematic
+    //# heavyStart
     date = F("2019-02-02_17h49m06s	SAT");
     select_array_in(SCALES, doric_scale);
     select_array_in(JIFFLES, pentatonic_rise);
@@ -4826,8 +4871,6 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // harmonical CYCLE: 2h 48' 57"	SUBCYCLE: | 3' 41" |
     // | 2' 38" |
     break;
-
-    // DADA2+	todo: CHECK FROM HERE <<<====	====>>>   #define SHORT_PRESET_COLLECTION	169
 
   case 170:
     name = F("veryverybad");

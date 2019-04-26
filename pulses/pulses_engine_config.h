@@ -24,8 +24,8 @@
 //#define USE_LEDC_AUDIO	// not written yet ;)
 
 /*
-  OLED_HALT_PIN0	// halts display in display_program_version() by pressing boot switch on GPIO 0
+  OLED_HALT_PIN0	// halts display in monochrome_show_program_version() by pressing boot switch on GPIO 0
   ATTENTION: *DANGEROUS!*	could possibly block boot sequence in systems with monochrome display code
   *not* tested with GPIO00 as click or such...
 */
-//#define OLED_HALT_PIN0	// see: display_program_version()
+//#define OLED_HALT_PIN0	// see: monochrome_show_program_version()

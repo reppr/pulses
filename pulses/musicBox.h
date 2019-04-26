@@ -122,12 +122,22 @@
   bool some_metric_tunings_only=false;	// free pitch tuning is default
 #endif
 
+
+// pulse_time_t harmonical_CYCLE;	// is in pulses.ino now TODO: move to Harmonical?
+pulse_time_t used_subcycle;	// TODO: move to Harmonical? ? ?
+short subcycle_octave=0;
+bool subcycle_user_selected=false;
+
 int stack_sync_slices=0;	// 0 is off	// positive: upwards,	negative: downwards	// TODO: make it short?
 char* name=NULL;		// name of a piece, a preset
 char* date=NULL;		// date  of a piece, preset or whatever
 int base_pulse=ILLEGAL;		// a human perceived base pulse, see 'stack_sync_slices'	// TODO: make it short?
 
 short preset=0;
+
+#if defined USE_MONOCHROME_DISPLAY
+  #include "monochrome_display.h"
+#endif
 
 #if ! defined MAX_SUBCYCLE_SECONDS
   #define MAX_SUBCYCLE_SECONDS	0	// default: off, use whole harmonical cycle
@@ -299,11 +309,6 @@ ui_conf_t uiConf;
 
 pulse_time_t musicBox_start_time;
 pulse_time_t musicBox_hard_end_time;
-
-// pulse_time_t harmonical_CYCLE;	// is in pulses.ino now TODO: move to Harmonical?
-pulse_time_t used_subcycle;	// TODO: move to Harmonical? ? ?
-short subcycle_octave=0;
-bool subcycle_user_selected=false;
 
 /*
   select something like
@@ -969,79 +974,6 @@ void show_metric_mnemonic() {	// TODO: move to Harmonical or Pulses
   MENU.out(second_letter);
 }
 
-#if defined USE_MONOCHROME_DISPLAY
-void display_basic_musicBox_parameters() {	// ATTENTION: takes too long to be used while playing
-  u8x8.clear();
-
-  if(preset) {
-    u8x8.setCursor(0,0);
-    u8x8.setInverseFont(1);
-    u8x8.print(F("PRESET "));
-    u8x8.print(preset);
-    u8x8.print(' ');
-    u8x8.setInverseFont(0);
-  }
-
-  u8x8.drawString(0, 1, array2name(SCALES, selected_in(SCALES)));
-
-  u8x8.drawString(0, 3, array2name(JIFFLES, selected_in(JIFFLES)));
-
-  u8x8.setCursor(0,5);
-  u8x8.setCursor(0,5);
-  u8x8.print('S');		// sync
-  u8x8.print(sync);
-  if(stack_sync_slices) {	// stack_sync_slices
-    u8x8.print('|');
-    u8x8.print(stack_sync_slices);
-  }
-  u8x8.print(F("  "));
-  u8x8.print(pitch.multiplier);	// pitch
-  u8x8.print('/');
-  u8x8.print(pitch.divisor);
-
-  if(stack_sync_slices && base_pulse != ILLEGAL) {
-    u8x8.setCursor(0,6);
-    u8x8.print(F("p["));
-    u8x8.print(base_pulse);
-    u8x8.print(F("]|"));
-    u8x8.print(stack_sync_slices);
-  }
-
-  if(selected_in(SCALES) != NULL) {
-    u8x8.setCursor(0,7);
-    u8x8.print(F("2^"));
-    u8x8.print(subcycle_octave);
-    u8x8.print(F("  "));
-
-    unsigned long seconds = (((float) used_subcycle.time / 1000000.0) + 0.5);	// TODO: factor out, build a string
-    if (used_subcycle.overflow)
-      seconds += used_subcycle.overflow * 4295;	// FIXME: (float) and round *after* overflow correction
-
-    unsigned int days = seconds / 86400;
-    seconds %= 86400;
-    unsigned int hours = seconds / 3600;
-    seconds %= 3600;
-    unsigned int minutes = seconds / 60;
-    seconds %= 60;
-    if(days) {
-      u8x8.print(days);
-      u8x8.print(F("d "));
-    }
-    if(hours || days) {
-      u8x8.print(hours);
-      u8x8.print(F("h "));
-    }
-    if(minutes || hours || days) {
-      u8x8.print(minutes);
-      u8x8.print(F("\' "));
-    }
-    u8x8.print(seconds);
-    u8x8.print(F("\" "));
-  } else									// TODO: factor out
-    u8x8.print('-');
-}
-#endif // USE_MONOCHROME_DISPLAY
-
 
 void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   if(preset) {
@@ -1091,13 +1023,7 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
     MENU.out(F(" metric"));
   MENU.space();
   show_metric_mnemonic();
-
   MENU.ln();
-
-#if defined USE_MONOCHROME_DISPLAY
-  if(MusicBoxState != AWAKE && MusicBoxState != ENDING)	// avoid destroying performance...
-    display_basic_musicBox_parameters();	// Heltec oled test	// ATTENTION: takes too long to be used while playing
-#endif
 }
 
 void musicBox_short_info() {
@@ -2307,6 +2233,7 @@ void start_musicBox() {
   MENU.ln();
   MENU.men_selected = 0;	// starting point (might be changed by kb macro)
   MENU.play_KB_macro(F("-:M "), false); // initialize, the space avoids output from :M , no newline
+//MENU.play_KB_macro(F("-:Mop "), false); // initialize, the space avoids output from :M , no newline
 
   // TODO: REWORK:  setup_bass_middle_high()  used in musicBox, but not really compatible
   MENU.ln();	// start setup sequence output "block"
@@ -2406,8 +2333,7 @@ void start_musicBox() {
   MENU.ln();
   musicBox_short_info();
 #if defined USE_MONOCHROME_DISPLAY
-  // on OLED it is blocked after set_MusicBoxState(AWAKE)
-  display_basic_musicBox_parameters();	// Heltec oled test	// ATTENTION: takes too long to be used while playing
+  monochrome_show_musicBox_parameters();	// ATTENTION: takes too long to be used while playing
 #endif
 
   MENU.outln(F("\n >>> * <<<"));	// start output block with configurations
