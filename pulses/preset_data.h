@@ -7,11 +7,11 @@
   also see: preset-hashtags.txt
 */
 
-#define MUSICBOX_PRESETs	170	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
-#define SHORT_PRESET_COLLECTION	166	// only the first <nn> presets are at choice, redefines MUSICBOX_PRESETs
+#define MUSICBOX_PRESETs	171	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
+#define SHORT_PRESET_COLLECTION	167	// only the first <nn> presets are at choice, redefines MUSICBOX_PRESETs
 
 bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset? ################
-  if(new_preset < 1 || new_preset >= MUSICBOX_PRESETs)
+  if(new_preset < 1 || new_preset > MUSICBOX_PRESETs)
     return true;	// *ERROR*
 
   preset = new_preset;
@@ -4810,34 +4810,50 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     subcycle_octave = -5;	// 3' 31"	| subcycle |
     break;
 
-    // DADA2+	todo: CHECK FROM HERE <<<====	====>>>   #define SHORT_PRESET_COLLECTION	166
-
   case 167:
-    name = F("no meh melodie :)");
-    //# favorite-
-    //# heavyStart	problematic...
+    name = F("The Landing Of The Fairies");
+    //# FAVORITE
     //# shortIsOk
-    //# motives
-    //# melodies
-    //# aesthetic
-    //# nice
-    //# simple
+    //# fullCycleIsOk
+    //# ritch
     //# fractal
     //# soundscape
-    //# bigBang
-    //# churchbells
+    //# slow	nice slow bass
+    //# fast	web
+    //# floating
+    //# motives
+    //# melodies
+    //# harmonies
+    //# aesthetic
+    //# nice
+    //# mystic
+    //# cosmic
+    //# SoundSpaceShip
     //# fairies
-    //# hasSlowPulse
+    //# aurora
+    //# sound
+    //# lesley
+    //# delay
+    //# hasSlowPulse	barely audible
     //# lyric
-    date = F("2018-11-27_17h22m21s	TUE");
-    select_array_in(SCALES, octave_4th_5th);
-    select_array_in(JIFFLES, dwn_THRD_up);
-    sync = 0;
-    pitch = {32768, 357};
-    // random octave shift: used SUBCYCLE:	3' 2"
-    // CYC: 2^0	6h 27' 42"
-    subcycle_octave = -7;	// 3'  2"	| subcycle |
+    //# dream
+    //# angels
+    //# heaven
+    //# air
+    //# children
+    //# dance
+    //# festive
+    //# solemn
+    //# ritual
+    //# happy
+    select_array_in(SCALES, pentatonic_minor);
+    sync = 1;
+    select_array_in(JIFFLES, dwn_THRD);
+    pitch = {1, 357};	// 8	*metric* c
+    // harmonical CYCLE: 1h 6' 2"	SUBCYCLE: 2^3 | 11' 28" |	???
     break;
+
+    // DADA2+	todo: CHECK FROM HERE <<<====	====>>>   #define SHORT_PRESET_COLLECTION	167
 
   case 168:
     name = F("2019-02-06_major_doric_rise");
@@ -4887,7 +4903,34 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // harmonical CYCLE: 1h 6' 2"	SUBCYCLE: | 4' 8" |
     break;
 
-    // >>>> *DO NOT FORGET* to update MUSICBOX_PRESETs <<<<
+  case 171:
+    name = F("no meh melodie :)");
+    //# favorite-
+    //# heavyStart	problematic...
+    //# shortIsOk
+    //# motives
+    //# melodies
+    //# aesthetic
+    //# nice
+    //# simple
+    //# fractal
+    //# soundscape
+    //# bigBang
+    //# churchbells
+    //# fairies
+    //# hasSlowPulse
+    //# lyric
+    date = F("2018-11-27_17h22m21s	TUE");
+    select_array_in(SCALES, octave_4th_5th);
+    select_array_in(JIFFLES, dwn_THRD_up);
+    sync = 0;
+    pitch = {32768, 357};
+    // random octave shift: used SUBCYCLE:	3' 2"
+    // CYC: 2^0	6h 27' 42"
+    subcycle_octave = -7;	// 3'  2"	| subcycle |
+    break;
+
+    // >>>> *DO NOT FORGET* to update MUSICBOX_PRESETs <<<<	171
 
   default:
     MENU.error_ln(F("invalid preset"));		// ERROR, should not happen
