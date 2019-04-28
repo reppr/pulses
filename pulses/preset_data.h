@@ -7,8 +7,8 @@
   also see: preset-hashtags.txt
 */
 
-#define MUSICBOX_PRESETs	171	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
-#define SHORT_PRESET_COLLECTION	167	// only the first <nn> presets are at choice, redefines MUSICBOX_PRESETs
+#define MUSICBOX_PRESETs	175	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
+//#define SHORT_PRESET_COLLECTION	171	// only the first <nn> presets are at choice, redefines MUSICBOX_PRESETs
 
 bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset? ################
   if(new_preset < 1 || new_preset > MUSICBOX_PRESETs)
@@ -2167,36 +2167,34 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 84:
-    name = F("Klangschwade mit Puls");
-    // heavy big bang
-    //# favorite-
+    name = F("The Enchanted Forest Temple");
+    //# FAVORITE
     //# shortIsOk
+    //# ritch
+    //# fractal
+    //# soundscape
+    //# slow	relatively low tuned melody net
+    //# floating
     //# motives
-    //# harmonies	static, more like bourdon
-    //# bourdon		permanent
-    //# heavyStart
-    //# quiet
-    //# static
-    //# dramatic
-    //# nervous
-    //# simple
-    //# simlicistic
-    //# dense		harmonies more like bourdon
-    //# elementary
-    //# bigBang
-    //# clock
-    //# robot
-    //# humming
-    //# hasSlowPulse	soft and not steady
-    //# lyric		but very simple, static
-    date = F("2018-12-07_18h34m01s	FRI");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, tanboura);
-    sync = 0;
-    pitch = {32768, 275};
-    // fix:	play_KB_macro  *2
-    // CYC: 2^0	2h  5' 49"
-    subcycle_octave = -4;	// 7' 52"	| subcycle |
+    //# melodies
+    //# harmonies	nice long bass chords
+    //# bourdon		often
+    //# sound
+    //# aesthetic
+    //# nice		a bit advanced
+    //# static		a bit
+    //# mystic
+    //# cosmic
+    //# fairies
+    //# aurora
+    //# lyric
+    //# dream
+    //# dance		very quietly moving with fast detail patterns
+    date = F("2019-04-04");
+    select_array_in(SCALES, octave_4th_5th);
+    select_array_in(JIFFLES, penta_3rd_down_5);
+    sync = 1;
+    pitch = {1, 330};
     break;
 
   case 85:
@@ -4735,7 +4733,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //comment: interesting start ;)
     //# favorite+
     //# shortIsOk
-    //# fullCycleIsOk	armonical CYCLE: 1h 23' 35"
+    //# fullCycleIsOk	harmonical CYCLE: 1h 23' 35"
     //# melodies	harmonic progression
     //# harmonies
     //# rhytm&pulse	strong at stat, stacking
@@ -4853,9 +4851,28 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // harmonical CYCLE: 1h 6' 2"	SUBCYCLE: 2^3 | 11' 28" |	???
     break;
 
-    // DADA2+	todo: CHECK FROM HERE <<<====	====>>>   #define SHORT_PRESET_COLLECTION	167
-
   case 168:
+    name = F("Perlechetti");
+    //# favorite+
+    //# shortIsOk
+    //# fullCycleIsOk	harmonical CYCLE: 1h 13' 48"
+    //# ritch
+    //# fractal
+    //# soundscape
+    //# floating
+    //# motives
+    //# aesthetic
+    //# nice
+    //# children
+    //# dance
+    date = F("2019-04-15");
+    select_array_in(SCALES, pentatonic_minor);
+    select_array_in(JIFFLES, pentatonic_desc);
+    sync = 1;
+    pitch = {1, 111};
+    break;
+
+  case 169:
     name = F("2019-02-06_major_doric_rise");
     //comment: ardour 5
     //# RECORDED    //comment: ardour 5
@@ -4871,42 +4888,67 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // | 5' 31" |
     break;
 
-  case 169:
-    name = F("2019-02-02 ardour5 noname");	// TODO: broken?
-    //# RECORDED	name = F("2019-02-02 ardour5 noname");	// TODO: broken?
-    //# favorite-
-    //# ISSUE	was broken, set *random* pitch {1,128} as workaround
-    //# ISSUE heavyStart is problematic
-    //# heavyStart
-    date = F("2019-02-02_17h49m06s	SAT");
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, pentatonic_rise);
-    sync = 0;
-    // was: pitch = {32768, 32};
-    pitch = {1, 128};
-    // harmonical CYCLE: 2h 48' 57"	SUBCYCLE: | 3' 41" |
-    // | 2' 38" |
-    break;
-
   case 170:
-    name = F("veryverybad");
+    name = F("doric musicbox S2");
+    //# favorite+
     //# shortIsOk
-    //# dense
-    //# melancholic
-    //# dramatic
-    //# crazy
-    //# chaotic
-    select_array_in(SCALES, europ_PENTAtonic);
-    sync = 3;
-    select_array_in(JIFFLES, tetraCHORD_desc);
-    pitch = {1, 12};	// 8	*metric* c
-    // harmonical CYCLE: 1h 6' 2"	SUBCYCLE: | 4' 8" |
+    //# fractal
+    //# simple
+    //# slow
+    //# harmonies
+    //# classicHarmonical
+    //# aesthetic
+    //# nice
+    //# quiet
+    //# cosmic
+    //# hasSlowPulse	harmonical progression
+    //# dream
+    //# ritual
+    date = F("2019-04-02");
+    select_array_in(SCALES, doric_scale);
+    select_array_in(JIFFLES, diing_ditditdit);
+    sync = 2;
+    pitch = {1, 196};	// metric g
     break;
 
   case 171:
+    name = F("George's Dream");
+    //# favorite
+    //# shortIsOk
+    //# fullCycleIsOk
+    //# fractal
+    //# simple		quite, somehow
+    //# slow
+    //# motives
+    //# melodies
+    //# aesthetic	modern
+    //# nice		modern
+    //# quiet
+    //# static
+    //# funny
+    //# jazz
+    //# sound
+    //# lesley
+    //# hasSlowPulse	repeating motivpatterns
+    //# dream
+    //# air
+    //# children
+    //# boring
+    //# tired		maybe?
+    date = F("2019-03-29");
+    select_array_in(SCALES, TRIAD);
+    select_array_in(JIFFLES, up_THRD_dn);
+    sync = 1;
+    pitch = {1, 428};
+    break;
+
+    // DADA2+	todo: CHECK FROM HERE <<<====	====>>>   #define SHORT_PRESET_COLLECTION	171
+
+  case 172:
     name = F("no meh melodie :)");
     //# favorite-
     //# heavyStart	problematic...
+    //# dropouts	problematic
     //# shortIsOk
     //# motives
     //# melodies
@@ -4930,7 +4972,72 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     subcycle_octave = -7;	// 3'  2"	| subcycle |
     break;
 
-    // >>>> *DO NOT FORGET* to update MUSICBOX_PRESETs <<<<	171
+  case 173:
+    name = F("Klangschwade mit Puls");
+    // heavy big bang
+    //# favorite-
+    //# shortIsOk
+    //# motives
+    //# harmonies	static, more like bourdon
+    //# bourdon		permanent
+    //# heavyStart
+    //# quiet
+    //# static
+    //# dramatic
+    //# nervous
+    //# simple
+    //# simlicistic
+    //# dense		harmonies more like bourdon
+    //# elementary
+    //# bigBang
+    //# clock
+    //# robot
+    //# humming
+    //# hasSlowPulse	soft and not steady
+    //# lyric		but very simple, static
+    date = F("2018-12-07_18h34m01s	FRI");
+    select_array_in(SCALES, europ_PENTAtonic);
+    select_array_in(JIFFLES, tanboura);
+    sync = 0;
+    pitch = {32768, 275};
+    // fix:	play_KB_macro  *2
+    // CYC: 2^0	2h  5' 49"
+    subcycle_octave = -4;	// 7' 52"	| subcycle |
+    break;
+
+  case 174:
+    name = F("2019-02-02 ardour5 noname");	// TODO: broken?
+    //# RECORDED	name = F("2019-02-02 ardour5 noname");	// TODO: broken?
+    //# favorite-
+    //# ISSUE	was broken, set *random* pitch {1,128} as workaround
+    //# ISSUE heavyStart is problematic
+    //# heavyStart
+    date = F("2019-02-02_17h49m06s	SAT");
+    select_array_in(SCALES, doric_scale);
+    select_array_in(JIFFLES, pentatonic_rise);
+    sync = 0;
+    // was: pitch = {32768, 32};
+    pitch = {1, 128};
+    // harmonical CYCLE: 2h 48' 57"	SUBCYCLE: | 3' 41" |
+    // | 2' 38" |
+    break;
+
+  case 175:
+    name = F("veryverybad");
+    //# shortIsOk
+    //# dense
+    //# melancholic
+    //# dramatic
+    //# crazy
+    //# chaotic
+    select_array_in(SCALES, europ_PENTAtonic);
+    sync = 3;
+    select_array_in(JIFFLES, tetraCHORD_desc);
+    pitch = {1, 12};	// 8	*metric* c
+    // harmonical CYCLE: 1h 6' 2"	SUBCYCLE: | 4' 8" |
+    break;
+
+    // >>>> *DO NOT FORGET* to update MUSICBOX_PRESETs <<<<	175
 
   default:
     MENU.error_ln(F("invalid preset"));		// ERROR, should not happen
