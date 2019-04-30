@@ -1010,15 +1010,16 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   MENU.space(2);
 
   tag_randomness(pitch_user_selected);
-  MENU.out(F("SCALING: "));	// FIXME: TODO: check where that *is* used ################
+  MENU.out(F("SCALING: "));
+/*				// TODO: REMOVE:
   MENU.out(multiplier);		// TODO: define role of multiplier, divisor
   MENU.slash();
   MENU.out(divisor);		// TODO: define role of multiplier, divisor
   MENU.space();
+*/
   MENU.out(pitch.multiplier);
   MENU.slash();
   MENU.out(pitch.divisor);
-
   if(chromatic_pitch)
     MENU.out(F(" metric"));
   MENU.space();
