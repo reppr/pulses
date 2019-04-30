@@ -6,7 +6,7 @@
 #include <esp_bt.h>
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
-  #error BluetoothSerialMenu.h  bluetooth is not enabled!  please run `make menuconfig` to and enable it
+  #error BluetoothSerialMenu.h  bluetooth is not enabled!  please run `make menuconfig` and enable it
 #endif
 
 // BluetoothSerial BLUEtoothSerial;
@@ -75,11 +75,11 @@ bool bluetoothSerialBEGIN() {
   return ok;
 }
 
-void bluetooth_setup() {
+void bluetooth_setup() {			// start bluetooth
   MENU.out(F("BLUETOOTH: "));
   MENU.outln(STRINGIFY(BLUETOOTH_NAME));
 
-  /* debugging
+  /* debugging		//	FIXME: TODO: *FAILED BLUETOOTH WAKEUP AFTER light_sleep()*
   show_bt_controller_status();	// reboot: zero, then 2 forever...
   MENU.tab();
   */
@@ -107,3 +107,26 @@ void bluetooth_setup() {
 
   MENU.ln();
 }
+
+void bluetooth_end() {				// end bluetooth
+  if(MENU.verbosity >= VERBOSITY_SOME)
+    MENU.out(F("BT end"));
+  BLUEtoothSerial.end();
+  // yield();
+
+  if(MENU.verbosity >= VERBOSITY_SOME) {
+    show_bt_controller_status();
+    MENU.ln();
+  }
+}
+
+#if defined BLUETOOTH_ENABLE_PIN
+void set_bluetooth_according_switch() {
+  pinMode(BLUETOOTH_ENABLE_PIN, INPUT);
+  digitalRead(BLUETOOTH_ENABLE_PIN);		// don't trust the very first reading...
+  if(digitalRead(BLUETOOTH_ENABLE_PIN))		// read again
+    bluetoothSerialBEGIN();			// START bluetooth
+  else						//   or
+    bluetooth_end();				// END bluetooth
+}
+#endif

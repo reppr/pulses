@@ -2182,6 +2182,9 @@ short middle_pulses;	// see  setup_bass_middle_high()
 short high_pulses;	// see  setup_bass_middle_high()
 
 void start_musicBox() {
+#if defined BLUETOOTH_ENABLE_PIN
+  set_bluetooth_according_switch();
+#endif
   MENU.out(F("\nstart_musicBox()\t"));
   show_program_version();
 

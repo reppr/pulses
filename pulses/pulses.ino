@@ -887,9 +887,9 @@ void setup() {
   MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
 #endif
 
-#if defined USE_BLUETOOTH_SERIAL_MENU	// double, 1/2	test brownout recognition	TODO: review
+#if defined USE_BLUETOOTH_SERIAL_MENU	// setup()	double, 1/2	test brownout recognition	TODO: review
   #if defined BLUETOOTH_ENABLE_PIN
-  if(bluetooth_switch_())
+  if(bluetooth_switch_())		// setup()	double, 1/2	test brownout recognition	TODO: review
   #endif
     {
       bluetooth_setup();
@@ -957,9 +957,9 @@ MENU.ln();
   #endif	// ESP8266
 #endif // to WiFi or not
 
-#if defined USE_BLUETOOTH_SERIAL_MENU && false	// double, 2/2	test brownout recognition	TODO: review
+#if defined USE_BLUETOOTH_SERIAL_MENU && false	// setup()	double, 2/2	test brownout recognition  *DEACTIVATED* TODO: review
   #if defined BLUETOOTH_ENABLE_PIN
-  if(bluetooth_switch_())
+  if(bluetooth_switch_())			// setup()	double, 2/2	test brownout recognition  *DEACTIVATED* TODO: review
   #endif
     bluetooth_setup();
 #endif
