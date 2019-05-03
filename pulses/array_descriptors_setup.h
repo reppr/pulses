@@ -135,6 +135,7 @@ REGISTER_JIFFLE(mech2);
 REGISTER_JIFFLE(mech255);
 REGISTER_JIFFLE(mech511);
 REGISTER_JIFFLE(mech1023);
+REGISTER_JIFFLE(with_pauses);
 
 REGISTER_JIFFLE(doDe_i);	// test only, remove?
 REGISTER_JIFFLE(asdfg);		// test only, remove?

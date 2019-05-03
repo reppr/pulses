@@ -169,9 +169,15 @@ action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actio
 
 
 /* **************************************************************** */
-fraction pitch={1,1};	// pitch to tune a scale	// TODO: gather basic settings in the code	################
+// TODO: gather basic settings in the code	################
+int sync=1;		// syncing edges or middles of square pulses
+fraction pitch={1,1};	// pitch to tune a scale
 int octave_shift=0;
 bool no_octave_shift=false;	// see: tune_selected_2_scale_limited()
+
+int base_pulse=ILLEGAL;			// a human perceived base pulse, see 'stack_sync_slices'
+pulse_time_t base_pulse_period={0,0};	// {0,0} is unknown, invalid
+
 
 /* **************************************************************** */
 bool DO_or_maybe_display(unsigned char verbosity_level) { // the flag tells *if* to display
@@ -618,7 +624,6 @@ void selected_DACsq_intensity_proportional(int intensity, int channel) {
 /* **************************************************************** */
 // user interface variables:
 
-int sync=1;			// syncing edges or middles of square pulses
 unsigned long multiplier=1;	// TODO: define role of multiplier, divisor
 unsigned long divisor=1;	// TODO: define role of multiplier, divisor
 

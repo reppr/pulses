@@ -102,3 +102,7 @@ FIXME:
 separe USE_BATTERY_CONTROL and signal LED
 
 SWITCH 1-4
+
+gather configuration variables in the code	// TODO: do more
+
+// TODO: maybe clone whole base_pulse ???

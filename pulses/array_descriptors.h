@@ -92,6 +92,7 @@ bool register_array_in_DB(arr_descriptor* DB,	\
     return true;
   }
 
+  MENU.error_ln(F("could not register array"));
   return false;
 }
 
@@ -135,7 +136,7 @@ bool include_DB_in_DB(arr_descriptor* DB, arr_descriptor* DB_include, int first)
 #define SCALE_DESCRIPTORS	64	// FIXME: ################
 arr_descriptor SCALES[SCALE_DESCRIPTORS];
 
-#define JIFFLE_DESCRIPTORS	96	// FIXME: ################
+#define JIFFLE_DESCRIPTORS	128	// FIXME: ################
 arr_descriptor JIFFLES[JIFFLE_DESCRIPTORS];
 
 #define iCODE_DESCRIPTORS	(64+JIFFLE_DESCRIPTORS)	// FIXME: ################

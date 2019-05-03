@@ -131,7 +131,6 @@ bool subcycle_user_selected=false;
 int stack_sync_slices=0;	// 0 is off	// positive: upwards,	negative: downwards	// TODO: make it short?
 char* name=NULL;		// name of a piece, a preset
 char* date=NULL;		// date  of a piece, preset or whatever
-int base_pulse=ILLEGAL;		// a human perceived base pulse, see 'stack_sync_slices'	// TODO: make it short?
 
 short preset=0;
 
@@ -2308,6 +2307,9 @@ void start_musicBox() {
   // *not* regarding pitch_user_selected as selected frequencies might be too high, check anyway...
   lower_audio_if_too_high(409600*2);	// 2 bass octaves	// TODO: adjust appropriate...
 #endif
+
+  if(PULSES.pulses[base_pulse].period.time)
+    base_pulse_period = PULSES.pulses[base_pulse].period;	// see: test_jiffle();
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   peripheral_power_switch_ON();

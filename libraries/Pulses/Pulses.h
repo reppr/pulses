@@ -132,9 +132,10 @@ struct pulse_t {
 #define g_MASTER	1	// master pulse that generates and controls other pulses that perform a piece
 #define g_PRIMARY	2	// a pulse that seeds 'throws' other pulses like do_throw_a_jiffle(p)
 #define g_SECONDARY	4	// a one shot player like do_jiffle(p);
+#define g_AUXILIARY	8	// like a pulse used to test a jiffle		//  FIXME:  CRASH g_AUXILIARY <--> g_TRIAD
 
 // tuning groups:
-//#define g_TRIAD		8	// (any) 3 note subset of a scale
+//#define g_TRIAD		8	// (any) 3 note subset of a scale	//  FIXME:  CRASH g_AUXILIARY <--> g_TRIAD
 //#define g_TETRA		16	// 4 note subset of pulses tuned to a tetrachord (or similar)
 //#define g_PENTA		32	// pentatonic 5 note subset of tuned pulses
 //#define g_HEXA		64	// (any) 6 tone subset
