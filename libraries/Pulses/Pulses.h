@@ -298,6 +298,7 @@ class Pulses {
 
   void init_pulse(int pulse);		// init, reset or kill a pulse
   void init_pulses();			// init all pulses
+  int highest_available_pulse();	// first free pulse from top (or ILLEGAL)
   void wake_pulse(int pulse);		// wake a pulse up, called from check_maybe_do()
   void deactivate_pulse(int pulse);	// clear ACTIVE flag, keep data
   void set_payload(int pulse, void (*payload)(int));	// set and activate payload

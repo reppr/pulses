@@ -49,6 +49,7 @@ activate_tuning	KEYWORD2
 stop_tuning	KEYWORD2
 init_pulse	KEYWORD2
 init_pulses	KEYWORD2
+highest_available_pulse	KEYWORD2
 wake_pulse	KEYWORD2
 deactivate_pulse	KEYWORD2
 set_payload	KEYWORD2

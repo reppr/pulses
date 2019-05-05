@@ -366,6 +366,28 @@ void fix_jiffle_range() {	// FIXME: use new implementation
 };
 
 
+void test_jiffle(unsigned int* jiffle, int count) {
+  if(jiffle==NULL || (jiffle[0]==0 && jiffle[1]==0))
+    return;	// invalid
+
+  int pulse;
+  if((pulse = PULSES.highest_available_pulse()) == ILLEGAL)
+    return;	// no free pulse
+
+  if(MENU.verbosity >= VERBOSITY_LOWEST)
+    MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
+
+  // pulse_time_t period = base_pulse_period;
+  pulse_time_t period = {6000000, 0};		// TODO: better default based on the situation ################
+  setup_icode_seeder(pulse, period, (icode_t*) jiffle, DACsq1 | DACsq2 | doesICODE);
+  PULSES.pulses[pulse].flags |= COUNTED;
+  PULSES.pulses[pulse].remaining = count;
+  PULSES.pulses[pulse].dac1_intensity = PULSES.pulses[pulse].dac2_intensity = 20; // TODO: random test value
+  PULSES.activate_pulse_synced(pulse, PULSES.get_now(), abs(sync));
+  PULSES.fix_global_next();
+}
+
+
 /* **************************************************************** */
 /*
   void display_names(char** names, int count, int selected);
@@ -4508,7 +4530,7 @@ bool menu_pulses_reaction(char menu_input) {
     setup_jiffle_thrower_selected(selected_actions);
     break;
 
-  case 'J':	// select, edit, load jiffle
+  case 'J':	// select, edit, test, load jiffle
     /*
       'J'  shows registered jiffle names and display_jiffletab(<selected_jiffle>)
       'J7' selects jiffle #7 and display_jiffletab()
@@ -4516,19 +4538,35 @@ bool menu_pulses_reaction(char menu_input) {
       'J9!' copy jiffle #9 in jiffle_RAM, select jiffle_RAM, display_jiffletab(jiffle_RAM)
     */
     // some jiffles from source, some very old FIXME:	review and delete	################
-    if (MENU.cb_peek() != '!')		// 'J<num>' selects jiffle
-      if (UI_select_from_DB(JIFFLES))	// select jiffle UI
+    next_token = MENU.cb_peek();
+    if (next_token != '!' && next_token != 't')	// 'J<num>' selects jiffle
+      if (UI_select_from_DB(JIFFLES))		// select jiffle UI
 	jiffle_user_selected = true;
 
-    if (MENU.cb_peek() == '!') {	// 'J[<num>]!' copies an already selected jiffletab to RAM, selects RAM
-      MENU.drop_input_token();
-      if(selected_in(JIFFLES) != jiffle_RAM) {
-	unsigned int * source=selected_in(JIFFLES);
-	// jiffle_write_index=0;	// no, write starting at jiffle_write_index #### FIXME: ####
-	load2_jiffle_RAM(source);
+    {
+      bool trying=true;
+      while (trying) {
+	switch (MENU.cb_peek()) {
+	case 't':	// 'J[...]t' tests a jiffle
+	  MENU.drop_input_token();
+	  test_jiffle(selected_in(JIFFLES), 4);
+	  break;
+
+	case '!':	// 'J[<num>]!' copies an already selected jiffletab to RAM, selects RAM
+	  MENU.drop_input_token();
+	  if(selected_in(JIFFLES) != jiffle_RAM) {
+	    unsigned int * source=selected_in(JIFFLES);
+	    // jiffle_write_index=0;	// no, write starting at jiffle_write_index #### FIXME: ####
+	    load2_jiffle_RAM(source);
+	  }
+	  select_array_in(JIFFLES, jiffle_RAM);
+	  jiffle_user_selected = true;
+	  break;
+
+	default:
+	  trying=false;
+	}
       }
-      select_array_in(JIFFLES, jiffle_RAM);
-      jiffle_user_selected = true;
     }
 
     if (MENU.verbosity >= VERBOSITY_SOME)

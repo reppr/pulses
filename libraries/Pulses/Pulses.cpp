@@ -325,6 +325,13 @@ void Pulses::init_pulses() {
   }
 }
 
+int Pulses::highest_available_pulse() {
+  for (int pulse=pl_max-1; pulse>=0; pulse--)
+    if(pulses[pulse].flags == 0)
+      return pulse;			// return topmost free pulse
+
+  return ILLEGAL;
+}
 
 // void wake_pulse(int pulse);	do one life step of the pulse
 // gets called from check_maybe_do()
