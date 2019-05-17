@@ -809,7 +809,7 @@ void softboard_display() {
 
   MENU.out(F("\n.=all digital\t,=all analog\t;=both\tx=extra\t"));
 #if defined USE_i2c
-  MENU.outln(F("C=i2c scan"));
+  MENU.outln(F("\tC=i2c scan"));
 #endif
 
 #if defined USE_RTC_MODULE
