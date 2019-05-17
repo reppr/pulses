@@ -8,7 +8,9 @@
 */
 
 #define MUSICBOX_PRESETs	175	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
-//#define SHORT_PRESET_COLLECTION	171	// only the first <nn> presets are at choice, redefines MUSICBOX_PRESETs
+
+// *all* existing presets should be playable now :)
+#define SHORT_PRESET_COLLECTION	175	// only the first <nn> presets are at choice, redefines MUSICBOX_PRESETs
 
 bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset? ################
   if(new_preset < 1 || new_preset > MUSICBOX_PRESETs)
@@ -32,6 +34,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     name = F("wunderschön melodisch :) :) :)");
     //comment: mit schönem, aberendlosem schluss ;)
     //# FAVORITE
+    //# bigBang		// sometimes problematic	use autostack_S0
     //# melodies
     //# harmonie
     //# shortIsOk
@@ -356,7 +359,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //comment: :) :) :) !!!
     //# favorite+
     //# dropouts
-    //# heavyStart
+    //# heavyStart		// sometimes problematic	use autostack_S0
     //# rhytm&pulse
     date = F("2018-12-09_15h24m13s	SUN");
     select_array_in(SCALES, octave_4th_5th);
@@ -390,7 +393,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 19:
     name = F("simple, hübsche aafang");
-    //# bigBang	is ok
+    //# bigBang	is ok	sometimes problematic	use autostack_S0
     //# FAVORITE ???
     //# shortIsOk
     //# bigBang
@@ -643,8 +646,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 30:
     name = F("short cycled !");	// TODO: check start
     //# FAVORITE ???
-    //# bigBang
-    //# heavyStart	but passes, sometimes ;)
+    //# bigBang		// sometimes problematic	use autostack_S0
+    //# heavyStart	// problematic, but passes, sometimes ;)	use autostack_S0
     //# fullCycleIsOk	// TODO: test
     //# shortIsOk
     //# strange
@@ -830,8 +833,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# melancholic
     //# simple
     //# cosmic
-    //# bigBang
-    //# heavyStart	should go ok
+    //# bigBang		// sometimes problematic	use autostack_S0
+    //# heavyStart	should go ok,  but sometimes problematic	use autostack_S0
     //# clock
     //# hasSlowPulse
     //# lyric
@@ -1398,7 +1401,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 57:
     name = F("klassisch, schön, als grundlag zu eme 22' 1\" stuck");
     // FIXME: is double speed on chamber orchestra
-    //# favorite+
+    //# FAVORITE+
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 11' 0" or 22' 01"
     //# melodies
@@ -1701,7 +1704,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 68:
     name = F("wow");
-    //# FAVORITE
+    //# FAVORITE	+++ :)
     //# shortIsOk
     //# melodies
     //# harmonies
@@ -2760,7 +2763,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 103:
     name = F("PENTA Classic");
-    //# favorite+
+    //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 51' 57"
     //# motives
@@ -4651,7 +4654,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 162:
     name = F("klassisch und simpel schön");
     //# favorite
-    //# heavyStart
+    //# heavyStart	problematcic	use autostack_S0
     //# shortIsOk
     //# bigBang
     //# ritch
@@ -4810,7 +4813,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 167:
     name = F("The Landing Of The Fairies");
-    //# FAVORITE
+    //# FAVORITE+
     //# shortIsOk
     //# fullCycleIsOk
     //# ritch
@@ -4942,12 +4945,10 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     pitch = {1, 428};
     break;
 
-    // DADA2+	todo: CHECK FROM HERE <<<====	====>>>   #define SHORT_PRESET_COLLECTION	171
-
   case 172:
     name = F("no meh melodie :)");
-    //# favorite-
-    //# heavyStart	problematic...
+    //# favorite	only with autostack_S0
+    //# heavyStart	PROBLEMATIC, throughout...	use autostack_S0 !
     //# dropouts	problematic
     //# shortIsOk
     //# motives
@@ -4975,12 +4976,12 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 173:
     name = F("Klangschwade mit Puls");
     // heavy big bang
-    //# favorite-
+    //# favorite  with autostack_S0
     //# shortIsOk
     //# motives
     //# harmonies	static, more like bourdon
     //# bourdon		permanent
-    //# heavyStart
+    //# heavyStart	use autostack_S0 !
     //# quiet
     //# static
     //# dramatic
@@ -5008,9 +5009,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 174:
     name = F("2019-02-02 ardour5 noname");	// TODO: broken?
     //# RECORDED	name = F("2019-02-02 ardour5 noname");	// TODO: broken?
-    //# favorite-
+    //# favorite  with autostack_S0
     //# ISSUE	was broken, set *random* pitch {1,128} as workaround
-    //# ISSUE heavyStart is problematic
+    //# ISSUE heavyStart is problematic   use autostack_S0 !
     //# heavyStart
     date = F("2019-02-02_17h49m06s	SAT");
     select_array_in(SCALES, doric_scale);
@@ -5037,11 +5038,21 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // harmonical CYCLE: 1h 6' 2"	SUBCYCLE: | 4' 8" |
     break;
 
-    // >>>> *DO NOT FORGET* to update MUSICBOX_PRESETs <<<<	175
+    // DADA:	todo: CHECK FROM HERE <<<====	====>>>   #define SHORT_PRESET_COLLECTION	175
+    // DADA: >>>> *DO NOT FORGET* to update MUSICBOX_PRESETs <<<<	175
+
 
   default:
     MENU.error_ln(F("invalid preset"));		// ERROR, should not happen
     return true;
+  }
+
+  if(sync==0 && stack_sync_slices==0) {		// *AUTOMAGIC WORKAROUND* for problematic S0 setups:
+    stack_sync_slices=autostack_S0;		// using autostack_S0
+    if(MENU.verbosity >= VERBOSITY_LOWEST) {
+      MENU.out(F("\tAUTOSTACK: "));
+      MENU.outln(stack_sync_slices);
+    }
   }
 
   MENU.tab();

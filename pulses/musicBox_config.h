@@ -19,5 +19,14 @@
 // compatibility: use (buggy) old style tuning and lowering mechanism for backwards compatibility reproducing older setups?
 //#define OLDSTYLE_TUNE_AND_LIMIT	// use (buggy) old style tuning and lowering mechanism for backwards compatibility
 
+#define AUTOSTACK_S0_DEFAULT	-4096*32	// a possible default...
+
+
+
+// SANITY CHECKS:	===>  *DO NOT CHANGE* THE LINES BELOW  <===
+#if ! defined AUTOSTACK_S0_DEFAULT
+  #define AUTOSTACK_S0_DEFAULT	0
+#endif
+
 #define MUSICBOX_CONFIG_H
 #endif

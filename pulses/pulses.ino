@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION		PULSES alpha.021
+#define PROGRAM_VERSION		PULSES alpha.022
 /*				0123456789abcdef   */
 
 /* **************************************************************** */
@@ -3045,7 +3045,7 @@ void menu_pulses_display() {
 }
 
 
-// FIXME: obsolete? ################
+// FIXME: obsolete? ################	// RETHINK:	DADA?
 int setup_jiffle_thrower_synced(pulse_time_t when,
 				unsigned long unit,
 				unsigned long multiplier, unsigned long divisor,

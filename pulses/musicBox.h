@@ -129,6 +129,9 @@ short subcycle_octave=0;
 bool subcycle_user_selected=false;
 
 int stack_sync_slices=0;	// 0 is off	// positive: upwards,	negative: downwards	// TODO: make it short?
+
+int autostack_S0=AUTOSTACK_S0_DEFAULT;
+
 char* name=NULL;		// name of a piece, a preset
 char* date=NULL;		// date  of a piece, preset or whatever
 
@@ -3357,9 +3360,11 @@ bool musicBox_reaction(char token) {
     MENU.ln();
     MENU.out(F("PRESET "));
     if(input_value = MENU.numeric_input(1)) {
-      if(! load_preset(input_value))	// no error?
-	start_musicBox();		// play preset
-      else
+      if(! load_preset(input_value)) {	// no error?
+	if(MusicBoxState != OFF)	// end a running session?
+	  tabula_rasa();
+	start_musicBox();		// play new preset
+      } else
 	MENU.outln_invalid();
     } else
       play_random_preset();	// selecting zero plays a *random* preset
