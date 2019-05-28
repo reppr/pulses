@@ -31,23 +31,23 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   switch(preset) {
   case 1:
-    name = F("wunderschön melodisch :) :) :)");
-    //comment: mit schönem, aberendlosem schluss ;)
+    name = F("wunderschöns obenabe vogelgetzwitscher bistüüfinbass :)");
     //# FAVORITE
-    //# bigBang		// sometimes problematic	use autostack_S0
     //# melodies
-    //# harmonie
     //# shortIsOk
-    //# dropouts
-    //# aesthetic	beware of dropouts
-    date = F("2018-11-19_17h42m49s	MON");
+    //# aurora	some
+    //# lesley	a bit
+    //# birds
+    //# mystic
+    //# nice
+    //# simple
+    //# happy
+    //# aesthetic
+    date = F("2018-11-06_15h52m17s	TUE");
     select_array_in(SCALES, octaves_fifths);
-    select_array_in(JIFFLES, dwn_THRD);
-    sync = 0;
-    pitch = {32768*2, 281};
-    // fix:	play_KB_macro  *2
-    // CYC: 2^0	14d 14h 15' 26"
-    subcycle_octave = -1;	// 2	    5'  8"	| subcycle |
+    select_array_in(JIFFLES, dwn_THRD_up);
+    sync = 5;
+    pitch = {32768, 322};
     break;
 
   case 2:
@@ -179,23 +179,23 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 8:
-    name = F("wunderschöns obenabe vogelgetzwitscher bistüüfinbass :)");
+    name = F("wunderschön melodisch :) :) :)");
+    //comment: mit schönem, aberendlosem schluss ;)
     //# FAVORITE
+    //# bigBang		// sometimes problematic	use autostack_S0
     //# melodies
+    //# harmonie
     //# shortIsOk
-    //# aurora	some
-    //# lesley	a bit
-    //# birds
-    //# mystic
-    //# nice
-    //# simple
-    //# happy
-    //# aesthetic
-    date = F("2018-11-06_15h52m17s	TUE");
+    //# dropouts
+    //# aesthetic	beware of dropouts
+    date = F("2018-11-19_17h42m49s	MON");
     select_array_in(SCALES, octaves_fifths);
-    select_array_in(JIFFLES, dwn_THRD_up);
-    sync = 5;
-    pitch = {32768, 322};
+    select_array_in(JIFFLES, dwn_THRD);
+    sync = 0;
+    pitch = {32768*2, 281};
+    // fix:	play_KB_macro  *2
+    // CYC: 2^0	14d 14h 15' 26"
+    subcycle_octave = -1;	// 2	    5'  8"	| subcycle |
     break;
 
   case 9:
@@ -303,7 +303,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 14:
     name = F("ewig tickends uhr gloggespiel");
-    //# FAVORITE ???
+    //# FAVORITE
     //# shortIsOk
     //# simple
     //# simlicistic
@@ -335,7 +335,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 16:
     name = F("langsams iiordne in es ruhigs piipskonzert");
-    //# favorite+
+    //# FAVORITE
     //# shortIsOk
     //# harmonies
     //# classicHarmonical
@@ -357,7 +357,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 17:
     name = F("Ouverture");
     //comment: :) :) :) !!!
-    //# favorite+
+    //# FAVORITE
     //# dropouts
     //# heavyStart		// sometimes problematic	use autostack_S0
     //# rhytm&pulse
@@ -373,7 +373,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 18:
     name = F("klassisch TIMEMACHINE style");
     // :)
-    //# FAVORITE ???
+    //# FAVORITE
     //# harmonies
     //# shortIsOk
     //# systemStress	just occasionally
@@ -392,9 +392,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 19:
-    name = F("simple, hübsche aafang");
+    name = F("simple, hübsche bigBang");
     //# bigBang	is ok	sometimes problematic	use autostack_S0
-    //# FAVORITE ???
+    //# FAVORITE
     //# shortIsOk
     //# bigBang
     //# melodies
@@ -414,7 +414,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 20:
     name = F("nice, simple slow harmonics");
-    //# FAVORITE ???
+    //# FAVORITE
     //# shortIsOk
     //# melodies
     //# harmonies
@@ -435,8 +435,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 21:
-    name = F("klassischi brachemagie");
-    //# FAVORITE ???
+    name = F("klassischi pent brachemagie");
+    //# FAVORITE
     //# shortIsOk
     //# melodies
     //# harmonies
@@ -455,7 +455,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 22:
     name = F("hübsche start mit geknatter");
-    //# FAVORITE ???-	has dropouts
+    //# FAVORITE(-)	has dropouts, (nice) system stress
     //# bigBang	is ok
     //# shortIsOk
     //# melodies
@@ -478,7 +478,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 23:
     name = F("fröhlichs, witzigs Tänzli :)");
-    //# favorite
+    //# favorite	DADA?
     //# shortIsOk
     //# crazy
     //# funny
@@ -493,7 +493,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 24:
     name = F("wienen rägeboge vo striicher wo abeschwebed uf t erde bis tüüf in bass und meh und meh i en zyclische reige iistimmed");
-    //# FAVORITE ???
+    //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk		maybe
     //# motives
@@ -525,7 +525,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 25:
     name = F("e psinnlichi ziit");	// some morningbirds too
-    //# FAVORITE ???
+    //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk		maybe
     //# motives
@@ -559,7 +559,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 26:
     name = F("en andere brachklassiker");
-    //# FAVORITE ???
+    //# FAVORITE
     //# shortIsOk
     //# harmonies
     //# nice
@@ -579,7 +579,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 27:
     name = F("nomal en timemachine klassiker");
-    //# FAVORITE ???
+    //# FAVORITE
     //# shortIsOk
     //# melodies
     //# harmonies
@@ -603,7 +603,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 28:
     name = F("PENT eifache reige");
-    //# FAVORITE ???
+    //# FAVORITE
     //# shortIsOk
     //# melodies
     //# harmonies
@@ -624,7 +624,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 29:
     name = F("triggered");
-    //# FAVORITE ???
+    //# FAVORITE(?)
     //# shortIsOk
     //# melodies
     //# harmonies
@@ -644,8 +644,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 30:
-    name = F("short cycled !");	// TODO: check start
-    //# FAVORITE ???
+    name = F("short cycled !");
+    //# FAVORITE
     //# bigBang		// sometimes problematic	use autostack_S0
     //# heavyStart	// problematic, but passes, sometimes ;)	use autostack_S0
     //# fullCycleIsOk	// TODO: test
@@ -665,7 +665,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 31:
     name = F("sanfti landig");
-    //# FAVORITE ???
+    //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk
     //# melodies	whirles
@@ -694,7 +694,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 32:
     name = F("schön, ruhig, eifach");
-    //# FAVORITE ???
+    //# FAVORITE
     //# shortIsOk
     //# melodies
     //# harmonies
@@ -726,7 +726,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 33:
     name = F("magical toilet gejodel");
-    //# FAVORITE ???	has some light stress and maybe dropout issues, but sounds crazy ok
+    //# FAVORITE(crazy)		has some light stress and maybe dropout issues, but sounds crazy ok
     //# shortIsOk
     //# melodies
     //# harmonies
@@ -759,7 +759,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 34:
     name = F("hübsch, langipausenamaafang");
-    //# FAVORITE ???
+    //# FAVORITE
     //# shortIsOk
     //# melodies
     //# harmonies
@@ -790,8 +790,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 35:
-    name = F("uusprägts melodiemotiv");
-    //# FAVORITE ???
+    name = F("uusprägts melodiemotiv, fughetta");
+    //# FAVORITE
     //# shortIsOk
     //# motives
     //# melodies
@@ -820,7 +820,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 36:
     name = F("maschinells ticke, klassisch");
-    //# FAVORITE ???
+    //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk		possibly
     //# motives
@@ -849,8 +849,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 37:
-    name = F("sehr sehr spezielle sync 0 aafang, wunderschön");
-    //# FAVORITE ???
+    name = F("sehr sehr spezielle S0 aafang, wunderschön");
+    //# FAVORITE
     //# heavy start	on some instruments...
     //# shortIsOk
     //# fullCycleIsOk		possibly
@@ -885,7 +885,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 38:
     name = F("allereifachsts melodischs iiticke");
-    //# FAVORITE ???
+    //# FAVORITE
     //# shortIsOk
     //# rhytm&pulse
     //# structure
@@ -909,7 +909,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 39:
     name = F("näbel");
-    //# systemStress
+    //# FAVORITE
+    //# systemStress	really???
     date = F("2018-11-19_10h30m25s	MON");
     select_array_in(SCALES, minor_scale);
     select_array_in(JIFFLES, dwn_THRD_up);
@@ -923,7 +924,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 40:
     name = F("jazzig");
-    //# FAVORITE ???
+    //# FAVORITE
     //# shortIsOk
     //# melodies	runs
     //# harmonies	a bit crazy
@@ -949,7 +950,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 41:
     name = F("chileglogge?");
-    //# FAVORITE ???
+    //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk		maybe?
     //# motives
@@ -981,7 +982,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 42:
     name = F("lesley");
-    //# FAVORITE ???
+    //# FAVORITE
     //# shortIsOk
     //# motives
     //# melodies
@@ -1074,7 +1075,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 45:
     name = F("motivtanz");
-    //# favorite+
+    //# FAVORITE
     //# motives
     //# melodies
     //# harmonies
@@ -1103,7 +1104,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 46:
     name = F("madrigal machine");
-    //# favorite+
+    //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk		maybe
     //# motives
@@ -1188,7 +1189,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 49:
     name = F("herzig ;)");
-    //# favorite+
+    //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk		42' 6"
     //# motives
@@ -1247,7 +1248,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 51:
     name = F("langsam sprudelnd");
-    //# favorite+
+    //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk
     //# motives
@@ -1273,31 +1274,51 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 52:
-    name = F("fractal time web");
-    //# favorite
+    name = F("The Landing Of The Fairies");
+    //# FAVORITE
     //# shortIsOk
-    //# fullCycleIsOk	harmonical CYCLE: 28' 21"
+    //# fullCycleIsOk
+    //# ritch
+    //# fractal
+    //# soundscape
+    //# slow	nice slow bass
+    //# fast	web
+    //# floating
     //# motives
+    //# melodies
     //# harmonies
-    //# structure
-    //# classicHarmonical
     //# aesthetic
     //# nice
-    //# fractal
-    //# birds
+    //# mystic
+    //# cosmic
+    //# SoundSpaceShip
+    //# fairies
+    //# aurora
+    //# sound
     //# lesley
-    //# hasSlowPulse
+    //# delay
+    //# hasSlowPulse	barely audible
     //# lyric
-    date = F("2018-12-05 15h40m");
+    //# dream
+    //# angels
+    //# heaven
+    //# air
+    //# children
+    //# dance
+    //# festive
+    //# solemn
+    //# ritual
+    //# happy
+    select_array_in(SCALES, pentatonic_minor);
     sync = 1;
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, up_THRD_dn);
-    pitch = {1, 32};
+    select_array_in(JIFFLES, dwn_THRD);
+    pitch = {1, 357};	// 8	*metric* c
+    // harmonical CYCLE: 1h 6' 2"	SUBCYCLE: 2^3 | 11' 28" |	???
     break;
 
   case 53:
     name = F("church bells are still ringing");
-    //# favorite+
+    //# FAVORITE
     //# shortIsOk
     //# motives
     //# harmonies
@@ -1365,7 +1386,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_array_in(SCALES, major_scale);
     select_array_in(JIFFLES, dwn_THRD_up);
     sync = 4;
-    pitch = {32768, 308};
+    pitch = {32768/4, 308};
     // fix:	play_KB_macro  /2
     // CYC: 2^0	    7'  1"
     subcycle_octave = -1;	// 3' 31"	| subcycle |
@@ -4812,46 +4833,26 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 167:
-    name = F("The Landing Of The Fairies");
-    //# FAVORITE+
+    name = F("fractal time web");
+    //# favorite
     //# shortIsOk
-    //# fullCycleIsOk
-    //# ritch
-    //# fractal
-    //# soundscape
-    //# slow	nice slow bass
-    //# fast	web
-    //# floating
+    //# fullCycleIsOk	harmonical CYCLE: 28' 21"
     //# motives
-    //# melodies
     //# harmonies
+    //# structure
+    //# classicHarmonical
     //# aesthetic
     //# nice
-    //# mystic
-    //# cosmic
-    //# SoundSpaceShip
-    //# fairies
-    //# aurora
-    //# sound
+    //# fractal
+    //# birds
     //# lesley
-    //# delay
-    //# hasSlowPulse	barely audible
+    //# hasSlowPulse
     //# lyric
-    //# dream
-    //# angels
-    //# heaven
-    //# air
-    //# children
-    //# dance
-    //# festive
-    //# solemn
-    //# ritual
-    //# happy
-    select_array_in(SCALES, pentatonic_minor);
+    date = F("2018-12-05 15h40m");
     sync = 1;
-    select_array_in(JIFFLES, dwn_THRD);
-    pitch = {1, 357};	// 8	*metric* c
-    // harmonical CYCLE: 1h 6' 2"	SUBCYCLE: 2^3 | 11' 28" |	???
+    select_array_in(SCALES, doric_scale);
+    select_array_in(JIFFLES, up_THRD_dn);
+    pitch = {1, 32};
     break;
 
   case 168:

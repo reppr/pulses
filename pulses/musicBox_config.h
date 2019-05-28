@@ -19,7 +19,8 @@
 // compatibility: use (buggy) old style tuning and lowering mechanism for backwards compatibility reproducing older setups?
 //#define OLDSTYLE_TUNE_AND_LIMIT	// use (buggy) old style tuning and lowering mechanism for backwards compatibility
 
-#define AUTOSTACK_S0_DEFAULT	-4096*32	// a possible default...
+// #define AUTOSTACK_S0_DEFAULT	-4096*32	// a possible default, seems to work ok on (small) speakers, not on vibration speakers
+#define AUTOSTACK_S0_DEFAULT	-4096		// TEST: on vibration speakers	TODO: test&trim		TODO: UI?
 
 
 

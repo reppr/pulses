@@ -24,8 +24,8 @@
   #define USE_BATTERY_CONTROL				// *pseudo* for green LED
   #define PERIPHERAL_POWER_SWITCH_PIN		12	// switch power, often green LED
   #define PROGRAM_SUB_VERSION			miniHarmonical 0	//
-  #define MAX_SUBCYCLE_SECONDS			60*6	// *max seconds*, PRODUCES *VERY SHORT PRESET PIECES*	BRACHE 2019-04
-  #define MUSICBOX_HARD_END_SECONDS		60*100	// SAVETY NET shut down after 100'
+  #define MAX_SUBCYCLE_SECONDS			60*9	// *max seconds*, produces *SHORT PRESET PIECES*	BRACHE 2019-05
+//#define MUSICBOX_HARD_END_SECONDS		60*100	// SAVETY NET shut down after 100'	***DEACTIVATED***
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3600*12	// *DEACTIVATED*
   #define SOFT_END_DAYS_TO_LIVE_DEFAULT		1	// quite fast ending
   #undef RANDOM_PRESET_LOOP				// just in case, does not work well together	TODO: TEST: ################
@@ -2238,8 +2238,13 @@ void start_musicBox() {
 
   MENU.ln();
   MENU.men_selected = 0;	// starting point (might be changed by kb macro)
-  MENU.play_KB_macro(F("-:M "), false); // initialize, the space avoids output from :M , no newline
-//MENU.play_KB_macro(F("-:Mop "), false); // initialize, the space avoids output from :M , no newline
+
+  // either
+  // *DO* show cycle pattern:
+  // MENU.play_KB_macro(F("-:M "), false);	// initialize, the space avoids output from :M , no newline
+  // or
+  // *DO NOT* show cycle pattern:
+  MENU.play_KB_macro(F("-:M op"), false);	// initialize, the space avoids output from :M , no newline
 
   // TODO: REWORK:  setup_bass_middle_high()  used in musicBox, but not really compatible
   MENU.ln();	// start setup sequence output "block"
