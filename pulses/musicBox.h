@@ -2920,6 +2920,22 @@ void musicBox_display() {
   stress_event_cnt = -3;	// heavy stress expected after musicBox_display
 }
 
+void input_preset_and_start() {	// factored out UI component	// TODO: sets preset, how to unset?	################
+  int input_value;
+
+  MENU.ln();
+  MENU.out(F("PRESET "));
+  if(input_value = MENU.numeric_input(0)) {
+    if(! load_preset(input_value)) {	// no error?
+      if(MusicBoxState != OFF)	// end a running session?
+	tabula_rasa();
+      start_musicBox();		// play new preset
+    } else
+      MENU.outln_invalid();
+  } else
+    play_random_preset();	// selecting zero plays a *random* preset
+}
+
 bool musicBox_reaction(char token) {
   int input_value, cnt;
   bool done;
@@ -3361,18 +3377,24 @@ bool musicBox_reaction(char token) {
     }
     break;
 
-  case 'y':    // TODO: sets preset, how to unset?	################
-    MENU.ln();
-    MENU.out(F("PRESET "));
-    if(input_value = MENU.numeric_input(1)) {
-      if(! load_preset(input_value)) {	// no error?
-	if(MusicBoxState != OFF)	// end a running session?
-	  tabula_rasa();
-	start_musicBox();		// play new preset
-      } else
-	MENU.outln_invalid();
-    } else
-      play_random_preset();	// selecting zero plays a *random* preset
+  // special case number only: play preset	(OVERRIDES pulse selection in pulses)
+  case '0':
+  case '1':
+  case '2':
+  case '3':
+  case '4':
+  case '5':
+  case '6':
+  case '7':
+  case '8':
+  case '9':
+    // TODO: sets preset, how to unset?	################
+    MENU.restore_input_token();	// restore first chiffre
+    input_preset_and_start();	// read preset number
+    break;
+
+  case 'y':   // TODO: sets preset, how to unset?	################
+    input_preset_and_start();
     break;
 
   default:

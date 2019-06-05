@@ -4001,6 +4001,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   // in normal mode toggle pulse selection with chiffres
   // else input data. see 'menu_mode'
+  // (overwritten in musicBox menu by direct numeric preset input)
   case '0':	// toggle selection
   case '1':	// toggle selection
   case '2':	// toggle selection
