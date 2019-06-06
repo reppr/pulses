@@ -2585,7 +2585,7 @@ void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from mai
   */
 
 #if defined BLUETOOTH_ENABLE_PIN
-  if(bluetooth_switch_())
+  if(bluetooth_switch_info())
 #endif
     bluetooth_setup();		// does no good, does no harm
 

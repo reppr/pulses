@@ -108,3 +108,5 @@ gather configuration variables in the code	// TODO: do more
 // TODO: maybe clone whole base_pulse ???
 
 ununlaute on OLED äöüÄÖÜ
+
+menu stack

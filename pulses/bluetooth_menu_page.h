@@ -12,9 +12,8 @@ void bluetooth_menu_display() {
 
   #if defined BLUETOOTH_ENABLE_PIN
     MENU.out(F("bluetooth enable pin "));
-    MENU.out(BLUETOOTH_ENABLE_PIN);
-    MENU.out_ON_off(bluetooth_switch_());
-    MENU.ln();
+    MENU.outln(BLUETOOTH_ENABLE_PIN);
+    bluetooth_switch_info();
   #endif
 
   MENU.out(F("BLUEtoothSerial.hasClient() "));

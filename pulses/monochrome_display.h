@@ -18,7 +18,7 @@ void monochrome_show_program_version() {	// monochrome oled display
 
     #if defined USE_BLUETOOTH_SERIAL_MENU
       #if defined BLUETOOTH_ENABLE_PIN
-	if(bluetooth_switch_())
+	if(bluetooth_switch_info())
 	  u8x8.print('B');
 	else
 	  u8x8.print('b');

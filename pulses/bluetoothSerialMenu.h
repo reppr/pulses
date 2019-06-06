@@ -22,7 +22,7 @@
 #define BLUETOOTH_ENABLE_PIN	35	// check pin to see if bluetooth is enabled
 
 #if defined BLUETOOTH_ENABLE_PIN
-  bool bluetooth_switch_() {
+  bool bluetooth_switch_info() {
     bool on;
     pinMode(BLUETOOTH_ENABLE_PIN, INPUT);
     digitalRead(BLUETOOTH_ENABLE_PIN);		// i do not trust the very first reading...
@@ -54,7 +54,7 @@ bool bluetoothSerialBEGIN() {
   bool ok;
 
 #if defined BLUETOOTH_ENABLE_PIN
-  if(! bluetooth_switch_()) {	// savety net, should not happen...
+  if(! bluetooth_switch_info()) {	// savety net, should not happen...
     MENU.error_ln(F("BT is disabled"));
     return false;
   }

@@ -910,7 +910,7 @@ void setup() {
 
 #if defined USE_BLUETOOTH_SERIAL_MENU	// setup()	double, 1/2	test brownout recognition	TODO: review
   #if defined BLUETOOTH_ENABLE_PIN
-  if(bluetooth_switch_())		// setup()	double, 1/2	test brownout recognition	TODO: review
+  if(bluetooth_switch_info())		// setup()	double, 1/2	test brownout recognition	TODO: review
   #endif
     {
       bluetooth_setup();
@@ -980,7 +980,7 @@ MENU.ln();
 
 #if defined USE_BLUETOOTH_SERIAL_MENU && false	// setup()	double, 2/2	test brownout recognition  *DEACTIVATED* TODO: review
   #if defined BLUETOOTH_ENABLE_PIN
-  if(bluetooth_switch_())			// setup()	double, 2/2	test brownout recognition  *DEACTIVATED* TODO: review
+  if(bluetooth_switch_info())			// setup()	double, 2/2	test brownout recognition  *DEACTIVATED* TODO: review
   #endif
     bluetooth_setup();
 #endif
@@ -1056,7 +1056,8 @@ MENU.ln();
   #endif
 
   #if defined  USE_BLUETOOTH_SERIAL_MENU	// hi jacking USE_BLUETOOTH_SERIAL_MENU
-    MENU.add_page("bluetooth", 'B', &bluetooth_menu_display, &bluetooth_menu_reaction, 'P');
+    MENU.add_page("Bluetooth", 'B', &bluetooth_menu_display, &bluetooth_menu_reaction, 'P');
+  #endif
   #endif
 
   // display menu at startup, but not in music box
