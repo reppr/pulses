@@ -779,31 +779,49 @@ uint8_t relaxmax=4;			// up to how many relax() in one todo chain
   #include "stress_managment.h"
 #endif
 
-
 #if defined HARMONICAL_MUSIC_BOX
   #include "musicBox.h"
 #endif
 
+#if defined USE_SYSTEM_MENU
+  #include "system_menu.h"
+#endif
+
 #if defined ESP32
-    // ESP32  int getChipRevision()	see: Andreas Spiess ESP32_Version.ino, register names updated
-    #include "soc/efuse_reg.h"
-    int get_ESP32_ChipRevision() {
-      return (REG_READ(EFUSE_BLK0_RDATA3_REG) >> (EFUSE_RD_CHIP_VER_REV1_S)&&EFUSE_RD_CHIP_VER_REV1_V) ;
-    }
+  // ESP32  int getChipRevision()	see: Andreas Spiess ESP32_Version.ino, register names updated
+  #include "soc/efuse_reg.h"
+  int get_ESP32_ChipRevision() {
+    return (REG_READ(EFUSE_BLK0_RDATA3_REG) >> (EFUSE_RD_CHIP_VER_REV1_S)&&EFUSE_RD_CHIP_VER_REV1_V) ;
+  }
+
+  void display_esp_versions() {
+    MENU.out(F("ESP32 revision "));
+    MENU.outln(get_ESP32_ChipRevision());
+
+    MENU.out(F("ESP IDF version "));
+    MENU.outln(esp_get_idf_version());
+    MENU.ln();
+  }
 #endif
 
 
 /* **************************************************************** */
-void show_program_version() {
+void display_program_version() {	// display program versions, maybe prename. menu output only
   MENU.out(F(STRINGIFY(PROGRAM_VERSION)));
   MENU.tab();
 #if defined PROGRAM_SUB_VERSION
   MENU.out(F(STRINGIFY(PROGRAM_SUB_VERSION)));
-  MENU.tab();
 #endif
 #if defined PRENAME
-  MENU.outln(F(STRINGIFY(PRENAME)));
+  MENU.tab();
+  MENU.out(F(STRINGIFY(PRENAME)));
 #endif
+  MENU.ln();
+}
+
+
+void show_program_version() {
+  display_program_version();
 
 #if defined USE_MONOCHROME_DISPLAY
   monochrome_show_program_version();
@@ -880,12 +898,7 @@ void setup() {
 #endif
 
 #if defined ESP32
-  MENU.out(F("ESP32 revision "));
-  MENU.outln(get_ESP32_ChipRevision());
-
-  MENU.out(F("ESP IDF version "));
-  MENU.outln(esp_get_idf_version());
-  MENU.ln();
+  display_esp_versions();
 #endif
 
   /*
@@ -1058,6 +1071,9 @@ MENU.ln();
   #if defined  USE_BLUETOOTH_SERIAL_MENU	// hi jacking USE_BLUETOOTH_SERIAL_MENU
     MENU.add_page("Bluetooth", 'B', &bluetooth_menu_display, &bluetooth_menu_reaction, 'P');
   #endif
+
+  #if defined USE_SYSTEM_MENU
+    MENU.add_page("System", 'S', &system_menu_display, &system_menu_reaction, 'P');
   #endif
 
   // display menu at startup, but not in music box

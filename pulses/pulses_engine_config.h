@@ -13,6 +13,8 @@
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	// TODO: check, remove?
 #define HARMONICAL_MUSIC_BOX
 
+#define USE_SYSTEM_MENU		// only a start...
+
 //#define USE_MORSE	// incomplete	DEACTIVATED MORSE OUTPUT, (== PERIPHERAL_POWER_SWITCH_PIN ;)
 //#define USE_INPUTS
 //#define USE_LEDC	// to be written ;)
