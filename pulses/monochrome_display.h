@@ -8,11 +8,14 @@ void monochrome_show_program_version() {	// monochrome oled display
     u8x8.print(F(STRINGIFY(PROGRAM_VERSION)));
 
     u8x8.setCursor(0,3);
-    #if defined PRENAME
-      u8x8.print(F(STRINGIFY(PRENAME)));
-    #elif defined PROGRAM_SUB_VERSION
+    if(preName)
+      u8x8.print(preName);
+    else
+#if defined PROGRAM_SUB_VERSION
       u8x8.print(F(STRINGIFY(PROGRAM_SUB_VERSION)));
-    #endif
+#else
+      ;
+#endif
 
     u8x8.setCursor(0,5);	// option mnemonics
 

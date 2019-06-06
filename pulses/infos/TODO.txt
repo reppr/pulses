@@ -110,3 +110,5 @@ gather configuration variables in the code	// TODO: do more
 ununlaute on OLED äöüÄÖÜ
 
 menu stack
+
+PRENAME (etc) nvs UI

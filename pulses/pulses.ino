@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION		PULSES alpha.022
+#define PROGRAM_VERSION		PULSES alpha.023
 /*				0123456789abcdef   */
 
 /* **************************************************************** */
@@ -178,6 +178,7 @@ bool no_octave_shift=false;	// see: tune_selected_2_scale_limited()
 int base_pulse=ILLEGAL;			// a human perceived base pulse, see 'stack_sync_slices'
 pulse_time_t base_pulse_period={0,0};	// {0,0} is unknown, invalid
 
+String preName = "";		// individual name of an instrument
 
 /* **************************************************************** */
 bool DO_or_maybe_display(unsigned char verbosity_level) { // the flag tells *if* to display
@@ -806,21 +807,28 @@ uint8_t relaxmax=4;			// up to how many relax() in one todo chain
 
 
 /* **************************************************************** */
-void display_program_version() {	// display program versions, maybe prename. menu output only
+void display_program_version() {  // program versions, maybe preName. menu output only. see: show_program_version()
   MENU.out(F(STRINGIFY(PROGRAM_VERSION)));
   MENU.tab();
 #if defined PROGRAM_SUB_VERSION
   MENU.out(F(STRINGIFY(PROGRAM_SUB_VERSION)));
 #endif
-#if defined PRENAME
+
+#if defined FAMILY_NAME
   MENU.tab();
-  MENU.out(F(STRINGIFY(PRENAME)));
+  MENU.out(F(STRINGIFY(FAMILY_NAME)));
 #endif
+
+  if(preName) {
+    MENU.tab();
+    MENU.out(preName);
+  }
+
   MENU.ln();
 }
 
 
-void show_program_version() {
+void show_program_version() {	// program version on menu output *and* OLED
   display_program_version();
 
 #if defined USE_MONOCHROME_DISPLAY
@@ -881,6 +889,16 @@ void setup() {
   delay(STARTUP_DELAY);
 
   MENU.outln(F("\n\nPULSES  http://github.com/reppr/pulses/"));
+#if defined USE_NVS
+  {
+    String s = nvs_getString(F("nvs_PRENAME"));
+    if (s) {
+      preName = s;
+      MENU.out(F("nvs_PRENAME:\t"));
+      MENU.outln(s);
+    }
+  }
+#endif
   show_program_version();
   MENU.ln();
 

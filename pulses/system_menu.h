@@ -9,17 +9,28 @@ void system_menu_display() {
   display_esp_versions();
 #endif
 
-  display_program_version();	// display program versions, maybe prename. menu output only
+  display_program_version();	// display program versions, maybe preName. menu output only
+
+  MENU.outln(F("\n'P' nvs_PRENAME"));
 
   MENU.ln();
 }
 
 bool system_menu_reaction(char token) {
   int input_value;
+  String s;
 
   switch(token) {
   case '?':
     MENU.menu_display();
+    break;
+
+  case 'P':
+    s = nvs_getString(F("nvs_PRENAME"));
+    MENU.out(F("nvs_PRENAME:\t"));
+    if (s)
+      MENU.out(s);
+    MENU.ln();
     break;
 
   default:

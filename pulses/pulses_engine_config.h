@@ -5,6 +5,9 @@
   do not change
 */
 
+#define FAMILY_NAME	SoundShip1		// configuration family
+/*			0123456789abcdef	// 16 bytes	*/
+
 #define DO_STRESS_MANAGMENT
 //#define STRESS_MONITOR_LEVEL	64*2	// TODO: menu interface	// TODO: move to another configuration file
 
@@ -31,3 +34,7 @@
   *not* tested with GPIO00 as click or such...
 */
 //#define OLED_HALT_PIN0	// see: monochrome_show_program_version()
+
+#if defined ESP32
+  #define USE_NVS
+#endif

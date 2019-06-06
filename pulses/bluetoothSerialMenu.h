@@ -9,15 +9,7 @@
   #error BluetoothSerialMenu.h  bluetooth is not enabled!  please run `make menuconfig` and enable it
 #endif
 
-// BluetoothSerial BLUEtoothSerial;
-#if defined PRENAME
-  #define  BLUETOOTH_NAME	PRENAME
-#elif defined PROGRAM_VERSION
-  #define BLUETOOTH_NAME	PROGRAM_VERSION	// the BT name of esp32
-#else
-  #define BLUETOOTH_NAME	ESP32 alpha	// the BT name of esp32
-#endif
-
+String bluetooth_name;
 
 #define BLUETOOTH_ENABLE_PIN	35	// check pin to see if bluetooth is enabled
 
@@ -61,10 +53,10 @@ bool bluetoothSerialBEGIN() {
 #endif
 
   MENU.out(F("BLUEtoothSerial.begin("));
-  MENU.out(F(STRINGIFY(BLUETOOTH_NAME)));
+  MENU.out(bluetooth_name);
   MENU.out(F(") "));
 
-  ok = BLUEtoothSerial.begin(STRINGIFY(BLUETOOTH_NAME));	// Bluetooth device name
+  ok = BLUEtoothSerial.begin(bluetooth_name);	// Bluetooth device name
   yield();
   if(ok)
     MENU.outln(F("ok"));
@@ -77,7 +69,19 @@ bool bluetoothSerialBEGIN() {
 
 void bluetooth_setup() {			// start bluetooth
   MENU.out(F("BLUETOOTH: "));
-  MENU.outln(STRINGIFY(BLUETOOTH_NAME));
+
+    // get correct bluetooth_name
+  if(preName)
+    bluetooth_name = preName;
+  else
+#if defined PROGRAM_VERSION
+    bluetooth_name = STRINGIFY(PROGRAM_VERSION);
+#else
+    bluetooth_name = "ESP32 alpha";
+#endif
+
+
+  MENU.outln(bluetooth_name);
 
   /* debugging		//	FIXME: TODO: *FAILED BLUETOOTH WAKEUP AFTER light_sleep()*
   show_bt_controller_status();	// reboot: zero, then 2 forever...

@@ -4,7 +4,7 @@
 
 
 // char * coded_NAME[]=NULL;
-char * coded_NAME[] = {"Rumpelstilzchen"};	// 15 chars
+// char * coded_NAME[] = {"Rumpelstilzchen"};	// 15 chars
 
 #ifndef STRINGIFY2
   // see:  https://stackoverflow.com/questions/20631922/expand-macro-inside-string-literal
@@ -18,20 +18,35 @@ char * coded_NAME[] = {"Rumpelstilzchen"};	// 15 chars
   Note: Namespace name is limited to 15 chars */
 Preferences CONF_nvs;
 CONF_nvs.begin("CONFIG", false);
-MENU.out("nvs_NAME:\t");
-MENU.outln(CONF_nvs.getString("nvs_NAME", ""));
 
+#if defined NVS_PUT_PRENAME_HACK	// 1 shot HACK to put a PRENAME		TODO: UI
+  CONF_nvs.putString("nvs_PRENAME", STRINGIFY(NVS_PUT_PRENAME_HACK));
+#endif
+
+MENU.out("nvs_PRENAME:\t");
+{
+  String name = CONF_nvs.getString("nvs_PRENAME");
+  if(name) {
+    preName = name;
+    MENU.out(preName);
+    // bluetooth_name?
+  }
+  MENU.ln();
+}
+
+/*
 MENU.out("nvs_GPIO:\t");
-MENU.outln(CONF_nvs.getString("nvs_GPIO", ""));
+MENU.outln(CONF_nvs.getString("nvs_GPIO"));
 
 MENU.out("nvs_AUDIO:\t");
-MENU.outln(CONF_nvs.getString("nvs_AUDIO", ""));
+MENU.outln(CONF_nvs.getString("nvs_AUDIO"));
 
 MENU.out("nvs_MORSE:\t");
-MENU.outln(CONF_nvs.getString("nvs_MORSE", ""));
+MENU.outln(CONF_nvs.getString("nvs_MORSE"));
 
 MENU.out("nvs_AUTOSTART:\t");
-MENU.outln(CONF_nvs.getString("nvs_AUTOSTART", ""));
+MENU.outln(CONF_nvs.getString("nvs_AUTOSTART"));
+*/
 
 MENU.out("nvs freeEntries():\t");
 MENU.outln(CONF_nvs.freeEntries());
@@ -40,8 +55,8 @@ MENU.outln(CONF_nvs.freeEntries());
   nvs_DATE
 */
 
-if (coded_NAME == 0)
-  MENU.outln("NULL");
+//if (coded_NAME == 0)	// ???, remove
+//  MENU.outln("NULL");
 
 //CONF_nvs.putString("nvs_NAME", "Rumpelstilzchen");
 //CONF_nvs.putString("nvs_NAME", (char *) *coded_NAME);

@@ -6,8 +6,12 @@
 
 */
 
-#define PRENAME		SoundShip1		// individual name	// TODO: maybe introduce FAMILY_NAME?
+//#define PRENAME	SoundShip1		// individual name	// better use nvs_PRENAME
 /*			0123456789abcdef	// 16 bytes	*/
+
+// #define FAMILY_NAME	SoundShip1		// configuration family	// see: pulses_engine_config.h
+// /*			0123456789abcdef	// 16 bytes	*/
+
 
 // TODO: change PERIPHERAL_POWER_SWITCH_PIN as GPIO12 is active during boot process...
 // TODO: introduce SIGNAL leds
@@ -28,3 +32,6 @@
 // magic musicBox can produce tunings compatible to a=440 tunings only:
 #define SOME_METRIC_TUNINGS_ONLY_DEFAULT	true	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
 //#define SOME_METRIC_TUNINGS_ONLY_DEFAULT	false;	// free pitch tuning
+
+//#define NVS_PUT_PRENAME_HACK	LillyBoy	// 1 shot HACK to put a PRENAME		TODO: UI
+//#define NVS_PUT_PRENAME_HACK	CHATEAU		// 1 shot HACK to put a PRENAME		TODO: UI

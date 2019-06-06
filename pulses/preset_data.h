@@ -1448,7 +1448,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 58:
     name = F("eifach und eigenartig schön");
-    //# favorite
+    //# FAVORITE
     //# shortIsOk
     //# motives
     //# melodies
@@ -1458,6 +1458,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# simple
     //# fractal
     //# hasSlowPulse
+    //# lyric
     date = F("2018-11-25_16h18m50s	SUN");
     select_array_in(SCALES, pentatonic_minor);
     select_array_in(JIFFLES, pentatonic_rise);
