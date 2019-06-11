@@ -2801,6 +2801,10 @@ void musicBox_setup() {	// TODO:update
 // musicBox menu
 
 void musicBox_display() {
+#if defined BLUETOOTH_ENABLE_PIN
+  set_bluetooth_according_switch();	// side effect
+#endif
+
   MENU.outln(F("The Harmonical Music Box  http://github.com/reppr/pulses/\n"));
 
   MENU.out(F("MusicBoxState "));

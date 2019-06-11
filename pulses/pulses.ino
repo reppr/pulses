@@ -4219,12 +4219,6 @@ bool menu_pulses_reaction(char menu_input) {
       MENU.outln(F("muted all actions"));
     break;
 
-//	#if defined USE_MORSE	// TODO: fix or remove
-//	  case 'm':	// toggle MORSE on/off
-//	    morse = ! morse;
-//	    break;
-//	#endif
-
   case '*':	// multiply destination
     if(MENU.cb_peek() != '!') {		// '*' (*not* '*!<num>' set multiplier)
       switch (dest) {

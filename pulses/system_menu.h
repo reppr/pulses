@@ -13,6 +13,10 @@ void system_menu_display() {
 
   MENU.outln(F("\n'P' nvs_PRENAME"));
 
+#if defined USE_BATTERY_CONTROL
+  show_battery_level();
+#endif
+
   MENU.ln();
 }
 

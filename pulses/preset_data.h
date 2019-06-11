@@ -2418,6 +2418,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 91:
+    //# FAVORITE
+    // TODO: add tags
     name = F("simple and beautiful");
     date = F("2018-12-10_17h02m05s	MON");
     select_array_in(SCALES, doric_scale);
