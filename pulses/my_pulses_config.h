@@ -6,6 +6,8 @@
 
 */
 
+#define USE_MORSE	// try to reuse old morse code
+
 //#define PRENAME	SoundShip1		// individual name	// better use nvs_PRENAME
 /*			0123456789abcdef	// 16 bytes	*/
 

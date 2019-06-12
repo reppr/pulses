@@ -4,20 +4,24 @@
 
 #ifndef MORSE_H
 
+#define DEBUG_MORSE_tmp		// TODO: REMOVE: debugging code
+//#define MORSE_TOKEN_DEBUG	// low level token recognising debugging
+#define DEBUG_MORSE_TOUCH_INTERRUPT
+#define MORSE_COMPILE_HELPERS	// info, debugging, *can be left out*
+
 #include "touch.h"
 #include "esp_attr.h"
 
-//#define MORSE_TOKEN_DEBUG	// low level token recognising debugging
 
 // ################ TODO: MOVE: configuration
-// use GPIO with pulldown as morse input
+// use GPIO (with pulldown) as morse input?
 // #define MORSE_GPIO_INPUT_PIN	34	// Morse input GPIO pin, 34 needs hardware pulldown
 
-#define MORSE_OUTPUT_PIN	2 // 2 is often blue onboard led, hang a led, a piezzo on that one :)
-
-#ifndef MORSE_TOUCH_INPUT_PIN
-  #define MORSE_TOUCH_INPUT_PIN	12	// use ESP32 touch sensor as morse input
-  //#define MORSE_TOUCH_INPUT_PIN	13	// use ESP32 touch sensor as morse input
+//#define MORSE_OUTPUT_PIN	2 // 2 is often blue onboard led, hang a led, a piezzo on that one :)
+//	#define MORSE_OUTPUT_PIN	12 // DADA REMOVE! ################################################################
+#ifndef MORSE_TOUCH_INPUT_PIN		// TODO: be more flexible
+  //#define MORSE_TOUCH_INPUT_PIN	12	// use ESP32 touch sensor as morse input
+  #define MORSE_TOUCH_INPUT_PIN	13	// use ESP32 touch sensor as morse input	(13 just a test)
 #endif
 
 // menu interface is case sensitive, so I need lowercase
@@ -49,6 +53,8 @@ float limit_dot_dash;
 float limit_dash_loong;
 float limit_loong_overlong;
 
+#if defined MORSE_COMPILE_HELPERS
+// morse_show_limits():	code left for debugging
 void morse_show_limits() {
   MENU.out("limit_debounce\t\t");
   MENU.out(limit_debounce);
@@ -72,6 +78,7 @@ void morse_show_limits() {
 
   MENU.ln();
 }
+#endif
 
 #define MORSE_TOKEN_MAX	256			// a *lot* for debugging...	TODO:
 volatile unsigned int morse_token_cnt=0;	// count up to MORSE_TOKEN_MAX . _ ! V tokens to form one letter or COMMAND
@@ -101,8 +108,8 @@ float morse_token_duration[MORSE_TOKEN_MAX];	// debugging and statistics
 
 #define MORSE_TOKEN_ILLEGAL		'§'
 
-bool is_real_token(char token) {	// filter real tokens like . - ! V and separation (word, letter)
-  switch(token) {			//	drop all debugging and debounce stuff
+bool is_real_token(char token) {	// check for real tokens like . - ! V and separation (word, letter)
+  switch(token) {			//	reject all debugging and debounce stuff
   case MORSE_TOKEN_dot:
   case MORSE_TOKEN_dash:
   case MORSE_TOKEN_loong:
@@ -118,6 +125,7 @@ bool is_real_token(char token) {	// filter real tokens like . - ! V and separati
 // forward declaration
 void IRAM_ATTR morse_received_token(char token, float token_duration);
 
+#if defined MORSE_COMPILE_HELPERS	// *can* be left out...
 void morse_show_tokens(bool show_all = false) {	// set show_all=true  for token debug output
   char token;
   bool last_was_separeLetter=false;	// normally we want to see *only the first space* of a sequence
@@ -152,6 +160,7 @@ void morse_show_tokens(bool show_all = false) {	// set show_all=true  for token 
     // MENU.ln();
   }
 }
+#endif
 
 uint8_t morse_expected_Tims(char token) {	// ATTENTION: returns 0 for unknown/unreal tokens
   uint8_t morse_Tims=0;
@@ -234,7 +243,7 @@ void IRAM_ATTR morse_separation_check_OFF() {
 float scaled_low_duration;	// microseconds/morse_TimeUnit
 float scaled_high_duration;
 
-#if defined MORSE_GPIO_INPUT_PIN
+#if defined MORSE_GPIO_INPUT_PIN	// Morse input GPIO pin (34 needs hardware pulldown, check on others)
 void IRAM_ATTR morse_GPIO_ISR_falling();	// declaration is needed...
 
 void IRAM_ATTR morse_GPIO_ISR_rising() {	// MORSE INPUT on GPIO
@@ -324,7 +333,7 @@ void IRAM_ATTR morse_GPIO_ISR_falling() {			// MORSE INPUT on GPIO morse_GPIO_IS
 /* **************************************************************** */
 // touch ISR
 
-#define DEBUG_MORSE_TOUCH_INTERRUPT
+//#define DEBUG_MORSE_TOUCH_INTERRUPT
 void IRAM_ATTR morse_endOfLetter() {
   morse_separation_check_OFF();
 
@@ -1224,16 +1233,32 @@ void IRAM_ATTR morse_stats_do() {
 void IRAM_ATTR morse_received_token(char token, float duration) {
   portENTER_CRITICAL_ISR(&morse_MUX);
 
+#if defined DEBUG_MORSE_tmp
+  //MENU.out("DADA morse_received_token "); MENU.outln(token);
+#endif
+
   if(morse_token_cnt < MORSE_TOKEN_MAX) {	// buffer not full?
     morse_token_duration[morse_token_cnt] = duration;	// SAVE TOKEN and duration
     morse_SEEN_TOKENS[morse_token_cnt++] = token;
 
     if(is_real_token(token)) {	// react on REAL morse tokens
+#if defined DEBUG_MORSE_tmp
+      MENU.out("DADA morse real token "); MENU.outln(token);
+#endif
       switch (token) {		// save letters?, do statistics?
       case MORSE_TOKEN_separeLetter:
+#if defined DEBUG_MORSE_tmp
+      MENU.outln("MORSE_TOKEN_separeLetter");
+#endif
 	if(morse_token_cnt == 1) {	// ignore separation tokens on startup
+#if defined DEBUG_MORSE_tmp
+      MENU.outln("skip 1st");
+#endif
 	  --morse_token_cnt;		//   remove from buffer
 	} else {
+#if defined DEBUG_MORSE_tmp
+      MENU.outln("statistics");
+#endif
 	  morse_stats_do();	// do statistics on received letter
 	  morse_stats_init();	// prepare stats for next run
 	  //	morse_save_symbol(token);
@@ -1241,7 +1266,13 @@ void IRAM_ATTR morse_received_token(char token, float duration) {
 	break;
 
       case MORSE_TOKEN_separeWord:
+#if defined DEBUG_MORSE_tmp
+      MENU.outln("MORSE_TOKEN_separeWord");
+#endif
 	if(morse_token_cnt == 1) {	// ignore separation tokens on startup
+#if defined DEBUG_MORSE_tmp
+      MENU.outln("skip 1st");
+#endif
 	  --morse_token_cnt;		//   remove from buffer
 	} else {
 	  //	morse_save_symbol(token);
@@ -1252,8 +1283,12 @@ void IRAM_ATTR morse_received_token(char token, float duration) {
 	morse_stats_gather(token, duration);
       }
     }
-
-    //    MENU.out(token);	// TODO: switch off, normally  ######################################################
+#if defined DEBUG_MORSE_tmp
+    else {
+      MENU.out("DADA morse unreal token ");
+      MENU.outln(token);
+    }
+#endif
   } else {
     MENU.error_ln(F("MORSE_TOKEN_MAX	buffer cleared"));
     morse_token_cnt=0;	// TODO: maybe still use data or use a ring buffer?
@@ -1484,8 +1519,6 @@ const char * morse_definitions_tab[] = {
   "7 * ...--.. X X TODO:",		// beta ss	TODO: FIX:
 
   "8 C ........ MISTAKE",		// MISTAKE
-
-  ""	// end marker, *do NOT remove*	// TODO: REMOVE: ################
 };
 #define MORSE_DEFINITIONS	(sizeof (morse_definitions_tab) / sizeof(const char *))
 
@@ -1671,14 +1704,14 @@ int morse_find_definition(const char* pattern) {	// returns index in morse_defin
 char morse_2ACTION() {
 /*
   SAVE LETTERS,
-  return CHAR for letters or ILLEGAL for unknown patters
+  return CHAR for letters or ILLEGAL for unknown patterns
 
   EXECUTE COMMANDS,
   return of commands is currently unused, always 0
 */
   for(int i=0; i < MORSE_DEFINITIONS; i++) {
     morse_read_definition(i);
-//	    //morse_definition_set_show(morse_uppercase);
+
     switch (morse_def_TYPE) {
     case '*': // LETTER
       morse_show_space_delimited_string(morse_Letter_in_CASE->c_str());
@@ -1718,6 +1751,71 @@ char morse_2ACTION() {
   return ILLEGAL;
 }
 
+/* **************************************************************** */
+void react_on_code(int start, int length) {
+
+}
+
+#define MORSE_DECODED_LETTERS_BUFFER	64
+char * decoded_letters_string[MORSE_DECODED_LETTERS_BUFFER];	// buffer
+short morse_stored_letters_cnt=0;
+
+bool morse_store_received_letter(char letter) {
+  if(morse_stored_letters_cnt < MORSE_DECODED_LETTERS_BUFFER) {
+    //decoded_letters_string[morse_stored_letters_cnt++] = letter;
+    return 0;
+  }
+
+  return 1;	// ERROR
+}
+
+char morse_decode() {	// decode received token sequence
+/*
+  decode received token sequence
+  SAVE LETTERS,
+  return CHAR for letters or ILLEGAL for unknown patterns
+
+  EXECUTE COMMANDS,
+  return of commands is currently unused, always 0
+*/
+
+  MENU.outln("morse_decode() 0");
+  char token;
+  bool last_was_separeLetter=false;	// normally we want to store *only the first space* of a sequence
+
+  if(morse_token_cnt) {
+    for (int i=0; i<morse_token_cnt; i++) {
+      token = token=morse_SEEN_TOKENS[i];
+      if(is_real_token(token)) {
+	switch(token) {
+	case MORSE_TOKEN_dot:
+	case MORSE_TOKEN_dash:
+	case MORSE_TOKEN_loong:
+	case MORSE_TOKEN_overlong:
+	case MORSE_TOKEN_separeLetter:
+	case MORSE_TOKEN_separeWord:
+	  break;
+
+	}
+      } // real token
+    }
+  }
+//      case MORSE_TOKEN_dot:
+//      case MORSE_TOKEN_dash:
+////      case MORSE_TOKEN_loong:
+////      case MORSE_TOKEN_overlong:
+//      case MORSE_TOKEN_separeWord:
+//	MENU.out(token);	// known real tokens
+//	last_was_separeLetter=false;
+//	break;
+//
+//      case MORSE_TOKEN_separeLetter:	// *only one* space separe letter
+//	if (!last_was_separeLetter)
+//	  MENU.out(token);	// space
+//
+//      default:
+
+}
 /* **************************************************************** */
 
   // ################################################################
