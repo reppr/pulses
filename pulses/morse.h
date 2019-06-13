@@ -4,10 +4,12 @@
 
 #ifndef MORSE_H
 
-#define DEBUG_MORSE_tmp		// TODO: REMOVE: debugging code
-//#define MORSE_TOKEN_DEBUG	// low level token recognising debugging
-#define DEBUG_MORSE_TOUCH_INTERRUPT
-#define MORSE_COMPILE_HELPERS	// info, debugging, *can be left out*
+#define MORSE_DECODE_DEBUG	// tokens to letters, commands
+
+//#define MORSE_DEBUG_RECEIVE_TOKEN	// TODO: REMOVE: debugging code
+//#define MORSE_TOKEN_DEBUG		// low level token recognising debugging
+//#define DEBUG_MORSE_TOUCH_INTERRUPT
+#define MORSE_COMPILE_HELPERS		// compile some functions for info, debugging, *can be left out*
 
 #include "touch.h"
 #include "esp_attr.h"
@@ -18,7 +20,7 @@
 // #define MORSE_GPIO_INPUT_PIN	34	// Morse input GPIO pin, 34 needs hardware pulldown
 
 //#define MORSE_OUTPUT_PIN	2 // 2 is often blue onboard led, hang a led, a piezzo on that one :)
-//	#define MORSE_OUTPUT_PIN	12 // DADA REMOVE! ################################################################
+//#define MORSE_OUTPUT_PIN	12 // *one shot TEST ONLY*	// TODO: REMOVE:
 #ifndef MORSE_TOUCH_INPUT_PIN		// TODO: be more flexible
   //#define MORSE_TOUCH_INPUT_PIN	12	// use ESP32 touch sensor as morse input
   #define MORSE_TOUCH_INPUT_PIN	13	// use ESP32 touch sensor as morse input	(13 just a test)
@@ -1230,11 +1232,14 @@ void IRAM_ATTR morse_stats_do() {
 
 /* **************************************************************** */
 #ifndef ONE_TOUCH_HACK	// morse_received_token(), normal actions...
+
+char morse_decode();	// pre declaration
+
 void IRAM_ATTR morse_received_token(char token, float duration) {
   portENTER_CRITICAL_ISR(&morse_MUX);
 
-#if defined DEBUG_MORSE_tmp
-  //MENU.out("DADA morse_received_token "); MENU.outln(token);
+#if defined MORSE_DEBUG_RECEIVE_TOKEN
+  //MENU.out("morse_received_token() "); MENU.outln(token);
 #endif
 
   if(morse_token_cnt < MORSE_TOKEN_MAX) {	// buffer not full?
@@ -1242,35 +1247,36 @@ void IRAM_ATTR morse_received_token(char token, float duration) {
     morse_SEEN_TOKENS[morse_token_cnt++] = token;
 
     if(is_real_token(token)) {	// react on REAL morse tokens
-#if defined DEBUG_MORSE_tmp
-      MENU.out("DADA morse real token "); MENU.outln(token);
+#if defined MORSE_DEBUG_RECEIVE_TOKEN
+      //MENU.out("morse real token "); MENU.outln(token);
 #endif
       switch (token) {		// save letters?, do statistics?
       case MORSE_TOKEN_separeLetter:
-#if defined DEBUG_MORSE_tmp
+#if defined MORSE_DEBUG_RECEIVE_TOKEN
       MENU.outln("MORSE_TOKEN_separeLetter");
 #endif
 	if(morse_token_cnt == 1) {	// ignore separation tokens on startup
-#if defined DEBUG_MORSE_tmp
+#if defined MORSE_DEBUG_RECEIVE_TOKEN
       MENU.outln("skip 1st");
 #endif
-	  --morse_token_cnt;		//   remove from buffer
-	} else {
-#if defined DEBUG_MORSE_tmp
+	  --morse_token_cnt;		//   remove 1st from buffer
+	} else {			// MORSE_TOKEN_separeLetter  ok
+#if defined MORSE_DEBUG_RECEIVE_TOKEN
       MENU.outln("statistics");
 #endif
 	  morse_stats_do();	// do statistics on received letter
 	  morse_stats_init();	// prepare stats for next run
-	  //	morse_save_symbol(token);
+
+	  morse_decode();
 	}
 	break;
 
       case MORSE_TOKEN_separeWord:
-#if defined DEBUG_MORSE_tmp
+#if defined MORSE_DEBUG_RECEIVE_TOKEN
       MENU.outln("MORSE_TOKEN_separeWord");
 #endif
 	if(morse_token_cnt == 1) {	// ignore separation tokens on startup
-#if defined DEBUG_MORSE_tmp
+#if defined MORSE_DEBUG_RECEIVE_TOKEN
       MENU.outln("skip 1st");
 #endif
 	  --morse_token_cnt;		//   remove from buffer
@@ -1283,9 +1289,9 @@ void IRAM_ATTR morse_received_token(char token, float duration) {
 	morse_stats_gather(token, duration);
       }
     }
-#if defined DEBUG_MORSE_tmp
+#if defined MORSE_DEBUG_RECEIVE_TOKEN
     else {
-      MENU.out("DADA morse unreal token ");
+      MENU.out("morse unreal token ");
       MENU.outln(token);
     }
 #endif
@@ -1472,7 +1478,7 @@ const char * morse_definitions_tab[] = {
   "4 * --.. Z z",
   "4 * --.- Q q",
   "4 * ---. Ö ö",
-  "4 * ---- |CH| |ch|",
+//"4 * ---- |CH| |ch|",	// sorry, no string letters any more	free :)
 
   "5 * ..... 5 5",
   "5 * ....- 4 4",
@@ -1528,7 +1534,7 @@ char morse_def_TYPE=ILLEGAL;
 string * morse_def_TOKENS;	// TODO: fix or remove ################
 string * morse_def_UPPER_Letter;
 string * morse_def_LOWER_Letter;
-string * morse_Letter_in_CASE;
+string * morse_def_Letter_in_CASE;
 string * morse_def_COMMAND;
 
 #define morse_def_TOKENS_LEN	16	// up to 15 token for morse pattern strings
@@ -1553,37 +1559,36 @@ int space_separated_string_WORDS(string * source) {	/* for debugging only */
   return cnt;
 }
 
-// RESULT variables morse 2 meaning:
+// TODO: comments ################################################################
 string morse_DEFINITION;
 string morse_DEFINITION_TOKENS;
-string morse_KNOWN_UPPER_Letter;
-string morse_KNOWN_LOWER_Letter;
-string morse_KNOWN_Letter_in_CASE;
-string morse_KNOWN_COMMAND;
+char morse_PRESENT_UPPER_Letter;
+char morse_PRESENT_LOWER_Letter;
+char morse_PRESENT_in_case_Letter;
+char morse_PRESENT_TYPE='\0';
+string morse_PRESENT_COMMAND;
 
 uint8_t morse_seen_TOKENS=0;
 uint8_t morse_SYMBOLS_cnt=0;
-char    morse_KNOWN_TYPE=0;
 
 void morse_show_definition() {
   if(morse_DEFINITION.c_str() != "") {
-    MENU.out(morse_KNOWN_TYPE);
+    MENU.out(morse_PRESENT_TYPE);
     MENU.space();
     MENU.out(morse_DEFINITION_TOKENS.c_str());
     MENU.space();
-    switch (morse_KNOWN_TYPE) {
+    switch (morse_PRESENT_TYPE) {
     case '*':
-      MENU.out(morse_KNOWN_UPPER_Letter.c_str());
+      MENU.out(morse_PRESENT_UPPER_Letter);
       MENU.space();
-      MENU.out(morse_KNOWN_LOWER_Letter.c_str());
+      MENU.out(morse_PRESENT_LOWER_Letter);
       MENU.space();
-      if(morse_KNOWN_Letter_in_CASE != "")
-	MENU.out(morse_KNOWN_Letter_in_CASE.c_str());
-      MENU.ln();
+      if(morse_PRESENT_in_case_Letter)
+	MENU.out(morse_PRESENT_in_case_Letter);
       break;
 
     case 'C':
-	MENU.outln(morse_KNOWN_COMMAND.c_str());
+      MENU.outln(morse_PRESENT_COMMAND.c_str());	// TODO: do I still need .c_str() ??? ################################
       break;
     }
   }
@@ -1594,14 +1599,14 @@ void morse_reset_definition(string source) {
   morse_DEFINITION = source;
 
   morse_DEFINITION_TOKENS="";
-  morse_KNOWN_UPPER_Letter="";
-  morse_KNOWN_LOWER_Letter="";
-  morse_KNOWN_Letter_in_CASE="";
-  morse_KNOWN_COMMAND="";
+  morse_PRESENT_UPPER_Letter='\0';
+  morse_PRESENT_LOWER_Letter='\0';
+  morse_PRESENT_in_case_Letter='\0';
+  morse_PRESENT_TYPE='\0';
+  morse_PRESENT_COMMAND="";
 
   morse_seen_TOKENS=0;
   morse_SYMBOLS_cnt=0;
-  morse_KNOWN_TYPE=0;
 }
 
 void morse_read_definition(int index) {	// keep index in range, please
@@ -1621,26 +1626,33 @@ void morse_read_definition(int index) {	// keep index in range, please
       morse_SYMBOLS_cnt = word[0] - '0';
       break;
     case 1:
-      morse_KNOWN_TYPE = word[0];
+      morse_PRESENT_TYPE = word[0];
       break;
     case 2:
       morse_DEFINITION_TOKENS = word;
       break;
     case 3:
-      if(morse_KNOWN_TYPE=='*') {		// item 3 LETTER mode	= UPPER
-	morse_KNOWN_UPPER_Letter = word;
-      } else if(morse_KNOWN_TYPE=='C') {	// item 3 COMMAND mode	= COMMAND  (last command item)
-	morse_KNOWN_COMMAND = word;
+      if(morse_PRESENT_TYPE=='*') {		// item 3 LETTER mode	= UPPER
+	morse_PRESENT_UPPER_Letter = word[0];
+      } else if(morse_PRESENT_TYPE=='C') {	// item 3 COMMAND mode	= COMMAND  (last command item)
+	morse_PRESENT_COMMAND = word;
 	size = -1;	// command read, done
       }
       break;
     case 4:
-      if(morse_KNOWN_TYPE=='*') {		// item 4 LETTER mode	= LOWER  (last letter item)
-	morse_KNOWN_LOWER_Letter = word;
+      if(morse_PRESENT_TYPE=='*') {		// item 4 LETTER mode	= LOWER  (last letter item)
+	morse_PRESENT_LOWER_Letter = word[0];
 	size = -1;	// letter read, done
       }
       // else  (no check here)
       break;
+    }
+
+    if(morse_PRESENT_TYPE=='*') {		// upper | lowercase letters
+      if(morse_uppercase)
+	morse_PRESENT_in_case_Letter = morse_PRESENT_UPPER_Letter;
+      else
+	morse_PRESENT_in_case_Letter = morse_PRESENT_LOWER_Letter;
     }
 
     cnt++;
@@ -1674,8 +1686,8 @@ void morse_definition_set_show(bool uppercase) {
 
   switch(morse_def_TYPE) {
   case '*':	// letters
-    //    morse_show_space_delimited_string(morse_Letter_in_CASE);
-    MENU.out(morse_Letter_in_CASE->c_str());
+    //    morse_show_space_delimited_string(morse_def_Letter_in_CASE);
+    MENU.out(morse_def_Letter_in_CASE->c_str());
   case 'C':	// COMMANDs
     morse_show_space_delimited_string(morse_def_COMMAND->c_str());
     break;
@@ -1685,20 +1697,21 @@ void morse_definition_set_show(bool uppercase) {
 }
 
 
-int morse_find_definition(const char* pattern) {	// returns index in morse_definitions_tab[i]
-  for(int i=0; i<MORSE_DEFINITIONS ; i++) {	// or ILLEGAL if not found
+int morse_find_definition(const char* pattern) {  // returns index in morse_definitions_tab[i] or ILLEGAL
+  for(int i=0; i<MORSE_DEFINITIONS ; i++) {
     morse_read_definition(i);
     if((string) pattern == morse_DEFINITION_TOKENS) {
+#if defined MORSE_DECODE_DEBUG
       MENU.out("== ");
       MENU.outln(pattern);
       morse_show_definition();
-
+#endif
       return i;
     }
   }
 
   morse_reset_definition("");
-  return ILLEGAL;	// not foud
+  return ILLEGAL;	// not found
 }
 
 char morse_2ACTION() {
@@ -1714,7 +1727,7 @@ char morse_2ACTION() {
 
     switch (morse_def_TYPE) {
     case '*': // LETTER
-      morse_show_space_delimited_string(morse_Letter_in_CASE->c_str());
+      morse_show_space_delimited_string(morse_def_Letter_in_CASE->c_str());
       MENU.tab();
       MENU.outln(F("LETTER action"));
       break;
@@ -1752,9 +1765,6 @@ char morse_2ACTION() {
 }
 
 /* **************************************************************** */
-void react_on_code(int start, int length) {
-
-}
 
 #define MORSE_DECODED_LETTERS_BUFFER	64
 char * decoded_letters_string[MORSE_DECODED_LETTERS_BUFFER];	// buffer
@@ -1777,45 +1787,93 @@ char morse_decode() {	// decode received token sequence
 
   EXECUTE COMMANDS,
   return of commands is currently unused, always 0
-*/
 
-  MENU.outln("morse_decode() 0");
+  see: MORSE_DECODE_DEBUG
+*/
+  char pattern[10] = { '\0' };	// 10 (up to 9 real tokens + '\0'
   char token;
   bool last_was_separeLetter=false;	// normally we want to store *only the first space* of a sequence
 
+#if defined MORSE_DECODE_DEBUG
+  MENU.outln("morse_decode()");
+#endif
+
+  pattern[0] = '\0';
+  short pattern_length=0;
   if(morse_token_cnt) {
     for (int i=0; i<morse_token_cnt; i++) {
-      token = token=morse_SEEN_TOKENS[i];
+      token = morse_SEEN_TOKENS[i];
       if(is_real_token(token)) {
+	if(pattern_length > 8) {	  // ERROR
+	  MENU.error_ln(F("morse pattern_length"));
+	  return ILLEGAL;
+	}
 	switch(token) {
 	case MORSE_TOKEN_dot:
 	case MORSE_TOKEN_dash:
-	case MORSE_TOKEN_loong:
-	case MORSE_TOKEN_overlong:
-	case MORSE_TOKEN_separeLetter:
-	case MORSE_TOKEN_separeWord:
+	  pattern[pattern_length++] = token;
+#if defined MORSE_DECODE_DEBUG
+	  MENU.space(2);
+	  MENU.out(token);
+#endif
 	  break;
 
+	case MORSE_TOKEN_separeLetter:		// time to store letter
+#if defined MORSE_DECODE_DEBUG
+	  MENU.out(F("\tsepareLetter "));
+#endif
+	  if(morse_find_definition(pattern) != ILLEGAL) {
+	    switch(morse_PRESENT_TYPE) {
+	    case '*':	// letter
+	      MENU.out("\nDADA STORE LETTER:\t"); MENU.outln(morse_PRESENT_in_case_Letter);
+	      break;
+
+	    case 'C':	// Command
+	      MENU.out("\nDADA COMMAND:\t"); MENU.outln(morse_PRESENT_COMMAND.c_str());
+	      break;
+
+	    default:
+	      MENU.error_ln(F("morse_decode type"));
+	      return ILLEGAL;
+	    }
+	  } else {
+	    MENU.error_ln(F("morse  no definition"));
+	    return ILLEGAL;
+	  }
+	  break;
+
+	case MORSE_TOKEN_separeWord:
+#if defined MORSE_DECODE_DEBUG
+	  MENU.out(F("\tsepareWord "));
+#endif
+	  break;
+
+	case MORSE_TOKEN_loong:
+	  pattern[pattern_length++] = token;
+#if defined MORSE_DECODE_DEBUG
+	  MENU.space(2);
+	  MENU.out(token);
+#endif
+	  MENU.error_ln(F("DADA\tTODO: MORSE_TOKEN_overlong"));
+	  return ILLEGAL;
+
+	  break;
+
+	case MORSE_TOKEN_overlong:
+	  MENU.error_ln(F("DADA\tTODO: MORSE_TOKEN_overlong"));
+	  return ILLEGAL;
+	  break;
+
+	default:
+	  MENU.error_ln(F("morse real token unknown"));
+	  return ILLEGAL;
 	}
       } // real token
     }
-  }
-//      case MORSE_TOKEN_dot:
-//      case MORSE_TOKEN_dash:
-////      case MORSE_TOKEN_loong:
-////      case MORSE_TOKEN_overlong:
-//      case MORSE_TOKEN_separeWord:
-//	MENU.out(token);	// known real tokens
-//	last_was_separeLetter=false;
-//	break;
-//
-//      case MORSE_TOKEN_separeLetter:	// *only one* space separe letter
-//	if (!last_was_separeLetter)
-//	  MENU.out(token);	// space
-//
-//      default:
-
+    morse_token_cnt=0;
+  } // if(morse_token_cnt)
 }
+
 /* **************************************************************** */
 
   // ################################################################

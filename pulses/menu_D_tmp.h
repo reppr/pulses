@@ -5,6 +5,8 @@
 */
 
 #if defined USE_MORSE	// && defined MORSE_COMPILE_HELPERS
+morse_show_tokens(true);
+MENU.ln();
 morse_show_tokens();
 
 // morse_decode();
