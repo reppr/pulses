@@ -1448,11 +1448,16 @@ void morse_play_out_tokens(bool show=true) {	// play (and show) saved tokens in 
 const char * morse_definitions_tab[] = {
   "1 * . E e",
   "1 * - T t",
+  "1 C ! SEND",
 
   "2 * .. I i",
   "2 * .- A a",
   "2 * -. N n",
   "2 * -- M m",
+
+  "2 C !. LOWER",
+  "2 C !- UPPER",
+  "2 C !! DELLAST",
 
   "3 * ... S s",
   "3 * ..- U u",
@@ -1766,17 +1771,27 @@ char morse_2ACTION() {
 
 /* **************************************************************** */
 
-#define MORSE_DECODED_LETTERS_BUFFER	64
-char * decoded_letters_string[MORSE_DECODED_LETTERS_BUFFER];	// buffer
-short morse_stored_letters_cnt=0;
+#ifndef MORSE_OUTPUT_BUFFER_SIZE
+  #define MORSE_OUTPUT_BUFFER_SIZE	64	// size of morse output buffer
+#endif
+char  morse_output_buffer[MORSE_OUTPUT_BUFFER_SIZE];	// buffer
+short morse_out_buffer_cnt=0;
 
-bool morse_store_received_letter(char letter) {
-  if(morse_stored_letters_cnt < MORSE_DECODED_LETTERS_BUFFER) {
-    //decoded_letters_string[morse_stored_letters_cnt++] = letter;
-    return 0;
+void morse_do_output() {
+  morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
+  if(morse_out_buffer_cnt)
+    MENU.play_KB_macro((char*) morse_output_buffer);
+  morse_out_buffer_cnt=0;
+}
+
+bool morse_store_received_letter(char letter) {		// returns error
+  if(morse_out_buffer_cnt < MORSE_OUTPUT_BUFFER_SIZE) {
+    morse_output_buffer[morse_out_buffer_cnt++] = letter;
+    morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0' just in case ;)
+    return 0;	// ok
   }
 
-  return 1;	// ERROR
+  return true;	// ERROR
 }
 
 char morse_decode() {	// decode received token sequence
@@ -1826,18 +1841,31 @@ char morse_decode() {	// decode received token sequence
 	    switch(morse_PRESENT_TYPE) {
 	    case '*':	// letter
 	      MENU.out("\nDADA STORE LETTER:\t"); MENU.outln(morse_PRESENT_in_case_Letter);
+	      morse_store_received_letter(morse_PRESENT_in_case_Letter);
 	      break;
 
 	    case 'C':	// Command
-	      MENU.out("\nDADA COMMAND:\t"); MENU.outln(morse_PRESENT_COMMAND.c_str());
+	      if(morse_PRESENT_COMMAND == "SEND")
+		morse_do_output();
+	      else if(morse_PRESENT_COMMAND == "LOWER")
+		morse_uppercase = false;
+	      else if(morse_PRESENT_COMMAND == "UPPER")
+		morse_uppercase = true;
+	      else if(morse_PRESENT_COMMAND == "DELLAST") {
+		if(morse_out_buffer_cnt)
+		  morse_out_buffer_cnt--;
+	      } else
+		MENU.out("\nDADA COMMAND:\t"); MENU.outln(morse_PRESENT_COMMAND.c_str());
 	      break;
 
 	    default:
 	      MENU.error_ln(F("morse_decode type"));
+	      morse_reset_definition("");
 	      return ILLEGAL;
 	    }
 	  } else {
 	    MENU.error_ln(F("morse  no definition"));
+	    morse_reset_definition("");
 	    return ILLEGAL;
 	  }
 	  break;
@@ -1854,18 +1882,15 @@ char morse_decode() {	// decode received token sequence
 	  MENU.space(2);
 	  MENU.out(token);
 #endif
-	  MENU.error_ln(F("DADA\tTODO: MORSE_TOKEN_overlong"));
-	  return ILLEGAL;
-
 	  break;
 
 	case MORSE_TOKEN_overlong:
-	  MENU.error_ln(F("DADA\tTODO: MORSE_TOKEN_overlong"));
-	  return ILLEGAL;
+	  pattern[pattern_length++] = token;
 	  break;
 
 	default:
 	  MENU.error_ln(F("morse real token unknown"));
+	  morse_reset_definition("");
 	  return ILLEGAL;
 	}
       } // real token
