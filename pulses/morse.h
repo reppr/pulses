@@ -1233,7 +1233,7 @@ void IRAM_ATTR morse_stats_do() {
 /* **************************************************************** */
 #ifndef ONE_TOUCH_HACK	// morse_received_token(), normal actions...
 
-char morse_decode();	// pre declaration
+void morse_decode();	// pre declaration
 
 void IRAM_ATTR morse_received_token(char token, float duration) {
   portENTER_CRITICAL_ISR(&morse_MUX);
@@ -1449,6 +1449,7 @@ const char * morse_definitions_tab[] = {
   "1 * . E e",
   "1 * - T t",
   "1 C ! SEND",
+  "1 C V CANCEL",	// TODO: test	################
 
   "2 * .. I i",
   "2 * .- A a",
@@ -1777,14 +1778,43 @@ char morse_2ACTION() {
 char  morse_output_buffer[MORSE_OUTPUT_BUFFER_SIZE];	// buffer
 short morse_out_buffer_cnt=0;
 
+bool morse_output_to_do=false;		// triggers morse_do_output()
 void morse_do_output() {
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
   if(morse_out_buffer_cnt)
     MENU.play_KB_macro((char*) morse_output_buffer);
+
   morse_out_buffer_cnt=0;
+  morse_output_to_do=false;
 }
 
+#if defined USE_MONOCHROME_DISPLAY
+char morse_do_monochrome_display = '\0';
+
+bool monochrome_display_on;	// pre declaration
+void morse_monochrome_display() {
+  MENU.out("\nmorse_monochrome_display()\t");
+  MENU.outln(morse_do_monochrome_display);
+  /*
+  MENU.out_ON_off(morse_do_monochrome_display);
+  MENU.tab();
+  MENU.out_ON_off(monochrome_display_on);
+  */
+  if(morse_do_monochrome_display) {
+    u8x8.setInverseFont(0);
+    u8x8.setCursor(morse_out_buffer_cnt - 1, 0);
+    u8x8.print(morse_do_monochrome_display);
+    u8x8.print(' ');
+  }
+
+  morse_do_monochrome_display = '\0';
+}
+#endif
+
 bool morse_store_received_letter(char letter) {		// returns error
+#if defined USE_MONOCHROME_DISPLAY
+  morse_do_monochrome_display = letter;
+#endif
   if(morse_out_buffer_cnt < MORSE_OUTPUT_BUFFER_SIZE) {
     morse_output_buffer[morse_out_buffer_cnt++] = letter;
     morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0' just in case ;)
@@ -1794,11 +1824,10 @@ bool morse_store_received_letter(char letter) {		// returns error
   return true;	// ERROR
 }
 
-char morse_decode() {	// decode received token sequence
+void morse_decode() {	// decode received token sequence
 /*
   decode received token sequence
   SAVE LETTERS,
-  return CHAR for letters or ILLEGAL for unknown patterns
 
   EXECUTE COMMANDS,
   return of commands is currently unused, always 0
@@ -1821,7 +1850,8 @@ char morse_decode() {	// decode received token sequence
       if(is_real_token(token)) {
 	if(pattern_length > 8) {	  // ERROR
 	  MENU.error_ln(F("morse pattern_length"));
-	  return ILLEGAL;
+	  morse_token_cnt=0;
+	  return;
 	}
 	switch(token) {
 	case MORSE_TOKEN_dot:
@@ -1840,13 +1870,12 @@ char morse_decode() {	// decode received token sequence
 	  if(morse_find_definition(pattern) != ILLEGAL) {
 	    switch(morse_PRESENT_TYPE) {
 	    case '*':	// letter
-	      MENU.out("\nDADA STORE LETTER:\t"); MENU.outln(morse_PRESENT_in_case_Letter);
 	      morse_store_received_letter(morse_PRESENT_in_case_Letter);
 	      break;
 
 	    case 'C':	// Command
 	      if(morse_PRESENT_COMMAND == "SEND")
-		morse_do_output();
+		morse_output_to_do = true;	// triggers morse_do_output()
 	      else if(morse_PRESENT_COMMAND == "LOWER")
 		morse_uppercase = false;
 	      else if(morse_PRESENT_COMMAND == "UPPER")
@@ -1854,19 +1883,23 @@ char morse_decode() {	// decode received token sequence
 	      else if(morse_PRESENT_COMMAND == "DELLAST") {
 		if(morse_out_buffer_cnt)
 		  morse_out_buffer_cnt--;
+		// DADA monochrome
 	      } else
-		MENU.out("\nDADA COMMAND:\t"); MENU.outln(morse_PRESENT_COMMAND.c_str());
+		// DADA
+		MENU.out("\nCOMMAND:\t"); MENU.outln(morse_PRESENT_COMMAND.c_str());
 	      break;
 
 	    default:
 	      MENU.error_ln(F("morse_decode type"));
 	      morse_reset_definition("");
-	      return ILLEGAL;
+	      morse_token_cnt=0;
+	      return;
 	    }
 	  } else {
 	    MENU.error_ln(F("morse  no definition"));
 	    morse_reset_definition("");
-	    return ILLEGAL;
+	    morse_token_cnt=0;
+	    return;
 	  }
 	  break;
 
@@ -1891,10 +1924,12 @@ char morse_decode() {	// decode received token sequence
 	default:
 	  MENU.error_ln(F("morse real token unknown"));
 	  morse_reset_definition("");
-	  return ILLEGAL;
+	  morse_token_cnt=0;
+	  return;
 	}
       } // real token
     }
+
     morse_token_cnt=0;
   } // if(morse_token_cnt)
 }

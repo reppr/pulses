@@ -1165,6 +1165,17 @@ bool low_priority_tasks() {
     return true;
 #endif
 
+#if defined USE_MORSE	// TODO: test right priority
+  if(morse_output_to_do) {
+    morse_do_output();
+    return true;
+  }
+  if(morse_do_monochrome_display) {
+    morse_monochrome_display();
+    return true;
+  }
+#endif
+
   if (maybe_run_continuous())		// even lower priority: maybe display input state changes.
     return true;
 
