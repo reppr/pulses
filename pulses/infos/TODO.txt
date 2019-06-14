@@ -112,3 +112,5 @@ ununlaute on OLED äöüÄÖÜ
 menu stack
 
 PRENAME (etc) nvs UI
+
+// TODO: void u8x8_SetPowerSave(u8x8_t *u8x8, uint8_t is_enable);

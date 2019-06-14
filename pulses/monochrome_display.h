@@ -1,6 +1,12 @@
 /*
   monochrome_display.h
+
+  see: https://github.com/olikraus/u8g2/wiki/u8x8reference
 */
+
+// TODO: void u8x8_SetPowerSave(u8x8_t *u8x8, uint8_t is_enable);
+
+#ifndef MONOCHROME_DISPLAY_H
 
 void monochrome_show_program_version() {	// monochrome oled display
     u8x8.clear();
@@ -10,11 +16,9 @@ void monochrome_show_program_version() {	// monochrome oled display
     u8x8.setCursor(0,3);
     if(preName)
       u8x8.print(preName);
-    else
 #if defined PROGRAM_SUB_VERSION
+    else
       u8x8.print(F(STRINGIFY(PROGRAM_SUB_VERSION)));
-#else
-      ;
 #endif
 
     u8x8.setCursor(0,5);	// option mnemonics
@@ -134,7 +138,20 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
     char * s = name;
     char c ;
     int col=0;
+/*
+    // TESTCODE Umlaute		// TODO: fix or remove
+    char line_buffer[rows];
+    for(int r=0; r<rows; r++) {		// a letter for each row
+      c = line_buffer[r] = s[r];
+      if (c==0)				// string end
+	break;
+    }
+*/
     u8x8.setInverseFont(1);
+/* // TESTCODE Umlaute		// TODO: fix or remove
+    // U8X8::drawUTF8(uint8_t x, uint8_t y, const char *s)
+    u8x8.drawUTF8(0, row, line_buffer);
+*/
     while(c = *s++) {
       u8x8.print(c);
       if ((++col % cols) == 0)
@@ -209,3 +226,6 @@ void display_string(char * s) {	// ATTENTION: takes too long to be used while pl
   }
 }
 */
+
+#define MONOCHROME_DISPLAY_H
+#endif

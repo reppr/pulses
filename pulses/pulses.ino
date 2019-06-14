@@ -868,18 +868,21 @@ void setup() {
   while (MENU.cb_peek() != EOF) { MENU.drop_input_token(); yield(); }
 
 #if defined USE_MONOCHROME_DISPLAY
+  // SEE: https://github.com/olikraus/u8g2/wiki/u8x8reference
   u8x8.begin();
-  u8x8.setFont(u8x8_font_chroma48medium8_r);
-  // bool monochrome_display_on=true;	// TODO: fix&use monochrome_display detection
+  //  u8x8.setFont(u8x8_font_chroma48medium8_r);	// *Umlaute missing*
+  u8x8.setFont(u8x8_font_amstrad_cpc_extended_f);	// *Umlaute here, but strange*
+
   /*	// TODO: fix&use monochrome_display detection
   MENU.ln();	// try to detect display...
   MENU.out(F("################	display ################ "));
   MENU.outln(u8x8.getCols());
   MENU.outln(u8x8.getRows());
-  monochrome_display_on = u8x8.getCols();
-  MENU.out_ON_off(monochrome_display_on);
+  monochrome_display_hardware = u8x8.getCols();
+  MENU.out_ON_off(monochrome_display_hardware);
   MENU.ln();
   */
+  bool monochrome_display_hardware=true;	// TODO: fix&use monochrome_display detection
 #endif
 
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
@@ -903,11 +906,9 @@ void setup() {
   MENU.ln();
 
 #if defined USE_MONOCHROME_DISPLAY
-  /*	// TODO: fix&use monochrome_display detection
-  if(monochrome_display_on)
-    delay(1500);	// give a chance to read version on oled display
-  */
-  delay(1500);	// give a chance to read version on oled display
+  // TODO: fix&use monochrome_display detection
+  if(monochrome_display_hardware)
+    delay(1111);	// give a chance to read version on oled display
 
   #if defined OLED_HALT_PIN0
     pinMode(0, INPUT);	// holding GPIO00 switch holds program version display on screen

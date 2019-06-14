@@ -4,6 +4,10 @@
 
 #ifndef MORSE_H
 
+#if ! defined MORSE_MONOCHROME_ROW
+  #define MORSE_MONOCHROME_ROW	0	// row for monochrome morse display
+#endif
+
 #define MORSE_DECODE_DEBUG	// tokens to letters, commands
 
 //#define MORSE_DEBUG_RECEIVE_TOKEN	// TODO: REMOVE: debugging code
@@ -1543,8 +1547,8 @@ string * morse_def_LOWER_Letter;
 string * morse_def_Letter_in_CASE;
 string * morse_def_COMMAND;
 
-#define morse_def_TOKENS_LEN	16	// up to 15 token for morse pattern strings
-#define morse_def_LETTER_LEN	8	// up to 7 chars for compound morse "letter" strings
+#define morse_def_TOKENS_LEN	16	// up to 15 tokens for morse pattern strings
+#define morse_def_LETTER_LEN	8	// up to 7  chars for compound morse "letter" strings
 #define morse_def_COMMAND_LEN	12	// up to 11 chars for morse command names
 
 
@@ -1781,8 +1785,12 @@ short morse_out_buffer_cnt=0;
 bool morse_output_to_do=false;		// triggers morse_do_output()
 void morse_do_output() {
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
-  if(morse_out_buffer_cnt)
+  if(morse_out_buffer_cnt) {
+    #if defined USE_MONOCHROME_DISPLAY
+      u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "        ");
+    #endif
     MENU.play_KB_macro((char*) morse_output_buffer);
+  }
 
   morse_out_buffer_cnt=0;
   morse_output_to_do=false;
@@ -1791,23 +1799,30 @@ void morse_do_output() {
 #if defined USE_MONOCHROME_DISPLAY
 char morse_do_monochrome_display = '\0';
 
-bool monochrome_display_on;	// pre declaration
 void morse_monochrome_display() {
   MENU.out("\nmorse_monochrome_display()\t");
   MENU.outln(morse_do_monochrome_display);
-  /*
+  /*	prior (small) version
   MENU.out_ON_off(morse_do_monochrome_display);
   MENU.tab();
-  MENU.out_ON_off(monochrome_display_on);
+  MENU.out_ON_off(monochrome_display_hardware);
   */
-  if(morse_do_monochrome_display) {
+  if(morse_do_monochrome_display && morse_out_buffer_cnt) {
     u8x8.setInverseFont(0);
-    u8x8.setCursor(morse_out_buffer_cnt - 1, 0);
-    u8x8.print(morse_do_monochrome_display);
-    u8x8.print(' ');
+
+    // 2x2 version
+    char s[]="? ";
+    s[0] = morse_do_monochrome_display;
+    u8x8.draw2x2String(2*(morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s);
+
+    /*	prior (small) version
+      u8x8.setCursor(morse_out_buffer_cnt - 1, MORSE_MONOCHROME_ROW);
+      u8x8.print(morse_do_monochrome_display);
+      u8x8.print(' ');		// clear next char
+    */
   }
 
-  morse_do_monochrome_display = '\0';
+  morse_do_monochrome_display = '\0';	// trigger off
 }
 #endif
 
@@ -1881,11 +1896,20 @@ void morse_decode() {	// decode received token sequence
 	      else if(morse_PRESENT_COMMAND == "UPPER")
 		morse_uppercase = true;
 	      else if(morse_PRESENT_COMMAND == "DELLAST") {
-		if(morse_out_buffer_cnt)
+		if(morse_out_buffer_cnt) {
 		  morse_out_buffer_cnt--;
-		// DADA monochrome
+#if defined USE_MONOCHROME_DISPLAY
+		  u8x8.draw2x2String(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " ");
+#endif
+		}
+	      } else if(morse_PRESENT_COMMAND == "CANCEL") {
+		morse_out_buffer_cnt = 0;
+#if defined USE_MONOCHROME_DISPLAY
+	        u8x8.setInverseFont(1);
+		u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "CANCEL ");
+	        u8x8.setInverseFont(1);
+#endif
 	      } else
-		// DADA
 		MENU.out("\nCOMMAND:\t"); MENU.outln(morse_PRESENT_COMMAND.c_str());
 	      break;
 
@@ -1896,6 +1920,13 @@ void morse_decode() {	// decode received token sequence
 	      return;
 	    }
 	  } else {
+#if defined USE_MONOCHROME_DISPLAY
+	    if(morse_out_buffer_cnt) {
+	      u8x8.setInverseFont(1);
+	      u8x8.draw2x2String(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, "?");
+	      u8x8.setInverseFont(0);
+	    }
+#endif
 	    MENU.error_ln(F("morse  no definition"));
 	    morse_reset_definition("");
 	    morse_token_cnt=0;
