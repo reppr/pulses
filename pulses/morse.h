@@ -1452,8 +1452,9 @@ void morse_play_out_tokens(bool show=true) {	// play (and show) saved tokens in 
 const char * morse_definitions_tab[] = {
   "1 * . E e",
   "1 * - T t",
-  "1 C ! SEND",
-  "1 C V CANCEL",	// TODO: test	################
+
+  "1 C ! NEXT",		// SEND if morse input,  else  START/STOP playing
+  "1 C V CANCEL",
 
   "2 * .. I i",
   "2 * .- A a",
@@ -1511,7 +1512,7 @@ const char * morse_definitions_tab[] = {
   "5 * -..-. / /",
   "5 C -..-- UPPER",	// NW	_..__	UPPERCASE
   "5 C -.-.. LOWER",	// ND	-.-..	LOWERCASE
-  "5 C -.-.- SEND",	// NK	-.-.-	SEND
+//"5 C -.-.- SEND",	// NK	-.-.-	SEND	obsolete, replaced by 'NEXT'
   "5 * -.--. ( (",
   "5 C -.--- DELLAST",	// NO -.---	DELETE LAST LETTER
   "5 * --... 7 7",
@@ -1751,8 +1752,8 @@ char morse_2ACTION() {
 	morse_uppercase = true;
       } else if(strcmp(morse_def_COMMAND->c_str(), "LOWER") == 0) {
 	morse_uppercase = false;
-      } else if(strcmp(morse_def_COMMAND->c_str(), "SEND") == 0) {
-	MENU.out(">>>> SEND\t");
+      } else if(strcmp(morse_def_COMMAND->c_str(), "NEXT") == 0) {
+	MENU.out(">>>> NEXT\t");
 	//MENU.outln(morse_OUTPUT_buffer);
 	//MENU.play_KB_macro(morse_OUTPUT_buffer);
       } else if(strcmp(morse_def_COMMAND->c_str(), "DELLAST") == 0) {
@@ -1794,6 +1795,8 @@ void morse_do_output() {
 
   morse_out_buffer_cnt=0;
   morse_output_to_do=false;
+
+  morse_uppercase = true;	// reset to uppercase
 }
 
 #if defined USE_MONOCHROME_DISPLAY
@@ -1889,12 +1892,19 @@ void morse_decode() {	// decode received token sequence
 	      break;
 
 	    case 'C':	// Command
-	      if(morse_PRESENT_COMMAND == "SEND")
-		morse_output_to_do = true;	// triggers morse_do_output()
-	      else if(morse_PRESENT_COMMAND == "LOWER")
+	      if(morse_PRESENT_COMMAND == "NEXT") {
+		if(morse_out_buffer_cnt)	// if something is buffered, send it,
+		  morse_output_to_do = true;	//	triggers morse_do_output() on morse input
+		else {				// else: 'P'=START/STOP		TODO: for preset mode, TEST: for others
+		  morse_store_received_letter(morse_PRESENT_in_case_Letter = 'P');
+		  morse_output_to_do = true;	//	triggers morse_do_output() on 'P'
+		}
+	      } else if(morse_PRESENT_COMMAND == "LOWER")
 		morse_uppercase = false;
+
 	      else if(morse_PRESENT_COMMAND == "UPPER")
 		morse_uppercase = true;
+
 	      else if(morse_PRESENT_COMMAND == "DELLAST") {
 		if(morse_out_buffer_cnt) {
 		  morse_out_buffer_cnt--;
@@ -1902,12 +1912,13 @@ void morse_decode() {	// decode received token sequence
 		  u8x8.draw2x2String(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " ");
 #endif
 		}
+
 	      } else if(morse_PRESENT_COMMAND == "CANCEL") {
 		morse_out_buffer_cnt = 0;
 #if defined USE_MONOCHROME_DISPLAY
-	        u8x8.setInverseFont(1);
+		u8x8.setInverseFont(1);
 		u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "CANCEL ");
-	        u8x8.setInverseFont(1);
+		u8x8.setInverseFont(1);
 #endif
 	      } else
 		MENU.out("\nCOMMAND:\t"); MENU.outln(morse_PRESENT_COMMAND.c_str());
