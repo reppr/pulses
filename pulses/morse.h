@@ -1916,9 +1916,12 @@ void morse_decode() {	// decode received token sequence
 	      } else if(morse_PRESENT_COMMAND == "CANCEL") {
 		morse_out_buffer_cnt = 0;
 #if defined USE_MONOCHROME_DISPLAY
-		u8x8.setInverseFont(1);
-		u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "CANCEL ");
-		u8x8.setInverseFont(1);
+		/* long prior version was very audible
+		   u8x8.setInverseFont(1);
+		   u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "CANCEL ");
+		   u8x8.setInverseFont(1);
+		*/
+		u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "C");	// *short&quick*
 #endif
 	      } else
 		MENU.out("\nCOMMAND:\t"); MENU.outln(morse_PRESENT_COMMAND.c_str());
