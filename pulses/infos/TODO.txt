@@ -114,3 +114,9 @@ menu stack
 PRENAME (etc) nvs UI
 
 // TODO: void u8x8_SetPowerSave(u8x8_t *u8x8, uint8_t is_enable);
+
+MPU-6050
+
+introduce SIGNAL leds, use them i.e. MORSE_OUTPUT_PIN
+
+change PERIPHERAL_POWER_SWITCH_PIN as GPIO12 is active during boot process...

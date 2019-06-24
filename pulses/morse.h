@@ -27,9 +27,9 @@ bool morse_feedback_while_playing = false;	// do *not* give morse feedback while
 // #define MORSE_GPIO_INPUT_PIN	34	// Morse input GPIO pin, 34 needs hardware pulldown
 
 //#define MORSE_OUTPUT_PIN	2 // 2 is often blue onboard led, hang a led, a piezzo on that one :)
-//#define MORSE_OUTPUT_PIN	12 // *one shot TEST ONLY*	// TODO: REMOVE:
+//#define MORSE_OUTPUT_PIN	12 // *one shot TEST ONLY*	// TODO: separe from PERIPHERAL_POWER_SWITCH_PIN
+
 #ifndef MORSE_TOUCH_INPUT_PIN		// TODO: be more flexible
-  //#define MORSE_TOUCH_INPUT_PIN	12	// use ESP32 touch sensor as morse input
   #define MORSE_TOUCH_INPUT_PIN	13	// use ESP32 touch sensor as morse input	(13 just a test)
 #endif
 

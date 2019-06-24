@@ -559,7 +559,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 26:
     name = F("en andere brachklassiker");
-    //# FAVORITE
+    //# FAVORITE+	wunderschön :)
     //# shortIsOk
     //# harmonies
     //# nice
@@ -1685,7 +1685,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# soundscape
     //# birds
     //# hasSlowPulse
-    //# lyric
+    //# lyric	er sitzt nur da und lost uf t vögel wo zwitschered im gebüsch
+    //# lyric	(mer findet en en) gspässige Vogel
     date = F("2018-11-28_21h02m41s	WED");
     select_array_in(SCALES, octaves_fifths);
     select_array_in(JIFFLES, PENTA_3rd_rise);
@@ -3097,7 +3098,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 113:
     name = F("Chläderrose");
-    //# favorite+
+    //# FAVORITE
     //# shortIsOk
     //# motives
     //# melodies
@@ -4799,7 +4800,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     name = F("mad accordeon players whichdance with old indio's flute babbling");
     //# favorite
     //# systemStress
-    //# heavyStart
+    //# heavyStart	// added stack_sync_slices = -64; to try a fix	// TODO: test&trim
     //# shortIsOk
     //# bigBang
     //# dense
@@ -4829,6 +4830,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_array_in(SCALES, pentatonic_minor);
     select_array_in(JIFFLES, dwn_THRD_up);
     sync = 0;
+    stack_sync_slices = -64;	// TODO: test&trim
     pitch = {32768, 384};
     // fix:	play_KB_macro  *2
     // CYC: 2^0	1h 52' 38"

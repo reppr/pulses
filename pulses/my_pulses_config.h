@@ -6,18 +6,18 @@
 
 */
 
-#define USE_MORSE	// try to reuse old morse code
-
 //#define PRENAME	SoundShip1		// individual name	// better use nvs_PRENAME
 /*			0123456789abcdef	// 16 bytes	*/
 
-// #define FAMILY_NAME	SoundShip1		// configuration family	// see: pulses_engine_config.h
+#define FAMILY_NAME	SoundShip1		// configuration family	// see: pulses_engine_config.h
 // /*			0123456789abcdef	// 16 bytes	*/
 
+#define USE_MORSE	// touch morse code is in use :)
 
+#define USE_MPU_6050	// TODO: implement first tests
+
+#define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_OUTPUT_PIN	green LED in many musicBoxes
 // TODO: change PERIPHERAL_POWER_SWITCH_PIN as GPIO12 is active during boot process...
-// TODO: introduce SIGNAL leds
-#define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_TOUCH_INPUT_PIN	green LED in many musicBoxes
 
 #define ESP32_USB_DAC_ONLY
 
@@ -37,3 +37,5 @@
 
 //#define NVS_PUT_PRENAME_HACK	LillyBoy	// 1 shot HACK to put a PRENAME		TODO: UI
 //#define NVS_PUT_PRENAME_HACK	CHATEAU		// 1 shot HACK to put a PRENAME		TODO: UI
+//#define NVS_PUT_PRENAME_HACK	FitNess		// 1 shot HACK to put a PRENAME		TODO: UI
+//#define NVS_PUT_PRENAME_HACK	LillyBoy_	// 1 shot HACK to put a PRENAME		TODO: UI
