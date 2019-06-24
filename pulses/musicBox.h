@@ -409,6 +409,10 @@ void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditional
   }
 }
 
+bool musicbox_is_idle() {	// makes it easier to pre declare that from outside
+  return MusicBoxState == OFF;
+}
+
 void tabula_rasa() {
   if (MENU.verbosity > VERBOSITY_LOWEST)
     MENU.outln(F("tabula rasa"));
