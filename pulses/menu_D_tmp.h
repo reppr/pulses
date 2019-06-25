@@ -4,84 +4,85 @@
   temporary test code for pulses menu 'D'
 */
 
-#if defined USE_MORSE	// && defined MORSE_COMPILE_HELPERS
-morse_do_output();
+#undefine NOT_DEFINED
+#if defined USE_MORSE && defined NOT_DEFINED
+  morse_do_output();
 
-// morse_show_tokens(true);
-// MENU.ln();
-// morse_show_tokens();
+  // morse_show_tokens(true);
+  // MENU.ln();
+  // morse_show_tokens();
 
-// morse_decode();
+  // morse_decode();
 
-//    MENU.ln();
+  //    MENU.ln();
 
-//  #if defined MORSE_TOKEN_DEBUG		// a *lot* of debug info...
-//    morse_debug_token_info();
-//    morse_show_tokens();
-//    MENU.ln();
-//  #endif
-//
-//  #if defined MORSE_OUTPUT_PIN
-//    morse_play_out_tokens();	// play saved tokens in current morse speed ;)
-//  #endif
+  //  #if defined MORSE_TOKEN_DEBUG		// a *lot* of debug info...
+  //    morse_debug_token_info();
+  //    morse_show_tokens();
+  //    MENU.ln();
+  //  #endif
+  //
+  //  #if defined MORSE_OUTPUT_PIN
+  //    morse_play_out_tokens();	// play saved tokens in current morse speed ;)
+  //  #endif
 
-//  MENU.outln("DADA morse77");
-//  show_morse_output_buffer();
-//  morse_2ACTION();
-  //    morse_tokens2meaning_state();	// obsolete?
+  //  MENU.outln("DADA morse77");
+  //  show_morse_output_buffer();
+  //  morse_2ACTION();
+    //    morse_tokens2meaning_state();	// obsolete?
 
-  morse_OUTPUT_cnt=0;
+    morse_OUTPUT_cnt=0;
+
+    /*
+    #if defined MORSE_TOKEN_DEBUG
+      morse_show_tokens();
+      MENU.ln();
+
+      morse_debug_token_info();
+
+      morse_show_tokens();
+      MENU.ln();
+
+      morse_token_cnt=0;
+    #else
+      morse_show_tokens();
+      MENU.ln();
+
+      morse_token_cnt=0;
+    #endif
+    */
+
+    /*
+      for(int i = 0; i<MORSE_DEFINITIONS; i++) {
+	string definition = morse_definitions_tab[i];
+	morse_reset_definition(definition);
+	morse_read_definition(i);
+	morse_show_definition();
+      }
+    */
 
   /*
-  #if defined MORSE_TOKEN_DEBUG
-    morse_show_tokens();
-    MENU.ln();
-
-    morse_debug_token_info();
-
-    morse_show_tokens();
-    MENU.ln();
-
-    morse_token_cnt=0;
-  #else
-    morse_show_tokens();
-    MENU.ln();
-
-    morse_token_cnt=0;
-  #endif
+    MENU.outln("DADA");
+    morse_find_definition("-.-");
+    morse_find_definition("-.---");
+    morse_find_definition(".-.");
+    MENU.outln("DADA");
   */
 
   /*
     for(int i = 0; i<MORSE_DEFINITIONS; i++) {
-      string definition = morse_definitions_tab[i];
-      morse_reset_definition(definition);
       morse_read_definition(i);
-      morse_show_definition();
+      morse_definition_set_show(morse_uppercase);
     }
   */
 
-/*
-  MENU.outln("DADA");
-  morse_find_definition("-.-");
-  morse_find_definition("-.---");
-  morse_find_definition(".-.");
-  MENU.outln("DADA");
-*/
+  //    morse_2ACTION();
 
-/*
-  for(int i = 0; i<MORSE_DEFINITIONS; i++) {
-    morse_read_definition(i);
-    morse_definition_set_show(morse_uppercase);
-  }
-*/
-
-//    morse_2ACTION();
-
-/*
-  #if defined MORSE_OUTPUT_PIN
-    morse_play_out_tokens();	// play and show saved tokens in current morse speed
-  #endif
-*/
+  /*
+    #if defined MORSE_OUTPUT_PIN
+      morse_play_out_tokens();	// play and show saved tokens in current morse speed
+    #endif
+  */
 
 #endif // USE_MORSE
 

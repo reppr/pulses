@@ -55,7 +55,6 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //comment: :) :) :) :) :)
     //# FAVORITE
     //# shortIsOk
-    //# favorite
     //# mystic
     //# SoundSpaceShip
     //# cosmic
@@ -3828,7 +3827,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 134:
     name = F("Childrens Christmas Night");
-    //# FAVORITE
+    //# FAVORITE+
     //# shortIsOk
     //# fullCycleIsOk
     //# ritch
