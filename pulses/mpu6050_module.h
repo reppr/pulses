@@ -44,6 +44,48 @@ bool mpu6050_setup() {
   return false;
 }
 
+typedef struct {
+  int16_t ax;
+  int16_t ay;
+  int16_t az;
+  int16_t gx;
+  int16_t gy;
+  int16_t gz;
+} accelero_gyro_6d_data ;
+
+accelero_gyro_6d_data accelero_gyro_current = { 0 };	// current values (after oversampling)
+
+#if ! defined MPU_OVERSAMPLING
+  #define MPU_OVERSAMPLING	16
+#endif
+accelero_gyro_6d_data mpu_samples[MPU_OVERSAMPLING] = { 0 };
+
+void sample_accelero_giro_6d() {
+  static int16_t mpu_sample_index=0;
+
+  mpu6050.getMotion6(&mpu_samples[mpu_sample_index].ax, &mpu_samples[mpu_sample_index].ay, &mpu_samples[mpu_sample_index].az, \
+		     &mpu_samples[mpu_sample_index].gx, &mpu_samples[mpu_sample_index].gy, &mpu_samples[mpu_sample_index].gz);
+
+  int32_t AX=0, AY=0, AZ=0, GX=0, GY=0, GZ=0;
+
+  for(int i=0; i < MPU_OVERSAMPLING; i++) {
+    AX += mpu_samples[i].ax;
+    AY += mpu_samples[i].ay;
+    AZ += mpu_samples[i].az;
+    GX += mpu_samples[i].gx;
+    GY += mpu_samples[i].gy;
+    GZ += mpu_samples[i].gz;
+  }
+
+  accelero_gyro_current.ax = AX / MPU_OVERSAMPLING;
+  accelero_gyro_current.ay = AY / MPU_OVERSAMPLING;
+  accelero_gyro_current.az = AZ / MPU_OVERSAMPLING;
+
+  accelero_gyro_current.gx = GX / MPU_OVERSAMPLING;
+  accelero_gyro_current.gy = GY / MPU_OVERSAMPLING;
+  accelero_gyro_current.gz = GZ / MPU_OVERSAMPLING;
+}
+
 /*
 	void getMotion6(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz);
 	void getAcceleration(int16_t* x, int16_t* y, int16_t* z);

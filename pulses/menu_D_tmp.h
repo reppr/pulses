@@ -4,38 +4,20 @@
   temporary test code for pulses menu 'D'
 */
 
-{
-  int16_t ax, ay, az, gx, gy, gz;
-  int32_t AX=0, AY=0, AZ=0, GX=0, GY=0, GZ=0;
-  int n=7;
-  for(int i=0; i<n ; i++) {
-    // mpu6050.getAcceleration(&ax, &ay, &az);
-    mpu6050.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-    AX += ax;
-    AY += ay;
-    AZ += az;
-    GX += gx;
-    GY += gy;
-    GZ += gz;
-  }
+sample_accelero_giro_6d();
 
-  ax = AX / n;
-  ay = AY / n;
-  az = AZ / n;
-
-  MENU.out(ax);
-  MENU.tab();
-  MENU.out(ay);
-  MENU.tab();
-  MENU.out(az);
-  MENU.tab();
-  MENU.out(gx);
-  MENU.tab();
-  MENU.out(gy);
-  MENU.tab();
-  MENU.out(gz);
-  MENU.ln();
-}
+MENU.out(accelero_gyro_current.ax);
+MENU.tab();
+MENU.out(accelero_gyro_current.ay);
+MENU.tab();
+MENU.out(accelero_gyro_current.az);
+MENU.tab();
+MENU.out(accelero_gyro_current.gx);
+MENU.tab();
+MENU.out(accelero_gyro_current.gy);
+MENU.tab();
+MENU.out(accelero_gyro_current.gz);
+MENU.ln();
 
 #undef NOT_DEFINED	// DEACTIVATE...
 #if defined USE_MORSE && defined NOT_DEFINED	// && defined MORSE_COMPILE_HELPERS
