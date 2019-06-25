@@ -725,6 +725,9 @@ bool stack_sync_user_selected=false;
   #include "RTC_DS1307_module.h"
 #endif
 
+#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
+  #include "mpu6050_module.h"
+#endif
 
 /* **************************************************************** */
 #ifdef ARDUINO
@@ -928,6 +931,10 @@ void setup() {
     start_musicBox();	must be blocked if appropriate
   */
   //  maybe_restore_from_RTCmem();		// only after deep sleep, else noop
+
+#if defined USE_MPU6050
+  mpu6050_setup();
+#endif
 
 #if defined MUSICBOX_TRIGGER_PIN
   pinMode(MUSICBOX_TRIGGER_PIN, INPUT);

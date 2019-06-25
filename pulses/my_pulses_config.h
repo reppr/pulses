@@ -14,7 +14,7 @@
 
 #define USE_MORSE	// touch morse code is in use :)
 
-#define USE_MPU_6050	// TODO: implement first tests
+#define USE_MPU6050	// MPU-6050 6d accelero/gyro
 
 #define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_OUTPUT_PIN	green LED in many musicBoxes
 // TODO: change PERIPHERAL_POWER_SWITCH_PIN as GPIO12 is active during boot process...
