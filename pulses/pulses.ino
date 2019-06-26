@@ -1169,15 +1169,16 @@ bool low_priority_tasks() {
   low_priority_cnt++;
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
-  if(new_accelGyro_data) {
-    MENU.out('~');
-    new_accelGyro_data = false;
-    return true;
-  } // else
+  if(accelGyro_is_active) {
+    if(new_accelGyro_data ) {	//   check new input data
+      acceleroGyro_reaction();
+      return true;
+    } // else
 
-  if ((low_priority_cnt % 33333) == 0) {
-    accelGyro_sample_ISR();	// testing ouside of interrupt context
-    return true;
+    if ((low_priority_cnt % 33333) == 0) { // take a accelerGyro sample
+      accelGyro_sample_ISR();		 // testing ouside of interrupt context
+      return true;
+    }
   } // else
 #endif
 

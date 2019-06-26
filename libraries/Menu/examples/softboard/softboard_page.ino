@@ -809,8 +809,12 @@ void softboard_display() {
 
   MENU.out(F("\n.=all digital\t,=all analog\t;=both\tx=extra\t"));
 #if defined USE_i2c
-  MENU.outln(F("\tC=i2c scan"));
+  MENU.out(F("\tC=i2c scan"));
 #endif
+#if defined USE_MPU6050	// MPU-6050 6d accelero/gyro
+  MENU.out(F("\tG=accelero/gyro"));
+#endif
+  MENU.ln();
 
 #if defined USE_RTC_MODULE
   MENU.outln(F("t=time\tt! <year> <month> <day> <hour> <minute> =set time"));
@@ -1146,7 +1150,7 @@ bool softboard_reaction(char token) {
     break;
 
 #if defined ESP32
-  case ':':	// all touch
+  case ':':	// all touch	// TODO: clashes with menu key
     pins_info_touch();
     break;
 #endif
@@ -1172,6 +1176,12 @@ bool softboard_reaction(char token) {
 #if defined USE_i2c
   case 'C':	// i2c_scan()	#define USE_i2c to activate
     i2c_scan();
+    break;
+#endif
+
+#if defined USE_MPU6050	// MPU-6050 6d accelero/gyro
+  case 'G':	// MPU-6050 6d accelero/gyro
+    acceleroGyro_data_display();
     break;
 #endif
 

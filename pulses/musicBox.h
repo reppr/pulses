@@ -23,7 +23,7 @@
 #if defined SETUP_PORTABLE_DAC_ONLY
   #define USE_BATTERY_CONTROL				// *pseudo* for green LED
   #define PERIPHERAL_POWER_SWITCH_PIN		12	// switch power, often green LED
-  #define PROGRAM_SUB_VERSION			miniHarmonical 0	//
+  #define PROGRAM_SUB_VERSION			portable 2
   #define MAX_SUBCYCLE_SECONDS			60*9	// *max seconds*, produces *SHORT PRESET PIECES*	BRACHE 2019-05
 //#define MUSICBOX_HARD_END_SECONDS		60*100	// SAVETY NET shut down after 100'	***DEACTIVATED***
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3600*12	// *DEACTIVATED*
@@ -2916,6 +2916,11 @@ void musicBox_display() {
   MENU.ln();
 
   MENU.outln(F("'m'= set mode\t'mm' 'mM'= manual\t'ma' 'mA'= automagic"));
+#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
+  MENU.out(F("'G'= toggle AccelGyro "));
+  MENU.out_ON_off(accelGyro_is_active);
+  MENU.ln();
+#endif
   MENU.ln(2);
 
   musicBox_short_info();
@@ -3050,6 +3055,15 @@ bool musicBox_reaction(char token) {
   case 'H': // HARD_END_playing(true);
     HARD_END_playing(true);
     break;
+
+#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
+  case 'G': // toggle accelGyro_is_active
+    accelGyro_is_active ^= 1;
+    MENU.out(F("accelGyro"));
+    MENU.out_ON_off(accelGyro_is_active);
+    MENU.ln();
+    break;
+#endif
 
   case 'n':	// restart now	(like menu pulses 'n')
     if(musicBox_butler_i != ILLEGAL)	// remove butler
