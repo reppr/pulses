@@ -1169,13 +1169,16 @@ bool low_priority_tasks() {
   low_priority_cnt++;
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
-//  if((low_priority_cnt % 17) == 0 ) {
-//    //sample_accelero_giro_6d();
-//    return true;
-//  }
-//  if((low_priority_cnt % 251) == 0 ) {
-//    ; // TODO: CHECK REACTION...
-//  }
+  if(new_accelGyro_data) {
+    MENU.out('~');
+    new_accelGyro_data = false;
+    return true;
+  } // else
+
+  if ((low_priority_cnt % 33333) == 0) {
+    accelGyro_sample_ISR();	// testing ouside of interrupt context
+    return true;
+  } // else
 #endif
 
 #ifdef IMPLEMENT_TUNING		// tuning, sweeping priority below menu		*implies floating point*
@@ -1427,14 +1430,7 @@ void loop() {	// ARDUINO
   if(! maybe_check_inputs())		// reading inputs can be time critical, so check early
 #endif
 
-#if defined USE_MPU6050
-    if ((loop_cnt % 33333) == 0) {
-      accelGyro_sample_ISR();	// testing ouside of interrupt context
-      //      MENU.out('#');
-    } else
-#endif
-
-  if(MENU.lurk_then_do()) {		// MENU second in priority, check if something to do,
+    if(MENU.lurk_then_do()) {		// MENU second in priority, check if something to do,
       stress_event_cnt = -1;		//   after many menu actions there will be a stress event, ignore that
     } else {      // no, menu did not do much
 

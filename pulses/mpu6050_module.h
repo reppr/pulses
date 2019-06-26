@@ -75,15 +75,15 @@ hw_timer_t * accelGyro_timer = NULL;
 void accelGyro_sample_ISR() {	// test	from *outside* interrupt context	TODO: RENAME:
   static int16_t mpu_sample_index=0;
 
-  /*
+#define ONE_SHOT_ACCELGYRO
+#if ! defined ONE_SHOT_ACCELGYRO
   // take one 6d sample
   mpu6050.getMotion6(&mpu_samples[mpu_sample_index].ax, &mpu_samples[mpu_sample_index].ay, &mpu_samples[mpu_sample_index].az, \
 		     &mpu_samples[mpu_sample_index].gx, &mpu_samples[mpu_sample_index].gy, &mpu_samples[mpu_sample_index].gz);
-  */
-
+#else
   // TEST: take just *ONE* data
   mpu_samples[mpu_sample_index].ax = mpu6050.getAccelerationX();
-  // MENU.out('|');
+#endif
 
   if(((++mpu_sample_index) % MPU_OVERSAMPLING) == 0) {
     mpu_sample_index = 0;
