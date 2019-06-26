@@ -1164,6 +1164,20 @@ MENU.ln();
 // check lower priority tasks and do the first one that needs to be done
 // return true if something was done
 bool low_priority_tasks() {
+  static uint32_t low_priority_cnt = 0;
+
+  low_priority_cnt++;
+
+#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
+//  if((low_priority_cnt % 17) == 0 ) {
+//    //sample_accelero_giro_6d();
+//    return true;
+//  }
+//  if((low_priority_cnt % 251) == 0 ) {
+//    ; // TODO: CHECK REACTION...
+//  }
+#endif
+
 #ifdef IMPLEMENT_TUNING		// tuning, sweeping priority below menu		*implies floating point*
   tuning = PULSES.tuning;	// FIXME: workaround for having all 3 sweep implementations in parallel
   if (maybe_stop_sweeping())		// low priority control sweep range
@@ -1271,7 +1285,11 @@ bool lowest_priority_tasks() {
 
 
 void loop() {	// ARDUINO
+  static unsigned int loop_cnt=0;
   unsigned int this_todo_cnt=0;
+
+  loop_cnt++;
+
   #ifdef ESP8266	// hope it works on all ESP8266 boards, FIXME: test
     #ifdef WIFI_OFF_hackster
       // see: https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
@@ -1408,12 +1426,21 @@ void loop() {	// ARDUINO
 #ifdef USE_INPUTS
   if(! maybe_check_inputs())		// reading inputs can be time critical, so check early
 #endif
-    if(MENU.lurk_then_do()) {		// MENU second in priority, check if something to do,
+
+#if defined USE_MPU6050
+    if ((loop_cnt % 33333) == 0) {
+      accelGyro_sample_ISR();	// testing ouside of interrupt context
+      //      MENU.out('#');
+    } else
+#endif
+
+  if(MENU.lurk_then_do()) {		// MENU second in priority, check if something to do,
       stress_event_cnt = -1;		//   after many menu actions there will be a stress event, ignore that
-    } else					// no, menu did not do much
+    } else {      // no, menu did not do much
+
       if (! low_priority_tasks())		// check low_priority_tasks()
 	lowest_priority_tasks();		// if still nothing done, check lowest_priority_tasks()
-
+    }
 } // ARDUINO loop()
 
 #else		// c++ Linux PC test version

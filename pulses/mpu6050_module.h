@@ -51,16 +51,85 @@ typedef struct {
   int16_t gx;
   int16_t gy;
   int16_t gz;
-} accelero_gyro_6d_data ;
+} accelGyro_6d_data ;
 
-accelero_gyro_6d_data accelero_gyro_current = { 0 };	// current values (after oversampling)
+accelGyro_6d_data accelGyro_current = { 0 };	// current values (after oversampling)
 
 #if ! defined MPU_OVERSAMPLING
-  #define MPU_OVERSAMPLING	16
+//#define MPU_OVERSAMPLING	15
+#define MPU_OVERSAMPLING	7
+//#define MPU_OVERSAMPLING	4
+//#define MPU_OVERSAMPLING	2
 #endif
-accelero_gyro_6d_data mpu_samples[MPU_OVERSAMPLING] = { 0 };
+accelGyro_6d_data mpu_samples[MPU_OVERSAMPLING] = { 0 };
 
-void sample_accelero_giro_6d() {
+bool volatile new_accelGyro_data=false;
+hw_timer_t * accelGyro_timer = NULL;
+
+//#define WITH_TIMER_MUX	// DEACTIVATED for a test	TODO: REMOVE:
+#if defined WITH_TIMER_MUX
+  portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
+#endif
+
+//void IRAM_ATTR accelGyro_sample_ISR() {
+void accelGyro_sample_ISR() {	// test	from *outside* interrupt context	TODO: RENAME:
+  static int16_t mpu_sample_index=0;
+
+  /*
+  // take one 6d sample
+  mpu6050.getMotion6(&mpu_samples[mpu_sample_index].ax, &mpu_samples[mpu_sample_index].ay, &mpu_samples[mpu_sample_index].az, \
+		     &mpu_samples[mpu_sample_index].gx, &mpu_samples[mpu_sample_index].gy, &mpu_samples[mpu_sample_index].gz);
+  */
+
+  // TEST: take just *ONE* data
+  mpu_samples[mpu_sample_index].ax = mpu6050.getAccelerationX();
+  // MENU.out('|');
+
+  if(((++mpu_sample_index) % MPU_OVERSAMPLING) == 0) {
+    mpu_sample_index = 0;
+    int32_t AX=0, AY=0, AZ=0, GX=0, GY=0, GZ=0;
+
+    for(int i=0; i < MPU_OVERSAMPLING; i++) {
+      AX += mpu_samples[i].ax;
+      AY += mpu_samples[i].ay;
+      AZ += mpu_samples[i].az;
+      GX += mpu_samples[i].gx;
+      GY += mpu_samples[i].gy;
+      GZ += mpu_samples[i].gz;
+    }
+
+    accelGyro_current.ax = AX / MPU_OVERSAMPLING;
+    accelGyro_current.ay = AY / MPU_OVERSAMPLING;
+    accelGyro_current.az = AZ / MPU_OVERSAMPLING;
+
+    accelGyro_current.gx = GX / MPU_OVERSAMPLING;
+    accelGyro_current.gy = GY / MPU_OVERSAMPLING;
+    accelGyro_current.gz = GZ / MPU_OVERSAMPLING;
+
+#if defined WITH_TIMER_MUX
+    portENTER_CRITICAL_ISR(&timerMux);
+#endif
+    new_accelGyro_data = true;
+#if defined WITH_TIMER_MUX
+    portEXIT_CRITICAL_ISR(&timerMux);
+#endif
+
+    //MENU.out('%');
+  }
+}
+
+
+void activate_accelGyro() {
+  //  accelGyro_timer = timerBegin(0, 80000, true);	// milliseconds
+  accelGyro_timer = timerBegin(0, 80, true);	// microseconds
+  timerAttachInterrupt(accelGyro_timer, &accelGyro_sample_ISR, true);
+  timerAlarmWrite(accelGyro_timer, 1000000, true);
+  timerAlarmEnable(accelGyro_timer);
+}
+
+
+/*
+void sample_accelGyro_6d() {	// too heavy,
   static int16_t mpu_sample_index=0;
 
   mpu6050.getMotion6(&mpu_samples[mpu_sample_index].ax, &mpu_samples[mpu_sample_index].ay, &mpu_samples[mpu_sample_index].az, \
@@ -77,29 +146,15 @@ void sample_accelero_giro_6d() {
     GZ += mpu_samples[i].gz;
   }
 
-  accelero_gyro_current.ax = AX / MPU_OVERSAMPLING;
-  accelero_gyro_current.ay = AY / MPU_OVERSAMPLING;
-  accelero_gyro_current.az = AZ / MPU_OVERSAMPLING;
+  accelGyro_current.ax = AX / MPU_OVERSAMPLING;
+  accelGyro_current.ay = AY / MPU_OVERSAMPLING;
+  accelGyro_current.az = AZ / MPU_OVERSAMPLING;
 
-  accelero_gyro_current.gx = GX / MPU_OVERSAMPLING;
-  accelero_gyro_current.gy = GY / MPU_OVERSAMPLING;
-  accelero_gyro_current.gz = GZ / MPU_OVERSAMPLING;
+  accelGyro_current.gx = GX / MPU_OVERSAMPLING;
+  accelGyro_current.gy = GY / MPU_OVERSAMPLING;
+  accelGyro_current.gz = GZ / MPU_OVERSAMPLING;
 }
-
-/*
-	void getMotion6(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz);
-	void getAcceleration(int16_t* x, int16_t* y, int16_t* z);
-	int16_t getAccelerationX();
-	int16_t getAccelerationY();
-	int16_t getAccelerationZ();
-
-	 // GYRO_*OUT_* registers
-	void getRotation(int16_t* x, int16_t* y, int16_t* z);
-	int16_t getRotationX();
-	int16_t getRotationY();
-	int16_t getRotationZ();
 */
-
 
 #define  MPU6050_MODULE_H
 #endif

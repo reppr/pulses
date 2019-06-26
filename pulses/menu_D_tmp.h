@@ -4,6 +4,9 @@
   temporary test code for pulses menu 'D'
 */
 
+activate_accelGyro();
+
+/*
 sample_accelero_giro_6d();
 
 MENU.out(accelero_gyro_current.ax);
@@ -18,6 +21,7 @@ MENU.out(accelero_gyro_current.gy);
 MENU.tab();
 MENU.out(accelero_gyro_current.gz);
 MENU.ln();
+*/
 
 #undef NOT_DEFINED	// DEACTIVATE...
 #if defined USE_MORSE && defined NOT_DEFINED	// && defined MORSE_COMPILE_HELPERS
