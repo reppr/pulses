@@ -755,7 +755,7 @@ int8_t musicBox_page=ILLEGAL;	// NOTE: musicBox_page is not used
   #include "peripheral_power_switch.h"
 #endif
 
-#if defined USE_BATTERY_CONTROL
+#if defined BATTERY_LEVEL_CONTROL_PIN
   #include "battery_control.h"
 #endif
 
@@ -974,7 +974,7 @@ MENU.ln();
   #include "ledc_tone_setup.h"
 #endif
 
-#if defined USE_BATTERY_CONTROL
+#if defined BATTERY_LEVEL_CONTROL_PIN
   battery_control_setup();
 #endif
 

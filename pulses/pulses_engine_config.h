@@ -25,7 +25,7 @@
 #define USE_RTC_MODULE
 //#define USE_i2c_SCANNER
 
-// #define USE_BATTERY_CONTROL switched on in SETUP_BRACHE
+//#define BATTERY_LEVEL_CONTROL_PIN switched in SETUP_BRACHE
 //#define USE_LEDC_AUDIO	// not written yet ;)
 
 /*

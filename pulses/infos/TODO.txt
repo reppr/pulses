@@ -99,7 +99,7 @@ FIXME:
     //# harmonie
     //# harmonies
 
-separe USE_BATTERY_CONTROL and signal LED
+separe BATTERY_LEVEL_CONTROL_PIN and signal LED
 
 SWITCH 1-4
 
@@ -120,3 +120,6 @@ MPU-6050
 introduce SIGNAL leds, use them i.e. MORSE_OUTPUT_PIN
 
 change PERIPHERAL_POWER_SWITCH_PIN as GPIO12 is active during boot process...
+
+BATTERY_LEVEL_CONTROL_PIN	must be set somewhere appropriate
+

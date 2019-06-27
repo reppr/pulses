@@ -21,8 +21,7 @@
 // pre defined SETUPS:
 
 #if defined SETUP_PORTABLE_DAC_ONLY
-  #define USE_BATTERY_CONTROL				// *pseudo* for green LED
-  #define PERIPHERAL_POWER_SWITCH_PIN		12	// switch power, often green LED
+  #define PERIPHERAL_POWER_SWITCH_PIN		12	// *pseudo* for green LED,  switch power, often green LED
   #define PROGRAM_SUB_VERSION			portable 2
   #define MAX_SUBCYCLE_SECONDS			60*9	// *max seconds*, produces *SHORT PRESET PIECES*	BRACHE 2019-05
 //#define MUSICBOX_HARD_END_SECONDS		60*100	// SAVETY NET shut down after 100'	***DEACTIVATED***
@@ -36,7 +35,7 @@
   #define AUTOSTART	play_random_preset();		// same as pulses_project_conf.h
 
 #elif defined SETUP_BRACHE_TRIGGERED_PRESETs
-  #define USE_BATTERY_CONTROL
+//#define BATTERY_LEVEL_CONTROL_PIN		36	// triggers battery control
   #define PERIPHERAL_POWER_SWITCH_PIN		12	// switch power, often green LED
   #define PROGRAM_SUB_VERSION			TRIGGERED_PLAYER
   #define MAX_SUBCYCLE_SECONDS			120	// *max seconds*, PRODUCES *VERY SHORT PRESET PIECES*	BRACHE 2019-04
@@ -54,7 +53,7 @@
   #define AUTOSTART	play_random_preset();		// same as pulses_project_conf.h
 
 #elif defined SETUP_BRACHE
-  #define USE_BATTERY_CONTROL
+//#define BATTERY_LEVEL_CONTROL_PIN		36	// triggers battery control
   #define PERIPHERAL_POWER_SWITCH_PIN		12	// switch power, often green LED
   #define PROGRAM_SUB_VERSION			SETUP_BRACHE
   #define MAX_SUBCYCLE_SECONDS	5*60		// *max seconds*, produce short sample pieces	BRACHE 2019-01
@@ -76,6 +75,8 @@
 
 #elif defined SETUP_CHAMBER_ORCHESTRA
   #define PROGRAM_SUB_VERSION			SETUP_CHAMBER_ORCHESTRA
+
+//#define BATTERY_LEVEL_CONTROL_PIN		36	// triggers battery control	maybe?
 
   //#define MAX_SUBCYCLE_SECONDS	21*60		// *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
   #define MAX_SUBCYCLE_SECONDS		12*60		// *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
@@ -112,7 +113,7 @@
 
 #include "random_entropy.h"
 
-#if defined USE_BATTERY_CONTROL
+#if defined BATTERY_LEVEL_CONTROL_PIN
   #include "battery_control.h"
 #endif
 
@@ -1180,7 +1181,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
 
   delay(3200); // aesthetics
 
-#if defined PERIPHERAL_POWER_SWITCH_PIN && defined USE_BATTERY_CONTROL
+#if defined PERIPHERAL_POWER_SWITCH_PIN && defined BATTERY_LEVEL_CONTROL_PIN
   MENU.out(F("peripheral POWER OFF "));
   MENU.out(PERIPHERAL_POWER_SWITCH_PIN);
   MENU.tab();
@@ -1535,7 +1536,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 
   } else {	// all later wakeups, everything is initialised and set up
 
-#if defined USE_BATTERY_CONTROL
+#if defined BATTERY_LEVEL_CONTROL_PIN
     if((PULSES.pulses[pulse].counter % 13) == 0) {	// keep an eye on the battery
       if(!assure_battery_level()) {
 	MENU.outln(F("POWER LOW"));
@@ -2217,7 +2218,7 @@ void start_musicBox() {
   blocked_trigger_shown = false;	// show only once a run
   musicBox_butler_i=ILLEGAL;
 
-#if defined USE_BATTERY_CONTROL
+#if defined BATTERY_LEVEL_CONTROL_PIN
   show_battery_level();
   if(assure_battery_level())
     MENU.outln(F("power accepted"));
@@ -2680,7 +2681,7 @@ void deep_sleep() {
   rtc_gpio_isolate((gpio_num_t) 26);   // DOES NOT HELP  TODO: rtc_gpio_hold_dis
   */
 
-#if defined USE_BATTERY_CONTROL
+#if defined BATTERY_LEVEL_CONTROL_PIN
   MENU.out(F("pausing...\t"));
   delay(1600);	// beware of DAC snoring! let power go down enough
 #endif

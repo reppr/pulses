@@ -1,12 +1,15 @@
 /*
   battery_control.h
+
+  #define BATTERY_LEVEL_CONTROL_PIN 36		triggers loading
 */
 
 
 #if ! defined BATTERY_CONTROL_H
 
-#if ! defined BATTERY_LEVEL_CONTROL_PIN
-  #define BATTERY_LEVEL_CONTROL_PIN	36
+#if ! defined BATTERY_LEVEL_CONTROL_PIN		// TODO: must be set somewhere appropriate
+  #error TODO: BATTERY_LEVEL_CONTROL_PIN must be set somewhere appropriate
+//  #define BATTERY_LEVEL_CONTROL_PIN	36	// TODO: must be set somewhere appropriate
 #endif
 
 /*
