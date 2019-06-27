@@ -783,6 +783,12 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
       check for survivors
       when no one is left, then *SWITCH OFF* musicbox
 */
+
+#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro	// TODO: RETHINK: HACK to avoid problems between 6050 and soft end
+  extern bool accelGyro_is_active;
+  accelGyro_is_active = false;	// CANCEL accelGyro_is_active	// TODO: RETHINK: HACK to avoid problems between 6050 and soft end
+#endif
+
   /*	*no* let it always *try* to work...
   if(MusicBoxState == OFF)
     return;
