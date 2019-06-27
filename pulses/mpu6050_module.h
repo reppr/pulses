@@ -55,6 +55,13 @@ typedef struct {
   int16_t gz;
 } accelGyro_6d_data ;
 
+int16_t ax_off0 = 0;
+int16_t ay_off0 = 0;
+int16_t az_off0 = 0;
+int16_t gx_off0 = 0;
+int16_t gy_off0 = 0;
+int16_t gz_off0 = 0;
+
 accelGyro_6d_data accelGyro_current = { 0 };	// current values (after oversampling)
 
 #if ! defined MPU_OVERSAMPLING
@@ -158,27 +165,60 @@ void activate_accelGyro() {
   timerAlarmEnable(accelGyro_timer);
 }
 
+void calibrate_accelGyro_offsets() {
+  #define ACCELGYRO_CALIBRATE_OVERSAMPLING	16
+  MENU.outln(F("\tcalibrate_accelGyro_offsets()"));
+
+  int32_t AX=0, AY=0, AZ=0, GX=0, GY=0, GZ=0;
+  for(int i=0; i<ACCELGYRO_CALIBRATE_OVERSAMPLING; i++) {
+    AX += mpu6050.getAccelerationX();
+    AY += mpu6050.getAccelerationY();
+    AZ += mpu6050.getAccelerationZ();
+    GX += mpu6050.getRotationX();
+    GY += mpu6050.getRotationY();
+    GZ += mpu6050.getRotationZ();
+  }
+
+  ax_off0 = AX / ACCELGYRO_CALIBRATE_OVERSAMPLING;
+  ay_off0 = AY / ACCELGYRO_CALIBRATE_OVERSAMPLING;
+  az_off0 = AZ / ACCELGYRO_CALIBRATE_OVERSAMPLING;
+  gx_off0 = GX / ACCELGYRO_CALIBRATE_OVERSAMPLING;
+  gy_off0 = GY / ACCELGYRO_CALIBRATE_OVERSAMPLING;
+  gz_off0 = GZ / ACCELGYRO_CALIBRATE_OVERSAMPLING;
+
+  MENU.out(ax_off0); MENU.tab();
+  MENU.out(ay_off0); MENU.tab();
+  MENU.out(az_off0); MENU.tab();
+  MENU.out(gx_off0); MENU.tab();
+  MENU.out(gy_off0); MENU.tab();
+  MENU.out(gz_off0);
+}
+
 void acceleroGyro_reaction() {
   static int selected_aX_seen;
   static int selected_aY_seen;
+  //static int selected_gZ_seen;
 
   new_accelGyro_data = false;
   if(! accelGyro_is_active)
     return;
 
-  float AX = accelGyro_current.ax + 16384;
-  float AY = accelGyro_current.ay + 16384;
+  //  float AX = accelGyro_current.ax - ax_off0 + 16384;
+  float AX = accelGyro_current.ax - ax_off0;
+  float AY = accelGyro_current.ay - ay_off0;
+  //float GZ = accelGyro_current.gz - gz_off0;
   AX /= 32786;
-  AY /= 32786;
+  //AY /= 32786;
   int AXn = 65;
-  int AYn = 12;
+  int AYn = 100;
   AX *= AXn;
-  AY *= AYn;
+  //AY *= AYn;
 
   int selected_aX = AX + 0.5;
   int selected_aY = AY + 0.5;
 
-  if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen) {
+  if (selected_aX != selected_aX_seen) {
+//if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen) {
     MENU.out((int) (AX + 0.5));
     MENU.tab();
     MENU.out((int) (AY + 0.5));

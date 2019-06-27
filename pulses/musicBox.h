@@ -22,7 +22,7 @@
 
 #if defined SETUP_PORTABLE_DAC_ONLY
   #define PERIPHERAL_POWER_SWITCH_PIN		12	// *pseudo* for green LED,  switch power, often green LED
-  #define PROGRAM_SUB_VERSION			portable 2
+  #define PROGRAM_SUB_VERSION			portable 3	// with morse and (rudimetary) accelGyro UI
   #define MAX_SUBCYCLE_SECONDS			60*9	// *max seconds*, produces *SHORT PRESET PIECES*	BRACHE 2019-05
 //#define MUSICBOX_HARD_END_SECONDS		60*100	// SAVETY NET shut down after 100'	***DEACTIVATED***
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3600*12	// *DEACTIVATED*
@@ -3068,6 +3068,8 @@ bool musicBox_reaction(char token) {
     accelGyro_is_active ^= 1;
     MENU.out(F("accelGyro"));
     MENU.out_ON_off(accelGyro_is_active);
+    if(accelGyro_is_active)
+      calibrate_accelGyro_offsets();
     MENU.ln();
     break;
 #endif
