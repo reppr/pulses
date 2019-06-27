@@ -1876,6 +1876,12 @@ void morse_decode() {	// decode received token sequence
 
 	      } else if(morse_PRESENT_COMMAND == "CANCEL") {
 		morse_out_buffer_cnt = 0;
+
+#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
+		extern bool accelGyro_is_active;
+		accelGyro_is_active = false;	// CANCEL accelGyro_is_active
+#endif
+
 #if defined USE_MONOCHROME_DISPLAY
 		/* long prior version was very audible
 		   u8x8.setInverseFont(1);

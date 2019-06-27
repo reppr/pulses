@@ -35,7 +35,104 @@ DB_info(SCALES);
 
 #include "jiffles.h"
 init_arr_DB(JIFFLES, sizeof(JIFFLES), "JIFFLES");
+
+// RAM
 REGISTER_JIFFLE(jiffle_RAM);
+// REGISTER_JIFFLE(jiffle_RAM1);
+// REGISTER_JIFFLE(jiffle_RAM2);
+// REGISTER_JIFFLE(jiffle_RAM3);
+
+// ???
+
+// simple, short -> long (*even* counts only)
+REGISTER_JIFFLE(d4096_2);
+REGISTER_JIFFLE(d4096_4);
+REGISTER_JIFFLE(d4096_6);
+REGISTER_JIFFLE(d4096_8);
+REGISTER_JIFFLE(d4096_12);
+REGISTER_JIFFLE(d4096_16);
+REGISTER_JIFFLE(d4096_32);
+REGISTER_JIFFLE(d4096_64);
+REGISTER_JIFFLE(d4096_128);
+REGISTER_JIFFLE(d4096_256);
+REGISTER_JIFFLE(d4096_512);
+REGISTER_JIFFLE(d4096_1024);	// == 1/4
+REGISTER_JIFFLE(d4096_2048);	// == 1/2
+REGISTER_JIFFLE(d4096_3072);	// == 3/4
+
+REGISTER_JIFFLE(loong);		// length 255/256  
+REGISTER_JIFFLE(looong);	// length 511/512  
+REGISTER_JIFFLE(loooong);	// length 1023/1024
+
+// sparkles
+REGISTER_JIFFLE(din_dididi);
+REGISTER_JIFFLE(din__dididi);
+REGISTER_JIFFLE(din__dididi_dix);
+REGISTER_JIFFLE(din__dididi_dixi);
+REGISTER_JIFFLE(ding_ditditdit);
+REGISTER_JIFFLE(diing_ditditdit);
+
+// effects
+REGISTER_JIFFLE(mechanical);
+REGISTER_JIFFLE(mech2);
+REGISTER_JIFFLE(mech255);
+REGISTER_JIFFLE(mech511);
+REGISTER_JIFFLE(mech1023);
+REGISTER_JIFFLE(with_pauses);
+REGISTER_JIFFLE(tumtum);
+REGISTER_JIFFLE(tumtumtum);
+REGISTER_JIFFLE(tumtumtumtum);
+
+// scale patterns
+REGISTER_JIFFLE(tetraCHORD_rise);
+REGISTER_JIFFLE(tetraCHORD_desc);
+
+REGISTER_JIFFLE(pentatonic_rise);
+REGISTER_JIFFLE(pentatonic_desc);
+REGISTER_JIFFLE(PENTAtonic_rise);
+REGISTER_JIFFLE(PENTAtonic_desc);
+
+REGISTER_JIFFLE(doric_rise);
+REGISTER_JIFFLE(doric_descend);
+REGISTER_JIFFLE(minor_rise);
+REGISTER_JIFFLE(minor_descend);
+REGISTER_JIFFLE(major_rise);
+REGISTER_JIFFLE(major_descend);
+
+REGISTER_JIFFLE(pentaCHORD_rise);
+REGISTER_JIFFLE(pentaCHORD_desc);
+REGISTER_JIFFLE(pentachord_rise);
+REGISTER_JIFFLE(pentachord_descend);
+
+// melodies
+REGISTER_JIFFLE(simple_theme);
+REGISTER_JIFFLE(rising_pent_them);
+REGISTER_JIFFLE(pent_top_wave_0);
+REGISTER_JIFFLE(pent_top_wave);
+REGISTER_JIFFLE(pent_patternA);
+REGISTER_JIFFLE(pent_patternB);
+
+REGISTER_JIFFLE(PENTA_3rd_down_5);
+REGISTER_JIFFLE(PENTA_3rd_rise);
+REGISTER_JIFFLE(penta_3rd_down_5);
+REGISTER_JIFFLE(penta_3rd_rise);
+
+REGISTER_JIFFLE(up_THRD);
+REGISTER_JIFFLE(up_THRD_dn);
+REGISTER_JIFFLE(top_RETurn);
+REGISTER_JIFFLE(dwn_THRD);
+REGISTER_JIFFLE(dwn_THRD_up);
+
+// arpeggios
+REGISTER_JIFFLE(arpeggio4096);
+REGISTER_JIFFLE(arpeggio4096down);
+REGISTER_JIFFLE(arpeggio_cont);
+REGISTER_JIFFLE(arpeggio_and_down);
+REGISTER_JIFFLE(arpeggio_and_sayling);
+
+// FIXME: TODO: out of order, leftovers...
+REGISTER_JIFFLE(back_to_ground);
+REGISTER_JIFFLE(stepping_down);
 REGISTER_JIFFLE(gling128);		// FIXME: replace ################
 REGISTER_JIFFLE(jiffletab);
 REGISTER_JIFFLE(jiff_december);
@@ -54,88 +151,15 @@ REGISTER_JIFFLE(gling128_1);
 REGISTER_JIFFLE(gling128_2);
 REGISTER_JIFFLE(harmonics4);
 REGISTER_JIFFLE(ting1024);
-REGISTER_JIFFLE(ting4096);
-REGISTER_JIFFLE(arpeggio4096);
-REGISTER_JIFFLE(arpeggio4096down);
-REGISTER_JIFFLE(arpeggio_cont);
-REGISTER_JIFFLE(arpeggio_and_down);
-REGISTER_JIFFLE(stepping_down);
-REGISTER_JIFFLE(back_to_ground);
-REGISTER_JIFFLE(arpeggio_and_sayling);
-REGISTER_JIFFLE(simple_theme);
-REGISTER_JIFFLE(pentatonic_rise);
-REGISTER_JIFFLE(pentatonic_desc);
-REGISTER_JIFFLE(rising_pent_them);
-REGISTER_JIFFLE(pent_top_wave_0);
-REGISTER_JIFFLE(pent_top_wave);
-REGISTER_JIFFLE(pent_patternA);
-REGISTER_JIFFLE(pent_patternB);
-REGISTER_JIFFLE(PENTAtonic_rise);
-REGISTER_JIFFLE(PENTAtonic_desc);
-REGISTER_JIFFLE(PENTA_3rd_down_5);
-REGISTER_JIFFLE(PENTA_3rd_rise);
+REGISTER_JIFFLE(ting4096);	// RENAME:
+
 REGISTER_JIFFLE(tingeling4096);
 REGISTER_JIFFLE(ding1024);
 REGISTER_JIFFLE(kalimbaxyl);
 REGISTER_JIFFLE(ting_tick4096);
 REGISTER_JIFFLE(tigg_ding4096);
-REGISTER_JIFFLE(tumtum);
 REGISTER_JIFFLE(piip2048);
 REGISTER_JIFFLE(tanboura);
-REGISTER_JIFFLE(d4096_2);
-REGISTER_JIFFLE(d4096_4);
-REGISTER_JIFFLE(d4096_6);
-REGISTER_JIFFLE(d4096_8);
-REGISTER_JIFFLE(d4096_16);
-REGISTER_JIFFLE(d4096_12);
-REGISTER_JIFFLE(d4096_32);
-REGISTER_JIFFLE(d4096_64);
-REGISTER_JIFFLE(d4096_128);
-REGISTER_JIFFLE(d4096_256);
-REGISTER_JIFFLE(d4096_512);
-REGISTER_JIFFLE(d4096_1024);
-REGISTER_JIFFLE(d4096_2048);
-REGISTER_JIFFLE(d4096_3072);
-REGISTER_JIFFLE(loong);
-REGISTER_JIFFLE(looong);
-REGISTER_JIFFLE(loooong);
-REGISTER_JIFFLE(din__dididi_dix);
-REGISTER_JIFFLE(din__dididi_dixi);
-REGISTER_JIFFLE(din_dididi);
-REGISTER_JIFFLE(ding_ditditdit);
-REGISTER_JIFFLE(diing_ditditdit);
-
-REGISTER_JIFFLE(penta_3rd_down_5);		// TODO: re order
-REGISTER_JIFFLE(penta_3rd_rise);
-
-REGISTER_JIFFLE(up_THRD);			// TODO: re order
-REGISTER_JIFFLE(up_THRD_dn);
-REGISTER_JIFFLE(top_RETurn);
-REGISTER_JIFFLE(dwn_THRD);
-REGISTER_JIFFLE(dwn_THRD_up);
-
-REGISTER_JIFFLE(major_rise);
-REGISTER_JIFFLE(major_descend);
-REGISTER_JIFFLE(minor_rise);
-REGISTER_JIFFLE(minor_descend);
-REGISTER_JIFFLE(doric_rise);
-REGISTER_JIFFLE(doric_descend);
-REGISTER_JIFFLE(pentaCHORD_rise);
-REGISTER_JIFFLE(pentaCHORD_desc);
-REGISTER_JIFFLE(pentachord_rise);
-REGISTER_JIFFLE(pentachord_descend);
-REGISTER_JIFFLE(tetraCHORD_rise);
-REGISTER_JIFFLE(tetraCHORD_desc);
-
-REGISTER_JIFFLE(tumtumtum);
-REGISTER_JIFFLE(tumtumtumtum);
-
-REGISTER_JIFFLE(mechanical);
-REGISTER_JIFFLE(mech2);
-REGISTER_JIFFLE(mech255);
-REGISTER_JIFFLE(mech511);
-REGISTER_JIFFLE(mech1023);
-REGISTER_JIFFLE(with_pauses);
 
 REGISTER_JIFFLE(doDe_i);	// test only, remove?
 REGISTER_JIFFLE(asdfg);		// test only, remove?

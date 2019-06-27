@@ -8,7 +8,7 @@ unsigned int harmonics4[] = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0,0};	// ma
 unsigned int ting1024[] = {1,4096,64, 1,1024,128, 1,1024*3,128, 1,1024*2,128, 1,1024*8,64, 1,1024,64, 0,0}; // magnet strings experiments 2
 // unsigned int ting1024[] = {1,4096,64, 1,1024,128, 0,0};			// magnet strings experiments 2
 // unsigned int ting4096[] = {1,4096,1024, -1,0,0};			// magnet strings experiments 2
-unsigned int ting4096[] = {1,4096,1024, 0,0,0};			// magnet strings experiments 2, KALIMBA7
+unsigned int ting4096[] = {1,4096,1024, 0,0,0};			// TODO: use d4096_1024	magnet strings experiments 2, KALIMBA7
 
 unsigned int d4096_3072[] = {1,4096,3072, 0,0,0};	// == 3/4
 

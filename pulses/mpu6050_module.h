@@ -159,193 +159,43 @@ void activate_accelGyro() {
 }
 
 void acceleroGyro_reaction() {
-  if(! accelGyro_is_active) {
-    return;
-  }
+  static int selected_aX_seen;
+  static int selected_aY_seen;
 
-  //MENU.out('~');
+  new_accelGyro_data = false;
+  if(! accelGyro_is_active)
+    return;
+
   float AX = accelGyro_current.ax + 16384;
   float AY = accelGyro_current.ay + 16384;
   AX /= 32786;
   AY /= 32786;
-  int AXn = 50;
+  int AXn = 65;
   int AYn = 12;
   AX *= AXn;
   AY *= AYn;
 
   int selected_aX = AX + 0.5;
-  MENU.out((int) (AX + 0.5));
-  MENU.tab();
   int selected_aY = AY + 0.5;
-  MENU.out((int) (AY + 0.5));
-  MENU.tab();
 
-  new_accelGyro_data = false;
+  if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen) {
+    MENU.out((int) (AX + 0.5));
+    MENU.tab();
+    MENU.out((int) (AY + 0.5));
+    MENU.ln();
+
+    selected_aY_seen = selected_aY;	// TODO: DEACTIVATED, unused
+  }
 
   unsigned int* jiffle = NULL;
-  switch(selected_aX) {
-  case 0:
-    jiffle = PENTAtonic_rise;
-    break;
-  case 1:
-    jiffle = PENTAtonic_desc;
-    break;
-  case 2:
-    jiffle = pentatonic_rise;
-    break;
-  case 3:
-    jiffle = pentatonic_desc;
-    break;
-  case 4:
-    jiffle = tumtum;
-    break;
-  case 5:
-    jiffle = jiff_dec128;
-    break;
-  case 6:
-    jiffle = ding_ditditdit;
-    break;
-  case 7:
-    jiffle = diing_ditditdit;
-    break;
-  case 8:
-    jiffle = din__dididi_dixi;
-    break;
-  case 9:
-    jiffle = din_dididi;
-    break;
-  case 10:
-    jiffle = PENTA_3rd_rise;
-    break;
-  case 11:
-    jiffle = up_THRD;
-    break;
-  case 12:
-    jiffle = up_THRD_dn;
-    break;
-  case 13:
-    jiffle = dwn_THRD;
-    break;
-  case 14:
-    jiffle = dwn_THRD_up;
-    break;
-  case 15:
-    jiffle = PENTA_3rd_down_5;
-    break;
-  case 16:
-    jiffle = penta_3rd_down_5;
-    break;
-  case 17:
-    jiffle = rising_pent_them;
-    break;
-  case 18:
-    jiffle = penta_3rd_rise;
-    break;
-  case 19:
-    jiffle = simple_theme;
-    break;
-  case 20:
-    jiffle = jiff_dec_pizzica;
-    break;
-  case 21:
-    jiffle = pent_patternA;
-    break;
-  case 22:
-    jiffle = pent_patternB;
-    break;
-  case 23:
-    jiffle = pent_top_wave;
-    break;
-  case 24:
-    jiffle = pent_top_wave_0;
-    break;
-  case 25:
-    jiffle = d4096_3072;
-    break;
-  case 26:
-    jiffle = d4096_2048;
-    break;
-  case 27:
-    jiffle = d4096_1024;
-    break;
-  case 28:
-    jiffle = d4096_512;
-    break;
-  case 29:
-    jiffle = d4096_256;
-    break;
-  case 30:
-    jiffle = d4096_128;
-    break;
-  case 31:
-    jiffle = d4096_64;
-    break;
-  case 32:
-    jiffle = d4096_32;
-    break;
-  case 33:
-    jiffle = d4096_16;
-    break;
-  case 34:
-    jiffle = d4096_12;
-    break;
-  case 35:
-    jiffle = tanboura;
-    break;
-  case 36:
-    jiffle = doric_rise;
-    break;
-  case 37:
-    jiffle = minor_rise;
-    break;
-  case 38:
-    jiffle = doric_descend;
-    break;
-  case 39:
-    jiffle = minor_descend;
-    break;
-  case 40:
-    jiffle = major_descend;
-    break;
-  case 41:
-    jiffle = major_rise;
-    break;
-  case 42:
-    jiffle = pentaCHORD_rise;
-    break;
-  case 43:
-    jiffle = tumtumtum;
-    break;
-  case 44:
-    jiffle = tumtumtumtum;
-    break;
-  case 45:
-    jiffle = pentachord_rise;
-    break;
-  case 46:
-    jiffle = pentaCHORD_desc;
-    break;
-  case 47:
-    jiffle = pentachord_descend;
-    break;
-  case 48:
-    jiffle = tetraCHORD_rise;
-    break;
-  case 49:
-    jiffle = tetraCHORD_desc;
-    break;
-  case 50:
-    jiffle = mechanical;
-    break;
-  default:
-    MENU.error_ln(F("acceleroGyro_reaction()"));
+  if(jiffle = index2pointer(JIFFLES, selected_aX)) {
+    if(selected_aX != selected_aX_seen) {
+      select_array_in(JIFFLES, jiffle);
+      setup_jiffle_thrower_selected(selected_actions);
+      MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
+      selected_aX_seen = selected_aX;
+    }
   }
-  if(jiffle) {
-    select_array_in(JIFFLES, jiffle);
-    setup_jiffle_thrower_selected(selected_actions);
-    MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
-  }
-  MENU.ln();
 }
 
 void acceleroGyro_data_display() {
