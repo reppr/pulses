@@ -1238,8 +1238,6 @@ void IRAM_ATTR morse_stats_do() {
 }
 
 /* **************************************************************** */
-#ifndef ONE_TOUCH_HACK	// morse_received_token(), normal actions...
-
 void morse_decode();	// pre declaration
 
 void IRAM_ATTR morse_received_token(char token, float duration) {
@@ -1309,56 +1307,7 @@ void IRAM_ATTR morse_received_token(char token, float duration) {
 
   portEXIT_CRITICAL_ISR(&morse_MUX);
 }
-#else	// ONE_TOUCH_HACK *is* defined  MAKERSFARE Dynamo 2018 HACK: immediately react on overlong, loong, dash, dot
-	// by HIGH JACKING morse_received_token()	that's mean!
-	void IRAM_ATTR morse_received_token(char token, float duration) {
-	  portENTER_CRITICAL_ISR(&morse_MUX);
-	  static short hack_jiff=2;
 
-	  if(is_real_token(token)) {
-	    switch (token) {
-	    case MORSE_TOKEN_dot:
-	      MENU.play_KB_macro("n");
-	      break;
-
-	    case MORSE_TOKEN_dash:
-	      if(sync==0)
-		MENU.play_KB_macro("S1n");
-	      else
-		MENU.play_KB_macro("S0n");
-	      break;
-
-	    case MORSE_TOKEN_loong:
-	      switch(hack_jiff) {
-	      case 2:
-		MENU.play_KB_macro("J2j");
-		hack_jiff = 31;
-		break;
-	      case 31:
-		MENU.play_KB_macro("J31j");
-		hack_jiff = 43;
-		break;
-	      case 43:
-		MENU.play_KB_macro("J43j");
-		hack_jiff = 44;
-		break;
-	      case 44:
-	      default:
-		MENU.play_KB_macro("J44j");
-		hack_jiff = 2;
-		break;
-	      }
-	      break;
-
-	    case MORSE_TOKEN_overlong:
-	      MENU.play_KB_macro("S1XA");
-	      break;
-	    }
-	  }
-	  portEXIT_CRITICAL_ISR(&morse_MUX);
-	}
-#endif //  ONE_TOUCH_HACK
-/* **************************************************************** */
 
 /* **************************************************************** */
 // morse output, i.e. on a piezzo, led

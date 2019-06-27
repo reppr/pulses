@@ -5144,38 +5144,46 @@ bool menu_pulses_reaction(char menu_input) {
 #endif
 
       case 20:	// macro
-	select_array_in(JIFFLES, arpeggio4096);
-	MENU.play_KB_macro("X E12! .a N *8 J20-.");
+	// was: MENU.play_KB_macro("X E12! .a N *8 J20-.");
+	select_array_in(JIFFLES, arpeggio4096);		// TODO: test order
+	MENU.play_KB_macro("X E12! .a N *8 -");
+	select_array_in(JIFFLES, arpeggio4096);		// FIXME: TODO: test order
 	break;
 
       case 21:	// macro
-	select_array_in(JIFFLES, arpeggio4096down);
-	MENU.play_KB_macro("X E12! .a N *16 J21-.");
+	// was: MENU.play_KB_macro("X E12! .a N *16 J21-.");
+	select_array_in(JIFFLES, arpeggio4096down);		// TODO: test order
+	MENU.play_KB_macro("X E12! .a N *16 -.");
 	break;
 
       case 22:	// macro
-	select_array_in(JIFFLES, arpeggio_cont);				// :)	with pizzs
-	MENU.play_KB_macro("X E12! .a N *16 J22-.");
+	select_array_in(JIFFLES, arpeggio_cont);		// TODO: test order		// :)	with pizzs
+	// was: MENU.play_KB_macro("X E12! .a N *16 J22-.");
+	MENU.play_KB_macro("X E12! .a N *16 -.");
 	break;
 
       case 23:	// macro
-	select_array_in(JIFFLES, arpeggio_and_down);			// :) :)  arpeggio down instead pizzs
-	MENU.play_KB_macro("X E12! .a N *16 J23-.");
+	select_array_in(JIFFLES, arpeggio_and_down);		// TODO: test order		// :) :)  arpeggio down instead pizzs
+	// was: MENU.play_KB_macro("X E12! .a N *16 J23-.");
+	MENU.play_KB_macro("X E12! .a N *16 -.");
 	break;
 
       case 24:	// macro
-	select_array_in(JIFFLES, stepping_down);				// :) :)  stepping down
-	MENU.play_KB_macro("X E12 S=0 ! .a N *16 J24-.");
+	select_array_in(JIFFLES, stepping_down);		// TODO: test order		// :) :)  stepping down
+	// was: MENU.play_KB_macro("X E12 S=0 ! .a N *16 J24-.");
+	MENU.play_KB_macro("X E12 S=0 ! .a N *16 -.");
 	break;
 
       case 25:	// macro
-	select_array_in(JIFFLES, back_to_ground);		// rhythm slowdown
-	MENU.play_KB_macro("X E12! .a N *32 J25-.");		// :)	rhythm slowdown
+	select_array_in(JIFFLES, back_to_ground);		// TODO: test order		// rhythm slowdown
+	// was: MENU.play_KB_macro("X E12! .a N *32 J25-.");		// :)	rhythm slowdown
+	MENU.play_KB_macro("X E12! .a N *32 -.");		// :)	rhythm slowdown
 	break;
 
       case 26:	// macro
-	select_array_in(JIFFLES, arpeggio_and_sayling);
-	MENU.play_KB_macro("X E12! .a N *32 J26-.");
+	select_array_in(JIFFLES, arpeggio_and_sayling);		// TODO: test order
+	// was: MENU.play_KB_macro("X E12! .a N *32 J26-.");
+	MENU.play_KB_macro("X E12! .a N *32 -.");
 	break;
 
       case 27:	// macro
@@ -5186,7 +5194,6 @@ bool menu_pulses_reaction(char menu_input) {
       case 28:	// macro   for tuning
 	select_array_in(JIFFLES, peepeep4096);
 	MENU.play_KB_macro("X E12! .a N *2 -.");
-
 	break;
 
       case 29:	// E29 KALIMBA7 tuning
