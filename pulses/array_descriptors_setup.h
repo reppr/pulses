@@ -44,6 +44,9 @@ REGISTER_JIFFLE(jiffle_RAM);
 
 // ???
 
+// padding ;)
+REGISTER_JIFFLE(gling128);
+
 // simple, short -> long (*even* counts only)
 REGISTER_JIFFLE(d4096_2);
 REGISTER_JIFFLE(d4096_4);
@@ -82,6 +85,9 @@ REGISTER_JIFFLE(with_pauses);
 REGISTER_JIFFLE(tumtum);
 REGISTER_JIFFLE(tumtumtum);
 REGISTER_JIFFLE(tumtumtumtum);
+
+// padding ;)
+REGISTER_JIFFLE(gling128_2);
 
 // scale patterns
 REGISTER_JIFFLE(tetraCHORD_rise);
@@ -148,7 +154,6 @@ REGISTER_JIFFLE(jiffletab06);
 REGISTER_JIFFLE(jiffletab06);		 // ==12 ??? FIXME: replace
 REGISTER_JIFFLE(gling128_0);
 REGISTER_JIFFLE(gling128_1);
-REGISTER_JIFFLE(gling128_2);
 REGISTER_JIFFLE(harmonics4);
 REGISTER_JIFFLE(ting1024);
 REGISTER_JIFFLE(ting4096);	// RENAME:

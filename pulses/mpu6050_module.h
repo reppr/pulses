@@ -180,7 +180,11 @@ void calibrate_accelGyro_offsets() {
   }
 
   ax_off0 = AX / ACCELGYRO_CALIBRATE_OVERSAMPLING;
+  ax_off0 -= 16384;
+
   ay_off0 = AY / ACCELGYRO_CALIBRATE_OVERSAMPLING;
+  ay_off0 -= 16384;
+
   az_off0 = AZ / ACCELGYRO_CALIBRATE_OVERSAMPLING;
   gx_off0 = GX / ACCELGYRO_CALIBRATE_OVERSAMPLING;
   gy_off0 = GY / ACCELGYRO_CALIBRATE_OVERSAMPLING;
@@ -194,6 +198,7 @@ void calibrate_accelGyro_offsets() {
   MENU.out(gz_off0);
 }
 
+//#define DEBUG_AG_REACTION
 void acceleroGyro_reaction() {
   static int selected_aX_seen;
   static int selected_aY_seen;
@@ -203,25 +208,47 @@ void acceleroGyro_reaction() {
   if(! accelGyro_is_active)
     return;
 
-  //  float AX = accelGyro_current.ax - ax_off0 + 16384;
-  float AX = accelGyro_current.ax - ax_off0;
-  float AY = accelGyro_current.ay - ay_off0;
-  //float GZ = accelGyro_current.gz - gz_off0;
+  // AX works fine as is, no offsets used (yet?)
+  //float AX = accelGyro_current.ax - ax_off0 + 16384;
+  float AX = accelGyro_current.ax + 16384;
+#if defined DEBUG_AG_REACTION
+//MENU.out("DADA AX "); MENU.out(AX); MENU.out("\toff "); MENU.outln(ax_off0);
+#endif
   AX /= 32786;
-  //AY /= 32786;
-  int AXn = 65;
-  int AYn = 100;
+  int AXn = 66;
   AX *= AXn;
-  //AY *= AYn;
 
-  int selected_aX = AX + 0.5;
-  int selected_aY = AY + 0.5;
+  // TODO: AY is *not* working yet, AX does...
+//float AY = accelGyro_current.ay - ay_off0;
+//float AY = accelGyro_current.ay;
+  float AY = accelGyro_current.ay + 16384;
+#if defined DEBUG_AG_REACTION
+  MENU.out(" DADA AY "); MENU.out(AY); MENU.tab();
+#endif
+  //  AY += 16384;
+  AY /= 32786;
+#if defined DEBUG_AG_REACTION
+  MENU.out(AY); MENU.tab();
+#endif
+  int AYn = 60;
+  AY *= AYn;
+#if defined DEBUG_AG_REACTION
+  MENU.out(AY); MENU.ln();
+#endif
 
+//float GZ = accelGyro_current.gz - gz_off0;
+
+  int selected_aX = AX + 1.5;
+  int selected_aY = AY + 1.5;
+
+#if defined DEBUG_AG_REACTION
+  if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen) {
+#else
   if (selected_aX != selected_aX_seen) {
-//if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen) {
-    MENU.out((int) (AX + 0.5));
+#endif
+    MENU.out(selected_aX);
     MENU.tab();
-    MENU.out((int) (AY + 0.5));
+    MENU.out(selected_aY);
     MENU.ln();
 
     selected_aY_seen = selected_aY;	// TODO: DEACTIVATED, unused
