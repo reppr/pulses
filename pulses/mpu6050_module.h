@@ -72,7 +72,7 @@ accelGyro_6d_data accelGyro_current = { 0 };	// current values (after oversampli
 #endif
 accelGyro_6d_data mpu_samples[MPU_OVERSAMPLING] = { 0 };
 
-bool volatile new_accelGyro_data=false;
+bool volatile accelGyro_new_data=false;
 hw_timer_t * accelGyro_timer = NULL;
 
 //#define WITH_TIMER_MUX	// DEACTIVATED for a test	TODO: REMOVE:
@@ -148,7 +148,7 @@ void accelGyro_sample_ISR() {	// test	from *outside* interrupt context	TODO: REN
 #if defined WITH_TIMER_MUX
     portENTER_CRITICAL_ISR(&timerMux);
 #endif
-    new_accelGyro_data = true;
+    accelGyro_new_data = true;
 #if defined WITH_TIMER_MUX
     portEXIT_CRITICAL_ISR(&timerMux);
 #endif
@@ -198,13 +198,15 @@ void calibrate_accelGyro_offsets() {
   MENU.out(gz_off0);
 }
 
+extern void monochrome_show_line(uint8_t row, char * s);	// pre declaration
+
 //#define DEBUG_AG_REACTION
-void acceleroGyro_reaction() {
+void accelGyro_reaction() {
   static int selected_aX_seen;
   static int selected_aY_seen;
   //static int selected_gZ_seen;
 
-  new_accelGyro_data = false;
+  accelGyro_new_data = false;
   if(! accelGyro_is_active)
     return;
 
@@ -242,17 +244,18 @@ void acceleroGyro_reaction() {
   int selected_aY = AY + 1.5;
 
 #if defined DEBUG_AG_REACTION
-  if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen) {
+  if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen)
 #else
-  if (selected_aX != selected_aX_seen) {
+  if (selected_aX != selected_aX_seen)
 #endif
-    MENU.out(selected_aX);
-    MENU.tab();
-    MENU.out(selected_aY);
-    MENU.ln();
+    {
+      MENU.out(selected_aX);
+      MENU.tab();
+      MENU.out(selected_aY);
+      MENU.ln();
 
-    selected_aY_seen = selected_aY;	// TODO: DEACTIVATED, unused
-  }
+      selected_aY_seen = selected_aY;	// TODO: DEACTIVATED, unused
+    }
 
   unsigned int* jiffle = NULL;
   if(jiffle = index2pointer(JIFFLES, selected_aX)) {
@@ -261,11 +264,18 @@ void acceleroGyro_reaction() {
       setup_jiffle_thrower_selected(selected_actions);
       MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
       selected_aX_seen = selected_aX;
+
+#if defined USE_MONOCHROME_DISPLAY
+      if(morse_feedback_while_playing || musicbox_is_idle()) {
+	monochrome_show_line(3, array2name(JIFFLES, selected_in(JIFFLES)));
+      }
+#endif
     }
   }
 }
 
-void acceleroGyro_data_display() {
+
+void accelGyro_data_display() {
   if(! mpu6050.testConnection())	// if no connection, try to initialise
     mpu6050_setup();
   if(mpu6050.testConnection()) {	// (try again)

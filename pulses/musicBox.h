@@ -23,7 +23,7 @@
 #if defined SETUP_PORTABLE_DAC_ONLY
   #define PERIPHERAL_POWER_SWITCH_PIN		12	// *pseudo* for green LED,  switch power, often green LED
   #define PROGRAM_SUB_VERSION			portable 3	// with morse and (rudimetary) accelGyro UI
-  #define MAX_SUBCYCLE_SECONDS			60*9	// *max seconds*, produces *SHORT PRESET PIECES*	BRACHE 2019-05
+  #define MAX_SUBCYCLE_SECONDS			60*12	// *max seconds*, produces short PRESET PIECES	   portable instruments 2019-06
 //#define MUSICBOX_HARD_END_SECONDS		60*100	// SAVETY NET shut down after 100'	***DEACTIVATED***
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3600*12	// *DEACTIVATED*
   #define SOFT_END_DAYS_TO_LIVE_DEFAULT		1	// quite fast ending
@@ -172,14 +172,14 @@ int max_subcycle_seconds=MAX_SUBCYCLE_SECONDS;
 
 
 int musicBox_pause_seconds=10;	// SEE: hibernate(), restart(), random_preset()
-void delay_pause() {
+void delay_pause() {	// FIXME: (i.e. morse input...)
   if(musicBox_pause_seconds) {
     if(MENU.verbosity >= VERBOSITY_LOWEST); {
       MENU.out(F("restarting after "));
       MENU.out(musicBox_pause_seconds);
       MENU.outln(F(" seconds"));
     }
-    delay(musicBox_pause_seconds*1000);	// *not* meant for any background activity to go on
+    delay(musicBox_pause_seconds*1000);	// *not* meant for any background activity to go on	// FIXME: (i.e. morse input...)
   }
 }
 
@@ -2395,7 +2395,7 @@ void start_musicBox() {
   if (stack_sync_slices)
     PULSES.activate_selected_stack_sync_now((pulse_time_t) {PULSES.pulses[base_pulse].period.time/stack_sync_slices, 0}, sync);
   else
-    PULSES.activate_selected_synced_now(sync);	// 'n' sync and activate
+    PULSES.activate_selected_synced_now(sync);	// 'n' 'N' sync and activate
 
   if(sync || stack_sync_slices) {	// TODO: REVIEW: ################
     PULSES.fix_global_next();			// cannot understand why i need that here...
@@ -2852,7 +2852,7 @@ void musicBox_display() {
   MENU.out(subcycle_octave);
   MENU.out(F(" subcycle  | "));
   PULSES.display_time_human(used_subcycle);
-  MENU.out(F("| \tslices 'N' "));
+  MENU.out(F("| \tslices '&' "));
   MENU.out(cycle_slices);
   MENU.tab();
 
@@ -2860,7 +2860,7 @@ void musicBox_display() {
   PULSES.display_time_human(slice_tick_period);
   MENU.ln();
 
-  MENU.out(F("subcycle octave 'O+' 'O-'\tresync/restart now 'n'\t't' metric tuning"));
+  MENU.out(F("subcycle octave 'O+' 'O-'\tresync/restart now 'N'\t't' metric tuning"));
   MENU.out_ON_off(some_metric_tunings_only);
   MENU.out(F("  'F' "));
   if(scale_user_selected && sync_user_selected && jiffle_user_selected  && pitch_user_selected && stack_sync_user_selected /* && subcycle_user_selected*/)
@@ -2897,7 +2897,7 @@ void musicBox_display() {
   MENU.outln(F("'L'=stop when low\t'LL'=stop only low\thard end='H'"));
   MENU.ln();
 
-  MENU.out(F("'EF[dlhru]'  deep_sleep, light_sleep, hibernate, restart, user, presets\t"));
+  MENU.out(F("'EF[DLHRUP]'  deep_sleep, light_sleep, hibernate, restart, user, presets\t"));
   show_when_done_function();
   MENU.ln(2);
 
@@ -2928,6 +2928,9 @@ void musicBox_display() {
   MENU.out_ON_off(accelGyro_is_active);
   MENU.ln();
 #endif
+
+  MENU.outln(F("'I'= info"));
+
   MENU.ln(2);
 
   musicBox_short_info();
@@ -2987,19 +2990,19 @@ bool musicBox_reaction(char token) {
       MENU.drop_input_token();
       if(MENU.cb_peek() != EOF) {
 	switch(MENU.cb_peek()) {
-	case 'd':
-	  musicBox_when_done=&deep_sleep;		// "EFd" deep_sleep()
+	case 'D':
+	  musicBox_when_done=&deep_sleep;		// "EFD" deep_sleep()
 	  break;
-	case 'l':
-	  musicBox_when_done=&light_sleep;	// "EFl" light_sleep()
+	case 'L':
+	  musicBox_when_done=&light_sleep;	// "EFL" light_sleep()
 	  break;
-	case 'h':
-	  MENU.out(F("hibernate() *DEACTIVATED* "));		// "EFh" hibernate()	TODO: CRASH: DEBUG: ################
-	  //musicBox_when_done=&hibernate;	// "EFh" hibernate()	TODO: CRASH: DEBUG: ################
+	case 'H':
+	  MENU.out(F("hibernate() *DEACTIVATED* "));		// "EFH" hibernate()	TODO: CRASH: DEBUG: ################
+	  //musicBox_when_done=&hibernate;	// "EFH" hibernate()	TODO: CRASH: DEBUG: ################
 	  // TODO: interface to int musicBox_pause_seconds, see: 'r'
 	  break;
-	case 'r':
-	  musicBox_when_done=&restart;		// "EFr" restart()
+	case 'R':
+	  musicBox_when_done=&restart;		// "EFR" restart()
 
 	  MENU.drop_input_token();		// "EFr<nn>" set musicBox_pause_seconds
 	  input_value = MENU.numeric_input(musicBox_pause_seconds);	// drop 'r' first
@@ -3007,11 +3010,11 @@ bool musicBox_reaction(char token) {
 	    musicBox_pause_seconds = input_value;
 	  MENU.restore_input_token();		// dummy, see below
 	  break;
-	case 'u':
-	  musicBox_when_done=&user;		// "EFu" user()
+	case 'U':
+	  musicBox_when_done=&user;		// "EFU" user()
 	  break;
-	case 'p':
-	  musicBox_when_done=&random_preset;	// "EFp" random_preset()
+	case 'P':
+	  musicBox_when_done=&random_preset;	// "EFP" random_preset()
 	  break;
 	default:
 	  MENU.outln_invalid();
@@ -3074,7 +3077,8 @@ bool musicBox_reaction(char token) {
     break;
 #endif
 
-  case 'n':	// restart now	(like menu pulses 'n')
+  case 'N':	// 'N' 'n' restart now	(like menu pulses 'n')
+  case 'n':	// 'N' 'n' restart now	(like menu pulses 'n')
     if(musicBox_butler_i != ILLEGAL)	// remove butler
       PULSES.init_pulse(musicBox_butler_i);
 
@@ -3095,10 +3099,11 @@ bool musicBox_reaction(char token) {
     stress_event_cnt = -3;	// some stress events will often happen after starting the musicBox
     break;
 
-  case 'N': // TODO: review, fix cycle_slices
+  case '&': // TODO: review, fix cycle_slices
     if((input_value = MENU.numeric_input(cycle_slices) > 0)) {
       set_cycle_slice_number(input_value);
       PULSES.pulses[musicBox_butler_i].period = slice_tick_period;	// a bit adventurous ;)
+      // TODO: feedback
     }
     break;
   case 'o': // show_subcycle_position
@@ -3150,6 +3155,13 @@ bool musicBox_reaction(char token) {
       } else
 	start_musicBox();
     }
+    break;
+
+  case 'I':	// info		// force OLED resdisplay on morse
+    musicBox_short_info();
+#if defined USE_MONOCHROME_DISPLAY
+    monochrome_show_musicBox_parameters();	// ATTENTION: takes too long to be used while playing
+#endif
     break;
 
   case 'v':

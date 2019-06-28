@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION		PULSES alpha.024
+#define PROGRAM_VERSION		PULSES alpha.025
 /*				0123456789abcdef   */
 
 /* **************************************************************** */
@@ -1170,8 +1170,8 @@ bool low_priority_tasks() {
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
   if(accelGyro_is_active) {
-    if(new_accelGyro_data ) {	//   check new input data
-      acceleroGyro_reaction();
+    if(accelGyro_new_data ) {	//   check new input data
+      accelGyro_reaction();
       return true;
     } // else
 

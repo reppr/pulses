@@ -207,6 +207,26 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
   }
 }
 
+void monochrome_show_line(uint8_t row, char * s) {
+  uint8_t cols = u8x8.getCols();
+  char full_line[cols+1] = {0};
+  char c;
+
+  int i;
+  for (i=0; i<cols; i++) {
+    if(c = s[i])
+      full_line[i] = c;
+    else	// end of string reached
+      break;
+  }
+  while(i< cols)	// fill line with spaces (avoid u8x8.clearLine() as it takes too long)
+    full_line[i++] = ' ';
+  full_line[cols] = '\0';
+
+  u8x8.setCursor(0,row);
+  u8x8.print(full_line);
+}
+
 /*
 void display_string(char * s) {	// ATTENTION: takes too long to be used while playing
   uint8_t cols = u8x8.getCols();

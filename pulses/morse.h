@@ -11,7 +11,7 @@ bool morse_feedback_while_playing = false;	// do *not* give morse feedback while
   #define MORSE_MONOCHROME_ROW	0	// row for monochrome morse display
 #endif
 
-#define MORSE_DECODE_DEBUG	// tokens to letters, commands
+//#define MORSE_DECODE_DEBUG	// tokens to letters, commands
 
 //#define MORSE_DEBUG_RECEIVE_TOKEN	// TODO: REMOVE: debugging code
 //#define MORSE_TOKEN_DEBUG		// low level token recognising debugging
@@ -1759,7 +1759,9 @@ void morse_do_output() {
 #if defined USE_MONOCHROME_DISPLAY
 char morse_do_monochrome_display = '\0';
 
+//#define CHATTY_MONOCHROME
 void morse_monochrome_display() {
+#if defined CHATTY_MONOCHROME
   MENU.out("\nmorse_monochrome_display()\t");
   MENU.outln(morse_do_monochrome_display);
   /*	prior (small) version
@@ -1767,6 +1769,7 @@ void morse_monochrome_display() {
   MENU.tab();
   MENU.out_ON_off(monochrome_display_hardware);
   */
+#endif
   if(morse_do_monochrome_display && morse_out_buffer_cnt) {
     if(morse_feedback_while_playing || musicbox_is_idle()) {
       u8x8.setInverseFont(0);
@@ -1889,7 +1892,7 @@ void morse_decode() {	// decode received token sequence
 		   u8x8.setInverseFont(1);
 		*/
 		if(morse_feedback_while_playing || musicbox_is_idle())
-		  u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "C");	// *short&quick*
+		  u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "C ");	// *short&quick*
 #endif
 	      } else
 		MENU.out("\nCOMMAND:\t"); MENU.outln(morse_PRESENT_COMMAND.c_str());
