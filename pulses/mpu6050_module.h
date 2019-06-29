@@ -200,7 +200,7 @@ void calibrate_accelGyro_offsets() {
 
 extern void monochrome_show_line(uint8_t row, char * s);	// pre declaration
 
-//#define DEBUG_AG_REACTION
+#define DEBUG_AG_REACTION
 #define DEBUG_ACCELGYRO_BASICS
 void accelGyro_reaction() {
   static int selected_aX_seen;
@@ -216,16 +216,19 @@ void accelGyro_reaction() {
   float AX = accelGyro_current.ax + 16384;
 
 #if defined DEBUG_ACCELGYRO_BASICS
-  MENU.out("AX+16384 "); MENU.out(AX);
-  MENU.out("\tax "); MENU.out(accelGyro_current.ax);
+  //  MENU.out("AX+16384 ");
+  MENU.out("AX ");
+  MENU.out(AX);
+  MENU.out("\tax ");
+  MENU.out(accelGyro_current.ax);
 #endif
 
   AX /= 32768;
 
 #if defined DEBUG_ACCELGYRO_BASICS
-  MENU.out(F("\t/32768 "));
+  MENU.tab();
   MENU.out(AX);
-  MENU.ln();
+  MENU.tab(2);
 #endif
 
   int AXn = 66;
@@ -234,38 +237,50 @@ void accelGyro_reaction() {
   // TODO: AY is *not* working yet, AX does...
 //float AY = accelGyro_current.ay - ay_off0;
 //float AY = accelGyro_current.ay;
-  float AY = accelGyro_current.ay + 16384;
+float AY = accelGyro_current.ay + 16384;
+//float AY = accelGyro_current.ay + 16384/2;
 
-#if defined DEBUG_AG_REACTION
-  MENU.out(" AY+16384 "); MENU.out(AY); MENU.tab();
+#if defined DEBUG_ACCELGYRO_BASICS
+//MENU.out("AY +00000 ");
+//MENU.out("AY+16384  ");
+//MENU.out("AY+16384/2 ");
+  MENU.out("AY ");
+  MENU.out(AY);
+  MENU.out("\tay ");
+  MENU.out(accelGyro_current.ay);
 #endif
 
-  //  AY += 16384;
   AY /= 32768;
-
-#if defined DEBUG_AG_REACTION
-  MENU.out(AY); MENU.tab();
+#if defined DEBUG_ACCELGYRO_BASICS
+  MENU.tab();
+  //  MENU.out(F("\t/32768 "));
+  MENU.out(AY);
+  MENU.ln();
 #endif
 
-  int AYn = 60;
+  int AYn = 30;		// TODO: FIXME: as is  works only with n=30
   AY *= AYn;
-#if defined DEBUG_AG_REACTION
-  MENU.out(AY); MENU.ln();
+#if defined DEBUG_ACCELGYRO_BASICS
+  // MENU.out(F("AY *n "));
+  // MENU.out(AY);
 #endif
 
 //float GZ = accelGyro_current.gz - gz_off0;
 
-  int selected_aX = AX + 1.5;
-  int selected_aY = AY + 1.5;
-
+  int selected_aX = AX + 1.5;	// TODO: FIXME:
+  int selected_aY = AY + 1.5;	// TODO: FIXME: as is  works only with AYn=30
+  //selected_aY -= 6.15;	// TODO: FIXME: as is  works only with AYn=30
+  selected_aY -= 6.1;		// TODO: FIXME: as is  works only with AYn=30
+  //selected_aY -= 6.01;	// TODO: FIXME: as is  works only with AYn=30
 #if defined DEBUG_AG_REACTION
   if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen)
 #else
   if (selected_aX != selected_aX_seen)
 #endif
     {
+      MENU.out(F("selected\t"));
       MENU.out(selected_aX);
-      MENU.tab();
+      MENU.tab(2);
       MENU.out(selected_aY);
       MENU.ln();
 
