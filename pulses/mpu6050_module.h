@@ -201,6 +201,7 @@ void calibrate_accelGyro_offsets() {
 extern void monochrome_show_line(uint8_t row, char * s);	// pre declaration
 
 //#define DEBUG_AG_REACTION
+#define DEBUG_ACCELGYRO_BASICS
 void accelGyro_reaction() {
   static int selected_aX_seen;
   static int selected_aY_seen;
@@ -213,10 +214,20 @@ void accelGyro_reaction() {
   // AX works fine as is, no offsets used (yet?)
   //float AX = accelGyro_current.ax - ax_off0 + 16384;
   float AX = accelGyro_current.ax + 16384;
-#if defined DEBUG_AG_REACTION
-//MENU.out("DADA AX "); MENU.out(AX); MENU.out("\toff "); MENU.outln(ax_off0);
+
+#if defined DEBUG_ACCELGYRO_BASICS
+  MENU.out("AX+16384 "); MENU.out(AX);
+  MENU.out("\tax "); MENU.out(accelGyro_current.ax);
 #endif
-  AX /= 32786;
+
+  AX /= 32768;
+
+#if defined DEBUG_ACCELGYRO_BASICS
+  MENU.out(F("\t/32768 "));
+  MENU.out(AX);
+  MENU.ln();
+#endif
+
   int AXn = 66;
   AX *= AXn;
 
@@ -224,14 +235,18 @@ void accelGyro_reaction() {
 //float AY = accelGyro_current.ay - ay_off0;
 //float AY = accelGyro_current.ay;
   float AY = accelGyro_current.ay + 16384;
+
 #if defined DEBUG_AG_REACTION
-  MENU.out(" DADA AY "); MENU.out(AY); MENU.tab();
+  MENU.out(" AY+16384 "); MENU.out(AY); MENU.tab();
 #endif
+
   //  AY += 16384;
-  AY /= 32786;
+  AY /= 32768;
+
 #if defined DEBUG_AG_REACTION
   MENU.out(AY); MENU.tab();
 #endif
+
   int AYn = 60;
   AY *= AYn;
 #if defined DEBUG_AG_REACTION
