@@ -4256,11 +4256,11 @@ bool menu_pulses_reaction(char menu_input) {
     // icode_user_selected = true;
     break;
 */
-  case 'M':	// "mute", see 'N' as alternative
-    PULSES.mute_all_actions();	// TODO: dead end street
+  case 'M':	// selected_toggle_actions()	was: "mute", see 'N' as alternative
+    PULSES.selected_toggle_no_actions();
 
     if (DO_or_maybe_display(VERBOSITY_LOWEST))
-      MENU.outln(F("muted all actions"));
+      MENU.outln(F("toggle action muting"));
     break;
 
   case '*':	// multiply destination

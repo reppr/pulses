@@ -126,3 +126,5 @@ BATTERY_LEVEL_CONTROL_PIN	must be set somewhere appropriate
 void delay_pause() {	// FIXME: (i.e. morse input...)
 
 MPU6050 offsets nvs
+
+double keywords in Pulses

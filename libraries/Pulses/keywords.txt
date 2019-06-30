@@ -61,7 +61,7 @@ play_icode	KEYWORD2
 show_icode_mnemonic	KEYWORD2
 show_pulse_flag_mnemonics	KEYWORD2
 show_action_flags	KEYWORD2
-mute_all_actions	KEYWORD2
+selected_toggle_no_actions	KEYWORD2
 select_pulse	KEYWORD2
 deselect_pulse	KEYWORD2
 toggle_selection	KEYWORD2
@@ -120,8 +120,6 @@ icode		KEYWORD2
 play_icode	KEYWORD2
 set_i2c_addr_pin	KEYWORD2
 show_icode_mnemonic	KEYWORD2
-mute_all_actions	KEYWORD2
-show_action_flags	KEYWORD2
 select_pulse	KEYWORD2
 deselect_pulse	KEYWORD2
 clear_selection	KEYWORD2

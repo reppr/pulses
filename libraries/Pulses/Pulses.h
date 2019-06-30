@@ -321,7 +321,7 @@ class Pulses {
 
   void show_pulse_flag_mnemonics(pulse_flags_t flags);	// show pulse flags as mnemonics
   void show_action_flags(action_flags_t flags);	// show action flags as mnemonics
-  void mute_all_actions();			// mute action flags
+  void selected_toggle_no_actions();		// selected toggle action flag noACTION
 
   bool select_pulse(int pulse);			// select in user interface
   void deselect_pulse(int pulse);
