@@ -3393,7 +3393,7 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   }
   PULSES.add_selected_to_group(g_LOW_END);
 
-  PULSES.select_from_to(0,bass_pulses);			// pulse[bass_pulses] belongs to both output groups
+  PULSES.select_from_to(0,bass_pulses);			// TODO: do not start by 0!	pulse[bass_pulses] belongs to both output groups
   // selected_DACsq_intensity_proportional(255, 1);
   selected_share_DACsq_intensity(255, 1);		// bass DAC1 intensity
 

@@ -269,6 +269,7 @@ typedef struct {
   short high_pulses;		// see  setup_bass_middle_high()
   int lowest_primary=ILLEGAL;	// TODO: make it short?
   int highest_primary=ILLEGAL;	// TODO: make it short?
+  //  int primary_count=0;
   int base_pulse=ILLEGAL;	// TODO: make it short?
   short subcycle_octave;
 } musicBox_conf_t;
@@ -438,6 +439,7 @@ bool show_cycle_pattern=true;
 bool show_cycle_pattern_intervals=false;
 
 int lowest_primary=ILLEGAL, highest_primary=ILLEGAL;	// remember start configuration	// TODO: make it short?
+int primary_count=0;
 
 void set_primary_block_bounds() {	// remember where the primary block starts and stops
   lowest_primary=ILLEGAL;
@@ -448,9 +450,11 @@ void set_primary_block_bounds() {	// remember where the primary block starts and
       highest_primary = pulse;
     }
   }
+  primary_count = highest_primary - lowest_primary;	// stupid, but true
 
   if(MENU.verbosity >= VERBOSITY_MORE) {
-    MENU.out("primaries from ");
+  MENU.out(primary_count);
+    MENU.out(" primaries from ");
     MENU.out(lowest_primary);
     MENU.out(" to ");
     MENU.outln(highest_primary);
@@ -3157,6 +3161,38 @@ bool musicBox_reaction(char token) {
       } else
 	start_musicBox();
     }
+    break;
+
+  case 'Y':	// noACTION managing
+    switch(MENU.cb_peek()) {
+    case 'T':	// 'YT' toggle top
+      MENU.drop_input_token();
+      PULSES.select_from_to(highest_primary - (primary_count/4), highest_primary);
+      PULSES.selected_toggle_no_actions();
+      PULSES.select_n(voices);
+      break;
+
+    case 'B':	// 'YB' toggle bottom
+      MENU.drop_input_token();
+      PULSES.select_from_to(lowest_primary, lowest_primary + (primary_count/4));
+      PULSES.selected_toggle_no_actions();
+      PULSES.select_n(voices);
+      break;
+
+    case 'A':	// 'YA' *CLEAR ALL* noACTION flags on primary pulses
+      MENU.drop_input_token();
+      for (int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	PULSES.pulses[pulse].action_flags &= ~noACTION; // clear all
+      break;
+
+    default:	// 'Y' (bare or unknown tokens)
+      PULSES.select_from_to(lowest_primary, highest_primary);
+      PULSES.selected_toggle_no_actions();
+      PULSES.select_n(voices);
+    }
+
+    if(MENU.maybe_display_more(VERBOSITY_LOWEST))
+      MENU.outln(F("noACTION managing"));
     break;
 
   case 'I':	// info		// force OLED resdisplay on morse
