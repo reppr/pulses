@@ -7,6 +7,11 @@
 
 #if ! defined MPU6050_MODULE_H
 
+int16_t accelGyro_offsets[] = {-1493, -2125, 1253, 98, 85, -50};	// aX, aY, aZ, gX, gY, gZ offsets
+// *GIVE INDIVIDUAL OFFSET VALUES FOR YOUR CHIP HERE*
+// get these values (with *horizontally resting* chips)
+// see: https://github.com/jrowberg/i2cdevlib/tree/master/Arduino/MPU6050/examples/IMU_Zero
+
 #include <I2Cdev.h>
 #include <MPU6050.h>
 
@@ -38,6 +43,39 @@ bool mpu6050_setup() {
 
   if(mpu6050.testConnection()) {
     MENU.outln(F("ok"));
+
+    MENU.out(F("set accelGyro offsets\t{"));
+    int16_t o;
+
+    mpu6050.setXAccelOffset(o = accelGyro_offsets[0]);
+    MENU.out(o);
+    MENU.out(',');
+    MENU.space();
+
+    mpu6050.setYAccelOffset(o = accelGyro_offsets[1]);
+    MENU.out(o);
+    MENU.out(',');
+    MENU.space();
+
+    mpu6050.setZAccelOffset(o = accelGyro_offsets[2]);
+    MENU.out(o);
+    MENU.out(',');
+    MENU.space();
+
+    mpu6050.setXGyroOffset(o = accelGyro_offsets[3]);
+    MENU.out(o);
+    MENU.out(',');
+    MENU.space();
+
+    mpu6050.setYGyroOffset(o = accelGyro_offsets[4]);
+    MENU.out(o);
+    MENU.out(',');
+    MENU.space();
+
+    mpu6050.setZGyroOffset(o = accelGyro_offsets[5]);
+    MENU.out(o);
+    MENU.outln('}');
+
     return true;
   }
 
@@ -54,13 +92,6 @@ typedef struct {
   int16_t gy;
   int16_t gz;
 } accelGyro_6d_data ;
-
-int16_t ax_off0 = 0;
-int16_t ay_off0 = 0;
-int16_t az_off0 = 0;
-int16_t gx_off0 = 0;
-int16_t gy_off0 = 0;
-int16_t gz_off0 = 0;
 
 accelGyro_6d_data accelGyro_current = { 0 };	// current values (after oversampling)
 
@@ -165,38 +196,39 @@ void activate_accelGyro() {
   timerAlarmEnable(accelGyro_timer);
 }
 
-void calibrate_accelGyro_offsets() {
-  #define ACCELGYRO_CALIBRATE_OVERSAMPLING	16
-  MENU.outln(F("\tcalibrate_accelGyro_offsets()"));
 
-  int32_t AX=0, AY=0, AZ=0, GX=0, GY=0, GZ=0;
-  for(int i=0; i<ACCELGYRO_CALIBRATE_OVERSAMPLING; i++) {
-    AX += mpu6050.getAccelerationX();
-    AY += mpu6050.getAccelerationY();
-    AZ += mpu6050.getAccelerationZ();
-    GX += mpu6050.getRotationX();
-    GY += mpu6050.getRotationY();
-    GZ += mpu6050.getRotationZ();
-  }
-
-  ax_off0 = AX / ACCELGYRO_CALIBRATE_OVERSAMPLING;
-  ax_off0 -= 16384;
-
-  ay_off0 = AY / ACCELGYRO_CALIBRATE_OVERSAMPLING;
-  ay_off0 -= 16384;
-
-  az_off0 = AZ / ACCELGYRO_CALIBRATE_OVERSAMPLING;
-  gx_off0 = GX / ACCELGYRO_CALIBRATE_OVERSAMPLING;
-  gy_off0 = GY / ACCELGYRO_CALIBRATE_OVERSAMPLING;
-  gz_off0 = GZ / ACCELGYRO_CALIBRATE_OVERSAMPLING;
-
-  MENU.out(ax_off0); MENU.tab();
-  MENU.out(ay_off0); MENU.tab();
-  MENU.out(az_off0); MENU.tab();
-  MENU.out(gx_off0); MENU.tab();
-  MENU.out(gy_off0); MENU.tab();
-  MENU.out(gz_off0);
-}
+//	void calibrate_accelGyro_offsets() {			// TODO: rewrite or REMOVE:
+//	  #define ACCELGYRO_CALIBRATE_OVERSAMPLING	16
+//	  MENU.outln(F("\tcalibrate_accelGyro_offsets()"));
+//
+//	  int32_t AX=0, AY=0, AZ=0, GX=0, GY=0, GZ=0;
+//	  for(int i=0; i<ACCELGYRO_CALIBRATE_OVERSAMPLING; i++) {
+//	    AX += mpu6050.getAccelerationX();
+//	    AY += mpu6050.getAccelerationY();
+//	    AZ += mpu6050.getAccelerationZ();
+//	    GX += mpu6050.getRotationX();
+//	    GY += mpu6050.getRotationY();
+//	    GZ += mpu6050.getRotationZ();
+//	  }
+//
+//	  ax_off0 = AX / ACCELGYRO_CALIBRATE_OVERSAMPLING;
+//	  ax_off0 -= 16384;
+//
+//	  ay_off0 = AY / ACCELGYRO_CALIBRATE_OVERSAMPLING;
+//	  ay_off0 -= 16384;
+//
+//	  az_off0 = AZ / ACCELGYRO_CALIBRATE_OVERSAMPLING;
+//	  gx_off0 = GX / ACCELGYRO_CALIBRATE_OVERSAMPLING;
+//	  gy_off0 = GY / ACCELGYRO_CALIBRATE_OVERSAMPLING;
+//	  gz_off0 = GZ / ACCELGYRO_CALIBRATE_OVERSAMPLING;
+//
+//	  MENU.out(ax_off0); MENU.tab();
+//	  MENU.out(ay_off0); MENU.tab();
+//	  MENU.out(az_off0); MENU.tab();
+//	  MENU.out(gx_off0); MENU.tab();
+//	  MENU.out(gy_off0); MENU.tab();
+//	  MENU.out(gz_off0);
+//	}
 
 extern void monochrome_show_line(uint8_t row, char * s);	// pre declaration
 
@@ -211,8 +243,6 @@ void accelGyro_reaction() {
   if(! accelGyro_is_active)
     return;
 
-  // AX works fine as is, no offsets used (yet?)
-  //float AX = accelGyro_current.ax - ax_off0 + 16384;
   float AX = accelGyro_current.ax + 16384;
 
 #if defined DEBUG_ACCELGYRO_BASICS
@@ -267,11 +297,10 @@ float AY = accelGyro_current.ay + 16384;
 
 //float GZ = accelGyro_current.gz - gz_off0;
 
-  int selected_aX = AX + 1.5;	// TODO: FIXME:
-  int selected_aY = AY + 1.5;	// TODO: FIXME: as is  works only with AYn=30
-  //selected_aY -= 6.15;	// TODO: FIXME: as is  works only with AYn=30
-  selected_aY -= 6.1;		// TODO: FIXME: as is  works only with AYn=30
-  //selected_aY -= 6.01;	// TODO: FIXME: as is  works only with AYn=30
+  int selected_aX = AX + 1.5;	// TODO: rethink
+//int selected_aY = AY + 1.5;	// TODO: rethink
+  int selected_aY = AY -0.5;	// TODO: rethink
+
 #if defined DEBUG_AG_REACTION
   if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen)
 #else
@@ -324,6 +353,13 @@ void accelGyro_data_display() {
   } else
     MENU.outln(F("mpu6050 not connected"));
 }
+
+
+#define DEBUG_SAMPLE_OFFSETS
+void accelGyro_sample_offsets() {
+
+}
+
 
 /*
 void sample_accelGyro_6d() {	// too heavy,

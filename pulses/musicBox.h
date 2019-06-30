@@ -3071,8 +3071,10 @@ bool musicBox_reaction(char token) {
     accelGyro_is_active ^= 1;
     MENU.out(F("accelGyro"));
     MENU.out_ON_off(accelGyro_is_active);
+/*
     if(accelGyro_is_active)
-      calibrate_accelGyro_offsets();
+      calibrate_accelGyro_offsets();	// TODO: rewrite
+*/
     MENU.ln();
     break;
 #endif

@@ -124,3 +124,5 @@ change PERIPHERAL_POWER_SWITCH_PIN as GPIO12 is active during boot process...
 BATTERY_LEVEL_CONTROL_PIN	must be set somewhere appropriate
 
 void delay_pause() {	// FIXME: (i.e. morse input...)
+
+MPU6050 offsets nvs
