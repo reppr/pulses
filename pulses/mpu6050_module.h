@@ -98,8 +98,8 @@ accelGyro_6d_data accelGyro_current = { 0 };	// current values (after oversampli
 #if ! defined MPU_OVERSAMPLING
   //#define MPU_OVERSAMPLING	15
   //#define MPU_OVERSAMPLING	7	// ok, but slow
-  //#define MPU_OVERSAMPLING	4
-  #define MPU_OVERSAMPLING	2	// quite usable
+  #define MPU_OVERSAMPLING	4	// TEST
+  //#define MPU_OVERSAMPLING	2	// quite usable, but sounds trigger accelero...
   //#define MPU_OVERSAMPLING	1	// possible
 #endif
 accelGyro_6d_data mpu_samples[MPU_OVERSAMPLING] = { 0 };
@@ -231,120 +231,171 @@ void activate_accelGyro() {
 //	  MENU.out(gz_off0);
 //	}
 
+enum AG_modes {
+  axM=1,
+  ayM=2,
+  azM=4,
+
+  gxM=8,
+  gyM=16,
+  gzM=32,
+} ;
+
+int accelGyro_mode=0;	// zero means inactive
+
+int16_t aX_sel_i0=0;
+int16_t aY_sel_i0=0;
+int16_t aZ_sel_i0=0;
+int16_t gX_sel_i0=0;
+int16_t gY_sel_i0=0;
+int16_t gZ_sel_i0=0;
+
+#define ACCELERO_SELECTION_SLOTS_DEFAULT		24	// TODO: test&trimm
+int16_t aX_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;	// n items to select from
+int16_t aY_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;	// n items to select from
+int16_t aZ_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;	// n items to select from
+
+void reset_accGyro_selection() {
+  aX_sel_i0=0;
+  aY_sel_i0=0;
+  aZ_sel_i0=0;
+  gX_sel_i0=0;
+  gY_sel_i0=0;
+  gZ_sel_i0=0;
+
+  aX_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;
+  aY_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;
+  aZ_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;
+}
+
+void * ax_reaction_from=NULL;	// DB pointers can be used here
+void * ay_reaction_from=NULL;	// DB pointers can be used here
+void * az_reaction_from=NULL;	// DB pointers can be used here
+
+void * gx_reaction_from=NULL;	// DB pointers can be used here
+void * gy_reaction_from=NULL;	// DB pointers can be used here
+void * gz_reaction_from=NULL;	// DB pointers can be used here
+
 extern void monochrome_show_line(uint8_t row, char * s);	// pre declaration
 
 #define DEBUG_AG_REACTION		// *DO* show selected slices
 //#define DEBUG_ACCELGYRO_BASICS	// deactivated
 void accelGyro_reaction() {
-  static int selected_aX_seen;
-  static int selected_aY_seen;
-  static int selected_gZ_seen;
+  bool there_was_output=false;
+  if(accelGyro_mode) {
+    static int selected_aX_seen;
+    static int selected_aY_seen;
+    static int selected_gZ_seen;
 
-  accelGyro_new_data = false;
-  if(! accelGyro_is_active)
-    return;
+    float AX=0.0, AY=0.0, AZ=0.0, GX=0.0, GY=0.0, GZ=0.0;
+    accelGyro_new_data = false;
+    if(! accelGyro_is_active)
+      return;
 
-  float AX = accelGyro_current.ax + 16384;
+    reset_accGyro_selection();	// offsets and slots
+
+    if(accelGyro_mode & axM) {		// accelero X
+      AX = accelGyro_current.ax + 16384;
+#if defined DEBUG_ACCELGYRO_BASICS
+      there_was_output = true;
+      //MENU.out("AX+16384 ");
+      MENU.out("AX+ ");
+      MENU.out(AX);
+      MENU.out("  ax ");
+      MENU.out(accelGyro_current.ax);
+      MENU.space(3);
+      MENU.out(AX/32768);
+#endif
+      AX /= 32768;	// to float scaling
+
+      aX_select_slots = 66;
+      AX *= aX_select_slots;
+    }
+
+    if(accelGyro_mode & ayM) {		// accelero Y
+      AY = accelGyro_current.ay + 16384;
+#if defined DEBUG_ACCELGYRO_BASICS
+      there_was_output = true;
+      MENU.out("\t\tAY+ ");
+      MENU.out(AY);
+      MENU.out("  ay ");
+      MENU.out(accelGyro_current.ay);
+      MENU.space(3);
+      MENU.out(AY/32768);
+#endif
+      AY /= 32768;	// to float scaling
+
+      // aY_select_slots = ...;
+      AY *= aY_select_slots;
+    }
+
+    if(accelGyro_mode & gzM) {		// gyro Z
+      GZ = accelGyro_current.gz;
 
 #if defined DEBUG_ACCELGYRO_BASICS
-//MENU.out("AX+16384 ");
-  MENU.out("AX+ ");
-  MENU.out(AX);
-  MENU.out("  ax ");
-  MENU.out(accelGyro_current.ax);
+      there_was_output = true;
+      MENU.out("\t\tGZ= ");
+      MENU.out(GZ);
+      MENU.out("  gz ");
+      MENU.out(accelGyro_current.gz);
 #endif
-
-  AX /= 32768;	// to float scaling
-
+      GZ /= 32;	// TODO: is *RANDOM* float scaling
 #if defined DEBUG_ACCELGYRO_BASICS
-  MENU.space(3);
-  MENU.out(AX);
+      MENU.space(3);
+      MENU.out(GZ);
 #endif
+    }
 
-  int AXn = 66;
-  AX *= AXn;
+    if(there_was_output)
+      MENU.ln();
 
+    // select slice:
+    int selected_aX = AX + 1.5;	// TODO: rethink
+    selected_aX += aX_sel_i0;
 
-  float AY = accelGyro_current.ay + 16384;
+    int selected_aY = AY - 0.5;	// TODO: rethink
+    selected_aY += aY_sel_i0;
 
-#if defined DEBUG_ACCELGYRO_BASICS
-  MENU.out("\t\tAY+ ");
-  MENU.out(AY);
-  MENU.out("  ay ");
-  MENU.out(accelGyro_current.ay);
-#endif
-
-  AY /= 32768;	// to float scaling
-#if defined DEBUG_ACCELGYRO_BASICS
-  MENU.space(3);
-  MENU.out(AY);
-#endif
-
-  int AYn = 30;
-  AY *= AYn;
-
-
-  float GZ = accelGyro_current.gz;
-
-#if defined DEBUG_ACCELGYRO_BASICS
-  MENU.out("\t\tGZ= ");
-  MENU.out(GZ);
-  MENU.out("  gz ");
-  MENU.out(accelGyro_current.gz);
-
-#endif
-  GZ /= 32;	// TODO: is *RANDOM* float scaling
-
-#if defined DEBUG_ACCELGYRO_BASICS
-  MENU.space(3);
-  MENU.out(GZ);
-  MENU.ln();
-#endif
-
-
-// select slice:
-  int selected_aX = AX + 1.5;	// TODO: rethink
-  int selected_aY = AY - 0.5;	// TODO: rethink
-
-  int selected_gZ = GZ + 0.5;
+    int selected_gZ = GZ + 0.5;
+    selected_gZ += gZ_sel_i0;
 
 #if defined DEBUG_AG_REACTION
-  if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen || selected_gZ != selected_gZ_seen)
-//if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen)
+    if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen || selected_gZ != selected_gZ_seen)
+      //if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen)
 #else
-  if (selected_aX != selected_aX_seen)
+      if (selected_aX != selected_aX_seen)
 #endif
-    {
-      MENU.out(F("SELECTED  aX "));
-      MENU.out(selected_aX);
+	{
+	  MENU.out(F("SELECTED  aX "));
+	  MENU.out(selected_aX);
 
-      MENU.out(F("\t\taY "));
-      MENU.out(selected_aY);
+	  MENU.out(F("\t\taY "));
+	  MENU.out(selected_aY);
 
-      MENU.out(F("\t\tgZ "));
-      MENU.outln(selected_gZ);
+	  MENU.out(F("\t\tgZ "));
+	  MENU.outln(selected_gZ);
 
-      selected_aY_seen = selected_aY;	// TODO: DEACTIVATED, unused
-      selected_gZ_seen = selected_gZ;	// TODO: DEACTIVATED, unused
-    }
+	  selected_aY_seen = selected_aY;	// TODO: DEACTIVATED, unused
+	  selected_gZ_seen = selected_gZ;	// TODO: DEACTIVATED, unused
+	}
 
-  unsigned int* jiffle = NULL;
-  if(jiffle = index2pointer(JIFFLES, selected_aX)) {
-    if(selected_aX != selected_aX_seen) {
-      select_array_in(JIFFLES, jiffle);
-      setup_jiffle_thrower_selected(selected_actions);
-      MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
-      selected_aX_seen = selected_aX;
+    unsigned int* jiffle = NULL;
+    if(jiffle = index2pointer(JIFFLES, selected_aX)) {
+      if(selected_aX != selected_aX_seen) {
+	select_array_in(JIFFLES, jiffle);
+	setup_jiffle_thrower_selected(selected_actions);
+	MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
+	selected_aX_seen = selected_aX;
 
 #if defined USE_MONOCHROME_DISPLAY
-      if(morse_feedback_while_playing || musicbox_is_idle()) {
-	monochrome_show_line(3, array2name(JIFFLES, selected_in(JIFFLES)));
-      }
+	if(morse_feedback_while_playing || musicbox_is_idle()) {
+	  monochrome_show_line(3, array2name(JIFFLES, selected_in(JIFFLES)));
+	}
 #endif
+      }
     }
-  }
+  } // if(accelGyro_mode)
 }
-
 
 void accelGyro_data_display() {
   if(! mpu6050.testConnection())	// if no connection, try to initialise

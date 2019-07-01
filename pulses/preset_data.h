@@ -4980,7 +4980,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 173:
     name = F("Klangschwade mit Puls");
-    // heavy big bang
+    // heavy big bang	Störfall ???  kän grund zur Beunruhigung...
     //# favorite  with autostack_S0
     //# shortIsOk
     //# motives

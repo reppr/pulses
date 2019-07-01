@@ -3075,6 +3075,11 @@ bool musicBox_reaction(char token) {
     accelGyro_is_active ^= 1;
     MENU.out(F("accelGyro"));
     MENU.out_ON_off(accelGyro_is_active);
+    if(accelGyro_is_active) {
+      accelGyro_mode = axM;	// react on ACCEL X (only)
+      accelGyro_mode |= ayM;	// and show ACCEL Y
+      accelGyro_mode |= gzM;	// and show GYRO Z
+    }
 /*
     if(accelGyro_is_active)
       calibrate_accelGyro_offsets();	// TODO: rewrite
