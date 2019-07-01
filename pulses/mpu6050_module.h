@@ -96,10 +96,11 @@ typedef struct {
 accelGyro_6d_data accelGyro_current = { 0 };	// current values (after oversampling)
 
 #if ! defined MPU_OVERSAMPLING
-//#define MPU_OVERSAMPLING	15
-#define MPU_OVERSAMPLING	7
-//#define MPU_OVERSAMPLING	4
-//#define MPU_OVERSAMPLING	2
+  //#define MPU_OVERSAMPLING	15
+  //#define MPU_OVERSAMPLING	7	// ok, but slow
+  //#define MPU_OVERSAMPLING	4
+  #define MPU_OVERSAMPLING	2	// quite usable
+  //#define MPU_OVERSAMPLING	1	// possible
 #endif
 accelGyro_6d_data mpu_samples[MPU_OVERSAMPLING] = { 0 };
 
@@ -232,12 +233,12 @@ void activate_accelGyro() {
 
 extern void monochrome_show_line(uint8_t row, char * s);	// pre declaration
 
-#define DEBUG_AG_REACTION
-#define DEBUG_ACCELGYRO_BASICS
+#define DEBUG_AG_REACTION		// *DO* show selected slices
+//#define DEBUG_ACCELGYRO_BASICS	// deactivated
 void accelGyro_reaction() {
   static int selected_aX_seen;
   static int selected_aY_seen;
-  //static int selected_gZ_seen;
+  static int selected_gZ_seen;
 
   accelGyro_new_data = false;
   if(! accelGyro_is_active)
@@ -246,74 +247,85 @@ void accelGyro_reaction() {
   float AX = accelGyro_current.ax + 16384;
 
 #if defined DEBUG_ACCELGYRO_BASICS
-  //  MENU.out("AX+16384 ");
-  MENU.out("AX ");
+//MENU.out("AX+16384 ");
+  MENU.out("AX+ ");
   MENU.out(AX);
-  MENU.out("\tax ");
+  MENU.out("  ax ");
   MENU.out(accelGyro_current.ax);
 #endif
 
-  AX /= 32768;
+  AX /= 32768;	// to float scaling
 
 #if defined DEBUG_ACCELGYRO_BASICS
-  MENU.tab();
+  MENU.space(3);
   MENU.out(AX);
-  MENU.tab(2);
 #endif
 
   int AXn = 66;
   AX *= AXn;
 
-  // TODO: AY is *not* working yet, AX does...
-//float AY = accelGyro_current.ay - ay_off0;
-//float AY = accelGyro_current.ay;
-float AY = accelGyro_current.ay + 16384;
-//float AY = accelGyro_current.ay + 16384/2;
+
+  float AY = accelGyro_current.ay + 16384;
 
 #if defined DEBUG_ACCELGYRO_BASICS
-//MENU.out("AY +00000 ");
-//MENU.out("AY+16384  ");
-//MENU.out("AY+16384/2 ");
-  MENU.out("AY ");
+  MENU.out("\t\tAY+ ");
   MENU.out(AY);
-  MENU.out("\tay ");
+  MENU.out("  ay ");
   MENU.out(accelGyro_current.ay);
 #endif
 
-  AY /= 32768;
+  AY /= 32768;	// to float scaling
 #if defined DEBUG_ACCELGYRO_BASICS
-  MENU.tab();
-  //  MENU.out(F("\t/32768 "));
+  MENU.space(3);
   MENU.out(AY);
+#endif
+
+  int AYn = 30;
+  AY *= AYn;
+
+
+  float GZ = accelGyro_current.gz;
+
+#if defined DEBUG_ACCELGYRO_BASICS
+  MENU.out("\t\tGZ= ");
+  MENU.out(GZ);
+  MENU.out("  gz ");
+  MENU.out(accelGyro_current.gz);
+
+#endif
+  GZ /= 32;	// TODO: is *RANDOM* float scaling
+
+#if defined DEBUG_ACCELGYRO_BASICS
+  MENU.space(3);
+  MENU.out(GZ);
   MENU.ln();
 #endif
 
-  int AYn = 30;		// TODO: FIXME: as is  works only with n=30
-  AY *= AYn;
-#if defined DEBUG_ACCELGYRO_BASICS
-  // MENU.out(F("AY *n "));
-  // MENU.out(AY);
-#endif
 
-//float GZ = accelGyro_current.gz - gz_off0;
-
+// select slice:
   int selected_aX = AX + 1.5;	// TODO: rethink
-//int selected_aY = AY + 1.5;	// TODO: rethink
-  int selected_aY = AY -0.5;	// TODO: rethink
+  int selected_aY = AY - 0.5;	// TODO: rethink
+
+  int selected_gZ = GZ + 0.5;
 
 #if defined DEBUG_AG_REACTION
-  if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen)
+  if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen || selected_gZ != selected_gZ_seen)
+//if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen)
 #else
   if (selected_aX != selected_aX_seen)
 #endif
     {
-      MENU.out(F("selected\t"));
+      MENU.out(F("SELECTED  aX "));
       MENU.out(selected_aX);
-      MENU.tab(2);
+
+      MENU.out(F("\t\taY "));
       MENU.out(selected_aY);
-      MENU.ln();
+
+      MENU.out(F("\t\tgZ "));
+      MENU.outln(selected_gZ);
 
       selected_aY_seen = selected_aY;	// TODO: DEACTIVATED, unused
+      selected_gZ_seen = selected_gZ;	// TODO: DEACTIVATED, unused
     }
 
   unsigned int* jiffle = NULL;
