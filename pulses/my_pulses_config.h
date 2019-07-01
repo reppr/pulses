@@ -13,6 +13,7 @@
 // /*			0123456789abcdef	// 16 bytes	*/
 
 #define USE_MORSE	// touch morse code is in use :)
+#define MORSE_OUTPUT_PIN	PERIPHERAL_POWER_SWITCH_PIN	// *ONLY* possible if there's *NO POWER SWITCH HARDWARE*
 
 #define USE_MPU6050	// MPU-6050 6d accelero/gyro
 

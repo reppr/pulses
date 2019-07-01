@@ -130,3 +130,5 @@ MPU6050 offsets nvs
 double keywords in Pulses
 
 PULSES.select_from_to(0,bass_pulses);			// TODO: do not start by 0!	pulse[bass_pulses] belongs to both output groups
+
+nvs: is there hardware for peripheral power switch?
