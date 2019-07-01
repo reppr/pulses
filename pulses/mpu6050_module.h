@@ -28,6 +28,7 @@ int16_t gx, gy, gz;
 
 
 bool accelGyro_is_active = false ;	// accelGyro switching by the program
+bool accelGyro_invert = true;		// defaults to invert mathemetical axis, which feels right in instrument handling
 
 bool mpu6050_setup() {
   MENU.out(F("mpu6050_setup()\t"));
@@ -255,6 +256,14 @@ int16_t aX_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;	// n items to select f
 int16_t aY_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;	// n items to select from
 int16_t aZ_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;	// n items to select from
 
+void * aX_reaction_source=NULL;	// DB pointers can be used here
+void * aY_reaction_source=NULL;	// DB pointers can be used here
+void * aZ_reaction_source=NULL;	// DB pointers can be used here
+
+void * gX_reaction_source=NULL;	// DB pointers can be used here
+void * gY_reaction_source=NULL;	// DB pointers can be used here
+void * gZ_reaction_source=NULL;	// DB pointers can be used here
+
 void reset_accGyro_selection() {
   aX_sel_i0=0;
   aY_sel_i0=0;
@@ -266,18 +275,19 @@ void reset_accGyro_selection() {
   aX_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;
   aY_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;
   aZ_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;
+
+  aX_reaction_source=NULL;
+  aY_reaction_source=NULL;
+  aZ_reaction_source=NULL;
+
+  gX_reaction_source=NULL;
+  gY_reaction_source=NULL;
+  gZ_reaction_source=NULL;
 }
 
-void * ax_reaction_from=NULL;	// DB pointers can be used here
-void * ay_reaction_from=NULL;	// DB pointers can be used here
-void * az_reaction_from=NULL;	// DB pointers can be used here
 
-void * gx_reaction_from=NULL;	// DB pointers can be used here
-void * gy_reaction_from=NULL;	// DB pointers can be used here
-void * gz_reaction_from=NULL;	// DB pointers can be used here
-
+// accelGyro_reaction()
 extern void monochrome_show_line(uint8_t row, char * s);	// pre declaration
-
 #define DEBUG_AG_REACTION		// *DO* show selected slices
 //#define DEBUG_ACCELGYRO_BASICS	// deactivated
 void accelGyro_reaction() {
@@ -298,7 +308,6 @@ void accelGyro_reaction() {
       AX = accelGyro_current.ax + 16384;
 #if defined DEBUG_ACCELGYRO_BASICS
       there_was_output = true;
-      //MENU.out("AX+16384 ");
       MENU.out("AX+ ");
       MENU.out(AX);
       MENU.out("  ax ");
@@ -308,8 +317,9 @@ void accelGyro_reaction() {
 #endif
       AX /= 32768;	// to float scaling
 
+      aX_reaction_source = JIFFLES;
       aX_select_slots = 66;
-      AX *= aX_select_slots;
+      aX_sel_i0 = 0;
     }
 
     if(accelGyro_mode & ayM) {		// accelero Y
@@ -325,8 +335,9 @@ void accelGyro_reaction() {
 #endif
       AY /= 32768;	// to float scaling
 
-      // aY_select_slots = ...;
-      AY *= aY_select_slots;
+      aY_reaction_source = NULL;
+      aY_select_slots = ACCELERO_SELECTION_SLOTS_DEFAULT;
+      aY_sel_i0 = 0;
     }
 
     if(accelGyro_mode & gzM) {		// gyro Z
@@ -339,7 +350,10 @@ void accelGyro_reaction() {
       MENU.out("  gz ");
       MENU.out(accelGyro_current.gz);
 #endif
-      GZ /= 32;	// TODO: is *RANDOM* float scaling
+      GZ /= 32;			// TODO: is *RANDOM* float scaling
+      if(accelGyro_invert)	// invert mathematical axis
+	GZ = -GZ;
+
 #if defined DEBUG_ACCELGYRO_BASICS
       MENU.space(3);
       MENU.out(GZ);
@@ -350,11 +364,15 @@ void accelGyro_reaction() {
       MENU.ln();
 
     // select slice:
-    int selected_aX = AX + 1.5;	// TODO: rethink
+    int selected_aX = AX * aX_select_slots +0.5;
     selected_aX += aX_sel_i0;
+    if(accelGyro_invert)	// invert mathematical axis
+      selected_aX = aX_select_slots - 1 - selected_aX;
 
-    int selected_aY = AY - 0.5;	// TODO: rethink
+    int selected_aY = AY * aY_select_slots +0.5;
     selected_aY += aY_sel_i0;
+    if(accelGyro_invert)	// invert mathematical axis
+      selected_aY = aY_select_slots - 1 - selected_aY;
 
     int selected_gZ = GZ + 0.5;
     selected_gZ += gZ_sel_i0;
