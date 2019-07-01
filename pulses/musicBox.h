@@ -2924,7 +2924,7 @@ void musicBox_display() {
   MENU.out(F("\t'P1'= stop primary\t'P2'= stop secondary"));
   if(MusicBoxState == OFF)
     MENU.out(F("\t'W<seconds>' = wait&start"));
-  MENU.ln();
+  MENU.outln(F("\t'Q'= ~ noAction[A01234]"));
 
   MENU.outln(F("'m'= set mode\t'mm' 'mM'= manual\t'ma' 'mA'= automagic"));
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
@@ -2945,6 +2945,18 @@ void musicBox_display() {
   MENU.ln();
 
   stress_event_cnt = -3;	// heavy stress expected after musicBox_display
+}
+
+void noAction_flags_line() {	// show a line with primary noAction flag signs		// TODO: move to Pulses?
+  MENU.ln();
+  for (int pulse=highest_primary; pulse >= lowest_primary; pulse--) {
+    if(PULSES.pulses[pulse].action_flags & noACTION)
+      MENU.out('x');	// actions are blocked
+    else
+      MENU.out('A');	// actions on
+  }
+
+  MENU.outln(F("\taction muting"));
 }
 
 void input_preset_and_start() {	// factored out UI component	// TODO: sets preset, how to unset?	################
@@ -3168,36 +3180,56 @@ bool musicBox_reaction(char token) {
     }
     break;
 
-  case 'Y':	// noACTION managing
+  case 'Q':	// noACTION managing
     switch(MENU.cb_peek()) {
-    case 'T':	// 'YT' toggle top
-      MENU.drop_input_token();
-      PULSES.select_from_to(highest_primary - (primary_count/4), highest_primary);
-      PULSES.selected_toggle_no_actions();
-      PULSES.select_n(voices);
-      break;
-
-    case 'B':	// 'YB' toggle bottom
+    case '1':	// 'Q1' toggle bottom quarter
       MENU.drop_input_token();
       PULSES.select_from_to(lowest_primary, lowest_primary + (primary_count/4));
       PULSES.selected_toggle_no_actions();
       PULSES.select_n(voices);
       break;
 
-    case 'A':	// 'YA' *CLEAR ALL* noACTION flags on primary pulses
+    case '2':	// 'Q3' toggle lower middle quarter
       MENU.drop_input_token();
-      for (int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-	PULSES.pulses[pulse].action_flags &= ~noACTION; // clear all
+      PULSES.select_from_to(lowest_primary + (primary_count/4) +1, lowest_primary + highest_primary/2);
+      PULSES.selected_toggle_no_actions();
+      PULSES.select_n(voices);
       break;
 
-    default:	// 'Y' (bare or unknown tokens)
+    case '3':	// 'Q2' toggle higher middle quarter
+      MENU.drop_input_token();
+      PULSES.select_from_to(highest_primary/2 +1, highest_primary - (primary_count/4));
+      PULSES.selected_toggle_no_actions();
+      PULSES.select_n(voices);
+      break;
+
+    case '4':	// 'Q4' toggle top quarter
+      MENU.drop_input_token();
+      PULSES.select_from_to(highest_primary - (primary_count/4) +1, highest_primary);
+      PULSES.selected_toggle_no_actions();
+      PULSES.select_n(voices);
+      break;
+
+    case '0':	// 'Q0' *SET ALL* noACTION flags on primary pulses
+      MENU.drop_input_token();
+      for (int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	PULSES.pulses[pulse].action_flags |= noACTION;	// SET all
+      break;
+
+    case 'A':	// 'QA' *CLEAR ALL* noACTION flags on primary pulses
+      MENU.drop_input_token();
+      for (int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
+      break;
+
+    default:	// 'Q' (bare or unknown tokens)
       PULSES.select_from_to(lowest_primary, highest_primary);
       PULSES.selected_toggle_no_actions();
       PULSES.select_n(voices);
     }
 
     if(MENU.maybe_display_more(VERBOSITY_LOWEST))
-      MENU.outln(F("noACTION managing"));
+      noAction_flags_line();
     break;
 
   case 'I':	// info		// force OLED resdisplay on morse
