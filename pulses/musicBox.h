@@ -129,7 +129,7 @@ pulse_time_t used_subcycle;	// TODO: move to Harmonical? ? ?
 short subcycle_octave=0;
 bool subcycle_user_selected=false;
 
-int stack_sync_slices=0;	// 0 is off	// positive: upwards,	negative: downwards	// TODO: make it short?
+short stack_sync_slices=0;	// 0 is off	// positive: upwards,	negative: downwards
 
 int autostack_S0=AUTOSTACK_S0_DEFAULT;
 
