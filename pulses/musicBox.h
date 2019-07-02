@@ -2932,7 +2932,7 @@ void musicBox_display() {
 
   MENU.outln(F("'m'= set mode\t'mm' 'mM'= manual\t'ma' 'mA'= automagic"));
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
-  MENU.out(F("'G'= toggle AccelGyro "));
+  MENU.out(F("'Y'= toggle AccelGyro "));
   MENU.out_ON_off(accelGyro_is_active);
   MENU.ln();
 #endif
@@ -3087,7 +3087,7 @@ bool musicBox_reaction(char token) {
     break;
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
-  case 'G': // toggle accelGyro_is_active
+  case 'Y': // 'Y' (symbolising 3 axes)	toggle accelGyro_is_active
     accelGyro_is_active ^= 1;
     MENU.out(F("accelGyro"));
     MENU.out_ON_off(accelGyro_is_active);
