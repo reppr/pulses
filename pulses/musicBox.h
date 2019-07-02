@@ -489,8 +489,12 @@ void watch_primary_pulses() {
 		MENU.out('}');	// '}' FIFTH was alive *once*
 	      else
 		MENU.out('*');	// '*' was alive *once*
-	    } else					// simple all stars pattern :)
-	      MENU.out('*');	// '*' was alive *once*
+	    } else {					// simple all stars pattern :)
+	      if(PULSES.pulses[pulse].action_flags & noACTION)
+		MENU.out('.');	// '.' action is muted, was alive *once*
+	      else
+		MENU.out('*');	// '*' was alive *once*
+	    }
 	  } else if(diff > 1) {
 	    if (diff < 16)
 	      MENU.out_hex_chiffre(diff);
@@ -2947,7 +2951,7 @@ void musicBox_display() {
   stress_event_cnt = -3;	// heavy stress expected after musicBox_display
 }
 
-void noAction_flags_line() {	// show a line with primary noAction flag signs		// TODO: move to Pulses?
+void noAction_flags_line() {	// show a line with primary noACTION flag signs		// TODO: move to Pulses?
   MENU.ln();
   for (int pulse=highest_primary; pulse >= lowest_primary; pulse--) {
     if(PULSES.pulses[pulse].action_flags & noACTION)
@@ -2956,7 +2960,7 @@ void noAction_flags_line() {	// show a line with primary noAction flag signs		//
       MENU.out('A');	// actions on
   }
 
-  MENU.outln(F("\taction muting"));
+  MENU.outln(F("' action muting"));
 }
 
 void input_preset_and_start() {	// factored out UI component	// TODO: sets preset, how to unset?	################
