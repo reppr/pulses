@@ -437,7 +437,7 @@ void accelGyro_reaction() {
 	selected_aX_seen = selected_aX;
 
 #if defined USE_MONOCHROME_DISPLAY
-	if(morse_feedback_while_playing || musicbox_is_idle()) {
+	if(oled_feedback_while_playing || musicbox_is_idle()) {
 	  monochrome_show_line(3, array2name(JIFFLES, selected_in(JIFFLES)));
 	}
 #endif

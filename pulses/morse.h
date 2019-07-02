@@ -5,7 +5,7 @@
 #ifndef MORSE_H
 
 // avoid sound glitches when using OLED:
-bool morse_feedback_while_playing = false;	// do *not* give morse feedback while playing
+bool oled_feedback_while_playing = false;	// do *not* give morse feedback while playing
 
 #if ! defined MORSE_MONOCHROME_ROW
   #define MORSE_MONOCHROME_ROW	0	// row for monochrome morse display
@@ -1471,7 +1471,9 @@ const char * morse_definitions_tab[] = {
 //"5 0 --..- 5 5",	// FREE M	MU	__.._ 3 M- COMMAND triggers	free :)  rhythm sample? tap  *HOW TO GET OUT?*
 //"5 0 --.-. 5 5",	// FREE M	MR	--.-. 3 M- COMMAND triggers	free :)  rhythm replay
   "5 * --.-- Ñ Ñ",	// Ñ
+  "5 C ---.- OLED",	// OA	---.-	OLED	toggle oled display while playing ################
   "5 * ---.. 8 8",
+  "5 * ----. 9 9",
   "5 C ---.- DELWORD",	// MK	---.-	DELETE WORD
   "5 * ----- 0 0",
 
@@ -1712,6 +1714,7 @@ char morse_2ACTION() {
 	MENU.outln(">>>> DELLAST");
       } else if(strcmp(morse_def_COMMAND->c_str(), "DELWORD") == 0) {
 	MENU.outln(">>>> DELLWORD");
+	
       } else if(strcmp(morse_def_COMMAND->c_str(), "MISTAKE") == 0) {
 	MENU.outln(">>>> MISTAKE");
       }
@@ -1743,7 +1746,7 @@ void morse_do_output() {
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
   if(morse_out_buffer_cnt) {
 #if defined USE_MONOCHROME_DISPLAY
-    if(morse_feedback_while_playing || musicbox_is_idle())
+    if(oled_feedback_while_playing || musicbox_is_idle())
       u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "        ");
 #endif
 
@@ -1771,7 +1774,7 @@ void morse_monochrome_display() {
   */
 #endif
   if(morse_do_monochrome_display && morse_out_buffer_cnt) {
-    if(morse_feedback_while_playing || musicbox_is_idle()) {
+    if(oled_feedback_while_playing || musicbox_is_idle()) {
       u8x8.setInverseFont(0);
 
       // 2x2 version
@@ -1872,11 +1875,15 @@ void morse_decode() {	// decode received token sequence
 		  morse_out_buffer_cnt--;
 
 #if defined USE_MONOCHROME_DISPLAY
-		  if(morse_feedback_while_playing || musicbox_is_idle())
+		  if(oled_feedback_while_playing || musicbox_is_idle())
 		    u8x8.draw2x2String(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " ");
 #endif
 		}
-
+	      } else if(morse_PRESENT_COMMAND == "OLED") {
+		oled_feedback_while_playing ^= 1;
+		MENU.out(F("OLED"));
+		MENU.out_ON_off(oled_feedback_while_playing);
+		MENU.ln();
 	      } else if(morse_PRESENT_COMMAND == "CANCEL") {
 		morse_out_buffer_cnt = 0;
 
@@ -1891,10 +1898,10 @@ void morse_decode() {	// decode received token sequence
 		   u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "CANCEL ");
 		   u8x8.setInverseFont(1);
 		*/
-		if(morse_feedback_while_playing || musicbox_is_idle())
+		if(oled_feedback_while_playing || musicbox_is_idle())
 		  u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "C ");	// *short&quick*
 #endif
-	      } else
+	      } else	// unknown
 		MENU.out("\nCOMMAND:\t"); MENU.outln(morse_PRESENT_COMMAND.c_str());
 	      break;
 
@@ -1906,7 +1913,7 @@ void morse_decode() {	// decode received token sequence
 	    }
 	  } else {
 #if defined USE_MONOCHROME_DISPLAY
-	    if(morse_feedback_while_playing || musicbox_is_idle()) {
+	    if(oled_feedback_while_playing || musicbox_is_idle()) {
 	      if(morse_out_buffer_cnt) {
 		u8x8.setInverseFont(1);
 		u8x8.draw2x2String(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, "?");
