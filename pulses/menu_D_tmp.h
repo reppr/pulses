@@ -4,7 +4,10 @@
   temporary test code for pulses menu 'D'
 */
 
-activate_accelGyro();
+
+sync_shifting({1,12});
+
+// activate_accelGyro();
 
 /*
 sample_accelero_giro_6d();

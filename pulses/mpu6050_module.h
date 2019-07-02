@@ -117,7 +117,7 @@ hw_timer_t * accelGyro_timer = NULL;
 void accelGyro_sample_ISR() {	// test	from *outside* interrupt context	TODO: RENAME:
   static int16_t mpu_sample_index=0;
 
-//#define ACCELGYRO_SAMPLES	ALL
+//#define ACCELGYRO_SAMPLES	ALL6
 // or individual parameters:
 #define ACCELGYRO_SAMPLES_AX
 #define ACCELGYRO_SAMPLES_AY
@@ -126,7 +126,7 @@ void accelGyro_sample_ISR() {	// test	from *outside* interrupt context	TODO: REN
 //#define ACCELGYRO_SAMPLES_GY
 #define ACCELGYRO_SAMPLES_GZ
 
-#if ACCELGYRO_SAMPLES == ALL
+#if ACCELGYRO_SAMPLES == ALL6
   // take one 6d sample
   mpu6050.getMotion6(&mpu_samples[mpu_sample_index].ax, &mpu_samples[mpu_sample_index].ay, &mpu_samples[mpu_sample_index].az, \
 		     &mpu_samples[mpu_sample_index].gx, &mpu_samples[mpu_sample_index].gy, &mpu_samples[mpu_sample_index].gz);
@@ -242,8 +242,8 @@ enum AG_modes {
   gzM=32,
 } ;
 
-int accelGyro_mode=0;	// zero means inactive
-
+//int accelGyro_mode=0;	// zero means inactive
+int accelGyro_mode = gzM;	// very temporary default ;)
 int16_t aX_sel_i0=0;
 int16_t aY_sel_i0=0;
 int16_t aZ_sel_i0=0;
@@ -283,6 +283,28 @@ void reset_accGyro_selection() {
   gX_reaction_source=NULL;
   gY_reaction_source=NULL;
   gZ_reaction_source=NULL;
+}
+
+
+extern void sync_shifting(fraction shift);			// pre declaration
+//int16_t GYROX_selected=0;
+//int16_t GYROY_selected=0;
+int16_t GYROZ_selected=0;
+bool gyro_check() {
+  float GZ = mpu6050.getRotationZ();
+  GZ /= 32;	// TODO: is *RANDOM* float scaling
+  if(accelGyro_invert)	// invert mathematical axis
+    GZ = -GZ;
+
+  GYROZ_selected = GZ + 0.5;
+  GYROZ_selected += gZ_sel_i0;
+  if(GYROZ_selected) {	// gyro Z shows rotation?
+//  MENU.out(GYROZ_selected); MENU.space();
+    sync_shifting({GYROZ_selected, 16*4096});
+    return true;
+  }
+
+  return false;
 }
 
 
@@ -364,18 +386,27 @@ void accelGyro_reaction() {
       MENU.ln();
 
     // select slice:
-    int selected_aX = AX * aX_select_slots +0.5;
-    selected_aX += aX_sel_i0;
-    if(accelGyro_invert)	// invert mathematical axis
-      selected_aX = aX_select_slots - 1 - selected_aX;
+    int selected_aX =0;	// make sure it starts with zero
+    if(accelGyro_mode & axM) {		// accelero X
+      selected_aX = AX * aX_select_slots +0.5;
+      selected_aX += aX_sel_i0;
+      if(accelGyro_invert)	// invert mathematical axis
+	selected_aX = aX_select_slots - 1 - selected_aX;
+    }
 
-    int selected_aY = AY * aY_select_slots +0.5;
-    selected_aY += aY_sel_i0;
-    if(accelGyro_invert)	// invert mathematical axis
-      selected_aY = aY_select_slots - 1 - selected_aY;
+    int selected_aY=0;	// make sure it starts with zero
+    if(accelGyro_mode & ayM) {		// accelero Y
+      selected_aY = AY * aY_select_slots +0.5;
+      selected_aY += aY_sel_i0;
+      if(accelGyro_invert)	// invert mathematical axis
+	selected_aY = aY_select_slots - 1 - selected_aY;
+    }
 
-    int selected_gZ = GZ + 0.5;
-    selected_gZ += gZ_sel_i0;
+    int selected_gZ=0;	// make sure it starts with zero
+    if(accelGyro_mode & gzM) {		// gyro Z
+      selected_gZ = GZ + 0.5;
+      selected_gZ += gZ_sel_i0;
+    }
 
 #if defined DEBUG_AG_REACTION
     if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen || selected_gZ != selected_gZ_seen)

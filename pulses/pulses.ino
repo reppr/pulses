@@ -1169,13 +1169,26 @@ bool low_priority_tasks() {
   low_priority_cnt++;
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
+
+//  #define GYRO_MODULUS		5113	// prime
+//  #define GYRO_MODULUS		9679	// prime
+//  #define GYRO_MODULUS		1173	// prime
+  #define GYRO_MODULUS		19319	// prime
+
+  if(accelGyro_is_active) {
+    if((low_priority_cnt % GYRO_MODULUS) == 0) { // check GYRO
+      if(gyro_check())
+	return true;
+    }
+  }
+
   if(accelGyro_is_active) {
     if(accelGyro_new_data ) {	//   check new input data
       accelGyro_reaction();
       return true;
     } // else
 
-#define ACCGYR_MODULUS	55547	// prime
+  #define ACCGYR_MODULUS	55547	// prime
     if ((low_priority_cnt % ACCGYR_MODULUS) == 0) { // take a accelerGyro sample
       accelGyro_sample_ISR();		 // testing ouside of interrupt context
       return true;

@@ -2768,6 +2768,22 @@ void magical_butler(int p) {	// TODO: OBSOLETE?
 
 
 /* **************************************************************** */
+void sync_shifting(fraction shift) {
+  pulse_time_t this_shift;
+  if(shift.multiplier) { // no zero shift?
+    for (int pulse=lowest_primary; pulse <= highest_primary; pulse++) {
+      if(PULSES.pulses[pulse].flags & ACTIVE) {
+	this_shift = PULSES.pulses[pulse].period;
+	PULSES.mul_time(&this_shift, shift.multiplier);
+	PULSES.div_time(&this_shift, shift.divisor);
+	PULSES.add_time(&this_shift, &PULSES.pulses[pulse].next);
+      }
+    }
+    PULSES.fix_global_next();
+  } // no shift
+}
+
+/* **************************************************************** */
 void musicBox_setup() {	// TODO:update
   MENU.ln();
 
@@ -3091,15 +3107,20 @@ bool musicBox_reaction(char token) {
     accelGyro_is_active ^= 1;
     MENU.out(F("accelGyro"));
     MENU.out_ON_off(accelGyro_is_active);
-    if(accelGyro_is_active) {
-      accelGyro_mode = axM;	// react on ACCEL X (only)
-      accelGyro_mode |= ayM;	// and show ACCEL Y
-      accelGyro_mode |= gzM;	// and show GYRO Z
-    }
-/*
-    if(accelGyro_is_active)
-      calibrate_accelGyro_offsets();	// TODO: rewrite
-*/
+    switch(MENU.cb_peek()) {	// second letter
+    case 'X':
+      MENU.drop_input_token();
+      accelGyro_mode ^= axM;
+      break;
+    case 'Y':
+      MENU.drop_input_token();
+      accelGyro_mode ^= ayM;
+      break;
+    case 'Z':
+      MENU.drop_input_token();
+      accelGyro_mode ^= gzM;
+      break;
+    } // known second letters
     MENU.ln();
     break;
 #endif
