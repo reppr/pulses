@@ -449,57 +449,60 @@ void accelGyro_reaction() {
     }
 
     if(accelGyro_mode & ayM) {		// accelero Y
-//    MENU.outln(selected_aY);
-      switch(selected_aY) {
-//      case 0:		// TODO: selected_aY < 1
-//	// limit--
-//	break;
-      case 1:	// all but high
-	for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-	  PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
-	for(int pulse = highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
-	  PULSES.pulses[pulse].action_flags |= noACTION; // SET upper quarter
-	break;
-      case 2:	// all on
-      case 3:	// all on
-	for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-	  PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
+      if(selected_aY != selected_aY_seen) {
+	selected_aY_seen = selected_aY;
+
+	switch(selected_aY) {
+	  //      case 0:		// TODO: selected_aY < 1
+	  //	// limit--
+	  //	break;
+	case 1:	// all but high
+	  for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	    PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
+	  for(int pulse = highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
+	    PULSES.pulses[pulse].action_flags |= noACTION; // SET upper quarter
 	  break;
-      case 4:	// middle only
-	MENU.out("CASE3 ");
-	MENU.outln(highest_primary);
-	for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-	  PULSES.pulses[pulse].action_flags |= noACTION; // SET all
-	for(int pulse=lowest_primary + (primary_count/4) +1; pulse <= highest_primary - (primary_count/4); pulse++)
-	  PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
-	break;
-      case 5:	// extremes only
-	for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-	  PULSES.pulses[pulse].action_flags |= noACTION; // SET all
-	for(int pulse=lowest_primary; pulse <= lowest_primary + (primary_count/4); pulse++)
-	  PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR low quarter
-	for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
-	  PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
-	break;
-      case 6:	// high only
-	for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-	  PULSES.pulses[pulse].action_flags |= noACTION; // SET all
-	for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
-	  PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
-	break;
+	case 2:	// all on
+	case 3:	// all on
+	  for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	    PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
+	  break;
+	case 4:	// middle only
+	  MENU.out("CASE3 ");
+	  MENU.outln(highest_primary);
+	  for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	    PULSES.pulses[pulse].action_flags |= noACTION; // SET all
+	  for(int pulse=lowest_primary + (primary_count/4) +1; pulse <= highest_primary - (primary_count/4); pulse++)
+	    PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
+	  break;
+	case 5:	// extremes only
+	  for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	    PULSES.pulses[pulse].action_flags |= noACTION; // SET all
+	  for(int pulse=lowest_primary; pulse <= lowest_primary + (primary_count/4); pulse++)
+	    PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR low quarter
+	  for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
+	    PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
+	  break;
+	case 6:	// high only
+	  for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	    PULSES.pulses[pulse].action_flags |= noACTION; // SET all
+	  for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
+	    PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
+	  break;
 
-//      case 7:	// bass_limit--		// TODO: near limit region
-//	break;
-      default:	// toggle all
-	PULSES.select_from_to(lowest_primary, highest_primary);
-	PULSES.selected_toggle_no_actions();
-	PULSES.select_n(voices);
-      }
-
-      noAction_flags_line();
-    }
+	  //      case 7:	// bass_limit--		// TODO: near limit region
+	  //	break;
+	default:	// toggle all
+	  PULSES.select_from_to(lowest_primary, highest_primary);
+	  PULSES.selected_toggle_no_actions();
+	  PULSES.select_n(voices);
+	} // switch(selected_aY)
+	noAction_flags_line();
+      } //selected_aY_seen
+    } // accelero Y
   } // if(accelGyro_mode)
 }
+
 
 void accelGyro_data_display() {
   if(! mpu6050.testConnection())	// if no connection, try to initialise
@@ -522,7 +525,7 @@ void accelGyro_data_display() {
 }
 
 
-#define COMPILE_ACCEL_GYRO_SPEED_TEST
+//#define COMPILE_ACCEL_GYRO_SPEED_TEST
 #if defined COMPILE_ACCEL_GYRO_SPEED_TEST
 void accelGyro_speed_test(int n=1000) {
   unsigned int start_time, loop_time, elapsed;

@@ -3107,37 +3107,47 @@ bool musicBox_reaction(char token) {
     {
       bool switch_activity=false;
       bool do_next_letter=true;
-      while(do_next_letter) {
-	switch(MENU.cb_peek()) {	// second letter
-	case '0':			// 0 =	restart at zero
-	case '=':
-	  MENU.drop_input_token();
-	  accelGyro_mode = 0;
-	  break;
-	case 'X':			// X acc	toggle axM
-	  MENU.drop_input_token();
-	  accelGyro_mode ^= axM;
-	  break;
-	case 'Y':			// Y acc	toggle ayM
-	  MENU.drop_input_token();
-	  accelGyro_mode ^= ayM;
-	  break;
-	case 'Z':			// Z GYRO	toggle gzM
-	  MENU.drop_input_token();
-	  accelGyro_mode ^= gzM;
-	  break;
-	default:
-	  do_next_letter = false;
-	} // known second letters
+
+      if(MENU.cb_peek() == EOF)	// bare 'Y'
+	switch_activity = true;
+      else {
+	while(do_next_letter) {
+	  switch(MENU.cb_peek()) {	// second letter
+	  case '0':			// Y0 =	restart at zero
+	  case '=':
+	    MENU.drop_input_token();
+	    accelGyro_mode = 0;
+	    accelGyro_is_active = false;
+	    break;
+	  case 'X':			// YX acc	toggle axM
+	    MENU.drop_input_token();
+	    accelGyro_mode ^= axM;
+	    accelGyro_is_active = accelGyro_mode;
+	    break;
+	  case 'Y':			// YY acc	toggle ayM
+	    MENU.drop_input_token();
+	    accelGyro_mode ^= ayM;
+	    accelGyro_is_active = accelGyro_mode;
+	    break;
+	  case 'Z':			// YZ GYRO	toggle gzM
+	    MENU.drop_input_token();
+	    accelGyro_mode ^= gzM;
+	    accelGyro_is_active = accelGyro_mode;
+	    break;
+	  default:
+	    do_next_letter = false;
+	  } // known second letters
+	} // do_next_letter
       }
 
       if(switch_activity)
 	accelGyro_is_active ^= 1;
-
       if(accelGyro_mode==0)		// deconfigured, so deactivate
 	accelGyro_is_active = false;
 
-      MENU.out(F("accelGyro"));
+      MENU.out(F("accelGyro m "));
+      MENU.out(accelGyro_mode);
+      MENU.tab();
       MENU.out_ON_off(accelGyro_is_active);
       MENU.ln();
     }
