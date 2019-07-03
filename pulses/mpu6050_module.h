@@ -26,7 +26,6 @@ MPU6050 mpu6050;
 int16_t ax, ay, az;
 int16_t gx, gy, gz;
 
-
 bool accelGyro_is_active = false ;	// accelGyro switching by the program
 bool accelGyro_invert = true;		// defaults to invert mathemetical axis, which feels right in instrument handling
 
@@ -330,6 +329,10 @@ bool gyro_check() {
   return false;
 }
 
+#if ! defined ACCGYRO_DEFAULT_PRESET
+  #define ACCGYRO_DEFAULT_PRESET	1
+#endif
+uint8_t	accelGyro_preset = ACCGYRO_DEFAULT_PRESET;
 
 // void accelGyro_reaction()
 //#define DEBUG_AG_REACTION		// DO show selected slices
@@ -338,191 +341,195 @@ extern void monochrome_show_line(uint8_t row, char * s);	// extern declaration
 extern int lowest_primary, highest_primary, primary_count;	// extern declaration
 extern void noAction_flags_line();				// extern declaration
 void accelGyro_reaction() {
-  bool there_was_output=false;
   if(accelGyro_mode) {
     static int selected_aX_seen;
     static int selected_aY_seen;
     static int selected_gZ_seen;
+
+    // selected slice:
+    int selected_aX =0;	// make sure it starts with zero
+    int selected_aY=0;	// make sure it starts with zero
+    int selected_gZ=0;	// make sure it starts with zero
 
     float AX=0.0, AY=0.0, AZ=0.0, GX=0.0, GY=0.0, GZ=0.0;
     accelGyro_new_data = false;
     if(! accelGyro_is_active)
       return;
 
+    bool there_was_output=false;
     reset_accGyro_selection();	// offsets and slots
 
-    if(accelGyro_mode & axM) {		// accelero X
-      AX = accelGyro_current.ax + 16384;
+    switch(accelGyro_preset) {
+    case 1:
+      if(accelGyro_mode & axM) {		// accelero X
+	AX = accelGyro_current.ax + 16384;
 #if defined DEBUG_ACCELGYRO_BASICS
-      there_was_output = true;
-      MENU.out("AX+ ");
-      MENU.out(AX);
-      MENU.out("  ax ");
-      MENU.out(accelGyro_current.ax);
-      MENU.space(3);
-      MENU.out(AX/32768);
+	there_was_output = true;
+	MENU.out("AX+ ");
+	MENU.out(AX);
+	MENU.out("  ax ");
+	MENU.out(accelGyro_current.ax);
+	MENU.space(3);
+	MENU.out(AX/32768);
 #endif
-      AX /= 32768;	// to float scaling
+	AX /= 32768;	// to float scaling
 
-      aX_reaction_source = JIFFLES;
-      aX_select_slots = 66;
-      aX_sel_i0 = 0;
-    }
+	aX_reaction_source = JIFFLES;
+	aX_select_slots = 66;
+	aX_sel_i0 = 0;
+      }
 
-    if(accelGyro_mode & ayM) {		// accelero Y
-      AY = accelGyro_current.ay + 16384;
+      if(accelGyro_mode & ayM) {		// accelero Y
+	AY = accelGyro_current.ay + 16384;
 #if defined DEBUG_ACCELGYRO_BASICS
-      there_was_output = true;
-      MENU.out("\t\tAY+ ");
-      MENU.out(AY);
-      MENU.out("  ay ");
-      MENU.out(accelGyro_current.ay);
-      MENU.space(3);
-      MENU.out(AY/32768);
+	there_was_output = true;
+	MENU.out("\t\tAY+ ");
+	MENU.out(AY);
+	MENU.out("  ay ");
+	MENU.out(accelGyro_current.ay);
+	MENU.space(3);
+	MENU.out(AY/32768);
 #endif
-      AY /= 32768;	// to float scaling
+	AY /= 32768;	// to float scaling
 
-      aY_reaction_source = NULL;
-      aY_select_slots = 8;
-      aY_sel_i0 = 0;
-    }
+	aY_reaction_source = NULL;
+	aY_select_slots = 8;
+	aY_sel_i0 = 0;
+      }
 
-    if(accelGyro_mode & gzM) {		// gyro Z
-      GZ = accelGyro_current.gz;
-
-#if defined DEBUG_ACCELGYRO_BASICS
-      there_was_output = true;
-      MENU.out("\t\tGZ= ");
-      MENU.out(GZ);
-      MENU.out("  gz ");
-      MENU.out(accelGyro_current.gz);
-#endif
-      GZ /= 32;			// TODO: is *RANDOM* float scaling
-      if(accelGyro_invert)	// invert mathematical axis
-	GZ = -GZ;
+      if(accelGyro_mode & gzM) {		// gyro Z
+	GZ = accelGyro_current.gz;
 
 #if defined DEBUG_ACCELGYRO_BASICS
-      MENU.space(3);
-      MENU.out(GZ);
+	there_was_output = true;
+	MENU.out("\t\tGZ= ");
+	MENU.out(GZ);
+	MENU.out("  gz ");
+	MENU.out(accelGyro_current.gz);
 #endif
-    }
+	GZ /= 32;			// TODO: is *RANDOM* float scaling
+	if(accelGyro_invert)	// invert mathematical axis
+	  GZ = -GZ;
 
-    if(there_was_output)
-      MENU.ln();
+#if defined DEBUG_ACCELGYRO_BASICS
+	MENU.space(3);
+	MENU.out(GZ);	// scaled and inverted
+#endif
+      }
 
-    // select slice:
-    int selected_aX =0;	// make sure it starts with zero
-    if(accelGyro_mode & axM) {		// accelero X
-      selected_aX = AX * aX_select_slots +0.5;
-      selected_aX += aX_sel_i0;
-      if(accelGyro_invert)	// invert mathematical axis
-	selected_aX = aX_select_slots - 1 - selected_aX;
-    }
+      if(there_was_output)
+	MENU.ln();
 
-    int selected_aY=0;	// make sure it starts with zero
-    if(accelGyro_mode & ayM) {		// accelero Y
-      selected_aY = AY * aY_select_slots +0.5;
-      selected_aY += aY_sel_i0;
-      if(accelGyro_invert)	// invert mathematical axis
-	selected_aY = aY_select_slots - 1 - selected_aY;
-    }
+      if(accelGyro_mode & axM) {		// accelero X
+	selected_aX = AX * aX_select_slots +0.5;
+	selected_aX += aX_sel_i0;
+	if(accelGyro_invert)	// invert mathematical axis
+	  selected_aX = aX_select_slots - 1 - selected_aX;
+      }
 
-    int selected_gZ=0;	// make sure it starts with zero
-    if(accelGyro_mode & gzM) {		// gyro Z
-      selected_gZ = GZ + 0.5;
-      selected_gZ += gZ_sel_i0;
-    }
+      if(accelGyro_mode & ayM) {		// accelero Y
+	selected_aY = AY * aY_select_slots +0.5;
+	selected_aY += aY_sel_i0;
+	if(accelGyro_invert)	// invert mathematical axis
+	  selected_aY = aY_select_slots - 1 - selected_aY;
+      }
+
+      if(accelGyro_mode & gzM) {		// gyro Z
+	selected_gZ = GZ + 0.5;
+	selected_gZ += gZ_sel_i0;
+      }
 
 #if defined DEBUG_AG_REACTION
-    if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen || selected_gZ != selected_gZ_seen)
-      //if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen)
-#else
-      if (selected_aX != selected_aX_seen)
+      if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen || selected_gZ != selected_gZ_seen) {
+	MENU.out(F("SELECTED  aX "));
+	MENU.out(selected_aX);
+
+	MENU.out(F("\t\taY "));
+	MENU.out(selected_aY);
+
+	MENU.out(F("\t\tgZ "));
+	MENU.outln(selected_gZ);
+
+	//selected_aY_seen = selected_aY;	// right now unused
+	selected_gZ_seen = selected_gZ;	// TODO: DEACTIVATED, see GYRO
+      }
 #endif
-	{
-	  MENU.out(F("SELECTED  aX "));
-	  MENU.out(selected_aX);
 
-	  MENU.out(F("\t\taY "));
-	  MENU.out(selected_aY);
-
-	  MENU.out(F("\t\tgZ "));
-	  MENU.outln(selected_gZ);
-
-	  //selected_aY_seen = selected_aY;	// right now unused
-	  selected_gZ_seen = selected_gZ;	// TODO: DEACTIVATED, unused
-	}
-
-    if(accelGyro_mode & axM) {		// accelero X
-      unsigned int* jiffle = NULL;
-      if(jiffle = index2pointer(JIFFLES, selected_aX)) {
-	if(selected_aX != selected_aX_seen) {
-	  selected_aX_seen = selected_aX;
-	  select_array_in(JIFFLES, jiffle);
-	  setup_jiffle_thrower_selected(selected_actions);
-	  MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
+      if(accelGyro_mode & axM) {		// accelero X
+	unsigned int* jiffle = NULL;
+	if(jiffle = index2pointer(JIFFLES, selected_aX)) {
+	  if(selected_aX != selected_aX_seen) {
+	    selected_aX_seen = selected_aX;
+	    select_array_in(JIFFLES, jiffle);
+	    setup_jiffle_thrower_selected(selected_actions);
+	    MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
 
 #if defined USE_MONOCHROME_DISPLAY
-	  if(oled_feedback_while_playing || musicbox_is_idle()) {
-	    monochrome_show_line(3, array2name(JIFFLES, selected_in(JIFFLES)));
-	  }
+	    if(oled_feedback_while_playing || musicbox_is_idle()) {
+	      monochrome_show_line(3, array2name(JIFFLES, selected_in(JIFFLES)));
+	    }
 #endif
-	}
-      } // aX JIFFLES
-    }
+	  }
+	} // aX JIFFLES
+      }
 
-    if(accelGyro_mode & ayM) {		// accelero Y
-      if(selected_aY != selected_aY_seen) {
-	selected_aY_seen = selected_aY;
+      if(accelGyro_mode & ayM) {		// accelero Y
+	if(selected_aY != selected_aY_seen) {
+	  selected_aY_seen = selected_aY;
 
-	switch(selected_aY) {
-	  //      case 0:		// TODO: selected_aY < 1
-	  //	// limit--
-	  //	break;
-	case 1:	// all but high
-	  for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-	    PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
-	  for(int pulse = highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
-	    PULSES.pulses[pulse].action_flags |= noACTION; // SET upper quarter
-	  break;
-	case 2:	// all on
-	case 3:	// all on
-	  for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-	    PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
-	  break;
-	case 4:	// middle only
-	  MENU.out("CASE3 ");
-	  MENU.outln(highest_primary);
-	  for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-	    PULSES.pulses[pulse].action_flags |= noACTION; // SET all
-	  for(int pulse=lowest_primary + (primary_count/4) +1; pulse <= highest_primary - (primary_count/4); pulse++)
-	    PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
-	  break;
-	case 5:	// extremes only
-	  for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-	    PULSES.pulses[pulse].action_flags |= noACTION; // SET all
-	  for(int pulse=lowest_primary; pulse <= lowest_primary + (primary_count/4); pulse++)
-	    PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR low quarter
-	  for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
-	    PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
-	  break;
-	case 6:	// high only
-	  for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-	    PULSES.pulses[pulse].action_flags |= noACTION; // SET all
-	  for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
-	    PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
-	  break;
+	  switch(selected_aY) {
+	    //      case 0:		// TODO: selected_aY < 1
+	    //	// limit--
+	    //	break;
+	  case 1:	// all but high
+	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
+	    for(int pulse = highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags |= noACTION; // SET upper quarter
+	    break;
+	  case 2:	// all on
+	  case 3:	// all on
+	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
+	    break;
+	  case 4:	// middle only
+	    MENU.out("CASE3 ");
+	    MENU.outln(highest_primary);
+	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
+	    for(int pulse=lowest_primary + (primary_count/4) +1; pulse <= highest_primary - (primary_count/4); pulse++)
+	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
+	    break;
+	  case 5:	// extremes only
+	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
+	    for(int pulse=lowest_primary; pulse <= lowest_primary + (primary_count/4); pulse++)
+	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR low quarter
+	    for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
+	    break;
+	  case 6:	// high only
+	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
+	    for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
+	    break;
 
-	  //      case 7:	// bass_limit--		// TODO: near limit region
-	  //	break;
-	default:	// toggle all
-	  PULSES.select_from_to(lowest_primary, highest_primary);
-	  PULSES.selected_toggle_no_actions();
-	  PULSES.select_n(voices);
-	} // switch(selected_aY)
-	noAction_flags_line();
-      } //selected_aY_seen
-    } // accelero Y
+	    //      case 7:	// bass_limit--		// TODO: near limit region
+	    //	break;
+	  default:	// toggle all
+	    PULSES.select_from_to(lowest_primary, highest_primary);
+	    PULSES.selected_toggle_no_actions();
+	    PULSES.select_n(voices);
+	  } // switch(selected_aY)
+	  noAction_flags_line();
+	} //selected_aY_seen
+      } // accelero Y
+      break;
+
+    default:
+      MENU.error_ln(F("unknown accelGyro_preset"));
+    } // switch (accelGyro_preset)
   } // if(accelGyro_mode)
 }
 
