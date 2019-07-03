@@ -243,7 +243,7 @@ enum AG_modes {
 } ;
 
 //int accelGyro_mode=0;	// zero means inactive
-int accelGyro_mode = gzM;	// very temporary default ;)
+int accelGyro_mode = gzM | ayM;	// very temporary default ;)
 int16_t aX_sel_i0=0;
 int16_t aY_sel_i0=0;
 int16_t aZ_sel_i0=0;
@@ -299,8 +299,8 @@ bool gyro_check() {
   GYROZ_selected = GZ + 0.5;
   GYROZ_selected += gZ_sel_i0;
   if(GYROZ_selected) {	// gyro Z shows rotation?
-//  MENU.out(GYROZ_selected); MENU.space();
-    sync_shifting({GYROZ_selected, 16*4096});
+//  sync_shifting({GYROZ_selected, 8*4096});
+    sync_shifting({GYROZ_selected, 16*4096});	// TODO: UI for shift amount
     return true;
   }
 
@@ -308,10 +308,12 @@ bool gyro_check() {
 }
 
 
-// accelGyro_reaction()
-extern void monochrome_show_line(uint8_t row, char * s);	// pre declaration
-#define DEBUG_AG_REACTION		// *DO* show selected slices
+// void accelGyro_reaction()
+//#define DEBUG_AG_REACTION		// DO show selected slices
 //#define DEBUG_ACCELGYRO_BASICS	// deactivated
+extern void monochrome_show_line(uint8_t row, char * s);	// extern declaration
+extern int lowest_primary, highest_primary, primary_count;	// extern declaration
+extern void noAction_flags_line();				// extern declaration
 void accelGyro_reaction() {
   bool there_was_output=false;
   if(accelGyro_mode) {
@@ -358,7 +360,7 @@ void accelGyro_reaction() {
       AY /= 32768;	// to float scaling
 
       aY_reaction_source = NULL;
-      aY_select_slots = ACCELERO_SELECTION_SLOTS_DEFAULT;
+      aY_select_slots = 8;
       aY_sel_i0 = 0;
     }
 
@@ -424,24 +426,77 @@ void accelGyro_reaction() {
 	  MENU.out(F("\t\tgZ "));
 	  MENU.outln(selected_gZ);
 
-	  selected_aY_seen = selected_aY;	// TODO: DEACTIVATED, unused
+	  //selected_aY_seen = selected_aY;	// right now unused
 	  selected_gZ_seen = selected_gZ;	// TODO: DEACTIVATED, unused
 	}
 
-    unsigned int* jiffle = NULL;
-    if(jiffle = index2pointer(JIFFLES, selected_aX)) {
-      if(selected_aX != selected_aX_seen) {
-	select_array_in(JIFFLES, jiffle);
-	setup_jiffle_thrower_selected(selected_actions);
-	MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
-	selected_aX_seen = selected_aX;
+    if(accelGyro_mode & axM) {		// accelero X
+      unsigned int* jiffle = NULL;
+      if(jiffle = index2pointer(JIFFLES, selected_aX)) {
+	if(selected_aX != selected_aX_seen) {
+	  selected_aX_seen = selected_aX;
+	  select_array_in(JIFFLES, jiffle);
+	  setup_jiffle_thrower_selected(selected_actions);
+	  MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
 
 #if defined USE_MONOCHROME_DISPLAY
-	if(oled_feedback_while_playing || musicbox_is_idle()) {
-	  monochrome_show_line(3, array2name(JIFFLES, selected_in(JIFFLES)));
-	}
+	  if(oled_feedback_while_playing || musicbox_is_idle()) {
+	    monochrome_show_line(3, array2name(JIFFLES, selected_in(JIFFLES)));
+	  }
 #endif
+	}
+      } // aX JIFFLES
+    }
+
+    if(accelGyro_mode & ayM) {		// accelero Y
+//    MENU.outln(selected_aY);
+      switch(selected_aY) {
+//      case 0:		// TODO: selected_aY < 1
+//	// limit--
+//	break;
+      case 1:	// all but high
+	for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	  PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
+	for(int pulse = highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
+	  PULSES.pulses[pulse].action_flags |= noACTION; // SET upper quarter
+	break;
+      case 2:	// all on
+      case 3:	// all on
+	for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	  PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
+	  break;
+      case 4:	// middle only
+	MENU.out("CASE3 ");
+	MENU.outln(highest_primary);
+	for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	  PULSES.pulses[pulse].action_flags |= noACTION; // SET all
+	for(int pulse=lowest_primary + (primary_count/4) +1; pulse <= highest_primary - (primary_count/4); pulse++)
+	  PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
+	break;
+      case 5:	// extremes only
+	for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	  PULSES.pulses[pulse].action_flags |= noACTION; // SET all
+	for(int pulse=lowest_primary; pulse <= lowest_primary + (primary_count/4); pulse++)
+	  PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR low quarter
+	for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
+	  PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
+	break;
+      case 6:	// high only
+	for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	  PULSES.pulses[pulse].action_flags |= noACTION; // SET all
+	for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
+	  PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
+	break;
+
+//      case 7:	// bass_limit--		// TODO: near limit region
+//	break;
+      default:	// toggle all
+	PULSES.select_from_to(lowest_primary, highest_primary);
+	PULSES.selected_toggle_no_actions();
+	PULSES.select_n(voices);
       }
+
+      noAction_flags_line();
     }
   } // if(accelGyro_mode)
 }
@@ -464,12 +519,6 @@ void accelGyro_data_display() {
     MENU.outln(mpu6050.getRotationZ());
   } else
     MENU.outln(F("mpu6050 not connected"));
-}
-
-
-#define DEBUG_SAMPLE_OFFSETS
-void accelGyro_sample_offsets() {
-
 }
 
 

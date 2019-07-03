@@ -3104,24 +3104,43 @@ bool musicBox_reaction(char token) {
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
   case 'Y': // 'Y' (symbolising 3 axes)	toggle accelGyro_is_active
-    accelGyro_is_active ^= 1;
-    MENU.out(F("accelGyro"));
-    MENU.out_ON_off(accelGyro_is_active);
-    switch(MENU.cb_peek()) {	// second letter
-    case 'X':
-      MENU.drop_input_token();
-      accelGyro_mode ^= axM;
-      break;
-    case 'Y':
-      MENU.drop_input_token();
-      accelGyro_mode ^= ayM;
-      break;
-    case 'Z':
-      MENU.drop_input_token();
-      accelGyro_mode ^= gzM;
-      break;
-    } // known second letters
-    MENU.ln();
+    {
+      bool switch_activity=false;
+      bool do_next_letter=true;
+      while(do_next_letter) {
+	switch(MENU.cb_peek()) {	// second letter
+	case '0':			// 0 =	restart at zero
+	case '=':
+	  MENU.drop_input_token();
+	  accelGyro_mode = 0;
+	  break;
+	case 'X':			// X acc	toggle axM
+	  MENU.drop_input_token();
+	  accelGyro_mode ^= axM;
+	  break;
+	case 'Y':			// Y acc	toggle ayM
+	  MENU.drop_input_token();
+	  accelGyro_mode ^= ayM;
+	  break;
+	case 'Z':			// Z GYRO	toggle gzM
+	  MENU.drop_input_token();
+	  accelGyro_mode ^= gzM;
+	  break;
+	default:
+	  do_next_letter = false;
+	} // known second letters
+      }
+
+      if(switch_activity)
+	accelGyro_is_active ^= 1;
+
+      if(accelGyro_mode==0)		// deconfigured, so deactivate
+	accelGyro_is_active = false;
+
+      MENU.out(F("accelGyro"));
+      MENU.out_ON_off(accelGyro_is_active);
+      MENU.ln();
+    }
     break;
 #endif
 
@@ -3246,11 +3265,7 @@ bool musicBox_reaction(char token) {
       for (int pulse=lowest_primary; pulse <= highest_primary; pulse++)
 	PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
       break;
-
-    default:	// 'Q' (bare or unknown tokens)
-      PULSES.select_from_to(lowest_primary, highest_primary);
-      PULSES.selected_toggle_no_actions();
-      PULSES.select_n(voices);
+//  default:	// 'Q' (bare or unknown tokens)
     }
 
     if(MENU.maybe_display_more(VERBOSITY_LOWEST))
