@@ -135,3 +135,8 @@ nvs: is there hardware for peripheral power switch?
 
 wo isch de Störfall?
 s hät glaub mehreri ...
+
+MENU morse feedback and || OLED
+  many stray newlines around...
+
+MENU accelGyro feedback || OLED

@@ -243,7 +243,7 @@ enum AG_modes {
 };
 
 //int accelGyro_mode=0;	// zero means inactive
-int accelGyro_mode = gzM | ayM;	// very temporary default ;)
+int accelGyro_mode = gzM | ayM | axM;	// very temporary default ;)
 int16_t aX_sel_i0=0;
 int16_t aY_sel_i0=0;
 int16_t aZ_sel_i0=0;

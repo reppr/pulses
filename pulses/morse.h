@@ -1441,7 +1441,7 @@ const char * morse_definitions_tab[] = {
   "4 * --.. Z z",
   "4 * --.- Q q",
   "4 * ---. Ö ö",
-//"4 * ---- |CH| |ch|",	// sorry, no string letters any more	free :)
+  "4 C ---- ANY1",	// was: |CH| |ch|
 
   "5 * ..... 5 5",
   "5 * ....- 4 4",
@@ -1714,7 +1714,7 @@ char morse_2ACTION() {
 	MENU.outln(">>>> DELLAST");
       } else if(strcmp(morse_def_COMMAND->c_str(), "DELWORD") == 0) {
 	MENU.outln(">>>> DELLWORD");
-	
+
       } else if(strcmp(morse_def_COMMAND->c_str(), "MISTAKE") == 0) {
 	MENU.outln(">>>> MISTAKE");
       }
@@ -1807,6 +1807,7 @@ bool morse_store_received_letter(char letter) {		// returns error
   return true;	// ERROR
 }
 
+extern uint8_t monochrome_power_save;
 void morse_decode() {	// decode received token sequence
 /*
   decode received token sequence
@@ -1880,26 +1881,29 @@ void morse_decode() {	// decode received token sequence
 #endif
 		}
 	      } else if(morse_PRESENT_COMMAND == "OLED") {
-		oled_feedback_while_playing ^= 1;
+		if(oled_feedback_while_playing ^= 1)
+		  u8x8.setCursor(0,1);
+
 		MENU.out(F("OLED"));
 		MENU.out_ON_off(oled_feedback_while_playing);
 		MENU.ln();
 	      } else if(morse_PRESENT_COMMAND == "CANCEL") {
 		morse_out_buffer_cnt = 0;
-
+/*   no, i do not want CANCEL to change accelGyro_is_active any more
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
 		extern bool accelGyro_is_active;
 		accelGyro_is_active = false;	// CANCEL accelGyro_is_active
 #endif
-
+*/
 #if defined USE_MONOCHROME_DISPLAY
-		/* long prior version was very audible
-		   u8x8.setInverseFont(1);
-		   u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "CANCEL ");
-		   u8x8.setInverseFont(1);
-		*/
 		if(oled_feedback_while_playing || musicbox_is_idle())
 		  u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "C ");	// *short&quick*
+#endif
+	      } else if(morse_PRESENT_COMMAND == "ANY1") {	// '----'
+#if defined USE_MONOCHROME_DISPLAY
+		u8x8.setPowerSave(monochrome_power_save++ & 1);	// temporary ANY1 action
+#else
+		;
 #endif
 	      } else	// unknown
 		MENU.out("\nCOMMAND:\t"); MENU.outln(morse_PRESENT_COMMAND.c_str());

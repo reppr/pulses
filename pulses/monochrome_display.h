@@ -8,6 +8,8 @@
 
 #ifndef MONOCHROME_DISPLAY_H
 
+uint8_t monochrome_power_save=0;
+
 void monochrome_show_program_version() {	// monochrome oled display
     u8x8.clear();
     u8x8.setCursor(0,1);

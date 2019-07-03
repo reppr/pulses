@@ -5690,12 +5690,11 @@ void extended_output(char* data) {	// output on serial MENU, maybe OLED, possibl
 
 #if defined USE_MORSE && defined USE_MONOCHROME_DISPLAY
 //	#define MORSE_MONOCHROME_ROW
-  if(morse_do_monochrome_display) {
-    if(oled_feedback_while_playing || musicbox_is_idle())
-      u8x8.print(data);
-  }
+  if(oled_feedback_while_playing || musicbox_is_idle() || morse_do_monochrome_display)
+    u8x8.print(data);
 #endif
 }
+
 
 /* **************************************************************** */
 /* **************************************************************** */
