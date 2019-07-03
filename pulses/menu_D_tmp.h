@@ -5,7 +5,11 @@
 */
 
 
-sync_shifting({1,12});
+#if defined COMPILE_ACCEL_GYRO_SPEED_TEST
+accelGyro_speed_test();
+#endif
+
+// sync_shifting({1,12});
 
 // activate_accelGyro();
 

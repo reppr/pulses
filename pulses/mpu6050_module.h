@@ -522,6 +522,98 @@ void accelGyro_data_display() {
 }
 
 
+#define COMPILE_ACCEL_GYRO_SPEED_TEST
+#if defined COMPILE_ACCEL_GYRO_SPEED_TEST
+void accelGyro_speed_test(int n=1000) {
+  unsigned int start_time, loop_time, elapsed;
+  int16_t dummy;
+
+  MENU.out(F("accelGyro_speed_test("));
+  MENU.out(n);
+  MENU.outln(')');
+
+
+  MENU.out(F("loop\t"));
+  start_time = micros();
+  for(int i=0; i<n; i++) {
+    dummy=i;
+  }
+  elapsed = loop_time = (micros() - start_time);
+  MENU.outln((float) elapsed / n);
+
+
+  MENU.out(F("Ax\t"));
+  start_time = micros();
+  for(int i=0; i<n; i++) {
+    dummy=mpu6050.getAccelerationX();
+  }
+  elapsed = micros() - start_time;
+  elapsed -= loop_time;
+  MENU.outln((float) elapsed / n);
+
+  
+  MENU.out(F("Gx\t"));
+  start_time = micros();
+  for(int i=0; i<n; i++) {
+    dummy=mpu6050.getRotationX();
+  }
+  elapsed = micros() - start_time;
+  elapsed -= loop_time;
+  MENU.outln((float) elapsed / n);
+
+
+  MENU.out(F("XY\t"));
+  start_time = micros();
+  for(int i=0; i<n; i++) {
+    dummy=mpu6050.getAccelerationX();
+    dummy=mpu6050.getAccelerationY();
+  }
+  elapsed = micros() - start_time;
+  elapsed -= loop_time;
+  MENU.outln((float) elapsed / n);
+
+
+  MENU.out(F("XYZ\t"));
+  start_time = micros();
+  for(int i=0; i<n; i++) {
+    dummy=mpu6050.getAccelerationX();
+    dummy=mpu6050.getAccelerationY();
+    dummy=mpu6050.getRotationZ();
+  }
+  elapsed = micros() - start_time;
+  elapsed -= loop_time;
+  MENU.outln((float) elapsed / n);
+
+
+  MENU.out(F("6D\t"));
+  start_time = micros();
+  for(int i=0; i<n; i++) {
+    mpu6050.getMotion6(&dummy, &dummy, &dummy, &dummy, &dummy, &dummy);
+  }
+  elapsed = micros() - start_time;
+  elapsed -= loop_time;
+  MENU.outln((float) elapsed / n);
+
+
+  MENU.out(F("XYZxyz\t"));
+  start_time = micros();
+  for(int i=0; i<n; i++) {
+    dummy=mpu6050.getAccelerationX();
+    dummy=mpu6050.getAccelerationY();
+    dummy=mpu6050.getAccelerationZ();
+    dummy=mpu6050.getRotationX();
+    dummy=mpu6050.getRotationY();
+    dummy=mpu6050.getRotationZ();
+  }
+  elapsed = micros() - start_time;
+  elapsed -= loop_time;
+  MENU.outln((float) elapsed / n);
+
+
+  MENU.ln();
+}
+#endif // COMPILE_ACCEL_GYRO_SPEED_TEST
+
 /*
 void sample_accelGyro_6d() {	// too heavy,
   static int16_t mpu_sample_index=0;
