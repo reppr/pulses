@@ -3145,8 +3145,7 @@ bool musicBox_reaction(char token) {
       if(accelGyro_mode==0)		// deconfigured, so deactivate
 	accelGyro_is_active = false;
 
-      MENU.out(F("accelGyro m "));
-      MENU.out(accelGyro_mode);
+      display_accelGyro_mode();
       MENU.tab();
       MENU.out_ON_off(accelGyro_is_active);
       MENU.ln();

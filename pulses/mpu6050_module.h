@@ -240,7 +240,7 @@ enum AG_modes {
   gxM=8,
   gyM=16,
   gzM=32,
-} ;
+};
 
 //int accelGyro_mode=0;	// zero means inactive
 int accelGyro_mode = gzM | ayM;	// very temporary default ;)
@@ -263,6 +263,29 @@ void * aZ_reaction_source=NULL;	// DB pointers can be used here
 void * gX_reaction_source=NULL;	// DB pointers can be used here
 void * gY_reaction_source=NULL;	// DB pointers can be used here
 void * gZ_reaction_source=NULL;	// DB pointers can be used here
+
+void display_accelGyro_mode() {
+  MENU.out(F("accelGyro mode: "));
+
+  if(accelGyro_mode & axM) {
+    MENU.out(F("aX "));
+  }
+  if(accelGyro_mode & ayM) {
+    MENU.out(F("aY "));
+  }
+  if(accelGyro_mode & azM) {
+    MENU.out(F("aZ "));
+  }
+  if(accelGyro_mode & gxM) {
+    MENU.out(F("gX "));
+  }
+  if(accelGyro_mode & gyM) {
+    MENU.out(F("gY "));
+  }
+  if(accelGyro_mode & gzM) {
+    MENU.out(F("gZ "));
+  }
+}
 
 void reset_accGyro_selection() {
   aX_sel_i0=0;
@@ -554,7 +577,7 @@ void accelGyro_speed_test(int n=1000) {
   elapsed -= loop_time;
   MENU.outln((float) elapsed / n);
 
-  
+
   MENU.out(F("Gx\t"));
   start_time = micros();
   for(int i=0; i<n; i++) {
