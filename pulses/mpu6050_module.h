@@ -268,22 +268,22 @@ void display_accelGyro_mode() {
   MENU.out(F("accelGyro mode: "));
 
   if(accelGyro_mode & axM) {
-    MENU.out(F("aX "));
+    extended_output(F("aX "));
   }
   if(accelGyro_mode & ayM) {
-    MENU.out(F("aY "));
+    extended_output(F("aY "));
   }
   if(accelGyro_mode & azM) {
-    MENU.out(F("aZ "));
+    extended_output(F("aZ "));
   }
   if(accelGyro_mode & gxM) {
-    MENU.out(F("gX "));
+    extended_output(F("gX "));
   }
   if(accelGyro_mode & gyM) {
-    MENU.out(F("gY "));
+    extended_output(F("gY "));
   }
   if(accelGyro_mode & gzM) {
-    MENU.out(F("gZ "));
+    extended_output(F("gZ "));
   }
 }
 

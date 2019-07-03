@@ -5685,7 +5685,17 @@ bool menu_pulses_reaction(char menu_input) {
 
 /* **************************************************************** */
 
+void extended_output(char* data) {	// output on serial MENU, maybe OLED, possibly morse, ...
+  MENU.out(data);
 
+#if defined USE_MORSE && defined USE_MONOCHROME_DISPLAY
+//	#define MORSE_MONOCHROME_ROW
+  if(morse_do_monochrome_display) {
+    if(oled_feedback_while_playing || musicbox_is_idle())
+      u8x8.print(data);
+  }
+#endif
+}
 
 /* **************************************************************** */
 /* **************************************************************** */
