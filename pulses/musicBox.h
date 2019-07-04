@@ -22,7 +22,7 @@
 
 #if defined SETUP_PORTABLE_DAC_ONLY
   #define PERIPHERAL_POWER_SWITCH_PIN		12	// *pseudo* for green LED,  switch power, often green LED
-  #define PROGRAM_SUB_VERSION			portable 3	// with morse and (rudimetary) accelGyro UI
+  #define PROGRAM_SUB_VERSION			portable 3	// with morse and (rudimetary) accGyro UI
   #define MAX_SUBCYCLE_SECONDS			60*12	// *max seconds*, produces short PRESET PIECES	   portable instruments 2019-06
 //#define MUSICBOX_HARD_END_SECONDS		60*100	// SAVETY NET shut down after 100'	***DEACTIVATED***
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3600*12	// *DEACTIVATED*
@@ -794,8 +794,8 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
 */
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro	// TODO: RETHINK: HACK to avoid problems between 6050 and soft end
-  extern bool accelGyro_is_active;
-  accelGyro_is_active = false;	// CANCEL accelGyro_is_active	// TODO: RETHINK: HACK to avoid problems between 6050 and soft end
+  extern bool accGyro_is_active;
+  accGyro_is_active = false;	// CANCEL accGyro_is_active	// TODO: RETHINK: HACK to avoid problems between 6050 and soft end
 #endif
 
   /*	*no* let it always *try* to work...
@@ -2953,7 +2953,7 @@ void musicBox_display() {
   MENU.outln(F("'m'= set mode\t'mm' 'mM'= manual\t'ma' 'mA'= automagic"));
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
   MENU.out(F("'Y'= toggle AccelGyro "));
-  MENU.out_ON_off(accelGyro_is_active);
+  MENU.out_ON_off(accGyro_is_active);
   MENU.ln();
 #endif
 
@@ -3107,7 +3107,7 @@ bool musicBox_reaction(char token) {
     break;
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
-  case 'Y': // 'Y' (symbolising 3 axes)	toggle accelGyro_is_active
+  case 'Y': // 'Y' (symbolising 3 axes)	toggle accGyro_is_active
     {
       bool switch_activity=false;
       bool do_next_letter=true;
@@ -3120,23 +3120,23 @@ bool musicBox_reaction(char token) {
 	  case '0':			// Y0 =	restart at zero
 	  case '=':
 	    MENU.drop_input_token();
-	    accelGyro_mode = 0;
-	    accelGyro_is_active = false;
+	    accGyro_mode = 0;
+	    accGyro_is_active = false;
 	    break;
 	  case 'X':			// YX acc	toggle axM
 	    MENU.drop_input_token();
-	    accelGyro_mode ^= axM;
-	    accelGyro_is_active = accelGyro_mode;
+	    accGyro_mode ^= axM;
+	    accGyro_is_active = accGyro_mode;
 	    break;
 	  case 'Y':			// YY acc	toggle ayM
 	    MENU.drop_input_token();
-	    accelGyro_mode ^= ayM;
-	    accelGyro_is_active = accelGyro_mode;
+	    accGyro_mode ^= ayM;
+	    accGyro_is_active = accGyro_mode;
 	    break;
 	  case 'Z':			// YZ GYRO	toggle gzM
 	    MENU.drop_input_token();
-	    accelGyro_mode ^= gzM;
-	    accelGyro_is_active = accelGyro_mode;
+	    accGyro_mode ^= gzM;
+	    accGyro_is_active = accGyro_mode;
 	    break;
 	  default:
 	    do_next_letter = false;
@@ -3145,13 +3145,13 @@ bool musicBox_reaction(char token) {
       }
 
       if(switch_activity)
-	accelGyro_is_active ^= 1;
-      if(accelGyro_mode==0)		// deconfigured, so deactivate
-	accelGyro_is_active = false;
+	accGyro_is_active ^= 1;
+      if(accGyro_mode==0)		// deconfigured, so deactivate
+	accGyro_is_active = false;
 
-      display_accelGyro_mode();
+      display_accGyro_mode();
       MENU.tab();
-      MENU.out_ON_off(accelGyro_is_active);
+      MENU.out_ON_off(accGyro_is_active);
       MENU.ln();
     }
     break;

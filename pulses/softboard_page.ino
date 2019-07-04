@@ -1181,7 +1181,7 @@ bool softboard_reaction(char token) {
 
 #if defined USE_MPU6050	// MPU-6050 6d accelero/gyro
   case 'G':	// MPU-6050 6d accelero/gyro
-    accelGyro_data_display();
+    accGyro_data_display();
     break;
 #endif
 

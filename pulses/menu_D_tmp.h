@@ -4,18 +4,20 @@
   temporary test code for pulses menu 'D'
 */
 
+/*
 u8x8.setPowerSave(0);
 delay(1000);
 u8x8.setPowerSave(1);
 delay(1000);
+*/
 
 #if defined COMPILE_ACCEL_GYRO_SPEED_TEST
-accelGyro_speed_test();
+accGyro_speed_test();
 #endif
 
 // sync_shifting({1,12});
 
-// activate_accelGyro();
+// activate_accGyro();
 
 /*
 sample_accelero_giro_6d();

@@ -7,7 +7,7 @@
 
 #if ! defined MPU6050_MODULE_H
 
-int16_t accelGyro_offsets[] = {-1493, -2125, 1253, 98, 85, -50};	// aX, aY, aZ, gX, gY, gZ offsets
+int16_t accGyro_offsets[] = {-1493, -2125, 1253, 98, 85, -50};	// aX, aY, aZ, gX, gY, gZ offsets
 // *GIVE INDIVIDUAL OFFSET VALUES FOR YOUR CHIP HERE*
 // get these values (with *horizontally resting* chips)
 // see: https://github.com/jrowberg/i2cdevlib/tree/master/Arduino/MPU6050/examples/IMU_Zero
@@ -26,8 +26,8 @@ MPU6050 mpu6050;
 int16_t ax, ay, az;
 int16_t gx, gy, gz;
 
-bool accelGyro_is_active = false ;	// accelGyro switching by the program
-bool accelGyro_invert = true;		// defaults to invert mathemetical axis, which feels right in instrument handling
+bool accGyro_is_active = false ;	// accGyro switching by the program
+bool accGyro_invert = true;		// defaults to invert mathemetical axis, which feels right in instrument handling
 
 bool mpu6050_setup() {
   MENU.out(F("mpu6050_setup()\t"));
@@ -44,35 +44,35 @@ bool mpu6050_setup() {
   if(mpu6050.testConnection()) {
     MENU.outln(F("ok"));
 
-    MENU.out(F("set accelGyro offsets\t{"));
+    MENU.out(F("set accGyro offsets\t{"));
     int16_t o;
 
-    mpu6050.setXAccelOffset(o = accelGyro_offsets[0]);
+    mpu6050.setXAccelOffset(o = accGyro_offsets[0]);
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
-    mpu6050.setYAccelOffset(o = accelGyro_offsets[1]);
+    mpu6050.setYAccelOffset(o = accGyro_offsets[1]);
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
-    mpu6050.setZAccelOffset(o = accelGyro_offsets[2]);
+    mpu6050.setZAccelOffset(o = accGyro_offsets[2]);
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
-    mpu6050.setXGyroOffset(o = accelGyro_offsets[3]);
+    mpu6050.setXGyroOffset(o = accGyro_offsets[3]);
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
-    mpu6050.setYGyroOffset(o = accelGyro_offsets[4]);
+    mpu6050.setYGyroOffset(o = accGyro_offsets[4]);
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
-    mpu6050.setZGyroOffset(o = accelGyro_offsets[5]);
+    mpu6050.setZGyroOffset(o = accGyro_offsets[5]);
     MENU.out(o);
     MENU.outln('}');
 
@@ -84,8 +84,8 @@ bool mpu6050_setup() {
   return false;
 }
 
-bool volatile accelGyro_new_data=false;		// new data has arrived, waits for accelGyro_reaction()
-// float  accGyro_current_??			// last accGyro data seen as accelGyro_new_data got true
+bool volatile accGyro_new_data=false;		// new data has arrived, waits for accGyro_reaction()
+// float  accGyro_current_??			// last accGyro data seen as accGyro_new_data got true
 float accGyro_current_AX=0.0;
 float accGyro_current_AY=0.0;
 float accGyro_current_AZ=0.0;
@@ -101,7 +101,7 @@ typedef struct {
   int16_t gx;
   int16_t gy;
   int16_t gz;
-} accelGyro_6d_data;
+} accGyro_6d_data;
 
 #if ! defined MPU_OVERSAMPLING
   //#define MPU_OVERSAMPLING	15
@@ -110,9 +110,9 @@ typedef struct {
   //#define MPU_OVERSAMPLING	2	// quite usable, but sounds trigger accelero...
   //#define MPU_OVERSAMPLING	1	// possible
 #endif
-accelGyro_6d_data mpu_samples[MPU_OVERSAMPLING] = { 0 };	// TODO: yes?
+accGyro_6d_data mpu_samples[MPU_OVERSAMPLING] = { 0 };	// TODO: yes?
 
-hw_timer_t * accelGyro_timer = NULL;
+hw_timer_t * accGyro_timer = NULL;
 
 //#define WITH_TIMER_MUX	// DEACTIVATED for a test	TODO: REMOVE:
 #if defined WITH_TIMER_MUX
@@ -130,8 +130,8 @@ enum AG_mode {
   D6M=64,	// unused yet
 };
 
-//int accelGyro_mode=0;	// zero means inactive
-int accelGyro_mode = gzM | ayM | axM;	// very temporary default ;)
+//int accGyro_mode=0;	// zero means inactive
+int accGyro_mode = gzM | ayM | axM;	// very temporary default ;)
 int16_t aX_sel_i0=0;
 int16_t aY_sel_i0=0;
 int16_t aZ_sel_i0=0;
@@ -152,25 +152,25 @@ void * gX_reaction_source=NULL;	// DB pointers can be used here
 void * gY_reaction_source=NULL;	// DB pointers can be used here
 void * gZ_reaction_source=NULL;	// DB pointers can be used here
 
-void display_accelGyro_mode() {
-  MENU.out(F("accelGyro mode: "));
+void display_accGyro_mode() {
+  MENU.out(F("accGyro mode: "));
 
-  if(accelGyro_mode & axM) {
+  if(accGyro_mode & axM) {
     extended_output(F("aX "));
   }
-  if(accelGyro_mode & ayM) {
+  if(accGyro_mode & ayM) {
     extended_output(F("aY "));
   }
-  if(accelGyro_mode & azM) {
+  if(accGyro_mode & azM) {
     extended_output(F("aZ "));
   }
-  if(accelGyro_mode & gxM) {
+  if(accGyro_mode & gxM) {
     extended_output(F("gX "));
   }
-  if(accelGyro_mode & gyM) {
+  if(accGyro_mode & gyM) {
     extended_output(F("gY "));
   }
-  if(accelGyro_mode & gzM) {
+  if(accGyro_mode & gzM) {
     extended_output(F("gZ "));
   }
 }
@@ -201,10 +201,10 @@ extern void sync_shifting(fraction shift);			// pre declaration
 //int16_t GYROX_selected=0;
 //int16_t GYROY_selected=0;
 int16_t GYROZ_selected=0;
-bool gyro_check() {
+bool GYRO_only_check() {
   float GZ = mpu6050.getRotationZ();
   GZ /= 32;	// TODO: is *RANDOM* float scaling
-  if(accelGyro_invert)	// invert mathematical axis
+  if(accGyro_invert)	// invert mathematical axis
     GZ = -GZ;
 
   GYROZ_selected = GZ + 0.5;
@@ -221,11 +221,11 @@ bool gyro_check() {
 #if ! defined ACCGYRO_DEFAULT_PRESET
   #define ACCGYRO_DEFAULT_PRESET	1
 #endif
-uint8_t	accelGyro_preset = ACCGYRO_DEFAULT_PRESET;
+uint8_t	accGyro_preset = ACCGYRO_DEFAULT_PRESET;
 
 
-//void IRAM_ATTR accelGyro_sample_ISR() {
-void accelGyro_sample_ISR() {	// test	from *outside* interrupt context	TODO: RENAME:
+//void IRAM_ATTR accGyro_sample_ISR() {
+void accGyro_sample_ISR() {	// test	from *outside* interrupt context	TODO: RENAME:
   static int16_t mpu_sample_index=0;
 
 //#define ACCELGYRO_SAMPLES	ALL6
@@ -281,7 +281,7 @@ void accelGyro_sample_ISR() {	// test	from *outside* interrupt context	TODO: REN
       GZ += mpu_samples[i].gz;
     }
 
-    // ACCELERO:	INVERTING DELAYED to accelGyro_reaction()
+    // ACCELERO:	INVERTING DELAYED to accGyro_reaction()
     accGyro_current_AX = (AX / MPU_OVERSAMPLING) + 16384;
     accGyro_current_AX /= 32768;	// to float scaling
 
@@ -291,50 +291,50 @@ void accelGyro_sample_ISR() {	// test	from *outside* interrupt context	TODO: REN
     accGyro_current_AZ = (AZ / MPU_OVERSAMPLING) + 16384;
     accGyro_current_AZ /= 32768;	// to float scaling
 
-    // GYRO:	INVERTING IS DONE HERE in accelGyro_sample_ISR
+    // GYRO:	INVERTING IS DONE HERE in accGyro_sample_ISR
     accGyro_current_GX = (GX / MPU_OVERSAMPLING);
     accGyro_current_GX /= 32;	// TODO: is *RANDOM* float scaling
-    if(accelGyro_invert)	// invert mathematical axis
+    if(accGyro_invert)	// invert mathematical axis
       accGyro_current_GX = -accGyro_current_GX;
 
     accGyro_current_GY = (GY / MPU_OVERSAMPLING);
     accGyro_current_GY /= 32;	// TODO: is *RANDOM* float scaling
-    if(accelGyro_invert)	// invert mathematical axis
+    if(accGyro_invert)	// invert mathematical axis
       accGyro_current_GY = -accGyro_current_GY;
 
     accGyro_current_GZ = (GZ / MPU_OVERSAMPLING);
     accGyro_current_GZ /= 32;	// TODO: is *RANDOM* float scaling
-    if(accelGyro_invert)	// invert mathematical axis
+    if(accGyro_invert)	// invert mathematical axis
       accGyro_current_GZ = -accGyro_current_GZ;
 
 #if defined WITH_TIMER_MUX
     portENTER_CRITICAL_ISR(&timerMux);
 #endif
-    accelGyro_new_data = true;
+    accGyro_new_data = true;
 #if defined WITH_TIMER_MUX
     portEXIT_CRITICAL_ISR(&timerMux);
 #endif
   }
 }
 
-void activate_accelGyro() {	// TODO: obsolete
-  //  accelGyro_timer = timerBegin(0, 80000, true);	// milliseconds
-  accelGyro_timer = timerBegin(0, 80, true);	// microseconds
-  timerAttachInterrupt(accelGyro_timer, &accelGyro_sample_ISR, true);
-  timerAlarmWrite(accelGyro_timer, 1000000, true);
-  timerAlarmEnable(accelGyro_timer);
+void activate_accGyro() {	// TODO: obsolete
+  //  accGyro_timer = timerBegin(0, 80000, true);	// milliseconds
+  accGyro_timer = timerBegin(0, 80, true);	// microseconds
+  timerAttachInterrupt(accGyro_timer, &accGyro_sample_ISR, true);
+  timerAlarmWrite(accGyro_timer, 1000000, true);
+  timerAlarmEnable(accGyro_timer);
 }
 
-// void accelGyro_reaction()
+// void accGyro_reaction()
 #define DEBUG_AG_REACTION		// DO show selected slices
 #define DEBUG_ACCELGYRO_BASICS	// deactivated
 extern void monochrome_show_line(uint8_t row, char * s);	// extern declaration
 extern int lowest_primary, highest_primary, primary_count;	// extern declaration
 extern void noAction_flags_line();				// extern declaration
-void accelGyro_reaction() {		// react on data coming from ################################################################
-  if(accelGyro_new_data && accelGyro_mode) {
-    accelGyro_new_data = false;
-    if(! accelGyro_is_active)
+void accGyro_reaction() {		// react on data coming from ################################################################
+  if(accGyro_new_data && accGyro_mode) {
+    accGyro_new_data = false;
+    if(! accGyro_is_active)
       return;
 
     // selected slice:
@@ -350,9 +350,9 @@ void accelGyro_reaction() {		// react on data coming from ######################
     bool there_was_output=false;
     reset_accGyro_selection();	// offsets and slots
 
-    switch(accelGyro_preset) {
+    switch(accGyro_preset) {
     case 1:
-      if(accelGyro_mode & axM) {		// accelero X
+      if(accGyro_mode & axM) {		// accelero X
 	AX = accGyro_current_AX;
 #if defined DEBUG_ACCELGYRO_BASICS
 	there_was_output = true;
@@ -366,7 +366,7 @@ void accelGyro_reaction() {		// react on data coming from ######################
 	aX_sel_i0 = 0;
       }
 
-      if(accelGyro_mode & ayM) {		// accelero Y
+      if(accGyro_mode & ayM) {		// accelero Y
 	AY = accGyro_current_AY;
 #if defined DEBUG_ACCELGYRO_BASICS
 	there_was_output = true;
@@ -381,7 +381,7 @@ void accelGyro_reaction() {		// react on data coming from ######################
 	aY_sel_i0 = 0;
       }
 
-      if(accelGyro_mode & gzM) {		// gyro Z
+      if(accGyro_mode & gzM) {		// gyro Z
 	GZ = accGyro_current_GZ;
 
 #if defined DEBUG_ACCELGYRO_BASICS
@@ -389,7 +389,7 @@ void accelGyro_reaction() {		// react on data coming from ######################
 	MENU.out("\tGZ= ");
 	MENU.out(GZ);
 #endif
-	if(accelGyro_invert)	// invert mathematical axis
+	if(accGyro_invert)	// invert mathematical axis
 	  GZ = -GZ;
 
 #if defined DEBUG_ACCELGYRO_BASICS
@@ -401,22 +401,22 @@ void accelGyro_reaction() {		// react on data coming from ######################
       if(there_was_output)
 	MENU.ln();
 
-      // ACCELERO:	INVERTING IS DONE HERE in  accelGyro_reaction()
-      if(accelGyro_mode & axM) {		// accelero X
+      // ACCELERO:	INVERTING IS DONE HERE in  accGyro_reaction()
+      if(accGyro_mode & axM) {		// accelero X
 	selected_aX = AX * aX_select_slots +0.5;
 	selected_aX += aX_sel_i0;
-	if(accelGyro_invert)	// invert mathematical axis
+	if(accGyro_invert)	// invert mathematical axis
 	  selected_aX = aX_select_slots - 1 - selected_aX;
       }
 
-      if(accelGyro_mode & ayM) {		// accelero Y
+      if(accGyro_mode & ayM) {		// accelero Y
 	selected_aY = AY * aY_select_slots +0.5;
 	selected_aY += aY_sel_i0;
-	if(accelGyro_invert)	// invert mathematical axis
+	if(accGyro_invert)	// invert mathematical axis
 	  selected_aY = aY_select_slots - 1 - selected_aY;
       }
 
-      if(accelGyro_mode & gzM) {		// gyro Z
+      if(accGyro_mode & gzM) {		// gyro Z
 	selected_gZ = GZ + 0.5;
 	selected_gZ += gZ_sel_i0;
       }
@@ -437,7 +437,7 @@ void accelGyro_reaction() {		// react on data coming from ######################
       }
 #endif
 
-      if(accelGyro_mode & axM) {		// accelero X
+      if(accGyro_mode & axM) {		// accelero X
 	unsigned int* jiffle = NULL;
 	if(jiffle = index2pointer(JIFFLES, selected_aX)) {
 	  if(selected_aX != selected_aX_seen) {
@@ -455,7 +455,7 @@ void accelGyro_reaction() {		// react on data coming from ######################
 	} // aX JIFFLES
       }
 
-      if(accelGyro_mode & ayM) {		// accelero Y
+      if(accGyro_mode & ayM) {		// accelero Y
 	if(selected_aY != selected_aY_seen) {
 	  selected_aY_seen = selected_aY;
 
@@ -510,13 +510,13 @@ void accelGyro_reaction() {		// react on data coming from ######################
       break;
 
     default:
-      MENU.error_ln(F("unknown accelGyro_preset"));
-    } // switch (accelGyro_preset)
-  } // if(accelGyro_mode)
+      MENU.error_ln(F("unknown accGyro_preset"));
+    } // switch (accGyro_preset)
+  } // if(accGyro_mode)
 }
 
 
-void accelGyro_data_display() {
+void accGyro_data_display() {
   if(! mpu6050.testConnection())	// if no connection, try to initialise
     mpu6050_setup();
   if(mpu6050.testConnection()) {	// (try again)
@@ -539,11 +539,11 @@ void accelGyro_data_display() {
 
 //#define COMPILE_ACCEL_GYRO_SPEED_TEST
 #if defined COMPILE_ACCEL_GYRO_SPEED_TEST
-void accelGyro_speed_test(int n=1000) {
+void accGyro_speed_test(int n=1000) {
   unsigned int start_time, loop_time, elapsed;
   int16_t dummy;
 
-  MENU.out(F("accelGyro_speed_test("));
+  MENU.out(F("accGyro_speed_test("));
   MENU.out(n);
   MENU.outln(')');
 

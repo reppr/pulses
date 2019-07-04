@@ -1175,22 +1175,22 @@ bool low_priority_tasks() {
 //  #define GYRO_MODULUS		1173	// prime
   #define GYRO_MODULUS		19319	// prime
 
-  if(accelGyro_is_active) {
+  if(accGyro_is_active) {
     if((low_priority_cnt % GYRO_MODULUS) == 0) { // check GYRO
-      if(gyro_check())
+      if(GYRO_only_check())
 	return true;
     }
   }
 
-  if(accelGyro_is_active) {
-    if(accelGyro_new_data ) {	//   check new input data
-      accelGyro_reaction();
+  if(accGyro_is_active) {
+    if(accGyro_new_data ) {	//   check new input data
+      accGyro_reaction();
       return true;
     } // else
 
   #define ACCGYR_MODULUS	55547	// prime
     if ((low_priority_cnt % ACCGYR_MODULUS) == 0) { // take a accelerGyro sample
-      accelGyro_sample_ISR();		 // testing ouside of interrupt context
+      accGyro_sample_ISR();		 // testing ouside of interrupt context
       return true;
     }
   } // else

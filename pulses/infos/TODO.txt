@@ -139,6 +139,6 @@ s hät glaub mehreri ...
 MENU morse feedback and || OLED
   many stray newlines around...
 
-MENU accelGyro feedback || OLED
+MENU accGyro feedback || OLED
 
 AG_mode D6M

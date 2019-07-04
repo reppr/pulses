@@ -1889,10 +1889,10 @@ void morse_decode() {	// decode received token sequence
 		MENU.ln();
 	      } else if(morse_PRESENT_COMMAND == "CANCEL") {
 		morse_out_buffer_cnt = 0;
-/*   no, i do not want CANCEL to change accelGyro_is_active any more
+/*   no, i do not want CANCEL to change accGyro_is_active any more
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
-		extern bool accelGyro_is_active;
-		accelGyro_is_active = false;	// CANCEL accelGyro_is_active
+		extern bool accGyro_is_active;
+		accGyro_is_active = false;	// CANCEL accGyro_is_active
 #endif
 */
 #if defined USE_MONOCHROME_DISPLAY
