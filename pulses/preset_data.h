@@ -3068,7 +3068,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# whirles
     //# structure	whirlnet
     //# systemStress	some
-    //# heavyStart
+    //# heavyStart	???
     //# aesthetic	enchanted
     //# nice
     //# dense		it *is*, but still nice
@@ -3203,7 +3203,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# melodies
     //# harmonies
     //# whirles
-    //# heavyStart
+    //# heavyStart	*churze* Störfall
     //# classicHarmonical	with whirls
     //# aesthetic
     //# quiet
@@ -4799,6 +4799,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     name = F("mad accordeon players whichdance with old indio's flute babbling");
     //# favorite
     //# systemStress
+    // Störfall? mit stack_sync_slices=0
     //# heavyStart	// added stack_sync_slices = -64; to try a fix	// TODO: test&trim
     //# shortIsOk
     //# bigBang
@@ -4952,8 +4953,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 172:
     name = F("no meh melodie :)");
-    //# favorite	only with autostack_S0
-    //# heavyStart	PROBLEMATIC, throughout...	use autostack_S0 !
+    // SCHWÄRE STÖRFALL !
+    //# favorite--	only with autostack_S0
+    //#heavyStart	PROBLEMATIC, throughout...	use autostack_S0 !
     //# dropouts	problematic
     //# shortIsOk
     //# motives

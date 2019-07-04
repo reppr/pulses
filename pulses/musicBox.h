@@ -22,7 +22,7 @@
 
 #if defined SETUP_PORTABLE_DAC_ONLY
   #define PERIPHERAL_POWER_SWITCH_PIN		12	// *pseudo* for green LED,  switch power, often green LED
-  #define PROGRAM_SUB_VERSION			portable 3	// with morse and (rudimetary) accGyro UI
+  #define PROGRAM_SUB_VERSION			portable 3+	// with morse and simple 3d accGyro UI
   #define MAX_SUBCYCLE_SECONDS			60*12	// *max seconds*, produces short PRESET PIECES	   portable instruments 2019-06
 //#define MUSICBOX_HARD_END_SECONDS		60*100	// SAVETY NET shut down after 100'	***DEACTIVATED***
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3600*12	// *DEACTIVATED*

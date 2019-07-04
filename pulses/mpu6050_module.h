@@ -322,8 +322,8 @@ void accGyro_sample() {
 }
 
 // void accGyro_reaction()
-#define DEBUG_AG_REACTION		// DO show selected slices
-#define DEBUG_ACCELGYRO_BASICS	// deactivated
+//#define DEBUG_AG_REACTION		// DO show selected slices
+//#define DEBUG_ACCELGYRO_BASICS	// deactivated
 extern bool monochrome_is_on();					// extern declaration
 extern void monochrome_show_line(uint8_t row, char * s);	// extern declaration
 extern int lowest_primary, highest_primary, primary_count;	// extern declaration
