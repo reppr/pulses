@@ -5690,10 +5690,12 @@ void extended_output(char* data, uint8_t row=0, uint8_t col=0, bool force=false)
 
 #if defined USE_MORSE && defined USE_MONOCHROME_DISPLAY
 //	#define MORSE_MONOCHROME_ROW
-  if(oled_feedback_while_playing || (musicbox_is_idle() || force) || monochrome_output_char) {
-    //if(row | col)
-    u8x8.setCursor(col,row);	// sounds horrible
-    u8x8.print(data);		// sounds horrible
+  if(monochrome_power_save==0) {
+    if(oled_feedback_while_playing || (musicbox_is_idle() || force) || monochrome_output_char) {
+      //if(row | col)
+      u8x8.setCursor(col,row);	// sounds horrible
+      u8x8.print(data);		// sounds horrible
+    }
   }
 #endif
 }
