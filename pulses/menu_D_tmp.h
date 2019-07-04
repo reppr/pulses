@@ -17,8 +17,6 @@ accGyro_speed_test();
 
 // sync_shifting({1,12});
 
-// activate_accGyro();
-
 /*
 sample_accelero_giro_6d();
 

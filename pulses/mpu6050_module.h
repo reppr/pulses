@@ -112,12 +112,18 @@ typedef struct {
 #endif
 accGyro_6d_data mpu_samples[MPU_OVERSAMPLING] = { 0 };	// TODO: yes?
 
+/*  pulses does NOT use interrupt version any more
+//	the interrupt version worked fine so far
+//	but as i2c activity is quite critical while playing
+//	i want the program to decide *when* to do it...
+
 hw_timer_t * accGyro_timer = NULL;
 
-//#define WITH_TIMER_MUX	// DEACTIVATED for a test	TODO: REMOVE:
+//#define WITH_TIMER_MUX
 #if defined WITH_TIMER_MUX
   portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 #endif
+*/
 
 enum AG_mode {
   axM=1,
@@ -225,8 +231,8 @@ bool GYRO_only_check() {
 uint8_t	accGyro_preset = ACCGYRO_DEFAULT_PRESET;
 
 
-//void IRAM_ATTR accGyro_sample_ISR() {
-void accGyro_sample_ISR() {	// test	from *outside* interrupt context	TODO: RENAME:
+/*	void IRAM_ATTR accGyro_sample()	// pulses does NOT use interrupt version any more	*/
+void accGyro_sample() {
   static int16_t mpu_sample_index=0;
 
 //#define ACCELGYRO_SAMPLES	ALL6
@@ -292,7 +298,7 @@ void accGyro_sample_ISR() {	// test	from *outside* interrupt context	TODO: RENAM
     accGyro_current_AZ = (AZ / MPU_OVERSAMPLING) + 16384;
     accGyro_current_AZ /= 32768;	// to float scaling
 
-    // GYRO:	INVERTING IS DONE HERE in accGyro_sample_ISR
+    // GYRO:	INVERTING IS DONE HERE in accGyro_sample
     accGyro_current_GX = (GX / MPU_OVERSAMPLING);
     accGyro_current_GX /= 32;	// TODO: is *RANDOM* float scaling
     if(accGyro_invert)	// invert mathematical axis
@@ -308,22 +314,10 @@ void accGyro_sample_ISR() {	// test	from *outside* interrupt context	TODO: RENAM
     if(accGyro_invert)	// invert mathematical axis
       accGyro_current_GZ = -accGyro_current_GZ;
 
-#if defined WITH_TIMER_MUX
-    portENTER_CRITICAL_ISR(&timerMux);
-#endif
+    /*	portENTER_CRITICAL_ISR(&timerMux);	*/ // pulses does not use interrupt version any more
     accGyro_new_data = true;
-#if defined WITH_TIMER_MUX
-    portEXIT_CRITICAL_ISR(&timerMux);
-#endif
+    /*	portEXIT_CRITICAL_ISR(&timerMux);	*/ // pulses does not use interrupt version any more
   }
-}
-
-void activate_accGyro() {	// TODO: obsolete
-  //  accGyro_timer = timerBegin(0, 80000, true);	// milliseconds
-  accGyro_timer = timerBegin(0, 80, true);	// microseconds
-  timerAttachInterrupt(accGyro_timer, &accGyro_sample_ISR, true);
-  timerAlarmWrite(accGyro_timer, 1000000, true);
-  timerAlarmEnable(accGyro_timer);
 }
 
 // void accGyro_reaction()
@@ -333,7 +327,7 @@ extern bool monochrome_is_on();					// extern declaration
 extern void monochrome_show_line(uint8_t row, char * s);	// extern declaration
 extern int lowest_primary, highest_primary, primary_count;	// extern declaration
 extern void noAction_flags_line();				// extern declaration
-void accGyro_reaction() {		// react on data coming from ################################################################
+void accGyro_reaction() {	// react on data coming from accGyro_sample()
   if(accGyro_new_data && accGyro_mode) {
     accGyro_new_data = false;
     if(! accGyro_is_active)
@@ -631,6 +625,15 @@ void accGyro_speed_test(int n=1000) {
 }
 #endif // COMPILE_ACCEL_GYRO_SPEED_TEST
 
+/* pulses does not use interrupt version any more
+void activate_accGyro() {
+  //  accGyro_timer = timerBegin(0, 80000, true);	// milliseconds
+  accGyro_timer = timerBegin(0, 80, true);	// microseconds
+  timerAttachInterrupt(accGyro_timer, &accGyro_sample, true);
+  timerAlarmWrite(accGyro_timer, 1000000, true);
+  timerAlarmEnable(accGyro_timer);
+}
+*/
 
 #define  MPU6050_MODULE_H
 #endif

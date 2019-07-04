@@ -1190,7 +1190,7 @@ bool low_priority_tasks() {
 
   #define ACCGYR_MODULUS	55547	// prime
     if ((low_priority_cnt % ACCGYR_MODULUS) == 0) { // take a accelerGyro sample
-      accGyro_sample_ISR();		 // testing ouside of interrupt context
+      accGyro_sample();
       return true;
     }
   } // else
