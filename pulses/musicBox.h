@@ -435,7 +435,11 @@ void init_primary_counters() {
   memset(&primary_counters, 0, sizeof(primary_counters));
 }
 
-bool show_cycle_pattern=true;
+#if ! defined SHOW_CYCLE_PATTERN_DEFAULT
+  #define SHOW_CYCLE_PATTERN_DEFAULT	false
+#endif
+
+bool show_cycle_pattern=false;
 bool show_cycle_pattern_intervals=false;
 
 int lowest_primary=ILLEGAL, highest_primary=ILLEGAL;	// remember start configuration	// TODO: make it short?
@@ -679,8 +683,12 @@ int slice_weighting(fraction F) {
 
 
 // cycle_monitor(p)  payload to give infos where in the cycle we are
-bool show_subcycle_position=true;
 int cycle_monitor_i=ILLEGAL;	// pulse index of cycle_monitor(p)
+
+#if ! defined SHOW_SUBCYCLE_POSITION_DEFAULT
+  #define SHOW_SUBCYCLE_POSITION_DEFAULT	false
+#endif
+bool show_subcycle_position=SHOW_SUBCYCLE_POSITION_DEFAULT;
 
 void cycle_monitor(int pulse) {	// show markers at important cycle divisions
   static unsigned short cycle_monitor_last_seen_division=0;
@@ -2267,7 +2275,7 @@ void start_musicBox() {
   // MENU.play_KB_macro(F("-:M "), false);	// initialize, the space avoids output from :M , no newline
   // or
   // *DO NOT* show cycle pattern:
-  MENU.play_KB_macro(F("-:M op"), false);	// initialize, the space avoids output from :M , no newline
+  MENU.play_KB_macro(F("-:M"), false);	// initialize, the space avoids output from :M , no newline	// maybe replace?
 
   // TODO: REWORK:  setup_bass_middle_high()  used in musicBox, but not really compatible
   MENU.ln();	// start setup sequence output "block"
@@ -3186,6 +3194,7 @@ bool musicBox_reaction(char token) {
       // TODO: feedback
     }
     break;
+
   case 'o': // show_subcycle_position
     show_subcycle_position ^= 1 ;
     if(MENU.verbosity > VERBOSITY_LOWEST) {
@@ -3314,7 +3323,7 @@ bool musicBox_reaction(char token) {
     if(MENU.cb_peek()=='*') {	// 'p*' toggle interval symbols in cycle pattern
       MENU.drop_input_token();
       show_cycle_pattern_intervals ^= 1;
-      show_cycle_pattern = 1;
+      show_cycle_pattern = true;
     } else
       show_cycle_pattern ^= 1;
 

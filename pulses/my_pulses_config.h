@@ -40,3 +40,8 @@
 //#define NVS_PUT_PRENAME_HACK	CHATEAU		// 1 shot HACK to put a PRENAME		TODO: UI
 //#define NVS_PUT_PRENAME_HACK	FitNess		// 1 shot HACK to put a PRENAME		TODO: UI
 //#define NVS_PUT_PRENAME_HACK	LillyBoy_	// 1 shot HACK to put a PRENAME		TODO: UI
+
+
+// some defaults you can change:
+//#define SHOW_CYCLE_PATTERN_DEFAULT		false
+//#define SHOW_SUBCYCLE_POSITION_DEFAULT	false
