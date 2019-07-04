@@ -467,7 +467,7 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	    //	// limit--
 	    //	break;
 	  case 1:	// all but high
-	    extended_output(F("LBM_ "), 0, 1, false);
+	    extended_output(F(" LBM_ "), 0, 1, false);
 	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
 	    for(int pulse = highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
@@ -475,12 +475,12 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	    break;
 	  case 2:	// all on
 	  case 3:	// all on
-	    extended_output(F("LBMH "), 0, 1, false);
+	    extended_output(F(" LBMH "), 0, 1, false);
 	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
 	    break;
 	  case 4:	// middle only
-	    extended_output(F("_BM_ "), 0, 1, false);
+	    extended_output(F(" _BM_ "), 0, 1, false);
 	    MENU.outln(highest_primary);
 	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
@@ -488,7 +488,7 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
 	    break;
 	  case 5:	// extremes only
-	    extended_output(F("L__H "), 0, 1, false);
+	    extended_output(F(" L__H "), 0, 1, false);
 	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
 	    for(int pulse=lowest_primary; pulse <= lowest_primary + (primary_count/4); pulse++)
@@ -497,7 +497,7 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
 	    break;
 	  case 6:	// high only
-	    extended_output(F("___H "), 0, 1, false);
+	    extended_output(F(" ___H "), 0, 1, false);
 	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
 	    for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
@@ -507,7 +507,7 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	    //      case 7:	// bass_limit--		// TODO: near limit region
 	    //	break;
 	  default:	// toggle all
-	    extended_output(F("~~~~ "), 0, 1, false);
+	    extended_output(F(" ~~~~ "), 0, 1, false);
 	    PULSES.select_from_to(lowest_primary, highest_primary);
 	    PULSES.selected_toggle_no_actions();
 	    PULSES.select_n(voices);

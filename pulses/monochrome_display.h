@@ -23,7 +23,7 @@ bool monochrome_is_on() {	// monochrome output is appropriate?
 }
 
 void monochrome_show_program_version() {	// monochrome oled display
-  if(monochrome_is_on()) {
+  if(! monochrome_power_save) {
     u8x8.clear();
     u8x8.setCursor(0,1);
     u8x8.print(F(STRINGIFY(PROGRAM_VERSION)));
@@ -93,7 +93,7 @@ void monochrome_show_program_version() {	// monochrome oled display
 }
 
 void monochrome_show_subcycle_octave() {
-  if(monochrome_is_on()) {
+  if(! monochrome_power_save) {
     if(selected_in(SCALES) != NULL) {
       u8x8.print(F("2^"));
       u8x8.print(subcycle_octave);
@@ -102,7 +102,7 @@ void monochrome_show_subcycle_octave() {
 }
 
 void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be used while playing
-  if(monochrome_is_on()) {
+  if(! monochrome_power_save) {
     uint8_t cols = u8x8.getCols();
     uint8_t rows = u8x8.getRows();
     int row=0;
@@ -229,7 +229,7 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
 }
 
 void monochrome_show_line(uint8_t row, char * s) {
-  if(monochrome_is_on()) {
+  if(! monochrome_power_save) {
     uint8_t cols = u8x8.getCols();
     char full_line[cols+1] = {0};
     char c;
