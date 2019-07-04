@@ -158,26 +158,27 @@ void * gX_reaction_source=NULL;	// DB pointers can be used here
 void * gY_reaction_source=NULL;	// DB pointers can be used here
 void * gZ_reaction_source=NULL;	// DB pointers can be used here
 
+extern void extended_output(char* data, uint8_t row, uint8_t col, bool force);
 void display_accGyro_mode() {
   MENU.out(F("accGyro mode: "));
 
   if(accGyro_mode & axM) {
-    extended_output(F("aX "));
+    extended_output(F("aX "), 0, 0, false);
   }
   if(accGyro_mode & ayM) {
-    extended_output(F("aY "));
+    extended_output(F("aY "), 0, 0, false);
   }
   if(accGyro_mode & azM) {
-    extended_output(F("aZ "));
+    extended_output(F("aZ "), 0, 0, false);
   }
   if(accGyro_mode & gxM) {
-    extended_output(F("gX "));
+    extended_output(F("gX "), 0, 0, false);
   }
   if(accGyro_mode & gyM) {
-    extended_output(F("gY "));
+    extended_output(F("gY "), 0, 0, false);
   }
   if(accGyro_mode & gzM) {
-    extended_output(F("gZ "));
+    extended_output(F("gZ "), 0, 0, false);
   }
 }
 
@@ -358,8 +359,14 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	MENU.out(AX/32768);
 #endif
 	aX_reaction_source = JIFFLES;
-	aX_select_slots = 66;
-	aX_sel_i0 = 0;
+	//	aX_select_slots = 66;	// dwn_THRD_up
+	//	aX_sel_i0 = 0;		// JIFFLE RAM
+
+	//	aX_select_slots = 40;		// PENTAtonic_rise	+1 PENTAtonic_desc
+	//	aX_sel_i0 = 1;
+
+	aX_sel_i0 = 3;
+	aX_select_slots = 41;		//
       }
 
       if(accGyro_mode & ayM) {		// accelero Y
@@ -460,6 +467,7 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	    //	// limit--
 	    //	break;
 	  case 1:	// all but high
+	    extended_output(F("LBM_ "), 0, 1, false);
 	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
 	    for(int pulse = highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
@@ -467,11 +475,12 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	    break;
 	  case 2:	// all on
 	  case 3:	// all on
+	    extended_output(F("LBMH "), 0, 1, false);
 	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
 	    break;
 	  case 4:	// middle only
-	    MENU.out("CASE3 ");
+	    extended_output(F("_BM_ "), 0, 1, false);
 	    MENU.outln(highest_primary);
 	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
@@ -479,6 +488,7 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
 	    break;
 	  case 5:	// extremes only
+	    extended_output(F("L__H "), 0, 1, false);
 	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
 	    for(int pulse=lowest_primary; pulse <= lowest_primary + (primary_count/4); pulse++)
@@ -487,6 +497,7 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
 	    break;
 	  case 6:	// high only
+	    extended_output(F("___H "), 0, 1, false);
 	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
 	    for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
@@ -496,6 +507,7 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	    //      case 7:	// bass_limit--		// TODO: near limit region
 	    //	break;
 	  default:	// toggle all
+	    extended_output(F("~~~~ "), 0, 1, false);
 	    PULSES.select_from_to(lowest_primary, highest_primary);
 	    PULSES.selected_toggle_no_actions();
 	    PULSES.select_n(voices);
@@ -503,6 +515,9 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	  noAction_flags_line();
 	} //selected_aY_seen
       } // accelero Y
+      break;
+
+    case 2:
       break;
 
     default:

@@ -5685,13 +5685,16 @@ bool menu_pulses_reaction(char menu_input) {
 
 /* **************************************************************** */
 
-void extended_output(char* data) {	// output on serial MENU, maybe OLED, possibly morse, ...
+void extended_output(char* data, uint8_t row=0, uint8_t col=0, bool force=false) {	// output on serial MENU, maybe OLED, possibly morse, ...
   MENU.out(data);
 
 #if defined USE_MORSE && defined USE_MONOCHROME_DISPLAY
 //	#define MORSE_MONOCHROME_ROW
-  if(oled_feedback_while_playing || musicbox_is_idle() || monochrome_output_char)
-    u8x8.print(data);
+  if(oled_feedback_while_playing || (musicbox_is_idle() || force) || monochrome_output_char) {
+    //if(row | col)
+    u8x8.setCursor(col,row);	// sounds horrible
+    u8x8.print(data);		// sounds horrible
+  }
 #endif
 }
 

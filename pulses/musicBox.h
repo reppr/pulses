@@ -827,7 +827,7 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
     }
 
 #if defined USE_MONOCHROME_DISPLAY
-    extended_output(F("END "));	// output on serial MENU, maybe OLED, possibly morse, ...
+    extended_output(F("END "), 0, 0, true);	// output on serial MENU, maybe OLED, possibly morse, ...
 #endif
 
     for (int pulse=0; pulse<PL_MAX; pulse++) {	// make days_to_live COUNTED generating pulses

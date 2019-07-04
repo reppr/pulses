@@ -144,3 +144,4 @@ MENU accGyro feedback || OLED
 
 AG_mode D6M
 
+extended_output(F("~~~~"), monochrome_row);
