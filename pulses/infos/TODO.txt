@@ -135,10 +135,12 @@ nvs: is there hardware for peripheral power switch?
 
 wo isch de Störfall?
 s hät glaub mehreri ...
+die spilled offebar nöd uf allne Instrumänt, so try CHATEAU
 
-MENU morse feedback and || OLED
+MENU morse feedback menu and || OLED
   many stray newlines around...
 
 MENU accGyro feedback || OLED
 
 AG_mode D6M
+

@@ -1739,14 +1739,14 @@ char  morse_output_buffer[MORSE_OUTPUT_BUFFER_SIZE];	// buffer
 short morse_out_buffer_cnt=0;
 
 
-bool musicbox_is_idle();	// pre declaration
-
 bool morse_output_to_do=false;		// triggers morse_do_output()
+extern bool musicbox_is_idle();		// extern declaration
+extern bool monochrome_is_on();		// extern declaration
 void morse_do_output() {
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
   if(morse_out_buffer_cnt) {
 #if defined USE_MONOCHROME_DISPLAY
-    if(oled_feedback_while_playing || musicbox_is_idle())
+    if(monochrome_is_on())
       u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "        ");
 #endif
 
@@ -1760,43 +1760,46 @@ void morse_do_output() {
 }
 
 #if defined USE_MONOCHROME_DISPLAY
-char morse_do_monochrome_display = '\0';
+char monochrome_output_char = '\0';	// '\0' means *no* output
 
 //#define CHATTY_MONOCHROME
 void morse_monochrome_display() {
+  if(! monochrome_is_on())
+    return;
+
 #if defined CHATTY_MONOCHROME
   MENU.out("\nmorse_monochrome_display()\t");
-  MENU.outln(morse_do_monochrome_display);
+  MENU.outln(monochrome_output_char);
   /*	prior (small) version
-  MENU.out_ON_off(morse_do_monochrome_display);
+  MENU.out_ON_off(monochrome_output_char);
   MENU.tab();
   MENU.out_ON_off(monochrome_display_hardware);
   */
 #endif
-  if(morse_do_monochrome_display && morse_out_buffer_cnt) {
+  if(monochrome_output_char && morse_out_buffer_cnt) {
     if(oled_feedback_while_playing || musicbox_is_idle()) {
       u8x8.setInverseFont(0);
 
       // 2x2 version
       char s[]="? ";
-      s[0] = morse_do_monochrome_display;
+      s[0] = monochrome_output_char;
       u8x8.draw2x2String(2*(morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s);
 
       /*	prior (small) version
 		u8x8.setCursor(morse_out_buffer_cnt - 1, MORSE_MONOCHROME_ROW);
-		u8x8.print(morse_do_monochrome_display);
+		u8x8.print(monochrome_output_char);
 		u8x8.print(' ');		// clear next char
       */
     }
   }
 
-  morse_do_monochrome_display = '\0';	// trigger off
+  monochrome_output_char = '\0';	// trigger off
 }
 #endif
 
 bool morse_store_received_letter(char letter) {		// returns error
 #if defined USE_MONOCHROME_DISPLAY
-  morse_do_monochrome_display = letter;
+  monochrome_output_char = letter;
 #endif
   if(morse_out_buffer_cnt < MORSE_OUTPUT_BUFFER_SIZE) {
     morse_output_buffer[morse_out_buffer_cnt++] = letter;

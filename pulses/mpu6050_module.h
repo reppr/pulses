@@ -210,6 +210,7 @@ bool GYRO_only_check() {
   GYROZ_selected = GZ + 0.5;
   GYROZ_selected += gZ_sel_i0;
   if(GYROZ_selected) {	// gyro Z shows rotation?
+    // TODO: feedback
 //  sync_shifting({GYROZ_selected, 8*4096});
     sync_shifting({GYROZ_selected, 16*4096});	// TODO: UI for shift amount
     return true;
@@ -328,6 +329,7 @@ void activate_accGyro() {	// TODO: obsolete
 // void accGyro_reaction()
 #define DEBUG_AG_REACTION		// DO show selected slices
 #define DEBUG_ACCELGYRO_BASICS	// deactivated
+extern bool monochrome_is_on();					// extern declaration
 extern void monochrome_show_line(uint8_t row, char * s);	// extern declaration
 extern int lowest_primary, highest_primary, primary_count;	// extern declaration
 extern void noAction_flags_line();				// extern declaration
@@ -447,7 +449,7 @@ void accGyro_reaction() {		// react on data coming from ########################
 	    MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
 
 #if defined USE_MONOCHROME_DISPLAY
-	    if(oled_feedback_while_playing || musicbox_is_idle()) {
+	    if(monochrome_is_on()) {
 	      monochrome_show_line(3, array2name(JIFFLES, selected_in(JIFFLES)));
 	    }
 #endif
