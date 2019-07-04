@@ -84,6 +84,16 @@ bool mpu6050_setup() {
   return false;
 }
 
+bool volatile accelGyro_new_data=false;		// new data has arrived, waits for accelGyro_reaction()
+// float  accGyro_current_??			// last accGyro data seen as accelGyro_new_data got true
+float accGyro_current_AX=0.0;
+float accGyro_current_AY=0.0;
+float accGyro_current_AZ=0.0;
+float accGyro_current_GX=0.0;
+float accGyro_current_GY=0.0;
+float accGyro_current_GZ=0.0;
+
+
 typedef struct {
   int16_t ax;
   int16_t ay;
@@ -91,9 +101,7 @@ typedef struct {
   int16_t gx;
   int16_t gy;
   int16_t gz;
-} accelGyro_6d_data ;
-
-accelGyro_6d_data accelGyro_current = { 0 };	// current values (after oversampling)
+} accelGyro_6d_data;
 
 #if ! defined MPU_OVERSAMPLING
   //#define MPU_OVERSAMPLING	15
@@ -102,9 +110,8 @@ accelGyro_6d_data accelGyro_current = { 0 };	// current values (after oversampli
   //#define MPU_OVERSAMPLING	2	// quite usable, but sounds trigger accelero...
   //#define MPU_OVERSAMPLING	1	// possible
 #endif
-accelGyro_6d_data mpu_samples[MPU_OVERSAMPLING] = { 0 };
+accelGyro_6d_data mpu_samples[MPU_OVERSAMPLING] = { 0 };	// TODO: yes?
 
-bool volatile accelGyro_new_data=false;
 hw_timer_t * accelGyro_timer = NULL;
 
 //#define WITH_TIMER_MUX	// DEACTIVATED for a test	TODO: REMOVE:
@@ -112,126 +119,7 @@ hw_timer_t * accelGyro_timer = NULL;
   portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 #endif
 
-//void IRAM_ATTR accelGyro_sample_ISR() {
-void accelGyro_sample_ISR() {	// test	from *outside* interrupt context	TODO: RENAME:
-  static int16_t mpu_sample_index=0;
-
-//#define ACCELGYRO_SAMPLES	ALL6
-// or individual parameters:
-#define ACCELGYRO_SAMPLES_AX
-#define ACCELGYRO_SAMPLES_AY
-//#define ACCELGYRO_SAMPLES_AZ
-//#define ACCELGYRO_SAMPLES_GX
-//#define ACCELGYRO_SAMPLES_GY
-#define ACCELGYRO_SAMPLES_GZ
-
-#if ACCELGYRO_SAMPLES == ALL6
-  // take one 6d sample
-  mpu6050.getMotion6(&mpu_samples[mpu_sample_index].ax, &mpu_samples[mpu_sample_index].ay, &mpu_samples[mpu_sample_index].az, \
-		     &mpu_samples[mpu_sample_index].gx, &mpu_samples[mpu_sample_index].gy, &mpu_samples[mpu_sample_index].gz);
-#else
-  // individual switches:
-  #if defined ACCELGYRO_SAMPLES_AX
-  mpu_samples[mpu_sample_index].ax = mpu6050.getAccelerationX();
-  #endif
-
-  #if defined ACCELGYRO_SAMPLES_AY
-  mpu_samples[mpu_sample_index].ay = mpu6050.getAccelerationY();
-  #endif
-
-  #if defined ACCELGYRO_SAMPLES_AZ
-  mpu_samples[mpu_sample_index].az = mpu6050.getAccelerationZ();
-  #endif
-
-  #if defined ACCELGYRO_SAMPLES_GX
-  mpu_samples[mpu_sample_index].gx = mpu6050.getRotationX();
-  #endif
-
-  #if defined ACCELGYRO_SAMPLES_GY
-  mpu_samples[mpu_sample_index].gy = mpu6050.getRotationY();
-  #endif
-
-  #if defined ACCELGYRO_SAMPLES_GZ
-  mpu_samples[mpu_sample_index].gz = mpu6050.getRotationZ();
-  #endif
-#endif
-
-  if(((++mpu_sample_index) % MPU_OVERSAMPLING) == 0) {
-    mpu_sample_index = 0;
-    int32_t AX=0, AY=0, AZ=0, GX=0, GY=0, GZ=0;
-
-    for(int i=0; i < MPU_OVERSAMPLING; i++) {
-      AX += mpu_samples[i].ax;
-      AY += mpu_samples[i].ay;
-      AZ += mpu_samples[i].az;
-      GX += mpu_samples[i].gx;
-      GY += mpu_samples[i].gy;
-      GZ += mpu_samples[i].gz;
-    }
-
-    accelGyro_current.ax = AX / MPU_OVERSAMPLING;
-    accelGyro_current.ay = AY / MPU_OVERSAMPLING;
-    accelGyro_current.az = AZ / MPU_OVERSAMPLING;
-
-    accelGyro_current.gx = GX / MPU_OVERSAMPLING;
-    accelGyro_current.gy = GY / MPU_OVERSAMPLING;
-    accelGyro_current.gz = GZ / MPU_OVERSAMPLING;
-
-#if defined WITH_TIMER_MUX
-    portENTER_CRITICAL_ISR(&timerMux);
-#endif
-    accelGyro_new_data = true;
-#if defined WITH_TIMER_MUX
-    portEXIT_CRITICAL_ISR(&timerMux);
-#endif
-
-    //MENU.out('%');
-  }
-}
-
-void activate_accelGyro() {
-  //  accelGyro_timer = timerBegin(0, 80000, true);	// milliseconds
-  accelGyro_timer = timerBegin(0, 80, true);	// microseconds
-  timerAttachInterrupt(accelGyro_timer, &accelGyro_sample_ISR, true);
-  timerAlarmWrite(accelGyro_timer, 1000000, true);
-  timerAlarmEnable(accelGyro_timer);
-}
-
-
-//	void calibrate_accelGyro_offsets() {			// TODO: rewrite or REMOVE:
-//	  #define ACCELGYRO_CALIBRATE_OVERSAMPLING	16
-//	  MENU.outln(F("\tcalibrate_accelGyro_offsets()"));
-//
-//	  int32_t AX=0, AY=0, AZ=0, GX=0, GY=0, GZ=0;
-//	  for(int i=0; i<ACCELGYRO_CALIBRATE_OVERSAMPLING; i++) {
-//	    AX += mpu6050.getAccelerationX();
-//	    AY += mpu6050.getAccelerationY();
-//	    AZ += mpu6050.getAccelerationZ();
-//	    GX += mpu6050.getRotationX();
-//	    GY += mpu6050.getRotationY();
-//	    GZ += mpu6050.getRotationZ();
-//	  }
-//
-//	  ax_off0 = AX / ACCELGYRO_CALIBRATE_OVERSAMPLING;
-//	  ax_off0 -= 16384;
-//
-//	  ay_off0 = AY / ACCELGYRO_CALIBRATE_OVERSAMPLING;
-//	  ay_off0 -= 16384;
-//
-//	  az_off0 = AZ / ACCELGYRO_CALIBRATE_OVERSAMPLING;
-//	  gx_off0 = GX / ACCELGYRO_CALIBRATE_OVERSAMPLING;
-//	  gy_off0 = GY / ACCELGYRO_CALIBRATE_OVERSAMPLING;
-//	  gz_off0 = GZ / ACCELGYRO_CALIBRATE_OVERSAMPLING;
-//
-//	  MENU.out(ax_off0); MENU.tab();
-//	  MENU.out(ay_off0); MENU.tab();
-//	  MENU.out(az_off0); MENU.tab();
-//	  MENU.out(gx_off0); MENU.tab();
-//	  MENU.out(gy_off0); MENU.tab();
-//	  MENU.out(gz_off0);
-//	}
-
-enum AG_modes {
+enum AG_mode {
   axM=1,
   ayM=2,
   azM=4,
@@ -239,6 +127,7 @@ enum AG_modes {
   gxM=8,
   gyM=16,
   gzM=32,
+  D6M=64,	// unused yet
 };
 
 //int accelGyro_mode=0;	// zero means inactive
@@ -334,27 +223,129 @@ bool gyro_check() {
 #endif
 uint8_t	accelGyro_preset = ACCGYRO_DEFAULT_PRESET;
 
+
+//void IRAM_ATTR accelGyro_sample_ISR() {
+void accelGyro_sample_ISR() {	// test	from *outside* interrupt context	TODO: RENAME:
+  static int16_t mpu_sample_index=0;
+
+//#define ACCELGYRO_SAMPLES	ALL6
+// or individual parameters:
+#define ACCELGYRO_SAMPLES_AX
+#define ACCELGYRO_SAMPLES_AY
+//#define ACCELGYRO_SAMPLES_AZ
+//#define ACCELGYRO_SAMPLES_GX
+//#define ACCELGYRO_SAMPLES_GY
+#define ACCELGYRO_SAMPLES_GZ
+
+#if ACCELGYRO_SAMPLES == ALL6
+  // take one 6d sample
+  mpu6050.getMotion6(&mpu_samples[mpu_sample_index].ax, &mpu_samples[mpu_sample_index].ay, &mpu_samples[mpu_sample_index].az, \
+		     &mpu_samples[mpu_sample_index].gx, &mpu_samples[mpu_sample_index].gy, &mpu_samples[mpu_sample_index].gz);
+#else
+  // individual switches:
+  #if defined ACCELGYRO_SAMPLES_AX
+  mpu_samples[mpu_sample_index].ax = mpu6050.getAccelerationX();
+  #endif
+
+  #if defined ACCELGYRO_SAMPLES_AY
+  mpu_samples[mpu_sample_index].ay = mpu6050.getAccelerationY();
+  #endif
+
+  #if defined ACCELGYRO_SAMPLES_AZ
+  mpu_samples[mpu_sample_index].az = mpu6050.getAccelerationZ();
+  #endif
+
+  #if defined ACCELGYRO_SAMPLES_GX
+  mpu_samples[mpu_sample_index].gx = mpu6050.getRotationX();
+  #endif
+
+  #if defined ACCELGYRO_SAMPLES_GY
+  mpu_samples[mpu_sample_index].gy = mpu6050.getRotationY();
+  #endif
+
+  #if defined ACCELGYRO_SAMPLES_GZ
+  mpu_samples[mpu_sample_index].gz = mpu6050.getRotationZ();
+  #endif
+#endif
+
+  if(((++mpu_sample_index) % MPU_OVERSAMPLING) == 0) {
+    mpu_sample_index = 0;
+    int32_t AX=0, AY=0, AZ=0, GX=0, GY=0, GZ=0;
+
+    for(int i=0; i < MPU_OVERSAMPLING; i++) {
+      AX += mpu_samples[i].ax;
+      AY += mpu_samples[i].ay;
+      AZ += mpu_samples[i].az;
+      GX += mpu_samples[i].gx;
+      GY += mpu_samples[i].gy;
+      GZ += mpu_samples[i].gz;
+    }
+
+    // ACCELERO:	INVERTING DELAYED to accelGyro_reaction()
+    accGyro_current_AX = (AX / MPU_OVERSAMPLING) + 16384;
+    accGyro_current_AX /= 32768;	// to float scaling
+
+    accGyro_current_AY = (AY / MPU_OVERSAMPLING) + 16384;
+    accGyro_current_AY /= 32768;	// to float scaling
+
+    accGyro_current_AZ = (AZ / MPU_OVERSAMPLING) + 16384;
+    accGyro_current_AZ /= 32768;	// to float scaling
+
+    // GYRO:	INVERTING IS DONE HERE in accelGyro_sample_ISR
+    accGyro_current_GX = (GX / MPU_OVERSAMPLING);
+    accGyro_current_GX /= 32;	// TODO: is *RANDOM* float scaling
+    if(accelGyro_invert)	// invert mathematical axis
+      accGyro_current_GX = -accGyro_current_GX;
+
+    accGyro_current_GY = (GY / MPU_OVERSAMPLING);
+    accGyro_current_GY /= 32;	// TODO: is *RANDOM* float scaling
+    if(accelGyro_invert)	// invert mathematical axis
+      accGyro_current_GY = -accGyro_current_GY;
+
+    accGyro_current_GZ = (GZ / MPU_OVERSAMPLING);
+    accGyro_current_GZ /= 32;	// TODO: is *RANDOM* float scaling
+    if(accelGyro_invert)	// invert mathematical axis
+      accGyro_current_GZ = -accGyro_current_GZ;
+
+#if defined WITH_TIMER_MUX
+    portENTER_CRITICAL_ISR(&timerMux);
+#endif
+    accelGyro_new_data = true;
+#if defined WITH_TIMER_MUX
+    portEXIT_CRITICAL_ISR(&timerMux);
+#endif
+  }
+}
+
+void activate_accelGyro() {	// TODO: obsolete
+  //  accelGyro_timer = timerBegin(0, 80000, true);	// milliseconds
+  accelGyro_timer = timerBegin(0, 80, true);	// microseconds
+  timerAttachInterrupt(accelGyro_timer, &accelGyro_sample_ISR, true);
+  timerAlarmWrite(accelGyro_timer, 1000000, true);
+  timerAlarmEnable(accelGyro_timer);
+}
+
 // void accelGyro_reaction()
-//#define DEBUG_AG_REACTION		// DO show selected slices
-//#define DEBUG_ACCELGYRO_BASICS	// deactivated
+#define DEBUG_AG_REACTION		// DO show selected slices
+#define DEBUG_ACCELGYRO_BASICS	// deactivated
 extern void monochrome_show_line(uint8_t row, char * s);	// extern declaration
 extern int lowest_primary, highest_primary, primary_count;	// extern declaration
 extern void noAction_flags_line();				// extern declaration
-void accelGyro_reaction() {
-  if(accelGyro_mode) {
-    static int selected_aX_seen;
-    static int selected_aY_seen;
-    static int selected_gZ_seen;
-
-    // selected slice:
-    int selected_aX =0;	// make sure it starts with zero
-    int selected_aY=0;	// make sure it starts with zero
-    int selected_gZ=0;	// make sure it starts with zero
-
-    float AX=0.0, AY=0.0, AZ=0.0, GX=0.0, GY=0.0, GZ=0.0;
+void accelGyro_reaction() {		// react on data coming from ################################################################
+  if(accelGyro_new_data && accelGyro_mode) {
     accelGyro_new_data = false;
     if(! accelGyro_is_active)
       return;
+
+    // selected slice:
+    static int selected_aX_seen;
+    static int selected_aY_seen;
+    static int selected_gZ_seen;
+    int selected_aX=0;
+    int selected_aY=0;
+    int selected_gZ=0;
+
+    float AX=0.0, AY=0.0, AZ=0.0, GX=0.0, GY=0.0, GZ=0.0;
 
     bool there_was_output=false;
     reset_accGyro_selection();	// offsets and slots
@@ -362,35 +353,28 @@ void accelGyro_reaction() {
     switch(accelGyro_preset) {
     case 1:
       if(accelGyro_mode & axM) {		// accelero X
-	AX = accelGyro_current.ax + 16384;
+	AX = accGyro_current_AX;
 #if defined DEBUG_ACCELGYRO_BASICS
 	there_was_output = true;
 	MENU.out("AX+ ");
 	MENU.out(AX);
-	MENU.out("  ax ");
-	MENU.out(accelGyro_current.ax);
 	MENU.space(3);
 	MENU.out(AX/32768);
 #endif
-	AX /= 32768;	// to float scaling
-
 	aX_reaction_source = JIFFLES;
 	aX_select_slots = 66;
 	aX_sel_i0 = 0;
       }
 
       if(accelGyro_mode & ayM) {		// accelero Y
-	AY = accelGyro_current.ay + 16384;
+	AY = accGyro_current_AY;
 #if defined DEBUG_ACCELGYRO_BASICS
 	there_was_output = true;
 	MENU.out("\t\tAY+ ");
 	MENU.out(AY);
-	MENU.out("  ay ");
-	MENU.out(accelGyro_current.ay);
 	MENU.space(3);
 	MENU.out(AY/32768);
 #endif
-	AY /= 32768;	// to float scaling
 
 	aY_reaction_source = NULL;
 	aY_select_slots = 8;
@@ -398,16 +382,13 @@ void accelGyro_reaction() {
       }
 
       if(accelGyro_mode & gzM) {		// gyro Z
-	GZ = accelGyro_current.gz;
+	GZ = accGyro_current_GZ;
 
 #if defined DEBUG_ACCELGYRO_BASICS
 	there_was_output = true;
-	MENU.out("\t\tGZ= ");
+	MENU.out("\tGZ= ");
 	MENU.out(GZ);
-	MENU.out("  gz ");
-	MENU.out(accelGyro_current.gz);
 #endif
-	GZ /= 32;			// TODO: is *RANDOM* float scaling
 	if(accelGyro_invert)	// invert mathematical axis
 	  GZ = -GZ;
 
@@ -420,6 +401,7 @@ void accelGyro_reaction() {
       if(there_was_output)
 	MENU.ln();
 
+      // ACCELERO:	INVERTING IS DONE HERE in  accelGyro_reaction()
       if(accelGyro_mode & axM) {		// accelero X
 	selected_aX = AX * aX_select_slots +0.5;
 	selected_aX += aX_sel_i0;
@@ -647,33 +629,6 @@ void accelGyro_speed_test(int n=1000) {
 }
 #endif // COMPILE_ACCEL_GYRO_SPEED_TEST
 
-/*
-void sample_accelGyro_6d() {	// too heavy,
-  static int16_t mpu_sample_index=0;
-
-  mpu6050.getMotion6(&mpu_samples[mpu_sample_index].ax, &mpu_samples[mpu_sample_index].ay, &mpu_samples[mpu_sample_index].az, \
-		     &mpu_samples[mpu_sample_index].gx, &mpu_samples[mpu_sample_index].gy, &mpu_samples[mpu_sample_index].gz);
-
-  int32_t AX=0, AY=0, AZ=0, GX=0, GY=0, GZ=0;
-
-  for(int i=0; i < MPU_OVERSAMPLING; i++) {
-    AX += mpu_samples[i].ax;
-    AY += mpu_samples[i].ay;
-    AZ += mpu_samples[i].az;
-    GX += mpu_samples[i].gx;
-    GY += mpu_samples[i].gy;
-    GZ += mpu_samples[i].gz;
-  }
-
-  accelGyro_current.ax = AX / MPU_OVERSAMPLING;
-  accelGyro_current.ay = AY / MPU_OVERSAMPLING;
-  accelGyro_current.az = AZ / MPU_OVERSAMPLING;
-
-  accelGyro_current.gx = GX / MPU_OVERSAMPLING;
-  accelGyro_current.gy = GY / MPU_OVERSAMPLING;
-  accelGyro_current.gz = GZ / MPU_OVERSAMPLING;
-}
-*/
 
 #define  MPU6050_MODULE_H
 #endif
