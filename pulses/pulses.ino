@@ -378,6 +378,7 @@ void test_jiffle(unsigned int* jiffle, int count) {
   if(MENU.verbosity >= VERBOSITY_LOWEST)
     MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
 
+  int sync_was=sync;
   // pulse_time_t period = base_pulse_period;
   pulse_time_t period = {6000000, 0};		// TODO: better default based on the situation ################
   setup_icode_seeder(pulse, period, (icode_t*) jiffle, DACsq1 | DACsq2 | doesICODE);
@@ -386,6 +387,7 @@ void test_jiffle(unsigned int* jiffle, int count) {
   PULSES.pulses[pulse].dac1_intensity = PULSES.pulses[pulse].dac2_intensity = 20; // TODO: random test value
   PULSES.activate_pulse_synced(pulse, PULSES.get_now(), abs(sync));
   PULSES.fix_global_next();
+  sync = sync_was;
 }
 
 
@@ -4620,23 +4622,24 @@ bool menu_pulses_reaction(char menu_input) {
   case 'J':	// select, edit, test, load jiffle
     /*
       'J'  shows registered jiffle names and display_jiffletab(<selected_jiffle>)
+      'JT' tests jiffle
       'J7' selects jiffle #7 and display_jiffletab()
       'J!' copy selected jiffle in jiffle_RAM, select jiffle_RAM, display_jiffletab(jiffle_RAM)
       'J9!' copy jiffle #9 in jiffle_RAM, select jiffle_RAM, display_jiffletab(jiffle_RAM)
     */
     // some jiffles from source, some very old FIXME:	review and delete	################
-    next_token = MENU.cb_peek();
-    if (next_token != '!' && next_token != 't')	// 'J<num>' selects jiffle
-      if (UI_select_from_DB(JIFFLES))		// select jiffle UI
-	jiffle_user_selected = true;
-
     {
+      next_token = MENU.cb_peek();
+      if (next_token != '!' && next_token != 'T')	// 'J<num>' selects jiffle
+	if (UI_select_from_DB(JIFFLES))		// select jiffle UI
+	  jiffle_user_selected = true;
+
       bool trying=true;
       while (trying) {
 	switch (MENU.cb_peek()) {
-	case 't':	// 'J[...]t' tests a jiffle
+	case 'T':	// 'J[...]T' tests a jiffle
 	  MENU.drop_input_token();
-	  test_jiffle(selected_in(JIFFLES), 4);
+	  test_jiffle(selected_in(JIFFLES), 3);
 	  break;
 
 	case '!':	// 'J[<num>]!' copies an already selected jiffletab to RAM, selects RAM

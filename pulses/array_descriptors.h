@@ -190,33 +190,63 @@ bool register_jiffle(unsigned int* jiffle, unsigned int len, char* name) {
 
       MENU.ln();
     }
+    MENU.outln(selected_name(DB));
   }
 
 
 // menu helper function: UI to select array from a DB
 bool UI_select_from_DB(arr_descriptor* DB) {
-  int input_value;
+  bool return_flag=false;
   unsigned int* p = NULL;
+  int input_value;
 
-  if (MENU.cb_peek() == EOF) {	// no further input:
-    display_arr_names(DB);		//   display list
-    return false;			//   return
+  if(MENU.cb_peek() == EOF ) {	// no further input:
+    display_arr_names(DB);	//    display list
+    return false;		//    RETURN
   }
 
-  input_value=MENU.numeric_input(-1);
-  if (input_value != -1) {
-    p = index2pointer(DB, input_value + 1);
-    if (p == NULL) {
+  if(MENU.is_numeric()) {
+    input_value=MENU.numeric_input(-1);
+    if (input_value > -1) {
+      p = index2pointer(DB, input_value + 1);
+      if (p == NULL) {
+	MENU.outln_invalid();
+      } else {
+	MENU.outln(array2name(DB, p));
+	DB[0].pointer = p;	// selected in DB
+	return_flag = true;
+      }
+    } else {			// negative input_value
       MENU.outln_invalid();
       return false;
-    } else {
-      MENU.outln(array2name(DB, p));
-      DB[0].pointer = p;	// selected in DB
-      return true;
+    }
+  } else {			// *not* numeric input
+    switch(MENU.cb_peek()) {	// '+' | '-'
+    case '+':
+      MENU.drop_input_token();
+      {
+	int i = pointer2index(DB, selected_in(DB));
+	if(i<DB_items(DB)) {
+	  select_array_in(DB,index2pointer(DB, ++i));
+	  return_flag = true;
+	}
+      }
+      break;
+    case '-':
+      MENU.drop_input_token();
+      {
+	int i = pointer2index(DB, selected_in(DB));
+	if(i) {
+	  select_array_in(DB,index2pointer(DB, --i));
+	  return_flag = true;
+	}
+      }
+      break;
     }
   }
 
-  return false;
+  MENU.outln(selected_name(DB));
+  return return_flag;
 }
 
 #endif // MENU_h
