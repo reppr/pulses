@@ -1078,11 +1078,11 @@ void show_configuration_code() {	// show code, similar show_UI_basic_setup()
     MENU.out(date);
   MENU.outln(F("\");"));
 
-  MENU.out(F("select_array_in(SCALES, "));
+  MENU.out(F("select_in(SCALES, "));
   MENU.out(array2name(SCALES, selected_in(SCALES)));
   MENU.outln(F(");"));
 
-  MENU.out(F("select_array_in(JIFFLES, "));	// TODO: iCode
+  MENU.out(F("select_in(JIFFLES, "));	// TODO: iCode
   MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
   MENU.outln(F(");"));
 
@@ -1722,55 +1722,55 @@ void select_random_scale() {
 
   switch(random(39)) {		// random scale
   case 0: case 1: case 3: case 4:
-    select_array_in(SCALES, pentatonic_minor);
+    select_in(SCALES, pentatonic_minor);
     break;
   case 5: case 6: case 7: case 8:
-    select_array_in(SCALES, europ_PENTAtonic);
+    select_in(SCALES, europ_PENTAtonic);
     break;
   case 9: case 10: case 11:
-    select_array_in(SCALES, minor_scale);
+    select_in(SCALES, minor_scale);
     break;
   case 12: case 13: case 14:
-    select_array_in(SCALES, major_scale);
+    select_in(SCALES, major_scale);
     break;
   case 15: case 16: case 17:
-    select_array_in(SCALES, doric_scale);	// +1 for doric_scale, see below
+    select_in(SCALES, doric_scale);	// +1 for doric_scale, see below
     break;
   case 18: case 19: case 20:
-    select_array_in(SCALES, tetraCHORD);	// +1 for tetraCHORD, see below
+    select_in(SCALES, tetraCHORD);	// +1 for tetraCHORD, see below
     break;
   case 21: case 22:
-    select_array_in(SCALES, octave_4th_5th);
+    select_in(SCALES, octave_4th_5th);
     break;
   case 23:
-    select_array_in(SCALES, octaves_fifths);
+    select_in(SCALES, octaves_fifths);
     break;
   case 24:
-    select_array_in(SCALES, octaves_fourths);
+    select_in(SCALES, octaves_fourths);
     break;
   case 25:
-    select_array_in(SCALES, doric_scale);	// +1 for doric_scale
+    select_in(SCALES, doric_scale);	// +1 for doric_scale
     break;
   case 26:
-    select_array_in(SCALES, tetraCHORD);	// +1 for tetraCHORD
+    select_in(SCALES, tetraCHORD);	// +1 for tetraCHORD
     break;
   case 27: case 28: case 29:
-    select_array_in(SCALES, pentaCHORD);
+    select_in(SCALES, pentaCHORD);
     break;
   case 30: case 31: case 32:
-    select_array_in(SCALES, pentachord);
+    select_in(SCALES, pentachord);
     break;
   case 33:
-    select_array_in(SCALES, trichord);
+    select_in(SCALES, trichord);
     break;
   case 34:
-    select_array_in(SCALES, triad);
+    select_in(SCALES, triad);
     break;
   case 35:	// too simple in most cases
-    select_array_in(SCALES, TRIAD);
+    select_in(SCALES, TRIAD);
     break;
   case 36: case 37: case 38:
-    select_array_in(SCALES, tetrachord);
+    select_in(SCALES, tetrachord);
     break;
   }
 
@@ -1798,161 +1798,161 @@ void select_random_jiffle(void) {
 
   switch(random(142)) {
   case 0: case 1: case 2: case 3: case 4:
-    select_array_in(JIFFLES, PENTAtonic_rise);
+    select_in(JIFFLES, PENTAtonic_rise);
     break;
   case 5: case 6: case 7: case 8: case 9:
-    select_array_in(JIFFLES, PENTAtonic_desc);
+    select_in(JIFFLES, PENTAtonic_desc);
     break;
 
   case 10: case 11: case 12: case 13: case 14:
-    select_array_in(JIFFLES, pentatonic_rise);
+    select_in(JIFFLES, pentatonic_rise);
     break;
   case 15: case 16: case 17: case 18: case 19:
-    select_array_in(JIFFLES, pentatonic_desc);
+    select_in(JIFFLES, pentatonic_desc);
     break;
 
   case 20: case 21: case 22: case 23: case 24: case 29:	// was: too many, see below
-    select_array_in(JIFFLES, tumtum);
+    select_in(JIFFLES, tumtum);
     break;
   case 25: case 26: case 27:	// case 28: case 29:	// too many, see below
-    select_array_in(JIFFLES, jiff_dec128);
+    select_in(JIFFLES, jiff_dec128);
     break;
   case 30: case 31: case 32: case 33: case 34:
-    select_array_in(JIFFLES, ding_ditditdit);
+    select_in(JIFFLES, ding_ditditdit);
     break;
   case 35: case 36: case 37: case 38: case 39:
-    select_array_in(JIFFLES, diing_ditditdit);
+    select_in(JIFFLES, diing_ditditdit);
     break;
   case 40: case 41: case 42: case 43: case 44:
-    select_array_in(JIFFLES, din__dididi_dixi);
+    select_in(JIFFLES, din__dididi_dixi);
     break;
   case 45: case 46: case 47: case 48: case 49:
-    select_array_in(JIFFLES, din_dididi);
+    select_in(JIFFLES, din_dididi);
     break;
 
   case 50: case 51: case 52: case 53:
-    select_array_in(JIFFLES, PENTA_3rd_rise);
+    select_in(JIFFLES, PENTA_3rd_rise);
     break;
   case 54: case 55: case 56: case 57:
-    select_array_in(JIFFLES, up_THRD);
+    select_in(JIFFLES, up_THRD);
     break;
   case 58: case 59: case 60: case 61:
-    select_array_in(JIFFLES, up_THRD_dn);
+    select_in(JIFFLES, up_THRD_dn);
     break;
   case 62: case 63: case 64: case 65:
-    select_array_in(JIFFLES, dwn_THRD);
+    select_in(JIFFLES, dwn_THRD);
     break;
   case 66: case 67: case 68: case 69:
-    select_array_in(JIFFLES, dwn_THRD_up);
+    select_in(JIFFLES, dwn_THRD_up);
     break;
   case 70: case 71: case 72: case 73:
-    select_array_in(JIFFLES, PENTA_3rd_down_5);
+    select_in(JIFFLES, PENTA_3rd_down_5);
     break;
   case 74: case 75: case 76: case 77:
-    select_array_in(JIFFLES, penta_3rd_down_5);
+    select_in(JIFFLES, penta_3rd_down_5);
     break;
   case 78: case 79: case 80: case 81:
-    select_array_in(JIFFLES, rising_pent_them);
+    select_in(JIFFLES, rising_pent_them);
     break;
   case 82: case 83: case 84: case 85:
-    select_array_in(JIFFLES, penta_3rd_rise);
+    select_in(JIFFLES, penta_3rd_rise);
     break;
   case 86: case 87: case 88: case 89:
-    select_array_in(JIFFLES, simple_theme);
+    select_in(JIFFLES, simple_theme);
     break;
 
   case 90:
-    select_array_in(JIFFLES, jiff_dec_pizzica);
+    select_in(JIFFLES, jiff_dec_pizzica);
     break;
   case 91: case 92:
-    select_array_in(JIFFLES, pent_patternA);
+    select_in(JIFFLES, pent_patternA);
     break;
   case 93: case 94:
-    select_array_in(JIFFLES, pent_patternB);
+    select_in(JIFFLES, pent_patternB);
     break;
   case 95: case 96:
-    select_array_in(JIFFLES, pent_top_wave);
+    select_in(JIFFLES, pent_top_wave);
     break;
   case 97:
-    select_array_in(JIFFLES, pent_top_wave_0);
+    select_in(JIFFLES, pent_top_wave_0);
     break;
   case 98:	// add some very simple jiffles:
-    select_array_in(JIFFLES, d4096_3072);
+    select_in(JIFFLES, d4096_3072);
     break;
   case 99:
-    select_array_in(JIFFLES, d4096_2048);
+    select_in(JIFFLES, d4096_2048);
     break;
   case 100: case 28:	// was: too many, see above
-    select_array_in(JIFFLES, d4096_1024);
+    select_in(JIFFLES, d4096_1024);
     break;
   case 101:
-    select_array_in(JIFFLES, d4096_512);
+    select_in(JIFFLES, d4096_512);
     break;
   case 102:
-    select_array_in(JIFFLES, d4096_256);
+    select_in(JIFFLES, d4096_256);
     break;
   case 103:
-    select_array_in(JIFFLES, d4096_128);
+    select_in(JIFFLES, d4096_128);
     break;
   case 104:
-    select_array_in(JIFFLES, d4096_64);
+    select_in(JIFFLES, d4096_64);
     break;
   case 105:
-    select_array_in(JIFFLES, d4096_32);
+    select_in(JIFFLES, d4096_32);
     break;
   case 106:
-    select_array_in(JIFFLES, d4096_16);
+    select_in(JIFFLES, d4096_16);
     break;
   case 107:
-    select_array_in(JIFFLES, d4096_12);
+    select_in(JIFFLES, d4096_12);
     break;
   case 108:
-    select_array_in(JIFFLES, tanboura);
+    select_in(JIFFLES, tanboura);
     break;
   case 109: case 110: case 111:
-    select_array_in(JIFFLES, doric_rise);
+    select_in(JIFFLES, doric_rise);
     break;
   case 112: case 113:
-    select_array_in(JIFFLES, minor_rise);
+    select_in(JIFFLES, minor_rise);
     break;
   case 114:
-    select_array_in(JIFFLES, doric_descend);
+    select_in(JIFFLES, doric_descend);
     break;
   case 115:
-    select_array_in(JIFFLES, minor_descend);
+    select_in(JIFFLES, minor_descend);
     break;
   case 116:
-    select_array_in(JIFFLES, major_descend);
+    select_in(JIFFLES, major_descend);
     break;
   case 117: case 118:
-    select_array_in(JIFFLES, major_rise);
+    select_in(JIFFLES, major_rise);
     break;
   case 119: case 120:
-    select_array_in(JIFFLES, pentaCHORD_rise);
+    select_in(JIFFLES, pentaCHORD_rise);
     break;
   case 121: case 122: case 123: case 124: case 125:
-    select_array_in(JIFFLES, tumtumtum);
+    select_in(JIFFLES, tumtumtum);
     break;
   case 126: case 127: case 128: case 129: case 130:
-    select_array_in(JIFFLES, tumtumtumtum);
+    select_in(JIFFLES, tumtumtumtum);
     break;
   case 131: case 132:
-    select_array_in(JIFFLES, pentachord_rise);
+    select_in(JIFFLES, pentachord_rise);
     break;
   case 133:
-    select_array_in(JIFFLES, pentaCHORD_desc);	// TODO: test
+    select_in(JIFFLES, pentaCHORD_desc);	// TODO: test
     break;
   case 134:
-    select_array_in(JIFFLES, pentachord_descend);	// TODO: test
+    select_in(JIFFLES, pentachord_descend);	// TODO: test
     break;
   case 135: case 136:
-    select_array_in(JIFFLES, tetraCHORD_rise);
+    select_in(JIFFLES, tetraCHORD_rise);
     break;
   case 137:
-    select_array_in(JIFFLES, tetraCHORD_desc);
+    select_in(JIFFLES, tetraCHORD_desc);
     break;
   case 138: case 139: case 140: case 141:
-    select_array_in(JIFFLES, mechanical);
+    select_in(JIFFLES, mechanical);
     break;
   }
 
@@ -2056,43 +2056,43 @@ void furzificate() {	// switch to a quiet, farting patterns, u.a.
 #endif
   switch (random(10)) {
   case 0:	// kalimbaxyl
-    select_array_in(JIFFLES, kalimbaxyl);
+    select_in(JIFFLES, kalimbaxyl);
     MENU.play_KB_macro("j");
     break;
   case 1:	// back_to_ground
-    select_array_in(JIFFLES, back_to_ground);
+    select_in(JIFFLES, back_to_ground);
     MENU.play_KB_macro("j");
     break;
   case 2:	// *3 jiffletab0	"Frosch"
-    select_array_in(JIFFLES, jiffletab0);
+    select_in(JIFFLES, jiffletab0);
     MENU.play_KB_macro(F("*3 j"));
     break;
   case 3:	// J3j jiff_december
-    select_array_in(JIFFLES, jiff_december);
+    select_in(JIFFLES, jiff_december);
     MENU.play_KB_macro(F("*4/3 j"));
     break;
   case 4:	// jiff_dec128  the drummer in the cathedral
-    select_array_in(JIFFLES, jiff_dec128);
+    select_in(JIFFLES, jiff_dec128);
     MENU.play_KB_macro(F("*3/2 j S0n"));
     break;
   case 5:	// jiffletab, silent rhythmes
-    select_array_in(JIFFLES, jiffletab);
+    select_in(JIFFLES, jiffletab);
     MENU.play_KB_macro("j");
     break;
   case 6:	// jiff_dec_pizzica	dirty!
-    select_array_in(JIFFLES, jiff_dec_pizzica);
+    select_in(JIFFLES, jiff_dec_pizzica);
     MENU.play_KB_macro(F("*3 j"));
     break;
   case 7:	// jiffletab0	fröhliches Knatterfurzkonzert explodiert
-    select_array_in(JIFFLES,jiffletab0 );
+    select_in(JIFFLES,jiffletab0 );
     MENU.play_KB_macro(F("*6 j S0n"));
     break;
   case 8:	// aktivitätswellen  jiffletab01
-    select_array_in(JIFFLES, jiffletab01);
+    select_in(JIFFLES, jiffletab01);
     MENU.play_KB_macro(F("*3 j"));
     break;
   case 9:	// d4096_6 churzi plipps
-    select_array_in(JIFFLES, d4096_6);
+    select_in(JIFFLES, d4096_6);
     MENU.play_KB_macro("j");
     break;
   }
@@ -2174,7 +2174,7 @@ void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless wakin
 
     if(scale_stored_RTC != NULL) {
       MENU.out(F("SCALE "));
-      select_array_in(SCALES, scale_stored_RTC);
+      select_in(SCALES, scale_stored_RTC);
       scale_user_selected = true;
     }
 
@@ -2192,7 +2192,7 @@ void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless wakin
 
     if(jiffle_stored_RTC != NULL) {
       MENU.out(F("JIFFLE "));
-      select_array_in(JIFFLES, jiffle_stored_RTC);
+      select_in(JIFFLES, jiffle_stored_RTC);
       jiffle_user_selected = true;
     }
 
@@ -3371,7 +3371,7 @@ bool musicBox_reaction(char token) {
 
   case 'T':	// Tuning pitch and scale	// TODO: move to pulses.ino
     if(MENU.cb_peek()==EOF) {		// bare 'T'?
-      display_arr_names(SCALES);	//   display SCALES list
+      display_names(SCALES);	//   display SCALES list
       MENU.ln();
       musicBox_short_info();
     } else {				// more input?

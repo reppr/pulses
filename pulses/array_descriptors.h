@@ -26,7 +26,7 @@ struct arr_descriptor {
 
 // init an array as array database
 // set DB[0] to describe the database
-void init_arr_DB(arr_descriptor * DB, unsigned int len, char* name) {
+void init_DB(arr_descriptor * DB, unsigned int len, char* name) {
   // DB[0] describes the database itself
   DB[0].pointer=NULL;	// DB[0].pointer points to selected array
   DB[0].len=len;	// data base length in bytes
@@ -66,7 +66,7 @@ int pointer2index(arr_descriptor * DB, unsigned int* array) {
 }
 
 
-void select_array_in(arr_descriptor* DB, unsigned int* array) {
+void select_in(arr_descriptor* DB, unsigned int* array) {
   if (pointer2index(DB, array) != ILLEGAL)	// TODO: remove debugging code
     DB[0].pointer=array;	// DB[0].pointer points to selected array
   else						// TODO: remove debugging code
@@ -77,7 +77,7 @@ unsigned int* selected_in(arr_descriptor* DB) {
   return DB[0].pointer;
 }
 
-bool register_array_in_DB(arr_descriptor* DB,	\
+bool register_in_DB(arr_descriptor* DB,	\
 	unsigned int* array, unsigned int len, unsigned int item, char* name, char* type) {
   // DB[0] describes the database itself
   unsigned int next=DB[0].item;
@@ -125,7 +125,7 @@ bool include_DB_in_DB(arr_descriptor* DB, arr_descriptor* DB_include, int first)
     MENU.out(DB_include[i].type);
     MENU.ln();
     */
-    if (! register_array_in_DB(DB, DB_include[i].pointer, DB_include[i].len, DB_include[i].item, DB_include[i].name, DB_include[i].type))
+    if (! register_in_DB(DB, DB_include[i].pointer, DB_include[i].len, DB_include[i].item, DB_include[i].name, DB_include[i].type))
       return false;
   }
 
@@ -145,7 +145,7 @@ arr_descriptor iCODEs[iCODE_DESCRIPTORS];
 
 // register_scale(europ_PENTAtonic, sizeof(europ_PENTAtonic), "europ_PENTAtonic");
 bool register_scale(unsigned int* scale, unsigned int len, char* name) {
-  return register_array_in_DB(SCALES, scale, len, 2, name, "scale");
+  return register_in_DB(SCALES, scale, len, 2, name, "scale");
 }
 
 #ifndef STRINGIFY2
@@ -159,11 +159,11 @@ bool register_scale(unsigned int* scale, unsigned int len, char* name) {
 
 // i.e.  register_jiffle(pentatonic_rise, sizeof(pentatonic_rise), "pentatonic_rise");
 bool register_jiffle(unsigned int* jiffle, unsigned int len, char* name) {
-  return register_array_in_DB(JIFFLES, jiffle, len, 3, name, "jiffle");
+  return register_in_DB(JIFFLES, jiffle, len, 3, name, "jiffle");
 }
 
 #ifdef MENU_h
-  void display_arr_names(arr_descriptor* DB) {
+  void display_names(arr_descriptor* DB) {
     unsigned int * selected_array = DB[0].pointer;
 
     MENU.ln();
@@ -201,7 +201,7 @@ bool UI_select_from_DB(arr_descriptor* DB) {
   int input_value;
 
   if(MENU.cb_peek() == EOF ) {	// no further input:
-    display_arr_names(DB);	//    display list
+    display_names(DB);	//    display list
     return false;		//    RETURN
   }
 
@@ -227,7 +227,7 @@ bool UI_select_from_DB(arr_descriptor* DB) {
       {
 	int i = pointer2index(DB, selected_in(DB));
 	if(i<DB_items(DB)) {
-	  select_array_in(DB,index2pointer(DB, ++i));
+	  select_in(DB,index2pointer(DB, ++i));
 	  return_flag = true;
 	}
       }
@@ -237,7 +237,7 @@ bool UI_select_from_DB(arr_descriptor* DB) {
       {
 	int i = pointer2index(DB, selected_in(DB));
 	if(i) {
-	  select_array_in(DB,index2pointer(DB, --i));
+	  select_in(DB,index2pointer(DB, --i));
 	  return_flag = true;
 	}
       }
@@ -255,7 +255,7 @@ bool UI_select_from_DB(arr_descriptor* DB) {
 
 
 bool register_iCODE(int* icode, unsigned int len, char* name) {
-  return register_array_in_DB(iCODEs, (unsigned int *) icode, len, 1, name, "icode");
+  return register_in_DB(iCODEs, (unsigned int *) icode, len, 1, name, "icode");
 }
 
 #define REGISTER_iCODE(X)	register_iCODE((X), sizeof((X)), STRINGIFY(X))

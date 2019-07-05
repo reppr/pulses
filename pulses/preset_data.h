@@ -44,8 +44,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# happy
     //# aesthetic
     date = F("2018-11-06_15h52m17s	TUE");
-    select_array_in(SCALES, octaves_fifths);
-    select_array_in(JIFFLES, dwn_THRD_up);
+    select_in(SCALES, octaves_fifths);
+    select_in(JIFFLES, dwn_THRD_up);
     sync = 5;
     pitch = {32768, 322};
     break;
@@ -59,8 +59,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# SoundSpaceShip
     //# cosmic
     date = F("2018-12-11_20h48m37s	TUE");
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, PENTAtonic_rise);
+    select_in(SCALES, doric_scale);
+    select_in(JIFFLES, PENTAtonic_rise);
     sync = 5;
     pitch = {32768, 217};
     // fix:	play_KB_macro  /2
@@ -78,8 +78,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# birds
     //comment: very rich chord progression :) :) :)
     date = F("2018-12-19_20h24m56s	WED");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, pentatonic_rise);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, pentatonic_rise);
     sync = 4;
     pitch = {32768, 292};
     // harmonical CYCLE: 1h 14' 4"	SUBCYCLE: | 4' 38" |
@@ -100,8 +100,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //comment: langi dorischi kadenz uf sim cembalo spillt
     //comment: eifach und ruhig schreitend mit glitzerfunkewirbel drüberobe
     date = F("2018-11-13_12h11m04s	TUE");
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, din__dididi_dixi);
+    select_in(SCALES, doric_scale);
+    select_in(JIFFLES, din__dididi_dixi);
     sync = 2;
     // fixed tuning d	294
     pitch = {32768, 294};
@@ -119,8 +119,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lesley	a bit
     //# aesthetic
     date = F("2018-12-22_19h57m19s	SAT");
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES, PENTAtonic_desc);
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES, PENTAtonic_desc);
     sync = 2;
     pitch = {32768, 263};
     // fix:	play_KB_macro  *2
@@ -149,8 +149,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //comment: 59/60 ready?
     //comment: 1/1   silently restart :)
     date = F("2018-11-13_11h57m23s	TUE");
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES, dwn_THRD_up);
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES, dwn_THRD_up);
     sync = 1;
     // fixed tuning g	196
     pitch = {32768, 196};
@@ -169,8 +169,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# simple
     //# aesthetic
     date = F("2018-11-18_20h09m42s	SUN");
-    select_array_in(SCALES, major_scale);
-    select_array_in(JIFFLES, din_dididi);
+    select_in(SCALES, major_scale);
+    select_in(JIFFLES, din_dididi);
     sync = 2;
     pitch = {32768, 351};
     // CYC: 2^0	   12' 19"
@@ -188,8 +188,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dropouts
     //# aesthetic	beware of dropouts
     date = F("2018-11-19_17h42m49s	MON");
-    select_array_in(SCALES, octaves_fifths);
-    select_array_in(JIFFLES, dwn_THRD);
+    select_in(SCALES, octaves_fifths);
+    select_in(JIFFLES, dwn_THRD);
     sync = 0;
     pitch = {32768*2, 281};
     // fix:	play_KB_macro  *2
@@ -209,8 +209,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# cosmic
     //# aesthetic
     date = F("2018-11-07_17h36m34s	WED");
-    select_array_in(SCALES, major_scale);
-    select_array_in(JIFFLES, penta_3rd_down_5);
+    select_in(SCALES, major_scale);
+    select_in(JIFFLES, penta_3rd_down_5);
     sync = 1;
     pitch = {32768, 229};
     // CYC: 2^0	   18' 53"
@@ -231,8 +231,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# aurora
     //# aesthetic
     date = F("2019-02-02_12h12m11s	SAT");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, penta_3rd_down_5);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, penta_3rd_down_5);
     sync = 1;
     // random *metric* tuning d
     pitch = {32768, 294};
@@ -253,9 +253,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dense
     //# chaotic
     //# aesthetic	chaotic
-    select_array_in(SCALES, pentachord);
+    select_in(SCALES, pentachord);
     sync = 0;
-    select_array_in(JIFFLES, tumtumtum);
+    select_in(JIFFLES, tumtumtum);
     pitch = {1, 12};	// 8	*metric* a
     // harmonical CYCLE: 6h 33' 12"	SUBCYCLE: | 6' 9" |
     break;
@@ -271,8 +271,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# simple
     //# aesthetic
     date = F("2019-01-06_21h29m36s	SUN");
-    select_array_in(SCALES, octaves_fourths);
-    select_array_in(JIFFLES, PENTAtonic_desc);
+    select_in(SCALES, octaves_fourths);
+    select_in(JIFFLES, PENTAtonic_desc);
     sync = 4;
     pitch = {32768, 371};
     // fix:	play_KB_macro  *2
@@ -293,8 +293,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# aesthetic
     //comment: bordunartig, stehend
     date = F("2018-11-06_20h02m08s	TUE");
-    select_array_in(SCALES, major_scale);
-    select_array_in(JIFFLES, diing_ditditdit);
+    select_in(SCALES, major_scale);
+    select_in(JIFFLES, diing_ditditdit);
     sync = 5;
     pitch = {32768, 417};
     // fix:	play_KB_macro  *2
@@ -309,8 +309,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# clock
     //# elementary
     date = F("2018-11-07_17h49m47s	WED");
-    select_array_in(SCALES, octave_4th_5th);
-    select_array_in(JIFFLES, diing_ditditdit);
+    select_in(SCALES, octave_4th_5th);
+    select_in(JIFFLES, diing_ditditdit);
     sync = 1;
     pitch = {32768, 410};
     // CYC: 2^0	5h 37' 35"
@@ -325,8 +325,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# simlicistic
     //# elementary
     date = F("2018-11-06_20h48m16s	TUE");
-    select_array_in(SCALES, octaves_fifths);
-    select_array_in(JIFFLES, ding_ditditdit);
+    select_in(SCALES, octaves_fifths);
+    select_in(JIFFLES, ding_ditditdit);
     sync = 1;
     pitch = {32768, 214};
     // fix:	play_KB_macro  *2
@@ -344,8 +344,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# elementary
     //# beep
     date = F("2018-11-08_18h05m59s	THU");
-    select_array_in(SCALES, octaves_fifths);
-    select_array_in(JIFFLES, din__dididi_dixi);
+    select_in(SCALES, octaves_fifths);
+    select_in(JIFFLES, din__dididi_dixi);
     sync = 3;
     // fixed tuning e	330
     pitch = {32768, 330};
@@ -361,8 +361,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# heavyStart		// sometimes problematic	use autostack_S0
     //# rhytm&pulse
     date = F("2018-12-09_15h24m13s	SUN");
-    select_array_in(SCALES, octave_4th_5th);
-    select_array_in(JIFFLES, PENTAtonic_rise);
+    select_in(SCALES, octave_4th_5th);
+    select_in(JIFFLES, PENTAtonic_rise);
     sync = 0;
     pitch = {32768, 375};
     // CYC: 2^0	6h  9'  5"
@@ -381,8 +381,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# simple
     //# aesthetic
     date = F("2018-11-07_18h20m53s	WED");
-    select_array_in(SCALES, minor_scale);
-    select_array_in(JIFFLES, ding_ditditdit);
+    select_in(SCALES, minor_scale);
+    select_in(JIFFLES, ding_ditditdit);
     sync = 2;
     pitch = {32768, 359};
     // no_octave_shift = true;
@@ -403,8 +403,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# simple
     //# aesthetic
     date = F("2018-11-08_14h38m32s	THU");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, ding_ditditdit);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, ding_ditditdit);
     sync = 0;
     pitch = {32768, 210};
     // fix:	play_KB_macro  *2
@@ -424,8 +424,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-11-13_15h04m11s	TUE");
-    select_array_in(SCALES, octaves_fifths);
-    select_array_in(JIFFLES, penta_3rd_rise);
+    select_in(SCALES, octaves_fifths);
+    select_in(JIFFLES, penta_3rd_rise);
     sync = 2;
     // fixed tuning f	175
     pitch = {32768, 175};
@@ -444,8 +444,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# simple
     //# birds
     date = F("2018-11-13_12h23m54s	TUE");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, pentatonic_rise);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, pentatonic_rise);
     sync = 5;
     // fixed tuning b	233
     pitch = {32768, 233};
@@ -466,8 +466,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# rumble
     //# aesthetic
     date = F("2018-11-13_11h40m30s	TUE");
-    select_array_in(SCALES, octave_4th_5th);
-    select_array_in(JIFFLES, pentatonic_desc);
+    select_in(SCALES, octave_4th_5th);
+    select_in(JIFFLES, pentatonic_desc);
     sync = 0;
     // fixed tuning g	196
     pitch = {32768, 196};
@@ -483,8 +483,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# funny
     //# chaotic	a bit
     date = F("2018-11-08_14h27m25s	THU");
-    select_array_in(SCALES, major_scale);
-    select_array_in(JIFFLES, simple_theme);
+    select_in(SCALES, major_scale);
+    select_in(JIFFLES, simple_theme);
     sync = 5;
     pitch = {32768, 380};
     // fix:	play_KB_macro  *2
@@ -514,8 +514,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-11-21_13h23m41s	WED");
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, rising_pent_them);
+    select_in(SCALES, doric_scale);
+    select_in(JIFFLES, rising_pent_them);
     sync = 1;
     pitch = {32768, 295};
     // CYC: 2^0	1h 13' 19"
@@ -547,8 +547,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-11-21_14h33m31s	WED");
-    select_array_in(SCALES, octave_4th_5th);
-    select_array_in(JIFFLES, pentatonic_desc);
+    select_in(SCALES, octave_4th_5th);
+    select_in(JIFFLES, pentatonic_desc);
     sync = 2;
     pitch = {32768, 354};
     // fix:	play_KB_macro  *4
@@ -568,8 +568,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //comment: schöni uufbou
     //comment: vilichtmengischauchlilangwiiligi?
     date = F("2018-11-13_15h12m50s	TUE");
-    select_array_in(SCALES, major_scale);
-    select_array_in(JIFFLES, pentatonic_rise);
+    select_in(SCALES, major_scale);
+    select_in(JIFFLES, pentatonic_rise);
     sync = 5;
     // fixed tuning a	220
     pitch = {32768, 220};
@@ -591,8 +591,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //comment: zum uussueche...
     //comment: bald mit tüüfem gebrumm
     date = F("2018-11-13_17h33m15s	TUE");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, ding_ditditdit);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, ding_ditditdit);
     sync = 1;
     // fixed tuning b	233
     pitch = {32768, 233};
@@ -612,8 +612,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# simple
     //# cosmic
     date = F("2018-11-14_13h27m35s	WED");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, ding_ditditdit);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, ding_ditditdit);
     sync = 5;
     // fixed tuning a	220
     pitch = {32768, 220};
@@ -634,8 +634,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //comment: da lauft öppis, so simpel das es bliibt	:)
     date = F("2018-11-14_14h58m29s	WED");
-    select_array_in(SCALES, minor_scale);
-    select_array_in(JIFFLES, PENTAtonic_rise);
+    select_in(SCALES, minor_scale);
+    select_in(JIFFLES, PENTAtonic_rise);
     sync = 3;
     // fixed tuning f	175
     pitch = {32768, 175};
@@ -654,8 +654,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# mystic
     //# aesthetic	wide
     date = F("2018-11-14_19h47m20s	WED");
-    select_array_in(SCALES, major_scale);
-    select_array_in(JIFFLES, pentatonic_rise);
+    select_in(SCALES, major_scale);
+    select_in(JIFFLES, pentatonic_rise);
     sync = 0;
     // fixed tuning e	330
     pitch = {32768, 330};
@@ -682,8 +682,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lesley
     //# lyric
     date = F("2018-11-15_09h10m37s	THU");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, dwn_THRD_up);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, dwn_THRD_up);
     sync = 1;
     // fixed tuning a	220
     pitch = {32768, 220};
@@ -714,8 +714,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //comment: *lange* harmonical cycle 11h 46' 9"	???
     date = F("2018-11-15_15h15m34s	THU");
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES, pentatonic_rise);
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES, pentatonic_rise);
     sync = 3;
     // fixed tuning g	196
     pitch = {32768, 196};
@@ -748,8 +748,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-11-15_15h38m13s	THU");
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, penta_3rd_down_5);
+    select_in(SCALES, doric_scale);
+    select_in(JIFFLES, penta_3rd_down_5);
     sync = 5;
     // fixed tuning c	262
     pitch = {32768, 262};
@@ -778,8 +778,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-11-15_15h53m44s	THU");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, dwn_THRD_up);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, dwn_THRD_up);
     sync = 5;
     // fixed tuning b	233
     pitch = {32768, 233};
@@ -808,8 +808,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-11-16_12h29m17s	FRI");
-    select_array_in(SCALES, octaves_fifths);
-    select_array_in(JIFFLES, PENTA_3rd_rise);
+    select_in(SCALES, octaves_fifths);
+    select_in(JIFFLES, PENTA_3rd_rise);
     sync = 5;
     pitch = {32768, 383};
     // fix:	play_KB_macro  /2
@@ -838,8 +838,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-11-17_11h59m15s	SAT");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, ding_ditditdit);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, ding_ditditdit);
     sync = 0;
     pitch = {32768, 207};
     // fix:	play_KB_macro  *4
@@ -873,8 +873,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //comment: chönnt mer guet au 1/2 cycle näh
     //comment: u.a.
     date = F("2018-11-17_20h41m20s	SAT");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, PENTAtonic_desc);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, PENTAtonic_desc);
     sync = 0;
     pitch = {32768, 379};
     // fix:	play_KB_macro  *2
@@ -898,8 +898,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //comment: schluss müest me no händisch mache...
     date = F("2018-11-18_20h26m18s	SUN");
-    select_array_in(SCALES, octaves_fifths);
-    select_array_in(JIFFLES, ding_ditditdit);
+    select_in(SCALES, octaves_fifths);
+    select_in(JIFFLES, ding_ditditdit);
     sync = 1;
     pitch = {32768, 420};
     // CYC: 2^0	4d 21h 10' 10"
@@ -911,8 +911,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# FAVORITE
     //# systemStress	really???
     date = F("2018-11-19_10h30m25s	MON");
-    select_array_in(SCALES, minor_scale);
-    select_array_in(JIFFLES, dwn_THRD_up);
+    select_in(SCALES, minor_scale);
+    select_in(JIFFLES, dwn_THRD_up);
     sync = 2;
     pitch = {32768, 200};	// quite random to tune it lower
     // was: pitch = {32768, 399};
@@ -938,8 +938,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //comment: und übrigens:	harmonical cycle    49' 50"
     date = F("2018-11-19_20h29m59s	MON");
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, tumtum);
+    select_in(SCALES, doric_scale);
+    select_in(JIFFLES, tumtum);
     sync = 4;
     pitch = {32768, 217};
     // fix:	play_KB_macro  /2
@@ -970,8 +970,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-11-20_11h40m15s	TUE");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, up_THRD);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, up_THRD);
     sync = 1;
     pitch = {32768, 172};
     // fix:	play_KB_macro  *2
@@ -1004,8 +1004,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-11-20_14h34m14s	TUE");
-    select_array_in(SCALES, minor_scale);
-    select_array_in(JIFFLES, rising_pent_them);
+    select_in(SCALES, minor_scale);
+    select_in(JIFFLES, rising_pent_them);
     sync = 4;
     pitch = {32768, 195};
     // fix:	play_KB_macro  *2
@@ -1034,8 +1034,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //comment: oderso,
     //comment:   muesdeaafangnomallose ;)
     date = F("2018-11-20_15h15m48s	TUE");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, up_THRD_dn);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, up_THRD_dn);
     sync = 1;
     pitch = {32768, 225};
     // CYC: 2^0	1h 16' 54"
@@ -1064,8 +1064,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //comment: und übrigens:	harmonical cycle    53' 34"
     date = F("2018-11-20_20h31m27s	TUE");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, pent_top_wave);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, pent_top_wave);
     sync = 5;
     pitch = {32768, 323};
     // CYC: 2^0	   53' 34"
@@ -1090,8 +1090,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2019-04-11_18h21m28s	THU");
-    select_array_in(SCALES, octave_4th_5th);
-    select_array_in(JIFFLES, up_THRD);
+    select_in(SCALES, octave_4th_5th);
+    select_in(JIFFLES, up_THRD);
     sync = 4;
     stack_sync_slices = 0;
     // base_pulse = 15;	// TODO: rethink that
@@ -1118,8 +1118,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2019-04-11_14h");
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES, mechanical);
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES, mechanical);
     sync = 2;
     stack_sync_slices = 256;
     // base_pulse = 15;	// TODO: rethink that
@@ -1148,8 +1148,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lesley
     //# lyric
     date = F("2018-11-21_15h49m05s	WED");
-    select_array_in(SCALES, minor_scale);
-    select_array_in(JIFFLES, pent_patternA);
+    select_in(SCALES, minor_scale);
+    select_in(JIFFLES, pent_patternA);
     sync = 3;
     pitch = {32768, 161};
     // used SUBCYCLE:    4' 12"
@@ -1177,8 +1177,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //comment: und übrigens:	harmonical cycle    55' 27"
     date = F("2018-11-21_16h08m40s	WED");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, pentatonic_rise);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, pentatonic_rise);
     sync = 5;
     pitch = {32768, 195};
     // usedSUBCYCLE:    3' 28"
@@ -1207,8 +1207,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-11-21_16h54m05s	WED");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, pent_patternA);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, pent_patternA);
     sync = 5;
     pitch = {32768, 266};
     // fix:	play_KB_macro  *4
@@ -1236,8 +1236,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     //comment: harmonical cycle    40' 39"	...
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, rising_pent_them);
+    select_in(SCALES, doric_scale);
+    select_in(JIFFLES, rising_pent_them);
     sync = 5;
     pitch = {32768, 266};
     // fix:	play_KB_macro  /2
@@ -1262,8 +1262,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# water
     date = F("2019-04-11_10h");
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES, up_THRD_dn);
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES, up_THRD_dn);
     sync = 2;
     stack_sync_slices = -16;
     // base_pulse = 15;	// TODO: rethink that
@@ -1308,9 +1308,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# solemn
     //# ritual
     //# happy
-    select_array_in(SCALES, pentatonic_minor);
+    select_in(SCALES, pentatonic_minor);
     sync = 1;
-    select_array_in(JIFFLES, dwn_THRD);
+    select_in(JIFFLES, dwn_THRD);
     pitch = {1, 357};	// 8	*metric* c
     // harmonical CYCLE: 1h 6' 2"	SUBCYCLE: 2^3 | 11' 28" |	???
     break;
@@ -1329,8 +1329,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# delay
     //# hasSlowPulse
     date = F("2018-11-21_21h12m38s	WED");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, pent_patternA);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, pent_patternA);
     sync = 2;
     pitch = {32768, 221};
     // CYC: 2^0	1h 37' 51"
@@ -1351,8 +1351,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# fractal
     //# hasSlowPulse
     date = F("2018-11-22_08h48m23s	THU");
-    select_array_in(SCALES, octaves_fifths);
-    select_array_in(JIFFLES, pent_top_wave_0);
+    select_in(SCALES, octaves_fifths);
+    select_in(JIFFLES, pent_top_wave_0);
     sync = 5;
     pitch = {32768, 415};
     // fix:	play_KB_macro  *2
@@ -1382,8 +1382,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //comment: //comment: ;) ;)
     //comment: harmonical cycle     7'  1"
     date = F("2018-11-22_09h26m06s	THU");
-    select_array_in(SCALES, major_scale);
-    select_array_in(JIFFLES, dwn_THRD_up);
+    select_in(SCALES, major_scale);
+    select_in(JIFFLES, dwn_THRD_up);
     sync = 4;
     pitch = {32768/4, 308};
     // fix:	play_KB_macro  /2
@@ -1409,8 +1409,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //comment: harmonical cycle    26' 18"	...
     date = F("2018-11-22_10h44m17s	THU");
-    select_array_in(SCALES, major_scale);
-    select_array_in(JIFFLES, pentatonic_desc);
+    select_in(SCALES, major_scale);
+    select_in(JIFFLES, pentatonic_desc);
     sync = 2;
     pitch = {32768, 329};
     // fix:	play_KB_macro  *2
@@ -1436,8 +1436,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //comment: harmonical cycle    22'  1"
     //comment: jiffle no uusprobiere ;)
     date = F("2018-11-22_11h45m56s	THU");
-    select_array_in(SCALES, major_scale);
-    select_array_in(JIFFLES, din_dididi);
+    select_in(SCALES, major_scale);
+    select_in(JIFFLES, din_dididi);
     sync = 2;
     pitch = {32768, 393};
     // fix:	play_KB_macro  *2
@@ -1459,8 +1459,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-11-25_16h18m50s	SUN");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, pentatonic_rise);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, pentatonic_rise);
     sync = 5;
     pitch = {32768, 167};
     // random octave shift: // fix:	play_KB_macro  *2
@@ -1485,8 +1485,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-11-25_16h31m56s	SUN");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, PENTAtonic_rise);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, PENTAtonic_rise);
     sync = 0;
     pitch = {32768, 261};
     // random octave shift: // fix:	play_KB_macro  *4
@@ -1515,8 +1515,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-11-25_18h49m01s	SUN");
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES, dwn_THRD_up);
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES, dwn_THRD_up);
     sync = 1;
     pitch = {32768, 247};
     // random octave shift: // fix:	play_KB_macro  /2
@@ -1541,8 +1541,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-11-25_19h14m10s	SUN");
-    select_array_in(SCALES, octave_4th_5th);
-    select_array_in(JIFFLES, PENTA_3rd_down_5);
+    select_in(SCALES, octave_4th_5th);
+    select_in(JIFFLES, PENTA_3rd_down_5);
     sync = 2;
     pitch = {32768, 296};
     // random octave shift: // fix:	play_KB_macro  *2
@@ -1563,8 +1563,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-11-25_19h24m24s	SUN");
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, din_dididi);
+    select_in(SCALES, doric_scale);
+    select_in(JIFFLES, din_dididi);
     sync = 0;
     pitch = {32768, 219};
     // random octave shift: used SUBCYCLE:	3' 5"y61
@@ -1609,8 +1609,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dance
     //# ritual
     sync = 0;
-    select_array_in(SCALES, octave_4th_5th);
-    select_array_in(JIFFLES, pentatonic_rise);
+    select_in(SCALES, octave_4th_5th);
+    select_in(JIFFLES, pentatonic_rise);
     pitch = {2, 6144};
     // harmonical cycle 'c'	12h 24'  7"	subcycle    5' 49"
     break;
@@ -1633,8 +1633,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# birds	some
     //# hasSlowPulse
     //# lyric
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, PENTAtonic_rise);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, PENTAtonic_rise);
     sync = 4;
     pitch = {32768, 211};
     // random octave shift: // fix:	play_KB_macro  *2
@@ -1664,8 +1664,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# aurora
     //# hasSlowPulse
     //# lyric
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, pentatonic_rise);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, pentatonic_rise);
     pitch = {1, 128};
     sync = 4;
     break;
@@ -1687,8 +1687,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric	er sitzt nur da und lost uf t vögel wo zwitschered im gebüsch
     //# lyric	(mer findet en en) gspässige Vogel
     date = F("2018-11-28_21h02m41s	WED");
-    select_array_in(SCALES, octaves_fifths);
-    select_array_in(JIFFLES, PENTA_3rd_rise);
+    select_in(SCALES, octaves_fifths);
+    select_in(JIFFLES, PENTA_3rd_rise);
     sync = 3;
     pitch = {32768, 375};
     // random octave shift:
@@ -1715,8 +1715,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-11-29_14h14m39s	THU");
-    select_array_in(SCALES, octaves_fifths);
-    select_array_in(JIFFLES, PENTAtonic_desc);
+    select_in(SCALES, octaves_fifths);
+    select_in(JIFFLES, PENTAtonic_desc);
     sync = 2;
     pitch = {32768, 172};
     // random octave shift:
@@ -1740,8 +1740,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-12-01_12h11m13s	SAT");
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, ding_ditditdit);
+    select_in(SCALES, doric_scale);
+    select_in(JIFFLES, ding_ditditdit);
     sync = 4;
     pitch = {32768, 288};
     // random octave shift: // fix:	play_KB_macro  *2
@@ -1774,8 +1774,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-12-02_20h43m32s	SUN");
-    select_array_in(SCALES, major_scale);
-    select_array_in(JIFFLES, pentatonic_desc);
+    select_in(SCALES, major_scale);
+    select_in(JIFFLES, pentatonic_desc);
     sync = 2;
     pitch = {32768, 379};
     // random octave shift: // fix:	play_KB_macro  *4
@@ -1802,8 +1802,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-12-03_08h30m25s	MON");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, up_THRD);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, up_THRD);
     sync = 0;
     pitch = {32768, 230};
     // fix:	play_KB_macro  *2
@@ -1830,8 +1830,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-12-04_10h16m55s	TUE");
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES, dwn_THRD);
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES, dwn_THRD);
     sync = 3;
     pitch = {32768, 410};
     // fix:	play_KB_macro  *2
@@ -1856,8 +1856,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-12-04_10h24m24s	TUE");
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES, pent_top_wave);
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES, pent_top_wave);
     sync = 3;
     pitch = {32768, 375};
     // fix:	play_KB_macro  *2
@@ -1868,8 +1868,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 73:
     name = F("simplistic");
     date = F("2018-12-05_19h18m09s	WED");
-    select_array_in(SCALES, octaves_fifths);
-    select_array_in(JIFFLES, din_dididi);
+    select_in(SCALES, octaves_fifths);
+    select_in(JIFFLES, din_dididi);
     sync = 5;
     pitch = {32768, 256};
     // fix:	play_KB_macro  /2
@@ -1899,8 +1899,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //comment: very good example for note-metrum interval analogy :)
     //comment: will be a good test case for a better end algorithm ;)
     date = F("2018-12-06_08h14m01s	THU");
-    select_array_in(SCALES, octaves_fourths);
-    select_array_in(JIFFLES, tumtum);
+    select_in(SCALES, octaves_fourths);
+    select_in(JIFFLES, tumtum);
     sync = 0;
     pitch = {32768, 413};
     // fix:	play_KB_macro  *2
@@ -1931,8 +1931,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-12-07_09h44m49s	FRI");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, PENTA_3rd_down_5);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, PENTA_3rd_down_5);
     sync = 3;
     pitch = {32768, 176};
     // fix:	play_KB_macro  *4
@@ -1963,8 +1963,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-12-07_13h03m35s	FRI");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, dwn_THRD);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, dwn_THRD);
     sync = 1;
     pitch = {32768, 357};
     // CYC: 2^0	   48' 28"
@@ -1988,8 +1988,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# elementary
     //# robot
     date = F("2018-12-07_13h53m29s	FRI");
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, tanboura);
+    select_in(SCALES, doric_scale);
+    select_in(JIFFLES, tanboura);
     sync = 5;
     pitch = {32768, 299};
     // fix:	play_KB_macro  *2
@@ -2017,8 +2017,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# fairies
     //# lyric
     date = F("2018-12-07_16h22m20s	FRI");
-    select_array_in(SCALES, octave_4th_5th);
-    select_array_in(JIFFLES, pent_top_wave);
+    select_in(SCALES, octave_4th_5th);
+    select_in(JIFFLES, pent_top_wave);
     sync = 3;
     pitch = {32768, 257};
     // fix:	play_KB_macro  *2
@@ -2055,8 +2055,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-12-07_15h57m55s	FRI");
-    select_array_in(SCALES, minor_scale);
-    select_array_in(JIFFLES, PENTA_3rd_down_5);
+    select_in(SCALES, minor_scale);
+    select_in(JIFFLES, PENTA_3rd_down_5);
     sync = 3;
     pitch = {32768, 300};
     // CYC: 2^0	1h 12'  5"
@@ -2090,8 +2090,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# water		why not?
     date = F("2018-12-07_16h32m24s	FRI");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, PENTA_3rd_down_5);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, PENTA_3rd_down_5);
     sync = 1;
     pitch = {32768, 195};
     // fix:	play_KB_macro  *2
@@ -2125,8 +2125,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# water		possible, bubbles?
     date = F("2018-12-07_17h23m46s	FRI");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, PENTA_3rd_rise);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, PENTA_3rd_rise);
     sync = 3;
     pitch = {32768, 355};
     // fix:	play_KB_macro  *2
@@ -2155,8 +2155,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# water
     date = F("2018-12-07_17h34m18s	FRI");
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES, PENTAtonic_desc);
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES, PENTAtonic_desc);
     sync = 5;
     pitch = {32768, 260};
     // fix:	play_KB_macro  /2
@@ -2182,8 +2182,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric		maybe too simple
     date = F("2018-12-07_17h45m57s	FRI");
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES, din__dididi_dixi);
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES, din__dididi_dixi);
     sync = 3;
     pitch = {32768, 195};
     // fix:	play_KB_macro  *2
@@ -2216,8 +2216,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dream
     //# dance		very quietly moving with fast detail patterns
     date = F("2019-04-04");
-    select_array_in(SCALES, octave_4th_5th);
-    select_array_in(JIFFLES, penta_3rd_down_5);
+    select_in(SCALES, octave_4th_5th);
+    select_in(JIFFLES, penta_3rd_down_5);
     sync = 1;
     pitch = {1, 330};
     break;
@@ -2254,8 +2254,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse	slow and subtle
     //# lyric		poetic
     sync = 2;
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, PENTAtonic_desc);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, PENTAtonic_desc);
     pitch = {1, 128};
     // harmonical cycle 1h  9' 59"	subcycle    8' 45"
     break;
@@ -2285,8 +2285,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric		maybe?
     //# water		why not?
     date = F("2018-12-07_19h04m44s	FRI");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, penta_3rd_rise);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, penta_3rd_rise);
     sync = 1;
     pitch = {32768, 423};
     // CYC: 2^0	1h 21' 48"
@@ -2314,8 +2314,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse	by a melody motive
     //# lyric
     date = F("2018-12-07_19h16m36s	FRI");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, din__dididi_dixi);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, din__dididi_dixi);
     sync = 1;
     pitch = {32768, 187};
     // fix:	play_KB_macro  *2
@@ -2340,8 +2340,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# robot
     //# hasSlowPulse	by motives
     date = F("2018-12-07_19h48m57s	FRI");
-    select_array_in(SCALES, octave_4th_5th);
-    select_array_in(JIFFLES, d4096_512);
+    select_in(SCALES, octave_4th_5th);
+    select_in(JIFFLES, d4096_512);
     sync = 1;
     pitch = {32768, 187};
     // CYC: 2^0	6h 10'  4"
@@ -2371,8 +2371,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# water		everything is possible
     date = F("2018-12-07_20h03m19s	FRI");
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, dwn_THRD_up);
+    select_in(SCALES, doric_scale);
+    select_in(JIFFLES, dwn_THRD_up);
     sync = 1;
     pitch = {32768, 189};
     // fix:	play_KB_macro  *2
@@ -2408,8 +2408,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# water		slow waves
     date = F("2018-12-09_20h14m56s	SUN");
-    select_array_in(SCALES, major_scale);
-    select_array_in(JIFFLES, penta_3rd_rise);
+    select_in(SCALES, major_scale);
+    select_in(JIFFLES, penta_3rd_rise);
     sync = 3;
     pitch = {32768, 170};
     // fix:	play_KB_macro  *2
@@ -2422,8 +2422,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // TODO: add tags
     name = F("simple and beautiful");
     date = F("2018-12-10_17h02m05s	MON");
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, d4096_1024);
+    select_in(SCALES, doric_scale);
+    select_in(JIFFLES, d4096_1024);
     sync = 2;
     pitch = {32768, 297};
     // fix:	play_KB_macro  *2
@@ -2459,8 +2459,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# water
     date = F("2018-12-10_17h27m01s	MON");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, dwn_THRD_up);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, dwn_THRD_up);
     sync = 3;
     pitch = {32768, 244};
     // fix:	play_KB_macro  *2
@@ -2491,8 +2491,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# water	busy rising melodies like air bubbles in water
     date = F("2018-12-11_13h29m08s	TUE");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, pentatonic_rise);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, pentatonic_rise);
     sync = 5;
     pitch = {32768, 217};
     // CYC: 2^0	1h 19' 44"
@@ -2526,8 +2526,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# children
     //# dance
     date = F("2018-12-13_10h24m06s	THU");
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES, rising_pent_them);
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES, rising_pent_them);
     sync = 4;
     pitch = {32768, 302};
     // CYC: 2^0	57' 17"
@@ -2554,8 +2554,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dance
     //# festive
     date = F("2018-12-13_10h47m46s	THU");
-    select_array_in(SCALES, major_scale);
-    select_array_in(JIFFLES, d4096_1024);
+    select_in(SCALES, major_scale);
+    select_in(JIFFLES, d4096_1024);
     sync = 3;
     // harmonical CYCLE: 13' 11"	SUBCYCLE: | 6' 36" |
     subcycle_octave = -1;
@@ -2583,8 +2583,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# aurora
     //# lesley
     date = F("2018-12-13_16h59m40s	THU");
-    select_array_in(SCALES, major_scale);
-    select_array_in(JIFFLES, PENTA_3rd_down_5);
+    select_in(SCALES, major_scale);
+    select_in(JIFFLES, PENTA_3rd_down_5);
     sync = 1;
     pitch = {32768, 208};
     // harmonical CYCLE: 20' 48"	SUBCYCLE: | 5' 12" |
@@ -2614,8 +2614,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# children
     date = F("2018-12-13_19h42m01s	THU");
-    select_array_in(SCALES, octaves_fifths);
-    select_array_in(JIFFLES, diing_ditditdit);
+    select_in(SCALES, octaves_fifths);
+    select_in(JIFFLES, diing_ditditdit);
     sync = 2;
     pitch = {32768, 449};
     // harmonical CYCLE: 4d 13h 36' 6"		SUBCYCLE: | 6' 25" |
@@ -2649,8 +2649,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dance		slowly progressing
     //# festive		blue night festival
     date = F("2018-12-13_21h35m38s	THU");
-    select_array_in(SCALES, minor_scale);
-    select_array_in(JIFFLES, pentatonic_rise);
+    select_in(SCALES, minor_scale);
+    select_in(JIFFLES, pentatonic_rise);
     sync = 0;
     pitch = {32768, 234};
     // fix:	play_KB_macro  *2
@@ -2684,8 +2684,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# water
     //# floating
     date = F("2018-12-14_18h24m10s	FRI");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, pent_patternA);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, pent_patternA);
     sync = 5;
     pitch = {32768, 431};
     // harmonical CYCLE: 1h 40' 21"	SUBCYCLE: | 6' 16" |
@@ -2719,8 +2719,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# children
     //# dance
     date = F("2018-12-14_18h51m01s	FRI");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, diing_ditditdit);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, diing_ditditdit);
     sync = 3;
     pitch = {32768, 429};
     // fix:	play_KB_macro  *2
@@ -2753,8 +2753,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dance		very slow, quiet but strong dance
     //# festive		somehow yes, but quietly so
     date = F("2018-12-14_19h03m53s	FRI");
-    select_array_in(SCALES, octaves_fourths);
-    select_array_in(JIFFLES, pentatonic_desc);
+    select_in(SCALES, octaves_fourths);
+    select_in(JIFFLES, pentatonic_desc);
     sync = 0;
     pitch = {32768, 352};
     // fix:	play_KB_macro  *2
@@ -2776,8 +2776,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# simple
     //# hasSlowPulse	somehow
     date = F("2018-12-14_19h37m48s	FRI");
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, d4096_1024);
+    select_in(SCALES, doric_scale);
+    select_in(JIFFLES, d4096_1024);
     sync = 1;
     pitch = {32768, 215};
     // fix:	play_KB_macro  *2
@@ -2809,8 +2809,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dance		quiet, slow and strong
     //# festive		somehow
     date = F("2018-12-14_19h48m35s	FRI");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, up_THRD);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, up_THRD);
     sync = 2;
     pitch = {32768, 333};
     // fix:	play_KB_macro  *2
@@ -2839,8 +2839,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse	jazzy, and not steady
     //# dance		crazy dance
     date = F("2018-12-15_12h58m14s	SAT");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, tumtum);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, tumtum);
     sync = 2;
     pitch = {32768, 222};
     // harmonical CYCLE: 1h 37' 25"	SUBCYCLE: | 6' 5" |
@@ -2870,8 +2870,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dance		whirdance?
     //# floating	in a whirlpool?
     date = F("2018-12-15_15h06m14s	SAT");
-    select_array_in(SCALES, minor_scale);
-    select_array_in(JIFFLES, pentatonic_rise);
+    select_in(SCALES, minor_scale);
+    select_in(JIFFLES, pentatonic_rise);
     sync = 0;
     pitch = {32768, 223};
     // harmonical CYCLE: 1h 36' 59"	SUBCYCLE: | 6' 4" |
@@ -2899,8 +2899,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# festive
     //# floating	in the dance
     date = F("2018-12-18_11h56m09s	TUE");
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES, rising_pent_them);
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES, rising_pent_them);
     sync = 1;
     pitch = {32768, 420};
     // fix:	play_KB_macro  *2
@@ -2932,8 +2932,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dance		steady advancing
     //# festive		advanced
     date = F("2018-12-19_14h13m01s	WED");
-    select_array_in(SCALES, octave_4th_5th);
-    select_array_in(JIFFLES, tumtum);
+    select_in(SCALES, octave_4th_5th);
+    select_in(JIFFLES, tumtum);
     sync = 0;
     pitch = {32768, 413};
     // fix:	play_KB_macro  *2
@@ -2962,8 +2962,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# children
     //# dance
     date = F("2018-12-19_15h29m35s	WED");
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES, pentatonic_rise);
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES, pentatonic_rise);
     sync = 5;
     pitch = {32768, 323};
     // fix:	play_KB_macro  /2
@@ -2991,8 +2991,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dance
     //# festive
     date = F("2018-12-19_15h49m12s	WED");
-    select_array_in(SCALES, octave_4th_5th);
-    select_array_in(JIFFLES, dwn_THRD_up);
+    select_in(SCALES, octave_4th_5th);
+    select_in(JIFFLES, dwn_THRD_up);
     sync = 4;
     pitch = {32768, 354};
     // fix:	play_KB_macro  *2
@@ -3017,8 +3017,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# festive
     date = F("2018-12-19_15h42m05s	WED");
-    select_array_in(SCALES, minor_scale);
-    select_array_in(JIFFLES, d4096_512);
+    select_in(SCALES, minor_scale);
+    select_in(JIFFLES, d4096_512);
     sync = 5;
     pitch = {32768, 228};
     // fix:	play_KB_macro  /2
@@ -3047,8 +3047,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dance
     //# festive
     date = F("2018-12-19_15h57m43s	WED");
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, pentatonic_rise);
+    select_in(SCALES, doric_scale);
+    select_in(JIFFLES, pentatonic_rise);
     sync = 5;
     pitch = {32768, 373};
     // fix:	play_KB_macro  *2
@@ -3086,8 +3086,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# festive
     //# floating
     date = F("2018-12-20_13h11m49s	THU");
-    select_array_in(SCALES, major_scale);
-    select_array_in(JIFFLES, penta_3rd_down_5);
+    select_in(SCALES, major_scale);
+    select_in(JIFFLES, penta_3rd_down_5);
     sync = 1;
     pitch = {32768, 262};
     // fix:	play_KB_macro  /2
@@ -3116,8 +3116,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dance
     //# floating
     date = F("2018-12-19_20h43m46s	WED");
-    select_array_in(SCALES, minor_scale);
-    select_array_in(JIFFLES, up_THRD);
+    select_in(SCALES, minor_scale);
+    select_in(JIFFLES, up_THRD);
     sync = 3;
     pitch = {32768, 400};
     // fix:	play_KB_macro  *2
@@ -3160,8 +3160,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dance		very mystical
     //# festive
     date = F("2018-12-19_22h08m50s	WED");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, penta_3rd_down_5);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, penta_3rd_down_5);
     sync = 1;
     pitch = {32768, 226};
     // harmonical CYCLE: 1h 35' 41"	SUBCYCLE: | 5' 59" |
@@ -3187,8 +3187,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //comment: langsams, maschinells schriite
     //comment: ständig umpiepst vo de nervende alärm ;)
     date = F("2018-11-08_15h07m35s	THU");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, din__dididi_dixi);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, din__dididi_dixi);
     sync = 0;
     pitch = {32768, 386};
     // fix:	play_KB_macro  /2
@@ -3221,8 +3221,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# children
     //# lyric
     date = F("2018-12-20_16h05m35s	THU");
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES, pentatonic_desc);
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES, pentatonic_desc);
     sync = 0;
     pitch = {32768, 411};
     // fix:	play_KB_macro  *2
@@ -3265,8 +3265,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dance	slow movements
     //# festive and quiet, very concentrated
     date = F("2018-12-20_16h54m10s	THU");
-    select_array_in(SCALES, octaves_fifths);
-    select_array_in(JIFFLES, pentatonic_desc);
+    select_in(SCALES, octaves_fifths);
+    select_in(JIFFLES, pentatonic_desc);
     sync = 4;
     pitch = {32768, 271};
     // harmonical CYCLE: 3d 18h 47' 44"	SUBCYCLE: | 5' 19" |
@@ -3297,8 +3297,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse	simplicistic
     //# boring
     date = F("2018-12-21_11h54m41s	FRI");
-    select_array_in(SCALES, triad);
-    select_array_in(JIFFLES, tanboura);
+    select_in(SCALES, triad);
+    select_in(JIFFLES, tanboura);
     sync = 3;
     pitch = {32768, 248};
     // fix:	play_KB_macro  /2
@@ -3342,8 +3342,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# slow
     //# steady
     date = F("2018-12-21_18h55m55s	FRI");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, dwn_THRD);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, dwn_THRD);
     sync = 2;
     pitch = {32768, 300};
     // fix:	play_KB_macro  *2
@@ -3380,8 +3380,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# happy
     //# tired
     date = F("2018-12-21_19h57m09s	FRI");
-    select_array_in(SCALES, pentaCHORD);
-    select_array_in(JIFFLES, din_dididi);
+    select_in(SCALES, pentaCHORD);
+    select_in(JIFFLES, din_dididi);
     sync = 2;
     pitch = {32768, 416};
     // fix:	play_KB_macro  *2
@@ -3413,8 +3413,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# slow
     //# steady
     date = F("2018-12-22_09h52m20s	SAT");
-    select_array_in(SCALES, octaves_fourths);
-    select_array_in(JIFFLES, PENTAtonic_desc);
+    select_in(SCALES, octaves_fourths);
+    select_in(JIFFLES, PENTAtonic_desc);
     sync = 2;
     pitch = {32768, 350};
     // fix:	play_KB_macro  *2
@@ -3446,8 +3446,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# boring
     //# steady
     date = F("2018-12-22_10h34m45s	SAT");
-    select_array_in(SCALES, octaves_fourths);
-    select_array_in(JIFFLES, d4096_3072);
+    select_in(SCALES, octaves_fourths);
+    select_in(JIFFLES, d4096_3072);
     sync = 0;
     pitch = {32768, 188};
     // fix:	play_KB_macro  *2
@@ -3482,8 +3482,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# slow
     //# steady	in waves
     date = F("2018-12-22_15h51m27s	SAT");
-    select_array_in(SCALES, pentaCHORD);
-    select_array_in(JIFFLES, pentatonic_desc);
+    select_in(SCALES, pentaCHORD);
+    select_in(JIFFLES, pentatonic_desc);
     sync = 5;
     pitch = {32768, 181};
     // fix:	play_KB_macro  *2
@@ -3516,8 +3516,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# steady
     //# tired	maybe tired or drunk, who knows?
     date = F("2018-12-22_15h58m50s	SAT");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, tumtum);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, tumtum);
     sync = 2;
     pitch = {32768, 257};
     // fix:	play_KB_macro  *2
@@ -3528,8 +3528,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 125:
     name = F("a firework of sounds");
     date = F("2018-12-22_18h52m33s	SAT");
-    select_array_in(SCALES, major_scale);
-    select_array_in(JIFFLES, PENTAtonic_rise);
+    select_in(SCALES, major_scale);
+    select_in(JIFFLES, PENTAtonic_rise);
     sync = 1;
     pitch = {32768, 428};
     // fix:	play_KB_macro  /2
@@ -3540,8 +3540,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 126:
     name = F("firework #2");
     date = F("2018-12-22_19h03m01s	SAT");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, din_dididi);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, din_dididi);
     sync = 5;
     pitch = {32768, 354};
     // fix:	play_KB_macro  /2
@@ -3583,8 +3583,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# steady
     //# tired	maybe just a bit
     date = F("2018-12-22_20h17m39s	SAT");
-    select_array_in(SCALES, octaves_fourths);
-    select_array_in(JIFFLES, rising_pent_them);
+    select_in(SCALES, octaves_fourths);
+    select_in(JIFFLES, rising_pent_them);
     sync = 5;
     pitch = {32768, 322};
     // harmonical CYCLE: 9d 13h 14' 40"	SUBCYCLE: | 6' 43" |
@@ -3622,8 +3622,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# floating
     //# slow
     date = F("2018-12-23_18h45m37s	SUN");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, PENTAtonic_desc);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, PENTAtonic_desc);
     sync = 1;
     pitch = {32768, 444};
     // harmonical CYCLE: 1h 37' 25"	SUBCYCLE: | 6' 5" |
@@ -3654,8 +3654,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# fast
     //# steady		stubborn
     date = F("2018-12-23_18h53m20s	SUN");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, tumtumtum);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, tumtumtum);
     sync = 4;
     pitch = {32768, 398};
     // fix:	play_KB_macro  *2
@@ -3690,8 +3690,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# festive
     //# slow
     date = F("2018-12-24_20h35m07s	MON");
-    select_array_in(SCALES, trichord);
-    select_array_in(JIFFLES, pentatonic_rise);
+    select_in(SCALES, trichord);
+    select_in(JIFFLES, pentatonic_rise);
     sync = 2;
     pitch = {32768, 286};
     // fix:	play_KB_macro  *2
@@ -3731,8 +3731,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# slow
     //# tired	maybe a bit?
     date = F("2018-12-24_20h49m58s	MON");
-    select_array_in(SCALES, trichord);
-    select_array_in(JIFFLES, PENTAtonic_desc);
+    select_in(SCALES, trichord);
+    select_in(JIFFLES, PENTAtonic_desc);
     sync = 2;
     pitch = {32768, 288};
     // fix:	play_KB_macro  *2
@@ -3766,8 +3766,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# steady
     //# happy
     date = F("2018-12-25_19h16m25s	TUE");
-    select_array_in(SCALES, octave_4th_5th);
-    select_array_in(JIFFLES, penta_3rd_rise);
+    select_in(SCALES, octave_4th_5th);
+    select_in(JIFFLES, penta_3rd_rise);
     sync = 1;
     // fixed random tuning b	233
     pitch = {32768, 233};
@@ -3810,15 +3810,15 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# festive
     //# happy
     date = F("2018-12-25_20h28m58s	TUE");
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, din__dididi_dix);
+    select_in(SCALES, doric_scale);
+    select_in(JIFFLES, din__dididi_dix);
     sync = 2;
     pitch = {32768, 32};
     // harmonical CYCLE: 2h 48' 57"	SUBCYCLE: | 5' 17" |
     subcycle_octave = -5;
     date = F("2019-01-04_18h44m09s	FRI");
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES, PENTAtonic_desc);
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES, PENTAtonic_desc);
     sync = 2;
     pitch = {32768, 234};
     // harmonical CYCLE: 2h 27' 52"	SUBCYCLE: | 4' 37" |
@@ -3855,8 +3855,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# sad
     //# tired	a bit, maybe
     date = F("2018-12-25_19h42m27s	TUE");
-    select_array_in(SCALES, pentaCHORD);
-    select_array_in(JIFFLES, din__dididi_dixi);
+    select_in(SCALES, pentaCHORD);
+    select_in(JIFFLES, din__dididi_dixi);
     sync = 4;
     pitch = {32768, 128};
     // fix:	play_KB_macro  *2
@@ -3899,8 +3899,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# children
     //# ritual
     date = F("2019-01-06_16h16m57s	SUN");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, penta_3rd_down_5);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, penta_3rd_down_5);
     sync = 3;
     pitch = {32768, 301};
     // fix:	play_KB_macro  *2
@@ -3927,8 +3927,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# children
     //# dance
     sync = 5;
-    select_array_in(SCALES, pentaCHORD);
-    select_array_in(JIFFLES, tumtum);
+    select_in(SCALES, pentaCHORD);
+    select_in(JIFFLES, tumtum);
     pitch = {1, 128};
     // harmonical CYCLE: 51' 48"	SUBCYCLE: | 6' 28" |
     break;
@@ -3964,8 +3964,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# festive
     //# ritual
     date = F("2019-01-06_22h12m45s	SUN");
-    select_array_in(SCALES, TRIAD);
-    select_array_in(JIFFLES, rising_pent_them);
+    select_in(SCALES, TRIAD);
+    select_in(JIFFLES, rising_pent_them);
     sync = 1;
     pitch = {32768, 428};
     // fix:	play_KB_macro  /2
@@ -3999,8 +3999,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# rumble
     //# hasSlowPulse	*strong* slow pulse clicks & rhythms
     date = F("2019-01-08_08h46m00s	TUE");
-    select_array_in(SCALES, octaves_fourths);
-    select_array_in(JIFFLES, din_dididi);
+    select_in(SCALES, octaves_fourths);
+    select_in(JIFFLES, din_dididi);
     sync = 0;
     // fixed random tuning a
     pitch = {32768, 220};
@@ -4027,7 +4027,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dream
     //# ritual	maybe
     sync = 1;
-    select_array_in(JIFFLES, PENTA_3rd_rise);
+    select_in(JIFFLES, PENTA_3rd_rise);
     pitch = {1, 32};	//	*metric* ?
     // harmonical CYCLE: 1h 24' 29"	SUBCYCLE: | 5' 17" |
     break;
@@ -4066,8 +4066,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# children
     //# happy
     date = F("2019-04-11_12h");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, pentatonic_desc);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, pentatonic_desc);
     sync = 0;
     stack_sync_slices = 32;
     // base_pulse = 15;	// TODO: rethink that
@@ -4096,7 +4096,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# robot
     //# boring
     sync = 1;
-    select_array_in(JIFFLES, d4096_1024);
+    select_in(JIFFLES, d4096_1024);
     pitch = {1, 32};	//		*metric* a
     // harmonical CYCLE: 2h 48' 57"	SUBCYCLE: | 2' 38" |
     break;
@@ -4125,9 +4125,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# rumble
     //# hasSlowPulse
     //# boring
-    select_array_in(SCALES, octave_4th_5th);
+    select_in(SCALES, octave_4th_5th);
     sync = 0;
-    select_array_in(JIFFLES, tumtumtum);
+    select_in(JIFFLES, tumtumtum);
     pitch = {2, 61};
     // harmonical CYCLE: 6h 0' 26"	SUBCYCLE: | 2' 38" |
     break;
@@ -4158,8 +4158,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# children
     //# dance
     date = F("2019-04-11_10h");
-    select_array_in(SCALES, triad);
-    select_array_in(JIFFLES, pent_top_wave_0);
+    select_in(SCALES, triad);
+    select_in(JIFFLES, pent_top_wave_0);
     sync = 1;
     stack_sync_slices = 1024;
     // base_pulse = 15;	// TODO: rethink that
@@ -4186,8 +4186,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# children
     //# dance
     date = F("2019-02-06_15h44m39s	WED");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, tumtum);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, tumtum);
     sync = 2;
     // random *metric* tuning a
     pitch = {32768, 220};
@@ -4209,12 +4209,12 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# waves
     //# aesthetic
     //# quiet
-    select_array_in(JIFFLES, pentaCHORD_rise);
+    select_in(JIFFLES, pentaCHORD_rise);
     pitch = {3, 10};	// 24	*metric* A
     // harmonical CYCLE: 0"	SUBCYCLE: | 4' 13" |
     date = F("2019-02-06_20h31m52s	WED");
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES, pentaCHORD_rise);
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES, pentaCHORD_rise);
     sync = 1;
     pitch = {32768, 1024};
     // harmonical CYCLE: 2h 15' 10"	SUBCYCLE: | 4' 13" |
@@ -4242,8 +4242,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     pitch = {2, 61};	// 44	*metric* G
     // harmonical CYCLE: 0"	SUBCYCLE: | 5' 38" |
     date = F("2019-02-06_21h18m28s	WED");
-    select_array_in(SCALES, octave_4th_5th);
-    select_array_in(JIFFLES, d4096_64);
+    select_in(SCALES, octave_4th_5th);
+    select_in(JIFFLES, d4096_64);
     sync = 0;
     pitch = {32768, 6144};
     // harmonical CYCLE: 6h 0' 26"	SUBCYCLE: | 5' 38" |
@@ -4268,9 +4268,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# nice
     //# quiet
     //# rumble
-    select_array_in(SCALES, octave_4th_5th);
+    select_in(SCALES, octave_4th_5th);
     sync = 0;
-    select_array_in(JIFFLES, d4096_64);
+    select_in(JIFFLES, d4096_64);
     pitch = {2, 61};	// 44	*metric* d
     // harmonical CYCLE: 0"	SUBCYCLE: | 3' 41" |
     break;
@@ -4291,9 +4291,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# sound
     //# dream
     //# children
-    select_array_in(SCALES, tetraCHORD);
+    select_in(SCALES, tetraCHORD);
     sync = 1;
-    select_array_in(JIFFLES, pentachord_rise);
+    select_in(JIFFLES, pentachord_rise);
     pitch = {3, 10};	// 24	*metric* a
     // harmonical CYCLE: 2h 37' 17"	SUBCYCLE: | 4' 55" |
     break;
@@ -4311,9 +4311,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lesley
     //# delay
     //# boring
-    select_array_in(SCALES, europ_PENTAtonic);
+    select_in(SCALES, europ_PENTAtonic);
     sync = 4;
-    select_array_in(JIFFLES, tumtumtumtum);
+    select_in(JIFFLES, tumtumtumtum);
     pitch = {1, 12};	// 8	*metric* f
     // harmonical CYCLE: 49' 26"	SUBCYCLE: | 6' 11" |
     break;
@@ -4335,9 +4335,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# static
     //# clock
     //# boring
-    select_array_in(SCALES, octaves_fourths);
+    select_in(SCALES, octaves_fourths);
     sync = 2;
-    select_array_in(JIFFLES, din_dididi);
+    select_in(JIFFLES, din_dididi);
     pitch = {3, 52};	// 4288		*metric* g
     // harmonical CYCLE: 7d 20h 18' 29"	SUBCYCLE: | 5' 31" |
     break;
@@ -4365,8 +4365,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# festive
     //# solemn		beware of stress!
     date = F("2019-02-07_09h46m29s	THU");
-    select_array_in(SCALES, minor_scale);
-    select_array_in(JIFFLES, d4096_1024);
+    select_in(SCALES, minor_scale);
+    select_in(JIFFLES, d4096_1024);
     sync = 4;
     // random *metric* tuning c
     pitch = {32768, 262};
@@ -4399,9 +4399,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# children
     //# ritual	secret simple knowledge
     //comment: try variations in SYNC :)
-    select_array_in(SCALES, europ_PENTAtonic);
+    select_in(SCALES, europ_PENTAtonic);
     sync = 5;
-    select_array_in(JIFFLES, pentaCHORD_rise);
+    select_in(JIFFLES, pentaCHORD_rise);
     pitch = {1, 12};	// 8  1/175	*metric* f
     // harmonical CYCLE: 49' 26"	SUBCYCLE: | 6' 11" |
     break;
@@ -4410,9 +4410,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     name = F("eifach wunderschön");
     //comment: sehr ruhig
     date = F("2019-02-26_12h46m19s	TUE");
-    select_array_in(SCALES, doric_scale);
+    select_in(SCALES, doric_scale);
     sync = 1;
-    select_array_in(JIFFLES, diing_ditditdit);
+    select_in(JIFFLES, diing_ditditdit);
     pitch = {1, 330};	// 8 1/330 metric e
     // was:  pitch = {32768, 12};	// 8 1/330 metric e
     // harmonical CYCLE: 3h 18' 35"	SUBCYCLE: | 6' 12" |
@@ -4420,11 +4420,11 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 154:
     name = F("2019-04-01 doric stack");
-    select_array_in(SCALES, doric_scale);
+    select_in(SCALES, doric_scale);
     sync = 1;
     stack_sync_slices = 8;
     base_pulse = 15;
-    select_array_in(JIFFLES, din__dididi_dixi);
+    select_in(JIFFLES, din__dididi_dixi);
     pitch = {1, 175};	// 8 1/175 metric f
     // was:  pitch = {32768, 12};	// 8 1/175 metric f
     // harmonical CYCLE: 3h 7' 14"	2^4 SUBCYCLE: | 11' 42" |
@@ -4460,8 +4460,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dance		"it is like it is"
     //# festive
     //# tired		possible
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES,tetraCHORD_rise);
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES,tetraCHORD_rise);
     sync = 4;		// S unleserlich, 4?
     stack_sync_slices=1024;
     // p[15]|1024	// unleserlich, 1024?
@@ -4497,8 +4497,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# children
     //# festive		possibly
     //# boring		possible
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, ding_ditditdit);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, ding_ditditdit);
     sync=0;
     stack_sync_slices=64;
     pitch={1, 175};		// f
@@ -4527,8 +4527,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# children
     //# festive		can be
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, d4096_128);
+    select_in(SCALES, doric_scale);
+    select_in(JIFFLES, d4096_128);
     sync=1;
     stack_sync_slices=128;
     pitch={1, 330};
@@ -4556,8 +4556,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# robot
     //# children
     //# boring
-    select_array_in(SCALES, pentaCHORD);	// unleserlich,,,
-    select_array_in(JIFFLES, pent_top_wave_0);
+    select_in(SCALES, pentaCHORD);	// unleserlich,,,
+    select_in(JIFFLES, pent_top_wave_0);
     sync=2;
     stack_sync_slices=0;
     pitch={1, 175};		// f
@@ -4593,8 +4593,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# ritual
     //# boring
     //# tired
-    select_array_in(SCALES, octave_4th_5th);
-    select_array_in(JIFFLES, simple_theme);
+    select_in(SCALES, octave_4th_5th);
+    select_in(JIFFLES, simple_theme);
     sync=3;
     stack_sync_slices=0;
     pitch={1, 294};		// d
@@ -4639,8 +4639,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dance
     //# ritual
     sync = 0;
-    select_array_in(SCALES, octave_4th_5th);
-    select_array_in(JIFFLES, pentatonic_rise);
+    select_in(SCALES, octave_4th_5th);
+    select_in(JIFFLES, pentatonic_rise);
     pitch = {2, 6144};
     // harmonical cycle 'c'	12h 24'  7"	subcycle    5' 49"
     break;
@@ -4670,8 +4670,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# ritual
     //# happy
     sync = 2;
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES, PENTA_3rd_rise);
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES, PENTA_3rd_rise);
     pitch = {3, 1024};
     break;
 
@@ -4701,8 +4701,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# humming
     //# rumble
     sync = 0;
-    select_array_in(SCALES, tetraCHORD);
-    select_array_in(JIFFLES, pentatonic_desc);
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES, pentatonic_desc);
     pitch = {3, 1024};
     break;
 
@@ -4710,8 +4710,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     name = F("harmonikali jazzsession");
     //comment: harmonical cycle    54'  4"
     date = F("2018-11-21_20h21m11s	WED");
-    select_array_in(SCALES, minor_scale);
-    select_array_in(JIFFLES, tumtum);
+    select_in(SCALES, minor_scale);
+    select_in(JIFFLES, tumtum);
     sync = 5;
     pitch = {1, 128};
     // was:  pitch = {32768, 200};
@@ -4749,8 +4749,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# boring		not for me
     sync = 5;
     stack_sync_slices = 16;
-    select_array_in(SCALES,europ_PENTAtonic );
-    select_array_in(JIFFLES, pent_patternA);
+    select_in(SCALES,europ_PENTAtonic );
+    select_in(JIFFLES, pent_patternA);
     pitch = {1, 262};	// metric c
     chromatic_pitch = 4;
     break;
@@ -4785,8 +4785,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# boring
     //# slow
     //# steady	insisting
-    select_array_in(SCALES,europ_PENTAtonic);
-    select_array_in(JIFFLES,d4096_32);
+    select_in(SCALES,europ_PENTAtonic);
+    select_in(JIFFLES,d4096_32);
     sync=0;
     stack_sync_slices=64;
     base_pulse=15;
@@ -4827,8 +4827,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dream
     //# boring
     date = F("2018-11-21_17h35m59s	WED");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, dwn_THRD_up);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, dwn_THRD_up);
     sync = 0;
     stack_sync_slices = -64;	// TODO: test&trim
     pitch = {32768, 384};
@@ -4855,8 +4855,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     date = F("2018-12-05 15h40m");
     sync = 1;
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, up_THRD_dn);
+    select_in(SCALES, doric_scale);
+    select_in(JIFFLES, up_THRD_dn);
     pitch = {1, 32};
     break;
 
@@ -4875,8 +4875,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# children
     //# dance
     date = F("2019-04-15");
-    select_array_in(SCALES, pentatonic_minor);
-    select_array_in(JIFFLES, pentatonic_desc);
+    select_in(SCALES, pentatonic_minor);
+    select_in(JIFFLES, pentatonic_desc);
     sync = 1;
     pitch = {1, 111};
     break;
@@ -4888,8 +4888,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# ISSUE	TODO: does not start, *VERY* long pause
     //	random pitch as workaround
     date = F("2019-02-06_13h32m52s	WED");
-    select_array_in(SCALES, major_scale);
-    select_array_in(JIFFLES, doric_rise);
+    select_in(SCALES, major_scale);
+    select_in(JIFFLES, doric_rise);
     sync = 4;
     pitch = {1, 128};	// just a random pitch...
     // was: pitch = {32768, 32};
@@ -4914,8 +4914,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dream
     //# ritual
     date = F("2019-04-02");
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, diing_ditditdit);
+    select_in(SCALES, doric_scale);
+    select_in(JIFFLES, diing_ditditdit);
     sync = 2;
     pitch = {1, 196};	// metric g
     break;
@@ -4945,8 +4945,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# boring
     //# tired		maybe?
     date = F("2019-03-29");
-    select_array_in(SCALES, TRIAD);
-    select_array_in(JIFFLES, up_THRD_dn);
+    select_in(SCALES, TRIAD);
+    select_in(JIFFLES, up_THRD_dn);
     sync = 1;
     pitch = {1, 428};
     break;
@@ -4971,8 +4971,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     date = F("2018-11-27_17h22m21s	TUE");
-    select_array_in(SCALES, octave_4th_5th);
-    select_array_in(JIFFLES, dwn_THRD_up);
+    select_in(SCALES, octave_4th_5th);
+    select_in(JIFFLES, dwn_THRD_up);
     sync = 0;
     pitch = {32768, 357};
     // random octave shift: used SUBCYCLE:	3' 2"
@@ -5004,8 +5004,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse	soft and not steady
     //# lyric		but very simple, static
     date = F("2018-12-07_18h34m01s	FRI");
-    select_array_in(SCALES, europ_PENTAtonic);
-    select_array_in(JIFFLES, tanboura);
+    select_in(SCALES, europ_PENTAtonic);
+    select_in(JIFFLES, tanboura);
     sync = 0;
     pitch = {32768, 275};
     // fix:	play_KB_macro  *2
@@ -5021,8 +5021,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# ISSUE heavyStart is problematic   use autostack_S0 !
     //# heavyStart
     date = F("2019-02-02_17h49m06s	SAT");
-    select_array_in(SCALES, doric_scale);
-    select_array_in(JIFFLES, pentatonic_rise);
+    select_in(SCALES, doric_scale);
+    select_in(JIFFLES, pentatonic_rise);
     sync = 0;
     // was: pitch = {32768, 32};
     pitch = {1, 128};
@@ -5038,9 +5038,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dramatic
     //# crazy
     //# chaotic
-    select_array_in(SCALES, europ_PENTAtonic);
+    select_in(SCALES, europ_PENTAtonic);
     sync = 3;
-    select_array_in(JIFFLES, tetraCHORD_desc);
+    select_in(JIFFLES, tetraCHORD_desc);
     pitch = {1, 12};	// 8	*metric* c
     // harmonical CYCLE: 1h 6' 2"	SUBCYCLE: | 4' 8" |
     break;

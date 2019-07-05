@@ -445,7 +445,7 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	if(jiffle = index2pointer(JIFFLES, selected_aX)) {
 	  if(selected_aX != selected_aX_seen) {
 	    selected_aX_seen = selected_aX;
-	    select_array_in(JIFFLES, jiffle);
+	    select_in(JIFFLES, jiffle);
 	    setup_jiffle_thrower_selected(selected_actions);
 	    MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
 
