@@ -63,10 +63,6 @@ REGISTER_JIFFLE(d4096_1024);	// == 1/4
 REGISTER_JIFFLE(d4096_2048);	// == 1/2
 REGISTER_JIFFLE(d4096_3072);	// == 3/4
 
-REGISTER_JIFFLE(loong);		// length 255/256  
-REGISTER_JIFFLE(looong);	// length 511/512  
-REGISTER_JIFFLE(loooong);	// length 1023/1024
-
 // sparkles
 REGISTER_JIFFLE(din_dididi);
 REGISTER_JIFFLE(din__dididi);
@@ -140,7 +136,10 @@ REGISTER_JIFFLE(arpeggio_and_sayling);
 // FIXME: TODO: out of order, leftovers...
 REGISTER_JIFFLE(back_to_ground);
 REGISTER_JIFFLE(stepping_down);
-REGISTER_JIFFLE(gling128);		// FIXME: replace ################
+REGISTER_JIFFLE(loong);		// length 255/256
+REGISTER_JIFFLE(looong);	// length 511/512
+REGISTER_JIFFLE(loooong);	// length 1023/1024
+REGISTER_JIFFLE(gling128);	// FIXME: replace ################
 REGISTER_JIFFLE(gling128_2);
 REGISTER_JIFFLE(jiffletab);
 REGISTER_JIFFLE(jiff_december);
