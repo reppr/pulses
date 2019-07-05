@@ -2994,18 +2994,44 @@ void noAction_flags_line() {	// show a line with primary noACTION flag signs		//
 
 void input_preset_and_start() {	// factored out UI component	// TODO: sets preset, how to unset?	################
   int input_value;
+  bool load=false;
 
   MENU.ln();
   MENU.out(F("PRESET "));
-  if(input_value = MENU.numeric_input(0)) {
-    if(! load_preset(input_value)) {	// no error?
+  switch(MENU.cb_peek()) {
+  case '+':
+    MENU.drop_input_token();
+    if(preset<MUSICBOX_PRESETs) {
+      preset++;
+      load = true;
+    }
+    break;
+  case '-':
+    MENU.drop_input_token();
+    if(preset>0)
+      preset--;
+      load = true;
+    break;
+
+  default:	// numeric input (expected)
+    if(MENU.is_numeric()) {
+      if(input_value = MENU.numeric_input(0)) {
+	preset = input_value;
+	load = true;
+      } else
+	play_random_preset();	// selecting zero plays a *random* preset
+    } else
+      MENU.outln_invalid();
+  }
+
+  if(load) {
+    if(! load_preset(preset)) {	// no error?
       if(MusicBoxState != OFF)	// end a running session?
 	tabula_rasa();
       start_musicBox();		// play new preset
     } else
       MENU.outln_invalid();
-  } else
-    play_random_preset();	// selecting zero plays a *random* preset
+  }
 }
 
 bool musicBox_reaction(char token) {
