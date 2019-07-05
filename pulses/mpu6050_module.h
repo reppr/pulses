@@ -169,42 +169,26 @@ extern void extended_output(char* data, uint8_t row, uint8_t col, bool force);
 
 void display_accGyro_mode() {
   MENU.out(F("accGyro mode: "));
-  char * placeholder = "   ";
-  uint8_t col=0;
+
+  u8x8.setCursor(MONOCHROME_MOTION_STATE_ROW, 0);
+  char buffer[] = {"acc ...  gyr ..."};
+  //              {"0123456789abcdef"}
+
   if(accGyro_mode & axM)
-    extended_output(F("aX "), MONOCHROME_MOTION_STATE_ROW, col, false);
-  else
-    extended_output(placeholder, MONOCHROME_MOTION_STATE_ROW, col, false);
-
-  col += 3;
+    buffer[4] = 'X';
   if(accGyro_mode & ayM)
-    extended_output(F("aY "), MONOCHROME_MOTION_STATE_ROW, col, false);
-  else
-    extended_output(placeholder, MONOCHROME_MOTION_STATE_ROW, col, false);
-
-  col += 3;
+    buffer[5] = 'Y';
   if(accGyro_mode & azM)
-    extended_output(F("aZ "), MONOCHROME_MOTION_STATE_ROW, col, false);
-  else
-    extended_output(placeholder, MONOCHROME_MOTION_STATE_ROW, col, false);
+    buffer[6] = 'Z';
 
-  col += 3;
   if(accGyro_mode & gxM)
-    extended_output(F("gX "), MONOCHROME_MOTION_STATE_ROW, col, false);
-  else
-    extended_output(placeholder, MONOCHROME_MOTION_STATE_ROW, col, false);
-
-  col += 3;
+    buffer[13] = 'X';
   if(accGyro_mode & gyM)
-    extended_output(F("gY "), MONOCHROME_MOTION_STATE_ROW, col, false);
-  else
-    extended_output(placeholder, MONOCHROME_MOTION_STATE_ROW, col, false);
-
-  col += 3;
+    buffer[14] = 'Y';
   if(accGyro_mode & gzM)
-    extended_output(F("gZ "), MONOCHROME_MOTION_STATE_ROW, col, false);
-  else
-    extended_output(placeholder, MONOCHROME_MOTION_STATE_ROW, col, false);
+    buffer[15] = 'Z';
+
+  extended_output(buffer, MONOCHROME_MOTION_STATE_ROW, 0, false);
 }
 
 void reset_accGyro_selection() {
