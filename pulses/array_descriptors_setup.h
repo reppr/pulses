@@ -87,7 +87,8 @@ REGISTER_JIFFLE(tumtumtum);
 REGISTER_JIFFLE(tumtumtumtum);
 
 // padding ;)
-REGISTER_JIFFLE(gling128_2);
+REGISTER_JIFFLE(tum8);
+REGISTER_JIFFLE(tum8up);
 
 // scale patterns
 REGISTER_JIFFLE(tetraCHORD_rise);
@@ -140,6 +141,7 @@ REGISTER_JIFFLE(arpeggio_and_sayling);
 REGISTER_JIFFLE(back_to_ground);
 REGISTER_JIFFLE(stepping_down);
 REGISTER_JIFFLE(gling128);		// FIXME: replace ################
+REGISTER_JIFFLE(gling128_2);
 REGISTER_JIFFLE(jiffletab);
 REGISTER_JIFFLE(jiff_december);
 REGISTER_JIFFLE(jiff_dec128);	// jiff_dec128 with sync=0 to hear the big drum in the cathedral ;)
