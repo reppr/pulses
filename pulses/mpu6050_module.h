@@ -158,28 +158,53 @@ void * gX_reaction_source=NULL;	// DB pointers can be used here
 void * gY_reaction_source=NULL;	// DB pointers can be used here
 void * gZ_reaction_source=NULL;	// DB pointers can be used here
 
+
 extern void extended_output(char* data, uint8_t row, uint8_t col, bool force);
+#if ! defined MONOCHROME_MOTION_STATE_ROW
+  #define MONOCHROME_MOTION_STATE_ROW	7
+#endif
+#if ! defined MONOCHROME_MOTION_MUTING_ROW
+  #define MONOCHROME_MOTION_MUTING_ROW	0
+#endif
+
 void display_accGyro_mode() {
   MENU.out(F("accGyro mode: "));
+  char * placeholder = "   ";
+  uint8_t col=0;
+  if(accGyro_mode & axM)
+    extended_output(F("aX "), MONOCHROME_MOTION_STATE_ROW, col, false);
+  else
+    extended_output(placeholder, MONOCHROME_MOTION_STATE_ROW, col, false);
 
-  if(accGyro_mode & axM) {
-    extended_output(F("aX "), 0, 0, false);
-  }
-  if(accGyro_mode & ayM) {
-    extended_output(F("aY "), 0, 0, false);
-  }
-  if(accGyro_mode & azM) {
-    extended_output(F("aZ "), 0, 0, false);
-  }
-  if(accGyro_mode & gxM) {
-    extended_output(F("gX "), 0, 0, false);
-  }
-  if(accGyro_mode & gyM) {
-    extended_output(F("gY "), 0, 0, false);
-  }
-  if(accGyro_mode & gzM) {
-    extended_output(F("gZ "), 0, 0, false);
-  }
+  col += 3;
+  if(accGyro_mode & ayM)
+    extended_output(F("aY "), MONOCHROME_MOTION_STATE_ROW, col, false);
+  else
+    extended_output(placeholder, MONOCHROME_MOTION_STATE_ROW, col, false);
+
+  col += 3;
+  if(accGyro_mode & azM)
+    extended_output(F("aZ "), MONOCHROME_MOTION_STATE_ROW, col, false);
+  else
+    extended_output(placeholder, MONOCHROME_MOTION_STATE_ROW, col, false);
+
+  col += 3;
+  if(accGyro_mode & gxM)
+    extended_output(F("gX "), MONOCHROME_MOTION_STATE_ROW, col, false);
+  else
+    extended_output(placeholder, MONOCHROME_MOTION_STATE_ROW, col, false);
+
+  col += 3;
+  if(accGyro_mode & gyM)
+    extended_output(F("gY "), MONOCHROME_MOTION_STATE_ROW, col, false);
+  else
+    extended_output(placeholder, MONOCHROME_MOTION_STATE_ROW, col, false);
+
+  col += 3;
+  if(accGyro_mode & gzM)
+    extended_output(F("gZ "), MONOCHROME_MOTION_STATE_ROW, col, false);
+  else
+    extended_output(placeholder, MONOCHROME_MOTION_STATE_ROW, col, false);
 }
 
 void reset_accGyro_selection() {
@@ -467,7 +492,7 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	    //	// limit--
 	    //	break;
 	  case 1:	// all but high
-	    extended_output(F(" LBM_ "), 0, 1, false);
+	    extended_output(F("LBM_ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
 	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
 	    for(int pulse = highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
@@ -475,12 +500,12 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	    break;
 	  case 2:	// all on
 	  case 3:	// all on
-	    extended_output(F(" LBMH "), 0, 1, false);
+	    extended_output(F("LBMH "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
 	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
 	    break;
 	  case 4:	// middle only
-	    extended_output(F(" _BM_ "), 0, 1, false);
+	    extended_output(F("_BM_ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
 	    MENU.outln(highest_primary);
 	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
@@ -488,7 +513,7 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
 	    break;
 	  case 5:	// extremes only
-	    extended_output(F(" L__H "), 0, 1, false);
+	    extended_output(F("L__H "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
 	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
 	    for(int pulse=lowest_primary; pulse <= lowest_primary + (primary_count/4); pulse++)
@@ -497,7 +522,7 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
 	    break;
 	  case 6:	// high only
-	    extended_output(F(" ___H "), 0, 1, false);
+	    extended_output(F("___H "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
 	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
 	    for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
@@ -507,7 +532,7 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	    //      case 7:	// bass_limit--		// TODO: near limit region
 	    //	break;
 	  default:	// toggle all
-	    extended_output(F(" ~~~~ "), 0, 1, false);
+	    extended_output(F("~~~~ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
 	    PULSES.select_from_to(lowest_primary, highest_primary);
 	    PULSES.selected_toggle_no_actions();
 	    PULSES.select_n(voices);

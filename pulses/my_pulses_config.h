@@ -45,3 +45,6 @@
 // some defaults you can change:
 //#define SHOW_CYCLE_PATTERN_DEFAULT		false
 //#define SHOW_SUBCYCLE_POSITION_DEFAULT	false
+
+//#define MONOCHROME_MOTION_STATE_ROW	7
+//#define MONOCHROME_MOTION_MUTING_ROW	0
