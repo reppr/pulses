@@ -368,15 +368,8 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	MENU.out(AX/32768);
 #endif
 	aX_reaction_source = JIFFLES;
-	//	aX_select_slots = 66;	// dwn_THRD_up
-	//	aX_sel_i0 = 0;		// JIFFLE RAM
-
-	//	aX_select_slots = 40;		// PENTAtonic_rise	+1 PENTAtonic_desc
-	//	aX_sel_i0 = 1;
-
 	aX_sel_i0 = 0;			// JIFFLE RAM
-	//aX_select_slots = 41;		// doric_rise
-	aX_select_slots = 45;		// major_rise
+	aX_select_slots = 41;		// tum8up
       }
 
       if(accGyro_mode & ayM) {		// accelero Y

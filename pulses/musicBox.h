@@ -2270,13 +2270,7 @@ void start_musicBox() {
 
   MENU.ln();
   MENU.men_selected = 0;	// starting point (might be changed by kb macro)
-
-  // either
-  // *DO* show cycle pattern:
-  // MENU.play_KB_macro(F("-:M "), false);	// initialize, the space avoids output from :M , no newline
-  // or
-  // *DO NOT* show cycle pattern:
-  MENU.play_KB_macro(F("-:M"), false);	// initialize, the space avoids output from :M , no newline	// maybe replace?
+  MENU.play_KB_macro(F("-:M "), false);	// initialize, the space avoids output from :M , no newline	// maybe replace?
 
   // TODO: REWORK:  setup_bass_middle_high()  used in musicBox, but not really compatible
   MENU.ln();	// start setup sequence output "block"
@@ -2287,6 +2281,13 @@ void start_musicBox() {
 
   if(!jiffle_user_selected)	// if *not* set by user interaction
     select_random_jiffle();	//   random jiffle
+
+#if defined USE_MPU6050
+  if(selected_in(JIFFLES) != jiffle_RAM) {	// maybe populate jiffle ram for motion UI?
+    if(jiffle_RAM[0] == '\0')
+      load2_jiffle_RAM(selected_in(JIFFLES));	// anything seems better than nothing ;)
+  }
+#endif
 
   next_gpio(0);			// FIXME: TODO: HACK  would destroy an already running configuration....
   setup_jiffle_thrower_selected(selected_actions);	// FIXME: why does this give 'no free GPIO' ???
