@@ -897,7 +897,7 @@ void setup() {
   delay(STARTUP_DELAY);
 
   MENU.outln(F("\n\nPULSES  http://github.com/reppr/pulses/"));
-#if defined USE_NVS
+#if defined USE_NVS	// always used on ESP32
   {
     String s = nvs_getString(F("nvs_PRENAME"));
     if (s) {
@@ -961,7 +961,7 @@ void setup() {
 
 #include "array_descriptors_setup.h"
 
-#ifdef USE_NVS
+#if defined USE_NVS	// always used on ESP32
   #include "nvs_pulses_setup.h"
 #endif
 

@@ -24,8 +24,7 @@
     #endif
 
     /* ESP32 NVS	*/
-    // #define USE_NVS	// TODO: use it
-    #if defined USE_NVS
+    #if defined USE_NVS		// always used on ESP32
       #include "nvs_pulses.h"
     #endif
 

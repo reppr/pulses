@@ -5,8 +5,6 @@
 
 #include <Preferences.h>
 
-#define USE_NVS		// very first tests, not integrated yet
-
 String nvs_getString(char * key) {
   String s;
 

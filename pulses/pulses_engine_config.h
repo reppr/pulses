@@ -36,5 +36,5 @@
 //#define OLED_HALT_PIN0	// see: monochrome_show_program_version()
 
 #if defined ESP32
-  #define USE_NVS
+  #define USE_NVS		// always used on ESP32
 #endif
