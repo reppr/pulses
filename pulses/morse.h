@@ -1198,47 +1198,68 @@ void morse_show_saved_stats() {
 
 }
 
+//#define DEBUG_MORSE_STATS_DO
 void IRAM_ATTR morse_stats_do() {
+#if defined DEBUG_MORSE_STATS_DO
   MENU.ln();
+#endif
+
   if(morse_stats_dot_cnt) {
     morse_stats_dot_duration_ /= morse_stats_dot_cnt;
-//    MENU.out(F("dot\t\t% "));
-//    MENU.outln(morse_stats_dot_duration_ / dotTim);
+#if defined DEBUG_MORSE_STATS_DO
+  MENU.out(F("dot\t\t% "));
+  MENU.outln(morse_stats_dot_duration_ / dotTim);
+#endif
   }
+
   if(morse_stats_dash_cnt) {
     morse_stats_dash_duration_ /= morse_stats_dash_cnt;
-//    MENU.out(F("dash\t\t% "));
-//    MENU.outln(morse_stats_dash_duration_ / dashTim);
+#if defined DEBUG_MORSE_STATS_DO
+    MENU.out(F("dash\t\t% "));
+    MENU.outln(morse_stats_dash_duration_ / dashTim);
+#endif
 
     // auto adapt, 1st simple try: only look at dashs
     morse_stats_mean_dash_factor = morse_stats_dash_duration_ / dashTim; // save for auto speed adaption
   }
+
   if(morse_stats_loong_cnt) {
     morse_stats_loong_duration_ /= morse_stats_loong_cnt;
-//    MENU.out(F("loong\t\t% "));
-//    MENU.outln(morse_stats_loong_duration_ / loongTim);
+#if defined DEBUG_MORSE_STATS_DO
+    MENU.out(F("loong\t\t% "));
+    MENU.outln(morse_stats_loong_duration_ / loongTim);
+#endif
   }
+
   if(morse_stats_separeToken_cnt) {
     morse_stats_separeToken_duration_ /= morse_stats_separeToken_cnt;
-//    MENU.out(F("separeToken\t% "));
-//    MENU.outln(morse_stats_dash_duration_ / separeTokenTim);
+#if defined DEBUG_MORSE_STATS_DO
+    MENU.out(F("separeToken\t% "));
+    MENU.outln(morse_stats_dash_duration_ / separeTokenTim);
+#endif
   }
+
   if(morse_stats_separeLetter_cnt) {
     morse_stats_separeLetter_duration_ /= morse_stats_separeLetter_cnt;
-//    MENU.out(F("separeLetter\t% "));
-//    MENU.outln(morse_stats_dash_duration_ / separeLetterTim);
+#if defined DEBUG_MORSE_STATS_DO
+    MENU.out(F("separeLetter\t% "));
+    MENU.outln(morse_stats_dash_duration_ / separeLetterTim);
+#endif
   }
+
+#if defined DEBUG_MORSE_STATS_DO
 //  if(morse_stats_separeWord_cnt) {
 //    morse_stats_separeWord_duration_ /= morse_stats_separeWord_cnt;
 //    MENU.out(F("separeWord\t% "));
 //    MENU.outln(morse_stats_dash_duration_ / separeWordTim);
 //  }
+#endif
 
   morse_stats_save();		// call immediately after morse_stats_do()
 }
 
 /* **************************************************************** */
-void morse_decode();	// pre declaration
+void morse_token_decode();	// pre declaration
 
 void IRAM_ATTR morse_received_token(char token, float duration) {
   portENTER_CRITICAL_ISR(&morse_MUX);
@@ -1272,7 +1293,7 @@ void IRAM_ATTR morse_received_token(char token, float duration) {
 	  morse_stats_do();	// do statistics on received letter
 	  morse_stats_init();	// prepare stats for next run
 
-	  morse_decode();
+	  morse_token_decode();
 	}
 	break;
 
@@ -1751,7 +1772,8 @@ void morse_do_output() {
       u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "        ");
 #endif
 
-    MENU.play_KB_macro((char*) morse_output_buffer);
+    MENU.out(F("morse "));
+    MENU.play_KB_macro((char*) morse_output_buffer);	// *does* the menu feedack
   }
 
   morse_out_buffer_cnt=0;
@@ -1760,8 +1782,9 @@ void morse_do_output() {
   morse_uppercase = true;	// reset to uppercase
 }
 
+char morse_output_char = '\0';	// '\0' means *no* output
+
 #if defined USE_MONOCHROME_DISPLAY
-char monochrome_output_char = '\0';	// '\0' means *no* output
 
 //#define CHATTY_MONOCHROME
 void morse_monochrome_display() {
@@ -1770,37 +1793,39 @@ void morse_monochrome_display() {
 
 #if defined CHATTY_MONOCHROME
   MENU.out("\nmorse_monochrome_display()\t");
-  MENU.outln(monochrome_output_char);
   /*	prior (small) version
-  MENU.out_ON_off(monochrome_output_char);
+  MENU.out_ON_off(morse_output_char);
   MENU.tab();
   MENU.out_ON_off(monochrome_display_hardware);
   */
 #endif
-  if(monochrome_output_char && morse_out_buffer_cnt) {
+  if(morse_output_char && morse_out_buffer_cnt) {
     if(oled_feedback_while_playing || musicbox_is_idle()) {
       u8x8.setInverseFont(0);
 
       // 2x2 version
       char s[]="? ";
-      s[0] = monochrome_output_char;
+      s[0] = morse_output_char;
       u8x8.draw2x2String(2*(morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s);
 
       /*	prior (small) version
 		u8x8.setCursor(morse_out_buffer_cnt - 1, MORSE_MONOCHROME_ROW);
-		u8x8.print(monochrome_output_char);
+		u8x8.print(morse_output_char);
 		u8x8.print(' ');		// clear next char
       */
     }
   }
 
-  monochrome_output_char = '\0';	// trigger off
+  morse_output_char = '\0';	// trigger off
 }
 #endif
 
+bool echo_morse_input=true;
 bool morse_store_received_letter(char letter) {		// returns error
+  if(echo_morse_input)
+    MENU.out(letter);
 #if defined USE_MONOCHROME_DISPLAY
-  monochrome_output_char = letter;
+  morse_output_char = letter;	// char and switch
 #endif
   if(morse_out_buffer_cnt < MORSE_OUTPUT_BUFFER_SIZE) {
     morse_output_buffer[morse_out_buffer_cnt++] = letter;
@@ -1813,7 +1838,7 @@ bool morse_store_received_letter(char letter) {		// returns error
 
 extern uint8_t monochrome_power_save;
 extern bool accGyro_is_active;
-void morse_decode() {	// decode received token sequence
+void morse_token_decode() {	// decode received token sequence
 /*
   decode received token sequence
   SAVE LETTERS,
@@ -1828,7 +1853,7 @@ void morse_decode() {	// decode received token sequence
   bool last_was_separeLetter=false;	// normally we want to store *only the first space* of a sequence
 
 #if defined MORSE_DECODE_DEBUG
-  MENU.outln("morse_decode()");
+  MENU.outln("morse_token_decode()");
 #endif
 
   pattern[0] = '\0';

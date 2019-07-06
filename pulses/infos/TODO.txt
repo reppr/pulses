@@ -125,25 +125,19 @@ BATTERY_LEVEL_CONTROL_PIN	must be set somewhere appropriate
 
 void delay_pause() {	// FIXME: (i.e. morse input...)
 
-MPU6050 offsets nvs
-
 double keywords in Pulses
 
 PULSES.select_from_to(0,bass_pulses);			// TODO: do not start by 0!	pulse[bass_pulses] belongs to both output groups
 
 nvs: is there hardware for peripheral power switch?
+MPU6050 offsets nvs
+
 
 wo isch de Störfall?
 s hät glaub mehreri ...
 die spilled offebar nöd uf allne Instrumänt, so try CHATEAU
 
-MENU morse feedback menu and || OLED
-  many stray newlines around...
-
-MENU accGyro feedback || OLED
-
 AG_mode D6M
+rename AG_mode AG_receive_mode
 
-extended_output(F("~~~~"), monochrome_row);
-
-TODO: remove overlong JIFFLES
+TODO morse command names come unformatted on menu: "XYZSEND" should be "XYZ |SEND|"

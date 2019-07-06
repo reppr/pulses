@@ -909,7 +909,7 @@ void Menu::play_KB_macro(char *macro, bool newline) {	// most often you might do
     }
   }
 
-  space();			// separe macro from its output
+  space(2);			// separe macro from its output
 
   interpret_men_input();	// Menu input interpreter
   if(newline)
