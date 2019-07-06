@@ -1447,7 +1447,8 @@ const char * morse_definitions_tab[] = {
   "5 * ....- 4 4",
 //"5 0 ...-. 5 5",
   "5 * ...-- 3 3",
-  "5 * ..-.. É É",	// É	FIX: lowercase
+//"5 * ..-.. É É",	// É	FIX: lowercase
+  "5 C ..-.. UIswM",	// switch motion UI activity
 //"5 0 ..-.- 5 5",
 //"5 0 ..--. - -",
   "5 * ..--- 2 2",
@@ -1811,6 +1812,7 @@ bool morse_store_received_letter(char letter) {		// returns error
 }
 
 extern uint8_t monochrome_power_save;
+extern bool accGyro_is_active;
 void morse_decode() {	// decode received token sequence
 /*
   decode received token sequence
@@ -1908,7 +1910,13 @@ void morse_decode() {	// decode received token sequence
 #else
 		;
 #endif
-	      } else	// unknown
+
+#if defined USE_MPU6050
+	      } else if(morse_PRESENT_COMMAND == "UIswM") {	// '..-..'  UI	switch motion UI on/off
+		  MENU.out(F("motion UI "));
+		  MENU.out_ON_off(accGyro_is_active ^= 1);	// toggle and show
+#endif
+	      } else	// unknown morse command
 		MENU.out("\nCOMMAND:\t"); MENU.outln(morse_PRESENT_COMMAND.c_str());
 	      break;
 
