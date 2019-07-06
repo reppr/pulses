@@ -20,7 +20,15 @@ Preferences CONF_nvs;
 CONF_nvs.begin("CONFIG", false);
 
 #if defined NVS_PUT_PRENAME_HACK	// 1 shot HACK to put a PRENAME		TODO: UI
-  CONF_nvs.putString("nvs_PRENAME", STRINGIFY(NVS_PUT_PRENAME_HACK));
+  MENU.out(F("NVS_PUT_PRENAME_HACK: "));
+  MENU.out(STRINGIFY(NVS_PUT_PRENAME_HACK));
+  MENU.tab();
+  // avoid writing the same string over and over		// TODO: needs testing
+  if(CONF_nvs.getString("nvs_PRENAME") != STRINGIFY(NVS_PUT_PRENAME_HACK)) {
+    CONF_nvs.putString("nvs_PRENAME", STRINGIFY(NVS_PUT_PRENAME_HACK));
+    MENU.outln(F("ok"));
+   } else
+    MENU.outln(F("was already stored"));
 #endif
 
 MENU.out("nvs_PRENAME:\t");
