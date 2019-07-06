@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION		PULSES alpha.026
+#define PROGRAM_VERSION		PULSES alpha.027
 /*				0123456789abcdef   */
 
 /* **************************************************************** */

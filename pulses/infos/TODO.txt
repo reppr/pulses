@@ -129,15 +129,20 @@ double keywords in Pulses
 
 PULSES.select_from_to(0,bass_pulses);			// TODO: do not start by 0!	pulse[bass_pulses] belongs to both output groups
 
-nvs: is there hardware for peripheral power switch?
-MPU6050 offsets nvs
+NVS: is there hardware for peripheral power switch?
 
 
 wo isch de Störfall?
 s hät glaub mehreri ...
 die spilled offebar nöd uf allne Instrumänt, so try CHATEAU
 
+remove unused morse code
+
 AG_mode D6M
 rename AG_mode AG_receive_mode
 
 TODO morse command names come unformatted on menu: "XYZSEND" should be "XYZ |SEND|"
+
+* ESPNOW
+* MPU6050 offsets nvs
+* MAC nvs
