@@ -7,6 +7,7 @@ void system_menu_display() {
 
 #if defined ESP32
   display_esp_versions();
+  MENU.ln();
 #endif
 
   display_program_version();	// display program versions, maybe preName. menu output only

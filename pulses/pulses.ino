@@ -806,7 +806,6 @@ uint8_t relaxmax=4;			// up to how many relax() in one todo chain
 
     MENU.out(F("ESP IDF version "));
     MENU.outln(esp_get_idf_version());
-    MENU.ln();
   }
 
   // see: https://github.com/espressif/arduino-esp32/issues/932
@@ -909,6 +908,8 @@ void setup() {
 
   MENU.outln(F("\n\nPULSES  http://github.com/reppr/pulses/\n"));
 
+  show_program_version();
+
 #if defined USE_NVS	// always used on ESP32
   {
     String s = nvs_getString(F("nvs_PRENAME"));
@@ -919,8 +920,6 @@ void setup() {
     }
   }
 #endif
-  show_program_version();
-  MENU.ln();
 
 #if defined USE_MONOCHROME_DISPLAY
   // TODO: fix&use monochrome_display detection
@@ -937,6 +936,8 @@ void setup() {
   display_esp_versions();
   MENU.out(F("MAC: "));
   MENU.outln(getMacAddress());
+  MENU.ln();
+
 #endif
 
   /*
@@ -1174,6 +1175,8 @@ MENU.ln();
   peripheral_power_switch_ON();		// default peripheral power supply ON
   //  peripheral_power_switch_OFF();	// default peripheral power supply OFF
 #endif
+
+  MENU.ln();
 };
 
 

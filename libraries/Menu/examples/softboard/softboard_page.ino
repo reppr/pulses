@@ -776,11 +776,17 @@ void _select_analog(bool key) {
 void softboard_display() {
   MENU.outln(F("Arduino Softboard  http://github.com/reppr/pulses/\n"));
 
-#if defined(ESP8266)	// ################ FIXME: ESP32 ################
+#if defined ESP32
+  display_esp_versions();
+  MENU.out(F("MAC: "));
+  MENU.outln(getMacAddress());
+
+#elif defined ESP8266
   MENU.out("ESP chip ID: ");
   MENU.out_hex(ESP.getChipId());
-  MENU.ln(2);
+  MENU.ln();
 #endif
+  MENU.ln();
 
   _select_digital(true);
   MENU.out(toWork_);
@@ -1181,7 +1187,7 @@ bool softboard_reaction(char token) {
 
 #if defined USE_MPU6050	// MPU-6050 6d accelero/gyro
   case 'G':	// MPU-6050 6d accelero/gyro
-    acceleroGyro_data_display();
+    accGyro_data_display();
     break;
 #endif
 

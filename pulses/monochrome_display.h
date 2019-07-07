@@ -39,16 +39,19 @@ void monochrome_show_program_version() {	// monochrome oled display
     u8x8.setCursor(0,5);	// option mnemonics
 
 #if defined USE_BLUETOOTH_SERIAL_MENU
-#if defined BLUETOOTH_ENABLE_PIN
-    if(bluetooth_switch_info())
-      u8x8.print('B');
+  #if defined BLUETOOTH_ENABLE_PIN
+    pinMode(BLUETOOTH_ENABLE_PIN, INPUT);
+    digitalRead(BLUETOOTH_ENABLE_PIN);		// i do not trust the very first reading...
+    if(digitalRead(BLUETOOTH_ENABLE_PIN))
+      u8x8.print('B');	// BLUETOOTH_ENABLE_PIN enabled?
     else
       u8x8.print('b');
-#else
+  #else			// *no* BLUETOOTH_ENABLE_PIN
     u8x8.print('B');
-#endif
+  #endif
+
     u8x8.print(' ');
-#else
+#else	// *no* USE_BLUETOOTH_SERIAL_MENU
     u8x8.print(' ');
     u8x8.print(' ');
 #endif	// USE_BLUETOOTH_SERIAL_MENU

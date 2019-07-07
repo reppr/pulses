@@ -1095,8 +1095,7 @@ void show_configuration_code() {	// show code, similar show_UI_basic_setup()
   MENU.outln(';');
 
   MENU.out(F("// base_pulse = "));	// commented out, must rethink that
-  MENU.out(base_pulse);
-  MENU.outln(F(";\t// TODO: rethink that"));
+  MENU.outln(base_pulse);
 
   MENU.out(F("pitch = {"));
   MENU.out(pitch.multiplier);
@@ -1111,8 +1110,7 @@ void show_configuration_code() {	// show code, similar show_UI_basic_setup()
   MENU.ln();
 
   MENU.out(F("// subcycle_octave = "));	// commented out, must rethink that
-  MENU.out(subcycle_octave);
-  MENU.outln(F(";\t// TODO: rethink that"));
+  MENU.outln(subcycle_octave);
 
   MENU.out(F("// cycle "));	// commented out, redundant info
   PULSES.display_time_human(harmonical_CYCLE);

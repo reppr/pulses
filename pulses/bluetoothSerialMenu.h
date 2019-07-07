@@ -27,7 +27,7 @@ String bluetooth_name;
       if(on)
 	MENU.tab();
       else
-	MENU.ln(2);
+	MENU.ln();
     }
     return on;
   }

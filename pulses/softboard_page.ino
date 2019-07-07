@@ -776,11 +776,17 @@ void _select_analog(bool key) {
 void softboard_display() {
   MENU.outln(F("Arduino Softboard  http://github.com/reppr/pulses/\n"));
 
-#if defined(ESP8266)	// ################ FIXME: ESP32 ################
+#if defined ESP32
+  display_esp_versions();
+  MENU.out(F("MAC: "));
+  MENU.outln(getMacAddress());
+
+#elif defined ESP8266
   MENU.out("ESP chip ID: ");
   MENU.out_hex(ESP.getChipId());
-  MENU.ln(2);
+  MENU.ln();
 #endif
+  MENU.ln();
 
   _select_digital(true);
   MENU.out(toWork_);
