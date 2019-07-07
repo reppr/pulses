@@ -1763,12 +1763,12 @@ short morse_out_buffer_cnt=0;
 
 bool morse_output_to_do=false;		// triggers morse_do_output()
 extern bool musicbox_is_idle();		// extern declaration
-extern bool monochrome_is_on();		// extern declaration
+extern bool monochrome_can_be_used();		// extern declaration
 void morse_do_output() {
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
   if(morse_out_buffer_cnt) {
 #if defined USE_MONOCHROME_DISPLAY
-    if(monochrome_is_on())
+    if(monochrome_can_be_used())
       u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "        ");
 #endif
 
@@ -1788,7 +1788,7 @@ char morse_output_char = '\0';	// '\0' means *no* output
 
 //#define CHATTY_MONOCHROME
 void morse_monochrome_display() {
-  if(! monochrome_is_on())
+  if(! monochrome_can_be_used())
     return;
 
 #if defined CHATTY_MONOCHROME
@@ -1940,6 +1940,7 @@ void morse_token_decode() {	// decode received token sequence
 	      } else if(morse_PRESENT_COMMAND == "UIswM") {	// '..-..'  UI	switch motion UI on/off
 		  MENU.out(F("motion UI "));
 		  MENU.out_ON_off(accGyro_is_active ^= 1);	// toggle and show
+		  MENU.ln();
 #endif
 	      } else	// unknown morse command
 		MENU.out("\nCOMMAND:\t"); MENU.outln(morse_PRESENT_COMMAND.c_str());

@@ -35,6 +35,7 @@ bool mpu6050_setup() {
   // join I2C bus (I2Cdev library doesn't do this automatically)
   #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     Wire.begin();
+    Wire.setClock(400000L);	// must be *after* Wire.begin()
   #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
     Fastwire::setup(400, true);
   #endif
@@ -333,7 +334,7 @@ void accGyro_sample() {
 // void accGyro_reaction()
 //#define DEBUG_AG_REACTION		// DO show selected slices
 //#define DEBUG_ACCELGYRO_BASICS	// deactivated
-extern bool monochrome_is_on();					// extern declaration
+extern bool monochrome_can_be_used();				// extern declaration
 extern void monochrome_show_line(uint8_t row, char * s);	// extern declaration
 extern int lowest_primary, highest_primary, primary_count;	// extern declaration
 extern void noAction_flags_line();				// extern declaration
@@ -453,7 +454,7 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	    MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
 
 #if defined USE_MONOCHROME_DISPLAY
-	    if(monochrome_is_on()) {
+	    if(monochrome_can_be_used()) {
 	      monochrome_show_line(3, array2name(JIFFLES, selected_in(JIFFLES)));
 	    }
 #endif

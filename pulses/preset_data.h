@@ -2064,7 +2064,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 80:
-    name = F("Aurora mit Tänzelde Liechter");
+    name = F("Aurora mit tänzelnde Liechter");
     //# FAVORITE
     //# fullCycleIsOk	harmonical CYCLE: 55' 27"
     //# motives

@@ -10,7 +10,7 @@
 
 uint8_t monochrome_power_save=0;
 
-bool monochrome_is_on() {	// monochrome output is appropriate?
+bool monochrome_can_be_used() {	// monochrome output is appropriate?
   if(monochrome_power_save)
     return false;			// power save
 

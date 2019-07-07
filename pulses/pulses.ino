@@ -808,11 +808,22 @@ uint8_t relaxmax=4;			// up to how many relax() in one todo chain
     MENU.outln(esp_get_idf_version());
     MENU.ln();
   }
+
+  // see: https://github.com/espressif/arduino-esp32/issues/932
+  #include "esp_system.h"
+  String getMacAddress() {
+    uint8_t baseMac[6];
+    // Get MAC address for WiFi station
+    esp_read_mac(baseMac, ESP_MAC_WIFI_STA);
+    char baseMacChr[18] = {0};
+    sprintf(baseMacChr, "%02X:%02X:%02X:%02X:%02X:%02X", baseMac[0], baseMac[1], baseMac[2], baseMac[3], baseMac[4], baseMac[5]);
+    return String(baseMacChr);
+  }
 #endif
 
 
 /* **************************************************************** */
-void display_program_version() {  // program versions, maybe preName. menu output only. see: show_program_version()
+void display_program_version() {  // program versions, mac, maybe preName.  MENU output only. see: show_program_version()
   MENU.out(F(STRINGIFY(PROGRAM_VERSION)));
   MENU.tab();
 #if defined PROGRAM_SUB_VERSION
@@ -896,7 +907,8 @@ void setup() {
 
   delay(STARTUP_DELAY);
 
-  MENU.outln(F("\n\nPULSES  http://github.com/reppr/pulses/"));
+  MENU.outln(F("\n\nPULSES  http://github.com/reppr/pulses/\n"));
+
 #if defined USE_NVS	// always used on ESP32
   {
     String s = nvs_getString(F("nvs_PRENAME"));
@@ -923,6 +935,8 @@ void setup() {
 
 #if defined ESP32
   display_esp_versions();
+  MENU.out(F("MAC: "));
+  MENU.outln(getMacAddress());
 #endif
 
   /*
@@ -1028,10 +1042,11 @@ MENU.ln();
 
 #if defined USE_i2c
   Wire.begin();
+  Wire.setClock(400000L);	// must be *after* Wire.begin()
 
   #if defined USE_MCP23017
     MCP23017.begin();
-    Wire.setClock(100000L);	// must be *after* Wire.begin()
+    Wire.setClock(100000L);	// must be *after* Wire.begin()  TODO: check if 400kHz does not work
     MCP23017_OUT_LOW();
     PULSES.do_A2 = &MCP23017_write;
   #endif
