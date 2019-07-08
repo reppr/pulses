@@ -1836,8 +1836,8 @@ bool morse_store_received_letter(char letter) {		// returns error
   return true;	// ERROR
 }
 
-extern uint8_t monochrome_power_save;
 extern bool accGyro_is_active;
+extern uint8_t monochrome_power_save;
 void morse_token_decode() {	// decode received token sequence
 /*
   decode received token sequence
@@ -1919,12 +1919,7 @@ void morse_token_decode() {	// decode received token sequence
 		MENU.ln();
 	      } else if(morse_PRESENT_COMMAND == "CANCEL") {
 		morse_out_buffer_cnt = 0;
-/*   no, i do not want CANCEL to change accGyro_is_active any more
-#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
-		extern bool accGyro_is_active;
-		accGyro_is_active = false;	// CANCEL accGyro_is_active
-#endif
-*/
+
 #if defined USE_MONOCHROME_DISPLAY
 		if(oled_feedback_while_playing || musicbox_is_idle())
 		  u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "C ");	// *short&quick*

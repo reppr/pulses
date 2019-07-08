@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION		PULSES alpha.027
+#define PROGRAM_VERSION		portable v0.027+
 /*				0123456789abcdef   */
 
 /* **************************************************************** */

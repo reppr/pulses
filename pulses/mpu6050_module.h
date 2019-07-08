@@ -237,7 +237,8 @@ bool GYRO_only_check() {
 }
 
 #if ! defined ACCGYRO_DEFAULT_PRESET
-  #define ACCGYRO_DEFAULT_PRESET	1
+  //#define ACCGYRO_DEFAULT_PRESET	1
+  #define ACCGYRO_DEFAULT_PRESET	2
 #endif
 uint8_t	accGyro_preset = ACCGYRO_DEFAULT_PRESET;
 
@@ -522,6 +523,167 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
       break;
 
     case 2:
+      if(accGyro_mode & axM) {		// accelero X
+	AX = accGyro_current_AX;
+#if defined DEBUG_ACCELGYRO_BASICS
+	there_was_output = true;
+	MENU.out("AX+ ");
+	MENU.out(AX);
+	MENU.space(3);
+	MENU.out(AX/32768);
+#endif
+	aX_reaction_source = JIFFLES;
+	//	aX_sel_i0 = -40 -11 -10;		// tum8up ? -11 diing_ditditdit ?  -10 looong ?
+	aX_sel_i0 = -29;				// diing_ditditdit ?
+	aX_select_slots = 41;		//
+      }
+
+      if(accGyro_mode & ayM) {		// accelero Y
+	AY = accGyro_current_AY;
+#if defined DEBUG_ACCELGYRO_BASICS
+	there_was_output = true;
+	MENU.out("\t\tAY+ ");
+	MENU.out(AY);
+	MENU.space(3);
+	MENU.out(AY/32768);
+#endif
+
+	aY_reaction_source = NULL;
+	aY_select_slots = 8;
+	aY_sel_i0 = 0;
+      }
+
+      if(accGyro_mode & gzM) {		// gyro Z
+	GZ = accGyro_current_GZ;
+
+#if defined DEBUG_ACCELGYRO_BASICS
+	there_was_output = true;
+	MENU.out("\tGZ= ");
+	MENU.out(GZ);
+#endif
+	if(accGyro_invert)	// invert mathematical axis
+	  GZ = -GZ;
+
+#if defined DEBUG_ACCELGYRO_BASICS
+	MENU.space(3);
+	MENU.out(GZ);	// scaled and inverted
+#endif
+      }
+
+      if(there_was_output)
+	MENU.ln();
+
+      // ACCELERO:	INVERTING IS DONE HERE in  accGyro_reaction()
+      if(accGyro_mode & axM) {		// accelero X
+	selected_aX = AX * aX_select_slots +0.5;
+	selected_aX += aX_sel_i0;
+	if(accGyro_invert)	// invert mathematical axis
+	  selected_aX = aX_select_slots - 1 - selected_aX;
+      }
+
+      if(accGyro_mode & ayM) {		// accelero Y
+	selected_aY = AY * aY_select_slots +0.5;
+	selected_aY += aY_sel_i0;
+	if(accGyro_invert)	// invert mathematical axis
+	  selected_aY = aY_select_slots - 1 - selected_aY;
+      }
+
+      if(accGyro_mode & gzM) {		// gyro Z
+	selected_gZ = GZ + 0.5;
+	selected_gZ += gZ_sel_i0;
+      }
+
+#if defined DEBUG_AG_REACTION
+      if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen || selected_gZ != selected_gZ_seen) {
+	MENU.out(F("SELECTED  aX "));
+	MENU.out(selected_aX);
+
+	MENU.out(F("\t\taY "));
+	MENU.out(selected_aY);
+
+	MENU.out(F("\t\tgZ "));
+	MENU.outln(selected_gZ);
+
+	//selected_aY_seen = selected_aY;	// right now unused
+	selected_gZ_seen = selected_gZ;	// TODO: DEACTIVATED, see GYRO
+      }
+#endif
+
+      if(accGyro_mode & axM) {		// accelero X
+	unsigned int* jiffle = NULL;
+	if(jiffle = index2pointer(JIFFLES, selected_aX)) {
+	  if(selected_aX != selected_aX_seen) {
+	    selected_aX_seen = selected_aX;
+	    select_in(JIFFLES, jiffle);
+	    setup_jiffle_thrower_selected(selected_actions);
+	    MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
+
+#if defined USE_MONOCHROME_DISPLAY
+	    if(monochrome_can_be_used()) {
+	      monochrome_show_line(3, array2name(JIFFLES, selected_in(JIFFLES)));
+	    }
+#endif
+	  }
+	} // aX JIFFLES
+      }
+
+      if(accGyro_mode & ayM) {		// accelero Y
+	if(selected_aY != selected_aY_seen) {
+	  selected_aY_seen = selected_aY;
+
+	  switch(selected_aY) {
+	    //      case 0:		// TODO: selected_aY < 1
+	    //	// limit--
+	    //	break;
+	  case 1:	// all but high
+	    extended_output(F("LBM_ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
+	    for(int pulse = highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags |= noACTION; // SET upper quarter
+	    break;
+	  case 2:	// all on
+	  case 3:	// all on
+	    extended_output(F("LBMH "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
+	    break;
+	  case 4:	// middle only
+	    extended_output(F("_BM_ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    MENU.outln(highest_primary);
+	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
+	    for(int pulse=lowest_primary + (primary_count/4) +1; pulse <= highest_primary - (primary_count/4); pulse++)
+	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
+	    break;
+	  case 5:	// extremes only
+	    extended_output(F("L__H "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
+	    for(int pulse=lowest_primary; pulse <= lowest_primary + (primary_count/4); pulse++)
+	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR low quarter
+	    for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
+	    break;
+	  case 6:	// high only
+	    extended_output(F("___H "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
+	    for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
+	    break;
+
+	    //      case 7:	// bass_limit--		// TODO: near limit region
+	    //	break;
+	  default:	// toggle all
+	    extended_output(F("~~~~ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    PULSES.select_from_to(lowest_primary, highest_primary);
+	    PULSES.selected_toggle_no_actions();
+	    PULSES.select_n(voices);
+	  } // switch(selected_aY)
+	  noAction_flags_line();
+	} //selected_aY_seen
+      } // accelero Y
       break;
 
     default:

@@ -22,7 +22,7 @@
 
 #if defined SETUP_PORTABLE_DAC_ONLY
   #define PERIPHERAL_POWER_SWITCH_PIN		12	// *pseudo* for green LED,  switch power, often green LED
-  #define PROGRAM_SUB_VERSION			portable 3d	// with morse 3D accGyro UI
+  #define PROGRAM_SUB_VERSION			portable 3D	// with morse and 3D accGyro UI
   #define MAX_SUBCYCLE_SECONDS			60*12	// *max seconds*, produces short PRESET PIECES	   portable instruments 2019-06
 //#define MUSICBOX_HARD_END_SECONDS		60*100	// SAVETY NET shut down after 100'	***DEACTIVATED***
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3600*12	// *DEACTIVATED*
@@ -3599,8 +3599,18 @@ bool musicBox_reaction(char token) {
     input_preset_and_start();	// read preset number
     break;
 
-  case 'y':   // TODO: sets preset, how to unset?	################
+  case 'y': // TODO: sets preset, how to unset?	################
     input_preset_and_start();
+    break;
+
+  case 'U': // 'U' UI configuration	motion UI
+    if(accGyro_preset == 1)
+      accGyro_preset = 2;
+    else
+      accGyro_preset = 1;
+
+    MENU.out(F("accGyro_preset "));
+    MENU.outln(accGyro_preset);
     break;
 
   default:
