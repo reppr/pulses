@@ -3636,24 +3636,18 @@ bool musicBox_reaction(char token) {
     MENU.outln(accGyro_preset);
     break;
 
+#if defined USE_ESP_NOW
   case 'D':
     {
-      MENU.out(F("esp_now_pulses_send()\t"));
-      int return_code = esp_now_pulses_send();
+      MENU.out(F("esp_now_pulses_broadcast()\t"));
 
-      switch(return_code) {
-      case ESP_NOW_SEND_SUCCESS:
+      int status = esp_now_pulses_broadcast();
+      if(status == ESP_NOW_SEND_SUCCESS) {
 	MENU.outln(F("ok"));
-	break;
-      case ESP_NOW_SEND_FAIL:
-	MENU.outln(F("failes"));
-	break;
-
-      default:
-	MENU.outln(return_code);
-      }
+      } else MENU.outln(esp_err_to_name(status));
     }
     break;
+#endif
 
   default:
     return false;

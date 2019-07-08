@@ -49,6 +49,7 @@ using namespace std;	// ESP8266 needs that
 
 #if defined ESP32
   #include <esp_system.h>
+  #include <esp_err.h>
 #endif
 
 /* **************************************************************** */
@@ -979,11 +980,17 @@ void setup() {
   //  maybe_restore_from_RTCmem();		// only after deep sleep, else noop
 
 #if defined USE_ESP_NOW
-  MENU.out(F("esp_now_pulses_setup()\t"));
-  if(esp_now_pulses_setup())	// TODO: factor that out?
-    MENU.outln(F("failed"));	// TODO: factor that out?
-  else				// TODO: factor that out?
-    MENU.outln(F("ok"));	// TODO: factor that out?
+  {
+    esp_err_t error;
+    MENU.out(F("esp_now_pulses_setup()\t"));
+    if(error = esp_now_pulses_setup()) {
+      MENU.out(F("failed "));
+      // MENU.out_hex(error);
+      // MENU.ln();
+      MENU.outln(esp_err_to_name(error));
+    } else
+      MENU.outln(F("ok"));
+  }
 #endif
 
 #if defined USE_MPU6050
