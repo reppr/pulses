@@ -43,3 +43,26 @@
   #undef USE_WIFI_telnet_menu
   #warning USE_BLUETOOTH_SERIAL_MENU so #undef USE_WIFI_telnet_menu
 #endif
+
+#if defined USE_ESP_NOW
+/*
+  Sketch uses 1447262 bytes (110%) of program storage space. Maximum is 1310720 bytes.
+  Global variables use 96048 bytes (29%) of dynamic memory, leaving 231632 bytes for local variables. Maximum is 327680 bytes.
+*/
+
+  #undef USE_WIFI_telnet_menu
+/*
+  Sketch uses 1447262 bytes (110%) of program storage space. Maximum is 1310720 bytes.
+  Global variables use 96048 bytes (29%) of dynamic memory, leaving 231632 bytes for local variables. Maximum is 327680 bytes.
+  hmm?
+*/
+
+  #undef USE_BLUETOOTH_SERIAL_MENU
+/*
+  'MENU_OUTSTREAM2' was not declared in this scope	fixed
+  some more troubles,	fixed
+
+  Sketch uses 1013648 bytes (77%) of program storage space. Maximum is 1310720 bytes.
+  Global variables use 71348 bytes (21%) of dynamic memory, leaving 256332 bytes for local variables. Maximum is 327680 bytes.
+*/
+#endif

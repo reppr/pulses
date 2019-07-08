@@ -99,6 +99,26 @@ class Menu;
 #else
   #define CB_SIZE	128
 #endif
+
+#if ! defined MENU_OUTSTREAM2
+// see: https://stackoverflow.com/questions/11826554/standard-no-op-output-stream
+#include <iostream>
+class NullBuffer :  public std::streambuf
+{
+public:
+  int overflow(int c) { return c; }
+  // streambuf::overflow is the function called when the buffer has to output data to the actual destination of the stream.
+  // The NullBuffer class above does nothing when overflow is called so any stream using it will not produce any output.
+};
+
+NullBuffer null_buffer;
+
+//#define MENU_OUTSTREAM2		std::ostream null_stream(&null_buffer)
+
+#define MENU_OUTSTREAM2	(Stream &) null_buffer
+
+#endif
+
 Menu MENU(CB_SIZE, 6, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
 
 
@@ -1028,7 +1048,8 @@ MENU.ln();
   #endif
 #else // WiFi not in use, switch it off:
 
-  #if defined(ESP8266) || defined(ESP32)	// ################ FIXME: test ################
+#if defined(ESP8266) || defined(ESP32)	// TODO: TEST: do we need that on ESP32?
+
     MENU.outln("switch WiFi off");
 
     #ifdef WIFI_OFF_hackster
@@ -1048,15 +1069,8 @@ MENU.ln();
       WiFi.forceSleepBegin();
       delay(1);
     #endif
-  #endif	// ESP8266
+  #endif	// ESP8266, ESP32
 #endif // to WiFi or not
-
-#if defined USE_BLUETOOTH_SERIAL_MENU && false	// setup()	double, 2/2	test brownout recognition  *DEACTIVATED* TODO: review
-  #if defined BLUETOOTH_ENABLE_PIN
-  if(bluetooth_switch_info())			// setup()	double, 2/2	test brownout recognition  *DEACTIVATED* TODO: review
-  #endif
-    bluetooth_setup();
-#endif
 
 #if defined USE_i2c
   Wire.begin();
