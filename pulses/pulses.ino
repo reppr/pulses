@@ -1,6 +1,8 @@
 #define PROGRAM_VERSION		portable v0.027+
 /*				0123456789abcdef   */
 
+#define USE_ESP_NOW	very 1st test only
+
 /* **************************************************************** */
 /*
 			pulses.ino
@@ -45,6 +47,9 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
 using namespace std;	// ESP8266 needs that
 
+#if defined ESP32
+  #include <esp_system.h>
+#endif
 
 /* **************************************************************** */
 // configuration sequence:
@@ -56,6 +61,10 @@ using namespace std;	// ESP8266 needs that
 #include "pulses_project_conf.h"	// predefined special projects like instruments
 
 #include "pulses_sanity_checks.h"	// check some pp macro incompatibilities
+
+#if defined USE_ESP_NOW
+  #include "esp_now_pulses.h"
+#endif
 
 #if defined USE_BLUETOOTH_SERIAL_MENU
   #include "BluetoothSerial.h"
@@ -948,6 +957,14 @@ void setup() {
     start_musicBox();	must be blocked if appropriate
   */
   //  maybe_restore_from_RTCmem();		// only after deep sleep, else noop
+
+#if defined USE_ESP_NOW
+  MENU.out(F("esp_now_pulses_setup()\t"));
+  if(esp_now_pulses_setup())	// TODO: factor that out?
+    MENU.outln(F("failed"));	// TODO: factor that out?
+  else				// TODO: factor that out?
+    MENU.outln(F("ok"));	// TODO: factor that out?
+#endif
 
 #if defined USE_MPU6050
   mpu6050_setup();
