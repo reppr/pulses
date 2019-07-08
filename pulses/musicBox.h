@@ -3636,6 +3636,25 @@ bool musicBox_reaction(char token) {
     MENU.outln(accGyro_preset);
     break;
 
+  case 'D':
+    {
+      MENU.out(F("esp_now_pulses_send()\t"));
+      int return_code = esp_now_pulses_send();
+
+      switch(return_code) {
+      case ESP_NOW_SEND_SUCCESS:
+	MENU.outln(F("ok"));
+	break;
+      case ESP_NOW_SEND_FAIL:
+	MENU.outln(F("failes"));
+	break;
+
+      default:
+	MENU.outln(return_code);
+      }
+    }
+    break;
+
   default:
     return false;
   }

@@ -23,3 +23,10 @@ uint8_t macSlaves[][6] = {
   //Or to send to all Slaves
   {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}
 };
+
+
+int esp_now_pulses_send() {
+  uint8_t broadcast[] = {0xFF, 0xFF,0xFF,0xFF,0xFF,0xFF};
+  char * text[] = {"Hey You?       "};
+  return esp_now_send(broadcast, (uint8_t*) &text, sizeof(text));
+}
