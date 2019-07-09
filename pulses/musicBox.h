@@ -3640,10 +3640,10 @@ bool musicBox_reaction(char token) {
   case 'D':
     {
       MENU.out(F("esp_now_pulses_broadcast()\t"));
-
       esp_err_t status = esp_now_pulses_broadcast(PRES);
       if(status == ESP_NOW_SEND_SUCCESS) {
 	MENU.outln(F("ok"));
+	start_musicBox();
       } else MENU.outln(esp_err_to_name(status));
     }
     break;
