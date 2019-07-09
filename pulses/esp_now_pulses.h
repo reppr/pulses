@@ -12,9 +12,8 @@
 
 #define ESP_NOW_CHANNEL	3
 
-//Callback function that gives us feedback about the sent data
-esp_err_t esp_now_pulses_broadcast(icode_t code);	// pre declaration
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+  MENU.outln("DADA OnDataSent");
   char macStr[18];
   //Copies the receiver Mac Address to a string
   snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
@@ -40,7 +39,9 @@ typedef struct __attribute__((packed)) pulses_esp_now_t {
   // data
 } pulses_esp_now_t;
 
+
 static void send_msg(pulses_esp_now_t * msg) {
+  MENU.outln("DADA send_msg");
   // Pack
   uint16_t packet_size = sizeof(pulses_esp_now_t);
   uint8_t msg_data[packet_size];
@@ -54,15 +55,38 @@ static void send_msg(pulses_esp_now_t * msg) {
 }
 
 esp_err_t esp_now_pulses_broadcast(icode_t code) {
-  icode_t meaning = code;
+  MENU.outln("DADA esp_now_pulses_broadcast");
+  int data_len = 4;	// default for code==meaning
+  int * ip;
 
-  pulses_esp_now_t message;
+  switch(code) {
+  case PRES:
+    break;
+  default:
+    MENU.error_ln(F("data_len, unknown code"));	// TODO: ##################################
+  }
+
+  pulses_esp_now_t * msg_buf = (pulses_esp_now_t *) malloc(data_len + 0);	// TODO: determine right size
+  //  pulses_esp_now_t message;
+
+  switch(code) {
+  case PRES:
+    extern short preset;
+    ip = (int *) &msg_buf;
+    *ip = preset;
+MENU.outln("DADA sent preset "); MENU.outln(preset);
+    break;
+  default:
+    MENU.error_ln(F("not implemented code"));	// TODO: ##################################
+  }
+
 
   esp_now_register_send_cb(OnDataSent);
-  return esp_now_send(broadcast_mac, (uint8_t*) &message, sizeof(message));
+  return esp_now_send(broadcast_mac, (uint8_t*) msg_buf, sizeof(msg_buf));
 }
 
 static void esp_now_pulses_reaction(pulses_esp_now_t msg, uint8_t *data) {
+  MENU.outln("DADA esp_now_pulses_reaction");
   switch (msg.meaning) {
   case PRES:
     MENU.outln(F("PRES "));
@@ -77,6 +101,8 @@ static void esp_now_pulses_reaction(pulses_esp_now_t msg, uint8_t *data) {
 }
 
 static void msg_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len) {
+  MENU.outln("DADA msg_recv_cb");
+
   if (len == sizeof(pulses_esp_now_t)) {
     char macStr[18];	// buffer for sender MAC string representation
 
@@ -101,6 +127,7 @@ static void msg_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len) {
 
 //Callback function that tells us when data from Master is received
 static void OnDataRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
+  MENU.outln("DADA OnDataRecv");
   char macStr[18];	// senders MAC string representation
   snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
 	   mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
@@ -108,7 +135,7 @@ static void OnDataRecv(const uint8_t *mac_addr, const uint8_t *data, int data_le
   MENU.out(macStr);
   MENU.out(F("\t\tbytes "));
   MENU.outln(data_len);
-  MENU.outln((int) *data);
+//  MENU.outln((int) *data);
   pulses_esp_now_t * msg_buf = (pulses_esp_now_t *) malloc(data_len + 16);	// TODO: determine right size
   memcpy(msg_buf, data, data_len);
   esp_now_pulses_reaction(*msg_buf, (uint8_t*) data);
