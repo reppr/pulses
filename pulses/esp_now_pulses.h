@@ -13,7 +13,7 @@
 #define ESP_NOW_CHANNEL	3
 
 //Callback function that gives us feedback about the sent data
-esp_err_t esp_now_pulses_broadcast();	// pre declaration
+esp_err_t esp_now_pulses_broadcast(icode_t code);	// pre declaration
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
   char macStr[18];
   //Copies the receiver Mac Address to a string
@@ -28,23 +28,92 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 }
 
 uint8_t broadcast_mac[] = {0xFF, 0xFF,0xFF,0xFF,0xFF,0xFF};
-esp_err_t esp_now_pulses_broadcast() {
-  char * text[] = {"Hey You?       "};	// TODO: REMOVE: justatest
+
+// pulses_esp_now_t	as type of pulses esp_now messages:
+// see: https://hackaday.io/project/164132-hello-world-for-esp-now/log/160570-esp-now-introduction
+typedef struct __attribute__((packed)) pulses_esp_now_t {
+  icode_t meaning;
+//  uint8_t data_bytes;
+//  uint8_t flags1_UNUSED;
+//  uint8_t flags2_UNUSED;
+//  uint8_t flags3_UNUSED;
+  // data
+} pulses_esp_now_t;
+
+static void send_msg(pulses_esp_now_t * msg) {
+  // Pack
+  uint16_t packet_size = sizeof(pulses_esp_now_t);
+  uint8_t msg_data[packet_size];
+  memcpy(&msg_data[0], msg, sizeof(pulses_esp_now_t));
+
+  esp_err_t status = esp_now_send(broadcast_mac, msg_data, packet_size);
+  if (ESP_OK != status) {
+    MENU.out(F("send_msg "));
+    MENU.outln(esp_err_to_name(status));
+  }
+}
+
+esp_err_t esp_now_pulses_broadcast(icode_t code) {
+  icode_t meaning = code;
+
+  pulses_esp_now_t message;
+
   esp_now_register_send_cb(OnDataSent);
-  return esp_now_send(broadcast_mac, (uint8_t*) &text, sizeof(text));
+  return esp_now_send(broadcast_mac, (uint8_t*) &message, sizeof(message));
+}
+
+static void esp_now_pulses_reaction(pulses_esp_now_t msg, uint8_t *data) {
+  switch (msg.meaning) {
+  case PRES:
+    MENU.outln(F("PRES "));
+    break;
+
+  default:
+    MENU.out_Error_();
+    MENU.out(F("unknown reaction code\t"));
+    MENU.outln(msg.meaning);
+    MENU.outln((int) *data);
+  } // switch meaning
+}
+
+static void msg_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len) {
+  if (len == sizeof(pulses_esp_now_t)) {
+    char macStr[18];	// buffer for sender MAC string representation
+
+    snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
+	     mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+
+    MENU.out("\nESP-NOW from: ");
+    MENU.out(macStr);
+    MENU.tab();
+    MENU.outln(len);
+
+    pulses_esp_now_t * msg_buf = (pulses_esp_now_t *) malloc(len + 16);	// TODO: determine right size
+    memcpy(msg_buf, data, len);
+
+//    MENU.out(F("esp_now_pulses_reaction "));
+//    MENU.outln((*msg_buf).meaning);
+    esp_now_pulses_reaction(*msg_buf, (uint8_t*) data);
+
+    free(msg_buf);
+  } // if(len)
 }
 
 //Callback function that tells us when data from Master is received
-extern void start_musicBox();	// TODO: do not do that from here, JUSTATEST
-void OnDataRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
-  char macStr[18];
-  //Copies the sender Mac Address to a string
+static void OnDataRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
+  char macStr[18];	// senders MAC string representation
   snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
 	   mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-  Serial.print("\nESP-NOW from: ");
-  Serial.println(macStr);
+  MENU.out("\nESP-NOW from: ");
+  MENU.out(macStr);
+  MENU.out(F("\t\tbytes "));
+  MENU.outln(data_len);
+  MENU.outln((int) *data);
+  pulses_esp_now_t * msg_buf = (pulses_esp_now_t *) malloc(data_len + 16);	// TODO: determine right size
+  memcpy(msg_buf, data, data_len);
+  esp_now_pulses_reaction(*msg_buf, (uint8_t*) data);
 
-  start_musicBox();	// TODO: do not do that from here, JUSTATEST
+  free(msg_buf);
 }
 
 
@@ -71,21 +140,3 @@ esp_err_t esp_now_pulses_setup() {
 
   return status;
 }
-
-// see: https://hackaday.io/project/164132-hello-world-for-esp-now/log/160570-esp-now-introduction
-typedef struct __attribute__((packed)) esp_now_msg_t
-{
-  uint32_t version;
-  uint32_t type;
-  uint8_t size;
-  // ...
-} esp_now_msg_t;
-
-
-// TODO: unused ???
-uint8_t macSlaves[][6] = {
-  //To send to specific Slaves
-  //{0x24, 0x0A, 0xC4, 0x0E, 0x3F, 0xD1}, {0x24, 0x0A, 0xC4, 0x0E, 0x4E, 0xC3}
-  //Or to send to all Slaves
-  {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}
-};

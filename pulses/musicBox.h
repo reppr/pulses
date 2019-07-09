@@ -3641,7 +3641,7 @@ bool musicBox_reaction(char token) {
     {
       MENU.out(F("esp_now_pulses_broadcast()\t"));
 
-      int status = esp_now_pulses_broadcast();
+      esp_err_t status = esp_now_pulses_broadcast(PRES);
       if(status == ESP_NOW_SEND_SUCCESS) {
 	MENU.outln(F("ok"));
       } else MENU.outln(esp_err_to_name(status));

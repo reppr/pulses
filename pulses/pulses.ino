@@ -1,7 +1,7 @@
 #define PROGRAM_VERSION		portable v0.027+
 /*				0123456789abcdef   */
 
-#define USE_ESP_NOW	very 1st test only
+#define USE_ESP_NOW	// starts working :)
 
 /* **************************************************************** */
 /*
@@ -62,10 +62,6 @@ using namespace std;	// ESP8266 needs that
 #include "pulses_project_conf.h"	// predefined special projects like instruments
 
 #include "pulses_sanity_checks.h"	// check some pp macro incompatibilities
-
-#if defined USE_ESP_NOW
-  #include "esp_now_pulses.h"
-#endif
 
 #if defined USE_BLUETOOTH_SERIAL_MENU
   #include "BluetoothSerial.h"
@@ -131,6 +127,12 @@ Menu MENU(CB_SIZE, 6, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
 #include "pulses_boards.h"
 
 Pulses PULSES(PL_MAX, &MENU);
+
+
+// MENU is defined now
+#if defined USE_ESP_NOW
+  #include "esp_now_pulses.h"
+#endif
 
 
 /* **************** Harmonical **************** */
