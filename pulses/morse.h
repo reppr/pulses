@@ -1945,7 +1945,7 @@ void morse_token_decode() {	// decode received token sequence
 		  MENU.ln();
   #if defined USE_MONOCHROME_DISPLAY
 		  if(monochrome_can_be_used()) {
-		    u8x8.setCursor(u8x8.getCols() - 7 ,0);
+		    u8x8.setCursor(u8x8.getCols() - 7 ,0);	// position of OLED UI display
 		    if(accGyro_is_active) {
 		      u8x8.setInverseFont(1);
 		      u8x8.print(F("      "));	// TODO: real string
