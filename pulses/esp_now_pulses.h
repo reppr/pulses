@@ -71,10 +71,10 @@ esp_err_t esp_now_pulses_broadcast(icode_t code) {
 
   switch(code) {
   case PRES:
-//    extern short preset;
-//    ip = (int *) &msg_buf;
-//    *ip = preset;
-//MENU.outln("DADA sent preset "); MENU.outln(preset);
+    extern short preset;
+    ip = (int *) &msg_buf;
+    *ip = preset;
+MENU.outln("DADA sent preset "); MENU.outln(preset);
     break;
   default:
     MENU.error_ln(F("not implemented code"));	// TODO: ##################################
@@ -85,7 +85,6 @@ esp_err_t esp_now_pulses_broadcast(icode_t code) {
   return esp_now_send(broadcast_mac, (uint8_t*) msg_buf, sizeof(msg_buf));
 }
 
-extern void start_musicBox();
 static void esp_now_pulses_reaction(pulses_esp_now_t msg, uint8_t *data) {
   MENU.outln("DADA esp_now_pulses_reaction");
   switch (msg.meaning) {
@@ -98,8 +97,6 @@ static void esp_now_pulses_reaction(pulses_esp_now_t msg, uint8_t *data) {
     MENU.out(F("unknown reaction code\t"));
     MENU.outln(msg.meaning);
     MENU.outln((int) *data);
-
-    start_musicBox();
   } // switch meaning
 }
 
