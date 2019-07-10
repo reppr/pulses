@@ -11,6 +11,8 @@
 uint8_t monochrome_power_save=0;
 
 bool monochrome_can_be_used() {	// monochrome output is appropriate?
+  // TODO: monochrome_display_hardware	fix&use monochrome_display detection
+
   if(monochrome_power_save)
     return false;			// power save
 

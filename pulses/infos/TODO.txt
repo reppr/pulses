@@ -145,4 +145,18 @@ TODO morse command names come unformatted on menu: "XYZSEND" should be "XYZ |SEN
 
 * ESPNOW
 * MPU6050 offsets nvs
-* MAC nvs
+
+* MAC nvs	*not* needed, can read it directly ;)
+
+*NO OLED OUTPUT* when it is in POWER SAVE mode		maybe already done?
+
+check monochrome_display_hardware	   MENU.out_ON_off(monochrome_display_hardware);
+
+FIXME: OLED != DELWORD
+
+T touch softboard
+
+analogRead als input
+"analogi" touch wert als input
+
+rename simple_theme animals_voice

@@ -922,7 +922,7 @@ void setup() {
 #endif
 
 #if defined USE_MONOCHROME_DISPLAY
-  // TODO: fix&use monochrome_display detection
+  // TODO: monochrome_display_hardware	fix&use monochrome_display detection
   if(monochrome_display_hardware)
     delay(1111);	// give a chance to read version on oled display
 
