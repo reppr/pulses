@@ -2214,6 +2214,8 @@ short bass_pulses;	// see  setup_bass_middle_high()
 short middle_pulses;	// see  setup_bass_middle_high()
 short high_pulses;	// see  setup_bass_middle_high()
 
+bool autoskip_pause=false;	// TODO: MOVE: UI ################
+
 void start_musicBox() {
 #if defined BLUETOOTH_ENABLE_PIN
   set_bluetooth_according_switch();
@@ -2417,14 +2419,27 @@ void start_musicBox() {
   else
     PULSES.activate_selected_synced_now(sync);	// 'n' 'N' sync and activate
 
-  if(sync || stack_sync_slices) {	// TODO: REVIEW: ################
+  // TODO: TEST: start pause detection and skipping
+  if(sync || stack_sync_slices) {	// start pause possible?
     PULSES.fix_global_next();			// cannot understand why i need that here...
     pulse_time_t pause = PULSES.global_next;
-    if(stack_sync_slices) {			// TODO: fix quick hack... depending pause length is better
-      PULSES.sub_time(&musicBox_start_time, &pause);	// just skip pause, HACK: ################
-      PULSES.time_skip_selected(pause);
-      MENU.outln(F("pause skipped"));
-    } else {
+    if(stack_sync_slices) { // stack_sync sliced?
+      if(autoskip_pause) {
+	PULSES.sub_time(&musicBox_start_time, &pause);	// just skip pause, HACK: ################
+	PULSES.time_skip_selected(pause);
+	MENU.outln(F("pause skipped"));
+      } else { // pause is *not* autoskipped
+	MENU.outln(F("no pause autoskip"));
+#if defined USE_MONOCHROME_DISPLAY
+	u8x8.setCursor(0, u8x8.getRows() -1);	// last line is message line
+	u8x8.print(F("pause "));
+      }
+#endif
+    } else {	// stack_sync_slices==0
+#if defined USE_MONOCHROME_DISPLAY
+      u8x8.setCursor(0, u8x8.getRows() -1);	// last line is message line
+      u8x8.print(F("pause "));
+#endif
       if(MENU.verbosity >= VERBOSITY_LOWEST) {
 	MENU.out(F("sync pause "));
 	PULSES.display_time_human(pause);
@@ -2432,8 +2447,8 @@ void start_musicBox() {
 	musicBox_short_info();
 	MENU.ln(2);
       }
-    }
-  }
+    } // stack_sync_slices
+  } // possible?
 
   // setup butler:	works better if activated a tad later than the primary pulses...
   // remember pulse index of the butler, so we can call him, if we need him ;)

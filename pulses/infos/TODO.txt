@@ -160,3 +160,6 @@ analogRead als input
 "analogi" touch wert als input
 
 rename simple_theme animals_voice
+
+bool autoskip_pause=false;	// TODO: MOVE:
+TODO: UI
