@@ -1762,8 +1762,9 @@ short morse_out_buffer_cnt=0;
 
 
 bool morse_output_to_do=false;		// triggers morse_do_output()
-extern bool musicbox_is_idle();		// extern declaration
-extern bool monochrome_can_be_used();		// extern declaration
+extern bool musicbox_is_idle();
+extern bool monochrome_can_be_used();
+extern void monochrome_display_message(char * message);
 void morse_do_output() {
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
   if(morse_out_buffer_cnt) {
@@ -1911,15 +1912,11 @@ void morse_token_decode() {	// decode received token sequence
 		  MENU.ln();
 
 #if defined USE_MONOCHROME_DISPLAY
-		  if(monochrome_can_be_used()) {
-		    u8x8.setCursor(0, u8x8.getRows() -1);	// last line is message line
-		    u8x8.print(F("OLED "));
-		  }
+		  if(monochrome_can_be_used())
+		    monochrome_display_message(F(" OLED"));
 		} else {					// got switched off
-		  if(monochrome_can_be_used()) {
-		    u8x8.setCursor(0, u8x8.getRows() -1);	// last line is message line
-		    u8x8.print(F("off "));
-		  }
+		  if(monochrome_can_be_used())
+		    monochrome_display_message(F(" off"));
 #endif
 		} // switched on/off
 

@@ -2431,14 +2431,12 @@ void start_musicBox() {
       } else { // pause is *not* autoskipped
 	MENU.outln(F("no pause autoskip"));
 #if defined USE_MONOCHROME_DISPLAY
-	u8x8.setCursor(0, u8x8.getRows() -1);	// last line is message line
-	u8x8.print(F("pause "));
+	monochrome_display_message(F(" pause"));
       }
 #endif
     } else {	// stack_sync_slices==0
 #if defined USE_MONOCHROME_DISPLAY
-      u8x8.setCursor(0, u8x8.getRows() -1);	// last line is message line
-      u8x8.print(F("pause "));
+      monochrome_display_message(F(" pause"));
 #endif
       if(MENU.verbosity >= VERBOSITY_LOWEST) {
 	MENU.out(F("sync pause "));
@@ -3276,15 +3274,25 @@ bool musicBox_reaction(char token) {
 	MENU.outln(cnt);
       }
       break;
-
     default:	// 'P' start/stop musicBox
-      if(MusicBoxState != OFF) {
-	tabula_rasa();
+      {
+	bool start=false;
+	if(MusicBoxState != OFF)
+	  tabula_rasa();	// MusicBoxState is OFF now
+	else
+	  start=true;
+
 	if(MENU.maybe_display_more(VERBOSITY_SOME))
 	  musicBox_display();
-      } else
-	start_musicBox();
-    }
+
+#if defined USE_MONOCHROME_DISPLAY
+	if(monochrome_can_be_used())
+	  monochrome_show_musicBox_parameters();
+#endif
+	if(start)
+	  start_musicBox();
+      }
+    } // switch(MENU.cb_peek())
     break;
 
   case 'Q':	// noACTION managing
