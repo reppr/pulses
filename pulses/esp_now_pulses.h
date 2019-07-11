@@ -74,7 +74,7 @@ esp_err_t esp_now_pulses_broadcast(icode_t code) {
     extern short preset;
     ip = (int *) &msg_buf;
     *ip = preset;
-MENU.outln("DADA sent preset "); MENU.outln(preset);
+MENU.outln("DADA send preset "); MENU.outln(preset);
     break;
   default:
     MENU.error_ln(F("not implemented code"));	// TODO: ##################################
@@ -82,7 +82,12 @@ MENU.outln("DADA sent preset "); MENU.outln(preset);
 
 
   esp_now_register_send_cb(OnDataSent);
-  return esp_now_send(broadcast_mac, (uint8_t*) msg_buf, sizeof(msg_buf));
+MENU.outln("DADA send preset registered");
+
+//  return esp_now_send(broadcast_mac, (uint8_t*) msg_buf, sizeof(msg_buf));
+  esp_err_t status=esp_now_send(broadcast_mac, (uint8_t*) msg_buf, sizeof(msg_buf));
+  MENU.out("DADA "); MENU.outln(esp_err_to_name(status));
+  return status;
 }
 
 static void esp_now_pulses_reaction(pulses_esp_now_t msg, uint8_t *data) {
