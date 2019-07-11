@@ -163,3 +163,5 @@ rename simple_theme animals_voice
 
 bool autoskip_pause=false;	// TODO: MOVE:
 TODO: UI
+
+ESP_NOW VERBOISITY level
