@@ -14,15 +14,16 @@
 
 
 // buffers for data to send or receive
-#define ESP_NOW_BUFFER_SIZE	252	// don't know the exact size
-uint8_t esp_now_send_data[ESP_NOW_BUFFER_SIZE] = {0};
+
+uint8_t esp_now_send_data[ESP_NOW_MAX_DATA_LEN] = {0};
 uint8_t esp_now_data_to_send_cnt=0;	// bytes
-uint8_t esp_now_received_data[ESP_NOW_BUFFER_SIZE] = {0};
+
+uint8_t esp_now_received_data[ESP_NOW_MAX_DATA_LEN] = {0};
 uint8_t esp_now_data_received_cnt=0;	// bytes
+uint8_t esp_now_data_received_read=0;	// bytes
 
-
-void esp_now_store_to_send(int di) {
-  if(esp_now_data_to_send_cnt > ESP_NOW_BUFFER_SIZE) {
+void esp_now_store_to_send(int di) {			// (int) version
+  if(esp_now_data_to_send_cnt > ESP_NOW_MAX_DATA_LEN) {
     MENU.error_ln(F("send buffer full"));
     return;
   }
@@ -33,8 +34,8 @@ void esp_now_store_to_send(int di) {
   esp_now_data_to_send_cnt += sizeof(int);
 }
 
-void esp_now_store_to_send(short ds) {
-  if(esp_now_data_to_send_cnt > ESP_NOW_BUFFER_SIZE) {
+void esp_now_store_to_send(short ds) {			// (short version)
+  if(esp_now_data_to_send_cnt > ESP_NOW_MAX_DATA_LEN) {
     MENU.error_ln(F("send buffer full"));
   }
 
@@ -42,6 +43,24 @@ void esp_now_store_to_send(short ds) {
   *sp = ds;
 
   esp_now_data_to_send_cnt += sizeof(short);
+}
+
+void esp_now_read_received(int* pi) {			// (int) version
+  // SIZE ################
+  int* ip = (int*) esp_now_received_data + esp_now_data_received_read;
+  *pi = *ip;
+
+  esp_now_data_received_read += sizeof(int);
+}
+
+void esp_now_read_received(short* ps) {			// (short version)
+  // SIZE ################
+  short* sp = (short*)  esp_now_received_data + esp_now_data_received_read;
+  MENU.out("DADA sees ");
+  MENU.outln(*sp);
+  *ps = *sp;
+
+  esp_now_data_received_read += sizeof(short);
 }
 
 uint8_t broadcast_mac[] = {0xFF, 0xFF,0xFF,0xFF,0xFF,0xFF};
@@ -110,15 +129,18 @@ static void esp_now_pulses_reaction() {
   MENU.outln("DADA esp_now_pulses_reaction()");
   if(MENU.maybe_display_more(VERBOSITY_LOWEST))
     MENU.out(F("received: "));
-  // int meaning = *(int) esp_now_received_data;
-  int * ip = (int*) esp_now_received_data;
-  int meaning = *ip;
+  int meaning;
+  esp_now_read_received(&meaning);	// (int) version
   switch (meaning) {
   case PRES:
     {
       MENU.out(F("PRES "));
-      short * preset_p = (short *) esp_now_received_data;
-      MENU.outln((short) *preset_p);
+      short preset;
+      esp_now_read_received(&preset);	// (short) version
+      MENU.outln(preset);
+      //     short * preset_p = (short *) esp_now_received_data;
+      //      short * preset_p = (short *) &esp_now_received_data;
+      //      MENU.outln((short) *preset_p);
     }
     break;
 
@@ -132,6 +154,8 @@ static void esp_now_pulses_reaction() {
 
 static void pulses_data_received_callback(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
   MENU.outln("DADA pulses_data_received_callback()");
+  esp_now_data_received_read = 0;
+
   if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
     char macStr[18];	// senders MAC string representation
     snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
