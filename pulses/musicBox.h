@@ -874,8 +874,9 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
   }
 }
 
-void parameters_by_user() {
-  MENU.outln(F("manual mode"));
+void parameters_by_user(bool no_output = false) {
+  if(!no_output)
+    MENU.outln(F("manual mode"));
   scale_user_selected = true;
   sync_user_selected = true;
   stack_sync_user_selected = true;
@@ -883,6 +884,7 @@ void parameters_by_user() {
   pitch_user_selected = true;	// TODO: ################################################################
   // subcycle_user_selected=true;	// TODO: ################################################################
 }
+
 
 void parameters_get_randomised() {
   MENU.outln(F("random mode"));
@@ -3004,6 +3006,19 @@ void noAction_flags_line() {	// show a line with primary noACTION flag signs		//
   MENU.outln(F("' action muting"));
 }
 
+bool load_preset_and_start(short preset_new) {	// returns error
+  short preset_was = preset;
+  preset = preset_new;
+  if(load_preset(preset)) {	// error?
+    MENU.outln_invalid();
+    preset = preset_was;
+    return true;		// ERROR
+  } // else
+  if(MusicBoxState != OFF)	// end a running session?
+    tabula_rasa();
+  start_musicBox();		// play new preset
+}
+
 void input_preset_and_start() {	// factored out UI component	// TODO: sets preset, how to unset?	################
   int input_value;
   bool load=false;
@@ -3036,14 +3051,8 @@ void input_preset_and_start() {	// factored out UI component	// TODO: sets prese
       MENU.outln_invalid();
   }
 
-  if(load) {
-    if(! load_preset(preset)) {	// no error?
-      if(MusicBoxState != OFF)	// end a running session?
-	tabula_rasa();
-      start_musicBox();		// play new preset
-    } else
-      MENU.outln_invalid();
-  }
+  if(load)
+    load_preset_and_start(preset);
 }
 
 bool musicBox_reaction(char token) {
@@ -3636,9 +3645,13 @@ bool musicBox_reaction(char token) {
     MENU.outln(accGyro_preset);
     break;
 
-#if defined USE_ESP_NOW
+#if defined USE_ESP_NOW		// /else pulses 'D')
   case 'D':
+    if(MusicBoxState != OFF)	// not needed, but less stress to do that first...
+      tabula_rasa();
+    load_preset(preset);
     esp_now_send(PRES);
+    start_musicBox();
     break;
 #endif
 

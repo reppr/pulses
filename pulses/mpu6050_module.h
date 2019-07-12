@@ -237,8 +237,8 @@ bool GYRO_only_check() {
 }
 
 #if ! defined ACCGYRO_DEFAULT_PRESET
-  //#define ACCGYRO_DEFAULT_PRESET	1
-  #define ACCGYRO_DEFAULT_PRESET	2
+  #define ACCGYRO_DEFAULT_PRESET	1
+  //#define ACCGYRO_DEFAULT_PRESET	2
 #endif
 uint8_t	accGyro_preset = ACCGYRO_DEFAULT_PRESET;
 

@@ -5063,7 +5063,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   }
 
   MENU.tab();
-  parameters_by_user();
+  parameters_by_user(true);	// true: block output
   HARMONICAL.reduce_fraction(&pitch);		// ;)
 
   if(name) {
@@ -5077,6 +5077,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   MENU.ln();
   musicBox_short_info();
 
+  MENU.outln("DADA LOADED preset_data.h");
   return false;		// ok, no error
 }
 

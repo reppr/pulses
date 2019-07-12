@@ -165,3 +165,7 @@ bool autoskip_pause=false;	// TODO: MOVE:
 TODO: UI
 
 ESP_NOW VERBOISITY level
+
+ESP_NOW on USB POWER (only) is flaky	:(
+
+MENU.outln_invalid("text");
