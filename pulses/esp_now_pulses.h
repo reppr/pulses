@@ -45,15 +45,14 @@ void esp_now_store_to_send(short ds) {			// (short version)
   esp_now_data_to_send_cnt += sizeof(short);
 }
 
-void esp_now_read_received(int* pi) {			// (int) version
+int esp_now_read_received_int() {			// (int) version
   // SIZE ################
   int* ip = (int*) esp_now_received_data + esp_now_data_received_read;
-  *pi = *ip;
-
   esp_now_data_received_read += sizeof(int);
+  return *ip;
 }
 
-void esp_now_read_received(short* ps) {			// (short version)
+void esp_now_read_received(short *ps) {			// (short version)
   // SIZE ################
   short* sp = (short*)  esp_now_received_data + esp_now_data_received_read;
   MENU.out("DADA sees ");
@@ -129,15 +128,16 @@ static void esp_now_pulses_reaction() {
   MENU.outln("DADA esp_now_pulses_reaction()");
   if(MENU.maybe_display_more(VERBOSITY_LOWEST))
     MENU.out(F("received: "));
-  int meaning;
-  esp_now_read_received(&meaning);	// (int) version
+  icode_t meaning = esp_now_read_received_int();	// (int) version
+  MENU.outln("DADA READ...");
   switch (meaning) {
   case PRES:
     {
       MENU.out(F("PRES "));
-      short preset;
-      esp_now_read_received(&preset);	// (short) version
+      int preset = esp_now_read_received_int();	// (int) version	TEST
+      MENU.outln("DADA READ MORE...");
       MENU.outln(preset);
+      MENU.outln("DADA READ MORE and more...");
       //     short * preset_p = (short *) esp_now_received_data;
       //      short * preset_p = (short *) &esp_now_received_data;
       //      MENU.outln((short) *preset_p);
