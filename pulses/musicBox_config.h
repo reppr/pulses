@@ -4,6 +4,16 @@
 
 #if ! defined MUSICBOX_CONFIG_H
 
+/*
+  I once suspected problems between soft end and motion UI
+  so soft ending used to switch off motion UI
+
+  new macro SOFT_END_STOPPS_MOTION_UI allows testing both possibilities
+  SOFT_END_STOPPS_MOTION_UI is *not* defined by default for testing
+*/
+// #define SOFT_END_STOPPS_MOTION_UI
+
+
 #define RANDOM_PRESET_LOOP
 
 #define LONELY_BUTLER_QUITS	// lonely butler detect SAVETY NET, TODO: will be completely *wrong* in other situations

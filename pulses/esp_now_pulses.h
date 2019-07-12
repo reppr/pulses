@@ -33,6 +33,29 @@ uint8_t esp_now_received_data_cnt=0;	// bytes
 uint8_t esp_now_received_data_read=0;	// bytes
 uint8_t broadcast_mac[] = {0xFF, 0xFF,0xFF,0xFF,0xFF,0xFF};
 
+
+// info and debugging
+void esp_now_show_raw_data(uint8_t * read_p, uint8_t len) {
+  MENU.ln();
+  MENU.out(len);
+  MENU.outln(F(" BYTES raw data\tu8,\tint"));
+  for(int i=0; i<len; i++) {
+    MENU.out('|');
+    MENU.out(*(read_p + i));
+    MENU.out("| ");
+  }
+  MENU.ln();
+
+  if(len >= sizeof(icode_t)) {
+    icode_t * ip = (icode_t*) read_p;
+
+    MENU.outln((int) *ip);
+  }
+  MENU.outln(F("raw data end\n"));
+}
+
+
+// sending:
 void esp_now_data_sent_callback(const uint8_t *mac_addr, esp_now_send_status_t status) {
   if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {	// display MAC?	TODO: factor out ################
     char macStr[18];	// receiver MAC as string
@@ -53,25 +76,6 @@ void esp_now_data_sent_callback(const uint8_t *mac_addr, esp_now_send_status_t s
   }
 }
 
-void esp_now_show_raw_data(uint8_t * read_p, uint8_t len) {
-  MENU.ln();
-  MENU.out(len);
-  MENU.outln(F(" BYTES raw data\tu8,\tint"));
-  for(int i=0; i<len; i++) {
-    MENU.out('|');
-    MENU.out(*(read_p + i));
-    MENU.out("| ");
-  }
-  MENU.ln();
-
-  if(len >= sizeof(icode_t)) {
-    icode_t * ip = (icode_t*) read_p;
-
-    MENU.outln((int) *ip);
-  }
-  MENU.outln(F("raw data end\n"));
-}
-
 void esp_now_send(icode_t meaning) {
   // set meaning:
   icode_t* i_data = (icode_t*) esp_now_send_data;
@@ -85,6 +89,10 @@ void esp_now_send(icode_t meaning) {
       short * short_p = (short *) &esp_now_send_data[esp_now_send_data_cnt];
       memcpy(short_p, &preset, sizeof(short));
       esp_now_send_data_cnt += sizeof(short);
+      if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {
+	MENU.out(F("ESP-NOW send PRES "));
+	MENU.outln(preset);
+      }
     }
     break;
 
@@ -92,11 +100,7 @@ void esp_now_send(icode_t meaning) {
     MENU.out((int) meaning);
     MENU.space(2);
     MENU.error_ln(F("what?"));
-
-#if DEBUG_ESP_NOW != false
     esp_now_show_raw_data(esp_now_send_data, esp_now_send_data_cnt);
-#endif
-
     return;
   } // switch(meaning)
 
@@ -120,6 +124,8 @@ void esp_now_send(icode_t meaning) {
     MENU.error_ln(esp_err_to_name(status));
 }
 
+
+// receiving:
 static void esp_now_pulses_reaction() {
 #if DEBUG_ESP_NOW != false
   MENU.outln("esp_now_pulses_reaction()");
@@ -160,14 +166,9 @@ static void esp_now_pulses_reaction() {
     MENU.out((int) meaning);
     MENU.space(2);
     MENU.error_ln(F("what?"));
-
-#if DEBUG_ESP_NOW != false
     esp_now_show_raw_data(esp_now_received_data, esp_now_received_data_cnt);
-#endif
-
   } // switch meaning
 }
-
 
 static void pulses_data_received_callback(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
   esp_now_received_data_read = 0;
@@ -192,6 +193,8 @@ static void pulses_data_received_callback(const uint8_t *mac_addr, const uint8_t
   esp_now_pulses_reaction();
 }
 
+
+// setup:
 esp_now_peer_info_t peer_info;
 
 esp_err_t esp_now_pulses_setup() {

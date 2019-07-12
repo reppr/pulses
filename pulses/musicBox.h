@@ -172,7 +172,7 @@ int max_subcycle_seconds=MAX_SUBCYCLE_SECONDS;
 
 
 int musicBox_pause_seconds=10;	// SEE: hibernate(), restart(), random_preset()
-void delay_pause() {	// FIXME: (i.e. morse input...)
+void delay_pause() {	// TODO; FIXME: (i.e. morse input...)
   if(musicBox_pause_seconds) {
     if(MENU.verbosity >= VERBOSITY_LOWEST); {
       MENU.out(F("restarting after "));
@@ -801,9 +801,11 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
       when no one is left, then *SWITCH OFF* musicbox
 */
 
-#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro	// TODO: RETHINK: HACK to avoid problems between 6050 and soft end
+#if defined SOFT_END_STOPPS_MOTION_UI	// TODO: integrate
+  #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro	// TODO: RETHINK: HACK to avoid problems between 6050 and soft end
   extern bool accGyro_is_active;
   accGyro_is_active = false;	// CANCEL accGyro_is_active	// TODO: RETHINK: HACK to avoid problems between 6050 and soft end
+  #endif
 #endif
 
   /*	*no* let it always *try* to work...
@@ -886,7 +888,7 @@ void parameters_by_user(bool no_output = false) {
 }
 
 
-void parameters_get_randomised() {
+void parameters_get_randomised() {	// TODO: factor out randomisation
   MENU.outln(F("random mode"));
   scale_user_selected = false;
   sync_user_selected = false;
@@ -2278,10 +2280,10 @@ void start_musicBox() {
   MENU.ln();	// start setup sequence output "block"
   setup_bass_middle_high(bass_pulses, middle_pulses, high_pulses);
 
-  if(!scale_user_selected)	// if *not* set by user interaction
+  if(!scale_user_selected)	// if *not* set by user interaction	// TODO: factor out randomisation
     select_random_scale();	//   random scale
 
-  if(!jiffle_user_selected)	// if *not* set by user interaction
+  if(!jiffle_user_selected)	// if *not* set by user interaction	// TODO: factor out randomisation
     select_random_jiffle();	//   random jiffle
 
 #if defined USE_MPU6050
@@ -2297,11 +2299,11 @@ void start_musicBox() {
   PULSES.add_selected_to_group(g_PRIMARY);
   set_primary_block_bounds();	// remember where the primary block starts and stops
 
-  if(!sync_user_selected)	// if *not* set by user interaction
+  if(!sync_user_selected)	// if *not* set by user interaction	// TODO: factor out randomisation
     sync = random(6);		// random sync	// MAYBE: define  select_random_sync()  ???
 
   // stack_sync
-  if(!stack_sync_user_selected) {	// if *not* set by user interaction
+  if(!stack_sync_user_selected) {	// if *not* set by user interaction	// TODO: factor out randomisation
     if (random(2) == 1)		// stack_sync in 50%
       select_random_stack_sync();
     else
@@ -2316,7 +2318,7 @@ void start_musicBox() {
   multiplier=4096;	// uses 1/4096 jiffles		// TODO: define role of multiplier, divisor
   multiplier *= 8;	// TODO: adjust appropriate...	// TODO: define role of multiplier, divisor
 
-  // random pitch
+  // random pitch	// TODO: factor out randomisation
   if(!pitch_user_selected) {	// if *not* set by user interaction
     if(!some_metric_tunings_only) {	// RANDOM tuning?
       chromatic_pitch = false;
@@ -2325,11 +2327,11 @@ void start_musicBox() {
       random_entropy();	// entropy from hardware
 #endif
 
-      pitch.divisor = random(160, 450);	// *not* tuned for other instruments
+      pitch.divisor = random(160, 450);	// *not* tuned for other instruments	// TODO: factor out randomisation
       if(MENU.maybe_display_more(VERBOSITY_SOME))
 	MENU.out(F("random pitch\t"));
     } else {			// *some RANDOMLY selected METRIC A=440 tunings*
-      random_metric_pitches();	// random *metric* pitches
+      random_metric_pitches();	// random *metric* pitches	// TODO: factor out randomisation
       MENU.tab();
     }
   }
@@ -2343,7 +2345,7 @@ void start_musicBox() {
   tune_selected_2_scale_limited(pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves // TODO: adjust limit appropriate...
 #endif
 
-  if(!pitch_user_selected)		// if *not* set by user interaction
+  if(!pitch_user_selected)		// if *not* set by user interaction	// TODO: factor out randomisation
     random_octave_shift();		// random octave shift
 
 #if defined OLDSTYLE_TUNE_AND_LIMIT
@@ -2433,12 +2435,13 @@ void start_musicBox() {
       } else { // pause is *not* autoskipped
 	MENU.outln(F("no pause autoskip"));
 #if defined USE_MONOCHROME_DISPLAY
-	monochrome_display_message(F(" pause"));
+	monochrome_display_message(F(" pause "));	// TODO: monochrome pause time
+
       }
 #endif
     } else {	// stack_sync_slices==0
 #if defined USE_MONOCHROME_DISPLAY
-      monochrome_display_message(F(" pause"));
+      monochrome_display_message(F(" pause "));		// TODO: monochrome pause time
 #endif
       if(MENU.verbosity >= VERBOSITY_LOWEST) {
 	MENU.out(F("sync pause "));
@@ -3072,6 +3075,14 @@ bool musicBox_reaction(char token) {
     } else
       musicBox_short_info();
     break;
+  case 'X':
+//case 'Y':	// TODO: free 'Y' for motion UI y-coordinate
+  case 'Z':
+  case 'A':
+  case 'G':
+    // TODO:	#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
+    MENU.outln(F("reserved for motion UI"));
+    break;
   case 'a': // magic_autochanges    // 'a'
     MENU.out(F("autochanges"));
     toggle_magic_autochanges();
@@ -3144,8 +3155,8 @@ bool musicBox_reaction(char token) {
       musicBox_when_done = &user;
       musicBox_short_info();
       break;
-    case 'A':
-    case 'a':
+    case 'A':	// 'mA'
+    case 'a':	// 'ma'
       MENU.drop_input_token();
       musicBox_when_done = MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT;
       if(!magic_autochanges)
@@ -3163,7 +3174,7 @@ bool musicBox_reaction(char token) {
     break;
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
-  case 'Y': // 'Y' (symbolising 3 axes)	toggle accGyro_is_active
+  case 'Y': // 'Y' (symbolising 3 axes)	toggle accGyro_is_active  // TODO: free 'Y' for motion UI y-coordinate
     // TODO: monochrome feedback on motion UI switching
     {
       bool switch_activity=false;
@@ -3650,6 +3661,10 @@ bool musicBox_reaction(char token) {
   case 'D':
     if(MusicBoxState != OFF)	// not needed, but less stress to do that first...
       tabula_rasa();
+    // VERBOSITY_LOWEST?
+    MENU.out(F("ESP NOW sends PRES preset "));
+    MENU.outln(preset);
+
     load_preset(preset);
     esp_now_send(PRES);
     start_musicBox();
@@ -3658,7 +3673,7 @@ bool musicBox_reaction(char token) {
 
   default:
     return false;
-  }
+  } // switch(token)
 
   return true;
-}
+} // musicBox_reaction

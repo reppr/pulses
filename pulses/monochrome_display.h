@@ -256,7 +256,7 @@ void monochrome_show_line(uint8_t row, char * s) {
 }
 
 void monochrome_display_message(char* message) {
-  u8x8.setCursor(u8x8.getCols() - strlen(message) -1,  u8x8.getRows() -1);	// last line > right is message spot
+  u8x8.setCursor(u8x8.getCols() - strlen(message),  u8x8.getRows() -1);	// last line > right is message spot
   u8x8.print(message);
 }
 

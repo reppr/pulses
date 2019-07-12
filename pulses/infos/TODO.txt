@@ -173,3 +173,13 @@ MENU.outln_invalid("text");
 do I still need .c_str()
 
 monochrome feedback on motion UI switching
+
+replace delay_pause() morse input...
+
+TODO: monochrome pause time
+
+TODO: free 'Y' for motion UI y-coordinate
+
+switch ESP-NOW UI
+
+factor out randomisation
