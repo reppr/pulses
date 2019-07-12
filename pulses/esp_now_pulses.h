@@ -9,7 +9,6 @@
 #include <esp_now.h>
 #include <WiFi.h>
 
-
 /*
   DEBUG_ESP_NOW
 
@@ -25,62 +24,14 @@
 
 #define ESP_NOW_CHANNEL	3
 
-
 // buffers for data to send or receive
-
 uint8_t esp_now_send_data[ESP_NOW_MAX_DATA_LEN] = {0};
 uint8_t esp_now_send_data_cnt=0;	// bytes
 
 uint8_t esp_now_received_data[ESP_NOW_MAX_DATA_LEN] = {0};
 uint8_t esp_now_received_data_cnt=0;	// bytes
 uint8_t esp_now_received_data_read=0;	// bytes
-
-void esp_now_store_to_send(int di) {			// (int) version
-  if(esp_now_send_data_cnt > ESP_NOW_MAX_DATA_LEN) {
-    MENU.error_ln(F("send buffer full"));
-    return;
-  }
-
-  int* ip = (int*) esp_now_send_data + esp_now_send_data_cnt;
-  *ip = di;
-
-  esp_now_send_data_cnt += sizeof(int);
-}
-
-void esp_now_store_to_send(short ds) {			// (short version)
-  if(esp_now_send_data_cnt > ESP_NOW_MAX_DATA_LEN) {
-    MENU.error_ln(F("send buffer full"));
-  }
-
-  short* sp = (short*) esp_now_send_data + esp_now_send_data_cnt;
-  *sp = ds;
-
-  esp_now_send_data_cnt += sizeof(short);
-}
-
-int esp_now_read_received_int() {			// (int) version
-  // SIZE ################
-  int* ip = (int*) esp_now_received_data + esp_now_received_data_read;
-  esp_now_received_data_read += sizeof(int);
-  return *ip;
-}
-
-void esp_now_read_received(short *ps) {			// (short version)
-  // SIZE ################
-  short* sp = (short*)  esp_now_received_data + esp_now_received_data_read;
-  MENU.out("DADA sees ");
-  MENU.outln(*sp);
-  *ps = *sp;
-
-  esp_now_received_data_read += sizeof(short);
-}
-
 uint8_t broadcast_mac[] = {0xFF, 0xFF,0xFF,0xFF,0xFF,0xFF};
-
-//	typedef struct PRES_t {
-//	  icode_t meaning = PRES;
-//	  int preset;
-//	} PRES_t;
 
 void esp_now_data_sent_callback(const uint8_t *mac_addr, esp_now_send_status_t status) {
   if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {	// display MAC?	TODO: factor out ################
@@ -138,13 +89,8 @@ void esp_now_send(icode_t meaning) {
       */
       short * short_p = (short *) &esp_now_send_data[esp_now_send_data_cnt];
       memcpy(short_p, &preset, sizeof(short));
-      MENU.out("DADA set preset data: "); MENU.outln(*i_data);	// REMOVE: ################
-      short* pres = (short*) &esp_now_send_data[esp_now_send_data_cnt];	// REMOVE: ################
-      MENU.out("DADA read set data:   "); MENU.outln(*pres);	// REMOVE: ################
-
       esp_now_send_data_cnt += sizeof(short);
 
-esp_now_show_raw_data(esp_now_send_data, esp_now_send_data_cnt);	// REMOVE: ################
       /* was:
       PRES_t msg;
       msg.preset = preset;
@@ -198,7 +144,9 @@ esp_now_show_raw_data(esp_now_send_data, esp_now_send_data_cnt);	// REMOVE: ####
 }
 
 static void esp_now_pulses_reaction() {
-  MENU.outln("DADA esp_now_pulses_reaction()");
+#if DEBUG_ESP_NOW != false
+  MENU.outln("esp_now_pulses_reaction()");
+#endif
   if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
     MENU.out(F("received: "));
 
@@ -217,12 +165,9 @@ static void esp_now_pulses_reaction() {
     //    sp = (short*) i_data;
     sp = (short*) &esp_now_received_data[esp_now_received_data_read];
     preset = *sp;
-MENU.out("DADA preset "); MENU.outln(preset);	// REMOVE:
-    //    memcpy(&preset, sp, sizeof(short));	// rcve ............... ################
     esp_now_received_data_read += sizeof(short);
     i_data += sizeof(short);
     // i_data += sizeof(short);	// not needed on last item
-esp_now_show_raw_data(esp_now_received_data, esp_now_received_data_read);	// REMOVE: ################
 
     if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {
       MENU.out(F("PRES "));
@@ -247,16 +192,13 @@ esp_now_show_raw_data(esp_now_received_data, esp_now_received_data_read);	// REM
 
     /* was:
   icode_t meaning = esp_now_read_received_int();	// (int) version
-  MENU.outln("DADA READ...");
   switch (meaning) {
   case PRES:
     {
       MENU.out(F("PRES "));
       // was:
       int preset = esp_now_read_received_int();	// (int) version	TEST
-      MENU.outln("DADA READ MORE...");
       MENU.outln(preset);
-      MENU.outln("DADA READ MORE and more...");
       //     short * preset_p = (short *) esp_now_received_data;
       //      short * preset_p = (short *) &esp_now_received_data;
       //      MENU.outln((short) *preset_p);
@@ -266,8 +208,12 @@ esp_now_show_raw_data(esp_now_received_data, esp_now_received_data_read);	// REM
 
 
 static void pulses_data_received_callback(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
-MENU.out("DADA pulses_data_received_callback()\tbytes "); MENU.outln(data_len);
   esp_now_received_data_read = 0;
+
+#if DEBUG_ESP_NOW != false
+  MENU.out("pulses_data_received_callback()\tbytes ");
+  MENU.outln(data_len);
+#endif
 
   if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {
     char macStr[18];	// senders MAC string representation
@@ -281,8 +227,6 @@ MENU.out("DADA pulses_data_received_callback()\tbytes "); MENU.outln(data_len);
 
   esp_now_received_data_cnt = data_len;
   memcpy(esp_now_received_data, data, data_len);
-MENU.outln("DADA SHOWTIME");	// REMOVE: ################
-esp_now_show_raw_data(esp_now_received_data, esp_now_received_data_cnt);	// REMOVE: ################
   esp_now_pulses_reaction();
 }
 
@@ -311,6 +255,50 @@ esp_err_t esp_now_pulses_setup() {
 }
 
 // DADA
+
+
+//	void esp_now_store_to_send(int di) {			// (int) version
+//	  if(esp_now_send_data_cnt > ESP_NOW_MAX_DATA_LEN) {
+//	    MENU.error_ln(F("send buffer full"));
+//	    return;
+//	  }
+//
+//	  int* ip = (int*) esp_now_send_data + esp_now_send_data_cnt;
+//	  *ip = di;
+//
+//	  esp_now_send_data_cnt += sizeof(int);
+//	}
+//
+//	void esp_now_store_to_send(short ds) {			// (short version)
+//	  if(esp_now_send_data_cnt > ESP_NOW_MAX_DATA_LEN) {
+//	    MENU.error_ln(F("send buffer full"));
+//	  }
+//
+//	  short* sp = (short*) esp_now_send_data + esp_now_send_data_cnt;
+//	  *sp = ds;
+//
+//	  esp_now_send_data_cnt += sizeof(short);
+//	}
+//
+//	int esp_now_read_received_int() {			// (int) version
+//	  // SIZE ################
+//	  int* ip = (int*) esp_now_received_data + esp_now_received_data_read;
+//	  esp_now_received_data_read += sizeof(int);
+//	  return *ip;
+//	}
+//
+//	void esp_now_read_received(short *ps) {			// (short version)
+//	  // SIZE ################
+//	  short* sp = (short*)  esp_now_received_data + esp_now_received_data_read;
+//	  *ps = *sp;
+//
+//	  esp_now_received_data_read += sizeof(short);
+//	}
+
+//	typedef struct PRES_t {
+//	  icode_t meaning = PRES;
+//	  int preset;
+//	} PRES_t;
 
 //	// pulses_esp_now_t	as type of pulses esp_now messages:
 //	// see: https://hackaday.io/project/164132-hello-world-for-esp-now/log/160570-esp-now-introduction
@@ -409,7 +397,4 @@ esp_err_t esp_now_pulses_setup() {
 //
 //	  free(msg_buf);
 //	}
-//
-//
-//
 //

@@ -169,3 +169,7 @@ ESP_NOW VERBOISITY level
 ESP_NOW on USB POWER (only) is flaky	:(
 
 MENU.outln_invalid("text");
+
+do I still need .c_str()
+
+monochrome feedback on motion UI switching

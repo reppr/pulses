@@ -3164,6 +3164,7 @@ bool musicBox_reaction(char token) {
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
   case 'Y': // 'Y' (symbolising 3 axes)	toggle accGyro_is_active
+    // TODO: monochrome feedback on motion UI switching
     {
       bool switch_activity=false;
       bool do_next_letter=true;
@@ -3173,23 +3174,23 @@ bool musicBox_reaction(char token) {
       else {
 	while(do_next_letter) {
 	  switch(MENU.cb_peek()) {	// second letter
-	  case '0':			// Y0 =	restart at zero
+	  case '0':			// Y0 =	restart at zero		-.--  -----
 	  case '=':
 	    MENU.drop_input_token();
 	    accGyro_mode = 0;
 	    accGyro_is_active = false;
 	    break;
-	  case 'X':			// YX acc	toggle axM
+	  case 'X':			// YX acc	toggle axM	-.--  -..-
 	    MENU.drop_input_token();
 	    accGyro_mode ^= axM;
 	    accGyro_is_active = accGyro_mode;
 	    break;
-	  case 'Y':			// YY acc	toggle ayM
+	  case 'Y':			// YY acc	toggle ayM	-.--  -.--
 	    MENU.drop_input_token();
 	    accGyro_mode ^= ayM;
 	    accGyro_is_active = accGyro_mode;
 	    break;
-	  case 'Z':			// YZ GYRO	toggle gzM
+	  case 'Z':			// YZ GYRO	toggle gzM	-.--  --..
 	    MENU.drop_input_token();
 	    accGyro_mode ^= gzM;
 	    accGyro_is_active = accGyro_mode;
