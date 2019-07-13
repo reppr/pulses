@@ -1913,12 +1913,12 @@ void morse_token_decode() {	// decode received token sequence
 
 #if defined USE_MONOCHROME_DISPLAY
 		  if(monochrome_can_be_used())
-		    monochrome_display_message(F(" OLED"));
+		    monochrome_display_message(F(" OLED "));
 		} else {					// got switched off
 		  if(monochrome_can_be_used())
-		    monochrome_display_message(F(" off"));
+		    monochrome_display_message(F(" off "));
 #endif
-		} // switched on/off
+		} // oled switched on/off
 
 	      } else if(morse_PRESENT_COMMAND == "CANCEL") {	// CANCEL
 		morse_out_buffer_cnt = 0;

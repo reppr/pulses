@@ -3097,8 +3097,22 @@ bool Xmotion_UI() {	// "eXtended motion UI" planed eXtensions: other input sourc
 	accGyro_is_active = accGyro_mode;
 	recognised = true;
 	break;
+
    // case 'M':	// maybe for mute?
    //   break;
+
+      case 'P':	// 'UP' UI presets
+	MENU.drop_input_token();
+	if(accGyro_preset == 1)
+	  accGyro_preset = 2;
+	else
+	  accGyro_preset = 1;
+
+	MENU.out(F("accGyro_preset "));
+	MENU.outln(accGyro_preset);
+	recognised = true;
+	break;
+
       default:
 	do_next_letter = false;
       } // known second letters
@@ -3295,7 +3309,13 @@ bool musicBox_reaction(char token) {
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
   case 'U': // Xmotion UI
     if(Xmotion_UI())
-      return true;		// note: EARLY RETURN
+      return true;		// note: EARLY RETURN	// TODO: hmmm?
+
+    // TODO: VERBOSITY etc	// move this to Xmotion_UI()
+    display_accGyro_mode();
+    MENU.tab();
+    MENU.out_ON_off(accGyro_is_active);
+    MENU.ln();
     break;
 #endif
 
@@ -3739,6 +3759,6 @@ bool musicBox_reaction(char token) {
     return false;
   } // switch(token)
 
-  // note: Xmotion_UI() coul have already returned
+  // note: Xmotion_UI() could have already returned
   return true;
 } // musicBox_reaction

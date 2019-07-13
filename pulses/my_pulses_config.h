@@ -9,7 +9,7 @@
 //#define PRENAME	SoundShip1		// individual name	// better use nvs_PRENAME
 /*			0123456789abcdef	// 16 bytes	*/
 
-#define FAMILY_NAME	SoundShip1		// configuration family	// see: pulses_engine_config.h
+#define FAMILY_NAME	SoundShip3D		// configuration family	// see: pulses_engine_config.h
 // /*			0123456789abcdef	// 16 bytes	*/
 
 #define USE_MORSE	// touch morse code is in use :)
@@ -22,10 +22,11 @@
 
 #define ESP32_USB_DAC_ONLY
 
-// do you use an OLED?
-//#define HELTEC_OLED_BOARD	// Heltec OLED BOARD
-#define BATTERY_OLED_BOARD	// LiPo battery OLED BOARD
-/* but, */
+// do you use an OLED?	// TODO: rename to OLED_xxxx_BOARD, or even BOARD_OLED_xxxx
+#define HELTEC_OLED_BOARD	// Heltec OLED BOARD
+//#define BATTERY_OLED_BOARD	// LiPo battery OLED BOARD
+//
+// but,
 #if defined BATTERY_OLED_BOARD && defined HELTEC_OLED_BOARD
   #error HELTEC_OLED_BOARD and BATTERY_OLED_BOARD can *not both* be configured
 #endif
