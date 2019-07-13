@@ -2978,7 +2978,7 @@ void musicBox_display() {
 
   MENU.outln(F("'m'= set mode\t'mm' 'mM'= manual\t'ma' 'mA'= automagic"));
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
-  MENU.out(F("'Y'= toggle AccelGyro "));
+  MENU.out(F("'Y'= toggle AccelGyro "));	// TODO: UPDATE:
   MENU.out_ON_off(accGyro_is_active);
   MENU.ln();
 #endif
@@ -3057,6 +3057,125 @@ void input_preset_and_start() {	// factored out UI component	// TODO: sets prese
   if(load)
     load_preset_and_start(preset);
 }
+
+
+bool Xmotion_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: ADC, 'analog'Touch, distance sensors, etc
+#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
+  // TODO: REPLACE BY NEW ENGINE ################################################################
+  // TODO: monochrome feedback on motion UI switching
+  bool switch_activity=false;
+  bool do_next_letter=true;
+  bool recognised = false;
+  if(MENU.cb_peek() == EOF) {	// bare 'U'
+    switch_activity = true;
+    recognised = true;
+  } else {
+    while(do_next_letter) {
+      switch(MENU.cb_peek()) {	// second letter
+      case '0':			// Y0 =	restart at zero		-.--  -----
+      case '=':
+	MENU.drop_input_token();
+	accGyro_mode = 0;
+	accGyro_is_active = false;
+	recognised = true;
+	break;
+      case 'X':			// YX acc	toggle axM	-.--  -..-
+	MENU.drop_input_token();
+	accGyro_mode ^= axM;
+	accGyro_is_active = accGyro_mode;
+	recognised = true;
+	break;
+      case 'Y':			// YY acc	toggle ayM	-.--  -.--
+	MENU.drop_input_token();
+	accGyro_mode ^= ayM;
+	accGyro_is_active = accGyro_mode;
+	recognised = true;
+	break;
+      case 'Z':			// YZ GYRO	toggle gzM	-.--  --..
+	MENU.drop_input_token();
+	accGyro_mode ^= gzM;
+	accGyro_is_active = accGyro_mode;
+	recognised = true;
+	break;
+   // case 'M':	// maybe for mute?
+   //   break;
+      default:
+	do_next_letter = false;
+      } // known second letters
+    } // do_next_letter
+  }
+
+  if(switch_activity)
+    accGyro_is_active ^= 1;
+  if(accGyro_mode==0)		// deconfigured, so deactivate
+    accGyro_is_active = false;
+
+  display_accGyro_mode();
+  MENU.tab();
+  MENU.out_ON_off(accGyro_is_active);
+  MENU.ln();
+
+  return recognised;
+  // TODO: REPLACE BY NEW ENGINE until here
+
+  //	// TEMPLATE:
+/*
+  'U'	master switch on/off motionUI	// (sampling might continue)
+  '[U]X'	toggle X-axis configured actions, both ACCELERO & GYRO
+  '[U]Y'	toggle Y-axis configured actions, both ACCELERO & GYRO
+  '[U]Z'	toggle Z-axis configured actions, both ACCELERO & GYRO
+  '[U]A'	toggle ACCELERO configured actions, all axes
+  '[U]G'	toggle GYRO configured actions, all axes
+*/
+//	  case 'U': // 'U' UI configuration	motion UI
+//	    {
+//	      bool check_next=true;
+//	      while(check_next) {
+//		switch(MENU.cb_peek()) {
+//		case 'X': // 'UX'
+//		  MENU.drop_input_token();
+//		  MENU.error_ln(F("TODO: implement"));
+//		  break;
+//
+//		case 'Y': // 'UY'
+//		  MENU.drop_input_token();
+//		  MENU.error_ln(F("TODO: implement"));
+//		  break;
+//
+//		case 'Z': // 'UZ'
+//		  MENU.drop_input_token();
+//		  MENU.error_ln(F("TODO: implement"));
+//		  break;
+//
+//		case 'A': // 'UA'
+//		  MENU.drop_input_token();
+//		  MENU.error_ln(F("TODO: implement"));
+//		  break;
+//
+//		case 'G': // 'UG'
+//		  MENU.drop_input_token();
+//		  MENU.error_ln(F("TODO: implement"));
+//		  break;
+//
+//		default: // EOF or unknown
+//		  check_next = false;
+//		} // peek second letter
+//	      }
+//	    }
+//	//    {	// 'UP' (provisoric)
+//	//    if(accGyro_preset == 1)
+//	//      accGyro_preset = 2;
+//	//    else
+//	//      accGyro_preset = 1;
+//	//
+//	//    MENU.out(F("accGyro_preset "));
+//	//    MENU.outln(accGyro_preset);
+//	//    }
+#else	// no MPU6050
+  return false;
+#endif
+}
+
 
 bool musicBox_reaction(char token) {
   int input_value, cnt;
@@ -3174,54 +3293,9 @@ bool musicBox_reaction(char token) {
     break;
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
-  case 'Y': // 'Y' (symbolising 3 axes)	toggle accGyro_is_active  // TODO: free 'Y' for motion UI y-coordinate
-    // TODO: monochrome feedback on motion UI switching
-    {
-      bool switch_activity=false;
-      bool do_next_letter=true;
-
-      if(MENU.cb_peek() == EOF)	// bare 'Y'
-	switch_activity = true;
-      else {
-	while(do_next_letter) {
-	  switch(MENU.cb_peek()) {	// second letter
-	  case '0':			// Y0 =	restart at zero		-.--  -----
-	  case '=':
-	    MENU.drop_input_token();
-	    accGyro_mode = 0;
-	    accGyro_is_active = false;
-	    break;
-	  case 'X':			// YX acc	toggle axM	-.--  -..-
-	    MENU.drop_input_token();
-	    accGyro_mode ^= axM;
-	    accGyro_is_active = accGyro_mode;
-	    break;
-	  case 'Y':			// YY acc	toggle ayM	-.--  -.--
-	    MENU.drop_input_token();
-	    accGyro_mode ^= ayM;
-	    accGyro_is_active = accGyro_mode;
-	    break;
-	  case 'Z':			// YZ GYRO	toggle gzM	-.--  --..
-	    MENU.drop_input_token();
-	    accGyro_mode ^= gzM;
-	    accGyro_is_active = accGyro_mode;
-	    break;
-	  default:
-	    do_next_letter = false;
-	  } // known second letters
-	} // do_next_letter
-      }
-
-      if(switch_activity)
-	accGyro_is_active ^= 1;
-      if(accGyro_mode==0)		// deconfigured, so deactivate
-	accGyro_is_active = false;
-
-      display_accGyro_mode();
-      MENU.tab();
-      MENU.out_ON_off(accGyro_is_active);
-      MENU.ln();
-    }
+  case 'U': // Xmotion UI
+    if(Xmotion_UI())
+      return true;		// note: EARLY RETURN
     break;
 #endif
 
@@ -3647,16 +3721,6 @@ bool musicBox_reaction(char token) {
     input_preset_and_start();
     break;
 
-  case 'U': // 'U' UI configuration	motion UI
-    if(accGyro_preset == 1)
-      accGyro_preset = 2;
-    else
-      accGyro_preset = 1;
-
-    MENU.out(F("accGyro_preset "));
-    MENU.outln(accGyro_preset);
-    break;
-
 #if defined USE_ESP_NOW		// /else pulses 'D')
   case 'D':
     if(MusicBoxState != OFF)	// not needed, but less stress to do that first...
@@ -3675,5 +3739,6 @@ bool musicBox_reaction(char token) {
     return false;
   } // switch(token)
 
+  // note: Xmotion_UI() coul have already returned
   return true;
 } // musicBox_reaction

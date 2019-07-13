@@ -178,8 +178,6 @@ replace delay_pause() morse input...
 
 TODO: monochrome pause time
 
-TODO: free 'Y' for motion UI y-coordinate
-
 switch ESP-NOW UI
 
 factor out randomisation
