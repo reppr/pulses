@@ -22,8 +22,13 @@
 
 #define ESP32_USB_DAC_ONLY
 
-//#define BATTERY_OLED_BOARD	// LiPo battery OLED BOARD
-#define HELTEC_OLED_BOARD	// Heltec OLED BOARD
+// do you use an OLED?
+//#define HELTEC_OLED_BOARD	// Heltec OLED BOARD
+#define BATTERY_OLED_BOARD	// LiPo battery OLED BOARD
+/* but, */
+#if defined BATTERY_OLED_BOARD && defined HELTEC_OLED_BOARD
+  #error HELTEC_OLED_BOARD and BATTERY_OLED_BOARD can *not both* be configured
+#endif
 
 
 #if defined ESP32

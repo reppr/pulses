@@ -6,6 +6,7 @@
 
 #include "pulses_boards.h"
 
+// DACs
 #if defined USE_DACs
   #if (USE_DACs == 0)	// deactivate
     #undef USE_DACs
@@ -23,6 +24,7 @@
   #endif
 #endif // USE_DACs
 
+
 // USE_MORSE
 #if (defined(MORSE_GPIO_INPUT_PIN) || defined(MORSE_OUTPUT_PIN) || defined(MORSE_TOUCH_INPUT_PIN))
   #define USE_MORSE
@@ -32,11 +34,18 @@
   #error MORSE_TOUCH_INPUT_PIN:  undefined BOARD_has_TOUCH
 #endif
 
+
 // i2c
 #if ! defined USE_i2c
-#if defined(USE_MCP23017) || defined(USE_RTC_MODULE) || defined(USE_i2c_SCANNER)
+  #if defined(USE_MCP23017) || defined(USE_RTC_MODULE) || defined(USE_i2c_SCANNER) || defined(USE_MPU6050)
     #define USE_i2c
   #endif
+#endif
+
+
+// OLED boards
+#if defined BATTERY_OLED_BOARD && defined HELTEC_OLED_BOARD
+  #error HELTEC_OLED_BOARD and BATTERY_OLED_BOARD can *not both* be configured
 #endif
 
 #if defined USE_BLUETOOTH_SERIAL_MENU && defined USE_WIFI_telnet_menu
@@ -44,6 +53,8 @@
   #warning USE_BLUETOOTH_SERIAL_MENU so #undef USE_WIFI_telnet_menu
 #endif
 
+
+// ESP-NOW
 #if defined USE_ESP_NOW
 /*
   Sketch uses 1447262 bytes (110%) of program storage space. Maximum is 1310720 bytes.
