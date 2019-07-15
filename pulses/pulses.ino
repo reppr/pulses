@@ -981,20 +981,6 @@ void setup() {
   */
   //  maybe_restore_from_RTCmem();		// only after deep sleep, else noop
 
-#if defined USE_ESP_NOW
-  {
-    esp_err_t error;
-    MENU.out(F("esp_now_pulses_setup()\t"));
-    if(error = esp_now_pulses_setup()) {
-      MENU.out(F("failed "));
-      // MENU.out_hex(error);
-      // MENU.ln();
-      MENU.outln(esp_err_to_name(error));
-    } else
-      MENU.outln(F("ok"));
-  }
-#endif
-
 #if defined USE_MPU6050
   mpu6050_setup();
 #endif
@@ -1102,6 +1088,20 @@ MENU.ln();
 
 #ifdef USE_LEDC_AUDIO
   ledc_audio_setup();
+#endif
+
+#if defined USE_ESP_NOW
+  {
+    esp_err_t error;
+    MENU.out(F("esp_now_pulses_setup()\t"));
+    if(error = esp_now_pulses_setup()) {
+      MENU.out(F("failed "));
+      // MENU.out_hex(error);
+      // MENU.ln();
+      MENU.outln(esp_err_to_name(error));
+    } else
+      MENU.outln(F("ok"));
+  }
 #endif
 
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
