@@ -10,7 +10,7 @@
 #ifdef ARDUINO
   #if defined(ESP32)				// ESP32 :)
     /* OLED boards	*/
-    #if defined BATTERY_OLED_BOARD || defined HELTEC_OLED_BOARD
+    #if defined BOARD_OLED_LIPO || defined BOARD_HELTEC_OLED
       #if ! defined USE_MONOCHROME_DISPLAY
         #define USE_MONOCHROME_DISPLAY
       #endif

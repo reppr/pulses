@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION		portable v0.027+
+#define PROGRAM_VERSION		portable v0.028
 /*				0123456789abcdef   */
 
 #define USE_ESP_NOW	// starts working :)
@@ -148,10 +148,10 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 
 #if defined USE_MONOCHROME_DISPLAY
   #include <U8x8lib.h>
-  #if defined BATTERY_OLED_BOARD
-    U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 4, /* data=*/ 5, /* reset=*/ 16);  // BATTERY_OLED_BOARD	TODO: move to setup()
-  #elif defined HELTEC_OLED_BOARD		// heltec
-    U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16); // HELTEC_OLED_BOARD	TODO: move to setup()
+  #if defined BOARD_OLED_LIPO
+    U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 4, /* data=*/ 5, /* reset=*/ 16);  // BOARD_OLED_LIPO	TODO: move to setup()
+  #elif defined BOARD_HELTEC_OLED		// heltec
+    U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16); // BOARD_HELTEC_OLED	TODO: move to setup()
   #endif
 #endif
 

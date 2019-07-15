@@ -44,8 +44,8 @@
 
 
 // OLED boards
-#if defined BATTERY_OLED_BOARD && defined HELTEC_OLED_BOARD
-  #error HELTEC_OLED_BOARD and BATTERY_OLED_BOARD can *not both* be configured
+#if defined BOARD_OLED_LIPO && defined BOARD_HELTEC_OLED
+  #error BOARD_HELTEC_OLED and BOARD_OLED_LIPO can *not both* be configured
 #endif
 
 #if defined USE_BLUETOOTH_SERIAL_MENU && defined USE_WIFI_telnet_menu
