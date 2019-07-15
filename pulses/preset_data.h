@@ -1156,7 +1156,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 48:
-    name = F("eifach und schön");	// harmonical cycle    55' 27"
+    name = F("eifach und schön, blue");	// harmonical cycle    55' 27"
+    // simile 'Blue Night Cadence'
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk		probably very nice!
@@ -1790,7 +1791,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# motives
     //# melodies
     //# harmonies
-    //# heavyStart
+    //# heavyStart	// Störfall?
     //# aesthetic
     //# strange
     //# mystic
@@ -2728,13 +2729,13 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 101:
-    name = F("Good Night Choir");
+    name = F("Good Night Choir (mit Knatterrhytme)");
     //# favorite+
     //# shortIsOk
     //# motives
     //# melodies
     //# harmonies
-    //# rhytm&pulse
+    //# rhytm&pulse    // mit KNATTERRHYTHME
     //# bourdon
     //# structure	chord progression
     //# aesthetic
@@ -4102,7 +4103,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 142:
-    name = F("2019-02-04_bordun");	// with rhythm
+    name = F("2019-02-04_bordun, rhythm");	// with rhythm
     //comment: ardour5
     //# RECORDED    //comment: ardour5
     //# FAVORITE
@@ -4225,6 +4226,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     name = F("2019-02-06_RG3_S0_d64_melody-rhythm");    // pitch variation of    "noname_a"
     //# FAVORITE
     //# SPECIALITY	rhythm and short jiffs	see: "noname_a"
+    //# rhytm&pulse
     //# shortIsOk
     //# bigBang
     //# loose
