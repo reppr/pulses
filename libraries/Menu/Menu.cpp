@@ -126,7 +126,7 @@ char Menu::cb_read() {
     out(F("\n  start:\t"));
     outln(cb_start);
 
-    int value = cb_peek();
+    int value = peek();
     out(F("\n  char:\t\t"));
     if (value != -1) {
       out(value);
@@ -147,8 +147,8 @@ char Menu::cb_read() {
     ln();
 
     for (int i=0; i<=cb_count; i++) {
-      value = cb_peek(i);
-      out(F("  cb_peek("));
+      value = peek(i);
+      out(F("  peek("));
       out(i);
       out(F(")\t\t: "));
       out(value);
@@ -329,7 +329,7 @@ bool Menu::maybe_display_more(unsigned char verbosity_level) {	// avoid too much
      return true;
 
    // if verbosity is == verbosity_level: display only if no other input is waiting
-   if(cb_peek()==EOF)
+   if(peek()==EOF)
      return true;
    return false;		// there is more input, do not display info yet
 }
@@ -363,14 +363,14 @@ bool Menu::maybe_display_more(unsigned char verbosity_level) {	// avoid too much
 
 
   bool Menu::get_numeric_input(unsigned long *result) {	// if there's a number, read it
-    char token = cb_peek();
+    char token = peek();
     if (!is_chiffre(token))	// no numeric input, return false
       return false;
 
     drop_input_token();
     *result = token - '0';	// start with first chiffre
 
-    while (token=cb_peek(), is_chiffre(token)) {
+    while (token=peek(), is_chiffre(token)) {
       drop_input_token();
       *result *= 10;
       *result += token -'0';
@@ -383,13 +383,13 @@ bool Menu::maybe_display_more(unsigned char verbosity_level) {	// avoid too much
     /* check for & calculate integer input
        calculates simply left to right  */
     unsigned long scratch;	// see recursion
-    char token = cb_peek();
+    char token = peek();
     bool is_result = false;
 
     if (get_numeric_input(result)) {
       is_result = true;
 
-      token = cb_peek();
+      token = peek();
       if (token == -1)
 	return true;
     }
@@ -404,7 +404,7 @@ bool Menu::maybe_display_more(unsigned char verbosity_level) {	// avoid too much
 	  scratch *= *result;
 	  *result = scratch;
 	}
-	if (cb_peek()==-1)
+	if (peek()==-1)
 	  return true;
 	else
 	  return maybe_calculate_input(result);	// recurse and return
@@ -414,7 +414,7 @@ bool Menu::maybe_display_more(unsigned char verbosity_level) {	// avoid too much
 	  scratch /= *result;
 	  *result = scratch;
 	}
-	if (cb_peek()==-1)
+	if (peek()==-1)
 	  return true;
 	else
 	  return maybe_calculate_input(result);	// recurse and return
@@ -424,7 +424,7 @@ bool Menu::maybe_display_more(unsigned char verbosity_level) {	// avoid too much
 	  scratch += *result;
 	  *result = scratch;
 	}
-	if (cb_peek()==-1)
+	if (peek()==-1)
 	  return true;
 	else
 	  return maybe_calculate_input(result);	// recurse and return
@@ -434,7 +434,7 @@ bool Menu::maybe_display_more(unsigned char verbosity_level) {	// avoid too much
 	  scratch -= *result;
 	  *result = scratch;
 	}
-	if (cb_peek()==-1)
+	if (peek()==-1)
 	  return true;
 	else
 	  return maybe_calculate_input(result);	// recurse and return
@@ -502,7 +502,7 @@ bool Menu::string_match(const char * teststring) {
   if(len = strlen(teststring)) { // *if* there is a string
     if(cb_count >= len) {		// compare strings
       for(int i=0; i<len; i++)
-	if(cb_peek(i) != *(teststring +i)) {
+	if(peek(i) != *(teststring +i)) {
 	  // restore leading spaces, as they could be *essential* for the menu parser
 	  while (leading_spaces--)  restore_input_token();	// restore leading spaces
 	  return false;			// strings are different
@@ -815,10 +815,10 @@ void Menu::out_flags_()	const { out(F("\tflags ")); }
 // Buffer interface functions for parsing:
 
 /*
-  int cb_peek()
+  int peek()
   return EOF if buffer is empty, else
   return next char without removing it from buffer		*/
-int Menu::cb_peek() const {
+int Menu::peek() const {
   if (cb_count == 0)
     return EOF;
 
@@ -827,11 +827,11 @@ int Menu::cb_peek() const {
 
 
 /*
-  int cb_peek(int offset)
-  like cb_peek() with offset>0
+  int peek(int offset)
+  like peek() with offset>0
   return EOF if token does not exist
   return next char without removing it from buffer		*/
-int Menu::cb_peek(int offset) const {
+int Menu::peek(int offset) const {
   if (cb_count <= offset)
     return EOF;
 
@@ -842,7 +842,7 @@ int Menu::cb_peek(int offset) const {
 /* void skip_spaces(): remove leading spaces from input buffer:	*/
 unsigned int Menu::skip_spaces() {
   unsigned int space_count=0;
-  while (cb_peek() == ' ') {  //  EOF != ' ' end of buffer case ok
+  while (peek() == ' ') {  //  EOF != ' ' end of buffer case ok
     space_count++;
     cb_read();
   }
@@ -856,7 +856,7 @@ int Menu::next_input_token() const {
   int token;
 
   for (int offset=0; offset<cb_count; offset++) {
-    switch ( token = cb_peek(offset) ) {
+    switch ( token = peek(offset) ) {
     case ' ':		// skip spaces
       break;
 //  case '\0':		// currently not possible
@@ -1040,7 +1040,7 @@ bool Menu::lurk_then_do() {
    true if there is a next numeric chiffre
    false on missing data or not numeric data			*/
 bool Menu::is_numeric() const {
-  int c = cb_peek();
+  int c = peek();
 
   if (c > '9' || c < '0')
     return false;
@@ -1057,7 +1057,7 @@ long Menu::numeric_input(long default_value) {
     goto number_missing;	// no non-space input: return
 
   // check for sign:
-  switch ( cb_peek() ) {
+  switch ( peek() ) {
   case '-':			// switch sign
     sign = -1;			// then continue like '+'
   case '+':
@@ -1316,7 +1316,7 @@ void Menu::interpret_men_input() {
 #ifdef DEBUGGING_MENU
       outln(F("* MENU PAGES KEY"));
 #endif
-      switch(token = cb_peek()) {	// read next token
+      switch(token = peek()) {	// read next token
       case 255:		// 255 is EOF as char	':' only	display menu pages
 	menu_pages_info();
 	return;
@@ -1451,7 +1451,7 @@ void Menu::interpret_men_input() {
 
     case '#': // one line comment
       out('#');
-      while (cb_peek() != EOF) {
+      while (peek() != EOF) {
 	out((char) drop_input_token());	// echo # comment line
       }
       ln();
@@ -1501,10 +1501,10 @@ void Menu::interpret_men_input() {
 	out((int) (token & 0xFF));
 	ln();
       }
-      if (cb_peek() != EOF) {
+      if (peek() != EOF) {
 	out(F("skipping "));
 	out(token);
-	while (cb_peek() != EOF) {
+	while (peek() != EOF) {
 	  out((char) drop_input_token());
 	}
 	ln();

@@ -20,7 +20,7 @@ get_numeric_input	KEYWORD2
 maybe_calculate_input	KEYWORD2
 string_match	KEYWORD2
 ticked	KEYWORD2
-cb_peek	KEYWORD2
+peek	KEYWORD2
 skip_spaces	KEYWORD2
 next_input_token	KEYWORD2
 is_numeric	KEYWORD2

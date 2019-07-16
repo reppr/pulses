@@ -3028,7 +3028,7 @@ void input_preset_and_start() {	// factored out UI component	// TODO: sets prese
 
   MENU.ln();
   MENU.out(F("PRESET "));
-  switch(MENU.cb_peek()) {
+  switch(MENU.peek()) {
   case '+':
     MENU.drop_input_token();
     if(preset<MUSICBOX_PRESETs) {
@@ -3066,12 +3066,12 @@ bool Xmotion_UI() {	// "eXtended motion UI" planed eXtensions: other input sourc
   bool switch_activity=false;
   bool do_next_letter=true;
   bool recognised = false;
-  if(MENU.cb_peek() == EOF) {	// bare 'U'
+  if(MENU.peek() == EOF) {	// bare 'U'
     switch_activity = true;
     recognised = true;
   } else {
     while(do_next_letter) {
-      switch(MENU.cb_peek()) {	// second letter
+      switch(MENU.peek()) {	// second letter
       case '0':			// Y0 =	restart at zero		-.--  -----
       case '=':
 	MENU.drop_input_token();
@@ -3145,7 +3145,7 @@ bool Xmotion_UI() {	// "eXtended motion UI" planed eXtensions: other input sourc
 //	    {
 //	      bool check_next=true;
 //	      while(check_next) {
-//		switch(MENU.cb_peek()) {
+//		switch(MENU.peek()) {
 //		case 'X': // 'UX'
 //		  MENU.drop_input_token();
 //		  MENU.error_ln(F("TODO: implement"));
@@ -3226,10 +3226,10 @@ bool musicBox_reaction(char token) {
     show_cycle(harmonical_CYCLE);
     break;
   case 'E': // 'E' (bare):  start_soft_ending(soft_end_days_to_live, soft_end_survive_level);
-    if(MENU.cb_peek() == 'F') {			// case "EFx" configure function musicBox_when_done();
+    if(MENU.peek() == 'F') {			// case "EFx" configure function musicBox_when_done();
       MENU.drop_input_token();
-      if(MENU.cb_peek() != EOF) {
-	switch(MENU.cb_peek()) {
+      if(MENU.peek() != EOF) {
+	switch(MENU.peek()) {
 	case 'D':
 	  musicBox_when_done=&deep_sleep;		// "EFD" deep_sleep()
 	  break;
@@ -3278,7 +3278,7 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'm': // mode
-    switch(MENU.cb_peek()) {	// second letter
+    switch(MENU.peek()) {	// second letter
     case 'M':	// 'mM' fully manual, like manual, but even more so ;)
       MENU.out(F("fully "));
       magic_autochanges = false;
@@ -3361,7 +3361,7 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'L': // 'L' == stop_on_LOW_H1()  ||  "LL" == stop_on_LOW()/*only*/)
-    if(MENU.cb_peek() != 'L') {	// 'L' case	stop_on_LOW_H1()
+    if(MENU.peek() != 'L') {	// 'L' case	stop_on_LOW_H1()
       MENU.out(stop_on_LOW_H1());
       MENU.outln(F(" were high "));
     } else {			// "LL" case	stop_on_LOW()/*only*/
@@ -3372,7 +3372,7 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'P': // 'P' Play start/stop
-    switch(MENU.cb_peek()) {
+    switch(MENU.peek()) {
     case '1':	// 'P1' kill primary pulses
       MENU.drop_input_token();
       cnt = kill_primary();
@@ -3407,11 +3407,11 @@ bool musicBox_reaction(char token) {
 	if(start)
 	  start_musicBox();
       }
-    } // switch(MENU.cb_peek())
+    } // switch(MENU.peek())
     break;
 
   case 'Q':	// noACTION managing
-    switch(MENU.cb_peek()) {
+    switch(MENU.peek()) {
     case '1':	// 'Q1' toggle bottom quarter
       MENU.drop_input_token();
       PULSES.select_from_to(lowest_primary, lowest_primary + (primary_count/4));
@@ -3484,7 +3484,7 @@ bool musicBox_reaction(char token) {
     } // not numeric, ignore
     break;
   case 'p': // 'p' switch cycle pattern display
-    if(MENU.cb_peek()=='*') {	// 'p*' toggle interval symbols in cycle pattern
+    if(MENU.peek()=='*') {	// 'p*' toggle interval symbols in cycle pattern
       MENU.drop_input_token();
       show_cycle_pattern_intervals ^= 1;
       show_cycle_pattern = true;
@@ -3507,14 +3507,14 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'T':	// Tuning pitch and scale	// TODO: move to pulses.ino
-    if(MENU.cb_peek()==EOF) {		// bare 'T'?
+    if(MENU.peek()==EOF) {		// bare 'T'?
       display_names(SCALES);	//   display SCALES list
       MENU.ln();
       musicBox_short_info();
     } else {				// more input?
       done=false;
       while(!done) {
-	switch(MENU.cb_peek()) {
+	switch(MENU.peek()) {
 	case '!':	// 'Txyz!'	trailing '!': *do* tune and quit
 	  tune_selected_2_scale_limited(pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves // TODO: adjust appropriate...
 	case ' ':	// a space ends a 'T... ' input sequence, quit
@@ -3528,7 +3528,7 @@ bool musicBox_reaction(char token) {
 	    if(UI_select_from_DB(SCALES))	// select scale
 	      scale_user_selected = true;
 	  } else {			// not numeric
-	    switch(MENU.cb_peek()) {	// test for known letters
+	    switch(MENU.peek()) {	// test for known letters
 	    case 'u':	// harmonical time unit
 	      chromatic_pitch = 13;
 	      MENU.drop_input_token();
@@ -3617,7 +3617,7 @@ bool musicBox_reaction(char token) {
     {
       int start=0;
       int end =0;
-      switch(MENU.cb_peek()) {
+      switch(MENU.peek()) {
       case 'b':	// 'sb' toggle bottom voices
 	start = lowest_primary;
 	end = start + 7;	// TODO: FIXME: 7 just a test
@@ -3671,14 +3671,14 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'O':	// subcycle_octave TODO: what to do while playing???
-    if(MENU.cb_peek() == '+') {		// higher octave is shorter
+    if(MENU.peek() == '+') {		// higher octave is shorter
       MENU.drop_input_token();
       PULSES.div_time(&used_subcycle,2);
       subcycle_octave++;
     } else {				// default and '-' is longer
       PULSES.mul_time(&used_subcycle,2);
       subcycle_octave--;
-      if(MENU.cb_peek() == '-')		// '-' is default
+      if(MENU.peek() == '-')		// '-' is default
 	MENU.drop_input_token();
     }
     show_cycles_1line();
@@ -3698,7 +3698,7 @@ bool musicBox_reaction(char token) {
 */
 
   case '|':	// '|' stack_sync_slices	(and '|b' base_pulse)
-    if(MENU.cb_peek() == 'b') {		// '|b' base_pulse
+    if(MENU.peek() == 'b') {		// '|b' base_pulse
       MENU.drop_input_token();
       input_value = MENU.numeric_input(base_pulse);
       if(input_value >= 0 && input_value < PL_MAX) {

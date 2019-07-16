@@ -59,7 +59,7 @@ bool bluetooth_menu_reaction(char token) {
     break;
 
   case 'C':
-    switch (MENU.cb_peek()) {
+    switch (MENU.peek()) {
     case 'I':
       MENU.drop_input_token();
       MENU.ok_or_error_ln(F("esp_bt_controller_enable(ESP_BT_MODE_IDLE)"), \

@@ -141,8 +141,8 @@ class Menu {
 
   void flush() const { port_.flush(); }	// flush menu output, inlined.
 
-  int cb_peek() const;			// peek at next if any, else return EOL
-  int cb_peek(int offset) const;	// peek at next, overnext... if any, else EOL
+  int peek() const;			// peek at next if any, else return EOL
+  int peek(int offset) const;	// peek at next, overnext... if any, else EOL
   unsigned int skip_spaces();			// skip leading spaces from the buffer
   int next_input_token() const;		// next non space input token if any, else EOL
   bool is_numeric() const;		// test if next token will be a numeric chiffre

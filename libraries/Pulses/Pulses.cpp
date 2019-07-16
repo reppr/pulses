@@ -1510,7 +1510,7 @@ void Pulses::show_selected_mask() {
   if (hex_pulses > 16)
     hex_pulses=16;
 
-  if((*MENU).is_chiffre((*MENU).cb_peek()))	// more numeric input, so no display yet...	FIXME: not here
+  if((*MENU).is_chiffre((*MENU).peek()))	// more numeric input, so no display yet...	FIXME: not here
     return;
 
   (*MENU).out_selected_();

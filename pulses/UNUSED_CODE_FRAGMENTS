@@ -336,7 +336,7 @@ void click_connection_test(int wait) {	// wait==0 steps through the first round,
 /*
 char wait_for_input() {
   MENU.outln(F("waits for input"));
-    //  char next_token=(char) MENU.cb_peek();
+    //  char next_token=(char) MENU.peek();
   int next_token=MENU.next_input_token();
   while (next_token == EOF) {
     next_token=MENU.next_input_token();
@@ -354,10 +354,10 @@ char wait_for_input() {
 //	      if ((PULSES.pulse_is_selected(pulse))) && PULSES.pulses[pulse].period.time) {
 //		MENU.outln(pulse);
 //
-//		while (MENU.cb_peek()==EOF)
+//		while (MENU.peek()==EOF)
 //		  delay(0.1);
 //
-//		INP=MENU.cb_peek();
+//		INP=MENU.peek();
 //		MENU.out("DADA	");
 //		MENU.outln(INP);
 //		MENU.drop_input_token();

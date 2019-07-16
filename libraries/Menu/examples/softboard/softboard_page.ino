@@ -1048,7 +1048,7 @@ bool softboard_reaction(char token) {
   case 't':
     show_DS1307_time_stamp();
     MENU.ln();
-    if(MENU.cb_peek() == '!') {
+    if(MENU.peek() == '!') {
       MENU.drop_input_token();
       uint8_t year=2018;
       uint8_t month=11;

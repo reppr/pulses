@@ -280,7 +280,7 @@ bool inputs_reaction(char token) {
       'W<number>' set pwm pin and SET_PWM
      */
     if(anything_selected()) {	// if not, tell the user how to select
-      if(MENU.cb_peek()==EOF) {
+      if(MENU.peek()==EOF) {
 	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
 	  if (INPUTS.selected_inputs & ( 1 << inp)) {
 	    INPUTS.set_flags(inp, (INPUTS.get_flags(inp) ^ SET_PWM ));

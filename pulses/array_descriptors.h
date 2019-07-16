@@ -200,7 +200,7 @@ bool UI_select_from_DB(arr_descriptor* DB) {
   unsigned int* p = NULL;
   int input_value;
 
-  if(MENU.cb_peek() == EOF ) {	// no further input:
+  if(MENU.peek() == EOF ) {	// no further input:
     display_names(DB);	//    display list
     return false;		//    RETURN
   }
@@ -221,7 +221,7 @@ bool UI_select_from_DB(arr_descriptor* DB) {
       return false;
     }
   } else {			// *not* numeric input
-    switch(MENU.cb_peek()) {	// '+' | '-'
+    switch(MENU.peek()) {	// '+' | '-'
     case '+':
       MENU.drop_input_token();
       {
