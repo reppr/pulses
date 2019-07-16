@@ -438,11 +438,27 @@ void Pulses::set_i2c_addr_pin(int pulse, uint8_t i2c_addr, uint8_t i2c_pin) {
 #endif
 
 
-void Pulses::selected_toggle_no_actions() {	// selected toggle action flag noACTION
+void Pulses::selected_toggle_no_actions() {	// selected toggle action flag noACTION  // TODO: do I want this?
   for (int pulse=0; pulse<pl_max; pulse++)
     if (pulse_is_selected(pulse))
       if(pulses[pulse].action_flags)
 	pulses[pulse].action_flags ^= noACTION;
+}
+
+
+void Pulses::selected_set_no_actions() {	// selected set action flag noACTION  // TODO: do I want this?
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if (pulse_is_selected(pulse))
+      if(pulses[pulse].action_flags)
+	pulses[pulse].action_flags |= noACTION;
+}
+
+
+void Pulses::selected_clear_no_actions() {	// selected clear action flag noACTION  // TODO: do I want this?
+  for (int pulse=0; pulse<pl_max; pulse++)
+    if (pulse_is_selected(pulse))
+      if(pulses[pulse].action_flags)
+	pulses[pulse].action_flags &= ~noACTION;
 }
 
 

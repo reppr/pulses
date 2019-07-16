@@ -62,6 +62,8 @@ show_icode_mnemonic	KEYWORD2
 show_pulse_flag_mnemonics	KEYWORD2
 show_action_flags	KEYWORD2
 selected_toggle_no_actions	KEYWORD2
+selected_set_no_actions	KEYWORD2
+selected_clear_no_actions	KEYWORD2
 select_pulse	KEYWORD2
 deselect_pulse	KEYWORD2
 toggle_selection	KEYWORD2
