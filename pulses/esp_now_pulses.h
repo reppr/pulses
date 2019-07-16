@@ -25,8 +25,8 @@
 #define ESP_NOW_CHANNEL	3
 
 // buffers for data to send or receive
-uint8_t esp_now_send_data[ESP_NOW_MAX_DATA_LEN] = {0};
-uint8_t esp_now_send_data_cnt=0;	// bytes
+uint8_t esp_now_send_buffer[ESP_NOW_MAX_DATA_LEN] = {0};
+uint8_t esp_now_send_buffer_cnt=0;	// bytes
 
 uint8_t esp_now_received_data[ESP_NOW_MAX_DATA_LEN] = {0};
 uint8_t esp_now_received_data_cnt=0;	// bytes
@@ -67,7 +67,7 @@ void esp_now_data_sent_callback(const uint8_t *mac_addr, esp_now_send_status_t s
   }
 
   if(status == ESP_NOW_SEND_SUCCESS) {
-    //    esp_now_send_data_cnt=0;			// ?????
+    //    esp_now_send_buffer_cnt=0;			// ?????
     if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
       MENU.outln(F("ok"));
   } else {
@@ -76,19 +76,19 @@ void esp_now_data_sent_callback(const uint8_t *mac_addr, esp_now_send_status_t s
   }
 }
 
-void esp_now_send(icode_t meaning) {
+void esp_now_pulses_send(icode_t meaning) {
   // set meaning:
-  icode_t* i_data = (icode_t*) esp_now_send_data;
+  icode_t* i_data = (icode_t*) esp_now_send_buffer;
   *i_data = meaning;
-  esp_now_send_data_cnt = sizeof(icode_t);	// icode_t meaning
+  esp_now_send_buffer_cnt = sizeof(icode_t);	// icode_t meaning
 
   switch(meaning) {
   case PRES:
     {
       extern short preset;
-      short * short_p = (short *) &esp_now_send_data[esp_now_send_data_cnt];
+      short * short_p = (short *) &esp_now_send_buffer[esp_now_send_buffer_cnt];
       memcpy(short_p, &preset, sizeof(short));
-      esp_now_send_data_cnt += sizeof(short);
+      esp_now_send_buffer_cnt += sizeof(short);
       if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {
 	MENU.out(F("ESP-NOW send PRES "));
 	MENU.outln(preset);
@@ -96,16 +96,23 @@ void esp_now_send(icode_t meaning) {
     }
     break;
 
+  case MACRO_NOW:
+    {
+      char* macro;
+
+    }
+    break;
+
   default:
     MENU.out((int) meaning);
     MENU.space(2);
     MENU.error_ln(F("what?"));
-    esp_now_show_raw_data(esp_now_send_data, esp_now_send_data_cnt);
+    esp_now_show_raw_data(esp_now_send_buffer, esp_now_send_buffer_cnt);
     return;
   } // switch(meaning)
 
   if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {
-    MENU.out(esp_now_send_data_cnt);
+    MENU.out(esp_now_send_buffer_cnt);
     MENU.out(F(" bytes\t\t"));
   }
 
@@ -115,7 +122,7 @@ void esp_now_send(icode_t meaning) {
     // return;	// maybe, maybe not
   }
 
-  status = esp_now_send(broadcast_mac, esp_now_send_data, esp_now_send_data_cnt);
+  status = esp_now_send(broadcast_mac, esp_now_send_buffer, esp_now_send_buffer_cnt);
 
   if (status == ESP_OK) {
     if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
@@ -191,6 +198,10 @@ static void pulses_data_received_callback(const uint8_t *mac_addr, const uint8_t
   esp_now_received_data_cnt = data_len;
   memcpy(esp_now_received_data, data, data_len);
   esp_now_pulses_reaction();
+}
+
+void esp_now_send_and_do_macro(/* recipient, */ char * macro) {
+
 }
 
 

@@ -1,7 +1,6 @@
 #define PROGRAM_VERSION		portable v0.028-
 /*				0123456789abcdef   */
 
-#define USE_ESP_NOW	// starts working :)
 
 /* **************************************************************** */
 /*

@@ -23,14 +23,15 @@
 typedef int icode_t;
 
 //#include <limits.h>
-enum icode {	// names are all four letter words ?
+enum icode {	// names are all four letter words ?	// maybe 8?
   KILL=INT_MIN,
-  i2cW,	// i2c write, based on pulses[pulse].i2c_addr and pulses[pulse].i2c_pin
-  doA2,	// function A, taking 2 int parameters
+  i2cW,		// i2c write, based on pulses[pulse].i2c_addr and pulses[pulse].i2c_pin
+  doA2,		// function A, taking 2 int parameters
   INFO,
   WAIT,
   DONE,
-  PRES,	// 1 parameter: int preset
+  PRES,		// 1 parameter: int preset
+  MACRO_NOW,	// 1 parameter: char * macro
 };
 
 #ifndef pulse_flags_t

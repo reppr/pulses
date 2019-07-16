@@ -3750,7 +3750,7 @@ bool musicBox_reaction(char token) {
     MENU.outln(preset);
 
     load_preset(preset);
-    esp_now_send(PRES);
+    esp_now_pulses_send(PRES);
     start_musicBox();
     break;
 #endif

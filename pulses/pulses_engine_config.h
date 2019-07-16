@@ -8,6 +8,9 @@
 #define FAMILY_NAME	SoundShip1		// configuration family
 /*			0123456789abcdef	// 16 bytes	*/
 
+
+#define USE_ESP_NOW	// starts working :)
+
 #define DO_STRESS_MANAGMENT
 //#define STRESS_MONITOR_LEVEL	64*2	// TODO: menu interface	// TODO: move to another configuration file
 
