@@ -1466,12 +1466,12 @@ const char * morse_definitions_tab[] = {
 
   "5 * ..... 5 5",
   "5 * ....- 4 4",
-//"5 0 ...-. 5 5",
+//"5 0 ...-. 5 5",	// ...N  SN  IR  EF  VE		maybe:  MORSE ESP_NOW AND SEND
   "5 * ...-- 3 3",
 //"5 * ..-.. É É",	// was: É	FIX: lowercase
   "5 C ..-.. UIswM",	// switch Motion UI activity
-//"5 0 ..-.- 5 5",
-//"5 0 ..--. - -",
+//"5 0 ..-.- 5 5",	// ..K  IK  UA  FT EÄ
+  "5 * ..--. - -",
   "5 * ..--- 2 2",
 //"5 0 .-... 5 5",
   "5 * .-..- È È",	// È	FIX: lowercase
@@ -1493,23 +1493,34 @@ const char * morse_definitions_tab[] = {
 //"5 0 --..- 5 5",	// FREE M	MU	__.._ 3 M- COMMAND triggers	free :)  rhythm sample? tap  *HOW TO GET OUT?*
 //"5 0 --.-. 5 5",	// FREE M	MR	--.-. 3 M- COMMAND triggers	free :)  rhythm replay
   "5 * --.-- Ñ Ñ",	// Ñ
-  "5 C ---.- OLED",	// OA	---.-	OLED	toggle oled display while playing	// TODO: FIXME: OLED != DELWORD
+//"5 0 ---.- OLED",	// OA	---.-	OLED	toggle oled display while playing
   "5 * ---.. 8 8",
   "5 * ----. 9 9",
-  "5 C ---.- DELWORD",	// MK	---.-	DELETE WORD					// TODO: FIXME: OLED != DELWORD
+  "5 C ---.- DELWORD",	// MK	---.-	DELETE WORD
   "5 * ----- 0 0",
 
-  "6 * -....- _ _",	// check - _
 
-  "6 * .-.-.- . .",
-  "6 * --..-- , ,",
+//"6 0 ...... TODO",	// FREE
+//"6 0 ....._ TODO",	// FREE
+//"6 0 ...._. TODO",	// FREE
+//"6 0 ....__ TODO",	// FREE
+//"6 0 ...-.. TODO",	// FREE		(maybe morse speed calibration?)
+//"6 0 ...-.- TODO",	// FREE		(maybe morse speed calibration?)
+//"6 0 ...__. TODO",	// FREE
+  "6 C ...--- OLED",	// FREE		OLED	toggle oled display while playing
+//"6 0 ...... TODO",	// FREE
+//"6 0 ...... TODO",	// FREE
+
   "6 * ..--.. ? ?",
-  "6 * ---... : :",
-  "6 * .----. ' '",
   "6 * .-..-. \" \"",
+  "6 * .----. ' '",
+  "6 * .-.-.- . .",
   "6 * .--.-. @ @",
+  "6 * -....- _ _",	// check - _
+  "6 * --..-- , ,",
+  "6 * ---... : :",
 
-  "7 * ...--.. X X TODO:",		// beta ss	TODO: FIX:
+//"7 0 ...--.. X X TODO:",		// beta ss	TODO: FIX:
 
   "8 C ........ MISTAKE",		// MISTAKE
 };
