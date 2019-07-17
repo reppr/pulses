@@ -15,6 +15,8 @@
 #define USE_MORSE	// touch morse code is in use :)
 #define MORSE_OUTPUT_PIN	PERIPHERAL_POWER_SWITCH_PIN	// *ONLY* possible if there's *NO POWER SWITCH HARDWARE*
 
+//#undef MORSE_OUTPUT_PIN		// (TODO: REMOVE: needed that to test FitNess with updated hw version)
+
 #define USE_MPU6050	// MPU-6050 6d accelero/gyro
 
 #define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_OUTPUT_PIN	green LED in many musicBoxes
@@ -22,7 +24,7 @@
 
 #define ESP32_USB_DAC_ONLY
 
-// do you use an OLED?	// TODO: rename to OLED_xxxx_BOARD, or even BOARD_OLED_xxxx
+// do you use an OLED board?
 #define BOARD_HELTEC_OLED	// Heltec OLED BOARD
 //#define BOARD_OLED_LIPO	// LiPo battery OLED BOARD
 //
@@ -45,6 +47,7 @@
 //#define NVS_PUT_PRENAME_HACK	LillyBoy	// 1 shot HACK to put a PRENAME		TODO: UI
 //#define NVS_PUT_PRENAME_HACK	CHATEAU		// 1 shot HACK to put a PRENAME		TODO: UI
 //#define NVS_PUT_PRENAME_HACK	FitNess		// 1 shot HACK to put a PRENAME		TODO: UI
+//#define NVS_PUT_PRENAME_HACK	butler		// 1 shot HACK to put a PRENAME		TODO: UI
 
 
 // some defaults you can change:

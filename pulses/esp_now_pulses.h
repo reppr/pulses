@@ -67,7 +67,6 @@ void esp_now_data_sent_callback(const uint8_t *mac_addr, esp_now_send_status_t s
   }
 
   if(status == ESP_NOW_SEND_SUCCESS) {
-    //    esp_now_send_buffer_cnt=0;			// ?????
     if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
       MENU.outln(F("ok"));
   } else {
@@ -97,9 +96,9 @@ void esp_now_pulses_send(icode_t meaning) {
     break;
 
   case MACRO_NOW:
-    {
-      char* macro;
-
+    if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {
+      MENU.out(F("ESP-NOW send MACRO_NOW  "));
+      MENU.outln((char *) ((char*) &esp_now_send_buffer + sizeof(icode_t)));
     }
     break;
 
@@ -129,6 +128,32 @@ void esp_now_pulses_send(icode_t meaning) {
       MENU.outln(F("ok"));
   } else  // not ok
     MENU.error_ln(esp_err_to_name(status));
+}
+
+
+void esp_now_send_macro(char * macro) {
+  icode_t* i_data = (icode_t*) esp_now_send_buffer;
+  uint8_t len = strlen(macro) + 1;
+  if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {
+    MENU.out(F("esp_now_send_macro()  "));
+    MENU.outln(macro);
+  }
+
+  *i_data++ = MACRO_NOW;
+  esp_now_send_buffer_cnt = sizeof(icode_t);	// icode_t meaning
+
+  memcpy(i_data, macro, len);
+  esp_now_send_buffer_cnt += len;
+
+  esp_err_t status = esp_now_send(broadcast_mac, esp_now_send_buffer, esp_now_send_buffer_cnt);
+
+  if (status == ESP_OK) {
+    if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
+      MENU.outln(F("ok"));
+  } else  // not ok
+    MENU.error_ln(esp_err_to_name(status));
+
+  //  esp_now_pulses_send(MACRO_NOW);
 }
 
 
@@ -169,6 +194,15 @@ static void esp_now_pulses_reaction() {
     load_preset_and_start(preset);
     break;
 
+  case MACRO_NOW:
+    {
+      char* macro = (char*) esp_now_received_data + sizeof(icode_t);
+      MENU.out(F("react on MACRO_NOW  "));
+      MENU.outln(macro);
+      MENU.play_KB_macro(macro);
+    }
+    break;
+
   default:
     MENU.out((int) meaning);
     MENU.space(2);
@@ -201,7 +235,9 @@ static void pulses_data_received_callback(const uint8_t *mac_addr, const uint8_t
 }
 
 void esp_now_send_and_do_macro(/* recipient, */ char * macro) {
-
+  MENU.out(F("esp_now_send_and_do_macro() "));  MENU.outln(macro);
+  esp_now_send_macro(macro);
+  MENU.play_KB_macro(macro);
 }
 
 

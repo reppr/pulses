@@ -1466,7 +1466,7 @@ const char * morse_definitions_tab[] = {
 
   "5 * ..... 5 5",
   "5 * ....- 4 4",
-//"5 0 ...-. 5 5",	// ...N  SN  IR  EF  VE		maybe:  MORSE ESP_NOW AND SEND
+  "5 C ...-. MACRO_NOW",	// SN
   "5 * ...-- 3 3",
 //"5 * ..-.. É É",	// was: É	FIX: lowercase
   "5 C ..-.. UIswM",	// switch Motion UI activity
@@ -1948,6 +1948,14 @@ void morse_token_decode() {	// decode received token sequence
 		;
 #endif	// USE_MONOCHROME_DISPLAY
 
+	      } else if(morse_PRESENT_COMMAND == "MACRO_NOW") {
+		if(morse_out_buffer_cnt) {
+		  extern void esp_now_send_and_do_macro(/* recipient, */ char * macro);
+		  morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
+		  esp_now_send_and_do_macro(morse_output_buffer);	// send then do
+		} else {
+		  MENU.outln(F("no data to send now"));
+		}
 
 #if defined USE_MPU6050
 	      } else if(morse_PRESENT_COMMAND == "UIswM") {	// '..-..'  UI	switch Motion UI on/off

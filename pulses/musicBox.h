@@ -3197,6 +3197,14 @@ bool musicBox_reaction(char token) {
   char next_token;
   pulse_time_t T_scratch;
 
+//  // check for numeric preset input first	(OVERRIDES pulse selection in pulses)
+//  MENU.restore_input_token();
+//  if(MENU.is_numeric()) {
+//    input_preset_and_start();	// read preset number
+//    return true;		// early exit
+//  } else
+//    MENU.drop_input_token();	// restore state as usual, token is read
+
   switch(token) {
   case '?': // musicBox_display();
     musicBox_display();
@@ -3316,6 +3324,29 @@ bool musicBox_reaction(char token) {
     MENU.tab();
     MENU.out_ON_off(accGyro_is_active);
     MENU.ln();
+    break;
+#endif
+
+#if defined USE_ESP_NOW
+  case 'C':
+    {
+      MENU.outln(F("SEND NOW, then do"));
+      int len=0;
+      char c;
+      for(;len < 64; len++) {
+	if(MENU.peek(len) == EOF)
+	  break;
+      }
+      char* macro = (char*) malloc(len + 1);
+
+      int i;
+      for (i=0; i<len; i++)
+	*(macro + i) = (char) MENU.drop_input_token();
+      *(macro + i) = '\0';
+
+      esp_now_send_and_do_macro(macro);
+      free(macro);
+    }
     break;
 #endif
 
@@ -3732,14 +3763,11 @@ bool musicBox_reaction(char token) {
   case '7':
   case '8':
   case '9':
-    // TODO: sets preset, how to unset?	################
     MENU.restore_input_token();	// restore first chiffre
-    input_preset_and_start();	// read preset number
+  case 'y':
+    input_preset_and_start();	// reads preset number
     break;
 
-  case 'y': // TODO: sets preset, how to unset?	################
-    input_preset_and_start();
-    break;
 
 #if defined USE_ESP_NOW		// /else pulses 'D')
   case 'D':
