@@ -72,10 +72,6 @@ using namespace std;	// ESP8266 needs that
   #if defined USE_MCP23017
     #include "MCP23017.h"			// Adafruit, simple test version only
   #endif
-
-  #if defined USE_i2c_scanner
-    #include "i2c_scan.h"
-  #endif
 #endif // USE_i2c
 
 

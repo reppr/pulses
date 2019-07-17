@@ -689,12 +689,21 @@ int i2c_scan() {
     error = Wire.endTransmission();
 
     if (error == 0) {
+      found++;
       MENU.out("I2C device at 0x");
       if (adr<16)
 	MENU.out('0');
       MENU.out_hex(adr);
-      MENU.outln("  !");
-      found++;
+      MENU.tab();
+      switch(adr) {
+      case 0x68:
+      case 0x69:
+	MENU.outln(F("MPU6050 / DS1307  *????*"));	// they both use the same address :(
+	break;
+
+      default:
+	MENU.outln('!');
+      }
     } else if (error==4) {
       MENU.out("Unknown error at address 0x");
       if (adr<16)

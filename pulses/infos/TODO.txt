@@ -181,3 +181,6 @@ TODO: monochrome pause time
 switch ESP-NOW UI
 
 factor out randomisation
+
+TODO: fix clash between MPU6050 and DS1307
+TODO: i2c_scan() should know all used i2c devices, maybe even verify them
