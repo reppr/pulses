@@ -1015,10 +1015,6 @@ void setup() {
 show_GPIOs();	// *does* work for GPIO_PINS==0
 MENU.ln();
 
-#ifdef USE_MORSE
-  #include "morse_setup.h"
-#endif
-
 #if defined USE_LEDC
   #include "ledc_tone_setup.h"
 #endif
@@ -1102,6 +1098,10 @@ MENU.ln();
     } else
       MENU.outln(F("ok"));
   }
+#endif
+
+#ifdef USE_MORSE	// ATTENTION: *do this AFTER esp_now_pulses_setup()*
+  #include "morse_setup.h"
 #endif
 
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
