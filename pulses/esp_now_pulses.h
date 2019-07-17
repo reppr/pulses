@@ -198,22 +198,40 @@ static void pulses_data_received_callback(const uint8_t *mac_addr, const uint8_t
 esp_now_peer_info_t peer_info;
 
 esp_err_t esp_now_pulses_setup() {
+  MENU.outln(F("esp_now_pulses_setup()"));
+
+  MENU.outln(F("  WiFi.mode(WIFI_OFF)"));
+  WiFi.mode(WIFI_OFF);
+  yield();
+
+  MENU.outln(F("  WiFi.mode(WIFI_STA)"));
   WiFi.mode(WIFI_STA);
+  yield();
+
+  MENU.outln(F("  WiFi.disconnect()"));
   WiFi.disconnect();	// just in case
+  yield();
 
   esp_err_t status;
+  MENU.outln(F("  esp_now_init()"));
+  yield();
   status = esp_now_init();
   if(status != ESP_OK)
     return status;
 
+  MENU.outln(F("  esp_now_register_recv_cb()"));
+  yield();
   status = esp_now_register_recv_cb(pulses_data_received_callback);
   if(status != ESP_OK)
     return status;
 
+  yield();
+  MENU.outln(F("  esp_now_add_peer()"));
   peer_info.channel = ESP_NOW_CHANNEL;
   memcpy(peer_info.peer_addr, broadcast_mac, 6);
   peer_info.ifidx = ESP_IF_WIFI_STA;
   peer_info.encrypt = false;
+
   status = esp_now_add_peer(&peer_info);
 
   return status;
