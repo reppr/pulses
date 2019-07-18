@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION		portable v0.028-
+#define PROGRAM_VERSION		HARMONICALv.028N
 /*				0123456789abcdef   */
 
 

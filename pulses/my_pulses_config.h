@@ -48,6 +48,7 @@
 //#define NVS_PUT_PRENAME_HACK	CHATEAU		// 1 shot HACK to put a PRENAME		TODO: UI
 //#define NVS_PUT_PRENAME_HACK	FitNess		// 1 shot HACK to put a PRENAME		TODO: UI
 //#define NVS_PUT_PRENAME_HACK	butler		// 1 shot HACK to put a PRENAME		TODO: UI
+//#define NVS_PUT_PRENAME_HACK	chameleon	// 1 shot HACK to put a PRENAME		TODO: UI
 
 
 // some defaults you can change:

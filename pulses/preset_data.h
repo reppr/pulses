@@ -476,7 +476,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 23:
-    name = F("fröhlichs, witzigs Tänzli :)");
+    name = F("fröhlichs, crazy witzigs Tänzli :)");
     //# favorite	DADA?
     //# shortIsOk
     //# crazy
@@ -3309,7 +3309,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 119:
     name = F("slow dreams");
-    //# favorite
+    //# FAVORITE
     //# shortIsOk
     //# motives
     //# melodies

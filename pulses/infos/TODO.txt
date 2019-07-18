@@ -189,3 +189,11 @@ TODO: possibility to calibrate touch level during startup
 
 i2cdevlib/Arduino/I2Cdev/I2Cdev.h
 #define I2CDEV_IMPLEMENTATION       I2CDEV_BUILTIN_FASTWIRE	// DADA
+
+ESP_NOW_CHANNEL		optimise for BRACHE
+
+ESP_NOW  VERBOSITY
+
+stress on soft end
+
+esp_now peer musicians list {MAC, PRENAME, /* hw options */}
