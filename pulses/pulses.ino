@@ -4643,7 +4643,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     break;
 
-  case 'T':	// 'T<integer-number>' sets tuning, 'T' toggles TUNED
+  case 'T':	// 'T<integer-number>' sets tuning, 'T' toggles TUNED	// see: Y_UI
     input_value = (unsigned long) PULSES.tuning;
     if (MENU.maybe_calculate_input(&input_value))	{	// T1 sets tuning to 1.0
       if (input_value > 0)

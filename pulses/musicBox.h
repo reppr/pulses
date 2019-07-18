@@ -3059,14 +3059,14 @@ void input_preset_and_start() {	// factored out UI component	// TODO: sets prese
 }
 
 
-bool Xmotion_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: ADC, 'analog'Touch, distance sensors, etc
+bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: ADC, 'analog'Touch, distance sensors, etc
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
   // TODO: REPLACE BY NEW ENGINE ################################################################
   // TODO: monochrome feedback on motion UI switching
   bool switch_activity=false;
   bool do_next_letter=true;
   bool recognised = false;
-  if(MENU.peek() == EOF) {	// bare 'U'
+  if(MENU.peek() == EOF) {	// bare 'U'	switch_activity
     switch_activity = true;
     recognised = true;
   } else {
@@ -3316,10 +3316,10 @@ bool musicBox_reaction(char token) {
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
   case 'U': // Xmotion UI
-    if(Xmotion_UI())
+    if(Y_UI())
       return true;		// note: EARLY RETURN	// TODO: hmmm?
 
-    // TODO: VERBOSITY etc	// move this to Xmotion_UI()
+    // TODO: VERBOSITY etc	// move this to Y_UI()
     display_accGyro_mode();
     MENU.tab();
     MENU.out_ON_off(accGyro_is_active);
@@ -3788,6 +3788,6 @@ bool musicBox_reaction(char token) {
     return false;
   } // switch(token)
 
-  // note: Xmotion_UI() could have already returned
+  // note: Y_UI() could have already returned
   return true;
 } // musicBox_reaction
