@@ -1937,8 +1937,9 @@ void morse_token_decode() {	// decode received token sequence
 #if defined USE_MONOCHROME_DISPLAY
 		if(monochrome_can_be_used()) {
 		  u8x8.setInverseFont(1);
-		  u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, ".");	// CANCEL shows inverted "."
+		  u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, ".");	// CANCEL shows inverted "." and ' '
 		  u8x8.setInverseFont(0);
+		  u8x8.draw2x2String(1, MORSE_MONOCHROME_ROW, " ");
 		}
 #endif
 	      } else if(morse_PRESENT_COMMAND == "ANY1") {	// '----'
@@ -1948,7 +1949,7 @@ void morse_token_decode() {	// decode received token sequence
 		;
 #endif	// USE_MONOCHROME_DISPLAY
 
-	      } else if(morse_PRESENT_COMMAND == "MACRO_NOW") {
+	      } else if(morse_PRESENT_COMMAND == "MACRO_NOW") {	// ...-.  SN
 		if(morse_out_buffer_cnt) {
 		  extern void esp_now_send_and_do_macro(/* recipient, */ char * macro);
 		  morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
@@ -1995,6 +1996,7 @@ void morse_token_decode() {	// decode received token sequence
 	      }
 	    }
 #endif
+	    MENU.space(2);
 	    MENU.error_ln(F("morse  no definition"));
 	    morse_reset_definition("");
 	    morse_token_cnt=0;
