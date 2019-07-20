@@ -83,3 +83,15 @@
   Global variables use 71348 bytes (21%) of dynamic memory, leaving 256332 bytes for local variables. Maximum is 327680 bytes.
 */
 #endif
+
+
+/*
+  TODO:	 *conflict* UART2  MIDI <> OLED		and UART2 gpio_pins 16, 17
+
+  #define USE_UART2
+
+  GPIO16	OLED_RST, ePaper	UART2 RX  // *CONFLICT* UART2 MIDI <> OLED
+  GPIO17				UART2 TX
+
+  also check gpio_pins	and possible *other PIN 16, 17 USAGE*
+*/
