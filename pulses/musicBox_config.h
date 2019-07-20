@@ -33,6 +33,7 @@
 #define AUTOSTACK_S0_DEFAULT	-4096		// TEST: on vibration speakers	TODO: test&trim		TODO: UI?
 
 
+//#define MUSICBOX_SHOW_PROGRAM_VERSION	// start_musicBox() shows program version on oled	*DEFAULT OFF*
 
 // SANITY CHECKS:	===>  *DO NOT CHANGE* THE LINES BELOW  <===
 #if ! defined AUTOSTACK_S0_DEFAULT

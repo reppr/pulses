@@ -2225,7 +2225,10 @@ void start_musicBox() {
   set_bluetooth_according_switch();
 #endif
   MENU.out(F("\nstart_musicBox()\t"));
+
+#if defined USE_MONOCHROME_DISPLAY && defined MUSICBOX_SHOW_PROGRAM_VERSION	// default *off*
   show_program_version();
+#endif
 
   set_MusicBoxState(AWAKE);
 

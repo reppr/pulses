@@ -44,6 +44,9 @@
 #define SOME_METRIC_TUNINGS_ONLY_DEFAULT	true	// fixed pitchs only like E A D G C F B  was: SOME_FIXED_TUNINGS_ONLY
 //#define SOME_METRIC_TUNINGS_ONLY_DEFAULT	false;	// free pitch tuning
 
+//#define MUSICBOX_SHOW_PROGRAM_VERSION	// start_musicBox() shows program version on OLED	*DEFAULT OFF*
+
+
 //#define NVS_PUT_PRENAME_HACK	LillyBoy	// 1 shot HACK to put a PRENAME		TODO: UI
 //#define NVS_PUT_PRENAME_HACK	CHATEAU		// 1 shot HACK to put a PRENAME		TODO: UI
 //#define NVS_PUT_PRENAME_HACK	FitNess		// 1 shot HACK to put a PRENAME		TODO: UI
