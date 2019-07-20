@@ -170,6 +170,8 @@ unsigned int tum8up[] = {1,2048,2048/32, 1,32,1,  1,2048,2048/32, 1,32,1,  1,204
 unsigned int piip2048[] ={1,2048,128, 0,0,0, };		// length 1/16
 unsigned int tanboura[] ={1,2048,1536, 0,0,0, };	// length 3/4
 
+unsigned int d2048_div6[] ={1,2048,2048/6, 0,0,0, };	// length ~ 1/6 ~
+
 unsigned int loong[]{1,4096,4080, 0,0,0, };		// length 255/256
 unsigned int looong[]{1,4096,4088, 0,0,0, };		// length 511/512
 unsigned int loooong[]{1,4096,4092, 0,0,0, };		// length 1023/1024
