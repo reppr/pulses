@@ -1936,10 +1936,13 @@ void morse_token_decode() {	// decode received token sequence
 
 #if defined USE_MONOCHROME_DISPLAY
 		if(monochrome_can_be_used()) {
+		  /*
 		  u8x8.setInverseFont(1);
 		  u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, ".");	// CANCEL shows inverted "." and ' '
 		  u8x8.setInverseFont(0);
 		  u8x8.draw2x2String(1, MORSE_MONOCHROME_ROW, " ");
+		  */
+		  u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "__");	// CANCEL shows "__"
 		}
 #endif
 	      } else if(morse_PRESENT_COMMAND == "ANY1") {	// '----'
