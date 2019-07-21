@@ -144,7 +144,7 @@ unsigned int kalimbaxyl[] =
   {1,1024,32, 1,16,2, 1,32,8, 1,1024,4, 1,32,2, 0, 0, 0};	// KALIMBA7, very silent jiffle
 
 unsigned int ting_tick4096[] = {1,4096,1024, 1,2,1, 1,8192,3, 0,0,0};
-unsigned int tigg_ding4096[] = {1,8192,3, 1,2,1, 1,4096,1024, 0,0,0};
+unsigned int tigg_ding4096[] = {1,8192,3, 1,2,1, 1,4096,1024, 0,0,0};	// TODO: nice, use it
 
 unsigned int tumtum[] = {1,2048,2048/16, 7,16,1, 1,2048,2048/16, 0,0,0};
 unsigned int tumtumtum[] = {1,2048,2048/16, 3,16,1, 1,2048,2048/16, 3,16,1, 1,2048,2048/16, 0,0,0};

@@ -3347,7 +3347,7 @@ bool musicBox_reaction(char token) {
 	*(macro + i) = (char) MENU.drop_input_token();
       *(macro + i) = '\0';
 
-      esp_now_send_and_do_macro(macro);
+      esp_now_send_and_do_macro(known_peers_mac, macro);
       free(macro);
     }
     break;
@@ -3772,18 +3772,10 @@ bool musicBox_reaction(char token) {
     break;
 
 
-#if defined USE_ESP_NOW		// /else pulses 'D')
-  case 'D':
-    // TODO: REMOVE: obsolete
-    if(MusicBoxState != OFF)	// not needed, but less stress to do that first...
-      tabula_rasa();
-    // VERBOSITY_LOWEST?
-    MENU.out(F("ESP NOW sends PRES preset (musicBox)"));
-    MENU.outln(preset);
-
-    load_preset(preset);
-    esp_now_send_preset(preset);
-    start_musicBox();
+#if defined USE_ESP_NOW	// (else: pulses 'D')
+  case 'D':		// musicBox 'D'
+    MENU.out("esp_now_send_HI()\t");
+    esp_err_info(esp_now_send_HI(broadcast_mac));	// broadcast may detect new peers
     break;
 #endif
 

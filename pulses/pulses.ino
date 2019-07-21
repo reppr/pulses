@@ -1084,16 +1084,21 @@ MENU.ln();
 #if defined USE_ESP_NOW
   {
     esp_err_t error;
-    MENU.out(F("esp_now_pulses_setup()\t"));
+    MENU.out(F("\nesp_now_pulses_setup()\t"));
     if(error = esp_now_pulses_setup()) {
       MENU.out(F("failed "));
       // MENU.out_hex(error);
       // MENU.ln();
       MENU.outln(esp_err_to_name(error));
-    } else
+    } else {
       MENU.outln(F("ok"));
+      esp_now_pulses_add_peer(broadcast_mac);	// may give feedback
+      esp_now_send_HI(broadcast_mac);		// broadcast can spread peer detection
+    }
+    MENU.ln();
   }
 #endif
+  delay(10);	// delay for esp_now, but left to make all instruments come up in time ;)
 
 #ifdef USE_MORSE	// ATTENTION: *do this AFTER esp_now_pulses_setup()*
   #include "morse_setup.h"

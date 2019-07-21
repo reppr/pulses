@@ -190,10 +190,17 @@ TODO: possibility to calibrate touch level during startup
 i2cdevlib/Arduino/I2Cdev/I2Cdev.h
 #define I2CDEV_IMPLEMENTATION       I2CDEV_BUILTIN_FASTWIRE	// DADA
 
-ESP_NOW_CHANNEL		optimise for BRACHE
-
 ESP_NOW  VERBOSITY
 
 stress on soft end
 
 esp_now peer musicians list {MAC, PRENAME, /* hw options */}
+
+ultrasonic distance sensor based on interrupts
+
+unsigned int tigg_ding4096[] = {1,8192,3, 1,2,1, 1,4096,1024, 0,0,0};	// TODO: nice, use it
+
+char* setMACstr(const uint8_t* mac) {	// TODO: mac==NULL case ################
+
+TODO: more work left to make all instruments come up in time ;)
+delay(10);	// delay for esp_now, but left to make all instruments come up in time ;)

@@ -32,6 +32,8 @@ enum icode {	// names are all four letter words ?	// maybe 8?
   DONE,
   PRES,		// 1 parameter: int preset
   MACRO_NOW,	// 1 parameter: char * macro
+  N_HI,		// (bare)  HI are you there?	for connection and ping pong
+  N_HO,		// (bare)  HERE I AM
 };
 
 #ifndef pulse_flags_t
