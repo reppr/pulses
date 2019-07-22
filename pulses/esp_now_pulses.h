@@ -54,13 +54,18 @@ void esp_now_show_raw_data(uint8_t * read_p, uint8_t len) {
 
 
 // MAC address
-uint8_t broadcast_mac[] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
-uint8_t* known_peers_mac = NULL;
-
+typedef uint8_t mac_addr_t;
+mac_addr_t broadcast_mac[] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
+mac_addr_t* known_peers_mac = NULL;	// this is a *PSEUDO MAC POINTER* to NULL
+					//   esp_now_send() will *send to ALL KNOWN PEERS*
 // MAC as string
-char MACstr[18];
-char* setMACstr(const uint8_t* mac) {	// TODO: mac==NULL case ################
+char* MAC_str(const mac_addr_t* mac) {	// TODO: TEST: mac==NULL case
+  if(mac == NULL)
+    return "0=> ALL KNOWN";
+  // else
+  char MACstr[18];
   snprintf(MACstr, sizeof(MACstr), "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
   return MACstr;
 }
 
@@ -82,16 +87,16 @@ char* setMACstr(const uint8_t* mac) {	// TODO: mac==NULL case ################
 
 
 // sending:
-void esp_now_data_sent_callback(const uint8_t *mac_addr, esp_now_send_status_t status) {
+void esp_now_data_sent_callback(const mac_addr_t *mac_addr, esp_now_send_status_t status) {
   if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {	// display MAC?
     MENU.out(F("esp now to:  "));
-    MENU.out(setMACstr(mac_addr));
+    MENU.out(MAC_str(mac_addr));
     MENU.tab();
     esp_err_info(status);
   }
 }
 
-esp_err_t esp_now_pulses_send(const uint8_t *mac_addr) {	// send data stored in esp_now_send_buffer
+esp_err_t esp_now_pulses_send(const mac_addr_t *mac_addr) {	// send data stored in esp_now_send_buffer
   esp_err_t status = esp_now_send(mac_addr, esp_now_send_buffer, esp_now_send_buffer_cnt);
 
   if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
@@ -101,7 +106,7 @@ esp_err_t esp_now_pulses_send(const uint8_t *mac_addr) {	// send data stored in 
 }
 
 // some messages contain only the meaning code, no additional parameters:
-esp_err_t esp_now_send_bare(uint8_t* mac_addr, icode_t meaning) {
+esp_err_t esp_now_send_bare(mac_addr_t* mac_addr, icode_t meaning) {
   icode_t* i_data = (icode_t*) esp_now_send_buffer;
   *i_data = meaning;
   esp_now_send_buffer_cnt = sizeof(icode_t);	// icode_t meaning
@@ -109,7 +114,7 @@ esp_err_t esp_now_send_bare(uint8_t* mac_addr, icode_t meaning) {
   return esp_now_pulses_send(mac_addr);
 }
 
-esp_err_t esp_now_send_preset(uint8_t* mac_addr, short preset) {
+esp_err_t esp_now_send_preset(mac_addr_t* mac_addr, short preset) {
   icode_t* i_data = (icode_t*) esp_now_send_buffer;
   *i_data++ = PRES;
   esp_now_send_buffer_cnt = sizeof(icode_t);	// icode_t meaning
@@ -133,7 +138,7 @@ esp_err_t esp_now_send_preset(uint8_t* mac_addr, short preset) {
   return status;
 }
 
-esp_err_t  esp_now_send_macro(uint8_t* mac_addr, char * macro) {
+esp_err_t  esp_now_send_macro(mac_addr_t* mac_addr, char * macro) {
   icode_t* i_data = (icode_t*) esp_now_send_buffer;
   uint8_t len = strlen(macro) + 1;
   if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {
@@ -156,7 +161,7 @@ esp_err_t  esp_now_send_macro(uint8_t* mac_addr, char * macro) {
 }
 
 unsigned long esp_now_send_HI_time=0L;	// timing ping pong  N_HI - N_HO
-esp_err_t  esp_now_send_HI(uint8_t* mac_addr) {
+esp_err_t  esp_now_send_HI(mac_addr_t* mac_addr) {
   pulse_time_t n = PULSES.get_now();
   esp_now_send_HI_time = n.time;
   return esp_now_send_bare(mac_addr, N_HI);
@@ -166,12 +171,40 @@ esp_err_t  esp_now_send_HI(uint8_t* mac_addr) {
 // peers
 esp_now_peer_info_t peer_info;
 
-esp_err_t esp_now_pulses_add_peer(const uint8_t *mac_addr) {	// might give feedback
+typedef struct {
+  mac_addr_t mac_addr[6]={0};
+  char preName[16]={'\0'};
+  // planed: existing hardware, known peers?
+} peer_ID_t;
+
+peer_ID_t esp_now_pulses_known_peers[ESP_NOW_MAX_TOTAL_PEER_NUM];
+
+void esp_now_pulses_2_ID_list(uint8_t* mac_addr, char* preName) {
+  if(mac_addr != NULL) {
+    bool peer_is_known=false;
+    int i; // index
+    for(i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {	// search if peer is known
+      for(int m=0; m<6; m++) {	// compare MAC
+	if(*(mac_addr + m) != esp_now_pulses_known_peers[i].mac_addr[m])
+	  break;
+	if(m==5)
+	  peer_is_known=true;	// all 6 mac bytes are identical
+      }
+      if(peer_is_known)
+	break;
+    }
+
+    if(peer_is_known == false) {	// peer was unknown
+      for(i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {	// search for free mac field
+      }
+    } // peer was unknown
+  } // mac_addr != NULL
+}
+
+esp_err_t esp_now_pulses_add_peer(const mac_addr_t *mac_addr) {	// might give feedback
   bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
   if(do_display)
-    MENU.out(F("add peer  "));
-
-  MENU.outln(F("  esp_now_add_peer()"));
+    MENU.outln(F("  esp_now_pulses_add_peer()  esp_now_add_peer() "));
 
   peer_info.channel = ESP_NOW_CHANNEL;
   memcpy(peer_info.peer_addr, mac_addr, 6);
@@ -196,7 +229,7 @@ esp_err_t esp_now_pulses_add_peer(const uint8_t *mac_addr) {	// might give feedb
 
 
 // receiving:
-static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
+static void esp_now_pulses_reaction(const mac_addr_t *mac_addr) {
 #if DEBUG_ESP_NOW != false
   MENU.outln("esp_now_pulses_reaction()");
 #endif
@@ -217,7 +250,7 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
     // TODO: ERROR check
 
     if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {
-      MENU.out(setMACstr(mac_addr));
+      MENU.out(MAC_str(mac_addr));
       MENU.out(F("  HI anybody "));
     }
     esp_now_pulses_add_peer(mac_addr);		// might give feedback
@@ -229,7 +262,7 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
       MENU.space(2);
       MENU.out(n.time - esp_now_send_HI_time);
       MENU.out(F(" microsec  "));
-      MENU.out(setMACstr(mac_addr));
+      MENU.out(MAC_str(mac_addr));
       MENU.out(F("  I AM here  "));
     }
 
@@ -276,14 +309,14 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
   } // switch meaning
 }
 
-static void pulses_data_received_callback(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
+static void pulses_data_received_callback(const mac_addr_t *mac_addr, const uint8_t *data, int data_len) {
   esp_now_received_data_cnt = data_len;
   memcpy(esp_now_received_data, data, data_len);
   esp_now_received_data_read = 0;
 
   if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {
     MENU.out("\npulses_data_received_callback()  from: ");
-    MENU.out(setMACstr(mac_addr));
+    MENU.out(MAC_str(mac_addr));
     MENU.out(F("\t\tbytes "));
     MENU.outln(data_len);
   }
@@ -291,7 +324,7 @@ static void pulses_data_received_callback(const uint8_t *mac_addr, const uint8_t
   esp_now_pulses_reaction(mac_addr);
 }
 
-void esp_now_send_and_do_macro(uint8_t* mac_addr, char* macro) {
+void esp_now_send_and_do_macro(mac_addr_t* mac_addr, char* macro) {
   if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {
     MENU.out(F("esp_now_send_and_do_macro() "));
     MENU.outln(macro);
@@ -323,7 +356,8 @@ esp_err_t esp_now_pulses_setup() {
   yield();
 
   esp_err_t status;
-  MENU.outln(F("  esp_now_init()"));
+  MENU.out(F("  esp_now_init() version "));
+  MENU.outln((uint32_t) esp_now_get_version);
   yield();
   status = esp_now_init();
   if(status != ESP_OK)
@@ -342,7 +376,8 @@ esp_err_t esp_now_pulses_setup() {
     return status;
 
   yield();
-  MENU.outln(F("  esp_now_add_peer()"));
+  MENU.out(F("  esp_now_add_peer()  broadcast ch="));
+  MENU.outln((int) ESP_NOW_CHANNEL);
   peer_info.channel = ESP_NOW_CHANNEL;
   memcpy(peer_info.peer_addr, broadcast_mac, 6);
   peer_info.ifidx = ESP_IF_WIFI_STA;
