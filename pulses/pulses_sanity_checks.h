@@ -85,6 +85,11 @@
 #endif
 
 
+#if defined USE_MPU6050 && defined USE_RTC_MODULE	// clash i2c address
+  #warning MPU6050 and RTC_MODULE use the same i2c address, USE_RTC_MODULE *deactivated*
+  #undef USE_RTC_MODULE
+#endif
+
 /*
   TODO:	 *conflict* UART2  MIDI <> OLED		and UART2 gpio_pins 16, 17
 

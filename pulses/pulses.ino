@@ -205,7 +205,10 @@ bool no_octave_shift=false;	// see: tune_selected_2_scale_limited()
 int base_pulse=ILLEGAL;			// a human perceived base pulse, see 'stack_sync_slices'
 pulse_time_t base_pulse_period={0,0};	// {0,0} is unknown, invalid
 
-String preName = "";		// individual name of an instrument
+#if ! defined PRENAME_MAX_LENGTH
+  #define PRENAME_MAX_LENGTH	15	// *excluding* '\0'
+#endif
+String preName = "";			// individual name of an instrument
 
 /* **************************************************************** */
 bool DO_or_maybe_display(unsigned char verbosity_level) { // the flag tells *if* to display
@@ -1087,18 +1090,21 @@ MENU.ln();
     MENU.out(F("\nesp_now_pulses_setup()\t"));
     if(error = esp_now_pulses_setup()) {
       MENU.out(F("failed "));
-      // MENU.out_hex(error);
-      // MENU.ln();
       MENU.outln(esp_err_to_name(error));
     } else {
-      MENU.outln(F("ok"));
-      esp_now_pulses_add_peer(broadcast_mac);	// may give feedback
-      esp_now_send_HI(broadcast_mac);		// broadcast can spread peer detection
+      MENU.out(F("ok  MAC: "));
+      esp_read_mac(my_MAC, ESP_MAC_WIFI_STA);	// set my_MAC
+      MENU.outln(MAC_str(my_MAC));
+      esp_now_pulses_add_peer(broadcast_mac);	// add broadcast as peer may give feedback
+      // esp_now_send_HI(broadcast_mac);	// broadcast can spread peer detection
+      esp_now_send_who(broadcast_mac);		// *broadcast* to spread peer detection
     }
-    MENU.ln();
+    delay(100);	// esp_now network build up, left anyway to make all instruments come up in time  TODO: test&trimm
+    MENU.ln();	//   TODO: test&trimm ;)
   }
+#else
+  delay(100);	// don't change startup time if esp_now is used or not
 #endif
-  delay(10);	// delay for esp_now, but left to make all instruments come up in time ;)
 
 #ifdef USE_MORSE	// ATTENTION: *do this AFTER esp_now_pulses_setup()*
   #include "morse_setup.h"

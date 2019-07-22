@@ -8,6 +8,7 @@
 #define FAMILY_NAME	SoundShip1		// configuration family
 /*			0123456789abcdef	// 16 bytes	*/
 
+#define PRENAME_MAX_LENGTH	15		// *excluding* '\0'
 
 #define USE_ESP_NOW	// starts working :)
 

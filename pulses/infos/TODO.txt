@@ -204,3 +204,7 @@ char* setMACstr(const uint8_t* mac) {	// TODO: mac==NULL case ################
 
 TODO: more work left to make all instruments come up in time ;)
 delay(10);	// delay for esp_now, but left to make all instruments come up in time ;)
+
+esp_now TIME SLICES for broadcast response
+
+change monochrome row jiffles

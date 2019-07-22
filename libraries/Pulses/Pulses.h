@@ -34,6 +34,8 @@ enum icode {	// names are all four letter words ?	// maybe 8?
   MACRO_NOW,	// 1 parameter: char * macro
   N_HI,		// (bare)  HI are you there?	for connection and ping pong
   N_HO,		// (bare)  HERE I AM
+  N_WHO,	// (bare)  WHO is here?
+  N_ME,		// parameter: peer_ID_t me	share personal data
 };
 
 #ifndef pulse_flags_t

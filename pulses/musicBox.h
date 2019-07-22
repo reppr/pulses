@@ -3774,8 +3774,7 @@ bool musicBox_reaction(char token) {
 
 #if defined USE_ESP_NOW	// (else: pulses 'D')
   case 'D':		// musicBox 'D'
-    MENU.out("esp_now_send_HI()\t");
-    esp_err_info(esp_now_send_HI(broadcast_mac));	// broadcast may detect new peers
+    display_peer_ID_list();
     break;
 #endif
 
