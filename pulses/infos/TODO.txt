@@ -208,3 +208,6 @@ delay(10);	// delay for esp_now, but left to make all instruments come up in tim
 esp_now TIME SLICES for broadcast response
 
 change monochrome row jiffles
+
+// TODO: parameter including preName	peer_ID_t ################
+esp_err_t esp_now_pulses_add_peer(const mac_addr_t *mac_addr) {	// might give feedback

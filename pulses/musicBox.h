@@ -3347,7 +3347,7 @@ bool musicBox_reaction(char token) {
 	*(macro + i) = (char) MENU.drop_input_token();
       *(macro + i) = '\0';
 
-      esp_now_send_and_do_macro(known_peers_mac, macro);
+      esp_now_send_and_do_macro(known_peers_mac_p, macro);
       free(macro);
     }
     break;

@@ -56,7 +56,7 @@ void esp_now_show_raw_data(uint8_t * read_p, uint8_t len) {
 // MAC address
 typedef uint8_t mac_addr_t;
 mac_addr_t broadcast_mac[] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
-mac_addr_t* known_peers_mac = NULL;	// this is a *PSEUDO MAC POINTER* to NULL
+mac_addr_t* known_peers_mac_p = NULL;	// this is a *PSEUDO MAC POINTER* to NULL
 					//   esp_now_send() will *send to ALL KNOWN PEERS*
 
 // MAC as string
@@ -154,53 +154,65 @@ esp_err_t esp_now_send_preset(mac_addr_t* mac_addr, short preset) {
   return status;
 }
 
-esp_err_t esp_now_send_preset(mac_addr_t* mac_addr, short preset) {
-  icode_t* i_data = (icode_t*) esp_now_send_buffer;
-  *i_data++ = PRES;
-  esp_now_send_buffer_cnt = sizeof(icode_t);	// icode_t meaning
+void esp_now_add_mine( ) {	// adds identity data to the esp_now_send_buffer[]
+#if defined DEBUG_ESP_NOW
+  MENU.out(F(" esp_now_add_mine() "));
+#endif
+  peer_ID_t peer_ID;
+  for(int b=0; b<6 ;b++)
+    peer_ID.mac_addr[b] = my_MAC[b];
 
-  short* short_p = (short *) &esp_now_send_buffer[esp_now_send_buffer_cnt];
-  extern short preset;
-  memcpy(short_p, &preset, sizeof(short));
-  esp_now_send_buffer_cnt += sizeof(short);
-  bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
-  if(do_display) {
-    MENU.out(F("ESP-NOW sent PRES "));
-    MENU.out(preset);
-    MENU.tab();
+  extern String preName;
+  const char* preName_c_p = preName.c_str();
+
+  char c;
+  for (int b=0; b<15 ;b++) {
+    peer_ID.preName[b] = c = preName_c_p[b];
+    if(c==0)
+      break;
   }
 
-  esp_err_t status = esp_now_send(mac_addr, esp_now_send_buffer, esp_now_send_buffer_cnt);
+  peer_ID_t* ID_p = (peer_ID_t *) &esp_now_send_buffer[esp_now_send_buffer_cnt];
+  memcpy(ID_p, &peer_ID, sizeof(peer_ID_t));
+  esp_now_send_buffer_cnt += sizeof(peer_ID_t);
+}
 
+peer_ID_t esp_now_read_mine() {	// reads identity data from esp_now_received_data
+  peer_ID_t read_peer_ID;
+  uint8_t* data_read_p = esp_now_received_data + esp_now_received_data_read;
+  for(int b=0; b<6; b++)
+    read_peer_ID.mac_addr[b] = *data_read_p++;
+  esp_now_received_data_read += 6;
+
+  char c;
+  for(int i=0; i<16; i++) {
+    read_peer_ID.preName[i] = c = *data_read_p++;
+    if(c == '\0')
+      break;
+  }
+
+  return read_peer_ID;
+}
+
+esp_err_t esp_now_send_who(mac_addr_t* mac_addr) {
+  bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
+
+  icode_t* i_data = (icode_t*) esp_now_send_buffer + esp_now_send_buffer_cnt;
+  *i_data++ = N_WHO;
+  esp_now_send_buffer_cnt = sizeof(icode_t);	// icode_t meaning
+
+  esp_now_add_mine();
+
+  if(do_display)
+    MENU.out(F("ESP-NOW send WHO\t"));
+
+  esp_err_t status = esp_now_send(mac_addr, esp_now_send_buffer, esp_now_send_buffer_cnt);
   if(do_display)
     esp_err_info(status);
 
   return status;
 }
 
-esp_err_t esp_now_send_preset(mac_addr_t* mac_addr, short preset) {
-  icode_t* i_data = (icode_t*) esp_now_send_buffer;
-  *i_data++ = PRES;
-  esp_now_send_buffer_cnt = sizeof(icode_t);	// icode_t meaning
-
-  short* short_p = (short *) &esp_now_send_buffer[esp_now_send_buffer_cnt];
-  extern short preset;
-  memcpy(short_p, &preset, sizeof(short));
-  esp_now_send_buffer_cnt += sizeof(short);
-  bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
-  if(do_display) {
-    MENU.out(F("ESP-NOW sent PRES "));
-    MENU.out(preset);
-    MENU.tab();
-  }
-
-  esp_err_t status = esp_now_send(mac_addr, esp_now_send_buffer, esp_now_send_buffer_cnt);
-
-  if(do_display)
-    esp_err_info(status);
-
-  return status;
-}
 
 esp_err_t  esp_now_send_macro(mac_addr_t* mac_addr, char * macro) {
   icode_t* i_data = (icode_t*) esp_now_send_buffer;
@@ -255,7 +267,7 @@ bool mac_is_non_zero(mac_addr_t* mac_addr) {
 peer_ID_t esp_now_pulses_known_peers[ESP_NOW_MAX_TOTAL_PEER_NUM];
 
 void display_peer_ID_list() {
-  MENU.outln(F("\nknown peers:"));
+  MENU.outln(F("known peers:"));
   int i;
   for(i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {
     if(mac_is_non_zero(esp_now_pulses_known_peers[i].mac_addr)) {
@@ -335,10 +347,14 @@ void esp_now_pulses_2_ID_list(uint8_t* mac_addr, char* preName /*hardware*/) {
       // preName
       if(preName) {	// TODO: TEST:
 	int len = strlen(preName);
-	char* pp = esp_now_pulses_known_peers[i].preName;
-	memcpy(pp, &preName, len);
-	*(pp + len) = '\0';
-      }
+	for(int b=0; b<16; b++) {
+	  if(b < len)
+	    esp_now_pulses_known_peers[i].preName[b] = preName[b];
+	  else
+	    esp_now_pulses_known_peers[i].preName[b] = '\0';
+	}
+	MENU.outln(esp_now_pulses_known_peers[i].preName);
+      } // else
 
       // hardware planed
       if(do_display) {
@@ -352,6 +368,7 @@ void esp_now_pulses_2_ID_list(uint8_t* mac_addr, char* preName /*hardware*/) {
   } // mac_addr != NULL
 }
 
+// TODO: parameter including preName	peer_ID_t ################
 esp_err_t esp_now_pulses_add_peer(const mac_addr_t *mac_addr) {	// might give feedback
   bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
   if(do_display)
@@ -366,7 +383,7 @@ esp_err_t esp_now_pulses_add_peer(const mac_addr_t *mac_addr) {	// might give fe
   esp_err_t status = esp_now_add_peer(&peer_info);
   switch (status) {
   case ESP_OK:
-    esp_now_pulses_2_ID_list((mac_addr_t*) mac_addr, "");
+    esp_now_pulses_2_ID_list((mac_addr_t*) mac_addr, ""); // DADA ""
     if(do_display)
       MENU.outln(F("ok"));
     break;
@@ -424,13 +441,17 @@ static void esp_now_pulses_reaction(const mac_addr_t *mac_addr) {
     break;
 
   case N_WHO:
-    if(do_display) {
-      MENU.out(MAC_str(mac_addr));
-      MENU.space(2);
-      MENU.out(F("WHO? "));
+    {
+      if(do_display) {
+	MENU.out(MAC_str(mac_addr));
+	MENU.space(2);
+	MENU.outln(F("WHO?"));
+      }
+
+      peer_ID_t received_ID = esp_now_read_mine();
+      esp_now_pulses_2_ID_list((mac_addr_t*) mac_addr, received_ID.preName);
     }
-    esp_now_send_ID((mac_addr_t*) mac_addr);	// send ID
-  break;
+    break;
 
   case N_ME:
     {
