@@ -125,10 +125,11 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
     } else
       u8x8.clearLine(row++);
 
+    row++;
     u8x8.clearLine(row);
     u8x8.drawString(0, row++, array2name(SCALES, selected_in(SCALES)));
 
-    u8x8.clearLine(row++);	// empty line
+    // u8x8.clearLine(row++);	// empty line
 
     u8x8.clearLine(row);
     u8x8.drawString(0, row++, array2name(JIFFLES, selected_in(JIFFLES)));

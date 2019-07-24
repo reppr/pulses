@@ -3332,8 +3332,32 @@ bool musicBox_reaction(char token) {
 
 #if defined USE_ESP_NOW
   case 'C':
-    {
-      MENU.outln(F("SEND NOW, then do"));
+    if(MENU.peek() == 'C' ) {	// second letter C: 'CC...' configure esp_now sending
+      MENU.drop_input_token();
+      if(MENU.is_numeric()) {	// 'C<numeric>'
+	/*
+	 *ATTENTION* UI numbering is one more as the field index:
+	 UI 0 means NULL pointer 		   alias 'known_peers_mac_p'
+	 UI 1 means esp_now_pulses_known_peers[0]  == broadcast
+	 UI 2 means first other			   individual "2"
+	 */
+	int input_value= MENU.numeric_input(0);		// default to broadcast
+	if(input_value == 0) {
+	  esp_now_send2_mac_p = known_peers_mac_p;	// NULL == *all known* peers
+	} else if(input_value <= ESP_NOW_MAX_TOTAL_PEER_NUM) {
+	  esp_now_send2_mac_p = esp_now_pulses_known_peers[input_value -1 ].mac_addr;
+	} else {
+	  MENU.outln_invalid();
+	  display_peer_ID_list();
+	}
+      } else {	// *non numeric input* after 'CC'	TODO: search preName
+	MENU.outln("DADA to implement name search");
+      }
+
+    } else {	// normal case (second letter <> 'C' (from 'CC')
+      if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
+	MENU.outln(F("SEND NOW, maybe do"));
+
       int len=0;
       char c;
       for(;len < 64; len++) {
@@ -3347,7 +3371,7 @@ bool musicBox_reaction(char token) {
 	*(macro + i) = (char) MENU.drop_input_token();
       *(macro + i) = '\0';
 
-      esp_now_send_and_do_macro(known_peers_mac_p, macro);
+      esp_now_send_maybe_do_macro(esp_now_send2_mac_p, macro);
       free(macro);
     }
     break;

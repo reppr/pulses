@@ -1954,10 +1954,9 @@ void morse_token_decode() {	// decode received token sequence
 
 	      } else if(morse_PRESENT_COMMAND == "MACRO_NOW") {	// ...-.  SN
 		if(morse_out_buffer_cnt) {
-		  extern uint8_t* mac_addr;
-		  extern void esp_now_send_and_do_macro(uint8_t* mac_addr, char * macro);
+		  extern void esp_now_send_maybe_do_macro(uint8_t* mac_addr, char * macro);
 		  morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
-		  esp_now_send_and_do_macro(known_peers_mac_p, morse_output_buffer); // send do known_peers_mac_p
+		  esp_now_send_maybe_do_macro(esp_now_send2_mac_p, morse_output_buffer); // send to *esp_now_send2_mac_p
 		} else {
 		  MENU.outln(F("no data to send now"));
 		}

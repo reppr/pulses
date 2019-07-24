@@ -59,10 +59,18 @@ mac_addr_t broadcast_mac[] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 mac_addr_t* known_peers_mac_p = NULL;	// this is a *PSEUDO MAC POINTER* to NULL
 					//   esp_now_send() will *send to ALL KNOWN PEERS*
 
+/*
+  mac_addr_t*  esp_now_send2_mac_p
+
+  points to the mac esp_now_send() will send to
+  if NULL: send to *ALL KNOWN* peers
+*/
+mac_addr_t* esp_now_send2_mac_p = broadcast_mac; // DEFAULT: *first* message will be BROADCASTed
+
 // MAC as string
 char* MAC_str(const mac_addr_t* mac) {	// TODO: TEST: mac==NULL case
   if(mac == NULL)
-    return "0=> ALL KNOWN";
+    return ">*< ALL KNOWN >*<";
   // else
 
   static char MACstr[18];
@@ -515,16 +523,32 @@ static void pulses_data_received_callback(const mac_addr_t *mac_addr, const uint
   esp_now_pulses_reaction(mac_addr);
 }
 
-void esp_now_send_and_do_macro(mac_addr_t* mac_addr, char* macro) {
+/*
+  esp_now_send_maybe_do_macro
+
+  sends a menu KB macro to the configured  esp_now_send2_mac_p*
+
+  IF the mac* == NULL (alias known_peers_mac_p*) || BROADCAST
+     THEN *DO* play the macro locally
+
+  else if sending to an INDIVIDUAL
+     ONLY send *without playing it locally*	
+*/
+void esp_now_send_maybe_do_macro(mac_addr_t* mac_addr, char* macro) {
   if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {
-    MENU.out(F("esp_now_send_and_do_macro() "));
+    MENU.out(F("esp_now_send_maybe_do_macro() "));
     MENU.outln(macro);
   }
 
   esp_err_t status = esp_now_send_macro(mac_addr, macro);
-  if(status == ESP_OK)	// if sent, do it locally now:
-    MENU.play_KB_macro(macro);
-  else						// sending failed
+  if(status == ESP_OK) {	// if sent, maybe DO it locally now?
+
+    if(known_peers_mac_p == NULL || known_peers_mac_p == (mac_addr_t*) &broadcast_mac) {  // to play or not to play?
+      MENU.out(F("send AND locally DO "));
+      MENU.play_KB_macro(macro);		// only play locally if the recipent is *NOT* an individual
+    }
+
+  } else						// sending failed
     if(MENU.maybe_display_more(VERBOSITY_LOWEST/* sic! */) || DEBUG_ESP_NOW)	// *do* display that
       MENU.error_ln(esp_err_to_name(status));
 }

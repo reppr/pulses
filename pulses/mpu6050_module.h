@@ -77,12 +77,13 @@ bool mpu6050_setup() {
     MENU.out(o);
     MENU.outln('}');
 
-    MENU.ln();
+    MENU.ln(2);
     return true;
   }
 
   MENU.out(F("failed: "));
-  MENU.outln(mpu6050.getDeviceID());
+  MENU.out(mpu6050.getDeviceID());
+  MENU.ln(2);
   return false;
 }
 

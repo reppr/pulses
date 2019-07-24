@@ -1,9 +1,48 @@
 README pulses
 
-  (this README is outdated and very incomplete, sorry)
-
   Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
   http://github.com/reppr/pulses
+
+
+  Setup an ensemble of ESP32 driven harmonical music instruments
+    most of them portable
+    some stationary
+
+  They will be used for installations and performances during
+    "The Living Room Festival 2019", STADIONBRACHE Zürich, Switzerland, august 24 - 31
+    Probably it will soon show up on their page  https://www.facebook.com/livingroomstadionbrache/
+
+
+  Portable instruments
+    have a touch morse input pin for configuration
+    can be influenced by moving using MPU6050
+    so, when the players dance, the music will change in the rhythm of the dance ;)
+
+  Stationary instruments
+    could be added i.e. when they need more electrical power
+    like RGB strings
+    or LED spots
+
+
+  Configure all instruments (from any one of them):
+   * either by using morse touch input
+   * or using a serial connection to one instrument
+
+  The configuration can be sent to the recipient(s)  by esp_now_send() 'C<...>'
+    'CC<n>' to set recipient(s)
+    'C<xyz>' sends '<xyz>' to the selected recipent(s)
+
+  Start the band with menu 'CP' (from any instrument in the group)
+
+
+  *proof of concept*  the UI still needs a lot of work...
+
+
+
+  (this README is *very outdated* and *very* incomplete, sorry)
+
+  ****************************************************************
+  old README:
 
   Arduino library collection to raise actions in harmonical time intervals.
   Periodically do multiple independent tasks named 'pulses'.
