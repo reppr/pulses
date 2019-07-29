@@ -3799,6 +3799,7 @@ bool musicBox_reaction(char token) {
 #if defined USE_ESP_NOW	// (else: pulses 'D')
   case 'D':		// musicBox 'D'
     display_peer_ID_list();
+    pulses_RGB_LED_string_init();
     break;
 #endif
 

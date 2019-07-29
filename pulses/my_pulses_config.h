@@ -6,11 +6,21 @@
 
 */
 
-//#define PRENAME	SoundShip1		// individual name	// better use nvs_PRENAME
+/* set PRENAME:
+   better use nvs_PRENAME	see: nvs_pulses_setup.h		NVS_PUT_PRENAME_HACK
+*/
+//#define PRENAME	SoundShip1		// individual name	// better use nvs_PRENAME  see above
 /*			0123456789abcdef	// 16 bytes	*/
 
 #define FAMILY_NAME	SoundShip3D		// configuration family	// see: pulses_engine_config.h
 // /*			0123456789abcdef	// 16 bytes	*/
+
+
+#define USE_RGB_LED_STRIP
+#if defined USE_RGB_LED_STRIP
+  #define RGB_STRING_LED_CNT		144	// number of RGB leds in the string
+  #define RGB_LED_STRIP_DATA_PIN	14	// use GPIO14 || GPIO27
+#endif
 
 #define USE_MORSE	// touch morse code is in use :)
 #define MORSE_OUTPUT_PIN	PERIPHERAL_POWER_SWITCH_PIN	// *ONLY* possible if there's *NO POWER SWITCH HARDWARE*

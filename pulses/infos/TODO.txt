@@ -211,3 +211,19 @@ change monochrome row jiffles
 
 // TODO: parameter including preName	peer_ID_t ################
 esp_err_t esp_now_pulses_add_peer(const mac_addr_t *mac_addr) {	// might give feedback
+
+try:
+https://github.com/MartyMacGyver/ESP32-Digital-RGB-LED-Drivers/blob/master/examples/arduino-esp32/demo1/demo1.ino
+
+void dumpSysInfo() {
+  esp_chip_info_t sysinfo;
+  esp_chip_info(&sysinfo);
+  Serial.print("Model: ");
+  Serial.print((int)sysinfo.model);
+  Serial.print("; Features: 0x");
+  Serial.print((int)sysinfo.features, HEX);
+  Serial.print("; Cores: ");
+  Serial.print((int)sysinfo.cores);
+  Serial.print("; Revision: r");
+  Serial.println((int)sysinfo.revision);
+}

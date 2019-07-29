@@ -5,7 +5,7 @@ GPIO00	button
 
 GPIO01  TX0	Serial TX
 
-GPIO02	[touch]	MORSE_OUTPUT_PIN	[often blue onboard led, add piezzo?]
+GPIO02	[touch]	(rarely used as MORSE_OUTPUT_PIN	[often blue onboard led, add piezzo?])
 	TODO: test as touch (led!)
 
 GPIO03	RX0	Serial RX
@@ -27,13 +27,15 @@ GPIO10 FLASH D3
 
 GPIO11 FLASH CMD
 
-GPIO12	[touch]	PERIPHERAL_POWER_SWITCH_PIN, MORSE_TOUCH_INPUT_PIN (ESP32 touch sensor as morse input)	(MISO MICROSD)
+GPIO12	[touch]		(MISO MICROSD)
+       MORSE_OUTPUT_PIN	  ||	PERIPHERAL_POWER_SWITCH_PIN
+       ((was: MORSE_TOUCH_INPUT_PIN (ESP32 touch sensor as morse input))
 
-GPIO13	[touch]	TOUCH	(LyraT:touch TP5"Vol-")
+GPIO13	[touch]	TOUCH		MORSE_TOUCH_INPUT_PIN		(LyraT:touch TP5"Vol-")
 
-GPIO14	[touch]	TOUCH			(MOSI MICROSD)
+GPIO14	[touch]	TOUCH		RGB_LED_STRIP_DATA_PIN		(MOSI MICROSD)
 
-GPIO15	[touch]	OLED_SCL
+GPIO15	[touch]	OLED_SCL	(RGB_LED_STRING)
 
 GPIO16	OLED_RST, ePaper	UART2 RX	// *conflict* UART2 MIDI <> OLED
 
@@ -53,9 +55,9 @@ GPIO23
 
 GPIO25	DAC (low, right)
 
-GPIO26	DAC (high, left)
+GPIO26	DAC (high, left)	(RGB_LED_STRING)
 
-GPIO27	[touch]	TOUCH			(SCK MICROSD)	(LyraT:touch TP6"Vol+")
+GPIO27	[touch]	TOUCH		RGB_LED_STRING		(SCK MICROSD)	(LyraT:touch TP6"Vol+")
 
 
 

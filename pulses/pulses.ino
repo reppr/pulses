@@ -1,6 +1,7 @@
 #define PROGRAM_VERSION		HARMONICAL v.029
 /*				0123456789abcdef   */
 
+#include "extensions/pulses_RGB_LED_string.h"
 
 /* **************************************************************** */
 /*
