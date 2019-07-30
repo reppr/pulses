@@ -3799,7 +3799,28 @@ bool musicBox_reaction(char token) {
 #if defined USE_ESP_NOW	// (else: pulses 'D')
   case 'D':		// musicBox 'D'
     display_peer_ID_list();
-    pulses_RGB_LED_string_init();
+    random_RGB_string();
+    /*
+    {
+      int i=0;
+      strand_t * strands [STRANDCNT];
+      strands[i] = &STRANDS[i];
+
+      MENU.out("LED STRING ");
+      ulong t0 = micros();
+      int s = digitalLeds_drawPixels(strands, 1);
+      ulong d = micros() - t0;
+      MENU.out(s);
+      MENU.tab();
+      MENU.outln(d);
+
+//      randomStrands(strands, i, 100, 3000);
+//      scanners(strands, i, 0, 2000);
+//      scanners(strands, i, 0, 2000);
+//      rainbows(strands, i, 0, 4000);
+
+    }
+    */
     break;
 #endif
 

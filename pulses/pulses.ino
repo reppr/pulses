@@ -1,8 +1,6 @@
 #define PROGRAM_VERSION		HARMONICAL v.029
 /*				0123456789abcdef   */
 
-#include "extensions/pulses_RGB_LED_string.h"
-
 /* **************************************************************** */
 /*
 			pulses.ino
@@ -156,8 +154,6 @@ action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actio
 /* **************************************************************** */
 // some #define's:
 #define ILLEGAL		-1
-#define ILLEGAL_PIN	255
-
 
 /* **************************************************************** */
 // define gpio_pin_t gpio_pins[GPIO_PINS]	// see: pulses_boards.h
@@ -762,6 +758,10 @@ bool stack_sync_user_selected=false;
   #include "mpu6050_module.h"
 #endif
 
+#if defined USE_RGB_LED_STRIP
+  #include "extensions/pulses_RGB_LED_string.h"
+#endif
+
 /* **************************************************************** */
 #ifdef ARDUINO
 /* Arduino setup() and loop():					*/
@@ -933,6 +933,10 @@ void setup() {
 
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
   random_entropy();	// gathering entropy from serial noise
+#endif
+
+#if defined USE_RGB_LED_STRIP
+  pulses_RGB_LED_string_init();
 #endif
 
   delay(STARTUP_DELAY);

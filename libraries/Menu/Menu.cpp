@@ -1086,7 +1086,7 @@ long Menu::numeric_input(long default_value) {
 
   // number was missing, return the given default_value:
  number_missing:
-  if (verbosity) {
+  if (maybe_display_more(VERBOSITY_SOME)) {
     outln(F("number missing"));
   }
   return default_value;		// return default_value
