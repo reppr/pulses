@@ -128,8 +128,12 @@ struct pulse_t {
 #define PAYLOAD			8	// do payload(pulse)
 #define doesICODE		16	// plays icode
 
-#define noACTION		32	// 'mutes' all actions
-#define ACTION_MASK_BITS	6	// >>>>>>>> *DO CHANGE* number of flags changes here <<<<<<<
+#define DO_first		32	// do before counting and any other actions
+#define DO_after		64	// do after other actions
+
+#define noACTION		128	// 'mutes' all actions
+
+#define ACTION_MASK_BITS	8	// >>>>>>>> *DO CHANGE* number of flags changes here <<<<<<<
 					// ACTION_MASK_BITS is used by mask displaying code (only)
 
   group_flags_t groups;			// flags like primary pulse, pentatonic, bass, octave and the like
@@ -155,6 +159,9 @@ struct pulse_t {
 #define g_LOW_END	512	// deep bass & rhytm & structure & below ;)
 #define g_MIDDLE	1024	// bass & melody	TODO: split in 2 g_BASS and g_MELODY
 #define g_HIGH_END	2048	// high up in the skies
+
+
+  void (*do_first)(int);	// see: action flag DO_first
 
   // internal parameter:
   unsigned int remaining;		// if COUNTED, gives number of remaining executions

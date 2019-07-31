@@ -336,6 +336,10 @@ int Pulses::highest_available_pulse() {
 // void wake_pulse(int pulse);	do one life step of the pulse
 // gets called from check_maybe_do()
 void Pulses::wake_pulse(int pulse) {
+  if ((pulses[pulse].action_flags & DO_first) && !(pulses[pulse].action_flags & noACTION)) {	// unmuted DO_first action?
+    (*pulses[pulse].do_first)(pulse);		// do do_first action
+  }
+
   pulses[pulse].counter++;			//      count
 
 #ifdef IMPLEMENT_TUNING
@@ -485,6 +489,16 @@ void Pulses::show_action_flags(action_flags_t flags) {
 
   if(flags & doesICODE)
     (*MENU).out('C');
+  else
+    (*MENU).out('.');
+
+  if(flags & DO_first)
+    (*MENU).out('1');
+  else
+    (*MENU).out('.');
+
+  if(flags & DO_after)
+    (*MENU).out('A');
   else
     (*MENU).out('.');
 
