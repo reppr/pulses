@@ -9,7 +9,7 @@
 //#define DEBUG_LED_STRINGS
 
 #if ! defined MAX_LED_STRING_INTENSITY
-  #define MAX_LED_STRING_INTENSITY	32
+  #define MAX_LED_STRING_INTENSITY	48
 #endif
 
 #include "../FOREIGN/ESP32-Digital-RGB-LED-Drivers/src/esp32_digital_led_lib.h"
@@ -284,6 +284,25 @@ void random_HSV_LED_string() {
   digitalLeds_drawPixels(strands, 1);
 } // random_HSV_LED_string()
 
+
+bool update_RGB_LED_string=false;	// is the string buffer dirty?
+
+void set_pulse_LED_pixel_from_counter(int pulse) {
+  float H, S, V;
+  H = (float) (PULSES.pulses[pulse].counter % 8) / 8.0;
+  //  MENU.out(H); MENU.space();
+  S = 0.8;
+  V = (float) MAX_LED_STRING_INTENSITY / (float) 255;
+
+  strand_t * strand_p = strands[0];
+  int pix_i = pulse - lowest_primary;
+  pixelColor_t pixel;
+
+  HSV_2_RGB_degree(&pixel, (H * 360.0), S, V);
+  strand_p->pixels[pix_i] = pixel;
+
+  update_RGB_LED_string=true;		// new buffer content to be displayed
+}
 
 #define PULSES_RGB_LED_STRING_H
 #endif

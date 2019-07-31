@@ -129,7 +129,7 @@ struct pulse_t {
 #define doesICODE		16	// plays icode
 
 #define DO_first		32	// do before counting and any other actions
-#define DO_after		64	// do after other actions
+#define DO_after		64	// do after other actions	// TODO: UNUSED:
 
 #define noACTION		128	// 'mutes' all actions
 
@@ -314,6 +314,7 @@ class Pulses {
   int highest_available_pulse();	// first free pulse from top (or ILLEGAL)
   void wake_pulse(int pulse);		// wake a pulse up, called from check_maybe_do()
   void deactivate_pulse(int pulse);	// clear ACTIVE flag, keep data
+  void set_do_first(int pulse, void (*do_first)(int));	// set and activate do_first
   void set_payload(int pulse, void (*payload)(int));	// set and activate payload
   void set_payload_with_pin(int pulse, void (*payload)(int), gpio_pin_t pin);	// set and activate payload with gpio
   void set_gpio(int pulse, gpio_pin_t pin);		// set gpio

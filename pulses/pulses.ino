@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION		HARMONICAL v.029
+#define PROGRAM_VERSION		HARMONICAL v.030
 /*				0123456789abcdef   */
 
 /* **************************************************************** */
@@ -1238,6 +1238,14 @@ bool low_priority_tasks() {
   static uint32_t low_priority_cnt = 0;
 
   low_priority_cnt++;
+
+#if defined USE_RGB_LED_STRIP
+  if(update_RGB_LED_string) {
+    digitalLeds_drawPixels(strands, 1);
+    update_RGB_LED_string = false;
+    return true;
+  }
+#endif
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
 
@@ -3507,6 +3515,14 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   //	selected_DACsq_intensity_proportional(255, 2);
 
   PULSES.select_n(voices);	// select all primary voices again
+
+#if defined USE_RGB_LED_STRIP
+  int pl_max = PULSES.get_pl_max();
+  for (int pulse=0; pulse<pl_max; pulse++) {
+    if (PULSES.pulse_is_selected(pulse))
+      PULSES.set_do_first(pulse, set_pulse_LED_pixel_from_counter);
+  }
+#endif
 }
 
 

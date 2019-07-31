@@ -354,6 +354,10 @@ void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditional
   case OFF:
     MusicBoxState_name = F("OFF");
 
+#if defined USE_RGB_LED_STRIP
+    digitalLeds_resetPixels(&strands[0], 1);
+#endif
+
     // control if the butler is still running || musicBox_butler_i != ILLEGAL
     if(musicBox_butler_i != ILLEGAL) {	// musicBox_butler(p) seems running?
       if(PULSES.pulses[musicBox_butler_i].payload == &musicBox_butler) {

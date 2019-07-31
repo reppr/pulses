@@ -401,6 +401,15 @@ void Pulses::deactivate_pulse(int pulse) {	// clear ACTIVE flag, keep data
 }
 
 
+void Pulses::set_do_first(int pulse, void (*do_first)(int)) {	// set and activate do_first
+  pulses[pulse].do_first = do_first;
+  pulses[pulse].action_flags |= DO_first;
+
+  if (do_first == NULL)
+    pulses[pulse].action_flags &= ~DO_first;	// clear DO_first bit if do_first==NULL
+}
+
+
 void Pulses::set_payload(int pulse, void (*payload)(int)) {	// set and activate payload
   pulses[pulse].payload = payload;
   pulses[pulse].action_flags |= PAYLOAD;

@@ -228,4 +228,5 @@ void dumpSysInfo() {
   Serial.println((int)sysinfo.revision);
 }
 
-pulses_RGB_LED_string.h		why do i always get 3 identical LEDs ???
+pulses_RGB_LED_string.h	 why do i always get 3 identical LEDs ???
+  HW PROBLEM?	runs well with 1m 144 LED 5V string :)

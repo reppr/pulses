@@ -52,6 +52,7 @@ init_pulses	KEYWORD2
 highest_available_pulse	KEYWORD2
 wake_pulse	KEYWORD2
 deactivate_pulse	KEYWORD2
+set_do_first	KEYWORD2
 set_payload	KEYWORD2
 set_payload_with_pin	KEYWORD2
 set_gpio	KEYWORD2
