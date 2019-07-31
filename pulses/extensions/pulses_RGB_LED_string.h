@@ -6,7 +6,7 @@
 
 #if ! defined PULSES_RGB_LED_STRING_H
 
-#define DEBUG_LED_STRINGS
+//#define DEBUG_LED_STRINGS
 
 #if ! defined MAX_LED_STRING_INTENSITY
   #define MAX_LED_STRING_INTENSITY	32
@@ -243,11 +243,6 @@ void random_RGB_string(uint8_t max=8) {
 #if defined DEBUG_LED_STRINGS
     inspect_LED_pixel(strand_p->pixels[i]);
 #endif
-    //    strands[0]->pixels[i] = (pixelColor_t) pixelFromRGB((uint8_t) random(max), (uint8_t) random(max), (uint8_t) random(max));
-    //    strand->pixels[i] = (pixelColor_t) pixelFromRGB((uint8_t) random(max), (uint8_t) random(max), (uint8_t) random(max));
-    //strand->pixels[i].r = (uint8_t) random(max);
-    //strand->pixels[i].g = (uint8_t) random(max);
-    //strand->pixels[i].b = (uint8_t) random(max);
   }
 
   digitalLeds_drawPixels(strands, 1);
@@ -268,6 +263,7 @@ void random_HSV_LED_string() {
     S = (float) random(random_delta_i) / (float) random_delta_i;
     V = (float) random(random_delta_i) / (float) random_delta_i;
 
+#if defined DEBUG_LED_STRINGS
     MENU.out(i);
     MENU.tab();
     MENU.out(H);
@@ -275,12 +271,13 @@ void random_HSV_LED_string() {
     MENU.out(S);
     MENU.tab();
     MENU.outln(V);
+#endif
 
     HSV_2_RGB_degree(&pixel, H, S, V);
     strand_p->pixels[i] = pixel;
+
 #if defined DEBUG_LED_STRINGS
     inspect_LED_pixel(pixel);
-    //    inspect_LED_pixel(strand_p->pixels[i]);
 #endif
   }
 
