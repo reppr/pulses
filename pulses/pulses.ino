@@ -885,6 +885,10 @@ void show_program_version() {	// program version on menu output *and* OLED
 int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very first one
 
 void setup() {
+#if defined USE_RGB_LED_STRIP
+  pulses_RGB_LED_string_init();	// DO THAT EARLY to switch led string off after booting
+#endif
+
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
   random_entropy();	// start gathering entropy before initialisation
 #endif
@@ -933,10 +937,6 @@ void setup() {
 
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
   random_entropy();	// gathering entropy from serial noise
-#endif
-
-#if defined USE_RGB_LED_STRIP
-  pulses_RGB_LED_string_init();
 #endif
 
   delay(STARTUP_DELAY);

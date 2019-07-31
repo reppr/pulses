@@ -3798,9 +3798,10 @@ bool musicBox_reaction(char token) {
 
 #if defined USE_ESP_NOW	// (else: pulses 'D')
   case 'D':		// musicBox 'D'
-    display_peer_ID_list();
-    random_RGB_string();
-    /*
+    //display_peer_ID_list();
+    //random_RGB_string(MENU.numeric_input(4));
+    random_HSV_LED_string();
+  /*
     {
       int i=0;
       strand_t * strands [STRANDCNT];
