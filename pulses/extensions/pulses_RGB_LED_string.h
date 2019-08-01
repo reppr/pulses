@@ -6,7 +6,8 @@
 
 #if ! defined PULSES_RGB_LED_STRING_H
 
-//#define DEBUG_LED_STRINGS
+//#define DEBUG_LED_STRINGS			// empty  or 'SATURATION'
+//#define DEBUG_LED_STRINGS	SATURATION	// empty  or 'SATURATION'
 
 #if ! defined MAX_LED_STRING_INTENSITY
   #define MAX_LED_STRING_INTENSITY	48
@@ -104,11 +105,17 @@ void HSV_2_RGB_degree(pixelColor_t* pixel, float H, float S, float V) {	// TODO:
   }
 
 #if defined DEBUG_LED_STRINGS
-  MENU.out(H);
-  MENU.tab();
-  MENU.out(S);
-  MENU.tab();
-  MENU.outln(V);
+  #if DEBUG_LED_STRINGS != SATURATION
+    MENU.out(F("H= "));
+    MENU.out(H);
+    MENU.out(F("\tS= "));
+    MENU.out(S);
+    MENU.out(F("\tV= "));
+    MENU.outln(V);
+  #else	//    DEBUG_LED_STRINGS == SATURATION
+    MENU.out(F("\tS= "));
+    MENU.outln(S);
+  #endif
 #endif
   // parameters within range now	TODO: test
 
@@ -119,23 +126,25 @@ void HSV_2_RGB_degree(pixelColor_t* pixel, float H, float S, float V) {	// TODO:
   float t = V * (1 - S*(1 - f));
 
 #if defined DEBUG_LED_STRINGS
-  MENU.out(F("f = "));
-  MENU.out(f);
-  MENU.out(F("\tp = "));
-  MENU.out(p);
-  MENU.out(F("\tq = "));
-  MENU.out(q);
-  MENU.out(F("\tt = "));
-  MENU.outln(t);
+  #if DEBUG_LED_STRINGS != SATURATION
+    MENU.out(F("f = "));
+    MENU.out(f);
+    MENU.out(F("\tp = "));
+    MENU.out(p);
+    MENU.out(F("\tq = "));
+    MENU.out(q);
+    MENU.out(F("\tt = "));
+    MENU.outln(t);
 
-  // double check h_i range
-  MENU.out(F("h_i = "));
-  MENU.out(h_i);
-  if(h_i < 0 || h_i > 6) {	// catch programming errors ;)
-    MENU.tab();
-    MENU.error_ln(F("HSV_2_RGB_degree()\th_i"));
-  } else
-    MENU.ln();
+    // double check h_i range
+    MENU.out(F("h_i = "));
+    MENU.out(h_i);
+    if(h_i < 0 || h_i > 6) {	// catch programming errors ;)
+      MENU.tab();
+      MENU.error_ln(F("HSV_2_RGB_degree()\th_i"));
+    } else
+      MENU.ln();
+  #endif
 #endif
 
   switch(h_i) {
@@ -215,8 +224,11 @@ bool pulses_RGB_LED_string_init() {
 
 void random_RGB_string(uint8_t max=8) {
 #if defined DEBUG_LED_STRINGS
-  MENU.outln(F("random_RGB_string()"));
+  #if DEBUG_LED_STRINGS != SATURATION
+    MENU.outln(F("random_RGB_string()"));
+  #endif
 #endif
+
   strand_t * strand_p = strands[0];
   for(int i=0; i<RGB_STRING_LED_CNT; i++) {
     switch(i) {
@@ -240,16 +252,19 @@ void random_RGB_string(uint8_t max=8) {
     default:
       strand_p->pixels[i] = pixelFromRGB(random(max), random(max), random(max));
     }
+
 #if defined DEBUG_LED_STRINGS
+  #if DEBUG_LED_STRINGS != SATURATION
     inspect_LED_pixel(strand_p->pixels[i]);
+  #endif
 #endif
   }
 
   digitalLeds_drawPixels(strands, 1);
-}
+} // random_RGB_string(uint8_t max=8)
 
 void random_HSV_LED_string() {
-#if defined DEBUG_LED_STRINGS
+#if DEBUG_LED_STRINGS == true
   MENU.outln(F("random_HSV_LED_string()"));
 #endif
 
@@ -263,7 +278,7 @@ void random_HSV_LED_string() {
     S = (float) random(random_delta_i) / (float) random_delta_i;
     V = (float) random(random_delta_i) / (float) random_delta_i;
 
-#if defined DEBUG_LED_STRINGS
+#if DEBUG_LED_STRINGS == true
     MENU.out(i);
     MENU.tab();
     MENU.out(H);
@@ -276,7 +291,7 @@ void random_HSV_LED_string() {
     HSV_2_RGB_degree(&pixel, H, S, V);
     strand_p->pixels[i] = pixel;
 
-#if defined DEBUG_LED_STRINGS
+#if DEBUG_LED_STRINGS == true
     inspect_LED_pixel(pixel);
 #endif
   }
@@ -285,24 +300,58 @@ void random_HSV_LED_string() {
 } // random_HSV_LED_string()
 
 
+//int hue_slice_cnt = 8;	// just a usable default	// TODO: UI
+int hue_slice_cnt = 12;	// just another usable default	// TODO: UI
+
+//float saturation_start_value = 0.12;
+//float saturation_start_value = 0.3;
+float saturation_start_value = 0.2;	// TODO: test&trimm default value ################	UI
+float saturation = saturation_start_value;
+
+float saturation_change_factor = 1.004;
+float saturation_reset_value = 0.35;
+
+float BlueHack_factor = 2.0;	// HACK: increase blueness
+
+
 bool update_RGB_LED_string=false;	// is the string buffer dirty?
 
 void set_pulse_LED_pixel_from_counter(int pulse) {
-  float H, S, V;
-  H = (float) (PULSES.pulses[pulse].counter % 8) / 8.0;
-  //  MENU.out(H); MENU.space();
-  S = 0.8;
+  float H, V;
+
+  bool do_display = MENU.maybe_display_more(VERBOSITY_SOME);
+#if defined DEBUG_LED_STRINGS
+  do_display = true;
+#endif
+
+  saturation *= saturation_change_factor;	// slowly increase saturation ;)
+  if(saturation > 1.0) {			// sudden reset on overflow to a low saturation level
+    saturation = saturation_reset_value;
+    if(do_display) {
+      MENU.out(F("RESET saturation to "));
+      MENU.outln(saturation);
+    }
+  }
+
+  H = (float) (PULSES.pulses[pulse].counter % hue_slice_cnt) / (float) hue_slice_cnt;
   V = (float) MAX_LED_STRING_INTENSITY / (float) 255;
 
   strand_t * strand_p = strands[0];
   int pix_i = pulse - lowest_primary;
   pixelColor_t pixel;
 
-  HSV_2_RGB_degree(&pixel, (H * 360.0), S, V);
+  HSV_2_RGB_degree(&pixel, (H * 360.0), saturation, V);
   strand_p->pixels[pix_i] = pixel;
 
+  // try the BlueHack, to give *more* blue
+  int blue = (int) (((float) strand_p->pixels[pix_i].b * BlueHack_factor) + 0.5);
+  if(blue > 255)
+    blue = 255;
+  strand_p->pixels[pix_i].b = blue;
+
   update_RGB_LED_string=true;		// new buffer content to be displayed
-}
+} // set_pulse_LED_pixel_from_counter(int pulse)
+
 
 #define PULSES_RGB_LED_STRING_H
 #endif
