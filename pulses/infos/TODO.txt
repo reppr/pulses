@@ -236,4 +236,6 @@ int hue_slice_cnt = 8;	// just a usable default	// TODO: UI
 
 what is sysinfo.features ???
 
-float saturation_start_value = 0.2;	// TODO: test&trimm default value ################	UI
+float saturation_start_value = 0.2;	// TODO: test&trimm default value #################
+
+TODO: float menu input !!!

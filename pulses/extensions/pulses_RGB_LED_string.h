@@ -308,7 +308,7 @@ int hue_slice_cnt = 12;	// just another usable default	// TODO: UI
 float saturation_start_value = 0.2;	// TODO: test&trimm default value ################	UI
 float saturation = saturation_start_value;
 
-float saturation_change_factor = 1.004;
+float saturation_change_factor = 1.004;	// TODO: UI
 float saturation_reset_value = 0.35;
 
 float BlueHack_factor = 2.0;	// HACK: increase blueness

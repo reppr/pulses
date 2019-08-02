@@ -3440,19 +3440,55 @@ bool musicBox_reaction(char token) {
 #if defined USE_RGB_LED_STRIP
   case 'L':	 // 'L' RGB LED STRING
     switch (MENU.peek()) {	// second letter after 'L'
-    case 'B':
+    case 'B':	// 'LB'	background dimming
       MENU.drop_input_token();
       input_value = MENU.numeric_input(0);
       if (input_value > 0) {
 	rgb_background_dim = 1.0 / ((float) input_value);
       }
+
+      if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
+	MENU.out(F("background dim "));
+	MENU.outln(rgb_background_dim);
+      }
       break;
 
-    case 'S':
+    case 'S':	// 'LS'	saturation start value
       MENU.drop_input_token();
       input_value = MENU.numeric_input(0);
       if (input_value > 0) {
 	saturation_start_value = 1.0 / ((float) input_value);
+      }
+
+      if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
+	MENU.out(F("saturation start "));
+	MENU.outln(saturation_start_value);
+      }
+      break;
+
+    case 'R':	// 'LR' saturation_reset_value
+      MENU.drop_input_token();
+      input_value = MENU.numeric_input(0);
+      if (input_value > 0) {
+	saturation_reset_value = 1.0 / ((float) input_value);
+      }
+
+      if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
+	MENU.out(F("saturation_reset_value "));
+	MENU.outln(saturation_reset_value);
+      }
+      break;
+
+    case 'N':	// 'LN' hue_slice_cnt
+      MENU.drop_input_token();
+      input_value = MENU.numeric_input(0);
+      if (input_value > 0) {
+	hue_slice_cnt = input_value;
+      }
+
+      if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
+	MENU.out(F("hue slices "));
+	MENU.outln(hue_slice_cnt);
       }
       break;
 
