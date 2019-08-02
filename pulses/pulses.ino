@@ -3025,9 +3025,15 @@ void do_throw_a_jiffle(int pulse) {		// for pulse_do
       has_data=false;
 
   if (has_data)	{ // there *is* jiffle data
-    int p = init_jiffle((unsigned int *) PULSES.pulses[pulse].data,	\
+    int destination_pulse = init_jiffle((unsigned int *) PULSES.pulses[pulse].data,	\
 	      PULSES.pulses[pulse].next, PULSES.pulses[pulse].period, pulse);
-    PULSES.pulses[p].groups |= g_SECONDARY;
+    PULSES.pulses[destination_pulse].groups |= g_SECONDARY;
+
+#if defined USE_RGB_LED_STRIP
+    if(PULSES.pulses[pulse].flags & HAS_RGB_LEDs) {
+      PULSES.set_rgb_led_string(destination_pulse, PULSES.pulses[pulse].rgb_string_idx, PULSES.pulses[pulse].rgb_pixel_idx);
+    }
+#endif
 
   } else	// zero in first triplet, *invalid* jiffle table.
     MENU.outln(F("no jiffle"));
@@ -3420,6 +3426,12 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
   int base_index = PULSES.pulses[pulse].index;		// readability
   long multiplier=jiffletab[base_index];
   if (multiplier == 0) {	// multiplier==0 no next phase, return
+
+#if defined USE_RGB_LED_STRIP
+    if(PULSES.pulses[pulse].flags & HAS_RGB_LEDs)
+      set_rgb_led_background(pulse);
+#endif
+
     PULSES.init_pulse(pulse);	// remove pulse
     return;			// and return
   }
@@ -3431,6 +3443,7 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
   long divisor=jiffletab[base_index+1];
   long counter=jiffletab[base_index+2];
   if (divisor==0 || counter==0 ) {	// no next phase, return
+    MENU.outln("DADA jiff d|c");
     PULSES.init_pulse(pulse);		// remove pulse
     return;				// and return
   }
@@ -3521,7 +3534,7 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   for (int pulse=0; pulse<pl_max; pulse++) {
     if (PULSES.pulse_is_selected(pulse)) {
       PULSES.set_do_first(pulse, set_pulse_LED_pixel_from_counter);
-      PULSES.set_rgb_led_string(pulse, 0, pulse - lowest_primary);
+      PULSES.set_rgb_led_string(pulse, 0, PULSE_2_RGB_LED_STRING);
     }
   }
 #endif

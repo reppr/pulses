@@ -316,6 +316,9 @@ float BlueHack_factor = 2.0;	// HACK: increase blueness
 
 bool update_RGB_LED_string=false;	// is the string buffer dirty?
 
+
+#define PULSE_2_RGB_LED_STRING	  pulse - lowest_primary	// find the corresponding led sting
+
 void set_pulse_LED_pixel_from_counter(int pulse) {
   float H, V;
 
@@ -337,7 +340,7 @@ void set_pulse_LED_pixel_from_counter(int pulse) {
   V = (float) MAX_LED_STRING_INTENSITY / (float) 255;
 
   strand_t * strand_p = strands[0];
-  int pix_i = pulse - lowest_primary;
+  int pix_i = PULSE_2_RGB_LED_STRING;		// TODO: use pulse intenal data
   pixelColor_t pixel;
 
   HSV_2_RGB_degree(&pixel, (H * 360.0), saturation, V);
@@ -357,6 +360,21 @@ void rgb_led_reset_to_default() {	// reset rgb led strip management to default c
   saturation = saturation_start_value;
 }
 
+void set_rgb_led_background(int pulse) {
+  if(PULSES.pulses[pulse].flags & HAS_RGB_LEDs) {
+    strand_t * strand_p = strands[PULSES.pulses[pulse].rgb_string_idx];
+    pixelColor_t pixel;
+
+    float H, S, V;
+    H = 0.0;		// TODO: this version just switches OFF
+    S = 0.0;
+    V = 0.0;
+    HSV_2_RGB_degree(&pixel, (H * 360.0), saturation, V);
+    strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx] = pixel;
+    update_RGB_LED_string=true;		// new buffer content to be displayed
+  } else
+    MENU.error_ln(F("no RGB LED"));
+}
 
 #define PULSES_RGB_LED_STRING_H
 #endif
