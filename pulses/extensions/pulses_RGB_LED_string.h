@@ -360,17 +360,33 @@ void rgb_led_reset_to_default() {	// reset rgb led strip management to default c
   saturation = saturation_start_value;
 }
 
+float rgb_background_dim = 0.45;	// ok for 5V version 1m 144
+//float rgb_background_dim = 0.1;		// TEST: for "12V" version 5m 300
+
 void set_rgb_led_background(int pulse) {
   if(PULSES.pulses[pulse].flags & HAS_RGB_LEDs) {
     strand_t * strand_p = strands[PULSES.pulses[pulse].rgb_string_idx];
-    pixelColor_t pixel;
 
-    float H, S, V;
-    H = 0.0;		// TODO: this version just switches OFF
-    S = 0.0;
-    V = 0.0;
-    HSV_2_RGB_degree(&pixel, (H * 360.0), saturation, V);
-    strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx] = pixel;
+//    pixelColor_t pixel;
+//    float H, S, V;
+//    H = 0.0;		// TODO: this version just switches OFF
+//    S = 0.0;
+//    V = 0.0;
+//    HSV_2_RGB_degree(&pixel, (H * 360.0), saturation, V);
+//    strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx] = pixel;
+
+    float x = strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].r;
+    x *= rgb_background_dim;
+    strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].r = (x + 0.5);
+
+    x = strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].g;
+    x *= rgb_background_dim;
+    strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].g = (x + 0.5);
+
+    x = strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].b;
+    x *= rgb_background_dim;
+    strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].b = (x + 0.5);
+
     update_RGB_LED_string=true;		// new buffer content to be displayed
   } else
     MENU.error_ln(F("no RGB LED"));
