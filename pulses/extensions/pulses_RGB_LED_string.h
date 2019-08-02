@@ -352,6 +352,25 @@ void set_pulse_LED_pixel_from_counter(int pulse) {
   update_RGB_LED_string=true;		// new buffer content to be displayed
 } // set_pulse_LED_pixel_from_counter(int pulse)
 
+void set_rgb_led_string(int pulse, uint8_t rgb_string_idx, uint8_t pixel_idx) {
+  PULSES.pulses[pulse].rgb_string_idx = rgb_string_idx;
+  PULSES.pulses[pulse].rgb_pixel_idx = pixel_idx;
+  PULSES.pulses[pulse].flags |= HAS_RGB_LEDs;
+}
+
+void remove_rgb_led_string(int pulse, bool clear_leds=false) {
+  PULSES.pulses[pulse].rgb_string_idx = 0;
+  PULSES.pulses[pulse].rgb_pixel_idx = 0;
+  PULSES.pulses[pulse].flags &= ~HAS_RGB_LEDs;
+
+  if(clear_leds)
+    digitalLeds_resetPixels(&strands[0], 1);
+}
+
+void rgb_led_reset_to_default() {	// reset rgb led strip management to default conditions
+  saturation = saturation_start_value;
+}
+
 
 #define PULSES_RGB_LED_STRING_H
 #endif

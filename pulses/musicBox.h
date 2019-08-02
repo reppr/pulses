@@ -2234,6 +2234,10 @@ void start_musicBox() {
   show_program_version();
 #endif
 
+#if defined USE_RGB_LED_STRIP
+  rgb_led_reset_to_default();	// reset rgb led strip management to default conditions
+#endif
+
   set_MusicBoxState(AWAKE);
 
 #if defined  USE_RTC_MODULE
@@ -3248,7 +3252,7 @@ bool musicBox_reaction(char token) {
 	case 'D':
 	  musicBox_when_done=&deep_sleep;		// "EFD" deep_sleep()
 	  break;
-	case 'L':
+	case 'L':	// TODO: free for LED string ################
 	  musicBox_when_done=&light_sleep;	// "EFL" light_sleep()
 	  break;
 	case 'H':

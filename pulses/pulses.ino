@@ -3519,11 +3519,13 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
 #if defined USE_RGB_LED_STRIP
   int pl_max = PULSES.get_pl_max();
   for (int pulse=0; pulse<pl_max; pulse++) {
-    if (PULSES.pulse_is_selected(pulse))
+    if (PULSES.pulse_is_selected(pulse)) {
       PULSES.set_do_first(pulse, set_pulse_LED_pixel_from_counter);
+      PULSES.set_rgb_led_string(pulse, 0, pulse - lowest_primary);
+    }
   }
 #endif
-}
+} // setup_bass_middle_high()
 
 
 // pre-defined jiffle pattern:

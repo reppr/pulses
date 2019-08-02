@@ -239,3 +239,5 @@ what is sysinfo.features ???
 free 'L' for LED string
 
 float saturation_start_value = 0.2;	// TODO: test&trimm default value ################	UI
+
+#error DO WE NEED pulses.h at all?

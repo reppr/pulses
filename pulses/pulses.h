@@ -1,5 +1,7 @@
 #ifndef PULSES_H
 
+#error DO WE NEED pulses.h at all?
+
 void do_jiffle(int pulse);
 void pulse_info_1line(int pulse);
 
