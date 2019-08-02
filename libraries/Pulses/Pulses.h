@@ -20,6 +20,7 @@
 
 #include "../../pulses/pulses_project_conf.h"
 
+
 typedef int icode_t;
 
 //#include <limits.h>
@@ -39,7 +40,7 @@ enum icode {	// names are all four letter words ?	// maybe 8?
 };
 
 #ifndef pulse_flags_t
-  #define pulse_flags_t		uint8_t
+  #define pulse_flags_t		uint16_t
 #endif
 
 #ifndef action_flags_t
@@ -55,12 +56,12 @@ enum icode {	// names are all four letter words ?	// maybe 8?
 //  #define gpio_pin_t		short		// negative values might be used for pin extensions
 #endif
 
-#define JIFFLETAB_INDEX_STEP	3
 
 #include "../../pulses/pulses_systems.h"
 #include "../../pulses/pulses_boards.h"
 
 #include <Menu.h>
+
 
 /* **************************************************************** */
 /* Some basic #define's						    */
@@ -112,6 +113,7 @@ struct pulse_t {
 #define TUNED		       32	// do not set directly, use activate_tuning(pulse)
 #define HAS_ICODE	       64	// do not set directly, use set_icode_p(int pulse, icode_t* icode_p)
 #define HAS_I2C_ADDR_PIN      128	// do not set directly, use set_i2c_addr_pin(uint8_t adr, uint8_t pin)
+#define HAS_RGB_LEDs	      256	// has RGB LED string, set_rgb_led_string(pulse, string_idx, pixel)
 
   //#define INVERSE_LOGIC	      128	// TODO: implement
 
@@ -129,6 +131,8 @@ struct pulse_t {
 #define doesICODE		16	// plays icode
 
 #define DO_first		32	// do before counting and any other actions
+					//   use set_do_first(...) to set and activate
+
 #define DO_after		64	// do after other actions	// TODO: UNUSED:
 
 #define noACTION		128	// 'mutes' all actions
@@ -194,6 +198,14 @@ struct pulse_t {
     used by icode_player as array index
   */
 
+  int other_pulse;
+  /*
+    used by seed_icode_player()
+
+    in a seeder pulse, the other_pulse is the child,
+    in the child, it is the parent
+  */
+
 #if defined USE_i2c
   #if defined USE_MCP23017
     uint8_t i2c_addr;
@@ -244,12 +256,15 @@ struct pulse_t {
 
 #if defined USE_DACs
   //  int (*dac1_wave_function)(int pulse, int volume);
-  int dac1_intensity=0;
+  int dac1_intensity;
   #if (USE_DACs > 1)	// only 1 or 2 DACs supported
     //  int (*dac2_wave_function)(int pulse, int volume);
-    int dac2_intensity=0;
+    int dac2_intensity;
   #endif
 #endif
+
+  uint8_t rgb_string_idx;	// use  set_rgb_led_string(), remove_rgb_led_string()
+  uint8_t rgb_pixel_idx;
 };
 
 /* **************************************************************** */
@@ -319,6 +334,10 @@ class Pulses {
   void set_payload_with_pin(int pulse, void (*payload)(int), gpio_pin_t pin);	// set and activate payload with gpio
   void set_gpio(int pulse, gpio_pin_t pin);		// set gpio
   void set_icode_p(int pulse, icode_t* icode_p, bool activate);			// set icode. maybe activate
+
+  void set_rgb_led_string(int pulse, uint8_t string_idx, uint8_t pixel);
+  void remove_rgb_led_string(int pulse);
+
 
 #if defined USE_i2c
   #if defined USE_MCP23017

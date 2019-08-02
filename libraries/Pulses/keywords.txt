@@ -25,6 +25,8 @@ dest_action_flags	KEYWORD2
 payload	KEYWORD2
 dac1_intensity	KEYWORD2
 dac2intensity	KEYWORD2
+rgb_string_idx	KEYWORD2
+rgb_pixel_idx	KEYWORD2
 get_now	KEYWORD2
 init_time	KEYWORD2
 get_now	KEYWORD2
@@ -57,6 +59,8 @@ set_payload	KEYWORD2
 set_payload_with_pin	KEYWORD2
 set_gpio	KEYWORD2
 set_icode_p	KEYWORD2
+set_rgb_led_string	KEYWORD2
+remove_rgb_led_string	KEYWORD2
 set_i2c_addr_pin	KEYWORD2
 play_icode	KEYWORD2
 show_icode_mnemonic	KEYWORD2

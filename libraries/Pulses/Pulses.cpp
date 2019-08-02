@@ -442,6 +442,20 @@ void Pulses::set_icode_p(int pulse, icode_t* icode_p, bool activate=false) {
 }
 
 
+void Pulses::set_rgb_led_string(int pulse, uint8_t string_idx, uint8_t pixel) {
+  pulses[pulse].rgb_string_idx = string_idx;
+  pulses[pulse].rgb_pixel_idx = pixel;
+  pulses[pulse].flags |= HAS_RGB_LEDs;
+}
+
+
+void Pulses::remove_rgb_led_string(int pulse) {
+  pulses[pulse].flags &= ~HAS_RGB_LEDs;
+  pulses[pulse].rgb_string_idx = 0;
+  pulses[pulse].rgb_pixel_idx = 0;
+}
+
+
 #if defined USE_MCP23017
 void Pulses::set_i2c_addr_pin(int pulse, uint8_t i2c_addr, uint8_t i2c_pin) {
   pulses[pulse].i2c_addr = i2c_addr;
