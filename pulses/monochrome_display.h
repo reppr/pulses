@@ -116,7 +116,7 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
       u8x8.clearLine(row);
       u8x8.setCursor(0,row++);
       u8x8.setInverseFont(1);
-      u8x8.print(F("PRESET "));
+      u8x8.print(F("P "));
       u8x8.print(preset);
       u8x8.print(' ');
       u8x8.setInverseFont(0);
