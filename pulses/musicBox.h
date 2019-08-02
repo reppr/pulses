@@ -3345,7 +3345,7 @@ bool musicBox_reaction(char token) {
       if(MENU.is_numeric()) {	// 'C<numeric>'
 	/*
 	 *ATTENTION* UI numbering is one more as the field index:
-	 UI 0 means NULL pointer 		   alias 'known_peers_mac_p'
+	 UI 0 means NULL pointer		   alias 'known_peers_mac_p'
 	 UI 1 means esp_now_pulses_known_peers[0]  == broadcast
 	 UI 2 means first other			   individual "2"
 	 */
@@ -3426,16 +3426,39 @@ bool musicBox_reaction(char token) {
     }
     break;
 
-  case 'L': // 'L' == stop_on_LOW_H1()  ||  "LL" == stop_on_LOW()/*only*/)
-    if(MENU.peek() != 'L') {	// 'L' case	stop_on_LOW_H1()
-      MENU.out(stop_on_LOW_H1());
-      MENU.outln(F(" were high "));
-    } else {			// "LL" case	stop_on_LOW()/*only*/
+//  case 'L': // 'L' == stop_on_LOW_H1()  ||  "LL" == stop_on_LOW()/*only*/)
+//    if(MENU.peek() != 'L') {	// 'L' case	stop_on_LOW_H1()
+//      MENU.out(stop_on_LOW_H1());
+//      MENU.outln(F(" were high "));
+//    } else {			// "LL" case	stop_on_LOW()/*only*/
+//      MENU.drop_input_token();
+//      MENU.out(stop_on_LOW()/*only*/);
+//      MENU.outln(F(" were high "));
+//    }
+//    break;
+
+#if defined USE_RGB_LED_STRIP
+  case 'L':	 // 'L' RGB LED STRING
+    switch (MENU.peek()) {	// second letter after 'L'
+    case 'B':
       MENU.drop_input_token();
-      MENU.out(stop_on_LOW()/*only*/);
-      MENU.outln(F(" were high "));
-    }
+      input_value = MENU.numeric_input(0);
+      if (input_value > 0) {
+	rgb_background_dim = 1.0 / ((float) input_value);
+      }
+      break;
+
+    case 'S':
+      MENU.drop_input_token();
+      input_value = MENU.numeric_input(0);
+      if (input_value > 0) {
+	saturation_start_value = 1.0 / ((float) input_value);
+      }
+      break;
+
+    } // second letter after 'L'
     break;
+#endif
 
   case 'P': // 'P' Play start/stop
     switch(MENU.peek()) {
@@ -3839,4 +3862,4 @@ bool musicBox_reaction(char token) {
 
   // note: Y_UI() could have already returned
   return true;
-} // musicBox_reaction
+} // musicBox_reaction()

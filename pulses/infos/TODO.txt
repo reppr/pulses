@@ -40,7 +40,7 @@ USE_GPI0_SWITCH	low active input switch || boot button ;)
 free 'i' for input (like double klick ;)
 
 menu: preambles for en-jiffle, en_info, ...
-            and for en_xxx_trower
+	    and for en_xxx_trower
 
 mnemonics for gpio usage like
 	  sw0
@@ -236,8 +236,4 @@ int hue_slice_cnt = 8;	// just a usable default	// TODO: UI
 
 what is sysinfo.features ???
 
-free 'L' for LED string
-
 float saturation_start_value = 0.2;	// TODO: test&trimm default value ################	UI
-
-#error DO WE NEED pulses.h at all?
