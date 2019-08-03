@@ -77,7 +77,7 @@ bool mpu6050_setup() {
     MENU.out(o);
     MENU.outln('}');
 
-    MENU.ln(2);
+    MENU.ln();
     return true;
   }
 

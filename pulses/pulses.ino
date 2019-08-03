@@ -984,6 +984,12 @@ void setup() {
   */
   //  maybe_restore_from_RTCmem();		// only after deep sleep, else noop
 
+#if defined USE_RGB_LED_STRIP
+  MENU.out(F("RGB LED string on pin "));
+  MENU.outln(STRANDS[0].gpioNum);	// RGB_LED_STRIP_DATA_PIN
+  MENU.ln();
+#endif
+
 #if defined USE_MPU6050
   mpu6050_setup();
 #endif
@@ -997,6 +1003,7 @@ void setup() {
   MENU.out_ON_off(digitalRead(PERIPHERAL_POWER_SWITCH_PIN));
   MENU.space();
   MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
+  MENU.ln();
 #endif
 
 #if defined USE_BLUETOOTH_SERIAL_MENU	// setup()	double, 1/2	test brownout recognition	TODO: review
@@ -1016,7 +1023,7 @@ void setup() {
 #endif
 
 show_GPIOs();	// *does* work for GPIO_PINS==0
-MENU.ln();
+//MENU.ln();
 
 #if defined USE_LEDC
   #include "ledc_tone_setup.h"

@@ -9,9 +9,12 @@
 //#define DEBUG_LED_STRINGS			// empty  or 'SATURATION'
 //#define DEBUG_LED_STRINGS	SATURATION	// empty  or 'SATURATION'
 
-#if ! defined MAX_LED_STRING_INTENSITY
-  #define MAX_LED_STRING_INTENSITY	48
+#if ! defined DEFAULT_LED_STRING_INTENSITY
+  #define DEFAULT_LED_STRING_INTENSITY	48	// 72 on 'placeholder'	DADA
 #endif
+
+uint8_t rgb_led_string_intensity = DEFAULT_LED_STRING_INTENSITY;
+
 
 #include "FOREIGN/ESP32-Digital-RGB-LED-Drivers/src/esp32_digital_led_lib.h"
 #include "FOREIGN/ESP32-Digital-RGB-LED-Drivers/src/esp32_digital_led_lib.cpp"
@@ -22,7 +25,7 @@
 #define COUNT_OF(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 
 strand_t STRANDS[] = { // Avoid using any of the strapping pins on the ESP32, anything >=32, 16, 17... not much left.
-  {.rmtChannel = 0, .gpioNum = 14, .ledType = LED_WS2812B_V3, .brightLimit = 24, .numPixels = RGB_STRING_LED_CNT },
+  {.rmtChannel = 0, .gpioNum = RGB_LED_STRIP_DATA_PIN, .ledType = LED_WS2812B_V3, .brightLimit = 24, .numPixels = RGB_STRING_LED_CNT },
 //  {.rmtChannel = 0, .gpioNum = 14, .ledType = LED_WS2812B_V2, .brightLimit = 24, .numPixels = RGB_STRING_LED_CNT },
 //  {.rmtChannel = 0, .gpioNum = 14, .ledType = LED_WS2812B_V1, .brightLimit = 24, .numPixels = RGB_STRING_LED_CNT },
 };
@@ -150,34 +153,34 @@ void HSV_2_RGB_degree(pixelColor_t* pixel, float H, float S, float V) {	// TODO:
   switch(h_i) {
   case 0:
   case 6:
-    pixel->r = V * MAX_LED_STRING_INTENSITY;
-    pixel->g = t * MAX_LED_STRING_INTENSITY;
-    pixel->b = p * MAX_LED_STRING_INTENSITY;
+    pixel->r = V * rgb_led_string_intensity;
+    pixel->g = t * rgb_led_string_intensity;
+    pixel->b = p * rgb_led_string_intensity;
     break;
   case 1:
-    pixel->r = q * MAX_LED_STRING_INTENSITY;
-    pixel->g = V * MAX_LED_STRING_INTENSITY;
-    pixel->b = p * MAX_LED_STRING_INTENSITY;
+    pixel->r = q * rgb_led_string_intensity;
+    pixel->g = V * rgb_led_string_intensity;
+    pixel->b = p * rgb_led_string_intensity;
     break;
   case 2:
-    pixel->r = p * MAX_LED_STRING_INTENSITY;
-    pixel->g = V * MAX_LED_STRING_INTENSITY;
-    pixel->b = t * MAX_LED_STRING_INTENSITY;
+    pixel->r = p * rgb_led_string_intensity;
+    pixel->g = V * rgb_led_string_intensity;
+    pixel->b = t * rgb_led_string_intensity;
     break;
   case 3:
-    pixel->r = p * MAX_LED_STRING_INTENSITY;
-    pixel->g = q * MAX_LED_STRING_INTENSITY;
-    pixel->b = V * MAX_LED_STRING_INTENSITY;
+    pixel->r = p * rgb_led_string_intensity;
+    pixel->g = q * rgb_led_string_intensity;
+    pixel->b = V * rgb_led_string_intensity;
     break;
   case 4:
-    pixel->r = t * MAX_LED_STRING_INTENSITY;
-    pixel->g = p * MAX_LED_STRING_INTENSITY;
-    pixel->b = V * MAX_LED_STRING_INTENSITY;
+    pixel->r = t * rgb_led_string_intensity;
+    pixel->g = p * rgb_led_string_intensity;
+    pixel->b = V * rgb_led_string_intensity;
     break;
   case 5:
-    pixel->r = V * MAX_LED_STRING_INTENSITY;
-    pixel->g = p * MAX_LED_STRING_INTENSITY;
-    pixel->b = q * MAX_LED_STRING_INTENSITY;
+    pixel->r = V * rgb_led_string_intensity;
+    pixel->g = p * rgb_led_string_intensity;
+    pixel->b = q * rgb_led_string_intensity;
     break;
   }
 
@@ -217,10 +220,7 @@ void HSV_2_RGB_degree(pixelColor_t* pixel, float H, float S, float V) {	// TODO:
 bool pulses_RGB_LED_string_init() {
   initStrands();
   digitalLeds_resetPixels(&strands[0], 1);
-//	  dumpSysInfo();
 }
-
-//strand_t * pStrand = strands[8];
 
 void random_RGB_string(uint8_t max=8) {
 #if defined DEBUG_LED_STRINGS
@@ -337,7 +337,7 @@ void set_pulse_LED_pixel_from_counter(int pulse) {
   }
 
   H = (float) (PULSES.pulses[pulse].counter % hue_slice_cnt) / (float) hue_slice_cnt;
-  V = (float) MAX_LED_STRING_INTENSITY / (float) 255;
+  V = (float) rgb_led_string_intensity / (float) 255;
 
   strand_t * strand_p = strands[0];
   int pix_i = PULSE_2_RGB_LED_STRING;		// TODO: use pulse intenal data
@@ -361,7 +361,7 @@ void rgb_led_reset_to_default() {	// reset rgb led strip management to default c
 }
 
 float rgb_background_dim = 0.45;	// ok for 5V version 1m 144
-//float rgb_background_dim = 0.1;		// TEST: for "12V" version 5m 300
+//float rgb_background_dim = 0.1;		// TEST: for "12V" version 5m 300	DADA placeholder
 
 void set_rgb_led_background(int pulse) {
   if(PULSES.pulses[pulse].flags & HAS_RGB_LEDs) {

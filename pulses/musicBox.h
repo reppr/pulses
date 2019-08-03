@@ -3479,6 +3479,19 @@ bool musicBox_reaction(char token) {
       }
       break;
 
+    case 'I':	// 'LI' LED (max) INTENSITY
+      MENU.drop_input_token();
+      input_value = MENU.numeric_input(0);
+      if (input_value > 0) {
+        rgb_led_string_intensity = input_value;
+      }
+
+      if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
+	MENU.out(F("LED max intensity "));
+	MENU.outln(rgb_led_string_intensity);
+      }
+      break;
+
     case 'N':	// 'LN' hue_slice_cnt
       MENU.drop_input_token();
       input_value = MENU.numeric_input(0);
