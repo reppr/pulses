@@ -2446,13 +2446,13 @@ void start_musicBox() {
       } else { // pause is *not* autoskipped
 	MENU.outln(F("no pause autoskip"));
 #if defined USE_MONOCHROME_DISPLAY
-	monochrome_display_message(F(" pause "));	// TODO: monochrome pause time
+	monochrome_display_message(F(" _"));	// TODO: monochrome pause time
 
       }
 #endif
     } else {	// stack_sync_slices==0
 #if defined USE_MONOCHROME_DISPLAY
-      monochrome_display_message(F(" pause "));		// TODO: monochrome pause time
+      monochrome_display_message(F(" _"));		// TODO: monochrome pause time
 #endif
       if(MENU.verbosity >= VERBOSITY_LOWEST) {
 	MENU.out(F("sync pause "));

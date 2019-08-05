@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION		HARMONICAL v.031-
+#define PROGRAM_VERSION		HARMONICAL v.031
 /*				0123456789abcdef   */
 
 /* **************************************************************** */
