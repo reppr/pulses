@@ -1025,9 +1025,9 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   MENU.out(divisor);		// TODO: define role of multiplier, divisor
   MENU.space();
 */
-  MENU.out(pitch.multiplier);
+  MENU.out(musicBoxConf.pitch.multiplier);
   MENU.slash();
-  MENU.out(pitch.divisor);
+  MENU.out(musicBoxConf.pitch.divisor);
   if(chromatic_pitch)
     MENU.out(F(" metric"));
   MENU.space();
@@ -1072,9 +1072,9 @@ void show_configuration_code() {	// show code, similar show_UI_basic_setup()
   MENU.outln(base_pulse);
 
   MENU.out(F("pitch = {"));
-  MENU.out(pitch.multiplier);
+  MENU.out(musicBoxConf.pitch.multiplier);
   MENU.out(F(", "));
-  MENU.out(pitch.divisor);
+  MENU.out(musicBoxConf.pitch.divisor);
   MENU.outln(F("};"));
 
   MENU.out(F("chromatic_pitch = "));
@@ -1130,9 +1130,9 @@ void show_configuration_as_string() {	// file representation, similar show_confi
   MENU.out('\t');
 
   MENU.out(F("PITCH:"));
-  MENU.out(pitch.multiplier);
+  MENU.out(musicBoxConf.pitch.multiplier);
   MENU.out(',');
-  MENU.out(pitch.divisor);
+  MENU.out(musicBoxConf.pitch.divisor);
   MENU.out('\t');
 
   MENU.out(F("chrom:"));
@@ -1945,47 +1945,47 @@ void random_metric_pitches(void) {
   case 1:
   case 3:
     chromatic_pitch = 1;
-    pitch.multiplier = 1;
-    pitch.divisor = 220; // 220	// A 220  ***not*** harmonical	// TODO: define role of multiplier, pitch.divisor
+    musicBoxConf.pitch.multiplier = 1;
+    musicBoxConf.pitch.divisor = 220; // 220	// A 220  ***not*** harmonical	// TODO: define role of multiplier, pitch.divisor
     break;
   case 4:
   case 5:
   case 6:
     chromatic_pitch = 8;
-    pitch.multiplier = 1;
-    pitch.divisor=330; // 329.36	// E4  ***not*** harmonical
+    musicBoxConf.pitch.multiplier = 1;
+    musicBoxConf.pitch.divisor=330; // 329.36	// E4  ***not*** harmonical
     break;
   case 7:
   case 8:
     chromatic_pitch = 6;
-    pitch.multiplier = 1;
-    pitch.divisor = 294;		// 293.66 = D4
+    musicBoxConf.pitch.multiplier = 1;
+    musicBoxConf.pitch.divisor = 294;		// 293.66 = D4
     break;
   case 9:
   case 10:
   case 11:
     chromatic_pitch = 11;
-    pitch.multiplier = 1;
-    pitch.divisor=196; // 196.00	// G3  ***not*** harmonical
+    musicBoxConf.pitch.multiplier = 1;
+    musicBoxConf.pitch.divisor=196; // 196.00	// G3  ***not*** harmonical
     break;
   case 12:
   case 13:
     chromatic_pitch = 4;
-    pitch.multiplier = 1;
-    pitch.divisor=262; // 261.63	// C4  ***not*** harmonical
+    musicBoxConf.pitch.multiplier = 1;
+    musicBoxConf.pitch.divisor=262; // 261.63	// C4  ***not*** harmonical
     break;
   case 14:
   case 15:
     chromatic_pitch = 9;
-    pitch.multiplier = 1;
-    pitch.divisor=175; // 174.16	// F3  ***not*** harmonical
+    musicBoxConf.pitch.multiplier = 1;
+    musicBoxConf.pitch.divisor=175; // 174.16	// F3  ***not*** harmonical
     break;
   case 16:
     chromatic_pitch = 2;
-    pitch.multiplier = 1;
-    pitch.divisor=233; // 233.08	// Bb3 ***not*** harmonical
+    musicBoxConf.pitch.multiplier = 1;
+    musicBoxConf.pitch.divisor=233; // 233.08	// Bb3 ***not*** harmonical
     break;
-    //    pitch.divisor=247; // 246.94	// B3  ***not*** harmonical  }
+    //    musicBoxConf.pitch.divisor=247; // 246.94	// B3  ***not*** harmonical  }
   }
   show_metric_mnemonic();
 
@@ -2119,8 +2119,8 @@ void rtc_save_configuration() {
     jiffle_stored_RTC = selected_in(JIFFLES);
 
   if(pitch_user_selected) {	// TODO: ################################################################
-    multiplier_stored_RTC = pitch.multiplier;
-    divisor_stored_RTC = pitch.divisor;
+    multiplier_stored_RTC = musicBoxConf.pitch.multiplier;
+    divisor_stored_RTC = musicBoxConf.pitch.divisor;
   }
 
 //if(uiConf.subcycle_user_selected) ;
@@ -2174,8 +2174,8 @@ void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless wakin
 
     if((multiplier_stored_RTC != ILLEGAL) && divisor_stored_RTC != ILLEGAL) {
       MENU.out(F("PITCH "));
-      pitch.multiplier = multiplier_stored_RTC;
-      pitch.divisor = divisor_stored_RTC;
+      musicBoxConf.pitch.multiplier = multiplier_stored_RTC;
+      musicBoxConf.pitch.divisor = divisor_stored_RTC;
       pitch_user_selected = true;
     }
 
@@ -2300,7 +2300,7 @@ void start_musicBox() {
       random_entropy();	// entropy from hardware
 #endif
 
-      pitch.divisor = random(160, 450);	// *not* tuned for other instruments	// TODO: factor out randomisation
+      musicBoxConf.pitch.divisor = random(160, 450);	// *not* tuned for other instruments	// TODO: factor out randomisation
       if(MENU.maybe_display_more(VERBOSITY_SOME))
 	MENU.out(F("random pitch\t"));
     } else {			// *some RANDOMLY selected METRIC A=440 tunings*
@@ -2312,10 +2312,10 @@ void start_musicBox() {
 // #define OLDSTYLE_TUNE_AND_LIMIT	// use (buggy) old style tuning and lowering mechanism, for recording old setups
 #if defined OLDSTYLE_TUNE_AND_LIMIT	// use (buggy) old style tuning and lowering mechanism?	// TODO: OBSOLETE?
   // HACK: backwards compatibility for multiplier/divisor	################
-  tune_2_scale(voices, multiplier*pitch.multiplier, divisor*pitch.divisor, selected_in(SCALES)); // TODO: OBSOLETE? TODO: define role of multiplier, divisor
+  tune_2_scale(voices, multiplier*musicBoxConf.pitch.multiplier, divisor*musicBoxConf.pitch.divisor, selected_in(SCALES)); // TODO: OBSOLETE? TODO: define role of multiplier, divisor
 
-#else	// working on new style tune_selected_2_scale_limited(pitch, selected_in(SCALES), limit);
-  tune_selected_2_scale_limited(pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves // TODO: adjust limit appropriate...
+#else	// working on new style tune_selected_2_scale_limited(musicBoxConf.pitch, selected_in(SCALES), limit);
+  tune_selected_2_scale_limited(musicBoxConf.pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves // TODO: adjust limit appropriate...
 #endif
 
   if(!pitch_user_selected)		// if *not* set by user interaction	// TODO: factor out randomisation
@@ -3616,7 +3616,7 @@ bool musicBox_reaction(char token) {
       while(!done) {
 	switch(MENU.peek()) {
 	case '!':	// 'Txyz!'	trailing '!': *do* tune and quit
-	  tune_selected_2_scale_limited(pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves // TODO: adjust appropriate...
+	  tune_selected_2_scale_limited(musicBoxConf.pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves // TODO: adjust appropriate...
 	case ' ':	// a space ends a 'T... ' input sequence, quit
 	  MENU.drop_input_token();
 	case EOF:	// EOF done		quit
@@ -3633,24 +3633,24 @@ bool musicBox_reaction(char token) {
 	      chromatic_pitch = 13;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
-	      pitch.multiplier=1;
-	      pitch.divisor=1;
+	      musicBoxConf.pitch.multiplier=1;
+	      musicBoxConf.pitch.divisor=1;
 	      pitch_user_selected = true;
 	      break;
 	    case 'c':
 	      chromatic_pitch = 4;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
-	      pitch.multiplier=1;
-	      pitch.divisor=262; // 261.63	// C4  ***not*** harmonical
+	      musicBoxConf.pitch.multiplier=1;
+	      musicBoxConf.pitch.divisor=262; // 261.63	// C4  ***not*** harmonical
 	      pitch_user_selected = true;
 	      break;
 	    case 'd':
 	      chromatic_pitch = 6;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
-	      pitch.multiplier=1;
-	      pitch.divisor = 294;		// 293.66 = D4
+	      musicBoxConf.pitch.multiplier=1;
+	      musicBoxConf.pitch.divisor = 294;		// 293.66 = D4
 	      // divisor = 147;		// 146.83 = D3
 	      pitch_user_selected = true;
 	      break;
@@ -3658,48 +3658,48 @@ bool musicBox_reaction(char token) {
 	      chromatic_pitch = 8;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
-	      pitch.multiplier=1;
-	      pitch.divisor=330; // 329.36	// e4  ***not*** harmonical
+	      musicBoxConf.pitch.multiplier=1;
+	      musicBoxConf.pitch.divisor=330; // 329.36	// e4  ***not*** harmonical
 	      pitch_user_selected = true;
 	      break;
 	    case 'f':
 	      chromatic_pitch = 9;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
-	      pitch.multiplier=1;
-	      pitch.divisor=175; // 174.16	// F3  ***not*** harmonical
+	      musicBoxConf.pitch.multiplier=1;
+	      musicBoxConf.pitch.divisor=175; // 174.16	// F3  ***not*** harmonical
 	      pitch_user_selected = true;
 	      break;
 	    case 'g':
 	      chromatic_pitch = 11;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
-	      pitch.multiplier=1;
-	      pitch.divisor=196; // 196.00	// G3  ***not*** harmonical
+	      musicBoxConf.pitch.multiplier=1;
+	      musicBoxConf.pitch.divisor=196; // 196.00	// G3  ***not*** harmonical
 	      pitch_user_selected = true;
 	      break;
 	    case 'a':
 	      chromatic_pitch = 1;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
-	      pitch.multiplier=1;
-	      pitch.divisor = 440;
+	      musicBoxConf.pitch.multiplier=1;
+	      musicBoxConf.pitch.divisor = 440;
 	      pitch_user_selected = true;
 	      break;
 	    case 'b':
 	      chromatic_pitch = 2;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
-	      pitch.multiplier=1;
-	      pitch.divisor=233; //	// 233.08 Bb3  ***not*** harmonical
+	      musicBoxConf.pitch.multiplier=1;
+	      musicBoxConf.pitch.divisor=233; //	// 233.08 Bb3  ***not*** harmonical
 	      pitch_user_selected = true;
 	      break;
 	    case 'h':
 	      chromatic_pitch = 3;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
-	      pitch.multiplier=1;
-	      pitch.divisor=247; // 246.94	// B3  ***not*** harmonical
+	      musicBoxConf.pitch.multiplier=1;
+	      musicBoxConf.pitch.divisor=247; // 246.94	// B3  ***not*** harmonical
 	      pitch_user_selected = true;
 	      break;
 

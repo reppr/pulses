@@ -230,7 +230,7 @@ action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actio
 // DADA
 //int sync=1;		// syncing edges or middles of square pulses
 //base_pulse
-fraction_t pitch={1,1};	// pitch to tune a scale
+//fraction_t pitch={1,1};	// pitch to tune a scale
 //	int octave_shift=0;
 //	bool no_octave_shift=false;	// see: tune_selected_2_scale_limited()
 
