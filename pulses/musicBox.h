@@ -146,6 +146,7 @@ magical_conf_t MagicConf;
 typedef struct ui_conf_t {
   uint8_t version = 1;
   // voices=0;	// DADA: include voices?	maybe not?
+  // TODO: include selection ???
 
   bool show_cycle_pattern=false;
   bool show_cycle_pattern_intervals=false;
@@ -905,29 +906,10 @@ void toggle_magic_autochanges() {
 }
 
 
-// TODO: chromatic_pitch	move to Harmonical or Pulses
-uint8_t chromatic_pitch = 0;	// 0: pitch is not metric
-/*
-  0  *not* metric
-  1  a
-  2  a#|bb
-  3  b	=german "h"
-  4  c
-  5  c#|db
-  6  d
-  7  d#|eb
-  8  e
-  9  f
-  10 f#|gb
-  11 g
-  12 g#|ab
-  13 u		/ harmonical time unit
-*/
-
 void show_metric_mnemonic() {	// TODO: move to Harmonical or Pulses
   char second_letter = ' ';
 
-  switch (chromatic_pitch) {
+  switch (musicBoxConf.chromatic_pitch) {
   case 0:			// not metric
     MENU.out(F("free"));
     return;			// return
@@ -1028,7 +1010,7 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   MENU.out(musicBoxConf.pitch.multiplier);
   MENU.slash();
   MENU.out(musicBoxConf.pitch.divisor);
-  if(chromatic_pitch)
+  if(musicBoxConf.chromatic_pitch)
     MENU.out(F(" metric"));
   MENU.space();
   show_metric_mnemonic();
@@ -1078,7 +1060,7 @@ void show_configuration_code() {	// show code, similar show_UI_basic_setup()
   MENU.outln(F("};"));
 
   MENU.out(F("chromatic_pitch = "));
-  MENU.out(chromatic_pitch);
+  MENU.out(musicBoxConf.chromatic_pitch);
   MENU.out(F(";\t// "));
   show_metric_mnemonic();
   MENU.ln();
@@ -1136,7 +1118,7 @@ void show_configuration_as_string() {	// file representation, similar show_confi
   MENU.out('\t');
 
   MENU.out(F("chrom:"));
-  MENU.out(chromatic_pitch);
+  MENU.out(musicBoxConf.chromatic_pitch);
   MENU.out('\t');
 
   /* metric mnemonic is shown, but *ignored* when reading */
@@ -1944,44 +1926,44 @@ void random_metric_pitches(void) {
   case 0:
   case 1:
   case 3:
-    chromatic_pitch = 1;
+    musicBoxConf.chromatic_pitch = 1;
     musicBoxConf.pitch.multiplier = 1;
     musicBoxConf.pitch.divisor = 220; // 220	// A 220  ***not*** harmonical	// TODO: define role of multiplier, pitch.divisor
     break;
   case 4:
   case 5:
   case 6:
-    chromatic_pitch = 8;
+    musicBoxConf.chromatic_pitch = 8;
     musicBoxConf.pitch.multiplier = 1;
     musicBoxConf.pitch.divisor=330; // 329.36	// E4  ***not*** harmonical
     break;
   case 7:
   case 8:
-    chromatic_pitch = 6;
+    musicBoxConf.chromatic_pitch = 6;
     musicBoxConf.pitch.multiplier = 1;
     musicBoxConf.pitch.divisor = 294;		// 293.66 = D4
     break;
   case 9:
   case 10:
   case 11:
-    chromatic_pitch = 11;
+    musicBoxConf.chromatic_pitch = 11;
     musicBoxConf.pitch.multiplier = 1;
     musicBoxConf.pitch.divisor=196; // 196.00	// G3  ***not*** harmonical
     break;
   case 12:
   case 13:
-    chromatic_pitch = 4;
+    musicBoxConf.chromatic_pitch = 4;
     musicBoxConf.pitch.multiplier = 1;
     musicBoxConf.pitch.divisor=262; // 261.63	// C4  ***not*** harmonical
     break;
   case 14:
   case 15:
-    chromatic_pitch = 9;
+    musicBoxConf.chromatic_pitch = 9;
     musicBoxConf.pitch.multiplier = 1;
     musicBoxConf.pitch.divisor=175; // 174.16	// F3  ***not*** harmonical
     break;
   case 16:
-    chromatic_pitch = 2;
+    musicBoxConf.chromatic_pitch = 2;
     musicBoxConf.pitch.multiplier = 1;
     musicBoxConf.pitch.divisor=233; // 233.08	// Bb3 ***not*** harmonical
     break;
@@ -2294,7 +2276,7 @@ void start_musicBox() {
   // random pitch	// TODO: factor out randomisation
   if(!pitch_user_selected) {	// if *not* set by user interaction
     if(!MagicConf.some_metric_tunings_only) {	// RANDOM tuning?
-      chromatic_pitch = false;
+      musicBoxConf.chromatic_pitch = 0;
 
 #if defined RANDOM_ENTROPY_H
       random_entropy();	// entropy from hardware
@@ -2325,9 +2307,6 @@ void start_musicBox() {
   // *not* regarding pitch_user_selected as selected frequencies might be too high, check anyway...
   lower_audio_if_too_high(409600*2);	// 2 bass octaves	// TODO: adjust appropriate...
 #endif
-
-  if(PULSES.pulses[musicBoxConf.base_pulse].period.time)
-    base_pulse_period = PULSES.pulses[musicBoxConf.base_pulse].period;	// see: test_jiffle();
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   peripheral_power_switch_ON();
@@ -3630,7 +3609,7 @@ bool musicBox_reaction(char token) {
 	  } else {			// not numeric
 	    switch(MENU.peek()) {	// test for known letters
 	    case 'u':	// harmonical time unit
-	      chromatic_pitch = 13;
+	      musicBoxConf.chromatic_pitch = 13;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
 	      musicBoxConf.pitch.multiplier=1;
@@ -3638,7 +3617,7 @@ bool musicBox_reaction(char token) {
 	      pitch_user_selected = true;
 	      break;
 	    case 'c':
-	      chromatic_pitch = 4;
+	      musicBoxConf.chromatic_pitch = 4;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
 	      musicBoxConf.pitch.multiplier=1;
@@ -3646,7 +3625,7 @@ bool musicBox_reaction(char token) {
 	      pitch_user_selected = true;
 	      break;
 	    case 'd':
-	      chromatic_pitch = 6;
+	      musicBoxConf.chromatic_pitch = 6;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
 	      musicBoxConf.pitch.multiplier=1;
@@ -3655,7 +3634,7 @@ bool musicBox_reaction(char token) {
 	      pitch_user_selected = true;
 	      break;
 	    case 'e':
-	      chromatic_pitch = 8;
+	      musicBoxConf.chromatic_pitch = 8;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
 	      musicBoxConf.pitch.multiplier=1;
@@ -3663,7 +3642,7 @@ bool musicBox_reaction(char token) {
 	      pitch_user_selected = true;
 	      break;
 	    case 'f':
-	      chromatic_pitch = 9;
+	      musicBoxConf.chromatic_pitch = 9;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
 	      musicBoxConf.pitch.multiplier=1;
@@ -3671,7 +3650,7 @@ bool musicBox_reaction(char token) {
 	      pitch_user_selected = true;
 	      break;
 	    case 'g':
-	      chromatic_pitch = 11;
+	      musicBoxConf.chromatic_pitch = 11;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
 	      musicBoxConf.pitch.multiplier=1;
@@ -3679,7 +3658,7 @@ bool musicBox_reaction(char token) {
 	      pitch_user_selected = true;
 	      break;
 	    case 'a':
-	      chromatic_pitch = 1;
+	      musicBoxConf.chromatic_pitch = 1;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
 	      musicBoxConf.pitch.multiplier=1;
@@ -3687,7 +3666,7 @@ bool musicBox_reaction(char token) {
 	      pitch_user_selected = true;
 	      break;
 	    case 'b':
-	      chromatic_pitch = 2;
+	      musicBoxConf.chromatic_pitch = 2;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
 	      musicBoxConf.pitch.multiplier=1;
@@ -3695,7 +3674,7 @@ bool musicBox_reaction(char token) {
 	      pitch_user_selected = true;
 	      break;
 	    case 'h':
-	      chromatic_pitch = 3;
+	      musicBoxConf.chromatic_pitch = 3;
 	      MENU.drop_input_token();
 	      PULSES.time_unit=1000000;	// switch to metric time unit
 	      musicBoxConf.pitch.multiplier=1;

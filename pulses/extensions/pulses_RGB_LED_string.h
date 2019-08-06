@@ -399,9 +399,9 @@ void set_rgb_led_background(int pulse) {
     bool clear=false;
 #if defined HARMONICAL_MUSIC_BOX && defined USE_RGB_LED_STRIP
     // bool clear_rgb_background_on_ending	// TODO: maybe	// DADA rgb_string_config
-     extern bool musicbox_is_ending();
-     // DADA
-     // clear = musicbox_is_ending();
+    // extern bool musicbox_is_ending();
+    // DADA
+    // clear = musicbox_is_ending();
 #endif
 
     float x = strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].r;

@@ -237,3 +237,7 @@ what is sysinfo.features ???
 float saturation_start_value = 0.2;	// TODO: test&trimm default value #################
 
 TODO: float menu input !!!
+
+ui_conf_t TODO: include selection ???
+
+slowly fade rgb leds after ending

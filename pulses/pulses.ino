@@ -169,6 +169,23 @@ typedef struct musicBox_conf_t {
   short high_pulses=0;		// see  setup_bass_middle_high()
 
   uint8_t chromatic_pitch = 0;	// 0: pitch is not metric
+  /*  chromatic_pitch:
+    0  *not* metric
+    1  a
+    2  a#|bb
+    3  b	=german "h"
+    4  c
+    5  c#|db
+    6  d
+    7  d#|eb
+    8  e
+    9  f
+    10 f#|gb
+    11 g
+    12 g#|ab
+    13 u		/ harmonical time unit
+  */
+
 } musicBox_conf_t;
 
 musicBox_conf_t musicBoxConf;
@@ -224,20 +241,6 @@ action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actio
   #endif
 #endif	// ESP8266
 
-
-/* **************************************************************** */
-// TODO: gather basic settings in the code	################
-// DADA
-//int sync=1;		// syncing edges or middles of square pulses
-//base_pulse
-//fraction_t pitch={1,1};	// pitch to tune a scale
-//	int octave_shift=0;
-//	bool no_octave_shift=false;	// see: tune_selected_2_scale_limited()
-
-// int base_pulse=ILLEGAL;			// a human perceived base pulse, see 'stack_sync_slices'
-pulse_time_t base_pulse_period={0,0};	// {0,0} is unknown, invalid
-
-// String preName = "";			// individual name of an instrument
 
 /* **************************************************************** */
 bool DO_or_maybe_display(unsigned char verbosity_level) { // the flag tells *if* to display
@@ -447,7 +450,6 @@ void test_jiffle(unsigned int* jiffle, int count) {
   if(MENU.verbosity >= VERBOSITY_LOWEST)
     MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
 
-  // pulse_time_t period = base_pulse_period;
   pulse_time_t period = {6000000, 0};		// TODO: better default based on the situation ################
   setup_icode_seeder(pulse, period, (icode_t*) jiffle, DACsq1 | DACsq2 | doesICODE);
   PULSES.pulses[pulse].flags |= COUNTED;
@@ -3519,7 +3521,7 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   PULSES.add_selected_to_group(g_PRIMARY);
 
   musicBoxConf.base_pulse=0;		// a human perceived base pulse, see 'stack_sync_slices'
-  if(bass_pulses && (middle_pulses || high_pulses))	// DADA
+  if(bass_pulses && (middle_pulses || high_pulses))
     musicBoxConf.base_pulse = bass_pulses +1;	// FIXME: HACK: first pulse above bass, but should respect tuning (octave)
 
   // tune *all* primary pulses
@@ -3921,7 +3923,7 @@ void select_scale__UI() {	// OBSOLETE?:
     break;
 
   case 'u':	// harmonical time unit, minor
-    chromatic_pitch = 13;
+    musicBoxConf.chromatic_pitch = 13;
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
@@ -3930,7 +3932,7 @@ void select_scale__UI() {	// OBSOLETE?:
     break;
 
   case 'U':	// harmonical time unit, major
-    chromatic_pitch = 13;
+    musicBoxConf.chromatic_pitch = 13;
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
@@ -3939,7 +3941,7 @@ void select_scale__UI() {	// OBSOLETE?:
     break;
 
   case 'c':	// c minor
-    chromatic_pitch = 4;
+    musicBoxConf.chromatic_pitch = 4;
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3947,7 +3949,7 @@ void select_scale__UI() {	// OBSOLETE?:
     break;
 
   case 'C':	// c major
-    chromatic_pitch = 4;
+    musicBoxConf.chromatic_pitch = 4;
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3956,7 +3958,7 @@ void select_scale__UI() {	// OBSOLETE?:
     break;
 
   case 'd':	// d minor scale
-    chromatic_pitch = 6;
+    musicBoxConf.chromatic_pitch = 6;
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor = 294;		// 293.66 = D4
@@ -3965,7 +3967,7 @@ void select_scale__UI() {	// OBSOLETE?:
     break;
 
   case 'D':	// D major scale
-    chromatic_pitch = 6;
+    musicBoxConf.chromatic_pitch = 6;
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor = 294;		// 293.66 = D4
@@ -3974,7 +3976,7 @@ void select_scale__UI() {	// OBSOLETE?:
     break;
 
   case 'e':	// e minor scale
-    chromatic_pitch = 8;
+    musicBoxConf.chromatic_pitch = 8;
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3982,7 +3984,7 @@ void select_scale__UI() {	// OBSOLETE?:
     break;
 
   case 'E':	// E major scale
-    chromatic_pitch = 8;
+    musicBoxConf.chromatic_pitch = 8;
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3990,7 +3992,7 @@ void select_scale__UI() {	// OBSOLETE?:
     break;
 
   case 'f':	// f minor
-    chromatic_pitch = 9;
+    musicBoxConf.chromatic_pitch = 9;
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -3998,7 +4000,7 @@ void select_scale__UI() {	// OBSOLETE?:
     break;
 
   case 'F':	// f major
-    chromatic_pitch = 9;
+    musicBoxConf.chromatic_pitch = 9;
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -4006,7 +4008,7 @@ void select_scale__UI() {	// OBSOLETE?:
     break;
 
   case 'g':	// g minor
-    chromatic_pitch = 11;
+    musicBoxConf.chromatic_pitch = 11;
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -4014,7 +4016,7 @@ void select_scale__UI() {	// OBSOLETE?:
     break;
 
   case 'G':	// g major
-    chromatic_pitch = 11;
+    musicBoxConf.chromatic_pitch = 11;
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -4022,7 +4024,7 @@ void select_scale__UI() {	// OBSOLETE?:
     break;
 
   case 'a':	// a minor scale
-    chromatic_pitch = 1;
+    musicBoxConf.chromatic_pitch = 1;
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor = 440;
@@ -4030,7 +4032,7 @@ void select_scale__UI() {	// OBSOLETE?:
     break;
 
   case 'A':	// A major scale
-    chromatic_pitch = 1;
+    musicBoxConf.chromatic_pitch = 1;
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
     divisor = 440;
@@ -4038,7 +4040,7 @@ void select_scale__UI() {	// OBSOLETE?:
     break;
 
   case 'b':	// b minor
-    chromatic_pitch = 3;
+    musicBoxConf.chromatic_pitch = 3;
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
@@ -4046,7 +4048,7 @@ void select_scale__UI() {	// OBSOLETE?:
     break;
 
   case 'B':	// b major
-    chromatic_pitch = 3;
+    musicBoxConf.chromatic_pitch = 3;
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
