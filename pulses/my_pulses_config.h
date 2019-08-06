@@ -21,6 +21,7 @@
 //  #define RGB_STRING_LED_CNT		144	// number of RGB leds in the string
   #define RGB_STRING_LED_CNT		150	// number of RGB leds in the string
   #define RGB_LED_STRIP_DATA_PIN	14	// use GPIO14 || GPIO27
+// DEFAULT_LED_STRING_INTENSITY
 #endif
 
 #define USE_MORSE	// touch morse code is in use :)

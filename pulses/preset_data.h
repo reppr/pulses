@@ -16,22 +16,24 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   if(new_preset < 1 || new_preset > MUSICBOX_PRESETs)
     return true;	// *ERROR*
 
-  preset = new_preset;
+  musicBoxConf.preset = new_preset;
   MENU.out(F("load preset "));
-  MENU.out(preset);
+  MENU.out(musicBoxConf.preset);
 
-  name=NULL;		// initialisation and defaults:
-  date=NULL;
-  octave_shift = 0;
-  pitch = {1, 1};	// TEST: ok to set as default?
+  // initialisation and defaults:
+  musicBoxConf.name=NULL;
+  musicBoxConf.date=NULL;
+  int octave_shift = 0;		// DADA: TODO: write back configuration
+  pitch = {1, 1};		// TEST: ok to set as default?
+  short subcycle_octave = 0;	// DADA: TODO: write back configuration
 
   PULSES.time_unit = 1000000;	// defaults:
-  stack_sync_slices = 0;
-  chromatic_pitch = 0;
+  short stack_sync_slices = 0;	// DADA: TODO: write back configuration
+  uint8_t chromatic_pitch = 0;	// DADA: TODO: write back configuration
 
-  switch(preset) {
+  switch(musicBoxConf.preset) {
   case 1:
-    name = F("wunderschöns obenabe vogelgetzwitscher bistüüfinbass :)");
+    musicBoxConf.name = F("wunderschöns obenabe vogelgetzwitscher bistüüfinbass :)");
     //# FAVORITE
     //# melodies
     //# shortIsOk
@@ -43,7 +45,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# simple
     //# happy
     //# aesthetic
-    date = F("2018-11-06_15h52m17s	TUE");
+    musicBoxConf.date = F("2018-11-06_15h52m17s	TUE");
     select_in(SCALES, octaves_fifths);
     select_in(JIFFLES, dwn_THRD_up);
     sync = 5;
@@ -51,14 +53,14 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 2:
-    name = F("LIFT OFF");
+    musicBoxConf.name = F("LIFT OFF");
     //comment: :) :) :) :) :)
     //# FAVORITE
     //# shortIsOk
     //# mystic
     //# SoundSpaceShip
     //# cosmic
-    date = F("2018-12-11_20h48m37s	TUE");
+    musicBoxConf.date = F("2018-12-11_20h48m37s	TUE");
     select_in(SCALES, doric_scale);
     select_in(JIFFLES, PENTAtonic_rise);
     sync = 5;
@@ -69,7 +71,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 3:
-    name = F("Blue Night Cadence");
+    musicBoxConf.name = F("Blue Night Cadence");
     //# FAVORITE
     //# harmonie	a bit like some jazz chord progressions
     //# shortIsOk
@@ -77,7 +79,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# aesthetic
     //# birds
     //comment: very rich chord progression :) :) :)
-    date = F("2018-12-19_20h24m56s	WED");
+    musicBoxConf.date = F("2018-12-19_20h24m56s	WED");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, pentatonic_rise);
     sync = 4;
@@ -87,7 +89,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 4:
-    name = F("harpsichord");
+    musicBoxConf.name = F("harpsichord");
     //# FAVORITE
     //# shortIsOk
     //# melodies
@@ -99,7 +101,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //comment: wie n alte musiker wo e langsam schreitendi,
     //comment: langi dorischi kadenz uf sim cembalo spillt
     //comment: eifach und ruhig schreitend mit glitzerfunkewirbel drüberobe
-    date = F("2018-11-13_12h11m04s	TUE");
+    musicBoxConf.date = F("2018-11-13_12h11m04s	TUE");
     select_in(SCALES, doric_scale);
     select_in(JIFFLES, din__dididi_dixi);
     sync = 2;
@@ -109,7 +111,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 5:
-    name = F("dragons dancing in the sky");
+    musicBoxConf.name = F("dragons dancing in the sky");
     //comment: :) :) :)
     //# FAVORITE
     //# melodies
@@ -118,7 +120,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# aurora
     //# lesley	a bit
     //# aesthetic
-    date = F("2018-12-22_19h57m19s	SAT");
+    musicBoxConf.date = F("2018-12-22_19h57m19s	SAT");
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, PENTAtonic_desc);
     sync = 2;
@@ -129,7 +131,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 6:
-    name = F("aurora elfetanz");
+    musicBoxConf.name = F("aurora elfetanz");
     //# FAVORITE
     //# melodies
     //# shortIsOk
@@ -148,7 +150,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //comment: 29/30 letschti psinnig, denn zur rueh choo
     //comment: 59/60 ready?
     //comment: 1/1   silently restart :)
-    date = F("2018-11-13_11h57m23s	TUE");
+    musicBoxConf.date = F("2018-11-13_11h57m23s	TUE");
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, dwn_THRD_up);
     sync = 1;
@@ -158,7 +160,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 7:
-    name = F("klassisch, wunderschön, vo A bis Z :)");
+    musicBoxConf.name = F("klassisch, wunderschön, vo A bis Z :)");
     //comment: und übrigens:	harmonical cycle    12' 19"
     //# FAVORITE
     //# harmonies
@@ -168,7 +170,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# nice
     //# simple
     //# aesthetic
-    date = F("2018-11-18_20h09m42s	SUN");
+    musicBoxConf.date = F("2018-11-18_20h09m42s	SUN");
     select_in(SCALES, major_scale);
     select_in(JIFFLES, din_dididi);
     sync = 2;
@@ -178,7 +180,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 8:
-    name = F("wunderschön melodisch :) :) :)");
+    musicBoxConf.name = F("wunderschön melodisch :) :) :)");
     //comment: mit schönem, aberendlosem schluss ;)
     //# FAVORITE
     //# bigBang		// sometimes problematic	use autostack_S0
@@ -187,7 +189,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# shortIsOk
     //# dropouts
     //# aesthetic	beware of dropouts
-    date = F("2018-11-19_17h42m49s	MON");
+    musicBoxConf.date = F("2018-11-19_17h42m49s	MON");
     select_in(SCALES, octaves_fifths);
     select_in(JIFFLES, dwn_THRD);
     sync = 0;
@@ -198,7 +200,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 9:
-    name = F("e rechts füürwerch a jubelnde wirbel oderso :)");
+    musicBoxConf.name = F("e rechts füürwerch a jubelnde wirbel oderso :)");
     //# FAVORITE
     //# melodies
     //# shortIsOk
@@ -208,7 +210,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# mystic
     //# cosmic
     //# aesthetic
-    date = F("2018-11-07_17h36m34s	WED");
+    musicBoxConf.date = F("2018-11-07_17h36m34s	WED");
     select_in(SCALES, major_scale);
     select_in(JIFFLES, penta_3rd_down_5);
     sync = 1;
@@ -217,7 +219,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 10:
-    name = F("2019-02-01_aRainOfJoy");
+    musicBoxConf.name = F("2019-02-01_aRainOfJoy");
     //# FAVORITE
     //# shortIsOk
     //# melodies
@@ -230,7 +232,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# fairies
     //# aurora
     //# aesthetic
-    date = F("2019-02-02_12h12m11s	SAT");
+    musicBoxConf.date = F("2019-02-02_12h12m11s	SAT");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, penta_3rd_down_5);
     sync = 1;
@@ -242,7 +244,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 11:
-    name = F("genial jazzpiano version");
+    musicBoxConf.name = F("genial jazzpiano version");
     // big bang
     //# FAVORITE
     //# shortIsOk
@@ -261,7 +263,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 12:
-    name = F("a love like the morning birds");
+    musicBoxConf.name = F("a love like the morning birds");
     //# FAVORITE
     //# melodies
     //# harmonies
@@ -270,7 +272,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# happy
     //# simple
     //# aesthetic
-    date = F("2019-01-06_21h29m36s	SUN");
+    musicBoxConf.date = F("2019-01-06_21h29m36s	SUN");
     select_in(SCALES, octaves_fourths);
     select_in(JIFFLES, PENTAtonic_desc);
     sync = 4;
@@ -281,7 +283,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 13:
-    name = F("sehr ruhigs festlichs stimmigsbild");
+    musicBoxConf.name = F("sehr ruhigs festlichs stimmigsbild");
     //# FAVORITE
     //# shortIsOk
     //# melodies
@@ -292,7 +294,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# cosmic
     //# aesthetic
     //comment: bordunartig, stehend
-    date = F("2018-11-06_20h02m08s	TUE");
+    musicBoxConf.date = F("2018-11-06_20h02m08s	TUE");
     select_in(SCALES, major_scale);
     select_in(JIFFLES, diing_ditditdit);
     sync = 5;
@@ -301,14 +303,14 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 14:
-    name = F("ewig tickends uhr gloggespiel");
+    musicBoxConf.name = F("ewig tickends uhr gloggespiel");
     //# FAVORITE
     //# shortIsOk
     //# simple
     //# simlicistic
     //# clock
     //# elementary
-    date = F("2018-11-07_17h49m47s	WED");
+    musicBoxConf.date = F("2018-11-07_17h49m47s	WED");
     select_in(SCALES, octave_4th_5th);
     select_in(JIFFLES, diing_ditditdit);
     sync = 1;
@@ -317,14 +319,14 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 15:
-    name = F("tickende uhr");
+    musicBoxConf.name = F("tickende uhr");
     //# clock
     //# favorite+
     //# shortIsOk
     //# classicHarmonical
     //# simlicistic
     //# elementary
-    date = F("2018-11-06_20h48m16s	TUE");
+    musicBoxConf.date = F("2018-11-06_20h48m16s	TUE");
     select_in(SCALES, octaves_fifths);
     select_in(JIFFLES, ding_ditditdit);
     sync = 1;
@@ -333,7 +335,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 16:
-    name = F("langsams iiordne in es ruhigs piipskonzert");
+    musicBoxConf.name = F("langsams iiordne in es ruhigs piipskonzert");
     //# FAVORITE
     //# shortIsOk
     //# harmonies
@@ -343,7 +345,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# simlicistic
     //# elementary
     //# beep
-    date = F("2018-11-08_18h05m59s	THU");
+    musicBoxConf.date = F("2018-11-08_18h05m59s	THU");
     select_in(SCALES, octaves_fifths);
     select_in(JIFFLES, din__dididi_dixi);
     sync = 3;
@@ -354,13 +356,13 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 17:
-    name = F("Ouverture");
+    musicBoxConf.name = F("Ouverture");
     //comment: :) :) :) !!!
     //# FAVORITE
     //# dropouts
     //# heavyStart		// sometimes problematic	use autostack_S0
     //# rhytm&pulse
-    date = F("2018-12-09_15h24m13s	SUN");
+    musicBoxConf.date = F("2018-12-09_15h24m13s	SUN");
     select_in(SCALES, octave_4th_5th);
     select_in(JIFFLES, PENTAtonic_rise);
     sync = 0;
@@ -370,7 +372,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 18:
-    name = F("klassisch TIMEMACHINE style");
+    musicBoxConf.name = F("klassisch TIMEMACHINE style");
     // :)
     //# FAVORITE
     //# harmonies
@@ -380,7 +382,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# nice
     //# simple
     //# aesthetic
-    date = F("2018-11-07_18h20m53s	WED");
+    musicBoxConf.date = F("2018-11-07_18h20m53s	WED");
     select_in(SCALES, minor_scale);
     select_in(JIFFLES, ding_ditditdit);
     sync = 2;
@@ -391,7 +393,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 19:
-    name = F("simple, hübsche bigBang");
+    musicBoxConf.name = F("simple, hübsche bigBang");
     //# bigBang	is ok	sometimes problematic	use autostack_S0
     //# FAVORITE
     //# shortIsOk
@@ -402,7 +404,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# nice
     //# simple
     //# aesthetic
-    date = F("2018-11-08_14h38m32s	THU");
+    musicBoxConf.date = F("2018-11-08_14h38m32s	THU");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, ding_ditditdit);
     sync = 0;
@@ -412,7 +414,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 20:
-    name = F("nice, simple slow harmonics");
+    musicBoxConf.name = F("nice, simple slow harmonics");
     //# FAVORITE
     //# shortIsOk
     //# melodies
@@ -423,7 +425,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# birds
     //# hasSlowPulse
     //# lyric
-    date = F("2018-11-13_15h04m11s	TUE");
+    musicBoxConf.date = F("2018-11-13_15h04m11s	TUE");
     select_in(SCALES, octaves_fifths);
     select_in(JIFFLES, penta_3rd_rise);
     sync = 2;
@@ -434,7 +436,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 21:
-    name = F("klassischi pent brachemagie");
+    musicBoxConf.name = F("klassischi pent brachemagie");
     //# FAVORITE
     //# shortIsOk
     //# melodies
@@ -443,7 +445,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# nice
     //# simple
     //# birds
-    date = F("2018-11-13_12h23m54s	TUE");
+    musicBoxConf.date = F("2018-11-13_12h23m54s	TUE");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, pentatonic_rise);
     sync = 5;
@@ -453,7 +455,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 22:
-    name = F("hübsche start mit geknatter");
+    musicBoxConf.name = F("hübsche start mit geknatter");
     //# FAVORITE(-)	has dropouts, (nice) system stress
     //# bigBang	is ok
     //# shortIsOk
@@ -465,7 +467,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# simple
     //# rumble
     //# aesthetic
-    date = F("2018-11-13_11h40m30s	TUE");
+    musicBoxConf.date = F("2018-11-13_11h40m30s	TUE");
     select_in(SCALES, octave_4th_5th);
     select_in(JIFFLES, pentatonic_desc);
     sync = 0;
@@ -476,13 +478,13 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 23:
-    name = F("fröhlichs, crazy witzigs Tänzli :)");
+    musicBoxConf.name = F("fröhlichs, crazy witzigs Tänzli :)");
     //# favorite	DADA?
     //# shortIsOk
     //# crazy
     //# funny
     //# chaotic	a bit
-    date = F("2018-11-08_14h27m25s	THU");
+    musicBoxConf.date = F("2018-11-08_14h27m25s	THU");
     select_in(SCALES, major_scale);
     select_in(JIFFLES, simple_theme);
     sync = 5;
@@ -491,7 +493,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 24:
-    name = F("wienen rägeboge vo striicher wo abeschwebed uf t erde bis tüüf in bass und meh und meh i en zyclische reige iistimmed");
+    musicBoxConf.name = F("wienen rägeboge vo striicher wo abeschwebed uf t erde bis tüüf in bass und meh und meh i en zyclische reige iistimmed");
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk		maybe
@@ -513,7 +515,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lesley
     //# hasSlowPulse
     //# lyric
-    date = F("2018-11-21_13h23m41s	WED");
+    musicBoxConf.date = F("2018-11-21_13h23m41s	WED");
     select_in(SCALES, doric_scale);
     select_in(JIFFLES, rising_pent_them);
     sync = 1;
@@ -523,7 +525,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 25:
-    name = F("e psinnlichi ziit");	// some morningbirds too
+    musicBoxConf.name = F("e psinnlichi ziit");	// some morningbirds too
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk		maybe
@@ -546,7 +548,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lesley
     //# hasSlowPulse
     //# lyric
-    date = F("2018-11-21_14h33m31s	WED");
+    musicBoxConf.date = F("2018-11-21_14h33m31s	WED");
     select_in(SCALES, octave_4th_5th);
     select_in(JIFFLES, pentatonic_desc);
     sync = 2;
@@ -557,7 +559,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 26:
-    name = F("en andere brachklassiker");
+    musicBoxConf.name = F("en andere brachklassiker");
     //# FAVORITE+	wunderschön :)
     //# shortIsOk
     //# harmonies
@@ -567,7 +569,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //comment: müestemalnolengerlose...
     //comment: schöni uufbou
     //comment: vilichtmengischauchlilangwiiligi?
-    date = F("2018-11-13_15h12m50s	TUE");
+    musicBoxConf.date = F("2018-11-13_15h12m50s	TUE");
     select_in(SCALES, major_scale);
     select_in(JIFFLES, pentatonic_rise);
     sync = 5;
@@ -577,7 +579,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 27:
-    name = F("nomal en timemachine klassiker");
+    musicBoxConf.name = F("nomal en timemachine klassiker");
     //# FAVORITE
     //# shortIsOk
     //# melodies
@@ -590,7 +592,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# humming
     //comment: zum uussueche...
     //comment: bald mit tüüfem gebrumm
-    date = F("2018-11-13_17h33m15s	TUE");
+    musicBoxConf.date = F("2018-11-13_17h33m15s	TUE");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, ding_ditditdit);
     sync = 1;
@@ -601,7 +603,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 28:
-    name = F("PENT eifache reige");
+    musicBoxConf.name = F("PENT eifache reige");
     //# FAVORITE
     //# shortIsOk
     //# melodies
@@ -611,7 +613,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# nice
     //# simple
     //# cosmic
-    date = F("2018-11-14_13h27m35s	WED");
+    musicBoxConf.date = F("2018-11-14_13h27m35s	WED");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, ding_ditditdit);
     sync = 5;
@@ -622,7 +624,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 29:
-    name = F("triggered");
+    musicBoxConf.name = F("triggered");
     //# FAVORITE(?)
     //# shortIsOk
     //# melodies
@@ -633,7 +635,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# SoundSpaceShip
     //# hasSlowPulse
     //comment: da lauft öppis, so simpel das es bliibt	:)
-    date = F("2018-11-14_14h58m29s	WED");
+    musicBoxConf.date = F("2018-11-14_14h58m29s	WED");
     select_in(SCALES, minor_scale);
     select_in(JIFFLES, PENTAtonic_rise);
     sync = 3;
@@ -643,7 +645,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 30:
-    name = F("short cycled !");
+    musicBoxConf.name = F("short cycled !");
     //# FAVORITE
     //# bigBang		// sometimes problematic	use autostack_S0
     //# heavyStart	// problematic, but passes, sometimes ;)	use autostack_S0
@@ -653,7 +655,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# harmonies
     //# mystic
     //# aesthetic	wide
-    date = F("2018-11-14_19h47m20s	WED");
+    musicBoxConf.date = F("2018-11-14_19h47m20s	WED");
     select_in(SCALES, major_scale);
     select_in(JIFFLES, pentatonic_rise);
     sync = 0;
@@ -663,7 +665,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 31:
-    name = F("sanfti landig");
+    musicBoxConf.name = F("sanfti landig");
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk
@@ -681,7 +683,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# aurora
     //# lesley
     //# lyric
-    date = F("2018-11-15_09h10m37s	THU");
+    musicBoxConf.date = F("2018-11-15_09h10m37s	THU");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, dwn_THRD_up);
     sync = 1;
@@ -692,7 +694,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 32:
-    name = F("schön, ruhig, eifach");
+    musicBoxConf.name = F("schön, ruhig, eifach");
     //# FAVORITE
     //# shortIsOk
     //# melodies
@@ -713,7 +715,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     //comment: *lange* harmonical cycle 11h 46' 9"	???
-    date = F("2018-11-15_15h15m34s	THU");
+    musicBoxConf.date = F("2018-11-15_15h15m34s	THU");
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, pentatonic_rise);
     sync = 3;
@@ -724,7 +726,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 33:
-    name = F("magical toilet gejodel");
+    musicBoxConf.name = F("magical toilet gejodel");
     //# FAVORITE(crazy)		has some light stress and maybe dropout issues, but sounds crazy ok
     //# shortIsOk
     //# melodies
@@ -747,7 +749,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lesley
     //# hasSlowPulse
     //# lyric
-    date = F("2018-11-15_15h38m13s	THU");
+    musicBoxConf.date = F("2018-11-15_15h38m13s	THU");
     select_in(SCALES, doric_scale);
     select_in(JIFFLES, penta_3rd_down_5);
     sync = 5;
@@ -757,7 +759,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 34:
-    name = F("hübsch, langipausenamaafang");
+    musicBoxConf.name = F("hübsch, langipausenamaafang");
     //# FAVORITE
     //# shortIsOk
     //# melodies
@@ -777,7 +779,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lesley
     //# hasSlowPulse
     //# lyric
-    date = F("2018-11-15_15h53m44s	THU");
+    musicBoxConf.date = F("2018-11-15_15h53m44s	THU");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, dwn_THRD_up);
     sync = 5;
@@ -789,7 +791,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 35:
-    name = F("uusprägts melodiemotiv, fughetta");
+    musicBoxConf.name = F("uusprägts melodiemotiv, fughetta");
     //# FAVORITE
     //# shortIsOk
     //# motives
@@ -807,7 +809,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lesley
     //# hasSlowPulse
     //# lyric
-    date = F("2018-11-16_12h29m17s	FRI");
+    musicBoxConf.date = F("2018-11-16_12h29m17s	FRI");
     select_in(SCALES, octaves_fifths);
     select_in(JIFFLES, PENTA_3rd_rise);
     sync = 5;
@@ -818,7 +820,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 36:
-    name = F("maschinells ticke, klassisch");
+    musicBoxConf.name = F("maschinells ticke, klassisch");
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk		possibly
@@ -837,7 +839,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# clock
     //# hasSlowPulse
     //# lyric
-    date = F("2018-11-17_11h59m15s	SAT");
+    musicBoxConf.date = F("2018-11-17_11h59m15s	SAT");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, ding_ditditdit);
     sync = 0;
@@ -848,7 +850,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 37:
-    name = F("sehr sehr spezielle S0 aafang, wunderschön");
+    musicBoxConf.name = F("sehr sehr spezielle S0 aafang, wunderschön");
     //# FAVORITE
     //# heavy start	on some instruments...
     //# shortIsOk
@@ -872,7 +874,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //comment: chönnt mer guet au 1/2 cycle näh
     //comment: u.a.
-    date = F("2018-11-17_20h41m20s	SAT");
+    musicBoxConf.date = F("2018-11-17_20h41m20s	SAT");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, PENTAtonic_desc);
     sync = 0;
@@ -883,7 +885,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 38:
-    name = F("allereifachsts melodischs iiticke");
+    musicBoxConf.name = F("allereifachsts melodischs iiticke");
     //# FAVORITE
     //# shortIsOk
     //# rhytm&pulse
@@ -897,7 +899,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# beep
     //# hasSlowPulse
     //comment: schluss müest me no händisch mache...
-    date = F("2018-11-18_20h26m18s	SUN");
+    musicBoxConf.date = F("2018-11-18_20h26m18s	SUN");
     select_in(SCALES, octaves_fifths);
     select_in(JIFFLES, ding_ditditdit);
     sync = 1;
@@ -907,10 +909,10 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 39:
-    name = F("näbel");
+    musicBoxConf.name = F("näbel");
     //# FAVORITE
     //# systemStress	really???
-    date = F("2018-11-19_10h30m25s	MON");
+    musicBoxConf.date = F("2018-11-19_10h30m25s	MON");
     select_in(SCALES, minor_scale);
     select_in(JIFFLES, dwn_THRD_up);
     sync = 2;
@@ -922,7 +924,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 40:
-    name = F("jazzig");
+    musicBoxConf.name = F("jazzig");
     //# FAVORITE
     //# shortIsOk
     //# melodies	runs
@@ -937,7 +939,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# jazz
     //# lyric
     //comment: und übrigens:	harmonical cycle    49' 50"
-    date = F("2018-11-19_20h29m59s	MON");
+    musicBoxConf.date = F("2018-11-19_20h29m59s	MON");
     select_in(SCALES, doric_scale);
     select_in(JIFFLES, tumtum);
     sync = 4;
@@ -948,7 +950,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 41:
-    name = F("chileglogge?");
+    musicBoxConf.name = F("chileglogge?");
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk		maybe?
@@ -969,7 +971,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lesley
     //# hasSlowPulse
     //# lyric
-    date = F("2018-11-20_11h40m15s	TUE");
+    musicBoxConf.date = F("2018-11-20_11h40m15s	TUE");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, up_THRD);
     sync = 1;
@@ -980,7 +982,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 42:
-    name = F("lesley");
+    musicBoxConf.name = F("lesley");
     //# FAVORITE
     //# shortIsOk
     //# motives
@@ -1003,7 +1005,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lesley
     //# hasSlowPulse
     //# lyric
-    date = F("2018-11-20_14h34m14s	TUE");
+    musicBoxConf.date = F("2018-11-20_14h34m14s	TUE");
     select_in(SCALES, minor_scale);
     select_in(JIFFLES, rising_pent_them);
     sync = 4;
@@ -1014,7 +1016,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 43:
-    name = F("vorbereitige zum abflug?");
+    musicBoxConf.name = F("vorbereitige zum abflug?");
     //# FAVORITE ???
     //# shortIsOk
     //# motives
@@ -1033,7 +1035,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //comment: oderso,
     //comment:   muesdeaafangnomallose ;)
-    date = F("2018-11-20_15h15m48s	TUE");
+    musicBoxConf.date = F("2018-11-20_15h15m48s	TUE");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, up_THRD_dn);
     sync = 1;
@@ -1043,7 +1045,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 44:
-    name = F("melodischs tänzle");
+    musicBoxConf.name = F("melodischs tänzle");
     //# FAVORITE ???
     //# shortIsOk
     //# fullCycleIsOk		probably yes
@@ -1063,7 +1065,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     //comment: und übrigens:	harmonical cycle    53' 34"
-    date = F("2018-11-20_20h31m27s	TUE");
+    musicBoxConf.date = F("2018-11-20_20h31m27s	TUE");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, pent_top_wave);
     sync = 5;
@@ -1073,7 +1075,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 45:
-    name = F("motivtanz");
+    musicBoxConf.name = F("motivtanz");
     //# FAVORITE
     //# motives
     //# melodies
@@ -1089,7 +1091,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lesley
     //# hasSlowPulse
     //# lyric
-    date = F("2019-04-11_18h21m28s	THU");
+    musicBoxConf.date = F("2019-04-11_18h21m28s	THU");
     select_in(SCALES, octave_4th_5th);
     select_in(JIFFLES, up_THRD);
     sync = 4;
@@ -1102,7 +1104,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 46:
-    name = F("madrigal machine");
+    musicBoxConf.name = F("madrigal machine");
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk		maybe
@@ -1117,7 +1119,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# noise
     //# hasSlowPulse
     //# lyric
-    date = F("2019-04-11_14h");
+    musicBoxConf.date = F("2019-04-11_14h");
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, mechanical);
     sync = 2;
@@ -1129,7 +1131,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 47:
-    name = F("es sphärischs netz vo eigenartige melodie wiegt über öis");
+    musicBoxConf.name = F("es sphärischs netz vo eigenartige melodie wiegt über öis");
     //# favorite
     //# shortIsOk
     //# fullCycleIsOk		possible
@@ -1147,7 +1149,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# aurora
     //# lesley
     //# lyric
-    date = F("2018-11-21_15h49m05s	WED");
+    musicBoxConf.date = F("2018-11-21_15h49m05s	WED");
     select_in(SCALES, minor_scale);
     select_in(JIFFLES, pent_patternA);
     sync = 3;
@@ -1156,7 +1158,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 48:
-    name = F("eifach und schön, blue");	// harmonical cycle    55' 27"
+    musicBoxConf.name = F("eifach und schön, blue");	// harmonical cycle    55' 27"
     // simile 'Blue Night Cadence'
     //# FAVORITE
     //# shortIsOk
@@ -1177,7 +1179,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     //comment: und übrigens:	harmonical cycle    55' 27"
-    date = F("2018-11-21_16h08m40s	WED");
+    musicBoxConf.date = F("2018-11-21_16h08m40s	WED");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, pentatonic_rise);
     sync = 5;
@@ -1188,7 +1190,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 49:
-    name = F("herzig ;)");
+    musicBoxConf.name = F("herzig ;)");
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk		42' 6"
@@ -1207,7 +1209,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# delay
     //# hasSlowPulse
     //# lyric
-    date = F("2018-11-21_16h54m05s	WED");
+    musicBoxConf.date = F("2018-11-21_16h54m05s	WED");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, pent_patternA);
     sync = 5;
@@ -1218,7 +1220,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 50:
-    name = F("slow simple melodic ostinato dance");	// with fast ornaments: piepiep: Intensivstation
+    musicBoxConf.name = F("slow simple melodic ostinato dance");	// with fast ormusicBoxConf.naments: piepiep: Intensivstation
     //# favorite+
     //# shortIsOk
     //# fullCycleIsOk		52' 37"
@@ -1247,7 +1249,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 51:
-    name = F("langsam sprudelnd");
+    musicBoxConf.name = F("langsam sprudelnd");
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk
@@ -1262,7 +1264,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# soundscapey
     //# lyric
     //# water
-    date = F("2019-04-11_10h");
+    musicBoxConf.date = F("2019-04-11_10h");
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, up_THRD_dn);
     sync = 2;
@@ -1274,7 +1276,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 52:
-    name = F("The Landing Of The Fairies");
+    musicBoxConf.name = F("The Landing Of The Fairies");
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk
@@ -1317,7 +1319,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 53:
-    name = F("church bells are still ringing");
+    musicBoxConf.name = F("church bells are still ringing");
     //# FAVORITE
     //# shortIsOk
     //# motives
@@ -1329,7 +1331,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# birds
     //# delay
     //# hasSlowPulse
-    date = F("2018-11-21_21h12m38s	WED");
+    musicBoxConf.date = F("2018-11-21_21h12m38s	WED");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, pent_patternA);
     sync = 2;
@@ -1339,7 +1341,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 54:
-    name = F("kid's room");
+    musicBoxConf.name = F("kid's room");
     //# favorite
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 28' 21"
@@ -1351,7 +1353,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# simple
     //# fractal
     //# hasSlowPulse
-    date = F("2018-11-22_08h48m23s	THU");
+    musicBoxConf.date = F("2018-11-22_08h48m23s	THU");
     select_in(SCALES, octaves_fifths);
     select_in(JIFFLES, pent_top_wave_0);
     sync = 5;
@@ -1361,7 +1363,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 55:
-    name = F("uufregig im hüehnerstall weg de chileglogge");
+    musicBoxConf.name = F("uufregig im hüehnerstall weg de chileglogge");
     //# favorite
     //# shortIsOk
     //# motives
@@ -1382,7 +1384,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //comment: //comment: ;) ;)
     //comment: harmonical cycle     7'  1"
-    date = F("2018-11-22_09h26m06s	THU");
+    musicBoxConf.date = F("2018-11-22_09h26m06s	THU");
     select_in(SCALES, major_scale);
     select_in(JIFFLES, dwn_THRD_up);
     sync = 4;
@@ -1393,7 +1395,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 56:
-    name = F("klassischi harmonikali aesthetik");
+    musicBoxConf.name = F("klassischi harmonikali aesthetik");
     //# favorite
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 13' 9"
@@ -1409,7 +1411,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric
     //comment: harmonical cycle    26' 18"	...
-    date = F("2018-11-22_10h44m17s	THU");
+    musicBoxConf.date = F("2018-11-22_10h44m17s	THU");
     select_in(SCALES, major_scale);
     select_in(JIFFLES, pentatonic_desc);
     sync = 2;
@@ -1420,7 +1422,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 57:
-    name = F("klassisch, schön, als grundlag zu eme 22' 1\" stuck");
+    musicBoxConf.name = F("klassisch, schön, als grundlag zu eme 22' 1\" stuck");
     // FIXME: is double speed on chamber orchestra
     //# FAVORITE+
     //# shortIsOk
@@ -1436,7 +1438,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //comment: harmonical cycle    22'  1"
     //comment: jiffle no uusprobiere ;)
-    date = F("2018-11-22_11h45m56s	THU");
+    musicBoxConf.date = F("2018-11-22_11h45m56s	THU");
     select_in(SCALES, major_scale);
     select_in(JIFFLES, din_dididi);
     sync = 2;
@@ -1447,7 +1449,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 58:
-    name = F("eifach und eigenartig schön");
+    musicBoxConf.name = F("eifach und eigenartig schön");
     //# FAVORITE
     //# shortIsOk
     //# motives
@@ -1459,7 +1461,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# fractal
     //# hasSlowPulse
     //# lyric
-    date = F("2018-11-25_16h18m50s	SUN");
+    musicBoxConf.date = F("2018-11-25_16h18m50s	SUN");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, pentatonic_rise);
     sync = 5;
@@ -1470,7 +1472,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 59:
-    name = F("gradnomal wunderschön :)");
+    musicBoxConf.name = F("gradnomal wunderschön :)");
     //# favorite+
     //# shortIsOk
     //# motives
@@ -1485,7 +1487,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# churchbells
     //# hasSlowPulse
     //# lyric
-    date = F("2018-11-25_16h31m56s	SUN");
+    musicBoxConf.date = F("2018-11-25_16h31m56s	SUN");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, PENTAtonic_rise);
     sync = 0;
@@ -1496,7 +1498,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 60:
-    name = F("landing, seed, growth, ....");
+    musicBoxConf.name = F("landing, seed, growth, ....");
     //comment: strong beginning ;)
     //# favorite+
     //# shortIsOk
@@ -1515,7 +1517,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lesley
     //# hasSlowPulse
     //# lyric
-    date = F("2018-11-25_18h49m01s	SUN");
+    musicBoxConf.date = F("2018-11-25_18h49m01s	SUN");
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, dwn_THRD_up);
     sync = 1;
@@ -1526,7 +1528,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 61:
-    name = F("Baldrian");
+    musicBoxConf.name = F("Baldrian");
     //comment: entspannig pur
     //comment: try longer cycles ;)
     //# favorite
@@ -1541,7 +1543,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# aurora
     //# hasSlowPulse
     //# lyric
-    date = F("2018-11-25_19h14m10s	SUN");
+    musicBoxConf.date = F("2018-11-25_19h14m10s	SUN");
     select_in(SCALES, octave_4th_5th);
     select_in(JIFFLES, PENTA_3rd_down_5);
     sync = 2;
@@ -1552,7 +1554,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 62:
-    name = F("dorisch");
+    musicBoxConf.name = F("dorisch");
     //# favorite
     //# shortIsOk
     //# harmonies
@@ -1563,7 +1565,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# fractal
     //# hasSlowPulse
     //# lyric
-    date = F("2018-11-25_19h24m24s	SUN");
+    musicBoxConf.date = F("2018-11-25_19h24m24s	SUN");
     select_in(SCALES, doric_scale);
     select_in(JIFFLES, din_dididi);
     sync = 0;
@@ -1574,7 +1576,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 63:
-    name = F("rising ostinatos over rhythmic bordun");  // nice and harmonic, humming, good ending
+    musicBoxConf.name = F("rising ostinatos over rhythmic bordun");  // nice and harmonic, humming, good ending
     //comment: very nice ending :)
     //# FAVORITE
     //# SPECIALITY	from rhythm, beat to sound effects, everything's there
@@ -1617,7 +1619,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 64:
-    name = F("lost name");
+    musicBoxConf.name = F("lost name");
     //# favorite+
     //# shortIsOk
     //# motives
@@ -1645,7 +1647,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 65:
-    name = F("eigenartigi harmonischi melodiegebilde");
+    musicBoxConf.name = F("eigenartigi harmonischi melodiegebilde");
     //# favorite+
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 1h 4' 0"
@@ -1672,7 +1674,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 66:
-    name = F("no ohni name");
+    musicBoxConf.name = F("no ohni name");
     //# favorite+
     //# shortIsOk
     //# motives		!
@@ -1687,7 +1689,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //# lyric	er sitzt nur da und lost uf t vögel wo zwitschered im gebüsch
     //# lyric	(mer findet en en) gspässige Vogel
-    date = F("2018-11-28_21h02m41s	WED");
+    musicBoxConf.date = F("2018-11-28_21h02m41s	WED");
     select_in(SCALES, octaves_fifths);
     select_in(JIFFLES, PENTA_3rd_rise);
     sync = 3;
@@ -1698,7 +1700,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 67:
-    name = F("sehr eifach & schön");		// ähnlich love like a morning bird
+    musicBoxConf.name = F("sehr eifach & schön");		// ähnlich love like a morning bird
     //# favorite+
     //# shortIsOk
     //# melodies
@@ -1715,7 +1717,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# fairies
     //# hasSlowPulse
     //# lyric
-    date = F("2018-11-29_14h14m39s	THU");
+    musicBoxConf.date = F("2018-11-29_14h14m39s	THU");
     select_in(SCALES, octaves_fifths);
     select_in(JIFFLES, PENTAtonic_desc);
     sync = 2;
@@ -1726,7 +1728,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 68:
-    name = F("wow");
+    musicBoxConf.name = F("wow");
     //# FAVORITE	+++ :)
     //# shortIsOk
     //# melodies
@@ -1740,7 +1742,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# fractal
     //# hasSlowPulse
     //# lyric
-    date = F("2018-12-01_12h11m13s	SAT");
+    musicBoxConf.date = F("2018-12-01_12h11m13s	SAT");
     select_in(SCALES, doric_scale);
     select_in(JIFFLES, ding_ditditdit);
     sync = 4;
@@ -1751,7 +1753,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 69:
-    name = F("schön melodisch, mit recht guetem schluss");
+    musicBoxConf.name = F("schön melodisch, mit recht guetem schluss");
     //comment: de schluss chönnt no chli schneller fertig sii
     //# favorite+
     //# shortIsOk
@@ -1774,7 +1776,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lesley
     //# hasSlowPulse
     //# lyric
-    date = F("2018-12-02_20h43m32s	SUN");
+    musicBoxConf.date = F("2018-12-02_20h43m32s	SUN");
     select_in(SCALES, major_scale);
     select_in(JIFFLES, pentatonic_desc);
     sync = 2;
@@ -1785,7 +1787,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 70:
-    name = F("PENTAtheme");
+    musicBoxConf.name = F("PENTAtheme");
     //# favorite
     //# shortIsOk
     //# motives
@@ -1802,7 +1804,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# fairies
     //# hasSlowPulse
     //# lyric
-    date = F("2018-12-03_08h30m25s	MON");
+    musicBoxConf.date = F("2018-12-03_08h30m25s	MON");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, up_THRD);
     sync = 0;
@@ -1813,7 +1815,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 71:
-    name = F("elfechinde");
+    musicBoxConf.name = F("elfechinde");
     //# favorite
     //# shortIsOk
     //# motives
@@ -1830,7 +1832,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lesley
     //# hasSlowPulse
     //# lyric
-    date = F("2018-12-04_10h16m55s	TUE");
+    musicBoxConf.date = F("2018-12-04_10h16m55s	TUE");
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, dwn_THRD);
     sync = 3;
@@ -1841,7 +1843,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 72:
-    name = F("elfechinde 2");
+    musicBoxConf.name = F("elfechinde 2");
     //# favorite
     //# shortIsOk
     //# motives
@@ -1856,7 +1858,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# fairies
     //# hasSlowPulse
     //# lyric
-    date = F("2018-12-04_10h24m24s	TUE");
+    musicBoxConf.date = F("2018-12-04_10h24m24s	TUE");
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, pent_top_wave);
     sync = 3;
@@ -1867,8 +1869,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 73:
-    name = F("simplistic");
-    date = F("2018-12-05_19h18m09s	WED");
+    musicBoxConf.name = F("simplistic");
+    musicBoxConf.date = F("2018-12-05_19h18m09s	WED");
     select_in(SCALES, octaves_fifths);
     select_in(JIFFLES, din_dididi);
     sync = 5;
@@ -1879,7 +1881,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 74:
-    name = F("rhythms");
+    musicBoxConf.name = F("rhythms");
     //# favorite+
     //# shortIsOk
     //# motives
@@ -1899,7 +1901,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse
     //comment: very good example for note-metrum interval analogy :)
     //comment: will be a good test case for a better end algorithm ;)
-    date = F("2018-12-06_08h14m01s	THU");
+    musicBoxConf.date = F("2018-12-06_08h14m01s	THU");
     select_in(SCALES, octaves_fourths);
     select_in(JIFFLES, tumtum);
     sync = 0;
@@ -1910,7 +1912,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 75:
-    name = F("ruhig schwebend");
+    musicBoxConf.name = F("ruhig schwebend");
     //# favorite+
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 1h 33' 5"
@@ -1931,7 +1933,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lesley
     //# hasSlowPulse
     //# lyric
-    date = F("2018-12-07_09h44m49s	FRI");
+    musicBoxConf.date = F("2018-12-07_09h44m49s	FRI");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, PENTA_3rd_down_5);
     sync = 3;
@@ -1942,7 +1944,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 76:
-    name = F("magical tree");
+    musicBoxConf.name = F("magical tree");
     //comment: maybe as music for the tree woman from Theaterspektakel, Zürich 2018
     //# favorite
     //# shortIsOk
@@ -1963,7 +1965,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lesley
     //# hasSlowPulse
     //# lyric
-    date = F("2018-12-07_13h03m35s	FRI");
+    musicBoxConf.date = F("2018-12-07_13h03m35s	FRI");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, dwn_THRD);
     sync = 1;
@@ -1973,7 +1975,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 77:
-    name = F("tanboura");
+    musicBoxConf.name = F("tanboura");
     //# favorite
     //# shortIsOk	even very short ;)
     //# melodies
@@ -1988,7 +1990,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dense		harmonies
     //# elementary
     //# robot
-    date = F("2018-12-07_13h53m29s	FRI");
+    musicBoxConf.date = F("2018-12-07_13h53m29s	FRI");
     select_in(SCALES, doric_scale);
     select_in(JIFFLES, tanboura);
     sync = 5;
@@ -1999,7 +2001,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 78:
-    name = F("melodischs Netz uf I IV V");
+    musicBoxConf.name = F("melodischs Netz uf I IV V");
     //# favorite+
     //# shortIsOk
     //# motives
@@ -2017,7 +2019,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# birds
     //# fairies
     //# lyric
-    date = F("2018-12-07_16h22m20s	FRI");
+    musicBoxConf.date = F("2018-12-07_16h22m20s	FRI");
     select_in(SCALES, octave_4th_5th);
     select_in(JIFFLES, pent_top_wave);
     sync = 3;
@@ -2028,7 +2030,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 79:
-    name = F("Aurora");
+    musicBoxConf.name = F("Aurora");
     //comment: very dense pulsating web
     //comment: good ending ;)
     //# FAVORITE
@@ -2055,7 +2057,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lesley
     //# hasSlowPulse
     //# lyric
-    date = F("2018-12-07_15h57m55s	FRI");
+    musicBoxConf.date = F("2018-12-07_15h57m55s	FRI");
     select_in(SCALES, minor_scale);
     select_in(JIFFLES, PENTA_3rd_down_5);
     sync = 3;
@@ -2065,7 +2067,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 80:
-    name = F("Aurora mit tänzelnde Liechter");
+    musicBoxConf.name = F("Aurora mit tänzelnde Liechter");
     //# FAVORITE
     //# fullCycleIsOk	harmonical CYCLE: 55' 27"
     //# motives
@@ -2090,7 +2092,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse	soft and not always
     //# lyric
     //# water		why not?
-    date = F("2018-12-07_16h32m24s	FRI");
+    musicBoxConf.date = F("2018-12-07_16h32m24s	FRI");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, PENTA_3rd_down_5);
     sync = 1;
@@ -2101,7 +2103,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 81:
-    name = F("Melodie Kabinet");
+    musicBoxConf.name = F("Melodie Kabinet");
     //comment: wunderschön tänzelnds Melodienetz
     //comment: wo sich langsam au i di undere Stimme uusdehnt
     //# favorite
@@ -2125,7 +2127,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse	subtle
     //# lyric
     //# water		possible, bubbles?
-    date = F("2018-12-07_17h23m46s	FRI");
+    musicBoxConf.date = F("2018-12-07_17h23m46s	FRI");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, PENTA_3rd_rise);
     sync = 3;
@@ -2136,7 +2138,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 82:
-    name = F("Akkordeon");
+    musicBoxConf.name = F("Akkordeon");
     //# favorite
     //# shortIsOk
     //# motives
@@ -2155,7 +2157,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse	subtle
     //# lyric
     //# water
-    date = F("2018-12-07_17h34m18s	FRI");
+    musicBoxConf.date = F("2018-12-07_17h34m18s	FRI");
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, PENTAtonic_desc);
     sync = 5;
@@ -2166,7 +2168,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 83:
-    name = F("MusikdoseTraum");
+    musicBoxConf.name = F("MusikdoseTraum");
     //comment: für langi, vertröimti szene
     //# favorite+
     //# shortIsOk
@@ -2182,7 +2184,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# delay
     //# hasSlowPulse
     //# lyric		maybe too simple
-    date = F("2018-12-07_17h45m57s	FRI");
+    musicBoxConf.date = F("2018-12-07_17h45m57s	FRI");
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, din__dididi_dixi);
     sync = 3;
@@ -2193,7 +2195,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 84:
-    name = F("The Enchanted Forest Temple");
+    musicBoxConf.name = F("The Enchanted Forest Temple");
     //# FAVORITE
     //# shortIsOk
     //# ritch
@@ -2216,7 +2218,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# dream
     //# dance		very quietly moving with fast detail patterns
-    date = F("2019-04-04");
+    musicBoxConf.date = F("2019-04-04");
     select_in(SCALES, octave_4th_5th);
     select_in(JIFFLES, penta_3rd_down_5);
     sync = 1;
@@ -2224,7 +2226,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 85:
-    name = F("Pentaweb");
+    musicBoxConf.name = F("Pentaweb");
     //comment: stimmigsvoll
     //comment: mit sehnsucht ufs ziel zue
     //# favorite
@@ -2262,7 +2264,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 86:
-    name = F("Schwester Pentaweb");
+    musicBoxConf.name = F("Schwester Pentaweb");
     //comment: e ZwillingsPentawebSchwöster :)
     //# favorite+
     //# shortIsOk
@@ -2285,7 +2287,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse	some
     //# lyric		maybe?
     //# water		why not?
-    date = F("2018-12-07_19h04m44s	FRI");
+    musicBoxConf.date = F("2018-12-07_19h04m44s	FRI");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, penta_3rd_rise);
     sync = 1;
@@ -2295,7 +2297,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 87:
-    name = F("PentaMusicBox");
+    musicBoxConf.name = F("PentaMusicBox");
     //# favorite
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 57' 49"
@@ -2314,7 +2316,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# humming
     //# hasSlowPulse	by a melody motive
     //# lyric
-    date = F("2018-12-07_19h16m36s	FRI");
+    musicBoxConf.date = F("2018-12-07_19h16m36s	FRI");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, din__dididi_dixi);
     sync = 1;
@@ -2325,7 +2327,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 88:
-    name = F("I_IV_V mit Knatterrhytheme");
+    musicBoxConf.name = F("I_IV_V mit Knatterrhytheme");
     //# favorite
     //# shortIsOk	rhythm will probably not start yet
     //# motives		rhythmical melodies
@@ -2340,7 +2342,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# elementary
     //# robot
     //# hasSlowPulse	by motives
-    date = F("2018-12-07_19h48m57s	FRI");
+    musicBoxConf.date = F("2018-12-07_19h48m57s	FRI");
     select_in(SCALES, octave_4th_5th);
     select_in(JIFFLES, d4096_512);
     sync = 1;
@@ -2350,7 +2352,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 89:
-    name = F("The Landing Of The Sound Space Ship");
+    musicBoxConf.name = F("The Landing Of The Sound Space Ship");
     //# favorite+
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 57' 13"
@@ -2371,7 +2373,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse	has slow structures
     //# lyric
     //# water		everything is possible
-    date = F("2018-12-07_20h03m19s	FRI");
+    musicBoxConf.date = F("2018-12-07_20h03m19s	FRI");
     select_in(SCALES, doric_scale);
     select_in(JIFFLES, dwn_THRD_up);
     sync = 1;
@@ -2382,7 +2384,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 90:
-    name = F("Striicherbordun");
+    musicBoxConf.name = F("Striicherbordun");
     //comment: dichts melodienetz mit tüüfem stehendem bass, wi tüüfi striicher
     //# favorite
     //# shortIsOk
@@ -2408,7 +2410,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse	simple
     //# lyric
     //# water		slow waves
-    date = F("2018-12-09_20h14m56s	SUN");
+    musicBoxConf.date = F("2018-12-09_20h14m56s	SUN");
     select_in(SCALES, major_scale);
     select_in(JIFFLES, penta_3rd_rise);
     sync = 3;
@@ -2421,8 +2423,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 91:
     //# FAVORITE
     // TODO: add tags
-    name = F("simple and beautiful");
-    date = F("2018-12-10_17h02m05s	MON");
+    musicBoxConf.name = F("simple and beautiful");
+    musicBoxConf.date = F("2018-12-10_17h02m05s	MON");
     select_in(SCALES, doric_scale);
     select_in(JIFFLES, d4096_1024);
     sync = 2;
@@ -2433,7 +2435,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 92:
-    name = F("de Reige vo de Dezämberfee");
+    musicBoxConf.name = F("de Reige vo de Dezämberfee");
     //# favorite+
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 1h 3' 53"
@@ -2459,7 +2461,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse	you can always hear something, subtle
     //# lyric
     //# water
-    date = F("2018-12-10_17h27m01s	MON");
+    musicBoxConf.date = F("2018-12-10_17h27m01s	MON");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, dwn_THRD_up);
     sync = 3;
@@ -2470,7 +2472,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 93:
-    name = F("Saiteresonanze");
+    musicBoxConf.name = F("Saiteresonanze");
     //comment: git grad zuefellig wonderschöni Saiteresonanze uf de Gitarre &co
     //# favorite+
     //# shortIsOk
@@ -2491,7 +2493,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse	not really, but quite
     //# lyric
     //# water	busy rising melodies like air bubbles in water
-    date = F("2018-12-11_13h29m08s	TUE");
+    musicBoxConf.date = F("2018-12-11_13h29m08s	TUE");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, pentatonic_rise);
     sync = 5;
@@ -2501,7 +2503,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 94:
-    name = F("Chindertanz -- Children's Dance");
+    musicBoxConf.name = F("Chindertanz -- Children's Dance");
     //comment: fröhlich gspunnene chindertanz
     //# favorite+
     //# shortIsOk
@@ -2526,7 +2528,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# children
     //# dance
-    date = F("2018-12-13_10h24m06s	THU");
+    musicBoxConf.date = F("2018-12-13_10h24m06s	THU");
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, rising_pent_them);
     sync = 4;
@@ -2536,7 +2538,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 95:
-    name = F("Good Old Major Sync3");
+    musicBoxConf.name = F("Good Old Major Sync3");
     //comment: use whole cycle :)
     //# FAVORITE
     //# shortIsOk	maybe use whole cycle instead?
@@ -2554,7 +2556,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# dance
     //# festive
-    date = F("2018-12-13_10h47m46s	THU");
+    musicBoxConf.date = F("2018-12-13_10h47m46s	THU");
     select_in(SCALES, major_scale);
     select_in(JIFFLES, d4096_1024);
     sync = 3;
@@ -2563,7 +2565,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 96:
-    name = F("Cosmic SoundWave Visiting Earth");
+    musicBoxConf.name = F("Cosmic SoundWave Visiting Earth");
     //# favorite+
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 1h 3' 1"
@@ -2583,7 +2585,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# fairies
     //# aurora
     //# lesley
-    date = F("2018-12-13_16h59m40s	THU");
+    musicBoxConf.date = F("2018-12-13_16h59m40s	THU");
     select_in(SCALES, major_scale);
     select_in(JIFFLES, PENTA_3rd_down_5);
     sync = 1;
@@ -2593,7 +2595,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 97:
-    name = F("Jazzigi Rhythme mit schnarrend schnarchende KnatterKläng");	// really???
+    musicBoxConf.name = F("Jazzigi Rhythme mit schnarrend schnarchende KnatterKläng");	// really???
     // meh wi e musikdose	steady endless looping
     //# favorite
     //# shortIsOk
@@ -2614,7 +2616,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse	simplicistic
     //# lyric
     //# children
-    date = F("2018-12-13_19h42m01s	THU");
+    musicBoxConf.date = F("2018-12-13_19h42m01s	THU");
     select_in(SCALES, octaves_fifths);
     select_in(JIFFLES, diing_ditditdit);
     sync = 2;
@@ -2624,7 +2626,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 98:
-    name = F("Harmonikale Schrittanz");
+    musicBoxConf.name = F("Harmonikale Schrittanz");
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk	armonical CYCLE: 59' 49"
@@ -2649,7 +2651,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# water		possible
     //# dance		slowly progressing
     //# festive		blue night festival
-    date = F("2018-12-13_21h35m38s	THU");
+    musicBoxConf.date = F("2018-12-13_21h35m38s	THU");
     select_in(SCALES, minor_scale);
     select_in(JIFFLES, pentatonic_rise);
     sync = 0;
@@ -2660,7 +2662,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 99:
-    name = F("Church Bells, blue jay way");
+    musicBoxConf.name = F("Church Bells, blue jay way");
     //comment: es paar Alphörner het s glaub au no ;)
     //# favorite
     //# shortIsOk
@@ -2684,7 +2686,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# water
     //# floating
-    date = F("2018-12-14_18h24m10s	FRI");
+    musicBoxConf.date = F("2018-12-14_18h24m10s	FRI");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, pent_patternA);
     sync = 5;
@@ -2694,7 +2696,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 100:
-    name = F("PENTAtonic Clock Organ");
+    musicBoxConf.name = F("PENTAtonic Clock Organ");
     //# favorite
     //# shortIsOk
     //# motives
@@ -2719,7 +2721,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse	archaic
     //# children
     //# dance
-    date = F("2018-12-14_18h51m01s	FRI");
+    musicBoxConf.date = F("2018-12-14_18h51m01s	FRI");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, diing_ditditdit);
     sync = 3;
@@ -2729,7 +2731,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 101:
-    name = F("Good Night Choir (mit Knatterrhytme)");
+    musicBoxConf.name = F("Good Night Choir (mit Knatterrhytme)");
     //# favorite+
     //# shortIsOk
     //# motives
@@ -2753,7 +2755,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# dance		very slow, quiet but strong dance
     //# festive		somehow yes, but quietly so
-    date = F("2018-12-14_19h03m53s	FRI");
+    musicBoxConf.date = F("2018-12-14_19h03m53s	FRI");
     select_in(SCALES, octaves_fourths);
     select_in(JIFFLES, pentatonic_desc);
     sync = 0;
@@ -2764,7 +2766,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 102:
-    name = F("Classical Beauty");
+    musicBoxConf.name = F("Classical Beauty");
     //# favorite
     //# shortIsOk
     //# melodies
@@ -2776,7 +2778,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# quiet
     //# simple
     //# hasSlowPulse	somehow
-    date = F("2018-12-14_19h37m48s	FRI");
+    musicBoxConf.date = F("2018-12-14_19h37m48s	FRI");
     select_in(SCALES, doric_scale);
     select_in(JIFFLES, d4096_1024);
     sync = 1;
@@ -2787,7 +2789,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 103:
-    name = F("PENTA Classic");
+    musicBoxConf.name = F("PENTA Classic");
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 51' 57"
@@ -2809,7 +2811,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# children	maybe also
     //# dance		quiet, slow and strong
     //# festive		somehow
-    date = F("2018-12-14_19h48m35s	FRI");
+    musicBoxConf.date = F("2018-12-14_19h48m35s	FRI");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, up_THRD);
     sync = 2;
@@ -2820,7 +2822,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 104:
-    name = F("pentatonic reaching down to rhythm");
+    musicBoxConf.name = F("pentatonic reaching down to rhythm");
     //# favorite+
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 1h 3' 3"
@@ -2839,7 +2841,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# rumble
     //# hasSlowPulse	jazzy, and not steady
     //# dance		crazy dance
-    date = F("2018-12-15_12h58m14s	SAT");
+    musicBoxConf.date = F("2018-12-15_12h58m14s	SAT");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, tumtum);
     sync = 2;
@@ -2849,7 +2851,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 105:
-    name = F("Nameless Beauty");
+    musicBoxConf.name = F("Nameless Beauty");
     //# favorite+
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 55' 27"
@@ -2870,7 +2872,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# children	possible
     //# dance		whirdance?
     //# floating	in a whirlpool?
-    date = F("2018-12-15_15h06m14s	SAT");
+    musicBoxConf.date = F("2018-12-15_15h06m14s	SAT");
     select_in(SCALES, minor_scale);
     select_in(JIFFLES, pentatonic_rise);
     sync = 0;
@@ -2880,7 +2882,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 106:
-    name = F("melodischs gfüeg");
+    musicBoxConf.name = F("melodischs gfüeg");
     //# favorite+
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 55' 27"
@@ -2899,7 +2901,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dance
     //# festive
     //# floating	in the dance
-    date = F("2018-12-18_11h56m09s	TUE");
+    musicBoxConf.date = F("2018-12-18_11h56m09s	TUE");
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, rising_pent_them);
     sync = 1;
@@ -2910,7 +2912,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 107:
-    name = F("RhythmicalTroubadourBordun");
+    musicBoxConf.name = F("RhythmicalTroubadourBordun");
     // could imagine it in a song :)
     //# FAVORITE
     //# shortIsOk
@@ -2932,7 +2934,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# dance		steady advancing
     //# festive		advanced
-    date = F("2018-12-19_14h13m01s	WED");
+    musicBoxConf.date = F("2018-12-19_14h13m01s	WED");
     select_in(SCALES, octave_4th_5th);
     select_in(JIFFLES, tumtum);
     sync = 0;
@@ -2943,7 +2945,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 108:
-    name = F("another melody net");
+    musicBoxConf.name = F("another melody net");
     //# favorite
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 55' 27"
@@ -2962,7 +2964,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# water		sure, what not?
     //# children
     //# dance
-    date = F("2018-12-19_15h29m35s	WED");
+    musicBoxConf.date = F("2018-12-19_15h29m35s	WED");
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, pentatonic_rise);
     sync = 5;
@@ -2973,7 +2975,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 109:
-    name = F("eifache schöne reige");
+    musicBoxConf.name = F("eifache schöne reige");
     //# favorite+
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 55' 27"
@@ -2991,7 +2993,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# dance
     //# festive
-    date = F("2018-12-19_15h49m12s	WED");
+    musicBoxConf.date = F("2018-12-19_15h49m12s	WED");
     select_in(SCALES, octave_4th_5th);
     select_in(JIFFLES, dwn_THRD_up);
     sync = 4;
@@ -3002,7 +3004,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 110:
-    name = F("another nice simple one");	// hübsch
+    musicBoxConf.name = F("another nice simple one");	// hübsch
     // e bizz wie n es cembalo :)
     //# favorite
     //# shortIsOk
@@ -3017,7 +3019,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse	harmonic progression
     //# lyric
     //# festive
-    date = F("2018-12-19_15h42m05s	WED");
+    musicBoxConf.date = F("2018-12-19_15h42m05s	WED");
     select_in(SCALES, minor_scale);
     select_in(JIFFLES, d4096_512);
     sync = 5;
@@ -3028,7 +3030,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 111:
-    name = F("descending ascending whirles");
+    musicBoxConf.name = F("descending ascending whirles");
     //# favorite+
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 57' 59"
@@ -3047,7 +3049,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# dance
     //# festive
-    date = F("2018-12-19_15h57m43s	WED");
+    musicBoxConf.date = F("2018-12-19_15h57m43s	WED");
     select_in(SCALES, doric_scale);
     select_in(JIFFLES, pentatonic_rise);
     sync = 5;
@@ -3058,7 +3060,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 112:
-    name = F("im Zaubergarte");
+    musicBoxConf.name = F("im Zaubergarte");
     //# favorite
     //# shortIsOk	short cycled anyway ;)
     //# fullCycleIsOk	harmonical CYCLE: 10' 41"
@@ -3086,7 +3088,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dance		very slow witch dance
     //# festive
     //# floating
-    date = F("2018-12-20_13h11m49s	THU");
+    musicBoxConf.date = F("2018-12-20_13h11m49s	THU");
     select_in(SCALES, major_scale);
     select_in(JIFFLES, penta_3rd_down_5);
     sync = 1;
@@ -3097,7 +3099,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 113:
-    name = F("Chläderrose");
+    musicBoxConf.name = F("Chläderrose");
     //# FAVORITE
     //# shortIsOk
     //# motives
@@ -3116,7 +3118,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# dance
     //# floating
-    date = F("2018-12-19_20h43m46s	WED");
+    musicBoxConf.date = F("2018-12-19_20h43m46s	WED");
     select_in(SCALES, minor_scale);
     select_in(JIFFLES, up_THRD);
     sync = 3;
@@ -3127,7 +3129,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 114:
-    name = F("dream angel came from heaven to earth");
+    musicBoxConf.name = F("dream angel came from heaven to earth");
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk	armonical CYCLE: 1h 1' 56"
@@ -3160,7 +3162,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# air
     //# dance		very mystical
     //# festive
-    date = F("2018-12-19_22h08m50s	WED");
+    musicBoxConf.date = F("2018-12-19_22h08m50s	WED");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, penta_3rd_down_5);
     sync = 1;
@@ -3170,7 +3172,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 115:
-    name = F("crazy, roboterhafts piepse");
+    musicBoxConf.name = F("crazy, roboterhafts piepse");
     //# bigBang
     //# favorite-
     //# shortIsOk
@@ -3187,7 +3189,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //comment: alarmgepiepse
     //comment: langsams, maschinells schriite
     //comment: ständig umpiepst vo de nervende alärm ;)
-    date = F("2018-11-08_15h07m35s	THU");
+    musicBoxConf.date = F("2018-11-08_15h07m35s	THU");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, din__dididi_dixi);
     sync = 0;
@@ -3197,7 +3199,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 116:
-    name = F("relax and get ready");
+    musicBoxConf.name = F("relax and get ready");
     //# favorite
     //# shortIsOk
     //# motives
@@ -3221,7 +3223,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# earth
     //# children
     //# lyric
-    date = F("2018-12-20_16h05m35s	THU");
+    musicBoxConf.date = F("2018-12-20_16h05m35s	THU");
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, pentatonic_desc);
     sync = 0;
@@ -3232,7 +3234,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 117:
-    name = F("birds and other musicians calling");
+    musicBoxConf.name = F("birds and other musicians calling");
     //# FAVORITE
     //# shortIsOk
     //# motives
@@ -3265,7 +3267,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# children
     //# dance	slow movements
     //# festive and quiet, very concentrated
-    date = F("2018-12-20_16h54m10s	THU");
+    musicBoxConf.date = F("2018-12-20_16h54m10s	THU");
     select_in(SCALES, octaves_fifths);
     select_in(JIFFLES, pentatonic_desc);
     sync = 4;
@@ -3275,7 +3277,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 118:
-    name = F("triad tanboura");
+    musicBoxConf.name = F("triad tanboura");
     //comment: nice for a while
     //comment: can get boring ;)
     //# favorite-
@@ -3297,7 +3299,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# rumble
     //# hasSlowPulse	simplicistic
     //# boring
-    date = F("2018-12-21_11h54m41s	FRI");
+    musicBoxConf.date = F("2018-12-21_11h54m41s	FRI");
     select_in(SCALES, triad);
     select_in(JIFFLES, tanboura);
     sync = 3;
@@ -3308,7 +3310,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 119:
-    name = F("slow dreams");
+    musicBoxConf.name = F("slow dreams");
     //# FAVORITE
     //# shortIsOk
     //# motives
@@ -3342,7 +3344,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# floating
     //# slow
     //# steady
-    date = F("2018-12-21_18h55m55s	FRI");
+    musicBoxConf.date = F("2018-12-21_18h55m55s	FRI");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, dwn_THRD);
     sync = 2;
@@ -3353,7 +3355,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 120:
-    name = F("schlichte Tanz");
+    musicBoxConf.name = F("schlichte Tanz");
     //# favorite
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 1h 3' 1"
@@ -3380,7 +3382,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# steady
     //# happy
     //# tired
-    date = F("2018-12-21_19h57m09s	FRI");
+    musicBoxConf.date = F("2018-12-21_19h57m09s	FRI");
     select_in(SCALES, pentaCHORD);
     select_in(JIFFLES, din_dididi);
     sync = 2;
@@ -3391,7 +3393,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 121:
-    name = F("schlicht ruhends muster, friedlich, erwartigsvoll, lebensfroh");
+    musicBoxConf.name = F("schlicht ruhends muster, friedlich, erwartigsvoll, lebensfroh");
     //# favorite+
     //# shortIsOk
     //# motives
@@ -3413,7 +3415,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# festive
     //# slow
     //# steady
-    date = F("2018-12-22_09h52m20s	SAT");
+    musicBoxConf.date = F("2018-12-22_09h52m20s	SAT");
     select_in(SCALES, octaves_fourths);
     select_in(JIFFLES, PENTAtonic_desc);
     sync = 2;
@@ -3424,7 +3426,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 122:
-    name = F("und es ratteret und brummet tickend de motor");	// sehr starche puls!
+    musicBoxConf.name = F("und es ratteret und brummet tickend de motor");	// sehr starche puls!
     //# favorite+
     //# favorite
     //# shortIsOk
@@ -3446,7 +3448,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dance	hypnotic
     //# boring
     //# steady
-    date = F("2018-12-22_10h34m45s	SAT");
+    musicBoxConf.date = F("2018-12-22_10h34m45s	SAT");
     select_in(SCALES, octaves_fourths);
     select_in(JIFFLES, d4096_3072);
     sync = 0;
@@ -3457,7 +3459,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 123:
-    name = F("pentatonische wasserfall");
+    musicBoxConf.name = F("pentatonische wasserfall");
     //# favorite+
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 47' 48"
@@ -3482,7 +3484,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# floating
     //# slow
     //# steady	in waves
-    date = F("2018-12-22_15h51m27s	SAT");
+    musicBoxConf.date = F("2018-12-22_15h51m27s	SAT");
     select_in(SCALES, pentaCHORD);
     select_in(JIFFLES, pentatonic_desc);
     sync = 5;
@@ -3493,7 +3495,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 124:
-    name = F("brummbärs ratterkiste");
+    musicBoxConf.name = F("brummbärs ratterkiste");
     //# favorite+
     //# shortIsOk
     //# melodies	jazzy harmonic progression
@@ -3516,7 +3518,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# fast
     //# steady
     //# tired	maybe tired or drunk, who knows?
-    date = F("2018-12-22_15h58m50s	SAT");
+    musicBoxConf.date = F("2018-12-22_15h58m50s	SAT");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, tumtum);
     sync = 2;
@@ -3527,8 +3529,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 125:
-    name = F("a firework of sounds");
-    date = F("2018-12-22_18h52m33s	SAT");
+    musicBoxConf.name = F("a firework of sounds");
+    musicBoxConf.date = F("2018-12-22_18h52m33s	SAT");
     select_in(SCALES, major_scale);
     select_in(JIFFLES, PENTAtonic_rise);
     sync = 1;
@@ -3539,8 +3541,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 126:
-    name = F("firework #2");
-    date = F("2018-12-22_19h03m01s	SAT");
+    musicBoxConf.name = F("firework #2");
+    musicBoxConf.date = F("2018-12-22_19h03m01s	SAT");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, din_dididi);
     sync = 5;
@@ -3551,7 +3553,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 127:
-    name = F("acoustic telegraph lines");
+    musicBoxConf.name = F("acoustic telegraph lines");
     //# FAVORITE
     //# shortIsOk
     //# melodies
@@ -3583,7 +3585,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# slow
     //# steady
     //# tired	maybe just a bit
-    date = F("2018-12-22_20h17m39s	SAT");
+    musicBoxConf.date = F("2018-12-22_20h17m39s	SAT");
     select_in(SCALES, octaves_fourths);
     select_in(JIFFLES, rising_pent_them);
     sync = 5;
@@ -3593,7 +3595,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 128:
-    name = F("clear winter sky");
+    musicBoxConf.name = F("clear winter sky");
     //# favorite+
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 1h 10' 13"
@@ -3622,7 +3624,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# festive
     //# floating
     //# slow
-    date = F("2018-12-23_18h45m37s	SUN");
+    musicBoxConf.date = F("2018-12-23_18h45m37s	SUN");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, PENTAtonic_desc);
     sync = 1;
@@ -3632,7 +3634,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 129:
-    name = F("the mad old jazz piano man");
+    musicBoxConf.name = F("the mad old jazz piano man");
     //# favorite
     //# shortIsOk
     //# motives
@@ -3654,7 +3656,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dance		crazy
     //# fast
     //# steady		stubborn
-    date = F("2018-12-23_18h53m20s	SUN");
+    musicBoxConf.date = F("2018-12-23_18h53m20s	SUN");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, tumtumtum);
     sync = 4;
@@ -3665,7 +3667,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 130:
-    name = F("nameless beauty");
+    musicBoxConf.name = F("nameless beauty");
     //# favorite+
     //# shortIsOk
     //# motives
@@ -3690,7 +3692,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dream
     //# festive
     //# slow
-    date = F("2018-12-24_20h35m07s	MON");
+    musicBoxConf.date = F("2018-12-24_20h35m07s	MON");
     select_in(SCALES, trichord);
     select_in(JIFFLES, pentatonic_rise);
     sync = 2;
@@ -3701,7 +3703,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 131:
-    name = F("penta trichord");
+    musicBoxConf.name = F("penta trichord");
     //# favorite+
     //# shortIsOk
     //# motives
@@ -3731,7 +3733,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# floating
     //# slow
     //# tired	maybe a bit?
-    date = F("2018-12-24_20h49m58s	MON");
+    musicBoxConf.date = F("2018-12-24_20h49m58s	MON");
     select_in(SCALES, trichord);
     select_in(JIFFLES, PENTAtonic_desc);
     sync = 2;
@@ -3742,7 +3744,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 132:
-    name = F("Santa Claus");
+    musicBoxConf.name = F("Santa Claus");
     //# favorite+
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 57' 59"
@@ -3766,7 +3768,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# slow
     //# steady
     //# happy
-    date = F("2018-12-25_19h16m25s	TUE");
+    musicBoxConf.date = F("2018-12-25_19h16m25s	TUE");
     select_in(SCALES, octave_4th_5th);
     select_in(JIFFLES, penta_3rd_rise);
     sync = 1;
@@ -3778,7 +3780,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 133:
-    name = F("sound waves like ever descending rain");
+    musicBoxConf.name = F("sound waves like ever descending rain");
     //# RECORDED (similar)	name = F("2018-12-25_20h28m58s (recorded)");
     //# FAVORITE
     //# shortIsOk
@@ -3810,14 +3812,14 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dance
     //# festive
     //# happy
-    date = F("2018-12-25_20h28m58s	TUE");
+    musicBoxConf.date = F("2018-12-25_20h28m58s	TUE");
     select_in(SCALES, doric_scale);
     select_in(JIFFLES, din__dididi_dix);
     sync = 2;
     pitch = {32768, 32};
     // harmonical CYCLE: 2h 48' 57"	SUBCYCLE: | 5' 17" |
     subcycle_octave = -5;
-    date = F("2019-01-04_18h44m09s	FRI");
+    musicBoxConf.date = F("2019-01-04_18h44m09s	FRI");
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, PENTAtonic_desc);
     sync = 2;
@@ -3827,7 +3829,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 134:
-    name = F("Childrens Christmas Night");
+    musicBoxConf.name = F("Childrens Christmas Night");
     //# FAVORITE+
     //# shortIsOk
     //# fullCycleIsOk
@@ -3855,7 +3857,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# happy
     //# sad
     //# tired	a bit, maybe
-    date = F("2018-12-25_19h42m27s	TUE");
+    musicBoxConf.date = F("2018-12-25_19h42m27s	TUE");
     select_in(SCALES, pentaCHORD);
     select_in(JIFFLES, din__dididi_dixi);
     sync = 4;
@@ -3866,7 +3868,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 135:
-    name = F("daydreams");
+    musicBoxConf.name = F("daydreams");
     //# favorite
     //# shortIsOk
     //# fullCycleIsOk	armonical CYCLE: 1h 11' 51"
@@ -3899,7 +3901,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# air
     //# children
     //# ritual
-    date = F("2019-01-06_16h16m57s	SUN");
+    musicBoxConf.date = F("2019-01-06_16h16m57s	SUN");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, penta_3rd_down_5);
     sync = 3;
@@ -3910,7 +3912,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 136:
-    name = F("Harmonical Musicbox alpha 0.010");
+    musicBoxConf.name = F("Harmonical Musicbox alpha 0.010");
     //# favorite
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 51' 12"
@@ -3935,7 +3937,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 137:
-    name = F("TRIAD");
+    musicBoxConf.name = F("TRIAD");
     //# FAVORITE
     //# SPECIALITY	strong sound effects
     //# shortIsOk
@@ -3964,7 +3966,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# children
     //# festive
     //# ritual
-    date = F("2019-01-06_22h12m45s	SUN");
+    musicBoxConf.date = F("2019-01-06_22h12m45s	SUN");
     select_in(SCALES, TRIAD);
     select_in(JIFFLES, rising_pent_them);
     sync = 1;
@@ -3975,7 +3977,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 138:
-    name = F("rhythm tuned in");
+    musicBoxConf.name = F("rhythm tuned in");
     //comment: very nice, simple octaves_fourths pattern, deep down to rhythmical roots
     //# favorite+
     //# SPECIALITY	rhythm and pulse
@@ -3999,7 +4001,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# clock
     //# rumble
     //# hasSlowPulse	*strong* slow pulse clicks & rhythms
-    date = F("2019-01-08_08h46m00s	TUE");
+    musicBoxConf.date = F("2019-01-08_08h46m00s	TUE");
     select_in(SCALES, octaves_fourths);
     select_in(JIFFLES, din_dididi);
     sync = 0;
@@ -4010,8 +4012,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 139:
-    name = F("2019-02-01 ardour5 noname");
-    //# RECORDED	name = F("2019-02-01 ardour5 noname");
+    musicBoxConf.name = F("2019-02-01 ardour5 noname");
+    //# RECORDED	name = F("2019-02-01 ardour5 nomusicBoxConf.name");
     //# favorite+
     //# shortIsOk
     //# ritch
@@ -4034,7 +4036,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 140:
-    name = F("noname starting 2019-04-11_12h");
+    musicBoxConf.name = F("noname starting 2019-04-11_12h");
     //# favorite
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 1h 14' 28"
@@ -4066,7 +4068,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# dream
     //# children
     //# happy
-    date = F("2019-04-11_12h");
+    musicBoxConf.date = F("2019-04-11_12h");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, pentatonic_desc);
     sync = 0;
@@ -4078,7 +4080,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 141:
-    name = F("2019-02-04_doric_cycle_S1");
+    musicBoxConf.name = F("2019-02-04_doric_cycle_S1");
     //comment: ardour 5
     //# RECORDED	    //comment: ardour 5
     //# favorite+
@@ -4103,7 +4105,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 142:
-    name = F("2019-02-04_bordun, rhythm");	// with rhythm
+    musicBoxConf.name = F("2019-02-04_bordun, rhythm");	// with rhythm
     //comment: ardour5
     //# RECORDED    //comment: ardour5
     //# FAVORITE
@@ -4134,7 +4136,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 143:
-    name = F("nice little dance");
+    musicBoxConf.name = F("nice little dance");
     //# FAVORITE
     //# shortIsOk
     //# ritch
@@ -4158,7 +4160,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# children
     //# dance
-    date = F("2019-04-11_10h");
+    musicBoxConf.date = F("2019-04-11_10h");
     select_in(SCALES, triad);
     select_in(JIFFLES, pent_top_wave_0);
     sync = 1;
@@ -4169,7 +4171,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 144:
-    name = F("2019-02-6_tumtum_pentatonic_minor_S2");
+    musicBoxConf.name = F("2019-02-6_tumtum_pentatonic_minor_S2");
     //# favorite
     //# shortIsOk
     //# steady
@@ -4186,7 +4188,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# rumble
     //# children
     //# dance
-    date = F("2019-02-06_15h44m39s	WED");
+    musicBoxConf.date = F("2019-02-06_15h44m39s	WED");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, tumtum);
     sync = 2;
@@ -4198,7 +4200,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 145:
-    name = F("zagg  2019-02-06_tetraCHORD_pentachord_rise_S1");
+    musicBoxConf.name = F("zagg  2019-02-06_tetraCHORD_pentachord_rise_S1");
     //# favorite
     //# shortIsOk
     //# soundscape
@@ -4213,7 +4215,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, pentaCHORD_rise);
     pitch = {3, 10};	// 24	*metric* A
     // harmonical CYCLE: 0"	SUBCYCLE: | 4' 13" |
-    date = F("2019-02-06_20h31m52s	WED");
+    musicBoxConf.date = F("2019-02-06_20h31m52s	WED");
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, pentaCHORD_rise);
     sync = 1;
@@ -4223,9 +4225,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 146:
-    name = F("2019-02-06_RG3_S0_d64_melody-rhythm");    // pitch variation of    "noname_a"
+    musicBoxConf.name = F("2019-02-06_RG3_S0_d64_melody-rhythm");    // pitch variation of    "noname_a"
     //# FAVORITE
-    //# SPECIALITY	rhythm and short jiffs	see: "noname_a"
+    //# SPECIALITY	rhythm and short jiffs	see: "nomusicBoxConf.name_a"
     //# rhytm&pulse
     //# shortIsOk
     //# bigBang
@@ -4243,7 +4245,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# rumble
     pitch = {2, 61};	// 44	*metric* G
     // harmonical CYCLE: 0"	SUBCYCLE: | 5' 38" |
-    date = F("2019-02-06_21h18m28s	WED");
+    musicBoxConf.date = F("2019-02-06_21h18m28s	WED");
     select_in(SCALES, octave_4th_5th);
     select_in(JIFFLES, d4096_64);
     sync = 0;
@@ -4253,7 +4255,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 147:
-    name = F("noname_a");	// pitch variation of "2019-02-06_RG3_S0_d64_melody-rhythm"
+    musicBoxConf.name = F("noname_a");	// pitch variation of "2019-02-06_RG3_S0_d64_melody-rhythm"
     //# FAVORITE
     //# SPECIALITY	rhythm and short jiffs	see: "2019-02-06_RG3_S0_d64_melody-rhythm"
     //# shortIsOk
@@ -4278,7 +4280,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 148:
-    name = F("noname_b");
+    musicBoxConf.name = F("noname_b");
     //# favorite
     //# shortIsOk
     //# motives
@@ -4301,7 +4303,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 149:
-    name = F("noname_c");
+    musicBoxConf.name = F("noname_c");
     //# favorite
     //# shortIsOk
     //# motives
@@ -4322,7 +4324,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 150:
     // catched ERROR: no period	via lower_audio_if_too_high(limit)	// TODO: REMOVE: this line
-    name = F("simplicistic_d0");
+    musicBoxConf.name = F("simplicistic_d0");
     //# favorite
     //# shortIsOk
     //# loose
@@ -4345,7 +4347,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 151:
-    name = F("2019-02-07_classical_time_machine_S4");
+    musicBoxConf.name = F("2019-02-07_classical_time_machine_S4");
     //comment: resonating strings not really tuned...
     //comment: retuned version with problems in ending...
     //# RECORDED	probably yes, ???
@@ -4366,7 +4368,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# festive
     //# solemn		beware of stress!
-    date = F("2019-02-07_09h46m29s	THU");
+    musicBoxConf.date = F("2019-02-07_09h46m29s	THU");
     select_in(SCALES, minor_scale);
     select_in(JIFFLES, d4096_1024);
     sync = 4;
@@ -4377,7 +4379,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 152:
-    name = F("noname_");
+    musicBoxConf.name = F("noname_");
     //# favorite
     //# shortIsOk	but easily *too short*
     //# fullCycleIsOk	harmonical CYCLE: 1h 8' 16"
@@ -4409,9 +4411,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 153:
-    name = F("eifach wunderschön");
+    musicBoxConf.name = F("eifach wunderschön");
     //comment: sehr ruhig
-    date = F("2019-02-26_12h46m19s	TUE");
+    musicBoxConf.date = F("2019-02-26_12h46m19s	TUE");
     select_in(SCALES, doric_scale);
     sync = 1;
     select_in(JIFFLES, diing_ditditdit);
@@ -4421,7 +4423,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 154:
-    name = F("2019-04-01 doric stack");
+    musicBoxConf.name = F("2019-04-01 doric stack");
     select_in(SCALES, doric_scale);
     sync = 1;
     stack_sync_slices = 8;
@@ -4433,7 +4435,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 155:
-    name = F("Marianne 1	eingesperrt<->Freiheit	sync? 4|1024");
+    musicBoxConf.name = F("Marianne 1	eingesperrt<->Freiheit	sync? 4|1024");
     /*
       in einer Gefängniszelle
       mit Vögel draussen
@@ -4472,7 +4474,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 156:
-    name = F("Marianne 2	warten");
+    musicBoxConf.name = F("Marianne 2	warten");
     /*
       warten
       Langeweile
@@ -4509,7 +4511,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 157:
-    name = F("Marianne 3	s erst Mal underwägs");
+    musicBoxConf.name = F("Marianne 3	s erst Mal underwägs");
     /*
       Bild: Spital in Shri Lanka
       ein Mann ist das allererste Mal mit seinen Prothesen unterwegs
@@ -4539,7 +4541,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 158:
-    name = F("Marianne 4	Chatzemusik!");
+    musicBoxConf.name = F("Marianne 4	Chatzemusik!");
     /*
       Chatzemusik!
       Mariannes Katze kommt, als das Stück läuft...
@@ -4568,7 +4570,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 159:
-    name = F("Marianne 5	Gefängnisgeburt");
+    musicBoxConf.name = F("Marianne 5	Gefängnisgeburt");
     /*
       eine Freundin von Marianne bekommt im Gefängnis ihr Baby
     */
@@ -4605,7 +4607,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 160:
-    name = F("rising ostinatos over rhythmic bordun");  // nice and harmonic, humming, good ending
+    musicBoxConf.name = F("rising ostinatos over rhythmic bordun");  // nice and harmonic, humming, good ending
     //comment: very nice ending :)
     //# FAVORITE
     //# SPECIALITY	from rhythm, beat to sound effects, everything's there
@@ -4648,7 +4650,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 161:
-    name = F("au sehr schön:");
+    musicBoxConf.name = F("au sehr schön:");
     //# favorite+
     //# shortIsOk
     //# ritch
@@ -4678,7 +4680,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 162:
-    name = F("klassisch und simpel schön");
+    musicBoxConf.name = F("klassisch und simpel schön");
     //# favorite
     //# heavyStart	problematcic	use autostack_S0
     //# shortIsOk
@@ -4709,9 +4711,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 163:
-    name = F("harmonikali jazzsession");
+    musicBoxConf.name = F("harmonikali jazzsession");
     //comment: harmonical cycle    54'  4"
-    date = F("2018-11-21_20h21m11s	WED");
+    musicBoxConf.date = F("2018-11-21_20h21m11s	WED");
     select_in(SCALES, minor_scale);
     select_in(JIFFLES, tumtum);
     sync = 5;
@@ -4722,8 +4724,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 164:
-    name = F("busy soundscape");      // zarts soundgflecht
-    date = F("");
+    musicBoxConf.name = F("busy soundscape");      // zarts soundgflecht
+    musicBoxConf.date = F("");
     //# favorite+
     //# shortIsOk
     //# dense
@@ -4758,7 +4760,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 165:
-    name = F("stacked clicks");	// stacked start :)
+    musicBoxConf.name = F("stacked clicks");	// stacked start :)
     //comment: interesting start ;)
     //# favorite+
     //# shortIsOk
@@ -4798,7 +4800,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 166:
-    name = F("mad accordeon players whichdance with old indio's flute babbling");
+    musicBoxConf.name = F("mad accordeon players whichdance with old indio's flute babbling");
     //# favorite
     //# systemStress
     // Störfall? mit stack_sync_slices=0
@@ -4828,7 +4830,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lyric
     //# dream
     //# boring
-    date = F("2018-11-21_17h35m59s	WED");
+    musicBoxConf.date = F("2018-11-21_17h35m59s	WED");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, dwn_THRD_up);
     sync = 0;
@@ -4840,7 +4842,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 167:
-    name = F("fractal time web");
+    musicBoxConf.name = F("fractal time web");
     //# favorite
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 28' 21"
@@ -4855,7 +4857,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# lesley
     //# hasSlowPulse
     //# lyric
-    date = F("2018-12-05 15h40m");
+    musicBoxConf.date = F("2018-12-05 15h40m");
     sync = 1;
     select_in(SCALES, doric_scale);
     select_in(JIFFLES, up_THRD_dn);
@@ -4863,7 +4865,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 168:
-    name = F("Perlechetti");
+    musicBoxConf.name = F("Perlechetti");
     //# favorite+
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 1h 13' 48"
@@ -4876,7 +4878,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# nice
     //# children
     //# dance
-    date = F("2019-04-15");
+    musicBoxConf.date = F("2019-04-15");
     select_in(SCALES, pentatonic_minor);
     select_in(JIFFLES, pentatonic_desc);
     sync = 1;
@@ -4884,12 +4886,12 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 169:
-    name = F("2019-02-06_major_doric_rise");
+    musicBoxConf.name = F("2019-02-06_major_doric_rise");
     //comment: ardour 5
     //# RECORDED    //comment: ardour 5
     //# ISSUE	TODO: does not start, *VERY* long pause
     //	random pitch as workaround
-    date = F("2019-02-06_13h32m52s	WED");
+    musicBoxConf.date = F("2019-02-06_13h32m52s	WED");
     select_in(SCALES, major_scale);
     select_in(JIFFLES, doric_rise);
     sync = 4;
@@ -4900,7 +4902,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 170:
-    name = F("doric musicbox S2");
+    musicBoxConf.name = F("doric musicbox S2");
     //# favorite+
     //# shortIsOk
     //# fractal
@@ -4915,7 +4917,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# hasSlowPulse	harmonical progression
     //# dream
     //# ritual
-    date = F("2019-04-02");
+    musicBoxConf.date = F("2019-04-02");
     select_in(SCALES, doric_scale);
     select_in(JIFFLES, diing_ditditdit);
     sync = 2;
@@ -4923,7 +4925,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 171:
-    name = F("George's Dream");
+    musicBoxConf.name = F("George's Dream");
     //# favorite
     //# shortIsOk
     //# fullCycleIsOk
@@ -4946,7 +4948,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# children
     //# boring
     //# tired		maybe?
-    date = F("2019-03-29");
+    musicBoxConf.date = F("2019-03-29");
     select_in(SCALES, TRIAD);
     select_in(JIFFLES, up_THRD_dn);
     sync = 1;
@@ -4954,7 +4956,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 172:
-    name = F("no meh melodie :)");
+    musicBoxConf.name = F("no meh melodie :)");
     // SCHWÄRE STÖRFALL !
     //# favorite--	only with autostack_S0
     //#heavyStart	PROBLEMATIC, throughout...	use autostack_S0 !
@@ -4972,7 +4974,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# fairies
     //# hasSlowPulse
     //# lyric
-    date = F("2018-11-27_17h22m21s	TUE");
+    musicBoxConf.date = F("2018-11-27_17h22m21s	TUE");
     select_in(SCALES, octave_4th_5th);
     select_in(JIFFLES, dwn_THRD_up);
     sync = 0;
@@ -4983,7 +4985,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 173:
-    name = F("Klangschwade mit Puls");
+    musicBoxConf.name = F("Klangschwade mit Puls");
     // heavy big bang	Störfall ???  kän grund zur Beunruhigung...
     //# favorite  with autostack_S0
     //# shortIsOk
@@ -5005,7 +5007,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# humming
     //# hasSlowPulse	soft and not steady
     //# lyric		but very simple, static
-    date = F("2018-12-07_18h34m01s	FRI");
+    musicBoxConf.date = F("2018-12-07_18h34m01s	FRI");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, tanboura);
     sync = 0;
@@ -5016,13 +5018,13 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 174:
-    name = F("2019-02-02 ardour5 noname");	// TODO: broken?
+    musicBoxConf.name = F("2019-02-02 ardour5 noname");	// TODO: broken?
     //# RECORDED	name = F("2019-02-02 ardour5 noname");	// TODO: broken?
     //# favorite  with autostack_S0
     //# ISSUE	was broken, set *random* pitch {1,128} as workaround
     //# ISSUE heavyStart is problematic   use autostack_S0 !
     //# heavyStart
-    date = F("2019-02-02_17h49m06s	SAT");
+    musicBoxConf.date = F("2019-02-02_17h49m06s	SAT");
     select_in(SCALES, doric_scale);
     select_in(JIFFLES, pentatonic_rise);
     sync = 0;
@@ -5033,7 +5035,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 175:
-    name = F("veryverybad");
+    musicBoxConf.name = F("veryverybad");
     //# shortIsOk
     //# dense
     //# melancholic
@@ -5048,7 +5050,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
     // DADA:	todo: CHECK FROM HERE <<<====	====>>>   #define SHORT_PRESET_COLLECTION	175
-    // DADA: >>>> *DO NOT FORGET* to update MUSICBOX_PRESETs <<<<	175
+    // DADA: >>>> *DO NOT FORGET* to upmusicBoxConf.date MUSICBOX_PRESETs <<<<	175
 
 
   default:
@@ -5057,7 +5059,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   }
 
   if(sync==0 && stack_sync_slices==0) {		// *AUTOMAGIC WORKAROUND* for problematic S0 setups:
-    stack_sync_slices=autostack_S0;		// using autostack_S0
+    stack_sync_slices=MagicConf.autostack_S0;	// using autostack_S0
     if(MENU.verbosity >= VERBOSITY_LOWEST) {
       MENU.out(F("\tAUTOSTACK: "));
       MENU.outln(stack_sync_slices);
@@ -5068,19 +5070,21 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   parameters_by_user(true);	// true: block output
   HARMONICAL.reduce_fraction(&pitch);		// ;)
 
-  if(name) {
+  if(musicBoxConf.name) {
     MENU.tab();
-    MENU.out(name);
+    MENU.out(musicBoxConf.name);
   }
-  if(date) {
+  if(musicBoxConf.date) {
     MENU.tab();
-    MENU.out(date);
+    MENU.out(musicBoxConf.date);
   }
   MENU.ln();
   musicBox_short_info();
 
+  // DADA: TODO: write back configuration
+
   return false;		// ok, no error
-}
+} // load_preset()
 
 
 /*

@@ -194,18 +194,17 @@ action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actio
 
 /* **************************************************************** */
 // TODO: gather basic settings in the code	################
+// DADA
 int sync=1;		// syncing edges or middles of square pulses
+//base_pulse
 fraction pitch={1,1};	// pitch to tune a scale
-int octave_shift=0;
-bool no_octave_shift=false;	// see: tune_selected_2_scale_limited()
+//	int octave_shift=0;
+//	bool no_octave_shift=false;	// see: tune_selected_2_scale_limited()
 
 int base_pulse=ILLEGAL;			// a human perceived base pulse, see 'stack_sync_slices'
 pulse_time_t base_pulse_period={0,0};	// {0,0} is unknown, invalid
 
-#if ! defined PRENAME_MAX_LENGTH
-  #define PRENAME_MAX_LENGTH	15	// *excluding* '\0'
-#endif
-String preName = "";			// individual name of an instrument
+// String preName = "";			// individual name of an instrument
 
 /* **************************************************************** */
 bool DO_or_maybe_display(unsigned char verbosity_level) { // the flag tells *if* to display
@@ -321,11 +320,22 @@ unsigned int trichord[] = {1,1, 8,9, 4,5, 0,0};			// major
 unsigned int TRIAD[] ={1,1, 4,5, 2,3, 0,0};
 unsigned int triad[] ={1,1, 5,6, 2,3, 0,0};
 
-// TODO: time (and related stuff should move to Harmonics::
-pulse_time_t harmonical_CYCLE;		// TODO: move to Harmonical?
 
-// TODO: move to Harmonical::scale2harmonical_cycle()	################
-struct fraction harmonical_cycle_fraction={1, 1 };
+// cycles_conf_t
+typedef struct cycles_conf_t {
+  pulse_time_t harmonical_CYCLE;	// TODO: move to Harmonical?
+  pulse_time_t used_subcycle;		// TODO: move to Harmonical?
+
+  // struct fraction harmonical_cycle_fraction={1, 1}; // TODO: what for ?
+
+  short subcycle_octave=0;
+
+} cycles_conf_t;
+
+cycles_conf_t CyclesConf;
+
+
+
 
 //#define SCALE2CYCLE_INFO	// for debugging, but interesting to watch anyway ;)
 pulse_time_t scale2harmonical_cycle(unsigned int* scale, pulse_time_t* duration) {		// returns harmonical cycle of a scale
@@ -351,13 +361,12 @@ pulse_time_t scale2harmonical_cycle(unsigned int* scale, pulse_time_t* duration)
 #endif
   }
 
-  harmonical_cycle_fraction = f_LCM;		// remember as a side effect
-
   PULSES.mul_time(duration, f_LCM.multiplier);
   PULSES.div_time(duration, f_LCM.divisor);
 
   return *duration;
-}
+} // scale2harmonical_cycle()
+
 
 // TODO: move to Harmonical::	################
 void scale_time(pulse_time_t *duration, fraction * F) {
@@ -865,9 +874,9 @@ void display_program_version() {  // program versions, mac, maybe preName.  MENU
   MENU.out(F(STRINGIFY(FAMILY_NAME)));
 #endif
 
-  if(preName) {
+  if(my_ID.preName) {
     MENU.tab();
-    MENU.out(preName);
+    MENU.out(my_ID.preName);
   }
 
   MENU.ln();
@@ -949,7 +958,7 @@ void setup() {
   {
     String s = nvs_getString(F("nvs_PRENAME"));
     if (s) {
-      preName = s;
+      my_ID.preName = s;
       MENU.out(F("nvs_PRENAME:\t"));
       MENU.outln(s);
     }
@@ -1235,7 +1244,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 #endif
 
   MENU.ln();
-};
+} // setup()
 
 
 // bool lower_priority_tasks();
@@ -2224,7 +2233,7 @@ int tune_selected_2_scale_limited(fraction scaling, unsigned int *scale, unsigne
 
   shortest limit *can* be zero to switch it off
 
-  return octave_hift
+  return octave_shift
 */
 
   if (MENU.verbosity >= VERBOSITY_LOWEST) {
@@ -2259,8 +2268,6 @@ int tune_selected_2_scale_limited(fraction scaling, unsigned int *scale, unsigne
 	  }
 
 	  divisor=scale[note*2+1];
-//	if (divisor==0)
-//	  goto global_next;		// divisor==0: error, end
 
 	  // check for some very basic tuning intervals
 	  PULSES.pulses[pulse].groups &= ~g_OCTAVE;	// clear all tuning groups
@@ -2293,27 +2300,26 @@ int tune_selected_2_scale_limited(fraction scaling, unsigned int *scale, unsigne
 	} // selected
       } // pulse
 
-      if(no_octave_shift) {	// no_octave_shift, so we're done
-	no_octave_shift = false;
-	MENU.outln(F("MENU.out(octave_shift)"));
+      if(MagicConf.no_octave_shift) {	// no_octave_shift, so we're done
+	MagicConf.no_octave_shift = false;	// hmm? TODO: check that
 	return 0;
       }
 
       if(this_period.time > shortest_limit) {
-	if (octave_shift || MENU.verbosity > VERBOSITY_SOME) {
-	  MENU.out(octave_shift);
+	if (MagicConf.octave_shift || MENU.verbosity > VERBOSITY_SOME) {
+	  MENU.out(MagicConf.octave_shift);
 	  MENU.outln(F(" octaves shifted"));
 	}
-	return octave_shift;		// OK, tuning fine and within limit, RETURN
+	return MagicConf.octave_shift;		// OK, tuning fine and within limit, RETURN
       }
       // else repeat one octave lower...
       PULSES.mul_time(&base_period, 2);
-      octave_shift--;
+      MagicConf.octave_shift--;
     } // while off limit, tune octaves down...
   } else MENU.error_ln(F("invalid tuning"));
 
-  return octave_shift;
-}
+  return MagicConf.octave_shift;
+} // tune_selected_2_scale_limited()
 
 
 bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, unsigned int *scale)	// TODO: OBSOLETE? #########
@@ -2355,7 +2361,7 @@ bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, u
       MENU.error_ln(F("no scale"));
 
   return false;
-};
+} // tune_2_scale()
 
 
 int lower_audio_if_too_high(unsigned long limit) {
@@ -2377,7 +2383,7 @@ int lower_audio_if_too_high(unsigned long limit) {
       if(PULSES.pulses[pulse].period.time == 0) {	//     (disregarding overflow)
 	MENU.error_ln(F("no period data"));
 	MENU.out(F("PRESET "));
-	MENU.outln(F(preset));
+	MENU.outln(musicBoxConf.preset);
 	return INT_MIN;			//   return ERROR INT_MIN  if first selected pulse has no period data (not used yet)
       }
     }
@@ -2417,7 +2423,7 @@ int lower_audio_if_too_high(unsigned long limit) {
   } else {		// catch the shortest == 0, ERROR	return INT_MAX, not used yet
     MENU.outln(F("shortest period 0"));
     MENU.outln(F("PRESET "));
-    MENU.outln(F(preset));
+    MENU.outln(musicBoxConf.preset);
     return INT_MAX;	// catch the shortest == 0, ERROR	return INT_MAX, not used yet
   }
 
@@ -2429,7 +2435,7 @@ int lower_audio_if_too_high(unsigned long limit) {
   }
 
   return octave_shift;
-}
+} // lower_audio_if_too_high()
 
 
 // ****************************************************************
@@ -3826,7 +3832,7 @@ void show_UI_basic_setup() {
   MENU.slash();
   MENU.out(divisor);
   MENU.space(3);
-  if(some_metric_tunings_only)
+  if(MagicConf.some_metric_tunings_only)
     MENU.out(F("*metric*"));
   MENU.space();
   show_metric_mnemonic();
@@ -5618,11 +5624,11 @@ bool menu_pulses_reaction(char menu_input) {
       case 39:	// 'E39' time machine 2 setup
 	// #define ESP32_15_clicks_no_display_TIME_MACHINE2
 	{ // local scope only right now
-	  short bass_pulses=14;
-	  short middle_pulses=15;
-	  short high_pulses=7;
+	  musicBoxConf.bass_pulses=14;
+	  musicBoxConf.middle_pulses=15;
+	  musicBoxConf.high_pulses=7;
 
-	  voices = bass_pulses + middle_pulses + high_pulses;	// init *all* primary pulses
+	  voices = musicBoxConf.bass_pulses + musicBoxConf.middle_pulses + musicBoxConf.high_pulses;	// init *all* primary pulses
 	  PULSES.select_n(voices);
 
 	  PULSES.time_unit=1000000;	// default metric
@@ -5641,34 +5647,34 @@ bool menu_pulses_reaction(char menu_input) {
 
 	  // bass on DAC1 and planed broad angle LED lamps
 	  // select_in(JIFFLES, d4096_512);
-	  PULSES.select_from_to(0, bass_pulses - 1);
-	  for(int pulse=0; pulse<bass_pulses; pulse++)
+	  PULSES.select_from_to(0, musicBoxConf.bass_pulses - 1);
+	  for(int pulse=0; pulse<musicBoxConf.bass_pulses; pulse++)
 	    en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL, DACsq1);	// TODO: FIXME: use inbuilt click
-	  PULSES.select_from_to(0,bass_pulses);			// pulse[bass_pulses] belongs to both groups
+	  PULSES.select_from_to(0,musicBoxConf.bass_pulses);			// pulse[bass_pulses] belongs to both groups
 	  // selected_DACsq_intensity_proportional(255, 1);
 	  selected_share_DACsq_intensity(255, 1);		// bass DAC1 intensity
 
 	  // 2 middle octaves on 15 gpios
 	  // select_in(JIFFLES, d4096_512);
 	  //	select_in(JIFFLES, d4096_256);
-	  PULSES.select_from_to(bass_pulses, bass_pulses + middle_pulses -1);
+	  PULSES.select_from_to(musicBoxConf.bass_pulses, musicBoxConf.bass_pulses + musicBoxConf.middle_pulses -1);
 	  setup_jiffle_thrower_selected(selected_actions=0);		// overwrites topmost bass pulse
 									// TODO: 'selected_actions=...' or '|='
 	  // fix topmost bass pulse pulse[bass_pulses] that belongs to both groups:
-	  PULSES.pulses[bass_pulses].dest_action_flags |= DACsq1;
+	  PULSES.pulses[musicBoxConf.bass_pulses].dest_action_flags |= DACsq1;
 
 	  // high octave on DAC2
 	  //	select_in(JIFFLES, d4096_64);
 	  //select_in(JIFFLES, d4096_256);
-	  PULSES.select_from_to(bass_pulses + middle_pulses -1, bass_pulses + middle_pulses + high_pulses -1);
-	  for(int pulse = bass_pulses + middle_pulses; pulse<voices; pulse++) {	// pulse[21] belongs to both groups
+	  PULSES.select_from_to(musicBoxConf.bass_pulses + musicBoxConf.middle_pulses -1, musicBoxConf.bass_pulses + musicBoxConf.middle_pulses + musicBoxConf.high_pulses -1);
+	  for(int pulse = musicBoxConf.bass_pulses + musicBoxConf.middle_pulses; pulse<voices; pulse++) {	// pulse[21] belongs to both groups
 	    en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL, DACsq2);	// FIXME: use inbuilt click
 	    //	  PULSES.pulses[pulse].dest_action_flags |= (DACsq2);
 	    //	  PULSES.set_payload(pulse, &do_throw_a_jiffle);
 	    //	  PULSES.pulses[pulse].data = (unsigned int) jiffle;
 	  }
 	  // fix pulse[21] belonging to both groups
-	  PULSES.pulses[bass_pulses + middle_pulses - 1].dest_action_flags |= DACsq2;
+	  PULSES.pulses[musicBoxConf.bass_pulses + musicBoxConf.middle_pulses - 1].dest_action_flags |= DACsq2;
 	  selected_share_DACsq_intensity(255, 2);
 	  //	selected_DACsq_intensity_proportional(255, 2);
 
@@ -5710,7 +5716,7 @@ bool menu_pulses_reaction(char menu_input) {
 #endif
 	  }
 
-	  setup_bass_middle_high(bass_pulses, middle_pulses, high_pulses);
+	  setup_bass_middle_high(musicBoxConf.bass_pulses, musicBoxConf.middle_pulses, musicBoxConf.high_pulses);
 
 	  // maybe start?
 	  if(MENU.peek() == '!') {		// 'E40!' starts E40

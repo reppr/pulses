@@ -31,8 +31,8 @@ void monochrome_show_program_version() {	// monochrome oled display
     u8x8.print(F(STRINGIFY(PROGRAM_VERSION)));
 
     u8x8.setCursor(0,3);
-    if(preName)
-      u8x8.print(preName);
+    if(my_ID.preName)
+      u8x8.print(my_ID.preName);
 #if defined PROGRAM_SUB_VERSION
     else
       u8x8.print(F(STRINGIFY(PROGRAM_SUB_VERSION)));
@@ -101,7 +101,7 @@ void monochrome_show_subcycle_octave() {
   if(! monochrome_power_save) {
     if(selected_in(SCALES) != NULL) {
       u8x8.print(F("2^"));
-      u8x8.print(subcycle_octave);
+      u8x8.print(CyclesConf.subcycle_octave);
     }
   }
 }
@@ -112,12 +112,12 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
     uint8_t rows = u8x8.getRows();
     int row=0;
 
-    if(preset) {
+    if(musicBoxConf.preset) {
       u8x8.clearLine(row);
       u8x8.setCursor(0,row++);
       u8x8.setInverseFont(1);
       u8x8.print(F("P "));
-      u8x8.print(preset);
+      u8x8.print(musicBoxConf.preset);
       u8x8.print(' ');
       u8x8.setInverseFont(0);
       u8x8.print(' ');
@@ -140,28 +140,28 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
     u8x8.setCursor(0,row++);
     u8x8.print('S');		// sync
     u8x8.print(sync);
-    if(stack_sync_slices) {	// stack_sync_slices
+    if(musicBoxConf.stack_sync_slices) {	// stack_sync_slices
       u8x8.print('|');
-      u8x8.print(stack_sync_slices);
+      u8x8.print(musicBoxConf.stack_sync_slices);
     }
     u8x8.print(F("  "));
     u8x8.print(pitch.multiplier);	// pitch
     u8x8.print('/');
     u8x8.print(pitch.divisor);
 
-    if(stack_sync_slices && base_pulse != ILLEGAL) {
+    if(musicBoxConf.stack_sync_slices && base_pulse != ILLEGAL) {
       u8x8.clearLine(row);	// stack_sync_slices or empty line
       u8x8.setCursor(0,row++);
       u8x8.print(F("p["));
       u8x8.print(base_pulse);
       u8x8.print(F("]|"));
-      u8x8.print(stack_sync_slices);
+      u8x8.print(musicBoxConf.stack_sync_slices);
     }
 
     u8x8.clearLine(row);	// name or subcycle
     u8x8.setCursor(0,row++);
-    if(name && *name /*no empty string*/) {	// one line from name
-      char * s = name;
+    if(musicBoxConf.name && *musicBoxConf.name /*no empty string*/) {	// one line from name
+      char * s = musicBoxConf.name;
       char c ;
       int col=0;
       /*
@@ -204,9 +204,9 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
       if(selected_in(SCALES) != NULL) {
 	monochrome_show_subcycle_octave();
 	u8x8.print(' ');
-	unsigned long seconds = (((float) used_subcycle.time / 1000000.0) + 0.5);	// TODO: factor out, build a string
-	if (used_subcycle.overflow)
-	  seconds += used_subcycle.overflow * 4295;	// FIXME: (float) and round *after* overflow correction
+	unsigned long seconds = (((float) CyclesConf.used_subcycle.time / 1000000.0) + 0.5);	// TODO: factor out, build a string
+	if (CyclesConf.used_subcycle.overflow)
+	  seconds += CyclesConf.used_subcycle.overflow * 4295;	// FIXME: (float) and round *after* overflow correction
 
 	unsigned int days = seconds / 86400;
 	seconds %= 86400;

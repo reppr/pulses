@@ -117,26 +117,86 @@
   #include "battery_control.h"
 #endif
 
-#if defined SOME_METRIC_TUNINGS_ONLY_DEFAULT
-  bool some_metric_tunings_only=SOME_METRIC_TUNINGS_ONLY_DEFAULT;	// free or fixed pitchs (like E A D G C F B) *only*
-#else
-  bool some_metric_tunings_only=false;	// free pitch tuning is default
+
+typedef struct musicBox_conf_t {
+  unsigned int* scale=NULL;
+  unsigned int* jiffle=NULL;
+  unsigned int* iCode=NULL;
+  fraction pitch = {1,1};
+
+  int sync=1;			// old default, seems still ok ;)
+
+  char* name=NULL;		// name of a piece, a preset
+  char* date=NULL;		// date  of a piece, preset or whatever
+
+  short preset=0;
+
+  unsigned short version = 1;
+
+  unsigned short cycle_slices = 540;	// set slice_tick_period accordingly
+  short lowest_primary=ILLEGAL;		// TAKE CARE when casting to int
+  short highest_primary=ILLEGAL;	// TAKE CARE when casting to int
+  // short primary_count=0;
+  short base_pulse=ILLEGAL;		// TAKE CARE when casting to int
+
+  short stack_sync_slices=0;	// 0 is off	positive: upwards,  negative: downwards
+  short subcycle_octave=0;
+
+  short bass_pulses=0;		// see  setup_bass_middle_high()
+  short middle_pulses=0;	// see  setup_bass_middle_high()
+  short high_pulses=0;		// see  setup_bass_middle_high()
+
+  uint8_t chromatic_pitch = 0;	// 0: pitch is not metric
+} musicBox_conf_t;
+
+musicBox_conf_t musicBoxConf;
+
+
+typedef struct magical_conf_t {
+  void (*musicBox_when_done)(void)=NULL;
+  int octave_shift=0;
+  int soft_cleanup_minimal_fraction_weighting=1;	// TODO: adjust default
+  unsigned long soft_end_cleanup_wait=60*1000000L;	// default 60"	// TODO: rethink ################
+  int autostack_S0=AUTOSTACK_S0_DEFAULT;
+
+#if ! defined SOFT_END_DAYS_TO_LIVE_DEFAULT
+  #define SOFT_END_DAYS_TO_LIVE_DEFAULT		1	// default
 #endif
+  unsigned short soft_end_days_to_live=SOFT_END_DAYS_TO_LIVE_DEFAULT;
+
+  unsigned short soft_end_survive_level = 4;		// the level a pulse must have reached to survive soft end
+
+  bool magic_autochanges=true;		// TODO: switch that logic
+  bool some_metric_tunings_only=false;	// free or fixed pitchs (like E A D G C F B) *only*
+
+  bool autoskip_pause = false;		// TODO: UI
+  bool no_octave_shift = false;
+
+} magical_conf_t;
+
+magical_conf_t MagicConf;
 
 
-// pulse_time_t harmonical_CYCLE;	// is in pulses.ino now TODO: move to Harmonical?
-pulse_time_t used_subcycle;	// TODO: move to Harmonical? ? ?
-short subcycle_octave=0;
-bool subcycle_user_selected=false;
+typedef struct ui_conf_t {
+  uint8_t version = 1;
+  // voices=0;	// DADA: include voices?	maybe not?
 
-short stack_sync_slices=0;	// 0 is off	// positive: upwards,	negative: downwards
+  bool show_cycle_pattern=false;
+  bool show_cycle_pattern_intervals=false;
+  bool show_subcycle_position=false;
 
-int autostack_S0=AUTOSTACK_S0_DEFAULT;
+  bool subcycle_user_selected=false;
 
-char* name=NULL;		// name of a piece, a preset
-char* date=NULL;		// date  of a piece, preset or whatever
+  bool scale_user_selected = false;
+  bool sync_user_selected = false;
+  bool stack_sync_user_selected = false;
+  bool jiffle_user_selected = false;
+  bool pitch_user_selected = false;	// TODO: ################
 
-short preset=0;
+} ui_conf_t;
+
+ui_conf_t uiConf;
+
 
 #if defined USE_MONOCHROME_DISPLAY
   #include "monochrome_display.h"
@@ -251,66 +311,6 @@ void show_when_done_function() {
 }
 
 
-// configuration
-typedef struct {
-  unsigned short version = ILLEGAL;
-
-  unsigned int* scale=NULL;
-  unsigned int* jiffle=NULL;
-  unsigned int* iCode=NULL;
-  fraction pitch = {1,1};
-  uint8_t chromatic_pitch = 0;	// 0: pitch is not metric
-
-  int sync=1;			// old default, seems still ok ;)
-  short stack_sync_slices=0;
-
-  short bass_pulses;		// see  setup_bass_middle_high()
-  short middle_pulses;		// see  setup_bass_middle_high()
-  short high_pulses;		// see  setup_bass_middle_high()
-  int lowest_primary=ILLEGAL;	// TODO: make it short?
-  int highest_primary=ILLEGAL;	// TODO: make it short?
-  //  int primary_count=0;
-  int base_pulse=ILLEGAL;	// TODO: make it short?
-  short subcycle_octave;
-} musicBox_conf_t;
-
-musicBox_conf_t musicBoxConf;
-
-
-typedef struct {
-  bool magic_autochanges=true;		// TODO: switch that logic
-  bool some_metric_tunings_only=false;
-
-  unsigned short cycle_slices;		// set slice_tick_period accordingly
-  void (*musicBox_when_done)(void)=NULL;
-
-  int soft_cleanup_minimal_fraction_weighting=1;	// TODO: adjust default
-  unsigned short soft_end_days_to_live=1;
-  unsigned short soft_end_survive_level = 4;		// the level a pulse must have reached to survive soft end
-  unsigned long soft_end_cleanup_wait=60*1000000L;	// default 60"	// TODO: rethink ################
-} magical_conf_t;
-
-magical_conf_t magicalConf;
-
-
-typedef struct {
-  // voices=0;	// maybe not?
-
-  bool show_cycle_pattern=false;
-  bool show_cycle_pattern_intervals=false;
-  bool show_subcycle_position=false;
-
-  bool scale_user_selected = false;
-  bool sync_user_selected = false;
-  bool stack_sync_user_selected = false;
-  bool jiffle_user_selected = false;
-  bool pitch_user_selected = false;	// TODO: ################################################################
-  bool subcycle_user_selected=false;
-} ui_conf_t;
-
-ui_conf_t uiConf;
-
-
 pulse_time_t musicBox_start_time;
 pulse_time_t musicBox_hard_end_time;
 
@@ -331,7 +331,7 @@ pulse_time_t slice_tick_period;	// *DO NOT SET DIRECTLY* use set_cycle_slice_num
 
 void set_cycle_slice_number(short ticks_a_cycle) {
   cycle_slices = ticks_a_cycle;
-  slice_tick_period = used_subcycle;
+  slice_tick_period = CyclesConf.used_subcycle;
   PULSES.div_time(&slice_tick_period, cycle_slices);
 }
 
@@ -419,6 +419,10 @@ bool musicbox_is_idle() {	// makes it easier to pre declare that from outside
   return MusicBoxState == OFF;
 }
 
+bool musicbox_is_ending() {	// makes it easier to pre declare that from outside
+  return MusicBoxState == ENDING;
+}
+
 void tabula_rasa() {
   if (MENU.verbosity > VERBOSITY_LOWEST)
     MENU.outln(F("tabula rasa"));
@@ -427,7 +431,7 @@ void tabula_rasa() {
   if(MusicBoxState != OFF)	// avoid possible side effects
     set_MusicBoxState(OFF);
 
-  date=NULL;	// TODO: TEST: hmm?
+  musicBoxConf.date=NULL;	// TODO: TEST: hmm?
 }
 
 // TODO: magic_autochanges default?
@@ -538,13 +542,13 @@ void show_cycles_1line() {	// no scale, no cycle
     return;
   } // else
 
-  // this version assumes harmonical_CYCLE and used_subcycle *are* set
+  // this version assumes harmonical_CYCLE and CyclesConf.used_subcycle *are* set
   MENU.out(F("harmonical CYCLE: "));
-  PULSES.display_time_human(harmonical_CYCLE);
+  PULSES.display_time_human(CyclesConf.harmonical_CYCLE);
   MENU.out(F("\t2^"));
-  MENU.out(subcycle_octave);
+  MENU.out(CyclesConf.subcycle_octave);
   MENU.out(F(" SUBCYCLE: | "));
-  PULSES.display_time_human(used_subcycle);
+  PULSES.display_time_human(CyclesConf.used_subcycle);
   MENU.outln('|');
 
   // TODO: show current position (float)
@@ -574,11 +578,11 @@ void show_cycle(pulse_time_t cycle) {
 
   int i=0;
   //                                   !!!  a tolerance of 128 seemed *not* to be enough
-  while(cycle.time >= (used_subcycle.time - 256/*tolerance*/) || \
+  while(cycle.time >= (CyclesConf.used_subcycle.time - 256/*tolerance*/) || \
 	cycle.time >= (shortest.time - 256/*tolerance*/) || \
 	cycle.overflow)		// display cycle and relevant octaves
     {
-      if(cycle.time == used_subcycle.time)
+      if(cycle.time == CyclesConf.used_subcycle.time)
 	MENU.out('|');
 
       MENU.out(F("(2^"));
@@ -586,7 +590,7 @@ void show_cycle(pulse_time_t cycle) {
       MENU.out(F(") "));
       PULSES.display_time_human(cycle);
 
-      if(cycle.time == used_subcycle.time)
+      if(cycle.time == CyclesConf.used_subcycle.time)
 	MENU.out('|');
 
       if(i % 4)	// 4 items a line
@@ -599,7 +603,8 @@ void show_cycle(pulse_time_t cycle) {
 
   if(i % 4)	// 4 items a line
     MENU.ln();
-}
+} // show_cycle()
+
 
 int slice_weighting(fraction F) {
   int weighting=0;
@@ -775,16 +780,7 @@ unsigned int kill_primary() {
 
 
 bool do_pause_musicBox=false;	// triggers MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch
-// MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
 
-int soft_cleanup_minimal_fraction_weighting=1;		// TODO: adjust default
-
-#if ! defined SOFT_END_DAYS_TO_LIVE_DEFAULT
-  #define SOFT_END_DAYS_TO_LIVE_DEFAULT		1	// default
-#endif
-unsigned short soft_end_days_to_live = SOFT_END_DAYS_TO_LIVE_DEFAULT;	// remaining days of life after soft end
-
-unsigned short soft_end_survive_level = 4;	// the level a pulse must have reached to survive soft end
 pulse_time_t soft_end_start_time;
 unsigned long soft_end_cleanup_wait=60*1000000L;	// default 60"
 void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft ending of musicBox
@@ -822,9 +818,9 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
 
     if(MENU.verbosity >= VERBOSITY_LOWEST) {
       MENU.out(F("start_soft_ending("));		// info
-      MENU.out(soft_end_days_to_live);
+      MENU.out(MagicConf.soft_end_days_to_live);
       MENU.out_comma_();
-      MENU.out(soft_end_survive_level);
+      MENU.out(MagicConf.soft_end_survive_level);
       MENU.out(F(")   main part "));
       pulse_time_t main_part_duration = soft_end_start_time;
       PULSES.sub_time(&musicBox_start_time, &main_part_duration);
@@ -844,6 +840,9 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
 	  PULSES.pulses[pulse].remaining = days_to_live;  // repeat, then vanish
 	  PULSES.pulses[pulse].flags |= COUNTED;
 	} else {
+#if defined USE_RGB_LED_STRIP
+	  clear_RGB_string_pixel(pulse);
+#endif
 	  PULSES.init_pulse(pulse);	// unborn pulse or too young, or days==0	just remove
 	}
       }
@@ -878,7 +877,8 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
       // MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
     }
   }
-}
+} // start_soft_ending()
+
 
 void parameters_by_user(bool no_output = false) {
   if(!no_output)
@@ -921,7 +921,7 @@ void toggle_magic_autochanges() {
 	  soft_end_time = PULSES.pulses[musicBox_butler_i].other_time;
 	  PULSES.sub_time(&thisNow, &soft_end_time);
 	  if(soft_end_time.overflow) {	// add subcycles until soft_end_time is in future
-	    PULSES.add_time(&used_subcycle, &PULSES.pulses[musicBox_butler_i].other_time);
+	    PULSES.add_time(&CyclesConf.used_subcycle, &PULSES.pulses[musicBox_butler_i].other_time);
 	    cnt++;
 	  } else
 	    break;
@@ -1018,12 +1018,12 @@ void show_metric_mnemonic() {	// TODO: move to Harmonical or Pulses
 
 
 void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
-  if(preset) {
+  if(musicBoxConf.preset) {
     MENU.out(F("PRESET: "));
-    MENU.out(preset);
-    if(name) {
+    MENU.out(musicBoxConf.preset);
+    if(musicBoxConf.name) {
       MENU.tab();
-      MENU.out(name);
+      MENU.out(musicBoxConf.name);
     }
     MENU.ln();
   }
@@ -1036,11 +1036,11 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   tag_randomness(sync_user_selected);
   MENU.out(F("SYNC: "));
   MENU.out(sync);
-  if(stack_sync_slices) {	// /stack_sync_slices
+  if(musicBoxConf.stack_sync_slices) {	// /stack_sync_slices
     MENU.out(F(" p["));
     MENU.out(base_pulse);
     MENU.out(F("]|"));
-    MENU.out(stack_sync_slices);
+    MENU.out(musicBoxConf.stack_sync_slices);
     MENU.space();
     tag_randomness(stack_sync_user_selected);
   }
@@ -1077,13 +1077,13 @@ void musicBox_short_info() {
 
 void show_configuration_code() {	// show code, similar show_UI_basic_setup()
   MENU.out(F("name = F(\""));
-  if(name)
-    MENU.out(name);
+  if(musicBoxConf.name)
+    MENU.out(musicBoxConf.name);
   MENU.outln(F("\");"));
 
   MENU.out(F("date = F(\""));
-  if(date)
-    MENU.out(date);
+  if(musicBoxConf.date)
+    MENU.out(musicBoxConf.date);
   MENU.outln(F("\");"));
 
   MENU.out(F("select_in(SCALES, "));
@@ -1099,7 +1099,7 @@ void show_configuration_code() {	// show code, similar show_UI_basic_setup()
   MENU.outln(';');
 
   MENU.out(F("stack_sync_slices = "));
-  MENU.out(stack_sync_slices);
+  MENU.out(musicBoxConf.stack_sync_slices);
   MENU.outln(';');
 
   MENU.out(F("// base_pulse = "));	// commented out, must rethink that
@@ -1118,25 +1118,25 @@ void show_configuration_code() {	// show code, similar show_UI_basic_setup()
   MENU.ln();
 
   MENU.out(F("// subcycle_octave = "));	// commented out, must rethink that
-  MENU.outln(subcycle_octave);
+  MENU.outln(CyclesConf.subcycle_octave);
 
   MENU.out(F("// cycle "));	// commented out, redundant info
-  PULSES.display_time_human(harmonical_CYCLE);
+  PULSES.display_time_human(CyclesConf.harmonical_CYCLE);
   MENU.out(F(" subcycle | "));
-  PULSES.display_time_human(used_subcycle);
+  PULSES.display_time_human(CyclesConf.used_subcycle);
   MENU.outln('|');
 }
 
 
 void show_configuration_as_string() {	// file representation, similar show_configuration_code()
   MENU.out(F("name:"));
-  if(name)
-    MENU.out(name);
+  if(musicBoxConf.name)
+    MENU.out(musicBoxConf.name);
   MENU.out('\t');
 
   MENU.out(F("date:"));
-  if(date)
-    MENU.out(date);
+  if(musicBoxConf.date)
+    MENU.out(musicBoxConf.date);
   MENU.out('\t');
 
   MENU.out(F("SCALE:"));
@@ -1156,7 +1156,7 @@ void show_configuration_as_string() {	// file representation, similar show_confi
   MENU.out('\t');
 
   MENU.out(F("synS:"));
-  MENU.out(stack_sync_slices);
+  MENU.out(musicBoxConf.stack_sync_slices);
   MENU.out('\t');
 
   MENU.out(F("pul*:"));
@@ -1180,7 +1180,7 @@ void show_configuration_as_string() {	// file representation, similar show_confi
 
   /* decide on loading to respekt that or not */
   MENU.out(F("cyc_o:"));
-  MENU.out(subcycle_octave);
+  MENU.out(CyclesConf.subcycle_octave);
   MENU.out('\t');
 
   MENU.ln();
@@ -1536,7 +1536,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     stop_on_low_cnt=0;
 
     pulse_time_t soft_end_time=musicBox_start_time;
-    PULSES.add_time(&used_subcycle, &soft_end_time);
+    PULSES.add_time(&CyclesConf.used_subcycle, &soft_end_time);
     PULSES.add_time(100/*tolerance*/, &soft_end_time);	// tolerance	TODO: rethink&check
     PULSES.pulses[pulse].other_time = soft_end_time;	// TODO: musicBox_butler(p) CONFLICTS with tuning
     musicBox_trigger_enabled=false;			// do we need that?
@@ -1633,7 +1633,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 	PULSES.sub_time(&thisNow, &soft_end_time);	// is it time?
 	if(soft_end_time.overflow) {			//   negative, so it *is*
 	  if(soft_end_cnt++ == 0)
-	    start_soft_ending(soft_end_days_to_live, soft_end_survive_level); // start soft end
+	    start_soft_ending(MagicConf.soft_end_days_to_live, MagicConf.soft_end_survive_level); // start soft end
 	}
       } else {	// soft end was called already
 
@@ -1781,16 +1781,17 @@ void select_random_scale() {
   }
 
   scale_user_selected = false;
-  subcycle_user_selected = false;
-}
+  uiConf.subcycle_user_selected = false;
+} //  select_random_scale()
+
 
 void  select_random_stack_sync(void) {
-  stack_sync_slices = 4 ;	// 4 slow start
+  musicBoxConf.stack_sync_slices = 4 ;	// 4 slow start
 
   int o = random(10);
-  while (o--) stack_sync_slices *= 2;
+  while (o--) musicBoxConf.stack_sync_slices *= 2;
   if(random(4) == 1)		// 75% up, 25% downwards
-    stack_sync_slices *= -1;	// *more up*  as up did not exist in previous sync implementation
+    musicBoxConf.stack_sync_slices *= -1;	// *more up*  as up did not exist in previous sync implementation
 
   stack_sync_user_selected = false;
 }
@@ -2023,7 +2024,7 @@ void random_metric_pitches(void) {
   show_metric_mnemonic();
 
   pitch_user_selected = false;
-  subcycle_user_selected = false;
+  uiConf.subcycle_user_selected = false;
 }
 
 void random_octave_shift(void) {
@@ -2121,6 +2122,7 @@ RTC_DATA_ATTR unsigned long divisor_stored_RTC=0;
 RTC_DATA_ATTR uint8_t metric_tunings_stored_RTC=2;	// 2 means off (&1)
 RTC_DATA_ATTR bool magic_autochanges_OFF_stored_RTC=false;
 
+
 void rtc_save_configuration() {
   MENU.out(F("save to RTC memory\t"));
 
@@ -2132,6 +2134,7 @@ void rtc_save_configuration() {
   multiplier_stored_RTC	=ILLEGAL;
 
   metric_tunings_stored_RTC = 2;	// 2 means off (&1)
+  bool some_metric_tunings_only = MagicConf.some_metric_tunings_only;
   if(some_metric_tunings_only)
     metric_tunings_stored_RTC |= 1;	// 2 means off (&1)
 
@@ -2144,7 +2147,7 @@ void rtc_save_configuration() {
     sync_stored_RTC = sync;
 
   if(stack_sync_user_selected)
-    stack_sync_slices_stored_RTC = stack_sync_slices;
+    stack_sync_slices_stored_RTC = musicBoxConf.stack_sync_slices;
 
   if(jiffle_user_selected)
     jiffle_stored_RTC = selected_in(JIFFLES);
@@ -2154,7 +2157,7 @@ void rtc_save_configuration() {
     divisor_stored_RTC = pitch.divisor;
   }
 
-//if(subcycle_user_selected) ;
+//if(uiConf.subcycle_user_selected) ;
 //if(octave_user_selected) ;
 }
 
@@ -2170,10 +2173,11 @@ void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless wakin
 
   if(divisor_stored_RTC) {	// divisor == 0 when *not* waking up from deep sleep, ignore
     MENU.out(F("data ok "));
+
     if(metric_tunings_stored_RTC & 1)	// 2 means off, &1
-      some_metric_tunings_only=true;
+      MagicConf.some_metric_tunings_only=true;
     else
-      some_metric_tunings_only=false;	// 2 means off
+      MagicConf.some_metric_tunings_only=false;	// 2 means off
 
     if(magic_autochanges_OFF_stored_RTC)
       magic_autochanges = false;
@@ -2192,7 +2196,7 @@ void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless wakin
 
     if(stack_sync_slices_stored_RTC) {
       MENU.out(F("stack | "));
-      stack_sync_slices = stack_sync_slices_stored_RTC;
+      musicBoxConf.stack_sync_slices = stack_sync_slices_stored_RTC;
       stack_sync_user_selected = true;
     }
 
@@ -2215,14 +2219,6 @@ void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless wakin
     MENU.outln_invalid();
 }
 
-
-
-// configure and start musicBox:
-short bass_pulses;	// see  setup_bass_middle_high()
-short middle_pulses;	// see  setup_bass_middle_high()
-short high_pulses;	// see  setup_bass_middle_high()
-
-bool autoskip_pause=false;	// TODO: MOVE: UI ################
 
 void start_musicBox() {
 #if defined BLUETOOTH_ENABLE_PIN
@@ -2289,7 +2285,7 @@ void start_musicBox() {
 
   // TODO: REWORK:  setup_bass_middle_high()  used in musicBox, but not really compatible
   MENU.ln();	// start setup sequence output "block"
-  setup_bass_middle_high(bass_pulses, middle_pulses, high_pulses);
+  setup_bass_middle_high(musicBoxConf.bass_pulses, musicBoxConf.middle_pulses, musicBoxConf.high_pulses);
 
   if(!scale_user_selected)	// if *not* set by user interaction	// TODO: factor out randomisation
     select_random_scale();	//   random scale
@@ -2318,7 +2314,7 @@ void start_musicBox() {
     if (random(2) == 1)		// stack_sync in 50%
       select_random_stack_sync();
     else
-      stack_sync_slices = 0;	// 50% normal sync only, still automagic, but sync stacking is off
+      musicBoxConf.stack_sync_slices = 0;	// 50% normal sync only, still automagic, but sync stacking is off
   }
 
   // time_unit
@@ -2331,7 +2327,7 @@ void start_musicBox() {
 
   // random pitch	// TODO: factor out randomisation
   if(!pitch_user_selected) {	// if *not* set by user interaction
-    if(!some_metric_tunings_only) {	// RANDOM tuning?
+    if(!MagicConf.some_metric_tunings_only) {	// RANDOM tuning?
       chromatic_pitch = false;
 
 #if defined RANDOM_ENTROPY_H
@@ -2372,22 +2368,22 @@ void start_musicBox() {
 #endif
 
   pulse_time_t period_lowest = PULSES.pulses[lowest_primary].period;
-  harmonical_CYCLE = scale2harmonical_cycle(selected_in(SCALES), &period_lowest);
+  CyclesConf.harmonical_CYCLE = scale2harmonical_cycle(selected_in(SCALES), &period_lowest);
 
-  if(!subcycle_user_selected) {
-    used_subcycle = harmonical_CYCLE;
-    subcycle_octave = 0;
+  if(!uiConf.subcycle_user_selected) {
+    CyclesConf.used_subcycle = CyclesConf.harmonical_CYCLE;
+    CyclesConf.subcycle_octave = 0;
 
     if(max_subcycle_seconds) {
-      used_subcycle={MAX_SUBCYCLE_SECONDS*1000000L,0};
-      pulse_time_t this_subcycle=harmonical_CYCLE;
+      CyclesConf.used_subcycle={MAX_SUBCYCLE_SECONDS*1000000L,0};
+      pulse_time_t this_subcycle=CyclesConf.harmonical_CYCLE;
       while(true) {
-	if(this_subcycle.time <= used_subcycle.time && this_subcycle.overflow==used_subcycle.overflow) {
-	  used_subcycle = this_subcycle;
+	if(this_subcycle.time <= CyclesConf.used_subcycle.time && this_subcycle.overflow==CyclesConf.used_subcycle.overflow) {
+	  CyclesConf.used_subcycle = this_subcycle;
 	  break;
 	}
 	PULSES.div_time(&this_subcycle, 2);
-	subcycle_octave++;
+	CyclesConf.subcycle_octave++;
       }
     }
   }
@@ -2410,7 +2406,7 @@ void start_musicBox() {
   MENU.outln(F(" <<< * >>>\n"));	// end output block
 
   if(MENU.verbosity >= VERBOSITY_MORE) {
-    show_cycle(harmonical_CYCLE);	// shows multiple cycle octaves
+    show_cycle(CyclesConf.harmonical_CYCLE);	// shows multiple cycle octaves
     MENU.ln();
   }
 
@@ -2429,17 +2425,17 @@ void start_musicBox() {
 */
   musicBox_start_time = PULSES.get_now();	// keep musicBox_start_time
 
-  if (stack_sync_slices)
-    PULSES.activate_selected_stack_sync_now((pulse_time_t) {PULSES.pulses[base_pulse].period.time/stack_sync_slices, 0}, sync);
+  if (musicBoxConf.stack_sync_slices)
+    PULSES.activate_selected_stack_sync_now((pulse_time_t) {PULSES.pulses[base_pulse].period.time/musicBoxConf.stack_sync_slices, 0}, sync);
   else
     PULSES.activate_selected_synced_now(sync);	// 'n' 'N' sync and activate
 
   // TODO: TEST: start pause detection and skipping
-  if(sync || stack_sync_slices) {	// start pause possible?
+  if(sync || musicBoxConf.stack_sync_slices) {	// start pause possible?
     PULSES.fix_global_next();			// cannot understand why i need that here...
     pulse_time_t pause = PULSES.global_next;
-    if(stack_sync_slices) { // stack_sync sliced?
-      if(autoskip_pause) {
+    if(musicBoxConf.stack_sync_slices) { // stack_sync sliced?
+      if(MagicConf.autoskip_pause) {
 	PULSES.sub_time(&musicBox_start_time, &pause);	// just skip pause, HACK: ################
 	PULSES.time_skip_selected(pause);
 	MENU.outln(F("pause skipped"));
@@ -2471,7 +2467,7 @@ void start_musicBox() {
   PULSES.pulses[musicBox_butler_i].groups |= g_MASTER;	// savety net, until butler has initialised itself
 
   stress_event_cnt = -3;	// some stress events will often happen after starting the musicBox
-}
+} // start_musicBox()
 
 
 void relax() {		// kill highest secondary pulse
@@ -2768,7 +2764,7 @@ void magical_butler(int p) {	// TODO: OBSOLETE?
 #endif
 
     if(MAX_SUBCYCLE_SECONDS) {	// MAX seconds
-      pulse_time_t til_soft_end_time=used_subcycle;
+      pulse_time_t til_soft_end_time=CyclesConf.used_subcycle;
       PULSES.sub_time(MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000L, &til_soft_end_time);
       PULSES.add_time(100, &til_soft_end_time);	// tolerance
       PULSES.pulses[p].period = til_soft_end_time;
@@ -2777,11 +2773,11 @@ void magical_butler(int p) {	// TODO: OBSOLETE?
     break;
   case 3:	// start soft ending and cleanup pulse, prepare for butler hard end
     if(magic_autochanges)
-      start_soft_ending(soft_end_days_to_live, soft_end_survive_level);
+      start_soft_ending(MagicConf.soft_end_days_to_live, MagicConf.soft_end_survive_level);
     // prepare hard end
 #if defined MAX_SUBCYCLE_SECONDS
     {
-      pulse_time_t til_hard_end_time = used_subcycle;
+      pulse_time_t til_hard_end_time = CyclesConf.used_subcycle;
       PULSES.div_time(&til_hard_end_time, 2);	// cycle/2 for soft end, then HARD end	// TODO: test&adjust
       PULSES.pulses[p].period = til_hard_end_time;
     }
@@ -2860,13 +2856,13 @@ void musicBox_setup() {	// TODO:update
 #endif
 
 #if defined ESP32_USB_DAC_ONLY || defined ESP32_USB_DAC_ONLY_OLED	// *minimal* usb powered *DAC only* setups
-  bass_pulses=14;	// see  setup_bass_middle_high()
-  middle_pulses=0;	// see  setup_bass_middle_high()
-  high_pulses=22;	// see  setup_bass_middle_high()
+  musicBoxConf.bass_pulses=14;	// see  setup_bass_middle_high()
+  musicBoxConf.middle_pulses=0;	// see  setup_bass_middle_high()
+  musicBoxConf.high_pulses=22;	// see  setup_bass_middle_high()
 #else	// most setups:
-  bass_pulses=14;	// see  setup_bass_middle_high()
-  middle_pulses=15;	// see  setup_bass_middle_high()
-  high_pulses=7;	// see  setup_bass_middle_high()
+  musicBoxConf.bass_pulses=14;	// see  setup_bass_middle_high()
+  musicBoxConf.middle_pulses=15;	// see  setup_bass_middle_high()
+  musicBoxConf.high_pulses=7;	// see  setup_bass_middle_high()
 #endif
 }
 
@@ -2910,13 +2906,13 @@ void musicBox_display() {
   MENU.ln();
 
   MENU.out(F("harmonical cycle 'c'\t"));
-  PULSES.display_time_human_format(harmonical_CYCLE);
+  PULSES.display_time_human_format(CyclesConf.harmonical_CYCLE);
   MENU.tab();
 
   MENU.out(F("2^"));
-  MENU.out(subcycle_octave);
+  MENU.out(CyclesConf.subcycle_octave);
   MENU.out(F(" subcycle  | "));
-  PULSES.display_time_human(used_subcycle);
+  PULSES.display_time_human(CyclesConf.used_subcycle);
   MENU.out(F("| \tslices '&' "));
   MENU.out(cycle_slices);
   MENU.tab();
@@ -2926,9 +2922,9 @@ void musicBox_display() {
   MENU.ln();
 
   MENU.out(F("subcycle octave 'O+' 'O-'\tresync/restart now 'N'\t't' metric tuning"));
-  MENU.out_ON_off(some_metric_tunings_only);
+  MENU.out_ON_off(MagicConf.some_metric_tunings_only);
   MENU.out(F("  'F' "));
-  if(scale_user_selected && sync_user_selected && jiffle_user_selected  && pitch_user_selected && stack_sync_user_selected /* && subcycle_user_selected*/)
+  if(scale_user_selected && sync_user_selected && jiffle_user_selected  && pitch_user_selected && stack_sync_user_selected /* && uiConf.subcycle_user_selected*/)
     MENU.out(F("un"));
   MENU.outln(F("freeze parameters"));
 
@@ -2948,16 +2944,16 @@ void musicBox_display() {
   MENU.out(F("'c' cycle "));
 
   pulse_time_t period_lowest = PULSES.pulses[lowest_primary].period;
-  harmonical_CYCLE = scale2harmonical_cycle(selected_in(SCALES), &period_lowest); // TODO: rethink ################
-  PULSES.display_time_human(harmonical_CYCLE);
+  CyclesConf.harmonical_CYCLE = scale2harmonical_cycle(selected_in(SCALES), &period_lowest); // TODO: rethink ################
+  PULSES.display_time_human(CyclesConf.harmonical_CYCLE);
   MENU.ln();
 
   MENU.out(F("soft_end("));
-  MENU.out(soft_end_days_to_live);	// remaining days of life after soft end
+  MENU.out(MagicConf.soft_end_days_to_live);	// remaining days of life after soft end
   MENU.out_comma_();
-  MENU.out(soft_end_survive_level);	// the level a pulse must have reached to survive soft en
+  MENU.out(MagicConf.soft_end_survive_level);	// the level a pulse must have reached to survive soft en
   MENU.out(F(")\t'd'=days to survive  'l'=level minimal age 'E'= start soft end now  'w' minimal weight "));
-  MENU.outln(soft_cleanup_minimal_fraction_weighting);
+  MENU.outln(MagicConf.soft_cleanup_minimal_fraction_weighting);
 
   MENU.outln(F("'L'=stop when low\t'LL'=stop only low\thard end='H'"));
   MENU.ln();
@@ -2972,7 +2968,7 @@ void musicBox_display() {
   MENU.out_ON_off(peripheral_power_on);
 #endif
   MENU.out(F("   '|' sync slices ="));
-  MENU.out(stack_sync_slices);
+  MENU.out(musicBoxConf.stack_sync_slices);
   MENU.out(F(" '|b' base  ="));
   MENU.out(base_pulse);
   MENU.ln(2);
@@ -3021,11 +3017,11 @@ void noAction_flags_line() {	// show a line with primary noACTION flag signs		//
 }
 
 bool load_preset_and_start(short preset_new) {	// returns error
-  short preset_was = preset;
-  preset = preset_new;
-  if(load_preset(preset)) {	// error?
+  short preset_was = musicBoxConf.preset;
+  musicBoxConf.preset = preset_new;
+  if(load_preset(musicBoxConf.preset)) {	// error?
     MENU.outln_invalid();
-    preset = preset_was;
+    musicBoxConf.preset = preset_was;
     return true;		// ERROR
   } // else
   if(MusicBoxState != OFF)	// end a running session?
@@ -3042,22 +3038,22 @@ void input_preset_and_start() {	// factored out UI component	// TODO: sets prese
   switch(MENU.peek()) {
   case '+':
     MENU.drop_input_token();
-    if(preset<MUSICBOX_PRESETs) {
-      preset++;
+    if(musicBoxConf.preset<MUSICBOX_PRESETs) {
+      musicBoxConf.preset++;
       load = true;
     }
     break;
   case '-':
     MENU.drop_input_token();
-    if(preset>0)
-      preset--;
+    if(musicBoxConf.preset>0)
+      musicBoxConf.preset--;
       load = true;
     break;
 
   default:	// numeric input (expected)
     if(MENU.is_numeric()) {
       if(input_value = MENU.numeric_input(0)) {
-	preset = input_value;
+	musicBoxConf.preset = input_value;
 	load = true;
       } else
 	play_random_preset();	// selecting zero plays a *random* preset
@@ -3066,7 +3062,7 @@ void input_preset_and_start() {	// factored out UI component	// TODO: sets prese
   }
 
   if(load)
-    load_preset_and_start(preset);
+    load_preset_and_start(musicBoxConf.preset);
 }
 
 
@@ -3242,7 +3238,7 @@ bool musicBox_reaction(char token) {
     MENU.ln();
     break;
   case 'c': // show cycle
-    show_cycle(harmonical_CYCLE);
+    show_cycle(CyclesConf.harmonical_CYCLE);
     break;
   case 'E': // 'E' (bare):  start_soft_ending(soft_end_days_to_live, soft_end_survive_level);
     if(MENU.peek() == 'F') {			// case "EFx" configure function musicBox_when_done();
@@ -3283,17 +3279,17 @@ bool musicBox_reaction(char token) {
       show_when_done_function();
       MENU.ln();
     } else	// plain 'E' start_soft_ending(...)
-      start_soft_ending(soft_end_days_to_live, soft_end_survive_level);
+      start_soft_ending(MagicConf.soft_end_days_to_live, MagicConf.soft_end_survive_level);
     break;
   case 'd': // soft_end_days_to_live
-    input_value = MENU.numeric_input(soft_end_days_to_live);
+    input_value = MENU.numeric_input(MagicConf.soft_end_days_to_live);
     if(input_value >= 0)
-      soft_end_days_to_live = input_value;
+      MagicConf.soft_end_days_to_live = input_value;
     break;
   case 'l': // soft_end_survive_level
-    input_value = MENU.numeric_input(soft_end_survive_level);
+    input_value = MENU.numeric_input(MagicConf.soft_end_survive_level);
     if(input_value >= 0)
-      soft_end_survive_level = input_value;
+      MagicConf.soft_end_survive_level = input_value;
     break;
 
   case 'm': // mode
@@ -3319,7 +3315,7 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'w': // soft_cleanup_minimal_fraction_weighting
-    soft_cleanup_minimal_fraction_weighting = MENU.numeric_input(soft_cleanup_minimal_fraction_weighting);
+    MagicConf.soft_cleanup_minimal_fraction_weighting = MENU.numeric_input(MagicConf.soft_cleanup_minimal_fraction_weighting);
     break;
   case 'H': // HARD_END_playing(true);
     HARD_END_playing(true);
@@ -3457,12 +3453,12 @@ bool musicBox_reaction(char token) {
       MENU.drop_input_token();
       input_value = MENU.numeric_input(0);
       if (input_value > 0) {
-	saturation_start_value = 1.0 / ((float) input_value);
+	RGBstringConf.saturation_start_value = 1.0 / ((float) input_value);
       }
 
       if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
 	MENU.out(F("saturation start "));
-	MENU.outln(saturation_start_value);
+	MENU.outln(RGBstringConf.saturation_start_value);
       }
       break;
 
@@ -3470,12 +3466,12 @@ bool musicBox_reaction(char token) {
       MENU.drop_input_token();
       input_value = MENU.numeric_input(0);
       if (input_value > 0) {
-	saturation_reset_value = 1.0 / ((float) input_value);
+	RGBstringConf.saturation_reset_value = 1.0 / ((float) input_value);
       }
 
       if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
 	MENU.out(F("saturation_reset_value "));
-	MENU.outln(saturation_reset_value);
+	MENU.outln(RGBstringConf.saturation_reset_value);
       }
       break;
 
@@ -3483,12 +3479,12 @@ bool musicBox_reaction(char token) {
       MENU.drop_input_token();
       input_value = MENU.numeric_input(0);
       if (input_value > 0) {
-        rgb_led_string_intensity = input_value;
+	RGBstringConf.rgb_led_string_intensity = input_value;
       }
 
       if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
 	MENU.out(F("LED max intensity "));
-	MENU.outln(rgb_led_string_intensity);
+	MENU.outln(RGBstringConf.rgb_led_string_intensity);
       }
       break;
 
@@ -3496,12 +3492,12 @@ bool musicBox_reaction(char token) {
       MENU.drop_input_token();
       input_value = MENU.numeric_input(0);
       if (input_value > 0) {
-	hue_slice_cnt = input_value;
+	RGBstringConf.hue_slice_cnt = input_value;
       }
 
       if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
 	MENU.out(F("hue slices "));
-	MENU.outln(hue_slice_cnt);
+	MENU.outln(RGBstringConf.hue_slice_cnt);
       }
       break;
 
@@ -3795,12 +3791,12 @@ bool musicBox_reaction(char token) {
 
   case 't':	// tuning: toggle some_metric_tunings_only
     MENU.out(F("fixed metric tunings"));
-    MENU.out_ON_off(some_metric_tunings_only = !some_metric_tunings_only);
+    MENU.out_ON_off(MagicConf.some_metric_tunings_only = !MagicConf.some_metric_tunings_only);
     MENU.ln();
     break;
 
   case 'F':	// freeze-unfreeze parameters
-    if(scale_user_selected && sync_user_selected && jiffle_user_selected && pitch_user_selected && stack_sync_user_selected /* && subcycle_user_selected*/) {
+    if(scale_user_selected && sync_user_selected && jiffle_user_selected && pitch_user_selected && stack_sync_user_selected /* && uiConf.subcycle_user_selected*/) {
       parameters_get_randomised();
     } else {
       parameters_by_user();
@@ -3811,16 +3807,16 @@ bool musicBox_reaction(char token) {
   case 'O':	// subcycle_octave TODO: what to do while playing???
     if(MENU.peek() == '+') {		// higher octave is shorter
       MENU.drop_input_token();
-      PULSES.div_time(&used_subcycle,2);
-      subcycle_octave++;
+      PULSES.div_time(&CyclesConf.used_subcycle,2);
+      CyclesConf.subcycle_octave++;
     } else {				// default and '-' is longer
-      PULSES.mul_time(&used_subcycle,2);
-      subcycle_octave--;
+      PULSES.mul_time(&CyclesConf.used_subcycle,2);
+      CyclesConf.subcycle_octave--;
       if(MENU.peek() == '-')		// '-' is default
 	MENU.drop_input_token();
     }
     show_cycles_1line();
-    //subcycle_user_selected=true;
+    //uiConf.subcycle_user_selected=true;
     set_cycle_slice_number(cycle_slices);	// make sure slice_tick_period is ok
     break;
 
@@ -3844,16 +3840,16 @@ bool musicBox_reaction(char token) {
 	stack_sync_user_selected=true;	// RETHINK: maybe, maybe not?
       }
     } else {	// bare '|'
-      input_value = MENU.numeric_input(stack_sync_slices);
+      input_value = MENU.numeric_input(musicBoxConf.stack_sync_slices);
       if(input_value >= 0 ) {
-	stack_sync_slices = input_value;
+	musicBoxConf.stack_sync_slices = input_value;
 	stack_sync_user_selected=true;
       }
     }
 
     if(MENU.verbosity >= VERBOSITY_LOWEST) {
       MENU.out(F("stacked_sync | "));
-      MENU.out(stack_sync_slices);
+      MENU.out(musicBoxConf.stack_sync_slices);
       MENU.out(F("  base_pulse "));
       MENU.outln(base_pulse);
     }

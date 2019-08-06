@@ -13,7 +13,30 @@
   #define DEFAULT_LED_STRING_INTENSITY	48	// 72 on 'placeholder'	DADA
 #endif
 
-uint8_t rgb_led_string_intensity = DEFAULT_LED_STRING_INTENSITY;
+
+//  pulses_rgb_string_config_t
+typedef struct {
+  short version = 1;
+  //short hue_slice_cnt = 8;	// just a usable default	// TODO: UI
+  short hue_slice_cnt = 12;	// just another usable default	// TODO: UI
+
+//float saturation_start_value = 0.12;
+//float saturation_start_value = 0.3;
+  float saturation_start_value = 0.2;	// TODO: test&trimm default value ################	UI
+  float saturation = saturation_start_value;
+
+  float saturation_change_factor = 1.004;	// TODO: UI
+  float saturation_reset_value = 0.35;
+
+  float BlueHack_factor = 2.0;	// HACK: increase blueness
+
+  uint8_t pixel_cnt=150;
+  uint8_t rgb_led_string_intensity = DEFAULT_LED_STRING_INTENSITY;
+
+  bool clear_rgb_background_on_ending = true;	// TODO: ################
+} pulses_rgb_string_config_t;
+
+pulses_rgb_string_config_t RGBstringConf;
 
 
 #include "FOREIGN/ESP32-Digital-RGB-LED-Drivers/src/esp32_digital_led_lib.h"
@@ -150,6 +173,7 @@ void HSV_2_RGB_degree(pixelColor_t* pixel, float H, float S, float V) {	// TODO:
   #endif
 #endif
 
+  uint8_t rgb_led_string_intensity = RGBstringConf.rgb_led_string_intensity;
   switch(h_i) {
   case 0:
   case 6:
@@ -300,24 +324,22 @@ void random_HSV_LED_string() {
 } // random_HSV_LED_string()
 
 
-//int hue_slice_cnt = 8;	// just a usable default	// TODO: UI
-int hue_slice_cnt = 12;	// just another usable default	// TODO: UI
-
-//float saturation_start_value = 0.12;
-//float saturation_start_value = 0.3;
-float saturation_start_value = 0.2;	// TODO: test&trimm default value ################	UI
-float saturation = saturation_start_value;
-
-float saturation_change_factor = 1.004;	// TODO: UI
-float saturation_reset_value = 0.35;
-
-float BlueHack_factor = 2.0;	// HACK: increase blueness
-
-
 bool update_RGB_LED_string=false;	// is the string buffer dirty?
 
-
 #define PULSE_2_RGB_LED_STRING	  pulse - lowest_primary	// find the corresponding led sting
+
+void clear_RGB_string_pixel(int pulse) {
+  strand_t * strand_p = strands[0];
+  int pix_i = PULSE_2_RGB_LED_STRING;		// TODO: use pulse intenal data
+  pixelColor_t pixel;
+  pixel.r = 0;
+  pixel.g = 0;
+  pixel.b = 0;
+  strand_p->pixels[pix_i] = pixel;
+
+  update_RGB_LED_string = true;
+}
+
 
 void set_pulse_LED_pixel_from_counter(int pulse) {
   float H, V;
@@ -327,27 +349,27 @@ void set_pulse_LED_pixel_from_counter(int pulse) {
   do_display = true;
 #endif
 
-  saturation *= saturation_change_factor;	// slowly increase saturation ;)
-  if(saturation > 1.0) {			// sudden reset on overflow to a low saturation level
-    saturation = saturation_reset_value;
+  RGBstringConf.saturation *= RGBstringConf.saturation_change_factor;	// slowly increase saturation ;)
+  if(RGBstringConf.saturation > 1.0) {			// sudden reset on overflow to a low saturation level
+    RGBstringConf.saturation = RGBstringConf.saturation_reset_value;
     if(do_display) {
       MENU.out(F("RESET saturation to "));
-      MENU.outln(saturation);
+      MENU.outln(RGBstringConf.saturation);
     }
   }
 
-  H = (float) (PULSES.pulses[pulse].counter % hue_slice_cnt) / (float) hue_slice_cnt;
-  V = (float) rgb_led_string_intensity / (float) 255;
+  H = (float) (PULSES.pulses[pulse].counter % RGBstringConf.hue_slice_cnt) / (float) RGBstringConf.hue_slice_cnt;
+  V = (float) RGBstringConf.rgb_led_string_intensity / (float) 255;
 
   strand_t * strand_p = strands[0];
   int pix_i = PULSE_2_RGB_LED_STRING;		// TODO: use pulse intenal data
   pixelColor_t pixel;
 
-  HSV_2_RGB_degree(&pixel, (H * 360.0), saturation, V);
+  HSV_2_RGB_degree(&pixel, (H * 360.0), RGBstringConf.saturation, V);
   strand_p->pixels[pix_i] = pixel;
 
   // try the BlueHack, to give *more* blue
-  int blue = (int) (((float) strand_p->pixels[pix_i].b * BlueHack_factor) + 0.5);
+  int blue = (int) (((float) strand_p->pixels[pix_i].b * RGBstringConf.BlueHack_factor) + 0.5);
   if(blue > 255)
     blue = 255;
   strand_p->pixels[pix_i].b = blue;
@@ -357,7 +379,7 @@ void set_pulse_LED_pixel_from_counter(int pulse) {
 
 
 void rgb_led_reset_to_default() {	// reset rgb led strip management to default conditions
-  saturation = saturation_start_value;
+  RGBstringConf.saturation = RGBstringConf.saturation_start_value;
 }
 
 float rgb_background_dim = 0.45;	// ok for 5V version 1m 144
@@ -375,17 +397,31 @@ void set_rgb_led_background(int pulse) {
 //    HSV_2_RGB_degree(&pixel, (H * 360.0), saturation, V);
 //    strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx] = pixel;
 
+    bool clear=false;
+#if defined HARMONICAL_MUSIC_BOX && defined USE_RGB_LED_STRIP
+    // bool clear_rgb_background_on_ending	// TODO: maybe	// DADA rgb_string_config
+     extern bool musicbox_is_ending();
+     // DADA
+     // clear = musicbox_is_ending();
+#endif
+
     float x = strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].r;
     x *= rgb_background_dim;
     strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].r = (x + 0.5);
+    if(clear)
+      strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].r = 0;
 
     x = strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].g;
     x *= rgb_background_dim;
     strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].g = (x + 0.5);
+    if(clear)
+      strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].g = 0;
 
     x = strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].b;
     x *= rgb_background_dim;
     strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].b = (x + 0.5);
+    if(clear)
+      strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].b = 0;
 
     update_RGB_LED_string=true;		// new buffer content to be displayed
   } else

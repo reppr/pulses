@@ -85,10 +85,16 @@ mac_addr_t my_MAC[] = {0,0,0,0,0,0};
 // peer_ID_t
 typedef struct {
   mac_addr_t mac_addr[6]={0};
-  char preName[16]={'\0'};
+  String preName="";
   // planed: existing hardware
 } peer_ID_t;
 
+peer_ID_t my_ID;
+
+void set_my_ID() {
+  esp_read_mac(my_ID.mac_addr, ESP_MAC_WIFI_STA);
+  // my_ID.preName	read from nvs
+}
 
 // esp_err_t ERROR reporting
 #if ! defined ESP_ERR_INFO_DEFINED
@@ -162,26 +168,13 @@ esp_err_t esp_now_send_preset(mac_addr_t* mac_addr, short preset) {
   return status;
 }
 
-void esp_now_add_mine( ) {	// adds identity data to the esp_now_send_buffer[]
+void esp_now_add_mine() {	// adds identity data to the esp_now_send_buffer[]
 #if defined DEBUG_ESP_NOW
   MENU.out(F(" esp_now_add_mine() "));
 #endif
-  peer_ID_t peer_ID;
-  for(int b=0; b<6 ;b++)
-    peer_ID.mac_addr[b] = my_MAC[b];
-
-  extern String preName;
-  const char* preName_c_p = preName.c_str();
-
-  char c;
-  for (int b=0; b<15 ;b++) {
-    peer_ID.preName[b] = c = preName_c_p[b];
-    if(c==0)
-      break;
-  }
 
   peer_ID_t* ID_p = (peer_ID_t *) &esp_now_send_buffer[esp_now_send_buffer_cnt];
-  memcpy(ID_p, &peer_ID, sizeof(peer_ID_t));
+  memcpy(ID_p, &my_ID, sizeof(peer_ID_t));
   esp_now_send_buffer_cnt += sizeof(peer_ID_t);
 }
 
@@ -293,7 +286,7 @@ void display_peer_ID_list() {
   MENU.ln();
 }
 
-void esp_now_pulses_2_ID_list(uint8_t* mac_addr, char* preName /*hardware*/) {
+void esp_now_pulses_2_ID_list(uint8_t* mac_addr, String preName /*hardware*/) {
   bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
 #if defined DEBUG_ESP_NOW
   MENU.out(F("esp_now_pulses_2_ID_list() "));
@@ -354,10 +347,11 @@ void esp_now_pulses_2_ID_list(uint8_t* mac_addr, char* preName /*hardware*/) {
 
       // preName
       if(preName) {	// TODO: TEST:
-	int len = strlen(preName);
+	const char* new_preName = preName.c_str();
+	int len = strlen(new_preName);
 	for(int b=0; b<16; b++) {
 	  if(b < len)
-	    esp_now_pulses_known_peers[i].preName[b] = preName[b];
+	    esp_now_pulses_known_peers[i].preName[b] = new_preName[b];
 	  else
 	    esp_now_pulses_known_peers[i].preName[b] = '\0';
 	}
@@ -463,30 +457,31 @@ static void esp_now_pulses_reaction(const mac_addr_t *mac_addr) {
 
   case N_ME:
     {
-      extern String preName;
-      esp_now_pulses_2_ID_list((mac_addr_t*) mac_addr, (char*) preName.c_str());	// building up peer info lists
+      peer_ID_t received_ID = esp_now_read_mine();
+      esp_now_pulses_2_ID_list((mac_addr_t*) mac_addr, received_ID.preName);	// building up peer info lists
     }
     break;
 
   case PRES:
-    // read preset number:
-    extern short preset;
-    //    sp = (short*) i_data;
-    sp = (short*) &esp_now_received_data[esp_now_received_data_read];
-    preset = *sp;
-    esp_now_received_data_read += sizeof(short);
-    i_data += sizeof(short);
-    // i_data += sizeof(short);	// not needed on last item
+    {
+      // read preset number:
+      sp = (short*) &esp_now_received_data[esp_now_received_data_read];
+      //    extern short (musicBoxConf.preset);
+      short new_preset = *sp;
+      esp_now_received_data_read += sizeof(short);
+      i_data += sizeof(short);
+      // i_data += sizeof(short);	// not needed on last item
 
-    if(do_display) {
-      MENU.out(F("PRES "));
-      MENU.out(preset);
-      MENU.tab();
+      if(do_display) {
+	MENU.out(F("PRES "));
+	MENU.out(new_preset);
+	MENU.tab();
+      }
+      esp_now_pulses_add_peer(mac_addr);		// might give feedback
+
+      extern bool load_preset_and_start(short preset);
+      load_preset_and_start(new_preset);
     }
-    esp_now_pulses_add_peer(mac_addr);		// might give feedback
-
-    extern bool load_preset_and_start(short preset);
-    load_preset_and_start(preset);
     break;
 
   case MACRO_NOW:
@@ -506,7 +501,8 @@ static void esp_now_pulses_reaction(const mac_addr_t *mac_addr) {
     esp_now_show_raw_data(esp_now_received_data, esp_now_received_data_cnt);
     // the peer is *not* added
   } // switch meaning
-}
+} //  esp_now_pulses_reaction()
+
 
 static void pulses_data_received_callback(const mac_addr_t *mac_addr, const uint8_t *data, int data_len) {
   esp_now_received_data_cnt = data_len;
@@ -607,17 +603,7 @@ esp_err_t esp_now_pulses_setup() {
 
   status = esp_now_pulses_add_peer(broadcast_mac);	// add broadcast as peer
 
-  /*	does not seem to work here
-#if defined DEBUG_ESP_NOW
-  MENU.out(F("base mac "));
-  uint8_t base_mac[]={0,0,0,0,0,0};
-  uint8_t* b_p = base_mac;
+  set_my_ID();
 
-  if(esp_efuse_mac_get_custom(base_mac) == ESP_OK)
-    MENU.outln(MAC_str(base_mac));
-  else
-    MENU.ln();
-#endif
-  */
   return status;
 }
