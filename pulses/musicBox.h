@@ -1004,7 +1004,7 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   MENU.out(musicBoxConf.sync);
   if(musicBoxConf.stack_sync_slices) {	// /stack_sync_slices
     MENU.out(F(" p["));
-    MENU.out(base_pulse);
+    MENU.out(musicBoxConf.base_pulse);
     MENU.out(F("]|"));
     MENU.out(musicBoxConf.stack_sync_slices);
     MENU.space();
@@ -1069,7 +1069,7 @@ void show_configuration_code() {	// show code, similar show_UI_basic_setup()
   MENU.outln(';');
 
   MENU.out(F("// base_pulse = "));	// commented out, must rethink that
-  MENU.outln(base_pulse);
+  MENU.outln(musicBoxConf.base_pulse);
 
   MENU.out(F("pitch = {"));
   MENU.out(musicBoxConf.pitch.multiplier);
@@ -1126,7 +1126,7 @@ void show_configuration_as_string() {	// file representation, similar show_confi
   MENU.out('\t');
 
   MENU.out(F("pul*:"));
-  MENU.out(base_pulse);
+  MENU.out(musicBoxConf.base_pulse);
   MENU.out('\t');
 
   MENU.out(F("PITCH:"));
@@ -2326,8 +2326,8 @@ void start_musicBox() {
   lower_audio_if_too_high(409600*2);	// 2 bass octaves	// TODO: adjust appropriate...
 #endif
 
-  if(PULSES.pulses[base_pulse].period.time)
-    base_pulse_period = PULSES.pulses[base_pulse].period;	// see: test_jiffle();
+  if(PULSES.pulses[musicBoxConf.base_pulse].period.time)
+    base_pulse_period = PULSES.pulses[musicBoxConf.base_pulse].period;	// see: test_jiffle();
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   peripheral_power_switch_ON();
@@ -2392,7 +2392,7 @@ void start_musicBox() {
   musicBox_start_time = PULSES.get_now();	// keep musicBox_start_time
 
   if (musicBoxConf.stack_sync_slices)
-    PULSES.activate_selected_stack_sync_now((pulse_time_t) {PULSES.pulses[base_pulse].period.time/musicBoxConf.stack_sync_slices, 0}, musicBoxConf.sync);
+    PULSES.activate_selected_stack_sync_now((pulse_time_t) {PULSES.pulses[musicBoxConf.base_pulse].period.time/musicBoxConf.stack_sync_slices, 0}, musicBoxConf.sync);
   else
     PULSES.activate_selected_synced_now(musicBoxConf.sync);	// 'n' 'N' sync and activate
 
@@ -2936,7 +2936,7 @@ void musicBox_display() {
   MENU.out(F("   '|' sync slices ="));
   MENU.out(musicBoxConf.stack_sync_slices);
   MENU.out(F(" '|b' base  ="));
-  MENU.out(base_pulse);
+  MENU.out(musicBoxConf.base_pulse);
   MENU.ln(2);
 
   MENU.out(F("'P'="));
@@ -3800,9 +3800,9 @@ bool musicBox_reaction(char token) {
   case '|':	// '|' stack_sync_slices	(and '|b' base_pulse)
     if(MENU.peek() == 'b') {		// '|b' base_pulse
       MENU.drop_input_token();
-      input_value = MENU.numeric_input(base_pulse);
+      input_value = MENU.numeric_input(musicBoxConf.base_pulse);
       if(input_value >= 0 && input_value < PL_MAX) {
-	base_pulse = input_value;
+	musicBoxConf.base_pulse = input_value;
 	stack_sync_user_selected=true;	// RETHINK: maybe, maybe not?
       }
     } else {	// bare '|'
@@ -3817,7 +3817,7 @@ bool musicBox_reaction(char token) {
       MENU.out(F("stacked_sync | "));
       MENU.out(musicBoxConf.stack_sync_slices);
       MENU.out(F("  base_pulse "));
-      MENU.outln(base_pulse);
+      MENU.outln(musicBoxConf.base_pulse);
     }
     break;
 

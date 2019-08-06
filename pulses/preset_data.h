@@ -1096,7 +1096,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, up_THRD);
     musicBoxConf.sync = 4;
     stack_sync_slices = 0;
-    // base_pulse = 15;	// TODO: rethink that
+    // musicBoxConf.base_pulse = 15;	// TODO: rethink that
     musicBoxConf.pitch = {1, 175};
     chromatic_pitch = 9;	// f
     // subcycle_octave = 6;	// TODO: rethink that
@@ -1124,7 +1124,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, mechanical);
     musicBoxConf.sync = 2;
     stack_sync_slices = 256;
-    // base_pulse = 15;	// TODO: rethink that
+    // musicBoxConf.base_pulse = 15;	// TODO: rethink that
     musicBoxConf.pitch = {1, 233};
     chromatic_pitch = 2;	// a#
     // subcycle_octave = 4;	// TODO: rethink that
@@ -1269,7 +1269,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, up_THRD_dn);
     musicBoxConf.sync = 2;
     stack_sync_slices = -16;
-    // base_pulse = 15;	// TODO: rethink that
+    // musicBoxConf.base_pulse = 15;	// TODO: rethink that
     musicBoxConf.pitch = {1, 196};
     chromatic_pitch = 11;	// g
     // subcycle_octave = 5;	// TODO: rethink that
@@ -4073,7 +4073,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, pentatonic_desc);
     musicBoxConf.sync = 0;
     stack_sync_slices = 32;
-    // base_pulse = 15;	// TODO: rethink that
+    // musicBoxConf.base_pulse = 15;	// TODO: rethink that
     musicBoxConf.pitch = {1, 220};
     chromatic_pitch = 1;	// a
     // subcycle_octave = 3;	// TODO: rethink that
@@ -4165,7 +4165,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, pent_top_wave_0);
     musicBoxConf.sync = 1;
     stack_sync_slices = 1024;
-    // base_pulse = 15;	// TODO: rethink that
+    // musicBoxConf.base_pulse = 15;	// TODO: rethink that
     musicBoxConf.pitch = {1, 196};
     chromatic_pitch = 11;	// g
     break;
@@ -4427,7 +4427,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, doric_scale);
     musicBoxConf.sync = 1;
     stack_sync_slices = 8;
-    base_pulse = 15;
+    musicBoxConf.base_pulse = 15;
     select_in(JIFFLES, din__dididi_dixi);
     musicBoxConf.pitch = {1, 175};	// 8 1/175 metric f
     // was:  musicBoxConf.pitch = {32768, 12};	// 8 1/175 metric f
@@ -4792,8 +4792,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES,europ_PENTAtonic);
     select_in(JIFFLES,d4096_32);
     musicBoxConf.sync = 0;
-    stack_sync_slices=64;
-    base_pulse=15;
+    stack_sync_slices = 64;
+    musicBoxConf.base_pulse = 15;
     musicBoxConf.pitch={1, 262};
     chromatic_pitch=4;	// c
     // subcycle_octave = -1;	// TODO: select a short piece ################

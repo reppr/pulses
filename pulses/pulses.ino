@@ -234,7 +234,7 @@ action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actio
 //	int octave_shift=0;
 //	bool no_octave_shift=false;	// see: tune_selected_2_scale_limited()
 
-int base_pulse=ILLEGAL;			// a human perceived base pulse, see 'stack_sync_slices'
+// int base_pulse=ILLEGAL;			// a human perceived base pulse, see 'stack_sync_slices'
 pulse_time_t base_pulse_period={0,0};	// {0,0} is unknown, invalid
 
 // String preName = "";			// individual name of an instrument
@@ -3518,9 +3518,9 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
 
   PULSES.add_selected_to_group(g_PRIMARY);
 
-  base_pulse=0;		// a human perceived base pulse, see 'stack_sync_slices'
+  musicBoxConf.base_pulse=0;		// a human perceived base pulse, see 'stack_sync_slices'
   if(bass_pulses && (middle_pulses || high_pulses))	// DADA
-    base_pulse = bass_pulses +1;	// FIXME: HACK: first pulse above bass, but should respect tuning (octave)
+    musicBoxConf.base_pulse = bass_pulses +1;	// FIXME: HACK: first pulse above bass, but should respect tuning (octave)
 
   // tune *all* primary pulses
 #if ! defined MAGICAL_TOILET_HACK_2

@@ -149,11 +149,11 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
     u8x8.print('/');
     u8x8.print(musicBoxConf.pitch.divisor);
 
-    if(musicBoxConf.stack_sync_slices && base_pulse != ILLEGAL) {
+    if(musicBoxConf.stack_sync_slices && musicBoxConf.base_pulse != ILLEGAL) {
       u8x8.clearLine(row);	// stack_sync_slices or empty line
       u8x8.setCursor(0,row++);
       u8x8.print(F("p["));
-      u8x8.print(base_pulse);
+      u8x8.print(musicBoxConf.base_pulse);
       u8x8.print(F("]|"));
       u8x8.print(musicBoxConf.stack_sync_slices);
     }
