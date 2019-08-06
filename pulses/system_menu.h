@@ -2,6 +2,20 @@
   system_menu.h
 */
 
+void display_type_sizes() {
+  MENU.out(F("musicBox_conf_t\t"));
+  MENU.outln(sizeof(musicBox_conf_t));
+
+  MENU.out(F("cycles_conf_t\t"));
+  MENU.outln(sizeof(cycles_conf_t));
+
+  MENU.out(F("magical_conf_t\t"));
+  MENU.outln(sizeof(magical_conf_t));
+
+  MENU.out(F("ui_conf_t\t"));
+  MENU.outln(sizeof(ui_conf_t));
+}
+
 void system_menu_display() {
   //MENU.outln(F("Pulses System Menu\n"));
 
@@ -11,6 +25,9 @@ void system_menu_display() {
 #endif
 
   display_program_version();	// display program versions, maybe preName. menu output only
+
+  display_type_sizes();
+  MENU.ln();
 
   MENU.outln(F("\n'P' nvs_PRENAME"));
 
