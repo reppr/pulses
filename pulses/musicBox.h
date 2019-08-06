@@ -118,40 +118,6 @@
 #endif
 
 
-typedef struct musicBox_conf_t {
-  unsigned int* scale=NULL;
-  unsigned int* jiffle=NULL;
-  unsigned int* iCode=NULL;
-  fraction pitch = {1,1};
-
-  int sync=1;			// old default, seems still ok ;)
-
-  char* name=NULL;		// name of a piece, a preset
-  char* date=NULL;		// date  of a piece, preset or whatever
-
-  short preset=0;
-
-  unsigned short version = 1;
-
-  unsigned short cycle_slices = 540;	// set slice_tick_period accordingly
-  short lowest_primary=ILLEGAL;		// TAKE CARE when casting to int
-  short highest_primary=ILLEGAL;	// TAKE CARE when casting to int
-  // short primary_count=0;
-  short base_pulse=ILLEGAL;		// TAKE CARE when casting to int
-
-  short stack_sync_slices=0;	// 0 is off	positive: upwards,  negative: downwards
-  short subcycle_octave=0;
-
-  short bass_pulses=0;		// see  setup_bass_middle_high()
-  short middle_pulses=0;	// see  setup_bass_middle_high()
-  short high_pulses=0;		// see  setup_bass_middle_high()
-
-  uint8_t chromatic_pitch = 0;	// 0: pitch is not metric
-} musicBox_conf_t;
-
-musicBox_conf_t musicBoxConf;
-
-
 typedef struct magical_conf_t {
   void (*musicBox_when_done)(void)=NULL;
   int octave_shift=0;
@@ -606,7 +572,7 @@ void show_cycle(pulse_time_t cycle) {
 } // show_cycle()
 
 
-int slice_weighting(fraction F) {
+int slice_weighting(fraction_t F) {
   int weighting=0;
 
   if(F.multiplier<9)
@@ -710,9 +676,9 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
   if(this_time.overflow != PULSES.pulses[pulse].last.overflow)
     MENU.outln(F("over"));
   */
-  fraction phase = {this_time.time, PULSES.pulses[pulse].period.time};
+  fraction_t phase = {this_time.time, PULSES.pulses[pulse].period.time};
   // float float_phase = this_time.time / PULSES.pulses[pulse].period.time;	// not used
-  fraction this_division = {cycle_monitor_last_seen_division, cycle_slices};
+  fraction_t this_division = {cycle_monitor_last_seen_division, cycle_slices};
   HARMONICAL.reduce_fraction(&this_division);
 
   if(show_subcycle_position /*&& slice_weighting(this_division) > 0*/) {	// weighting influence switched off
@@ -1035,7 +1001,7 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
 
   tag_randomness(sync_user_selected);
   MENU.out(F("SYNC: "));
-  MENU.out(sync);
+  MENU.out(musicBoxConf.sync);
   if(musicBoxConf.stack_sync_slices) {	// /stack_sync_slices
     MENU.out(F(" p["));
     MENU.out(base_pulse);
@@ -1095,7 +1061,7 @@ void show_configuration_code() {	// show code, similar show_UI_basic_setup()
   MENU.outln(F(");"));
 
   MENU.out(F("sync = "));
-  MENU.out(sync);
+  MENU.out(musicBoxConf.sync);
   MENU.outln(';');
 
   MENU.out(F("stack_sync_slices = "));
@@ -1152,7 +1118,7 @@ void show_configuration_as_string() {	// file representation, similar show_confi
   MENU.out('\t');
 
   MENU.out(F("SYNC:"));
-  MENU.out(sync);
+  MENU.out(musicBoxConf.sync);
   MENU.out('\t');
 
   MENU.out(F("synS:"));
@@ -1520,9 +1486,9 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
   pulse_time_t this_time = PULSES.pulses[pulse].next;		// TODO: verify ################
   PULSES.sub_time(&PULSES.pulses[pulse].last, &this_time);	// so long inside this cycle
 
-  // fraction phase = {this_time.time, PULSES.pulses[pulse].period.time};	// not used
+  // fraction_t phase = {this_time.time, PULSES.pulses[pulse].period.time};	// not used
   // float float_phase = this_time.time / PULSES.pulses[pulse].period.time;	// not used
-  fraction this_division = {PULSES.pulses[pulse].counter -1 , cycle_slices};
+  fraction_t this_division = {PULSES.pulses[pulse].counter -1 , cycle_slices};
   HARMONICAL.reduce_fraction(&this_division);
   int this_weighting = slice_weighting(this_division);
 
@@ -2144,7 +2110,7 @@ void rtc_save_configuration() {
     scale_stored_RTC = selected_in(SCALES);
 
   if(sync_user_selected)
-    sync_stored_RTC = sync;
+    sync_stored_RTC = musicBoxConf.sync;
 
   if(stack_sync_user_selected)
     stack_sync_slices_stored_RTC = musicBoxConf.stack_sync_slices;
@@ -2190,7 +2156,7 @@ void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless wakin
 
     if(sync_stored_RTC != ILLEGAL) {
       MENU.out(F("SYNC "));
-      sync = sync_stored_RTC;
+      musicBoxConf.sync = sync_stored_RTC;
       sync_user_selected = true;
     }
 
@@ -2307,7 +2273,7 @@ void start_musicBox() {
   set_primary_block_bounds();	// remember where the primary block starts and stops
 
   if(!sync_user_selected)	// if *not* set by user interaction	// TODO: factor out randomisation
-    sync = random(6);		// random sync	// MAYBE: define  select_random_sync()  ???
+    musicBoxConf.sync = random(6);		// random sync	// MAYBE: define  select_random_sync()  ???
 
   // stack_sync
   if(!stack_sync_user_selected) {	// if *not* set by user interaction	// TODO: factor out randomisation
@@ -2426,12 +2392,12 @@ void start_musicBox() {
   musicBox_start_time = PULSES.get_now();	// keep musicBox_start_time
 
   if (musicBoxConf.stack_sync_slices)
-    PULSES.activate_selected_stack_sync_now((pulse_time_t) {PULSES.pulses[base_pulse].period.time/musicBoxConf.stack_sync_slices, 0}, sync);
+    PULSES.activate_selected_stack_sync_now((pulse_time_t) {PULSES.pulses[base_pulse].period.time/musicBoxConf.stack_sync_slices, 0}, musicBoxConf.sync);
   else
-    PULSES.activate_selected_synced_now(sync);	// 'n' 'N' sync and activate
+    PULSES.activate_selected_synced_now(musicBoxConf.sync);	// 'n' 'N' sync and activate
 
   // TODO: TEST: start pause detection and skipping
-  if(sync || musicBoxConf.stack_sync_slices) {	// start pause possible?
+  if(musicBoxConf.sync || musicBoxConf.stack_sync_slices) {	// start pause possible?
     PULSES.fix_global_next();			// cannot understand why i need that here...
     pulse_time_t pause = PULSES.global_next;
     if(musicBoxConf.stack_sync_slices) { // stack_sync sliced?
@@ -2805,7 +2771,7 @@ void magical_butler(int p) {	// TODO: OBSOLETE?
 
 
 /* **************************************************************** */
-void sync_shifting(fraction shift) {
+void sync_shifting(fraction_t shift) {
   pulse_time_t this_shift;
   if(shift.multiplier) { // no zero shift?
     for (int pulse=lowest_primary; pulse <= highest_primary; pulse++) {
@@ -2889,7 +2855,7 @@ void musicBox_display() {
     MENU.out(musicBox_butler_i);
     MENU.tab();
 
-    struct fraction current_phase = {PULSES.pulses[musicBox_butler_i].counter, cycle_slices};
+    fraction_t current_phase = {PULSES.pulses[musicBox_butler_i].counter, cycle_slices};
     MENU.out('[');
     display_fraction_int(current_phase);
 
@@ -3393,7 +3359,7 @@ bool musicBox_reaction(char token) {
     set_MusicBoxState(AWAKE);
     musicBox_start_time = PULSES.get_now();
 
-    PULSES.activate_selected_synced_now(sync);	// sync and activate
+    PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate
 
     // the butler starts just a pad *after* musicBox_start_time
     musicBox_butler_i =							\

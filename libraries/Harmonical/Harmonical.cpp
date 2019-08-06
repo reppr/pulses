@@ -71,7 +71,7 @@ unsigned long Harmonical::LCM(unsigned int a, unsigned int b) {	// least common 
 }
 
 
-bool Harmonical::fraction_LCM(fraction *F, fraction *LCM_) {	// returns error
+bool Harmonical::fraction_LCM(fraction_t *F, fraction_t *LCM_) {	// returns error
   reduce_fraction(F);
   reduce_fraction(LCM_);
   (*LCM_).multiplier = LCM((*F).multiplier, (*LCM_).multiplier);
@@ -80,7 +80,7 @@ bool Harmonical::fraction_LCM(fraction *F, fraction *LCM_) {	// returns error
 }
 
 
-void Harmonical::reduce_fraction(struct fraction *f) {
+void Harmonical::reduce_fraction(fraction_t *f) {
   unsigned int d = GCD(f->multiplier, f->divisor);
 
   (*f).multiplier /= d;
@@ -88,7 +88,7 @@ void Harmonical::reduce_fraction(struct fraction *f) {
 }
 
 
-void Harmonical::expand_fractions(struct fraction * a, struct fraction * b) {
+void Harmonical::expand_fractions(fraction_t * a, fraction_t * b) {
   unsigned long l = LCM(a->divisor, b->divisor);
   unsigned int f;
   f =  l / a->divisor ;
@@ -100,7 +100,7 @@ void Harmonical::expand_fractions(struct fraction * a, struct fraction * b) {
 }
 
 
-struct fraction* Harmonical::add_fraction(struct fraction * delta, struct fraction * sum) {
+fraction_t* Harmonical::add_fraction(fraction_t * delta, fraction_t * sum) {
   expand_fractions(delta, sum);
   (*sum).multiplier += (*delta).multiplier;
   reduce_fraction(sum);

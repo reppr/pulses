@@ -139,7 +139,7 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
     u8x8.clearLine(row);
     u8x8.setCursor(0,row++);
     u8x8.print('S');		// sync
-    u8x8.print(sync);
+    u8x8.print(musicBoxConf.sync);
     if(musicBoxConf.stack_sync_slices) {	// stack_sync_slices
       u8x8.print('|');
       u8x8.print(musicBoxConf.stack_sync_slices);

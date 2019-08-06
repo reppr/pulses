@@ -140,6 +140,39 @@ Harmonical HARMONICAL(3628800uL);	// old style for a first test
 #include "array_descriptors.h"		// make data arrays accessible for the menu, give names to the data arrays
 
 
+typedef struct musicBox_conf_t {
+  unsigned int* scale=NULL;
+  unsigned int* jiffle=NULL;
+  unsigned int* iCode=NULL;
+  fraction_t pitch = {1,1};
+
+  int sync=1;			// old default, seems still ok ;)
+
+  char* name=NULL;		// name of a piece, a preset
+  char* date=NULL;		// date  of a piece, preset or whatever
+
+  short preset=0;
+
+  unsigned short version = 1;
+
+  unsigned short cycle_slices = 540;	// set slice_tick_period accordingly
+  short lowest_primary=ILLEGAL;		// TAKE CARE when casting to int
+  short highest_primary=ILLEGAL;	// TAKE CARE when casting to int
+  // short primary_count=0;
+  short base_pulse=ILLEGAL;		// TAKE CARE when casting to int
+
+  short stack_sync_slices=0;	// 0 is off	positive: upwards,  negative: downwards
+  short subcycle_octave=0;
+
+  short bass_pulses=0;		// see  setup_bass_middle_high()
+  short middle_pulses=0;	// see  setup_bass_middle_high()
+  short high_pulses=0;		// see  setup_bass_middle_high()
+
+  uint8_t chromatic_pitch = 0;	// 0: pitch is not metric
+} musicBox_conf_t;
+
+musicBox_conf_t musicBoxConf;
+
 #if defined USE_MONOCHROME_DISPLAY
   #include <U8x8lib.h>
   #if defined BOARD_OLED_LIPO
@@ -195,9 +228,9 @@ action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actio
 /* **************************************************************** */
 // TODO: gather basic settings in the code	################
 // DADA
-int sync=1;		// syncing edges or middles of square pulses
+//int sync=1;		// syncing edges or middles of square pulses
 //base_pulse
-fraction pitch={1,1};	// pitch to tune a scale
+fraction_t pitch={1,1};	// pitch to tune a scale
 //	int octave_shift=0;
 //	bool no_octave_shift=false;	// see: tune_selected_2_scale_limited()
 
@@ -326,7 +359,7 @@ typedef struct cycles_conf_t {
   pulse_time_t harmonical_CYCLE;	// TODO: move to Harmonical?
   pulse_time_t used_subcycle;		// TODO: move to Harmonical?
 
-  // struct fraction harmonical_cycle_fraction={1, 1}; // TODO: what for ?
+  // fraction_t harmonical_cycle_fraction={1, 1}; // TODO: what for ?
 
   short subcycle_octave=0;
 
@@ -339,11 +372,11 @@ cycles_conf_t CyclesConf;
 
 //#define SCALE2CYCLE_INFO	// for debugging, but interesting to watch anyway ;)
 pulse_time_t scale2harmonical_cycle(unsigned int* scale, pulse_time_t* duration) {		// returns harmonical cycle of a scale
-  fraction f_LCM;
+  fraction_t f_LCM;
   f_LCM.multiplier = 1;
   f_LCM.divisor = 1;
 
-  fraction f_F2;
+  fraction_t f_F2;
 
   for(int i=0; scale[i]; i+=2) {
     f_F2.multiplier = selected_in(SCALES)[i];
@@ -369,7 +402,7 @@ pulse_time_t scale2harmonical_cycle(unsigned int* scale, pulse_time_t* duration)
 
 
 // TODO: move to Harmonical::	################
-void scale_time(pulse_time_t *duration, fraction * F) {
+void scale_time(pulse_time_t *duration, fraction_t* F) {
   PULSES.mul_time(duration, (*F).multiplier);
   PULSES.div_time(duration, (*F).divisor);
 }
@@ -414,16 +447,14 @@ void test_jiffle(unsigned int* jiffle, int count) {
   if(MENU.verbosity >= VERBOSITY_LOWEST)
     MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
 
-  int sync_was=sync;
   // pulse_time_t period = base_pulse_period;
   pulse_time_t period = {6000000, 0};		// TODO: better default based on the situation ################
   setup_icode_seeder(pulse, period, (icode_t*) jiffle, DACsq1 | DACsq2 | doesICODE);
   PULSES.pulses[pulse].flags |= COUNTED;
   PULSES.pulses[pulse].remaining = count;
   PULSES.pulses[pulse].dac1_intensity = PULSES.pulses[pulse].dac2_intensity = 20; // TODO: random test value
-  PULSES.activate_pulse_synced(pulse, PULSES.get_now(), abs(sync));
+  PULSES.activate_pulse_synced(pulse, PULSES.get_now(), abs(musicBoxConf.sync));
   PULSES.fix_global_next();
-  sync = sync_was;
 }
 
 
@@ -1952,7 +1983,8 @@ bool en_tuned_sweep_click(int pulse) {
 
 
 int setup_click_synced(pulse_time_t when, unsigned long unit, unsigned long multiplier,
-		       unsigned long divisor, int sync) {
+		       unsigned long divisor, int sync)
+{
   int pulse= PULSES.setup_pulse_synced(&click, ACTIVE, when, unit, multiplier, divisor, sync);
 
   if ((pulse > ILLEGAL) && (pulse < PL_MAX))
@@ -2112,7 +2144,8 @@ void select_alive() {
    each is the integer representation of a rational number
    very useful for all kind of things like scales, chords, rhythms */
 
-int prepare_scale(bool inverse, int voices, unsigned long multiplier, unsigned long divisor, int sync, unsigned int *scale, bool octaves=true) {
+int prepare_scale(bool inverse, int voices, unsigned long multiplier, unsigned long divisor, int sync, unsigned int *scale, bool octaves=true)
+{
 /* prepare a couple of pulses based on a scale array.
    up to 'voices' pulses are created among the selected ones.
    return number of prepared pulses */
@@ -2175,7 +2208,7 @@ int prepare_scale(bool inverse, int voices, unsigned long multiplier, unsigned l
  global_next:
   PULSES.fix_global_next();
   return prepared;
-}
+} // prepare_scale()
 
 
 int selected_apply_scale_on_period(int voices, unsigned int *scale, bool octaves=true) { // TODO: OBSOLETE? ################
@@ -2223,7 +2256,7 @@ int selected_apply_scale_on_period(int voices, unsigned int *scale, bool octaves
 }
 
 // see: bool no_octave_shift=false;
-int tune_selected_2_scale_limited(fraction scaling, unsigned int *scale, unsigned long shortest_limit) {
+int tune_selected_2_scale_limited(fraction_t scaling, unsigned int *scale, unsigned long shortest_limit) {
 /*
   tune all selected pulses to the scale, start with lowest selected
   scale 'PULSES.time_unit' by 'scaling' for base_period
@@ -2509,7 +2542,7 @@ void init_ratio_sequence(pulse_time_t when,
   }
 
   PULSES.fix_global_next();
-}
+} // init_ratio_sequence()
 
 
 /* **************************************************************** */
@@ -3214,7 +3247,7 @@ void menu_pulses_display() {
   MENU.out(F("s=switch pulse on/off"));
   MENU.tab();
   MENU.out(F("M=mute ALL actions\tX=remove ALL\tK=kill\n\nCREATE PULSES\tstart with 'P'\nP=new pulse\tg=en-click\tj=en-jiffle\tN=en-noop\ti=en-info\tF=en-INFO\nS=sync\tn=sync now "));
-  MENU.outln(sync);
+  MENU.outln(musicBoxConf.sync);
 
   MENU.out(F("E=enter experiment (")); MENU.out(selected_experiment); MENU.out(')');
   MENU.out(F("\tV=voices for experiment (")); MENU.out(voices); MENU.out(F(")"));
@@ -3252,7 +3285,7 @@ int setup_jiffle_thrower_synced(pulse_time_t when,
   }
 
   return pulse;
-}
+} // setup_jiffle_thrower_synced()
 
 
 /* **************************************************************** */
@@ -3334,9 +3367,9 @@ void load2_jiffle_RAM(unsigned int *source) {	// double zero terminated
 }
 
 
-struct fraction jiffletab_len(unsigned int *jiffletab) {
-  static struct fraction f;	// keep return value
-  struct fraction scratch;
+fraction_t jiffletab_len(unsigned int *jiffletab) {
+  static fraction_t f;	// keep return value
+  fraction_t scratch;
   unsigned int multiplier, divisor, count;
 
   f.multiplier = 0;
@@ -3361,7 +3394,7 @@ void display_jiffletab(unsigned int *jiffle) {
   if (jiffle == NULL)	// silently ignore undefined
     return;
 
-  struct fraction sum;
+  fraction_t sum;
   sum.multiplier = 0;
   sum.divisor = 1;
   bool was_zero=false;
@@ -3486,7 +3519,7 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   PULSES.add_selected_to_group(g_PRIMARY);
 
   base_pulse=0;		// a human perceived base pulse, see 'stack_sync_slices'
-  if(bass_pulses && (middle_pulses || high_pulses))
+  if(bass_pulses && (middle_pulses || high_pulses))	// DADA
     base_pulse = bass_pulses +1;	// FIXME: HACK: first pulse above bass, but should respect tuning (octave)
 
   // tune *all* primary pulses
@@ -3816,7 +3849,7 @@ void show_scaling() {
 
 void show_UI_basic_setup() {
   MENU.out(F("SYNC: "));
-  MENU.out(sync);
+  MENU.out(musicBoxConf.sync);
   MENU.space(4);
 
   MENU.out(F("SCALE: "));
@@ -4355,7 +4388,7 @@ bool menu_pulses_reaction(char menu_input) {
   case 'S':	// enter sync
     if (MENU.maybe_calculate_input(&input_value)) {
       if (input_value>=0 ) {
-	sync = input_value;
+	musicBoxConf.sync = input_value;
 	sync_user_selected = true;
       }
       else
@@ -4364,7 +4397,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (DO_or_maybe_display(VERBOSITY_LOWEST)) {
       MENU.out(F("sync "));
-      MENU.outln(sync);
+      MENU.outln(musicBoxConf.sync);
     }
 
     break;
@@ -4552,7 +4585,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'n':	// synchronize to now
     // see also '!'	one of 'n' and '!' is obsolete...
-    PULSES.activate_selected_synced_now(sync);	// sync and activate
+    PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate
 
     if (DO_or_maybe_display(VERBOSITY_HIGH)) {
       MENU.ln();
@@ -4966,40 +4999,40 @@ bool menu_pulses_reaction(char menu_input) {
       case 1:	// setup_jiffle128
 	multiplier=2;
 	divisor=1;
-	sync=15;
+	musicBoxConf.sync=15;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("setup_jiffle128", g_inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("setup_jiffle128", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
 
       case 2:	// init_div_123456
-	sync=0;
+	musicBoxConf.sync=0;
 	multiplier=1;
 	divisor=1;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_div_123456", g_inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("init_div_123456", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
 
       case 3:	// setup_jiffles0
-	sync=1;
+	musicBoxConf.sync=1;
 	multiplier=8;
 	divisor=3;
 #if GPIO_PINS > 0
 	reverse_gpio_pins();
 #endif
 	if (MENU.maybe_display_more()) {
-	  // display_name5pars("setup_jiffles0", g_inverse, voices, multiplier, divisor, sync);
+	  // display_name5pars("setup_jiffles0", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	  MENU.out(F("setup_jiffles0("));
 	  MENU.out(g_inverse);
 	  display_next_par(voices);
 	  display_next_par(multiplier);
 	  display_next_par(divisor);
-	  display_next_par(sync);
+	  display_next_par(musicBoxConf.sync);
 	  MENU.outln(F(")  ESP8266 Frogs"));
 	  Press_toStart();
 	}
@@ -5008,88 +5041,88 @@ bool menu_pulses_reaction(char menu_input) {
       case 4:	// setup_jiffles2345
 	multiplier=1;
 	divisor=2;
-	sync=0;
+	musicBoxConf.sync=0;
 	select_in(JIFFLES, jiffletab);
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("setup_jiffles2345", g_inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("setup_jiffles2345", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
 
       case 5:	// init_123456
-	sync=0;		// FIXME: test and select ################
+	musicBoxConf.sync=0;		// FIXME: test and select ################
 	multiplier=3;
 	divisor=1;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_123456", g_inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("init_123456", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
 
       case 6:	// init_chord_1345689a
-	sync=0;		// FIXME: test and select ################
+	musicBoxConf.sync=0;		// FIXME: test and select ################
 	multiplier=1;
 	divisor=1;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_chord_1345689a", g_inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("init_chord_1345689a", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
 
       case 7:	// init_rhythm_1
-	sync=1;
+	musicBoxConf.sync=1;
 	multiplier=1;
 	divisor=6*7;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_rhythm_1", g_inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("init_rhythm_1", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
 
       case 8:	// init_rhythm_2
-	sync=5;
+	musicBoxConf.sync=5;
 	multiplier=1;
 	divisor=1;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_rhythm_2", g_inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("init_rhythm_2", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
 
       case 9:  // init_rhythm_3
-	sync=3;
+	musicBoxConf.sync=3;
 	multiplier=1;
 	divisor=1;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_rhythm_3", g_inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("init_rhythm_3", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
 
       case 10:	// init_rhythm_4
-	sync=1;
+	musicBoxConf.sync=1;
 	multiplier=1;
 	divisor=7L*3L;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_rhythm_4", g_inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("init_rhythm_4", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
 
       case 11:	// setup_jifflesNEW
-	sync=3;
+	musicBoxConf.sync=3;
 	multiplier=3;
 	divisor=1;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("setup_jifflesNEW", g_inverse, voices, multiplier, divisor, sync);
+	  display_name5pars("setup_jifflesNEW", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
@@ -5102,10 +5135,10 @@ bool menu_pulses_reaction(char menu_input) {
 	select_in(SCALES, minor_scale);		// default e minor
 
 //	if (MENU.maybe_display_more()) {
-//	  display_name5pars("init_pentatonic", g_inverse, voices, multiplier, divisor, sync);
+//	  display_name5pars("init_pentatonic", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 //	}
 
-//	init_pentatonic(g_inverse, voices, multiplier, divisor, sync);
+//	init_pentatonic(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	select_in(JIFFLES, piip2048);		// default jiffle FIXME: ################
 
 	if (voices == 0)
@@ -5129,7 +5162,7 @@ bool menu_pulses_reaction(char menu_input) {
     #endif
   #endif
 
-	PULSES.activate_selected_synced_now(sync);	// sync and activate;
+	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
 	MENU.ln();
 
 	if (MENU.maybe_display_more())
@@ -5139,7 +5172,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 
       case 13:	// prepare_magnets
-	sync=1;	// or: sync=0;
+	musicBoxConf.sync=1;	// or: musicBoxConf.sync=0;
 	multiplier=1;
 	divisor=1;
 	voices=8;	//just for 'The Harmonical Strings Christmas Evening Sounds'
@@ -5147,8 +5180,8 @@ bool menu_pulses_reaction(char menu_input) {
 	// unsigned int harmonics4 = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0,0};
 	select_in(JIFFLES, harmonics4);
 	PULSES.select_n(voices);
-	display_name5pars("prepare_magnets", g_inverse, voices, multiplier, divisor, sync);
-	prepare_magnets(g_inverse, voices, multiplier, divisor, sync);
+	display_name5pars("prepare_magnets", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	prepare_magnets(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 
 	if (MENU.maybe_display_more()) {
 	  selected_or_flagged_pulses_info_lines();
@@ -5164,10 +5197,10 @@ bool menu_pulses_reaction(char menu_input) {
 
 	select_in(SCALES, pentatonic_minor);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier * 1024 , divisor * 1167, sync, selected_in(SCALES));
+	prepare_scale(false, voices, multiplier * 1024 , divisor * 1167, musicBoxConf.sync, selected_in(SCALES));
 	select_in(JIFFLES, ting1024);
 	PULSES.select_n(voices);
-	display_name5pars("E14", g_inverse, voices, multiplier, divisor, sync);
+	display_name5pars("E14", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 
 	if (MENU.maybe_display_more())
 	  selected_or_flagged_pulses_info_lines();
@@ -5181,10 +5214,10 @@ bool menu_pulses_reaction(char menu_input) {
 
 	select_in(SCALES, pentatonic_minor);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier * 4096 , divisor * 1167, sync, selected_in(SCALES));
+	prepare_scale(false, voices, multiplier * 4096 , divisor * 1167, musicBoxConf.sync, selected_in(SCALES));
 	select_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	display_name5pars("E15", g_inverse, voices, multiplier, divisor, sync);
+	display_name5pars("E15", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  selected_or_flagged_pulses_info_lines();
@@ -5198,10 +5231,10 @@ bool menu_pulses_reaction(char menu_input) {
 
 	select_in(SCALES, europ_PENTAtonic);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
+	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
 	select_in(JIFFLES, ting4096);
 	// select_in(JIFFLES, arpeggio4096);
-	display_name5pars("E16 PENTAtonic", g_inverse, voices, multiplier, divisor, sync);
+	display_name5pars("E16 PENTAtonic", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  selected_or_flagged_pulses_info_lines();
@@ -5215,9 +5248,9 @@ bool menu_pulses_reaction(char menu_input) {
 
 	select_in(SCALES, mimic_japan_pentatonic);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
+	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
 	select_in(JIFFLES, ting4096);
-	display_name5pars("E17 mimic japan", g_inverse, voices, multiplier, divisor, sync);
+	display_name5pars("E17 mimic japan", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  selected_or_flagged_pulses_info_lines();
@@ -5247,8 +5280,8 @@ bool menu_pulses_reaction(char menu_input) {
 	select_in(JIFFLES, ting4096);
 
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
-	display_name5pars("E18 pentatonic minor", g_inverse, voices, multiplier, divisor, sync);
+	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
+	display_name5pars("E18 pentatonic minor", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  selected_or_flagged_pulses_info_lines();
@@ -5343,10 +5376,10 @@ bool menu_pulses_reaction(char menu_input) {
 	multiplier=1;
 	divisor=1024;
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
-	display_name5pars("E29 KALIMBA7 tuning", g_inverse, voices, multiplier, divisor, sync);
+	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
+	display_name5pars("E29 KALIMBA7 tuning", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	en_click_selected();							// for tuning ;)
-	PULSES.activate_selected_synced_now(sync);	// sync and activate
+	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate
 	MENU.ln();
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -5364,10 +5397,10 @@ bool menu_pulses_reaction(char menu_input) {
 	select_in(JIFFLES, ting4096);
 	// select_in(JIFFLES, tingeling4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
-	display_name5pars("E30 KALIMBA7 jiff", g_inverse, voices, multiplier, divisor, sync);
+	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
+	display_name5pars("E30 KALIMBA7 jiff", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
-	PULSES.activate_selected_synced_now(sync);	// sync and activate
+	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate
 
 	MENU.ln();
 
@@ -5383,10 +5416,10 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=1;
 	select_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
-	display_name5pars("E31 KALIMBA7 jiff", g_inverse, voices, multiplier, divisor, sync);
+	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
+	display_name5pars("E31 KALIMBA7 jiff", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
-	PULSES.activate_selected_synced_now(sync);	// sync and activate;
+	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
 	MENU.ln();
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -5402,10 +5435,10 @@ bool menu_pulses_reaction(char menu_input) {
 	// select_in(JIFFLES, ting4096);
 	select_in(JIFFLES, tigg_ding4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
-	display_name5pars("E32 ESP32_12", g_inverse, voices, multiplier, divisor, sync);
+	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
+	display_name5pars("E32 ESP32_12", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
-	PULSES.activate_selected_synced_now(sync);	// sync and activate;
+	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
 	MENU.ln();
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -5420,10 +5453,10 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=1;
 	select_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
-	display_name5pars("minor", g_inverse, voices, multiplier, divisor, sync);
+	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
+	display_name5pars("minor", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
-	PULSES.activate_selected_synced_now(sync);	// sync and activate;
+	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
 	MENU.ln();
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -5438,10 +5471,10 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=1;
 	select_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
-	display_name5pars("major", g_inverse, voices, multiplier, divisor, sync);
+	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
+	display_name5pars("major", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
-	PULSES.activate_selected_synced_now(sync);	// sync and activate;
+	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
 	MENU.ln();
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -5456,10 +5489,10 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=1;
 	select_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
-	display_name5pars("tetra", g_inverse, voices, multiplier, divisor, sync);
+	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
+	display_name5pars("tetra", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
-	PULSES.activate_selected_synced_now(sync);	// sync and activate;
+	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
 	MENU.ln();
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -5474,10 +5507,10 @@ bool menu_pulses_reaction(char menu_input) {
 	divisor=1;
 	select_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, sync, selected_in(SCALES));
-	display_name5pars("BIG major", g_inverse, voices, multiplier, divisor, sync);
+	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
+	display_name5pars("BIG major", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
-	PULSES.activate_selected_synced_now(sync);	// sync and activate;
+	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
 	MENU.ln();
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -5511,7 +5544,7 @@ bool menu_pulses_reaction(char menu_input) {
 	// ################ FIXME: remove redundant code ################
 	PULSES.select_n(voices);
 //	prepare_scale(false, voices, multiplier, divisor, 0, selected_in(SCALES));
-//	display_name5pars("GUITAR", g_inverse, voices, multiplier, divisor, sync);
+//	display_name5pars("GUITAR", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
 	tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));	// TODO: OBSOLETE?
 	lower_audio_if_too_high(409600);
 
@@ -5530,7 +5563,7 @@ bool menu_pulses_reaction(char menu_input) {
     #endif
   #endif
 
-	PULSES.activate_selected_synced_now(sync);	// sync and activate;
+	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
 	MENU.ln();
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -5617,7 +5650,7 @@ bool menu_pulses_reaction(char menu_input) {
 	// maybe start?
 	if(MENU.peek() == '!') {		// 'E38!' starts E38
 	  MENU.drop_input_token();
-	  PULSES.activate_selected_synced_now(sync);	// sync and activate;
+	  PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
 	}
 	break; // E38
 
@@ -5683,7 +5716,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  // maybe start?
 	  if(MENU.peek() == '!') {		// 'E39!' starts E39
 	    MENU.drop_input_token();
-	    PULSES.activate_selected_synced_now(sync);	// sync and activate, no display
+	    PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate, no display
 	  } else
 	    if (DO_or_maybe_display(VERBOSITY_LOWEST))	// maybe ok for here?
 	      selected_or_flagged_pulses_info_lines();
@@ -5721,7 +5754,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  // maybe start?
 	  if(MENU.peek() == '!') {		// 'E40!' starts E40
 	    MENU.drop_input_token();
-	    PULSES.activate_selected_synced_now(sync);	// sync and activate, no display
+	    PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate, no display
 	  } else
 	    if (DO_or_maybe_display(VERBOSITY_LOWEST))	// maybe ok for here?
 	      selected_or_flagged_pulses_info_lines();
@@ -5743,41 +5776,41 @@ bool menu_pulses_reaction(char menu_input) {
     case 0:
       break;
     case 1:
-      setup_jiffle128(g_inverse, voices, multiplier, divisor, sync);
+      setup_jiffle128(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
       break;
     case 2:
-      init_div_123456(g_inverse, voices, multiplier, divisor, sync);
+      init_div_123456(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
       break;
     case 3:
-      setup_jiffles0(g_inverse, voices, multiplier, divisor, sync);    // ESP8266 Frog Orchester
+      setup_jiffles0(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);    // ESP8266 Frog Orchester
       break;
     case 4:
-      setup_jiffles2345(g_inverse, voices, multiplier, divisor, sync);
+      setup_jiffles2345(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
       break;
     case 5:
-      init_123456(g_inverse, voices, multiplier, divisor, sync);
+      init_123456(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
       break;
     case 6:
-      init_chord_1345689a(g_inverse, voices, multiplier, divisor, sync);
+      init_chord_1345689a(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
       break;
     case 7:
-      init_rhythm_1(g_inverse, voices, multiplier, divisor, sync);
+      init_rhythm_1(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
       break;
     case 8:
-      init_rhythm_2(g_inverse, voices, multiplier, divisor, sync);
+      init_rhythm_2(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
       break;
     case 9:
-      init_rhythm_3(g_inverse, voices, multiplier, divisor, sync);
+      init_rhythm_3(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
       break;
     case 10:
-      init_rhythm_4(g_inverse, voices, multiplier, divisor, sync);
+      init_rhythm_4(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
       break;
     case 11:
-      setup_jifflesNEW(g_inverse, voices, multiplier, divisor, sync);
+      setup_jifflesNEW(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
       break;
 
     default:	// normal use case: sync and activate
-      PULSES.activate_selected_synced_now(sync); // sync and activate
+      PULSES.activate_selected_synced_now(musicBoxConf.sync); // sync and activate
 
       if (DO_or_maybe_display(VERBOSITY_HIGH)) {
 	MENU.ln();

@@ -5,27 +5,27 @@ unsigned int arr_range_bottom=0;
 unsigned int arr_range_top=0;
 
 /*
-  struct fraction arr_len(unsigned int *arr, unsigned int step);
+  fraction_t arr_len(unsigned int *arr, unsigned int step);
 
   for arrays with multiplier/divisor items starting each data set like scales or jiffletabs
   sums up all multiplier/divisor fractions
   until it sees a divisor==0
-  returns struct fraction sum
+  returns fraction_t sum
   0/0 signals an error
 
   in jiffletabs it will return the *length of the jiffle* relative to the base period
   in scales it gives the length of a melody containing *each note once*
 
  */
-struct fraction arr_len(unsigned int *arr, unsigned int step) {
-  struct fraction f = {0,0};	// keeps return value
+fraction_t arr_len(unsigned int *arr, unsigned int step) {
+  fraction_t f = {0,0};	// keeps return value
   if (step < 2)	// the fraction takes the first two integers from each data set
     return f;
 
   unsigned int multiplier=0;
   unsigned int divisor=0;
   unsigned int count=1;
-  struct fraction scratch;
+  fraction_t scratch;
 
   f.multiplier = 0;
   f.divisor=1;
@@ -48,7 +48,7 @@ struct fraction arr_len(unsigned int *arr, unsigned int step) {
 }
 
 
-void display_fraction(struct fraction *f) {
+void display_fraction(fraction_t *f) {
   MENU.out((*f).multiplier);
   MENU.slash();
   MENU.out((*f).divisor);
@@ -58,7 +58,7 @@ void display_fraction(struct fraction *f) {
 }
 
 
-void display_fraction_int(struct fraction F) {
+void display_fraction_int(fraction_t F) {
   MENU.out(F.multiplier);
   MENU.out('/');
   MENU.out(F.divisor);
@@ -67,7 +67,7 @@ void display_fraction_int(struct fraction F) {
 
 #define ARRAY_ENTRY_UNTIL_ZERO_MODE	1	// menu_mode for unsigned integer data entry, stop at multiple zeros
 void display_arr(unsigned int *arr, unsigned int step) {
-  struct fraction sum;
+  fraction_t sum;
   sum.multiplier = 0;
   sum.divisor = 1;
   bool was_zero=false;

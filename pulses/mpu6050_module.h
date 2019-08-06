@@ -216,7 +216,7 @@ void reset_accGyro_selection() {
 }
 
 
-extern void sync_shifting(fraction shift);			// pre declaration
+extern void sync_shifting(fraction_t shift);			// pre declaration
 //int16_t GYROX_selected=0;
 //int16_t GYROY_selected=0;
 int16_t GYROZ_selected=0;

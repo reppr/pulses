@@ -14,8 +14,7 @@
 #endif
 
 
-//  pulses_rgb_string_config_t
-typedef struct {
+typedef struct rgb_string_config_t {
   short version = 1;
   //short hue_slice_cnt = 8;	// just a usable default	// TODO: UI
   short hue_slice_cnt = 12;	// just another usable default	// TODO: UI
@@ -34,9 +33,9 @@ typedef struct {
   uint8_t rgb_led_string_intensity = DEFAULT_LED_STRING_INTENSITY;
 
   bool clear_rgb_background_on_ending = true;	// TODO: ################
-} pulses_rgb_string_config_t;
+} rgb_string_config_t;
 
-pulses_rgb_string_config_t RGBstringConf;
+rgb_string_config_t RGBstringConf;
 
 
 #include "FOREIGN/ESP32-Digital-RGB-LED-Drivers/src/esp32_digital_led_lib.h"

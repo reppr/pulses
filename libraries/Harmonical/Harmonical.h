@@ -34,10 +34,11 @@
 #endif
 
 /* **************************************************************** */
-struct fraction {
+typedef struct fraction_t {
   unsigned int multiplier;
   unsigned int divisor;
-};
+} fraction_t;
+
 
 /* **************************************************************** */
 class Harmonical {
@@ -48,10 +49,10 @@ class Harmonical {
 
   unsigned int GCD(unsigned int a, unsigned int b);		// greatest common divisor, Euklid
   unsigned long LCM(unsigned int a, unsigned int b);		// least common multiple
-  bool fraction_LCM(struct fraction * F, struct fraction *LCM);	// LCM for fractions, returns error
-  void reduce_fraction(struct fraction *f);
-  void expand_fractions(struct fraction * a, struct fraction * b);
-  fraction * add_fraction(struct fraction * delta, struct fraction * sum);
+  bool fraction_LCM(fraction_t* F, fraction_t*LCM);	// LCM for fractions, returns error
+  void reduce_fraction(fraction_t*f);
+  void expand_fractions(fraction_t* a, fraction_t* b);
+  fraction_t* add_fraction(fraction_t* delta, fraction_t* sum);
   int prime_factors(unsigned int p_factors[], unsigned long number);	// returns index-1 of highest used prime, -1 is error
   bool is_small_prime(unsigned long number);
 
