@@ -2296,9 +2296,50 @@ void start_musicBox() {
 #if defined OLDSTYLE_TUNE_AND_LIMIT	// use (buggy) old style tuning and lowering mechanism?	// TODO: OBSOLETE?
   // HACK: backwards compatibility for multiplier/divisor	################
   tune_2_scale(voices, multiplier*musicBoxConf.pitch.multiplier, divisor*musicBoxConf.pitch.divisor, selected_in(SCALES)); // TODO: OBSOLETE? TODO: define role of multiplier, divisor
-
 #else	// working on new style tune_selected_2_scale_limited(musicBoxConf.pitch, selected_in(SCALES), limit);
   tune_selected_2_scale_limited(musicBoxConf.pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves // TODO: adjust limit appropriate...
+#endif
+
+  extern short steps_in_octave;
+  MENU.out(F("notes/octave "));
+  MENU.outln(steps_in_octave);
+
+
+#if defined USE_RGB_LED_STRIP	// set a hue_slice_cnt that fits the tuning
+  if(RGBstringConf.set_automagic_hue_slices) {
+    switch(steps_in_octave) {
+    case 5: // pentatonic scales
+      RGBstringConf.hue_slice_cnt = 15;	// try also 30
+      break;
+    case 7: // heptatonic aka "diatonic" scales
+      RGBstringConf.hue_slice_cnt = 21;
+      break;
+    case 4: // i.e. tetrachord
+      RGBstringConf.hue_slice_cnt = 12;	// try 24
+      break;
+    case 3: // octave-fourth-fifth,   TRIADs,	TRICHORDs	...
+      RGBstringConf.hue_slice_cnt = 18;	// try 9
+      break;
+    case 2: // octave-fourth,	octave-fifth,	borduns
+      RGBstringConf.hue_slice_cnt = 12;	// try 6, 24
+      break;
+    case 1: // just octaves
+      RGBstringConf.hue_slice_cnt = 24;	// try 12, 6, 3
+      break;
+
+    default:
+      RGBstringConf.hue_slice_cnt = steps_in_octave * 3;
+      if(RGBstringConf.hue_slice_cnt < 6)
+	RGBstringConf.hue_slice_cnt;
+      break;
+    } // switch(steps_in_octave)
+
+    MENU.out(F("set "));
+  } else	// if(set_automagic_hue_slices)
+    MENU.out(F("fixed "));
+
+  MENU.out(F("hue slices "));
+  MENU.outln(RGBstringConf.hue_slice_cnt);
 #endif
 
   if(!pitch_user_selected)		// if *not* set by user interaction	// TODO: factor out randomisation
@@ -3437,8 +3478,9 @@ bool musicBox_reaction(char token) {
     case 'N':	// 'LN' hue_slice_cnt
       MENU.drop_input_token();
       input_value = MENU.numeric_input(0);
-      if (input_value > 0) {
+      if (input_value > 0 || input_value < 256) {
 	RGBstringConf.hue_slice_cnt = input_value;
+	RGBstringConf.set_automagic_hue_slices = false;	// keep as set by user
       }
 
       if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
@@ -3822,6 +3864,10 @@ bool musicBox_reaction(char token) {
   case 'D':		// musicBox 'D'
     //display_peer_ID_list();
     //random_RGB_string(MENU.numeric_input(4));
+    extern short steps_in_octave;
+    MENU.out(F("steps_in_octave "));
+    MENU.outln(steps_in_octave);
+
     random_HSV_LED_string();
   /*
     {

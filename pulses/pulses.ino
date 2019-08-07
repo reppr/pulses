@@ -2266,6 +2266,8 @@ int selected_apply_scale_on_period(int voices, unsigned int *scale, bool octaves
   return applied;
 }
 
+short steps_in_octave=0;	// like  '5' for pentatonic  '7' for heptatonic aka diatonic scales
+
 // see: bool no_octave_shift=false;
 int tune_selected_2_scale_limited(fraction_t scaling, unsigned int *scale, unsigned long shortest_limit) {
 /*
@@ -2291,6 +2293,7 @@ int tune_selected_2_scale_limited(fraction_t scaling, unsigned int *scale, unsig
   }
 
   if ((scale != NULL) && scale[0] && scaling.divisor) {
+    steps_in_octave=0;
     pulse_time_t base_period = {PULSES.time_unit, 0};
     base_period.time *= scaling.multiplier;
     base_period.time /= scaling.divisor;
@@ -2306,6 +2309,9 @@ int tune_selected_2_scale_limited(fraction_t scaling, unsigned int *scale, unsig
       for(int pulse=0; pulse<PL_MAX; pulse++) {
 	if (PULSES.pulse_is_selected(pulse)) {
 	  if ((multiplier = scale[note*2]) == 0) {	// next octave?
+	    if(steps_in_octave==0)			// after the *first* octave save steps_in_octave
+	      steps_in_octave = note;
+
 	    octave *= 2;	// one octave higher
 	    note = 0;	// restart at first note
 	    multiplier = scale[note*2];

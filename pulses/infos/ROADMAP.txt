@@ -58,19 +58,20 @@ new INSTRUMENTS
   magicBall	play&dance with it,	includes Y_UI,	maybe some LEDs,	*no sound*, *no display*
 
 RGB LED
+  automatic switching for 5V/12V strings based on nvs
+
   slowly FADING when the cycle is over
   float intensity
 
   test GAMMA CORRECTION
 
   hue_slice_cnt diatonic/pentatonic
-    *tuning* should set the note count (like 5 or 7)
-    (or store it in SCALES)
-      then set accoringly, i.e. in units of 3 (3 basic colours)
-	pentatonic: 15	hepta: 21
+    *tuning* should set the note count (like 5 or 7)			// OK
+      then set accoringly, i.e. in units of 3 (3 basic colours)		// OK
+	pentatonic: 15	hepta: 21					// OK
 	or double   20	       42 ;)	but that's a lot...
-	*TEST that first*			OK TESTED NOW, looks promising :)	now implement
-      what to do with 2, 3, 4?
+	*TEST that first*	OK TESTED NOW, looks promising :)	// OK implemented, nice results :)
+      what to do with 2, 3, 4?						// OK needs TESTING
 
   background colour memory
 

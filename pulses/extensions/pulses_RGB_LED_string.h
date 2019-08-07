@@ -15,9 +15,6 @@
 
 
 typedef struct rgb_string_config_t {
-  //short hue_slice_cnt = 8;	// just a usable default	// TODO: UI
-  short hue_slice_cnt = 12;	// just another usable default	// TODO: UI	DADA
-
 //float saturation_start_value = 0.12;
 //float saturation_start_value = 0.3;
   float saturation_start_value = 0.2;	// TODO: test&trimm default value ################	UI
@@ -30,9 +27,12 @@ typedef struct rgb_string_config_t {
 
   uint8_t pixel_cnt=150;
   uint8_t rgb_led_string_intensity = DEFAULT_LED_STRING_INTENSITY;
+  uint8_t hue_slice_cnt = 15;	// just a usable default  see: set_automagic_hue_slices
+  uint8_t voltage_type = 12;	// TODO: use ################	DADA
   uint8_t version = 0;	// 0 means currently under development
 
   bool clear_rgb_background_on_ending = true;	// TODO: ################
+  bool set_automagic_hue_slices = true;		// if *not* set by user
 
 } rgb_string_config_t;
 
@@ -385,7 +385,7 @@ void rgb_led_reset_to_default() {	// reset rgb led strip management to default c
 float rgb_background_dim = 0.45;	// ok for 5V version 1m 144
 //float rgb_background_dim = 0.1;		// TEST: for "12V" version 5m 300	DADA placeholder
 
-void set_rgb_led_background(int pulse) {
+void set_rgb_led_background(int pulse) {	// DADA
   if(PULSES.pulses[pulse].flags & HAS_RGB_LEDs) {
     strand_t * strand_p = strands[PULSES.pulses[pulse].rgb_string_idx];
 
