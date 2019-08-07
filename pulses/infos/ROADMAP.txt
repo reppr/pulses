@@ -1,0 +1,121 @@
+ Roadmap for "Living Room Festival 2019"
+*****************************************
+
+August 24-31, HARDTURMBRACHE, Zürich Switzerland
+
+some first ideas about planing the roadmap:
+
+
+****************************************************************
+keep all the HARDWARE up to date
+  LillyBoy	(ok) 12V led string on ~10V	mechanical construction		battery compartment
+  CHATEAU	(ok) 5V led string on USB	fix led string on instrument	better morse input
+  FitNess	morse, maybe bluetooth broken	no led string yet	test MPU6050
+  butler	 ?
+  chameleon	 ?
+  placeholderTM0 ?
+  etc...	 others under construction
+
+
+CALIBRATE *all* MPU6050
+
+****************************************************************
+solo and ENSEMBLE real live everyday testing
+  including guests playing&dancing with active Y_UI
+
+let people PLAY&DANCE with motion detecting instruments
+  get feedback
+  observe movement patterns
+  configure and connect Y_UI accordingly...
+
+
+
+****************************************************************
+NVS
+  nvs_menu	configure all the instruments in the band
+  HARDWARE	*one* program for all
+		individual configuration based on NVS configuration
+
+
+new IMPLEMENTATION for MOTION UI	Y_UI
+  updated configuration type
+
+
+SECURITY  (maybe some attempts only present in my private sources)
+  secure morse inputs, calibrate before start
+  ESP NOW security
+
+
+ESP NOW NET
+  ACK on important configuration messages
+  message numbering
+  OLED info and Y_UI
+
+
+new INSTRUMENTS
+  SexOpus	6 armed light strings
+  SubBass	to sit on it	maybe
+  magicBall	play&dance with it,	includes Y_UI,	maybe some LEDs,	*no sound*, *no display*
+
+RGB LED
+  slowly FADING when the cycle is over
+  float intensity
+
+  test GAMMA CORRECTION
+
+  hue_slice_cnt diatonic/pentatonic
+    *tuning* should set the note count (like 5 or 7)
+    (or store it in SCALES)
+      then set accoringly, i.e. in units of 3 (3 basic colours)
+	pentatonic: 15	hepta: 21
+	or double   20	       42 ;)	but that's a lot...
+	*TEST that first*			OK TESTED NOW, looks promising :)	now implement
+      what to do with 2, 3, 4?
+
+  background colour memory
+
+
+
+maybe:
+*******
+
+AEOLUS	would be very nice :)	if there is time...
+	much work: MIDI
+		   raspberry 4, power, configuration, automatic startup
+		   aeolus
+		   tuning...
+
+
+
+****************************************************************
+probably AFTER the festival
+****************************************************************
+
+
+add SENSORS reacting on ENVIRONMENT (not only on instrument movement)
+  distance sensors
+  light change
+  high impedance static voltage detector
+  touch value reading (reacting on short range only)
+
+generic DC INPUT
+
+VOLTAGE CONTROLLED UNIVERSAL AUDIO FILTER
+  connect to:
+    distance sensors
+    MPU6050
+    generic DC INPUT
+
+MOVEMENT DETECTOR
+  has an eye on acc/gyro activities in the background
+  can switch Y_UI accordingly
+
+PLL 4046
+SOFTWARE PLL?
+
+add MICRO for sound input
+  tuning
+  sampling
+  PLL 4046
+  feedback
+  guess played scale, tune and try to play along... ;)

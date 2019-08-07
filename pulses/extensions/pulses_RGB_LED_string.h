@@ -15,9 +15,8 @@
 
 
 typedef struct rgb_string_config_t {
-  short version = 1;
   //short hue_slice_cnt = 8;	// just a usable default	// TODO: UI
-  short hue_slice_cnt = 12;	// just another usable default	// TODO: UI
+  short hue_slice_cnt = 12;	// just another usable default	// TODO: UI	DADA
 
 //float saturation_start_value = 0.12;
 //float saturation_start_value = 0.3;
@@ -31,8 +30,10 @@ typedef struct rgb_string_config_t {
 
   uint8_t pixel_cnt=150;
   uint8_t rgb_led_string_intensity = DEFAULT_LED_STRING_INTENSITY;
+  uint8_t version = 0;	// 0 means currently under development
 
   bool clear_rgb_background_on_ending = true;	// TODO: ################
+
 } rgb_string_config_t;
 
 rgb_string_config_t RGBstringConf;

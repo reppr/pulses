@@ -144,9 +144,9 @@ magical_conf_t MagicConf;
 
 
 typedef struct ui_conf_t {
-  uint8_t version = 1;
+  uint8_t version = 0;	// 0 means currently under development
   // voices=0;	// DADA: include voices?	maybe not?
-  // TODO: include selection ???
+  // TODO: include selection ???	I think YES	DADA
 
   bool show_cycle_pattern=false;
   bool show_cycle_pattern_intervals=false;
@@ -321,7 +321,7 @@ void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditional
   case OFF:
     MusicBoxState_name = F("OFF");
 
-#if defined USE_RGB_LED_STRIP
+#if defined USE_RGB_LED_STRIP	// TODO: more flexibility, like fading	DADA
     digitalLeds_resetPixels(&strands[0], 1);
 #endif
 
@@ -1154,7 +1154,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
     MENU.ln();
   }
 
-  delay(3200); // aesthetics
+  delay(3200); // aesthetics	DADA
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN && defined BATTERY_LEVEL_CONTROL_PIN
   MENU.out(F("peripheral POWER OFF "));
@@ -1441,6 +1441,7 @@ void remove_all_primary_but_butlers() {
   for(int pulse=0; pulse<PL_MAX; pulse++) {
     if(pulse != musicBox_butler_i && pulse != cycle_monitor_i)	// do *not* kill the butlers!
       if(PULSES.pulses[pulse].flags && PULSES.pulses[pulse].groups & g_PRIMARY) {
+	// DADA USE_RGB_LED_STRIP
 	PULSES.init_pulse(pulse);
 
 	if(MENU.verbosity >= VERBOSITY_SOME) {

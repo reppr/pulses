@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION		HARMONICAL v.031
+#define PROGRAM_VERSION		HARMONICAL v.032
 /*				0123456789abcdef   */
 
 /* **************************************************************** */
@@ -153,8 +153,6 @@ typedef struct musicBox_conf_t {
 
   short preset=0;
 
-  unsigned short version = 1;
-
   unsigned short cycle_slices = 540;	// set slice_tick_period accordingly
   short lowest_primary=ILLEGAL;		// TAKE CARE when casting to int
   short highest_primary=ILLEGAL;	// TAKE CARE when casting to int
@@ -185,6 +183,8 @@ typedef struct musicBox_conf_t {
     12 g#|ab
     13 u		/ harmonical time unit
   */
+
+  uint8_t version = 0;	// 0 means currently under development
 
 } musicBox_conf_t;
 

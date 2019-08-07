@@ -243,3 +243,5 @@ ui_conf_t TODO: include selection ???
 slowly fade rgb leds after ending
 
 // TODO: stress configuration struct stress_conf_t
+
+see also: ROADMAP.txt
