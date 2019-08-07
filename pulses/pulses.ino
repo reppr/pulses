@@ -110,7 +110,7 @@ NullBuffer null_buffer;
 
 #endif
 
-Menu MENU(CB_SIZE, 6, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
+Menu MENU(CB_SIZE, 7, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
 
 
 /* **************** Pulses **************** */
@@ -845,7 +845,7 @@ int8_t musicBox_page=ILLEGAL;	// NOTE: musicBox_page is not used
 
 
 // declaring these, even if they are not used, makes compiling easier ;)
-// TODO: stress configuration struct conf_stress_t
+// TODO: stress configuration struct stress_conf_t	// DADA
 unsigned int stress_emergency=4096*6;	// magical musicBox test	TODO: fine tune, maybe UI
 unsigned int stress_event_level=1024;	// continue TESTING:  TODO: fine tune, maybe UI
 int stress_event_cnt=0;			// counting stress_event_level events
@@ -864,6 +864,10 @@ uint8_t relaxmax=4;			// up to how many relax() in one todo chain
 
 #if defined USE_SYSTEM_MENU
   #include "system_menu.h"
+#endif
+
+#if defined USE_NVS_MENU
+  #include "nvs_menu.h"
 #endif
 
 #if defined ESP32
@@ -1213,12 +1217,17 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
   #endif
 
   #if defined  USE_BLUETOOTH_SERIAL_MENU	// hi jacking USE_BLUETOOTH_SERIAL_MENU
-    MENU.add_page("Bluetooth", 'B', &bluetooth_menu_display, &bluetooth_menu_reaction, 'P');
+    MENU.add_page("Bluetooth", 'B', &bluetooth_menu_display, &bluetooth_menu_reaction, 'M');
   #endif
 
   #if defined USE_SYSTEM_MENU
     MENU.add_page("System", 'S', &system_menu_display, &system_menu_reaction, 'P');
   #endif
+
+  #if defined USE_NVS_MENU
+    MENU.add_page("NVS", 'N', &nvs_menu_display, &nvs_menu_reaction, 'M');
+  #endif
+
 
   // display menu at startup, but not in music box
   #if ! defined HARMONICAL_MUSIC_BOX

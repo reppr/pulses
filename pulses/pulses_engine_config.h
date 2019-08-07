@@ -41,4 +41,5 @@
 
 #if defined ESP32
   #define USE_NVS		// always used on ESP32
+  #define USE_NVS_MENU		// to set up all the instruments...
 #endif
