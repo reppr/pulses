@@ -34,7 +34,7 @@ let people PLAY&DANCE with motion detecting instruments
 NVS
   nvs_menu	configure all the instruments in the band
   HARDWARE	*one* program for all
-		individual configuration based on NVS configuration
+		individual configurations based on NVS configuration
 
 
 new IMPLEMENTATION for MOTION UI	Y_UI
@@ -73,7 +73,7 @@ RGB LED
 	*TEST that first*	OK TESTED NOW, looks promising :)	// OK implemented, nice results :)
       what to do with 2, 3, 4?						// OK needs TESTING
 
-  background colour memory
+  background colour memory	implemented BG buffer			// OK test&trimm
 
 
 

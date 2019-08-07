@@ -3427,12 +3427,12 @@ bool musicBox_reaction(char token) {
       MENU.drop_input_token();
       input_value = MENU.numeric_input(0);
       if (input_value > 0) {
-	rgb_background_dim = 1.0 / ((float) input_value);
+	RGBstringConf.rgb_background_dim = 1.0 / ((float) input_value);
       }
 
       if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
 	MENU.out(F("background dim "));
-	MENU.outln(rgb_background_dim);
+	MENU.outln(RGBstringConf.rgb_background_dim);
       }
       break;
 

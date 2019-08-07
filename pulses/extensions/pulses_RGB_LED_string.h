@@ -13,6 +13,11 @@
   #define DEFAULT_LED_STRING_INTENSITY	48	// 72 on 'placeholder'	DADA
 #endif
 
+enum background_algorithms {
+  bgDIM = 1,	// dim by rgb_background_dim
+  bgHISTORY_i,	// dim by rgb_background_dim, mix with (last bg * rgb_background_history_mix)	first INTEGER version
+  bgHISTORY_f,	// looks like we will need that...
+};
 
 typedef struct rgb_string_config_t {
 //float saturation_start_value = 0.12;
@@ -22,13 +27,20 @@ typedef struct rgb_string_config_t {
 
   float saturation_change_factor = 1.004;	// TODO: UI
   float saturation_reset_value = 0.35;
+  //float rgb_background_dim = 0.2;	// just a default, please change with voltage
+  //float rgb_background_dim = 0.45;	// ok for 5V version 1m 144
+  float rgb_background_dim = 0.1;	// TEST: for "12V" version 5m 300
+  float rgb_background_history_mix = 0.66;	// how much history included in bg color
 
   float BlueHack_factor = 2.0;	// HACK: increase blueness
 
-  uint8_t pixel_cnt=150;
-  uint8_t rgb_led_string_intensity = DEFAULT_LED_STRING_INTENSITY;
+  uint8_t pixel_cnt=150;	// too much does not harm too much (?)
+  uint8_t rgb_led_string_intensity = DEFAULT_LED_STRING_INTENSITY;	// TODO: make that float	DADA
   uint8_t hue_slice_cnt = 15;	// just a usable default  see: set_automagic_hue_slices
   uint8_t voltage_type = 12;	// TODO: use ################	DADA
+  //uint8_t set_background_algorithm = bgDIM;
+  uint8_t set_background_algorithm = bgHISTORY_i;
+
   uint8_t version = 0;	// 0 means currently under development
 
   bool clear_rgb_background_on_ending = true;	// TODO: ################
@@ -108,6 +120,15 @@ void inspect_LED_pixel(pixelColor_t pixel) {
   MENU.out(pixel.g);
   MENU.out(F("\tb = "));
   MENU.outln(pixel.b);
+}
+
+
+// background0[]  buffer for background colour history
+pixelColor_t background0[RGB_STRING_LED_CNT] = {0};	// keeps last used background colour, dimmed
+
+void clear_background_buffer0() {
+  for(int i=0; i < RGB_STRING_LED_CNT; i++)
+    background0[i].r = background0[i].g = background0[i].b = 0;
 }
 
 // see: https://de.wikipedia.org/wiki/HSV-Farbraum
@@ -380,10 +401,8 @@ void set_pulse_LED_pixel_from_counter(int pulse) {
 
 void rgb_led_reset_to_default() {	// reset rgb led strip management to default conditions
   RGBstringConf.saturation = RGBstringConf.saturation_start_value;
+  clear_background_buffer0();
 }
-
-float rgb_background_dim = 0.45;	// ok for 5V version 1m 144
-//float rgb_background_dim = 0.1;		// TEST: for "12V" version 5m 300	DADA placeholder
 
 void set_rgb_led_background(int pulse) {	// DADA
   if(PULSES.pulses[pulse].flags & HAS_RGB_LEDs) {
@@ -397,35 +416,83 @@ void set_rgb_led_background(int pulse) {	// DADA
 //    HSV_2_RGB_degree(&pixel, (H * 360.0), saturation, V);
 //    strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx] = pixel;
 
-    bool clear=false;
+//    pixelColor_t* pixel_p = strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx];	DADA
+
+    switch (RGBstringConf.set_background_algorithm) {
+    case 1: // DIM
+      {
+	bool clear=false;
 #if defined HARMONICAL_MUSIC_BOX && defined USE_RGB_LED_STRIP
-    // bool clear_rgb_background_on_ending	// TODO: maybe	// DADA rgb_string_config
-    // extern bool musicbox_is_ending();
-    // DADA
-    // clear = musicbox_is_ending();
+	// bool clear_rgb_background_on_ending	// TODO: maybe	// DADA rgb_string_config
+	// extern bool musicbox_is_ending();
+	// DADA
+	// clear = musicbox_is_ending();
 #endif
+	float x = strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].r;
+	x *= RGBstringConf.rgb_background_dim;
+	strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].r = (x + 0.5);
+	if(clear)
+	  strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].r = 0;
 
-    float x = strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].r;
-    x *= rgb_background_dim;
-    strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].r = (x + 0.5);
-    if(clear)
-      strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].r = 0;
+	x = strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].g;
+	x *= RGBstringConf.rgb_background_dim;
+	strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].g = (x + 0.5);
+	if(clear)
+	  strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].g = 0;
 
-    x = strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].g;
-    x *= rgb_background_dim;
-    strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].g = (x + 0.5);
-    if(clear)
-      strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].g = 0;
+	x = strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].b;
+	x *= RGBstringConf.rgb_background_dim;
+	strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].b = (x + 0.5);
+	if(clear)
+	  strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].b = 0;
 
-    x = strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].b;
-    x *= rgb_background_dim;
-    strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].b = (x + 0.5);
-    if(clear)
-      strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx].b = 0;
+	update_RGB_LED_string=true;		// new buffer content to be displayed
+      }
+      break;
 
-    update_RGB_LED_string=true;		// new buffer content to be displayed
-  } else
-    MENU.error_ln(F("no RGB LED"));
+    case 2: // HISTORY
+      {
+	int i = PULSES.pulses[pulse].rgb_pixel_idx;
+	// start with background history
+	float R = background0[i].r;
+	float G = background0[i].g;
+	float B = background0[i].b;
+	// history share scaling
+	R *= RGBstringConf.rgb_background_history_mix;
+	G *= RGBstringConf.rgb_background_history_mix;
+	B *= RGBstringConf.rgb_background_history_mix;
+
+	// new (float) FG colors
+	float fg_R = strand_p->pixels[i].r;
+	float fg_G = strand_p->pixels[i].g;
+	float fg_B = strand_p->pixels[i].b;
+	// dim
+	fg_R *= RGBstringConf.rgb_background_dim;
+	fg_G *= RGBstringConf.rgb_background_dim;
+	fg_B *= RGBstringConf.rgb_background_dim;
+	// new color share
+	fg_R *= (1 - RGBstringConf.rgb_background_history_mix);
+	fg_G *= (1 - RGBstringConf.rgb_background_history_mix);
+	fg_B *= (1 - RGBstringConf.rgb_background_history_mix);
+
+	// sum up
+	R += fg_R;
+	G += fg_G;
+	B += fg_B;
+	// set and preserve history
+	strand_p->pixels[i].r = background0[i].r = (R + 0.5);
+	strand_p->pixels[i].g = background0[i].g = (G + 0.5);
+	strand_p->pixels[i].b = background0[i].b = (B + 0.5);
+
+	update_RGB_LED_string=true;		// new buffer content to be displayed
+      }
+      break;
+
+    default:
+      MENU.error_ln(F("set_background_algorithm"));
+    } // switch (RGBstringConf.set_background_algorithm)
+  } /* HAS_RGB_LEDs */ else
+    MENU.error_ln(F("no RGB LEDs"));
 }
 
 #define PULSES_RGB_LED_STRING_H
