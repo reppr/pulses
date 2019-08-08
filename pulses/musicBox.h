@@ -2480,7 +2480,11 @@ void relax() {		// kill highest secondary pulse
 
 void magical_stress_release() {		// special stress release for magical music box
   if (voices) {	// normal case, I have never seen exceptions
-    PULSES.init_pulse(--voices);		// *remove* topmost voice
+    int topmost = --voices;
+#if defined USE_RGB_LED_STRIP
+    clear_RGB_string_pixel(topmost);
+#endif
+    PULSES.init_pulse(topmost);		// *remove* topmost voice
     PULSES.select_n(voices);
     MENU.out(F("magical_stress_release() V"));
     MENU.outln(voices);
