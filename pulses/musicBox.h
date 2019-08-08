@@ -3235,7 +3235,7 @@ bool musicBox_reaction(char token) {
 	case 'D':
 	  musicBox_when_done=&deep_sleep;		// "EFD" deep_sleep()
 	  break;
-	case 'L':	// TODO: free for LED string ################
+	case 'L':
 	  musicBox_when_done=&light_sleep;	// "EFL" light_sleep()
 	  break;
 	case 'H':
@@ -3486,6 +3486,16 @@ bool musicBox_reaction(char token) {
       if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
 	MENU.out(F("hue slices "));
 	MENU.outln(RGBstringConf.hue_slice_cnt);
+      }
+      break;
+
+    case 'V':	// 'LV' voltage_type
+      MENU.drop_input_token();
+      RGBstringConf.voltage_type = MENU.numeric_input(RGBstringConf.voltage_type);
+
+      if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
+	MENU.out(F("voltage_type "));
+	MENU.outln(RGBstringConf.voltage_type);
       }
       break;
 

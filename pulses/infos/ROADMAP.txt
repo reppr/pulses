@@ -57,7 +57,9 @@ new INSTRUMENTS
   SubBass	to sit on it	maybe
   magicBall	play&dance with it,	includes Y_UI,	maybe some LEDs,	*no sound*, *no display*
 
+
 RGB LED
+  UI to new RGBstringConf.voltage_type on 'LV<n>'			// OK
   automatic switching for 5V/12V strings based on nvs
 
   slowly FADING when the cycle is over

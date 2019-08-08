@@ -38,8 +38,8 @@ typedef struct rgb_string_config_t {
   uint8_t rgb_led_string_intensity = DEFAULT_LED_STRING_INTENSITY;	// TODO: make that float	DADA
   uint8_t hue_slice_cnt = 15;	// just a usable default  see: set_automagic_hue_slices
   uint8_t voltage_type = 12;	// TODO: use ################	DADA
-  //uint8_t set_background_algorithm = bgDIM;
-  uint8_t set_background_algorithm = bgHISTORY_i;
+  uint8_t set_background_algorithm = bgDIM;
+  //uint8_t set_background_algorithm = bgHISTORY_i;	// TODO: DADA broken
 
   uint8_t version = 0;	// 0 means currently under development
 
@@ -50,6 +50,14 @@ typedef struct rgb_string_config_t {
 
 rgb_string_config_t RGBstringConf;
 
+
+void set_rgb_string_voltage_type(int voltage) {
+  RGBstringConf.voltage_type = voltage;
+  if(voltage < 6)
+    RGBstringConf.rgb_background_dim = 0.45;	// ok for 5V version (1m 144)
+  else	// 6V and more "12V" type
+    RGBstringConf.rgb_background_dim = 0.1;	// TEST: for "12V" version 5m 300
+}
 
 #include "FOREIGN/ESP32-Digital-RGB-LED-Drivers/src/esp32_digital_led_lib.h"
 #include "FOREIGN/ESP32-Digital-RGB-LED-Drivers/src/esp32_digital_led_lib.cpp"
@@ -404,20 +412,13 @@ void rgb_led_reset_to_default() {	// reset rgb led strip management to default c
   clear_background_buffer0();
 }
 
-#define DEBUG_RGB_STRING_BACKGROUND
+
+//#define DEBUG_RGB_STRING_BACKGROUND
 void set_rgb_led_background(int pulse) {	// DADA
   if(PULSES.pulses[pulse].flags & HAS_RGB_LEDs) {
     strand_t * strand_p = strands[PULSES.pulses[pulse].rgb_string_idx];
 
-//    pixelColor_t pixel;
-//    float H, S, V;
-//    H = 0.0;		// TODO: this version just switches OFF
-//    S = 0.0;
-//    V = 0.0;
-//    HSV_2_RGB_degree(&pixel, (H * 360.0), saturation, V);
-//    strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx] = pixel;
-
-//    pixelColor_t* pixel_p = strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx];	DADA
+//  pixelColor_t* pixel_p = strand_p->pixels[PULSES.pulses[pulse].rgb_pixel_idx];	DADA
 
     switch (RGBstringConf.set_background_algorithm) {
     case 1: // DIM
