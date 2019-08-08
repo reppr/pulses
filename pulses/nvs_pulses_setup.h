@@ -3,9 +3,6 @@
 */
 
 
-// char * coded_NAME[]=NULL;
-// char * coded_NAME[] = {"Rumpelstilzchen"};	// 15 chars
-
 #ifndef STRINGIFY2
   // see:  https://stackoverflow.com/questions/20631922/expand-macro-inside-string-literal
   #define STRINGIFY2(X) #X

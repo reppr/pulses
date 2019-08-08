@@ -50,6 +50,7 @@ using namespace std;	// ESP8266 needs that
   #include <esp_err.h>
 #endif
 
+
 /* **************************************************************** */
 // configuration sequence:
 #include "pulses_engine_config.h"	// pulses engine configuration file, do not change
@@ -121,11 +122,92 @@ Menu MENU(CB_SIZE, 7, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
 #include "pulses_boards.h"
 
 Pulses PULSES(PL_MAX, &MENU);
+// MENU and PULSES are defined now
 
 
-// MENU is defined now
+/* **************************************************************** */
+// some HARDWARE must be known early	*can be managed by nvs*
+typedef struct pulses_hardware_conf_t {
+  // MPU6050
+  int16_t accGyro_offsets[6] = {0};	// aX, aY, aZ, gX, gY, gZ offsets
+  uint8_t mpu6050_addr=0;		// flag and i2c addr
+
+  // gpio
+  uint8_t gpio_pins_cnt=0;			// used GPIO click pins
+  gpio_pin_t gpio_pins[16]={ILLEGAL};
+
+  // dac
+  uint8_t DAC1_pin=0;	// flag 0 or 25	// 0==flag or pin
+  uint8_t DAC2_pin=0;	// flag 0 or 26	// 0==flag or pin
+
+  // trigger
+  uint8_t musicbox_trigger_pin=ILLEGAL;
+
+  // battery and peripheral power
+  uint8_t battery_level_control_pin=ILLEGAL;
+  uint8_t peripheral_power_switch_pin=ILLEGAL;
+
+  // morse
+  uint8_t morse_touch_input_pin=ILLEGAL;
+  uint8_t morse_gpio_input_pin=ILLEGAL;
+  uint8_t morse_output_pin=ILLEGAL;
+
+  // bluetooth
+  uint8_t bluetooth_enable_pin=ILLEGAL;
+
+  // OLED
+  // oled_type
+  // pins???
+
+  // RGB LED strings
+  uint8_t rgb_strings=0;	// flag and string count
+  uint8_t rgb_pin[8]={0};
+  uint8_t rgb_led_cnt[8]={0};
+  uint8_t rgb_led_voltage_type=5;
+
+  // RTC
+  // type
+  // rtc flag&addr
+  // DS1307_I2C_ADDRESS 0x68
+  // DS3231
+
+  // MCP23017.h
+  // reserve space
+
+  // MIDI?
+  uint8_t MIDI_in_pin=ILLEGAL;		// reserved, not implemented yet
+  uint8_t MIDI_out_pin=ILLEGAL;		// reserved, not implemented yet
+
+  // other pins
+  uint8_t magical_fart_output_pin=ILLEGAL;	// who knows, maybe?
+  uint8_t magical_sense_pin=ILLEGAL;		// maybe?	i.e. see: magical_fart
+
+  uint8_t tone_pin=ILLEGAL;			// used in very old code, could be recycled?
+
+  // 8 bytes RESERVED for future use, forward compatibility
+  uint8_t reserved0=ILLEGAL;
+  uint8_t reserved1=ILLEGAL;
+  uint8_t reserved2=ILLEGAL;
+  uint8_t reserved3=ILLEGAL;
+  uint8_t reserved4=ILLEGAL;
+  uint8_t reserved5=ILLEGAL;
+  uint8_t reserved6=ILLEGAL;
+  uint8_t reserved7=ILLEGAL;
+
+  // version
+  uint8_t version = 0;		// 0 means in development
+
+  // nvs read flags
+  bool read_from_nvs=false;	// set if *anything* was read	do we need|want that?
+  bool gpios_from_nvs=false;
+
+} pulses_hardware_conf_t;
+
+pulses_hardware_conf_t HARDWARE_Conf;	// hardware of this instrument
+
+
 #if defined USE_ESP_NOW
-  #include "esp_now_pulses.h"
+  #include "esp_now_pulses.h"	// needs pulses_hardware_conf_t
 #endif
 
 
@@ -134,12 +216,10 @@ Pulses PULSES(PL_MAX, &MENU);
 
 Harmonical HARMONICAL(3628800uL);	// old style for a first test
 
-#include "iCODE.h"			// icode programs
-#include "jiffles.h"			// old style jiffles (could also be used as icode)
-#include "int_edit.h"			// displaying and editing unsigned int arrays
-#include "array_descriptors.h"		// make data arrays accessible for the menu, give names to the data arrays
+// MENU, PULSES and HARMONICAL all declared now
 
 
+/* **************************************************************** */
 typedef struct musicBox_conf_t {
   unsigned int* scale=NULL;
   unsigned int* jiffle=NULL;
@@ -189,6 +269,20 @@ typedef struct musicBox_conf_t {
 } musicBox_conf_t;
 
 musicBox_conf_t musicBoxConf;
+
+
+/* **************************************************************** */
+#include "iCODE.h"			// icode programs
+#include "jiffles.h"			// old style jiffles (could also be used as icode)
+#include "int_edit.h"			// displaying and editing unsigned int arrays
+#include "array_descriptors.h"		// make data arrays accessible for the menu, give names to the data arrays
+
+
+/* ESP32 NVS	*/
+#if defined USE_NVS		// always used on ESP32
+  #include "nvs_pulses.h"
+#endif
+
 
 #if defined USE_MONOCHROME_DISPLAY
   #include <U8x8lib.h>
@@ -928,9 +1022,75 @@ void show_program_version() {	// program version on menu output *and* OLED
 #endif
 }
 
+void setup_initial_HARDWARE_conf() {
+#if defined USE_MPU6050
+  HARDWARE_Conf.mpu6050_addr = 0x68;
+#endif
+
+  HARDWARE_Conf.gpio_pins_cnt = GPIO_PINS;
+  if (GPIO_PINS) {
+    for(int i=0; i<GPIO_PINS; i++) {
+      extern gpio_pin_t gpio_pins[GPIO_PINS];
+      HARDWARE_Conf.gpio_pins[i] = gpio_pins[i];
+    }
+  }
+
+#if defined  USE_DACs
+  HARDWARE_Conf.DAC1_pin = 25;
+  #if (USE_DACs > 1)
+  HARDWARE_Conf.DAC2_pin = 26;
+  #endif
+#endif
+
+#if defined MUSICBOX_TRIGGER_PIN
+  HARDWARE_Conf.musicbox_trigger_pin=MUSICBOX_TRIGGER_PIN;
+#endif
+
+#if defined BATTERY_LEVEL_CONTROL_PIN
+  HARDWARE_Conf.battery_level_control_pin=BATTERY_LEVEL_CONTROL_PIN;
+#endif
+
+#if defined PERIPHERAL_POWER_SWITCH_PIN
+  HARDWARE_Conf.peripheral_power_switch_pin = PERIPHERAL_POWER_SWITCH_PIN;
+#endif
+
+#if defined MORSE_TOUCH_INPUT_PIN
+  HARDWARE_Conf.morse_touch_input_pin = MORSE_TOUCH_INPUT_PIN;
+#endif
+
+#if defined MORSE_GPIO_INPUT_PIN
+  HARDWARE_Conf.morse_gpio_input_pin = MORSE_GPIO_INPUT_PIN;
+#endif
+
+#if defined MORSE_OUTPUT_PIN
+  HARDWARE_Conf.morse_output_pin = MORSE_OUTPUT_PIN;
+#endif
+
+#if defined BLUETOOTH_ENABLE_PIN
+  HARDWARE_Conf.bluetooth_enable_pin = BLUETOOTH_ENABLE_PIN;
+#endif
+
+#if defined USE_MONOCHROME_DISPLAY
+  // OLED
+#endif
+
+#if defined USE_RGB_LED_STRIP
+  HARDWARE_Conf.rgb_strings = 1;	// I use only one
+  HARDWARE_Conf.rgb_pin[0] = RGB_LED_STRIP_DATA_PIN;
+  HARDWARE_Conf.rgb_led_cnt[0] = RGB_STRING_LED_CNT;
+  #if defined RGB_LED_STRING_VOLTAGE_TYPE
+    HARDWARE_Conf.rgb_led_voltage_type = RGB_LED_STRING_VOLTAGE_TYPE;
+  #endif
+#endif
+
+    // RTC others ... ################################################################
+}
+
+
 int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very first one
 
 void setup() {
+  setup_initial_HARDWARE_conf();
 #if defined USE_RGB_LED_STRIP
   pulses_RGB_LED_string_init();	// DO THAT EARLY to switch led string off after booting
 #endif

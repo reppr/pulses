@@ -4,6 +4,8 @@
   see: https://github.com/olikraus/u8g2/wiki/u8x8reference
 */
 
+// DADA	TODO: monochrome_conf_t
+
 // TODO: void u8x8_SetPowerSave(u8x8_t *u8x8, uint8_t is_enable);
 
 #ifndef MONOCHROME_DISPLAY_H

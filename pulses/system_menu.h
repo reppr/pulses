@@ -3,6 +3,9 @@
 */
 
 void display_type_sizes() {
+  MENU.out(F("pulses_hardware_conf_t\t"));
+  MENU.outln(sizeof(pulses_hardware_conf_t));
+
   MENU.out(F("musicBox_conf_t\t"));
   MENU.outln(sizeof(musicBox_conf_t));
 

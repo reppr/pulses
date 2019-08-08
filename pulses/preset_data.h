@@ -1527,7 +1527,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.name = F("Baldrian");
     //comment: entspannig pur
     //comment: try longer cycles ;)
-    //# favorite
+    //# FAVORITE
     //# shortIsOk
     //# motives
     //# melodies

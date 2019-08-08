@@ -23,11 +23,6 @@
       #endif
     #endif
 
-    /* ESP32 NVS	*/
-    #if defined USE_NVS		// always used on ESP32
-      #include "nvs_pulses.h"
-    #endif
-
     /* ESP32 DAC
        #define USE_DACs in your configuration files to use ESP32 DAC output	*/
     #define BOARD_has_DACs		2

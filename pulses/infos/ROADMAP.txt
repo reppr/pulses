@@ -18,6 +18,8 @@ keep all the HARDWARE up to date
 
 
 CALIBRATE *all* MPU6050
+add FRESNEL LENSES to all MONOCHROME displays
+
 
 ****************************************************************
 solo and ENSEMBLE real live everyday testing
@@ -31,6 +33,13 @@ let people PLAY&DANCE with motion detecting instruments
 
 
 ****************************************************************
+pitch TUNING Y_UI for jam sessions
+
+CHEAT SHEETS:
+  special morse codes
+  presets
+
+
 NVS
   nvs_menu	configure all the instruments in the band	(ok)	add functionality
   HARDWARE	*one* program for all
@@ -66,7 +75,7 @@ RGB LED
   slowly FADING when the cycle is over
   float intensity							// OK
 
-  test GAMMA CORRECTION
+  test GAMMA CORRECTION							// delay that
 
   hue_slice_cnt diatonic/pentatonic
     *tuning* should set the note count (like 5 or 7)			// OK
@@ -77,6 +86,14 @@ RGB LED
       what to do with 2, 3, 4?						// OK needs TESTING
 
   background colour memory	implemented BG buffer			// OK test&trimm
+
+
+basic loop configuration runtime UI
+      user mode, idle
+      idle (==user?)
+      random preset mode
+      triggered
+      magical random mode
 
 
 

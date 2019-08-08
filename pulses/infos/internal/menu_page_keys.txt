@@ -1,15 +1,21 @@
 P	Pulses
 
-H	Hardware Softboard	==> 'B' (BreadBord) would be nice to free 'H' for Harmonical...
+H	Hardware Softboard	==> free 'H' for Harmonical?
 
 I	Inputs
 
 Y	WiFi			==> W
 
-M	Magical Musicbox	new, planed
+B	Bluetooth
 
-S	System			new, planed:	nvs, time, internal switches and settings,
-						monitoring, maybe esp_now(),
+M	Magical Musicbox	new
+
+N	NVS			new
+
+S	System			new, planed:	time,
+						internal switches and settings,
+						monitoring,
+						maybe esp_now()
 
 C	Compiler Configuration	planed:  sizeof(), RAM, some #define info
 
