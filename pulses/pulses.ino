@@ -1524,6 +1524,13 @@ void loop() {	// ARDUINO
     }
 */
 #endif	// DO_STRESS_MANAGMENT
+
+#if defined USE_RGB_LED_STRIP && defined HIGH_PRIORITY_RGB_LED_UPDATE
+    if(update_RGB_LED_string) {
+      digitalLeds_drawPixels(strands, 1);
+      update_RGB_LED_string = false;
+    }
+#endif
   }
 
 #if defined STRESS_MONITOR_LEVEL

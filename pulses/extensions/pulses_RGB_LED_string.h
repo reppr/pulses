@@ -28,9 +28,8 @@ typedef struct rgb_string_config_t {
 
   float saturation_change_factor = 1.004;	// TODO: UI
   float saturation_reset_value = 0.35;
-  //float rgb_background_dim = 0.2;	// just a default, please change with voltage
-  //float rgb_background_dim = 0.45;	// ok for 5V version 1m 144
-  float rgb_background_dim = 0.1;	// TEST: for "12V" version 5m 300
+  float rgb_background_dim = 0.45;	// ok for 5V version 1m 144
+  //float rgb_background_dim = 0.1;	// TEST: for "12V" version 5m 300
   float rgb_background_history_mix = 0.66;	// how much history included in bg color
 
   float BlueHack_factor = 2.0;	// HACK: increase blueness
