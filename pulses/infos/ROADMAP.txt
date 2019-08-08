@@ -32,13 +32,13 @@ let people PLAY&DANCE with motion detecting instruments
 
 ****************************************************************
 NVS
-  nvs_menu	configure all the instruments in the band
+  nvs_menu	configure all the instruments in the band	(ok)	add functionality
   HARDWARE	*one* program for all
 		individual configurations based on NVS configuration
 
 
 new IMPLEMENTATION for MOTION UI	Y_UI
-  updated configuration type
+  update configuration type
 
 
 SECURITY  (maybe some attempts only present in my private sources)
@@ -54,6 +54,7 @@ ESP NOW NET
 
 new INSTRUMENTS
   SexOpus	6 armed light strings
+  Octopus	maybe 8? (if possible)
   SubBass	to sit on it	maybe
   magicBall	play&dance with it,	includes Y_UI,	maybe some LEDs,	*no sound*, *no display*
 
@@ -63,7 +64,7 @@ RGB LED
   automatic switching for 5V/12V strings based on nvs
 
   slowly FADING when the cycle is over
-  float intensity
+  float intensity							// OK
 
   test GAMMA CORRECTION
 

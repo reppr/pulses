@@ -22,6 +22,7 @@ enum background_algorithms {
 typedef struct rgb_string_config_t {
 //float saturation_start_value = 0.12;
 //float saturation_start_value = 0.3;
+  float rgb_led_string_intensity = DEFAULT_LED_STRING_INTENSITY;
   float saturation_start_value = 0.2;	// TODO: test&trimm default value ################	UI
   float saturation = saturation_start_value;
 
@@ -35,7 +36,6 @@ typedef struct rgb_string_config_t {
   float BlueHack_factor = 2.0;	// HACK: increase blueness
 
   uint8_t pixel_cnt=150;	// too much does not harm too much (?)
-  uint8_t rgb_led_string_intensity = DEFAULT_LED_STRING_INTENSITY;	// TODO: make that float	DADA
   uint8_t hue_slice_cnt = 15;	// just a usable default  see: set_automagic_hue_slices
   uint8_t voltage_type = 12;	// TODO: use ################	DADA
   uint8_t set_background_algorithm = bgDIM;
@@ -202,7 +202,7 @@ void HSV_2_RGB_degree(pixelColor_t* pixel, float H, float S, float V) {	// TODO:
   #endif
 #endif
 
-  uint8_t rgb_led_string_intensity = RGBstringConf.rgb_led_string_intensity;
+  float rgb_led_string_intensity = RGBstringConf.rgb_led_string_intensity;
   switch(h_i) {
   case 0:
   case 6:
@@ -388,7 +388,7 @@ void set_pulse_LED_pixel_from_counter(int pulse) {
   }
 
   H = (float) (PULSES.pulses[pulse].counter % RGBstringConf.hue_slice_cnt) / (float) RGBstringConf.hue_slice_cnt;
-  V = (float) RGBstringConf.rgb_led_string_intensity / (float) 255;
+  V = RGBstringConf.rgb_led_string_intensity / (float) 255;
 
   strand_t * strand_p = strands[0];
   int pix_i = PULSE_2_RGB_LED_STRING;		// TODO: use pulse intenal data
