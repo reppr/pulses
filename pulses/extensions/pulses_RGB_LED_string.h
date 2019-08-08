@@ -404,6 +404,7 @@ void rgb_led_reset_to_default() {	// reset rgb led strip management to default c
   clear_background_buffer0();
 }
 
+#define DEBUG_RGB_STRING_BACKGROUND
 void set_rgb_led_background(int pulse) {	// DADA
   if(PULSES.pulses[pulse].flags & HAS_RGB_LEDs) {
     strand_t * strand_p = strands[PULSES.pulses[pulse].rgb_string_idx];
@@ -457,23 +458,90 @@ void set_rgb_led_background(int pulse) {	// DADA
 	float R = background0[i].r;
 	float G = background0[i].g;
 	float B = background0[i].b;
+
+#if defined DEBUG_RGB_STRING_BACKGROUND
+	MENU.out(F("bg pixel  "));
+	MENU.outln(i);
+
+	MENU.out(F("last BG \t"));
+	MENU.out(R);
+	MENU.tab();
+	MENU.out(G);
+	MENU.tab();
+	MENU.out(B);
+	MENU.tab();
+	MENU.out('*');
+	MENU.outln(RGBstringConf.rgb_background_history_mix);
+#endif
+
 	// history share scaling
 	R *= RGBstringConf.rgb_background_history_mix;
 	G *= RGBstringConf.rgb_background_history_mix;
 	B *= RGBstringConf.rgb_background_history_mix;
 
+#if defined DEBUG_RGB_STRING_BACKGROUND
+	MENU.out(F("history share\t"));
+	MENU.out(R);
+	MENU.tab();
+	MENU.out(G);
+	MENU.tab();
+	MENU.out(B);
+	MENU.tab();
+	MENU.outln(F("now get FG"));
+#endif
+
 	// new (float) FG colors
 	float fg_R = strand_p->pixels[i].r;
 	float fg_G = strand_p->pixels[i].g;
 	float fg_B = strand_p->pixels[i].b;
+
+#if defined DEBUG_RGB_STRING_BACKGROUND
+	MENU.out(F("new FG\t\t"));
+	MENU.out(fg_R);
+	MENU.tab();
+	MENU.out(fg_G);
+	MENU.tab();
+	MENU.out(fg_B);
+	MENU.tab();
+	MENU.out('*');
+	MENU.outln(RGBstringConf.rgb_background_dim);
+	//	MENU.outln(1.0 - RGBstringConf.rgb_background_history_mix);
+#endif
+
 	// dim
 	fg_R *= RGBstringConf.rgb_background_dim;
 	fg_G *= RGBstringConf.rgb_background_dim;
 	fg_B *= RGBstringConf.rgb_background_dim;
+
+#if defined DEBUG_RGB_STRING_BACKGROUND
+	MENU.out(F("dimmed fg\t"));
+	MENU.out(fg_R);
+	MENU.tab();
+	MENU.out(fg_G);
+	MENU.tab();
+	MENU.out(fg_B);
+	MENU.tab();
+	MENU.out('*');
+	MENU.outln(1 - RGBstringConf.rgb_background_history_mix);
+	//	MENU.outln(1.0 - RGBstringConf.rgb_background_history_mix);
+#endif
+
 	// new color share
 	fg_R *= (1 - RGBstringConf.rgb_background_history_mix);
 	fg_G *= (1 - RGBstringConf.rgb_background_history_mix);
 	fg_B *= (1 - RGBstringConf.rgb_background_history_mix);
+
+#if defined DEBUG_RGB_STRING_BACKGROUND
+	MENU.out(F("share fg \t"));
+	MENU.out(fg_R);
+	MENU.tab();
+	MENU.out(fg_G);
+	MENU.tab();
+	MENU.out(fg_B);
+	MENU.tab();
+	MENU.outln(F("sum up"));
+	//	MENU.outln(1.0 - RGBstringConf.rgb_background_history_mix);
+#endif
 
 	// sum up
 	R += fg_R;
@@ -483,6 +551,25 @@ void set_rgb_led_background(int pulse) {	// DADA
 	strand_p->pixels[i].r = background0[i].r = (R + 0.5);
 	strand_p->pixels[i].g = background0[i].g = (G + 0.5);
 	strand_p->pixels[i].b = background0[i].b = (B + 0.5);
+
+#if defined DEBUG_RGB_STRING_BACKGROUND
+	MENU.out(F("BG float\t"));
+	MENU.out(R);
+	MENU.tab();
+	MENU.out(G);
+	MENU.tab();
+	MENU.out(B);
+	MENU.tab();
+	MENU.outln(F("as int"));
+
+	MENU.out(F("BACKGOUND\t"));
+	MENU.out(background0[i].r);
+	MENU.tab();
+	MENU.out(background0[i].g);
+	MENU.tab();
+	MENU.outln(background0[i].b);
+	MENU.ln();
+#endif
 
 	update_RGB_LED_string=true;		// new buffer content to be displayed
       }
