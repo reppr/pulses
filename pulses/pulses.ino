@@ -125,7 +125,23 @@ Pulses PULSES(PL_MAX, &MENU);
 // MENU and PULSES are defined now
 
 
+
 /* **************************************************************** */
+enum oled_type {
+  oled_type_off=0,
+  oled_type_heltec,
+  oled_type_LiPO,
+  oled_type_unknown,
+};
+
+enum rtc_types {
+  rtc_type_off=0,
+  rtc_type_DS1307,
+  rtc_type_DS3231,
+  rtc_type_unknown,
+};
+
+
 // some HARDWARE must be known early	*can be managed by nvs*
 typedef struct pulses_hardware_conf_t {
   // MPU6050
@@ -156,23 +172,20 @@ typedef struct pulses_hardware_conf_t {
   uint8_t bluetooth_enable_pin=ILLEGAL;
 
   // OLED
-  // oled_type
-  // pins???
+  uint8_t OLED_type = oled_type_off;
 
   // RGB LED strings
-  uint8_t rgb_strings=0;	// flag and string count
+  uint8_t rgb_strings=0;		// flag and rgb led string count
   uint8_t rgb_pin[8]={0};
   uint8_t rgb_led_cnt[8]={0};
   uint8_t rgb_led_voltage_type=5;
 
   // RTC
-  // type
-  // rtc flag&addr
-  // DS1307_I2C_ADDRESS 0x68
-  // DS3231
+  uint8_t rtc_type = rtc_type_off;	// flag and i2c addr
+  uint8_t rtc_addr=0;			// DS1307_I2C_ADDRESS 0x68	DS3231
 
   // MCP23017.h
-  // reserve space
+  uint8_t mcp23017_addr=0;		// unused, reserve space
 
   // MIDI?
   uint8_t MIDI_in_pin=ILLEGAL;		// reserved, not implemented yet
@@ -1071,7 +1084,11 @@ void setup_initial_HARDWARE_conf() {
 #endif
 
 #if defined USE_MONOCHROME_DISPLAY
-  // OLED
+  #if defined BOARD_HELTEC_OLED
+    HARDWARE_Conf.OLED_type = oled_type_heltec;
+  #elif defined BOARD_OLED_LIPO
+    HARDWARE_Conf.OLED_type = oled_type_LiPO;
+  #endif
 #endif
 
 #if defined USE_RGB_LED_STRIP
@@ -1083,7 +1100,14 @@ void setup_initial_HARDWARE_conf() {
   #endif
 #endif
 
-    // RTC others ... ################################################################
+#if defined USE_RTC_MODULE
+  HARDWARE_Conf.rtc_type = rtc_type_DS1307;
+#endif
+
+  // MIDI		// TODO: implement hard and software
+  // other pins		// TODO: implement
+  // nvs flags		// ?????	TODO: implement
+  // version		// switch(version)
 }
 
 
