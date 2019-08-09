@@ -19,7 +19,9 @@ enum background_algorithms {
   bgHISTORY_f,	// looks like we will need that...
 };
 
+
 typedef struct rgb_string_config_t {
+  uint8_t pixel_cnt=150;	// too much does not harm too much (?)
 //float saturation_start_value = 0.12;
 //float saturation_start_value = 0.3;
   float rgb_led_string_intensity = DEFAULT_LED_STRING_INTENSITY;
@@ -34,7 +36,6 @@ typedef struct rgb_string_config_t {
 
   float BlueHack_factor = 2.0;	// HACK: increase blueness
 
-  uint8_t pixel_cnt=150;	// too much does not harm too much (?)
   uint8_t hue_slice_cnt = 15;	// just a usable default  see: set_automagic_hue_slices
   uint8_t voltage_type = 12;	// TODO: use ################	DADA
   uint8_t set_background_algorithm = bgDIM;

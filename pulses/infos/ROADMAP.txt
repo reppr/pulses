@@ -40,6 +40,11 @@ CHEAT SHEETS:
   presets
 
 
+configuration types
+  include rgb led hw in HARDWARE
+  stress conf
+
+
 NVS
   nvs_menu	configure all the instruments in the band	(ok)	add functionality
   HARDWARE	*one* program for all

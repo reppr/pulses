@@ -3893,13 +3893,14 @@ bool musicBox_reaction(char token) {
 
 #if defined USE_ESP_NOW	// (else: pulses 'D')
   case 'D':		// musicBox 'D'
+    show_hardware_conf(&HARDWARE_Conf);
     //display_peer_ID_list();
     //random_RGB_string(MENU.numeric_input(4));
     extern short steps_in_octave;
     MENU.out(F("steps_in_octave "));
     MENU.outln(steps_in_octave);
 
-    random_HSV_LED_string();
+    // random_HSV_LED_string();
   /*
     {
       int i=0;

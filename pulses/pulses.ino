@@ -172,7 +172,7 @@ typedef struct pulses_hardware_conf_t {
   uint8_t bluetooth_enable_pin=ILLEGAL;
 
   // OLED
-  uint8_t OLED_type = oled_type_off;
+  uint8_t OLED_type = oled_type_off;	// flag and oled_type
 
   // RGB LED strings
   uint8_t rgb_strings=0;		// flag and rgb led string count
@@ -181,7 +181,7 @@ typedef struct pulses_hardware_conf_t {
   uint8_t rgb_led_voltage_type=5;
 
   // RTC
-  uint8_t rtc_type = rtc_type_off;	// flag and i2c addr
+  uint8_t rtc_type = rtc_type_off;	// flag and rtc_type
   uint8_t rtc_addr=0;			// DS1307_I2C_ADDRESS 0x68	DS3231
 
   // MCP23017.h
@@ -1108,7 +1108,102 @@ void setup_initial_HARDWARE_conf() {
   // other pins		// TODO: implement
   // nvs flags		// ?????	TODO: implement
   // version		// switch(version)
+
+} //  setup_initial_HARDWARE_conf()
+
+
+void show_pin_or_dash(uint8_t pin) {
+  if(pin==255) // ILLEGAL
+    MENU.out('-');
+  else
+    MENU.out(pin);
 }
+
+void show_hardware_conf(pulses_hardware_conf_t* hardware) {
+  MENU.outln(F("HARDWARE configuration"));
+
+  MENU.out(F("GPIO click pins\t\t"));
+  if(hardware->gpio_pins_cnt) {
+    MENU.outln(hardware->gpio_pins_cnt);
+    show_GPIOs();
+  } else
+    MENU.outln('-');
+
+  MENU.out(F("DAC1/DAC2 pins\t\t"));
+  show_pin_or_dash(hardware->DAC1_pin);
+  MENU.tab();
+  show_pin_or_dash(hardware->DAC2_pin);
+  MENU.ln();
+
+  MENU.out(F("MPU6050\t\t\t"));
+  if(hardware->mpu6050_addr) {
+    MENU.out_hex(hardware->mpu6050_addr);
+    MENU.ln();
+  } else
+    MENU.outln(F("no"));
+
+  MENU.out(F("musicbox_trigger_pin\t"));
+  show_pin_or_dash(hardware->musicbox_trigger_pin);
+  MENU.ln();
+
+  MENU.out(F("battery level pin\t"));
+  show_pin_or_dash(hardware->battery_level_control_pin);
+  MENU.ln();
+
+  MENU.out(F("peripheral power switch\t"));
+  show_pin_or_dash(hardware->peripheral_power_switch_pin);
+  MENU.ln();
+
+  MENU.out(F("morse_gpio_input\t"));
+  show_pin_or_dash(hardware->morse_gpio_input_pin);
+  MENU.ln();
+
+  MENU.out(F("morse_output_pin\t"));
+  show_pin_or_dash(hardware->morse_output_pin);
+  MENU.ln();
+
+  MENU.out(F("bluetooth_enable_pin\t"));
+  show_pin_or_dash(hardware->bluetooth_enable_pin);
+  MENU.ln();
+
+  MENU.out(F("OLED\t\t\t"));
+  switch(hardware->OLED_type) {
+  case oled_type_off:
+    MENU.outln('-');
+    break;
+  case oled_type_heltec:
+    MENU.outln(F("heltec"));
+    break;
+  case oled_type_LiPO:
+    MENU.outln(F("OLED LiPO"));
+    break;
+  default:
+    MENU.error_ln(F("oled_type unknown"));
+  }
+
+  MENU.out(F("RGB LED strings\t\t"));
+  if(hardware->rgb_strings) {
+    MENU.outln(hardware->rgb_strings);
+    for(int i=0; i<hardware->rgb_strings; i++) {
+      MENU.out(i);
+      MENU.out(F("  pin\t\t"));
+      MENU.out(hardware->rgb_pin[i]);
+      MENU.out(F("\tcnt "));
+      MENU.outln(hardware->rgb_led_cnt[i]);
+    }
+    MENU.out(F("voltage type\t\t"));
+    MENU.outln(hardware->rgb_led_voltage_type);
+  } else
+    MENU.outln('_');
+
+  MENU.outln(F("RTC\t\t\tTODO:"));
+  MENU.ln();
+
+  // MIDI	// TODO:
+  // other pins
+  // switch(version)
+  // nvs flags
+} // show_hardware_conf()
 
 
 int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very first one
