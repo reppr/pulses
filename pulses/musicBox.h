@@ -2946,7 +2946,11 @@ void musicBox_display() {
   MENU.out(F(")\t'd'=days to survive  'l'=level minimal age 'E'= start soft end now  'w' minimal weight "));
   MENU.outln(MagicConf.soft_cleanup_minimal_fraction_weighting);
 
-  MENU.outln(F("'L'=stop when low\t'LL'=stop only low\thard end='H'"));
+  // MENU.outln(F("'L'=stop when low\t'LL'=stop only low\thard end='H'"));	// old meaning deactivated
+#if defined USE_RGB_LED_STRIP
+  MENU.out(F("'L'=rgbLED 'LB'=BGdim 'LS'=saturation0 'LR'=sat reset value 'LI'=intensity 'LN'=hue slices 'LV'=voltage\t"));
+#endif
+  MENU.outln(F("hard end='H'"));	// old meaning deactivated
   MENU.ln();
 
   MENU.out(F("'EF[DLHRUP]'  deep_sleep, light_sleep, hibernate, restart, user, presets\t"));
@@ -3427,6 +3431,10 @@ bool musicBox_reaction(char token) {
 #if defined USE_RGB_LED_STRIP
   case 'L':	 // 'L' RGB LED STRING
     switch (MENU.peek()) {	// second letter after 'L'
+    case EOF:	// bare 'L' strip info
+      // TODO: give infos about string(s)	DADA ????
+      break;
+
     case 'B':	// 'LB'	background dimming
       MENU.drop_input_token();
       input_value = MENU.numeric_input(0);
