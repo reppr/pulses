@@ -42,6 +42,12 @@ typedef struct rgb_string_config_t {
 
   uint8_t version = 0;	// 0 means currently under development
 
+#if defined HIGH_PRIORITY_RGB_LED_UPDATE
+  bool rgb_leds_high_priority = true;		// run time toggle with menu 'LH'
+#else
+  bool rgb_leds_high_priority = false;		// run time toggle with menu 'LH'
+#endif
+
   bool clear_rgb_background_on_ending = true;	// TODO: ################
   bool set_automagic_hue_slices = true;		// if *not* set by user
 

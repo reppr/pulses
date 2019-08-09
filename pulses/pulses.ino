@@ -1442,6 +1442,11 @@ bool lowest_priority_tasks() {
 
 void loop() {	// ARDUINO
   static unsigned int loop_cnt=0;
+
+#if defined USE_RGB_LED_STRIP
+  bool rgb_leds_high_priority=RGBstringConf.rgb_leds_high_priority;	// run time toggle with 'LH'
+#endif
+
   unsigned int this_todo_cnt=0;
 
   loop_cnt++;
@@ -1525,8 +1530,8 @@ void loop() {	// ARDUINO
 */
 #endif	// DO_STRESS_MANAGMENT
 
-#if defined USE_RGB_LED_STRIP && defined HIGH_PRIORITY_RGB_LED_UPDATE
-    if(update_RGB_LED_string) {
+#if defined USE_RGB_LED_STRIP
+    if(update_RGB_LED_string && rgb_leds_high_priority) {
       digitalLeds_drawPixels(strands, 1);
       update_RGB_LED_string = false;
     }

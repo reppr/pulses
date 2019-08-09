@@ -2948,7 +2948,7 @@ void musicBox_display() {
 
   // MENU.outln(F("'L'=stop when low\t'LL'=stop only low\thard end='H'"));	// old meaning deactivated
 #if defined USE_RGB_LED_STRIP
-  MENU.out(F("'L'=rgbLED 'LB'=BGdim 'LS'=saturation0 'LR'=sat reset value 'LI'=intensity 'LN'=hue slices 'LV'=voltage\t"));
+  MENU.out(F("'L'=rgbLED 'LB'=BGdim 'LS'=saturation0 'LR'=sat reset value 'LI'=intensity 'LN'=hue slices 'LV'=voltage 'LH'=high priority\t"));
 #endif
   MENU.outln(F("hard end='H'"));	// old meaning deactivated
   MENU.ln();
@@ -3511,6 +3511,15 @@ bool musicBox_reaction(char token) {
       }
       break;
 
+    case 'H':	// 'LH' toggle led string priority
+      MENU.drop_input_token();
+      RGBstringConf.rgb_leds_high_priority = !RGBstringConf.rgb_leds_high_priority;
+      if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
+	MENU.out(F("rgb led high priority"));
+	MENU.out_ON_off(RGBstringConf.rgb_leds_high_priority);
+	MENU.ln();
+      }
+      break;
     } // second letter after 'L'
     break;
 #endif
