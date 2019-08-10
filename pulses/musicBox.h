@@ -3896,12 +3896,16 @@ bool musicBox_reaction(char token) {
     show_hardware_conf(&HARDWARE_Conf);
     //display_peer_ID_list();
     //random_RGB_string(MENU.numeric_input(4));
+
+    /*
     extern short steps_in_octave;
     MENU.out(F("steps_in_octave "));
     MENU.outln(steps_in_octave);
+    */
 
     // random_HSV_LED_string();
-  /*
+
+    /*
     {
       int i=0;
       strand_t * strands [STRANDCNT];
@@ -3922,6 +3926,7 @@ bool musicBox_reaction(char token) {
 
     }
     */
+
     break;
 #endif
 
