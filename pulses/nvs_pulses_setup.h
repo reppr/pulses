@@ -16,7 +16,7 @@
 Preferences CONF_nvs;
 CONF_nvs.begin("CONFIG", false);
 
-#if defined NVS_PUT_PRENAME_HACK	// 1 shot HACK to put a PRENAME		TODO: UI
+#if defined NVS_PUT_PRENAME_HACK	// 1 shot HACK to put a PRENAME		TODO: UI (in constuction)
   MENU.out(F("NVS_PUT_PRENAME_HACK: "));
   MENU.out(STRINGIFY(NVS_PUT_PRENAME_HACK));
   MENU.tab();

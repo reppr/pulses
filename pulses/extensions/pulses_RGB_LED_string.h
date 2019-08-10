@@ -34,7 +34,8 @@ typedef struct rgb_string_config_t {
   //float rgb_background_dim = 0.1;	// TEST: for "12V" version 5m 300
   float rgb_background_history_mix = 0.66;	// how much history included in bg color
 
-  float BlueHack_factor = 2.0;	// HACK: increase blueness
+//float BlueHack_factor = 2.0;	// HACK: increase blueness
+  float BlueHack_factor = 1.4;	// HACK: increase blueness
 
   uint8_t hue_slice_cnt = 15;	// just a usable default  see: set_automagic_hue_slices
   uint8_t voltage_type = 12;	// TODO: use ################	DADA
