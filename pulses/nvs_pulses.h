@@ -284,8 +284,8 @@ void nvs_save_blob_v3(char* key, void* new_blob, size_t buffer_size) {
 //	  // battery and peripheral power
 //	  if(HARDWARE_from_nvs->battery_level_control_pin != ILLEGAL)
 //	    HARDWARE_Conf.battery_level_control_pin = HARDWARE_from_nvs->battery_level_control_pin;
-//	  if(HARDWARE_from_nvs->peripheral_power_switch_pin != ILLEGAL)
-//	    HARDWARE_Conf.peripheral_power_switch_pin = HARDWARE_from_nvs->peripheral_power_switch_pin;
+//	  if(HARDWARE_from_nvs->periph_power_switch_pin != ILLEGAL)
+//	    HARDWARE_Conf.periph_power_switch_pin = HARDWARE_from_nvs->periph_power_switch_pin;
 //
 //	  // morse
 //	  if(HARDWARE_from_nvs->morse_touch_input_pin != ILLEGAL)
@@ -300,14 +300,14 @@ void nvs_save_blob_v3(char* key, void* new_blob, size_t buffer_size) {
 //	    HARDWARE_Conf.bluetooth_enable_pin = HARDWARE_from_nvs->bluetooth_enable_pin;
 //
 //	  // oled
-//	  if(HARDWARE_from_nvs->OLED_type != ILLEGAL)
-//	    HARDWARE_Conf.OLED_type = HARDWARE_from_nvs->OLED_type;
+//	  if(HARDWARE_from_nvs->monochrome_type != ILLEGAL)
+//	    HARDWARE_Conf.monochrome_type = HARDWARE_from_nvs->monochrome_type;
 //	  if(HARDWARE_from_nvs->oled_reserved != ILLEGAL)
 //	    HARDWARE_Conf.oled_reserved = HARDWARE_from_nvs->oled_reserved;
 //
 //	  // RTC module
-//	  if(HARDWARE_from_nvs->rtc_type != rtc_type_off)
-//	    HARDWARE_Conf.rtc_type = HARDWARE_from_nvs->rtc_type;
+//	  if(HARDWARE_from_nvs->RTC_type != RTC_type_off)
+//	    HARDWARE_Conf.RTC_type = HARDWARE_from_nvs->RTC_type;
 //	  if(HARDWARE_from_nvs->rtc_addr != ILLEGAL)
 //	    HARDWARE_Conf.rtc_addr = HARDWARE_from_nvs->rtc_addr;
 //
@@ -399,8 +399,8 @@ void nvs_save_blob_v3(char* key, void* new_blob, size_t buffer_size) {
 //	  // battery and peripheral power
 //	  if(HARDWARE_from_nvs->battery_level_control_pin != ILLEGAL)
 //	    HARDWARE_Conf.battery_level_control_pin = HARDWARE_from_nvs->battery_level_control_pin;
-//	  if(HARDWARE_from_nvs->peripheral_power_switch_pin != ILLEGAL)
-//	    HARDWARE_Conf.peripheral_power_switch_pin = HARDWARE_from_nvs->peripheral_power_switch_pin;
+//	  if(HARDWARE_from_nvs->periph_power_switch_pin != ILLEGAL)
+//	    HARDWARE_Conf.periph_power_switch_pin = HARDWARE_from_nvs->periph_power_switch_pin;
 //
 //	  // morse
 //	  if(HARDWARE_from_nvs->morse_touch_input_pin != ILLEGAL)
@@ -415,14 +415,14 @@ void nvs_save_blob_v3(char* key, void* new_blob, size_t buffer_size) {
 //	    HARDWARE_Conf.bluetooth_enable_pin = HARDWARE_from_nvs->bluetooth_enable_pin;
 //
 //	  // oled
-//	  if(HARDWARE_from_nvs->OLED_type != ILLEGAL)
-//	    HARDWARE_Conf.OLED_type = HARDWARE_from_nvs->OLED_type;
+//	  if(HARDWARE_from_nvs->monochrome_type != ILLEGAL)
+//	    HARDWARE_Conf.monochrome_type = HARDWARE_from_nvs->monochrome_type;
 //	  if(HARDWARE_from_nvs->oled_reserved != ILLEGAL)
 //	    HARDWARE_Conf.oled_reserved = HARDWARE_from_nvs->oled_reserved;
 //
 //	  // RTC module
-//	  if(HARDWARE_from_nvs->rtc_type != rtc_type_off)
-//	    HARDWARE_Conf.rtc_type = HARDWARE_from_nvs->rtc_type;
+//	  if(HARDWARE_from_nvs->RTC_type != RTC_type_off)
+//	    HARDWARE_Conf.RTC_type = HARDWARE_from_nvs->RTC_type;
 //	  if(HARDWARE_from_nvs->rtc_addr != ILLEGAL)
 //	    HARDWARE_Conf.rtc_addr = HARDWARE_from_nvs->rtc_addr;
 //
@@ -508,8 +508,8 @@ void configure_HARDWARE_from_nvs_v3() {
   // battery and peripheral power
   if(HARDWARE_from_nvs.battery_level_control_pin != ILLEGAL)
     HARDWARE_Conf.battery_level_control_pin = HARDWARE_from_nvs.battery_level_control_pin;
-  if(HARDWARE_from_nvs.peripheral_power_switch_pin != ILLEGAL)
-    HARDWARE_Conf.peripheral_power_switch_pin = HARDWARE_from_nvs.peripheral_power_switch_pin;
+  if(HARDWARE_from_nvs.periph_power_switch_pin != ILLEGAL)
+    HARDWARE_Conf.periph_power_switch_pin = HARDWARE_from_nvs.periph_power_switch_pin;
 
   // morse
   if(HARDWARE_from_nvs.morse_touch_input_pin != ILLEGAL)
@@ -524,14 +524,14 @@ void configure_HARDWARE_from_nvs_v3() {
     HARDWARE_Conf.bluetooth_enable_pin = HARDWARE_from_nvs.bluetooth_enable_pin;
 
   // oled
-  if(HARDWARE_from_nvs.OLED_type != ILLEGAL)
-    HARDWARE_Conf.OLED_type = HARDWARE_from_nvs.OLED_type;
+  if(HARDWARE_from_nvs.monochrome_type != ILLEGAL)
+    HARDWARE_Conf.monochrome_type = HARDWARE_from_nvs.monochrome_type;
   if(HARDWARE_from_nvs.oled_reserved != ILLEGAL)
     HARDWARE_Conf.oled_reserved = HARDWARE_from_nvs.oled_reserved;
 
   // RTC module
-  if(HARDWARE_from_nvs.rtc_type != rtc_type_off)
-    HARDWARE_Conf.rtc_type = HARDWARE_from_nvs.rtc_type;
+  if(HARDWARE_from_nvs.RTC_type != RTC_type_off)
+    HARDWARE_Conf.RTC_type = HARDWARE_from_nvs.RTC_type;
   if(HARDWARE_from_nvs.rtc_addr != ILLEGAL)
     HARDWARE_Conf.rtc_addr = HARDWARE_from_nvs.rtc_addr;
 

@@ -127,18 +127,18 @@ Pulses PULSES(PL_MAX, &MENU);
 
 
 /* **************************************************************** */
-enum oled_type {
-  oled_type_off=0,
-  oled_type_heltec,
-  oled_type_LiPO,
-  oled_type_unknown,
+enum monochrome_type {
+  monochrome_type_off=0,
+  monochrome_type_heltec,
+  monochrome_type_LiPO,
+  monochrome_type_unknown,
 };
 
-enum rtc_types {
-  rtc_type_off=0,
-  rtc_type_DS1307,
-  rtc_type_DS3231,
-  rtc_type_unknown,
+enum RTC_types {
+  RTC_type_off=0,
+  RTC_type_DS1307,
+  RTC_type_DS3231,
+  RTC_type_unknown,
 };
 
 
@@ -161,7 +161,7 @@ typedef struct pulses_hardware_conf_t {
 
   // battery and peripheral power
   uint8_t battery_level_control_pin=ILLEGAL;				// %4
-  uint8_t peripheral_power_switch_pin=ILLEGAL; // RENAME: ################################################################
+  uint8_t periph_power_switch_pin=ILLEGAL;
 
   // morse
   uint8_t morse_touch_input_pin=ILLEGAL;
@@ -172,11 +172,11 @@ typedef struct pulses_hardware_conf_t {
   uint8_t bluetooth_enable_pin=ILLEGAL;
 
   // OLED
-  uint8_t OLED_type = oled_type_off;	// flag and oled_type RENAME: ################################################################
+  uint8_t monochrome_type = monochrome_type_off;	// flag and monochrome_type
   uint8_t oled_reserved=0;						// %4
 
   // RTC
-  uint8_t rtc_type = rtc_type_off;	// flag and rtc_type RENAME: ################################################################
+  uint8_t RTC_type = RTC_type_off;	// flag and RTC_type
   uint8_t rtc_addr=0;			// DS1307_I2C_ADDRESS 0x68	DS3231
 
   // RGB LED strings
@@ -1064,7 +1064,7 @@ void setup_initial_HARDWARE_conf() {
 #endif
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
-  HARDWARE_Conf.peripheral_power_switch_pin = PERIPHERAL_POWER_SWITCH_PIN;
+  HARDWARE_Conf.periph_power_switch_pin = PERIPHERAL_POWER_SWITCH_PIN;
 #endif
 
 #if defined MORSE_TOUCH_INPUT_PIN
@@ -1085,9 +1085,9 @@ void setup_initial_HARDWARE_conf() {
 
 #if defined USE_MONOCHROME_DISPLAY
   #if defined BOARD_HELTEC_OLED
-    HARDWARE_Conf.OLED_type = oled_type_heltec;
+    HARDWARE_Conf.monochrome_type = monochrome_type_heltec;
   #elif defined BOARD_OLED_LIPO
-    HARDWARE_Conf.OLED_type = oled_type_LiPO;
+    HARDWARE_Conf.monochrome_type = monochrome_type_LiPO;
   #endif
 #endif
 
@@ -1101,7 +1101,7 @@ void setup_initial_HARDWARE_conf() {
 #endif
 
 #if defined USE_RTC_MODULE
-  HARDWARE_Conf.rtc_type = rtc_type_DS1307;
+  HARDWARE_Conf.RTC_type = RTC_type_DS1307;
 #endif
 
   // MIDI		// TODO: implement hard and software
@@ -1151,7 +1151,7 @@ void show_hardware_conf(pulses_hardware_conf_t* hardware) {
   MENU.ln();
 
   MENU.out(F("peripheral power switch\t"));
-  show_pin_or_dash(hardware->peripheral_power_switch_pin);
+  show_pin_or_dash(hardware->periph_power_switch_pin);
   MENU.ln();
 
   MENU.out(F("morse_gpio_input\t"));
@@ -1167,18 +1167,18 @@ void show_hardware_conf(pulses_hardware_conf_t* hardware) {
   MENU.ln();
 
   MENU.out(F("OLED\t\t\t"));
-  switch(hardware->OLED_type) {
-  case oled_type_off:
+  switch(hardware->monochrome_type) {
+  case monochrome_type_off:
     MENU.outln('-');
     break;
-  case oled_type_heltec:
+  case monochrome_type_heltec:
     MENU.outln(F("heltec"));
     break;
-  case oled_type_LiPO:
+  case monochrome_type_LiPO:
     MENU.outln(F("OLED LiPO"));
     break;
   default:
-    MENU.error_ln(F("oled_type unknown"));
+    MENU.error_ln(F("monochrome_type unknown"));
   }
 
   MENU.out(F("RGB LED strings\t\t"));
