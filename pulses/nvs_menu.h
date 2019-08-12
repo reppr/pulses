@@ -57,9 +57,7 @@ bool nvs_menu_reaction(char token) {
       MENU.drop_input_token();
       {
 	pulses_hardware_conf_t hardware_from_nvs;
-	nvs_read_blob_v3("HARDWARE_nvs", &hardware_from_nvs, sizeof(pulses_hardware_conf_t));
-	//nvs_read_blob_v1("HARDWARE_nvs", &hardware_from_nvs, sizeof(pulses_hardware_conf_t));
-	//nvs_read_blob_v2("HARDWARE_nvs", &hardware_from_nvs);
+	nvs_read_blob("HARDWARE_nvs", &hardware_from_nvs, sizeof(pulses_hardware_conf_t));
 	show_hardware_conf(&hardware_from_nvs);
       }
       show_hardware_conf(&HARDWARE_Conf);
@@ -67,8 +65,7 @@ bool nvs_menu_reaction(char token) {
 
     case 'S':
       MENU.drop_input_token();
-      nvs_save_blob_v3("HARDWARE_nvs", &HARDWARE_Conf, sizeof(pulses_hardware_conf_t));
-      //nvs_save_blob_v1("HARDWARE_nvs", &HARDWARE_Conf, sizeof(pulses_hardware_conf_t));
+      nvs_save_blob("HARDWARE_nvs", &HARDWARE_Conf, sizeof(pulses_hardware_conf_t));
       break;
 
     default:

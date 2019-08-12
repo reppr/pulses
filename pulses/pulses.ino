@@ -1209,12 +1209,9 @@ void show_hardware_conf(pulses_hardware_conf_t* hardware) {
 int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very first one
 
 void setup() {
-  setup_initial_HARDWARE_conf();
+  // DADA TODO: emergency rgb led strings reset in setup()?
 
-//#if defined USE_NVS
-//  //  configure_HARDWARE_from_nvs();	// DADA defunc
-//  configure_HARDWARE_from_nvs_v3();	// DADA TEST
-//#endif
+  setup_initial_HARDWARE_conf();
 
 #if defined USE_RGB_LED_STRIP
   pulses_RGB_LED_string_init();	// DO THAT EARLY to switch led string off after booting
@@ -1316,9 +1313,7 @@ void setup() {
   //  maybe_restore_from_RTCmem();		// only after deep sleep, else noop
 
 #if defined USE_NVS
-  //  configure_HARDWARE_from_nvs();	// DADA defunc
-  configure_HARDWARE_from_nvs_v3();	// DADA TEST
-  // configure_HARDWARE_from_nvs_v4();	// DADA TEST
+  configure_HARDWARE_from_nvs();
 #endif
 
 #if defined USE_RGB_LED_STRIP
