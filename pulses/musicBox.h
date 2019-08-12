@@ -417,14 +417,14 @@ void init_primary_counters() {
 bool show_cycle_pattern=false;
 bool show_cycle_pattern_intervals=false;
 
-int lowest_primary=ILLEGAL, highest_primary=ILLEGAL;	// remember start configuration	// TODO: make it short?
+short lowest_primary=ILLEGAL16, highest_primary=ILLEGAL16;	// remember start configuration
 int primary_count=0;
 
 void set_primary_block_bounds() {	// remember where the primary block starts and stops
-  lowest_primary=ILLEGAL;
+  lowest_primary=ILLEGAL16;
   for(int pulse=0; pulse<PL_MAX; pulse++) {
     if(PULSES.pulses[pulse].groups & g_PRIMARY) {
-      if(lowest_primary == ILLEGAL)
+      if(lowest_primary == ILLEGAL16)
 	lowest_primary = pulse;
       highest_primary = pulse;
     }
@@ -2503,13 +2503,13 @@ void magical_stress_release() {		// special stress release for magical music box
 // magical fart on reading a floating GPIO pin ;)
 portMUX_TYPE magical_fart_MUX = portMUX_INITIALIZER_UNLOCKED;
 unsigned int magical_fart_cnt=0;
-gpio_pin_t magical_fart_output_pin=ILLEGAL;
+gpio_pin_t magical_fart_output_pin=ILLEGAL8;
 
 void magical_fart_ISR() {
   portENTER_CRITICAL_ISR(&magical_fart_MUX);
   magical_fart_cnt++;
 
-  if(magical_fart_output_pin != ILLEGAL)
+  if(magical_fart_output_pin != ILLEGAL8)
     digitalWrite(magical_fart_output_pin, ! digitalRead(magical_fart_output_pin));
 
   //MENU.out(F("magical_fart_ISR()\t"));

@@ -54,7 +54,9 @@ using namespace std;	// ESP8266 needs that
 /* **************************************************************** */
 // some #define's:
 #define ILLEGAL		-1	// TODO: replace
-#define ILLEGAL8	255	// define ILLEGAL16	ILLEGAL32
+#define ILLEGAL8	255
+#define ILLEGAL16	0xffff
+//#define ILLEGAL32	0xffffffff
 
 /* **************************************************************** */
 // configuration sequence:
@@ -251,10 +253,10 @@ typedef struct musicBox_conf_t {
   short preset=0;
 
   unsigned short cycle_slices = 540;	// set slice_tick_period accordingly
-  short lowest_primary=ILLEGAL;		// TAKE CARE when casting to int
-  short highest_primary=ILLEGAL;	// TAKE CARE when casting to int
+  short lowest_primary=ILLEGAL16;
+  short highest_primary=ILLEGAL16;
   // short primary_count=0;
-  short base_pulse=ILLEGAL;		// TAKE CARE when casting to int
+  short base_pulse=ILLEGAL16;
 
   short stack_sync_slices=0;	// 0 is off	positive: upwards,  negative: downwards
   short subcycle_octave=0;

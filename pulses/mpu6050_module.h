@@ -337,10 +337,11 @@ void accGyro_sample() {
 // void accGyro_reaction()
 //#define DEBUG_AG_REACTION		// DO show selected slices
 //#define DEBUG_ACCELGYRO_BASICS	// deactivated
-extern bool monochrome_can_be_used();				// extern declaration
-extern void monochrome_show_line(uint8_t row, char * s);	// extern declaration
-extern int lowest_primary, highest_primary, primary_count;	// extern declaration
-extern void noAction_flags_line();				// extern declaration
+extern bool monochrome_can_be_used();			// extern declarations
+extern void monochrome_show_line(uint8_t row, char * s);
+extern short lowest_primary, highest_primary;
+extern int primary_count;
+extern void noAction_flags_line();
 void accGyro_reaction() {	// react on data coming from accGyro_sample()
   if(accGyro_new_data && accGyro_mode) {
     accGyro_new_data = false;
