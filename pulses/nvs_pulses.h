@@ -227,45 +227,153 @@ void nvs_save_blob_v3(char* key, void* new_blob, size_t buffer_size) {
 } // nvs_save_blob_v3
 
 
-void configure_HARDWARE_from_nvs() {
-  MENU.outln(F("DADA DEBUGGING configure_HARDWARE_from_nvs() *DEACTIVATED*\n")); return;	// TODO: REMOVE:
+//	void configure_HARDWARE_from_nvs() {
+//	  MENU.outln(F("DADA DEBUGGING configure_HARDWARE_from_nvs() *DEACTIVATED*\n")); return;	// TODO: REMOVE:
+//	  int v;
+//	  pulses_hardware_conf_t* HARDWARE_from_nvs = (pulses_hardware_conf_t*) malloc(sizeof(pulses_hardware_conf_t));
+//	  if(HARDWARE_from_nvs == NULL) {
+//	    //	MENU.error_ln(F("malloc"));
+//	    return;
+//	  }
+//
+//	  if(nvs_read_blob_v3("HARDWARE_nvs", &HARDWARE_from_nvs, sizeof(pulses_hardware_conf_t))) {
+//	    free(HARDWARE_from_nvs);
+//	    return;
+//	  }
+//	  // blob is loaded now
+//
+//	  // check version compatibility
+//	  if(HARDWARE_from_nvs->version != HARDWARE_Conf.version) { // DADA *DEBUGGING* CRASH!
+//	    //	MENU.error_ln(F("version mismatch"));
+//	    free(HARDWARE_from_nvs);
+//	    return;
+//	  }
+//
+//	  // MPU6050
+//	  if(HARDWARE_from_nvs->mpu6050_addr) {
+//	    HARDWARE_Conf.mpu6050_addr = HARDWARE_from_nvs->mpu6050_addr;
+//	    for(int i=0; i<6; i++) {
+//	      if(HARDWARE_from_nvs->accGyro_offsets[i])
+//		HARDWARE_Conf.accGyro_offsets[i] = HARDWARE_from_nvs->accGyro_offsets[i];
+//	    }
+//	  }
+//
+//	  // GPIO
+//	  if(HARDWARE_from_nvs->gpio_pins_cnt) {
+//	    if(HARDWARE_from_nvs->gpio_pins_cnt > 20)	// invalid?
+//	      ; //	MENU.error_ln(F("gpio_pins_cnt"));
+//	    else {
+//	      for(int i=0; i<HARDWARE_from_nvs->gpio_pins_cnt; i++) {
+//		if(HARDWARE_from_nvs->gpio_pins[i] != ILLEGAL) // illegal?
+//		  HARDWARE_Conf.gpio_pins[i] = HARDWARE_from_nvs->gpio_pins[i];
+//		else {
+//		  //	MENU.error_ln(F("illegal gpio"));
+//		  break;
+//		}
+//	      }
+//	    }
+//	  }
+//
+//	  // DAC
+//	  if(HARDWARE_from_nvs->DAC1_pin != ILLEGAL)
+//	    HARDWARE_Conf.DAC1_pin = HARDWARE_from_nvs->DAC1_pin;
+//	  if(HARDWARE_from_nvs->DAC2_pin != ILLEGAL)
+//	    HARDWARE_Conf.DAC2_pin = HARDWARE_from_nvs->DAC2_pin;
+//
+//	  // trigger
+//	  if(HARDWARE_from_nvs->musicbox_trigger_pin != ILLEGAL)
+//	    HARDWARE_Conf.musicbox_trigger_pin = HARDWARE_from_nvs->musicbox_trigger_pin;
+//
+//	  // battery and peripheral power
+//	  if(HARDWARE_from_nvs->battery_level_control_pin != ILLEGAL)
+//	    HARDWARE_Conf.battery_level_control_pin = HARDWARE_from_nvs->battery_level_control_pin;
+//	  if(HARDWARE_from_nvs->peripheral_power_switch_pin != ILLEGAL)
+//	    HARDWARE_Conf.peripheral_power_switch_pin = HARDWARE_from_nvs->peripheral_power_switch_pin;
+//
+//	  // morse
+//	  if(HARDWARE_from_nvs->morse_touch_input_pin != ILLEGAL)
+//	    HARDWARE_Conf.morse_touch_input_pin = HARDWARE_from_nvs->morse_touch_input_pin;
+//	  if(HARDWARE_from_nvs->morse_gpio_input_pin != ILLEGAL)
+//	    HARDWARE_Conf.morse_gpio_input_pin = HARDWARE_from_nvs->morse_gpio_input_pin;
+//	  if(HARDWARE_from_nvs->morse_output_pin != ILLEGAL)
+//	    HARDWARE_Conf.morse_output_pin = HARDWARE_from_nvs->morse_output_pin;
+//
+//	  // bluetooth
+//	  if(HARDWARE_from_nvs->bluetooth_enable_pin != ILLEGAL)
+//	    HARDWARE_Conf.bluetooth_enable_pin = HARDWARE_from_nvs->bluetooth_enable_pin;
+//
+//	  // oled
+//	  if(HARDWARE_from_nvs->OLED_type != ILLEGAL)
+//	    HARDWARE_Conf.OLED_type = HARDWARE_from_nvs->OLED_type;
+//	  if(HARDWARE_from_nvs->oled_reserved != ILLEGAL)
+//	    HARDWARE_Conf.oled_reserved = HARDWARE_from_nvs->oled_reserved;
+//
+//	  // RTC module
+//	  if(HARDWARE_from_nvs->rtc_type != rtc_type_off)
+//	    HARDWARE_Conf.rtc_type = HARDWARE_from_nvs->rtc_type;
+//	  if(HARDWARE_from_nvs->rtc_addr != ILLEGAL)
+//	    HARDWARE_Conf.rtc_addr = HARDWARE_from_nvs->rtc_addr;
+//
+//	  // RGB LED strings
+//	  if(HARDWARE_from_nvs->rgb_strings) {
+//	    HARDWARE_Conf.rgb_strings = HARDWARE_from_nvs->rgb_strings;
+//	    for(int i=0; i < HARDWARE_from_nvs->rgb_strings; i++) {
+//	      HARDWARE_Conf.rgb_pin[i] = HARDWARE_from_nvs->rgb_pin[i];
+//	      HARDWARE_Conf.rgb_led_cnt[i] = HARDWARE_from_nvs->rgb_led_cnt[i];
+//	      HARDWARE_Conf.rgb_led_voltage_type[i] = HARDWARE_from_nvs->rgb_led_voltage_type[i];
+//	    }
+//	  }
+//
+//	  // MIDI
+//	  if(HARDWARE_from_nvs->MIDI_in_pin != ILLEGAL)
+//	    HARDWARE_Conf.MIDI_in_pin = HARDWARE_from_nvs->MIDI_in_pin;
+//	  if(HARDWARE_from_nvs->MIDI_out_pin != ILLEGAL)
+//	    HARDWARE_Conf.MIDI_out_pin = HARDWARE_from_nvs->MIDI_out_pin;
+//
+//	  // other
+//	  if(HARDWARE_from_nvs->magical_fart_output_pin != ILLEGAL)
+//	    HARDWARE_Conf.magical_fart_output_pin = HARDWARE_from_nvs->magical_fart_output_pin;
+//	  if(HARDWARE_from_nvs->magical_sense_pin != ILLEGAL)
+//	    HARDWARE_Conf.magical_sense_pin = HARDWARE_from_nvs->magical_sense_pin;
+//
+//	  // reserved
+//
+//	  free(HARDWARE_from_nvs);
+//	} // configure_HARDWARE_from_nvs()
+
+
+void configure_HARDWARE_from_nvs_v3() {
   int v;
-  pulses_hardware_conf_t* HARDWARE_from_nvs = (pulses_hardware_conf_t*) malloc(sizeof(pulses_hardware_conf_t));
-  if(HARDWARE_from_nvs == NULL) {
-    //	MENU.error_ln(F("malloc"));
-    return;
-  }
+  pulses_hardware_conf_t HARDWARE_from_nvs;
 
   if(nvs_read_blob_v3("HARDWARE_nvs", &HARDWARE_from_nvs, sizeof(pulses_hardware_conf_t))) {
-    free(HARDWARE_from_nvs);
     return;
   }
   // blob is loaded now
 
   // check version compatibility
-  if(HARDWARE_from_nvs->version != HARDWARE_Conf.version) { // DADA *DEBUGGING* CRASH!
+  if(HARDWARE_from_nvs.version != HARDWARE_Conf.version) {
     //	MENU.error_ln(F("version mismatch"));
-    free(HARDWARE_from_nvs);
     return;
   }
 
   // MPU6050
-  if(HARDWARE_from_nvs->mpu6050_addr) {
-    HARDWARE_Conf.mpu6050_addr = HARDWARE_from_nvs->mpu6050_addr;
+  if(HARDWARE_from_nvs.mpu6050_addr) {
+    HARDWARE_Conf.mpu6050_addr = HARDWARE_from_nvs.mpu6050_addr;
     for(int i=0; i<6; i++) {
-      if(HARDWARE_from_nvs->accGyro_offsets[i])
-	HARDWARE_Conf.accGyro_offsets[i] = HARDWARE_from_nvs->accGyro_offsets[i];
+      if(HARDWARE_from_nvs.accGyro_offsets[i])
+	HARDWARE_Conf.accGyro_offsets[i] = HARDWARE_from_nvs.accGyro_offsets[i];
     }
   }
 
   // GPIO
-  if(HARDWARE_from_nvs->gpio_pins_cnt) {
-    if(HARDWARE_from_nvs->gpio_pins_cnt > 20)	// invalid?
+  if(HARDWARE_from_nvs.gpio_pins_cnt) {
+    if(HARDWARE_from_nvs.gpio_pins_cnt > 20)	// invalid?
       ; //	MENU.error_ln(F("gpio_pins_cnt"));
     else {
-      for(int i=0; i<HARDWARE_from_nvs->gpio_pins_cnt; i++) {
-	if(HARDWARE_from_nvs->gpio_pins[i] != ILLEGAL) // illegal?
-	  HARDWARE_Conf.gpio_pins[i] = HARDWARE_from_nvs->gpio_pins[i];
+      for(int i=0; i<HARDWARE_from_nvs.gpio_pins_cnt; i++) {
+	if(HARDWARE_from_nvs.gpio_pins[i] != ILLEGAL) // illegal?
+	  HARDWARE_Conf.gpio_pins[i] = HARDWARE_from_nvs.gpio_pins[i];
 	else {
 	  //	MENU.error_ln(F("illegal gpio"));
 	  break;
@@ -275,71 +383,69 @@ void configure_HARDWARE_from_nvs() {
   }
 
   // DAC
-  if(HARDWARE_from_nvs->DAC1_pin != ILLEGAL)
-    HARDWARE_Conf.DAC1_pin = HARDWARE_from_nvs->DAC1_pin;
-  if(HARDWARE_from_nvs->DAC2_pin != ILLEGAL)
-    HARDWARE_Conf.DAC2_pin = HARDWARE_from_nvs->DAC2_pin;
+  if(HARDWARE_from_nvs.DAC1_pin != ILLEGAL)
+    HARDWARE_Conf.DAC1_pin = HARDWARE_from_nvs.DAC1_pin;
+  if(HARDWARE_from_nvs.DAC2_pin != ILLEGAL)
+    HARDWARE_Conf.DAC2_pin = HARDWARE_from_nvs.DAC2_pin;
 
   // trigger
-  if(HARDWARE_from_nvs->musicbox_trigger_pin != ILLEGAL)
-    HARDWARE_Conf.musicbox_trigger_pin = HARDWARE_from_nvs->musicbox_trigger_pin;
+  if(HARDWARE_from_nvs.musicbox_trigger_pin != ILLEGAL)
+    HARDWARE_Conf.musicbox_trigger_pin = HARDWARE_from_nvs.musicbox_trigger_pin;
 
   // battery and peripheral power
-  if(HARDWARE_from_nvs->battery_level_control_pin != ILLEGAL)
-    HARDWARE_Conf.battery_level_control_pin = HARDWARE_from_nvs->battery_level_control_pin;
-  if(HARDWARE_from_nvs->peripheral_power_switch_pin != ILLEGAL)
-    HARDWARE_Conf.peripheral_power_switch_pin = HARDWARE_from_nvs->peripheral_power_switch_pin;
+  if(HARDWARE_from_nvs.battery_level_control_pin != ILLEGAL)
+    HARDWARE_Conf.battery_level_control_pin = HARDWARE_from_nvs.battery_level_control_pin;
+  if(HARDWARE_from_nvs.peripheral_power_switch_pin != ILLEGAL)
+    HARDWARE_Conf.peripheral_power_switch_pin = HARDWARE_from_nvs.peripheral_power_switch_pin;
 
   // morse
-  if(HARDWARE_from_nvs->morse_touch_input_pin != ILLEGAL)
-    HARDWARE_Conf.morse_touch_input_pin = HARDWARE_from_nvs->morse_touch_input_pin;
-  if(HARDWARE_from_nvs->morse_gpio_input_pin != ILLEGAL)
-    HARDWARE_Conf.morse_gpio_input_pin = HARDWARE_from_nvs->morse_gpio_input_pin;
-  if(HARDWARE_from_nvs->morse_output_pin != ILLEGAL)
-    HARDWARE_Conf.morse_output_pin = HARDWARE_from_nvs->morse_output_pin;
+  if(HARDWARE_from_nvs.morse_touch_input_pin != ILLEGAL)
+    HARDWARE_Conf.morse_touch_input_pin = HARDWARE_from_nvs.morse_touch_input_pin;
+  if(HARDWARE_from_nvs.morse_gpio_input_pin != ILLEGAL)
+    HARDWARE_Conf.morse_gpio_input_pin = HARDWARE_from_nvs.morse_gpio_input_pin;
+  if(HARDWARE_from_nvs.morse_output_pin != ILLEGAL)
+    HARDWARE_Conf.morse_output_pin = HARDWARE_from_nvs.morse_output_pin;
 
   // bluetooth
-  if(HARDWARE_from_nvs->bluetooth_enable_pin != ILLEGAL)
-    HARDWARE_Conf.bluetooth_enable_pin = HARDWARE_from_nvs->bluetooth_enable_pin;
+  if(HARDWARE_from_nvs.bluetooth_enable_pin != ILLEGAL)
+    HARDWARE_Conf.bluetooth_enable_pin = HARDWARE_from_nvs.bluetooth_enable_pin;
 
   // oled
-  if(HARDWARE_from_nvs->OLED_type != ILLEGAL)
-    HARDWARE_Conf.OLED_type = HARDWARE_from_nvs->OLED_type;
-  if(HARDWARE_from_nvs->oled_reserved != ILLEGAL)
-    HARDWARE_Conf.oled_reserved = HARDWARE_from_nvs->oled_reserved;
+  if(HARDWARE_from_nvs.OLED_type != ILLEGAL)
+    HARDWARE_Conf.OLED_type = HARDWARE_from_nvs.OLED_type;
+  if(HARDWARE_from_nvs.oled_reserved != ILLEGAL)
+    HARDWARE_Conf.oled_reserved = HARDWARE_from_nvs.oled_reserved;
 
   // RTC module
-  if(HARDWARE_from_nvs->rtc_type != rtc_type_off)
-    HARDWARE_Conf.rtc_type = HARDWARE_from_nvs->rtc_type;
-  if(HARDWARE_from_nvs->rtc_addr != ILLEGAL)
-    HARDWARE_Conf.rtc_addr = HARDWARE_from_nvs->rtc_addr;
+  if(HARDWARE_from_nvs.rtc_type != rtc_type_off)
+    HARDWARE_Conf.rtc_type = HARDWARE_from_nvs.rtc_type;
+  if(HARDWARE_from_nvs.rtc_addr != ILLEGAL)
+    HARDWARE_Conf.rtc_addr = HARDWARE_from_nvs.rtc_addr;
 
   // RGB LED strings
-  if(HARDWARE_from_nvs->rgb_strings) {
-    HARDWARE_Conf.rgb_strings = HARDWARE_from_nvs->rgb_strings;
-    for(int i=0; i < HARDWARE_from_nvs->rgb_strings; i++) {
-      HARDWARE_Conf.rgb_pin[i] = HARDWARE_from_nvs->rgb_pin[i];
-      HARDWARE_Conf.rgb_led_cnt[i] = HARDWARE_from_nvs->rgb_led_cnt[i];
-      HARDWARE_Conf.rgb_led_voltage_type[i] = HARDWARE_from_nvs->rgb_led_voltage_type[i];
+  if(HARDWARE_from_nvs.rgb_strings) {
+    HARDWARE_Conf.rgb_strings = HARDWARE_from_nvs.rgb_strings;
+    for(int i=0; i < HARDWARE_from_nvs.rgb_strings; i++) {
+      HARDWARE_Conf.rgb_pin[i] = HARDWARE_from_nvs.rgb_pin[i];
+      HARDWARE_Conf.rgb_led_cnt[i] = HARDWARE_from_nvs.rgb_led_cnt[i];
+      HARDWARE_Conf.rgb_led_voltage_type[i] = HARDWARE_from_nvs.rgb_led_voltage_type[i];
     }
   }
 
   // MIDI
-  if(HARDWARE_from_nvs->MIDI_in_pin != ILLEGAL)
-    HARDWARE_Conf.MIDI_in_pin = HARDWARE_from_nvs->MIDI_in_pin;
-  if(HARDWARE_from_nvs->MIDI_out_pin != ILLEGAL)
-    HARDWARE_Conf.MIDI_out_pin = HARDWARE_from_nvs->MIDI_out_pin;
+  if(HARDWARE_from_nvs.MIDI_in_pin != ILLEGAL)
+    HARDWARE_Conf.MIDI_in_pin = HARDWARE_from_nvs.MIDI_in_pin;
+  if(HARDWARE_from_nvs.MIDI_out_pin != ILLEGAL)
+    HARDWARE_Conf.MIDI_out_pin = HARDWARE_from_nvs.MIDI_out_pin;
 
   // other
-  if(HARDWARE_from_nvs->magical_fart_output_pin != ILLEGAL)
-    HARDWARE_Conf.magical_fart_output_pin = HARDWARE_from_nvs->magical_fart_output_pin;
-  if(HARDWARE_from_nvs->magical_sense_pin != ILLEGAL)
-    HARDWARE_Conf.magical_sense_pin = HARDWARE_from_nvs->magical_sense_pin;
+  if(HARDWARE_from_nvs.magical_fart_output_pin != ILLEGAL)
+    HARDWARE_Conf.magical_fart_output_pin = HARDWARE_from_nvs.magical_fart_output_pin;
+  if(HARDWARE_from_nvs.magical_sense_pin != ILLEGAL)
+    HARDWARE_Conf.magical_sense_pin = HARDWARE_from_nvs.magical_sense_pin;
 
   // reserved
-
-  free(HARDWARE_from_nvs);
-}
+} // configure_HARDWARE_from_nvs_v3()
 
 
 void nvs_clear_all_keys() {

@@ -1212,7 +1212,8 @@ void setup() {
   setup_initial_HARDWARE_conf();
 
 //#if defined USE_NVS
-//  configure_HARDWARE_from_nvs();	// DADA
+//  //  configure_HARDWARE_from_nvs();	// DADA defunc
+//  configure_HARDWARE_from_nvs_v3();	// DADA TEST
 //#endif
 
 #if defined USE_RGB_LED_STRIP
@@ -1315,7 +1316,8 @@ void setup() {
   //  maybe_restore_from_RTCmem();		// only after deep sleep, else noop
 
 #if defined USE_NVS
-  configure_HARDWARE_from_nvs();	// DADA
+  //  configure_HARDWARE_from_nvs();	// DADA defunc
+  configure_HARDWARE_from_nvs_v3();	// DADA TEST
 #endif
 
 #if defined USE_RGB_LED_STRIP
