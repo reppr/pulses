@@ -1318,6 +1318,7 @@ void setup() {
 #if defined USE_NVS
   //  configure_HARDWARE_from_nvs();	// DADA defunc
   configure_HARDWARE_from_nvs_v3();	// DADA TEST
+  // configure_HARDWARE_from_nvs_v4();	// DADA TEST
 #endif
 
 #if defined USE_RGB_LED_STRIP
