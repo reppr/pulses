@@ -135,11 +135,11 @@ void nvs_read_blob_v1(char* key, void* new_blob, size_t buffer_size) {	// 1st ve
 
 typedef uint32_t nvs_handle_t;	// where is that defined?
 
-void nvs_read_blob_v3(char* key, void* new_blob, size_t buffer_size) {
+bool nvs_read_blob_v3(char* key, void* new_blob, size_t buffer_size) {
   // see: https://github.com/espressif/esp-idf/blob/master/examples/storage/nvs_rw_blob/main/nvs_blob_example_main.c
 
-  MENU.out(F("nvs_read_blob_v3\t"));
-  MENU.outln(key);
+  //	MENU.out(F("nvs_read_blob_v3\t"));	// *DEBUGGING* DADA TODO: REACTIVATE MENU
+  //	MENU.outln(key);
 
   nvs_handle_t my_handle;
   esp_err_t err;
@@ -147,7 +147,7 @@ void nvs_read_blob_v3(char* key, void* new_blob, size_t buffer_size) {
   err = nvs_open("CONFIG", NVS_READWRITE, &my_handle);
   if (err != ESP_OK) {
     esp_err_info(err);
-    return;
+    return true; // error
   }
 
   // Read the size of memory space required for blob
@@ -156,17 +156,19 @@ void nvs_read_blob_v3(char* key, void* new_blob, size_t buffer_size) {
   if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
     esp_err_info(err);
     nvs_close(my_handle);
-    return;
+    return true; // error
   }
-  MENU.out(required_size);
-  MENU.outln(F(" bytes to read"));
+  //	MENU.out(required_size);
+  //	MENU.outln(F(" bytes to read"));
 
   // double check buffer size
   if(required_size > buffer_size) {
-    MENU.error_ln(F("too much"));
+    //	MENU.error_ln(F("too much"));
     nvs_close(my_handle);
-    return;
+    return true; // error
   }
+
+//  //	MENU.outln("size ok"); return true;
 
   // Read previously saved blob if available
   // uint8_t* run_time = (uint8_t*) malloc(required_size);
@@ -174,14 +176,16 @@ void nvs_read_blob_v3(char* key, void* new_blob, size_t buffer_size) {
     err = nvs_get_blob(my_handle, key, new_blob, &required_size);
     if (err != ESP_OK) {
       esp_err_info(err);
-      // free(run_time);
       nvs_close(my_handle);
-      return;
+      return true; // error
     }
   }
 
+//	MENU.outln("read ok"); return true;
+
   // Close
   nvs_close(my_handle);
+  return false; // OK
 } // nvs_read_blob_v3
 
 
@@ -223,11 +227,118 @@ void nvs_save_blob_v3(char* key, void* new_blob, size_t buffer_size) {
 } // nvs_save_blob_v3
 
 
-esp_err_t configure_hardware_from_nvs() {
-  esp_err_t esp_err;
-  pulses_hardware_conf_t read_HARDWARE;
+void configure_HARDWARE_from_nvs() {
+  MENU.outln(F("DADA DEBUGGING configure_HARDWARE_from_nvs() *DEACTIVATED*\n")); return;	// TODO: REMOVE:
+  int v;
+  pulses_hardware_conf_t* HARDWARE_from_nvs = (pulses_hardware_conf_t*) malloc(sizeof(pulses_hardware_conf_t));
+  if(HARDWARE_from_nvs == NULL) {
+    //	MENU.error_ln(F("malloc"));
+    return;
+  }
 
-  return esp_err;
+  if(nvs_read_blob_v3("HARDWARE_nvs", &HARDWARE_from_nvs, sizeof(pulses_hardware_conf_t))) {
+    free(HARDWARE_from_nvs);
+    return;
+  }
+  // blob is loaded now
+
+  // check version compatibility
+  if(HARDWARE_from_nvs->version != HARDWARE_Conf.version) { // DADA *DEBUGGING* CRASH!
+    //	MENU.error_ln(F("version mismatch"));
+    free(HARDWARE_from_nvs);
+    return;
+  }
+
+  // MPU6050
+  if(HARDWARE_from_nvs->mpu6050_addr) {
+    HARDWARE_Conf.mpu6050_addr = HARDWARE_from_nvs->mpu6050_addr;
+    for(int i=0; i<6; i++) {
+      if(HARDWARE_from_nvs->accGyro_offsets[i])
+	HARDWARE_Conf.accGyro_offsets[i] = HARDWARE_from_nvs->accGyro_offsets[i];
+    }
+  }
+
+  // GPIO
+  if(HARDWARE_from_nvs->gpio_pins_cnt) {
+    if(HARDWARE_from_nvs->gpio_pins_cnt > 20)	// invalid?
+      ; //	MENU.error_ln(F("gpio_pins_cnt"));
+    else {
+      for(int i=0; i<HARDWARE_from_nvs->gpio_pins_cnt; i++) {
+	if(HARDWARE_from_nvs->gpio_pins[i] != ILLEGAL) // illegal?
+	  HARDWARE_Conf.gpio_pins[i] = HARDWARE_from_nvs->gpio_pins[i];
+	else {
+	  //	MENU.error_ln(F("illegal gpio"));
+	  break;
+	}
+      }
+    }
+  }
+
+  // DAC
+  if(HARDWARE_from_nvs->DAC1_pin != ILLEGAL)
+    HARDWARE_Conf.DAC1_pin = HARDWARE_from_nvs->DAC1_pin;
+  if(HARDWARE_from_nvs->DAC2_pin != ILLEGAL)
+    HARDWARE_Conf.DAC2_pin = HARDWARE_from_nvs->DAC2_pin;
+
+  // trigger
+  if(HARDWARE_from_nvs->musicbox_trigger_pin != ILLEGAL)
+    HARDWARE_Conf.musicbox_trigger_pin = HARDWARE_from_nvs->musicbox_trigger_pin;
+
+  // battery and peripheral power
+  if(HARDWARE_from_nvs->battery_level_control_pin != ILLEGAL)
+    HARDWARE_Conf.battery_level_control_pin = HARDWARE_from_nvs->battery_level_control_pin;
+  if(HARDWARE_from_nvs->peripheral_power_switch_pin != ILLEGAL)
+    HARDWARE_Conf.peripheral_power_switch_pin = HARDWARE_from_nvs->peripheral_power_switch_pin;
+
+  // morse
+  if(HARDWARE_from_nvs->morse_touch_input_pin != ILLEGAL)
+    HARDWARE_Conf.morse_touch_input_pin = HARDWARE_from_nvs->morse_touch_input_pin;
+  if(HARDWARE_from_nvs->morse_gpio_input_pin != ILLEGAL)
+    HARDWARE_Conf.morse_gpio_input_pin = HARDWARE_from_nvs->morse_gpio_input_pin;
+  if(HARDWARE_from_nvs->morse_output_pin != ILLEGAL)
+    HARDWARE_Conf.morse_output_pin = HARDWARE_from_nvs->morse_output_pin;
+
+  // bluetooth
+  if(HARDWARE_from_nvs->bluetooth_enable_pin != ILLEGAL)
+    HARDWARE_Conf.bluetooth_enable_pin = HARDWARE_from_nvs->bluetooth_enable_pin;
+
+  // oled
+  if(HARDWARE_from_nvs->OLED_type != ILLEGAL)
+    HARDWARE_Conf.OLED_type = HARDWARE_from_nvs->OLED_type;
+  if(HARDWARE_from_nvs->oled_reserved != ILLEGAL)
+    HARDWARE_Conf.oled_reserved = HARDWARE_from_nvs->oled_reserved;
+
+  // RTC module
+  if(HARDWARE_from_nvs->rtc_type != rtc_type_off)
+    HARDWARE_Conf.rtc_type = HARDWARE_from_nvs->rtc_type;
+  if(HARDWARE_from_nvs->rtc_addr != ILLEGAL)
+    HARDWARE_Conf.rtc_addr = HARDWARE_from_nvs->rtc_addr;
+
+  // RGB LED strings
+  if(HARDWARE_from_nvs->rgb_strings) {
+    HARDWARE_Conf.rgb_strings = HARDWARE_from_nvs->rgb_strings;
+    for(int i=0; i < HARDWARE_from_nvs->rgb_strings; i++) {
+      HARDWARE_Conf.rgb_pin[i] = HARDWARE_from_nvs->rgb_pin[i];
+      HARDWARE_Conf.rgb_led_cnt[i] = HARDWARE_from_nvs->rgb_led_cnt[i];
+      HARDWARE_Conf.rgb_led_voltage_type[i] = HARDWARE_from_nvs->rgb_led_voltage_type[i];
+    }
+  }
+
+  // MIDI
+  if(HARDWARE_from_nvs->MIDI_in_pin != ILLEGAL)
+    HARDWARE_Conf.MIDI_in_pin = HARDWARE_from_nvs->MIDI_in_pin;
+  if(HARDWARE_from_nvs->MIDI_out_pin != ILLEGAL)
+    HARDWARE_Conf.MIDI_out_pin = HARDWARE_from_nvs->MIDI_out_pin;
+
+  // other
+  if(HARDWARE_from_nvs->magical_fart_output_pin != ILLEGAL)
+    HARDWARE_Conf.magical_fart_output_pin = HARDWARE_from_nvs->magical_fart_output_pin;
+  if(HARDWARE_from_nvs->magical_sense_pin != ILLEGAL)
+    HARDWARE_Conf.magical_sense_pin = HARDWARE_from_nvs->magical_sense_pin;
+
+  // reserved
+
+  free(HARDWARE_from_nvs);
 }
 
 

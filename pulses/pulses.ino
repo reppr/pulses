@@ -149,70 +149,69 @@ typedef struct pulses_hardware_conf_t {
   uint8_t mpu6050_addr=0;		// flag and i2c addr
 
   // gpio
-  uint8_t gpio_pins_cnt=0;			// used GPIO click pins
-  gpio_pin_t gpio_pins[16]={ILLEGAL};
+  uint8_t gpio_pins_cnt=0;		// used GPIO click pins
+  gpio_pin_t gpio_pins[20]={ILLEGAL};					// %4
 
   // dac
-  uint8_t DAC1_pin=0;	// flag 0 or 25	// 0==flag or pin
-  uint8_t DAC2_pin=0;	// flag 0 or 26	// 0==flag or pin
+  uint8_t DAC1_pin=ILLEGAL;	// !flag ILLEGAL or 25	// ILLEGAL==!flag or pin  // %4
+  uint8_t DAC2_pin=ILLEGAL;	// !flag ILLEGAL or 26	// ILLEGAL==!flag or pin
 
   // trigger
   uint8_t musicbox_trigger_pin=ILLEGAL;
 
   // battery and peripheral power
-  uint8_t battery_level_control_pin=ILLEGAL;
-  uint8_t peripheral_power_switch_pin=ILLEGAL;
+  uint8_t battery_level_control_pin=ILLEGAL;				// %4
+  uint8_t peripheral_power_switch_pin=ILLEGAL; // RENAME: ################################################################
 
   // morse
   uint8_t morse_touch_input_pin=ILLEGAL;
-  uint8_t morse_gpio_input_pin=ILLEGAL;
+  uint8_t morse_gpio_input_pin=ILLEGAL;					// %4
   uint8_t morse_output_pin=ILLEGAL;
 
   // bluetooth
   uint8_t bluetooth_enable_pin=ILLEGAL;
 
   // OLED
-  uint8_t OLED_type = oled_type_off;	// flag and oled_type
-
-  // RGB LED strings
-  uint8_t rgb_strings=0;		// flag and rgb led string count
-  uint8_t rgb_pin[8]={0};
-  uint8_t rgb_led_cnt[8]={0};
-  uint8_t rgb_led_voltage_type=5;
+  uint8_t OLED_type = oled_type_off;	// flag and oled_type RENAME: ################################################################
+  uint8_t oled_reserved=0;						// %4
 
   // RTC
-  uint8_t rtc_type = rtc_type_off;	// flag and rtc_type
+  uint8_t rtc_type = rtc_type_off;	// flag and rtc_type RENAME: ################################################################
   uint8_t rtc_addr=0;			// DS1307_I2C_ADDRESS 0x68	DS3231
 
-  // MCP23017.h
-  uint8_t mcp23017_addr=0;		// unused, reserve space
+  // RGB LED strings
+  uint8_t rgb_strings=0;		// flag and rgb led string cnt
+  uint8_t rgb_pin[8]={0};						// %4
+  uint8_t rgb_led_cnt[8]={0};						// %4
+  uint8_t rgb_led_voltage_type[8]={0};					// %4
 
   // MIDI?
-  uint8_t MIDI_in_pin=ILLEGAL;		// reserved, not implemented yet
+  uint8_t MIDI_in_pin=ILLEGAL;		// reserved, not implemented yet // %4
   uint8_t MIDI_out_pin=ILLEGAL;		// reserved, not implemented yet
 
   // other pins
   uint8_t magical_fart_output_pin=ILLEGAL;	// who knows, maybe?
   uint8_t magical_sense_pin=ILLEGAL;		// maybe?	i.e. see: magical_fart
 
-  uint8_t tone_pin=ILLEGAL;			// used in very old code, could be recycled?
-
   // 8 bytes RESERVED for future use, forward compatibility
-  uint8_t reserved0=ILLEGAL;
+  uint8_t reserved0=ILLEGAL;						// %4
   uint8_t reserved1=ILLEGAL;
   uint8_t reserved2=ILLEGAL;
   uint8_t reserved3=ILLEGAL;
-  uint8_t reserved4=ILLEGAL;
+  uint8_t reserved4=ILLEGAL;						// %4
   uint8_t reserved5=ILLEGAL;
   uint8_t reserved6=ILLEGAL;
   uint8_t reserved7=ILLEGAL;
 
+  // other other
+  uint8_t tone_pin=ILLEGAL; // from very old code, could be recycled?	// %4
+
   // version
   uint8_t version = 0;		// 0 means in development
 
-  // nvs read flags
-  bool read_from_nvs=false;	// set if *anything* was read	do we need|want that?
-  bool gpios_from_nvs=false;
+//// nvs read flags		// do we need|want them?
+//  bool read_from_nvs=false;	// set if *anything* was read	do we need|want that?
+//  bool gpios_from_nvs=false;	// do we need|want that?
 
 } pulses_hardware_conf_t;
 
@@ -1035,6 +1034,7 @@ void show_program_version() {	// program version on menu output *and* OLED
 #endif
 }
 
+
 void setup_initial_HARDWARE_conf() {
 #if defined USE_MPU6050
   HARDWARE_Conf.mpu6050_addr = 0x68;
@@ -1096,7 +1096,7 @@ void setup_initial_HARDWARE_conf() {
   HARDWARE_Conf.rgb_pin[0] = RGB_LED_STRIP_DATA_PIN;
   HARDWARE_Conf.rgb_led_cnt[0] = RGB_STRING_LED_CNT;
   #if defined RGB_LED_STRING_VOLTAGE_TYPE
-    HARDWARE_Conf.rgb_led_voltage_type = RGB_LED_STRING_VOLTAGE_TYPE;
+    HARDWARE_Conf.rgb_led_voltage_type[0] = RGB_LED_STRING_VOLTAGE_TYPE;
   #endif
 #endif
 
@@ -1109,7 +1109,7 @@ void setup_initial_HARDWARE_conf() {
   // nvs flags		// ?????	TODO: implement
   // version		// switch(version)
 
-} //  setup_initial_HARDWARE_conf()
+} // setup_initial_HARDWARE_conf()
 
 
 void show_pin_or_dash(uint8_t pin) {
@@ -1192,7 +1192,7 @@ void show_hardware_conf(pulses_hardware_conf_t* hardware) {
       MENU.outln(hardware->rgb_led_cnt[i]);
     }
     MENU.out(F("voltage type\t\t"));
-    MENU.outln(hardware->rgb_led_voltage_type);
+    MENU.outln(hardware->rgb_led_voltage_type[0]);
   } else
     MENU.outln('_');
 
@@ -1210,6 +1210,11 @@ int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very fi
 
 void setup() {
   setup_initial_HARDWARE_conf();
+
+//#if defined USE_NVS
+//  configure_HARDWARE_from_nvs();	// DADA
+//#endif
+
 #if defined USE_RGB_LED_STRIP
   pulses_RGB_LED_string_init();	// DO THAT EARLY to switch led string off after booting
 #endif
@@ -1308,6 +1313,10 @@ void setup() {
     start_musicBox();	must be blocked if appropriate
   */
   //  maybe_restore_from_RTCmem();		// only after deep sleep, else noop
+
+#if defined USE_NVS
+  configure_HARDWARE_from_nvs();	// DADA
+#endif
 
 #if defined USE_RGB_LED_STRIP
   MENU.out(F("RGB LED string on pin "));
