@@ -171,13 +171,13 @@ typedef struct pulses_hardware_conf_t {
   // bluetooth
   uint8_t bluetooth_enable_pin=ILLEGAL;
 
-  // OLED
+  // monochrome display
   uint8_t monochrome_type = monochrome_type_off;	// flag and monochrome_type
-  uint8_t oled_reserved=0;						// %4
+  uint8_t monochrome_reserved=0;						// %4
 
   // RTC
   uint8_t RTC_type = RTC_type_off;	// flag and RTC_type
-  uint8_t rtc_addr=0;			// DS1307_I2C_ADDRESS 0x68	DS3231
+  uint8_t RTC_addr=0;			// DS1307_I2C_ADDRESS 0x68	DS3231
 
   // RGB LED strings
   uint8_t rgb_strings=0;		// flag and rgb led string cnt
@@ -1166,7 +1166,7 @@ void show_hardware_conf(pulses_hardware_conf_t* hardware) {
   show_pin_or_dash(hardware->bluetooth_enable_pin);
   MENU.ln();
 
-  MENU.out(F("OLED\t\t\t"));
+  MENU.out(F("monochrome\t\t"));
   switch(hardware->monochrome_type) {
   case monochrome_type_off:
     MENU.outln('-');

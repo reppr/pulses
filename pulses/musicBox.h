@@ -3219,7 +3219,7 @@ bool musicBox_reaction(char token) {
       musicBox_short_info();
     break;
   case 'X':
-//case 'Y':	// TODO: free 'Y' for motion UI y-coordinate
+  case 'Y':
   case 'Z':
   case 'A':
   case 'G':

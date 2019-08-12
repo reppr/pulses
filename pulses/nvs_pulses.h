@@ -144,105 +144,224 @@ void nvs_save_blob(char* key, void* new_blob, size_t buffer_size) {
 void configure_HARDWARE_from_nvs() {
   int v;
   pulses_hardware_conf_t HARDWARE_from_nvs;
+  HARDWARE_from_nvs.version = ILLEGAL;	// see below
   MENU.outln(F("configure_HARDWARE_from_nvs()\t"));
 
   if(nvs_read_blob("HARDWARE_nvs", &HARDWARE_from_nvs, sizeof(pulses_hardware_conf_t))) {
     return;
   }
-  // blob is loaded now
+  // blob is loaded now, *if* exists, check that
+  if(HARDWARE_from_nvs.version == ILLEGAL) {		// did key exist?
+    MENU.outln(F("HARDWARE_nvs does not exist"));
+    return;						// no
+  }
 
   // check version compatibility
   if(HARDWARE_from_nvs.version != HARDWARE_Conf.version) {
-    //	MENU.error_ln(F("version mismatch"));
+    MENU.error_ln(F("version mismatch"));
     return;
   }
 
   // MPU6050
   if(HARDWARE_from_nvs.mpu6050_addr) {
     HARDWARE_Conf.mpu6050_addr = HARDWARE_from_nvs.mpu6050_addr;
+
+    bool AccGyr_offset_set=false;
     for(int i=0; i<6; i++) {
       if(HARDWARE_from_nvs.accGyro_offsets[i])
-	HARDWARE_Conf.accGyro_offsets[i] = HARDWARE_from_nvs.accGyro_offsets[i];
+	AccGyr_offset_set = true;
+    }
+
+    if(AccGyr_offset_set) {
+      MENU.out(F("AccGyr offsets\t{"));
+      for(int o, i=0; i<6; i++) {
+	o = HARDWARE_Conf.accGyro_offsets[i] = HARDWARE_from_nvs.accGyro_offsets[i];
+	MENU.out(o);
+	MENU.out(',');
+	MENU.space();
+      }
+      MENU.outln('}');
     }
   }
 
   // GPIO
   if(HARDWARE_from_nvs.gpio_pins_cnt) {
+    MENU.out(F("GPIO clicks\t"));
+    MENU.outln(HARDWARE_from_nvs.gpio_pins_cnt);
+
     if(HARDWARE_from_nvs.gpio_pins_cnt > 20)	// invalid?
-      ; //	MENU.error_ln(F("gpio_pins_cnt"));
+      MENU.error_ln(F("gpio_pins_cnt"));
     else {
+      MENU.out(F("gpio_pins\t{"));
+      uint8_t p;
       for(int i=0; i<HARDWARE_from_nvs.gpio_pins_cnt; i++) {
-	if(HARDWARE_from_nvs.gpio_pins[i] != ILLEGAL) // illegal?
-	  HARDWARE_Conf.gpio_pins[i] = HARDWARE_from_nvs.gpio_pins[i];
-	else {
-	  //	MENU.error_ln(F("illegal gpio"));
-	  break;
+	p = HARDWARE_from_nvs.gpio_pins[i];
+	if(p != ILLEGAL) {	// illegal?
+	  HARDWARE_Conf.gpio_pins[i] = p;
+	  MENU.out(p);
+	  MENU.out(',');
+	  MENU.space();
+	} else {
+	  MENU.out(F("ILL, "));
 	}
-      }
+      } // for( pins )
+      MENU.outln('}');
     }
   }
 
+  uint8_t pin, x, a, n;
+
   // DAC
-  if(HARDWARE_from_nvs.DAC1_pin != ILLEGAL)
-    HARDWARE_Conf.DAC1_pin = HARDWARE_from_nvs.DAC1_pin;
-  if(HARDWARE_from_nvs.DAC2_pin != ILLEGAL)
-    HARDWARE_Conf.DAC2_pin = HARDWARE_from_nvs.DAC2_pin;
+  pin = HARDWARE_from_nvs.DAC1_pin;
+  if(pin != ILLEGAL) {
+    MENU.out(F("DAC1_pin\t"));
+    MENU.outln(pin);
+    HARDWARE_Conf.DAC1_pin = pin;
+  }
+
+  pin = HARDWARE_from_nvs.DAC2_pin;
+  if(pin != ILLEGAL) {
+    MENU.out(F("DAC2_pin\t"));
+    MENU.outln(pin);
+    HARDWARE_Conf.DAC2_pin = pin;
+  }
 
   // trigger
-  if(HARDWARE_from_nvs.musicbox_trigger_pin != ILLEGAL)
-    HARDWARE_Conf.musicbox_trigger_pin = HARDWARE_from_nvs.musicbox_trigger_pin;
+  pin = HARDWARE_from_nvs.musicbox_trigger_pin;
+  if(pin != ILLEGAL) {
+    MENU.out(F("trigger pin\t"));
+    MENU.outln(pin);
+    HARDWARE_Conf.musicbox_trigger_pin = pin;
+  }
 
   // battery and peripheral power
-  if(HARDWARE_from_nvs.battery_level_control_pin != ILLEGAL)
-    HARDWARE_Conf.battery_level_control_pin = HARDWARE_from_nvs.battery_level_control_pin;
-  if(HARDWARE_from_nvs.periph_power_switch_pin != ILLEGAL)
-    HARDWARE_Conf.periph_power_switch_pin = HARDWARE_from_nvs.periph_power_switch_pin;
+  pin = HARDWARE_from_nvs.battery_level_control_pin;
+  if(pin != ILLEGAL) {
+    MENU.out(F("Battery level pin "));
+    MENU.outln(pin);
+    HARDWARE_Conf.battery_level_control_pin = pin;
+  }
+
+  pin = HARDWARE_from_nvs.periph_power_switch_pin;
+  if(pin != ILLEGAL) {
+    MENU.out(F("periph pwr PIN\t"));
+    MENU.outln(pin);
+    HARDWARE_Conf.periph_power_switch_pin = pin;
+  }
 
   // morse
-  if(HARDWARE_from_nvs.morse_touch_input_pin != ILLEGAL)
-    HARDWARE_Conf.morse_touch_input_pin = HARDWARE_from_nvs.morse_touch_input_pin;
-  if(HARDWARE_from_nvs.morse_gpio_input_pin != ILLEGAL)
-    HARDWARE_Conf.morse_gpio_input_pin = HARDWARE_from_nvs.morse_gpio_input_pin;
-  if(HARDWARE_from_nvs.morse_output_pin != ILLEGAL)
-    HARDWARE_Conf.morse_output_pin = HARDWARE_from_nvs.morse_output_pin;
+  pin = HARDWARE_from_nvs.morse_touch_input_pin;
+  if(pin != ILLEGAL) {
+    MENU.out(F("morse touch pin\t"));
+    MENU.outln(pin);
+    HARDWARE_Conf.morse_touch_input_pin = pin;
+  }
+
+  pin = HARDWARE_from_nvs.morse_gpio_input_pin;
+  if(pin != ILLEGAL) {
+    MENU.out(F("morse gpio pin\t"));
+    MENU.outln(pin);
+    HARDWARE_Conf.morse_gpio_input_pin = pin;
+  }
+
+  pin = HARDWARE_from_nvs.morse_output_pin;
+  if(pin != ILLEGAL) {
+    MENU.out(F("morse out pin\t"));
+    MENU.outln(pin);
+    HARDWARE_Conf.morse_output_pin = pin;
+  }
 
   // bluetooth
-  if(HARDWARE_from_nvs.bluetooth_enable_pin != ILLEGAL)
-    HARDWARE_Conf.bluetooth_enable_pin = HARDWARE_from_nvs.bluetooth_enable_pin;
+  pin = HARDWARE_from_nvs.bluetooth_enable_pin;
+  if(pin != ILLEGAL) {
+    MENU.out(F("BT enable pin\t"));
+    MENU.outln(pin);
+    HARDWARE_Conf.bluetooth_enable_pin = pin;
+  }
 
-  // oled
-  if(HARDWARE_from_nvs.monochrome_type != ILLEGAL)
-    HARDWARE_Conf.monochrome_type = HARDWARE_from_nvs.monochrome_type;
-  if(HARDWARE_from_nvs.oled_reserved != ILLEGAL)
-    HARDWARE_Conf.oled_reserved = HARDWARE_from_nvs.oled_reserved;
+  // monochrome
+  x = HARDWARE_from_nvs.monochrome_type;
+  if(x != monochrome_type_off) {
+    MENU.out(F("monochrome type\t"));
+    MENU.outln(x);
+    HARDWARE_Conf.monochrome_type = x;
+  }
+
+  x = HARDWARE_from_nvs.monochrome_reserved;
+  if(x) {
+    MENU.out(F("monochrome reserved\t"));
+    MENU.outln(x);
+    HARDWARE_Conf.monochrome_reserved = x;
+  }
 
   // RTC module
-  if(HARDWARE_from_nvs.RTC_type != RTC_type_off)
-    HARDWARE_Conf.RTC_type = HARDWARE_from_nvs.RTC_type;
-  if(HARDWARE_from_nvs.rtc_addr != ILLEGAL)
-    HARDWARE_Conf.rtc_addr = HARDWARE_from_nvs.rtc_addr;
+  x = HARDWARE_from_nvs.RTC_type;
+  if(x != RTC_type_off) {
+    MENU.out(F("RTC_type\t"));
+    MENU.outln(x);
+    HARDWARE_Conf.RTC_type = x;
+  }
+
+  a = HARDWARE_from_nvs.RTC_addr;
+  if(a) {
+    MENU.out(F("RTC_addr\t\t"));
+    MENU.outln(a);
+    HARDWARE_Conf.RTC_addr = a;
+  }
 
   // RGB LED strings
-  if(HARDWARE_from_nvs.rgb_strings) {
-    HARDWARE_Conf.rgb_strings = HARDWARE_from_nvs.rgb_strings;
-    for(int i=0; i < HARDWARE_from_nvs.rgb_strings; i++) {
-      HARDWARE_Conf.rgb_pin[i] = HARDWARE_from_nvs.rgb_pin[i];
-      HARDWARE_Conf.rgb_led_cnt[i] = HARDWARE_from_nvs.rgb_led_cnt[i];
-      HARDWARE_Conf.rgb_led_voltage_type[i] = HARDWARE_from_nvs.rgb_led_voltage_type[i];
+  n = HARDWARE_from_nvs.rgb_strings;
+  if(n) {
+    HARDWARE_Conf.rgb_strings = n;
+    MENU.out(F("RGB LED strings "));
+    MENU.outln(n);
+    for(int i=0; i < n; i++) {
+      MENU.space(2);
+      MENU.out(i);
+
+      MENU.out(F("  pin "));
+      x = HARDWARE_Conf.rgb_pin[i] = HARDWARE_from_nvs.rgb_pin[i];
+      MENU.out(x);
+
+      MENU.out(F("\tcnt "));
+      x = HARDWARE_Conf.rgb_led_cnt[i] = HARDWARE_from_nvs.rgb_led_cnt[i];
+      MENU.out(x);
+
+      MENU.out(F("\ttype "));
+      x = HARDWARE_Conf.rgb_led_voltage_type[i] = HARDWARE_from_nvs.rgb_led_voltage_type[i];
+      MENU.outln(x);
     }
   }
 
   // MIDI
-  if(HARDWARE_from_nvs.MIDI_in_pin != ILLEGAL)
-    HARDWARE_Conf.MIDI_in_pin = HARDWARE_from_nvs.MIDI_in_pin;
-  if(HARDWARE_from_nvs.MIDI_out_pin != ILLEGAL)
-    HARDWARE_Conf.MIDI_out_pin = HARDWARE_from_nvs.MIDI_out_pin;
+  pin = HARDWARE_from_nvs.MIDI_in_pin;
+  if(pin != ILLEGAL) {
+    MENU.out(F("MIDI_in_pin\t"));
+    MENU.outln(pin);
+    HARDWARE_Conf.MIDI_in_pin = pin;
+  }
+
+  pin = HARDWARE_from_nvs.MIDI_out_pin;
+  if(pin != ILLEGAL) {
+    MENU.out(F("MIDI_out_pin\t"));
+    MENU.outln(pin);
+    HARDWARE_Conf.MIDI_out_pin = pin;
+  }
 
   // other
-  if(HARDWARE_from_nvs.magical_fart_output_pin != ILLEGAL)
-    HARDWARE_Conf.magical_fart_output_pin = HARDWARE_from_nvs.magical_fart_output_pin;
-  if(HARDWARE_from_nvs.magical_sense_pin != ILLEGAL)
-    HARDWARE_Conf.magical_sense_pin = HARDWARE_from_nvs.magical_sense_pin;
+  pin = HARDWARE_from_nvs.magical_fart_output_pin;
+  if(pin != ILLEGAL) {
+    MENU.out(F("magical fart pin "));
+    MENU.outln(pin);
+    HARDWARE_Conf.magical_fart_output_pin = pin;
+  }
+
+  pin = HARDWARE_from_nvs.magical_sense_pin;
+  if(pin != ILLEGAL) {
+    MENU.out(F("magical sense pin "));
+    MENU.outln(pin);
+    HARDWARE_Conf.magical_sense_pin = pin;
+  }
 
   // reserved
 } // configure_HARDWARE_from_nvs()

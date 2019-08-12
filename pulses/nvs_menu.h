@@ -2,22 +2,6 @@
   nvs_menu.h
 */
 
-void store_early_hardware_conf() {
-  pulses_hardware_conf_t hardware;
-
-#if defined USE_RGB_LED_STRIP
-  hardware.rgb_strings = 1;
-  hardware.rgb_led_cnt[0] = RGB_STRING_LED_CNT;
-  hardware.rgb_pin[0] = RGB_LED_STRIP_DATA_PIN;
-#endif
-
-#if defined USE_MPU6050
-  hardware.mpu6050_addr = 0x68;
-#endif
-
-}
-
-
 void nvs_menu_display() {
   MENU.outln(F("Pulses NVS Menu\n"));
 
@@ -87,7 +71,8 @@ bool nvs_menu_reaction(char token) {
   case 'X':
     MENU.drop_input_token();
     nvs_clear_all_keys();
-    MENU.outln("XXX");		// CRASH AFTER THAT ########################################
+    MENU.outln("DADA TODO: DEBUG CRASH");	// menu CRASH AFTER THAT
+    yield();
     break;
 
   default:
