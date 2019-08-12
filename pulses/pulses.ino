@@ -52,6 +52,11 @@ using namespace std;	// ESP8266 needs that
 
 
 /* **************************************************************** */
+// some #define's:
+#define ILLEGAL		-1	// TODO: replace
+#define ILLEGAL8	255	// define ILLEGAL16	ILLEGAL32
+
+/* **************************************************************** */
 // configuration sequence:
 #include "pulses_engine_config.h"	// pulses engine configuration file, do not change
 #include "pulses_systems.h"		// different software systems
@@ -150,26 +155,26 @@ typedef struct pulses_hardware_conf_t {
 
   // gpio
   uint8_t gpio_pins_cnt=0;		// used GPIO click pins
-  gpio_pin_t gpio_pins[20]={ILLEGAL};					// %4
+  gpio_pin_t gpio_pins[20]={ILLEGAL8};					// %4
 
   // dac
-  uint8_t DAC1_pin=ILLEGAL;	// !flag ILLEGAL or 25	// ILLEGAL==!flag or pin  // %4
-  uint8_t DAC2_pin=ILLEGAL;	// !flag ILLEGAL or 26	// ILLEGAL==!flag or pin
+  uint8_t DAC1_pin=ILLEGAL8;	// !flag ILLEGAL8 or 25	// ILLEGAL8==!flag or pin  // %4
+  uint8_t DAC2_pin=ILLEGAL8;	// !flag ILLEGAL8 or 26	// ILLEGAL8==!flag or pin
 
   // trigger
-  uint8_t musicbox_trigger_pin=ILLEGAL;
+  uint8_t musicbox_trigger_pin=ILLEGAL8;
 
   // battery and peripheral power
-  uint8_t battery_level_control_pin=ILLEGAL;				// %4
-  uint8_t periph_power_switch_pin=ILLEGAL;
+  uint8_t battery_level_control_pin=ILLEGAL8;				// %4
+  uint8_t periph_power_switch_pin=ILLEGAL8;
 
   // morse
-  uint8_t morse_touch_input_pin=ILLEGAL;
-  uint8_t morse_gpio_input_pin=ILLEGAL;					// %4
-  uint8_t morse_output_pin=ILLEGAL;
+  uint8_t morse_touch_input_pin=ILLEGAL8;
+  uint8_t morse_gpio_input_pin=ILLEGAL8;					// %4
+  uint8_t morse_output_pin=ILLEGAL8;
 
   // bluetooth
-  uint8_t bluetooth_enable_pin=ILLEGAL;
+  uint8_t bluetooth_enable_pin=ILLEGAL8;
 
   // monochrome display
   uint8_t monochrome_type = monochrome_type_off;	// flag and monochrome_type
@@ -186,25 +191,25 @@ typedef struct pulses_hardware_conf_t {
   uint8_t rgb_led_voltage_type[8]={0};					// %4
 
   // MIDI?
-  uint8_t MIDI_in_pin=ILLEGAL;		// reserved, not implemented yet // %4
-  uint8_t MIDI_out_pin=ILLEGAL;		// reserved, not implemented yet
+  uint8_t MIDI_in_pin=ILLEGAL8;		// reserved, not implemented yet // %4
+  uint8_t MIDI_out_pin=ILLEGAL8;		// reserved, not implemented yet
 
   // other pins
-  uint8_t magical_fart_output_pin=ILLEGAL;	// who knows, maybe?
-  uint8_t magical_sense_pin=ILLEGAL;		// maybe?	i.e. see: magical_fart
+  uint8_t magical_fart_output_pin=ILLEGAL8;	// who knows, maybe?
+  uint8_t magical_sense_pin=ILLEGAL8;		// maybe?	i.e. see: magical_fart
 
   // 8 bytes RESERVED for future use, forward compatibility
-  uint8_t reserved0=ILLEGAL;						// %4
-  uint8_t reserved1=ILLEGAL;
-  uint8_t reserved2=ILLEGAL;
-  uint8_t reserved3=ILLEGAL;
-  uint8_t reserved4=ILLEGAL;						// %4
-  uint8_t reserved5=ILLEGAL;
-  uint8_t reserved6=ILLEGAL;
-  uint8_t reserved7=ILLEGAL;
+  uint8_t reserved0=ILLEGAL8;						// %4
+  uint8_t reserved1=ILLEGAL8;
+  uint8_t reserved2=ILLEGAL8;
+  uint8_t reserved3=ILLEGAL8;
+  uint8_t reserved4=ILLEGAL8;						// %4
+  uint8_t reserved5=ILLEGAL8;
+  uint8_t reserved6=ILLEGAL8;
+  uint8_t reserved7=ILLEGAL8;
 
   // other other
-  uint8_t tone_pin=ILLEGAL; // from very old code, could be recycled?	// %4
+  uint8_t tone_pin=ILLEGAL8; // from very old code, could be recycled?	// %4
 
   // version
   uint8_t version = 0;		// 0 means in development
@@ -306,10 +311,6 @@ musicBox_conf_t musicBoxConf;
 #endif
 
 action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actions
-
-/* **************************************************************** */
-// some #define's:
-#define ILLEGAL		-1
 
 /* **************************************************************** */
 // define gpio_pin_t gpio_pins[GPIO_PINS]	// see: pulses_boards.h

@@ -41,9 +41,18 @@ bool nvs_menu_reaction(char token) {
       MENU.drop_input_token();
       {
 	pulses_hardware_conf_t hardware_from_nvs;
+	hardware_from_nvs.version = ILLEGAL8;	// see below
 	nvs_read_blob("HARDWARE_nvs", &hardware_from_nvs, sizeof(pulses_hardware_conf_t));
-	show_hardware_conf(&hardware_from_nvs);
+	MENU.ln();
+	if(hardware_from_nvs.version == ILLEGAL8)
+	  MENU.outln(F("no data in nvs"));
+	else {
+	  MENU.outln(F("HARDWARE configuration from nvs:"));
+	  show_hardware_conf(&hardware_from_nvs);
+	}
       }
+
+      MENU.outln(F("current HARDWARE configuration:"));
       show_hardware_conf(&HARDWARE_Conf);
       break;
 

@@ -245,3 +245,7 @@ slowly fade rgb leds after ending
 // TODO: stress configuration struct stress_conf_t
 
 see also: ROADMAP.txt
+
+use ILLEGAL8
+#define ILLEGAL		-1	// TODO: replace
+#define ILLEGAL8	255	// define ILLEGAL16	ILLEGAL32
