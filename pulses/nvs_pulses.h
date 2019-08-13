@@ -162,14 +162,14 @@ void configure_HARDWARE_from_nvs() {
   }
 
   // check version compatibility
-  if(HARDWARE_from_nvs.version != HARDWARE_Conf.version) {
+  if(HARDWARE_from_nvs.version != HARDWARE.version) {
     MENU.error_ln(F("version mismatch"));
     return;
   }
 
   // MPU6050
   if(HARDWARE_from_nvs.mpu6050_addr) {
-    HARDWARE_Conf.mpu6050_addr = HARDWARE_from_nvs.mpu6050_addr;
+    HARDWARE.mpu6050_addr = HARDWARE_from_nvs.mpu6050_addr;
 
     bool AccGyr_offset_set=false;
     for(int i=0; i<6; i++) {
@@ -180,7 +180,7 @@ void configure_HARDWARE_from_nvs() {
     if(AccGyr_offset_set) {
       MENU.out(F("AccGyr offsets\t{"));
       for(int o, i=0; i<6; i++) {
-	o = HARDWARE_Conf.accGyro_offsets[i] = HARDWARE_from_nvs.accGyro_offsets[i];
+	o = HARDWARE.accGyro_offsets[i] = HARDWARE_from_nvs.accGyro_offsets[i];
 	MENU.out(o);
 	MENU.out(',');
 	MENU.space();
@@ -202,7 +202,7 @@ void configure_HARDWARE_from_nvs() {
       for(int i=0; i<HARDWARE_from_nvs.gpio_pins_cnt; i++) {
 	p = HARDWARE_from_nvs.gpio_pins[i];
 	if(p != ILLEGAL8) {	// illegal?
-	  HARDWARE_Conf.gpio_pins[i] = p;
+	  HARDWARE.gpio_pins[i] = p;
 	  MENU.out(p);
 	  MENU.out(',');
 	  MENU.space();
@@ -221,14 +221,14 @@ void configure_HARDWARE_from_nvs() {
   if(pin != ILLEGAL8) {
     MENU.out(F("DAC1_pin\t"));
     MENU.outln(pin);
-    HARDWARE_Conf.DAC1_pin = pin;
+    HARDWARE.DAC1_pin = pin;
   }
 
   pin = HARDWARE_from_nvs.DAC2_pin;
   if(pin != ILLEGAL8) {
     MENU.out(F("DAC2_pin\t"));
     MENU.outln(pin);
-    HARDWARE_Conf.DAC2_pin = pin;
+    HARDWARE.DAC2_pin = pin;
   }
 
   // trigger
@@ -236,7 +236,7 @@ void configure_HARDWARE_from_nvs() {
   if(pin != ILLEGAL8) {
     MENU.out(F("trigger pin\t"));
     MENU.outln(pin);
-    HARDWARE_Conf.musicbox_trigger_pin = pin;
+    HARDWARE.musicbox_trigger_pin = pin;
   }
 
   // battery and peripheral power
@@ -244,14 +244,14 @@ void configure_HARDWARE_from_nvs() {
   if(pin != ILLEGAL8) {
     MENU.out(F("Battery level pin "));
     MENU.outln(pin);
-    HARDWARE_Conf.battery_level_control_pin = pin;
+    HARDWARE.battery_level_control_pin = pin;
   }
 
   pin = HARDWARE_from_nvs.periph_power_switch_pin;
   if(pin != ILLEGAL8) {
     MENU.out(F("periph pwr PIN\t"));
     MENU.outln(pin);
-    HARDWARE_Conf.periph_power_switch_pin = pin;
+    HARDWARE.periph_power_switch_pin = pin;
   }
 
   // morse
@@ -259,21 +259,21 @@ void configure_HARDWARE_from_nvs() {
   if(pin != ILLEGAL8) {
     MENU.out(F("morse touch pin\t"));
     MENU.outln(pin);
-    HARDWARE_Conf.morse_touch_input_pin = pin;
+    HARDWARE.morse_touch_input_pin = pin;
   }
 
   pin = HARDWARE_from_nvs.morse_gpio_input_pin;
   if(pin != ILLEGAL8) {
     MENU.out(F("morse gpio pin\t"));
     MENU.outln(pin);
-    HARDWARE_Conf.morse_gpio_input_pin = pin;
+    HARDWARE.morse_gpio_input_pin = pin;
   }
 
   pin = HARDWARE_from_nvs.morse_output_pin;
   if(pin != ILLEGAL8) {
     MENU.out(F("morse out pin\t"));
     MENU.outln(pin);
-    HARDWARE_Conf.morse_output_pin = pin;
+    HARDWARE.morse_output_pin = pin;
   }
 
   // bluetooth
@@ -281,7 +281,7 @@ void configure_HARDWARE_from_nvs() {
   if(pin != ILLEGAL8) {
     MENU.out(F("BT enable pin\t"));
     MENU.outln(pin);
-    HARDWARE_Conf.bluetooth_enable_pin = pin;
+    HARDWARE.bluetooth_enable_pin = pin;
   }
 
   // monochrome
@@ -289,14 +289,14 @@ void configure_HARDWARE_from_nvs() {
   if(x != monochrome_type_off) {
     MENU.out(F("monochrome type\t"));
     MENU.outln(x);
-    HARDWARE_Conf.monochrome_type = x;
+    HARDWARE.monochrome_type = x;
   }
 
   x = HARDWARE_from_nvs.monochrome_reserved;
   if(x) {
     MENU.out(F("monochrome reserved\t"));
     MENU.outln(x);
-    HARDWARE_Conf.monochrome_reserved = x;
+    HARDWARE.monochrome_reserved = x;
   }
 
   // RTC module
@@ -304,47 +304,46 @@ void configure_HARDWARE_from_nvs() {
   if(x != RTC_type_off) {
     MENU.out(F("RTC_type\t"));
     MENU.outln(x);
-    HARDWARE_Conf.RTC_type = x;
+    HARDWARE.RTC_type = x;
   }
 
   a = HARDWARE_from_nvs.RTC_addr;
   if(a) {
     MENU.out(F("RTC_addr\t\t"));
     MENU.outln(a);
-    HARDWARE_Conf.RTC_addr = a;
+    HARDWARE.RTC_addr = a;
   }
 
   // RGB LED strings
   n = HARDWARE_from_nvs.rgb_strings;
   if(n) {
-    HARDWARE_Conf.rgb_strings = n;
+    HARDWARE.rgb_strings = n;
     MENU.out(F("RGB LED strings "));
     MENU.outln(n);
-    uint8_t voltage_type0=ILLEGAL8;	// HACK: just 1 string...
+
     for(int i=0; i < n; i++) {
       MENU.space(2);
       MENU.out(i);
 
       MENU.out(F("  pin "));
-      x = HARDWARE_Conf.rgb_pin[i] = HARDWARE_from_nvs.rgb_pin[i];
+      x = HARDWARE.rgb_pin[i] = HARDWARE_from_nvs.rgb_pin[i];
       MENU.out(x);
 
       MENU.out(F("\tcnt "));
-      x = HARDWARE_Conf.rgb_led_cnt[i] = HARDWARE_from_nvs.rgb_led_cnt[i];
+      x = HARDWARE.rgb_led_cnt[i] = HARDWARE_from_nvs.rgb_led_cnt[i];
       MENU.out(x);
 
       MENU.out(F("\ttype "));
-      x = HARDWARE_Conf.rgb_led_voltage_type[i] = HARDWARE_from_nvs.rgb_led_voltage_type[i];
+      x = HARDWARE.rgb_led_voltage_type[i] = HARDWARE_from_nvs.rgb_led_voltage_type[i];
       MENU.out(x);
       MENU.outln('V');
-
-      voltage_type0 = x;
     }
 
-    if(voltage_type0 != ILLEGAL8) {
-      MENU.out(F("set_rgb_string_voltage_type("));
-      MENU.out(voltage_type0);
-      MENU.outln(')');
+    // currently *all* strings share software conf (as setup for string[0])
+    if((x = HARDWARE_from_nvs.rgb_led_voltage_type[0]) != ILLEGAL8) {
+      extern int selected_rgb_LED_string;
+      extern void set_rgb_string_voltage_type(int, int);
+      set_rgb_string_voltage_type(x, selected_rgb_LED_string);
     }
   }
 
@@ -353,14 +352,14 @@ void configure_HARDWARE_from_nvs() {
   if(pin != ILLEGAL8) {
     MENU.out(F("MIDI_in_pin\t"));
     MENU.outln(pin);
-    HARDWARE_Conf.MIDI_in_pin = pin;
+    HARDWARE.MIDI_in_pin = pin;
   }
 
   pin = HARDWARE_from_nvs.MIDI_out_pin;
   if(pin != ILLEGAL8) {
     MENU.out(F("MIDI_out_pin\t"));
     MENU.outln(pin);
-    HARDWARE_Conf.MIDI_out_pin = pin;
+    HARDWARE.MIDI_out_pin = pin;
   }
 
   // other
@@ -368,14 +367,14 @@ void configure_HARDWARE_from_nvs() {
   if(pin != ILLEGAL8) {
     MENU.out(F("magical fart pin "));
     MENU.outln(pin);
-    HARDWARE_Conf.magical_fart_output_pin = pin;
+    HARDWARE.magical_fart_output_pin = pin;
   }
 
   pin = HARDWARE_from_nvs.magical_sense_pin;
   if(pin != ILLEGAL8) {
     MENU.out(F("magical sense pin "));
     MENU.outln(pin);
-    HARDWARE_Conf.magical_sense_pin = pin;
+    HARDWARE.magical_sense_pin = pin;
   }
 
   // reserved

@@ -222,7 +222,7 @@ typedef struct pulses_hardware_conf_t {
 
 } pulses_hardware_conf_t;
 
-pulses_hardware_conf_t HARDWARE_Conf;	// hardware of this instrument
+pulses_hardware_conf_t HARDWARE;	// hardware of this instrument
 
 
 #if defined USE_ESP_NOW
@@ -1046,71 +1046,71 @@ void show_program_version() {	// program version on menu output *and* OLED
 
 void setup_initial_HARDWARE_conf() {
 #if defined USE_MPU6050
-  HARDWARE_Conf.mpu6050_addr = 0x68;
+  HARDWARE.mpu6050_addr = 0x68;
 #endif
 
-  HARDWARE_Conf.gpio_pins_cnt = GPIO_PINS;
+  HARDWARE.gpio_pins_cnt = GPIO_PINS;
   if (GPIO_PINS) {
     for(int i=0; i<GPIO_PINS; i++) {
       extern gpio_pin_t gpio_pins[GPIO_PINS];
-      HARDWARE_Conf.gpio_pins[i] = gpio_pins[i];
+      HARDWARE.gpio_pins[i] = gpio_pins[i];
     }
   }
 
 #if defined  USE_DACs
-  HARDWARE_Conf.DAC1_pin = 25;
+  HARDWARE.DAC1_pin = 25;
   #if (USE_DACs > 1)
-  HARDWARE_Conf.DAC2_pin = 26;
+  HARDWARE.DAC2_pin = 26;
   #endif
 #endif
 
 #if defined MUSICBOX_TRIGGER_PIN
-  HARDWARE_Conf.musicbox_trigger_pin=MUSICBOX_TRIGGER_PIN;
+  HARDWARE.musicbox_trigger_pin=MUSICBOX_TRIGGER_PIN;
 #endif
 
 #if defined BATTERY_LEVEL_CONTROL_PIN
-  HARDWARE_Conf.battery_level_control_pin=BATTERY_LEVEL_CONTROL_PIN;
+  HARDWARE.battery_level_control_pin=BATTERY_LEVEL_CONTROL_PIN;
 #endif
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
-  HARDWARE_Conf.periph_power_switch_pin = PERIPHERAL_POWER_SWITCH_PIN;
+  HARDWARE.periph_power_switch_pin = PERIPHERAL_POWER_SWITCH_PIN;
 #endif
 
 #if defined MORSE_TOUCH_INPUT_PIN
-  HARDWARE_Conf.morse_touch_input_pin = MORSE_TOUCH_INPUT_PIN;
+  HARDWARE.morse_touch_input_pin = MORSE_TOUCH_INPUT_PIN;
 #endif
 
 #if defined MORSE_GPIO_INPUT_PIN
-  HARDWARE_Conf.morse_gpio_input_pin = MORSE_GPIO_INPUT_PIN;
+  HARDWARE.morse_gpio_input_pin = MORSE_GPIO_INPUT_PIN;
 #endif
 
 #if defined MORSE_OUTPUT_PIN
-  HARDWARE_Conf.morse_output_pin = MORSE_OUTPUT_PIN;
+  HARDWARE.morse_output_pin = MORSE_OUTPUT_PIN;
 #endif
 
 #if defined BLUETOOTH_ENABLE_PIN
-  HARDWARE_Conf.bluetooth_enable_pin = BLUETOOTH_ENABLE_PIN;
+  HARDWARE.bluetooth_enable_pin = BLUETOOTH_ENABLE_PIN;
 #endif
 
 #if defined USE_MONOCHROME_DISPLAY
   #if defined BOARD_HELTEC_OLED
-    HARDWARE_Conf.monochrome_type = monochrome_type_heltec;
+    HARDWARE.monochrome_type = monochrome_type_heltec;
   #elif defined BOARD_OLED_LIPO
-    HARDWARE_Conf.monochrome_type = monochrome_type_LiPO;
+    HARDWARE.monochrome_type = monochrome_type_LiPO;
   #endif
 #endif
 
 #if defined USE_RGB_LED_STRIP
-  HARDWARE_Conf.rgb_strings = 1;	// I use only one
-  HARDWARE_Conf.rgb_pin[0] = RGB_LED_STRIP_DATA_PIN;
-  HARDWARE_Conf.rgb_led_cnt[0] = RGB_STRING_LED_CNT;
+  HARDWARE.rgb_strings = 1;	// I use only one
+  HARDWARE.rgb_pin[0] = RGB_LED_STRIP_DATA_PIN;
+  HARDWARE.rgb_led_cnt[0] = RGB_STRING_LED_CNT;
   #if defined RGB_LED_STRING_VOLTAGE_TYPE
-    HARDWARE_Conf.rgb_led_voltage_type[0] = RGB_LED_STRING_VOLTAGE_TYPE;
+    HARDWARE.rgb_led_voltage_type[0] = RGB_LED_STRING_VOLTAGE_TYPE;
   #endif
 #endif
 
 #if defined USE_RTC_MODULE
-  HARDWARE_Conf.RTC_type = RTC_type_DS1307;
+  HARDWARE.RTC_type = RTC_type_DS1307;
 #endif
 
   // MIDI		// TODO: implement hard and software

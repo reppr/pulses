@@ -53,12 +53,12 @@ bool nvs_menu_reaction(char token) {
       }
 
       MENU.outln(F("current HARDWARE configuration:"));
-      show_hardware_conf(&HARDWARE_Conf);
+      show_hardware_conf(&HARDWARE);
       break;
 
     case 'S':
       MENU.drop_input_token();
-      nvs_save_blob("HARDWARE_nvs", &HARDWARE_Conf, sizeof(pulses_hardware_conf_t));
+      nvs_save_blob("HARDWARE_nvs", &HARDWARE, sizeof(pulses_hardware_conf_t));
       break;
 
     default:

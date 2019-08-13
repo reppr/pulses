@@ -3509,16 +3509,16 @@ bool musicBox_reaction(char token) {
     case 'V':	// 'LV' voltage_type
       MENU.drop_input_token();
       {
-	int voltage = MENU.numeric_input((long) HARDWARE_Conf.rgb_led_voltage_type[selected_rgb_LED_string]);
+	int voltage = MENU.numeric_input((long) HARDWARE.rgb_led_voltage_type[selected_rgb_LED_string]);
 	if((voltage > -1) && (voltage < 256)) {
-	  //	  HARDWARE_Conf.rgb_led_voltage_type[selected_rgb_LED_string] = voltage;
+	  //	  HARDWARE.rgb_led_voltage_type[selected_rgb_LED_string] = voltage;
 	  set_rgb_string_voltage_type(voltage, selected_rgb_LED_string);
 	}
       }
 
       if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
 	MENU.out(F("voltage_type "));
-	MENU.outln(HARDWARE_Conf.rgb_led_voltage_type[selected_rgb_LED_string]);
+	MENU.outln(HARDWARE.rgb_led_voltage_type[selected_rgb_LED_string]);
       }
       break;
 
@@ -3904,7 +3904,7 @@ bool musicBox_reaction(char token) {
 
 #if defined USE_ESP_NOW	// (else: pulses 'D')
   case 'D':		// musicBox 'D'
-    show_hardware_conf(&HARDWARE_Conf);
+    show_hardware_conf(&HARDWARE);
     //display_peer_ID_list();
     //random_RGB_string(MENU.numeric_input(4));
 
