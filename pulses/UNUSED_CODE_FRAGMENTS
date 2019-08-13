@@ -3,7 +3,7 @@
   DOES NOT WORK: non static member function	TODO: fix or remove ################
 */
 bool Pulses::setup_icode_seeder(int pulse, pulse_time_t period, icode_t* icode_p, action_flags_t dest_action_flags) {
-  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
+  if ((pulse > -1) && (pulse < PL_MAX) && (pulse != ILLEGAL32)) {
     pulses[pulse].period = period;
     set_icode_p(pulse, icode_p, false);		// icode inactive in seeder
     set_payload(pulse, seed_icode_player);
@@ -16,7 +16,7 @@ bool Pulses::setup_icode_seeder(int pulse, pulse_time_t period, icode_t* icode_p
 
 void Pulses::seed_icode_player(int seeder_pulse) {	// as payload for seeder
   int dest_pulse = setup_pulse(NULL, ACTIVE, pulses[seeder_pulse].next, pulses[seeder_pulse].period);
-  if (dest_pulse != ILLEGAL) {
+  if (dest_pulse != ILLEGAL32) {
     /*
       pulses[pulse].icode_p	icode start pointer
       pulses[pulse].icode_index	icode index

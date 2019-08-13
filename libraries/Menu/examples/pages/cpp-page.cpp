@@ -57,13 +57,6 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
 
 /* **************************************************************** */
-/* define some things early: */
-
-#ifndef ILLEGAL
-  #define ILLEGAL	-1
-#endif
-
-/* **************************************************************** */
 
 //	void cpp_info_display();		// defined later on
 //	bool cpp_info_reaction(char token);	// defined later on

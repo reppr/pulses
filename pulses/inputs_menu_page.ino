@@ -23,8 +23,6 @@
 */
 
 /* **************************************************************** */
-#define ILLEGAL		-1
-/* **************************************************************** */
 
 
 // display function for the inputs_menu page:
@@ -120,16 +118,17 @@ bool inputs_reaction(char token) {
     break;
 
   case 'N':	// set selection	do i want that at all?
-    newValue = MENU.numeric_input(ILLEGAL);
-    if ((newValue >= 0) && (newValue < INPUTS.get_inputs_allocated())) {
-      INPUTS.selected_inputs = 1 << newValue;
+    newValue = MENU.numeric_input(ILLEGAL32);
+    if(newValue != ILLEGAL32) {
+	if ((newValue >= 0) && (newValue < INPUTS.get_inputs_allocated())) {
+	  INPUTS.selected_inputs = 1 << newValue;
 
-      if (MENU.verbosity >= VERBOSITY_SOME) {
-	print_selected_inputs();
-	inputs_info();
-      }
-    } else MENU.OutOfRange();
-
+	  if (MENU.verbosity >= VERBOSITY_SOME) {
+	    print_selected_inputs();
+	    inputs_info();
+	  }
+	} else MENU.OutOfRange();
+      } // else TODO:?	bare 'N'
     break;
 
   case 'I':	// Initialize (raw)
@@ -169,29 +168,33 @@ bool inputs_reaction(char token) {
 
   case 'A':	// set_inp A
     if(anything_selected()) {	// if not, tell the user how to select
-      newValue = MENU.numeric_input(ILLEGAL);
-      if (newValue == (gpio_pin_t) newValue) {
-	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (INPUTS.selected_inputs & ( 1 << inp))
-	    INPUTS.set_inp_A(inp, newValue);
+      newValue = MENU.numeric_input(ILLEGAL32);
+      if(newValue != ILLEGAL32) {
+	if (newValue == (gpio_pin_t) newValue) {
+	  for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	    if (INPUTS.selected_inputs & ( 1 << inp))
+	      INPUTS.set_inp_A(inp, newValue);
 
-	if (MENU.verbosity >= VERBOSITY_SOME)
-	  inputs_info();
-      } else MENU.OutOfRange();
-    }
+	  if (MENU.verbosity >= VERBOSITY_SOME)
+	    inputs_info();
+	} else MENU.OutOfRange();
+      }
+    } // else	TODO: bare 'A'
     break;
 
   case 'B':	// set_inp B
     if(anything_selected()) {	// if not, tell the user how to select
-      newValue = MENU.numeric_input(ILLEGAL);
-      if (newValue == (gpio_pin_t) newValue) {
-	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (INPUTS.selected_inputs & ( 1 << inp))
-	    INPUTS.set_inp_B(inp, newValue);
+      newValue = MENU.numeric_input(ILLEGAL32);
+      if(newValue != ILLEGAL32) {
+	if (newValue == (gpio_pin_t) newValue) {
+	  for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	    if (INPUTS.selected_inputs & ( 1 << inp))
+	      INPUTS.set_inp_B(inp, newValue);
 
-	if (MENU.verbosity >= VERBOSITY_SOME)
-	  inputs_info();
-      } else MENU.OutOfRange();
+	  if (MENU.verbosity >= VERBOSITY_SOME)
+	    inputs_info();
+	} else MENU.OutOfRange();
+      } // else	TODO: bare 'B'
     }
     break;
 
@@ -199,67 +202,75 @@ bool inputs_reaction(char token) {
     if (!INPUTS.selected_inputs)
       return false;			// unhide verbosity '+'
 
-    newValue = MENU.numeric_input(ILLEGAL);
-    if (newValue == (ioP_t) newValue) {
-      for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	if (INPUTS.selected_inputs & ( 1 << inp))
-	  INPUTS.set_in_offset(inp, newValue);
+    newValue = MENU.numeric_input(ILLEGAL32);
+    if(newValue != ILLEGAL32) {
+      if (newValue == (ioP_t) newValue) {
+	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	  if (INPUTS.selected_inputs & ( 1 << inp))
+	    INPUTS.set_in_offset(inp, newValue);
 
-      if (MENU.verbosity >= VERBOSITY_SOME)
-	inputs_info();
+	if (MENU.verbosity >= VERBOSITY_SOME)
+	  inputs_info();
 
-    } else MENU.OutOfRange();
+      } else MENU.OutOfRange();
+    } // else	TODO: bare '+'
     break;
 
   case '*':	// set_mul
     if(anything_selected()) {	// if not, tell the user how to select
-      newValue = MENU.numeric_input(ILLEGAL);
-      if (newValue == (ioP_t) newValue) {
-	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (INPUTS.selected_inputs & ( 1 << inp))
-	    INPUTS.set_mul(inp, newValue);
-	if (MENU.verbosity >= VERBOSITY_SOME)
-	  inputs_info();
-      } else MENU.OutOfRange();
-    }
+      newValue = MENU.numeric_input(ILLEGAL32);
+      if(newValue != ILLEGAL32) {
+	if (newValue == (ioP_t) newValue) {
+	  for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	    if (INPUTS.selected_inputs & ( 1 << inp))
+	      INPUTS.set_mul(inp, newValue);
 
-    if (MENU.verbosity >= VERBOSITY_SOME)
-      inputs_info();
+	  if (MENU.verbosity >= VERBOSITY_SOME)
+	    inputs_info();
+	} else MENU.OutOfRange();
+      }
 
+      if (MENU.verbosity >= VERBOSITY_SOME)
+	inputs_info();
+    } // else	TODO: bare '*'
     break;
 
   case '/':	// set_div
     if(anything_selected()) {	// if not, tell the user how to select
-      newValue = MENU.numeric_input(ILLEGAL);
-      if (newValue == (ioP_t) newValue) {
-	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (INPUTS.selected_inputs & ( 1 << inp))
-	    INPUTS.set_div(inp, newValue);
-	if (MENU.verbosity >= VERBOSITY_SOME)
-	  inputs_info();
-      } else MENU.OutOfRange();
+      newValue = MENU.numeric_input(ILLEGAL32);
+      if(newValue != ILLEGAL32) {
+	if (newValue == (ioP_t) newValue) {
+	  for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	    if (INPUTS.selected_inputs & ( 1 << inp))
+	      INPUTS.set_div(inp, newValue);
+
+	  if (MENU.verbosity >= VERBOSITY_SOME)
+	    inputs_info();
+	} else MENU.OutOfRange();
+      } // else	TODO?	bare '/'
+
+      if (MENU.verbosity >= VERBOSITY_SOME)
+	inputs_info();
     }
-
-    if (MENU.verbosity >= VERBOSITY_SOME)
-      inputs_info();
-
     break;
 
   case '>':	// set_out_offset
     if(anything_selected()) {	// if not, tell the user how to select
-      newValue = MENU.numeric_input(ILLEGAL);
-      if (newValue == (ioV_t) newValue) {
-	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (INPUTS.selected_inputs & ( 1 << inp))
-	    INPUTS.set_out_offset(inp, newValue);
-	if (MENU.verbosity >= VERBOSITY_SOME)
-	  inputs_info();
-      } else MENU.OutOfRange();
+      newValue = MENU.numeric_input(ILLEGAL32);
+      if(newValue != ILLEGAL32) {
+	if (newValue == (ioV_t) newValue) {
+	  for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	    if (INPUTS.selected_inputs & ( 1 << inp))
+	      INPUTS.set_out_offset(inp, newValue);
+
+	  if (MENU.verbosity >= VERBOSITY_SOME)
+	    inputs_info();
+	} else MENU.OutOfRange();
+      } // else	TODO? bare '>'
     }
 
     if (MENU.verbosity >= VERBOSITY_SOME)
       inputs_info();
-
     break;
 
   case ':':	// toggle output reaction
@@ -287,8 +298,8 @@ bool inputs_reaction(char token) {
 	    //INPUTS.fix_output_reaction_flag(inp);
 	  }
       } else {
-	newValue = MENU.numeric_input(ILLEGAL);
-	if (newValue!=ILLEGAL) {
+	newValue = MENU.numeric_input(ILLEGAL32);
+	if (newValue != ILLEGAL32) {
 	  for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++) {
 	    if (INPUTS.selected_inputs & ( 1 << inp)) {
 	      INPUTS.set_flags(inp, (INPUTS.get_flags(inp) | SET_PWM ));
@@ -306,14 +317,16 @@ bool inputs_reaction(char token) {
 
   case 'O':	// set_out_A
     if(anything_selected()) {	// if not, tell the user how to select
-      newValue = MENU.numeric_input(ILLEGAL);
-      if (newValue == (gpio_pin_t) newValue) {
-	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (INPUTS.selected_inputs & ( 1 << inp))
-	    INPUTS.set_out_A(inp, newValue);
-	if (MENU.verbosity >= VERBOSITY_SOME)
-	  inputs_info();
-      } else MENU.OutOfRange();
+      newValue = MENU.numeric_input(ILLEGAL32);
+      if (newValue != ILLEGAL32) {
+	if (newValue == (gpio_pin_t) newValue) {
+	  for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	    if (INPUTS.selected_inputs & ( 1 << inp))
+	      INPUTS.set_out_A(inp, newValue);
+	  if (MENU.verbosity >= VERBOSITY_SOME)
+	    inputs_info();
+	} else MENU.OutOfRange();
+      } // else	TODO? bare 'O'
     }
 
     if (MENU.verbosity >= VERBOSITY_SOME)
@@ -323,56 +336,59 @@ bool inputs_reaction(char token) {
 
   case 'Q':	 // set_out_B
     if(anything_selected()) {	// if not, tell the user how to select
-      newValue = MENU.numeric_input(ILLEGAL);
-      if (newValue == (gpio_pin_t) newValue) {
-	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (INPUTS.selected_inputs & ( 1 << inp))
-	    INPUTS.set_out_B(inp, newValue);
-	if (MENU.verbosity >= VERBOSITY_SOME)
-	  inputs_info();
-      } else MENU.OutOfRange();
-    }
+      newValue = MENU.numeric_input(ILLEGAL32);
+      if (newValue != ILLEGAL32) {
+	if (newValue == (gpio_pin_t) newValue) {
+	  for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	    if (INPUTS.selected_inputs & ( 1 << inp))
+	      INPUTS.set_out_B(inp, newValue);
+	  if (MENU.verbosity >= VERBOSITY_SOME)
+	    inputs_info();
+	} else MENU.OutOfRange();
+      }
+    } // else bare 'Q'
 
     if (MENU.verbosity >= VERBOSITY_SOME)
       inputs_info();
-
     break;
 
   case 'S':	// malloc_samples
     if(anything_selected()) {	// if not, tell the user how to select
-      newValue = MENU.numeric_input(ILLEGAL);
-      if (newValue > 0) {
-	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (INPUTS.selected_inputs & ( 1 << inp))
-	    if (!INPUTS.malloc_samples(inp, newValue)) {
-	      MENU.OutOfRange();
-	      break;
-	    }
-	if (MENU.verbosity >= VERBOSITY_SOME)
-	  inputs_info();
-      } else MENU.OutOfRange();
+      newValue = MENU.numeric_input(ILLEGAL32);
+      if (newValue != ILLEGAL32) {
+	if (newValue > 0) {
+	  for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	    if (INPUTS.selected_inputs & ( 1 << inp))
+	      if (!INPUTS.malloc_samples(inp, newValue)) {
+		MENU.OutOfRange();
+		break;
+	      }
+	  if (MENU.verbosity >= VERBOSITY_SOME)
+	    inputs_info();
+	} else MENU.OutOfRange();
+      } // else bare 'S'
     }
 
     if (MENU.verbosity >= VERBOSITY_SOME)
       inputs_info();
-
     break;
 
   case '#':	// set_counter	do i want that at all?
     if(anything_selected()) {	// if not, tell the user how to select
-      newValue = MENU.numeric_input(ILLEGAL);
-      if (newValue == (unsigned long) newValue) {
-	for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
-	  if (INPUTS.selected_inputs & ( 1 << inp))
-	    INPUTS.set_counter(inp, newValue);
-	if (MENU.verbosity >= VERBOSITY_SOME)
-	  inputs_info();
-      } else MENU.OutOfRange();
+      newValue = MENU.numeric_input(ILLEGAL32);
+      if (newValue != ILLEGAL32) {
+	if (newValue == (unsigned long) newValue) {
+	  for (int inp=0; inp < INPUTS.get_inputs_allocated(); inp++)
+	    if (INPUTS.selected_inputs & ( 1 << inp))
+	      INPUTS.set_counter(inp, newValue);
+	  if (MENU.verbosity >= VERBOSITY_SOME)
+	    inputs_info();
+	} else MENU.OutOfRange();
+      } // else bare '#'
     }
 
     if (MENU.verbosity >= VERBOSITY_SOME)
       inputs_info();
-
     break;
 
 
@@ -386,7 +402,6 @@ bool inputs_reaction(char token) {
 
   case 'i': case '.':	// inputs_info
     inputs_info();
-
     break;
 
   case 't':	// test_in2o_calculation
@@ -398,7 +413,6 @@ bool inputs_reaction(char token) {
 	    test_in2o_calculation(inp, (int) newValue);
       } else MENU.OutOfRange();
     }
-
     break;
 
   case 'T':	// test_in2o_calculation range
@@ -414,7 +428,6 @@ bool inputs_reaction(char token) {
 	}
       }
     }
-
     break;
 
   case '!':	// toggle activity

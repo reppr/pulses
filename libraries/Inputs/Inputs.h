@@ -61,7 +61,7 @@
 //#undef I2O_PARAMETER_IS_FLOAT		// see: inputs_test.ino
 
 // integer, bigger range:
-#define I2O_parameter_t	long
+#define I2O_parameter_t		long
 #define I2O_value_t		long
 #undef  I2O_PARAMETER_IS_FLOAT	// see: inputs_test.ino
 

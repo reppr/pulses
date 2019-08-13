@@ -160,9 +160,12 @@ int main() {
       return ((int) &free) - ((int) __brkval);
   }
 #else			// not used yet on PC ;(	################
-  int get_free_RAM() { return ILLEGAL; }
-#endif
 
+  #if ! defined ILLEGAL32
+    #define ILLEGAL32	0xffffffff
+  #endif
+  int get_free_RAM() { return ILLEGAL32; }
+#endif
 
 
 /* **************************************************************** */

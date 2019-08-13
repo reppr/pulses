@@ -476,13 +476,9 @@ void show_morse_output_buffer() {
   }
 }
 
-#ifndef ILLEGAL
-  #define ILLEGAL	~0
-#endif
-
 bool morse_store_as_letter(char token) {	// translate special cases and store as letters
   switch (token) {
-  case ILLEGAL:
+  case ILLEGAL8:
     morse_2output_buffer(MORSE_TOKEN_ILLEGAL);
   case '\0':
     return false;
@@ -571,7 +567,7 @@ bool morse2letter_decoder_state(char token, bool init=false) {
   // decode letters
   if((token == MORSE_TOKEN_dot) || (token == MORSE_TOKEN_dash)) {
     switch (state) {
-    case ILLEGAL:	// TODO: needs testing ################
+    case ILLEGAL8:	// TODO: needs testing ################
       state='\0';
     case '\0':	//	initial state, start reading first token
       switch(token) {
@@ -768,7 +764,7 @@ bool morse2letter_decoder_state(char token, bool init=false) {
 	state = 'É';
 	break;
       case MORSE_TOKEN_dash:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       }
       break;
@@ -777,7 +773,7 @@ bool morse2letter_decoder_state(char token, bool init=false) {
       // case 'Ü':	// ..--
       switch(token) {
       case MORSE_TOKEN_dot:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       case MORSE_TOKEN_dash:
 	state = '2';
@@ -788,7 +784,7 @@ bool morse2letter_decoder_state(char token, bool init=false) {
     case 'L':	// .-..
       switch(token) {
       case MORSE_TOKEN_dot:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       case MORSE_TOKEN_dash:
 	state = 'È';
@@ -802,7 +798,7 @@ bool morse2letter_decoder_state(char token, bool init=false) {
 	state = 'a';	// 'a' means AR Spruchende here
 	break;
       case MORSE_TOKEN_dash:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       }
       break;
@@ -821,7 +817,7 @@ bool morse2letter_decoder_state(char token, bool init=false) {
     case 'J':	// .---
       switch(token) {
       case MORSE_TOKEN_dot:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       case MORSE_TOKEN_dash:
 	state = '1';
@@ -846,7 +842,7 @@ bool morse2letter_decoder_state(char token, bool init=false) {
 	state = '/';
 	break;
       case MORSE_TOKEN_dash:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       }
       break;
@@ -854,7 +850,7 @@ bool morse2letter_decoder_state(char token, bool init=false) {
     case 'C':	// -.-.
       switch(token) {
       case MORSE_TOKEN_dot:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       case MORSE_TOKEN_dash:
 	state = 'k';	// 'k' means KA	Spruchanfang
@@ -868,7 +864,7 @@ bool morse2letter_decoder_state(char token, bool init=false) {
 	state = '(';
 	break;
       case MORSE_TOKEN_dash:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       }
       break;
@@ -876,7 +872,7 @@ bool morse2letter_decoder_state(char token, bool init=false) {
     case 'Z':	// --..
       switch(token) {
       case MORSE_TOKEN_dot:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       case MORSE_TOKEN_dash:
 	state = '7';
@@ -887,7 +883,7 @@ bool morse2letter_decoder_state(char token, bool init=false) {
     case 'Q':	// --.-
       switch(token) {
       case MORSE_TOKEN_dot:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       case MORSE_TOKEN_dash:
 	state = 'Ñ';
@@ -901,7 +897,7 @@ bool morse2letter_decoder_state(char token, bool init=false) {
 	state = '8';
 	break;
       case MORSE_TOKEN_dash:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       }
       break;
@@ -920,10 +916,10 @@ bool morse2letter_decoder_state(char token, bool init=false) {
     case '5':	// .....
       switch(token) {
       case MORSE_TOKEN_dot:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       case MORSE_TOKEN_dash:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       }
       break;
@@ -931,10 +927,10 @@ bool morse2letter_decoder_state(char token, bool init=false) {
     case '4':	// ....-
       switch(token) {
       case MORSE_TOKEN_dot:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       case MORSE_TOKEN_dash:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       }
       break;
@@ -942,10 +938,10 @@ bool morse2letter_decoder_state(char token, bool init=false) {
     case '3':	// ...--
       switch(token) {
       case MORSE_TOKEN_dot:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       case MORSE_TOKEN_dash:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       }
       break;
@@ -953,10 +949,10 @@ bool morse2letter_decoder_state(char token, bool init=false) {
     case '2':	// ..---
       switch(token) {
       case MORSE_TOKEN_dot:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       case MORSE_TOKEN_dash:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       }
       break;
@@ -964,10 +960,10 @@ bool morse2letter_decoder_state(char token, bool init=false) {
     case '1':	// .----
       switch(token) {
       case MORSE_TOKEN_dot:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       case MORSE_TOKEN_dash:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       }
       break;
@@ -975,10 +971,10 @@ bool morse2letter_decoder_state(char token, bool init=false) {
     case '0':	// -----
       switch(token) {
       case MORSE_TOKEN_dot:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       case MORSE_TOKEN_dash:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       }
       break;
@@ -986,10 +982,10 @@ bool morse2letter_decoder_state(char token, bool init=false) {
     case '9':	// ----.
       switch(token) {
       case MORSE_TOKEN_dot:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       case MORSE_TOKEN_dash:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       }
       break;
@@ -997,10 +993,10 @@ bool morse2letter_decoder_state(char token, bool init=false) {
     case '8':	// ---..
       switch(token) {
       case MORSE_TOKEN_dot:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       case MORSE_TOKEN_dash:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       }
       break;
@@ -1008,10 +1004,10 @@ bool morse2letter_decoder_state(char token, bool init=false) {
     case '7':	// --...
       switch(token) {
       case MORSE_TOKEN_dot:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       case MORSE_TOKEN_dash:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       }
       break;
@@ -1019,10 +1015,10 @@ bool morse2letter_decoder_state(char token, bool init=false) {
     case '6':	// -....
       switch(token) {
       case MORSE_TOKEN_dot:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       case MORSE_TOKEN_dash:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       }
       break;
@@ -1031,10 +1027,10 @@ bool morse2letter_decoder_state(char token, bool init=false) {
     case '.':	// .-.-.-
       switch(token) {
       case MORSE_TOKEN_dot:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       case MORSE_TOKEN_dash:
-	state = ILLEGAL;
+	state = ILLEGAL8;
 	break;
       }
       break;
@@ -1528,7 +1524,7 @@ const char * morse_definitions_tab[] = {
 
 
 uint8_t morse_def_token_cnt=0;
-char morse_def_TYPE=ILLEGAL;
+char morse_def_TYPE=ILLEGAL8;
 string * morse_def_TOKENS;	// TODO: fix or remove ################
 string * morse_def_UPPER_Letter;
 string * morse_def_LOWER_Letter;
@@ -1695,7 +1691,7 @@ void morse_definition_set_show(bool uppercase) {
 }
 
 
-int morse_find_definition(const char* pattern) {  // returns index in morse_definitions_tab[i] or ILLEGAL
+int morse_find_definition(const char* pattern) {  // returns index in morse_definitions_tab[i] or ILLEGAL32
   for(int i=0; i<MORSE_DEFINITIONS ; i++) {
     morse_read_definition(i);
     if((string) pattern == morse_DEFINITION_TOKENS) {
@@ -1709,13 +1705,13 @@ int morse_find_definition(const char* pattern) {  // returns index in morse_defi
   }
 
   morse_reset_definition("");
-  return ILLEGAL;	// not found
-}
+  return ILLEGAL32;	// not found
+} // morse_find_definition()
 
 char morse_2ACTION() {
 /*
   SAVE LETTERS,
-  return CHAR for letters or ILLEGAL for unknown patterns
+  return CHAR for letters or ILLEGAL8 for unknown patterns
 
   EXECUTE COMMANDS,
   return of commands is currently unused, always 0
@@ -1760,8 +1756,8 @@ char morse_2ACTION() {
   }
 
 
-  return ILLEGAL;
-}
+  return ILLEGAL8;
+} // morse_2ACTION()
 
 /* **************************************************************** */
 
@@ -1886,7 +1882,7 @@ void morse_token_decode() {	// decode received token sequence
 #if defined MORSE_DECODE_DEBUG
 	  MENU.out(F("\tsepareLetter "));
 #endif
-	  if(morse_find_definition(pattern) != ILLEGAL) {
+	  if(morse_find_definition(pattern) != ILLEGAL32) {
 	    switch(morse_PRESENT_TYPE) {
 	    case '*':	// letter
 	      morse_store_received_letter(morse_PRESENT_in_case_Letter);

@@ -62,12 +62,12 @@ int pointer2index(arr_descriptor * DB, unsigned int* array) {
     if (DB[i].pointer == array)
       return i;
 
-  return ILLEGAL;	// TIP: use to check if array is in db ;)
+  return ILLEGAL32;	// TIP: use to check if array is in db ;)
 }
 
 
 void select_in(arr_descriptor* DB, unsigned int* array) {
-  if (pointer2index(DB, array) != ILLEGAL)	// TODO: remove debugging code
+  if (pointer2index(DB, array) != ILLEGAL32)	// TODO: remove debugging code
     DB[0].pointer=array;	// DB[0].pointer points to selected array
   else						// TODO: remove debugging code
     MENU.error_ln(F("(invalid)"));		// TODO: remove debugging code

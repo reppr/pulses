@@ -28,9 +28,9 @@
 #endif
 
 // return error codes <0 from  prime_factors()
-#define PF_0		-3	// zero
-#define PF_1		-2	// one
-#define PF_ILLEGAL	-1	// invalid
+#define PF_0		-3		// zero
+#define PF_1		-2		// one
+#define PF_ILLEGAL	ILLEGAL32	// invalid
 /* **************************************************************** */
 // Constructor/Destructor:
 
@@ -113,7 +113,7 @@ int Harmonical::prime_factors(unsigned int p_factors[], unsigned long number) {
   return values:
   -3	PF_0	number == 0
   -2	PF_1	number == 1
-  -1	ILLEGAL not enough small primes (or negative number)
+  -1	ILLEGAL32 not enough small primes (or negative number)
   0	index of highest prime	0 ~ 2
   1	index of highest prime	0 ~ 3
   2	index of highest prime	0 ~ 5
@@ -123,7 +123,7 @@ int Harmonical::prime_factors(unsigned int p_factors[], unsigned long number) {
 
   // special cases: negative, zero, one
   if(number < 0)
-    return -1;		// number is negative, ILLEGAL, abort
+    return ILLEGAL32;	// number is negative, ILLEGAL32, abort
   if(number==0)
     return PF_0;	// 0
   if(number==1)		// 1
@@ -149,7 +149,7 @@ int Harmonical::prime_factors(unsigned int p_factors[], unsigned long number) {
       }
       f++;
     } // loop over small_primes[]
-    return ILLEGAL;	// not enough small primes, ILLEGAL, abort
+    return ILLEGAL32;	// not enough small primes, ILLEGAL32, abort
   }
 }
 

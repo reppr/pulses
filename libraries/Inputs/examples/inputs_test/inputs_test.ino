@@ -292,10 +292,10 @@ void bar_graph_signed(int value, int scale, char m, char p) {
       return ((int) &free) - ((int) __brkval);
   }
 #else			// not used yet on PC ;(	################
-  #ifndef ILLEGAL
-     #define ILLEGAL	~0
+  #ifndef ILLEGAL32
+     #define ILLEGAL32	0xffffffff
   #endif
-  int get_free_RAM() { return ILLEGAL; }
+  int get_free_RAM() { return ILLEGAL32; }
 #endif
 
 

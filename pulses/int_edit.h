@@ -78,7 +78,7 @@ void display_arr(unsigned int *arr, unsigned int step) {
   }
 
   bool edit_mode = (MENU.menu_mode==ARRAY_ENTRY_UNTIL_ZERO_MODE);
-//  if (selected_jiffle==ILLEGAL) {
+//  if (selected_jiffle==ILLEGAL32) {
 //    MENU.outln(F("(nothing selected)"));
 //    return;
 //  }

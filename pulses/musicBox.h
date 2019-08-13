@@ -303,7 +303,7 @@ void set_cycle_slice_number(short ticks_a_cycle) {
 }
 
 // remember pulse index of the butler, so we can call him, if we need him ;)
-int musicBox_butler_i=ILLEGAL;	// pulse index of musicBox_butler(p)
+int musicBox_butler_i=ILLEGAL32;	// pulse index of musicBox_butler(p)
 
 // some pre declarations:
 void musicBox_butler(int);
@@ -325,8 +325,8 @@ void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditional
     digitalLeds_resetPixels(&strands[0], 1);
 #endif
 
-    // control if the butler is still running || musicBox_butler_i != ILLEGAL
-    if(musicBox_butler_i != ILLEGAL) {	// musicBox_butler(p) seems running?
+    // control if the butler is still running || musicBox_butler_i != ILLEGAL32
+    if(musicBox_butler_i != ILLEGAL32) {	// musicBox_butler(p) seems running?
       if(PULSES.pulses[musicBox_butler_i].payload == &musicBox_butler) {
 	PULSES.init_pulse(musicBox_butler_i);
 	if(MENU.maybe_display_more(VERBOSITY_MORE))
@@ -338,7 +338,7 @@ void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditional
 	}
       }
 
-      musicBox_butler_i = ILLEGAL;				// invalidate pulse index of musicBox_butler(p)
+      musicBox_butler_i = ILLEGAL32;				// invalidate pulse index of musicBox_butler(p)
     }
 
     // test if there is really no butler left:
@@ -443,7 +443,7 @@ void set_primary_block_bounds() {	// remember where the primary block starts and
 void watch_primary_pulses() {
   long diff;
   int primary_cnt=0;
-  int secondary_cnt=ILLEGAL;
+  int secondary_cnt=ILLEGAL32;
 
   for(int pulse=highest_primary; pulse>=lowest_primary; pulse--) {
     if(PULSES.pulses[pulse].groups & g_PRIMARY) {
@@ -659,7 +659,7 @@ int slice_weighting(fraction_t F) {
 
 
 // cycle_monitor(p)  payload to give infos where in the cycle we are
-int cycle_monitor_i=ILLEGAL;	// pulse index of cycle_monitor(p)
+int cycle_monitor_i=ILLEGAL32;	// pulse index of cycle_monitor(p)
 
 #if ! defined SHOW_SUBCYCLE_POSITION_DEFAULT
   #define SHOW_SUBCYCLE_POSITION_DEFAULT	false
@@ -723,8 +723,10 @@ unsigned int kill_secondary() {	// kill all secondary
 
   for(int pulse=0; pulse < PL_MAX; pulse++) {
     if(PULSES.pulses[pulse].groups & g_SECONDARY) {
-      if(PULSES.pulses[pulse].flags & HAS_GPIO)		// maybe set GPIO low?
-	digitalWrite(PULSES.pulses[pulse].gpio, LOW);
+      if(PULSES.pulses[pulse].flags & HAS_GPIO)	{	// maybe set GPIO low?
+	if(PULSES.pulses[pulse].gpio != ILLEGAL8)
+	  digitalWrite(PULSES.pulses[pulse].gpio, LOW);
+      }
       PULSES.init_pulse(pulse);				// remove all secondary pulses
       cnt++;
     }
@@ -879,7 +881,7 @@ void tag_randomness(bool user_selected) {
 
 void toggle_magic_autochanges() {
   if(magic_autochanges = !magic_autochanges) {	// if magic_autochanges got *SWITCHED ON*
-    if(musicBox_butler_i != ILLEGAL) {	// deal with soft_end_time
+    if(musicBox_butler_i != ILLEGAL32) {	// deal with soft_end_time
       pulse_time_t thisNow = PULSES.get_now();
       pulse_time_t soft_end_time;
       int cnt=0;
@@ -1178,7 +1180,7 @@ void musicBox_trigger_ON();	// forward declaration
 bool musicBox_trigger_enabled=false;
 bool blocked_trigger_shown=false;	// show only once a run
 
-void activate_musicBox_trigger(int dummy_p=ILLEGAL) {
+void activate_musicBox_trigger(int dummy_p=ILLEGAL32) {
 #if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
   musicBox_trigger_enabled = true;
   if(MENU.verbosity >= VERBOSITY_LOWEST) {
@@ -1637,7 +1639,8 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 			MENU.space();
 		      }
 		      if(PULSES.pulses[pulse].flags & HAS_GPIO && PULSES.pulses[pulse].counter & 1) {
-			digitalWrite(PULSES.pulses[pulse].gpio, LOW);	// set GPIO LOW
+			if(PULSES.pulses[pulse].gpio != ILLEGAL8)
+			  digitalWrite(PULSES.pulses[pulse].gpio, LOW);	// set GPIO LOW
 			if(MENU.verbosity > VERBOSITY_LOWEST)
 			  MENU.ln();
 			break;						// if was high, then set low *one by one*...
@@ -2064,7 +2067,7 @@ void furzificate() {	// switch to a quiet, farting patterns, u.a.
 */
 RTC_DATA_ATTR unsigned int * scale_stored_RTC=NULL;
 RTC_DATA_ATTR unsigned int * jiffle_stored_RTC=NULL;
-RTC_DATA_ATTR int sync_stored_RTC=ILLEGAL;
+RTC_DATA_ATTR int sync_stored_RTC=ILLEGAL32;
 RTC_DATA_ATTR int stack_sync_slices_stored_RTC=0;		// TODO: make it short?
 RTC_DATA_ATTR unsigned long multiplier_stored_RTC=0;
 RTC_DATA_ATTR unsigned long divisor_stored_RTC=0;
@@ -2077,10 +2080,10 @@ void rtc_save_configuration() {
 
   scale_stored_RTC	=NULL;
   jiffle_stored_RTC	=NULL;
-  sync_stored_RTC	=ILLEGAL;	// hmmm, not bullet proof	TODO: sync_stored_RTC
+  sync_stored_RTC	=ILLEGAL32;	// hmmm, not bullet proof	TODO: sync_stored_RTC
   stack_sync_slices_stored_RTC	=0;
-  divisor_stored_RTC	=ILLEGAL;	// !=0 after wake up flags deep sleep wakeup
-  multiplier_stored_RTC	=ILLEGAL;
+  divisor_stored_RTC	=ILLEGAL32;	// !=0 after wake up flags deep sleep wakeup
+  multiplier_stored_RTC	=ILLEGAL32;
 
   metric_tunings_stored_RTC = 2;	// 2 means off (&1)
   bool some_metric_tunings_only = MagicConf.some_metric_tunings_only;
@@ -2137,7 +2140,7 @@ void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless wakin
       scale_user_selected = true;
     }
 
-    if(sync_stored_RTC != ILLEGAL) {
+    if(sync_stored_RTC != ILLEGAL32) {
       MENU.out(F("SYNC "));
       musicBoxConf.sync = sync_stored_RTC;
       sync_user_selected = true;
@@ -2155,7 +2158,7 @@ void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless wakin
       jiffle_user_selected = true;
     }
 
-    if((multiplier_stored_RTC != ILLEGAL) && divisor_stored_RTC != ILLEGAL) {
+    if((multiplier_stored_RTC != ILLEGAL32) && divisor_stored_RTC != ILLEGAL32) {
       MENU.out(F("PITCH "));
       musicBoxConf.pitch.multiplier = multiplier_stored_RTC;
       musicBoxConf.pitch.divisor = divisor_stored_RTC;
@@ -2197,7 +2200,7 @@ void start_musicBox() {
 #endif
   musicBox_trigger_enabled=false;
   blocked_trigger_shown = false;	// show only once a run
-  musicBox_butler_i=ILLEGAL;
+  musicBox_butler_i=ILLEGAL32;
 
 #if defined BATTERY_LEVEL_CONTROL_PIN
   show_battery_level();
@@ -2461,8 +2464,10 @@ void relax() {		// kill highest secondary pulse
   for(int pulse=PL_MAX ; pulse >= 0; pulse--) {
     if(PULSES.pulses[pulse].groups & g_SECONDARY) {
       if(PULSES.pulses[pulse].flags & ACTIVE) {			// highest active secondary pulse
-	// if(PULSES.pulses[pulse].flags & HAS_GPIO)		// set GPIO low?  maybe MAKES NOISE?
-	//   digitalWrite(PULSES.pulses[pulse].gpio, LOW);
+	if(PULSES.pulses[pulse].flags & HAS_GPIO)		// set GPIO low?  maybe MAKES NOISE?
+	  if(PULSES.pulses[pulse].gpio != ILLEGAL8)
+	    digitalWrite(PULSES.pulses[pulse].gpio, LOW);
+
 	PULSES.init_pulse(pulse);				// remove highest secondary pulses
 
 #if defined STRESS_MONITOR_LEVEL		// *any* stress monitoring level triggers notice
@@ -2473,9 +2478,9 @@ void relax() {		// kill highest secondary pulse
 
 	return;		// removed just the highest one
       }
-    }
-  }
-}
+    } // secondary
+  } // pulse loop
+} // relax()
 
 
 void magical_stress_release() {		// special stress release for magical music box
@@ -2874,7 +2879,7 @@ void musicBox_display() {
   MENU.out(MusicBoxState_name);
   MENU.tab();
   MENU.out(F("butler "));
-  if(musicBox_butler_i == ILLEGAL)
+  if(musicBox_butler_i == ILLEGAL32)
     MENU.out('-');
   else {
     MENU.out(musicBox_butler_i);
@@ -3378,7 +3383,7 @@ bool musicBox_reaction(char token) {
 
   case 'N':	// 'N' 'n' restart now	(like menu pulses 'n')
   case 'n':	// 'N' 'n' restart now	(like menu pulses 'n')
-    if(musicBox_butler_i != ILLEGAL)	// remove butler
+    if(musicBox_butler_i != ILLEGAL32)	// remove butler
       PULSES.init_pulse(musicBox_butler_i);
 
     for(int pulse=0; pulse<PL_MAX; pulse++)

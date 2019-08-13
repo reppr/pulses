@@ -29,8 +29,8 @@
 #endif
 
 
-#if ! defined ILLEGAL
-  #define ILLEGAL	~0
+#if ! defined ILLEGAL32
+  #define ILLEGAL32	0xffffffff
 #endif
 
 /* **************************************************************** */

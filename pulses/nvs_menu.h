@@ -43,7 +43,7 @@ bool nvs_menu_reaction(char token) {
 	pulses_hardware_conf_t hardware_from_nvs;
 	hardware_from_nvs.version = ILLEGAL8;	// see below
 	nvs_read_blob("HARDWARE_nvs", &hardware_from_nvs, sizeof(pulses_hardware_conf_t));
-	MENU.ln();
+
 	if(hardware_from_nvs.version == ILLEGAL8)
 	  MENU.outln(F("no data in nvs"));
 	else {

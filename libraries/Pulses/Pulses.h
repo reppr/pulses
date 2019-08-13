@@ -20,6 +20,13 @@
 
 #include "../../pulses/pulses_project_conf.h"
 
+#if ! defined ILLEGAL8
+  #define ILLEGAL8	255
+#endif
+#if ! defined ILLEGAL32
+  #define ILLEGAL32	0xffffffff
+#endif
+
 
 typedef int icode_t;
 
@@ -67,8 +74,6 @@ enum icode {	// names are all four letter words ?	// maybe 8?
 /* Some basic #define's						    */
 
 #define pulses_mask_t  uint32_t		// ???	uint64_t compiles, but does not work
-
-#define ILLEGAL			-1	// illegal value for many topics
 
 
 /* **************************************************************** */
@@ -326,7 +331,7 @@ class Pulses {
 
   void init_pulse(int pulse);		// init, reset or kill a pulse
   void init_pulses();			// init all pulses
-  int highest_available_pulse();	// first free pulse from top (or ILLEGAL)
+  int highest_available_pulse();	// first free pulse from top (or ILLEGAL32)
   void wake_pulse(int pulse);		// wake a pulse up, called from check_maybe_do()
   void deactivate_pulse(int pulse);	// clear ACTIVE flag, keep data
   void set_do_first(int pulse, void (*do_first)(int));	// set and activate do_first

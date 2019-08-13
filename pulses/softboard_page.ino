@@ -175,10 +175,15 @@
 /* **************************************************************** */
 /* define some things early: */
 
-#define ILLEGAL		-1
+#if ! defined ILLEGAL8
+  #define ILLEGAL8	255
+#endif
+#if ! defined ILLEGAL32
+  #define ILLEGAL32	0xffffffff
+#endif
 
-char PIN_digital = ILLEGAL;	// would be dangerous to default to zero
-char PIN_analog = 0;		// 0 is save as default for analog pins
+uint8_t PIN_digital = ILLEGAL8;
+uint8_t PIN_analog = 0;		// 0 is save as default for analog pins
 
 // Comment next line out if you do not want the analog2tone functionality:
 #define has_ARDUINO_TONE
@@ -188,7 +193,7 @@ char PIN_analog = 0;		// 0 is save as default for analog pins
 #endif
 
 #ifdef has_ARDUINO_TONE
-char PIN_tone = ILLEGAL;	// pin for tone output on a piezzo
+  uint8_t PIN_tone = ILLEGAL8;	// pin for tone output on a piezzo
 #endif
 
 // The following defaults *must* match with each other, choose one pair.
@@ -576,7 +581,7 @@ const int unusable_tones = 31;		// tone() plays some garbage below 32hz :(
 // const int unusable_tones = 15;	// tone() plays garbage below 16hz :(
 
 bool analog2tone(int analogPIN, int PIN_tone) {
-  if (PIN_tone == ILLEGAL)		// ILLEGAL *pin*	return false;
+  if (PIN_tone == ILLEGAL8)		// ILLEGAL *pin*	return false;
     return false;
 
   static unsigned long lastToneTime = 0;
@@ -800,7 +805,7 @@ void softboard_display() {
   _select_digital(true);
   MENU.out(toWork_);
   MENU.out(pin__);
-  if (PIN_digital == ILLEGAL)
+  if (PIN_digital == ILLEGAL8)
     MENU.out(F("no"));
   else
     MENU.out((int) PIN_digital);
@@ -856,8 +861,8 @@ void toggle_extra() {
 // Factored out helper function
 // digital_pin_ok()  Checks if PIN_digital has been set
 bool digital_pin_ok() {
-  // testing on ILLEGAL is enough in this context
-  if (PIN_digital == ILLEGAL) {
+  // testing on ILLEGAL8 is enough in this context
+  if (PIN_digital == ILLEGAL8) {
     _select_digital(true);
     MENU.ln();
     return false;
@@ -904,7 +909,7 @@ bool softboard_reaction(char token) {
       PIN_digital = newValue;
       pin_info_digital((int) PIN_digital);
     } else
-      if (newValue != ILLEGAL)
+      if (newValue != ILLEGAL8)
 	MENU.OutOfRange();
 
     touch_VU=false;
@@ -953,7 +958,7 @@ bool softboard_reaction(char token) {
 	MENU.out(pin_); MENU.out((int) PIN_digital);
 	MENU.tab();
 	MENU.out(pwm_); MENU.out(F("write "));
-	newValue = MENU.numeric_input(ILLEGAL);
+	newValue = MENU.numeric_input(ILLEGAL32);
 	if (newValue>=0 && newValue<pwm_maX) {
 	  MENU.out(newValue);
 
@@ -1124,7 +1129,7 @@ bool softboard_reaction(char token) {
     if (newValue>=0 && newValue<visible_digital_pins) {
       PIN_digital = newValue;
     } else {
-      if (newValue != ILLEGAL)
+      if (newValue != ILLEGAL8)
 	MENU.OutOfRange();
     }
 

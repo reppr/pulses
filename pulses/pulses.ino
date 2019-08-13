@@ -53,10 +53,10 @@ using namespace std;	// ESP8266 needs that
 
 /* **************************************************************** */
 // some #define's:
-#define ILLEGAL		-1	// TODO: replace
+
 #define ILLEGAL8	255
 #define ILLEGAL16	0xffff
-//#define ILLEGAL32	0xffffffff
+#define ILLEGAL32	0xffffffff
 
 /* **************************************************************** */
 // configuration sequence:
@@ -364,20 +364,22 @@ bool DO_or_maybe_display(unsigned char verbosity_level) { // the flag tells *if*
 // iCode
 
 bool setup_icode_seeder(int pulse, pulse_time_t period, icode_t* icode_p, action_flags_t dest_action_flags) {
-  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
+  //  if ((pulse > ILLEGAL32) && (pulse < PL_MAX)) {
+  if ((pulse > -1) && (pulse < PL_MAX) && (pulse != ILLEGAL32)) {
     PULSES.pulses[pulse].period = period;
     PULSES.set_icode_p(pulse, icode_p, false);		// icode inactive in seeder
     PULSES.set_payload(pulse, seed_icode_player);
     PULSES.pulses[pulse].dest_action_flags |= dest_action_flags;
     return true;
   }
+
   return false;
 }
 
 
 void seed_icode_player(int seeder_pulse) {	// as payload for seeder
   int dest_pulse = PULSES.setup_pulse(NULL, ACTIVE, PULSES.pulses[seeder_pulse].next, PULSES.pulses[seeder_pulse].period);
-  if (dest_pulse != ILLEGAL) {
+  if (dest_pulse != ILLEGAL32) {
     /*
       pulses[pulse].icode_p	icode start pointer
       pulses[pulse].icode_index	icode index
@@ -553,7 +555,7 @@ void test_jiffle(unsigned int* jiffle, int count) {
     return;	// invalid
 
   int pulse;
-  if((pulse = PULSES.highest_available_pulse()) == ILLEGAL)
+  if((pulse = PULSES.highest_available_pulse()) == ILLEGAL32)
     return;	// no free pulse
 
   if(MENU.verbosity >= VERBOSITY_LOWEST)
@@ -593,22 +595,22 @@ void display_names_OBSOLETE(char** names, int count, int selected) {	// TODO: ma
 
 #if GPIO_PINS > 0
 /*	TODO: move to library Pulses
-  gpio_pin_t next_gpio()	return next unused GPIO click pin (or ILLEGAL)
+  gpio_pin_t next_gpio()	return next unused GPIO click pin (or ILLEGAL32)
   gpio_pin_t next_gpio(index)	*reset* to give gpio_pins[index] on next call
 */
-gpio_pin_t next_gpio(gpio_pin_t set_i=-1) {
+gpio_pin_t next_gpio(gpio_pin_t set_i=ILLEGAL8) {
   static gpio_pin_t next_free_gpio_i=0;
 
-  gpio_pin_t ret=ILLEGAL;
+  gpio_pin_t ret=ILLEGAL8;
 
-  if (set_i == -1) {	// normal use: next_gpio()  *get next unused gpio pin**
+  if (set_i == ILLEGAL8) {	// normal use: next_gpio()  *get next unused gpio pin**
     if(next_free_gpio_i < GPIO_PINS)
       ret = gpio_pins[next_free_gpio_i];	// return next free pin
     else
       if (MENU.verbosity > VERBOSITY_LOWEST)
 	MENU.outln(F("no free GPIO"));
     next_free_gpio_i++;				// count pins, available or not
-  } else {		// next_gpio(set_i != ILLEGAL)   *reset* to return 'set_i' on next next_gpio() call
+  } else {		// next_gpio(set_i != ILLEGAL8)   *reset* to return 'set_i' on next next_gpio() call
     if ((set_i < GPIO_PINS) && (set_i >= 0)) {
       next_free_gpio_i = set_i;
       ret = gpio_pins[next_free_gpio_i];	// rarely used, same as next call to next_gpio()
@@ -620,21 +622,25 @@ gpio_pin_t next_gpio(gpio_pin_t set_i=-1) {
   return ret;
 }
 
-
+DADA
 gpio_pin_t this_or_next_gpio(int pulse) {
+  if(pulse == ILLEGAL32) {
+    MENU.error_ln(F("this_or_next_gpio(ILLEGAL)"));
+    return ILLEGAL8;
+  }
   if (PULSES.pulses[pulse].flags & HAS_GPIO)	// if a pulse already has gpio, return it
     return PULSES.pulses[pulse].gpio;
 
-  return next_gpio();				// else return  next_gpio()  or ILLEGAL
+  return next_gpio();				// else return  next_gpio()  or ILLEGAL8
 }
 
 #else	// NO_GPIO_PINS
   gpio_pin_t next_gpio(gpio_pin_t set_i=-1) {		// dummy: NO_GPIO_PINS
-    return (gpio_pin_t) ILLEGAL;
+    return (gpio_pin_t) ILLEGAL8;
   }
 
   gpio_pin_t this_or_next_gpio(gpio_pin_t set_i=-1) {	// dummy: NO_GPIO_PINS
-    return (gpio_pin_t) ILLEGAL;
+    return (gpio_pin_t) ILLEGAL8;
   }
 #endif // GPIO_PINS
 
@@ -699,7 +705,7 @@ int reset_all_flagged_pulses_GPIO_OFF() {	  // see: tabula_rasa()
 
 // make an existing pulse an old style click pulse:
 bool en_click(int pulse, gpio_pin_t pin) {
-  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
+  if ((pulse > -1) && (pulse < PL_MAX) && (pulse != ILLEGAL32)) {
     PULSES.set_payload_with_pin(pulse, &click, pin);
     return true;
   }
@@ -740,7 +746,7 @@ void show_GPIOs() {
 #if defined USE_DACs	// TODO: move to library Pulses
 // set_action_flags(pulse, DACsq1 | DACsq2) activates both DACs
 bool set_action_flags(int pulse, unsigned int action_flags) {
-  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
+  if ((pulse > -1) && (pulse < PL_MAX) && (pulse != ILLEGAL32)) {
     PULSES.pulses[pulse].action_flags |= action_flags;
     return true;
   }
@@ -921,7 +927,7 @@ bool stack_sync_user_selected=false;
 // void softboard_display();
 // bool softboard_reaction(char token);
 int8_t softboard_page=-1;	// see: maybe_run_continuous()
-int8_t musicBox_page=ILLEGAL;	// NOTE: musicBox_page is not used
+int8_t musicBox_page=ILLEGAL8;	// NOTE: musicBox_page is not used
 
 
 
@@ -960,7 +966,7 @@ unsigned int stress_event_level=1024;	// continue TESTING:  TODO: fine tune, may
 int stress_event_cnt=0;			// counting stress_event_level events
 uint8_t stress_event_cnt_MAX=1;		// if the count reaches MAX stress release needed TODO: fine tune
 unsigned int stress_count=0;		// low level stress count
-unsigned int relax_level=200;		// see: relax()	 (ILLEGAL should switch that off)
+unsigned int relax_level=200;		// see: relax()	 (ILLEGAL32 should switch that off)
 uint8_t relaxmax=4;			// up to how many relax() in one todo chain
 
 #if defined DO_STRESS_MANAGMENT
@@ -1116,7 +1122,7 @@ void setup_initial_HARDWARE_conf() {
 
 
 void show_pin_or_dash(uint8_t pin) {
-  if(pin==255) // ILLEGAL
+  if(pin==ILLEGAL8)
     MENU.out('-');
   else
     MENU.out(pin);
@@ -1985,7 +1991,8 @@ int main() {
 
 
 void click(int pulse) {	// can be called from a pulse
-  digitalWrite(PULSES.pulses[pulse].gpio, PULSES.pulses[pulse].counter & 1);
+  if(PULSES.pulses[pulse].gpio != ILLEGAL8)
+    digitalWrite(PULSES.pulses[pulse].gpio, PULSES.pulses[pulse].counter & 1);
 }
 
 
@@ -2254,7 +2261,7 @@ void out_noFreePulses() {
 #ifdef IMPLEMENT_TUNING		// implies floating point
 // make an existing pulse to a sweep click pulse:
 bool en_sweep_click(int pulse) {
-  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {	// gpio set
+  if ((pulse > -1) && (pulse < PL_MAX) && (pulse != ILLEGAL32)) {	// gpio set
     if (en_click(pulse, this_or_next_gpio(pulse))) {
       PULSES.set_payload(pulse, &sweep_click);	// gpio set
 
@@ -2268,7 +2275,7 @@ bool en_sweep_click(int pulse) {
 
 // make an existing pulse to a sweep_click_0 pulse:
 bool en_sweep_click_0(int pulse) {
-  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
+  if ((pulse > -1) && (pulse < PL_MAX) && (pulse != ILLEGAL32)) {
     if (en_click(pulse, this_or_next_gpio(pulse))) {	// gpio set
       PULSES.pulses[pulse].base_time = PULSES.pulses[pulse].period.time;
       PULSES.set_payload(pulse, &sweep_click_0);	// gpio set
@@ -2281,7 +2288,7 @@ bool en_sweep_click_0(int pulse) {
 
 
 bool en_tuned_sweep_click(int pulse) {
-  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
+  if ((pulse > -1) && (pulse < PL_MAX) && (pulse != ILLEGAL32)) {
     if (en_click(pulse, this_or_next_gpio(pulse))) {	// gpio set
       PULSES.activate_tuning(pulse);
       PULSES.set_payload(pulse, &tuned_sweep_click);	// gpio set
@@ -2299,7 +2306,7 @@ int setup_click_synced(pulse_time_t when, unsigned long unit, unsigned long mult
 {
   int pulse= PULSES.setup_pulse_synced(&click, ACTIVE, when, unit, multiplier, divisor, sync);
 
-  if ((pulse > ILLEGAL) && (pulse < PL_MAX))
+  if ((pulse > -1) && (pulse < PL_MAX) && (pulse != ILLEGAL32))
     PULSES.set_gpio(pulse, this_or_next_gpio(pulse));
   else // no free pulse
     out_noFreePulses();
@@ -2972,7 +2979,7 @@ unsigned char dest = CODE_PULSES;
 
 // make an existing pulse to display 1 info line:
 bool en_info(int pulse) {
-  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
+  if ((pulse > -1) && (pulse < PL_MAX) && (pulse != ILLEGAL32)) {
     PULSES.set_payload(pulse, &pulse_info_1line);
     return true;
   }
@@ -3026,7 +3033,7 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
 
   if (PULSES.pulses[pulse].flags & HAS_GPIO) {
     MENU.out(F(" p"));
-    if(PULSES.pulses[pulse].gpio != ILLEGAL) {
+    if(PULSES.pulses[pulse].gpio != ILLEGAL8) {
       MENU.out((int) PULSES.pulses[pulse].gpio);
       if (PULSES.pulses[pulse].gpio<10)	// padding?
 	MENU.space();
@@ -3150,7 +3157,7 @@ void pulse_info(int pulse) {
 
 // make an existing pulse to display multiline pulse info:
 bool en_INFO(int pulse) {	// FIXME: to lib Pulses
-  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
+  if ((pulse > -1) && (pulse < PL_MAX) && (pulse != ILLEGAL32)) {
     PULSES.set_payload(pulse, &pulse_info);
     return true;
   }
@@ -3317,7 +3324,7 @@ void selected_or_flagged_pulses_info_lines() {
 // make an existing pulse to a jiffle thrower pulse:
 bool en_jiffle_thrower(int pulse, unsigned int *jiffle, gpio_pin_t pin, action_flags_t action_mask)
 {
-  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
+  if ((pulse > -1) && (pulse < PL_MAX) && (pulse != ILLEGAL32)) {
     PULSES.pulses[pulse].dest_action_flags |= action_mask;
     PULSES.set_payload_with_pin(pulse, &do_throw_a_jiffle, pin);
     PULSES.pulses[pulse].data = (unsigned int) jiffle;
@@ -3357,7 +3364,7 @@ int init_jiffle(unsigned int *jiffle, pulse_time_t when, pulse_time_t new_period
   jiffle_period.time = new_period.time * jiffle[0] / jiffle[1];
 
   pulse = PULSES.setup_pulse(&do_jiffle, ACTIVE, when, jiffle_period);
-  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
+  if ((pulse > -1) && (pulse < PL_MAX) && (pulse != ILLEGAL32)) {
     PULSES.pulses[pulse].action_flags |= PULSES.pulses[origin_pulse].dest_action_flags; // set actions
     PULSES.set_gpio(pulse, PULSES.pulses[origin_pulse].gpio);	// copy pin from origin pulse
     PULSES.pulses[pulse].index = 0;				// init phase 0
@@ -3595,7 +3602,7 @@ int setup_jiffle_thrower_synced(pulse_time_t when,
 {
  int pulse= PULSES.setup_pulse_synced(&do_throw_a_jiffle, ACTIVE,
 			       when, unit, multiplier, divisor, sync);
-  if ((pulse > ILLEGAL) && (pulse < PL_MAX)) {
+  if ((pulse > -1) && (pulse < PL_MAX) && (pulse != ILLEGAL32)) {
     PULSES.set_gpio(pulse, this_or_next_gpio(pulse));
     PULSES.pulses[pulse].data = (unsigned int) jiffle;
   } else {
@@ -3780,7 +3787,9 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
   PULSES.pulses[pulse].data		jiffletab[] pointer
   PULSES.pulses[pulse].base_time	base period = period of starting pulse
 */
-  digitalWrite(PULSES.pulses[pulse].gpio, PULSES.pulses[pulse].counter & 1);	// click
+  if(PULSES.pulses[pulse].gpio != ILLEGAL8)
+    digitalWrite(PULSES.pulses[pulse].gpio, PULSES.pulses[pulse].counter & 1);	// click
+
   if (--PULSES.pulses[pulse].countdown > 0)				// countdown, phase endid?
     return;						//   no: return immediately
 
@@ -4915,7 +4924,7 @@ bool menu_pulses_reaction(char menu_input) {
     // we work on pulses anyway, regardless dest
     for (int pulse=0; pulse<PL_MAX; pulse++)
       if (PULSES.pulse_is_selected(pulse)) {
-	if ((PULSES.pulses[pulse].flags & HAS_GPIO) && (PULSES.pulses[pulse].gpio != ILLEGAL))
+	if ((PULSES.pulses[pulse].flags & HAS_GPIO) && (PULSES.pulses[pulse].gpio != ILLEGAL8))
 	  digitalWrite(PULSES.pulses[pulse].gpio, LOW);	// set clicks on LOW
 	PULSES.set_payload(pulse, NULL);
       }
@@ -5930,7 +5939,7 @@ bool menu_pulses_reaction(char menu_input) {
 	// select_in(JIFFLES, d4096_512);
 	PULSES.select_from_to(0,6);
 	for(int pulse=0; pulse<=6; pulse++) {
-	  en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL, DACsq1);	// FIXME: use inbuilt click
+	  en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL8, DACsq1);	// FIXME: use inbuilt click
 	}
 	PULSES.select_from_to(0,7);
 	// selected_DACsq_intensity_proportional(255, 1);
@@ -5953,7 +5962,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 	PULSES.select_from_to(21, 31);
 	for(int pulse=22; pulse<=31; pulse++) {	// pulse[21] belongs to both groups
-	  en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL, DACsq2);	// FIXME: use inbuilt click
+	  en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL8, DACsq2);	// FIXME: use inbuilt click
 //	  PULSES.pulses[pulse].dest_action_flags |= (DACsq2);
 //	  PULSES.set_payload(pulse, &do_throw_a_jiffle);
 //	  PULSES.pulses[pulse].data = (unsigned int) jiffle;
@@ -6000,7 +6009,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  // select_in(JIFFLES, d4096_512);
 	  PULSES.select_from_to(0, musicBoxConf.bass_pulses - 1);
 	  for(int pulse=0; pulse<musicBoxConf.bass_pulses; pulse++)
-	    en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL, DACsq1);	// TODO: FIXME: use inbuilt click
+	    en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL8, DACsq1);	// TODO: FIXME: use inbuilt click
 	  PULSES.select_from_to(0,musicBoxConf.bass_pulses);			// pulse[bass_pulses] belongs to both groups
 	  // selected_DACsq_intensity_proportional(255, 1);
 	  selected_share_DACsq_intensity(255, 1);		// bass DAC1 intensity
@@ -6019,7 +6028,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  //select_in(JIFFLES, d4096_256);
 	  PULSES.select_from_to(musicBoxConf.bass_pulses + musicBoxConf.middle_pulses -1, musicBoxConf.bass_pulses + musicBoxConf.middle_pulses + musicBoxConf.high_pulses -1);
 	  for(int pulse = musicBoxConf.bass_pulses + musicBoxConf.middle_pulses; pulse<voices; pulse++) {	// pulse[21] belongs to both groups
-	    en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL, DACsq2);	// FIXME: use inbuilt click
+	    en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL8, DACsq2);	// FIXME: use inbuilt click
 	    //	  PULSES.pulses[pulse].dest_action_flags |= (DACsq2);
 	    //	  PULSES.set_payload(pulse, &do_throw_a_jiffle);
 	    //	  PULSES.pulses[pulse].data = (unsigned int) jiffle;

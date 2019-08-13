@@ -135,7 +135,7 @@ void Pulses::init_time() {
   last_now = now;		// correct overflow
 
   global_next.time=0;
-  global_next.overflow=~0;	// ILLEGAL
+  global_next.overflow=ILLEGAL32;
 }
 
 
@@ -314,8 +314,8 @@ void Pulses::global_shift(int global_octave) {
 void Pulses::init_pulse(int pulse) {
   memset(&pulses[pulse], 0, sizeof(pulse_t));
 
-  pulses[pulse].next.overflow = ~0;	// ILLEGAL
-  pulses[pulse].gpio = ~0;		// ILLEGAL
+  pulses[pulse].next.overflow = ILLEGAL32;
+  pulses[pulse].gpio = ILLEGAL8;
 }
 
 // called from constructor:
@@ -330,7 +330,7 @@ int Pulses::highest_available_pulse() {
     if(pulses[pulse].flags == 0)
       return pulse;			// return topmost free pulse
 
-  return ILLEGAL;
+  return ILLEGAL32;
 }
 
 // void wake_pulse(int pulse);	do one life step of the pulse
@@ -393,7 +393,7 @@ void Pulses::wake_pulse(int pulse) {
 
 
 void Pulses::deactivate_pulse(int pulse) {	// clear ACTIVE flag, keep data
-  if (pulse == ILLEGAL)	// invalid?
+  if (pulse == ILLEGAL32)	// invalid?
     return;
   pulses[pulse].flags &= ~ACTIVE;
 
@@ -831,7 +831,7 @@ void Pulses::fix_global_next() {
 */
 
   // we work directly on the global variables here:
-  global_next.overflow=~0;	// ILLEGAL value
+  global_next.overflow=ILLEGAL32;
   global_next_count=0;
 
   for (int pulse=0; pulse<pl_max; pulse++) {		// check all pulses
@@ -866,8 +866,8 @@ void Pulses::DAC_output() {
     #error DAC_output():  only 2 DACs supported...
   #endif
 
-  static int dac1_last=ILLEGAL;
-  static int dac2_last=ILLEGAL;
+  static int dac1_last=ILLEGAL32;
+  static int dac2_last=ILLEGAL32;
 
   int dac1_value=0;
   int dac2_value=0;
@@ -994,14 +994,14 @@ int Pulses::setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
   int pulse;
 
   if (new_flags == 0)				// illegal new_flags parameter
-    return ILLEGAL;				//   should not happen
+    return ILLEGAL32;				//   should not happen
 
   for (pulse=0; pulse<pl_max; pulse++) {	// search first free pulse
     if (pulses[pulse].flags == 0)		// flags==0 means empty pulse
       break;					//   found one
   }
   if (pulse == pl_max) {			// no pulse free :(
-    return ILLEGAL;				// ERROR
+    return ILLEGAL32;				// ERROR
   }
 
   // initiaize new pulse				// yes, found a free pulse
@@ -1175,7 +1175,7 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 
       case KILL:
 	if(pulses[pulse].flags & HAS_GPIO)		// TODO: reset gpio here or not, see: (multiplier == 0 || divisor==0)
-	  if(pulses[pulse].gpio != ILLEGAL) {		// currently the gpios stay high after a jiff without
+	  if(pulses[pulse].gpio != ILLEGAL8) {		// currently the gpios stay high after a jiff without
 	    digitalWrite(pulses[pulse].gpio, 0);	// so yes, set gpio LOW
 #if defined DEBUG_ICODE
 	    (*MENU).out("reset GPIO ");
@@ -1265,7 +1265,7 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 #endif
 	// icode_p += 3;	// skip invalid data triple
 	if(pulses[pulse].flags & HAS_GPIO)		// TODO: reset gpio here or not, see 'KILL'
-	  if(pulses[pulse].gpio != ILLEGAL) {		// currently the gpios stay high after a jiff without
+	  if(pulses[pulse].gpio != ILLEGAL8) {		// currently the gpios stay high after a jiff without
 	    digitalWrite(pulses[pulse].gpio, 0);	// so yes, set gpio LOW
 #if defined DEBUG_ICODE
 	    (*MENU).out("reset GPIO ");
@@ -1299,7 +1299,7 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	  pulses[pulse].period.time = pulses[pulse].base_time * multiplier / divisor;
 	}
 
-	if((pulses[pulse].flags & HAS_GPIO) && (pulses[pulse].gpio != ILLEGAL))
+	if((pulses[pulse].flags & HAS_GPIO) && (pulses[pulse].gpio != ILLEGAL8))
 	  digitalWrite(pulses[pulse].gpio, pulses[pulse].counter & 1);	// gpio click
 #if defined DEBUG_ICODE
 	(*MENU).out(F("GPIO\t"));
