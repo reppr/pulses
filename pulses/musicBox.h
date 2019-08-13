@@ -3904,6 +3904,7 @@ bool musicBox_reaction(char token) {
 
 #if defined USE_ESP_NOW	// (else: pulses 'D')
   case 'D':		// musicBox 'D'
+    MENU.outln(F("HARDWARE configuration"));
     show_hardware_conf(&HARDWARE);
     //display_peer_ID_list();
     //random_RGB_string(MENU.numeric_input(4));

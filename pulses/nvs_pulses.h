@@ -9,7 +9,7 @@
 #include "nvs_flash.h"
 #include "esp_system.h"
 
-#define DEBUG_NVS	// TODO: unset
+//#define DEBUG_NVS	// TODO: unset
 
 // why can't i do this?
 // Preferences CONF_nvs;
@@ -62,7 +62,8 @@ bool nvs_read_blob(char* key, void* new_blob, size_t buffer_size) {
   // see: https://github.com/espressif/esp-idf/blob/master/examples/storage/nvs_rw_blob/main/nvs_blob_example_main.c
 
   MENU.out(F("nvs_read_blob\t"));
-  MENU.outln(key);
+  MENU.out(key);
+  MENU.tab();
 
   nvs_handle_t my_handle;
   esp_err_t err;
@@ -379,6 +380,24 @@ void configure_HARDWARE_from_nvs() {
 
   // reserved
 } // configure_HARDWARE_from_nvs()
+
+
+void nvs_show_HW_both() {
+  pulses_hardware_conf_t hardware_from_nvs;
+  hardware_from_nvs.version = ILLEGAL8;	// see below
+  nvs_read_blob("HARDWARE_nvs", &hardware_from_nvs, sizeof(pulses_hardware_conf_t));
+
+  if(hardware_from_nvs.version == ILLEGAL8)
+    MENU.outln(F("no data in nvs\n"));
+  else {
+    MENU.outln(F("HARDWARE configuration from nvs:"));
+    extern void show_hardware_conf(pulses_hardware_conf_t*);
+    show_hardware_conf(&hardware_from_nvs);
+  }
+
+  extern void show_current_hardware_conf();
+  show_current_hardware_conf();
+}
 
 
 void nvs_clear_all_keys() {

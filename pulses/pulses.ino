@@ -1129,8 +1129,6 @@ void show_pin_or_dash(uint8_t pin) {
 }
 
 void show_hardware_conf(pulses_hardware_conf_t* hardware) {
-  MENU.outln(F("HARDWARE configuration"));
-
   MENU.out(F("GPIO click pins\t\t"));
   if(hardware->gpio_pins_cnt) {
     MENU.outln(hardware->gpio_pins_cnt);
@@ -1213,6 +1211,12 @@ void show_hardware_conf(pulses_hardware_conf_t* hardware) {
   // switch(version)
   // nvs flags
 } // show_hardware_conf()
+
+
+void show_current_hardware_conf() {	// same, with title, for menu output
+  MENU.outln(F("current HARDWARE configuration:"));
+  show_hardware_conf(&HARDWARE);
+}
 
 
 int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very first one

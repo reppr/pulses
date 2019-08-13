@@ -9,8 +9,7 @@ void nvs_menu_display() {
   MENU.outln(nvs_free_entries());
   MENU.ln();
 
-  MENU.out(F("'H'=HARDWARE 'HR'=read 'HS'=save"));
-  MENU.ln();
+  MENU.outln(F("'H'=HARDWARE 'HR'=read 'HS'=save '?'=info"));
 
   MENU.outln(F("\n'P' nvs_PRENAME"));
 
@@ -31,38 +30,25 @@ bool nvs_menu_reaction(char token) {
   case 'H':
     MENU.out(F("HARDWARE\t"));
     switch(next_token) {	// next token after 'H'
-    case '?':	// 'H?'
+    case 'R':	// 'HR'	= read hardware and info nvs hardware and engine hardware
+    case '?':	// 'H?'	= read hardware and info nvs hardware and engine hardware
       MENU.drop_input_token();	// continue...
-    case EOF:	// bare 'H', 'H?'
-      // info
+
+    case ILLEGAL8:	// bare 'H' = read hardware and info nvs hardware and engine hardware
+      nvs_show_HW_both();
       break;
 
-    case 'R':
-      MENU.drop_input_token();
-      {
-	pulses_hardware_conf_t hardware_from_nvs;
-	hardware_from_nvs.version = ILLEGAL8;	// see below
-	nvs_read_blob("HARDWARE_nvs", &hardware_from_nvs, sizeof(pulses_hardware_conf_t));
-
-	if(hardware_from_nvs.version == ILLEGAL8)
-	  MENU.outln(F("no data in nvs"));
-	else {
-	  MENU.outln(F("HARDWARE configuration from nvs:"));
-	  show_hardware_conf(&hardware_from_nvs);
-	}
-      }
-
-      MENU.outln(F("current HARDWARE configuration:"));
-      show_hardware_conf(&HARDWARE);
-      break;
-
-    case 'S':
+    case 'S':	// 'HS' save HARDWARE_nvs blob, read back, compare
       MENU.drop_input_token();
       nvs_save_blob("HARDWARE_nvs", &HARDWARE, sizeof(pulses_hardware_conf_t));
+
+      MENU.ln();
+      nvs_show_HW_both();
+      //show_current_hardware_conf();
       break;
 
     default:
-      // info DADA
+      MENU.error_ln(F("say HR HS H?"));	// error feedback
       return false;
     } // switch(next_token) after 'H'
 
@@ -77,7 +63,7 @@ bool nvs_menu_reaction(char token) {
     MENU.ln();
     break;
 
-  case 'X':
+  case 'X':	// works, but crashes menu	// TODO: fix menu crash after nvs_clear_all_keys()
     MENU.drop_input_token();
     nvs_clear_all_keys();
     MENU.outln("DADA TODO: DEBUG CRASH");	// menu CRASH AFTER THAT

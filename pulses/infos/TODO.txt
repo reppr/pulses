@@ -245,3 +245,9 @@ slowly fade rgb leds after ending
 // TODO: stress configuration struct stress_conf_t
 
 see also: ROADMAP.txt
+
+fix menu crash after nvs_clear_all_keys()
+
+nvs show all keys
+
+case EOF:	case ILLEGAL8:
