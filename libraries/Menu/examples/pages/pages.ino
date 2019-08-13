@@ -66,7 +66,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 */
 #ifdef ARDUINO	// Arduino  men_getchar();
 
-  int men_getchar() {	// Arduino version
+  int men_getchar() {	// Arduino version	returns EOF 32 bit or char
     if (!Serial.available())
       return EOF;
 

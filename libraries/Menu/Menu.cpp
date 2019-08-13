@@ -329,7 +329,7 @@ bool Menu::maybe_display_more(unsigned char verbosity_level) {	// avoid too much
      return true;
 
    // if verbosity is == verbosity_level: display only if no other input is waiting
-   if(peek()==EOF)
+   if(peek()==ILLEGAL8)
      return true;
    return false;		// there is more input, do not display info yet
 }
@@ -568,7 +568,7 @@ bool Menu::string_match(const char * teststring) {
   */
   //	/* int men_getchar();
   //	   Read next char of menu input, if available.
-  //	   Returns EOF or char.						*/
+  //	   Returns EOF 32bit or char.						*/
   //	int Menu::men_getchar() { return getchar(); } // c++ Linux PC test version
 
   /* void Menu::out(); overloaded menu output function family:	*/
@@ -816,11 +816,11 @@ void Menu::out_flags_()	const { out(F("\tflags ")); }
 
 /*
   int peek()
-  return EOF if buffer is empty, else
+  return EOF8 if buffer is empty, else
   return next char without removing it from buffer		*/
 int Menu::peek() const {
   if (cb_count == 0)
-    return EOF;
+    return EOF8;
 
   return cb_buf[cb_start];
 }
@@ -829,11 +829,11 @@ int Menu::peek() const {
 /*
   int peek(int offset)
   like peek() with offset>0
-  return EOF if token does not exist
+  return EOF8 if token does not exist
   return next char without removing it from buffer		*/
 int Menu::peek(int offset) const {
   if (cb_count <= offset)
-    return EOF;
+    return EOF8;
 
   return cb_buf[(cb_start + offset) % cb_size ];
 }
@@ -842,17 +842,17 @@ int Menu::peek(int offset) const {
 /* void skip_spaces(): remove leading spaces from input buffer:	*/
 unsigned int Menu::skip_spaces() {
   unsigned int space_count=0;
-  while (peek() == ' ') {  //  EOF != ' ' end of buffer case ok
+  while (peek() == ' ') {  //  EOF8 != ' ' end of buffer case ok
     space_count++;
     cb_read();
   }
   return space_count;
 }
 
-/* int next_input_token()
+/* uint8_t next_input_token()
    return next non space input token if any
-   else return EOF						*/
-int Menu::next_input_token() const {
+   else return EOF8						*/
+uint8_t  Menu::next_input_token() const {
   int token;
 
   for (int offset=0; offset<cb_count; offset++) {
@@ -860,12 +860,12 @@ int Menu::next_input_token() const {
     case ' ':		// skip spaces
       break;
 //  case '\0':		// currently not possible
-//    return EOF;	// not a meaningful token
+//    return EOF8;	// not a meaningful token
     default:
       return token;	// found a token
     }
   }
-  return EOF;		// no meaningful token found
+  return EOF8;		// no meaningful token found
 }
 
 
@@ -937,7 +937,7 @@ bool Menu::lurk_then_do() {
 
   /* int maybe_input()
      must be a function returning one byte data
-     or if there is no input returning EOF		*/
+     or if there is no input returning EOF 32bit	*/
   INP=(*maybe_input)();
 
   if ( INP == EOF )	// no input?  done
@@ -1503,10 +1503,10 @@ void Menu::interpret_men_input() {
 	out((int) (token & 0xFF));
 	ln();
       }
-      if (peek() != EOF) {
+      if (peek() != EOF8) {
 	out(F("skipping "));
 	out(token);
-	while (peek() != EOF) {
+	while (peek() != EOF8) {
 	  out((char) drop_input_token());
 	}
 	ln();

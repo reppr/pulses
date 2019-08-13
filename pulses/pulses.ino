@@ -620,9 +620,9 @@ gpio_pin_t next_gpio(gpio_pin_t set_i=ILLEGAL8) {
     }
   }
   return ret;
-}
+} // next_gpio()
 
-DADA
+
 gpio_pin_t this_or_next_gpio(int pulse) {
   if(pulse == ILLEGAL32) {
     MENU.error_ln(F("this_or_next_gpio(ILLEGAL)"));
@@ -1256,7 +1256,8 @@ void setup() {
 
   // try to get rid of menu input garbage, "dopplet gnaeht hebt vilicht besser" ;)
   while (Serial.available())  { Serial.read(); yield(); }
-  while (MENU.peek() != EOF) { MENU.drop_input_token(); yield(); }
+  while (MENU.peek() != EOF8) { MENU.drop_input_token(); yield(); }
+  MENU.outln(F("\n      \n"));	// try to get empty start lines after serial garbage...
 
 #if defined USE_MONOCHROME_DISPLAY
   // SEE: https://github.com/olikraus/u8g2/wiki/u8x8reference
@@ -1562,7 +1563,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 
   // try to get rid of menu input garbage, "dopplet gnaeht hebt vilicht besser" ;)
   while (Serial.available())  { Serial.read(); yield(); }
-  while (MENU.peek() != EOF) { MENU.drop_input_token(); yield(); }
+  while (MENU.peek() != EOF8) { MENU.drop_input_token(); yield(); }
 
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
   random_entropy();	// entropy from thit and that
@@ -4248,7 +4249,7 @@ void select_scale__UI() {	// OBSOLETE?:
   */
 
   switch (MENU.peek()) {
-  case EOF:
+  case EOF8:
     break;
 
   case 'u':	// harmonical time unit, minor
@@ -4386,7 +4387,7 @@ void select_scale__UI() {	// OBSOLETE?:
   }
 
   switch (MENU.peek()) {	// (second or) third letters for other scales
-  case EOF:
+  case EOF8:
     break;
   case '6':	// doric scale	// TODO: check 14
     user_select_scale(doric_scale);
@@ -4446,7 +4447,7 @@ bool menu_pulses_reaction(char menu_input) {
     case ' ':
       MENU.drop_input_token();	// ' ' no 'break;'  display short_info
 
-    case EOF:			// '.' and '. ' display short_info
+    case EOF8:			// '.' and '. ' display short_info
       short_info();
       break;
 
@@ -4548,7 +4549,7 @@ bool menu_pulses_reaction(char menu_input) {
       jiffle_range_bottom = jiffle_write_index;
       fix_jiffle_range();
 
-      if(MENU.peek()==EOF)
+      if(MENU.peek()==EOF8)
 	if (MENU.verbosity)
 	  display_jiffletab(selected_in(JIFFLES));
     } else
@@ -4563,7 +4564,7 @@ bool menu_pulses_reaction(char menu_input) {
       jiffle_range_top = jiffle_write_index;
       fix_jiffle_range();
 
-      if(MENU.peek()==EOF)
+      if(MENU.peek()==EOF8)
 	if (MENU.verbosity)
 	  display_jiffletab(selected_in(JIFFLES));
     } else
@@ -4644,7 +4645,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (jiffle_write_index)
 	jiffle_write_index--;
 
-      if(MENU.peek()==EOF)
+      if(MENU.peek()==EOF8)
 	if (MENU.verbosity)
 	  display_jiffletab(selected_in(JIFFLES));
       break;
@@ -4662,7 +4663,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (++jiffle_write_index >= (JIFFLE_RAM_SIZE - 2))
 	jiffle_write_index = JIFFLE_RAM_SIZE - 2;
 
-      if(MENU.peek()==EOF)
+      if(MENU.peek()==EOF8)
 	if (MENU.verbosity)
 	  display_jiffletab(selected_in(JIFFLES));
       break;
@@ -4786,7 +4787,7 @@ bool menu_pulses_reaction(char menu_input) {
       }
     } else {		// '*!<num>' set multiplier
       MENU.drop_input_token();
-      if(MENU.peek()==EOF)
+      if(MENU.peek()==EOF8)
 	MENU.outln(F("multiplier"));
 
       input_value = MENU.numeric_input(multiplier);
@@ -4806,7 +4807,7 @@ bool menu_pulses_reaction(char menu_input) {
     if(MENU.peek() == '!') {		// '/!<num>' set divisor
       MENU.drop_input_token();
 
-      if(MENU.peek()==EOF)
+      if(MENU.peek()==EOF8)
 	MENU.outln(F("divisor"));
 
       input_value = MENU.numeric_input(divisor);
@@ -4970,7 +4971,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'W':	// sweep info and control
     next_token = MENU.peek();
-    if (next_token == (char) EOF) {	// *no* input after 'W': maybe start, info
+    if (next_token == EOF8) {	// *no* input after 'W': maybe start, info
       if (sweep_up==0)
 	sweep_up=1;		//    start sweeping up if disabled
 
@@ -5177,7 +5178,7 @@ bool menu_pulses_reaction(char menu_input) {
     select_in(JIFFLES, jiffle_RAM);
     jiffle_write_index=0;	// ################ FIXME: ################
     select_in(JIFFLES, jiffle_RAM);
-    if(MENU.peek()==EOF)
+    if(MENU.peek()==EOF8)
       if (MENU.verbosity)
 	display_jiffletab(selected_in(JIFFLES));
     break;
@@ -5226,7 +5227,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'V':	// set voices	V[num]! PULSES.select_n_voices
-    if(MENU.peek()==EOF)
+    if(MENU.peek()==EOF8)
       MENU.out(F("voices "));
 
     input_value = MENU.numeric_input(voices);
@@ -5252,7 +5253,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'O':	// configure selected_actions
-    if (MENU.peek() == EOF) {
+    if (MENU.peek() == EOF8) {
       MENU.out(F("action flags "));
       PULSES.show_action_flags(selected_actions);
       MENU.ln();

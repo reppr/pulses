@@ -337,8 +337,8 @@ void click_connection_test(int wait) {	// wait==0 steps through the first round,
 char wait_for_input() {
   MENU.outln(F("waits for input"));
     //  char next_token=(char) MENU.peek();
-  int next_token=MENU.next_input_token();
-  while (next_token == EOF) {
+  uint8_t next_token=MENU.next_input_token();
+  while (next_token == EOF8) {
     next_token=MENU.next_input_token();
   }
   return (char) next_token;

@@ -3073,7 +3073,7 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
   bool switch_activity=false;
   bool do_next_letter=true;
   bool recognised = false;
-  if(MENU.peek() == EOF) {	// bare 'U'	switch_activity
+  if(MENU.peek() == EOF8) {	// bare 'U'	switch_activity
     switch_activity = true;
     recognised = true;
   } else {
@@ -3243,7 +3243,7 @@ bool musicBox_reaction(char token) {
   case 'E': // 'E' (bare):  start_soft_ending(soft_end_days_to_live, soft_end_survive_level);
     if(MENU.peek() == 'F') {			// case "EFx" configure function musicBox_when_done();
       MENU.drop_input_token();
-      if(MENU.peek() != EOF) {
+      if(MENU.peek() != EOF8) {
 	switch(MENU.peek()) {
 	case 'D':
 	  musicBox_when_done=&deep_sleep;		// "EFD" deep_sleep()
@@ -3365,7 +3365,7 @@ bool musicBox_reaction(char token) {
       int len=0;
       char c;
       for(;len < 64; len++) {
-	if(MENU.peek(len) == EOF)
+	if(MENU.peek(len) == EOF8)
 	  break;
       }
       char* macro = (char*) malloc(len + 1);
@@ -3436,7 +3436,7 @@ bool musicBox_reaction(char token) {
 #if defined USE_RGB_LED_STRIP
   case 'L':	 // 'L' RGB LED STRING
     switch (MENU.peek()) {	// second letter after 'L'
-    case EOF:	// bare 'L' strip info
+    case EOF8:	// bare 'L' strip info
       // TODO: give infos about string(s)	DADA ????
       break;
 
@@ -3671,7 +3671,7 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'T':	// Tuning pitch and scale	// TODO: move to pulses.ino
-    if(MENU.peek()==EOF) {		// bare 'T'?
+    if(MENU.peek()==EOF8) {		// bare 'T'?
       display_names(SCALES);	//   display SCALES list
       MENU.ln();
       musicBox_short_info();
@@ -3683,7 +3683,7 @@ bool musicBox_reaction(char token) {
 	  tune_selected_2_scale_limited(musicBoxConf.pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves // TODO: adjust appropriate...
 	case ' ':	// a space ends a 'T... ' input sequence, quit
 	  MENU.drop_input_token();
-	case EOF:	// EOF done		quit
+	case EOF8:	// EOF done		quit
 	  done = true;
 	  break;
 

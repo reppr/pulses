@@ -22,6 +22,13 @@
 #endif
 
 
+#if ! defined ILLEGAL8
+  #define ILLEGAL8	255
+#endif
+#if ! defined EOF8
+  #define EOF8	ILLEGAL8
+#endif
+
 /* **************************************************************** */
 // verbosity:	Levels of menu feedback:
 #define VERBOSITY_LOWEST	1
@@ -141,10 +148,10 @@ class Menu {
 
   void flush() const { port_.flush(); }	// flush menu output, inlined.
 
-  int peek() const;			// peek at next if any, else return EOL
-  int peek(int offset) const;	// peek at next, overnext... if any, else EOL
-  unsigned int skip_spaces();			// skip leading spaces from the buffer
-  int next_input_token() const;		// next non space input token if any, else EOL
+  int peek() const;			// peek at next if any, else return EOF8
+  int peek(int offset) const;		// peek at next, overnext... if any, else EOF8
+  unsigned int skip_spaces();		// skip leading spaces from the buffer
+  uint8_t next_input_token() const;	// next non space input token if any, else EOF8
   bool is_numeric() const;		// test if next token will be a numeric chiffre
   long numeric_input(long default_value);  // read a number from the buffer
   void skip_numeric_input();		// drop leading numeric sequence from the buffer
@@ -313,7 +320,7 @@ class Menu {
 #ifdef DEBUGGING_CIRCBUF
   void cb_info() const;			// debugging help
 #endif
-  int (*maybe_input)(void);	// maybe_input()  Must return EOF or next char
+  int (*maybe_input)(void);	// maybe_input()  Must return EOF 32bit or char
   bool (*action)(void);		// will be called on receiving an end token
 
   int cb_stored() const { return cb_count; }   // inlined: number of accumulated bytes
