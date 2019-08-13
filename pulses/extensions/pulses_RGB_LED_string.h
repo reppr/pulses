@@ -19,11 +19,9 @@ enum background_algorithms {
   bgHISTORY_f,	// looks like we will need that...
 };
 
-
+/* rgb_string_config_t	*software* configuration config for RGB LED strings
+			for *hardware* see pulses_hardware_conf_t	*/
 typedef struct rgb_string_config_t {
-  uint8_t pixel_cnt=150;	// too much does not harm too much (?)
-//float saturation_start_value = 0.12;
-//float saturation_start_value = 0.3;
   float rgb_led_string_intensity = DEFAULT_LED_STRING_INTENSITY;
   float saturation_start_value = 0.2;	// TODO: test&trimm default value ################	UI
   float saturation = saturation_start_value;
@@ -38,7 +36,6 @@ typedef struct rgb_string_config_t {
   float BlueHack_factor = 1.4;	// HACK: increase blueness
 
   uint8_t hue_slice_cnt = 15;	// just a usable default  see: set_automagic_hue_slices
-  uint8_t voltage_type = 12;	// TODO: use ################	DADA
   uint8_t set_background_algorithm = bgDIM;
   //uint8_t set_background_algorithm = bgHISTORY_i;	// TODO: DADA broken
 
@@ -58,12 +55,19 @@ typedef struct rgb_string_config_t {
 rgb_string_config_t RGBstringConf;
 
 
-void set_rgb_string_voltage_type(int voltage) {
-  RGBstringConf.voltage_type = voltage;
+void set_rgb_string_voltage_type(int voltage, int string) {
+  HARDWARE_Conf.rgb_led_voltage_type[string] = voltage;	// voltage goes to *HARDWARE_Conf*
+
   if(voltage < 6)
     RGBstringConf.rgb_background_dim = 0.45;	// ok for 5V version (1m 144)
   else	// 6V and more "12V" type
     RGBstringConf.rgb_background_dim = 0.1;	// TEST: for "12V" version 5m 300
+
+  MENU.out(F("configured voltage adaptions on string "));
+  MENU.out(string);
+  MENU.out(F("  for voltage "));
+  MENU.out(voltage);
+  MENU.outln('V');
 }
 
 #include "FOREIGN/ESP32-Digital-RGB-LED-Drivers/src/esp32_digital_led_lib.h"
@@ -73,6 +77,8 @@ void set_rgb_string_voltage_type(int voltage) {
 #include "FOREIGN/ESP32-Digital-RGB-LED-Drivers/src/esp32_digital_led_funcs.cpp"
 
 #define COUNT_OF(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
+
+int selected_rgb_LED_string = 0;	// default to the first string
 
 strand_t STRANDS[] = { // Avoid using any of the strapping pins on the ESP32, anything >=32, 16, 17... not much left.
   {.rmtChannel = 0, .gpioNum = RGB_LED_STRIP_DATA_PIN, .ledType = LED_WS2812B_V3, .brightLimit = 24, .numPixels = RGB_STRING_LED_CNT },

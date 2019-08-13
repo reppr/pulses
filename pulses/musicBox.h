@@ -3508,11 +3508,17 @@ bool musicBox_reaction(char token) {
 
     case 'V':	// 'LV' voltage_type
       MENU.drop_input_token();
-      RGBstringConf.voltage_type = MENU.numeric_input(RGBstringConf.voltage_type);
+      {
+	int voltage = MENU.numeric_input((long) HARDWARE_Conf.rgb_led_voltage_type[selected_rgb_LED_string]);
+	if((voltage > -1) && (voltage < 256)) {
+	  //	  HARDWARE_Conf.rgb_led_voltage_type[selected_rgb_LED_string] = voltage;
+	  set_rgb_string_voltage_type(voltage, selected_rgb_LED_string);
+	}
+      }
 
       if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
 	MENU.out(F("voltage_type "));
-	MENU.outln(RGBstringConf.voltage_type);
+	MENU.outln(HARDWARE_Conf.rgb_led_voltage_type[selected_rgb_LED_string]);
       }
       break;
 
