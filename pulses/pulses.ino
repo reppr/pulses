@@ -1336,7 +1336,7 @@ void setup() {
 #endif
 
 #if defined USE_MPU6050
-  mpu6050_setup();
+  mpu6050_available = mpu6050_setup();	// this will switch MPU6050 *OFF* if not found, including sampling
 #endif
 
 #if defined MUSICBOX_TRIGGER_PIN
@@ -1605,31 +1605,29 @@ bool low_priority_tasks() {
 #endif
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
-
-//  #define GYRO_MODULUS		5113	// prime
-//  #define GYRO_MODULUS		9679	// prime
-//  #define GYRO_MODULUS		1173	// prime
   #define GYRO_MODULUS		19319	// prime
-
-  if(accGyro_is_active) {
-    if((low_priority_cnt % GYRO_MODULUS) == 0) { // check GYRO
+  if((low_priority_cnt % GYRO_MODULUS) == 0) { // check GYRO
+    if(accGyro_is_active) {
       if(GYRO_only_check())
 	return true;
     }
   }
 
-  if(accGyro_is_active) {
-    if(accGyro_new_data ) {	//   check new input data
-      accGyro_reaction();
-      return true;
-    } // else
+  if(accGyro_new_data) {	//   check new input data
+    if(!mpu6050_available)						// catch bugs, if any ;)  TODO: REMOVE:
+      MENU.error_ln(F("accGyro_new_data  mpu6050_available=false"));	// catch bugs, if any ;)  TODO: REMOVE:
+
+    accGyro_reaction();
+    return true;
+  }
 
   #define ACCGYR_MODULUS	55547	// prime
-    if ((low_priority_cnt % ACCGYR_MODULUS) == 0) { // take a accelerGyro sample
+  if ((low_priority_cnt % ACCGYR_MODULUS) == 0) { // take a accelerGyro sample
+    if(accGyro_is_active) {
       accGyro_sample();
       return true;
     }
-  } // else
+  }
 #endif
 
 #ifdef IMPLEMENT_TUNING		// tuning, sweeping priority below menu		*implies floating point*

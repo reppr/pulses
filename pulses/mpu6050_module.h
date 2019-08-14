@@ -7,6 +7,9 @@
 
 #if ! defined MPU6050_MODULE_H
 
+bool mpu6050_available=true;	// will be reset automagically if there's no MPU6050 found
+				// this will switch it off, including sampling...
+
 int16_t accGyro_offsets[] = {-1493, -2125, 1253, 98, 85, -50};	// aX, aY, aZ, gX, gY, gZ offsets
 // *GIVE INDIVIDUAL OFFSET VALUES FOR YOUR CHIP HERE*
 // get these values (with *horizontally resting* chips)
@@ -247,6 +250,11 @@ uint8_t	accGyro_preset = ACCGYRO_DEFAULT_PRESET;
 
 /*	void IRAM_ATTR accGyro_sample()	// pulses does NOT use interrupt version any more	*/
 void accGyro_sample() {
+  if(!mpu6050_available) {						// catch bugs, if any ;)  TODO: REMOVE:
+    MENU.error_ln(F("accGyro_sample() mpu6050_available=false"));	// catch bugs, if any ;)  TODO: REMOVE:
+    return;
+  }
+
   static int16_t mpu_sample_index=0;
 
 //#define ACCELGYRO_SAMPLES	ALL6
@@ -332,7 +340,7 @@ void accGyro_sample() {
     accGyro_new_data = true;
     /*	portEXIT_CRITICAL_ISR(&timerMux);	*/ // pulses does not use interrupt version any more
   }
-}
+} // accGyro_sample()
 
 // void accGyro_reaction()
 //#define DEBUG_AG_REACTION		// DO show selected slices
@@ -693,7 +701,7 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
       MENU.error_ln(F("unknown accGyro_preset"));
     } // switch (accGyro_preset)
   } // if(accGyro_mode)
-}
+} // accGyro_reaction()
 
 
 void accGyro_data_display() {
@@ -714,7 +722,7 @@ void accGyro_data_display() {
     MENU.outln(mpu6050.getRotationZ());
   } else
     MENU.outln(F("mpu6050 not connected"));
-}
+} // accGyro_data_display()
 
 
 //#define COMPILE_ACCEL_GYRO_SPEED_TEST

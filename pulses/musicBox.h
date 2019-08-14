@@ -3090,18 +3090,27 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
 	MENU.drop_input_token();
 	accGyro_mode ^= axM;
 	accGyro_is_active = accGyro_mode;
+	if(!mpu6050_available)
+	  accGyro_is_active = false;
+
 	recognised = true;
 	break;
       case 'Y':			// YY acc	toggle ayM	-.--  -.--
 	MENU.drop_input_token();
 	accGyro_mode ^= ayM;
 	accGyro_is_active = accGyro_mode;
+	if(!mpu6050_available)
+	  accGyro_is_active = false;
+
 	recognised = true;
 	break;
       case 'Z':			// YZ GYRO	toggle gzM	-.--  --..
 	MENU.drop_input_token();
 	accGyro_mode ^= gzM;
 	accGyro_is_active = accGyro_mode;
+	if(!mpu6050_available)
+	  accGyro_is_active = false;
+
 	recognised = true;
 	break;
 
@@ -3128,12 +3137,18 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
 
   if(switch_activity)
     accGyro_is_active ^= 1;
+  if(!mpu6050_available)
+    accGyro_is_active = false;
+
+
   if(accGyro_mode==0)		// deconfigured, so deactivate
     accGyro_is_active = false;
 
   display_accGyro_mode();
   MENU.tab();
   MENU.out_ON_off(accGyro_is_active);
+  if(!mpu6050_available)
+    MENU.out(F("\tMPU6050 not available"));
   MENU.ln();
 
   return recognised;
@@ -3195,7 +3210,7 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
 #else	// no MPU6050
   return false;
 #endif
-}
+} // Y_UI()
 
 
 bool musicBox_reaction(char token) {
