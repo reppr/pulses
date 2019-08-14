@@ -15,6 +15,10 @@
 
 #ifndef MENU_CONFIGURATION_H
 
+#if ! defined EOF32
+  #define EOF32		0xffffffff
+#endif
+
 /*
 // CONFIGURE one or more INPUTS and OUTPUTS:
 #define MENU_USE_SERIAL_IN
@@ -122,7 +126,7 @@
 	return Serial.read();
     #endif
 */
-    return EOF;
+    return EOF32;
   }
 
 #else	// PC

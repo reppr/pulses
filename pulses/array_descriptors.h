@@ -200,7 +200,7 @@ bool UI_select_from_DB(arr_descriptor* DB) {
   unsigned int* p = NULL;
   int input_value;
 
-  if(MENU.peek() == EOF ) {	// no further input:
+  if(MENU.peek() == EOF8) {	// no further input:
     display_names(DB);	//    display list
     return false;		//    RETURN
   }

@@ -1,5 +1,5 @@
 24 matches for "case" in buffer: pulses.ino
-      3:  case EOF:
+      3:  case EOF8:
       6:  case 'u':	// harmonical time unit, minor
      14:  case 'U':	// harmonical time unit, major
      22:  case 'c':	// c minor
@@ -16,7 +16,7 @@
     101:  case 'A':	// A major scale
     108:  case 'b':	// b minor
     115:  case 'B':	// b major
-    124:  case EOF:
+    124:  case EOF8:
     126:  case '6':	// doric scale
     129:  case '5':	// 5  pentatonic (minor|major) scale
     137:  case '4':	// 4  scale tetraCHORD tetrachord (major|minor)

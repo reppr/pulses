@@ -354,7 +354,7 @@ char wait_for_input() {
 //	      if ((PULSES.pulse_is_selected(pulse))) && PULSES.pulses[pulse].period.time) {
 //		MENU.outln(pulse);
 //
-//		while (MENU.peek()==EOF)
+//		while (MENU.peek()==EOF8)
 //		  delay(0.1);
 //
 //		INP=MENU.peek();

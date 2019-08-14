@@ -568,7 +568,7 @@ bool Menu::string_match(const char * teststring) {
   */
   //	/* int men_getchar();
   //	   Read next char of menu input, if available.
-  //	   Returns EOF 32bit or char.						*/
+  //	   Returns EOF32 or char.						*/
   //	int Menu::men_getchar() { return getchar(); } // c++ Linux PC test version
 
   /* void Menu::out(); overloaded menu output function family:	*/
@@ -937,10 +937,10 @@ bool Menu::lurk_then_do() {
 
   /* int maybe_input()
      must be a function returning one byte data
-     or if there is no input returning EOF 32bit	*/
+     or if there is no input EOF32		*/
   INP=(*maybe_input)();
 
-  if ( INP == EOF )	// no input?  done
+  if ( INP == EOF32 )	// no input?  done
     return false;	// false: *no program reaction triggered*
 
   // there *is* input
@@ -1319,7 +1319,7 @@ void Menu::interpret_men_input() {
       outln(F("* MENU PAGES KEY"));
 #endif
       switch(token = peek()) {	// read next token
-      case 255:		// 255 is EOF as char	':' only	display menu pages
+      case EOF8:		// ':' only	display menu pages
 	menu_pages_info();
 	return;
 	break;
@@ -1453,7 +1453,7 @@ void Menu::interpret_men_input() {
 
     case '#': // one line comment
       out('#');
-      while (peek() != EOF) {
+      while (peek() != EOF8) {
 	out((char) drop_input_token());	// echo # comment line
       }
       ln();

@@ -57,7 +57,7 @@ void Menu_setup();
 
   int men_getchar() {
     if (!Serial.available())	// ARDUINO
-      return EOF;
+      return EOF32;
 
     return Serial.read();
   }

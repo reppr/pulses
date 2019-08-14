@@ -3178,7 +3178,7 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
 //		  MENU.error_ln(F("TODO: implement"));
 //		  break;
 //
-//		default: // EOF or unknown
+//		default: // EOF8 or unknown
 //		  check_next = false;
 //		} // peek second letter
 //	      }
@@ -3800,7 +3800,7 @@ bool musicBox_reaction(char token) {
 	end = highest_primary;
 	break;
 
-      default:	// EOF or invalid
+      default:	// EOF8 or invalid
 	MENU.restore_input_token();
 	return false;	// bare 's' see: pulses menu	*RETURN*
 	break;

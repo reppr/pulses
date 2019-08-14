@@ -1,4 +1,4 @@
-/*
+ /*
   menu_IO_configuration.h
 */
 
@@ -14,6 +14,10 @@
 
 
 #ifndef MENU_CONFIGURATION_H
+
+#if ! defined EOF32
+  #define EOF32		0xffffffff
+#endif
 
 /*
 // CONFIGURE one or more INPUTS and OUTPUTS:
@@ -45,9 +49,16 @@
 */
 
     /* BAUDRATE for Serial:	uncomment one of the following lines:	*/
+    //#define BAUDRATE	1000000	// (I get many errors on some ESP32 boards)
+    //#define BAUDRATE	500000	// fine on ESP32 with bad USB cable
+#if defined ESP32
+  #define BAUDRATE	500000	// TODO: test with better USB connection and also ESP8266
+#else
+  #define BAUDRATE	115200	// works fine here on all tested Arduinos
+#endif
     //#define BAUDRATE	250000
     //#define BAUDRATE	230400
-    #define BAUDRATE	115200		// works fine here on all tested Arduinos
+    //#define BAUDRATE	115200		// works fine here on all tested Arduinos
     //#define BAUDRATE	74880
     //#define BAUDRATE	57600
     //#define BAUDRATE	38400
@@ -63,14 +74,18 @@
   #endif	  ################ FIXME: temporary:  use Serial unconditionally
 */
 
+#if defined USE_BLUETOOTH_SERIAL_MENU
+  #define MENU_OUTSTREAM2	BLUEtoothSerial
+#endif
+
 // do we need WiFi?
   #ifdef USE_WIFI_telnet_menu	// use WIFI as menu over telnet?
     #if defined(ESP8266)
-  #include <ESP8266WiFi.h>	// breaks:  min() max()   use:  _min() _max()
+	#include <ESP8266WiFi.h>	// breaks:  min() max()   use:  _min() _max()
     #elif defined(ESP32)
-	#include <ESP32WiFi.h>	// might break:  min() max()   use:  _min() _max()
+	#include <WiFi.h>	// might break:  min() max()   use:  _min() _max()
     #else
-	#error "WiFi code unknown"
+	#error "WiFi code unknown,  see: pulses_boards.h"
     #endif
   #endif
 
@@ -95,6 +110,11 @@
     if (Serial.available())
       return Serial.read();
 
+  #if defined USE_BLUETOOTH_SERIAL_MENU
+    if (BLUEtoothSerial.available())
+      return BLUEtoothSerial.read();
+  #endif
+
   #ifdef USE_WIFI_telnet_menu
       if (server_client && server_client.connected() && server_client.available())
 	return server_client.read();
@@ -105,13 +125,8 @@
       if (Serial.available())
 	return Serial.read();
     #endif
-
-    #ifdef MENU_USE_WiFi_TELNET_IN
-      if (server_client && server_client.connected() && server_client.available())
-	return server_client.read();
-    #endif
 */
-    return EOF;
+    return EOF32;
   }
 
 #else	// PC

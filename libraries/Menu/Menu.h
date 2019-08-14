@@ -26,7 +26,10 @@
   #define ILLEGAL8	255
 #endif
 #if ! defined EOF8
-  #define EOF8	ILLEGAL8
+  #define EOF8		ILLEGAL8
+#endif
+#if ! defined EOF32
+  #define EOF32		0xffffffff
 #endif
 
 /* **************************************************************** */
@@ -320,7 +323,7 @@ class Menu {
 #ifdef DEBUGGING_CIRCBUF
   void cb_info() const;			// debugging help
 #endif
-  int (*maybe_input)(void);	// maybe_input()  Must return EOF 32bit or char
+  int (*maybe_input)(void);	// maybe_input()  Must return EOF32 or char
   bool (*action)(void);		// will be called on receiving an end token
 
   int cb_stored() const { return cb_count; }   // inlined: number of accumulated bytes

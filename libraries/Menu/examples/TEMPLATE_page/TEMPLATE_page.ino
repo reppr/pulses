@@ -49,9 +49,9 @@ Inputs INPUTS(8);
   This version definines the menu INPUT routine int men_getchar();
   in the *program* not inside the Menu class.
 */
-int men_getchar() {	// returns EOF 32 bit or char
+int men_getchar() {	// returns EOF32
   if (!Serial.available())	// ARDUINO
-    return EOF;
+    return EOF32;
 
   return Serial.read();
 }
