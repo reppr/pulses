@@ -3531,6 +3531,21 @@ bool musicBox_reaction(char token) {
 	MENU.ln();
       }
       break;
+
+    case 'P':	// 'LP' set led string pixel
+      MENU.drop_input_token();
+      input_value = MENU.numeric_input(HARDWARE.rgb_pixel_cnt[selected_rgb_LED_string]);
+      if((input_value > -1) && (input_value < 256)) {
+	HARDWARE.rgb_pixel_cnt[selected_rgb_LED_string] = input_value;
+	STRANDS[selected_rgb_LED_string].numPixels = input_value;
+      }
+
+      MENU.out(F("LED string "));
+      MENU.out(selected_rgb_LED_string);
+      MENU.tab();
+      MENU.out(HARDWARE.rgb_pixel_cnt[selected_rgb_LED_string]);
+      MENU.outln(F(" LEDs"));
+      break;
     } // second letter after 'L'
     break;
 #endif

@@ -334,7 +334,7 @@ void configure_HARDWARE_from_nvs() {
       MENU.out(x);
 
       MENU.out(F("\tcnt "));
-      x = HARDWARE.rgb_led_cnt[i] = HARDWARE_from_nvs.rgb_led_cnt[i];
+      x = HARDWARE.rgb_pixel_cnt[i] = HARDWARE_from_nvs.rgb_pixel_cnt[i];
       MENU.out(x);
 
       MENU.out(F("\ttype "));

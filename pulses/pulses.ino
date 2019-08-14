@@ -190,7 +190,7 @@ typedef struct pulses_hardware_conf_t {
   // RGB LED strings
   uint8_t rgb_strings=0;		// flag and rgb led string cnt
   uint8_t rgb_pin[RGB_STRINGS_MAX]={0};					// %4
-  uint8_t rgb_led_cnt[RGB_STRINGS_MAX]={0};				// %4
+  uint8_t rgb_pixel_cnt[RGB_STRINGS_MAX]={0};				// %4
   uint8_t rgb_led_voltage_type[RGB_STRINGS_MAX]={0};			// %4
 
   // MIDI?
@@ -1098,7 +1098,7 @@ void setup_initial_HARDWARE_conf() {
 #if defined USE_RGB_LED_STRIP
   HARDWARE.rgb_strings = 1;	// I use only one
   HARDWARE.rgb_pin[0] = RGB_LED_STRIP_DATA_PIN;
-  HARDWARE.rgb_led_cnt[0] = RGB_STRING_LED_CNT;
+  HARDWARE.rgb_pixel_cnt[0] = RGB_STRING_LED_CNT;
   #if defined RGB_LED_STRING_VOLTAGE_TYPE
     HARDWARE.rgb_led_voltage_type[0] = RGB_LED_STRING_VOLTAGE_TYPE;
   #endif
@@ -1191,7 +1191,7 @@ void show_hardware_conf(pulses_hardware_conf_t* hardware) {
       MENU.out(F("  pin\t\t"));
       MENU.out(hardware->rgb_pin[i]);
       MENU.out(F("\tcnt "));
-      MENU.outln(hardware->rgb_led_cnt[i]);
+      MENU.outln(hardware->rgb_pixel_cnt[i]);
     }
     MENU.out(F("voltage type\t\t"));
     MENU.outln(hardware->rgb_led_voltage_type[0]);
@@ -1217,7 +1217,11 @@ void show_current_hardware_conf() {	// same, with title, for menu output
 int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very first one
 
 void setup() {
-  // DADA TODO: emergency rgb led strings reset in setup()?
+// DADA TODO: emergency rgb led strings reset in setup()?
+//   #if defined RGB_LED_STRIP_DATA_PIN
+//     pinMode(RGB_LED_STRIP_DATA_PIN, OUTPUT);	// on oldstyle Arduinos this is enough, maybe not always on ESP
+//     digitalWrite(RGB_LED_STRIP_DATA_PIN, HIGH);	// on oldstyle Arduinos this is enough, maybe not always on ESP
+//   #endif
 
   setup_initial_HARDWARE_conf();
 
