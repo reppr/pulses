@@ -15,7 +15,7 @@
 // Preferences CONF_nvs;
 // CONF_nvs.begin("CONFIG", /* readonly is */ false);
 
-
+#define RGB_STRINGS_MAX		8
 // esp_err_t ERROR reporting
 #if ! defined ESP_ERR_INFO_DEFINED
   bool /* error */ esp_err_info(esp_err_t status) {

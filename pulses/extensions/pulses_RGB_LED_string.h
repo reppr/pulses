@@ -89,7 +89,7 @@ strand_t STRANDS[] = { // Avoid using any of the strapping pins on the ESP32, an
 
 int STRANDCNT = COUNT_OF(STRANDS);	// I use only one
 
-strand_t * strands[8];
+strand_t * strands[RGB_STRINGS_MAX];
 
 //**************************************************************************//
 boolean initStrands()
@@ -112,7 +112,7 @@ boolean initStrands()
     gpioSetup(STRANDS[i].gpioNum, OUTPUT, LOW);
   }
 
-  // strand_t * strands[8];
+  // strand_t * strands[RGB_STRINGS_MAX];
   for (int i = 0; i < STRANDCNT; i++) {
     strands[i] = &STRANDS[i];
   }

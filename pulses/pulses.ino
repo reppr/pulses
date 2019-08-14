@@ -148,6 +148,7 @@ enum RTC_types {
   RTC_type_unknown,
 };
 
+#define RGB_STRINGS_MAX		8
 
 // some HARDWARE must be known early	*can be managed by nvs*
 typedef struct pulses_hardware_conf_t {
@@ -188,9 +189,9 @@ typedef struct pulses_hardware_conf_t {
 
   // RGB LED strings
   uint8_t rgb_strings=0;		// flag and rgb led string cnt
-  uint8_t rgb_pin[8]={0};						// %4
-  uint8_t rgb_led_cnt[8]={0};						// %4
-  uint8_t rgb_led_voltage_type[8]={0};					// %4
+  uint8_t rgb_pin[RGB_STRINGS_MAX]={0};					// %4
+  uint8_t rgb_led_cnt[RGB_STRINGS_MAX]={0};				// %4
+  uint8_t rgb_led_voltage_type[RGB_STRINGS_MAX]={0};			// %4
 
   // MIDI?
   uint8_t MIDI_in_pin=ILLEGAL8;		// reserved, not implemented yet // %4
@@ -1195,7 +1196,7 @@ void show_hardware_conf(pulses_hardware_conf_t* hardware) {
     MENU.out(F("voltage type\t\t"));
     MENU.outln(hardware->rgb_led_voltage_type[0]);
   } else
-    MENU.outln('_');
+    MENU.outln('-');
 
   MENU.outln(F("RTC\t\t\tTODO:"));
   MENU.ln();

@@ -10,6 +10,8 @@ void nvs_menu_display() {
   MENU.ln();
 
   MENU.outln(F("'H'=HARDWARE 'HR'=read 'HS'=save '?'=info"));
+  MENU.ln();
+  MENU.outln(F("'S'=SYSTEM 'SS'=set rgb string cnt"));
 
   MENU.outln(F("\n'P' nvs_PRENAME"));
 
@@ -53,6 +55,31 @@ bool nvs_menu_reaction(char token) {
     } // switch(next_token) after 'H'
 
     MENU.ln();
+    break;
+
+  case 'S':	// 'S' system	in construction
+    switch(next_token) { // second letter after 'S'
+    case 'S':	// 'SS'
+      MENU.drop_input_token();
+      input_value = MENU.numeric_input(HARDWARE.rgb_strings);
+      if((input_value >= 0) && (input_value < RGB_STRINGS_MAX))
+	HARDWARE.rgb_strings = input_value;
+
+      MENU.out(F("LED strings "));
+      MENU.outln(HARDWARE.rgb_strings);
+
+      rgb_strings_available = (HARDWARE.rgb_strings > 0); // false, if there's no string
+      MENU.out(F("LED strings switched"));
+      MENU.out_ON_off(rgb_strings_available);
+      MENU.ln();
+      break;
+
+    case EOF8:
+      break;
+
+    default:
+      return false;
+    } // second letter after 'S'
     break;
 
   case 'P':
