@@ -147,6 +147,7 @@ void nvs_save_blob(char* key, void* new_blob, size_t buffer_size) {
 } // nvs_save_blob
 
 
+extern bool rgb_strings_available;
 void configure_HARDWARE_from_nvs() {
   int v;
   pulses_hardware_conf_t HARDWARE_from_nvs;
@@ -319,7 +320,9 @@ void configure_HARDWARE_from_nvs() {
   n = HARDWARE_from_nvs.rgb_strings;
   if(n) {
     HARDWARE.rgb_strings = n;
-    MENU.out(F("RGB LED strings "));
+    rgb_strings_available = true;
+
+    MENU.out(F("RGB LED strings available "));
     MENU.outln(n);
 
     for(int i=0; i < n; i++) {
@@ -344,7 +347,13 @@ void configure_HARDWARE_from_nvs() {
     if((x = HARDWARE_from_nvs.rgb_led_voltage_type[0]) != ILLEGAL8) {
       extern int selected_rgb_LED_string;
       extern void set_rgb_string_voltage_type(int, int);
+      MENU.out(F("=>"));
       set_rgb_string_voltage_type(x, selected_rgb_LED_string);
+    }
+  } else {	// no rgb led strings
+    if(rgb_strings_available) {
+      rgb_strings_available = false;
+      MENU.outln(F("*switched RGB LED STRINGS OFF*"));
     }
   }
 

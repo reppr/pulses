@@ -873,12 +873,6 @@ bool stack_sync_user_selected=false;
 #endif
 
 
-#ifndef RAM_IS_SCARE	// ################ FIXME: USE_INPUTS default condition ################
-  #if ! defined SMALL_SKETCH_SIZE_TEST
-    #define USE_INPUTS
-  #endif
-#endif
-
 #ifdef USE_INPUTS
   #include <Inputs.h>
   Inputs INPUTS(4);
@@ -1252,12 +1246,14 @@ void setup() {
   while (!Serial) { yield(); }		// wait for Serial to open
 #endif
 
-  delay(STARTUP_DELAY);
-
   // try to get rid of menu input garbage, "dopplet gnaeht hebt vilicht besser" ;)
+  //  delay(STARTUP_DELAY);
   while (Serial.available())  { Serial.read(); yield(); }
+  delay(STARTUP_DELAY);
   while (MENU.peek() != EOF8) { MENU.drop_input_token(); yield(); }
-  MENU.outln(F("\n      \n"));	// try to get empty start lines after serial garbage...
+  MENU.ln();	// try to get empty start lines after serial garbage...
+  MENU.space(8);
+  MENU.ln();
 
 #if defined USE_MONOCHROME_DISPLAY
   // SEE: https://github.com/olikraus/u8g2/wiki/u8x8reference
@@ -1281,9 +1277,7 @@ void setup() {
   random_entropy();	// gathering entropy from serial noise
 #endif
 
-  delay(STARTUP_DELAY);
-
-  MENU.outln(F("\n\nPULSES  http://github.com/reppr/pulses/\n"));
+  MENU.outln(F("PULSES  http://github.com/reppr/pulses/\n"));
 
   show_program_version();
 
@@ -1598,7 +1592,7 @@ bool low_priority_tasks() {
   low_priority_cnt++;
 
 #if defined USE_RGB_LED_STRIP
-  if(update_RGB_LED_string) {
+  if(update_RGB_LED_string && rgb_strings_available) {
     digitalLeds_drawPixels(strands, 1);
     update_RGB_LED_string = false;
     return true;
@@ -1831,7 +1825,7 @@ void loop() {	// ARDUINO
 #endif	// DO_STRESS_MANAGMENT
 
 #if defined USE_RGB_LED_STRIP
-    if(update_RGB_LED_string && rgb_leds_high_priority) {
+    if(update_RGB_LED_string && rgb_leds_high_priority && rgb_strings_available) {
       digitalLeds_drawPixels(strands, 1);
       update_RGB_LED_string = false;
     }

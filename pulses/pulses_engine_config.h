@@ -22,8 +22,15 @@
 
 #define USE_SYSTEM_MENU		// only a start...
 
-//#define USE_MORSE	// incomplete	DEACTIVATED MORSE OUTPUT, (== PERIPHERAL_POWER_SWITCH_PIN ;)
-//#define USE_INPUTS
+#define USE_INPUTS		// not used any more, but left in for compilation test ;)
+/* was:
+   #ifndef RAM_IS_SCARE	// ################ FIXME: USE_INPUTS default condition ################
+     #if ! defined SMALL_SKETCH_SIZE_TEST
+       #define USE_INPUTS
+     #endif
+   #endif
+*/
+
 //#define USE_LEDC	// to be written ;)
 
 #define USE_RTC_MODULE

@@ -9,6 +9,8 @@
 //#define DEBUG_LED_STRINGS			// empty  or 'SATURATION'
 //#define DEBUG_LED_STRINGS	SATURATION	// empty  or 'SATURATION'
 
+bool rgb_strings_available = true;	// default, can be switched off i.e. from nvs
+
 #if ! defined DEFAULT_LED_STRING_INTENSITY
   #define DEFAULT_LED_STRING_INTENSITY	48	// 72 on 'placeholder'	DADA
 #endif
@@ -54,7 +56,6 @@ typedef struct rgb_string_config_t {
 
 rgb_string_config_t RGBstringConf;
 
-
 void set_rgb_string_voltage_type(int voltage, int string) {
   HARDWARE.rgb_led_voltage_type[string] = voltage;	// voltage goes to *HARDWARE*
 
@@ -93,6 +94,9 @@ strand_t * strands[8];
 //**************************************************************************//
 boolean initStrands()
 {
+  if(!rgb_strings_available)
+    return true;
+
   /****************************************************************************
      If you have multiple strands connected, but not all are in use, the
      GPIO power-on defaults for the unused strand data lines will typically be
@@ -148,8 +152,10 @@ void inspect_LED_pixel(pixelColor_t pixel) {
 pixelColor_t background0[RGB_STRING_LED_CNT] = {0};	// keeps last used background colour, dimmed
 
 void clear_background_buffer0() {
-  for(int i=0; i < RGB_STRING_LED_CNT; i++)
-    background0[i].r = background0[i].g = background0[i].b = 0;
+  if(rgb_strings_available) {
+    for(int i=0; i < RGB_STRING_LED_CNT; i++)
+      background0[i].r = background0[i].g = background0[i].b = 0;
+  }
 }
 
 // see: https://de.wikipedia.org/wiki/HSV-Farbraum
@@ -283,9 +289,11 @@ void HSV_2_RGB_degree(pixelColor_t* pixel, float H, float S, float V) {	// TODO:
 //	  MENU.outln((int)sysinfo.revision);
 //	}
 
-bool pulses_RGB_LED_string_init() {
-  initStrands();
-  digitalLeds_resetPixels(&strands[0], 1);
+void pulses_RGB_LED_string_init() {
+  if(rgb_strings_available) {
+    initStrands();
+    digitalLeds_resetPixels(&strands[0], 1);
+  }
 }
 
 void random_RGB_string(uint8_t max=8) {
@@ -371,63 +379,72 @@ bool update_RGB_LED_string=false;	// is the string buffer dirty?
 #define PULSE_2_RGB_LED_STRING	  pulse - lowest_primary	// find the corresponding led sting
 
 void clear_RGB_string_pixel(int pulse) {
-  strand_t * strand_p = strands[0];
-  int pix_i = PULSE_2_RGB_LED_STRING;		// TODO: use pulse intenal data
-  pixelColor_t pixel;
-  pixel.r = 0;
-  pixel.g = 0;
-  pixel.b = 0;
-  strand_p->pixels[pix_i] = pixel;
+  if(rgb_strings_available) {
+    strand_t * strand_p = strands[0];
+    int pix_i = PULSE_2_RGB_LED_STRING;		// TODO: use pulse intenal data
+    pixelColor_t pixel;
+    pixel.r = 0;
+    pixel.g = 0;
+    pixel.b = 0;
+    strand_p->pixels[pix_i] = pixel;
 
-  update_RGB_LED_string = true;
+    update_RGB_LED_string = true;
+  }
 }
 
 
 void set_pulse_LED_pixel_from_counter(int pulse) {
-  float H, V;
+  if(rgb_strings_available) {
+    float H, V;
 
-  bool do_display = MENU.maybe_display_more(VERBOSITY_SOME);
+    bool do_display = MENU.maybe_display_more(VERBOSITY_SOME);
 #if defined DEBUG_LED_STRINGS
-  do_display = true;
+    do_display = true;
 #endif
 
-  RGBstringConf.saturation *= RGBstringConf.saturation_change_factor;	// slowly increase saturation ;)
-  if(RGBstringConf.saturation > 1.0) {			// sudden reset on overflow to a low saturation level
-    RGBstringConf.saturation = RGBstringConf.saturation_reset_value;
-    if(do_display) {
-      MENU.out(F("RESET saturation to "));
-      MENU.outln(RGBstringConf.saturation);
+    RGBstringConf.saturation *= RGBstringConf.saturation_change_factor;	// slowly increase saturation ;)
+    if(RGBstringConf.saturation > 1.0) {			// sudden reset on overflow to a low saturation level
+      RGBstringConf.saturation = RGBstringConf.saturation_reset_value;
+      if(do_display) {
+	MENU.out(F("RESET saturation to "));
+	MENU.outln(RGBstringConf.saturation);
+      }
     }
-  }
 
-  H = (float) (PULSES.pulses[pulse].counter % RGBstringConf.hue_slice_cnt) / (float) RGBstringConf.hue_slice_cnt;
-  V = RGBstringConf.rgb_led_string_intensity / (float) 255;
+    H = (float) (PULSES.pulses[pulse].counter % RGBstringConf.hue_slice_cnt) / (float) RGBstringConf.hue_slice_cnt;
+    V = RGBstringConf.rgb_led_string_intensity / (float) 255;
 
-  strand_t * strand_p = strands[0];
-  int pix_i = PULSE_2_RGB_LED_STRING;		// TODO: use pulse intenal data
-  pixelColor_t pixel;
+    strand_t * strand_p = strands[0];
+    int pix_i = PULSE_2_RGB_LED_STRING;		// TODO: use pulse intenal data
+    pixelColor_t pixel;
 
-  HSV_2_RGB_degree(&pixel, (H * 360.0), RGBstringConf.saturation, V);
-  strand_p->pixels[pix_i] = pixel;
+    HSV_2_RGB_degree(&pixel, (H * 360.0), RGBstringConf.saturation, V);
+    strand_p->pixels[pix_i] = pixel;
 
-  // try the BlueHack, to give *more* blue
-  int blue = (int) (((float) strand_p->pixels[pix_i].b * RGBstringConf.BlueHack_factor) + 0.5);
-  if(blue > 255)
-    blue = 255;
-  strand_p->pixels[pix_i].b = blue;
+    // try the BlueHack, to give *more* blue
+    int blue = (int) (((float) strand_p->pixels[pix_i].b * RGBstringConf.BlueHack_factor) + 0.5);
+    if(blue > 255)
+      blue = 255;
+    strand_p->pixels[pix_i].b = blue;
 
-  update_RGB_LED_string=true;		// new buffer content to be displayed
+    update_RGB_LED_string=true;		// new buffer content to be displayed
+  } // if(rgb_strings_available) {
 } // set_pulse_LED_pixel_from_counter(int pulse)
 
 
 void rgb_led_reset_to_default() {	// reset rgb led strip management to default conditions
-  RGBstringConf.saturation = RGBstringConf.saturation_start_value;
-  clear_background_buffer0();
+  if(rgb_strings_available) {
+    RGBstringConf.saturation = RGBstringConf.saturation_start_value;
+    clear_background_buffer0();
+  }
 }
 
 
 //#define DEBUG_RGB_STRING_BACKGROUND
-void set_rgb_led_background(int pulse) {	// DADA
+void set_rgb_led_background(int pulse) {
+  if(!rgb_strings_available)
+    return;
+
   if(PULSES.pulses[pulse].flags & HAS_RGB_LEDs) {
     strand_t * strand_p = strands[PULSES.pulses[pulse].rgb_string_idx];
 
@@ -594,7 +611,8 @@ void set_rgb_led_background(int pulse) {	// DADA
     } // switch (RGBstringConf.set_background_algorithm)
   } /* HAS_RGB_LEDs */ else
     MENU.error_ln(F("no RGB LEDs"));
-}
+} // set_rgb_led_background(int pulse)
+
 
 #define PULSES_RGB_LED_STRING_H
 #endif
