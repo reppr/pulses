@@ -18,6 +18,8 @@ keep all the HARDWARE up to date
 
 
 CALIBRATE *all* MPU6050
+  save the offsets to nvs
+
 add FRESNEL LENSES to all MONOCHROME displays
 
 
@@ -48,7 +50,7 @@ configuration types
 NVS
   nvs_menu	configure all the instruments in the band	(ok)	add functionality
   HARDWARE	*one* program for all
-		individual configurations based on NVS configuration
+		individual configurations based on NVS configuration	some important parts implemente
 
 
 new IMPLEMENTATION for MOTION UI	Y_UI
@@ -75,15 +77,15 @@ new INSTRUMENTS
 
 RGB LED
   UI to new RGBstringConf.voltage_type on 'LV<n>'			// OK
-  automatic switching for 5V/12V strings based on nvs
-  emergency rgb led strings reset in setup()
+  automatic switching for 5V/12V strings based on nvs			// OK
+  emergency rgb led strings reset in setup()				difficult
 
   slowly FADING when the cycle is over
   float intensity							// OK
 
   test GAMMA CORRECTION							// delay that
 
-  hue_slice_cnt diatonic/pentatonic
+  hue_slice_cnt diatonic/pentatonic					// OK
     *tuning* should set the note count (like 5 or 7)			// OK
       then set accoringly, i.e. in units of 3 (3 basic colours)		// OK
 	pentatonic: 15	hepta: 21					// OK
@@ -94,7 +96,7 @@ RGB LED
   background colour memory	implemented BG buffer			// OK test&trimm
 
 
-basic loop configuration runtime UI
+basic loop configuration runtime UI					URGENT
       user mode, idle
       idle (==user?)
       random preset mode
@@ -106,7 +108,7 @@ basic loop configuration runtime UI
 maybe:
 *******
 
-AEOLUS	would be very nice :)	if there is time...
+AEOLUS	would be very nice :)	if there is time...			there will be a time, maybe, later...
 	much work: MIDI
 		   raspberry 4, power, configuration, automatic startup
 		   aeolus
