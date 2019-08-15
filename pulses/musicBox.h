@@ -2944,6 +2944,7 @@ void musicBox_display() {
   PULSES.display_time_human(CyclesConf.harmonical_CYCLE);
   MENU.ln();
 
+  MENU.space(4);
   MENU.out(F("soft_end("));
   MENU.out(MagicConf.soft_end_days_to_live);	// remaining days of life after soft end
   MENU.out_comma_();
@@ -2951,16 +2952,20 @@ void musicBox_display() {
   MENU.out(F(")\t'd'=days to survive  'l'=level minimal age 'E'= start soft end now  'w' minimal weight "));
   MENU.outln(MagicConf.soft_cleanup_minimal_fraction_weighting);
 
-  // MENU.outln(F("'L'=stop when low\t'LL'=stop only low\thard end='H'"));	// old meaning deactivated
-#if defined USE_RGB_LED_STRIP
-  MENU.out(F("'L'=rgbLED 'LB'=BGdim 'LS'=saturation0 'LR'=sat reset value 'LI'=intensity 'LN'=hue slices 'LV'=voltage 'LH'=high priority\t"));
-#endif
+  MENU.space(4);
   MENU.outln(F("hard end='H'"));	// old meaning deactivated
   MENU.ln();
 
+  // MENU.outln(F("'L'=stop when low\t'LL'=stop only low\thard end='H'"));	// old meaning deactivated
   MENU.out(F("'EF[DLHRUP]'  deep_sleep, light_sleep, hibernate, restart, user, presets\t"));
   show_when_done_function();
-  MENU.ln(2);
+  MENU.ln();
+
+  #if defined USE_RGB_LED_STRIP
+  MENU.outln(F("\n'L'=rgbLED 'LB'=BGdim 'LS'=saturation0 'LR'=sat reset value 'LI'=intensity 'LN'=hue slices 'LV'=voltage 'LH'=high priority"));
+  MENU.outln(F("   'LN'=hue slices 'LV'=voltage 'LH'=high priority\n"));
+#endif
+
 
   MENU.out(F("'T' tune pitch, scale"));
 #if defined PERIPHERAL_POWER_SWITCH_PIN
@@ -3002,7 +3007,7 @@ void musicBox_display() {
   MENU.ln();
 
   stress_event_cnt = -3;	// heavy stress expected after musicBox_display
-}
+} // musicBox_display()
 
 void noAction_flags_line() {	// show a line with primary noACTION flag signs		// TODO: move to Pulses?
   MENU.ln();
@@ -3063,7 +3068,7 @@ void input_preset_and_start() {	// factored out UI component	// TODO: sets prese
 
   if(load)
     load_preset_and_start(musicBoxConf.preset);
-}
+} // input_preset_and_start()
 
 
 bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: ADC, 'analog'Touch, distance sensors, etc
@@ -3243,7 +3248,6 @@ bool musicBox_reaction(char token) {
   case 'Z':
   case 'A':
   case 'G':
-    // TODO:	#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
     MENU.outln(F("reserved for motion UI"));
     break;
   case 'a': // magic_autochanges    // 'a'
@@ -3260,18 +3264,18 @@ bool musicBox_reaction(char token) {
       MENU.drop_input_token();
       if(MENU.peek() != EOF8) {
 	switch(MENU.peek()) {
-	case 'D':
+	case 'ED':
 	  musicBox_when_done=&deep_sleep;		// "EFD" deep_sleep()
 	  break;
-	case 'L':
+	case 'EL':
 	  musicBox_when_done=&light_sleep;	// "EFL" light_sleep()
 	  break;
-	case 'H':
+	case 'EH':
 	  MENU.out(F("hibernate() *DEACTIVATED* "));		// "EFH" hibernate()	TODO: CRASH: DEBUG: ################
 	  //musicBox_when_done=&hibernate;	// "EFH" hibernate()	TODO: CRASH: DEBUG: ################
 	  // TODO: interface to int musicBox_pause_seconds, see: 'r'
 	  break;
-	case 'R':
+	case 'ER':
 	  musicBox_when_done=&restart;		// "EFR" restart()
 
 	  MENU.drop_input_token();		// "EFr<nn>" set musicBox_pause_seconds
@@ -3280,10 +3284,10 @@ bool musicBox_reaction(char token) {
 	    musicBox_pause_seconds = input_value;
 	  MENU.restore_input_token();		// dummy, see below
 	  break;
-	case 'U':
+	case 'EU':
 	  musicBox_when_done=&user;		// "EFU" user()
 	  break;
-	case 'P':
+	case 'EP':
 	  musicBox_when_done=&random_preset;	// "EFP" random_preset()
 	  break;
 	default:
@@ -3332,6 +3336,7 @@ bool musicBox_reaction(char token) {
   case 'w': // soft_cleanup_minimal_fraction_weighting
     MagicConf.soft_cleanup_minimal_fraction_weighting = MENU.numeric_input(MagicConf.soft_cleanup_minimal_fraction_weighting);
     break;
+
   case 'H': // HARD_END_playing(true);
     HARD_END_playing(true);
     break;
@@ -3351,7 +3356,7 @@ bool musicBox_reaction(char token) {
 
 #if defined USE_ESP_NOW
   case 'C':
-    if(MENU.peek() == 'C' ) {	// second letter C: 'CC...' configure esp_now sending
+    if(MENU.peek() == 'C' ) {	// 'CC' second letter C: 'CC...' configure esp_now sending
       MENU.drop_input_token();
       if(MENU.is_numeric()) {	// 'C<numeric>'
 	/*
@@ -3450,7 +3455,7 @@ bool musicBox_reaction(char token) {
 
 #if defined USE_RGB_LED_STRIP
   case 'L':	 // 'L' RGB LED STRING
-    switch (MENU.peek()) {	// second letter after 'L'
+    switch (MENU.peek()) {	// second letter after 'L...'
     case EOF8:	// bare 'L' strip info
       // TODO: give infos about string(s)	DADA ????
       break;
@@ -3931,46 +3936,9 @@ bool musicBox_reaction(char token) {
     input_preset_and_start();	// reads preset number
     break;
 
-
-#if defined USE_ESP_NOW	// (else: pulses 'D')
   case 'D':		// musicBox 'D'
-    MENU.outln(F("HARDWARE configuration"));
-    show_hardware_conf(&HARDWARE);
-    //display_peer_ID_list();
-    //random_RGB_string(MENU.numeric_input(4));
-
-    /*
-    extern short steps_in_octave;
-    MENU.out(F("steps_in_octave "));
-    MENU.outln(steps_in_octave);
-    */
-
-    // random_HSV_LED_string();
-
-    /*
-    {
-      int i=0;
-      strand_t * strands [STRANDCNT];
-      strands[i] = &STRANDS[i];
-
-      MENU.out("LED STRING ");
-      ulong t0 = micros();
-      int s = digitalLeds_drawPixels(strands, 1);
-      ulong d = micros() - t0;
-      MENU.out(s);
-      MENU.tab();
-      MENU.outln(d);
-
-//      randomStrands(strands, i, 100, 3000);
-//      scanners(strands, i, 0, 2000);
-//      scanners(strands, i, 0, 2000);
-//      rainbows(strands, i, 0, 4000);
-
-    }
-    */
-
+    #include "men_MuD.h"
     break;
-#endif
 
   default:
     return false;

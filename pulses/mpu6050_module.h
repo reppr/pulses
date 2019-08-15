@@ -6,7 +6,9 @@
 
 #if ! defined MPU6050_MODULE_H
 
-//#define DEBUG_ACCGYRO_SAMPLE		// TODO: deactivate
+#define DEBUG_ACCGYRO_SAMPLE	true	// TODO: deactivate
+#define DEBUG_ACCGYRO_SAMPLE	false	// TODO: deactivate
+bool debug_accgyro_sample=DEBUG_ACCGYRO_SAMPLE;
 
 #define MPU6050_TEST_VERSION	2			// TODO: remove runtime test versions
 uint8_t mpu6050_test_version=MPU6050_TEST_VERSION;	// DEFAULT, could be switched run time
@@ -117,7 +119,8 @@ typedef struct accGyro_6d_data_t{
 
 
 #if ! defined MPU_OVERSAMPLING
-  #define MPU_OVERSAMPLING	4	// TEST
+//#define MPU_OVERSAMPLING	4	// TEST
+  #define MPU_OVERSAMPLING	2	// TEST
   //#define MPU_OVERSAMPLING	1	// possible
 #endif
 int mpu_oversampling=MPU_OVERSAMPLING;		// default	TODO: UI
@@ -125,7 +128,7 @@ accGyro_6d_data_t mpu_samples[MPU_OVERSAMPLING] = {0};
 
 
 #if ! defined GYRO_FLOAT_SCALING
-  #define GYRO_FLOAT_SCALING	120.0	// TODO: TEST&TRIMM:
+  #define GYRO_FLOAT_SCALING	48.0	// very SENSITIVE, but *AVOID gyroZ FALSE POSITIVES*
 #endif
 float gyro_float_scaling=GYRO_FLOAT_SCALING;	// default, TEST&TRIMM:	(no UI planed)
 
@@ -354,8 +357,8 @@ void accGyro_sample() {
     /*	portEXIT_CRITICAL_ISR(&timerMux);	*/ // pulses does not use interrupt version any more
   }
 
-#if defined DEBUG_ACCGYRO_SAMPLE
-  if(accGyro_new_data) {	// TODO: factor that out?
+  //#if defined DEBUG_ACCGYRO_SAMPLE
+  if(accGyro_new_data && debug_accgyro_sample) {	// TODO: factor that out?
     MENU.out(F("AX "));
     MENU.out(accGyro_current_AX_f, 4);
     MENU.tab();
@@ -380,7 +383,7 @@ void accGyro_sample() {
     MENU.out(accGyro_current_GZ_f, 4);
     MENU.ln();
   }
-#endif
+  // #endif
 } // accGyro_sample()
 
 // void accGyro_reaction()
@@ -938,7 +941,7 @@ void accGyro_sample_v2() {
   }
 
 #if defined DEBUG_ACCGYRO_SAMPLE
-  if(accGyro_new_data) {	// TODO: factor that out?
+  if(accGyro_new_data && debug_accgyro_sample) {	// TODO: factor that out?
     MENU.out(F("AX "));
     MENU.out(accGyro_current_AX_f, 4);
     MENU.tab();
