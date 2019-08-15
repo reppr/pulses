@@ -1606,7 +1606,7 @@ bool low_priority_tasks() {
 #endif
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
-  #define GYRO_MODULUS		19319	// prime
+  #define GYRO_MODULUS		19319	// prime		// TODO: OBSOLETE?
   if((low_priority_cnt % GYRO_MODULUS) == 0) { // check GYRO
     if(accGyro_is_active) {
       if(GYRO_only_check())
@@ -1622,10 +1622,27 @@ bool low_priority_tasks() {
     return true;
   }
 
-  #define ACCGYR_MODULUS	55547	// prime
-  if ((low_priority_cnt % ACCGYR_MODULUS) == 0) { // take a accelerGyro sample
+  uint32_t accgyro_modulus;		// TODO: remove runtime test versions
+  switch(mpu6050_test_version) {	// TODO: remove runtime test versions
+  case 1:
+    accgyro_modulus = 55547;	// prime
+    break;
+
+  case 2:
+    // accgyro_modulus = 9901;	// prime	would be ok, but makes too much noise
+    accgyro_modulus = 21221;	// prime
+    break;
+  }
+
+  if ((low_priority_cnt % accgyro_modulus) == 0) { // take a accelerGyro sample
     if(accGyro_is_active) {
-      accGyro_sample_v2();
+      switch(mpu6050_test_version) {
+      case 1:
+	accGyro_sample();
+	break;
+      case 2:
+	accGyro_sample_v2();
+      }
       return true;
     }
   }

@@ -250,3 +250,6 @@ nvs show all keys
 // catch bugs, if any ;)  TODO: REMOVE:
 
 if(accGyro_invert)	// invert mathematical axis	// TODO: where to invert?
+
+switch(mpu6050_test_version) {	// TODO: remove runtime test versions
+TODO: REMOVE: when mpu6050_test_version 2 is finished
