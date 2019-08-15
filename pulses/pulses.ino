@@ -1041,7 +1041,8 @@ void show_program_version() {	// program version on menu output *and* OLED
 
 void setup_initial_HARDWARE_conf() {
 #if defined USE_MPU6050
-  HARDWARE.mpu6050_addr = 0x68;
+  if(mpu6050_available)
+    HARDWARE.mpu6050_addr = 0x68;
 #endif
 
   HARDWARE.gpio_pins_cnt = GPIO_PINS;
@@ -1624,7 +1625,7 @@ bool low_priority_tasks() {
   #define ACCGYR_MODULUS	55547	// prime
   if ((low_priority_cnt % ACCGYR_MODULUS) == 0) { // take a accelerGyro sample
     if(accGyro_is_active) {
-      accGyro_sample();
+      accGyro_sample_v2();
       return true;
     }
   }
