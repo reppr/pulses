@@ -376,12 +376,12 @@ void random_HSV_LED_string() {
 
 bool update_RGB_LED_string=false;	// is the string buffer dirty?
 
-#define PULSE_2_RGB_LED_STRING	  pulse - lowest_primary	// find the corresponding led sting
+#define PULSE_2_RGB_LED_STRING	  (pulse - lowest_primary)	// find the corresponding led sting
 
 void clear_RGB_string_pixel(int pulse) {
   if(rgb_strings_available) {
     strand_t * strand_p = strands[0];
-    int pix_i = PULSE_2_RGB_LED_STRING;		// TODO: use pulse intenal data
+    int pix_i = PULSE_2_RGB_LED_STRING;		// TODO: use pulse internal data
     pixelColor_t pixel;
     pixel.r = 0;
     pixel.g = 0;

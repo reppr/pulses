@@ -3091,27 +3091,27 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
 	accGyro_is_active = false;
 	recognised = true;
 	break;
-      case 'X':			// YX acc	toggle axM	-.--  -..-
+      case 'X':			// YX acc	toggle AG_mode_Ax	-.--  -..-
 	MENU.drop_input_token();
-	accGyro_mode ^= axM;
+	accGyro_mode ^= AG_mode_Ax;
 	accGyro_is_active = accGyro_mode;
 	if(!mpu6050_available)
 	  accGyro_is_active = false;
 
 	recognised = true;
 	break;
-      case 'Y':			// YY acc	toggle ayM	-.--  -.--
+      case 'Y':			// YY acc	toggle AG_mode_Ay	-.--  -.--
 	MENU.drop_input_token();
-	accGyro_mode ^= ayM;
+	accGyro_mode ^= AG_mode_Ay;
 	accGyro_is_active = accGyro_mode;
 	if(!mpu6050_available)
 	  accGyro_is_active = false;
 
 	recognised = true;
 	break;
-      case 'Z':			// YZ GYRO	toggle gzM	-.--  --..
+      case 'Z':			// YZ GYRO	toggle AG_mode_Gz	-.--  --..
 	MENU.drop_input_token();
-	accGyro_mode ^= gzM;
+	accGyro_mode ^= AG_mode_Gz;
 	accGyro_is_active = accGyro_mode;
 	if(!mpu6050_available)
 	  accGyro_is_active = false;

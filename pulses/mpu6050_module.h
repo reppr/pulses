@@ -16,7 +16,7 @@ uint8_t mpu6050_test_version=MPU6050_TEST_VERSION;	// DEFAULT, could be switched
 bool mpu6050_available=true;	// will be reset automagically if there's no MPU6050 found
 				// this will switch it off, including sampling...
 
-int16_t accGyro_offsets[] = {-1493, -2125, 1253, 98, 85, -50};	// aX, aY, aZ, gX, gY, gZ offsets
+int16_t accGyro_offsets[] = {-1493, -2125, 1253, 98, 85, -50};	// Ax, Ay, Az, Gx, Gy, Gz offsets
 // *GIVE INDIVIDUAL OFFSET VALUES FOR YOUR CHIP HERE*
 // get these values (with *horizontally resting* chips)
 // see: https://github.com/jrowberg/i2cdevlib/tree/master/Arduino/MPU6050/examples/IMU_Zero
@@ -146,38 +146,40 @@ hw_timer_t * accGyro_timer = NULL;
 #endif
 */
 
-enum AG_mode {	// oldstyle, maybe obsolete?
-  axM=1,
-  ayM=2,
-  azM=4,
+enum accGyro_modes {
+  AG_mode_Ax=1,
+  AG_mode_Ay=2,
+  AG_mode_Az=4,
+  AG_mode_A_reserved=8,
 
-  gxM=8,
-  gyM=16,
-  gzM=32,
-  D6M=64,	// unused yet
+  AG_mode_Gx=16,
+  AG_mode_Gy=32,
+  AG_mode_Gz=64,
+  AG_mode_G_reserved=128,
 };
 
 //int accGyro_mode=0;	// zero means inactive
-int accGyro_mode = gzM | ayM | axM;	// very temporary default ;)
-int16_t aX_sel_i0=0;
-int16_t aY_sel_i0=0;
-int16_t aZ_sel_i0=0;
-int16_t gX_sel_i0=0;
-int16_t gY_sel_i0=0;
-int16_t gZ_sel_i0=0;
+int accGyro_mode = AG_mode_Gz | AG_mode_Ay | AG_mode_Ax;	// very temporary default ;)
+
+int16_t Ax_sel_offset=0;
+int16_t Ay_sel_offset=0;
+int16_t Az_sel_offset=0;
+int16_t Gx_sel_offset=0;
+int16_t Gy_sel_offset=0;
+int16_t Gz_sel_offset=0;
 
 #define ACCELERO_SELECTION_SLOTS_DEFAULT		24	// TODO: test&trimm
-int16_t aX_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;	// n items to select from
-int16_t aY_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;	// n items to select from
-int16_t aZ_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;	// n items to select from
+int16_t Ax_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;	// n items to select from
+int16_t Ay_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;	// n items to select from
+int16_t Az_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;	// n items to select from
 
-void * aX_reaction_source=NULL;	// DB pointers can be used here
-void * aY_reaction_source=NULL;	// DB pointers can be used here
-void * aZ_reaction_source=NULL;	// DB pointers can be used here
+void * Ax_reaction_source=NULL;	// DB pointers can be used here
+void * Ay_reaction_source=NULL;	// DB pointers can be used here
+void * Az_reaction_source=NULL;	// DB pointers can be used here
 
-void * gX_reaction_source=NULL;	// DB pointers can be used here
-void * gY_reaction_source=NULL;	// DB pointers can be used here
-void * gZ_reaction_source=NULL;	// DB pointers can be used here
+void * Gx_reaction_source=NULL;	// DB pointers can be used here
+void * Gy_reaction_source=NULL;	// DB pointers can be used here
+void * Gz_reaction_source=NULL;	// DB pointers can be used here
 
 
 extern void extended_output(char* data, uint8_t row, uint8_t col, bool force);
@@ -195,42 +197,50 @@ void display_accGyro_mode() {
   char buffer[] = {"acc ...  gyr ..."};
   //              {"0123456789abcdef"}
 
-  if(accGyro_mode & axM)
+  if(accGyro_mode & AG_mode_Ax)
     buffer[4] = 'X';
-  if(accGyro_mode & ayM)
+  if(accGyro_mode & AG_mode_Ay)
     buffer[5] = 'Y';
-  if(accGyro_mode & azM)
+  if(accGyro_mode & AG_mode_Az)
     buffer[6] = 'Z';
 
-  if(accGyro_mode & gxM)
+  if(accGyro_mode & AG_mode_Gx)
     buffer[13] = 'X';
-  if(accGyro_mode & gyM)
+  if(accGyro_mode & AG_mode_Gy)
     buffer[14] = 'Y';
-  if(accGyro_mode & gzM)
+  if(accGyro_mode & AG_mode_Gz)
     buffer[15] = 'Z';
 
   extended_output(buffer, MONOCHROME_MOTION_STATE_ROW, 0, false);
 }
 
-void reset_accGyro_selection() {
-  aX_sel_i0=0;
-  aY_sel_i0=0;
-  aZ_sel_i0=0;
-  gX_sel_i0=0;
-  gY_sel_i0=0;
-  gZ_sel_i0=0;
 
-  aX_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;
-  aY_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;
-  aZ_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;
+void reset_accGyro_selection() {	// reset accGyro selections, slots, reaction sources
+  Ax_sel_offset=0;
+  Ay_sel_offset=0;
+  Az_sel_offset=0;
 
-  aX_reaction_source=NULL;
-  aY_reaction_source=NULL;
-  aZ_reaction_source=NULL;
+  Gx_sel_offset=0;
+  Gy_sel_offset=0;
+  Gz_sel_offset=0;
 
-  gX_reaction_source=NULL;
-  gY_reaction_source=NULL;
-  gZ_reaction_source=NULL;
+  Ax_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;	// or zero, meaning switch to raw linear float?
+  Ay_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;
+  Az_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;
+
+  /*
+  Gx_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;
+  Gy_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;
+  Gz_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;
+  */
+
+  Ax_reaction_source=NULL;
+  Ay_reaction_source=NULL;
+  Az_reaction_source=NULL;
+
+  Gx_reaction_source=NULL;
+  Gy_reaction_source=NULL;
+  Gz_reaction_source=NULL;
 }
 
 
@@ -245,7 +255,7 @@ bool GYRO_only_check() {	// OBSOLETE:
     GZ = -GZ;
 
   GYROZ_selected = GZ + 0.5;
-  GYROZ_selected += gZ_sel_i0;
+  GYROZ_selected += Gz_sel_offset;
   if(GYROZ_selected) {	// gyro Z shows rotation?
     // TODO: feedback
 //  sync_shifting({GYROZ_selected, 8*4096});
@@ -401,21 +411,37 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
       return;
 
     // selected slice:
-    static int selected_aX_seen;
-    static int selected_aY_seen;
-    static int selected_gZ_seen;
-    int selected_aX=0;
-    int selected_aY=0;
-    int selected_gZ=0;
+    static int selected_Ax_seen_i;
+    static int selected_Ay_seen;
+    static int selected_Az_seen;
+
+    static int selected_Gx_seen;
+    static int selected_Gy_seen;
+    static int selected_Gz_seen;
+
+    int selected_Ax=0;
+    int selected_Ay=0;
+    int selected_Az=0;
+
+    int selected_Gx=0;
+    int selected_Gy=0;
+    int selected_Gz=0;
 
     float AX=0.0, AY=0.0, AZ=0.0, GX=0.0, GY=0.0, GZ=0.0;
 
     bool there_was_output=false;
-    reset_accGyro_selection();	// offsets and slots
+    reset_accGyro_selection();	// reset accGyro selections, slots, reaction sources
+
+    if(accGyro_mode & AG_mode_Ax) {	// accelero X
+      AX = accGyro_current_AX_f;
+    }
+
+
+
 
     switch(accGyro_preset) {
     case 1:
-      if(accGyro_mode & axM) {		// accelero X
+      if(accGyro_mode & AG_mode_Ax) {	// accelero X
 	AX = accGyro_current_AX_f;
 #if defined DEBUG_ACCELGYRO_BASICS
 	there_was_output = true;
@@ -424,12 +450,12 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	MENU.space(3);
 	MENU.out(AX/32768);
 #endif
-	aX_reaction_source = JIFFLES;
-	aX_sel_i0 = 0;			// JIFFLE RAM
-	aX_select_slots = 41;		// tum8up
+	Ax_reaction_source = JIFFLES;
+	Ax_sel_offset = 0;			// JIFFLE RAM
+	Ax_select_slots = 41;		// tum8up
       }
 
-      if(accGyro_mode & ayM) {		// accelero Y
+      if(accGyro_mode & AG_mode_Ay) {		// accelero Y
 	AY = accGyro_current_AY_f;
 #if defined DEBUG_ACCELGYRO_BASICS
 	there_was_output = true;
@@ -439,12 +465,12 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	MENU.out(AY/32768);
 #endif
 
-	aY_reaction_source = NULL;
-	aY_select_slots = 8;
-	aY_sel_i0 = 0;
+	Ay_reaction_source = NULL;
+	Ay_select_slots = 8;
+	Ay_sel_offset = 0;
       }
 
-      if(accGyro_mode & gzM) {		// gyro Z
+      if(accGyro_mode & AG_mode_Gz) {		// gyro Z
 	GZ = accGyro_current_GZ_f;
 
 #if defined DEBUG_ACCELGYRO_BASICS
@@ -465,46 +491,46 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	MENU.ln();
 
       // ACCELERO:	INVERTING IS DONE HERE in  accGyro_reaction()
-      if(accGyro_mode & axM) {		// accelero X
-	selected_aX = AX * aX_select_slots +0.5;
-	selected_aX += aX_sel_i0;
+      if(accGyro_mode & AG_mode_Ax) {		// accelero X
+	selected_Ax = AX * Ax_select_slots +0.5;
+	selected_Ax += Ax_sel_offset;
 	if(accGyro_invert)	// invert mathematical axis
-	  selected_aX = aX_select_slots - 1 - selected_aX;
+	  selected_Ax = Ax_select_slots - 1 - selected_Ax;
       }
 
-      if(accGyro_mode & ayM) {		// accelero Y
-	selected_aY = AY * aY_select_slots +0.5;
-	selected_aY += aY_sel_i0;
+      if(accGyro_mode & AG_mode_Ay) {		// accelero Y
+	selected_Ay = AY * Ay_select_slots +0.5;
+	selected_Ay += Ay_sel_offset;
 	if(accGyro_invert)	// invert mathematical axis
-	  selected_aY = aY_select_slots - 1 - selected_aY;
+	  selected_Ay = Ay_select_slots - 1 - selected_Ay;
       }
 
-      if(accGyro_mode & gzM) {		// gyro Z
-	selected_gZ = GZ + 0.5;
-	selected_gZ += gZ_sel_i0;
+      if(accGyro_mode & AG_mode_Gz) {		// gyro Z
+	selected_Gz = GZ + 0.5;
+	selected_Gz += Gz_sel_offset;
       }
 
 #if defined DEBUG_AG_REACTION
-      if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen || selected_gZ != selected_gZ_seen) {
-	MENU.out(F("SELECTED  aX "));
-	MENU.out(selected_aX);
+      if (selected_Ax != selected_Ax_seen_i || selected_Ay != selected_Ay_seen || selected_Gz != selected_Gz_seen) {
+	MENU.out(F("SELECTED  Ax "));
+	MENU.out(selected_Ax);
 
-	MENU.out(F("\t\taY "));
-	MENU.out(selected_aY);
+	MENU.out(F("\t\tAy "));
+	MENU.out(selected_Ay);
 
-	MENU.out(F("\t\tgZ "));
-	MENU.outln(selected_gZ);
+	MENU.out(F("\t\tGz "));
+	MENU.outln(selected_Gz);
 
-	//selected_aY_seen = selected_aY;	// right now unused
-	selected_gZ_seen = selected_gZ;	// TODO: DEACTIVATED, see GYRO
+	//selected_Ay_seen = selected_Ay;	// right now unused
+	selected_Gz_seen = selected_Gz;	// TODO: DEACTIVATED, see GYRO
       }
 #endif
 
-      if(accGyro_mode & axM) {		// accelero X
+      if(accGyro_mode & AG_mode_Ax) {		// accelero X
 	unsigned int* jiffle = NULL;
-	if(jiffle = index2pointer(JIFFLES, selected_aX)) {
-	  if(selected_aX != selected_aX_seen) {
-	    selected_aX_seen = selected_aX;
+	if(jiffle = index2pointer(JIFFLES, selected_Ax)) {
+	  if(selected_Ax != selected_Ax_seen_i) {
+	    selected_Ax_seen_i = selected_Ax;
 	    select_in(JIFFLES, jiffle);
 	    setup_jiffle_thrower_selected(selected_actions);
 	    MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
@@ -515,15 +541,15 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	    }
 #endif
 	  }
-	} // aX JIFFLES
+	} // Ax JIFFLES
       }
 
-      if(accGyro_mode & ayM) {		// accelero Y
-	if(selected_aY != selected_aY_seen) {
-	  selected_aY_seen = selected_aY;
+      if(accGyro_mode & AG_mode_Ay) {		// accelero Y
+	if(selected_Ay != selected_Ay_seen) {
+	  selected_Ay_seen = selected_Ay;
 
-	  switch(selected_aY) {
-	    //      case 0:		// TODO: selected_aY < 1
+	  switch(selected_Ay) {
+	    //      case 0:		// TODO: selected_Ay < 1
 	    //	// limit--
 	    //	break;
 	  case 1:	// all but high
@@ -571,14 +597,14 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	    PULSES.select_from_to(lowest_primary, highest_primary);
 	    PULSES.selected_toggle_no_actions();
 	    PULSES.select_n(voices);
-	  } // switch(selected_aY)
+	  } // switch(selected_Ay)
 	  noAction_flags_line();
-	} //selected_aY_seen
+	} //selected_Ay_seen
       } // accelero Y
       break;
 
     case 2:
-      if(accGyro_mode & axM) {		// accelero X
+      if(accGyro_mode & AG_mode_Ax) {		// accelero X
 	AX = accGyro_current_AX_f;
 #if defined DEBUG_ACCELGYRO_BASICS
 	there_was_output = true;
@@ -587,13 +613,13 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	MENU.space(3);
 	MENU.out(AX/32768);
 #endif
-	aX_reaction_source = JIFFLES;
-	//	aX_sel_i0 = -40 -11 -10;		// tum8up ? -11 diing_ditditdit ?  -10 looong ?
-	aX_sel_i0 = -29;				// diing_ditditdit ?
-	aX_select_slots = 41;		//
+	Ax_reaction_source = JIFFLES;
+	//	Ax_sel_offset = -40 -11 -10;		// tum8up ? -11 diing_ditditdit ?  -10 looong ?
+	Ax_sel_offset = -29;				// diing_ditditdit ?
+	Ax_select_slots = 41;		//
       }
 
-      if(accGyro_mode & ayM) {		// accelero Y
+      if(accGyro_mode & AG_mode_Ay) {		// accelero Y
 	AY = accGyro_current_AY_f;
 #if defined DEBUG_ACCELGYRO_BASICS
 	there_was_output = true;
@@ -603,12 +629,12 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	MENU.out(AY/32768);
 #endif
 
-	aY_reaction_source = NULL;
-	aY_select_slots = 8;
-	aY_sel_i0 = 0;
+	Ay_reaction_source = NULL;
+	Ay_select_slots = 8;
+	Ay_sel_offset = 0;
       }
 
-      if(accGyro_mode & gzM) {		// gyro Z
+      if(accGyro_mode & AG_mode_Gz) {		// gyro Z
 	GZ = accGyro_current_GZ_f;
 
 #if defined DEBUG_ACCELGYRO_BASICS
@@ -629,46 +655,46 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	MENU.ln();
 
       // ACCELERO:	INVERTING IS DONE HERE in  accGyro_reaction()
-      if(accGyro_mode & axM) {		// accelero X
-	selected_aX = AX * aX_select_slots +0.5;
-	selected_aX += aX_sel_i0;
+      if(accGyro_mode & AG_mode_Ax) {		// accelero X
+	selected_Ax = AX * Ax_select_slots +0.5;
+	selected_Ax += Ax_sel_offset;
 	if(accGyro_invert)	// invert mathematical axis
-	  selected_aX = aX_select_slots - 1 - selected_aX;
+	  selected_Ax = Ax_select_slots - 1 - selected_Ax;
       }
 
-      if(accGyro_mode & ayM) {		// accelero Y
-	selected_aY = AY * aY_select_slots +0.5;
-	selected_aY += aY_sel_i0;
+      if(accGyro_mode & AG_mode_Ay) {		// accelero Y
+	selected_Ay = AY * Ay_select_slots +0.5;
+	selected_Ay += Ay_sel_offset;
 	if(accGyro_invert)	// invert mathematical axis
-	  selected_aY = aY_select_slots - 1 - selected_aY;
+	  selected_Ay = Ay_select_slots - 1 - selected_Ay;
       }
 
-      if(accGyro_mode & gzM) {		// gyro Z
-	selected_gZ = GZ + 0.5;
-	selected_gZ += gZ_sel_i0;
+      if(accGyro_mode & AG_mode_Gz) {		// gyro Z
+	selected_Gz = GZ + 0.5;
+	selected_Gz += Gz_sel_offset;
       }
 
 #if defined DEBUG_AG_REACTION
-      if (selected_aX != selected_aX_seen || selected_aY != selected_aY_seen || selected_gZ != selected_gZ_seen) {
-	MENU.out(F("SELECTED  aX "));
-	MENU.out(selected_aX);
+      if (selected_Ax != selected_Ax_seen_i || selected_Ay != selected_Ay_seen || selected_Gz != selected_Gz_seen) {
+	MENU.out(F("SELECTED  Ax "));
+	MENU.out(selected_Ax);
 
-	MENU.out(F("\t\taY "));
-	MENU.out(selected_aY);
+	MENU.out(F("\t\tAy "));
+	MENU.out(selected_Ay);
 
-	MENU.out(F("\t\tgZ "));
-	MENU.outln(selected_gZ);
+	MENU.out(F("\t\tGz "));
+	MENU.outln(selected_Gz);
 
-	//selected_aY_seen = selected_aY;	// right now unused
-	selected_gZ_seen = selected_gZ;	// TODO: DEACTIVATED, see GYRO
+	//selected_Ay_seen = selected_Ay;	// right now unused
+	selected_Gz_seen = selected_Gz;	// TODO: DEACTIVATED, see GYRO
       }
 #endif
 
-      if(accGyro_mode & axM) {		// accelero X
+      if(accGyro_mode & AG_mode_Ax) {		// accelero X
 	unsigned int* jiffle = NULL;
-	if(jiffle = index2pointer(JIFFLES, selected_aX)) {
-	  if(selected_aX != selected_aX_seen) {
-	    selected_aX_seen = selected_aX;
+	if(jiffle = index2pointer(JIFFLES, selected_Ax)) {
+	  if(selected_Ax != selected_Ax_seen_i) {
+	    selected_Ax_seen_i = selected_Ax;
 	    select_in(JIFFLES, jiffle);
 	    setup_jiffle_thrower_selected(selected_actions);
 	    MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
@@ -679,15 +705,15 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	    }
 #endif
 	  }
-	} // aX JIFFLES
+	} // Ax JIFFLES
       }
 
-      if(accGyro_mode & ayM) {		// accelero Y
-	if(selected_aY != selected_aY_seen) {
-	  selected_aY_seen = selected_aY;
+      if(accGyro_mode & AG_mode_Ay) {		// accelero Y
+	if(selected_Ay != selected_Ay_seen) {
+	  selected_Ay_seen = selected_Ay;
 
-	  switch(selected_aY) {
-	    //      case 0:		// TODO: selected_aY < 1
+	  switch(selected_Ay) {
+	    //      case 0:		// TODO: selected_Ay < 1
 	    //	// limit--
 	    //	break;
 	  case 1:	// all but high
@@ -735,9 +761,9 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
 	    PULSES.select_from_to(lowest_primary, highest_primary);
 	    PULSES.selected_toggle_no_actions();
 	    PULSES.select_n(voices);
-	  } // switch(selected_aY)
+	  } // switch(selected_Ay)
 	  noAction_flags_line();
-	} //selected_aY_seen
+	} //selected_Ay_seen
       } // accelero Y
       break;
 
@@ -968,6 +994,210 @@ void accGyro_sample_v2() {
   }
 #endif
 } // accGyro_sample_v2()
+
+
+void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
+  if(accGyro_new_data && accGyro_mode) {
+    accGyro_new_data = false;
+
+    if(! accGyro_is_active) {	// maybe catch errors here, if any?	TODO: REMOVE:
+      MENU.error_ln(F("accGyro_reaction_v2():\taccGyro_is_active is false"));
+      return;
+    }
+
+    // last selected slice, integer
+    static int _selected_Ax_i_seen;
+    static int _selected_Ay_i_seen;
+    static int _selected_Az_i_seen;
+
+    static int _selected_Gx_i_seen;
+    static int _selected_Gy_i_seen;
+    static int _selected_Gz_i_seen;
+
+    int Ax_i_new=0;
+    int Ay_i_new=0;
+    int Az_i_new=0;
+
+    int selected_Gx_i=0;
+    int selected_Gy_i=0;
+    int selected_Gz_i=0;
+
+    float AX_seen_f=0.0;
+    float AY_seen_f=0.0;
+    float AZ_seen_f=0.0;
+    float GX_seen_f=0.0;
+    float GY_seen_f=0.0;
+    float GZ_seen_f=0.0;
+
+    reset_accGyro_selection();	// offsets and slots
+
+    // ACCELERO;
+    if(accGyro_mode & AG_mode_Ax) {		// accelero X
+      AX_seen_f = accGyro_current_AX_f;
+    }
+
+    if(accGyro_mode & AG_mode_Ay) {		// accelero Y
+      AY_seen_f = accGyro_current_AY_f;
+    }
+
+    if(accGyro_mode & AG_mode_Az) {		// accelero Z
+      AZ_seen_f = accGyro_current_AZ_f;
+
+//      Az_reaction_source = NULL;
+//      Az_select_slots = 8;
+//      Az_sel_offset = 0;
+    }
+
+    // GYRO:
+    if(accGyro_mode & AG_mode_Gx) {		// gyro X
+      GX_seen_f = accGyro_current_GX_f;
+    }
+
+    if(accGyro_mode & AG_mode_Gy) {		// gyro Y
+      GY_seen_f = accGyro_current_GY_f;
+    }
+
+    if(accGyro_mode & AG_mode_Gz) {		// gyro Z
+      GZ_seen_f = accGyro_current_GZ_f;
+    }
+
+
+    switch(accGyro_preset) {
+    case 1:
+      // ACCELERO;
+      if(accGyro_mode & AG_mode_Ax) {		// accelero X
+	Ax_reaction_source = JIFFLES;
+	Ax_sel_offset = 0;			// JIFFLE RAM
+	Ax_select_slots = 41;		// tum8up
+      }
+
+      if(accGyro_mode & AG_mode_Ay) {		// accelero Y
+	Ay_reaction_source = NULL;
+	Ay_select_slots = 8;
+	Ay_sel_offset = 0;
+      }
+
+      if(accGyro_mode & AG_mode_Az) {		// accelero Z
+	Az_reaction_source = NULL;
+	Az_select_slots = 8;
+	Az_sel_offset = 0;
+      }
+
+      // ACCELERO:
+      if(accGyro_mode & AG_mode_Ax) {		// accelero X
+	Ax_i_new = AX_seen_f * Ax_select_slots +0.5;
+	Ax_i_new += Ax_sel_offset;
+      }
+
+      if(accGyro_mode & AG_mode_Ay) {		// accelero Y
+	Ay_i_new = AY_seen_f * Ay_select_slots +0.5;
+	Ay_i_new += Ay_sel_offset;
+      }
+
+      if(accGyro_mode & AG_mode_Az) {		// accelero Z
+	Az_i_new = AZ_seen_f * Az_select_slots +0.5;
+	Az_i_new += Az_sel_offset;
+      }
+
+      // GYRO:
+      if(accGyro_mode & AG_mode_Gx) {		// gyro X
+	selected_Gx_i = GX_seen_f + 0.5;
+	selected_Gx_i += Gx_sel_offset;
+      }
+
+      if(accGyro_mode & AG_mode_Gy) {		// gyro Y
+	selected_Gy_i = GY_seen_f + 0.5;
+	selected_Gy_i += Gy_sel_offset;
+      }
+
+      if(accGyro_mode & AG_mode_Gz) {		// gyro Z
+	selected_Gz_i = GZ_seen_f + 0.5;
+	selected_Gz_i += Gz_sel_offset;
+      }
+
+      if(accGyro_mode & AG_mode_Ax) {		// accelero X
+	unsigned int* jiffle = NULL;
+	if(jiffle = index2pointer(JIFFLES, Ax_i_new)) {
+	  if(Ax_i_new != _selected_Ax_i_seen) {
+	    _selected_Ax_i_seen = Ax_i_new;
+	    select_in(JIFFLES, jiffle);
+	    setup_jiffle_thrower_selected(selected_actions);
+	    MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
+
+#if defined USE_MONOCHROME_DISPLAY
+	    if(monochrome_can_be_used()) {
+	      monochrome_show_line(3, array2name(JIFFLES, selected_in(JIFFLES)));
+	    }
+#endif
+	  }
+	} // Ax JIFFLES
+      }
+
+
+      if(accGyro_mode & AG_mode_Ay) {		// accelero Y
+	if(Ay_i_new != _selected_Ay_i_seen) {
+	  _selected_Ay_i_seen = Ay_i_new;
+
+	  switch(Ay_i_new) {
+	    //      case 0:		// TODO: Ay_i_new < 1
+	    //	// limit--
+	    //	break;
+	  case 1:	// all but high
+	    extended_output(F("LBM_ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
+	    for(int pulse = highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags |= noACTION; // SET upper quarter
+	    break;
+	  case 2:	// all on
+	  case 3:	// all on
+	    extended_output(F("LBMH "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
+	    break;
+	  case 4:	// middle only
+	    extended_output(F("_BM_ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    MENU.outln(highest_primary);
+	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
+	    for(int pulse=lowest_primary + (primary_count/4) +1; pulse <= highest_primary - (primary_count/4); pulse++)
+	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
+	    break;
+	  case 5:	// extremes only
+	    extended_output(F("L__H "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
+	    for(int pulse=lowest_primary; pulse <= lowest_primary + (primary_count/4); pulse++)
+	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR low quarter
+	    for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
+	    break;
+	  case 6:	// high only
+	    extended_output(F("___H "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
+	    for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
+	    break;
+
+	    //      case 7:	// bass_limit--		// TODO: near limit region
+	    //	break;
+	  default:	// toggle all
+	    extended_output(F("~~~~ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    PULSES.select_from_to(lowest_primary, highest_primary);
+	    PULSES.selected_toggle_no_actions();
+	    PULSES.select_n(voices);
+	  } // switch(Ay_i_new)
+	  noAction_flags_line();
+	} //_selected_Ay_i_seen
+      } // accelero Y
+      break;
+
+    default:
+      MENU.error_ln(F("unknown accGyro_preset"));
+    } // switch (accGyro_preset)
+  } // if(accGyro_mode)
+} // accGyro_reaction_v2()
 
 
 #define  MPU6050_MODULE_H
