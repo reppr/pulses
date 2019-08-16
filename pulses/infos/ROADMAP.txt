@@ -8,8 +8,13 @@ some first ideas about planing the roadmap:
 
 ****************************************************************
 keep all the HARDWARE up to date
-  LillyBoy	(ok) 12V led string on ~10V	mechanical construction		battery compartment
-  CHATEAU	(ok) 5V led string on USB	fix led string on instrument	better morse input
+  INSERT RESISTORs to all MORSE INPUTs!		DESTROYED LillyBoy	*URGENT*
+  check also all led strip data pins if they have resistors
+
+  LillyBoy	FIX or make new		mostly ok	TODO: *FIX RGB LED STRING*
+  //was: LillyBoy	(ok) 12V led string on ~10V	mechanical construction		battery compartment
+
+  CHATEAU	OK	5V led string on USB	led string fixed on instrument OK	morse input ok?
   FitNess	morse, maybe bluetooth broken	no led string yet	test MPU6050
   butler	 ?
   chameleon	 ?

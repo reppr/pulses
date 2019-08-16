@@ -4,42 +4,38 @@ README pulses
   http://github.com/reppr/pulses
 
 
-  Setup an ensemble of ESP32 driven harmonical music instruments
-    most of them portable
-    some stationary
+  ESP32 based MUSICAL INSTRUMENTS and esp-now synchronised ORCHESTRA
+  producing and playing harmonical patterns as MUSIC and COLOUR patterns
 
-  They will be used for installations and performances during
-    "The Living Room Festival 2019", STADIONBRACHE Zürich, Switzerland, august 24 - 31
-    Probably it will soon show up on their page  https://www.facebook.com/livingroomstadionbrache/
+  The instruments will be used for performaces
+  and interactive sound/light/colour installations during
+  "The Living Room Festival 2019", STADIONBRACHE Zürich, Switzerland, august 24 - 31
+  see: https://www.facebook.com/livingroomstadionbrache/
 
 
   Portable instruments
-    have a touch morse input pin for configuration
-    can be influenced by moving using MPU6050
-    so, when the players dance, the music will change in the rhythm of the dance ;)
+    have a *touch MORSE input* pin for configuration
+    can react interactively on MOVEMENT using MPU6050
+    so, when the players DANCE, the music will change in the rhythm of the dance ;)
 
   Stationary instruments
-    could be added i.e. when they need more electrical power
+    some need more electrical power
     like RGB strings
     or LED spots
 
-
-  Configure all instruments (from any one of them):
-   * either by using morse touch input
+  Configure all instruments (from any one of them) using a menu interface and ESP-NOW:
+   * either by using MORSE TOUCH input
    * or using a serial connection to one instrument
 
   The configuration can be sent to the recipient(s)  by esp_now_send() 'C<...>'
     'CC<n>' to set recipient(s)
     'C<xyz>' sends '<xyz>' to the selected recipent(s)
 
-  Start the band with menu 'CP' (from any instrument in the group)
-
-
-  *proof of concept*  the UI still needs a lot of work...
+  Start the band with menu 'CP' (from *any* instrument in the group)
 
 
 
-  (this README is *very outdated* and *very* incomplete, sorry)
+  (the rest of this README is *very outdated* and *very* incomplete, sorry)
 
   ****************************************************************
   old README:

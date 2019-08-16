@@ -2497,7 +2497,7 @@ void magical_stress_release() {		// special stress release for magical music box
     stress_count = 0;		// configure pulses stress managment
     stress_event_cnt = -3;	// some *heavy* stress event expected after magical_stress_release()...
   } else {
-    MENU.play_KB_macro("X");	// *could* happen some time, maybe *SAVETY NET*
+    tabula_rasa();	// *could* happen some time, maybe *SAVETY NET*
     stress_count = 0;		// configure pulses stress managment
     stress_event_cnt = 0;
   }

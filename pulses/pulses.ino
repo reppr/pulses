@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION		HARMONICAL v.033
+#define PROGRAM_VERSION		HARMONICAL v.034
 /*				0123456789abcdef   */
 
 /* **************************************************************** */
@@ -1618,7 +1618,8 @@ bool low_priority_tasks() {
     if(!mpu6050_available)						// catch bugs, if any ;)  TODO: REMOVE:
       MENU.error_ln(F("accGyro_new_data  mpu6050_available=false"));	// catch bugs, if any ;)  TODO: REMOVE:
 
-    accGyro_reaction();
+    //accGyro_reaction();
+    accGyro_reaction_v2();
     return true;
   }
 
