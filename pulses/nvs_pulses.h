@@ -289,9 +289,22 @@ void configure_HARDWARE_from_nvs() {
   // monochrome
   x = HARDWARE_from_nvs.monochrome_type;
   if(x != monochrome_type_off) {
-    MENU.out(F("monochrome type\t"));
-    MENU.outln(x);
     HARDWARE.monochrome_type = x;
+    // TODO: factor that out
+    MENU.out(F("monochrome type\t"));
+    switch(x) {
+    case monochrome_type_off:
+      MENU.outln('-');
+      break;
+    case monochrome_type_heltec:
+      MENU.outln(F("heltec"));
+      break;
+    case monochrome_type_LiPO:
+      MENU.outln(F("LiPO"));
+      break;
+    default:
+      MENU.error_ln(F("unknown"));
+    }
   }
 
   x = HARDWARE_from_nvs.monochrome_reserved;

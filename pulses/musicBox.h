@@ -2962,8 +2962,8 @@ void musicBox_display() {
   MENU.ln();
 
   #if defined USE_RGB_LED_STRIP
-  MENU.outln(F("\n'L'=rgbLED 'LB'=BGdim 'LS'=saturation0 'LR'=sat reset value 'LI'=intensity 'LN'=hue slices 'LV'=voltage 'LH'=high priority"));
-  MENU.outln(F("   'LN'=hue slices 'LV'=voltage 'LH'=high priority\n"));
+  MENU.outln(F("\n'L'=rgbLED 'LB'=BGdim 'LS'=saturation0 'LR'=sat reset value 'LI'=intensity 'LN'=hue slices"));
+  MENU.outln(F("   'LH'=high priority 'LP'=pixel cnt 'LV'=voltage\n"));
 #endif
 
 
