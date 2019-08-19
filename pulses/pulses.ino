@@ -1911,6 +1911,7 @@ void loop() {	// ARDUINO
   if(! maybe_check_inputs())		// reading inputs can be time critical, so check early
 #endif
 
+    // DEBUG: see: infos/internal/2019-08-20_backtrace.txt
     if(MENU.lurk_then_do()) {		// MENU second in priority, check if something to do,
       stress_event_cnt = -1;		//   after many menu actions there will be a stress event, ignore that
     } else {      // no, menu did not do much

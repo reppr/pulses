@@ -3,15 +3,17 @@
   temporary test menu UI during development
 */
 
+    /*
     debug_accgyro_sample = !debug_accgyro_sample;
     MENU.out(F("debug_accgyro_sample"));
     MENU.out_ON_off(debug_accgyro_sample);
     MENU.ln();
+    */
 
     //MENU.outln(F("HARDWARE configuration"));
     //show_hardware_conf(&HARDWARE);
 
-    //display_peer_ID_list();
+    display_peer_ID_list();
     //random_RGB_string(MENU.numeric_input(4));
 
     /*

@@ -989,6 +989,8 @@ bool Menu::lurk_then_do() {
 #endif
 
       // EMERGENCY EXIT, dangerous...
+
+      // DEBUG: see: infos/internal/2019-08-20_backtrace.txt
       interpret_men_input();	// <<<<<<<< INTERPRET BUFFER CONTENT >>>>>>>>
 #if defined(DEBUGGING_LURKING) || defined(DEBUGGING_MENU)
       outln(F("lurk_then_do() INTERPRETed INPUT BUFFER."));
@@ -1264,6 +1266,7 @@ void Menu::out_noop() {
 
 /* factored out:
    Not needed without debugging code.				*/
+// DEBUG: see: infos/internal/2019-08-20_backtrace.txt
 bool Menu::try_page_reaction(char pg, char token) {
   bool did_something=(*men_pages[pg].interpret)(token);
 
@@ -1370,8 +1373,10 @@ void Menu::interpret_men_input() {
     // token not found yet...
     // search selected page first:
 #ifdef DEBUGGING_MENU
+    // DEBUG: see: infos/internal/2019-08-20_backtrace.txt
     out(F("* try selected"));
 #endif
+    // DEBUG: see: infos/internal/2019-08-20_backtrace.txt
     did_something = try_page_reaction(men_selected, token);
     if (did_something) {
       continue;

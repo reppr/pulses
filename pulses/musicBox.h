@@ -2966,6 +2966,9 @@ void musicBox_display() {
   MENU.outln(F("   'LH'=high priority 'LP'=pixel cnt 'LV'=voltage\n"));
 #endif
 
+#if defined USE_ESP_NOW
+  MENU.outln(F("'C' 'CC' 'CC!'\n"));	// TODO: show ESP_NOW hierarchy
+#endif
 
   MENU.out(F("'T' tune pitch, scale"));
 #if defined PERIPHERAL_POWER_SWITCH_PIN
@@ -3365,7 +3368,7 @@ bool musicBox_reaction(char token) {
 	 UI 1 means esp_now_pulses_known_peers[0]  == broadcast
 	 UI 2 means first other			   individual "2"
 	 */
-	int input_value= MENU.numeric_input(0);		// default to broadcast
+	input_value = MENU.numeric_input(0);		// default to broadcast
 	if(input_value == 0) {
 	  esp_now_send2_mac_p = known_peers_mac_p;	// NULL == *all known* peers
 	} else if(input_value <= ESP_NOW_MAX_TOTAL_PEER_NUM) {
@@ -3375,7 +3378,20 @@ bool musicBox_reaction(char token) {
 	  display_peer_ID_list();
 	}
       } else {	// *non numeric input* after 'CC'	TODO: search preName
-	MENU.outln("DADA to implement name search");
+	if(MENU.peek() == '!' ) { // 'CC!' set	// OBSOLETE: ':N IT'
+	  MENU.drop_input_token();
+	  if(MENU.is_numeric()) {	// 'CC!<numeric>'
+	    input_value = MENU.numeric_input(-1);
+	    if(input_value > 0 && input_value < 256)
+	      my_ID.esp_now_time_slice = input_value;
+	    else
+	      MENU.outln_invalid();
+	  }
+
+	  MENU.out(F("esp-now time slice\t"));
+	  MENU.outln(my_ID.esp_now_time_slice);
+	} else
+	  MENU.outln("DADA implement peer name search");
       }
 
     } else {	// normal case (second letter <> 'C' (from 'CC')

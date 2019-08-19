@@ -19,10 +19,14 @@
 */
 #define DEBUG_ESP_NOW		true	// switches ESP_NOW debugging on  BEWARE:  *this could easily damage the audio with CLICKS*
 #if ! defined DEBUG_ESP_NOW		// default: ESP_NOW debugging off
-  #define DEBUG_ESP_NOW		false	// switches ESP_NOW debugging pff
+  #define DEBUG_ESP_NOW		false	// switches ESP_NOW debugging off
 #endif
 
 #define ESP_NOW_CHANNEL	4
+
+// react on broadcast or all-known-peers messages in an individual time slice
+// defines the length of *one* slice in milliseconds
+#define ESP_NOW_TIME_SLICE_MS	12	// TODO: TEST&TRIMM:
 
 // buffers for data to send or receive
 uint8_t esp_now_send_buffer[ESP_NOW_MAX_DATA_LEN] = {0};
@@ -58,6 +62,7 @@ typedef uint8_t mac_addr_t;
 mac_addr_t broadcast_mac[] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 mac_addr_t* known_peers_mac_p = NULL;	// this is a *PSEUDO MAC POINTER* to NULL
 					//   esp_now_send() will *send to ALL KNOWN PEERS*
+mac_addr_t time_sliced_sent_to_mac[6]={0};
 
 /*
   mac_addr_t*  esp_now_send2_mac_p
@@ -82,18 +87,41 @@ char* MAC_str(const mac_addr_t* mac) {	// TODO: TEST: mac==NULL case
 mac_addr_t my_MAC[] = {0,0,0,0,0,0};
 
 
+// esp_now_reaction_timer  give reactions on broadcast or all_known_peers messages in an individual time slice
+hw_timer_t * esp_now_reaction_timer = NULL;
+
+
 // peer_ID_t
-typedef struct {
-  mac_addr_t mac_addr[6]={0};
+typedef struct peer_ID_t {
   String preName="";
-  // planed: existing hardware
+  mac_addr_t mac_addr[6]={0};
+  uint8_t esp_now_time_slice=0;	// react on broadcast or all-known-peers messages in an individual time slice
+  uint8_t version=0;
 } peer_ID_t;
 
 peer_ID_t my_ID;
 
+void show_peer_id(peer_ID_t* this_peer_ID_p) {
+  MENU.out(F("ID data\t"));
+  MENU.outln(this_peer_ID_p->preName);
+
+  MENU.out(F("MAC\t"));
+  MENU.outln(MAC_str(this_peer_ID_p->mac_addr));
+
+  MENU.out(F("time slice  "));
+  MENU.out((int) this_peer_ID_p->esp_now_time_slice);
+
+  MENU.out(F("\tversion\t"));
+  MENU.outln((int) this_peer_ID_p->version);
+}
+
+
 void set_my_ID() {
   esp_read_mac(my_ID.mac_addr, ESP_MAC_WIFI_STA);
-  // my_ID.preName	read from nvs
+  extern String nvs_getString(char * key);
+  my_ID.preName = nvs_getString(F("nvs_PRENAME"));
+
+  // my_ID.esp_now_time_slice
 }
 
 // esp_err_t ERROR reporting
@@ -205,7 +233,7 @@ esp_err_t esp_now_send_who(mac_addr_t* mac_addr) {
   esp_now_add_mine();
 
   if(do_display)
-    MENU.out(F("ESP-NOW send WHO\t"));
+    MENU.out(F("ESP-NOW send N_WHO\t"));
 
   esp_err_t status = esp_now_send(mac_addr, esp_now_send_buffer, esp_now_send_buffer_cnt);
   if(do_display)
@@ -284,12 +312,12 @@ void display_peer_ID_list() {
     }
   }
   MENU.ln();
-}
+} // display_peer_ID_list()
 
-void esp_now_pulses_2_ID_list(uint8_t* mac_addr, String preName /*hardware*/) {
+void esp_now_2_ID_list(uint8_t* mac_addr, String preName /*hardware*/) {
   bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
 #if defined DEBUG_ESP_NOW
-  MENU.out(F("esp_now_pulses_2_ID_list() "));
+  MENU.out(F("esp_now_2_ID_list() "));
 #endif
 
   if(mac_addr != NULL) {
@@ -368,7 +396,8 @@ void esp_now_pulses_2_ID_list(uint8_t* mac_addr, String preName /*hardware*/) {
     } else		// no free entry
       MENU.error_ln(F("too many peers"));
   } // mac_addr != NULL
-}
+} // esp_now_2_ID_list()
+
 
 // TODO: parameter including preName	peer_ID_t ################
 esp_err_t esp_now_pulses_add_peer(const mac_addr_t *mac_addr) {	// might give feedback
@@ -385,7 +414,7 @@ esp_err_t esp_now_pulses_add_peer(const mac_addr_t *mac_addr) {	// might give fe
   esp_err_t status = esp_now_add_peer(&peer_info);
   switch (status) {
   case ESP_OK:
-    esp_now_pulses_2_ID_list((mac_addr_t*) mac_addr, ""); // DADA ""
+    esp_now_2_ID_list((mac_addr_t*) mac_addr, ""); // DADA ""
     if(do_display)
       MENU.outln(F("ok"));
     break;
@@ -397,7 +426,35 @@ esp_err_t esp_now_pulses_add_peer(const mac_addr_t *mac_addr) {	// might give fe
     MENU.error_ln(esp_err_to_name(status));
   }
   return status;
+} // esp_now_pulses_add_peer()
+
+
+void send_response_time_sliced() {
+  // N_ME
+  ;
 }
+
+// time_sliced_sent_to_mac
+bool prepare_time_sliced_reaction(mac_addr_t* to_mac) {
+  // debug output ################################################################
+  MENU.outln(F("prepare_time_sliced_reaction()\tms"));
+MENU.outln(my_ID.esp_now_time_slice * ESP_NOW_TIME_SLICE_MS);
+
+  // save mac
+  for (int i=0; i<6; i++)
+    time_sliced_sent_to_mac[i] = to_mac[i];
+
+
+  // prepare data to send
+
+
+  // setup time sliced reaction
+  esp_now_reaction_timer = timerBegin(0, 80, true /* count upwards */);
+  timerAttachInterrupt(esp_now_reaction_timer, &send_response_time_sliced, true /* edge */);
+  timerAlarmWrite(esp_now_reaction_timer, (my_ID.esp_now_time_slice * ESP_NOW_TIME_SLICE_MS * 1000), false /* only once */);
+  timerAlarmEnable(esp_now_reaction_timer);
+  return true; // ################################################################
+} // prepare_time_sliced_reaction()
 
 
 // receiving:
@@ -447,18 +504,20 @@ static void esp_now_pulses_reaction(const mac_addr_t *mac_addr) {
       if(do_display) {
 	MENU.out(MAC_str(mac_addr));
 	MENU.space(2);
-	MENU.outln(F("WHO?"));
+	MENU.outln(F("N_WHO"));
       }
 
       peer_ID_t received_ID = esp_now_read_mine();
-      esp_now_pulses_2_ID_list((mac_addr_t*) mac_addr, received_ID.preName);
+      esp_now_2_ID_list((mac_addr_t*) mac_addr, received_ID.preName);
+
+      prepare_time_sliced_reaction((mac_addr_t*) mac_addr);
     }
     break;
 
   case N_ME:
     {
       peer_ID_t received_ID = esp_now_read_mine();
-      esp_now_pulses_2_ID_list((mac_addr_t*) mac_addr, received_ID.preName);	// building up peer info lists
+      esp_now_2_ID_list((mac_addr_t*) mac_addr, received_ID.preName);	// building up peer info lists
     }
     break;
 
@@ -517,7 +576,8 @@ static void pulses_data_received_callback(const mac_addr_t *mac_addr, const uint
   }
 
   esp_now_pulses_reaction(mac_addr);
-}
+} // pulses_data_received_callback()
+
 
 /*
   esp_now_send_maybe_do_macro
@@ -547,7 +607,7 @@ void esp_now_send_maybe_do_macro(mac_addr_t* mac_addr, char* macro) {
   } else						// sending failed
     if(MENU.maybe_display_more(VERBOSITY_LOWEST/* sic! */) || DEBUG_ESP_NOW)	// *do* display that
       MENU.error_ln(esp_err_to_name(status));
-}
+} // esp_now_send_maybe_do_macro()
 
 
 // setup:
@@ -606,4 +666,4 @@ esp_err_t esp_now_pulses_setup() {
   set_my_ID();
 
   return status;
-}
+} // esp_now_pulses_setup()

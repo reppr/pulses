@@ -424,6 +424,7 @@ void IRAM_ATTR touch_morse_ISR(void) {	// ISR for ESP32 touch sensor as morse in
       morse_release_time = micros();
       seems_touched = false;
 
+      // TODO: had a crash on following line after booting:
       float scaled_touched_duration = (float) (morse_release_time - morse_touch_time) / morse_TimeUnit;
       if (scaled_touched_duration > limit_debounce) {			// *real input* no debounce
 	if(scaled_touched_duration > limit_loong_overlong) {

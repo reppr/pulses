@@ -9,7 +9,9 @@
 #include "nvs_flash.h"
 #include "esp_system.h"
 
-//#define DEBUG_NVS	// TODO: unset
+//#include "nvs_encryption_key.h"	// not used yet
+
+#define DEBUG_NVS
 
 // why can't i do this?
 // Preferences CONF_nvs;
@@ -420,6 +422,11 @@ void nvs_show_HW_both() {
   extern void show_current_hardware_conf();
   show_current_hardware_conf();
 }
+
+
+void configure_my_ID_from_nvs() {
+  ; // DADA ################	time_sliced_sent_to_mac = send_to_mac;
+} // configure_my_ID_from_nvs
 
 
 void nvs_clear_all_keys() {
