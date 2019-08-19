@@ -16,7 +16,7 @@ uint8_t mpu6050_test_version=MPU6050_TEST_VERSION;	// DEFAULT, could be switched
 bool mpu6050_available=true;	// will be reset automagically if there's no MPU6050 found
 				// this will switch it off, including sampling...
 
-int16_t accGyro_offsets[] = {-1493, -2125, 1253, 98, 85, -50};	// Ax, Ay, Az, Gx, Gy, Gz offsets
+// int16_t HARDWARE.accGyro_offsets[] = {-1493, -2125, 1253, 98, 85, -50};	// Ax, Ay, Az, Gx, Gy, Gz offsets
 // *GIVE INDIVIDUAL OFFSET VALUES FOR YOUR CHIP HERE*
 // get these values (with *horizontally resting* chips)
 // see: https://github.com/jrowberg/i2cdevlib/tree/master/Arduino/MPU6050/examples/IMU_Zero
@@ -51,38 +51,39 @@ bool mpu6050_setup() {
 
   mpu6050.initialize();
 
+  mpu6050_available=true;
   if(mpu6050.testConnection()) {
     MENU.outln(F("ok"));
 
     MENU.out(F("set accGyro offsets\t{"));
     int16_t o;
 
-    mpu6050.setXAccelOffset(o = accGyro_offsets[0]);
+    mpu6050.setXAccelOffset(o = HARDWARE.accGyro_offsets[0]);
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
-    mpu6050.setYAccelOffset(o = accGyro_offsets[1]);
+    mpu6050.setYAccelOffset(o = HARDWARE.accGyro_offsets[1]);
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
-    mpu6050.setZAccelOffset(o = accGyro_offsets[2]);
+    mpu6050.setZAccelOffset(o = HARDWARE.accGyro_offsets[2]);
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
-    mpu6050.setXGyroOffset(o = accGyro_offsets[3]);
+    mpu6050.setXGyroOffset(o = HARDWARE.accGyro_offsets[3]);
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
-    mpu6050.setYGyroOffset(o = accGyro_offsets[4]);
+    mpu6050.setYGyroOffset(o = HARDWARE.accGyro_offsets[4]);
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
-    mpu6050.setZGyroOffset(o = accGyro_offsets[5]);
+    mpu6050.setZGyroOffset(o = HARDWARE.accGyro_offsets[5]);
     MENU.out(o);
     MENU.outln('}');
 
@@ -93,7 +94,9 @@ bool mpu6050_setup() {
   MENU.out(F("failed: "));
   MENU.out(mpu6050.getDeviceID());
   MENU.ln(2);
-  return false;		// ERROR
+  mpu6050_available=false;	// no connection to MPU6050
+
+  return false;			// ERROR
 } // mpu6050_setup()
 
 
