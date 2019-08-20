@@ -43,7 +43,7 @@ enum icode {	// names are all four letter words ?	// maybe 8?
   N_HI,		// (bare)  HI are you there?	for connection and ping pong
   N_HO,		// (bare)  HERE I AM
   N_WHO,	// (bare)  WHO is here?
-  N_ME,		// parameter: peer_ID_t me	share personal data
+  N_ID,		// parameter: peer_ID_t my_IDENTITY	share personal data
 };
 
 #ifndef pulse_flags_t

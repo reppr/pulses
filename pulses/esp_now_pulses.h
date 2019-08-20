@@ -28,6 +28,22 @@
 // defines the length of *one* slice in milliseconds
 #define ESP_NOW_TIME_SLICE_MS	12	// TODO: TEST&TRIMM:
 
+// esp_err_t ERROR reporting
+#if ! defined ESP_ERR_INFO_DEFINED
+  bool /* error */ esp_err_info(esp_err_t status) {
+    if(status == ESP_OK) {	// ok
+      if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
+	MENU.outln(F("ok"));
+      return false;	// OK
+    } else			// not ok
+      if(MENU.maybe_display_more(VERBOSITY_LOWEST/* sic! */) || DEBUG_ESP_NOW)	// *do* display that
+	MENU.error_ln(esp_err_to_name(status));
+    return true;		// ERROR
+  }
+  #define ESP_ERR_INFO_DEFINED
+#endif
+
+
 // buffers for data to send or receive
 uint8_t esp_now_send_buffer[ESP_NOW_MAX_DATA_LEN] = {0};
 uint8_t esp_now_send_buffer_cnt=0;	// bytes
@@ -124,21 +140,6 @@ void set_my_IDENTITY() {
 
   // my_IDENTITY.esp_now_time_slice
 }
-
-// esp_err_t ERROR reporting
-#if ! defined ESP_ERR_INFO_DEFINED
-  bool /* error */ esp_err_info(esp_err_t status) {
-    if(status == ESP_OK) {	// ok
-      if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
-	MENU.outln(F("ok"));
-      return false;	// OK
-    } else			// not ok
-      if(MENU.maybe_display_more(VERBOSITY_LOWEST/* sic! */) || DEBUG_ESP_NOW)	// *do* display that
-	MENU.error_ln(esp_err_to_name(status));
-    return true;		// ERROR
-  }
-  #define ESP_ERR_INFO_DEFINED
-#endif
 
 
 // sending:
@@ -430,31 +431,34 @@ esp_err_t esp_now_pulses_add_peer(const mac_addr_t *mac_addr) {	// might give fe
 } // esp_now_pulses_add_peer()
 
 
-void send_response_time_sliced() {
-  // N_ME
-  ;
+void send_IDENTITY_time_sliced() {	// send data stored in esp_now_send_buffer
+  esp_err_t status = esp_now_pulses_send(time_sliced_sent_to_mac);
+  // esp_err_t status = esp_now_send(time_sliced_sent_to_mac, esp_now_send_buffer, esp_now_send_buffer_cnt);
+
+  if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
+    esp_err_info(status);
 }
 
-// time_sliced_sent_to_mac
-bool prepare_time_sliced_reaction(mac_addr_t* to_mac) {
-  // debug output ################################################################
-  MENU.outln(F("prepare_time_sliced_reaction()\tms"));
-MENU.outln(my_IDENTITY.esp_now_time_slice * ESP_NOW_TIME_SLICE_MS);
+
+void prepare_time_sliced_reaction(mac_addr_t* to_mac) {
+  MENU.out(F("prepare_time_sliced_reaction()\tms "));
+  MENU.outln(my_IDENTITY.esp_now_time_slice * ESP_NOW_TIME_SLICE_MS);
 
   // save mac
   for (int i=0; i<6; i++)
     time_sliced_sent_to_mac[i] = to_mac[i];
 
-
   // prepare data to send
-
+  icode_t* i_data = (icode_t*) esp_now_send_buffer;
+  *i_data++ = N_ID;
+  esp_now_send_buffer_cnt = sizeof(icode_t);	// icode_t meaning
+  esp_now_add_mine();				// my_IDENTITY
 
   // setup time sliced reaction
   esp_now_reaction_timer = timerBegin(0, 80, true /* count upwards */);
-  timerAttachInterrupt(esp_now_reaction_timer, &send_response_time_sliced, true /* edge */);
+  timerAttachInterrupt(esp_now_reaction_timer, &send_IDENTITY_time_sliced, true /* edge */);
   timerAlarmWrite(esp_now_reaction_timer, (my_IDENTITY.esp_now_time_slice * ESP_NOW_TIME_SLICE_MS * 1000), false /* only once */);
   timerAlarmEnable(esp_now_reaction_timer);
-  return true; // ################################################################
 } // prepare_time_sliced_reaction()
 
 
@@ -510,15 +514,17 @@ static void esp_now_pulses_reaction(const mac_addr_t *mac_addr) {
 
       peer_ID_t received_ID = esp_now_read_mine();
       esp_now_2_ID_list((mac_addr_t*) mac_addr, received_ID.preName);
+      esp_now_pulses_add_peer(mac_addr);	// might give feedback
 
       prepare_time_sliced_reaction((mac_addr_t*) mac_addr);
     }
     break;
 
-  case N_ME:
+  case N_ID:
     {
       peer_ID_t received_ID = esp_now_read_mine();
       esp_now_2_ID_list((mac_addr_t*) mac_addr, received_ID.preName);	// building up peer info lists
+      esp_now_pulses_add_peer(mac_addr);		// might give feedback    }
     }
     break;
 
