@@ -1289,24 +1289,15 @@ void setup() {
 
 #if defined USE_NVS	// always used on ESP32
   {
-    String s = nvs_getString(F("nvs_PRENAME"));
+    String s = nvs_getString(F("nvs_PRENAME"));	// OBSOLETE: use IDENTITY
     if (s) {
       my_ID.preName = s;
       MENU.out(F("nvs_PRENAME:\t"));
       MENU.outln(s);
     }
+
+
   }
-#endif
-
-#if defined USE_MONOCHROME_DISPLAY
-  // TODO: monochrome_display_hardware	fix&use monochrome_display detection
-  if(monochrome_display_hardware)
-    delay(1111);	// give a chance to read version on oled display
-
-  #if defined OLED_HALT_PIN0
-    pinMode(0, INPUT);	// holding GPIO00 switch holds program version display on screen
-    while(digitalRead(0) == LOW) { delay(1000); MENU.out('°'); }  // ATTENTION: dangerous *not* tested with GPIO00 as click or such...
-  #endif
 #endif
 
 #if defined ESP32
@@ -1314,7 +1305,6 @@ void setup() {
   MENU.out(F("MAC: "));
   MENU.outln(getMacAddress());
   MENU.ln();
-
 #endif
 
   /*
@@ -1328,6 +1318,19 @@ void setup() {
 
 #if defined USE_NVS
   configure_HARDWARE_from_nvs();
+  configure_IDENTITY_from_nvs();
+  MENU.ln();
+#endif
+
+#if defined USE_MONOCHROME_DISPLAY
+  // TODO: monochrome_display_hardware	fix&use monochrome_display detection
+  if(monochrome_display_hardware)
+    delay(1111);	// give a chance to read version on oled display
+
+  #if defined OLED_HALT_PIN0
+    pinMode(0, INPUT);	// holding GPIO00 switch holds program version display on screen
+    while(digitalRead(0) == LOW) { delay(1000); MENU.out('°'); }  // ATTENTION: dangerous *not* tested with GPIO00 as click or such...
+  #endif
 #endif
 
 #if defined USE_RGB_LED_STRIP

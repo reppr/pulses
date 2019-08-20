@@ -101,14 +101,15 @@ typedef struct peer_ID_t {
 
 peer_ID_t my_ID;
 
+
 void show_peer_id(peer_ID_t* this_peer_ID_p) {
-  MENU.out(F("ID data\t"));
-  MENU.outln(this_peer_ID_p->preName);
+  MENU.out(F("IDENTITY\t"));
+  MENU.out(this_peer_ID_p->preName);
 
-  MENU.out(F("MAC\t"));
-  MENU.outln(MAC_str(this_peer_ID_p->mac_addr));
+  MENU.out(F("\tMAC\t"));
+  MENU.out(MAC_str(this_peer_ID_p->mac_addr));
 
-  MENU.out(F("time slice  "));
+  MENU.out(F("\ttime slice  "));
   MENU.out((int) this_peer_ID_p->esp_now_time_slice);
 
   MENU.out(F("\tversion\t"));

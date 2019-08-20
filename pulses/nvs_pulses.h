@@ -424,9 +424,49 @@ void nvs_show_HW_both() {
 }
 
 
-void configure_my_ID_from_nvs() {
-  ; // DADA ################	time_sliced_sent_to_mac = send_to_mac;
-} // configure_my_ID_from_nvs
+void configure_IDENTITY_from_nvs() {
+  peer_ID_t* IDENTITY_from_nvs_p = (peer_ID_t*) malloc(sizeof(peer_ID_t));
+  if(IDENTITY_from_nvs_p==NULL) {
+    MENU.error_ln(F("malloc"));
+    return;
+  }
+
+  IDENTITY_from_nvs_p->version = ILLEGAL8;
+  MENU.outln(F("\nconfigure_IDENTITY_from_nvs()\t"));
+  if(nvs_read_blob("IDENTITY_nvs", IDENTITY_from_nvs_p, sizeof(peer_ID_t))) {
+    goto free_identity_nvs;
+  }
+
+    // blob is loaded now, *if* exists, check that
+  if(IDENTITY_from_nvs_p->version == ILLEGAL8) {		// did key exist?
+    MENU.outln(F("IDENTITY_nvs does not exist\n"));
+    goto free_identity_nvs;
+  }
+
+  // check version compatibility
+  if(IDENTITY_from_nvs_p->version != my_ID.version) {
+    MENU.error_ln(F("version mismatch"));
+    goto free_identity_nvs;
+  }
+
+  if(IDENTITY_from_nvs_p->preName != "") {
+    my_ID.preName = IDENTITY_from_nvs_p->preName;
+    MENU.out(F("preName\t\t"));
+    MENU.outln(my_ID.preName);
+  }
+
+  // mac
+
+  // time slice
+  if(IDENTITY_from_nvs_p->esp_now_time_slice) {
+    my_ID.esp_now_time_slice = IDENTITY_from_nvs_p->esp_now_time_slice;
+    MENU.out(F("time slice\t"));
+    MENU.outln(my_ID.esp_now_time_slice);
+  }
+
+ free_identity_nvs:
+  free(IDENTITY_from_nvs_p);
+} // configure_IDENTITY_from_nvs()
 
 
 void nvs_clear_all_keys() {

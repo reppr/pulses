@@ -25,7 +25,6 @@ void nvs_menu_display() {
 
 bool nvs_menu_reaction(char token) {
   int input_value;
-  String s;
   char next_token=MENU.peek();
 
   switch(token) {
@@ -71,6 +70,9 @@ bool nvs_menu_reaction(char token) {
       switch(MENU.peek()) { // 'I...' second letter after 'I'
       case 'S':	// 'IS' nvs save identity
 	nvs_save_blob("IDENTITY_nvs", &my_ID, sizeof(peer_ID_t));
+	// read back
+	ID_from_nvs.version=ILLEGAL8;
+	nvs_read_blob("IDENTITY_nvs", &ID_from_nvs, sizeof(peer_ID_t));	// always read on 'I...'
       case 'R':	// 'IR' nvs read identity, noop as we read always
 	MENU.drop_input_token(); // drop 'S' 'R'
       case EOF8:
@@ -89,10 +91,12 @@ bool nvs_menu_reaction(char token) {
 	break;
       } // switch next token after 'I'
 
-      if(ID_from_nvs.version != ILLEGAL8)
+      if(ID_from_nvs.version != ILLEGAL8) {
+	MENU.out(F("NVS\t"));
 	show_peer_id(&ID_from_nvs);
-      MENU.ln();
+      }
 
+      MENU.out(F("SYSTEM\t"));
       show_peer_id(&my_ID);
       MENU.ln();
     }
@@ -124,11 +128,14 @@ bool nvs_menu_reaction(char token) {
     break;
 
   case 'P':
-    s = nvs_getString(F("nvs_PRENAME"));
-    MENU.out(F("nvs_PRENAME:\t"));
-    if (s)
-      MENU.out(s);
-    MENU.ln();
+    {
+      String s="";
+      s = nvs_getString(F("nvs_PRENAME"));
+      MENU.out(F("nvs_PRENAME:\t"));
+      if (s)
+	MENU.out(s);
+      MENU.ln();
+    }
     break;
 
   case 'X':	// works, but crashes menu	// TODO: fix menu crash after nvs_clear_all_keys()
