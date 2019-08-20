@@ -1021,9 +1021,9 @@ void display_program_version() {  // program versions, mac, maybe preName.  MENU
   MENU.out(F(STRINGIFY(FAMILY_NAME)));
 #endif
 
-  if(my_ID.preName) {
+  if(my_IDENTITY.preName) {
     MENU.tab();
-    MENU.out(my_ID.preName);
+    MENU.out(my_IDENTITY.preName);
   }
 
   MENU.ln();
@@ -1291,7 +1291,7 @@ void setup() {
   {
     String s = nvs_getString(F("nvs_PRENAME"));	// OBSOLETE: use IDENTITY
     if (s) {
-      my_ID.preName = s;
+      my_IDENTITY.preName = s;
       MENU.out(F("nvs_PRENAME:\t"));
       MENU.outln(s);
     }

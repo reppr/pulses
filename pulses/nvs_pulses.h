@@ -444,24 +444,24 @@ void configure_IDENTITY_from_nvs() {
   }
 
   // check version compatibility
-  if(IDENTITY_from_nvs_p->version != my_ID.version) {
+  if(IDENTITY_from_nvs_p->version != my_IDENTITY.version) {
     MENU.error_ln(F("version mismatch"));
     goto free_identity_nvs;
   }
 
   if(IDENTITY_from_nvs_p->preName != "") {
-    my_ID.preName = IDENTITY_from_nvs_p->preName;
+    my_IDENTITY.preName = IDENTITY_from_nvs_p->preName;
     MENU.out(F("preName\t\t"));
-    MENU.outln(my_ID.preName);
+    MENU.outln(my_IDENTITY.preName);
   }
 
   // mac
 
   // time slice
   if(IDENTITY_from_nvs_p->esp_now_time_slice) {
-    my_ID.esp_now_time_slice = IDENTITY_from_nvs_p->esp_now_time_slice;
+    my_IDENTITY.esp_now_time_slice = IDENTITY_from_nvs_p->esp_now_time_slice;
     MENU.out(F("time slice\t"));
-    MENU.outln(my_ID.esp_now_time_slice);
+    MENU.outln(my_IDENTITY.esp_now_time_slice);
   }
 
  free_identity_nvs:

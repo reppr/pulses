@@ -60,7 +60,7 @@ bool nvs_menu_reaction(char token) {
     MENU.ln();
     break;
 
-  case 'I': //	'I' identity my_ID
+  case 'I': //	'I' identity my_IDENTITY
     MENU.outln(F("\nIDENTITY"));
     {
       peer_ID_t ID_from_nvs;
@@ -69,7 +69,7 @@ bool nvs_menu_reaction(char token) {
 
       switch(MENU.peek()) { // 'I...' second letter after 'I'
       case 'S':	// 'IS' nvs save identity
-	nvs_save_blob("IDENTITY_nvs", &my_ID, sizeof(peer_ID_t));
+	nvs_save_blob("IDENTITY_nvs", &my_IDENTITY, sizeof(peer_ID_t));
 	// read back
 	ID_from_nvs.version=ILLEGAL8;
 	nvs_read_blob("IDENTITY_nvs", &ID_from_nvs, sizeof(peer_ID_t));	// always read on 'I...'
@@ -82,12 +82,12 @@ bool nvs_menu_reaction(char token) {
 	if(MENU.is_numeric()) {	// 'IT<numeric>'
 	  input_value = MENU.numeric_input(-1);
 	  if(input_value > 0 && input_value < 256)
-	    my_ID.esp_now_time_slice = input_value;
+	    my_IDENTITY.esp_now_time_slice = input_value;
 	  else
 	    MENU.outln_invalid();
 	}
 	MENU.out(F("esp-now time slice\t"));	// obsolete, see below
-	MENU.outln(my_ID.esp_now_time_slice);
+	MENU.outln(my_IDENTITY.esp_now_time_slice);
 	break;
       } // switch next token after 'I'
 
@@ -97,7 +97,7 @@ bool nvs_menu_reaction(char token) {
       }
 
       MENU.out(F("SYSTEM\t"));
-      show_peer_id(&my_ID);
+      show_peer_id(&my_IDENTITY);
       MENU.ln();
     }
     break;

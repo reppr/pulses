@@ -33,8 +33,8 @@ void monochrome_show_program_version() {	// monochrome oled display
     u8x8.print(F(STRINGIFY(PROGRAM_VERSION)));
 
     u8x8.setCursor(0,3);
-    if(my_ID.preName)
-      u8x8.print(my_ID.preName);
+    if(my_IDENTITY.preName)
+      u8x8.print(my_IDENTITY.preName);
 #if defined PROGRAM_SUB_VERSION
     else
       u8x8.print(F(STRINGIFY(PROGRAM_SUB_VERSION)));

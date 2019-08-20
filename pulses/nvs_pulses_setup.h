@@ -32,8 +32,8 @@ MENU.out("nvs_PRENAME:\t");
 {
   String name = CONF_nvs.getString("nvs_PRENAME");
   if(name) {
-    my_ID.preName = name;
-    MENU.out(my_ID.preName);
+    my_IDENTITY.preName = name;
+    MENU.out(my_IDENTITY.preName);
     // bluetooth_name?
   }
   MENU.ln();

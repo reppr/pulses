@@ -3383,13 +3383,13 @@ bool musicBox_reaction(char token) {
 	  if(MENU.is_numeric()) {	// 'CC!<numeric>'
 	    input_value = MENU.numeric_input(-1);
 	    if(input_value > 0 && input_value < 256)
-	      my_ID.esp_now_time_slice = input_value;
+	      my_IDENTITY.esp_now_time_slice = input_value;
 	    else
 	      MENU.outln_invalid();
 	  }
 
 	  MENU.out(F("esp-now time slice\t"));
-	  MENU.outln(my_ID.esp_now_time_slice);
+	  MENU.outln(my_IDENTITY.esp_now_time_slice);
 	} else
 	  MENU.outln("DADA implement peer name search");
       }

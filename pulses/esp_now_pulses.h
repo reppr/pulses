@@ -99,7 +99,7 @@ typedef struct peer_ID_t {
   uint8_t version=0;
 } peer_ID_t;
 
-peer_ID_t my_ID;
+peer_ID_t my_IDENTITY;
 
 
 void show_peer_id(peer_ID_t* this_peer_ID_p) {
@@ -117,12 +117,12 @@ void show_peer_id(peer_ID_t* this_peer_ID_p) {
 }
 
 
-void set_my_ID() {
-  esp_read_mac(my_ID.mac_addr, ESP_MAC_WIFI_STA);
+void set_my_IDENTITY() {
+  esp_read_mac(my_IDENTITY.mac_addr, ESP_MAC_WIFI_STA);
   extern String nvs_getString(char * key);
-  my_ID.preName = nvs_getString(F("nvs_PRENAME"));
+  my_IDENTITY.preName = nvs_getString(F("nvs_PRENAME"));
 
-  // my_ID.esp_now_time_slice
+  // my_IDENTITY.esp_now_time_slice
 }
 
 // esp_err_t ERROR reporting
@@ -203,7 +203,7 @@ void esp_now_add_mine() {	// adds identity data to the esp_now_send_buffer[]
 #endif
 
   peer_ID_t* ID_p = (peer_ID_t *) &esp_now_send_buffer[esp_now_send_buffer_cnt];
-  memcpy(ID_p, &my_ID, sizeof(peer_ID_t));
+  memcpy(ID_p, &my_IDENTITY, sizeof(peer_ID_t));
   esp_now_send_buffer_cnt += sizeof(peer_ID_t);
 }
 
@@ -439,7 +439,7 @@ void send_response_time_sliced() {
 bool prepare_time_sliced_reaction(mac_addr_t* to_mac) {
   // debug output ################################################################
   MENU.outln(F("prepare_time_sliced_reaction()\tms"));
-MENU.outln(my_ID.esp_now_time_slice * ESP_NOW_TIME_SLICE_MS);
+MENU.outln(my_IDENTITY.esp_now_time_slice * ESP_NOW_TIME_SLICE_MS);
 
   // save mac
   for (int i=0; i<6; i++)
@@ -452,7 +452,7 @@ MENU.outln(my_ID.esp_now_time_slice * ESP_NOW_TIME_SLICE_MS);
   // setup time sliced reaction
   esp_now_reaction_timer = timerBegin(0, 80, true /* count upwards */);
   timerAttachInterrupt(esp_now_reaction_timer, &send_response_time_sliced, true /* edge */);
-  timerAlarmWrite(esp_now_reaction_timer, (my_ID.esp_now_time_slice * ESP_NOW_TIME_SLICE_MS * 1000), false /* only once */);
+  timerAlarmWrite(esp_now_reaction_timer, (my_IDENTITY.esp_now_time_slice * ESP_NOW_TIME_SLICE_MS * 1000), false /* only once */);
   timerAlarmEnable(esp_now_reaction_timer);
   return true; // ################################################################
 } // prepare_time_sliced_reaction()
@@ -664,7 +664,7 @@ esp_err_t esp_now_pulses_setup() {
 
   status = esp_now_pulses_add_peer(broadcast_mac);	// add broadcast as peer
 
-  set_my_ID();
+  set_my_IDENTITY();
 
   return status;
 } // esp_now_pulses_setup()
