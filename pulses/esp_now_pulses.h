@@ -30,6 +30,8 @@
 
 // esp_err_t ERROR reporting
 #if ! defined ESP_ERR_INFO_DEFINED
+  #include "esp_err.h"
+  extern const char* esp_err_to_name(esp_err_t code);
   bool /* error */ esp_err_info(esp_err_t status) {
     if(status == ESP_OK) {	// ok
       if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
@@ -319,23 +321,34 @@ void display_peer_ID_list() {
 void esp_now_2_ID_list(uint8_t* mac_addr, String preName /*hardware*/) {
   bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
 #if defined DEBUG_ESP_NOW
-  MENU.out(F("esp_now_2_ID_list() "));
+  MENU.out(F("esp_now_2_ID_list() |"));
+  MENU.out(preName);
+  MENU.out(F("|\t"));
 #endif
 
   if(mac_addr != NULL) {
-    bool peer_is_known=false;
+    uint8_t peer_is_known=ILLEGAL8;
     int i; // index
     for(i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {	// search if peer is known
       for(int m=0; m<6; m++) {	// compare MAC
 	if(*(mac_addr + m) != esp_now_pulses_known_peers[i].mac_addr[m])
 	  break;
 	if(m==5)
-	  peer_is_known=true;	// all 6 mac bytes are identical
+	  peer_is_known = i;	// all 6 mac bytes are identical
       }
-      if(peer_is_known) {
+      if(peer_is_known != ILLEGAL8) {
 #if defined DEBUG_ESP_NOW
-	MENU.outln(F("peer is known"));
+	MENU.out(F("peer is known "));
+	MENU.outln((int) peer_is_known);
 #endif
+	if(preName!="") {
+	  esp_now_pulses_known_peers[i].preName = preName;
+#if defined DEBUG_ESP_NOW
+	  MENU.out('|');
+	  MENU.out(esp_now_pulses_known_peers[i].preName);
+	  MENU.outln('|');
+#endif
+	}
 	return;			// *EARLY EXIT*, keep it quick
       }
     }
@@ -376,7 +389,7 @@ void esp_now_2_ID_list(uint8_t* mac_addr, String preName /*hardware*/) {
       memcpy(mp, mac_addr, 6);
 
       // preName
-      if(preName) {	// TODO: TEST:
+      if(preName!="") {	// TODO: TEST:
 	const char* new_preName = preName.c_str();
 	int len = strlen(new_preName);
 	for(int b=0; b<16; b++) {
@@ -385,8 +398,11 @@ void esp_now_2_ID_list(uint8_t* mac_addr, String preName /*hardware*/) {
 	  else
 	    esp_now_pulses_known_peers[i].preName[b] = '\0';
 	}
-	MENU.outln(esp_now_pulses_known_peers[i].preName);
-      } // else
+
+	MENU.out('|');
+	MENU.out(esp_now_pulses_known_peers[i].preName);
+	MENU.outln('|');
+      }
 
       // hardware planed
       if(do_display) {

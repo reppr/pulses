@@ -48,6 +48,7 @@ using namespace std;	// ESP8266 needs that
 #if defined ESP32
   #include <esp_system.h>
   #include <esp_err.h>
+  extern const char* esp_err_to_name(esp_err_t);
 #endif
 
 

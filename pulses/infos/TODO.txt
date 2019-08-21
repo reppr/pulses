@@ -257,3 +257,5 @@ TODO: REMOVE: when mpu6050_test_version 2 is finished
 encrypted ESP-NOW
 
 see: infos/internal/2019-08-20_backtrace.txt
+
+#define NVS_FREE_ENTRIES_DUMMY_HACK	// TODO: DADA FIXME:

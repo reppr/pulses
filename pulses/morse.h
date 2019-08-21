@@ -21,6 +21,9 @@ bool oled_feedback_while_playing = false;	// do *not* give morse feedback while 
 #include "touch.h"
 #include "esp_attr.h"
 
+#if defined ESP32
+  extern const char* esp_err_to_name(esp_err_t);
+#endif
 
 // ################ TODO: MOVE: configuration
 // use GPIO (with pulldown) as morse input?
