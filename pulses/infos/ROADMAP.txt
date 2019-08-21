@@ -8,14 +8,14 @@ some first ideas about planing the roadmap:
 
 ****************************************************************
 keep all the HARDWARE up to date
-  INSERT RESISTORs to all MORSE INPUTs!		DESTROYED LillyBoy	*URGENT*
-  check also all led strip data pins if they have resistors
+  INSERT RESISTORs to all MORSE INPUTs!		DESTROYED LillyBoy	repaired :)	OK
+  check also all led strip data pins if they have resistors				OK
 
-  LillyBoy	FIX or make new		mostly ok	TODO: *FIX RGB LED STRING*
+  LillyBoy	FIX or make new		mostly ok	TODO: *FIX RGB LED STRING*	OK
   //was: LillyBoy	(ok) 12V led string on ~10V	mechanical construction		battery compartment
 
   CHATEAU	OK	5V led string on USB	led string fixed on instrument OK	morse input ok?
-  FitNess	morse, maybe bluetooth broken	no led string yet	test MPU6050
+  FitNess	morse, maybe bluetooth broken	no led string yet	test MPU6050	OK
   butler	 ?
   chameleon	 ?
   placeholderTM0 ?
@@ -25,7 +25,11 @@ keep all the HARDWARE up to date
 CALIBRATE *all* MPU6050
   save the offsets to nvs
 
-add FRESNEL LENSES to all MONOCHROME displays
+add FRESNEL LENSES to all MONOCHROME displays	NO, i want people to *hear* the music and *enjoy* the colour patterns
+						    and not read the display...
+						    could even switch it off, maybe?
+
+start rgb_pattern led (offset)								OK
 
 
 ****************************************************************
@@ -55,7 +59,7 @@ configuration types
 NVS
   nvs_menu	configure all the instruments in the band	(ok)	add functionality
   HARDWARE	*one* program for all
-		individual configurations based on NVS configuration	some important parts implemente
+		individual configurations based on NVS configuration	OK, i think
 
 
 new IMPLEMENTATION for MOTION UI	Y_UI
@@ -64,7 +68,7 @@ new IMPLEMENTATION for MOTION UI	Y_UI
 
 SECURITY  (maybe some attempts only present in my private sources)
   secure morse inputs, calibrate before start
-  ESP NOW security
+  ESP NOW security							prepared
 
 
 ESP NOW NET
@@ -101,7 +105,7 @@ RGB LED
   background colour memory	implemented BG buffer			// OK test&trimm
 
 
-basic loop configuration runtime UI					URGENT
+basic loop configuration runtime UI					*URGENT*
       user mode, idle
       idle (==user?)
       random preset mode

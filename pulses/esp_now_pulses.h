@@ -22,6 +22,8 @@
   #define DEBUG_ESP_NOW		false	// switches ESP_NOW debugging off
 #endif
 
+#define DEBUG_ESP_NOW_NETWORKING
+
 #define ESP_NOW_CHANNEL	4
 
 // react on broadcast or all-known-peers messages in an individual time slice
@@ -121,10 +123,10 @@ peer_ID_t my_IDENTITY;
 
 
 void show_peer_id(peer_ID_t* this_peer_ID_p) {
-  MENU.out(F("IDENTITY\t"));
+  MENU.out(F("IDENTITY\t|"));
   MENU.out(this_peer_ID_p->preName);
 
-  MENU.out(F("\tMAC\t"));
+  MENU.out(F("|\tMAC\t"));
   MENU.out(MAC_str(this_peer_ID_p->mac_addr));
 
   MENU.out(F("\ttime slice  "));
@@ -132,16 +134,23 @@ void show_peer_id(peer_ID_t* this_peer_ID_p) {
 
   MENU.out(F("\tversion\t"));
   MENU.outln((int) this_peer_ID_p->version);
-}
+} // show_peer_id()
 
 
 void set_my_IDENTITY() {
   esp_read_mac(my_IDENTITY.mac_addr, ESP_MAC_WIFI_STA);
+
   extern String nvs_getString(char * key);
   my_IDENTITY.preName = nvs_getString(F("nvs_PRENAME"));
 
-  // my_IDENTITY.esp_now_time_slice
-}
+  // my_IDENTITY.esp_now_time_slice  set from nvs
+
+#if defined DEBUG_ESP_NOW_NETWORKING
+  MENU.outln("\n===============>>>\t>>>>>>>>>>>>>>>>  set_my_IDENTITY()\tset ID");
+  show_peer_id(&my_IDENTITY);
+  MENU.ln();
+#endif
+} // set_my_IDENTITY()
 
 
 // sending:
@@ -152,7 +161,7 @@ void esp_now_data_sent_callback(const mac_addr_t *mac_addr, esp_now_send_status_
     MENU.tab();
     esp_err_info(status);
   }
-}
+} // esp_now_data_sent_callback()
 
 esp_err_t esp_now_pulses_send(const mac_addr_t *mac_addr) {	// send data stored in esp_now_send_buffer
   esp_err_t status = esp_now_send(mac_addr, esp_now_send_buffer, esp_now_send_buffer_cnt);
@@ -161,7 +170,8 @@ esp_err_t esp_now_pulses_send(const mac_addr_t *mac_addr) {	// send data stored 
     esp_err_info(status);
 
   return status;
-}
+} // esp_now_pulses_send()
+
 
 // some messages contain only the meaning code, no additional parameters:
 esp_err_t esp_now_send_bare(mac_addr_t* mac_addr, icode_t meaning) {
@@ -174,7 +184,8 @@ esp_err_t esp_now_send_bare(mac_addr_t* mac_addr, icode_t meaning) {
   esp_now_send_buffer_cnt = sizeof(icode_t);	// icode_t meaning
 
   return esp_now_pulses_send(mac_addr);
-}
+} // esp_now_send_bare()
+
 
 esp_err_t esp_now_send_preset(mac_addr_t* mac_addr, short preset) {
   icode_t* i_data = (icode_t*) esp_now_send_buffer;
@@ -198,19 +209,28 @@ esp_err_t esp_now_send_preset(mac_addr_t* mac_addr, short preset) {
     esp_err_info(status);
 
   return status;
-}
+} //esp_now_send_preset()
 
-void esp_now_add_mine() {	// adds identity data to the esp_now_send_buffer[]
+
+void esp_now_add_identity() {	// adds identity data to the esp_now_send_buffer[]
 #if defined DEBUG_ESP_NOW
-  MENU.out(F(" esp_now_add_mine() "));
+  MENU.out(F(" esp_now_add_identity() "));
 #endif
 
   peer_ID_t* ID_p = (peer_ID_t *) &esp_now_send_buffer[esp_now_send_buffer_cnt];
   memcpy(ID_p, &my_IDENTITY, sizeof(peer_ID_t));
-  esp_now_send_buffer_cnt += sizeof(peer_ID_t);
-}
 
-peer_ID_t esp_now_read_mine() {	// reads identity data from esp_now_received_data
+#if defined DEBUG_ESP_NOW_NETWORKING
+  MENU.outln("\n===============>>>\t>>>>>>>>>>>>>>>>  esp_now_add_identity()\tadded ID");
+  show_peer_id((peer_ID_t*) &esp_now_send_buffer[esp_now_send_buffer_cnt]);
+  MENU.ln();
+#endif
+
+  esp_now_send_buffer_cnt += sizeof(peer_ID_t);
+} // esp_now_add_identity()
+
+
+peer_ID_t esp_now_read_identity() {	// reads identity data from esp_now_received_data
   peer_ID_t read_peer_ID;
   uint8_t* data_read_p = esp_now_received_data + esp_now_received_data_read;
   for(int b=0; b<6; b++)
@@ -224,8 +244,15 @@ peer_ID_t esp_now_read_mine() {	// reads identity data from esp_now_received_dat
       break;
   }
 
+#if defined DEBUG_ESP_NOW_NETWORKING
+  MENU.outln("\n===============>>>\t>>>>>>>>>>>>>>>>  esp_now_read_identity()\tread ID");
+  show_peer_id(&read_peer_ID);
+  MENU.ln();
+#endif
+
   return read_peer_ID;
-}
+} // esp_now_read_identity()
+
 
 esp_err_t esp_now_send_who(mac_addr_t* mac_addr) {
   bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
@@ -234,17 +261,17 @@ esp_err_t esp_now_send_who(mac_addr_t* mac_addr) {
   *i_data++ = N_WHO;
   esp_now_send_buffer_cnt = sizeof(icode_t);	// icode_t meaning
 
-  esp_now_add_mine();
-
   if(do_display)
     MENU.out(F("ESP-NOW send N_WHO\t"));
+
+  esp_now_add_identity();
 
   esp_err_t status = esp_now_send(mac_addr, esp_now_send_buffer, esp_now_send_buffer_cnt);
   if(do_display)
     esp_err_info(status);
 
   return status;
-}
+} // esp_now_send_who()
 
 
 esp_err_t  esp_now_send_macro(mac_addr_t* mac_addr, char * macro) {
@@ -453,6 +480,10 @@ void send_IDENTITY_time_sliced() {	// send data stored in esp_now_send_buffer
 
   if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
     esp_err_info(status);
+
+#if defined DEBUG_ESP_NOW_NETWORKING
+  MENU.outln("\n===============>>>\t>>>>>>>>>>>>>>>> send_IDENTITY_time_sliced() sent previously prepared data");
+#endif
 }
 
 
@@ -468,7 +499,7 @@ void prepare_time_sliced_reaction(mac_addr_t* to_mac) {
   icode_t* i_data = (icode_t*) esp_now_send_buffer;
   *i_data++ = N_ID;
   esp_now_send_buffer_cnt = sizeof(icode_t);	// icode_t meaning
-  esp_now_add_mine();				// my_IDENTITY
+  esp_now_add_identity();			// my_IDENTITY
 
   // setup time sliced reaction
   esp_now_reaction_timer = timerBegin(0, 80, true /* count upwards */);
@@ -528,8 +559,15 @@ static void esp_now_pulses_reaction(const mac_addr_t *mac_addr) {
 	MENU.outln(F("N_WHO"));
       }
 
-      peer_ID_t received_ID = esp_now_read_mine();
-      esp_now_2_ID_list((mac_addr_t*) mac_addr, received_ID.preName);
+      peer_ID_t received_ID = esp_now_read_identity();
+
+#if defined DEBUG_ESP_NOW_NETWORKING
+      MENU.outln("\n===============>>>\t>>>>>>>>>>>>>>>>  esp_now_pulses_reaction()\tread N_WHO");
+      show_peer_id(&received_ID);
+      MENU.ln();
+#endif
+
+      esp_now_2_ID_list((mac_addr_t*) mac_addr, received_ID.preName);	// building up peer info lists
       esp_now_pulses_add_peer(mac_addr);	// might give feedback
 
       prepare_time_sliced_reaction((mac_addr_t*) mac_addr);
@@ -538,9 +576,16 @@ static void esp_now_pulses_reaction(const mac_addr_t *mac_addr) {
 
   case N_ID:
     {
-      peer_ID_t received_ID = esp_now_read_mine();
+      peer_ID_t received_ID = esp_now_read_identity();
+
+#if defined DEBUG_ESP_NOW_NETWORKING
+      MENU.outln("\n===============>>>\t>>>>>>>>>>>>>>>>  esp_now_pulses_reaction()\tread N_ID");
+      show_peer_id(&received_ID);
+      MENU.ln();
+#endif
+
       esp_now_2_ID_list((mac_addr_t*) mac_addr, received_ID.preName);	// building up peer info lists
-      esp_now_pulses_add_peer(mac_addr);		// might give feedback    }
+      esp_now_pulses_add_peer(mac_addr);				// might give feedback    }
     }
     break;
 
@@ -611,7 +656,7 @@ static void pulses_data_received_callback(const mac_addr_t *mac_addr, const uint
      THEN *DO* play the macro locally
 
   else if sending to an INDIVIDUAL
-     ONLY send *without playing it locally*	
+     ONLY send *without playing it locally*
 */
 void esp_now_send_maybe_do_macro(mac_addr_t* mac_addr, char* macro) {
   if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {
