@@ -113,7 +113,7 @@ hw_timer_t * esp_now_reaction_timer = NULL;
 
 // peer_ID_t
 typedef struct peer_ID_t {
-  String preName="";
+  char preName[16]={0};
   mac_addr_t mac_addr[6]={0};
   uint8_t esp_now_time_slice=0;	// react on broadcast or all-known-peers messages in an individual time slice
   uint8_t version=0;
@@ -123,7 +123,7 @@ peer_ID_t my_IDENTITY;
 
 
 void show_peer_id(peer_ID_t* this_peer_ID_p) {
-  MENU.out(F("IDENTITY\t|"));
+  MENU.out(F("IDENTITY\tpreName |"));
   MENU.out(this_peer_ID_p->preName);
 
   MENU.out(F("|\tMAC\t"));
@@ -140,8 +140,8 @@ void show_peer_id(peer_ID_t* this_peer_ID_p) {
 void set_my_IDENTITY() {
   esp_read_mac(my_IDENTITY.mac_addr, ESP_MAC_WIFI_STA);
 
-  extern String nvs_getString(char * key);
-  my_IDENTITY.preName = nvs_getString(F("nvs_PRENAME"));
+//	  extern String nvs_getString(char * key);
+//	  my_IDENTITY.preName = nvs_getString(F("nvs_PRENAME"));
 
   // my_IDENTITY.esp_now_time_slice  set from nvs
 
@@ -345,10 +345,10 @@ void display_peer_ID_list() {
   MENU.ln();
 } // display_peer_ID_list()
 
-void esp_now_2_ID_list(uint8_t* mac_addr, String preName /*hardware*/) {
+void esp_now_2_ID_list(uint8_t* mac_addr, char* preName /*hardware*/) {
   bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
 #if defined DEBUG_ESP_NOW
-  MENU.out(F("esp_now_2_ID_list() |"));
+  MENU.out(F("esp_now_2_ID_list() preName |"));
   MENU.out(preName);
   MENU.out(F("|\t"));
 #endif
@@ -369,7 +369,15 @@ void esp_now_2_ID_list(uint8_t* mac_addr, String preName /*hardware*/) {
 	MENU.outln((int) peer_is_known);
 #endif
 	if(preName!="") {
-	  esp_now_pulses_known_peers[i].preName = preName;
+	  for(int b=0; b<16; b++)
+	    esp_now_pulses_known_peers[i].preName[b] = preName[b];
+
+#if defined DEBUG_ESP_NOW_NETWORKING
+	  MENU.outln("\n===============>>>\t>>>>>>>>>>>>>>>>  esp_now_2_ID_list()\tsees preName? |");
+	  MENU.out(esp_now_pulses_known_peers[i].preName);
+	  MENU.outln('|');
+#endif
+
 #if defined DEBUG_ESP_NOW
 	  MENU.out('|');
 	  MENU.out(esp_now_pulses_known_peers[i].preName);
@@ -417,7 +425,7 @@ void esp_now_2_ID_list(uint8_t* mac_addr, String preName /*hardware*/) {
 
       // preName
       if(preName!="") {	// TODO: TEST:
-	const char* new_preName = preName.c_str();
+	char* new_preName = preName;
 	int len = strlen(new_preName);
 	for(int b=0; b<16; b++) {
 	  if(b < len)

@@ -91,11 +91,11 @@ bool nvs_read_blob(char* key, void* new_blob, size_t buffer_size) {
     return true; // error
   }
   MENU.out(required_size);
-  MENU.outln(F(" bytes to read"));
+  MENU.outln(F(" bytes reading"));
 
   // double check buffer size
   if(required_size > buffer_size) {
-    //	MENU.error_ln(F("too much"));
+    MENU.error_ln(F("too much"));
     nvs_close(my_handle);
     return true; // error
   }
@@ -460,7 +460,9 @@ void configure_IDENTITY_from_nvs() {
   }
 
   if(IDENTITY_from_nvs_p->preName != "") {
-    my_IDENTITY.preName = IDENTITY_from_nvs_p->preName;
+    for(int b=0; b<16; b++)
+      my_IDENTITY.preName[b] = IDENTITY_from_nvs_p->preName[b];
+
     MENU.out(F("preName\t\t|"));
     MENU.out(my_IDENTITY.preName);
     MENU.outln('|');

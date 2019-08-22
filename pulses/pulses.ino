@@ -1295,16 +1295,16 @@ void setup() {
   show_program_version();
 
 #if defined USE_NVS	// always used on ESP32
-  {
-    String s = nvs_getString(F("nvs_PRENAME"));	// OBSOLETE: use IDENTITY
-    if (s) {
-      my_IDENTITY.preName = s;
-      MENU.out(F("nvs_PRENAME:\t"));
-      MENU.outln(s);
-    }
-
-
-  }
+//	  {
+//	    String s = nvs_getString(F("nvs_PRENAME"));	// OBSOLETE: use IDENTITY
+//	    if (s) {
+//	      my_IDENTITY.preName = s;
+//	      MENU.out(F("nvs_PRENAME:\t"));
+//	      MENU.outln(s);
+//	    }
+//
+//
+//	  }
 #endif
 
 #if defined ESP32

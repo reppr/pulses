@@ -12,7 +12,7 @@ void nvs_menu_display() {
   MENU.outln(F("'H'=HARDWARE 'HR'=read 'HS'=save '?'=info"));
   MENU.ln();
 
-  MENU.outln(F("'I'=IDENTITY 'IS'=save 'IR'=read 'IT'=time slice"));
+  MENU.outln(F("'I'=IDENTITY 'IS'=save 'IR'=read 'IT'=time slice 'IP<preName>'"));
   MENU.ln();
 
   MENU.outln(F("'S'=SYSTEM 'SS'=set rgb string cnt"));
@@ -77,7 +77,8 @@ bool nvs_menu_reaction(char token) {
 	MENU.drop_input_token(); // drop 'S' 'R'
       case EOF8:
 	break;
-      case 'T':	// 'IT'
+
+      case 'T':	// 'IT' time slice
 	MENU.drop_input_token();
 	if(MENU.is_numeric()) {	// 'IT<numeric>'
 	  input_value = MENU.numeric_input(-1);
@@ -88,6 +89,25 @@ bool nvs_menu_reaction(char token) {
 	}
 	MENU.out(F("esp-now time slice\t"));	// obsolete, see below
 	MENU.outln(my_IDENTITY.esp_now_time_slice);
+	break;
+
+      case 'P':	// 'IP<preName>' preName
+	MENU.drop_input_token();
+	int b;
+	char c;
+	for(b=0; b<16; b++) {
+	  if(MENU.peek() == EOF8) {
+	    my_IDENTITY.preName[b] = '\0';
+	    break;
+	  }
+	  c = MENU.drop_input_token();
+	  my_IDENTITY.preName[b] = c;
+	}
+	my_IDENTITY.preName[15] = '\0';	// security net
+
+	MENU.out(F("preName\t|"));
+	MENU.out(my_IDENTITY.preName);
+	MENU.outln('|');
 	break;
       } // switch next token after 'I'
 
