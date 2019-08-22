@@ -361,7 +361,11 @@ void configure_HARDWARE_from_nvs() {
       MENU.out(F("\ttype "));
       x = HARDWARE.rgb_led_voltage_type[i] = HARDWARE_from_nvs.rgb_led_voltage_type[i];
       MENU.out(x);
-      MENU.outln('V');
+      MENU.out('V');
+
+      MENU.out(F("\tpattern start "));
+      x = HARDWARE.rgb_pattern0[i] = HARDWARE_from_nvs.rgb_pattern0[i];
+      MENU.outln(x);
     }
 
     // currently *all* strings share software conf (as setup for string[0])

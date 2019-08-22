@@ -2963,7 +2963,7 @@ void musicBox_display() {
 
   #if defined USE_RGB_LED_STRIP
   MENU.outln(F("\n'L'=rgbLED 'LB'=BGdim 'LS'=saturation0 'LR'=sat reset value 'LI'=intensity 'LN'=hue slices"));
-  MENU.outln(F("   'LH'=high priority 'LP'=pixel cnt 'LV'=voltage\n"));
+  MENU.outln(F("   'LH'=high priority 'LP'=pixel cnt 'LV'=voltage 'LO'=offset pattern"));
 #endif
 
 #if defined USE_ESP_NOW
@@ -3581,6 +3581,18 @@ bool musicBox_reaction(char token) {
       MENU.tab();
       MENU.out(HARDWARE.rgb_pixel_cnt[selected_rgb_LED_string]);
       MENU.outln(F(" LEDs"));
+      break;
+
+    case 'O':	// 'LO' set offset to pattern start led
+      MENU.drop_input_token();
+      input_value = MENU.numeric_input(HARDWARE.rgb_pattern0[selected_rgb_LED_string]);
+      if((input_value > -1) && (input_value < ILLEGAL8))
+	HARDWARE.rgb_pattern0[selected_rgb_LED_string]=input_value;
+
+      MENU.out(F("RGB STRING ["));
+      MENU.out(selected_rgb_LED_string);
+      MENU.out(F("]\tpattern start\t"));
+      MENU.outln(HARDWARE.rgb_pattern0[selected_rgb_LED_string]);
       break;
     } // second letter after 'L'
     break;

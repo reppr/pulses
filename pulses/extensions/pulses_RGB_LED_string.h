@@ -40,6 +40,7 @@ typedef struct rgb_string_config_t {
   uint8_t hue_slice_cnt = 15;	// just a usable default  see: set_automagic_hue_slices
   uint8_t set_background_algorithm = bgDIM;
   //uint8_t set_background_algorithm = bgHISTORY_i;	// TODO: DADA broken
+  // see: pulses_hardware_conf_t  uint8_t rgb_pattern0
 
   uint8_t version = 0;	// 0 means currently under development
 
@@ -56,6 +57,7 @@ typedef struct rgb_string_config_t {
 
 rgb_string_config_t RGBstringConf;
 
+
 void set_rgb_string_voltage_type(int voltage, int string) {
   HARDWARE.rgb_led_voltage_type[string] = voltage;	// voltage goes to *HARDWARE*
 
@@ -70,6 +72,7 @@ void set_rgb_string_voltage_type(int voltage, int string) {
   MENU.out(voltage);
   MENU.outln('V');
 }
+
 
 #include "FOREIGN/ESP32-Digital-RGB-LED-Drivers/src/esp32_digital_led_lib.h"
 #include "FOREIGN/ESP32-Digital-RGB-LED-Drivers/src/esp32_digital_led_lib.cpp"
@@ -292,7 +295,7 @@ void HSV_2_RGB_degree(pixelColor_t* pixel, float H, float S, float V) {	// TODO:
 void pulses_RGB_LED_string_init() {
   if(rgb_strings_available) {
     initStrands();
-    digitalLeds_resetPixels(&strands[0], 1);
+    digitalLeds_resetPixels(&strands[0], 1);	// DADA	TODO: multiple RGB strings
   }
 }
 
@@ -303,7 +306,7 @@ void random_RGB_string(uint8_t max=8) {
   #endif
 #endif
 
-  strand_t * strand_p = strands[0];
+  strand_t * strand_p = strands[0];	// DADA	TODO: multiple RGB strings
   for(int i=0; i<RGB_STRING_LED_CNT; i++) {
     switch(i) {
       /*	// TODO: REMOVE: DEBUGGING: why do i always get 3 identical LEDs ???
@@ -342,7 +345,7 @@ void random_HSV_LED_string() {
   MENU.outln(F("random_HSV_LED_string()"));
 #endif
 
-  strand_t * strand_p = strands[0];
+  strand_t * strand_p = strands[0];	// DADA	TODO: multiple RGB strings
   pixelColor_t pixel;
   int random_delta_i=1000000;	// just a random granularity
   float H, S, V;
@@ -376,12 +379,18 @@ void random_HSV_LED_string() {
 
 bool update_RGB_LED_string=false;	// is the string buffer dirty?
 
-#define PULSE_2_RGB_LED_STRING	  (pulse - lowest_primary)	// find the corresponding led sting
+
+int pulse_2_rgb_pixel(int pulse) {
+  int pixel = pulse;
+  pixel -= lowest_primary;
+  pixel += HARDWARE.rgb_pattern0[0];	// DADA	TODO: multiple RGB strings
+  return pixel;
+}
 
 void clear_RGB_string_pixel(int pulse) {
   if(rgb_strings_available) {
-    strand_t * strand_p = strands[0];
-    int pix_i = PULSE_2_RGB_LED_STRING;		// TODO: use pulse internal data
+    strand_t * strand_p = strands[0];		// DADA	TODO: multiple RGB strings
+    int pix_i = pulse_2_rgb_pixel(pulse);	// TODO: use pulse internal data
     pixelColor_t pixel;
     pixel.r = 0;
     pixel.g = 0;
@@ -414,8 +423,8 @@ void set_pulse_LED_pixel_from_counter(int pulse) {
     H = (float) (PULSES.pulses[pulse].counter % RGBstringConf.hue_slice_cnt) / (float) RGBstringConf.hue_slice_cnt;
     V = RGBstringConf.rgb_led_string_intensity / (float) 255;
 
-    strand_t * strand_p = strands[0];
-    int pix_i = PULSE_2_RGB_LED_STRING;		// TODO: use pulse intenal data
+    strand_t * strand_p = strands[0];		// DADA	TODO: multiple RGB strings
+    int pix_i = pulse_2_rgb_pixel(pulse);	// TODO: use pulse intenal data
     pixelColor_t pixel;
 
     HSV_2_RGB_degree(&pixel, (H * 360.0), RGBstringConf.saturation, V);

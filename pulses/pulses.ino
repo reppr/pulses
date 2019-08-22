@@ -193,6 +193,7 @@ typedef struct pulses_hardware_conf_t {
   uint8_t rgb_pin[RGB_STRINGS_MAX]={0};					// %4
   uint8_t rgb_pixel_cnt[RGB_STRINGS_MAX]={0};				// %4
   uint8_t rgb_led_voltage_type[RGB_STRINGS_MAX]={0};			// %4
+  uint8_t rgb_pattern0[RGB_STRINGS_MAX]={0};				// %4
 
   // MIDI?
   uint8_t MIDI_in_pin=ILLEGAL8;		// reserved, not implemented yet // %4
@@ -1193,9 +1194,14 @@ void show_hardware_conf(pulses_hardware_conf_t* hardware) {
       MENU.out(F("  pin\t\t"));
       MENU.out(hardware->rgb_pin[i]);
       MENU.out(F("\tcnt "));
-      MENU.outln(hardware->rgb_pixel_cnt[i]);
+      MENU.out(hardware->rgb_pixel_cnt[i]);
+      MENU.out(F("  \tvoltage "));
+      MENU.out(hardware->rgb_led_voltage_type[i]);
+      MENU.out(F("\tstart "));
+      MENU.outln(hardware->rgb_pattern0[i]);
     }
-    MENU.out(F("voltage type\t\t"));
+
+    MENU.out(F("uses voltage type\t\t"));
     MENU.outln(hardware->rgb_led_voltage_type[0]);
   } else
     MENU.outln('-');
@@ -3933,7 +3939,7 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   for (int pulse=0; pulse<pl_max; pulse++) {
     if (PULSES.pulse_is_selected(pulse)) {
       PULSES.set_do_first(pulse, set_pulse_LED_pixel_from_counter);
-      PULSES.set_rgb_led_string(pulse, 0, PULSE_2_RGB_LED_STRING);
+      PULSES.set_rgb_led_string(pulse, 0, pulse_2_rgb_pixel(pulse));
     }
   }
 #endif
