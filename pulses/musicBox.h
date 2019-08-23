@@ -390,6 +390,11 @@ bool musicbox_is_ending() {	// makes it easier to pre declare that from outside
   return MusicBoxState == ENDING;
 }
 
+bool musicbox_is_awake() {	// makes it easier to pre declare that from outside
+  return MusicBoxState == AWAKE;
+}
+
+
 void tabula_rasa() {
   if (MENU.verbosity > VERBOSITY_LOWEST)
     MENU.outln(F("tabula rasa"));
@@ -399,7 +404,8 @@ void tabula_rasa() {
     set_MusicBoxState(OFF);
 
   musicBoxConf.date=NULL;	// TODO: TEST: hmm?
-}
+} // tabula_rasa()
+
 
 // TODO: magic_autochanges default?
 bool magic_autochanges=true;	// switch if to end normal playing after MUSICBOX_PERFORMACE_SECONDS

@@ -579,7 +579,7 @@ static void esp_now_pulses_reaction(const mac_addr_t *mac_addr) {
 	MENU.outln(F("N_WHO"));
       }
 
-      esp_now_2_ID_list((mac_addr_t*) mac_addr, " (none) ");	// building up peer info lists
+      esp_now_2_ID_list((mac_addr_t*) mac_addr, "(N_WHO)");	// building up peer info lists
       esp_now_pulses_add_peer(mac_addr);	// might give feedback
 
       esp_now_prepare_N_ID((mac_addr_t*) mac_addr);
@@ -696,7 +696,35 @@ void esp_now_call_participants() {	// kickstart network connections
 
   esp_now_send_identity(broadcast_mac);
   yield();
+  delay(100); // ################################################################
   esp_now_send_who(broadcast_mac);
+}
+
+
+// if the engine considers it appropriate send identification from time to time
+int esp_now_idle_ms = 20000;	// ms	all 20"
+hw_timer_t * esp_now_idle_identity_timer = NULL; // ms
+bool volatile esp_now_send_idle_identity=false;
+
+void trigger_idle_identification() {
+  //  MENU.outln("DADA trigger");	// TODO: REMOVE: ################
+  esp_now_send_idle_identity=true;
+}
+
+bool esp_now_idle_identification() {
+  if(! esp_now_send_idle_identity) {
+    esp_now_send_idle_identity=true;
+    return false;
+  }
+
+  extern bool musicbox_is_awake();
+  if(! musicbox_is_awake()) {
+    esp_now_send_identity(broadcast_mac);
+    esp_now_send_idle_identity = false;
+    return true;
+  } // else
+  MENU.outln("DADA is playing...");	// TODO: REMOVE: ################
+  return false;
 }
 
 
@@ -755,5 +783,18 @@ esp_err_t esp_now_pulses_setup() {
 
   set_my_IDENTITY();
 
+  // if "idle" broadcast IDENTITY from time to time
+  MENU.out(F("  if idle broadcast identity all "));
+  MENU.out((float) esp_now_idle_ms / 1000.0);
+  MENU.outln(F("\""));
+
+  esp_now_idle_identity_timer = timerBegin(0, 80, true /* count upwards */);	// ms
+  if(esp_now_idle_identity_timer==NULL)
+    MENU.error_ln(F("timerBegin"));
+  else {
+    timerAttachInterrupt(esp_now_idle_identity_timer, &trigger_idle_identification, true /* edge */);
+    timerAlarmWrite(esp_now_idle_identity_timer, esp_now_idle_ms*1000, true /* repeat */);
+    timerAlarmEnable(esp_now_idle_identity_timer);
+  }
   return status;
 } // esp_now_pulses_setup()

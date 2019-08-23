@@ -1607,6 +1607,12 @@ bool low_priority_tasks() {
 
   low_priority_cnt++;
 
+#if defined USE_ESP_NOW
+  if(esp_now_send_idle_identity)
+    if(esp_now_idle_identification())
+      return true;
+#endif
+
 #if defined USE_RGB_LED_STRIP
   if(update_RGB_LED_string && rgb_strings_available) {
     digitalLeds_drawPixels(strands, 1);
