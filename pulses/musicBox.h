@@ -1156,6 +1156,10 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
     MENU.ln();
   }
 
+#if defined USE_ESP_NOW
+  esp_now_prepare_N_ID(broadcast_mac);
+#endif
+
   delay(3200); // aesthetics	DADA
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN && defined BATTERY_LEVEL_CONTROL_PIN
@@ -2967,7 +2971,7 @@ void musicBox_display() {
 #endif
 
 #if defined USE_ESP_NOW
-  MENU.outln(F("'C' 'CC' 'CC!'\n"));	// TODO: show ESP_NOW hierarchy
+  MENU.outln(F("'C<macro>'=send macro 'CC<num>'=recipient  'C'='CC'=build net"));
 #endif
 
   MENU.out(F("'T' tune pitch, scale"));
@@ -3357,65 +3361,88 @@ bool musicBox_reaction(char token) {
     break;
 #endif
 
+  case 'C': // 'C' hierarchy: esp now send or configure
+
 #if defined USE_ESP_NOW
-  case 'C':
-    if(MENU.peek() == 'C' ) {	// 'CC' second letter C: 'CC...' configure esp_now sending
+    switch(MENU.peek()) {	// second letter after 'CC...' configure esp_now sending
+    case EOF8:  // bare 'C'	// *broadcast* to spread peer detection
+      esp_now_call_participants();
+      break;
+
+    case 'C':	// 'CC' second letter: 'CC...' configure esp_now sending
       MENU.drop_input_token();
-      if(MENU.is_numeric()) {	// 'C<numeric>'
-	/*
-	 *ATTENTION* UI numbering is one more as the field index:
-	 UI 0 means NULL pointer		   alias 'known_peers_mac_p'
-	 UI 1 means esp_now_pulses_known_peers[0]  == broadcast
-	 UI 2 means first other			   individual "2"
-	 */
-	input_value = MENU.numeric_input(0);		// default to broadcast
-	if(input_value == 0) {
-	  esp_now_send2_mac_p = known_peers_mac_p;	// NULL == *all known* peers
-	} else if(input_value <= ESP_NOW_MAX_TOTAL_PEER_NUM) {
-	  esp_now_send2_mac_p = esp_now_pulses_known_peers[input_value -1 ].mac_addr;
-	} else {
-	  MENU.outln_invalid();
-	  display_peer_ID_list();
-	}
-      } else {	// *non numeric input* after 'CC'	TODO: search preName
-	if(MENU.peek() == '!' ) { // 'CC!' set	// OBSOLETE: ':N IT'
-	  MENU.drop_input_token();
-	  if(MENU.is_numeric()) {	// 'CC!<numeric>'
-	    input_value = MENU.numeric_input(-1);
-	    if(input_value > 0 && input_value < 256)
-	      my_IDENTITY.esp_now_time_slice = input_value;
-	    else
-	      MENU.outln_invalid();
+
+      if(MENU.peek() == EOF8) {	// bare 'CC'
+	esp_now_call_participants();
+
+      } else {	// more input after 'CC'
+	if(MENU.is_numeric()) {	// 'CC<numeric>'
+	  /*
+	   *ATTENTION* UI numbering is one more as the field index:
+	   UI 0 means NULL pointer		   alias 'known_peers_mac_p'
+	   UI 1 means esp_now_pulses_known_peers[0]  == broadcast
+	   UI 2 means first other			   individual "2"
+	  */
+	  input_value = MENU.numeric_input(0);		// default to broadcast
+	  if(input_value == 0) {
+	    esp_now_send2_mac_p = known_peers_mac_p;	// NULL == *all known* peers
+	  } else if(input_value <= ESP_NOW_MAX_TOTAL_PEER_NUM) {
+	    esp_now_send2_mac_p = esp_now_pulses_known_peers[input_value -1 ].mac_addr;
+	  } else {
+	    MENU.outln_invalid();
+	    display_peer_ID_list();
 	  }
 
-	  MENU.out(F("esp-now time slice\t"));
-	  MENU.outln(my_IDENTITY.esp_now_time_slice);
-	} else
-	  MENU.outln("DADA implement peer name search");
+	} else {	// *NON NUMERIC* input after 'CC<xxx>'	TODO: search preName
+	  MENU.out("DADA implement peer name search\t");
+	  char c = MENU.peek();
+	  if(c != EOF8) {
+	    MENU.out(F("skipping "));
+	    while (c != EOF8)
+	      MENU.out(c = MENU.drop_input_token());
+
+	    MENU.ln();
+	  }
+	}
+      } // more input after 'CC'
+      break;
+
+    default:	// normal case (second letter != 'C' (from 'CC')
+      {
+	if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
+	  MENU.outln(F("SEND NOW, maybe do"));
+
+	int len=0;
+	char c;
+	for(;len < 64; len++) {
+	  if(MENU.peek(len) == EOF8)
+	    break;
+	}
+	char* macro = (char*) malloc(len + 1);
+
+	int i;
+	for (i=0; i<len; i++)
+	  *(macro + i) = (char) MENU.drop_input_token();
+	*(macro + i) = '\0';
+
+	esp_now_send_maybe_do_macro(esp_now_send2_mac_p, macro);
+	free(macro);
       }
+    } // switch(MENU.peek())	second letter after 'C'
 
-    } else {	// normal case (second letter <> 'C' (from 'CC')
-      if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
-	MENU.outln(F("SEND NOW, maybe do"));
-
-      int len=0;
-      char c;
-      for(;len < 64; len++) {
-	if(MENU.peek(len) == EOF8)
-	  break;
+#else	// ! defined USE_ESP_NOW
+    MENU.out(F("ESP_NOW not used"));	// TODO: not tested
+    char c = MENU.peek();
+    if(c != EOF8) {
+      MENU.out(F("skipped: "));
+      while(c != EOF8) {
+	MENU.out(c);
+	c = MENU.drop_input_token();
       }
-      char* macro = (char*) malloc(len + 1);
-
-      int i;
-      for (i=0; i<len; i++)
-	*(macro + i) = (char) MENU.drop_input_token();
-      *(macro + i) = '\0';
-
-      esp_now_send_maybe_do_macro(esp_now_send2_mac_p, macro);
-      free(macro);
     }
+    MENU.ln();
+#endif	// defined USE_ESP_NOW
     break;
-#endif
 
   case 'N':	// 'N' 'n' restart now	(like menu pulses 'n')
   case 'n':	// 'N' 'n' restart now	(like menu pulses 'n')

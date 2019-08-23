@@ -3,15 +3,22 @@
 
 August 24-31, HARDTURMBRACHE, Zürich Switzerland
 
-some first ideas about planing the roadmap:
+some ideas about planing the roadmap:
 
+*last day* before opening ceremony...
+  build hardware:
+    led string slave(s)
+
+  software:
+    HUE OFFSETS foreground/background
+    fix version 1 ???
 
 ****************************************************************
 keep all the HARDWARE up to date
   INSERT RESISTORs to all MORSE INPUTs!		DESTROYED LillyBoy	repaired :)	OK
   check also all led strip data pins if they have resistors				OK
 
-  LillyBoy	FIX or make new		mostly ok	TODO: *FIX RGB LED STRING*	OK
+  LillyBoy	FIX or make new		mostly ok	TODO: *FIX RGB LED STRING*	(OK)
   //was: LillyBoy	(ok) 12V led string on ~10V	mechanical construction		battery compartment
 
   CHATEAU	OK	5V led string on USB	led string fixed on instrument OK	morse input ok?

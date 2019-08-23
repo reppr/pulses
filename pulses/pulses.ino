@@ -1464,14 +1464,14 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
       esp_read_mac(my_MAC, ESP_MAC_WIFI_STA);	// set my_MAC
       MENU.outln(MAC_str(my_MAC));
       esp_now_pulses_add_peer(broadcast_mac);	// add broadcast as peer may give feedback
-      // esp_now_send_HI(broadcast_mac);	// broadcast can spread peer detection
-      esp_now_send_who(broadcast_mac);		// *broadcast* to spread peer detection
+
+      esp_now_call_participants();
     }
     delay(100);	// esp_now network build up, left anyway to make all instruments come up in time  TODO: test&trimm
     MENU.ln();	//   TODO: test&trimm ;)
   }
 #else
-  delay(100);	// don't change startup time if esp_now is used or not
+  delay(150);	// don't change startup time if esp_now is used or not
 #endif
 
 #ifdef USE_MORSE	// ATTENTION: *do this AFTER esp_now_pulses_setup()*
