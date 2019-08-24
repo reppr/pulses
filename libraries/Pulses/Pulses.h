@@ -42,8 +42,9 @@ enum icode {	// names are all four letter words ?	// maybe 8?
   MACRO_NOW,	// 1 parameter: char * macro
   N_HI,		// (bare)  HI are you there?	for connection and ping pong
   N_HO,		// (bare)  HERE I AM
-  N_WHO,	// (bare)  WHO is here?
-  N_ID,		// parameter: peer_ID_t my_IDENTITY	share personal data
+  N_WHO,	// 	//(bare)  WHO is here?
+  N_ID,		// peer_ID_t my_IDENTITY	share personal data
+  N_ST,		// (bare)   receiver sets sync to its individual time slice IDENTITY.esp_now_time_slice;
 };
 
 #ifndef pulse_flags_t

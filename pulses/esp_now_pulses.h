@@ -601,6 +601,11 @@ static void esp_now_pulses_reaction(const mac_addr_t *mac_addr) {
     }
     break;
 
+  case N_ST:
+    extern void sync_landscape_time_sliced();
+    sync_landscape_time_sliced();
+    break;
+
   case PRES:
     {
       // read preset number:

@@ -2978,7 +2978,7 @@ void musicBox_display() {
 #endif
 
 #if defined USE_ESP_NOW
-  MENU.outln(F("'C<macro>'=send macro 'CC<num>'=recipient  'C'='CC'=build net"));
+  MENU.outln(F("'C<macro>'=send macro 'CC<num>'=recipient  'C'='CC'=build net 'CS'=automagic sync landscape"));
 #endif
 
   MENU.out(F("'T' tune pitch, scale"));
@@ -3083,6 +3083,13 @@ void input_preset_and_start() {	// factored out UI component	// TODO: sets prese
   if(load)
     load_preset_and_start(musicBoxConf.preset);
 } // input_preset_and_start()
+
+
+void sync_landscape_time_sliced() {
+  musicBoxConf.sync = my_IDENTITY.esp_now_time_slice;	// receiver sets sync to its individual time slice
+  MENU.out(F("sync_landscape_time_sliced()  my sync "));
+  MENU.outln(musicBoxConf.sync);
+}
 
 
 bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: ADC, 'analog'Touch, distance sensors, etc
@@ -3374,6 +3381,13 @@ bool musicBox_reaction(char token) {
     switch(MENU.peek()) {	// second letter after 'CC...' configure esp_now sending
     case EOF8:  // bare 'C'	// *broadcast* to spread peer detection
       esp_now_call_participants();
+      break;
+
+    case 'S':
+      // sync=IDENTITY.esp_now_time_slice;	// not on this one
+      MENU.out(F("set sync of instruments to time slice "));
+      MENU.outln();
+      esp_now_send_bare(broadcast_mac, N_ST);
       break;
 
     case 'C':	// 'CC' second letter: 'CC...' configure esp_now sending
