@@ -367,7 +367,7 @@ void IRAM_ATTR morse_endOfLetter() {
 void IRAM_ATTR morse_stats_gather(char token, float duration);	// forwards declaration
 
 #if defined MORSE_TOUCH_INPUT_PIN
-void IRAM_ATTR touch_morse_ISR(void) {	// ISR for ESP32 touch sensor as morse input
+void static IRAM_ATTR touch_morse_ISR(void) {	// ISR for ESP32 touch sensor as morse input
   portENTER_CRITICAL_ISR(&morse_MUX);	// MAYBE: a separated mux for touch?
 
   static bool seems_touched=false;
@@ -388,6 +388,7 @@ void IRAM_ATTR touch_morse_ISR(void) {	// ISR for ESP32 touch sensor as morse in
       morse_separation_check_OFF();
       morse_touch_time = micros();
       seems_touched = true;
+      // TODO: sometimes crashes on following line after booting:
       float scaled_off_duration = (float) (morse_touch_time - morse_release_time) / morse_TimeUnit;
       if (scaled_off_duration >= separeWordTim) {
 	morse_received_token(MORSE_TOKEN_separeLetter, scaled_off_duration);	// " |" is word end
@@ -451,7 +452,7 @@ void IRAM_ATTR touch_morse_ISR(void) {	// ISR for ESP32 touch sensor as morse in
   }
 
   portEXIT_CRITICAL_ISR(&morse_MUX);	// MAYBE: a separated mux for touch?
-}
+} // touch_morse_ISR()
 #endif // MORSE_TOUCH_INPUT_PIN
 /* **************************************************************** */
 

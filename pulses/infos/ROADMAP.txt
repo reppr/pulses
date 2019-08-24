@@ -7,7 +7,7 @@ some ideas about planing the roadmap:
 
 *last day* before opening ceremony...
   build hardware:
-    led string slave(s)
+    led string slave(s)		failed, did a new version
 
   software:
     HUE OFFSETS foreground/background
@@ -28,6 +28,7 @@ keep all the HARDWARE up to date
   placeholderTM0 ?
   etc...	 others under construction
 
+  new: JumpingJack	SprayerWall	TIMEmachine2019		:)
 
 CALIBRATE *all* MPU6050
   save the offsets to nvs

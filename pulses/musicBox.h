@@ -198,7 +198,8 @@ int max_subcycle_seconds=MAX_SUBCYCLE_SECONDS;
 #endif
 
 
-int musicBox_pause_seconds=10;	// SEE: hibernate(), restart(), random_preset()
+//int musicBox_pause_seconds=10;	// SEE: hibernate(), restart(), random_preset()
+int musicBox_pause_seconds=18;		// DADA changed that ################
 void delay_pause() {	// TODO; FIXME: (i.e. morse input...)
   if(musicBox_pause_seconds) {
     if(MENU.verbosity >= VERBOSITY_LOWEST); {

@@ -11,8 +11,13 @@
 
 bool rgb_strings_available = true;	// default, can be switched off i.e. from nvs
 
+
 #if ! defined DEFAULT_LED_STRING_INTENSITY
   #define DEFAULT_LED_STRING_INTENSITY	48	// 72 on 'placeholder'	DADA
+#endif
+
+#if ! defined DEFAULT_LED_STRING_INTENSITY_12V
+  #define DEFAULT_LED_STRING_INTENSITY_12V	192	// bright for festival opening ceremony ;)
 #endif
 
 enum background_algorithms {
@@ -61,11 +66,13 @@ rgb_string_config_t RGBstringConf;
 void set_rgb_string_voltage_type(int voltage, int string) {
   HARDWARE.rgb_led_voltage_type[string] = voltage;	// voltage goes to *HARDWARE*
 
-  if(voltage < 6)
+  if(voltage < 6) {
     RGBstringConf.rgb_background_dim = 0.45;	// ok for 5V version (1m 144)
-  else	// 6V and more "12V" type
+    RGBstringConf.rgb_led_string_intensity = DEFAULT_LED_STRING_INTENSITY;
+  } else {	// 6V and more "12V" type
     RGBstringConf.rgb_background_dim = 0.1;	// TEST: for "12V" version 5m 300
-
+    RGBstringConf.rgb_led_string_intensity = DEFAULT_LED_STRING_INTENSITY_12V;
+  }
   MENU.out(F("configured voltage adaptions on string "));
   MENU.out(string);
   MENU.out(F("  for voltage "));

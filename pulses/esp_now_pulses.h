@@ -484,9 +484,9 @@ void send_IDENTITY_time_sliced() {	// send data stored in esp_now_send_buffer
   if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
     esp_err_info(status);
 
-#if defined DEBUG_ESP_NOW_NETWORKING
-  MENU.outln("\n===============>>>\t>>>>>>>>>>>>>>>> send_IDENTITY_time_sliced() sent previously prepared data");
-#endif
+//	#if defined DEBUG_ESP_NOW_NETWORKING
+//	  MENU.outln("\n===============>>>\t>>>>>>>>>>>>>>>> send_IDENTITY_time_sliced() sent previously prepared data");
+//	#endif
 }
 
 

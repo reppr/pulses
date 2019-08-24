@@ -1471,12 +1471,12 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
     MENU.ln();	//   TODO: test&trimm ;)
   }
 #else
-  delay(150);	// don't change startup time if esp_now is used or not
+  delay(100);	// don't change startup time if esp_now is used or not
 #endif
 
-#ifdef USE_MORSE	// ATTENTION: *do this AFTER esp_now_pulses_setup()*
-  #include "morse_setup.h"
-#endif
+//#ifdef USE_MORSE	// ATTENTION: *do this AFTER esp_now_pulses_setup()*
+//  #include "morse_setup.h"
+//#endif
 
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
   random_entropy();	// more entropy from hardware like wifi, etc
@@ -1555,7 +1555,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 
   PULSES.fix_global_next();		// we *must* call that here late in setup();
 
-  #ifdef AUTOSTART			// see: pulses_project_conf.h
+#ifdef AUTOSTART			// see: pulses_project_conf.h
     autostart_counter++;
     MENU.out(F("\nAUTOSTART "));
     MENU.out(autostart_counter);
@@ -1593,6 +1593,10 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 #if defined PERIPHERAL_POWER_SWITCH_PIN	// no idea why this is needed again, but it is
   peripheral_power_switch_ON();		// default peripheral power supply ON
   //  peripheral_power_switch_OFF();	// default peripheral power supply OFF
+#endif
+
+#ifdef USE_MORSE			// ATTENTION: *do this AFTER esp_now_pulses_setup()*
+  #include "morse_setup.h"
 #endif
 
   MENU.ln();
