@@ -3004,7 +3004,7 @@ void musicBox_display() {
 
   MENU.outln(F("'m'= set mode\t'mm' 'mM'= manual\t'ma' 'mA'= automagic"));
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
-  MENU.out(F("'Y'= toggle AccelGyro "));	// TODO: UPDATE:
+  MENU.out(F("'Y'= ~AccelGyro "));	// TODO: UPDATE:
   MENU.out_ON_off(accGyro_is_active);
   MENU.ln();
 #endif
@@ -3269,7 +3269,8 @@ bool musicBox_reaction(char token) {
   case 'Z':
   case 'A':
   case 'G':
-    MENU.outln(F("reserved for motion UI"));
+    if(Y_UI())
+      return true;
     break;
   case 'a': // magic_autochanges    // 'a'
     MENU.out(F("autochanges"));

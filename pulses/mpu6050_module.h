@@ -6,9 +6,13 @@
 
 #if ! defined MPU6050_MODULE_H
 
-#define DEBUG_ACCGYRO_SAMPLE	true	// TODO: deactivate
-#define DEBUG_ACCGYRO_SAMPLE	false	// TODO: deactivate
-bool debug_accgyro_sample=DEBUG_ACCGYRO_SAMPLE;
+#define DEBUG_AG_REACTION	// TODO: remove or fix the debug mess
+#define DEBUG_ACCELGYRO_BASICS	// TODO: remove or fix the debug mess
+
+// #define DEBUG_ACCGYRO_SAMPLE	true	// TODO: remove or fix the debug mess
+#define DEBUG_ACCGYRO_SAMPLE	false	// TODO: remove or fix the debug mess
+
+bool debug_accgyro_sample=DEBUG_ACCGYRO_SAMPLE;	// TODO: remove or fix the debug mess
 
 #define MPU6050_TEST_VERSION	2			// TODO: remove runtime test versions
 uint8_t mpu6050_test_version=MPU6050_TEST_VERSION;	// DEFAULT, could be switched run time
@@ -252,6 +256,9 @@ extern void sync_shifting(fraction_t shift);
 //int16_t GYROY_selected=0;
 int16_t GYROZ_selected=0;
 bool GYRO_only_check() {	// OBSOLETE:
+#if defined DEBUG_AG_REACTION
+  MENU.outln("GYRO_only_check()");
+#endif
   float GZ = mpu6050.getRotationZ();
   GZ /= 32;	// TODO: is *RANDOM* float scaling
   if(accGyro_invert)	// invert mathematical axis	// TODO: where to invert?
@@ -261,8 +268,8 @@ bool GYRO_only_check() {	// OBSOLETE:
   GYROZ_selected += Gz_sel_offset;
   if(GYROZ_selected) {	// gyro Z shows rotation?
     // TODO: feedback
-//  sync_shifting({GYROZ_selected, 8*4096});
-    sync_shifting({GYROZ_selected, 16*4096});	// TODO: UI for shift amount
+    // sync_shifting({GYROZ_selected, 16*4096});	// was: DEFAULT in first version
+    sync_shifting({GYROZ_selected, 16*4096});	// TODO: FIND&TRIMM new DEFAULT for version2
     return true;
   }
 
@@ -400,14 +407,15 @@ void accGyro_sample() {
 } // accGyro_sample()
 
 // void accGyro_reaction()
-//#define DEBUG_AG_REACTION		// DO show selected slices
-//#define DEBUG_ACCELGYRO_BASICS	// deactivated
 extern bool monochrome_can_be_used();			// extern declarations
 extern void monochrome_show_line(uint8_t row, char * s);
 extern short lowest_primary, highest_primary;
 extern int primary_count;
 extern void noAction_flags_line();
 void accGyro_reaction() {	// react on data coming from accGyro_sample()
+#if defined DEBUG_AG_REACTION
+  MENU.outln("accGyro_reaction()");
+#endif
   if(accGyro_new_data && accGyro_mode) {
     accGyro_new_data = false;
     if(! accGyro_is_active)
@@ -606,7 +614,7 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
       } // accelero Y
       break;
 
-    case 2:
+    case 2:	// new implementation
       if(accGyro_mode & AG_mode_Ax) {		// accelero X
 	AX = accGyro_current_AX_f;
 #if defined DEBUG_ACCELGYRO_BASICS
@@ -922,7 +930,7 @@ void accGyro_sample_v2() {
   if(mpu_sample_index % mpu_oversampling)
     return;
 
-  // else mpu_sample_index % mpu_oversampling) == 0	NEW OVERSAMPLED DATA READY
+  // else (mpu_sample_index % mpu_oversampling) == 0	NEW OVERSAMPLED DATA READY
   mpu_sample_index = 0;
   accGyro_new_data = true;		// trigger accGyro_reaction()
 
