@@ -2824,6 +2824,13 @@ void sync_shifting(fraction_t shift) {
       }
     }
     PULSES.fix_global_next();
+    /*
+    // TODO:; DADA	REMOVE:
+    MENU.out(F("sync_shifting("));
+    display_fraction_int(shift);
+    MENU.outln(')');
+    // TODO:; DADA	REMOVE:
+    */
   } // no shift
 }
 
