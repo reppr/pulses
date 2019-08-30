@@ -3384,11 +3384,17 @@ bool musicBox_reaction(char token) {
       esp_now_call_participants();
       break;
 
-    case 'S':
-      // sync=IDENTITY.esp_now_time_slice;	// not on this one
-      MENU.out(F("set sync of instruments to time slice "));
-      MENU.outln();
+    case 'S':			// 'CS' set sync of *other* instruments to time slice,	see: 'CSS'
+      MENU.drop_input_token();
+      MENU.outln(F("set sync of instruments to time slice "));
       esp_now_send_bare(broadcast_mac, N_ST);
+
+      if(MENU.peek() == 'S') {	// 'CSS' set *all* instruments (including sender) to time slice sync
+	MENU.drop_input_token();
+	musicBoxConf.sync=my_IDENTITY.esp_now_time_slice;
+	MENU.out(F("sync =\t"));
+	MENU.outln(musicBoxConf.sync);
+      }
       break;
 
     case 'C':	// 'CC' second letter: 'CC...' configure esp_now sending
