@@ -135,7 +135,7 @@ bool is_real_token(char token) {	// check for real tokens like . - ! V and separ
 }
 
 // forward declaration
-void IRAM_ATTR morse_received_token(char token, float token_duration);
+void static IRAM_ATTR morse_received_token(char token, float token_duration);
 
 #if defined MORSE_COMPILE_HELPERS	// *can* be left out...
 void morse_show_tokens(bool show_all = false) {	// set show_all=true  for token debug output
@@ -229,8 +229,8 @@ void morse_debug_token_info() {		// a *lot* of debug info...
 
 
 // factored out for testing...
-void IRAM_ATTR morse_endOfLetter();
-void IRAM_ATTR morse_separation_check_ON() {
+void static IRAM_ATTR morse_endOfLetter();
+void static IRAM_ATTR morse_separation_check_ON() {
   // see morse_setup.h	timerAttachInterrupt(morse_separation_timer, &morse_endOfLetter, true);
   // timerRestart(morse_separation_timer);
   timerStart(morse_separation_timer);
@@ -241,7 +241,7 @@ void IRAM_ATTR morse_separation_check_ON() {
   timerAlarmEnable(morse_separation_timer);	// separation detection on
 }
 
-void IRAM_ATTR morse_separation_check_OFF() {
+void static IRAM_ATTR morse_separation_check_OFF() {
   timerAlarmDisable(morse_separation_timer);
   timerStop(morse_separation_timer);
 
@@ -256,12 +256,14 @@ float scaled_low_duration;	// microseconds/morse_TimeUnit
 float scaled_high_duration;
 
 #if defined MORSE_GPIO_INPUT_PIN	// Morse input GPIO pin (34 needs hardware pulldown, check on others)
-void IRAM_ATTR morse_GPIO_ISR_falling();	// declaration is needed...
+void static IRAM_ATTR morse_GPIO_ISR_falling();	// declaration is needed...
 
-void IRAM_ATTR morse_GPIO_ISR_rising() {	// MORSE INPUT on GPIO
+void static IRAM_ATTR morse_GPIO_ISR_rising() {	// MORSE INPUT on GPIO
   static unsigned long morse_low_time=0;
 
   portENTER_CRITICAL_ISR(&morse_MUX);
+  // TODO	################  DADA: check if GPIO *is* high?
+
   morse_start_ON_time = micros();
   morse_separation_check_OFF();
 
@@ -280,7 +282,7 @@ void IRAM_ATTR morse_GPIO_ISR_rising() {	// MORSE INPUT on GPIO
   }
 
 #if defined MORSE_TOKEN_DEBUG
- else if (scaled_low_duration < limit_debounce) {
+  else if (scaled_low_duration < limit_debounce) {	// TODO: DADA: are you sure we don't need that?
    morse_received_token(MORSE_TOKEN_debounce, scaled_low_duration);
  } else
    morse_received_token(MORSE_TOKEN_separe_OTHER, scaled_low_duration);
@@ -297,10 +299,12 @@ void IRAM_ATTR morse_GPIO_ISR_rising() {	// MORSE INPUT on GPIO
 } // morse_GPIO_ISR_rising()
 
 
-void IRAM_ATTR morse_GPIO_ISR_falling() {			// MORSE INPUT on GPIO morse_GPIO_ISR_falling()
+void static IRAM_ATTR morse_GPIO_ISR_falling() {	// MORSE INPUT on GPIO morse_GPIO_ISR_falling()
   static unsigned long morse_high_time=0L;
 
   portENTER_CRITICAL_ISR(&morse_MUX);
+  // DADA: TODO: DOUBLE CHECK if MORSE_GPIO_INPUT_PIN is still low
+
   morse_start_OFF_time = micros();
   morse_separation_check_OFF();
 
@@ -346,7 +350,7 @@ void IRAM_ATTR morse_GPIO_ISR_falling() {			// MORSE INPUT on GPIO morse_GPIO_IS
 // touch ISR
 
 //#define DEBUG_MORSE_TOUCH_INTERRUPT
-void IRAM_ATTR morse_endOfLetter() {
+void static IRAM_ATTR morse_endOfLetter() {
   morse_separation_check_OFF();
 
   float scaled_low_duration = (float) (micros() - morse_start_OFF_time) / morse_TimeUnit;
@@ -359,16 +363,16 @@ void IRAM_ATTR morse_endOfLetter() {
 #if defined DEBUG_MORSE_TOUCH_INTERRUPT
   //morse_debug_token_info();	// REMOVE: debug only ################
 #endif
-}
+} // morse_endOfLetter()
 
 
 /* **************************************************************** */
 // touch ISR:	touch_morse_ISR()
-void IRAM_ATTR morse_stats_gather(char token, float duration);	// forwards declaration
+void static IRAM_ATTR morse_stats_gather(char token, float duration);	// forwards declaration
 
 #if defined MORSE_TOUCH_INPUT_PIN
 void static IRAM_ATTR touch_morse_ISR(void) {	// ISR for ESP32 touch sensor as morse input
-  portENTER_CRITICAL_ISR(&morse_MUX);	// MAYBE: a separated mux for touch?
+  portENTER_CRITICAL_ISR(&morse_MUX);		// MAYBE: a separated mux for touch?
 
   static bool seems_touched=false;
   static unsigned long morse_touch_time=0L;
@@ -1102,7 +1106,7 @@ void morse_stats_init() {
 
 // TODO: comment ################
 // TODO: inline
-void IRAM_ATTR morse_stats_gather(char token, float duration) {	// only real tokens please
+void static IRAM_ATTR morse_stats_gather(char token, float duration) {	// only real tokens please
   switch (token) {
   case MORSE_TOKEN_dot:
     morse_stats_dot_duration_ += duration;
@@ -1125,7 +1129,8 @@ void IRAM_ATTR morse_stats_gather(char token, float duration) {	// only real tok
     morse_stats_separeLetter_cnt++;
     break;
   }
-}
+} // morse_stats_gather()
+
 
 float morse_saved_stats_dot=0.0;
 float morse_saved_stats_dash=0.0;
@@ -1138,28 +1143,27 @@ float morse_saved_stats_separeLetter=0.0;
 unsigned short morse_stat_ID=0;		// flag (counter)	// flag (counter) for display control
 unsigned short morse_stat_seen_ID=0;	// flag (counter)	// flag (counter) for display control
 
-void IRAM_ATTR morse_stats_save() {	// call immediately after morse_stats_do() to save statistics
+void static IRAM_ATTR morse_stats_save() {	// call immediately after morse_stats_do() to save statistics
   morse_stat_ID++;	// display flag (counter)
 
-  if(morse_stats_dot_cnt) {
+  if(morse_stats_dot_cnt)
     morse_saved_stats_dot = morse_stats_dot_duration_;
-  }
-  if(morse_stats_dash_cnt) {
+
+  if(morse_stats_dash_cnt)
     morse_saved_stats_dash = morse_stats_dash_duration_;
-  }
-  if(morse_stats_loong_cnt) {
+
+  if(morse_stats_loong_cnt)
     morse_saved_stats_loong = morse_stats_loong_duration_;
-  }
-  if(morse_stats_separeToken_cnt) {
+
+  if(morse_stats_separeToken_cnt)
     morse_saved_stats_separeToken = morse_stats_separeToken_duration_;
-  }
-  if(morse_stats_separeLetter_cnt) {
+
+  if(morse_stats_separeLetter_cnt)
     morse_saved_stats_separeLetter = morse_stats_separeLetter_duration_;
-  }
-//  if(morse_stats_separeWord_cnt) {
+
+//  if(morse_stats_separeWord_cnt)
 //    morse_saved_stats_separeWord = morse_stats_separeWord_duration_;
-//  }
-}
+} // morse_stats_save()
 
 void morse_show_saved_stats() {
   morse_stat_seen_ID = morse_stat_ID;	// flag (counter) for display control
@@ -1196,11 +1200,10 @@ void morse_show_saved_stats() {
   MENU.tab();
   MENU.out(F("morse_TimeUnit "));
   MENU.outln(morse_TimeUnit);
+} // morse_show_saved_stats()
 
-}
-
-//#define DEBUG_MORSE_STATS_DO
-void IRAM_ATTR morse_stats_do() {
+//#define DEBUG_MORSE_STATS_DO	// ATTENTION can be called from interrupt...
+void static IRAM_ATTR morse_stats_do() {
 #if defined DEBUG_MORSE_STATS_DO
   MENU.ln();
 #endif
@@ -1256,13 +1259,13 @@ void IRAM_ATTR morse_stats_do() {
 //  }
 #endif
 
-  morse_stats_save();		// call immediately after morse_stats_do()
-}
+  morse_stats_save();		// called from morse_stats_do()
+} // morse_stats_do()
 
 /* **************************************************************** */
-void morse_token_decode();	// pre declaration
+void static morse_token_decode();	// pre declaration
 
-void IRAM_ATTR morse_received_token(char token, float duration) {
+void static IRAM_ATTR morse_received_token(char token, float duration) {
   portENTER_CRITICAL_ISR(&morse_MUX);
 
 #if defined MORSE_DEBUG_RECEIVE_TOKEN
@@ -1328,7 +1331,7 @@ void IRAM_ATTR morse_received_token(char token, float duration) {
   }
 
   portEXIT_CRITICAL_ISR(&morse_MUX);
-}
+} // morse_received_token()
 
 
 /* **************************************************************** */
@@ -1844,7 +1847,7 @@ bool morse_store_received_letter(char letter) {		// returns error
 
 extern bool accGyro_is_active;
 extern uint8_t monochrome_power_save;
-void morse_token_decode() {	// decode received token sequence
+void static morse_token_decode() {	// decode received token sequence
 /*
   decode received token sequence
   SAVE LETTERS,
