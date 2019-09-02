@@ -13,7 +13,7 @@
   //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&restart	// endless loop
   //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&ESP.restart	// works fine
   //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&hibernate	// wakes up after musicBox_pause_seconds  BT should work, test
-  #define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user		// works fine, a possible snoring workaround on usb dac only models
+  #define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user	// works fine, a possible snoring workaround on usb dac only models
   //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&random_preset	// muzak forever? >>>RANDOM_PRESET_LOOP sets this automagically <<<
 #endif
 
@@ -28,7 +28,8 @@
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3600*12	// *DEACTIVATED*
   #define SOFT_END_DAYS_TO_LIVE_DEFAULT		1	// quite fast ending
   #undef RANDOM_PRESET_LOOP				// just in case, does not work well together	TODO: TEST: ################
-  #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&random_preset
+  #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user	// new default for *portable* instruments
+//  #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&random_preset
 //  #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
   #define MAGICAL_TOILET_HACK_2	// continue using (parts of) setup_bass_middle_high() to setup musicbox
   #undef AUTOSTART
