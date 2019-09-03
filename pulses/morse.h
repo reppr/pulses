@@ -4,6 +4,10 @@
 
 #ifndef MORSE_H
 
+#define TOUCH_ISR_VERSION_2
+
+#define DEBUG_MORSE_IN_STATUS	// TESTING and DEBUGGING help
+
 // avoid sound glitches when using OLED:
 bool oled_feedback_while_playing = false;	// do *not* give morse feedback while playing
 
@@ -371,7 +375,161 @@ void static IRAM_ATTR morse_endOfLetter() {
 void static IRAM_ATTR morse_stats_gather(char token, float duration);	// forwards declaration
 
 #if defined MORSE_TOUCH_INPUT_PIN
-void static IRAM_ATTR touch_morse_ISR(void) {	// ISR for ESP32 touch sensor as morse input
+#if defined TOUCH_ISR_VERSION_2
+typedef union morse_in_status_t {
+  int status_i=0;	// used to check for activity and reset
+  // short is_hot;		// used as flag?
+  struct {
+    uint8_t seen_touched;	// on  hot flag and counter
+    uint8_t seen_off;		// off hot flag and counter
+    short errors;	// debugging help more then one interrupt received...	// see: DEBUG_MORSE_IN_STATUS
+  };
+} morse_in_status_t ;
+
+volatile morse_in_status_t morse_in_status;
+
+void show_morse_in_status() {
+  MENU.out(F("morse input touched  "));
+  MENU.out(morse_in_status.seen_touched);
+  MENU.out(F("\toff  "));
+  MENU.out(morse_in_status.seen_off);
+#if defined DEBUG_MORSE_IN_STATUS
+  if(morse_in_status.errors) {
+    MENU.out(F("\tERRORS  "));
+    MENU.out(morse_in_status.errors);
+  }
+#endif
+  MENU.ln();
+}
+
+volatile unsigned long morse_touch_time=0L;
+volatile unsigned long morse_release_time=0L;
+
+void static IRAM_ATTR touch_morse_ISR_v2() {	// ISR for ESP32 touch sensor as morse input	*NEW VERSION 2*
+  portENTER_CRITICAL_ISR(&morse_MUX);		// maybe a separated mux for touch?
+
+  if(touchRead(MORSE_TOUCH_INPUT_PIN) < touch_threshold) {	// looks TOUCHED
+    morse_touch_time = micros();
+    morse_separation_check_OFF();
+    morse_in_status.seen_touched++;
+    touch_pad_set_trigger_mode(TOUCH_TRIGGER_ABOVE);		// wait for touch release
+  } else {							// looks RELEASED
+    morse_release_time = micros();
+    morse_separation_check_ON();
+    morse_in_status.seen_off++;
+    touch_pad_set_trigger_mode(TOUCH_TRIGGER_BELOW);		// wait for next touch
+  }
+
+  if((morse_in_status.seen_touched + morse_in_status.seen_off) != 1)
+    morse_in_status.errors++;
+
+  portEXIT_CRITICAL_ISR(&morse_MUX);		// maybe a separated mux for touch?
+} // touch_morse_ISR_v2()
+
+
+#define DEBUG_CHECK_AND_TREAT_MORSE_INPUT	// include *SAVETY NET*  and report errors
+polled from pulses.ino main loop()
+bool static check_and_treat_morse_input() {
+  /*
+    check_and_treat_morse_input()	polled from pulses.ino main loop();
+  */
+  if(morse_in_status.status_i == 0)	// *not* hot and *no errors*
+    return false;			//  nothing to do, return
+
+  if(morse_in_status.errors == 0) {	// NORMAL ACTIVITY, no error:
+    if(morse_in_status.seen_touched) {	//	on,  TOUCHED?
+#if defined MORSE_OUTPUT_PIN
+      digitalWrite(MORSE_OUTPUT_PIN, HIGH);	// feedback: pin is touched, LED on
+#endif
+
+      float scaled_off_duration = (float) (morse_touch_time - morse_release_time) / morse_TimeUnit;
+#if defined DEBUG_CHECK_AND_TREAT_MORSE_INPUT
+      if(scaled_off_duration <= 0.0) {	// SAVETY NET, should not happen
+	MENU.out_Error_();
+	MENU.out(F("scaled_off_duration "));
+	MENU.outln(scaled_off_duration);
+      }
+#endif
+      if (scaled_off_duration >= separeWordTim) {
+	morse_received_token(MORSE_TOKEN_separeLetter, scaled_off_duration);	// " |" is word end
+	morse_received_token(MORSE_TOKEN_separeWord, scaled_off_duration);
+#if defined  DEBUG_MORSE_TOUCH_INTERRUPT
+	morse_received_token('X', scaled_off_duration);	// REMOVE: debug only ################
+#endif
+      } else if (scaled_off_duration >= separeLetterTim) {
+	morse_received_token(MORSE_TOKEN_separeLetter, scaled_off_duration);
+#if defined DEBUG_MORSE_TOUCH_INTERRUPT
+	morse_received_token('Y', scaled_off_duration);	// REMOVE: debug only ################
+#endif
+      }
+      else {
+	morse_stats_gather(MORSE_TOKEN_separeToken, scaled_off_duration);
+//#if defined DEBUG_MORSE_TOUCH_INTERRUPT
+//	morse_received_token(MORSE_TOKEN_separe_OTHER, scaled_off_duration); // arrived often in an old version, no harm (?)
+//#endif
+      }
+
+#if defined DEBUG_CHECK_AND_TREAT_MORSE_INPUT
+      if(morse_in_status.seen_touched   != 1) {	// should not happen, SAVETY NET
+	MENU.error_ln(F("MORSE TOUCH INPUT touched\tWTF?"));
+	show_morse_in_status();
+      }	// should not happen, SAVETY NET
+#endif	// just continue to check what happens ;)
+
+    } else {	// untouched		//	off, RELEASED?
+
+#if defined MORSE_OUTPUT_PIN
+      digitalWrite(MORSE_OUTPUT_PIN, LOW); // feedback: pin released, LED off
+#endif
+
+      float scaled_touched_duration = (float) (morse_release_time - morse_touch_time) / morse_TimeUnit;
+#if defined DEBUG_CHECK_AND_TREAT_MORSE_INPUT
+      if(scaled_touched_duration <= 0.0) {	// SAVETY NET, should not happen
+	MENU.out_Error_();
+	MENU.out(F("scaled_touched_duration "));
+	MENU.outln(scaled_touched_duration);
+      }
+#endif
+
+    // morse_in_status.seen_off should be 1
+#if defined DEBUG_CHECK_AND_TREAT_MORSE_INPUT
+      if(morse_in_status.seen_off   != 1) {	// should not happen, SAVETY NET
+	MENU.error_ln(F("MORSE TOUCH INPUT released\tWTF?"));
+	show_morse_in_status();
+      }	// should not happen, SAVETY NET
+#endif	// just continue to check what happens ;)
+
+      if (scaled_touched_duration > limit_debounce) {			// *real input* no debounce
+	if(scaled_touched_duration > limit_loong_overlong) {
+	  morse_received_token(MORSE_TOKEN_overlong, scaled_touched_duration);
+	} else if (scaled_touched_duration > limit_dash_loong) {
+	  morse_received_token(MORSE_TOKEN_loong, scaled_touched_duration);
+	} else if (scaled_touched_duration > limit_dot_dash) {
+	  morse_received_token(MORSE_TOKEN_dash, scaled_touched_duration);
+	} else {	// this may give false dots...
+	  morse_received_token(MORSE_TOKEN_dot, scaled_touched_duration);
+	}
+      }
+#if defined DEBUG_MORSE_TOUCH_INTERRUPT
+      else {		// debounce, ignore
+	morse_received_token(MORSE_TOKEN_debounce, scaled_touched_duration);
+      }
+#endif
+    } // touched or released
+
+  } else {				// ERROR treatment:
+    MENU.error_ln(F("MORSE TOUCH INPUT"));
+    show_morse_in_status();
+  } // ok or errors?
+
+  morse_in_status.status_i = 0;		// *RESET all events and errors*
+  return true;				// something *did* happen, (input, maybe error)
+} // check_and_treat_morse_input()
+
+
+#else // ! TOUCH_ISR_VERSION_2	below is OLD VERSION:
+
+void static IRAM_ATTR touch_morse_ISR(void) {	// ISR for ESP32 touch sensor as morse input	*OLD VERSION*
   portENTER_CRITICAL_ISR(&morse_MUX);		// MAYBE: a separated mux for touch?
 
   static bool seems_touched=false;
@@ -456,7 +614,9 @@ void static IRAM_ATTR touch_morse_ISR(void) {	// ISR for ESP32 touch sensor as m
   }
 
   portEXIT_CRITICAL_ISR(&morse_MUX);	// MAYBE: a separated mux for touch?
-} // touch_morse_ISR()
+} // touch_morse_ISR()	old version
+#endif // TOUCH_ISR_VERSION_2 or old
+
 #endif // MORSE_TOUCH_INPUT_PIN
 /* **************************************************************** */
 

@@ -3,6 +3,8 @@
   ESP32 touch sensors
   see https://github.com/espressif/arduino-esp32/blob/master/tools/sdk/include/driver/driver/touch_pad.h
   or locate touch_pad.h
+
+  file maybe obsolete, see: morse.h
 */
 #ifndef TOUCH_H
 
@@ -19,7 +21,7 @@ int touch_threshold = 58;		// TODO: TEST&TRIM:
 #endif
 
 // touchAttachInterrupt(test_PIN_touch, touch_ISR, touch_threshold);
-void  IRAM_ATTR touch_ISR(void) {
+void  IRAM_ATTR touch_ISR(void) {	// DADA: unused?
   static bool is_touched=false;
   static int touch_value_isr;
 
@@ -58,7 +60,7 @@ void  IRAM_ATTR touch_ISR(void) {
     MENU.outln(" released");
 #endif
   }
-}
+} // touch_ISR()	unused?
 
 /* see also:
    touch_pad_init();
