@@ -402,6 +402,7 @@ typedef union morse_in_status_t {
     uint8_t seen_touched;	// on  hot flag and counter
     uint8_t seen_off;		// off hot flag and counter
     short errors;	// debugging help more then one interrupt received...	// see: DEBUG_MORSE_IN_STATUS
+    unsigned int cnt;
   };
 } morse_in_status_t ;
 
@@ -412,20 +413,21 @@ void show_morse_in_status() {		// ATTENTION:	*MUST* be morse_MUXed from caller
   MENU.out(morse_in_status.seen_touched);
   MENU.out(F("\toff  "));
   MENU.out(morse_in_status.seen_off);
-#if defined DEBUG_MORSE_IN_STATUS
   if(morse_in_status.errors) {
-    MENU.out(F("\tERRORS  "));
+    MENU.out(F("\tERRORS "));
     MENU.out(morse_in_status.errors);
   }
-#endif
-  MENU.ln();
+  MENU.out(F("\t# "));
+  MENU.outln(morse_in_status.cnt);	// debugging only
 }
 
-volatile unsigned long morse_touch_time=0L;
+volatile unsigned long morse_touch_time=0L;	// TODO: maybe move to morse_in_status ???
 volatile unsigned long morse_release_time=0L;
 
 void static IRAM_ATTR touch_morse_ISR_v2() {	// ISR for ESP32 touch sensor as morse input	*NEW VERSION 2*
   portENTER_CRITICAL_ISR(&morse_MUX);		// maybe a separated mux for touch?
+
+  morse_in_status.cnt++;	// debugging only
 
   if(touchRead(MORSE_TOUCH_INPUT_PIN) < touch_threshold) {	// looks TOUCHED
     morse_touch_time = micros();
@@ -541,7 +543,8 @@ bool check_and_treat_morse_input() {
     } // touched or released
 
   } else {		// morse_in_status.errors != 0		ERROR treatment
-
+    //morse_separation_check_OFF();	// not sure about that...
+    //morse_separation_check_ON();	// not sure about that...
     MENU.error_ln(F("MORSE TOUCH INPUT"));
     show_morse_in_status();	// already morse_MUXed
 
@@ -551,19 +554,23 @@ bool check_and_treat_morse_input() {
     morse_token_cnt = 0;
 
 #if defined USE_MONOCHROME_DISPLAY
-    {
-      u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "ERR ");	// *UNCONDITIONALLY* show ERRORs
-      u8x8.setCursor(8,0);
-      u8x8.print(morse_in_status.seen_touched);
-      u8x8.print(' ');
-      u8x8.print(morse_in_status.seen_off);
-      u8x8.print(' ');
-    }
+    u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "ERR ");	// *UNCONDITIONALLY* show ERRORs
+    u8x8.setCursor(8,0 /* = MORSE_MONOCHROME_ROW*/);
+    u8x8.print(morse_in_status.seen_touched);
+    u8x8.print(' ');
+    u8x8.print(morse_in_status.seen_off);
+    u8x8.print(' ');
+
+    u8x8.setCursor(8,1 /* = MORSE_MONOCHROME_ROW + 1*/);
+    u8x8.print(morse_in_status.errors);
+    u8x8.print(F(" # "));
+    u8x8.print(morse_in_status.cnt);
 #endif
+
     // maybe call ISR once from here to recover?
-    morse_in_status.status_i = 0;		// *RESET all events and errors*
+    morse_in_status.status_i = 0;	// *RESET all events and errors*
     portEXIT_CRITICAL(&morse_MUX);
-    touch_morse_ISR_v2();	// try to recover...
+    touch_morse_ISR_v2();	// try to recover...	// call ISR for re-initialisation?
     return true;		// well, *something* happened ;)
   } // ok or errors?
 
