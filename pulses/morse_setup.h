@@ -42,6 +42,6 @@ morse_separation_timer = timerBegin(0, 80, true);	// prescaler 80 for microsecon
 timerAttachInterrupt(morse_separation_timer, &morse_endOfLetter, true);
 
 #ifdef MORSE_TOUCH_INPUT_PIN	// use ESP32 touch sensor as morse input
-  //touch_morse_ISR_v2();		// call ISR once from setup for initialisation?
+  // touch_morse_ISR_v2();		// call ISR once from setup for initialisation?
   touchAttachInterrupt(MORSE_TOUCH_INPUT_PIN, touch_morse_ISR_v2, touch_threshold);
 #endif

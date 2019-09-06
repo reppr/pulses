@@ -3429,16 +3429,18 @@ bool musicBox_reaction(char token) {
 	    display_peer_ID_list();
 	  }
 
-	} else {	// *NON NUMERIC* input after 'CC<xxx>'	TODO: search preName
-	  MENU.out("DADA implement peer name search\t");
+	} else {	// other *NON NUMERIC* input after 'CC<xxx>'	TODO: search preName
+	  MENU.out("DADA implement peer name search?\t");
+/*
 	  char c = MENU.peek();
 	  if(c != EOF8) {
 	    MENU.out(F("skipping "));
 	    while (c != EOF8)
 	      MENU.out(c = MENU.drop_input_token());
-
 	    MENU.ln();
 	  }
+*/
+	  MENU.ln();
 	}
       } // more input after 'CC'
       break;

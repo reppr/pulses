@@ -263,3 +263,9 @@ see: infos/internal/2019-08-20_backtrace.txt
 HUE OFFSETS foreground/background
 
 fix TOUCH MORSE INTERRUPT, from time to time there are still malfunctions and crashes
+
+run time switching of rgb strings to test noise  "Good old Major" 95
+
+factor out 'L' hierarchy, use in :N
+
+time_slice=ILLEGAL8

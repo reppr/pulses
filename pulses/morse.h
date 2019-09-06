@@ -139,7 +139,11 @@ bool is_real_token(char token) {	// check for real tokens like . - ! V and separ
 }
 
 // forward declaration
-void static IRAM_ATTR morse_received_token(char token, float token_duration);
+#if defined TOUCH_ISR_VERSION_2
+  void morse_received_token(char token, float token_duration);
+#else
+  void static IRAM_ATTR morse_received_token(char token, float token_duration);
+#endif
 
 #if defined MORSE_COMPILE_HELPERS	// *can* be left out...
 void morse_show_tokens(bool show_all = false) {	// set show_all=true  for token debug output
@@ -354,7 +358,11 @@ void static IRAM_ATTR morse_GPIO_ISR_falling() {	// MORSE INPUT on GPIO morse_GP
 // touch ISR
 
 //#define DEBUG_MORSE_TOUCH_INTERRUPT
-void static IRAM_ATTR morse_endOfLetter() {
+#if defined TOUCH_ISR_VERSION_2
+  void morse_endOfLetter() {
+#else
+  void static IRAM_ATTR morse_endOfLetter() {
+#endif
   morse_separation_check_OFF();
 
   float scaled_low_duration = (float) (micros() - morse_start_OFF_time) / morse_TimeUnit;
@@ -362,7 +370,18 @@ void static IRAM_ATTR morse_endOfLetter() {
 #if defined DEBUG_MORSE_TOUCH_INTERRUPT
   morse_received_token('#', scaled_low_duration);	// TODO: REVERSE after debugging ################
 #endif
-  morse_received_token(MORSE_TOKEN_separeLetter, scaled_low_duration);	// TODO: REVERSE after debugging ################
+  /* got a crash here:
+     PC: 0x4008170a: morse_endOfLetter() at /tmp/arduino_build_1555/sketch/morse.h line 373
+     EXCVADDR: 0x00000000
+
+     Decoding stack results
+     0x4008170a: morse_endOfLetter() at /tmp/arduino_build_1555/sketch/morse.h line 373
+     0x40082749: __timerISR at /home/dada/arduino-1.8.6/hardware/espressif/esp32/cores/esp32/esp32-hal-timer.c line 88
+     0x400f2bb3: esp_vApplicationIdleHook at /Users/ficeto/Desktop/ESP32/ESP32/esp-idf-public/components/esp32/freertos_hooks.c line 64
+
+     so *DEACTIVATE FOLLOWING CODE LINE* ???
+  */
+  //  morse_received_token(MORSE_TOKEN_separeLetter, scaled_low_duration);
 
 #if defined DEBUG_MORSE_TOUCH_INTERRUPT
   //morse_debug_token_info();	// REMOVE: debug only ################
@@ -388,7 +407,7 @@ typedef union morse_in_status_t {
 
 volatile morse_in_status_t morse_in_status;
 
-void show_morse_in_status() {
+void show_morse_in_status() {		// ATTENTION:	*MUST* be morse_MUXed from caller
   MENU.out(F("morse input touched  "));
   MENU.out(morse_in_status.seen_touched);
   MENU.out(F("\toff  "));
@@ -428,13 +447,17 @@ void static IRAM_ATTR touch_morse_ISR_v2() {	// ISR for ESP32 touch sensor as mo
 
 
 #define DEBUG_CHECK_AND_TREAT_MORSE_INPUT	// include *SAVETY NET*  and report errors
-polled from pulses.ino main loop()
-bool static check_and_treat_morse_input() {
+// polled from pulses.ino main loop()
+bool check_and_treat_morse_input() {
   /*
     check_and_treat_morse_input()	polled from pulses.ino main loop();
   */
-  if(morse_in_status.status_i == 0)	// *not* hot and *no errors*
+  portENTER_CRITICAL(&morse_MUX);
+
+  if(morse_in_status.status_i == 0) {	// *not* hot and *no errors*
+    portEXIT_CRITICAL(&morse_MUX);
     return false;			//  nothing to do, return
+  }
 
   if(morse_in_status.errors == 0) {	// NORMAL ACTIVITY, no error:
     if(morse_in_status.seen_touched) {	//	on,  TOUCHED?
@@ -472,7 +495,7 @@ bool static check_and_treat_morse_input() {
 #if defined DEBUG_CHECK_AND_TREAT_MORSE_INPUT
       if(morse_in_status.seen_touched   != 1) {	// should not happen, SAVETY NET
 	MENU.error_ln(F("MORSE TOUCH INPUT touched\tWTF?"));
-	show_morse_in_status();
+	show_morse_in_status();		// already morse_MUXed
       }	// should not happen, SAVETY NET
 #endif	// just continue to check what happens ;)
 
@@ -495,7 +518,7 @@ bool static check_and_treat_morse_input() {
 #if defined DEBUG_CHECK_AND_TREAT_MORSE_INPUT
       if(morse_in_status.seen_off   != 1) {	// should not happen, SAVETY NET
 	MENU.error_ln(F("MORSE TOUCH INPUT released\tWTF?"));
-	show_morse_in_status();
+	show_morse_in_status();		// already morse_MUXed
       }	// should not happen, SAVETY NET
 #endif	// just continue to check what happens ;)
 
@@ -517,13 +540,36 @@ bool static check_and_treat_morse_input() {
 #endif
     } // touched or released
 
-  } else {				// ERROR treatment:
+  } else {		// morse_in_status.errors != 0		ERROR treatment
+
     MENU.error_ln(F("MORSE TOUCH INPUT"));
-    show_morse_in_status();
+    show_morse_in_status();	// already morse_MUXed
+
+    // basically do 'CANCEL', but show "ERR_" on OLED, even if it is switched off
+    extern short morse_out_buffer_cnt;
+    morse_out_buffer_cnt = 0;
+    morse_token_cnt = 0;
+
+#if defined USE_MONOCHROME_DISPLAY
+    {
+      u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "ERR ");	// *UNCONDITIONALLY* show ERRORs
+      u8x8.setCursor(8,0);
+      u8x8.print(morse_in_status.seen_touched);
+      u8x8.print(' ');
+      u8x8.print(morse_in_status.seen_off);
+      u8x8.print(' ');
+    }
+#endif
+    // maybe call ISR once from here to recover?
+    morse_in_status.status_i = 0;		// *RESET all events and errors*
+    portEXIT_CRITICAL(&morse_MUX);
+    touch_morse_ISR_v2();	// try to recover...
+    return true;		// well, *something* happened ;)
   } // ok or errors?
 
   morse_in_status.status_i = 0;		// *RESET all events and errors*
-  return true;				// something *did* happen, (input, maybe error)
+  portEXIT_CRITICAL(&morse_MUX);
+  return true;				// something *did* happen, (input or error)
 } // check_and_treat_morse_input()
 
 
@@ -621,7 +667,9 @@ void static IRAM_ATTR touch_morse_ISR(void) {	// ISR for ESP32 touch sensor as m
 /* **************************************************************** */
 
 
-#define MORSE_OUTPUT_MAX	64
+#if ! defined MORSE_OUTPUT_MAX
+  #define MORSE_OUTPUT_MAX	64
+#endif
 char morse_OUTPUT_buffer[MORSE_OUTPUT_MAX];
 short morse_OUTPUT_cnt=0;
 
@@ -1425,8 +1473,13 @@ void static IRAM_ATTR morse_stats_do() {
 /* **************************************************************** */
 void static morse_token_decode();	// pre declaration
 
+#if defined TOUCH_ISR_VERSION_2
+void morse_received_token(char token, float duration) {
+  portENTER_CRITICAL(&morse_MUX);
+#else
 void static IRAM_ATTR morse_received_token(char token, float duration) {
   portENTER_CRITICAL_ISR(&morse_MUX);
+#endif
 
 #if defined MORSE_DEBUG_RECEIVE_TOKEN
   //MENU.out("morse_received_token() "); MENU.outln(token);
@@ -1490,7 +1543,11 @@ void static IRAM_ATTR morse_received_token(char token, float duration) {
     morse_token_cnt=0;	// TODO: maybe still use data or use a ring buffer?
   }
 
+#if defined TOUCH_ISR_VERSION_2
+  portEXIT_CRITICAL(&morse_MUX);
+#else
   portEXIT_CRITICAL_ISR(&morse_MUX);
+#endif
 } // morse_received_token()
 
 
@@ -2096,6 +2153,7 @@ void static morse_token_decode() {	// decode received token sequence
 		} // oled switched on/off
 
 	      } else if(morse_PRESENT_COMMAND == "CANCEL") {	// CANCEL
+		morse_token_cnt = 0;
 		morse_out_buffer_cnt = 0;
 
 #if defined USE_MONOCHROME_DISPLAY
