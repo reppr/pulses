@@ -1697,7 +1697,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 67:
     musicBoxConf.name = F("sehr eifach & schön");		// ähnlich love like a morning bird
-    //# favorite+
+    //# FAVORITE	// morning birds sibling :)
     //# shortIsOk
     //# melodies
     //# harmonies
