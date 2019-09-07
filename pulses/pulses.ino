@@ -1928,10 +1928,14 @@ void loop() {	// ARDUINO
 
 // descend through priorities and do first thing found
 #if defined USE_MORSE
-  #if defined TOUCH_ISR_VERSION_2	// touch morse input?
-  if(! check_and_treat_morse_input())
-  #endif
+ #if defined TOUCH_ISR_VERSION_3	// touch morse input?
+  if(! check_and_treat_morse_events_v3())
+
+#elif defined TOUCH_ISR_VERSION_2	// touch morse input?
+  if(! check_and_treat_morse_input_v2())
+ #endif
 #endif
+
 
 #ifdef USE_INPUTS
   if(! maybe_check_inputs())		// reading inputs can be time critical, so check early

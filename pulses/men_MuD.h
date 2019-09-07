@@ -3,6 +3,8 @@
   temporary test menu UI during development
 */
 
+    show_morse_event_buffer();
+
     /*
     debug_accgyro_sample = !debug_accgyro_sample;
     MENU.out(F("debug_accgyro_sample"));
@@ -13,7 +15,7 @@
     //MENU.outln(F("HARDWARE configuration"));
     //show_hardware_conf(&HARDWARE);
 
-    display_peer_ID_list();
+    //display_peer_ID_list();
     //random_RGB_string(MENU.numeric_input(4));
 
     /*

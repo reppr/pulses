@@ -4,12 +4,14 @@
 
 #ifndef MORSE_H
 
-#define TOUCH_ISR_VERSION_2
+//#define TOUCH_ISR_VERSION_2
+#define TOUCH_ISR_VERSION_3
 
-#define DEBUG_MORSE_IN_STATUS	// TESTING and DEBUGGING help
+#define DEBUG_TREAT_MORSE_EVENTS_V3	// TODO: deactivate
+#define DEBUG_MORSE_IN_STATUS		// TESTING and DEBUGGING help
 
 // avoid sound glitches when using OLED:
-bool oled_feedback_while_playing = false;	// do *not* give morse feedback while playing
+bool oled_feedback_while_playing = false;	// do *not* give morse feedback while playing	// MOVE: monochrome
 
 #if ! defined MORSE_MONOCHROME_ROW
   #define MORSE_MONOCHROME_ROW	0	// row for monochrome morse display
@@ -139,7 +141,7 @@ bool is_real_token(char token) {	// check for real tokens like . - ! V and separ
 }
 
 // forward declaration
-#if defined TOUCH_ISR_VERSION_2
+#if defined TOUCH_ISR_VERSION_2 || defined TOUCH_ISR_VERSION_3
   void morse_received_token(char token, float token_duration);
 #else
   void static IRAM_ATTR morse_received_token(char token, float token_duration);
@@ -358,10 +360,10 @@ void static IRAM_ATTR morse_GPIO_ISR_falling() {	// MORSE INPUT on GPIO morse_GP
 // touch ISR
 
 //#define DEBUG_MORSE_TOUCH_INTERRUPT
-#if defined TOUCH_ISR_VERSION_2
-  void morse_endOfLetter() {
+#if defined TOUCH_ISR_VERSION_2 || defined TOUCH_ISR_VERSION_3
+void morse_endOfLetter() {
 #else
-  void static IRAM_ATTR morse_endOfLetter() {
+void static IRAM_ATTR morse_endOfLetter() {
 #endif
   morse_separation_check_OFF();
 
@@ -391,10 +393,278 @@ void static IRAM_ATTR morse_GPIO_ISR_falling() {	// MORSE INPUT on GPIO morse_GP
 
 /* **************************************************************** */
 // touch ISR:	touch_morse_ISR()
-void static IRAM_ATTR morse_stats_gather(char token, float duration);	// forwards declaration
+void morse_stats_gather(char token, float duration);	// forwards declaration
 
 #if defined MORSE_TOUCH_INPUT_PIN
-#if defined TOUCH_ISR_VERSION_2
+#if defined TOUCH_ISR_VERSION_3
+
+// data structure to save morse touch events from touch_morse_ISR_v3():
+typedef struct morse_seen_events_t {
+  int type=0;		// 0 is UNTOUCHED	1 is ON
+  unsigned long time=0;
+} morse_seen_events_t;
+
+
+#if ! defined MORSE_EVENTS_MAX
+  #define MORSE_EVENTS_MAX	128					// TODO: TEST&TRIMM:
+#endif
+volatile morse_seen_events_t morse_events_cbuf[MORSE_EVENTS_MAX];
+volatile unsigned int morse_events_write_i=0;		// morse_events_cbuf[i]  write index
+unsigned int morse_events_read_i=0;			// morse_events_cbuf[i]  read index
+
+volatile bool too_many_events=false;			// error flag set by touch_morse_ISR_v3()
+
+unsigned long morse_letter_separation_expected=0L;	// flag or time of automatic letter separation
+							//		after input stays idle, untouched
+
+#if defined DEBUG_TREAT_MORSE_EVENTS_V3
+void show_morse_event_buffer() {	// debugging only
+  MENU.outln(F("\nmorse events circular buffer"));
+  for(int i=0; i<MORSE_EVENTS_MAX; i++) {
+    MENU.out(i);
+    MENU.space();
+    if(i<10)
+      MENU.space();
+
+    if(i==morse_events_write_i)
+      MENU.out(F("<WP>"));
+    else
+      MENU.space(4);
+
+    if(i==morse_events_read_i)
+      MENU.out(F("<RP>"));
+    else
+      MENU.space(4);
+
+    MENU.tab();
+    switch(morse_events_cbuf[i].type) {
+    case 0:
+      MENU.out(F("released"));
+      break;
+    case 1:
+      MENU.out(F("TOUCHED "));
+      break;
+
+    default:
+      MENU.out(morse_events_cbuf[i].type);
+      MENU.out(F("\t?"));
+    }
+
+    MENU.tab();
+    MENU.outln(morse_events_cbuf[i].time);
+  }
+  MENU.ln();
+} // show_morse_event_buffer()
+#endif // DEBUG_TREAT_MORSE_EVENTS_V3
+
+
+void IRAM_ATTR touch_morse_ISR_v3() {	// ISR for ESP32 touch sensor as morse input	*NEW VERSION 3*
+  unsigned long now = micros();
+
+  portENTER_CRITICAL_ISR(&morse_MUX);
+  unsigned long next_index = morse_events_write_i + 1;
+  next_index %= MORSE_EVENTS_MAX;
+
+  if(next_index == morse_events_read_i) {		// buffer full?
+    too_many_events = true;				//   ERROR too_many_events
+    goto morse_isr_exit;				//	   return
+  }
+
+  morse_events_cbuf[morse_events_write_i].time = now;	// save time
+
+  if(touchRead(MORSE_TOUCH_INPUT_PIN) < touch_threshold) {	// >>>>>>>>>>>>>>>> looks TOUCHED <<<<<<<<<<<<<<<<
+    touch_pad_set_trigger_mode(TOUCH_TRIGGER_ABOVE);		// wait for touch release
+    morse_events_cbuf[morse_events_write_i].type = 1 /*touched*/;
+#if defined MORSE_OUTPUT_PIN
+    digitalWrite(MORSE_OUTPUT_PIN, HIGH);		// feedback: pin is TOUCHED, LED on
+#endif
+
+  } else {							// >>>>>>>>>>>>>>>> looks RELEASED <<<<<<<<<<<<<<<<
+    touch_pad_set_trigger_mode(TOUCH_TRIGGER_BELOW);		// wait for next touch
+    morse_events_cbuf[morse_events_write_i].type = 0 /*released*/;
+#if defined MORSE_OUTPUT_PIN
+      digitalWrite(MORSE_OUTPUT_PIN, LOW);		// feedback: pin is RELEASED, LED off
+#endif
+  }
+  morse_events_write_i++;
+  morse_events_write_i %= MORSE_EVENTS_MAX;		// it's a ring buffer
+
+ morse_isr_exit:
+  portEXIT_CRITICAL_ISR(&morse_MUX);
+} // touch_morse_ISR_v3()
+
+
+bool check_and_treat_morse_events_v3() {	// polled from pulses.ino main loop()	*NEW VERSION 3*
+  static int last_seen_type=ILLEGAL32;
+
+  static unsigned long last_seen_touch_time=ILLEGAL32;
+  static unsigned long last_seen_release_time=ILLEGAL32;
+
+  float scaled_touch_duration = 0.0;
+  float scaled_released_duration = 0.0;
+
+  portENTER_CRITICAL(&morse_MUX);
+
+  if(morse_events_read_i == morse_events_write_i) {
+    bool retval=false;
+    if(morse_letter_separation_expected) {
+      bool morse_poll_letter_separation();  // pre declaration
+      retval = morse_poll_letter_separation();
+    }
+    portEXIT_CRITICAL(&morse_MUX);
+    return false;			// NO DATA, or no letter separation check needed
+  }
+
+  if(too_many_events) {			// ERROR buffer too small
+    too_many_events = false;
+    portEXIT_CRITICAL(&morse_MUX);
+
+    MENU.error_ln(F("morse event buffer too small"));
+    return true;			// give up (for this round)
+
+  } else {	// (! too_many_events)		OK,  *NO ISR ERROR*
+     // check if already seen same type?
+    if(morse_events_cbuf[morse_events_read_i].type == last_seen_type) { // already seen SAME TYPE?
+      MENU.out_Error_();					// strange ERROR, SAVETY NET, ignore
+      MENU.out(F("skip repeated "));				// strange ERROR, SAVETY NET, ignore
+      if(morse_events_cbuf[morse_events_read_i].type)
+	MENU.outln(F("TOUCH"));
+      else
+	MENU.outln(F("RELEASE"));
+      morse_events_read_i++;				// just ignore?
+      morse_events_read_i %= MORSE_EVENTS_MAX;
+
+      portEXIT_CRITICAL(&morse_MUX);
+      return true;
+
+    } else {		// NORMAL CASE:  >>>>>>>>>>>>>>>>  *NEW TYPE* was detected  <<<<<<<<<<<<<<<<
+
+      last_seen_type = morse_events_cbuf[morse_events_read_i].type;
+
+      morse_letter_separation_expected=0L;	// default, will be set if appropriate
+
+      if(last_seen_type /* == new TOUCH */) {	//    >>>>>>>>>>>>>>>> seen TOUCHED now <<<<<<<<<<<<<<<<
+#if defined DEBUG_TREAT_MORSE_EVENTS_V3
+	MENU.out(F("TOUCH\t"));
+#endif
+	last_seen_touch_time = morse_events_cbuf[morse_events_read_i].time;
+	scaled_released_duration = (float) (last_seen_touch_time - last_seen_release_time) / morse_TimeUnit;
+	if(scaled_released_duration <= 0.0) {	// SAVETY NET, should not happen
+	  MENU.out_Error_();
+	  MENU.out(F("TODO:  negative scaled_released_duration "));
+	  MENU.outln(scaled_released_duration);
+	} // TODO: *does* this ever happen?
+
+	if (scaled_released_duration >= separeWordTim) {		// word end?
+#if defined DEBUG_TREAT_MORSE_EVENTS_V3
+	MENU.outln(F("word end"));
+#endif
+	  morse_received_token(MORSE_TOKEN_separeLetter, scaled_released_duration);	// " |" is word end
+	  morse_received_token(MORSE_TOKEN_separeWord, scaled_released_duration);
+
+	} else if (scaled_released_duration >= separeLetterTim) {	// letter end?
+#if defined DEBUG_TREAT_MORSE_EVENTS_V3
+	MENU.outln(F("letter end by touch"));
+#endif
+	  morse_received_token(MORSE_TOKEN_separeLetter, scaled_released_duration);
+
+	} else {							// token end?
+#if defined DEBUG_TREAT_MORSE_EVENTS_V3
+	  MENU.outln(F("token end?"));
+#endif
+	  morse_stats_gather(MORSE_TOKEN_separeToken, scaled_released_duration);
+	}
+
+      } else { /* new RELEASE */	//    >>>>>>>>>>>>>>>> seen RELEASED now <<<<<<<<<<<<<<<<
+#if defined DEBUG_TREAT_MORSE_EVENTS_V3
+	MENU.out(F("RELEASE\t"));
+#endif
+	last_seen_release_time = morse_events_cbuf[morse_events_read_i].time;
+	scaled_touch_duration = (float) (last_seen_release_time - last_seen_touch_time) / morse_TimeUnit;
+#if defined DEBUG_TREAT_MORSE_EVENTS_V3
+	MENU.out(F("scaled_touch_duration\t"));
+	MENU.outln(scaled_touch_duration);
+#endif
+	if(scaled_touch_duration <= 0.0) {		// SAVETY NET, should not happen
+	  MENU.out_Error_();
+	  MENU.out(F("TODO:  negative touch duration "));
+	  MENU.outln(scaled_touch_duration);
+	} // TODO: *does* this ever happen?
+
+	if (scaled_touch_duration > limit_debounce) {		// *REAL INPUT* no debounce
+	  if(scaled_touch_duration > limit_loong_overlong) {
+#if defined DEBUG_TREAT_MORSE_EVENTS_V3
+	    MENU.outln(F("overlong"));
+#endif
+	    morse_received_token(MORSE_TOKEN_overlong, scaled_touch_duration);
+
+	  } else if (scaled_touch_duration > limit_dash_loong) {
+#if defined DEBUG_TREAT_MORSE_EVENTS_V3
+	    MENU.outln(F("loong"));
+#endif
+	    morse_received_token(MORSE_TOKEN_loong, scaled_touch_duration);
+
+	  } else if (scaled_touch_duration > limit_dot_dash) {
+#if defined DEBUG_TREAT_MORSE_EVENTS_V3
+	    MENU.outln('-');
+#endif
+	    morse_received_token(MORSE_TOKEN_dash, scaled_touch_duration);
+
+	  } else {	// this may give false dots...
+#if defined DEBUG_TREAT_MORSE_EVENTS_V3
+	    MENU.out(F("TODO: check short event\t"));
+	    MENU.outln('.');
+#endif
+	    morse_received_token(MORSE_TOKEN_dot, scaled_touch_duration);
+	  }
+	} // real input?
+#if defined DEBUG_TREAT_MORSE_EVENTS_V3
+	else						// DEBOUNCE, ignore
+	  MENU.outln(F("debounce ignored"));
+#endif
+
+      } // touched | RELEASED ?
+
+      morse_events_read_i++;
+      morse_events_read_i %= MORSE_EVENTS_MAX;
+
+      if(morse_events_read_i == morse_events_write_i) {	// waiting untouched, if no input follows it would miss separeLetter
+	morse_letter_separation_expected = last_seen_release_time + (separeLetterTim * morse_TimeUnit)*3; // wait 3* as long...
+											// TODO: TEST&TRIMM: wait 3* as long...
+#if defined DEBUG_TREAT_MORSE_EVENTS_V3
+	MENU.outln(F("waiting for letter separation"));
+#endif
+      } // set morse_letter_separation_expected ?
+    } // NEW or repeated type?
+  } // ! (too_many_events) ISR error?
+
+  portEXIT_CRITICAL(&morse_MUX);
+  return true;
+} // check_and_treat_morse_events_v3()
+
+
+bool morse_poll_letter_separation() {
+  if(morse_letter_separation_expected == 0L)		// we *might* miss one at a 0, i don't mind ;)
+    return false;	// nothing to do, return
+  // else
+
+  unsigned long now = micros();
+  signed long diff = now - morse_letter_separation_expected;
+  if(diff < 0)		// not time yet
+    return false;	//   do *not* block while polling
+  else {		// it *is* time
+    morse_received_token(MORSE_TOKEN_separeLetter, separeLetterTim /*that's a fake!*/);
+    morse_letter_separation_expected = 0L;
+#if defined DEBUG_TREAT_MORSE_EVENTS_V3
+    MENU.outln(F("\nautomatic letter separation"));
+#endif
+    return true;
+  }
+} // morse_poll_letter_separation()
+
+
+#elif defined TOUCH_ISR_VERSION_2
+
 typedef union morse_in_status_t {
   int status_i=0;	// used to check for activity and reset
   // short is_hot;		// used as flag?
@@ -577,7 +847,7 @@ bool check_and_treat_morse_input() {
   morse_in_status.status_i = 0;		// *RESET all events and errors*
   portEXIT_CRITICAL(&morse_MUX);
   return true;				// something *did* happen, (input or error)
-} // check_and_treat_morse_input()
+} // check_and_treat_morse_input_v2()
 
 
 #else // ! TOUCH_ISR_VERSION_2	below is OLD VERSION:
@@ -1320,8 +1590,11 @@ void morse_stats_init() {
 
 
 // TODO: comment ################
-// TODO: inline
+#if defined TOUCH_ISR_VERSION_2 || defined TOUCH_ISR_VERSION_3
+void morse_stats_gather(char token, float duration) {	// only real tokens please
+#else // old version
 void static IRAM_ATTR morse_stats_gather(char token, float duration) {	// only real tokens please
+#endif
   switch (token) {
   case MORSE_TOKEN_dot:
     morse_stats_dot_duration_ += duration;
@@ -1480,7 +1753,7 @@ void static IRAM_ATTR morse_stats_do() {
 /* **************************************************************** */
 void static morse_token_decode();	// pre declaration
 
-#if defined TOUCH_ISR_VERSION_2
+#if defined TOUCH_ISR_VERSION_2 || defined TOUCH_ISR_VERSION_3
 void morse_received_token(char token, float duration) {
   portENTER_CRITICAL(&morse_MUX);
 #else
@@ -1550,7 +1823,7 @@ void static IRAM_ATTR morse_received_token(char token, float duration) {
     morse_token_cnt=0;	// TODO: maybe still use data or use a ring buffer?
   }
 
-#if defined TOUCH_ISR_VERSION_2
+#if defined TOUCH_ISR_VERSION_2 || defined TOUCH_ISR_VERSION_3
   portEXIT_CRITICAL(&morse_MUX);
 #else
   portEXIT_CRITICAL_ISR(&morse_MUX);

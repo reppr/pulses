@@ -269,3 +269,7 @@ run time switching of rgb strings to test noise  "Good old Major" 95
 factor out 'L' hierarchy, use in :N
 
 time_slice=ILLEGAL8
+
+bool oled_feedback_while_playing = false;	// do *not* give morse feedback while playing	// MOVE: monochrome
+
+why do i still include inputs?	never really used

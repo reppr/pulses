@@ -728,7 +728,9 @@ bool esp_now_idle_identification() {
     esp_now_send_idle_identity = false;
     return true;
   } // else
-  MENU.outln("DADA is playing...");	// TODO: REMOVE: ################
+
+  esp_now_send_idle_identity = false;
+  MENU.outln("DADA is playing...\tno ID sent");	// TODO: REMOVE: ################
   return false;
 }
 
