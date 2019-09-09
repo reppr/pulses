@@ -22,7 +22,7 @@
   #define DEBUG_ESP_NOW		false	// switches ESP_NOW debugging off
 #endif
 
-#define DEBUG_ESP_NOW_NETWORKING
+//#define DEBUG_ESP_NOW_NETWORKING
 
 #define ESP_NOW_CHANNEL	4
 
@@ -491,7 +491,11 @@ void send_IDENTITY_time_sliced() {	// send data stored in esp_now_send_buffer
 
 
 void esp_now_send_identity(mac_addr_t* to_mac) {
+#if ! defined DEBUG_ESP_NOW_NETWORKING	// else print anyway
+  if(MENU.verbosity > VERBOSITY_LOWEST)
+#endif
     MENU.out(F("ESP-NOW send N_ID\t"));
+
   // prepare data to send
   icode_t* i_data = (icode_t*) esp_now_send_buffer;
   *i_data++ = N_ID;
@@ -730,7 +734,8 @@ bool esp_now_idle_identification() {
   } // else
 
   esp_now_send_idle_identity = false;
-  MENU.outln("DADA is playing...\tno ID sent");	// TODO: REMOVE: ################
+  if(MENU.maybe_display_more(VERBOSITY_SOME))
+    MENU.outln("MusicBox is playing\tID not sent");	// TODO: REMOVE?:
   return false;
 }
 
