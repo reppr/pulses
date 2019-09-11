@@ -568,9 +568,14 @@ bool check_and_treat_morse_events_v3() {	// polled from pulses.ino main loop()	*
 #endif
 	  morse_received_token(MORSE_TOKEN_separeLetter, scaled_released_duration);
 
-	} else {							// token end?
+	} else if (scaled_released_duration <= limit_debounce) {	// ignore debounce
 #if defined DEBUG_TREAT_MORSE_EVENTS_V3
-	  MENU.outln(F("token end?"));
+	  MENU.outln(F("DEBOUNCE ignored"));
+#endif
+	  ;
+	} else  {							// token end
+#if defined DEBUG_TREAT_MORSE_EVENTS_V3
+	  MENU.outln(F("token end"));
 #endif
 	  morse_stats_gather(MORSE_TOKEN_separeToken, scaled_released_duration);
 	}
@@ -610,19 +615,19 @@ bool check_and_treat_morse_events_v3() {	// polled from pulses.ino main loop()	*
 #endif
 	    morse_received_token(MORSE_TOKEN_dash, scaled_touch_duration);
 
-	  } else {	// this may give false dots...
+	  } else {
 #if defined DEBUG_TREAT_MORSE_EVENTS_V3
-	    MENU.out(F("TODO: check short event\t"));
 	    MENU.outln('.');
 #endif
 	    morse_received_token(MORSE_TOKEN_dot, scaled_touch_duration);
 	  }
 	} // real input?
+	else {						// DEBOUNCE, ignore
 #if defined DEBUG_TREAT_MORSE_EVENTS_V3
-	else						// DEBOUNCE, ignore
-	  MENU.outln(F("debounce ignored"));
+	  MENU.outln(F("DEBOUNCE ignored"));
 #endif
-
+	  ;
+	} // debounce
       } // touched | RELEASED ?
 
       morse_events_read_i++;
