@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION		HARMONICAL v.036
+#define PROGRAM_VERSION		HARMONICAL v.037
 /*				0123456789abcdef   */
 
 /* **************************************************************** */
@@ -1144,6 +1144,10 @@ void show_hardware_conf(pulses_hardware_conf_t* hardware) {
   if(hardware->mpu6050_addr) {
     MENU.out_hex(hardware->mpu6050_addr);
     MENU.ln();
+#if defined USE_MPU6050
+    extern void show_accGyro_offsets();
+    show_accGyro_offsets();
+#endif
   } else
     MENU.outln(F("no"));
 

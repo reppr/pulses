@@ -15,7 +15,11 @@ void nvs_menu_display() {
   MENU.outln(F("'I'=IDENTITY 'IS'=save 'IR'=read 'IT'=time slice 'IP<preName>'"));
   MENU.ln();
 
-  MENU.outln(F("'S'=SYSTEM 'SS'=set rgb string cnt"));
+  MENU.out(F("'S'=SYSTEM 'SS'=set rgb string cnt"));
+#if defined USE_MPU6050
+  MENU.out(F(" 'SU'=set mpu6050 offsets"));
+#endif
+  MENU.ln();
 
   MENU.outln(F("\n'P' nvs_PRENAME"));
 
@@ -138,6 +142,13 @@ bool nvs_menu_reaction(char token) {
       MENU.out_ON_off(rgb_strings_available);
       MENU.ln();
       break;
+
+#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
+    case 'U':
+      MENU.drop_input_token();
+      set_accGyro_offsets_UI();
+      break;
+#endif
 
     case EOF8:
       break;
