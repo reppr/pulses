@@ -727,7 +727,8 @@ bool esp_now_idle_identification() {
   }
 
   extern bool musicbox_is_awake();
-  if(! musicbox_is_awake()) {
+  extern bool musicbox_is_idle();
+  if(musicbox_is_idle()) {
     esp_now_send_identity(broadcast_mac);
     esp_now_send_idle_identity = false;
     return true;
