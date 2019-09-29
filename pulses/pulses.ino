@@ -76,7 +76,8 @@ using namespace std;	// ESP8266 needs that
 #endif
 
 #if defined USE_i2c
-  #include <Wire.h>
+  #include <Wire.h>	// TODO: what about fastWire?
+
   #if defined USE_MCP23017
     #include "MCP23017.h"			// Adafruit, simple test version only
   #endif
@@ -1434,8 +1435,12 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 #endif // to WiFi or not
 
 #if defined USE_i2c
-  Wire.begin();
-  Wire.setClock(400000L);	// must be *after* Wire.begin()
+  Wire.begin(21, 22, 400000L);
+  /*
+    was:
+     Wire.begin();
+     Wire.setClock(400000L);	// must be *after* Wire.begin()
+  */
 
   #if defined USE_MCP23017
     MCP23017.begin();
@@ -1663,7 +1668,7 @@ bool low_priority_tasks() {
     if(accGyro_is_active) {
       switch(mpu6050_test_version) {
       case 1:
-	accGyro_sample();
+//	accGyro_sample();	// TODO: REMOVE: ################
 	break;
       case 2:
 	accGyro_sample_v2();
