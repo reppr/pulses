@@ -40,7 +40,19 @@ int16_t ax, ay, az;
 int16_t gx, gy, gz;
 
 bool accGyro_is_active = false ;	// accGyro switching by the program
-bool accGyro_invert = true;		// defaults to invert mathemetical axis, which feels right in instrument handling
+
+bool accGyro_invert = true;	// OBSOLETE:	// defaults to invert mathemetical axis, which feels right in instrument handling
+//bool accGyro_invert = false;		// default TEST ################################################################
+
+// all 6 axis can be inverted individually	// TODO: configuration, nvs, ... ################
+bool accX_invert = true;	// "rear" up (as seen from my current portable instruments)
+bool accY_invert = false;	// right up
+bool accZ_invert = true;	// TODO: ???
+
+bool gyrX_invert = false;	// TODO: ???
+bool gyrY_invert = false;	// TODO: ???
+bool gyrZ_invert = true;	// TODO: TEST:
+
 
 bool mpu6050_setup() {
   MENU.out(F("mpu6050_setup()\t"));
@@ -126,8 +138,9 @@ typedef struct accGyro_6d_data_t{
 
 
 #if ! defined MPU_OVERSAMPLING
+  #define MPU_OVERSAMPLING	3	// TEST
 //#define MPU_OVERSAMPLING	4	// TEST
-  #define MPU_OVERSAMPLING	2	// TEST
+//#define MPU_OVERSAMPLING	2	// TEST
   //#define MPU_OVERSAMPLING	1	// possible
 #endif
 int mpu_oversampling=MPU_OVERSAMPLING;		// default	TODO: UI
@@ -353,12 +366,15 @@ void accGyro_sample() {
     // ACCELERO:	INVERTING DELAYED to accGyro_reaction()
     accGyro_current_AX_f = (AX / MPU_OVERSAMPLING) + 16384;
     accGyro_current_AX_f /= 32768;	// to float scaling
+    accGyro_current_AX_f += 1.0;	// (inverted axis)  0..1
 
     accGyro_current_AY_f = (AY / MPU_OVERSAMPLING) + 16384;
     accGyro_current_AY_f /= 32768;	// to float scaling
+    accGyro_current_AY_f += 1.0;	// (inverted axis)  0..1
 
     accGyro_current_AZ_f = (AZ / MPU_OVERSAMPLING) + 16384;
     accGyro_current_AZ_f /= 32768;	// to float scaling
+    accGyro_current_AZ_f += 1.0;	// (inverted axis)  ????
 
     // GYRO:	INVERTING IS DONE HERE in accGyro_sample
     accGyro_current_GX_f = (GX / MPU_OVERSAMPLING);
@@ -381,7 +397,7 @@ void accGyro_sample() {
     /*	portEXIT_CRITICAL_ISR(&timerMux);	*/ // pulses does not use interrupt version any more
   }
 
-  //#if defined DEBUG_ACCGYRO_SAMPLE
+  #if defined DEBUG_ACCGYRO_SAMPLE
   if(accGyro_new_data && debug_accgyro_sample) {	// TODO: factor that out?
     MENU.out(F("AX "));
     MENU.out(accGyro_current_AX_f, 4);
@@ -407,7 +423,7 @@ void accGyro_sample() {
     MENU.out(accGyro_current_GZ_f, 4);
     MENU.ln();
   }
-  // #endif
+#endif
 } // accGyro_sample()
 
 // void accGyro_reaction()
@@ -426,8 +442,8 @@ void accGyro_reaction() {	// react on data coming from accGyro_sample()
       return;
 
     // selected slice:
-    static int selected_Ax_seen_i;
-    static int selected_Ay_seen;
+    static int selected_Ax_seen_i;	// HUUUCH ????????????????
+    static int selected_Ay_seen;	// HUUUCH ????????????????
     static int selected_Az_seen;
 
     static int selected_Gx_seen;
@@ -916,8 +932,9 @@ void activate_accGyro() {
 
 
 /* **************************************************************** */
-// new implementation:
+// new implementation _v2:
 
+#define DEBUG_SHOW_EACH_MPU_SAMLE	// TODO: DEACTIVATE:
 void accGyro_sample_v2() {
   if(!mpu6050_available) {						// catch bugs, if any ;)  TODO: REMOVE:
     MENU.error_ln(F("accGyro_sample_v2() mpu6050_available=false"));	// catch bugs, if any ;)  TODO: REMOVE:
@@ -949,42 +966,58 @@ void accGyro_sample_v2() {
     gx_i += mpu_samples[i].gx;
     gy_i += mpu_samples[i].gy;
     gz_i += mpu_samples[i].gz;
+
+#if defined DEBUG_SHOW_EACH_MPU_SAMLE
+    MENU.out(mpu_samples[i].ax); MENU.tab();
+    MENU.out(mpu_samples[i].ay); MENU.tab();
+    MENU.out(mpu_samples[i].az); MENU.tab();
+    MENU.out(mpu_samples[i].gx); MENU.tab();
+    MENU.out(mpu_samples[i].gy); MENU.tab();
+    MENU.outln(mpu_samples[i].gz);
+#endif
   }
 
   // ACCELERO:
   accGyro_current_AX_f = (ax_i / mpu_oversampling) + 16384.0;
   accGyro_current_AX_f /= 32768.0;	// to float scaling
+  if(accX_invert) {
+    accGyro_current_AX_f *= -1.0;
+    accGyro_current_AX_f += 1.0;	// 0..1
+  } // else	not tested
 
   accGyro_current_AY_f = (ay_i / mpu_oversampling) + 16384.0;
   accGyro_current_AY_f /= 32768.0;	// to float scaling
+  if(accY_invert) {
+    accGyro_current_AY_f *= -1.0;
+    accGyro_current_AY_f += 1.0;	// 0..1
+  } // else	nothing to do
 
   accGyro_current_AZ_f = (az_i / mpu_oversampling) + 16384.0;
   accGyro_current_AZ_f /= 32768.0;	// to float scaling
-
-  if(accGyro_invert) {		// INVERT mathematical axis?
-    accGyro_current_AX_f *= -1.0;
-    accGyro_current_AY_f *= -1.0;
+  if(accZ_invert) {		// INVERT mathematical axis?
     accGyro_current_AZ_f *= -1.0;
+    accGyro_current_AZ_f += 1.0;	// ????
   }
 
   // GYRO:
   accGyro_current_GX_f = (gx_i / mpu_oversampling);
   accGyro_current_GX_f /= gyro_float_scaling;
+  if(gyrX_invert)		// INVERT mathematical axis?
+    accGyro_current_GX_f *= -1;
 
   accGyro_current_GY_f = (gy_i / mpu_oversampling);
   accGyro_current_GY_f /= gyro_float_scaling;
+  if(gyrY_invert)		// INVERT mathematical axis?
+    accGyro_current_GY_f *= -1;
 
   accGyro_current_GZ_f = (gz_i / mpu_oversampling);
   accGyro_current_GZ_f /= gyro_float_scaling;
-
-  if(accGyro_invert) {		// INVERT mathematical axis?
-    accGyro_current_GX_f *= -1;
-    accGyro_current_GY_f *= -1;
+  if(gyrZ_invert)
     accGyro_current_GZ_f *= -1;
-  }
 
-#if defined DEBUG_ACCGYRO_SAMPLE
-  if(accGyro_new_data && debug_accgyro_sample) {	// TODO: factor that out?
+  //#if defined DEBUG_ACCGYRO_SAMPLE
+  // TODO: DEACTIVATE DEBUGGING OUTPUT...	################
+  if(true || accGyro_new_data && debug_accgyro_sample) {	// TODO: factor that out?
     MENU.out(F("AX "));
     MENU.out(accGyro_current_AX_f, 4);
     MENU.tab();
@@ -1009,7 +1042,7 @@ void accGyro_sample_v2() {
     MENU.out(accGyro_current_GZ_f, 4);
     MENU.ln();
   }
-#endif
+  //#endif
 } // accGyro_sample_v2()
 
 
@@ -1084,7 +1117,7 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
       // ACCELERO;
       if(accGyro_mode & AG_mode_Ax) {		// accelero X
 	Ax_reaction_source = JIFFLES;
-	Ax_sel_offset = 50;
+	Ax_sel_offset = 0;		// TODO: TRIMM:
 	Ax_select_slots = 41;		// TODO: TRIMM:
       }
 
@@ -1115,6 +1148,7 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 	Az_i_new = AZ_seen_f * Az_select_slots +0.5;
 	Az_i_new += Az_sel_offset;
       }
+
 
       // GYRO:
       if(accGyro_mode & AG_mode_Gx) {		// gyro X
@@ -1218,22 +1252,28 @@ MENU.outln(">>>>>>>>>>>>>>>> DADA\tno jiffle?");
 	    PULSES.select_n(voices);
 	  } // switch(Ay_i_new)
 	  */
-/*
-MENU.out("DADA ****************\t");
-MENU.outln(Ay_i_new);
-*/
+
  for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)	// default ALL UNMUTED
    PULSES.pulses[pulse].action_flags &= ~noACTION;	// CLEAR all
 
 	  switch(Ay_i_new) {
-	  case -3:	// extremes only
-	  case 3:	// extremes only
+	    /*
+	      1  L__H
+	      2  LB__
+	      3  LBM_
+	      4  LBMH
+	      5  _BMH
+	      6  __MH
+	      7  _BM_
+	      8  L__H
+	     */
+	  case 1:	// extremes only
+	  case 8:	// extremes only
 	    for(int pulse=lowest_primary + (primary_count/4) +1; pulse <= highest_primary - (primary_count/4); pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute middle two quarters
 	    break;
 
-	  case -2:	// middles only
-	  case 2:	// middles only
+	  case 7:	// middles only
 	    extended_output(F("_BM_ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
 	    for(int pulse = highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute high quarter
@@ -1241,72 +1281,39 @@ MENU.outln(Ay_i_new);
 	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute low quarter
 	    break;
 
-	  case -1:	// mute low
+	  case 6:	// mute lower half
+	    extended_output(F("__MH "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    for(int pulse=lowest_primary; pulse <= lowest_primary + (primary_count/2); pulse++)
+	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute lower half
+	    break;
+
+	  case 5:	// mute low
+	    extended_output(F("_BMH "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
 	    for(int pulse=lowest_primary; pulse <= lowest_primary + (primary_count/4); pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute low quarter
 	    break;
 
-	  case 0:	// all unmuted
+	  case 4:	// all unmuted
 	    extended_output(F("LBMH "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
 	    break;
 
-	  case 1:	// mute high
+	  case 3:	// mute high
 	    extended_output(F("LBM_ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
 	    for(int pulse = highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute high quarter
 	    break;
-	  }
-//	    //      case 0:		// TODO: Ay_i_new < 1
-//	    //	// limit--
-//	    //	break;
-//	  case 1:	// all but high
-//	    extended_output(F("LBM_ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
-//	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-//	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
-//	    for(int pulse = highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
-//	      PULSES.pulses[pulse].action_flags |= noACTION; // SET upper quarter
-//	    break;
-//	  case 2:	// all on
-//	  case 3:	// all on
-//	    extended_output(F("LBMH "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
-//	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-//	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
-//	    break;
-//	  case 4:	// middle only
-//	    extended_output(F("_BM_ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
-//	    MENU.outln(highest_primary);
-//	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-//	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
-//	    for(int pulse=lowest_primary + (primary_count/4) +1; pulse <= highest_primary - (primary_count/4); pulse++)
-//	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
-//	    break;
-//	  case 5:	// extremes only
-//	    extended_output(F("L__H "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
-//	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-//	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
-//	    for(int pulse=lowest_primary; pulse <= lowest_primary + (primary_count/4); pulse++)
-//	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR low quarter
-//	    for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
-//	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
-//	    break;
-//	  case 6:	// high only
-//	    extended_output(F("___H "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
-//	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-//	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
-//	    for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
-//	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
-//	    break;
-//
-//	    //      case 7:	// bass_limit--		// TODO: near limit region
-//	    //	break;
-//	  default:	// toggle all
-//	    extended_output(F("~~~~ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
-//	    PULSES.select_from_to(lowest_primary, highest_primary);
-//	    PULSES.selected_toggle_no_actions();
-//	    PULSES.select_n(voices);
-//	  } // switch(Ay_i_new)
 
-//MENU.outln(">>>>>>>>>>>>>>>> DADA\there");
+	  case 2:	// mute upper half
+	    extended_output(F("LB__ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    for(int pulse = highest_primary - (primary_count/2) +1; pulse <= highest_primary; pulse++)
+	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute upper half
+	    break;
+
+	  default:
+	    MENU.out(F("accGyro_reaction_v2()\tAy_i_new out of range "));
+	    MENU.outln(Ay_i_new);
+	  }
+
 	  noAction_flags_line();
 	} //_selected_Ay_i_seen
       } // accelero Y
@@ -1317,6 +1324,33 @@ MENU.outln(Ay_i_new);
     } // switch (accGyro_preset)
   } // if(accGyro_mode)
 } // accGyro_reaction_v2()
+
+
+void show_accGyro_offsets() {
+  MENU.out(F("accGyro offsets  Ax, Ay, Az,  Gx, Gy, Gz {"));
+  for(int i=0; i<6; i++) {
+    MENU.out(HARDWARE.accGyro_offsets[i]);
+    MENU.out(F(", "));
+  }
+  MENU.outln('}');
+}
+
+
+void set_accGyro_offsets_UI() {
+// int16_t HARDWARE.accGyro_offsets[] = {-1493, -2125, 1253, 98, 85, -50};	// Ax, Ay, Az, Gx, Gy, Gz offsets
+  MENU.outln(F("set accGyro offsets"));
+  show_accGyro_offsets();
+
+  for(int i=0; i<6; i++) {
+    //    if(MENU.is_numeric())
+    HARDWARE.accGyro_offsets[i] = MENU.numeric_input(HARDWARE.accGyro_offsets[i]);
+
+    if(MENU.peek() == ',')
+      MENU.drop_input_token();
+  }
+
+  show_accGyro_offsets();
+}
 
 
 #define  MPU6050_MODULE_H
