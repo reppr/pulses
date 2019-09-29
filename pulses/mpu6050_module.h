@@ -153,7 +153,7 @@ accGyro_6d_data_t mpu_samples[MPU_OVERSAMPLING] = {0};
 float gyro_float_scaling=GYRO_FLOAT_SCALING;	// default, TEST&TRIMM:	(no UI planed)
 
 
-/*  pulses does NOT use interrupt version any more
+/*  pulses does NOT use interrupt version any more	// TODO: REMOVE:
 //	the interrupt version worked fine so far
 //	but as i2c activity is quite critical while playing
 //	i want the program to decide *when* to do it...
@@ -1092,10 +1092,6 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 
     if(accGyro_mode & AG_mode_Az) {		// accelero Z
       AZ_seen_f = accGyro_current_AZ_f;
-
-//      Az_reaction_source = NULL;
-//      Az_select_slots = 8;
-//      Az_sel_offset = 0;
     }
 
     // GYRO:
@@ -1110,7 +1106,6 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
     if(accGyro_mode & AG_mode_Gz) {		// gyro Z
       GZ_seen_f = accGyro_current_GZ_f;
     }
-
 
     switch(accGyro_preset) {
     case 1:
@@ -1167,11 +1162,6 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
       }
 
       if(accGyro_mode & AG_mode_Ax) {		// accelero X
-	/*
-MENU.out(">>>>>>>>>>>>>>>> DADA\tAX  ");
-MENU.out(Ax_i_new);
-MENU.tab();
-	*/
 	unsigned int* jiffle = NULL;
 	if(jiffle = index2pointer(JIFFLES, Ax_i_new)) {
 	  if(Ax_i_new != _selected_Ax_i_seen) {
@@ -1186,75 +1176,20 @@ MENU.tab();
 	    }
 #endif
 	}
-	  //else MENU.outln(">>>>>>>>>>>>>>>> DADA\tseen already");
+	// else MENU.outln("\tseen already");
 
 	} else {
-MENU.outln(">>>>>>>>>>>>>>>> DADA\tno jiffle?");
-
+	  MENU.error_ln(F("no jiffle?"));
 	} // Ax JIFFLES
       }
 
 
       if(accGyro_mode & AG_mode_Ay) {		// accelero Y
-//MENU.outln(">>>>>>>>>>>>>>>> DADA\twas here");
 	if(Ay_i_new != _selected_Ay_i_seen) {
 	  _selected_Ay_i_seen = Ay_i_new;
-//MENU.outln(">>>>>>>>>>>>>>>>\tnew");
-	  /*
-	  switch(Ay_i_new) {
-	    //      case 0:		// TODO: Ay_i_new < 1
-	    //	// limit--
-	    //	break;
-	  case 1:	// all but high
-	    extended_output(F("LBM_ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
-	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
-	    for(int pulse = highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
-	      PULSES.pulses[pulse].action_flags |= noACTION; // SET upper quarter
-	    break;
-	  case 2:	// all on
-	  case 3:	// all on
-	    extended_output(F("LBMH "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
-	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
-	    break;
-	  case 4:	// middle only
-	    extended_output(F("_BM_ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
-	    MENU.outln(highest_primary);
-	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
-	    for(int pulse=lowest_primary + (primary_count/4) +1; pulse <= highest_primary - (primary_count/4); pulse++)
-	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
-	    break;
-	  case 5:	// extremes only
-	    extended_output(F("L__H "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
-	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
-	    for(int pulse=lowest_primary; pulse <= lowest_primary + (primary_count/4); pulse++)
-	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR low quarter
-	    for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
-	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
-	    break;
-	  case 6:	// high only
-	    extended_output(F("___H "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
-	    for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)
-	      PULSES.pulses[pulse].action_flags |= noACTION; // SET all
-	    for(int pulse=highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
-	      PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR high quarter
-	    break;
 
-	    //      case 7:	// bass_limit--		// TODO: near limit region
-	    //	break;
-	  default:	// toggle all
-	    extended_output(F("~~~~ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
-	    PULSES.select_from_to(lowest_primary, highest_primary);
-	    PULSES.selected_toggle_no_actions();
-	    PULSES.select_n(voices);
-	  } // switch(Ay_i_new)
-	  */
-
- for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)	// default ALL UNMUTED
-   PULSES.pulses[pulse].action_flags &= ~noACTION;	// CLEAR all
+	  for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)	// default ALL UNMUTED
+	    PULSES.pulses[pulse].action_flags &= ~noACTION;	// CLEAR all
 
 	  switch(Ay_i_new) {
 	    /*
