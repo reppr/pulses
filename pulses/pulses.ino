@@ -1635,13 +1635,13 @@ bool low_priority_tasks() {
 #endif
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
-  #define GYRO_MODULUS		19319	// prime		// TODO: OBSOLETE?
-  if((low_priority_cnt % GYRO_MODULUS) == 0) { // check GYRO
-    if(accGyro_is_active) {
-      if(GYRO_only_check())
-	return true;
-    }
-  }
+//	  #define GYRO_MODULUS		19319	// prime		// TODO: OBSOLETE?	REMOVE:
+//	  if((low_priority_cnt % GYRO_MODULUS) == 0) { // check GYRO
+//	    if(accGyro_is_active) {
+//	      if(GYRO_only_check())
+//		return true;
+//	    }
+//	  }
 
   if(accGyro_new_data) {	//   check new input data
     if(!mpu6050_available)						// catch bugs, if any ;)  TODO: REMOVE:

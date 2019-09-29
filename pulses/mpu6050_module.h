@@ -264,34 +264,34 @@ void reset_accGyro_selection() {	// reset accGyro selections, slots, reaction so
 }
 
 
-extern void sync_shifting(fraction_t shift);
-//int16_t GYROX_selected=0;
-//int16_t GYROY_selected=0;
-int16_t GYROZ_selected=0;
-bool GYRO_only_check() {	// OBSOLETE:
-#if defined DEBUG_AG_REACTION
-  MENU.outln("GYRO_only_check()");
-#endif
-  float GZ = mpu6050.getRotationZ();
-  GZ /= 128;		// TODO: TEST&TRIMM: new float scaling
-  if(accGyro_invert)	// invert mathematical axis	// TODO: where to invert?
-    GZ = -GZ;
-
-  GYROZ_selected = GZ + 0.5;
-  GYROZ_selected += Gz_sel_offset;
-  if(GYROZ_selected) {	// gyro Z shows rotation?
-    // TODO: feedback
-    // sync_shifting({GYROZ_selected, 16*4096});	// was: DEFAULT in first version
-    sync_shifting({GYROZ_selected, 16*4096});	// TODO: FIND&TRIMM new DEFAULT for version2
-#if defined DEBUG_AG_REACTION
-    MENU.out(GYROZ_selected);
-    MENU.outln("\t<<<<<<<<<<<<<<<<");
-#endif
-    return true;
-  }
-
-  return false;
-}
+//	extern void sync_shifting(fraction_t shift);	// TODO: REMOVE:
+//	//int16_t GYROX_selected=0;
+//	//int16_t GYROY_selected=0;
+//	int16_t GYROZ_selected=0;
+//	bool GYRO_only_check() {	// OBSOLETE:
+//	#if defined DEBUG_AG_REACTION
+//	  MENU.outln("GYRO_only_check()");
+//	#endif
+//	  float GZ = mpu6050.getRotationZ();
+//	  GZ /= 128;		// TODO: TEST&TRIMM: new float scaling
+//	  if(accGyro_invert)	// invert mathematical axis	// TODO: where to invert?
+//	    GZ = -GZ;
+//
+//	  GYROZ_selected = GZ + 0.5;
+//	  GYROZ_selected += Gz_sel_offset;
+//	  if(GYROZ_selected) {	// gyro Z shows rotation?
+//	    // TODO: feedback
+//	    // sync_shifting({GYROZ_selected, 16*4096});	// was: DEFAULT in first version
+//	    sync_shifting({GYROZ_selected, 16*4096});	// TODO: FIND&TRIMM new DEFAULT for version2
+//	#if defined DEBUG_AG_REACTION
+//	    MENU.out(GYROZ_selected);
+//	    MENU.outln("\t<<<<<<<<<<<<<<<<");
+//	#endif
+//	    return true;
+//	  }
+//
+//	  return false;
+//	} // GYRO_only_check()	// TODO: REMOVE:
 
 #if ! defined ACCGYRO_DEFAULT_PRESET
   #define ACCGYRO_DEFAULT_PRESET	1
