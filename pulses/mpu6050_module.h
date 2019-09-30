@@ -126,6 +126,32 @@ float accGyro_current_GX_f=0.0;
 float accGyro_current_GY_f=0.0;
 float accGyro_current_GZ_f=0.0;
 
+void show_current_accGyro_values() {
+  MENU.out(F("AX "));
+  MENU.out(accGyro_current_AX_f, 4);
+  MENU.tab();
+
+  MENU.out(F("AY "));
+  MENU.out(accGyro_current_AY_f, 4);
+  MENU.tab();
+
+  MENU.out(F("AZ "));
+  MENU.out(accGyro_current_AZ_f, 4);
+  MENU.tab();
+
+  MENU.out(F("GX "));
+  MENU.out(accGyro_current_GX_f, 4);
+  MENU.tab();
+
+  MENU.out(F("GY "));
+  MENU.out(accGyro_current_GY_f, 4);
+  MENU.tab();
+
+  MENU.out(F("GZ "));
+  MENU.out(accGyro_current_GZ_f, 4);
+  MENU.ln();
+} // show_current_accGyro_values()
+
 
 typedef struct accGyro_6d_data_t{
   int16_t ax;
@@ -932,9 +958,9 @@ void activate_accGyro() {
 
 
 /* **************************************************************** */
-// new implementation _v2:
+// new implementations _v2:
 
-#define DEBUG_SHOW_EACH_MPU_SAMLE	// TODO: DEACTIVATE:
+// #define DEBUG_SHOW_EACH_MPU_SAMLE
 void accGyro_sample_v2() {
   if(!mpu6050_available) {						// catch bugs, if any ;)  TODO: REMOVE:
     MENU.error_ln(F("accGyro_sample_v2() mpu6050_available=false"));	// catch bugs, if any ;)  TODO: REMOVE:
@@ -1015,34 +1041,10 @@ void accGyro_sample_v2() {
   if(gyrZ_invert)
     accGyro_current_GZ_f *= -1;
 
-  //#if defined DEBUG_ACCGYRO_SAMPLE
-  // TODO: DEACTIVATE DEBUGGING OUTPUT...	################
-  if(true || accGyro_new_data && debug_accgyro_sample) {	// TODO: factor that out?
-    MENU.out(F("AX "));
-    MENU.out(accGyro_current_AX_f, 4);
-    MENU.tab();
-
-    MENU.out(F("AY "));
-    MENU.out(accGyro_current_AY_f, 4);
-    MENU.tab();
-
-    MENU.out(F("AZ "));
-    MENU.out(accGyro_current_AZ_f, 4);
-    MENU.tab();
-
-    MENU.out(F("GX "));
-    MENU.out(accGyro_current_GX_f, 4);
-    MENU.tab();
-
-    MENU.out(F("GY "));
-    MENU.out(accGyro_current_GY_f, 4);
-    MENU.tab();
-
-    MENU.out(F("GZ "));
-    MENU.out(accGyro_current_GZ_f, 4);
-    MENU.ln();
-  }
-  //#endif
+#if defined DEBUG_ACCGYRO_SAMPLE
+  if(accGyro_new_data && debug_accgyro_sample)	// TODO: REMOVE: runtime debug switching...
+    show_current_accGyro_values();
+#endif
 } // accGyro_sample_v2()
 
 
@@ -1068,13 +1070,14 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
     int Ay_i_new=0;
     int Az_i_new=0;
 
-    int selected_Gx_i=0;
-    int selected_Gy_i=0;
-    int selected_Gz_i=0;
+    int Gx_i_new=0;
+    int Gy_i_new=0;
+    int Gz_i_new=0;
 
     float AX_seen_f=0.0;
     float AY_seen_f=0.0;
     float AZ_seen_f=0.0;
+
     float GX_seen_f=0.0;
     float GY_seen_f=0.0;
     float GZ_seen_f=0.0;
@@ -1147,20 +1150,21 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 
       // GYRO:
       if(accGyro_mode & AG_mode_Gx) {		// gyro X
-	selected_Gx_i = GX_seen_f + 0.5;
-	selected_Gx_i += Gx_sel_offset;
+	Gx_i_new = GX_seen_f + 0.5;
+	Gx_i_new += Gx_sel_offset;
       }
 
       if(accGyro_mode & AG_mode_Gy) {		// gyro Y
-	selected_Gy_i = GY_seen_f + 0.5;
-	selected_Gy_i += Gy_sel_offset;
+	Gy_i_new = GY_seen_f + 0.5;
+	Gy_i_new += Gy_sel_offset;
       }
 
       if(accGyro_mode & AG_mode_Gz) {		// gyro Z
-	selected_Gz_i = GZ_seen_f + 0.5;
-	selected_Gz_i += Gz_sel_offset;
+	Gz_i_new = GZ_seen_f + 0.5;
+	Gz_i_new += Gz_sel_offset;
       }
 
+      // now react;
       if(accGyro_mode & AG_mode_Ax) {		// accelero X
 	unsigned int* jiffle = NULL;
 	if(jiffle = index2pointer(JIFFLES, Ax_i_new)) {
@@ -1252,7 +1256,24 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 	  noAction_flags_line();
 	} //_selected_Ay_i_seen
       } // accelero Y
-      break;
+
+      // gyro X not used
+      // gyro Y not used
+
+      // gyro Z
+      if(accGyro_mode & AG_mode_Gz) {		// accelero Y
+	if(Gz_i_new != _selected_Gz_i_seen) {
+	  _selected_Gz_i_seen = Gz_i_new;
+	  extern void sync_shifting(fraction_t shift);
+	  // sync_shifting({_selected_Gz_i_seen, 16*4096});	// TODO: FIND&TRIMM new DEFAULT for version2
+	  sync_shifting({_selected_Gz_i_seen, 4*4096});		// TODO: FIND&TRIMM new DEFAULT for version2
+//#if defined DEBUG_AG_REACTION		// TODO: how and when to report? ################
+	  MENU.out(F("sync_shifting "));
+	  MENU.outln(_selected_Gz_i_seen);
+//#endif
+	}
+      }
+      break; // preset 1
 
     default:
       MENU.error_ln(F("unknown accGyro_preset"));
