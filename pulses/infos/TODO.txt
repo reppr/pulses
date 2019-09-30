@@ -266,10 +266,16 @@ fix TOUCH MORSE INTERRUPT, from time to time there are still malfunctions and cr
 
 run time switching of rgb strings to test noise  "Good old Major" 95
 
-factor out 'L' hierarchy, use in :N
-
 time_slice=ILLEGAL8
 
 bool oled_feedback_while_playing = false;	// do *not* give morse feedback while playing	// MOVE: monochrome
 
 why do i still include inputs?	never really used
+
+*do* initiate lowest_primary
+
+auto calibrate morse touch input interrupt level
+
+factor out 'L' hierarchy, use in :N
+
+fix LiPo OLED type boards

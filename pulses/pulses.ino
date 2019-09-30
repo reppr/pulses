@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION		HARMONICAL v.037
+#define PROGRAM_VERSION		HARMONICAL v.038
 /*				0123456789abcdef   */
 
 /* **************************************************************** */
@@ -1195,12 +1195,16 @@ void show_hardware_conf(pulses_hardware_conf_t* hardware) {
   if(hardware->rgb_strings) {
     MENU.outln(hardware->rgb_strings);
     for(int i=0; i<hardware->rgb_strings; i++) {
+      MENU.out(F(" #"));
       MENU.out(i);
-      MENU.out(F("  pin\t\t"));
+
+      MENU.out(F("\tpin "));
       MENU.out(hardware->rgb_pin[i]);
+
       MENU.out(F("\tcnt "));
       MENU.out(hardware->rgb_pixel_cnt[i]);
       MENU.out(F("  \tvoltage "));
+
       MENU.out(hardware->rgb_led_voltage_type[i]);
       MENU.out(F("\tstart "));
       MENU.outln(hardware->rgb_pattern0[i]);

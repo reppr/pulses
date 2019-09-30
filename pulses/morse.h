@@ -11,7 +11,7 @@
 #define DEBUG_MORSE_IN_STATUS		// TESTING and DEBUGGING help
 
 // avoid sound glitches when using OLED:
-bool oled_feedback_while_playing = false;	// do *not* give morse feedback while playing	// MOVE: monochrome
+bool oled_feedback_while_playing = true;	// do *not* give morse feedback while playing	// MOVE: monochrome
 
 #if ! defined MORSE_MONOCHROME_ROW
   #define MORSE_MONOCHROME_ROW	0	// row for monochrome morse display

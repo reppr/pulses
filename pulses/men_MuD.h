@@ -3,7 +3,13 @@
   temporary test menu UI during development
 */
 
-    show_morse_event_buffer();
+MENU.out(F("highest_primary "));
+MENU.out(highest_primary);
+MENU.out(F("\tlowest_primary "));
+MENU.outln(lowest_primary);
+
+
+//  show_morse_event_buffer();
 
     /*
     debug_accgyro_sample = !debug_accgyro_sample;
