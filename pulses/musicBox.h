@@ -494,8 +494,8 @@ void watch_primary_pulses() {
 
     } else	// is *not* g_PRIMARY
       MENU.out('-');	// was removed, replaced or something
-  }
-  MENU.out(F("' "));	// mark end of low pulses by ' space
+  } // primary pulse loop (high to low)
+  MENU.out(F("' "));	// mark end of primary pulses by ' space
 
   if(primary_cnt <= 4 || MENU.verbosity >= VERBOSITY_SOME) {	// test&trimm: 4
     secondary_cnt=0;
@@ -1683,6 +1683,13 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 }  // musicBox_butler()
 
 
+void not_a_preset() {
+  musicBoxConf.preset = 0;
+  musicBoxConf.name = NULL;
+  musicBoxConf.date = NULL;
+}
+
+
 void select_random_scale() {
 #if defined RANDOM_ENTROPY_H
   random_entropy();	// entropy from hardware
@@ -1746,6 +1753,7 @@ void select_random_scale() {
 
   scale_user_selected = false;
   uiConf.subcycle_user_selected = false;
+  not_a_preset();
 } //  select_random_scale()
 
 
@@ -1758,6 +1766,7 @@ void  select_random_stack_sync(void) {
     musicBoxConf.stack_sync_slices *= -1;	// *more up*  as up did not exist in previous sync implementation
 
   stack_sync_user_selected = false;
+  not_a_preset();
 }
 
 void select_random_jiffle(void) {
@@ -1928,6 +1937,7 @@ void select_random_jiffle(void) {
   }
 
   jiffle_user_selected = false;
+  not_a_preset();
 }
 
 void random_metric_pitches(void) {
@@ -1989,6 +1999,7 @@ void random_metric_pitches(void) {
 
   pitch_user_selected = false;
   uiConf.subcycle_user_selected = false;
+  not_a_preset();
 }
 
 void random_octave_shift(void) {
@@ -2009,6 +2020,7 @@ void random_octave_shift(void) {
     break;
   }
   octave_user_selected = false;
+  not_a_preset();
 }
 
 
@@ -2270,8 +2282,10 @@ void start_musicBox() {
   PULSES.add_selected_to_group(g_PRIMARY);
   set_primary_block_bounds();	// remember where the primary block starts and stops
 
-  if(!sync_user_selected)	// if *not* set by user interaction	// TODO: factor out randomisation
+  if(!sync_user_selected) {	// if *not* set by user interaction	// TODO: factor out randomisation
     musicBoxConf.sync = random(6);		// random sync	// MAYBE: define  select_random_sync()  ???
+    not_a_preset();
+  }
 
   // stack_sync
   if(!stack_sync_user_selected) {	// if *not* set by user interaction	// TODO: factor out randomisation
@@ -2279,6 +2293,8 @@ void start_musicBox() {
       select_random_stack_sync();
     else
       musicBoxConf.stack_sync_slices = 0;	// 50% normal sync only, still automagic, but sync stacking is off
+
+    not_a_preset();	// well, most of the time
   }
 
   // time_unit
@@ -2305,6 +2321,7 @@ void start_musicBox() {
       random_metric_pitches();	// random *metric* pitches	// TODO: factor out randomisation
       MENU.tab();
     }
+    not_a_preset();
   }
 
 // #define OLDSTYLE_TUNE_AND_LIMIT	// use (buggy) old style tuning and lowering mechanism, for recording old setups
