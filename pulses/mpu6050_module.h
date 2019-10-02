@@ -1208,6 +1208,7 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 	     */
 	  case 1:	// extremes only
 	  case 8:	// extremes only
+	    extended_output(F("L__H"), MONOCHROME_MOTION_MUTING_ROW, 0, false);
 	    for(int pulse=lowest_primary + (primary_count/4) +1; pulse <= highest_primary - (primary_count/4); pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute middle two quarters
 	    break;
