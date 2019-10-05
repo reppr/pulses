@@ -3110,10 +3110,12 @@ void input_preset_and_start() {	// factored out UI component	// TODO: sets prese
 } // input_preset_and_start()
 
 
-void sync_landscape_time_sliced() {
-  musicBoxConf.sync = my_IDENTITY.esp_now_time_slice;	// receiver sets sync to its individual time slice
-  MENU.out(F("sync_landscape_time_sliced()  my sync "));
-  MENU.outln(musicBoxConf.sync);
+void sync_landscape_time_sliced() {	// set this instruments time slice
+  if(my_IDENTITY.esp_now_time_slice != ILLEGAL8) {
+    musicBoxConf.sync = my_IDENTITY.esp_now_time_slice;	// receiver sets sync to its individual time slice
+    MENU.out(F("sync_landscape_time_sliced()  my sync "));
+    MENU.outln(musicBoxConf.sync);
+  }
 }
 
 
@@ -3416,8 +3418,12 @@ bool musicBox_reaction(char token) {
 
       if(MENU.peek() == 'S') {	// 'CSS' set *all* instruments (including sender) to time slice sync
 	MENU.drop_input_token();
-	musicBoxConf.sync=my_IDENTITY.esp_now_time_slice;
 	MENU.out(F("sync =\t"));
+	if(my_IDENTITY.esp_now_time_slice != ILLEGAL8)
+	  musicBoxConf.sync=my_IDENTITY.esp_now_time_slice;	// include *sender* in time sliced landscape
+	else
+	  MENU.out(F("*no* sender time slice\t"));
+
 	MENU.outln(musicBoxConf.sync);
       }
       break;

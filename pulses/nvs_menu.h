@@ -86,7 +86,7 @@ bool nvs_menu_reaction(char token) {
 	MENU.drop_input_token();
 	if(MENU.is_numeric()) {	// 'IT<numeric>'
 	  input_value = MENU.numeric_input(-1);
-	  if(input_value > 0 && input_value < 256)
+	  if(input_value >= -1 && input_value <= 256)	// -1 aka 'ILLEGAL8' deactivates time slice
 	    my_IDENTITY.esp_now_time_slice = input_value;
 	  else
 	    MENU.outln_invalid();

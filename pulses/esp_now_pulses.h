@@ -115,7 +115,7 @@ hw_timer_t * esp_now_reaction_timer = NULL;
 typedef struct peer_ID_t {
   char preName[16]={0};
   mac_addr_t mac_addr[6]={0};
-  uint8_t esp_now_time_slice=0;	// react on broadcast or all-known-peers messages in an individual time slice
+  uint8_t esp_now_time_slice=ILLEGAL8;	// react on broadcast or all-known-peers messages in an individual time slice
   uint8_t version=0;
 } peer_ID_t;
 
@@ -513,6 +513,12 @@ void esp_now_send_identity(mac_addr_t* to_mac) {
 // prepare N_ID IDENTITY message to be sent in it's time slice
 void esp_now_prepare_N_ID(mac_addr_t* to_mac) {
   MENU.out(F("esp_now_prepare_N_ID()\tms "));
+
+  if(my_IDENTITY.esp_now_time_slice == ILLEGAL8) {
+    MENU.error_ln(F("no time slice defined, will *NOT* send"));
+    return;
+  }
+
   MENU.outln(my_IDENTITY.esp_now_time_slice * ESP_NOW_TIME_SLICE_MS);
 
   // save mac

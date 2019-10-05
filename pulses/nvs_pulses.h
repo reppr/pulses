@@ -471,7 +471,7 @@ void configure_IDENTITY_from_nvs() {
   // mac
 
   // time slice
-  if(IDENTITY_from_nvs_p->esp_now_time_slice) {
+  if(IDENTITY_from_nvs_p->esp_now_time_slice != ILLEGAL8) {
     my_IDENTITY.esp_now_time_slice = IDENTITY_from_nvs_p->esp_now_time_slice;
     MENU.out(F("time slice\t"));
     MENU.outln(my_IDENTITY.esp_now_time_slice);
