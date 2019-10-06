@@ -1005,7 +1005,7 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   tag_randomness(sync_user_selected);
   MENU.out(F("SYNC: "));
   MENU.out(musicBoxConf.sync);
-  if(musicBoxConf.stack_sync_slices) {	// /stack_sync_slices
+  if(musicBoxConf.stack_sync_slices != ILLEGAL16) {	// /stack_sync_slices
     MENU.out(F(" p["));
     MENU.out(musicBoxConf.base_pulse);
     MENU.out(F("]|"));
@@ -2102,10 +2102,10 @@ void furzificate() {	// switch to a quiet, farting patterns, u.a.
 */
 RTC_DATA_ATTR unsigned int * scale_stored_RTC=NULL;
 RTC_DATA_ATTR unsigned int * jiffle_stored_RTC=NULL;
-RTC_DATA_ATTR int sync_stored_RTC=ILLEGAL32;
-RTC_DATA_ATTR int stack_sync_slices_stored_RTC=0;		// TODO: make it short?
 RTC_DATA_ATTR unsigned long multiplier_stored_RTC=0;
 RTC_DATA_ATTR unsigned long divisor_stored_RTC=0;
+RTC_DATA_ATTR int sync_stored_RTC=ILLEGAL32;
+RTC_DATA_ATTR short stack_sync_slices_stored_RTC=ILLEGAL16;
 RTC_DATA_ATTR uint8_t metric_tunings_stored_RTC=2;	// 2 means off (&1)
 RTC_DATA_ATTR bool magic_autochanges_OFF_stored_RTC=false;
 
@@ -2116,7 +2116,7 @@ void rtc_save_configuration() {
   scale_stored_RTC	=NULL;
   jiffle_stored_RTC	=NULL;
   sync_stored_RTC	=ILLEGAL32;	// hmmm, not bullet proof	TODO: sync_stored_RTC
-  stack_sync_slices_stored_RTC	=0;
+  stack_sync_slices_stored_RTC =	ILLEGAL16;
   divisor_stored_RTC	=ILLEGAL32;	// !=0 after wake up flags deep sleep wakeup
   multiplier_stored_RTC	=ILLEGAL32;
 
@@ -2181,7 +2181,7 @@ void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless wakin
       sync_user_selected = true;
     }
 
-    if(stack_sync_slices_stored_RTC) {
+    if(stack_sync_slices_stored_RTC != ILLEGAL16) {
       MENU.out(F("stack | "));
       musicBoxConf.stack_sync_slices = stack_sync_slices_stored_RTC;
       stack_sync_user_selected = true;
@@ -2458,13 +2458,13 @@ void start_musicBox() {
 */
   musicBox_start_time = PULSES.get_now();	// keep musicBox_start_time
 
-  if (musicBoxConf.stack_sync_slices)
+  if((musicBoxConf.stack_sync_slices != ILLEGAL16) && (musicBoxConf.stack_sync_slices))
     PULSES.activate_selected_stack_sync_now((pulse_time_t) {PULSES.pulses[musicBoxConf.base_pulse].period.time/musicBoxConf.stack_sync_slices, 0}, musicBoxConf.sync);
   else
     PULSES.activate_selected_synced_now(musicBoxConf.sync);	// 'n' 'N' sync and activate
 
   // TODO: TEST: start pause detection and skipping
-  if(musicBoxConf.sync || musicBoxConf.stack_sync_slices) {	// start pause possible?
+  if(musicBoxConf.sync || (musicBoxConf.stack_sync_slices > 0 )) {	// start pause possible?
     PULSES.fix_global_next();			// cannot understand why i need that here...
     pulse_time_t pause = PULSES.global_next;
     if(musicBoxConf.stack_sync_slices) { // stack_sync sliced?
@@ -2476,7 +2476,6 @@ void start_musicBox() {
 	MENU.outln(F("no pause autoskip"));
 #if defined USE_MONOCHROME_DISPLAY
 	monochrome_display_message(F(" _"));	// TODO: monochrome pause time
-
       }
 #endif
     } else {	// stack_sync_slices==0
@@ -4036,7 +4035,7 @@ bool musicBox_reaction(char token) {
       }
     } else {	// bare '|'
       input_value = MENU.numeric_input(musicBoxConf.stack_sync_slices);
-      if(input_value >= 0 ) {
+      if((input_value >= -1 )) {
 	musicBoxConf.stack_sync_slices = input_value;
 	stack_sync_user_selected=true;
       }

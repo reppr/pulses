@@ -262,7 +262,7 @@ typedef struct musicBox_conf_t {
   // short primary_count=0;
   short base_pulse=ILLEGAL16;
 
-  short stack_sync_slices=0;	// 0 is off	positive: upwards,  negative: downwards
+  short stack_sync_slices=ILLEGAL16;	// ILLEGAL16 is undefined,	0 is off	positive: upwards,  negative: downwards
   short subcycle_octave=0;
 
   short bass_pulses=0;		// see  setup_bass_middle_high()
