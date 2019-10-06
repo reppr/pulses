@@ -2533,7 +2533,7 @@ void magical_stress_release() {		// special stress release for magical music box
     PULSES.select_n(voices);
     MENU.out(F("magical_stress_release() V"));
     MENU.outln(voices);
-
+    set_primary_block_bounds();
     stress_count = 0;		// configure pulses stress managment
     stress_event_cnt = -3;	// some *heavy* stress event expected after magical_stress_release()...
   } else {
@@ -2541,6 +2541,7 @@ void magical_stress_release() {		// special stress release for magical music box
     stress_count = 0;		// configure pulses stress managment
     stress_event_cnt = 0;
   }
+  set_primary_block_bounds();
   // instant_stress_release();	// DEACTIVATED
 }
 

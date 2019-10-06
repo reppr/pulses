@@ -278,3 +278,7 @@ GYRO_FLOAT_SCALING variable with UI
 stop automatic esp_now_add_identity
 
 use musicBoxConf.lowest_primary etc
+
+* / ...
+    stress_count = 0;		// configure pulses stress managment
+    stress_event_cnt = -3;	// some *heavy* stress event expected after magical_stress_release()...
