@@ -6208,7 +6208,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 // extended_output(...)  output on MENU, maybe OLED, possibly morse, ...
 void extended_output(char* data, uint8_t row=0, uint8_t col=0, bool force=false) {
-  MENU.out(data);
+  MENU.outln(data);
 
 #if defined USE_MONOCHROME_DISPLAY
   if(monochrome_can_be_used() || force || morse_output_char) {
