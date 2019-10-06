@@ -55,9 +55,9 @@ using namespace std;	// ESP8266 needs that
 /* **************************************************************** */
 // some #define's:
 
-#define ILLEGAL8	255
-#define ILLEGAL16	0xffff
-#define ILLEGAL32	0xffffffff
+#define ILLEGAL8	(uint8_t) 255
+#define ILLEGAL16	(short) 0xffff
+#define ILLEGAL32	(int) 0xffffffff
 
 /* **************************************************************** */
 // configuration sequence:

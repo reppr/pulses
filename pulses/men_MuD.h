@@ -8,6 +8,11 @@ MENU.out(highest_primary);
 MENU.out(F("\tlowest_primary "));
 MENU.outln(lowest_primary);
 
+MENU.out(F("highest_primary "));
+MENU.out(musicBoxConf.highest_primary);
+MENU.out(F("\tlowest_primary "));
+MENU.outln(musicBoxConf.lowest_primary);
+
 
 //  show_morse_event_buffer();
 

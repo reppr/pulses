@@ -272,10 +272,10 @@ bool oled_feedback_while_playing = false;	// do *not* give morse feedback while 
 
 why do i still include inputs?	never really used
 
-*do* initiate lowest_primary
-
 auto calibrate morse touch input interrupt level
 
 factor out 'L' hierarchy, use in :N
 
 fix LiPo OLED type boards
+
+remove old mpu6050 code

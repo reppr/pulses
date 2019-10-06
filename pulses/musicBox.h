@@ -425,26 +425,35 @@ void init_primary_counters() {
 bool show_cycle_pattern=false;
 bool show_cycle_pattern_intervals=false;
 
-short lowest_primary=ILLEGAL16, highest_primary=ILLEGAL16;	// remember start configuration
+short lowest_primary=ILLEGAL16;
+short highest_primary=ILLEGAL16;
 int primary_count=0;
 
 void set_primary_block_bounds() {	// remember where the primary block starts and stops
   lowest_primary=ILLEGAL16;
+  highest_primary=ILLEGAL16;
+  primary_count=0;
+
   for(int pulse=0; pulse<PL_MAX; pulse++) {
     if(PULSES.pulses[pulse].groups & g_PRIMARY) {
+      primary_count++;
+
       if(lowest_primary == ILLEGAL16)
-	lowest_primary = pulse;
-      highest_primary = pulse;
+	lowest_primary = pulse;		// first primary pulse seen
+      else
+	highest_primary = pulse;	// last primary pulse seen
     }
   }
-  primary_count = highest_primary - lowest_primary;	// stupid, but true
 
-  if(MENU.verbosity >= VERBOSITY_MORE) {
-  MENU.out(primary_count);
-    MENU.out(" primaries from ");
-    MENU.out(lowest_primary);
-    MENU.out(" to ");
-    MENU.outln(highest_primary);
+ if(MENU.verbosity >= VERBOSITY_MORE) {
+    MENU.out(primary_count);
+    if(primary_count) {
+      MENU.out(" primaries from ");
+      MENU.out(lowest_primary);
+      MENU.out(" to ");
+      MENU.outln(highest_primary);
+    } else
+      MENU.outln(F("no primary pulses"));
   }
 }
 
@@ -537,7 +546,7 @@ void show_cycle(pulse_time_t cycle) {
     return;
   }
 
-  set_primary_block_bounds();
+  set_primary_block_bounds();	// remember where the primary block starts and stops
 
   PULSES.display_time_human(cycle);
   MENU.ln();
@@ -2280,7 +2289,7 @@ void start_musicBox() {
   setup_jiffle_thrower_selected(selected_actions);	// FIXME: why does this give 'no free GPIO' ???
 
   PULSES.add_selected_to_group(g_PRIMARY);
-  set_primary_block_bounds();	// remember where the primary block starts and stops
+  // set_primary_block_bounds();		// delayed, see below
 
   if(!sync_user_selected) {	// if *not* set by user interaction	// TODO: factor out randomisation
     musicBoxConf.sync = random(6);		// random sync	// MAYBE: define  select_random_sync()  ???
@@ -2381,6 +2390,8 @@ void start_musicBox() {
   // *not* regarding pitch_user_selected as selected frequencies might be too high, check anyway...
   lower_audio_if_too_high(409600*2);	// 2 bass octaves	// TODO: adjust appropriate...
 #endif
+
+  set_primary_block_bounds();	// remember where the primary block starts and stops
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   peripheral_power_switch_ON();
