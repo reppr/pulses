@@ -455,16 +455,18 @@ void set_primary_block_bounds() {	// remember where the primary block starts and
     } else
       MENU.outln(F("no primary pulses"));
   }
-}
+} // set_primary_block_bounds()
+
+
+int highest_primary_at_start=ILLEGAL32;	// needed for primary pattern display in watch_primary_pulses()
 
 void watch_primary_pulses() {
   long diff;
-  int primary_cnt=0;
   int secondary_cnt=ILLEGAL32;
 
-  for(int pulse=highest_primary; pulse>=lowest_primary; pulse--) {
+  for(int pulse=highest_primary_at_start; pulse>=lowest_primary; pulse--) {
     if(PULSES.pulses[pulse].groups & g_PRIMARY) {
-      primary_cnt++;
+      //      primary_cnt++;
       diff = PULSES.pulses[pulse].counter - primary_counters[pulse];	// has the counter changed?
       primary_counters[pulse]=PULSES.pulses[pulse].counter;		// update to new counter
 
@@ -506,7 +508,7 @@ void watch_primary_pulses() {
   } // primary pulse loop (high to low)
   MENU.out(F("' "));	// mark end of primary pulses by ' space
 
-  if(primary_cnt <= 4 || MENU.verbosity >= VERBOSITY_SOME) {	// test&trimm: 4
+  if(primary_count <= 4 || MENU.verbosity >= VERBOSITY_SOME) {	// test&trimm: 4
     secondary_cnt=0;
 
     for(int pulse=0; pulse < PL_MAX; pulse++) {
@@ -518,7 +520,7 @@ void watch_primary_pulses() {
     MENU.out(secondary_cnt);
     MENU.out(')');
   }
-}
+} // watch_primary_pulses()
 
 void show_cycles_1line() {	// no scale, no cycle
   if(selected_in(SCALES)==NULL) {
@@ -2391,7 +2393,8 @@ void start_musicBox() {
   lower_audio_if_too_high(409600*2);	// 2 bass octaves	// TODO: adjust appropriate...
 #endif
 
-  set_primary_block_bounds();	// remember where the primary block starts and stops
+  set_primary_block_bounds();			// remember where the primary block starts and stops
+  highest_primary_at_start = highest_primary;	// needed for primary pattern display in watch_primary_pulses()
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   peripheral_power_switch_ON();
@@ -2525,15 +2528,14 @@ void relax() {		// kill highest secondary pulse
 
 void magical_stress_release() {		// special stress release for magical music box
   if (voices) {	// normal case, I have never seen exceptions
-    int topmost = --voices;
+    PULSES.init_pulse(highest_primary);		// *remove* topmost voice
 #if defined USE_RGB_LED_STRIP
-    clear_RGB_string_pixel(topmost);
+    clear_RGB_string_pixel(highest_primary);
 #endif
-    PULSES.init_pulse(topmost);		// *remove* topmost voice
-    PULSES.select_n(voices);
+    PULSES.select_n(--voices);
+
     MENU.out(F("magical_stress_release() V"));
     MENU.outln(voices);
-    set_primary_block_bounds();
     stress_count = 0;		// configure pulses stress managment
     stress_event_cnt = -3;	// some *heavy* stress event expected after magical_stress_release()...
   } else {
