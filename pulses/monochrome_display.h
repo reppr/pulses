@@ -12,6 +12,9 @@
 
 uint8_t monochrome_power_save=0;
 
+// avoid sound glitches when using OLED:
+bool oled_feedback_while_playing = true;	// do *not* give morse feedback while playing
+
 bool monochrome_can_be_used() {	// monochrome output is appropriate?
   // TODO: monochrome_display_hardware	fix&use monochrome_display detection
 

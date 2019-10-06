@@ -1616,9 +1616,13 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 } // setup()
 
 
-// bool lower_priority_tasks();
+// bool low_priority_tasks();
 // check lower priority tasks and do the first one that needs to be done
 // return true if something was done
+#if defined USE_MPU6050
+  uint32_t accgyro_modulus = 21221;	// prime	// TODO: UI
+#endif
+//
 bool low_priority_tasks() {
   static uint32_t low_priority_cnt = 0;
 
@@ -1639,14 +1643,6 @@ bool low_priority_tasks() {
 #endif
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
-//	  #define GYRO_MODULUS		19319	// prime		// TODO: OBSOLETE?	REMOVE:
-//	  if((low_priority_cnt % GYRO_MODULUS) == 0) { // check GYRO
-//	    if(accGyro_is_active) {
-//	      if(GYRO_only_check())
-//		return true;
-//	    }
-//	  }
-
   if(accGyro_new_data) {	//   check new input data
     if(!mpu6050_available)						// catch bugs, if any ;)  TODO: REMOVE:
       MENU.error_ln(F("accGyro_new_data  mpu6050_available=false"));	// catch bugs, if any ;)  TODO: REMOVE:
@@ -1656,27 +1652,9 @@ bool low_priority_tasks() {
     return true;
   }
 
-  uint32_t accgyro_modulus;		// TODO: remove runtime test versions
-  switch(mpu6050_test_version) {	// TODO: remove runtime test versions
-  case 1:
-    accgyro_modulus = 55547;	// prime
-    break;
-
-  case 2:
-    // accgyro_modulus = 9901;	// prime	would be ok, but makes too much noise
-    accgyro_modulus = 21221;	// prime
-    break;
-  }
-
   if ((low_priority_cnt % accgyro_modulus) == 0) { // take a accelerGyro sample
     if(accGyro_is_active) {
-      switch(mpu6050_test_version) {
-      case 1:
-//	accGyro_sample();	// TODO: REMOVE: ################
-	break;
-      case 2:
-	accGyro_sample_v2();
-      }
+      accGyro_sample_v2();
       return true;
     }
   }

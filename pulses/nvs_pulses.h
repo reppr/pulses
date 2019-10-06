@@ -50,18 +50,12 @@ String nvs_getString(char * key) {
   return s;
 }
 
-#define NVS_FREE_ENTRIES_DUMMY_HACK	// TODO: DADA FIXME: ################
 int nvs_free_entries() {
-#if ! defined NVS_FREE_ENTRIES_DUMMY_HACK
   Preferences CONF_nvs;
   CONF_nvs.begin("CONFIG", /* readonly is */ false);
   int free_entries = CONF_nvs.freeEntries();
   CONF_nvs.end();
   return free_entries;
-#else // NVS_FREE_ENTRIES_DUMMY_HACK
-  MENU.error_ln(F("NVS_FREE_ENTRIES_DUMMY_HACK"));
-  return ILLEGAL32;
-#endif
 }
 
 typedef uint32_t nvs_handle_t;	// TODO: *where* is that defined?	################
@@ -486,18 +480,13 @@ void nvs_clear_all_keys() {
   MENU.out(F(">>> CLEARED ALL KEYS in CONF_nvs <<<  "));
   Preferences CONF_nvs;
   CONF_nvs.begin("CONFIG", /* readonly is */ false);
-#if ! defined NVS_FREE_ENTRIES_DUMMY_HACK
   int was_free = CONF_nvs.freeEntries();
-#else
-  MENU.error_ln(F("NVS_FREE_ENTRIES_DUMMY_HACK"));
-#endif
   CONF_nvs.clear();
 
-#if ! defined NVS_FREE_ENTRIES_DUMMY_HACK
   MENU.out(CONF_nvs.freeEntries() - was_free);
   MENU.out(F("\tfree entries now "));
   MENU.outln(CONF_nvs.freeEntries());
-#endif
+
   CONF_nvs.end();
 }
 

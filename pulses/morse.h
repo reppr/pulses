@@ -10,9 +10,6 @@
 #define DEBUG_TREAT_MORSE_EVENTS_V3	// TODO: deactivate
 #define DEBUG_MORSE_IN_STATUS		// TESTING and DEBUGGING help
 
-// avoid sound glitches when using OLED:
-bool oled_feedback_while_playing = true;	// do *not* give morse feedback while playing	// MOVE: monochrome
-
 #if ! defined MORSE_MONOCHROME_ROW
   #define MORSE_MONOCHROME_ROW	0	// row for monochrome morse display
 #endif
@@ -2282,6 +2279,9 @@ bool morse_output_to_do=false;		// triggers morse_do_output()
 extern bool musicbox_is_idle();
 extern bool monochrome_can_be_used();
 extern void monochrome_display_message(char * message);
+// avoid sound glitches when using OLED:
+extern bool oled_feedback_while_playing;	// do *not* give morse feedback while playing
+
 void morse_do_output() {
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
   if(morse_out_buffer_cnt) {

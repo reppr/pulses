@@ -53,12 +53,9 @@ MENU.out("nvs_AUTOSTART:\t");
 MENU.outln(CONF_nvs.getString("nvs_AUTOSTART"));
 */
 
-#if ! defined NVS_FREE_ENTRIES_DUMMY_HACK
   MENU.out("nvs freeEntries():\t");
   MENU.outln(CONF_nvs.freeEntries());
-#else
-  MENU.error_ln(F("NVS_FREE_ENTRIES_DUMMY_HACK"));
-#endif
+
 /*
   nvs_DATE
 */
