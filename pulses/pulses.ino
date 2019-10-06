@@ -911,6 +911,7 @@ bool stack_sync_user_selected=false;
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
   #include "mpu6050_module.h"
+  #include "extensions/IMU_Zero.h"
 #endif
 
 #if defined USE_RGB_LED_STRIP

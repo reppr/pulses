@@ -90,6 +90,11 @@
   #undef USE_RTC_MODULE
 #endif
 
+#if defined INCLUDE_IMU_ZERO && ! defined USE_MPU6050
+  #warning no MPU6050, no IMU ZERO
+  #undef INCLUDE_IMU_ZERO
+#endif
+
 /*
   TODO:	 *conflict* UART2  MIDI <> OLED		and UART2 gpio_pins 16, 17
 

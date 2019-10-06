@@ -3,16 +3,7 @@
   temporary test menu UI during development
 */
 
-MENU.out(F("highest_primary "));
-MENU.out(highest_primary);
-MENU.out(F("\tlowest_primary "));
-MENU.outln(lowest_primary);
-
-MENU.out(F("highest_primary "));
-MENU.out(musicBoxConf.highest_primary);
-MENU.out(F("\tlowest_primary "));
-MENU.outln(musicBoxConf.lowest_primary);
-
+determine_imu_zero_offsets(2000);
 
 //  show_morse_event_buffer();
 

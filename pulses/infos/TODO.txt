@@ -274,3 +274,7 @@ fix LiPo OLED type boards
 warn if accGyr offsets are not set
 
 GYRO_FLOAT_SCALING variable with UI
+
+stop automatic esp_now_add_identity
+
+use musicBoxConf.lowest_primary etc

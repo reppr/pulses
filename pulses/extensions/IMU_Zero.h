@@ -16,6 +16,8 @@
   2019_10_07	as is, with changed BAUDRATE
   2019_10_07	emacs whitespace-cleanup
 
+  2019-10-07	use MENU.out, use F("") macro, minor adaptions
+
 */
 
 
@@ -127,8 +129,8 @@ const int iGy = 4;
 const int iGz = 5;
 
 const int usDelay = 3150;   // empirical, to hold sampling to 200 Hz
-const int NFast =  1000;    // the bigger, the better (but slower)
-const int NSlow = 10000;    // ..
+      int NFast =  1000;    // the bigger, the better (but slower)
+      int NSlow = 10000;    // ..
 const int LinesBetweenHeaders = 5;
       int LowValue[6];
       int HighValue[6];
@@ -154,21 +156,23 @@ void GetSmoothed()
       { // get sums
 	accelgyro.getMotion6(&RawValue[iAx], &RawValue[iAy], &RawValue[iAz],
 			     &RawValue[iGx], &RawValue[iGy], &RawValue[iGz]);
-	if ((i % 500) == 0)
-	  Serial.print(PERIOD);
+	if ((i % 1000) == 0)	// was: 500
+	  MENU.out(PERIOD);
 	delayMicroseconds(usDelay);
 	for (int j = iAx; j <= iGz; j++)
 	  Sums[j] = Sums[j] + RawValue[j];
       } // get sums
 //    unsigned long usForN = micros() - Start;
-//    Serial.print(" reading at ");
-//    Serial.print(1000000/((usForN+N/2)/N));
-//    Serial.println(" Hz");
+//    MENU.out(F(" reading at "));
+//    MENU.out(1000000/((usForN+N/2)/N));
+//    MENU.outln(F(" Hz"));
+    MENU.ln();
+
     for (i = iAx; i <= iGz; i++)
       { Smoothed[i] = (Sums[i] + N/2) / N ; }
   } // GetSmoothed
 
-void Initialize()
+void Initialize_imu_zero()
   {
     // join I2C bus (I2Cdev library doesn't do this automatically)
     #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
@@ -177,17 +181,17 @@ void Initialize()
 	Fastwire::setup(400, true);
     #endif
 
-    //    Serial.begin(9600);
-    Serial.begin(BAUDRATE);
-
     // initialize device
-    Serial.println("Initializing I2C devices...");
+    MENU.outln(F("Initializing I2C devices..."));
     accelgyro.initialize();
 
     // verify connection
-    Serial.println("Testing device connections...");
-    Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
-  } // Initialize
+    MENU.out(F("Testing MPU6050 connection\t"));
+    if(accelgyro.testConnection())
+      MENU.outln(F("OK"));
+    else
+      MENU.error_ln(F("failed"));
+  } // Initialize_imu_zero
 
 void SetOffsets(int TheOffsets[6])
   { accelgyro.setXAccelOffset(TheOffsets [iAx]);
@@ -201,40 +205,50 @@ void SetOffsets(int TheOffsets[6])
 void ShowProgress()
   { if (LinesOut >= LinesBetweenHeaders)
       { // show header
-	Serial.println("\tXAccel\t\t\tYAccel\t\t\t\tZAccel\t\t\tXGyro\t\t\tYGyro\t\t\tZGyro");
+	MENU.outln(F("\nXAccel\t\t\tYAccel\t\t\t\tZAccel\t\t\tXGyro\t\t\tYGyro\t\t\tZGyro"));
 	LinesOut = 0;
       } // show header
-    Serial.print(BLANK);
+    MENU.out(BLANK);
     for (int i = iAx; i <= iGz; i++)
-      { Serial.print(LBRACKET);
-	Serial.print(LowOffset[i]),
-	Serial.print(COMMA);
-	Serial.print(HighOffset[i]);
-	Serial.print("] --> [");
-	Serial.print(LowValue[i]);
-	Serial.print(COMMA);
-	Serial.print(HighValue[i]);
+      { MENU.out(LBRACKET);
+	MENU.out(LowOffset[i]),
+	MENU.out(COMMA);
+	MENU.out(HighOffset[i]);
+	MENU.out(F("] --> ["));
+	MENU.out(LowValue[i]);
+	MENU.out(COMMA);
+	MENU.out(HighValue[i]);
 	if (i == iGz)
-	  { Serial.println(RBRACKET); }
+	  { MENU.outln(RBRACKET); }
 	else
-	  { Serial.print("]\t"); }
+	  { MENU.out(F("]\t")); }
       }
     LinesOut++;
   } // ShowProgress
+
+void SetAveraging(int NewN)
+  { N = NewN;
+    MENU.out(F("averaging "));
+    MENU.out(N);
+    MENU.outln(F(" readings each time"));
+   } // SetAveraging
 
 void PullBracketsIn()
   { boolean AllBracketsNarrow;
     boolean StillWorking;
     int NewOffset[6];
 
-    Serial.println("\nclosing in:");
+    MENU.outln(F("\nclosing in:"));
     AllBracketsNarrow = false;
     ForceHeader();
     StillWorking = true;
     while (StillWorking)
       { StillWorking = false;
 	if (AllBracketsNarrow && (N == NFast))
-	  { SetAveraging(NSlow); }
+	  {
+	    int NSlow = 10 * NFast;	// was: NSlow (==10000)
+	    SetAveraging(NSlow);
+	  }
 	else
 	  { AllBracketsNarrow = true; }// tentative
 	for (int i = iAx; i <= iGz; i++)
@@ -273,7 +287,7 @@ void PullBracketsOut()
     int NextLowOffset[6];
     int NextHighOffset[6];
 
-    Serial.println("expanding:");
+    MENU.outln(F("expanding:"));
     ForceHeader();
 
     while (!Done)
@@ -311,15 +325,8 @@ void PullBracketsOut()
      } // keep going
   } // PullBracketsOut
 
-void SetAveraging(int NewN)
-  { N = NewN;
-    Serial.print("averaging ");
-    Serial.print(N);
-    Serial.println(" readings each time");
-   } // SetAveraging
-
-void setup()
-  { Initialize();
+void determine_imu_zero_offsets(int NFast=1000)
+  { Initialize_imu_zero();
     for (int i = iAx; i <= iGz; i++)
       { // set targets and initial guesses
 	Target[i] = 0; // must fix for ZAccel
@@ -332,9 +339,5 @@ void setup()
     PullBracketsOut();
     PullBracketsIn();
 
-    Serial.println("-------------- done --------------");
-  } // setup
-
-void loop()
-  {
-  } // loop
+    MENU.outln(F("-------------- done --------------"));
+  } // determine_imu_zero_offsets()
