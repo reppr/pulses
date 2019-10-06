@@ -286,3 +286,6 @@ pause skipping
 why does preset UI drop following input?
 
 TODO: use musicBoxConf.primary_count in next version
+
+TODO: fix play_KB_macro()
+      avoid use where not appropriate

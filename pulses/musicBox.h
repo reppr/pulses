@@ -2265,8 +2265,9 @@ void start_musicBox() {
   maybe_restore_from_RTCmem();		// only after deep sleep, else noop
 
   MENU.ln();
-  MENU.men_selected = 0;	// starting point (might be changed by kb macro)
-  MENU.play_KB_macro(F("-:M "), false);	// initialize, the space avoids output from :M , no newline	// maybe replace?
+
+  MENU.men_selected = musicBox_page;
+  MENU.verbosity = VERBOSITY_LOWEST;
 
   // TODO: REWORK:  setup_bass_middle_high()  used in musicBox, but not really compatible
   MENU.ln();	// start setup sequence output "block"
