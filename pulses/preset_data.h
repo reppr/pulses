@@ -2224,8 +2224,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 85:
     musicBoxConf.name = F("Pentaweb");
     //comment: stimmigsvoll
-    //comment: mit sehnsucht ufs ziel zue
-    //# favorite
+    //comment: mit sehnsucht und chraft ufs ziel zue
+    //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 1h 4' 0"
     //# motives

@@ -488,8 +488,7 @@ void accGyro_sample_v2() {
 
 extern bool monochrome_can_be_used();
 extern void monochrome_show_line(uint8_t row, char * s);
-extern short lowest_primary, highest_primary;
-extern int primary_count;
+extern short primary_count;		// TODO: use musicBoxConf.primary_count in next version
 extern void noAction_flags_line();
 
 void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
@@ -636,7 +635,7 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 	if(Ay_i_new != _selected_Ay_i_seen) {
 	  _selected_Ay_i_seen = Ay_i_new;
 
-	  for(int pulse=lowest_primary; pulse <= highest_primary; pulse++)	// default ALL UNMUTED
+	  for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++)	// default ALL UNMUTED
 	    PULSES.pulses[pulse].action_flags &= ~noACTION;	// CLEAR all
 
 	  switch(Ay_i_new) {
@@ -653,27 +652,27 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 	  case 1:	// extremes only
 	  case 8:	// extremes only
 	    extended_output(F("L__H"), MONOCHROME_MOTION_MUTING_ROW, 0, false);
-	    for(int pulse=lowest_primary + (primary_count/4) +1; pulse <= highest_primary - (primary_count/4); pulse++)
+	    for(int pulse=musicBoxConf.lowest_primary + (primary_count/4) +1; pulse <= musicBoxConf.highest_primary - (primary_count/4); pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute middle two quarters
 	    break;
 
 	  case 7:	// middles only
 	    extended_output(F("_BM_ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
-	    for(int pulse = highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
+	    for(int pulse = musicBoxConf.highest_primary - (primary_count/4) +1; pulse <= musicBoxConf.highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute high quarter
-	    for(int pulse=lowest_primary; pulse <= lowest_primary + (primary_count/4); pulse++)
+	    for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.lowest_primary + (primary_count/4); pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute low quarter
 	    break;
 
 	  case 6:	// mute lower half
 	    extended_output(F("__MH "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
-	    for(int pulse=lowest_primary; pulse <= lowest_primary + (primary_count/2); pulse++)
+	    for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.lowest_primary + (primary_count/2); pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute lower half
 	    break;
 
 	  case 5:	// mute low
 	    extended_output(F("_BMH "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
-	    for(int pulse=lowest_primary; pulse <= lowest_primary + (primary_count/4); pulse++)
+	    for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.lowest_primary + (primary_count/4); pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute low quarter
 	    break;
 
@@ -683,13 +682,13 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 
 	  case 3:	// mute high
 	    extended_output(F("LBM_ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
-	    for(int pulse = highest_primary - (primary_count/4) +1; pulse <= highest_primary; pulse++)
+	    for(int pulse = musicBoxConf.highest_primary - (primary_count/4) +1; pulse <= musicBoxConf.highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute high quarter
 	    break;
 
 	  case 2:	// mute upper half
 	    extended_output(F("LB__ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
-	    for(int pulse = highest_primary - (primary_count/2) +1; pulse <= highest_primary; pulse++)
+	    for(int pulse = musicBoxConf.highest_primary - (primary_count/2) +1; pulse <= musicBoxConf.highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute upper half
 	    break;
 

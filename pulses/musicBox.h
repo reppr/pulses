@@ -425,33 +425,31 @@ void init_primary_counters() {
 bool show_cycle_pattern=false;
 bool show_cycle_pattern_intervals=false;
 
-short lowest_primary=ILLEGAL16;
-short highest_primary=ILLEGAL16;
-int primary_count=0;
+short primary_count=0;	// TODO: use musicBoxConf.primary_count in next version
 
 void set_primary_block_bounds() {	// remember where the primary block starts and stops
-  lowest_primary=ILLEGAL16;
-  highest_primary=ILLEGAL16;
-  primary_count=0;
+  musicBoxConf.lowest_primary=ILLEGAL16;
+  musicBoxConf.highest_primary=ILLEGAL16;
+  primary_count=0;	// TODO: use musicBoxConf.primary_count in next version
 
   for(int pulse=0; pulse<PL_MAX; pulse++) {
     if(PULSES.pulses[pulse].groups & g_PRIMARY) {
       primary_count++;
 
-      if(lowest_primary == ILLEGAL16)
-	lowest_primary = pulse;		// first primary pulse seen
+      if(musicBoxConf.lowest_primary == ILLEGAL16)
+	musicBoxConf.lowest_primary = pulse;		// first primary pulse seen
       else
-	highest_primary = pulse;	// last primary pulse seen
+	musicBoxConf.highest_primary = pulse;	// last primary pulse seen
     }
   }
 
  if(MENU.verbosity >= VERBOSITY_MORE) {
-    MENU.out(primary_count);
+    MENU.out(primary_count);	// TODO: use musicBoxConf.primary_count in next version
     if(primary_count) {
       MENU.out(" primaries from ");
-      MENU.out(lowest_primary);
+      MENU.out(musicBoxConf.lowest_primary);
       MENU.out(" to ");
-      MENU.outln(highest_primary);
+      MENU.outln(musicBoxConf.highest_primary);
     } else
       MENU.outln(F("no primary pulses"));
   }
@@ -464,7 +462,7 @@ void watch_primary_pulses() {
   long diff;
   int secondary_cnt=ILLEGAL32;
 
-  for(int pulse=highest_primary_at_start; pulse>=lowest_primary; pulse--) {
+  for(int pulse=highest_primary_at_start; pulse>=musicBoxConf.lowest_primary; pulse--) {
     if(PULSES.pulses[pulse].groups & g_PRIMARY) {
       //      primary_cnt++;
       diff = PULSES.pulses[pulse].counter - primary_counters[pulse];	// has the counter changed?
@@ -553,7 +551,7 @@ void show_cycle(pulse_time_t cycle) {
   PULSES.display_time_human(cycle);
   MENU.ln();
 
-  pulse_time_t period_highest = PULSES.pulses[highest_primary].period;
+  pulse_time_t period_highest = PULSES.pulses[musicBoxConf.highest_primary].period;
   pulse_time_t shortest = scale2harmonical_cycle(selected_in(SCALES), &period_highest);
 
   if(MENU.verbosity >= VERBOSITY_MORE) {
@@ -2394,13 +2392,13 @@ void start_musicBox() {
 #endif
 
   set_primary_block_bounds();			// remember where the primary block starts and stops
-  highest_primary_at_start = highest_primary;	// needed for primary pattern display in watch_primary_pulses()
+  highest_primary_at_start = musicBoxConf.highest_primary;	// needed for primary pattern display in watch_primary_pulses()
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   peripheral_power_switch_ON();
 #endif
 
-  pulse_time_t period_lowest = PULSES.pulses[lowest_primary].period;
+  pulse_time_t period_lowest = PULSES.pulses[musicBoxConf.lowest_primary].period;
   CyclesConf.harmonical_CYCLE = scale2harmonical_cycle(selected_in(SCALES), &period_lowest);
 
   if(!uiConf.subcycle_user_selected) {
@@ -2527,9 +2525,9 @@ void relax() {		// kill highest secondary pulse
 
 void magical_stress_release() {		// special stress release for magical music box
   if (voices) {	// normal case, I have never seen exceptions
-    PULSES.init_pulse(highest_primary);		// *remove* topmost voice
+    PULSES.init_pulse(musicBoxConf.highest_primary);		// *remove* topmost voice
 #if defined USE_RGB_LED_STRIP
-    clear_RGB_string_pixel(highest_primary);
+    clear_RGB_string_pixel(musicBoxConf.highest_primary);
 #endif
     PULSES.select_n(--voices);
 
@@ -2846,7 +2844,7 @@ void magical_butler(int p) {	// TODO: OBSOLETE?
 void sync_shifting(fraction_t shift) {
   pulse_time_t this_shift;
   if(shift.multiplier) { // no zero shift?
-    for (int pulse=lowest_primary; pulse <= highest_primary; pulse++) {
+    for (int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++) {
       if(PULSES.pulses[pulse].flags & ACTIVE) {
 	this_shift = PULSES.pulses[pulse].period;
 	PULSES.mul_time(&this_shift, shift.multiplier);
@@ -2988,7 +2986,7 @@ void musicBox_display() {
   MENU.tab();
   MENU.out(F("'c' cycle "));
 
-  pulse_time_t period_lowest = PULSES.pulses[lowest_primary].period;
+  pulse_time_t period_lowest = PULSES.pulses[musicBoxConf.lowest_primary].period;
   CyclesConf.harmonical_CYCLE = scale2harmonical_cycle(selected_in(SCALES), &period_lowest); // TODO: rethink ################
   PULSES.display_time_human(CyclesConf.harmonical_CYCLE);
   MENU.ln();
@@ -3063,7 +3061,7 @@ void musicBox_display() {
 
 void noAction_flags_line() {	// show a line with primary noACTION flag signs		// TODO: move to Pulses?
   MENU.ln();
-  for (int pulse=highest_primary; pulse >= lowest_primary; pulse--) {
+  for (int pulse=musicBoxConf.highest_primary; pulse >= musicBoxConf.lowest_primary; pulse--) {
     if(PULSES.pulses[pulse].action_flags & noACTION)
       MENU.out('x');	// actions are blocked
     else
@@ -3742,41 +3740,42 @@ bool musicBox_reaction(char token) {
     switch(MENU.peek()) {
     case '1':	// 'Q1' toggle bottom quarter
       MENU.drop_input_token();
-      PULSES.select_from_to(lowest_primary, lowest_primary + (primary_count/4));
+      PULSES.select_from_to(musicBoxConf.lowest_primary, musicBoxConf.lowest_primary + (primary_count/4));	// TODO: use musicBoxConf.primary_count in next version
       PULSES.selected_toggle_no_actions();
       PULSES.select_n(voices);
       break;
 
     case '2':	// 'Q3' toggle lower middle quarter
       MENU.drop_input_token();
-      PULSES.select_from_to(lowest_primary + (primary_count/4) +1, lowest_primary + highest_primary/2);
+      // TODO: use musicBoxConf.primary_count in next version
+      PULSES.select_from_to(musicBoxConf.lowest_primary + (primary_count/4) +1, musicBoxConf.lowest_primary + musicBoxConf.highest_primary/2);
       PULSES.selected_toggle_no_actions();
       PULSES.select_n(voices);
       break;
 
     case '3':	// 'Q2' toggle higher middle quarter
       MENU.drop_input_token();
-      PULSES.select_from_to(highest_primary/2 +1, highest_primary - (primary_count/4));
+      PULSES.select_from_to(musicBoxConf.highest_primary/2 +1, musicBoxConf.highest_primary - (primary_count/4));
       PULSES.selected_toggle_no_actions();
       PULSES.select_n(voices);
       break;
 
     case '4':	// 'Q4' toggle top quarter
       MENU.drop_input_token();
-      PULSES.select_from_to(highest_primary - (primary_count/4) +1, highest_primary);
+      PULSES.select_from_to(musicBoxConf.highest_primary - (primary_count/4) +1, musicBoxConf.highest_primary);
       PULSES.selected_toggle_no_actions();
       PULSES.select_n(voices);
       break;
 
     case '0':	// 'Q0' *SET ALL* noACTION flags on primary pulses
       MENU.drop_input_token();
-      for (int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+      for (int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++)
 	PULSES.pulses[pulse].action_flags |= noACTION;	// SET all
       break;
 
     case 'A':	// 'QA' *CLEAR ALL* noACTION flags on primary pulses
       MENU.drop_input_token();
-      for (int pulse=lowest_primary; pulse <= highest_primary; pulse++)
+      for (int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++)
 	PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
       break;
 //  default:	// 'Q' (bare or unknown tokens)
@@ -3941,27 +3940,27 @@ bool musicBox_reaction(char token) {
     break;
 
   // TODO: REPLACE: this is just a *proof of concept* test, works, but is not usable ################
-  case 's':	// in musicBox toggle voice groups 'sb' 'sm' 'st'
+  case 's':	// in musicBox toggle voice groups 'sb' 'sm' 'st'	// TODO: OBSOLETE: rework or remove
     {
       int start=0;
       int end =0;
       switch(MENU.peek()) {
       case 'b':	// 'sb' toggle bottom voices
-	start = lowest_primary;
+	start = musicBoxConf.lowest_primary;
 	end = start + 7;	// TODO: FIXME: 7 just a test
 	break;
       case 'm':	// 'sm' toggle middle voices
-	start = lowest_primary + 7;
-	end = highest_primary - 7;	// TODO: FIXME: 7 just a test
+	start = musicBoxConf.lowest_primary + 7;
+	end = musicBoxConf.highest_primary - 7;	// TODO: FIXME: 7 just a test
 	break;
       case 't':	// 'st' 'sh' toggle top=high voices
       case 'h':	// 'st' 'sh' toggle top=high voices
-	start = highest_primary -7 ;	// TODO: FIXME: 7 just a test
-	end = highest_primary;
+	start = musicBoxConf.highest_primary -7 ;	// TODO: FIXME: 7 just a test
+	end = musicBoxConf.highest_primary;
 	break;
       case '~':	// 's~' toggle all voices
-	start = lowest_primary;
-	end = highest_primary;
+	start = musicBoxConf.lowest_primary;
+	end = musicBoxConf.highest_primary;
 	break;
 
       default:	// EOF8 or invalid

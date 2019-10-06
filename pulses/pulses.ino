@@ -259,7 +259,7 @@ typedef struct musicBox_conf_t {
   unsigned short cycle_slices = 540;	// set slice_tick_period accordingly
   short lowest_primary=ILLEGAL16;
   short highest_primary=ILLEGAL16;
-  // short primary_count=0;
+  // short primary_count=0;		// TODO: use musicBoxConf.primary_count in next version
   short base_pulse=ILLEGAL16;
 
   short stack_sync_slices=ILLEGAL16;	// ILLEGAL16 is undefined,	0 is off	positive: upwards,  negative: downwards

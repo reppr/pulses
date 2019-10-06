@@ -389,7 +389,7 @@ bool update_RGB_LED_string=false;	// is the string buffer dirty?
 
 int pulse_2_rgb_pixel(int pulse) {
   int pixel = pulse;
-  pixel -= lowest_primary;
+  pixel -= musicBoxConf.lowest_primary;
   pixel += HARDWARE.rgb_pattern0[0];	// DADA	TODO: multiple RGB strings
   return pixel;
 }
