@@ -3009,13 +3009,14 @@ void musicBox_display() {
   show_when_done_function();
   MENU.ln();
 
-  #if defined USE_RGB_LED_STRIP
-  MENU.outln(F("\n'L'=rgbLED 'LB'=BGdim 'LS'=saturation0 'LR'=sat reset value 'LI'=intensity 'LN'=hue slices"));
-  MENU.outln(F("   'LH'=high priority 'LP'=pixel cnt 'LV'=voltage 'LO'=offset pattern"));
+#if defined USE_RGB_LED_STRIP
+  rgb_led_string_UI_display();
+  MENU.ln();
 #endif
 
 #if defined USE_ESP_NOW
   MENU.outln(F("'C<macro>'=send macro 'CC<num>'=recipient  'C'='CC'=build net 'CS'=automagic sync landscape"));
+  MENU.ln();
 #endif
 
   MENU.out(F("'T' tune pitch, scale"));
@@ -3558,7 +3559,7 @@ bool musicBox_reaction(char token) {
     }
     break;
 
-//  case 'L': // 'L' == stop_on_LOW_H1()  ||  "LL" == stop_on_LOW()/*only*/)
+//  case 'L': // 'L' == stop_on_LOW_H1()  ||  "LL" == stop_on_LOW()/*only*/)	// TODO: REMOVE?
 //    if(MENU.peek() != 'L') {	// 'L' case	stop_on_LOW_H1()
 //      MENU.out(stop_on_LOW_H1());
 //      MENU.outln(F(" were high "));
@@ -3569,134 +3570,13 @@ bool musicBox_reaction(char token) {
 //    }
 //    break;
 
-#if defined USE_RGB_LED_STRIP
   case 'L':	 // 'L' RGB LED STRING
-    switch (MENU.peek()) {	// second letter after 'L...'
-    case EOF8:	// bare 'L' strip info
-      // TODO: give infos about string(s)	DADA ????
-      break;
-
-    case 'B':	// 'LB'	background dimming
-      MENU.drop_input_token();
-      input_value = MENU.numeric_input(0);
-      if (input_value > 0) {
-	RGBstringConf.rgb_background_dim = 1.0 / ((float) input_value);
-      }
-
-      if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
-	MENU.out(F("background dim "));
-	MENU.outln(RGBstringConf.rgb_background_dim);
-      }
-      break;
-
-    case 'S':	// 'LS'	saturation start value
-      MENU.drop_input_token();
-      input_value = MENU.numeric_input(0);
-      if (input_value > 0) {
-	RGBstringConf.saturation_start_value = 1.0 / ((float) input_value);
-      }
-
-      if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
-	MENU.out(F("saturation start "));
-	MENU.outln(RGBstringConf.saturation_start_value);
-      }
-      break;
-
-    case 'R':	// 'LR' saturation_reset_value
-      MENU.drop_input_token();
-      input_value = MENU.numeric_input(0);
-      if (input_value > 0) {
-	RGBstringConf.saturation_reset_value = 1.0 / ((float) input_value);
-      }
-
-      if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
-	MENU.out(F("saturation_reset_value "));
-	MENU.outln(RGBstringConf.saturation_reset_value);
-      }
-      break;
-
-    case 'I':	// 'LI' LED (max) INTENSITY
-      MENU.drop_input_token();
-      input_value = MENU.numeric_input(0);
-      if (input_value > 0) {
-	RGBstringConf.rgb_led_string_intensity = input_value;
-      }
-
-      if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
-	MENU.out(F("LED max intensity "));
-	MENU.outln(RGBstringConf.rgb_led_string_intensity);
-      }
-      break;
-
-    case 'N':	// 'LN' hue_slice_cnt
-      MENU.drop_input_token();
-      input_value = MENU.numeric_input(0);
-      if (input_value > 0 || input_value < 256) {
-	RGBstringConf.hue_slice_cnt = input_value;
-	RGBstringConf.set_automagic_hue_slices = false;	// keep as set by user
-      }
-
-      if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
-	MENU.out(F("hue slices "));
-	MENU.outln(RGBstringConf.hue_slice_cnt);
-      }
-      break;
-
-    case 'V':	// 'LV' voltage_type
-      MENU.drop_input_token();
-      {
-	int voltage = MENU.numeric_input((long) HARDWARE.rgb_led_voltage_type[selected_rgb_LED_string]);
-	if((voltage > -1) && (voltage < 256)) {
-	  //	  HARDWARE.rgb_led_voltage_type[selected_rgb_LED_string] = voltage;
-	  set_rgb_string_voltage_type(voltage, selected_rgb_LED_string);
-	}
-      }
-
-      if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
-	MENU.out(F("voltage_type "));
-	MENU.outln(HARDWARE.rgb_led_voltage_type[selected_rgb_LED_string]);
-      }
-      break;
-
-    case 'H':	// 'LH' toggle led string priority
-      MENU.drop_input_token();
-      RGBstringConf.rgb_leds_high_priority = !RGBstringConf.rgb_leds_high_priority;
-      if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
-	MENU.out(F("rgb led high priority"));
-	MENU.out_ON_off(RGBstringConf.rgb_leds_high_priority);
-	MENU.ln();
-      }
-      break;
-
-    case 'P':	// 'LP' set led string pixel
-      MENU.drop_input_token();
-      input_value = MENU.numeric_input(HARDWARE.rgb_pixel_cnt[selected_rgb_LED_string]);
-      if((input_value > -1) && (input_value < 256)) {
-	HARDWARE.rgb_pixel_cnt[selected_rgb_LED_string] = input_value;
-	STRANDS[selected_rgb_LED_string].numPixels = input_value;
-      }
-
-      MENU.out(F("LED string "));
-      MENU.out(selected_rgb_LED_string);
-      MENU.tab();
-      MENU.out(HARDWARE.rgb_pixel_cnt[selected_rgb_LED_string]);
-      MENU.outln(F(" LEDs"));
-      break;
-
-    case 'O':	// 'LO' set offset to pattern start led
-      MENU.drop_input_token();
-      input_value = MENU.numeric_input(HARDWARE.rgb_pattern0[selected_rgb_LED_string]);
-      if((input_value > -1) && (input_value < ILLEGAL8))
-	HARDWARE.rgb_pattern0[selected_rgb_LED_string]=input_value;
-
-      MENU.out(F("RGB STRING ["));
-      MENU.out(selected_rgb_LED_string);
-      MENU.out(F("]\tpattern start\t"));
-      MENU.outln(HARDWARE.rgb_pattern0[selected_rgb_LED_string]);
-      break;
-    } // second letter after 'L'
-    break;
+#if defined USE_RGB_LED_STRIP
+    rgb_led_string_UI();
+#else
+    MENU.outln(F("*NO* rgb led string code"));
 #endif
+    break;
 
   case 'P': // 'P' Play start/stop
     switch(MENU.peek()) {

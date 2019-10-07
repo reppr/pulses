@@ -289,3 +289,5 @@ TODO: use musicBoxConf.primary_count in next version
 
 TODO: fix play_KB_macro()
       avoid use where not appropriate
+
+REMOVE?	stop_on_LOW_H1() stop_on_LOW()

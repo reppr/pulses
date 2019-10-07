@@ -630,5 +630,59 @@ void set_rgb_led_background(int pulse) {
 } // set_rgb_led_background(int pulse)
 
 
+void rgb_led_string_UI() {	// starting 'L' already received
+  int input_value;
+
+  switch (MENU.peek()) {	// second letter after 'L...'
+  case EOF8:	// bare 'L' strip info
+    MENU.outln(F("TODO: implement RGB LED strings info"));	// TODO: give infos about string(s)	DADA ????
+    break;
+
+  case 'B':	// 'LB'	background dimming
+    MENU.drop_input_token();
+    input_value = MENU.numeric_input(0);
+    if (input_value > 0) {
+      RGBstringConf.rgb_background_dim = 1.0 / ((float) input_value);
+    }
+
+    if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
+      MENU.out(F("background dim "));
+      MENU.outln(RGBstringConf.rgb_background_dim);
+    }
+    break;
+
+  case 'S':	// 'LS'	saturation start value
+    MENU.drop_input_token();
+    input_value = MENU.numeric_input(0);
+    if (input_value > 0) {
+      RGBstringConf.saturation_start_value = 1.0 / ((float) input_value);
+    }
+
+    if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
+      MENU.out(F("saturation start "));
+      MENU.outln(RGBstringConf.saturation_start_value);
+    }
+    break;
+
+  case 'R':	// 'LR' saturation_reset_value
+    MENU.drop_input_token();
+    input_value = MENU.numeric_input(0);
+    if (input_value > 0) {
+      RGBstringConf.saturation_reset_value = 1.0 / ((float) input_value);
+    }
+
+    if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
+      MENU.out(F("saturation_reset_value "));
+      MENU.outln(RGBstringConf.saturation_reset_value);
+    }
+    break;
+  } // switch second letter
+} // rgb_led_string_UI()
+
+void rgb_led_string_UI_display() {
+  MENU.outln(F("\n'L'=rgbLED 'LB'=BGdim 'LS'=saturation0 'LR'=sat reset value 'LI'=intensity 'LN'=hue slices"));
+  MENU.outln(F("   'LH'=high priority 'LP'=pixel cnt 'LV'=voltage 'LO'=offset pattern"));
+}
+
 #define PULSES_RGB_LED_STRING_H
 #endif
