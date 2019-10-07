@@ -3,7 +3,11 @@
   temporary test menu UI during development
 */
 
-determine_imu_zero_offsets(2000);
+MENU.out(F("normalised_pitch "));
+MENU.out(get_normalised_pitch(), 6);
+MENU.ln();
+
+// determine_imu_zero_offsets(2000);
 
 //  show_morse_event_buffer();
 

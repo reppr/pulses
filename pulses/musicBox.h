@@ -2202,7 +2202,36 @@ void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless wakin
   }
   else	// *not* wake up from deep sleep
     MENU.outln_invalid();
-}
+} // maybe_restore_from_RTCmem()
+
+
+double pitch_normalised=0.0;
+short normalised_octave=0;
+double get_normalised_pitch() {
+  if(musicBoxConf.pitch.divisor==0)	// savety net
+    MENU.error_ln(F("pitch.divisor==0"));
+  else {
+    pitch_normalised = musicBoxConf.pitch.multiplier;
+    pitch_normalised /= (double) musicBoxConf.pitch.divisor;
+    normalised_octave=0;
+
+    if(pitch_normalised < 0.0)		// savety net
+      MENU.error_ln(F("pitch_normalised *negative*"));
+    else {				// everything looks ok
+      while(pitch_normalised < 1.0) {	// below 1.0
+	normalised_octave++;
+	pitch_normalised *= 2.0;
+      }
+
+      while(pitch_normalised >= 2.0) {	// 2.0 and above
+	normalised_octave--;
+	pitch_normalised /= 2.0;
+      }
+    }
+  }
+
+  return pitch_normalised;
+} // get_normalised_pitch()
 
 
 void start_musicBox() {
@@ -2394,6 +2423,11 @@ void start_musicBox() {
 
   set_primary_block_bounds();			// remember where the primary block starts and stops
   highest_primary_at_start = musicBoxConf.highest_primary;	// needed for primary pattern display in watch_primary_pulses()
+
+  get_normalised_pitch();
+  MENU.out(F("normalised_pitch "));
+  MENU.out(pitch_normalised, 6);
+  MENU.ln();
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   peripheral_power_switch_ON();

@@ -291,3 +291,9 @@ TODO: fix play_KB_macro()
       avoid use where not appropriate
 
 REMOVE?	stop_on_LOW_H1() stop_on_LOW()
+
+stack_sync_slices still buggy?
+
+TODO: shouldn't these change musicBoxConf.pitch?	no, normalised_octave
+   random_octave_shift();
+   lower_audio_if_too_high(409600*2);			?
