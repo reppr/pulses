@@ -1995,7 +1995,8 @@ const char * morse_definitions_tab[] = {
   "5 * --... 7 7",
 //"5 0 --..- 5 5",	// FREE M	MU	__.._ 3 M- COMMAND triggers	free :)  rhythm sample? tap  *HOW TO GET OUT?*
 //"5 0 --.-. 5 5",	// FREE M	MR	--.-. 3 M- COMMAND triggers	free :)  rhythm replay
-  "5 * --.-- Ñ Ñ",	// Ñ
+//"5 * --.-- Ñ Ñ",	// Ñ
+  "5 * --.-- * *",	// my private code for '*'	// was: Ñ
 //"5 0 ---.- OLED",	// OA	---.-	OLED	toggle oled display while playing
   "5 * ---.. 8 8",
   "5 * ----. 9 9",
