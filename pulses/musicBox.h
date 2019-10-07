@@ -2339,11 +2339,6 @@ void start_musicBox() {
   // time_unit
   PULSES.time_unit=1000000;	// default metric
 
-  // pitch
-  // TODO: REMOVE: multiplier, divisor	################################################################
-  multiplier=4096;	// uses 1/4096 jiffles		// TODO: define role of multiplier, divisor
-  multiplier *= 8;	// TODO: adjust appropriate...	// TODO: define role of multiplier, divisor
-
   // random pitch	// TODO: factor out randomisation
   if(!pitch_user_selected) {	// if *not* set by user interaction
     if(!MagicConf.some_metric_tunings_only) {	// RANDOM tuning?

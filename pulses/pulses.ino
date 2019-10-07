@@ -837,9 +837,6 @@ void selected_DACsq_intensity_proportional(int intensity, int channel) {
 /* **************************************************************** */
 // user interface variables:
 
-unsigned long multiplier=1;	// TODO: define role of multiplier, divisor
-unsigned long divisor=1;	// TODO: define role of multiplier, divisor
-
 int selected_experiment=-1;
 int voices=GPIO_PINS;
 
@@ -2580,6 +2577,7 @@ int selected_apply_scale_on_period(int voices, unsigned int *scale, bool octaves
 
   pulse_time_t new_period;
   int applied=0;
+  unsigned long multiplier, divisor;
 
   int octave=1;	// 1,2,4,8,...
   for (int note=0, pulse=0; applied<voices; note++) {
@@ -3629,7 +3627,7 @@ void menu_pulses_display() {
     MENU.out(F("down"));
   MENU.outln(F(")\tZ=reverse_gpio_pins"));
 
-  MENU.out(F("Scale (")); MENU.out(multiplier);MENU.slash();  MENU.out(divisor);
+  MENU.out(F("Scale (")); MENU.out(musicBoxConf.pitch.multiplier); MENU.slash();  MENU.out(musicBoxConf.pitch.divisor);
   MENU.out(F(")\t'*!'=multiplier '/!'=divisor"));
 
   MENU.ln();
@@ -4215,7 +4213,7 @@ void no_g_inverse() {
 // display factor function show_scaling();
 void show_scaling() {
   MENU.out(F("multiplier/divisor "));
-  MENU.out(multiplier); MENU.slash(); MENU.out(divisor);
+  MENU.out(musicBoxConf.pitch.multiplier); MENU.slash(); MENU.out(musicBoxConf.pitch.divisor);
 }
 
 void show_UI_basic_setup() {
@@ -4232,9 +4230,9 @@ void show_UI_basic_setup() {
   MENU.space(3);
 
   MENU.out(F("SCALING: "));
-  MENU.out(multiplier);
+  MENU.out(musicBoxConf.pitch.multiplier);
   MENU.slash();
-  MENU.out(divisor);
+  MENU.out(musicBoxConf.pitch.divisor);
   MENU.space(3);
   if(MagicConf.some_metric_tunings_only)
     MENU.out(F("*metric*"));
@@ -4296,8 +4294,8 @@ void select_scale__UI() {	// OBSOLETE?:
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
-    multiplier=1;
-    divisor=1;
+    musicBoxConf.pitch.multiplier=1;
+    musicBoxConf.pitch.divisor=1;
     break;
 
   case 'U':	// harmonical time unit, major
@@ -4305,8 +4303,8 @@ void select_scale__UI() {	// OBSOLETE?:
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
-    multiplier=1;
-    divisor=1;
+    musicBoxConf.pitch.multiplier=1;
+    musicBoxConf.pitch.divisor=1;
     break;
 
   case 'c':	// c minor
@@ -4314,7 +4312,7 @@ void select_scale__UI() {	// OBSOLETE?:
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
-    divisor=262; // 261.63	// C4  ***not*** harmonical
+    musicBoxConf.pitch.divisor=262; // 261.63	// C4  ***not*** harmonical
     break;
 
   case 'C':	// c major
@@ -4322,7 +4320,7 @@ void select_scale__UI() {	// OBSOLETE?:
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
-    divisor=262; // 261.63	// C4  ***not*** harmonical
+    musicBoxConf.pitch.divisor=262; // 261.63	// C4  ***not*** harmonical
     MENU.outln(" ok");
     break;
 
@@ -4330,7 +4328,7 @@ void select_scale__UI() {	// OBSOLETE?:
     musicBoxConf.chromatic_pitch = 6;
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
-    divisor = 294;		// 293.66 = D4
+    musicBoxConf.pitch.divisor = 294;		// 293.66 = D4
     // divisor = 147;		// 146.83 = D3
     user_select_scale(minor_scale);
     break;
@@ -4339,7 +4337,7 @@ void select_scale__UI() {	// OBSOLETE?:
     musicBoxConf.chromatic_pitch = 6;
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
-    divisor = 294;		// 293.66 = D4
+    musicBoxConf.pitch.divisor = 294;		// 293.66 = D4
     // divisor = 147;		// 146.83 = D3
     user_select_scale(major_scale);
     break;
@@ -4349,7 +4347,7 @@ void select_scale__UI() {	// OBSOLETE?:
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
-    divisor=330; // 329.36	// e4  ***not*** harmonical
+    musicBoxConf.pitch.divisor=330; // 329.36	// e4  ***not*** harmonical
     break;
 
   case 'E':	// E major scale
@@ -4357,7 +4355,7 @@ void select_scale__UI() {	// OBSOLETE?:
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
-    divisor=330; // 329.36	// e4  ***not*** harmonical
+    musicBoxConf.pitch.divisor=330; // 329.36	// e4  ***not*** harmonical
     break;
 
   case 'f':	// f minor
@@ -4365,7 +4363,7 @@ void select_scale__UI() {	// OBSOLETE?:
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
-    divisor=175; // 174.16	// F3  ***not*** harmonical
+    musicBoxConf.pitch.divisor=175; // 174.16	// F3  ***not*** harmonical
     break;
 
   case 'F':	// f major
@@ -4373,7 +4371,7 @@ void select_scale__UI() {	// OBSOLETE?:
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
-    divisor=175; // 174.16	// F3  ***not*** harmonical
+    musicBoxConf.pitch.divisor=175; // 174.16	// F3  ***not*** harmonical
     break;
 
   case 'g':	// g minor
@@ -4381,7 +4379,7 @@ void select_scale__UI() {	// OBSOLETE?:
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
-    divisor=196; // 196.00	// G3  ***not*** harmonical
+    musicBoxConf.pitch.divisor=196; // 196.00	// G3  ***not*** harmonical
     break;
 
   case 'G':	// g major
@@ -4389,14 +4387,14 @@ void select_scale__UI() {	// OBSOLETE?:
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
-    divisor=196; // 196.00	// G3  ***not*** harmonical
+    musicBoxConf.pitch.divisor=196; // 196.00	// G3  ***not*** harmonical
     break;
 
   case 'a':	// a minor scale
     musicBoxConf.chromatic_pitch = 1;
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
-    divisor = 440;
+    musicBoxConf.pitch.divisor = 440;
     user_select_scale(minor_scale);
     break;
 
@@ -4404,7 +4402,7 @@ void select_scale__UI() {	// OBSOLETE?:
     musicBoxConf.chromatic_pitch = 1;
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
-    divisor = 440;
+    musicBoxConf.pitch.divisor = 440;
     user_select_scale(major_scale);
     break;
 
@@ -4413,7 +4411,7 @@ void select_scale__UI() {	// OBSOLETE?:
     MENU.drop_input_token();
     user_select_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
-    divisor=247; // 246.94	// B3  ***not*** harmonical
+    musicBoxConf.pitch.divisor=247; // 246.94	// B3  ***not*** harmonical
     break;
 
   case 'B':	// b major
@@ -4421,7 +4419,7 @@ void select_scale__UI() {	// OBSOLETE?:
     MENU.drop_input_token();
     user_select_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
-    divisor=247; // 246.94	// B3  ***not*** harmonical
+    musicBoxConf.pitch.divisor=247; // 246.94	// B3  ***not*** harmonical
     break;
   }
 
@@ -4829,9 +4827,9 @@ bool menu_pulses_reaction(char menu_input) {
       if(MENU.peek()==EOF8)
 	MENU.outln(F("multiplier"));
 
-      input_value = MENU.numeric_input(multiplier);
+      input_value = MENU.numeric_input(musicBoxConf.pitch.multiplier);
       if (input_value>0 )
-	multiplier = input_value;
+	musicBoxConf.pitch.multiplier = input_value;
       else
 	MENU.outln(F("small positive integer only"));
 
@@ -4849,9 +4847,9 @@ bool menu_pulses_reaction(char menu_input) {
       if(MENU.peek()==EOF8)
 	MENU.outln(F("divisor"));
 
-      input_value = MENU.numeric_input(divisor);
+      input_value = MENU.numeric_input(musicBoxConf.pitch.divisor);
       if (input_value>0 )
-	divisor = input_value;
+	musicBoxConf.pitch.divisor = input_value;
       else
 	MENU.outln(F("small positive integer only"));
 
@@ -5188,7 +5186,8 @@ bool menu_pulses_reaction(char menu_input) {
 
     // 'R!' tune selected pulses to a scale starting from lowest
     if (MENU.peek()=='!') {
-      tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));	// tune-2-scale FIXME: *selected*  // TODO: OBSOLETE?
+      // tune-2-scale FIXME: *selected*  // TODO: OBSOLETE?
+      tune_2_scale(voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, selected_in(SCALES));
       scale_user_selected = true;
     }
     else	// ui select a scale
@@ -5368,41 +5367,44 @@ bool menu_pulses_reaction(char menu_input) {
 //	  break;
 
       case 1:	// setup_jiffle128
-	multiplier=2;
-	divisor=1;
+	musicBoxConf.pitch.multiplier=2;
+	musicBoxConf.pitch.divisor=1;
 	musicBoxConf.sync=15;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("setup_jiffle128", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	  display_name5pars("setup_jiffle128", g_inverse, voices, \
+			    musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
 
       case 2:	// init_div_123456
 	musicBoxConf.sync=0;
-	multiplier=1;
-	divisor=1;
+	musicBoxConf.pitch.multiplier=1;
+	musicBoxConf.pitch.divisor=1;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_div_123456", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	  display_name5pars("init_div_123456", g_inverse, voices, \
+			    musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
 
       case 3:	// setup_jiffles0
 	musicBoxConf.sync=1;
-	multiplier=8;
-	divisor=3;
+	musicBoxConf.pitch.multiplier=8;
+	musicBoxConf.pitch.divisor=3;
 #if GPIO_PINS > 0
 	reverse_gpio_pins();
 #endif
 	if (MENU.maybe_display_more()) {
-	  // display_name5pars("setup_jiffles0", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	  // display_name5pars("setup_jiffles0", g_inverse, voices, \
+	  			musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	  MENU.out(F("setup_jiffles0("));
 	  MENU.out(g_inverse);
 	  display_next_par(voices);
-	  display_next_par(multiplier);
-	  display_next_par(divisor);
+	  display_next_par(musicBoxConf.pitch.multiplier);
+	  display_next_par(musicBoxConf.pitch.divisor);
 	  display_next_par(musicBoxConf.sync);
 	  MENU.outln(F(")  ESP8266 Frogs"));
 	  Press_toStart();
@@ -5410,113 +5412,114 @@ bool menu_pulses_reaction(char menu_input) {
 	break;
 
       case 4:	// setup_jiffles2345
-	multiplier=1;
-	divisor=2;
+	musicBoxConf.pitch.multiplier=1;
+	musicBoxConf.pitch.divisor=2;
 	musicBoxConf.sync=0;
 	select_in(JIFFLES, jiffletab);
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("setup_jiffles2345", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	  display_name5pars("setup_jiffles2345", g_inverse, voices, \
+			    musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
 
       case 5:	// init_123456
 	musicBoxConf.sync=0;		// FIXME: test and select ################
-	multiplier=3;
-	divisor=1;
+	musicBoxConf.pitch.multiplier=3;
+	musicBoxConf.pitch.divisor=1;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_123456", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	  display_name5pars("init_123456", g_inverse, voices, \
+			    musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
 
       case 6:	// init_chord_1345689a
 	musicBoxConf.sync=0;		// FIXME: test and select ################
-	multiplier=1;
-	divisor=1;
+	musicBoxConf.pitch.multiplier=1;
+	musicBoxConf.pitch.divisor=1;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_chord_1345689a", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	  display_name5pars("init_chord_1345689a", g_inverse, voices, \
+			    musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
 
       case 7:	// init_rhythm_1
 	musicBoxConf.sync=1;
-	multiplier=1;
-	divisor=6*7;
+	musicBoxConf.pitch.multiplier=1;
+	musicBoxConf.pitch.divisor=6*7;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_rhythm_1", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	  display_name5pars("init_rhythm_1", g_inverse, voices, \
+			    musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
 
       case 8:	// init_rhythm_2
 	musicBoxConf.sync=5;
-	multiplier=1;
-	divisor=1;
+	musicBoxConf.pitch.multiplier=1;
+	musicBoxConf.pitch.divisor=1;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_rhythm_2", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	  display_name5pars("init_rhythm_2", g_inverse, voices, \
+			    musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
 
       case 9:  // init_rhythm_3
 	musicBoxConf.sync=3;
-	multiplier=1;
-	divisor=1;
+	musicBoxConf.pitch.multiplier=1;
+	musicBoxConf.pitch.divisor=1;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_rhythm_3", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	  display_name5pars("init_rhythm_3", g_inverse, voices, \
+			    musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
 
       case 10:	// init_rhythm_4
 	musicBoxConf.sync=1;
-	multiplier=1;
-	divisor=7L*3L;
+	musicBoxConf.pitch.multiplier=1;
+	musicBoxConf.pitch.divisor=7L*3L;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("init_rhythm_4", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	  display_name5pars("init_rhythm_4", g_inverse, voices, \
+			    musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
 
       case 11:	// setup_jifflesNEW
 	musicBoxConf.sync=3;
-	multiplier=3;
-	divisor=1;
+	musicBoxConf.pitch.multiplier=3;
+	musicBoxConf.pitch.divisor=1;
 
 	if (MENU.maybe_display_more()) {
-	  display_name5pars("setup_jifflesNEW", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	  display_name5pars("setup_jifflesNEW", g_inverse, voices, \
+			    musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	  Press_toStart();
 	}
 	break;
 
       case 12:	// init_pentatonic
-//	multiplier=4;
-	multiplier=1;
-	divisor=1;
+	musicBoxConf.pitch.multiplier=1;
+	musicBoxConf.pitch.divisor=1;
 
 	select_in(SCALES, minor_scale);		// default e minor
-
-//	if (MENU.maybe_display_more()) {
-//	  display_name5pars("init_pentatonic", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
-//	}
-
-//	init_pentatonic(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
-	select_in(JIFFLES, piip2048);		// default jiffle FIXME: ################
+	select_in(JIFFLES, piip2048);
 
 	if (voices == 0)
 	  voices = GPIO_PINS;
 
 	PULSES.select_n(voices);
-	tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));	// TODO: OBSOLETE?
+	tune_2_scale(voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, selected_in(SCALES));	// TODO: OBSOLETE?
 
   #ifndef USE_DACs	// TODO: review and use test code
 	setup_jiffle_thrower_selected(selected_actions);
@@ -5544,15 +5547,17 @@ bool menu_pulses_reaction(char menu_input) {
 
       case 13:	// prepare_magnets
 	musicBoxConf.sync=1;	// or: musicBoxConf.sync=0;
-	multiplier=1;
-	divisor=1;
+	musicBoxConf.pitch.multiplier=1;
+	musicBoxConf.pitch.divisor=1;
 	voices=8;	//just for 'The Harmonical Strings Christmas Evening Sounds'
 	g_inverse=false;
 	// unsigned int harmonics4 = {1,1,1024, 1,2,1024, 1,3,1024, 1,4,1024, 0,0};
 	select_in(JIFFLES, harmonics4);
 	PULSES.select_n(voices);
-	display_name5pars("prepare_magnets", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
-	prepare_magnets(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	display_name5pars("prepare_magnets", g_inverse, voices, \
+			  musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
+	prepare_magnets(g_inverse, voices, \
+			musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 
 	if (MENU.maybe_display_more()) {
 	  selected_or_flagged_pulses_info_lines();
@@ -5562,16 +5567,16 @@ bool menu_pulses_reaction(char menu_input) {
 
       case 14:	// E14
 	// magnets on strings, second take
-	multiplier=1;
-	divisor=1;
+	musicBoxConf.pitch.multiplier=1;
+	musicBoxConf.pitch.divisor=1;
 	g_inverse=false;
 
 	select_in(SCALES, pentatonic_minor);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier * 1024 , divisor * 1167, musicBoxConf.sync, selected_in(SCALES));
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier * 1024 , musicBoxConf.pitch.divisor * 1167, musicBoxConf.sync, selected_in(SCALES));
 	select_in(JIFFLES, ting1024);
 	PULSES.select_n(voices);
-	display_name5pars("E14", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	display_name5pars("E14", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 
 	if (MENU.maybe_display_more())
 	  selected_or_flagged_pulses_info_lines();
@@ -5579,16 +5584,17 @@ bool menu_pulses_reaction(char menu_input) {
 
       case 15:	// E15
 	// magnets on strings, third take
-	multiplier=1;
-	divisor=1;
+	musicBoxConf.pitch.multiplier=1;
+	musicBoxConf.pitch.divisor=1;
 	g_inverse=false;
 
 	select_in(SCALES, pentatonic_minor);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier * 4096 , divisor * 1167, musicBoxConf.sync, selected_in(SCALES));
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier * 4096 , musicBoxConf.pitch.divisor * 1167, musicBoxConf.sync, selected_in(SCALES));
 	select_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	display_name5pars("E15", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	display_name5pars("E15", g_inverse, voices, \
+			  musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  selected_or_flagged_pulses_info_lines();
@@ -5596,16 +5602,16 @@ bool menu_pulses_reaction(char menu_input) {
 
       case 16:	// E16 europ_PENTAtonic
 	// piezzos on low strings 2016-12-28
-	multiplier=4096;
-	divisor=256;
+	musicBoxConf.pitch.multiplier=4096;
+	musicBoxConf.pitch.divisor=256;
 	g_inverse=false;
 
 	select_in(SCALES, europ_PENTAtonic);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
 	select_in(JIFFLES, ting4096);
 	// select_in(JIFFLES, arpeggio4096);
-	display_name5pars("E16 PENTAtonic", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	display_name5pars("E16 PENTAtonic", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  selected_or_flagged_pulses_info_lines();
@@ -5613,15 +5619,15 @@ bool menu_pulses_reaction(char menu_input) {
 
       case 17:	// E17 mimic japan
 	// magnets on steel strings, "japanese"
-	multiplier=1;	// click
+	musicBoxConf.pitch.multiplier=1;	// click
 	// multiplier=4096;	// jiffle ting4096
-	divisor=256*5;
+	musicBoxConf.pitch.divisor=256*5;
 
 	select_in(SCALES, mimic_japan_pentatonic);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
 	select_in(JIFFLES, ting4096);
-	display_name5pars("E17 mimic japan", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	display_name5pars("E17 mimic japan", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  selected_or_flagged_pulses_info_lines();
@@ -5630,29 +5636,29 @@ bool menu_pulses_reaction(char menu_input) {
 
       case 18:	// E18 pentatonic minor  nylon stringed wooden box, piezzos
 	select_in(SCALES, pentatonic_minor);
-	multiplier=1;	// click
-	// multiplier=4096;	// jiffle ting4096
+	musicBoxConf.pitch.multiplier=1;	// click
+	// musicBoxConf.pitch.multiplier=4096;	// jiffle ting4096
 	// divisor=2048;
 
 	// string tuning on 8/9
-	//   multiplier=8;
+	//   musicBoxConf.pitch.multiplier=8;
 	//   divisor=9*1024;
-	// multiplier=1;
+	// musicBoxConf.pitch.multiplier=1;
 	// divisor=9*128;
 
-	// multiplier=8*4096;	// jiffle ting4096
+	// musicBoxConf.pitch.multiplier=8*4096;	// jiffle ting4096
 	// divisor=9*1024;
-	multiplier=32;	// reduced
+	musicBoxConf.pitch.multiplier=32;	// reduced
 	//#if defined(ESP32)	// used as test setup with 16 clicks
 	// ################ FIXME: ESP32 16 click ################
 	//      multiplier *= 4;
 	//#endif
-	divisor=9;	// reduced
+	musicBoxConf.pitch.divisor=9;	// reduced
 	select_in(JIFFLES, ting4096);
 
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
-	display_name5pars("E18 pentatonic minor", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	display_name5pars("E18 pentatonic minor", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
 	  selected_or_flagged_pulses_info_lines();
@@ -5744,11 +5750,11 @@ bool menu_pulses_reaction(char menu_input) {
 	voices=7;
 #endif
 
-	multiplier=1;
-	divisor=1024;
+	musicBoxConf.pitch.multiplier=1;
+	musicBoxConf.pitch.divisor=1024;
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
-	display_name5pars("E29 KALIMBA7 tuning", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	display_name5pars("E29 KALIMBA7 tuning", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	en_click_selected();							// for tuning ;)
 	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate
 	MENU.ln();
@@ -5762,14 +5768,14 @@ bool menu_pulses_reaction(char menu_input) {
 	select_in(SCALES, pentatonic_minor);
 	voices=7;
 	// voices=8;
-	multiplier=4;
-	divisor=1;
+	musicBoxConf.pitch.multiplier=4;
+	musicBoxConf.pitch.divisor=1;
 	// select_in(JIFFLES, peepeep4096);
 	select_in(JIFFLES, ting4096);
 	// select_in(JIFFLES, tingeling4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
-	display_name5pars("E30 KALIMBA7 jiff", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	display_name5pars("E30 KALIMBA7 jiff", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate
 
@@ -5783,12 +5789,12 @@ bool menu_pulses_reaction(char menu_input) {
       case 31:	// E31 KALIMBA7 jiff
 	select_in(SCALES, europ_PENTAtonic);
 	voices=7;
-	multiplier=4;
-	divisor=1;
+	musicBoxConf.pitch.multiplier=4;
+	musicBoxConf.pitch.divisor=1;
 	select_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
-	display_name5pars("E31 KALIMBA7 jiff", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	display_name5pars("E31 KALIMBA7 jiff", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
 	MENU.ln();
@@ -5801,13 +5807,13 @@ bool menu_pulses_reaction(char menu_input) {
       case 32:	// ESP32_12 ff
 	select_in(SCALES, major_scale);
 	voices=GPIO_PINS;
-	multiplier=4;
-	divisor=1;
+	musicBoxConf.pitch.multiplier=4;
+	musicBoxConf.pitch.divisor=1;
 	// select_in(JIFFLES, ting4096);
 	select_in(JIFFLES, tigg_ding4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
-	display_name5pars("E32 ESP32_12", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	display_name5pars("E32 ESP32_12", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
 	MENU.ln();
@@ -5820,12 +5826,12 @@ bool menu_pulses_reaction(char menu_input) {
       case 33:	// variation
 	select_in(SCALES, minor_scale);
 	voices=GPIO_PINS;
-	multiplier=4;
-	divisor=1;
+	musicBoxConf.pitch.multiplier=4;
+	musicBoxConf.pitch.divisor=1;
 	select_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
-	display_name5pars("minor", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	display_name5pars("minor", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
 	MENU.ln();
@@ -5838,12 +5844,12 @@ bool menu_pulses_reaction(char menu_input) {
       case 34:	// same, major?
 	select_in(SCALES, major_scale);
 	voices=GPIO_PINS;
-	multiplier=4;
-	divisor=1;
+	musicBoxConf.pitch.multiplier=4;
+	musicBoxConf.pitch.divisor=1;
 	select_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
-	display_name5pars("major", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	display_name5pars("major", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
 	MENU.ln();
@@ -5856,12 +5862,12 @@ bool menu_pulses_reaction(char menu_input) {
       case 35:	// tetra
 	select_in(SCALES, tetraCHORD);
 	voices=GPIO_PINS;
-	multiplier=4;
-	divisor=1;
+	musicBoxConf.pitch.multiplier=4;
+	musicBoxConf.pitch.divisor=1;
 	select_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
-	display_name5pars("tetra", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	display_name5pars("tetra", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
 	MENU.ln();
@@ -5874,12 +5880,12 @@ bool menu_pulses_reaction(char menu_input) {
       case 36:	// BIG major
 	select_in(SCALES, pentatonic_minor);
 	voices=GPIO_PINS;
-	multiplier=6;
-	divisor=1;
+	musicBoxConf.pitch.multiplier=6;
+	musicBoxConf.pitch.divisor=1;
 	select_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, multiplier, divisor, musicBoxConf.sync, selected_in(SCALES));
-	display_name5pars("BIG major", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	display_name5pars("BIG major", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
 	MENU.ln();
@@ -5894,10 +5900,10 @@ bool menu_pulses_reaction(char menu_input) {
 	PULSES.time_unit=1000000;
 
 	// default tuning e
-	multiplier=4096;
-	// divisor=440;			// a4
-	divisor=330; // 329.36		// e4  ***not*** harmonical
-	// divisor=165; // 164.81		// e3  ***not*** harmonical
+	musicBoxConf.pitch.multiplier=4096;
+	// musicBoxConf.pitch.divisor=440;			// a4
+	musicBoxConf.pitch.divisor=330; // 329.36		// e4  ***not*** harmonical
+	// musicBoxConf.pitch.divisor=165; // 164.81		// e3  ***not*** harmonical
 
 	select_in(SCALES, minor_scale);	// default e minor
 
@@ -5914,9 +5920,9 @@ bool menu_pulses_reaction(char menu_input) {
 
 	// ################ FIXME: remove redundant code ################
 	PULSES.select_n(voices);
-//	prepare_scale(false, voices, multiplier, divisor, 0, selected_in(SCALES));
-//	display_name5pars("GUITAR", g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
-	tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));	// TODO: OBSOLETE?
+//	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, 0, selected_in(SCALES));
+//	display_name5pars("GUITAR", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
+	tune_2_scale(voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, selected_in(SCALES));	// TODO: OBSOLETE?
 	lower_audio_if_too_high(409600);
 
   #ifndef USE_DACs	// TODO: review and use test code
@@ -5960,20 +5966,20 @@ bool menu_pulses_reaction(char menu_input) {
 	PULSES.time_unit=1000000;	// TODO:  maybe, maybe not...
 
 	// default tuning a
-	multiplier=4096;	// bass octave added and one lower...
-	//	divisor=440;		// a
-	//	divisor=220;		// a
-	divisor=110;		// a
-	// divisor=55;		// a
+	musicBoxConf.pitch.multiplier=4096;	// bass octave added and one lower...
+	//	musicBoxConf.pitch.divisor=440;		// a
+	//	musicBoxConf.pitch.divisor=220;		// a
+	musicBoxConf.pitch.divisor=110;		// a
+	// musicBoxConf.pitch.divisor=55;		// a
 
-	// divisor=330; // 329.36		// e4  ***not*** harmonical
-	// divisor=165; // 164.81		// e3  ***not*** harmonical
+	// musicBoxConf.pitch.divisor=330; // 329.36		// e4  ***not*** harmonical
+	// musicBoxConf.pitch.divisor=165; // 164.81		// e3  ***not*** harmonical
 
 	select_in(SCALES, minor_scale);		// default e minor
 	select_scale__UI();	// second/third letters choose metric scales	// OBSOLETE?:
 
 	// tune *all* primary pulses
-	tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));	// TODO: OBSOLETE?
+	tune_2_scale(voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, selected_in(SCALES));	// TODO: OBSOLETE?
 	lower_audio_if_too_high(409600);
 
 	// prepare primary pulse groups:
@@ -6036,14 +6042,14 @@ bool menu_pulses_reaction(char menu_input) {
 	  PULSES.select_n(voices);
 
 	  PULSES.time_unit=1000000;	// default metric
-	  multiplier=4096;		// uses 1/4096 jiffles
-	  divisor = 294;		// 293.66 = D4	// default tuning D4
-	  // divisor = 147;	// 146.83 = D3
-	  // divisor=55;	// default tuning a
+	  musicBoxConf.pitch.multiplier=4096;		// uses 1/4096 jiffles
+	  musicBoxConf.pitch.divisor= 294;		// 293.66 = D4	// default tuning D4
+	  // musicBoxConf.pitch.divisor= 147;	// 146.83 = D3
+	  // musicBoxConf.pitch.divisor=55;	// default tuning a
 
 	  select_in(SCALES, minor_scale);		// default e minor
 	  // tune *all* primary pulses
-	  tune_2_scale(voices, multiplier, divisor, selected_in(SCALES));	// TODO: OBSOLETE?
+	  tune_2_scale(voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, selected_in(SCALES));	// TODO: OBSOLETE?
 	  lower_audio_if_too_high(409600*2);	// 2 bass octaves
 
 	  // prepare primary pulse groups:
@@ -6099,11 +6105,11 @@ bool menu_pulses_reaction(char menu_input) {
 	tabula_rasa();
 	{ // local scope 'E40' only right now	// TODO: factor out
 	  PULSES.time_unit=1000000;	// default metric
-	  multiplier=4096;		// uses 1/4096 jiffles
-	  multiplier *= 8;	// TODO: adjust appropriate...
-	  divisor = 294;		// 293.66 = D4	// default tuning D4
-	  // divisor = 147;	// 146.83 = D3
-	  // divisor=55;	// default tuning a
+	  musicBoxConf.pitch.multiplier=4096;		// uses 1/4096 jiffles
+	  musicBoxConf.pitch.multiplier *= 8;	// TODO: adjust appropriate...
+	  musicBoxConf.pitch.divisor= 294;		// 293.66 = D4	// default tuning D4
+	  // musicBoxConf.pitch.divisor= 147;	// 146.83 = D3
+	  // musicBoxConf.pitch.divisor=55;	// default tuning a
 	  if(!scale_user_selected)	// see musicBox
 	    select_in(SCALES, minor_scale);		// default e minor
 
@@ -6147,37 +6153,37 @@ bool menu_pulses_reaction(char menu_input) {
     case 0:
       break;
     case 1:
-      setup_jiffle128(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+      setup_jiffle128(g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
       break;
     case 2:
-      init_div_123456(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+      init_div_123456(g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
       break;
     case 3:
-      setup_jiffles0(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);    // ESP8266 Frog Orchester
+      setup_jiffles0(g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);    // ESP8266 Frog Orchester
       break;
     case 4:
-      setup_jiffles2345(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+      setup_jiffles2345(g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
       break;
     case 5:
-      init_123456(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+      init_123456(g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
       break;
     case 6:
-      init_chord_1345689a(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+      init_chord_1345689a(g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
       break;
     case 7:
-      init_rhythm_1(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+      init_rhythm_1(g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
       break;
     case 8:
-      init_rhythm_2(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+      init_rhythm_2(g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
       break;
     case 9:
-      init_rhythm_3(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+      init_rhythm_3(g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
       break;
     case 10:
-      init_rhythm_4(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+      init_rhythm_4(g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
       break;
     case 11:
-      setup_jifflesNEW(g_inverse, voices, multiplier, divisor, musicBoxConf.sync);
+      setup_jifflesNEW(g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
       break;
 
     default:	// normal use case: sync and activate

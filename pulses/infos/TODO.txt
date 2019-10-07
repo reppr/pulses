@@ -297,3 +297,5 @@ stack_sync_slices still buggy?
 TODO: shouldn't these change musicBoxConf.pitch?	no, normalised_octave
    random_octave_shift();
    lower_audio_if_too_high(409600*2);			?
+
+secondary cnt in ending phase is broken
