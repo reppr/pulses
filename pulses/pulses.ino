@@ -262,7 +262,7 @@ typedef struct musicBox_conf_t {
   // short primary_count=0;		// TODO: use musicBoxConf.primary_count in next version
   short base_pulse=ILLEGAL16;
 
-  short stack_sync_slices=ILLEGAL16;	// ILLEGAL16 is undefined,	0 is off	positive: upwards,  negative: downwards
+  short stack_sync_slices=0;	// 0 is off	positive: upwards,  negative: downwards
   short subcycle_octave=0;
 
   short bass_pulses=0;		// see  setup_bass_middle_high()
@@ -4587,6 +4587,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case '|':	// accept as noop in normal mode. used as range bottom delimiter in arrays
+    // TODO: '|' pulses vs musicbox *clash*
     if (MENU.menu_mode==JIFFLE_ENTRY_UNTIL_ZERO_MODE) {
       jiffle_range_bottom = jiffle_write_index;
       fix_jiffle_range();

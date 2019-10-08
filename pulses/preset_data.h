@@ -24,8 +24,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   musicBoxConf.name=NULL;
   musicBoxConf.date=NULL;
   musicBoxConf.pitch={1,1};
-
-  PULSES.time_unit = 1000000;	// defaults:
+  musicBoxConf.stack_sync_slices = 0;
+  PULSES.time_unit = 1000000;	// DEFAULT	a bit rude
 
   switch(musicBoxConf.preset) {
   case 1:

@@ -691,12 +691,12 @@ void Pulses::activate_selected_stack_sync_now(pulse_time_t tick /*sign inverts d
 	activate_pulse_synced(pulse, next_now, abs(sync));
 	add_time(&tick, &next_now);
       }
-    // set stack_sync_slices negative??? // TODO: ################
   }
 
   fix_global_next();
-  check_maybe_do();	  // maybe do it *first*
+  check_maybe_do();	  // maybe do it *first*	TODO: RETHINK:
 }
+
 
 void Pulses::time_skip_selected(pulse_time_t time_skip) {	// positive time intervall only
   for (int pulse=0; pulse<pl_max; pulse++)
