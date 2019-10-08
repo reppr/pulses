@@ -241,6 +241,9 @@ void Pulses::mul_time(pulse_time_t *duration, unsigned int factor)
 
 void Pulses::div_time(pulse_time_t *duration, unsigned int divisor)
 {
+  if(divisor==0)
+    return;
+
   unsigned long scratch;
   unsigned long result=0;
   unsigned int carry=0;

@@ -2693,7 +2693,10 @@ int tune_selected_2_scale_limited(fraction_t scaling, unsigned int *scale, unsig
 
 	  this_period = base_period;
 	  PULSES.mul_time(&this_period, multiplier);
-	  PULSES.div_time(&this_period, divisor);
+	  if(divisor==0)
+	    MENU.error_ln(F("divisor==0"));	// TODO: fix cause, if that happens
+	  else
+	    PULSES.div_time(&this_period, divisor);
 	  PULSES.pulses[pulse].period = this_period;
 
 	  note++;
@@ -4268,7 +4271,7 @@ void Press_toStart() {
 }
 
 
-void user_select_scale(unsigned int* scale) {
+void user_selected_scale(unsigned int* scale) {
   if(scale != NULL) {
     select_in(SCALES, scale);
     scale_user_selected = true;
@@ -4291,10 +4294,15 @@ void select_scale__UI() {	// OBSOLETE?:
   case EOF8:
     break;
 
+    /*
+      TODO:
+      case '?':
+      break;
+    */
   case 'u':	// harmonical time unit, minor
     musicBoxConf.chromatic_pitch = 13;
     MENU.drop_input_token();
-    user_select_scale(minor_scale);
+    user_selected_scale(minor_scale);
     PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
     musicBoxConf.pitch.multiplier=1;
     musicBoxConf.pitch.divisor=1;
@@ -4303,7 +4311,7 @@ void select_scale__UI() {	// OBSOLETE?:
   case 'U':	// harmonical time unit, major
     musicBoxConf.chromatic_pitch = 13;
     MENU.drop_input_token();
-    user_select_scale(major_scale);
+    user_selected_scale(major_scale);
     PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
     musicBoxConf.pitch.multiplier=1;
     musicBoxConf.pitch.divisor=1;
@@ -4312,7 +4320,7 @@ void select_scale__UI() {	// OBSOLETE?:
   case 'c':	// c minor
     musicBoxConf.chromatic_pitch = 4;
     MENU.drop_input_token();
-    user_select_scale(minor_scale);
+    user_selected_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     musicBoxConf.pitch.divisor=262; // 261.63	// C4  ***not*** harmonical
     break;
@@ -4320,7 +4328,7 @@ void select_scale__UI() {	// OBSOLETE?:
   case 'C':	// c major
     musicBoxConf.chromatic_pitch = 4;
     MENU.drop_input_token();
-    user_select_scale(major_scale);
+    user_selected_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     musicBoxConf.pitch.divisor=262; // 261.63	// C4  ***not*** harmonical
     MENU.outln(" ok");
@@ -4332,7 +4340,7 @@ void select_scale__UI() {	// OBSOLETE?:
     PULSES.time_unit=1000000;	// switch to metric time unit
     musicBoxConf.pitch.divisor = 294;		// 293.66 = D4
     // divisor = 147;		// 146.83 = D3
-    user_select_scale(minor_scale);
+    user_selected_scale(minor_scale);
     break;
 
   case 'D':	// D major scale
@@ -4341,13 +4349,13 @@ void select_scale__UI() {	// OBSOLETE?:
     PULSES.time_unit=1000000;	// switch to metric time unit
     musicBoxConf.pitch.divisor = 294;		// 293.66 = D4
     // divisor = 147;		// 146.83 = D3
-    user_select_scale(major_scale);
+    user_selected_scale(major_scale);
     break;
 
   case 'e':	// e minor scale
     musicBoxConf.chromatic_pitch = 8;
     MENU.drop_input_token();
-    user_select_scale(minor_scale);
+    user_selected_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     musicBoxConf.pitch.divisor=330; // 329.36	// e4  ***not*** harmonical
     break;
@@ -4355,7 +4363,7 @@ void select_scale__UI() {	// OBSOLETE?:
   case 'E':	// E major scale
     musicBoxConf.chromatic_pitch = 8;
     MENU.drop_input_token();
-    user_select_scale(major_scale);
+    user_selected_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     musicBoxConf.pitch.divisor=330; // 329.36	// e4  ***not*** harmonical
     break;
@@ -4363,7 +4371,7 @@ void select_scale__UI() {	// OBSOLETE?:
   case 'f':	// f minor
     musicBoxConf.chromatic_pitch = 9;
     MENU.drop_input_token();
-    user_select_scale(minor_scale);
+    user_selected_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     musicBoxConf.pitch.divisor=175; // 174.16	// F3  ***not*** harmonical
     break;
@@ -4371,7 +4379,7 @@ void select_scale__UI() {	// OBSOLETE?:
   case 'F':	// f major
     musicBoxConf.chromatic_pitch = 9;
     MENU.drop_input_token();
-    user_select_scale(major_scale);
+    user_selected_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     musicBoxConf.pitch.divisor=175; // 174.16	// F3  ***not*** harmonical
     break;
@@ -4379,7 +4387,7 @@ void select_scale__UI() {	// OBSOLETE?:
   case 'g':	// g minor
     musicBoxConf.chromatic_pitch = 11;
     MENU.drop_input_token();
-    user_select_scale(minor_scale);
+    user_selected_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     musicBoxConf.pitch.divisor=196; // 196.00	// G3  ***not*** harmonical
     break;
@@ -4387,7 +4395,7 @@ void select_scale__UI() {	// OBSOLETE?:
   case 'G':	// g major
     musicBoxConf.chromatic_pitch = 11;
     MENU.drop_input_token();
-    user_select_scale(major_scale);
+    user_selected_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     musicBoxConf.pitch.divisor=196; // 196.00	// G3  ***not*** harmonical
     break;
@@ -4397,7 +4405,7 @@ void select_scale__UI() {	// OBSOLETE?:
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
     musicBoxConf.pitch.divisor = 440;
-    user_select_scale(minor_scale);
+    user_selected_scale(minor_scale);
     break;
 
   case 'A':	// A major scale
@@ -4405,13 +4413,13 @@ void select_scale__UI() {	// OBSOLETE?:
     MENU.drop_input_token();
     PULSES.time_unit=1000000;	// switch to metric time unit
     musicBoxConf.pitch.divisor = 440;
-    user_select_scale(major_scale);
+    user_selected_scale(major_scale);
     break;
 
   case 'b':	// b minor
     musicBoxConf.chromatic_pitch = 3;
     MENU.drop_input_token();
-    user_select_scale(minor_scale);
+    user_selected_scale(minor_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     musicBoxConf.pitch.divisor=247; // 246.94	// B3  ***not*** harmonical
     break;
@@ -4419,7 +4427,7 @@ void select_scale__UI() {	// OBSOLETE?:
   case 'B':	// b major
     musicBoxConf.chromatic_pitch = 3;
     MENU.drop_input_token();
-    user_select_scale(major_scale);
+    user_selected_scale(major_scale);
     PULSES.time_unit=1000000;	// switch to metric time unit
     musicBoxConf.pitch.divisor=247; // 246.94	// B3  ***not*** harmonical
     break;
@@ -4428,36 +4436,50 @@ void select_scale__UI() {	// OBSOLETE?:
   switch (MENU.peek()) {	// (second or) third letters for other scales
   case EOF8:
     break;
+
+  case '0':	// europ_PENTAtonic ('0' just as it is free)	// shortcut europ_PENTAtonic
+    MENU.drop_input_token();
+    user_selected_scale(europ_PENTAtonic);
+    break;
+  case '8':	// major scale	// analog '7' (which is handy for morse input)
+    MENU.drop_input_token();
+    user_selected_scale(major_scale);
+    break;
+  case '7':	// minor scale	// avoid minuscules in morse: type 'E7' instead of 'e'
+    MENU.drop_input_token();
+    user_selected_scale(minor_scale);
+    break;
   case '6':	// doric scale	// TODO: check 14
-    user_select_scale(doric_scale);
+    MENU.drop_input_token();
+    user_selected_scale(doric_scale);
     break;
   case '5':	// 5  pentatonic (minor|major) scale
     MENU.drop_input_token();
     if ((selected_in(SCALES) == major_scale) || (selected_in(SCALES) == tetraCHORD)) {
-      user_select_scale(europ_PENTAtonic);
+      user_selected_scale(europ_PENTAtonic);
     } else {
-      user_select_scale(pentatonic_minor);
+      user_selected_scale(pentatonic_minor);
     }
     break;
   case '4':	// 4  tetraCHORD | tetrachord
     MENU.drop_input_token();
     if ((selected_in(SCALES) == minor_scale) || (selected_in(SCALES) == pentatonic_minor) || \
 	(selected_in(SCALES) == doric_scale) || (selected_in(SCALES) == triad))
-      user_select_scale(tetrachord);
+      user_selected_scale(tetrachord);
     else
-      user_select_scale(tetraCHORD);
+      user_selected_scale(tetraCHORD);
     break;
   case '3':	// 3  octaves fourths fifths
     MENU.drop_input_token();
-    user_select_scale(octave_4th_5th);
+    user_selected_scale(octave_4th_5th);
     break;
   case '2':	// 2  octaves fifths
     MENU.drop_input_token();
-    user_select_scale(octaves_fifths);
+    user_selected_scale(octaves_fifths);
     break;
   case '1':	// 1  octaves
     MENU.drop_input_token();
-    user_select_scale(octaves);
+    user_selected_scale(octaves);
     break;
   }
 
@@ -4812,6 +4834,7 @@ bool menu_pulses_reaction(char menu_input) {
 	      PULSES.multiply_period(pulse, input_value);
 
 	  PULSES.fix_global_next();
+	  not_a_preset();
 
 	  if (DO_or_maybe_display(VERBOSITY_MORE)) {	// TODO: '*' maybe VERBOSITY_SOME
 	    MENU.ln();
@@ -4823,9 +4846,10 @@ bool menu_pulses_reaction(char menu_input) {
 
       case CODE_TIME_UNIT:
 	input_value = MENU.numeric_input(1);
-	if (input_value>0)
+	if (input_value>0) {
 	  PULSES.set_time_unit_and_inform(PULSES.time_unit * input_value);
-	else
+	  not_a_preset();
+	} else
 	  MENU.outln_invalid();
 	break;
       }
@@ -4835,9 +4859,9 @@ bool menu_pulses_reaction(char menu_input) {
 	MENU.outln(F("multiplier"));
 
       input_value = MENU.numeric_input(musicBoxConf.pitch.multiplier);
-      if (input_value>0 )
+      if (input_value>0 ) {
 	musicBoxConf.pitch.multiplier = input_value;
-      else
+      } else
 	MENU.outln(F("small positive integer only"));
 
       if (DO_or_maybe_display(VERBOSITY_LOWEST)) {
@@ -4855,9 +4879,10 @@ bool menu_pulses_reaction(char menu_input) {
 	MENU.outln(F("divisor"));
 
       input_value = MENU.numeric_input(musicBoxConf.pitch.divisor);
-      if (input_value>0 )
+      if (input_value>0 ) {
 	musicBoxConf.pitch.divisor = input_value;
-      else
+	not_a_preset();
+      } else
 	MENU.outln(F("small positive integer only"));
 
       if (DO_or_maybe_display(VERBOSITY_LOWEST)) {
@@ -4875,6 +4900,7 @@ bool menu_pulses_reaction(char menu_input) {
 	      PULSES.divide_period(pulse, input_value);
 
 	  PULSES.fix_global_next();
+	  not_a_preset();
 
 	  if (DO_or_maybe_display(VERBOSITY_MORE)) {
 	    MENU.ln();
@@ -4886,9 +4912,10 @@ bool menu_pulses_reaction(char menu_input) {
 
       case CODE_TIME_UNIT:
 	input_value = MENU.numeric_input(1);
-	if (input_value>0)
+	if (input_value>0) {
 	  PULSES.set_time_unit_and_inform(PULSES.time_unit / input_value);
-	else
+	  not_a_preset();
+	} else
 	  MENU.outln_invalid();
 	break;
       }
@@ -4909,6 +4936,7 @@ bool menu_pulses_reaction(char menu_input) {
 	  }
 
 	PULSES.fix_global_next();
+	not_a_preset();
 
 	if (DO_or_maybe_display(VERBOSITY_MORE)) {
 	  MENU.ln();
@@ -4920,9 +4948,10 @@ bool menu_pulses_reaction(char menu_input) {
 
     case CODE_TIME_UNIT:
       input_value = MENU.numeric_input(1);
-      if (input_value>0)
+      if (input_value>0) {
 	PULSES.set_time_unit_and_inform(input_value);
-      else
+	not_a_preset();
+      } else
 	MENU.outln_invalid();
       break;
     }
