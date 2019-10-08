@@ -4285,6 +4285,8 @@ void select_scale__UI() {	// OBSOLETE?:
     "F4"	*tetraCHORD* (as a scale) on metric F
   */
 
+  unsigned int* scale_was = selected_in(SCALES);
+
   switch (MENU.peek()) {
   case EOF8:
     break;
@@ -4458,7 +4460,10 @@ void select_scale__UI() {	// OBSOLETE?:
     user_select_scale(octaves);
     break;
   }
-}
+
+  if(selected_in(SCALES) != scale_was)
+    not_a_preset();
+} // select_scale__UI()
 
 
 #if defined USE_DACs	// ################ TODO: remove
@@ -4759,6 +4764,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (input_value>=0 ) {
 	musicBoxConf.sync = input_value;
 	sync_user_selected = true;
+	not_a_preset();
       }
       else
 	MENU.out(F("positive integer only"));
@@ -5147,8 +5153,10 @@ bool menu_pulses_reaction(char menu_input) {
     {
       next_token = MENU.peek();
       if (next_token != '!' && next_token != 'T')	// 'J<num>' selects jiffle
-	if (UI_select_from_DB(JIFFLES))		// select jiffle UI
+	if (UI_select_from_DB(JIFFLES)) {		// select jiffle UI
 	  jiffle_user_selected = true;
+	  not_a_preset();
+	}
 
       bool trying=true;
       while (trying) {

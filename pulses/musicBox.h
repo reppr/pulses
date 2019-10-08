@@ -3943,13 +3943,13 @@ bool musicBox_reaction(char token) {
       if(input_value >= 0 && input_value < PL_MAX) {
 	musicBoxConf.base_pulse = input_value;
 	stack_sync_user_selected=true;	// RETHINK: maybe, maybe not?
+	not_a_preset();
       }
     } else {	// bare '|'
-      input_value = MENU.numeric_input(musicBoxConf.stack_sync_slices);
-      if((input_value >= -1 )) {
-	musicBoxConf.stack_sync_slices = input_value;
-	stack_sync_user_selected=true;
-      }
+      short input_value = MENU.numeric_input(musicBoxConf.stack_sync_slices);
+      musicBoxConf.stack_sync_slices = input_value;
+      stack_sync_user_selected=true;
+      not_a_preset();
     }
 
     if(MENU.verbosity >= VERBOSITY_LOWEST) {
