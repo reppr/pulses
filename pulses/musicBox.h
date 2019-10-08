@@ -460,11 +460,11 @@ int highest_primary_at_start=ILLEGAL32;	// needed for primary pattern display in
 
 void watch_primary_pulses() {
   long diff;
-  int secondary_cnt=ILLEGAL32;
+  int primary_cnt=0;	// keep track (for display only)
 
   for(int pulse=highest_primary_at_start; pulse>=musicBoxConf.lowest_primary; pulse--) {
     if(PULSES.pulses[pulse].groups & g_PRIMARY) {
-      //      primary_cnt++;
+      primary_cnt++;
       diff = PULSES.pulses[pulse].counter - primary_counters[pulse];	// has the counter changed?
       primary_counters[pulse]=PULSES.pulses[pulse].counter;		// update to new counter
 
@@ -504,10 +504,12 @@ void watch_primary_pulses() {
     } else	// is *not* g_PRIMARY
       MENU.out('-');	// was removed, replaced or something
   } // primary pulse loop (high to low)
-  MENU.out(F("' "));	// mark end of primary pulses by ' space
+  MENU.out('\'');	// mark end of primary pulses by "'  "
+  MENU.space(2);
 
-  if(primary_count <= 4 || MENU.verbosity >= VERBOSITY_SOME) {	// test&trimm: 4
-    secondary_cnt=0;
+  // near the end  show secondary_cnt
+  if((primary_cnt <= 4) || (MENU.verbosity >= VERBOSITY_SOME)) {	// test&trimm: 4
+    int secondary_cnt=0;
 
     for(int pulse=0; pulse < PL_MAX; pulse++) {
       if(PULSES.pulses[pulse].groups & g_SECONDARY)
@@ -516,7 +518,7 @@ void watch_primary_pulses() {
 
     MENU.out(F("S("));
     MENU.out(secondary_cnt);
-    MENU.out(')');
+    MENU.out(F(")\t"));
   }
 } // watch_primary_pulses()
 
@@ -700,6 +702,9 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
   HARMONICAL.reduce_fraction(&this_division);
 
   if(show_subcycle_position /*&& slice_weighting(this_division) > 0*/) {	// weighting influence switched off
+    MENU.out((float) this_division.multiplier/this_division.divisor, 6);
+    MENU.space(2);
+
     if(this_division.multiplier<10000)
       MENU.space();
     if(this_division.multiplier<1000)
@@ -721,18 +726,15 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
       MENU.space();
     MENU.space();
 
-    MENU.out((float) this_division.multiplier/this_division.divisor, 6);
-    MENU.space(2);
-
     if(MENU.verbosity >= VERBOSITY_SOME) {
-      MENU.out(F("w="));
+      MENU.out(F("\tw="));
       MENU.out(slice_weighting(this_division));
     }
   }
 
   cycle_monitor_last_seen_division++;
   cycle_monitor_last_seen_division %= cycle_slices;
-}
+} // cycle_monitor()
 
 
 unsigned int kill_secondary() {	// kill all secondary
