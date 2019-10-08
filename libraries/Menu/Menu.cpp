@@ -894,7 +894,10 @@ int Menu::restore_input_token() {	// restores last input token	only use if you *
 void Menu::play_KB_macro(char *macro, bool newline) {	// most often you might do  'men_selected=0;'  before
   out("play_KB_macro  ");
 
-  // DADA: TODO: IMPLEMENT: maybe esp_now_send from here ?????
+  int pending_input = cb_count;		// pending input to SAVE|restore ?
+  char buffer[pending_input];
+  for(int i=0; i<pending_input; i++)
+    buffer[i] = cb_read();
 
   for (char c=*macro++; c; c=*macro++) {
     if (cb_is_full()) {
@@ -917,6 +920,11 @@ void Menu::play_KB_macro(char *macro, bool newline) {	// most often you might do
   interpret_men_input();	// Menu input interpreter
   if(newline)
     ln();
+
+  if(pending_input) {		// pending input to restore ?
+    for(int i=pending_input; i; i--)
+      cb_write(buffer[i-1]);
+  }
 }
 
 /* **************************************************************** */
