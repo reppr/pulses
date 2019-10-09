@@ -2236,6 +2236,19 @@ double get_normalised_pitch() {
 } // get_normalised_pitch()
 
 
+pulse_time_t get_pause_time(bool display=true) {
+  PULSES.fix_global_next();
+  pulse_time_t pause =  PULSES.global_next;
+  PULSES.sub_time(&musicBox_start_time, &pause);
+  if(display) {
+    MENU.out(F("pause\t"));
+    PULSES.display_time_human(pause);
+    MENU.ln();
+  }
+  return pause;
+} // get_pause_time()
+
+
 void start_musicBox() {
 #if defined BLUETOOTH_ENABLE_PIN
   set_bluetooth_according_switch();
@@ -2493,15 +2506,17 @@ void start_musicBox() {
   else
     PULSES.activate_selected_synced_now(musicBoxConf.sync);	// 'n' 'N' sync and activate
 
+  PULSES.fix_global_next();			// cannot understand why i need that here...
+  pulse_time_t pause = get_pause_time(true/*do display*/);
+
   // TODO: TEST: start pause detection and skipping
   if(musicBoxConf.sync || musicBoxConf.stack_sync_slices) {	// start pause possible?
-    PULSES.fix_global_next();			// cannot understand why i need that here...
-    pulse_time_t pause = PULSES.global_next;
     if(musicBoxConf.stack_sync_slices) { // stack_sync sliced?
       if(MagicConf.autoskip_pause) {
-	PULSES.sub_time(&musicBox_start_time, &pause);	// just skip pause, HACK: ################
 	PULSES.time_skip_selected(pause);
-	MENU.outln(F("pause skipped"));
+	MENU.out(F("skipped\t"));
+	PULSES.display_time_human(pause);
+	MENU.ln();
       } else { // pause is *not* autoskipped
 	MENU.outln(F("no pause autoskip"));
 #if defined USE_MONOCHROME_DISPLAY
@@ -2513,9 +2528,7 @@ void start_musicBox() {
       monochrome_display_message(F(" _"));		// TODO: monochrome pause time
 #endif
       if(MENU.verbosity >= VERBOSITY_LOWEST) {
-	MENU.out(F("sync pause "));
-	PULSES.display_time_human(pause);
-	MENU.ln(2);
+	MENU.ln();
 	musicBox_short_info();
 	MENU.ln(2);
       }
@@ -2528,7 +2541,8 @@ void start_musicBox() {
     PULSES.setup_pulse(&musicBox_butler, ACTIVE, PULSES.get_now(), slice_tick_period);
   PULSES.pulses[musicBox_butler_i].groups |= g_MASTER;	// savety net, until butler has initialised itself
 
-  stress_event_cnt = -3;	// some stress events will often happen after starting the musicBox
+  stress_event_cnt = -4;	// some stress events will often happen after starting the musicBox
+  stress_count = 0;
 } // start_musicBox()
 
 

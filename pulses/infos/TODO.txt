@@ -281,7 +281,6 @@ stop automatic esp_now_add_identity
     stress_count = 0;		// configure pulses stress managment
     stress_event_cnt = -3;	// some *heavy* stress event expected after magical_stress_release()...
 
-pause skipping
 
 why does preset UI drop following input?
 
@@ -292,7 +291,7 @@ TODO: fix play_KB_macro()
 
 REMOVE?	stop_on_LOW_H1() stop_on_LOW()
 
-TESTING: stack_sync_slices still buggy?
+TEST: stack_sync_slices
 
 TODO: shouldn't these change musicBoxConf.pitch?	no, normalised_octave
    random_octave_shift();
