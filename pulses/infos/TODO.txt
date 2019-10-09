@@ -302,3 +302,20 @@ TODO: shouldn't these change musicBoxConf.pitch?	no, normalised_octave
 
 
     check_maybe_do();	  // maybe do it *first*	TODO: RETHINK:
+
+
+#define SOFT_END_STOPPS_MOTION_UI	should go to musicBoxConf
+
+version should *always* come first or at a constant offset
+	uint8_t version=0;
+	uint8_t version_reserved0=0;
+	uint8_t version_reserved1=0;
+	uint8_t version_reserved2=0;
+
+implement "selected_by"	   as bitmask (0=not set, default) 1=user, 2=nvs, 4=preset, 8=automatic, 16=random, fixed?, ... 
+implement "selectable_by"  0=not selectable, fixed, (with backdoor for local user)
+	randomise should be off at start
+
+* / and butler: done
+
+TEST:	change also harmonical_cycle?

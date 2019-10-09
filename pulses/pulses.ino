@@ -4829,12 +4829,21 @@ bool menu_pulses_reaction(char menu_input) {
       case CODE_PULSES:
 	input_value = MENU.numeric_input(1);
 	if (input_value>=0) {
-	  for (int pulse=0; pulse<PL_MAX; pulse++)
+	  for (int pulse=0; pulse<PL_MAX; pulse++) {
 	    if (PULSES.pulse_is_selected(pulse))
 	      PULSES.multiply_period(pulse, input_value);
-
+	    else {	// not selected, test for butler (if it was *not* selected)
+	      if(pulse == musicBox_butler_i)	// pulse can *not* be ILLEGAL32 here
+		if(PULSES.pulses[musicBox_butler_i].payload == &musicBox_butler) {	// butler found
+		  PULSES.multiply_period(musicBox_butler_i, input_value);
+		  MENU.outln(F("'*' butler included"));
+		}
+	    }
+	  } // pulse
 	  PULSES.fix_global_next();
 	  not_a_preset();
+	  stress_event_cnt = -2;	// stress events possible after '*'
+	  stress_count = 0;
 
 	  if (DO_or_maybe_display(VERBOSITY_MORE)) {	// TODO: '*' maybe VERBOSITY_SOME
 	    MENU.ln();
@@ -4882,6 +4891,8 @@ bool menu_pulses_reaction(char menu_input) {
       if (input_value>0 ) {
 	musicBoxConf.pitch.divisor = input_value;
 	not_a_preset();
+	stress_event_cnt = -6;	// *heavy* stress events expected after '/!'	// TODO: TEST:
+	stress_count = 0;
       } else
 	MENU.outln(F("small positive integer only"));
 
@@ -4894,18 +4905,30 @@ bool menu_pulses_reaction(char menu_input) {
       switch (dest) {
       case CODE_PULSES:
 	input_value = MENU.numeric_input(1);
-	if (input_value>=0) {
-	  for (int pulse=0; pulse<PL_MAX; pulse++)
+	if (input_value>0) {
+	  for (int pulse=0; pulse<PL_MAX; pulse++) {
 	    if (PULSES.pulse_is_selected(pulse))
 	      PULSES.divide_period(pulse, input_value);
-
+	    else {	// not selected, test for butler (if it was *not* selected)
+	      if(pulse == musicBox_butler_i)	// pulse can *not* be ILLEGAL32 here
+		if(PULSES.pulses[musicBox_butler_i].payload == &musicBox_butler) {	// butler found
+		  PULSES.divide_period(musicBox_butler_i, input_value);
+		  MENU.outln(F("'/' butler included"));
+		}
+	    }
+	  } // pulse
 	  PULSES.fix_global_next();
 	  not_a_preset();
+	  stress_event_cnt = -5;	// *heavy* stress events expected after '/'
+	  stress_count = 0;
 
 	  if (DO_or_maybe_display(VERBOSITY_MORE)) {
 	    MENU.ln();
 	    selected_or_flagged_pulses_info_lines();
 	  }
+	  stress_event_cnt = -5;	// *heavy* stress events expected after '/'
+	  stress_count = 0;
+
 	} else
 	  MENU.outln_invalid();
 	break;
@@ -4937,6 +4960,8 @@ bool menu_pulses_reaction(char menu_input) {
 
 	PULSES.fix_global_next();
 	not_a_preset();
+	stress_event_cnt = -4;	// heavy stress events expected after '='
+	stress_count = 0;
 
 	if (DO_or_maybe_display(VERBOSITY_MORE)) {
 	  MENU.ln();
