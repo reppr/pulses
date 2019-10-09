@@ -4408,6 +4408,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 153:
     musicBoxConf.name = F("eifach wunderschön");
+    //# FAVORITE
     //comment: sehr ruhig
     musicBoxConf.date = F("2019-02-26_12h46m19s	TUE");
     select_in(SCALES, doric_scale);
