@@ -9,8 +9,12 @@
 //#define DEBUG_LED_STRINGS			// empty  or 'SATURATION'
 //#define DEBUG_LED_STRINGS	SATURATION	// empty  or 'SATURATION'
 
+// TODO: bool rgb_strings_available	MOVE: to HARDWARE
 bool rgb_strings_available = true;	// default, can be switched off i.e. from nvs
 
+// TODO: bool rgb_strings_active	MOVE: to RGBstringConf
+bool rgb_strings_active = false;	// new default *INACTIVE* to avoid audible clicks
+					//  programm can switch all rgb string activity ON|off
 
 #if ! defined DEFAULT_LED_STRING_INTENSITY
   #define DEFAULT_LED_STRING_INTENSITY	48	// 72 on 'placeholder'	DADA
@@ -54,6 +58,8 @@ typedef struct rgb_string_config_t {
 #else
   bool rgb_leds_high_priority = false;		// run time toggle with menu 'LH'
 #endif
+
+  bool rgb_strings_active = false;		// defaults to INACTIVE to avoid clicks
 
   bool clear_rgb_background_on_ending = true;	// TODO: ################
   bool set_automagic_hue_slices = true;		// if *not* set by user
@@ -162,7 +168,7 @@ void inspect_LED_pixel(pixelColor_t pixel) {
 pixelColor_t background0[RGB_STRING_LED_CNT] = {0};	// keeps last used background colour, dimmed
 
 void clear_background_buffer0() {
-  if(rgb_strings_available) {
+  if(RGBstringConf.rgb_strings_active && rgb_strings_available) {
     for(int i=0; i < RGB_STRING_LED_CNT; i++)
       background0[i].r = background0[i].g = background0[i].b = 0;
   }
@@ -395,8 +401,8 @@ int pulse_2_rgb_pixel(int pulse) {
 }
 
 void clear_RGB_string_pixel(int pulse) {
-  if(rgb_strings_available) {
-    strand_t * strand_p = strands[0];		// DADA	TODO: multiple RGB strings
+  if(RGBstringConf.rgb_strings_active && rgb_strings_available) {
+    strand_t * strand_p = strands[selected_rgb_LED_string];		// DADA	TODO: multiple RGB strings
     int pix_i = pulse_2_rgb_pixel(pulse);	// TODO: use pulse internal data
     pixelColor_t pixel;
     pixel.r = 0;
@@ -410,7 +416,7 @@ void clear_RGB_string_pixel(int pulse) {
 
 
 void set_pulse_LED_pixel_from_counter(int pulse) {
-  if(rgb_strings_available) {
+  if(RGBstringConf.rgb_strings_active && rgb_strings_available) {
     float H, V;
 
     bool do_display = MENU.maybe_display_more(VERBOSITY_SOME);
@@ -430,7 +436,7 @@ void set_pulse_LED_pixel_from_counter(int pulse) {
     H = (float) (PULSES.pulses[pulse].counter % RGBstringConf.hue_slice_cnt) / (float) RGBstringConf.hue_slice_cnt;
     V = RGBstringConf.rgb_led_string_intensity / (float) 255;
 
-    strand_t * strand_p = strands[0];		// DADA	TODO: multiple RGB strings
+    strand_t * strand_p = strands[selected_rgb_LED_string];		// DADA	TODO: multiple RGB strings
     int pix_i = pulse_2_rgb_pixel(pulse);	// TODO: use pulse intenal data
     pixelColor_t pixel;
 
@@ -444,12 +450,12 @@ void set_pulse_LED_pixel_from_counter(int pulse) {
     strand_p->pixels[pix_i].b = blue;
 
     update_RGB_LED_string=true;		// new buffer content to be displayed
-  } // if(rgb_strings_available) {
+  } // if(RGBstringConf.rgb_strings_active && rgb_strings_available) {
 } // set_pulse_LED_pixel_from_counter(int pulse)
 
 
 void rgb_led_reset_to_default() {	// reset rgb led strip management to default conditions
-  if(rgb_strings_available) {
+  if(RGBstringConf.rgb_strings_active && rgb_strings_available) {
     RGBstringConf.saturation = RGBstringConf.saturation_start_value;
     clear_background_buffer0();
   }
@@ -458,7 +464,7 @@ void rgb_led_reset_to_default() {	// reset rgb led strip management to default c
 
 //#define DEBUG_RGB_STRING_BACKGROUND
 void set_rgb_led_background(int pulse) {
-  if(!rgb_strings_available)
+  if(!RGBstringConf.rgb_strings_active || !rgb_strings_available)
     return;
 
   if(PULSES.pulses[pulse].flags & HAS_RGB_LEDs) {
@@ -630,12 +636,76 @@ void set_rgb_led_background(int pulse) {
 } // set_rgb_led_background(int pulse)
 
 
+void rgb_strings_info() {
+  MENU.out(F("LED strings "));
+  MENU.out(HARDWARE.rgb_strings);
+  rgb_strings_available = (HARDWARE.rgb_strings > 0); // false, if there's no string
+  MENU.out('\t');
+  if(!rgb_strings_available)
+    MENU.out(F("*not* "));
+  MENU.out(F("available\tswitched"));
+  MENU.out_ON_off(RGBstringConf.rgb_strings_active);
+
+  MENU.out(F("\thigh priority"));
+  MENU.out_ON_off(RGBstringConf.rgb_leds_high_priority);
+  MENU.ln();
+
+  for(int i=0; i<RGB_STRINGS_MAX; i++) {	// TODO: multiple rgb led strings
+    if(i==selected_rgb_LED_string)
+      MENU.out('*');
+    else
+      MENU.space();
+    MENU.out(F(" string["));
+    MENU.out(i);
+    MENU.out(F("]\tpin "));
+    MENU.out(HARDWARE.rgb_pin[i]);
+    MENU.out(F("\t\tpixel "));
+    MENU.out(HARDWARE.rgb_pixel_cnt[i]);
+    MENU.out(F("\tvoltage "));
+    MENU.out(HARDWARE.rgb_led_voltage_type[i]);
+    MENU.out(F("\toffset "));
+    MENU.outln(HARDWARE.rgb_pattern0[i]);
+  }
+}
+
+void rgb_led_string_UI_display() {
+  MENU.outln(F("\n'L'=rgbLED 'L<num>'=select string  'L+''LE'=ON  'L-''LT'=OFF 'LI'=intensity 'LO'=offset 'LP'=pixel cnt"));
+  MENU.outln(F("   'LH'=high priority 'LV'=voltage 'LB'=BGdim 'LS'=saturation0 'LR'=sat reset value 'LN'=hue slices"));
+}
+
 void rgb_led_string_UI() {	// starting 'L' already received
   int input_value;
 
+  if(MENU.is_numeric()) {	// 'L<num>' select string
+    input_value = MENU.numeric_input(selected_rgb_LED_string);
+    if(input_value >= 0 && input_value < RGB_STRINGS_MAX) {
+      selected_rgb_LED_string = input_value;
+      MENU.out(F("selected RGB LED string "));
+      MENU.outln(selected_rgb_LED_string);
+    }
+  }
+
   switch (MENU.peek()) {	// second letter after 'L...'
-  case EOF8:	// bare 'L' strip info
-    MENU.outln(F("TODO: implement RGB LED strings info"));	// TODO: give infos about string(s)	DADA ????
+  case '?':	// 'L?' (and bare 'L') led string infos
+    MENU.drop_input_token();
+  case EOF8:	// bare 'L' led string info
+    rgb_strings_info();
+    rgb_led_string_UI_display();
+    break;
+
+  case '-':	// 'L-' == 'LT' led string off
+  case 'T':	// 'LT' for morse
+    MENU.drop_input_token();
+    pulses_RGB_LED_string_init();	// switch it off
+    RGBstringConf.rgb_strings_active = false;
+    MENU.outln(F("rgb leds off"));
+    break;
+
+  case '+':	// 'L+' == 'LE' led string on
+  case 'E':	// 'LE' for morse
+    MENU.drop_input_token();
+    RGBstringConf.rgb_strings_active = true;
+    MENU.outln(F("rgb leds activated"));
     break;
 
   case 'B':	// 'LB'	background dimming
@@ -648,6 +718,75 @@ void rgb_led_string_UI() {	// starting 'L' already received
     if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
       MENU.out(F("background dim "));
       MENU.outln(RGBstringConf.rgb_background_dim);
+    }
+    break;
+
+  case 'H': // 'LH' toggle high priority
+    MENU.drop_input_token();
+    RGBstringConf.rgb_leds_high_priority = !RGBstringConf.rgb_leds_high_priority;
+
+    MENU.out(F("rgb_leds_high_priority "));
+    MENU.out_ON_off(RGBstringConf.rgb_leds_high_priority);
+    MENU.ln();
+    break;
+
+  case 'I':	// 'LI' led intenity
+    MENU.drop_input_token();
+    {
+      float float_input_value = (float) MENU.numeric_input(RGBstringConf.rgb_led_string_intensity);
+      if(float_input_value >= 0 && float_input_value <= 255)
+	RGBstringConf.rgb_led_string_intensity = float_input_value;
+
+      MENU.out(F("LED intensity "));
+      MENU.outln(RGBstringConf.rgb_led_string_intensity);
+    }
+    break;
+
+//case 'N':	// 'LN' number of strings	CLASH hue slices
+//  MENU.drop_input_token();
+//  input_value = MENU.numeric_input(HARDWARE.rgb_strings);
+//  if((input_value >= 0) && (input_value < RGB_STRINGS_MAX))
+//    HARDWARE.rgb_strings = input_value;
+//  rgb_strings_info();
+//  break;
+
+  case 'N':	// 'LN' hue slices	CLASH number of strings
+    MENU.drop_input_token();
+    input_value = MENU.numeric_input(RGBstringConf.hue_slice_cnt);
+    if((input_value >= 0) && (input_value < 256))
+      HARDWARE.rgb_strings = input_value;
+    rgb_strings_info();
+    break;
+
+  case 'O':	// 'LO' offset
+    MENU.drop_input_token();
+    input_value = (uint8_t) MENU.numeric_input(HARDWARE.rgb_pattern0[selected_rgb_LED_string]);
+    if(input_value >=0 && input_value < ILLEGAL8)
+      HARDWARE.rgb_pattern0[selected_rgb_LED_string] = input_value;
+    MENU.out(F("led offset "));
+    MENU.outln(HARDWARE.rgb_pattern0[selected_rgb_LED_string]);
+    break;
+
+  case 'P':	// 'LP' led pixel_cnt
+    MENU.drop_input_token();
+    input_value = MENU.numeric_input(HARDWARE.rgb_pixel_cnt[selected_rgb_LED_string]);
+    if(input_value >= 0)
+      HARDWARE.rgb_pixel_cnt[selected_rgb_LED_string] = input_value;
+
+    MENU.out(F("LED pixels "));
+    MENU.outln(HARDWARE.rgb_pixel_cnt[selected_rgb_LED_string]);
+    break;
+
+  case 'R':	// 'LR' saturation_reset_value
+    MENU.drop_input_token();
+    input_value = MENU.numeric_input(0);
+    if (input_value > 0) {
+      RGBstringConf.saturation_reset_value = 1.0 / ((float) input_value);
+    }
+
+    if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
+      MENU.out(F("saturation_reset_value "));
+      MENU.outln(RGBstringConf.saturation_reset_value);
     }
     break;
 
@@ -664,25 +803,15 @@ void rgb_led_string_UI() {	// starting 'L' already received
     }
     break;
 
-  case 'R':	// 'LR' saturation_reset_value
+  case 'V':	// 'LV' voltage type
     MENU.drop_input_token();
-    input_value = MENU.numeric_input(0);
-    if (input_value > 0) {
-      RGBstringConf.saturation_reset_value = 1.0 / ((float) input_value);
-    }
-
-    if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
-      MENU.out(F("saturation_reset_value "));
-      MENU.outln(RGBstringConf.saturation_reset_value);
-    }
+    input_value = MENU.numeric_input(HARDWARE.rgb_led_voltage_type[selected_rgb_LED_string]);
+    set_rgb_string_voltage_type(input_value, selected_rgb_LED_string);
     break;
+
   } // switch second letter
 } // rgb_led_string_UI()
 
-void rgb_led_string_UI_display() {
-  MENU.outln(F("\n'L'=rgbLED 'LB'=BGdim 'LS'=saturation0 'LR'=sat reset value 'LI'=intensity 'LN'=hue slices"));
-  MENU.outln(F("   'LH'=high priority 'LP'=pixel cnt 'LV'=voltage 'LO'=offset pattern"));
-}
 
 #define PULSES_RGB_LED_STRING_H
 #endif

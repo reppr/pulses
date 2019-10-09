@@ -15,7 +15,7 @@ void nvs_menu_display() {
   MENU.outln(F("'I'=IDENTITY 'IS'=save 'IR'=read 'IT'=time slice 'IP<preName>'"));
   MENU.ln();
 
-  MENU.out(F("'S'=SYSTEM 'SS'=set rgb string cnt"));
+  MENU.out(F("'S'=SYSTEM"));
 
 #if defined USE_MPU6050
   MENU.out(F(" 'SU'=set mpu6050 offsets"));
@@ -23,7 +23,7 @@ void nvs_menu_display() {
   MENU.ln();
 
 #if defined USE_RGB_LED_STRIP
-    rgb_led_string_UI_display();
+  rgb_led_string_UI_display();
 #endif
 
   MENU.outln(F("\n'P' nvs_PRENAME"));
@@ -141,23 +141,9 @@ bool nvs_menu_reaction(char token) {
 
   case 'S':	// 'S' system	in construction
     switch(next_token) { // second letter after 'S'
-    case 'S':	// 'SS'
-      MENU.drop_input_token();
-      input_value = MENU.numeric_input(HARDWARE.rgb_strings);
-      if((input_value >= 0) && (input_value < RGB_STRINGS_MAX))
-	HARDWARE.rgb_strings = input_value;
-
-      MENU.out(F("LED strings "));
-      MENU.outln(HARDWARE.rgb_strings);
-
-      rgb_strings_available = (HARDWARE.rgb_strings > 0); // false, if there's no string
-      MENU.out(F("LED strings switched"));
-      MENU.out_ON_off(rgb_strings_available);
-      MENU.ln();
-      break;
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
-    case 'U':
+    case 'U':	// 'SU'
       MENU.drop_input_token();
       set_accGyro_offsets_UI();
       break;

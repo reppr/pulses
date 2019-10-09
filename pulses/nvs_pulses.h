@@ -17,7 +17,7 @@
 // Preferences CONF_nvs;
 // CONF_nvs.begin("CONFIG", /* readonly is */ false);
 
-#define RGB_STRINGS_MAX		8
+#define RGB_STRINGS_MAX		2	// 8 possible
 // esp_err_t ERROR reporting
 #if ! defined ESP_ERR_INFO_DEFINED
   #include "esp_err.h"
@@ -150,6 +150,7 @@ void nvs_save_blob(char* key, void* new_blob, size_t buffer_size) {
 
 
 extern bool rgb_strings_available;
+extern bool rgb_strings_active;
 void configure_HARDWARE_from_nvs() {
   int v;
   pulses_hardware_conf_t HARDWARE_from_nvs;
@@ -336,7 +337,7 @@ void configure_HARDWARE_from_nvs() {
   if(n) {
     HARDWARE.rgb_strings = n;
     rgb_strings_available = true;
-
+    rgb_strings_active = true;
     MENU.out(F("RGB LED strings available "));
     MENU.outln(n);
 
@@ -370,8 +371,9 @@ void configure_HARDWARE_from_nvs() {
       set_rgb_string_voltage_type(x, selected_rgb_LED_string);
     }
   } else {	// no rgb led strings
-    if(rgb_strings_available) {
+    if(rgb_strings_available || rgb_strings_active) {
       rgb_strings_available = false;
+      rgb_strings_active = false;
       MENU.outln(F("*switched RGB LED STRINGS OFF*"));
     }
   }

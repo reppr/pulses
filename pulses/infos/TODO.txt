@@ -318,3 +318,6 @@ implement "selectable_by"  0=not selectable, fixed, (with backdoor for local use
 * / and butler: done
 
 TEST:	change also harmonical_cycle?
+
+RGB_STRING_LED_CNT
+// TODO: bool rgb_strings_available	MOVE: to HARDWARE

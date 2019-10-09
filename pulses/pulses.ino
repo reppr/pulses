@@ -150,7 +150,7 @@ enum RTC_types {
   RTC_type_unknown,
 };
 
-#define RGB_STRINGS_MAX		8
+#define RGB_STRINGS_MAX		2	// 8 possible
 
 // some HARDWARE must be known early	*can be managed by nvs*
 typedef struct pulses_hardware_conf_t {
@@ -198,7 +198,7 @@ typedef struct pulses_hardware_conf_t {
 
   // MIDI?
   uint8_t MIDI_in_pin=ILLEGAL8;		// reserved, not implemented yet // %4
-  uint8_t MIDI_out_pin=ILLEGAL8;		// reserved, not implemented yet
+  uint8_t MIDI_out_pin=ILLEGAL8;	// reserved, not implemented yet
 
   // other pins
   uint8_t magical_fart_output_pin=ILLEGAL8;	// who knows, maybe?
@@ -1633,7 +1633,7 @@ bool low_priority_tasks() {
 #endif
 
 #if defined USE_RGB_LED_STRIP
-  if(update_RGB_LED_string && rgb_strings_available) {
+  if(rgb_strings_active && update_RGB_LED_string && rgb_strings_available) {
     digitalLeds_drawPixels(strands, 1);
     update_RGB_LED_string = false;
     return true;
@@ -1767,11 +1767,6 @@ bool lowest_priority_tasks() {
 
 void loop() {	// ARDUINO
   static unsigned int loop_cnt=0;
-
-#if defined USE_RGB_LED_STRIP
-  bool rgb_leds_high_priority=RGBstringConf.rgb_leds_high_priority;	// run time toggle with 'LH'
-#endif
-
   unsigned int this_todo_cnt=0;
 
   loop_cnt++;
@@ -1856,7 +1851,7 @@ void loop() {	// ARDUINO
 #endif	// DO_STRESS_MANAGMENT
 
 #if defined USE_RGB_LED_STRIP
-    if(update_RGB_LED_string && rgb_leds_high_priority && rgb_strings_available) {
+    if(RGBstringConf.rgb_strings_active && update_RGB_LED_string && RGBstringConf.rgb_leds_high_priority) {
       digitalLeds_drawPixels(strands, 1);
       update_RGB_LED_string = false;
     }
