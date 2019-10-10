@@ -82,6 +82,11 @@ using namespace std;	// ESP8266 needs that
   #if defined USE_MCP23017
     #include "MCP23017.h"			// Adafruit, simple test version only
   #endif
+
+  #if defined USE_ADS1115_AT_ADDR
+    #include <Adafruit_ADS1015.h>
+    Adafruit_ADS1115 ADS1115(USE_ADS1115_AT_ADDR);
+  #endif
 #endif // USE_i2c
 
 
@@ -1599,6 +1604,10 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
     Wire.setClock(100000L);	// must be *after* Wire.begin()  TODO: check if 400kHz does not work
     MCP23017_OUT_LOW();
     PULSES.do_A2 = &MCP23017_write;
+  #endif
+
+  #if defined  USE_ADS1115_AT_ADDR
+    ADS1115.begin();
   #endif
 
   #if defined  USE_RTC_MODULE

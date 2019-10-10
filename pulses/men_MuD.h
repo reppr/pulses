@@ -3,9 +3,42 @@
   temporary test menu UI during development
 */
 
+#if defined USE_ADS1115_AT_ADDR
+{
+  static int16_t just_read = ADS1115.readADC_SingleEnded(0);	// initialise to get sum right
+  int16_t read_before=just_read;
+  just_read = ADS1115.readADC_SingleEnded(0);
+
+  static float volts= (just_read * 0.1875)/1000;	// initialise to get sum right
+  float volts_before=volts;
+  volts = (just_read * 0.1875)/1000;
+
+  MENU.out(F("read "));
+  MENU.out(just_read);
+  MENU.tab();
+  MENU.out(volts, 6);
+  MENU.tab();
+
+  float diff = volts - volts_before;
+  if(diff == 0)
+    MENU.out('=');
+  else if(diff > 0)
+    MENU.out('+');
+  MENU.out(diff, 6);
+  MENU.tab();
+
+  static float sum=0.0;
+  sum += diff;
+  MENU.out(sum, 6);
+  MENU.ln();
+}
+
+#else
 MENU.out(F("normalised_pitch "));
 MENU.out(get_normalised_pitch(), 6);
 MENU.ln();
+
+#endif
 
 // determine_imu_zero_offsets(2000);
 
