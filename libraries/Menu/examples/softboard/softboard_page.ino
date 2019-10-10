@@ -223,6 +223,10 @@ const char pin_[] = "pin ";
 const char high_[] = "HIGH";
 const char low_[] = "LOW";
 
+#if defined PULSES_SYSTEM
+  extern bool show_pulses_pin_usage(gpio_pin_t pin);
+#endif
+
 void pin_info_digital(gpio_pin_t pin) {
   uint8_t mask = digitalPinToBitMask(pin);
 #ifdef __SAM3X8E__	// FIXME: ################
@@ -251,7 +255,7 @@ void pin_info_digital(gpio_pin_t pin) {
   MENU.out(pin_);
   MENU.out((int) pin);
   MENU.tab();
-  #if defined(ESP32)
+#if defined(ESP32)
     #warning "I/O pin configuration info *not implemented on ESP32*."
     // MENU.out(F("(pin_info_digital() not implemented on ESP32)"));
     if (digitalRead(pin))
@@ -259,7 +263,7 @@ void pin_info_digital(gpio_pin_t pin) {
     else
       MENU.out(low_);
 
-  #elif defined(ESP8266)		// FIXME: ################
+#elif defined(ESP8266)		// FIXME: ################
     #warning "I/O pin configuration info *not implemented on ESP8266*."
     // MENU.out(F("(pin_info_digital() not implemented on ESP8266)"));
     if (digitalRead(pin))
@@ -267,7 +271,7 @@ void pin_info_digital(gpio_pin_t pin) {
     else
       MENU.out(low_);
 
-  #elif defined(__SAM3X8E__)	// FIXME: !!! ################
+#elif defined(__SAM3X8E__)	// FIXME: !!! ################
     #warning "I/O pin configuration info *not implemented on Arduino DUE yet*."
     MENU.out(F("(pin_info_digital() not implemented on DUE yet)"));
     if (digitalRead(pin))
@@ -275,7 +279,7 @@ void pin_info_digital(gpio_pin_t pin) {
     else
       MENU.out(low_);
 
-  #else		// old style Arduino hardware
+#else		// old style Arduino hardware
   // see: <Arduino.h>
 
   // input or output?
@@ -313,10 +317,15 @@ void pin_info_digital(gpio_pin_t pin) {
       MENU.out(F("floating"));
     }
   }
-  #endif
-  MENU.ln();
-}
+#endif	// hardware type
 
+#if defined PULSES_SYSTEM
+  MENU.tab();
+  show_pulses_pin_usage(pin);
+#endif
+
+  MENU.ln();
+} // pin_info_digital()
 
 // display configuration and state of all digital pins:
 void pins_info_digital() {
@@ -383,8 +392,9 @@ void toggle_watch() {
 */
 const char value_[] = "value ";
 
+
 bool touch_VU=false;	// show touchRead(pin) instead of analogRead(pin)
-void bar_graph(int value) {
+void bar_graph(int value, bool newline=true) {
   int i, scale, length=64;
 
   #if defined ESP32
@@ -414,24 +424,30 @@ void bar_graph(int value) {
       else
 	MENU.out('*');			// all other values '*'
     }
-    MENU.ln();
+    if(newline)
+      MENU.ln();
   } else {
     MENU.out(F("negative value "));
     MENU.out(value);
     MENU.OutOfRange();
   }
-}
+} // bar_graph() (softboard)
 
 
 // Display analog pin name and value as number and bar graph:
 void pin_info_analog(gpio_pin_t pin) {
   if (pin == PIN_analog)
-    MENU.out(F("*A"));
+    MENU.out(F("*A"));	// DADA
   else
     MENU.out(F(" A"));
   MENU.out((int) pin);
   MENU.tab();
-  bar_graph(analogRead(pin));
+  bar_graph(analogRead(pin), false /* no newline */);
+#if defined PULSES_SYSTEM
+  MENU.tab();
+  show_pulses_pin_usage(pin);
+#endif
+  MENU.ln();
 }
 
 
@@ -508,7 +524,7 @@ void feedback_tolerance(unsigned int tolerance) {
 void VU_init(int pin) {
   VU_last=IMPOSSIBLE;	// just an impossible value
 
-  MENU.out(F("pin\tval\t'+' '-' '*' '/' set "));
+  MENU.out(F("pin\tval\t'v'=stop\t'+' '-' '*' '/' set "));
   feedback_tolerance(bar_graph_tolerance);
 }
 
@@ -518,8 +534,11 @@ void toggle_VU() {
   run_VU = !run_VU;
   if (run_VU)
     VU_init(PIN_analog);
-  else
+  else {
+    MENU.outln(F("VU off"));
     MENU.ln();
+    touch_VU = false;	// reset touch_VU mode when switching off
+  }
 }
 
 /*
@@ -544,7 +563,11 @@ bool bar_graph_VU(int pin) {	// return true, if there was output
     value =  analogRead(pin);
 
   if (abs(value - VU_last) > bar_graph_tolerance) {
-    MENU.out(F("*A"));
+    MENU.out('*');
+    if(touch_VU)
+      MENU.out('T');
+    else
+      MENU.out('A');
     MENU.out((int) pin);
     MENU.tab();
     bar_graph(value);
@@ -554,7 +577,7 @@ bool bar_graph_VU(int pin) {	// return true, if there was output
   }
 
   return false;  // analog read *had to be done*, but no output	 return false;
-}
+} // bar_graph_VU() (softboard)
 
 
 #ifdef has_ARDUINO_TONE
@@ -802,6 +825,11 @@ void softboard_display() {
 #endif
   MENU.ln();
 
+#if defined PULSES_SYSTEM
+  MENU.outln(F("'P'=show PULSES pin usage"));
+  MENU.ln();
+#endif
+
   _select_digital(true);
   MENU.out(toWork_);
   MENU.out(pin__);
@@ -972,7 +1000,14 @@ bool softboard_reaction(char token) {
       }
     }
     break;
-#endif	// ESP32
+#endif	// ! ESP32
+
+#if defined PULSES_SYSTEM
+  case 'P': // 'P' show PULSES pin usage
+    extern void show_pulses_all_pins_usage();
+    show_pulses_all_pins_usage();
+    break;
+#endif
 
   case 'a':
     MENU.outln(bar_graph_header);
@@ -1135,7 +1170,13 @@ bool softboard_reaction(char token) {
 
     touch_VU=true;
     run_VU=true;
-    VU_init(PIN_digital);	// ??? touch!
+
+#if defined PULSES_SYSTEM
+    if(PIN_digital == ILLEGAL8)
+      PIN_digital = HARDWARE.morse_touch_input_pin;
+#endif
+
+    VU_init(PIN_digital);
     break;
 
 #ifdef has_ARDUINO_TONE

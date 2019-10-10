@@ -37,6 +37,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 /* **************************************************************** */
 // SOURCE CODE STARTS HERE:
 /* **************************************************************** */
+#define PULSES_SYSTEM	// softboard i.e. can check if running standalone
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1226,6 +1227,155 @@ void show_hardware_conf(pulses_hardware_conf_t* hardware) {
 void show_current_hardware_conf() {	// same, with title, for menu output
   MENU.outln(F("current HARDWARE configuration:"));
   show_hardware_conf(&HARDWARE);
+}
+
+bool show_pulses_pin_usage(gpio_pin_t pin) {	// TODO: show also basic pins usage like flash memory, uart, i2c
+  bool retval=false;
+  // gpio
+  if(HARDWARE.gpio_pins_cnt) {
+    for(int i=0; 1 < HARDWARE.gpio_pins_cnt; i++) {
+      if(pin == HARDWARE.gpio_pins[i]) {
+	MENU.out(F("GPIO "));
+	MENU.out(pin);
+	MENU.tab();
+	retval = true;
+      }
+    }
+  }
+
+  // dac
+  if(pin == HARDWARE.DAC1_pin) {
+    MENU.out(F("DAC1 "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+  if(pin == HARDWARE.DAC2_pin) {
+    MENU.out(F("DAC2 "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+
+  // morse
+  if(pin == HARDWARE.morse_touch_input_pin) {
+    MENU.out(F("morse touch "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+  if(pin == HARDWARE.morse_gpio_input_pin) {
+    MENU.out(F("morse gpio "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+  if(pin == HARDWARE.morse_output_pin) {
+    MENU.out(F("morse out "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+
+  // rgb led strings
+  if(HARDWARE.rgb_strings) {
+    for(int i=0; i < RGB_STRINGS_MAX; i++) {
+      if(pin == HARDWARE.rgb_pin[i]) {
+	MENU.out(F("RGB["));
+	MENU.out(i);
+	MENU.out(F("] pin "));
+	MENU.out(pin);
+	MENU.tab();
+	retval = true;
+      }
+    }
+  }
+
+  // trigger
+  if(pin == HARDWARE.musicbox_trigger_pin) {
+    MENU.out(F("trigger "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+
+  // peripheral power switch
+  if(pin == HARDWARE.periph_power_switch_pin) {
+    MENU.out(F("peripheral power "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+
+  // battery control
+  if(pin == HARDWARE.battery_level_control_pin) {
+    MENU.out(F("battery level "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+
+  // bluetooth
+  if(pin == HARDWARE.bluetooth_enable_pin) {
+    MENU.out(F("bluetooth enable "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+
+  // MIDI
+  if(pin == HARDWARE.MIDI_in_pin) {
+    MENU.out(F("MIDI IN "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+  if(pin == HARDWARE.MIDI_out_pin) {
+    MENU.out(F("MIDI OUT "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+
+  // other pins
+  if(pin == HARDWARE.magical_fart_output_pin) {
+    MENU.out(F("magical fart "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+
+  if(pin == HARDWARE.magical_sense_pin) {
+    MENU.out(F("magical sense "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+
+  if(pin == HARDWARE.tone_pin) {	// from very old code, could be recycled?
+    MENU.out(F("tone "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+
+// HCSR04_TRIGGER_PIN
+// HCSR04_ECHO_PIN
+// LED_PIN
+  return retval;
+} // show_pulses_pin_usage()
+
+void show_pulses_all_pins_usage() {
+  MENU.outln(F("PULSES pin usage:"));
+  for(int i=0; i < 40; i++) {
+    MENU.out(F("  pin "));
+    MENU.out(i);
+    MENU.space();
+    MENU.tab();
+    show_pulses_pin_usage(i);
+    MENU.ln();
+  }
+  MENU.ln();
 }
 
 

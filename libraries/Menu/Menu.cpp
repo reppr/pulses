@@ -692,7 +692,7 @@ void Menu::out_ticked_hexs(unsigned int count) const {
 
 
 /*
-  void bar_graph(long value, unsigned int scale, char c);
+  void bar_graph(long value, unsigned int scale, char c, bool newline=true);
   print one value & bar graph line.
 
   example output:  MENU.bar_graph(value, 1023, '*');
@@ -726,7 +726,7 @@ value 1024	***************************************************************X
 value 1072	***************************************************************XXXX
 value 1104	***************************************************************XXXXXX
 */
-void Menu::bar_graph(long value, unsigned int scale, char c) {
+void Menu::bar_graph(long value, unsigned int scale, char c, bool newline /*=true*/) {
   const long length=64;
   int stars = (value * length) / (scale + 1) ;
 
@@ -765,8 +765,9 @@ void Menu::bar_graph(long value, unsigned int scale, char c) {
   if (value==scale)		// positive full scale:
     out('|');			// last sign '|'
 
-  ln();
-}
+  if(newline)
+    ln();
+} // Menu::bar_graph()
 
 
 

@@ -244,7 +244,7 @@ class Menu {
   void out_ticked_hexs(unsigned int count) const;
 
   // Print a bar_graph line:
-  void bar_graph(long value, unsigned int scale, char c);
+  void bar_graph(long value, unsigned int scale, char c, bool newline=true);
 
   /* String recycling:						*/
   void OutOfRange() const;	// output "out of range\n"

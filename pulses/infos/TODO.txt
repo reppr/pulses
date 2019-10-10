@@ -324,3 +324,11 @@ RGB_STRING_LED_CNT
 
 morse touch autocalibration
 configuration int touch_threshold;	HARDWARE?
+
+
+TODO: 2 versions bar_graph() implemented softboard | Pulses.cpp
+void Menu::bar_graph(long value, unsigned int scale, char c, bool newline /*=true*/) {
+softboard
+
+
+show_pulses_pin_usage(gpio_pin_t pin) // TODO: show also basic pins usage like flash memory, uart, i2c, ...
