@@ -343,4 +343,3 @@ case 'j':	// en_jiffle_thrower	// OBSOLETE, as select_jiffle_UI() *does* this no
 
 TODO: expand_fractions() add SAVETY net not to crash on divisor zero
       it should *not* be called with illformed fractions, but *SHOULD NOT CRASH* anyway
-
