@@ -13,8 +13,8 @@
 gpio_pin_t test_PIN_touch = 4;		// == T0	// ################ TODO: remove debugging code
 //int touch_threshold = 70;		// TODO: does not work well on some new instruments ???
 //int touch_threshold = 60;		// TODO: TEST&TRIM:
-int touch_threshold = 58;		// TODO: TEST&TRIM:
-//int IRAM_ATTR touch_threshold = 58;	// TODO: TEST&TRIM:	// (does not compile)
+//int touch_threshold = 58;		// TODO: TEST&TRIM:
+int touch_threshold = 61;		// TODO: TEST&TRIM:
 
 #if defined DEBUG_TOUCH_INTERRUPT			// ################ TODO: remove debugging code
   long touch_cnt=0;

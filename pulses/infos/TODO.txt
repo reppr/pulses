@@ -321,3 +321,6 @@ TEST:	change also harmonical_cycle?
 
 RGB_STRING_LED_CNT
 // TODO: bool rgb_strings_available	MOVE: to HARDWARE
+
+morse touch autocalibration
+configuration int touch_threshold;	HARDWARE?
