@@ -4,45 +4,8 @@
 */
 
 #if defined USE_ADS1115_AT_ADDR
-{
-  static int16_t just_read = ADS1115.readADC_SingleEnded(0);	// initialise to get sum right
-  int16_t read_before=just_read;
-  just_read = ADS1115.readADC_SingleEnded(0);
-
-  //  float resolution = 0.512 / 32767;
-  //  float resolution=0.1875;	// 6144 / 32767
-
-  static float volts= (just_read * ADS1115_resolution_mV)/1000;	// initialise to get sum right
-  float volts_before=volts;
-  volts = (just_read * ADS1115_resolution_mV) / 1000.0;
-
-  MENU.out(F("volts "));
-  MENU.out(volts, 6);
-
-  float diff = volts - volts_before;
-  MENU.out(F("\t± "));
-  if(diff == 0)
-    MENU.out('=');
-  else if(diff > 0)
-    MENU.out('+');
-  MENU.out(diff, 6);
-
-  static float sum=0.0;
-  sum += diff;
-  MENU.out(F("\t\t(summed ± "));
-  if(sum >= 0)
-    MENU.out('+');
-  MENU.out(sum, 6);
-
-  MENU.out(F(")\tresolution mV "));
-  MENU.out(ADS1115_resolution_mV, 6);
-
-  MENU.out(F("\t\t15bit read "));
-  MENU.out(just_read);
-
-  MENU.out(F("\t\trange mV "));
-  MENU.outln(ADS1115_range_mV);
-}
+//ads1115_first_test_A0();
+  ads1115_first_test_diff_A2_A3();
 
 #else
 MENU.out(F("normalised_pitch "));
