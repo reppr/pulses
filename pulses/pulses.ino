@@ -571,7 +571,7 @@ void test_jiffle(unsigned int* jiffle, int count) {
   PULSES.pulses[pulse].flags |= COUNTED;
   PULSES.pulses[pulse].remaining = count;
   PULSES.pulses[pulse].dac1_intensity = PULSES.pulses[pulse].dac2_intensity = 20; // TODO: random test value
-  PULSES.activate_pulse_synced(pulse, PULSES.get_now(), abs(musicBoxConf.sync));
+  PULSES.activate_pulse_synced(pulse, PULSES.get_now(), 0 /* or abs(musicBoxConf.sync) */); // test with sync=0
   PULSES.fix_global_next();
 }
 

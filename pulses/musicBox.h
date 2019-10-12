@@ -3177,6 +3177,108 @@ void sync_landscape_time_sliced() {	// set this instruments time slice
 }
 
 
+bool tuning_pitch_and_scale_UI() {
+  if(MENU.peek()==EOF8) {		// bare 'T'?
+    // TODO: show tuning	// display pitch tuning
+    display_names(SCALES);	// display SCALES list
+    MENU.ln();
+    musicBox_short_info();
+  } else {				// more input?
+    bool done=false;
+    while(!done) {
+      switch(MENU.peek()) {
+      // check for ending tokens first:
+      case '!':	// 'Txyz!'	trailing '!': *do* tune and quit
+	tune_selected_2_scale_limited(musicBoxConf.pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves
+      case ' ':	// a space ends a 'T... ' input sequence, quit
+	MENU.drop_input_token();
+      case EOF8:	// EOF done		quit
+	done = true;
+	break;
+
+      default:	// numbers or known letters?
+	if(MENU.is_numeric()) {
+	  if(UI_select_from_DB(SCALES))	// select scale
+	    scale_user_selected = true;
+	} else {
+	  // not numeric
+	  switch(MENU.peek()) {	// test for known letters
+	  case 'C':
+	    musicBoxConf.chromatic_pitch = 4;
+	    MENU.drop_input_token();
+	    PULSES.time_unit=1000000;	// switch to metric time unit
+	    musicBoxConf.pitch.multiplier=1;
+	    musicBoxConf.pitch.divisor=262; // 261.63	// C4  ***not*** harmonical
+	    pitch_user_selected = true;
+	    break;
+	  case 'D':
+	    musicBoxConf.chromatic_pitch = 6;
+	    MENU.drop_input_token();
+	    PULSES.time_unit=1000000;	// switch to metric time unit
+	    musicBoxConf.pitch.multiplier=1;
+	    musicBoxConf.pitch.divisor = 294;		// 293.66 = D4
+	    // divisor = 147;		// 146.83 = D3
+	    pitch_user_selected = true;
+	    break;
+	  case 'E':
+	    musicBoxConf.chromatic_pitch = 8;
+	    MENU.drop_input_token();
+	    PULSES.time_unit=1000000;	// switch to metric time unit
+	    musicBoxConf.pitch.multiplier=1;
+	    musicBoxConf.pitch.divisor=330; // 329.36	// e4  ***not*** harmonical
+	    pitch_user_selected = true;
+	    break;
+	  case 'F':
+	    musicBoxConf.chromatic_pitch = 9;
+	    MENU.drop_input_token();
+	    PULSES.time_unit=1000000;	// switch to metric time unit
+	    musicBoxConf.pitch.multiplier=1;
+	    musicBoxConf.pitch.divisor=175; // 174.16	// F3  ***not*** harmonical
+	    pitch_user_selected = true;
+	    break;
+	  case 'G':
+	    musicBoxConf.chromatic_pitch = 11;
+	    MENU.drop_input_token();
+	    PULSES.time_unit=1000000;	// switch to metric time unit
+	    musicBoxConf.pitch.multiplier=1;
+	    musicBoxConf.pitch.divisor=196; // 196.00	// G3  ***not*** harmonical
+	    pitch_user_selected = true;
+	    break;
+	  case 'A':
+	    musicBoxConf.chromatic_pitch = 1;
+	    MENU.drop_input_token();
+	    PULSES.time_unit=1000000;	// switch to metric time unit
+	    musicBoxConf.pitch.multiplier=1;
+	    musicBoxConf.pitch.divisor = 440;
+	    pitch_user_selected = true;
+	    break;
+	  case 'B':
+	    musicBoxConf.chromatic_pitch = 2;
+	    MENU.drop_input_token();
+	    PULSES.time_unit=1000000;	// switch to metric time unit
+	    musicBoxConf.pitch.multiplier=1;
+	    musicBoxConf.pitch.divisor=233; //	// 233.08 Bb3  ***not*** harmonical
+	    pitch_user_selected = true;
+	    break;
+	  case 'H':
+	    musicBoxConf.chromatic_pitch = 3;
+	    MENU.drop_input_token();
+	    PULSES.time_unit=1000000;	// switch to metric time unit
+	    musicBoxConf.pitch.multiplier=1;
+	    musicBoxConf.pitch.divisor=247; // 246.94	// B3  ***not*** harmonical
+	    pitch_user_selected = true;
+	    break;
+
+	  default:	//	unknown input, not for the 'T' interface
+	    done=true;
+	  } // known letters?
+	} // not numeric
+      } // treat input following 'T......'
+    }	// input loop		'Tx'
+  }
+} // tuning_pitch_and_scale_UI()
+
+
 bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: ADC, 'analog'Touch, distance sensors, etc
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
   // TODO: REPLACE BY NEW ENGINE ################################################################
@@ -3326,7 +3428,6 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
 
 bool musicBox_reaction(char token) {
   int input_value, cnt;
-  bool done;
   char next_token;
   pulse_time_t T_scratch;
 
@@ -3759,110 +3860,8 @@ bool musicBox_reaction(char token) {
     MENU.outln(selected_name(SCALES));
     break;
 
-  case 'T':	// Tuning pitch and scale	// TODO: move to pulses.ino
-    if(MENU.peek()==EOF8) {		// bare 'T'?
-      display_names(SCALES);	//   display SCALES list
-      MENU.ln();
-      musicBox_short_info();
-    } else {				// more input?
-      done=false;
-      while(!done) {
-	switch(MENU.peek()) {
-	case '!':	// 'Txyz!'	trailing '!': *do* tune and quit
-	  tune_selected_2_scale_limited(musicBoxConf.pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves // TODO: adjust appropriate...
-	case ' ':	// a space ends a 'T... ' input sequence, quit
-	  MENU.drop_input_token();
-	case EOF8:	// EOF done		quit
-	  done = true;
-	  break;
-
-	default:	// numbers or known letters?
-	  if(MENU.is_numeric()) {
-	    if(UI_select_from_DB(SCALES))	// select scale
-	      scale_user_selected = true;
-	  } else {			// not numeric
-	    switch(MENU.peek()) {	// test for known letters
-	    case 'u':	// harmonical time unit
-	      musicBoxConf.chromatic_pitch = 13;
-	      MENU.drop_input_token();
-	      PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
-	      musicBoxConf.pitch.multiplier=1;
-	      musicBoxConf.pitch.divisor=1;
-	      pitch_user_selected = true;
-	      break;
-	    case 'c':
-	      musicBoxConf.chromatic_pitch = 4;
-	      MENU.drop_input_token();
-	      PULSES.time_unit=1000000;	// switch to metric time unit
-	      musicBoxConf.pitch.multiplier=1;
-	      musicBoxConf.pitch.divisor=262; // 261.63	// C4  ***not*** harmonical
-	      pitch_user_selected = true;
-	      break;
-	    case 'd':
-	      musicBoxConf.chromatic_pitch = 6;
-	      MENU.drop_input_token();
-	      PULSES.time_unit=1000000;	// switch to metric time unit
-	      musicBoxConf.pitch.multiplier=1;
-	      musicBoxConf.pitch.divisor = 294;		// 293.66 = D4
-	      // divisor = 147;		// 146.83 = D3
-	      pitch_user_selected = true;
-	      break;
-	    case 'e':
-	      musicBoxConf.chromatic_pitch = 8;
-	      MENU.drop_input_token();
-	      PULSES.time_unit=1000000;	// switch to metric time unit
-	      musicBoxConf.pitch.multiplier=1;
-	      musicBoxConf.pitch.divisor=330; // 329.36	// e4  ***not*** harmonical
-	      pitch_user_selected = true;
-	      break;
-	    case 'f':
-	      musicBoxConf.chromatic_pitch = 9;
-	      MENU.drop_input_token();
-	      PULSES.time_unit=1000000;	// switch to metric time unit
-	      musicBoxConf.pitch.multiplier=1;
-	      musicBoxConf.pitch.divisor=175; // 174.16	// F3  ***not*** harmonical
-	      pitch_user_selected = true;
-	      break;
-	    case 'g':
-	      musicBoxConf.chromatic_pitch = 11;
-	      MENU.drop_input_token();
-	      PULSES.time_unit=1000000;	// switch to metric time unit
-	      musicBoxConf.pitch.multiplier=1;
-	      musicBoxConf.pitch.divisor=196; // 196.00	// G3  ***not*** harmonical
-	      pitch_user_selected = true;
-	      break;
-	    case 'a':
-	      musicBoxConf.chromatic_pitch = 1;
-	      MENU.drop_input_token();
-	      PULSES.time_unit=1000000;	// switch to metric time unit
-	      musicBoxConf.pitch.multiplier=1;
-	      musicBoxConf.pitch.divisor = 440;
-	      pitch_user_selected = true;
-	      break;
-	    case 'b':
-	      musicBoxConf.chromatic_pitch = 2;
-	      MENU.drop_input_token();
-	      PULSES.time_unit=1000000;	// switch to metric time unit
-	      musicBoxConf.pitch.multiplier=1;
-	      musicBoxConf.pitch.divisor=233; //	// 233.08 Bb3  ***not*** harmonical
-	      pitch_user_selected = true;
-	      break;
-	    case 'h':
-	      musicBoxConf.chromatic_pitch = 3;
-	      MENU.drop_input_token();
-	      PULSES.time_unit=1000000;	// switch to metric time unit
-	      musicBoxConf.pitch.multiplier=1;
-	      musicBoxConf.pitch.divisor=247; // 246.94	// B3  ***not*** harmonical
-	      pitch_user_selected = true;
-	      break;
-
-	    default:	//	unknown input, not for the 'T' interface
-	      done=true;
-	    }
-	  } //  known letters?
-	} // treat input
-      }	// input loop		'Tx'
-    }
+  case 'T':	// Tuning pitch and scale
+    tuning_pitch_and_scale_UI();
     break;
 
   // TODO: REPLACE: this is just a *proof of concept* test, works, but is not usable ################
