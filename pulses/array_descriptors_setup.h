@@ -78,6 +78,10 @@ REGISTER_JIFFLE(din__dididi_dixi);
 REGISTER_JIFFLE(ding_ditditdit);
 REGISTER_JIFFLE(diing_ditditdit);
 
+REGISTER_JIFFLE(jiff_1500);	// new for commit 1500
+REGISTER_JIFFLE(jiff_1500_2);	// new for commit 1500
+REGISTER_JIFFLE(jiff_1500_3);	// new for commit 1500
+
 // effects
 REGISTER_JIFFLE(mech1023);
 REGISTER_JIFFLE(mech511);

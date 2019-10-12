@@ -7,10 +7,10 @@
   also see: preset-hashtags.txt
 */
 
-#define MUSICBOX_PRESETs	175	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
+#define MUSICBOX_PRESETs	176	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
 
 // *all* existing presets should be playable now :)
-#define SHORT_PRESET_COLLECTION	175	// only the first <nn> presets are at choice, redefines MUSICBOX_PRESETs
+#define SHORT_PRESET_COLLECTION	176	// only the first <nn> presets are at choice, redefines MUSICBOX_PRESETs
 
 bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset? ################
   if(new_preset < 1 || new_preset > MUSICBOX_PRESETs)
@@ -5032,6 +5032,17 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 175:
+    musicBoxConf.name = F("Kaleidoskop 1500");
+    musicBoxConf.date = F("2019_10_12_10h SAT");
+    select_in(SCALES, octaves_fifths);
+    select_in(JIFFLES, jiff_1500_2);
+    musicBoxConf.sync = 3;
+    musicBoxConf.pitch = {1, 110};
+    musicBoxConf.chromatic_pitch = 0;	// a
+    // harmonical CYCLE: 7d 1h 27' 4" 	2^10 SUBCYCLE: | 9' 56" |
+    break;
+
+  case 176:
     musicBoxConf.name = F("veryverybad");
     //# shortIsOk
     //# dense
