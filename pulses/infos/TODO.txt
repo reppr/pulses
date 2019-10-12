@@ -332,3 +332,10 @@ softboard
 
 
 show_pulses_pin_usage(gpio_pin_t pin) // TODO: show also basic pins usage like flash memory, uart, i2c, ...
+
+pin configuration for Wire SDA SCL
+
+lightweight MONO instruments
+
+eliminate TIME_UNIT
+

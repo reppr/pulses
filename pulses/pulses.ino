@@ -4444,22 +4444,19 @@ void select_scale__UI() {	// OBSOLETE?:
       case '?':
       break;
     */
-  case 'u':	// harmonical time unit, minor
-    musicBoxConf.chromatic_pitch = 13;
+  case 'U':	// toggle harmonical time unit
     MENU.drop_input_token();
-    user_selected_scale(minor_scale);
-    PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
-    musicBoxConf.pitch.multiplier=1;
-    musicBoxConf.pitch.divisor=1;
+
+    if(PULSES.time_unit != TIME_UNIT)
+      PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
+    else
+      PULSES.time_unit=1000000;		// switch to metric time unit
     break;
 
-  case 'U':	// harmonical time unit, major
-    musicBoxConf.chromatic_pitch = 13;
+  case 'S':	// use       if(UI_select_from_DB(SCALES))	// select scale
     MENU.drop_input_token();
-    user_selected_scale(major_scale);
-    PULSES.time_unit=TIME_UNIT;	// switch to harmonical time unit
-    musicBoxConf.pitch.multiplier=1;
-    musicBoxConf.pitch.divisor=1;
+    if(UI_select_from_DB(SCALES))	// select scale
+      scale_user_selected = true;
     break;
 
   case 'c':	// c minor
@@ -4586,6 +4583,10 @@ void select_scale__UI() {	// OBSOLETE?:
     MENU.drop_input_token();
     user_selected_scale(europ_PENTAtonic);
     break;
+  case '9':	// pentaCHORD ('9' just as it is free)
+    MENU.drop_input_token();
+    user_selected_scale(pentaCHORD);
+    break;
   case '8':	// major scale	// analog '7' (which is handy for morse input)
     MENU.drop_input_token();
     user_selected_scale(major_scale);
@@ -4598,13 +4599,9 @@ void select_scale__UI() {	// OBSOLETE?:
     MENU.drop_input_token();
     user_selected_scale(doric_scale);
     break;
-  case '5':	// 5  pentatonic (minor|major) scale
+  case '5':	// 5  pentatonic minor scale
     MENU.drop_input_token();
-    if ((selected_in(SCALES) == major_scale) || (selected_in(SCALES) == tetraCHORD)) {
-      user_selected_scale(europ_PENTAtonic);
-    } else {
-      user_selected_scale(pentatonic_minor);
-    }
+    user_selected_scale(pentatonic_minor);
     break;
   case '4':	// 4  tetraCHORD | tetrachord
     MENU.drop_input_token();
