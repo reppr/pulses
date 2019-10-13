@@ -4416,6 +4416,60 @@ void Press_toStart() {
 }
 
 
+void select_jiffle_UI() {	// select jiffle, maybe apply to selected pulses
+  /*
+    'J'  shows registered jiffle names and display_jiffletab(<selected_jiffle>)
+    'JT' tests jiffle
+    'J7' selects jiffle #7 and display_jiffletab()
+    'J!' copy selected jiffle in jiffle_RAM, select jiffle_RAM, display_jiffletab(jiffle_RAM)
+    'J9!' copy jiffle #9 in jiffle_RAM, select jiffle_RAM, display_jiffletab(jiffle_RAM)
+  */
+  // some jiffles from source, some very old FIXME:	review and delete	################
+
+  unsigned int* jiffle_was = selected_in(JIFFLES);
+
+  int next_token = MENU.peek();
+  if (next_token != '!' && next_token != '?')	// 'J<num>' 'J+'=='JE' 'J-'=='JT' select jiffle
+    if (UI_select_from_DB(JIFFLES)) {		// select jiffle UI
+      jiffle_user_selected = true;
+      not_a_preset();
+    }
+
+  bool trying=true;
+  while (trying) {
+    switch (MENU.peek()) {
+    case '?':	// 'J[...]?' tests a jiffle
+      MENU.drop_input_token();
+      test_jiffle(selected_in(JIFFLES), 3);
+      break;
+
+    case '!':	// 'J[<num>]!' copies an already selected jiffletab to RAM, selects RAM
+      MENU.drop_input_token();
+      if(selected_in(JIFFLES) != jiffle_RAM) {
+	unsigned int * source=selected_in(JIFFLES);
+	// jiffle_write_index=0;	// no, write starting at jiffle_write_index #### FIXME: ####
+	load2_jiffle_RAM(source);
+      }
+      select_in(JIFFLES, jiffle_RAM);
+      jiffle_user_selected = true;
+      break;
+
+    default:
+      trying=false;
+    }
+  }
+
+  if(jiffle_was != selected_in(JIFFLES)) {
+    jiffle_user_selected = true;
+    setup_jiffle_thrower_selected(selected_actions);	// was: 'j'
+    not_a_preset();
+  }
+
+  if (MENU.verbosity >= VERBOSITY_SOME)
+    display_jiffletab(selected_in(JIFFLES));
+} // select_jiffle_UI()
+
+
 void user_selected_scale(unsigned int* scale) {
   if(scale != NULL) {
     select_in(SCALES, scale);
@@ -5334,54 +5388,12 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 #endif	// #ifdef IMPLEMENT_TUNING	implies floating point
 
-  case 'j':	// en_jiffle_thrower
+  case 'j':	// en_jiffle_thrower	// OBSOLETE, as select_jiffle_UI() does this now
     setup_jiffle_thrower_selected(selected_actions);
     break;
 
   case 'J':	// select, edit, test, load jiffle
-    /*
-      'J'  shows registered jiffle names and display_jiffletab(<selected_jiffle>)
-      'JT' tests jiffle
-      'J7' selects jiffle #7 and display_jiffletab()
-      'J!' copy selected jiffle in jiffle_RAM, select jiffle_RAM, display_jiffletab(jiffle_RAM)
-      'J9!' copy jiffle #9 in jiffle_RAM, select jiffle_RAM, display_jiffletab(jiffle_RAM)
-    */
-    // some jiffles from source, some very old FIXME:	review and delete	################
-    {
-      next_token = MENU.peek();
-      if (next_token != '!' && next_token != 'T')	// 'J<num>' selects jiffle
-	if (UI_select_from_DB(JIFFLES)) {		// select jiffle UI
-	  jiffle_user_selected = true;
-	  not_a_preset();
-	}
-
-      bool trying=true;
-      while (trying) {
-	switch (MENU.peek()) {
-	case 'T':	// 'J[...]T' tests a jiffle
-	  MENU.drop_input_token();
-	  test_jiffle(selected_in(JIFFLES), 3);
-	  break;
-
-	case '!':	// 'J[<num>]!' copies an already selected jiffletab to RAM, selects RAM
-	  MENU.drop_input_token();
-	  if(selected_in(JIFFLES) != jiffle_RAM) {
-	    unsigned int * source=selected_in(JIFFLES);
-	    // jiffle_write_index=0;	// no, write starting at jiffle_write_index #### FIXME: ####
-	    load2_jiffle_RAM(source);
-	  }
-	  select_in(JIFFLES, jiffle_RAM);
-	  jiffle_user_selected = true;
-	  break;
-
-	default:
-	  trying=false;
-	}
-      }
-    }
-
-    if (MENU.verbosity >= VERBOSITY_SOME)
-	display_jiffletab(selected_in(JIFFLES));
+    select_jiffle_UI();
     break;
 
   // 'R' OBSOLETE????	################

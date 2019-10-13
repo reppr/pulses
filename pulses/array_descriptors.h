@@ -221,33 +221,37 @@ bool UI_select_from_DB(arr_descriptor* DB) {
       return false;
     }
   } else {			// *not* numeric input
-    switch(MENU.peek()) {	// '+' | '-'
-    case '+':
-      MENU.drop_input_token();
-      {
-	int i = pointer2index(DB, selected_in(DB));
-	if(i<DB_items(DB)) {
-	  select_in(DB,index2pointer(DB, ++i));
-	  return_flag = true;
+    while(MENU.peek()=='+' || MENU.peek()=='-' || MENU.peek()=='E' || MENU.peek()=='T') {
+      switch(MENU.peek()) {	// '+' | '-'  and 'E' 'T' (for morse)
+      case '+': // 'J+' == 'JE'	(for morse) one entry up
+      case 'E': // 'J+' == 'JE'	(for morse) one entry up
+	MENU.drop_input_token();
+	{
+	  int i = pointer2index(DB, selected_in(DB));
+	  if(i<DB_items(DB)) {
+	    select_in(DB,index2pointer(DB, ++i));
+	    return_flag = true;
+	  }
 	}
-      }
-      break;
-    case '-':
-      MENU.drop_input_token();
-      {
-	int i = pointer2index(DB, selected_in(DB));
-	if(i) {
-	  select_in(DB,index2pointer(DB, --i));
-	  return_flag = true;
+	break;
+      case '-': // 'J-' == 'JT'	(for morse) one entry down
+      case 'T': // 'J-' == 'JT'	(for morse) one entry down
+	MENU.drop_input_token();
+	{
+	  int i = pointer2index(DB, selected_in(DB));
+	  if(i) {
+	    select_in(DB,index2pointer(DB, --i));
+	    return_flag = true;
+	  }
 	}
-      }
-      break;
-    }
+	break;
+      } // '+' '-'  'E' 'T' (for morse)  loop
+    } // treat '+' and '-'
   }
 
   MENU.outln(selected_name(DB));
   return return_flag;
-}
+} // UI_select_from_DB()
 
 #endif // MENU_h
 

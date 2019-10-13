@@ -91,12 +91,14 @@ void Harmonical::reduce_fraction(fraction_t *f) {
 void Harmonical::expand_fractions(fraction_t * a, fraction_t * b) {
   unsigned long l = LCM(a->divisor, b->divisor);
   unsigned int f;
-  f =  l / a->divisor ;
-  (*a).multiplier *= f;
-  (*a).divisor    *= f;
-  f =  l / b->divisor ;
-  (*b).multiplier *= f;
-  (*b).divisor *= f;
+  //if(a->divisor && b->divisor) { // TODO: add SAVETY net not to crash on divisor zero
+    f =  l / a->divisor ;
+    (*a).multiplier *= f;
+    (*a).divisor    *= f;
+    f =  l / b->divisor ;
+    (*b).multiplier *= f;
+    (*b).divisor *= f;
+  //}
 }
 
 
