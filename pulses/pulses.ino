@@ -920,6 +920,48 @@ bool stack_sync_user_selected=false;
 #endif
 
 /* **************************************************************** */
+void selected_do_detune_periods(short cents) {	// works on the period time of each pulse...
+  MENU.out(F("detuning periods  cents "));	// just a quick-hack-tuning-interface by MENU input
+  MENU.out(cents);				// *will produce a lot of ROUNDING ERRORS*
+  if(cents==0)					// TODO: REPLACE: by a version working on pitch and retune
+    return;
+
+  double cent_factor = 1.0005777895;	// 1 cent
+  double detune = 1.0;
+
+  if(cents > 0)		// tuning upwards
+    for(short i=0; i<cents; i++)
+      detune /= cent_factor;
+  else			// tuning downwards
+    for(short i=cents; i<0; i++)
+      detune *= cent_factor;
+
+  MENU.tab();
+  MENU.out(F("\tfactor "));
+  MENU.out(detune, 6);
+  MENU.ln();
+
+  if(detune != 1.0) {
+    for(int pulse=0; pulse<PL_MAX; pulse++) {
+      if (PULSES.pulse_is_selected(pulse)) {
+	double time_double = PULSES.pulses[pulse].period.time;
+	time_double *= detune;
+	if(pulse==15)
+	  MENU.out(PULSES.pulses[pulse].period.time);
+	PULSES.pulses[pulse].period.time = (unsigned long) (time_double + 0.5);
+	if(pulse==15) {
+	  MENU.tab();
+	  MENU.outln(PULSES.pulses[pulse].period.time);
+	}
+      }
+    }
+
+    PULSES.fix_global_next();
+  } // detune != 1.0
+} // selected_do_detune_periods()
+
+
+/* **************************************************************** */
 #ifdef ARDUINO
 /* Arduino setup() and loop():					*/
 

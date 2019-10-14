@@ -5,14 +5,14 @@
 
 #if defined USE_ADS1115_AT_ADDR
 //ads1115_first_test_A0();
-  ads1115_first_test_diff_A2_A3();
+//ads1115_first_test_diff_A2_A3();
+#endif
 
-#else
+
 MENU.out(F("normalised_pitch "));
 MENU.out(get_normalised_pitch(), 6);
 MENU.ln();
 
-#endif
 
 // determine_imu_zero_offsets(2000);
 

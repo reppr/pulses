@@ -343,3 +343,8 @@ case 'j':	// en_jiffle_thrower	// OBSOLETE, as select_jiffle_UI() *does* this no
 
 TODO: expand_fractions() add SAVETY net not to crash on divisor zero
       it should *not* be called with illformed fractions, but *SHOULD NOT CRASH* anyway
+
+TODO: '+' and '-' and numeric input
+
+TODO: selected_do_detune_periods(cents)		REPLACE: by a version working on pitch and retune
+TODO: add motion UI tuning interface

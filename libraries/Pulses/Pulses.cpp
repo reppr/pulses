@@ -730,7 +730,7 @@ void Pulses::activate_tuning(int pulse) {	// copy period to other_time and set T
   pulses[pulse].other_time.time = pulses[pulse].period.time;
   pulses[pulse].other_time.overflow = pulses[pulse].period.overflow;
 
-  fix_global_next();	// looks like we do nod need this?
+  fix_global_next();	// looks like we do not need this?
 }
 
 
