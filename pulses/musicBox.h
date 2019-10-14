@@ -931,51 +931,51 @@ void show_metric_mnemonic() {	// TODO: move to Harmonical or Pulses
   char second_letter = ' ';
 
   switch (musicBoxConf.chromatic_pitch) {
-  case 0:			// not metric
+  case 0: // free		// not metric
     MENU.out(F("free"));
     return;			// return
-  case 1:
+  case 1: // a
     MENU.out('a');
     break;
-  case 2:
+  case 2: // a#==Bb
     MENU.out('a');
     second_letter = '#';
     break;
-  case 3:
+  case 3: // b==h
     MENU.out('b');
     break;
-  case 4:
+  case 4: // c
     MENU.out('c');
     break;
-  case 5:
+  case 5: // c#
     MENU.out('c');
     second_letter = '#';
     break;
-  case 6:
+  case 6: // d
     MENU.out('d');
     break;
-  case 7:
+  case 7: // d#
     MENU.out('d');
     second_letter = '#';
     break;
-  case 8:
+  case 8: // e
     MENU.out('e');
     break;
-  case 9:
+  case 9: // f
     MENU.out('f');
     break;
-  case 10:
+  case 10: // f#
     MENU.out('f');
     second_letter = '#';
     break;
-  case 11:
+  case 11: // g
     MENU.out('g');
     break;
-  case 12:
+  case 12: // g#
     MENU.out('g');
     second_letter = '#';
     break;
-  case 13:
+  case 13: // u
     MENU.out('u');
     break;
   default:
@@ -983,7 +983,7 @@ void show_metric_mnemonic() {	// TODO: move to Harmonical or Pulses
     second_letter = '?';
   }
   MENU.out(second_letter);
-}
+} // show_metric_mnemonic()
 
 
 void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
@@ -1036,11 +1036,43 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   MENU.space();
   show_metric_mnemonic();
   MENU.ln();
-}
+} // show_basic_musicBox_parameters()
+
+double pitch_normalised=0.0;	// maybe MOVE?: to musicBoxConf?
+short normalised_octave=0;	// maybe MOVE?: to musicBoxConf?
+double get_normalised_pitch() {
+  if(musicBoxConf.pitch.divisor==0)	// savety net
+    MENU.error_ln(F("pitch.divisor==0"));
+  else {
+    pitch_normalised = musicBoxConf.pitch.multiplier;
+    pitch_normalised /= (double) musicBoxConf.pitch.divisor;
+    normalised_octave=0;
+
+    if(pitch_normalised < 0.0)		// savety net
+      MENU.error_ln(F("pitch_normalised *negative*"));
+    else {				// everything looks ok
+      while(pitch_normalised < 1.0) {	// below 1.0
+	normalised_octave++;
+	pitch_normalised *= 2.0;
+      }
+
+      while(pitch_normalised >= 2.0) {	// 2.0 and above
+	normalised_octave--;
+	pitch_normalised /= 2.0;
+      }
+    }
+  }
+
+  return pitch_normalised;
+} // get_normalised_pitch()
+
 
 void musicBox_short_info() {
   show_basic_musicBox_parameters();
   MENU.space(2);  // indent
+  MENU.out(F("normalised pitch "));
+  MENU.out(get_normalised_pitch(), 6);
+  MENU.tab();
   show_cycles_1line();
 }
 
@@ -1963,44 +1995,44 @@ void random_metric_pitches(void) {
   case 0:
   case 1:
   case 3:
-    musicBoxConf.chromatic_pitch = 1;
+    musicBoxConf.chromatic_pitch = 1; // a
     musicBoxConf.pitch.multiplier = 1;
     musicBoxConf.pitch.divisor = 220; // 220	// A 220  ***not*** harmonical	// TODO: define role of multiplier, pitch.divisor
     break;
   case 4:
   case 5:
   case 6:
-    musicBoxConf.chromatic_pitch = 8;
+    musicBoxConf.chromatic_pitch = 8; // e
     musicBoxConf.pitch.multiplier = 1;
     musicBoxConf.pitch.divisor=330; // 329.36	// E4  ***not*** harmonical
     break;
   case 7:
   case 8:
-    musicBoxConf.chromatic_pitch = 6;
+    musicBoxConf.chromatic_pitch = 6; // d
     musicBoxConf.pitch.multiplier = 1;
     musicBoxConf.pitch.divisor = 294;		// 293.66 = D4
     break;
   case 9:
   case 10:
   case 11:
-    musicBoxConf.chromatic_pitch = 11;
+    musicBoxConf.chromatic_pitch = 11; // g
     musicBoxConf.pitch.multiplier = 1;
     musicBoxConf.pitch.divisor=196; // 196.00	// G3  ***not*** harmonical
     break;
   case 12:
   case 13:
-    musicBoxConf.chromatic_pitch = 4;
+    musicBoxConf.chromatic_pitch = 4; // c
     musicBoxConf.pitch.multiplier = 1;
     musicBoxConf.pitch.divisor=262; // 261.63	// C4  ***not*** harmonical
     break;
   case 14:
   case 15:
-    musicBoxConf.chromatic_pitch = 9;
+    musicBoxConf.chromatic_pitch = 9; // f
     musicBoxConf.pitch.multiplier = 1;
     musicBoxConf.pitch.divisor=175; // 174.16	// F3  ***not*** harmonical
     break;
   case 16:
-    musicBoxConf.chromatic_pitch = 2;
+    musicBoxConf.chromatic_pitch = 2; // Bb
     musicBoxConf.pitch.multiplier = 1;
     musicBoxConf.pitch.divisor=233; // 233.08	// Bb3 ***not*** harmonical
     break;
@@ -2205,35 +2237,6 @@ void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless wakin
   else	// *not* wake up from deep sleep
     MENU.outln_invalid();
 } // maybe_restore_from_RTCmem()
-
-
-double pitch_normalised=0.0;
-short normalised_octave=0;
-double get_normalised_pitch() {
-  if(musicBoxConf.pitch.divisor==0)	// savety net
-    MENU.error_ln(F("pitch.divisor==0"));
-  else {
-    pitch_normalised = musicBoxConf.pitch.multiplier;
-    pitch_normalised /= (double) musicBoxConf.pitch.divisor;
-    normalised_octave=0;
-
-    if(pitch_normalised < 0.0)		// savety net
-      MENU.error_ln(F("pitch_normalised *negative*"));
-    else {				// everything looks ok
-      while(pitch_normalised < 1.0) {	// below 1.0
-	normalised_octave++;
-	pitch_normalised *= 2.0;
-      }
-
-      while(pitch_normalised >= 2.0) {	// 2.0 and above
-	normalised_octave--;
-	pitch_normalised /= 2.0;
-      }
-    }
-  }
-
-  return pitch_normalised;
-} // get_normalised_pitch()
 
 
 pulse_time_t get_pause_time(bool display=true) {
