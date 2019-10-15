@@ -111,6 +111,19 @@ void monochrome_show_subcycle_octave() {
   }
 }
 
+char scale_symbol_char() {	// 1 char SCALE index as hex and beyond for monochrome display, morse out(?)
+  char s = (char) pointer2index(SCALES, selected_in(SCALES));		// start with index in SCALES
+  s--;	// scale 0 is in SCALES[1]
+  if(s < 10)
+    s += '0';	// chiffres 0...9
+  else {
+    s -= 10;
+    s += 'A';	// hex and beyond ;)
+  }
+  return s;
+} // scale_symbol_char()
+
+
 void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be used while playing
   if(! monochrome_power_save) {
     uint8_t cols = u8x8.getCols();
@@ -205,7 +218,7 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
 	  while(col++ < cols)  u8x8.print(' ');	// fill line witch spaces
       }
       u8x8.setInverseFont(0);
-    } else {
+    } else { // if there is no name
       if(selected_in(SCALES) != NULL) {
 	monochrome_show_subcycle_octave();
 	u8x8.print(' ');
@@ -235,9 +248,19 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
 	u8x8.print(F("\" "));
       } else									// TODO: factor out
 	u8x8.print('-');
+    } // name or no name
+
+    if(musicBoxConf.chromatic_pitch) {
+      extern char* metric_mnemonic_str(uint8_t);
+      u8x8.draw2x2String(10, 0, metric_mnemonic_str(musicBoxConf.chromatic_pitch));
+      char s[] = {0, 0};
+      extern char scale_symbol_char();
+      s[0] = scale_symbol_char();
+      u8x8.draw2x2String(14, 0, s);
     }
-  }
-}
+  } //if(! monochrome_power_save)
+} // monochrome_show_musicBox_parameters()
+
 
 void monochrome_show_line(uint8_t row, char * s) {
   if(! monochrome_power_save) {

@@ -353,3 +353,7 @@ no,   REPLACE: by a version working with detuning by PULSES.tuning
 TODO: add motion UI tuning interface	(partly done)
 
 tune_chromatic(n)
+
+consistensy of metric_mnemonic_str and menu input
+
+butler and tuning to a new scale

@@ -192,7 +192,7 @@ int max_subcycle_seconds=MAX_SUBCYCLE_SECONDS;
 // TODO: FIXME: MUSICBOX_HARD_END_SECONDS		// savety net	################
 #if ! defined MUSICBOX_HARD_END_SECONDS		// savety net
   #if defined MAX_SUBCYCLE_SECONDS && MAX_SUBCYCLE_SECONDS > 0
-    #define  MUSICBOX_HARD_END_SECONDS	(MAX_SUBCYCLE_SECONDS*2)	// TODO: first try, FIXME: determine at run time
+//    #define  MUSICBOX_HARD_END_SECONDS	(MAX_SUBCYCLE_SECONDS*2)	// TODO: first try, FIXME: determine at run time
   #else
     #define  MUSICBOX_HARD_END_SECONDS	90*60	// FIXME: TODO: review that	################
   #endif
@@ -927,66 +927,61 @@ void toggle_magic_autochanges() {
     PULSES.add_time(MUSICBOX_HARD_END_SECONDS*1000000, &musicBox_hard_end_time);
 #endif
   } // else (switched *off*) nothing needs mending
-}
+} // toggle_magic_autochanges()
 
 
-void show_metric_mnemonic() {	// TODO: move to Harmonical or Pulses
-  char second_letter = ' ';
+char* metric_mnemonic_str(uint8_t chromatic_pitch) {	// 2byte c-str describing pitch
+  char* mnemonic;
 
-  switch (musicBoxConf.chromatic_pitch) {
+  switch(chromatic_pitch) {
   case 0: // free		// not metric
-    MENU.out(F("free"));
-    return;			// return
-  case 1: // a
-    MENU.out('a');
+    mnemonic = "::";
     break;
-  case 2: // a#==Bb
-    MENU.out('a');
-    second_letter = '#';
+  case 1: // a
+    mnemonic = "A ";	// changed to UPPERCASE
+    break;		//   readability on small displays
+  case 2: // Bb		//   consistensy with menu input and morse
+    mnemonic = "Bb";
     break;
   case 3: // b==h
-    MENU.out('b');
+    mnemonic = "B ";
     break;
   case 4: // c
-    MENU.out('c');
+    mnemonic = "C ";
     break;
   case 5: // c#
-    MENU.out('c');
-    second_letter = '#';
+    mnemonic = "C#";
     break;
   case 6: // d
-    MENU.out('d');
+    mnemonic = "D ";
     break;
   case 7: // d#
-    MENU.out('d');
-    second_letter = '#';
+    mnemonic = "D#";
     break;
   case 8: // e
-    MENU.out('e');
+    mnemonic = "E ";
     break;
   case 9: // f
-    MENU.out('f');
+    mnemonic = "F ";
     break;
   case 10: // f#
-    MENU.out('f');
-    second_letter = '#';
+    mnemonic = "F#";
     break;
   case 11: // g
-    MENU.out('g');
+    mnemonic = "G ";
     break;
   case 12: // g#
-    MENU.out('g');
-    second_letter = '#';
+    mnemonic = "G#";
     break;
   case 13: // u
-    MENU.out('u');
+    mnemonic = "u ";
     break;
   default:
-    MENU.out('?');
-    second_letter = '?';
+    mnemonic = "??";
   }
-  MENU.out(second_letter);
-} // show_metric_mnemonic()
+
+  return mnemonic;
+} // metric_mnemonic_str()
 
 
 void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
@@ -1034,10 +1029,12 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   MENU.out(musicBoxConf.pitch.multiplier);
   MENU.slash();
   MENU.out(musicBoxConf.pitch.divisor);
-  if(musicBoxConf.chromatic_pitch)
-    MENU.out(F(" metric"));
-  MENU.space();
-  show_metric_mnemonic();
+
+  if(musicBoxConf.chromatic_pitch) {
+    MENU.out(F(" metric "));
+    MENU.out(metric_mnemonic_str(musicBoxConf.chromatic_pitch));
+  }
+
   MENU.ln();
 } // show_basic_musicBox_parameters()
 
@@ -1118,7 +1115,7 @@ void show_configuration_code() {	// show code, similar show_UI_basic_setup()
   MENU.out(F("chromatic_pitch = "));
   MENU.out(musicBoxConf.chromatic_pitch);
   MENU.out(F(";\t// "));
-  show_metric_mnemonic();
+  MENU.out(metric_mnemonic_str(musicBoxConf.chromatic_pitch));
   MENU.ln();
 
   MENU.out(F("// subcycle_octave = "));	// commented out, must rethink that
@@ -1129,7 +1126,7 @@ void show_configuration_code() {	// show code, similar show_UI_basic_setup()
   MENU.out(F(" subcycle | "));
   PULSES.display_time_human(CyclesConf.used_subcycle);
   MENU.outln('|');
-}
+} // show_configuration_code()
 
 
 void show_configuration_as_string() {	// file representation, similar show_configuration_code()
@@ -1179,7 +1176,7 @@ void show_configuration_as_string() {	// file representation, similar show_confi
 
   /* metric mnemonic is shown, but *ignored* when reading */
   MENU.out(F("chmnm:"));
-  show_metric_mnemonic();
+  MENU.out(metric_mnemonic_str(musicBoxConf.chromatic_pitch));
   MENU.out('\t');
 
   /* decide on loading to respekt that or not */
@@ -1562,6 +1559,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     PULSES.add_time(&musicBox_start_time, &trigger_enable_time);
 #endif
 
+#if defined MUSICBOX_HARD_END_SECONDS
     musicBox_hard_end_time = {MUSICBOX_HARD_END_SECONDS*1000000, 0};	// savety net: fixed maximal performance duration
     if(MENU.verbosity >= VERBOSITY_SOME) {
       MENU.out(F("butler: prepare hard end "));
@@ -1569,6 +1567,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
       MENU.ln();
     }
     PULSES.add_time(&musicBox_start_time, &musicBox_hard_end_time);
+#endif
 
   } else {	// all later wakeups, everything is initialised and set up
 
@@ -2032,7 +2031,7 @@ void random_metric_pitches() {
   case 15:
     musicBoxConf.chromatic_pitch = 9; // f
     musicBoxConf.pitch.multiplier = 1;
-    musicBoxConf.pitch.divisor=175; // 174.16	// F3  ***not*** harmonical
+    musicBoxConf.pitch.divisor=174; // 174.16	// F3  ***not*** harmonical
     break;
   case 16:
     musicBoxConf.chromatic_pitch = 2; // Bb
@@ -2041,12 +2040,16 @@ void random_metric_pitches() {
     break;
     //    musicBoxConf.pitch.divisor=247; // 246.94	// B3  ***not*** harmonical  }
   }
-  show_metric_mnemonic();
+
+  if(musicBoxConf.chromatic_pitch) {
+    MENU.space(2);
+    MENU.out(metric_mnemonic_str(musicBoxConf.chromatic_pitch));
+  }
 
   pitch_user_selected = false;
   uiConf.subcycle_user_selected = false;
   not_a_preset();
-}
+} // random_metric_pitches()
 
 void random_octave_shift(void) {
   if(MENU.maybe_display_more(VERBOSITY_SOME))

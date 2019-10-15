@@ -37,8 +37,10 @@ void init_DB(arr_descriptor * DB, unsigned int len, char* name) {
 
 
 int DB_items(arr_descriptor * DB) {
-  return DB[0].item - 1;	// returns number of enties, (-1 if not initialised)
+  return DB[0].item - 1;	// returns number of entries, (-1 if not initialised)
 }
+
+
 char* array2name(arr_descriptor * DB, unsigned int* array) {
   arr_descriptor * arr= DB;
 

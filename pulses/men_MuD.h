@@ -8,6 +8,13 @@
 //ads1115_first_test_diff_A2_A3();
 #endif
 
+{
+  MENU.out(metric_mnemonic_str(musicBoxConf.chromatic_pitch));
+  char s[] = {0, 0};
+  s[0] = scale_symbol_char();
+  MENU.outln(s);
+}
+
 
 MENU.out(F("normalised_pitch "));
 MENU.out(get_normalised_pitch(), 6);
