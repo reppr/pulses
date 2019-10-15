@@ -819,6 +819,7 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
 #if defined USE_MONOCHROME_DISPLAY
     // u8x8.draw2x2String(0, 0, "(END) ");	// would be handy but sounds horrible...
     extended_output(F("END "), 0, 0, true);	// output on serial MENU, maybe OLED, possibly morse, ...
+    MENU.ln();
 #endif
 
     for (int pulse=0; pulse<PL_MAX; pulse++) {	// make days_to_live COUNTED generating pulses
@@ -3337,14 +3338,23 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
 
       case 'P':	// 'UP' UI presets
 	MENU.drop_input_token();
-	if(accGyro_preset == 1)
+	if(accGyro_preset == 1) {
 	  accGyro_preset = 2;
-	else
+	  MENU.outln(F("TUNING"));
+	} else {
 	  accGyro_preset = 1;
+	  MENU.outln(F("accGyro_preset 1"));
+	}
 
 	MENU.out(F("accGyro_preset "));
 	MENU.outln(accGyro_preset);
 	recognised = true;
+	break;
+
+      case 'T':	// 'UT' toggle gZ TUNING mode
+	MENU.drop_input_token();
+	extern void accGyro_toggle_TUNING_mode();
+	accGyro_toggle_TUNING_mode();
 	break;
 
       default:

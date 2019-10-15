@@ -243,7 +243,7 @@ void display_accGyro_mode() {
     buffer[15] = 'Z';
 
   extended_output(buffer, MONOCHROME_MOTION_STATE_ROW, 0, false);
-}
+} // display_accGyro_mode()
 
 
 void reset_accGyro_selection() {	// reset accGyro selections, slots, reaction sources
@@ -277,7 +277,7 @@ void reset_accGyro_selection() {	// reset accGyro selections, slots, reaction so
 
 #if ! defined ACCGYRO_DEFAULT_PRESET
   #define ACCGYRO_DEFAULT_PRESET	1
-  //#define ACCGYRO_DEFAULT_PRESET	2
+//#define ACCGYRO_DEFAULT_PRESET	2	// == TUNING mode
 #endif
 uint8_t	accGyro_preset = ACCGYRO_DEFAULT_PRESET;
 
@@ -300,6 +300,19 @@ void accGyro_data_display() {
   } else
     MENU.outln(F("mpu6050 not connected"));
 } // accGyro_data_display()
+
+
+void accGyro_toggle_TUNING_mode() {
+  if(accGyro_preset==2 && accGyro_is_active) { // was tuning, so switch it off
+    accGyro_is_active = false;
+    accGyro_preset = 1;	// not so sure where to switch to ;)
+
+  } else {
+    MENU.outln(F("TUNING gZ mode"));
+    accGyro_preset = 2;
+    accGyro_is_active = true;
+  }
+} // accGyro_toggle_TUNING_mode()
 
 
 //#define COMPILE_ACCEL_GYRO_SPEED_TEST
@@ -554,7 +567,7 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
     }
 
     switch(accGyro_preset) {
-    case 1:
+    case 1: // accGyro_preset==1
       // ACCELERO;
       if(accGyro_mode & AG_mode_Ax) {		// accelero X
 	Ax_reaction_source = JIFFLES;
@@ -705,7 +718,7 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
       // gyro Y not used
 
       // gyro Z
-      if(accGyro_mode & AG_mode_Gz) {		// accelero Y
+      if(accGyro_mode & AG_mode_Gz) {		// gyro Y
 	if(Gz_i_new != _selected_Gz_i_seen) {
 	  _selected_Gz_i_seen = Gz_i_new;
 	  extern void sync_shifting(fraction_t shift);
@@ -717,12 +730,29 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 //#endif
 	}
       }
-      break; // preset 1
+      break; // accGyro_preset==1
+
+    case 2: // accGyro_preset==2 GYRO Z TUNING mode :)
+      Gz_i_new = GZ_seen_f + 0.5;
+      // Gz_i_new += Gz_sel_offset; no offset here, i think...
+
+      if(Gz_i_new != _selected_Gz_i_seen) {
+	_selected_Gz_i_seen = Gz_i_new;
+#if true
+	extern void selected_do_detune_periods(short cents);
+	selected_do_detune_periods((short) _selected_Gz_i_seen / -3);	// scaling and invert
+#else
+	extern void selected_detune_cents(short cents);
+	selected_detune_cents((short) _selected_Gz_i_seen / -3);	// scaling and invert
+#endif
+      }
+
+      break; // accGyro_preset==2 GYRO Z TUNING mode :)
 
     default:
       MENU.error_ln(F("unknown accGyro_preset"));
     } // switch (accGyro_preset)
-  } // if(accGyro_mode)
+  } // if(accGyro_new_data && accGyro_mode)
 } // accGyro_reaction_v2()
 
 

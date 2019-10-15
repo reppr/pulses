@@ -311,7 +311,7 @@ version should *always* come first or at a constant offset
 	uint8_t version_reserved1=0;
 	uint8_t version_reserved2=0;
 
-implement "selected_by"	   as bitmask (0=not set, default) 1=user, 2=nvs, 4=preset, 8=automatic, 16=random, fixed?, ... 
+implement "selected_by"	   as bitmask (0=not set, default) 1=user, 2=nvs, 4=preset, 8=automatic, 16=random, fixed?, ...
 implement "selectable_by"  0=not selectable, fixed, (with backdoor for local user)
 	randomise should be off at start
 
@@ -347,4 +347,9 @@ TODO: expand_fractions() add SAVETY net not to crash on divisor zero
 TODO: '+' and '-' and numeric input
 
 TODO: selected_do_detune_periods(cents)		REPLACE: by a version working on pitch and retune
-TODO: add motion UI tuning interface
+no,   REPLACE: by a version working with detuning by PULSES.tuning
+      TUNED should *NOT* toggle sweeping!
+
+TODO: add motion UI tuning interface	(partly done)
+
+tune_chromatic(n)

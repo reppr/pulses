@@ -920,13 +920,43 @@ bool stack_sync_user_selected=false;
 #endif
 
 /* **************************************************************** */
+double cent_factor = 1.0005777895;	// 1 cent
+void selected_detune_cents(short cents) {
+  MENU.out(F("detune_cents " ));
+  MENU.outln(cents);
+  if(cents == 0)
+    return;
+
+  for(int pulse=0; pulse < PL_MAX; pulse++) {
+    if(PULSES.pulses[pulse].groups & g_PRIMARY) {
+      PULSES.activate_tuning(pulse);
+    }
+  }
+
+  if(cents>0) // tuning up
+    for(short i=0; i<cents; i++)
+      PULSES.tuning /= cent_factor;
+
+  else        // tuning down
+    for(short i=cents; i<0; i++)
+      PULSES.tuning *= cent_factor;
+
+  for(int pulse=0; pulse < PL_MAX; pulse++) {
+    if(PULSES.pulses[pulse].groups & g_PRIMARY) {
+      PULSES.stop_tuning(pulse);
+    }
+  }
+} // selected_detune_cents()
+
+
 void selected_do_detune_periods(short cents) {	// works on the period time of each pulse...
   MENU.out(F("detuning periods  cents "));	// just a quick-hack-tuning-interface by MENU input
   MENU.out(cents);				// *will produce a lot of ROUNDING ERRORS*
-  if(cents==0)					// TODO: REPLACE: by a version working on pitch and retune
+  if(cents==0) {				// TODO: REPLACE: by a version working on pitch and retune
+    MENU.ln();
     return;
+  }
 
-  double cent_factor = 1.0005777895;	// 1 cent
   double detune = 1.0;
 
   if(cents > 0)		// tuning upwards
@@ -4434,12 +4464,12 @@ void show_UI_basic_setup() {
   if(MagicConf.some_metric_tunings_only)
     MENU.out(F("*metric*"));
   MENU.space();
-  show_metric_mnemonic();
+  MENU.out(metric_mnemonic_str(musicBoxConf.chromatic_pitch));
 
   if (g_inverse)	// FIXME: TODO: check where that *is* used ################
     MENU.out(F("\tGPIO BOTTOM UP"));
   MENU.ln();	// maybe...
-}
+} // show_UI_basic_setup()
 
 void show_UI_settings() {
   MENU.ln();
@@ -6480,7 +6510,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 // extended_output(...)  output on MENU, maybe OLED, possibly morse, ...
 void extended_output(char* data, uint8_t row=0, uint8_t col=0, bool force=false) {
-  MENU.outln(data);
+  MENU.out(data);
 
 #if defined USE_MONOCHROME_DISPLAY
   if(monochrome_can_be_used() || force || morse_output_char) {
