@@ -898,6 +898,8 @@ void tag_randomness(bool user_selected) {
   MENU.space();
 }
 
+
+pulse_time_t butler_soft_end_time;	// used by musicBox_butler(int pulse), toggle_magic_autochanges()
 void toggle_magic_autochanges() {
   if(magic_autochanges = !magic_autochanges) {	// if magic_autochanges got *SWITCHED ON*
     if(musicBox_butler_i != ILLEGAL32) {	// deal with soft_end_time
@@ -906,10 +908,10 @@ void toggle_magic_autochanges() {
       int cnt=0;
       while (true)
 	{
-	  soft_end_time = PULSES.pulses[musicBox_butler_i].other_time;
+	  soft_end_time = butler_soft_end_time;
 	  PULSES.sub_time(&thisNow, &soft_end_time);
 	  if(soft_end_time.overflow) {	// add subcycles until soft_end_time is in future
-	    PULSES.add_time(&CyclesConf.used_subcycle, &PULSES.pulses[musicBox_butler_i].other_time);
+	    PULSES.add_time(&CyclesConf.used_subcycle, &butler_soft_end_time);
 	    cnt++;
 	  } else
 	    break;
@@ -1512,7 +1514,6 @@ void remove_all_primary_but_butlers() {
     MENU.ln();
 }
 
-// TODO: musicBox_butler(p) LONELY BUTLER CHECK	################
 void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking with slice_tick_period
   static uint8_t soft_end_cnt=0;
   static bool soft_cleanup_started=false;
@@ -1521,6 +1522,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
   static short current_slice=0;
   static pulse_time_t butler_start_time;
   static pulse_time_t trigger_enable_time;
+
   pulse_time_t this_start_time =  PULSES.pulses[pulse].next;	// still unchanged?
 
   pulse_time_t this_time = PULSES.pulses[pulse].next;		// TODO: verify ################
@@ -1544,11 +1546,11 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     pulse_time_t soft_end_time=musicBox_start_time;
     PULSES.add_time(&CyclesConf.used_subcycle, &soft_end_time);
     PULSES.add_time(100/*tolerance*/, &soft_end_time);	// tolerance	TODO: rethink&check
-    PULSES.pulses[pulse].other_time = soft_end_time;	// TODO: musicBox_butler(p) CONFLICTS with tuning
+    butler_soft_end_time = soft_end_time;
     musicBox_trigger_enabled=false;			// do we need that?
 
   } else if(PULSES.pulses[pulse].counter==2) {	// now we might have more time for some setup
-
+    ;
 #if defined MUSICBOX_TRIGGER_BLOCK_SECONDS
     trigger_enable_time = {MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000, 0};
     if(MENU.verbosity >= VERBOSITY_SOME) {
@@ -1634,7 +1636,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     if(magic_autochanges) {	// the butler influences performance and changes phases like ending
       if(soft_end_cnt==0) {	// first time
 	// soft end time could be reprogrammed by user interaction, always compute new:
-	pulse_time_t soft_end_time = PULSES.pulses[pulse].other_time;
+	pulse_time_t soft_end_time = butler_soft_end_time;
 	pulse_time_t thisNow = this_start_time;
 	PULSES.sub_time(&thisNow, &soft_end_time);	// is it time?
 	if(soft_end_time.overflow) {			//   negative, so it *is*
@@ -1983,7 +1985,7 @@ void select_random_jiffle(void) {
   not_a_preset();
 }
 
-void random_metric_pitches(void) {
+void random_metric_pitches() {
   if(MENU.maybe_display_more(VERBOSITY_LOWEST))
     MENU.out(F("random *metric* tuning "));
 

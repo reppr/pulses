@@ -103,8 +103,7 @@ struct pulse_t {
   pulse_time_t next;		// next time the pulse wants to wake up
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
-  pulse_time_t other_time;	// used by tuning,	TODO: CONFLICTS with musicBox_butler(p)
-				// used by musicBox_butler(p) as soft_end_time	TODO: CONFLICTS with tuning
+  pulse_time_t other_time;	// used by tuning
 #endif
 
 
