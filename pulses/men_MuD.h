@@ -8,8 +8,11 @@
 //ads1115_first_test_diff_A2_A3();
 #endif
 
+show_metric_cents_list();
+
+
 {
-  MENU.out(metric_mnemonic_str(musicBoxConf.chromatic_pitch));
+  MENU.out(metric_mnemonic);
   char s[] = {0, 0};
   s[0] = scale_symbol_char();
   MENU.outln(s);

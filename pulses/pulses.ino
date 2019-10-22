@@ -4464,7 +4464,7 @@ void show_UI_basic_setup() {
   if(MagicConf.some_metric_tunings_only)
     MENU.out(F("*metric*"));
   MENU.space();
-  MENU.out(metric_mnemonic_str(musicBoxConf.chromatic_pitch));
+  MENU.out(metric_mnemonic);
 
   if (g_inverse)	// FIXME: TODO: check where that *is* used ################
     MENU.out(F("\tGPIO BOTTOM UP"));

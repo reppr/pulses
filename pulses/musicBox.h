@@ -930,58 +930,167 @@ void toggle_magic_autochanges() {
 } // toggle_magic_autochanges()
 
 
-char* metric_mnemonic_str(uint8_t chromatic_pitch) {	// 2byte c-str describing pitch
-  char* mnemonic;
+char* metric_mnemonic = "::";	// set by set_metric_pitch() only	 default "::" == not metric
 
-  switch(chromatic_pitch) {
-  case 0: // free		// not metric
-    mnemonic = "::";
-    break;
-  case 1: // a
-    mnemonic = "A ";	// changed to UPPERCASE
-    break;		//   readability on small displays
-  case 2: // Bb		//   consistensy with menu input and morse
-    mnemonic = "Bb";
-    break;
-  case 3: // b==h
-    mnemonic = "B ";
-    break;
-  case 4: // c
-    mnemonic = "C ";
-    break;
-  case 5: // c#
-    mnemonic = "C#";
-    break;
-  case 6: // d
-    mnemonic = "D ";
-    break;
-  case 7: // d#
-    mnemonic = "D#";
-    break;
-  case 8: // e
-    mnemonic = "E ";
-    break;
-  case 9: // f
-    mnemonic = "F ";
-    break;
-  case 10: // f#
-    mnemonic = "F#";
-    break;
-  case 11: // g
-    mnemonic = "G ";
-    break;
-  case 12: // g#
-    mnemonic = "G#";
-    break;
-  case 13: // u
-    mnemonic = "u ";
-    break;
-  default:
-    mnemonic = "??";
+enum metric_pitch_t {
+		     mp_free = 0,
+		     mp_A,
+		     mp_Bb,
+		     mp_B,
+		     mp_C,
+		     mp_Cis,
+		     mp_D,
+		     mp_Dis,
+		     mp_E,
+		     mp_F,
+		     mp_Fis,
+		     mp_G,
+		     mp_Gis,
+};
+
+void set_metric_pitch(int metric_pitch) {	// SETS PARAMETERS ONLY, does *not* tune
+  if(musicBoxConf.chromatic_pitch == metric_pitch) {	// do *not* touch parameters for same tonica
+    MENU.outln(F("metric pitch not changed"));		//    else we might loose octave setup
+    return;
   }
 
-  return mnemonic;
-} // metric_mnemonic_str()
+  int metric_pitch_was = musicBoxConf.chromatic_pitch = (uint8_t) metric_pitch;	// check follows
+
+  unsigned long time_unit_was = PULSES.time_unit;
+  PULSES.time_unit=1000000;	// switch to metric time unit
+
+  switch(metric_pitch) {
+  case 1: // A
+    metric_mnemonic = "A ";
+    musicBoxConf.pitch = {1, 220};	// A  220.0
+    break;
+
+  case 2: // Bb
+    metric_mnemonic = "Bb";
+    musicBoxConf.pitch = {1, 233};	// Bb 233.08
+    break;
+
+  case 3: // B == H
+    metric_mnemonic = "B "; // B == H
+    musicBoxConf.pitch = {1, 247};	// B=H 246.94
+    break;
+
+  case 4: // C
+    metric_mnemonic = "C ";
+    musicBoxConf.pitch = {1, 262};	// C  261.63
+    break;
+
+  case 5: // C#
+    metric_mnemonic = "C#";
+    musicBoxConf.pitch = {1, 277};	// C# 277.18
+    break;
+
+  case 6: // D
+    metric_mnemonic = "D ";
+    musicBoxConf.pitch = {1, 294};	// D  293.66
+    break;
+
+  case 7: // D#
+    metric_mnemonic = "D#";
+    musicBoxConf.pitch = {1, 311};	// D# 311.12
+    break;
+
+  case 8: // E
+    metric_mnemonic = "E ";
+    musicBoxConf.pitch = {1, 330};	// E  329.36
+    break;
+
+  case 9: // F
+    metric_mnemonic = "F ";
+    musicBoxConf.pitch = {1, 175};	// F  349.23 / 2
+    break;
+
+  case 10: // F#
+    metric_mnemonic = "F#";
+    musicBoxConf.pitch = {1, 185};	// F# 369.99 / 2
+    break;
+
+  case 11: // G
+    metric_mnemonic = "G ";
+    musicBoxConf.pitch = {1, 196};	// G  392.00 / 2
+    break;
+
+  case 12: // G#
+    metric_mnemonic = "G#";
+    musicBoxConf.pitch = {1, 208};	// G# 415.30 / 2
+    break;
+
+  case 0:	// set not metric
+    metric_mnemonic = "::";
+    musicBoxConf.chromatic_pitch = 0;	// not metric
+    break;
+
+  default:	// invalid
+    MENU.out_Error_();
+    MENU.out(F("invalid metric pitch "));
+    MENU.outln(metric_pitch);
+
+    metric_mnemonic = "??";		// "??" like "::" but flags an ERROR, result undefined
+    musicBoxConf.chromatic_pitch = metric_pitch_was;
+    PULSES.time_unit = time_unit_was;
+  }
+} // set_metric_pitch()
+
+
+void show_metric_cents_list(double base_note=220.0) {	// helper function, not needed
+  /*
+    sample output:
+
+    semitone	1.059463143348693847	2.000000000000000000
+    cent	1.000577807426452636	2.000000000000000000
+
+
+    1.000000000000000000	220.00	1	A
+    1.059463143348693847	233.08	2	Bb
+    1.122462034225463867	246.94	3	B
+    1.189207077026367187	261.63	4	C
+    1.259921073913574218	277.18	5	C#
+    1.334839820861816406	293.66	6	D
+    1.414213538169860839	311.13	7	D#
+    1.498307108879089355	329.63	8	E
+    1.587401032447814941	349.23	9	F
+    1.681792855262756347	369.99	10	F#
+    1.781797409057617187	392.00	11	G
+    1.887748599052429199	415.30	12	G#
+  */
+
+  int metric_pitch_was = musicBoxConf.chromatic_pitch;
+
+  double semitone = pow(2.0, (1.0 / 12.0));
+  double cent = pow(2.0, (1.0 / 1200.0));
+
+  MENU.out(F("semitone "));
+  MENU.out(semitone, 18);
+  MENU.tab();
+  MENU.out(pow(semitone, 12), 18);	// octave test
+  MENU.ln();
+
+  MENU.out(F("cent\t "));
+  MENU.out(cent, 18);
+  MENU.tab();
+  MENU.out(pow(cent, 1200), 18);	// octave test
+  MENU.ln(2);
+
+  double b;
+  for(int i=0; i<12; i++) {
+    b = pow(semitone, i);
+    MENU.out(b, 18);
+    MENU.tab();
+    MENU.out(b * base_note);
+    MENU.tab();
+    MENU.out(i+1);
+    MENU.tab();
+    set_metric_pitch(i+1);
+    MENU.outln(metric_mnemonic);
+  }
+
+  set_metric_pitch(metric_pitch_was);	// restore
+} // show_metric_cents_list()
 
 
 void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
@@ -1020,23 +1129,18 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
 
   tag_randomness(pitch_user_selected);
   MENU.out(F("SCALING: "));
-/*				// TODO: REMOVE:
-  MENU.out(multiplier);		// TODO: define role of multiplier, divisor
-  MENU.slash();
-  MENU.out(divisor);		// TODO: define role of multiplier, divisor
-  MENU.space();
-*/
   MENU.out(musicBoxConf.pitch.multiplier);
   MENU.slash();
   MENU.out(musicBoxConf.pitch.divisor);
 
   if(musicBoxConf.chromatic_pitch) {
     MENU.out(F(" metric "));
-    MENU.out(metric_mnemonic_str(musicBoxConf.chromatic_pitch));
+    MENU.out(metric_mnemonic);
   }
 
   MENU.ln();
 } // show_basic_musicBox_parameters()
+
 
 double pitch_normalised=0.0;	// maybe MOVE?: to musicBoxConf?
 short normalised_octave=0;	// maybe MOVE?: to musicBoxConf?
@@ -1115,7 +1219,7 @@ void show_configuration_code() {	// show code, similar show_UI_basic_setup()
   MENU.out(F("chromatic_pitch = "));
   MENU.out(musicBoxConf.chromatic_pitch);
   MENU.out(F(";\t// "));
-  MENU.out(metric_mnemonic_str(musicBoxConf.chromatic_pitch));
+  MENU.out(metric_mnemonic);
   MENU.ln();
 
   MENU.out(F("// subcycle_octave = "));	// commented out, must rethink that
@@ -1176,7 +1280,7 @@ void show_configuration_as_string() {	// file representation, similar show_confi
 
   /* metric mnemonic is shown, but *ignored* when reading */
   MENU.out(F("chmnm:"));
-  MENU.out(metric_mnemonic_str(musicBoxConf.chromatic_pitch));
+  MENU.out(metric_mnemonic);	// TODO: not set?
   MENU.out('\t');
 
   /* decide on loading to respekt that or not */
@@ -1185,7 +1289,7 @@ void show_configuration_as_string() {	// file representation, similar show_confi
   MENU.out('\t');
 
   MENU.ln();
-}
+} // show_configuration_as_string()
 
 
 void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard end playing
@@ -1983,7 +2087,8 @@ void select_random_jiffle(void) {
 
   jiffle_user_selected = false;
   not_a_preset();
-}
+} // select_random_jiffle()
+
 
 void random_metric_pitches() {
   if(MENU.maybe_display_more(VERBOSITY_LOWEST))
@@ -2043,7 +2148,7 @@ void random_metric_pitches() {
 
   if(musicBoxConf.chromatic_pitch) {
     MENU.space(2);
-    MENU.out(metric_mnemonic_str(musicBoxConf.chromatic_pitch));
+    MENU.out(metric_mnemonic);
   }
 
   pitch_user_selected = false;
@@ -3187,14 +3292,22 @@ void sync_landscape_time_sliced() {	// set this instruments time slice
 
 
 bool tuning_pitch_and_scale_UI() {
-  if(MENU.peek()==EOF8) {		// bare 'T'?
+  if(MENU.peek()==EOF8) {	// bare 'T'?
     // TODO: show tuning	// display pitch tuning
     display_names(SCALES);	// display SCALES list
     MENU.ln();
     musicBox_short_info();
+
+  } else if(MENU.peek()=='M') {	// 'TM' toggle metric_alternative_tuning
+    MENU.drop_input_token();
+    metric_alternative_tuning = ! metric_alternative_tuning;
+    MENU.out(F("metric alternative tuning"));
+    MENU.out_ON_off(metric_alternative_tuning);
+    MENU.ln();
+
   } else {				// more input?
     bool done=false;
-    while(!done) {
+    while(!done) {	// sequential input loop
       switch(MENU.peek()) {
       // check for ending tokens first:
       case '!':	// 'Txyz!'	trailing '!': *do* tune and quit
@@ -3213,69 +3326,63 @@ bool tuning_pitch_and_scale_UI() {
 	  // not numeric
 	  switch(MENU.peek()) {	// test for known letters
 	  case 'C':
-	    musicBoxConf.chromatic_pitch = 4;
 	    MENU.drop_input_token();
-	    PULSES.time_unit=1000000;	// switch to metric time unit
-	    musicBoxConf.pitch.multiplier=1;
-	    musicBoxConf.pitch.divisor=262; // 261.63	// C4  ***not*** harmonical
+	    set_metric_pitch(mp_C);
 	    pitch_user_selected = true;
 	    break;
 	  case 'D':
-	    musicBoxConf.chromatic_pitch = 6;
 	    MENU.drop_input_token();
-	    PULSES.time_unit=1000000;	// switch to metric time unit
-	    musicBoxConf.pitch.multiplier=1;
-	    musicBoxConf.pitch.divisor = 294;		// 293.66 = D4
-	    // divisor = 147;		// 146.83 = D3
+	    set_metric_pitch(mp_D);
 	    pitch_user_selected = true;
 	    break;
 	  case 'E':
-	    musicBoxConf.chromatic_pitch = 8;
 	    MENU.drop_input_token();
-	    PULSES.time_unit=1000000;	// switch to metric time unit
-	    musicBoxConf.pitch.multiplier=1;
-	    musicBoxConf.pitch.divisor=330; // 329.36	// e4  ***not*** harmonical
+	    set_metric_pitch(mp_E);
 	    pitch_user_selected = true;
 	    break;
 	  case 'F':
-	    musicBoxConf.chromatic_pitch = 9;
 	    MENU.drop_input_token();
-	    PULSES.time_unit=1000000;	// switch to metric time unit
-	    musicBoxConf.pitch.multiplier=1;
-	    musicBoxConf.pitch.divisor=175; // 174.16	// F3  ***not*** harmonical
+	    set_metric_pitch(mp_F);
 	    pitch_user_selected = true;
 	    break;
 	  case 'G':
-	    musicBoxConf.chromatic_pitch = 11;
 	    MENU.drop_input_token();
-	    PULSES.time_unit=1000000;	// switch to metric time unit
-	    musicBoxConf.pitch.multiplier=1;
-	    musicBoxConf.pitch.divisor=196; // 196.00	// G3  ***not*** harmonical
+	    set_metric_pitch(mp_G);
 	    pitch_user_selected = true;
 	    break;
 	  case 'A':
-	    musicBoxConf.chromatic_pitch = 1;
 	    MENU.drop_input_token();
-	    PULSES.time_unit=1000000;	// switch to metric time unit
-	    musicBoxConf.pitch.multiplier=1;
-	    musicBoxConf.pitch.divisor = 440;
+	    set_metric_pitch(mp_A);
 	    pitch_user_selected = true;
 	    break;
 	  case 'B':
-	    musicBoxConf.chromatic_pitch = 2;
 	    MENU.drop_input_token();
-	    PULSES.time_unit=1000000;	// switch to metric time unit
-	    musicBoxConf.pitch.multiplier=1;
-	    musicBoxConf.pitch.divisor=233; //	// 233.08 Bb3  ***not*** harmonical
+	    set_metric_pitch(mp_Bb);
+	    pitch_user_selected = true;
+	  case 'H':
+	    MENU.drop_input_token();
+	    set_metric_pitch(mp_B);
 	    pitch_user_selected = true;
 	    break;
-	  case 'H':
-	    musicBoxConf.chromatic_pitch = 3;
+	  case '-': // 'T-' if metric: chromatic step down
 	    MENU.drop_input_token();
-	    PULSES.time_unit=1000000;	// switch to metric time unit
-	    musicBoxConf.pitch.multiplier=1;
-	    musicBoxConf.pitch.divisor=247; // 246.94	// B3  ***not*** harmonical
-	    pitch_user_selected = true;
+	    if(musicBoxConf.chromatic_pitch) {
+	      int pitch = musicBoxConf.chromatic_pitch - 1;
+	      if(pitch < 1)
+		pitch = 11;	// wrap
+	      set_metric_pitch(pitch);
+	      pitch_user_selected = true;
+	    }
+	    break;
+	  case '+': // 'T+' chromatic step up
+	    MENU.drop_input_token();
+	    {
+	      int pitch = musicBoxConf.chromatic_pitch + 1;
+	      if(pitch >11)
+		pitch = 1;	// wrap
+	      set_metric_pitch(pitch);
+	      pitch_user_selected = true;
+	    }
 	    break;
 
 	  default:	//	unknown input, not for the 'T' interface
@@ -3283,7 +3390,7 @@ bool tuning_pitch_and_scale_UI() {
 	  } // known letters?
 	} // not numeric
       } // treat input following 'T......'
-    }	// input loop		'Tx'
+    }	// // sequential input loop		'Tx'
   }
 } // tuning_pitch_and_scale_UI()
 

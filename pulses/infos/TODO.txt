@@ -357,3 +357,9 @@ tune_chromatic(n)
 consistensy of metric_mnemonic_str and menu input
 
 butler and tuning to a new scale
+
+bool metric_alternative_tuning	vs  bool some_metric_tunings_only
+
+tuning_pitch_and_scale_UI()	TODO: tuning_pitch_and_scale_display()
+
+learn morse code for + and - ;)

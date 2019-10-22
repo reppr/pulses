@@ -251,8 +251,8 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
     } // name or no name
 
     if(musicBoxConf.chromatic_pitch) {
-      extern char* metric_mnemonic_str(uint8_t);
-      u8x8.draw2x2String(10, 0, metric_mnemonic_str(musicBoxConf.chromatic_pitch));
+      extern char* metric_mnemonic;
+      u8x8.draw2x2String(10, 0, metric_mnemonic);
       char s[] = {0, 0};
       extern char scale_symbol_char();
       s[0] = scale_symbol_char();
