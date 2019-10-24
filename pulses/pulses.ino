@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION		HARMONICAL v.039
+#define PROGRAM_VERSION		HARMONICAL v.040	// 'Guitar' version
 /*				0123456789abcdef   */
 
 /* **************************************************************** */

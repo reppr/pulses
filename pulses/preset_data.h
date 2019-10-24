@@ -7,10 +7,10 @@
   also see: preset-hashtags.txt
 */
 
-#define MUSICBOX_PRESETs	176	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
+#define MUSICBOX_PRESETs	181	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
 
 // *all* existing presets should be playable now :)
-#define SHORT_PRESET_COLLECTION	176	// only the first <nn> presets are at choice, redefines MUSICBOX_PRESETs
+#define SHORT_PRESET_COLLECTION	181	// only the first <nn> presets are at choice, overrides MUSICBOX_PRESETs
 
 
 bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset? ################
@@ -93,7 +93,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 292};
     // harmonical CYCLE: 1h 14' 4"	SUBCYCLE: | 4' 38" |
     musicBoxConf.subcycle_octave = -4;
-    
+
     if(metric_alternative_tuning)
       set_metric_pitch(mp_Dis);		// set_metric_pitch(mp_D);
     break;
@@ -5389,12 +5389,57 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.sync = 3;
     musicBoxConf.pitch = {1, 110};
     // musicBoxConf.chromatic_pitch = 1;	// a
-    // harmonical CYCLE: 7d 1h 27' 4" 	2^10 SUBCYCLE: | 9' 56" |
+    // harmonical CYCLE: 7d 1h 27' 4"	2^10 SUBCYCLE: | 9' 56" |
     if(metric_alternative_tuning)
       set_metric_pitch(mp_A);
     break;
 
   case 176:
+    musicBoxConf.name = F("Guitar A5");
+    select_in(SCALES, pentatonic_minor);
+    musicBoxConf.sync = 1;
+    select_in(JIFFLES, mech2);
+    musicBoxConf.stack_sync_slices = -1024;
+    set_metric_pitch(mp_A);
+    break;
+
+  case 177:
+    musicBoxConf.name = F("Guitar A6");
+    select_in(SCALES, doric_scale);
+    musicBoxConf.sync = 0;
+    select_in(JIFFLES, mechanical);
+    musicBoxConf.stack_sync_slices = 512;
+    set_metric_pitch(mp_A);
+    break;
+
+  case 178:
+    musicBoxConf.name = F("Guitar A+");
+    select_in(SCALES, major_scale);
+    musicBoxConf.sync = 3;
+    select_in(JIFFLES, mech1023);
+    musicBoxConf.stack_sync_slices = 2048;
+    set_metric_pitch(mp_A);
+    break;
+
+  case 179:
+    musicBoxConf.name = F("Guitar A-4-5");
+    select_in(SCALES, octave_4th_5th);
+    musicBoxConf.sync = 4;
+    select_in(JIFFLES, diing_ditditdit);
+    musicBoxConf.stack_sync_slices = 2048;
+    set_metric_pitch(mp_A);
+    break;
+
+  case 180:
+    musicBoxConf.name = F("Guitar AV");
+    select_in(SCALES, pentaCHORD);
+    musicBoxConf.sync = 3;
+    select_in(JIFFLES, with_pauses);
+    musicBoxConf.stack_sync_slices = 2048;
+    set_metric_pitch(mp_A);
+    break;
+
+  case 181:
     musicBoxConf.name = F("veryverybad");
     //# shortIsOk
     //# dense
@@ -5413,135 +5458,6 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
     // DADA:	todo: CHECK FROM HERE <<<====	====>>>   #define SHORT_PRESET_COLLECTION	175
     // DADA: >>>> *DO NOT FORGET* to upmusicBoxConf.date MUSICBOX_PRESETs <<<<	175
-
-  case 212:
-    musicBoxConf.name = F("D? a love like the morning birds");
-    //# FAVORITE
-    //# melodies
-    //# harmonies
-    //# shortIsOk
-    //# birds
-    //# happy
-    //# simple
-    //# aesthetic
-    select_in(SCALES, octaves_fourths);
-    select_in(JIFFLES, PENTAtonic_desc);
-    musicBoxConf.sync = 4;
-
-    // 12 was: musicBoxConf.pitch = {32768, 371};
-    musicBoxConf.pitch = {1, 294};
-    //musicBoxConf.chromatic_pitch = 6;	// D
-    musicBoxConf.subcycle_octave = -11;
-    if(metric_alternative_tuning)
-      set_metric_pitch(mp_D);
-    break;
-
-  case 246:
-    musicBoxConf.name = F("madrigal machine");
-    //# FAVORITE
-    //# shortIsOk
-    //# fullCycleIsOk		maybe
-    //# motives
-    //# melodies
-    //# harmonies
-    //# classicHarmonical
-    //# aesthetic
-    //# nice
-    //# simple
-    //# fractal
-    //# noise
-    //# hasSlowPulse
-    //# lyric
-    musicBoxConf.date = F("2019-04-11_14h");
-    select_in(SCALES, tetraCHORD);
-    select_in(JIFFLES, mechanical);
-    musicBoxConf.sync = 2;
-    musicBoxConf.stack_sync_slices = 256;
-    // musicBoxConf.base_pulse = 15;	// TODO: rethink that
-    musicBoxConf.pitch = {1, 220};
-    // musicBoxConf.chromatic_pitch = 1;	// a
-    // musicBoxConf.subcycle_octave = 4;	// TODO: rethink that
-    if(metric_alternative_tuning)
-      set_metric_pitch(mp_A);
-    break;
-
-  case 327:
-    musicBoxConf.name = F("f acoustic telegraph lines");
-    //# FAVORITE
-    //# shortIsOk
-    //# melodies
-    //# harmonies
-    //# rhytm&pulse
-    //# beat
-    //# bourdon
-    //# structure	simple
-    //# aesthetic	tecnical
-    //# static
-    //# nervous		no, not really
-    //# crazy
-    //# funny
-    //# simple
-    //# simlicistic
-    //# fractal
-    //# clock
-    //# beep
-    //# robot
-    //# lesley
-    //# delay
-    //# humming
-    //# rumble
-    //# hasSlowPulse	steady
-    //# lyric
-    //# dream
-    //# earth
-    //# boring	but interesting effects
-    //# slow
-    //# steady
-    //# tired	maybe just a bit
-    musicBoxConf.date = F("2018-12-22_20h17m39s	SAT");
-    select_in(SCALES, octaves_fourths);
-    select_in(JIFFLES, rising_pent_them);
-    musicBoxConf.sync = 5;
-    // musicBoxConf.chromatic_pitch = 8; // e
-    musicBoxConf.pitch.multiplier = 1;
-    //    musicBoxConf.pitch.divisor=330; // 329.36	// E4  ***not*** harmonical
-    // musicBoxConf.chromatic_pitch = 9; // f
-    musicBoxConf.pitch.divisor=175*2; // 174.16	// F3  ***not*** harmonical
-
-    musicBoxConf.subcycle_octave = -11;
-    break;
-
-  case 346:
-    musicBoxConf.name = F("G d64_melody-rhythm");    // pitch variation of    "noname_a"
-    //# FAVORITE
-    //# SPECIALITY	rhythm and short jiffs	see: "nomusicBoxConf.name_a"
-    //# rhytm&pulse
-    //# shortIsOk
-    //# bigBang
-    //# loose
-    //# elementary
-    //# simple
-    //# simlicistic
-    //# motives
-    //# harmonies
-    //# structure	loose
-    //# classicHarmonical
-    //# aesthetic
-    //# nice
-    //# quiet
-    //# rumble
-    musicBoxConf.pitch = {2, 61};	// 44	*metric* G
-    // harmonical CYCLE: 0"	SUBCYCLE: | 5' 38" |
-    musicBoxConf.date = F("2019-02-06_21h18m28s	WED");
-    select_in(SCALES, octave_4th_5th);
-    select_in(JIFFLES, d4096_64);
-    musicBoxConf.sync = 0;
-    musicBoxConf.pitch = {32768, 6144};
-    // harmonical CYCLE: 6h 0' 26"	SUBCYCLE: | 5' 38" |
-    musicBoxConf.subcycle_octave = -6;
-    if(metric_alternative_tuning)
-      set_metric_pitch(mp_G);
-    break;
 
   default:
     MENU.tab();
