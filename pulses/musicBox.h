@@ -949,8 +949,19 @@ enum metric_pitch_t {
 };
 
 void set_metric_pitch(int metric_pitch) {	// SETS PARAMETERS ONLY, does *not* tune
+  if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
+    MENU.out(F("set_metric_pitch("));
+    MENU.out(metric_pitch);
+    MENU.outln(')');
+  }
+
+// was: deactivated, gave wrong ';;' et al mnemonics
+// REACTIVATED as I do *not* touch musicBoxConf.chromatic_pitch any more, always using set_metric_pitch() now
+// TODO: TEST:
   if(musicBoxConf.chromatic_pitch == metric_pitch) {	// do *not* touch parameters for same tonica
-    MENU.outln(F("metric pitch not changed"));		//    else we might loose octave setup
+    if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {	//    else we might loose octave setup
+      MENU.outln(F("metric pitch not changed"));
+    }
     return;
   }
 
@@ -958,6 +969,8 @@ void set_metric_pitch(int metric_pitch) {	// SETS PARAMETERS ONLY, does *not* tu
 
   unsigned long time_unit_was = PULSES.time_unit;
   PULSES.time_unit=1000000;	// switch to metric time unit
+
+  // TODO:  should we keep pitch_was in set_metric_pitch()?
 
   switch(metric_pitch) {
   case 1: // A
@@ -1034,6 +1047,9 @@ void set_metric_pitch(int metric_pitch) {	// SETS PARAMETERS ONLY, does *not* tu
     musicBoxConf.chromatic_pitch = metric_pitch_was;
     PULSES.time_unit = time_unit_was;
   }
+
+  if(MENU.maybe_display_more(VERBOSITY_LOWEST))
+    MENU.outln(metric_mnemonic);		// TODO: do i want that?
 } // set_metric_pitch()
 
 
@@ -1091,6 +1107,132 @@ void show_metric_cents_list(double base_note=220.0) {	// helper function, not ne
 
   set_metric_pitch(metric_pitch_was);	// restore
 } // show_metric_cents_list()
+
+
+//bool metric_alternative_tuning = false;	// force metric autotuning
+bool metric_alternative_tuning = true;	// TODO: active only for TESTING...
+
+void tuning_pitch_and_scale_UI_display() {
+  MENU.out(F("'T'=tuning\t'TM'=toggle metric"));
+  MENU.out_ON_off(metric_alternative_tuning);
+  MENU.outln(F("\t'T!'=tune\t'T<num>'=select scale"));
+
+  MENU.out(F("'T[ABHCDEFG]'=select metric key ("));
+  MENU.out(metric_mnemonic);
+
+  MENU.outln(F(")\t'T+' 'T-'=chromatic up|down tuning\n"));
+} // tuning_pitch_and_scale_UI_display()
+
+
+bool tuning_pitch_and_scale_UI() {
+  if(MENU.peek()==EOF8) {	// bare 'T'?
+    // TODO: show tuning	// display pitch tuning
+    display_names(SCALES);	// display SCALES list
+    MENU.ln();
+    extern void musicBox_short_info();
+    musicBox_short_info();
+
+  } else if(MENU.peek()=='M') {	// 'TM' toggle metric_alternative_tuning
+    MENU.drop_input_token();
+    metric_alternative_tuning = ! metric_alternative_tuning;
+    MENU.out(F("metric alternative tuning"));
+    MENU.out_ON_off(metric_alternative_tuning);
+    MENU.ln();
+
+  } else {				// more input?
+    bool done=false;
+    while(!done) {	// sequential input loop
+      switch(MENU.peek()) {
+      // check for ending tokens first:
+      case '!':	// 'Txyz!'	trailing '!': *do* tune and quit
+	tune_selected_2_scale_limited(musicBoxConf.pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves
+      case ' ':	// a space ends a 'T... ' input sequence, quit
+	MENU.drop_input_token();
+      case EOF8:	// EOF done		quit
+	done = true;
+	break;
+
+      default:	// numbers or known letters?
+	if(MENU.is_numeric()) {
+	  if(UI_select_from_DB(SCALES))	// select scale
+	    scale_user_selected = true;
+	} else {
+	  // not numeric
+	  switch(MENU.peek()) {	// test for known letters
+	  case 'C':
+	    MENU.drop_input_token();
+	    set_metric_pitch(mp_C);
+	    pitch_user_selected = true;
+	    break;
+	  case 'D':
+	    MENU.drop_input_token();
+	    set_metric_pitch(mp_D);
+	    pitch_user_selected = true;
+	    break;
+	  case 'E':
+	    MENU.drop_input_token();
+	    set_metric_pitch(mp_E);
+	    pitch_user_selected = true;
+	    break;
+	  case 'F':
+	    MENU.drop_input_token();
+	    set_metric_pitch(mp_F);
+	    pitch_user_selected = true;
+	    break;
+	  case 'G':
+	    MENU.drop_input_token();
+	    set_metric_pitch(mp_G);
+	    pitch_user_selected = true;
+	    break;
+	  case 'A':
+	    MENU.drop_input_token();
+	    set_metric_pitch(mp_A);
+	    pitch_user_selected = true;
+	    break;
+	  case 'B':
+	    MENU.drop_input_token();
+	    set_metric_pitch(mp_Bb);
+	    pitch_user_selected = true;
+	  case 'H':
+	    MENU.drop_input_token();
+	    set_metric_pitch(mp_B);
+	    pitch_user_selected = true;
+	    break;
+	  case '-': // 'T-' if metric: chromatic step down
+	    MENU.drop_input_token();
+	    if(musicBoxConf.chromatic_pitch) {
+	      int pitch = musicBoxConf.chromatic_pitch - 1;
+	      if(pitch < 1)
+		pitch = 11;	// wrap
+
+	      set_metric_pitch(pitch);
+	      MENU.out(F("tuned to "));
+	      MENU.outln(metric_mnemonic);
+	      pitch_user_selected = true;
+	    }
+	    break;
+	  case '+': // 'T+' chromatic step up
+	    MENU.drop_input_token();
+	    {
+	      int pitch = musicBoxConf.chromatic_pitch + 1;
+	      if(pitch >11)
+		pitch = 1;	// wrap
+
+	      set_metric_pitch(pitch);
+	      MENU.out(F("tuned to "));
+	      MENU.outln(metric_mnemonic);
+	      pitch_user_selected = true;
+	    }
+	    break;
+
+	  default:	//	unknown input, not for the 'T' interface
+	    done=true;
+	  } // known letters?
+	} // not numeric
+      } // treat input following 'T......'
+    }	// // sequential input loop		'Tx'
+  }
+} // tuning_pitch_and_scale_UI()
 
 
 void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
@@ -3178,9 +3320,10 @@ void musicBox_display() {
   MENU.ln();
 #endif
 
-  MENU.out(F("'T' tune pitch, scale"));
+  tuning_pitch_and_scale_UI_display();
+
 #if defined PERIPHERAL_POWER_SWITCH_PIN
-  MENU.out(F("\t'v' peripheral power"));
+  MENU.out(F("'v' peripheral power"));
   MENU.out_ON_off(peripheral_power_on);
 #endif
   MENU.out(F("   '|' sync slices ="));
@@ -3289,110 +3432,6 @@ void sync_landscape_time_sliced() {	// set this instruments time slice
     MENU.outln(musicBoxConf.sync);
   }
 }
-
-
-bool tuning_pitch_and_scale_UI() {
-  if(MENU.peek()==EOF8) {	// bare 'T'?
-    // TODO: show tuning	// display pitch tuning
-    display_names(SCALES);	// display SCALES list
-    MENU.ln();
-    musicBox_short_info();
-
-  } else if(MENU.peek()=='M') {	// 'TM' toggle metric_alternative_tuning
-    MENU.drop_input_token();
-    metric_alternative_tuning = ! metric_alternative_tuning;
-    MENU.out(F("metric alternative tuning"));
-    MENU.out_ON_off(metric_alternative_tuning);
-    MENU.ln();
-
-  } else {				// more input?
-    bool done=false;
-    while(!done) {	// sequential input loop
-      switch(MENU.peek()) {
-      // check for ending tokens first:
-      case '!':	// 'Txyz!'	trailing '!': *do* tune and quit
-	tune_selected_2_scale_limited(musicBoxConf.pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves
-      case ' ':	// a space ends a 'T... ' input sequence, quit
-	MENU.drop_input_token();
-      case EOF8:	// EOF done		quit
-	done = true;
-	break;
-
-      default:	// numbers or known letters?
-	if(MENU.is_numeric()) {
-	  if(UI_select_from_DB(SCALES))	// select scale
-	    scale_user_selected = true;
-	} else {
-	  // not numeric
-	  switch(MENU.peek()) {	// test for known letters
-	  case 'C':
-	    MENU.drop_input_token();
-	    set_metric_pitch(mp_C);
-	    pitch_user_selected = true;
-	    break;
-	  case 'D':
-	    MENU.drop_input_token();
-	    set_metric_pitch(mp_D);
-	    pitch_user_selected = true;
-	    break;
-	  case 'E':
-	    MENU.drop_input_token();
-	    set_metric_pitch(mp_E);
-	    pitch_user_selected = true;
-	    break;
-	  case 'F':
-	    MENU.drop_input_token();
-	    set_metric_pitch(mp_F);
-	    pitch_user_selected = true;
-	    break;
-	  case 'G':
-	    MENU.drop_input_token();
-	    set_metric_pitch(mp_G);
-	    pitch_user_selected = true;
-	    break;
-	  case 'A':
-	    MENU.drop_input_token();
-	    set_metric_pitch(mp_A);
-	    pitch_user_selected = true;
-	    break;
-	  case 'B':
-	    MENU.drop_input_token();
-	    set_metric_pitch(mp_Bb);
-	    pitch_user_selected = true;
-	  case 'H':
-	    MENU.drop_input_token();
-	    set_metric_pitch(mp_B);
-	    pitch_user_selected = true;
-	    break;
-	  case '-': // 'T-' if metric: chromatic step down
-	    MENU.drop_input_token();
-	    if(musicBoxConf.chromatic_pitch) {
-	      int pitch = musicBoxConf.chromatic_pitch - 1;
-	      if(pitch < 1)
-		pitch = 11;	// wrap
-	      set_metric_pitch(pitch);
-	      pitch_user_selected = true;
-	    }
-	    break;
-	  case '+': // 'T+' chromatic step up
-	    MENU.drop_input_token();
-	    {
-	      int pitch = musicBoxConf.chromatic_pitch + 1;
-	      if(pitch >11)
-		pitch = 1;	// wrap
-	      set_metric_pitch(pitch);
-	      pitch_user_selected = true;
-	    }
-	    break;
-
-	  default:	//	unknown input, not for the 'T' interface
-	    done=true;
-	  } // known letters?
-	} // not numeric
-      } // treat input following 'T......'
-    }	// // sequential input loop		'Tx'
-  }
-} // tuning_pitch_and_scale_UI()
 
 
 bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: ADC, 'analog'Touch, distance sensors, etc

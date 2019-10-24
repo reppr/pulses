@@ -273,7 +273,7 @@ typedef struct musicBox_conf_t {
   short middle_pulses=0;	// see  setup_bass_middle_high()
   short high_pulses=0;		// see  setup_bass_middle_high()
 
-  uint8_t chromatic_pitch = 0;	// 0: pitch is not metric
+  uint8_t chromatic_pitch = 0;	// 0: pitch is not metric	set *only* by  set_metric_pitch()
   /*  chromatic_pitch:
     0  *not* metric
     1  a

@@ -360,6 +360,11 @@ butler and tuning to a new scale
 
 bool metric_alternative_tuning	vs  bool some_metric_tunings_only
 
-tuning_pitch_and_scale_UI()	TODO: tuning_pitch_and_scale_display()
-
 learn morse code for + and - ;)
+
+bool metric_alternative_tuning = true;	// TODO: active only for TESTING...
+
+the whole tuning-to-the-right-octave-implementation is nonsense...
+  delayed fix until i will test time as double
+
+// TODO:  should we keep pitch_was in set_metric_pitch()?

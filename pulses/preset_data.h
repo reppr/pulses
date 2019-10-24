@@ -12,9 +12,12 @@
 // *all* existing presets should be playable now :)
 #define SHORT_PRESET_COLLECTION	176	// only the first <nn> presets are at choice, redefines MUSICBOX_PRESETs
 
+
 bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset? ################
-  if(new_preset < 1 || new_preset > MUSICBOX_PRESETs)
+  if(new_preset < 1 /*|| new_preset > MUSICBOX_PRESETs*/)	// TODO: fix!
     return true;	// *ERROR*
+
+  short preset_was = musicBoxConf.preset;
 
   musicBoxConf.preset = new_preset;
   MENU.out(F("load preset "));
@@ -25,6 +28,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   musicBoxConf.date=NULL;
   musicBoxConf.pitch={1,1};
   musicBoxConf.stack_sync_slices = 0;
+  musicBoxConf.chromatic_pitch = 0; // not metric
+
   PULSES.time_unit = 1000000;	// DEFAULT	a bit rude
 
   switch(musicBoxConf.preset) {
@@ -46,6 +51,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, dwn_THRD_up);
     musicBoxConf.sync = 5;
     musicBoxConf.pitch = {32768, 322};
+
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_E);
     break;
 
   case 2:
@@ -64,6 +72,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  /2
     // CYC: 2^0	   49' 50"
     musicBoxConf.subcycle_octave = -3;	// 6' 14"	| subcycle |
+
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 3:
@@ -82,6 +93,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 292};
     // harmonical CYCLE: 1h 14' 4"	SUBCYCLE: | 4' 38" |
     musicBoxConf.subcycle_octave = -4;
+    
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Dis);		// set_metric_pitch(mp_D);
     break;
 
   case 4:
@@ -101,8 +115,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, doric_scale);
     select_in(JIFFLES, din__dididi_dixi);
     musicBoxConf.sync = 2;
-    // fixed tuning d	294
-    musicBoxConf.pitch = {32768, 294};
+
+    set_metric_pitch(mp_D);
     // CYC: 2^0	1h 13' 33"
     break;
 
@@ -124,6 +138,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 4h 23' 8"	SUBCYCLE: | 4' 7" |
     musicBoxConf.subcycle_octave = -6;
+
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 6:
@@ -150,8 +167,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, dwn_THRD_up);
     musicBoxConf.sync = 1;
-    // fixed tuning g	196
-    musicBoxConf.pitch = {32768, 196};
+    set_metric_pitch(mp_G);
     // CYC: 2^0	2h 56' 32"
     break;
 
@@ -173,6 +189,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 351};
     // CYC: 2^0	   12' 19"
     musicBoxConf.subcycle_octave = -2;	// 3'  5"	| subcycle |
+
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 8:
@@ -193,6 +212,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	14d 14h 15' 26"
     musicBoxConf.subcycle_octave = -1;	// 2	    5'  8"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Cis);
     break;
 
   case 9:
@@ -212,6 +233,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.sync = 1;
     musicBoxConf.pitch = {32768, 229};
     // CYC: 2^0	   18' 53"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 10:
@@ -233,7 +256,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, penta_3rd_down_5);
     musicBoxConf.sync = 1;
     // random *metric* tuning d
-    musicBoxConf.pitch = {32768, 294};
+    set_metric_pitch(mp_D);
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 58' 51"	SUBCYCLE: | 3' 41" |
     musicBoxConf.subcycle_octave = -4;
@@ -256,6 +279,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, tumtumtum);
     musicBoxConf.pitch = {1, 12};	// 8	*metric* a
     // harmonical CYCLE: 6h 33' 12"	SUBCYCLE: | 6' 9" |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 12:
@@ -276,6 +301,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 8d 6h 58' 1"	SUBCYCLE: | 5' 50" |
     musicBoxConf.subcycle_octave = -11;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_D);
+    //set_metric_pitch(mp_Fis);	// mp_D ???
     break;
 
   case 13:
@@ -296,6 +324,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.sync = 5;
     musicBoxConf.pitch = {32768, 417};
     // fix:	play_KB_macro  *2
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Gis);
     break;
 
   case 14:
@@ -312,6 +342,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.sync = 1;
     musicBoxConf.pitch = {32768, 410};
     // CYC: 2^0	5h 37' 35"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 15:
@@ -328,6 +360,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.sync = 1;
     musicBoxConf.pitch = {32768, 214};
     // fix:	play_KB_macro  *2
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 16:
@@ -345,10 +379,12 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, octaves_fifths);
     select_in(JIFFLES, din__dididi_dixi);
     musicBoxConf.sync = 3;
-    // fixed tuning e	330
     musicBoxConf.pitch = {32768, 330};
+    // musicBoxConf.chromatic_pitch = 8;	// e
     // fix:	play_KB_macro  *2
     // CYC: 2^0	12d 10h 14' 58"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_E);
     break;
 
   case 17:
@@ -365,6 +401,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 375};
     // CYC: 2^0	6h  9'  5"
     musicBoxConf.subcycle_octave = -5;	// 11' 32"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);	// TODO: TEST: set_metric_pitch(mp_Fis)
     break;
 
   case 18:
@@ -386,6 +424,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // no_octave_shift = true;
     // fix:	play_KB_macro  *2
     // CYC: 2^0	2h  0' 29"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 19:
@@ -407,6 +447,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 210};
     // fix:	play_KB_macro  *2
     // CYC: 2^0	3h 25' 58"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 20:
@@ -425,10 +467,12 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, octaves_fifths);
     select_in(JIFFLES, penta_3rd_rise);
     musicBoxConf.sync = 2;
-    // fixed tuning f	175
     musicBoxConf.pitch = {32768, 175};
+    // musicBoxConf.chromatic_pitch = 9; // f
     // fix:	play_KB_macro  *2
     // CYC: 2^0	11d 17h 12' 24"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);	// should not change anything...
     break;
 
   case 21:
@@ -445,9 +489,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, pentatonic_rise);
     musicBoxConf.sync = 5;
-    // fixed tuning b	233
-    musicBoxConf.pitch = {32768, 233};
     // CYC: 2^0	1h 14' 15"
+    set_metric_pitch(mp_Bb);
     break;
 
   case 22:
@@ -467,8 +510,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, octave_4th_5th);
     select_in(JIFFLES, pentatonic_desc);
     musicBoxConf.sync = 0;
-    // fixed tuning g	196
-    musicBoxConf.pitch = {32768, 196};
+    set_metric_pitch(mp_G);
     // fix:	play_KB_macro  *2
     // CYC: 2^0	11h 46'  9"
     break;
@@ -486,6 +528,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.sync = 5;
     musicBoxConf.pitch = {32768, 380};
     // fix:	play_KB_macro  *2
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 24:
@@ -518,6 +562,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 295};
     // CYC: 2^0	1h 13' 19"
     musicBoxConf.subcycle_octave = -4;	// 4' 35"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_D);
     break;
 
   case 25:
@@ -552,6 +598,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *4
     // CYC: 2^0	1d 2h  3' 55"
     musicBoxConf.subcycle_octave = -9;	// 3'  3"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 26:
@@ -569,9 +617,11 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, major_scale);
     select_in(JIFFLES, pentatonic_rise);
     musicBoxConf.sync = 5;
-    // fixed tuning a	220
     musicBoxConf.pitch = {32768, 220};
+    // musicBoxConf.chromatic_pitch = 1;	// a
     // CYC: 2^0	   19' 40"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);	// should not make any difference
     break;
 
   case 27:
@@ -592,10 +642,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, ding_ditditdit);
     musicBoxConf.sync = 1;
-    // fixed tuning b	233
-    musicBoxConf.pitch = {32768, 233};
     // fix:	play_KB_macro  *2
     // CYC: 2^0	2h 28' 30"
+    set_metric_pitch(mp_Bb);
     break;
 
   case 28:
@@ -613,10 +662,12 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, ding_ditditdit);
     musicBoxConf.sync = 5;
-    // fixed tuning a	220
     musicBoxConf.pitch = {32768, 220};
+    // musicBoxConf.chromatic_pitch = 1;	// a
     // fix:	play_KB_macro  /2
     // CYC: 2^0	   39' 19"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);	// should not make any difference
     break;
 
   case 29:
@@ -635,8 +686,10 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, minor_scale);
     select_in(JIFFLES, PENTAtonic_rise);
     musicBoxConf.sync = 3;
-    // fixed tuning f	175
     musicBoxConf.pitch = {32768, 175};
+    // musicBoxConf.chromatic_pitch = 9; // f
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     // CYC: 2^0	1h  1' 47"
     break;
 
@@ -655,8 +708,10 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, major_scale);
     select_in(JIFFLES, pentatonic_rise);
     musicBoxConf.sync = 0;
-    // fixed tuning e	330
     musicBoxConf.pitch = {32768, 330};
+    // musicBoxConf.chromatic_pitch = 8;	// e
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_E);
     // CYC: 2^0	   13'  6"
     break;
 
@@ -683,10 +738,12 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, dwn_THRD_up);
     musicBoxConf.sync = 1;
-    // fixed tuning a	220
     musicBoxConf.pitch = {32768, 220};
+    // musicBoxConf.chromatic_pitch = 1;	// a
     // fix:	play_KB_macro  *2
     // CYC: 2^0	2h 37' 17"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 32:
@@ -715,10 +772,12 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, pentatonic_rise);
     musicBoxConf.sync = 3;
-    // fixed tuning g	196
     musicBoxConf.pitch = {32768, 196};
+    // musicBoxConf.chromatic_pitch = 11;	// g
     // fix:	play_KB_macro  *4
     // CYC: 2^0	11h 46'  9"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 33:
@@ -749,9 +808,10 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, doric_scale);
     select_in(JIFFLES, penta_3rd_down_5);
     musicBoxConf.sync = 5;
-    // fixed tuning c	262
     musicBoxConf.pitch = {32768, 262};
     // CYC: 2^0	1h 22' 33"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 34:
@@ -779,11 +839,13 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, dwn_THRD_up);
     musicBoxConf.sync = 5;
-    // fixed tuning b	233
     musicBoxConf.pitch = {32768, 233};
+    // musicBoxConf.chromatic_pitch = 2; // Bb
     // fix:	play_KB_macro  *4
     // CYC: 2^0	4h 57'  1"
     musicBoxConf.subcycle_octave = -3;	// 37'  8"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Bb);
     break;
 
   case 35:
@@ -813,6 +875,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  /2
     // used subcycle:    3' 46"
     // harmonical cycle 2d 16h 14' 40"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 36:
@@ -843,6 +907,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *4
     // CYC: 2^0	5h 34' 19"
     musicBoxConf.subcycle_octave = -8;	// 1' 18"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Gis);
     break;
 
   case 37:
@@ -878,6 +944,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	1h 31' 18"
     musicBoxConf.subcycle_octave = -4;	// 5' 42"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Fis);
     break;
 
   case 38:
@@ -902,6 +970,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 420};
     // CYC: 2^0	4d 21h 10' 10"
     musicBoxConf.subcycle_octave = -1;	// 1	    3' 26"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Gis);
     break;
 
   case 39:
@@ -917,6 +987,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *4
     // CYC: 2^0	3h 36' 48"
     musicBoxConf.subcycle_octave = -6;	// 3' 23"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 40:
@@ -943,6 +1015,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  /2
     // CYC: 2^0	   49' 50"
     musicBoxConf.subcycle_octave = -4;	// 3'  7"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 41:
@@ -975,6 +1049,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	2h  5' 44"
     musicBoxConf.subcycle_octave = -5;	// 3' 56"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 42:
@@ -1009,6 +1085,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	1h 50' 54"
     musicBoxConf.subcycle_octave = -5;	// 3' 28"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 43:
@@ -1038,6 +1116,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 225};
     // CYC: 2^0	1h 16' 54"
     musicBoxConf.subcycle_octave = -4;	// 4' 48"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 44:
@@ -1068,6 +1148,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 323};
     // CYC: 2^0	   53' 34"
     musicBoxConf.subcycle_octave = -4;	// 3' 21"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_E);
     break;
 
   case 45:
@@ -1094,9 +1176,11 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.stack_sync_slices = 0;
     // musicBoxConf.base_pulse = 15;	// TODO: rethink that
     musicBoxConf.pitch = {1, 175};
-    musicBoxConf.chromatic_pitch = 9;	// f
+    // musicBoxConf.chromatic_pitch = 9; // f
     // musicBoxConf.subcycle_octave = 6;	// TODO: rethink that
     // cycle 9h 59' 10"  subcycle | 9' 22" |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 46:
@@ -1122,8 +1206,10 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.stack_sync_slices = 256;
     // musicBoxConf.base_pulse = 15;	// TODO: rethink that
     musicBoxConf.pitch = {1, 233};
-    musicBoxConf.chromatic_pitch = 2;	// a#
+    // musicBoxConf.chromatic_pitch = 2;	// Bb
     // musicBoxConf.subcycle_octave = 4;	// TODO: rethink that
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Bb);
     break;
 
   case 47:
@@ -1151,6 +1237,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.sync = 3;
     musicBoxConf.pitch = {32768, 161};
     // used SUBCYCLE:    4' 12"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_E);
     break;
 
   case 48:
@@ -1183,6 +1271,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // usedSUBCYCLE:    3' 28"
     // CYC: 2^0	   55' 27"
     musicBoxConf.subcycle_octave = -4;	// 3' 28"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 49:
@@ -1213,6 +1303,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *4
     // CYC: 2^0	4h 20' 10"
     musicBoxConf.subcycle_octave = -6;	// 4'  4"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 50:
@@ -1242,6 +1334,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  /2
     // CYC: 2^0	   40' 39"
     musicBoxConf.subcycle_octave = -3;	// 5'  5"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 51:
@@ -1264,10 +1358,10 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, up_THRD_dn);
     musicBoxConf.sync = 2;
-    musicBoxConf.stack_sync_slices = -16;
+    // was: musicBoxConf.stack_sync_slices = -16;
+    musicBoxConf.stack_sync_slices = 512;	// CHANGED: 2019-10-23
     // musicBoxConf.base_pulse = 15;	// TODO: rethink that
-    musicBoxConf.pitch = {1, 196};
-    musicBoxConf.chromatic_pitch = 11;	// g
+    set_metric_pitch(mp_G);
     // musicBoxConf.subcycle_octave = 5;	// TODO: rethink that
     break;
 
@@ -1312,6 +1406,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, dwn_THRD);
     musicBoxConf.pitch = {1, 357};	// 8	*metric* c
     // harmonical CYCLE: 1h 6' 2"	SUBCYCLE: 2^3 | 11' 28" |	???
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 53:
@@ -1334,6 +1430,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 221};
     // CYC: 2^0	1h 37' 51"
     musicBoxConf.subcycle_octave = -5;	// 3'  3"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 54:
@@ -1356,6 +1454,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 415};
     // fix:	play_KB_macro  *2
     // used SUBCYCLE:    3' 28"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Gis);
     break;
 
   case 55:
@@ -1388,6 +1488,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  /2
     // CYC: 2^0	    7'  1"
     musicBoxConf.subcycle_octave = -1;	// 3' 31"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Dis);
     break;
 
   case 56:
@@ -1415,6 +1517,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	   26' 18"
     musicBoxConf.subcycle_octave = -3;	// 3' 17"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_E);
     break;
 
   case 57:
@@ -1442,6 +1546,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	   22'  1"
     musicBoxConf.subcycle_octave = -2;	// 5' 30"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 58:
@@ -1465,6 +1571,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // random octave shift: // fix:	play_KB_macro  *2
     // CYC: 2^0	2h  9' 30"
     musicBoxConf.subcycle_octave = -5;	// 4'  3"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_E);
     break;
 
   case 59:
@@ -1491,6 +1599,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // random octave shift: // fix:	play_KB_macro  *4
     // CYC: 2^0	4h 25'  9"
     musicBoxConf.subcycle_octave = -6;	// 4'  9"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 60:
@@ -1521,6 +1631,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // random octave shift: // fix:	play_KB_macro  /2
     // CYC: 2^0	1h 10'  3"
     musicBoxConf.subcycle_octave = -4;	// 4' 23"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_B);
     break;
 
   case 61:
@@ -1547,6 +1659,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // random octave shift: // fix:	play_KB_macro  *2
     // CYC: 2^0	15h 35' 11"
     musicBoxConf.subcycle_octave = -8;	// 3' 39"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_D);
     break;
 
   case 62:
@@ -1569,6 +1683,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // random octave shift: used SUBCYCLE:	3' 5"y61
     // CYC: 2^0	1h 38' 45"
     musicBoxConf.subcycle_octave = -5;	// 3'  5"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 63:
@@ -1612,6 +1728,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, pentatonic_rise);
     musicBoxConf.pitch = {2, 6144};
     // harmonical cycle 'c'	12h 24'  7"	subcycle    5' 49"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 64:
@@ -1640,6 +1758,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // used SUBCYCLE:	3' 12"
     // CYC: 2^0	3h 24' 59"
     musicBoxConf.subcycle_octave = -6;	// 3' 12"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Gis);
     break;
 
   case 65:
@@ -1667,6 +1787,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, pentatonic_rise);
     musicBoxConf.pitch = {1, 128};
     musicBoxConf.sync = 4;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 66:
@@ -1693,6 +1815,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // random octave shift:
     // CYC: 2^0	5d 11h 13' 47"
     musicBoxConf.subcycle_octave = -1;	// 0	    7' 41"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Fis);
     break;
 
   case 67:
@@ -1721,6 +1845,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // random octave shift:
     // CYC: 2^0	5d 23h  3' 20"
     musicBoxConf.subcycle_octave = -1;	// 1	    4' 11"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 68:
@@ -1746,6 +1872,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // random octave shift: // fix:	play_KB_macro  *2
     // CYC: 2^0	2h 30' 11"
     musicBoxConf.subcycle_octave = -5;	// 4' 42"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_D);
     break;
 
   case 69:
@@ -1780,6 +1908,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // random octave shift: // fix:	play_KB_macro  *4
     // CYC: 2^0	   45' 39"
     musicBoxConf.subcycle_octave = -3;	// 5' 42"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 70:
@@ -1808,6 +1938,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	2h 30' 26"
     musicBoxConf.subcycle_octave = -5;	// 4' 42"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Bb);
     break;
 
   case 71:
@@ -1836,6 +1968,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	5h 37' 35"
     musicBoxConf.subcycle_octave = -6;	// 5' 16"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Gis);
     break;
 
   case 72:
@@ -1862,6 +1996,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	6h  9'  5"
     musicBoxConf.subcycle_octave = -6;	// 5' 46"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Fis);
     break;
 
   case 73:
@@ -1874,6 +2010,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  /2
     // CYC: 2^0	2d 0h  3' 28"
     musicBoxConf.subcycle_octave = -9;	// 5' 38"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 74:
@@ -1905,6 +2043,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	14d 21h 27' 58"
     musicBoxConf.subcycle_octave = -1;	// 2	    5' 14"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Gis);
     break;
 
   case 75:
@@ -1937,6 +2077,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *4
     // CYC: 2^0	4h  5' 45"
     musicBoxConf.subcycle_octave = -5;	// 7' 41"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 76:
@@ -1968,6 +2110,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 357};
     // CYC: 2^0	   48' 28"
     musicBoxConf.subcycle_octave = -3;	// 6'  3"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 77:
@@ -1994,6 +2138,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	2h 24' 39"
     musicBoxConf.subcycle_octave = -4;	// 9'  2"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_D);
     break;
 
   case 78:
@@ -2023,6 +2169,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	8h 58' 33"
     musicBoxConf.subcycle_octave = -6;	// 8' 25"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 79:
@@ -2060,6 +2208,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 300};
     // CYC: 2^0	1h 12'  5"
     musicBoxConf.subcycle_octave = -3;	// 9'  1"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_D);
     break;
 
   case 80:
@@ -2096,6 +2246,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	1h 50' 54"
     musicBoxConf.subcycle_octave = -4;	// 6' 56"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 81:
@@ -2131,6 +2283,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	1h 37' 28"
     musicBoxConf.subcycle_octave = -4;	// 6'  6"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 82:
@@ -2161,6 +2315,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  /2
     // CYC: 2^0	1h  6' 32"
     musicBoxConf.subcycle_octave = -3;	// 8' 19"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 83:
@@ -2188,6 +2344,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	5h 54' 53"
     musicBoxConf.subcycle_octave = -5;	// 11'  5"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 84:
@@ -2219,6 +2377,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, penta_3rd_down_5);
     musicBoxConf.sync = 1;
     musicBoxConf.pitch = {1, 330};
+    // musicBoxConf.chromatic_pitch = 8;	// e
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_E);
     break;
 
   case 85:
@@ -2257,6 +2418,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, PENTAtonic_desc);
     musicBoxConf.pitch = {1, 128};
     // harmonical cycle 1h  9' 59"	subcycle    8' 45"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 86:
@@ -2290,6 +2453,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 423};
     // CYC: 2^0	1h 21' 48"
     musicBoxConf.subcycle_octave = -3;	// 10' 13"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Gis);
     break;
 
   case 87:
@@ -2320,6 +2485,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	1h 55' 39"
     musicBoxConf.subcycle_octave = -4;	// 7' 14"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Fis);
     break;
 
   case 88:
@@ -2345,6 +2512,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 187};
     // CYC: 2^0	6h 10'  4"
     //	musicBoxConf.subcycle_octave = -5;	// 11' 34"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Fis);
     break;
 
   case 89:
@@ -2377,6 +2546,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	1h 54' 25"
     musicBoxConf.subcycle_octave = -4;	// 7'  9"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Fis);
     break;
 
   case 90:
@@ -2414,6 +2585,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	   25' 27"
     musicBoxConf.subcycle_octave = -2;	// 6' 22"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 91:
@@ -2428,6 +2601,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	2h 25' 38"
     musicBoxConf.subcycle_octave = -5;	// 4' 33"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_D);
     break;
 
   case 92:
@@ -2465,6 +2640,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	2h 57' 16"
     musicBoxConf.subcycle_octave = -5;	// 5' 32"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_B);
     break;
 
   case 93:
@@ -2496,6 +2673,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 217};
     // CYC: 2^0	1h 19' 44"
     musicBoxConf.subcycle_octave = -4;	// 4' 59"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 94:
@@ -2531,6 +2710,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 302};
     // CYC: 2^0	57' 17"
     musicBoxConf.subcycle_octave = -4;	// 3' 35"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Dis);
     break;
 
   case 95:
@@ -2556,8 +2737,11 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, major_scale);
     select_in(JIFFLES, d4096_1024);
     musicBoxConf.sync = 3;
+    // DADA: no pitch data...
     // harmonical CYCLE: 13' 11"	SUBCYCLE: | 6' 36" |
     musicBoxConf.subcycle_octave = -1;
+    if(metric_alternative_tuning)	// TODO: else, no pitch defined???
+      set_metric_pitch(mp_C);
     break;
 
   case 96:
@@ -2588,6 +2772,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 208};
     // harmonical CYCLE: 20' 48"	SUBCYCLE: | 5' 12" |
     // SUBCYCLE: (2^-2) 5' 12"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Gis);
     break;
 
   case 97:
@@ -2619,6 +2805,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 449};
     // harmonical CYCLE: 4d 13h 36' 6"		SUBCYCLE: | 6' 25" |
     musicBoxConf.subcycle_octave = -10;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 98:
@@ -2655,6 +2843,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 3h 4' 50"	SUBCYCLE: | 5' 47" |
     musicBoxConf.subcycle_octave = -5;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Bb);
     break;
 
   case 99:
@@ -2689,6 +2879,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 431};
     // harmonical CYCLE: 1h 40' 21"	SUBCYCLE: | 6' 16" |
     musicBoxConf.subcycle_octave = -4;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Gis);
     break;
 
   case 100:
@@ -2724,6 +2916,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 429};
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 2h 41' 19"	SUBCYCLE: | 5' 2" |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 101:
@@ -2759,6 +2953,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 17d 11h 24' 48"	SUBCYCLE: | 6' 9" |
     musicBoxConf.subcycle_octave = -12;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 102:
@@ -2782,6 +2978,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 3h 21' 10"	SUBCYCLE: | 6' 17" |
     musicBoxConf.subcycle_octave = -5;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 103:
@@ -2815,6 +3013,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 1h 43' 55"	SUBCYCLE: | 6' 30" |
     musicBoxConf.subcycle_octave = -4;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_E);
     break;
 
   case 104:
@@ -2844,6 +3044,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 222};
     // harmonical CYCLE: 1h 37' 25"	SUBCYCLE: | 6' 5" |
     musicBoxConf.subcycle_octave = -4;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 105:
@@ -2875,6 +3077,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 223};
     // harmonical CYCLE: 1h 36' 59"	SUBCYCLE: | 6' 4" |
     musicBoxConf.subcycle_octave = -4;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 106:
@@ -2905,6 +3109,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 5h 29' 32"	SUBCYCLE: | 5' 9" |
     musicBoxConf.subcycle_octave = -6;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Gis);
     break;
 
   case 107:
@@ -2938,6 +3144,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 11h 10' 15"	SUBCYCLE: | 5' 14" |
     musicBoxConf.subcycle_octave = -7;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Gis);
     break;
 
   case 108:
@@ -2968,6 +3176,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  /2
     // harmonical CYCLE: 1h 47' 8"	SUBCYCLE: | 6' 42" |
     musicBoxConf.subcycle_octave = -4;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_E);
     break;
 
   case 109:
@@ -2997,6 +3207,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 13h 1' 57"	SUBCYCLE: | 6' 7" |
     musicBoxConf.subcycle_octave = -7;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 110:
@@ -3023,6 +3235,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  /2
     // harmonical CYCLE: 47' 26"	SUBCYCLE: | 5' 56" |
     musicBoxConf.subcycle_octave = -3;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 111:
@@ -3053,6 +3267,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 1h 55' 57"	SUBCYCLE: | 3' 37" |
     musicBoxConf.subcycle_octave = -5;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Fis);
     break;
 
   case 112:
@@ -3089,9 +3305,12 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, penta_3rd_down_5);
     musicBoxConf.sync = 1;
     musicBoxConf.pitch = {32768, 262};
+    // musicBoxConf.chromatic_pitch = 4; // c
     // fix:	play_KB_macro  /2
     // harmonical CYCLE: 8' 15"	SUBCYCLE: | 4' 8" |
     musicBoxConf.subcycle_octave = -1;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 113:
@@ -3122,6 +3341,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 1h 48' 8"	SUBCYCLE: | 6' 45" |
     musicBoxConf.subcycle_octave = -4;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 114:
@@ -3165,6 +3386,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 226};
     // harmonical CYCLE: 1h 35' 41"	SUBCYCLE: | 5' 59" |
     musicBoxConf.subcycle_octave = -4;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 115:
@@ -3192,6 +3415,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 386};
     // fix:	play_KB_macro  /2
     // CYC: 2^0	   28'  1"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 116:
@@ -3227,6 +3452,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 5h 36' 45"	SUBCYCLE: | 5' 16" |
     musicBoxConf.subcycle_octave = -6;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Gis);
     break;
 
   case 117:
@@ -3270,6 +3497,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 271};
     // harmonical CYCLE: 3d 18h 47' 44"	SUBCYCLE: | 5' 19" |
     musicBoxConf.subcycle_octave = -10;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Cis);
     break;
 
   case 118:
@@ -3303,6 +3532,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  /2
     // harmonical CYCLE: 3h 52' 32"	SUBCYCLE: | 3' 38" |
     musicBoxConf.subcycle_octave = -6;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_B);
     break;
 
   case 119:
@@ -3348,6 +3579,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 1h 55' 20"	SUBCYCLE: | 3' 36" |
     musicBoxConf.subcycle_octave = -5;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_D);
     break;
 
   case 120:
@@ -3386,6 +3619,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 2h 46' 21"	SUBCYCLE: | 5' 12" |
     musicBoxConf.subcycle_octave = -5;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Gis);
     break;
 
   case 121:
@@ -3419,6 +3654,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 17d 13h 48' 36"	SUBCYCLE: | 6' 11" |
     musicBoxConf.subcycle_octave = -12;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 122:
@@ -3452,6 +3689,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 16d 8h 38' 32"	SUBCYCLE: | 5' 45" |
     musicBoxConf.subcycle_octave = -12;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Fis);
     break;
 
   case 123:
@@ -3488,6 +3727,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 1h 35' 35"	SUBCYCLE: | 5' 58" |
     musicBoxConf.subcycle_octave = -4;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Fis);
     break;
 
   case 124:
@@ -3522,6 +3763,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 2h 48' 18"	SUBCYCLE: | 5' 16" |
     musicBoxConf.subcycle_octave = -5;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 125:
@@ -3534,6 +3777,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  /2
     // harmonical CYCLE: 10' 6"	SUBCYCLE: | 5' 3" |
     // | (2^-1) 5' 3" |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 126:
@@ -3546,6 +3791,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  /2
     // harmonical CYCLE: 24' 26"	SUBCYCLE: | 6' 7" |
     musicBoxConf.subcycle_octave = -2;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 127:
@@ -3588,7 +3835,10 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 322};
     // harmonical CYCLE: 9d 13h 14' 40"	SUBCYCLE: | 6' 43" |
     musicBoxConf.subcycle_octave = -11;
-    break;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);	// preferred
+      //set_metric_pitch(mp_E);	// did not sound right...
+   break;
 
   case 128:
     musicBoxConf.name = F("clear winter sky");
@@ -3627,6 +3877,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 444};
     // harmonical CYCLE: 1h 37' 25"	SUBCYCLE: | 6' 5" |
     musicBoxConf.subcycle_octave = -4;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 129:
@@ -3660,6 +3912,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 1h 48' 40"	SUBCYCLE: | 6' 48" |
     musicBoxConf.subcycle_octave = -4;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 130:
@@ -3696,6 +3950,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 10h 45' 15"	SUBCYCLE: | 5' 2" |
     musicBoxConf.subcycle_octave = -7;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_D);
     break;
 
   case 131:
@@ -3737,6 +3993,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 10h 40' 46"	SUBCYCLE: | 5' 0" |
     musicBoxConf.subcycle_octave = -7;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_D);
     break;
 
   case 132:
@@ -3768,11 +4026,13 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, octave_4th_5th);
     select_in(JIFFLES, penta_3rd_rise);
     musicBoxConf.sync = 1;
-    // fixed random tuning b	233
     musicBoxConf.pitch = {32768, 233};
+    // musicBoxConf.chromatic_pitch = 2; // Bb
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 9h 54' 1"	SUBCYCLE: | 4' 38" |
     musicBoxConf.subcycle_octave = -7;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Bb);
     break;
 
   case 133:
@@ -3822,6 +4082,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 234};
     // harmonical CYCLE: 2h 27' 52"	SUBCYCLE: | 4' 37" |
     musicBoxConf.subcycle_octave = -5;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Bb);
     break;
 
   case 134:
@@ -3861,6 +4123,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 2h 15' 10"	SUBCYCLE: | 4' 13" |
     musicBoxConf.subcycle_octave = -5;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 135:
@@ -3905,6 +4169,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 1h 11' 51"	SUBCYCLE: | 4' 29" |
     musicBoxConf.subcycle_octave = -4;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_D);
     break;
 
   case 136:
@@ -3930,6 +4196,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, tumtum);
     musicBoxConf.pitch = {1, 128};
     // harmonical CYCLE: 51' 48"	SUBCYCLE: | 6' 28" |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 137:
@@ -3970,6 +4238,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  /2
     // harmonical CYCLE: 3h 35' 35"	SUBCYCLE: | 6' 44" |
     musicBoxConf.subcycle_octave = -5;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 138:
@@ -4001,10 +4271,12 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, octaves_fourths);
     select_in(JIFFLES, din_dididi);
     musicBoxConf.sync = 0;
-    // fixed random tuning a
     musicBoxConf.pitch = {32768, 220};
+    // musicBoxConf.chromatic_pitch = 1;	// a
     // harmonical CYCLE: 6d 23h 45' 55"	SUBCYCLE: | 4' 55" |
     musicBoxConf.subcycle_octave = -11;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 139:
@@ -4029,6 +4301,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, PENTA_3rd_rise);
     musicBoxConf.pitch = {1, 32};	//	*metric* ?
     // harmonical CYCLE: 1h 24' 29"	SUBCYCLE: | 5' 17" |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 140:
@@ -4071,8 +4345,10 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.stack_sync_slices = 32;
     // musicBoxConf.base_pulse = 15;	// TODO: rethink that
     musicBoxConf.pitch = {1, 220};
-    musicBoxConf.chromatic_pitch = 1;	// a
+    // musicBoxConf.chromatic_pitch = 1;	// a
     // musicBoxConf.subcycle_octave = 3;	// TODO: rethink that
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 141:
@@ -4098,6 +4374,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, d4096_1024);
     musicBoxConf.pitch = {1, 32};	//		*metric* a
     // harmonical CYCLE: 2h 48' 57"	SUBCYCLE: | 2' 38" |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 142:
@@ -4129,6 +4407,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, tumtumtum);
     musicBoxConf.pitch = {2, 61};
     // harmonical CYCLE: 6h 0' 26"	SUBCYCLE: | 2' 38" |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_B);
     break;
 
   case 143:
@@ -4163,7 +4443,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.stack_sync_slices = 1024;
     // musicBoxConf.base_pulse = 15;	// TODO: rethink that
     musicBoxConf.pitch = {1, 196};
-    musicBoxConf.chromatic_pitch = 11;	// g
+    // musicBoxConf.chromatic_pitch = 11;	// g
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 144:
@@ -4190,9 +4472,12 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.sync = 2;
     // random *metric* tuning a
     musicBoxConf.pitch = {32768, 220};
+    // musicBoxConf.chromatic_pitch = 1;	// a
     // fix:	play_KB_macro  *2
     // harmonical CYCLE: 1h 38' 18"	SUBCYCLE: | 6' 9" |
     musicBoxConf.subcycle_octave = -4;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 145:
@@ -4218,6 +4503,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 1024};
     // harmonical CYCLE: 2h 15' 10"	SUBCYCLE: | 4' 13" |
     musicBoxConf.subcycle_octave = -5;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 146:
@@ -4248,6 +4535,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {32768, 6144};
     // harmonical CYCLE: 6h 0' 26"	SUBCYCLE: | 5' 38" |
     musicBoxConf.subcycle_octave = -6;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 147:
@@ -4273,6 +4562,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, d4096_64);
     musicBoxConf.pitch = {2, 61};	// 44	*metric* d
     // harmonical CYCLE: 0"	SUBCYCLE: | 3' 41" |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_B);
     break;
 
   case 148:
@@ -4296,6 +4587,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, pentachord_rise);
     musicBoxConf.pitch = {3, 10};	// 24	*metric* a
     // harmonical CYCLE: 2h 37' 17"	SUBCYCLE: | 4' 55" |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_D);	// TODO: check that...
     break;
 
   case 149:
@@ -4316,6 +4609,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, tumtumtumtum);
     musicBoxConf.pitch = {1, 12};	// 8	*metric* f
     // harmonical CYCLE: 49' 26"	SUBCYCLE: | 6' 11" |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 150:
@@ -4340,6 +4635,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, din_dididi);
     musicBoxConf.pitch = {3, 52};	// 4288		*metric* g
     // harmonical CYCLE: 7d 20h 18' 29"	SUBCYCLE: | 5' 31" |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Cis);
     break;
 
   case 151:
@@ -4370,8 +4667,11 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.sync = 4;
     // random *metric* tuning c
     musicBoxConf.pitch = {32768, 262};
+    // musicBoxConf.chromatic_pitch = 4; // c
     // harmonical CYCLE: 1h 22' 33"	SUBCYCLE: | 5' 10" |
     musicBoxConf.subcycle_octave = -4;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 152:
@@ -4403,7 +4703,10 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.sync = 5;
     select_in(JIFFLES, pentaCHORD_rise);
     musicBoxConf.pitch = {1, 12};	// 8  1/175	*metric* f
+    // musicBoxConf.chromatic_pitch = 9; // f
     // harmonical CYCLE: 49' 26"	SUBCYCLE: | 6' 11" |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 153:
@@ -4415,8 +4718,11 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.sync = 1;
     select_in(JIFFLES, diing_ditditdit);
     musicBoxConf.pitch = {1, 330};	// 8 1/330 metric e
+    // musicBoxConf.chromatic_pitch = 8;	// e
     // was:  musicBoxConf.pitch = {32768, 12};	// 8 1/330 metric e
     // harmonical CYCLE: 3h 18' 35"	SUBCYCLE: | 6' 12" |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_E);
     break;
 
   case 154:
@@ -4426,9 +4732,12 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.stack_sync_slices = 8;
     musicBoxConf.base_pulse = 15;
     select_in(JIFFLES, din__dididi_dixi);
-    musicBoxConf.pitch = {1, 175};	// 8 1/175 metric f
+    musicBoxConf.pitch = {1, 175};	// 1/175 metric f
+    // musicBoxConf.chromatic_pitch = 9; // f
     // was:  musicBoxConf.pitch = {32768, 12};	// 8 1/175 metric f
     // harmonical CYCLE: 3h 7' 14"	2^4 SUBCYCLE: | 11' 42" |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 155:
@@ -4466,8 +4775,10 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.sync = 4;		// S unleserlich, 4?
     musicBoxConf.stack_sync_slices=1024;
     // p[15]|1024	// unleserlich, 1024?
-    musicBoxConf.chromatic_pitch = 0;
-    musicBoxConf.pitch={1, 294};		// d just a random default
+    // musicBoxConf.chromatic_pitch = 6;
+    musicBoxConf.pitch={1, 294};	// d just a random default
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_D);
     break;
 
   case 156:
@@ -4503,8 +4814,10 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.sync = 0;
     musicBoxConf.stack_sync_slices=64;
     musicBoxConf.pitch={1, 175};		// f
-    musicBoxConf.chromatic_pitch = 9;	// f
+    // musicBoxConf.chromatic_pitch = 9;	// f
     // 11'42"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 157:
@@ -4533,8 +4846,10 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.sync = 1;
     musicBoxConf.stack_sync_slices=128;
     musicBoxConf.pitch={1, 330};
-    musicBoxConf.chromatic_pitch = 4;		// e
+    // musicBoxConf.chromatic_pitch = 8;	// e
     // 6'12"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_E);
     break;
 
   case 158:
@@ -4562,8 +4877,10 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.sync = 2;
     musicBoxConf.stack_sync_slices=0;
     musicBoxConf.pitch={1, 175};		// f
-    musicBoxConf.chromatic_pitch = 9;		// f
+    // musicBoxConf.chromatic_pitch = 9;		// f
     // 9'22"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 159:
@@ -4599,8 +4916,10 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.sync = 3;
     musicBoxConf.stack_sync_slices=0;
     musicBoxConf.pitch={1, 294};		// d
-    musicBoxConf.chromatic_pitch = 6;		// d
+    // musicBoxConf.chromatic_pitch = 6;		// d
     // zeit unleserlich
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_D);
     break;
 
   case 160:
@@ -4644,6 +4963,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, pentatonic_rise);
     musicBoxConf.pitch = {2, 6144};
     // harmonical cycle 'c'	12h 24'  7"	subcycle    5' 49"
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 161:
@@ -4674,6 +4995,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, PENTA_3rd_rise);
     musicBoxConf.pitch = {3, 1024};
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_B);
     break;
 
   case 162:
@@ -4705,6 +5028,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, tetraCHORD);
     select_in(JIFFLES, pentatonic_desc);
     musicBoxConf.pitch = {3, 1024};
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 163:
@@ -4718,6 +5043,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // was:  musicBoxConf.pitch = {32768, 200};
     // CYC: 2^0	   54'  4"
     musicBoxConf.subcycle_octave = -4;	// 3' 23"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 164:
@@ -4753,7 +5080,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES,europ_PENTAtonic );
     select_in(JIFFLES, pent_patternA);
     musicBoxConf.pitch = {1, 262};	// metric c
-    musicBoxConf.chromatic_pitch = 4;
+    // musicBoxConf.chromatic_pitch = 4;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 165:
@@ -4792,8 +5121,10 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.stack_sync_slices = 64;
     musicBoxConf.base_pulse = 15;
     musicBoxConf.pitch={1, 262};
-    musicBoxConf.chromatic_pitch=4;	// c
+    // musicBoxConf.chromatic_pitch=4;	// c
     // musicBoxConf.subcycle_octave = -1;	// TODO: select a short piece ################
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 166:
@@ -4836,6 +5167,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	1h 52' 38"
     musicBoxConf.subcycle_octave = -5;	// 3' 31"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 167:
@@ -4859,6 +5192,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(SCALES, doric_scale);
     select_in(JIFFLES, up_THRD_dn);
     musicBoxConf.pitch = {1, 32};
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 168:
@@ -4880,6 +5215,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, pentatonic_desc);
     musicBoxConf.sync = 1;
     musicBoxConf.pitch = {1, 111};
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 169:
@@ -4896,6 +5233,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // was: musicBoxConf.pitch = {32768, 32};
     // harmonical CYCLE: 33' 47"	SUBCYCLE: | 5' 31" |
     // | 5' 31" |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 170:
@@ -4919,6 +5258,9 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, diing_ditditdit);
     musicBoxConf.sync = 2;
     musicBoxConf.pitch = {1, 196};	// metric g
+    // musicBoxConf.chromatic_pitch = 11;	// g
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
     break;
 
   case 171:
@@ -4950,6 +5292,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, up_THRD_dn);
     musicBoxConf.sync = 1;
     musicBoxConf.pitch = {1, 428};
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 172:
@@ -4979,6 +5323,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // random octave shift: used SUBCYCLE:	3' 2"
     // CYC: 2^0	6h 27' 42"
     musicBoxConf.subcycle_octave = -7;	// 3'  2"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_F);
     break;
 
   case 173:
@@ -5012,6 +5358,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     // fix:	play_KB_macro  *2
     // CYC: 2^0	2h  5' 49"
     musicBoxConf.subcycle_octave = -4;	// 7' 52"	| subcycle |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_Cis);
     break;
 
   case 174:
@@ -5029,6 +5377,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     musicBoxConf.pitch = {1, 128};
     // harmonical CYCLE: 2h 48' 57"	SUBCYCLE: | 3' 41" |
     // | 2' 38" |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
   case 175:
@@ -5038,8 +5388,10 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, jiff_1500_2);
     musicBoxConf.sync = 3;
     musicBoxConf.pitch = {1, 110};
-    musicBoxConf.chromatic_pitch = 0;	// a
+    // musicBoxConf.chromatic_pitch = 1;	// a
     // harmonical CYCLE: 7d 1h 27' 4" 	2^10 SUBCYCLE: | 9' 56" |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
     break;
 
   case 176:
@@ -5055,16 +5407,148 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     select_in(JIFFLES, tetraCHORD_desc);
     musicBoxConf.pitch = {1, 12};	// 8	*metric* c
     // harmonical CYCLE: 1h 6' 2"	SUBCYCLE: | 4' 8" |
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_C);
     break;
 
     // DADA:	todo: CHECK FROM HERE <<<====	====>>>   #define SHORT_PRESET_COLLECTION	175
     // DADA: >>>> *DO NOT FORGET* to upmusicBoxConf.date MUSICBOX_PRESETs <<<<	175
 
+  case 212:
+    musicBoxConf.name = F("D? a love like the morning birds");
+    //# FAVORITE
+    //# melodies
+    //# harmonies
+    //# shortIsOk
+    //# birds
+    //# happy
+    //# simple
+    //# aesthetic
+    select_in(SCALES, octaves_fourths);
+    select_in(JIFFLES, PENTAtonic_desc);
+    musicBoxConf.sync = 4;
+
+    // 12 was: musicBoxConf.pitch = {32768, 371};
+    musicBoxConf.pitch = {1, 294};
+    //musicBoxConf.chromatic_pitch = 6;	// D
+    musicBoxConf.subcycle_octave = -11;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_D);
+    break;
+
+  case 246:
+    musicBoxConf.name = F("madrigal machine");
+    //# FAVORITE
+    //# shortIsOk
+    //# fullCycleIsOk		maybe
+    //# motives
+    //# melodies
+    //# harmonies
+    //# classicHarmonical
+    //# aesthetic
+    //# nice
+    //# simple
+    //# fractal
+    //# noise
+    //# hasSlowPulse
+    //# lyric
+    musicBoxConf.date = F("2019-04-11_14h");
+    select_in(SCALES, tetraCHORD);
+    select_in(JIFFLES, mechanical);
+    musicBoxConf.sync = 2;
+    musicBoxConf.stack_sync_slices = 256;
+    // musicBoxConf.base_pulse = 15;	// TODO: rethink that
+    musicBoxConf.pitch = {1, 220};
+    // musicBoxConf.chromatic_pitch = 1;	// a
+    // musicBoxConf.subcycle_octave = 4;	// TODO: rethink that
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_A);
+    break;
+
+  case 327:
+    musicBoxConf.name = F("f acoustic telegraph lines");
+    //# FAVORITE
+    //# shortIsOk
+    //# melodies
+    //# harmonies
+    //# rhytm&pulse
+    //# beat
+    //# bourdon
+    //# structure	simple
+    //# aesthetic	tecnical
+    //# static
+    //# nervous		no, not really
+    //# crazy
+    //# funny
+    //# simple
+    //# simlicistic
+    //# fractal
+    //# clock
+    //# beep
+    //# robot
+    //# lesley
+    //# delay
+    //# humming
+    //# rumble
+    //# hasSlowPulse	steady
+    //# lyric
+    //# dream
+    //# earth
+    //# boring	but interesting effects
+    //# slow
+    //# steady
+    //# tired	maybe just a bit
+    musicBoxConf.date = F("2018-12-22_20h17m39s	SAT");
+    select_in(SCALES, octaves_fourths);
+    select_in(JIFFLES, rising_pent_them);
+    musicBoxConf.sync = 5;
+    // musicBoxConf.chromatic_pitch = 8; // e
+    musicBoxConf.pitch.multiplier = 1;
+    //    musicBoxConf.pitch.divisor=330; // 329.36	// E4  ***not*** harmonical
+    // musicBoxConf.chromatic_pitch = 9; // f
+    musicBoxConf.pitch.divisor=175*2; // 174.16	// F3  ***not*** harmonical
+
+    musicBoxConf.subcycle_octave = -11;
+    break;
+
+  case 346:
+    musicBoxConf.name = F("G d64_melody-rhythm");    // pitch variation of    "noname_a"
+    //# FAVORITE
+    //# SPECIALITY	rhythm and short jiffs	see: "nomusicBoxConf.name_a"
+    //# rhytm&pulse
+    //# shortIsOk
+    //# bigBang
+    //# loose
+    //# elementary
+    //# simple
+    //# simlicistic
+    //# motives
+    //# harmonies
+    //# structure	loose
+    //# classicHarmonical
+    //# aesthetic
+    //# nice
+    //# quiet
+    //# rumble
+    musicBoxConf.pitch = {2, 61};	// 44	*metric* G
+    // harmonical CYCLE: 0"	SUBCYCLE: | 5' 38" |
+    musicBoxConf.date = F("2019-02-06_21h18m28s	WED");
+    select_in(SCALES, octave_4th_5th);
+    select_in(JIFFLES, d4096_64);
+    musicBoxConf.sync = 0;
+    musicBoxConf.pitch = {32768, 6144};
+    // harmonical CYCLE: 6h 0' 26"	SUBCYCLE: | 5' 38" |
+    musicBoxConf.subcycle_octave = -6;
+    if(metric_alternative_tuning)
+      set_metric_pitch(mp_G);
+    break;
 
   default:
-    MENU.error_ln(F("invalid preset"));		// ERROR, should not happen
+    MENU.tab();
+    MENU.error_ln(F("invalid preset"));	// ERROR, invalid preset
+    musicBoxConf.preset	= 0;
     return true;
-  }
+  } // switch preset
 
   if(musicBoxConf.sync==0 && musicBoxConf.stack_sync_slices==0) {		// *AUTOMAGIC WORKAROUND* for problematic S0 setups:
     musicBoxConf.stack_sync_slices=MagicConf.autostack_S0;	// using autostack_S0
