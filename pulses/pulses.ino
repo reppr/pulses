@@ -1238,6 +1238,10 @@ void show_hardware_conf(pulses_hardware_conf_t* hardware) {
   show_pin_or_dash(hardware->periph_power_switch_pin);
   MENU.ln();
 
+  MENU.out(F("morse_touch_input\t"));
+  show_pin_or_dash(hardware->morse_touch_input_pin);
+  MENU.ln();
+
   MENU.out(F("morse_gpio_input\t"));
   show_pin_or_dash(hardware->morse_gpio_input_pin);
   MENU.ln();

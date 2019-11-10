@@ -3434,7 +3434,7 @@ void sync_landscape_time_sliced() {	// set this instruments time slice
 }
 
 
-bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: ADC, 'analog'Touch, distance sensors, etc
+bool Y_UI() { 	// "eXtended motion UI" planed eXtensions: other input sources: ADC, 'analog'Touch, distance sensors, etc
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
   // TODO: REPLACE BY NEW ENGINE ################################################################
   // TODO: monochrome feedback on motion UI switching

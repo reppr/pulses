@@ -10,7 +10,7 @@
 
 #define PRENAME_MAX_LENGTH	15		// *excluding* '\0'
 
-#define USE_ESP_NOW	// starts working :)
+#define USE_ESP_NOW	// starts working :)	// TODO: does not compile without
 
 #define DO_STRESS_MANAGMENT
 //#define STRESS_MONITOR_LEVEL	64*2	// TODO: menu interface	// TODO: move to another configuration file

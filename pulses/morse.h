@@ -1974,7 +1974,7 @@ const char * morse_definitions_tab[] = {
 //"5 * ..-.. É É",	// was: É	FIX: lowercase
   "5 C ..-.. UIswM",	// switch Motion UI activity
 //"5 0 ..-.- 5 5",	// ..K  IK  UA  FT EÄ
-  "5 * ..--. - -",
+  "5 * ..--. - -",	// ???
   "5 * ..--- 2 2",
 //"5 0 .-... 5 5",
   "5 * .-..- È È",	// È	FIX: lowercase
@@ -1982,7 +1982,7 @@ const char * morse_definitions_tab[] = {
 //"5 0 .-.-- 5 5",
 //"5 0 .--.. 5 5",
   "5 * .--.- Å Å",	// Å	FIX: lowercase
-  "5 * .---. - -",
+  "5 * .---. - -",	// ???
   "5 * .---- 1 1",
   "5 * -.... 6 6",
   "5 * -...- = =",

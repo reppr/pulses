@@ -73,7 +73,8 @@ void set_rgb_string_voltage_type(int voltage, int string) {
   HARDWARE.rgb_led_voltage_type[string] = voltage;	// voltage goes to *HARDWARE*
 
   if(voltage < 6) {
-    RGBstringConf.rgb_background_dim = 0.45;	// ok for 5V version (1m 144)
+    // RGBstringConf.rgb_background_dim = 0.45;	// ok for 5V version (1m 144)
+    RGBstringConf.rgb_background_dim = 0.08;	// TEST
     RGBstringConf.rgb_led_string_intensity = DEFAULT_LED_STRING_INTENSITY;
   } else {	// 6V and more "12V" type
     RGBstringConf.rgb_background_dim = 0.1;	// TEST: for "12V" version 5m 300

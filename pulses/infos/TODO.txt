@@ -368,3 +368,6 @@ the whole tuning-to-the-right-octave-implementation is nonsense...
   delayed fix until i will test time as double
 
 // TODO:  should we keep pitch_was in set_metric_pitch()?
+
+#define USE_ESP_NOW	// does not compile without
+	DEBUG_ESP_NOW in esp_err_info() is messy, deactivated...
