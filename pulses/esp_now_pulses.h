@@ -112,7 +112,7 @@ hw_timer_t * esp_now_reaction_timer = NULL;
 
 
 // peer_ID_t
-typedef struct peer_ID_t {
+typedef struct peer_ID_t {	// TODO: fix compiling without USE_ESP_NOW
   char preName[16]={0};
   mac_addr_t mac_addr[6]={0};
   uint8_t esp_now_time_slice=ILLEGAL8;	// react on broadcast or all-known-peers messages in an individual time slice

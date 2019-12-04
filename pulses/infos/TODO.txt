@@ -369,5 +369,20 @@ the whole tuning-to-the-right-octave-implementation is nonsense...
 
 // TODO:  should we keep pitch_was in set_metric_pitch()?
 
-#define USE_ESP_NOW	// does not compile without
-	DEBUG_ESP_NOW in esp_err_info() is messy, deactivated...
+#define USE_ESP_NOW		// does not compile without
+typedef struct peer_ID_t {	// TODO: fix compiling without USE_ESP_NOW
+
+  DEBUG_ESP_NOW in esp_err_info() is messy, deactivated...
+
+
+
+mixed int-double fractions
+      functions on them...
+
+
+
+double times
+       *computed and stored* as floating point, but
+       *used* as int64_t
+
+       use ESP 64bit timer to get time?
