@@ -2464,6 +2464,7 @@ void static morse_token_decode() {	// decode received token sequence
 		if(morse_out_buffer_cnt) {
 		  extern void esp_now_send_maybe_do_macro(uint8_t* mac_addr, char * macro);
 		  morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
+		  extern uint8_t* esp_now_send2_mac_p;
 		  esp_now_send_maybe_do_macro(esp_now_send2_mac_p, morse_output_buffer); // send to *esp_now_send2_mac_p
 		} else {
 		  MENU.outln(F("no data to send now"));

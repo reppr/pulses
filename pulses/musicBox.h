@@ -3815,16 +3815,18 @@ bool musicBox_reaction(char token) {
     } // switch(MENU.peek())	second letter after 'C'
 
 #else	// ! defined USE_ESP_NOW
-    MENU.out(F("ESP_NOW not used"));	// TODO: not tested
-    char c = MENU.peek();
-    if(c != EOF8) {
-      MENU.out(F("skipped: "));
-      while(c != EOF8) {
-	MENU.out(c);
-	c = MENU.drop_input_token();
+    {
+      MENU.out(F("ESP_NOW not used"));	// TODO: not tested
+      char c = MENU.peek();
+      if(c != EOF8) {
+	MENU.out(F("skipped: "));
+	while(c != EOF8) {
+	  MENU.out(c);
+	  c = MENU.drop_input_token();
+	}
       }
+      MENU.ln();
     }
-    MENU.ln();
 #endif	// defined USE_ESP_NOW
     break;
 

@@ -120,6 +120,8 @@ bool nvs_menu_reaction(char token) {
 	break;
       } // switch next token after 'I'
 
+      extern void show_peer_id(peer_ID_t* this_peer_ID_p);
+
       if(ID_from_nvs.version != ILLEGAL8) {
 	MENU.out(F("NVS\t"));
 	show_peer_id(&ID_from_nvs);

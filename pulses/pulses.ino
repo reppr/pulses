@@ -241,11 +241,14 @@ typedef struct peer_ID_t {
   uint8_t version=0;
 } peer_ID_t;
 
+/*
+  void show_peer_id(peer_ID_t* this_peer_ID_p);  see: esp_now_pulses.h
+*/
+
 
 #if defined USE_ESP_NOW || defined USE_NVS
   peer_ID_t my_IDENTITY;
 #endif
-
 
 
 #if defined USE_ESP_NOW
@@ -537,12 +540,6 @@ pulse_time_t scale2harmonical_cycle(unsigned int* scale, pulse_time_t* duration)
   return *duration;
 } // scale2harmonical_cycle()
 
-
-// TODO: move to Harmonical::	################
-void scale_time(pulse_time_t *duration, fraction_t* F) {
-  PULSES.mul_time(duration, (*F).multiplier);
-  PULSES.div_time(duration, (*F).divisor);
-}
 
 /* **************************************************************** */
 

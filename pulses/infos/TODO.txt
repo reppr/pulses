@@ -379,10 +379,35 @@ typedef struct peer_ID_t {	// TODO: fix compiling without USE_ESP_NOW
 mixed int-double fractions
       functions on them...
 
+  typedef struct D_fraction_t {	// consider a *signed* implementation?
+    unsigned int multiplier=1;
+    unsigned int divisor=1;
+    double value=1.0;
+    uint16_t flags=0;
+  } D_fraction_t;
 
+  /*
+    compare_fractions(D_fraction_t*, D_fraction_t*);
+    test_fraction(D_fraction_t*);
+
+    set_fraction(D_fraction_t*, uint, uint);
+    set_fraction(D_fraction_t*, double);
+
+    reduce_fraction(D_fraction_t*);
+    add, sub, mul, inverse
+  */
+
+{
+  Harmonical::D_fraction_t D;
+  MENU.outln(D.multiplier);
+}
+
+
+check double vs long double size
 
 double times
        *computed and stored* as floating point, but
        *used* as int64_t
+       probably without rounding (?)
 
        use ESP 64bit timer to get time?

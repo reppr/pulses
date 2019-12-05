@@ -111,7 +111,7 @@ uint8_t my_MAC[] = {0,0,0,0,0,0};
 hw_timer_t * esp_now_reaction_timer = NULL;
 
 
-void show_peer_id(peer_ID_t* this_peer_ID_p) {
+void show_peer_id(peer_ID_t* this_peer_ID_p) {	// TODO: move?
   MENU.out(F("IDENTITY\tpreName |"));
   MENU.out(this_peer_ID_p->preName);
 
