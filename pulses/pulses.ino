@@ -233,6 +233,21 @@ typedef struct pulses_hardware_conf_t {
 pulses_hardware_conf_t HARDWARE;	// hardware of this instrument
 
 
+// peer_ID_t
+typedef struct peer_ID_t {
+  char preName[16]={0};
+  uint8_t mac_addr[6]={0};
+  uint8_t esp_now_time_slice=ILLEGAL8;	// react on broadcast or all-known-peers messages in an individual time slice
+  uint8_t version=0;
+} peer_ID_t;
+
+
+#if defined USE_ESP_NOW || defined USE_NVS
+  peer_ID_t my_IDENTITY;
+#endif
+
+
+
 #if defined USE_ESP_NOW
   #include "esp_now_pulses.h"	// needs pulses_hardware_conf_t
 #endif

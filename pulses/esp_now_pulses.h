@@ -111,17 +111,6 @@ uint8_t my_MAC[] = {0,0,0,0,0,0};
 hw_timer_t * esp_now_reaction_timer = NULL;
 
 
-// peer_ID_t
-typedef struct peer_ID_t {	// TODO: fix compiling without USE_ESP_NOW
-  char preName[16]={0};
-  uint8_t mac_addr[6]={0};
-  uint8_t esp_now_time_slice=ILLEGAL8;	// react on broadcast or all-known-peers messages in an individual time slice
-  uint8_t version=0;
-} peer_ID_t;
-
-peer_ID_t my_IDENTITY;
-
-
 void show_peer_id(peer_ID_t* this_peer_ID_p) {
   MENU.out(F("IDENTITY\tpreName |"));
   MENU.out(this_peer_ID_p->preName);
