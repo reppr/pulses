@@ -71,7 +71,7 @@ void bluetooth_setup() {			// start bluetooth
   MENU.out(F("BLUETOOTH: "));
 
     // get correct bluetooth_name
-  if(preName)
+  if(preName)	// TODO: fix ################
     bluetooth_name = preName;
   else
 #if defined PROGRAM_VERSION
