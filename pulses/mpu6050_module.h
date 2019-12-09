@@ -721,7 +721,7 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
       if(accGyro_mode & AG_mode_Gz) {		// gyro Y
 	if(Gz_i_new != _selected_Gz_i_seen) {
 	  _selected_Gz_i_seen = Gz_i_new;
-	  extern void sync_shifting(fraction_t shift);
+	  extern void sync_shifting(Harmonical::fraction_t shift);
 	  // sync_shifting({_selected_Gz_i_seen, 16*4096});	// TODO: FIND&TRIMM new DEFAULT for version2
 	  sync_shifting({_selected_Gz_i_seen, 4*4096});		// TODO: FIND&TRIMM new DEFAULT for version2
 //#if defined DEBUG_AG_REACTION		// TODO: how and when to report? ################

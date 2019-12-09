@@ -102,7 +102,7 @@ void Harmonical::expand_fractions(fraction_t * a, fraction_t * b) {
 }
 
 
-fraction_t* Harmonical::add_fraction(fraction_t * delta, fraction_t * sum) {
+Harmonical::fraction_t* Harmonical::add_fraction(fraction_t * delta, fraction_t * sum) {
   expand_fractions(delta, sum);
   (*sum).multiplier += (*delta).multiplier;
   reduce_fraction(sum);

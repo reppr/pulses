@@ -592,7 +592,7 @@ void show_cycle(pulse_time_t cycle) {
 } // show_cycle()
 
 
-int slice_weighting(fraction_t F) {
+int slice_weighting(Harmonical::fraction_t F) {
   int weighting=0;
 
   if(F.multiplier<9)
@@ -696,9 +696,9 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
   if(this_time.overflow != PULSES.pulses[pulse].last.overflow)
     MENU.outln(F("over"));
   */
-  fraction_t phase = {this_time.time, PULSES.pulses[pulse].period.time};
+  Harmonical::fraction_t phase = {this_time.time, PULSES.pulses[pulse].period.time};
   // float float_phase = this_time.time / PULSES.pulses[pulse].period.time;	// not used
-  fraction_t this_division = {cycle_monitor_last_seen_division, cycle_slices};
+  Harmonical::fraction_t this_division = {cycle_monitor_last_seen_division, cycle_slices};
   HARMONICAL.reduce_fraction(&this_division);
 
   if(show_subcycle_position /*&& slice_weighting(this_division) > 0*/) {	// weighting influence switched off
@@ -1772,9 +1772,9 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
   pulse_time_t this_time = PULSES.pulses[pulse].next;		// TODO: verify ################
   PULSES.sub_time(&PULSES.pulses[pulse].last, &this_time);	// so long inside this cycle
 
-  // fraction_t phase = {this_time.time, PULSES.pulses[pulse].period.time};	// not used
+  // Harmonical::fraction_t phase = {this_time.time, PULSES.pulses[pulse].period.time};	// not used
   // float float_phase = this_time.time / PULSES.pulses[pulse].period.time;	// not used
-  fraction_t this_division = {PULSES.pulses[pulse].counter -1 , cycle_slices};
+  Harmonical::fraction_t this_division = {PULSES.pulses[pulse].counter -1 , cycle_slices};
   HARMONICAL.reduce_fraction(&this_division);
   int this_weighting = slice_weighting(this_division);
 
@@ -3143,7 +3143,7 @@ void magical_butler(int p) {	// TODO: OBSOLETE?
 
 
 /* **************************************************************** */
-void sync_shifting(fraction_t shift) {
+void sync_shifting(Harmonical::fraction_t shift) {
   pulse_time_t this_shift;
   if(shift.multiplier) { // no zero shift?
     for (int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++) {
@@ -3234,7 +3234,7 @@ void musicBox_display() {
     MENU.out(musicBox_butler_i);
     MENU.tab();
 
-    fraction_t current_phase = {PULSES.pulses[musicBox_butler_i].counter, cycle_slices};
+    Harmonical::fraction_t current_phase = {PULSES.pulses[musicBox_butler_i].counter, cycle_slices};
     MENU.out('[');
     display_fraction_int(current_phase);
 

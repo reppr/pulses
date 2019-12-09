@@ -33,19 +33,19 @@
   #define ILLEGAL32	0xffffffff
 #endif
 
-/* **************************************************************** */
-typedef struct fraction_t {
-  unsigned int multiplier;
-  unsigned int divisor;
-} fraction_t;
-
 
 /* **************************************************************** */
+
 class Harmonical {
 
  public:
   Harmonical(unsigned long harmonical_base);
   ~Harmonical();
+
+  typedef struct fraction_t {
+    unsigned int multiplier;
+    unsigned int divisor;
+  } fraction_t;
 
   unsigned int GCD(unsigned int a, unsigned int b);		// greatest common divisor, Euklid
   unsigned long LCM(unsigned int a, unsigned int b);		// least common multiple

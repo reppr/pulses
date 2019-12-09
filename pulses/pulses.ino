@@ -60,6 +60,7 @@ using namespace std;	// ESP8266 needs that
 #define ILLEGAL16	(short) 0xffff
 #define ILLEGAL32	(int) 0xffffffff
 
+
 /* **************************************************************** */
 // configuration sequence:
 #include "pulses_engine_config.h"	// pulses engine configuration file, do not change
@@ -269,7 +270,7 @@ typedef struct musicBox_conf_t {
   unsigned int* scale=NULL;
   unsigned int* jiffle=NULL;
   unsigned int* iCode=NULL;
-  fraction_t pitch = {1,1};
+  Harmonical::fraction_t pitch = {1,1};
 
   int sync=1;			// old default, seems still ok ;)
 
@@ -499,7 +500,7 @@ typedef struct cycles_conf_t {
   pulse_time_t harmonical_CYCLE;	// TODO: move to Harmonical?
   pulse_time_t used_subcycle;		// TODO: move to Harmonical?
 
-  // fraction_t harmonical_cycle_fraction={1, 1}; // TODO: what for ?
+  // Harmonical::fraction_t harmonical_cycle_fraction={1, 1}; // TODO: what for ?
 
   short subcycle_octave=0;
 
@@ -512,11 +513,11 @@ cycles_conf_t CyclesConf;
 
 //#define SCALE2CYCLE_INFO	// for debugging, but interesting to watch anyway ;)
 pulse_time_t scale2harmonical_cycle(unsigned int* scale, pulse_time_t* duration) {		// returns harmonical cycle of a scale
-  fraction_t f_LCM;
+  Harmonical::fraction_t f_LCM;
   f_LCM.multiplier = 1;
   f_LCM.divisor = 1;
 
-  fraction_t f_F2;
+  Harmonical::fraction_t f_F2;
 
   for(int i=0; scale[i]; i+=2) {
     f_F2.multiplier = selected_in(SCALES)[i];
@@ -2859,7 +2860,7 @@ int selected_apply_scale_on_period(int voices, unsigned int *scale, bool octaves
 short steps_in_octave=0;	// like  '5' for pentatonic  '7' for heptatonic aka diatonic scales
 
 // see: bool no_octave_shift=false;
-int tune_selected_2_scale_limited(fraction_t scaling, unsigned int *scale, unsigned long shortest_limit) {
+int tune_selected_2_scale_limited(Harmonical::fraction_t scaling, unsigned int *scale, unsigned long shortest_limit) {
 /*
   tune all selected pulses to the scale, start with lowest selected
   scale 'PULSES.time_unit' by 'scaling' for base_period
@@ -3977,9 +3978,9 @@ void load2_jiffle_RAM(unsigned int *source) {	// double zero terminated
 }
 
 
-fraction_t jiffletab_len(unsigned int *jiffletab) {
-  static fraction_t f;	// keep return value
-  fraction_t scratch;
+Harmonical::fraction_t jiffletab_len(unsigned int *jiffletab) {
+  static Harmonical::fraction_t f;	// keep return value
+  Harmonical::fraction_t scratch;
   unsigned int multiplier, divisor, count;
 
   f.multiplier = 0;
@@ -4004,7 +4005,7 @@ void display_jiffletab(unsigned int *jiffle) {
   if (jiffle == NULL)	// silently ignore undefined
     return;
 
-  fraction_t sum;
+  Harmonical::fraction_t sum;
   sum.multiplier = 0;
   sum.divisor = 1;
   bool was_zero=false;
