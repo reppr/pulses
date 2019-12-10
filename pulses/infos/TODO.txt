@@ -375,6 +375,8 @@ typedef struct peer_ID_t {	// TODO: fix compiling without USE_ESP_NOW
   DEBUG_ESP_NOW in esp_err_info() is messy, deactivated...
 
 
+esp_now_add_identity() should not be active normally
+
 
 mixed int-double fractions
       functions on them...

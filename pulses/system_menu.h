@@ -17,6 +17,46 @@ void display_type_sizes() {
 
   MENU.out(F("ui_conf_t\t"));
   MENU.outln(sizeof(ui_conf_t));
+
+#if defined USE_ESP_NOW
+  MENU.out(F("peer_ID_t\t"));
+  MENU.outln(sizeof(peer_ID_t));
+#endif
+}
+
+void cpp_info_display() {
+//  bool dummybool[8];
+//  MENU.out(F("sizeof(bool[8])\t"));	MENU.outln(sizeof(dummybool));
+
+  MENU.out(F("\ncpp_info:  sizeof(int*) "));
+  MENU.outln(sizeof(int*));
+
+  MENU.out(F("(char) "));
+  MENU.out(sizeof(char));
+
+  MENU.out(F("\t(short) "));
+  MENU.out(sizeof(short));
+
+  MENU.out(F("\t(int) "));
+  MENU.out(sizeof(int));
+
+  MENU.out(F("\t\t(long) "));
+  MENU.out(sizeof(long));
+
+  MENU.out(F("\t(int64_t) "));
+  MENU.outln(sizeof(int64_t));
+
+//  MENU.out(F("\t(void*) "));
+//  MENU.outln(sizeof(void*));
+
+  MENU.out(F("(float) "));
+  MENU.out(sizeof(float));
+
+  MENU.out(F("\t(double) "));
+  MENU.out(sizeof(double));
+
+  MENU.out(F("\t(long double) "));
+  MENU.outln(sizeof(long double));
 }
 
 void system_menu_display() {
@@ -29,10 +69,13 @@ void system_menu_display() {
 
   display_program_version();	// display program versions, maybe preName. menu output only
 
-  display_type_sizes();
+  display_type_sizes();		// sizeof pulses data types
   MENU.ln();
 
-  MENU.outln(F("\n'P' nvs_PRENAME"));
+  cpp_info_display();		// sizeof compiler specific types
+  MENU.ln();
+
+  MENU.outln(F("\n'P' nvs_PRENAME	TODO: obsolete"));
 
 #if defined BATTERY_LEVEL_CONTROL_PIN
   show_battery_level();
