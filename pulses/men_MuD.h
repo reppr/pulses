@@ -24,6 +24,8 @@ MENU.out(get_normalised_pitch(), 6);
 MENU.ln();
 
 
+MENU.outln((int) esp_timer_get_time());
+
 // determine_imu_zero_offsets(2000);
 
 //  show_morse_event_buffer();

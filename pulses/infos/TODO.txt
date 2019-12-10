@@ -378,6 +378,11 @@ typedef struct peer_ID_t {	// TODO: fix compiling without USE_ESP_NOW
 esp_now_add_identity() should not be active normally
 
 
+TODO: musicBox_runtime_data_t block?
+pulse_time_t musicBox_start_time;
+pulse_time_t musicBox_hard_end_time;
+
+
 mixed int-double fractions
       functions on them...
 
@@ -413,3 +418,13 @@ double times
        probably without rounding (?)
 
        use ESP 64bit timer to get time?
+	 * esp_timer_get_time();
+	 * hw timer (can start/stop)
+
+
+       try to mirror oldstyle time/overflow to uint64_t
+was:			via:			to: union with uint64_t
+typedef struct {	  typedef struct {
+  unsigned long time;	    unsigned long overflow;
+  unsigned int overflow;    unsigned long time;
+} pulse_time_t;		  } pulse_time_t;

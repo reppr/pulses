@@ -87,11 +87,19 @@ enum icode {	// names are all four letter words ?	// maybe 8?
 // time:
 
 // TODO: time (and related stuff should move to Harmonics::
+// TODO: double (seen as uint64_t)
 typedef struct {
   unsigned long time;
   unsigned int overflow;
 } pulse_time_t;
 
+
+/* does not work
+typedef struct {
+  unsigned long overflow;
+  unsigned long time;
+} pulse_time_t;
+*/
 
 /* **************************************************************** */
 // pulse_t:
