@@ -860,6 +860,16 @@ void Pulses::fix_global_next() {
   } // pulse loop
 }
 
+
+bool Pulses::time_reached(pulse_time_t time_limit) {
+  get_now();
+  if(now.overflow == time_limit.overflow)
+    return (now.time >= time_limit.time);
+  else
+    return (now.overflow > time_limit.overflow);
+}
+
+
 #if defined USE_DACs
 //#define DEBUG_DACsq	// TODO: remove debugging code
 void Pulses::DAC_output() {

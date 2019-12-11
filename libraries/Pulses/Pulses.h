@@ -308,6 +308,7 @@ class Pulses {
   pulse_time_t global_next;	// next time that a pulse wants to be waken up
   unsigned int global_next_count; // how many tasks wait to be activated at the same time?
 
+  bool time_reached(pulse_time_t when);
 
 #if defined USE_DACs
   void DAC_output();		// calculate and output on DAC

@@ -1881,16 +1881,14 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 #endif
 
     if(magic_autochanges) {	// the butler influences performance and changes phases like ending
-      if(soft_end_cnt==0) {	// first time
+      if(soft_end_cnt==0) {	// *before* starting soft end
 	// soft end time could be reprogrammed by user interaction, always compute new:
-	pulse_time_t soft_end_time = butler_soft_end_time;
-	pulse_time_t thisNow = this_start_time;
-	PULSES.sub_time(&thisNow, &soft_end_time);	// is it time?
-	if(soft_end_time.overflow) {			//   negative, so it *is*
-	  if(soft_end_cnt++ == 0)
-	    start_soft_ending(MagicConf.soft_end_days_to_live, MagicConf.soft_end_survive_level); // start soft end
+	if(PULSES.time_reached(butler_soft_end_time)) {
+	  soft_end_cnt++;
+	  start_soft_ending(MagicConf.soft_end_days_to_live, MagicConf.soft_end_survive_level); // start soft end
 	}
-      } else {	// soft end was called already
+
+      } else {	// soft end was started already
 
 	magical_cleanup(pulse);
 

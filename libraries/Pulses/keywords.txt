@@ -44,6 +44,7 @@ now	KEYWORD2
 last_now	KEYWORD2
 global_next	KEYWORD2
 global_next_count	KEYWORD2
+time_reached	KEYWORD2
 DAC_output	KEYWORD2
 ticks_per_octave	KEYWORD2
 tuning	KEYWORD2
