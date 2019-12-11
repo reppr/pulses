@@ -1663,10 +1663,7 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
   if(flagged) {
     if(counter_sum == last_counter_sum) {	// inactivity detected
       // long enough?
-      pulse_time_t scratch = inactivity_limit_time;
-      pulse_time_t just_now = PULSES.get_now();
-      PULSES.sub_time(&just_now, &scratch);	// is it time?
-      if(scratch.overflow) {			//   negative, so it *is*
+      if(PULSES.time_reached(inactivity_limit_time)) {
 	MENU.out(F("inactivity stop\t"));
 	HARD_END_playing(true);			// END
       }
@@ -1831,9 +1828,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 
 #if defined MUSICBOX_HARD_END_SECONDS		// SAVETY NET
     if(magic_autochanges) {
-      pulse_time_t scratch = musicBox_hard_end_time;
-      PULSES.sub_time(&this_start_time, &scratch);	// is it time?
-      if(scratch.overflow) {			//   negative, so it *is*
+      if(PULSES.time_reached(musicBox_hard_end_time)) {
 	MENU.out(F("butler: MUSICBOX_HARD_END_SECONDS "));
 	HARD_END_playing(true);
       }
@@ -1869,9 +1864,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 #if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
   #if defined MUSICBOX_TRIGGER_BLOCK_SECONDS
     if(! musicBox_trigger_enabled) {
-      pulse_time_t scratch = trigger_enable_time;
-      PULSES.sub_time(&this_start_time, &scratch);	// is it time?
-      if(scratch.overflow) {				//   negative, so it *is*
+      if(PULSES.time_reached(trigger_enable_time)) {
 	if(MENU.verbosity >= VERBOSITY_LOWEST)
 	  MENU.out(F("butler: "));
 	activate_musicBox_trigger();
@@ -1894,10 +1887,9 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 
 	if(MusicBoxState == ENDING) {
 	  if(!soft_cleanup_started) {
-	    pulse_time_t scratch = PULSES.get_now();
-	    PULSES.sub_time(&soft_end_start_time, &scratch);
-	    PULSES.sub_time(soft_end_cleanup_wait, &scratch);
-	    if(!scratch.overflow) {
+	    pulse_time_t start_cleanup = soft_end_start_time;
+	    PULSES.add_time(soft_end_cleanup_wait, &start_cleanup);
+	    if(PULSES.time_reached(start_cleanup)) {
 	      soft_cleanup_started=true;
 	      //fast_cleanup_minimal_fraction_weighting = slice_weighting({1,4});	// start quite high, then descend
 	      fast_cleanup_minimal_fraction_weighting = 12;	// start here, then descend
