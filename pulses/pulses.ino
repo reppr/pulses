@@ -582,7 +582,7 @@ void test_jiffle(unsigned int* jiffle, int count) {
   if(MENU.verbosity >= VERBOSITY_LOWEST)
     MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
 
-  pulse_time_t period = {6000000, 0};		// TODO: better default based on the situation ################
+  pulse_time_t period = PULSES.integer_time(6000000);	// TODO: better default based on the situation ################
   setup_icode_seeder(pulse, period, (icode_t*) jiffle, DACsq1 | DACsq2 | doesICODE);
   PULSES.pulses[pulse].flags |= COUNTED;
   PULSES.pulses[pulse].remaining = count;
@@ -2885,12 +2885,12 @@ int tune_selected_2_scale_limited(Harmonical::fraction_t scaling, unsigned int *
 
   if ((scale != NULL) && scale[0] && scaling.divisor) {
     steps_in_octave=0;
-    pulse_time_t base_period = {PULSES.time_unit, 0};
+    pulse_time_t base_period = PULSES.integer_time(PULSES.time_unit);
     base_period.time *= scaling.multiplier;
     base_period.time /= scaling.divisor;
 
     // check if highest note is within limit
-    pulse_time_t this_period = {0, 0};	// bluff the very first test to pass
+    pulse_time_t this_period = PULSES.integer_time(0);	// bluff the very first test to pass
     while (this_period.time <= shortest_limit) { // SHORTEST LIMIT *CAN* BE ZERO (to switch it off)
       int octave=1;  // 1,2,4,8,...	the octave of this note   (*not* octave_shift)
       int note = 0;

@@ -2,7 +2,7 @@
 /*
   Pulses.cpp
 
-  Arduino library to raise actions in harmonical time intervalls.
+  Arduino library to raise actions in harmonical time intervals.
 
 
     Copyright © Robert Epprecht  www.RobertEpprecht.ch  GPLv2
@@ -149,6 +149,20 @@ pulse_time_t Pulses::get_now() {	// get time, set now.time and now.overflow
   last_now = now;		// manage last_now
 
   return now;
+}
+
+
+/*
+  pulse_time_t integer_time((unsigned long) integer_only_time)
+  return a time interval integer only, overflow==0
+
+  simplify transition to double float time
+*/
+pulse_time_t Pulses::integer_time(unsigned long integer_only_time) {
+  pulse_time_t int_time;
+  int_time.overflow = 0;
+  int_time.time = integer_only_time;
+  return int_time;
 }
 
 

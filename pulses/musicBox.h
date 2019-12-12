@@ -1788,7 +1788,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
   } else if(PULSES.pulses[pulse].counter==2) {	// now we might have more time for some setup
     ;
 #if defined MUSICBOX_TRIGGER_BLOCK_SECONDS
-    trigger_enable_time = {MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000, 0};
+    trigger_enable_time = PULSES.integer_time(MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000);
     if(MENU.verbosity >= VERBOSITY_SOME) {
       MENU.out(F("butler: prepare trigger  "));
       PULSES.display_time_human(trigger_enable_time);
@@ -1798,7 +1798,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 #endif
 
 #if defined MUSICBOX_HARD_END_SECONDS
-    musicBox_hard_end_time = {MUSICBOX_HARD_END_SECONDS*1000000, 0};	// savety net: fixed maximal performance duration
+    musicBox_hard_end_time = PULSES.integer_time(MUSICBOX_HARD_END_SECONDS*1000000);	// savety net: fixed maximal performance duration
     if(MENU.verbosity >= VERBOSITY_SOME) {
       MENU.out(F("butler: prepare hard end "));
       PULSES.display_time_human(musicBox_hard_end_time);

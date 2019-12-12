@@ -94,7 +94,7 @@ typedef struct {
 } pulse_time_t;
 
 
-/* does not work
+/* does not work (yet)
 typedef struct {
   unsigned long overflow;
   unsigned long time;
@@ -288,7 +288,9 @@ class Pulses {
   void init_time();
   pulse_time_t get_now();	// *always* use get_now() to get current time!
 				// get_now() works directly on 'now'
-				// also returns a pointer to 'now'
+				// returns now
+
+  pulse_time_t integer_time(unsigned long time);	// integer only, overflow==0
 
   void add_time(pulse_time_t *delta, pulse_time_t *sum);
   void sub_time(pulse_time_t *delta, pulse_time_t *sum);

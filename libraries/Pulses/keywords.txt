@@ -30,6 +30,7 @@ rgb_pixel_idx	KEYWORD2
 get_now	KEYWORD2
 init_time	KEYWORD2
 get_now	KEYWORD2
+integer_time	KEYWORD2
 add_time	KEYWORD2
 sub_time	KEYWORD2
 mul_time	KEYWORD2
