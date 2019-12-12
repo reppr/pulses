@@ -2582,11 +2582,13 @@ bool en_tuned_sweep_click(int pulse) {
 }
 #endif	// #ifdef IMPLEMENT_TUNING	implies floating point
 
-
 int setup_click_synced(pulse_time_t when, unsigned long unit, unsigned long multiplier,
 		       unsigned long divisor, int sync)
 {
-  int pulse= PULSES.setup_pulse_synced(&click, ACTIVE, when, unit, multiplier, divisor, sync);
+  pulse_time_t period = PULSES.integer_time(unit);
+  PULSES.mul_time(&period, multiplier);
+  PULSES.div_time(&period, divisor);
+  int pulse= PULSES.setup_pulse_synced(&click, ACTIVE, when, period, sync);
 
   if ((pulse > -1) && (pulse < PL_MAX) && (pulse != ILLEGAL32))
     PULSES.set_gpio(pulse, this_or_next_gpio(pulse));
@@ -3880,8 +3882,10 @@ int setup_jiffle_thrower_synced(pulse_time_t when,
 				unsigned long multiplier, unsigned long divisor,
 				int sync, unsigned int *jiffle)
 {
- int pulse= PULSES.setup_pulse_synced(&do_throw_a_jiffle, ACTIVE,
-			       when, unit, multiplier, divisor, sync);
+  pulse_time_t period = PULSES.integer_time(unit);
+  PULSES.mul_time(&period, multiplier);
+  PULSES.div_time(&period, divisor);
+  int pulse= PULSES.setup_pulse_synced(&do_throw_a_jiffle, ACTIVE, when, period, sync);
   if ((pulse > -1) && (pulse < PL_MAX) && (pulse != ILLEGAL32)) {
     PULSES.set_gpio(pulse, this_or_next_gpio(pulse));
     PULSES.pulses[pulse].data = (unsigned int) jiffle;

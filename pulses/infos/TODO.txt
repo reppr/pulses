@@ -430,6 +430,4 @@ typedef struct {	  typedef struct {
 } pulse_time_t;		  } pulse_time_t;
 
 
-TODO: simplify time parameters in  setup_pulse_synced(,,, unit, factor, divisor, ...)
-
 check_maybe_do();	  // maybe do it *first*	TODO: RETHINK:

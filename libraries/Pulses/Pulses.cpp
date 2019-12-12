@@ -1359,30 +1359,20 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 // (that's why the menu only allows positive. it syncs now related,
 //  so a negative sync value would always reach into past.)
 int Pulses::setup_pulse_synced(void (*pulse_do)(int), pulse_flags_t new_flags,
-		       pulse_time_t when, unsigned long unit,
-		       unsigned long factor, unsigned long divisor, int sync)
+		       pulse_time_t when, pulse_time_t period, int sync)
 {
   (*MENU).outln("PULSES.setup_pulse_synced");
   pulse_time_t new_period;
 
   if (sync) {
-    pulse_time_t delta;
-    delta.time = sync*unit/2L;
-    delta.overflow = 0;
-
-    mul_time(&delta, factor);
-    div_time(&delta, divisor);
-
+    pulse_time_t delta = period;
+    mul_time(&delta, sync);
+    div_time(&delta, 2);
     add_time(&delta, &when);
   }
 
-  new_period.time = unit;
-  new_period.overflow = 0;
-  mul_time(&new_period, factor);
-  div_time(&new_period, divisor);
-
-  return setup_pulse(pulse_do, new_flags, when, new_period);
-}
+  return setup_pulse(pulse_do, new_flags, when, period);
+} // setup_pulse_synced()
 
 
 /* **************************************************************** */

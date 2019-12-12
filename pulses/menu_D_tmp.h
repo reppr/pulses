@@ -124,18 +124,6 @@ MENU.ln();
     // lower_audio_if_too_high(409600);
 
     /*
-    MENU.play_KB_macro("X 0");
-    PULSES.setup_pulse_synced(NULL, ACTIVE, PULSES.get_now(), 4000000, 1, 1, sync);
-    PULSES.pulses[0].base_time = PULSES.pulses[0].period.time;
-
-    PULSES.set_icode_p(0, TEST_ICODE, true);	// set (and activate) icode
-    //    PULSES.set_icode_p(0, (icode_t*) d4096_1024, true);
-    MENU.play_KB_macro("n.");	// TODO: why do we need that?
-    */
-
-    // PULSES.set_payload(2, &pulse_info_1line); // test: set and activate payload
-
-    /*
     MENU.outln(next_gpio());
     MENU.outln(next_gpio());
     MENU.outln(next_gpio());

@@ -406,8 +406,7 @@ class Pulses {
 			    pulse_time_t when, int sync);	// ################
 
   int setup_pulse_synced(void (*pulse_do)(int), pulse_flags_t new_flags,
-			 pulse_time_t when, unsigned long unit,
-			 unsigned long factor, unsigned long divisor, int sync);
+			 pulse_time_t when, pulse_time_t period, int sync);
 
   unsigned long time_unit;
 
