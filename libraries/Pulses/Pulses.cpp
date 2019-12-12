@@ -1046,13 +1046,6 @@ int Pulses::setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
 }
 
 
-int Pulses::setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags,	\
-			pulse_time_t when, unsigned long new_period) {	// unsigned long *only* version
-  pulse_time_t period = {new_period, 0};	// no overflow in period
-  setup_pulse(pulse_do, new_flags, when, period);
-}
-
-
 void Pulses::set_new_period(int pulse, pulse_time_t new_period) {
   pulses[pulse].period.time = new_period.time;
   pulses[pulse].period.overflow = new_period.overflow;
