@@ -2742,10 +2742,14 @@ void start_musicBox() {
 */
   musicBox_start_time = PULSES.get_now();	// keep musicBox_start_time
 
-  if(musicBoxConf.stack_sync_slices)
-    PULSES.activate_selected_stack_sync_now((pulse_time_t) {PULSES.pulses[musicBoxConf.base_pulse].period.time/musicBoxConf.stack_sync_slices, 0}, musicBoxConf.sync);
-  else
+  if(musicBoxConf.stack_sync_slices) {
+    pulse_time_t slice;
+    slice = PULSES.pulses[musicBoxConf.base_pulse].period;
+    PULSES.div_time(&slice, abs(musicBoxConf.stack_sync_slices));
+    PULSES.activate_selected_stack_sync_now(slice, musicBoxConf.sync, (musicBoxConf.stack_sync_slices>0 /*aka 'ascending'*/));
+  } else {
     PULSES.activate_selected_synced_now(musicBoxConf.sync);	// 'n' 'N' sync and activate
+  }
 
   PULSES.fix_global_next();			// cannot understand why i need that here...
   pulse_time_t pause = get_pause_time(true/*do display*/);

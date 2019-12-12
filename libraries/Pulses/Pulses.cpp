@@ -692,18 +692,18 @@ void Pulses::activate_selected_synced_now(int sync) {
 }
 
 
-void Pulses::activate_selected_stack_sync_now(pulse_time_t tick /*sign inverts direction*/, int sync) {
+void Pulses::activate_selected_stack_sync_now(pulse_time_t tick, int sync, bool ascending) {
   pulse_time_t next_now = get_now();
 
-  if(tick.overflow >= 0) {	// positive tick: ascending pulse order
-    for (int pulse=0; pulse<pl_max; pulse++)
+  if(ascending) {
+    for (int pulse=0; pulse<pl_max; pulse++)		// ascending
       if (pulse_is_selected(pulse)) {
-	activate_pulse_synced(pulse, next_now, abs(sync));
+	activate_pulse_synced(pulse, next_now, sync);
 	add_time(&tick, &next_now);
       }
-  } else {	// negativetive tick: descending pulse order
-    tick.overflow = 0;	// make it positive, disregarding overflow
-    for (int pulse=(pl_max-1); pulse>=0; pulse--)
+
+  } else {
+    for (int pulse=(pl_max-1); pulse>=0; pulse--)	// descending
       if (pulse_is_selected(pulse)) {
 	activate_pulse_synced(pulse, next_now, abs(sync));
 	add_time(&tick, &next_now);
