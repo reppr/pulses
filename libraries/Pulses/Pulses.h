@@ -400,8 +400,6 @@ class Pulses {
 		  pulse_time_t when, pulse_time_t new_period);
   int setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
 		  pulse_time_t when, unsigned long new_period);	// unsigned long *only* version
-  int setup_counted_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
-			  pulse_time_t when, pulse_time_t new_period, unsigned int count);
   void set_new_period(int pulse, pulse_time_t new_period);
 
   void activate_pulse_synced(int pulse,			\

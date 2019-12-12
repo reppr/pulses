@@ -90,7 +90,6 @@ show_group_mnemonics	KEYWORD2
 fix_global_next	KEYWORD2
 check_maybe_do	KEYWORD2
 setup_pulse	KEYWORD2
-setup_counted_pulse	KEYWORD2
 set_new_period	KEYWORD2
 activate_pulse_synced	KEYWORD2
 setup_pulse_synced	KEYWORD2

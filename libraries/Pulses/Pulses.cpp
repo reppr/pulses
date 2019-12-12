@@ -1039,19 +1039,6 @@ int Pulses::setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags,	\
 }
 
 
-// unused?
-int Pulses::setup_counted_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
-			pulse_time_t when, pulse_time_t new_period, unsigned int remaining)
-{
-  int pulse;
-
-  pulse= setup_pulse(pulse_do, new_flags|COUNTED, when, new_period);
-  pulses[pulse].remaining = remaining;
-
-  return pulse;
-}
-
-
 void Pulses::set_new_period(int pulse, pulse_time_t new_period) {
   pulses[pulse].period.time = new_period.time;
   pulses[pulse].period.overflow = new_period.overflow;
