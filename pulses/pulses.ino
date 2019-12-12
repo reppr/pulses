@@ -3470,12 +3470,6 @@ void display_payload(int pulse) {
     return;
   }
 
-  scratch=&magical_butler;
-  if (PULSES.pulses[pulse].payload == scratch) {
-    MENU.out("magical_butler");
-    return;
-  }
-
   scratch=&magical_cleanup;
   if (PULSES.pulses[pulse].payload == scratch) {
     MENU.out("magical_cleanup");

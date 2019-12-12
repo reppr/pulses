@@ -310,7 +310,6 @@ int musicBox_butler_i=ILLEGAL32;	// pulse index of musicBox_butler(p)
 
 // some pre declarations:
 void musicBox_butler(int);
-void magical_butler(int);	// old version, obsolete?
 
 
 // MusicBoxState
@@ -1620,11 +1619,6 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
       if(PULSES.pulses[pulse].payload == &musicBox_butler) {
 	if(do_display) {
 	  MENU.out('B');
-	}
-	skipped++;
-      } else if(PULSES.pulses[pulse].payload == &magical_butler) {
-	if(do_display) {
-	  MENU.out('u');
 	}
 	skipped++;
       } else if(PULSES.pulses[pulse].payload == &magical_cleanup) {
@@ -3064,73 +3058,6 @@ void deep_sleep() {
   esp_deep_sleep_start();	// sleep well ... ... ...
   // it will never get here
 }
-
-
-/*
-  void magical_butler(int p)	 OBSOLETE
-
-  enables trigger when due
-  then if(magic_autochanges) {
-    start start_soft_ending() and start magical_cleanup()
-    start HARD_END_playing() if cleanup did not detect END already
-*/
-//#define DEBUG_BUTLER	TODO: remove debug code
-void magical_butler(int p) {	// TODO: OBSOLETE?
-#if defined DEBUG_BUTLER
-  MENU.out(F("BUTLER: "));
-#endif
-  switch(PULSES.pulses[p].counter) {
-  case 1:	// prepare enable trigger
-#if defined MUSICBOX_TRIGGER_BLOCK_SECONDS
-    PULSES.pulses[p].period.time = MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000L;
-#endif
-    break;
-  case 2:	// enable trigger and prepare soft end
-#if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
-    musicBox_trigger_enabled = true;
-    MENU.out(F("trigger enabled "));
-    MENU.outln(MUSICBOX_TRIGGER_PIN);
-#endif
-
-    if(MAX_SUBCYCLE_SECONDS) {	// MAX seconds
-      pulse_time_t til_soft_end_time=CyclesConf.used_subcycle;
-      PULSES.sub_time(MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000L, &til_soft_end_time);
-      PULSES.add_time(100, &til_soft_end_time);	// tolerance
-      PULSES.pulses[p].period = til_soft_end_time;
-    } else
-      PULSES.pulses[p].period.time = (MUSICBOX_PERFORMACE_SECONDS - MUSICBOX_TRIGGER_BLOCK_SECONDS)*1000000L;
-    break;
-  case 3:	// start soft ending and cleanup pulse, prepare for butler hard end
-    if(magic_autochanges)
-      start_soft_ending(MagicConf.soft_end_days_to_live, MagicConf.soft_end_survive_level);
-    // prepare hard end
-#if defined MAX_SUBCYCLE_SECONDS
-    {
-      pulse_time_t til_hard_end_time = CyclesConf.used_subcycle;
-      PULSES.div_time(&til_hard_end_time, 2);	// cycle/2 for soft end, then HARD end	// TODO: test&adjust
-      PULSES.pulses[p].period = til_hard_end_time;
-    }
-#else
-    PULSES.pulses[p].period.time =
-      (MUSICBOX_HARD_END_SECONDS - MUSICBOX_PERFORMACE_SECONDS - MUSICBOX_TRIGGER_BLOCK_SECONDS)*1000000L;
-#endif
-    // start magical_cleanup() pulse taking care of selections, check for end, stop *if* end reached
-    pulse_time_t duration;
-    duration.overflow=0;
-    duration.time=2*1000000;	// magical_cleanup all 2 seconds
-    PULSES.setup_pulse(&magical_cleanup, ACTIVE, PULSES.get_now(), duration);	// start magical_cleanup() pulse
-    break;
-  case 4:	// hard end playing
-    if(magic_autochanges) {
-      // the end was not reached by magical_cleanup(), so we abort playing now
-      MENU.out(F("butler: "));
-      HARD_END_playing(true);
-    }
-    break;
-  default:	// we should never get here...	savety net
-    PULSES.init_pulse(p);	// with  magic_autochanges==false it's normal
-  }
-} // magical_butler()	OBSOLETE
 
 
 /* **************************************************************** */
