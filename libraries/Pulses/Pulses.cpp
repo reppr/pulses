@@ -105,6 +105,13 @@ Pulses::~Pulses() {
 /* **************************************************************** */
 // init time:
 
+pulse_time_t Pulses::INVALID_time() {
+  pulse_time_t invalid_time;
+  invalid_time.time=0;
+  invalid_time.overflow=ILLEGAL32;
+  return invalid_time;
+}
+
 // do this once from setup()	################
 void Pulses::init_time() {
 #if defined(ESP8266) || defined(ESP32)
@@ -134,8 +141,7 @@ void Pulses::init_time() {
 
   last_now = now;		// correct overflow
 
-  global_next.time=0;
-  global_next.overflow=ILLEGAL32;
+  global_next=INVALID_time();
 }
 
 
@@ -331,7 +337,7 @@ void Pulses::global_shift(int global_octave) {
 void Pulses::init_pulse(int pulse) {
   memset(&pulses[pulse], 0, sizeof(pulse_t));
 
-  pulses[pulse].next.overflow = ILLEGAL32;
+  pulses[pulse].next = INVALID_time();
   pulses[pulse].gpio = ILLEGAL8;
 }
 
@@ -848,7 +854,7 @@ void Pulses::fix_global_next() {
 */
 
   // we work directly on the global variables here:
-  global_next.overflow=ILLEGAL32;
+  global_next = INVALID_time();
   global_next_count=0;
 
   for (int pulse=0; pulse<pl_max; pulse++) {		// check all pulses

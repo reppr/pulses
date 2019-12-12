@@ -307,6 +307,7 @@ class Pulses {
   pulse_time_t now;
   pulse_time_t last_now;		// for simple overflow detection
 				// DO WE NEED OVERFLOW PART of that? ################
+  pulse_time_t INVALID_time();
   pulse_time_t global_next;	// next time that a pulse wants to be waken up
   unsigned int global_next_count; // how many tasks wait to be activated at the same time?
 

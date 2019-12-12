@@ -410,8 +410,6 @@ mixed int-double fractions
 }
 
 
-check double vs long double size
-
 double times
        *computed and stored* as floating point, but
        *used* as int64_t

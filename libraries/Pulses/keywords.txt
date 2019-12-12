@@ -43,6 +43,7 @@ global_octave_mask	KEYWORD2
 current_global_octave_mask	KEYWORD2
 now	KEYWORD2
 last_now	KEYWORD2
+INVALID_time	KEYWORD2
 global_next	KEYWORD2
 global_next_count	KEYWORD2
 time_reached	KEYWORD2
