@@ -16,7 +16,7 @@
 // /*			0123456789abcdef	// 16 bytes	*/
 
 
-#define USE_ADS1115_AT_ADDR	0x48
+//#define USE_ADS1115_AT_ADDR	0x48
 
 #define USE_RGB_LED_STRIP
 #if defined USE_RGB_LED_STRIP

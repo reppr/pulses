@@ -92,39 +92,10 @@ uint8_t time_sliced_sent_to_mac[6]={0};
 */
 uint8_t* esp_now_send2_mac_p = broadcast_mac; // DEFAULT: *first* message will be BROADCASTed
 
-// MAC as string
-char* MAC_str(const uint8_t* mac) {	// TODO: TEST: mac==NULL case
-  if(mac == NULL)
-    return ">*< ALL KNOWN >*<";
-  // else
-
-  static char MACstr[18];
-  snprintf(MACstr, sizeof(MACstr), "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-
-  return MACstr;
-}
-
-uint8_t my_MAC[] = {0,0,0,0,0,0};
-
-
 // esp_now_reaction_timer  give reactions on broadcast or all_known_peers messages in an individual time slice
 hw_timer_t * esp_now_reaction_timer = NULL;
 
-
-void show_peer_id(peer_ID_t* this_peer_ID_p) {	// TODO: move?
-  MENU.out(F("IDENTITY\tpreName |"));
-  MENU.out(this_peer_ID_p->preName);
-
-  MENU.out(F("|\tMAC\t"));
-  MENU.out(MAC_str(this_peer_ID_p->mac_addr));
-
-  MENU.out(F("\ttime slice  "));
-  MENU.out((int) this_peer_ID_p->esp_now_time_slice);
-
-  MENU.out(F("\tversion\t"));
-  MENU.outln((int) this_peer_ID_p->version);
-} // show_peer_id()
-
+extern void show_peer_id(peer_ID_t* this_peer_ID_p);
 
 void set_my_IDENTITY() {
   esp_read_mac(my_IDENTITY.mac_addr, ESP_MAC_WIFI_STA);

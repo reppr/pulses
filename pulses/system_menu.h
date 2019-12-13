@@ -94,11 +94,15 @@ bool system_menu_reaction(char token) {
     break;
 
   case 'P':
+#if defined USE_NVS
     s = nvs_getString(F("nvs_PRENAME"));
     MENU.out(F("nvs_PRENAME:\t"));
     if (s)
       MENU.out(s);
     MENU.ln();
+#else
+    MENU.outln(F("*no* USE_NVS"));
+#endif
     break;
 
   default:
