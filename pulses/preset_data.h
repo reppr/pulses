@@ -5476,7 +5476,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   MENU.tab();
   parameters_by_user(true);	// true: block output
-  HARMONICAL.reduce_fraction(&musicBoxConf.pitch);	// ;)
+  (*HARMONICAL).reduce_fraction(&musicBoxConf.pitch);	// ;)
 
   if(musicBoxConf.name) {
     MENU.tab();

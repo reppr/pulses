@@ -41,7 +41,7 @@ Harmonical::fraction_t arr_len(unsigned int *arr, unsigned int step) {
 
     scratch.multiplier = multiplier * count;
     scratch.divisor = divisor;
-    HARMONICAL.add_fraction(&scratch, &f);
+    (*HARMONICAL).add_fraction(&scratch, &f);
   }
 
   return f;

@@ -17,7 +17,7 @@
       for (int pulse=0; pulse<PL_MAX; pulse++) {
 	if (PULSES.pulse_is_selected(pulse)) {
 	  MENU.out(pulse); MENU.tab(); PULSES.pulses[pulse].period.time; MENU.tab();
-	  lcm = HARMONICAL.LCM(lcm, PULSES.pulses[pulse].period.time);
+	  lcm = (*HARMONICAL).LCM(lcm, PULSES.pulses[pulse].period.time);
 	  MENU.outln(lcm);
 	}
       }

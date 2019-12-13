@@ -141,6 +141,7 @@ Pulses PULSES(PL_MAX, &MENU);
 
 
 #include <Harmonical.h>		// including early simplifies compiling
+Harmonical* HARMONICAL;
 
 /* **************************************************************** */
 enum monochrome_type {
@@ -282,14 +283,6 @@ void show_peer_id(peer_ID_t* this_peer_ID_p) {	// TODO: move?
 #if defined USE_ESP_NOW
   #include "esp_now_pulses.h"	// needs pulses_hardware_conf_t  etc
 #endif
-
-
-/* **************** Harmonical **************** */
-// #include <Harmonical.h>	// doing that early simplifies compiling
-
-Harmonical HARMONICAL(3628800uL);	// old style for a first test	// TODO: move to setup()
-
-// MENU, PULSES and HARMONICAL all declared now
 
 
 /* **************************************************************** */
@@ -554,7 +547,7 @@ pulse_time_t scale2harmonical_cycle(unsigned int* scale, pulse_time_t* duration)
     MENU.tab();
 #endif
 
-    HARMONICAL.fraction_LCM(&f_F2, &f_LCM);
+    (*HARMONICAL).fraction_LCM(&f_F2, &f_LCM);
 
 #if defined SCALE2CYCLE_INFO
     display_fraction(&f_LCM);
@@ -1523,6 +1516,8 @@ void setup() {
   //  peripheral_power_switch_OFF();	// default peripheral power supply OFF
   delay(100);	// wait a bit longer
 #endif
+
+  HARMONICAL = new Harmonical(3628800uL);	// old style harmonical unit, obsolete?
 
   delay(STARTUP_DELAY);		// yield()
   Serial.begin(BAUDRATE);	// Start serial communication.
@@ -4020,7 +4015,7 @@ Harmonical::fraction_t jiffletab_len(unsigned int *jiffletab) {
 
     scratch.multiplier = multiplier * count;
     scratch.divisor = divisor;
-    HARMONICAL.add_fraction(&scratch, &f);
+    (*HARMONICAL).add_fraction(&scratch, &f);
   }
 
   return f;
@@ -5576,11 +5571,11 @@ bool menu_pulses_reaction(char menu_input) {
       int p_factors_size=6;	// for harmonics I rarely use more than three, sometimes four ;)
       unsigned int p_factors[p_factors_size];
       MENU.out(F("prime factors of ")); MENU.out(calc_result);
-      int highest = HARMONICAL.prime_factors(p_factors, calc_result);
-      for (int i=0; HARMONICAL.small_primes[i]<=highest; i++) {
+      int highest = (*HARMONICAL).prime_factors(p_factors, calc_result);
+      for (int i=0; (*HARMONICAL).small_primes[i]<=highest; i++) {
 	MENU.tab();
 	MENU.out(F("("));
-	MENU.out(HARMONICAL.small_primes[i]);
+	MENU.out((*HARMONICAL).small_primes[i]);
 	MENU.out(F(")^"));
 	MENU.out(p_factors[i]);
       }

@@ -670,7 +670,7 @@ int slice_weighting(Harmonical::fraction_t F) {
   case 64: weighting++;
   }
 
-  if(HARMONICAL.is_small_prime(F.multiplier))
+  if((*HARMONICAL).is_small_prime(F.multiplier))
     weighting++;
 
   return weighting;
@@ -699,7 +699,7 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
   Harmonical::fraction_t phase = {this_time.time, PULSES.pulses[pulse].period.time};
   // float float_phase = this_time.time / PULSES.pulses[pulse].period.time;	// not used
   Harmonical::fraction_t this_division = {cycle_monitor_last_seen_division, cycle_slices};
-  HARMONICAL.reduce_fraction(&this_division);
+  (*HARMONICAL).reduce_fraction(&this_division);
 
   if(show_subcycle_position /*&& slice_weighting(this_division) > 0*/) {	// weighting influence switched off
     MENU.out((float) this_division.multiplier/this_division.divisor, 6);
@@ -1767,7 +1767,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
   // Harmonical::fraction_t phase = {this_time.time, PULSES.pulses[pulse].period.time};	// not used
   // float float_phase = this_time.time / PULSES.pulses[pulse].period.time;	// not used
   Harmonical::fraction_t this_division = {PULSES.pulses[pulse].counter -1 , cycle_slices};
-  HARMONICAL.reduce_fraction(&this_division);
+  (*HARMONICAL).reduce_fraction(&this_division);
   int this_weighting = slice_weighting(this_division);
 
   if(PULSES.pulses[pulse].counter==1) {	// the butler initializes himself:
@@ -3160,7 +3160,7 @@ void musicBox_display() {
     MENU.out('[');
     display_fraction_int(current_phase);
 
-    HARMONICAL.reduce_fraction(&current_phase);
+    (*HARMONICAL).reduce_fraction(&current_phase);
     if(current_phase.divisor != cycle_slices) {	// fraction has been reduced
       MENU.out(F(" = "));
       display_fraction_int(current_phase);

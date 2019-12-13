@@ -369,20 +369,20 @@ char wait_for_input() {
     //     MENU.outln(F("'D' 1"));
     //     pulse_info_1line(0);
     //     MENU.outln(F("'D' 2"));
-    //    MENU.outln(HARMONICAL.harmonical_base);
+    //    MENU.outln((*HARMONICAL).harmonical_base);
 
     //    MENU.outln(F("small primes:"));
-    //    for (int i=0; HARMONICAL.small_primes[i]; i++) {
+    //    for (int i=0; (*HARMONICAL).small_primes[i]; i++) {
     //      MENU.out(i+1);
     //      MENU.tab();
-    //      MENU.outln(HARMONICAL.small_primes[i]);
+    //      MENU.outln((*HARMONICAL).small_primes[i]);
     //    }
 //	    {
 //	      unsigned long lcm=1L;
 //	      for (int pulse=0; pulse<pl_max; pulse++) {
 //		if (PULSES.pulse_is_selected(pulse)) {
 //		  MENU.out(pulse); MENU.tab(); PULSES.pulses[pulse].period.time; MENU.tab();
-//		  lcm = HARMONICAL.LCM(lcm, PULSES.pulses[pulse].period.time);
+//		  lcm = (*HARMONICAL).LCM(lcm, PULSES.pulses[pulse].period.time);
 //		  MENU.outln(lcm);
 //		}
 //	      }
@@ -421,7 +421,7 @@ char wait_for_input() {
 //    bruch2.multiplier=100;
 //    bruch2.divisor=300;
 //
-//    HARMONICAL.add_fraction(&bruch1, &bruch2);
+//    (*HARMONICAL).add_fraction(&bruch1, &bruch2);
 //    MENU.out(bruch2.multiplier); MENU.slash(); MENU.outln(bruch2.divisor);
 
 
