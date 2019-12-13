@@ -135,10 +135,12 @@ Menu MENU(CB_SIZE, 7, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
 #include "pulses_systems.h"
 #include "pulses_boards.h"
 
+#if defined ESP32
+  #include "time64bit.h"
+#endif
+
 Pulses PULSES(PL_MAX, &MENU);
 // MENU and PULSES are defined now
-
-
 
 #include <Harmonical.h>		// including early simplifies compiling
 Harmonical* HARMONICAL;
@@ -1598,6 +1600,10 @@ void setup() {
   configure_HARDWARE_from_nvs();
   configure_IDENTITY_from_nvs();
   MENU.ln();
+#endif
+
+#if defined ESP32
+  setup_timer64();
 #endif
 
 #if defined USE_MONOCHROME_DISPLAY
