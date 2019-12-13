@@ -10,7 +10,6 @@
 */
 /* **************************************************************** */
 
-
 #ifndef PULSES_h
 #define PULSES_h
 
@@ -88,11 +87,15 @@ enum icode {	// names are all four letter words ?	// maybe 8?
 
 // TODO: time (and related stuff should move to Harmonics::
 // TODO: double (seen as uint64_t)
+
+#if defined TIMES_DOUBLE
+typedef double pulse_time_t;
+
+#else // old int overflow style
 typedef struct {
   unsigned long time;
   unsigned int overflow;
 } pulse_time_t;
-
 
 /* does not work (yet)
 typedef struct {
@@ -100,6 +103,7 @@ typedef struct {
   unsigned long time;
 } pulse_time_t;
 */
+#endif // TIMES_DOUBLE or oldstyle int ovfl
 
 /* **************************************************************** */
 // pulse_t:
@@ -305,8 +309,9 @@ class Pulses {
   unsigned long global_octave_mask;	    // this mask gets shifted and then actually used
   unsigned long current_global_octave_mask; // actually used mask to switch oscillators
   pulse_time_t now;
-  pulse_time_t last_now;		// for simple overflow detection
-				// DO WE NEED OVERFLOW PART of that? ################
+  pulse_time_t last_now;	// for simple overflow detection (oldstyle int ovfl style only)
+  uint64_t now64;		// TIMES_DOUBLE only
+
   pulse_time_t INVALID_time();
   pulse_time_t global_next;	// next time that a pulse wants to be waken up
   unsigned int global_next_count; // how many tasks wait to be activated at the same time?

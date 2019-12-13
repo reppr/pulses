@@ -4148,7 +4148,7 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
   PULSES.pulses[pulse].period.time =
     PULSES.pulses[pulse].base_time * jiffletab[base_index] / jiffletab[base_index+1];
   PULSES.pulses[pulse].countdown = jiffletab[base_index+2];		// count of next phase
-}
+} // do_jiffle(p)
 
 
 // ################################################################

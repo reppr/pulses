@@ -15,6 +15,7 @@
 #define FAMILY_NAME	SoundShip3D		// configuration family	// see: pulses_engine_config.h
 // /*			0123456789abcdef	// 16 bytes	*/
 
+#define TIMES_DOUBLE	// start implementing...
 
 //#define USE_ADS1115_AT_ADDR	0x48
 

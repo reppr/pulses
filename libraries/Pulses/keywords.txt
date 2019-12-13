@@ -29,7 +29,6 @@ rgb_string_idx	KEYWORD2
 rgb_pixel_idx	KEYWORD2
 get_now	KEYWORD2
 init_time	KEYWORD2
-get_now	KEYWORD2
 simple_time	KEYWORD2
 add_time	KEYWORD2
 sub_time	KEYWORD2

@@ -1,3 +1,5 @@
+#define  TIMES_DOUBLE	// TODO: MOVE!
+
 /* **************************************************************** */
 /*
   Pulses.cpp
@@ -105,12 +107,21 @@ Pulses::~Pulses() {
 /* **************************************************************** */
 // init time:
 
+#if defined TIMES_DOUBLE
+
+pulse_time_t Pulses::INVALID_time() {
+  uint64_t invalid_time64=(ILLEGAL32<<32);
+  return (pulse_time_t) invalid_time64;
+}
+
+#else // old int overflow style
 pulse_time_t Pulses::INVALID_time() {
   pulse_time_t invalid_time;
   invalid_time.time=0;
   invalid_time.overflow=ILLEGAL32;
   return invalid_time;
 }
+#endif
 
 // do this once from setup()	################
 void Pulses::init_time() {
@@ -135,27 +146,39 @@ void Pulses::init_time() {
   #endif
 #endif
 
+#if defined TIMES_DOUBLE
+  get_now();
+
+#else // old int overflow style
   last_now.time = 0;		// make sure get_now() sees no overflow
   get_now();
   now.overflow = 0;		// start with now.overflow = 0
 
   last_now = now;		// correct overflow
 
+#endif // double times or int overflow
+
   global_next=INVALID_time();
-}
+} // Pulses::init_time()
 
 
 // *always* get time through get_now()
 pulse_time_t Pulses::get_now() {	// get time, set now.time and now.overflow
+#if defined TIMES_DOUBLE
+  extern void get_timer64_value(uint64_t* value64);
+  get_timer64_value(&now64);
+  now = (pulse_time_t) now64;	//
+#else // old int overflow style
   now.time = micros();
 
   if (now.time < last_now.time)	// manage now.overflow
     now.overflow++;
 
   last_now = now;		// manage last_now
+#endif
 
   return now;
-}
+} // Pulses::init_time()
 
 
 /*
@@ -169,13 +192,54 @@ pulse_time_t Pulses::get_now() {	// get time, set now.time and now.overflow
 */
 pulse_time_t Pulses::simple_time(unsigned long integer_only_time) {
   pulse_time_t int_time;
+
+#if defined TIMES_DOUBLE
+  int_time = (pulse_time_t) integer_only_time;
+
+#else // old int overflow style
   int_time.overflow = 0;
   int_time.time = integer_only_time;
+#endif
+
   return int_time;
 }
 
 
 // add_time(), sub_time(), mul_time(), div_time():
+
+#if defined TIMES_DOUBLE
+
+void Pulses::add_time(pulse_time_t *delta, pulse_time_t *sum)
+{
+  *sum += *delta;
+}
+
+void Pulses::sub_time(pulse_time_t *delta, pulse_time_t *sum)
+{
+  *sum -= *delta;
+}
+
+void Pulses::add_time(unsigned long time, pulse_time_t *sum)	// TODO: check if still needed
+{
+  *sum += (pulse_time_t) time;
+}
+
+void Pulses::sub_time(unsigned long time, pulse_time_t *sum)	// TODO: check if still needed
+{
+  *sum -= (pulse_time_t) time;
+}
+
+void Pulses::mul_time(pulse_time_t *duration, unsigned int factor)
+{
+  *duration *= factor;
+}
+
+void Pulses::div_time(pulse_time_t *duration, unsigned int divisor)
+{
+  *duration /= divisor;
+}
+
+#else // old int overflow style
 
 void Pulses::add_time(pulse_time_t *delta, pulse_time_t *sum)
 {
@@ -296,8 +360,8 @@ void Pulses::div_time(pulse_time_t *duration, unsigned int divisor)
   }
 
   (*duration).time=result;
-}
-
+} // div_time() oldstyle
+#endif // no TIMES_DOUBLE
 
 void Pulses::multiply_period(int pulse, unsigned long factor) {	// integer math
   pulse_time_t new_period;
