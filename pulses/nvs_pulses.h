@@ -18,23 +18,8 @@
 // CONF_nvs.begin("CONFIG", /* readonly is */ false);
 
 #define RGB_STRINGS_MAX		2	// 8 possible	// TODO: DOES NOT BELONG HERE
-// esp_err_t ERROR reporting
-#if ! defined ESP_ERR_INFO_DEFINED
-  #include "esp_err.h"
-  bool /* error */ esp_err_info(esp_err_t status) {
-    if(status == ESP_OK) {	// ok
-      if(MENU.maybe_display_more(VERBOSITY_LOWEST))
-	// was: if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
-	MENU.outln(F("ok"));
-      return false;	// OK
-    } else			// not ok
-      if(MENU.maybe_display_more(VERBOSITY_LOWEST/* sic! */))	// *do* display that
-	// was: if(MENU.maybe_display_more(VERBOSITY_LOWEST/* sic! */) || DEBUG_ESP_NOW)	// *do* display that
-	MENU.error_ln(esp_err_to_name(status));
-    return true;		// ERROR
-  }
-  #define ESP_ERR_INFO_DEFINED
-#endif
+
+#include "pulses_esp_err.h"		// esp_err_t ERROR reporting
 
 String nvs_getString(char * key) {
   String s;

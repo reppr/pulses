@@ -30,23 +30,7 @@
 // defines the length of *one* slice in milliseconds
 #define ESP_NOW_TIME_SLICE_MS	12	// TODO: TEST&TRIMM:
 
-// esp_err_t ERROR reporting
-#if ! defined ESP_ERR_INFO_DEFINED
-  #include "esp_err.h"
-  extern const char* esp_err_to_name(esp_err_t code);
-  bool /* error */ esp_err_info(esp_err_t status) {
-    if(status == ESP_OK) {	// ok
-      if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
-	MENU.outln(F("ok"));
-      return false;	// OK
-    } else			// not ok
-      if(MENU.maybe_display_more(VERBOSITY_LOWEST/* sic! */) || DEBUG_ESP_NOW)	// *do* display that
-	MENU.error_ln(esp_err_to_name(status));
-    return true;		// ERROR
-  }
-  #define ESP_ERR_INFO_DEFINED
-#endif
-
+#include "pulses_esp_err.h"		// esp_err_t ERROR reporting
 
 // buffers for data to send or receive
 uint8_t esp_now_send_buffer[ESP_NOW_MAX_DATA_LEN] = {0};
