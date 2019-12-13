@@ -290,7 +290,7 @@ class Pulses {
 				// get_now() works directly on 'now'
 				// returns now
 
-  pulse_time_t integer_time(unsigned long time);	// integer only, overflow==0
+  pulse_time_t simple_time(unsigned long time);	// integer only, overflow==0
 
   void add_time(pulse_time_t *delta, pulse_time_t *sum);
   void sub_time(pulse_time_t *delta, pulse_time_t *sum);

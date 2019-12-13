@@ -159,12 +159,15 @@ pulse_time_t Pulses::get_now() {	// get time, set now.time and now.overflow
 
 
 /*
-  pulse_time_t integer_time((unsigned long) integer_only_time)
+  pulse_time_t simple_time((unsigned long) integer_only_time)
   return a time interval integer only, overflow==0
+
+  or a double float ;)
+     depending pulse_time_t
 
   simplify transition to double float time
 */
-pulse_time_t Pulses::integer_time(unsigned long integer_only_time) {
+pulse_time_t Pulses::simple_time(unsigned long integer_only_time) {
   pulse_time_t int_time;
   int_time.overflow = 0;
   int_time.time = integer_only_time;
