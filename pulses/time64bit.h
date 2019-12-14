@@ -1,5 +1,7 @@
 /*
   time64bit.h
+
+  some very first tests only
 */
 
 #include "driver/timer.h"
@@ -13,6 +15,8 @@ timer_group_t timer64Group = (timer_group_t) 1;	// omg i love c
 timer_idx_t timer64Num = (timer_idx_t) 1;
 
 void test_timer64() {
+  static unsigned int int64_max_error=0;
+
   uint64_t value64;
   timer_get_counter_value(timer64Group, timer64Num, &value64);
   MENU.out((unsigned int) value64);
@@ -22,11 +26,18 @@ void test_timer64() {
   MENU.out(value_f, 15);
   MENU.tab();
 
-  uint64_t d = value_f;
-  d -= value64;
+  uint64_t d = value_f;	// cast it back to uint64	// 1st TEST unsigned 64
+  d -= value64;		// compare with original uint64 value
+  if(d > int64_max_error)
+    int64_max_error = d;
+
   MENU.out(F("d= "));
   MENU.out((unsigned int) d);
   MENU.tab();
+
+  MENU.out(F("Dmax= "));
+  MENU.out((unsigned int) int64_max_error);
+  MENU.tab(2);
 
   MENU.out(value_f/1000000.0);
   MENU.outln(F(" s"));

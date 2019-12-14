@@ -2036,6 +2036,18 @@ bool lowest_priority_tasks() {
   }
 #endif // USE_WIFI_telnet_menu
 
+//#define TEMPORARY_TIME64_TEST	// TODO:  REMOVE:
+#if defined TEMPORARY_TIME64_TEST
+  if (random(1000000)==1) {
+    MENU.out(F("ovfl "));
+    MENU.out(PULSES.now.overflow);
+    MENU.space(2);
+
+    test_timer64();
+    return true;
+  }
+#endif
+
   return false;		// ################ FIXME: return values ################
 } // lowest_priority_tasks()
 
