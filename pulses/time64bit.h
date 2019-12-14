@@ -14,6 +14,16 @@ timer_config_t TIME64_conf;
 timer_group_t timer64Group = (timer_group_t) 1;	// omg i love c
 timer_idx_t timer64Num = (timer_idx_t) 1;
 
+
+void get_timer64_value(uint64_t* value64) {
+  esp_err_t err = timer_get_counter_value(timer64Group, timer64Num, value64);
+  if (err != ESP_OK) {
+    esp_err_info(err);
+    MENU.ln();
+  }
+}
+
+
 void test_timer64() {
   static unsigned int int64_max_error=0;
 
