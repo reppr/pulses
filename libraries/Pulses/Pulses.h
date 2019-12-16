@@ -103,6 +103,7 @@ typedef struct {
   unsigned long time;
 } pulse_time_t;
 */
+
 #endif // TIMES_DOUBLE or oldstyle int ovfl
 
 /* **************************************************************** */
@@ -235,7 +236,7 @@ struct pulse_t {
   #endif
 #endif
 
-  unsigned long base_time;
+  pulse_time_t base_period;
   /*
     used by do_jiffle as base period
     used by tuned_click_0 as base period
@@ -295,6 +296,8 @@ class Pulses {
 				// returns now
 
   pulse_time_t simple_time(unsigned long time);	// integer only, overflow==0
+
+  //  signed int cmp_times(pulse_time_t a, pulse_time_t b);	// later, a>b: 1	a==b: 0		earlyer a<b: -1
 
   void add_time(pulse_time_t *delta, pulse_time_t *sum);
   void sub_time(pulse_time_t *delta, pulse_time_t *sum);

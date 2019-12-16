@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION		HARMONICAL v.041	// de-messing
+#define PROGRAM_VERSION		HARMONICAL v.042   // double times
 /*				0123456789abcdef   */
 
 /* **************************************************************** */
@@ -433,11 +433,11 @@ void seed_icode_player(int seeder_pulse) {	// as payload for seeder
       pulses[pulse].icode_p	icode start pointer
       pulses[pulse].icode_index	icode index
       pulses[pulse].countdown	count down
-      pulses[pulse].base_time	base period = period of starting pulse
+      pulses[pulse].base_period	base period = period of starting pulse
       pulses[pulse].gpio	maybe click pin
     */
     PULSES.set_icode_p(dest_pulse, PULSES.pulses[seeder_pulse].icode_p, true);	// set (and activate) icode
-    PULSES.pulses[dest_pulse].base_time   = PULSES.pulses[seeder_pulse].period.time;
+    PULSES.pulses[dest_pulse].base_period = PULSES.pulses[seeder_pulse].period;
     PULSES.pulses[dest_pulse].action_flags = PULSES.pulses[seeder_pulse].dest_action_flags;
     if(PULSES.pulses[seeder_pulse].flags & HAS_GPIO)		// if the seeder has gpio,
       PULSES.set_gpio(dest_pulse, PULSES.pulses[seeder_pulse].gpio);	// copy gpio
@@ -841,22 +841,34 @@ int selected_share_DACsq_intensity(int intensity, int channel) {
 // share DAC intensity of selected pulses, proportional to period
 void selected_DACsq_intensity_proportional(int intensity, int channel) {
   pulse_time_t sum;
+#if defined TIMES_DOUBLE	// sorry, some of the worst code ever written...
+  sum=0.0;			// transition to a new time type, preseving both for some time...
+#else // old int overflow style
   sum.time=0;
   sum.overflow=0;
-  float factor;
+#endif
+  double factor;
 
   for (int pulse=0; pulse<PL_MAX; pulse++)
     if (PULSES.pulse_is_selected(pulse))
       PULSES.add_time(&PULSES.pulses[pulse].period, &sum);
 
+#if defined TIMES_DOUBLE
+  bool there_is_something = (sum != 0.0);
+#else // old int overflow style
   if (sum.overflow)	// FIXME: if ever needed ;)
     MENU.error_ln(F("sum.overflow"));
+  bool there_is_something = sum.time;
+#endif // old int overflow style
 
-  if (sum.time) {
+  if (there_is_something) {
     for (int pulse=0; pulse<PL_MAX; pulse++) {
       if (PULSES.pulse_is_selected(pulse)) {
-	factor = (float) PULSES.pulses[pulse].period.time / (float) sum.time;
-
+#if defined TIMES_DOUBLE
+	factor = PULSES.pulses[pulse].period / sum;
+#else // old int overflow style
+	factor = (double) PULSES.pulses[pulse].period.time / (double) sum.time;
+#endif
 	switch (channel) {
 	case 1:
 	  PULSES.pulses[pulse].dac1_intensity = factor * intensity;
@@ -868,7 +880,7 @@ void selected_DACsq_intensity_proportional(int intensity, int channel) {
       }
     }
   }
-}
+} // selected_DACsq_intensity_proportional()
 #endif // USE_DACs	// TODO: move to library Pulses
 
 
@@ -1009,15 +1021,21 @@ void selected_do_detune_periods(short cents) {	// works on the period time of ea
   if(detune != 1.0) {
     for(int pulse=0; pulse<PL_MAX; pulse++) {
       if (PULSES.pulse_is_selected(pulse)) {
-	double time_double = PULSES.pulses[pulse].period.time;
+#if defined TIMES_DOUBLE
+	PULSES.pulses[pulse].period *= detune;
+
+#else // old int overflow style
+	double time_double;
+	time_double = PULSES.pulses[pulse].period.time;
 	time_double *= detune;
-	if(pulse==15)
-	  MENU.out(PULSES.pulses[pulse].period.time);
 	PULSES.pulses[pulse].period.time = (unsigned long) (time_double + 0.5);
-	if(pulse==15) {
-	  MENU.tab();
-	  MENU.outln(PULSES.pulses[pulse].period.time);
-	}
+#endif
+// WTF	if(pulse==15)
+//	  MENU.out(PULSES.pulses[pulse].period.time);
+// WTF	if(pulse==15) {
+//	  MENU.tab();
+//	  MENU.outln(PULSES.pulses[pulse].period.time);
+//	}
       }
     }
 
@@ -2321,8 +2339,14 @@ void click(int pulse) {	// can be called from a pulse
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
 void sweep_click(int pulse) {	// can be called from a pulse
-  double period = PULSES.pulses[pulse].period.time;
-  double detune_number = PULSES.ticks_per_octave / PULSES.pulses[pulse].period.time;
+  double period;
+#if defined TIMES_DOUBLE
+  period = PULSES.pulses[pulse].period;
+#else // old int overflow style
+  period = PULSES.pulses[pulse].period.time;
+#endif
+
+  double detune_number = PULSES.ticks_per_octave / period;
   double detune = 1 / pow(2.0, 1/detune_number);
 
   switch (sweep_up) {
@@ -2336,14 +2360,22 @@ void sweep_click(int pulse) {	// can be called from a pulse
     break;
   }
 
+#if defined TIMES_DOUBLE
+  PULSES.pulses[pulse].period = period;
+#else // old int overflow style
   PULSES.pulses[pulse].period.time = period;
   // PULSES.pulses[pulse].period.overflow = 0;
+#endif
   click(pulse);
 }
 
 
 void tuned_sweep_click(int pulse) {	// can be called from a pulse
+#if defined TIMES_DOUBLE
+  double detune_number = PULSES.ticks_per_octave / PULSES.pulses[pulse].period;
+#else // old int overflow style
   double detune_number = PULSES.ticks_per_octave / PULSES.pulses[pulse].period.time;
+#endif
   double detune = pow(2.0, 1.0/detune_number);	// fails on Arduino Mega2560
 
   switch (sweep_up) {
@@ -2355,15 +2387,20 @@ void tuned_sweep_click(int pulse) {	// can be called from a pulse
     break;
   }
 
-  // PULSES.pulses[pulse].period.overflow = 0;
   click(pulse);
 }
 
 
 // first try: octave is reached by a fixed number of steps:
 void sweep_click_0(int pulse) {	// can be called from a sweeping pulse
-  PULSES.pulses[pulse].period.time = PULSES.pulses[pulse].base_time * tuning;
+#if defined TIMES_DOUBLE
+  PULSES.pulses[pulse].period = PULSES.pulses[pulse].base_period;
+  PULSES.pulses[pulse].period *= tuning;
+
+#else // old int overflow style
+  PULSES.pulses[pulse].period.time = PULSES.pulses[pulse].base_period * tuning;
   PULSES.pulses[pulse].period.overflow = 0;
+#endif
   click(pulse);
 
   switch (sweep_up) {
@@ -2400,8 +2437,6 @@ void tuning_info() {
 }
 
 void sweep_info() {
-  pulse_time_t duration;
-
   MENU.out(F("sweep "));
   switch (sweep_up) {
   case 0:
@@ -2416,9 +2451,7 @@ void sweep_info() {
   }
 
   MENU.out(F("\ttime/octave "));
-  duration.time = (unsigned long) PULSES.ticks_per_octave;
-  duration.overflow=0;
-  PULSES.display_realtime_sec(duration);
+  PULSES.display_realtime_sec(PULSES.simple_time(PULSES.ticks_per_octave));
 
   MENU.tab();
   tuning_info();
@@ -2600,7 +2633,7 @@ bool en_sweep_click(int pulse) {
 bool en_sweep_click_0(int pulse) {
   if ((pulse > -1) && (pulse < PL_MAX) && (pulse != ILLEGAL32)) {
     if (en_click(pulse, this_or_next_gpio(pulse))) {	// gpio set
-      PULSES.pulses[pulse].base_time = PULSES.pulses[pulse].period.time;
+      PULSES.pulses[pulse].base_period = PULSES.pulses[pulse].period;
       PULSES.set_payload(pulse, &sweep_click_0);	// gpio set
       return true;
     }
@@ -2837,8 +2870,7 @@ int prepare_scale(bool inverse, int voices, unsigned long multiplier, unsigned l
 	this_period = unit;
 	this_period *= multiplier;
 	this_period /= divisor;
-	new_period.time = this_period;
-	new_period.overflow = 0;
+	new_period = PULSES.simple_time(this_period);
 	PULSES.setup_pulse(NULL, SCRATCH, now, new_period);
 	pulse++;
 	prepared++;
@@ -2929,12 +2961,16 @@ int tune_selected_2_scale_limited(Harmonical::fraction_t scaling, unsigned int *
   if ((scale != NULL) && scale[0] && scaling.divisor) {
     steps_in_octave=0;
     pulse_time_t base_period = PULSES.simple_time(PULSES.time_unit);
-    base_period.time *= scaling.multiplier;
-    base_period.time /= scaling.divisor;
+    PULSES.mul_time(&base_period, scaling.multiplier);
+    PULSES.div_time(&base_period, scaling.divisor);
 
     // check if highest note is within limit
     pulse_time_t this_period = PULSES.simple_time(0);	// bluff the very first test to pass
+#if defined TIMES_DOUBLE
+    while (this_period <= shortest_limit) { // SHORTEST LIMIT *CAN* BE ZERO (to switch it off)
+#else // old int overflow style
     while (this_period.time <= shortest_limit) { // SHORTEST LIMIT *CAN* BE ZERO (to switch it off)
+#endif
       int octave=1;  // 1,2,4,8,...	the octave of this note   (*not* octave_shift)
       int note = 0;
       int multiplier=0;
@@ -2992,7 +3028,11 @@ int tune_selected_2_scale_limited(Harmonical::fraction_t scaling, unsigned int *
 	return 0;
       }
 
+#if defined TIMES_DOUBLE
+      if(this_period > shortest_limit) {
+#else // old int overflow style
       if(this_period.time > shortest_limit) {
+#endif
 	if (MagicConf.octave_shift || MENU.verbosity > VERBOSITY_SOME) {
 	  MENU.out(MagicConf.octave_shift);
 	  MENU.outln(F(" octaves shifted"));
@@ -3012,10 +3052,9 @@ int tune_selected_2_scale_limited(Harmonical::fraction_t scaling, unsigned int *
 bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, unsigned int *scale)	// TODO: OBSOLETE? #########
 {
   int pulse;
-  pulse_time_t base_period;
-  base_period.overflow = 0;
-  base_period.time = multiplier * PULSES.time_unit;
-  base_period.time /= divisor;
+  pulse_time_t base_period = PULSES.simple_time(PULSES.time_unit);
+  PULSES.mul_time(&base_period, multiplier);
+  PULSES.div_time(&base_period, divisor);
 
   if (scale != NULL) {
     if (MENU.verbosity >= VERBOSITY_LOWEST) {	// debug output
@@ -3060,10 +3099,37 @@ int lower_audio_if_too_high(unsigned long limit) {
   return ERROR INT_MAX	if shortest==0					(not used yet)
   TODO: OBSOLETE?	################
 */
-  unsigned int shortest=~0;		// shortest period.time (no overflow implemented here)
   unsigned int fastest_pulse=~0;	// pulse index with shortest period.time
   int octave_shift=0;
   int pulse;
+  bool shortest_is_zero=false;
+
+#if defined TIMES_DOUBLE
+  for (pulse=0; pulse<PL_MAX; pulse++) {		// check if there *is* period data at all:
+    if (PULSES.pulse_is_selected(pulse)) {		//   in the first selected pulse
+      if(PULSES.pulses[pulse].period == 0.0) {	//     (disregarding overflow)
+	MENU.error_ln(F("no period data"));
+	MENU.out(F("PRESET "));
+	MENU.outln(musicBoxConf.preset);
+	return INT_MIN;			//   return ERROR INT_MIN  if first selected pulse has no period data (not used yet)
+      }
+    }
+  }
+  // data ok
+
+  pulse_time_t shortest = PULSES.INVALID_time();
+  for (pulse=0; pulse<PL_MAX; pulse++) {	// find fastest selected pulse
+    if (PULSES.pulse_is_selected(pulse)) {
+      if(shortest > PULSES.pulses[pulse].period) {
+	fastest_pulse =  pulse;
+	shortest =  PULSES.pulses[pulse].period;
+      }
+    }
+  }
+  shortest_is_zero = (shortest == 0.0);
+
+#else // old int overflow style
+  unsigned int shortest=~0;		// shortest period.time (no overflow implemented here)
 
   for (pulse=0; pulse<PL_MAX; pulse++) {		// check if there *is* period data at all:
     if (PULSES.pulse_is_selected(pulse)) {		//   in the first selected pulse
@@ -3086,33 +3152,48 @@ int lower_audio_if_too_high(unsigned long limit) {
     }
   }
 
-  if(MENU.verbosity >= VERBOSITY_SOME || shortest==0) {	// DEBUGGING and normal feedback
+  shortest_is_zero = (shortest==0);
+
+#endif  // old int overflow style
+
+  if(MENU.verbosity >= VERBOSITY_SOME || shortest_is_zero) {	// DEBUGGING and normal feedback
     MENU.out(F("lower_audio_if_too_high shortest "));
     MENU.out(fastest_pulse);
     MENU.tab();
     MENU.outln(shortest);
     if(shortest==0) {
-      // MENU.play_KB_macro(".");	// REMOVE: DEBUGGING:	################
       MENU.outln(F(" DEBUG: shortest==0 "));
       MENU.ln();
     }
   }
 
-  if(shortest) {	// ok
-    while (PULSES.pulses[fastest_pulse].period.time < limit) {	// too fast?
-      octave_shift--;
-      for (pulse=0; pulse<PL_MAX; pulse++) {
-	if (PULSES.pulse_is_selected(pulse)) {
-	  PULSES.mul_time(&PULSES.pulses[pulse].period, 2);	// octave shift down
-	}
-      }
-    }
-  } else {		// catch the shortest == 0, ERROR	return INT_MAX, not used yet
+  if(shortest_is_zero) {
     MENU.outln(F("shortest period 0"));
     MENU.outln(F("PRESET "));
     MENU.outln(musicBoxConf.preset);
     return INT_MAX;	// catch the shortest == 0, ERROR	return INT_MAX, not used yet
   }
+
+#if defined TIMES_DOUBLE
+  while (PULSES.pulses[fastest_pulse].period < limit) {	// too fast?
+    octave_shift--;
+    for (pulse=0; pulse<PL_MAX; pulse++) {
+      if (PULSES.pulse_is_selected(pulse)) {
+	PULSES.mul_time(&PULSES.pulses[pulse].period, 2);	// octave shift down
+      }
+    }
+  }
+
+#else // old int overflow style
+  while (PULSES.pulses[fastest_pulse].period.time < limit) {	// too fast?
+    octave_shift--;
+    for (pulse=0; pulse<PL_MAX; pulse++) {
+      if (PULSES.pulse_is_selected(pulse)) {
+	PULSES.mul_time(&PULSES.pulses[pulse].period, 2);	// octave shift down
+      }
+    }
+  }
+#endif // old int overflow style
 
   if (octave_shift) {
     if (MENU.verbosity >= VERBOSITY_LOWEST) {
@@ -3444,10 +3525,17 @@ void pulse_info(int pulse) {
   MENU.out(F("\ttimes ")); MENU.out(PULSES.pulses[pulse].remaining);
   MENU.out(F("\tcntd ")); MENU.out(PULSES.pulses[pulse].countdown);
   MENU.out(F("\tdata ")); MENU.out(PULSES.pulses[pulse].data);
-  MENU.out(F("\ttime ")); MENU.out(PULSES.pulses[pulse].base_time);
 
+#if defined TIMES_DOUBLE
+  MENU.out(F("\ttime ")); MENU.out(PULSES.pulses[pulse].base_period);
   MENU.ln();		// start next line
+  MENU.out(PULSES.pulses[pulse].period / (double) PULSES.time_unit, 6);
+  MENU.out(F(" time\t"));
+  MENU.out(PULSES.pulses[pulse].period);
 
+#else // old int overflow style
+  MENU.out(F("\ttime ")); MENU.out(PULSES.pulses[pulse].base_period.time);
+  MENU.ln();		// start next line
   MENU.out((float) PULSES.pulses[pulse].period.time / (float) PULSES.time_unit, 6);
   MENU.out(F(" time"));
 
@@ -3455,6 +3543,7 @@ void pulse_info(int pulse) {
   MENU.out((unsigned int) PULSES.pulses[pulse].period.time);
   MENU.slash();
   MENU.out(PULSES.pulses[pulse].period.overflow);
+#endif
 
   MENU.tab();
   PULSES.display_realtime_sec(PULSES.pulses[pulse].period);
@@ -3463,6 +3552,13 @@ void pulse_info(int pulse) {
 
   MENU.ln();		// start next line
 
+#if defined TIMES_DOUBLE
+  MENU.out(F("last "));
+  MENU.out(PULSES.pulses[pulse].last);
+  MENU.out(F("   \tnext "));
+  MENU.out(PULSES.pulses[pulse].next);
+
+#else // old int overflow style
   MENU.out(F("last/ovfl "));
   MENU.out((unsigned int) PULSES.pulses[pulse].last.time);
   MENU.slash();
@@ -3472,6 +3568,7 @@ void pulse_info(int pulse) {
   MENU.out(PULSES.pulses[pulse].next.time);
   MENU.slash();
   MENU.out(PULSES.pulses[pulse].next.overflow);
+#endif // old int overflow style
 
   MENU.tab();
   MENU.out(F("expected "));
@@ -3683,8 +3780,8 @@ int init_jiffle(unsigned int *jiffle, pulse_time_t when, pulse_time_t new_period
 {
   int pulse;
   pulse_time_t jiffle_period=new_period;
-
-  jiffle_period.time = new_period.time * jiffle[0] / jiffle[1];
+  PULSES.mul_time(&jiffle_period, jiffle[0]);
+  PULSES.div_time(&jiffle_period, jiffle[1]);
 
   pulse = PULSES.setup_pulse(&do_jiffle, ACTIVE, when, jiffle_period);
   if ((pulse > -1) && (pulse < PL_MAX) && (pulse != ILLEGAL32)) {
@@ -3693,7 +3790,7 @@ int init_jiffle(unsigned int *jiffle, pulse_time_t when, pulse_time_t new_period
     PULSES.pulses[pulse].index = 0;				// init phase 0
     PULSES.pulses[pulse].countdown = jiffle[2];			// count of first phase
     PULSES.pulses[pulse].data = (unsigned int) jiffle;
-    PULSES.pulses[pulse].base_time = new_period.time;
+    PULSES.pulses[pulse].base_period = new_period;
 #if defined USE_DACs
     PULSES.pulses[pulse].dac1_intensity = PULSES.pulses[origin_pulse].dac1_intensity;
   #if (USE_DACs > 1)
@@ -3749,8 +3846,7 @@ int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned 
   for (int pulse=0; pulse<voices; pulse++)
     if (PULSES.pulse_is_selected(pulse)) {
       PULSES.reset_and_edit_pulse(pulse, PULSES.time_unit);
-      PULSES.pulses[pulse].period.time = 3110;	// brute force for compatibility ;)
-      PULSES.pulses[pulse].period.overflow = 0;	// brute force for compatibility ;)
+      PULSES.pulses[pulse].period = PULSES.simple_time(3110);	// brute force for compatibility ;)
       en_jiffle_thrower(pulse, selected_in(JIFFLES), this_or_next_gpio(pulse), 0);
     }
   //  int selected_apply_scale_on_period(int voices, unsigned int *scale, bool octaves=true);
@@ -4110,7 +4206,7 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
   PULSES.pulses[pulse].index		jiffletab index
   PULSES.pulses[pulse].countdown	count down
   PULSES.pulses[pulse].data		jiffletab[] pointer
-  PULSES.pulses[pulse].base_time	base period = period of starting pulse
+  PULSES.pulses[pulse].base_period	base period = period of starting pulse
 */
   if(PULSES.pulses[pulse].gpio != ILLEGAL8)
     digitalWrite(PULSES.pulses[pulse].gpio, PULSES.pulses[pulse].counter & 1);	// click
@@ -4145,8 +4241,15 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
     PULSES.init_pulse(pulse);		// remove pulse
     return;				// and return
   }
-  PULSES.pulses[pulse].period.time =
-    PULSES.pulses[pulse].base_time * jiffletab[base_index] / jiffletab[base_index+1];
+#if defined TIMES_DOUBLE
+  PULSES.pulses[pulse].period = PULSES.pulses[pulse].base_period;
+  PULSES.mul_time(&PULSES.pulses[pulse].period, jiffletab[base_index]);
+  PULSES.div_time(&PULSES.pulses[pulse].period, jiffletab[base_index+1]);
+#else // old int overflow style
+  PULSES.pulses[pulse].period.time = \
+    PULSES.pulses[pulse].base_period * jiffletab[base_index] / jiffletab[base_index+1];
+  PULSES.pulses[pulse].countdown = jiffletab[base_index+2];		// count of next phase
+#endif
   PULSES.pulses[pulse].countdown = jiffletab[base_index+2];		// count of next phase
 } // do_jiffle(p)
 
@@ -5283,8 +5386,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (input_value>=0) {
 	for (int pulse=0; pulse<PL_MAX; pulse++)
 	  if (PULSES.pulse_is_selected(pulse)) {
-	    time_scratch.time = PULSES.time_unit;
-	    time_scratch.overflow = 0;
+	    time_scratch = PULSES.simple_time(PULSES.time_unit);
 	    PULSES.mul_time(&time_scratch, input_value);
 	    PULSES.set_new_period(pulse, time_scratch);
 	  }

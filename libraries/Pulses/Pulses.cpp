@@ -110,8 +110,7 @@ Pulses::~Pulses() {
 #if defined TIMES_DOUBLE
 
 pulse_time_t Pulses::INVALID_time() {
-  uint64_t invalid_time64=(ILLEGAL32<<32);
-  return (pulse_time_t) invalid_time64;
+  return (pulse_time_t) 999999999.0;	// INVALID_time() TODO: select value
 }
 
 #else // old int overflow style
@@ -168,6 +167,7 @@ pulse_time_t Pulses::get_now() {	// get time, set now.time and now.overflow
   extern void get_timer64_value(uint64_t* value64);
   get_timer64_value(&now64);
   now = (pulse_time_t) now64;	//
+
 #else // old int overflow style
   now.time = micros();
 
@@ -204,44 +204,70 @@ pulse_time_t Pulses::simple_time(unsigned long integer_only_time) {
   return int_time;
 }
 
+//	#if defined TIMES_DOUBLE
+//	signed int Pulses::cmp_times(pulse_time_t a, pulse_time_t b) {	// later, a>b: 1	a==b: 0		earlyer a<b: -1
+//	  if(a < b)	// a < b
+//	    return -1;
+//	  if(a > b)	// a > b
+//	    return 1;
+//
+//	  return 0;	// a == b
+//	}
+//
+//	#else // old int overflow style
+//	signed int Pulses::cmp_times(pulse_time_t a, pulse_time_t b) {	// later, a>b: 1	a==b: 0		earlyer a<b: -1
+//	  if(a.overflow < b.overflow)	// a < b
+//	    return -1;
+//	  if(a.overflow > b.overflow)	// a > b
+//	    return 1;
+//
+//	  if(a.time < b.time)	// a < b
+//	    return -1;
+//	  if(a.time > b.time)	// a > b
+//	    return 1;
+//
+//	  return 0;		// a == b
+//	}
+//	#endif // old int overflow style
 
-// add_time(), sub_time(), mul_time(), div_time():
 
 #if defined TIMES_DOUBLE
+// add_time(), sub_time(), mul_time(), div_time():
 
-void Pulses::add_time(pulse_time_t *delta, pulse_time_t *sum)
+void Pulses::add_time(pulse_time_t *delta, pulse_time_t *sum)	// TIMES_DOUBLE
 {
   *sum += *delta;
 }
 
-void Pulses::sub_time(pulse_time_t *delta, pulse_time_t *sum)
+void Pulses::sub_time(pulse_time_t *delta, pulse_time_t *sum)	// TIMES_DOUBLE
 {
   *sum -= *delta;
 }
 
-void Pulses::add_time(unsigned long time, pulse_time_t *sum)	// TODO: check if still needed
+void Pulses::add_time(unsigned long time, pulse_time_t *sum)	// TIMES_DOUBLE	// TODO: check if still needed
 {
   *sum += (pulse_time_t) time;
 }
 
-void Pulses::sub_time(unsigned long time, pulse_time_t *sum)	// TODO: check if still needed
+void Pulses::sub_time(unsigned long time, pulse_time_t *sum)	// TIMES_DOUBLE	// TODO: check if still needed
 {
   *sum -= (pulse_time_t) time;
 }
 
-void Pulses::mul_time(pulse_time_t *duration, unsigned int factor)
+void Pulses::mul_time(pulse_time_t *duration, unsigned int factor)	// TIMES_DOUBLE
 {
   *duration *= factor;
 }
 
-void Pulses::div_time(pulse_time_t *duration, unsigned int divisor)
+void Pulses::div_time(pulse_time_t *duration, unsigned int divisor)	// TIMES_DOUBLE
 {
   *duration /= divisor;
 }
 
 #else // old int overflow style
+// add_time(), sub_time(), mul_time(), div_time():
 
-void Pulses::add_time(pulse_time_t *delta, pulse_time_t *sum)
+void Pulses::add_time(pulse_time_t *delta, pulse_time_t *sum)	// old int overflow style
 {
   unsigned long last=(*sum).time;
 
@@ -254,7 +280,7 @@ void Pulses::add_time(pulse_time_t *delta, pulse_time_t *sum)
 
 // As time is unsigned we need a separate sub_time()
 // to have access to the full unsigned value range.
-void Pulses::sub_time(pulse_time_t *delta, pulse_time_t *sum)
+void Pulses::sub_time(pulse_time_t *delta, pulse_time_t *sum)	// old int overflow style
 {
   unsigned long last=(*sum).time;
 
@@ -265,7 +291,7 @@ void Pulses::sub_time(pulse_time_t *delta, pulse_time_t *sum)
 }
 
 
-void Pulses::add_time(unsigned long time, pulse_time_t *sum)
+void Pulses::add_time(unsigned long time, pulse_time_t *sum)	// old int overflow style
 {
   unsigned long last=(*sum).time;
 
@@ -277,7 +303,7 @@ void Pulses::add_time(unsigned long time, pulse_time_t *sum)
 
 // As time is unsigned we need a separate sub_time()
 // to have access to the full unsigned value range.
-void Pulses::sub_time(unsigned long time, pulse_time_t *sum)
+void Pulses::sub_time(unsigned long time, pulse_time_t *sum)	// old int overflow style
 {
   unsigned long last=(*sum).time;
 
@@ -289,7 +315,7 @@ void Pulses::sub_time(unsigned long time, pulse_time_t *sum)
 
 // #define OLD_BROKEN_ESP8266_COMPATIBILITY  // switches bug back on, might influence old setups ;)
 //
-void Pulses::mul_time(pulse_time_t *duration, unsigned int factor)
+void Pulses::mul_time(pulse_time_t *duration, unsigned int factor)	// old int overflow style
  {
   unsigned long scratch;
   unsigned long result=0;
@@ -326,7 +352,7 @@ void Pulses::mul_time(pulse_time_t *duration, unsigned int factor)
 }
 
 
-void Pulses::div_time(pulse_time_t *duration, unsigned int divisor)
+void Pulses::div_time(pulse_time_t *duration, unsigned int divisor)	// old int overflow style
 {
   if(divisor==0)
     return;
@@ -362,6 +388,7 @@ void Pulses::div_time(pulse_time_t *duration, unsigned int divisor)
   (*duration).time=result;
 } // div_time() oldstyle
 #endif // no TIMES_DOUBLE
+
 
 void Pulses::multiply_period(int pulse, unsigned long factor) {	// integer math
   pulse_time_t new_period;
@@ -434,8 +461,12 @@ void Pulses::wake_pulse(int pulse) {
 
 #ifdef IMPLEMENT_TUNING
   if (pulses[pulse].flags & TUNED) {
+  #if defined TIMES_DOUBLE
+    pulses[pulse].period = pulses[pulse].other_time / tuning;
+  #else // old int overflow style
     pulses[pulse].period.time = pulses[pulse].other_time.time / tuning;
     // period lengths with overflow are *not* supported with tuning
+  #endif // old int overflow style
   }
 #endif
 
@@ -457,12 +488,17 @@ void Pulses::wake_pulse(int pulse) {
 
     if (action_flags & doesICODE) {		// play icode   (payload already done)
       play_icode(pulse);
-      if ((pulses[pulse].period.time == 0) && (pulses[pulse].period.overflow == 0))	// pulse got killed?
+      if (pulses[pulse].period == simple_time(0))	// pulse got killed?
 	return;
     }
   }
 
   // prepare future:
+#if defined TIMES_DOUBLE
+  pulses[pulse].last = pulses[pulse].next;	// when it *should* have happened
+  pulses[pulse].next += pulses[pulse].period;	// when it should happen again
+
+#else // old int overflow style
   pulses[pulse].last.time = pulses[pulse].next.time;	// when it *should* have happened
   pulses[pulse].last.overflow = pulses[pulse].next.overflow;
   pulses[pulse].next.time += pulses[pulse].period.time;	// when it should happen again
@@ -470,6 +506,7 @@ void Pulses::wake_pulse(int pulse) {
 
   if (pulses[pulse].last.time > pulses[pulse].next.time)
     pulses[pulse].next.overflow++;
+#endif // old int overflow style
 
   if (pulses[pulse].flags & COUNTED) {	// COUNTED pulse && end reached?
     if(--pulses[pulse].remaining < 1) {		// END REACHED with 0,	(below just as savety net ;)
@@ -479,7 +516,7 @@ void Pulses::wake_pulse(int pulse) {
 	init_pulse(pulse);			//     no:  DELETE pulse
     }
   }
-}
+} // wake_pulse(p)
 
 
 void Pulses::deactivate_pulse(int pulse) {	// clear ACTIVE flag, keep data
@@ -804,18 +841,14 @@ void Pulses::reset_and_edit_pulse(int pulse, unsigned long time_unit) {
   pulses[pulse].flags &= ~ACTIVE;	// remove ACTIVE
 
   // set a default pulse length:
-  pulse_time_t scratch;
-  scratch.time = time_unit;
-  scratch.overflow = 0;
-  pulses[pulse].period = scratch;
-}
+  pulses[pulse].period = simple_time(time_unit);
+} // reset_and_edit_pulse(
 
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
 void Pulses::activate_tuning(int pulse) {	// copy period to other_time and set TUNING flag
   pulses[pulse].flags |= TUNED;
-  pulses[pulse].other_time.time = pulses[pulse].period.time;
-  pulses[pulse].other_time.overflow = pulses[pulse].period.overflow;
+  pulses[pulse].other_time = pulses[pulse].period;
 
   fix_global_next();	// looks like we do not need this?
 }
@@ -830,6 +863,42 @@ void Pulses::stop_tuning(int pulse) {	// the pulse stays as it is, but no furthe
 
 
 // find fastest pulse (in case of emergency)
+#if defined TIMES_DOUBLE
+int Pulses::fastest_pulse() {	// *not* dealing with period overflow here...
+  pulse_time_t min_period=0xefffffffffffffff;
+  int fast_pulse=-1;
+
+  for (int pulse=pl_max-1; pulse>-1; pulse--) {	// start with *highest* pulse index downwards
+    if (pulses[pulse].flags & ACTIVE && pulses[pulse].period < min_period) {
+      min_period = pulses[pulse].period;
+      fast_pulse = pulse;
+    }
+  }
+  return fast_pulse;
+} // fastest_pulse()
+
+int Pulses::fastest_from_selected() {
+  double min_period=0.0;
+  int fast_pulse=-1;
+
+  for (int pulse=pl_max-1; pulse>-1; pulse--) {	// start with *highest* pulse index downwards
+    if(pulse_is_selected(pulse)) {		// SELECTED IS ENOUGH, *no need to be ACTIVE*
+      if(min_period) {	// not first date
+	if(pulses[pulse].period < min_period) {
+	  min_period = pulses[pulse].period;
+	  fast_pulse = pulse;
+	}
+      } else {		// first one
+	min_period = pulses[pulse].period;
+	fast_pulse = pulse;
+      }
+    }
+  }
+
+  return fast_pulse;
+} // fastest_from_selected()
+
+#else // old int overflow style
 int Pulses::fastest_pulse() {	// *not* dealing with period overflow here...
   double min_period=0xefffffffffffffff;
   int fast_pulse=-1;
@@ -842,7 +911,6 @@ int Pulses::fastest_pulse() {	// *not* dealing with period overflow here...
   }
   return fast_pulse;
 }
-
 
 int Pulses::fastest_from_selected() {	// no overflow here...
   double min_period=0;
@@ -864,6 +932,8 @@ int Pulses::fastest_from_selected() {	// no overflow here...
 
   return fast_pulse;
 }
+#endif // old int overflow style
+
 
 int Pulses::add_selected_to_group(group_flags_t groups_to_set) {	// add selected pulses to groups
   int set=0;
@@ -909,6 +979,9 @@ void Pulses::show_group_mnemonics(int pulse) {
 // to start properly you *must* call this once, late in setup()
 // will automagically get updated later on
 void Pulses::fix_global_next() {
+#if defined HEAVYDEBUG
+  (*MENU).out("fix_global_next()\t");		// REMOVE: HEAVYDEBUG
+#endif
 /* This version calculates global next event[s] *once* when the next
    event could possibly have changed.
 
@@ -922,13 +995,45 @@ void Pulses::fix_global_next() {
 
   // we work directly on the global variables here:
   global_next = INVALID_time();
+#if defined HEAVYDEBUG
+//  (*MENU).out("INVALID_time==");	// REMOVE: HEAVYDEBUG
+//  (*MENU).out(global_next);		// REMOVE: HEAVYDEBUG
+#endif
   global_next_count=0;
 
+#if defined TIMES_DOUBLE
+  for (int pulse=0; pulse<pl_max; pulse++) {		// check all pulses
+    if (pulses[pulse].flags & ACTIVE) {			// pulse active?
+      if (pulses[pulse].next < global_next) {		//   yes: earlier?
+	global_next = pulses[pulse].next;			//   yes: reset search
+	global_next_pulses[0] = pulse;
+	global_next_count = 1;
+#if defined HEAVYDEBUG
+	(*MENU).out(" P");		// REMOVE: HEAVYDEBUG
+	(*MENU).out(pulse);		// REMOVE: HEAVYDEBUG
+	(*MENU).out(" ");		// REMOVE: HEAVYDEBUG
+#endif
+      } else if(pulses[pulse].next == global_next) {	// maybe same time?
+	global_next_pulses[global_next_count++]=pulse;	//   yes: save pulse, count++
+#if defined HEAVYDEBUG
+	(*MENU).out(" p");		// REMOVE: HEAVYDEBUG
+	(*MENU).out(pulse);		// REMOVE: HEAVYDEBUG
+	(*MENU).out(" ");		// REMOVE: HEAVYDEBUG
+#endif
+      } // same time
+    } // active?
+  } // pulse loop
+
+#if defined HEAVYDEBUG
+  (*MENU).out("\tglobal_next_count ");		// REMOVE: HEAVYDEBUG
+  (*MENU).outln(global_next_count);		// REMOVE: HEAVYDEBUG
+#endif
+
+#else // old int overflow style
   for (int pulse=0; pulse<pl_max; pulse++) {		// check all pulses
     if (pulses[pulse].flags & ACTIVE) {				// pulse active?
       if (pulses[pulse].next.overflow < global_next.overflow) {	// yes: earlier overflow?
-	global_next.time = pulses[pulse].next.time;		//   yes: reset search
-	global_next.overflow = pulses[pulse].next.overflow;
+	global_next = pulses[pulse].next;			//   yes: reset search
 	global_next_pulses[0] = pulse;
 	global_next_count = 1;
       } else {					// same (or later) overflow:
@@ -945,9 +1050,17 @@ void Pulses::fix_global_next() {
       }
     } // active?
   } // pulse loop
+#endif // old int overflow style
+} // fix_global_next()
+
+
+#if defined TIMES_DOUBLE
+bool Pulses::time_reached(pulse_time_t time_limit) {
+  get_now();
+  return now >= time_limit;
 }
 
-
+#else // old int overflow style
 bool Pulses::time_reached(pulse_time_t time_limit) {
   get_now();
   if(now.overflow == time_limit.overflow)
@@ -955,6 +1068,7 @@ bool Pulses::time_reached(pulse_time_t time_limit) {
   else
     return (now.overflow > time_limit.overflow);
 }
+#endif // old int overflow style
 
 
 #if defined USE_DACs
@@ -1065,25 +1179,28 @@ Serial.println();
 bool Pulses::check_maybe_do() {
   get_now();	// updates now
 
-  if (global_next.overflow == now.overflow) {	// current overflow period?
-    if (global_next.time <= now.time) {		//   yes: is it time?
-      for (unsigned int i=0; i<global_next_count; i++)	//     yes:
-	wake_pulse(global_next_pulses[i]);	//     wake next pulses up
+#if defined HEAVYDEBUG
+  (*MENU).out("check_maybe_do(), now ");		// REMOVE: HEAVYDEBUG
+  (*MENU).outln(now);			// REMOVE: HEAVYDEBUG
+  (*MENU).out("global_next ");		// REMOVE: HEAVYDEBUG
+  (*MENU).out(global_next);		// REMOVE: HEAVYDEBUG
+#endif
+  if(time_reached(global_next)) {
+#if defined HEAVYDEBUG
+    (*MENU).outln("\tREACHED");		// REMOVE: HEAVYDEBUG
+#endif
+    for (unsigned int i=0; i<global_next_count; i++)
+      wake_pulse(global_next_pulses[i]);	//     wake next pulses up
 
-      fix_global_next();			// determine next event[s] serie
-      return true;		// *did* do something
-    }
-  } else					// (earlier or later overflow)
-    if (global_next.overflow < now.overflow) {	// earlier overflow period?
-      for (unsigned int i=0; i<global_next_count; i++)	//   yes, we're late...
-	wake_pulse(global_next_pulses[i]);	//     wake next pulses up
+    fix_global_next();				// determine next event[s] serie
+    return true;				// *did* do something
+  }
 
-      fix_global_next();			// determine next event[s] serie
-      return true;		// *did* do something
-    }
-
+#if defined HEAVYDEBUG
+  (*MENU).outln("\twaiting");
+#endif
   return false;			// *no* not the right time yet
-}
+} // check_maybe_do()
 
 
 int Pulses::setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
@@ -1108,28 +1225,31 @@ int Pulses::setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
   pulses[pulse].flags = new_flags;			// initialize pulse
   set_payload(pulse, pulse_do);
 
-  pulses[pulse].next.time = when.time;			// next wake up time
-  pulses[pulse].next.overflow = when.overflow;
-  pulses[pulse].period.time = new_period.time;
-  pulses[pulse].period.overflow = new_period.overflow;
+  pulses[pulse].next = when;				// next wake up time
+  pulses[pulse].period = new_period;
 
   // fix_global_next();	// this version does *not* automatically call that here...
 
   return pulse;
-}
+} // setup_pulse()
 
 
 void Pulses::set_new_period(int pulse, pulse_time_t new_period) {
-  pulses[pulse].period.time = new_period.time;
-  pulses[pulse].period.overflow = new_period.overflow;
+  pulses[pulse].period = new_period;
 
+#if defined TIMES_DOUBLE
+  pulses[pulse].next = pulses[pulse].last;
+  add_time(&pulses[pulse].period, &pulses[pulse].next);
+
+#else // old int overflow style
   pulses[pulse].next.time = pulses[pulse].last.time + pulses[pulse].period.time;
   pulses[pulse].next.overflow = pulses[pulse].last.overflow + pulses[pulse].period.overflow;
   if(pulses[pulse].next.time < pulses[pulse].last.time)
     pulses[pulse].next.overflow++;
+#endif // old int overflow style
 
   fix_global_next();	// it's saver to do that from here, but could be omitted.
-}
+} // set_new_period()
 
 
 /* **************************************************************** */
@@ -1144,8 +1264,13 @@ void Pulses::set_new_period(int pulse, pulse_time_t new_period) {
 void Pulses::activate_pulse_synced(int pulse, \
 				   pulse_time_t when, int sync)
 {
-  if (pulses[pulse].period.time==0)	// ignore invalid pulses with period==0
+#if defined TIMES_DOUBLE
+  if (pulses[pulse].period == 0.0)	// ignore invalid pulses with period==0
     return;
+#else // old int overflow style
+  if (pulses[pulse].period.time == 0)	// ignore invalid pulses with period==0
+    return;
+#endif // old int overflow style
 
   if (sync) {
     pulse_time_t delta = pulses[pulse].period;
@@ -1160,7 +1285,7 @@ void Pulses::activate_pulse_synced(int pulse, \
   // now switch it on
   pulses[pulse].flags |= ACTIVE;	// set ACTIVE
   pulses[pulse].flags &= ~SCRATCH;	// clear SCRATCH
-}
+} // activate_pulse_synced()
 
 
 void Pulses::show_pulse_flag_mnemonics(pulse_flags_t flags) {	// show pulse flags as mnemonics
@@ -1208,7 +1333,7 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
     pulses[pulse].icode_p	icode start pointer
     pulses[pulse].icode_index	icode index
     pulses[pulse].countdown	count down
-    pulses[pulse].base_time	base period = period of starting pulse
+    pulses[pulse].base_period	base period = period of starting pulse
     pulses[pulse].gpio		maybe click pin
   */
 
@@ -1249,7 +1374,9 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
       case WAIT:
 	multiplier = *icode_p++;
 	divisor = *icode_p++;
-	pulses[pulse].period.time = pulses[pulse].base_time * multiplier / divisor;
+	pulses[pulse].period = pulses[pulse].base_period;
+	mul_time(&pulses[pulse].period, multiplier);
+	div_time(&pulses[pulse].period, divisor);
 	// busy = false;
 	break;
 
@@ -1308,7 +1435,7 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	break;
 
       case DONE:
-	pulses[pulse].period.time = pulses[pulse].base_time;	// might make sense, sometimes
+	pulses[pulse].period = pulses[pulse].base_period;	// might make sense, sometimes
 	pulses[pulse].countdown = 0;
 	icode_p = pulses[pulse].icode_p;
 	pulses[pulse].icode_index = 0;
@@ -1361,9 +1488,12 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
       } else if (counter==0) {	// WAIT?
 #if defined DEBUG_ICODE
       (*MENU).out("\nwait ");
-      (*MENU).outln(pulses[pulse].base_time * multiplier / divisor);
+      (*MENU).outln(pulses[pulse].base_period * multiplier / divisor);
 #endif
-	pulses[pulse].period.time = pulses[pulse].base_time * multiplier / divisor;
+	pulses[pulse].period = pulses[pulse].base_period;
+	mul_time(&pulses[pulse].period, multiplier);
+	div_time(&pulses[pulse].period, divisor);
+
 	pulses[pulse].counter--;	// *WAITING IS NOT COUNTED AS A SEPARATE PULSE*
 	busy = false;
 	icode_p += 3;
@@ -1373,10 +1503,12 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	  (*MENU).out(F("INIT jiff\tcounter "));
 	  (*MENU).out(counter);
 	  (*MENU).out(F("\ttim "));
-	  (*MENU).outln(pulses[pulse].base_time * multiplier / divisor);
+	  (*MENU).outln(pulses[pulse].base_period * multiplier / divisor);
 #endif
 	  pulses[pulse].countdown = counter;		// initalise counter of next phase
-	  pulses[pulse].period.time = pulses[pulse].base_time * multiplier / divisor;
+	  pulses[pulse].period = pulses[pulse].base_period;
+	  mul_time(&pulses[pulse].period, multiplier);
+	  div_time(&pulses[pulse].period, divisor);
 	}
 
 	if((pulses[pulse].flags & HAS_GPIO) && (pulses[pulse].gpio != ILLEGAL8))
@@ -1475,10 +1607,15 @@ void Pulses::time_info() {
 
 // display a time in seconds:
 float Pulses::display_realtime_sec(pulse_time_t duration) {
+#if defined TIMES_DOUBLE
+  float seconds = duration / 1000000.0;
+
+#else // old int overflow style
   float seconds=((float) ((unsigned long) duration.time) / 1000000.0);
 
   if (duration.overflow != 0)
     seconds += overflow_sec * (float) ((signed long) duration.overflow);
+#endif // old int overflow style
 
   float scratch = 1000.0;
   float limit = abs(seconds);
@@ -1497,14 +1634,19 @@ float Pulses::display_realtime_sec(pulse_time_t duration) {
   (*MENU).out('s');
 
   return seconds;
-}
+} // display_realtime_sec()
 
 
 // void display_time_human_format(pulse_time_t duration);	// everyday time format	d h m s  formatted with spaces
 void Pulses::display_time_human_format(pulse_time_t duration) {
+#if defined TIMES_DOUBLE
+  unsigned long seconds = ((duration / 1000000.0) + 0.5);
+#else // old int overflow style
+
   unsigned long seconds = (((float) duration.time / 1000000.0) + 0.5);
   if (duration.overflow)
     seconds += duration.overflow * 4295;
+#endif // old int overflow style
 
   unsigned int days = seconds / 86400;
   seconds %= 86400;
@@ -1534,13 +1676,18 @@ void Pulses::display_time_human_format(pulse_time_t duration) {
 
   if(seconds<10 && minutes==0 && hours==0 && days==0)	// fall back to float time display below 10 seconds
     display_realtime_sec(duration);
-}
+} // display_time_human_format()
 
 
 void Pulses::display_time_human(pulse_time_t duration) {  // everyday time format d h m s short
+#if defined TIMES_DOUBLE
+  unsigned long seconds = ((duration / 1000000.0) + 0.5);
+
+#else // old int overflow style
   unsigned long seconds = (((float) duration.time / 1000000.0) + 0.5);
   if (duration.overflow)
     seconds += duration.overflow * 4295;
+#endif // old int overflow style
 
   unsigned int days = seconds / 86400;
   seconds %= 86400;
@@ -1569,11 +1716,15 @@ void Pulses::display_time_human(pulse_time_t duration) {  // everyday time forma
   }
   (*MENU).out(seconds);
   (*MENU).out(F("\" "));
-}
+} // display_time_human()
 
 
 void Pulses::print_period_in_time_units(int pulse) {
+#if defined TIMES_DOUBLE
+  float time_units = ((float) pulses[pulse].period / (float) time_unit);
+#else // old int overflow style
   float time_units = ((float) pulses[pulse].period.time / (float) time_unit);
+#endif // old int overflow style
 
   // (*MENU).out(F("pulse "));
 
@@ -1589,19 +1740,23 @@ void Pulses::print_period_in_time_units(int pulse) {
 
   (*MENU).out((float) time_units, 6);
   (*MENU).out(F(" time"));
-}
+} // print_period_in_time_units
 
 
 // mainly for debugging
 void Pulses::display_real_ovfl_and_sec(pulse_time_t then) {
+#if defined TIMES_DOUBLE
+#else // old int overflow style
   (*MENU).out(F("tic/ofl "));
   (*MENU).out(then.time);
   (*MENU).slash();
   (*MENU).out((signed long) then.overflow);
   (*MENU).space();
   (*MENU).out('=');
+#endif // old int overflow style
+
   display_realtime_sec(then);
-}
+} // display_real_ovfl_and_sec()
 
 
 void Pulses::reset_and_edit_selected() {	// FIXME: replace
@@ -1658,7 +1813,7 @@ void Pulses::show_selected_mask() {
   }
 
   (*MENU).ln();
-}
+} // show_selected_mask()
 
 
 void Pulses::maybe_show_selected_mask() {

@@ -562,6 +562,10 @@ void show_cycle(pulse_time_t cycle) {
   }
   MENU.ln();
 
+#if defined TIMES_DOUBLE
+  MENU.outln(F("todo: maybe give subcycle infos?"));	// TODO:
+
+#else // old int overflow style
   int i=0;
   //                                   !!!  a tolerance of 128 seemed *not* to be enough
   while(cycle.time >= (CyclesConf.used_subcycle.time - 256/*tolerance*/) || \
@@ -589,6 +593,7 @@ void show_cycle(pulse_time_t cycle) {
 
   if(i % 4)	// 4 items a line
     MENU.ln();
+#endif // old int overflow style
 } // show_cycle()
 
 
@@ -696,7 +701,7 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
   if(this_time.overflow != PULSES.pulses[pulse].last.overflow)
     MENU.outln(F("over"));
   */
-  Harmonical::fraction_t phase = {this_time.time, PULSES.pulses[pulse].period.time};
+  // Harmonical::fraction_t phase = {this_time.time, PULSES.pulses[pulse].period.time};
   // float float_phase = this_time.time / PULSES.pulses[pulse].period.time;	// not used
   Harmonical::fraction_t this_division = {cycle_monitor_last_seen_division, cycle_slices};
   (*HARMONICAL).reduce_fraction(&this_division);
@@ -729,6 +734,8 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
     if(MENU.verbosity >= VERBOSITY_SOME) {
       MENU.out(F("\tw="));
       MENU.out(slice_weighting(this_division));
+      MENU.out(F("\tnow="));
+      PULSES.display_time_human(PULSES.now);
     }
   }
 
@@ -905,13 +912,12 @@ void toggle_magic_autochanges() {
   if(magic_autochanges = !magic_autochanges) {	// if magic_autochanges got *SWITCHED ON*
     if(musicBox_butler_i != ILLEGAL32) {	// deal with soft_end_time
       pulse_time_t thisNow = PULSES.get_now();
-      pulse_time_t soft_end_time;
+      pulse_time_t soft_end_time;	// scratch
       int cnt=0;
       while (true)
 	{
 	  soft_end_time = butler_soft_end_time;
-	  PULSES.sub_time(&thisNow, &soft_end_time);
-	  if(soft_end_time.overflow) {	// add subcycles until soft_end_time is in future
+	  if(PULSES.time_reached(soft_end_time)) {
 	    PULSES.add_time(&CyclesConf.used_subcycle, &butler_soft_end_time);
 	    cnt++;
 	  } else
@@ -1596,7 +1602,7 @@ int last_counter_sum=0;	// sum of counters of all relevant pulses
 //#define DEBUG_CLEANUP  TODO: maybe remove debug code, but can give interesting insights...
 
 void magical_cleanup(int p) {	// deselect unused primary pulses, check if playing has ended
-  static pulse_time_t inactivity_limit_time={0,0};
+  static pulse_time_t inactivity_limit_time=PULSES.simple_time(0);
 
   if(!magic_autochanges)	// completely switched off by magic_autochanges==false
     return;			// noop
@@ -2692,13 +2698,20 @@ void start_musicBox() {
     CyclesConf.subcycle_octave = 0;
 
     if(max_subcycle_seconds) {
-      CyclesConf.used_subcycle={MAX_SUBCYCLE_SECONDS*1000000L,0};
+      CyclesConf.used_subcycle = PULSES.simple_time(max_subcycle_seconds*1000000L);
       pulse_time_t this_subcycle=CyclesConf.harmonical_CYCLE;
       while(true) {
+#if defined TIMES_DOUBLE
+	if(this_subcycle <= CyclesConf.used_subcycle) {
+	  CyclesConf.used_subcycle = this_subcycle;
+	  break;
+	}
+#else // old int overflow style
 	if(this_subcycle.time <= CyclesConf.used_subcycle.time && this_subcycle.overflow==CyclesConf.used_subcycle.overflow) {
 	  CyclesConf.used_subcycle = this_subcycle;
 	  break;
 	}
+#endif
 	PULSES.div_time(&this_subcycle, 2);
 	CyclesConf.subcycle_octave++;
       }
@@ -3104,7 +3117,7 @@ void musicBox_setup() {	// TODO:update
 
 #if defined MAX_SUBCYCLE_SECONDS
   MENU.out(F("cycle used max seconds:\t"));
-    MENU.outln(MAX_SUBCYCLE_SECONDS);
+  MENU.outln(max_subcycle_seconds);
 #endif
 
 #if defined MUSICBOX_PERFORMACE_SECONDS

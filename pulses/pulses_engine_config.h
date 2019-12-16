@@ -10,6 +10,8 @@
 
 #define PRENAME_MAX_LENGTH	15		// *excluding* '\0'
 
+#define TIMES_DOUBLE	// start implementing...	// TODO: MOVE: where?
+
 //#define USE_ESP_NOW	// starts working :)	// compiles fine when switched off, but
 			// TODO: watch sketch size!	check WiFI and Bt stuff
 
