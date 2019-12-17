@@ -6,6 +6,11 @@
 
 */
 
+#if ! defined MY_PULSES_CONFIG_H
+
+#define FAMILY_NAME	SoundShip1		// configuration family
+/*			0123456789abcdef	// 16 bytes	*/
+
 /* set PRENAME:
    better use nvs_PRENAME	see: nvs_pulses_setup.h		NVS_PUT_PRENAME_HACK
 */
@@ -15,7 +20,7 @@
 #define FAMILY_NAME	SoundShip3D		// configuration family	// see: pulses_engine_config.h
 // /*			0123456789abcdef	// 16 bytes	*/
 
-#define TIMES_DOUBLE	// start implementing...
+#define PULSES_USE_DOUBLE_TIMES	// working fine :)
 
 //#define USE_ADS1115_AT_ADDR	0x48
 
@@ -82,5 +87,8 @@
 #define HIGH_PRIORITY_RGB_LED_UPDATE		// TODO: TEST MOVE:
 #define RGB_LED_STRING_VOLTAGE_TYPE	5	// TODO: TEST MOVE:
 
-#undef MAX_SUBCYCLE_SECONDS		// TODO: REMOVE: test only
-#define MAX_SUBCYCLE_SECONDS	2*3600	// TODO: REMOVE: test only
+#undef MAX_SUBCYCLE_SECONDS			// TODO: REMOVE: test only	catch the 16'40" bug
+#define MAX_SUBCYCLE_SECONDS	(2*3600)	// TODO: REMOVE: test only	catch the 16'40" bug
+
+#define MY_PULSES_CONFIG_H
+#endif

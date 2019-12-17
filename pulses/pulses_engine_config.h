@@ -5,12 +5,12 @@
   do not change
 */
 
-#define FAMILY_NAME	SoundShip1		// configuration family
-/*			0123456789abcdef	// 16 bytes	*/
+#if ! defined PULSES_ENGINE_CONFIG_H
 
 #define PRENAME_MAX_LENGTH	15		// *excluding* '\0'
 
-#define TIMES_DOUBLE	// start implementing...	// TODO: MOVE: where?
+
+#define PULSES_USE_DOUBLE_TIMES		// working fine :)
 
 //#define USE_ESP_NOW	// starts working :)	// compiles fine when switched off, but
 			// TODO: watch sketch size!	check WiFI and Bt stuff
@@ -52,4 +52,7 @@
 #if defined ESP32
   #define USE_NVS		// always used on ESP32
   #define USE_NVS_MENU		// to set up all the instruments...
+#endif
+
+#define PULSES_ENGINE_CONFIG_H
 #endif

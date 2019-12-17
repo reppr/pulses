@@ -222,7 +222,7 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
       if(selected_in(SCALES) != NULL) {
 	monochrome_show_subcycle_octave();
 	u8x8.print(' ');
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
 	unsigned long seconds = ((CyclesConf.used_subcycle / 1000000.0) + 0.5);	// TODO: factor out, build a string
 #else // old int overflow style
 	unsigned long seconds = (((float) CyclesConf.used_subcycle.time / 1000000.0) + 0.5);	// TODO: factor out, build a string

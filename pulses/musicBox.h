@@ -3,6 +3,7 @@
 */
 
 #include "musicBox_config.h"	// included in the configuration sequence
+#include "my_pulses_config.h"
 
 /* **************************************************************** */
 // some DEFAULTs, setups might change them
@@ -21,9 +22,12 @@
 // pre defined SETUPS:
 
 #if defined SETUP_PORTABLE_DAC_ONLY
+
   #define PERIPHERAL_POWER_SWITCH_PIN		12	// *pseudo* for green LED,  switch power, often green LED
   #define PROGRAM_SUB_VERSION			portable 3D	// with morse and 3D accGyro UI
-  #define MAX_SUBCYCLE_SECONDS			60*12	// *max seconds*, produces short PRESET PIECES	   portable instruments 2019-06
+  #if ! defined MAX_SUBCYCLE_SECONDS
+    #define MAX_SUBCYCLE_SECONDS		60*20	// *max seconds*, produces short PRESET PIECES	   portable instruments 2019-06
+  #endif
 //#define MUSICBOX_HARD_END_SECONDS		60*100	// SAVETY NET shut down after 100'	***DEACTIVATED***
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3600*12	// *DEACTIVATED*
   #define SOFT_END_DAYS_TO_LIVE_DEFAULT		1	// quite fast ending
@@ -100,6 +104,7 @@
   //#define MAX_SUBCYCLE_SECONDS	18*60	// *max seconds*, produce moderate length sample pieces  DEFAULT
   //#define MAX_SUBCYCLE_SECONDS	65*60	// *max seconds*, sets performance timing based on cycle
 #endif
+
 
 #include <esp_sleep.h>
 // #include "rom/gpio.h"
@@ -185,16 +190,13 @@ int max_subcycle_seconds=MAX_SUBCYCLE_SECONDS;
   #endif
 #endif
 
-#ifndef MUSICBOX_PERFORMACE_SECONDS
-  #define MUSICBOX_PERFORMACE_SECONDS	12*60
-#endif
-
 // TODO: FIXME: MUSICBOX_HARD_END_SECONDS		// savety net	################
 #if ! defined MUSICBOX_HARD_END_SECONDS		// savety net
   #if defined MAX_SUBCYCLE_SECONDS && MAX_SUBCYCLE_SECONDS > 0
-//    #define  MUSICBOX_HARD_END_SECONDS	(MAX_SUBCYCLE_SECONDS*2)	// TODO: first try, FIXME: determine at run time
+    // should be ok
+    // or try	#define  MUSICBOX_HARD_END_SECONDS	(MAX_SUBCYCLE_SECONDS*2)
   #else
-    #define  MUSICBOX_HARD_END_SECONDS	90*60	// FIXME: TODO: review that	################
+    #warning *no* MUSICBOX_HARD_END_SECONDS
   #endif
 #endif
 
@@ -398,19 +400,29 @@ bool musicbox_is_awake() {	// makes it easier to pre declare that from outside
 
 
 void tabula_rasa() {
-  if (MENU.verbosity > VERBOSITY_LOWEST)
-    MENU.outln(F("tabula rasa"));
+  if (MENU.verbosity > VERBOSITY_LOWEST) {
+    MENU.out(F("tabula rasa\t"));
+    MENU.print_free_RAM();
+    MENU.tab();
+  }
 
   reset_all_flagged_pulses_GPIO_OFF();
   if(MusicBoxState != OFF)	// avoid possible side effects
     set_MusicBoxState(OFF);
 
   musicBoxConf.date=NULL;	// TODO: TEST: hmm?
+  if (MENU.verbosity > VERBOSITY_LOWEST) {
+    MENU.print_free_RAM();
+    MENU.ln();
+  }
+
+  //reset_timer64();  // restart timer64?
+  //PULSES.get_now();
 } // tabula_rasa()
 
 
 // TODO: magic_autochanges default?
-bool magic_autochanges=true;	// switch if to end normal playing after MUSICBOX_PERFORMACE_SECONDS
+bool magic_autochanges=true;	// TODO: bitvector loweraudio, subcycle, .... metric
 
 unsigned long primary_counters[PL_MAX] = { 0 };	// preserve last seen counters
 
@@ -562,7 +574,7 @@ void show_cycle(pulse_time_t cycle) {
   }
   MENU.ln();
 
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   MENU.outln(F("todo: maybe give subcycle infos?"));	// TODO:
 
 #else // old int overflow style
@@ -736,6 +748,8 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
       MENU.out(slice_weighting(this_division));
       MENU.out(F("\tnow="));
       PULSES.display_time_human(PULSES.now);
+      //MENU.tab();
+      //MENU.print_free_RAM();
     }
   }
 
@@ -2701,7 +2715,7 @@ void start_musicBox() {
       CyclesConf.used_subcycle = PULSES.simple_time(max_subcycle_seconds*1000000L);
       pulse_time_t this_subcycle=CyclesConf.harmonical_CYCLE;
       while(true) {
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
 	if(this_subcycle <= CyclesConf.used_subcycle) {
 	  CyclesConf.used_subcycle = this_subcycle;
 	  break;
@@ -3118,11 +3132,6 @@ void musicBox_setup() {	// TODO:update
 #if defined MAX_SUBCYCLE_SECONDS
   MENU.out(F("cycle used max seconds:\t"));
   MENU.outln(max_subcycle_seconds);
-#endif
-
-#if defined MUSICBOX_PERFORMACE_SECONDS
-  MENU.out(F("performance seconds:\t"));
-  MENU.outln(MUSICBOX_PERFORMACE_SECONDS);
 #endif
 
 #if defined MUSICBOX_HARD_END_SECONDS

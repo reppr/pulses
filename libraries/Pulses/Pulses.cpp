@@ -1,5 +1,3 @@
-#define  TIMES_DOUBLE	// TODO: MOVE!
-
 /* **************************************************************** */
 /*
   Pulses.cpp
@@ -107,13 +105,13 @@ Pulses::~Pulses() {
 /* **************************************************************** */
 // init time:
 
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES	// use double float time type
 
 pulse_time_t Pulses::INVALID_time() {
-  return (pulse_time_t) 999999999.0;	// INVALID_time() TODO: select value
+  return (pulse_time_t) 1.7E+308;
 }
 
-#else // old int overflow style
+#else 					// use old style int overflow time type
 pulse_time_t Pulses::INVALID_time() {
   pulse_time_t invalid_time;
   invalid_time.time=0;
@@ -145,7 +143,7 @@ void Pulses::init_time() {
   #endif
 #endif
 
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   get_now();
 
 #else // old int overflow style
@@ -163,7 +161,7 @@ void Pulses::init_time() {
 
 // *always* get time through get_now()
 pulse_time_t Pulses::get_now() {	// get time, set now.time and now.overflow
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   extern void get_timer64_value(uint64_t* value64);
   get_timer64_value(&now64);
   now = (pulse_time_t) now64;	//
@@ -193,7 +191,7 @@ pulse_time_t Pulses::get_now() {	// get time, set now.time and now.overflow
 pulse_time_t Pulses::simple_time(unsigned long integer_only_time) {
   pulse_time_t int_time;
 
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   int_time = (pulse_time_t) integer_only_time;
 
 #else // old int overflow style
@@ -204,62 +202,64 @@ pulse_time_t Pulses::simple_time(unsigned long integer_only_time) {
   return int_time;
 }
 
-//	#if defined TIMES_DOUBLE
-//	signed int Pulses::cmp_times(pulse_time_t a, pulse_time_t b) {	// later, a>b: 1	a==b: 0		earlyer a<b: -1
-//	  if(a < b)	// a < b
-//	    return -1;
-//	  if(a > b)	// a > b
-//	    return 1;
-//
-//	  return 0;	// a == b
-//	}
-//
-//	#else // old int overflow style
-//	signed int Pulses::cmp_times(pulse_time_t a, pulse_time_t b) {	// later, a>b: 1	a==b: 0		earlyer a<b: -1
-//	  if(a.overflow < b.overflow)	// a < b
-//	    return -1;
-//	  if(a.overflow > b.overflow)	// a > b
-//	    return 1;
-//
-//	  if(a.time < b.time)	// a < b
-//	    return -1;
-//	  if(a.time > b.time)	// a > b
-//	    return 1;
-//
-//	  return 0;		// a == b
-//	}
-//	#endif // old int overflow style
+/*
+  #if defined PULSES_USE_DOUBLE_TIMES
+  // currently not used
+  signed int Pulses::cmp_times(pulse_time_t a, pulse_time_t b) {	// later, a>b: 1	a==b: 0		earlyer a<b: -1
+    if(a < b)	// a < b
+      return -1;
+    if(a > b)	// a > b
+      return 1;
 
+    return 0;	// a == b
+  }
 
-#if defined TIMES_DOUBLE
+  #else // old int overflow style
+  signed int Pulses::cmp_times(pulse_time_t a, pulse_time_t b) {	// later, a>b: 1	a==b: 0		earlyer a<b: -1
+    if(a.overflow < b.overflow)	// a < b
+      return -1;
+    if(a.overflow > b.overflow)	// a > b
+      return 1;
+
+    if(a.time < b.time)	// a < b
+      return -1;
+    if(a.time > b.time)	// a > b
+      return 1;
+
+    return 0;		// a == b
+  }
+  #endif // old int overflow style
+*/
+
+#if defined PULSES_USE_DOUBLE_TIMES
 // add_time(), sub_time(), mul_time(), div_time():
 
-void Pulses::add_time(pulse_time_t *delta, pulse_time_t *sum)	// TIMES_DOUBLE
+void Pulses::add_time(pulse_time_t *delta, pulse_time_t *sum)	// PULSES_USE_DOUBLE_TIMES
 {
   *sum += *delta;
 }
 
-void Pulses::sub_time(pulse_time_t *delta, pulse_time_t *sum)	// TIMES_DOUBLE
+void Pulses::sub_time(pulse_time_t *delta, pulse_time_t *sum)	// PULSES_USE_DOUBLE_TIMES
 {
   *sum -= *delta;
 }
 
-void Pulses::add_time(unsigned long time, pulse_time_t *sum)	// TIMES_DOUBLE	// TODO: check if still needed
+void Pulses::add_time(unsigned long time, pulse_time_t *sum)	// PULSES_USE_DOUBLE_TIMES	// TODO: check if still needed
 {
   *sum += (pulse_time_t) time;
 }
 
-void Pulses::sub_time(unsigned long time, pulse_time_t *sum)	// TIMES_DOUBLE	// TODO: check if still needed
+void Pulses::sub_time(unsigned long time, pulse_time_t *sum)	// PULSES_USE_DOUBLE_TIMES	// TODO: check if still needed
 {
   *sum -= (pulse_time_t) time;
 }
 
-void Pulses::mul_time(pulse_time_t *duration, unsigned int factor)	// TIMES_DOUBLE
+void Pulses::mul_time(pulse_time_t *duration, unsigned int factor)	// PULSES_USE_DOUBLE_TIMES
 {
   *duration *= factor;
 }
 
-void Pulses::div_time(pulse_time_t *duration, unsigned int divisor)	// TIMES_DOUBLE
+void Pulses::div_time(pulse_time_t *duration, unsigned int divisor)	// PULSES_USE_DOUBLE_TIMES
 {
   *duration /= divisor;
 }
@@ -387,7 +387,7 @@ void Pulses::div_time(pulse_time_t *duration, unsigned int divisor)	// old int o
 
   (*duration).time=result;
 } // div_time() oldstyle
-#endif // no TIMES_DOUBLE
+#endif // no PULSES_USE_DOUBLE_TIMES
 
 
 void Pulses::multiply_period(int pulse, unsigned long factor) {	// integer math
@@ -461,7 +461,7 @@ void Pulses::wake_pulse(int pulse) {
 
 #ifdef IMPLEMENT_TUNING
   if (pulses[pulse].flags & TUNED) {
-  #if defined TIMES_DOUBLE
+  #if defined PULSES_USE_DOUBLE_TIMES
     pulses[pulse].period = pulses[pulse].other_time / tuning;
   #else // old int overflow style
     pulses[pulse].period.time = pulses[pulse].other_time.time / tuning;
@@ -494,7 +494,7 @@ void Pulses::wake_pulse(int pulse) {
   }
 
   // prepare future:
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   pulses[pulse].last = pulses[pulse].next;	// when it *should* have happened
   pulses[pulse].next += pulses[pulse].period;	// when it should happen again
 
@@ -863,7 +863,7 @@ void Pulses::stop_tuning(int pulse) {	// the pulse stays as it is, but no furthe
 
 
 // find fastest pulse (in case of emergency)
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
 int Pulses::fastest_pulse() {	// *not* dealing with period overflow here...
   pulse_time_t min_period=0xefffffffffffffff;
   int fast_pulse=-1;
@@ -1001,7 +1001,7 @@ void Pulses::fix_global_next() {
 #endif
   global_next_count=0;
 
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   for (int pulse=0; pulse<pl_max; pulse++) {		// check all pulses
     if (pulses[pulse].flags & ACTIVE) {			// pulse active?
       if (pulses[pulse].next < global_next) {		//   yes: earlier?
@@ -1054,7 +1054,7 @@ void Pulses::fix_global_next() {
 } // fix_global_next()
 
 
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
 bool Pulses::time_reached(pulse_time_t time_limit) {
   get_now();
   return now >= time_limit;
@@ -1237,7 +1237,7 @@ int Pulses::setup_pulse(void (*pulse_do)(int), pulse_flags_t new_flags, \
 void Pulses::set_new_period(int pulse, pulse_time_t new_period) {
   pulses[pulse].period = new_period;
 
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   pulses[pulse].next = pulses[pulse].last;
   add_time(&pulses[pulse].period, &pulses[pulse].next);
 
@@ -1264,7 +1264,7 @@ void Pulses::set_new_period(int pulse, pulse_time_t new_period) {
 void Pulses::activate_pulse_synced(int pulse, \
 				   pulse_time_t when, int sync)
 {
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   if (pulses[pulse].period == 0.0)	// ignore invalid pulses with period==0
     return;
 #else // old int overflow style
@@ -1607,7 +1607,7 @@ void Pulses::time_info() {
 
 // display a time in seconds:
 float Pulses::display_realtime_sec(pulse_time_t duration) {
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   float seconds = duration / 1000000.0;
 
 #else // old int overflow style
@@ -1639,7 +1639,7 @@ float Pulses::display_realtime_sec(pulse_time_t duration) {
 
 // void display_time_human_format(pulse_time_t duration);	// everyday time format	d h m s  formatted with spaces
 void Pulses::display_time_human_format(pulse_time_t duration) {
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   unsigned long seconds = ((duration / 1000000.0) + 0.5);
 #else // old int overflow style
 
@@ -1680,7 +1680,7 @@ void Pulses::display_time_human_format(pulse_time_t duration) {
 
 
 void Pulses::display_time_human(pulse_time_t duration) {  // everyday time format d h m s short
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   unsigned long seconds = ((duration / 1000000.0) + 0.5);
 
 #else // old int overflow style
@@ -1720,7 +1720,7 @@ void Pulses::display_time_human(pulse_time_t duration) {  // everyday time forma
 
 
 void Pulses::print_period_in_time_units(int pulse) {
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   float time_units = ((float) pulses[pulse].period / (float) time_unit);
 #else // old int overflow style
   float time_units = ((float) pulses[pulse].period.time / (float) time_unit);
@@ -1745,7 +1745,7 @@ void Pulses::print_period_in_time_units(int pulse) {
 
 // mainly for debugging
 void Pulses::display_real_ovfl_and_sec(pulse_time_t then) {
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
 #else // old int overflow style
   (*MENU).out(F("tic/ofl "));
   (*MENU).out(then.time);

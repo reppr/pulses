@@ -1,6 +1,6 @@
 /* **************************************************************** */
 /*
-  project_configuration.ino
+  pulses_project_conf.h
 
   prepare compiling for special projects like the kalimbas,
   dac only minimal boards, dac with OLED, etc.
@@ -9,7 +9,7 @@
 
 */
 /* **************************************************************** */
-#ifndef PROJECT_CONFIGURATION_H
+#ifndef PULSES_PROJECT_CONF_H
 
 /*  TIME_MACHINE did *not* use i2c	*i2c DEACTIVATED* see below */
 
@@ -173,5 +173,5 @@
   #define AUTOSTART	play_random_preset();	// same as musicBox.h
 #endif
 /* **************************************************************** */
-#define PROJECT_CONFIGURATION_H
+#define PULSES_PROJECT_CONF_H
 #endif

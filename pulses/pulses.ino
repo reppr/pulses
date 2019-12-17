@@ -841,8 +841,8 @@ int selected_share_DACsq_intensity(int intensity, int channel) {
 // share DAC intensity of selected pulses, proportional to period
 void selected_DACsq_intensity_proportional(int intensity, int channel) {
   pulse_time_t sum;
-#if defined TIMES_DOUBLE	// sorry, some of the worst code ever written...
-  sum=0.0;			// transition to a new time type, preseving both for some time...
+#if defined PULSES_USE_DOUBLE_TIMES	// sorry, some of the worst code ever written...
+  sum=0.0;				// transition to new double time type, preseving both for some time...
 #else // old int overflow style
   sum.time=0;
   sum.overflow=0;
@@ -853,7 +853,7 @@ void selected_DACsq_intensity_proportional(int intensity, int channel) {
     if (PULSES.pulse_is_selected(pulse))
       PULSES.add_time(&PULSES.pulses[pulse].period, &sum);
 
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   bool there_is_something = (sum != 0.0);
 #else // old int overflow style
   if (sum.overflow)	// FIXME: if ever needed ;)
@@ -864,7 +864,7 @@ void selected_DACsq_intensity_proportional(int intensity, int channel) {
   if (there_is_something) {
     for (int pulse=0; pulse<PL_MAX; pulse++) {
       if (PULSES.pulse_is_selected(pulse)) {
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
 	factor = PULSES.pulses[pulse].period / sum;
 #else // old int overflow style
 	factor = (double) PULSES.pulses[pulse].period.time / (double) sum.time;
@@ -1021,7 +1021,7 @@ void selected_do_detune_periods(short cents) {	// works on the period time of ea
   if(detune != 1.0) {
     for(int pulse=0; pulse<PL_MAX; pulse++) {
       if (PULSES.pulse_is_selected(pulse)) {
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
 	PULSES.pulses[pulse].period *= detune;
 
 #else // old int overflow style
@@ -2340,7 +2340,7 @@ void click(int pulse) {	// can be called from a pulse
 #ifdef IMPLEMENT_TUNING		// implies floating point
 void sweep_click(int pulse) {	// can be called from a pulse
   double period;
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   period = PULSES.pulses[pulse].period;
 #else // old int overflow style
   period = PULSES.pulses[pulse].period.time;
@@ -2360,7 +2360,7 @@ void sweep_click(int pulse) {	// can be called from a pulse
     break;
   }
 
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   PULSES.pulses[pulse].period = period;
 #else // old int overflow style
   PULSES.pulses[pulse].period.time = period;
@@ -2371,7 +2371,7 @@ void sweep_click(int pulse) {	// can be called from a pulse
 
 
 void tuned_sweep_click(int pulse) {	// can be called from a pulse
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   double detune_number = PULSES.ticks_per_octave / PULSES.pulses[pulse].period;
 #else // old int overflow style
   double detune_number = PULSES.ticks_per_octave / PULSES.pulses[pulse].period.time;
@@ -2393,7 +2393,7 @@ void tuned_sweep_click(int pulse) {	// can be called from a pulse
 
 // first try: octave is reached by a fixed number of steps:
 void sweep_click_0(int pulse) {	// can be called from a sweeping pulse
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   PULSES.pulses[pulse].period = PULSES.pulses[pulse].base_period;
   PULSES.pulses[pulse].period *= tuning;
 
@@ -2966,7 +2966,7 @@ int tune_selected_2_scale_limited(Harmonical::fraction_t scaling, unsigned int *
 
     // check if highest note is within limit
     pulse_time_t this_period = PULSES.simple_time(0);	// bluff the very first test to pass
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
     while (this_period <= shortest_limit) { // SHORTEST LIMIT *CAN* BE ZERO (to switch it off)
 #else // old int overflow style
     while (this_period.time <= shortest_limit) { // SHORTEST LIMIT *CAN* BE ZERO (to switch it off)
@@ -3028,7 +3028,7 @@ int tune_selected_2_scale_limited(Harmonical::fraction_t scaling, unsigned int *
 	return 0;
       }
 
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
       if(this_period > shortest_limit) {
 #else // old int overflow style
       if(this_period.time > shortest_limit) {
@@ -3104,7 +3104,7 @@ int lower_audio_if_too_high(unsigned long limit) {
   int pulse;
   bool shortest_is_zero=false;
 
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   for (pulse=0; pulse<PL_MAX; pulse++) {		// check if there *is* period data at all:
     if (PULSES.pulse_is_selected(pulse)) {		//   in the first selected pulse
       if(PULSES.pulses[pulse].period == 0.0) {	//     (disregarding overflow)
@@ -3174,7 +3174,7 @@ int lower_audio_if_too_high(unsigned long limit) {
     return INT_MAX;	// catch the shortest == 0, ERROR	return INT_MAX, not used yet
   }
 
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   while (PULSES.pulses[fastest_pulse].period < limit) {	// too fast?
     octave_shift--;
     for (pulse=0; pulse<PL_MAX; pulse++) {
@@ -3526,7 +3526,7 @@ void pulse_info(int pulse) {
   MENU.out(F("\tcntd ")); MENU.out(PULSES.pulses[pulse].countdown);
   MENU.out(F("\tdata ")); MENU.out(PULSES.pulses[pulse].data);
 
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   MENU.out(F("\ttime ")); MENU.out(PULSES.pulses[pulse].base_period);
   MENU.ln();		// start next line
   MENU.out(PULSES.pulses[pulse].period / (double) PULSES.time_unit, 6);
@@ -3552,7 +3552,7 @@ void pulse_info(int pulse) {
 
   MENU.ln();		// start next line
 
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   MENU.out(F("last "));
   MENU.out(PULSES.pulses[pulse].last);
   MENU.out(F("   \tnext "));
@@ -4241,7 +4241,7 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
     PULSES.init_pulse(pulse);		// remove pulse
     return;				// and return
   }
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES
   PULSES.pulses[pulse].period = PULSES.pulses[pulse].base_period;
   PULSES.mul_time(&PULSES.pulses[pulse].period, jiffletab[base_index]);
   PULSES.div_time(&PULSES.pulses[pulse].period, jiffletab[base_index+1]);

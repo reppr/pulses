@@ -23,6 +23,10 @@ void get_timer64_value(uint64_t* value64) {
   }
 }
 
+void reset_timer64() {
+  // esp_err_t timer_set_counter_value(timer_group_t group_num, timer_idx_t timer_num, uint64_t load_val)
+  timer_set_counter_value(timer64Group, timer64Num, 0L);
+}
 
 void test_timer64() {
   static unsigned int int64_max_error=0;
@@ -51,7 +55,7 @@ void test_timer64() {
 
   MENU.out(value_f/1000000.0);
   MENU.outln(F(" s"));
-}
+} // test_timer64()
 
 void setup_timer64() {
   MENU.out(F("setup_timer64()  G"));

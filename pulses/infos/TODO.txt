@@ -441,7 +441,3 @@ return (pulse_time_t) 999999999.0;	// INVALID_time() TODO: select value
 
 #undef MAX_SUBCYCLE_SECONDS		// DADA
 #define MAX_SUBCYCLE_SECONDS	2*3600	// DADA
-
-where to set +#define TIMES_DOUBLE	// start implementing...
-
-BUG: stopps when now > 16' 40"

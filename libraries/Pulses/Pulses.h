@@ -17,7 +17,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "../../pulses/pulses_project_conf.h"
+#include "../../pulses/pulses_engine_config.h"
+#include "../../pulses/my_pulses_config.h"
+#include "../../pulses/pulses_systems.h"
+#include "../../pulses/pulses_boards.h"
 
 #if ! defined ILLEGAL8
   #define ILLEGAL8	255
@@ -64,9 +67,6 @@ enum icode {	// names are all four letter words ?	// maybe 8?
 #endif
 
 
-#include "../../pulses/pulses_systems.h"
-#include "../../pulses/pulses_boards.h"
-
 #include <Menu.h>
 
 
@@ -88,10 +88,10 @@ enum icode {	// names are all four letter words ?	// maybe 8?
 // TODO: time (and related stuff should move to Harmonics::
 // TODO: double (seen as uint64_t)
 
-#if defined TIMES_DOUBLE
+#if defined PULSES_USE_DOUBLE_TIMES	// use double float time type
 typedef double pulse_time_t;
 
-#else // old int overflow style
+#else 					// old style int overflow style
 typedef struct {
   unsigned long time;
   unsigned int overflow;
@@ -103,8 +103,7 @@ typedef struct {
   unsigned long time;
 } pulse_time_t;
 */
-
-#endif // TIMES_DOUBLE or oldstyle int ovfl
+#endif // PULSES_USE_DOUBLE_TIMES or oldstyle int ovfl
 
 /* **************************************************************** */
 // pulse_t:
@@ -313,7 +312,7 @@ class Pulses {
   unsigned long current_global_octave_mask; // actually used mask to switch oscillators
   pulse_time_t now;
   pulse_time_t last_now;	// for simple overflow detection (oldstyle int ovfl style only)
-  uint64_t now64;		// TIMES_DOUBLE only
+  uint64_t now64;		// PULSES_USE_DOUBLE_TIMES only
 
   pulse_time_t INVALID_time();
   pulse_time_t global_next;	// next time that a pulse wants to be waken up
