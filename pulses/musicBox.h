@@ -2712,15 +2712,19 @@ void start_musicBox() {
     CyclesConf.subcycle_octave = 0;
 
     if(max_subcycle_seconds) {
+#if defined PULSES_USE_DOUBLE_TIMES
       CyclesConf.used_subcycle = PULSES.simple_time(max_subcycle_seconds*1000000L);
       pulse_time_t this_subcycle=CyclesConf.harmonical_CYCLE;
       while(true) {
-#if defined PULSES_USE_DOUBLE_TIMES
 	if(this_subcycle <= CyclesConf.used_subcycle) {
 	  CyclesConf.used_subcycle = this_subcycle;
 	  break;
 	}
+
 #else // old int overflow style
+      CyclesConf.used_subcycle = PULSES.simple_time(max_subcycle_seconds*1000000L);
+      pulse_time_t this_subcycle=CyclesConf.harmonical_CYCLE;
+      while(true) {
 	if(this_subcycle.time <= CyclesConf.used_subcycle.time && this_subcycle.overflow==CyclesConf.used_subcycle.overflow) {
 	  CyclesConf.used_subcycle = this_subcycle;
 	  break;

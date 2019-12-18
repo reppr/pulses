@@ -488,8 +488,13 @@ void Pulses::wake_pulse(int pulse) {
 
     if (action_flags & doesICODE) {		// play icode   (payload already done)
       play_icode(pulse);
-      if (pulses[pulse].period == simple_time(0))	// pulse got killed?
+#if defined PULSES_USE_DOUBLE_TIMES
+      if(pulses[pulse].period == simple_time(0))	// pulse got killed?
 	return;
+#else
+      if(pulses[pulse].period.time == 0 && pulses[pulse].period.overflow == 0)	// pulse got killed?
+	return;
+#endif
     }
   }
 
@@ -1060,6 +1065,10 @@ bool Pulses::time_reached(pulse_time_t time_limit) {
   return now >= time_limit;
 }
 
+pulse_time_t Pulses::time_seconds(unsigned long seconds) {
+  return 1E6 * (pulse_time_t) seconds;
+}
+
 #else // old int overflow style
 bool Pulses::time_reached(pulse_time_t time_limit) {
   get_now();
@@ -1068,8 +1077,15 @@ bool Pulses::time_reached(pulse_time_t time_limit) {
   else
     return (now.overflow > time_limit.overflow);
 }
-#endif // old int overflow style
 
+pulse_time_t Pulses::time_seconds(unsigned long seconds) {
+  pulse_time_t Tseconds;
+  Tseconds.time=seconds;
+  Tseconds.overflow=0;
+  mul_time(&Tseconds, 1000000);
+  return Tseconds;
+}
+#endif // old int overflow style
 
 #if defined USE_DACs
 //#define DEBUG_DACsq	// TODO: remove debugging code

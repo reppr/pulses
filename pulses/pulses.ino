@@ -1585,20 +1585,19 @@ void setup() {
 
   show_program_version();
 
-#if defined USE_NVS	// always used on ESP32
-//	  {
-//	    String s = nvs_getString(F("nvs_PRENAME"));	// OBSOLETE: use IDENTITY
-//	    if (s) {
-//	      my_IDENTITY.preName = s;
-//	      MENU.out(F("nvs_PRENAME:\t"));
-//	      MENU.outln(s);
-//	    }
-//
-//
-//	  }
+#if defined PULSES_USE_DOUBLE_TIMES
+  MENU.outln(F("pulses\tuses double times"));
+#else
+  MENU.outln(F("pulses\tuses int overflow times"));
 #endif
 
 #if defined ESP32
+  #if defined USE_ESP_NOW
+    MENU.outln(F("\tuses ESP_NOW"));
+  #else
+    MENU.outln(F("\tesp_now *not* used"));
+  #endif
+
   display_esp_versions();
   MENU.out(F("MAC: "));
   MENU.outln(getMacAddress());
@@ -2398,7 +2397,7 @@ void sweep_click_0(int pulse) {	// can be called from a sweeping pulse
   PULSES.pulses[pulse].period *= tuning;
 
 #else // old int overflow style
-  PULSES.pulses[pulse].period.time = PULSES.pulses[pulse].base_period * tuning;
+  PULSES.pulses[pulse].period.time = PULSES.pulses[pulse].base_period.time * tuning;
   PULSES.pulses[pulse].period.overflow = 0;
 #endif
   click(pulse);
@@ -4245,9 +4244,10 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
   PULSES.pulses[pulse].period = PULSES.pulses[pulse].base_period;
   PULSES.mul_time(&PULSES.pulses[pulse].period, jiffletab[base_index]);
   PULSES.div_time(&PULSES.pulses[pulse].period, jiffletab[base_index+1]);
+
 #else // old int overflow style
   PULSES.pulses[pulse].period.time = \
-    PULSES.pulses[pulse].base_period * jiffletab[base_index] / jiffletab[base_index+1];
+    PULSES.pulses[pulse].base_period.time * jiffletab[base_index] / jiffletab[base_index+1];
   PULSES.pulses[pulse].countdown = jiffletab[base_index+2];		// count of next phase
 #endif
   PULSES.pulses[pulse].countdown = jiffletab[base_index+2];		// count of next phase

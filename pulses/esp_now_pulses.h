@@ -239,12 +239,19 @@ esp_err_t  esp_now_send_macro(uint8_t* mac_addr, char * macro) {
 }
 
 unsigned long esp_now_send_HI_time=0L;	// timing ping pong  N_HI - N_HO
+#if defined PULSES_USE_DOUBLE_TIMES
+esp_err_t  esp_now_send_HI(uint8_t* mac_addr) {
+  esp_now_send_HI_time = (unsigned long) PULSES.get_now();
+  return esp_now_send_bare(mac_addr, N_HI);
+}
+
+#else
 esp_err_t  esp_now_send_HI(uint8_t* mac_addr) {
   pulse_time_t n = PULSES.get_now();
   esp_now_send_HI_time = n.time;
   return esp_now_send_bare(mac_addr, N_HI);
 }
-
+#endif
 
 // peers
 
@@ -514,10 +521,16 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
 
   case N_HO:
     if(do_display) {
-      pulse_time_t n = PULSES.get_now();
       MENU.space(2);
+
+#if defined PULSES_USE_DOUBLE_TIMES
+      MENU.out((unsigned long) PULSES.get_now() - esp_now_send_HI_time);
+#else
+      pulse_time_t n = PULSES.get_now();
       MENU.out(n.time - esp_now_send_HI_time);
+#endif
       MENU.out(F(" microsec  "));
+
       MENU.out(MAC_str(mac_addr));
       MENU.out(F("  I AM here  "));
     }

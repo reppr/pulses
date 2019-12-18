@@ -47,6 +47,7 @@ INVALID_time	KEYWORD2
 global_next	KEYWORD2
 global_next_count	KEYWORD2
 time_reached	KEYWORD2
+time_seconds	KEYWORD2
 DAC_output	KEYWORD2
 ticks_per_octave	KEYWORD2
 tuning	KEYWORD2

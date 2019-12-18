@@ -294,7 +294,7 @@ class Pulses {
 				// get_now() works directly on 'now'
 				// returns now
 
-  pulse_time_t simple_time(unsigned long time);	// integer only, overflow==0
+  pulse_time_t simple_time(unsigned long time);	// integer only, overflow==0	// TODO: transition only, then obsolete
 
   //  signed int cmp_times(pulse_time_t a, pulse_time_t b);	// later, a>b: 1	a==b: 0		earlyer a<b: -1
 
@@ -319,6 +319,7 @@ class Pulses {
   unsigned int global_next_count; // how many tasks wait to be activated at the same time?
 
   bool time_reached(pulse_time_t when);
+  pulse_time_t time_seconds(unsigned long seconds);	// seconds as pulse_time_t
 
 #if defined USE_DACs
   void DAC_output();		// calculate and output on DAC
