@@ -88,8 +88,5 @@
 #define HIGH_PRIORITY_RGB_LED_UPDATE		// TODO: TEST MOVE:
 #define RGB_LED_STRING_VOLTAGE_TYPE	5	// TODO: TEST MOVE:
 
-#undef MAX_SUBCYCLE_SECONDS			// TODO: REMOVE: test only	catch the 16'40" bug
-#define MAX_SUBCYCLE_SECONDS	(2*3600)	// TODO: REMOVE: test only	catch the 16'40" bug
-
 #define MY_PULSES_CONFIG_H
 #endif

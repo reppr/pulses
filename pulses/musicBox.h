@@ -26,7 +26,7 @@
   #define PERIPHERAL_POWER_SWITCH_PIN		12	// *pseudo* for green LED,  switch power, often green LED
   #define PROGRAM_SUB_VERSION			portable 3D	// with morse and 3D accGyro UI
   #if ! defined MAX_SUBCYCLE_SECONDS
-    #define MAX_SUBCYCLE_SECONDS		60*20	// *max seconds*, produces short PRESET PIECES	   portable instruments 2019-06
+    #define MAX_SUBCYCLE_SECONDS		60*18	// *max seconds*, produces short PRESET PIECES	   portable instruments 2019-06
   #endif
 //#define MUSICBOX_HARD_END_SECONDS		60*100	// SAVETY NET shut down after 100'	***DEACTIVATED***
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3600*12	// *DEACTIVATED*
@@ -1808,7 +1808,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
   } else if(PULSES.pulses[pulse].counter==2) {	// now we might have more time for some setup
     ;
 #if defined MUSICBOX_TRIGGER_BLOCK_SECONDS
-    trigger_enable_time = PULSES.simple_time(MUSICBOX_TRIGGER_BLOCK_SECONDS*1000000);
+    trigger_enable_time = PULSES.time_seconds(MUSICBOX_TRIGGER_BLOCK_SECONDS);
     if(MENU.verbosity >= VERBOSITY_SOME) {
       MENU.out(F("butler: prepare trigger  "));
       PULSES.display_time_human(trigger_enable_time);
@@ -1817,8 +1817,8 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     PULSES.add_time(&musicBox_start_time, &trigger_enable_time);
 #endif
 
-#if defined MUSICBOX_HARD_END_SECONDS
-    musicBox_hard_end_time = PULSES.simple_time(MUSICBOX_HARD_END_SECONDS*1000000);	// savety net: fixed maximal performance duration
+#if defined MUSICBOX_HARD_END_SECONDS	// savety net: limited maximal performance duration
+    musicBox_hard_end_time = PULSES.time_seconds(MUSICBOX_HARD_END_SECONDS);
     if(MENU.verbosity >= VERBOSITY_SOME) {
       MENU.out(F("butler: prepare hard end "));
       PULSES.display_time_human(musicBox_hard_end_time);
@@ -2707,19 +2707,18 @@ void start_musicBox() {
   pulse_time_t period_lowest = PULSES.pulses[musicBoxConf.lowest_primary].period;
   CyclesConf.harmonical_CYCLE = scale2harmonical_cycle(selected_in(SCALES), &period_lowest);
 
-  if(!uiConf.subcycle_user_selected) {
+  if(! uiConf.subcycle_user_selected) {
     CyclesConf.used_subcycle = CyclesConf.harmonical_CYCLE;
     CyclesConf.subcycle_octave = 0;
 
     if(max_subcycle_seconds) {
+
 #if defined PULSES_USE_DOUBLE_TIMES
-      CyclesConf.used_subcycle = PULSES.simple_time(max_subcycle_seconds*1000000L);
-      pulse_time_t this_subcycle=CyclesConf.harmonical_CYCLE;
-      while(true) {
-	if(this_subcycle <= CyclesConf.used_subcycle) {
-	  CyclesConf.used_subcycle = this_subcycle;
-	  break;
-	}
+      while (CyclesConf.used_subcycle > PULSES.time_seconds(max_subcycle_seconds))
+	{
+	  PULSES.div_time(&CyclesConf.used_subcycle, 2);
+	  CyclesConf.subcycle_octave++;
+	} // was too long?
 
 #else // old int overflow style
       CyclesConf.used_subcycle = PULSES.simple_time(max_subcycle_seconds*1000000L);
@@ -2729,11 +2728,12 @@ void start_musicBox() {
 	  CyclesConf.used_subcycle = this_subcycle;
 	  break;
 	}
-#endif
 	PULSES.div_time(&this_subcycle, 2);
 	CyclesConf.subcycle_octave++;
       }
-    }
+#endif
+
+    } // if(max_subcycle_seconds)
   }
 
   MENU.ln();
@@ -3134,7 +3134,7 @@ void musicBox_setup() {	// TODO:update
 #endif
 
 #if defined MAX_SUBCYCLE_SECONDS
-  MENU.out(F("cycle used max seconds:\t"));
+  MENU.out(F("max subcycle seconds:\t"));
   MENU.outln(max_subcycle_seconds);
 #endif
 
@@ -3386,7 +3386,7 @@ void sync_landscape_time_sliced() {	// set this instruments time slice
 }
 
 
-bool Y_UI() { 	// "eXtended motion UI" planed eXtensions: other input sources: ADC, 'analog'Touch, distance sensors, etc
+bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: ADC, 'analog'Touch, distance sensors, etc
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
   // TODO: REPLACE BY NEW ENGINE ################################################################
   // TODO: monochrome feedback on motion UI switching
@@ -3397,7 +3397,7 @@ bool Y_UI() { 	// "eXtended motion UI" planed eXtensions: other input sources: A
     switch_activity = true;
     recognised = true;
   } else {
-    while(do_next_letter) {
+    while(do_next_letter) {	// a group of symbols as optional sequence toggling active axis
       switch(MENU.peek()) {	// second letter
       case '0':			// Y0 =	restart at zero		-.--  -----
       case '=':
@@ -3452,7 +3452,10 @@ bool Y_UI() { 	// "eXtended motion UI" planed eXtensions: other input sources: A
 	recognised = true;
 	break;
 
-      case 'T':	// 'UT' toggle gZ TUNING mode
+      case 'T':	// 'UT' MPU6050 tuning	// 'UT' toggle gZ TUNING mode
+	/*
+	  TODO: planed:	 'UT' MPU6050 tuning mode   'UTZ' Zgyro || 'UTX' Xacc || 'UTY'Yacc
+	*/
 	MENU.drop_input_token();
 	extern void accGyro_toggle_TUNING_mode();
 	accGyro_toggle_TUNING_mode();
@@ -3955,6 +3958,7 @@ bool musicBox_reaction(char token) {
       } // ignore if musicBox is running, hmm (there *could* be a use case while it is running...)
     } // not numeric, ignore
     break;
+
   case 'p': // 'p' switch cycle pattern display
     if(MENU.peek()=='*') {	// 'p*' toggle interval symbols in cycle pattern
       MENU.drop_input_token();

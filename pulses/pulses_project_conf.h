@@ -74,10 +74,8 @@
   #if defined ESP32_USB_DAC_ONLY
     #define PROGRAM_SUB_VERSION			DAC_only_usb
 
-    #define MAX_SUBCYCLE_SECONDS		21*60	// *max seconds*, produce sample pieces	ESP32_usb_DAC_only	// TODO: move?
-
     #if defined USE_MONOCHROME_DISPLAY		// hmm, do we want this or not?
-      #warning *NOT* using monochrome control
+      #warning *NOT* using monochrome display
       #undef USE_MONOCHROME_DISPLAY
     #endif
 

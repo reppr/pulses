@@ -89,8 +89,6 @@ BUG often plays 2 subcycles
 
 TODO: REMOVE: multiplier, divisor	################################################################
 
-// TODO: FIXME: MUSICBOX_HARD_END_SECONDS		// savety net	################
-
 power save mode for OLED deep_sleep()
 
 FIXME: debug power off noise
@@ -467,3 +465,15 @@ Guru Meditation Error: Core  1 panic'ed (Interrupt wdt timeout on CPU1)
 TODO: try to reproduce the crash!
 
 TODO: incorporate time64bit.h
+
+TODO: fix OLED LiPo
+
+TODO: goto light sleep when done (after a while)
+
+
+system_menu()
+ 'SD'		deep sleep now
+ 'SL'		light sleep now
+ 'R'		reboot
+ 'U'		go into user mode
+ or move them all below 'E<x>'

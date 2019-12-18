@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION		HARMONICAL v.042   // double times
+#define PROGRAM_VERSION		HARMONICAL v.042   // double times :)
 /*				0123456789abcdef   */
 
 /* **************************************************************** */
@@ -1585,8 +1585,9 @@ void setup() {
 
   show_program_version();
 
+  MENU.ln();
 #if defined PULSES_USE_DOUBLE_TIMES
-  MENU.outln(F("pulses\tuses double times"));
+  MENU.outln(F("pulses\tuses DOUBLE times"));
 #else
   MENU.outln(F("pulses\tuses int overflow times"));
 #endif
@@ -1598,7 +1599,10 @@ void setup() {
     MENU.outln(F("\tesp_now *not* used"));
   #endif
 
+  MENU.ln();
   display_esp_versions();
+
+  MENU.ln();
   MENU.out(F("MAC: "));
   MENU.outln(getMacAddress());
   MENU.ln();
