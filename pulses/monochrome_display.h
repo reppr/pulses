@@ -313,5 +313,44 @@ void display_string(char * s) {	// ATTENTION: takes too long to be used while pl
 }
 */
 
+
+void oled_ui_display() {
+  MENU.outln(F("'O<x>' OLED\t'OA'='OE'=on  'OT'=off  'OP'=whilePlaying"));
+}
+
+bool OLED_UI() {	// follows 'O'		'OE'	'OT'	'OP'
+  switch (MENU.peek()) {
+  case 'E':		// 'OA' == 'OE'	all on   (morse friendly)
+  case 'A':		// 'OA' == 'OE'	all on   analogue morse COMMAND 'OA'
+    MENU.drop_input_token();
+    monochrome_power_save = 0;
+    u8x8.setPowerSave(monochrome_power_save);
+    oled_feedback_while_playing = true;
+    MENU.outln(F("OLED on"));
+    break;
+
+  case 'T':		// 'OT'	OLED off (morse friendly)
+    MENU.drop_input_token();
+    monochrome_power_save = 1;
+    u8x8.setPowerSave(monochrome_power_save);
+    MENU.outln(F("OLED off"));
+    break;
+
+  case 'P':		// 'OP' toggle oled_feedback_while_playing
+    MENU.drop_input_token();
+    oled_feedback_while_playing = ! oled_feedback_while_playing;
+    MENU.out(F("OLED while playing "));
+    MENU.out_ON_off(oled_feedback_while_playing);
+    MENU.ln();
+    break;
+
+  default:
+    return false;
+  }
+
+  return true;
+} // OLED_UI()
+
+
 #define MONOCHROME_DISPLAY_H
 #endif

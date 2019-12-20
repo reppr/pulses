@@ -3297,10 +3297,14 @@ void musicBox_display() {
   MENU.ln();
 #endif
 
-  MENU.outln(F("'I'= info"));
+  MENU.out(F("'I'= info"));
+
+#if defined USE_MONOCHROME_DISPLAY
+  MENU.tab();
+  oled_ui_display();
+#endif
 
   MENU.ln(2);
-
   musicBox_short_info();
 
 /*	*deactivated*
@@ -4036,19 +4040,27 @@ bool musicBox_reaction(char token) {
     }
     break;
 
-  case 'O':	// subcycle_octave TODO: what to do while playing???
+  case 'O':	// 'O<x>' OLED_UI()	or:  'O' subcycle_octave TODO: what to do while playing???
+#if defined USE_MONOCHROME_DISPLAY
+    extern bool OLED_UI();
+    if(OLED_UI())
+      return true;
+#endif
+
     if(MENU.peek() == '+') {		// higher octave is shorter
       MENU.drop_input_token();
       PULSES.div_time(&CyclesConf.used_subcycle,2);
       CyclesConf.subcycle_octave++;
+      //uiConf.subcycle_user_selected=true;
     } else {				// default and '-' is longer
       PULSES.mul_time(&CyclesConf.used_subcycle,2);
       CyclesConf.subcycle_octave--;
       if(MENU.peek() == '-')		// '-' is default
 	MENU.drop_input_token();
+      //uiConf.subcycle_user_selected=true;
     }
     show_cycles_1line();
-    //uiConf.subcycle_user_selected=true;
+
     set_cycle_slice_number(cycle_slices);	// make sure slice_tick_period is ok
     break;
 

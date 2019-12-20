@@ -1997,7 +1997,7 @@ const char * morse_definitions_tab[] = {
 //"5 0 --.-. 5 5",	// FREE M	MR	--.-. 3 M- COMMAND triggers	free :)  rhythm replay
 //"5 * --.-- Ñ Ñ",	// Ñ
   "5 * --.-- * *",	// my private code for '*'	// was: Ñ
-//"5 0 ---.- OLED",	// OA	---.-	OLED	toggle oled display while playing
+  "5 0 ---.- OLED",	// OA	---.-	OLED	toggle oled display
   "5 * ---.. 8 8",
   "5 * ----. 9 9",
   "5 C ---.- DELWORD",	// MK	---.-	DELETE WORD
@@ -2011,7 +2011,7 @@ const char * morse_definitions_tab[] = {
 //"6 0 ...-.. TODO",	// FREE		(maybe morse speed calibration?)
 //"6 0 ...-.- TODO",	// FREE		(maybe morse speed calibration?)
 //"6 0 ...__. TODO",	// FREE
-  "6 C ...--- OLED",	// FREE		OLED	toggle oled display while playing
+//"6 C ...--- (was: OLED)",	// FREE	  was: OLED toggle oled display while playing
 //"6 0 ...... TODO",	// FREE
 //"6 0 ...... TODO",	// FREE
 
@@ -2425,6 +2425,9 @@ void static morse_token_decode() {	// decode received token sequence
 
 	      } else if(morse_PRESENT_COMMAND == "OLED") {	// ---.-  "OA"
 		if(oled_feedback_while_playing ^= 1) {		// got switched on
+		  monochrome_power_save = 0;
+		  u8x8.setPowerSave(monochrome_power_save);
+
 		  MENU.out(F("OLED"));
 		  MENU.out_ON_off(oled_feedback_while_playing);
 		  MENU.ln();
@@ -2454,11 +2457,7 @@ void static morse_token_decode() {	// decode received token sequence
 		}
 #endif
 	      } else if(morse_PRESENT_COMMAND == "ANY1") {	// '----'
-#if defined USE_MONOCHROME_DISPLAY
-		u8x8.setPowerSave(monochrome_power_save++ & 1);	// temporary ANY1 action
-#else
-		;
-#endif	// USE_MONOCHROME_DISPLAY
+		MENU.outln(F("\"ANY1\" currently unused"));
 
 	      } else if(morse_PRESENT_COMMAND == "MACRO_NOW") {	// ...-.  SN
 		if(morse_out_buffer_cnt) {
