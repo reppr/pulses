@@ -493,3 +493,9 @@ entune_basic_musicbox_pulses()	refactor
 accgyro_preset	accgyro_preset_number vs accgyro_preset_mode
 
 accgyro_modulus
+
+REMOVE: IMPLEMENT_TUNING
+	RENAME: other_time
+		other_pulse ???
+
+group of musicbox butler?

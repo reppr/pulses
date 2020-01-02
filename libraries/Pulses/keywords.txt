@@ -13,6 +13,8 @@ group_flags_t	KEYWORD1
 groups	KEYWORD2
 remaining	KEYWORD2
 countdown	KEYWORD2
+note_position	KEYWORD2
+note_octave	KEYWORD2
 data	KEYWORD2
 index	KEYWORD2
 icode_p	KEYWORD2

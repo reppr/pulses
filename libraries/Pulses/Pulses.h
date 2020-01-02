@@ -44,7 +44,7 @@ enum icode {	// names are all four letter words ?	// maybe 8?
   MACRO_NOW,	// 1 parameter: char * macro
   N_HI,		// (bare)  HI are you there?	for connection and ping pong
   N_HO,		// (bare)  HERE I AM
-  N_WHO,	// 	//(bare)  WHO is here?
+  N_WHO,	//	//(bare)  WHO is here?
   N_ID,		// peer_ID_t my_IDENTITY	share personal data
   N_ST,		// (bare)   receiver sets sync to its individual time slice IDENTITY.esp_now_time_slice;
 };
@@ -91,7 +91,7 @@ enum icode {	// names are all four letter words ?	// maybe 8?
 #if defined PULSES_USE_DOUBLE_TIMES	// use double float time type
 typedef double pulse_time_t;
 
-#else 					// old style int overflow style
+#else					// old style int overflow style
 typedef struct {
   unsigned long time;
   unsigned int overflow;
@@ -181,6 +181,20 @@ struct pulse_t {
 #define g_MIDDLE	1024	// bass & melody	TODO: split in 2 g_BASS and g_MELODY
 #define g_HIGH_END	2048	// high up in the skies
 
+  /*  position inside a scale:
+    tuned_note
+    0 = unknown, invalid
+    1 = tonic
+    2 = 2nd string
+    ...
+    so on a 7 note scale:
+    1 2 3 4 5 6 7	1 would be tonic, 4 fourth, 5 fifth
+
+    other scales just count strings:
+    i.e. PENTATONIC	1 2 3 4 5
+  */
+  uint8_t note_position;	// 0=not set, unknown	1 tonic, ...
+  int8_t note_octave;		// *ONLY VALID if(note_position)*	// TODO: use
 
   void (*do_first)(int);	// see: action flag DO_first
 

@@ -2995,7 +2995,7 @@ int tune_selected_2_scale_limited(Harmonical::fraction_t scaling, unsigned int *
 
 	  divisor=scale[note*2+1];
 
-	  // check for some very basic tuning intervals
+	  // check for some very basic pure tuning intervals
 	  PULSES.pulses[pulse].groups &= ~g_OCTAVE;	// clear all tuning groups
 	  PULSES.pulses[pulse].groups &= ~g_FOURTH;
 	  PULSES.pulses[pulse].groups &= ~g_FIFTH;
@@ -3025,7 +3025,8 @@ int tune_selected_2_scale_limited(Harmonical::fraction_t scaling, unsigned int *
 	    PULSES.div_time(&this_period, divisor);
 	  PULSES.pulses[pulse].period = this_period;
 
-	  note++;
+	  PULSES.pulses[pulse].note_position = ++note;	// after incrementing, tonic=1
+	  PULSES.pulses[pulse].note_octave = octave;	// TODO: implement and use
 	} // selected
       } // pulse
 
@@ -3405,14 +3406,12 @@ bool en_info(int pulse) {
 
 // TODO: move to Pulses.cpp
 void pulse_info_1line(int pulse) {	// one line pulse info, short version
-  unsigned long realtime=micros();		// let's take time *before* serial output
+  unsigned long realtime=micros();	// take time *before* serial output
 
   if (PULSES.pulse_is_selected(pulse))
     MENU.out('*');
   else
     MENU.space();
-  MENU.space();
-  PULSES.show_group_mnemonics(pulse);
 
   MENU.out(F(" PULSE "));
   if (pulse<100)	// left padding 'pulse'
@@ -3439,7 +3438,16 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
   else
     MENU.space();
 
-  MENU.out(F(" Pf:"));
+  MENU.space();
+  if(PULSES.pulses[pulse].note_position)	// show note_position, if defined	// TODO: note_octave?
+    MENU.out(PULSES.pulses[pulse].note_position);
+  else
+    MENU.space();
+
+  MENU.tab();
+  PULSES.show_group_mnemonics(pulse);
+
+  MENU.out(F("Pf:"));
   PULSES.show_pulse_flag_mnemonics(PULSES.pulses[pulse].flags);
   if (PULSES.pulses[pulse].action_flags) {
     MENU.out(F(" Af: "));
