@@ -128,52 +128,48 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
   if(! monochrome_power_save) {
     uint8_t cols = u8x8.getCols();
     uint8_t rows = u8x8.getRows();
-    int row=0;
+    int row=0;	// first 2 lines empty empty for 2x2 output (i.e. MORSE)
+    u8x8.clearLine(row++);	// clear empty line
+    u8x8.clearLine(row++);	// clear empty line
 
+    u8x8.clearLine(row);
     if(musicBoxConf.preset) {
-      u8x8.clearLine(row);
-      u8x8.setCursor(0,row++);
+      u8x8.setCursor(0,row);
       u8x8.setInverseFont(1);
       u8x8.print(F("P "));
       u8x8.print(musicBoxConf.preset);
       u8x8.print(' ');
       u8x8.setInverseFont(0);
-      u8x8.print(' ');
+      u8x8.print(F("  "));
       monochrome_show_subcycle_octave();
-    } else
-      u8x8.clearLine(row++);
-
+    }
     row++;
+
     u8x8.clearLine(row);
     u8x8.drawString(0, row++, array2name(SCALES, selected_in(SCALES)));
-
-    // u8x8.clearLine(row++);	// empty line
 
     u8x8.clearLine(row);
     u8x8.drawString(0, row++, array2name(JIFFLES, selected_in(JIFFLES)));
 
-    u8x8.clearLine(row++);	// empty line
-
     u8x8.clearLine(row);
     u8x8.setCursor(0,row++);
-    u8x8.print('S');		// sync
+    u8x8.print(F("S "));	// sync
     u8x8.print(musicBoxConf.sync);
-    if(musicBoxConf.stack_sync_slices) {	// stack_sync_slices?
-      u8x8.print('|');
-      u8x8.print(musicBoxConf.stack_sync_slices);
-    }
-    u8x8.print(F("  "));
-    u8x8.print(musicBoxConf.pitch.multiplier);	// pitch
-    u8x8.print('/');
-    u8x8.print(musicBoxConf.pitch.divisor);
 
-    if(musicBoxConf.stack_sync_slices && musicBoxConf.base_pulse != ILLEGAL16) {
-      u8x8.clearLine(row);	// stack_sync_slices or empty line
-      u8x8.setCursor(0,row++);
-      u8x8.print(F("p["));
-      u8x8.print(musicBoxConf.base_pulse);
-      u8x8.print(F("]|"));
+    if(musicBoxConf.stack_sync_slices) {	// stack_sync_slices?
+      u8x8.print(F(" |"));
       u8x8.print(musicBoxConf.stack_sync_slices);
+      if(musicBoxConf.base_pulse != ILLEGAL16) {
+	u8x8.print(F(" p["));
+	u8x8.print(musicBoxConf.base_pulse);
+	u8x8.print(']');
+      }
+
+    } else {	// no stack_sync_slices, so there is space for other info:	// (can be removed)
+      u8x8.print(F("  "));
+      u8x8.print(musicBoxConf.pitch.multiplier);	// pitch
+      u8x8.print('/');
+      u8x8.print(musicBoxConf.pitch.divisor);
     }
 
     u8x8.clearLine(row);	// name or subcycle

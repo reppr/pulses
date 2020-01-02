@@ -477,3 +477,11 @@ system_menu()
  'R'		reboot
  'U'		go into user mode
  or move them all below 'E<x>'
+
+show_metric_cents_list();	// TODO: move to Tuning hierarchy
+
+void sweep_click_0(int pulse) {	// can be called from a sweeping pulse	// TODO: REMOVE:
+
+TODO: reformat OLED display layout	IMPLEMENTING...
+
+TODO: menu 'M' mute hierarchy
