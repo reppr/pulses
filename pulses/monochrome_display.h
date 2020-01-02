@@ -142,6 +142,11 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
       u8x8.setInverseFont(0);
       u8x8.print(F("  "));
       monochrome_show_subcycle_octave();
+
+      // *BIG* PRESET number on top		poor old eyes little helper ;)
+      char preset[10] = {0};
+      itoa(musicBoxConf.preset, preset, 10);
+      u8x8.draw2x2String(0, 0, preset);
     }
     row++;
 
