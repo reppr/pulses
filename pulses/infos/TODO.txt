@@ -485,3 +485,11 @@ void sweep_click_0(int pulse) {	// can be called from a sweeping pulse	// TODO: 
 TODO: reformat OLED display layout	IMPLEMENTING...
 
 TODO: menu 'M' mute hierarchy
+
+
+entune_basic_musicbox_pulses()	refactor
+
+
+accgyro_preset	accgyro_preset_number vs accgyro_preset_mode
+
+accgyro_modulus

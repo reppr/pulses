@@ -1132,6 +1132,21 @@ void show_metric_cents_list(double base_note=220.0) {	// helper function, not ne
 //bool metric_alternative_tuning = false;	// force metric autotuning
 bool metric_alternative_tuning = true;	// TODO: active only for TESTING...
 
+
+void entune_basic_musicbox_pulses() {
+  MENU.outln(F("entune_basic_musicbox_pulses()"));
+
+  for (int pulse=0; pulse<PULSES.get_pl_max(); pulse++)
+    if (PULSES.pulse_is_selected(pulse) || PULSES.pulses[pulse].groups & g_PRIMARY)
+      PULSES.activate_tuning(pulse);	// en tune *all* primary or selected pulses
+
+  if(musicBox_butler_i != ILLEGAL32)
+    PULSES.activate_tuning(musicBox_butler_i);	// entune butler
+
+  if(cycle_monitor_i != ILLEGAL32)
+    PULSES.activate_tuning(cycle_monitor_i);	// entune cycle_monitor
+} // entune_basic_musicbox_pulses()
+
 void tuning_pitch_and_scale_UI_display() {
   MENU.out(F("'T'=tuning\t'TM'=toggle metric"));
   MENU.out_ON_off(metric_alternative_tuning);

@@ -906,7 +906,7 @@ bool stack_sync_user_selected=false;
 /* tuning *= detune;
   called detune_number times
   will rise tuning by an octave	*/
-  int sweep_up=1;	// sweep_up==0 no sweep, 1 up, -1 down
+  int sweep_up=0;	// sweep_up==0 no sweep, 1 up, -1 down
   double tuning=1.0;
   double detune_number=4096.0;
   double detune=1.0 / pow(2.0, 1/detune_number);
@@ -1584,6 +1584,9 @@ void setup() {
   MENU.outln(F("PULSES  http://github.com/reppr/pulses/\n"));
 
   show_program_version();
+#if defined USE_MONOCHROME_DISPLAY
+  delay(1200);	// sorry for that
+#endif
 
   MENU.ln();
 #if defined PULSES_USE_DOUBLE_TIMES
@@ -1979,7 +1982,7 @@ bool low_priority_tasks() {
     return true;
 
   return false;
-}
+} // low_priority_tasks()
 
 
 bool lowest_priority_tasks() {
@@ -2370,7 +2373,7 @@ void sweep_click(int pulse) {	// can be called from a pulse
   // PULSES.pulses[pulse].period.overflow = 0;
 #endif
   click(pulse);
-}
+} // sweep_click()
 
 
 void tuned_sweep_click(int pulse) {	// can be called from a pulse
@@ -2391,11 +2394,11 @@ void tuned_sweep_click(int pulse) {	// can be called from a pulse
   }
 
   click(pulse);
-}
+} // tuned_sweep_click()
 
 
 // first try: octave is reached by a fixed number of steps:
-void sweep_click_0(int pulse) {	// can be called from a sweeping pulse
+void sweep_click_0(int pulse) {	// can be called from a sweeping pulse	// TODO: REMOVE:
 #if defined PULSES_USE_DOUBLE_TIMES
   PULSES.pulses[pulse].period = PULSES.pulses[pulse].base_period;
   PULSES.pulses[pulse].period *= tuning;
@@ -2459,7 +2462,7 @@ void sweep_info() {
   MENU.tab();
   tuning_info();
   MENU.ln();
-}
+} // sweep_info()
 
 
 int is_octave(unsigned int integer) {
@@ -2517,7 +2520,7 @@ bool maybe_display_tuning_steps() {
   } // tuning has changed
 
   return did_something;
-}
+} // maybe_display_tuning_steps()
 
 
 bool maybe_stop_sweeping() {
@@ -6127,7 +6130,7 @@ bool menu_pulses_reaction(char menu_input) {
       case 19:	// TUNING: tuned sweep
 	PULSES.clear_selection();
 	PULSES.select_pulse(0);
-	sweep_up=1;
+	sweep_up = 1;
 	PULSES.reset_and_edit_pulse(0, PULSES.time_unit);
 	PULSES.divide_period(0, 1024);
 	en_tuned_sweep_click(0);

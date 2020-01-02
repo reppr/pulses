@@ -3,23 +3,30 @@
   temporary test menu UI during development
 */
 
+
+//	for (int pulse=0; pulse<64; pulse++)
+//	  if (PULSES.pulse_is_selected(pulse))
+//	    PULSES.activate_tuning(pulse);
+//	PULSES.tuning *= 0.793421;
+//	sweep_up=0;
+
 #if defined USE_ADS1115_AT_ADDR
 //ads1115_first_test_A0();
 //ads1115_first_test_diff_A2_A3();
 #endif
 
-show_metric_cents_list();
+show_metric_cents_list();	// TODO: move to Tuning hierarchy
 
 
-{
-  MENU.out(metric_mnemonic);
-  char s[] = {0, 0};
-  s[0] = scale_symbol_char();
-  MENU.outln(s);
-}
+//	{
+//	  MENU.out(metric_mnemonic);
+//	  char s[] = {0, 0};
+//	  s[0] = scale_symbol_char();
+//	  MENU.outln(s);
+//	}
 
 
-MENU.out(F("normalised_pitch "));
+MENU.out(F("normalised_pitch "));	// TODO: move to Tuning hierarchy
 MENU.out(get_normalised_pitch(), 6);
 MENU.ln();
 

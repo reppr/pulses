@@ -272,12 +272,18 @@ void reset_accGyro_selection() {	// reset accGyro selections, slots, reaction so
   Gx_reaction_source=NULL;
   Gy_reaction_source=NULL;
   Gz_reaction_source=NULL;
-}
+} // reset_accGyro_selection()
+
+
+enum accgyro_preset_modes {
+  ACCGYR_PRES_MODE_AXAYGZ=1,
+  ACCGYR_PRES_MODE_TUNING_Y,
+};
 
 
 #if ! defined ACCGYRO_DEFAULT_PRESET
-  #define ACCGYRO_DEFAULT_PRESET	1
-//#define ACCGYRO_DEFAULT_PRESET	2	// == TUNING mode
+  #define ACCGYRO_DEFAULT_PRESET	ACCGYR_PRES_MODE_AXAYGZ
+//#define ACCGYRO_DEFAULT_PRESET	ACCGYR_PRES_MODE_TUNING_Y
 #endif
 uint8_t	accGyro_preset = ACCGYRO_DEFAULT_PRESET;
 
@@ -303,14 +309,20 @@ void accGyro_data_display() {
 
 
 void accGyro_toggle_TUNING_mode() {
-  if(accGyro_preset==2 && accGyro_is_active) { // was tuning, so switch it off
+  extern uint32_t accgyro_modulus;
+  if(accGyro_preset==ACCGYR_PRES_MODE_TUNING_Y && accGyro_is_active) { // WAS tuning, so switch it off
     accGyro_is_active = false;
-    accGyro_preset = 1;	// not so sure where to switch to ;)
+    accGyro_preset = ACCGYR_PRES_MODE_AXAYGZ;	// not so sure where to switch to ;)
+    accgyro_modulus = 21221;	// prime	// TODO: UI
 
-  } else {
+  } else {					// switch to TUNING
     MENU.outln(F("TUNING gZ mode"));
-    accGyro_preset = 2;
+    accGyro_preset = ACCGYR_PRES_MODE_TUNING_Y;
     accGyro_is_active = true;
+    //sweep_up = 0;				// keep mental sanity ;)
+    extern void entune_basic_musicbox_pulses();
+    entune_basic_musicbox_pulses();
+    accgyro_modulus = 2027;	// prime	// TODO: UI
   }
 } // accGyro_toggle_TUNING_mode()
 
@@ -566,8 +578,8 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
       GZ_seen_f = accGyro_current_GZ_f;
     }
 
-    switch(accGyro_preset) {
-    case 1: // accGyro_preset==1
+    switch(accGyro_preset) {			// switch accGyro_preset mode
+    case ACCGYR_PRES_MODE_AXAYGZ: 		// accGyro_preset 1
       // ACCELERO;
       if(accGyro_mode & AG_mode_Ax) {		// accelero X
 	Ax_reaction_source = JIFFLES;
@@ -730,24 +742,16 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 //#endif
 	}
       }
-      break; // accGyro_preset==1
+      break; 		// ACCGYR_PRES_MODE_AXAYGZ
 
-    case 2: // accGyro_preset==2 GYRO Z TUNING mode :)
-      Gz_i_new = GZ_seen_f + 0.5;
-      // Gz_i_new += Gz_sel_offset; no offset here, i think...
-
-      if(Gz_i_new != _selected_Gz_i_seen) {
-	_selected_Gz_i_seen = Gz_i_new;
-#if true
-	extern void selected_do_detune_periods(short cents);
-	selected_do_detune_periods((short) _selected_Gz_i_seen / -3);	// scaling and invert
-#else
-	extern void selected_detune_cents(short cents);
-	selected_detune_cents((short) _selected_Gz_i_seen / -3);	// scaling and invert
-#endif
+    // TUNING MODE
+    case ACCGYR_PRES_MODE_TUNING_Y: 	//  ACC Y TUNING mode
+      {
+	// debug output showed cents as suitable unit, so i go this way:
+	double cent = pow(2.0, (1.0 / 1200.0));	// for human readers ;)
+	PULSES.tuning *= pow(cent, AY_seen_f);
       }
-
-      break; // accGyro_preset==2 GYRO Z TUNING mode :)
+      break; 				// accGyro_preset==ACCGYR_PRES_MODE_TUNING_Y
 
     default:
       MENU.error_ln(F("unknown accGyro_preset"));

@@ -855,7 +855,7 @@ void Pulses::activate_tuning(int pulse) {	// copy period to other_time and set T
   pulses[pulse].flags |= TUNED;
   pulses[pulse].other_time = pulses[pulse].period;
 
-  fix_global_next();	// looks like we do not need this?
+  //  fix_global_next();	// looks like we do not need this?
 }
 
 
