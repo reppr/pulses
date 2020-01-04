@@ -1157,7 +1157,7 @@ void display_program_version() {  // program versions, mac, maybe preName.  MENU
   }
 
   MENU.ln();
-}
+} // display_program_version()
 
 
 void show_program_version() {	// program version on menu output *and* OLED
@@ -1583,12 +1583,19 @@ void setup() {
 
   MENU.outln(F("PULSES  http://github.com/reppr/pulses/\n"));
 
-  show_program_version();
-#if defined USE_MONOCHROME_DISPLAY
-  delay(1200);	// sorry for that
+#if defined USE_NVS
+  configure_HARDWARE_from_nvs();
+  configure_IDENTITY_from_nvs();
+  MENU.ln();
 #endif
 
+  show_program_version();	// prename now known
+  #if defined USE_MONOCHROME_DISPLAY
+    delay(1200);	// sorry for that
+  #endif
+
   MENU.ln();
+
 #if defined PULSES_USE_DOUBLE_TIMES
   MENU.outln(F("pulses\tuses DOUBLE times"));
 #else
@@ -1620,11 +1627,6 @@ void setup() {
   */
   //  maybe_restore_from_RTCmem();		// only after deep sleep, else noop
 
-#if defined USE_NVS
-  configure_HARDWARE_from_nvs();
-  configure_IDENTITY_from_nvs();
-  MENU.ln();
-#endif
 
 #if defined ESP32
   setup_timer64();

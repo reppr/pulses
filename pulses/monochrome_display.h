@@ -36,7 +36,7 @@ void monochrome_show_program_version() {	// monochrome oled display
     u8x8.print(F(STRINGIFY(PROGRAM_VERSION)));
 
     u8x8.setCursor(0,3);
-    if(my_IDENTITY.preName)
+    if(my_IDENTITY.preName != "")
       u8x8.print(my_IDENTITY.preName);
 #if defined PROGRAM_SUB_VERSION
     else
@@ -158,7 +158,7 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
 
     u8x8.clearLine(row);
     u8x8.setCursor(0,row++);
-    u8x8.print(F("S "));	// sync
+    u8x8.print(F("S="));	// sync
     u8x8.print(musicBoxConf.sync);
 
     if(musicBoxConf.stack_sync_slices) {	// stack_sync_slices?
