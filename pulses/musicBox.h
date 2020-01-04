@@ -3800,6 +3800,76 @@ bool musicBox_reaction(char token) {
 #endif	// defined USE_ESP_NOW
     break;
 
+  case 'M':	// 'M<x>' mute
+    {
+      char next_letter = MENU.peek();
+      // bare 'M'
+      while (EOF8 != (next_letter = MENU.peek())) {
+	switch(next_letter) {
+	case 'T':	// 'MT' (morse)	all but tonic muted
+	case '0':	// 'M0' == 'MT' all but tonic muted
+	  MENU.drop_input_token();
+	  for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++) {	// tonic only
+	    if (PULSES.pulses[pulse].note_position == 1)
+	      PULSES.pulses[pulse].action_flags &= ~noACTION;	// activate TONIC only
+	    else
+	      PULSES.pulses[pulse].action_flags |= noACTION;	// MUTE all others
+	  }
+
+	  break;
+
+	case 'E':	// 'ME' (morse)	all on
+	case 'A':	// 'MA' == 'ME'	all on
+	  MENU.drop_input_token();
+	  for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++)	// ALL ON
+	    PULSES.pulses[pulse].action_flags &= ~noACTION;	// UNmute all,  all ON
+	  break;
+
+	case '1':	// note position	1 == tonic     toggle
+	case '2':	// switch individual note positions on and off
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+	  MENU.drop_input_token();
+
+	  for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++)	// toggle one
+	    if (PULSES.pulses[pulse].note_position == next_letter - '0')
+	      PULSES.pulses[pulse].action_flags ^= noACTION;
+	  break;
+
+	case 'H': // high end
+	  MENU.drop_input_token();
+	  for(int pulse = musicBoxConf.highest_primary - (primary_count/4) +1; pulse <= musicBoxConf.highest_primary; pulse++)
+	    PULSES.pulses[pulse].action_flags |= noACTION;	// mute high quarter
+	  break;
+
+//	case 'M': // melody
+//	  MENU.drop_input_token();
+//	  break;
+//
+//	case 'B': // bass
+//	  MENU.drop_input_token();
+//	  break;
+
+	case 'L': // low end
+	  for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.lowest_primary + (primary_count/4); pulse++)
+	    PULSES.pulses[pulse].action_flags |= noACTION;	// mute low quarter
+	  break;
+
+//	    case 'O':	// octave managnent
+//	    case '+';
+//	    case '-';
+//	      MENU.drop_input_token();
+//	      break;
+	}
+      }
+    }
+    break; // 'M<x>'
+
   case 'N':	// 'N' 'n' restart now	(like menu pulses 'n')
   case 'n':	// 'N' 'n' restart now	(like menu pulses 'n')
     if(musicBox_butler_i != ILLEGAL32)	// remove butler
