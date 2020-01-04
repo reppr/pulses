@@ -745,11 +745,44 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
       break; 		// ACCGYR_PRES_MODE_AXAYGZ
 
     // TUNING MODE
+#define DEBUG_U_TUNING_MODE
     case ACCGYR_PRES_MODE_TUNING_Y: 	//  ACC Y TUNING mode
       {
+	double UI_value = AY_seen_f;
+	UI_value -= 0.18;	// offset	just testing...
+
 	// debug output showed cents as suitable unit, so i go this way:
 	double cent = pow(2.0, (1.0 / 1200.0));	// for human readers ;)
-	PULSES.tuning *= pow(cent, AY_seen_f);
+	double detune = 1.0;
+
+	detune = pow(cent, (AY_seen_f * -2.0) + 1.0);
+	detune *= detune;
+	detune *= detune;
+	PULSES.tuning *= detune;
+
+#if defined DEBUG_U_TUNING_MODE
+#if true
+	u8x8.setCursor(0,0);
+	u8x8.print(AY_seen_f, 6);
+	u8x8.print("  ");
+
+	u8x8.setCursor(0,1);
+	u8x8.print(accGyro_current_AX_f, 6);
+	u8x8.print("  ");
+#endif
+	MENU.out(F("seen_Y "));
+	MENU.out(AY_seen_f, 9);
+	MENU.tab();
+
+	MENU.out(F("UI_v "));
+	MENU.out(UI_value, 9);
+	MENU.tab();
+
+	MENU.out((AY_seen_f * -2) + 1.0, 9);
+	MENU.tab(); MENU.out(detune, 9);
+	MENU.tab(); MENU.out(PULSES.tuning, 9);
+	MENU.ln();
+#endif
       }
       break; 				// accGyro_preset==ACCGYR_PRES_MODE_TUNING_Y
 

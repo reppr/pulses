@@ -751,6 +751,10 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
       //MENU.tab();
       //MENU.print_free_RAM();
     }
+    if(PULSES.tuning != 1.0) {
+      MENU.tab();
+      MENU.out(PULSES.tuning,6);
+    }
   }
 
   cycle_monitor_last_seen_division++;
@@ -3449,8 +3453,6 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
 	recognised = true;
 	break;
 
-   // case 'M':	// maybe for mute?
-   //   break;
 
       case 'P':	// 'UP' UI presets
 	MENU.drop_input_token();
