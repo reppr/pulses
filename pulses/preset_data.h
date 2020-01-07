@@ -7,10 +7,10 @@
   also see: preset-hashtags.txt
 */
 
-#define MUSICBOX_PRESETs	181	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
+#define MUSICBOX_PRESETs	184	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
 
 // *all* existing presets should be playable now :)
-#define SHORT_PRESET_COLLECTION	181	// only the first <nn> presets are at choice, overrides MUSICBOX_PRESETs
+//#define SHORT_PRESET_COLLECTION	181	// only the first <nn> presets are at choice, overrides MUSICBOX_PRESETs
 
 
 bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset? ################
@@ -5440,6 +5440,35 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 181:
+    musicBoxConf.name = F("Santur F6");
+    select_in(SCALES, doric_scale);
+    musicBoxConf.sync = 1;
+    select_in(JIFFLES, d4096_256);
+    set_metric_pitch(mp_F);
+    magic_autochanges = false;	// BRUTE FORCE
+    break;
+
+  case 182:
+    musicBoxConf.name = F("Santur F minor");
+    select_in(SCALES, minor_scale);
+    musicBoxConf.sync = 1;
+    select_in(JIFFLES, mech255);
+    set_metric_pitch(mp_F);
+    magic_autochanges = false;	// BRUTE FORCE
+    break;
+
+  case 183:
+    musicBoxConf.name = F("Santur c#- minor");
+    select_in(SCALES, minor_scale);
+    musicBoxConf.pitch = {1, 271};
+    musicBoxConf.sync = 0;
+    //    select_in(JIFFLES, mech255);
+    select_in(JIFFLES, mechanical);
+    set_metric_pitch(0);
+    magic_autochanges = false;	// BRUTE FORCE
+    break;
+
+  case 184:
     musicBoxConf.name = F("veryverybad");
     //# shortIsOk
     //# dense
