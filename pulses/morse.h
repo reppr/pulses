@@ -7,8 +7,10 @@
 //#define TOUCH_ISR_VERSION_2
 #define TOUCH_ISR_VERSION_3
 
-#define DEBUG_TREAT_MORSE_EVENTS_V3	// TODO: deactivate
-#define DEBUG_MORSE_IN_STATUS		// TESTING and DEBUGGING help
+//#define DEBUG_TREAT_MORSE_EVENTS_V3
+//#define DEBUG_MORSE_IN_STATUS			// TESTING and DEBUGGING help
+//#define DEBUG_CHECK_AND_TREAT_MORSE_INPUT	// include *SAVETY NET*  and report errors
+
 
 #if ! defined MORSE_MONOCHROME_ROW
   #define MORSE_MONOCHROME_ROW	0	// row for monochrome morse display
@@ -720,7 +722,7 @@ void static IRAM_ATTR touch_morse_ISR_v2() {	// ISR for ESP32 touch sensor as mo
 } // touch_morse_ISR_v2()
 
 
-#define DEBUG_CHECK_AND_TREAT_MORSE_INPUT	// include *SAVETY NET*  and report errors
+//#define DEBUG_CHECK_AND_TREAT_MORSE_INPUT	// include *SAVETY NET*  and report errors
 // polled from pulses.ino main loop()
 bool check_and_treat_morse_input() {
   /*
@@ -2613,7 +2615,11 @@ void morse_out_separeLetter() {
 void morse_out_separeWord() {
   delay((separeWordTim - separeLetterTim - 1) * morse_TimeUnit / 1000);
 }
+
+// EXPERIMENTAL morse state pwm output?
+
 #endif // MORSE_OUTPUT_PIN
+
 
 #define MORSE_H
 #endif
