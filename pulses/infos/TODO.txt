@@ -499,3 +499,18 @@ REMOVE: IMPLEMENT_TUNING
 		other_pulse ???
 
 group of musicbox butler?
+
+tuning mode:
+TODO: switch ui menu input mode: chiffres are note position toggle *not* presets
+	no automatic end	fixed? brute force
+	chiffres are taken as note-positions, toggle
+	morse overlong ends tuning mode
+	maybe send chiffres from morse immediately?
+
+TODO: show tuning	// display pitch tuning
+
+TODO: maybe factor out 'Mxyz' mute interface?
+
+float hertz = 0.0;	// TODO: maybe
+
+TODO: staff pitch groups L B M H

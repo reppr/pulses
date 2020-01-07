@@ -972,6 +972,8 @@ enum metric_pitch_t {
 		     mp_Gis,
 };
 
+// float hertz = 0.0;	// TODO: maybe
+
 void set_metric_pitch(int metric_pitch) {	// SETS PARAMETERS ONLY, does *not* tune
   if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
     MENU.out(F("set_metric_pitch("));
@@ -1151,9 +1153,10 @@ void entune_basic_musicbox_pulses() {
     PULSES.activate_tuning(cycle_monitor_i);	// entune cycle_monitor
 } // entune_basic_musicbox_pulses()
 
-void tuning_pitch_and_scale_UI_display() {
-  MENU.out(F("'T'=tuning\t'TM'=toggle metric"));
+void tuning_pitch_and_scale_UI_display() {	// TODO: update
+  MENU.out(F("'T'=tuning 'T?'=?\t'TM'=toggle metric"));
   MENU.out_ON_off(metric_alternative_tuning);
+  MENU.out(F("\t'TZ<num>'=(int)hertz\t'T!'=tune"));
   MENU.outln(F("\t'T!'=tune\t'T<num>'=select scale"));
 
   MENU.out(F("'T[ABHCDEFG]'=select metric key ("));
@@ -1162,23 +1165,79 @@ void tuning_pitch_and_scale_UI_display() {
   MENU.outln(F(")\t'T+' 'T-'=chromatic up|down tuning\n"));
 } // tuning_pitch_and_scale_UI_display()
 
+void display_pitch() {
+  MENU.out(F("PITCH: "));
+  MENU.out(musicBoxConf.pitch.multiplier);
+  MENU.slash();
+  MENU.out(musicBoxConf.pitch.divisor);
+  if(musicBoxConf.chromatic_pitch) {
+    MENU.out(F(" metric "));
+    MENU.out(metric_mnemonic);
+  }
+}
+
+void display_scale_name() {
+  MENU.out(F("SCALE: "));
+  MENU.out(array2name(SCALES, selected_in(SCALES)));
+}
 
 bool tuning_pitch_and_scale_UI() {
-  if(MENU.peek()==EOF8) {	// bare 'T'?
-    // TODO: show tuning	// display pitch tuning
+  uint8_t first_token = MENU.peek();
+  switch(first_token) {
+  case '?':	// 'T?'
     display_names(SCALES);	// display SCALES list
+    MENU.ln(2);			//  then like bare 'T'
+  case EOF8:	// bare 'T'?
+    display_pitch();
+    MENU.tab();
+    display_scale_name();
+    MENU.ln();
+    tuning_pitch_and_scale_UI_display();
     MENU.ln();
     extern void musicBox_short_info();
     musicBox_short_info();
+    return true;
+    break;
 
-  } else if(MENU.peek()=='M') {	// 'TM' toggle metric_alternative_tuning
+  case 'M':	// 'TM' toggle metric_alternative_tuning	// TODO: check that...
     MENU.drop_input_token();
     metric_alternative_tuning = ! metric_alternative_tuning;
     MENU.out(F("metric alternative tuning"));
     MENU.out_ON_off(metric_alternative_tuning);
     MENU.ln();
+    return true;
+    break;
 
-  } else {				// more input?
+//case 'I':	// 'TIG' start GUITAR tuning
+//    // .. G 2drop
+//    MENU.drop_input_token();
+//    MENU.drop_input_token();
+//    // sound E A D G B E on metric pitch
+//
+//    MENU.out(F("GUITAR TUNING"));
+//    MENU.ln();
+//    break;
+
+  case 'Z':	// 'TZ<n>'	tune to hertZ	integer only hertz input
+    // global  float hertz = 0.0;	// TODO: maybe...
+
+    MENU.drop_input_token();
+    MENU.out(F("set tuning to frequency in hertz "));
+    {
+      int hz = 0;
+      if(hz = MENU.numeric_input(0)) {
+	musicBoxConf.pitch = {1, hz};
+	pitch_user_selected = true;
+	MENU.out(hz);
+	set_metric_pitch(0);	// assumed to be *not* metric
+      }
+    }
+    MENU.ln();
+    return true;
+    break;
+  } // switch(first_token)
+
+  {				// more input?
     bool done=false;
     while(!done) {	// sequential input loop
       switch(MENU.peek()) {
@@ -1286,8 +1345,7 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   }
 
   tag_randomness(scale_user_selected);
-  MENU.out(F("SCALE: "));
-  MENU.out(array2name(SCALES, selected_in(SCALES)));
+  display_scale_name();
   MENU.space(3);
 
   tag_randomness(sync_user_selected);
@@ -1309,16 +1367,7 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   MENU.space(2);
 
   tag_randomness(pitch_user_selected);
-  MENU.out(F("SCALING: "));
-  MENU.out(musicBoxConf.pitch.multiplier);
-  MENU.slash();
-  MENU.out(musicBoxConf.pitch.divisor);
-
-  if(musicBoxConf.chromatic_pitch) {
-    MENU.out(F(" metric "));
-    MENU.out(metric_mnemonic);
-  }
-
+  display_pitch();
   MENU.ln();
 } // show_basic_musicBox_parameters()
 
@@ -3802,20 +3851,19 @@ bool musicBox_reaction(char token) {
 #endif	// defined USE_ESP_NOW
     break;
 
-  case 'M':	// 'M<x>' mute
+  case 'M':	// 'M<x>' mute		// TODO: maybe factor out 'Mxyz' mute interface?
     {
       char next_letter = MENU.peek();
       // bare 'M'
       while (EOF8 != (next_letter = MENU.peek())) {
+	magic_autochanges = false;	// brute force...
+	// TODO: switch ui menu input mode: chiffres are note position toggle *not* presets
 	switch(next_letter) {
-	case 'T':	// 'MT' (morse)	all but tonic muted
-	case '0':	// 'M0' == 'MT' all but tonic muted
+	case 'T':	// 'MT' (morse)	all MUTED
+	case '0':	// 'M0' == 'MT' all MUTED
 	  MENU.drop_input_token();
 	  for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++) {	// tonic only
-	    if (PULSES.pulses[pulse].note_position == 1)
-	      PULSES.pulses[pulse].action_flags &= ~noACTION;	// activate TONIC only
-	    else
-	      PULSES.pulses[pulse].action_flags |= noACTION;	// MUTE all others
+	    PULSES.pulses[pulse].action_flags |= noACTION;	// MUTE ALL
 	  }
 
 	  break;
@@ -3843,19 +3891,28 @@ bool musicBox_reaction(char token) {
 	      PULSES.pulses[pulse].action_flags ^= noACTION;
 	  break;
 
+	// TODO: staff pitch groups L B M H
 	case 'H': // high end
 	  MENU.drop_input_token();
 	  for(int pulse = musicBoxConf.highest_primary - (primary_count/4) +1; pulse <= musicBoxConf.highest_primary; pulse++)
 	    PULSES.pulses[pulse].action_flags |= noACTION;	// mute high quarter
 	  break;
 
-//	case 'M': // melody
-//	  MENU.drop_input_token();
-//	  break;
-//
-//	case 'B': // bass
-//	  MENU.drop_input_token();
-//	  break;
+	case 'M': // melody
+	  for(int pulse = musicBoxConf.lowest_primary + (primary_count/2)+1;
+	      pulse <= musicBoxConf.highest_primary  - (primary_count/4);
+	      pulse++)
+	    PULSES.pulses[pulse].action_flags |= noACTION;	// mute high quarter
+	  MENU.drop_input_token();
+	  break;
+
+	case 'B': // bass
+	  MENU.drop_input_token();
+	  for(int pulse = musicBoxConf.lowest_primary + (primary_count/4)+1;
+	      pulse <= musicBoxConf.lowest_primary  + (primary_count/2);
+	      pulse++)
+	    PULSES.pulses[pulse].action_flags |= noACTION;	// mute high quarter
+	  break;
 
 	case 'L': // low end
 	  for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.lowest_primary + (primary_count/4); pulse++)
