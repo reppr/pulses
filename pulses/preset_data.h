@@ -7,7 +7,7 @@
   also see: preset-hashtags.txt
 */
 
-#define MUSICBOX_PRESETs	184	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
+#define MUSICBOX_PRESETs	185	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
 
 // *all* existing presets should be playable now :)
 //#define SHORT_PRESET_COLLECTION	181	// only the first <nn> presets are at choice, overrides MUSICBOX_PRESETs
@@ -5087,8 +5087,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 165:
     musicBoxConf.name = F("stacked clicks");	// stacked start :)
-    //comment: interesting start ;)
-    //# favorite+
+    //comment: interesting start ;)	crazy jazz rhythms ;)
+    //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 1h 23' 35"
     //# melodies	harmonic progression
@@ -5115,6 +5115,8 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     //# boring
     //# slow
     //# steady	insisting
+    //# jazz
+    //# crazy
     select_in(SCALES,europ_PENTAtonic);
     select_in(JIFFLES,d4096_32);
     musicBoxConf.sync = 0;
@@ -5469,6 +5471,17 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
     break;
 
   case 184:
+    musicBoxConf.name = F("Santur JIFF test");
+    select_in(SCALES, minor_scale);
+    musicBoxConf.pitch = {1, 271};
+    musicBoxConf.sync = 1;
+    //    select_in(JIFFLES, mech255);
+    select_in(JIFFLES, jiff_TEST);
+    set_metric_pitch(0);
+    magic_autochanges = false;	// BRUTE FORCE
+    break;
+
+  case 185:
     musicBoxConf.name = F("veryverybad");
     //# shortIsOk
     //# dense

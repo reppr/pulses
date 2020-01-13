@@ -183,6 +183,10 @@ REGISTER_JIFFLE(tigg_ding4096);
 REGISTER_JIFFLE(piip2048);
 REGISTER_JIFFLE(tanboura);
 
+REGISTER_JIFFLE(jiff_TEST);
+REGISTER_JIFFLE(jiff_TEST2);
+REGISTER_JIFFLE(jiff_TEST3);
+
 REGISTER_JIFFLE(doDe_i);	// test only, remove?
 REGISTER_JIFFLE(asdfg);		// test only, remove?
 
