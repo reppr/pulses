@@ -1786,8 +1786,8 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
   delay(100);	// don't change startup time if esp_now is used or not
 #endif
 
-//#ifdef USE_MORSE	// ATTENTION: *do this AFTER esp_now_pulses_setup()*
-//  #include "morse_setup.h"
+//#ifdef USE_MORSE
+//  morse_init();	// ATTENTION: *do this AFTER esp_now_pulses_setup()*
 //#endif
 
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
@@ -1907,8 +1907,8 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
   //  peripheral_power_switch_OFF();	// default peripheral power supply OFF
 #endif
 
-#ifdef USE_MORSE			// ATTENTION: *do this AFTER esp_now_pulses_setup()*
-  #include "morse_setup.h"
+#ifdef USE_MORSE
+  morse_init();	// ATTENTION: *do this AFTER esp_now_pulses_setup()*
 #endif
 
   MENU.ln();
