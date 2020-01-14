@@ -41,23 +41,23 @@ limit_loong_overlong	= (float) (loongTim + overlongTim + 1)/2;
 #endif
 
 // initialize a timer used to check for letter separation pause:
-#if ! defined TOUCH_ISR_VERSION_3	// TODO: OBSOLETE:
-  morse_separation_timer = timerBegin(0, 80, true);	// prescaler 80 for microseconds
-  timerAttachInterrupt(morse_separation_timer, &morse_endOfLetter, true);
-#endif
+//  #if ! defined TOUCH_ISR_VERSION_3	// TODO: OBSOLETE:
+//    morse_separation_timer = timerBegin(0, 80, true);	// prescaler 80 for microseconds
+//    timerAttachInterrupt(morse_separation_timer, &morse_endOfLetter, true);
+//  #endif
 
 #ifdef MORSE_TOUCH_INPUT_PIN	// use ESP32 touch sensor as morse input
-  #if defined TOUCH_ISR_VERSION_3
+//    #if defined TOUCH_ISR_VERSION_3
     touchAttachInterrupt(MORSE_TOUCH_INPUT_PIN, touch_morse_ISR_v3, touch_threshold);
-  #elif defined TOUCH_ISR_VERSION_2	// REMOVED, see: morse_unused.txt
-#error		// REMOVED, see: morse_unused.txt
-    morse_in_status.cnt = 0;	// debugging only
-    morse_in_status.status_i = 0;	// debugging
-//  touch_morse_ISR_v2();		// call ISR once from setup for initialisation?
-    touchAttachInterrupt(MORSE_TOUCH_INPUT_PIN, touch_morse_ISR_v2, touch_threshold);
-
-    morse_in_status.cnt = 0;	// debugging only	maybe even twice?
-    morse_in_status.status_i = 0;	// debugging
-//  touch_morse_ISR_v2();		// call ISR once from setup for initialisation?
-  #endif // TOUCH_ISR_VERSION_n
+//    #elif defined TOUCH_ISR_VERSION_2	// REMOVED, see: morse_unused.txt
+//  #error		// REMOVED, see: morse_unused.txt
+//      morse_in_status.cnt = 0;	// debugging only
+//      morse_in_status.status_i = 0;	// debugging
+//  //  touch_morse_ISR_v2();		// call ISR once from setup for initialisation?
+//      touchAttachInterrupt(MORSE_TOUCH_INPUT_PIN, touch_morse_ISR_v2, touch_threshold);
+//
+//      morse_in_status.cnt = 0;	// debugging only	maybe even twice?
+//      morse_in_status.status_i = 0;	// debugging
+//  //  touch_morse_ISR_v2();		// call ISR once from setup for initialisation?
+//    #endif // TOUCH_ISR_VERSION_n
 #endif // MORSE_TOUCH_INPUT_PIN
