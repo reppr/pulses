@@ -2326,6 +2326,8 @@ void morse_out_separeWord() {
 
 
 void morse_init() {
+  // MENU.outln(F("MORSE morse_init()"));
+
   //limit_debounce		= 0.5;
   //limit_debounce		= 0.25;	// *LOWERED* as a test		// TODO: test&trim
   limit_debounce		= 0.35;	// hat some stray 'E' so test 0.35	// TODO: test&trim

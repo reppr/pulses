@@ -1867,15 +1867,9 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 
   PULSES.fix_global_next();		// we *must* call that here late in setup();
 
-#ifdef AUTOSTART			// see: pulses_project_conf.h
-    autostart_counter++;
-    MENU.out(F("\nAUTOSTART "));
-    MENU.out(autostart_counter);
-    MENU.tab();
-    MENU.outln(STRINGIFY(AUTOSTART));
-
-    AUTOSTART
-  #endif
+//#ifdef AUTOSTART			// see: pulses_project_conf.h
+// WAS HERE, see below			// EXPERIMENTAL: was here, see below
+//#endif
 
   // informations about alive pulses:
   if(MENU.verbosity >= VERBOSITY_SOME) { // can be switched of by autostart ;)
@@ -1912,6 +1906,16 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 #endif
 
   MENU.ln();
+
+#ifdef AUTOSTART			// see: pulses_project_conf.h
+  autostart_counter++;			//  EXPERIMENTAL: moved here
+  MENU.out(F("\nAUTOSTART "));
+  MENU.out(autostart_counter);
+  MENU.tab();
+  MENU.outln(STRINGIFY(AUTOSTART));
+
+  AUTOSTART
+#endif
 } // setup()
 
 
