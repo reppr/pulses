@@ -1,3 +1,10 @@
+/*
+  unused code
+
+  left here to apply renames and api changes...
+*/
+
+
 /* **************************************************************** */
 /*
   DOES NOT WORK: non static member function	TODO: fix or remove ################
@@ -326,30 +333,11 @@ char wait_for_input() {
 */
 
 
-// left over test code	################ FIXME: look over and delete ################
-//  case 'D':	// DADA debug
-// for tuning
-//	    int INP;
-//	    for (int pulse=0; pulse<pl_max; pulse++)
-//	      if ((PULSES.pulse_is_selected(pulse))) && PULSES.pulses[pulse].period.time) {
-//		MENU.outln(pulse);
-//
-//		while (MENU.peek()==EOF8)
-//		  delay(0.1);
-//
-//		INP=MENU.peek();
-//		MENU.out("DADA	");
-//		MENU.outln(INP);
-//		MENU.drop_input_token();
-//	      }
-//	MENU.outln("done");
 
-    //    click_connection_test(5000);
-    //    click_connection_test(0);	// steps through the first round, then normal
-    //     MENU.outln(F("'D' 1"));
-    //     pulse_info_1line(0);
-    //     MENU.outln(F("'D' 2"));
-    //    MENU.outln((*HARMONICAL).harmonical_base);
+// left over test code	################ FIXME: look over and delete ################
+
+//    click_connection_test(5000);
+//    click_connection_test(0);	// steps through the first round, then normal
 
     //    MENU.outln(F("small primes:"));
     //    for (int i=0; (*HARMONICAL).small_primes[i]; i++) {
@@ -357,6 +345,7 @@ char wait_for_input() {
     //      MENU.tab();
     //      MENU.outln((*HARMONICAL).small_primes[i]);
     //    }
+
 //	    {
 //	      unsigned long lcm=1L;
 //	      for (int pulse=0; pulse<pl_max; pulse++) {
@@ -593,13 +582,6 @@ private:
 //	  if (prepared != 8)
 //	    MENU.out(F("prepared ")); MENU.out(prepared); MENU.slash(); MENU.outln(voices);
 //	  //  PULSES.selected_pulses=0;
-
-
-// working on:
-// prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
-// pentatonic steel strings on 8 magnets
-//			  ratios = pentatonic_minor;
-
 
 /* ****************  END DEMO SETUPS  **************** */
 /* **************************************************************** */

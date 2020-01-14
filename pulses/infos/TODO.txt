@@ -484,8 +484,6 @@ void sweep_click_0(int pulse) {	// can be called from a sweeping pulse	// TODO: 
 
 TODO: reformat OLED display layout	IMPLEMENTING...
 
-TODO: menu 'M' mute hierarchy
-
 
 entune_basic_musicbox_pulses()	refactor
 
@@ -509,8 +507,28 @@ TODO: switch ui menu input mode: chiffres are note position toggle *not* presets
 
 TODO: show tuning	// display pitch tuning
 
-TODO: maybe factor out 'Mxyz' mute interface?
-
 float hertz = 0.0;	// TODO: maybe
 
 TODO: staff pitch groups L B M H
+
+TODO: MORSE output on LED   (speaker? )
+      MORSE output as pulse?
+
+
+TODO: reserve more pins:
+  TRIGGER     34
+  MIDI
+  TOUCH		[=13], 2(LED?), 27, 32(SD), 33
+    TOUCH no OLED	4, 14
+    TOUCH no RGB	[=14], (15?)
+
+  UART2		RX 16 (OLED)	TX 17
+
+
+some experimental jiffles
+     TODO: rename or remove
+
+
+RETHINK: harmonical_base	looks obsolete?
+
+eliminate morse_setup.h

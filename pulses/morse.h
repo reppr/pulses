@@ -4,7 +4,7 @@
 
 #ifndef MORSE_H
 
-//#define TOUCH_ISR_VERSION_2
+//#define TOUCH_ISR_VERSION_2	// removed, see: morse_unused.txt
 #define TOUCH_ISR_VERSION_3
 
 //#define DEBUG_TREAT_MORSE_EVENTS_V3
@@ -140,7 +140,7 @@ bool is_real_token(char token) {	// check for real tokens like . - ! V and separ
 }
 
 // forward declaration
-#if defined TOUCH_ISR_VERSION_2 || defined TOUCH_ISR_VERSION_3
+#if defined TOUCH_ISR_VERSION_2 || defined TOUCH_ISR_VERSION_3	// TODO: obsolete
   void morse_received_token(char token, float token_duration);
 #else
   void static IRAM_ATTR morse_received_token(char token, float token_duration);
@@ -359,7 +359,7 @@ void static IRAM_ATTR morse_GPIO_ISR_falling() {	// MORSE INPUT on GPIO morse_GP
 // touch ISR
 
 //#define DEBUG_MORSE_TOUCH_INTERRUPT
-#if defined TOUCH_ISR_VERSION_2 || defined TOUCH_ISR_VERSION_3
+#if defined TOUCH_ISR_VERSION_2 || defined TOUCH_ISR_VERSION_3	// TODO: obsolete
 void morse_endOfLetter() {
 #else
 void static IRAM_ATTR morse_endOfLetter() {
@@ -667,8 +667,8 @@ bool morse_poll_letter_separation() {
 } // morse_poll_letter_separation()
 
 
-#elif defined TOUCH_ISR_VERSION_2
-
+#elif defined TOUCH_ISR_VERSION_2	// REMOVED, see: morse_unused.txt
+#error TOUCH_ISR_VERSION_2	// REMOVED, see: morse_unused.txt
 typedef union morse_in_status_t {
   int status_i=0;	// used to check for activity and reset
   // short is_hot;		// used as flag?
@@ -855,7 +855,7 @@ bool check_and_treat_morse_input() {
 
 
 #else // ! TOUCH_ISR_VERSION_2	below is OLD VERSION:
-
+#error	// REMOVED, see: morse_unused.txt
 void static IRAM_ATTR touch_morse_ISR(void) {	// ISR for ESP32 touch sensor as morse input	*OLD VERSION*
   portENTER_CRITICAL_ISR(&morse_MUX);		// MAYBE: a separated mux for touch?
 
@@ -942,7 +942,7 @@ void static IRAM_ATTR touch_morse_ISR(void) {	// ISR for ESP32 touch sensor as m
 
   portEXIT_CRITICAL_ISR(&morse_MUX);	// MAYBE: a separated mux for touch?
 } // touch_morse_ISR()	old version
-#endif // TOUCH_ISR_VERSION_2 or old
+#endif // TOUCH_ISR_VERSION_2 or old	// REMOVED, see: morse_unused.txt
 
 #endif // MORSE_TOUCH_INPUT_PIN
 /* **************************************************************** */
@@ -1594,7 +1594,7 @@ void morse_stats_init() {
 
 
 // TODO: comment ################
-#if defined TOUCH_ISR_VERSION_2 || defined TOUCH_ISR_VERSION_3
+#if defined TOUCH_ISR_VERSION_2 || defined TOUCH_ISR_VERSION_3	// TODO: obsolete
 void morse_stats_gather(char token, float duration) {	// only real tokens please
 #else // old version
 void static IRAM_ATTR morse_stats_gather(char token, float duration) {	// only real tokens please
@@ -1757,7 +1757,7 @@ void static IRAM_ATTR morse_stats_do() {
 /* **************************************************************** */
 void static morse_token_decode();	// pre declaration
 
-#if defined TOUCH_ISR_VERSION_2 || defined TOUCH_ISR_VERSION_3
+#if defined TOUCH_ISR_VERSION_2 || defined TOUCH_ISR_VERSION_3	// TODO: obsolete
 void morse_received_token(char token, float duration) {
   portENTER_CRITICAL(&morse_MUX);
 #else
@@ -1827,7 +1827,7 @@ void static IRAM_ATTR morse_received_token(char token, float duration) {
     morse_token_cnt=0;	// TODO: maybe still use data or use a ring buffer?
   }
 
-#if defined TOUCH_ISR_VERSION_2 || defined TOUCH_ISR_VERSION_3
+#if defined TOUCH_ISR_VERSION_2 || defined TOUCH_ISR_VERSION_3	// TODO: obsolete
   portEXIT_CRITICAL(&morse_MUX);
 #else
   portEXIT_CRITICAL_ISR(&morse_MUX);
