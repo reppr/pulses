@@ -473,6 +473,8 @@ void Pulses::wake_pulse(int pulse) {
   if (pulses[pulse].action_flags && !(pulses[pulse].action_flags & noACTION)) {	// unmuted action?
     int action_flags = pulses[pulse].action_flags;
 
+//#define CLICK_AND_DAC_BEFORE_PAYLOAD_OLDSTYLE		// TODO: TEST&REMOVE	old style
+#if defined CLICK_AND_DAC_BEFORE_PAYLOAD_OLDSTYLE	// TODO: TEST&REMOVE	old style
     if (action_flags & CLICKs)
       digitalWrite(pulses[pulse].gpio, pulses[pulse].counter & 1);
 
@@ -480,6 +482,7 @@ void Pulses::wake_pulse(int pulse) {
     if (action_flags & (DACsq1|DACsq2))
       DAC_output();
 #endif
+#endif CLICK_AND_DAC_BEFORE_PAYLOAD_OLDSTYLE	// TODO: TEST&REMOVE	old style
 
     if (action_flags & PAYLOAD) {		// for flexibility payload comes *before* icode
       (*pulses[pulse].payload)(pulse);		// do payload
@@ -496,6 +499,17 @@ void Pulses::wake_pulse(int pulse) {
 	return;
 #endif
     }
+
+#if ! defined CLICK_AND_DAC_BEFORE_PAYLOAD_OLDSTYLE	// new style, EXPERIMENTAL:
+    if (action_flags & CLICKs)
+      digitalWrite(pulses[pulse].gpio, pulses[pulse].counter & 1);
+
+#if defined USE_DACs
+    if (action_flags & (DACsq1|DACsq2))
+      DAC_output();
+#endif
+#endif // CLICK_AND_DAC_BEFORE_PAYLOAD_OLDSTYLE	// TODO: TEST&REMOVE	old style
+
   }
 
   // prepare future:
