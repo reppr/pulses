@@ -187,6 +187,9 @@ REGISTER_JIFFLE(jiff_TEST);
 REGISTER_JIFFLE(jiff_TEST2);
 REGISTER_JIFFLE(jiff_TEST3);
 
+REGISTER_JIFFLE(wait_TEST);
+REGISTER_JIFFLE(wait_TEST2);
+
 REGISTER_JIFFLE(doDe_i);	// test only, remove?
 REGISTER_JIFFLE(asdfg);		// test only, remove?
 

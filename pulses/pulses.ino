@@ -4231,6 +4231,7 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
   PULSES.pulses[pulse].data		jiffletab[] pointer
   PULSES.pulses[pulse].base_period	base period = period of starting pulse
 */
+
   if(PULSES.pulses[pulse].gpio != ILLEGAL8)
     digitalWrite(PULSES.pulses[pulse].gpio, PULSES.pulses[pulse].counter & 1);	// click
 
@@ -4258,12 +4259,12 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
   // to be able to play unfinished jiffletabs while editing them
   // we check the other 2 items of the triple for zeroes
   long divisor=jiffletab[base_index+1];
-  long counter=jiffletab[base_index+2];
-  if (divisor==0 || counter==0 ) {	// no next phase, return
-    MENU.outln("DADA jiff d|c");
+  if (divisor==0) {	// no next phase, return
+    MENU.outln("DADA jiff d=0");
     PULSES.init_pulse(pulse);		// remove pulse
     return;				// and return
   }
+
 #if defined PULSES_USE_DOUBLE_TIMES
   PULSES.pulses[pulse].period = PULSES.pulses[pulse].base_period;
   PULSES.mul_time(&PULSES.pulses[pulse].period, jiffletab[base_index]);
@@ -4272,9 +4273,14 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
 #else // old int overflow style
   PULSES.pulses[pulse].period.time = \
     PULSES.pulses[pulse].base_period.time * jiffletab[base_index] / jiffletab[base_index+1];
-  PULSES.pulses[pulse].countdown = jiffletab[base_index+2];		// count of next phase
 #endif
-  PULSES.pulses[pulse].countdown = jiffletab[base_index+2];		// count of next phase
+
+  long counter=jiffletab[base_index+2];
+  if (counter) {	// normal jiffle
+    PULSES.pulses[pulse].countdown = jiffletab[base_index+2];		// count of next phase
+  } else {	// count==0 wait
+    PULSES.pulses[pulse].counter--;	// waiting is not counted as new pulse
+  }
 } // do_jiffle(p)
 
 
