@@ -532,3 +532,10 @@ some experimental jiffles
 RETHINK: harmonical_base	looks obsolete?
 
 eliminate morse_setup.h
+
+there's still a LOT of unused MORSE code...
+and a bad MORSE bug forgetting all but last letters in a sequence
+
+PSRAM tests
+
+UI 'M' hierarchy feedback

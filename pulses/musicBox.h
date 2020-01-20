@@ -748,8 +748,6 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
       MENU.out(slice_weighting(this_division));
       MENU.out(F("\tnow="));
       PULSES.display_time_human(PULSES.now);
-      //MENU.tab();
-      //MENU.print_free_RAM();
     }
     if(PULSES.tuning != 1.0) {
       MENU.tab();

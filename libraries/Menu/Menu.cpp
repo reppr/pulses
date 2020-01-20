@@ -546,7 +546,18 @@ bool Menu::string_match(const char * teststring) {
     #endif
 
     void Menu::print_free_RAM() const {
-      out(F("free RAM:")); space(); out((int) get_free_RAM());
+      out(F("free RAM: " ));
+      out((int) get_free_RAM());
+      out(F("\theap: "));
+      out((int) ESP.getFreeHeap());
+      out('/');
+      out((int) ESP.getHeapSize());
+      if((int) ESP.getPsramSize()) {
+	out(F("\tPSRAM: "));
+	out((int) ESP.getFreePsram());
+	out('/');
+	out((int) ESP.getPsramSize());
+      }
     }
 
   #else				// NOOP free RAM fakes only:
@@ -1200,7 +1211,7 @@ void Menu::menu_display() const {
   // men_selected page display:
   out(F("\n * ** *** MENU "));
   out(men_pages[men_selected].title);
-  out(F(" *** ** *\t\t"));
+  out(F(" *** ** *\t"));
   print_free_RAM();	// real or fake ;)
   ln();
 

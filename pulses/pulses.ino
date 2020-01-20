@@ -611,7 +611,7 @@ void test_jiffle(unsigned int* jiffle, int count) {
   PULSES.pulses[pulse].dac1_intensity = PULSES.pulses[pulse].dac2_intensity = 20; // TODO: random test value
   PULSES.activate_pulse_synced(pulse, PULSES.get_now(), 0 /* or abs(musicBoxConf.sync) */); // test with sync=0
   PULSES.fix_global_next();
-}
+} // test_jiffle()
 
 
 /* **************************************************************** */
@@ -1588,6 +1588,9 @@ void setup() {
   configure_IDENTITY_from_nvs();
   MENU.ln();
 #endif
+
+  MENU.print_free_RAM();
+  MENU.ln(2);
 
   show_program_version();	// prename now known
   #if defined USE_MONOCHROME_DISPLAY
@@ -3725,7 +3728,7 @@ void display_payload(int pulse) {
   }
 
   MENU.out(F("UNKNOWN\t"));
-}
+} // display_payload()
 
 
 void flagged_pulses_info() {
