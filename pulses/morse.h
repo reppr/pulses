@@ -1,5 +1,6 @@
 /*
   morse.h
+  version 3 touch only
 */
 
 #ifndef MORSE_H
@@ -8,9 +9,6 @@
 #define TOUCH_ISR_VERSION_3	// other code removed, see: morse_unused.txt
 
 //#define DEBUG_TREAT_MORSE_EVENTS_V3
-//#define DEBUG_MORSE_IN_STATUS			// TESTING and DEBUGGING help
-//#define DEBUG_CHECK_AND_TREAT_MORSE_INPUT	// include *SAVETY NET*  and report errors
-
 
 #if ! defined MORSE_MONOCHROME_ROW
   #define MORSE_MONOCHROME_ROW	0	// row for monochrome morse display
@@ -96,7 +94,7 @@ void morse_show_limits() {
 }
 #endif
 
-#define MORSE_TOKEN_MAX	256			// a *lot* for debugging...	TODO:
+#define MORSE_TOKEN_MAX	128			// a *lot* for debugging...	TODO:
 volatile unsigned int morse_token_cnt=0;	// count up to MORSE_TOKEN_MAX . _ ! V tokens to form one letter or COMMAND
 char morse_SEEN_TOKENS[MORSE_TOKEN_MAX];
 float morse_token_duration[MORSE_TOKEN_MAX];	// debugging and statistics
@@ -120,8 +118,8 @@ float morse_token_duration[MORSE_TOKEN_MAX];	// debugging and statistics
 
 #define MORSE_TOKEN_separe_OTHER	'?'
 // not used any more:
-//  #define MORSE_TOKEN_OFF			'o'
-//  #define MORSE_TOKEN_ON			'°'
+//  #define MORSE_TOKEN_OFF		'o'
+//  #define MORSE_TOKEN_ON		'°'
 
 #define MORSE_TOKEN_ILLEGAL		'§'
 
@@ -258,101 +256,101 @@ void static IRAM_ATTR morse_separation_check_OFF() {
 }
 
 
-/* **************************************************************** */
-// GPIO ISR
-
-float scaled_low_duration;	// microseconds/morse_TimeUnit
-float scaled_high_duration;
-
-#if defined MORSE_GPIO_INPUT_PIN	// Morse input GPIO pin (34 needs hardware pulldown, check on others)
-void static IRAM_ATTR morse_GPIO_ISR_falling();	// declaration is needed...
-
-void static IRAM_ATTR morse_GPIO_ISR_rising() {	// MORSE INPUT on GPIO
-  static unsigned long morse_low_time=0;
-
-  portENTER_CRITICAL_ISR(&morse_MUX);
-  // TODO	################  DADA: check if GPIO *is* high?
-
-  morse_start_ON_time = micros();
-  morse_separation_check_OFF();
-
-  morse_low_time = morse_start_ON_time - morse_start_OFF_time;
-  scaled_low_duration = (float) morse_low_time / morse_TimeUnit;
-
-#if defined MORSE_TOKEN_DEBUG
-  morse_received_token('L', (float) scaled_low_duration);	// ################ DEBUGGING only
-#endif
-
-  if (scaled_low_duration >= separeWordTim) {
-      morse_received_token(MORSE_TOKEN_separeLetter, scaled_low_duration);    // " |" is word end
-      morse_received_token(MORSE_TOKEN_separeWord, scaled_low_duration);
-  } else if (scaled_low_duration >= separeLetterTim) {
-    morse_received_token(MORSE_TOKEN_separeLetter, scaled_low_duration);
-  }
-
-#if defined MORSE_TOKEN_DEBUG
-  else if (scaled_low_duration < limit_debounce) {	// TODO: DADA: are you sure we don't need that?
-   morse_received_token(MORSE_TOKEN_debounce, scaled_low_duration);
- } else
-   morse_received_token(MORSE_TOKEN_separe_OTHER, scaled_low_duration);
-
-  if(!digitalRead(MORSE_GPIO_INPUT_PIN)) {	// DOUBLE CHECK if MORSE_GPIO_INPUT_PIN is still high...
-     morse_received_token('i', -1);
-     MENU.outln("pin is LOW!");		// ################ sorry ;)
-  }
-
-#endif
-
-  attachInterrupt(digitalPinToInterrupt(MORSE_GPIO_INPUT_PIN), morse_GPIO_ISR_falling, FALLING);
-  portEXIT_CRITICAL_ISR(&morse_MUX);
-} // morse_GPIO_ISR_rising()
-
-
-void static IRAM_ATTR morse_GPIO_ISR_falling() {	// MORSE INPUT on GPIO morse_GPIO_ISR_falling()
-  static unsigned long morse_high_time=0L;
-
-  portENTER_CRITICAL_ISR(&morse_MUX);
-  // DADA: TODO: DOUBLE CHECK if MORSE_GPIO_INPUT_PIN is still low
-
-  morse_start_OFF_time = micros();
-  morse_separation_check_OFF();
-
-  morse_high_time = morse_start_OFF_time - morse_start_ON_time;
-
-  scaled_high_duration = (float) morse_high_time / morse_TimeUnit; // microseconds/morse_TimeUnit
-#if defined MORSE_TOKEN_DEBUG
-  morse_received_token('H', scaled_high_duration);	// ################ DEBUGGING only
-#endif
-
-  if (scaled_high_duration > limit_debounce) {			// *real input* no debounce
-    if(scaled_high_duration > limit_loong_overlong) {
-      morse_received_token(MORSE_TOKEN_overlong, scaled_high_duration);
-    } else if (morse_high_time > morse_TimeUnit * limit_dash_loong) {
-      morse_received_token(MORSE_TOKEN_loong, scaled_high_duration);
-    } else if (morse_high_time > morse_TimeUnit * limit_dot_dash) {
-      morse_received_token(MORSE_TOKEN_dash, scaled_high_duration);
-    } else {
-      morse_received_token(MORSE_TOKEN_dot, scaled_high_duration);
-    }
-  }
-
-#if defined MORSE_TOKEN_DEBUG
-  else {		// debounce, ignore
-    morse_received_token(MORSE_TOKEN_debounce, scaled_high_duration);
-  }
-
-  if(digitalRead(MORSE_GPIO_INPUT_PIN)) {	// DOUBLE CHECK if MORSE_GPIO_INPUT_PIN is still low...
-    morse_received_token('I', scaled_high_duration);
-    MENU.outln("pin is HIGH!");		// ################ sorry ;)
-  }
-#endif
-
-  attachInterrupt(digitalPinToInterrupt(MORSE_GPIO_INPUT_PIN), morse_GPIO_ISR_rising, RISING);
-  morse_separation_check_ON();
-
-  portEXIT_CRITICAL_ISR(&morse_MUX);
-} // morse_GPIO_ISR_falling()
-#endif // MORSE_GPIO_INPUT_PIN
+//%/* **************************************************************** */
+//%// GPIO ISR
+//%
+//%float scaled_low_duration;	// microseconds/morse_TimeUnit
+//%float scaled_high_duration;
+//%
+//%#if defined MORSE_GPIO_INPUT_PIN	// Morse input GPIO pin (34 needs hardware pulldown, check on others)
+//%void static IRAM_ATTR morse_GPIO_ISR_falling();	// declaration is needed...
+//%
+//%void static IRAM_ATTR morse_GPIO_ISR_rising() {	// MORSE INPUT on GPIO
+//%  static unsigned long morse_low_time=0;
+//%
+//%  portENTER_CRITICAL_ISR(&morse_MUX);
+//%  // TODO	################  DADA: check if GPIO *is* high?
+//%
+//%  morse_start_ON_time = micros();
+//%  morse_separation_check_OFF();
+//%
+//%  morse_low_time = morse_start_ON_time - morse_start_OFF_time;
+//%  scaled_low_duration = (float) morse_low_time / morse_TimeUnit;
+//%
+//%#if defined MORSE_TOKEN_DEBUG
+//%  morse_received_token('L', (float) scaled_low_duration);	// ################ DEBUGGING only
+//%#endif
+//%
+//%  if (scaled_low_duration >= separeWordTim) {
+//%      morse_received_token(MORSE_TOKEN_separeLetter, scaled_low_duration);    // " |" is word end
+//%      morse_received_token(MORSE_TOKEN_separeWord, scaled_low_duration);
+//%  } else if (scaled_low_duration >= separeLetterTim) {
+//%    morse_received_token(MORSE_TOKEN_separeLetter, scaled_low_duration);
+//%  }
+//%
+//%#if defined MORSE_TOKEN_DEBUG
+//%  else if (scaled_low_duration < limit_debounce) {	// TODO: DADA: are you sure we don't need that?
+//%   morse_received_token(MORSE_TOKEN_debounce, scaled_low_duration);
+//% } else
+//%   morse_received_token(MORSE_TOKEN_separe_OTHER, scaled_low_duration);
+//%
+//%  if(!digitalRead(MORSE_GPIO_INPUT_PIN)) {	// DOUBLE CHECK if MORSE_GPIO_INPUT_PIN is still high...
+//%     morse_received_token('i', -1);
+//%     MENU.outln("pin is LOW!");		// ################ sorry ;)
+//%  }
+//%
+//%#endif
+//%
+//%  attachInterrupt(digitalPinToInterrupt(MORSE_GPIO_INPUT_PIN), morse_GPIO_ISR_falling, FALLING);
+//%  portEXIT_CRITICAL_ISR(&morse_MUX);
+//%} // morse_GPIO_ISR_rising()
+//%
+//%
+//%void static IRAM_ATTR morse_GPIO_ISR_falling() {	// MORSE INPUT on GPIO morse_GPIO_ISR_falling()
+//%  static unsigned long morse_high_time=0L;
+//%
+//%  portENTER_CRITICAL_ISR(&morse_MUX);
+//%  // DADA: TODO: DOUBLE CHECK if MORSE_GPIO_INPUT_PIN is still low
+//%
+//%  morse_start_OFF_time = micros();
+//%  morse_separation_check_OFF();
+//%
+//%  morse_high_time = morse_start_OFF_time - morse_start_ON_time;
+//%
+//%  scaled_high_duration = (float) morse_high_time / morse_TimeUnit; // microseconds/morse_TimeUnit
+//%#if defined MORSE_TOKEN_DEBUG
+//%  morse_received_token('H', scaled_high_duration);	// ################ DEBUGGING only
+//%#endif
+//%
+//%  if (scaled_high_duration > limit_debounce) {			// *real input* no debounce
+//%    if(scaled_high_duration > limit_loong_overlong) {
+//%      morse_received_token(MORSE_TOKEN_overlong, scaled_high_duration);
+//%    } else if (morse_high_time > morse_TimeUnit * limit_dash_loong) {
+//%      morse_received_token(MORSE_TOKEN_loong, scaled_high_duration);
+//%    } else if (morse_high_time > morse_TimeUnit * limit_dot_dash) {
+//%      morse_received_token(MORSE_TOKEN_dash, scaled_high_duration);
+//%    } else {
+//%      morse_received_token(MORSE_TOKEN_dot, scaled_high_duration);
+//%    }
+//%  }
+//%
+//%#if defined MORSE_TOKEN_DEBUG
+//%  else {		// debounce, ignore
+//%    morse_received_token(MORSE_TOKEN_debounce, scaled_high_duration);
+//%  }
+//%
+//%  if(digitalRead(MORSE_GPIO_INPUT_PIN)) {	// DOUBLE CHECK if MORSE_GPIO_INPUT_PIN is still low...
+//%    morse_received_token('I', scaled_high_duration);
+//%    MENU.outln("pin is HIGH!");		// ################ sorry ;)
+//%  }
+//%#endif
+//%
+//%  attachInterrupt(digitalPinToInterrupt(MORSE_GPIO_INPUT_PIN), morse_GPIO_ISR_rising, RISING);
+//%  morse_separation_check_ON();
+//%
+//%  portEXIT_CRITICAL_ISR(&morse_MUX);
+//%} // morse_GPIO_ISR_falling()
+//%#endif // MORSE_GPIO_INPUT_PIN
 
 
 /* **************************************************************** */
@@ -660,8 +658,7 @@ bool morse_poll_letter_separation() {
 #endif
     return true;
   }
-} // morse_poll_letter_separation()
-
+} // morse_poll_letter_separation()  TOUCH_ISR_VERSION_3
 //  #elif defined TOUCH_ISR_VERSION_2	// REMOVED, see: morse_unused.txt
 #endif // TOUCH_ISR_VERSION
 
@@ -750,534 +747,536 @@ bool morse_store_as_letter(char token) {	// translate special cases and store as
 }
 
 // decode stored tokens and store recognised letters
-bool morse2letter_decoder_state(char token, bool init=false) {	// TODO: obsolete? ################
-  static char state='\0';
-
-  // if init is true initialize, then return	// ################ TODO: REVIEW:
-  if (init) {
-    state='\0';					// reset
-    return true;	// dummy
-  }
-
-  // letter separation first, then return
-  if (token == MORSE_TOKEN_separeLetter) {
-    if(state) {
-      bool ret = morse_store_as_letter(state);	// save
-      state='\0';				// reset
-//      morse_stats_init();			// prepare next statistic run
-      return ret;				// reset
-   } else
-      return false;				// no state, just return
-  }
-
-  // word separation: store a space, then return
-  if (token == MORSE_TOKEN_separeWord) {
-    state='\0';				// reset
-    return morse_store_as_letter(' ');		// store a space and return
-  }
-
-/*
-  // maybe treat COMMANDs here?
-  if (token == MORSE_TOKEN_loong) {
-    // COMMAND parser
-  }
-*/
-
-  // decode letters
-  if((token == MORSE_TOKEN_dot) || (token == MORSE_TOKEN_dash)) {
-    switch (state) {
-    case ILLEGAL8:	// TODO: needs testing ################
-      state='\0';
-    case '\0':	//	initial state, start reading first token
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = 'E';
-	break;
-      case MORSE_TOKEN_dash:
-	state = 'T';
-	break;
-      }
-      break;
-
-    case 'E':	// .
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = 'I';
-	break;
-      case MORSE_TOKEN_dash:
-	state = 'A';
-	break;
-      }
-      break;
-
-    case 'T':	// -
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = 'N';
-	break;
-      case MORSE_TOKEN_dash:
-	state = 'M';
-	break;
-      }
-      break;
-
-    case 'I':	// ..
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = 'S';
-	break;
-      case MORSE_TOKEN_dash:
-	state = 'U';
-	break;
-      }
-      break;
-
-    case 'A':	// .-
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = 'R';
-	break;
-      case MORSE_TOKEN_dash:
-	state = 'W';
-	break;
-      }
-      break;
-
-    case 'N':	// -.
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = 'D';
-	break;
-      case MORSE_TOKEN_dash:
-	state = 'K';
-	break;
-      }
-      break;
-
-    case 'M':	// --
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = 'G';
-	break;
-      case MORSE_TOKEN_dash:
-	state = 'O';
-	break;
-      }
-      break;
-
-    case 'S':	// ...
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = 'H';
-	break;
-      case MORSE_TOKEN_dash:
-	state = 'V';
-	break;
-      }
-      break;
-
-    case 'U':	// ..-
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = 'F';
-	break;
-      case MORSE_TOKEN_dash:
-	state = 220;
-	// state = 'Ü';
-	break;
-      }
-      break;
-
-    case 'R':	// .-.
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = 'L';
-	break;
-      case MORSE_TOKEN_dash:
-	state = 'Ä';
-	break;
-      }
-      break;
-
-    case 'W':	// .--
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = 'P';
-	break;
-      case MORSE_TOKEN_dash:
-	state = 'J';
-	break;
-      }
-      break;
-
-    case 'D':	// -..
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = 'B';
-	break;
-      case MORSE_TOKEN_dash:
-	state = 'X';
-	break;
-      }
-      break;
-
-    case 'K':	// -.-
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = 'C';
-	break;
-      case MORSE_TOKEN_dash:
-	state = 'Y';
-	break;
-      }
-      break;
-
-    case 'G':	// --.
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = 'Z';
-	break;
-      case MORSE_TOKEN_dash:
-	state = 'Q';
-	break;
-      }
-      break;
-
-    case 'O':	// ---
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = 'Ö';
-	break;
-      case MORSE_TOKEN_dash:
-	state = 'c';	// 'c' means CH here ;)
-	break;
-      }
-      break;
-
-
-    case 'H':	// ....
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = '5';
-	break;
-      case MORSE_TOKEN_dash:
-	state = '4';
-	break;
-      }
-      break;
-
-    case 'V':	// ...-
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = 'v';	// 'v' means VE, verstanden
-	break;
-      case MORSE_TOKEN_dash:
-	state = '3';
-	break;
-      }
-      break;
-
-    case 'F':	// ..-.
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = 'É';
-	break;
-      case MORSE_TOKEN_dash:
-	state = ILLEGAL8;
-	break;
-      }
-      break;
-
-    case 220:	// ..--
-      // case 'Ü':	// ..--
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = ILLEGAL8;
-	break;
-      case MORSE_TOKEN_dash:
-	state = '2';
-	break;
-      }
-      break;
-
-    case 'L':	// .-..
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = ILLEGAL8;
-	break;
-      case MORSE_TOKEN_dash:
-	state = 'È';
-	break;
-      }
-      break;
-
-    case 'Ä':	// .-.-
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = 'a';	// 'a' means AR Spruchende here
-	break;
-      case MORSE_TOKEN_dash:
-	state = ILLEGAL8;
-	break;
-      }
-      break;
-
-    case 'P':	// .--.
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = '?';
-	break;
-      case MORSE_TOKEN_dash:
-	state = 'Å';
-	break;
-      }
-      break;
-
-    case 'J':	// .---
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = ILLEGAL8;
-	break;
-      case MORSE_TOKEN_dash:
-	state = '1';
-	break;
-      }
-      break;
-
-    case 'B':	// -...
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = '6';
-	break;
-      case MORSE_TOKEN_dash:
-	state = 'b';	// 'b' means BT	Pause here
-	break;
-      }
-      break;
-
-    case 'X':	// -..-
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = '/';
-	break;
-      case MORSE_TOKEN_dash:
-	state = ILLEGAL8;
-	break;
-      }
-      break;
-
-    case 'C':	// -.-.
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = ILLEGAL8;
-	break;
-      case MORSE_TOKEN_dash:
-	state = 'k';	// 'k' means KA	Spruchanfang
-	break;
-      }
-      break;
-
-    case 'Y':	// -.--
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = '(';
-	break;
-      case MORSE_TOKEN_dash:
-	state = ILLEGAL8;
-	break;
-      }
-      break;
-
-    case 'Z':	// --..
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = ILLEGAL8;
-	break;
-      case MORSE_TOKEN_dash:
-	state = '7';
-	break;
-      }
-      break;
-
-    case 'Q':	// --.-
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = ILLEGAL8;
-	break;
-      case MORSE_TOKEN_dash:
-	state = 'Ñ';
-	break;
-      }
-      break;
-
-    case 'Ö':	// ---.
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = '8';
-	break;
-      case MORSE_TOKEN_dash:
-	state = ILLEGAL8;
-	break;
-      }
-      break;
-
-    case 'c':	// ----	'c' means CH here ;)
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = '9';
-	break;
-      case MORSE_TOKEN_dash:
-	state = '0';
-	break;
-      }
-      break;
-
-    case '5':	// .....
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = ILLEGAL8;
-	break;
-      case MORSE_TOKEN_dash:
-	state = ILLEGAL8;
-	break;
-      }
-      break;
-
-    case '4':	// ....-
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = ILLEGAL8;
-	break;
-      case MORSE_TOKEN_dash:
-	state = ILLEGAL8;
-	break;
-      }
-      break;
-
-    case '3':	// ...--
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = ILLEGAL8;
-	break;
-      case MORSE_TOKEN_dash:
-	state = ILLEGAL8;
-	break;
-      }
-      break;
-
-    case '2':	// ..---
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = ILLEGAL8;
-	break;
-      case MORSE_TOKEN_dash:
-	state = ILLEGAL8;
-	break;
-      }
-      break;
-
-    case '1':	// .----
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = ILLEGAL8;
-	break;
-      case MORSE_TOKEN_dash:
-	state = ILLEGAL8;
-	break;
-      }
-      break;
-
-    case '0':	// -----
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = ILLEGAL8;
-	break;
-      case MORSE_TOKEN_dash:
-	state = ILLEGAL8;
-	break;
-      }
-      break;
-
-    case '9':	// ----.
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = ILLEGAL8;
-	break;
-      case MORSE_TOKEN_dash:
-	state = ILLEGAL8;
-	break;
-      }
-      break;
-
-    case '8':	// ---..
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = ILLEGAL8;
-	break;
-      case MORSE_TOKEN_dash:
-	state = ILLEGAL8;
-	break;
-      }
-      break;
-
-    case '7':	// --...
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = ILLEGAL8;
-	break;
-      case MORSE_TOKEN_dash:
-	state = ILLEGAL8;
-	break;
-      }
-      break;
-
-    case '6':	// -....
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = ILLEGAL8;
-	break;
-      case MORSE_TOKEN_dash:
-	state = ILLEGAL8;
-	break;
-      }
-      break;
-
-
-    case '.':	// .-.-.-
-      switch(token) {
-      case MORSE_TOKEN_dot:
-	state = ILLEGAL8;
-	break;
-      case MORSE_TOKEN_dash:
-	state = ILLEGAL8;
-	break;
-      }
-      break;
-
-    default:
-      MENU.out(state);
-      MENU.out(F(" morse2letter_decoder_state  unknown morse code"));
-      MENU.tab();
-      MENU.outln((int) state);
-      break;
-    }
-  }
-
-  return false;
-} // TODO: obsolete? ################
-
-
-// TODO: obsolete? ################
-void morse_tokens2meaning_state() {	// translate saved tokens into letters or COMMANDs, save letters
-  morse2letter_decoder_state(0, true);	// init
-  char token;
-
-  for(int i=0; i<morse_token_cnt; i++) {
-    if(is_real_token(token = morse_SEEN_TOKENS[i]))
-      morse2letter_decoder_state(token);
-  }
-  morse_token_cnt=0;
-}
+// OLD STATE DECODER:
+//%bool morse2letter_decoder_state(char token, bool init=false) {	// TODO: obsolete? ################
+//%  static char state='\0';
+//%
+//%  // if init is true initialize, then return	// ################ TODO: REVIEW:
+//%  if (init) {
+//%    state='\0';					// reset
+//%    return true;	// dummy
+//%  }
+//%
+//%  // letter separation first, then return
+//%  if (token == MORSE_TOKEN_separeLetter) {
+//%    if(state) {
+//%      bool ret = morse_store_as_letter(state);	// save
+//%      state='\0';				// reset
+//%//      morse_stats_init();			// prepare next statistic run
+//%      return ret;				// reset
+//%   } else
+//%      return false;				// no state, just return
+//%  }
+//%
+//%  // word separation: store a space, then return
+//%  if (token == MORSE_TOKEN_separeWord) {
+//%    state='\0';				// reset
+//%    return morse_store_as_letter(' ');		// store a space and return
+//%  }
+//%
+//%/*
+//%  // maybe treat COMMANDs here?
+//%  if (token == MORSE_TOKEN_loong) {
+//%    // COMMAND parser
+//%  }
+//%*/
+//%
+//%  // decode letters
+//%  if((token == MORSE_TOKEN_dot) || (token == MORSE_TOKEN_dash)) {
+//%    switch (state) {
+//%    case ILLEGAL8:	// TODO: needs testing ################
+//%      state='\0';
+//%    case '\0':	//	initial state, start reading first token
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = 'E';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 'T';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'E':	// .
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = 'I';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 'A';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'T':	// -
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = 'N';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 'M';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'I':	// ..
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = 'S';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 'U';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'A':	// .-
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = 'R';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 'W';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'N':	// -.
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = 'D';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 'K';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'M':	// --
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = 'G';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 'O';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'S':	// ...
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = 'H';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 'V';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'U':	// ..-
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = 'F';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 220;
+//%	// state = 'Ü';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'R':	// .-.
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = 'L';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 'Ä';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'W':	// .--
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = 'P';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 'J';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'D':	// -..
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = 'B';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 'X';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'K':	// -.-
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = 'C';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 'Y';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'G':	// --.
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = 'Z';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 'Q';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'O':	// ---
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = 'Ö';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 'c';	// 'c' means CH here ;)
+//%	break;
+//%      }
+//%      break;
+//%
+//%
+//%    case 'H':	// ....
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = '5';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = '4';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'V':	// ...-
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = 'v';	// 'v' means VE, verstanden
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = '3';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'F':	// ..-.
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = 'É';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = ILLEGAL8;
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 220:	// ..--
+//%      // case 'Ü':	// ..--
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = ILLEGAL8;
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = '2';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'L':	// .-..
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = ILLEGAL8;
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 'È';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'Ä':	// .-.-
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = 'a';	// 'a' means AR Spruchende here
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = ILLEGAL8;
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'P':	// .--.
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = '?';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 'Å';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'J':	// .---
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = ILLEGAL8;
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = '1';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'B':	// -...
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = '6';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 'b';	// 'b' means BT	Pause here
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'X':	// -..-
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = '/';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = ILLEGAL8;
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'C':	// -.-.
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = ILLEGAL8;
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 'k';	// 'k' means KA	Spruchanfang
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'Y':	// -.--
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = '(';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = ILLEGAL8;
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'Z':	// --..
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = ILLEGAL8;
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = '7';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'Q':	// --.-
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = ILLEGAL8;
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = 'Ñ';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'Ö':	// ---.
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = '8';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = ILLEGAL8;
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case 'c':	// ----	'c' means CH here ;)
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = '9';
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = '0';
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case '5':	// .....
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = ILLEGAL8;
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = ILLEGAL8;
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case '4':	// ....-
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = ILLEGAL8;
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = ILLEGAL8;
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case '3':	// ...--
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = ILLEGAL8;
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = ILLEGAL8;
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case '2':	// ..---
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = ILLEGAL8;
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = ILLEGAL8;
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case '1':	// .----
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = ILLEGAL8;
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = ILLEGAL8;
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case '0':	// -----
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = ILLEGAL8;
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = ILLEGAL8;
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case '9':	// ----.
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = ILLEGAL8;
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = ILLEGAL8;
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case '8':	// ---..
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = ILLEGAL8;
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = ILLEGAL8;
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case '7':	// --...
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = ILLEGAL8;
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = ILLEGAL8;
+//%	break;
+//%      }
+//%      break;
+//%
+//%    case '6':	// -....
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = ILLEGAL8;
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = ILLEGAL8;
+//%	break;
+//%      }
+//%      break;
+//%
+//%
+//%    case '.':	// .-.-.-
+//%      switch(token) {
+//%      case MORSE_TOKEN_dot:
+//%	state = ILLEGAL8;
+//%	break;
+//%      case MORSE_TOKEN_dash:
+//%	state = ILLEGAL8;
+//%	break;
+//%      }
+//%      break;
+//%
+//%    default:
+//%      MENU.out(state);
+//%      MENU.out(F(" morse2letter_decoder_state  unknown morse code"));
+//%      MENU.tab();
+//%      MENU.outln((int) state);
+//%      break;
+//%    }
+//%  }
+//%
+//%  return false;
+//%} // TODO: obsolete? ################
+//%
+//%
+//%// TODO: obsolete? ################
+//%void morse_tokens2meaning_state() {	// translate saved tokens into letters or COMMANDs, save letters
+//%  morse2letter_decoder_state(0, true);	// init
+//%  char token;
+//%
+//%  for(int i=0; i<morse_token_cnt; i++) {
+//%    if(is_real_token(token = morse_SEEN_TOKENS[i]))
+//%      morse2letter_decoder_state(token);
+//%  }
+//%  morse_token_cnt=0;
+//%
+//%}
 
 /* **************************************************************** */
 // morse token duration statistics
@@ -1543,59 +1542,59 @@ void morse_received_token(char token, float duration) {
 } // morse_received_token()
 
 
-/* **************************************************************** */
-// morse output, i.e. on a piezzo, led
-
-// declarations to be defined later
-void morse_out_dot();
-void morse_out_dash();
-void morse_out_loong();
-void morse_out_overlong();
-void morse_out_separeLetter();
-void morse_out_separeWord();
-
-#if defined MORSE_OUTPUT_PIN
-void morse_play_out_tokens(bool show=true) {	// play (and show) saved tokens in current morse speed
-  char token;
-  for(int i=0 ; i < morse_token_cnt; i++) {
-    token = morse_SEEN_TOKENS[i];
-    switch (token) {
-    case MORSE_TOKEN_dot:
-      if(show)
-	MENU.out(token);	// show *before* sound
-      morse_out_dot();
-      break;
-    case MORSE_TOKEN_dash:
-      if(show)
-	MENU.out(token);	// show *before* sound
-      morse_out_dash();
-      break;
-    case MORSE_TOKEN_loong:
-      if(show)
-	MENU.out(token);	// show *before* sound
-      morse_out_loong();
-      break;
-    case MORSE_TOKEN_overlong:
-      if(show)
-	MENU.out(token);	// show *before* sound
-      morse_out_overlong();
-      break;
-    case MORSE_TOKEN_separeLetter:
-      if(show)
-	MENU.out(token);	// show *before* sound
-      morse_out_separeLetter();
-      break;
-    case MORSE_TOKEN_separeWord:
-      if(show)
-	MENU.out(token);	// show *before* sound
-      morse_out_separeWord();
-      break;
-    }
-  }
-  if(show)
-    MENU.ln();
-}
-#endif // MORSE_OUTPUT_PIN
+//%/* **************************************************************** */
+//%// morse output, i.e. on a piezzo, led
+//%
+//%// declarations to be defined later
+//%void morse_out_dot();
+//%void morse_out_dash();
+//%void morse_out_loong();
+//%void morse_out_overlong();
+//%void morse_out_separeLetter();
+//%void morse_out_separeWord();
+//%
+//%#if defined MORSE_OUTPUT_PIN
+//%void morse_play_out_tokens(bool show=true) {	// play (and show) saved tokens in current morse speed
+//%  char token;
+//%  for(int i=0 ; i < morse_token_cnt; i++) {
+//%    token = morse_SEEN_TOKENS[i];
+//%    switch (token) {
+//%    case MORSE_TOKEN_dot:
+//%      if(show)
+//%	MENU.out(token);	// show *before* sound
+//%      morse_out_dot();
+//%      break;
+//%    case MORSE_TOKEN_dash:
+//%      if(show)
+//%	MENU.out(token);	// show *before* sound
+//%      morse_out_dash();
+//%      break;
+//%    case MORSE_TOKEN_loong:
+//%      if(show)
+//%	MENU.out(token);	// show *before* sound
+//%      morse_out_loong();
+//%      break;
+//%    case MORSE_TOKEN_overlong:
+//%      if(show)
+//%	MENU.out(token);	// show *before* sound
+//%      morse_out_overlong();
+//%      break;
+//%    case MORSE_TOKEN_separeLetter:
+//%      if(show)
+//%	MENU.out(token);	// show *before* sound
+//%      morse_out_separeLetter();
+//%      break;
+//%    case MORSE_TOKEN_separeWord:
+//%      if(show)
+//%	MENU.out(token);	// show *before* sound
+//%      morse_out_separeWord();
+//%      break;
+//%    }
+//%  }
+//%  if(show)
+//%    MENU.ln();
+//%}
+//%#endif // MORSE_OUTPUT_PIN
 
 /* **************************************************************** */
 // 2nd implementation: human readable look up table
@@ -2009,7 +2008,7 @@ void morse_do_output() {
   morse_output_to_do=false;
 
   morse_uppercase = true;	// reset to uppercase
-}
+} // morse_do_output()
 
 char morse_output_char = '\0';	// '\0' means *no* output
 
@@ -2263,70 +2262,70 @@ void static morse_token_decode() {	// decode received token sequence
 
 /* **************************************************************** */
 
-  // ################################################################
-// ################ TODO: REMOVE: replace
-// *very* simple minded morse output hack ;)
-// do *not* use with pulses, delays
-#if defined MORSE_OUTPUT_PIN
-void morse_out_dot() {
-  unsigned long start_time=micros();
-
-  while(micros() - start_time <= morse_TimeUnit * dotTim) {
-    digitalWrite(MORSE_OUTPUT_PIN, HIGH);
-    delay(4);
-    digitalWrite(MORSE_OUTPUT_PIN, LOW);
-    delay(4);
-  }
-  delay(morse_TimeUnit/1000);
-}
-
-void morse_out_dash() {
-  unsigned long start_time=micros();
-
-  while(micros() - start_time <= morse_TimeUnit * dashTim) {
-    digitalWrite(MORSE_OUTPUT_PIN, HIGH);
-    delay(4);
-    digitalWrite(MORSE_OUTPUT_PIN, LOW);
-    delay(4);
-  }
-  delay(morse_TimeUnit/1000);
-}
-
-void morse_out_loong() {
-  unsigned long start_time=micros();
-
-  while(micros() - start_time <= morse_TimeUnit * loongTim) {
-    digitalWrite(MORSE_OUTPUT_PIN, HIGH);
-    delay(4);
-    digitalWrite(MORSE_OUTPUT_PIN, LOW);
-    delay(4);
-  }
-  delay(morse_TimeUnit/1000);
-}
-
-void morse_out_overlong() {
-  unsigned long start_time=micros();
-
-  while(micros() - start_time <= morse_TimeUnit * overlongTim) {
-    digitalWrite(MORSE_OUTPUT_PIN, HIGH);
-    delay(4);
-    digitalWrite(MORSE_OUTPUT_PIN, LOW);
-    delay(4);
-  }
-  delay(morse_TimeUnit/1000);
-}
-
-void morse_out_separeLetter() {
-  delay((separeLetterTim - 1) * morse_TimeUnit / 1000);
-}
-
-void morse_out_separeWord() {
-  delay((separeWordTim - separeLetterTim - 1) * morse_TimeUnit / 1000);
-}
-
-// EXPERIMENTAL morse state pwm output?
-
-#endif // MORSE_OUTPUT_PIN
+//%// ################################################################
+//%// ################ TODO: REMOVE: replace
+//%// *very* simple minded morse output hack ;)
+//%// do *not* use with pulses, delays
+//%#if defined MORSE_OUTPUT_PIN
+//%void morse_out_dot() {
+//%  unsigned long start_time=micros();
+//%
+//%  while(micros() - start_time <= morse_TimeUnit * dotTim) {
+//%    digitalWrite(MORSE_OUTPUT_PIN, HIGH);
+//%    delay(4);
+//%    digitalWrite(MORSE_OUTPUT_PIN, LOW);
+//%    delay(4);
+//%  }
+//%  delay(morse_TimeUnit/1000);
+//%}
+//%
+//%void morse_out_dash() {
+//%  unsigned long start_time=micros();
+//%
+//%  while(micros() - start_time <= morse_TimeUnit * dashTim) {
+//%    digitalWrite(MORSE_OUTPUT_PIN, HIGH);
+//%    delay(4);
+//%    digitalWrite(MORSE_OUTPUT_PIN, LOW);
+//%    delay(4);
+//%  }
+//%  delay(morse_TimeUnit/1000);
+//%}
+//%
+//%void morse_out_loong() {
+//%  unsigned long start_time=micros();
+//%
+//%  while(micros() - start_time <= morse_TimeUnit * loongTim) {
+//%    digitalWrite(MORSE_OUTPUT_PIN, HIGH);
+//%    delay(4);
+//%    digitalWrite(MORSE_OUTPUT_PIN, LOW);
+//%    delay(4);
+//%  }
+//%  delay(morse_TimeUnit/1000);
+//%}
+//%
+//%void morse_out_overlong() {
+//%  unsigned long start_time=micros();
+//%
+//%  while(micros() - start_time <= morse_TimeUnit * overlongTim) {
+//%    digitalWrite(MORSE_OUTPUT_PIN, HIGH);
+//%    delay(4);
+//%    digitalWrite(MORSE_OUTPUT_PIN, LOW);
+//%    delay(4);
+//%  }
+//%  delay(morse_TimeUnit/1000);
+//%}
+//%
+//%void morse_out_separeLetter() {
+//%  delay((separeLetterTim - 1) * morse_TimeUnit / 1000);
+//%}
+//%
+//%void morse_out_separeWord() {
+//%  delay((separeWordTim - separeLetterTim - 1) * morse_TimeUnit / 1000);
+//%}
+//%
+//%// EXPERIMENTAL morse state pwm output?
+//%
+//%#endif // MORSE_OUTPUT_PIN
 
 
 void morse_init() {
