@@ -1319,9 +1319,21 @@ void Pulses::activate_pulse_synced(int pulse, \
 
 
 void Pulses::show_pulse_flag_mnemonics(pulse_flags_t flags) {	// show pulse flags as mnemonics
-  char* pulses_ON_mnemonics  =	"!NGsdTIi";
-  char* pulses_OFF_mnemonics =	"........";
+  // see: Pulses.h
+  // #define ACTIVE			1	// switches pulse on/off
+  // #define COUNTED			2	// repeats 'pulses[p].remaining' times, then vanishes
+  // #define HAS_GPIO			4	// has an associated GPIO pin	use set_gpio(pulse, pin)
+  // #define SCRATCH			8	// edit (or similar) in progress
+  // #define DO_NOT_DELETE	       16	// dummy to avoid being thrown out
+  // #define TUNED		       32	// do not set directly, use activate_tuning(pulse)
+  // #define HAS_ICODE		       64	// do not set directly, use set_icode_p(int pulse, icode_t* icode_p)
+  // #define HAS_I2C_ADDR_PIN	      128	// do not set directly, use set_i2c_addr_pin(uint8_t adr, uint8_t pin)
+  // #define HAS_RGB_LEDs	      256	// has RGB LED string, set_rgb_led_string(pulse, string_idx, pixel)
+
+  char* pulses_ON_mnemonics  =	"!NGsdTIiL";
+  char* pulses_OFF_mnemonics =	".........";
   (*MENU).show_flag_mnemonics(flags, sizeof(pulse_flags_t)*8, pulses_ON_mnemonics, pulses_OFF_mnemonics);
+  (*MENU).out("°");
 }
 
 /* **************************************************************** */
@@ -1368,11 +1380,11 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
   */
 
 #if defined DEBUG_ICODE
-      (*MENU).out(F("\niCODE\tpulse "));
+      (*MENU).out(F("\nplay_icode("));
       (*MENU).out(pulse);
-      (*MENU).out(F("\t#"));
+      (*MENU).out(F(")\t"));
       (*MENU).out(pulses[pulse].counter);
-      (*MENU).out(F("\t<****************"));
+      (*MENU).ln();
 #endif
   if(!(pulses[pulse].flags & HAS_ICODE))
     return;				// error: pulse has no icode

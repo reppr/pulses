@@ -121,7 +121,7 @@ struct pulse_t {
 
   pulse_flags_t flags;
 
-// #define pulses[pulse].flags masks:
+// #define pulses[pulse].flags masks:	// see: pulses_ON_mnemonics  =	"!NGsdTIiL"
 #define ACTIVE			1	// switches pulse on/off
 #define COUNTED			2	// repeats 'pulses[p].remaining' times, then vanishes
 #define HAS_GPIO		4	// has an associated GPIO pin	use set_gpio(pulse, pin)
