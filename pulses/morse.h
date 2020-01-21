@@ -41,9 +41,8 @@
   #define MORSE_TOUCH_INPUT_PIN	13	// use ESP32 touch sensor as morse input	(13 just a test)
 #endif
 
+bool morse_uppercase=true;	// lowercase very rarely used, changed many menu interfaces
 // menu interface is case sensitive, so I need lowercase
-// maybe also COMMAND mode?	TODO: rethink
-bool morse_uppercase=true;
 
 hw_timer_t * morse_separation_timer = NULL;
 portMUX_TYPE morse_MUX = portMUX_INITIALIZER_UNLOCKED;
@@ -120,8 +119,9 @@ float morse_token_duration[MORSE_TOKEN_MAX];	// debugging and statistics
 #define MORSE_TOKEN_separeWord		'|'
 
 #define MORSE_TOKEN_separe_OTHER	'?'
-#define MORSE_TOKEN_OFF			'o'
-#define MORSE_TOKEN_ON			'°'
+// not used any more:
+//  #define MORSE_TOKEN_OFF			'o'
+//  #define MORSE_TOKEN_ON			'°'
 
 #define MORSE_TOKEN_ILLEGAL		'§'
 
@@ -206,6 +206,8 @@ uint8_t morse_expected_Tims(char token) {	// ATTENTION: returns 0 for unknown/un
   return morse_Tims;
 }
 
+
+#if defined DEBUG_MORSE_TOUCH_INTERRUPT // REMOVE: debug only ################
 void morse_debug_token_info() {		// a *lot* of debug info...
   char token;
 
@@ -230,11 +232,13 @@ void morse_debug_token_info() {		// a *lot* of debug info...
     }
     MENU.outln(">>>done\n");
   }
-}
+} // morse_debug_token_info()
+#endif	// DEBUG_MORSE_TOUCH_INTERRUPT
 
 
 // factored out for testing...
 void static IRAM_ATTR morse_endOfLetter();
+
 void static IRAM_ATTR morse_separation_check_ON() {
   // see morse_setup.h	timerAttachInterrupt(morse_separation_timer, &morse_endOfLetter, true);
   // timerRestart(morse_separation_timer);
@@ -244,7 +248,7 @@ void static IRAM_ATTR morse_separation_check_ON() {
   timerAlarmWrite(morse_separation_timer, morse_TimeUnit * separeLetterTim, false);
   //timerAlarmWrite(morse_separation_timer, (unsigned long) ((float) morse_TimeUnit * separeLetter), false);
   timerAlarmEnable(morse_separation_timer);	// separation detection on
-}
+} // morse_separation_check_ON()
 
 void static IRAM_ATTR morse_separation_check_OFF() {
   timerAlarmDisable(morse_separation_timer);
@@ -397,7 +401,7 @@ typedef struct morse_seen_events_t {
 
 
 #if ! defined MORSE_EVENTS_MAX
-  #define MORSE_EVENTS_MAX	128					// TODO: TEST&TRIMM:
+  #define MORSE_EVENTS_MAX	256			// TODO: TEST&TRIMM:
 #endif
 volatile morse_seen_events_t morse_events_cbuf[MORSE_EVENTS_MAX];
 volatile unsigned int morse_events_write_i=0;		// morse_events_cbuf[i]  write index
@@ -746,7 +750,7 @@ bool morse_store_as_letter(char token) {	// translate special cases and store as
 }
 
 // decode stored tokens and store recognised letters
-bool morse2letter_decoder_state(char token, bool init=false) {
+bool morse2letter_decoder_state(char token, bool init=false) {	// TODO: obsolete? ################
   static char state='\0';
 
   // if init is true initialize, then return	// ################ TODO: REVIEW:
@@ -1260,7 +1264,7 @@ bool morse2letter_decoder_state(char token, bool init=false) {
   }
 
   return false;
-}
+} // TODO: obsolete? ################
 
 
 // TODO: obsolete? ################
