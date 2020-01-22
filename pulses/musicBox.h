@@ -1183,6 +1183,7 @@ bool tuning_pitch_and_scale_UI() {
   uint8_t first_token = MENU.peek();
   switch(first_token) {
   case '?':	// 'T?'
+    MENU.drop_input_token();
     display_names(SCALES);	// display SCALES list
     MENU.ln(2);			//  then like bare 'T'
   case EOF8:	// bare 'T'?
