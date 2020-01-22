@@ -1332,9 +1332,8 @@ void Pulses::show_pulse_flag_mnemonics(pulse_flags_t flags) {	// show pulse flag
 
   char* pulses_ON_mnemonics  =	"!NGsdTIiL";
   char* pulses_OFF_mnemonics =	".........";
-  (*MENU).show_flag_mnemonics(flags, sizeof(pulse_flags_t)*8, pulses_ON_mnemonics, pulses_OFF_mnemonics);
-  (*MENU).out("°");
-}
+  (*MENU).show_flag_mnemonics(flags, 9, pulses_ON_mnemonics, pulses_OFF_mnemonics);
+} // show_pulse_flag_mnemonics()
 
 /* **************************************************************** */
 /* int icode player	*/
