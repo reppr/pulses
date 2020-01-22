@@ -538,6 +538,4 @@ and a bad MORSE bug forgetting all but last letters in a sequence
 
 PSRAM tests
 
-UI 'M' hierarchy feedback
-
 DEBUG pulse flags

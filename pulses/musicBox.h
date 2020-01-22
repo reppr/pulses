@@ -3863,7 +3863,7 @@ bool musicBox_reaction(char token) {
 	  for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++) {	// tonic only
 	    PULSES.pulses[pulse].action_flags |= noACTION;	// MUTE ALL
 	  }
-
+	  MENU.outln(F("all MUTED"));
 	  break;
 
 	case 'E':	// 'ME' (morse)	all on
@@ -3871,6 +3871,7 @@ bool musicBox_reaction(char token) {
 	  MENU.drop_input_token();
 	  for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++)	// ALL ON
 	    PULSES.pulses[pulse].action_flags &= ~noACTION;	// UNmute all,  all ON
+	  MENU.outln(F("all unmuted"));
 	  break;
 
 	case '1':	// note position	1 == tonic     toggle
@@ -3887,21 +3888,25 @@ bool musicBox_reaction(char token) {
 	  for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++)	// toggle one
 	    if (PULSES.pulses[pulse].note_position == next_letter - '0')
 	      PULSES.pulses[pulse].action_flags ^= noACTION;
+	  MENU.out(F("mute toggle "));
+	  MENU.outln(next_letter);
 	  break;
 
 	// TODO: staff pitch groups L B M H
 	case 'H': // high end
 	  MENU.drop_input_token();
 	  for(int pulse = musicBoxConf.highest_primary - (primary_count/4) +1; pulse <= musicBoxConf.highest_primary; pulse++)
-	    PULSES.pulses[pulse].action_flags |= noACTION;	// mute high quarter
+	    PULSES.pulses[pulse].action_flags ^= noACTION;	// toggle mute high quarter
+	  MENU.outln(F("mute toggle HIGH"));
 	  break;
 
 	case 'M': // melody
 	  for(int pulse = musicBoxConf.lowest_primary + (primary_count/2)+1;
 	      pulse <= musicBoxConf.highest_primary  - (primary_count/4);
 	      pulse++)
-	    PULSES.pulses[pulse].action_flags |= noACTION;	// mute high quarter
+	    PULSES.pulses[pulse].action_flags ^= noACTION;	// toggle mute high quarter
 	  MENU.drop_input_token();
+	  MENU.outln(F("mute toggle MELODY"));
 	  break;
 
 	case 'B': // bass
@@ -3909,12 +3914,14 @@ bool musicBox_reaction(char token) {
 	  for(int pulse = musicBoxConf.lowest_primary + (primary_count/4)+1;
 	      pulse <= musicBoxConf.lowest_primary  + (primary_count/2);
 	      pulse++)
-	    PULSES.pulses[pulse].action_flags |= noACTION;	// mute high quarter
+	    PULSES.pulses[pulse].action_flags ^= noACTION;	// toggle mute high quarter
+	  MENU.outln(F("mute toggle BASS"));
 	  break;
 
 	case 'L': // low end
 	  for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.lowest_primary + (primary_count/4); pulse++)
-	    PULSES.pulses[pulse].action_flags |= noACTION;	// mute low quarter
+	    PULSES.pulses[pulse].action_flags ^= noACTION;	// toggle mute low quarter
+	  MENU.outln(F("mute toggle LOW"));
 	  break;
 
 //	    case 'O':	// octave managnent
