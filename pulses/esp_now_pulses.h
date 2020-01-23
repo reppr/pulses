@@ -8,6 +8,7 @@
 
 #include <esp_now.h>
 #include <WiFi.h>
+#include "pulses_esp_err.h"		// esp_err_t ERROR reporting
 
 /*
   DEBUG_ESP_NOW
@@ -22,15 +23,13 @@
   #define DEBUG_ESP_NOW		false	// switches ESP_NOW debugging off
 #endif
 
-//#define DEBUG_ESP_NOW_NETWORKING
+#define DEBUG_ESP_NOW_NETWORKING
 
-#define ESP_NOW_CHANNEL	4
+#define ESP_NOW_CHANNEL	4		// TODO: UI
 
 // react on broadcast or all-known-peers messages in an individual time slice
 // defines the length of *one* slice in milliseconds
 #define ESP_NOW_TIME_SLICE_MS	12	// TODO: TEST&TRIMM:
-
-#include "pulses_esp_err.h"		// esp_err_t ERROR reporting
 
 // buffers for data to send or receive
 uint8_t esp_now_send_buffer[ESP_NOW_MAX_DATA_LEN] = {0};
@@ -90,7 +89,7 @@ void set_my_IDENTITY() {
   // my_IDENTITY.esp_now_time_slice  set from nvs
 
 #if defined DEBUG_ESP_NOW_NETWORKING
-  MENU.outln("\n===============>>>\t>>>>>>>>>>>>>>>>  set_my_IDENTITY()\tset ID");
+  MENU.outln("\nset_my_IDENTITY()\tset ID");
   show_peer_id(&my_IDENTITY);
   MENU.ln();
 #endif
@@ -110,8 +109,10 @@ void esp_now_data_sent_callback(const uint8_t *mac_addr, esp_now_send_status_t s
 esp_err_t esp_now_pulses_send(const uint8_t *mac_addr) {	// send data stored in esp_now_send_buffer
   esp_err_t status = esp_now_send(mac_addr, esp_now_send_buffer, esp_now_send_buffer_cnt);
 
-  if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
+  if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {
+    MENU.out(F("esp_now_pulses_send() "));
     esp_err_info(status);
+  }
 
   return status;
 } // esp_now_pulses_send()
@@ -158,14 +159,14 @@ esp_err_t esp_now_send_preset(uint8_t* mac_addr, short preset) {
 
 void esp_now_add_identity() {	// adds identity data to the esp_now_send_buffer[]
 #if defined DEBUG_ESP_NOW
-  MENU.out(F(" esp_now_add_identity() "));
+  MENU.out(F("esp_now_add_identity() "));
 #endif
 
   peer_ID_t* ID_p = (peer_ID_t *) &esp_now_send_buffer[esp_now_send_buffer_cnt];
   memcpy(ID_p, &my_IDENTITY, sizeof(peer_ID_t));
 
 #if defined DEBUG_ESP_NOW_NETWORKING
-  MENU.outln("\n===============>>>\t>>>>>>>>>>>>>>>>  esp_now_add_identity()\tadded ID");
+  MENU.outln("\nesp_now_add_identity()\tadded ID to be sent");
   show_peer_id((peer_ID_t*) &esp_now_send_buffer[esp_now_send_buffer_cnt]);
   MENU.ln();
 #endif
@@ -174,7 +175,7 @@ void esp_now_add_identity() {	// adds identity data to the esp_now_send_buffer[]
 } // esp_now_add_identity()
 
 
-peer_ID_t esp_now_read_identity() {	// reads identity data from esp_now_received_data
+peer_ID_t esp_now_read_received_identity() {	// reads identity data from esp_now_received_data
   peer_ID_t read_peer_ID;
   uint8_t* data_read_p = esp_now_received_data + esp_now_received_data_read;
   for(int b=0; b<6; b++)
@@ -182,22 +183,22 @@ peer_ID_t esp_now_read_identity() {	// reads identity data from esp_now_received
   esp_now_received_data_read += 6;
 
   char* c_p = (char*) data_read_p;
-MENU.out('%');
+//MENU.out('%');
   for(int i=0; i<16; i++) {
     read_peer_ID.preName[i] = c_p[i];
-    MENU.out((char) read_peer_ID.preName[i]);
+//    MENU.out((char) read_peer_ID.preName[i]);
   }
-MENU.outln('%');
+//MENU.outln('%');
   esp_now_received_data_read += 16;
 
 #if defined DEBUG_ESP_NOW_NETWORKING
-  MENU.outln("\n===============>>>\t>>>>>>>>>>>>>>>>  esp_now_read_identity()\tread ID");
+  MENU.outln("\nesp_now_read_received_identity()\tgot ID");
   show_peer_id(&read_peer_ID);
   MENU.ln();
 #endif
 
   return read_peer_ID;
-} // esp_now_read_identity()
+} // esp_now_read_received_identity()
 
 
 esp_err_t esp_now_send_who(uint8_t* mac_addr) {
@@ -236,7 +237,8 @@ esp_err_t  esp_now_send_macro(uint8_t* mac_addr, char * macro) {
     esp_err_info(status);
 
   return status;
-}
+} // esp_now_send_macro()
+
 
 unsigned long esp_now_send_HI_time=0L;	// timing ping pong  N_HI - N_HO
 #if defined PULSES_USE_DOUBLE_TIMES
@@ -286,7 +288,9 @@ void display_peer_ID_list() {
       MENU.space(2);
       MENU.out('"');
       MENU.out(esp_now_pulses_known_peers[i].preName);
-      MENU.outln('"');
+      MENU.out('"');
+      MENU.tab();
+      MENU.outln(esp_now_pulses_known_peers[i].esp_now_time_slice);
     }
   }
   MENU.ln();
@@ -319,14 +323,8 @@ void esp_now_2_ID_list(uint8_t* mac_addr, char* preName /*hardware*/) {
 	  for(int b=0; b<16; b++)
 	    esp_now_pulses_known_peers[i].preName[b] = preName[b];
 
-#if defined DEBUG_ESP_NOW_NETWORKING
-	  MENU.outln("\n===============>>>\t>>>>>>>>>>>>>>>>  esp_now_2_ID_list()\tsees preName? |");
-	  MENU.out(esp_now_pulses_known_peers[i].preName);
-	  MENU.outln('|');
-#endif
-
-#if defined DEBUG_ESP_NOW
-	  MENU.out('|');
+#if defined DEBUG_ESP_NOW_NETWORKING || defined DEBUG_ESP_NOW
+	  MENU.out("\nesp_now_2_ID_list()\t|");
 	  MENU.out(esp_now_pulses_known_peers[i].preName);
 	  MENU.outln('|');
 #endif
@@ -399,11 +397,10 @@ void esp_now_2_ID_list(uint8_t* mac_addr, char* preName /*hardware*/) {
 } // esp_now_2_ID_list()
 
 
-// TODO: parameter including preName	peer_ID_t ################
-esp_err_t esp_now_pulses_add_peer(const uint8_t *mac_addr) {	// might give feedback
+esp_err_t esp_now_pulses_add_peer(const uint8_t *mac_addr, char* preName) {	// might give feedback
   bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
   if(do_display)
-    MENU.out(F("  esp_now_pulses_add_peer()  esp_now_add_peer() "));
+    MENU.out(F(" esp_now_pulses_add_peer(), esp_now_add_peer() "));
 
   peer_info.channel = ESP_NOW_CHANNEL;
   memcpy(peer_info.peer_addr, mac_addr, 6);
@@ -414,13 +411,17 @@ esp_err_t esp_now_pulses_add_peer(const uint8_t *mac_addr) {	// might give feedb
   esp_err_t status = esp_now_add_peer(&peer_info);
   switch (status) {
   case ESP_OK:
-    esp_now_2_ID_list((uint8_t*) mac_addr, ""); // DADA ""
-    if(do_display)
-      MENU.outln(F("ok"));
+    esp_now_2_ID_list((uint8_t*) mac_addr, preName);
+    if(do_display) {
+      MENU.out(F("ok\t"));
+      MENU.outln(preName);
+    }
     break;
   case ESP_ERR_ESPNOW_EXIST:
-    if(do_display)
-      MENU.outln(F("peer existed"));
+    if(do_display) {
+      MENU.out(preName);
+      MENU.outln(F(" peer existed"));
+    }
     break;
   default:
     MENU.error_ln(esp_err_to_name(status));
@@ -436,7 +437,7 @@ void send_IDENTITY_time_sliced() {	// send data stored in esp_now_send_buffer
     esp_err_info(status);
 
 //	#if defined DEBUG_ESP_NOW_NETWORKING
-//	  MENU.outln("\n===============>>>\t>>>>>>>>>>>>>>>> send_IDENTITY_time_sliced() sent previously prepared data");
+//	  MENU.outln("\nsend_IDENTITY_time_sliced() sent previously prepared data");
 //	#endif
 }
 
@@ -454,11 +455,15 @@ void esp_now_send_identity(uint8_t* to_mac) {
   esp_now_add_identity();			// my_IDENTITY
 
 #if defined DEBUG_ESP_NOW_NETWORKING
-  MENU.outln("\n===============>>>\t>>>>>>>>>>>>>>>>  esp_now_send_identity()\tread N_ID");
+  MENU.outln("\nesp_now_send_identity()\tread N_ID from send buffer ");
   show_peer_id((peer_ID_t*) i_data);
   MENU.ln();
 #endif
-}
+
+  MENU.out(F("sending "));
+  esp_err_t status = esp_now_send(to_mac, esp_now_send_buffer, esp_now_send_buffer_cnt);
+  esp_err_info(status);
+} // esp_now_send_identity()
 
 
 // prepare N_ID IDENTITY message to be sent in it's time slice
@@ -497,7 +502,7 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
 #endif
   bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
   if(do_display)
-    MENU.out(F("received: "));
+    MENU.out(F("\nesp_now_pulses_reaction()  received: "));
 
   esp_now_received_data_read=0;
   // get meaning:
@@ -516,7 +521,7 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
       MENU.out(MAC_str(mac_addr));
       MENU.out(F("  HI anybody "));
     }
-    esp_now_pulses_add_peer(mac_addr);		// might give feedback
+    esp_now_pulses_add_peer(mac_addr, "");		// might give feedback
     break;
 
   case N_HO:
@@ -535,7 +540,7 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
       MENU.out(F("  I AM here  "));
     }
 
-    esp_now_pulses_add_peer(mac_addr);		// might give feedback
+    esp_now_pulses_add_peer(mac_addr, "");		// might give feedback
     break;
 
   case N_WHO:
@@ -546,8 +551,7 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
 	MENU.outln(F("N_WHO"));
       }
 
-      esp_now_2_ID_list((uint8_t*) mac_addr, "(N_WHO)");	// building up peer info lists
-      esp_now_pulses_add_peer(mac_addr);	// might give feedback
+      esp_now_pulses_add_peer(mac_addr, "");	// might give feedback
 
       esp_now_prepare_N_ID((uint8_t*) mac_addr);
     }
@@ -555,16 +559,15 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
 
   case N_ID:
     {
-      peer_ID_t received_ID = esp_now_read_identity();
+      peer_ID_t received_ID = esp_now_read_received_identity();
 
 #if defined DEBUG_ESP_NOW_NETWORKING
-      MENU.outln("\n===============>>>\t>>>>>>>>>>>>>>>>  esp_now_pulses_reaction()\tread N_ID");
+      MENU.outln("\nesp_now_pulses_reaction()\tread N_ID");
       show_peer_id(&received_ID);
       MENU.ln();
 #endif
 
-      esp_now_2_ID_list((uint8_t*) mac_addr, received_ID.preName);	// building up peer info lists
-      esp_now_pulses_add_peer(mac_addr);				// might give feedback    }
+      esp_now_pulses_add_peer(mac_addr, received_ID.preName);		// might give feedback    }
     }
     break;
 
@@ -588,7 +591,7 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
 	MENU.out(new_preset);
 	MENU.tab();
       }
-      esp_now_pulses_add_peer(mac_addr);		// might give feedback
+      esp_now_pulses_add_peer(mac_addr, "");
 
       extern bool load_preset_and_start(short preset);
       load_preset_and_start(new_preset);
@@ -601,7 +604,7 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
       MENU.out(F("react on MACRO_NOW  "));
       MENU.outln(macro);
       MENU.play_KB_macro(macro);
-      esp_now_pulses_add_peer(mac_addr);	// might give feedback
+      esp_now_pulses_add_peer(mac_addr, "");	// might give feedback
     }
     break;
 
@@ -755,7 +758,7 @@ esp_err_t esp_now_pulses_setup() {
   peer_info.ifidx = ESP_IF_WIFI_STA;
   peer_info.encrypt = false;
 
-  status = esp_now_pulses_add_peer(broadcast_mac);	// add broadcast as peer
+  status = esp_now_pulses_add_peer(broadcast_mac, "broadcast");	// add broadcast as peer
 
   set_my_IDENTITY();
 

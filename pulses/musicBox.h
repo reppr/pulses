@@ -3777,6 +3777,10 @@ bool musicBox_reaction(char token) {
       if(MENU.peek() == EOF8) {	// bare 'CC'
 	esp_now_call_participants();
 
+      } else if(MENU.peek() == '?') {	// 'CC?'
+	MENU.drop_input_token();
+	display_peer_ID_list();
+
       } else {	// more input after 'CC'
 	if(MENU.is_numeric()) {	// 'CC<numeric>'
 	  /*

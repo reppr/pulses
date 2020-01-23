@@ -241,8 +241,8 @@ pulses_hardware_conf_t HARDWARE;	// hardware of this instrument
 
 // peer_ID_t
 typedef struct peer_ID_t {
-  char preName[16]={0};
   uint8_t mac_addr[6]={0};
+  char preName[16]={0};
   uint8_t esp_now_time_slice=ILLEGAL8;	// react on broadcast or all-known-peers messages in an individual time slice
   uint8_t version=0;
 } peer_ID_t;
@@ -252,7 +252,7 @@ void show_peer_id(peer_ID_t* this_peer_ID_p) {	// TODO: move?
   MENU.out(this_peer_ID_p->preName);
 
   extern char* MAC_str(const uint8_t* mac);
-  MENU.out(F("|\tMAC\t"));
+  MENU.out(F("|\tMAC "));
   MENU.out(MAC_str(this_peer_ID_p->mac_addr));
 
   MENU.out(F("\ttime slice  "));
@@ -1778,7 +1778,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
       esp_read_mac(my_MAC, ESP_MAC_WIFI_STA);	// set my_MAC
       extern char* MAC_str(const uint8_t* mac);
       MENU.outln(MAC_str(my_MAC));
-      esp_now_pulses_add_peer(broadcast_mac);	// add broadcast as peer may give feedback
+      esp_now_pulses_add_peer(broadcast_mac, "broadcast");	// add broadcast as peer may give feedback
 
       esp_now_call_participants();
     }

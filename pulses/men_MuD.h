@@ -3,19 +3,15 @@
   temporary test menu UI during development
 */
 
-
-//	for (int pulse=0; pulse<64; pulse++)
-//	  if (PULSES.pulse_is_selected(pulse))
-//	    PULSES.activate_tuning(pulse);
-//	PULSES.tuning *= 0.793421;
-//	sweep_up=0;
+// esp_now_call_participants();
+display_peer_ID_list();
 
 #if defined USE_ADS1115_AT_ADDR
 //ads1115_first_test_A0();
 //ads1115_first_test_diff_A2_A3();
 #endif
 
-show_metric_cents_list();	// TODO: move to Tuning hierarchy
+//show_metric_cents_list();	// TODO: move to Tuning hierarchy
 
 
 //	{
@@ -26,14 +22,14 @@ show_metric_cents_list();	// TODO: move to Tuning hierarchy
 //	}
 
 
-MENU.out(F("normalised_pitch "));	// TODO: move to Tuning hierarchy
-MENU.out(get_normalised_pitch(), 6);
-MENU.ln();
+//MENU.out(F("normalised_pitch "));	// TODO: move to Tuning hierarchy
+//MENU.out(get_normalised_pitch(), 6);
+//MENU.ln();
 
 
-MENU.outln((int) esp_timer_get_time());
+//MENU.outln((int) esp_timer_get_time());
 
-// determine_imu_zero_offsets(2000);
+//determine_imu_zero_offsets(2000);	// TODO: use and UI
 
 //  show_morse_event_buffer();
 

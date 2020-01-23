@@ -205,8 +205,6 @@ esp_now TIME SLICES for broadcast response
 
 change monochrome row jiffles
 
-// TODO: parameter including preName	peer_ID_t ################
-esp_err_t esp_now_pulses_add_peer(const mac_addr_t *mac_addr) {	// might give feedback
 
 try:
 https://github.com/MartyMacGyver/ESP32-Digital-RGB-LED-Drivers/blob/master/examples/arduino-esp32/demo1/demo1.ino
@@ -531,11 +529,13 @@ some experimental jiffles
 
 RETHINK: harmonical_base	looks obsolete?
 
-eliminate morse_setup.h
-
-there's still a LOT of unused MORSE code...
-and a bad MORSE bug forgetting all but last letters in a sequence
-
 PSRAM tests
 
-DEBUG pulse flags
+esp_now_set_pmk()
+esp_err_t esp_now_set_pmk(const uint8_t *pmk)
+uint8_t lmk[ESP_NOW_KEY_LEN]
+{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55
+
+#define ESP_NOW_CHANNEL	4		// TODO: UI
+
+//determine_imu_zero_offsets(2000);	// TODO: use and UI
