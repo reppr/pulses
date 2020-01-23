@@ -132,7 +132,7 @@ esp_err_t esp_now_send_bare(uint8_t* mac_addr, icode_t meaning) {
 } // esp_now_send_bare()
 
 
-esp_err_t esp_now_send_preset(uint8_t* mac_addr, short preset) {
+esp_err_t esp_now_send_preset(uint8_t* mac_addr, short preset) {	// do we need that?
   icode_t* i_data = (icode_t*) esp_now_send_buffer;
   *i_data++ = PRES;
   esp_now_send_buffer_cnt = sizeof(icode_t);	// icode_t meaning
@@ -141,6 +141,7 @@ esp_err_t esp_now_send_preset(uint8_t* mac_addr, short preset) {
   extern short preset;
   memcpy(short_p, &preset, sizeof(short));
   esp_now_send_buffer_cnt += sizeof(short);
+
   bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
   if(do_display) {
     MENU.out(F("ESP-NOW sent PRES "));
@@ -400,7 +401,7 @@ void esp_now_2_ID_list(uint8_t* mac_addr, char* preName /*hardware*/) {
 esp_err_t esp_now_pulses_add_peer(const uint8_t *mac_addr, char* preName) {	// might give feedback
   bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
   if(do_display)
-    MENU.out(F(" esp_now_pulses_add_peer(), esp_now_add_peer() "));
+    MENU.out(F("esp_now_pulses_add_peer(), esp_now_add_peer() "));
 
   peer_info.channel = ESP_NOW_CHANNEL;
   memcpy(peer_info.peer_addr, mac_addr, 6);
@@ -593,7 +594,7 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
       }
       esp_now_pulses_add_peer(mac_addr, "");
 
-      extern bool load_preset_and_start(short preset);
+      extern bool load_preset_and_start(short preset, bool start=true);
       load_preset_and_start(new_preset);
     }
     break;

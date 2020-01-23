@@ -3331,7 +3331,7 @@ void musicBox_display() {
 #endif
 
 #if defined USE_ESP_NOW
-  MENU.outln(F("'C<macro>'=send macro 'CC<num>'=recipient  'C'='CC'=build net 'CS'=automagic sync landscape"));
+  MENU.outln(F("'C<macro>'=send macro 'CC<num>'=recipient 'C?'=peers 'C'='CC'=build net 'CS'=automagic sync landscape"));
   MENU.ln();
 #endif
 
@@ -3394,7 +3394,7 @@ void noAction_flags_line() {	// show a line with primary noACTION flag signs		//
   MENU.outln(F("' action muting"));
 }
 
-bool load_preset_and_start(short preset_new) {	// returns error
+bool load_preset_and_start(short preset_new, bool start=true) {	// returns error
   short preset_was = musicBoxConf.preset;
   musicBoxConf.preset = preset_new;
   if(load_preset(musicBoxConf.preset)) {	// error?
@@ -3402,9 +3402,13 @@ bool load_preset_and_start(short preset_new) {	// returns error
     musicBoxConf.preset = preset_was;
     return true;		// ERROR
   } // else
-  if(MusicBoxState != OFF)	// end a running session?
-    tabula_rasa();
-  start_musicBox();		// play new preset
+
+  if(start) {
+    if(MusicBoxState != OFF)	// end a running session?
+      tabula_rasa();
+    start_musicBox();		// play new preset
+  } else
+    musicBox_short_info();
 }
 
 void input_preset_and_start() {	// factored out UI component	// TODO: sets preset, how to unset?	################
@@ -3439,8 +3443,13 @@ void input_preset_and_start() {	// factored out UI component	// TODO: sets prese
       MENU.outln_invalid();
   }
 
+  bool start=true;
+  if(MENU.peek() == 'T') {	// '<number>T' loads preset, but does not start
+    MENU.drop_input_token();
+    start = false;
+  }
   if(load)
-    load_preset_and_start(musicBoxConf.preset);
+    load_preset_and_start(musicBoxConf.preset, start);
 } // input_preset_and_start()
 
 
@@ -3754,6 +3763,11 @@ bool musicBox_reaction(char token) {
       esp_now_call_participants();
       break;
 
+    case '?':	// 'CC?' == 'C?'
+      MENU.drop_input_token();
+      display_peer_ID_list();
+      break;
+
     case 'S':			// 'CS' set sync of *other* instruments to time slice,	see: 'CSS'
       MENU.drop_input_token();
       MENU.outln(F("set sync of instruments to time slice "));
@@ -3777,7 +3791,7 @@ bool musicBox_reaction(char token) {
       if(MENU.peek() == EOF8) {	// bare 'CC'
 	esp_now_call_participants();
 
-      } else if(MENU.peek() == '?') {	// 'CC?'
+      } else if(MENU.peek() == '?') {	// 'CC?' == 'C?'
 	MENU.drop_input_token();
 	display_peer_ID_list();
 
