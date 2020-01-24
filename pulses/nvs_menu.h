@@ -81,7 +81,7 @@ bool nvs_menu_reaction(char token) {
 	nvs_save_blob("IDENTITY_nvs", &my_IDENTITY, sizeof(peer_ID_t));
 	// read back
 	ID_from_nvs.version=ILLEGAL8;
-	nvs_read_blob("IDENTITY_nvs", &ID_from_nvs, sizeof(peer_ID_t));	// always read on 'I...'
+	nvs_read_blob("IDENTITY_nvs", &ID_from_nvs, sizeof(peer_ID_t));	// read again
       case 'R':	// 'IR' nvs read identity, noop as we read always
 	MENU.drop_input_token(); // drop 'S' 'R'
       case EOF8:
@@ -120,6 +120,7 @@ bool nvs_menu_reaction(char token) {
 	break;
       } // switch next token after 'I'
 
+      // display_ID_and_SYSTEM(&ID_from_nvs);	// TODO: factor out and use in menu display
       extern void show_peer_id(peer_ID_t* this_peer_ID_p);
 
       if(ID_from_nvs.version != ILLEGAL8) {
@@ -130,6 +131,7 @@ bool nvs_menu_reaction(char token) {
       MENU.out(F("SYSTEM\t"));
       show_peer_id(&my_IDENTITY);
       MENU.ln();
+      // TODO: factor out and use in menu display
     }
     break;
 

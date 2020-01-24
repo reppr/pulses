@@ -3806,7 +3806,7 @@ bool musicBox_reaction(char token) {
 	  input_value = MENU.numeric_input(0);		// default to broadcast
 	  if(input_value == 0) {
 	    esp_now_send2_mac_p = known_peers_mac_p;	// NULL == *all known* peers
-	  } else if(input_value <= ESP_NOW_MAX_TOTAL_PEER_NUM) {
+	  } else if((input_value <= ESP_NOW_MAX_TOTAL_PEER_NUM) && (input_value > 0)) {
 	    esp_now_send2_mac_p = esp_now_pulses_known_peers[input_value -1 ].mac_addr;
 	  } else {
 	    MENU.outln_invalid();
@@ -3832,7 +3832,7 @@ bool musicBox_reaction(char token) {
     default:	// normal case (second letter != 'C' (from 'CC')
       {
 	if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
-	  MENU.outln(F("SEND NOW, maybe do"));
+	  MENU.out(F("send NOW\t"));
 
 	int len=0;
 	char c;

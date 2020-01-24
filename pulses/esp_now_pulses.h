@@ -276,7 +276,7 @@ bool mac_is_non_zero(uint8_t* mac_addr) {
 
 peer_ID_t esp_now_pulses_known_peers[ESP_NOW_MAX_TOTAL_PEER_NUM];
 
-void display_peer_ID_list() {
+void display_peer_ID_list() {	// TODO: monochrome
   MENU.outln(F("known peers:"));
   int i;
   for(i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {
@@ -654,11 +654,13 @@ void esp_now_send_maybe_do_macro(uint8_t* mac_addr, char* macro) {
 
   esp_err_t status = esp_now_send_macro(mac_addr, macro);
   if(status == ESP_OK) {	// if sent, maybe DO it locally now?
+    MENU.out(F("ok, sent\t"));
 
     if(known_peers_mac_p == NULL || known_peers_mac_p == (uint8_t*) &broadcast_mac) {  // to play or not to play?
-      MENU.out(F("send AND locally DO "));
+      MENU.out(F("and *do* locally "));
       MENU.play_KB_macro(macro);		// only play locally if the recipent is *NOT* an individual
-    }
+    } else
+      MENU.outln(F("*not* done locally"));
 
   } else						// sending failed
     if(MENU.maybe_display_more(VERBOSITY_LOWEST/* sic! */) || DEBUG_ESP_NOW)	// *do* display that

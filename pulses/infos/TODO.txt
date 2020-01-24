@@ -539,3 +539,7 @@ uint8_t lmk[ESP_NOW_KEY_LEN]
 #define ESP_NOW_CHANNEL	4		// TODO: UI
 
 //determine_imu_zero_offsets(2000);	// TODO: use and UI
+
+display_peer_ID_list()		// TODO: monochrome
+
+esp now parameters enable channel ...
