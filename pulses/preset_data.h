@@ -22,6 +22,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   musicBoxConf.preset = new_preset;
   MENU.out(F("load preset "));
   MENU.out(musicBoxConf.preset);
+  MENU.space();
 
   // initialisation and defaults:
   musicBoxConf.name=NULL;

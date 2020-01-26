@@ -1768,17 +1768,24 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 
 #if defined USE_ESP_NOW
   {
-    esp_err_t error;
+    esp_err_t status;
     MENU.out(F("\nesp_now_pulses_setup()\t"));
-    if(error = esp_now_pulses_setup()) {
+    if(status = esp_now_pulses_setup()) {
       MENU.out(F("failed "));
-      MENU.outln(esp_err_to_name(error));
+      MENU.outln(esp_err_to_name(status));
+
     } else {
       MENU.out(F("ok  MAC: "));
       esp_read_mac(my_MAC, ESP_MAC_WIFI_STA);	// set my_MAC
       extern char* MAC_str(const uint8_t* mac);
       MENU.outln(MAC_str(my_MAC));
-      esp_now_pulses_add_peer(broadcast_mac, "broadcast");	// add broadcast as peer may give feedback
+
+      // TODO: code duplication...	see: esp_now_pulses.h
+      peer_ID_t broadcast_ID;
+      memcpy(&broadcast_ID.mac_addr, &broadcast_mac, 6);
+      char preName[16] = "broadcast\0\0\0\0\0\0";
+      memcpy(&broadcast_ID.preName, preName, 16);
+      status = esp_now_pulses_add_peer(&broadcast_ID);	// add broadcast as peer	TODO: error check?
 
       esp_now_call_participants();
     }

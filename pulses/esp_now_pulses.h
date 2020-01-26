@@ -176,29 +176,17 @@ void esp_now_add_identity() {	// adds identity data to the esp_now_send_buffer[]
 } // esp_now_add_identity()
 
 
-peer_ID_t esp_now_read_received_identity() {	// reads identity data from esp_now_received_data
-  peer_ID_t read_peer_ID;
+void esp_now_read_received_identity(peer_ID_t* receive_ID_p) {	// reads identity data from esp_now_received_data
   uint8_t* data_read_p = esp_now_received_data + esp_now_received_data_read;
-  for(int b=0; b<6; b++)
-    read_peer_ID.mac_addr[b] = *data_read_p++;
-  esp_now_received_data_read += 6;
 
-  char* c_p = (char*) data_read_p;
-//MENU.out('%');
-  for(int i=0; i<16; i++) {
-    read_peer_ID.preName[i] = c_p[i];
-//    MENU.out((char) read_peer_ID.preName[i]);
-  }
-//MENU.outln('%');
-  esp_now_received_data_read += 16;
+  memcpy(receive_ID_p, data_read_p, sizeof(peer_ID_t));
+  //esp_now_received_data_read += sizeof(peer_ID_t) ;	// not needed here
 
 #if defined DEBUG_ESP_NOW_NETWORKING
-  MENU.outln("\nesp_now_read_received_identity()\tgot ID");
-  show_peer_id(&read_peer_ID);
+  MENU.outln("\nesp_now_read_received_identity()\tgot ID ");
+  show_peer_id(receive_ID_p);
   MENU.ln();
 #endif
-
-  return read_peer_ID;
 } // esp_now_read_received_identity()
 
 
@@ -297,39 +285,38 @@ void display_peer_ID_list() {	// TODO: monochrome
   MENU.ln();
 } // display_peer_ID_list()
 
-void esp_now_2_ID_list(uint8_t* mac_addr, char* preName /*hardware*/) {
-  bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
+
+void esp_now_ID_2_list(peer_ID_t* ID_p) {
 #if defined DEBUG_ESP_NOW
-  MENU.out(F("esp_now_2_ID_list() preName |"));
-  MENU.out(preName);
-  MENU.out(F("|\t"));
+  MENU.outln(F("esp_now_ID_2_list()"));
 #endif
 
-  if(mac_addr != NULL) {
+  if((*ID_p).mac_addr != NULL) {
     uint8_t peer_is_known=ILLEGAL8;
-    int i; // index
-    for(i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {	// search if peer is known
+    int peer; // index
+    for(peer=0; peer<ESP_NOW_MAX_TOTAL_PEER_NUM; peer++) {	// search if peer is known
+
       for(int m=0; m<6; m++) {	// compare MAC
-	if(*(mac_addr + m) != esp_now_pulses_known_peers[i].mac_addr[m])
+	if((*ID_p).mac_addr[m] != esp_now_pulses_known_peers[peer].mac_addr[m])
 	  break;
 	if(m==5)
-	  peer_is_known = i;	// all 6 mac bytes are identical
+	  peer_is_known = peer;	// all 6 mac bytes are identical
       }
-      if(peer_is_known != ILLEGAL8) {
-#if defined DEBUG_ESP_NOW
-	MENU.out(F("peer is known "));
-	MENU.outln((int) peer_is_known);
-#endif
-	if(preName!="") {
-	  for(int b=0; b<16; b++)
-	    esp_now_pulses_known_peers[i].preName[b] = preName[b];
 
-#if defined DEBUG_ESP_NOW_NETWORKING || defined DEBUG_ESP_NOW
-	  MENU.out("\nesp_now_2_ID_list()\t|");
-	  MENU.out(esp_now_pulses_known_peers[i].preName);
-	  MENU.outln('|');
-#endif
+      if(peer_is_known != ILLEGAL8) {	// known peer?
+	if((*ID_p).preName != '\0') {	// preName could have been empty or changed ;)
+	  for(int b=0; b<16; b++)
+	    esp_now_pulses_known_peers[peer].preName[b] = (*ID_p).mac_addr[b];
+	  esp_now_pulses_known_peers[peer].preName[15] = '\0';	// savety net
 	}
+#if defined DEBUG_ESP_NOW || defined DEBUG_ESP_NOW_NETWORKING
+	MENU.out(F(" peer is known "));
+	MENU.out((int) peer_is_known);
+	MENU.tab();
+	MENU.out('|');
+	MENU.out((*ID_p).preName);
+	MENU.outln('|');
+#endif
 	return;			// *EARLY EXIT*, keep it quick
       }
     }
@@ -337,92 +324,79 @@ void esp_now_2_ID_list(uint8_t* mac_addr, char* preName /*hardware*/) {
     // *PEER WAS UNKNOWN*
 #if defined DEBUG_ESP_NOW
     MENU.out(F("esp now new member "));
-    MENU.outln(MAC_str(mac_addr));
 #endif
-    bool free_entry=false;
-    for(i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {	// search for free mac field
-      if(*mac_addr == NULL) {	// was never set
+    int free_entry=ILLEGAL32;
+    for(int i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {	// search for free mac field
+      if(esp_now_pulses_known_peers[i].mac_addr == NULL) {	// was never set
 	MENU.out(" MAC*NULL .");
 	MENU.out(i);
 	MENU.space(2);
 
-	free_entry = true;
+	free_entry = i;
 	break;	// we found an empty virgine slot
       } else {
 	//	bool mac_is_non_zero(uint8_t* mac_addr)
 	if(! mac_is_non_zero(esp_now_pulses_known_peers[i].mac_addr)) {	// search empty mac enty
-	  free_entry = true;
+	  free_entry = i;
 	  MENU.out(" free_entry ");
-	  MENU.out(i);
+	  MENU.out(free_entry);
 	  break;	// we found an empty, reusable slot
 	}
       }
     } // for all peer slots
 
-    if(free_entry) {	// free_entry at index i	now COPY DATA to pulses own KNOWN PEER LIST
+    if(free_entry != ILLEGAL32) {	// free_entry at index i	now COPY DATA to pulses own KNOWN PEER LIST
 #if defined DEBUG_ESP_NOW
       MENU.out(F("->["));
-      MENU.out(i);
+      MENU.out(free_entry);
       MENU.out(F("] "));
 #endif
-      // mac
-      uint8_t* mp = esp_now_pulses_known_peers[i].mac_addr;
-      memcpy(mp, mac_addr, 6);
+      esp_now_pulses_known_peers[free_entry] = *ID_p;
+      esp_now_pulses_known_peers[free_entry].preName[15] = '\0';	// savety net
 
-      // preName
-      if(preName!="") {	// TODO: TEST:
-	char* new_preName = preName;
-	int len = strlen(new_preName);
-	for(int b=0; b<16; b++) {
-	  if(b < len)
-	    esp_now_pulses_known_peers[i].preName[b] = new_preName[b];
-	  else
-	    esp_now_pulses_known_peers[i].preName[b] = '\0';
-	}
-
-	MENU.out('|');
-	MENU.out(esp_now_pulses_known_peers[i].preName);
-	MENU.outln('|');
-      }
-
-      // hardware planed
-      if(do_display) {
+      if(MENU.verbosity >= VERBOSITY_LOWEST) {
 	MENU.out(F("\n\nconnected to "));
-	MENU.out(MAC_str(mac_addr));
-	MENU.space(2);
-	MENU.outln(preName);
+	show_peer_id(&esp_now_pulses_known_peers[free_entry]);
+	MENU.ln();
       }
     } else		// no free entry
       MENU.error_ln(F("too many peers"));
   } // mac_addr != NULL
-} // esp_now_2_ID_list()
+} // esp_now_ID_2_list()
 
 
-esp_err_t esp_now_pulses_add_peer(const uint8_t *mac_addr, char* preName) {	// might give feedback
+esp_err_t esp_now_pulses_add_peer(peer_ID_t* ID_new_p) {	// might give feedback
   bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
   if(do_display)
     MENU.out(F("esp_now_pulses_add_peer(), esp_now_add_peer() "));
 
   peer_info.channel = ESP_NOW_CHANNEL;
-  memcpy(peer_info.peer_addr, mac_addr, 6);
+  memcpy(peer_info.peer_addr, (*ID_new_p).mac_addr, 6);	// if((*ID_new_p).mac_addr != NULL)
   peer_info.ifidx = ESP_IF_WIFI_STA;
   peer_info.encrypt = false;
 
-  //  esp_err_t status = esp_now_add_peer(&peer_info);
-  esp_err_t status = esp_now_add_peer(&peer_info);
+  esp_err_t status = esp_now_add_peer(&peer_info);	// try to add peer
   switch (status) {
-  case ESP_OK:
-    esp_now_2_ID_list((uint8_t*) mac_addr, preName);
+  case ESP_OK:						// *new* peer added
+    //    *ID_new_p.preName[15] = '\0';			// savety net
+    esp_now_ID_2_list(ID_new_p);
     if(do_display) {
       MENU.out(F("ok\t"));
-      MENU.outln(preName);
+      MENU.outln((*ID_new_p).preName);
+      MENU.out(F("  added"));
     }
     break;
-  case ESP_ERR_ESPNOW_EXIST:
+  case ESP_ERR_ESPNOW_EXIST:	// peer was already seen
     if(do_display) {
-      MENU.out(preName);
-      MENU.outln(F(" peer existed"));
+      MENU.out(F(" peer existed "));
+      MENU.out((*ID_new_p).preName);
     }
+    if((*ID_new_p).preName != '\0') {	// if there *is* a preName, copy prename into list again:
+      (*ID_new_p).preName[15] = '\0';			// savety net
+      ; //      DADA search index
+    }
+    if(do_display)
+      MENU.ln();
     break;
   default:
     MENU.error_ln(esp_err_to_name(status));
@@ -430,6 +404,15 @@ esp_err_t esp_now_pulses_add_peer(const uint8_t *mac_addr, char* preName) {	// m
   return status;
 } // esp_now_pulses_add_peer()
 
+
+esp_err_t esp_now_add_peer_mac_only(const uint8_t *mac_addr) {	// might give feedback
+  peer_ID_t fake_id;
+  memcpy(fake_id.mac_addr, mac_addr, 6);
+  if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
+    MENU.out(F(" add mac only "));
+
+  return esp_now_pulses_add_peer(&fake_id);
+}
 
 void send_IDENTITY_time_sliced() {	// send data stored in esp_now_send_buffer
   esp_err_t status = esp_now_pulses_send(time_sliced_sent_to_mac);
@@ -522,7 +505,7 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
       MENU.out(MAC_str(mac_addr));
       MENU.out(F("  HI anybody "));
     }
-    esp_now_pulses_add_peer(mac_addr, "");		// might give feedback
+    esp_now_add_peer_mac_only(mac_addr);		// might give feedback
     break;
 
   case N_HO:
@@ -541,7 +524,7 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
       MENU.out(F("  I AM here  "));
     }
 
-    esp_now_pulses_add_peer(mac_addr, "");		// might give feedback
+    esp_now_add_peer_mac_only(mac_addr);		// might give feedback
     break;
 
   case N_WHO:
@@ -551,8 +534,7 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
 	MENU.space(2);
 	MENU.outln(F("N_WHO"));
       }
-
-      esp_now_pulses_add_peer(mac_addr, "");	// might give feedback
+      esp_now_add_peer_mac_only(mac_addr);		// might give feedback
 
       esp_now_prepare_N_ID((uint8_t*) mac_addr);
     }
@@ -560,7 +542,8 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
 
   case N_ID:
     {
-      peer_ID_t received_ID = esp_now_read_received_identity();
+      peer_ID_t received_ID;
+      esp_now_read_received_identity(&received_ID);
 
 #if defined DEBUG_ESP_NOW_NETWORKING
       MENU.outln("\nesp_now_pulses_reaction()\tread N_ID");
@@ -568,7 +551,7 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
       MENU.ln();
 #endif
 
-      esp_now_pulses_add_peer(mac_addr, received_ID.preName);		// might give feedback    }
+      esp_now_pulses_add_peer(&received_ID);	// might give feedback
     }
     break;
 
@@ -592,7 +575,7 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
 	MENU.out(new_preset);
 	MENU.tab();
       }
-      esp_now_pulses_add_peer(mac_addr, "");
+      esp_now_add_peer_mac_only(mac_addr);
 
       extern bool load_preset_and_start(short preset, bool start=true);
       load_preset_and_start(new_preset);
@@ -605,7 +588,7 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
       MENU.out(F("react on MACRO_NOW  "));
       MENU.outln(macro);
       MENU.play_KB_macro(macro);
-      esp_now_pulses_add_peer(mac_addr, "");	// might give feedback
+      esp_now_add_peer_mac_only(mac_addr);	// might give feedback
     }
     break;
 
@@ -761,11 +744,15 @@ esp_err_t esp_now_pulses_setup() {
   peer_info.ifidx = ESP_IF_WIFI_STA;
   peer_info.encrypt = false;
 
-  status = esp_now_pulses_add_peer(broadcast_mac, "broadcast");	// add broadcast as peer
+  peer_ID_t broadcast_ID;
+  memcpy(&broadcast_ID.mac_addr, &broadcast_mac, 6);
+  char preName[16] = "broadcast\0\0\0\0\0\0";
+  memcpy(&broadcast_ID.preName, preName, 16);
+  status = esp_now_pulses_add_peer(&broadcast_ID);	// add broadcast as peer
 
   set_my_IDENTITY();
 
-  // if "idle" broadcast IDENTITY from time to time
+  // if "idle" broadcast IDENTITY from time to time	// TODO: switch that off?
   MENU.out(F("  if idle broadcast identity all "));
   MENU.out((float) esp_now_idle_ms / 1000.0);
   MENU.outln(F("\""));
