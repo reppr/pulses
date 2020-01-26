@@ -542,7 +542,7 @@ uint8_t lmk[ESP_NOW_KEY_LEN]
 
 display_peer_ID_list()		// TODO: monochrome
 
-esp now parameters enable channel ...
+esp now parameters enable, channel ...
 
 esp now feedback verbosity
 
@@ -550,6 +550,4 @@ display_prename(p) |preName|
 
 preName, 16
 
-// if "idle" broadcast IDENTITY from time to time	// TODO: switch that off?
-
-pulses.ino	// TODO: code duplication...	see: esp_now_pulses.h
+change some default names like "portable"

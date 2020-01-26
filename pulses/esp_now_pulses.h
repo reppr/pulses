@@ -662,36 +662,45 @@ void esp_now_call_participants() {	// kickstart network connections
 }
 
 
-// if the engine considers it appropriate send identification from time to time
-int esp_now_idle_ms = 20000;	// ms	all 20"
-hw_timer_t * esp_now_idle_identity_timer = NULL; // ms
-bool volatile esp_now_send_idle_identity=false;
+//#define ESP_NOW_IDLE_ID_SEND	// if ever used again, make it switchable...
+#if defined ESP_NOW_IDLE_ID_SEND
+  // if the engine considers it appropriate send identification from time to time
+  int esp_now_idle_ms = 20000;	// ms	all 20"
+  hw_timer_t * esp_now_idle_identity_timer = NULL; // ms
+  bool volatile esp_now_send_idle_identity=false;
 
-void trigger_idle_identification() {
-  //  MENU.outln("DADA trigger");	// TODO: REMOVE: ################
-  esp_now_send_idle_identity=true;
-}
-
-bool esp_now_idle_identification() {
-  if(! esp_now_send_idle_identity) {
+  void trigger_idle_identification() {
     esp_now_send_idle_identity=true;
-    return false;
   }
 
-  extern bool musicbox_is_awake();
-  extern bool musicbox_is_idle();
-  if(musicbox_is_idle()) {
-    esp_now_send_identity(broadcast_mac);
+  bool esp_now_idle_identification() {
+    if(! esp_now_send_idle_identity) {
+      esp_now_send_idle_identity=true;
+      return false;
+    }
+
+    extern bool musicbox_is_awake();
+    extern bool musicbox_is_idle();
+    if(musicbox_is_idle()) {
+      esp_now_send_identity(broadcast_mac);
+      esp_now_send_idle_identity = false;
+      return true;
+    } // else
+
     esp_now_send_idle_identity = false;
-    return true;
-  } // else
+    if(MENU.maybe_display_more(VERBOSITY_SOME))
+      MENU.outln("MusicBox is playing\tID not sent");	// TODO: REMOVE?:
+    return false;
+  }
+#endif	// ESP_NOW_IDLE_ID_SEND
 
-  esp_now_send_idle_identity = false;
-  if(MENU.maybe_display_more(VERBOSITY_SOME))
-    MENU.outln("MusicBox is playing\tID not sent");	// TODO: REMOVE?:
-  return false;
+esp_err_t add_broascast_2_ESP_peer_list() {
+  peer_ID_t broadcast_ID;
+  memcpy(&broadcast_ID.mac_addr, &broadcast_mac, 6);
+  char preName[16] = "broadcast\0\0\0\0\0\0";
+  memcpy(&broadcast_ID.preName, preName, 16);
+  return esp_now_pulses_add_peer(&broadcast_ID);	// add broadcast as peer to ESP list
 }
-
 
 // setup:
 esp_err_t esp_now_pulses_setup() {
@@ -744,15 +753,13 @@ esp_err_t esp_now_pulses_setup() {
   peer_info.ifidx = ESP_IF_WIFI_STA;
   peer_info.encrypt = false;
 
-  peer_ID_t broadcast_ID;
-  memcpy(&broadcast_ID.mac_addr, &broadcast_mac, 6);
-  char preName[16] = "broadcast\0\0\0\0\0\0";
-  memcpy(&broadcast_ID.preName, preName, 16);
-  status = esp_now_pulses_add_peer(&broadcast_ID);	// add broadcast as peer
+  status = add_broascast_2_ESP_peer_list();		// add broadcast as ESP peer
 
   set_my_IDENTITY();
 
-  // if "idle" broadcast IDENTITY from time to time	// TODO: switch that off?
+#if defined ESP_NOW_IDLE_ID_SEND
+  // TODO: UI switch! ################
+  // if "idle" broadcast IDENTITY from time to time
   MENU.out(F("  if idle broadcast identity all "));
   MENU.out((float) esp_now_idle_ms / 1000.0);
   MENU.outln(F("\""));
@@ -765,5 +772,7 @@ esp_err_t esp_now_pulses_setup() {
     timerAlarmWrite(esp_now_idle_identity_timer, esp_now_idle_ms*1000, true /* repeat */);
     timerAlarmEnable(esp_now_idle_identity_timer);
   }
-  return status;
+#endif
+
+return status;
 } // esp_now_pulses_setup()

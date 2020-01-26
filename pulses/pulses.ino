@@ -1780,12 +1780,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
       extern char* MAC_str(const uint8_t* mac);
       MENU.outln(MAC_str(my_MAC));
 
-      // TODO: code duplication...	see: esp_now_pulses.h
-      peer_ID_t broadcast_ID;
-      memcpy(&broadcast_ID.mac_addr, &broadcast_mac, 6);
-      char preName[16] = "broadcast\0\0\0\0\0\0";
-      memcpy(&broadcast_ID.preName, preName, 16);
-      status = esp_now_pulses_add_peer(&broadcast_ID);	// add broadcast as peer	TODO: error check?
+      status = add_broascast_2_ESP_peer_list();
 
       esp_now_call_participants();
     }
@@ -1941,7 +1936,7 @@ bool low_priority_tasks() {
 
   low_priority_cnt++;
 
-#if defined USE_ESP_NOW
+#if defined USE_ESP_NOW && defined ESP_NOW_IDLE_ID_SEND
   if(esp_now_send_idle_identity)
     if(esp_now_idle_identification())
       return true;
