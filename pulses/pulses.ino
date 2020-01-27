@@ -1782,7 +1782,11 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 
       status = add_broascast_2_ESP_peer_list();
 
+  #if defined ESP_NOW_SETUP_CALL_PARTICIPANTS
       esp_now_call_participants();
+  #else
+      MENU.outln(F("NOT calling participants"));
+  #endif
     }
     delay(100);	// esp_now network build up, left anyway to make all instruments come up in time  TODO: test&trimm
     MENU.ln();	//   TODO: test&trimm ;)

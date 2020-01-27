@@ -10,6 +10,8 @@
 #include <WiFi.h>
 #include "pulses_esp_err.h"		// esp_err_t ERROR reporting
 
+//#define ESP_NOW_SETUP_CALL_PARTICIPANTS	// TESTING: DEACTIVATED setup participants call
+
 /*
   DEBUG_ESP_NOW
 
