@@ -13,19 +13,19 @@
 //#define ESP_NOW_SETUP_CALL_PARTICIPANTS	// TESTING: DEACTIVATED setup participants call
 
 /*
-  DEBUG_ESP_NOW
+  DEBUG_ESP_NOW_b		_b for bool, true or false
 
   a lot of menu output we'll be skipped by high stress levels in everyday use, so
-  define DEBUG_ESP_NOW to force more output on esp now processes
+  define DEBUG_ESP_NOW_b to force more output on esp now processes
   BEWARE:  *this could easily damage the audio with CLICKS*
-  mainly used in  if(MENU.maybe_display_more() || DEBUG_ESP_NOW)
+  mainly used in  if(MENU.maybe_display_more() || DEBUG_ESP_NOW_b)
 */
-#define DEBUG_ESP_NOW		true	// switches ESP_NOW debugging on  BEWARE:  *this could easily damage the audio with CLICKS*
-#if ! defined DEBUG_ESP_NOW		// default: ESP_NOW debugging off
-  #define DEBUG_ESP_NOW		false	// switches ESP_NOW debugging off
+//#define DEBUG_ESP_NOW_b	true	// switches ESP_NOW debugging on  BEWARE:  *this could easily damage the audio with CLICKS*
+#if ! defined DEBUG_ESP_NOW_b		// default: ESP_NOW debugging off
+  #define DEBUG_ESP_NOW_b	false	// switches ESP_NOW debugging off
 #endif
 
-#define DEBUG_ESP_NOW_NETWORKING
+//#define DEBUG_ESP_NOW_NETWORKING
 
 #define ESP_NOW_CHANNEL	4		// TODO: UI
 
@@ -99,7 +99,7 @@ void set_my_IDENTITY() {
 
 // sending:
 void esp_now_data_sent_callback(const uint8_t *mac_addr, esp_now_send_status_t status) {
-  if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {	// display MAC?
+  if(MENU.maybe_display_more(VERBOSITY_SOME) || DEBUG_ESP_NOW_b) {	// display MAC?
     MENU.out(F("esp now sent to:  "));
     MENU.out(MAC_str(mac_addr));
     MENU.tab();
@@ -110,7 +110,7 @@ void esp_now_data_sent_callback(const uint8_t *mac_addr, esp_now_send_status_t s
 esp_err_t esp_now_pulses_send(const uint8_t *mac_addr) {	// send data stored in esp_now_send_buffer
   esp_err_t status = esp_now_send(mac_addr, esp_now_send_buffer, esp_now_send_buffer_cnt);
 
-  if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {
+  if(MENU.maybe_display_more(VERBOSITY_SOME) || DEBUG_ESP_NOW_b) {
     MENU.out(F("esp_now_pulses_send() "));
     esp_err_info(status);
   }
@@ -121,7 +121,7 @@ esp_err_t esp_now_pulses_send(const uint8_t *mac_addr) {	// send data stored in 
 
 // some messages contain only the meaning code, no additional parameters:
 esp_err_t esp_now_send_bare(uint8_t* mac_addr, icode_t meaning) {
-#if defined DEBUG_ESP_NOW
+#if DEBUG_ESP_NOW_b
   MENU.out(F("esp_now_send_bare() "));
 #endif
 
@@ -143,7 +143,7 @@ esp_err_t esp_now_send_preset(uint8_t* mac_addr, short preset) {	// do we need t
   memcpy(short_p, &preset, sizeof(short));
   esp_now_send_buffer_cnt += sizeof(short);
 
-  bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
+  bool do_display = (MENU.maybe_display_more(VERBOSITY_SOME) || DEBUG_ESP_NOW_b);
   if(do_display) {
     MENU.out(F("ESP-NOW sent PRES "));
     MENU.out(preset);
@@ -160,7 +160,7 @@ esp_err_t esp_now_send_preset(uint8_t* mac_addr, short preset) {	// do we need t
 
 
 void esp_now_add_identity() {	// adds identity data to the esp_now_send_buffer[]
-#if defined DEBUG_ESP_NOW
+#if DEBUG_ESP_NOW_b
   MENU.out(F("esp_now_add_identity() "));
 #endif
 
@@ -194,7 +194,7 @@ void esp_now_read_received_identity(peer_ID_t* receive_ID_p) {	// reads identity
 esp_err_t esp_now_send_who(uint8_t* mac_addr) {
   esp_err_t status;
   bool do_display;
-  if(do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW))
+  if(do_display = (MENU.maybe_display_more(VERBOSITY_SOME) || DEBUG_ESP_NOW_b))
     MENU.out(F("ESP-NOW send N_WHO\t"));
 
   status = esp_now_send_bare(mac_addr, N_WHO);
@@ -209,7 +209,7 @@ esp_err_t  esp_now_send_macro(uint8_t* mac_addr, char * macro) {
   icode_t* i_data = (icode_t*) esp_now_send_buffer;
   uint8_t len = strlen(macro) + 1;
 
-  bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
+  bool do_display = (MENU.maybe_display_more(VERBOSITY_SOME) || DEBUG_ESP_NOW_b);
   if(do_display) {
     MENU.out(F("esp_now_send_macro()  "));
     MENU.outln(macro);
@@ -287,7 +287,7 @@ void display_peer_ID_list() {	// TODO: monochrome
 
 
 void esp_now_ID_2_list(peer_ID_t* ID_p) {
-#if defined DEBUG_ESP_NOW
+#if DEBUG_ESP_NOW_b
   MENU.outln(F("esp_now_ID_2_list()"));
 #endif
 
@@ -309,7 +309,7 @@ void esp_now_ID_2_list(peer_ID_t* ID_p) {
 	    esp_now_pulses_known_peers[peer].preName[b] = (*ID_p).mac_addr[b];
 	  esp_now_pulses_known_peers[peer].preName[15] = '\0';	// savety net
 	}
-#if defined DEBUG_ESP_NOW || defined DEBUG_ESP_NOW_NETWORKING
+#if DEBUG_ESP_NOW_b || defined DEBUG_ESP_NOW_NETWORKING
 	MENU.out(F(" peer is known "));
 	MENU.out((int) peer_is_known);
 	MENU.tab();
@@ -320,8 +320,8 @@ void esp_now_ID_2_list(peer_ID_t* ID_p) {
     }
 
     // *PEER WAS UNKNOWN*
-#if defined DEBUG_ESP_NOW
-    MENU.out(F("esp now new member "));
+#if DEBUG_ESP_NOW_b
+    MENU.out(F("esp now NEW member "));
 #endif
     int free_entry=ILLEGAL32;
     for(int i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {	// search for free mac field
@@ -336,15 +336,17 @@ void esp_now_ID_2_list(peer_ID_t* ID_p) {
 	//	bool mac_is_non_zero(uint8_t* mac_addr)
 	if(! mac_is_non_zero(esp_now_pulses_known_peers[i].mac_addr)) {	// search empty mac enty
 	  free_entry = i;
+#if DEBUG_ESP_NOW_b
 	  MENU.out(" free_entry ");
 	  MENU.out(free_entry);
+#endif
 	  break;	// we found an empty, reusable slot
 	}
       }
     } // for all peer slots
 
     if(free_entry != ILLEGAL32) {	// free_entry at index i	now COPY DATA to pulses own KNOWN PEER LIST
-#if defined DEBUG_ESP_NOW
+#if DEBUG_ESP_NOW_b
       MENU.out(F("->["));
       MENU.out(free_entry);
       MENU.out(F("] "));
@@ -353,10 +355,11 @@ void esp_now_ID_2_list(peer_ID_t* ID_p) {
       esp_now_pulses_known_peers[free_entry].preName[15] = '\0';	// savety net
 
       if(MENU.verbosity >= VERBOSITY_LOWEST) {
-	MENU.out(F("\n\nconnected to "));
+	MENU.out_IstrI(my_IDENTITY.preName);
+	MENU.out(F(" connected to "));
 	show_peer_id(&esp_now_pulses_known_peers[free_entry]);
-	MENU.ln();
       }
+      // TODO: new connected peer maybe show on monochrome?
     } else		// no free entry
       MENU.error_ln(F("too many peers"));
   } // mac_addr != NULL
@@ -364,7 +367,7 @@ void esp_now_ID_2_list(peer_ID_t* ID_p) {
 
 
 esp_err_t esp_now_pulses_add_peer(peer_ID_t* ID_new_p) {	// might give feedback
-  bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
+  bool do_display = (MENU.maybe_display_more(VERBOSITY_SOME) || DEBUG_ESP_NOW_b);
   if(do_display)
     MENU.out(F("esp_now_pulses_add_peer(), esp_now_add_peer() "));
 
@@ -406,7 +409,7 @@ esp_err_t esp_now_pulses_add_peer(peer_ID_t* ID_new_p) {	// might give feedback
 esp_err_t esp_now_add_peer_mac_only(const uint8_t *mac_addr) {	// might give feedback
   peer_ID_t fake_id;
   memcpy(fake_id.mac_addr, mac_addr, 6);
-  if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
+  if(MENU.maybe_display_more(VERBOSITY_SOME) || DEBUG_ESP_NOW_b)
     MENU.out(F(" add mac only "));
 
   return esp_now_pulses_add_peer(&fake_id);
@@ -415,7 +418,7 @@ esp_err_t esp_now_add_peer_mac_only(const uint8_t *mac_addr) {	// might give fee
 void send_IDENTITY_time_sliced() {	// send data stored in esp_now_send_buffer
   esp_err_t status = esp_now_pulses_send(time_sliced_sent_to_mac);
 
-  if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
+  if(MENU.maybe_display_more(VERBOSITY_SOME) || DEBUG_ESP_NOW_b)
     esp_err_info(status);
 
 //	#if defined DEBUG_ESP_NOW_NETWORKING
@@ -426,7 +429,7 @@ void send_IDENTITY_time_sliced() {	// send data stored in esp_now_send_buffer
 
 void esp_now_send_identity(uint8_t* to_mac) {
 #if ! defined DEBUG_ESP_NOW_NETWORKING	// else print anyway
-  if(MENU.verbosity > VERBOSITY_LOWEST)
+  if(MENU.verbosity > VERBOSITY_SOME)
 #endif
     MENU.out(F("ESP-NOW send N_ID\t"));
 
@@ -442,9 +445,11 @@ void esp_now_send_identity(uint8_t* to_mac) {
   MENU.ln();
 #endif
 
-  MENU.out(F("sending "));
   esp_err_t status = esp_now_send(to_mac, esp_now_send_buffer, esp_now_send_buffer_cnt);
-  esp_err_info(status);
+  if(MENU.verbosity > VERBOSITY_SOME) {
+    esp_err_info(status);
+    MENU.out(F("sent "));
+  }
 } // esp_now_send_identity()
 
 
@@ -479,10 +484,10 @@ void esp_now_prepare_N_ID(uint8_t* to_mac) {
 
 // receiving:
 static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
-#if DEBUG_ESP_NOW != false
+#if DEBUG_ESP_NOW_b != false
   MENU.outln("esp_now_pulses_reaction()");
 #endif
-  bool do_display = (MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW);
+  bool do_display = (MENU.maybe_display_more(VERBOSITY_SOME) || DEBUG_ESP_NOW_b);
   if(do_display)
     MENU.out(F("\nesp_now_pulses_reaction()  received: "));
 
@@ -605,7 +610,7 @@ static void pulses_data_received_callback(const uint8_t *mac_addr, const uint8_t
   memcpy(esp_now_received_data, data, data_len);
   esp_now_received_data_read = 0;
 
-  if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {
+  if(MENU.maybe_display_more(VERBOSITY_SOME) || DEBUG_ESP_NOW_b) {
     MENU.out("\npulses_data_received_callback()  from: ");
     MENU.out(MAC_str(mac_addr));
     MENU.out(F("\t\tbytes "));
@@ -628,7 +633,7 @@ static void pulses_data_received_callback(const uint8_t *mac_addr, const uint8_t
      ONLY send *without playing it locally*
 */
 void esp_now_send_maybe_do_macro(uint8_t* mac_addr, char* macro) {
-  if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW) {
+  if(MENU.maybe_display_more(VERBOSITY_SOME) || DEBUG_ESP_NOW_b) {
     MENU.out(F("esp_now_send_maybe_do_macro() "));
     MENU.outln(macro);
   }
@@ -644,13 +649,13 @@ void esp_now_send_maybe_do_macro(uint8_t* mac_addr, char* macro) {
       MENU.outln(F("*not* done locally"));
 
   } else						// sending failed
-    if(MENU.maybe_display_more(VERBOSITY_LOWEST/* sic! */) || DEBUG_ESP_NOW)	// *do* display that
+    if(MENU.maybe_display_more(VERBOSITY_LOWEST/* sic! */) || DEBUG_ESP_NOW_b)	// *do* display that
       MENU.error_ln(esp_err_to_name(status));
 } // esp_now_send_maybe_do_macro()
 
 
 void esp_now_call_participants() {	// kickstart network connections
-  if(MENU.maybe_display_more(VERBOSITY_SOME) || DEBUG_ESP_NOW)
+  if(MENU.maybe_display_more(VERBOSITY_SOME) || DEBUG_ESP_NOW_b)
     MENU.outln(F("esp_now_call_participants()"));
 
   esp_now_send_identity(broadcast_mac);

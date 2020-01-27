@@ -1333,6 +1333,8 @@ bool tuning_pitch_and_scale_UI() {
 
 
 void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
+  MENU.out_IstrI(my_IDENTITY.preName);
+  MENU.tab(2);
   if(musicBoxConf.preset) {
     MENU.out(F("PRESET: "));
     MENU.out(musicBoxConf.preset);
@@ -3760,6 +3762,7 @@ bool musicBox_reaction(char token) {
 #if defined USE_ESP_NOW
     switch(MENU.peek()) {	// second letter after 'CC...' configure esp_now sending
     case EOF8:  // bare 'C'	// *broadcast* to spread peer detection
+      MENU.outln(F("esp_now_call_participants()"));
       esp_now_call_participants();
       break;
 
@@ -3789,6 +3792,7 @@ bool musicBox_reaction(char token) {
       MENU.drop_input_token();
 
       if(MENU.peek() == EOF8) {	// bare 'CC'
+	MENU.outln(F("esp_now_call_participants()"));
 	esp_now_call_participants();
 
       } else if(MENU.peek() == '?') {	// 'CC?' == 'C?'
@@ -3831,7 +3835,7 @@ bool musicBox_reaction(char token) {
 
     default:	// normal case (second letter != 'C' (from 'CC')
       {
-	if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW)
+	if(MENU.maybe_display_more(VERBOSITY_LOWEST) || DEBUG_ESP_NOW_b)
 	  MENU.out(F("send NOW\t"));
 
 	int len=0;

@@ -365,7 +365,7 @@ the whole tuning-to-the-right-octave-implementation is nonsense...
 
 // TODO:  should we keep pitch_was in set_metric_pitch()?
 
-  DEBUG_ESP_NOW in esp_err_info() is messy, deactivated...
+  DEBUG_ESP_NOW_b in esp_err_info() is messy, deactivated...
 
 
 esp_now_add_identity() should not be active normally
@@ -552,3 +552,7 @@ change some default names like "portable"
 
 void set_my_IDENTITY() ???
 
+possibility to run without esp now and initialise at run time
+  measure power usage
+
+new connected peer maybe show on monochrome?
