@@ -20,6 +20,7 @@ get_numeric_input	KEYWORD2
 maybe_calculate_input	KEYWORD2
 string_match	KEYWORD2
 ticked	KEYWORD2
+out_IstrI	KEYWORD2
 peek	KEYWORD2
 skip_spaces	KEYWORD2
 next_input_token	KEYWORD2
@@ -56,7 +57,6 @@ out_comma_	KEYWORD2
 out_selected_	KEYWORD2
 out_flags_	KEYWORD2
 bar_graph	KEYWORD2
-ticked_chars	KEYWORD2
 out_ticked_hexs	KEYWORD2
 verbosity_info	KEYWORD2
 show_flag_mnemonics	KEYWORD2

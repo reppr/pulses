@@ -546,8 +546,9 @@ esp now parameters enable, channel ...
 
 esp now feedback verbosity
 
-display_prename(p) |preName|
-
 preName, 16
 
 change some default names like "portable"
+
+void set_my_IDENTITY() ???
+

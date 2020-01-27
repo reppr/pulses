@@ -114,9 +114,9 @@ bool nvs_menu_reaction(char token) {
 	}
 	my_IDENTITY.preName[15] = '\0';	// security net
 
-	MENU.out(F("preName\t|"));
-	MENU.out(my_IDENTITY.preName);
-	MENU.outln('|');
+	MENU.out(F("preName\t"));
+	MENU.out_IstrI(my_IDENTITY.preName);
+	MENU.ln();
 	break;
       } // switch next token after 'I'
 

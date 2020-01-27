@@ -83,10 +83,9 @@ extern void show_peer_id(peer_ID_t* this_peer_ID_p);
 void set_my_IDENTITY() {
   esp_read_mac(my_IDENTITY.mac_addr, ESP_MAC_WIFI_STA);
 
-//	  extern String nvs_getString(char * key);
-//	  my_IDENTITY.preName = nvs_getString(F("nvs_PRENAME"));
-
-  // my_IDENTITY.esp_now_time_slice  set from nvs
+// extern String nvs_getString(char * key);
+// my_IDENTITY.preName = nvs_getString(F("nvs_PRENAME"));
+// my_IDENTITY.esp_now_time_slice  set from nvs
 
 #if defined DEBUG_ESP_NOW_NETWORKING
   MENU.outln("\nset_my_IDENTITY()\tset ID");
@@ -265,7 +264,8 @@ bool mac_is_non_zero(uint8_t* mac_addr) {
 peer_ID_t esp_now_pulses_known_peers[ESP_NOW_MAX_TOTAL_PEER_NUM];
 
 void display_peer_ID_list() {	// TODO: monochrome
-  MENU.outln(F("known peers:"));
+  MENU.out_IstrI(my_IDENTITY.preName);
+  MENU.outln(F(" known peers:"));
   int i;
   for(i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {
     if(mac_is_non_zero(esp_now_pulses_known_peers[i].mac_addr)) {
@@ -275,9 +275,7 @@ void display_peer_ID_list() {	// TODO: monochrome
       MENU.space(2);
       MENU.out(MAC_str(esp_now_pulses_known_peers[i].mac_addr));
       MENU.space(2);
-      MENU.out('"');
-      MENU.out(esp_now_pulses_known_peers[i].preName);
-      MENU.out('"');
+      MENU.out_IstrI(esp_now_pulses_known_peers[i].preName);
       MENU.tab();
       MENU.outln(esp_now_pulses_known_peers[i].esp_now_time_slice);
     }
@@ -313,9 +311,7 @@ void esp_now_ID_2_list(peer_ID_t* ID_p) {
 	MENU.out(F(" peer is known "));
 	MENU.out((int) peer_is_known);
 	MENU.tab();
-	MENU.out('|');
-	MENU.out((*ID_p).preName);
-	MENU.outln('|');
+	MENU.out_IstrI((*ID_p).preName);
 #endif
 	return;			// *EARLY EXIT*, keep it quick
       }
@@ -382,14 +378,14 @@ esp_err_t esp_now_pulses_add_peer(peer_ID_t* ID_new_p) {	// might give feedback
     esp_now_ID_2_list(ID_new_p);
     if(do_display) {
       MENU.out(F("ok\t"));
-      MENU.outln((*ID_new_p).preName);
-      MENU.out(F("  added"));
+      MENU.out_IstrI((*ID_new_p).preName);
+      MENU.out(F(" added"));
     }
     break;
   case ESP_ERR_ESPNOW_EXIST:	// peer was already seen
     if(do_display) {
       MENU.out(F(" peer existed "));
-      MENU.out((*ID_new_p).preName);
+      MENU.out_IstrI((*ID_new_p).preName);
     }
     if((*ID_new_p).preName != '\0') {	// if there *is* a preName, copy prename into list again:
       (*ID_new_p).preName[15] = '\0';			// savety net

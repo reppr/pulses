@@ -219,10 +219,7 @@ class Menu {
 
   void ticked(const char c) const;  // output a ticked char token like 'A'
 
-  /* Do i want this?
-  // show char sequence ticked, like 'A' 'B' 'C' (ending in a space)
-  void ticked_chars(const char * chars) const;
-  */
+  void out_IstrI(const char *str)	const;	// output "|<c-str>|"
 
   // Print binary numbers with leading zeroes and a trailing space:
   void outBIN(unsigned long l, int bits ) const; // binary output

@@ -28,17 +28,6 @@ CONF_nvs.begin("CONFIG", false);
     MENU.outln(F("was already stored"));
 #endif
 
-//	MENU.out("nvs_PRENAME:\t");
-//	{
-//	  String name = CONF_nvs.getString("nvs_PRENAME");
-//	  if(name) {
-//	    my_IDENTITY.preName = name;
-//	    MENU.out(my_IDENTITY.preName);
-//	    // bluetooth_name?
-//	  }
-//	  MENU.ln();
-//	}
-
 /*
 MENU.out("nvs_GPIO:\t");
 MENU.outln(CONF_nvs.getString("nvs_GPIO"));

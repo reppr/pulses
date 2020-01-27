@@ -265,17 +265,11 @@ char Menu::cb_read() {
     MENU_OUT((char) 39); MENU_OUT(c); MENU_OUT((char) 39);
   }
 
-
-  /* Do i want this?
-  // show char sequence ticked, like 'A' 'B' 'C' (ending in a space)
-  void Menu::ticked_chars(const char * chars) const {
-    char c;
-    while (c = *chars++) {
-      ticked(c);
-      space();
-    }
+  void Menu::out_IstrI(const char *str)	const {		// output "|<c-str>|"
+    out('|');
+    out(str);
+    out('|');
   }
-  */
 
   /* Output a newline, tab, space, '='
      ln(), tab(), space(), equals():			*/

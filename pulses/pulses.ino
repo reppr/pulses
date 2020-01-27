@@ -248,11 +248,11 @@ typedef struct peer_ID_t {
 } peer_ID_t;
 
 void show_peer_id(peer_ID_t* this_peer_ID_p) {	// TODO: move?
-  MENU.out(F("IDENTITY\tpreName |"));
-  MENU.out(this_peer_ID_p->preName);
+  MENU.out(F("IDENTITY\tpreName "));
+  MENU.out_IstrI(this_peer_ID_p->preName);
 
   extern char* MAC_str(const uint8_t* mac);
-  MENU.out(F("|\tMAC "));
+  MENU.out(F("\tMAC "));
   MENU.out(MAC_str(this_peer_ID_p->mac_addr));
 
   MENU.out(F("\ttime slice  "));
@@ -1153,7 +1153,7 @@ void display_program_version() {  // program versions, mac, maybe preName.  MENU
 
   if(my_IDENTITY.preName) {
     MENU.tab();
-    MENU.out(my_IDENTITY.preName);
+    MENU.out_IstrI(my_IDENTITY.preName);
   }
 
   MENU.ln();
