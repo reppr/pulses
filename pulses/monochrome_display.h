@@ -10,6 +10,8 @@
 
 #ifndef MONOCHROME_DISPLAY_H
 
+#include <U8x8lib.h>
+
 uint8_t monochrome_power_save=0;
 
 // avoid sound glitches when using OLED:
@@ -124,29 +126,51 @@ char scale_symbol_char() {	// 1 char SCALE index as hex and beyond for monochrom
 } // scale_symbol_char()
 
 
+extern bool musicbox_is_awake();
+extern bool musicbox_is_idle();
+extern bool musicbox_is_ending();
+
+char run_state_symbol() {
+  if(musicbox_is_awake())
+    return '!';
+  if(musicbox_is_idle())
+    return '.';
+  if(musicbox_is_ending())
+    return 'e';
+
+  return '?';
+}
+
 void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be used while playing
   if(! monochrome_power_save) {
     uint8_t cols = u8x8.getCols();
     uint8_t rows = u8x8.getRows();
-    int row=0;	// first 2 lines empty empty for 2x2 output (i.e. MORSE)
+    int row=0;	// first 2 lines empty for 2x2 output (i.e. MORSE)
     u8x8.clearLine(row++);	// clear empty line
     u8x8.clearLine(row++);	// clear empty line
 
     u8x8.clearLine(row);
     if(musicBoxConf.preset) {
       u8x8.setCursor(0,row);
+      u8x8.print(run_state_symbol());
+      u8x8.print(' ');
+
       u8x8.setInverseFont(1);
       u8x8.print(F("P "));
       u8x8.print(musicBoxConf.preset);
       u8x8.print(' ');
       u8x8.setInverseFont(0);
-      u8x8.print(F("  "));
+      u8x8.print(' ');
+      //      u8x8.print(F("  "));
       monochrome_show_subcycle_octave();
+
+      char run_state[] = {run_state_symbol(), ' ', '\0' };
+      u8x8.draw2x2String(0, 0, run_state);
 
       // *BIG* PRESET number on top		poor old eyes little helper ;)
       char preset[10] = {0};
       itoa(musicBoxConf.preset, preset, 10);
-      u8x8.draw2x2String(0, 0, preset);
+      u8x8.draw2x2String(2, 0, preset);
     }
     row++;
 
@@ -352,6 +376,74 @@ bool OLED_UI() {	// follows 'O'		'OE'	'OT'	'OP'
   return true;
 } // OLED_UI()
 
+
+// to be used from other modules:
+void monochrome_print2x2(uint8_t col, uint8_t row, char* str) {
+  int max=(u8x8.getCols()/2);	// limit length
+  char truncated[max+1]={0};
+
+  char c;
+  for(int i=0; i<max; i++) {
+    if(c=str[i])
+      truncated[i] = c;
+    else
+      break;
+  }
+  u8x8.draw2x2String(col, row, truncated);
+} // monochrome_print2x2()
+
+void monochrome_setInverseFont(uint8_t inverse) {
+  u8x8.setInverseFont(inverse);
+}
+
+void monochrome_setPowerSave(uint8_t value) {
+  u8x8.setPowerSave(value);
+}
+
+void monochrome_setCursor(uint8_t col, uint8_t row) {
+  u8x8.setCursor(col, row);
+}
+
+void monochrome_print(char* str) {
+  u8x8.print(str);
+}
+
+void monochrome_print_f(float f) {
+  u8x8.print(f);
+}
+
+void monochrome_print_f(float f, int chiffres) {
+  u8x8.print(f, chiffres);
+}
+
+uint8_t monochrome_getCols() {
+  return u8x8.getCols();
+}
+
+//	void monochrome_setup() {
+//	  MENU.out(F("monochrome_setup() "));
+//	  switch(HARDWARE.monochrome_type) {
+//	  case monochrome_type_heltec:
+//	    U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16); // BOARD_HELTEC_OLED
+//	    MENU.out(F("heltec"));
+//	    break;
+//	  case monochrome_type_LiPO:
+//	    U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 4, /* data=*/ 5, /* reset=*/ 16);  // BOARD_OLED_LIPO	TODO: move to setup()
+//	    MENU.out(F("Lipo"));
+//	    break;
+//	  case monochrome_type_off:
+//	    MENU.error_ln(F("monochrome is off in nvs?"));
+//	#if defined BOARD_OLED_LIPO		// try to take from pp macros
+//	    U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 4, /* data=*/ 5, /* reset=*/ 16);  // BOARD_OLED_LIPO	TODO: move to setup()
+//	#elif defined BOARD_HELTEC_OLED		// heltec
+//	    U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16); // BOARD_HELTEC_OLED
+//	#endif
+//	    break;
+//	  default:
+//	    MENU.error(F("unknown monochrome_type"));
+//	  }
+//	  MENU.ln();
+//	} // monochrome_setup()
 
 #define MONOCHROME_DISPLAY_H
 #endif

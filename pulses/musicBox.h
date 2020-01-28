@@ -840,9 +840,13 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
     }
 
 #if defined USE_MONOCHROME_DISPLAY
-    // u8x8.draw2x2String(0, 0, "(END) ");	// would be handy but sounds horrible...
-    extended_output(F("END "), 0, 0, true);	// output on serial MENU, maybe OLED, possibly morse, ...
-    MENU.ln();
+    {
+      extern char run_state_symbol();
+      char s[] = {run_state_symbol(),0};
+      u8x8.draw2x2String(0, 0, s);	// would be handy but sounds horrible...
+      //extended_output(F("e "), 0, 0, true);	// output on serial MENU, maybe OLED, possibly morse, ...
+      MENU.ln();
+    }
 #endif
 
     for (int pulse=0; pulse<PL_MAX; pulse++) {	// make days_to_live COUNTED generating pulses
@@ -1541,6 +1545,10 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
     show_configuration_code();
     MENU.ln();
   }
+
+#if defined USE_MONOCHROME_DISPLAY
+  monochrome_show_musicBox_parameters();
+#endif
 
 #if defined USE_ESP_NOW
   esp_now_prepare_N_ID(broadcast_mac);
@@ -4105,11 +4113,55 @@ bool musicBox_reaction(char token) {
       noAction_flags_line();
     break;
 
-  case 'I':	// info		// force OLED resdisplay on morse
-    musicBox_short_info();
+  case 'I':	// info		// force OLED resdisplay or morse	// TODO: display help
+    switch(MENU.peek()) {
+    case '?':	// 'I?'
+      MENU.drop_input_token();
+    case EOF8:	// bare 'I'
+      musicBox_short_info();
 #if defined USE_MONOCHROME_DISPLAY
-    monochrome_show_musicBox_parameters();	// ATTENTION: takes too long to be used while playing
+      monochrome_show_musicBox_parameters();	// ATTENTION: takes too long to be used while playing
 #endif
+      break;
+    case 'P':	// 'IP'=='IN'	prename, name
+    case 'N':	// 'IP'=='IN'	prename, name
+      MENU.drop_input_token();
+      extended_output(my_IDENTITY.preName, 0, 0, true);
+      MENU.ln();
+
+      if(musicBoxConf.name!=NULL) {
+	extended_output(musicBoxConf.name, 0, 2*1, true);
+	MENU.ln();
+	// TODO: multiline
+	//	monochrome_setCursor(0, 5);
+	//	monochrome_print(musicBoxConf.name);
+      }
+      break;
+#if defined USE_ESP_NOW
+    case 'C':	// 'IC'	peer list
+      MENU.drop_input_token();
+      for(int row=0, i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {
+	if(mac_is_non_zero(esp_now_pulses_known_peers[i].mac_addr)) {
+	  //      MENU.out(i + 1);	// start counting with 1
+	  //      if(i<9)
+	  //	MENU.space();
+	  //      MENU.space(2);
+	  extended_output(esp_now_pulses_known_peers[i].preName, 0, 2*row, true);
+	  row++;
+	  MENU.ln();
+	}
+      }
+      break;
+#endif
+
+#if defined USE_MONOCHROME_DISPLAY
+    case 'O': // 'IO' clear OLED
+      MENU.drop_input_token();
+      u8x8.clear();
+      // monochrome_clear();
+      break;
+#endif
+    } // switch token after 'I'
     break;
 
   case 'v':

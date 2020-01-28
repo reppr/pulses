@@ -455,7 +455,8 @@ void esp_now_send_identity(uint8_t* to_mac) {
 
 // prepare N_ID IDENTITY message to be sent in it's time slice
 void esp_now_prepare_N_ID(uint8_t* to_mac) {
-  MENU.out(F("esp_now_prepare_N_ID()\tms "));
+  if(MENU.verbosity > VERBOSITY_SOME)
+    MENU.out(F("esp_now_prepare_N_ID()\tms "));
 
   if(my_IDENTITY.esp_now_time_slice == ILLEGAL8) {
     MENU.error_ln(F("no time slice defined, will *NOT* send"));

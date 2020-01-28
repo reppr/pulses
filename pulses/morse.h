@@ -1363,17 +1363,25 @@ short morse_out_buffer_cnt=0;
 
 bool morse_output_to_do=false;		// triggers morse_do_output()
 extern bool musicbox_is_idle();
+
 extern bool monochrome_can_be_used();
 extern void monochrome_display_message(char * message);
 // avoid sound glitches when using OLED:
-extern bool oled_feedback_while_playing;	// do *not* give morse feedback while playing
+extern bool oled_feedback_while_playing;
+extern void monochrome_print2x2(uint8_t col, uint8_t row, char* str);
+extern void monochrome_setInverseFont(uint8_t inverse);
+extern void monochrome_setPowerSave(uint8_t value);
+extern void monochrome_setCursor(uint8_t col, uint8_t row);
+extern uint8_t monochrome_getCols();
+extern void monochrome_print(char* str);
+extern void monochrome_print_f(float f, int chiffres);
 
 void morse_do_output() {
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
   if(morse_out_buffer_cnt) {
 #if defined USE_MONOCHROME_DISPLAY
     if(monochrome_can_be_used())
-      u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "        ");
+      monochrome_print2x2(0, MORSE_MONOCHROME_ROW, "        ");
 #endif
 
     MENU.out(F("morse "));
@@ -1408,7 +1416,7 @@ void morse_monochrome_display() {
     // 2x2 version
     char s[]="  ";
     s[0] = morse_output_char;
-    u8x8.draw2x2String(2*(morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s);
+    monochrome_print2x2(2*(morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s);
   }
 
   morse_output_char = '\0';	// trigger off
@@ -1504,14 +1512,14 @@ void static morse_token_decode() {	// decode received token sequence
 
 #if defined USE_MONOCHROME_DISPLAY
 		  if(monochrome_can_be_used())
-		    u8x8.draw2x2String(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " ");	// DELLAST
+		    monochrome_print2x2(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " ");	// DELLAST
 #endif
 		}
 
 	      } else if(morse_PRESENT_COMMAND == "OLED") {	// ---.-  "OA"
 		if(oled_feedback_while_playing ^= 1) {		// got switched on
 		  monochrome_power_save = 0;
-		  u8x8.setPowerSave(monochrome_power_save);
+		  monochrome_setPowerSave(monochrome_power_save);
 
 		  MENU.out(F("OLED"));
 		  MENU.out_ON_off(oled_feedback_while_playing);
@@ -1533,12 +1541,12 @@ void static morse_token_decode() {	// decode received token sequence
 #if defined USE_MONOCHROME_DISPLAY
 		if(monochrome_can_be_used()) {
 		  /*
-		  u8x8.setInverseFont(1);
-		  u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, ".");	// CANCEL shows inverted "." and ' '
-		  u8x8.setInverseFont(0);
-		  u8x8.draw2x2String(1, MORSE_MONOCHROME_ROW, " ");
+		  monochrome_setInverseFont(1);
+		  monochrome_print2x2(0, MORSE_MONOCHROME_ROW, ".");	// CANCEL shows inverted "." and ' '
+		  monochrome_setInverseFont(0);
+		  monochrome_print2x2(1, MORSE_MONOCHROME_ROW, " ");
 		  */
-		  u8x8.draw2x2String(0, MORSE_MONOCHROME_ROW, "__");	// CANCEL shows "__"
+		  monochrome_print2x2(0, MORSE_MONOCHROME_ROW, "__");	// CANCEL shows "__"
 		}
 #endif
 	      } else if(morse_PRESENT_COMMAND == "ANY1") {	// '----'
@@ -1566,13 +1574,13 @@ void static morse_token_decode() {	// decode received token sequence
 		  MENU.ln();
   #if defined USE_MONOCHROME_DISPLAY
 		  if(monochrome_can_be_used()) {
-		    u8x8.setCursor(u8x8.getCols() - 7 ,0);	// position of OLED UI display
+		    monochrome_setCursor(monochrome_getCols() - 7 ,0);	// position of OLED UI display
 		    if(accGyro_is_active) {
-		      u8x8.setInverseFont(1);
-		      u8x8.print(F("      "));	// TODO: real string
-		      u8x8.setInverseFont(0);
+		      monochrome_setInverseFont(1);
+		      monochrome_print(F("      "));	// TODO: real string
+		      monochrome_setInverseFont(0);
 		    } else
-		      u8x8.print(F("      "));
+		      monochrome_print(F("      "));
 		  }
   #endif
 #endif // USE_MPU6050
@@ -1591,9 +1599,9 @@ void static morse_token_decode() {	// decode received token sequence
 #if defined USE_MONOCHROME_DISPLAY
 	    if(monochrome_can_be_used()) {
 	      if(morse_out_buffer_cnt) {
-		u8x8.setInverseFont(1);
-		u8x8.draw2x2String(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, "'");
-		u8x8.setInverseFont(0);
+		monochrome_setInverseFont(1);
+		monochrome_print2x2(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, "'");	// TODO: TEST:
+		monochrome_setInverseFont(0);
 	      }
 	    }
 #endif
@@ -1634,7 +1642,7 @@ void static morse_token_decode() {	// decode received token sequence
 
     morse_token_cnt=0;
   } // if(morse_token_cnt)
-}
+} // morse_token_decode()
 
 
 /* **************************************************************** */

@@ -1539,6 +1539,10 @@ void setup() {
 
   HARMONICAL = new Harmonical(3628800uL);	// old style harmonical unit, obsolete?
 
+#if defined USE_MONOCHROME_DISPLAY
+  //  monochrome_setup();
+#endif
+
   delay(STARTUP_DELAY);		// yield()
   Serial.begin(BAUDRATE);	// Start serial communication.
 
@@ -6703,13 +6707,12 @@ bool menu_pulses_reaction(char menu_input) {
 /* **************************************************************** */
 
 // extended_output(...)  output on MENU, maybe OLED, possibly morse, ...
-void extended_output(char* data, uint8_t row=0, uint8_t col=0, bool force=false) {
+void extended_output(char* data, uint8_t col=0, uint8_t row=0, bool force=false) {
   MENU.out(data);
 
 #if defined USE_MONOCHROME_DISPLAY
   if(monochrome_can_be_used() || force || morse_output_char) {
-    u8x8.setCursor(col,row);	// sounds horrible
-    u8x8.print(data);		// sounds horrible
+    monochrome_print2x2(col, row, data);
   }
 #endif
 

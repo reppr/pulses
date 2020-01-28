@@ -213,7 +213,7 @@ void * Gy_reaction_source=NULL;	// DB pointers can be used here
 void * Gz_reaction_source=NULL;	// DB pointers can be used here
 
 
-extern void extended_output(char* data, uint8_t row, uint8_t col, bool force);
+extern void extended_output(char* data, uint8_t col, uint8_t row, bool force);
 #if ! defined MONOCHROME_MOTION_STATE_ROW
   #define MONOCHROME_MOTION_STATE_ROW	7
 #endif
@@ -224,7 +224,7 @@ extern void extended_output(char* data, uint8_t row, uint8_t col, bool force);
 void display_accGyro_mode() {
   MENU.out(F("accGyro mode: "));
 
-  u8x8.setCursor(MONOCHROME_MOTION_STATE_ROW, 0);
+  monochrome_setCursor(0, MONOCHROME_MOTION_STATE_ROW);
   char buffer[] = {"acc ...  gyr ..."};
   //              {"0123456789abcdef"}
 
@@ -242,7 +242,7 @@ void display_accGyro_mode() {
   if(accGyro_mode & AG_mode_Gz)
     buffer[15] = 'Z';
 
-  extended_output(buffer, MONOCHROME_MOTION_STATE_ROW, 0, false);
+  extended_output(buffer, 0, MONOCHROME_MOTION_STATE_ROW, false);
 } // display_accGyro_mode()
 
 
@@ -676,13 +676,13 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 	     */
 	  case 1:	// extremes only
 	  case 8:	// extremes only
-	    extended_output(F("L__H"), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    extended_output(F("L__H"), 0, MONOCHROME_MOTION_MUTING_ROW, false);
 	    for(int pulse=musicBoxConf.lowest_primary + (primary_count/4) +1; pulse <= musicBoxConf.highest_primary - (primary_count/4); pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute middle two quarters
 	    break;
 
 	  case 7:	// middles only
-	    extended_output(F("_BM_ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    extended_output(F("_BM_ "), 0, MONOCHROME_MOTION_MUTING_ROW, false);
 	    for(int pulse = musicBoxConf.highest_primary - (primary_count/4) +1; pulse <= musicBoxConf.highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute high quarter
 	    for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.lowest_primary + (primary_count/4); pulse++)
@@ -690,29 +690,29 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 	    break;
 
 	  case 6:	// mute lower half
-	    extended_output(F("__MH "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    extended_output(F("__MH "), 0, MONOCHROME_MOTION_MUTING_ROW, false);
 	    for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.lowest_primary + (primary_count/2); pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute lower half
 	    break;
 
 	  case 5:	// mute low
-	    extended_output(F("_BMH "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    extended_output(F("_BMH "), 0, MONOCHROME_MOTION_MUTING_ROW, false);
 	    for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.lowest_primary + (primary_count/4); pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute low quarter
 	    break;
 
 	  case 4:	// all unmuted
-	    extended_output(F("LBMH "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    extended_output(F("LBMH "), 0, MONOCHROME_MOTION_MUTING_ROW, false);
 	    break;
 
 	  case 3:	// mute high
-	    extended_output(F("LBM_ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    extended_output(F("LBM_ "), 0, MONOCHROME_MOTION_MUTING_ROW, false);
 	    for(int pulse = musicBoxConf.highest_primary - (primary_count/4) +1; pulse <= musicBoxConf.highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute high quarter
 	    break;
 
 	  case 2:	// mute upper half
-	    extended_output(F("LB__ "), MONOCHROME_MOTION_MUTING_ROW, 0, false);
+	    extended_output(F("LB__ "), 0, MONOCHROME_MOTION_MUTING_ROW, false);
 	    for(int pulse = musicBoxConf.highest_primary - (primary_count/2) +1; pulse <= musicBoxConf.highest_primary; pulse++)
 	      PULSES.pulses[pulse].action_flags |= noACTION;	// mute upper half
 	    break;
@@ -762,13 +762,14 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 
 #if defined DEBUG_U_TUNING_MODE
 #if true
-	u8x8.setCursor(0,0);
-	u8x8.print(AY_seen_f, 6);
-	u8x8.print("  ");
+	monochrome_setCursor(0,0);
+	//	extern void monochrome_print_f(float f, int chiffres);
+	monochrome_print_f(AY_seen_f, 6);
+	monochrome_print(F("  "));
 
-	u8x8.setCursor(0,1);
-	u8x8.print(accGyro_current_AX_f, 6);
-	u8x8.print("  ");
+	monochrome_setCursor(0,1);
+	monochrome_print_f(accGyro_current_AX_f, 6);
+	monochrome_print(F("  "));
 #endif
 	MENU.out(F("seen_Y "));
 	MENU.out(AY_seen_f, 9);

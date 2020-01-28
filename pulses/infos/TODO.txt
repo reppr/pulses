@@ -556,3 +556,11 @@ possibility to run without esp now and initialise at run time
   measure power usage
 
 new connected peer maybe show on monochrome?
+
+case 'I':	// info		// force OLED resdisplay or morse	// TODO: display help
+
+// DADA	TODO: monochrome_conf_t
+
+nvs MENU.error_ln(F("too much"));	// TODO: DEBUG: i have seen this...
+
+monochrome multiline string output (long strings)
