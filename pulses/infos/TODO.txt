@@ -563,7 +563,6 @@ case 'I':	// info		// force OLED resdisplay or morse	// TODO: display help
 
 nvs MENU.error_ln(F("too much"));	// TODO: DEBUG: i have seen this...
 
-monochrome multiline string output (long strings)
 
 respect   if(! monochrome_power_save)
 

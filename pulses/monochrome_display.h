@@ -32,7 +32,7 @@ bool monochrome_can_be_used() {	// monochrome output is appropriate?
 }
 
 void monochrome_show_program_version() {	// monochrome oled display
-  if(! monochrome_power_save) {
+  if(monochrome_can_be_used()) {
     u8x8.clear();
     u8x8.setCursor(0,1);
     u8x8.print(F(STRINGIFY(PROGRAM_VERSION)));
@@ -171,7 +171,7 @@ void monochrome_multiline_string(uint8_t row, char* s) {	// multiline string fro
 } // monochrome multiline string()
 
 void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be used while playing
-  if(! monochrome_power_save) {
+  if(monochrome_can_be_used()) {
     uint8_t cols = u8x8.getCols();
     uint8_t rows = u8x8.getRows();
     int row=0;	// first 2 lines empty for 2x2 output (i.e. MORSE)
@@ -283,12 +283,12 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
       s[0] = scale_symbol_char();
       u8x8.draw2x2String(14, 0, s);
     }
-  } //if(! monochrome_power_save)
+  } //if(monochrome_can_be_used())
 } // monochrome_show_musicBox_parameters()
 
 
 void monochrome_show_line(uint8_t row, char * s) {
-  if(! monochrome_power_save) {
+  if(monochrome_can_be_used()) {
     uint8_t cols = u8x8.getCols();
     char full_line[cols+1] = {0};
     char c;
@@ -374,38 +374,43 @@ bool OLED_UI() {	// follows 'O'		'OE'	'OT'	'OP'
 
 
 void monochrome_print2x2(uint8_t col, uint8_t row, char* str) {	// for short 2x2 strings
-  int max=(u8x8.getCols()/2);	// limit length
-  char truncated[max+1]={0};
+  if(monochrome_can_be_used()) {
+    int max=(u8x8.getCols()/2);	// limit length
+    char truncated[max+1]={0};
 
-  char c;
-  for(int i=0; i<max; i++) {
-    truncated[i] = str[i];
-    if(truncated[i] == 0)
-      break;
+    char c;
+    for(int i=0; i<max; i++) {
+      truncated[i] = str[i];
+      if(truncated[i] == 0)
+	break;
+    }
+    u8x8.draw2x2String(col, row, truncated);
   }
-  u8x8.draw2x2String(col, row, truncated);
 } // monochrome_print2x2()
 
 void monochrome_println2x2(uint8_t row, char* str) {	// 2x2 lines
-  int max=(u8x8.getCols()/2);	// limit length
-  char truncated[max+1];
-  for(int i=0; i<max; i++)
-    truncated[i] = ' ';		// space filled to clear line
-  truncated[max] = 0;		// /0 terminated
+  if(! monochrome_can_be_used()) {
+    int max=(u8x8.getCols()/2);	// limit length
+    char truncated[max+1];
+    for(int i=0; i<max; i++)
+      truncated[i] = ' ';		// space filled to clear line
+    truncated[max] = 0;		// /0 terminated
 
-  char c;
-  for(int i=0; i<=max; i++) {
-    if(c = str[i])
-      truncated[i] = c;
-    else
-      break;
+    char c;
+    for(int i=0; i<=max; i++) {
+      if(c = str[i])
+	truncated[i] = c;
+      else
+	break;
+    }
+
+    u8x8.draw2x2String(0, row, truncated);
   }
-
-  u8x8.draw2x2String(0, row, truncated);
 } // monochrome_println2x2()
 
 void monochrome_setInverseFont(uint8_t inverse) {
-  u8x8.setInverseFont(inverse);
+  if(monochrome_can_be_used())
+    u8x8.setInverseFont(inverse);
 }
 
 void monochrome_setPowerSave(uint8_t value) {
@@ -413,19 +418,23 @@ void monochrome_setPowerSave(uint8_t value) {
 }
 
 void monochrome_setCursor(uint8_t col, uint8_t row) {
-  u8x8.setCursor(col, row);
+  if(monochrome_can_be_used())
+    u8x8.setCursor(col, row);
 }
 
 void monochrome_print(char* str) {
-  u8x8.print(str);
+  if(monochrome_can_be_used())
+    u8x8.print(str);
 }
 
 void monochrome_print_f(float f) {
-  u8x8.print(f);
+  if(monochrome_can_be_used())
+    u8x8.print(f);
 }
 
 void monochrome_print_f(float f, int chiffres) {
-  u8x8.print(f, chiffres);
+  if(monochrome_can_be_used())
+    u8x8.print(f, chiffres);
 }
 
 uint8_t monochrome_getCols() {

@@ -265,7 +265,7 @@ bool mac_is_non_zero(uint8_t* mac_addr) {
 
 peer_ID_t esp_now_pulses_known_peers[ESP_NOW_MAX_TOTAL_PEER_NUM];
 
-void display_peer_ID_list() {	// TODO: monochrome
+void display_peer_ID_list() {
   MENU.out_IstrI(my_IDENTITY.preName);
   MENU.outln(F(" known peers:"));
   int i;

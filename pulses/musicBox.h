@@ -840,12 +840,12 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
     }
 
 #if defined USE_MONOCHROME_DISPLAY
-    {
+    if(monochrome_can_be_used()) {
       extern char run_state_symbol();
       char s[] = {run_state_symbol(),0};
       u8x8.draw2x2String(0, 0, s);
-      MENU.ln();
-    }
+      // MENU.ln();
+      }
 #endif
 
     for (int pulse=0; pulse<PL_MAX; pulse++) {	// make days_to_live COUNTED generating pulses
@@ -2593,7 +2593,8 @@ void start_musicBox() {
   MENU.out(F("\nstart_musicBox()\t"));
 
 #if defined USE_MONOCHROME_DISPLAY && defined MUSICBOX_SHOW_PROGRAM_VERSION	// default *off*
-  show_program_version();
+  if(monochrome_can_be_used())
+    show_program_version();
 #endif
 
 #if defined USE_RGB_LED_STRIP
@@ -4058,8 +4059,7 @@ bool musicBox_reaction(char token) {
 	  musicBox_display();
 
 #if defined USE_MONOCHROME_DISPLAY
-	if(monochrome_can_be_used())
-	  monochrome_show_musicBox_parameters();
+	monochrome_show_musicBox_parameters();
 #endif
 	if(start)
 	  start_musicBox();

@@ -224,7 +224,9 @@ extern void extended_output(char* data, uint8_t col, uint8_t row, bool force);
 void display_accGyro_mode() {
   MENU.out(F("accGyro mode: "));
 
-  monochrome_setCursor(0, MONOCHROME_MOTION_STATE_ROW);
+  if(monochrome_can_be_used())
+    monochrome_setCursor(0, MONOCHROME_MOTION_STATE_ROW);
+
   char buffer[] = {"acc ...  gyr ..."};
   //              {"0123456789abcdef"}
 
@@ -762,14 +764,16 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 
 #if defined DEBUG_U_TUNING_MODE
 #if true
-	monochrome_setCursor(0,0);
-	//	extern void monochrome_print_f(float f, int chiffres);
-	monochrome_print_f(AY_seen_f, 6);
-	monochrome_print(F("  "));
+	if(monochrome_can_be_used()) {
+	  monochrome_setCursor(0,0);
+	  //	extern void monochrome_print_f(float f, int chiffres);
+	  monochrome_print_f(AY_seen_f, 6);
+	  monochrome_print(F("  "));
 
-	monochrome_setCursor(0,1);
-	monochrome_print_f(accGyro_current_AX_f, 6);
-	monochrome_print(F("  "));
+	  monochrome_setCursor(0,1);
+	  monochrome_print_f(accGyro_current_AX_f, 6);
+	  monochrome_print(F("  "));
+	}
 #endif
 	MENU.out(F("seen_Y "));
 	MENU.out(AY_seen_f, 9);
