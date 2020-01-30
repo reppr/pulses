@@ -1368,20 +1368,22 @@ extern bool monochrome_can_be_used();
 extern void monochrome_display_message(char * message);
 // avoid sound glitches when using OLED:
 extern bool oled_feedback_while_playing;
-extern void monochrome_print2x2(uint8_t col, uint8_t row, char* str);
+extern void monochrome_println2x2(uint8_t row, char* str);
 extern void monochrome_setInverseFont(uint8_t inverse);
 extern void monochrome_setPowerSave(uint8_t value);
 extern void monochrome_setCursor(uint8_t col, uint8_t row);
 extern uint8_t monochrome_getCols();
 extern void monochrome_print(char* str);
 extern void monochrome_print_f(float f, int chiffres);
+extern void monochrome_println2x2(uint8_t row, char* str);		// 2x2 lines
+extern void monochrome_print2x2(uint8_t col, uint8_t row, char* str);	// for short 2x2 strings
 
 void morse_do_output() {
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
   if(morse_out_buffer_cnt) {
 #if defined USE_MONOCHROME_DISPLAY
     if(monochrome_can_be_used())
-      monochrome_print2x2(0, MORSE_MONOCHROME_ROW, "        ");
+      monochrome_println2x2(MORSE_MONOCHROME_ROW, "        ");
 #endif
 
     MENU.out(F("morse "));

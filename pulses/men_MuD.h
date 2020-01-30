@@ -3,8 +3,7 @@
   temporary test menu UI during development
 */
 
-// esp_now_call_participants();
-display_peer_ID_list();
+show_configuration_code();
 
 #if defined USE_ADS1115_AT_ADDR
 //ads1115_first_test_A0();

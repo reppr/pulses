@@ -564,3 +564,13 @@ case 'I':	// info		// force OLED resdisplay or morse	// TODO: display help
 nvs MENU.error_ln(F("too much"));	// TODO: DEBUG: i have seen this...
 
 monochrome multiline string output (long strings)
+
+respect   if(! monochrome_power_save)
+
+finish that
+//  show_configuration_code();
+//  MENU.outln(F(" <<< * >>>\n"));	// end output block
+
+musicBox
+char s[] = {'p', 0};		// TODO: how to clear that?
+u8x8.draw2x2String(0, 0, s);	// TODO: how to clear that?

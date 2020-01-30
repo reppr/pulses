@@ -137,9 +137,38 @@ char run_state_symbol() {
     return '.';
   if(musicbox_is_ending())
     return 'e';
+  // 'p' is used for pause
 
   return '?';
 }
+
+void monochrome_multiline_string(uint8_t row, char* s) {	// multiline string from row to bottom (max)
+  if(musicBoxConf.name && *musicBoxConf.name /*no empty string*/) {	// one line from name
+    uint8_t cols = u8x8.getCols();
+    uint8_t rows = u8x8.getRows();
+
+    char c ;
+    int col;
+    while(*s && row<rows) {
+      col=0;
+      u8x8.clearLine(row);
+      u8x8.setCursor(0,row++);
+      while(c = *s++) {
+	u8x8.print(c);
+	if ((++col % cols) == 0)
+	  break;
+      }
+      col %= cols;
+
+      if(c==0) {
+	while(col++ < cols)  u8x8.print(' ');	// fill line witch spaces
+	if(row < rows)
+	  u8x8.clearLine(row);			// clear one more line
+	break;
+      }
+    } // all chars
+  } // there *is* string content
+} // monochrome multiline string()
 
 void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be used while playing
   if(! monochrome_power_save) {
@@ -161,13 +190,14 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
       u8x8.print(' ');
       u8x8.setInverseFont(0);
       u8x8.print(' ');
-      //      u8x8.print(F("  "));
       monochrome_show_subcycle_octave();
 
-      char run_state[] = {run_state_symbol(), ' ', '\0' };
-      u8x8.draw2x2String(0, 0, run_state);
+      char run_state[2];
+      run_state[0] = run_state_symbol();
+      run_state[1] = 0;
+      u8x8.draw2x2String(0, 0, run_state);      // *BIG* run state
 
-      // *BIG* PRESET number on top		poor old eyes little helper ;)
+      // *BIG* PRESET number on top		// poor old eyes little helper ;)
       char preset[10] = {0};
       itoa(musicBoxConf.preset, preset, 10);
       u8x8.draw2x2String(2, 0, preset);
@@ -201,49 +231,15 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
       u8x8.print(musicBoxConf.pitch.divisor);
     }
 
-    u8x8.clearLine(row);	// name or subcycle
-    u8x8.setCursor(0,row++);
     if(musicBoxConf.name && *musicBoxConf.name /*no empty string*/) {	// one line from name
-      char * s = musicBoxConf.name;
-      char c ;
-      int col=0;
-      /*
-      // TESTCODE Umlaute		// TODO: fix or remove
-      char line_buffer[rows];
-      for(int r=0; r<rows; r++) {		// a letter for each row
-      c = line_buffer[r] = s[r];
-      if (c==0)				// string end
-      break;
-      }
-      */
       u8x8.setInverseFont(1);
-      /* // TESTCODE Umlaute		// TODO: fix or remove
-      // U8X8::drawUTF8(uint8_t x, uint8_t y, const char *s)
-      u8x8.drawUTF8(0, row, line_buffer);
-      */
-      while(c = *s++) {
-	u8x8.print(c);
-	if ((++col % cols) == 0)
-	  break;
-      }
-      col %= cols;
-      if(c==0)
-	while(col++ < cols)  u8x8.print(' ');	// fill line witch spaces
-
-      while ( c && row < rows) {	// if name is longer
-	u8x8.clearLine(row);	// name or subcycle
-	u8x8.setCursor(0,row++);
-	while(c = *s++) {
-	  u8x8.print(c);
-	  if ((++col % cols) == 0)
-	    break;
-	}
-	col %= cols;
-	if(c==0)
-	  while(col++ < cols)  u8x8.print(' ');	// fill line witch spaces
-      }
+      monochrome_multiline_string(row, musicBoxConf.name);
       u8x8.setInverseFont(0);
+
     } else { // if there is no name
+      u8x8.clearLine(row);
+      u8x8.setCursor(0,row);
+
       if(selected_in(SCALES) != NULL) {
 	monochrome_show_subcycle_octave();
 	u8x8.print(' ');
@@ -377,20 +373,36 @@ bool OLED_UI() {	// follows 'O'		'OE'	'OT'	'OP'
 } // OLED_UI()
 
 
-// to be used from other modules:
-void monochrome_print2x2(uint8_t col, uint8_t row, char* str) {
+void monochrome_print2x2(uint8_t col, uint8_t row, char* str) {	// for short 2x2 strings
   int max=(u8x8.getCols()/2);	// limit length
   char truncated[max+1]={0};
 
   char c;
   for(int i=0; i<max; i++) {
-    if(c=str[i])
-      truncated[i] = c;
-    else
+    truncated[i] = str[i];
+    if(truncated[i] == 0)
       break;
   }
   u8x8.draw2x2String(col, row, truncated);
 } // monochrome_print2x2()
+
+void monochrome_println2x2(uint8_t row, char* str) {	// 2x2 lines
+  int max=(u8x8.getCols()/2);	// limit length
+  char truncated[max+1];
+  for(int i=0; i<max; i++)
+    truncated[i] = ' ';		// space filled to clear line
+  truncated[max] = 0;		// /0 terminated
+
+  char c;
+  for(int i=0; i<=max; i++) {
+    if(c = str[i])
+      truncated[i] = c;
+    else
+      break;
+  }
+
+  u8x8.draw2x2String(0, row, truncated);
+} // monochrome_println2x2()
 
 void monochrome_setInverseFont(uint8_t inverse) {
   u8x8.setInverseFont(inverse);

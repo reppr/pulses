@@ -843,8 +843,7 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
     {
       extern char run_state_symbol();
       char s[] = {run_state_symbol(),0};
-      u8x8.draw2x2String(0, 0, s);	// would be handy but sounds horrible...
-      //extended_output(F("e "), 0, 0, true);	// output on serial MENU, maybe OLED, possibly morse, ...
+      u8x8.draw2x2String(0, 0, s);
       MENU.ln();
     }
 #endif
@@ -2603,6 +2602,11 @@ void start_musicBox() {
 
   set_MusicBoxState(AWAKE);
 
+//#if defined USE_MONOCHROME_DISPLAY
+//  extern void monochrome_show_musicBox_parameters();	// ATTENTION: takes too long to be used while playing
+//  monochrome_show_musicBox_parameters();
+//#endif
+
 #if defined  USE_RTC_MODULE
   show_DS1307_time_stamp();
   MENU.ln();
@@ -2819,7 +2823,7 @@ void start_musicBox() {
   monochrome_show_musicBox_parameters();	// ATTENTION: takes too long to be used while playing
 #endif
 
-  MENU.outln(F("\n >>> * <<<"));	// start output block with configurations
+  //  MENU.outln(F("\n >>> * <<<"));	// start output block with configurations
 
 #if defined  USE_RTC_MODULE		// repeat that in here, keeping first one for power failing cases
   MENU.out(F("date="));
@@ -2827,8 +2831,8 @@ void start_musicBox() {
   MENU.ln();
 #endif
 
-  show_configuration_code();
-  MENU.outln(F(" <<< * >>>\n"));	// end output block
+//  show_configuration_code();
+//  MENU.outln(F(" <<< * >>>\n"));	// end output block
 
   if(MENU.verbosity >= VERBOSITY_MORE) {
     show_cycle(CyclesConf.harmonical_CYCLE);	// shows multiple cycle octaves
@@ -2865,27 +2869,26 @@ void start_musicBox() {
   // TODO: TEST: start pause detection and skipping
   if(musicBoxConf.sync || musicBoxConf.stack_sync_slices) {	// start pause possible?
     if(musicBoxConf.stack_sync_slices) { // stack_sync sliced?
-      if(MagicConf.autoskip_pause) {
+      if(MagicConf.autoskip_pause) {	 //   autoskip?
 	PULSES.time_skip_selected(pause);
 	MENU.out(F("skipped\t"));
 	PULSES.display_time_human(pause);
 	MENU.ln();
-      } else { // pause is *not* autoskipped
+
+      } else	// pause is *not* autoskipped
 	MENU.outln(F("no pause autoskip"));
-#if defined USE_MONOCHROME_DISPLAY
-	monochrome_display_message(F(" _"));	// TODO: monochrome pause time
-      }
-#endif
+//#if defined USE_MONOCHROME_DISPLAY
+//	char s[] = {'p', 0};		// TODO: how to clear that?
+//	u8x8.draw2x2String(0, 0, s);	// TODO: how to clear that?
+//#endif
+
     } else {	// stack_sync_slices==0
-#if defined USE_MONOCHROME_DISPLAY
-      monochrome_display_message(F(" _"));		// TODO: monochrome pause time
-#endif
       if(MENU.verbosity >= VERBOSITY_LOWEST) {
 	MENU.ln();
 	musicBox_short_info();
 	MENU.ln(2);
       }
-    } // stack_sync_slices
+    } // stack_sync_slices?
   } // possible?
 
   // setup butler:	works better if activated a tad later than the primary pulses...
@@ -4123,29 +4126,34 @@ bool musicBox_reaction(char token) {
       monochrome_show_musicBox_parameters();	// ATTENTION: takes too long to be used while playing
 #endif
       break;
-    case 'P':	// 'IP'=='IN'	prename, name
-    case 'N':	// 'IP'=='IN'	prename, name
+    case 'N':	// 'IN'	prename, name
       MENU.drop_input_token();
       extended_output(my_IDENTITY.preName, 0, 0, true);
       MENU.ln();
 
-      if(musicBoxConf.name!=NULL) {
-	extended_output(musicBoxConf.name, 0, 2*1, true);
-	MENU.ln();
-	// TODO: multiline
-	//	monochrome_setCursor(0, 5);
-	//	monochrome_print(musicBoxConf.name);
+      if(musicBoxConf.name != NULL) {
+	MENU.outln(musicBoxConf.name);
+
+	int len=strlen(musicBoxConf.name);
+	if(len <= (u8x8.getRows() / 2)) {	// fits in one 2x2 line?
+	  // monochrome_multiline_string(2*1, musicBoxConf.name);
+	  monochrome_println2x2(2*1, musicBoxConf.name);
+	} else {				// too long for 2x2
+	  u8x8.clearLine(2);			// clear one more line
+	  monochrome_multiline_string(3, musicBoxConf.name);
+	}
       }
       break;
+
 #if defined USE_ESP_NOW
     case 'C':	// 'IC'	peer list
       MENU.drop_input_token();
       for(int row=0, i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {
 	if(mac_is_non_zero(esp_now_pulses_known_peers[i].mac_addr)) {
-	  //      MENU.out(i + 1);	// start counting with 1
-	  //      if(i<9)
-	  //	MENU.space();
-	  //      MENU.space(2);
+	  MENU.out(i + 1);	// start counting with 1
+	  if(i<9)
+	    MENU.space();
+	  MENU.space(2);
 	  extended_output(esp_now_pulses_known_peers[i].preName, 0, 2*row, true);
 	  row++;
 	  MENU.ln();
