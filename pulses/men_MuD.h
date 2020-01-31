@@ -3,7 +3,13 @@
   temporary test menu UI during development
 */
 
-show_configuration_as_string();	// unused
+monochrome_println_big_or_multiline(0, "SHORT");
+MENU.outln("SHORT");
+
+monochrome_println_big_or_multiline(4, "LONGER7890ABCDEF");
+MENU.outln("LONG\n\n");
+
+show_configuration_as_string();	// unused 1line mode for files
 
 #if defined USE_ADS1115_AT_ADDR
 //ads1115_first_test_A0();

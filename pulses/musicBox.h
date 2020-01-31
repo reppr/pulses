@@ -1468,7 +1468,7 @@ void show_configuration_code() {	// show code, similar show_UI_basic_setup()
 
 
 // TODO: unused
-void show_configuration_as_string() {	// file representation, similar show_configuration_code()
+void show_configuration_as_string() {	// file 1line representation, similar show_configuration_code()
   MENU.out(F("name:"));
   if(musicBoxConf.name)
     MENU.out(musicBoxConf.name);
@@ -3678,7 +3678,7 @@ bool musicBox_reaction(char token) {
     if(MENU.check_next('F')) {			// case "EFx" configure function musicBox_when_done();
       if(MENU.peek() != EOF8) {
 	switch(MENU.peek()) {
-	case 'ED':
+	case 'ED':		// TODO: huch? ################################################################
 	  musicBox_when_done=&deep_sleep;		// "EFD" deep_sleep()
 	  break;
 	case 'EL':
@@ -4125,6 +4125,7 @@ bool musicBox_reaction(char token) {
       monochrome_show_musicBox_parameters();	// ATTENTION: takes too long to be used while playing
 #endif
       break;
+
     case 'N':	// 'IN'	prename, name
       MENU.drop_input_token();
       extended_output(my_IDENTITY.preName, 0, 0, true);
@@ -4134,7 +4135,7 @@ bool musicBox_reaction(char token) {
 	MENU.outln(musicBoxConf.name);
 
 	int len=strlen(musicBoxConf.name);
-	if(len <= (u8x8.getRows() / 2)) {	// fits in one 2x2 line?
+	if(len <= (u8x8.getCols() / 2)) {	// fits in one 2x2 line?
 	  // monochrome_multiline_string(2*1, musicBoxConf.name);
 	  monochrome_println2x2(2*1, musicBoxConf.name);
 	} else {				// too long for 2x2
@@ -4166,6 +4167,22 @@ bool musicBox_reaction(char token) {
       MENU.drop_input_token();
       u8x8.clear();
       // monochrome_clear();
+      break;
+
+    case 'R':	// 'IR' == 'IT' == 'IJ'
+    case 'T':	// 'IR' == 'IT' == 'IJ'
+    case 'J':	// 'IR' == 'IT' == 'IJ'
+      MENU.drop_input_token();
+      {
+	char* str;
+	str = array2name(SCALES, selected_in(SCALES));
+	monochrome_println_big_or_multiline(0, str);
+	MENU.outln(str);
+
+	str = array2name(JIFFLES, selected_in(JIFFLES));
+	monochrome_println_big_or_multiline(3, str);
+	MENU.outln(str);
+      }
       break;
 #endif
     } // switch token after 'I'

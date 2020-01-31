@@ -389,7 +389,7 @@ void monochrome_print2x2(uint8_t col, uint8_t row, char* str) {	// for short 2x2
 } // monochrome_print2x2()
 
 void monochrome_println2x2(uint8_t row, char* str) {	// 2x2 lines
-  if(! monochrome_can_be_used()) {
+  if(monochrome_can_be_used()) {
     int max=(u8x8.getCols()/2);	// limit length
     char truncated[max+1];
     for(int i=0; i<max; i++)
@@ -408,13 +408,28 @@ void monochrome_println2x2(uint8_t row, char* str) {	// 2x2 lines
   }
 } // monochrome_println2x2()
 
+void monochrome_println_big_or_multiline(int row, char* str) {
+  /*
+    print one line on monochrome
+    use 2x2 size if it fits
+    else use basic size
+    even multinline, if needed
+  */
+  int len = strlen(str);
+  if(len <= (u8x8.getCols() / 2))	// fits in one 2x2 line?
+    monochrome_println2x2(row, str);
+  else				// too long for 2x2
+    monochrome_multiline_string(row, str);
+} // monochrome_println_big_or_multiline()
+
+
 void monochrome_setInverseFont(uint8_t inverse) {
   if(monochrome_can_be_used())
     u8x8.setInverseFont(inverse);
 }
 
 void monochrome_setPowerSave(uint8_t value) {
-  u8x8.setPowerSave(value);
+  u8x8.setPowerSave(value);	// try to set it anyway
 }
 
 void monochrome_setCursor(uint8_t col, uint8_t row) {

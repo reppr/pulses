@@ -540,8 +540,6 @@ uint8_t lmk[ESP_NOW_KEY_LEN]
 
 //determine_imu_zero_offsets(2000);	// TODO: use and UI
 
-display_peer_ID_list()		// TODO: monochrome
-
 esp now parameters enable, channel ...
 
 esp now feedback verbosity
@@ -555,23 +553,23 @@ void set_my_IDENTITY() ???
 possibility to run without esp now and initialise at run time
   measure power usage
 
-new connected peer maybe show on monochrome?
-
 case 'I':	// info		// force OLED resdisplay or morse	// TODO: display help
-
-// DADA	TODO: monochrome_conf_t
 
 nvs MENU.error_ln(F("too much"));	// TODO: DEBUG: i have seen this...
 
 
 respect   if(! monochrome_power_save)
 
-UNUSED?: void show_configuration_as_string() {	// file representation, similar show_configuration_code()
-finish that
-//  show_configuration_code();
-//  MENU.outln(F(" <<< * >>>\n"));	// end output block
+unused: void show_configuration_as_string() {	// file 1line representation, similar show_configuration_code()
 
 musicBox
-char s[] = {'p', 0};		// TODO: how to clear that?
-u8x8.draw2x2String(0, 0, s);	// TODO: how to clear that?
+char s[] = {'p', 0};		// TODO: how to clear that?	deactivated ;)
+u8x8.draw2x2String(0, 0, s);	// TODO: how to clear that?	deactivated ;)
 
+do not forget the monochrome type setup mess...
+// DADA	TODO: monochrome_conf_t
+
+monochrome row control
+TODO: return row  void monochrome_println_big_or_multiline(int row, char* str);
+
+musicBox case 'ED':		// TODO: huch?
