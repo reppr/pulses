@@ -3,7 +3,7 @@
   temporary test menu UI during development
 */
 
-show_configuration_code();
+show_configuration_as_string();	// unused
 
 #if defined USE_ADS1115_AT_ADDR
 //ads1115_first_test_A0();

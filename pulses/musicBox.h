@@ -1467,6 +1467,7 @@ void show_configuration_code() {	// show code, similar show_UI_basic_setup()
 } // show_configuration_code()
 
 
+// TODO: unused
 void show_configuration_as_string() {	// file representation, similar show_configuration_code()
   MENU.out(F("name:"));
   if(musicBoxConf.name)
@@ -2832,9 +2833,6 @@ void start_musicBox() {
   MENU.ln();
 #endif
 
-//  show_configuration_code();
-//  MENU.outln(F(" <<< * >>>\n"));	// end output block
-
   if(MENU.verbosity >= VERBOSITY_MORE) {
     show_cycle(CyclesConf.harmonical_CYCLE);	// shows multiple cycle octaves
     MENU.ln();
@@ -3647,12 +3645,17 @@ bool musicBox_reaction(char token) {
   case '?': // musicBox_display();
     musicBox_display();
     break;
-  case ',': // show parameters
+  case ',': // show parameters		',,' shows parameters and parameters in source code format
     if (MENU.menu_mode)	{ // *exclude* special menu modes
       MENU.restore_input_token();
       return false;	// for other menu modes let pulses menu do the work ;)	// TODO: TEST:
-    } else
+    } else {
       musicBox_short_info();
+      if(MENU.check_next(',')) {     // ',,' shows parameters and parameters in source code format
+	MENU.ln();
+	show_configuration_code();
+      }
+    }
     break;
   case 'X':
   case 'Y':
