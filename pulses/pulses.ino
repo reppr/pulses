@@ -5355,9 +5355,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
  case '/':	// '/' divide destination  '/!<num>' set divisor
-    if(MENU.peek() == '!') {		// '/!<num>' set divisor
-      MENU.drop_input_token();
-
+   if(MENU.check_next('!')) {		// '/!<num>' set divisor
       if(MENU.peek()==EOF8)
 	MENU.outln(F("divisor"));
 
@@ -5512,18 +5510,18 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'g':	// 'g' "GPIO"	'g~' toggle up/down pin mapping
-    if(MENU.peek() == '~') {	      // 'g~' toggle up/down pin mapping
-	  if (MENU.verbosity)
-	    MENU.out(F("pin mapping bottom "));
+    if(MENU.check_next('~')) {	      // 'g~' toggle up/down pin mapping
+      if (MENU.verbosity)
+	MENU.out(F("pin mapping bottom "));
 
-	  g_inverse = !g_inverse;	// toggle bottom up/down click-pin mapping
+      g_inverse = !g_inverse;	// toggle bottom up/down click-pin mapping
 
-	  if (DO_or_maybe_display(VERBOSITY_LOWEST)) {
-	    if (g_inverse)
-	      MENU.outln(F("up"));
-	    else
-	      MENU.outln(F("down"));
-	  }
+      if (DO_or_maybe_display(VERBOSITY_LOWEST)) {
+	if (g_inverse)
+	  MENU.outln(F("up"));
+	else
+	  MENU.outln(F("down"));
+      }
     } else
       en_click_selected();	// 'g' en_click  "GPIO"
     break;
@@ -5815,9 +5813,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     tabula_rasa();
 
-    if(MENU.peek() == '!') {		// 'X!' does 'X' *and* resets time_unit
-      MENU.drop_input_token();
-
+    if(MENU.check_next('!')) {		// 'X!' does 'X' *and* resets time_unit
       if(PULSES.time_unit != TIME_UNIT) {
 	MENU.outln(F("reset time_unit"));
 	PULSES.time_unit = TIME_UNIT;	// reset time_unit
@@ -6519,10 +6515,8 @@ bool menu_pulses_reaction(char menu_input) {
 	PULSES.select_n(voices);	// select all primary voices
 
 	// maybe start?
-	if(MENU.peek() == '!') {		// 'E38!' starts E38
-	  MENU.drop_input_token();
+	if(MENU.check_next('!'))		// 'E38!' starts E38
 	  PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
-	}
 	break; // E38
 
       case 39:	// 'E39' time machine 2 setup
@@ -6585,10 +6579,9 @@ bool menu_pulses_reaction(char menu_input) {
 	  PULSES.select_n(voices);	// select all primary voices
 
 	  // maybe start?
-	  if(MENU.peek() == '!') {		// 'E39!' starts E39
-	    MENU.drop_input_token();
+	  if(MENU.check_next('!'))		// 'E39!' starts E39
 	    PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate, no display
-	  } else
+	  else
 	    if (DO_or_maybe_display(VERBOSITY_LOWEST))	// maybe ok for here?
 	      selected_or_flagged_pulses_info_lines();
 	} // case E39 { }
@@ -6623,10 +6616,9 @@ bool menu_pulses_reaction(char menu_input) {
 	  setup_bass_middle_high(musicBoxConf.bass_pulses, musicBoxConf.middle_pulses, musicBoxConf.high_pulses);
 
 	  // maybe start?
-	  if(MENU.peek() == '!') {		// 'E40!' starts E40
-	    MENU.drop_input_token();
+	  if(MENU.check_next('!'))		// 'E40!' starts E40
 	    PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate, no display
-	  } else
+	  else
 	    if (DO_or_maybe_display(VERBOSITY_LOWEST))	// maybe ok for here?
 	      selected_or_flagged_pulses_info_lines();
 	} // case 'E40' { }

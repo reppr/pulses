@@ -304,6 +304,7 @@ class Menu {
   int drop_input_token();	// drops and return next input token, only use if you must
   int restore_input_token();	// restore and return last input token, only use if you *really must*
 				// *dangerous* no checks, you *can* restore a just-read-token
+  bool check_next(char token);	// check for token, drop it if found, return token *is* next
 
   void play_KB_macro(char *macro, bool newline=true);	//  keyboard input from a string
 				// most often you might do  'men_selected=0;'  before

@@ -3457,11 +3457,8 @@ void input_preset_and_start() {	// factored out UI component	// TODO: sets prese
       MENU.outln_invalid();
   }
 
-  bool start=true;
-  if(MENU.peek() == 'T') {	// '<number>T' loads preset, but does not start
-    MENU.drop_input_token();
-    start = false;
-  }
+  bool start = ! MENU.check_next('T');	// '<number>T' loads preset, but does not start
+
   if(load)
     load_preset_and_start(musicBoxConf.preset, start);
 } // input_preset_and_start()
@@ -3675,8 +3672,7 @@ bool musicBox_reaction(char token) {
     show_cycle(CyclesConf.harmonical_CYCLE);
     break;
   case 'E': // 'E' (bare):  start_soft_ending(soft_end_days_to_live, soft_end_survive_level);
-    if(MENU.peek() == 'F') {			// case "EFx" configure function musicBox_when_done();
-      MENU.drop_input_token();
+    if(MENU.check_next('F')) {			// case "EFx" configure function musicBox_when_done();
       if(MENU.peek() != EOF8) {
 	switch(MENU.peek()) {
 	case 'ED':
@@ -4192,8 +4188,7 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'p': // 'p' switch cycle pattern display
-    if(MENU.peek()=='*') {	// 'p*' toggle interval symbols in cycle pattern
-      MENU.drop_input_token();
+    if(MENU.check_next('*')) {	// 'p*' toggle interval symbols in cycle pattern
       show_cycle_pattern_intervals ^= 1;
       show_cycle_pattern = true;
     } else
@@ -4283,16 +4278,14 @@ bool musicBox_reaction(char token) {
       return true;
 #endif
 
-    if(MENU.peek() == '+') {		// higher octave is shorter
-      MENU.drop_input_token();
+    if(MENU.check_next('+')) {		// higher octave is shorter
       PULSES.div_time(&CyclesConf.used_subcycle,2);
       CyclesConf.subcycle_octave++;
       //uiConf.subcycle_user_selected=true;
     } else {				// default and '-' is longer
       PULSES.mul_time(&CyclesConf.used_subcycle,2);
       CyclesConf.subcycle_octave--;
-      if(MENU.peek() == '-')		// '-' is default
-	MENU.drop_input_token();
+      MENU.check_next('-');		// '-' is default, drop it
       //uiConf.subcycle_user_selected=true;
     }
     show_cycles_1line();
@@ -4312,8 +4305,7 @@ bool musicBox_reaction(char token) {
 */
 
   case '|':	// '|' stack_sync_slices	(and '|b' base_pulse)
-    if(MENU.peek() == 'b') {		// '|b' base_pulse
-      MENU.drop_input_token();
+    if(MENU.check_next('b')) {		// '|b' base_pulse
       input_value = MENU.numeric_input(musicBoxConf.base_pulse);
       if(input_value >= 0 && input_value < PL_MAX) {
 	musicBoxConf.base_pulse = input_value;

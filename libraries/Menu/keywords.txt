@@ -6,6 +6,7 @@ add_page	KEYWORD2
 menu_pages_info	KEYWORD2
 out	KEYWORD2
 outln	KEYWORD2
+outln_invalid	KEYWORD2
 ln	KEYWORD2
 tab	KEYWORD2
 space	KEYWORD2
@@ -60,3 +61,8 @@ bar_graph	KEYWORD2
 out_ticked_hexs	KEYWORD2
 verbosity_info	KEYWORD2
 show_flag_mnemonics	KEYWORD2
+out_noop	KEYWORD2
+drop_input_token	KEYWORD2
+restore_input_token	KEYWORD2
+check_next	KEYWORD2
+play_KB_macro	KEYWORD2

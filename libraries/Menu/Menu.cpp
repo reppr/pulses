@@ -896,6 +896,13 @@ int Menu::restore_input_token() {	// restores last input token	only use if you *
   return cb_buf[cb_start];
 }
 
+bool Menu::check_next(char token) {	// check for token as next input, drop if found, return token *is* next
+  if(peek() == token) {
+    drop_input_token();
+    return true;
+  }
+  return false;
+}
 
 void Menu::play_KB_macro(char *macro, bool newline) {	// most often you might do  'men_selected=0;'  before
   out("play_KB_macro  ");

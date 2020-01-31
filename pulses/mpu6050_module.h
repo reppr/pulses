@@ -817,8 +817,7 @@ void set_accGyro_offsets_UI() {
     //    if(MENU.is_numeric())
     HARDWARE.accGyro_offsets[i] = MENU.numeric_input(HARDWARE.accGyro_offsets[i]);
 
-    if(MENU.peek() == ',')
-      MENU.drop_input_token();
+    MENU.check_next(',');	// just drop any ','
   }
 
   show_accGyro_offsets();
