@@ -1,68 +1,76 @@
+#######################################
+# Datatypes & Classes (KEYWORD1)
+#######################################
+
 Menu	KEYWORD1
-menupage	KEYWORD1
-~Menu	KEYWORD2
-lurk_then_do	KEYWORD2
+Pulses	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+IPstring	KEYWORD2
+OutOfRange	KEYWORD2
 add_page	KEYWORD2
+bar_graph	KEYWORD2
+cb_info	KEYWORD2
+cb_read	KEYWORD2
+cb_write	KEYWORD2
+check_next	KEYWORD2
+did_something=	KEYWORD2
+drop_input_token	KEYWORD2
+equals	KEYWORD2
+error_ln	KEYWORD2
+get_free_RAM	KEYWORD2
+get_numeric_input	KEYWORD2
+interpret_men_input	KEYWORD2
+is_chiffre	KEYWORD2
+is_numeric	KEYWORD2
+is_operator	KEYWORD2
+ln	KEYWORD2
+lurk_then_do	KEYWORD2
+maybe_calculate_input	KEYWORD2
+maybe_display_more	KEYWORD2
+menu_display	KEYWORD2
+menu_page_info	KEYWORD2
 menu_pages_info	KEYWORD2
+numeric_input	KEYWORD2
+ok_or_error_ln	KEYWORD2
 out	KEYWORD2
+outBIN	KEYWORD2
+out_Error_	KEYWORD2
+out_IstrI	KEYWORD2
+out_ON_off	KEYWORD2
+out_comma_	KEYWORD2
+out_flags_	KEYWORD2
+out_hex	KEYWORD2
+out_hex_chiffre	KEYWORD2
+out_noop	KEYWORD2
+out_selected_	KEYWORD2
+out_ticked_hexs	KEYWORD2
 outln	KEYWORD2
 outln_invalid	KEYWORD2
-ln	KEYWORD2
-tab	KEYWORD2
-space	KEYWORD2
-equals	KEYWORD2
-slash	KEYWORD2
-IPstring	KEYWORD2
-out_ON_off	KEYWORD2
-maybe_display_more	KEYWORD2
-is_chiffre	KEYWORD2
-is_operator	KEYWORD2
-get_numeric_input	KEYWORD2
-maybe_calculate_input	KEYWORD2
-string_match	KEYWORD2
-ticked	KEYWORD2
-out_IstrI	KEYWORD2
+pad	KEYWORD2
 peek	KEYWORD2
-skip_spaces	KEYWORD2
-next_input_token	KEYWORD2
-is_numeric	KEYWORD2
-numeric_input	KEYWORD2
-skip_numeric_input	KEYWORD2
-menu_display	KEYWORD2
-interpret_men_input	KEYWORD2
-menu_page_info	KEYWORD2
-cb_is_full	KEYWORD2
-cb_info	KEYWORD2
-maybe_input	KEYWORD2
-action	KEYWORD2
-cb_stored	KEYWORD2
-cb_start	KEYWORD2
-cb_size	KEYWORD2
-cb_count	KEYWORD2
-cb_buf	KEYWORD2
-cb_write	KEYWORD2
-cb_read	KEYWORD2
-echo_switch	KEYWORD2
-men_max	KEYWORD2
-men_known	KEYWORD2
-men_selected	KEYWORD2
-men_pages	KEYWORD2
-verbosity	KEYWORD2
-get_free_RAM	KEYWORD2
-print_free_RAM	KEYWORD2
-OutOfRange	KEYWORD2
-out_Error_	KEYWORD2
-error_ln	KEYWORD2
-ok_or_error_ln	KEYWORD2
-out_comma_	KEYWORD2
-out_selected_	KEYWORD2
-out_flags_	KEYWORD2
-bar_graph	KEYWORD2
-out_ticked_hexs	KEYWORD2
-verbosity_info	KEYWORD2
-show_flag_mnemonics	KEYWORD2
-out_noop	KEYWORD2
-drop_input_token	KEYWORD2
-restore_input_token	KEYWORD2
-check_next	KEYWORD2
 play_KB_macro	KEYWORD2
+print_free_RAM	KEYWORD2
+restore_input_token	KEYWORD2
+show_flag_mnemonics	KEYWORD2
+skip_numeric_input	KEYWORD2
+slash	KEYWORD2
+space	KEYWORD2
+string_match	KEYWORD2
+tab	KEYWORD2
+ticked	KEYWORD2
+try_page_reaction	KEYWORD2
+verbosity_info	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+MENU_MENU_PAGES_KEY	LITERAL1
+VERBOSITY_HIGH	LITERAL1
+VERBOSITY_LOWEST	LITERAL1
+VERBOSITY_MORE	LITERAL1
+VERBOSITY_SOME	LITERAL1

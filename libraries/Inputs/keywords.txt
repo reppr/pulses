@@ -1,52 +1,47 @@
+#######################################
+# Datatypes & Classes (KEYWORD1)
+#######################################
+
 Inputs	KEYWORD1
-~Inputs	KEYWORD2
-ioP_t	KEYWORD1
-ioV_t	KEYWORD1
-input_t	KEYWORD1
-setup_sample_method	KEYWORD2
-setup_in2o_custom	KEYWORD2
-sample	KEYWORD2
-oversamples_average	KEYWORD2
-setup_raw	KEYWORD2
-setup_linear	KEYWORD2
-in2o_calculation	KEYWORD2
-get_inputs_allocated	KEYWORD2
-get_counter	KEYWORD2
-sample_and_react	KEYWORD2
-setup_io_reaction	KEYWORD2
-get_last_sampled	KEYWORD2
-inputs_allocated	KEYWORD2
-inputs	KEYWORD2
-get_counter	KEYWORD2
-get_flags	KEYWORD2
-get_inp_A	KEYWORD2
-get_inp_B	KEYWORD2
-get_oversample	KEYWORD2
-get_in_offset	KEYWORD2
-get_mul	KEYWORD2
-get_div	KEYWORD2
-get_out_offset	KEYWORD2
-get_out_A	KEYWORD2
-set_counter	KEYWORD2
-set_flags	KEYWORD2
-set_inp_A	KEYWORD2
-set_inp_B	KEYWORD2
-set_oversample	KEYWORD2
-set_in_offset	KEYWORD2
-set_mul	KEYWORD2
-set_div	KEYWORD2
-set_out_offset	KEYWORD2
-set_out_A	KEYWORD2
-set_out_B	KEYWORD2
-get_sample	KEYWORD2
-oversamples_deviation	KEYWORD2
-malloc_samples	KEYWORD2
-setup_analog_read	KEYWORD2
-next_input	KEYWORD2
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+analogWrite	KEYWORD2
+average=oversamples_average	KEYWORD2
 do_next_input	KEYWORD2
-setup_PWM	KEYWORD2
-selected_inputs	KEYWORD2
-active_inputs KEYWORD2
 fix_active_inputs	KEYWORD2
-flag_mnemonics_on	KEYWORD2
-flag_mnemonics_off	KEYWORD2
+malloc_samples	KEYWORD2
+oversamples_average	KEYWORD2
+sample	KEYWORD2
+sample_and_react	KEYWORD2
+setup_PWM	KEYWORD2
+setup_analog_read	KEYWORD2
+setup_in2o_custom	KEYWORD2
+setup_io_reaction	KEYWORD2
+setup_linear	KEYWORD2
+setup_raw	KEYWORD2
+setup_sample_method	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+ADD_TO_VALUE	LITERAL1
+I2O_parameter_t	LITERAL1
+I2O_value_t	LITERAL1
+INPUTS_h	LITERAL1
+INPUT_ACTIVE	LITERAL1
+INPUT_ANALOG_internal	LITERAL1
+INPUT_OUTPUT_REACTION	LITERAL1
+INPUT_PROCESSING	LITERAL1
+INVERSE	LITERAL1
+MUL_VALUE	LITERAL1
+OVERSAMPLE_AVERAGE	LITERAL1
+PROCESS_CUSTOM	LITERAL1
+PROCESS_INVERSE	LITERAL1
+PROCESS_LINEAR	LITERAL1
+PROPORTIONAL	LITERAL1
+SET_PWM	LITERAL1
+SET_TO_VALUE	LITERAL1
