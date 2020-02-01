@@ -1,5 +1,5 @@
-#define PROGRAM_VERSION		HARMONICAL v.042   // double times :)
-/*				0123456789abcdef   */
+#define PROGRAM_VERSION	HARMONICAL v.043   // esp now ensemble, usability
+/*			0123456789abcdef   */
 
 /* **************************************************************** */
 /*
