@@ -573,3 +573,9 @@ monochrome row control
 TODO: return row  void monochrome_println_big_or_multiline(int row, char* str);
 
 musicBox case 'ED':		// TODO: huch?
+
+for(int i=0; i < RGB_STRINGS_MAX; i++) {	// TODO: FIXME: do *not* show string 1 on pin 0,
+fixed:	#define RGB_STRINGS_MAX		1	// 8 "possible"
+
+TODO: make number of available strings run-time configurable
+  see: #define RGB_STRINGS_MAX	1	// 8 "possible"

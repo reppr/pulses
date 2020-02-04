@@ -160,7 +160,7 @@ enum RTC_types {
   RTC_type_unknown,
 };
 
-#define RGB_STRINGS_MAX		2	// 8 possible
+#define RGB_STRINGS_MAX		1	// 8 "possible"
 
 // some HARDWARE must be known early	*can be managed by nvs*
 typedef struct pulses_hardware_conf_t {
