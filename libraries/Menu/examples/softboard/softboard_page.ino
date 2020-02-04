@@ -324,7 +324,11 @@ void pin_info_digital(gpio_pin_t pin) {
   show_pulses_pin_usage(pin);
 #endif
 
+#if defined ESP32
+  MENU.tab(2);
+  show_esp32_pin_capabilities(pin);
   MENU.ln();
+#endif
 } // pin_info_digital()
 
 // display configuration and state of all digital pins:
@@ -1097,8 +1101,7 @@ bool softboard_reaction(char token) {
   case 't':
     show_DS1307_time_stamp();
     MENU.ln();
-    if(MENU.peek() == '!') {
-      MENU.drop_input_token();
+    if(MENU.check_next('!')) {
       uint8_t year=2018;
       uint8_t month=11;
       uint8_t day=11;

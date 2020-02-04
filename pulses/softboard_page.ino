@@ -324,7 +324,11 @@ void pin_info_digital(gpio_pin_t pin) {
   show_pulses_pin_usage(pin);
 #endif
 
+#if defined ESP32
+  MENU.tab(2);
+  show_esp32_pin_capabilities(pin);
   MENU.ln();
+#endif
 } // pin_info_digital()
 
 // display configuration and state of all digital pins:

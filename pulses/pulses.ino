@@ -50,6 +50,7 @@ using namespace std;	// ESP8266 needs that
   #include <esp_system.h>
   #include <esp_err.h>
   extern const char* esp_err_to_name(esp_err_t);
+  extern void show_esp32_pin_capabilities(uint8_t pin);
 #endif
 
 
@@ -1493,7 +1494,12 @@ bool show_pulses_pin_usage(gpio_pin_t pin) {	// TODO: show also basic pins usage
 
 // HCSR04_TRIGGER_PIN
 // HCSR04_ECHO_PIN
+
 // LED_PIN
+//#if defined ONBOARD_LED
+//  #error IMPLEMENT ONBOARD_LED ...
+//#endif
+
   return retval;
 } // show_pulses_pin_usage()
 
@@ -1509,6 +1515,117 @@ void show_pulses_all_pins_usage() {
   }
   MENU.ln();
 }
+
+void show_esp32_pin_capabilities(gpio_pin_t pin) {
+  switch(pin) {
+  case 0:
+    MENU.out(F("pu, button, (touch1), adc2_1, strap"));	// PWM at boot
+    break;
+  case 1:					// debug output at boot
+    MENU.out(F("TX"));
+    break;
+  case 2:
+    MENU.out(F("pd, (led), touch2, adc2_2, strap"));	// sometimes onboard LED
+    break;
+  case 3:					// HIGH at boot
+    MENU.out(F("RX"));
+    break;
+  case 4:
+    MENU.out(F("pd, touch0, adc2_0, strap"));
+    break;
+  case 5:					// PWM at boot	(must be high during boot)
+    MENU.out(F("pu, strap"));
+    break;
+
+  case 6:
+  case 7:
+  case 8:
+  case 9:
+  case 10:
+  case 11:
+    MENU.out(F("FLASH!"));
+    break;
+
+  case 12:
+    MENU.out(F("touch5, adc2_5, strap"));			// boot fail if pulled high
+    break;
+
+  case 13:
+    MENU.out(F("touch4, adc2_4, MISO"));			// TODO: strap or not?
+    break;
+  case 14:
+    MENU.out(F("touch6, adc2_6, MOSI"));			// PWM at boot
+    break;
+  case 15:
+    MENU.out(F("pu, touch3, adc2_3, strap"));			// PWM at boot	(must be high during boot)
+    break;
+  case 16:
+    MENU.out(F("i2s1_WS"));
+    break;
+  case 17:
+    MENU.out(F("i2s1_WS"));
+    break;
+  case 18:
+    MENU.out(F("spi_MOSI"));
+    break;
+  case 19:
+    MENU.out(F("spi_MISO, 12s_WS"));
+    break;
+  case 20:
+  case 24:
+  case 28:
+  case 29:
+  case 30:
+  case 31:
+    MENU.out(F("--"));
+    break;
+  case 21:
+    MENU.out(F("i2c SDA i2s"));
+    break;
+  case 22:
+    MENU.out(F("i2c SCL"));
+    break;
+  case 23:
+    MENU.out(F("VSPI MOSI"));
+    break;
+  case 25:
+    MENU.out(F("DAC1 adc2_8"));
+    break;
+  case 26:
+    MENU.out(F("DAC2 adc2_9"));
+    break;
+  case 27:
+    MENU.out(F("touch2_7"));
+    break;
+  case 32:
+    MENU.out(F("touch9, adc4"));
+    break;
+  case 33:
+    MENU.out(F("touch8, adc5"));
+    break;
+  case 34:
+    MENU.out(F("INPUT, adc6"));
+    break;
+  case 35:
+    MENU.out(F("INPUT, adc7"));
+    break;
+  case 36:
+    MENU.out(F("INPUT, adc0, SVP"));
+    break;
+  case 37:
+    MENU.out(F("INPUT, adc1"));
+    break;
+  case 38:
+    MENU.out(F("INPUT, adc2"));
+    break;
+  case 39:
+    MENU.out(F("INPUT, adc3, SVN"));
+    break;
+
+  default:
+    MENU.error_ln(F("no pin data"));
+  }
+} // esp32_pin_capabilities()
 
 
 int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very first one

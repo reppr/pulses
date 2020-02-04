@@ -1,11 +1,11 @@
 ESP32_pulses_PIN_usage.txt
 
 
-GPIO00	button
+GPIO00	strapping	button
 
 GPIO01  TX0	Serial TX
 
-GPIO02	[touch]	(rarely used as MORSE_OUTPUT_PIN	[often blue onboard led, add piezzo?])
+GPIO02	strapping [touch]	(rarely used as MORSE_OUTPUT_PIN	[sometimes blue onboard led, add piezzo?])
 	TODO: test as touch (led!)
 
 GPIO03	RX0	Serial RX
@@ -13,7 +13,7 @@ GPIO03	RX0	Serial RX
 GPIO04	[touch]	OLED_SDA, ePaper
 	TODO: test as touch (with display?)
 
-GPIO05
+GPIO05	strapping
 
 GPIO06 FLASH SCK
 
@@ -53,9 +53,9 @@ GPIO23
 
 
 
-GPIO25	DAC (low, right)
+GPIO25	DAC (low, right)				(HELTEC_oled onboard LED!)
 
-GPIO26	DAC (high, left)	(RGB_LED_STRING)
+GPIO26	DAC (high, left)	(RGB_LED_STRING)	(HELTEC_oled maybe put a LED too?    channel symmetry)
 
 GPIO27	[touch]	TOUCH		RGB_LED_STRING		(SCK MICROSD)	(LyraT:touch TP6"Vol+")
 

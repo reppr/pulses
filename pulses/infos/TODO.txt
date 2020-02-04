@@ -579,3 +579,12 @@ fixed:	#define RGB_STRINGS_MAX		1	// 8 "possible"
 
 TODO: make number of available strings run-time configurable
   see: #define RGB_STRINGS_MAX	1	// 8 "possible"
+
+GPIO14  would be *much* better for touch "analog" input, move RGB_LED_STRIP_DATA_PIN?
+
+softboard show more pin info:
+  state on esp32
+  capabilities: like touch, adc, input only, uart 2
+  board usage: TX RX DAC LED i2c
+
+TODO: finish show_esp32_pin_capabilities(pin)
