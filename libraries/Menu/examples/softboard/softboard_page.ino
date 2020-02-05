@@ -227,6 +227,7 @@ const char low_[] = "LOW";
   extern bool show_pulses_pin_usage(gpio_pin_t pin);
 #endif
 
+extern void show_esp32_pin_capabilities(gpio_pin_t pin);
 void pin_info_digital(gpio_pin_t pin) {
   uint8_t mask = digitalPinToBitMask(pin);
 #ifdef __SAM3X8E__	// FIXME: ################
@@ -321,14 +322,16 @@ void pin_info_digital(gpio_pin_t pin) {
 
 #if defined PULSES_SYSTEM
   MENU.tab();
-  show_pulses_pin_usage(pin);
-#endif
+  if(! show_pulses_pin_usage((gpio_pin_t) pin))
+    MENU.tab(2);
 
-#if defined ESP32
-  MENU.tab(2);
-  show_esp32_pin_capabilities(pin);
+  #if defined ESP32
+  MENU.tab();
+  show_esp32_pin_capabilities((gpio_pin_t) pin);
+  #endif // ESP32
+#endif // PULSES_SYSTEM
+
   MENU.ln();
-#endif
 } // pin_info_digital()
 
 // display configuration and state of all digital pins:
@@ -1009,7 +1012,7 @@ bool softboard_reaction(char token) {
 #if defined PULSES_SYSTEM
   case 'P': // 'P' show PULSES pin usage
     extern void show_pulses_all_pins_usage();
-    show_pulses_all_pins_usage();
+    show_pulses_all_pins_usage();	// TODO: keep 'P'?	capabilities?	verbosity
     break;
 #endif
 

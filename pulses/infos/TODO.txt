@@ -327,8 +327,6 @@ void Menu::bar_graph(long value, unsigned int scale, char c, bool newline /*=tru
 softboard
 
 
-show_pulses_pin_usage(gpio_pin_t pin) // TODO: show also basic pins usage like flash memory, uart, i2c, ...
-
 pin configuration for Wire SDA SCL
 
 lightweight MONO instruments
@@ -584,7 +582,12 @@ GPIO14  would be *much* better for touch "analog" input, move RGB_LED_STRIP_DATA
 
 softboard show more pin info:
   state on esp32
-  capabilities: like touch, adc, input only, uart 2
   board usage: TX RX DAC LED i2c
 
-TODO: finish show_esp32_pin_capabilities(pin)
+TODO: test softboard example
+
+show_pulses_all_pins_usage();	// TODO: keep 'P'?	capabilities?	verbosity
+
+TODO: PRESET 97: di tüüfere tön lüüter stelle
+
+musicBox  MENU.out(F("pause\t"));	// TODO: get_pause_time() should not display pause==0

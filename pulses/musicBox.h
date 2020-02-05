@@ -2520,7 +2520,7 @@ bool no_restore_from_RTCmem=false;	// one shot, gets reset
 void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless waking up from *deep sleep*
   MENU.out(F("restore from RTCmem "));
   if(no_restore_from_RTCmem) {
-    MENU.outln(F("blocked"));
+    MENU.outln(F("no"));
     no_restore_from_RTCmem = false;	// one shot
     return;
   }
@@ -2579,7 +2579,7 @@ pulse_time_t get_pause_time(bool display=true) {
   pulse_time_t pause =  PULSES.global_next;
   PULSES.sub_time(&musicBox_start_time, &pause);
   if(display) {
-    MENU.out(F("pause\t"));
+    MENU.out(F("pause\t"));	// TODO: get_pause_time() should not display pause==0
     PULSES.display_time_human(pause);
     MENU.ln();
   }

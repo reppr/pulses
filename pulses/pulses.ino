@@ -50,7 +50,6 @@ using namespace std;	// ESP8266 needs that
   #include <esp_system.h>
   #include <esp_err.h>
   extern const char* esp_err_to_name(esp_err_t);
-  extern void show_esp32_pin_capabilities(uint8_t pin);
 #endif
 
 
@@ -1362,7 +1361,7 @@ void show_current_hardware_conf() {	// same, with title, for menu output
   show_hardware_conf(&HARDWARE);
 }
 
-bool show_pulses_pin_usage(gpio_pin_t pin) {	// TODO: show also basic pins usage like flash memory, uart, i2c
+bool show_pulses_pin_usage(gpio_pin_t pin) {
   bool retval=false;
   // gpio
   if(HARDWARE.gpio_pins_cnt) {
@@ -1370,7 +1369,7 @@ bool show_pulses_pin_usage(gpio_pin_t pin) {	// TODO: show also basic pins usage
       if(pin == HARDWARE.gpio_pins[i]) {
 	MENU.out(F("GPIO "));
 	MENU.out(pin);
-	MENU.tab();
+	MENU.tab(2);
 	retval = true;
       }
     }
@@ -1380,13 +1379,13 @@ bool show_pulses_pin_usage(gpio_pin_t pin) {	// TODO: show also basic pins usage
   if(pin == HARDWARE.DAC1_pin) {
     MENU.out(F("DAC1 "));
     MENU.out(pin);
-    MENU.tab();
+    MENU.tab(2);
     retval = true;
   }
   if(pin == HARDWARE.DAC2_pin) {
     MENU.out(F("DAC2 "));
     MENU.out(pin);
-    MENU.tab();
+    MENU.tab(2);
     retval = true;
   }
 
@@ -1416,7 +1415,7 @@ bool show_pulses_pin_usage(gpio_pin_t pin) {	// TODO: show also basic pins usage
       if(pin == HARDWARE.rgb_pin[i]) {
 	MENU.out(F("RGB["));
 	MENU.out(i);
-	MENU.out(F("] pin "));
+	MENU.out(F("] data "));
 	MENU.out(pin);
 	MENU.tab();
 	retval = true;
@@ -1428,7 +1427,7 @@ bool show_pulses_pin_usage(gpio_pin_t pin) {	// TODO: show also basic pins usage
   if(pin == HARDWARE.musicbox_trigger_pin) {
     MENU.out(F("trigger "));
     MENU.out(pin);
-    MENU.tab();
+    MENU.tab(2);
     retval = true;
   }
 
@@ -1460,7 +1459,7 @@ bool show_pulses_pin_usage(gpio_pin_t pin) {	// TODO: show also basic pins usage
   if(pin == HARDWARE.MIDI_in_pin) {
     MENU.out(F("MIDI IN "));
     MENU.out(pin);
-    MENU.tab();
+    MENU.tab(2);
     retval = true;
   }
   if(pin == HARDWARE.MIDI_out_pin) {
@@ -1488,7 +1487,7 @@ bool show_pulses_pin_usage(gpio_pin_t pin) {	// TODO: show also basic pins usage
   if(pin == HARDWARE.tone_pin) {	// from very old code, could be recycled?
     MENU.out(F("tone "));
     MENU.out(pin);
-    MENU.tab();
+    MENU.tab(2);
     retval = true;
   }
 
@@ -1502,19 +1501,6 @@ bool show_pulses_pin_usage(gpio_pin_t pin) {	// TODO: show also basic pins usage
 
   return retval;
 } // show_pulses_pin_usage()
-
-void show_pulses_all_pins_usage() {
-  MENU.outln(F("PULSES pin usage:"));
-  for(int i=0; i < 40; i++) {
-    MENU.out(F("  pin "));
-    MENU.out(i);
-    MENU.space();
-    MENU.tab();
-    show_pulses_pin_usage(i);
-    MENU.ln();
-  }
-  MENU.ln();
-}
 
 void show_esp32_pin_capabilities(gpio_pin_t pin) {
   switch(pin) {
@@ -1560,10 +1546,10 @@ void show_esp32_pin_capabilities(gpio_pin_t pin) {
     MENU.out(F("pu, touch3, adc2_3, strap"));			// PWM at boot	(must be high during boot)
     break;
   case 16:
-    MENU.out(F("i2s1_WS"));
+    MENU.out(F("RX2, i2s1_WS"));
     break;
   case 17:
-    MENU.out(F("i2s1_WS"));
+    MENU.out(F("TX2, i2s1_WS"));
     break;
   case 18:
     MENU.out(F("spi_MOSI"));
@@ -1626,6 +1612,37 @@ void show_esp32_pin_capabilities(gpio_pin_t pin) {
     MENU.error_ln(F("no pin data"));
   }
 } // esp32_pin_capabilities()
+
+void pin_usage_title_lines() {
+  MENU.outln(F("PULSES pin usage:"));
+  MENU.out(F("pin\t\tPULSES"));
+#if defined ESP32
+  MENU.out(F("\t\tESP32"));
+#endif
+  if(MENU.verbosity <= VERBOSITY_LOWEST)
+    MENU.out(F("\tmore info with '+'"));
+
+  MENU.ln();
+} // pin_usage_title_lines()
+
+void show_pulses_all_pins_usage() {
+  pin_usage_title_lines();
+
+  for(uint8_t i=0; i < 40; i++) {
+    MENU.out(F("  pin "));
+    MENU.out(i);
+    MENU.space();
+    MENU.tab();
+
+    show_pulses_pin_usage(i);	// +++
+#if defined ESP32
+    show_esp32_pin_capabilities(i);
+#endif
+    MENU.ln();
+  }
+  MENU.ln();
+} // show_pulses_all_pins_usage()
+
 
 
 int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very first one

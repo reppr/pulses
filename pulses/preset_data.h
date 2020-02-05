@@ -2779,6 +2779,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 97:
     musicBoxConf.name = F("Jazzigi Rhythme mit schnarrend schnarchende KnatterKläng");	// really???
+    // TODO: PRESET 97: di tüüfere tön lüüter stelle
     // meh wi e musikdose	steady endless looping
     //# favorite
     //# shortIsOk
