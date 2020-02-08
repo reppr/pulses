@@ -1052,7 +1052,7 @@ void selected_do_detune_periods(short cents) {	// works on the period time of ea
 // void softboard_display();
 // bool softboard_reaction(char token);
 int8_t softboard_page=-1;	// see: maybe_run_continuous()
-int8_t musicBox_page=ILLEGAL8;	// NOTE: musicBox_page is not used
+int8_t musicBox_page=ILLEGAL8;	// NOTE: musicBox_page is not used	// TODO: ???
 
 
 
@@ -1647,6 +1647,12 @@ void show_pulses_all_pins_usage() {
 
 int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very first one
 
+#if defined FORCE_START_TO_USERMODE
+  bool force_start_to_usermode=true;
+#else
+  bool force_start_to_usermode=false;
+#endif
+
 void setup() {
 // DADA TODO: emergency rgb led strings reset in setup()?
 //   #if defined RGB_LED_STRIP_DATA_PIN
@@ -1776,12 +1782,22 @@ void setup() {
 #if defined USE_MONOCHROME_DISPLAY
   // TODO: monochrome_display_hardware	fix&use monochrome_display detection
   if(monochrome_display_hardware)
-    delay(1111);	// give a chance to read version on oled display
+    delay(1111);	// give a chance to read version on oled display during setup
+#endif
 
-  #if defined OLED_HALT_PIN0
-    pinMode(0, INPUT);	// holding GPIO00 switch holds program version display on screen
-    while(digitalRead(0) == LOW) { delay(1000); MENU.out('°'); }  // ATTENTION: dangerous *not* tested with GPIO00 as click or such...
-  #endif
+#if defined OLED_HALT_PIN0  // ATTENTION: dangerous *not* tested with GPIO00 as click or such...
+  pinMode(0, INPUT);		// holding GPIO00 switch holds program version display on screen
+  MENU.out(F("boot button0\tusermode "));
+
+  while(! digitalRead(0))	// if button0 *is* pressed  (pin==LOW)
+    {
+      force_start_to_usermode = true;	// then force user mode
+      delay(333);
+      MENU.out('!');
+    }
+
+  MENU.out_ON_off(force_start_to_usermode);
+  MENU.ln();
 #endif
 
 #if defined USE_RGB_LED_STRIP
@@ -2055,13 +2071,24 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
   MENU.ln();
 
 #ifdef AUTOSTART			// see: pulses_project_conf.h
-  autostart_counter++;			//  EXPERIMENTAL: moved here
-  MENU.out(F("\nAUTOSTART "));
-  MENU.out(autostart_counter);
-  MENU.tab();
-  MENU.outln(STRINGIFY(AUTOSTART));
+  if(force_start_to_usermode) {
+    force_start_to_usermode=false;
+    MENU.outln(F("\nforced start to user mode"));
+    MENU.men_selected = musicBox_page;	// default to musicBox menu
 
-  AUTOSTART
+#if defined USE_MONOCHROME_DISPLAY
+    monochrome_display_message("user mode active");
+#endif
+
+  } else {
+    autostart_counter++;
+    MENU.out(F("\nAUTOSTART "));
+    MENU.out(autostart_counter);
+    MENU.tab();
+    MENU.outln(STRINGIFY(AUTOSTART));
+
+    AUTOSTART
+    }
 #endif
 } // setup()
 

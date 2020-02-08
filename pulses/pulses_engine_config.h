@@ -68,10 +68,11 @@ Guru Meditation Error: Core  1 panic'ed (Interrupt wdt timeout on CPU1)
 
 /*
   OLED_HALT_PIN0	// halts display in monochrome_show_program_version() by pressing boot switch on GPIO 0
+  then boots to user mode, see: force_start_to_usermode
   ATTENTION: *DANGEROUS!*	could possibly block boot sequence in systems with monochrome display code
   *not* tested with GPIO00 as click or such...
 */
-//#define OLED_HALT_PIN0	// see: monochrome_show_program_version()
+#define OLED_HALT_PIN0	// see: monochrome_show_program_version()
 
 #if defined ESP32
   #define USE_NVS		// always used on ESP32

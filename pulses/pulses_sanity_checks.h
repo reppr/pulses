@@ -105,3 +105,13 @@
 
   also check gpio_pins	and possible *other PIN 16, 17 USAGE*
 */
+
+// react on button0 press during first start?
+#if defined ESP32	// esp board with 'boot' button0 assumed
+  #if defined FORCE_START_TO_USERMODE	// needs OLED_HALT_PIN0 to be declared
+    #if ! defined OLED_HALT_PIN0
+      #warning FORCE_START_TO_USERMODE but no OLED_HALT_PIN0 (*disabled*)
+      #warning will not react on button0 press
+    #endif
+  #endif
+#endif

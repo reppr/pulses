@@ -22,6 +22,9 @@
 // /*			0123456789abcdef	// 16 bytes	*/
 
 
+//#define FORCE_START_TO_USERMODE	// needs OLED_HALT_PIN0 to be declared
+
+
 
 //#define USE_ADS1115_AT_ADDR	0x48
 

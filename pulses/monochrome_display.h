@@ -95,14 +95,9 @@ void monochrome_show_program_version() {	// monochrome oled display
     u8x8.print((int) GPIO_PINS);
 #endif
 #endif
+  } // if(monochrome_can_be_used())
+} // monochrome_show_program_version()
 
-#if defined OLED_HALT_PIN0
-    // do *not* change pin mode (0) here...
-    while(digitalRead(0) == LOW) { delay(1000); MENU.out('°'); }  // ATTENTION: dangerous *not* tested with GPIO00 as click or such...
-#endif
-
-  }
-}
 
 void monochrome_show_subcycle_octave() {
   if(! monochrome_power_save) {
@@ -310,8 +305,10 @@ void monochrome_show_line(uint8_t row, char * s) {
 }
 
 void monochrome_display_message(char* message) {
-  u8x8.setCursor(u8x8.getCols() - strlen(message),  u8x8.getRows() -1);	// last line > right is message spot
-  u8x8.print(message);
+  if(monochrome_can_be_used()) {
+    u8x8.setCursor(u8x8.getCols() - strlen(message),  u8x8.getRows() -1);	// last line > right is message spot
+    u8x8.print(message);
+  }
 }
 
 /*
@@ -385,7 +382,7 @@ void monochrome_print2x2(uint8_t col, uint8_t row, char* str) {	// for short 2x2
 	break;
     }
     u8x8.draw2x2String(col, row, truncated);
-  }
+  } // if(monochrome_can_be_used())
 } // monochrome_print2x2()
 
 void monochrome_println2x2(uint8_t row, char* str) {	// 2x2 lines
@@ -405,7 +402,7 @@ void monochrome_println2x2(uint8_t row, char* str) {	// 2x2 lines
     }
 
     u8x8.draw2x2String(0, row, truncated);
-  }
+  } // if(monochrome_can_be_used())
 } // monochrome_println2x2()
 
 void monochrome_println_big_or_multiline(int row, char* str) {
@@ -415,11 +412,13 @@ void monochrome_println_big_or_multiline(int row, char* str) {
     else use basic size
     even multinline, if needed
   */
-  int len = strlen(str);
-  if(len <= (u8x8.getCols() / 2))	// fits in one 2x2 line?
-    monochrome_println2x2(row, str);
-  else				// too long for 2x2
-    monochrome_multiline_string(row, str);
+  if(monochrome_can_be_used()) {
+    int len = strlen(str);
+    if(len <= (u8x8.getCols() / 2))	// fits in one 2x2 line?
+      monochrome_println2x2(row, str);
+    else				// too long for 2x2
+      monochrome_multiline_string(row, str);
+  } // if(monochrome_can_be_used())
 } // monochrome_println_big_or_multiline()
 
 
