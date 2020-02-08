@@ -1382,8 +1382,7 @@ void morse_do_output() {
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
   if(morse_out_buffer_cnt) {
 #if defined USE_MONOCHROME_DISPLAY
-    if(monochrome_can_be_used())
-      monochrome_println2x2(MORSE_MONOCHROME_ROW, "        ");
+    monochrome_println2x2(MORSE_MONOCHROME_ROW, "        ");
 #endif
 
     MENU.out(F("morse "));
@@ -1511,10 +1510,8 @@ void static morse_token_decode() {	// decode received token sequence
 	      else if(morse_PRESENT_COMMAND == "DELLAST") {
 		if(morse_out_buffer_cnt) {
 		  morse_out_buffer_cnt--;
-
 #if defined USE_MONOCHROME_DISPLAY
-		  if(monochrome_can_be_used())
-		    monochrome_print2x2(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " ");	// DELLAST
+		  monochrome_print2x2(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " ");	// DELLAST
 #endif
 		}
 
@@ -1537,17 +1534,8 @@ void static morse_token_decode() {	// decode received token sequence
 	      } else if(morse_PRESENT_COMMAND == "CANCEL") {	// CANCEL
 		morse_token_cnt = 0;
 		morse_out_buffer_cnt = 0;
-
 #if defined USE_MONOCHROME_DISPLAY
-		if(monochrome_can_be_used()) {
-		  /*
-		  monochrome_setInverseFont(1);
-		  monochrome_print2x2(0, MORSE_MONOCHROME_ROW, ".");	// CANCEL shows inverted "." and ' '
-		  monochrome_setInverseFont(0);
-		  monochrome_print2x2(1, MORSE_MONOCHROME_ROW, " ");
-		  */
-		  monochrome_print2x2(0, MORSE_MONOCHROME_ROW, "__");	// CANCEL shows "__"
-		}
+		monochrome_print2x2(0, MORSE_MONOCHROME_ROW, "__");	// CANCEL shows "__"
 #endif
 	      } else if(morse_PRESENT_COMMAND == "ANY1") {	// '----'
 		MENU.outln(F("\"ANY1\" currently unused"));

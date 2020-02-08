@@ -592,8 +592,6 @@ TODO: PRESET 97: di tüüfere tön lüüter stelle
 
 musicBox  MENU.out(F("pause\t"));	// TODO: get_pause_time() should not display pause==0
 
-use if(monochrome_can_be_used()) {	*inside* display functions
-
 int8_t musicBox_page=ILLEGAL8;	// NOTE: musicBox_page is not used	// TODO: ???
 
 run time: other button0 functionality?

@@ -29,7 +29,7 @@ bool monochrome_can_be_used() {	// monochrome output is appropriate?
   }
 
   return true;
-}
+} // monochrome_can_be_used()
 
 void monochrome_show_program_version() {	// monochrome oled display
   if(monochrome_can_be_used()) {

@@ -645,9 +645,7 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 	    MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
 
 #if defined USE_MONOCHROME_DISPLAY
-	    if(monochrome_can_be_used()) {
-	      monochrome_show_line(3, array2name(JIFFLES, selected_in(JIFFLES)));
-	    }
+	    monochrome_show_line(3, array2name(JIFFLES, selected_in(JIFFLES)));
 #endif
 	}
 	// else MENU.outln("\tseen already");

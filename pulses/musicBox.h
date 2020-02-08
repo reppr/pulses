@@ -840,6 +840,7 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
     }
 
 #if defined USE_MONOCHROME_DISPLAY
+    extern bool monochrome_can_be_used();
     if(monochrome_can_be_used()) {
       extern char run_state_symbol();
       char s[] = {run_state_symbol(),0};
