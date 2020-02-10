@@ -4132,37 +4132,33 @@ bool musicBox_reaction(char token) {
 #endif
       break;
 
-    case 'N':	// 'IN'	prename, name
-      MENU.drop_input_token();
-      extended_output(my_IDENTITY.preName, 0, 0, true);
-      MENU.ln();
+    case 'N':	// 'IN'	prename, name, preset#
+      {
+	uint8_t rows = u8x8.getRows();
+	uint8_t next_row = 0;
 
-      if(musicBoxConf.name != NULL) {
-	MENU.outln(musicBoxConf.name);
+	MENU.drop_input_token();
+	next_row = extended_output(my_IDENTITY.preName, 0, next_row, true);
+	MENU.ln();
 
-	int len=strlen(musicBoxConf.name);
-	if(len <= (u8x8.getCols() / 2)) {	// fits in one 2x2 line?
-	  // monochrome_multiline_string(2*1, musicBoxConf.name);
-	  monochrome_println2x2(2*1, musicBoxConf.name);
+	u8x8.clearLine(next_row++);		// clear one more line
+	if((musicBoxConf.name != NULL) && (*musicBoxConf.name)) {
+	  MENU.outln(musicBoxConf.name);
+	  next_row = monochrome_println_big_or_multiline(next_row, musicBoxConf.name);
+	} // name
 
-	} else {				// too long for 2x2
-	  u8x8.clearLine(2);			// clear one more line
+	while (next_row < rows - 2)
+	  u8x8.clearLine(next_row++);		// clear in between lines
 
-	  uint8_t next_row = monochrome_multiline_string(3, musicBoxConf.name);
-	  uint8_t rows = u8x8.getRows();
-	  while (next_row < rows - 2)
-	    u8x8.clearLine(next_row++);		// clear in between lines
-
-	  if(next_row == (rows - 2)) {		// 2 more free rows?
-	    if(musicBoxConf.preset) {
+	if(next_row <= (rows - 2)) {		// 2 more free rows?
+	  if(musicBoxConf.preset) {
 	    u8x8.clearLine(next_row);		// clear 2 lines
 	    u8x8.clearLine(next_row + 1);
-	      char preset[10];
-	      itoa(musicBoxConf.preset, preset, 10);
-	      u8x8.draw2x2String(0, next_row, preset);		//   yes, show preset number
-	    }
-	  }
-	}
+	    char preset[10];
+	    itoa(musicBoxConf.preset, preset, 10);
+	    u8x8.draw2x2String(0, next_row, preset);		//   yes, show preset number
+	  } // preset
+	} // free 2 bottom lines?
       }
       break;
 
@@ -4184,7 +4180,7 @@ bool musicBox_reaction(char token) {
 #endif
 
 #if defined USE_MONOCHROME_DISPLAY
-    case 'O': // 'IO' clear OLED
+    case 'O': // 'IO' clear OLED	// TODO: OBSOLETE?
       MENU.drop_input_token();
       u8x8.clear();
       // monochrome_clear();

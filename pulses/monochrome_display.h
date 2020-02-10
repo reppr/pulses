@@ -137,7 +137,7 @@ char run_state_symbol() {
   return '?';
 }
 
-uint8_t monochrome_multiline_string(uint8_t row, char* s) {	// multiline string from row to bottom (max)
+uint8_t /*next_row*/ monochrome_multiline_string(uint8_t row, char* s) { // multiline string from row to bottom (max)
   if(s && *s /*no empty string*/) {
     uint8_t cols = u8x8.getCols();
     uint8_t rows = u8x8.getRows();
@@ -159,7 +159,7 @@ uint8_t monochrome_multiline_string(uint8_t row, char* s) {	// multiline string 
       if(c==0) {
 	while(col++ < cols)  u8x8.print(' ');	// fill line witch spaces
 	if(row < rows)
-	  u8x8.clearLine(row);			// clear one more line
+	  u8x8.clearLine(row++);		// clear one more line
 	break;
       }
     } // all chars
@@ -387,12 +387,12 @@ void monochrome_print2x2(uint8_t col, uint8_t row, char* str) {	// for short 2x2
   } // if(monochrome_can_be_used())
 } // monochrome_print2x2()
 
-void monochrome_println2x2(uint8_t row, char* str) {	// 2x2 lines
+uint8_t /*next_row*/ monochrome_println2x2(uint8_t row, char* str) {	// 2x2 lines
   if(monochrome_can_be_used()) {
     int max=(u8x8.getCols()/2);	// limit length
     char truncated[max+1];
     for(int i=0; i<max; i++)
-      truncated[i] = ' ';		// space filled to clear line
+      truncated[i] = ' ';	// space filled to clear line
     truncated[max] = 0;		// /0 terminated
 
     char c;
@@ -404,23 +404,31 @@ void monochrome_println2x2(uint8_t row, char* str) {	// 2x2 lines
     }
 
     u8x8.draw2x2String(0, row, truncated);
+    row += 2;
   } // if(monochrome_can_be_used())
+
+  return row;
 } // monochrome_println2x2()
 
-void monochrome_println_big_or_multiline(int row, char* str) {
+uint8_t /*next_row*/ monochrome_println_big_or_multiline(int row, char* str) {
   /*
     print one line on monochrome
     use 2x2 size if it fits
     else use basic size
     even multinline, if needed
+
+    return next_row
   */
+
   if(monochrome_can_be_used()) {
     int len = strlen(str);
     if(len <= (u8x8.getCols() / 2))	// fits in one 2x2 line?
-      monochrome_println2x2(row, str);
+      row = monochrome_println2x2(row, str);
     else				// too long for 2x2
-      monochrome_multiline_string(row, str);
+      row = monochrome_multiline_string(row, str);
   } // if(monochrome_can_be_used())
+
+  return row;
 } // monochrome_println_big_or_multiline()
 
 

@@ -213,7 +213,7 @@ void * Gy_reaction_source=NULL;	// DB pointers can be used here
 void * Gz_reaction_source=NULL;	// DB pointers can be used here
 
 
-extern void extended_output(char* data, uint8_t col, uint8_t row, bool force);
+extern uint8_t extended_output(char* data, uint8_t col, uint8_t row, bool force);
 #if ! defined MONOCHROME_MOTION_STATE_ROW
   #define MONOCHROME_MOTION_STATE_ROW	7
 #endif
