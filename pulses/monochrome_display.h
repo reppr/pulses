@@ -137,8 +137,8 @@ char run_state_symbol() {
   return '?';
 }
 
-void monochrome_multiline_string(uint8_t row, char* s) {	// multiline string from row to bottom (max)
-  if(musicBoxConf.name && *musicBoxConf.name /*no empty string*/) {	// one line from name
+uint8_t monochrome_multiline_string(uint8_t row, char* s) {	// multiline string from row to bottom (max)
+  if(s && *s /*no empty string*/) {
     uint8_t cols = u8x8.getCols();
     uint8_t rows = u8x8.getRows();
 
@@ -147,7 +147,8 @@ void monochrome_multiline_string(uint8_t row, char* s) {	// multiline string fro
     while(*s && row<rows) {
       col=0;
       u8x8.clearLine(row);
-      u8x8.setCursor(0,row++);
+      u8x8.setCursor(0,row++);		// row control
+
       while(c = *s++) {
 	u8x8.print(c);
 	if ((++col % cols) == 0)
@@ -163,6 +164,7 @@ void monochrome_multiline_string(uint8_t row, char* s) {	// multiline string fro
       }
     } // all chars
   } // there *is* string content
+  return row;
 } // monochrome multiline string()
 
 void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be used while playing

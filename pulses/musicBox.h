@@ -1338,7 +1338,7 @@ bool tuning_pitch_and_scale_UI() {
 
 void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   MENU.out_IstrI(my_IDENTITY.preName);
-  MENU.tab(2);
+  MENU.tab();
   if(musicBoxConf.preset) {
     MENU.out(F("PRESET: "));
     MENU.out(musicBoxConf.preset);
@@ -3974,19 +3974,24 @@ bool musicBox_reaction(char token) {
     if(musicBox_butler_i != ILLEGAL32)	// remove butler
       PULSES.init_pulse(musicBox_butler_i);
 
-    for(int pulse=0; pulse<PL_MAX; pulse++)
-      if (PULSES.pulse_is_selected(pulse))
-	PULSES.pulses[pulse].counter = 0;	// reset counters of selected pulses
+    if(PULSES.how_many_selected() == 0)	//	looks dead
+      start_musicBox();			//	TODO: just start?  or better select n & butler, then continue?
 
-    set_MusicBoxState(AWAKE);
-    musicBox_start_time = PULSES.get_now();
+    else {	// something *was* selected before, activate and sync it
+      for(int pulse=0; pulse<PL_MAX; pulse++)
+	if (PULSES.pulse_is_selected(pulse))
+	  PULSES.pulses[pulse].counter = 0;	// reset counters of selected pulses
 
-    PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate
+      set_MusicBoxState(AWAKE);
+      musicBox_start_time = PULSES.get_now();
 
-    // the butler starts just a pad *after* musicBox_start_time
-    musicBox_butler_i =							\
-      PULSES.setup_pulse(&musicBox_butler, ACTIVE, PULSES.get_now(), slice_tick_period);
-    PULSES.pulses[musicBox_butler_i].groups |= g_MASTER;	// savety net, until butler has initialised itself
+      PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate
+
+      // the butler starts just a pad *after* musicBox_start_time
+      musicBox_butler_i =						\
+	PULSES.setup_pulse(&musicBox_butler, ACTIVE, PULSES.get_now(), slice_tick_period);
+      PULSES.pulses[musicBox_butler_i].groups |= g_MASTER;	// savety net, until butler has initialised itself
+    }
 
     stress_event_cnt = -3;	// some stress events will often happen after starting the musicBox
     break;
@@ -4139,9 +4144,24 @@ bool musicBox_reaction(char token) {
 	if(len <= (u8x8.getCols() / 2)) {	// fits in one 2x2 line?
 	  // monochrome_multiline_string(2*1, musicBoxConf.name);
 	  monochrome_println2x2(2*1, musicBoxConf.name);
+
 	} else {				// too long for 2x2
 	  u8x8.clearLine(2);			// clear one more line
-	  monochrome_multiline_string(3, musicBoxConf.name);
+
+	  uint8_t next_row = monochrome_multiline_string(3, musicBoxConf.name);
+	  uint8_t rows = u8x8.getRows();
+	  while (next_row < rows - 2)
+	    u8x8.clearLine(next_row++);		// clear in between lines
+
+	  if(next_row == (rows - 2)) {		// 2 more free rows?
+	    if(musicBoxConf.preset) {
+	    u8x8.clearLine(next_row);		// clear 2 lines
+	    u8x8.clearLine(next_row + 1);
+	      char preset[10];
+	      itoa(musicBoxConf.preset, preset, 10);
+	      u8x8.draw2x2String(0, next_row, preset);		//   yes, show preset number
+	    }
+	  }
 	}
       }
       break;
