@@ -14,7 +14,7 @@
   //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&restart	// endless loop
   //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&ESP.restart	// works fine
   //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&hibernate	// wakes up after musicBox_pause_seconds  BT should work, test
-  #define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user	// works fine, a possible snoring workaround on usb dac only models
+  #define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT		&user		// works fine, a possible snoring workaround on usb dac only models
   //#define  MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&random_preset	// muzak forever? >>>RANDOM_PRESET_LOOP sets this automagically <<<
 #endif
 
@@ -3770,7 +3770,10 @@ bool musicBox_reaction(char token) {
 #endif
 
   case 'C': // 'C' hierarchy: esp now send or configure
+    // normal case is (second letter != 'C') (exclude 'CC...' and such:)
+    //	esp_now send rest of the line,	see below
 
+    // exclude special first 'CC...' 'EOF' '?' and such:
 #if defined USE_ESP_NOW
     switch(MENU.peek()) {	// second letter after 'CC...' configure esp_now sending
     case EOF8:  // bare 'C'	// *broadcast* to spread peer detection
@@ -3783,23 +3786,7 @@ bool musicBox_reaction(char token) {
       display_peer_ID_list();
       break;
 
-    case 'S':			// 'CS' set sync of *other* instruments to time slice,	see: 'CSS'
-      MENU.drop_input_token();
-      MENU.outln(F("set sync of instruments to time slice "));
-      esp_now_send_bare(broadcast_mac, N_ST);
-
-      if(MENU.peek() == 'S') {	// 'CSS' set *all* instruments (including sender) to time slice sync
-	MENU.drop_input_token();
-	MENU.out(F("sync =\t"));
-	if(my_IDENTITY.esp_now_time_slice != ILLEGAL8)
-	  musicBoxConf.sync=my_IDENTITY.esp_now_time_slice;	// include *sender* in time sliced landscape
-	else
-	  MENU.out(F("*no* sender time slice\t"));
-
-	MENU.outln(musicBoxConf.sync);
-      }
-      break;
-
+    // 'CC' hierarchy
     case 'C':	// 'CC' second letter: 'CC...' configure esp_now sending
       MENU.drop_input_token();
 
@@ -3807,9 +3794,22 @@ bool musicBox_reaction(char token) {
 	MENU.outln(F("esp_now_call_participants()"));
 	esp_now_call_participants();
 
-      } else if(MENU.peek() == '?') {	// 'CC?' == 'C?'
-	MENU.drop_input_token();
+      } else if(MENU.check_next('?')) {		// 'CC?' == 'C?'
 	display_peer_ID_list();
+
+	} else if(MENU.check_next('S')) {	// 'CCS' set sync of *other* instruments to time slice,	see: 'CCSS'
+	MENU.outln(F("set sync of instruments to time slice "));
+	esp_now_send_bare(broadcast_mac, N_ST);
+
+	if(MENU.check_next('S')) {		// 'CCSS' set *all* instruments (including sender) to time slice sync
+	  MENU.out(F("sync =\t"));
+	  if(my_IDENTITY.esp_now_time_slice != ILLEGAL8)
+	    musicBoxConf.sync=my_IDENTITY.esp_now_time_slice;	// include *sender* in time sliced landscape
+	  else
+	    MENU.out(F("*no* sender time slice\t"));
+
+	  MENU.outln(musicBoxConf.sync);
+	}
 
       } else {	// more input after 'CC'
 	if(MENU.is_numeric()) {	// 'CC<numeric>'
@@ -3841,7 +3841,7 @@ bool musicBox_reaction(char token) {
 	  }
 */
 	  MENU.ln();
-	}
+	} // numeric/non numeric after 'CC'
       } // more input after 'CC'
       break;
 
@@ -3870,7 +3870,7 @@ bool musicBox_reaction(char token) {
 
 #else	// ! defined USE_ESP_NOW
     {
-      MENU.out(F("ESP_NOW not used"));	// TODO: not tested
+      MENU.out(F("ESP_NOW not available"));
       char c = MENU.peek();
       if(c != EOF8) {
 	MENU.out(F("skipped: "));
