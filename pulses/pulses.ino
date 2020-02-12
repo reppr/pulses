@@ -1705,16 +1705,16 @@ void setup() {
 
 #if defined USE_MONOCHROME_DISPLAY
   // SEE: https://github.com/olikraus/u8g2/wiki/u8x8reference
-  u8x8.begin();
-  //  u8x8.setFont(u8x8_font_chroma48medium8_r);	// *Umlaute missing*
-  u8x8.setFont(u8x8_font_amstrad_cpc_extended_f);	// *Umlaute here, but strange*
+  monochrome_begin();
+  //  monochrome_setFont(u8x8_font_chroma48medium8_r);	// *Umlaute missing*
+  monochrome_setFont(u8x8_font_amstrad_cpc_extended_f);	// *Umlaute here, but strange*
 
   /*	// TODO: fix&use monochrome_display detection
   MENU.ln();	// try to detect display...
   MENU.out(F("################	display ################ "));
-  MENU.outln(u8x8.getCols());
-  MENU.outln(u8x8.getRows());
-  monochrome_display_hardware = u8x8.getCols();
+  MENU.outln(monochrome_getCols());
+  MENU.outln(monochrome_getRows());
+  monochrome_display_hardware = monochrome_getCols();
   MENU.out_ON_off(monochrome_display_hardware);
   MENU.ln();
   */
@@ -6864,8 +6864,8 @@ uint8_t /*next_row*/ extended_output(char* data, uint8_t col=0, uint8_t row=0, b
   MENU.out(data);
 #if defined USE_MONOCHROME_DISPLAY
   if(monochrome_can_be_used() || force || morse_output_char) {
-    u8x8.clearLine(row);
-    u8x8.clearLine(row +1);
+    monochrome_clearLine(row);
+    monochrome_clearLine(row +1);
     monochrome_print2x2(col, row, data);
   }
 

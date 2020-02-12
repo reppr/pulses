@@ -840,13 +840,9 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
     }
 
 #if defined USE_MONOCHROME_DISPLAY
-    extern bool monochrome_can_be_used();
-    if(monochrome_can_be_used()) {
-      extern char run_state_symbol();
-      char s[] = {run_state_symbol(),0};
-      u8x8.draw2x2String(0, 0, s);
-      // MENU.ln();
-      }
+    extern char run_state_symbol();
+    char s[] = {run_state_symbol(),0};
+    monochrome_print2x2(0, 0, s);
 #endif
 
     for (int pulse=0; pulse<PL_MAX; pulse++) {	// make days_to_live COUNTED generating pulses
@@ -2879,7 +2875,7 @@ void start_musicBox() {
 	MENU.outln(F("no pause autoskip"));
 //#if defined USE_MONOCHROME_DISPLAY
 //	char s[] = {'p', 0};		// TODO: how to clear that?
-//	u8x8.draw2x2String(0, 0, s);	// TODO: how to clear that?
+//	monochrome_print2x2(0, 0, s);	// TODO: how to clear that?
 //#endif
 
     } else {	// stack_sync_slices==0
@@ -4134,29 +4130,28 @@ bool musicBox_reaction(char token) {
 
     case 'N':	// 'IN'	prename, name, preset#
       {
-	uint8_t rows = u8x8.getRows();
+	uint8_t rows = monochrome_getRows();
 	uint8_t next_row = 0;
 
 	MENU.drop_input_token();
 	next_row = extended_output(my_IDENTITY.preName, 0, next_row, true);
 	MENU.ln();
-
-	u8x8.clearLine(next_row++);		// clear one more line
+	monochrome_clearLine(next_row++);		// clear one more line
 	if((musicBoxConf.name != NULL) && (*musicBoxConf.name)) {
 	  MENU.outln(musicBoxConf.name);
 	  next_row = monochrome_println_big_or_multiline(next_row, musicBoxConf.name);
 	} // name
 
 	while (next_row < rows - 2)
-	  u8x8.clearLine(next_row++);		// clear in between lines
+	  monochrome_clearLine(next_row++);	// clear in between lines
 
 	if(next_row <= (rows - 2)) {		// 2 more free rows?
 	  if(musicBoxConf.preset) {
-	    u8x8.clearLine(next_row);		// clear 2 lines
-	    u8x8.clearLine(next_row + 1);
+	    monochrome_clearLine(next_row);	// clear 2 lines
+	    monochrome_clearLine(next_row +1);
 	    char preset[10];
 	    itoa(musicBoxConf.preset, preset, 10);
-	    u8x8.draw2x2String(0, next_row, preset);		//   yes, show preset number
+	    monochrome_print2x2(0, next_row, preset);	//   yes, show preset number
 	  } // preset
 	} // free 2 bottom lines?
       }
@@ -4182,7 +4177,7 @@ bool musicBox_reaction(char token) {
 #if defined USE_MONOCHROME_DISPLAY
     case 'O': // 'IO' clear OLED	// TODO: OBSOLETE?
       MENU.drop_input_token();
-      u8x8.clear();
+      monochrome_clear();
       // monochrome_clear();
       break;
 

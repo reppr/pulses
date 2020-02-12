@@ -313,27 +313,6 @@ void monochrome_display_message(char* message) {
   }
 }
 
-/*
-void display_string(char * s) {	// ATTENTION: takes too long to be used while playing
-  uint8_t cols = u8x8.getCols();
-  uint8_t rows = u8x8.getRows();
-  char c;
-
-  //u8x8.clear();
-  for(uint8_t row=0; row<rows; row++) {
-    u8x8.setCursor(0,row);
-    u8x8.clearLine(row);
-    for(int col=0; col<cols; col++) {
-      if(c = *s++)
-	u8x8.print(c);
-      else		// string end reached
-	return;		// rest of line is clear
-    }
-  }
-}
-*/
-
-
 void oled_ui_display() {
   MENU.outln(F("'O<x>' OLED\t'OA'='OE'=on  'OT'=off  'OP'=whilePlaying"));
 }
@@ -432,37 +411,57 @@ uint8_t /*next_row*/ monochrome_println_big_or_multiline(int row, char* str) {
 } // monochrome_println_big_or_multiline()
 
 
-void monochrome_setInverseFont(uint8_t inverse) {
+inline void monochrome_setInverseFont(uint8_t inverse) {
   if(monochrome_can_be_used())
     u8x8.setInverseFont(inverse);
 }
 
-void monochrome_setPowerSave(uint8_t value) {
+inline void monochrome_setPowerSave(uint8_t value) {
   u8x8.setPowerSave(value);	// try to set it anyway
 }
 
-void monochrome_setCursor(uint8_t col, uint8_t row) {
+inline void monochrome_setCursor(uint8_t col, uint8_t row) {
   if(monochrome_can_be_used())
     u8x8.setCursor(col, row);
 }
 
-void monochrome_print(char* str) {
+inline void monochrome_print(char* str) {
   if(monochrome_can_be_used())
     u8x8.print(str);
 }
 
-void monochrome_print_f(float f) {
+inline void monochrome_print_f(float f) {
   if(monochrome_can_be_used())
     u8x8.print(f);
 }
 
-void monochrome_print_f(float f, int chiffres) {
+inline void monochrome_print_f(float f, int chiffres) {
   if(monochrome_can_be_used())
     u8x8.print(f, chiffres);
 }
 
-uint8_t monochrome_getCols() {
+inline uint8_t monochrome_getCols() {
   return u8x8.getCols();
+}
+
+inline uint8_t monochrome_getRows() {
+  return u8x8.getRows();
+}
+
+inline void monochrome_clear() {		// slow
+  u8x8.clear();
+}
+
+inline void monochrome_clearLine(uint8_t row) {	// slow
+  u8x8.clearLine(row);
+}
+
+inline void monochrome_begin() {
+  u8x8.begin();
+}
+
+inline void monochrome_setFont(const uint8_t *font_8x8) {
+  u8x8.setFont(font_8x8);
 }
 
 //	void monochrome_setup() {
