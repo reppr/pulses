@@ -86,7 +86,6 @@ void set_my_IDENTITY() {
   esp_read_mac(my_IDENTITY.mac_addr, ESP_MAC_WIFI_STA);
 
 // extern String nvs_getString(char * key);
-// my_IDENTITY.preName = nvs_getString(F("nvs_PRENAME"));
 // my_IDENTITY.esp_now_time_slice  set from nvs
 
 #if defined DEBUG_ESP_NOW_NETWORKING

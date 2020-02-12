@@ -75,8 +75,6 @@ void system_menu_display() {
   cpp_info_display();		// sizeof compiler specific types
   MENU.ln();
 
-  MENU.outln(F("\n'P' nvs_PRENAME	TODO: obsolete"));
-
 #if defined BATTERY_LEVEL_CONTROL_PIN
   show_battery_level();
 #endif
@@ -91,18 +89,6 @@ bool system_menu_reaction(char token) {
   switch(token) {
   case '?':
     MENU.menu_display();
-    break;
-
-  case 'P':
-#if defined USE_NVS
-    s = nvs_getString(F("nvs_PRENAME"));
-    MENU.out(F("nvs_PRENAME:\t"));
-    if (s)
-      MENU.out(s);
-    MENU.ln();
-#else
-    MENU.outln(F("*no* USE_NVS"));
-#endif
     break;
 
   default:

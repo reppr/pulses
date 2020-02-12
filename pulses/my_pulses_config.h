@@ -8,17 +8,7 @@
 
 #if ! defined MY_PULSES_CONFIG_H
 
-#define FAMILY_NAME	SoundShip1		// configuration family
-/*			0123456789abcdef	// 16 bytes	*/
-
-/* set PRENAME:
-   better use nvs_PRENAME	see: nvs_pulses_setup.h		NVS_PUT_PRENAME_HACK
-*/
-//#define PRENAME	SoundShip1		// individual name	// better use nvs_PRENAME  see above
-/*			0123456789abcdef	// 16 bytes	*/
-
-
-#define FAMILY_NAME	SoundShip3D		// configuration family	// see: pulses_engine_config.h
+#define FAMILY_NAME	SoundShipBand		// configuration family	// see: pulses_engine_config.h
 // /*			0123456789abcdef	// 16 bytes	*/
 
 
@@ -70,16 +60,6 @@
 //#define SOME_METRIC_TUNINGS_ONLY_DEFAULT	false;	// free pitch tuning
 
 //#define MUSICBOX_SHOW_PROGRAM_VERSION	// start_musicBox() shows program version on OLED	*DEFAULT OFF*
-
-
-//#define NVS_PUT_PRENAME_HACK	LillyBoy	// 1 shot HACK to put a PRENAME		TODO: UI
-//#define NVS_PUT_PRENAME_HACK	CHATEAU		// 1 shot HACK to put a PRENAME		TODO: UI
-//#define NVS_PUT_PRENAME_HACK	FitNess		// 1 shot HACK to put a PRENAME		TODO: UI
-//#define NVS_PUT_PRENAME_HACK	butler		// 1 shot HACK to put a PRENAME		TODO: UI
-//#define NVS_PUT_PRENAME_HACK	chameleon	// 1 shot HACK to put a PRENAME		TODO: UI
-//#define NVS_PUT_PRENAME_HACK	placeholderTM0	// 1 shot HACK to put a PRENAME		TODO: UI
-//#define NVS_PUT_PRENAME_HACK	testONLY	// 1 shot HACK to put a PRENAME		TODO: UI
-
 
 // some defaults you can change:
 //#define SHOW_CYCLE_PATTERN_DEFAULT		false

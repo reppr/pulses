@@ -3,13 +3,33 @@
 */
 
 void nvs_menu_display() {
-  MENU.outln(F("Pulses NVS Menu\n"));
-
-  MENU.out(F("free entries:\t"));
+  MENU.out_IstrI(my_IDENTITY.preName);
+  MENU.out(F(" free entries:\t"));
   MENU.outln(nvs_free_entries());
   MENU.ln();
 
-  MENU.outln(F("'H'=HARDWARE 'HR'=read 'HS'=save '?'=info"));
+  if (! nvs_test_key("IDENTITY_nvs"))
+    MENU.out(F("\t\tsay 'IS' to create"));
+  MENU.ln();
+
+  if (! nvs_test_key("HARDWARE_nvs"))
+    MENU.out(F("\t\tsay 'HS' to create"));
+  MENU.ln();
+
+  // test for old nvs_PRENAME key:		// TODO: remove after a while
+  if (nvs_test_key("nvs_PRENAME")) {	// obsolete key found
+    MENU.out(F("\t\tOBSOLETE\t|"));
+    String s="";
+    s = nvs_getString(F("nvs_PRENAME"));
+    if (s)
+      MENU.out(s);
+    MENU.out('|');
+  } else
+    MENU.out(F("\t\tok, no obsolete key found"));
+  MENU.ln();
+  // nvs_PRENAME TODO:  esp_err_t nvs_erase_key(nvs_handle_t handle, const char *key);
+
+  MENU.outln(F("\n\n'H'=HARDWARE 'HR'=read 'HS'=save '?'=info"));
   MENU.ln();
 
   MENU.outln(F("'I'=IDENTITY 'IS'=save 'IR'=read 'IT'=time slice 'IP<preName>'"));
@@ -26,10 +46,8 @@ void nvs_menu_display() {
   rgb_led_string_UI_display();
 #endif
 
-  MENU.outln(F("\n'P' nvs_PRENAME"));
-
   MENU.ln();
-}
+} // nvs_menu_display()
 
 
 bool nvs_menu_reaction(char token) {
@@ -58,7 +76,6 @@ bool nvs_menu_reaction(char token) {
 
       MENU.ln();
       nvs_show_HW_both();
-      //show_current_hardware_conf();
       break;
 
     default:
@@ -159,17 +176,6 @@ bool nvs_menu_reaction(char token) {
     default:
       return false;
     } // second letter after 'S'
-    break;
-
-  case 'P':
-    {
-      String s="";
-      s = nvs_getString(F("nvs_PRENAME"));
-      MENU.out(F("nvs_PRENAME:\t"));
-      if (s)
-	MENU.out(s);
-      MENU.ln();
-    }
     break;
 
   case 'X':	// works, but crashes menu	// TODO: fix menu crash after nvs_clear_all_keys()

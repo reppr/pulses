@@ -599,3 +599,5 @@ run time: other button0 functionality?
 ./pulses/extensions/pulses_RGB_LED_string.h 91:#include "FOREIGN/ESP32-Digital-RGB-LED-Drivers/src/esp32_digital_led_lib.h"
 
 musicBox  case 'O': // 'IO' clear OLED	// TODO: OBSOLETE?
+
+// nvs_PRENAME TODO:  esp_err_t nvs_erase_key(nvs_handle_t handle, const char *key);

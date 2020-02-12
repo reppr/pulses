@@ -47,6 +47,38 @@ int nvs_free_entries() {
 
 typedef uint32_t nvs_handle_t;	// TODO: *where* is that defined?	################
 
+size_t /*size*/ nvs_test_key(char* key) {	// no trailing newline
+  MENU.out(F("nvs key  "));
+  MENU.out(key);
+  MENU.tab();
+
+  nvs_handle_t my_handle;
+  esp_err_t err;
+  size_t size = 0;  // default 0, if not set yet in NVS
+
+  err = nvs_open("CONFIG", NVS_READWRITE, &my_handle);
+  if (err != ESP_OK) {
+    esp_err_info(err);
+    return 0; // error, size==0
+  } // nvs_open error?
+
+  // read size of the blob:
+  err = nvs_get_blob(my_handle, key, NULL, &size);
+  if (err == ESP_OK) {
+    MENU.out(size);
+    MENU.out(F(" bytes"));
+  } else {
+    if (err == ESP_ERR_NVS_NOT_FOUND)
+      MENU.out(F("no"));
+    else
+      esp_err_info(err);
+  }
+
+  nvs_close(my_handle);
+  return size;
+} // nvs_test_key()
+
+
 bool nvs_read_blob(char* key, void* new_blob, size_t buffer_size) {
   // see: https://github.com/espressif/esp-idf/blob/master/examples/storage/nvs_rw_blob/main/nvs_blob_example_main.c
 
@@ -76,7 +108,7 @@ bool nvs_read_blob(char* key, void* new_blob, size_t buffer_size) {
 
   // double check buffer size
   if(required_size > buffer_size) {
-    MENU.error_ln(F("too much"));	// TODO: DEBUG: i have seen this...
+    MENU.error_ln(F("too much TODO: DEBUG:"));	// TODO: DEBUG: i have seen this...
     nvs_close(my_handle);
     return true; // error
   }
