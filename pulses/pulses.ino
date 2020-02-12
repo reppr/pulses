@@ -354,11 +354,7 @@ musicBox_conf_t musicBoxConf;
 
 #if defined USE_MONOCHROME_DISPLAY
   #include <U8x8lib.h>
-  #if defined BOARD_OLED_LIPO
-    U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 4, /* data=*/ 5, /* reset=*/ 16);  // BOARD_OLED_LIPO	TODO: move to setup()
-  #elif defined BOARD_HELTEC_OLED		// heltec
-    U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16); // BOARD_HELTEC_OLED	TODO: move to setup()
-  #endif
+  U8X8_SSD1306_128X64_NONAME_SW_I2C* u8x8_p;
 #endif
 
 action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actions
@@ -1679,10 +1675,6 @@ void setup() {
 
   HARMONICAL = new Harmonical(3628800uL);	// old style harmonical unit, obsolete?
 
-#if defined USE_MONOCHROME_DISPLAY
-  //  monochrome_setup();
-#endif
-
   delay(STARTUP_DELAY);		// yield()
   Serial.begin(BAUDRATE);	// Start serial communication.
 
@@ -1703,24 +1695,6 @@ void setup() {
   MENU.space(8);
   MENU.ln();
 
-#if defined USE_MONOCHROME_DISPLAY
-  // SEE: https://github.com/olikraus/u8g2/wiki/u8x8reference
-  monochrome_begin();
-  //  monochrome_setFont(u8x8_font_chroma48medium8_r);	// *Umlaute missing*
-  monochrome_setFont(u8x8_font_amstrad_cpc_extended_f);	// *Umlaute here, but strange*
-
-  /*	// TODO: fix&use monochrome_display detection
-  MENU.ln();	// try to detect display...
-  MENU.out(F("################	display ################ "));
-  MENU.outln(monochrome_getCols());
-  MENU.outln(monochrome_getRows());
-  monochrome_display_hardware = monochrome_getCols();
-  MENU.out_ON_off(monochrome_display_hardware);
-  MENU.ln();
-  */
-  bool monochrome_display_hardware=true;	// TODO: fix&use monochrome_display detection
-#endif
-
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
   random_entropy();	// gathering entropy from serial noise
 #endif
@@ -1731,6 +1705,16 @@ void setup() {
   configure_HARDWARE_from_nvs();
   configure_IDENTITY_from_nvs();
   MENU.ln();
+#endif
+
+#if defined USE_MONOCHROME_DISPLAY
+  // SEE: https://github.com/olikraus/u8g2/wiki/u8x8reference
+  monochrome_setup();
+  monochrome_begin();
+  //  monochrome_setFont(u8x8_font_chroma48medium8_r);	// *Umlaute missing*
+  monochrome_setFont(u8x8_font_amstrad_cpc_extended_f);	// *Umlaute here, but strange*
+
+  bool monochrome_display_hardware=true;	// TODO: fix&use monochrome_display detection
 #endif
 
   MENU.print_free_RAM();

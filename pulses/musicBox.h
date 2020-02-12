@@ -4194,6 +4194,7 @@ bool musicBox_reaction(char token) {
 	str = array2name(JIFFLES, selected_in(JIFFLES));
 	monochrome_println_big_or_multiline(3, str);
 	MENU.outln(str);
+	// TODO: monochrome metric_mnemonic 'IR...'
       }
       break;
 #endif

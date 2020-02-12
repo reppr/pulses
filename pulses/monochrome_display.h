@@ -33,66 +33,66 @@ bool monochrome_can_be_used() {	// monochrome output is appropriate?
 
 void monochrome_show_program_version() {	// monochrome oled display
   if(monochrome_can_be_used()) {
-    u8x8.clear();
-    u8x8.setCursor(0,1);
-    u8x8.print(F(STRINGIFY(PROGRAM_VERSION)));
+    (*u8x8_p).clear();
+    (*u8x8_p).setCursor(0,1);
+    (*u8x8_p).print(F(STRINGIFY(PROGRAM_VERSION)));
 
-    u8x8.setCursor(0,3);
+    (*u8x8_p).setCursor(0,3);
     if(my_IDENTITY.preName != "")
-      u8x8.print(my_IDENTITY.preName);
+      (*u8x8_p).print(my_IDENTITY.preName);
 #if defined PROGRAM_SUB_VERSION
     else
-      u8x8.print(F(STRINGIFY(PROGRAM_SUB_VERSION)));
+      (*u8x8_p).print(F(STRINGIFY(PROGRAM_SUB_VERSION)));
 #endif
 
-    u8x8.setCursor(0,5);	// option mnemonics
+    (*u8x8_p).setCursor(0,5);	// option mnemonics
 
 #if defined USE_BLUETOOTH_SERIAL_MENU
   #if defined BLUETOOTH_ENABLE_PIN
     pinMode(BLUETOOTH_ENABLE_PIN, INPUT);
     digitalRead(BLUETOOTH_ENABLE_PIN);		// i do not trust the very first reading...
     if(digitalRead(BLUETOOTH_ENABLE_PIN))
-      u8x8.print('B');	// BLUETOOTH_ENABLE_PIN enabled?
+      (*u8x8_p).print('B');	// BLUETOOTH_ENABLE_PIN enabled?
     else
-      u8x8.print('b');
+      (*u8x8_p).print('b');
   #else			// *no* BLUETOOTH_ENABLE_PIN
-    u8x8.print('B');
+    (*u8x8_p).print('B');
   #endif
 
-    u8x8.print(' ');
+    (*u8x8_p).print(' ');
 #else	// *no* USE_BLUETOOTH_SERIAL_MENU
-    u8x8.print(' ');
-    u8x8.print(' ');
+    (*u8x8_p).print(' ');
+    (*u8x8_p).print(' ');
 #endif	// USE_BLUETOOTH_SERIAL_MENU
 
 #if defined MUSICBOX_TRIGGER_PIN
     if(musicBox_trigger_enabled)
-      u8x8.print('I');
+      (*u8x8_p).print('I');
     else
-      u8x8.print('i');
+      (*u8x8_p).print('i');
 #else
-    u8x8.print(' ');
+    (*u8x8_p).print(' ');
 #endif
-    u8x8.print(' ');
+    (*u8x8_p).print(' ');
 
 #if defined USE_RTC_MODULE
     if(rtc_module_is_usable)
-      u8x8.print('R');
+      (*u8x8_p).print('R');
     else
-      u8x8.print('r');
+      (*u8x8_p).print('r');
 #else
-    u8x8.print(' ');
+    (*u8x8_p).print(' ');
 #endif
-    u8x8.print(' ');
+    (*u8x8_p).print(' ');
 
 #if defined BATTERY_LEVEL_CONTROL_PIN
-    u8x8.print(F("V "));
+    (*u8x8_p).print(F("V "));
 #endif
 
 #if ! defined NO_GPIO_PINS
 #if GPIO_PINS > 0
-    u8x8.print('G');
-    u8x8.print((int) GPIO_PINS);
+    (*u8x8_p).print('G');
+    (*u8x8_p).print((int) GPIO_PINS);
 #endif
 #endif
   } // if(monochrome_can_be_used())
@@ -102,8 +102,8 @@ void monochrome_show_program_version() {	// monochrome oled display
 void monochrome_show_subcycle_octave() {
   if(! monochrome_power_save) {
     if(selected_in(SCALES) != NULL) {
-      u8x8.print(F("2^"));
-      u8x8.print(CyclesConf.subcycle_octave);
+      (*u8x8_p).print(F("2^"));
+      (*u8x8_p).print(CyclesConf.subcycle_octave);
     }
   }
 }
@@ -139,27 +139,27 @@ char run_state_symbol() {
 
 uint8_t /*next_row*/ monochrome_multiline_string(uint8_t row, char* s) { // multiline string from row to bottom (max)
   if(s && *s /*no empty string*/) {
-    uint8_t cols = u8x8.getCols();
-    uint8_t rows = u8x8.getRows();
+    uint8_t cols = (*u8x8_p).getCols();
+    uint8_t rows = (*u8x8_p).getRows();
 
     char c ;
     int col;
     while(*s && row<rows) {
       col=0;
-      u8x8.clearLine(row);
-      u8x8.setCursor(0,row++);		// row control
+      (*u8x8_p).clearLine(row);
+      (*u8x8_p).setCursor(0,row++);		// row control
 
       while(c = *s++) {
-	u8x8.print(c);
+	(*u8x8_p).print(c);
 	if ((++col % cols) == 0)
 	  break;
       }
       col %= cols;
 
       if(c==0) {
-	while(col++ < cols)  u8x8.print(' ');	// fill line witch spaces
+	while(col++ < cols)  (*u8x8_p).print(' ');	// fill line witch spaces
 	if(row < rows)
-	  u8x8.clearLine(row++);		// clear one more line
+	  (*u8x8_p).clearLine(row++);			// clear one more line
 	break;
       }
     } // all chars
@@ -169,77 +169,77 @@ uint8_t /*next_row*/ monochrome_multiline_string(uint8_t row, char* s) { // mult
 
 void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be used while playing
   if(monochrome_can_be_used()) {
-    uint8_t cols = u8x8.getCols();
-    uint8_t rows = u8x8.getRows();
+    uint8_t cols = (*u8x8_p).getCols();
+    uint8_t rows = (*u8x8_p).getRows();
     int row=0;	// first 2 lines empty for 2x2 output (i.e. MORSE)
-    u8x8.clearLine(row++);	// clear empty line
-    u8x8.clearLine(row++);	// clear empty line
+    (*u8x8_p).clearLine(row++);	// clear empty line
+    (*u8x8_p).clearLine(row++);	// clear empty line
 
-    u8x8.clearLine(row);
+    (*u8x8_p).clearLine(row);
     if(musicBoxConf.preset) {
-      u8x8.setCursor(0,row);
-      u8x8.print(run_state_symbol());
-      u8x8.print(' ');
+      (*u8x8_p).setCursor(0,row);
+      (*u8x8_p).print(run_state_symbol());
+      (*u8x8_p).print(' ');
 
-      u8x8.setInverseFont(1);
-      u8x8.print(F("P "));
-      u8x8.print(musicBoxConf.preset);
-      u8x8.print(' ');
-      u8x8.setInverseFont(0);
-      u8x8.print(' ');
+      (*u8x8_p).setInverseFont(1);
+      (*u8x8_p).print(F("P "));
+      (*u8x8_p).print(musicBoxConf.preset);
+      (*u8x8_p).print(' ');
+      (*u8x8_p).setInverseFont(0);
+      (*u8x8_p).print(' ');
       monochrome_show_subcycle_octave();
 
       char run_state[2];
       run_state[0] = run_state_symbol();
       run_state[1] = 0;
-      u8x8.draw2x2String(0, 0, run_state);      // *BIG* run state
+      (*u8x8_p).draw2x2String(0, 0, run_state);      // *BIG* run state
 
       // *BIG* PRESET number on top		// poor old eyes little helper ;)
       char preset[10] = {0};
       itoa(musicBoxConf.preset, preset, 10);
-      u8x8.draw2x2String(2, 0, preset);
+      (*u8x8_p).draw2x2String(2, 0, preset);
     }
     row++;
 
-    u8x8.clearLine(row);
-    u8x8.drawString(0, row++, array2name(SCALES, selected_in(SCALES)));
+    (*u8x8_p).clearLine(row);
+    (*u8x8_p).drawString(0, row++, array2name(SCALES, selected_in(SCALES)));
 
-    u8x8.clearLine(row);
-    u8x8.drawString(0, row++, array2name(JIFFLES, selected_in(JIFFLES)));
+    (*u8x8_p).clearLine(row);
+    (*u8x8_p).drawString(0, row++, array2name(JIFFLES, selected_in(JIFFLES)));
 
-    u8x8.clearLine(row);
-    u8x8.setCursor(0,row++);
-    u8x8.print(F("S="));	// sync
-    u8x8.print(musicBoxConf.sync);
+    (*u8x8_p).clearLine(row);
+    (*u8x8_p).setCursor(0,row++);
+    (*u8x8_p).print(F("S="));	// sync
+    (*u8x8_p).print(musicBoxConf.sync);
 
     if(musicBoxConf.stack_sync_slices) {	// stack_sync_slices?
-      u8x8.print(F(" |"));
-      u8x8.print(musicBoxConf.stack_sync_slices);
+      (*u8x8_p).print(F(" |"));
+      (*u8x8_p).print(musicBoxConf.stack_sync_slices);
       if(musicBoxConf.base_pulse != ILLEGAL16) {
-	u8x8.print(F(" p["));
-	u8x8.print(musicBoxConf.base_pulse);
-	u8x8.print(']');
+	(*u8x8_p).print(F(" p["));
+	(*u8x8_p).print(musicBoxConf.base_pulse);
+	(*u8x8_p).print(']');
       }
 
     } else {	// no stack_sync_slices, so there is space for other info:	// (can be removed)
-      u8x8.print(F("  "));
-      u8x8.print(musicBoxConf.pitch.multiplier);	// pitch
-      u8x8.print('/');
-      u8x8.print(musicBoxConf.pitch.divisor);
+      (*u8x8_p).print(F("  "));
+      (*u8x8_p).print(musicBoxConf.pitch.multiplier);	// pitch
+      (*u8x8_p).print('/');
+      (*u8x8_p).print(musicBoxConf.pitch.divisor);
     }
 
     if(musicBoxConf.name && *musicBoxConf.name /*no empty string*/) {	// one line from name
-      u8x8.setInverseFont(1);
+      (*u8x8_p).setInverseFont(1);
       monochrome_multiline_string(row, musicBoxConf.name);
-      u8x8.setInverseFont(0);
+      (*u8x8_p).setInverseFont(0);
 
     } else { // if there is no name
-      u8x8.clearLine(row);
-      u8x8.setCursor(0,row);
+      (*u8x8_p).clearLine(row);
+      (*u8x8_p).setCursor(0,row);
 
       if(selected_in(SCALES) != NULL) {
 	monochrome_show_subcycle_octave();
-	u8x8.print(' ');
+	(*u8x8_p).print(' ');
 #if defined PULSES_USE_DOUBLE_TIMES
 	unsigned long seconds = ((CyclesConf.used_subcycle / 1000000.0) + 0.5);	// TODO: factor out, build a string
 #else // old int overflow style
@@ -255,30 +255,30 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
 	unsigned int minutes = seconds / 60;
 	seconds %= 60;
 	if(days) {
-	  u8x8.print(days);
-	  u8x8.print(F("d "));
+	  (*u8x8_p).print(days);
+	  (*u8x8_p).print(F("d "));
 	}
 	if(hours || days) {
-	  u8x8.print(hours);
-	  u8x8.print(F("h "));
+	  (*u8x8_p).print(hours);
+	  (*u8x8_p).print(F("h "));
 	}
 	if(minutes || hours || days) {
-	  u8x8.print(minutes);
-	  u8x8.print(F("\' "));
+	  (*u8x8_p).print(minutes);
+	  (*u8x8_p).print(F("\' "));
 	}
-	u8x8.print(seconds);
-	u8x8.print(F("\" "));
+	(*u8x8_p).print(seconds);
+	(*u8x8_p).print(F("\" "));
       } else									// TODO: factor out
-	u8x8.print('-');
+	(*u8x8_p).print('-');
     } // name or no name
 
     if(musicBoxConf.chromatic_pitch) {
       extern char* metric_mnemonic;
-      u8x8.draw2x2String(10, 0, metric_mnemonic);
+      (*u8x8_p).draw2x2String(10, 0, metric_mnemonic);
       char s[] = {0, 0};
       extern char scale_symbol_char();
       s[0] = scale_symbol_char();
-      u8x8.draw2x2String(14, 0, s);
+      (*u8x8_p).draw2x2String(14, 0, s);
     }
   } //if(monochrome_can_be_used())
 } // monochrome_show_musicBox_parameters()
@@ -286,7 +286,7 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
 
 void monochrome_show_line(uint8_t row, char * s) {
   if(monochrome_can_be_used()) {
-    uint8_t cols = u8x8.getCols();
+    uint8_t cols = (*u8x8_p).getCols();
     char full_line[cols+1] = {0};
     char c;
 
@@ -297,19 +297,19 @@ void monochrome_show_line(uint8_t row, char * s) {
       else	// end of string reached
 	break;
     }
-    while(i< cols)	// fill line with spaces (avoid u8x8.clearLine() as it takes too long)
+    while(i< cols)	// fill line with spaces (avoid (*u8x8_p).clearLine() as it takes too long)
       full_line[i++] = ' ';
     full_line[cols] = '\0';
 
-    u8x8.setCursor(0,row);
-    u8x8.print(full_line);
+    (*u8x8_p).setCursor(0,row);
+    (*u8x8_p).print(full_line);
   }
 }
 
 void monochrome_display_message(char* message) {
   if(monochrome_can_be_used()) {
-    u8x8.setCursor(u8x8.getCols() - strlen(message),  u8x8.getRows() -1);	// last line > right is message spot
-    u8x8.print(message);
+    (*u8x8_p).setCursor((*u8x8_p).getCols() - strlen(message),  (*u8x8_p).getRows() -1);	// last line > right is message spot
+    (*u8x8_p).print(message);
   }
 }
 
@@ -323,7 +323,7 @@ bool OLED_UI() {	// follows 'O'		'OE'	'OT'	'OP'
   case 'A':		// 'OA' == 'OE'	all on   analogue morse COMMAND 'OA'
     MENU.drop_input_token();
     monochrome_power_save = 0;
-    u8x8.setPowerSave(monochrome_power_save);
+    (*u8x8_p).setPowerSave(monochrome_power_save);
     oled_feedback_while_playing = true;
     MENU.outln(F("OLED on"));
     break;
@@ -331,7 +331,7 @@ bool OLED_UI() {	// follows 'O'		'OE'	'OT'	'OP'
   case 'T':		// 'OT'	OLED off (morse friendly)
     MENU.drop_input_token();
     monochrome_power_save = 1;
-    u8x8.setPowerSave(monochrome_power_save);
+    (*u8x8_p).setPowerSave(monochrome_power_save);
     MENU.outln(F("OLED off"));
     break;
 
@@ -353,7 +353,7 @@ bool OLED_UI() {	// follows 'O'		'OE'	'OT'	'OP'
 
 void monochrome_print2x2(uint8_t col, uint8_t row, char* str) {	// for short 2x2 strings
   if(monochrome_can_be_used()) {
-    int max=(u8x8.getCols()/2);	// limit length
+    int max=((*u8x8_p).getCols()/2);	// limit length
     char truncated[max+1]={0};
 
     char c;
@@ -362,13 +362,13 @@ void monochrome_print2x2(uint8_t col, uint8_t row, char* str) {	// for short 2x2
       if(truncated[i] == 0)
 	break;
     }
-    u8x8.draw2x2String(col, row, truncated);
+    (*u8x8_p).draw2x2String(col, row, truncated);
   } // if(monochrome_can_be_used())
 } // monochrome_print2x2()
 
 uint8_t /*next_row*/ monochrome_println2x2(uint8_t row, char* str) {	// 2x2 lines
   if(monochrome_can_be_used()) {
-    int max=(u8x8.getCols()/2);	// limit length
+    int max=((*u8x8_p).getCols()/2);	// limit length
     char truncated[max+1];
     for(int i=0; i<max; i++)
       truncated[i] = ' ';	// space filled to clear line
@@ -382,7 +382,7 @@ uint8_t /*next_row*/ monochrome_println2x2(uint8_t row, char* str) {	// 2x2 line
 	break;
     }
 
-    u8x8.draw2x2String(0, row, truncated);
+    (*u8x8_p).draw2x2String(0, row, truncated);
     row += 2;
   } // if(monochrome_can_be_used())
 
@@ -401,7 +401,7 @@ uint8_t /*next_row*/ monochrome_println_big_or_multiline(int row, char* str) {
 
   if(monochrome_can_be_used()) {
     int len = strlen(str);
-    if(len <= (u8x8.getCols() / 2))	// fits in one 2x2 line?
+    if(len <= ((*u8x8_p).getCols() / 2))	// fits in one 2x2 line?
       row = monochrome_println2x2(row, str);
     else				// too long for 2x2
       row = monochrome_multiline_string(row, str);
@@ -413,81 +413,81 @@ uint8_t /*next_row*/ monochrome_println_big_or_multiline(int row, char* str) {
 
 inline void monochrome_setInverseFont(uint8_t inverse) {
   if(monochrome_can_be_used())
-    u8x8.setInverseFont(inverse);
+    (*u8x8_p).setInverseFont(inverse);
 }
 
 inline void monochrome_setPowerSave(uint8_t value) {
-  u8x8.setPowerSave(value);	// try to set it anyway
+  (*u8x8_p).setPowerSave(value);	// try to set it anyway
 }
 
 inline void monochrome_setCursor(uint8_t col, uint8_t row) {
   if(monochrome_can_be_used())
-    u8x8.setCursor(col, row);
+    (*u8x8_p).setCursor(col, row);
 }
 
 inline void monochrome_print(char* str) {
   if(monochrome_can_be_used())
-    u8x8.print(str);
+    (*u8x8_p).print(str);
 }
 
 inline void monochrome_print_f(float f) {
   if(monochrome_can_be_used())
-    u8x8.print(f);
+    (*u8x8_p).print(f);
 }
 
 inline void monochrome_print_f(float f, int chiffres) {
   if(monochrome_can_be_used())
-    u8x8.print(f, chiffres);
+    (*u8x8_p).print(f, chiffres);
 }
 
 inline uint8_t monochrome_getCols() {
-  return u8x8.getCols();
+  return (*u8x8_p).getCols();
 }
 
 inline uint8_t monochrome_getRows() {
-  return u8x8.getRows();
+  return (*u8x8_p).getRows();
 }
 
 inline void monochrome_clear() {		// slow
-  u8x8.clear();
+  (*u8x8_p).clear();
 }
 
 inline void monochrome_clearLine(uint8_t row) {	// slow
-  u8x8.clearLine(row);
+  (*u8x8_p).clearLine(row);
 }
 
 inline void monochrome_begin() {
-  u8x8.begin();
+  (*u8x8_p).begin();
 }
 
 inline void monochrome_setFont(const uint8_t *font_8x8) {
-  u8x8.setFont(font_8x8);
+  (*u8x8_p).setFont(font_8x8);
 }
 
-//	void monochrome_setup() {
-//	  MENU.out(F("monochrome_setup() "));
-//	  switch(HARDWARE.monochrome_type) {
-//	  case monochrome_type_heltec:
-//	    U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16); // BOARD_HELTEC_OLED
-//	    MENU.out(F("heltec"));
-//	    break;
-//	  case monochrome_type_LiPO:
-//	    U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 4, /* data=*/ 5, /* reset=*/ 16);  // BOARD_OLED_LIPO	TODO: move to setup()
-//	    MENU.out(F("Lipo"));
-//	    break;
-//	  case monochrome_type_off:
-//	    MENU.error_ln(F("monochrome is off in nvs?"));
-//	#if defined BOARD_OLED_LIPO		// try to take from pp macros
-//	    U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 4, /* data=*/ 5, /* reset=*/ 16);  // BOARD_OLED_LIPO	TODO: move to setup()
-//	#elif defined BOARD_HELTEC_OLED		// heltec
-//	    U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16); // BOARD_HELTEC_OLED
-//	#endif
-//	    break;
-//	  default:
-//	    MENU.error(F("unknown monochrome_type"));
-//	  }
-//	  MENU.ln();
-//	} // monochrome_setup()
+void monochrome_setup() {
+  MENU.out(F("monochrome_setup() "));
+  switch(HARDWARE.monochrome_type) {
+  case monochrome_type_heltec:
+    u8x8_p = new U8X8_SSD1306_128X64_NONAME_SW_I2C(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16); // BOARD_HELTEC_OLED
+    MENU.out(F("heltec c15 d4 r16"));
+    break;
+  case monochrome_type_LiPO:
+    u8x8_p = new U8X8_SSD1306_128X64_NONAME_SW_I2C(/* clock=*/ 4, /* data=*/ 5, /* reset=*/ 16);  // BOARD_OLED_LIPO
+    MENU.out(F("Lipo c4 d5 r16"));
+    break;
+  case monochrome_type_off:
+    MENU.error_ln(F("monochrome is off in nvs?"));
+#if defined BOARD_OLED_LIPO		// try to take from pp macros
+    u8x8_p = new U8X8_SSD1306_128X64_NONAME_SW_I2C(/* clock=*/ 4, /* data=*/ 5, /* reset=*/ 16);  // BOARD_OLED_LIPO
+#elif defined BOARD_HELTEC_OLED		// heltec
+    u8x8_p = new U8X8_SSD1306_128X64_NONAME_SW_I2C(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16); // BOARD_HELTEC_OLED
+#endif
+    break;
+  default:
+    MENU.error_ln(F("unknown monochrome_type"));
+  }
+  MENU.ln();
+} // monochrome_setup()
 
 #define MONOCHROME_DISPLAY_H
 #endif

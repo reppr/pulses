@@ -601,3 +601,5 @@ run time: other button0 functionality?
 musicBox  case 'O': // 'IO' clear OLED	// TODO: OBSOLETE?
 
 // nvs_PRENAME TODO:  esp_err_t nvs_erase_key(nvs_handle_t handle, const char *key);
+
+// TODO: monochrome metric_mnemonic 'IR...'

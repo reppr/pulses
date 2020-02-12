@@ -5,9 +5,9 @@
 */
 
 /*
-u8x8.setPowerSave(0);
+(*u8x8_p).setPowerSave(0);
 delay(1000);
-u8x8.setPowerSave(1);
+(*u8x8_p).setPowerSave(1);
 delay(1000);
 */
 
