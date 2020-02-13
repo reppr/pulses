@@ -714,7 +714,7 @@ esp_err_t esp_now_pulses_setup() {
   yield();
 
   MENU.outln(F("  WiFi.mode(WIFI_STA)"));
-  WiFi.mode(WIFI_STA);
+  WiFi.mode(WIFI_STA);				// TODO: BUG: does not returm on PSRAM boards!
   yield();
 
   MENU.outln(F("  WiFi.disconnect()"));

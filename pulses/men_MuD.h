@@ -3,6 +3,9 @@
   temporary test menu UI during development
 */
 
+MENU.print_free_RAM();
+MENU.ln();
+
 monochrome_println_big_or_multiline(0, "SHORT");
 MENU.outln("SHORT");
 

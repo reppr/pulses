@@ -546,12 +546,14 @@ bool Menu::string_match(const char * teststring) {
       out((int) ESP.getFreeHeap());
       out('/');
       out((int) ESP.getHeapSize());
+
+      out(F("\tPSRAM: "));
       if((int) ESP.getPsramSize()) {
-	out(F("\tPSRAM: "));
 	out((int) ESP.getFreePsram());
 	out('/');
 	out((int) ESP.getPsramSize());
-      }
+      } else
+	out("no");
     }
 
   #else				// NOOP free RAM fakes only:
