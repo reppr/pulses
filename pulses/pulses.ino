@@ -1727,10 +1727,18 @@ void setup() {
 
   MENU.ln();
 
+  {
+    int core;
+    MENU.out(F("pulses\trunning on core "));
+    MENU.outln(core = xPortGetCoreID());
+    if(core != 1)
+      MENU.error_ln(F("unexpected core"));
+  }
+
 #if defined PULSES_USE_DOUBLE_TIMES
-  MENU.outln(F("pulses\tuses DOUBLE times"));
+  MENU.outln(F("\tuses DOUBLE times"));
 #else
-  MENU.outln(F("pulses\tuses int overflow times"));
+  MENU.outln(F("\tuses int overflow times"));
 #endif
 
 #if defined ESP32
@@ -6854,7 +6862,7 @@ uint8_t /*next_row*/ extended_output(char* data, uint8_t col=0, uint8_t row=0, b
   }
 
   row += 2;
-#endif
+#endif // USE_MONOCHROME_DISPLAY
   return row;	// return row on *monochrome display*
 }
 

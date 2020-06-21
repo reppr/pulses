@@ -1422,7 +1422,7 @@ void morse_monochrome_display() {
 
   morse_output_char = '\0';	// trigger off
 }
-#endif
+#endif // USE_MONOCHROME_DISPLAY
 
 
 bool echo_morse_input=true;
@@ -1570,7 +1570,7 @@ void static morse_token_decode() {	// decode received token sequence
 		    } else
 		      monochrome_print(F("      "));
 		  }
-  #endif
+  #endif // USE_MONOCHROME_DISPLAY
 #endif // USE_MPU6050
 
 	      } else	// unknown morse command
@@ -1592,7 +1592,7 @@ void static morse_token_decode() {	// decode received token sequence
 		monochrome_setInverseFont(0);
 	      }
 	    }
-#endif
+#endif // USE_MONOCHROME_DISPLAY
 	    MENU.space(2);
 	    MENU.error_ln(F("morse  no definition"));
 	    morse_reset_definition("");

@@ -3766,11 +3766,11 @@ bool musicBox_reaction(char token) {
 #endif
 
   case 'C': // 'C' hierarchy: esp now send or configure
+#if defined USE_ESP_NOW
     // normal case is (second letter != 'C') (exclude 'CC...' and such:)
     //	esp_now send rest of the line,	see below
 
     // exclude special first 'CC...' 'EOF' '?' and such:
-#if defined USE_ESP_NOW
     switch(MENU.peek()) {	// second letter after 'CC...' configure esp_now sending
     case EOF8:  // bare 'C'	// *broadcast* to spread peer detection
       MENU.outln(F("esp_now_call_participants()"));
@@ -4197,7 +4197,7 @@ bool musicBox_reaction(char token) {
 	// TODO: monochrome metric_mnemonic 'IR...'
       }
       break;
-#endif
+#endif // USE_MONOCHROME_DISPLAY
     } // switch token after 'I'
     break;
 
