@@ -128,10 +128,14 @@ void multicore_show_program_version() {	// create and do one shot task
   }
 }
 
-  #define MC_show_program_version	multicore_show_program_version
+void inline MC_show_program_version() {
+  multicore_show_program_version();
+}
 
 #else
-  #define MC_show_program_version	monochrome_show_program_version
+void inline MC_show_program_version() {
+  monochrome_show_program_version();
+}
 #endif // MULTICORE_DISPLAY
 
 
@@ -344,10 +348,14 @@ void multicore_show_musicBox_parameters() {	// create and do one shot task
   }
 }
 
-  #define MC_show_musicBox_parameters	multicore_show_musicBox_parameters
+void inline MC_show_musicBox_parameters() {
+  multicore_show_musicBox_parameters();
+}
 
 #else
-  #define MC_show_musicBox_parameters	monochrome_show_musicBox_parameters
+void inline MC_show_musicBox_parameters() {
+  monochrome_show_musicBox_parameters();
+}
 #endif // MULTICORE_DISPLAY
 
 
@@ -478,7 +486,8 @@ void inline MC_print2x2(uint8_t col, uint8_t row, char* str) {
 }
 
 #else
-  #define MC_print2x2	monochrome_print2x2
+void inline MC_print2x2(uint8_t col, uint8_t row, char* str) {
+  monochrome_print2x2(uint8_t col, uint8_t row, char* str);
 #endif // MULTICORE_DISPLAY
 
 uint8_t /*next_row*/ monochrome_println2x2(uint8_t row, char* str) {	// 2x2 lines
