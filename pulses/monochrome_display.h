@@ -31,6 +31,40 @@ bool monochrome_can_be_used() {	// monochrome output is appropriate?
   return true;
 } // monochrome_can_be_used()
 
+
+// #include <freertos/include/freertos/task.h>
+#include <freertos/task.h>
+
+TaskHandle_t mono_out_core0;
+
+void mono_out_0(void * s) {
+  MENU.outln("TEST mono_out_0" );
+extern void monochrome_show_program_version();
+  monochrome_show_program_version();
+  delay(1000);
+extern void monochrome_show_musicBox_parameters();
+  monochrome_show_musicBox_parameters();
+
+  vTaskDelete(NULL);
+}
+
+
+void setup_mono_out_task() {
+  BaseType_t err = xTaskCreatePinnedToCore(mono_out_0,		// function
+					   "mono_out_core0",	// name
+					   2000,		// stack size
+					   NULL,		// task input parameter
+					   0,			// task priority
+					   &mono_out_core0,	// task handle
+					   0);			// core 0
+  if(err != pdPASS) {
+    MENU.out(err);
+    MENU.space();
+    MENU.error_ln(F("display task"));
+  }
+}
+
+
 void monochrome_show_program_version() {	// monochrome oled display
   if(monochrome_can_be_used()) {
     (*u8x8_p).clear();

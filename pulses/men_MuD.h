@@ -3,16 +3,10 @@
   temporary test menu UI during development
 */
 
-MENU.print_free_RAM();
-MENU.ln();
+setup_mono_out_task();	// very first multicore test
 
-monochrome_println_big_or_multiline(0, "SHORT");
-MENU.outln("SHORT");
-
-monochrome_println_big_or_multiline(4, "LONGER7890ABCDEF");
-MENU.outln("LONG\n\n");
-
-show_configuration_as_string();	// unused 1line mode for files
+//MENU.print_free_RAM();
+//MENU.ln();
 
 #if defined USE_ADS1115_AT_ADDR
 //ads1115_first_test_A0();
