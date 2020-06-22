@@ -10,6 +10,10 @@
 
 #ifndef MONOCHROME_DISPLAY_H
 
+#if defined MULTICORE_DISPLAY
+  #include <freertos/task.h>
+#endif
+
 #include <U8x8lib.h>
 
 uint8_t monochrome_power_save=0;
@@ -30,39 +34,6 @@ bool monochrome_can_be_used() {	// monochrome output is appropriate?
 
   return true;
 } // monochrome_can_be_used()
-
-
-// #include <freertos/include/freertos/task.h>
-#include <freertos/task.h>
-
-TaskHandle_t mono_out_core0;
-
-void mono_out_0(void * s) {
-  MENU.outln("TEST mono_out_0" );
-extern void monochrome_show_program_version();
-  monochrome_show_program_version();
-  delay(1000);
-extern void monochrome_show_musicBox_parameters();
-  monochrome_show_musicBox_parameters();
-
-  vTaskDelete(NULL);
-}
-
-
-void setup_mono_out_task() {
-  BaseType_t err = xTaskCreatePinnedToCore(mono_out_0,		// function
-					   "mono_out_core0",	// name
-					   2000,		// stack size
-					   NULL,		// task input parameter
-					   0,			// task priority
-					   &mono_out_core0,	// task handle
-					   0);			// core 0
-  if(err != pdPASS) {
-    MENU.out(err);
-    MENU.space();
-    MENU.error_ln(F("display task"));
-  }
-}
 
 
 void monochrome_show_program_version() {	// monochrome oled display
@@ -131,6 +102,37 @@ void monochrome_show_program_version() {	// monochrome oled display
 #endif
   } // if(monochrome_can_be_used())
 } // monochrome_show_program_version()
+
+
+#if defined MULTICORE_DISPLAY
+TaskHandle_t multicore_show_version_handle;
+
+void multicore_show_version_task(void * s) {
+  monochrome_show_program_version();
+  vTaskDelete(NULL);
+}
+
+
+void multicore_show_program_version() {	// create and do one shot task
+  BaseType_t err = xTaskCreatePinnedToCore(multicore_show_version_task,		// function
+					   "show_version",			// name
+					   2000,				// stack size
+					   NULL,				// task input parameter
+					   0,					// task priority
+					   &multicore_show_version_handle,	// task handle
+					   0);					// core 0
+  if(err != pdPASS) {
+    MENU.out(err);
+    MENU.space();
+    MENU.error_ln(F("display task"));
+  }
+}
+
+  #define MC_show_program_version	multicore_show_program_version
+
+#else
+  #define MC_show_program_version	monochrome_show_program_version
+#endif // MULTICORE_DISPLAY
 
 
 void monochrome_show_subcycle_octave() {
@@ -318,6 +320,38 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
 } // monochrome_show_musicBox_parameters()
 
 
+#if defined MULTICORE_DISPLAY
+TaskHandle_t multicore_show_musicBox_parameters_handle;
+
+void multicore_show_musicBox_parameters_task(void * s) {
+  monochrome_show_musicBox_parameters();
+  vTaskDelete(NULL);
+}
+
+
+void multicore_show_musicBox_parameters() {	// create and do one shot task
+  BaseType_t err = xTaskCreatePinnedToCore(multicore_show_musicBox_parameters_task,		// function
+					   "show_parameters",			// name
+					   2000,				// stack size
+					   NULL,				// task input parameter
+					   0,					// task priority
+					   &multicore_show_musicBox_parameters_handle,	// task handle
+					   0);					// core 0
+  if(err != pdPASS) {
+    MENU.out(err);
+    MENU.space();
+    MENU.error_ln(F("display task"));
+  }
+}
+
+  #define MC_show_musicBox_parameters	multicore_show_musicBox_parameters
+
+#else
+  #define MC_show_musicBox_parameters	monochrome_show_musicBox_parameters
+#endif // MULTICORE_DISPLAY
+
+
+// MULTICORE_DISPLAY
 void monochrome_show_line(uint8_t row, char * s) {
   if(monochrome_can_be_used()) {
     uint8_t cols = (*u8x8_p).getCols();
@@ -340,6 +374,7 @@ void monochrome_show_line(uint8_t row, char * s) {
   }
 }
 
+// MULTICORE_DISPLAY
 void monochrome_display_message(char* message) {
   if(monochrome_can_be_used()) {
     (*u8x8_p).setCursor((*u8x8_p).getCols() - strlen(message),  (*u8x8_p).getRows() -1);	// last line > right is message spot
@@ -400,6 +435,52 @@ void monochrome_print2x2(uint8_t col, uint8_t row, char* str) {	// for short 2x2
   } // if(monochrome_can_be_used())
 } // monochrome_print2x2()
 
+#if defined MULTICORE_DISPLAY
+typedef struct display_string_t {
+  char * text=NULL;
+  short col=0;
+  short row=0;
+  //uint8_t size=0;
+  //uint8_t colour=0;
+  //bool inverted=false;
+} display_string_t;
+
+TaskHandle_t multicore_print2x2_handle;
+
+void multicore_print2x2_task(void* data_) {
+  display_string_t* data = (display_string_t*) data_;
+  monochrome_print2x2(data->col, data->row, data->text);
+  vTaskDelete(NULL);
+}
+
+void multicore_print2x2(uint8_t col, uint8_t row, char* str) {	// create and do one shot task
+  display_string_t data;
+  data.text = str;
+  data.col = col;
+  data.row = row;
+//  TaskHandle_t multicore_print2x2_handle;
+  BaseType_t err = xTaskCreatePinnedToCore(multicore_print2x2_task,		// function
+					   "print2x2",			// name
+					   2000,				// stack size
+					   &data,				// task input parameter
+					   0,					// task priority
+					   &multicore_print2x2_handle,		// task handle
+					   0);					// core 0
+  if(err != pdPASS) {
+    MENU.out(err);
+    MENU.space();
+    MENU.error_ln(F("2x2display task"));
+  }
+}
+
+void inline MC_print2x2(uint8_t col, uint8_t row, char* str) {
+  multicore_print2x2(col, row, str);
+}
+
+#else
+  #define MC_print2x2	monochrome_print2x2
+#endif // MULTICORE_DISPLAY
+
 uint8_t /*next_row*/ monochrome_println2x2(uint8_t row, char* str) {	// 2x2 lines
   if(monochrome_can_be_used()) {
     int max=((*u8x8_p).getCols()/2);	// limit length
@@ -423,6 +504,7 @@ uint8_t /*next_row*/ monochrome_println2x2(uint8_t row, char* str) {	// 2x2 line
   return row;
 } // monochrome_println2x2()
 
+// MULTICORE_DISPLAY
 uint8_t /*next_row*/ monochrome_println_big_or_multiline(int row, char* str) {
   /*
     print one line on monochrome
@@ -445,6 +527,7 @@ uint8_t /*next_row*/ monochrome_println_big_or_multiline(int row, char* str) {
 } // monochrome_println_big_or_multiline()
 
 
+// MULTICORE_DISPLAY
 inline void monochrome_setInverseFont(uint8_t inverse) {
   if(monochrome_can_be_used())
     (*u8x8_p).setInverseFont(inverse);
@@ -454,6 +537,7 @@ inline void monochrome_setPowerSave(uint8_t value) {
   (*u8x8_p).setPowerSave(value);	// try to set it anyway
 }
 
+// MULTICORE_DISPLAY
 inline void monochrome_setCursor(uint8_t col, uint8_t row) {
   if(monochrome_can_be_used())
     (*u8x8_p).setCursor(col, row);
@@ -482,10 +566,12 @@ inline uint8_t monochrome_getRows() {
   return (*u8x8_p).getRows();
 }
 
+// MULTICORE_DISPLAY
 inline void monochrome_clear() {		// slow
   (*u8x8_p).clear();
 }
 
+// MULTICORE_DISPLAY
 inline void monochrome_clearLine(uint8_t row) {	// slow
   (*u8x8_p).clearLine(row);
 }

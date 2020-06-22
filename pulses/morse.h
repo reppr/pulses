@@ -1376,7 +1376,7 @@ extern uint8_t monochrome_getCols();
 extern void monochrome_print(char* str);
 extern void monochrome_print_f(float f, int chiffres);
 extern uint8_t monochrome_println2x2(uint8_t row, char* str);		// 2x2 lines
-extern void monochrome_print2x2(uint8_t col, uint8_t row, char* str);	// for short 2x2 strings
+extern void MC_print2x2(uint8_t col, uint8_t row, char* str);	// for short 2x2 strings
 
 void morse_do_output() {
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
@@ -1417,7 +1417,7 @@ void morse_monochrome_display() {
     // 2x2 version
     char s[]="  ";
     s[0] = morse_output_char;
-    monochrome_print2x2(2*(morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s);
+    MC_print2x2(2*(morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s);
   }
 
   morse_output_char = '\0';	// trigger off
@@ -1511,7 +1511,7 @@ void static morse_token_decode() {	// decode received token sequence
 		if(morse_out_buffer_cnt) {
 		  morse_out_buffer_cnt--;
 #if defined USE_MONOCHROME_DISPLAY
-		  monochrome_print2x2(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " ");	// DELLAST
+		  MC_print2x2(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " ");	// DELLAST
 #endif
 		}
 
@@ -1535,7 +1535,7 @@ void static morse_token_decode() {	// decode received token sequence
 		morse_token_cnt = 0;
 		morse_out_buffer_cnt = 0;
 #if defined USE_MONOCHROME_DISPLAY
-		monochrome_print2x2(0, MORSE_MONOCHROME_ROW, "__");	// CANCEL shows "__"
+		MC_print2x2(0, MORSE_MONOCHROME_ROW, "__");	// CANCEL shows "__"
 #endif
 	      } else if(morse_PRESENT_COMMAND == "ANY1") {	// '----'
 		MENU.outln(F("\"ANY1\" currently unused"));
@@ -1588,7 +1588,7 @@ void static morse_token_decode() {	// decode received token sequence
 	    if(monochrome_can_be_used()) {
 	      if(morse_out_buffer_cnt) {
 		monochrome_setInverseFont(1);
-		monochrome_print2x2(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, "'");	// TODO: TEST:
+		MC_print2x2(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, "'");	// TODO: TEST:
 		monochrome_setInverseFont(0);
 	      }
 	    }

@@ -1160,7 +1160,7 @@ void show_program_version() {	// program version on menu output *and* OLED
   display_program_version();
 
 #if defined USE_MONOCHROME_DISPLAY
-  monochrome_show_program_version();
+  MC_show_program_version();
 #endif
 }
 
@@ -1730,10 +1730,16 @@ void setup() {
   {
     int core;
     MENU.out(F("pulses\trunning on core "));
-    MENU.outln(core = xPortGetCoreID());
-    if(core != 1)
+    MENU.out(core = xPortGetCoreID());
+    if(core == 1)
+      MENU.ln();
+    else
       MENU.error_ln(F("unexpected core"));
   }
+
+#if defined MULTICORE_DISPLAY
+  MENU.outln(F("\tdisplays from other core"));
+#endif
 
 #if defined PULSES_USE_DOUBLE_TIMES
   MENU.outln(F("\tuses DOUBLE times"));
@@ -6858,7 +6864,7 @@ uint8_t /*next_row*/ extended_output(char* data, uint8_t col=0, uint8_t row=0, b
   if(monochrome_can_be_used() || force || morse_output_char) {
     monochrome_clearLine(row);
     monochrome_clearLine(row +1);
-    monochrome_print2x2(col, row, data);
+    MC_print2x2(col, row, data);
   }
 
   row += 2;

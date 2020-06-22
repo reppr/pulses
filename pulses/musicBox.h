@@ -842,7 +842,7 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
 #if defined USE_MONOCHROME_DISPLAY
     extern char run_state_symbol();
     char s[] = {run_state_symbol(),0};
-    monochrome_print2x2(0, 0, s);
+    MC_print2x2(0, 0, s);
 #endif
 
     for (int pulse=0; pulse<PL_MAX; pulse++) {	// make days_to_live COUNTED generating pulses
@@ -1544,7 +1544,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
   }
 
 #if defined USE_MONOCHROME_DISPLAY
-  monochrome_show_musicBox_parameters();
+  MC_show_musicBox_parameters();
 #endif
 
 #if defined USE_ESP_NOW
@@ -2602,8 +2602,8 @@ void start_musicBox() {
   set_MusicBoxState(AWAKE);
 
 //#if defined USE_MONOCHROME_DISPLAY
-//  extern void monochrome_show_musicBox_parameters();	// ATTENTION: takes too long to be used while playing
-//  monochrome_show_musicBox_parameters();
+//  extern void MC_show_musicBox_parameters();
+//  MC_show_musicBox_parameters();
 //#endif
 
 #if defined  USE_RTC_MODULE
@@ -2819,7 +2819,7 @@ void start_musicBox() {
   MENU.ln();
   musicBox_short_info();
 #if defined USE_MONOCHROME_DISPLAY
-  monochrome_show_musicBox_parameters();	// ATTENTION: takes too long to be used while playing
+  MC_show_musicBox_parameters();
 #endif
 
   //  MENU.outln(F("\n >>> * <<<"));	// start output block with configurations
@@ -2875,7 +2875,7 @@ void start_musicBox() {
 	MENU.outln(F("no pause autoskip"));
 //#if defined USE_MONOCHROME_DISPLAY
 //	char s[] = {'p', 0};		// TODO: how to clear that?
-//	monochrome_print2x2(0, 0, s);	// TODO: how to clear that?
+//	MC_print2x2(0, 0, s);	// TODO: how to clear that?
 //#endif
 
     } else {	// stack_sync_slices==0
@@ -4060,7 +4060,7 @@ bool musicBox_reaction(char token) {
 	  musicBox_display();
 
 #if defined USE_MONOCHROME_DISPLAY
-	monochrome_show_musicBox_parameters();
+	MC_show_musicBox_parameters();
 #endif
 	if(start)
 	  start_musicBox();
@@ -4124,7 +4124,7 @@ bool musicBox_reaction(char token) {
     case EOF8:	// bare 'I'
       musicBox_short_info();
 #if defined USE_MONOCHROME_DISPLAY
-      monochrome_show_musicBox_parameters();	// ATTENTION: takes too long to be used while playing
+      MC_show_musicBox_parameters();
 #endif
       break;
 
@@ -4151,7 +4151,7 @@ bool musicBox_reaction(char token) {
 	    monochrome_clearLine(next_row +1);
 	    char preset[10];
 	    itoa(musicBoxConf.preset, preset, 10);
-	    monochrome_print2x2(0, next_row, preset);	//   yes, show preset number
+	    MC_print2x2(0, next_row, preset);	//   yes, show preset number
 	  } // preset
 	} // free 2 bottom lines?
       }

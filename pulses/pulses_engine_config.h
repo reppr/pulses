@@ -7,8 +7,9 @@
 
 #if ! defined PULSES_ENGINE_CONFIG_H
 
-#define PRENAME_MAX_LENGTH	15		// *excluding* '\0'
+#define MULTICORE_DISPLAY	// send hw display from other core
 
+#define PRENAME_MAX_LENGTH	15		// *excluding* '\0'
 
 #define PULSES_USE_DOUBLE_TIMES		// working fine :)
 

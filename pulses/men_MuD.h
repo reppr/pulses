@@ -3,7 +3,15 @@
   temporary test menu UI during development
 */
 
-setup_mono_out_task();	// very first multicore test
+#if defined MULTICORE_DISPLAY
+ MC_show_program_version();
+ delay(1000);
+ MC_show_musicBox_parameters();
+ delay(1000);
+ MC_print2x2(0, 0, "HEUREKA!");
+//delay(6000);
+//MC_print2x2(2, 2, "DADA");
+#endif
 
 //MENU.print_free_RAM();
 //MENU.ln();
