@@ -1365,24 +1365,24 @@ bool morse_output_to_do=false;		// triggers morse_do_output()
 extern bool musicbox_is_idle();
 
 extern bool monochrome_can_be_used();	// TODO: do i want that *here*?
-extern void monochrome_display_message(char * message);
+extern void MC_display_message(char * message);
 // avoid sound glitches when using OLED:
 extern bool oled_feedback_while_playing;
-extern uint8_t monochrome_println2x2(uint8_t row, char* str);
-extern void monochrome_setInverseFont(uint8_t inverse);
+extern void MC_println2x2(uint8_t row, char* str);		// 2x2 lines
+extern void MC_setInverseFont();
+extern void MC_clearInverseFont();
 extern void monochrome_setPowerSave(uint8_t value);
-extern void monochrome_setCursor(uint8_t col, uint8_t row);
+extern void MC_setCursor(uint8_t col, uint8_t row);
 extern uint8_t monochrome_getCols();
-extern void monochrome_print(char* str);
+extern void MC_print(char* str);
 extern void monochrome_print_f(float f, int chiffres);
-extern uint8_t monochrome_println2x2(uint8_t row, char* str);		// 2x2 lines
 extern void MC_print2x2(uint8_t col, uint8_t row, char* str);	// for short 2x2 strings
 
 void morse_do_output() {
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
   if(morse_out_buffer_cnt) {
 #if defined USE_MONOCHROME_DISPLAY
-    monochrome_println2x2(MORSE_MONOCHROME_ROW, "        ");
+    MC_println2x2(MORSE_MONOCHROME_ROW, "        ");
 #endif
 
     MENU.out(F("morse "));
@@ -1409,7 +1409,7 @@ void morse_monochrome_display() {
   /*	prior (small) version
   MENU.out_ON_off(morse_output_char);
   MENU.tab();
-  MENU.out_ON_off(monochrome_display_hardware);
+  MENU.out_ON_off(has_display_hardware);
   */
   #endif
 
@@ -1525,9 +1525,9 @@ void static morse_token_decode() {	// decode received token sequence
 		  MENU.ln();
 
 #if defined USE_MONOCHROME_DISPLAY
-		  monochrome_display_message(F(" OLED "));
+		  MC_display_message(F(" OLED "));
 		} else {					// got switched off
-		  monochrome_display_message(F(" off "));
+		  MC_display_message(F(" off "));
 #endif
 		} // oled switched on/off
 
@@ -1562,13 +1562,13 @@ void static morse_token_decode() {	// decode received token sequence
 		  MENU.ln();
   #if defined USE_MONOCHROME_DISPLAY
 		  if(monochrome_can_be_used()) {
-		    monochrome_setCursor(monochrome_getCols() - 7 ,0);	// position of OLED UI display
+		    MC_setCursor(monochrome_getCols() - 7 ,0);	// position of OLED UI display
 		    if(accGyro_is_active) {
-		      monochrome_setInverseFont(1);
-		      monochrome_print(F("      "));	// TODO: real string
-		      monochrome_setInverseFont(0);
+		      MC_setInverseFont();
+		      MC_print(F("      "));	// TODO: real string
+		      MC_clearInverseFont();
 		    } else
-		      monochrome_print(F("      "));
+		      MC_print(F("      "));
 		  }
   #endif // USE_MONOCHROME_DISPLAY
 #endif // USE_MPU6050
@@ -1587,9 +1587,9 @@ void static morse_token_decode() {	// decode received token sequence
 #if defined USE_MONOCHROME_DISPLAY
 	    if(monochrome_can_be_used()) {
 	      if(morse_out_buffer_cnt) {
-		monochrome_setInverseFont(1);
+		MC_setInverseFont();
 		MC_print2x2(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, "'");	// TODO: TEST:
-		monochrome_setInverseFont(0);
+		MC_clearInverseFont();
 	      }
 	    }
 #endif // USE_MONOCHROME_DISPLAY

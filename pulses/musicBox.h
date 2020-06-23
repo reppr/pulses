@@ -2591,8 +2591,7 @@ void start_musicBox() {
   MENU.out(F("\nstart_musicBox()\t"));
 
 #if defined USE_MONOCHROME_DISPLAY && defined MUSICBOX_SHOW_PROGRAM_VERSION	// default *off*
-  if(monochrome_can_be_used())
-    show_program_version();
+  MC_show_program_version();
 #endif
 
 #if defined USE_RGB_LED_STRIP
@@ -4136,19 +4135,19 @@ bool musicBox_reaction(char token) {
 	MENU.drop_input_token();
 	next_row = extended_output(my_IDENTITY.preName, 0, next_row, true);
 	MENU.ln();
-	monochrome_clearLine(next_row++);		// clear one more line
+	MC_clearLine(next_row++);		// clear one more line
 	if((musicBoxConf.name != NULL) && (*musicBoxConf.name)) {
 	  MENU.outln(musicBoxConf.name);
 	  next_row = monochrome_println_big_or_multiline(next_row, musicBoxConf.name);
 	} // name
 
 	while (next_row < rows - 2)
-	  monochrome_clearLine(next_row++);	// clear in between lines
+	  MC_clearLine(next_row++);		// clear in between lines
 
 	if(next_row <= (rows - 2)) {		// 2 more free rows?
 	  if(musicBoxConf.preset) {
-	    monochrome_clearLine(next_row);	// clear 2 lines
-	    monochrome_clearLine(next_row +1);
+	    MC_clearLine(next_row);		// clear 2 lines
+	    MC_clearLine(next_row +1);
 	    char preset[10];
 	    itoa(musicBoxConf.preset, preset, 10);
 	    MC_print2x2(0, next_row, preset);	//   yes, show preset number
@@ -4177,8 +4176,7 @@ bool musicBox_reaction(char token) {
 #if defined USE_MONOCHROME_DISPLAY
     case 'O': // 'IO' clear OLED	// TODO: OBSOLETE?
       MENU.drop_input_token();
-      monochrome_clear();
-      // monochrome_clear();
+      MC_clear_display();
       break;
 
     case 'R':	// 'IR' == 'IT' == 'IJ'

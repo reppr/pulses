@@ -7,7 +7,8 @@
 
 #if ! defined PULSES_ENGINE_CONFIG_H
 
-#define MULTICORE_DISPLAY	// send hw display from other core
+#define MULTICORE_DISPLAY	// send hw display from other core (core 0)
+				// to avoid audible clicks and dropouts
 
 #define PRENAME_MAX_LENGTH	15		// *excluding* '\0'
 

@@ -148,7 +148,7 @@ TODO morse command names come unformatted on menu: "XYZSEND" should be "XYZ |SEN
 
 *NO OLED OUTPUT* when it is in POWER SAVE mode		maybe already done?
 
-check monochrome_display_hardware	   MENU.out_ON_off(monochrome_display_hardware);
+check has_display_hardware	   MENU.out_ON_off(has_display_hardware);
 
 FIXME: OLED != DELWORD
 

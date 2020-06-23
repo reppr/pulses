@@ -1714,7 +1714,7 @@ void setup() {
   //  monochrome_setFont(u8x8_font_chroma48medium8_r);	// *Umlaute missing*
   monochrome_setFont(u8x8_font_amstrad_cpc_extended_f);	// *Umlaute here, but strange*
 
-  bool monochrome_display_hardware=true;	// TODO: fix&use monochrome_display detection
+  bool has_display_hardware=true;	// TODO: fix&use monochrome_display detection
 #endif
 
   MENU.print_free_RAM();
@@ -1778,8 +1778,8 @@ void setup() {
 #endif
 
 #if defined USE_MONOCHROME_DISPLAY
-  // TODO: monochrome_display_hardware	fix&use monochrome_display detection
-  if(monochrome_display_hardware)
+  // TODO: has_display_hardware	fix&use monochrome_display detection
+  if(has_display_hardware)
     delay(1111);	// give a chance to read version on oled display during setup
 #endif
 
@@ -2075,7 +2075,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
     MENU.men_selected = musicBox_page;	// default to musicBox menu
 
 #if defined USE_MONOCHROME_DISPLAY
-    monochrome_display_message("user mode active");
+    MC_display_message("user mode active");
 #endif
 
   } else {
@@ -6862,8 +6862,8 @@ uint8_t /*next_row*/ extended_output(char* data, uint8_t col=0, uint8_t row=0, b
   MENU.out(data);
 #if defined USE_MONOCHROME_DISPLAY
   if(monochrome_can_be_used() || force || morse_output_char) {
-    monochrome_clearLine(row);
-    monochrome_clearLine(row +1);
+    MC_clearLine(row);
+    MC_clearLine(row +1);
     MC_print2x2(col, row, data);
   }
 
