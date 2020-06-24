@@ -4128,32 +4128,8 @@ bool musicBox_reaction(char token) {
       break;
 
     case 'N':	// 'IN'	prename, name, preset#
-      {
-	uint8_t rows = monochrome_getRows();
-	uint8_t next_row = 0;
-
-	MENU.drop_input_token();
-	next_row = extended_output(my_IDENTITY.preName, 0, next_row, true);
-	MENU.ln();
-	MC_clearLine(next_row++);		// clear one more line
-	if((musicBoxConf.name != NULL) && (*musicBoxConf.name)) {
-	  MENU.outln(musicBoxConf.name);
-	  next_row = monochrome_println_big_or_multiline(next_row, musicBoxConf.name);
-	} // name
-
-	while (next_row < rows - 2)
-	  MC_clearLine(next_row++);		// clear in between lines
-
-	if(next_row <= (rows - 2)) {		// 2 more free rows?
-	  if(musicBoxConf.preset) {
-	    MC_clearLine(next_row);		// clear 2 lines
-	    MC_clearLine(next_row +1);
-	    char preset[10];
-	    itoa(musicBoxConf.preset, preset, 10);
-	    MC_print2x2(0, next_row, preset);	//   yes, show preset number
-	  } // preset
-	} // free 2 bottom lines?
-      }
+      MENU.drop_input_token();
+      MC_show_names();
       break;
 
 #if defined USE_ESP_NOW

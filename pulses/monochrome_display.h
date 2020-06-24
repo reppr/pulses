@@ -132,7 +132,7 @@ void multicore_show_program_version() {	// create and do one shot task
   if(err != pdPASS) {
     MENU.out(err);
     MENU.space();
-    MENU.error_ln(F("display task"));
+    MENU.error_ln(F("show_version"));
   }
 }
 
@@ -185,7 +185,7 @@ char run_state_symbol() {	// TODO: move to musicBox
   return '?';
 }
 
-// DADA TODO: implement MC_version
+// no MC_xxx version
 uint8_t /*next_row*/ monochrome_multiline_string(uint8_t row, char* s) { // multiline string from row to bottom (max)
   if(s && *s /*no empty string*/) {
     uint8_t cols = (*u8x8_p).getCols();
@@ -620,7 +620,7 @@ void inline MC_println2x2(uint8_t row, char* str) {
 #endif // MULTICORE_DISPLAY
 
 
-// DADA  MULTICORE_DISPLAY  TODO: implement MC_version
+// no MC_xxx version
 uint8_t /*next_row*/ monochrome_println_big_or_multiline(int row, char* str) {
   /*
     print one line on monochrome
@@ -918,6 +918,67 @@ inline void monochrome_begin() {
 inline void monochrome_setFont(const uint8_t *font_8x8) {
   (*u8x8_p).setFont(font_8x8);
 }
+
+
+void monochrome_show_names() {
+  uint8_t rows = monochrome_getRows();
+  uint8_t next_row = 0;
+
+  next_row = extended_output(my_IDENTITY.preName, 0, next_row, true);
+  MENU.ln();
+  monochrome_clearLine(next_row++);	// clear one more line
+  if((musicBoxConf.name != NULL) && (*musicBoxConf.name)) {
+    MENU.outln(musicBoxConf.name);
+    next_row = monochrome_println_big_or_multiline(next_row, musicBoxConf.name);
+  } // name
+
+  while (next_row < rows - 2)
+    monochrome_clearLine(next_row++);		// clear in between lines
+
+  if(next_row <= (rows - 2)) {			// 2 more free rows?
+    if(musicBoxConf.preset) {
+      monochrome_clearLine(next_row);		// clear 2 lines
+      monochrome_clearLine(next_row +1);
+      char preset[10];
+      itoa(musicBoxConf.preset, preset, 10);
+      monochrome_print2x2(0, next_row, preset);	//   yes, show preset number
+    } // preset
+  } // free 2 bottom lines?
+} // monochrome_show_names()
+
+#if defined MULTICORE_DISPLAY
+TaskHandle_t multicore_show_names_handle;
+
+void multicore_show_names_task(void* dummy) {
+  monochrome_show_names();
+  vTaskDelete(NULL);
+}
+
+void multicore_show_names() {	// create and do one shot task
+  BaseType_t err = xTaskCreatePinnedToCore(multicore_show_names_task,		// function
+					   "show_names",			// name
+					   2000,				// stack size
+					   NULL,				// task input parameter
+					   0,					// task priority
+					   &multicore_show_names_handle,	// task handle
+					   0);					// core 0
+  if(err != pdPASS) {
+    MENU.out(err);
+    MENU.space();
+    MENU.error_ln(F("show_names"));
+  }
+}
+
+void inline MC_show_names() {
+  multicore_show_names();
+}
+
+#else
+ void inline MC_show_names() {
+   monochrome_show_names();
+ }
+#endif // MULTICORE_DISPLAY
+
 
 void monochrome_setup() {
   MENU.out(F("monochrome_setup() "));
