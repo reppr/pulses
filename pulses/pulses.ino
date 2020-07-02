@@ -1741,6 +1741,10 @@ void setup() {
   MENU.outln(F("\tdisplays from other core"));
 #endif
 
+#if defined MULTICORE_RGB_STRING
+  MENU.outln(F("\tdrives rgb from other core"));
+#endif
+
 #if defined PULSES_USE_DOUBLE_TIMES
   MENU.outln(F("\tuses DOUBLE times"));
 #else
@@ -2111,7 +2115,12 @@ bool low_priority_tasks() {
 
 #if defined USE_RGB_LED_STRIP
   if(rgb_strings_active && update_RGB_LED_string && rgb_strings_available) {
+  #if defined MULTICORE_RGB_STRING
+    extern void multicore_rgb_string_draw();
+    multicore_rgb_string_draw();
+  #else
     digitalLeds_drawPixels(strands, 1);
+  #endif
     update_RGB_LED_string = false;
     return true;
   }

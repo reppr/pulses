@@ -636,6 +636,29 @@ void set_rgb_led_background(int pulse) {
     MENU.error_ln(F("no RGB LEDs"));
 } // set_rgb_led_background(int pulse)
 
+#if defined MULTICORE_RGB_STRING
+TaskHandle_t multicore_rgb_string_draw_handle;
+
+void multicore_rgb_string_draw_task(void* dummy) {
+  digitalLeds_drawPixels(strands, 1);
+  vTaskDelete(NULL);
+}
+
+void multicore_rgb_string_draw() {	// create and do one shot task
+  BaseType_t err = xTaskCreatePinnedToCore(multicore_rgb_string_draw_task,	// function
+					   "rgb_draw",			// name
+					   2000,				// stack size
+					   NULL,				// task input parameter
+					   0,					// task priority
+					   &multicore_rgb_string_draw_handle,	// task handle
+					   0);					// core 0
+  if(err != pdPASS) {
+    MENU.out(err);
+    MENU.space();
+    MENU.error_ln(F("rgb_string_draw"));
+  }
+}
+#endif // MULTICORE_RGB_STRING
 
 void rgb_strings_info() {
   MENU.out(F("LED strings "));

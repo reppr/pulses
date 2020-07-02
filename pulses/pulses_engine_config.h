@@ -10,6 +10,9 @@
 #define MULTICORE_DISPLAY	// send hw display from other core (core 0)
 				// to avoid audible clicks and dropouts
 
+// MULTICORE_RGB_STRING	does *not* avoid clicks, so deactivated
+//#define MULTICORE_RGB_STRING	// avoid clicks, see: multicore_rgb_string_draw()
+
 #define PRENAME_MAX_LENGTH	15		// *excluding* '\0'
 
 #define PULSES_USE_DOUBLE_TIMES		// working fine :)
