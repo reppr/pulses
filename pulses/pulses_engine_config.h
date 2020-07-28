@@ -13,7 +13,9 @@
 // MULTICORE_RGB_STRING	does *not* avoid clicks, so deactivated
 //#define MULTICORE_RGB_STRING	// avoid clicks, see: multicore_rgb_string_draw()
 
-#define PRENAME_MAX_LENGTH	15		// *excluding* '\0'
+//#define MULTICORE_MPU_SAMPLING	// sample MPU from core 0	CRASHES VERY OFTEN
+
+#define PRENAME_MAX_LENGTH	15	// *excluding* '\0'
 
 #define PULSES_USE_DOUBLE_TIMES		// working fine :)
 

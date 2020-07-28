@@ -512,6 +512,30 @@ void accGyro_sample_v2() {
 #endif
 } // accGyro_sample_v2()
 
+#if defined  MULTICORE_MPU_SAMPLING
+TaskHandle_t multicore_sample_mpu_handle;
+
+void multicore_sample_mpu_task(void* dummy) {
+  accGyro_sample_v2();
+  vTaskDelete(NULL);
+}
+
+void multicore_sample_mpu() {	// create and do one shot task
+  BaseType_t err = xTaskCreatePinnedToCore(multicore_sample_mpu_task,		// function
+					   "sample mpu",			// name
+					   2000,				// stack size
+					   NULL,				// task input parameter
+					   0,					// task priority
+					   &multicore_sample_mpu_handle,	// task handle
+					   0);					// core 0
+  if(err != pdPASS) {
+    MENU.out(err);
+    MENU.space();
+    MENU.error_ln(F("sample mpu"));
+  }
+} // multicore_sample_mpu()
+#endif
+
 
 extern bool monochrome_can_be_used();
 extern void monochrome_show_line(uint8_t row, char * s);

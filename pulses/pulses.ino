@@ -1745,6 +1745,10 @@ void setup() {
   MENU.outln(F("\tdrives rgb from other core"));
 #endif
 
+#if defined MULTICORE_MPU_SAMPLING  &&  defined USE_MPU6050
+  MENU.outln(F("\tmpu sampling from other core"));
+#endif
+
 #if defined PULSES_USE_DOUBLE_TIMES
   MENU.outln(F("\tuses DOUBLE times"));
 #else
@@ -2136,9 +2140,13 @@ bool low_priority_tasks() {
     return true;
   }
 
-  if ((low_priority_cnt % accgyro_modulus) == 0) { // take a accelerGyro sample
-    if(accGyro_is_active) {
+  if(accGyro_is_active) {
+    if ((low_priority_cnt % accgyro_modulus) == 0) { // take a accelerGyro sample?
+#if defined  MULTICORE_MPU_SAMPLING
+      multicore_sample_mpu();
+#else
       accGyro_sample_v2();
+#endif
       return true;
     }
   }
