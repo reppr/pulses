@@ -5,15 +5,17 @@
 
 #if defined MULTICORE_DISPLAY
  MC_show_program_version();
- delay(3000);
+ delay(30);
  MC_show_musicBox_parameters();
- delay(3000);
+ delay(30);
 
- (*u8x8_p).clear();
+// (*u8x8_p).clear();
  MC_print2x2(0, 0, "HEUREKA!");
- delay(2000);
+ delay(20);
  MC_print2x2(2, 2, "DADA");
- delay(2000);
+ delay(50);
+ MC_println2x2(5, "chruxi");
+//delay(2000);
 #endif
 
 //MENU.print_free_RAM();

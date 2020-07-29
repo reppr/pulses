@@ -606,6 +606,5 @@ musicBox  case 'O': // 'IO' clear OLED	// TODO: OBSOLETE?
 
 WiFi.mode(WIFI_STA);			// TODO: BUG: does not returm on PSRAM boards!
 
-#define MULTICORE_DISPLAY	// send hw display from other core (core 0)	still CRASHES...
-      truncated[i] = str[i];	// monochrome_print2x2();	CRASH with MULTICORE_DISPLAY
-      try #define MONOCHROME_2X2_HACK
+#define MONOCHROME_2X2_BUFFER_SIZE	10	// TODO: more versatile implementation
+MUTEX for 2x2 printing
