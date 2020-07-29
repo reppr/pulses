@@ -21,6 +21,8 @@
     //uint8_t colour=0;
     //bool inverted=false;
   } display_string_t;
+
+  #define MONOCHROME_2X2_BUFFER_SIZE	10	// see: MONOCHROME_2X2_HACK
 #endif
 
 #include <U8x8lib.h>
@@ -514,7 +516,7 @@ void monochrome_print2x2(uint8_t col, uint8_t row, char* str) {	// for short 2x2
 
     char c;
     for(int i=0; i<max; i++) {
-      truncated[i] = str[i];
+      truncated[i] = str[i];	// monochrome_print2x2();   >>>>  CRASH with MULTICORE_DISPLAY  <<<<
       if(truncated[i] == 0)
 	break;
     }
@@ -525,20 +527,48 @@ void monochrome_print2x2(uint8_t col, uint8_t row, char* str) {	// for short 2x2
 #if defined MULTICORE_DISPLAY
 TaskHandle_t multicore_print2x2_handle;
 
+  #if defined MONOCHROME_2X2_HACK
+    #warning "using MONOCHROME_2X2_HACK"
+    char monochrome_2x2_buffer[MONOCHROME_2X2_BUFFER_SIZE] = {0};	// MONOCHROME_2X2_HACK	uses global buffer
+
+    display_string_t monochrome_2x2_data;
+  #endif
+
 void multicore_print2x2_task(void* data_) {
   display_string_t* data = (display_string_t*) data_;
+
+#if defined MONOCHROME_2X2_HACK
+  MENU.out("col, row\t"); MENU.out(monochrome_2x2_data.col); MENU.tab(); MENU.out(monochrome_2x2_data.row); MENU.tab(); MENU.outln(monochrome_2x2_buffer);
+  monochrome_print2x2(monochrome_2x2_data.col, monochrome_2x2_data.row, monochrome_2x2_buffer);
+#else
   monochrome_print2x2(data->col, data->row, data->text);
+#endif
+
   vTaskDelete(NULL);
 }
 
 void multicore_print2x2(uint8_t col, uint8_t row, char* str) {	// create and do one shot task
   display_string_t data;
+
+#if defined MONOCHROME_2X2_HACK
+  char c;
+  for(int i=0; i < MONOCHROME_2X2_BUFFER_SIZE; i++) {
+    c = monochrome_2x2_buffer[i] = str[i];
+    if(c==0)
+      break;
+  }
+  monochrome_2x2_buffer[MONOCHROME_2X2_BUFFER_SIZE - 1]=0;
+  data.text = monochrome_2x2_buffer;
+
+#else // no MONOCHROME_2X2_HACK
   data.text = str;
+#endif
+
   data.col = col;
   data.row = row;
-//  TaskHandle_t multicore_print2x2_handle;
+
   BaseType_t err = xTaskCreatePinnedToCore(multicore_print2x2_task,		// function
-					   "print2x2",			// name
+					   "print2x2",				// name
 					   2000,				// stack size
 					   &data,				// task input parameter
 					   0,					// task priority

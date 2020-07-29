@@ -7,8 +7,10 @@
 
 #if ! defined PULSES_ENGINE_CONFIG_H
 
-#define MULTICORE_DISPLAY	// send hw display from other core (core 0)
+#define MULTICORE_DISPLAY	// send hw display from other core (core 0)	still CRASHES without MONOCHROME_2X2_HACK
 				// to avoid audible clicks and dropouts
+#define MONOCHROME_2X2_HACK	// BAD HACK for monochrome_print2x2()
+
 
 // MULTICORE_RGB_STRING	does *not* avoid clicks, so deactivated
 //#define MULTICORE_RGB_STRING	// avoid clicks, see: multicore_rgb_string_draw()
