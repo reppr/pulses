@@ -4,18 +4,27 @@
 */
 
 #if defined MULTICORE_DISPLAY
- MC_show_program_version();
- delay(30);
- MC_show_musicBox_parameters();
- delay(30);
+//  MC_show_program_version();
+//  delay(30);
+//  MC_show_musicBox_parameters();
+//  delay(30);
+//
+// // (*u8x8_p).clear();
+//  MC_print2x2(0, 0, "HEUREKA!");
+//  delay(20);
+//  MC_print2x2(2, 2, "DADA");
+//  delay(50);
+//  MC_println2x2(5, "chruxi");
+// //delay(2000);
 
-// (*u8x8_p).clear();
- MC_print2x2(0, 0, "HEUREKA!");
- delay(20);
- MC_print2x2(2, 2, "DADA");
- delay(50);
- MC_println2x2(5, "chruxi");
-//delay(2000);
+// {
+//   char txt[9]= {0};
+//   snprintf(txt, 9, "sync=%i", musicBoxConf.sync);
+//   extended_output(txt, 0, 0, false);
+//   MENU.ln();
+// }
+
+  MC_show_tuning();
 #endif
 
 //MENU.print_free_RAM();

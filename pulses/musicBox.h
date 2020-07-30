@@ -1155,7 +1155,7 @@ void tuning_pitch_and_scale_UI_display() {	// TODO: update
   MENU.out(F("'T'=tuning 'T?'=?\t'TM'=toggle metric"));
   MENU.out_ON_off(metric_alternative_tuning);
   MENU.out(F("\t'TZ<num>'=(int)hertz\t'T!'=tune"));
-  MENU.outln(F("\t'T!'=tune\t'T<num>'=select scale"));
+  MENU.outln(F("\t'T<num>'=select scale"));
 
   MENU.out(F("'T[ABHCDEFG]'=select metric key ("));
   MENU.out(metric_mnemonic);
@@ -1195,6 +1195,9 @@ bool tuning_pitch_and_scale_UI() {
     MENU.ln();
     extern void musicBox_short_info();
     musicBox_short_info();
+#if defined  USE_MONOCHROME_DISPLAY
+    MC_show_tuning();
+#endif
     return true;
     break;
 
@@ -1228,10 +1231,14 @@ bool tuning_pitch_and_scale_UI() {
 	musicBoxConf.pitch = {1, hz};
 	pitch_user_selected = true;
 	MENU.out(hz);
+	MENU.tab();
 	set_metric_pitch(0);	// assumed to be *not* metric
       }
     }
     MENU.ln();
+#if defined  USE_MONOCHROME_DISPLAY
+    MC_show_tuning();
+#endif
     return true;
     break;
   } // switch(first_token)
@@ -1329,6 +1336,9 @@ bool tuning_pitch_and_scale_UI() {
       } // treat input following 'T......'
     }	// // sequential input loop		'Tx'
   }
+#if defined  USE_MONOCHROME_DISPLAY
+    MC_show_tuning();
+#endif
 } // tuning_pitch_and_scale_UI()
 
 
@@ -4162,11 +4172,11 @@ bool musicBox_reaction(char token) {
       {
 	char* str;
 	str = array2name(SCALES, selected_in(SCALES));
-	monochrome_println_big_or_multiline(0, str);
+	monochrome_big_or_multiline(0, str);
 	MENU.outln(str);
 
 	str = array2name(JIFFLES, selected_in(JIFFLES));
-	monochrome_println_big_or_multiline(3, str);
+	monochrome_big_or_multiline(3, str);
 	MENU.outln(str);
 	// TODO: monochrome metric_mnemonic 'IR...'
       }

@@ -606,5 +606,5 @@ musicBox  case 'O': // 'IO' clear OLED	// TODO: OBSOLETE?
 
 WiFi.mode(WIFI_STA);			// TODO: BUG: does not returm on PSRAM boards!
 
-#define MONOCHROME_2X2_BUFFER_SIZE	10	// TODO: more versatile implementation
-MUTEX for 2x2 printing
+fix MC_print()
+fix (or remove) next row in big_or_multiline and extended_output

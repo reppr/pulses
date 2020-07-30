@@ -5444,8 +5444,11 @@ bool menu_pulses_reaction(char menu_input) {
     }
 
     if (DO_or_maybe_display(VERBOSITY_LOWEST)) {
-      MENU.out(F("sync "));
-      MENU.outln(musicBoxConf.sync);
+      char txt[9]= {0};
+      char* format = F("sync %i");
+      snprintf(txt, 9, format, musicBoxConf.sync);
+      extended_output(txt, 0, 0, false);
+      MENU.ln();
     }
 
     break;
@@ -6881,7 +6884,7 @@ uint8_t /*next_row*/ extended_output(char* data, uint8_t col=0, uint8_t row=0, b
   if(monochrome_can_be_used() || force || morse_output_char) {
     MC_clearLine(row);
     MC_clearLine(row +1);
-    MC_print2x2(col, row, data);
+    MC_big_or_multiline(row, data);
   }
 
   row += 2;
