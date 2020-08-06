@@ -2,7 +2,7 @@
       9:  case '?':	// help, overrides common menu entry for '?'
      14:  case '.':	// ".xxx" select 16bit pulses masks  or  "." short info: time and flagged pulses info
      16:    case ' ':
-     19:    case EOF8:			// '.' and '. ' display short_info
+     19:    case EOF8:			// '.' and '. ' display all_pulses_info()
      23:    case '?':			// '.?' PULSES.show_selected_mask();
      28:    case 'M':  case 'm':	// '.M<num>' select HEX 16bit mask
      43:    case '~':	// '.~' invert destination selection

@@ -91,7 +91,7 @@ void Pulses::fix_global_next() {
 /* **************************************************************** */
 
 /* more functions to move to library Pulses:
-void Pulses::short_info(void) {
+void Pulses::all_pulses_info(void) {
   if ((*MENU).verbosity > VERBOSITY_SOME) {
     (*MENU).ln();
     time_info();

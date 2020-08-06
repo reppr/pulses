@@ -3649,7 +3649,7 @@ bool musicBox_reaction(char token) {
 
   switch(token) {
   case '?': // musicBox_display();
-    musicBox_display();
+    do_on_other_core(&musicBox_display);	// musicBox_display() on other core
     break;
   case ',': // show parameters		',,' shows parameters and parameters in source code format
     if (MENU.menu_mode)	{ // *exclude* special menu modes

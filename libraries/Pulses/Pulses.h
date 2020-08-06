@@ -441,7 +441,7 @@ class Pulses {
   void display_time_human(pulse_time_t duration);	// everyday time format	d h m s  short
   void display_time_human_format(pulse_time_t duration);	// everyday time format	d h m s  formatted with spaces
   void display_real_ovfl_and_sec(pulse_time_t then);	//
-  void short_info(void);				// give some infos, depending verbosity
+  //  void each_pulse_info();				// give pulse info lines, depending verbosity
   //  void selected_or_flagged_pulses_info_lines(void);
   //  void pulse_info_1line(int pulse);			// 1 line pulse info, depending verbosity
   void print_period_in_time_units(int pulse);

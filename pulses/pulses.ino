@@ -128,6 +128,11 @@ Menu MENU(CB_SIZE, 7, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
     #include "extensions/pulses_ADS1115.h"
   #endif
 
+
+#if defined ESP32	// do we have a second core?
+  #include "simple_do_from_other_core.h"
+#endif
+
 /* **************** Pulses **************** */
 
 #include <Pulses.h>
@@ -4763,7 +4768,7 @@ void reverse_gpio_pins() {	// TODO: fix next_gpio()  ???? ################
 // menu_pulses_reaction()
 
 // display helper functions:
-void short_info() {
+void all_pulses_info() {	// use as  do_on_other_core(&all_pulses_info);
   if (MENU.verbosity > VERBOSITY_SOME) {
     MENU.ln();
     PULSES.time_info();
@@ -5152,17 +5157,17 @@ bool menu_pulses_reaction(char menu_input) {
 
   switch (menu_input) {
   case '?':	// help, overrides common menu entry for '?'
-    MENU.menu_display();	// as common
-    short_info();		// + short info
+    MENU.menu_display();		// menu as common
+    do_on_other_core(&all_pulses_info);	// + all_pulses_info();
     break;
 
   case '.':	// ".xxx" select 16bit pulses masks  or  "." short info: time and flagged pulses info
     switch (MENU.peek()) {
     case ' ':
-      MENU.drop_input_token();	// ' ' no 'break;'  display short_info
+      MENU.drop_input_token();	// ' ' no 'break;'  display all_pulses_info
 
-    case EOF8:			// '.' and '. ' display short_info
-      short_info();
+    case EOF8:			// '.' and '. ' (and ' ') display all_pulses_info
+      do_on_other_core(&all_pulses_info);	// all_pulses_info();
       break;
 
     case '?':			// '.?' PULSES.show_selected_mask();
