@@ -190,7 +190,8 @@ enum accGyro_modes {
 };
 
 //int accGyro_mode=0;	// zero means inactive
-int accGyro_mode = AG_mode_Gz | AG_mode_Ay | AG_mode_Ax;	// very temporary default ;)
+//int accGyro_mode = AG_mode_Gz | AG_mode_Ay | AG_mode_Ax;	// was: temporary default
+int accGyro_mode = AG_mode_Ay | AG_mode_Ax;			// temporary default (Gz sync_shift made some problems)
 
 int16_t Ax_sel_offset=0;
 int16_t Ay_sel_offset=0;
@@ -759,9 +760,8 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 	if(Gz_i_new != _selected_Gz_i_seen) {
 	  _selected_Gz_i_seen = Gz_i_new;
 	  extern void sync_shifting(Harmonical::fraction_t shift);
-	  // sync_shifting({_selected_Gz_i_seen, 16*4096});	// TODO: FIND&TRIMM new DEFAULT for version2
-	  sync_shifting({_selected_Gz_i_seen, 4*4096});		// TODO: FIND&TRIMM new DEFAULT for version2
-//#if defined DEBUG_AG_REACTION		// TODO: how and when to report? ################
+	  sync_shifting({_selected_Gz_i_seen, 8*4096});	// FIXME: DEBUG: TODO: FIND&TRIMM new DEFAULT for version2
+//#if defined DEBUG_AG_REACTION		// fixme: TODO: how and when to report? ################
 	  MENU.out(F("sync_shifting "));
 	  MENU.outln(_selected_Gz_i_seen);
 //#endif
