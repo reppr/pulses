@@ -24,7 +24,8 @@
 //   MENU.ln();
 // }
 
-  MC_show_tuning();
+// MC_show_tuning();
+// MC_show_line(3, "Lirumlarum");
 #endif
 
 //MENU.print_free_RAM();

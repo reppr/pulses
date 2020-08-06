@@ -408,13 +408,22 @@ void multicore_show_line_task(void* data_) {
 }
 
 void multicore_show_line(uint8_t row, char* str) {	// create and do one shot task
-  display_string_t data;
-  data.text = str;
-  data.row = row;
+  char c;
+  for(int i=0; i < MONOCHROME_TEXT_BUFFER_SIZE; i++) {
+    c = monochrome_text_buffer[i] = str[i];
+    if(c==0)
+      break;
+  }
+  monochrome_text_buffer[MONOCHROME_TEXT_BUFFER_SIZE - 1]=0;
+  monochrome_descriptor.text = (char*) &monochrome_text_buffer;
+
+  monochrome_descriptor.col = 0;
+  monochrome_descriptor.row = row;
+
   BaseType_t err = xTaskCreatePinnedToCore(multicore_show_line_task,		// function
-					   "show_line",			// name
+					   "show_line",				// name
 					   2000,				// stack size
-					   &data,				// task input parameter
+					   &monochrome_descriptor,		// task input parameter
 					   0,					// task priority
 					   &multicore_show_line_handle,		// task handle
 					   0);					// core 0
@@ -425,7 +434,7 @@ void multicore_show_line(uint8_t row, char* str) {	// create and do one shot tas
   }
 }
 
-void inline MC_show_line(uint8_t row, char* str) {
+void MC_show_line(uint8_t row, char* str) {	// strange compiling problems when used as inline ????
   multicore_show_line(row, str);
 }
 
