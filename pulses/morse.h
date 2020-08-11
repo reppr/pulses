@@ -8,6 +8,8 @@
 //#define TOUCH_ISR_VERSION_2	// removed, see: morse_unused.txt
 #define TOUCH_ISR_VERSION_3	// other code removed, see: morse_unused.txt
 
+#define TRY_TOKEN_LENGTH_FEEDBACK_TASK	// experimental
+
 //#define DEBUG_TREAT_MORSE_EVENTS_V3
 
 #if ! defined MORSE_MONOCHROME_ROW
@@ -302,7 +304,7 @@ void show_morse_event_buffer() {	// debugging only
 } // show_morse_event_buffer()
 #endif // DEBUG_TREAT_MORSE_EVENTS_V3
 
-#if defined MORSE_OUTPUT_PIN && defined ESP32
+#if defined MORSE_OUTPUT_PIN && defined ESP32 && defined TRY_TOKEN_LENGTH_FEEDBACK_TASK	// experimental
   #include <freertos/task.h>
 
 TaskHandle_t morse_input_feedback_handle;
@@ -310,6 +312,7 @@ TaskHandle_t morse_input_feedback_handle;
 void morse_input_duration_feedback(void* dummy) {
   if(touchRead(MORSE_TOUCH_INPUT_PIN) < touch_threshold) {	// looks STILL TOUCHED
     vTaskDelay((TickType_t) (limit_dash_loong * morse_TimeUnit / 1000 / portTICK_PERIOD_MS));
+    //vTaskDelay((TickType_t) (dashTim * morse_TimeUnit / 1000 / portTICK_PERIOD_MS));
     if(touchRead(MORSE_TOUCH_INPUT_PIN) < touch_threshold) {	// looks STILL TOUCHED
       digitalWrite(MORSE_OUTPUT_PIN, LOW);
       vTaskDelay((TickType_t) 100 / portTICK_PERIOD_MS);
@@ -318,6 +321,7 @@ void morse_input_duration_feedback(void* dummy) {
       }
     }
   }
+  morse_input_feedback_handle = NULL;
   vTaskDelete(NULL);
 }
 
@@ -336,11 +340,14 @@ void trigger_token_duration_feedback() {
   }
 }
 
-void IRAM_ATTR stop_token_duration_feedback() {
-  if(morse_input_feedback_handle != NULL)
-    vTaskDelete(morse_input_feedback_handle);
-}
-#endif // MORSE_OUTPUT_PIN
+// works better when inlined
+// void IRAM_ATTR stop_token_duration_feedback() {	// (works better as inline)
+//   if(morse_input_feedback_handle != NULL) {
+//     vTaskDelete(morse_input_feedback_handle);
+//     morse_input_feedback_handle = NULL;
+//   }
+// }
+#endif // MORSE_OUTPUT_PIN && TRY_TOKEN_LENGTH_FEEDBACK_TASK	// experimental
 
 
 void IRAM_ATTR touch_morse_ISR_v3() {	// ISR for ESP32 touch sensor as morse input	*NEW VERSION 3*
@@ -362,18 +369,30 @@ void IRAM_ATTR touch_morse_ISR_v3() {	// ISR for ESP32 touch sensor as morse inp
     morse_events_cbuf[morse_events_write_i].type = 1 /*touched*/;
 #if defined MORSE_OUTPUT_PIN
     digitalWrite(MORSE_OUTPUT_PIN, HIGH);		// feedback: pin is TOUCHED, LED on
-    trigger_token_duration_feedback();
-#endif
+
+ #if defined TRY_TOKEN_LENGTH_FEEDBACK_TASK	// experimental
+    // stop_token_duration_feedback();			// assert it is off	// works better as inline:
+    if(morse_input_feedback_handle != NULL) {
+      vTaskDelete(morse_input_feedback_handle);
+      morse_input_feedback_handle = NULL;
+    }
+    trigger_token_duration_feedback();			// switch on
+ #endif // TRY_TOKEN_LENGTH_FEEDBACK_TASK	// experimental
+#endif // MORSE_OUTPUT_PIN
 
   } else {							// >>>>>>>>>>>>>>>> looks RELEASED <<<<<<<<<<<<<<<<
     touch_pad_set_trigger_mode(TOUCH_TRIGGER_BELOW);		// wait for next touch
     morse_events_cbuf[morse_events_write_i].type = 0 /*released*/;
 #if defined MORSE_OUTPUT_PIN
     digitalWrite(MORSE_OUTPUT_PIN, LOW);		// feedback: pin is RELEASED, LED off
-    //    stop_token_duration_feedback();
+
+  #if defined TRY_TOKEN_LENGTH_FEEDBACK_TASK		// experimental
+    // stop_token_duration_feedback();			// works better as inline:
     if(morse_input_feedback_handle != NULL)
       vTaskDelete(morse_input_feedback_handle);
-#endif
+    morse_input_feedback_handle = NULL;
+  #endif // TRY_TOKEN_LENGTH_FEEDBACK_TASK		// experimental
+#endif // MORSE_OUTPUT_PIN
   }
   morse_events_write_i++;
   morse_events_write_i %= MORSE_EVENTS_MAX;		// it's a ring buffer
