@@ -3,7 +3,8 @@
   temporary test menu UI during development
 */
 
-do_on_other_core(&all_pulses_info);
+morse_show_limits();
+//do_on_other_core(&all_pulses_info);
 
 #if defined MULTICORE_DISPLAY
 //  MC_show_program_version();

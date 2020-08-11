@@ -182,7 +182,7 @@ typedef struct pulses_hardware_conf_t {
   uint8_t DAC2_pin=ILLEGAL8;	// !flag ILLEGAL8 or 26	// ILLEGAL8==!flag or pin
 
   // trigger
-  uint8_t musicbox_trigger_pin=ILLEGAL8;
+  uint8_t musicbox_trigger_pin=ILLEGAL8;	// maybe include MUSICBOX_TRIGGER_BLOCK_SECONDS?
 
   // battery and peripheral power
   uint8_t battery_level_control_pin=ILLEGAL8;				// %4
@@ -190,7 +190,7 @@ typedef struct pulses_hardware_conf_t {
 
   // morse
   uint8_t morse_touch_input_pin=ILLEGAL8;
-  uint8_t morse_gpio_input_pin=ILLEGAL8;					// %4
+  uint8_t morse_gpio_input_pin=ILLEGAL8;				// %4
   uint8_t morse_output_pin=ILLEGAL8;
 
   // bluetooth
@@ -198,7 +198,7 @@ typedef struct pulses_hardware_conf_t {
 
   // monochrome display
   uint8_t monochrome_type = monochrome_type_off;	// flag and monochrome_type
-  uint8_t monochrome_reserved=0;						// %4
+  uint8_t monochrome_reserved=0;					// %4
 
   // RTC
   uint8_t RTC_type = RTC_type_off;	// flag and RTC_type
@@ -1741,6 +1741,9 @@ void setup() {
     else
       MENU.error_ln(F("unexpected core"));
   }
+
+  MENU.out(F("\tportTICK_PERIOD_MS "));
+  MENU.outln(portTICK_PERIOD_MS);
 
 #if defined MULTICORE_DISPLAY
   MENU.outln(F("\tdisplays from other core"));

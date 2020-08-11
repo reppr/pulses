@@ -328,7 +328,7 @@ void IRAM_ATTR touch_morse_ISR_v3() {	// ISR for ESP32 touch sensor as morse inp
     touch_pad_set_trigger_mode(TOUCH_TRIGGER_BELOW);		// wait for next touch
     morse_events_cbuf[morse_events_write_i].type = 0 /*released*/;
 #if defined MORSE_OUTPUT_PIN
-      digitalWrite(MORSE_OUTPUT_PIN, LOW);		// feedback: pin is RELEASED, LED off
+    digitalWrite(MORSE_OUTPUT_PIN, LOW);		// feedback: pin is RELEASED, LED off
 #endif
   }
   morse_events_write_i++;

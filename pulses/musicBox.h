@@ -29,7 +29,7 @@
     #define MAX_SUBCYCLE_SECONDS		60*18	// *max seconds*, produces short PRESET PIECES	   portable instruments 2019-06
   #endif
 //#define MUSICBOX_HARD_END_SECONDS		60*100	// SAVETY NET shut down after 100'	***DEACTIVATED***
-  #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3600*12	// *DEACTIVATED*
+  #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3600*12	// *DEACTIVATED*    TODO: should go to musicBoxConf or HARDWARE
   #define SOFT_END_DAYS_TO_LIVE_DEFAULT		1	// quite fast ending
   #undef RANDOM_PRESET_LOOP				// just in case, does not work well together	TODO: TEST: ################
   #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user	// new default for *portable* instruments
@@ -3207,16 +3207,17 @@ void sync_shifting(Harmonical::fraction_t shift) {
 void musicBox_setup() {	// TODO:update
   MENU.ln();
 
-#if defined MUSICBOX_TRIGGER_PIN
+#if defined MUSICBOX_TRIGGER_PIN		// TODO: use HARDWARE musicbox_trigger_pin != ILLEGAL8; ?
   MENU.out(F("musicBox trigger pin:\t"));
   MENU.outln(MUSICBOX_TRIGGER_PIN);
-#endif
 
-#if defined MUSICBOX_TRIGGER_BLOCK_SECONDS
+#if defined MUSICBOX_TRIGGER_BLOCK_SECONDS	// TODO: should go to musicBoxConf or HARDWARE
   MENU.out(F("disable retriggering:\t"));
   MENU.outln(MUSICBOX_TRIGGER_BLOCK_SECONDS);
   MENU.ln();
 #endif
+#endif //  MUSICBOX_TRIGGER_PIN
+
 
 #if defined MAX_SUBCYCLE_SECONDS
   MENU.out(F("max subcycle seconds:\t"));

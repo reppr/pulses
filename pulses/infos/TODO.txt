@@ -612,5 +612,14 @@ fix (or remove) next row in big_or_multiline and extended_output
 sync_shifting({_selected_Gz_i_seen, 8*4096});	// FIXME: TODO: FIND&TRIMM new DEFAULT for version2
 sync_shifting monochrome feedback
 
-multicore menu out	use  do_function_other_core();
+test rgb string (hardware) level shifting
+
+2 more touch inputs
+
+morse.h IS A MESS
+morse feedback:
+* morse out led
+* play morse output
+
+MUSICBOX_TRIGGER_BLOCK_SECONDS should go to musicBoxConf or HARDWARE
 

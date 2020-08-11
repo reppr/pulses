@@ -767,7 +767,7 @@ esp_err_t esp_now_pulses_setup() {
   MENU.out((float) esp_now_idle_ms / 1000.0);
   MENU.outln(F("\""));
 
-  esp_now_idle_identity_timer = timerBegin(0, 80, true /* count upwards */);	// ms
+  esp_now_idle_identity_timer = timerBegin(0, 80, true /* count upwards */);	// microseconds
   if(esp_now_idle_identity_timer==NULL)
     MENU.error_ln(F("timerBegin"));
   else {
