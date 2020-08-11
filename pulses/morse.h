@@ -42,7 +42,6 @@
 bool morse_uppercase=true;	// lowercase very rarely used, changed many menu interfaces
 // menu interface is case sensitive, so I need lowercase
 
-hw_timer_t * morse_separation_timer = NULL;
 portMUX_TYPE morse_MUX = portMUX_INITIALIZER_UNLOCKED;
 
 // morse tick
@@ -234,61 +233,8 @@ void morse_debug_token_info() {		// a *lot* of debug info...
 #endif	// DEBUG_MORSE_TOUCH_INTERRUPT
 
 
-// factored out for testing...
-void static IRAM_ATTR morse_endOfLetter();
-
-void static IRAM_ATTR morse_separation_check_ON() {
-  // see morse_setup.h	timerAttachInterrupt(morse_separation_timer, &morse_endOfLetter, true);
-  // timerRestart(morse_separation_timer);
-  timerStart(morse_separation_timer);
-  timerWrite(morse_separation_timer, 0);
-
-  timerAlarmWrite(morse_separation_timer, morse_TimeUnit * separeLetterTim, false);
-  //timerAlarmWrite(morse_separation_timer, (unsigned long) ((float) morse_TimeUnit * separeLetter), false);
-  timerAlarmEnable(morse_separation_timer);	// separation detection on
-} // morse_separation_check_ON()
-
-void static IRAM_ATTR morse_separation_check_OFF() {
-  timerAlarmDisable(morse_separation_timer);
-  timerStop(morse_separation_timer);
-
-  // morse_separation_timer.detach();
-}
-
-
 /* **************************************************************** */
 // GPIO ISR code removed
-
-/* **************************************************************** */
-// touch ISR
-
-//#define DEBUG_MORSE_TOUCH_INTERRUPT
-void morse_endOfLetter() {
-  morse_separation_check_OFF();
-
-  float scaled_low_duration = (float) (micros() - morse_start_OFF_time) / morse_TimeUnit;
-  //  morse_received_token(MORSE_TOKEN_separeLetter, -1);	// TODO: ################
-#if defined DEBUG_MORSE_TOUCH_INTERRUPT
-  morse_received_token('#', scaled_low_duration);	// TODO: REVERSE after debugging ################
-#endif
-  /* got a crash here:
-     PC: 0x4008170a: morse_endOfLetter() at /tmp/arduino_build_1555/sketch/morse.h line 373
-     EXCVADDR: 0x00000000
-
-     Decoding stack results
-     0x4008170a: morse_endOfLetter() at /tmp/arduino_build_1555/sketch/morse.h line 373
-     0x40082749: __timerISR at /home/dada/arduino-1.8.6/hardware/espressif/esp32/cores/esp32/esp32-hal-timer.c line 88
-     0x400f2bb3: esp_vApplicationIdleHook at /Users/ficeto/Desktop/ESP32/ESP32/esp-idf-public/components/esp32/freertos_hooks.c line 64
-
-     so *DEACTIVATE FOLLOWING CODE LINE* ???
-  */
-  //  morse_received_token(MORSE_TOKEN_separeLetter, scaled_low_duration);
-
-#if defined DEBUG_MORSE_TOUCH_INTERRUPT
-  //morse_debug_token_info();	// REMOVE: debug only ################
-#endif
-} // morse_endOfLetter()
-
 
 /* **************************************************************** */
 // touch ISR:	touch_morse_ISR()
