@@ -616,10 +616,10 @@ test rgb string (hardware) level shifting
 
 2 more touch inputs
 
-morse.h IS A MESS
-morse feedback:
-* morse out led
-* play morse output
-
 MUSICBOX_TRIGGER_BLOCK_SECONDS should go to musicBoxConf or HARDWARE
 
+UI to stress release
+
+morse.h IS A MESS
+play morse output
+morse cheat sheets

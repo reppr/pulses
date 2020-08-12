@@ -3914,6 +3914,13 @@ void display_payload(int pulse) {
     return;
   }
 
+  scratch=&morse_feedback;
+  if (PULSES.pulses[pulse].payload == scratch) {
+    MENU.out(F("morse_feedback"));
+    MENU.tab(2);
+    return;
+  }
+
   scratch=NULL;
   if (PULSES.pulses[pulse].payload == scratch) {
     MENU.tab();

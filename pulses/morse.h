@@ -8,7 +8,12 @@
 //#define TOUCH_ISR_VERSION_2	// removed, see: morse_unused.txt
 #define TOUCH_ISR_VERSION_3	// other code removed, see: morse_unused.txt
 
-#define TRY_TOKEN_LENGTH_FEEDBACK_TASK	// experimental
+#define TOKEN_LENGTH_FEEDBACK_PULSE	// using a pulse for morse duration feedback
+//#define TOKEN_LENGTH_FEEDBACK_TASK	// using a rtos task for morse duration feedback, experimental
+// sanity check:
+#if defined TOKEN_LENGTH_FEEDBACK_PULSE && defined TOKEN_LENGTH_FEEDBACK_TASK
+  #error morse.h: TOKEN_LENGTH_FEEDBACK_PULSE and TOKEN_LENGTH_FEEDBACK_TASK are both defined
+#endif
 
 //#define DEBUG_TREAT_MORSE_EVENTS_V3
 
@@ -304,8 +309,61 @@ void show_morse_event_buffer() {	// debugging only
 } // show_morse_event_buffer()
 #endif // DEBUG_TREAT_MORSE_EVENTS_V3
 
-#if defined MORSE_OUTPUT_PIN && defined ESP32 && defined TRY_TOKEN_LENGTH_FEEDBACK_TASK	// experimental
-  #include <freertos/task.h>
+#if defined MORSE_OUTPUT_PIN
+  #if defined TOKEN_LENGTH_FEEDBACK_PULSE
+int morse_length_feedback_pulse_i = ILLEGAL32;
+
+    #if ! defined PULSES_USE_DOUBLE_TIMES	// use double float time type
+      #error morse_feedback(pulse) needs PULSES_USE_DOUBLE_TIMES
+    #endif
+
+void morse_feedback(int pulse) {	// payload for morse duration feedback pulse
+  switch (PULSES.pulses[pulse].counter) {
+  case 1:	// wait for loong
+    // already done by start_morse_feedback_pulse():
+    //   PULSES.pulses[pulse].period = (pulse_time_t) (limit_dash_loong * morse_TimeUnit);
+    //   digitalWrite(MORSE_OUTPUT_PIN, HIGH);
+    break;
+  case 2: // loong reached: blink
+    digitalWrite(MORSE_OUTPUT_PIN, LOW);
+    PULSES.pulses[pulse].period = (pulse_time_t) 100000;
+    break;
+  case 3: //  wait for overlong
+    digitalWrite(MORSE_OUTPUT_PIN, HIGH);
+    PULSES.pulses[pulse].period = (pulse_time_t) (((limit_loong_overlong - limit_dash_loong) * morse_TimeUnit) - 100000);
+    break;
+  case 4: // overlong: switch LED off
+    digitalWrite(MORSE_OUTPUT_PIN, LOW);
+  default:
+    PULSES.init_pulse(pulse);		// harakiri
+  }
+} // morse_feedback(pulse) payload
+
+void kill_morse_feedback_pulse() {
+  if(morse_length_feedback_pulse_i != ILLEGAL32) {
+    PULSES.init_pulse(morse_length_feedback_pulse_i);
+    morse_length_feedback_pulse_i = ILLEGAL32;
+  } // else nothing to do
+}
+
+void start_morse_feedback_pulse() {
+  kill_morse_feedback_pulse();	// safety net...
+  morse_length_feedback_pulse_i = PULSES.highest_available_pulse();
+  if(morse_length_feedback_pulse_i != ILLEGAL32) {
+    PULSES.init_pulse(morse_length_feedback_pulse_i);
+    PULSES.set_payload_with_pin(morse_length_feedback_pulse_i, morse_feedback, MORSE_OUTPUT_PIN);  // pin not really used, hardcoded
+    PULSES.pulses[morse_length_feedback_pulse_i].groups = g_AUXILIARY;
+    PULSES.pulses[morse_length_feedback_pulse_i].period = (pulse_time_t) (limit_dash_loong * morse_TimeUnit);
+    PULSES.pulses[morse_length_feedback_pulse_i].next = PULSES.get_now();
+    PULSES.pulses[morse_length_feedback_pulse_i].flags |= ACTIVE;
+    PULSES.fix_global_next();
+  } // else (no free pulse): just ignore
+}
+
+  #else // no TOKEN_LENGTH_FEEDBACK_PULSE
+    #if defined ESP32 && defined TOKEN_LENGTH_FEEDBACK_TASK	// experimental
+
+#include <freertos/task.h>
 
 TaskHandle_t morse_input_feedback_handle;
 
@@ -347,7 +405,9 @@ void trigger_token_duration_feedback() {
 //     morse_input_feedback_handle = NULL;
 //   }
 // }
-#endif // MORSE_OUTPUT_PIN && TRY_TOKEN_LENGTH_FEEDBACK_TASK	// experimental
+  #endif // TOKEN_LENGTH_FEEDBACK_TASK	// experimental
+  #endif // kind of token length feedback
+#endif // MORSE_OUTPUT_PIN
 
 
 void IRAM_ATTR touch_morse_ISR_v3() {	// ISR for ESP32 touch sensor as morse input	*NEW VERSION 3*
@@ -369,15 +429,16 @@ void IRAM_ATTR touch_morse_ISR_v3() {	// ISR for ESP32 touch sensor as morse inp
     morse_events_cbuf[morse_events_write_i].type = 1 /*touched*/;
 #if defined MORSE_OUTPUT_PIN
     digitalWrite(MORSE_OUTPUT_PIN, HIGH);		// feedback: pin is TOUCHED, LED on
-
- #if defined TRY_TOKEN_LENGTH_FEEDBACK_TASK	// experimental
+ #if defined TOKEN_LENGTH_FEEDBACK_PULSE
+    start_morse_feedback_pulse();
+ #elif defined TOKEN_LENGTH_FEEDBACK_TASK	// experimental
     // stop_token_duration_feedback();			// assert it is off	// works better as inline:
     if(morse_input_feedback_handle != NULL) {
       vTaskDelete(morse_input_feedback_handle);
       morse_input_feedback_handle = NULL;
     }
     trigger_token_duration_feedback();			// switch on
- #endif // TRY_TOKEN_LENGTH_FEEDBACK_TASK	// experimental
+ #endif // TOKEN_LENGTH_FEEDBACK_TASK	// experimental
 #endif // MORSE_OUTPUT_PIN
 
   } else {							// >>>>>>>>>>>>>>>> looks RELEASED <<<<<<<<<<<<<<<<
@@ -385,13 +446,14 @@ void IRAM_ATTR touch_morse_ISR_v3() {	// ISR for ESP32 touch sensor as morse inp
     morse_events_cbuf[morse_events_write_i].type = 0 /*released*/;
 #if defined MORSE_OUTPUT_PIN
     digitalWrite(MORSE_OUTPUT_PIN, LOW);		// feedback: pin is RELEASED, LED off
-
-  #if defined TRY_TOKEN_LENGTH_FEEDBACK_TASK		// experimental
+  #if defined TOKEN_LENGTH_FEEDBACK_PULSE
+    kill_morse_feedback_pulse();
+  #elif defined TOKEN_LENGTH_FEEDBACK_TASK		// experimental rtos task
     // stop_token_duration_feedback();			// works better as inline:
     if(morse_input_feedback_handle != NULL)
       vTaskDelete(morse_input_feedback_handle);
     morse_input_feedback_handle = NULL;
-  #endif // TRY_TOKEN_LENGTH_FEEDBACK_TASK		// experimental
+  #endif // TOKEN_LENGTH_FEEDBACK_TASK			// experimental rtos task
 #endif // MORSE_OUTPUT_PIN
   }
   morse_events_write_i++;
