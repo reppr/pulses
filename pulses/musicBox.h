@@ -1342,6 +1342,119 @@ bool tuning_pitch_and_scale_UI() {
 } // tuning_pitch_and_scale_UI()
 
 
+void noAction_flags_line() {	// show a line with primary noACTION flag signs
+  MENU.ln();
+  for (int pulse=musicBoxConf.highest_primary; pulse >= musicBoxConf.lowest_primary; pulse--) {
+    if(PULSES.pulses[pulse].flags) { // is there a pulse?
+      if(PULSES.pulses[pulse].action_flags & noACTION)
+	MENU.out('x');	// actions are blocked
+      else
+	MENU.out('A');	// actions on
+    } else
+      MENU.out('.');	// nothing there
+  }
+
+  MENU.outln(F("' action muting"));
+}
+
+void muting_actions_UI_line() {
+  MENU.outln(F("'M'=muting actions: 'MH''MM''MB''ML'=toggle HIGH,MELODY,BASS,LOW 'M<n>'=~notes 'MX'=~selected 'MT'='M0'=mute all 'ME'='MA'=all on"));
+}
+
+void muting_actions_UI() {	// 'M' already received   action muting UI
+  char next_letter;
+
+  while (EOF8 != (next_letter = MENU.peek())) {
+    magic_autochanges = false;	// brute force...
+    // TODO: switch ui menu input mode: chiffres are note position toggle *not* presets
+    switch(next_letter) {
+    case 'T':	// 'MT' (morse)	all MUTED
+    case '0':	// 'M0' == 'MT' all MUTED
+      MENU.drop_input_token();
+      for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++) {	// tonic only
+	PULSES.pulses[pulse].action_flags |= noACTION;	// MUTE ALL
+      }
+      MENU.outln(F("all MUTED"));
+      break;
+
+    case 'E':	// 'ME' (morse)	all on
+    case 'A':	// 'MA' == 'ME'	all on
+      MENU.drop_input_token();
+      for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++)	// ALL ON
+	PULSES.pulses[pulse].action_flags &= ~noACTION;	// UNmute all,  all ON
+      MENU.outln(F("all unmuted"));
+      break;
+
+    case '1':	// 'M1'		// note position	1 == tonic     toggle
+    case '2':	// 'M2'		// switch individual note positions on and off
+    case '3':	// 'M3'
+    case '4':	// 'M4'
+    case '5':	// 'M5'
+    case '6':	// 'M6'
+    case '7':	// 'M7'
+    case '8':	// 'M8'
+    case '9':	// 'M9'
+      MENU.drop_input_token();
+
+      for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++)	// toggle one
+	if (PULSES.pulses[pulse].note_position == next_letter - '0')
+	  PULSES.pulses[pulse].action_flags ^= noACTION;
+      MENU.out(F("mute toggle "));
+      MENU.outln(next_letter);
+      break;
+
+      // TODO: staff pitch groups L B M H
+    case 'H': // 'MH'	toggle high end
+      MENU.drop_input_token();
+      for(int pulse = musicBoxConf.highest_primary - (primary_count/4) +1; pulse <= musicBoxConf.highest_primary; pulse++)
+	PULSES.pulses[pulse].action_flags ^= noACTION;	// toggle mute high quarter
+      MENU.outln(F("mute toggle HIGH"));
+      break;
+
+    case 'M': // 'MM'	toggle melody
+      MENU.drop_input_token();
+      for(int pulse = musicBoxConf.lowest_primary + (primary_count/2)+1;
+	  pulse <= musicBoxConf.highest_primary  - (primary_count/4);
+	  pulse++)
+	PULSES.pulses[pulse].action_flags ^= noACTION;	// toggle mute high quarter
+      MENU.outln(F("mute toggle MELODY"));
+      break;
+
+    case 'B': // 'MB'	toggle  bass
+      MENU.drop_input_token();
+      for(int pulse = musicBoxConf.lowest_primary + (primary_count/4)+1;
+	  pulse <= musicBoxConf.lowest_primary  + (primary_count/2);
+	  pulse++)
+	PULSES.pulses[pulse].action_flags ^= noACTION;	// toggle mute high quarter
+      MENU.outln(F("mute toggle BASS"));
+      break;
+
+    case 'L': // 'ML'	toggle low end
+      MENU.drop_input_token();
+      for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.lowest_primary + (primary_count/4); pulse++)
+	PULSES.pulses[pulse].action_flags ^= noACTION;	// toggle mute low quarter
+      MENU.outln(F("mute toggle LOW"));
+      break;
+
+    case 'X':	// 'MX'  muting toggle selected
+      MENU.drop_input_token();
+      PULSES.selected_toggle_no_actions();
+
+      if (DO_or_maybe_display(VERBOSITY_LOWEST))
+	MENU.outln(F("toggle action muting"));
+      break;
+
+      //	    case 'O':	// octave managnent
+      //	    case '+';
+      //	    case '-';
+      //	      MENU.drop_input_token();
+      //	      break;
+    }
+  } // next letter loop
+  noAction_flags_line();
+} // muting_actions_UI()
+
+
 void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   MENU.out_IstrI(my_IDENTITY.preName);
   MENU.tab();
@@ -3373,8 +3486,7 @@ void musicBox_display() {
     MENU.out(F("STOP"));
   MENU.out(F("\t'P1'= stop primary\t'P2'= stop secondary"));
   if(MusicBoxState == OFF)
-    MENU.out(F("\t'W<seconds>' = wait&start"));
-  MENU.outln(F("\t'Q'= ~ noAction[A01234]"));
+    MENU.outln(F("\t'W<seconds>' = wait&start"));
 
   MENU.outln(F("'m'= set mode\t'mm' 'mM'= manual\t'ma' 'mA'= automagic"));
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
@@ -3390,6 +3502,8 @@ void musicBox_display() {
   oled_ui_display();
 #endif
 
+  muting_actions_UI_line();
+
   MENU.ln(2);
   musicBox_short_info();
 
@@ -3397,21 +3511,8 @@ void musicBox_display() {
   MENU.outln(F("fart='f'"));
 */
   MENU.ln();
-
   stress_event_cnt = -3;	// heavy stress expected after musicBox_display
 } // musicBox_display()
-
-void noAction_flags_line() {	// show a line with primary noACTION flag signs		// TODO: move to Pulses?
-  MENU.ln();
-  for (int pulse=musicBoxConf.highest_primary; pulse >= musicBoxConf.lowest_primary; pulse--) {
-    if(PULSES.pulses[pulse].action_flags & noACTION)
-      MENU.out('x');	// actions are blocked
-    else
-      MENU.out('A');	// actions on
-  }
-
-  MENU.outln(F("' action muting"));
-}
 
 bool load_preset_and_start(short preset_new, bool start=true) {	// returns error
   short preset_was = musicBoxConf.preset;
@@ -3890,89 +3991,8 @@ bool musicBox_reaction(char token) {
 #endif	// defined USE_ESP_NOW
     break;
 
-  case 'M':	// 'M<x>' mute		// TODO: maybe factor out 'Mxyz' mute interface?
-    {
-      char next_letter = MENU.peek();
-      // bare 'M'
-      while (EOF8 != (next_letter = MENU.peek())) {
-	magic_autochanges = false;	// brute force...
-	// TODO: switch ui menu input mode: chiffres are note position toggle *not* presets
-	switch(next_letter) {
-	case 'T':	// 'MT' (morse)	all MUTED
-	case '0':	// 'M0' == 'MT' all MUTED
-	  MENU.drop_input_token();
-	  for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++) {	// tonic only
-	    PULSES.pulses[pulse].action_flags |= noACTION;	// MUTE ALL
-	  }
-	  MENU.outln(F("all MUTED"));
-	  break;
-
-	case 'E':	// 'ME' (morse)	all on
-	case 'A':	// 'MA' == 'ME'	all on
-	  MENU.drop_input_token();
-	  for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++)	// ALL ON
-	    PULSES.pulses[pulse].action_flags &= ~noACTION;	// UNmute all,  all ON
-	  MENU.outln(F("all unmuted"));
-	  break;
-
-	case '1':	// note position	1 == tonic     toggle
-	case '2':	// switch individual note positions on and off
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-	  MENU.drop_input_token();
-
-	  for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++)	// toggle one
-	    if (PULSES.pulses[pulse].note_position == next_letter - '0')
-	      PULSES.pulses[pulse].action_flags ^= noACTION;
-	  MENU.out(F("mute toggle "));
-	  MENU.outln(next_letter);
-	  break;
-
-	// TODO: staff pitch groups L B M H
-	case 'H': // high end
-	  MENU.drop_input_token();
-	  for(int pulse = musicBoxConf.highest_primary - (primary_count/4) +1; pulse <= musicBoxConf.highest_primary; pulse++)
-	    PULSES.pulses[pulse].action_flags ^= noACTION;	// toggle mute high quarter
-	  MENU.outln(F("mute toggle HIGH"));
-	  break;
-
-	case 'M': // melody
-	  for(int pulse = musicBoxConf.lowest_primary + (primary_count/2)+1;
-	      pulse <= musicBoxConf.highest_primary  - (primary_count/4);
-	      pulse++)
-	    PULSES.pulses[pulse].action_flags ^= noACTION;	// toggle mute high quarter
-	  MENU.drop_input_token();
-	  MENU.outln(F("mute toggle MELODY"));
-	  break;
-
-	case 'B': // bass
-	  MENU.drop_input_token();
-	  for(int pulse = musicBoxConf.lowest_primary + (primary_count/4)+1;
-	      pulse <= musicBoxConf.lowest_primary  + (primary_count/2);
-	      pulse++)
-	    PULSES.pulses[pulse].action_flags ^= noACTION;	// toggle mute high quarter
-	  MENU.outln(F("mute toggle BASS"));
-	  break;
-
-	case 'L': // low end
-	  for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.lowest_primary + (primary_count/4); pulse++)
-	    PULSES.pulses[pulse].action_flags ^= noACTION;	// toggle mute low quarter
-	  MENU.outln(F("mute toggle LOW"));
-	  break;
-
-//	    case 'O':	// octave managnent
-//	    case '+';
-//	    case '-';
-//	      MENU.drop_input_token();
-//	      break;
-	}
-      }
-    }
+  case 'M':	// 'M<x>' mute actions
+    muting_actions_UI();
     break; // 'M<x>'
 
   case 'N':	// 'N' 'n' restart now	(like menu pulses 'n')
@@ -4076,55 +4096,6 @@ bool musicBox_reaction(char token) {
 	  start_musicBox();
       }
     } // switch(MENU.peek())
-    break;
-
-  case 'Q':	// noACTION managing
-    switch(MENU.peek()) {
-    case '1':	// 'Q1' toggle bottom quarter
-      MENU.drop_input_token();
-      PULSES.select_from_to(musicBoxConf.lowest_primary, musicBoxConf.lowest_primary + (primary_count/4));	// TODO: use musicBoxConf.primary_count in next version
-      PULSES.selected_toggle_no_actions();
-      PULSES.select_n(voices);
-      break;
-
-    case '2':	// 'Q3' toggle lower middle quarter
-      MENU.drop_input_token();
-      // TODO: use musicBoxConf.primary_count in next version
-      PULSES.select_from_to(musicBoxConf.lowest_primary + (primary_count/4) +1, musicBoxConf.lowest_primary + musicBoxConf.highest_primary/2);
-      PULSES.selected_toggle_no_actions();
-      PULSES.select_n(voices);
-      break;
-
-    case '3':	// 'Q2' toggle higher middle quarter
-      MENU.drop_input_token();
-      PULSES.select_from_to(musicBoxConf.highest_primary/2 +1, musicBoxConf.highest_primary - (primary_count/4));
-      PULSES.selected_toggle_no_actions();
-      PULSES.select_n(voices);
-      break;
-
-    case '4':	// 'Q4' toggle top quarter
-      MENU.drop_input_token();
-      PULSES.select_from_to(musicBoxConf.highest_primary - (primary_count/4) +1, musicBoxConf.highest_primary);
-      PULSES.selected_toggle_no_actions();
-      PULSES.select_n(voices);
-      break;
-
-    case '0':	// 'Q0' *SET ALL* noACTION flags on primary pulses
-      MENU.drop_input_token();
-      for (int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++)
-	PULSES.pulses[pulse].action_flags |= noACTION;	// SET all
-      break;
-
-    case 'A':	// 'QA' *CLEAR ALL* noACTION flags on primary pulses
-      MENU.drop_input_token();
-      for (int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++)
-	PULSES.pulses[pulse].action_flags &= ~noACTION; // CLEAR all
-      break;
-//  default:	// 'Q' (bare or unknown tokens)
-    }
-
-    if(MENU.maybe_display_more(VERBOSITY_LOWEST))
-      noAction_flags_line();
     break;
 
   case 'I':	// info		// force OLED resdisplay or morse	// TODO: display help
@@ -4362,7 +4333,9 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'D':		// musicBox 'D'
-    #include "men_MuD.h"
+    {
+      #include "men_MuD.h"
+    }
     break;
 
   default:

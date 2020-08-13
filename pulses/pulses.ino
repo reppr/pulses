@@ -5485,11 +5485,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 */
   case 'M':	// selected_toggle_actions()	was: "mute", see 'N' as alternative
-    PULSES.selected_toggle_no_actions();
-
-    if (DO_or_maybe_display(VERBOSITY_LOWEST))
-      MENU.outln(F("toggle action muting"));
-    break;
+    muting_actions_UI();
 
   case '*':	// multiply destination
     if(MENU.peek() != '!') {		// '*' (*not* '*!<num>' set multiplier)
