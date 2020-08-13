@@ -716,7 +716,7 @@ void multicore_big_or_multiline(uint8_t row, char* str) {	// create and do one s
   }
 }
 
-void inline MC_big_or_multiline(uint8_t row, char* str) {
+void MC_big_or_multiline(uint8_t row, char* str) {	// does not work as inline
   multicore_big_or_multiline(row, str);
 }
 

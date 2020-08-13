@@ -575,7 +575,7 @@ void show_cycle(pulse_time_t cycle) {
   MENU.ln();
 
 #if defined PULSES_USE_DOUBLE_TIMES
-  MENU.outln(F("todo: maybe give subcycle infos?"));	// TODO:
+  MENU.outln(F("TODO: maybe give subcycle infos?"));	// TODO:
 
 #else // old int overflow style
   int i=0;
@@ -3795,14 +3795,20 @@ bool musicBox_reaction(char token) {
       }
     }
     break;
+
+#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
   case 'X':
   case 'Y':
   case 'Z':
-  case 'A':
-  case 'G':
+//  case 'A':
+//  case 'G':
+    MENU.restore_input_token();	// pass last token to Y_UI()
+  case 'U':
     if(Y_UI())
       return true;
     break;
+#endif
+
   case 'a': // magic_autochanges    // 'a'
     MENU.out(F("autochanges"));
     toggle_magic_autochanges();
@@ -3892,19 +3898,6 @@ bool musicBox_reaction(char token) {
   case 'H': // HARD_END_playing(true);
     HARD_END_playing(true);
     break;
-
-#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
-  case 'U': // Xmotion UI
-    if(Y_UI())
-      return true;		// note: EARLY RETURN	// TODO: hmmm?
-
-    // TODO: VERBOSITY etc	// move this to Y_UI()
-    display_accGyro_mode();
-    MENU.tab();
-    MENU.out_ON_off(accGyro_is_active);
-    MENU.ln();
-    break;
-#endif
 
   case 'C': // 'C' hierarchy: esp now send or configure
 #if defined USE_ESP_NOW

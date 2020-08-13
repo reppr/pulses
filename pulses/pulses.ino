@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICAL v.043   // esp now ensemble, usability
+#define PROGRAM_VERSION	HARMONICAL v.044   // usability, monochrome multicore display
 /*			0123456789abcdef   */
 
 /* **************************************************************** */
@@ -153,8 +153,8 @@ Harmonical* HARMONICAL;
 /* **************************************************************** */
 enum monochrome_type {
   monochrome_type_off=0,
-  monochrome_type_heltec,
-  monochrome_type_LiPO,
+  monochrome_type_heltec,	// chip is probably SSD1309
+  monochrome_type_LiPO,		// ditto?
   monochrome_type_unknown,
 };
 
@@ -194,7 +194,7 @@ typedef struct pulses_hardware_conf_t {
   uint8_t morse_output_pin=ILLEGAL8;
 
   // bluetooth
-  uint8_t bluetooth_enable_pin=ILLEGAL8;
+  uint8_t bluetooth_enable_pin=ILLEGAL8;	// 35
 
   // monochrome display
   uint8_t monochrome_type = monochrome_type_off;	// flag and monochrome_type
@@ -1216,7 +1216,7 @@ void setup_initial_HARDWARE_conf() {
 #endif
 
 #if defined BLUETOOTH_ENABLE_PIN
-  HARDWARE.bluetooth_enable_pin = BLUETOOTH_ENABLE_PIN;
+  HARDWARE.bluetooth_enable_pin = BLUETOOTH_ENABLE_PIN;		// 35
 #endif
 
 #if defined USE_MONOCHROME_DISPLAY
@@ -3913,13 +3913,14 @@ void display_payload(int pulse) {
     MENU.tab(2);
     return;
   }
-
+#if defined USE_MORSE && defined MORSE_OUTPUT_PIN
   scratch=&morse_feedback;
   if (PULSES.pulses[pulse].payload == scratch) {
     MENU.out(F("morse_feedback"));
     MENU.tab(2);
     return;
   }
+#endif
 
   scratch=NULL;
   if (PULSES.pulses[pulse].payload == scratch) {

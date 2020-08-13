@@ -147,6 +147,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 6:
     musicBoxConf.name = F("aurora elfetanz");
+    //# FAVORITE	DADA 2020 KUNSTDREIECK
     //# FAVORITE
     //# melodies
     //# shortIsOk
@@ -199,6 +200,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 8:
     musicBoxConf.name = F("wunderschön melodisch :) :) :)");
     //comment: mit schönem, aberendlosem schluss ;)
+    //# FAVORITE	DADA 2020 KUNSTDREIECK
     //# FAVORITE
     //# bigBang		// sometimes problematic	use autostack_S0
     //# melodies
@@ -455,6 +457,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 20:
     musicBoxConf.name = F("nice, simple slow harmonics");
+    //# FAVORITE	DADA 2020 KUNSTDREIECK
     //# FAVORITE
     //# shortIsOk
     //# melodies
@@ -719,6 +722,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 31:
     musicBoxConf.name = F("sanfti landig");
+    //# FAVORITE	DADA 2020 KUNSTDREIECK
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk
@@ -852,6 +856,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 35:
     musicBoxConf.name = F("uusprägts melodiemotiv, fughetta");
+    //# FAVORITE	DADA 2020 KUNSTDREIECK
     //# FAVORITE
     //# shortIsOk
     //# motives
@@ -883,6 +888,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 36:
     musicBoxConf.name = F("maschinells ticke, klassisch");
+    //# FAVORITE	DADA 2020 KUNSTDREIECK
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk		possibly
@@ -1093,6 +1099,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 43:
     musicBoxConf.name = F("vorbereitige zum abflug?");
+    //# FAVORITE	DADA 2020 KUNSTDREIECK
     //# FAVORITE ???
     //# shortIsOk
     //# motives
@@ -1246,6 +1253,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 48:
     musicBoxConf.name = F("eifach und schön, blue");	// harmonical cycle    55' 27"
     // simile 'Blue Night Cadence'
+    //# FAVORITE	DADA 2020 KUNSTDREIECK
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk		probably very nice!
@@ -1342,6 +1350,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 51:
     musicBoxConf.name = F("langsam sprudelnd");
+    //# FAVORITE	DADA 2020 KUNSTDREIECK
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk
@@ -1369,6 +1378,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 52:
     musicBoxConf.name = F("The Landing Of The Fairies");
+    //# FAVORITE	DADA 2020 KUNSTDREIECK ++++
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk
@@ -1438,6 +1448,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 54:
     musicBoxConf.name = F("kid's room");
+    //# FAVORITE	DADA 2020 KUNSTDREIECK
     //# favorite
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 28' 21"
@@ -1608,6 +1619,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 60:
     musicBoxConf.name = F("landing, seed, growth, ....");
+    //# FAVORITE	DADA 2020 KUNSTDREIECK
     //comment: strong beginning ;)
     //# favorite+
     //# shortIsOk
@@ -1693,6 +1705,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 63:
     musicBoxConf.name = F("rising ostinatos over rhythmic bordun");  // nice and harmonic, humming, good ending
     //comment: very nice ending :)
+    //# FAVORITE	DADA 2020 KUNSTDREIECK
     //# FAVORITE
     //# SPECIALITY	from rhythm, beat to sound effects, everything's there
 
@@ -1947,6 +1960,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 71:
     musicBoxConf.name = F("elfechinde");
+    //# FAVORITE	DADA 2020 KUNSTDREIECK
     //# favorite
     //# shortIsOk
     //# motives
@@ -2019,6 +2033,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 74:
     musicBoxConf.name = F("rhythms");
+    //# FAVORITE	DADA 2020 KUNSTDREIECK
     //# favorite+
     //# shortIsOk
     //# motives
@@ -2217,6 +2232,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 80:
     musicBoxConf.name = F("Aurora mit tänzelnde Liechter");
+    //# FAVORITE	DADA 2020 KUNSTDREIECK
     //# FAVORITE
     //# fullCycleIsOk	harmonical CYCLE: 55' 27"
     //# motives
@@ -2353,6 +2369,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 84:
     musicBoxConf.name = F("The Enchanted Forest Temple");
+    //# FAVORITE	DADA 2020 KUNSTDREIECK
     //# FAVORITE
     //# shortIsOk
     //# ritch
@@ -4645,6 +4662,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 151:
     musicBoxConf.name = F("2019-02-07_classical_time_machine_S4");
+    //# FAVORITE	DADA 2020 KUNSTDREIECK++++
     //comment: resonating strings not really tuned...
     //comment: retuned version with problems in ending...
     //# RECORDED	probably yes, ???

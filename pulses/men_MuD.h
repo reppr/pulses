@@ -3,12 +3,22 @@
   temporary test menu UI during development
 */
 
+
+#if defined USE_MONOCHROME_DISPLAY
+MENU.outln(F("TODO: MONOCHROME FIX?"));
 // MENU.outln(F("(*u8x8_p).initDisplay();"));
 // (*u8x8_p).initDisplay();
 
-MENU.outln(F("monochrome <ESC>c"));
-(*u8x8_p).print(27);
-(*u8x8_p).print('c');
+// MENU.outln(F("monochrome <ESC>c"));
+// (*u8x8_p).print(27);
+// (*u8x8_p).print('c');
+
+MENU.outln(F("(*u8x8_p).setFlipMode(0)"));
+(*u8x8_p).setFlipMode(0);
+
+MENU.outln(F("(*u8x8_p).refreshDisplay()"));	// see: Only required for SSD1606
+(*u8x8_p).refreshDisplay();
+#endif
 
 #if defined MULTICORE_DISPLAY
 // MC_show_tuning();

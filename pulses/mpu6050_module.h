@@ -319,7 +319,7 @@ void accGyro_toggle_TUNING_mode() {
     accgyro_modulus = 21221;	// prime	// TODO: UI
 
   } else {					// switch to TUNING
-    MENU.outln(F("TUNING gZ mode"));
+    MENU.outln(F("TUNING AY mode"));
     accGyro_preset = ACCGYR_PRES_MODE_TUNING_Y;
     accGyro_is_active = true;
     //sweep_up = 0;				// keep mental sanity ;)
@@ -615,7 +615,7 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
     }
 
     switch(accGyro_preset) {			// switch accGyro_preset mode
-    case ACCGYR_PRES_MODE_AXAYGZ: 		// accGyro_preset 1
+    case ACCGYR_PRES_MODE_AXAYGZ:		// accGyro_preset 1
       // ACCELERO;
       if(accGyro_mode & AG_mode_Ax) {		// accelero X
 	Ax_reaction_source = JIFFLES;
@@ -689,8 +689,8 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 	    MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
 
 #if defined USE_MONOCHROME_DISPLAY
-	    extern void MC_show_line(uint8_t row, char* str);
-	    MC_show_line(3, array2name(JIFFLES, selected_in(JIFFLES)));
+	    extern void MC_big_or_multiline(uint8_t row, char* str);
+	    MC_big_or_multiline(2, array2name(JIFFLES, selected_in(JIFFLES)));
 #endif
 	  }
 	} else {
@@ -790,11 +790,11 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 //#endif
 	}
       }
-      break; 		// ACCGYR_PRES_MODE_AXAYGZ
+      break;		// ACCGYR_PRES_MODE_AXAYGZ
 
     // TUNING MODE
 #define DEBUG_U_TUNING_MODE
-    case ACCGYR_PRES_MODE_TUNING_Y: 	//  ACC Y TUNING mode
+    case ACCGYR_PRES_MODE_TUNING_Y:	//  ACC Y TUNING mode
       {
 	double UI_value = AY_seen_f;
 	UI_value -= 0.18;	// offset	just testing...
@@ -806,36 +806,37 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 	detune = pow(cent, (AY_seen_f * -2.0) + 1.0);
 	detune *= detune;
 	detune *= detune;
+	detune *= detune;
 	PULSES.tuning *= detune;
 
-#if defined DEBUG_U_TUNING_MODE
-#if true
-	if(monochrome_can_be_used()) {
-	  MC_setCursor(0,0);
-	  //	extern void monochrome_print_f(float f, int chiffres);
-	  monochrome_print_f(AY_seen_f, 6);
-	  MC_print(F("  "));
-
-	  MC_setCursor(0,1);
-	  monochrome_print_f(accGyro_current_AX_f, 6);
-	  MC_print(F("  "));
-	}
-#endif
-	MENU.out(F("seen_Y "));
-	MENU.out(AY_seen_f, 9);
-	MENU.tab();
-
-	MENU.out(F("UI_v "));
-	MENU.out(UI_value, 9);
-	MENU.tab();
-
-	MENU.out((AY_seen_f * -2) + 1.0, 9);
-	MENU.tab(); MENU.out(detune, 9);
-	MENU.tab(); MENU.out(PULSES.tuning, 9);
-	MENU.ln();
-#endif
+// #if defined DEBUG_U_TUNING_MODE && false
+// // #if false
+// //	if(monochrome_can_be_used()) {
+// //	  MC_setCursor(0,0);
+// //	  //	extern void monochrome_print_f(float f, int chiffres);
+// //	  monochrome_print_f(AY_seen_f, 6);
+// //	  MC_print(F("  "));
+// //
+// //	  MC_setCursor(0,1);
+// //	  monochrome_print_f(accGyro_current_AX_f, 6);
+// //	  MC_print(F("  "));
+// //	}
+// // #endif
+//	MENU.out(F("seen_Y "));
+//	MENU.out(AY_seen_f, 9);
+//	MENU.tab();
+//
+//	MENU.out(F("UI_v "));
+//	MENU.out(UI_value, 9);
+//	MENU.tab();
+//
+//	MENU.out((AY_seen_f * -2) + 1.0, 9);
+//	MENU.tab(); MENU.out(detune, 9);
+//	MENU.tab(); MENU.out(PULSES.tuning, 9);
+//	MENU.ln();
+// #endif
       }
-      break; 				// accGyro_preset==ACCGYR_PRES_MODE_TUNING_Y
+      break;				// accGyro_preset==ACCGYR_PRES_MODE_TUNING_Y
 
     default:
       MENU.error_ln(F("unknown accGyro_preset"));

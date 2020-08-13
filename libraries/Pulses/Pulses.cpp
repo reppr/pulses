@@ -818,7 +818,7 @@ void Pulses::activate_selected_synced_now(int sync) {
   get_now();
   for (int pulse=0; pulse<pl_max; pulse++)
     if (pulse_is_selected(pulse))
-      activate_pulse_synced(pulse, now, abs(sync));
+      activate_pulse_synced(pulse, now, abs(sync));	// TODO: had a crash here
 
   fix_global_next();
   check_maybe_do();	  // maybe do it *first*

@@ -248,6 +248,10 @@ unsigned int tetraCHORD_rise[] =
 unsigned int tetraCHORD_desc[] =
   {3,2*4096,256, 1,5*512,256, 1,9*256,256, 1,2048,256*2, 0,0};	// FIXME:
 
+// low
+unsigned int d1024_128[] = {1,1024,128, 0,0,0};
+unsigned int d512_128[] = {1,512,128, 0,0,0};
+
 // try on doric scale
 unsigned int doDe_i[] = {1,512,16, 1,1024,16, 1,8,1, 1,2084,11, 0,0};	// TODO: test only, remove?
 

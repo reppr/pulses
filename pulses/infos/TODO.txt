@@ -625,39 +625,11 @@ play morse output
 morse cheat sheets
 
 try USE_BLUETOOTH_SERIAL_MENU
-
-
-had a crash after '46 T-<RETURN> PP<RETURN> J+<RETURN>'
-void Harmonical::expand_fractions(fraction_t * a, fraction_t * b) {
-  //if(a->divisor && b->divisor) { // TODO: add SAVETY net not to crash on divisor zero
-PC: 0x401e0d0a: Harmonical::expand_fractions(Harmonical::fraction_t*, Harmonical::fraction_t*) at /home/dada/PULSES_i5/pulses/libraries/Harmonical/Harmonical.cpp line 98
-EXCVADDR: 0x00000000
-
-Decoding stack results
-0x401e0d0a: Harmonical::expand_fractions(Harmonical::fraction_t*, Harmonical::fraction_t*) at /home/dada/PULSES_i5/pulses/libraries/Harmonical/Harmonical.cpp line 98
-0x400ea695: Harmonical::add_fraction(Harmonical::fraction_t*, Harmonical::fraction_t*) at /home/dada/PULSES_i5/pulses/libraries/Harmonical/Harmonical.cpp line 106
-0x400de6dd: jiffletab_len(unsigned int*) at /home/dada/PULSES_i5/pulses/pulses/pulses.ino line 4349
-0x400de81d: display_jiffletab(unsigned int*) at /home/dada/PULSES_i5/pulses/pulses/pulses.ino line 4410
-0x400df952: select_jiffle_UI() at /home/dada/PULSES_i5/pulses/pulses/pulses.ino line 4931
-0x400e0f56: menu_pulses_reaction(char) at /home/dada/PULSES_i5/pulses/pulses/pulses.ino line 5854
-0x401e0a76: Menu::try_page_reaction(char, char) at /home/dada/PULSES_i5/pulses/libraries/Menu/Menu.cpp line 1295
-0x400e936d: Menu::interpret_men_input() at /home/dada/PULSES_i5/pulses/libraries/Menu/Menu.cpp line 1445
-0x400e94d2: Menu::lurk_then_do() at /home/dada/PULSES_i5/pulses/libraries/Menu/Menu.cpp line 1018
-0x400e6336: loop() at /home/dada/PULSES_i5/pulses/pulses/pulses.ino line 2443
-0x400ee059: loopTask(void*) at /home/dada/.arduino15/packages/esp32/hardware/esp32/1.0.4/cores/esp32/main.cpp line 19
-0x4008fd85: vPortTaskWrapper at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/port.c line 143
-
+fix bluetooth_enable_pin logic
+  use HARDWARE.bluetooth_enable_pin
 
 Y_UI_display_line()
 
-#define USE_BLUETOOTH_SERIAL_MENU	fix DIL switch and HARDWARE conf
+#define USE_BLUETOOTH_SERIAL_MENU	fix DIL switch and HARDWARE conf logic
 
-had a crash here:
-PC: 0x0124e7c4
-EXCVADDR: 0x0124e7c4
-
-Decoding stack results
-0x400e70f1: Pulses::check_maybe_do() at /home/dada/PULSES_i5/pulses/libraries/Pulses/Pulses.cpp line 1223
-0x400e432f: loop() at /home/dada/PULSES_i5/pulses/pulses/pulses.ino line 2308
-0x400eb8a5: loopTask(void*) at /home/dada/.arduino15/packages/esp32/hardware/esp32/1.0.4/cores/esp32/main.cpp line 19
-0x4008a289: vPortTaskWrapper at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/port.c line 143
+git bisect gZ problems
