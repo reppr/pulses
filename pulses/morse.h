@@ -15,6 +15,8 @@
   #error morse.h: TOKEN_LENGTH_FEEDBACK_PULSE and TOKEN_LENGTH_FEEDBACK_TASK are both defined
 #endif
 
+#define COMPILE_MORSE_CHEAT_SHEETS	// ;)
+
 //#define DEBUG_TREAT_MORSE_EVENTS_V3
 
 #if ! defined MORSE_MONOCHROME_ROW
@@ -1132,7 +1134,7 @@ const char * morse_definitions_tab[] = {
 //"5 0 ..-.- 5 5",	// ..K  IK  UA  FT EÄ
   "5 * ..--. - -",	// ???
   "5 * ..--- 2 2",
-//"5 0 .-... 5 5",
+  "5 * .-... & &",
   "5 * .-..- È È",	// È	FIX: lowercase
   "5 * .-.-. + +",
 //"5 0 .-.-- 5 5",
@@ -1177,9 +1179,12 @@ const char * morse_definitions_tab[] = {
   "6 * .-.-.- . .",
   "6 * .--.-. @ @",
   "6 * -....- _ _",	// check - _
+  "6 * -.-.-. ; ;",
+  "6 * -.-.-- ! !",
   "6 * --..-- , ,",
   "6 * ---... : :",
 
+  "7 * ...-..- $ $",
 //"7 0 ...--.. X X TODO:",		// beta ss	TODO: FIX:
 
   "8 C ........ MISTAKE",		// MISTAKE
@@ -1704,7 +1709,131 @@ void static morse_token_decode() {	// decode received token sequence
 } // morse_token_decode()
 
 
-/* **************************************************************** */
+void morse_show_tokens_of_letter(char c, uint8_t row=0) {	// uppercase only
+  int maxlen=17;
+  char txt[maxlen]= {0};
+  char* format = F("%c %s");
+  for(int i=0; i < MORSE_DEFINITIONS; i++) {
+    morse_read_definition(i);
+    if(morse_PRESENT_UPPER_Letter == c) {	// uppercase only
+      snprintf(txt, maxlen, format, morse_PRESENT_UPPER_Letter, morse_DEFINITION_TOKENS.c_str());
+      extern uint8_t /*next_row*/ extended_output(char* data, uint8_t col=0, uint8_t row=0, bool force=false);
+      extended_output(txt, 0, row, false);
+      MENU.ln();
+
+      break;
+    }
+  }
+} // morse_show_tokens_of_letter()
+
+
+#if defined COMPILE_MORSE_CHEAT_SHEETS
+bool /*ok*/ morse_tokens_of_letter(char* result, uint8_t len, char c) {	// uppercase only
+  result[0] = '\0';
+  char* format = F("%c %s");
+  for(int i=0; i < MORSE_DEFINITIONS; i++) {
+    morse_read_definition(i);
+    if(morse_PRESENT_UPPER_Letter == c) {	// uppercase only
+      snprintf(result, len, format, morse_PRESENT_UPPER_Letter, morse_DEFINITION_TOKENS.c_str());
+      return true;	// OK
+    }
+  }
+  return false;	// ERROR, not found
+} // morse_tokens_of_letter()
+
+char cheat_buffer[5] = {0};
+
+void show_cheat_sheet() {
+  char c;
+  uint8_t maxlen=17;
+
+  (*u8x8_p).clear();
+  char result[maxlen];
+  for(int i=0; i<4; i++) {
+    if(c = cheat_buffer[i]) {
+      if(morse_tokens_of_letter(result, maxlen, c)) {	// uppercase only
+	extern uint8_t /*next_row*/ monochrome_big_or_multiline(int row, char* str);
+	monochrome_big_or_multiline(2*i, result);
+	MENU.outln(result);
+      } else {	// morse code not found
+	MENU.out(F("unknown symbol "));
+	MENU.out(c);
+	MENU.tab();
+	MENU.outln((int) c);
+      }
+    } else break;
+  }
+}
+
+void make_morse_cheat_sheet(char* symbols) {
+  for(int i=0; i<4; i++)
+    cheat_buffer[i] = symbols[i];
+  do_on_other_core(show_cheat_sheet);
+}
+
+void morse_cheat_sheets_UI() {
+  static uint8_t cheat_sheet_i = 0;
+
+  bool next_sheet=true;
+  int input_value = MENU.numeric_input(cheat_sheet_i);	// use false input as UI to *keep* the same sheet ;)
+
+  #define CHEAT_SHEETS_MAX	8	//	>>>>>>>> *DO* *UPDATE* number of CHEAT_SHEETS_MAX <<<<<<<<<<<<<<
+  if(input_value <= CHEAT_SHEETS_MAX  &&  input_value >= 0)
+    cheat_sheet_i = (uint8_t) input_value;
+  else				// use false input as UI to *keep* the same sheet ;)
+    next_sheet = false;
+
+  MENU.out(F("morse cheat sheet "));
+  MENU.outln(cheat_sheet_i);
+
+  switch(cheat_sheet_i) {
+  case 0:
+    make_morse_cheat_sheet(F("BCDG"));
+    break;
+  case 1:
+    make_morse_cheat_sheet(F("FLPQ"));
+    break;
+  case 2:
+    make_morse_cheat_sheet(F("JUVW"));
+    break;
+  case 3:
+    make_morse_cheat_sheet(F("XYZ'"));
+    break;
+  case 4:
+    make_morse_cheat_sheet(F("*/+-"));
+    break;
+  case 5:
+    make_morse_cheat_sheet(F("=!:?"));
+    break;
+  case 6:
+    make_morse_cheat_sheet(F(".,;:"));
+    break;
+  case 7:
+    make_morse_cheat_sheet(F("&$'\""));
+    break;
+  case 8:
+    make_morse_cheat_sheet(F("@"));
+    break;
+    /*  unkown: |~%<>{} <space>
+	case :
+	make_morse_cheat_sheet(F("|~% "));
+	break;
+	case :
+	make_morse_cheat_sheet(F("<>{}"));
+	break;
+    */
+  }
+  // *DO* update #define CHEAT_SHEETS_MAX
+
+  if(next_sheet) {
+    cheat_sheet_i++;
+    if(cheat_sheet_i > CHEAT_SHEETS_MAX)
+      cheat_sheet_i=0;
+  }
+} // morse_cheat_sheets_UI()
+#endif // COMPILE_MORSE_CHEAT_SHEETS
+
+  /* **************************************************************** */
 
 void morse_init() {
   // MENU.outln(F("MORSE morse_init()"));

@@ -651,3 +651,13 @@ Decoding stack results
 Y_UI_display_line()
 
 #define USE_BLUETOOTH_SERIAL_MENU	fix DIL switch and HARDWARE conf
+
+had a crash here:
+PC: 0x0124e7c4
+EXCVADDR: 0x0124e7c4
+
+Decoding stack results
+0x400e70f1: Pulses::check_maybe_do() at /home/dada/PULSES_i5/pulses/libraries/Pulses/Pulses.cpp line 1223
+0x400e432f: loop() at /home/dada/PULSES_i5/pulses/pulses/pulses.ino line 2308
+0x400eb8a5: loopTask(void*) at /home/dada/.arduino15/packages/esp32/hardware/esp32/1.0.4/cores/esp32/main.cpp line 19
+0x4008a289: vPortTaskWrapper at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/port.c line 143

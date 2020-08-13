@@ -4153,6 +4153,14 @@ bool musicBox_reaction(char token) {
 	// TODO: monochrome metric_mnemonic 'IR...'
       }
       break;
+
+  #if defined COMPILE_MORSE_CHEAT_SHEETS
+    case 'M':	// 'IM'
+      MENU.drop_input_token();
+      morse_cheat_sheets_UI();
+      break;
+  #endif // COMPILE_MORSE_CHEAT_SHEETS
+
 #endif // USE_MONOCHROME_DISPLAY
     } // switch token after 'I'
     break;

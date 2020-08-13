@@ -1220,7 +1220,7 @@ bool Pulses::check_maybe_do() {
     (*MENU).outln("\tREACHED");		// REMOVE: HEAVYDEBUG
 #endif
     for (unsigned int i=0; i<global_next_count; i++)
-      wake_pulse(global_next_pulses[i]);	//     wake next pulses up
+      wake_pulse(global_next_pulses[i]);	//     wake next pulses up	had a crash here, see TODO.txt
 
     fix_global_next();				// determine next event[s] serie
     return true;				// *did* do something

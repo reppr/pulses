@@ -60,6 +60,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
   case 2:
     musicBoxConf.name = F("LIFT OFF");
     //comment: :) :) :) :) :)
+    //# FAVORITE	DADA 2020 KUNSTDREIECK
     //# FAVORITE
     //# shortIsOk
     //# mystic
@@ -1553,6 +1554,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 58:
     musicBoxConf.name = F("eifach und eigenartig schön");
+    //# FAVORITE	DADA 2020 KUNSTDREIECK
     //# FAVORITE
     //# shortIsOk
     //# motives
@@ -3540,7 +3542,7 @@ bool /*error*/ load_preset(int new_preset) {	// TODO: sets preset, how to unset?
 
   case 119:
     musicBoxConf.name = F("slow dreams");
-    //# FAVORITE
+    //# FAVORITE	DADA 2020 KUNSTDREIECK
     //# shortIsOk
     //# motives
     //# melodies
