@@ -256,12 +256,16 @@ void Pulses::sub_time(unsigned long time, pulse_time_t *sum)	// PULSES_USE_DOUBL
 
 void Pulses::mul_time(pulse_time_t *duration, unsigned int factor)	// PULSES_USE_DOUBLE_TIMES
 {
-  *duration *= factor;
+  pulse_time_t t = *duration;
+  t *= (pulse_time_t) factor;
+  *duration  = t;
 }
 
 void Pulses::div_time(pulse_time_t *duration, unsigned int divisor)	// PULSES_USE_DOUBLE_TIMES
 {
-  *duration /= divisor;
+  pulse_time_t t = *duration;
+  t /= (pulse_time_t) divisor;
+  *duration  = t;
 }
 
 #else // old int overflow style

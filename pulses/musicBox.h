@@ -3294,6 +3294,23 @@ void deep_sleep() {
 
 
 /* **************************************************************** */
+#if defined PULSES_USE_DOUBLE_TIMES
+void sync_shifting(int multiplier, int divisor) {	// #if defined PULSES_USE_DOUBLE_TIMES
+  pulse_time_t this_shift;
+  if(multiplier) { // no zero shift?
+    for (int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++) {
+      if(PULSES.pulses[pulse].flags & ACTIVE) {
+	this_shift = PULSES.pulses[pulse].period;	// #if defined PULSES_USE_DOUBLE_TIMES
+	this_shift *= multiplier;
+	this_shift /= divisor;
+	PULSES.pulses[pulse].next += this_shift;
+      }
+    }
+    PULSES.fix_global_next();
+  } // no shift
+}
+
+#else // no  PULSES_USE_DOUBLE_TIMES, works for both versions now ;)
 void sync_shifting(Harmonical::fraction_t shift) {
   pulse_time_t this_shift;
   if(shift.multiplier) { // no zero shift?
@@ -3315,6 +3332,7 @@ void sync_shifting(Harmonical::fraction_t shift) {
     */
   } // no shift
 }
+#endif // PULSES_USE_DOUBLE_TIMES
 
 /* **************************************************************** */
 void musicBox_setup() {	// TODO:update

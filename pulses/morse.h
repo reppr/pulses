@@ -315,10 +315,6 @@ void show_morse_event_buffer() {	// debugging only
   #if defined TOKEN_LENGTH_FEEDBACK_PULSE
 int morse_length_feedback_pulse_i = ILLEGAL32;
 
-    #if ! defined PULSES_USE_DOUBLE_TIMES	// use double float time type
-      #error morse_feedback(pulse) needs PULSES_USE_DOUBLE_TIMES
-    #endif
-
 void morse_feedback(int pulse) {	// payload for morse duration feedback pulse
   switch (PULSES.pulses[pulse].counter) {
   case 1:	// wait for loong
@@ -328,11 +324,11 @@ void morse_feedback(int pulse) {	// payload for morse duration feedback pulse
     break;
   case 2: // loong reached: blink
     digitalWrite(MORSE_OUTPUT_PIN, LOW);
-    PULSES.pulses[pulse].period = (pulse_time_t) 100000;
+    PULSES.pulses[pulse].period = PULSES.simple_time(100000);
     break;
   case 3: //  wait for overlong
     digitalWrite(MORSE_OUTPUT_PIN, HIGH);
-    PULSES.pulses[pulse].period = (pulse_time_t) (((limit_loong_overlong - limit_dash_loong) * morse_TimeUnit) - 100000);
+    PULSES.pulses[pulse].period = PULSES.simple_time(((limit_loong_overlong - limit_dash_loong) * morse_TimeUnit) - 100000);
     break;
   case 4: // overlong: switch LED off
     digitalWrite(MORSE_OUTPUT_PIN, LOW);
@@ -355,7 +351,7 @@ void start_morse_feedback_pulse() {
     PULSES.init_pulse(morse_length_feedback_pulse_i);
     PULSES.set_payload_with_pin(morse_length_feedback_pulse_i, morse_feedback, MORSE_OUTPUT_PIN);  // pin not really used, hardcoded
     PULSES.pulses[morse_length_feedback_pulse_i].groups = g_AUXILIARY;
-    PULSES.pulses[morse_length_feedback_pulse_i].period = (pulse_time_t) (limit_dash_loong * morse_TimeUnit);
+    PULSES.pulses[morse_length_feedback_pulse_i].period = PULSES.simple_time(limit_dash_loong * morse_TimeUnit);
     PULSES.pulses[morse_length_feedback_pulse_i].next = PULSES.get_now();
     PULSES.pulses[morse_length_feedback_pulse_i].flags |= ACTIVE;
     PULSES.fix_global_next();
