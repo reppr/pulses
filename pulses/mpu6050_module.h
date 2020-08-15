@@ -193,12 +193,12 @@ enum accGyro_modes {
 int accGyro_mode = AG_mode_Gz | AG_mode_Ay | AG_mode_Ax;	// restored old default
 // int accGyro_mode = AG_mode_Ay | AG_mode_Ax;			// temporary default (Gz sync_shift made some problems)
 
-int16_t Ax_sel_offset=0;
-int16_t Ay_sel_offset=0;
-int16_t Az_sel_offset=0;
-int16_t Gx_sel_offset=0;
-int16_t Gy_sel_offset=0;
-int16_t Gz_sel_offset=0;
+float Ax_select_offset_f=0.0;
+float Ay_select_offset_f=0.0;
+float Az_select_offset_f=0.0;
+float Gx_select_offset_f=0.0;
+float Gy_select_offset_f=0.0;
+float Gz_select_offset_f=0.0;
 
 #define ACCELERO_SELECTION_SLOTS_DEFAULT		24	// TODO: test&trimm
 int16_t Ax_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;	// n items to select from
@@ -250,13 +250,13 @@ void display_accGyro_mode() {
 
 
 void reset_accGyro_selection() {	// reset accGyro selections, slots, reaction sources
-  Ax_sel_offset=0;
-  Ay_sel_offset=0;
-  Az_sel_offset=0;
+  Ax_select_offset_f=0.0;
+  Ay_select_offset_f=0.0;
+  Az_select_offset_f=0.0;
 
-  Gx_sel_offset=0;
-  Gy_sel_offset=0;
-  Gz_sel_offset=0;
+  Gx_select_offset_f=0.0;
+  Gy_select_offset_f=0.0;
+  Gz_select_offset_f=0.0;
 
   Ax_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;	// or zero, meaning switch to raw linear float?
   Ay_select_slots=ACCELERO_SELECTION_SLOTS_DEFAULT;
@@ -542,6 +542,7 @@ extern bool monochrome_can_be_used();
 extern void monochrome_show_line(uint8_t row, char * s);
 extern short primary_count;		// TODO: use musicBoxConf.primary_count in next version
 extern void noAction_flags_line();
+extern bool do_recalibrate_Y_ui;
 
 void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
   if(accGyro_new_data && accGyro_mode) {
@@ -561,9 +562,17 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
     static int _selected_Gy_i_seen;
     static int _selected_Gz_i_seen;
 
+    float Ax_f_new=0.0;
+    float Ay_f_new=0.0;
+    float Az_f_new=0.0;
+
     int Ax_i_new=0;
     int Ay_i_new=0;
     int Az_i_new=0;
+
+    float Gx_f_new=0.0;
+    float Gy_f_new=0.0;
+    float Gz_f_new=0.0;
 
     int Gx_i_new=0;
     int Gy_i_new=0;
@@ -577,7 +586,7 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
     float GY_seen_f=0.0;
     float GZ_seen_f=0.0;
 
-    reset_accGyro_selection();	// offsets and slots
+    // reset_accGyro_selection();	// offsets and slots	TODO: check if not partly needed
 
     // ACCELERO;
     if(accGyro_mode & AG_mode_Ax) {		// accelero X
@@ -610,53 +619,63 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
       // ACCELERO;
       if(accGyro_mode & AG_mode_Ax) {		// accelero X
 	Ax_reaction_source = JIFFLES;
-	Ax_sel_offset = 0;		// TODO: TRIMM:
-	Ax_select_slots = 41;		// TODO: TRIMM:
+	//Ax_select_offset_f = 0.0;		// TODO: check removal
+	Ax_select_slots = 41;			// TODO: TRIMM:
       }
 
       if(accGyro_mode & AG_mode_Ay) {		// accelero Y
 	Ay_reaction_source = NULL;
 	Ay_select_slots = 8;
-	Ay_sel_offset = 0;
+	//Ay_select_offset_f = 0.0;		// TODO: check removal
       }
 
       if(accGyro_mode & AG_mode_Az) {		// accelero Z
 	Az_reaction_source = NULL;
 	Az_select_slots = 8;
-	Az_sel_offset = 0;
+	//Az_select_offset_f = 0.0;		// TODO: check removal
       }
 
       // ACCELERO:
       if(accGyro_mode & AG_mode_Ax) {		// accelero X
-	Ax_i_new = AX_seen_f * Ax_select_slots +0.5;
-	Ax_i_new += Ax_sel_offset;
+	Ax_f_new = AX_seen_f * Ax_select_slots;
+	if(do_recalibrate_Y_ui) {
+	  Ax_select_offset_f = pointer2index(JIFFLES, selected_in(JIFFLES)) - Ax_f_new - 0.25;	// - 0.25 seems to do good...
+	  do_recalibrate_Y_ui = false;
+	}
+	Ax_f_new += Ax_select_offset_f;
+	Ax_i_new = (int) (Ax_f_new + 0.5);
       }
 
       if(accGyro_mode & AG_mode_Ay) {		// accelero Y
-	Ay_i_new = AY_seen_f * Ay_select_slots +0.5;
-	Ay_i_new += Ay_sel_offset;
+	Ay_f_new = AY_seen_f * Ay_select_slots;
+	Ay_f_new += Ay_select_offset_f;
+	Ay_i_new = (int) (Ay_f_new + 0.5);
       }
 
       if(accGyro_mode & AG_mode_Az) {		// accelero Z
-	Az_i_new = AZ_seen_f * Az_select_slots +0.5;
-	Az_i_new += Az_sel_offset;
+	Az_f_new = AZ_seen_f * Az_select_slots;
+	Az_f_new += Az_select_offset_f;
+	Az_i_new = (int) (Az_f_new + 0.5);
       }
 
 
       // GYRO:
       if(accGyro_mode & AG_mode_Gx) {		// gyro X
-	Gx_i_new = GX_seen_f + 0.5;
-	Gx_i_new += Gx_sel_offset;
+	Gx_f_new = GX_seen_f;
+	Gx_f_new += Gx_select_offset_f;
+	Gx_i_new = (int) Gx_f_new;	// TODO: + 0.5 ???
       }
 
       if(accGyro_mode & AG_mode_Gy) {		// gyro Y
-	Gy_i_new = GY_seen_f + 0.5;
-	Gy_i_new += Gy_sel_offset;
+	Gy_f_new = GY_seen_f;
+	Gy_f_new += Gy_select_offset_f;
+	Gy_i_new = (int) Gy_f_new;	// TODO: + 0.5 ???
       }
 
       if(accGyro_mode & AG_mode_Gz) {		// gyro Z
-	Gz_i_new = GZ_seen_f + 0.5;
-	Gz_i_new += Gz_sel_offset;
+	Gz_f_new = GZ_seen_f;
+	Gz_f_new += Gz_select_offset_f;
+	Gz_i_new = (int) Gz_f_new;	// TODO: + 0.5 ???
       }
 
       // now react;
@@ -673,9 +692,7 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 	    extern void MC_show_line(uint8_t row, char* str);
 	    MC_show_line(3, array2name(JIFFLES, selected_in(JIFFLES)));
 #endif
-	}
-	// else MENU.outln("\tseen already");
-
+	  }
 	} else {
 	  MENU.error_ln(F("no jiffle?"));
 	} // Ax JIFFLES

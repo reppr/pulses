@@ -3596,6 +3596,7 @@ void sync_landscape_time_sliced() {	// set this instruments time slice
   }
 }
 
+bool do_recalibrate_Y_ui = false;	// when switching on accGyro parameters should stay on spot, not change (i.e. jiffle)
 
 bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: ADC, 'analog'Touch, distance sensors, etc
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
@@ -3604,6 +3605,8 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
   bool switch_activity=false;
   bool do_next_letter=true;
   bool recognised = false;
+  bool was_active = accGyro_is_active;
+
   if(MENU.peek() == EOF8) {	// bare 'U'	switch_activity
     switch_activity = true;
     recognised = true;
@@ -3650,9 +3653,13 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
 	MENU.drop_input_token();
 	if(accGyro_preset == 1) {
 	  accGyro_preset = 2;
+	  reset_accGyro_selection();	// TODO: check	maybe, maybe not?
+	  do_recalibrate_Y_ui = true;;	// TODO: check	maybe, maybe not?
 	  MENU.outln(F("TUNING"));
 	} else {
 	  accGyro_preset = 1;
+	  reset_accGyro_selection();	// TODO: check
+	  do_recalibrate_Y_ui = true;;	// TODO: check
 	  MENU.outln(F("accGyro_preset 1"));
 	}
 
@@ -3691,6 +3698,11 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
   if(!mpu6050_available)
     MENU.out(F("\tMPU6050 not available"));
   MENU.ln();
+
+  if(accGyro_is_active && accGyro_is_active != was_active) {
+    do_recalibrate_Y_ui = true;
+    reset_accGyro_selection();	// TODO: maybe, maybe not?
+  }
 
   return recognised;
   // TODO: REPLACE BY NEW ENGINE until here
