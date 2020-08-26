@@ -69,6 +69,11 @@ uint8_t* known_peers_mac_p = NULL;	// this is a *PSEUDO MAC POINTER* to NULL
 					//   esp_now_send() will *send to ALL KNOWN PEERS*
 uint8_t time_sliced_sent_to_mac[6]={0};
 
+bool /*difference*/ mac_cmp(uint8_t* mac1,uint8_t* mac2) {
+  return (mac1[5] != mac2[5]  ||  mac1[4] != mac2[4]  ||  mac1[3] != mac2[3]  ||  \
+	  mac1[2] != mac2[2]  ||  mac1[1] != mac2[1]  ||  mac1[0] != mac2[0]);
+}
+
 /*
   uint8_t*  esp_now_send2_mac_p
 
@@ -265,23 +270,38 @@ bool mac_is_non_zero(uint8_t* mac_addr) {
 peer_ID_t esp_now_pulses_known_peers[ESP_NOW_MAX_TOTAL_PEER_NUM];
 
 void display_peer_ID_list() {
-  MENU.out_IstrI(my_IDENTITY.preName);
-  MENU.outln(F(" known peers:"));
+  extern void show_peer_id(peer_ID_t* this_peer_ID_p);
+
+  MENU.out(F("@ "));
+  show_peer_id(&my_IDENTITY);
+  MENU.outln(F("known peers:"));
+
   int i;
   for(i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {
     if(mac_is_non_zero(esp_now_pulses_known_peers[i].mac_addr)) {
       MENU.out(i + 1);	// start counting with 1
       if(i<9)
 	MENU.space();
-      MENU.space(2);
+      if(! mac_cmp(esp_now_send2_mac_p, esp_now_pulses_known_peers[i].mac_addr))	// >> mark send to peer
+	MENU.out(F(">>"));
+      else
+	MENU.space(2);
+
       MENU.out(MAC_str(esp_now_pulses_known_peers[i].mac_addr));
       MENU.space(2);
       MENU.out_IstrI(esp_now_pulses_known_peers[i].preName);
+      if(strlen(esp_now_pulses_known_peers[i].preName) < 6)
+	MENU.tab();
       MENU.tab();
       MENU.outln(esp_now_pulses_known_peers[i].esp_now_time_slice);
     }
   }
   MENU.ln();
+
+#if defined USE_MONOCHROME_DISPLAY
+  extern void MC_esp_now_peer_list();
+  MC_esp_now_peer_list();
+#endif
 } // display_peer_ID_list()
 
 
@@ -621,6 +641,22 @@ static void pulses_data_received_callback(const uint8_t *mac_addr, const uint8_t
 } // pulses_data_received_callback()
 
 
+void show_peer_prename_from_mac(uint8_t* mac) {
+  if(mac != NULL) {
+    for(int i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {
+      if(mac_is_non_zero(esp_now_pulses_known_peers[i].mac_addr)) {
+	if(! mac_cmp(mac, (uint8_t*) &esp_now_pulses_known_peers[i].mac_addr)) {
+	  MENU.out_IstrI(esp_now_pulses_known_peers[i].preName);
+	  return;
+	}
+      }
+    }
+    MENU.out(F("(unknown)\t"));
+    MENU.outln(MAC_str(mac));
+  } else
+    MENU.out_IstrI(F("ALL KNOWN"));
+} // show_peer_prename_from_mac()
+
 /*
   esp_now_send_maybe_do_macro
 
@@ -640,13 +676,14 @@ void esp_now_send_maybe_do_macro(uint8_t* mac_addr, char* macro) {
 
   esp_err_t status = esp_now_send_macro(mac_addr, macro);
   if(status == ESP_OK) {	// if sent, maybe DO it locally now?
-    MENU.out(F("ok, sent\t"));
+    MENU.out(F("ok, sent to "));
+    show_peer_prename_from_mac(mac_addr);
 
     if(known_peers_mac_p == NULL || known_peers_mac_p == (uint8_t*) &broadcast_mac) {  // to play or not to play?
-      MENU.out(F("and *do* locally "));
+      MENU.out(F(" \tand *do* locally\t"));
       MENU.play_KB_macro(macro);		// only play locally if the recipent is *NOT* an individual
     } else
-      MENU.outln(F("*not* done locally"));
+      MENU.outln(F("\t*not* done locally"));
 
   } else						// sending failed
     if(MENU.maybe_display_more(VERBOSITY_LOWEST/* sic! */) || DEBUG_ESP_NOW_b)	// *do* display that
@@ -664,6 +701,26 @@ void esp_now_call_participants() {	// kickstart network connections
   esp_now_send_who(broadcast_mac);
 }
 
+void payload_display_peer_ID_list(int pulse) {
+  if(PULSES.pulses[pulse].counter > 1) {
+    MENU.ln();
+    display_peer_ID_list();
+    PULSES.init_pulse(pulse);
+  }
+}
+
+void trigger_display_peer_ID_list() { // display peer ID list after a while
+  int feedback_pulse_i = PULSES.highest_available_pulse();
+  if(feedback_pulse_i != ILLEGAL32) {
+    PULSES.init_pulse(feedback_pulse_i);
+    PULSES.set_payload(feedback_pulse_i, &payload_display_peer_ID_list);
+    PULSES.pulses[feedback_pulse_i].groups = g_AUXILIARY;
+    PULSES.pulses[feedback_pulse_i].period = PULSES.simple_time(500000UL);	// TODO: test&trimm
+    PULSES.pulses[feedback_pulse_i].next = PULSES.get_now();
+    PULSES.pulses[feedback_pulse_i].flags |= ACTIVE;
+    PULSES.fix_global_next();
+  } // else (no free pulse): just ignore
+}
 
 //#define ESP_NOW_IDLE_ID_SEND	// if ever used again, make it switchable...
 #if defined ESP_NOW_IDLE_ID_SEND
@@ -704,6 +761,7 @@ esp_err_t add_broascast_2_ESP_peer_list() {
   memcpy(&broadcast_ID.preName, preName, 16);
   return esp_now_pulses_add_peer(&broadcast_ID);	// add broadcast as peer to ESP list
 }
+
 
 // setup:
 esp_err_t esp_now_pulses_setup() {

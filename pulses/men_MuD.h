@@ -9,9 +9,9 @@ MENU.outln(F("TODO: MONOCHROME FIX?"));
 // MENU.outln(F("(*u8x8_p).initDisplay();"));
 // (*u8x8_p).initDisplay();
 
-// MENU.outln(F("monochrome <ESC>c"));
-// (*u8x8_p).print(27);
-// (*u8x8_p).print('c');
+MENU.outln(F("monochrome <ESC>c"));
+(*u8x8_p).print((char) 27);
+(*u8x8_p).print('c');
 
 MENU.outln(F("(*u8x8_p).setFlipMode(0)"));
 (*u8x8_p).setFlipMode(0);

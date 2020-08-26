@@ -1112,6 +1112,47 @@ void inline MC_show_tuning() {
  }
 #endif // MULTICORE_DISPLAY
 
+
+#if defined USE_ESP_NOW
+void monochrome_show_peer_list() {
+  int peer_cnt=0;
+  for(int i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {
+    if(mac_is_non_zero(esp_now_pulses_known_peers[i].mac_addr))
+      peer_cnt++;
+  }
+  (*u8x8_p).clear();
+
+  uint8_t row=0;
+  bool is_send_to_peer;
+  bool small = peer_cnt > (monochrome_getRows() / 2);
+  for(int i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {
+    if(mac_is_non_zero(esp_now_pulses_known_peers[i].mac_addr)) {
+      if(is_send_to_peer = (! mac_cmp(esp_now_send2_mac_p, esp_now_pulses_known_peers[i].mac_addr)))	// send to peer?
+	(*u8x8_p).setInverseFont(1);
+
+      if(small) {
+	(*u8x8_p).setCursor(0,row++);
+	(*u8x8_p).print(esp_now_pulses_known_peers[i].preName);
+      } else {
+	//	(*u8x8_p).draw2x2String(0, 2*row++, esp_now_pulses_known_peers[i].preName);
+	monochrome_big_or_multiline(2*row++, esp_now_pulses_known_peers[i].preName);
+      }
+      if(is_send_to_peer)
+	(*u8x8_p).setInverseFont(0);
+    }
+  }
+} // monochrome_show_peer_list()
+
+
+void MC_esp_now_peer_list() {
+#if defined MULTICORE_DISPLAY
+  do_on_other_core(&monochrome_show_peer_list);
+#else
+  monochrome_show_peer_list();
+#endif
+}
+#endif
+
 void monochrome_setup() {
   MENU.out(F("monochrome_setup() "));
   switch(HARDWARE.monochrome_type) {

@@ -3909,11 +3909,12 @@ bool musicBox_reaction(char token) {
     case EOF8:  // bare 'C'	// *broadcast* to spread peer detection
       MENU.outln(F("esp_now_call_participants()"));
       esp_now_call_participants();
+      trigger_display_peer_ID_list();	// show peer list after a short while
       break;
 
     case '?':	// 'CC?' == 'C?'
       MENU.drop_input_token();
-      display_peer_ID_list();
+      display_peer_ID_list();		// display current list, *no*t rebuilding it
       break;
 
     // 'CC' hierarchy
@@ -3923,6 +3924,7 @@ bool musicBox_reaction(char token) {
       if(MENU.peek() == EOF8) {	// bare 'CC'
 	MENU.outln(F("esp_now_call_participants()"));
 	esp_now_call_participants();
+	trigger_display_peer_ID_list();		// show peer list after a short while
 
       } else if(MENU.check_next('?')) {		// 'CC?' == 'C?'
 	display_peer_ID_list();
@@ -3952,8 +3954,14 @@ bool musicBox_reaction(char token) {
 	  input_value = MENU.numeric_input(0);		// default to broadcast
 	  if(input_value == 0) {
 	    esp_now_send2_mac_p = known_peers_mac_p;	// NULL == *all known* peers
+	    MENU.outln(F("will send to ALL KNOWN peers"));
+	    display_peer_ID_list();
+
 	  } else if((input_value <= ESP_NOW_MAX_TOTAL_PEER_NUM) && (input_value > 0)) {
 	    esp_now_send2_mac_p = esp_now_pulses_known_peers[input_value -1 ].mac_addr;
+	    MENU.out(F("will send to "));
+	    MENU.out_IstrI(esp_now_pulses_known_peers[input_value -1].preName);
+	    MENU.ln();
 	  } else {
 	    MENU.outln_invalid();
 	    display_peer_ID_list();
@@ -4140,17 +4148,7 @@ bool musicBox_reaction(char token) {
 #if defined USE_ESP_NOW
     case 'C':	// 'IC'	peer list
       MENU.drop_input_token();
-      for(int row=0, i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {
-	if(mac_is_non_zero(esp_now_pulses_known_peers[i].mac_addr)) {
-	  MENU.out(i + 1);	// start counting with 1
-	  if(i<9)
-	    MENU.space();
-	  MENU.space(2);
-	  extended_output(esp_now_pulses_known_peers[i].preName, 0, 2*row, true);
-	  row++;
-	  MENU.ln();
-	}
-      }
+      display_peer_ID_list();
       break;
 #endif
 

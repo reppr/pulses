@@ -632,4 +632,11 @@ Y_UI_display_line()
 
 #define USE_BLUETOOTH_SERIAL_MENU	fix DIL switch and HARDWARE conf logic
 
-git bisect gZ problems
+RGBstringConf to nvs
+
+morse MACRO_NOW obsolete?
+
+show peers on monochrome
+
+make multicore monochrome switchable
+reset monochrome
