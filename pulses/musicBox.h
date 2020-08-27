@@ -3294,6 +3294,9 @@ void deep_sleep() {
 
 
 /* **************************************************************** */
+unsigned int sync_shifting_multiplier=1;	// scaling sync_shifting() UI
+unsigned int sync_shifting_divisor=8*4096;	// scaling sync_shifting() UI
+
 #if defined PULSES_USE_DOUBLE_TIMES
 void sync_shifting(int multiplier, int divisor) {	// #if defined PULSES_USE_DOUBLE_TIMES
   pulse_time_t this_shift;
@@ -3323,13 +3326,6 @@ void sync_shifting(Harmonical::fraction_t shift) {
       }
     }
     PULSES.fix_global_next();
-    /*
-    // TODO:; DADA	REMOVE:
-    MENU.out(F("sync_shifting("));
-    display_fraction_int(shift);
-    MENU.outln(')');
-    // TODO:; DADA	REMOVE:
-    */
   } // no shift
 }
 #endif // PULSES_USE_DOUBLE_TIMES
@@ -3610,8 +3606,39 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
   if(MENU.peek() == EOF8) {	// bare 'U'	switch_activity
     switch_activity = true;
     recognised = true;
-  } else {
-    while(do_next_letter) {	// a group of symbols as optional sequence toggling active axis
+  } else if(MENU.peek() == 'U')	{ // 'UU...' Y_UI() configuration
+    MENU.drop_input_token();
+    recognised = true;
+    switch(MENU.peek()) {
+    case 'S':	// 'UUS' scale sync_shifting()	// TODO: document 'U' UI
+      MENU.drop_input_token();
+      if(MENU.peek() == EOF8)	// bare 'UUS' double sync_shifting() scaling
+	sync_shifting_multiplier *= 2;
+      else {
+	// 'UUSM...' | 'UUS*...' repeated doubling sync_shifting() scaling
+	while (MENU.check_next('M') || MENU.check_next('*')) {
+	  sync_shifting_multiplier *= 2;
+	}
+	// 'UUSD...' | 'UUS/...' repeated /2 sync_shifting() scaling
+	while (MENU.check_next('D') || MENU.check_next('/')) {
+	  sync_shifting_divisor *= 2;
+	}
+      }
+      {
+	Harmonical::fraction_t f = {sync_shifting_multiplier, sync_shifting_divisor};
+	(*HARMONICAL).reduce_fraction(&f);			// reduce fraction
+	sync_shifting_multiplier = f.multiplier;
+	sync_shifting_divisor = f.divisor;
+      }
+      MENU.out(F("sync shift scaling "));
+      MENU.out(sync_shifting_multiplier);
+      MENU.out('/');
+      MENU.outln(sync_shifting_divisor);
+      break;
+    }
+  } // switch 'UUx' tokens
+  else {
+      while(do_next_letter) {	// a group of symbols as optional sequence toggling active axis
       switch(MENU.peek()) {	// second letter
       case '0':			// Y0 =	restart at zero		-.--  -----
       case '=':

@@ -15,8 +15,6 @@ delay(1000);
 accGyro_speed_test();
 #endif
 
-// sync_shifting({1,12});
-
 /*
 sample_accelero_giro_6d();
 

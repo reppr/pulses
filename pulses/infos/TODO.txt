@@ -609,9 +609,6 @@ WiFi.mode(WIFI_STA);			// TODO: BUG: does not returm on PSRAM boards!
 fix MC_print()
 fix (or remove) next row in big_or_multiline and extended_output
 
-sync_shifting({_selected_Gz_i_seen, 8*4096});	// FIXME: TODO: FIND&TRIMM new DEFAULT for version2
-sync_shifting monochrome feedback
-
 test rgb string (hardware) level shifting
 
 2 more touch inputs
@@ -640,3 +637,7 @@ show peers on monochrome
 
 make multicore monochrome switchable
 reset monochrome
+
+case 'S':	// 'UUS' scaling sync_shifting()	// TODO: document 'U' UI
+
+TODO: sync_shifting monochrome feedback

@@ -191,7 +191,6 @@ enum accGyro_modes {
 
 // int accGyro_mode=0;	// zero means inactive
 int accGyro_mode = AG_mode_Gz | AG_mode_Ay | AG_mode_Ax;	// restored old default
-// int accGyro_mode = AG_mode_Ay | AG_mode_Ax;			// temporary default (Gz sync_shift made some problems)
 
 float Ax_select_offset_f=0.0;
 float Ay_select_offset_f=0.0;
@@ -776,12 +775,14 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
       if(accGyro_mode & AG_mode_Gz) {		// gyro Y
 	if(Gz_i_new != _selected_Gz_i_seen) {
 	  _selected_Gz_i_seen = Gz_i_new;
+	  extern int sync_shifting_divisor;
+	  extern int sync_shifting_multiplier;
 #if defined PULSES_USE_DOUBLE_TIMES
 	  extern void sync_shifting(int multiplier, int divisor);
-	  sync_shifting(_selected_Gz_i_seen, 8*4096);
+	  sync_shifting(_selected_Gz_i_seen * sync_shifting_multiplier, sync_shifting_divisor);
 #else
 	  extern void sync_shifting(Harmonical::fraction_t shift);
-	  sync_shifting({_selected_Gz_i_seen, 8*4096});	// FIXME: DEBUG: TODO: FIND&TRIMM new DEFAULT for version2
+	  sync_shifting({_selected_Gz_i_seen * sync_shifting_multiplier, sync_shifting_divisor});
 #endif // PULSES_USE_DOUBLE_TIMES
 
 //#if defined DEBUG_AG_REACTION		// fixme: TODO: how and when to report? ################
