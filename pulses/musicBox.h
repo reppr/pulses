@@ -887,6 +887,9 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
       tabula_rasa();
       do_pause_musicBox = true;	// triggers MUSICBOX_ENDING_FUNCTION;	// sleep, restart or somesuch	*ENDED*
       // MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
+    } else {
+      if(MusicBoxState == OFF)
+	MENU.outln(F("musicBox *was* OFF"));
     }
   }
 } // start_soft_ending()
@@ -3846,45 +3849,47 @@ bool musicBox_reaction(char token) {
     show_cycle(CyclesConf.harmonical_CYCLE);
     break;
   case 'E': // 'E' (bare):  start_soft_ending(soft_end_days_to_live, soft_end_survive_level);
-    if(MENU.check_next('F')) {			// case "EFx" configure function musicBox_when_done();
-      if(MENU.peek() != EOF8) {
-	switch(MENU.peek()) {
-	case 'ED':		// TODO: huch? ################################################################
-	  musicBox_when_done=&deep_sleep;		// "EFD" deep_sleep()
-	  break;
-	case 'EL':
-	  musicBox_when_done=&light_sleep;	// "EFL" light_sleep()
-	  break;
-	case 'EH':
-	  MENU.out(F("hibernate() *DEACTIVATED* "));		// "EFH" hibernate()	TODO: CRASH: DEBUG: ################
-	  //musicBox_when_done=&hibernate;	// "EFH" hibernate()	TODO: CRASH: DEBUG: ################
-	  // TODO: interface to int musicBox_pause_seconds, see: 'r'
-	  break;
-	case 'ER':
-	  musicBox_when_done=&restart;		// "EFR" restart()
-
-	  MENU.drop_input_token();		// "EFr<nn>" set musicBox_pause_seconds
-	  input_value = MENU.numeric_input(musicBox_pause_seconds);	// drop 'r' first
-	  if(input_value >= 0)
-	    musicBox_pause_seconds = input_value;
-	  MENU.restore_input_token();		// dummy, see below
-	  break;
-	case 'EU':
-	  musicBox_when_done=&user;		// "EFU" user()
-	  break;
-	case 'EP':
-	  musicBox_when_done=&random_preset;	// "EFP" random_preset()
-	  break;
-	default:
-	  MENU.outln_invalid();
-	}
+    if(MENU.check_next('F')) {	// case 'EFx' configure function musicBox_when_done();
+      switch(MENU.peek()) {	// 'EF...'
+      case EOF8: // bare 'EF'  just show configured function  show_when_done_function();
+	break;
+      case 'D':  // 'EFD' deep_sleep()
 	MENU.drop_input_token();
-      } // else	// bare "EF"  just show configured function
+	musicBox_when_done=&deep_sleep;
+	break;
+      case 'L':  // 'EFL' light_sleep()
+	MENU.drop_input_token();
+	musicBox_when_done=&light_sleep;
+	break;
+      case 'H':  // 'EFH' hibernate()	TODO: CRASH: DEBUG: ################
+	MENU.drop_input_token();
+	MENU.out(F("hibernate() *DEACTIVATED* "));
+	//musicBox_when_done=&hibernate;  // 'EFH' hibernate()	TODO: CRASH: DEBUG: ################
+	// TODO: interface to int musicBox_pause_seconds, see: 'r'
+	break;
+      case 'R':  // 'EFR' restart()
+	MENU.drop_input_token();
+	musicBox_when_done=&restart;
+	input_value = MENU.numeric_input(musicBox_pause_seconds);  // 'EFr<nn>' set musicBox_pause_seconds
+	if(input_value >= 0)
+	  musicBox_pause_seconds = input_value;
+	break;
+      case 'U':  // 'EFU' user()
+	MENU.drop_input_token();
+	musicBox_when_done=&user;
+	break;
+      case 'P':  // 'EFP' random_preset()
+	MENU.drop_input_token();
+	musicBox_when_done=&random_preset;
+	break;
+      }
       show_when_done_function();
       MENU.ln();
-    } else	// plain 'E' start_soft_ending(...)
+    } // 'EF...'
+    else // 'E' bare
       start_soft_ending(MagicConf.soft_end_days_to_live, MagicConf.soft_end_survive_level);
     break;
+
   case 'd': // soft_end_days_to_live
     input_value = MENU.numeric_input(MagicConf.soft_end_days_to_live);
     if(input_value >= 0)
