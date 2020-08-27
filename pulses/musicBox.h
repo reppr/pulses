@@ -1361,7 +1361,8 @@ void noAction_flags_line() {	// show a line with primary noACTION flag signs
 }
 
 void muting_actions_UI_line() {
-  MENU.outln(F("'M'=muting actions: 'MH''MM''MB''ML'=toggle HIGH,MELODY,BASS,LOW 'M<n>'=~notes 'MX'=~selected 'MT'='M0'=mute all 'ME'='MA'=all on"));
+  MENU.outln(F("'M'=muting actions: 'MH''MM''MB''ML'=toggle HIGH,MELODY,BASS,LOW  'M<n>'=~notes  'MX'=~selected"));
+  MENU.outln(F("    'MT'='M0'=mute all  'ME'='MA'=all on   'MO'=mute top octave  'MQ'=unmute top octave"));
 }
 
 void muting_actions_UI() {	// 'M' already received   action muting UI
@@ -1447,13 +1448,52 @@ void muting_actions_UI() {	// 'M' already received   action muting UI
 	MENU.outln(F("toggle action muting"));
       break;
 
-      //	    case 'O':	// octave managnent
-      //	    case '+';
-      //	    case '-';
-      //	      MENU.drop_input_token();
-      //	      break;
-    }
+    case 'O':	// 'MO' octave managment; mute topmost octave
+      MENU.drop_input_token();
+      {
+	int pulse = musicBoxConf.highest_primary;
+	int muted=0;
+	while(pulse > musicBoxConf.lowest_primary  &&  PULSES.pulses[pulse].action_flags & noACTION)	// skip already muted pulses
+	  { pulse--; } // pulse is topmost unmuted
+
+	PULSES.pulses[pulse--].action_flags |= noACTION;	// mute topmost active pulse even if it *is* an octave
+	muted++;
+	while(pulse >= musicBoxConf.lowest_primary  &&  PULSES.pulses[pulse].note_position != 1)
+	  {
+	    PULSES.pulses[pulse--].action_flags |= noACTION;
+	    muted++;
+	  }
+	MENU.out(F("muted "));
+	MENU.outln(muted);
+      }
+      break;
+
+    case 'Q':	// 'MQ' octave managment: unmute topmost octave
+      MENU.drop_input_token();
+      {
+	int pulse = musicBoxConf.highest_primary;
+	int unmuted=0;
+	while(pulse > musicBoxConf.lowest_primary  &&  PULSES.pulses[pulse].action_flags & noACTION)	// skip already muted pulses
+	  { pulse--; } // pulse is topmost unmuted
+
+	while(++pulse <= musicBoxConf.highest_primary)
+	  {
+	    PULSES.pulses[pulse].action_flags &= ~noACTION;
+	    unmuted++;
+	    if(PULSES.pulses[pulse].note_position == 1)	// stop after activating an octave
+	      break;
+	  }
+
+	MENU.out(F("unmuted "));
+	MENU.outln(unmuted);
+      }
+      break;
+
+    default:
+      goto muting_UI_end;
+    } // next letter switch
   } // next letter loop
+ muting_UI_end:
   noAction_flags_line();
 } // muting_actions_UI()
 
