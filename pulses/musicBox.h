@@ -1079,6 +1079,8 @@ void set_metric_pitch(int metric_pitch) {	// SETS PARAMETERS ONLY, does *not* tu
     MENU.outln(metric_mnemonic);		// TODO: do i want that?
 } // set_metric_pitch()
 
+const double semitone = pow(2.0, (1.0 / 12.0));
+double cent = pow(2.0, (1.0 / 1200.0));		// ln: const does not work!  ????
 
 void show_metric_cents_list(double base_note=220.0) {	// helper function, not needed
   /*
@@ -1103,9 +1105,6 @@ void show_metric_cents_list(double base_note=220.0) {	// helper function, not ne
   */
 
   int metric_pitch_was = musicBoxConf.chromatic_pitch;
-
-  double semitone = pow(2.0, (1.0 / 12.0));
-  double cent = pow(2.0, (1.0 / 1200.0));
 
   MENU.out(F("semitone "));
   MENU.out(semitone, 18);

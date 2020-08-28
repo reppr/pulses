@@ -799,11 +799,10 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
       {
 	double UI_value = AY_seen_f;
 	UI_value -= 0.18;	// offset	just testing...
-
-	// debug output showed cents as suitable unit, so i go this way:
-	double cent = pow(2.0, (1.0 / 1200.0));	// for human readers ;)
 	double detune = 1.0;
 
+	// debug output showed cents as suitable unit, so i go this way:
+	extern double cent;	// double cent = pow(2.0, (1.0 / 1200.0));	// for human readers ;)
 	detune = pow(cent, (AY_seen_f * -2.0) + 1.0);
 	detune *= detune;
 	detune *= detune;
