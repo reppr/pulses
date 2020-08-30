@@ -9,10 +9,8 @@
 //#define DEBUG_AG_REACTION	// TODO: remove or fix the debug mess
 //#define DEBUG_ACCELGYRO_BASICS	// TODO: remove or fix the debug mess
 
-//#define DEBUG_ACCGYRO_SAMPLE	true	// TODO: remove or fix the debug mess
-#define DEBUG_ACCGYRO_SAMPLE	false	// TODO: remove or fix the debug mess
-
-bool debug_accgyro_sample=DEBUG_ACCGYRO_SAMPLE;	// TODO: remove or fix the debug mess
+bool display_accGyro_raw=true;	  // for debugging
+bool block_accGyro_reaction=true; // for debugging: *does* all the sampling and computation, but does *not* react on it	REMOVE:
 
 bool mpu6050_available=true;	// will be reset automagically if there's no MPU6050 found
 				// this will switch it off, including sampling...
@@ -64,38 +62,53 @@ bool mpu6050_setup() {
 
     MENU.out(F("set accGyro offsets\t{"));
     int16_t o;
+    bool offsets_zero=true;
 
     mpu6050.setXAccelOffset(o = HARDWARE.accGyro_offsets[0]);
+    if(o)
+      offsets_zero = false;
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
     mpu6050.setYAccelOffset(o = HARDWARE.accGyro_offsets[1]);
+    if(o)
+      offsets_zero = false;
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
     mpu6050.setZAccelOffset(o = HARDWARE.accGyro_offsets[2]);
+    if(o)
+      offsets_zero = false;
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
     mpu6050.setXGyroOffset(o = HARDWARE.accGyro_offsets[3]);
+    if(o)
+      offsets_zero = false;
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
     mpu6050.setYGyroOffset(o = HARDWARE.accGyro_offsets[4]);
+    if(o)
+      offsets_zero = false;
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
     mpu6050.setZGyroOffset(o = HARDWARE.accGyro_offsets[5]);
+    if(o)
+      offsets_zero = false;
     MENU.out(o);
     MENU.outln('}');
-
+    if(offsets_zero)
+      MENU.error_ln(F("accGyro not calibrated"));
     MENU.ln();
-    return true;	// OK
+
+    return true;	// OK (but calibration *might* be missing)
   } // else
 
   MENU.out(F("failed: "));
@@ -471,21 +484,21 @@ void accGyro_sample_v2() {
   // ACCELERO:
   accGyro_current_AX_f = (ax_i / mpu_oversampling) + 16384.0;
   accGyro_current_AX_f /= 32768.0;	// to float scaling
-  if(accX_invert) {
+  if(accX_invert) {			// INVERT mathematical X axis?
     accGyro_current_AX_f *= -1.0;
     accGyro_current_AX_f += 1.0;	// 0..1
   } // else	not tested
 
   accGyro_current_AY_f = (ay_i / mpu_oversampling) + 16384.0;
   accGyro_current_AY_f /= 32768.0;	// to float scaling
-  if(accY_invert) {
+  if(accY_invert) {			// INVERT mathematical Y axis?
     accGyro_current_AY_f *= -1.0;
     accGyro_current_AY_f += 1.0;	// 0..1
   } // else	nothing to do
 
   accGyro_current_AZ_f = (az_i / mpu_oversampling) + 16384.0;
   accGyro_current_AZ_f /= 32768.0;	// to float scaling
-  if(accZ_invert) {		// INVERT mathematical axis?
+  if(accZ_invert) {			// INVERT mathematical Z axis?
     accGyro_current_AZ_f *= -1.0;
     accGyro_current_AZ_f += 1.0;	// ????
   }
@@ -493,24 +506,25 @@ void accGyro_sample_v2() {
   // GYRO:
   accGyro_current_GX_f = (gx_i / mpu_oversampling);
   accGyro_current_GX_f /= gyro_float_scaling;
-  if(gyrX_invert)		// INVERT mathematical axis?
+  if(gyrX_invert)			// INVERT gyrX direction?
     accGyro_current_GX_f *= -1;
 
   accGyro_current_GY_f = (gy_i / mpu_oversampling);
   accGyro_current_GY_f /= gyro_float_scaling;
-  if(gyrY_invert)		// INVERT mathematical axis?
+  if(gyrY_invert)			// INVERT gyrY direction?
     accGyro_current_GY_f *= -1;
 
   accGyro_current_GZ_f = (gz_i / mpu_oversampling);
   accGyro_current_GZ_f /= gyro_float_scaling;
-  if(gyrZ_invert)
+  if(gyrZ_invert)			// INVERT gyrZ direction?
     accGyro_current_GZ_f *= -1;
 
-#if defined DEBUG_ACCGYRO_SAMPLE
-  if(accGyro_new_data && debug_accgyro_sample)	// TODO: REMOVE: runtime debug switching...
+  if(display_accGyro_raw && accGyro_new_data) {		// debugging
+    // do_on_other_core(&show_current_accGyro_values);	// could be dangerous
     show_current_accGyro_values();
-#endif
+  }
 } // accGyro_sample_v2()
+
 
 #if defined  MULTICORE_MPU_SAMPLING
 TaskHandle_t multicore_sample_mpu_handle;
@@ -546,6 +560,9 @@ extern bool do_recalibrate_Y_ui;
 void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
   if(accGyro_new_data && accGyro_mode) {
     accGyro_new_data = false;
+
+    if(block_accGyro_reaction)	// debugging only
+      return;
 
     if(! accGyro_is_active) {	// maybe catch errors here, if any?	TODO: REMOVE:
       MENU.error_ln(F("accGyro_reaction_v2():\taccGyro_is_active is false"));

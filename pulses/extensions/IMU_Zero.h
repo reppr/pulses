@@ -18,6 +18,7 @@
 
   2019-10-07	use MENU.out, use F("") macro, minor adaptions
 
+  2020-08-30    set_IMU_Zero_offsets() used in pulses nvs menu
 */
 
 
@@ -339,5 +340,24 @@ void determine_imu_zero_offsets(int NFast=1000)
     PullBracketsOut();
     PullBracketsIn();
 
-    MENU.outln(F("-------------- done --------------"));
+    MENU.outln(F("done"));
   } // determine_imu_zero_offsets()
+
+void set_IMU_Zero_offsets() {
+  int d_lower, d_higher, offset;
+  MENU.out('{');
+  for(int i=0; i<6; i++) {
+    d_lower = abs(LowValue[i] - Target[i]);
+    d_higher = abs(HighValue[i] - Target[i]);
+    if(d_higher < d_lower)
+      offset = HighOffset[i];
+    else
+      offset = LowOffset[i];
+    HARDWARE.accGyro_offsets[i] = offset;
+
+    MENU.out(offset);
+    MENU.out(F(", "));
+  }
+  MENU.outln('}');
+  MENU.outln(F("say ':NHS' to save to NVS"));
+}
