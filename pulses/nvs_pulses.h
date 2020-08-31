@@ -108,6 +108,8 @@ bool nvs_read_blob(char* key, void* new_blob, size_t buffer_size) {
 
   // double check buffer size
   if(required_size > buffer_size) {
+    MENU.out(required_size);
+    MENU.space();
     MENU.error_ln(F("too much TODO: DEBUG:"));	// TODO: DEBUG: i have seen this...
     nvs_close(my_handle);
     return true; // error

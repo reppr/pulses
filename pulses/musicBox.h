@@ -4026,7 +4026,6 @@ bool musicBox_reaction(char token) {
 	  if(input_value == 0) {
 	    esp_now_send2_mac_p = known_peers_mac_p;	// NULL == *all known* peers
 	    MENU.outln(F("will send to ALL KNOWN peers"));
-	    display_peer_ID_list();
 
 	  } else if((input_value <= ESP_NOW_MAX_TOTAL_PEER_NUM) && (input_value > 0)) {
 	    esp_now_send2_mac_p = esp_now_pulses_known_peers[input_value -1 ].mac_addr;
@@ -4035,8 +4034,8 @@ bool musicBox_reaction(char token) {
 	    MENU.ln();
 	  } else {
 	    MENU.outln_invalid();
-	    display_peer_ID_list();
 	  }
+	  display_peer_ID_list();
 
 	} else {	// other *NON NUMERIC* input after 'CC<xxx>'	TODO: search preName
 	  MENU.out("DADA implement peer name search?\t");
@@ -4050,6 +4049,7 @@ bool musicBox_reaction(char token) {
 	  }
 */
 	  MENU.ln();
+	  display_peer_ID_list();	// just in case...
 	} // numeric/non numeric after 'CC'
       } // more input after 'CC'
       break;

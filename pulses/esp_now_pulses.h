@@ -70,6 +70,10 @@ uint8_t* known_peers_mac_p = NULL;	// this is a *PSEUDO MAC POINTER* to NULL
 uint8_t time_sliced_sent_to_mac[6]={0};
 
 bool /*difference*/ mac_cmp(uint8_t* mac1,uint8_t* mac2) {
+  if(mac1 == NULL || mac2 == NULL) // check for NULL pointers
+    return true;  		   // a NULL pointer is *always* considered unequal here ;)
+
+  // else
   return (mac1[5] != mac2[5]  ||  mac1[4] != mac2[4]  ||  mac1[3] != mac2[3]  ||  \
 	  mac1[2] != mac2[2]  ||  mac1[1] != mac2[1]  ||  mac1[0] != mac2[0]);
 }
@@ -274,6 +278,8 @@ void display_peer_ID_list() {
 
   MENU.out(F("@ "));
   show_peer_id(&my_IDENTITY);
+  if(esp_now_send2_mac_p == NULL)
+    MENU.out(F(">> all "));
   MENU.outln(F("known peers:"));
 
   int i;
@@ -679,7 +685,7 @@ void esp_now_send_maybe_do_macro(uint8_t* mac_addr, char* macro) {
     MENU.out(F("ok, sent to "));
     show_peer_prename_from_mac(mac_addr);
 
-    if(known_peers_mac_p == NULL || known_peers_mac_p == (uint8_t*) &broadcast_mac) {  // to play or not to play?
+    if(mac_addr == NULL || ! mac_cmp(mac_addr, broadcast_mac)) {  // to play or not to play?
       MENU.out(F(" \tand *do* locally\t"));
       MENU.play_KB_macro(macro);		// only play locally if the recipent is *NOT* an individual
     } else

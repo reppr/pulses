@@ -641,3 +641,10 @@ reset monochrome
 case 'S':	// 'UUS' scaling sync_shifting()	// TODO: document 'U' UI
 
 TODO: sync_shifting monochrome feedback
+
+update MUSICBOX_TRIGGER_PIN
+       USE_MUSICBOX_TRIGGER_PIN
+       HARDWARE_conf
+       musicBox_trigger_enabled
+
+update battery control
