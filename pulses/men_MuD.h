@@ -51,8 +51,6 @@ MENU.outln(F("(*u8x8_p).refreshDisplay()"));	// see: Only required for SSD1606
 
 //MENU.outln((int) esp_timer_get_time());
 
-//determine_imu_zero_offsets(2000);	// TODO: use and UI
-
 //  show_morse_event_buffer();
 
     /*

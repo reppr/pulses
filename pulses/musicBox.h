@@ -3415,7 +3415,7 @@ void musicBox_setup() {	// TODO:update
 }
 
 
-#include "presets.h" // TODO: #define HAS_PRESETS	################
+#include "presets.h" // TODO: #define HAS_PRESETS ?
 
 /* **************************************************************** */
 // musicBox menu
@@ -3624,6 +3624,26 @@ void input_preset_and_start() {	// factored out UI component	// TODO: sets prese
   if(load)
     load_preset_and_start(musicBoxConf.preset, start);
 } // input_preset_and_start()
+
+void display_preset_names() {
+  short preset_was = musicBoxConf.preset;
+  int verbosity_was=MENU.verbosity;
+  MENU.verbosity = 0;	// *no* output from set_metric_pitch
+
+  for (musicBoxConf.preset=1; musicBoxConf.preset <= MUSICBOX_PRESETs; musicBoxConf.preset++) {
+    load_preset(musicBoxConf.preset, false);
+    MENU.out(musicBoxConf.preset);
+    if(musicBoxConf.preset<10)
+      MENU.space();
+    if(musicBoxConf.preset<100)
+      MENU.space();
+    MENU.space();
+    MENU.outln(musicBoxConf.name);
+  }
+
+  load_preset(musicBoxConf.preset = preset_was, false);	// restore preset
+  MENU.verbosity = verbosity_was;
+} // display_preset_names()
 
 
 void sync_landscape_time_sliced() {	// set this instruments time slice
@@ -4244,6 +4264,11 @@ bool musicBox_reaction(char token) {
 	MENU.outln(str);
 	// TODO: monochrome metric_mnemonic 'IR...'
       }
+      break;
+
+    case 'P':	// 'IP<num>' show preset names on monochrome display
+      MENU.drop_input_token();
+      monochrome_preset_names(MENU.numeric_input(0));	//  n==0: continue through the list, or start at n
       break;
 
   #if defined COMPILE_MORSE_CHEAT_SHEETS

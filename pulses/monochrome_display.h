@@ -1153,6 +1153,9 @@ void MC_esp_now_peer_list() {
 }
 #endif
 
+// void monochrome_preset_names(short start_at_preset=0);  see: presets.h
+
+
 void monochrome_setup() {
   MENU.out(F("monochrome_setup() "));
   switch(HARDWARE.monochrome_type) {
