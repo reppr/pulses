@@ -799,6 +799,10 @@ esp_err_t esp_now_pulses_setup() {
     MENU.outln(esp_now_version);
   } // else *ignore* errors here
 
+  // WiFi.setSleep(false);			// TODO: no idea if/why we would need this, just a test...
+  MENU.outln(F("WiFi.setSleep(false)\t TODO: test"));
+  WiFi.setSleep(false);
+
   MENU.outln(F("  esp_now_register_send_cb()"));
   yield();
   status = esp_now_register_send_cb(esp_now_data_sent_callback);

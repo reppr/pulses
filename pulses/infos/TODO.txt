@@ -648,3 +648,9 @@ update MUSICBOX_TRIGGER_PIN
        musicBox_trigger_enabled
 
 update battery control
+
+
+do test with 'EFL' and 'EFD'
+// WiFi.setSleep(false);			// TODO: no idea if/why we would need this, just a test...
+MENU.outln(F("WiFi.setSleep(false)\t TODO: test"));
+WiFi.setSleep(false);
