@@ -345,6 +345,19 @@ musicBox_conf_t musicBoxConf;
 
 
 /* **************************************************************** */
+// misc
+
+#include <ctype.h>
+void copy_string_to_lower(char* source, char* destination, size_t max) {
+  char c=1;	// dummy
+  int i;
+  for(i=0; c && i<max; i++)
+    c = destination[i] = tolower(source[i]);
+
+  destination[max] = 0;	// savety belt
+}
+
+/* **************************************************************** */
 #include "iCODE.h"			// icode programs
 #include "jiffles.h"			// old style jiffles (could also be used as icode)
 #include "int_edit.h"			// displaying and editing unsigned int arrays

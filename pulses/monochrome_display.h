@@ -655,6 +655,30 @@ void inline MC_println2x2(uint8_t row, char* str) {
 }
 #endif // MULTICORE_DISPLAY
 
+void monochrome_print_1line(uint8_t row, char* str) { // truncating, padding
+  if(monochrome_can_be_used()) {
+    if(str) {
+      //      (*u8x8_p).clearLine(row);
+      uint8_t cols = (*u8x8_p).getCols();
+      int chars;
+      char buffer[cols + 1];
+
+      char c=1;	// dummy
+      for(chars=0; chars<cols; chars++)
+	if(c = str[chars])
+	  buffer[chars] = c;
+	else
+	  break;
+
+      for(; chars<cols; chars++)	// string was short?
+	buffer[chars] = ' ';		//   pad with spaces
+      buffer[cols]='\0';
+
+      (*u8x8_p).setCursor(0,row);
+      (*u8x8_p).print(buffer);
+    }
+  }
+} // monochrome_print_1line()
 
 uint8_t /*next_row*/ monochrome_big_or_multiline(int row, char* str) {
   /*

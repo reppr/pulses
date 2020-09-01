@@ -31,7 +31,7 @@
 //#define MUSICBOX_HARD_END_SECONDS		60*100	// SAVETY NET shut down after 100'	***DEACTIVATED***
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	3600*12	// *DEACTIVATED*    TODO: should go to musicBoxConf or HARDWARE
   #define SOFT_END_DAYS_TO_LIVE_DEFAULT		1	// quite fast ending
-  #undef RANDOM_PRESET_LOOP				// just in case, does not work well together	TODO: TEST: ################
+  #undef RANDOM_PRESET_LOOP				// just in case, does not work well togetoher	TODO: TEST: ################
   #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user	// new default for *portable* instruments
 //  #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&random_preset
 //  #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
@@ -3541,6 +3541,7 @@ void musicBox_display() {
   else
     MENU.out(F("STOP"));
   MENU.out(F("\t'P1'= stop primary\t'P2'= stop secondary"));
+  MENU.out(F("'P?'=show preset names\t'P\"xxx\" = 'PNxxx' search in preset list"));
   if(MusicBoxState == OFF)
     MENU.outln(F("\t'W<seconds>' = wait&start"));
 
@@ -4182,8 +4183,38 @@ bool musicBox_reaction(char token) {
 #endif
     break;
 
-  case 'P': // 'P' Play start/stop
+  case 'P': // 'P' Play start/stop  (and others)
     switch(MENU.peek()) {
+    case '?':	// 'P?' show preset list
+      MENU.drop_input_token();
+      //do_on_other_core(&display_preset_names);  // TODO: had some strange problems with that...
+      display_preset_names();
+      break;
+    case '"': // 'P"<xxxx>"' == 'PN<xxxx>' search in preset names
+    case 'N':
+      {
+	MENU.drop_input_token();
+	short len = 30;
+	char* searchstring = (char*) malloc(len +1);
+	if(searchstring) {
+	  char c;
+	  short chars=0;
+	  while((EOF8 != MENU.peek()) && (chars < len))
+	    {
+	      c = MENU.drop_input_token();
+	      if(c == '"')
+		break;
+	      // else
+	      searchstring[chars++] = c;
+	    }
+	  searchstring[chars] = '\0';
+	  if(chars) {
+	    search_preset_list(searchstring);
+	  }
+	  free(searchstring);
+	}
+      }
+      break;
     case '1':	// 'P1' kill primary pulses
       MENU.drop_input_token();
       cnt = kill_primary();

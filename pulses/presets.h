@@ -66,3 +66,62 @@ void monochrome_preset_names(short start_at_preset=0) {
   MENU.verbosity = verbosity_was;
 } // monochrome_preset_names()
 #endif // USE_MONOCHROME_DISPLAY
+
+
+int search_preset_list(char* s) {
+  if(s==NULL || strlen(s)==0)
+    return -1;	// error
+
+  int preset_was = musicBoxConf.preset;
+  int verbosity_was=MENU.verbosity;
+  MENU.verbosity = 0;	// *no* output from set_metric_pitch
+
+  char* error=F("search presets malloc");
+  int len = strlen(s);
+  char* lower_search_str = (char*) malloc(len + 1);
+  if(lower_search_str==NULL) {
+    MENU.error_ln(error);
+    return -1;	// error
+  }
+  extern void copy_string_to_lower(char* source, char* destination, size_t max);
+  copy_string_to_lower(s, lower_search_str, len);
+
+
+  int max= 100;
+  char* name_buffer = (char*) malloc(max + 1);
+  if(name_buffer==NULL) {
+    MENU.error_ln(error);
+    free(lower_search_str);
+    return -1;	// error
+  }
+
+  int found=0;
+  for (musicBoxConf.preset=1; musicBoxConf.preset <= MUSICBOX_PRESETs; musicBoxConf.preset++) {
+    load_preset(musicBoxConf.preset, false);
+    copy_string_to_lower(musicBoxConf.name, name_buffer, max);
+    if(strstr(name_buffer, lower_search_str)) {
+      MENU.out(musicBoxConf.preset);
+      MENU.tab();
+      MENU.outln(musicBoxConf.name);
+#if defined USE_MONOCHROME_DISPLAY
+      // if(monochrome_can_be_used()) {
+      snprintf(name_buffer, max, "%i %s", musicBoxConf.preset, musicBoxConf.name);
+      monochrome_print_1line(found, name_buffer);
+      // }
+#endif
+      found++;
+    }
+  }
+#if defined USE_MONOCHROME_DISPLAY
+  // if(monochrome_can_be_used()) {
+  (*u8x8_p).clearLine(found);
+  // }
+#endif
+
+  free(lower_search_str);
+  free(name_buffer);
+
+  load_preset(musicBoxConf.preset = preset_was, false);	// restore preset
+  MENU.verbosity = verbosity_was;
+  return found;
+} // search_preset_list()

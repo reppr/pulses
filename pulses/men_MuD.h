@@ -53,13 +53,6 @@ MENU.outln(F("(*u8x8_p).refreshDisplay()"));	// see: Only required for SSD1606
 
 //  show_morse_event_buffer();
 
-    /*
-    debug_accgyro_sample = !debug_accgyro_sample;
-    MENU.out(F("debug_accgyro_sample"));
-    MENU.out_ON_off(debug_accgyro_sample);
-    MENU.ln();
-    */
-
     //MENU.outln(F("HARDWARE configuration"));
     //show_hardware_conf(&HARDWARE);
 

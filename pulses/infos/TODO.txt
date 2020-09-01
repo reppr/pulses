@@ -650,7 +650,11 @@ update MUSICBOX_TRIGGER_PIN
 update battery control
 
 
-do test with 'EFL' and 'EFD'
 // WiFi.setSleep(false);			// TODO: no idea if/why we would need this, just a test...
+do test with 'EFL' and 'EFD'
 MENU.outln(F("WiFi.setSleep(false)\t TODO: test"));
 WiFi.setSleep(false);
+
+MENU.out(F("'Y'= ~AccelGyro "));	// TODO: UPDATE:  ################################################################
+
+//do_on_other_core(&display_preset_names);	// TODO: had some strange problems with that...
