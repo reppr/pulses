@@ -1361,7 +1361,7 @@ void noAction_flags_line() {	// show a line with primary noACTION flag signs
 
 void muting_actions_UI_line() {
   MENU.outln(F("'M'=muting actions: 'MH''MM''MB''ML'=toggle HIGH,MELODY,BASS,LOW  'M<n>'=~notes  'MX'=~selected"));
-  MENU.outln(F("    'MT'='M0'=mute all  'ME'='MA'=all on   'MO'=mute top octave  'MQ'=unmute top octave"));
+  MENU.outln(F("  'MT'='M0'=mute all  'ME'='MA'=all on   'MO'=mute top octave  'MQ'=unmute top octave"));
 }
 
 void muting_actions_UI() {	// 'M' already received   action muting UI
@@ -3546,9 +3546,14 @@ void musicBox_display() {
     MENU.outln(F("\t'W<seconds>' = wait&start"));
 
   MENU.outln(F("'m'= set mode\t'mm' 'mM'= manual\t'ma' 'mA'= automagic"));
+
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
-  MENU.out(F("'Y'= ~AccelGyro "));	// TODO: UPDATE:
-  MENU.out_ON_off(accGyro_is_active);
+  MENU.ln();
+  if(mpu6050_available) {
+    extern void Y_UI_display_lines();
+    Y_UI_display_lines();
+  } else
+    MENU.outln(F("*no* MPU6050"));
   MENU.ln();
 #endif
 
@@ -3657,6 +3662,16 @@ void sync_landscape_time_sliced() {	// set this instruments time slice
 
 bool do_recalibrate_Y_ui = false;	// when switching on accGyro parameters should stay on spot, not change (i.e. jiffle)
 
+#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
+void Y_UI_display_lines() {
+  MENU.outln(F("'U'=toggle AccelGyro\t 'X' 'Y' 'Z' toggle axes on|off"));
+  MENU.outln(F("  'U0'='U='restart\T'UP'=accGyroPreset\t'UT'=tuning"));
+  MENU.out_ON_off(accGyro_is_active);
+  MENU.ln();
+  MENU.outln(F("  'UUS'='UUSM..'=sync shift scale double\t'UUSD..'=halve"));
+}
+#endif
+
 bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: ADC, 'analog'Touch, distance sensors, etc
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
   // TODO: REPLACE BY NEW ENGINE ################################################################
@@ -3672,7 +3687,7 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
   } else if(MENU.peek() == 'U')	{ // 'UU...' Y_UI() configuration
     MENU.drop_input_token();
     recognised = true;
-    switch(MENU.peek()) {
+    switch(MENU.peek()) { // third letter after 'UUx'
     case 'S':	// 'UUS' scale sync_shifting()	// TODO: document 'U' UI
       MENU.drop_input_token();
       if(MENU.peek() == EOF8)	// bare 'UUS' double sync_shifting() scaling
@@ -3698,19 +3713,46 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
       MENU.out('/');
       MENU.outln(sync_shifting_divisor);
       break;
-    }
-  } // switch 'UUx' tokens
-  else {
-      while(do_next_letter) {	// a group of symbols as optional sequence toggling active axis
-      switch(MENU.peek()) {	// second letter
-      case '0':			// Y0 =	restart at zero		-.--  -----
+
+//    case 'P':	// 'UUP' UI presets
+//      MENU.drop_input_token();
+//      if(accGyro_preset == 1) {
+//	accGyro_preset = 2;
+//	reset_accGyro_selection();	// TODO: check	maybe, maybe not?
+//	do_recalibrate_Y_ui = true;;	// TODO: check	maybe, maybe not?
+//	MENU.outln(F("TUNING"));
+//      } else {
+//	accGyro_preset = 1;
+//	reset_accGyro_selection();	// TODO: check
+//	do_recalibrate_Y_ui = true;;	// TODO: check
+//	MENU.outln(F("accGyro_preset 1"));
+//      }
+//
+//      MENU.out(F("accGyro_preset "));
+//      MENU.outln(accGyro_preset);
+//      recognised = true;
+//      break;
+//
+//    case 'T':	// 'UUT' MPU6050 tuning	// 'UT' toggle gZ TUNING mode
+//      /*
+//	TODO: planed:	 'UT' MPU6050 tuning mode   'UTZ' Zgyro || 'UTX' Xacc || 'UTY'Yacc
+//      */
+//      MENU.drop_input_token();
+//      extern void accGyro_toggle_TUNING_mode();
+//      accGyro_toggle_TUNING_mode();
+//      break;
+    } // switch 'UUx' tokens
+  } else { // was not starting with 'UU...'
+    while(do_next_letter) {	// a group of symbols as optional sequence toggling active axis
+      switch(MENU.peek()) {	// second letter after 'U'
+      case '0':			// 'U0' = 'U='	restart at zero		-.--  -----
       case '=':
 	MENU.drop_input_token();
 	accGyro_mode = 0;
 	accGyro_is_active = false;
 	recognised = true;
 	break;
-      case 'X':			// YX acc	toggle AG_mode_Ax	-.--  -..-
+      case 'X':			// UX acc	toggle AG_mode_Ax	-.--  -..-
 	MENU.drop_input_token();
 	accGyro_mode ^= AG_mode_Ax;
 	accGyro_is_active = accGyro_mode;
@@ -3719,7 +3761,7 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
 
 	recognised = true;
 	break;
-      case 'Y':			// YY acc	toggle AG_mode_Ay	-.--  -.--
+      case 'Y':			// UY acc	toggle AG_mode_Ay	-.--  -.--
 	MENU.drop_input_token();
 	accGyro_mode ^= AG_mode_Ay;
 	accGyro_is_active = accGyro_mode;
@@ -3728,7 +3770,7 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
 
 	recognised = true;
 	break;
-      case 'Z':			// YZ GYRO	toggle AG_mode_Gz	-.--  --..
+      case 'Z':			// UZ GYRO	toggle AG_mode_Gz	-.--  --..
 	MENU.drop_input_token();
 	accGyro_mode ^= AG_mode_Gz;
 	accGyro_is_active = accGyro_mode;
@@ -3738,7 +3780,7 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
 	recognised = true;
 	break;
 
-
+	// in 'Ux' or in the 'UUx' hierarchy?
       case 'P':	// 'UP' UI presets
 	MENU.drop_input_token();
 	if(accGyro_preset == 1) {
@@ -3769,9 +3811,9 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
 
       default:
 	do_next_letter = false;
-      } // known second letters
-    } // do_next_letter
-  }
+      } // known second letters after 'U'
+    } // do_next_letter after 'U' but *not* 'UU...'
+  } // *not* starting with 'UU..'
 
   if(switch_activity)
     accGyro_is_active ^= 1;

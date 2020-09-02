@@ -1133,7 +1133,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 44:
     musicBoxConf.name = F("melodischs tänzle");
-    //# FAVORITE ???
+    //# FAVORITE ???	P48 DADA 2020 KUNSTDREIECK
     //# shortIsOk
     //# fullCycleIsOk		probably yes
     //# motives

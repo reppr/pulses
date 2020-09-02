@@ -633,8 +633,6 @@ RGBstringConf to nvs
 
 morse MACRO_NOW obsolete?
 
-show peers on monochrome
-
 make multicore monochrome switchable
 reset monochrome
 
@@ -658,3 +656,6 @@ WiFi.setSleep(false);
 MENU.out(F("'Y'= ~AccelGyro "));	// TODO: UPDATE:  ################################################################
 
 //do_on_other_core(&display_preset_names);	// TODO: had some strange problems with that...
+
+simplify UI:
+'P'	only *bare* 'P' starts musicbox		or maybe only for preset numbers?
