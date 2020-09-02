@@ -3585,13 +3585,16 @@ bool load_preset_and_start(short preset_new, bool start=true) {	// returns error
     return true;		// ERROR
   } // else
 
-  if(start) {
-    if(MusicBoxState != OFF)	// end a running session?
-      tabula_rasa();
+  if(MusicBoxState != OFF)	// end a running session?
+    tabula_rasa();
+
+  if(start) {			// start?
+//    if(MusicBoxState != OFF)	// end a running session?
+//      tabula_rasa();
     start_musicBox();		// play new preset
   } else
     musicBox_short_info();
-}
+} // load_preset_and_start()
 
 void input_preset_and_start() {	// factored out UI component	// TODO: sets preset, how to unset?	################
   int input_value;
@@ -3625,10 +3628,9 @@ void input_preset_and_start() {	// factored out UI component	// TODO: sets prese
       MENU.outln_invalid();
   }
 
-  bool start = ! MENU.check_next('T');	// '<number>T' loads preset, but does not start
-
-  if(load)
-    load_preset_and_start(musicBoxConf.preset, start);
+  if(load) {
+    load_preset_and_start(musicBoxConf.preset, (MENU.peek()==EOF8));	// <nnn> *ONLY* starts preset if *nothing* follows
+  }
 } // input_preset_and_start()
 
 void display_preset_names() {
