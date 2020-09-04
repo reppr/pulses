@@ -112,11 +112,19 @@ int search_preset_list(char* s) {
       found++;
     }
   }
+
 #if defined USE_MONOCHROME_DISPLAY
   // if(monochrome_can_be_used()) {
-  (*u8x8_p).clearLine(found);
+  if(found < (*u8x8_p).getRows())	// avoid scrolling when screen is full
+    (*u8x8_p).clearLine(found);		// else empty line
   // }
 #endif
+
+  MENU.out(F(">>  "));
+  MENU.out(found);
+  MENU.out("\t\"");
+  MENU.out(s);
+  MENU.outln(F("\" found\n"));
 
   free(lower_search_str);
   free(name_buffer);

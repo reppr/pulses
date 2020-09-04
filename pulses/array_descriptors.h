@@ -167,13 +167,14 @@ bool register_jiffle(unsigned int* jiffle, unsigned int len, char* name) {
 #ifdef MENU_h
   void display_names(arr_descriptor* DB) {
     unsigned int * selected_array = DB[0].pointer;
-
+    int selected_n=-1;
     MENU.ln();
     for (int i = 0; i < DB[0].item; i++) {
       if(i) {					// *not for database DB[0]
-	if (DB[i].pointer == selected_array)
+	if (DB[i].pointer == selected_array) {
+	  selected_n = i-1;
 	  MENU.out('*');
-	else
+	} else
 	  MENU.space();
 
 	MENU.space();
@@ -195,7 +196,9 @@ bool register_jiffle(unsigned int* jiffle, unsigned int len, char* name) {
 
     extern uint8_t extended_output(char* data, uint8_t col=0, uint8_t row=0, bool force=false);
     extended_output(selected_name(DB));
-    MENU.ln();
+    MENU.out(F(" ["));
+    MENU.out(selected_n);
+    MENU.outln(']');
   } // void display_names(arr_descriptor* DB)
 
 

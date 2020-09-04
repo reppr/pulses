@@ -1984,7 +1984,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
   random_entropy();	// more entropy from hardware like wifi, etc
 #endif
 
-  MENU.out(F("\nsizeof(pulse_t) "));
+  MENU.out(F("sizeof(pulse_t) "));
   MENU.out(sizeof(pulse_t));
   MENU.out(F(" * "));
   MENU.out(PL_MAX);

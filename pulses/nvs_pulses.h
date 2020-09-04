@@ -183,7 +183,7 @@ void configure_HARDWARE_from_nvs() {
   }
   // blob is loaded now, *if* exists, check that
   if(HARDWARE_from_nvs.version == ILLEGAL8) {		// did key exist?
-    MENU.outln(F("HARDWARE_nvs does not exist\n"));
+    MENU.outln(F("HARDWARE_nvs does not exist"));
     return;						// no
   }
 
@@ -466,7 +466,7 @@ void configure_IDENTITY_from_nvs() {
 
     // blob is loaded now, *if* exists, check that
   if(IDENTITY_from_nvs_p->version == ILLEGAL8) {		// did key exist?
-    MENU.outln(F("IDENTITY_nvs does not exist\n"));
+    MENU.outln(F("IDENTITY_nvs does not exist"));
     goto free_identity_nvs;
   }
 

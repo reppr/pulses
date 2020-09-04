@@ -376,7 +376,7 @@ void inline MC_show_musicBox_parameters() {
 #endif // MULTICORE_DISPLAY
 
 
-void monochrome_show_line(uint8_t row, char * s) {
+void monochrome_show_line(uint8_t row, char * s) {	// TODO: redundant? see: monochrome_print_1line()
   if(monochrome_can_be_used()) {
     uint8_t cols = (*u8x8_p).getCols();
     char full_line[cols+1] = {0};
@@ -655,7 +655,8 @@ void inline MC_println2x2(uint8_t row, char* str) {
 }
 #endif // MULTICORE_DISPLAY
 
-void monochrome_print_1line(uint8_t row, char* str) { // truncating, padding
+
+void monochrome_print_1line(uint8_t row, char* str) { // truncating, padding	// TODO: redundant? see: monochrome_show_line()
   if(monochrome_can_be_used()) {
     if(str) {
       //      (*u8x8_p).clearLine(row);

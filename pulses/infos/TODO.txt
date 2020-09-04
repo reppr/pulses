@@ -460,10 +460,6 @@ Guru Meditation Error: Core  1 panic'ed (Interrupt wdt timeout on CPU1)
 
 TODO: try to reproduce the crash!
 
-TODO: incorporate time64bit.h
-
-TODO: fix OLED LiPo
-
 TODO: goto light sleep when done (after a while)
 
 
@@ -625,8 +621,6 @@ try USE_BLUETOOTH_SERIAL_MENU
 fix bluetooth_enable_pin logic
   use HARDWARE.bluetooth_enable_pin
 
-Y_UI_display_line()
-
 #define USE_BLUETOOTH_SERIAL_MENU	fix DIL switch and HARDWARE conf logic
 
 RGBstringConf to nvs
@@ -653,9 +647,9 @@ do test with 'EFL' and 'EFD'
 MENU.outln(F("WiFi.setSleep(false)\t TODO: test"));
 WiFi.setSleep(false);
 
-MENU.out(F("'Y'= ~AccelGyro "));	// TODO: UPDATE:  ################################################################
-
 //do_on_other_core(&display_preset_names);	// TODO: had some strange problems with that...
 
-simplify UI:
-'P'	only *bare* 'P' starts musicbox		or maybe only for preset numbers?
+monochrome_print_1line()	// TODO: redundant? see: monochrome_show_line()
+
+simplify esp-now UI  'CC' ==> 'C'
+'CCC' mode: send all inputs

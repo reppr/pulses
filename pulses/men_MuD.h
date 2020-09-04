@@ -4,29 +4,55 @@
 */
 
 
+if(MENU.check_next('D')) {
+  display_accGyro_raw = !display_accGyro_raw;
+  block_accGyro_reaction = display_accGyro_raw;
+  MENU.out(F("display_accGyro_raw"));
+  MENU.out_ON_off(display_accGyro_raw);
+  MENU.ln();
+  break;
+ }
+
+
 #if defined USE_MONOCHROME_DISPLAY
 MENU.outln(F("TODO: MONOCHROME FIX?"));
 // MENU.outln(F("(*u8x8_p).initDisplay();"));
 // (*u8x8_p).initDisplay();
 
+/*
+MENU.outln(F("monochrome_begin()"));
+monochrome_begin();
+*/
+
+/*
 MENU.outln(F("monochrome <ESC>c"));
 (*u8x8_p).print((char) 27);
 (*u8x8_p).print('c');
 
+MENU.outln(F("monochrome <ESC>C"));
+(*u8x8_p).print((char) 27);
+(*u8x8_p).print('C');
+*/
+
 MENU.outln(F("(*u8x8_p).setFlipMode(0)"));
 (*u8x8_p).setFlipMode(0);
 
+/*
 MENU.outln(F("(*u8x8_p).refreshDisplay()"));	// see: Only required for SSD1606
 (*u8x8_p).refreshDisplay();
+*/
+
+MENU.outln(F("(*u8x8_p).clear()"));
+(*u8x8_p).clear();
+
+MENU.outln(F("monochrome_show_musicBox_parameters();"));
+monochrome_show_musicBox_parameters();
 #endif
+
 
 #if defined MULTICORE_DISPLAY
 // MC_show_tuning();
-// MC_show_line(3, "Lirumlarum");
 #endif
-
-//MENU.print_free_RAM();
-//MENU.ln();
 
 #if defined USE_ADS1115_AT_ADDR
 //ads1115_first_test_A0();
@@ -34,7 +60,6 @@ MENU.outln(F("(*u8x8_p).refreshDisplay()"));	// see: Only required for SSD1606
 #endif
 
 //show_metric_cents_list();	// TODO: move to Tuning hierarchy
-
 
 //	{
 //	  MENU.out(metric_mnemonic);
