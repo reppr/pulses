@@ -717,6 +717,11 @@ int reset_all_flagged_pulses_GPIO_OFF() {	  // see: tabula_rasa()
     }
   }
 
+#if defined USE_MORSE
+  extern int morse_length_feedback_pulse_i;
+  morse_length_feedback_pulse_i = ILLEGAL32;
+#endif
+
 #if GPIO_PINS > 0
   init_click_GPIOs_OutLow();		// switch them on LOW, output	current off, i.e. magnets
 #endif
@@ -3927,9 +3932,9 @@ void display_payload(int pulse) {
     return;
   }
 #if defined USE_MORSE && defined MORSE_OUTPUT_PIN
-  scratch=&morse_feedback;
+  scratch=&morse_feedback_d;
   if (PULSES.pulses[pulse].payload == scratch) {
-    MENU.out(F("morse_feedback"));
+    MENU.out(F("morse_feedback_d"));
     MENU.tab(2);
     return;
   }

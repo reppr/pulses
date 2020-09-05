@@ -651,5 +651,4 @@ WiFi.setSleep(false);
 
 monochrome_print_1line()	// TODO: redundant? see: monochrome_show_line()
 
-simplify esp-now UI  'CC' ==> 'C'
 'CCC' mode: send all inputs
