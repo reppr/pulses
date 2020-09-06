@@ -3785,18 +3785,27 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
 	// in 'Ux' or in the 'UUx' hierarchy?
       case 'P':	// 'UP' UI presets
 	MENU.drop_input_token();
-	if(accGyro_preset == 1) {
-	  accGyro_preset = 2;
-	  reset_accGyro_selection();	// TODO: check	maybe, maybe not?
-	  do_recalibrate_Y_ui = true;;	// TODO: check	maybe, maybe not?
-	  MENU.outln(F("TUNING"));
+	if(MENU.is_numeric()){
+	  int input_value = MENU.numeric_input(-1);
+	  if((input_value >= 0) && (input_value < ACCGYR_PRES_MODE_MAX))
+	    accGyro_preset = input_value;
+	  if(accGyro_preset==0) {
+	    display_accGyro_raw=true;	// (redundant)	cannot be switched off (debugging only)
+	    accGyro_is_active = true;
+	  }
 	} else {
-	  accGyro_preset = 1;
-	  reset_accGyro_selection();	// TODO: check
-	  do_recalibrate_Y_ui = true;;	// TODO: check
-	  MENU.outln(F("accGyro_preset 1"));
+	  if(accGyro_preset == 1) {
+	    accGyro_preset = 2;
+	    reset_accGyro_selection();	// TODO: check	maybe, maybe not?
+	    do_recalibrate_Y_ui = true;;	// TODO: check	maybe, maybe not?
+	    MENU.outln(F("TUNING"));
+	  } else {
+	    accGyro_preset = 1;
+	    reset_accGyro_selection();	// TODO: check
+	    do_recalibrate_Y_ui = true;;	// TODO: check
+	    MENU.outln(F("accGyro_preset 1"));
+	  }
 	}
-
 	MENU.out(F("accGyro_preset "));
 	MENU.outln(accGyro_preset);
 	recognised = true;

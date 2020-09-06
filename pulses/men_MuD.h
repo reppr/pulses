@@ -4,16 +4,6 @@
 */
 
 
-if(MENU.check_next('D')) {
-  display_accGyro_raw = !display_accGyro_raw;
-  block_accGyro_reaction = display_accGyro_raw;
-  MENU.out(F("display_accGyro_raw"));
-  MENU.out_ON_off(display_accGyro_raw);
-  MENU.ln();
-  break;
- }
-
-
 #if defined USE_MONOCHROME_DISPLAY
 MENU.outln(F("TODO: MONOCHROME FIX?"));
 // MENU.outln(F("(*u8x8_p).initDisplay();"));

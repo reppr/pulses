@@ -9,8 +9,7 @@
 //#define DEBUG_AG_REACTION	// TODO: remove or fix the debug mess
 //#define DEBUG_ACCELGYRO_BASICS	// TODO: remove or fix the debug mess
 
-bool display_accGyro_raw=true;	  // for debugging
-bool block_accGyro_reaction=true; // for debugging: *does* all the sampling and computation, but does *not* react on it	REMOVE:
+bool display_accGyro_raw=false;	  // for debugging only
 
 bool mpu6050_available=true;	// will be reset automagically if there's no MPU6050 found
 				// this will switch it off, including sampling...
@@ -295,6 +294,7 @@ enum accgyro_preset_modes {
   ACCGYR_PRES_MODE_AXAYGZ=1,
   ACCGYR_PRES_MODE_MUTE_AND_VOLUME,	// TODO: implement
   ACCGYR_PRES_MODE_TUNING_Y,
+  ACCGYR_PRES_MODE_MAX,
 };
 
 
@@ -302,6 +302,7 @@ enum accgyro_preset_modes {
   #define ACCGYRO_DEFAULT_PRESET	ACCGYR_PRES_MODE_AXAYGZ
 //#define ACCGYRO_DEFAULT_PRESET	ACCGYR_PRES_MODE_MUTE_AND_VOLUME
 //#define ACCGYRO_DEFAULT_PRESET	ACCGYR_PRES_MODE_TUNING_Y
+//#define ACCGYRO_DEFAULT_PRESET	ACCGYR_PRES_MODE_RAW
 #endif
 uint8_t	accGyro_preset = ACCGYRO_DEFAULT_PRESET;
 
@@ -563,9 +564,6 @@ extern bool do_recalibrate_Y_ui;
 void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
   if(accGyro_new_data && accGyro_mode) {
     accGyro_new_data = false;
-
-    if(block_accGyro_reaction)	// debugging only
-      return;
 
     if(! accGyro_is_active) {	// maybe catch errors here, if any?	TODO: REMOVE:
       MENU.error_ln(F("accGyro_reaction_v2():\taccGyro_is_active is false"));
@@ -867,6 +865,10 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 // #endif
       }
       break;				// accGyro_preset==ACCGYR_PRES_MODE_TUNING_Y
+
+    case ACCGYR_PRES_MODE_RAW:
+      display_accGyro_raw=true;		// (redundant)	cannot be switched off (debugging only)
+      break;
 
     default:
       MENU.error_ln(F("unknown accGyro_preset"));
