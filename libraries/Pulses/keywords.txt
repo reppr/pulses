@@ -11,6 +11,7 @@ pulse_time_t	KEYWORD1
 #######################################
 
 DAC_output	KEYWORD2
+volume	KEYWORD2
 activate_pulse_synced	KEYWORD2
 activate_selected_stack_sync_now	KEYWORD2
 activate_selected_synced_now	KEYWORD2

@@ -291,13 +291,16 @@ void reset_accGyro_selection() {	// reset accGyro selections, slots, reaction so
 
 
 enum accgyro_preset_modes {
+  ACCGYR_PRES_MODE_RAW=0,		// TODO: implement
   ACCGYR_PRES_MODE_AXAYGZ=1,
+  ACCGYR_PRES_MODE_MUTE_AND_VOLUME,	// TODO: implement
   ACCGYR_PRES_MODE_TUNING_Y,
 };
 
 
 #if ! defined ACCGYRO_DEFAULT_PRESET
   #define ACCGYRO_DEFAULT_PRESET	ACCGYR_PRES_MODE_AXAYGZ
+//#define ACCGYRO_DEFAULT_PRESET	ACCGYR_PRES_MODE_MUTE_AND_VOLUME
 //#define ACCGYRO_DEFAULT_PRESET	ACCGYR_PRES_MODE_TUNING_Y
 #endif
 uint8_t	accGyro_preset = ACCGYRO_DEFAULT_PRESET;
@@ -809,6 +812,16 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 	}
       }
       break;		// ACCGYR_PRES_MODE_AXAYGZ
+
+    case ACCGYR_PRES_MODE_MUTE_AND_VOLUME:
+      if(accGyro_mode & AG_mode_Ax) {		// accelero X	volume
+	; // TODO: implement
+      }
+
+      if(accGyro_mode & AG_mode_Ay) {		// accelero Y	mute
+	; // TODO: implement
+      }
+      break; // ACCGYR_PRES_MODE_MUTE_AND_VOLUME
 
     // TUNING MODE
 #define DEBUG_U_TUNING_MODE

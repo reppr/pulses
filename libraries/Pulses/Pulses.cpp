@@ -1155,12 +1155,12 @@ Serial.println();
 #if defined DEBUG_DACsq
 //Serial.print(dac1_value); Serial.print(' ');
 #endif
-    dacWrite(BOARD_DAC1, dac1_value);
+    dacWrite(BOARD_DAC1, (int) (dac1_value * volume));
     dac1_last = dac1_value;
   }
 
   if(dac2_value != dac2_last) {
-    dacWrite(BOARD_DAC2, dac2_value);
+    dacWrite(BOARD_DAC2, (int) (dac2_value * volume));
     dac2_last = dac2_value;
   }
 }

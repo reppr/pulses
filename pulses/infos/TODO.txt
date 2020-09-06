@@ -652,3 +652,9 @@ WiFi.setSleep(false);
 monochrome_print_1line()	// TODO: redundant? see: monochrome_show_line()
 
 'CCC' mode: send all inputs
+
+ACCGYR_PRES_MODE_RAW=0,			// TODO: implement
+ACCGYR_PRES_MODE_MUTE_AND_VOLUME,	// TODO: implement
+
+implement menu float input
+// 'VV<nnn>' PULSES.volume	// given as 0...255	TODO: float input

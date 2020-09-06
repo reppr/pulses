@@ -337,6 +337,7 @@ class Pulses {
 
 #if defined USE_DACs
   void DAC_output();		// calculate and output on DAC
+  float volume=1.0;		// volume (<= 1.0) for all audio output:  *both* DACs  (planed also LEDC)
 
 // TODO: use or remove code later
 //	 #if (USE_DACs == 1)
