@@ -290,17 +290,17 @@ void reset_accGyro_selection() {	// reset accGyro selections, slots, reaction so
 
 
 enum accgyro_preset_modes {
-  ACCGYR_PRES_MODE_RAW=0,		// TODO: implement
+  ACCGYR_PRES_MODE_RAW=0,
   ACCGYR_PRES_MODE_AXAYGZ=1,
-  ACCGYR_PRES_MODE_MUTE_AND_VOLUME,	// TODO: implement
+  ACCGYR_PRES_MODE_MUTE_VOLUME_JIFF,
   ACCGYR_PRES_MODE_TUNING_Y,
   ACCGYR_PRES_MODE_MAX,
 };
 
 
 #if ! defined ACCGYRO_DEFAULT_PRESET
-  #define ACCGYRO_DEFAULT_PRESET	ACCGYR_PRES_MODE_AXAYGZ
-//#define ACCGYRO_DEFAULT_PRESET	ACCGYR_PRES_MODE_MUTE_AND_VOLUME
+//#define ACCGYRO_DEFAULT_PRESET	ACCGYR_PRES_MODE_AXAYGZ
+#define ACCGYRO_DEFAULT_PRESET	ACCGYR_PRES_MODE_MUTE_VOLUME_JIFF
 //#define ACCGYRO_DEFAULT_PRESET	ACCGYR_PRES_MODE_TUNING_Y
 //#define ACCGYRO_DEFAULT_PRESET	ACCGYR_PRES_MODE_RAW
 #endif
@@ -555,10 +555,32 @@ void multicore_sample_mpu() {	// create and do one shot task
 #endif
 
 
+extern void noAction_flags_line();
+void narrow_activity_range(uint8_t lowest_unmuted, uint8_t highest_unmuted) {
+  int pulse = highest_unmuted;
+  bool do_mute = false;
+  unsigned int unmuted_mask = ~noACTION;
+  for(int cnt=0; cnt < voices; cnt++) {
+    if(do_mute)
+      PULSES.pulses[pulse].action_flags |= noACTION;
+    else
+      PULSES.pulses[pulse].action_flags &= unmuted_mask;
+
+    if(pulse == lowest_unmuted)
+      do_mute = true;
+    if(pulse == musicBoxConf.lowest_primary)
+      pulse += voices;
+    pulse--;
+  }
+
+  if(MENU.maybe_display_more(VERBOSITY_SOME))
+    noAction_flags_line();
+} // narrow_activity_range()
+
+
 extern bool monochrome_can_be_used();
 extern void monochrome_show_line(uint8_t row, char * s);
 extern short primary_count;		// TODO: use musicBoxConf.primary_count in next version
-extern void noAction_flags_line();
 extern bool do_recalibrate_Y_ui;
 
 void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
@@ -811,15 +833,113 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
       }
       break;		// ACCGYR_PRES_MODE_AXAYGZ
 
-    case ACCGYR_PRES_MODE_MUTE_AND_VOLUME:
+    case ACCGYR_PRES_MODE_MUTE_VOLUME_JIFF:
       if(accGyro_mode & AG_mode_Ax) {		// accelero X	volume
-	; // TODO: implement
-      }
+	float volume = /*scaling*/2.4 * (accGyro_current_AX_f - /*zero point*/0.15);
+	/*
+	MENU.out(accGyro_current_AX_f, 4);
+	MENU.tab();
+	MENU.out(volume, 4);
+	MENU.ln();
+	*/
+	if(volume > 1.0)	// check range
+	  volume = 1.0;
+	if(volume < 0.0)
+	  volume = 0.0;
+	PULSES.volume = volume;
+	if(MENU.maybe_display_more(VERBOSITY_MORE)) {
+	  MENU.out(F("volume\t"));
+	  MENU.out(PULSES.volume, 4);
+	  MENU.ln();
+	}
+      } // volume on AX
 
-      if(accGyro_mode & AG_mode_Ay) {		// accelero Y	mute
-	; // TODO: implement
-      }
-      break; // ACCGYR_PRES_MODE_MUTE_AND_VOLUME
+      if(accGyro_mode & AG_mode_Ay) {	// accelero Y	action muting range
+	static uint8_t lowest_unmuted = musicBoxConf.lowest_primary;
+	static uint8_t highest_unmuted = musicBoxConf.highest_primary;
+
+	uint8_t lowest_unmuted_seen = lowest_unmuted;
+	uint8_t highest_unmuted_seen = highest_unmuted;
+
+// #define DEBUG_ACTION_NARROWING
+#if defined DEBUG_ACTION_NARROWING
+	MENU.out(accGyro_current_AY_f, 4);
+#endif
+	float diff = accGyro_current_AY_f - 0.5;
+	int muted;
+	if(diff < -0.05) {
+	  muted = voices * (diff + 0.05) / 0.45;
+	  highest_unmuted = musicBoxConf.highest_primary + muted + 1 ;	// muted is negative
+	  if(highest_unmuted > musicBoxConf.highest_primary)		// check range
+	    highest_unmuted = musicBoxConf.highest_primary;
+	  else if(highest_unmuted < musicBoxConf.lowest_primary)
+	    highest_unmuted = musicBoxConf.lowest_primary;
+#if defined DEBUG_ACTION_NARROWING
+	  MENU.out("\tSKY ");
+	  MENU.out(muted);
+	  MENU.out(F("\tTOP unmuted\t"));
+	  MENU.out(highest_unmuted);
+#endif
+
+	} else if(diff > 0.05) {
+	  muted = voices * (diff - 0.05) / 0.45;
+	  lowest_unmuted = musicBoxConf.lowest_primary + muted;		// muted is positive
+	  if(lowest_unmuted > musicBoxConf.highest_primary)		// check range
+	    lowest_unmuted = musicBoxConf.highest_primary;
+#if defined DEBUG_ACTION_NARROWING
+	  MENU.out("\tLOW ");
+	  MENU.out(muted);
+	  MENU.out(F("\tBOTTOM unmuted\t"));
+	  MENU.out(lowest_unmuted);
+	} else {
+	  MENU.out("\tdead zone 0\t\t");
+#endif
+	}
+
+#if defined DEBUG_ACTION_NARROWING
+	MENU.tab();
+	MENU.out(lowest_unmuted);
+	MENU.out(F("..."));
+	MENU.outln(highest_unmuted);
+	MENU.verbosity=VERBOSITY_SOME;	// brute
+#endif
+	if(highest_unmuted_seen != highest_unmuted || lowest_unmuted_seen != lowest_unmuted)
+	  narrow_activity_range(lowest_unmuted, highest_unmuted);
+      } // accelero Y	action muting range
+
+      if(accGyro_mode & AG_mode_Gz) {	// gyro Z jiffle +-
+	int diff = (int) (accGyro_current_GZ_f / 20.0);
+	/*
+	MENU.out(accGyro_current_GZ_f, 4);
+	MENU.tab(2);
+	MENU.out(accGyro_current_GZ_f / 20, 4);
+	MENU.tab(2);
+	MENU.out((int) (accGyro_current_GZ_f / 20.0));
+	MENU.ln();
+	*/
+	/*
+	if(diff)				// TODO: very rude quick hack!
+	  if(diff>0)
+	    for(; diff ; diff--)
+	      MENU.play_KB_macro(F("J+"));
+	  else
+	    for(; diff ; diff++)
+	      MENU.play_KB_macro(F("J-"));
+	*/
+	if(diff) {
+	  int i = pointer2index(JIFFLES, selected_in(JIFFLES)) + diff;
+	  if(i<DB_items(JIFFLES) && i >= 0) {
+	    select_in(JIFFLES,index2pointer(JIFFLES, i));
+	    setup_jiffle_thrower_selected(selected_actions);
+
+	    extern uint8_t extended_output(char* data, uint8_t col=0, uint8_t row=0, bool force=false);
+	    extended_output(selected_name(JIFFLES));
+	    MENU.ln();
+	  }
+	}
+      }	// gyro Z jiffle +-
+
+      break; // ACCGYR_PRES_MODE_MUTE_VOLUME_JIFF
 
     // TUNING MODE
 #define DEBUG_U_TUNING_MODE

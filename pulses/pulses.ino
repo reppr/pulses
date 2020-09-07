@@ -5966,14 +5966,19 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'V':	// set voices	V[num]! PULSES.select_n_voices
-    if(MENU.check_next('V')) {	// 'VV<nnn>' PULSES.volume
-      unsigned long inp = (PULSES.volume*255 + 0.5);  // given as 0...255	// TODO: float input
-      MENU.maybe_calculate_input(&inp);
-      input_value = (int) inp;
-      if(input_value > 255)
-	input_value = 255;
-      if(input_value >=0)
-	PULSES.volume = ((float) input_value) / 255.0;
+    if(MENU.check_next('V')) {	// 'VV' PULSES.volume
+      if(MENU.check_next('E'))	// 'VVE' (morse shortcut) reset PULSES.volume=1.0
+	PULSES.volume=1.0;
+      else {			// 'VV<nnn>' PULSES.volume (0..255)
+	unsigned long inp = (PULSES.volume*255 + 0.5);  // given as 0...255	// TODO: float input
+	MENU.maybe_calculate_input(&inp);
+	input_value = (int) inp;
+	if(input_value > 255)
+	  input_value = 255;
+	if(input_value >=0)
+	  PULSES.volume = ((float) input_value) / 255.0;
+      }
+
       MENU.out(F("global audio volume "));
       MENU.outln(PULSES.volume);
       break;

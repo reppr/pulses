@@ -3529,7 +3529,7 @@ void musicBox_display() {
   MENU.out(F("'v' peripheral power"));
   MENU.out_ON_off(peripheral_power_on);
 #endif
-  MENU.out(F("  'V'=voices  'VV'=volume    '|' sync slices ="));	// ('V' and 'VV' are actually in menu pulses)
+  MENU.out(F("  'V'=voices  'VV'=volume  'VVE'vol=1.0  '|' sync slices ="));	// ('V' and 'VV' are actually in menu pulses)
   MENU.out(musicBoxConf.stack_sync_slices);
   MENU.out(F("  '|b' base ="));
   MENU.out(musicBoxConf.base_pulse);
@@ -3540,7 +3540,7 @@ void musicBox_display() {
     MENU.out(F("START"));
   else
     MENU.out(F("STOP"));
-  MENU.out(F("\t'P1'= stop primary\t'P2'= stop secondary"));
+  MENU.outln(F("\t'P1'= stop primary\t'P2'= stop secondary"));
   MENU.out(F("'P?'=show preset names\t'P\"xxx\" = 'PNxxx' search in preset list"));
   if(MusicBoxState == OFF)
     MENU.outln(F("\t'W<seconds>' = wait&start"));
@@ -3793,7 +3793,7 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
 	    display_accGyro_raw=true;	// (redundant)	cannot be switched off (debugging only)
 	    accGyro_is_active = true;
 	  }
-	} else {
+	} else {	// *no* numeric input
 	  if(accGyro_preset == 1) {
 	    accGyro_preset = 2;
 	    reset_accGyro_selection();	// TODO: check	maybe, maybe not?

@@ -170,6 +170,7 @@ bool nvs_menu_reaction(char token) {
       break;
     case 'Z':	// ':NSZ' run IMU_Zero
       MENU.drop_input_token();
+      tabula_rasa();	// sound alters mpu readings...
       determine_imu_zero_offsets(1000);
       set_IMU_Zero_offsets();
       break;
