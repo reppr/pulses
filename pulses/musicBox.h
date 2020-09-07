@@ -3540,12 +3540,13 @@ void musicBox_display() {
     MENU.out(F("START"));
   else
     MENU.out(F("STOP"));
-  MENU.outln(F("\t'P1'= stop primary\t'P2'= stop secondary"));
-  MENU.out(F("'P?'=show preset names\t'P\"xxx\" = 'PNxxx' search in preset list"));
+  MENU.out(F("\t'P1'= stop primary\t'P2'= stop secondary"));
   if(MusicBoxState == OFF)
-    MENU.outln(F("\t'W<seconds>' = wait&start"));
-
+    MENU.out(F("\t'W<seconds>' = wait&start"));
+  MENU.ln();
   MENU.outln(F("'m'= set mode\t'mm' 'mM'= manual\t'ma' 'mA'= automagic"));
+
+  MENU.outln(F("\n'P?'=show preset names\t'P\"xxx\" = 'PNxxx' search in preset list"));
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
   MENU.ln();

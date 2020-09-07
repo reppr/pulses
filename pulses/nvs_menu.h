@@ -35,6 +35,9 @@ void nvs_menu_display() {
   MENU.outln(F("'I'=IDENTITY 'IS'=save 'IR'=read 'IT'=time slice 'IP<preName>'"));
   MENU.ln();
 
+  MENU.outln(F("'MH'=monochrome_type heltec  'MO'=type LiPO  'M0'=type off"));
+  MENU.ln();
+
   MENU.out(F("'S'=SYSTEM"));
 
 #if defined USE_MPU6050
@@ -152,6 +155,17 @@ bool nvs_menu_reaction(char token) {
     }
     break;
 
+  case 'M': // 'Mx' monochrome type;
+    if(MENU.check_next('0'))	   // 'M0' monochrome_type_off
+      HARDWARE.monochrome_type = monochrome_type_off;
+    else if(MENU.check_next('H'))  // 'MH' heltec
+      HARDWARE.monochrome_type = monochrome_type_heltec;
+    else if(MENU.check_next('L'))  // 'Ml' LiPO
+      HARDWARE.monochrome_type = monochrome_type_LiPO;
+
+    show_monochrome_type(HARDWARE.monochrome_type);
+    break;
+
   case 'L':	 // 'L' RGB LED STRING
 #if defined USE_RGB_LED_STRIP
     rgb_led_string_UI();
@@ -168,10 +182,17 @@ bool nvs_menu_reaction(char token) {
       MENU.drop_input_token();
       set_accGyro_offsets_UI();
       break;
-    case 'Z':	// ':NSZ' run IMU_Zero
+    case 'Z':	// 'SZ' ':NSZ' run IMU_Zero
       MENU.drop_input_token();
       tabula_rasa();	// sound alters mpu readings...
+#if defined USE_MONOCHROME_DISPLAY
+      (*u8x8_p).clear();
+#endif
+      extended_output(F("calibrating MPU"), 0, 1, true);
+      MENU.ln();
       determine_imu_zero_offsets(1000);
+      extended_output(F("done say 'HS'"), 0, 3, true);
+      MENU.ln();
       set_IMU_Zero_offsets();
       break;
 #endif

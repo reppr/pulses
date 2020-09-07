@@ -1273,6 +1273,24 @@ void show_pin_or_dash(uint8_t pin) {
     MENU.out(pin);
 }
 
+void show_monochrome_type(int type) {
+  MENU.out(F("monochrome\t\t"));
+  switch(type) {
+  case monochrome_type_off:
+    MENU.outln('-');
+    break;
+  case monochrome_type_heltec:
+    MENU.outln(F("heltec"));
+    break;
+  case monochrome_type_LiPO:
+    MENU.outln(F("OLED LiPO"));
+    break;
+  default:
+    MENU.error_ln(F("monochrome_type unknown"));
+  }
+} // show_monochrome_type(int type)
+
+
 void show_hardware_conf(pulses_hardware_conf_t* hardware) {
   MENU.out(F("GPIO click pins\t\t"));
   if(hardware->gpio_pins_cnt) {
@@ -1326,20 +1344,7 @@ void show_hardware_conf(pulses_hardware_conf_t* hardware) {
   show_pin_or_dash(hardware->bluetooth_enable_pin);
   MENU.ln();
 
-  MENU.out(F("monochrome\t\t"));
-  switch(hardware->monochrome_type) {
-  case monochrome_type_off:
-    MENU.outln('-');
-    break;
-  case monochrome_type_heltec:
-    MENU.outln(F("heltec"));
-    break;
-  case monochrome_type_LiPO:
-    MENU.outln(F("OLED LiPO"));
-    break;
-  default:
-    MENU.error_ln(F("monochrome_type unknown"));
-  }
+  show_monochrome_type(hardware->monochrome_type);
 
   MENU.out(F("RGB LED strings\t\t"));
   if(hardware->rgb_strings) {
