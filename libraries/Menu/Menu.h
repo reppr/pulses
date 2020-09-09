@@ -158,6 +158,7 @@ class Menu {
   bool is_numeric() const;		// test if next token will be a numeric chiffre
   long numeric_input(long default_value);  // read a number from the buffer
   void skip_numeric_input();		// drop leading numeric sequence from the buffer
+  void skip_input();			// drop (and display) all menu input
 
   void menu_page_info(char pg)	const;	// show a menu pages' info
   void menu_pages_info()	const;	// show all known pages' info
@@ -246,8 +247,9 @@ class Menu {
   /* String recycling:						*/
   void OutOfRange() const;	// output "out of range\n"
   void out_Error_() const;	// output "ERROR: "
-  void error_ln(const char * str) const;		// output "ERROR: xxxxxxxx"
-  void ok_or_error_ln(const char * str, int error) const; // output "ERROR: xxxxxxxx nn" or "xxxxxxxx ok"
+  void error_ln(const char * str) const;			// output "ERROR: xxxxxxxx"
+  void malloc_error() const { error_ln(F("malloc()")); } ;	// output "ERROR: malloc()" inlined
+  void ok_or_error_ln(const char * str, int error) const;	// output "ERROR: xxxxxxxx nn" or "xxxxxxxx ok"
   void out_comma_() const;	// output ", "  for parameter lists
 
   void out_selected_() const;	// output "selected "

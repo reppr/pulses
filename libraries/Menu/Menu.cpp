@@ -1126,6 +1126,16 @@ void Menu::skip_numeric_input() {
 }
 
 
+void Menu::skip_input() {
+  if(peek() == EOF8)
+    return;
+  out(F("skipped: "));
+  while (peek() != EOF8) {
+    out(cb_read());
+  }
+  ln();
+}
+
 /* **************************************************************** */
 // menu info:
 
@@ -1163,7 +1173,7 @@ int Menu::add_page(const char *pageTitle, const char page_key,		\
     so the user can see the error message.
     Looks save enough as a menu is not very usable without adding menupages.
   */
-    out_Error_();
+    malloc_error();
     print_free_RAM();	// real or fake ;)
     ln();
     flush();		// we *do* need to flush here
@@ -1532,14 +1542,7 @@ void Menu::interpret_men_input() {
 	out((int) (token & 0xFF));
 	ln();
       }
-      if (peek() != EOF8) {
-	out(F("skipping "));
-	out(token);
-	while (peek() != EOF8) {
-	  out((char) drop_input_token());
-	}
-	ln();
-      }
+      skip_input();
     }
 
   } // interpreter loop over all tokens

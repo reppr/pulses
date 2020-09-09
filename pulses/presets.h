@@ -76,11 +76,10 @@ int search_preset_list(char* s) {
   int verbosity_was=MENU.verbosity;
   MENU.verbosity = 0;	// *no* output from set_metric_pitch
 
-  char* error=F("search presets malloc");
   int len = strlen(s);
   char* lower_search_str = (char*) malloc(len + 1);
   if(lower_search_str==NULL) {
-    MENU.error_ln(error);
+    MENU.malloc_error();
     return -1;	// error
   }
   extern void copy_string_to_lower(char* source, char* destination, size_t max);
@@ -90,7 +89,7 @@ int search_preset_list(char* s) {
   int max= 100;
   char* name_buffer = (char*) malloc(max + 1);
   if(name_buffer==NULL) {
-    MENU.error_ln(error);
+    MENU.malloc_error();
     free(lower_search_str);
     return -1;	// error
   }

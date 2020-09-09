@@ -21,6 +21,7 @@ did_something=	KEYWORD2
 drop_input_token	KEYWORD2
 equals	KEYWORD2
 error_ln	KEYWORD2
+malloc_error	KEYWORD2
 get_free_RAM	KEYWORD2
 get_numeric_input	KEYWORD2
 interpret_men_input	KEYWORD2
@@ -57,6 +58,7 @@ print_free_RAM	KEYWORD2
 restore_input_token	KEYWORD2
 show_flag_mnemonics	KEYWORD2
 skip_numeric_input	KEYWORD2
+skip_input	KEYWORD2
 slash	KEYWORD2
 space	KEYWORD2
 string_match	KEYWORD2

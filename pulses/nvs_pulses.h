@@ -454,7 +454,7 @@ void nvs_show_HW_both() {
 void configure_IDENTITY_from_nvs() {
   peer_ID_t* IDENTITY_from_nvs_p = (peer_ID_t*) malloc(sizeof(peer_ID_t));
   if(IDENTITY_from_nvs_p==NULL) {
-    MENU.error_ln(F("malloc"));
+    MENU.malloc_error();
     return;
   }
 

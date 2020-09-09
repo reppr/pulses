@@ -3256,7 +3256,7 @@ void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from mai
     MENU.outln(F("wakeup undefined"));
 #if defined AUTOSTART
     MENU.out(F("HACK: restart anyway "));
-    AUTOSTART
+    AUTOSTART;
 #endif
     break;
   case 2:	// ESP_SLEEP_WAKEUP_EXT0	2
@@ -4114,15 +4114,7 @@ bool musicBox_reaction(char token) {
 
 	} else {	// other *NON NUMERIC* input after 'CC<xxx>'	TODO: search preName
 	  MENU.out("DADA implement peer name search?\t");
-/*
-	  char c = MENU.peek();
-	  if(c != EOF8) {
-	    MENU.out(F("skipping "));
-	    while (c != EOF8)
-	      MENU.out(c = MENU.drop_input_token());
-	    MENU.ln();
-	  }
-*/
+	  //	  MENU.skip_input();
 	  MENU.ln();
 	  display_peer_ID_list();	// just in case...
 	} // numeric/non numeric after 'CC'
@@ -4141,29 +4133,23 @@ bool musicBox_reaction(char token) {
 	    break;
 	}
 	char* macro = (char*) malloc(len + 1);
+	if(macro) {
+	  int i;
+	  for (i=0; i<len; i++)
+	    *(macro + i) = (char) MENU.drop_input_token();
+	  *(macro + i) = '\0';
 
-	int i;
-	for (i=0; i<len; i++)
-	  *(macro + i) = (char) MENU.drop_input_token();
-	*(macro + i) = '\0';
-
-	esp_now_send_maybe_do_macro(esp_now_send2_mac_p, macro);
-	free(macro);
+	  esp_now_send_maybe_do_macro(esp_now_send2_mac_p, macro);
+	  free(macro);
+	} else
+	  MENU.malloc_error();
       }
     } // switch(MENU.peek())	second letter after 'C'
 
 #else	// ! defined USE_ESP_NOW
     {
       MENU.out(F("ESP_NOW not available"));
-      char c = MENU.peek();
-      if(c != EOF8) {
-	MENU.out(F("skipped: "));
-	while(c != EOF8) {
-	  MENU.out(c);
-	  c = MENU.drop_input_token();
-	}
-      }
-      MENU.ln();
+      MENU.skip_input();
     }
 #endif	// defined USE_ESP_NOW
     break;
@@ -4266,7 +4252,8 @@ bool musicBox_reaction(char token) {
 	    search_preset_list(searchstring);
 	  }
 	  free(searchstring);
-	}
+	} else
+	  MENU.malloc_error();
       }
       break;
     case '1':	// 'P1' kill primary pulses
