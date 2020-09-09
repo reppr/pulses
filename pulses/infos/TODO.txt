@@ -659,3 +659,5 @@ implement menu float input
 // 'VV<nnn>' PULSES.volume	// given as 0...255	TODO: float input
 
 voices to musicBoxConf
+
+MORSE_conf

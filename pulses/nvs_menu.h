@@ -4,8 +4,8 @@
 
 void nvs_menu_display() {
   MENU.out_IstrI(my_IDENTITY.preName);
-  MENU.out(F(" free entries:\t"));
-  MENU.outln(nvs_free_entries());
+  MENU.space(2);
+  nvs_free_entries();
   MENU.ln();
 
   if (! nvs_test_key("IDENTITY_nvs"))
@@ -15,19 +15,6 @@ void nvs_menu_display() {
   if (! nvs_test_key("HARDWARE_nvs"))
     MENU.out(F("\t\tsay 'HS' to create"));
   MENU.ln();
-
-  // test for old nvs_PRENAME key:		// TODO: remove after a while
-  if (nvs_test_key("nvs_PRENAME")) {	// obsolete key found
-    MENU.out(F("\t\tOBSOLETE\t|"));
-    String s="";
-    s = nvs_getString(F("nvs_PRENAME"));
-    if (s)
-      MENU.out(s);
-    MENU.out('|');
-  } else
-    MENU.out(F("\t\tok, no obsolete key found"));
-  MENU.ln();
-  // nvs_PRENAME TODO:  esp_err_t nvs_erase_key(nvs_handle_t handle, const char *key);
 
   MENU.outln(F("\n\n'H'=HARDWARE 'HR'=read 'HS'=save '?'=info"));
   MENU.ln();
@@ -39,7 +26,6 @@ void nvs_menu_display() {
   MENU.ln();
 
   MENU.out(F("'S'=SYSTEM"));
-
 #if defined USE_MPU6050
   MENU.out(F(" 'SZ'=run IMU_Zero\t'SU'=set mpu6050 offsets by hand"));
 #endif
@@ -47,7 +33,16 @@ void nvs_menu_display() {
 
 #if defined USE_RGB_LED_STRIP
   rgb_led_string_UI_display();
+  MENU.ln();
 #endif
+
+  MENU.out(F("'Axxx'=autostart KB macro"));
+  if(nvs_AUTOSTART_kb_macro && strlen(nvs_AUTOSTART_kb_macro)) {
+    MENU.out(F(" (\""));
+    MENU.out(nvs_AUTOSTART_kb_macro);
+    MENU.out(F("\")\t'D'=delete autostart"));
+  }
+  MENU.ln();
 
   MENU.ln();
 } // nvs_menu_display()
@@ -210,6 +205,33 @@ bool nvs_menu_reaction(char token) {
     nvs_clear_all_keys();
     MENU.outln("DADA TODO: DEBUG CRASH");	// menu CRASH AFTER THAT
     yield();
+    break;
+
+  case 'A': // 'Axxx' nvs_autostart()
+    if(MENU.peek() != EOF8) {
+      size_t max = 100;
+      char buffer[max];
+      int len=0;
+      char c=1;
+      while (len < max && (c != EOF8))
+	{
+	  c = MENU.peek();
+	  if (c != EOF8) {
+	    buffer[len++] = c;
+	    MENU.drop_input_token();
+	  } else
+	    buffer[len] = '\0';
+	}
+      if(! nvs_save_blob("nvs_AUTOSTART", buffer, len + 1))
+	set_nvs_autostart_kb_macro(buffer);
+    }
+    break;
+
+  case 'D': // 'D' delete nvs_AUTOSTART
+    MENU.out(F("remove nvs_AUTOSTART\t"));
+    nvs_delete_key("nvs_AUTOSTART");
+    set_nvs_autostart_kb_macro(NULL);
+    MENU.ln();
     break;
 
   default:

@@ -13,35 +13,17 @@
 
 #define DEBUG_NVS
 
-// why can't i do this?
-// Preferences CONF_nvs;
-// CONF_nvs.begin("CONFIG", /* readonly is */ false);
-
 #define RGB_STRINGS_MAX		2	// 8 possible	// TODO: DOES NOT BELONG HERE
 
 #include "pulses_esp_err.h"		// esp_err_t ERROR reporting
-
-String nvs_getString(char * key) {
-  String s;
-
-  Preferences CONF_nvs;
-  CONF_nvs.begin("CONFIG", /* readonly is */ false);
-  s = CONF_nvs.getString(key);
-
-#if defined DEBUG_NVS
-  MENU.out(F("nvs_getString() |"));
-  MENU.out(s); MENU.outln('|');
-#endif
-
-  CONF_nvs.end();
-  return s;
-}
 
 int nvs_free_entries() {
   Preferences CONF_nvs;
   CONF_nvs.begin("CONFIG", /* readonly is */ false);
   int free_entries = CONF_nvs.freeEntries();
   CONF_nvs.end();
+  MENU.out(F("nvs free entries:\t"));
+  MENU.outln(free_entries);
   return free_entries;
 }
 
@@ -69,7 +51,7 @@ size_t /*size*/ nvs_test_key(char* key) {	// no trailing newline
     MENU.out(F(" bytes"));
   } else {
     if (err == ESP_ERR_NVS_NOT_FOUND)
-      MENU.out(F("no"));
+      MENU.out(F("(none)"));
     else
       esp_err_info(err);
   }
@@ -79,7 +61,21 @@ size_t /*size*/ nvs_test_key(char* key) {	// no trailing newline
 } // nvs_test_key()
 
 
-bool nvs_read_blob(char* key, void* new_blob, size_t buffer_size) {
+void nvs_delete_key(char* key) {
+  nvs_handle_t my_handle;
+  esp_err_t err = nvs_open("CONFIG", NVS_READWRITE, &my_handle);
+  if (err == ESP_OK)
+    err = nvs_erase_key(my_handle, key);
+  if (err == ESP_OK)
+    nvs_commit(my_handle);
+
+  if (err != ESP_OK)
+    esp_err_info(err);
+  nvs_close(my_handle);
+} // nvs_delete_key()
+
+
+bool /*error*/ nvs_read_blob(char* key, void* new_blob, size_t buffer_size) {
   // see: https://github.com/espressif/esp-idf/blob/master/examples/storage/nvs_rw_blob/main/nvs_blob_example_main.c
 
   MENU.out(F("nvs_read_blob\t"));
@@ -132,7 +128,7 @@ bool nvs_read_blob(char* key, void* new_blob, size_t buffer_size) {
 } // nvs_read_blob
 
 
-void nvs_save_blob(char* key, void* new_blob, size_t buffer_size) {
+bool /*error*/ nvs_save_blob(char* key, void* new_blob, size_t buffer_size) {
   // see: https://github.com/espressif/esp-idf/blob/master/examples/storage/nvs_rw_blob/main/nvs_blob_example_main.c
 
   MENU.out(F("nvs_save_blob\t"));
@@ -144,7 +140,7 @@ void nvs_save_blob(char* key, void* new_blob, size_t buffer_size) {
   err = nvs_open("CONFIG", NVS_READWRITE, &my_handle);
   if (err != ESP_OK) {
     esp_err_info(err);
-    return;
+    return true; // error
   }
 
   MENU.out(buffer_size);
@@ -154,19 +150,20 @@ void nvs_save_blob(char* key, void* new_blob, size_t buffer_size) {
   err = nvs_set_blob(my_handle, key, new_blob, buffer_size);
   if (err != ESP_OK) {
     esp_err_info(err);
-    return;
+    return true; // error
   } // else
 
   // Commit
   err = nvs_commit(my_handle);
   if (err != ESP_OK) {
     esp_err_info(err);
-    return;
+    return true; // error
   }
 
   // Close
   nvs_close(my_handle);
   MENU.outln(F("ok"));
+  return false; // OK
 } // nvs_save_blob
 
 
@@ -499,7 +496,45 @@ void configure_IDENTITY_from_nvs() {
 } // configure_IDENTITY_from_nvs()
 
 
-void nvs_clear_all_keys() {
+char* nvs_AUTOSTART_kb_macro=NULL;	// will be interpreted instead of AUTOSTART if it exists
+					// 'A' will still do "normal" autostart
+void set_nvs_autostart_kb_macro(char* macro) {
+  if(nvs_AUTOSTART_kb_macro)
+    free(nvs_AUTOSTART_kb_macro);	// free previous allocation
+  nvs_AUTOSTART_kb_macro=NULL;
+
+  if(macro && strlen(macro)) {
+    nvs_AUTOSTART_kb_macro = (char*) malloc(strlen(macro) + 1);
+    if(nvs_AUTOSTART_kb_macro) {
+      strcpy(nvs_AUTOSTART_kb_macro, macro);
+      MENU.out(F("set nvs_AUTOSTART \""));
+      MENU.out(nvs_AUTOSTART_kb_macro);
+      MENU.out('"');
+    } else
+      MENU.malloc_error();
+  }
+} // set_nvs_autostart_kb_macro()
+
+bool read_nvs_autostart() {
+  size_t size = nvs_test_key("nvs_AUTOSTART");
+  MENU.ln();
+  if(size == 0) {
+    set_nvs_autostart_kb_macro(NULL);
+    MENU.ln();
+    return false;
+  } // else
+
+//  MENU.out(F(" nvs AUTOSTART kb macro\tsize "));
+//  MENU.out(size);
+
+  char buffer[size];
+  if(! nvs_read_blob("nvs_AUTOSTART", buffer, size))
+    set_nvs_autostart_kb_macro(buffer);
+  MENU.ln();
+} // read_nvs_autostart()
+
+#if true // test OLD & new version  nvs_clear_all_keys()
+void nvs_clear_all_keys() {	// TODO: runs, but then crashes...
   MENU.out(F(">>> CLEARED ALL KEYS in CONF_nvs <<<  "));
   Preferences CONF_nvs;
   CONF_nvs.begin("CONFIG", /* readonly is */ false);
@@ -511,8 +546,31 @@ void nvs_clear_all_keys() {
   MENU.outln(CONF_nvs.freeEntries());
 
   CONF_nvs.end();
-}
+} // nvs_clear_all_keys()
 
+#else // test old & new version  nvs_clear_all_keys()
+void nvs_clear_all_keys() {	// TODO: tried to write new, still crashes pulses...
+  nvs_handle_t my_handle;
+  esp_err_t status = nvs_open("CONFIG", NVS_READWRITE, &my_handle);
+  if (status != ESP_OK) {
+    esp_err_info(status);
+    return;
+  } // nvs_open error?
+
+  nvs_erase_all(my_handle);
+  nvs_commit(my_handle);
+  nvs_close(my_handle);
+} // nvs_erase_all()
+#endif // test old & new version  nvs_clear_all_keys()
+
+
+void nvs_pulses_setup() {
+  configure_HARDWARE_from_nvs();
+  configure_IDENTITY_from_nvs();
+  MENU.ln();
+  read_nvs_autostart();
+  MENU.ln();
+}
 
 #define NVS_PULSES_H
 #endif

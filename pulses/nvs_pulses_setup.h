@@ -49,10 +49,5 @@ MENU.outln(CONF_nvs.getString("nvs_AUTOSTART"));
 // MORSE_TOUCH_INPUT_PIN,  MORSE_GPIO_INPUT_PIN, MORSE_OUTPUT_PIN
 // CONF_nvs.putString("nvs_MORSE", "mTI=13 mGI=34 mO=2");
 
-
-#if defined AUTOSTART
-//  CONF_nvs.putString("nvs_AUTOSTART", STRINGIFY(AUTOSTART));
-#endif
-
 CONF_nvs.end();
 MENU.ln();

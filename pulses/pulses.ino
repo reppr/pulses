@@ -1730,9 +1730,7 @@ void setup() {
   MENU.outln(F("PULSES  http://github.com/reppr/pulses/\n"));
 
 #if defined USE_NVS
-  configure_HARDWARE_from_nvs();
-  configure_IDENTITY_from_nvs();
-  MENU.ln();
+  nvs_pulses_setup();
 #endif
 
 #if defined USE_MONOCHROME_DISPLAY
@@ -1872,7 +1870,8 @@ void setup() {
 #include "array_descriptors_setup.h"
 
 #if defined USE_NVS	// always used on ESP32
-  #include "nvs_pulses_setup.h"
+  nvs_free_entries();
+  MENU.ln();
 #endif
 
 show_GPIOs();	// *does* work for GPIO_PINS==0
@@ -2105,28 +2104,38 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
   morse_init();	// ATTENTION: *do this AFTER esp_now_pulses_setup()*
 #endif
 
+  MENU.men_selected = musicBox_page;	// default to musicBox menu
   MENU.ln();
 
-#ifdef AUTOSTART			// see: pulses_project_conf.h
   if(force_start_to_usermode) {
     force_start_to_usermode=false;
     MENU.outln(F("\nforced start to user mode"));
-    MENU.men_selected = musicBox_page;	// default to musicBox menu
-
 #if defined USE_MONOCHROME_DISPLAY
     MC_display_message("user mode active");
 #endif
 
   } else {
-    autostart_counter++;
-    MENU.out(F("\nAUTOSTART "));
-    MENU.out(autostart_counter);
-    MENU.tab();
-    MENU.outln(STRINGIFY(AUTOSTART));
-
-    AUTOSTART
+#if defined USE_NVS
+    if(nvs_AUTOSTART_kb_macro) {
+      MENU.out(F("nvs autostart "));
+      MENU.play_KB_macro(nvs_AUTOSTART_kb_macro);
     }
+    else
 #endif
+
+#ifdef AUTOSTART			// see: pulses_project_conf.h
+      {
+	autostart_counter++;
+	MENU.out(F("\nAUTOSTART "));
+	MENU.out(autostart_counter);
+	MENU.tab();
+	MENU.out(STRINGIFY(AUTOSTART));
+	AUTOSTART;
+      }
+#else
+    ;
+#endif
+  }
 } // setup()
 
 
@@ -6035,7 +6044,7 @@ bool menu_pulses_reaction(char menu_input) {
 
 #if defined AUTOSTART
   case 'A':	// autostart
-    AUTOSTART
+    AUTOSTART;
     break;
 #endif
 
