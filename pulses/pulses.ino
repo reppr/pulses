@@ -5980,10 +5980,36 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'V':	// set voices	V[num]! PULSES.select_n_voices
-    if(MENU.check_next('V')) {	// 'VV' PULSES.volume
-      if(MENU.check_next('E'))	// 'VVE' (morse shortcut) reset PULSES.volume=1.0
+    if(MENU.check_next('V')) {	// 'VV' PULSES.voices
+      MENU.out(F("voices "));
+
+      input_value = MENU.numeric_input(voices);
+      if (input_value>0 && input_value<=PL_MAX) {
+	voices = input_value;
+//	if (voices>GPIO_PINS) {			// TODO: OBSOLETE?
+//	  if (DO_or_maybe_display(VERBOSITY_LOWEST))
+//	    MENU.outln(F("WARNING: voices > gpio"));
+//	}
+      } else
+	MENU.outln_invalid();
+
+      if (voices==0)
+	voices=36;	// just a guess (was: voices=GPIO_PINS;)
+
+      if (DO_or_maybe_display(VERBOSITY_LOWEST))
+	MENU.outln(voices);
+
+      if(MENU.peek()=='!')
+	PULSES.select_n(voices);
+    } else { // bare 'V' and 'VE' (*NOT* 'VVx')	PULSES.volume
+
+      if(MENU.check_next('E'))	// 'VE' (morse shortcut) reset PULSES.volume=1.0
 	PULSES.volume=1.0;
-      else {			// 'VV<nnn>' PULSES.volume (0..255)
+      else if(MENU.peek() == 'T')// 'VT[TT]' (morse shortcut) fade volume
+	while(MENU.check_next('T')) {
+	  PULSES.volume *= 0.7;
+	}
+      else {			// 'V<nnn>' PULSES.volume (0..255)
 	unsigned long inp = (PULSES.volume*255 + 0.5);  // given as 0...255	// TODO: float input
 	MENU.maybe_calculate_input(&inp);
 	input_value = (int) inp;
@@ -5995,32 +6021,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       MENU.out(F("global audio volume "));
       MENU.outln(PULSES.volume);
-      break;
-    } // else
-
-    if(MENU.peek()==EOF8)
-      MENU.out(F("voices "));
-
-    input_value = MENU.numeric_input(voices);
-    if (input_value>0 && input_value<=PL_MAX) {
-      voices = input_value;
-      if (voices>GPIO_PINS) {
-	if (DO_or_maybe_display(VERBOSITY_LOWEST))
-	  MENU.outln(F("WARNING: voices > gpio"));
-      }
-    }
-    else
-      MENU.outln_invalid();
-
-    if (voices==0)
-      voices=GPIO_PINS;	// just a guess
-
-    if (DO_or_maybe_display(VERBOSITY_LOWEST))
-      MENU.outln(voices);
-
-    if(MENU.peek()=='!')
-      PULSES.select_n(voices);
-
+    } // PULSES.volume (or voices)
     break;
 
   case 'O':	// configure selected_actions
