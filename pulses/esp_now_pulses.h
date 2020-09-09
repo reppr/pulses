@@ -482,12 +482,18 @@ void esp_now_prepare_N_ID(uint8_t* to_mac) {
   if(MENU.verbosity > VERBOSITY_SOME)
     MENU.out(F("esp_now_prepare_N_ID()\tms "));
 
-  if(my_IDENTITY.esp_now_time_slice == ILLEGAL8) {
-    MENU.error_ln(F("no time slice defined, will *NOT* send"));
-    return;
+  int time_slice_ms;
+  if(my_IDENTITY.esp_now_time_slice != ILLEGAL8) {
+    time_slice_ms = my_IDENTITY.esp_now_time_slice * ESP_NOW_TIME_SLICE_MS;
+    MENU.out(F("time slice "));
+    MENU.out(my_IDENTITY.esp_now_time_slice);
+    MENU.tab();
+  } else {
+    MENU.out(F("no time slice defined, delay "));
+    time_slice_ms = (random(11) + 13)*ESP_NOW_TIME_SLICE_MS + ESP_NOW_TIME_SLICE_MS/2;
   }
-
-  MENU.outln(my_IDENTITY.esp_now_time_slice * ESP_NOW_TIME_SLICE_MS);
+  MENU.out(time_slice_ms);
+  MENU.outln(F(" ms"));
 
   // save mac
   for (int i=0; i<6; i++)
@@ -502,7 +508,7 @@ void esp_now_prepare_N_ID(uint8_t* to_mac) {
   // setup time sliced reaction
   esp_now_reaction_timer = timerBegin(0, 80, true /* count upwards */);
   timerAttachInterrupt(esp_now_reaction_timer, &send_IDENTITY_time_sliced, true /* edge */);
-  timerAlarmWrite(esp_now_reaction_timer, (my_IDENTITY.esp_now_time_slice * ESP_NOW_TIME_SLICE_MS * 1000), false /* only once */);
+  timerAlarmWrite(esp_now_reaction_timer, (time_slice_ms * 1000), false /* only once */);
   timerAlarmEnable(esp_now_reaction_timer);
 } // esp_now_prepare_N_ID()
 
