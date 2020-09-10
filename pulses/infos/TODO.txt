@@ -661,3 +661,5 @@ implement menu float input
 voices to musicBoxConf
 
 MORSE_conf
+
+TODO: fix peer_ID_list after deleting a peer

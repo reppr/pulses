@@ -3519,7 +3519,8 @@ void musicBox_display() {
 #endif
 
 #if defined USE_ESP_NOW
-  MENU.outln(F("'C<macro>'=send macro 'CC<num>'=recipient 'C?'=peers 'C'='CC'=build net 'CS'=automagic sync landscape"));
+  MENU.outln(F("'C<macro>'=send macro 'CC<num>'=recipient 'C?'=peers 'C'='CC'=build net 'CCS'=automagic sync landscape"));
+  MENU.outln(F("'CCD<num>'=delete recipient"));
   MENU.ln();
 #endif
 
@@ -3529,7 +3530,7 @@ void musicBox_display() {
   MENU.out(F("'v' peripheral power"));
   MENU.out_ON_off(peripheral_power_on);
 #endif
-  MENU.out(F("  'V'=volume  'VE'vol=1.0   'VV'=voices   '|' sync slices ="));	// ('V' and 'VV' are actually in menu pulses)
+  MENU.out(F("  'V'=volume 'VE'vol=1.0 'VT..'volume-   'VV'=voices   '|' sync slices ="));    // ('V' and 'VV' are actually in menu pulses)
   MENU.out(musicBoxConf.stack_sync_slices);
   MENU.out(F("  '|b' base ="));
   MENU.out(musicBoxConf.base_pulse);
@@ -4058,7 +4059,7 @@ bool musicBox_reaction(char token) {
       trigger_display_peer_ID_list();	// show peer list after a short while
       break;
 
-    case '?':	// 'CC?' == 'C?'
+    case '?':	// 'C?' == 'CC?'
       MENU.drop_input_token();
       display_peer_ID_list();		// display current list, *no*t rebuilding it
       break;
@@ -4075,7 +4076,7 @@ bool musicBox_reaction(char token) {
       } else if(MENU.check_next('?')) {		// 'CC?' == 'C?'
 	display_peer_ID_list();
 
-	} else if(MENU.check_next('S')) {	// 'CCS' set sync of *other* instruments to time slice,	see: 'CCSS'
+      } else if(MENU.check_next('S')) {	// 'CCS' set sync of *other* instruments to time slice,	see: 'CCSS'
 	MENU.outln(F("set sync of instruments to time slice "));
 	esp_now_send_bare(broadcast_mac, N_ST);
 
@@ -4087,7 +4088,21 @@ bool musicBox_reaction(char token) {
 	    MENU.out(F("*no* sender time slice\t"));
 
 	  MENU.outln(musicBoxConf.sync);
-	}
+	} // 'CCSS'
+      } /*'CCS'*/ else if(MENU.check_next('D')) {	// 'CCD<num>' delete peer
+	MENU.out(F("delete peer <nnn>\t"));
+	  int peer_i = MENU.numeric_input(0);
+	  if(peer_i && (peer_i-1) < ESP_NOW_MAX_TOTAL_PEER_NUM) {
+	    MENU.out(peer_i);
+	    peer_i--;	// the UI starts counting with 1
+	    esp_err_t status = esp_now_del_peer(esp_now_pulses_known_peers[peer_i].mac_addr);
+	    if(status == ESP_OK) {
+	      display_peer_ID_list();	// TODO: fix ################
+	    } else
+	      esp_err_info(status);
+	  } else
+	    MENU.out(F("???"));
+	  MENU.ln();
 
       } else {	// more input after 'CC'
 	if(MENU.is_numeric()) {	// 'CC<numeric>'
