@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICAL v.044   // usability, monochrome multicore display
+#define PROGRAM_VERSION	HARMONICAL v.045   // LAMPION FESTIVAL 2020-09-12, BRACHE Zürich
 /*			0123456789abcdef   */
 
 /* **************************************************************** */
@@ -2117,7 +2117,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
   } else {
 #if defined USE_NVS
     if(nvs_AUTOSTART_kb_macro) {
-      MENU.out(F("nvs autostart "));
+      MENU.out(F("nvs AUTOSTART "));
       MENU.play_KB_macro(nvs_AUTOSTART_kb_macro);
     }
     else
@@ -5996,8 +5996,7 @@ bool menu_pulses_reaction(char menu_input) {
       if (voices==0)
 	voices=36;	// just a guess (was: voices=GPIO_PINS;)
 
-      if (DO_or_maybe_display(VERBOSITY_LOWEST))
-	MENU.outln(voices);
+      MENU.outln(voices);
 
       if(MENU.peek()=='!')
 	PULSES.select_n(voices);

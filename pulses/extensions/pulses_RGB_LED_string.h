@@ -693,13 +693,15 @@ void rgb_strings_info() {
 }
 
 void rgb_led_string_UI_display() {
-  MENU.outln(F("\n'L'=rgbLED 'L<num>'=select string  'L+''LE'=ON  'L-''LT'=OFF 'LI'=intensity 'LO'=offset 'LP'=pixel cnt"));
+  MENU.outln(F("\n'L'=rgbLED 'L<num>'=select string  'L+''LE'=ON  'L-''LT'=OFF 'LI'=intensity 'LO'='L0'offset 'LP'=pixel cnt"));
   MENU.outln(F("   'LH'=high priority 'LV'=voltage 'LB'=BGdim 'LS'=saturation0 'LR'=sat reset value 'LN'=hue slices"));
 }
 
 void rgb_led_string_UI() {	// starting 'L' already received
   int input_value;
 
+  /*
+    // TODO: unused (only one string) clashes with 'L0'=='LO' offset
   if(MENU.is_numeric()) {	// 'L<num>' select string
     input_value = MENU.numeric_input(selected_rgb_LED_string);
     if(input_value >= 0 && input_value < RGB_STRINGS_MAX) {
@@ -708,6 +710,7 @@ void rgb_led_string_UI() {	// starting 'L' already received
       MENU.outln(selected_rgb_LED_string);
     }
   }
+  */
 
   switch (MENU.peek()) {	// second letter after 'L...'
   case '?':	// 'L?' (and bare 'L') led string infos
@@ -720,7 +723,9 @@ void rgb_led_string_UI() {	// starting 'L' already received
   case '-':	// 'L-' == 'LT' led string off
   case 'T':	// 'LT' for morse
     MENU.drop_input_token();
-    pulses_RGB_LED_string_init();	// switch it off
+    if(! MENU.check_next('E'))		// 'LTE' stop RGB activity, but *LEAVE IT ON*
+      pulses_RGB_LED_string_init();	//       else 'LT' switch RGB LED string off
+
     RGBstringConf.rgb_strings_active = false;
     MENU.outln(F("rgb leds off"));
     break;
@@ -782,7 +787,8 @@ void rgb_led_string_UI() {	// starting 'L' already received
     rgb_strings_info();
     break;
 
-  case 'O':	// 'LO' offset
+  case 'O':	// 'LO'='L0' offset
+  case '0':	// 'LO'='L0' offset
     MENU.drop_input_token();
     input_value = (uint8_t) MENU.numeric_input(HARDWARE.rgb_pattern0[selected_rgb_LED_string]);
     if(input_value >=0 && input_value < ILLEGAL8)

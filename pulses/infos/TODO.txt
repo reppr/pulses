@@ -663,3 +663,7 @@ voices to musicBoxConf
 MORSE_conf
 
 TODO: fix peer_ID_list after deleting a peer
+
+calculate instead of numeric input
+
+ESP32 softboard

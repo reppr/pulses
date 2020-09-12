@@ -908,6 +908,7 @@ bool Menu::check_next(char token) {	// check for token as next input, drop if fo
 
 void Menu::play_KB_macro(char *macro, bool newline) {	// most often you might do  'men_selected=0;'  before
   out("play_KB_macro  ");
+  outln(macro);
 
   int pending_input = cb_count;		// pending input to SAVE|restore ?
   char buffer[pending_input];

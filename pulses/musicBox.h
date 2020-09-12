@@ -1732,7 +1732,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
 
   do_pause_musicBox = true;	//  triggers MUSICBOX_ENDING_FUNCTION;	sleep, restart or somesuch	// *ENDED*
   // MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
-}
+} // HARD_END_playing()
 
 portMUX_TYPE musicBox_trigger_MUX = portMUX_INITIALIZER_UNLOCKED;
 
@@ -3594,8 +3594,12 @@ bool load_preset_and_start(short preset_new, bool start=true) {	// returns error
 //    if(MusicBoxState != OFF)	// end a running session?
 //      tabula_rasa();
     start_musicBox();		// play new preset
-  } else
+  } else {
     musicBox_short_info();
+#if defined USE_MONOCHROME_DISPLAY
+    MC_show_musicBox_parameters();
+#endif
+  }
 } // load_preset_and_start()
 
 void input_preset_and_start() {	// factored out UI component	// TODO: sets preset, how to unset?	################
@@ -3630,9 +3634,8 @@ void input_preset_and_start() {	// factored out UI component	// TODO: sets prese
       MENU.outln_invalid();
   }
 
-  if(load) {
-    load_preset_and_start(musicBoxConf.preset, (MENU.peek()==EOF8));	// <nnn> *ONLY* starts preset if *nothing* follows
-  }
+  if(load)
+    load_preset_and_start(musicBoxConf.preset, /*start=*/(MENU.peek()==EOF8));	// <nnn> *ONLY* starts preset if *nothing* follows
 } // input_preset_and_start()
 
 void display_preset_names() {

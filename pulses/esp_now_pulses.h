@@ -408,7 +408,7 @@ esp_err_t esp_now_pulses_add_peer(peer_ID_t* ID_new_p) {	// might give feedback
     if(do_display) {
       MENU.out(F("ok\t"));
       MENU.out_IstrI((*ID_new_p).preName);
-      MENU.out(F(" added"));
+      MENU.out(F(" added "));
     }
     break;
   case ESP_ERR_ESPNOW_EXIST:	// peer was already seen

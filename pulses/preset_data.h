@@ -38,7 +38,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
   switch(musicBoxConf.preset) {
   case 1:
     musicBoxConf.name = F("wunderschöns obenabe vogelgetzwitscher bistüüfinbass :)");
-    //# FAVORITE
+    //# FAVORITE	P1 2020 KUNSTDREIECK
     //# melodies
     //# shortIsOk
     //# aurora	some
@@ -62,7 +62,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
   case 2:
     musicBoxConf.name = F("LIFT OFF");
     //comment: :) :) :) :) :)
-    //# FAVORITE	P2 DADA 2020 KUNSTDREIECK
+    //# FAVORITE	P2 2020 KUNSTDREIECK
     //# FAVORITE
     //# shortIsOk
     //# mystic
@@ -83,7 +83,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 3:
     musicBoxConf.name = F("Blue Night Cadence");
-    //# FAVORITE
+    //# FAVORITE	P3 2020 KUNSTDREIECK
     //# harmonie	a bit like some jazz chord progressions
     //# shortIsOk
     //# systemStress seems cured :)
@@ -149,7 +149,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 6:
     musicBoxConf.name = F("aurora elfetanz");
-    //# FAVORITE	P6 DADA 2020 KUNSTDREIECK
+    //# FAVORITE	P6 2020 KUNSTDREIECK
     //# FAVORITE
     //# melodies
     //# shortIsOk
@@ -179,7 +179,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
   case 7:
     musicBoxConf.name = F("klassisch, wunderschön, vo A bis Z :)");
     //comment: und übrigens:	harmonical cycle    12' 19"
-    //# FAVORITE
+    //# FAVORITE	P7 2020 KUNSTDREIECK mit bildschirm 'op'
     //# harmonies
     //# shortIsOk
     //# classicHarmonical
@@ -202,7 +202,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
   case 8:
     musicBoxConf.name = F("wunderschön melodisch :) :) :)");
     //comment: mit schönem, aberendlosem schluss ;)
-    //# FAVORITE	P8 DADA 2020 KUNSTDREIECK
+    //# FAVORITE	P8 2020 KUNSTDREIECK
     //# FAVORITE
     //# bigBang		// sometimes problematic	use autostack_S0
     //# melodies
@@ -271,7 +271,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
   case 11:
     musicBoxConf.name = F("genial jazzpiano version");
     // big bang
-    //# FAVORITE
+    //# FAVORITE	P11 2020 KUNSTDREIECK
     //# shortIsOk
     //# melodies
     //# jazz
@@ -291,7 +291,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 12:
     musicBoxConf.name = F("a love like the morning birds");
-    //# FAVORITE
+    //# FAVORITE	P12 2020 KUNSTDREIECK
     //# melodies
     //# harmonies
     //# shortIsOk
@@ -372,7 +372,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 16:
     musicBoxConf.name = F("langsams iiordne in es ruhigs piipskonzert");
-    //# FAVORITE
+    //# FAVORITE	P16 2020 KUNSTDREIECK
     //# shortIsOk
     //# harmonies
     //# classicHarmonical
@@ -396,7 +396,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
   case 17:
     musicBoxConf.name = F("Ouverture");
     //comment: :) :) :) !!!
-    //# FAVORITE
+    //# FAVORITE	P17 2020 KUNSTDREIECK
     //# dropouts
     //# heavyStart		// sometimes problematic	use autostack_S0
     //# rhytm&pulse
@@ -437,7 +437,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
   case 19:
     musicBoxConf.name = F("simple, hübsche bigBang");
     //# bigBang	is ok	sometimes problematic	use autostack_S0
-    //# FAVORITE
+    //# FAVORITE	P19 2020 KUNSTDREIECK
     //# shortIsOk
     //# bigBang
     //# melodies
@@ -459,7 +459,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 20:
     musicBoxConf.name = F("nice, simple slow harmonics");
-    //# FAVORITE	P20 DADA 2020 KUNSTDREIECK
+    //# FAVORITE	P20 2020 KUNSTDREIECK
     //# FAVORITE
     //# shortIsOk
     //# melodies
@@ -656,7 +656,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 28:
     musicBoxConf.name = F("PENT eifache reige");
-    //# FAVORITE
+    //# FAVORITE	P28 2020 KUNSTDREIECK
     //# shortIsOk
     //# melodies
     //# harmonies
@@ -679,7 +679,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 29:
     musicBoxConf.name = F("triggered");
-    //# FAVORITE(?)
+    //# FAVORITE(?)	P29 2020 KUNSTDREIECK
     //# shortIsOk
     //# melodies
     //# harmonies
@@ -724,7 +724,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 31:
     musicBoxConf.name = F("sanfti landig");
-    //# FAVORITE	P 31 DADA 2020 KUNSTDREIECK
+    //# FAVORITE	P31 2020 KUNSTDREIECK+++
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk
@@ -824,7 +824,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 34:
     musicBoxConf.name = F("hübsch, langipausenamaafang");
-    //# FAVORITE
+    //# FAVORITE	P34 2020 KUNSTDREIECK
     //# shortIsOk
     //# melodies
     //# harmonies
@@ -858,7 +858,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 35:
     musicBoxConf.name = F("uusprägts melodiemotiv, fughetta");
-    //# FAVORITE	P35 DADA 2020 KUNSTDREIECK
+    //# FAVORITE	P35 2020 KUNSTDREIECK
     //# FAVORITE
     //# shortIsOk
     //# motives
@@ -890,7 +890,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 36:
     musicBoxConf.name = F("maschinells ticke, klassisch");
-    //# FAVORITE	P36 DADA 2020 KUNSTDREIECK
+    //# FAVORITE	P36 2020 KUNSTDREIECK
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk		possibly
@@ -923,7 +923,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 37:
     musicBoxConf.name = F("sehr sehr spezielle S0 aafang, wunderschön");
-    //# FAVORITE
+    //# FAVORITE	P37 2020 KUNSTDREIECK
     //# heavy start	on some instruments...
     //# shortIsOk
     //# fullCycleIsOk		possibly
@@ -960,7 +960,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 38:
     musicBoxConf.name = F("allereifachsts melodischs iiticke");
-    //# FAVORITE
+    //# FAVORITE	P38 2020 KUNSTDREIECK
     //# shortIsOk
     //# rhytm&pulse
     //# structure
@@ -1101,7 +1101,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 43:
     musicBoxConf.name = F("vorbereitige zum abflug?");
-    //# FAVORITE	P 43 DADA 2020 KUNSTDREIECK
+    //# FAVORITE	P43 2020 KUNSTDREIECK
     //# FAVORITE ???
     //# shortIsOk
     //# motives
@@ -1133,7 +1133,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 44:
     musicBoxConf.name = F("melodischs tänzle");
-    //# FAVORITE ???	P48 DADA 2020 KUNSTDREIECK
+    //# FAVORITE ???	P44 2020 KUNSTDREIECK
     //# shortIsOk
     //# fullCycleIsOk		probably yes
     //# motives
@@ -1165,7 +1165,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 45:
     musicBoxConf.name = F("motivtanz");
-    //# FAVORITE
+    //# FAVORITE	P45 2020 KUNSTDREIECK
     //# motives
     //# melodies
     //# harmonies
@@ -1225,7 +1225,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 47:
     musicBoxConf.name = F("es sphärischs netz vo eigenartige melodie wiegt über öis");
-    //# favorite
+    //# favorite	P47 2020 KUNSTDREIECK
     //# shortIsOk
     //# fullCycleIsOk		possible
     //# motives
@@ -1255,7 +1255,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
   case 48:
     musicBoxConf.name = F("eifach und schön, blue");	// harmonical cycle    55' 27"
     // simile 'Blue Night Cadence'
-    //# FAVORITE	P48 DADA 2020 KUNSTDREIECK
+    //# FAVORITE	P48 2020 KUNSTDREIECK
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk		probably very nice!
@@ -1352,7 +1352,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 51:
     musicBoxConf.name = F("langsam sprudelnd");
-    //# FAVORITE	P51 DADA 2020 KUNSTDREIECK
+    //# FAVORITE	P51 2020 KUNSTDREIECK
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk
@@ -1380,7 +1380,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 52:
     musicBoxConf.name = F("The Landing Of The Fairies");
-    //# FAVORITE	P52 DADA 2020 KUNSTDREIECK ++++
+    //# FAVORITE	P52 2020 KUNSTDREIECK ++++
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk
@@ -1450,7 +1450,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 54:
     musicBoxConf.name = F("kid's room");
-    //# FAVORITE	P54 DADA 2020 KUNSTDREIECK
+    //# FAVORITE	P54 2020 KUNSTDREIECK
     //# favorite
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 28' 21"
@@ -1567,7 +1567,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 58:
     musicBoxConf.name = F("eifach und eigenartig schön");
-    //# FAVORITE	P58 DADA 2020 KUNSTDREIECK
+    //# FAVORITE	P58 2020 KUNSTDREIECK
     //# FAVORITE
     //# shortIsOk
     //# motives
@@ -1621,7 +1621,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 60:
     musicBoxConf.name = F("landing, seed, growth, ....");
-    //# FAVORITE	P60 DADA 2020 KUNSTDREIECK
+    //# FAVORITE	P60 2020 KUNSTDREIECK
     //comment: strong beginning ;)
     //# favorite+
     //# shortIsOk
@@ -1707,7 +1707,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
   case 63:
     musicBoxConf.name = F("rising ostinatos over rhythmic bordun");  // nice and harmonic, humming, good ending
     //comment: very nice ending :)
-    //# FAVORITE	P63 DADA 2020 KUNSTDREIECK
+    //# FAVORITE	P63 2020 KUNSTDREIECK
     //# FAVORITE
     //# SPECIALITY	from rhythm, beat to sound effects, everything's there
 
@@ -1962,7 +1962,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 71:
     musicBoxConf.name = F("elfechinde");
-    //# FAVORITE	P71 DADA 2020 KUNSTDREIECK
+    //# FAVORITE	P71 2020 KUNSTDREIECK
     //# favorite
     //# shortIsOk
     //# motives
@@ -2035,7 +2035,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 74:
     musicBoxConf.name = F("rhythms");
-    //# FAVORITE	P74 DADA 2020 KUNSTDREIECK
+    //# FAVORITE	P74 2020 KUNSTDREIECK
     //# favorite+
     //# shortIsOk
     //# motives
@@ -2164,7 +2164,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 78:
     musicBoxConf.name = F("melodischs Netz uf I IV V");
-    //# favorite+
+    //# favorite+	P78 2020 KUNSTDREIECK ???
     //# shortIsOk
     //# motives
     //# melodies	very nice
@@ -2234,7 +2234,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 80:
     musicBoxConf.name = F("Aurora mit tänzelnde Liechter");
-    //# FAVORITE	P80 DADA 2020 KUNSTDREIECK
+    //# FAVORITE	P80 2020 KUNSTDREIECK
     //# FAVORITE
     //# fullCycleIsOk	harmonical CYCLE: 55' 27"
     //# motives
@@ -2371,7 +2371,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 84:
     musicBoxConf.name = F("The Enchanted Forest Temple");
-    //# FAVORITE	P84 DADA 2020 KUNSTDREIECK
+    //# FAVORITE	P84 2020 KUNSTDREIECK
     //# FAVORITE
     //# shortIsOk
     //# ritch
@@ -3561,7 +3561,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 119:
     musicBoxConf.name = F("slow dreams");
-    //# FAVORITE	P119 DADA 2020 KUNSTDREIECK
+    //# FAVORITE	P119 2020 KUNSTDREIECK
     //# shortIsOk
     //# motives
     //# melodies
@@ -3756,7 +3756,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 124:
     musicBoxConf.name = F("brummbärs ratterkiste");
-    //# favorite+
+    //# favorite+	P124 2020 KUNSTDREIECK
     //# shortIsOk
     //# melodies	jazzy harmonic progression
     //# harmonies
@@ -3805,7 +3805,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 126:
-    musicBoxConf.name = F("firework #2");
+    musicBoxConf.name = F("firework #2");	// P126 2020 KUNSTDREIECK
     musicBoxConf.date = F("2018-12-22_19h03m01s	SAT");
     select_in(SCALES, europ_PENTAtonic);
     select_in(JIFFLES, din_dididi);
@@ -3820,7 +3820,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 127:
     musicBoxConf.name = F("acoustic telegraph lines");
-    //# FAVORITE
+    //# FAVORITE	// P127 2020 KUNSTDREIECK
     //# shortIsOk
     //# melodies
     //# harmonies
@@ -4664,7 +4664,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 151:
     musicBoxConf.name = F("2019-02-07_classical_time_machine_S4");
-    //# FAVORITE	P151 DADA 2020 KUNSTDREIECK++++
+    //# FAVORITE	P151 2020 KUNSTDREIECK++++
     //comment: resonating strings not really tuned...
     //comment: retuned version with problems in ending...
     //# RECORDED	probably yes, ???
