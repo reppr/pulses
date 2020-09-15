@@ -156,7 +156,6 @@ class Menu {
   unsigned int skip_spaces();		// skip leading spaces from the buffer
   uint8_t next_input_token() const;	// next non space input token if any, else EOF8
   bool is_numeric() const;		// test if next token will be a numeric chiffre
-  long numeric_input(long default_value);  // read a number from the buffer
   void skip_numeric_input();		// drop leading numeric sequence from the buffer
   void skip_input();			// drop (and display) all menu input
 
@@ -275,9 +274,12 @@ class Menu {
 /* Input							*/
   int is_chiffre(char token);			// is token a chiffre?
   char is_operator(char token);			// known operator?
-  bool get_numeric_input(unsigned long *result);	// if there's a number, read it
-  bool maybe_calculate_input(unsigned long *result);	// check for & calculate positive integer input
-							// calculates simply left to right
+  bool get_numeric_input(unsigned long *result);	// if there's a number, read it  (only used internally)	// OBSOLETE?:
+  bool maybe_calculate_input(unsigned long *result);	// check for & calculate positive integer input		// OBSOLETE?:
+  long numeric_input(long default_value);			// read a number from the buffer
+  bool get_signed_number(signed long *input_value);		// check for signed number, read it
+  signed long calculate_input(signed long default_value);	// calculating replacement for numeric_input()
+								// calculates simply left to right
 
   bool string_match(const char *test_str);			// c-style character string
 //  bool string_match(const String test_str);			// c++ String

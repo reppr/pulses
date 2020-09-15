@@ -3,6 +3,8 @@
   temporary test menu UI during development
 */
 
+MENU.outln(MENU.calculate_input(100));
+break;
 
 #if defined USE_MONOCHROME_DISPLAY
 MENU.outln(F("TODO: MONOCHROME FIX?"));

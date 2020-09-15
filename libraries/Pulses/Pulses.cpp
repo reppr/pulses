@@ -1861,12 +1861,6 @@ void Pulses::show_selected_mask() {
 } // show_selected_mask()
 
 
-void Pulses::maybe_show_selected_mask() {
-  if ((*MENU).maybe_display_more())
-    show_selected_mask();
-}
-
-
 void Pulses::show_time_unit() {
   (*MENU).out(F("TIME_U:\t"));
   (*MENU).out(time_unit);

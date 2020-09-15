@@ -356,7 +356,7 @@ bool Menu::maybe_display_more(unsigned char verbosity_level) {	// avoid too much
   }
 
 
-  bool Menu::get_numeric_input(unsigned long *result) {	// if there's a number, read it
+  bool Menu::get_numeric_input(unsigned long *result) {	// if there's a number, read it	// OBSOLETE? see: get_signed_number
     char token = peek();
     if (!is_chiffre(token))	// no numeric input, return false
       return false;
@@ -373,7 +373,7 @@ bool Menu::maybe_display_more(unsigned char verbosity_level) {	// avoid too much
   }
 
 
-  bool Menu::maybe_calculate_input(unsigned long *result) {
+bool Menu::maybe_calculate_input(unsigned long *result) {	// OBSOLETE?: see: signed version calculate_input()
     /* check for & calculate integer input
        calculates simply left to right  */
     unsigned long scratch;	// see recursion
@@ -478,7 +478,7 @@ bool Menu::maybe_display_more(unsigned char verbosity_level) {	// avoid too much
     }
 
     return is_result;
-  }
+  } // maybe_calculate_input()
 
 /*
   bool Menu::string_match(const char * teststring)
@@ -1117,7 +1117,115 @@ long Menu::numeric_input(long default_value) {
     outln(F("number missing"));
   }
   return default_value;		// return default_value
-}
+} // numeric_input()
+
+
+bool Menu::get_signed_number(signed long *result) {	// if there's a number, read it
+  char token = peek();
+  long sign=1L;
+  if(token=='-') {		// '-' sign?
+    drop_input_token();
+    sign = -1L;
+    token = peek();
+  } else {
+    if(token=='+') {
+      drop_input_token();	// ignore '+' sign
+      token = peek();
+    }
+  }
+
+  if (!is_chiffre(token))	// no numeric input, return false
+    return false;
+
+  drop_input_token();
+  *result = token - '0';	// start with first chiffre
+
+  while (token=peek(), is_chiffre(token)) {
+    drop_input_token();
+    *result *= 10;
+    *result += token -'0';
+  }
+
+  *result *= sign;
+  return true;		// all numeric input was read
+} // get_signed_number()
+
+
+signed long Menu::calculate_input(signed long default_value) {
+  static bool top_level=true;
+  long result = default_value;
+  long input_value;
+  long sign=1L;
+
+  skip_spaces();
+  char token = peek();
+
+  bool ok=true;
+  if(top_level && ((token=='-') || is_numeric())) {  // starting '-<nnn>' is seen as *negative number*, *not* subtraction
+    top_level=false;
+    if(ok = get_signed_number(&input_value))
+      result = input_value;
+  }
+
+  while(ok && is_operator(token = peek()))
+    {
+      drop_input_token();
+      switch(token) {
+      case '*':
+	if(ok = get_signed_number(&input_value))
+	  result *= input_value;
+	break;
+      case '/':
+	if(ok = get_signed_number(&input_value))
+	  result /= input_value;
+	break;
+      case '+':
+	if(ok = get_signed_number(&input_value))
+	  result += input_value;
+	break;
+      case '-':
+	if(ok = get_signed_number(&input_value))
+	  result -= input_value;
+	break;
+      case '%':
+	if(ok = get_signed_number(&input_value))
+	  result %= input_value;
+	break;
+      case '&':
+	if(ok = get_signed_number(&input_value))
+	  result &= input_value;
+	break;
+      case '|':
+	if(ok = get_signed_number(&input_value))
+	  result |= input_value;
+	break;
+      case '^':
+	if(ok = get_signed_number(&input_value))
+	  result ^= input_value;
+	break;
+      case '!':
+	if(ok = get_signed_number(&input_value)) {
+	  if(input_value >= 0 ) {
+	    result = 1L;
+	    for(long i= input_value; i>0; i--)
+	      result *= i;
+	  }
+	}
+	break;
+
+      default:
+	error_ln(F("unknown operator"));
+	top_level=true;	// prepare for next run
+	return 0L;
+      }
+    } // (while operator and ok=input)
+
+  if(! ok)
+    error_ln(F("number missing"));
+
+  top_level=true;	// prepare for next run
+  return result;
+} // calculate_input()
 
 
 /* drop leading numeric sequence from the buffer:		*/

@@ -38,7 +38,6 @@ highest_available_pulse	KEYWORD2
 init_pulse	KEYWORD2
 init_pulses	KEYWORD2
 init_time	KEYWORD2
-maybe_show_selected_mask	KEYWORD2
 mul_time	KEYWORD2
 multiply_period	KEYWORD2
 play_icode	KEYWORD2

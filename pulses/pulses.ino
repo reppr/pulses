@@ -5192,8 +5192,9 @@ int s2=0;
 #endif
 
 bool menu_pulses_reaction(char menu_input) {
-  static unsigned long input_value=0;
-  static unsigned long calc_result=0;
+  static unsigned long input_value=0;	// static???	// TODO: OBSOLETE? see: new_input
+  static long calc_result=0;
+  long new_input;	// static ???
   pulse_time_t now, time_scratch;
   pulses_mask_t bitmask;
   char next_token;	// for multichar commands
@@ -5220,37 +5221,36 @@ bool menu_pulses_reaction(char menu_input) {
 
     case 'M':  case 'm':	// '.M<num>' select HEX 16bit mask
       MENU.drop_input_token();
-      input_value = PULSES.hex_input_mask_index;
-      if (MENU.maybe_calculate_input(&input_value)) {
-	if (input_value >= 0) {
-	  if (input_value < (PULSES.selection_masks() * sizeof(pulses_mask_t) / 2)) {	// two bytes 16bit hex masks
-	    PULSES.hex_input_mask_index = input_value;
-	    PULSES.maybe_show_selected_mask();
-	  } else
-	    MENU.outln_invalid();
-	} else
+      new_input = MENU.calculate_input(PULSES.hex_input_mask_index);
+      if (new_input >= 0) {
+	if (new_input < (PULSES.selection_masks() * sizeof(pulses_mask_t) / 2))	// two bytes 16bit hex masks
+	  PULSES.hex_input_mask_index = new_input;
+	else
 	  MENU.outln_invalid();
-      }
+      } else
+	MENU.outln_invalid();
+
+      PULSES.show_selected_mask();
       break;
 
     case '~':	// '.~' invert destination selection
       MENU.drop_input_token();
       for (int pulse=0; pulse<PL_MAX; pulse++)
 	PULSES.toggle_selection(pulse);
-      PULSES.maybe_show_selected_mask();
+      PULSES.show_selected_mask();
       break;
 
     case 'x':	// '.x' clear destination selection	also on 'x'
       MENU.drop_input_token();
       PULSES.clear_selection();
-      PULSES.maybe_show_selected_mask();
+      PULSES.show_selected_mask();
       break;
 
     case 'a':	// '.a' select_flagged
       MENU.drop_input_token();
       select_flagged();
 
-      PULSES.maybe_show_selected_mask();
+      PULSES.show_selected_mask();
       if (DO_or_maybe_display(VERBOSITY_LOWEST))
 	selected_or_flagged_pulses_info_lines();
       break;
@@ -5258,7 +5258,7 @@ bool menu_pulses_reaction(char menu_input) {
     case 'A':	// '.A' select destination: *all* pulses
       MENU.drop_input_token();
       select_all();
-      PULSES.maybe_show_selected_mask();
+      PULSES.show_selected_mask();
       if (DO_or_maybe_display(VERBOSITY_LOWEST))
 	selected_or_flagged_pulses_info_lines();
       break;
@@ -5277,7 +5277,7 @@ bool menu_pulses_reaction(char menu_input) {
 	if(PULSES.pulses[pulse].flags && (PULSES.pulses[pulse].flags != SCRATCH))
 	  PULSES.select_pulse(pulse);
 
-      PULSES.maybe_show_selected_mask();
+      PULSES.show_selected_mask();
       if (DO_or_maybe_display(VERBOSITY_LOWEST))
 	selected_or_flagged_pulses_info_lines();
       break;
@@ -5285,7 +5285,7 @@ bool menu_pulses_reaction(char menu_input) {
     case 'L':	// '.L' select destination: all alive pulses
       MENU.drop_input_token();
       select_alive();
-      PULSES.maybe_show_selected_mask();
+      PULSES.show_selected_mask();
       if (DO_or_maybe_display(VERBOSITY_LOWEST))
 	selected_or_flagged_pulses_info_lines();
       break;
@@ -5358,7 +5358,7 @@ bool menu_pulses_reaction(char menu_input) {
       // existing pulse:
       PULSES.toggle_selection(menu_input);
 
-      PULSES.maybe_show_selected_mask();
+      PULSES.show_selected_mask();
       break;
 
     case JIFFLE_ENTRY_UNTIL_ZERO_MODE:	// first chiffre already seen
@@ -5390,7 +5390,7 @@ bool menu_pulses_reaction(char menu_input) {
       // existing pulse:
       PULSES.toggle_selection(menu_input);
 
-      PULSES.maybe_show_selected_mask();
+      PULSES.show_selected_mask();
       break;
 
     default:	// 'a' to 'f' keys not used in other menu modes
@@ -5441,9 +5441,10 @@ bool menu_pulses_reaction(char menu_input) {
   case 'u':	// PULSES.time_unit calculate or else select time_unit as destination
     {
       unsigned long input_value=PULSES.time_unit;
-      if (MENU.maybe_calculate_input(&input_value)) {
-	MENU.out("==> "), MENU.outln(input_value);
-	PULSES.time_unit=input_value;
+      if (MENU.maybe_calculate_input(&input_value)) {	// TODO: does not work...
+	PULSES.time_unit = input_value;
+	MENU.out(F("time_unit "));
+	MENU.outln(PULSES.time_unit);
       }
       else
 	dest = CODE_TIME_UNIT;		// FIXME: obsolete?
@@ -5452,7 +5453,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'x':	// clear destination selection  same as '.x'
     PULSES.clear_selection();
-    PULSES.maybe_show_selected_mask();
+    PULSES.show_selected_mask();
     break;
 
   case 's':	// switch pulse ACTIVE on/off
@@ -5481,15 +5482,13 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 
   case 'S':	// enter sync
-    if (MENU.maybe_calculate_input(&input_value)) {
-      if (input_value>=0 ) {
-	musicBoxConf.sync = input_value;
-	sync_user_selected = true;
-	not_a_preset();
-      }
-      else
-	MENU.out(F("positive integer only"));
-    }
+    new_input = MENU.calculate_input(musicBoxConf.sync);
+    if (new_input>=0 ) {
+      musicBoxConf.sync = new_input;
+      sync_user_selected = true;
+      not_a_preset();
+    } else
+      MENU.out(F("positive integer only\t"));
 
     if (DO_or_maybe_display(VERBOSITY_LOWEST)) {
       char txt[9]= {0};
@@ -5519,6 +5518,7 @@ bool menu_pulses_reaction(char menu_input) {
 */
   case 'M':	// selected_toggle_actions()	was: "mute", see 'N' as alternative
     muting_actions_UI();
+    break;
 
   case '*':	// multiply destination
     if(MENU.peek() != '!') {		// '*' (*not* '*!<num>' set multiplier)
@@ -5864,7 +5864,7 @@ bool menu_pulses_reaction(char menu_input) {
     input_value = (unsigned long) PULSES.tuning;
     if (MENU.maybe_calculate_input(&input_value))	{	// T1 sets tuning to 1.0
       if (input_value > 0)
-	PULSES.tuning = (double) input_value;
+	PULSES.tuning = (double) input_value;	// TODO: (double) input, (double) calculations
       tuning_info();
       MENU.ln();
     } else {	// toggle TUNED on selected pulses
@@ -5944,8 +5944,8 @@ bool menu_pulses_reaction(char menu_input) {
     jiffle_write_index=0;	// ################ FIXME: ################
     break;
 
-  case 'C':	// Calculator simply *left to right*	*positive integers only*
-    MENU.maybe_calculate_input(&calc_result);
+  case 'C':	// Calculator simply *left to right*
+    calc_result = MENU.calculate_input(calc_result);
 
     MENU.out(F("Calc => ")), MENU.outln(calc_result);
     if (calc_result > 1) {	// show prime factors if(result >= 2)
@@ -5983,9 +5983,9 @@ bool menu_pulses_reaction(char menu_input) {
     if(MENU.check_next('V')) {	// 'VV' PULSES.voices
       MENU.out(F("voices "));
 
-      input_value = MENU.numeric_input(voices);
-      if (input_value>0 && input_value<=PL_MAX) {
-	voices = input_value;
+      new_input = MENU.calculate_input(voices);
+      if (new_input>0 && new_input<=PL_MAX) {
+	voices = new_input;
 //	if (voices>GPIO_PINS) {			// TODO: OBSOLETE?
 //	  if (DO_or_maybe_display(VERBOSITY_LOWEST))
 //	    MENU.outln(F("WARNING: voices > gpio"));
@@ -5998,7 +5998,7 @@ bool menu_pulses_reaction(char menu_input) {
 
       MENU.outln(voices);
 
-      if(MENU.peek()=='!')
+      if(MENU.check_next('!'))
 	PULSES.select_n(voices);
     } else { // bare 'V' and 'VE' (*NOT* 'VVx')	PULSES.volume
 
@@ -6009,11 +6009,12 @@ bool menu_pulses_reaction(char menu_input) {
 	  PULSES.volume *= 0.7;
 	}
       else {			// 'V<nnn>' PULSES.volume (0..255)
-	unsigned long inp = (PULSES.volume*255 + 0.5);  // given as 0...255	// TODO: float input
-	MENU.maybe_calculate_input(&inp);
+	long inp = MENU.calculate_input((long) (PULSES.volume*255 + 0.5));  // given as 0...255	// TODO: float input
 	input_value = (int) inp;
 	if(input_value > 255)
 	  input_value = 255;
+	if(input_value < 0)
+	  input_value = 0;
 	if(input_value >=0)
 	  PULSES.volume = ((float) input_value) / 255.0;
       }
@@ -6029,8 +6030,7 @@ bool menu_pulses_reaction(char menu_input) {
       PULSES.show_action_flags(selected_actions);
       MENU.ln();
     } else {
-      // TODO: allow mnemonics ################
-      input_value = MENU.numeric_input(selected_actions);
+      input_value = MENU.numeric_input(selected_actions);      // TODO: allow mnemonics ################
       if (input_value != selected_actions)
 	selected_actions = input_value;
 

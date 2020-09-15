@@ -1229,7 +1229,7 @@ bool tuning_pitch_and_scale_UI() {
     MENU.out(F("set tuning to frequency in hertz "));
     {
       int hz = 0;
-      if(hz = MENU.numeric_input(0)) {
+      if(hz = MENU.numeric_input(0)) {	// TODO: float input
 	musicBoxConf.pitch = {1, hz};
 	pitch_user_selected = true;
 	MENU.out(hz);
@@ -1367,6 +1367,15 @@ void muting_actions_UI_line() {
 void muting_actions_UI() {	// 'M' already received   action muting UI
   char next_letter;
 
+  switch (MENU.peek()) {
+  case '?':
+    MENU.drop_input_token();
+  case EOF8:
+    noAction_flags_line();
+    muting_actions_UI_line();
+    return;
+  }
+
   while (EOF8 != (next_letter = MENU.peek())) {
     magic_autochanges = false;	// brute force...
     // TODO: switch ui menu input mode: chiffres are note position toggle *not* presets
@@ -1439,7 +1448,8 @@ void muting_actions_UI() {	// 'M' already received   action muting UI
       MENU.outln(F("mute toggle LOW"));
       break;
 
-    case 'X':	// 'MX'  muting toggle selected
+    case 'X':	// 'MX' = 'M~'  muting toggle selected
+    case '~':	// 'MX' = 'M~'  muting toggle selected
       MENU.drop_input_token();
       PULSES.selected_toggle_no_actions();
 
@@ -3603,7 +3613,7 @@ bool load_preset_and_start(short preset_new, bool start=true) {	// returns error
 } // load_preset_and_start()
 
 void input_preset_and_start() {	// factored out UI component	// TODO: sets preset, how to unset?	################
-  int input_value;
+  long new_input;
   bool load=false;
 
   MENU.ln();
@@ -3625,8 +3635,8 @@ void input_preset_and_start() {	// factored out UI component	// TODO: sets prese
 
   default:	// numeric input (expected)
     if(MENU.is_numeric()) {
-      if(input_value = MENU.numeric_input(0)) {
-	musicBoxConf.preset = input_value;
+      if(new_input = MENU.numeric_input(0)) {
+	musicBoxConf.preset = new_input;
 	load = true;
       } else
 	play_random_preset();	// selecting zero plays a *random* preset
@@ -3687,6 +3697,7 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
   bool do_next_letter=true;
   bool recognised = false;
   bool was_active = accGyro_is_active;
+  long new_input;
 
   if(MENU.peek() == EOF8) {	// bare 'U'	switch_activity
     switch_activity = true;
@@ -3791,9 +3802,9 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
       case 'P':	// 'UP' UI presets
 	MENU.drop_input_token();
 	if(MENU.is_numeric()){
-	  int input_value = MENU.numeric_input(-1);
-	  if((input_value >= 0) && (input_value < ACCGYR_PRES_MODE_MAX))
-	    accGyro_preset = input_value;
+	  new_input = MENU.numeric_input(-1);
+	  if((new_input >= 0) && (new_input < ACCGYR_PRES_MODE_MAX))
+	    accGyro_preset = new_input;
 	  if(accGyro_preset==0) {
 	    display_accGyro_raw=true;	// (redundant)	cannot be switched off (debugging only)
 	    accGyro_is_active = true;
@@ -3915,17 +3926,10 @@ bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: AD
 
 
 bool musicBox_reaction(char token) {
-  int input_value, cnt;
+  int cnt;
+  signed long new_input;
   char next_token;
   pulse_time_t T_scratch;
-
-//  // check for numeric preset input first	(OVERRIDES pulse selection in pulses)
-//  MENU.restore_input_token();
-//  if(MENU.is_numeric()) {
-//    input_preset_and_start();	// read preset number
-//    return true;		// early exit
-//  } else
-//    MENU.drop_input_token();	// restore state as usual, token is read
 
   switch(token) {
   case '?': // musicBox_display();
@@ -3988,9 +3992,9 @@ bool musicBox_reaction(char token) {
       case 'R':  // 'EFR' restart()
 	MENU.drop_input_token();
 	musicBox_when_done=&restart;
-	input_value = MENU.numeric_input(musicBox_pause_seconds);  // 'EFr<nn>' set musicBox_pause_seconds
-	if(input_value >= 0)
-	  musicBox_pause_seconds = input_value;
+	new_input = MENU.calculate_input(musicBox_pause_seconds);  // 'EFr<nn>' set musicBox_pause_seconds
+	if(new_input >= 0)
+	  musicBox_pause_seconds = new_input;
 	break;
       case 'U':  // 'EFU' user()
 	MENU.drop_input_token();
@@ -4009,14 +4013,18 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'd': // soft_end_days_to_live
-    input_value = MENU.numeric_input(MagicConf.soft_end_days_to_live);
-    if(input_value >= 0)
-      MagicConf.soft_end_days_to_live = input_value;
+    new_input = MENU.calculate_input(MagicConf.soft_end_days_to_live);
+    if(new_input >= 0)
+      MagicConf.soft_end_days_to_live = (short) new_input;
+    MENU.out(F("end_days_to_live "));
+    MENU.outln(MagicConf.soft_end_days_to_live);
     break;
   case 'l': // soft_end_survive_level
-    input_value = MENU.numeric_input(MagicConf.soft_end_survive_level);
-    if(input_value >= 0)
-      MagicConf.soft_end_survive_level = input_value;
+    new_input = MENU.calculate_input(MagicConf.soft_end_survive_level);
+    if(new_input >= 0)
+      MagicConf.soft_end_survive_level = new_input;
+    MENU.out(F("end_survive_level "));
+    MENU.outln(MagicConf.soft_end_survive_level);
     break;
 
   case 'm': // mode
@@ -4042,7 +4050,9 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'w': // soft_cleanup_minimal_fraction_weighting
-    MagicConf.soft_cleanup_minimal_fraction_weighting = MENU.numeric_input(MagicConf.soft_cleanup_minimal_fraction_weighting);
+    MagicConf.soft_cleanup_minimal_fraction_weighting = MENU.calculate_input(MagicConf.soft_cleanup_minimal_fraction_weighting);
+    MENU.out(F("cleanup minimal weighting "));
+    MENU.outln(MagicConf.soft_cleanup_minimal_fraction_weighting);
     break;
 
   case 'H': // HARD_END_playing(true);
@@ -4115,15 +4125,15 @@ bool musicBox_reaction(char token) {
 	   UI 1 means esp_now_pulses_known_peers[0]  == broadcast
 	   UI 2 means first other			   individual "2"
 	  */
-	  input_value = MENU.numeric_input(0);		// default to broadcast
-	  if(input_value == 0) {
+	  new_input = MENU.numeric_input(0);		// default to broadcast
+	  if(new_input == 0) {
 	    esp_now_send2_mac_p = known_peers_mac_p;	// NULL == *all known* peers
 	    MENU.outln(F("will send to ALL KNOWN peers"));
 
-	  } else if((input_value <= ESP_NOW_MAX_TOTAL_PEER_NUM) && (input_value > 0)) {
-	    esp_now_send2_mac_p = esp_now_pulses_known_peers[input_value -1 ].mac_addr;
+	  } else if((new_input <= ESP_NOW_MAX_TOTAL_PEER_NUM) && (new_input > 0)) {
+	    esp_now_send2_mac_p = esp_now_pulses_known_peers[new_input -1 ].mac_addr;
 	    MENU.out(F("will send to "));
-	    MENU.out_IstrI(esp_now_pulses_known_peers[input_value -1].preName);
+	    MENU.out_IstrI(esp_now_pulses_known_peers[new_input -1].preName);
 	    MENU.ln();
 	  } else {
 	    MENU.outln_invalid();
@@ -4204,10 +4214,11 @@ bool musicBox_reaction(char token) {
     break;
 
   case '&': // TODO: review, fix cycle_slices
-    if((input_value = MENU.numeric_input(cycle_slices) > 0)) {
-      set_cycle_slice_number(input_value);
+    if((new_input = MENU.calculate_input(cycle_slices)) > 0) {
+      set_cycle_slice_number(new_input);
       PULSES.pulses[musicBox_butler_i].period = slice_tick_period;	// a bit adventurous ;)
-      // TODO: feedback
+      MENU.out(F("cycle_slices "));
+      MENU.outln(cycle_slices);
     }
     break;
 
@@ -4380,14 +4391,18 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'W':
-    if(MENU.is_numeric()) {	// "P<number>" wait <number> seconds before starting musicBox, *see below*
-      musicBox_short_info();
-      input_value = MENU.numeric_input(-1);	// *do* read number anyway
+    if(MENU.is_numeric()) {	// "W<number>" wait <number> seconds before starting musicBox, *see below*
+      new_input = MENU.numeric_input(-1);	// *do* read number anyway
       if(MusicBoxState == OFF) {	// act *only* if musicBox is *not* running
-	if(input_value > 0)			// delay(sic!) *only* if positive
-	  delay(input_value * 1000);		// FIXME:  quickHACK: using delay as nothing is running, *probably* ;)
+	if(new_input > 0) {			// delay(sic!) *only* if positive
+	  musicBox_short_info();
+	  MENU.out(F("delay, then start "));
+	  MENU.outln(new_input);
+	  delay(new_input * 1000);		// FIXME:  quickHACK: using delay as nothing is running, *probably* ;)
+	}
 	start_musicBox();
-      } // ignore if musicBox is running, hmm (there *could* be a use case while it is running...)
+      } else	 // ignore if musicBox is running, hmm (there *could* be a use case while it is running...)
+	MENU.outln(F("is PLAYING, ignored"));
     } // not numeric, ignore
     break;
 
@@ -4510,15 +4525,15 @@ bool musicBox_reaction(char token) {
 
   case '|':	// '|' stack_sync_slices	(and '|b' base_pulse)
     if(MENU.check_next('b')) {		// '|b' base_pulse
-      input_value = MENU.numeric_input(musicBoxConf.base_pulse);
-      if(input_value >= 0 && input_value < PL_MAX) {
-	musicBoxConf.base_pulse = input_value;
+      new_input = MENU.calculate_input(musicBoxConf.base_pulse);
+      if(new_input >= 0 && new_input < PL_MAX) {
+	musicBoxConf.base_pulse = new_input;
 	stack_sync_user_selected=true;	// RETHINK: maybe, maybe not?
 	not_a_preset();
       }
     } else {	// bare '|'
-      short input_value = MENU.numeric_input(musicBoxConf.stack_sync_slices);
-      musicBoxConf.stack_sync_slices = input_value;
+      new_input = MENU.calculate_input(musicBoxConf.stack_sync_slices);
+      musicBoxConf.stack_sync_slices = (short) new_input;
       stack_sync_user_selected=true;
       not_a_preset();
     }
