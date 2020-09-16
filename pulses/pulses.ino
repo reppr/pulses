@@ -5441,7 +5441,7 @@ bool menu_pulses_reaction(char menu_input) {
   case 'u':	// PULSES.time_unit calculate or else select time_unit as destination
     {
       unsigned long input_value=PULSES.time_unit;
-      if (MENU.maybe_calculate_input(&input_value)) {	// TODO: does not work...
+      if (MENU.maybe_calculate_input(&input_value)) {
 	PULSES.time_unit = input_value;
 	MENU.out(F("time_unit "));
 	MENU.outln(PULSES.time_unit);

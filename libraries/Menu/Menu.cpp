@@ -128,7 +128,7 @@ char Menu::cb_read() {
 
     int value = peek();
     out(F("\n  char:\t\t"));
-    if (value != -1) {
+    if (value != EOF8) {
       out(value);
       out(F("\t"));
       out((char) value);
@@ -384,7 +384,7 @@ bool Menu::maybe_calculate_input(unsigned long *result) {	// OBSOLETE?: see: sig
       is_result = true;
 
       token = peek();
-      if (token == -1)
+      if (token == EOF8)
 	return true;
     }
 
@@ -398,7 +398,7 @@ bool Menu::maybe_calculate_input(unsigned long *result) {	// OBSOLETE?: see: sig
 	  scratch *= *result;
 	  *result = scratch;
 	}
-	if (peek()==-1)
+	if (peek()==EOF8)
 	  return true;
 	else
 	  return maybe_calculate_input(result);	// recurse and return
@@ -408,7 +408,7 @@ bool Menu::maybe_calculate_input(unsigned long *result) {	// OBSOLETE?: see: sig
 	  scratch /= *result;
 	  *result = scratch;
 	}
-	if (peek()==-1)
+	if (peek()==EOF8)
 	  return true;
 	else
 	  return maybe_calculate_input(result);	// recurse and return
@@ -418,7 +418,7 @@ bool Menu::maybe_calculate_input(unsigned long *result) {	// OBSOLETE?: see: sig
 	  scratch += *result;
 	  *result = scratch;
 	}
-	if (peek()==-1)
+	if (peek()==EOF8)
 	  return true;
 	else
 	  return maybe_calculate_input(result);	// recurse and return
@@ -428,7 +428,7 @@ bool Menu::maybe_calculate_input(unsigned long *result) {	// OBSOLETE?: see: sig
 	  scratch -= *result;
 	  *result = scratch;
 	}
-	if (peek()==-1)
+	if (peek()==EOF8)
 	  return true;
 	else
 	  return maybe_calculate_input(result);	// recurse and return
@@ -1090,7 +1090,7 @@ long Menu::numeric_input(long default_value) {
   case '-':			// switch sign
     sign = -1;			// then continue like '+'
   case '+':
-      cb_read();		// remove sign from buffer
+    cb_read();			// remove sign from buffer
     break;
   }
   if (cb_count == 0)
