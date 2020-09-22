@@ -36,7 +36,7 @@
 typedef int icode_t;
 
 //#include <limits.h>
-enum icode {	// names are all four letter words ?	// maybe 8?
+enum icode {	// names are all four letter words ?	// maybe 8? 12? 16?(15?)
   KILL=INT_MIN,
   i2cW,		// i2c write, based on pulses[pulse].i2c_addr and pulses[pulse].i2c_pin
   doA2,		// function A, taking 2 int parameters
@@ -50,6 +50,20 @@ enum icode {	// names are all four letter words ?	// maybe 8?
   N_WHO,	//	//(bare)  WHO is here?
   N_ID,		// peer_ID_t my_IDENTITY	share personal data
   N_ST,		// (bare)   receiver sets sync to its individual time slice IDENTITY.esp_now_time_slice;
+
+  JIFFLE_MODE,	// (bare)   (default icode_mode)
+  MELODY_MODE,	// (bare)
+  NOTE_scaling,	// 1 int parameter, default 4096
+  NOTE_4,	// (bare)	sets (legato) note length to NOTE_div / 4	i.e. 4096/4 = 1024
+  NOTE_8,	// (bare)	sets (legato) note length to NOTE_div / 8	i.e. 4096/8 = 512
+  NOTE_16,	// (bare)	sets (legato) note length to NOTE_div / 16	i.e. 4096/16 = 256
+  NOTE_32,	// (bare)	sets (legato) note length to NOTE_div / 32	i.e. 4096/32 = 128
+  NOTE_64,	// (bare)	sets (legato) note length to NOTE_div / 64	i.e. 4096/64 = 64
+  NOTE_128,	// (bare)	sets (legato) note length to NOTE_div / 128	i.e. 4096/128 = 32
+  NOTE_MulDiv,  // sets note length i.e. 3/8 * NOTE_scaling
+  STACCATO,
+  PORTATO,
+  LEGATO,
 };
 
 #ifndef pulse_flags_t
@@ -120,7 +134,6 @@ struct pulse_t {
 #ifdef IMPLEMENT_TUNING		// implies floating point
   pulse_time_t other_time;	// used by tuning
 #endif
-
 
   pulse_flags_t flags;
 
@@ -232,12 +245,39 @@ struct pulse_t {
     used by icode_player as array index
   */
 
+  int icode_mode;
+  /*
+    a kind of running mode for treating bare numbers inside iCode
+      JIFFLE_MODE is default
+        zero is considered to be equal to JIFFLE_MODE
+	triplets mul, div, cnt
+      MELODY_MODE
+        notes relative to basic pulse tuning
+  */
+
   int other_pulse;
   /*
     used by seed_icode_player()
 
-    in a seeder pulse, the other_pulse is the child,
+    in a seeder pulse, the other_pulse is the child,	(unused)
     in the child, it is the parent
+  */
+
+  unsigned short note_div_scale;	// default 4096  make it 2^x
+  /*
+    in MELODY_MODE note_div_scale vibrations give a full note (defaults to 4096)
+    (could also be used as a scale in JIFFLE_MODE)
+  */
+
+  unsigned short note_length;	// total length in vibrations *including* the break between notes (i.e. staccato)
+  /*
+    in MELODY_MODE note_length vibrations in a note, like 4096/4
+  */
+
+  uint8_t note_break_mul8;
+  uint8_t note_break_div8;
+  /*
+    in MELODY_MODE (note_break_mul8/note_break_div8)*note_length vibrations omitted after a note, like 4096/4
   */
 
 #if defined USE_i2c
@@ -454,6 +494,14 @@ class Pulses {
   void show_selected_mask();				// show mask of selected pulses
   void show_time_unit();
   void set_time_unit_and_inform(unsigned long new_value);
+
+  void set_primary_block_bounds(uint16_t new_lowest_primary, uint16_t new_highest_primary) {	// needed for MELODY_MODE
+    lowest_primary = new_lowest_primary;
+    highest_primary = new_highest_primary;
+  } // inlined
+  uint16_t lowest_primary;	// needed for MELODY_MODE
+  uint16_t highest_primary;	// needed for MELODY_MODE
+  uint16_t steps_in_octave;	// needed for MELODY_MODE
 
   unsigned int get_pl_max() { return pl_max; }	// inlined
 

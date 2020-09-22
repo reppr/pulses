@@ -203,12 +203,17 @@ DB_info(JIFFLES);
 init_DB(iCODEs, sizeof(iCODEs), "iCODEs");
 REGISTER_iCODE(d4096_1024_i2cLED);		// 0
 REGISTER_iCODE(d4096_1024_icode_jiff);
+REGISTER_iCODE(melody0);
 
+/*
 #if defined USE_i2c
-  select_in(iCODEs, (unsigned int *) d4096_1024_i2cLED);		// default iCODE LED spots on i2c
+  select_in(iCODEs, (unsigned int *) d4096_1024_i2cLED);	// default iCODE LED spots on i2c
 #else
   select_in(iCODEs, (unsigned int *) d4096_1024_icode_jiff);	// default iCODE, jiffling, *no* i2c
 #endif
+*/
+
+select_in(iCODEs, (unsigned int *) melody0);	// MELODY_MODE testing
 
 include_DB_in_DB(iCODEs, JIFFLES, 1);
 

@@ -678,3 +678,5 @@ input_value = MENU.numeric_input(selected_actions);      // TODO: allow mnemonic
 
 short primary_count=0;	// TODO: ################ voices vs primary_count ???
 short voices=0;		// TODO: not used yet	################		################ voices vs primary_count ???
+
+s/savety/safety/

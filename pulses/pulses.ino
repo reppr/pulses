@@ -338,7 +338,7 @@ typedef struct musicBox_conf_t {
 
   Harmonical::fraction_t pitch = {1,1};
 
-  short steps_in_octave=0;	// like  '5' for pentatonic  '7' for heptatonic aka diatonic scales
+  uint16_t steps_in_octave=0;	// like  '5' for pentatonic  '7' for heptatonic aka diatonic scales
   short reserved34=0;
 
   int sync=1;			// old default, seems still ok ;)
@@ -491,6 +491,7 @@ void seed_icode_player(int seeder_pulse) {	// as payload for seeder
     */
     PULSES.set_icode_p(dest_pulse, PULSES.pulses[seeder_pulse].icode_p, true);	// set (and activate) icode
     PULSES.pulses[dest_pulse].base_period = PULSES.pulses[seeder_pulse].period;
+    PULSES.pulses[dest_pulse].other_pulse = seeder_pulse;
     PULSES.pulses[dest_pulse].action_flags = PULSES.pulses[seeder_pulse].dest_action_flags;
     if(PULSES.pulses[seeder_pulse].flags & HAS_GPIO)		// if the seeder has gpio,
       PULSES.set_gpio(dest_pulse, PULSES.pulses[seeder_pulse].gpio);	// copy gpio
@@ -507,7 +508,7 @@ void seed_icode_player(int seeder_pulse) {	// as payload for seeder
 #endif
 
   }
-}
+} // seed_icode_player()
 
 /* **************************************************************** */
 // scales
@@ -3258,8 +3259,7 @@ int tune_selected_2_scale_limited(Harmonical::fraction_t scaling, unsigned int *
 	if (PULSES.pulse_is_selected(pulse)) {
 	  if ((multiplier = scale[note*2]) == 0) {	// next octave?
 	    if(musicBoxConf.steps_in_octave==0)		// after the *first* octave save musicBoxConf.steps_in_octave
-	      musicBoxConf.steps_in_octave = note;
-
+	      PULSES.steps_in_octave = musicBoxConf.steps_in_octave = note;	// PULSES needs to know for MELODY_MODE
 	    octave *= 2;	// one octave higher
 	    note = 0;	// restart at first note
 	    multiplier = scale[note*2];
@@ -4097,11 +4097,11 @@ int init_jiffle(unsigned int *jiffle, pulse_time_t when, pulse_time_t new_period
 }
 
 
-void do_throw_a_jiffle(int pulse) {		// for pulse_do
-  // pulses[pulse].data	= (unsigned int) jiffle;
+void do_throw_a_jiffle(int seeder_pulse) {		// for pulse_do
+  // pulses[seeder_pulse].data	= (unsigned int) jiffle;
 
   // start a new jiffling pulse now (next [pulse] is not yet updated):
-  unsigned int *this_jiff=(unsigned int *) PULSES.pulses[pulse].data;
+  unsigned int *this_jiff=(unsigned int *) PULSES.pulses[seeder_pulse].data;
 
   // check for empty jiffle first:
   bool has_data=true;
@@ -4110,13 +4110,14 @@ void do_throw_a_jiffle(int pulse) {		// for pulse_do
       has_data=false;
 
   if (has_data)	{ // there *is* jiffle data
-    int destination_pulse = init_jiffle((unsigned int *) PULSES.pulses[pulse].data,	\
-	      PULSES.pulses[pulse].next, PULSES.pulses[pulse].period, pulse);
+    int destination_pulse = init_jiffle((unsigned int *) PULSES.pulses[seeder_pulse].data,	\
+	      PULSES.pulses[seeder_pulse].next, PULSES.pulses[seeder_pulse].period, seeder_pulse);
     PULSES.pulses[destination_pulse].groups |= g_SECONDARY;
+    PULSES.pulses[destination_pulse].other_pulse = seeder_pulse;
 
 #if defined USE_RGB_LED_STRIP
-    if(PULSES.pulses[pulse].flags & HAS_RGB_LEDs) {
-      PULSES.set_rgb_led_string(destination_pulse, PULSES.pulses[pulse].rgb_string_idx, PULSES.pulses[pulse].rgb_pixel_idx);
+    if(PULSES.pulses[seeder_pulse].flags & HAS_RGB_LEDs) {
+      PULSES.set_rgb_led_string(destination_pulse, PULSES.pulses[seeder_pulse].rgb_string_idx, PULSES.pulses[seeder_pulse].rgb_pixel_idx);
     }
 #endif
 
@@ -6845,9 +6846,6 @@ bool menu_pulses_reaction(char menu_input) {
 	  PULSES.select_from_to(musicBoxConf.bass_pulses + musicBoxConf.middle_pulses -1, musicBoxConf.bass_pulses + musicBoxConf.middle_pulses + musicBoxConf.high_pulses -1);
 	  for(int pulse = musicBoxConf.bass_pulses + musicBoxConf.middle_pulses; pulse<voices; pulse++) {	// pulse[21] belongs to both groups
 	    en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL8, DACsq2);	// FIXME: use inbuilt click
-	    //	  PULSES.pulses[pulse].dest_action_flags |= (DACsq2);
-	    //	  PULSES.set_payload(pulse, &do_throw_a_jiffle);
-	    //	  PULSES.pulses[pulse].data = (unsigned int) jiffle;
 	  }
 	  // fix pulse[21] belonging to both groups
 	  PULSES.pulses[musicBoxConf.bass_pulses + musicBoxConf.middle_pulses - 1].dest_action_flags |= DACsq2;

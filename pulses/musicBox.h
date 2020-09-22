@@ -452,7 +452,9 @@ void set_primary_block_bounds() {	// remember where the primary block starts and
     }
   }
 
- if(MENU.verbosity >= VERBOSITY_MORE) {
+  PULSES.set_primary_block_bounds(musicBoxConf.lowest_primary, musicBoxConf.highest_primary);	// needed for MELODY_MODE
+
+  if(MENU.verbosity >= VERBOSITY_MORE) {
     MENU.out(musicBoxConf.primary_count);
     if(musicBoxConf.primary_count) {
       MENU.out(" primaries from ");

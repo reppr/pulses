@@ -22,7 +22,14 @@ void display_type_sizes() {
   MENU.out(F("peer_ID_t\t"));
   MENU.outln(sizeof(peer_ID_t));
 #endif
-}
+
+  MENU.out(F("pulse_t\t\t"));
+  MENU.outln(sizeof(pulse_t));
+
+  MENU.out(F("pulse_time_t\t"));
+  MENU.outln(sizeof(pulse_time_t));
+} // display_type_sizes()
+
 
 void cpp_info_display() {
 //  bool dummybool[8];

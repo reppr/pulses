@@ -64,6 +64,9 @@ set_payload	KEYWORD2
 set_payload_with_pin	KEYWORD2
 set_rgb_led_string	KEYWORD2
 set_time_unit_and_inform	KEYWORD2
+set_primary_block_bounds	KEYWORD2
+lowest_primary	KEYWORD2
+highest_primary	KEYWORD2
 setup_pulse	KEYWORD2
 setup_pulse_synced	KEYWORD2
 show_action_flags	KEYWORD2

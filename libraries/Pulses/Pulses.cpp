@@ -111,7 +111,7 @@ pulse_time_t Pulses::INVALID_time() {
   return (pulse_time_t) 1.7E+308;
 }
 
-#else 					// use old style int overflow time type
+#else					// use old style int overflow time type
 pulse_time_t Pulses::INVALID_time() {
   pulse_time_t invalid_time;
   invalid_time.time=0;
@@ -532,7 +532,7 @@ void Pulses::wake_pulse(int pulse) {
 #endif // old int overflow style
 
   if (pulses[pulse].flags & COUNTED) {	// COUNTED pulse && end reached?
-    if(--pulses[pulse].remaining < 1) {		// END REACHED with 0,	(below just as savety net ;)
+    if(--pulses[pulse].remaining < 1) {		// END REACHED with 0,	(below just as safety net ;)
       if (pulses[pulse].flags & DO_NOT_DELETE)	//   yes: DO_NOT_DELETE?
 	pulses[pulse].flags &= ~ACTIVE;		//     yes: just deactivate
       else
@@ -1364,10 +1364,71 @@ void Pulses::show_icode_mnemonic(icode_t icode) {
   case DONE:
     (*MENU).out(F("DONE"));
     break;
+  case PRES:
+    (*MENU).out(F("PRES"));
+    break;
+  case MACRO_NOW:
+    (*MENU).out(F("MACRO_NOW"));
+    break;
+  case N_HI:
+    (*MENU).out(F("N_HI"));
+    break;
+  case N_HO:
+    (*MENU).out(F("N_HO"));
+    break;
+  case N_WHO:
+    (*MENU).out(F("N_WHO"));
+    break;
+  case N_ID:
+    (*MENU).out(F("N_ID"));
+    break;
+  case N_ST:
+    (*MENU).out(F("N_ST"));
+    break;
+  case JIFFLE_MODE:
+    (*MENU).out(F("JIFFLE_MODE"));
+    break;
+  case MELODY_MODE:
+    (*MENU).out(F("MELODY_MODE"));
+    break;
+  case NOTE_scaling:
+    (*MENU).out(F("NOTE_scaling"));
+    break;
+  case NOTE_4:
+    (*MENU).out(F("NOTE_4"));
+    break;
+  case NOTE_8:
+    (*MENU).out(F("NOTE_8"));
+    break;
+  case NOTE_16:
+    (*MENU).out(F("NOTE_16"));
+    break;
+  case NOTE_32:
+    (*MENU).out(F("NOTE_32"));
+    break;
+  case NOTE_64:
+    (*MENU).out(F("NOTE_64"));
+    break;
+  case NOTE_128:
+    (*MENU).out(F("NOTE_128"));
+    break;
+  case NOTE_MulDiv:
+    (*MENU).out(F("NOTE_MulDiv"));
+    break;
+  case STACCATO:
+    (*MENU).out(F("STACCATO"));
+    break;
+  case PORTATO:
+    (*MENU).out(F("PORTATO"));
+    break;
+  case LEGATO:
+    (*MENU).out(F("LEGATO"));
+    break;
+
   default:
     (*MENU).out(icode);
   }
-}
+} // show_icode_mnemonic()
 
 
 //#define DEBUG_ICODE	// TODO: remove debugging icode
@@ -1407,7 +1468,7 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
   bool busy=true;
   while (busy) {
     icode = *icode_p;
-    if (icode < 0 ) {	// ICODE or JIFF?
+    if (icode < 0 ) {	// ICODE or (JIFF | MELODY) ?
       icode_p++;
 #if defined DEBUG_ICODE
       (*MENU).out(F("\nplay_icode "));
@@ -1438,6 +1499,101 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	init_pulse(pulse);
 	icode_p = pulses[pulse].icode_p;	// programmers aesthetics...
 	busy = false;
+	break;
+
+      case MELODY_MODE:
+	pulses[pulse].icode_mode = MELODY_MODE;
+	pulses[pulse].countdown = 0;	// safety_net
+
+	if(pulses[pulse].note_div_scale==0) {		// REDUNDANT: safety_net, default note initializations?
+	  pulses[pulse].note_div_scale = 4096;				// 4096	TODO: test&trimm ################
+	  pulses[pulse].note_length = pulses[pulse].note_div_scale / 8;	// 1/8	TODO: test&trimm ################
+	  if(pulses[pulse].note_break_mul8==0 && pulses[pulse].note_break_div8==0) {
+	    pulses[pulse].note_break_mul8 = 1;		// 1/32	TODO: test&trimm ################
+	    pulses[pulse].note_break_div8 = 32;		// 1/32	TODO: test&trimm ################
+	  }
+	}
+	break;
+
+      case NOTE_4:
+	pulses[pulse].note_length = pulses[pulse].note_div_scale;
+	pulses[pulse].note_length /= 4;
+	pulses[pulse].icode_mode = MELODY_MODE;
+	break;
+
+      case NOTE_8:
+	pulses[pulse].note_length = pulses[pulse].note_div_scale;
+	pulses[pulse].note_length /= 8;
+	pulses[pulse].icode_mode = MELODY_MODE;
+	break;
+
+      case NOTE_16:
+	pulses[pulse].note_length = pulses[pulse].note_div_scale;
+	pulses[pulse].note_length /= 16;
+	pulses[pulse].icode_mode = MELODY_MODE;
+	break;
+
+      case NOTE_32:
+	pulses[pulse].note_length = pulses[pulse].note_div_scale;
+	pulses[pulse].note_length /= 32;
+	pulses[pulse].icode_mode = MELODY_MODE;
+	break;
+
+      case NOTE_64:
+	pulses[pulse].note_length = pulses[pulse].note_div_scale;
+	pulses[pulse].note_length /= 64;
+	pulses[pulse].icode_mode = MELODY_MODE;
+	break;
+
+      case NOTE_128:
+	pulses[pulse].note_length = pulses[pulse].note_div_scale;
+	pulses[pulse].note_length /= 128;
+	pulses[pulse].icode_mode = MELODY_MODE;
+	break;
+
+      case NOTE_scaling:	// 1 int parameter
+	{
+	  int scale = *icode_p++;
+	  if(scale)
+	    pulses[pulse].note_div_scale = scale;
+	}
+	pulses[pulse].icode_mode = MELODY_MODE;
+	break;
+
+      case NOTE_MulDiv:	// 2 int parameter multiplicator, divisor
+	{
+	  int mul = *icode_p++;
+	  int div = *icode_p++;
+	  if(mul && div) {
+	    pulses[pulse].note_length = pulses[pulse].note_div_scale;
+	    pulses[pulse].note_length *= mul;
+	    pulses[pulse].note_length /= div;
+	  }
+	}
+	pulses[pulse].icode_mode = MELODY_MODE;
+	break;
+
+      case STACCATO:
+	pulses[pulse].note_break_mul8 = 1;
+	pulses[pulse].note_break_div8 = 2;
+	pulses[pulse].icode_mode = MELODY_MODE;
+	break;
+
+      case PORTATO:
+	pulses[pulse].note_break_mul8 = 1;
+	pulses[pulse].note_break_div8 = 64;
+	pulses[pulse].icode_mode = MELODY_MODE;
+	break;
+
+      case LEGATO:
+	pulses[pulse].note_break_mul8 = 0;
+	pulses[pulse].note_break_div8 = 0;
+	pulses[pulse].icode_mode = MELODY_MODE;
+	break;
+
+      case JIFFLE_MODE:
+	pulses[pulse].icode_mode = JIFFLE_MODE;
+	pulses[pulse].countdown = 0;	// safety_net
 	break;
 
 #if defined USE_MCP23017
@@ -1493,93 +1649,172 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
       } // switch icode
 
     } else {	// icode >= 0, interpreted as a JIFFLE
-
-      multiplier = icode;
-      divisor =  *(icode_p +1);
-      counter =  *(icode_p +2);
+      if(pulses[pulse].icode_mode==JIFFLE_MODE || pulses[pulse].icode_mode==0) {
+	pulses[pulse].icode_mode = JIFFLE_MODE;	// might have been zero
+	multiplier = icode;
+	divisor =  *(icode_p +1);
+	counter =  *(icode_p +2);
 #if defined DEBUG_ICODE
-      (*MENU).out("\ntry jiffle:");
-      (*MENU).out("\tmultiplier ");
-      (*MENU).out(multiplier);
-      (*MENU).out("\tdivisor ");
-      (*MENU).out(divisor);
-      (*MENU).out("\tcounter ");
-      (*MENU).out(counter);
-      (*MENU).out("\tcountdown ");
-      (*MENU).outln(pulses[pulse].countdown);
+	(*MENU).out("\ntry jiffle:");
+	(*MENU).out("\tmultiplier ");
+	(*MENU).out(multiplier);
+	(*MENU).out("\tdivisor ");
+	(*MENU).out(divisor);
+	(*MENU).out("\tcounter ");
+	(*MENU).out(counter);
+	(*MENU).out("\tcountdown ");
+	(*MENU).outln(pulses[pulse].countdown);
 #endif
-      // check for end of jiffle or WAIT
-      // to be able to play unfinished jiffletabs while editing them
-      // we check the first 2 items of the triple for zero
-      if (multiplier == 0 || divisor==0) {	// multiplier|divisor==0 no next phase, KILL pulse
+	// check for end of jiffle or WAIT
+	// to be able to play unfinished jiffletabs while editing them
+	// we check the first 2 items of the triple for zero
+	if (multiplier == 0 || divisor==0) {	// multiplier|divisor==0 no next phase, KILL pulse
 #if defined DEBUG_ICODE
-	(*MENU).outln(F("multiplier|divisor==0,  END of JIFF, KILL"));
+	  (*MENU).outln(F("multiplier|divisor==0,  END of JIFF, KILL"));
 #endif
-	// icode_p += 3;	// skip invalid data triple
-	if(pulses[pulse].flags & HAS_GPIO)		// TODO: reset gpio here or not, see 'KILL'
-	  if(pulses[pulse].gpio != ILLEGAL8) {		// currently the gpios stay high after a jiff without
-	    digitalWrite(pulses[pulse].gpio, 0);	// so yes, set gpio LOW
+	  // icode_p += 3;	// skip invalid data triple
+	  if(pulses[pulse].flags & HAS_GPIO)		// TODO: reset gpio here or not, see 'KILL'
+	    if(pulses[pulse].gpio != ILLEGAL8) {		// currently the gpios stay high after a jiff without
+	      digitalWrite(pulses[pulse].gpio, 0);	// so yes, set gpio LOW
 #if defined DEBUG_ICODE
-	    (*MENU).out("reset GPIO ");
-	    (*MENU).outln(pulses[pulse].gpio);
+	      (*MENU).out("reset GPIO ");
+	      (*MENU).outln(pulses[pulse].gpio);
 #endif
-	  }
+	    }
 
-	init_pulse(pulse);	// KILL pulse, makes old jiffletabs usable as icode
-	icode_p = pulses[pulse].icode_p;	// programmers aesthetics...
+	  init_pulse(pulse);	// KILL pulse, makes old jiffletabs usable as icode
+	  icode_p = pulses[pulse].icode_p;	// programmers aesthetics...
 
-	busy = false;
-	//	  return;		// and return
-      } else if (counter==0) {	// WAIT?
+	  busy = false;
+	  //	  return;		// and return
+	} else if (counter==0) {	// WAIT?
 #if defined DEBUG_ICODE
-      (*MENU).out("\nwait ");
-      (*MENU).outln(pulses[pulse].base_period * multiplier / divisor);
-#endif
-	pulses[pulse].period = pulses[pulse].base_period;
-	mul_time(&pulses[pulse].period, multiplier);
-	div_time(&pulses[pulse].period, divisor);
-
-	pulses[pulse].counter--;	// *WAITING IS NOT COUNTED AS A SEPARATE PULSE*
-	busy = false;
-	icode_p += 3;
-      } else { // JIFF valid jiffle data, *do jiffle*
-	if (pulses[pulse].countdown == 0) {
-#if defined DEBUG_ICODE
-	  (*MENU).out(F("INIT jiff\tcounter "));
-	  (*MENU).out(counter);
-	  (*MENU).out(F("\ttim "));
+	  (*MENU).out("\nwait ");
 	  (*MENU).outln(pulses[pulse].base_period * multiplier / divisor);
 #endif
-	  pulses[pulse].countdown = counter;		// initalise counter of next phase
 	  pulses[pulse].period = pulses[pulse].base_period;
 	  mul_time(&pulses[pulse].period, multiplier);
 	  div_time(&pulses[pulse].period, divisor);
+
+	  pulses[pulse].counter--;	// *WAITING IS NOT COUNTED AS A SEPARATE PULSE*
+	  busy = false;
+	  icode_p += 3;
+	} else { // JIFF valid jiffle data, *do jiffle*
+	  if (pulses[pulse].countdown == 0) {
+#if defined DEBUG_ICODE
+	    (*MENU).out(F("INIT jiff\tcounter "));
+	    (*MENU).out(counter);
+	    (*MENU).out(F("\ttim "));
+	    (*MENU).outln(pulses[pulse].base_period * multiplier / divisor);
+#endif
+	    pulses[pulse].countdown = counter;		// initalise counter of next phase
+	    pulses[pulse].period = pulses[pulse].base_period;
+	    mul_time(&pulses[pulse].period, multiplier);
+	    div_time(&pulses[pulse].period, divisor);
+	  }
+
+	  if((pulses[pulse].flags & HAS_GPIO) && (pulses[pulse].gpio != ILLEGAL8))
+	    digitalWrite(pulses[pulse].gpio, pulses[pulse].counter & 1);	// gpio click
+#if defined DEBUG_ICODE
+	  (*MENU).out(F("GPIO\t"));
+	  if(pulses[pulse].counter & 1)
+	    (*MENU).outln(F("HIGH"));
+	  else
+	    (*MENU).outln(F("LOW"));
+#endif
+	  if (--pulses[pulse].countdown > 0) {	// countdown, phase ended?
+#if defined DEBUG_ICODE
+	    (*MENU).out(F("countdown "));
+	    (*MENU).outln(pulses[pulse].countdown);
+#endif
+	    busy = false;				//   no: return immediately
+	  } else {	// countdown finished, 1 JIFF done
+#if defined DEBUG_ICODE
+	    (*MENU).outln(F("1 JIFF done"));
+#endif
+	    icode_p += 3;
+	    busy= false; // wait another period on last gpio state
+	  } //  1 JIFF done
+	} // JIFF valid jiffle data, *do jiffle*
+      } // JIFFLE, WAIT, JIFFLE END?
+
+      else if(pulses[pulse].icode_mode == MELODY_MODE) {
+	//	(*MENU).out(F("MELODY_MODE\n"));
+
+	if(pulses[pulse].note_div_scale==0) {		// safety net	default note initializations?
+	  pulses[pulse].note_div_scale = 4096;
+	  pulses[pulse].note_length = pulses[pulse].note_div_scale / 8;
+	  if(pulses[pulse].note_break_mul8==0 && pulses[pulse].note_break_div8==0) {
+	    pulses[pulse].note_break_mul8 = 1;		// 1/32	TODO: test&trimm ################
+	    pulses[pulse].note_break_div8 = 32;		// 1/32	TODO: test&trimm ################
+	  }
 	}
 
-	if((pulses[pulse].flags & HAS_GPIO) && (pulses[pulse].gpio != ILLEGAL8))
-	  digitalWrite(pulses[pulse].gpio, pulses[pulse].counter & 1);	// gpio click
-#if defined DEBUG_ICODE
-	(*MENU).out(F("GPIO\t"));
-	if(pulses[pulse].counter & 1)
-	  (*MENU).outln(F("HIGH"));
-	else
-	  (*MENU).outln(F("LOW"));
-#endif
-	if (--pulses[pulse].countdown > 0) {	// countdown, phase ended?
-#if defined DEBUG_ICODE
-	  (*MENU).out(F("countdown "));
-	  (*MENU).outln(pulses[pulse].countdown);
-#endif
-	  busy = false;				//   no: return immediately
-	} else {	// countdown finished, 1 JIFF done
-#if defined DEBUG_ICODE
-	  (*MENU).outln(F("1 JIFF done"));
-#endif
-	  icode_p += 3;
-	  busy= false; // wait another period on last gpio state
-	} //  1 JIFF done
-      } // JIFF valid jiffle data, *do jiffle*
-    } // JIFFLE, WAIT, JIFFLE END?
+	if (pulses[pulse].countdown == 0) {	// initialise NEXT note
+	  int interval = *icode_p++;
+
+	  // find reference_pulse, the primary pulse with the notes' tuning:
+	  int reference_pulse = pulses[pulse].other_pulse + interval;
+	  int octave_shift=0;
+	  while(reference_pulse > highest_primary) {
+	    reference_pulse -= steps_in_octave;
+	    octave_shift--;
+	    if(reference_pulse < lowest_primary)
+	      goto icode_error;
+	  }
+	  while(reference_pulse < lowest_primary) {
+	    reference_pulse += steps_in_octave;
+	    octave_shift++;
+	    if(reference_pulse > highest_primary)
+	      goto icode_error;
+	  }
+	  pulses[pulse].period = pulses[reference_pulse].period;
+
+	  while(octave_shift > 0) {
+	    octave_shift--;
+	    div_time(&pulses[pulse].period, 2);
+	  }
+	  while(octave_shift < 0) {
+	    octave_shift++;
+	    mul_time(&pulses[pulse].period, 2);
+	  }
+	  div_time(&pulses[pulse].period, pulses[pulse].note_div_scale);
+
+	  pulses[pulse].countdown = pulses[pulse].note_length;	// legato
+	  if(pulses[pulse].note_break_mul8 && pulses[pulse].note_break_div8) {
+	    int diff = pulses[pulse].note_length;
+	    diff *= pulses[pulse].note_break_mul8;
+	    diff /= pulses[pulse].note_break_div8;
+	    pulses[pulse].countdown -= diff;			// staccato
+	  }
+
+	  if((pulses[pulse].flags & HAS_GPIO) && (pulses[pulse].gpio != ILLEGAL8))
+	    digitalWrite(pulses[pulse].gpio, pulses[pulse].counter & 1);	// first gpio click
+	  busy = false;	// return immediately
+
+	} else {				// *is* PLAYING a note
+	  if((pulses[pulse].flags & HAS_GPIO) && (pulses[pulse].gpio != ILLEGAL8))
+	    digitalWrite(pulses[pulse].gpio, pulses[pulse].counter & 1);	// gpio click
+
+	  if (--pulses[pulse].countdown > 0) {
+	    busy = false;	// return immediately
+
+	  } else {				// sound ENDED: WAIT for next
+	    // add note break wait
+	    if(pulses[pulse].note_break_mul8 && pulses[pulse].note_break_div8) {
+	      pulse_time_t scratch = pulses[pulse].period;
+	      mul_time(&pulses[pulse].period, pulses[pulse].note_break_mul8);
+	      div_time(&pulses[pulse].period, pulses[pulse].note_break_div8);
+	      add_time(&scratch, &pulses[pulse].period);
+	    }
+	    busy = false;		// WAIT another period (+ break time) on *same* gpio state
+	    pulses[pulse].counter--;	// *WAITING IS NOT COUNTED AS A SEPARATE PULSE*
+	  }
+	}
+      } else
+	(*MENU).error_ln(F("unknown icode_mode"));
+    } // positive numeric input >=0
+
     pulses[pulse].icode_index = icode_p - pulses[pulse].icode_p;
 
 #if defined DEBUG_ICODE
@@ -1588,12 +1823,16 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 #endif
   } // while(busy)
 #if defined DEBUG_ICODE
-      (*MENU).out(F("iCODE\tpulse "));
-      (*MENU).out(pulse);
-      (*MENU).out(F("\t#"));
-      (*MENU).out(pulses[pulse].counter);
-      (*MENU).outln(F("\t1 step done  ----|"));
+  (*MENU).out(F("iCODE\tpulse "));
+  (*MENU).out(pulse);
+  (*MENU).out(F("\t#"));
+  (*MENU).out(pulses[pulse].counter);
+  (*MENU).outln(F("\t1 step done  ----|"));
 #endif
+  return;
+
+ icode_error:
+  (*MENU).error_ln(F("play_icode()"));
 } // play_icode()
 
 /* **************************************************************** */
@@ -1876,7 +2115,6 @@ void Pulses::set_time_unit_and_inform(unsigned long new_value) {
   (*MENU).out(time_unit);
   (*MENU).outln(F(" microseconds"));
 }
-
 
 /* **************************************************************** */
 

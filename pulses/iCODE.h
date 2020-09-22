@@ -25,5 +25,7 @@ icode_t TEST_ICODE_WAIT[] = { WAIT,1,4, WAIT,1,4, WAIT,1,32, WAIT,1,32, KILL };	
 icode_t TEST_ICODE_MCP23017[] = { doA2,0,1, 1,4096,1024, doA2,0,0, KILL, };	// time machine icode embedded jiffle
 */
 
+icode_t melody0[] = { MELODY_MODE, 0, 1, 2, 3, 4, STACCATO, 3, 2, 1, 0, PORTATO, 0, 0, KILL, };	// MELODY_MODE testing
+
 #define ICODE_H
 #endif
