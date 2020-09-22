@@ -151,7 +151,6 @@ magical_conf_t MagicConf;
 
 typedef struct ui_conf_t {
   uint8_t version = 0;	// 0 means currently under development
-  // voices=0;	// DADA: include voices?	maybe not?
   // TODO: include selection ???	I think YES	DADA
 
   bool show_cycle_pattern=false;
@@ -437,16 +436,14 @@ void init_primary_counters() {
 bool show_cycle_pattern=false;
 bool show_cycle_pattern_intervals=false;
 
-short primary_count=0;	// TODO: use musicBoxConf.primary_count in next version
-
 void set_primary_block_bounds() {	// remember where the primary block starts and stops
   musicBoxConf.lowest_primary=ILLEGAL16;
   musicBoxConf.highest_primary=ILLEGAL16;
-  primary_count=0;	// TODO: use musicBoxConf.primary_count in next version
+  musicBoxConf.primary_count=0;
 
   for(int pulse=0; pulse<PL_MAX; pulse++) {
     if(PULSES.pulses[pulse].groups & g_PRIMARY) {
-      primary_count++;
+      musicBoxConf.primary_count++;
 
       if(musicBoxConf.lowest_primary == ILLEGAL16)
 	musicBoxConf.lowest_primary = pulse;		// first primary pulse seen
@@ -456,8 +453,8 @@ void set_primary_block_bounds() {	// remember where the primary block starts and
   }
 
  if(MENU.verbosity >= VERBOSITY_MORE) {
-    MENU.out(primary_count);	// TODO: use musicBoxConf.primary_count in next version
-    if(primary_count) {
+    MENU.out(musicBoxConf.primary_count);
+    if(musicBoxConf.primary_count) {
       MENU.out(" primaries from ");
       MENU.out(musicBoxConf.lowest_primary);
       MENU.out(" to ");
@@ -1418,15 +1415,15 @@ void muting_actions_UI() {	// 'M' already received   action muting UI
       // TODO: staff pitch groups L B M H
     case 'H': // 'MH'	toggle high end
       MENU.drop_input_token();
-      for(int pulse = musicBoxConf.highest_primary - (primary_count/4) +1; pulse <= musicBoxConf.highest_primary; pulse++)
+      for(int pulse = musicBoxConf.highest_primary - (musicBoxConf.primary_count/4) +1; pulse <= musicBoxConf.highest_primary; pulse++)
 	PULSES.pulses[pulse].action_flags ^= noACTION;	// toggle mute high quarter
       MENU.outln(F("mute toggle HIGH"));
       break;
 
     case 'M': // 'MM'	toggle melody
       MENU.drop_input_token();
-      for(int pulse = musicBoxConf.lowest_primary + (primary_count/2)+1;
-	  pulse <= musicBoxConf.highest_primary  - (primary_count/4);
+      for(int pulse = musicBoxConf.lowest_primary + (musicBoxConf.primary_count/2)+1;
+	  pulse <= musicBoxConf.highest_primary  - (musicBoxConf.primary_count/4);
 	  pulse++)
 	PULSES.pulses[pulse].action_flags ^= noACTION;	// toggle mute high quarter
       MENU.outln(F("mute toggle MELODY"));
@@ -1434,8 +1431,8 @@ void muting_actions_UI() {	// 'M' already received   action muting UI
 
     case 'B': // 'MB'	toggle  bass
       MENU.drop_input_token();
-      for(int pulse = musicBoxConf.lowest_primary + (primary_count/4)+1;
-	  pulse <= musicBoxConf.lowest_primary  + (primary_count/2);
+      for(int pulse = musicBoxConf.lowest_primary + (musicBoxConf.primary_count/4)+1;
+	  pulse <= musicBoxConf.lowest_primary  + (musicBoxConf.primary_count/2);
 	  pulse++)
 	PULSES.pulses[pulse].action_flags ^= noACTION;	// toggle mute high quarter
       MENU.outln(F("mute toggle BASS"));
@@ -1443,7 +1440,7 @@ void muting_actions_UI() {	// 'M' already received   action muting UI
 
     case 'L': // 'ML'	toggle low end
       MENU.drop_input_token();
-      for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.lowest_primary + (primary_count/4); pulse++)
+      for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.lowest_primary + (musicBoxConf.primary_count/4); pulse++)
 	PULSES.pulses[pulse].action_flags ^= noACTION;	// toggle mute low quarter
       MENU.outln(F("mute toggle LOW"));
       break;
@@ -2896,14 +2893,13 @@ void start_musicBox() {
   tune_selected_2_scale_limited(musicBoxConf.pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves // TODO: adjust limit appropriate...
 #endif
 
-  extern short steps_in_octave;
   MENU.out(F("notes/octave "));
-  MENU.outln(steps_in_octave);
+  MENU.outln(musicBoxConf.steps_in_octave);
 
 
 #if defined USE_RGB_LED_STRIP	// set a hue_slice_cnt that fits the tuning
   if(RGBstringConf.set_automagic_hue_slices) {
-    switch(steps_in_octave) {
+    switch(musicBoxConf.steps_in_octave) {
     case 5: // pentatonic scales
       RGBstringConf.hue_slice_cnt = 15;	// try also 30
       break;
@@ -2924,11 +2920,11 @@ void start_musicBox() {
       break;
 
     default:
-      RGBstringConf.hue_slice_cnt = steps_in_octave * 3;
+      RGBstringConf.hue_slice_cnt = musicBoxConf.steps_in_octave * 3;
       if(RGBstringConf.hue_slice_cnt < 6)
 	RGBstringConf.hue_slice_cnt;
       break;
-    } // switch(steps_in_octave)
+    } // switch(musicBoxConf.steps_in_octave)
 
     MENU.out(F("set "));
   } else	// if(set_automagic_hue_slices)

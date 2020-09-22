@@ -199,6 +199,17 @@ typedef struct pulses_hardware_conf_t {
   // monochrome display
   uint8_t monochrome_type = monochrome_type_off;	// flag and monochrome_type
   uint8_t monochrome_reserved=0;					// %4
+  /*
+  uint8_t display_hw_pin0=ILLEGAL8;	// OLED		TTGO T5_V2.3_2.13 CS 5==SS	// TODO: implement
+  uint8_t display_hw_pin1=ILLEGAL8;	// OLED		TTGO T5_V2.3_2.13 DC 17
+  uint8_t display_hw_pin2=ILLEGAL8;	// OLED		TTGO T5_V2.3_2.13 RST 16
+  uint8_t display_hw_pin3=ILLEGAL8;	// OLED		TTGO T5_V2.3_2.13 BUSY 4	// %4
+  uint8_t display_hw_pin4=ILLEGAL8;	// OLED		TTGO T5_V2.3_2.13 MOSI 23
+  uint8_t display_hw_pin5=ILLEGAL8;	// OLED		TTGO T5_V2.3_2.13 CLK 18
+  uint8_t display_hw_colours=ILLEGAL8;	// OLED   2	TTGO T5_V2.3_2.13 2
+  uint16_t display_hw_x_pix=0;								// %4
+  uint16_t display_hw_y_pix=0;
+  */
 
   // RTC
   uint8_t RTC_type = RTC_type_off;	// flag and RTC_type
@@ -206,7 +217,7 @@ typedef struct pulses_hardware_conf_t {
 
   // RGB LED strings
   uint8_t rgb_strings=0;		// flag and rgb led string cnt
-  uint8_t rgb_pin[RGB_STRINGS_MAX]={0};					// %4
+  uint8_t rgb_pin[RGB_STRINGS_MAX]={0};					// %4	TODO: FIX ALIGNEMENT
   uint8_t rgb_pixel_cnt[RGB_STRINGS_MAX]={0};				// %4
   uint8_t rgb_led_voltage_type[RGB_STRINGS_MAX]={0};			// %4
   uint8_t rgb_pattern0[RGB_STRINGS_MAX]={0};				// %4
@@ -214,6 +225,26 @@ typedef struct pulses_hardware_conf_t {
   // MIDI?
   uint8_t MIDI_in_pin=ILLEGAL8;		// reserved, not implemented yet // %4
   uint8_t MIDI_out_pin=ILLEGAL8;	// reserved, not implemented yet
+
+  // SD CARD?	// TODO: implement
+  // type
+  // MOSI  15
+  // SCK   14
+  // MISO   2
+  // CS    13
+
+  // MCP23017 et al
+  // type
+  // addr
+  // ...
+
+  // ADS1115 et al
+  // type
+  // addr
+  // ...
+
+  // CMOS PLL 4046
+  // ...
 
   // other pins
   uint8_t magical_fart_output_pin=ILLEGAL8;	// who knows, maybe?
@@ -294,30 +325,40 @@ void show_peer_id(peer_ID_t* this_peer_ID_p) {	// TODO: move?
 
 /* **************************************************************** */
 typedef struct musicBox_conf_t {
-  unsigned int* scale=NULL;
-  unsigned int* jiffle=NULL;
-  unsigned int* iCode=NULL;
-  Harmonical::fraction_t pitch = {1,1};
-
-  int sync=1;			// old default, seems still ok ;)
+  const uint8_t version = 0;	// 0 means currently under development
+  const uint8_t subversion=0;
+  short reserved2=0;
 
   char* name=NULL;		// name of a piece, a preset
   char* date=NULL;		// date  of a piece, preset or whatever
 
+  unsigned int* scale=NULL;
+  unsigned int* jiffle=NULL;
+  unsigned int* iCode=NULL;
+
+  Harmonical::fraction_t pitch = {1,1};
+
+  short steps_in_octave=0;	// like  '5' for pentatonic  '7' for heptatonic aka diatonic scales
+  short reserved34=0;
+
+  int sync=1;			// old default, seems still ok ;)
+
   short preset=0;
 
-  unsigned short cycle_slices = 540;	// set slice_tick_period accordingly
   short lowest_primary=ILLEGAL16;
   short highest_primary=ILLEGAL16;
-  // short primary_count=0;		// TODO: use musicBoxConf.primary_count in next version
-  short base_pulse=ILLEGAL16;
-
-  short stack_sync_slices=0;	// 0 is off	positive: upwards,  negative: downwards
-  short subcycle_octave=0;
-
+  short primary_count=0;	// TODO:		################ voices vs primary_count ???
+  short voices=0;		// TODO: not used yet	################ voices vs primary_count ???
   short bass_pulses=0;		// see  setup_bass_middle_high()
   short middle_pulses=0;	// see  setup_bass_middle_high()
   short high_pulses=0;		// see  setup_bass_middle_high()
+
+  short base_pulse=ILLEGAL16;
+
+  unsigned short cycle_slices = 540;	// set slice_tick_period accordingly
+
+  short stack_sync_slices=0;	// 0 is off	positive: upwards,  negative: downwards
+  short subcycle_octave=0;
 
   uint8_t chromatic_pitch = 0;	// 0: pitch is not metric	set *only* by  set_metric_pitch()
   /*  chromatic_pitch:
@@ -336,8 +377,6 @@ typedef struct musicBox_conf_t {
     12 g#|ab
     13 u		/ harmonical time unit
   */
-
-  uint8_t version = 0;	// 0 means currently under development
 
 } musicBox_conf_t;
 
@@ -3173,8 +3212,6 @@ int selected_apply_scale_on_period(int voices, unsigned int *scale, bool octaves
   return applied;
 }
 
-short steps_in_octave=0;	// like  '5' for pentatonic  '7' for heptatonic aka diatonic scales
-
 // see: bool no_octave_shift=false;
 int tune_selected_2_scale_limited(Harmonical::fraction_t scaling, unsigned int *scale, unsigned long shortest_limit) {
 /*
@@ -3200,7 +3237,7 @@ int tune_selected_2_scale_limited(Harmonical::fraction_t scaling, unsigned int *
   }
 
   if ((scale != NULL) && scale[0] && scaling.divisor) {
-    steps_in_octave=0;
+    musicBoxConf.steps_in_octave=0;
     pulse_time_t base_period = PULSES.simple_time(PULSES.time_unit);
     PULSES.mul_time(&base_period, scaling.multiplier);
     PULSES.div_time(&base_period, scaling.divisor);
@@ -3220,8 +3257,8 @@ int tune_selected_2_scale_limited(Harmonical::fraction_t scaling, unsigned int *
       for(int pulse=0; pulse<PL_MAX; pulse++) {
 	if (PULSES.pulse_is_selected(pulse)) {
 	  if ((multiplier = scale[note*2]) == 0) {	// next octave?
-	    if(steps_in_octave==0)			// after the *first* octave save steps_in_octave
-	      steps_in_octave = note;
+	    if(musicBoxConf.steps_in_octave==0)		// after the *first* octave save musicBoxConf.steps_in_octave
+	      musicBoxConf.steps_in_octave = note;
 
 	    octave *= 2;	// one octave higher
 	    note = 0;	// restart at first note

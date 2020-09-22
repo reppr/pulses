@@ -3,8 +3,7 @@
   temporary test menu UI during development
 */
 
-MENU.outln(MENU.calculate_input(100));
-break;
+//#include "SPEED-TESTS.h"
 
 #if defined USE_MONOCHROME_DISPLAY
 MENU.outln(F("TODO: MONOCHROME FIX?"));
@@ -75,12 +74,6 @@ monochrome_show_musicBox_parameters();
 
     //display_peer_ID_list();
     //random_RGB_string(MENU.numeric_input(4));
-
-    /*
-    extern short steps_in_octave;
-    MENU.out(F("steps_in_octave "));
-    MENU.outln(steps_in_octave);
-    */
 
     // random_HSV_LED_string();
 

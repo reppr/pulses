@@ -280,8 +280,6 @@ stop automatic esp_now_add_identity
 
 why does preset UI drop following input?
 
-TODO: use musicBoxConf.primary_count in next version
-
 TODO: fix play_KB_macro()
       avoid use where not appropriate
 
@@ -677,3 +675,6 @@ ESP32 softboard
 'C' Calc prime factors are broken...
 
 input_value = MENU.numeric_input(selected_actions);      // TODO: allow mnemonics ################
+
+short primary_count=0;	// TODO: ################ voices vs primary_count ???
+short voices=0;		// TODO: not used yet	################		################ voices vs primary_count ???

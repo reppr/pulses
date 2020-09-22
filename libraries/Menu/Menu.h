@@ -28,6 +28,9 @@
 #if ! defined EOF8
   #define EOF8		ILLEGAL8
 #endif
+#if ! defined ILLEGAL16
+  #define ILLEGAL16	0xffff
+#endif
 #if ! defined EOF32
   #define EOF32		0xffffffff
 #endif

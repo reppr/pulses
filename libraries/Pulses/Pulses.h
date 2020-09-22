@@ -25,6 +25,9 @@
 #if ! defined ILLEGAL8
   #define ILLEGAL8	255
 #endif
+#if ! defined ILLEGAL16
+  #define ILLEGAL16	0xffff
+#endif
 #if ! defined ILLEGAL32
   #define ILLEGAL32	0xffffffff
 #endif
