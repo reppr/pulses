@@ -7,6 +7,9 @@
 
 #if ! defined PULSES_ENGINE_CONFIG_H
 
+#define ICODE_INSTEAD_OF_JIFFLES	// TESTING using all jiffles as icodes	TODO: REMOVE: after a while
+					//   test speed, bugs
+
 #define MULTICORE_DISPLAY	// send hw display from other core (core 0)
 				// to avoid audible clicks and dropouts
 

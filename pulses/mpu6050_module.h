@@ -724,11 +724,11 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 	    _selected_Ax_i_seen = Ax_i_new;
 	    select_in(JIFFLES, jiffle);
 	    setup_jiffle_thrower_selected(selected_actions);
-	    MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
+	    MENU.outln(selected_name(JIFFLES));
 
 #if defined USE_MONOCHROME_DISPLAY
 	    extern void MC_big_or_multiline(uint8_t row, char* str);
-	    MC_big_or_multiline(2, array2name(JIFFLES, selected_in(JIFFLES)));
+	    MC_big_or_multiline(2, selected_name(JIFFLES));
 #endif
 	  }
 	} else {

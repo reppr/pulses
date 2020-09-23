@@ -1177,7 +1177,7 @@ void display_pitch() {
 
 void display_scale_name() {
   MENU.out(F("SCALE: "));
-  MENU.out(array2name(SCALES, selected_in(SCALES)));
+  MENU.out(selected_name(SCALES));
 }
 
 bool tuning_pitch_and_scale_UI() {
@@ -1536,10 +1536,17 @@ void show_basic_musicBox_parameters() {		// similar show_UI_basic_setup()
   }
   MENU.space(2);
 
+#if defined ICODE_INSTEAD_OF_JIFFLES
+  tag_randomness(icode_user_selected);	// TODO: DEBUG:
+  MENU.out(F("iCode: "));
+  MENU.out(selected_name(iCODEs));
+  MENU.space(2);
+#else
   tag_randomness(jiffle_user_selected);
   MENU.out(F("JIFFLE: "));
-  MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
+  MENU.out(selected_name(JIFFLES));
   MENU.space(2);
+#endif
 
   tag_randomness(pitch_user_selected);
   display_pitch();
@@ -1597,11 +1604,15 @@ void show_configuration_code() {	// show code, similar show_UI_basic_setup()
   MENU.outln(F("\");"));
 
   MENU.out(F("select_in(SCALES, "));
-  MENU.out(array2name(SCALES, selected_in(SCALES)));
+  MENU.out(selected_name(SCALES));
   MENU.outln(F(");"));
 
-  MENU.out(F("select_in(JIFFLES, "));	// TODO: iCode
-  MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
+  MENU.out(F("select_in(JIFFLES, "));
+  MENU.out(selected_name(JIFFLES));
+  MENU.outln(F(");"));
+
+  MENU.out(F("select_in(iCODEs, "));
+  MENU.out(selected_name(iCODEs));
   MENU.outln(F(");"));
 
   MENU.out(F("sync = "));
@@ -1651,15 +1662,15 @@ void show_configuration_as_string() {	// file 1line representation, similar show
   MENU.out('\t');
 
   MENU.out(F("SCALE:"));
-  MENU.out(array2name(SCALES, selected_in(SCALES)));
+  MENU.out(selected_name(SCALES));
   MENU.out('\t');
 
   MENU.out(F("JIFF:"));
-  MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
+  MENU.out(selected_name(JIFFLES));
   MENU.out('\t');
 
   MENU.out(F("iCODE:"));
-  MENU.out(array2name(iCODEs, selected_in(iCODEs)));
+  MENU.out(selected_name(iCODEs));
   MENU.out('\t');
 
   MENU.out(F("SYNC:"));
@@ -2313,176 +2324,192 @@ void  select_random_stack_sync(void) {
   not_a_preset();
 }
 
-void select_random_jiffle(void) {
+#if defined ICODE_INSTEAD_OF_JIFFLES	// TODO: REMOVE: after testing a while
+  #define USED_DB	iCODEs		//   new style: play jiffles as iCode
+#else
+  #define USED_DB	JIFFLES		//   old style: use jiffles as jiffles (*not iCode)
+#endif
+
+void select_random_jiffle(void) {	// TODO: change name when removing ICODE_INSTEAD_OF_JIFFLES
 #if defined RANDOM_ENTROPY_H
   random_entropy();	// entropy from hardware
 #endif
+
+#if defined ICODE_INSTEAD_OF_JIFFLES	// TODO: REMOVE: after testing a while
+  if(MENU.maybe_display_more(VERBOSITY_SOME))
+    MENU.outln(F("random iCode"));
+#else
   if(MENU.maybe_display_more(VERBOSITY_SOME))
     MENU.outln(F("random jiffle"));
+#endif
 
   switch(random(142)) {
   case 0: case 1: case 2: case 3: case 4:
-    select_in(JIFFLES, PENTAtonic_rise);
+    select_in(USED_DB, PENTAtonic_rise);
     break;
   case 5: case 6: case 7: case 8: case 9:
-    select_in(JIFFLES, PENTAtonic_desc);
+    select_in(USED_DB, PENTAtonic_desc);
     break;
 
   case 10: case 11: case 12: case 13: case 14:
-    select_in(JIFFLES, pentatonic_rise);
+    select_in(USED_DB, pentatonic_rise);
     break;
   case 15: case 16: case 17: case 18: case 19:
-    select_in(JIFFLES, pentatonic_desc);
+    select_in(USED_DB, pentatonic_desc);
     break;
 
   case 20: case 21: case 22: case 23: case 24: case 29:	// was: too many, see below
-    select_in(JIFFLES, tumtum);
+    select_in(USED_DB, tumtum);
     break;
   case 25: case 26: case 27:	// case 28: case 29:	// too many, see below
-    select_in(JIFFLES, jiff_dec128);
+    select_in(USED_DB, jiff_dec128);
     break;
   case 30: case 31: case 32: case 33: case 34:
-    select_in(JIFFLES, ding_ditditdit);
+    select_in(USED_DB, ding_ditditdit);
     break;
   case 35: case 36: case 37: case 38: case 39:
-    select_in(JIFFLES, diing_ditditdit);
+    select_in(USED_DB, diing_ditditdit);
     break;
   case 40: case 41: case 42: case 43: case 44:
-    select_in(JIFFLES, din__dididi_dixi);
+    select_in(USED_DB, din__dididi_dixi);
     break;
   case 45: case 46: case 47: case 48: case 49:
-    select_in(JIFFLES, din_dididi);
+    select_in(USED_DB, din_dididi);
     break;
 
   case 50: case 51: case 52: case 53:
-    select_in(JIFFLES, PENTA_3rd_rise);
+    select_in(USED_DB, PENTA_3rd_rise);
     break;
   case 54: case 55: case 56: case 57:
-    select_in(JIFFLES, up_THRD);
+    select_in(USED_DB, up_THRD);
     break;
   case 58: case 59: case 60: case 61:
-    select_in(JIFFLES, up_THRD_dn);
+    select_in(USED_DB, up_THRD_dn);
     break;
   case 62: case 63: case 64: case 65:
-    select_in(JIFFLES, dwn_THRD);
+    select_in(USED_DB, dwn_THRD);
     break;
   case 66: case 67: case 68: case 69:
-    select_in(JIFFLES, dwn_THRD_up);
+    select_in(USED_DB, dwn_THRD_up);
     break;
   case 70: case 71: case 72: case 73:
-    select_in(JIFFLES, PENTA_3rd_down_5);
+    select_in(USED_DB, PENTA_3rd_down_5);
     break;
   case 74: case 75: case 76: case 77:
-    select_in(JIFFLES, penta_3rd_down_5);
+    select_in(USED_DB, penta_3rd_down_5);
     break;
   case 78: case 79: case 80: case 81:
-    select_in(JIFFLES, rising_pent_them);
+    select_in(USED_DB, rising_pent_them);
     break;
   case 82: case 83: case 84: case 85:
-    select_in(JIFFLES, penta_3rd_rise);
+    select_in(USED_DB, penta_3rd_rise);
     break;
   case 86: case 87: case 88: case 89:
-    select_in(JIFFLES, simple_theme);
+    select_in(USED_DB, simple_theme);
     break;
 
   case 90:
-    select_in(JIFFLES, jiff_dec_pizzica);
+    select_in(USED_DB, jiff_dec_pizzica);
     break;
   case 91: case 92:
-    select_in(JIFFLES, pent_patternA);
+    select_in(USED_DB, pent_patternA);
     break;
   case 93: case 94:
-    select_in(JIFFLES, pent_patternB);
+    select_in(USED_DB, pent_patternB);
     break;
   case 95: case 96:
-    select_in(JIFFLES, pent_top_wave);
+    select_in(USED_DB, pent_top_wave);
     break;
   case 97:
-    select_in(JIFFLES, pent_top_wave_0);
+    select_in(USED_DB, pent_top_wave_0);
     break;
   case 98:	// add some very simple jiffles:
-    select_in(JIFFLES, d4096_3072);
+    select_in(USED_DB, d4096_3072);
     break;
   case 99:
-    select_in(JIFFLES, d4096_2048);
+    select_in(USED_DB, d4096_2048);
     break;
   case 100: case 28:	// was: too many, see above
-    select_in(JIFFLES, d4096_1024);
+    select_in(USED_DB, d4096_1024);
     break;
   case 101:
-    select_in(JIFFLES, d4096_512);
+    select_in(USED_DB, d4096_512);
     break;
   case 102:
-    select_in(JIFFLES, d4096_256);
+    select_in(USED_DB, d4096_256);
     break;
   case 103:
-    select_in(JIFFLES, d4096_128);
+    select_in(USED_DB, d4096_128);
     break;
   case 104:
-    select_in(JIFFLES, d4096_64);
+    select_in(USED_DB, d4096_64);
     break;
   case 105:
-    select_in(JIFFLES, d4096_32);
+    select_in(USED_DB, d4096_32);
     break;
   case 106:
-    select_in(JIFFLES, d4096_16);
+    select_in(USED_DB, d4096_16);
     break;
   case 107:
-    select_in(JIFFLES, d4096_12);
+    select_in(USED_DB, d4096_12);
     break;
   case 108:
-    select_in(JIFFLES, tanboura);
+    select_in(USED_DB, tanboura);
     break;
   case 109: case 110: case 111:
-    select_in(JIFFLES, doric_rise);
+    select_in(USED_DB, doric_rise);
     break;
   case 112: case 113:
-    select_in(JIFFLES, minor_rise);
+    select_in(USED_DB, minor_rise);
     break;
   case 114:
-    select_in(JIFFLES, doric_descend);
+    select_in(USED_DB, doric_descend);
     break;
   case 115:
-    select_in(JIFFLES, minor_descend);
+    select_in(USED_DB, minor_descend);
     break;
   case 116:
-    select_in(JIFFLES, major_descend);
+    select_in(USED_DB, major_descend);
     break;
   case 117: case 118:
-    select_in(JIFFLES, major_rise);
+    select_in(USED_DB, major_rise);
     break;
   case 119: case 120:
-    select_in(JIFFLES, pentaCHORD_rise);
+    select_in(USED_DB, pentaCHORD_rise);
     break;
   case 121: case 122: case 123: case 124: case 125:
-    select_in(JIFFLES, tumtumtum);
+    select_in(USED_DB, tumtumtum);
     break;
   case 126: case 127: case 128: case 129: case 130:
-    select_in(JIFFLES, tumtumtumtum);
+    select_in(USED_DB, tumtumtumtum);
     break;
   case 131: case 132:
-    select_in(JIFFLES, pentachord_rise);
+    select_in(USED_DB, pentachord_rise);
     break;
   case 133:
-    select_in(JIFFLES, pentaCHORD_desc);	// TODO: test
+    select_in(USED_DB, pentaCHORD_desc);	// TODO: test
     break;
   case 134:
-    select_in(JIFFLES, pentachord_descend);	// TODO: test
+    select_in(USED_DB, pentachord_descend);	// TODO: test
     break;
   case 135: case 136:
-    select_in(JIFFLES, tetraCHORD_rise);
+    select_in(USED_DB, tetraCHORD_rise);
     break;
   case 137:
-    select_in(JIFFLES, tetraCHORD_desc);
+    select_in(USED_DB, tetraCHORD_desc);
     break;
   case 138: case 139: case 140: case 141:
-    select_in(JIFFLES, mechanical);
+    select_in(USED_DB, mechanical);
     break;
   }
 
+#if defined ICODE_INSTEAD_OF_JIFFLES	// TODO: REMOVE: after testing a while
+  icode_user_selected = false;
+#else
   jiffle_user_selected = false;
+#endif
   not_a_preset();
-} // select_random_jiffle()
+} // select_random_jiffle()	// TODO: RENAME: after removine ICODE_INSTEAD_OF_JIFFLES
 
 
 void random_metric_pitches() {
@@ -2588,7 +2615,7 @@ void furzificate() {	// switch to a quiet, farting patterns, u.a.
 #endif
   switch (random(10)) {
   case 0:	// kalimbaxyl
-    select_in(JIFFLES, kalimbaxyl);
+    select_in(JIFFLES, kalimbaxyl);	// TODO: ICODE_INSTEAD_OF_JIFFLES  furzificate() use USED_DB?
     MENU.play_KB_macro("j");
     break;
   case 1:	// back_to_ground
@@ -2630,7 +2657,7 @@ void furzificate() {	// switch to a quiet, farting patterns, u.a.
   }
   MENU.out(F("jiffle: "));
   MENU.outln(selected_name(JIFFLES));
-}
+} // furzificate()
 
 
 // save and restore _user_selected configuration over deep sleep (*only*):
@@ -2639,7 +2666,11 @@ void furzificate() {	// switch to a quiet, farting patterns, u.a.
   store fixed configuration options in RTC memory during deep_sleep (*only*)
 */
 RTC_DATA_ATTR unsigned int * scale_stored_RTC=NULL;
-RTC_DATA_ATTR unsigned int * jiffle_stored_RTC=NULL;
+#if defined ICODE_INSTEAD_OF_JIFFLES	// TODO: REMOVE: after testing a while
+  RTC_DATA_ATTR unsigned int * icode_stored_RTC=NULL;
+#else
+  RTC_DATA_ATTR unsigned int * jiffle_stored_RTC=NULL;
+#endif
 RTC_DATA_ATTR unsigned long multiplier_stored_RTC=0;
 RTC_DATA_ATTR unsigned long divisor_stored_RTC=0;
 RTC_DATA_ATTR int sync_stored_RTC=ILLEGAL32;
@@ -2652,7 +2683,11 @@ void rtc_save_configuration() {
   MENU.out(F("save to RTC memory\t"));
 
   scale_stored_RTC	=NULL;
+#if defined ICODE_INSTEAD_OF_JIFFLES	// TODO: REMOVE: after testing a while
+  icode_stored_RTC	=NULL;
+#else
   jiffle_stored_RTC	=NULL;
+#endif
   sync_stored_RTC	=ILLEGAL32;	// hmmm, not bullet proof	TODO: sync_stored_RTC
   stack_sync_slices_stored_RTC = 0;
   divisor_stored_RTC	=ILLEGAL32;	// !=0 after wake up flags deep sleep wakeup
@@ -2674,8 +2709,13 @@ void rtc_save_configuration() {
   if(stack_sync_user_selected)
     stack_sync_slices_stored_RTC = musicBoxConf.stack_sync_slices;
 
+#if defined ICODE_INSTEAD_OF_JIFFLES	// TODO: REMOVE: after testing a while
+  if(icode_user_selected)
+    icode_stored_RTC = selected_in(iCODEs);
+#else
   if(jiffle_user_selected)
     jiffle_stored_RTC = selected_in(JIFFLES);
+#endif
 
   if(pitch_user_selected) {	// TODO: ################################################################
     multiplier_stored_RTC = musicBoxConf.pitch.multiplier;
@@ -2725,11 +2765,19 @@ void maybe_restore_from_RTCmem() {	// RTC data get's always cleared unless wakin
       stack_sync_user_selected = true;
     }
 
+#if defined ICODE_INSTEAD_OF_JIFFLES	// TODO: REMOVE: after testing a while
+    if(icode_stored_RTC != NULL) {
+      MENU.out(F("iCode "));
+      select_in(iCODEs, icode_stored_RTC);
+      icode_user_selected = true;
+    }
+#else
     if(jiffle_stored_RTC != NULL) {
       MENU.out(F("JIFFLE "));
       select_in(JIFFLES, jiffle_stored_RTC);
       jiffle_user_selected = true;
     }
+#endif
 
     if((multiplier_stored_RTC != ILLEGAL32) && divisor_stored_RTC != ILLEGAL32) {
       MENU.out(F("PITCH "));
@@ -2835,7 +2883,7 @@ void start_musicBox() {
     select_random_scale();	//   random scale
 
   if(!jiffle_user_selected)	// if *not* set by user interaction	// TODO: factor out randomisation
-    select_random_jiffle();	//   random jiffle
+    select_random_jiffle();	//   random jiffle			// TODO: ICODE_INSTEAD_OF_JIFFLES
 
 #if defined USE_MPU6050
   if(selected_in(JIFFLES) != jiffle_RAM) {	// maybe populate jiffle ram for motion UI?
@@ -2845,7 +2893,10 @@ void start_musicBox() {
 #endif
 
   next_gpio(0);			// FIXME: TODO: HACK  would destroy an already running configuration....
+
+#if ! defined ICODE_INSTEAD_OF_JIFFLES			// FIXME: REMOVE: oldstyle
   setup_jiffle_thrower_selected(selected_actions);	// FIXME: why does this give 'no free GPIO' ???
+#endif
 
   PULSES.add_selected_to_group(g_PRIMARY);
   // set_primary_block_bounds();		// delayed, see below
@@ -3480,7 +3531,7 @@ void musicBox_display() {
   MENU.out(F("subcycle octave 'O+' 'O-'\tresync/restart now 'N'\t't' metric tuning"));
   MENU.out_ON_off(MagicConf.some_metric_tunings_only);
   MENU.out(F("  'F' "));
-  if(scale_user_selected && sync_user_selected && jiffle_user_selected  && pitch_user_selected && stack_sync_user_selected /* && uiConf.subcycle_user_selected*/)
+  if(scale_user_selected && sync_user_selected && jiffle_user_selected  && pitch_user_selected && stack_sync_user_selected /* && uiConf.subcycle_user_selected*/)	// TODO:  ICODE_INSTEAD_OF_JIFFLES
     MENU.out(F("un"));
   MENU.outln(F("freeze parameters"));
 
@@ -3675,7 +3726,7 @@ void sync_landscape_time_sliced() {	// set this instruments time slice
   }
 }
 
-bool do_recalibrate_Y_ui = false;	// when switching on accGyro parameters should stay on spot, not change (i.e. jiffle)
+bool do_recalibrate_Y_ui = false;	// when switching on accGyro parameters should stay on spot, not change (i.e. jiffle, iCode)
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
 void Y_UI_display_lines() {
@@ -4354,11 +4405,15 @@ bool musicBox_reaction(char token) {
       MENU.drop_input_token();
       {
 	char* str;
-	str = array2name(SCALES, selected_in(SCALES));
+	str = selected_name(SCALES);
 	monochrome_big_or_multiline(0, str);
 	MENU.outln(str);
 
-	str = array2name(JIFFLES, selected_in(JIFFLES));
+#if defined ICODE_INSTEAD_OF_JIFFLES	// TODO: REMOVE: after testing a while
+	str = selected_name(iCODEs);
+#else
+	str = selected_name(JIFFLES);
+#endif
 	monochrome_big_or_multiline(3, str);
 	MENU.outln(str);
 	// TODO: monochrome metric_mnemonic 'IR...'
@@ -4480,7 +4535,7 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'F':	// freeze-unfreeze parameters
-    if(scale_user_selected && sync_user_selected && jiffle_user_selected && pitch_user_selected && stack_sync_user_selected /* && uiConf.subcycle_user_selected*/) {
+    if(scale_user_selected && sync_user_selected && jiffle_user_selected && pitch_user_selected && stack_sync_user_selected /* && uiConf.subcycle_user_selected*/) {	// TODO: ICODE_INSTEAD_OF_JIFFLES
       parameters_get_randomised();
     } else {
       parameters_by_user();

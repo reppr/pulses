@@ -680,3 +680,15 @@ short primary_count=0;	// TODO: ################ voices vs primary_count ???
 short voices=0;		// TODO: not used yet	################		################ voices vs primary_count ???
 
 s/savety/safety/
+
+#define ICODE_INSTEAD_OF_JIFFLES	// TESTING using all jiffles as icodes	TODO: REMOVE: after a while
+
+tag_randomness(icode_user_selected);	// TODO: DEBUG:
+
+void test_jiffle(unsigned int* jiffle, int count) {	// TODO: test_icode	ICODE_INSTEAD_OF_JIFFLES
+
+void select_jiffle_UI() {	// TODO: implement for iCODEs
+
+  case 'J':	// select, edit, test, load jiffle	// TODO: for iCODEs
+    select_jiffle_UI();
+    break;

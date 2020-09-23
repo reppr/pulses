@@ -261,11 +261,14 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
     row++;
 
     (*u8x8_p).clearLine(row);
-    (*u8x8_p).drawString(0, row++, array2name(SCALES, selected_in(SCALES)));
+    (*u8x8_p).drawString(0, row++, selected_name(SCALES));
 
     (*u8x8_p).clearLine(row);
-    (*u8x8_p).drawString(0, row++, array2name(JIFFLES, selected_in(JIFFLES)));
-
+#if defined ICODE_INSTEAD_OF_JIFFLES
+    (*u8x8_p).drawString(0, row++, selected_name(iCODEs));
+#else
+    (*u8x8_p).drawString(0, row++, selected_name(JIFFLES));
+#endif
     (*u8x8_p).clearLine(row);
     (*u8x8_p).setCursor(0,row++);
     (*u8x8_p).print(F("S="));	// sync

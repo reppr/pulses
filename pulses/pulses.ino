@@ -647,7 +647,7 @@ void fix_jiffle_range() {	// FIXME: use new implementation
 };
 
 
-void test_jiffle(unsigned int* jiffle, int count) {
+void test_jiffle(unsigned int* jiffle, int count) {	// TODO: test_icode	ICODE_INSTEAD_OF_JIFFLES
   if(jiffle==NULL || (jiffle[0]==0 && jiffle[1]==0))
     return;	// invalid
 
@@ -656,7 +656,7 @@ void test_jiffle(unsigned int* jiffle, int count) {
     return;	// no free pulse
 
   if(MENU.verbosity >= VERBOSITY_LOWEST)
-    MENU.outln(array2name(JIFFLES, selected_in(JIFFLES)));
+    MENU.outln(selected_name(JIFFLES));
 
   pulse_time_t period = PULSES.simple_time(6000000);	// TODO: better default based on the situation ################
   setup_icode_seeder(pulse, period, (icode_t*) jiffle, DACsq1 | DACsq2 | doesICODE);
@@ -1932,8 +1932,6 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 #if GPIO_PINS > 0
   init_click_GPIOs_OutLow();		// make them GPIO, OUTPUT, LOW
 #endif
-
-// #include "melody_jiffles.h"	// TODO: test only
 
 #ifdef USE_WIFI_telnet_menu		// do we use WIFI?
   #ifdef AUTOSTART_WIFI		// start wifi on booting? see: WiFi_stuff.ino
@@ -3231,7 +3229,7 @@ int tune_selected_2_scale_limited(Harmonical::fraction_t scaling, unsigned int *
     MENU.out(F("tune_selected_2_scale_limited("));
     display_fraction(&scaling);
     MENU.out_comma_();
-    MENU.out(array2name(SCALES, selected_in(SCALES)));
+    MENU.out(selected_name(SCALES));
     MENU.out_comma_();
     MENU.out(shortest_limit);
     MENU.outln(')');
@@ -3933,14 +3931,6 @@ void display_payload(int pulse) {
   scratch=&seed_icode_player;
   if (PULSES.pulses[pulse].payload == scratch) {
     MENU.out("seed_iCode ");
-//    if (MENU.verbosity > VERBOSITY_LOWEST) {	// normally we *want* to see the names
-//      char * name=array2name(iCODEs, (unsigned int *) PULSES.pulses[pulse].icode_p);
-//      if (name != "")
-//	MENU.out(name);
-//      else	// maybe it is a jiffle, played as iCode?
-//	MENU.out("J:");
-//	MENU.out(array2name(JIFFLES, (unsigned int *) PULSES.pulses[pulse].icode_p));
-//    }
     if (MENU.verbosity > VERBOSITY_LOWEST) {	// normally we *want* to see the names
       char * name=array2name(iCODEs, (unsigned int *) PULSES.pulses[pulse].icode_p);
       if (name != "")
@@ -4610,7 +4600,11 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   PULSES.select_from_to(bass_pulses, bass_pulses + middle_pulses -1);
 
   for(int pulse=bass_pulses; pulse<bass_pulses+middle_pulses; pulse++) {
+#if defined ICODE_INSTEAD_OF_JIFFLES
+    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(iCODEs), DACsq1 | doesICODE | CLICKs);
+#else
     setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(JIFFLES), DACsq1 | doesICODE | CLICKs);
+#endif
     PULSES.set_gpio(pulse, next_gpio());
   }
   PULSES.add_selected_to_group(g_MIDDLE);
@@ -4621,7 +4615,11 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   // high octave on DAC2
   PULSES.select_from_to(bass_pulses + middle_pulses -1, bass_pulses + middle_pulses + high_pulses -1);
   for(int pulse = bass_pulses + middle_pulses; pulse<voices; pulse++) {	// pulse[21] belongs to both groups
+#if defined ICODE_INSTEAD_OF_JIFFLES
+    setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(iCODEs), DACsq2 | doesICODE);
+#else
     setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) d4096_256, DACsq2 | doesICODE);
+#endif
   }
   PULSES.add_selected_to_group(g_HIGH_END);
 
@@ -4910,11 +4908,16 @@ void show_UI_basic_setup() {
   MENU.space(4);
 
   MENU.out(F("SCALE: "));
-  MENU.out(array2name(SCALES, selected_in(SCALES)));
+  MENU.out(selected_name(SCALES));
   MENU.space(3);
 
+#if defined ICODE_INSTEAD_OF_JIFFLES	// TODO: REMOVE: after testing a while
+  MENU.out(F("iCode: "));
+  MENU.out(selected_name(iCODEs));
+#else
   MENU.out(F("JIFFLE: "));
-  MENU.out(array2name(JIFFLES, selected_in(JIFFLES)));
+  MENU.out(selected_name(JIFFLES));
+#endif
   MENU.space(3);
 
   MENU.out(F("SCALING: "));
@@ -4956,7 +4959,7 @@ void Press_toStart() {
 }
 
 
-void select_jiffle_UI() {	// select jiffle, maybe apply to selected pulses
+void select_jiffle_UI() {	// select jiffle, maybe apply to selected pulses	// TODO: implement for iCODEs
   /*
     'J'  shows registered jiffle names and display_jiffletab(<selected_jiffle>)
     'JT' tests jiffle
@@ -5928,7 +5931,7 @@ bool menu_pulses_reaction(char menu_input) {
     setup_jiffle_thrower_selected(selected_actions);
     break;
 
-  case 'J':	// select, edit, test, load jiffle
+  case 'J':	// select, edit, test, load jiffle	// TODO: for iCODEs
     select_jiffle_UI();
     break;
 
