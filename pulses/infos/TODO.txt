@@ -687,8 +687,4 @@ tag_randomness(icode_user_selected);	// TODO: DEBUG:
 
 void test_jiffle(unsigned int* jiffle, int count) {	// TODO: test_icode	ICODE_INSTEAD_OF_JIFFLES
 
-void select_jiffle_UI() {	// TODO: implement for iCODEs
-
-  case 'J':	// select, edit, test, load jiffle	// TODO: for iCODEs
-    select_jiffle_UI();
-    break;
+pulses:  case 'R':	// scale  was: ratio	// TODO: see musicBox 'R'	make them identical? ################

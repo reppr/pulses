@@ -2886,10 +2886,18 @@ void start_musicBox() {
     select_random_jiffle();	//   random jiffle			// TODO: ICODE_INSTEAD_OF_JIFFLES
 
 #if defined USE_MPU6050
-  if(selected_in(JIFFLES) != jiffle_RAM) {	// maybe populate jiffle ram for motion UI?
-    if(jiffle_RAM[0] == '\0')
-      load2_jiffle_RAM(selected_in(JIFFLES));	// anything seems better than nothing ;)
-  }
+  #if defined ICODE_INSTEAD_OF_JIFFLES
+    extern bool /*error*/ copy2_code_RAM(unsigned int *source, unsigned int size);
+    if(selected_in(iCODEs) != code_RAM) {	// maybe populate code_RAM for motion UI?
+      if(code_RAM[0] == '\0')
+        copy2_code_RAM(selected_in(iCODEs), selected_length_in(iCODEs));  // anything seems better than nothing ;)
+    }
+  #else
+    if(selected_in(JIFFLES) != code_RAM) {	// maybe populate code_RAM for motion UI?
+      if(code_RAM[0] == '\0')
+        load_jiffle_2_code_RAM(selected_in(JIFFLES));	// anything seems better than nothing ;)
+    }
+  #endif
 #endif
 
   next_gpio(0);			// FIXME: TODO: HACK  would destroy an already running configuration....

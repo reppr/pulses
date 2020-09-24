@@ -394,20 +394,6 @@ char wait_for_input() {
 //    MENU.out(bruch2.multiplier); MENU.slash(); MENU.outln(bruch2.divisor);
 
 
-    // load2_jiffle_RAM(gling128);	// zero terminated
-    // load2_jiffle_RAM(jiffletab_december_pizzicato);
-    // display_jiffletab(jiffle);
-
-    //    tuning = PULSES.tuning; // FIXME: workaround for having all 3 sweep implementations in parallel
-    //    sweep_info();
-    //    {
-    //      int fastest=PULSES.fastest_pulse();
-    //      MENU.ln();
-    //      PULSES.deactivate_pulse(fastest);
-    //    }
-//    break;
-
-
 /* **************************************************************** */
 
 /* **************** Inputs **************** */

@@ -37,10 +37,10 @@ DB_info(SCALES);
 init_DB(JIFFLES, sizeof(JIFFLES), "JIFFLES");
 
 // RAM
-REGISTER_JIFFLE(jiffle_RAM);
-// REGISTER_JIFFLE(jiffle_RAM1);
-// REGISTER_JIFFLE(jiffle_RAM2);
-// REGISTER_JIFFLE(jiffle_RAM3);
+REGISTER_JIFFLE(code_RAM);
+// REGISTER_JIFFLE(code_RAM1);
+// REGISTER_JIFFLE(code_RAM2);
+// REGISTER_JIFFLE(code_RAM3);
 
 // ???
 
@@ -201,7 +201,8 @@ DB_info(JIFFLES);
 
 #include "iCODE.h"
 init_DB(iCODEs, sizeof(iCODEs), "iCODEs");
-REGISTER_iCODE(d4096_1024_i2cLED);		// 0
+REGISTER_iCODE(code_RAM);		// 0
+REGISTER_iCODE(d4096_1024_i2cLED);
 REGISTER_iCODE(d4096_1024_icode_jiff);
 REGISTER_iCODE(melody0);
 

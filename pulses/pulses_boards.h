@@ -53,7 +53,7 @@
   //#define PL_MAX		256	// TEST :)
 #endif
 
-    #define JIFFLE_RAM_SIZE	256*3+2
+    #define CODE_RAM_SIZE	256*3+2
     #define SCALES_RAM_SIZE	256*2+2
     // must be defined before including Pulses
     #define IMPLEMENT_TUNING		// needs float
@@ -66,7 +66,7 @@
     #define STARTUP_DELAY	64	// ESP8266 maybe does not need that, but...
 
     #define PL_MAX	32
-    #define JIFFLE_RAM_SIZE	256*3+2
+    #define CODE_RAM_SIZE	256*3+2
     #define SCALES_RAM_SIZE	256*2+2
     // must be defined before including Pulses
     #define IMPLEMENT_TUNING		// needs float
@@ -76,14 +76,14 @@
 
   #elif defined(__SAM3X8E__)			// Arduino DUE
     #define PL_MAX	64
-    #define JIFFLE_RAM_SIZE	256*3+2
+    #define CODE_RAM_SIZE	256*3+2
     #define SCALES_RAM_SIZE	256*2+2
     // must be defined before including Pulses
     #define IMPLEMENT_TUNING		// needs float
 
   #elif defined(__AVR_ATmega2560__)		// mega2560
     #define PL_MAX	32	// test with more pins than 8 ;)
-    #define JIFFLE_RAM_SIZE	256*3+2
+    #define CODE_RAM_SIZE	256*3+2
     #define SCALES_RAM_SIZE	256*2+2
 //  #define RAM_IS_SCARE	// ################ FIXME: RAM_IS_SCARE ??? mega2560 ################
 

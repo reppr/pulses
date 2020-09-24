@@ -3,6 +3,8 @@
   temporary test menu UI during development
 */
 
+display_icode(melody0, sizeof(melody0));
+
 //#include "SPEED-TESTS.h"
 
 #if defined USE_MONOCHROME_DISPLAY

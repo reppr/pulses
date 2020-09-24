@@ -79,6 +79,10 @@ unsigned int* selected_in(arr_descriptor* DB) {
   return DB[0].pointer;
 }
 
+unsigned int selected_length_in(arr_descriptor* DB) {
+  return DB[pointer2index(DB, DB[0].pointer)].len;
+}
+
 bool register_in_DB(arr_descriptor* DB,	\
 	unsigned int* array, unsigned int len, unsigned int item, char* name, char* type) {
   // DB[0] describes the database itself
@@ -168,6 +172,7 @@ bool register_jiffle(unsigned int* jiffle, unsigned int len, char* name) {
   void display_names(arr_descriptor* DB) {
     unsigned int * selected_array = DB[0].pointer;
     int selected_n=-1;
+    int name_len;
     MENU.ln();
     for (int i = 0; i < DB[0].item; i++) {
       if(i) {					// *not for database DB[0]
@@ -189,6 +194,17 @@ bool register_jiffle(unsigned int* jiffle, unsigned int len, char* name) {
       if (i==0) {
 	MENU.tab();
 	MENU.out(DB[0].item - 1);	// number of items in data base
+      }
+
+      if(MENU.verbosity > VERBOSITY_LOWEST) {	// maybe show size
+	MENU.tab();
+	name_len = strlen(DB[i].name);
+	if(name_len < 8)
+	  MENU.tab();
+	if(name_len < 16)
+	  MENU.tab();
+	MENU.out(F("bytes "));
+	MENU.out(DB[i].len);
       }
 
       MENU.ln();
@@ -269,7 +285,7 @@ bool UI_select_from_DB(arr_descriptor* DB) {
 #define REGISTER_JIFFLE(X)	register_jiffle((X), sizeof((X)), STRINGIFY(X))
 
 
-bool register_iCODE(int* icode, unsigned int len, char* name) {
+bool register_iCODE(void* icode, unsigned int len, char* name) {
   return register_in_DB(iCODEs, (unsigned int *) icode, len, 1, name, "icode");
 }
 

@@ -465,6 +465,20 @@ bool DO_or_maybe_display(unsigned char verbosity_level) { // the flag tells *if*
 /* **************************************************************** */
 // iCode
 
+void display_icode(icode_t* icode_p, size_t len) {
+  int item_size = sizeof(icode_p[0]);
+  size_t shown=0;
+  int i=0;
+  MENU.out(F("{ "));
+  while (shown < len)
+    {
+      PULSES.show_icode_mnemonic(icode_p[i++]);
+      MENU.out(F(", "));
+      shown += item_size;
+    }
+  MENU.outln('}');
+}
+
 bool setup_icode_seeder(int pulse, pulse_time_t period, icode_t* icode_p, action_flags_t dest_action_flags) {
   //  if ((pulse > ILLEGAL32) && (pulse < PL_MAX)) {
   if ((pulse > -1) && (pulse < PL_MAX) && (pulse != ILLEGAL32)) {
@@ -478,6 +492,15 @@ bool setup_icode_seeder(int pulse, pulse_time_t period, icode_t* icode_p, action
   return false;
 }
 
+void en_icode_seeder_selected(icode_t* icode_p, action_flags_t dest_action_flags) {
+  for (int pulse=0; pulse<PL_MAX; pulse++) {
+    if (PULSES.pulse_is_selected(pulse)) {
+      PULSES.set_icode_p(pulse, icode_p, false);		// icode inactive in seeder
+      PULSES.set_payload(pulse, seed_icode_player);
+      PULSES.pulses[pulse].dest_action_flags |= dest_action_flags;
+    }
+  }
+}
 
 void seed_icode_player(int seeder_pulse) {	// as payload for seeder
   int dest_pulse = PULSES.setup_pulse(NULL, ACTIVE, PULSES.pulses[seeder_pulse].next, PULSES.pulses[seeder_pulse].period);
@@ -623,11 +646,11 @@ pulse_time_t scale2harmonical_cycle(unsigned int* scale, pulse_time_t* duration)
 // editing jiffle data
 // if we have enough RAM, we work in an int array[]
 // pre defined jiffletabs can be copied there before using and editing
-#ifndef JIFFLE_RAM_SIZE
+#ifndef CODE_RAM_SIZE
   // jiffletabs *MUST* have 2 trailing zeros
-  #define JIFFLE_RAM_SIZE 9*3+2	// small buffer might fit on simple hardware
+  #define CODE_RAM_SIZE 9*3+2	// small buffer might fit on simple hardware
 #endif
-unsigned int jiffle_RAM[JIFFLE_RAM_SIZE] = {0};
+unsigned int code_RAM[CODE_RAM_SIZE] = {0};
 unsigned int jiffle_write_index=0;
 unsigned int jiffle_range_bottom=0;
 unsigned int jiffle_range_top=0;
@@ -636,8 +659,8 @@ unsigned int jiffle_range_top=0;
 void fix_jiffle_range() {	// FIXME: use new implementation
   unsigned int i;
 
-  if (jiffle_range_top >= JIFFLE_RAM_SIZE)
-    jiffle_range_top=JIFFLE_RAM_SIZE-1;
+  if (jiffle_range_top >= CODE_RAM_SIZE)
+    jiffle_range_top=CODE_RAM_SIZE-1;
 
   if (jiffle_range_bottom > jiffle_range_top) {		// swap
     i = jiffle_range_bottom;
@@ -4341,11 +4364,11 @@ void set_jiffle_RAM_value(int new_value) {
   char input;
   //  unsigned int* jiffle = selected_in(JIFFLES);
 
-  jiffle_RAM[jiffle_write_index++]=new_value;
+  code_RAM[jiffle_write_index++]=new_value;
 
   // jiffletabs *MUST* have 2 trailing zeros	// ################ FIXME: ################
-  if (jiffle_write_index >= (JIFFLE_RAM_SIZE - 2)) {	// array full?
-    jiffle_RAM[jiffle_write_index--]=0;
+  if (jiffle_write_index >= (CODE_RAM_SIZE - 2)) {	// array full?
+    code_RAM[jiffle_write_index--]=0;
 
     // drop all remaining numbers and delimiters from input
     bool yes=true;
@@ -4370,23 +4393,23 @@ void set_jiffle_RAM_value(int new_value) {
 
 // as a zero was written stop receiving further input, cleanup
 void set_jiffle_RAM_value_0_stop() {
-  if (jiffle_write_index >= (JIFFLE_RAM_SIZE - 2))
-    jiffle_write_index = JIFFLE_RAM_SIZE - 2;
+  if (jiffle_write_index >= (CODE_RAM_SIZE - 2))
+    jiffle_write_index = CODE_RAM_SIZE - 2;
 
-  jiffle_RAM[JIFFLE_RAM_SIZE - 1 ] = 0;		// zero out last 2 array elements (savety net)
-  jiffle_RAM[JIFFLE_RAM_SIZE - 2 ] = 0;
+  code_RAM[CODE_RAM_SIZE - 1 ] = 0;		// zero out last 2 array elements (savety net)
+  code_RAM[CODE_RAM_SIZE - 2 ] = 0;
   MENU.menu_mode=0;				// stop numeric data input
   //  jiffle_write_index=0;		// no, we leave write index as is
 
-  display_jiffletab(jiffle_RAM);		// put that here for now
+  display_jiffletab(code_RAM);		// put that here for now
 }
 
 
-void load2_jiffle_RAM(unsigned int *source) {	// double zero terminated
+void load_jiffle_2_code_RAM(unsigned int *source) {	// for jiffles, double zero terminated
   unsigned int data;
   unsigned int cnt=0;	// data counter
 
-  while (jiffle_write_index < (JIFFLE_RAM_SIZE - 2)) {
+  while (jiffle_write_index < (CODE_RAM_SIZE - 2)) {
     data=source[cnt++];
     if (data==0) {
       --cnt;
@@ -4395,7 +4418,16 @@ void load2_jiffle_RAM(unsigned int *source) {	// double zero terminated
 
     set_jiffle_RAM_value(data);
   }
-}
+} // load_jiffle_2_code_RAM()
+
+
+bool /*error*/ copy2_code_RAM(unsigned int *source, unsigned int size) {
+  if(size > sizeof(code_RAM))
+    return true;
+
+  memcpy(code_RAM, source, size);
+  return false;
+} // copy2_code_RAM()
 
 
 Harmonical::fraction_t jiffletab_len(unsigned int *jiffletab) {
@@ -4959,13 +4991,65 @@ void Press_toStart() {
 }
 
 
-void select_jiffle_UI() {	// select jiffle, maybe apply to selected pulses	// TODO: implement for iCODEs
+void select_iCode_UI() {	// select iCode, maybe apply to selected pulses
+  /*
+    'Q'   shows registered iCode names and display data
+    'QT'  tests iCode
+    'Q7'  selects iCode #7 and display data
+    'Q!'  copy selected iCode in code_RAM, select code_RAM, display_jiffletab(code_RAM)
+    'Q9!' copy iCode #9 in code_RAM, select code_RAM, display_jiffletab(code_RAM)
+  */
+
+  unsigned int* iCode_was = selected_in(iCODEs);
+
+  int next_token = MENU.peek();
+  if (next_token != '!' && next_token != '?')	// 'Q<num>' 'Q+'=='QE' 'Q-'=='QT' select iCode
+    if (UI_select_from_DB(iCODEs)) {		// select iCode UI
+      icode_user_selected = true;
+      not_a_preset();
+    }
+
+  bool trying=true;
+  while (trying) {
+    switch (MENU.peek()) {
+    case '?':	// 'Q[...]?' tests a iCode
+      MENU.drop_input_token();
+      test_jiffle(selected_in(iCODEs), 3);
+      break;
+
+    case '!':	// 'Q[<num>]!' copies an already selected iCodetab to RAM, selects RAM
+      MENU.drop_input_token();
+      if(selected_in(iCODEs) != code_RAM) {
+	unsigned int * source=selected_in(iCODEs);
+	copy2_code_RAM(source, selected_length_in(iCODEs));
+      }
+      select_in(iCODEs, code_RAM);
+      icode_user_selected = true;
+      break;
+
+    default:
+      trying=false;
+    }
+  }
+
+  if(iCode_was != selected_in(iCODEs)) {
+    icode_user_selected = true;
+    en_icode_seeder_selected((icode_t*) selected_in(iCODEs), selected_actions);
+    not_a_preset();
+  }
+
+  if (MENU.verbosity >= VERBOSITY_SOME)
+    display_icode((icode_t*) selected_in(iCODEs), selected_length_in(iCODEs));
+} // select_iCode_UI()
+
+
+void select_jiffle_UI() {	// select jiffle, maybe apply to selected pulses
   /*
     'J'  shows registered jiffle names and display_jiffletab(<selected_jiffle>)
     'JT' tests jiffle
     'J7' selects jiffle #7 and display_jiffletab()
-    'J!' copy selected jiffle in jiffle_RAM, select jiffle_RAM, display_jiffletab(jiffle_RAM)
-    'J9!' copy jiffle #9 in jiffle_RAM, select jiffle_RAM, display_jiffletab(jiffle_RAM)
+    'J!' copy selected jiffle in code_RAM, select code_RAM, display_jiffletab(code_RAM)
+    'J9!' copy jiffle #9 in code_RAM, select code_RAM, display_jiffletab(code_RAM)
   */
   // some jiffles from source, some very old FIXME:	review and delete	################
 
@@ -4988,12 +5072,12 @@ void select_jiffle_UI() {	// select jiffle, maybe apply to selected pulses	// TO
 
     case '!':	// 'J[<num>]!' copies an already selected jiffletab to RAM, selects RAM
       MENU.drop_input_token();
-      if(selected_in(JIFFLES) != jiffle_RAM) {
+      if(selected_in(JIFFLES) != code_RAM) {
 	unsigned int * source=selected_in(JIFFLES);
 	// jiffle_write_index=0;	// no, write starting at jiffle_write_index #### FIXME: ####
-	load2_jiffle_RAM(source);
+	load_jiffle_2_code_RAM(source);
       }
-      select_in(JIFFLES, jiffle_RAM);
+      select_in(JIFFLES, code_RAM);
       jiffle_user_selected = true;
       break;
 
@@ -5464,8 +5548,8 @@ bool menu_pulses_reaction(char menu_input) {
   case '>':	// cursor right
     switch (MENU.menu_mode) {
     case JIFFLE_ENTRY_UNTIL_ZERO_MODE:
-      if (++jiffle_write_index >= (JIFFLE_RAM_SIZE - 2))
-	jiffle_write_index = JIFFLE_RAM_SIZE - 2;
+      if (++jiffle_write_index >= (CODE_RAM_SIZE - 2))
+	jiffle_write_index = CODE_RAM_SIZE - 2;
 
       if(MENU.peek()==EOF8)
 	if (MENU.verbosity)
@@ -5931,8 +6015,12 @@ bool menu_pulses_reaction(char menu_input) {
     setup_jiffle_thrower_selected(selected_actions);
     break;
 
-  case 'J':	// select, edit, test, load jiffle	// TODO: for iCODEs
+  case 'J':	// select, edit, test, load jiffle
     select_jiffle_UI();
+    break;
+
+  case 'Q':	// select, edit, test, load iCode
+    select_iCode_UI();
     break;
 
   // 'R' OBSOLETE????	################
@@ -5969,9 +6057,9 @@ bool menu_pulses_reaction(char menu_input) {
 
   case '{':	// enter_jiffletab
     MENU.menu_mode=JIFFLE_ENTRY_UNTIL_ZERO_MODE;
-    select_in(JIFFLES, jiffle_RAM);
+    select_in(JIFFLES, code_RAM);
     jiffle_write_index=0;	// ################ FIXME: ################
-    select_in(JIFFLES, jiffle_RAM);
+    select_in(JIFFLES, code_RAM);
     if(MENU.peek()==EOF8)
       if (MENU.verbosity)
 	display_jiffletab(selected_in(JIFFLES));
