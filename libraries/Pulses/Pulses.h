@@ -63,8 +63,10 @@ enum icode {	// names are all four letter words ?	// maybe 8? 12? 16?(15?)
   NOTE_MulDiv,  // sets note length i.e. 3/8 * NOTE_scaling
   STACCISS,	// staccissiomo
   STACCATO,
+  SEPARATO,
   PORTATO,
   LEGATO,
+  MUTED,	// =PAUSE following notes will not sound. Call LEGATO or similar to make them play again
 
   ICODE_MAX,
 };

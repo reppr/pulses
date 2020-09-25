@@ -1421,11 +1421,17 @@ void Pulses::show_icode_mnemonic(icode_t icode) {
   case STACCATO:
     (*MENU).out(F("STACCATO"));
     break;
+  case SEPARATO:
+    (*MENU).out(F("SEPARATO"));
+    break;
   case PORTATO:
     (*MENU).out(F("PORTATO"));
     break;
   case LEGATO:
     (*MENU).out(F("LEGATO"));
+    break;
+  case MUTED:
+    (*MENU).out(F("MUTED"));
     break;
   case ICODE_MAX:
     (*MENU).out(F("ICODE_MAX"));
@@ -1581,9 +1587,15 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	init_melody_mode(pulse);
 	break;
 
+      case SEPARATO:
+	pulses[pulse].note_sounding_mul = 7;
+	pulses[pulse].note_sounding_div = 8;
+	init_melody_mode(pulse);
+	break;
+
       case PORTATO:
-	pulses[pulse].note_sounding_mul = 31;
-	pulses[pulse].note_sounding_div = 32;
+	pulses[pulse].note_sounding_mul = 15;
+	pulses[pulse].note_sounding_div = 16;
 	init_melody_mode(pulse);
 	break;
 
@@ -1591,6 +1603,15 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	pulses[pulse].note_sounding_mul = 1;
 	pulses[pulse].note_sounding_div = 1;
 	init_melody_mode(pulse);
+	break;
+
+      case MUTED:  // PAUSE following notes will not sound. Call LEGATO or similar to make them play again
+	pulses[pulse].note_sounding_mul = 0;
+	pulses[pulse].note_sounding_div = 1;
+	init_melody_mode(pulse);
+	pulse[pulses].counter--;
+	pulses[pulse].countdown=1;
+	busy=false;
 	break;
 
       case JIFFLE_MODE:

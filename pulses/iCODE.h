@@ -29,8 +29,11 @@ icode_t TEST_ICODE_MCP23017[] = { doA2,0,1, 1,4096,1024, doA2,0,0, KILL, };	// t
 
 icode_t melody0[] = { MELODY_MODE, 0, 1, 2, KILL, };				// MELODY_MODE testing
 icode_t melody1[] = { LEGATO, NOTE_16, 0, -1, -2, -3, 0, 1, 2, 3, KILL, };	// MELODY_MODE testing
-icode_t melody2[] = { LEGATO, NOTE_16, 0, 0, 0, 1,  NOTE_32, 0, 0, 0, 1,  NOTE_64, 0, 0, 0, 1,  NOTE_128, 0, 0, 0, 1,  KILL, };	// MELODY_MODE testing
-icode_t melody3[] = { LEGATO, NOTE_16, 0, 0, 0, 1, PORTATO, 0, 0, 0, 1, STACCATO, 0, 0, 0, 1,  STACCISS, 0, 0, 0, 1, KILL, };	// MELODY_MODE testing
+icode_t melody2[] = { LEGATO, NOTE_16, 0, 0, 0, 1,  NOTE_32, 0, 0, 0, 1,  NOTE_64, 0, 0, 0, 1,  NOTE_128, 0, 0, 0, 1,
+		      KILL, };	// MELODY_MODE testing
+icode_t melody3[] = { LEGATO, NOTE_16, 0, 0, 1, PORTATO, 0, 0, 1, SEPARATO, 0, 0, 1, STACCATO, 0, 0, 1,
+		      STACCISS, 0, 0, 1, KILL, };	// MELODY_MODE testing
+icode_t melody4[] = { NOTE_8, 0, 1, 2, MUTED, 0, LEGATO, 3, 1, 0, KILL, };	// MELODY_MODE MUTED testing
 
 #define ICODE_H
 #endif
