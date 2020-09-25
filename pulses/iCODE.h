@@ -36,5 +36,7 @@ icode_t melody3[] = { LEGATO, NOTE_16, 0, 0, 1, PORTATO, 0, 0, 1, SEPARATO, 0, 0
 icode_t melody4[] = { NOTE_8, 0, 1, 2, MUTED, 0, LEGATO, 3, 1, 0, KILL, };	// MELODY_MODE MUTED testing
 icode_t melody5[] = { NOTE_8, 0, SOUNDSEP, 1, 4,  1, 2, 3, SOUNDSEP, 1, 64,  4, 3, 1, 0, KILL, };  // testing SOUNDSEP articulation
 
+icode_t melody6[] = { NOTE_16, SOUNDSEP,1,6, 0,0,1,2,3,4, NOTE_8, LEGATO, 5, MUTED, 5, NOTE_32, SEPARATO, 6,7,8,7,6,5,4,3,2,1, NOTE_16, 0, KILL, };  // testing SOUNDSEP articulation
+
 #define ICODE_H
 #endif

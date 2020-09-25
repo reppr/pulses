@@ -5,7 +5,7 @@
 
 //display_icode(melody0, sizeof(melody0));
 
-MENU.play_KB_macro(F("186 P *8 MTN30 + N"));	// MELODY_MODE test
+MENU.play_KB_macro(F("187 P *6 N"));	// try out MELODY mode
 
 //#include "SPEED-TESTS.h"
 

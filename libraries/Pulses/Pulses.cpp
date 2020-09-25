@@ -1804,11 +1804,11 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 
 	  while(octave_shift > 0) {
 	    octave_shift--;
-	    div_time(&pulses[pulse].period, 2);
+	    mul_time(&pulses[pulse].period, 2);
 	  }
 	  while(octave_shift < 0) {
 	    octave_shift++;
-	    mul_time(&pulses[pulse].period, 2);
+	    div_time(&pulses[pulse].period, 2);
 	  }
 	  div_time(&pulses[pulse].period, pulses[pulse].note_div_scale);
 

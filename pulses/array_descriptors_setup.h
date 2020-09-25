@@ -210,6 +210,7 @@ REGISTER_iCODE(melody2);
 REGISTER_iCODE(melody3);
 REGISTER_iCODE(melody4);
 REGISTER_iCODE(melody5);
+REGISTER_iCODE(melody6);
 
 /*
 #if defined USE_i2c

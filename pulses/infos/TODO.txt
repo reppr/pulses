@@ -687,4 +687,6 @@ tag_randomness(icode_user_selected);	// TODO: DEBUG:
 
 pulses:  case 'R':	// scale  was: ratio	// TODO: see musicBox 'R'	make them identical? ################
 
-implement PAUSE
+skip pause from UI and from preset
+
+pitch tuning from preset
