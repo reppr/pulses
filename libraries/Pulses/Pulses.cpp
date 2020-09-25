@@ -1433,6 +1433,9 @@ void Pulses::show_icode_mnemonic(icode_t icode) {
   case MUTED:
     (*MENU).out(F("MUTED"));
     break;
+  case SOUNDSEP:
+    (*MENU).out(F("SOUNDSEP"));
+    break;
   case ICODE_MAX:
     (*MENU).out(F("ICODE_MAX"));
     break;
@@ -1602,6 +1605,12 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
       case LEGATO:
 	pulses[pulse].note_sounding_mul = 1;
 	pulses[pulse].note_sounding_div = 1;
+	init_melody_mode(pulse);
+	break;
+
+      case SOUNDSEP: // change articulation
+	pulses[pulse].note_sounding_mul = *icode_p++;	// mul
+	pulses[pulse].note_sounding_div = *icode_p++;	// div
 	init_melody_mode(pulse);
 	break;
 

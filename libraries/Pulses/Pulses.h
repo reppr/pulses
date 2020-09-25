@@ -67,6 +67,7 @@ enum icode {	// names are all four letter words ?	// maybe 8? 12? 16?(15?)
   PORTATO,
   LEGATO,
   MUTED,	// =PAUSE following notes will not sound. Call LEGATO or similar to make them play again
+  SOUNDSEP,	// sounding mul/div for articulation
 
   ICODE_MAX,
 };
