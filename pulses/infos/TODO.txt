@@ -685,6 +685,6 @@ s/savety/safety/
 
 tag_randomness(icode_user_selected);	// TODO: DEBUG:
 
-void test_jiffle(unsigned int* jiffle, int count) {	// TODO: test_icode	ICODE_INSTEAD_OF_JIFFLES
-
 pulses:  case 'R':	// scale  was: ratio	// TODO: see musicBox 'R'	make them identical? ################
+
+implement PAUSE

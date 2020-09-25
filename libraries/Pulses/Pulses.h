@@ -61,9 +61,12 @@ enum icode {	// names are all four letter words ?	// maybe 8? 12? 16?(15?)
   NOTE_64,	// (bare)	sets (legato) note length to NOTE_div / 64	i.e. 4096/64 = 64
   NOTE_128,	// (bare)	sets (legato) note length to NOTE_div / 128	i.e. 4096/128 = 32
   NOTE_MulDiv,  // sets note length i.e. 3/8 * NOTE_scaling
+  STACCISS,	// staccissiomo
   STACCATO,
   PORTATO,
   LEGATO,
+
+  ICODE_MAX,
 };
 
 #ifndef pulse_flags_t
@@ -270,14 +273,21 @@ struct pulse_t {
   */
 
   unsigned short note_length;	// total length in vibrations *including* the break between notes (i.e. staccato)
+  uint8_t note_length_mul;
+  uint8_t note_length_div;
   /*
-    in MELODY_MODE note_length vibrations in a note, like 4096/4
+    in MELODY_MODE
+    note_length (in vibrations) total length of note, like 4096/4, *including* break
+    note_length (in vibrations) is note_div_scale * note_length_mul / note_length_div
   */
 
-  uint8_t note_break_mul8;
-  uint8_t note_break_div8;
+  unsigned short note_sounding;	// sounding length in vibrations *without* the break between notes (i.e. staccato)
+  uint8_t note_sounding_mul;	// i.e. STACCATO is note_sounding_mul=1  note_sounding_div=2 => break is 1/2
+  uint8_t note_sounding_div;
   /*
-    in MELODY_MODE (note_break_mul8/note_break_div8)*note_length vibrations omitted after a note, like 4096/4
+    MELODY_MODE part of note_length where the sound is actually vibrating
+    (note_sounding_mul / note_sounding_div) * note_length  vibrations are actually played,
+    the rest omitted as break between notes
   */
 
 #if defined USE_i2c
@@ -430,6 +440,7 @@ class Pulses {
 
   void play_icode(int pulse);			// payload to play icode
   void show_icode_mnemonic(icode_t icode);	// display icode mnemonic
+  void init_melody_mode(int pulse);		// set needed pulse variables
 
 //  DOES NOT WORK: non static member function	TODO: fix or remove ################
 //  void seed_icode_player(int pulse);		// used as payload to seed play_icode() pulses

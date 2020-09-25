@@ -1497,6 +1497,15 @@ void muting_actions_UI() {	// 'M' already received   action muting UI
       }
       break;
 
+    case 'N':	// 'MN<nn>' toggle pulse 'N'
+      MENU.drop_input_token();
+      {
+	int input = MENU.numeric_input(-1);
+	if(input >= musicBoxConf.lowest_primary && input <= musicBoxConf.highest_primary)
+	  PULSES.pulses[input].action_flags ^= noACTION;
+      }
+      break;
+
     default:
       goto muting_UI_end;
     } // next letter switch

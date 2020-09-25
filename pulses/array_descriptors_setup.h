@@ -205,6 +205,9 @@ REGISTER_iCODE(code_RAM);		// 0
 REGISTER_iCODE(d4096_1024_i2cLED);
 REGISTER_iCODE(d4096_1024_icode_jiff);
 REGISTER_iCODE(melody0);
+REGISTER_iCODE(melody1);
+REGISTER_iCODE(melody2);
+REGISTER_iCODE(melody3);
 
 /*
 #if defined USE_i2c

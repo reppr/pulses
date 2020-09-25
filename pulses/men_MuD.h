@@ -3,7 +3,9 @@
   temporary test menu UI during development
 */
 
-display_icode(melody0, sizeof(melody0));
+//display_icode(melody0, sizeof(melody0));
+
+MENU.play_KB_macro(F("186 P *8 MTN30 + N"));	// MELODY_MODE test
 
 //#include "SPEED-TESTS.h"
 

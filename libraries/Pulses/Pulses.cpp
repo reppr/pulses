@@ -493,7 +493,7 @@ void Pulses::wake_pulse(int pulse) {
       action_flags = pulses[pulse].action_flags;	// re-read (pulse might be changed)
     }
 
-    if (action_flags & doesICODE) {		// play icode   (payload already done)
+    if (action_flags & doesICODE) {		// play_icode(pulse)   (payload already done)
       play_icode(pulse);
 #if defined PULSES_USE_DOUBLE_TIMES
       if(pulses[pulse].period == simple_time(0))	// pulse got killed?
@@ -1415,6 +1415,9 @@ void Pulses::show_icode_mnemonic(icode_t icode) {
   case NOTE_MulDiv:
     (*MENU).out(F("NOTE_MulDiv"));
     break;
+  case STACCISS:
+    (*MENU).out(F("STACCISS"));
+    break;
   case STACCATO:
     (*MENU).out(F("STACCATO"));
     break;
@@ -1423,6 +1426,9 @@ void Pulses::show_icode_mnemonic(icode_t icode) {
     break;
   case LEGATO:
     (*MENU).out(F("LEGATO"));
+    break;
+  case ICODE_MAX:
+    (*MENU).out(F("ICODE_MAX"));
     break;
 
   default:
@@ -1468,7 +1474,7 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
   bool busy=true;
   while (busy) {
     icode = *icode_p;
-    if (icode < 0 ) {	// ICODE or (JIFF | MELODY) ?
+    if (icode <= ICODE_MAX) {	// ICODE or (JIFF | MELODY) ?
       icode_p++;
 #if defined DEBUG_ICODE
       (*MENU).out(F("\nplay_icode "));
@@ -1502,53 +1508,44 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	break;
 
       case MELODY_MODE:
-	pulses[pulse].icode_mode = MELODY_MODE;
+	init_melody_mode(pulse);
 	pulses[pulse].countdown = 0;	// safety_net
-
-	if(pulses[pulse].note_div_scale==0) {		// REDUNDANT: safety_net, default note initializations?
-	  pulses[pulse].note_div_scale = 4096;				// 4096	TODO: test&trimm ################
-	  pulses[pulse].note_length = pulses[pulse].note_div_scale / 8;	// 1/8	TODO: test&trimm ################
-	  if(pulses[pulse].note_break_mul8==0 && pulses[pulse].note_break_div8==0) {
-	    pulses[pulse].note_break_mul8 = 1;		// 1/32	TODO: test&trimm ################
-	    pulses[pulse].note_break_div8 = 32;		// 1/32	TODO: test&trimm ################
-	  }
-	}
 	break;
 
       case NOTE_4:
-	pulses[pulse].note_length = pulses[pulse].note_div_scale;
-	pulses[pulse].note_length /= 4;
-	pulses[pulse].icode_mode = MELODY_MODE;
+	pulses[pulse].note_length_mul = 1;
+	pulses[pulse].note_length_div = 4;
+	init_melody_mode(pulse);
 	break;
 
       case NOTE_8:
-	pulses[pulse].note_length = pulses[pulse].note_div_scale;
-	pulses[pulse].note_length /= 8;
-	pulses[pulse].icode_mode = MELODY_MODE;
+	pulses[pulse].note_length_mul = 1;
+	pulses[pulse].note_length_div = 8;
+	init_melody_mode(pulse);
 	break;
 
       case NOTE_16:
-	pulses[pulse].note_length = pulses[pulse].note_div_scale;
-	pulses[pulse].note_length /= 16;
-	pulses[pulse].icode_mode = MELODY_MODE;
+	pulses[pulse].note_length_mul = 1;
+	pulses[pulse].note_length_div = 16;
+	init_melody_mode(pulse);
 	break;
 
       case NOTE_32:
-	pulses[pulse].note_length = pulses[pulse].note_div_scale;
-	pulses[pulse].note_length /= 32;
-	pulses[pulse].icode_mode = MELODY_MODE;
+	pulses[pulse].note_length_mul = 1;
+	pulses[pulse].note_length_div = 32;
+	init_melody_mode(pulse);
 	break;
 
       case NOTE_64:
-	pulses[pulse].note_length = pulses[pulse].note_div_scale;
-	pulses[pulse].note_length /= 64;
-	pulses[pulse].icode_mode = MELODY_MODE;
+	pulses[pulse].note_length_mul = 1;
+	pulses[pulse].note_length_div = 64;
+	init_melody_mode(pulse);
 	break;
 
       case NOTE_128:
-	pulses[pulse].note_length = pulses[pulse].note_div_scale;
-	pulses[pulse].note_length /= 128;
-	pulses[pulse].icode_mode = MELODY_MODE;
+	pulses[pulse].note_length_mul = 1;
+	pulses[pulse].note_length_div = 128;
+	init_melody_mode(pulse);
 	break;
 
       case NOTE_scaling:	// 1 int parameter
@@ -1557,7 +1554,7 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	  if(scale)
 	    pulses[pulse].note_div_scale = scale;
 	}
-	pulses[pulse].icode_mode = MELODY_MODE;
+	init_melody_mode(pulse);
 	break;
 
       case NOTE_MulDiv:	// 2 int parameter multiplicator, divisor
@@ -1565,30 +1562,35 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	  int mul = *icode_p++;
 	  int div = *icode_p++;
 	  if(mul && div) {
-	    pulses[pulse].note_length = pulses[pulse].note_div_scale;
-	    pulses[pulse].note_length *= mul;
-	    pulses[pulse].note_length /= div;
+	    pulses[pulse].note_length_mul = mul;
+	    pulses[pulse].note_length_div = div;
 	  }
 	}
-	pulses[pulse].icode_mode = MELODY_MODE;
+	init_melody_mode(pulse);
+	break;
+
+      case STACCISS:
+	pulses[pulse].note_sounding_mul = 1;
+	pulses[pulse].note_sounding_div = 6;
+	init_melody_mode(pulse);
 	break;
 
       case STACCATO:
-	pulses[pulse].note_break_mul8 = 1;
-	pulses[pulse].note_break_div8 = 2;
-	pulses[pulse].icode_mode = MELODY_MODE;
+	pulses[pulse].note_sounding_mul = 1;
+	pulses[pulse].note_sounding_div = 2;
+	init_melody_mode(pulse);
 	break;
 
       case PORTATO:
-	pulses[pulse].note_break_mul8 = 1;
-	pulses[pulse].note_break_div8 = 64;
-	pulses[pulse].icode_mode = MELODY_MODE;
+	pulses[pulse].note_sounding_mul = 31;
+	pulses[pulse].note_sounding_div = 32;
+	init_melody_mode(pulse);
 	break;
 
       case LEGATO:
-	pulses[pulse].note_break_mul8 = 0;
-	pulses[pulse].note_break_div8 = 0;
-	pulses[pulse].icode_mode = MELODY_MODE;
+	pulses[pulse].note_sounding_mul = 1;
+	pulses[pulse].note_sounding_div = 1;
+	init_melody_mode(pulse);
 	break;
 
       case JIFFLE_MODE:
@@ -1643,13 +1645,20 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	busy = false;
 	break;
 
-      default:
+      case ICODE_MAX:	// just a flag, label, dummy, noop
+	(*MENU).out(F("ICODE_MAX"));
+	break;
+
+      default:	// should not happen
+	(*MENU).out(icode);
+	(*MENU).space(2);
 	(*MENU).error_ln(F("invalid icode"));
 	busy = false;
       } // switch icode
 
-    } else {	// icode >= 0, interpreted as a JIFFLE
-      if(pulses[pulse].icode_mode==JIFFLE_MODE || pulses[pulse].icode_mode==0) {
+    } else {	// <NUMERIC> (icode > ICODE_MAX)  'running' mode:  JIFFLE, MELODY, ...
+
+      if(pulses[pulse].icode_mode==JIFFLE_MODE || pulses[pulse].icode_mode==0) {	// >>>>>>>> JIFFLE_MODE <<<<<<<<
 	pulses[pulse].icode_mode = JIFFLE_MODE;	// might have been zero
 	multiplier = icode;
 	divisor =  *(icode_p +1);
@@ -1738,20 +1747,13 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	} // JIFF valid jiffle data, *do jiffle*
       } // JIFFLE, WAIT, JIFFLE END?
 
-      else if(pulses[pulse].icode_mode == MELODY_MODE) {
-	//	(*MENU).out(F("MELODY_MODE\n"));
+      else if(pulses[pulse].icode_mode == MELODY_MODE) {	// >>>>>>>> MELODY_MODE <<<<<<<<
 
-	if(pulses[pulse].note_div_scale==0) {		// safety net	default note initializations?
-	  pulses[pulse].note_div_scale = 4096;
-	  pulses[pulse].note_length = pulses[pulse].note_div_scale / 8;
-	  if(pulses[pulse].note_break_mul8==0 && pulses[pulse].note_break_div8==0) {
-	    pulses[pulse].note_break_mul8 = 1;		// 1/32	TODO: test&trimm ################
-	    pulses[pulse].note_break_div8 = 32;		// 1/32	TODO: test&trimm ################
-	  }
-	}
+	if(pulses[pulse].note_div_scale==0)		// safety net	default note initializations?
+	  init_melody_mode(pulse);
 
-	if (pulses[pulse].countdown == 0) {	// initialise NEXT note
-	  int interval = *icode_p++;
+	if (pulses[pulse].countdown <= 0) {	// initialise NEXT note
+	  int interval = *icode_p;
 
 	  // find reference_pulse, the primary pulse with the notes' tuning:
 	  int reference_pulse = pulses[pulse].other_pulse + interval;
@@ -1780,13 +1782,7 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	  }
 	  div_time(&pulses[pulse].period, pulses[pulse].note_div_scale);
 
-	  pulses[pulse].countdown = pulses[pulse].note_length;	// legato
-	  if(pulses[pulse].note_break_mul8 && pulses[pulse].note_break_div8) {
-	    int diff = pulses[pulse].note_length;
-	    diff *= pulses[pulse].note_break_mul8;
-	    diff /= pulses[pulse].note_break_div8;
-	    pulses[pulse].countdown -= diff;			// staccato
-	  }
+	  pulses[pulse].countdown = pulses[pulse].note_sounding;
 
 	  if((pulses[pulse].flags & HAS_GPIO) && (pulses[pulse].gpio != ILLEGAL8))
 	    digitalWrite(pulses[pulse].gpio, pulses[pulse].counter & 1);	// first gpio click
@@ -1801,14 +1797,13 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 
 	  } else {				// sound ENDED: WAIT for next
 	    // add note break wait
-	    if(pulses[pulse].note_break_mul8 && pulses[pulse].note_break_div8) {
-	      pulse_time_t scratch = pulses[pulse].period;
-	      mul_time(&pulses[pulse].period, pulses[pulse].note_break_mul8);
-	      div_time(&pulses[pulse].period, pulses[pulse].note_break_div8);
-	      add_time(&scratch, &pulses[pulse].period);
-	    }
+	    int diff = pulses[pulse].note_length - pulses[pulse].note_sounding;
+	    if(diff)
+	      mul_time(&pulses[pulse].period, (1 + diff));	// one for last half wave + break
 	    busy = false;		// WAIT another period (+ break time) on *same* gpio state
 	    pulses[pulse].counter--;	// *WAITING IS NOT COUNTED AS A SEPARATE PULSE*
+
+	    icode_p++;	// wait, then done. ready for next note
 	  }
 	}
       } else
@@ -1834,6 +1829,35 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
  icode_error:
   (*MENU).error_ln(F("play_icode()"));
 } // play_icode()
+
+void Pulses::init_melody_mode(int pulse) {
+  long length;	// for mixed */
+
+  pulses[pulse].icode_mode = MELODY_MODE;
+
+  if(pulses[pulse].note_div_scale == 0)
+    pulses[pulse].note_div_scale = 4096;	// 4096	TODO: test&trimm ################
+
+  if(pulses[pulse].note_length_mul==0 || pulses[pulse].note_length_div==0) {
+    pulses[pulse].note_length_mul=1;		// 1/8 TODO: test&trimm
+    pulses[pulse].note_length_div=8;		// 1/8 TODO: test&trimm
+  }
+
+  // mixed */ for total note length
+  length = pulses[pulse].note_div_scale;	// full note
+  length *= pulses[pulse].note_length_mul;	// *
+  length /= pulses[pulse].note_length_div;	// /
+  pulses[pulse].note_length = length;
+
+  // mixed */ for sounding note length
+  length = pulses[pulse].note_length;		// LEGATO
+  if(pulses[pulse].note_sounding_mul != pulses[pulse].note_sounding_div) {
+    length *= pulses[pulse].note_sounding_mul;
+    length /= pulses[pulse].note_sounding_div;
+  }
+  pulses[pulse].note_sounding = length;
+} // init_melody_mode()
+
 
 /* **************************************************************** */
 // playing with rhythms:

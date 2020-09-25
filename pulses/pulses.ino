@@ -500,6 +500,7 @@ void en_icode_seeder_selected(icode_t* icode_p, action_flags_t dest_action_flags
       PULSES.pulses[pulse].dest_action_flags |= dest_action_flags;
     }
   }
+  PULSES.fix_global_next();
 }
 
 void seed_icode_player(int seeder_pulse) {	// as payload for seeder
@@ -670,8 +671,8 @@ void fix_jiffle_range() {	// FIXME: use new implementation
 };
 
 
-void test_jiffle(unsigned int* jiffle, int count) {	// TODO: test_icode	ICODE_INSTEAD_OF_JIFFLES
-  if(jiffle==NULL || (jiffle[0]==0 && jiffle[1]==0))
+void test_code(unsigned int* code, char* name, int count) {	// works for iCode and jiffles
+  if(code==NULL || (code[0]==0 && code[1]==0))
     return;	// invalid
 
   int pulse;
@@ -679,16 +680,17 @@ void test_jiffle(unsigned int* jiffle, int count) {	// TODO: test_icode	ICODE_IN
     return;	// no free pulse
 
   if(MENU.verbosity >= VERBOSITY_LOWEST)
-    MENU.outln(selected_name(JIFFLES));
+    if(name)
+      MENU.outln(name);
 
   pulse_time_t period = PULSES.simple_time(6000000);	// TODO: better default based on the situation ################
-  setup_icode_seeder(pulse, period, (icode_t*) jiffle, DACsq1 | DACsq2 | doesICODE);
+  setup_icode_seeder(pulse, period, (icode_t*) code, DACsq1 | DACsq2 | doesICODE);
   PULSES.pulses[pulse].flags |= COUNTED;
   PULSES.pulses[pulse].remaining = count;
   PULSES.pulses[pulse].dac1_intensity = PULSES.pulses[pulse].dac2_intensity = 20; // TODO: random test value
   PULSES.activate_pulse_synced(pulse, PULSES.get_now(), 0 /* or abs(musicBoxConf.sync) */); // test with sync=0
   PULSES.fix_global_next();
-} // test_jiffle()
+} // test_code()
 
 
 /* **************************************************************** */
@@ -5014,7 +5016,7 @@ void select_iCode_UI() {	// select iCode, maybe apply to selected pulses
     switch (MENU.peek()) {
     case '?':	// 'Q[...]?' tests a iCode
       MENU.drop_input_token();
-      test_jiffle(selected_in(iCODEs), 3);
+      test_code(selected_in(iCODEs), selected_name(iCODEs), 3);
       break;
 
     case '!':	// 'Q[<num>]!' copies an already selected iCodetab to RAM, selects RAM
@@ -5067,7 +5069,7 @@ void select_jiffle_UI() {	// select jiffle, maybe apply to selected pulses
     switch (MENU.peek()) {
     case '?':	// 'J[...]?' tests a jiffle
       MENU.drop_input_token();
-      test_jiffle(selected_in(JIFFLES), 3);
+      test_code(selected_in(JIFFLES), selected_name(JIFFLES), 3);
       break;
 
     case '!':	// 'J[<num>]!' copies an already selected jiffletab to RAM, selects RAM

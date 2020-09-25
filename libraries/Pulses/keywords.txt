@@ -41,6 +41,7 @@ init_time	KEYWORD2
 mul_time	KEYWORD2
 multiply_period	KEYWORD2
 play_icode	KEYWORD2
+init_melody_mode	KEYWORD2
 print_period_in_time_units	KEYWORD2
 pulse_info_1line	KEYWORD2
 pulse_is_selected	KEYWORD2
