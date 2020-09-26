@@ -517,6 +517,7 @@ void seed_icode_player(int seeder_pulse) {	// as payload for seeder
     PULSES.pulses[dest_pulse].base_period = PULSES.pulses[seeder_pulse].period;
     PULSES.pulses[dest_pulse].other_pulse = seeder_pulse;
     PULSES.pulses[dest_pulse].action_flags = PULSES.pulses[seeder_pulse].dest_action_flags;
+    PULSES.pulses[dest_pulse].groups |= g_SECONDARY;
     if(PULSES.pulses[seeder_pulse].flags & HAS_GPIO)		// if the seeder has gpio,
       PULSES.set_gpio(dest_pulse, PULSES.pulses[seeder_pulse].gpio);	// copy gpio
     if(PULSES.pulses[seeder_pulse].dac1_intensity)		// if the seeder has dac1_intensity
@@ -530,7 +531,6 @@ void seed_icode_player(int seeder_pulse) {	// as payload for seeder
 	PULSES.set_i2c_addr_pin(dest_pulse, PULSES.pulses[seeder_pulse].i2c_addr, PULSES.pulses[seeder_pulse].i2c_pin);
   #endif
 #endif
-
   }
 } // seed_icode_player()
 

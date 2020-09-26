@@ -5529,18 +5529,18 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 186:
-    musicBoxConf.name = F("MELODY MODE 186 test");
+    musicBoxConf.name = F("melody1 test A");
     select_in(SCALES, octaves_fourths);
     musicBoxConf.sync = 4;
-    select_in(USED_DB, (unsigned int*) melody6);
+    select_in(USED_DB, (unsigned int*) melody1);
     musicBoxConf.pitch = {32768, 30};
     break;
 
   case 187:
-    musicBoxConf.name = F("MELODY MODE 187 test");
+    musicBoxConf.name = F("melody1 test B");
     select_in(SCALES, octave_4th_5th);
     musicBoxConf.sync = 4;
-    select_in(USED_DB, (unsigned int*) melody6);
+    select_in(USED_DB, (unsigned int*) melody1);
     musicBoxConf.pitch = {32768, 30};
     break;
 

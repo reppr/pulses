@@ -204,13 +204,10 @@ init_DB(iCODEs, sizeof(iCODEs), "iCODEs");
 REGISTER_iCODE(code_RAM);		// 0
 REGISTER_iCODE(d4096_1024_i2cLED);
 REGISTER_iCODE(d4096_1024_icode_jiff);
-REGISTER_iCODE(melody0);
 REGISTER_iCODE(melody1);
 REGISTER_iCODE(melody2);
 REGISTER_iCODE(melody3);
-REGISTER_iCODE(melody4);
-REGISTER_iCODE(melody5);
-REGISTER_iCODE(melody6);
+REGISTER_iCODE(melody7);
 
 /*
 #if defined USE_i2c
@@ -220,7 +217,7 @@ REGISTER_iCODE(melody6);
 #endif
 */
 
-select_in(iCODEs, (unsigned int *) melody0);	// MELODY_MODE testing
+select_in(iCODEs, (unsigned int *) melody1);	// MELODY_MODE testing
 
 include_DB_in_DB(iCODEs, JIFFLES, 1);
 

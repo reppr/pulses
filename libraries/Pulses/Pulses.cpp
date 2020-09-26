@@ -1430,8 +1430,8 @@ void Pulses::show_icode_mnemonic(icode_t icode) {
   case LEGATO:
     (*MENU).out(F("LEGATO"));
     break;
-  case MUTED:
-    (*MENU).out(F("MUTED"));
+  case PAUSE:
+    (*MENU).out(F("PAUSE"));
     break;
   case SOUNDSEP:
     (*MENU).out(F("SOUNDSEP"));
@@ -1481,6 +1481,8 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
   long counter=0;
 
   bool busy=true;
+  bool pause=false;
+
   while (busy) {
     icode = *icode_p;
     if (icode <= ICODE_MAX) {	// ICODE or (JIFF | MELODY) ?
@@ -1614,13 +1616,9 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	init_melody_mode(pulse);
 	break;
 
-      case MUTED:  // PAUSE following notes will not sound. Call LEGATO or similar to make them play again
-	pulses[pulse].note_sounding_mul = 0;
-	pulses[pulse].note_sounding_div = 1;
-	init_melody_mode(pulse);
-	pulse[pulses].counter--;
-	pulses[pulse].countdown=1;
-	busy=false;
+      case PAUSE:  // PAUSE following note will not sound
+	pause = true;
+	pulses[pulse].countdown=0;
 	break;
 
       case JIFFLE_MODE:
@@ -1810,13 +1808,26 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	    octave_shift++;
 	    div_time(&pulses[pulse].period, 2);
 	  }
-	  div_time(&pulses[pulse].period, pulses[pulse].note_div_scale);
 
-	  pulses[pulse].countdown = pulses[pulse].note_sounding;
+	  if(! pause) {
+	    div_time(&pulses[pulse].period, pulses[pulse].note_div_scale);
+	    pulses[pulse].countdown = pulses[pulse].note_sounding;
 
-	  if((pulses[pulse].flags & HAS_GPIO) && (pulses[pulse].gpio != ILLEGAL8))
-	    digitalWrite(pulses[pulse].gpio, pulses[pulse].counter & 1);	// first gpio click
-	  busy = false;	// return immediately
+	    if((pulses[pulse].flags & HAS_GPIO) && (pulses[pulse].gpio != ILLEGAL8))
+	      digitalWrite(pulses[pulse].gpio, pulses[pulse].counter & 1);	// first gpio click
+
+	  } else { // PAUSE for total note length
+	    if(pulses[pulse].note_length_mul != pulses[pulse].note_length_div) {
+	      mul_time(&pulses[pulse].period, pulses[pulse].note_length_mul);
+	      div_time(&pulses[pulse].period, pulses[pulse].note_length_div);
+	    }
+	    pulses[pulse].countdown = 0;
+	    pulses[pulse].counter--;
+
+	    icode_p++;	// PAUSE, then done. ready for next note
+	  }
+
+	  busy = false;	// return
 
 	} else {				// *is* PLAYING a note
 	  if((pulses[pulse].flags & HAS_GPIO) && (pulses[pulse].gpio != ILLEGAL8))
@@ -1886,6 +1897,7 @@ void Pulses::init_melody_mode(int pulse) {
     length /= pulses[pulse].note_sounding_div;
   }
   pulses[pulse].note_sounding = length;
+  pulses[pulse].countdown = 0;	// not sure about this...
 } // init_melody_mode()
 
 
