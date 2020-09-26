@@ -1250,7 +1250,7 @@ bool tuning_pitch_and_scale_UI() {
       switch(MENU.peek()) {
       // check for ending tokens first:
       case '!':	// 'Txyz!'	trailing '!': *do* tune and quit
-	tune_selected_2_scale_limited(musicBoxConf.pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves
+	tune_selected_2_scale_limited(&musicBoxConf.pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves
       case ' ':	// a space ends a 'T... ' input sequence, quit
 	MENU.drop_input_token();
       case EOF8:	// EOF done		quit
@@ -2959,8 +2959,8 @@ void start_musicBox() {
 #if defined OLDSTYLE_TUNE_AND_LIMIT	// use (buggy) old style tuning and lowering mechanism?	// TODO: OBSOLETE?
   // HACK: backwards compatibility for multiplier/divisor	################
   tune_2_scale(voices, multiplier*musicBoxConf.pitch.multiplier, divisor*musicBoxConf.pitch.divisor, selected_in(SCALES)); // TODO: OBSOLETE? TODO: define role of multiplier, divisor
-#else	// working on new style tune_selected_2_scale_limited(musicBoxConf.pitch, selected_in(SCALES), limit);
-  tune_selected_2_scale_limited(musicBoxConf.pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves // TODO: adjust limit appropriate...
+#else	// working on new style tune_selected_2_scale_limited(&musicBoxConf.pitch, selected_in(SCALES), limit);
+  tune_selected_2_scale_limited(&musicBoxConf.pitch, selected_in(SCALES), 409600*2L);	// 2 bass octaves // TODO: adjust limit appropriate...
 #endif
 
   MENU.out(F("notes/octave "));

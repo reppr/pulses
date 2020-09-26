@@ -3237,7 +3237,7 @@ int selected_apply_scale_on_period(int voices, unsigned int *scale, bool octaves
 }
 
 // see: bool no_octave_shift=false;
-int tune_selected_2_scale_limited(Harmonical::fraction_t scaling, unsigned int *scale, unsigned long shortest_limit) {
+int tune_selected_2_scale_limited(Harmonical::fraction_t* scaling_p, unsigned int *scale, unsigned long shortest_limit) {
 /*
   tune all selected pulses to the scale, start with lowest selected
   scale 'PULSES.time_unit' by 'scaling' for base_period
@@ -3250,9 +3250,11 @@ int tune_selected_2_scale_limited(Harmonical::fraction_t scaling, unsigned int *
   return octave_shift
 */
 
+  MagicConf.octave_shift = 0;
+
   if (MENU.verbosity >= VERBOSITY_LOWEST) {
     MENU.out(F("tune_selected_2_scale_limited("));
-    display_fraction(&scaling);
+    display_fraction(scaling_p);
     MENU.out_comma_();
     MENU.out(selected_name(SCALES));
     MENU.out_comma_();
@@ -3260,19 +3262,21 @@ int tune_selected_2_scale_limited(Harmonical::fraction_t scaling, unsigned int *
     MENU.outln(')');
   }
 
-  if ((scale != NULL) && scale[0] && scaling.divisor) {
+  if ((scale != NULL) && scale[0] && scaling_p->divisor) {
     musicBoxConf.steps_in_octave=0;
     pulse_time_t base_period = PULSES.simple_time(PULSES.time_unit);
-    PULSES.mul_time(&base_period, scaling.multiplier);
-    PULSES.div_time(&base_period, scaling.divisor);
+    PULSES.mul_time(&base_period, scaling_p->multiplier);
+    PULSES.div_time(&base_period, scaling_p->divisor);
 
     // check if highest note is within limit
+    bool first_run=true;
     pulse_time_t this_period = PULSES.simple_time(0);	// bluff the very first test to pass
 #if defined PULSES_USE_DOUBLE_TIMES
     while (this_period <= shortest_limit) { // SHORTEST LIMIT *CAN* BE ZERO (to switch it off)
 #else // old int overflow style
     while (this_period.time <= shortest_limit) { // SHORTEST LIMIT *CAN* BE ZERO (to switch it off)
 #endif
+
       int octave=1;  // 1,2,4,8,...	the octave of this note   (*not* octave_shift)
       int note = 0;
       int multiplier=0;
@@ -3337,13 +3341,18 @@ int tune_selected_2_scale_limited(Harmonical::fraction_t scaling, unsigned int *
 #endif
 	if (MagicConf.octave_shift || MENU.verbosity > VERBOSITY_SOME) {
 	  MENU.out(MagicConf.octave_shift);
-	  MENU.outln(F(" octaves shifted"));
+	  MENU.out(F(" octaves shifted\t"));
+	  (*HARMONICAL).reduce_fraction(scaling_p);
+	  MENU.out(F("pitch new: "));
+	  display_fraction(scaling_p);
+	  MENU.ln();
 	}
-	return MagicConf.octave_shift;		// OK, tuning fine and within limit, RETURN
-      }
-      // else repeat one octave lower...
+	return MagicConf.octave_shift;	// OK, tuning fine and within limit, RETURN
+      } // else repeat one octave lower...
+
       PULSES.mul_time(&base_period, 2);
       MagicConf.octave_shift--;
+      scaling_p->multiplier *= 2;	// fixing musicBoxConf.pitch
     } // while off limit, tune octaves down...
   } else MENU.error_ln(F("invalid tuning"));
 
@@ -3479,6 +3488,8 @@ int lower_audio_if_too_high(unsigned long limit) {
 #if defined PULSES_USE_DOUBLE_TIMES
   while (PULSES.pulses[fastest_pulse].period < limit) {	// too fast?
     octave_shift--;
+    musicBoxConf.pitch.multiplier *= 2;	// fixing musicBoxConf.pitch
+
     for (pulse=0; pulse<PL_MAX; pulse++) {
       if (PULSES.pulse_is_selected(pulse)) {
 	PULSES.mul_time(&PULSES.pulses[pulse].period, 2);	// octave shift down
@@ -3489,6 +3500,8 @@ int lower_audio_if_too_high(unsigned long limit) {
 #else // old int overflow style
   while (PULSES.pulses[fastest_pulse].period.time < limit) {	// too fast?
     octave_shift--;
+    musicBoxConf.pitch.multiplier *= 2;	// fixing musicBoxConf.pitch
+
     for (pulse=0; pulse<PL_MAX; pulse++) {
       if (PULSES.pulse_is_selected(pulse)) {
 	PULSES.mul_time(&PULSES.pulses[pulse].period, 2);	// octave shift down
@@ -3498,6 +3511,7 @@ int lower_audio_if_too_high(unsigned long limit) {
 #endif // old int overflow style
 
   if (octave_shift) {
+    (*HARMONICAL).reduce_fraction(&musicBoxConf.pitch);
     if (MENU.verbosity >= VERBOSITY_LOWEST) {
       MENU.out(octave_shift);
       MENU.outln(F(" octaves shifted"));
