@@ -690,3 +690,8 @@ pulses:  case 'R':	// scale  was: ratio	// TODO: see musicBox 'R'	make them iden
 skip pause from UI and from preset
 
 pitch tuning from preset
+
+skip pause UI
+autoskip_pause UI
+
+cycle_monitor_i and '*' '/' tuning?	// currently cycle_monitor runs from within the butler

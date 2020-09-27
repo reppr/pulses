@@ -694,7 +694,8 @@ int slice_weighting(Harmonical::fraction_t F) {
 
 
 // cycle_monitor(p)  payload to give infos where in the cycle we are
-int cycle_monitor_i=ILLEGAL32;	// pulse index of cycle_monitor(p)
+// currently cycle_monitor() runs from within the butler
+//int cycle_monitor_i=ILLEGAL32;	// pulse index of cycle_monitor(p)
 
 #if ! defined SHOW_SUBCYCLE_POSITION_DEFAULT
   #define SHOW_SUBCYCLE_POSITION_DEFAULT	false
@@ -1148,8 +1149,8 @@ void entune_basic_musicbox_pulses() {
   if(musicBox_butler_i != ILLEGAL32)
     PULSES.activate_tuning(musicBox_butler_i);	// entune butler
 
-  if(cycle_monitor_i != ILLEGAL32)
-    PULSES.activate_tuning(cycle_monitor_i);	// entune cycle_monitor
+//  if(cycle_monitor_i != ILLEGAL32)	// currently cycle_monitor runs from within the butler
+//    PULSES.activate_tuning(cycle_monitor_i);	// entune cycle_monitor
 } // entune_basic_musicbox_pulses()
 
 void tuning_pitch_and_scale_UI_display() {	// TODO: update
@@ -1328,6 +1329,11 @@ bool tuning_pitch_and_scale_UI() {
 	      MENU.outln(metric_mnemonic);
 	      pitch_user_selected = true;
 	    }
+	    break;
+
+	  case 'O': // 'TO' 1 octave *lower* == '*2' morse friendly ;)
+	    MENU.drop_input_token();
+	    multiply_musicBox_periods(2);
 	    break;
 
 	  default:	//	unknown input, not for the 'T' interface
@@ -1914,8 +1920,8 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
 	  MENU.out('C');
 	}
 	skipped++;
-      } else if(PULSES.pulses[pulse].payload == &cycle_monitor) {
-	if(do_display) {
+      } else if(PULSES.pulses[pulse].payload == &cycle_monitor) { // currently cycle_monitor runs from within the butler
+	if(do_display) {					  //   (so will not show up here)
 	  MENU.out('M');
 	}
 	skipped++;
@@ -2022,7 +2028,7 @@ void remove_all_primary_but_butlers() {
     MENU.out(F("remove primary"));
 
   for(int pulse=0; pulse<PL_MAX; pulse++) {
-    if(pulse != musicBox_butler_i && pulse != cycle_monitor_i)	// do *not* kill the butlers!
+    if(pulse != musicBox_butler_i /* && pulse != cycle_monitor_i */)	// do *not* kill the butlers!
       if(PULSES.pulses[pulse].flags && PULSES.pulses[pulse].groups & g_PRIMARY) {
 	// DADA USE_RGB_LED_STRIP
 	PULSES.init_pulse(pulse);
@@ -2240,7 +2246,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
   if(show_cycle_pattern)
     watch_primary_pulses();
 
-  cycle_monitor(pulse);
+  cycle_monitor(pulse);	// cycle_monitor() runs from within musicBox_butler()
 
   if(show_cycle_pattern || show_subcycle_position)
     MENU.ln();

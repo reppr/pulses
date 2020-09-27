@@ -3922,26 +3922,26 @@ void display_payload(int pulse) {
 
   scratch=&click;
   if (PULSES.pulses[pulse].payload == scratch) {
-    MENU.out("click");
+    MENU.out(F("click"));
     return;
   }
 
 #if defined HARMONICAL_MUSIC_BOX
   scratch=&musicBox_butler;
   if (PULSES.pulses[pulse].payload == scratch) {
-    MENU.out("musicBox_butler");
+    MENU.out(F("musicBox_butler"));
     return;
   }
 
   scratch=&magical_cleanup;
   if (PULSES.pulses[pulse].payload == scratch) {
-    MENU.out("magical_cleanup");
+    MENU.out(F("magical_cleanup"));
     return;
   }
 
-  scratch=&cycle_monitor;
+  scratch=&cycle_monitor;	// currently cycle_monitor runs from within the butler, so will not show up here
   if (PULSES.pulses[pulse].payload == scratch) {
-    MENU.out("cycle_monitor");
+    MENU.out(F("cycle_monitor"));
     return;
   }
 
@@ -5327,10 +5327,59 @@ void select_scale__UI() {	// OBSOLETE?:
 } // select_scale__UI()
 
 
-#if defined USE_DACs	// ################ TODO: remove
-int s1=0;
-int s2=0;
-#endif
+void multiply_musicBox_periods(unsigned int mul) {
+  if (mul >1) {
+    for (int pulse=0; pulse<PL_MAX; pulse++) {
+      if (PULSES.pulse_is_selected(pulse))
+	PULSES.multiply_period(pulse, mul);
+      else {	// not selected, test for butler (if it was *not* selected)
+	if(pulse == musicBox_butler_i) {	// pulse can *not* be ILLEGAL32 here
+	  if(PULSES.pulses[musicBox_butler_i].payload == &musicBox_butler) {	// butler found
+	    PULSES.multiply_period(musicBox_butler_i, mul);
+	    if(MENU.verbosity >= VERBOSITY_SOME)
+	      MENU.outln(F("'*' butler included"));
+	  }
+	}
+      }
+    }
+
+    PULSES.fix_global_next();
+    not_a_preset();
+    stress_event_cnt = -2;	// stress events possible after '*'
+    stress_count = 0;
+
+    musicBoxConf.pitch.multiplier *= mul;
+    (*HARMONICAL).reduce_fraction(&musicBoxConf.pitch);
+  }
+} // multiply_musicBox_periods()
+
+
+void divide_musicBox_periods(unsigned int div) {
+  if (div > 1) {
+    for (int pulse=0; pulse<PL_MAX; pulse++) {
+      if (PULSES.pulse_is_selected(pulse))
+	PULSES.divide_period(pulse, div);
+      else {	// not selected, test for butler (if it was *not* selected)
+	if(pulse == musicBox_butler_i) {	// pulse can *not* be ILLEGAL32 here
+	  if(PULSES.pulses[musicBox_butler_i].payload == &musicBox_butler) {	// butler found
+	    PULSES.divide_period(musicBox_butler_i, div);
+	    if(MENU.verbosity >= VERBOSITY_SOME)
+	      MENU.outln(F("'/' butler included"));
+	  }
+	}
+      }
+    } // pulse
+
+    PULSES.fix_global_next();
+    not_a_preset();
+    stress_event_cnt = -5;	// *heavy* stress events expected after '/'
+    stress_count = 0;
+
+    musicBoxConf.pitch.divisor *= div;
+    (*HARMONICAL).reduce_fraction(&musicBoxConf.pitch);
+  }
+} // divide_musicBox_periods()
+
 
 bool menu_pulses_reaction(char menu_input) {
   static unsigned long input_value=0;	// static???	// TODO: OBSOLETE? see: new_input
@@ -5666,22 +5715,8 @@ bool menu_pulses_reaction(char menu_input) {
       switch (dest) {
       case CODE_PULSES:
 	input_value = MENU.numeric_input(1);
-	if (input_value>=0) {
-	  for (int pulse=0; pulse<PL_MAX; pulse++) {
-	    if (PULSES.pulse_is_selected(pulse))
-	      PULSES.multiply_period(pulse, input_value);
-	    else {	// not selected, test for butler (if it was *not* selected)
-	      if(pulse == musicBox_butler_i)	// pulse can *not* be ILLEGAL32 here
-		if(PULSES.pulses[musicBox_butler_i].payload == &musicBox_butler) {	// butler found
-		  PULSES.multiply_period(musicBox_butler_i, input_value);
-		  MENU.outln(F("'*' butler included"));
-		}
-	    }
-	  } // pulse
-	  PULSES.fix_global_next();
-	  not_a_preset();
-	  stress_event_cnt = -2;	// stress events possible after '*'
-	  stress_count = 0;
+	if (input_value > 1) {
+	  multiply_musicBox_periods(input_value);
 
 	  if (DO_or_maybe_display(VERBOSITY_MORE)) {	// TODO: '*' maybe VERBOSITY_SOME
 	    MENU.ln();
@@ -5741,30 +5776,12 @@ bool menu_pulses_reaction(char menu_input) {
       switch (dest) {
       case CODE_PULSES:
 	input_value = MENU.numeric_input(1);
-	if (input_value>0) {
-	  for (int pulse=0; pulse<PL_MAX; pulse++) {
-	    if (PULSES.pulse_is_selected(pulse))
-	      PULSES.divide_period(pulse, input_value);
-	    else {	// not selected, test for butler (if it was *not* selected)
-	      if(pulse == musicBox_butler_i)	// pulse can *not* be ILLEGAL32 here
-		if(PULSES.pulses[musicBox_butler_i].payload == &musicBox_butler) {	// butler found
-		  PULSES.divide_period(musicBox_butler_i, input_value);
-		  MENU.outln(F("'/' butler included"));
-		}
-	    }
-	  } // pulse
-	  PULSES.fix_global_next();
-	  not_a_preset();
-	  stress_event_cnt = -5;	// *heavy* stress events expected after '/'
-	  stress_count = 0;
-
+	if (input_value > 1) {
+	  divide_musicBox_periods(input_value);
 	  if (DO_or_maybe_display(VERBOSITY_MORE)) {
 	    MENU.ln();
 	    selected_or_flagged_pulses_info_lines();
 	  }
-	  stress_event_cnt = -5;	// *heavy* stress events expected after '/'
-	  stress_count = 0;
-
 	} else
 	  MENU.outln_invalid();
 	break;
