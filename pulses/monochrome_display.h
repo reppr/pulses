@@ -13,6 +13,11 @@
 #if defined MULTICORE_DISPLAY
   #include <freertos/task.h>
 
+  // testing RTOS task priority for monochrome display routines:
+  #define MONOCHROME_PRIORITY	0	// seems best
+  //#define MONOCHROME_PRIORITY	1	// was 0
+  //#define MONOCHROME_PRIORITY	2	// was 0
+
 /* MUTEX for 2x2 printing (or just wait a bit... ;)
   SemaphoreHandle_t monochrome_mutex = xSemaphoreCreateMutex();
 */
@@ -135,7 +140,7 @@ void multicore_show_program_version() {	// create and do one shot task
 					   "show_version",			// name
 					   2000,				// stack size
 					   NULL,				// task input parameter
-					   0,					// task priority
+					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_show_version_handle,	// task handle
 					   0);					// core 0
   if(err != pdPASS) {
@@ -358,7 +363,7 @@ void multicore_show_musicBox_parameters() {	// create and do one shot task
 					   "show_parameters",			// name
 					   2000,				// stack size
 					   NULL,				// task input parameter
-					   0,					// task priority
+					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_show_musicBox_parameters_handle,	// task handle
 					   0);					// core 0
   if(err != pdPASS) {
@@ -427,7 +432,7 @@ void multicore_show_line(uint8_t row, char* str) {	// create and do one shot tas
 					   "show_line",				// name
 					   2000,				// stack size
 					   &monochrome_descriptor,		// task input parameter
-					   0,					// task priority
+					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_show_line_handle,		// task handle
 					   0);					// core 0
   if(err != pdPASS) {
@@ -469,7 +474,7 @@ void multicore_display_message(char* text) {	// create and do one shot task
 					   "display_message",			// name
 					   2000,				// stack size
 					   &text,				// task input parameter
-					   0,					// task priority
+					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_display_message_handle,		// task handle
 					   0);					// core 0
   if(err != pdPASS) {
@@ -570,7 +575,7 @@ void multicore_print2x2(uint8_t col, uint8_t row, char* str) {	// create and do 
 					   "print2x2",				// name
 					   2000,				// stack size
 					   &monochrome_descriptor,		// task input parameter
-					   0,					// task priority
+					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_print2x2_handle,		// task handle
 					   0);					// core 0
   if(err != pdPASS) {
@@ -638,7 +643,7 @@ void multicore_println2x2(uint8_t row, char* str) {	// create and do one shot ta
 					   "println2x2",			// name
 					   2000,				// stack size
 					   &monochrome_descriptor,		// task input parameter
-					   0,					// task priority
+					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_println2x2_handle,	// task handle
 					   0);					// core 0
   if(err != pdPASS) {
@@ -734,7 +739,7 @@ void multicore_big_or_multiline(uint8_t row, char* str) {	// create and do one s
 					   "big_or_multilin",			// name
 					   2000,				// stack size
 					   &monochrome_descriptor,		// task input parameter
-					   0,					// task priority
+					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_big_or_multiline_handle,	// task handle
 					   0);					// core 0
   if(err != pdPASS) {
@@ -774,7 +779,7 @@ void multicore_setInverseFont() {	// create and do one shot task
 					   "'setInverseFont",			// name
 					   2000,				// stack size
 					   NULL,				// task input parameter
-					   0,					// task priority
+					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_setInverseFont_handle,	// task handle
 					   0);					// core 0
   if(err != pdPASS) {
@@ -814,7 +819,7 @@ void multicore_clearInverseFont() {	// create and do one shot task
 					   "'clearInverse",			// name
 					   2000,				// stack size
 					   NULL,				// task input parameter
-					   0,					// task priority
+					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_clearInverseFont_handle,	// task handle
 					   0);					// core 0
   if(err != pdPASS) {
@@ -862,7 +867,7 @@ void multicore_setCursor(uint8_t col, uint8_t row) {	// create and do one shot t
 					   "setCursor",			// name
 					   2000,				// stack size
 					   &data,				// task input parameter
-					   0,					// task priority
+					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_setCursor_handle,		// task handle
 					   0);					// core 0
   if(err != pdPASS) {
@@ -902,7 +907,7 @@ void multicore_print(char* text) {	// create and do one shot task
 					   "print",			// name
 					   2000,				// stack size
 					   &text,				// task input parameter
-					   0,					// task priority
+					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_print_handle,		// task handle
 					   0);					// core 0
   if(err != pdPASS) {
@@ -960,7 +965,7 @@ void multicore_clear_display() {	// create and do one shot task
 					   "clear_display",				// name
 					   2000,				// stack size
 					   NULL,				// task input parameter
-					   0,					// task priority
+					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_clear_display_handle,	// task handle
 					   0);					// core 0
   if(err != pdPASS) {
@@ -1001,7 +1006,7 @@ void multicore_clearLine(uint8_t row) {	// create and do one shot task
 					   "clearLine",			// name
 					   2000,				// stack size
 					   &data,				// task input parameter
-					   0,					// task priority
+					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_clearLine_handle,	// task handle
 					   0);					// core 0
   if(err != pdPASS) {
@@ -1072,7 +1077,7 @@ void multicore_show_names() {	// create and do one shot task
 					   "show_names",			// name
 					   2000,				// stack size
 					   NULL,				// task input parameter
-					   0,					// task priority
+					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_show_names_handle,	// task handle
 					   0);					// core 0
   if(err != pdPASS) {
@@ -1120,7 +1125,7 @@ void multicore_show_tuning() {	// create and do one shot task
 					   "show_tuning",			// name
 					   2000,				// stack size
 					   NULL,				// task input parameter
-					   0,					// task priority
+					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_show_tuning_handle,	// task handle
 					   0);					// core 0
   if(err != pdPASS) {
