@@ -1181,7 +1181,7 @@ void display_scale_name() {
   MENU.out(selected_name(SCALES));
 }
 
-bool tuning_pitch_and_scale_UI() {
+bool tuning_pitch_and_scale_UI() {	// 'Tx'
   uint8_t first_token = MENU.peek();
   switch(first_token) {
   case '?':	// 'T?'
@@ -3761,7 +3761,7 @@ void Y_UI_display_lines() {
 }
 #endif
 
-bool Y_UI() {	// "eXtended motion UI" planed eXtensions: other input sources: ADC, 'analog'Touch, distance sensors, etc
+bool Y_UI() {	// 'Ux' 'X' 'Y' 'Z' "eXtended motion UI" planed eXtensions: other input sources: ADC, 'analog'Touch, distance sensors, etc
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
   // TODO: REPLACE BY NEW ENGINE ################################################################
   // TODO: monochrome feedback on motion UI switching

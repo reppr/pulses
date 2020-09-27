@@ -5007,7 +5007,7 @@ void Press_toStart() {
 }
 
 
-void select_iCode_UI() {	// select iCode, maybe apply to selected pulses
+void select_iCode_UI() {	// 'Q'  select iCode, maybe apply to selected pulses
   /*
     'Q'   shows registered iCode names and display data
     'QT'  tests iCode
@@ -5059,7 +5059,7 @@ void select_iCode_UI() {	// select iCode, maybe apply to selected pulses
 } // select_iCode_UI()
 
 
-void select_jiffle_UI() {	// select jiffle, maybe apply to selected pulses
+void select_jiffle_UI() {	// 'J'  select jiffle, maybe apply to selected pulses
   /*
     'J'  shows registered jiffle names and display_jiffletab(<selected_jiffle>)
     'JT' tests jiffle
@@ -5120,7 +5120,7 @@ void user_selected_scale(unsigned int* scale) {
   }
 }
 
-void select_scale__UI() {	// OBSOLETE?:
+void select_scale__UI() {	// OBSOLETE?: only used inside oldstyle experiments...
   /*
     void select_scale__UI() examples:
     "a"		metric a=440 *minor* scale
@@ -6044,7 +6044,7 @@ bool menu_pulses_reaction(char menu_input) {
     break;
 #endif	// #ifdef IMPLEMENT_TUNING	implies floating point
 
-  case 'j':	// en_jiffle_thrower	// OBSOLETE, as select_jiffle_UI() does this now
+  case 'j':	// en_jiffle_thrower	// maybe OBSOLETE?, as select_jiffle_UI() does this now
     setup_jiffle_thrower_selected(selected_actions);
     break;
 

@@ -1705,13 +1705,13 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	// check for end of jiffle or WAIT
 	// to be able to play unfinished jiffletabs while editing them
 	// we check the first 2 items of the triple for zero
-	if (multiplier == 0 || divisor==0) {	// multiplier|divisor==0 no next phase, KILL pulse
+	if (multiplier == 0 || divisor==0) {	// multiplier|divisor==0 no next phase, KILL pulse	end of JIFFLE?
 #if defined DEBUG_ICODE
 	  (*MENU).outln(F("multiplier|divisor==0,  END of JIFF, KILL"));
 #endif
 	  // icode_p += 3;	// skip invalid data triple
 	  if(pulses[pulse].flags & HAS_GPIO)		// TODO: reset gpio here or not, see 'KILL'
-	    if(pulses[pulse].gpio != ILLEGAL8) {		// currently the gpios stay high after a jiff without
+	    if(pulses[pulse].gpio != ILLEGAL8) {	// currently the gpios stay high after a jiff without
 	      digitalWrite(pulses[pulse].gpio, 0);	// so yes, set gpio LOW
 #if defined DEBUG_ICODE
 	      (*MENU).out("reset GPIO ");
@@ -1719,12 +1719,12 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 #endif
 	    }
 
-	  init_pulse(pulse);	// KILL pulse, makes old jiffletabs usable as icode
+	  init_pulse(pulse);	// KILL pulse, makes old jiffletabs usable as icode	fix JIFFLE as iCode
 	  icode_p = pulses[pulse].icode_p;	// programmers aesthetics...
 
 	  busy = false;
 	  //	  return;		// and return
-	} else if (counter==0) {	// WAIT?
+	} else if (counter==0) {	// WAIT?					JIFFLE is ending
 #if defined DEBUG_ICODE
 	  (*MENU).out("\nwait ");
 	  (*MENU).outln(pulses[pulse].base_period * multiplier / divisor);
@@ -1736,8 +1736,9 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	  pulses[pulse].counter--;	// *WAITING IS NOT COUNTED AS A SEPARATE PULSE*
 	  busy = false;
 	  icode_p += 3;
-	} else { // JIFF valid jiffle data, *do jiffle*
-	  if (pulses[pulse].countdown == 0) {
+
+	} else { // JIFF valid jiffle data, *do jiffle*					do JIFFLE
+	  if (pulses[pulse].countdown == 0) {	//					initialise next JIFFLE
 #if defined DEBUG_ICODE
 	    (*MENU).out(F("INIT jiff\tcounter "));
 	    (*MENU).out(counter);
@@ -1751,7 +1752,7 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	  }
 
 	  if((pulses[pulse].flags & HAS_GPIO) && (pulses[pulse].gpio != ILLEGAL8))
-	    digitalWrite(pulses[pulse].gpio, pulses[pulse].counter & 1);	// gpio click
+	    digitalWrite(pulses[pulse].gpio, pulses[pulse].counter & 1);		// JIFFLE gpio click
 #if defined DEBUG_ICODE
 	  (*MENU).out(F("GPIO\t"));
 	  if(pulses[pulse].counter & 1)
@@ -1759,13 +1760,14 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	  else
 	    (*MENU).outln(F("LOW"));
 #endif
-	  if (--pulses[pulse].countdown > 0) {	// countdown, phase ended?
+	  if (--pulses[pulse].countdown > 0) {	// countdown, phase ended?		// JIFFLE still running?
 #if defined DEBUG_ICODE
 	    (*MENU).out(F("countdown "));
 	    (*MENU).outln(pulses[pulse].countdown);
 #endif
 	    busy = false;				//   no: return immediately
-	  } else {	// countdown finished, 1 JIFF done
+
+	  } else {	// countdown finished, 1 JIFF done				// this JIFFLE is ending
 #if defined DEBUG_ICODE
 	    (*MENU).outln(F("1 JIFF done"));
 #endif
@@ -1775,18 +1777,18 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	} // JIFF valid jiffle data, *do jiffle*
       } // JIFFLE, WAIT, JIFFLE END?
 
-      else if(pulses[pulse].icode_mode == MELODY_MODE) {	// >>>>>>>> MELODY_MODE <<<<<<<<
+      else if(pulses[pulse].icode_mode == MELODY_MODE) {	// >>>>>>>>>>>>>>>> MELODY_MODE <<<<<<<<<<<<<<<<
 
 	if(pulses[pulse].note_div_scale==0)		// safety net	default note initializations?
 	  init_melody_mode(pulse);
 
-	if (pulses[pulse].countdown <= 0) {	// initialise NEXT note
+	if (pulses[pulse].countdown <= 0) {			// MELODY_MODE	initialise NEXT note
 	  int interval = *icode_p;
 
 	  // find reference_pulse, the primary pulse with the notes' tuning:
 	  int reference_pulse = pulses[pulse].other_pulse + interval;
 	  int octave_shift=0;
-	  while(reference_pulse > highest_primary) {
+	  while(reference_pulse > highest_primary) {		// MELODY_MODE	check range
 	    reference_pulse -= steps_in_octave;
 	    octave_shift--;
 	    if(reference_pulse < lowest_primary)
@@ -1798,7 +1800,7 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	    if(reference_pulse > highest_primary)
 	      goto icode_error;
 	  }
-	  pulses[pulse].period = pulses[reference_pulse].period;
+	  pulses[pulse].period = pulses[reference_pulse].period;	// MELODY_MODE compute period
 
 	  while(octave_shift > 0) {
 	    octave_shift--;
@@ -1809,14 +1811,14 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	    div_time(&pulses[pulse].period, 2);
 	  }
 
-	  if(! pause) {
+	  if(! pause) {							// MELODY_MODE	NOTE? (or pause)
 	    div_time(&pulses[pulse].period, pulses[pulse].note_div_scale);
 	    pulses[pulse].countdown = pulses[pulse].note_sounding;
 
 	    if((pulses[pulse].flags & HAS_GPIO) && (pulses[pulse].gpio != ILLEGAL8))
 	      digitalWrite(pulses[pulse].gpio, pulses[pulse].counter & 1);	// first gpio click
 
-	  } else { // PAUSE for total note length
+	  } else { 								// MELODY_MODE	PAUSE for total note length
 	    if(pulses[pulse].note_length_mul != pulses[pulse].note_length_div) {
 	      mul_time(&pulses[pulse].period, pulses[pulse].note_length_mul);
 	      div_time(&pulses[pulse].period, pulses[pulse].note_length_div);
@@ -1829,14 +1831,14 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 
 	  busy = false;	// return
 
-	} else {				// *is* PLAYING a note
+	} else {								// MELODY_MODE	*is* PLAYING a note
 	  if((pulses[pulse].flags & HAS_GPIO) && (pulses[pulse].gpio != ILLEGAL8))
-	    digitalWrite(pulses[pulse].gpio, pulses[pulse].counter & 1);	// gpio click
+	    digitalWrite(pulses[pulse].gpio, pulses[pulse].counter & 1);	// MELODY_MODE gpio click
 
-	  if (--pulses[pulse].countdown > 0) {
+	  if (--pulses[pulse].countdown > 0) {					// MELODY_MODE note continues?
 	    busy = false;	// return immediately
 
-	  } else {				// sound ENDED: WAIT for next
+	  } else {								// MELODY_MODE sound ENDED: WAIT for next
 	    // add note break wait
 	    int diff = pulses[pulse].note_length - pulses[pulse].note_sounding;
 	    if(diff)
@@ -1848,7 +1850,7 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	  }
 	}
       } else
-	(*MENU).error_ln(F("unknown icode_mode"));
+	(*MENU).error_ln(F("unknown icode_mode"));	// ERROR:  NUMERIC, but *not* JIFFLE_MODE *nor* MELODY_MODE
     } // positive numeric input >=0
 
     pulses[pulse].icode_index = icode_p - pulses[pulse].icode_p;
