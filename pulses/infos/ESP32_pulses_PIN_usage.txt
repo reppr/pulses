@@ -5,15 +5,16 @@ GPIO00	strapping	button
 
 GPIO01  TX0	Serial TX
 
-GPIO02	strapping [touch]	(rarely used as MORSE_OUTPUT_PIN	[sometimes blue onboard led, add piezzo?])
+GPIO02	strapping [touch]	(rarely used as MORSE_OUTPUT_PIN	(LILYGO T5 SD-CARD MISO)
+	[sometimes blue onboard led, add piezzo?])
 	TODO: test as touch (led!)
 
 GPIO03	RX0	Serial RX
 
-GPIO04	[touch]	OLED_SDA, ePaper
+GPIO04	[touch]	OLED_SDA, ePaper		(LILYGO T5 ePaper 2.13 BUSY)
 	TODO: test as touch (with display?)
 
-GPIO05	strapping
+GPIO05	strapping				(LILYGO T5 ePaper 2.13 CS)
 
 GPIO06 FLASH SCK
 
@@ -27,21 +28,20 @@ GPIO10 FLASH D3
 
 GPIO11 FLASH CMD
 
-GPIO12	[touch]		(MISO MICROSD)
-       MORSE_OUTPUT_PIN	  ||	PERIPHERAL_POWER_SWITCH_PIN
+GPIO12	[touch]       MORSE_OUTPUT_PIN  ||  PERIPHERAL_POWER_SWITCH_PIN		(MISO MICROSD)
        ((was: MORSE_TOUCH_INPUT_PIN (ESP32 touch sensor as morse input))
 
-GPIO13	[touch]	TOUCH		MORSE_TOUCH_INPUT_PIN		(LyraT:touch TP5"Vol-")
+GPIO13	[touch]	TOUCH		MORSE_TOUCH_INPUT_PIN	(LILYGO T5 SD-CARD MOSI)	(LyraT:touch TP5"Vol-")
 
-GPIO14	[touch]	TOUCH		RGB_LED_STRIP_DATA_PIN		(MOSI MICROSD)
+GPIO14	[touch]	TOUCH		RGB_LED_STRIP_DATA_PIN	(LILYGO T5 SD-CARD SCK)	(MOSI MICROSD)
 
-GPIO15	[touch]	OLED_SCL	(RGB_LED_STRING)
+GPIO15	[touch]	OLED_SCL	(RGB_LED_STRING)	(LILYGO T5 SD-CARD MOSI)
 
-GPIO16	OLED_RST, ePaper	UART2 RX	// *conflict* UART2 MIDI <> OLED
+GPIO16	OLED_RST, ePaper	UART2 RX		(LILYGO T5 ePaper 2.13 RST)	// *CONFLICT* UART2 MIDI <> OLED
 
-GPIO17				UART2 TX
+GPIO17				UART2 TX		(LILYGO T5 ePaper 2.13 DC)
 
-GPIO18
+GPIO18							(LILYGO T5 ePaper 2.13 CLK)
 
 GPIO19
 
@@ -49,7 +49,7 @@ GPIO21	   i2c SDA	Wire SDA
 
 GPIO22	   i2c SCL	Wire SCL	(I2S codec DATA)
 
-GPIO23
+GPIO23							(LILYGO T5 ePaper 2.13 MOSI)
 
 
 
@@ -63,19 +63,19 @@ GPIO27	[touch]	TOUCH		RGB_LED_STRING		(SCK MICROSD)	(LyraT:touch TP6"Vol+")
 
 GPI_32	[INPUT, adc, touch]	TOUCH	(CS MICROSD)	(LyraT:touch TP4"SET")
 
-GPI_33	[INPUT, adc, touch]	TOUCH	(LyraT:touch TP3"Play")
+GPI_33	[INPUT, adc, touch]	TOUCH			(LyraT:touch TP3"Play")
 
 GPI_34	[INPUT, adc]	MUSICBOX_TRIGGER_PIN, MORSE_GPIO_INPUT_PIN (needs hw pulldown)
 
 GPI_35	[INPUT, adc]	BLUETOOTH_ENABLE_PIN
 
-GPIO36	[INPUT, adc]	BATTERY_LEVEL_CONTROL_PIN
+GPI_36	[INPUT, adc]	BATTERY_LEVEL_CONTROL_PIN
 
-GPIO37	[INPUT, adc]
+GPI_37	[INPUT, adc]
 
-GPIO38	[INPUT, adc]
+GPI_38	[INPUT, adc]
 
-GPIO39	[INPUT, adc]
+GPI_39	[INPUT, adc]
 
 
 
@@ -90,3 +90,7 @@ PIN_SPI_DC	27
 			DC	17
 			MISO	19 (*not used*)
 			MOSI	23
+
+LILYGO T5 2.13 ePaper + MICROSD
+  GPIO27		RGB_LED_STRIP_DATA_PIN	(was: GPIO14)
+  GPI_32 | GPI_33 	MORSE_TOUCH_INPUT_PIN	(was: GPIO13)

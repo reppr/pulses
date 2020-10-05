@@ -695,3 +695,5 @@ skip pause UI
 autoskip_pause UI
 
 cycle_monitor_i and '*' '/' tuning?	// currently cycle_monitor runs from within the butler
+
+RETHINK: not_a_preset and name
