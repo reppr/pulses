@@ -99,7 +99,7 @@ void set_rgb_string_voltage_type(int voltage, int string) {
 int selected_rgb_LED_string = 0;	// default to the first string
 
 strand_t STRANDS[] = { // Avoid using any of the strapping pins on the ESP32, anything >=32, 16, 17... not much left.
-  {.rmtChannel = 0, .gpioNum = RGB_LED_STRIP_DATA_PIN, .ledType = LED_WS2812B_V3, .brightLimit = 24, .numPixels = RGB_STRING_LED_CNT },
+  {.rmtChannel = 0, .gpioNum = HARDWARE.rgb_pin[0], .ledType = LED_WS2812B_V3, .brightLimit = 24, .numPixels = RGB_STRING_LED_CNT },
 //  {.rmtChannel = 0, .gpioNum = 14, .ledType = LED_WS2812B_V2, .brightLimit = 24, .numPixels = RGB_STRING_LED_CNT },
 //  {.rmtChannel = 0, .gpioNum = 14, .ledType = LED_WS2812B_V1, .brightLimit = 24, .numPixels = RGB_STRING_LED_CNT },
 };
@@ -126,7 +126,7 @@ boolean initStrands()
   digitalLeds_initDriver();
 
   for (int i = 0; i < STRANDCNT; i++) {
-    gpioSetup(STRANDS[i].gpioNum, OUTPUT, LOW);
+    gpioSetup(HARDWARE.rgb_pin[i], OUTPUT, LOW);
   }
 
   // strand_t * strands[RGB_STRINGS_MAX];

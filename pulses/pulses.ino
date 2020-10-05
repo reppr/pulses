@@ -217,7 +217,7 @@ typedef struct pulses_hardware_conf_t {
 
   // RGB LED strings
   uint8_t rgb_strings=0;		// flag and rgb led string cnt
-  uint8_t rgb_pin[RGB_STRINGS_MAX]={0};					// %4	TODO: FIX ALIGNEMENT
+  uint8_t rgb_pin[RGB_STRINGS_MAX]={RGB_LED_STRIP_DATA_PIN};		// %4	TODO: FIX ALIGNEMENT
   uint8_t rgb_pixel_cnt[RGB_STRINGS_MAX]={0};				// %4
   uint8_t rgb_led_voltage_type[RGB_STRINGS_MAX]={0};			// %4
   uint8_t rgb_pattern0[RGB_STRINGS_MAX]={0};				// %4
