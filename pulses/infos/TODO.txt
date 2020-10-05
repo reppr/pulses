@@ -697,3 +697,7 @@ autoskip_pause UI
 cycle_monitor_i and '*' '/' tuning?	// currently cycle_monitor runs from within the butler
 
 RETHINK: not_a_preset and name
+
+if(HARDWARE.musicbox_trigger_pin != ILLEGAL8 )	// hmm, what else could wake me up?
+  if (esp_sleep_enable_ext0_wakeup((gpio_num_t) HARDWARE.musicbox_trigger_pin, 1))
+    MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));

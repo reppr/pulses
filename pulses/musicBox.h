@@ -878,10 +878,12 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
       }
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
-      MENU.out(F("peripheral POWER OFF "));
-      MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
-      peripheral_power_switch_OFF();
-      delay(600);	// let power go down softly
+      if(HARDWARE.periph_power_switch_pin != ILLEGAL8) {
+	MENU.out(F("peripheral POWER OFF "));
+	MENU.outln(HARDWARE.periph_power_switch_pin);
+	peripheral_power_switch_OFF();
+	delay(600);	// let power go down softly
+      }
 #endif
 
       tabula_rasa();
@@ -1755,7 +1757,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN && defined BATTERY_LEVEL_CONTROL_PIN
   MENU.out(F("peripheral POWER OFF "));
-  MENU.out(PERIPHERAL_POWER_SWITCH_PIN);
+  MENU.out(HARDWARE.periph_power_switch_pin);
   MENU.tab();
   MENU.outln(read_battery_level());
   peripheral_power_switch_OFF();
@@ -1780,7 +1782,7 @@ void activate_musicBox_trigger(int dummy_p=ILLEGAL32) {
   musicBox_trigger_enabled = true;
   if(MENU.verbosity >= VERBOSITY_LOWEST) {
     MENU.out(F("trigger enabled "));
-    MENU.outln(MUSICBOX_TRIGGER_PIN);
+    MENU.outln(HARDWARE.musicbox_trigger_pin);
   }
 #else					// else noop
   ;
@@ -1832,11 +1834,13 @@ void musicBox_trigger_ON() {
 #if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks *NOT* using the interrupt
   MENU.out(F("MUSICBOX_TRIGGER ON\t"));
   #if defined MUSICBOX_TRIGGER_PIN
-    pinMode(MUSICBOX_TRIGGER_PIN, INPUT);
-    attachInterrupt(digitalPinToInterrupt(MUSICBOX_TRIGGER_PIN), musicBox_trigger_ISR, RISING);
-    MENU.out(MUSICBOX_TRIGGER_PIN);
-    MENU.tab();
-    MENU.outln(musicbox_trigger_cnt);
+    if(HARDWARE.musicbox_trigger_pin != ILLEGAL8 ) {
+      pinMode(HARDWARE.musicbox_trigger_pin, INPUT);
+      attachInterrupt(digitalPinToInterrupt(HARDWARE.musicbox_trigger_pin), musicBox_trigger_ISR, RISING);
+      MENU.out(HARDWARE.musicbox_trigger_pin);
+      MENU.tab();
+      MENU.out(musicbox_trigger_cnt);
+    }
   #else
     MENU.ln();
   #endif
@@ -1850,8 +1854,10 @@ void musicBox_trigger_OFF() {
 #if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks *NOT* using the interrupt
   MENU.outln(F("musicBox_trigger_OFF\t"));
   #if defined MUSICBOX_TRIGGER_PIN
-    detachInterrupt(digitalPinToInterrupt(MUSICBOX_TRIGGER_PIN));
-  //  esp_intr_free(digitalPinToInterrupt(MUSICBOX_TRIGGER_PIN));
+    if(HARDWARE.musicbox_trigger_pin != ILLEGAL8 ) {
+      detachInterrupt(digitalPinToInterrupt(HARDWARE.musicbox_trigger_pin));
+      // esp_intr_free(digitalPinToInterrupt(HARDWARE.musicbox_trigger_pin));
+    }
   #endif
 #endif
   musicBox_trigger_enabled=false;
@@ -2848,9 +2854,10 @@ void start_musicBox() {
 #endif
 
 #if defined MUSICBOX_TRIGGER_PIN
-  pinMode(MUSICBOX_TRIGGER_PIN, INPUT);	// looks like we need that ???
+  if(HARDWARE.musicbox_trigger_pin != ILLEGAL8 )
+    pinMode(HARDWARE.musicbox_trigger_pin, INPUT);	// looks like we need that ???
   MENU.out(F("trigger pin: "));
-  MENU.outln(MUSICBOX_TRIGGER_PIN);
+  MENU.outln(HARDWARE.musicbox_trigger_pin);
 #endif
   musicBox_trigger_enabled=false;
   blocked_trigger_shown = false;	// show only once a run
@@ -2871,7 +2878,7 @@ void start_musicBox() {
   peripheral_power_switch_ON();
 
   MENU.out(F("peripheral POWER ON "));
-  MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
+  MENU.outln(HARDWARE.periph_power_switch_pin);
 
   delay(250);	// give peripheral supply voltage time to stabilise
 #endif
@@ -3279,14 +3286,17 @@ void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from mai
   digitalWrite(26, LOW);
 
 #if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
-  if (esp_sleep_enable_ext0_wakeup((gpio_num_t) MUSICBOX_TRIGGER_PIN, 1))
-    MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
+  if(HARDWARE.musicbox_trigger_pin != ILLEGAL8 )	// hmm, what else could wake me up?
+    if (esp_sleep_enable_ext0_wakeup((gpio_num_t) HARDWARE.musicbox_trigger_pin, 1))
+      MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
 /*
-  if(gpio_wakeup_enable((gpio_num_t) MUSICBOX_TRIGGER_PIN, GPIO_INTR_LOW_LEVEL))
-    MENU.error_ln(F("gpio_wakeup_enable()"));
+  if(HARDWARE.musicbox_trigger_pin != ILLEGAL8 )	// hmm, what else could wake me up?
+    if(gpio_wakeup_enable((gpio_num_t) HARDWARE.musicbox_trigger_pin, GPIO_INTR_LOW_LEVEL))
+      MENU.error_ln(F("gpio_wakeup_enable()"));
 
-  if (esp_sleep_enable_gpio_wakeup())
-    MENU.error_ln(F("esp_sleep_enable_gpio_wakeup"));
+  if(HARDWARE.musicbox_trigger_pin != ILLEGAL8 )	// hmm, what else could wake me up?
+    if (esp_sleep_enable_gpio_wakeup())
+      MENU.error_ln(F("esp_sleep_enable_gpio_wakeup"));
 */
 #endif
 
@@ -3376,8 +3386,9 @@ void deep_sleep() {
 #endif
 
 #if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
-  if (esp_sleep_enable_ext0_wakeup((gpio_num_t) MUSICBOX_TRIGGER_PIN, 1))
-    MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
+  if(HARDWARE.musicbox_trigger_pin != ILLEGAL8 )	// hmm, what else could wake me up?
+    if (esp_sleep_enable_ext0_wakeup((gpio_num_t) HARDWARE.musicbox_trigger_pin, 1))
+      MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
 #endif
 
   /* ONLY HELPS in light_sleep()
@@ -3458,15 +3469,17 @@ void sync_shifting(Harmonical::fraction_t shift) {
 void musicBox_setup() {	// TODO:update
   MENU.ln();
 
-#if defined MUSICBOX_TRIGGER_PIN		// TODO: use HARDWARE musicbox_trigger_pin != ILLEGAL8; ?
-  MENU.out(F("musicBox trigger pin:\t"));
-  MENU.outln(MUSICBOX_TRIGGER_PIN);
+#if defined MUSICBOX_TRIGGER_PIN
+  if(HARDWARE.musicbox_trigger_pin != ILLEGAL8 ) {
+    MENU.out(F("musicBox trigger pin:\t"));
+    MENU.outln(HARDWARE.musicbox_trigger_pin);
 
-#if defined MUSICBOX_TRIGGER_BLOCK_SECONDS	// TODO: should go to musicBoxConf or HARDWARE
-  MENU.out(F("disable retriggering:\t"));
-  MENU.outln(MUSICBOX_TRIGGER_BLOCK_SECONDS);
-  MENU.ln();
-#endif
+  #if defined MUSICBOX_TRIGGER_BLOCK_SECONDS	// TODO: should go to musicBoxConf or HARDWARE
+    MENU.out(F("disable retriggering:\t"));
+    MENU.outln(MUSICBOX_TRIGGER_BLOCK_SECONDS);
+    MENU.ln();
+  #endif
+  }
 #endif //  MUSICBOX_TRIGGER_PIN
 
 
@@ -3481,8 +3494,9 @@ void musicBox_setup() {	// TODO:update
 #endif
 
 #if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
-  if (esp_sleep_enable_ext0_wakeup((gpio_num_t) MUSICBOX_TRIGGER_PIN, 1))
-    MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
+  if(HARDWARE.musicbox_trigger_pin != ILLEGAL8 )	// hmm, what else could wake me up?
+    if (esp_sleep_enable_ext0_wakeup((gpio_num_t) HARDWARE.musicbox_trigger_pin, 1))
+      MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
 #endif
 
 #if defined ESP32_USB_DAC_ONLY || defined ESP32_USB_DAC_ONLY_OLED	// *minimal* usb powered *DAC only* setups
