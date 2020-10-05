@@ -1743,12 +1743,6 @@ int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very fi
 #endif
 
 void setup() {
-// DADA TODO: emergency rgb led strings reset in setup()?
-//   #if defined RGB_LED_STRIP_DATA_PIN
-//     pinMode(RGB_LED_STRIP_DATA_PIN, OUTPUT);	// on oldstyle Arduinos this is enough, maybe not always on ESP
-//     digitalWrite(RGB_LED_STRIP_DATA_PIN, HIGH);	// on oldstyle Arduinos this is enough, maybe not always on ESP
-//   #endif
-
   setup_initial_HARDWARE_conf();
 
 #if defined USE_RGB_LED_STRIP
@@ -1757,13 +1751,6 @@ void setup() {
 
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
   random_entropy();	// start gathering entropy before initialisation
-#endif
-
-#if defined PERIPHERAL_POWER_SWITCH_PIN	// output not possible yet, but switch peripheral power on already
-  // for some strange reason i had to repeat this at the end of setup(), see below
-  peripheral_power_switch_ON();		// default peripheral power supply ON
-  //  peripheral_power_switch_OFF();	// default peripheral power supply OFF
-  delay(100);	// wait a bit longer
 #endif
 
   HARMONICAL = new Harmonical(3628800uL);	// old style harmonical unit, obsolete?
@@ -1796,6 +1783,13 @@ void setup() {
 
 #if defined USE_NVS
   nvs_pulses_setup();
+#endif
+
+#if defined PERIPHERAL_POWER_SWITCH_PIN	// switch peripheral power on
+  // for some strange reason i had to repeat this at the end of setup(), see below
+  peripheral_power_switch_ON();		// default peripheral power supply ON
+  //  peripheral_power_switch_OFF();	// default peripheral power supply OFF
+  delay(100);	// wait a bit longer
 #endif
 
 #if defined USE_MONOCHROME_DISPLAY
@@ -1902,7 +1896,7 @@ void setup() {
 
 #if defined USE_RGB_LED_STRIP
   MENU.out(F("RGB LED string on pin "));
-  MENU.outln(STRANDS[0].gpioNum);	// RGB_LED_STRIP_DATA_PIN
+  MENU.outln(HARDWARE.rgb_pin[0]);	// RGB_LED_STRIP_DATA_PIN
   MENU.ln();
 #endif
 
@@ -1911,14 +1905,15 @@ void setup() {
 #endif
 
 #if defined MUSICBOX_TRIGGER_PIN
-  pinMode(MUSICBOX_TRIGGER_PIN, INPUT);
+  pinMode(HARDWARE.musicbox_trigger_pin, INPUT);
 #endif
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN	// output now possible, so give info now
   MENU.out(F("peripheral POWER"));
-  MENU.out_ON_off(digitalRead(PERIPHERAL_POWER_SWITCH_PIN));
+  if(HARDWARE.periph_power_switch_pin != ILLEGAL8)
+    MENU.out_ON_off(digitalRead(HARDWARE.periph_power_switch_pin));
   MENU.space();
-  MENU.outln(PERIPHERAL_POWER_SWITCH_PIN);
+  MENU.outln(HARDWARE.periph_power_switch_pin);
   MENU.ln();
 #endif
 
@@ -2152,7 +2147,8 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
     #if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks, *no* interrupt
 //    magic_trigger_ON();
     #else
-      pinMode(MUSICBOX_TRIGGER_PIN, INPUT);
+      if(HARDWARE.musicbox_trigger_pin != ILLEGAL8)
+        pinMode(HARDWARE.musicbox_trigger_pin, INPUT);
     #endif
   #endif
 #endif
@@ -2507,10 +2503,10 @@ void loop() {	// ARDUINO
 #if defined HARMONICAL_MUSIC_BOX
   #if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
     #if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
-     if(digitalRead(MUSICBOX_TRIGGER_PIN)) {
-//     digitalWrite(2,HIGH);	// REMOVE: for field testing only
-       musicBox_trigger_got_hot();	// must be called when musicBox trigger was detected high
-     }
+      if(HARDWARE.musicbox_trigger_pin != ILLEGAL8) {
+        if(digitalRead(HARDWARE.musicbox_trigger_pin))
+	  musicBox_trigger_got_hot();	// must be called when musicBox trigger was detected high
+      }
     #else
 //     if(switch_magical_trigger_off) {
 //       magic_trigger_OFF();
