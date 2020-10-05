@@ -35,10 +35,10 @@ unsigned int battery_high_level=1402;	// ~ 13.8V
 
 unsigned int read_battery_level(unsigned int oversampling=15) {
   unsigned int data=0;
-  analogRead(BATTERY_LEVEL_CONTROL_PIN);	// without this prior read, it reads always zero :(
+  analogRead(HARDWARE.battery_level_control_pin);	// without this prior read, it reads always zero :(
 
   for(int i=0; i<oversampling; i++)
-    data += analogRead(BATTERY_LEVEL_CONTROL_PIN);
+    data += analogRead(HARDWARE.battery_level_control_pin);
 
   return data / oversampling;
 }
@@ -80,7 +80,7 @@ battery_levels check_battery_level() {
 
 void show_battery_level() {
   MENU.out(F("battery control pin: "));
-  MENU.out(BATTERY_LEVEL_CONTROL_PIN);
+  MENU.out(HARDWARE.battery_level_control_pin);
   MENU.tab();
   MENU.out(read_battery_level());
   MENU.tab();
@@ -143,8 +143,8 @@ bool assure_battery_level() {
 }
 
 void battery_control_setup() {
-  pinMode(BATTERY_LEVEL_CONTROL_PIN, INPUT);
-  analogRead(BATTERY_LEVEL_CONTROL_PIN);	// without this prior read, it reads always zero :(
+  pinMode(HARDWARE.battery_level_control_pin, INPUT);
+  analogRead(HARDWARE.battery_level_control_pin);	// without this prior read, it reads always zero :(
 
   show_battery_level();
 }

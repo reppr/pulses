@@ -7,15 +7,19 @@
 bool peripheral_power_on=false;
 
 void peripheral_power_switch_ON() {
-  pinMode(PERIPHERAL_POWER_SWITCH_PIN, OUTPUT);
-  digitalWrite(PERIPHERAL_POWER_SWITCH_PIN, HIGH);
-  peripheral_power_on=true;
+  if(HARDWARE.periph_power_switch_pin != ILLEGAL8) {
+    pinMode(HARDWARE.periph_power_switch_pin, OUTPUT);
+    digitalWrite(HARDWARE.periph_power_switch_pin, HIGH);
+    peripheral_power_on=true;
+  }
 }
 
 void peripheral_power_switch_OFF() {
-  pinMode(PERIPHERAL_POWER_SWITCH_PIN, OUTPUT);
-  digitalWrite(PERIPHERAL_POWER_SWITCH_PIN, LOW);
-  peripheral_power_on=false;
+  if(HARDWARE.periph_power_switch_pin != ILLEGAL8) {
+    pinMode(HARDWARE.periph_power_switch_pin, OUTPUT);
+    digitalWrite(HARDWARE.periph_power_switch_pin, LOW);
+    peripheral_power_on=false;
+  }
 }
 
 #define PERIPHERAL_POWER_SWITCH_H

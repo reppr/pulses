@@ -329,18 +329,18 @@ void morse_feedback_d(int pulse) {	// payload for morse duration feedback pulse
   switch (PULSES.pulses[pulse].counter) {
   case 1: // wait for loong
     PULSES.pulses[pulse].period = (pulse_time_t) (limit_dash_loong * morse_TimeUnit);
-    digitalWrite(MORSE_OUTPUT_PIN, HIGH);
+    digitalWrite(HARDWARE.morse_output_pin, HIGH);
     break;
   case 2: // loong reached: blink
-    digitalWrite(MORSE_OUTPUT_PIN, LOW);
+    digitalWrite(HARDWARE.morse_output_pin, LOW);
     PULSES.pulses[pulse].period = PULSES.simple_time(100000);
     break;
   case 3: //  wait for overlong
-    digitalWrite(MORSE_OUTPUT_PIN, HIGH);
+    digitalWrite(HARDWARE.morse_output_pin, HIGH);
     PULSES.pulses[pulse].period = PULSES.simple_time(((limit_loong_overlong - limit_dash_loong) * morse_TimeUnit) - 100000);
     break;
   case 4: // overlong: switch LED off
-    digitalWrite(MORSE_OUTPUT_PIN, LOW);
+    digitalWrite(HARDWARE.morse_output_pin, LOW);
   default:
     deactivate_morse_feedback_d_pulse(); // sleep but stay ready for next press
   }
@@ -353,7 +353,7 @@ void prepare_morse_feedback_d_pulse() {	// prepares, but does not start it
     if(morse_length_feedback_pulse_i == ILLEGAL32)	// no pulse available
       return;						//   just ignore
     PULSES.init_pulse(morse_length_feedback_pulse_i);
-    PULSES.set_payload_with_pin(morse_length_feedback_pulse_i, morse_feedback_d, MORSE_OUTPUT_PIN);  // pin not really used, hardcoded
+    PULSES.set_payload_with_pin(morse_length_feedback_pulse_i, morse_feedback_d, HARDWARE.morse_output_pin);  // pin not really used, hardcoded
     PULSES.pulses[morse_length_feedback_pulse_i].groups = g_AUXILIARY;
     PULSES.pulses[morse_length_feedback_pulse_i].flags |= DO_NOT_DELETE; // redundant
     deactivate_morse_feedback_d_pulse();
@@ -382,14 +382,14 @@ void start_morse_feedback_d_pulse() {
 TaskHandle_t morse_input_feedback_handle;
 
 void morse_input_duration_feedback(void* dummy) {
-  if(touchRead(MORSE_TOUCH_INPUT_PIN) < touch_threshold) {	// looks STILL TOUCHED
+  if(touchRead(HARDWARE.morse_touch_input_pin) < touch_threshold) {	// looks STILL TOUCHED
     vTaskDelay((TickType_t) (limit_dash_loong * morse_TimeUnit / 1000 / portTICK_PERIOD_MS));
     //vTaskDelay((TickType_t) (dashTim * morse_TimeUnit / 1000 / portTICK_PERIOD_MS));
-    if(touchRead(MORSE_TOUCH_INPUT_PIN) < touch_threshold) {	// looks STILL TOUCHED
-      digitalWrite(MORSE_OUTPUT_PIN, LOW);
+    if(touchRead(HARDWARE.morse_touch_input_pin) < touch_threshold) {	// looks STILL TOUCHED
+      digitalWrite(HARDWARE.morse_output_pin, LOW);
       vTaskDelay((TickType_t) 100 / portTICK_PERIOD_MS);
-      if(touchRead(MORSE_TOUCH_INPUT_PIN) < touch_threshold) {	// looks STILL TOUCHED
-	digitalWrite(MORSE_OUTPUT_PIN, HIGH);
+      if(touchRead(HARDWARE.morse_touch_input_pin) < touch_threshold) {	// looks STILL TOUCHED
+	digitalWrite(HARDWARE.morse_output_pin, HIGH);
       }
     }
   }
@@ -438,11 +438,11 @@ void IRAM_ATTR touch_morse_ISR_v3() {	// ISR for ESP32 touch sensor as morse inp
 
   morse_events_cbuf[morse_events_write_i].time = now;	// save time
 
-  if(touchRead(MORSE_TOUCH_INPUT_PIN) < touch_threshold) {	// >>>>>>>>>>>>>>>> looks TOUCHED <<<<<<<<<<<<<<<<
+  if(touchRead(HARDWARE.morse_touch_input_pin) < touch_threshold) {	// >>>>>>>>>>>>>>>> looks TOUCHED <<<<<<<<<<<<<<<<
     touch_pad_set_trigger_mode(TOUCH_TRIGGER_ABOVE);		// wait for touch release
     morse_events_cbuf[morse_events_write_i].type = 1 /*touched*/;
 #if defined MORSE_OUTPUT_PIN
-    digitalWrite(MORSE_OUTPUT_PIN, HIGH);		// feedback: pin is TOUCHED, LED on
+    digitalWrite(HARDWARE.morse_output_pin, HIGH);		// feedback: pin is TOUCHED, LED on
  #if defined TOKEN_LENGTH_FEEDBACK_PULSE
     start_morse_feedback_d_pulse();
  #elif defined TOKEN_LENGTH_FEEDBACK_TASK	// experimental
@@ -459,7 +459,7 @@ void IRAM_ATTR touch_morse_ISR_v3() {	// ISR for ESP32 touch sensor as morse inp
     touch_pad_set_trigger_mode(TOUCH_TRIGGER_BELOW);		// wait for next touch
     morse_events_cbuf[morse_events_write_i].type = 0 /*released*/;
 #if defined MORSE_OUTPUT_PIN
-    digitalWrite(MORSE_OUTPUT_PIN, LOW);		// feedback: pin is RELEASED, LED off
+    digitalWrite(HARDWARE.morse_output_pin, LOW);		// feedback: pin is RELEASED, LED off
   #if defined TOKEN_LENGTH_FEEDBACK_PULSE
     deactivate_morse_feedback_d_pulse();
   #elif defined TOKEN_LENGTH_FEEDBACK_TASK		// experimental rtos task
@@ -1870,18 +1870,18 @@ void morse_init() {
 
 #ifdef MORSE_TOUCH_INPUT_PIN	// use ESP32 touch sensor as morse input	// in use
   MENU.out(F("MORSE touch pin "));
-  MENU.out(MORSE_TOUCH_INPUT_PIN);
+  MENU.out(HARDWARE.morse_touch_input_pin);
   MENU.out(F("\tinterrupt level "));
   MENU.outln(touch_threshold);
-  // touchAttachInterrupt(MORSE_TOUCH_INPUT_PIN, touch_morse_ISR, touch_threshold);	// do that last
+  // touchAttachInterrupt(HARDWARE.morse_touch_input_pin, touch_morse_ISR, touch_threshold);	// do that last
 #endif
 
 #ifdef MORSE_OUTPUT_PIN
   MENU.out(F("MORSE output pin "));
-  MENU.outln(MORSE_OUTPUT_PIN);
+  MENU.outln(HARDWARE.morse_output_pin);
 
-  pinMode(MORSE_OUTPUT_PIN, OUTPUT);
-  digitalWrite(MORSE_OUTPUT_PIN, LOW);
+  pinMode(HARDWARE.morse_output_pin, OUTPUT);
+  digitalWrite(HARDWARE.morse_output_pin, LOW);
 #endif
 
 #if defined(MORSE_GPIO_INPUT_PIN) || defined(MORSE_TOUCH_INPUT_PIN)
@@ -1889,7 +1889,7 @@ void morse_init() {
 #endif
 
 #ifdef MORSE_TOUCH_INPUT_PIN	// use ESP32 touch sensor as morse input
-  touchAttachInterrupt(MORSE_TOUCH_INPUT_PIN, touch_morse_ISR_v3, touch_threshold);
+  touchAttachInterrupt(HARDWARE.morse_touch_input_pin, touch_morse_ISR_v3, touch_threshold);
 #endif // MORSE_TOUCH_INPUT_PIN
 } // morse_init()
 
