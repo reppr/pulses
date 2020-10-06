@@ -4771,7 +4771,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 155:
-    musicBoxConf.name = F("Marianne 1	eingesperrt<->Freiheit	sync? 4|1024");
+    musicBoxConf.name = F("Marianne 1  eingesperrt<->Freiheit  sync? 4|1024");
     /*
       in einer Gefängniszelle
       mit Vögel draussen
@@ -4812,7 +4812,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 156:
-    musicBoxConf.name = F("Marianne 2	warten");
+    musicBoxConf.name = F("Marianne 2  warten");
     /*
       warten
       Langeweile
@@ -4851,7 +4851,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 157:
-    musicBoxConf.name = F("Marianne 3	s erst Mal underwägs");
+    musicBoxConf.name = F("Marianne 3  s erst Mal underwägs");
     /*
       Bild: Spital in Shri Lanka
       ein Mann ist das allererste Mal mit seinen Prothesen unterwegs
@@ -4883,7 +4883,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 158:
-    musicBoxConf.name = F("Marianne 4	Chatzemusik!");
+    musicBoxConf.name = F("Marianne 4  Chatzemusik!");
     /*
       Chatzemusik!
       Mariannes Katze kommt, als das Stück läuft...
@@ -4914,7 +4914,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 159:
-    musicBoxConf.name = F("Marianne 5	Gefängnisgeburt");
+    musicBoxConf.name = F("Marianne 5  Gefängnisgeburt");
     /*
       eine Freundin von Marianne bekommt im Gefängnis ihr Baby
     */

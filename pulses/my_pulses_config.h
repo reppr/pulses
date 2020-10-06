@@ -48,7 +48,7 @@
   #error BOARD_HELTEC_OLED and BOARD_OLED_LIPO can *not both* be configured
 #endif
 //
-//#define BOARD_LILYGO_T5
+#define BOARD_LILYGO_T5
 #if defined BOARD_LILYGO_T5 && (defined BOARD_OLED_LIPO || defined BOARD_HELTEC_OLED)
   #error BOARD_LILYGO_T5 and (BOARD_HELTEC_OLED or BOARD_OLED_LIPO can *not* be configured together, *only one*
 #endif

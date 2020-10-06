@@ -414,6 +414,27 @@ void copy_string_to_lower(char* source, char* destination, size_t max) {
   #include <U8x8lib.h>
   U8X8_SSD1306_128X64_NONAME_SW_I2C* u8x8_p;
 #endif
+#if defined BOARD_LILYGO_T5
+  #include <GxEPD2_BW.h>
+  #include <GxEPD2_3C.h>
+
+  #include <Fonts/FreeMonoBold9pt7b.h>
+  #include <Fonts/FreeMonoBold12pt7b.h>
+  #include <Fonts/FreeMonoBold18pt7b.h>
+
+  #include <GxEPD2_GFX.h>
+  #include <BitmapDisplay.h>
+  //#include <Fonts/FreeMonoBold9pt7b.h>
+
+  #include"LILYGO_ePaper_test.h"
+
+//BitmapDisplay bitmaps(display);
+//display.init(0);
+//display.init(500000);
+
+
+//#include "TextDisplay.h"
+#endif
 
 action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actions
 
@@ -1803,6 +1824,9 @@ void setup() {
   monochrome_setup();	// monochrome_begin() and monochrome_set_default_font() included in monochrome_setup() now
 
   bool has_display_hardware=true;	// for delay only	TODO: fix&use monochrome_display detection
+#endif
+#if defined BOARD_LILYGO_T5
+  setup_LILYGO_ePaper();
 #endif
 
   MENU.print_free_RAM();

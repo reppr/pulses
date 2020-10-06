@@ -1084,6 +1084,7 @@ void monochrome_setup() {
     (*u8x8_p).begin();
     monochrome_set_default_font();
     break;
+
   case monochrome_type_off:
     MENU.error_ln(F("monochrome is off in nvs?"));
 #if defined BOARD_OLED_LIPO		// try to fix from pp macros
