@@ -4420,7 +4420,11 @@ bool musicBox_reaction(char token) {
 
     case 'N':	// 'IN'	prename, name, preset#
       MENU.drop_input_token();
+#if defined USE_MONOCHROME_DISPLAY
       MC_show_names();
+#else
+      show_basic_musicBox_parameters();	// same info (and more)
+#endif
       break;
 
 #if defined USE_ESP_NOW

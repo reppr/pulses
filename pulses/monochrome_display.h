@@ -1027,10 +1027,6 @@ void inline MC_clearLine(uint8_t row) {
 #endif // MULTICORE_DISPLAY
 
 
-inline void monochrome_begin() {
-  (*u8x8_p).begin();
-}
-
 inline void monochrome_setFont(const uint8_t *font_8x8) {
   (*u8x8_p).setFont(font_8x8);
 }
@@ -1186,7 +1182,11 @@ void MC_esp_now_peer_list() {
 }
 #endif
 
-// void monochrome_preset_names(short start_at_preset=0);  see: presets.h
+
+void inline monochrome_set_default_font() {
+  //  monochrome_setFont(u8x8_font_chroma48medium8_r);	// *Umlaute missing*
+  monochrome_setFont(u8x8_font_amstrad_cpc_extended_f);	// *Umlaute here, but strange*
+}
 
 
 void monochrome_setup() {
@@ -1195,17 +1195,23 @@ void monochrome_setup() {
   case monochrome_type_heltec:
     u8x8_p = new U8X8_SSD1306_128X64_NONAME_SW_I2C(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16); // BOARD_HELTEC_OLED
     MENU.out(F("heltec c15 d4 r16"));
+    (*u8x8_p).begin();
+    monochrome_set_default_font();
     break;
   case monochrome_type_LiPO:
     u8x8_p = new U8X8_SSD1306_128X64_NONAME_SW_I2C(/* clock=*/ 4, /* data=*/ 5, /* reset=*/ 16);  // BOARD_OLED_LIPO
     MENU.out(F("Lipo c4 d5 r16"));
+    (*u8x8_p).begin();
+    monochrome_set_default_font();
     break;
   case monochrome_type_off:
     MENU.error_ln(F("monochrome is off in nvs?"));
-#if defined BOARD_OLED_LIPO		// try to take from pp macros
-    u8x8_p = new U8X8_SSD1306_128X64_NONAME_SW_I2C(/* clock=*/ 4, /* data=*/ 5, /* reset=*/ 16);  // BOARD_OLED_LIPO
+#if defined BOARD_OLED_LIPO		// try to fix from pp macros
+    HARDWARE.monochrome_type = monochrome_type_LiPO;
+    monochrome_setup();		// fixed(?), recurse
 #elif defined BOARD_HELTEC_OLED		// heltec
-    u8x8_p = new U8X8_SSD1306_128X64_NONAME_SW_I2C(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16); // BOARD_HELTEC_OLED
+    HARDWARE.monochrome_type = monochrome_type_heltec;
+    monochrome_setup();		// fixed(?), recurse
 #endif
     break;
   default:

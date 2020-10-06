@@ -16,7 +16,7 @@ MENU.outln(F("TODO: MONOCHROME FIX?"));
 
 /*
 MENU.outln(F("monochrome_begin()"));
-monochrome_begin();
+monochrome_begin();	// is in monochrome_setup() now
 */
 
 /*

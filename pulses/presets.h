@@ -20,9 +20,10 @@ void play_random_preset() {
   load_preset(random(MUSICBOX_PRESETs) + 1);	// TODO: sets preset, how to unset? ################
   no_restore_from_RTCmem = true;	// one shot, gets reset
   start_musicBox();
-    (*u8x8_p).print(' ');
-
-}
+#if defined USE_MONOCHROME_DISPLAY
+  (*u8x8_p).print(' ');
+#endif
+} // play_random_preset()
 
 #if defined USE_MONOCHROME_DISPLAY
 void monochrome_preset_names(short start_at_preset=0) {

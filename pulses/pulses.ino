@@ -155,6 +155,7 @@ enum monochrome_type {
   monochrome_type_off=0,
   monochrome_type_heltec,	// chip is probably SSD1309
   monochrome_type_LiPO,		// ditto?
+  monochrome_type_LILYGO_T5,	// 2.13" eInk display
   monochrome_type_unknown,
 };
 
@@ -1307,6 +1308,8 @@ void setup_initial_HARDWARE_conf() {
     HARDWARE.monochrome_type = monochrome_type_heltec;
   #elif defined BOARD_OLED_LIPO
     HARDWARE.monochrome_type = monochrome_type_LiPO;
+  #elif defined BOARD_LILYGO_T5
+    HARDWARE.monochrome_type = monochrome_type_LILYGO_T5;
   #endif
 #endif
 
@@ -1349,6 +1352,9 @@ void show_monochrome_type(int type) {
     break;
   case monochrome_type_LiPO:
     MENU.outln(F("OLED LiPO"));
+    break;
+  case monochrome_type_LILYGO_T5:
+    MENU.outln(F("LILYGO_T5"));
     break;
   default:
     MENU.error_ln(F("monochrome_type unknown"));
@@ -1794,12 +1800,9 @@ void setup() {
 
 #if defined USE_MONOCHROME_DISPLAY
   // SEE: https://github.com/olikraus/u8g2/wiki/u8x8reference
-  monochrome_setup();
-  monochrome_begin();
-  //  monochrome_setFont(u8x8_font_chroma48medium8_r);	// *Umlaute missing*
-  monochrome_setFont(u8x8_font_amstrad_cpc_extended_f);	// *Umlaute here, but strange*
+  monochrome_setup();	// monochrome_begin() and monochrome_set_default_font() included in monochrome_setup() now
 
-  bool has_display_hardware=true;	// TODO: fix&use monochrome_display detection
+  bool has_display_hardware=true;	// for delay only	TODO: fix&use monochrome_display detection
 #endif
 
   MENU.print_free_RAM();
@@ -2266,8 +2269,11 @@ bool low_priority_tasks() {
     return true;
   }
   if(morse_output_char) {
-    //MENU.out(morse_output_char);
+#if defined USE_MONOCHROME_DISPLAY
     morse_monochrome_display();
+#else
+    MENU.out(morse_output_char);
+#endif
     return true;
   }
 #endif

@@ -236,8 +236,10 @@ extern uint8_t extended_output(char* data, uint8_t col, uint8_t row, bool force)
 void display_accGyro_mode() {
   MENU.out(F("accGyro mode: "));
 
+#if defined USE_MONOCHROME_DISPLAY
   if(monochrome_can_be_used())
     MC_setCursor(0, MONOCHROME_MOTION_STATE_ROW);
+#endif
 
   char buffer[] = {"acc ...  gyr ..."};
   //              {"0123456789abcdef"}

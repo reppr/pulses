@@ -1452,6 +1452,7 @@ short morse_out_buffer_cnt=0;
 bool morse_output_to_do=false;		// triggers morse_do_output()
 extern bool musicbox_is_idle();
 
+#if defined USE_MONOCHROME_DISPLAY
 extern bool monochrome_can_be_used();	// TODO: do i want that *here*?
 extern void MC_display_message(char * message);
 // avoid sound glitches when using OLED:
@@ -1465,6 +1466,7 @@ extern uint8_t monochrome_getCols();
 extern void MC_print(char* str);
 extern void monochrome_print_f(float f, int chiffres);
 extern void MC_print2x2(uint8_t col, uint8_t row, char* str);	// for short 2x2 strings
+#endif // USE_MONOCHROME
 
 void morse_do_output() {
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
@@ -1604,6 +1606,7 @@ void static morse_token_decode() {	// decode received token sequence
 		}
 
 	      } else if(morse_PRESENT_COMMAND == "OLED") {	// ---.-  "OA"
+#if defined USE_MONOCHROME_DISPLAY			// (NOOP if no USE_MONOCHROME_DISPLAY)
 		if(oled_feedback_while_playing ^= 1) {		// got switched on
 		  monochrome_power_save = 0;
 		  monochrome_setPowerSave(monochrome_power_save);
@@ -1611,13 +1614,11 @@ void static morse_token_decode() {	// decode received token sequence
 		  MENU.out(F("OLED"));
 		  MENU.out_ON_off(oled_feedback_while_playing);
 		  MENU.ln();
-
-#if defined USE_MONOCHROME_DISPLAY
 		  MC_display_message(F(" OLED "));
 		} else {					// got switched off
 		  MC_display_message(F(" off "));
-#endif
 		} // oled switched on/off
+#endif
 
 	      } else if(morse_PRESENT_COMMAND == "CANCEL") {	// CANCEL
 		morse_token_cnt = 0;
@@ -1759,7 +1760,9 @@ void show_cheat_sheet() {
   char c;
   uint8_t maxlen=17;
 
+#if defined USE_MONOCHROME_DISPLAY
   (*u8x8_p).clear();
+#endif
   char result[maxlen];
   for(int i=0; i<4; i++) {
     if(c = cheat_buffer[i]) {
