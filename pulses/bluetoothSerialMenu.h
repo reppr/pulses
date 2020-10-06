@@ -16,12 +16,12 @@ String bluetooth_name;
 #if defined BLUETOOTH_ENABLE_PIN
   bool bluetooth_switch_info() {
     bool on;
-    pinMode(BLUETOOTH_ENABLE_PIN, INPUT);
-    digitalRead(BLUETOOTH_ENABLE_PIN);		// i do not trust the very first reading...
-    on = digitalRead(BLUETOOTH_ENABLE_PIN);	// read again
+    pinMode(HARDWARE.bluetooth_enable_pin, INPUT);
+    digitalRead(HARDWARE.bluetooth_enable_pin);		// i do not trust the very first reading...
+    on = digitalRead(HARDWARE.bluetooth_enable_pin);	// read again
     if(MENU.verbosity >= VERBOSITY_LOWEST) {
       MENU.out(F("bluetooth "));
-      MENU.out(BLUETOOTH_ENABLE_PIN);
+      MENU.out(HARDWARE.bluetooth_enable_pin);
       MENU.out(F(" is switched"));
       MENU.out_ON_off(on);
       if(on)
@@ -126,11 +126,11 @@ void bluetooth_end() {				// end bluetooth
 
 #if defined BLUETOOTH_ENABLE_PIN
 void set_bluetooth_according_switch() {
-  pinMode(BLUETOOTH_ENABLE_PIN, INPUT);
-  digitalRead(BLUETOOTH_ENABLE_PIN);		// don't trust the very first reading...
-  if(digitalRead(BLUETOOTH_ENABLE_PIN))		// read again
-    bluetoothSerialBEGIN();			// START bluetooth
-  else						//   or
-    bluetooth_end();				// END bluetooth
+  pinMode(HARDWARE.bluetooth_enable_pin, INPUT);
+  digitalRead(HARDWARE.bluetooth_enable_pin);		// don't trust the very first reading...
+  if(digitalRead(HARDWARE.bluetooth_enable_pin))	// read again
+    bluetoothSerialBEGIN();				// START bluetooth
+  else							//   or
+    bluetooth_end();					// END bluetooth
 }
 #endif

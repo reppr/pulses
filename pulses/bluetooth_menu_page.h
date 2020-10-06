@@ -12,7 +12,7 @@ void bluetooth_menu_display() {
 
   #if defined BLUETOOTH_ENABLE_PIN
     MENU.out(F("bluetooth enable pin "));
-    MENU.outln(BLUETOOTH_ENABLE_PIN);
+    MENU.outln(HARDWARE.bluetooth_enable_pin);
     bluetooth_switch_info();
   #endif
 

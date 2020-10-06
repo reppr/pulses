@@ -77,10 +77,10 @@ void monochrome_show_program_version() {	// monochrome oled display
 
 #if defined USE_BLUETOOTH_SERIAL_MENU
   #if defined BLUETOOTH_ENABLE_PIN
-    pinMode(BLUETOOTH_ENABLE_PIN, INPUT);
-    digitalRead(BLUETOOTH_ENABLE_PIN);		// i do not trust the very first reading...
-    if(digitalRead(BLUETOOTH_ENABLE_PIN))
-      (*u8x8_p).print('B');	// BLUETOOTH_ENABLE_PIN enabled?
+    pinMode(HARDWARE.bluetooth_enable_pin, INPUT);
+    digitalRead(HARDWARE.bluetooth_enable_pin);		// i do not trust the very first reading...
+    if((HARDWARE.bluetooth_enable_pin==ILLEGAL8) || digitalRead(HARDWARE.bluetooth_enable_pin))
+      (*u8x8_p).print('B');	// HARDWARE.bluetooth_enable_pin enabled?
     else
       (*u8x8_p).print('b');
   #else			// *no* BLUETOOTH_ENABLE_PIN
