@@ -21,5 +21,13 @@ icode_t melody7[] = { MELODY_MODE,STACCISS,0, PAUSE,0, SEPARATO,NOTE_64,2,0,-1,-
 		      NOTE_32,STACCATO,3,1,0,-1,-2,-3, STACCISS,4,2,1,0,-1,-2, STACCATO,-3,-2,-1,0,1, NOTE_16,SEPARATO,0, STACCATO,0,0,
 		      NOTE_8,PAUSE,0, NOTE_16,STACCISS,1,2,3,4,5,6,7,8, KILL, };
 
+icode_t melody_diatonic_rise[] = { SEPARATO,NOTE_32, 0,-1,0,1,2,3,4,5,6,7,8, NOTE_8, 7, KILL };
+icode_t melody_diatonic_fall[] = { STACCATO,NOTE_32, 7,8,7,6,5,4,3,2,1, NOTE_8,0, KILL };
+
+icode_t melody_upthirds_rise[] = { SEPARATO,NOTE_32, 0,2,1,3, 2,4,3,5,4,6,5,7,6,8, NOTE_4, 7, KILL };
+icode_t melody_downthirds_rise[] = { SEPARATO,NOTE_32, 0,-1,1,-1,2,0,3,1,4,2,5,3,6,4,7,5,8,6, NOTE_4, 7, KILL };
+
+icode_t melody_dwnthirds_fall[] = { SEPARATO,NOTE_32, 7,6,7,5,6,4,5,3,4,2,3,1,2,0,1,-1, 0,0,0,NOTE_8,0, KILL };
+
 #define ICODE_H
 #endif
