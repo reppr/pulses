@@ -1252,7 +1252,7 @@ void display_program_version() {  // program versions, mac, maybe preName.  MENU
 void show_program_version() {	// program version on menu output *and* OLED
   display_program_version();
 
-#if defined USE_MONOCHROME_DISPLAY
+#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
   MC_show_program_version();
 #endif
 }
@@ -1307,7 +1307,7 @@ void setup_initial_HARDWARE_conf() {
   HARDWARE.bluetooth_enable_pin = BLUETOOTH_ENABLE_PIN;		// 35
 #endif
 
-#if defined USE_MONOCHROME_DISPLAY
+#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
   #if defined BOARD_HELTEC_OLED
     HARDWARE.monochrome_type = monochrome_type_heltec;
   #elif defined BOARD_OLED_LIPO
@@ -1802,21 +1802,18 @@ void setup() {
   delay(100);	// wait a bit longer
 #endif
 
-#if defined USE_MONOCHROME_DISPLAY
+#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
   // SEE: https://github.com/olikraus/u8g2/wiki/u8x8reference
   monochrome_setup();	// monochrome_begin() and monochrome_set_default_font() included in monochrome_setup() now
 
   bool has_display_hardware=true;	// for delay only	TODO: fix&use monochrome_display detection
-#endif
-#if defined BOARD_LILYGO_T5
-  setup_LILYGO_ePaper();
 #endif
 
   MENU.print_free_RAM();
   MENU.ln(2);
 
   show_program_version();	// prename now known
-  #if defined USE_MONOCHROME_DISPLAY
+  #if defined USE_MONOCHROME_DISPLAY /* || defined BOARD_LILYGO_T5 */
     delay(1200);	// sorry for that
   #endif
 
@@ -1883,7 +1880,7 @@ void setup() {
   setup_timer64();
 #endif
 
-#if defined USE_MONOCHROME_DISPLAY
+#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
   // TODO: has_display_hardware	fix&use monochrome_display detection
   if(has_display_hardware)
     delay(1111);	// give a chance to read version on oled display during setup

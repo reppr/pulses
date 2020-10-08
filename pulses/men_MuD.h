@@ -3,7 +3,23 @@
   temporary test menu UI during development
 */
 
-//display_icode(melody0, sizeof(melody0));
+/*
+ePaper.setCursor(50,100);
+ePaper.print("%%%%%");
+ePaper.display();
+delay(6000);
+*/
+
+//ePaper_basic_parameters(); break;
+
+//ePaper_line_testing(); break;
+
+ePaper_print_1line(6*128/7, " *");
+delay(4000);
+//ePaper_print_1line(7*128/7, " ."); break;
+ePaper_print_1line(7*128/7, "Y."); break;
+
+// ePaper_show_tuning(); delay(5000);
 
 #if defined COMPILE_FONTTEST
   ePaper_fonttest();
@@ -54,6 +70,7 @@ MENU.outln(F("monochrome_show_musicBox_parameters();"));
 monochrome_show_musicBox_parameters();
 #endif
 
+//display_icode(melody0, sizeof(melody0));
 
 #if defined MULTICORE_DISPLAY
 // MC_show_tuning();

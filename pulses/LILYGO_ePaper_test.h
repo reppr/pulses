@@ -34,16 +34,43 @@
 
 GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT> ePaper(GxEPD2_213_B73(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4)); // GDEH0213B73
 
+void LILYGO_ePaper_infos() {
+  // give some infos:
+  for(int rotation=0; rotation<4; rotation++) {
+    ePaper.setRotation(rotation);
+    MENU.out(F("rotation("));
+    MENU.out(rotation);			//	0	1	2	3
+    MENU.out(F(")\tpage hight "));
+    MENU.out(ePaper.pageHeight());	//	250	250	250	250
+    MENU.out(F("\twidth "));
+    MENU.outln(ePaper.width());		//	128	250	128	250
+  }
+
+  MENU.out(F("hasFastPartialUpdate "));
+  if(ePaper.epd2.hasFastPartialUpdate)
+    MENU.outln(F("YES"));
+  else
+    MENU.outln(F("no"));
+  MENU.ln();
+} // LILYGO_ePaper_infos()
+
 void setup_LILYGO_ePaper() {
   MENU.outln(F("setup_LILYGO_ePaper()"));
 
   //ePaper.init(500000);	// debug baudrate
   ePaper.init(0);		// no debugging
-  ePaper.setRotation(1);	// TODO: rotation should go into HARDWARE
+
+  LILYGO_ePaper_infos();
+
+  int rotation=1;		// TODO: rotation should go into HARDWARE
+  ePaper.setRotation(rotation);	// TODO: rotation should go into HARDWARE
+
+  extern void ePaper_bounds();
+  ePaper_bounds();
 
   extern void ePaper_show_program_version();
   do_on_other_core(&ePaper_show_program_version);
-
+  delay(1000);
 //  ePaper.setFont(&FreeMonoBold9pt7b);
 //  ePaper.setTextColor(GxEPD_BLACK);
 //
@@ -63,7 +90,6 @@ void setup_LILYGO_ePaper() {
 //    ePaper.print("RugselBuxelButzlMutzel");	// 22 chars
 //  }
 //  while (ePaper.nextPage());
-
 } // setup_LILYGO_ePaper() very FIRST TESTs
 
 void ePaper_basic_parameters() {
@@ -119,6 +145,9 @@ void ePaper_basic_parameters() {
   while (ePaper.nextPage());
 } // ePaper_basic_parameters()
 
+void inline MC_show_musicBox_parameters() {
+  do_on_other_core(&ePaper_basic_parameters);
+}
 
 void  ePaper_show_program_version() {
   ePaper.setFullWindow();
@@ -171,7 +200,50 @@ void  ePaper_show_program_version() {
     // TODO: option mnemonics?
   }
   while (ePaper.nextPage());
-} // ePaper_show_programm_version()
+} // ePaper_show_program_version()
+
+void inline MC_show_program_version() {
+  do_on_other_core(&ePaper_show_program_version);
+}
+
+
+void  ePaper_show_tuning() {
+  ePaper.setFullWindow();
+  ePaper.fillScreen(GxEPD_WHITE);
+  ePaper.setTextColor(GxEPD_BLACK);
+
+  char txt[23];
+
+//  char* format_IstrI = F("|%s|");
+//  char* format2s = F("%s  %s");
+  char* format_s = F("%s");
+//  char* format_is = F("%i %s");
+//  char* format_sync = F("S=%i");
+
+  ePaper.firstPage();
+  do
+  {
+    //ePaper.setFont(&FreeSansBold9pt7b);
+    ePaper.setFont(&FreeSansBold12pt7b);
+    ePaper.fillScreen(GxEPD_WHITE);
+    ePaper.setCursor(0, 0);
+    ePaper.println();
+
+    snprintf(txt, 23, format_s, selected_name(SCALES));
+    ePaper.println(txt);
+    ePaper.println();
+
+    extern char* metric_mnemonic;
+    snprintf(txt, 12, F("%i/%i %s"), musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, metric_mnemonic);
+    //ePaper.setFont(&FreeSansBold12pt7b);
+    ePaper.println(txt);
+  }
+  while (ePaper.nextPage());
+} // ePaper_show_tuning()
+
+void inline MC_show_tuning() {
+  do_on_other_core(&ePaper_show_tuning);
+}
 
 
 #if defined COMPILE_FONTTEST
@@ -310,3 +382,126 @@ void ePaper_fonttest() {
   while (ePaper.nextPage());
 } // ePaper_fonttest()
 #endif // COMPILE_FONTTEST
+
+
+void inline monochrome_setup() {
+  setup_LILYGO_ePaper();
+}
+
+// void inline MC_setInverseFont() {
+//   //ePaper.fillScreen(GxEPD_BLACK);	// does this make sense?
+//   ePaper.setTextColor(GxEPD_WITE);
+// }
+// 
+// void inline MC_clearInverseFont() {
+//   //ePaper.fillScreen(GxEPD_WHITE);	// does this make sense?
+//   ePaper.setTextColor(GxEPD_BLACK);
+// }
+
+//void ePaper_tests() {
+//  ePaper.setFullWindow();
+//  //ePaper.fillScreen(GxEPD_WHITE);
+//  ePaper.setTextColor(GxEPD_BLACK);
+//  ePaper.setFont(&FreeMonoBold12pt7b);
+//
+//  ePaper.firstPage();
+//  do
+//  {
+//    ePaper.fillScreen(GxEPD_WHITE);
+//    ePaper.setCursor(0, 0);
+//    ePaper.println();
+//  }
+//  while (ePaper.nextPage());  
+//}
+
+void ePaper_bounds() {
+  MENU.outln(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+
+  int16_t tbx, tby; uint16_t tbw, tbh;
+  //ePaper.getTextBounds("123456789ABCDEFGHIKLMN", 0, 0, &tbx, &tby, &tbw, &tbh);	// 22 chars
+  char* str;
+
+  ePaper.setFont(&FreeMonoBold9pt7b);
+  MENU.outln("FreeMonoBold9pt7b");
+
+  for(int i=0; i<2; i++) {
+    str = "M";
+    ePaper.getTextBounds(str, 50, 50, &tbx, &tby, &tbw, &tbh);
+    MENU.out(str); MENU.tab();
+    MENU.out("x, y, w, h\t");
+    MENU.out(tbx); MENU.tab();
+    MENU.out(tby); MENU.tab();
+    MENU.out(tbw); MENU.tab();
+    MENU.outln(tbh);
+
+    str = "X";
+    ePaper.getTextBounds(str, 50, 50, &tbx, &tby, &tbw, &tbh);
+    MENU.out(str); MENU.tab();
+    MENU.out("x, y, w, h\t");
+    MENU.out(tbx); MENU.tab();
+    MENU.out(tby); MENU.tab();
+    MENU.out(tbw); MENU.tab();
+    MENU.outln(tbh);
+
+    str="1234567890";
+    ePaper.getTextBounds(str, 50, 50, &tbx, &tby, &tbw, &tbh);	// 10 chars
+    MENU.out(str); MENU.tab();
+    MENU.out("x, y, w, h\t");
+    MENU.out(tbx); MENU.tab();
+    MENU.out(tby); MENU.tab();
+    MENU.out(tbw); MENU.tab();
+    MENU.outln(tbh);
+
+    ePaper.setFont(&FreeMonoBold12pt7b);
+    MENU.outln("FreeMonoBold12pt7b");
+  }
+  MENU.outln(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+}
+
+void ePaper_line_matrix() {
+  MENU.outln(F("ePaper_line_matrix()"));
+
+  ePaper.setFullWindow();
+  ePaper.setTextColor(GxEPD_BLACK);
+  ePaper.setFont(&FreeMonoBold9pt7b);
+
+  char txt[24];
+  char* format_is = F("%i.%s");
+
+  ePaper.firstPage();
+  do
+  {
+    ePaper.fillScreen(GxEPD_WHITE);
+    ePaper.setCursor(0, 0);
+    ePaper.println();
+
+    for(int i=0; i<7; i++) {
+      snprintf(txt, 23, format_is, i, "3456789012345678901234567890");
+      ePaper.println(txt);
+    }
+  }
+  while (ePaper.nextPage());
+} // void ePaper_line_matrix()
+
+
+uint16_t ePaper_print_1line(uint16_t y, char* text) {
+  MENU.outln(F("ePaper_print_1line()"));
+  ePaper_line_matrix();
+
+  ePaper.setCursor(0, y);
+//  // clear line
+//  char empty[23]={'x'};
+//  empty[22] = '\0';
+//  ePaper.println(empty);
+
+//  int16_t tbx, tby; uint16_t tbw, tbh;
+//  ePaper.getTextBounds(empty, 0, y, &tbx, &tby, &tbw, &tbh);	// 22 chars
+//  ePaper.setPartialWindow(tbx, tby, tbw, tbh);
+//  // display.setPartialWindow(0, y, display.width(), wh);
+//  //  ePaper.fillScreen(GxEPD_WHITE);
+//
+//  ePaper.setCursor(0, y);
+  ePaper.println(text);
+  ePaper.display();
+}
+

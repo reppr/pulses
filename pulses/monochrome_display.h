@@ -970,7 +970,7 @@ void monochrome_show_tuning() {
     monochrome_big_or_multiline(0, selected_name(SCALES));
 
     char txt[9];
-    char* format = F("%i/%i %s");
+    char* format = F("%i / %i  %s");
     extern char* metric_mnemonic;
     snprintf(txt, 9, format, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, metric_mnemonic);
     monochrome_print2x2(0, 3, txt);

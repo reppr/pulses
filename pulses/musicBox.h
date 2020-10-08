@@ -1199,7 +1199,7 @@ bool tuning_pitch_and_scale_UI() {	// 'Tx'
     MENU.ln();
     extern void musicBox_short_info();
     musicBox_short_info();
-#if defined  USE_MONOCHROME_DISPLAY
+#if defined  USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
     MC_show_tuning();
 #endif
     return true;
@@ -1240,7 +1240,7 @@ bool tuning_pitch_and_scale_UI() {	// 'Tx'
       }
     }
     MENU.ln();
-#if defined  USE_MONOCHROME_DISPLAY
+#if defined  USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
     MC_show_tuning();
 #endif
     return true;
@@ -1345,7 +1345,7 @@ bool tuning_pitch_and_scale_UI() {	// 'Tx'
       } // treat input following 'T......'
     }	// // sequential input loop		'Tx'
   }
-#if defined  USE_MONOCHROME_DISPLAY
+#if defined  USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
     MC_show_tuning();
 #endif
 } // tuning_pitch_and_scale_UI()
@@ -1745,7 +1745,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
     MENU.ln();
   }
 
-#if defined USE_MONOCHROME_DISPLAY
+#if defined USE_MONOCHROME_DISPLAY || defined  BOARD_LILYGO_T5
   MC_show_musicBox_parameters();
 #endif
 
@@ -2833,7 +2833,7 @@ void start_musicBox() {
 #endif
   MENU.out(F("\nstart_musicBox()\t"));
 
-#if defined USE_MONOCHROME_DISPLAY && defined MUSICBOX_SHOW_PROGRAM_VERSION	// default *off*
+#if (defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5) && defined MUSICBOX_SHOW_PROGRAM_VERSION	// default *off*
   MC_show_program_version();
 #endif
 
@@ -3071,7 +3071,7 @@ void start_musicBox() {
 
   MENU.ln();
   musicBox_short_info();
-#if defined USE_MONOCHROME_DISPLAY
+#if defined USE_MONOCHROME_DISPLAY || defined  BOARD_LILYGO_T5
   MC_show_musicBox_parameters();
 #endif
 
@@ -3692,7 +3692,7 @@ bool load_preset_and_start(short preset_new, bool start=true) {	// returns error
     start_musicBox();		// play new preset
   } else {
     musicBox_short_info();
-#if defined USE_MONOCHROME_DISPLAY
+#if defined USE_MONOCHROME_DISPLAY || defined  BOARD_LILYGO_T5
     MC_show_musicBox_parameters();
 #endif
   }
@@ -4398,7 +4398,7 @@ bool musicBox_reaction(char token) {
 	if(MENU.maybe_display_more(VERBOSITY_SOME))
 	  musicBox_display();
 
-#if defined USE_MONOCHROME_DISPLAY
+#if defined USE_MONOCHROME_DISPLAY || defined  BOARD_LILYGO_T5
 	MC_show_musicBox_parameters();
 #endif
 	if(start)
@@ -4413,14 +4413,16 @@ bool musicBox_reaction(char token) {
       MENU.drop_input_token();
     case EOF8:	// bare 'I'
       musicBox_short_info();
-#if defined USE_MONOCHROME_DISPLAY
+#if defined USE_MONOCHROME_DISPLAY || defined  BOARD_LILYGO_T5
       MC_show_musicBox_parameters();
 #endif
       break;
 
     case 'N':	// 'IN'	prename, name, preset#
       MENU.drop_input_token();
-#if defined USE_MONOCHROME_DISPLAY
+#if defined BOARD_LILYGO_T5
+      MC_show_musicBox_parameters();	// show same and more on ePaper
+#elif defined USE_MONOCHROME_DISPLAY
       MC_show_names();
 #else
       show_basic_musicBox_parameters();	// same info (and more)
@@ -4431,6 +4433,13 @@ bool musicBox_reaction(char token) {
     case 'C':	// 'IC'	peer list
       MENU.drop_input_token();
       display_peer_ID_list();
+      break;
+#endif
+
+#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+    case 'V':	// 'IV'	program version
+      MENU.drop_input_token();
+      MC_show_program_version();
       break;
 #endif
 
