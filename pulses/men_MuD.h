@@ -21,12 +21,12 @@ monochrome_begin();	// is in monochrome_setup() now
 
 /*
 MENU.outln(F("monochrome <ESC>c"));
-(*u8x8_p).print((char) 27);
-(*u8x8_p).print('c');
+monochrome_print((char) 27);
+monochrome_print('c');
 
 MENU.outln(F("monochrome <ESC>C"));
-(*u8x8_p).print((char) 27);
-(*u8x8_p).print('C');
+monochrome_print((char) 27);
+monochrome_print('C');
 */
 
 MENU.outln(F("(*u8x8_p).setFlipMode(0)"));

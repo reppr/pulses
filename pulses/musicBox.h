@@ -842,7 +842,7 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
 #if defined USE_MONOCHROME_DISPLAY
     extern char run_state_symbol();
     char s[] = {run_state_symbol(),0};
-    MC_print2x2(0, 0, s);
+    MC_printBIG(0, 0, s);
 #endif
 
     for (int pulse=0; pulse<PL_MAX; pulse++) {	// make days_to_live COUNTED generating pulses
@@ -3128,7 +3128,7 @@ void start_musicBox() {
 	MENU.outln(F("no pause autoskip"));
 //#if defined USE_MONOCHROME_DISPLAY
 //	char s[] = {'p', 0};		// TODO: how to clear that?
-//	MC_print2x2(0, 0, s);	// TODO: how to clear that?
+//	MC_printBIG(0, 0, s);	// TODO: how to clear that?
 //#endif
 
     } else {	// stack_sync_slices==0

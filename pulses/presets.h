@@ -21,7 +21,7 @@ void play_random_preset() {
   no_restore_from_RTCmem = true;	// one shot, gets reset
   start_musicBox();
 #if defined USE_MONOCHROME_DISPLAY
-  (*u8x8_p).print(' ');
+  monochrome_print(' ');
 #endif
 } // play_random_preset()
 
@@ -47,9 +47,9 @@ void monochrome_preset_names(short start_at_preset=0) {
     } // else
     load_preset((int) musicBoxConf.preset, false);
     (*u8x8_p).setCursor(0,row);
-    (*u8x8_p).print(musicBoxConf.preset);
+    monochrome_print(musicBoxConf.preset);
     MENU.out(musicBoxConf.preset);
-    (*u8x8_p).print(' ');
+    monochrome_print(' ');
     MENU.space();
     col=2;
     if(musicBoxConf.preset>9)
@@ -57,7 +57,7 @@ void monochrome_preset_names(short start_at_preset=0) {
     if(musicBoxConf.preset>99)
       col++;
     strncpy(buffer, musicBoxConf.name, sizeof(buffer) - col -1);
-    (*u8x8_p).print(buffer);
+    monochrome_print(buffer);
     MENU.outln(musicBoxConf.name);
   }
 

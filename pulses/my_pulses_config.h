@@ -40,7 +40,7 @@
 #define ESP32_USB_DAC_ONLY
 
 // do you use an OLED board?
-//#define BOARD_HELTEC_OLED	// Heltec OLED BOARD
+#define BOARD_HELTEC_OLED	// Heltec OLED BOARD
 //#define BOARD_OLED_LIPO	// LiPo battery OLED BOARD
 //
 // but,

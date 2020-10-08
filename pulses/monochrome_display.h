@@ -585,12 +585,12 @@ void multicore_print2x2(uint8_t col, uint8_t row, char* str) {	// create and do 
   }
 }
 
-void inline MC_print2x2(uint8_t col, uint8_t row, char* str) {
+void inline MC_printBIG(uint8_t col, uint8_t row, char* str) {
   multicore_print2x2(col, row, str);
 }
 
 #else
-void inline MC_print2x2(uint8_t col, uint8_t row, char* str) {
+void inline MC_printBIG(uint8_t col, uint8_t row, char* str) {
   monochrome_print2x2(col, row, str);
 }
 #endif // MULTICORE_DISPLAY
@@ -653,12 +653,12 @@ void multicore_println2x2(uint8_t row, char* str) {	// create and do one shot ta
   }
 }
 
-void inline MC_println2x2(uint8_t row, char* str) {
+void inline MC_printlnBIG(uint8_t row, char* str) {
   multicore_println2x2(row, str);
 }
 
 #else
-void inline MC_println2x2(uint8_t row, char* str) {
+void inline MC_printlnBIG(uint8_t row, char* str) {
   monochrome_println2x2(row, str);
 }
 #endif // MULTICORE_DISPLAY
@@ -946,16 +946,26 @@ inline uint8_t monochrome_getRows() {
   return (*u8x8_p).getRows();
 }
 
+inline void monochrome_print(char c) {
+  if(monochrome_can_be_used())
+    (*u8x8_p).print(c);
+}
 
-inline void monochrome_clear_display() {		// slow
-  (*u8x8_p).clear();
+inline void monochrome_print(int i) {
+  if(monochrome_can_be_used())
+    (*u8x8_p).print(i);
+}
+
+inline void monochrome_clear() {	// slow, but does it *now*
+  if(monochrome_can_be_used())
+    (*u8x8_p).clear();
 }
 
 #if defined MULTICORE_DISPLAY
 TaskHandle_t multicore_clear_display_handle;
 
 void multicore_clear_display_task(void * dummy) {
-  monochrome_clear_display();
+  monochrome_clear();
   vTaskDelete(NULL);
 }
 
@@ -975,13 +985,13 @@ void multicore_clear_display() {	// create and do one shot task
   }
 }
 
-void inline MC_clear_display() {
+void inline MC_clear_display() {	// does it later, might be too late...	(use: monochrome_clear())
   multicore_clear_display();
 }
 
 #else
 void inline MC_clear_display() {
-  monochrome_clear_display();
+  monochrome_clear();
 }
 #endif // MULTICORE_DISPLAY
 

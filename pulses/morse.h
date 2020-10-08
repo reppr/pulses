@@ -1457,7 +1457,7 @@ extern bool monochrome_can_be_used();	// TODO: do i want that *here*?
 extern void MC_display_message(char * message);
 // avoid sound glitches when using OLED:
 extern bool oled_feedback_while_playing;
-extern void MC_println2x2(uint8_t row, char* str);		// 2x2 lines
+extern void MC_printlnBIG(uint8_t row, char* str);		// 2x2 lines
 extern void MC_setInverseFont();
 extern void MC_clearInverseFont();
 extern void monochrome_setPowerSave(uint8_t value);
@@ -1465,14 +1465,15 @@ extern void MC_setCursor(uint8_t col, uint8_t row);
 extern uint8_t monochrome_getCols();
 extern void MC_print(char* str);
 extern void monochrome_print_f(float f, int chiffres);
-extern void MC_print2x2(uint8_t col, uint8_t row, char* str);	// for short 2x2 strings
+extern void MC_printBIG(uint8_t col, uint8_t row, char* str);	// for short 2x2 strings
+extern void monochrome_clear();
 #endif // USE_MONOCHROME
 
 void morse_do_output() {
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
   if(morse_out_buffer_cnt) {
 #if defined USE_MONOCHROME_DISPLAY
-    MC_println2x2(MORSE_MONOCHROME_ROW, "        ");
+    MC_printlnBIG(MORSE_MONOCHROME_ROW, "        ");
 #endif
 
     MENU.out(F("morse "));
@@ -1507,7 +1508,7 @@ void morse_monochrome_display() {
     // 2x2 version
     char s[]="  ";
     s[0] = morse_output_char;
-    MC_print2x2(2*(morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s);
+    MC_printBIG(2*(morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s);
   }
 
   morse_output_char = '\0';	// trigger off
@@ -1601,7 +1602,7 @@ void static morse_token_decode() {	// decode received token sequence
 		if(morse_out_buffer_cnt) {
 		  morse_out_buffer_cnt--;
 #if defined USE_MONOCHROME_DISPLAY
-		  MC_print2x2(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " ");	// DELLAST
+		  MC_printBIG(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " ");	// DELLAST
 #endif
 		}
 
@@ -1624,7 +1625,7 @@ void static morse_token_decode() {	// decode received token sequence
 		morse_token_cnt = 0;
 		morse_out_buffer_cnt = 0;
 #if defined USE_MONOCHROME_DISPLAY
-		MC_print2x2(0, MORSE_MONOCHROME_ROW, "__");	// CANCEL shows "__"
+		MC_printBIG(0, MORSE_MONOCHROME_ROW, "__");	// CANCEL shows "__"
 #endif
 	      } else if(morse_PRESENT_COMMAND == "ANY1") {	// '----'
 		MENU.outln(F("\"ANY1\" currently unused"));
@@ -1677,7 +1678,7 @@ void static morse_token_decode() {	// decode received token sequence
 	    if(monochrome_can_be_used()) {
 	      if(morse_out_buffer_cnt) {
 		MC_setInverseFont();
-		MC_print2x2(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, "'");	// TODO: TEST:
+		MC_printBIG(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, "'");	// TODO: TEST:
 		MC_clearInverseFont();
 	      }
 	    }
@@ -1761,7 +1762,7 @@ void show_cheat_sheet() {
   uint8_t maxlen=17;
 
 #if defined USE_MONOCHROME_DISPLAY
-  (*u8x8_p).clear();
+  monochrome_clear();	// subito, MC_clear_display() does it too late!
 #endif
   char result[maxlen];
   for(int i=0; i<4; i++) {
