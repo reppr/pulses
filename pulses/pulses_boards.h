@@ -14,7 +14,7 @@
       #if ! defined USE_MONOCHROME_DISPLAY
         #define USE_MONOCHROME_DISPLAY
       #endif
-      #define ESP32_USB_DAC_ONLY_OLED	// not very flexible, but ok for now
+      #define ESP32_DAC_ONLY_OLED	// not very flexible, but ok for now
     #else
       #if defined USE_MONOCHROME_DISPLAY
         //#error MONOCHROME DISPLAY BOARD TYPE UNKNOWN

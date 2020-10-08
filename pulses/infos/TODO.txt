@@ -704,4 +704,6 @@ if(HARDWARE.musicbox_trigger_pin != ILLEGAL8 )	// hmm, what else could wake me u
 
 uint8_t rgb_pin[RGB_STRINGS_MAX]={RGB_LED_STRIP_DATA_PIN};		// %4	TODO: FIX ALIGNEMENT
 
+display.setRotation(1);	// TODO: rotation should go into HARDWARE
+
 void try_monochrome_fix() {	// DADA:  ################	not working appropriate

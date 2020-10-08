@@ -26,8 +26,8 @@
 
 #define ESP32_15_clicks_no_display_TIME_MACHINE2	// ESP32 new default
 
-//#define ESP32_USB_DAC_ONLY			// minimal setup to play on DACs only
-//#define ESP32_USB_DAC_ONLY_OLED			// minimal setup to play on DACs only with OLED display
+//#define ESP32_DAC_ONLY			// minimal setup to play on DACs only
+//#define ESP32_DAC_ONLY_OLED			// minimal setup to play on DACs only with OLED display
 
 // #define ESP32_15_clicks_no_display_TIME_MACHINE1	// ESP32 (prior default)
 
@@ -68,11 +68,11 @@
     #if ! defined USE_MONOCHROME_DISPLAY
       #define USE_MONOCHROME_DISPLAY
     #endif
-    #define ESP32_USB_DAC_ONLY_OLED	// not very flexible, but ok for now
+    #define ESP32_DAC_ONLY_OLED		// not very flexible, but ok for now
   #endif // _OLED_BOARD
 
-  #if defined ESP32_USB_DAC_ONLY
-    #define PROGRAM_SUB_VERSION			DAC_only_usb
+  #if defined ESP32_DAC_ONLY
+    #define PROGRAM_SUB_VERSION			DAC_only
 
     #if defined USE_MONOCHROME_DISPLAY		// hmm, do we want this or not?
       #warning *NOT* using monochrome display
@@ -81,7 +81,7 @@
 
     #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user	// a possible snoring workaround on usb dac only models
 
-  #elif defined ESP32_USB_DAC_ONLY_OLED
+  #elif defined ESP32_DAC_ONLY_OLED
     #define PROGRAM_SUB_VERSION			DAC_only_OLED
 
     #define MAX_SUBCYCLE_SECONDS		21*60	// *max seconds*, produce sample pieces	ESP32_usb_DAC_only
@@ -97,7 +97,7 @@
     #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT		&user	// a possible snoring workaround on usb dac only models
   #endif
 
-  #if defined ESP32_15_clicks_no_display_TIME_MACHINE2 || defined ESP32_USB_DAC_ONLY || defined ESP32_USB_DAC_ONLY_OLED
+  #if defined ESP32_15_clicks_no_display_TIME_MACHINE2 || defined ESP32_DAC_ONLY || defined ESP32_DAC_ONLY_OLED
     #if defined HARMONICAL_MUSIC_BOX
       #define AUTOSTART	start_musicBox();
 //    #define AUTOSTART	start_musicBox(); magic_trigger_ON();
@@ -117,11 +117,11 @@
     #define USE_MCP23017	Adafruit
 */
 
-    #if defined ESP32_USB_DAC_ONLY || defined ESP32_USB_DAC_ONLY_OLED
+    #if defined ESP32_DAC_ONLY || defined ESP32_DAC_ONLY_OLED
       #define NO_GPIO_PINS
     #endif
 
-    #if defined ESP32_USB_DAC_ONLY_OLED
+    #if defined ESP32_DAC_ONLY_OLED
       #define USE_MONOCHROME_DISPLAY
     #endif
 

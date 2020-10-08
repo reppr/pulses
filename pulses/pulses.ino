@@ -414,26 +414,9 @@ void copy_string_to_lower(char* source, char* destination, size_t max) {
   #include <U8x8lib.h>
   U8X8_SSD1306_128X64_NONAME_SW_I2C* u8x8_p;
 #endif
+
 #if defined BOARD_LILYGO_T5
-  #include <GxEPD2_BW.h>
-  #include <GxEPD2_3C.h>
-
-  #include <Fonts/FreeMonoBold9pt7b.h>
-  #include <Fonts/FreeMonoBold12pt7b.h>
-  #include <Fonts/FreeMonoBold18pt7b.h>
-
-  #include <GxEPD2_GFX.h>
-  #include <BitmapDisplay.h>
-  //#include <Fonts/FreeMonoBold9pt7b.h>
-
   #include"LILYGO_ePaper_test.h"
-
-//BitmapDisplay bitmaps(display);
-//display.init(0);
-//display.init(500000);
-
-
-//#include "TextDisplay.h"
 #endif
 
 action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actions
@@ -4622,7 +4605,7 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
 
 // ################################################################
 // TODO: FIXME: REWORK:  setup_bass_middle_high()  used in musicBox, but not really compatible
-// TODO: fix corner cases belonging to 2 groups, see: ESP32_USB_DAC_ONLY	################
+// TODO: fix corner cases belonging to 2 groups, see: ESP32_DAC_ONLY	################
 void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_pulses) {
   {
     MENU.out(F("setup_bass_middle_high("));	// ################ verbosity

@@ -5,9 +5,16 @@
 
 //display_icode(melody0, sizeof(melody0));
 
-if(MENU.check_next('D'))
-  ePaper_basic_parameters();
-else
+#if defined COMPILE_FONTTEST
+  ePaper_fonttest();
+#endif
+
+if(MENU.check_next('D')) {	// DD
+  if(MENU.check_next('D'))	// DDD
+    do_on_other_core(&ePaper_basic_parameters);	// DDD
+  else
+    ePaper_basic_parameters();	// DD
+} else
   MENU.play_KB_macro(F("187 P *6 N"));	// try out MELODY mode
 
 //#include "SPEED-TESTS.h"

@@ -3499,7 +3499,7 @@ void musicBox_setup() {	// TODO:update
       MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
 #endif
 
-#if defined ESP32_USB_DAC_ONLY || defined ESP32_USB_DAC_ONLY_OLED	// *minimal* usb powered *DAC only* setups
+#if defined ESP32_DAC_ONLY || defined ESP32_DAC_ONLY_OLED	// *minimal* usb powered *DAC only* setups
   musicBoxConf.bass_pulses=14;	// see  setup_bass_middle_high()
   musicBoxConf.middle_pulses=0;	// see  setup_bass_middle_high()
   musicBoxConf.high_pulses=22;	// see  setup_bass_middle_high()

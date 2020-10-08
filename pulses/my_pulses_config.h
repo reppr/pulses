@@ -37,7 +37,7 @@
 #define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_OUTPUT_PIN	green LED in many musicBoxes
 // TODO: change PERIPHERAL_POWER_SWITCH_PIN as GPIO12 is active during boot process...
 
-#define ESP32_USB_DAC_ONLY
+#define ESP32_DAC_ONLY
 
 // do you use an OLED board?
 #define BOARD_HELTEC_OLED	// Heltec OLED BOARD
