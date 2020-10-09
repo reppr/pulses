@@ -14,10 +14,12 @@ delay(6000);
 
 //ePaper_line_testing(); break;
 
-ePaper_print_1line(6*128/7, " *");
-delay(4000);
+//ePaper_print_1line(6*128/7, " *");
+ePaper_line_matrix();
+ePaper_print_1line(6*128/7, "HumbuKumbu");
+break;
 //ePaper_print_1line(7*128/7, " ."); break;
-ePaper_print_1line(7*128/7, "Y."); break;
+//ePaper_print_1line(7*128/7, "Y."); break;
 
 // ePaper_show_tuning(); delay(5000);
 

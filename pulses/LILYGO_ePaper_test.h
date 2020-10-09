@@ -392,7 +392,7 @@ void inline monochrome_setup() {
 //   //ePaper.fillScreen(GxEPD_BLACK);	// does this make sense?
 //   ePaper.setTextColor(GxEPD_WITE);
 // }
-// 
+//
 // void inline MC_clearInverseFont() {
 //   //ePaper.fillScreen(GxEPD_WHITE);	// does this make sense?
 //   ePaper.setTextColor(GxEPD_BLACK);
@@ -411,7 +411,7 @@ void inline monochrome_setup() {
 //    ePaper.setCursor(0, 0);
 //    ePaper.println();
 //  }
-//  while (ePaper.nextPage());  
+//  while (ePaper.nextPage());
 //}
 
 void ePaper_bounds() {
@@ -464,6 +464,8 @@ void ePaper_line_matrix() {
   ePaper.setFullWindow();
   ePaper.setTextColor(GxEPD_BLACK);
   ePaper.setFont(&FreeMonoBold9pt7b);
+  MENU.out(F("FreeMonoBold9pt7b.yAdvance "));
+  MENU.outln(FreeMonoBold9pt7b.yAdvance);
 
   char txt[24];
   char* format_is = F("%i.%s");
@@ -483,25 +485,22 @@ void ePaper_line_matrix() {
   while (ePaper.nextPage());
 } // void ePaper_line_matrix()
 
+void ePaper_print_1line(uint16_t y, char* text) {
+  MENU.out(F("ePaper_print_1line() "));
+  MENU.outln(y);
 
-uint16_t ePaper_print_1line(uint16_t y, char* text) {
-  MENU.outln(F("ePaper_print_1line()"));
-  ePaper_line_matrix();
+  // uint16_t font_yAdvance = FreeMonoBold9pt7b.yAdvance;
+  ePaper.setRotation(1);
+  ePaper.setFont(&FreeMonoBold9pt7b);
+  ePaper.setTextColor(GxEPD_BLACK);
+  ePaper.setPartialWindow(0, y-11, ePaper.width(), 12);
 
-  ePaper.setCursor(0, y);
-//  // clear line
-//  char empty[23]={'x'};
-//  empty[22] = '\0';
-//  ePaper.println(empty);
-
-//  int16_t tbx, tby; uint16_t tbw, tbh;
-//  ePaper.getTextBounds(empty, 0, y, &tbx, &tby, &tbw, &tbh);	// 22 chars
-//  ePaper.setPartialWindow(tbx, tby, tbw, tbh);
-//  // display.setPartialWindow(0, y, display.width(), wh);
-//  //  ePaper.fillScreen(GxEPD_WHITE);
-//
-//  ePaper.setCursor(0, y);
-  ePaper.println(text);
-  ePaper.display();
-}
-
+  ePaper.firstPage();
+  do
+  {
+    ePaper.fillScreen(GxEPD_WHITE);  // clear line
+    ePaper.setCursor(0, y);
+    ePaper.print(text);
+  }
+  while (ePaper.nextPage());
+} // ePaper_print_1line
