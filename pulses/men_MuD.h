@@ -15,8 +15,28 @@ delay(6000);
 //ePaper_line_testing(); break;
 
 //ePaper_print_1line(6*128/7, " *");
+
+//setup_LILYGO_ePaper(); break;
+
 ePaper_line_matrix();
-ePaper_print_1line(6*128/7, "HumbuKumbu");
+delay(500);
+ePaper_print_1line(6*128/7, "HumbuKumbu 6 ");
+
+//for(int i=0; i<8; i++) {
+for(int i=0; i<5; i++) {
+    delay(2000);
+    ePaper_print_1line(i*128/7, "->XY5");
+    MENU.out("line ");
+    MENU.outln(i);
+ }
+
+delay(1500);
+ePaper_print_str("DADA here i am ");
+delay(500);
+//ePaper.println();
+//delay(100);
+//ePaper_print_str("here, there&everywhere");
+//delay(250);
 break;
 //ePaper_print_1line(7*128/7, " ."); break;
 //ePaper_print_1line(7*128/7, "Y."); break;

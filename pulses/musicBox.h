@@ -2843,6 +2843,13 @@ void start_musicBox() {
 
   set_MusicBoxState(AWAKE);
 
+  /*	TODO: *test* that first, might be too much, so deactivated for now
+#if defined BOARD_LILYGO_T5
+  extern void MC_show_musicBox_parameters();
+  MC_show_musicBox_parameters();
+#endif
+  */
+
 //#if defined USE_MONOCHROME_DISPLAY
 //  extern void MC_show_musicBox_parameters();
 //  MC_show_musicBox_parameters();

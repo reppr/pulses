@@ -3,6 +3,7 @@
   see: GxEPD2/examples/GxEPD2_GFX_Example
 */
 
+#define DEBUG_ePAPER
 #define COMPILE_FONTTEST
 #define USE_MANY_FONTS		// uses some more program storage space
 
@@ -65,34 +66,16 @@ void setup_LILYGO_ePaper() {
   int rotation=1;		// TODO: rotation should go into HARDWARE
   ePaper.setRotation(rotation);	// TODO: rotation should go into HARDWARE
 
-  extern void ePaper_bounds();
-  ePaper_bounds();
-
   extern void ePaper_show_program_version();
   do_on_other_core(&ePaper_show_program_version);
   delay(1000);
-//  ePaper.setFont(&FreeMonoBold9pt7b);
-//  ePaper.setTextColor(GxEPD_BLACK);
-//
-//  int16_t tbx, tby; uint16_t tbw, tbh;
-//  ePaper.getTextBounds("123456789ABCDEFGHIKLMN", 0, 0, &tbx, &tby, &tbw, &tbh);	// 22 chars
-//
-//  // center bounding box by transposition of origin:
-//  uint16_t x = ((ePaper.width() - tbw) / 2) - tbx;
-//  uint16_t y = ((ePaper.height() - tbh) / 2) - tby;
-//  ePaper.setFullWindow();
-//
-//  ePaper.firstPage();
-//  do
-//  {
-//    ePaper.fillScreen(GxEPD_WHITE);
-//    ePaper.setCursor(x, y);
-//    ePaper.print("RugselBuxelButzlMutzel");	// 22 chars
-//  }
-//  while (ePaper.nextPage());
-} // setup_LILYGO_ePaper() very FIRST TESTs
+} // setup_LILYGO_ePaper()
 
 void ePaper_basic_parameters() {
+#if defined  DEBUG_ePAPER
+  MENU.outln(F("DEBUG_ePAPER\tePaper_basic_parameters()"));
+#endif
+
   ePaper.setFullWindow();
   ePaper.fillScreen(GxEPD_WHITE);
   ePaper.setTextColor(GxEPD_BLACK);
@@ -150,6 +133,10 @@ void inline MC_show_musicBox_parameters() {
 }
 
 void  ePaper_show_program_version() {
+#if defined  DEBUG_ePAPER
+  MENU.outln(F("DEBUG_ePAPER\tePaper_show_program_version()"));
+#endif
+
   ePaper.setFullWindow();
   ePaper.fillScreen(GxEPD_WHITE);
   ePaper.setTextColor(GxEPD_BLACK);
@@ -208,6 +195,10 @@ void inline MC_show_program_version() {
 
 
 void  ePaper_show_tuning() {
+#if defined  DEBUG_ePAPER
+  MENU.outln(F("DEBUG_ePAPER\tePaper_show_tuning()"));	// DADA remove debugging code ################
+#endif
+
   ePaper.setFullWindow();
   ePaper.fillScreen(GxEPD_WHITE);
   ePaper.setTextColor(GxEPD_BLACK);
@@ -398,24 +389,9 @@ void inline monochrome_setup() {
 //   ePaper.setTextColor(GxEPD_BLACK);
 // }
 
-//void ePaper_tests() {
-//  ePaper.setFullWindow();
-//  //ePaper.fillScreen(GxEPD_WHITE);
-//  ePaper.setTextColor(GxEPD_BLACK);
-//  ePaper.setFont(&FreeMonoBold12pt7b);
-//
-//  ePaper.firstPage();
-//  do
-//  {
-//    ePaper.fillScreen(GxEPD_WHITE);
-//    ePaper.setCursor(0, 0);
-//    ePaper.println();
-//  }
-//  while (ePaper.nextPage());
-//}
-
+#if defined  DEBUG_ePAPER
 void ePaper_bounds() {
-  MENU.outln(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+  MENU.outln(F("DEBUG_ePAPER\tePaper_bounds"));
 
   int16_t tbx, tby; uint16_t tbw, tbh;
   //ePaper.getTextBounds("123456789ABCDEFGHIKLMN", 0, 0, &tbx, &tby, &tbw, &tbh);	// 22 chars
@@ -455,11 +431,13 @@ void ePaper_bounds() {
     ePaper.setFont(&FreeMonoBold12pt7b);
     MENU.outln("FreeMonoBold12pt7b");
   }
-  MENU.outln(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-}
+  MENU.outln(F("DEBUG_ePAPER\tePaper_bounds()"));
+} // ePaper_bounds()
+#endif // DEBUG_ePAPER
 
-void ePaper_line_matrix() {
-  MENU.outln(F("ePaper_line_matrix()"));
+#if defined  DEBUG_ePAPER
+void ePaper_line_matrix() {			// DEBUGGING only
+  MENU.outln(F("DEBUG_ePAPER\tePaper_line_matrix()"));
 
   ePaper.setFullWindow();
   ePaper.setTextColor(GxEPD_BLACK);
@@ -484,10 +462,15 @@ void ePaper_line_matrix() {
   }
   while (ePaper.nextPage());
 } // void ePaper_line_matrix()
+#endif // DEBUG_ePAPER
 
 void ePaper_print_1line(uint16_t y, char* text) {
-  MENU.out(F("ePaper_print_1line() "));
-  MENU.outln(y);
+#if defined  DEBUG_ePAPER
+  MENU.out(F("DEBUG_ePAPER\tePaper_print_1line() "));
+  MENU.out(y);
+  MENU.tab();
+  MENU.outln(text);
+#endif
 
   // uint16_t font_yAdvance = FreeMonoBold9pt7b.yAdvance;
   ePaper.setRotation(1);
@@ -504,3 +487,22 @@ void ePaper_print_1line(uint16_t y, char* text) {
   }
   while (ePaper.nextPage());
 } // ePaper_print_1line
+
+void ePaper_print_str(char* text) {
+#if defined  DEBUG_ePAPER
+  MENU.out(F("DEBUG_ePAPER\tePaper_print_str()\t"));
+  MENU.outln(text);
+#endif
+
+  // uint16_t font_yAdvance = FreeMonoBold9pt7b.yAdvance;
+  ePaper.setRotation(1);
+  ePaper.setFont(&FreeMonoBold9pt7b);
+  ePaper.setTextColor(GxEPD_BLACK);
+
+  ePaper.firstPage();
+  do
+  {
+    ePaper.print(text);
+  }
+  while (ePaper.nextPage());
+} // ePaper_print_str()
