@@ -143,21 +143,27 @@ void ePaper_print_at(uint16_t col, uint16_t row, char* text) {
   ePaper.print(text);
   ePaper.display();
 #else
-  int16_t tbx, tby; uint16_t tbw, tbh;
-  ePaper.getTextBounds(text, x, y, &tbx, &tby, &tbw, &tbh);
-  ePaper.setPartialWindow(tbx, tby, tbw, tbh);
-#if defined DEBUG_ePAPER
-  MENU.out("x, y, w, h\t");
-  MENU.out(tbx); MENU.tab();
-  MENU.out(tby); MENU.tab();
-  MENU.out(tbw); MENU.tab();
-  MENU.outln(tbh);
-#endif
 
+// int16_t tbx, tby; uint16_t tbw, tbh;
+// ePaper.getTextBounds(text, x, y, &tbx, &tby, &tbw, &tbh);
+// ePaper.setPartialWindow(tbx, tby, tbw, tbh);
+//#if defined DEBUG_ePAPER
+//  MENU.out("x, y, w, h\t");
+//  MENU.out(tbx); MENU.tab();
+//  MENU.out(tby); MENU.tab();
+//  MENU.out(tbw); MENU.tab();
+//  MENU.outln(tbh);
+//#endif
+
+  //  display.fillRect(x, y-11, w, h, GxEPD_BLACK);
+
+  //  ePaper.setPartialWindow(x, y-used_font_y+1, strlen(text)*used_font_x, used_font_y);
+  ePaper.setPartialWindow(x, y-used_font_y+4, strlen(text)*used_font_x, used_font_y);
   ePaper.firstPage();
   do
     {
       ePaper.fillScreen(GxEPD_WHITE);  // clear region
+      //ePaper.fillRect(x, y-used_font_y+1,  strlen(text)*used_font_x, used_font_y, GxEPD_BLACK);
       ePaper.setCursor(x, y);
       ePaper.print(text);
     }
