@@ -102,7 +102,7 @@ void set_used_font(const GFXfont* font_p) {
     max_line_length=22;
 
   } else if(font_p == &FreeMonoBold12pt7b) {
-    used_font_x = 14; 		// ~250/18;
+    used_font_x = 14;		// ~250/18;
     used_font_y = 24;		// ~128/5 -1;
     max_line_length=18;
 
@@ -111,36 +111,58 @@ void set_used_font(const GFXfont* font_p) {
     return;	// do not change pointer nor size
   }
 
+  /*
 #if defined DEBUG_ePAPER
   MENU.out(F("yAdvance "));
   MENU.outln(font_p->yAdvance);
 #endif
+  */
 
   ePaper.setFont(font_p);
   used_font_p = (GFXfont*) font_p;
-} // set_as_default_font()
+} // set_used_font()
 
-
+int16_t col2x(int16_t col) {
+  return col*used_font_x;
+}
+int16_t row2y(int16_t row) {
+  return (row+1)*used_font_y;
+}
 void ePaper_print_at(uint16_t col, uint16_t row, char* text) {
 #if defined  DEBUG_ePAPER
-  MENU.outln(F("\nDEBUG_ePAPER\tePaper_print_at(...)\t"));
+  MENU.out(F("\nDEBUG_ePAPER\tePaper_print_at(...)\t"));
   MENU.outln(text);
 #endif
 
-  ePaper.setFullWindow();
   ePaper.setTextColor(GxEPD_BLACK);
   ePaper.setFont(used_font_p);
-
-  ePaper.setCursor(col*used_font_x, (row+1)*used_font_y);
+  int16_t x = col2x(col);
+  int16_t y = row2y(row);
+#if false
+  ePaper.setCursor(x, y);
   ePaper.print(text);
   ePaper.display();
-//   ePaper.firstPage();
-//   do
-//     {
-//       ePaper.setCursor(col * used_font_x, (row + 1) * used_font_y);
-//       ePaper.print(text);
-//     }
-//   while (ePaper.nextPage());
+#else
+  int16_t tbx, tby; uint16_t tbw, tbh;
+  ePaper.getTextBounds(text, x, y, &tbx, &tby, &tbw, &tbh);
+  ePaper.setPartialWindow(tbx, tby, tbw, tbh);
+#if defined DEBUG_ePAPER
+  MENU.out("x, y, w, h\t");
+  MENU.out(tbx); MENU.tab();
+  MENU.out(tby); MENU.tab();
+  MENU.out(tbw); MENU.tab();
+  MENU.outln(tbh);
+#endif
+
+  ePaper.firstPage();
+  do
+    {
+      ePaper.fillScreen(GxEPD_WHITE);  // clear region
+      ePaper.setCursor(x, y);
+      ePaper.print(text);
+    }
+  while (ePaper.nextPage());
+#endif
 } // ePaper_print_at()
 
 

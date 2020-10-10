@@ -6,6 +6,14 @@
 
 set_used_font(&FreeMonoBold12pt7b);
 ePaper_line_matrix();
+ePaper_print_at(3, 2, " abcd_");
+ePaper_print_at(0, 0, "NULL");
+ePaper_print_at(5, 4, "- - ");	// ePaper.getTextBounds() takes this too literally ;)
+delay(4000);
+break;
+
+set_used_font(&FreeMonoBold12pt7b);
+ePaper_line_matrix();
 ePaper_print_at(16, 4, "X");	// why is @(17,4,"X") not possible?
 delay(4000);
 //break;
