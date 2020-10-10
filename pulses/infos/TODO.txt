@@ -712,3 +712,9 @@ implement for ePaper?
   OLED_UI()
 
 void try_monochrome_fix() {	// DADA:  ################	not working appropriate
+
+delay(3000);		// TODO: TEST: maybe ESP now confuses display?
+
+void try_ePaper_fix() {
+  //~GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT>();
+  //~GxEPD2_BW();	// destructor ?

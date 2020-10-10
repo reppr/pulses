@@ -55,25 +55,35 @@ void LILYGO_ePaper_infos() {
   MENU.ln();
 } // LILYGO_ePaper_infos()
 
+
 void setup_LILYGO_ePaper() {
   MENU.outln(F("setup_LILYGO_ePaper()"));
 
   //ePaper.init(500000);	// debug baudrate
   ePaper.init(0);		// no debugging
 
-  LILYGO_ePaper_infos();
-
   int rotation=1;		// TODO: rotation should go into HARDWARE
   ePaper.setRotation(rotation);	// TODO: rotation should go into HARDWARE
 
+  delay(1000);			// TODO: test, maybe REMOVE?:
+} // setup_LILYGO_ePaper()
+
+void inline monochrome_setup() {
+  setup_LILYGO_ePaper();
+
+  // little helpers while implementing, TODO: REMOVE?:
+  LILYGO_ePaper_infos();
+  LILYGO_ePaper_infos(); /*fix rotation*/ ePaper.setRotation(1);
+
   extern void ePaper_show_program_version();
   do_on_other_core(&ePaper_show_program_version);
-  delay(1000);
-} // setup_LILYGO_ePaper()
+  delay(1000);			// TODO: test, maybe REMOVE?:
+}
+
 
 void ePaper_basic_parameters() {
 #if defined  DEBUG_ePAPER
-  MENU.outln(F("DEBUG_ePAPER\tePaper_basic_parameters()"));
+  MENU.outln(F("\nDEBUG_ePAPER\tePaper_basic_parameters()"));
 #endif
 
   ePaper.setFullWindow();
@@ -134,7 +144,7 @@ void inline MC_show_musicBox_parameters() {
 
 void  ePaper_show_program_version() {
 #if defined  DEBUG_ePAPER
-  MENU.outln(F("DEBUG_ePAPER\tePaper_show_program_version()"));
+  MENU.outln(F("\nDEBUG_ePAPER\tePaper_show_program_version()"));
 #endif
 
   ePaper.setFullWindow();
@@ -196,7 +206,7 @@ void inline MC_show_program_version() {
 
 void  ePaper_show_tuning() {
 #if defined  DEBUG_ePAPER
-  MENU.outln(F("DEBUG_ePAPER\tePaper_show_tuning()"));	// DADA remove debugging code ################
+  MENU.outln(F("\nDEBUG_ePAPER\tePaper_show_tuning()"));	// DADA remove debugging code ################
 #endif
 
   ePaper.setFullWindow();
@@ -375,10 +385,6 @@ void ePaper_fonttest() {
 #endif // COMPILE_FONTTEST
 
 
-void inline monochrome_setup() {
-  setup_LILYGO_ePaper();
-}
-
 // void inline MC_setInverseFont() {
 //   //ePaper.fillScreen(GxEPD_BLACK);	// does this make sense?
 //   ePaper.setTextColor(GxEPD_WITE);
@@ -391,7 +397,7 @@ void inline monochrome_setup() {
 
 #if defined  DEBUG_ePAPER
 void ePaper_bounds() {
-  MENU.outln(F("DEBUG_ePAPER\tePaper_bounds"));
+  MENU.outln(F("\nDEBUG_ePAPER\tePaper_bounds"));
 
   int16_t tbx, tby; uint16_t tbw, tbh;
   //ePaper.getTextBounds("123456789ABCDEFGHIKLMN", 0, 0, &tbx, &tby, &tbw, &tbh);	// 22 chars
@@ -431,13 +437,13 @@ void ePaper_bounds() {
     ePaper.setFont(&FreeMonoBold12pt7b);
     MENU.outln("FreeMonoBold12pt7b");
   }
-  MENU.outln(F("DEBUG_ePAPER\tePaper_bounds()"));
+  MENU.outln(F("\nDEBUG_ePAPER\tePaper_bounds()"));
 } // ePaper_bounds()
 #endif // DEBUG_ePAPER
 
 #if defined  DEBUG_ePAPER
 void ePaper_line_matrix() {			// DEBUGGING only
-  MENU.outln(F("DEBUG_ePAPER\tePaper_line_matrix()"));
+  MENU.outln(F("\nDEBUG_ePAPER\tePaper_line_matrix()"));
 
   ePaper.setFullWindow();
   ePaper.setTextColor(GxEPD_BLACK);
@@ -466,7 +472,7 @@ void ePaper_line_matrix() {			// DEBUGGING only
 
 void ePaper_print_1line(uint16_t y, char* text) {
 #if defined  DEBUG_ePAPER
-  MENU.out(F("DEBUG_ePAPER\tePaper_print_1line() "));
+  MENU.out(F("\nDEBUG_ePAPER\tePaper_print_1line() "));
   MENU.out(y);
   MENU.tab();
   MENU.outln(text);
@@ -490,7 +496,7 @@ void ePaper_print_1line(uint16_t y, char* text) {
 
 void ePaper_print_str(char* text) {
 #if defined  DEBUG_ePAPER
-  MENU.out(F("DEBUG_ePAPER\tePaper_print_str()\t"));
+  MENU.out(F("\nDEBUG_ePAPER\tePaper_print_str()\t"));
   MENU.outln(text);
 #endif
 
@@ -506,3 +512,29 @@ void ePaper_print_str(char* text) {
   }
   while (ePaper.nextPage());
 } // ePaper_print_str()
+
+
+void try_ePaper_fix() {
+  MENU.ln();
+  MENU.error_ln(F("\tTODO: IMPLEMENT\ttry_ePaper_fix()"));
+  //~GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT>();
+  //~GxEPD2_BW();	// destructor ?
+  MENU.out(F("before:\t"));
+  MENU.print_free_RAM();
+  MENU.ln();
+
+  MENU.outln(F("setup_LILYGO_ePaper()"));
+  setup_LILYGO_ePaper();
+
+  MENU.out(F("after:\t"));
+  MENU.print_free_RAM();
+  MENU.ln();
+  delay(1000);	// TODO: ?
+
+  ePaper_show_program_version();	// just as a test
+  delay(250);	// TODO: ?
+} // try_ePaper_fix()
+
+void inline try_monochrome_fix() {
+  try_ePaper_fix();
+}

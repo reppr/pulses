@@ -1747,6 +1747,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
 
 #if defined USE_MONOCHROME_DISPLAY || defined  BOARD_LILYGO_T5
   MC_show_musicBox_parameters();
+  delay(4000);	// TODO: TEST: maybe ESP now confuses display?
 #endif
 
 #if defined USE_ESP_NOW
@@ -4489,12 +4490,14 @@ bool musicBox_reaction(char token) {
       break;
   #endif // COMPILE_MORSE_CHEAT_SHEETS
 
+#endif // USE_MONOCHROME_DISPLAY
+
+#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
     case 'X':	// 'IX' try_monochrome_fix()
       MENU.drop_input_token();
       try_monochrome_fix();
       break;
-
-#endif // USE_MONOCHROME_DISPLAY
+#endif
     } // switch token after 'I'
     break;
 
