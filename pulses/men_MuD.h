@@ -3,6 +3,18 @@
   temporary test menu UI during development
 */
 
+
+set_used_font(&FreeMonoBold12pt7b);
+ePaper_line_matrix();
+ePaper_print_at(16, 4, "X");	// why is @(17,4,"X") not possible?
+delay(4000);
+//break;
+
+set_used_font(&FreeMonoBold9pt7b);
+ePaper_line_matrix();
+ePaper_print_at(21, 6, "X");
+delay(4000);
+break;
 /*
 ePaper.setCursor(50,100);
 ePaper.print("%%%%%");
@@ -18,6 +30,7 @@ delay(6000);
 
 //setup_LILYGO_ePaper(); break;
 
+set_used_font(&FreeMonoBold9pt7b);
 ePaper_line_matrix();
 delay(500);
 ePaper_print_1line(6*128/7, "HumbuKumbu 6 ");

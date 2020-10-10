@@ -81,6 +81,69 @@ void inline monochrome_setup() {
 }
 
 
+GFXfont* small_font_p = (GFXfont*) NULL;
+GFXfont* default_font_p = (GFXfont*) &FreeMonoBold9pt7b;
+GFXfont* BIG_font_p = (GFXfont*) &FreeMonoBold12pt7b;
+
+GFXfont* used_font_p = (GFXfont*) NULL;
+
+uint8_t used_font_x=11;
+uint8_t used_font_y=128/7;	// 18
+uint16_t max_line_length=22;
+// uint8_t small_font_x=0;	// mono fonts only
+// uint8_t small_font_y=0;	// mono fonts only
+// uint8_t BIG_font_x=14;	// mono fonts only
+// uint8_t BIG_font_y=14;	// mono fonts only
+
+void set_used_font(const GFXfont* font_p) {
+  if(font_p == &FreeMonoBold9pt7b) {
+    used_font_x = 250/22;	// 11
+    used_font_y = 128/7;	// 18
+    max_line_length=22;
+
+  } else if(font_p == &FreeMonoBold12pt7b) {
+    used_font_x = 14; 		// ~250/18;
+    used_font_y = 24;		// ~128/5 -1;
+    max_line_length=18;
+
+  } else {
+    MENU.error_ln(F("unknown font size"));
+    return;	// do not change pointer nor size
+  }
+
+#if defined DEBUG_ePAPER
+  MENU.out(F("yAdvance "));
+  MENU.outln(font_p->yAdvance);
+#endif
+
+  ePaper.setFont(font_p);
+  used_font_p = (GFXfont*) font_p;
+} // set_as_default_font()
+
+
+void ePaper_print_at(uint16_t col, uint16_t row, char* text) {
+#if defined  DEBUG_ePAPER
+  MENU.outln(F("\nDEBUG_ePAPER\tePaper_print_at(...)\t"));
+  MENU.outln(text);
+#endif
+
+  ePaper.setFullWindow();
+  ePaper.setTextColor(GxEPD_BLACK);
+  ePaper.setFont(used_font_p);
+
+  ePaper.setCursor(col*used_font_x, (row+1)*used_font_y);
+  ePaper.print(text);
+  ePaper.display();
+//   ePaper.firstPage();
+//   do
+//     {
+//       ePaper.setCursor(col * used_font_x, (row + 1) * used_font_y);
+//       ePaper.print(text);
+//     }
+//   while (ePaper.nextPage());
+} // ePaper_print_at()
+
+
 void ePaper_basic_parameters() {
 #if defined  DEBUG_ePAPER
   MENU.outln(F("\nDEBUG_ePAPER\tePaper_basic_parameters()"));
@@ -447,9 +510,7 @@ void ePaper_line_matrix() {			// DEBUGGING only
 
   ePaper.setFullWindow();
   ePaper.setTextColor(GxEPD_BLACK);
-  ePaper.setFont(&FreeMonoBold9pt7b);
-  MENU.out(F("FreeMonoBold9pt7b.yAdvance "));
-  MENU.outln(FreeMonoBold9pt7b.yAdvance);
+  ePaper.setFont(used_font_p);
 
   char txt[24];
   char* format_is = F("%i.%s");
@@ -462,7 +523,7 @@ void ePaper_line_matrix() {			// DEBUGGING only
     ePaper.println();
 
     for(int i=0; i<7; i++) {
-      snprintf(txt, 23, format_is, i, "3456789012345678901234567890");
+      snprintf(txt, max_line_length+1, format_is, i, "23456789012345678901234567890");
       ePaper.println(txt);
     }
   }
