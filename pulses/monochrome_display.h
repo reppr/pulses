@@ -128,32 +128,9 @@ void monochrome_show_program_version() {	// monochrome oled display
 
 
 #if defined MULTICORE_DISPLAY
-TaskHandle_t multicore_show_version_handle;
-
-void multicore_show_version_task(void* dummy) {
-  monochrome_show_program_version();
-  vTaskDelete(NULL);
-}
-
-void multicore_show_program_version() {	// create and do one shot task
-  BaseType_t err = xTaskCreatePinnedToCore(multicore_show_version_task,		// function
-					   "show_version",			// name
-					   2000,				// stack size
-					   NULL,				// task input parameter
-					   MONOCHROME_PRIORITY,			// task priority
-					   &multicore_show_version_handle,	// task handle
-					   0);					// core 0
-  if(err != pdPASS) {
-    MENU.out(err);
-    MENU.space();
-    MENU.error_ln(F("show_version"));
-  }
-}
-
 void inline MC_show_program_version() {
-  multicore_show_program_version();
+  do_on_other_core(&monochrome_show_program_version);
 }
-
 #else
 void inline MC_show_program_version() {
   monochrome_show_program_version();
@@ -351,32 +328,9 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
 } // monochrome_show_musicBox_parameters()
 
 #if defined MULTICORE_DISPLAY
-TaskHandle_t multicore_show_musicBox_parameters_handle;
-
-void multicore_show_musicBox_parameters_task(void* dummy) {
-  monochrome_show_musicBox_parameters();
-  vTaskDelete(NULL);
-}
-
-void multicore_show_musicBox_parameters() {	// create and do one shot task
-  BaseType_t err = xTaskCreatePinnedToCore(multicore_show_musicBox_parameters_task,		// function
-					   "show_parameters",			// name
-					   2000,				// stack size
-					   NULL,				// task input parameter
-					   MONOCHROME_PRIORITY,			// task priority
-					   &multicore_show_musicBox_parameters_handle,	// task handle
-					   0);					// core 0
-  if(err != pdPASS) {
-    MENU.out(err);
-    MENU.space();
-    MENU.error_ln(F("display task"));
-  }
-}
-
 void inline MC_show_musicBox_parameters() {
-  multicore_show_musicBox_parameters();
+  do_on_other_core(&monochrome_show_musicBox_parameters);
 }
-
 #else
 void inline MC_show_musicBox_parameters() {
   monochrome_show_musicBox_parameters();
@@ -766,33 +720,9 @@ inline void monochrome_setInverseFont() {
 }
 
 #if defined MULTICORE_DISPLAY
-TaskHandle_t multicore_setInverseFont_handle;
-
-void multicore_setInverseFont_task(void * dummy) {
-  monochrome_setInverseFont();
-  vTaskDelete(NULL);
-}
-
-
-void multicore_setInverseFont() {	// create and do one shot task
-  BaseType_t err = xTaskCreatePinnedToCore(multicore_setInverseFont_task,		// function
-					   "'setInverseFont",			// name
-					   2000,				// stack size
-					   NULL,				// task input parameter
-					   MONOCHROME_PRIORITY,			// task priority
-					   &multicore_setInverseFont_handle,	// task handle
-					   0);					// core 0
-  if(err != pdPASS) {
-    MENU.out(err);
-    MENU.space();
-    MENU.error_ln(F("set inverse"));
-  }
-}
-
 void inline MC_setInverseFont() {
-  multicore_setInverseFont();
+  do_on_other_core(monochrome_setInverseFont);
 }
-
 #else
 void inline MC_setInverseFont() {
   monochrome_setInverseFont();
@@ -806,33 +736,9 @@ inline void monochrome_clearInverseFont() {
 }
 
 #if defined MULTICORE_DISPLAY
-TaskHandle_t multicore_clearInverseFont_handle;
-
-void multicore_clearInverseFont_task(void * dummy) {
-  monochrome_clearInverseFont();
-  vTaskDelete(NULL);
-}
-
-
-void multicore_clearInverseFont() {	// create and do one shot task
-  BaseType_t err = xTaskCreatePinnedToCore(multicore_clearInverseFont_task,		// function
-					   "'clearInverse",			// name
-					   2000,				// stack size
-					   NULL,				// task input parameter
-					   MONOCHROME_PRIORITY,			// task priority
-					   &multicore_clearInverseFont_handle,	// task handle
-					   0);					// core 0
-  if(err != pdPASS) {
-    MENU.out(err);
-    MENU.space();
-    MENU.error_ln(F("clear inverse"));
-  }
-}
-
 void inline MC_clearInverseFont() {
-  multicore_clearInverseFont();
+  do_on_other_core(&monochrome_clearInverseFont);
 }
-
 #else
 void inline MC_clearInverseFont() {
   monochrome_clearInverseFont();
@@ -956,39 +862,16 @@ inline void monochrome_print(int i) {
     (*u8x8_p).print(i);
 }
 
+
 inline void monochrome_clear() {	// slow, but does it *now*
   if(monochrome_can_be_used())
     (*u8x8_p).clear();
 }
 
 #if defined MULTICORE_DISPLAY
-TaskHandle_t multicore_clear_display_handle;
-
-void multicore_clear_display_task(void * dummy) {
-  monochrome_clear();
-  vTaskDelete(NULL);
-}
-
-
-void multicore_clear_display() {	// create and do one shot task
-  BaseType_t err = xTaskCreatePinnedToCore(multicore_clear_display_task,		// function
-					   "clear_display",				// name
-					   2000,				// stack size
-					   NULL,				// task input parameter
-					   MONOCHROME_PRIORITY,			// task priority
-					   &multicore_clear_display_handle,	// task handle
-					   0);					// core 0
-  if(err != pdPASS) {
-    MENU.out(err);
-    MENU.space();
-    MENU.error_ln(F("clear_display"));
-  }
-}
-
 void inline MC_clear_display() {	// does it later, might be too late...	(use: monochrome_clear())
-  multicore_clear_display();
+  do_on_other_core(&monochrome_clear);
 }
-
 #else
 void inline MC_clear_display() {
   monochrome_clear();
@@ -1071,32 +954,9 @@ void monochrome_show_names() {
 } // monochrome_show_names()
 
 #if defined MULTICORE_DISPLAY
-TaskHandle_t multicore_show_names_handle;
-
-void multicore_show_names_task(void* dummy) {
-  monochrome_show_names();
-  vTaskDelete(NULL);
-}
-
-void multicore_show_names() {	// create and do one shot task
-  BaseType_t err = xTaskCreatePinnedToCore(multicore_show_names_task,		// function
-					   "show_names",			// name
-					   2000,				// stack size
-					   NULL,				// task input parameter
-					   MONOCHROME_PRIORITY,			// task priority
-					   &multicore_show_names_handle,	// task handle
-					   0);					// core 0
-  if(err != pdPASS) {
-    MENU.out(err);
-    MENU.space();
-    MENU.error_ln(F("show_names"));
-  }
-}
-
 void inline MC_show_names() {
-  multicore_show_names();
+  do_on_other_core(&monochrome_show_names);
 }
-
 #else
  void inline MC_show_names() {
    monochrome_show_names();
@@ -1119,32 +979,9 @@ void monochrome_show_tuning() {
 }
 
 #if defined MULTICORE_DISPLAY
-TaskHandle_t multicore_show_tuning_handle;
-
-void multicore_show_tuning_task(void* dummy) {
-  monochrome_show_tuning();
-  vTaskDelete(NULL);
-}
-
-void multicore_show_tuning() {	// create and do one shot task
-  BaseType_t err = xTaskCreatePinnedToCore(multicore_show_tuning_task,		// function
-					   "show_tuning",			// name
-					   2000,				// stack size
-					   NULL,				// task input parameter
-					   MONOCHROME_PRIORITY,			// task priority
-					   &multicore_show_tuning_handle,	// task handle
-					   0);					// core 0
-  if(err != pdPASS) {
-    MENU.out(err);
-    MENU.space();
-    MENU.error_ln(F("show_tuning"));
-  }
-}
-
 void inline MC_show_tuning() {
-  multicore_show_tuning();
+  do_on_other_core(&monochrome_show_tuning);
 }
-
 #else
  void inline MC_show_tuning() {
    monochrome_show_tuning();
