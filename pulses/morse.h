@@ -1490,19 +1490,9 @@ char morse_output_char = '\0';	// '\0' means *no* output
 
 #if defined USE_MONOCHROME_DISPLAY
 
-// #define CHATTY_MONOCHROME	// no
-void morse_monochrome_display() {
+void monochrome_out_morse_char() {
   if(! monochrome_can_be_used())
     return;
-
-  #if defined CHATTY_MONOCHROME
-  MENU.out("\nmorse_monochrome_display()\t");
-  /*	prior (small) version
-  MENU.out_ON_off(morse_output_char);
-  MENU.tab();
-  MENU.out_ON_off(has_display_hardware);
-  */
-  #endif
 
   if(morse_output_char && morse_out_buffer_cnt) {
     // 2x2 version

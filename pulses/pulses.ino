@@ -2270,7 +2270,7 @@ bool low_priority_tasks() {
   }
   if(morse_output_char) {
 #if defined USE_MONOCHROME_DISPLAY
-    morse_monochrome_display();
+    monochrome_out_morse_char();
 #else
     MENU.out(morse_output_char);
 #endif

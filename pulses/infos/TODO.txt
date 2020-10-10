@@ -703,3 +703,5 @@ if(HARDWARE.musicbox_trigger_pin != ILLEGAL8 )	// hmm, what else could wake me u
     MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
 
 uint8_t rgb_pin[RGB_STRINGS_MAX]={RGB_LED_STRIP_DATA_PIN};		// %4	TODO: FIX ALIGNEMENT
+
+void try_monochrome_fix() {	// DADA:  ################	not working appropriate
