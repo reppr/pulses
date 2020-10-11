@@ -6,6 +6,17 @@
 
 set_used_font(&FreeMonoBold9pt7b);
 ePaper_line_matrix();
+ePaper_print_1line_at(4, "HumbuKumbu 4 ");
+delay(4000);
+
+set_used_font(&FreeMonoBold12pt7b);
+ePaper_line_matrix();
+ePaper_print_1line_at(4, "HumbuKumbu 4 ");
+delay(4000);
+break;
+
+set_used_font(&FreeMonoBold9pt7b);
+ePaper_line_matrix();
 ePaper_print_at(3, 2, " abcd_");
 ePaper_print_at(0, 0, "NULL");
 ePaper_print_at(5, 4, "- - ");	// ePaper.getTextBounds() takes this too literally ;)
@@ -38,22 +49,22 @@ delay(6000);
 
 //setup_LILYGO_ePaper(); break;
 
-set_used_font(&FreeMonoBold9pt7b);
-ePaper_line_matrix();
-delay(500);
-ePaper_print_1line(6*128/7, "HumbuKumbu 6 ");
+//set_used_font(&FreeMonoBold9pt7b);
+//ePaper_line_matrix();
+//delay(500);
+//ePaper_print_1line(6*128/7, "HumbuKumbu 6 ");
 
-//for(int i=0; i<8; i++) {
-for(int i=0; i<5; i++) {
-    delay(2000);
-    ePaper_print_1line(i*128/7, "->XY5");
-    MENU.out("line ");
-    MENU.outln(i);
- }
+////for(int i=0; i<8; i++) {
+//for(int i=0; i<5; i++) {
+//  delay(2000);
+//  ePaper_print_1line(i*128/7, "->XY5");
+//  MENU.out("line ");
+//  MENU.outln(i);
+// }
 
-delay(1500);
-ePaper_print_str("DADA here i am ");
-delay(500);
+//delay(1500);
+//ePaper_print_str("DADA here i am ");
+//delay(500);
 //ePaper.println();
 //delay(100);
 //ePaper_print_str("here, there&everywhere");

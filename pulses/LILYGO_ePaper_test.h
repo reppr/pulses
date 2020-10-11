@@ -96,6 +96,9 @@ uint16_t max_line_length=22;
 // uint8_t BIG_font_y=14;	// mono fonts only
 
 void set_used_font(const GFXfont* font_p) {
+#if defined DEBUG_ePAPER
+  MENU.out(F("\nDEBUG_ePAPER\tset_used_font()"));
+#endif
   if(font_p == &FreeMonoBold9pt7b) {
     used_font_x = 250/22;	// 11
     used_font_y = 128/7;	// 18
@@ -130,7 +133,7 @@ int16_t row2y(int16_t row) {	// *do* call set_used_font() before using that
   return (row+1)*used_font_y;
 }
 
-void ePaper_print_at(uint16_t col, uint16_t row, char* text) {	// *do* call set_used_font() before using that
+void ePaper_print_at(uint16_t col, uint16_t row, char* text, int16_t offset_y=0) {	// *do* call set_used_font() before using that
 #if defined  DEBUG_ePAPER
   MENU.out(F("\nDEBUG_ePAPER\tePaper_print_at(...)\t"));
   MENU.outln(text);
@@ -140,6 +143,7 @@ void ePaper_print_at(uint16_t col, uint16_t row, char* text) {	// *do* call set_
   ePaper.setFont(used_font_p);
   int16_t x = col2x(col);
   int16_t y = row2y(row);
+  y += offset_y;
 
   ePaper.fillRect(x, y - used_font_y + 4, strlen(text)*used_font_x, used_font_y, GxEPD_WHITE);
   ePaper.setCursor(x, y);
@@ -532,32 +536,30 @@ void ePaper_line_matrix() {			// DEBUGGING only
     }
   }
   while (ePaper.nextPage());
+  delay(750);
 } // void ePaper_line_matrix()
 #endif // DEBUG_ePAPER
 
-void ePaper_print_1line(uint16_t y, char* text) {
+void ePaper_print_1line_at(uint16_t row, char* text, int16_t offset_y=0) {	// *do* call set_used_font() before using that
 #if defined  DEBUG_ePAPER
-  MENU.out(F("\nDEBUG_ePAPER\tePaper_print_1line() "));
-  MENU.out(y);
+  MENU.out(F("\nDEBUG_ePAPER\tePaper_print_1line_at() "));
+  MENU.out(row);
   MENU.tab();
   MENU.outln(text);
 #endif
 
-  // uint16_t font_yAdvance = FreeMonoBold9pt7b.yAdvance;
   ePaper.setRotation(1);
-  ePaper.setFont(&FreeMonoBold9pt7b);
   ePaper.setTextColor(GxEPD_BLACK);
-  ePaper.setPartialWindow(0, y-11, ePaper.width(), 12);
+  ePaper.setFont(used_font_p);
+  int16_t x = 0;
+  int16_t y = row2y(row);
+  y += offset_y;
 
-  ePaper.firstPage();
-  do
-  {
-    ePaper.fillScreen(GxEPD_WHITE);  // clear line
-    ePaper.setCursor(0, y);
-    ePaper.print(text);
-  }
-  while (ePaper.nextPage());
-} // ePaper_print_1line
+  ePaper.fillRect(x, y - used_font_y + 4, ePaper.width(), used_font_y, GxEPD_WHITE);
+  ePaper.setCursor(x, y);
+  ePaper.print(text);
+  ePaper.display(true);
+} // ePaper_print_1line_at()
 
 void ePaper_print_str(char* text) {
 #if defined  DEBUG_ePAPER
