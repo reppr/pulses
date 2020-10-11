@@ -718,3 +718,5 @@ delay(3000);		// TODO: TEST: maybe ESP now confuses display?
 void try_ePaper_fix() {
   //~GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT>();
   //~GxEPD2_BW();	// destructor ?
+
+MC_printBIG(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " "); TODO: avoid the 2*col

@@ -416,7 +416,7 @@ void copy_string_to_lower(char* source, char* destination, size_t max) {
 #endif
 
 #if defined BOARD_LILYGO_T5
-  #include"LILYGO_ePaper_test.h"
+  #include"LILYGO_ePaper.h"
 #endif
 
 action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actions
@@ -2273,7 +2273,7 @@ bool low_priority_tasks() {
     return true;
   }
   if(morse_output_char) {
-#if defined USE_MONOCHROME_DISPLAY
+#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
     monochrome_out_morse_char();
 #else
     MENU.out(morse_output_char);

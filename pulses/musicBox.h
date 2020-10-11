@@ -397,6 +397,30 @@ bool musicbox_is_awake() {	// makes it easier to pre declare that from outside
   return MusicBoxState == AWAKE;
 }
 
+char run_state_symbol() {
+  if(musicbox_is_awake())
+    return '!';
+  if(musicbox_is_idle())
+    return '.';
+  if(musicbox_is_ending())
+    return 'e';
+  // 'p' is used for pause
+
+  return '?';
+}
+
+char scale_symbol_char() {	// 1 char SCALE index as hex and beyond for monochrome display, morse out(?)
+  char s = (char) pointer2index(SCALES, selected_in(SCALES));		// start with index in SCALES
+  s--;	// scale 0 is in SCALES[1]
+  if(s < 10)
+    s += '0';	// chiffres 0...9
+  else {
+    s -= 10;
+    s += 'A';	// hex and beyond ;)
+  }
+  return s;
+} // scale_symbol_char()
+
 
 void tabula_rasa() {
   if (MENU.verbosity > VERBOSITY_LOWEST) {
@@ -839,10 +863,10 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
       MENU.ln();
     }
 
-#if defined USE_MONOCHROME_DISPLAY
+#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
     extern char run_state_symbol();
     char s[] = {run_state_symbol(),0};
-    MC_printBIG(0, 0, s);
+    MC_printBIG_at(0, 0, s);
 #endif
 
     for (int pulse=0; pulse<PL_MAX; pulse++) {	// make days_to_live COUNTED generating pulses
@@ -3134,9 +3158,9 @@ void start_musicBox() {
 
       } else	// pause is *not* autoskipped
 	MENU.outln(F("no pause autoskip"));
-//#if defined USE_MONOCHROME_DISPLAY
+//#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
 //	char s[] = {'p', 0};		// TODO: how to clear that?
-//	MC_printBIG(0, 0, s);	// TODO: how to clear that?
+//	MC_printBIG_at(0, 0, s);	// TODO: how to clear that?
 //#endif
 
     } else {	// stack_sync_slices==0

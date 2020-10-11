@@ -6,8 +6,15 @@
 
 set_used_font(&FreeMonoBold9pt7b);
 ePaper_line_matrix();
+MC_print_at(1,2," DADA ");
+delay(1000);
 ePaper_print_1line_at(4, "HumbuKumbu 4 ");
-delay(4000);
+delay(1000);
+MC_print_1line_at(1, "LINE 1");
+delay(2000);
+
+monochrome_clear();
+delay(3000);
 
 set_used_font(&FreeMonoBold12pt7b);
 ePaper_line_matrix();

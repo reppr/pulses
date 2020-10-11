@@ -1,10 +1,9 @@
 /*
-  LILYGO_ePaper_test.h
+  LILYGO_ePaper.h
   see: GxEPD2/examples/GxEPD2_GFX_Example
 */
 
 #define DEBUG_ePAPER
-#define COMPILE_FONTTEST
 #define USE_MANY_FONTS		// uses some more program storage space
 
 #include <GxEPD2_BW.h>
@@ -34,6 +33,50 @@
 #include <Fonts/TomThumb.h>
 
 GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT> ePaper(GxEPD2_213_B73(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4)); // GDEH0213B73
+
+
+#if defined MULTICORE_DISPLAY
+  #include <freertos/task.h>
+
+  // testing RTOS task priority for monochrome display routines:
+  #define MONOCHROME_PRIORITY	0	// seems best
+  //#define MONOCHROME_PRIORITY	1	// was 0
+  //#define MONOCHROME_PRIORITY	2	// was 0
+
+/* MUTEX for 2x2 printing (or just wait a bit... ;)
+  SemaphoreHandle_t monochrome_mutex = xSemaphoreCreateMutex();
+*/
+
+  #define MONOCHROME_TEXT_BUFFER_SIZE	24	// TODO: more versatile implementation
+  char monochrome_text_buffer[MONOCHROME_TEXT_BUFFER_SIZE] = {0};
+
+  typedef struct display_string_t {
+    int16_t col=0;
+    int16_t row=0;
+    int16_t offset_y=0;
+    //uint8_t size=0;
+    //uint8_t colour=0;
+    //bool inverted=false;
+    char* text = (char*) &monochrome_text_buffer;
+  } display_string_t;
+
+  display_string_t text_descriptor;	// HACK:  uses global data structure...
+
+  void copy_text_to_text_buffer(char* text) {
+    char c;
+    for(int i=0; i < MONOCHROME_TEXT_BUFFER_SIZE; i++) {
+      c = text_descriptor.text[i] = text[i];
+      if(c==0)
+	break;
+    }
+    text_descriptor.text[MONOCHROME_TEXT_BUFFER_SIZE - 1] = 0;
+    if(strlen(text) > (MONOCHROME_TEXT_BUFFER_SIZE -1)) {
+      MENU.outln(text_descriptor.text);
+      MENU.error_ln(F("string too long, truncated"));
+    }
+  } // copy_text_to_text_buffer()
+#endif
+
 
 void LILYGO_ePaper_infos() {
   // give some infos:
@@ -68,6 +111,7 @@ void setup_LILYGO_ePaper() {
   delay(1000);			// TODO: test, maybe REMOVE?:
 } // setup_LILYGO_ePaper()
 
+
 void inline monochrome_setup() {
   setup_LILYGO_ePaper();
 
@@ -81,23 +125,19 @@ void inline monochrome_setup() {
 }
 
 
-GFXfont* small_font_p = (GFXfont*) NULL;
-GFXfont* default_font_p = (GFXfont*) &FreeMonoBold9pt7b;
-GFXfont* BIG_font_p = (GFXfont*) &FreeMonoBold12pt7b;
+// GFXfont* small_font_p = (GFXfont*) NULL;
+// GFXfont* default_font_p = (GFXfont*) &FreeMonoBold9pt7b;
+// GFXfont* BIG_font_p = (GFXfont*) &FreeMonoBold12pt7b;
 
 GFXfont* used_font_p = (GFXfont*) NULL;
 
 uint8_t used_font_x=11;
 uint8_t used_font_y=128/7;	// 18
 uint16_t max_line_length=22;
-// uint8_t small_font_x=0;	// mono fonts only
-// uint8_t small_font_y=0;	// mono fonts only
-// uint8_t BIG_font_x=14;	// mono fonts only
-// uint8_t BIG_font_y=14;	// mono fonts only
 
 void set_used_font(const GFXfont* font_p) {
 #if defined DEBUG_ePAPER
-  MENU.out(F("\nDEBUG_ePAPER\tset_used_font()"));
+  MENU.out(F("DEBUG_ePAPER\tset_used_font()"));
 #endif
   if(font_p == &FreeMonoBold9pt7b) {
     used_font_x = 250/22;	// 11
@@ -125,6 +165,7 @@ void set_used_font(const GFXfont* font_p) {
   used_font_p = (GFXfont*) font_p;
 } // set_used_font()
 
+
 int16_t col2x(int16_t col) {	// *do* call set_used_font() before using that
   return col*used_font_x;
 }
@@ -150,6 +191,59 @@ void ePaper_print_at(uint16_t col, uint16_t row, char* text, int16_t offset_y=0)
   ePaper.print(text);
   ePaper.display(true);
 } // ePaper_print_at()
+
+#if defined MULTICORE_DISPLAY
+TaskHandle_t ePaper_print_at_handle;
+
+void ePaper_print_at_task(void* data_) {
+  display_string_t* data = (display_string_t*) data_;
+  ePaper_print_at(data->col, data->row, data->text, data->offset_y);
+  vTaskDelete(NULL);
+}
+
+void multicore_ePaper_print_at(int16_t col, int16_t row, char* text, int16_t offset_y) {	// create and start a one shot task
+  text_descriptor.col = col;
+  text_descriptor.row = row;
+  text_descriptor.offset_y = offset_y;
+  copy_text_to_text_buffer(text);
+
+  BaseType_t err = xTaskCreatePinnedToCore(ePaper_print_at_task,		// function
+					   "ePaper_print_at",			// name
+					   2000,				// stack size
+					   &text_descriptor,			// task input parameter
+					   MONOCHROME_PRIORITY,			// task priority
+					   &ePaper_print_at_handle,		// task handle
+					   0);					// core 0
+  if(err != pdPASS) {
+    MENU.out(err);
+    MENU.space();
+    MENU.error_ln(F("ePaper_print_at_task"));
+  }
+} // multicore_ePaper_print_at()
+
+void MC_print_at(int16_t col, int16_t row, char* text, int16_t offset_y=0) {
+  multicore_ePaper_print_at(col, row, text, offset_y);
+}
+
+#else
+void MC_print_at(int16_t col, int16_t row, char* text, int16_t offset_y=0) {
+  ePaper_print_at(col, row, text, offset_y);
+}
+#endif
+
+void MC_printBIG_at(int16_t col, int16_t row, char* text, int16_t offset_y=0) {
+  set_used_font(&FreeMonoBold12pt7b);
+  MC_print_at(col, row, text, offset_y);
+}
+
+void monochrome_clear() {
+#if defined  DEBUG_ePAPER
+  MENU.outln(F("DEBUG_ePAPER\tmonochrome_clear()"));
+#endif
+  ePaper.setFullWindow();
+  ePaper.fillScreen(GxEPD_WHITE);
+  ePaper.display(true);
+} // monochrome_clear()
 
 
 void ePaper_basic_parameters() {
@@ -212,6 +306,7 @@ void ePaper_basic_parameters() {
 void inline MC_show_musicBox_parameters() {
   do_on_other_core(&ePaper_basic_parameters);
 }
+
 
 void  ePaper_show_program_version() {
 #if defined  DEBUG_ePAPER
@@ -318,144 +413,6 @@ void inline MC_show_tuning() {
 }
 
 
-#if defined COMPILE_FONTTEST
-void ePaper_fonttest() {
-  ePaper.setFullWindow();
-  ePaper.fillScreen(GxEPD_WHITE);
-  ePaper.setTextColor(GxEPD_BLACK);
-  //ePaper.setFont(&FreeMonoBold9pt7b);	// see below
-  char txt[23];
-  char* format_s = F("%s");
-  int wait=10000;
-
-  ePaper.firstPage();
-  do
-  {
-    ePaper.fillScreen(GxEPD_WHITE);
-    ePaper.setCursor(0, 0);
-
-    ePaper.setFont(&FreeMonoBold9pt7b);
-    ePaper.println();
-
-    snprintf(txt, 23, format_s, "FreeMonoBold9pt7b");
-    ePaper.println(txt);
-
-    ePaper.setFont(&FreeMono9pt7b);
-    snprintf(txt, 23, format_s, "FreeMono9pt7b");
-    ePaper.println(txt);
-
-    ePaper.setFont(&FreeMonoBoldOblique9pt7b);
-    snprintf(txt, 23, format_s, "FreeMonoBoldOblique9pt7b");
-    ePaper.println(txt);
-
-    ePaper.setFont(&FreeSans9pt7b);
-    snprintf(txt, 23, format_s, "FreeSans9pt7b");
-    ePaper.println(txt);
-
-    ePaper.setFont(&FreeSansBold9pt7b);
-    snprintf(txt, 23, format_s, "FreeSansBold9pt7b");
-    ePaper.println(txt);
-
-    ePaper.setFont(&FreeSansOblique9pt7b);
-    snprintf(txt, 23, format_s, "FreeSansOblique9pt7b");
-    ePaper.println(txt);
-  }
-  while (ePaper.nextPage());
-  delay(wait);
-
-  ePaper.setFullWindow();
-  ePaper.fillScreen(GxEPD_WHITE);
-  ePaper.setTextColor(GxEPD_BLACK);
-
-  ePaper.firstPage();
-  do
-  {
-    ePaper.fillScreen(GxEPD_WHITE);
-    ePaper.setCursor(0, 0);
-
-    ePaper.setFont(&FreeSerif9pt7b);
-    ePaper.println();
-    snprintf(txt, 23, format_s, "FreeSerif9pt7b");
-    ePaper.println(txt);
-
-    ePaper.setFont(&FreeSerifBold9pt7b);
-    snprintf(txt, 23, format_s, "FreeSerifBold9pt7b");
-    ePaper.println(txt);
-
-    ePaper.setFont(&FreeSerifBoldItalic9pt7b);
-    snprintf(txt, 23, format_s, "FreeSerifBoldItalic9pt7b");
-    ePaper.println(txt);
-
-    ePaper.setFont(&FreeSerifItalic9pt7b);
-    snprintf(txt, 23, format_s, "FreeSerifItalic9pt7b");
-    ePaper.println(txt);
-
-    ePaper.setFont(&Org_01);
-    snprintf(txt, 23, format_s, "Org_01");
-    ePaper.println(txt);
-
-    ePaper.setFont(&Picopixel);
-    snprintf(txt, 23, format_s, "Picopixel");
-    ePaper.println(txt);
-  }
-  while (ePaper.nextPage());
-  delay(wait);
-
-  ePaper.setFullWindow();
-  ePaper.fillScreen(GxEPD_WHITE);
-  ePaper.setTextColor(GxEPD_BLACK);
-
-  ePaper.firstPage();
-  do
-  {
-    ePaper.fillScreen(GxEPD_WHITE);
-    ePaper.setCursor(0, 0);
-
-    ePaper.setFont(&Org_01);
-    ePaper.println();
-    snprintf(txt, 23, format_s, "Org_01");
-    ePaper.println(txt);
-    ePaper.println();
-    ePaper.println();
-
-    ePaper.setFont(&Picopixel);
-    snprintf(txt, 23, format_s, "Picopixel");
-    ePaper.println(txt);
-    ePaper.println();
-    ePaper.println();
-
-    ePaper.setFont(&Tiny3x3a2pt7b);
-    snprintf(txt, 23, format_s, "Tiny3x3a2pt7b");
-    ePaper.println(txt);
-    ePaper.println();
-    ePaper.println();
-
-    ePaper.setFont(&TomThumb);
-    snprintf(txt, 23, format_s, "TomThumb");
-    ePaper.println(txt);
-    ePaper.println();
-    ePaper.println();
-
-    ePaper.setFont(&FreeSans9pt7b);
-    ePaper.print("erstes ");
-    ePaper.print(99);
-    ePaper.println(" zweites MonB");
-
-    ePaper.print("erstes ");
-    ePaper.print(99);
-    ePaper.println(" zweites Sans");
-
-    ePaper.print("erstes ");
-    ePaper.print(99);
-    ePaper.println(" zweites SansBold");
-
-
-  }
-  while (ePaper.nextPage());
-} // ePaper_fonttest()
-#endif // COMPILE_FONTTEST
-
-
 // void inline MC_setInverseFont() {
 //   //ePaper.fillScreen(GxEPD_BLACK);	// does this make sense?
 //   ePaper.setTextColor(GxEPD_WITE);
@@ -466,83 +423,10 @@ void ePaper_fonttest() {
 //   ePaper.setTextColor(GxEPD_BLACK);
 // }
 
-#if defined  DEBUG_ePAPER
-void ePaper_bounds() {
-  MENU.outln(F("\nDEBUG_ePAPER\tePaper_bounds"));
-
-  int16_t tbx, tby; uint16_t tbw, tbh;
-  //ePaper.getTextBounds("123456789ABCDEFGHIKLMN", 0, 0, &tbx, &tby, &tbw, &tbh);	// 22 chars
-  char* str;
-
-  ePaper.setFont(&FreeMonoBold9pt7b);
-  MENU.outln("FreeMonoBold9pt7b");
-
-  for(int i=0; i<2; i++) {
-    str = "M";
-    ePaper.getTextBounds(str, 50, 50, &tbx, &tby, &tbw, &tbh);
-    MENU.out(str); MENU.tab();
-    MENU.out("x, y, w, h\t");
-    MENU.out(tbx); MENU.tab();
-    MENU.out(tby); MENU.tab();
-    MENU.out(tbw); MENU.tab();
-    MENU.outln(tbh);
-
-    str = "X";
-    ePaper.getTextBounds(str, 50, 50, &tbx, &tby, &tbw, &tbh);
-    MENU.out(str); MENU.tab();
-    MENU.out("x, y, w, h\t");
-    MENU.out(tbx); MENU.tab();
-    MENU.out(tby); MENU.tab();
-    MENU.out(tbw); MENU.tab();
-    MENU.outln(tbh);
-
-    str="1234567890";
-    ePaper.getTextBounds(str, 50, 50, &tbx, &tby, &tbw, &tbh);	// 10 chars
-    MENU.out(str); MENU.tab();
-    MENU.out("x, y, w, h\t");
-    MENU.out(tbx); MENU.tab();
-    MENU.out(tby); MENU.tab();
-    MENU.out(tbw); MENU.tab();
-    MENU.outln(tbh);
-
-    ePaper.setFont(&FreeMonoBold12pt7b);
-    MENU.outln("FreeMonoBold12pt7b");
-  }
-  MENU.outln(F("\nDEBUG_ePAPER\tePaper_bounds()"));
-} // ePaper_bounds()
-#endif // DEBUG_ePAPER
-
-#if defined  DEBUG_ePAPER
-void ePaper_line_matrix() {			// DEBUGGING only
-  MENU.outln(F("\nDEBUG_ePAPER\tePaper_line_matrix()"));
-
-  ePaper.setFullWindow();
-  ePaper.setTextColor(GxEPD_BLACK);
-  ePaper.setFont(used_font_p);
-
-  char txt[24];
-  char* format_is = F("%i.%s");
-
-  ePaper.firstPage();
-  do
-  {
-    ePaper.fillScreen(GxEPD_WHITE);
-    ePaper.setCursor(0, 0);
-    ePaper.println();
-
-    for(int i=0; i<7; i++) {
-      snprintf(txt, max_line_length+1, format_is, i, "23456789012345678901234567890");
-      ePaper.println(txt);
-    }
-  }
-  while (ePaper.nextPage());
-  delay(750);
-} // void ePaper_line_matrix()
-#endif // DEBUG_ePAPER
 
 void ePaper_print_1line_at(uint16_t row, char* text, int16_t offset_y=0) {	// *do* call set_used_font() before using that
 #if defined  DEBUG_ePAPER
-  MENU.out(F("\nDEBUG_ePAPER\tePaper_print_1line_at() "));
+  MENU.out(F("DEBUG_ePAPER\tePaper_print_1line_at() "));
   MENU.out(row);
   MENU.tab();
   MENU.outln(text);
@@ -561,7 +445,46 @@ void ePaper_print_1line_at(uint16_t row, char* text, int16_t offset_y=0) {	// *d
   ePaper.display(true);
 } // ePaper_print_1line_at()
 
-void ePaper_print_str(char* text) {
+#if defined MULTICORE_DISPLAY
+TaskHandle_t ePaper_1line_at_handle;
+
+void ePaper_1line_at_task(void* data_) {
+  display_string_t* data = (display_string_t*) data_;
+  ePaper_print_1line_at(data->row, data->text, data->offset_y);
+  vTaskDelete(NULL);
+}
+
+void multicore_ePaper_1line_at(int16_t row, char* text, int16_t offset_y) {	// create and start a one shot task
+  text_descriptor.row = row;
+  text_descriptor.offset_y = offset_y;
+  copy_text_to_text_buffer(text);
+
+  BaseType_t err = xTaskCreatePinnedToCore(ePaper_1line_at_task,		// function
+					   "ePaper_1line_at",			// name
+					   2000,				// stack size
+					   &text_descriptor,			// task input parameter
+					   MONOCHROME_PRIORITY,			// task priority
+					   &ePaper_1line_at_handle,		// task handle
+					   0);					// core 0
+  if(err != pdPASS) {
+    MENU.out(err);
+    MENU.space();
+    MENU.error_ln(F("ePaper_1line_at_task"));
+  }
+} // multicore_ePaper_1line_at()
+
+void MC_print_1line_at(int16_t row, char* text, int16_t offset_y=0) {
+  multicore_ePaper_1line_at(row, text, offset_y);
+}
+
+#else
+void MC_print_1line_at(int16_t row, char* text, int16_t offset_y=0) {
+  ePaper_print_1line_at(row, text, offset_y);
+}
+#endif
+
+
+void ePaper_print_str(char* text) {	// unused
 #if defined  DEBUG_ePAPER
   MENU.out(F("\nDEBUG_ePAPER\tePaper_print_str()\t"));
   MENU.outln(text);
@@ -605,3 +528,7 @@ void try_ePaper_fix() {
 void inline try_monochrome_fix() {
   try_ePaper_fix();
 }
+
+#if defined DEBUG_ePAPER
+  #include "ePaper_debugging.h"
+#endif

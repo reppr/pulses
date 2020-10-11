@@ -147,34 +147,6 @@ void monochrome_show_subcycle_octave() {
   }
 }
 
-char scale_symbol_char() {	// 1 char SCALE index as hex and beyond for monochrome display, morse out(?)
-  char s = (char) pointer2index(SCALES, selected_in(SCALES));		// start with index in SCALES
-  s--;	// scale 0 is in SCALES[1]
-  if(s < 10)
-    s += '0';	// chiffres 0...9
-  else {
-    s -= 10;
-    s += 'A';	// hex and beyond ;)
-  }
-  return s;
-} // scale_symbol_char()
-
-
-extern bool musicbox_is_awake();
-extern bool musicbox_is_idle();
-extern bool musicbox_is_ending();
-
-char run_state_symbol() {	// TODO: move to musicBox
-  if(musicbox_is_awake())
-    return '!';
-  if(musicbox_is_idle())
-    return '.';
-  if(musicbox_is_ending())
-    return 'e';
-  // 'p' is used for pause
-
-  return '?';
-}
 
 // no MC_xxx version
 uint8_t /*next_row*/ monochrome_multiline_string(uint8_t row, char* s) { // multiline string from row to bottom (max)
@@ -539,12 +511,12 @@ void multicore_print2x2(uint8_t col, uint8_t row, char* str) {	// create and do 
   }
 }
 
-void inline MC_printBIG(uint8_t col, uint8_t row, char* str) {
+void inline MC_printBIG_at(uint8_t col, uint8_t row, char* str) {
   multicore_print2x2(col, row, str);
 }
 
 #else
-void inline MC_printBIG(uint8_t col, uint8_t row, char* str) {
+void inline MC_printBIG_at(uint8_t col, uint8_t row, char* str) {
   monochrome_print2x2(col, row, str);
 }
 #endif // MULTICORE_DISPLAY

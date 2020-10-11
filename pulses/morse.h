@@ -1465,14 +1465,17 @@ extern void MC_setCursor(uint8_t col, uint8_t row);
 extern uint8_t monochrome_getCols();
 extern void MC_print(char* str);
 extern void monochrome_print_f(float f, int chiffres);
-extern void MC_printBIG(uint8_t col, uint8_t row, char* str);	// for short 2x2 strings
+extern void MC_printBIG_at(uint8_t col, uint8_t row, char* str);	// for short 2x2 strings
 extern void monochrome_clear();
-#endif // USE_MONOCHROME
+#endif // USE_MONOCHROME_DISPLAY
 
 void morse_do_output() {
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
   if(morse_out_buffer_cnt) {
-#if defined USE_MONOCHROME_DISPLAY
+#if defined BOARD_LILYGO_T5
+    set_used_font(&FreeMonoBold12pt7b);
+    MC_print_1line_at(MORSE_MONOCHROME_ROW, "");
+#elif defined USE_MONOCHROME_DISPLAY
     MC_printlnBIG(MORSE_MONOCHROME_ROW, "        ");
 #endif
 
@@ -1488,8 +1491,19 @@ void morse_do_output() {
 
 char morse_output_char = '\0';	// '\0' means *no* output
 
-#if defined USE_MONOCHROME_DISPLAY
+#if defined BOARD_LILYGO_T5
+void monochrome_out_morse_char() {
+  if(morse_output_char && morse_out_buffer_cnt) {
+    char s[]="  ";
+    s[0] = morse_output_char;
+    set_used_font(&FreeMonoBold12pt7b);
+    ePaper_print_at(morse_out_buffer_cnt - 1, MORSE_MONOCHROME_ROW, s);
+  }
 
+  morse_output_char = '\0';	// trigger off
+}
+
+#elif defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
 void monochrome_out_morse_char() {
   if(! monochrome_can_be_used())
     return;
@@ -1498,19 +1512,23 @@ void monochrome_out_morse_char() {
     // 2x2 version
     char s[]="  ";
     s[0] = morse_output_char;
-    MC_printBIG(2*(morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s);
+#if defined BOARD_LILYGO_T5
+    MC_printBIG_at((morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s);
+#elif defined USE_MONOCHROME_DISPLAY
+    MC_printBIG_at(2*(morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s);
+#endif
   }
 
   morse_output_char = '\0';	// trigger off
 }
-#endif // USE_MONOCHROME_DISPLAY
+#endif // USE_MONOCHROME_DISPLAY || BOARD_LILYGO_T5
 
 
 bool echo_morse_input=true;
 bool morse_store_received_letter(char letter) {		// returns error
   if(echo_morse_input)
     MENU.out(letter);
-#if defined USE_MONOCHROME_DISPLAY
+#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
   morse_output_char = letter;	// char and switch
 #endif
   if(morse_out_buffer_cnt < MORSE_OUTPUT_BUFFER_SIZE) {
@@ -1591,8 +1609,10 @@ void static morse_token_decode() {	// decode received token sequence
 	      else if(morse_PRESENT_COMMAND == "DELLAST") {
 		if(morse_out_buffer_cnt) {
 		  morse_out_buffer_cnt--;
-#if defined USE_MONOCHROME_DISPLAY
-		  MC_printBIG(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " ");	// DELLAST
+#if defined BOARD_LILYGO_T5
+		  MC_printBIG_at(morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " ");	// DELLAST
+#elif defined USE_MONOCHROME_DISPLAY
+		  MC_printBIG_at(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " ");	// DELLAST
 #endif
 		}
 
@@ -1609,13 +1629,15 @@ void static morse_token_decode() {	// decode received token sequence
 		} else {					// got switched off
 		  MC_display_message(F(" off "));
 		} // oled switched on/off
+#else
+		;
 #endif
 
 	      } else if(morse_PRESENT_COMMAND == "CANCEL") {	// CANCEL
 		morse_token_cnt = 0;
 		morse_out_buffer_cnt = 0;
-#if defined USE_MONOCHROME_DISPLAY
-		MC_printBIG(0, MORSE_MONOCHROME_ROW, "__");	// CANCEL shows "__"
+#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+		MC_printBIG_at(0, MORSE_MONOCHROME_ROW, "__");	// CANCEL shows "__"
 #endif
 	      } else if(morse_PRESENT_COMMAND == "ANY1") {	// '----'
 		MENU.outln(F("\"ANY1\" currently unused"));
@@ -1664,13 +1686,17 @@ void static morse_token_decode() {	// decode received token sequence
 	      return;
 	    }
 	  } else {	// no definition found, error
-#if defined USE_MONOCHROME_DISPLAY
-	    if(monochrome_can_be_used()) {
-	      if(morse_out_buffer_cnt) {
+#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+	    if(morse_out_buffer_cnt) {
+#if defined BOARD_LILYGO_T5
+	      MC_printBIG_at(morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, "'");	// TODO: TEST:
+#elif defined USE_MONOCHROME_DISPLAY
+	      if(monochrome_can_be_used()) {
 		MC_setInverseFont();
-		MC_printBIG(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, "'");	// TODO: TEST:
+		MC_printBIG_at(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, "'");	// TODO: TEST:
 		MC_clearInverseFont();
 	      }
+#endif
 	    }
 #endif // USE_MONOCHROME_DISPLAY
 	    MENU.space(2);
