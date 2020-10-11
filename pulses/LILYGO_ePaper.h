@@ -176,7 +176,7 @@ int16_t row2y(int16_t row) {	// *do* call set_used_font() before using that
 
 void ePaper_print_at(uint16_t col, uint16_t row, char* text, int16_t offset_y=0) {	// *do* call set_used_font() before using that
 #if defined  DEBUG_ePAPER
-  MENU.out(F("\nDEBUG_ePAPER\tePaper_print_at(...)\t"));
+  MENU.out(F("DEBUG_ePAPER\tePaper_print_at(...)\t"));
   MENU.outln(text);
 #endif
 
@@ -248,7 +248,7 @@ void monochrome_clear() {
 
 void ePaper_basic_parameters() {
 #if defined  DEBUG_ePAPER
-  MENU.outln(F("\nDEBUG_ePAPER\tePaper_basic_parameters()"));
+  MENU.outln(F("DEBUG_ePAPER\tePaper_basic_parameters()"));
 #endif
 
   ePaper.setFullWindow();
@@ -310,7 +310,7 @@ void inline MC_show_musicBox_parameters() {
 
 void  ePaper_show_program_version() {
 #if defined  DEBUG_ePAPER
-  MENU.outln(F("\nDEBUG_ePAPER\tePaper_show_program_version()"));
+  MENU.outln(F("DEBUG_ePAPER\tePaper_show_program_version()"));
 #endif
 
   ePaper.setFullWindow();
@@ -318,12 +318,7 @@ void  ePaper_show_program_version() {
   ePaper.setTextColor(GxEPD_BLACK);
 
   char txt[23];
-
-//  char* format_IstrI = F("|%s|");
-//  char* format2s = F("%s  %s");
   char* format_s = F("%s");
-//  char* format_is = F("%i %s");
-//  char* format_sync = F("S=%i");
 
   ePaper.firstPage();
   do
@@ -372,7 +367,7 @@ void inline MC_show_program_version() {
 
 void  ePaper_show_tuning() {
 #if defined  DEBUG_ePAPER
-  MENU.outln(F("\nDEBUG_ePAPER\tePaper_show_tuning()"));	// DADA remove debugging code ################
+  MENU.outln(F("DEBUG_ePAPER\tePaper_show_tuning()"));	// DADA remove debugging code ################
 #endif
 
   ePaper.setFullWindow();
@@ -380,12 +375,7 @@ void  ePaper_show_tuning() {
   ePaper.setTextColor(GxEPD_BLACK);
 
   char txt[23];
-
-//  char* format_IstrI = F("|%s|");
-//  char* format2s = F("%s  %s");
   char* format_s = F("%s");
-//  char* format_is = F("%i %s");
-//  char* format_sync = F("S=%i");
 
   ePaper.firstPage();
   do
@@ -411,17 +401,6 @@ void  ePaper_show_tuning() {
 void inline MC_show_tuning() {
   do_on_other_core(&ePaper_show_tuning);
 }
-
-
-// void inline MC_setInverseFont() {
-//   //ePaper.fillScreen(GxEPD_BLACK);	// does this make sense?
-//   ePaper.setTextColor(GxEPD_WITE);
-// }
-//
-// void inline MC_clearInverseFont() {
-//   //ePaper.fillScreen(GxEPD_WHITE);	// does this make sense?
-//   ePaper.setTextColor(GxEPD_BLACK);
-// }
 
 
 void ePaper_print_1line_at(uint16_t row, char* text, int16_t offset_y=0) {	// *do* call set_used_font() before using that
@@ -485,8 +464,8 @@ void MC_print_1line_at(int16_t row, char* text, int16_t offset_y=0) {
 
 
 void ePaper_print_str(char* text) {	// unused
-#if defined  DEBUG_ePAPER
-  MENU.out(F("\nDEBUG_ePAPER\tePaper_print_str()\t"));
+#if defined DEBUG_ePAPER
+  MENU.out(F("DEBUG_ePAPER\tePaper_print_str()\t"));
   MENU.outln(text);
 #endif
 

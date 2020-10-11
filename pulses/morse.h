@@ -1777,7 +1777,7 @@ void show_cheat_sheet() {
   char c;
   uint8_t maxlen=17;
 
-#if defined USE_MONOCHROME_DISPLAY
+#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
   monochrome_clear();	// subito, MC_clear_display() does it too late!
 #endif
   char result[maxlen];

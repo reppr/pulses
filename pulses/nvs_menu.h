@@ -181,7 +181,7 @@ bool nvs_menu_reaction(char token) {
       MENU.drop_input_token();
       tabula_rasa();	// sound alters mpu readings...
 #if defined USE_MONOCHROME_DISPLAY
-      (*u8x8_p).clear();
+      monochrome_clear();
 #endif
       extended_output(F("calibrating MPU"), 0, 1, true);
       MENU.ln();

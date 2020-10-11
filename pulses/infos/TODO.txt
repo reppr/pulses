@@ -720,3 +720,6 @@ void try_ePaper_fix() {
   //~GxEPD2_BW();	// destructor ?
 
 MC_printBIG(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " "); TODO: avoid the 2*col
+
+presets and ePaper
+#if defined BOARD_LILYGO_T5	// TODO: adapt MONOCHROME_MOTION_STATE_ROW

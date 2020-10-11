@@ -1771,7 +1771,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
 
 #if defined USE_MONOCHROME_DISPLAY || defined  BOARD_LILYGO_T5
   MC_show_musicBox_parameters();
-  delay(4000);	// TODO: TEST: maybe ESP now confuses display?
+  delay(2000);	// TODO: TEST: maybe ESP now confuses display?
 #endif
 
 #if defined USE_ESP_NOW
@@ -2875,7 +2875,7 @@ void start_musicBox() {
 #endif
   */
 
-//#if defined USE_MONOCHROME_DISPLAY
+//#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
 //  extern void MC_show_musicBox_parameters();
 //  MC_show_musicBox_parameters();
 //#endif
@@ -3689,7 +3689,7 @@ void musicBox_display() {
 
   MENU.out(F("'I'= info"));
 
-#if defined USE_MONOCHROME_DISPLAY
+#if defined USE_MONOCHROME_DISPLAY	// TODO: || defined BOARD_LILYGO_T5
   MENU.tab();
   oled_ui_display();
 #endif
@@ -4475,7 +4475,7 @@ bool musicBox_reaction(char token) {
       break;
 #endif
 
-#if defined USE_MONOCHROME_DISPLAY
+#if defined USE_MONOCHROME_DISPLAY	// ################ DADA TODO: ePaper ################
     case 'O': // 'IO' clear OLED	// TODO: OBSOLETE?
       MENU.drop_input_token();
       MC_clear_display();
@@ -4633,7 +4633,7 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'O':	// 'O<x>' OLED_UI()	or:  'O' subcycle_octave TODO: what to do while playing???
-#if defined USE_MONOCHROME_DISPLAY
+#if defined USE_MONOCHROME_DISPLAY	// TODO: || defined BOARD_LILYGO_T5
     extern bool OLED_UI();
     if(OLED_UI())
       return true;

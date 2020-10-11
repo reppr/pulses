@@ -96,46 +96,7 @@ if(MENU.check_next('D')) {	// DD
 
 //#include "SPEED-TESTS.h"
 
-#if defined USE_MONOCHROME_DISPLAY
-MENU.outln(F("TODO: MONOCHROME FIX?"));
-// MENU.outln(F("(*u8x8_p).initDisplay();"));
-// (*u8x8_p).initDisplay();
-
-/*
-MENU.outln(F("monochrome_begin()"));
-monochrome_begin();	// is in monochrome_setup() now
-*/
-
-/*
-MENU.outln(F("monochrome <ESC>c"));
-monochrome_print((char) 27);
-monochrome_print('c');
-
-MENU.outln(F("monochrome <ESC>C"));
-monochrome_print((char) 27);
-monochrome_print('C');
-*/
-
-MENU.outln(F("(*u8x8_p).setFlipMode(0)"));
-(*u8x8_p).setFlipMode(0);
-
-/*
-MENU.outln(F("(*u8x8_p).refreshDisplay()"));	// see: Only required for SSD1606
-(*u8x8_p).refreshDisplay();
-*/
-
-MENU.outln(F("(*u8x8_p).clear()"));
-(*u8x8_p).clear();
-
-MENU.outln(F("monochrome_show_musicBox_parameters();"));
-monochrome_show_musicBox_parameters();
-#endif
-
 //display_icode(melody0, sizeof(melody0));
-
-#if defined MULTICORE_DISPLAY
-// MC_show_tuning();
-#endif
 
 #if defined USE_ADS1115_AT_ADDR
 //ads1115_first_test_A0();
