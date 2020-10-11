@@ -4,7 +4,7 @@
 */
 
 
-set_used_font(&FreeMonoBold12pt7b);
+set_used_font(&FreeMonoBold9pt7b);
 ePaper_line_matrix();
 ePaper_print_at(3, 2, " abcd_");
 ePaper_print_at(0, 0, "NULL");
