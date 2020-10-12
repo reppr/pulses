@@ -3,6 +3,8 @@
   temporary test menu UI during development
 */
 
+MC_show_musicBox_parameters();
+break;
 
 delay(1000);
 set_used_font(&FreeMonoBold9pt7b);

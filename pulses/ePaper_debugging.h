@@ -22,7 +22,7 @@ void ePaper_line_matrix() {
     ePaper.println();
 
     for(int i=0; i<7; i++) {
-      snprintf(txt, max_line_length+1, format_is, i, "23456789012345678901234567890");
+      snprintf(txt, font_linlen+1, format_is, i, "23456789012345678901234567890");
       ePaper.println(txt);
     }
   }

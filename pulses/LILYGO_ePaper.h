@@ -43,8 +43,10 @@ GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT> ePaper(GxEPD2_213_B73(/*CS=5*/
   //#define MONOCHROME_PRIORITY	1	// was 0
   //#define MONOCHROME_PRIORITY	2	// was 0
 
-/* MUTEX for 2x2 printing (or just wait a bit... ;)
-  SemaphoreHandle_t monochrome_mutex = xSemaphoreCreateMutex();
+/*
+  // MUTEX for ePaper printing (or just wait a bit... ;)
+  portMUX_TYPE display_MUX = portMUX_INITIALIZER_UNLOCKED;
+  // SemaphoreHandle_t display_MUTEX = xSemaphoreCreateMutex();
 */
 
   #define MONOCHROME_TEXT_BUFFER_SIZE	156	// (7*22 +2)	// TODO: more versatile implementation
@@ -129,11 +131,16 @@ void inline monochrome_setup() {
 // GFXfont* default_font_p = (GFXfont*) &FreeMonoBold9pt7b;
 // GFXfont* BIG_font_p = (GFXfont*) &FreeMonoBold12pt7b;
 
-GFXfont* used_font_p = (GFXfont*) NULL;
+GFXfont* used_font_p = (GFXfont*) &FreeMonoBold9pt7b;;
+
+//GFXfont* small_font_p = (GFXfont*) NULL;
+GFXfont* middle_font_p = (GFXfont*) &FreeMonoBold9pt7b;
+GFXfont* big_font_p = (GFXfont*) &FreeMonoBold12pt7b;
 
 uint8_t used_font_x=11;
 uint8_t used_font_y=128/7;	// 18
-uint16_t max_line_length=22;
+uint8_t font_linlen=22;
+
 
 void set_used_font(const GFXfont* font_p) {
 #if defined DEBUG_ePAPER
@@ -142,12 +149,12 @@ void set_used_font(const GFXfont* font_p) {
   if(font_p == &FreeMonoBold9pt7b) {
     used_font_x = 250/22;	// 11
     used_font_y = 128/7;	// 18
-    max_line_length=22;
+    font_linlen=22;
 
   } else if(font_p == &FreeMonoBold12pt7b) {
     used_font_x = 14;		// ~250/18;
     used_font_y = 24;		// ~128/5 -1;
-    max_line_length=18;
+    font_linlen=18;
 
   } else {
     MENU.error_ln(F("unknown font size"));
@@ -246,6 +253,68 @@ void monochrome_clear() {
 } // monochrome_clear()
 
 
+#if false	// old or new version?
+// old:
+/* old */ void ePaper_basic_parameters() {
+	#if defined  DEBUG_ePAPER
+/* old */   MENU.outln(F("DEBUG_ePAPER\tePaper_basic_parameters()"));
+	#endif
+/* old */
+/* old */   ePaper.setFullWindow();
+/* old */   ePaper.fillScreen(GxEPD_WHITE);
+/* old */   ePaper.setTextColor(GxEPD_BLACK);
+/* old */
+/* old */   char txt[23];
+/* old */   char* format_IstrI = F("|%s|");
+/* old */   char* format2s = F("%s  %s");
+/* old */   char* format_s = F("%s");
+/* old */   char* format_is = F("%i %s");
+/* old */   char* format_sync = F("S=%i");
+/* old */
+/* old */   ePaper.firstPage();
+/* old */   do
+/* old */   {
+/* old */     ePaper.fillScreen(GxEPD_WHITE);
+/* old */     ePaper.setCursor(0, 0);
+/* old */
+	#if defined USE_MANY_FONTS
+/* old */     ePaper.setFont(&FreeSansBold12pt7b);
+	#else
+/* old */     ePaper.setFont(&FreeMonoBold12pt7b);
+	#endif
+/* old */     ePaper.println();
+/* old */
+/* old */     snprintf(txt, 23, format_IstrI, my_IDENTITY.preName);
+/* old */     ePaper.println(txt);
+/* old */
+	#if defined USE_MANY_FONTS
+/* old */     ePaper.setFont(&FreeSansBold9pt7b);
+	#else
+/* old */     ePaper.setFont(&FreeMonoBold9pt7b);
+	#endif
+/* old */     snprintf(txt, 23, format_is, musicBoxConf.preset, musicBoxConf.name);
+/* old */     ePaper.println(txt);
+/* old */
+/* old */     extern char* metric_mnemonic;
+/* old */     snprintf(txt, 23, format2s, selected_name(SCALES), metric_mnemonic);
+/* old */     ePaper.println(txt);
+/* old */
+	#if defined ICODE_INSTEAD_OF_JIFFLES
+/* old */     snprintf(txt, 23, format_s, selected_name(iCODEs));
+	#else
+/* old */     snprintf(txt, 23, format_s, selected_name(JIFFLES));
+	#endif
+/* old */     ePaper.println(txt);
+/* old */
+/* old */     snprintf(txt, 23, format_sync, musicBoxConf.sync);
+/* old */     ePaper.println(txt);
+/* old */   }
+/* old */   while (ePaper.nextPage());
+/* old */ } // ePaper_basic_parameters()
+/* old */ // end old
+
+#else	// old or new version?
+// new version:
 void ePaper_basic_parameters() {
 #if defined  DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tePaper_basic_parameters()"));
@@ -260,31 +329,31 @@ void ePaper_basic_parameters() {
   char* format2s = F("%s  %s");
   char* format_s = F("%s");
   char* format_is = F("%i %s");
-  char* format_sync = F("S=%i");
+
+  char* fmt_1st_row = F("%c%i |%s|");
+  //char* fmt_1st_row = F("%c |%s| P%i");
+  char* fmt_sync = F("S=%i");
+  char* fmt_synstack = F(" |%i");
+  char* fmt_basepulse = F(" p[%i]");
 
   ePaper.firstPage();
   do
   {
     ePaper.fillScreen(GxEPD_WHITE);
-    ePaper.setCursor(0, 0);
-
-#if defined USE_MANY_FONTS
     ePaper.setFont(&FreeSansBold12pt7b);
-#else
-    ePaper.setFont(&FreeMonoBold12pt7b);
-#endif
+    //set_used_font(&FreeMonoBold12pt7b);	// was: mono
+    ePaper.setCursor(0, 0);
     ePaper.println();
 
-    snprintf(txt, 23, format_IstrI, my_IDENTITY.preName);
-    ePaper.println(txt);
+    extern char run_state_symbol();
+    snprintf(txt, font_linlen+1, fmt_1st_row, run_state_symbol(), musicBoxConf.preset, my_IDENTITY.preName);
+    ePaper.print(txt);
+    // monochrome_show_subcycle_octave();
 
-#if defined USE_MANY_FONTS
+    //ePaper.println();	// before???	bigger ssstep
+    //set_used_font(&FreeMonoBold9pt7b);	// was: mono
     ePaper.setFont(&FreeSansBold9pt7b);
-#else
-    ePaper.setFont(&FreeMonoBold9pt7b);
-#endif
-    snprintf(txt, 23, format_is, musicBoxConf.preset, musicBoxConf.name);
-    ePaper.println(txt);
+    ePaper.println(); // or after???  smaller step
 
     extern char* metric_mnemonic;
     snprintf(txt, 23, format2s, selected_name(SCALES), metric_mnemonic);
@@ -297,11 +366,23 @@ void ePaper_basic_parameters() {
 #endif
     ePaper.println(txt);
 
-    snprintf(txt, 23, format_sync, musicBoxConf.sync);
-    ePaper.println(txt);
+    snprintf(txt, font_linlen+1, fmt_sync, musicBoxConf.sync);
+    ePaper.print(txt);
+    if(musicBoxConf.stack_sync_slices) {	// stack_sync_slices?
+      snprintf(txt, font_linlen+1, fmt_synstack, musicBoxConf.stack_sync_slices);
+      ePaper.print(txt);
+      if(musicBoxConf.base_pulse != ILLEGAL16) {
+	snprintf(txt, font_linlen+1, fmt_basepulse, musicBoxConf.base_pulse);
+	ePaper.print(txt);
+      }
+    }
+    ePaper.println();
+
+    ePaper.print(musicBoxConf.name);
   }
   while (ePaper.nextPage());
 } // ePaper_basic_parameters()
+#endif	// old or new version?
 
 void inline MC_show_musicBox_parameters() {
   do_on_other_core(&ePaper_basic_parameters);
