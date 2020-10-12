@@ -5688,7 +5688,7 @@ bool menu_pulses_reaction(char menu_input) {
 
     if (DO_or_maybe_display(VERBOSITY_LOWEST)) {
       char txt[9]= {0};
-      char* format = F("sync %i");
+      char* format = F("sync %i");		// TODO: | and [p] if appropriate?
       snprintf(txt, 9, format, musicBoxConf.sync);
       extended_output(txt, 0, 0, false);
       MENU.ln();

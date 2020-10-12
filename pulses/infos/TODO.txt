@@ -723,3 +723,5 @@ MC_printBIG(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " "); TODO: avoid the 
 
 presets and ePaper
 #if defined BOARD_LILYGO_T5	// TODO: adapt MONOCHROME_MOTION_STATE_ROW
+
+#define MONOCHROME_TEXT_BUFFER_SIZE	156	// (7*22 +2)	// TODO: more versatile implementation

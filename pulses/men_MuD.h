@@ -4,6 +4,23 @@
 */
 
 
+delay(1000);
+set_used_font(&FreeMonoBold9pt7b);
+//monochrome_clear();
+ePaper_line_matrix();
+delay(1000);
+ePaper_BIG_or_multiline(2, "HALLO DADA");
+delay(1000);
+break;
+
+delay(1000);
+set_used_font(&FreeMonoBold9pt7b);
+monochrome_clear();
+delay(1000);
+MC_print_at(0,0,"DADAsveryverysuperlongsuperduperduperlongLinewithout a break or something else continues vorever DADAsveryverysuperlongsuperduperduperlongLinewithout a break or something else continues vorever");
+delay(1000);
+break;
+
 set_used_font(&FreeMonoBold9pt7b);
 ePaper_line_matrix();
 MC_print_at(1,2," DADA ");

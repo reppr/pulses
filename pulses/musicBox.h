@@ -864,7 +864,6 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
     }
 
 #if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
-    extern char run_state_symbol();
     char s[] = {run_state_symbol(),0};
     MC_printBIG_at(0, 0, s);
 #endif

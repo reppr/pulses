@@ -47,7 +47,7 @@ GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT> ePaper(GxEPD2_213_B73(/*CS=5*/
   SemaphoreHandle_t monochrome_mutex = xSemaphoreCreateMutex();
 */
 
-  #define MONOCHROME_TEXT_BUFFER_SIZE	24	// TODO: more versatile implementation
+  #define MONOCHROME_TEXT_BUFFER_SIZE	156	// (7*22 +2)	// TODO: more versatile implementation
   char monochrome_text_buffer[MONOCHROME_TEXT_BUFFER_SIZE] = {0};
 
   typedef struct display_string_t {
@@ -511,3 +511,21 @@ void inline try_monochrome_fix() {
 #if defined DEBUG_ePAPER
   #include "ePaper_debugging.h"
 #endif
+
+void ePaper_BIG_or_multiline(int16_t row, char* text) {
+  int16_t col=0;
+#if defined DEBUG_ePAPER
+  MENU.out(F("DEBUG_ePAPER\tePaper_print_str()\t"));
+  MENU.out(row);
+  MENU.tab();
+  MENU.outln(text);
+#endif
+
+  if(strlen(text) <= 18)
+    set_used_font(&FreeMonoBold12pt7b);	// BIG
+  else
+    set_used_font(&FreeMonoBold9pt7b);	// normal
+  ePaper.setTextColor(GxEPD_BLACK);
+  ePaper_print_at(col/*0*/, row, text);
+  ePaper.display(true);
+} // ePaper_BIG_or_multiline()

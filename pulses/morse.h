@@ -1739,22 +1739,23 @@ void static morse_token_decode() {	// decode received token sequence
 } // morse_token_decode()
 
 
-void morse_show_tokens_of_letter(char c, uint8_t row=0) {	// uppercase only
-  int maxlen=17;
-  char txt[maxlen]= {0};
-  char* format = F("%c %s");
-  for(int i=0; i < MORSE_DEFINITIONS; i++) {
-    morse_read_definition(i);
-    if(morse_PRESENT_UPPER_Letter == c) {	// uppercase only
-      snprintf(txt, maxlen, format, morse_PRESENT_UPPER_Letter, morse_DEFINITION_TOKENS.c_str());
-      extern uint8_t /*next_row*/ extended_output(char* data, uint8_t col=0, uint8_t row=0, bool force=false);
-      extended_output(txt, 0, row, false);
-      MENU.ln();
-
-      break;
-    }
-  }
-} // morse_show_tokens_of_letter()
+// not used
+// void morse_show_tokens_of_letter(char c, uint8_t row=0) {	// uppercase only
+//   int maxlen=17;
+//   char txt[maxlen]= {0};
+//   char* format = F("%c %s");
+//   for(int i=0; i < MORSE_DEFINITIONS; i++) {
+//     morse_read_definition(i);
+//     if(morse_PRESENT_UPPER_Letter == c) {	// uppercase only
+//       snprintf(txt, maxlen, format, morse_PRESENT_UPPER_Letter, morse_DEFINITION_TOKENS.c_str());
+//       extern uint8_t /*next_row*/ extended_output(char* data, uint8_t col=0, uint8_t row=0, bool force=false);
+//       extended_output(txt, 0, row, false);
+//       MENU.ln();
+//
+//       break;
+//     }
+//   }
+// } // morse_show_tokens_of_letter()
 
 
 #if defined COMPILE_MORSE_CHEAT_SHEETS
