@@ -52,31 +52,48 @@ GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT> ePaper(GxEPD2_213_B73(/*CS=5*/
   #define MONOCHROME_TEXT_BUFFER_SIZE	156	// (7*22 +2)	// TODO: more versatile implementation
   char monochrome_text_buffer[MONOCHROME_TEXT_BUFFER_SIZE] = {0};
 
-  typedef struct display_string_t {
+  typedef struct print_descrpt_t {
     int16_t col=0;
     int16_t row=0;
     int16_t offset_y=0;
     //uint8_t size=0;
     //uint8_t colour=0;
     //bool inverted=false;
-    char* text = (char*) &monochrome_text_buffer;
-  } display_string_t;
+    char* text = NULL;
+    //char* text = (char*) &monochrome_text_buffer;
+  } print_descrpt_t;
 
-  display_string_t text_descriptor;	// HACK:  uses global data structure...
+  bool /*error*/ copy_text_to_text_buffer(char* text, print_descrpt_t* txt_descr_p) {
+    char* txt_p = (char*) malloc(strlen(text) + 1);
+    if(txt_p == NULL) {
+      goto malloc_error;
+    }
+    txt_descr_p->text = txt_p;
 
-  void copy_text_to_text_buffer(char* text) {
     char c;
-    for(int i=0; i < MONOCHROME_TEXT_BUFFER_SIZE; i++) {
-      c = text_descriptor.text[i] = text[i];
+    for(int i=0; ; i++) {
+      c = txt_descr_p->text[i] = text[i];
       if(c==0)
 	break;
     }
-    text_descriptor.text[MONOCHROME_TEXT_BUFFER_SIZE - 1] = 0;
-    if(strlen(text) > (MONOCHROME_TEXT_BUFFER_SIZE -1)) {
-      MENU.outln(text_descriptor.text);
-      MENU.error_ln(F("string too long, truncated"));
-    }
+    return false;	// OK
+
+  malloc_error:
+    MENU.error_ln(F("text buffer malloc()"));
+    return true;	// ERROR
   } // copy_text_to_text_buffer()
+
+  void free_text_buffer(print_descrpt_t* txt_descr_p) {
+#if defined DEBUG_ePAPER
+    MENU.out("DEBUG_ePAPER\tfree_text_buffer() ");
+    MENU.print_free_RAM(); MENU.tab();
+#endif
+    free((*txt_descr_p).text);
+    free(txt_descr_p);
+#if defined DEBUG_ePAPER
+    MENU.print_free_RAM(); MENU.ln();
+#endif
+  }
 #endif
 
 
@@ -206,21 +223,28 @@ void ePaper_print_at(uint16_t col, uint16_t row, char* text, int16_t offset_y=0)
 TaskHandle_t ePaper_print_at_handle;
 
 void ePaper_print_at_task(void* data_) {
-  display_string_t* data = (display_string_t*) data_;
+  print_descrpt_t* data = (print_descrpt_t*) data_;
   ePaper_print_at(data->col, data->row, data->text, data->offset_y);
+  free_text_buffer(data);
   vTaskDelete(NULL);
 }
 
-void multicore_ePaper_print_at(int16_t col, int16_t row, char* text, int16_t offset_y) {	// create and start a one shot task
-  text_descriptor.col = col;
-  text_descriptor.row = row;
-  text_descriptor.offset_y = offset_y;
-  copy_text_to_text_buffer(text);
+void multicore_ePaper_print_at(int16_t col, int16_t row, char* text, int16_t offset_y=0) {	// create and start a one shot task
+  print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
+  if(txt_descript_p == NULL) {
+    MENU.error_ln(F("txt_descript malloc()"));
+    return;	// ERROR
+  }
+  copy_text_to_text_buffer(text, txt_descript_p);
+
+  txt_descript_p->col = col;
+  txt_descript_p->row = row;
+  txt_descript_p->offset_y = offset_y;
 
   BaseType_t err = xTaskCreatePinnedToCore(ePaper_print_at_task,		// function
 					   "ePaper_print_at",			// name
 					   2000,				// stack size
-					   &text_descriptor,			// task input parameter
+					   txt_descript_p,			// task input parameter
 					   MONOCHROME_PRIORITY,			// task priority
 					   &ePaper_print_at_handle,		// task handle
 					   0);					// core 0
@@ -527,20 +551,26 @@ void ePaper_print_1line_at(uint16_t row, char* text, int16_t offset_y=0) {	// *d
 TaskHandle_t ePaper_1line_at_handle;
 
 void ePaper_1line_at_task(void* data_) {
-  display_string_t* data = (display_string_t*) data_;
+  print_descrpt_t* data = (print_descrpt_t*) data_;
   ePaper_print_1line_at(data->row, data->text, data->offset_y);
+  free_text_buffer(data);
   vTaskDelete(NULL);
 }
 
 void multicore_ePaper_1line_at(int16_t row, char* text, int16_t offset_y) {	// create and start a one shot task
-  text_descriptor.row = row;
-  text_descriptor.offset_y = offset_y;
-  copy_text_to_text_buffer(text);
+  print_descrpt_t* txt_descrpt_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
+  if(txt_descrpt_p == NULL) {
+    MENU.error_ln(F("txt_descript malloc()"));
+    return;	// ERROR
+  }
+  copy_text_to_text_buffer(text, txt_descrpt_p);
+  txt_descrpt_p->row = row;
+  txt_descrpt_p->offset_y = offset_y;
 
   BaseType_t err = xTaskCreatePinnedToCore(ePaper_1line_at_task,		// function
 					   "ePaper_1line_at",			// name
 					   2000,				// stack size
-					   &text_descriptor,			// task input parameter
+					   txt_descrpt_p,			// task input parameter
 					   MONOCHROME_PRIORITY,			// task priority
 					   &ePaper_1line_at_handle,		// task handle
 					   0);					// core 0

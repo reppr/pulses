@@ -3,6 +3,21 @@
   temporary test menu UI during development
 */
 
+set_used_font(&FreeMonoBold12pt7b);
+ePaper_line_matrix();
+delay(1000);
+MENU.print_free_RAM(); MENU.ln();
+MC_print_at(1,1, "MALLOC() FREE()");
+MENU.print_free_RAM(); MENU.ln();
+delay(1000);
+MC_print_1line_at(4, "malloc() free()");
+MENU.print_free_RAM(); MENU.ln();
+delay(1000);
+MC_print_1line_at(0, "   at the TOP");
+MENU.print_free_RAM(); MENU.ln();
+delay(4000);
+break;
+
 MC_show_musicBox_parameters();
 break;
 
