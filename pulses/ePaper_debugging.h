@@ -2,7 +2,7 @@
   ePaper_debugging.h	DEBUGGING only
 */
 
-#define COMPILE_FONTTEST
+#define COMPILE_FONT_TEST
 
 void ePaper_line_matrix() {
   MENU.outln(F("\nDEBUG_ePAPER\tePaper_line_matrix()"));
@@ -76,8 +76,10 @@ void ePaper_bounds() {
 } // ePaper_bounds()
 
 
-#if defined COMPILE_FONTTEST
-void ePaper_fonttest() {
+#if defined COMPILE_FONT_TEST
+void ePaper_font_test() {
+  MENU.outln(F("ePaper_font_test()"));
+
   ePaper.setFullWindow();
   ePaper.fillScreen(GxEPD_WHITE);
   ePaper.setTextColor(GxEPD_BLACK);
@@ -206,9 +208,7 @@ void ePaper_fonttest() {
     ePaper.print("erstes ");
     ePaper.print(99);
     ePaper.println(" zweites SansBold");
-
-
   }
   while (ePaper.nextPage());
-} // ePaper_fonttest()
-#endif // COMPILE_FONTTEST
+} // ePaper_font_test()
+#endif // COMPILE_FONT_TEST

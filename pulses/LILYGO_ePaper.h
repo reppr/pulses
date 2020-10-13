@@ -81,6 +81,8 @@ GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT> ePaper(GxEPD2_213_B73(/*CS=5*/
 
 
 void LILYGO_ePaper_infos() {
+  MENU.outln(F("LILYGO_ePaper_infos()"));
+
   // give some infos:
   for(int rotation=0; rotation<4; rotation++) {
     ePaper.setRotation(rotation);
@@ -117,9 +119,10 @@ void setup_LILYGO_ePaper() {
 void inline monochrome_setup() {
   setup_LILYGO_ePaper();
 
+#if defined DEBUG_ePAPER
   // little helpers while implementing, TODO: REMOVE?:
-  LILYGO_ePaper_infos();
   LILYGO_ePaper_infos(); /*fix rotation*/ ePaper.setRotation(1);
+#endif
 
   extern void ePaper_show_program_version();
   do_on_other_core(&ePaper_show_program_version);
@@ -229,6 +232,9 @@ void multicore_ePaper_print_at(int16_t col, int16_t row, char* text, int16_t off
 } // multicore_ePaper_print_at()
 
 void MC_print_at(int16_t col, int16_t row, char* text, int16_t offset_y=0) {
+#if defined DEBUG_ePAPER
+  MENU.outln(F("DEBUG_ePAPER\tMC_print_at()"));
+#endif
   multicore_ePaper_print_at(col, row, text, offset_y);
 }
 
@@ -239,6 +245,9 @@ void MC_print_at(int16_t col, int16_t row, char* text, int16_t offset_y=0) {
 #endif
 
 void MC_printBIG_at(int16_t col, int16_t row, char* text, int16_t offset_y=0) {
+#if defined DEBUG_ePAPER
+  MENU.outln(F("DEBUG_ePAPER\tMC_printBIG_at()"));
+#endif
   set_used_font(&FreeMonoBold12pt7b);
   MC_print_at(col, row, text, offset_y);
 }
@@ -257,7 +266,7 @@ void monochrome_clear() {
 // old:
 /* old */ void ePaper_basic_parameters() {
 	#if defined  DEBUG_ePAPER
-/* old */   MENU.outln(F("DEBUG_ePAPER\tePaper_basic_parameters()"));
+/* old */   MENU.outln(F("DEBUG_ePAPER\tePaper_basic_parameters() old"));
 	#endif
 /* old */
 /* old */   ePaper.setFullWindow();
@@ -317,7 +326,7 @@ void monochrome_clear() {
 // new version:
 void ePaper_basic_parameters() {
 #if defined  DEBUG_ePAPER
-  MENU.outln(F("DEBUG_ePAPER\tePaper_basic_parameters()"));
+  MENU.outln(F("DEBUG_ePAPER\tePaper_basic_parameters() new"));
 #endif
 
   ePaper.setFullWindow();
@@ -385,6 +394,9 @@ void ePaper_basic_parameters() {
 #endif	// old or new version?
 
 void inline MC_show_musicBox_parameters() {
+#if defined DEBUG_ePAPER
+  MENU.outln(F("DEBUG_ePAPER\tMC_show_musicBox_parameters()"));
+#endif
   do_on_other_core(&ePaper_basic_parameters);
 }
 
@@ -442,6 +454,9 @@ void  ePaper_show_program_version() {
 } // ePaper_show_program_version()
 
 void inline MC_show_program_version() {
+#if defined DEBUG_ePAPER
+  MENU.outln(F("DEBUG_ePAPER\tMC_show_program_version()"));
+#endif
   do_on_other_core(&ePaper_show_program_version);
 }
 
@@ -480,6 +495,9 @@ void  ePaper_show_tuning() {
 } // ePaper_show_tuning()
 
 void inline MC_show_tuning() {
+#if defined DEBUG_ePAPER
+  MENU.outln(F("DEBUG_ePAPER\tMC_show_tuning()"));
+#endif
   do_on_other_core(&ePaper_show_tuning);
 }
 
@@ -534,6 +552,9 @@ void multicore_ePaper_1line_at(int16_t row, char* text, int16_t offset_y) {	// c
 } // multicore_ePaper_1line_at()
 
 void MC_print_1line_at(int16_t row, char* text, int16_t offset_y=0) {
+#if defined DEBUG_ePAPER
+  MENU.outln(F("DEBUG_ePAPER\tMC_print_1line_at()"));
+#endif
   multicore_ePaper_1line_at(row, text, offset_y);
 }
 
@@ -544,7 +565,7 @@ void MC_print_1line_at(int16_t row, char* text, int16_t offset_y=0) {
 #endif
 
 
-void ePaper_print_str(char* text) {	// unused
+void ePaper_print_str(char* text) {	// unused?
 #if defined DEBUG_ePAPER
   MENU.out(F("DEBUG_ePAPER\tePaper_print_str()\t"));
   MENU.outln(text);
@@ -565,6 +586,10 @@ void ePaper_print_str(char* text) {	// unused
 
 
 void try_ePaper_fix() {
+#if defined DEBUG_ePAPER
+  MENU.outln(F("DEBUG_ePAPER\ttry_ePaper_fix()"));
+#endif
+
   MENU.ln();
   MENU.error_ln(F("\tTODO: IMPLEMENT\ttry_ePaper_fix()"));
   //~GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT>();
@@ -589,18 +614,15 @@ void inline try_monochrome_fix() {
   try_ePaper_fix();
 }
 
-#if defined DEBUG_ePAPER
-  #include "ePaper_debugging.h"
-#endif
-
 void ePaper_BIG_or_multiline(int16_t row, char* text) {
-  int16_t col=0;
 #if defined DEBUG_ePAPER
   MENU.out(F("DEBUG_ePAPER\tePaper_print_str()\t"));
   MENU.out(row);
   MENU.tab();
   MENU.outln(text);
 #endif
+
+  int16_t col=0;
 
   if(strlen(text) <= 18)
     set_used_font(&FreeMonoBold12pt7b);	// BIG
@@ -610,3 +632,7 @@ void ePaper_BIG_or_multiline(int16_t row, char* text) {
   ePaper_print_at(col/*0*/, row, text);
   ePaper.display(true);
 } // ePaper_BIG_or_multiline()
+
+#if defined DEBUG_ePAPER
+  #include "ePaper_debugging.h"
+#endif
