@@ -4474,6 +4474,13 @@ bool musicBox_reaction(char token) {
       break;
 #endif
 
+#if defined BOARD_LILYGO_T5
+    case 'D':	// 'ID'	ePaper.display(false);
+      MENU.drop_input_token();
+      ePaper.display(false);
+      break;
+#endif
+
 #if defined USE_MONOCHROME_DISPLAY	// ################ DADA TODO: ePaper ################
     case 'O': // 'IO' clear OLED	// TODO: OBSOLETE?
       MENU.drop_input_token();

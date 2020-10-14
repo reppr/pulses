@@ -239,8 +239,6 @@ slowly fade rgb leds after ending
 
 see also: ROADMAP.txt
 
-fix menu crash after nvs_clear_all_keys()
-
 nvs show all keys
 
 // catch bugs, if any ;)  TODO: REMOVE:
@@ -725,3 +723,7 @@ presets and ePaper
 #if defined BOARD_LILYGO_T5	// TODO: adapt MONOCHROME_MOTION_STATE_ROW
 
 #define MONOCHROME_TEXT_BUFFER_SIZE	156	// (7*22 +2)	// TODO: more versatile implementation
+
+uint8_t morse_touch_input_pin=ILLEGAL8;	// TODO: store touch_threshold
+
+ERROR: morse no definition	show received tokens

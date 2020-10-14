@@ -72,7 +72,7 @@
   #endif // _OLED_BOARD
 
   #if defined ESP32_DAC_ONLY
-    #define PROGRAM_SUB_VERSION			DAC_only
+    #define PROGRAM_SUB_VERSION			SoundShip1
 
     #if defined USE_MONOCHROME_DISPLAY		// hmm, do we want this or not?
       #warning *NOT* using monochrome display

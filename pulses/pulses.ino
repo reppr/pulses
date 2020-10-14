@@ -190,7 +190,7 @@ typedef struct pulses_hardware_conf_t {
   uint8_t periph_power_switch_pin=ILLEGAL8;
 
   // morse
-  uint8_t morse_touch_input_pin=ILLEGAL8;
+  uint8_t morse_touch_input_pin=ILLEGAL8;	// TODO: store touch interrupt level
   uint8_t morse_gpio_input_pin=ILLEGAL8;				// %4
   uint8_t morse_output_pin=ILLEGAL8;
 
@@ -5690,6 +5690,7 @@ bool menu_pulses_reaction(char menu_input) {
       char txt[9]= {0};
       char* format = F("sync %i");		// TODO: | and [p] if appropriate?
       snprintf(txt, 9, format, musicBoxConf.sync);
+      extern uint8_t /*next_row*/ extended_output(char* data, uint8_t col=0, uint8_t row=0, bool force=false);
       extended_output(txt, 0, 0, false);
       MENU.ln();
     }

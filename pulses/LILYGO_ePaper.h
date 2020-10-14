@@ -86,12 +86,12 @@ GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT> ePaper(GxEPD2_213_B73(/*CS=5*/
   void free_text_buffer(print_descrpt_t* txt_descr_p) {
 #if defined DEBUG_ePAPER
     MENU.out("DEBUG_ePAPER\tfree_text_buffer() ");
-    MENU.print_free_RAM(); MENU.tab();
+    MENU.ln();	//    MENU.print_free_RAM(); MENU.tab();	// deactivated	***I HAD CRASHES HERE***
 #endif
     free((*txt_descr_p).text);
     free(txt_descr_p);
 #if defined DEBUG_ePAPER
-    MENU.print_free_RAM(); MENU.ln();
+    // MENU.print_free_RAM(); MENU.ln();			// deactivated both
 #endif
   }
 #endif
@@ -136,14 +136,18 @@ void setup_LILYGO_ePaper() {
 void inline monochrome_setup() {
   setup_LILYGO_ePaper();
 
-#if defined DEBUG_ePAPER
-  // little helpers while implementing, TODO: REMOVE?:
-  LILYGO_ePaper_infos(); /*fix rotation*/ ePaper.setRotation(1);
-#endif
+// #if defined DEBUG_ePAPER
+//   // little helpers while implementing, TODO: REMOVE?:
+//   delay(250);
+//   LILYGO_ePaper_infos(); /*fix rotation*/ ePaper.setRotation(1);
+// #endif
 
+  delay(1500);
+  /*	// TODO: TESTING ################	deactivated for a test
   extern void ePaper_show_program_version();
   do_on_other_core(&ePaper_show_program_version);
   delay(1000);			// TODO: test, maybe REMOVE?:
+  */
 }
 
 
@@ -164,7 +168,7 @@ uint8_t font_linlen=22;
 
 void set_used_font(const GFXfont* font_p) {
 #if defined DEBUG_ePAPER
-  MENU.out(F("DEBUG_ePAPER\tset_used_font()"));
+  MENU.outln(F("DEBUG_ePAPER\tset_used_font()"));
 #endif
   if(font_p == &FreeMonoBold9pt7b) {
     used_font_x = 250/22;	// 11
@@ -175,6 +179,11 @@ void set_used_font(const GFXfont* font_p) {
     used_font_x = 14;		// ~250/18;
     used_font_y = 24;		// ~128/5 -1;
     font_linlen=18;
+
+  } else if(font_p == &FreeSansBold12pt7b) {
+    used_font_x = 14;		// ~250/18;
+    //used_font_y = 24;		// *NOT* a fixed width font!
+    font_linlen=33;		// *NOT* a fixed width font!
 
   } else {
     MENU.error_ln(F("unknown font size"));
@@ -363,7 +372,7 @@ void ePaper_basic_parameters() {
   char* format_s = F("%s");
   char* format_is = F("%i %s");
 
-  char* fmt_1st_row = F("%c%i |%s|");
+  char* fmt_1st_row = F("%c %i  |%s|");
   //char* fmt_1st_row = F("%c |%s| P%i");
   char* fmt_sync = F("S=%i");
   char* fmt_synstack = F(" |%i");
@@ -624,20 +633,27 @@ void try_ePaper_fix() {
   MENU.error_ln(F("\tTODO: IMPLEMENT\ttry_ePaper_fix()"));
   //~GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT>();
   //~GxEPD2_BW();	// destructor ?
+
+  /*
   MENU.out(F("before:\t"));
   MENU.print_free_RAM();
   MENU.ln();
+  */
 
   MENU.outln(F("setup_LILYGO_ePaper()"));
   setup_LILYGO_ePaper();
 
+  /*
   MENU.out(F("after:\t"));
   MENU.print_free_RAM();
   MENU.ln();
+  */
+
   delay(1000);	// TODO: ?
 
-  ePaper_show_program_version();	// just as a test
-  delay(250);	// TODO: ?
+  //  ePaper_show_program_version();	// just as a test
+  delay(2000); MC_show_musicBox_parameters();	// just as a test
+  delay(1500);	// TODO: ?
 } // try_ePaper_fix()
 
 void inline try_monochrome_fix() {

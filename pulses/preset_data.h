@@ -4671,6 +4671,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
   case 151:
     musicBoxConf.name = F("2019-02-07_classical_time_machine_S4");
     //# FAVORITE	P151 2020 KUNSTDREIECK++++
+    // >>>> 1/2 gives a good concert piece length... <<<<
     //comment: resonating strings not really tuned...
     //comment: retuned version with problems in ending...
     //# RECORDED	probably yes, ???

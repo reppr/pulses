@@ -1497,13 +1497,13 @@ void monochrome_out_morse_char() {
     char s[]="  ";
     s[0] = morse_output_char;
     set_used_font(&FreeMonoBold12pt7b);
-    ePaper_print_at(morse_out_buffer_cnt - 1, MORSE_MONOCHROME_ROW, s);
+    MC_print_at(morse_out_buffer_cnt - 1, MORSE_MONOCHROME_ROW, s);
   }
 
   morse_output_char = '\0';	// trigger off
 }
 
-#elif defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+#elif defined USE_MONOCHROME_DISPLAY
 void monochrome_out_morse_char() {
   if(! monochrome_can_be_used())
     return;

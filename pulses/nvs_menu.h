@@ -22,8 +22,13 @@ void nvs_menu_display() {
   MENU.outln(F("'I'=IDENTITY 'IS'=save 'IR'=read 'IT'=time slice 'IP<preName>'"));
   MENU.ln();
 
-  MENU.outln(F("'MH'=monochrome_type heltec  'MO'=type LiPO  'M0'=type off"));
+  MENU.outln(F("'MH'=monochrome_type heltec  'MO'=type LiPO  'ML'=type lilygo eInk  'M0'=type off"));
   MENU.ln();
+
+#if defined USE_MORSE
+  MENU.outln(F("'Px' pins:  'PT'=morse Touch  'PO'=morse Output"));
+  MENU.ln();
+#endif
 
   MENU.out(F("'S'=SYSTEM"));
 #if defined USE_MPU6050
@@ -155,8 +160,10 @@ bool nvs_menu_reaction(char token) {
       HARDWARE.monochrome_type = monochrome_type_off;
     else if(MENU.check_next('H'))  // 'MH' heltec
       HARDWARE.monochrome_type = monochrome_type_heltec;
-    else if(MENU.check_next('L'))  // 'Ml' LiPO
+    else if(MENU.check_next('O'))  // 'MO' LiPO
       HARDWARE.monochrome_type = monochrome_type_LiPO;
+    else if(MENU.check_next('L'))  // 'ML' ePaper LILYGO  2.13" eInk display
+      HARDWARE.monochrome_type = monochrome_type_LILYGO_T5;
 
     show_monochrome_type(HARDWARE.monochrome_type);
     break;
@@ -200,10 +207,29 @@ bool nvs_menu_reaction(char token) {
     } // second letter after 'S'
     break;
 
-  case 'X':	// works, but crashes menu	// TODO: fix menu crash after nvs_clear_all_keys()
-    MENU.drop_input_token();
+  case 'P':	// 'Px' PINS
+    if(MENU.check_next('T')) {		// 'PT' set morse touch pin
+      MENU.out(F("morse touch pin "));
+      input_value = MENU.numeric_input(ILLEGAL8);
+      if((input_value < ILLEGAL8) && (input_value >= 0)) {
+	HARDWARE.morse_touch_input_pin = input_value;
+	MENU.out(F("do 'HS' and reboot "));
+      }
+      MENU.outln(HARDWARE.morse_touch_input_pin);
+
+    } else if(MENU.check_next('O')) {	// 'PO' set morse output pin
+      MENU.out(F("morse output pin "));
+      input_value = MENU.numeric_input(ILLEGAL8);
+      if((input_value < ILLEGAL8) && (input_value >= 0)) {
+	HARDWARE.morse_output_pin = input_value;
+	pinMode(HARDWARE.morse_output_pin, OUTPUT);
+      }
+      MENU.outln(HARDWARE.morse_output_pin);
+    }
+    break;
+
+  case 'X':
     nvs_clear_all_keys();
-    MENU.outln("DADA TODO: DEBUG CRASH");	// menu CRASH AFTER THAT
     yield();
     break;
 
