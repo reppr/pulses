@@ -727,3 +727,5 @@ presets and ePaper
 uint8_t morse_touch_input_pin=ILLEGAL8;	// TODO: store touch_threshold
 
 ERROR: morse no definition	show received tokens
+
+#define MC_DELAY_MS	10	// delay MC_mux lock release	// TODO: maybe obsolete?

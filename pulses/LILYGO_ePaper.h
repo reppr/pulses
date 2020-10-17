@@ -4,7 +4,10 @@
 */
 
 #define DEBUG_ePAPER
+#define USE_MC_SEMAPHORE
+#define MC_DELAY_MS	10	// delay MC_mux lock release	// TODO: test&trimm	maybe obsolete?    ################
 #define USE_MANY_FONTS		// uses some more program storage space
+
 
 #include <GxEPD2_BW.h>
 #include <GxEPD2_GFX.h>
@@ -84,18 +87,57 @@ GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT> ePaper(GxEPD2_213_B73(/*CS=5*/
   } // copy_text_to_text_buffer()
 
   void free_text_buffer(print_descrpt_t* txt_descr_p) {
-#if defined DEBUG_ePAPER
+  #if defined DEBUG_ePAPER
     MENU.out("DEBUG_ePAPER\tfree_text_buffer() ");
     MENU.ln();	//    MENU.print_free_RAM(); MENU.tab();	// deactivated	***I HAD CRASHES HERE***
-#endif
+  #endif
     free((*txt_descr_p).text);
     free(txt_descr_p);
-#if defined DEBUG_ePAPER
-    // MENU.print_free_RAM(); MENU.ln();			// deactivated both
-#endif
+  //#if defined DEBUG_ePAPER
+  //  MENU.print_free_RAM(); MENU.ln();			// deactivated both
+  //#endif
   }
-#endif
 
+
+  #if defined USE_MC_SEMAPHORE
+    SemaphoreHandle_t MC_mux = NULL;
+  #endif
+
+
+  // MC_do_on_other_core() version with MC_mux and MC_DELAY_MS
+  TaskHandle_t MC_do_on_other_core_handle;
+
+  void MC_do_on_other_core_task(void* function_p) {
+    void (*fp)() = (void (*)()) function_p;
+    #if defined USE_MC_SEMAPHORE
+      xSemaphoreTake(MC_mux, portMAX_DELAY);
+    #endif
+
+    (*fp)();
+
+    vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
+    #if defined USE_MC_SEMAPHORE
+      xSemaphoreGive(MC_mux);
+    #endif
+    vTaskDelete(NULL);
+  }
+
+  void MC_do_on_other_core(void (*function_p)()) {	// create and do one shot task
+    BaseType_t err = xTaskCreatePinnedToCore(MC_do_on_other_core_task,	// function
+					   "other_fun",			// name
+					   4000,				// stack size
+					   (void*) function_p,			// task input parameter
+					   0,					// task priority
+					   &MC_do_on_other_core_handle,		// task handle
+					   0);					// core 0
+    if(err != pdPASS) {
+      MENU.out(err);
+      MENU.space();
+      MENU.error_ln(F("MC_do_on_other_core"));
+    }
+  }
+
+#endif MULTICORE_DISPLAY
 
 void LILYGO_ePaper_infos() {
   MENU.outln(F("LILYGO_ePaper_infos()"));
@@ -123,6 +165,11 @@ void LILYGO_ePaper_infos() {
 void setup_LILYGO_ePaper() {
   MENU.outln(F("setup_LILYGO_ePaper()"));
 
+  #if defined USE_MC_SEMAPHORE
+  if(MC_mux == NULL)
+    MC_mux = xSemaphoreCreateMutex();
+  #endif
+
   //ePaper.init(500000);	// debug baudrate
   ePaper.init(0);		// no debugging
 
@@ -145,7 +192,7 @@ void inline monochrome_setup() {
   delay(1500);
   /*	// TODO: TESTING ################	deactivated for a test
   extern void ePaper_show_program_version();
-  do_on_other_core(&ePaper_show_program_version);
+  MC_do_on_other_core(&ePaper_show_program_version);
   delay(1000);			// TODO: test, maybe REMOVE?:
   */
 }
@@ -233,8 +280,16 @@ TaskHandle_t ePaper_print_at_handle;
 
 void ePaper_print_at_task(void* data_) {
   print_descrpt_t* data = (print_descrpt_t*) data_;
+  #if defined USE_MC_SEMAPHORE
+    xSemaphoreTake(MC_mux, portMAX_DELAY);
+  #endif
   ePaper_print_at(data->col, data->row, data->text, data->offset_y);
   free_text_buffer(data);
+
+  vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
+  #if defined USE_MC_SEMAPHORE
+    xSemaphoreGive(MC_mux);
+  #endif
   vTaskDelete(NULL);
 }
 
@@ -281,7 +336,16 @@ void MC_printBIG_at(int16_t col, int16_t row, char* text, int16_t offset_y=0) {
 #if defined DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tMC_printBIG_at()"));
 #endif
+
+  #if defined USE_MC_SEMAPHORE
+    xSemaphoreTake(MC_mux, portMAX_DELAY);
+  #endif
   set_used_font(&FreeMonoBold12pt7b);
+
+  vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
+  #if defined USE_MC_SEMAPHORE
+    xSemaphoreGive(MC_mux);
+  #endif
   MC_print_at(col, row, text, offset_y);
 }
 
@@ -289,9 +353,18 @@ void monochrome_clear() {
 #if defined  DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tmonochrome_clear()"));
 #endif
+
+  #if defined USE_MC_SEMAPHORE
+    xSemaphoreTake(MC_mux, portMAX_DELAY);
+  #endif
   ePaper.setFullWindow();
   ePaper.fillScreen(GxEPD_WHITE);
   ePaper.display(true);
+
+  vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
+  #if defined USE_MC_SEMAPHORE
+    xSemaphoreGive(MC_mux);
+  #endif
 } // monochrome_clear()
 
 
@@ -430,7 +503,7 @@ void inline MC_show_musicBox_parameters() {
 #if defined DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tMC_show_musicBox_parameters()"));
 #endif
-  do_on_other_core(&ePaper_basic_parameters);
+  MC_do_on_other_core(&ePaper_basic_parameters);
 }
 
 
@@ -490,7 +563,7 @@ void inline MC_show_program_version() {
 #if defined DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tMC_show_program_version()"));
 #endif
-  do_on_other_core(&ePaper_show_program_version);
+  MC_do_on_other_core(&ePaper_show_program_version);
 }
 
 
@@ -531,7 +604,7 @@ void inline MC_show_tuning() {
 #if defined DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tMC_show_tuning()"));
 #endif
-  do_on_other_core(&ePaper_show_tuning);
+  MC_do_on_other_core(&ePaper_show_tuning);
 }
 
 
@@ -561,8 +634,16 @@ TaskHandle_t ePaper_1line_at_handle;
 
 void ePaper_1line_at_task(void* data_) {
   print_descrpt_t* data = (print_descrpt_t*) data_;
+  #if defined USE_MC_SEMAPHORE
+    xSemaphoreTake(MC_mux, portMAX_DELAY);
+  #endif
   ePaper_print_1line_at(data->row, data->text, data->offset_y);
   free_text_buffer(data);
+
+  vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
+  #if defined USE_MC_SEMAPHORE
+    xSemaphoreGive(MC_mux);
+  #endif
   vTaskDelete(NULL);
 }
 
@@ -660,13 +741,18 @@ void inline try_monochrome_fix() {
   try_ePaper_fix();
 }
 
-void ePaper_BIG_or_multiline(int16_t row, char* text) {
+
+void ePaper_BIG_or_multiline(int16_t row, char* text) {	// unused?
 #if defined DEBUG_ePAPER
   MENU.out(F("DEBUG_ePAPER\tePaper_print_str()\t"));
   MENU.out(row);
   MENU.tab();
   MENU.outln(text);
 #endif
+
+  #if defined USE_MC_SEMAPHORE
+    xSemaphoreTake(MC_mux, portMAX_DELAY);
+  #endif
 
   int16_t col=0;
 
@@ -677,6 +763,10 @@ void ePaper_BIG_or_multiline(int16_t row, char* text) {
   ePaper.setTextColor(GxEPD_BLACK);
   ePaper_print_at(col/*0*/, row, text);
   ePaper.display(true);
+
+  #if defined USE_MC_SEMAPHORE
+    xSemaphoreGive(MC_mux);
+  #endif
 } // ePaper_BIG_or_multiline()
 
 #if defined DEBUG_ePAPER

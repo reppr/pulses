@@ -1473,7 +1473,14 @@ void morse_do_output() {
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
   if(morse_out_buffer_cnt) {
 #if defined BOARD_LILYGO_T5
+  #if defined USE_MC_SEMAPHORE
+    xSemaphoreTake(MC_mux, portMAX_DELAY);
+  #endif
     set_used_font(&FreeMonoBold12pt7b);
+  #if defined USE_MC_SEMAPHORE
+    xSemaphoreGive(MC_mux);
+  #endif
+
     MC_print_1line_at(MORSE_MONOCHROME_ROW, "");
 #elif defined USE_MONOCHROME_DISPLAY
     MC_printlnBIG(MORSE_MONOCHROME_ROW, "        ");
@@ -1496,7 +1503,15 @@ void monochrome_out_morse_char() {
   if(morse_output_char && morse_out_buffer_cnt) {
     char s[]="  ";
     s[0] = morse_output_char;
+
+  #if defined USE_MC_SEMAPHORE
+    xSemaphoreTake(MC_mux, portMAX_DELAY);
+  #endif
     set_used_font(&FreeMonoBold12pt7b);
+  #if defined USE_MC_SEMAPHORE
+    xSemaphoreGive(MC_mux);
+  #endif
+
     MC_print_at(morse_out_buffer_cnt - 1, MORSE_MONOCHROME_ROW, s);
   }
 
