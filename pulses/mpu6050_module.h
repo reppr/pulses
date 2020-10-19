@@ -730,9 +730,9 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 	    setup_jiffle_thrower_selected(selected_actions);
 	    MENU.outln(selected_name(JIFFLES));
 
-#if defined USE_MONOCHROME_DISPLAY
+#if defined HAS_OLED	// TODO: ePaper
 	    extern void MC_big_or_multiline(uint8_t row, char* str);
-	    MC_big_or_multiline(2, selected_name(JIFFLES));
+	    MC_big_or_multiline(2, selected_name(JIFFLES));	// TODO: jiffle or iCODE ???	###########
 #endif
 	  }
 	} else {

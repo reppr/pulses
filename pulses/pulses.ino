@@ -410,13 +410,13 @@ void copy_string_to_lower(char* source, char* destination, size_t max) {
 #endif
 
 
-#if defined USE_MONOCHROME_DISPLAY
+#if defined HAS_OLED
   #include <U8x8lib.h>
   U8X8_SSD1306_128X64_NONAME_SW_I2C* u8x8_p;
 #endif
 
-#if defined BOARD_LILYGO_T5
-  #include"LILYGO_ePaper.h"
+#if defined HAS_ePaper
+  #include "LILYGO_ePaper.h"	// TODO: RENAME!
 #endif
 
 action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actions
@@ -1252,7 +1252,7 @@ void display_program_version() {  // program versions, mac, maybe preName.  MENU
 void show_program_version() {	// program version on menu output *and* OLED
   display_program_version();
 
-#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+#if defined HAS_DISPLAY
   MC_show_program_version();
 #endif
 }
@@ -1307,7 +1307,7 @@ void setup_initial_HARDWARE_conf() {
   HARDWARE.bluetooth_enable_pin = BLUETOOTH_ENABLE_PIN;		// 35
 #endif
 
-#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+#if defined HAS_DISPLAY
   #if defined BOARD_HELTEC_OLED
     HARDWARE.monochrome_type = monochrome_type_heltec;
   #elif defined BOARD_OLED_LIPO
@@ -1802,9 +1802,9 @@ void setup() {
   delay(100);	// wait a bit longer
 #endif
 
-#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+#if defined HAS_DISPLAY
   // SEE: https://github.com/olikraus/u8g2/wiki/u8x8reference
-  monochrome_setup();	// monochrome_begin() and monochrome_set_default_font() included in monochrome_setup() now
+  hw_display_setup();	// monochrome_begin() and monochrome_set_default_font() included in hw_display_setup() now
 
   bool has_display_hardware=true;	// for delay only	TODO: fix&use monochrome_display detection
 #endif
@@ -1813,7 +1813,7 @@ void setup() {
   MENU.ln(2);
 
   show_program_version();	// prename now known
-  #if defined USE_MONOCHROME_DISPLAY /* || defined BOARD_LILYGO_T5 */
+  #if defined HAS_DISPLAY
     delay(1200);	// sorry for that
   #endif
 
@@ -1880,7 +1880,7 @@ void setup() {
   setup_timer64();
 #endif
 
-#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+#if defined HAS_DISPLAY
   // TODO: has_display_hardware	fix&use monochrome_display detection
   if(has_display_hardware)
     delay(1111);	// give a chance to read version on oled display during setup
@@ -2176,7 +2176,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
   if(force_start_to_usermode) {
     force_start_to_usermode=false;
     MENU.outln(F("\nforced start to user mode"));
-#if defined USE_MONOCHROME_DISPLAY
+#if defined HAS_OLED	// TODO: HAS_ePaper
     MC_display_message("user mode active");
 #endif
 
@@ -2273,7 +2273,7 @@ bool low_priority_tasks() {
     return true;
   }
   if(morse_output_char) {
-#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+#if defined HAS_DISPLAY
     monochrome_out_morse_char();
 #else
     MENU.out(morse_output_char);

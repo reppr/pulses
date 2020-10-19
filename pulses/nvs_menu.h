@@ -187,7 +187,7 @@ bool nvs_menu_reaction(char token) {
     case 'Z':	// 'SZ' ':NSZ' run IMU_Zero
       MENU.drop_input_token();
       tabula_rasa();	// sound alters mpu readings...
-#if defined USE_MONOCHROME_DISPLAY
+#if defined HAS_DISPLAY
       monochrome_clear();
 #endif
       extended_output(F("calibrating MPU"), 0, 1, true);

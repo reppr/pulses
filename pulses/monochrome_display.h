@@ -181,6 +181,8 @@ uint8_t /*next_row*/ monochrome_multiline_string(uint8_t row, char* s) { // mult
 
 
 void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be used while playing
+  extern char run_state_symbol();
+
   if(monochrome_can_be_used()) {
     uint8_t cols = (*u8x8_p).getCols();
     uint8_t rows = (*u8x8_p).getRows();
@@ -1016,7 +1018,7 @@ void try_monochrome_fix() {	// DADA:  ################	not working appropriate
 
   /*
     MENU.outln(F("monochrome_begin()"));
-    monochrome_begin();	// is in monochrome_setup() now
+    monochrome_begin();	// is in hw_display_setup() now
   */
 
   /*
@@ -1041,8 +1043,8 @@ void try_monochrome_fix() {	// DADA:  ################	not working appropriate
   (*u8x8_p).clear();
 } // try_monochrome_fix()
 
-void monochrome_setup() {
-  MENU.out(F("monochrome_setup() "));
+void hw_display_setup() {
+  MENU.out(F("hw_display_setup() "));
   switch(HARDWARE.monochrome_type) {
   case monochrome_type_heltec:
     u8x8_p = new U8X8_SSD1306_128X64_NONAME_SW_I2C(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16); // BOARD_HELTEC_OLED
@@ -1061,17 +1063,17 @@ void monochrome_setup() {
     MENU.error_ln(F("monochrome is off in nvs?"));
 #if defined BOARD_OLED_LIPO		// try to fix from pp macros
     HARDWARE.monochrome_type = monochrome_type_LiPO;
-    monochrome_setup();		// fixed(?), recurse
+    hw_display_setup();		// fixed(?), recurse
 #elif defined BOARD_HELTEC_OLED		// heltec
     HARDWARE.monochrome_type = monochrome_type_heltec;
-    monochrome_setup();		// fixed(?), recurse
+    hw_display_setup();		// fixed(?), recurse
 #endif
     break;
   default:
     MENU.error_ln(F("unknown monochrome_type"));
   }
   MENU.ln();
-} // monochrome_setup()
+} // hw_display_setup()
 
 #define MONOCHROME_DISPLAY_H
 #endif

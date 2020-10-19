@@ -303,7 +303,7 @@ void display_peer_ID_list() {
   }
   MENU.ln();
 
-#if defined USE_MONOCHROME_DISPLAY
+#if defined HAS_OLED	// TODO: HAS_ePaper
   extern void MC_esp_now_peer_list();
   MC_esp_now_peer_list();
 #endif

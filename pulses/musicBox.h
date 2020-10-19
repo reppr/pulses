@@ -170,7 +170,7 @@ typedef struct ui_conf_t {
 ui_conf_t uiConf;
 
 
-#if defined USE_MONOCHROME_DISPLAY
+#if defined HAS_OLED
   #include "monochrome_display.h"
 #endif
 
@@ -863,7 +863,7 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
       MENU.ln();
     }
 
-#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+#if defined HAS_DISPLAY
     char s[] = {run_state_symbol(),0};
     MC_printBIG_at(0, 0, s);
 #endif
@@ -1222,7 +1222,7 @@ bool tuning_pitch_and_scale_UI() {	// 'Tx'
     MENU.ln();
     extern void musicBox_short_info();
     musicBox_short_info();
-#if defined  USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+#if defined HAS_DISPLAY
     MC_show_tuning();
 #endif
     return true;
@@ -1263,7 +1263,7 @@ bool tuning_pitch_and_scale_UI() {	// 'Tx'
       }
     }
     MENU.ln();
-#if defined  USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+#if defined HAS_DISPLAY
     MC_show_tuning();
 #endif
     return true;
@@ -1368,7 +1368,7 @@ bool tuning_pitch_and_scale_UI() {	// 'Tx'
       } // treat input following 'T......'
     }	// // sequential input loop		'Tx'
   }
-#if defined  USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+#if defined HAS_DISPLAY
     MC_show_tuning();
 #endif
 } // tuning_pitch_and_scale_UI()
@@ -1768,7 +1768,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
     MENU.ln();
   }
 
-#if defined USE_MONOCHROME_DISPLAY || defined  BOARD_LILYGO_T5
+#if defined HAS_DISPLAY
   MC_show_musicBox_parameters();
   delay(2000);	// TODO: TEST: maybe ESP now confuses display?
 #endif
@@ -2857,7 +2857,7 @@ void start_musicBox() {
 #endif
   MENU.out(F("\nstart_musicBox()\t"));
 
-#if (defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5) && defined MUSICBOX_SHOW_PROGRAM_VERSION	// default *off*
+#if defined HAS_DISPLAY && defined MUSICBOX_SHOW_PROGRAM_VERSION	// default *off*
   MC_show_program_version();
 #endif
 
@@ -2874,7 +2874,7 @@ void start_musicBox() {
 #endif
   */
 
-//#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+//#if defined HAS_DISPLAY
 //  extern void MC_show_musicBox_parameters();
 //  MC_show_musicBox_parameters();
 //#endif
@@ -3102,7 +3102,7 @@ void start_musicBox() {
 
   MENU.ln();
   musicBox_short_info();
-#if defined USE_MONOCHROME_DISPLAY || defined  BOARD_LILYGO_T5
+#if defined HAS_DISPLAY
   MC_show_musicBox_parameters();
 #endif
 
@@ -3157,7 +3157,7 @@ void start_musicBox() {
 
       } else	// pause is *not* autoskipped
 	MENU.outln(F("no pause autoskip"));
-//#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+//#if defined HAS_DISPLAY
 //	char s[] = {'p', 0};		// TODO: how to clear that?
 //	MC_printBIG_at(0, 0, s);	// TODO: how to clear that?
 //#endif
@@ -3688,7 +3688,7 @@ void musicBox_display() {
 
   MENU.out(F("'I'= info"));
 
-#if defined USE_MONOCHROME_DISPLAY	// TODO: || defined BOARD_LILYGO_T5
+#if defined HAS_OLED
   MENU.tab();
   oled_ui_display();
 #endif
@@ -3723,7 +3723,7 @@ bool load_preset_and_start(short preset_new, bool start=true) {	// returns error
     start_musicBox();		// play new preset
   } else {
     musicBox_short_info();
-#if defined USE_MONOCHROME_DISPLAY || defined  BOARD_LILYGO_T5
+#if defined HAS_DISPLAY
     MC_show_musicBox_parameters();
 #endif
   }
@@ -4429,7 +4429,7 @@ bool musicBox_reaction(char token) {
 	if(MENU.maybe_display_more(VERBOSITY_SOME))
 	  musicBox_display();
 
-#if defined USE_MONOCHROME_DISPLAY || defined  BOARD_LILYGO_T5
+#if defined HAS_DISPLAY
 	MC_show_musicBox_parameters();
 #endif
 	if(start)
@@ -4444,19 +4444,19 @@ bool musicBox_reaction(char token) {
       MENU.drop_input_token();
     case EOF8:	// bare 'I'
       musicBox_short_info();
-#if defined USE_MONOCHROME_DISPLAY || defined  BOARD_LILYGO_T5
+#if defined HAS_DISPLAY
       MC_show_musicBox_parameters();
 #endif
       break;
 
     case 'N':	// 'IN'	prename, name, preset#
       MENU.drop_input_token();
-#if defined BOARD_LILYGO_T5
+#if defined HAS_ePaper
       MC_show_musicBox_parameters();	// show same and more on ePaper
-#elif defined USE_MONOCHROME_DISPLAY
+#elif defined HAS_DISPLAY
       MC_show_names();
 #else
-      show_basic_musicBox_parameters();	// same info (and more)
+      show_basic_musicBox_parameters();	// same info (and more) on menu only
 #endif
       break;
 
@@ -4467,7 +4467,7 @@ bool musicBox_reaction(char token) {
       break;
 #endif
 
-#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+#if defined HAS_DISPLAY
     case 'V':	// 'IV'	program version
       MENU.drop_input_token();
       MC_show_program_version();
@@ -4481,16 +4481,21 @@ bool musicBox_reaction(char token) {
       break;
 #endif
 
-#if defined USE_MONOCHROME_DISPLAY	// ################ DADA TODO: ePaper ################
+#if defined HAS_DISPLAY
     case 'O': // 'IO' clear OLED	// TODO: OBSOLETE?
       MENU.drop_input_token();
-      MC_clear_display();
+      monochrome_clear();		// or: MC_clear_display()?
+      break;
+
+    case 'T':
+      MENU.drop_input_token();
+      MC_show_tuning();
       break;
 
     case 'R':	// 'IR' == 'IT' == 'IJ'
-    case 'T':	// 'IR' == 'IT' == 'IJ'
     case 'J':	// 'IR' == 'IT' == 'IJ'
       MENU.drop_input_token();
+#if defined HAS_OLED
       {
 	char* str;
 	str = selected_name(SCALES);
@@ -4506,28 +4511,30 @@ bool musicBox_reaction(char token) {
 	MENU.outln(str);
 	// TODO: monochrome metric_mnemonic 'IR...'
       }
+#else	// HAS_ePaper
+      MC_show_musicBox_parameters();
+#endif
       break;
 
     case 'P':	// 'IP<num>' show preset names on monochrome display
       MENU.drop_input_token();
-      monochrome_preset_names(MENU.numeric_input(0));	//  n==0: continue through the list, or start at n
+#if defined HAS_OLED	// TODO: ePaper
+      monochrome_preset_names(MENU.numeric_input(0));	// TODO: ePaper	//  n==0: continue through the list, or start at n
+#endif
       break;
 
-  #if defined COMPILE_MORSE_CHEAT_SHEETS
+  #if defined COMPILE_MORSE_CHEAT_SHEETS && defined HAS_OLED
     case 'M':	// 'IM'
       MENU.drop_input_token();
       morse_cheat_sheets_UI();
       break;
   #endif // COMPILE_MORSE_CHEAT_SHEETS
 
-#endif // USE_MONOCHROME_DISPLAY
-
-#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
     case 'X':	// 'IX' try_monochrome_fix()
       MENU.drop_input_token();
       try_monochrome_fix();
       break;
-#endif
+#endif // HAS_DISPLAY
     } // switch token after 'I'
     break;
 
@@ -4639,7 +4646,7 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'O':	// 'O<x>' OLED_UI()	or:  'O' subcycle_octave TODO: what to do while playing???
-#if defined USE_MONOCHROME_DISPLAY	// TODO: || defined BOARD_LILYGO_T5
+#if defined HAS_OLED
     extern bool OLED_UI();
     if(OLED_UI())
       return true;

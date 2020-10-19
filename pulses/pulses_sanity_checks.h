@@ -115,3 +115,14 @@
     #endif
   #endif
 #endif
+
+
+// has display hardware?
+#if defined HAS_ePaper290_on_DEV_KIT || defined BOARD_LILYGO_T5 || defined HAS_ePaper	// ePaper?
+  #define HAS_ePaper
+  #define HAS_DISPLAY
+
+#elif defined BOARD_HELTEC_OLED || defined BOARD_OLED_LIPO				// OLED?
+  #define HAS_OLED
+  #define HAS_DISPLAY
+#endif

@@ -1,5 +1,5 @@
 /*
-  LILYGO_ePaper.h
+  GxEPD2_ePaper.h
   see: GxEPD2/examples/GxEPD2_GFX_Example
 */
 
@@ -35,7 +35,28 @@
 #include <Fonts/Tiny3x3a2pt7b.h>
 #include <Fonts/TomThumb.h>
 
-GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT> ePaper(GxEPD2_213_B73(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4)); // GDEH0213B73
+#if defined HAS_ePaper290_on_DEV_KIT
+/*
+  connections:
+
+  BUSY	4
+  RST	16 (UART2 RCV)
+  DC	17 (UART2 TX)
+  CS	5
+  CLK	18
+  DIN	23
+  GND	GND
+  VCC	3.3V
+*/
+ GxEPD2_BW<GxEPD2_290, GxEPD2_290::HEIGHT> ePaper(GxEPD2_290(/*CS*/ 5, /*DC*/ 17, /*RST*/ 16, /*BUSY*/ 4));
+
+#elif defined BOARD_LILYGO_T5
+ // GDEH0213B73
+ GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT> ePaper(GxEPD2_213_B73(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
+
+#else
+  #error no ePaper display defined for GxEPD2
+#endif
 
 
 #if defined MULTICORE_DISPLAY
@@ -136,13 +157,24 @@ GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT> ePaper(GxEPD2_213_B73(/*CS=5*/
       MENU.error_ln(F("MC_do_on_other_core"));
     }
   }
-
 #endif MULTICORE_DISPLAY
 
-void LILYGO_ePaper_infos() {
-  MENU.outln(F("LILYGO_ePaper_infos()"));
+void ePaper_infos() {
+  MENU.outln(F("ePaper_infos()"));
 
-  // give some infos:
+  MENU.out(F("height\t"));
+  MENU.out(ePaper.height());
+  MENU.out(F("\twidth\t"));
+  MENU.out(ePaper.width());
+  MENU.out(F("\trotation\t"));
+  MENU.out(ePaper.getRotation());
+  MENU.out(F("\tFastPartialUpdate "));
+  if(ePaper.epd2.hasFastPartialUpdate)
+    MENU.outln(F("yes"));
+  else
+    MENU.outln(F("no"));
+
+  int rotation_was=ePaper.getRotation();
   for(int rotation=0; rotation<4; rotation++) {
     ePaper.setRotation(rotation);
     MENU.out(F("rotation("));
@@ -152,18 +184,14 @@ void LILYGO_ePaper_infos() {
     MENU.out(F("\twidth "));
     MENU.outln(ePaper.width());		//	128	250	128	250
   }
+  ePaper.setRotation(rotation_was);
 
-  MENU.out(F("hasFastPartialUpdate "));
-  if(ePaper.epd2.hasFastPartialUpdate)
-    MENU.outln(F("YES"));
-  else
-    MENU.outln(F("no"));
   MENU.ln();
-} // LILYGO_ePaper_infos()
+} // ePaper_infos()
 
 
-void setup_LILYGO_ePaper() {
-  MENU.outln(F("setup_LILYGO_ePaper()"));
+void setup_GxEPD2_ePaper() {
+  MENU.outln(F("setup_GxEPD2_ePaper()"));
 
   #if defined USE_MC_SEMAPHORE
   if(MC_mux == NULL)
@@ -176,18 +204,18 @@ void setup_LILYGO_ePaper() {
   int rotation=1;		// TODO: rotation should go into HARDWARE
   ePaper.setRotation(rotation);	// TODO: rotation should go into HARDWARE
 
+
   delay(1000);			// TODO: test, maybe REMOVE?:
-} // setup_LILYGO_ePaper()
+} // setup_GxEPD2_ePaper()
 
 
-void inline monochrome_setup() {
-  setup_LILYGO_ePaper();
+void inline hw_display_setup() {
+  setup_GxEPD2_ePaper();
 
-// #if defined DEBUG_ePAPER
+#if defined DEBUG_ePAPER
 //   // little helpers while implementing, TODO: REMOVE?:
-//   delay(250);
-//   LILYGO_ePaper_infos(); /*fix rotation*/ ePaper.setRotation(1);
-// #endif
+  ePaper_infos();
+#endif
 
   delay(1500);
   /*	// TODO: TESTING ################	deactivated for a test
@@ -705,13 +733,13 @@ void ePaper_print_str(char* text) {	// unused?
 } // ePaper_print_str()
 
 
-void try_ePaper_fix() {
+void try_ePaper_fix() {	// maybe OBSOLETE?	let's hope ;)
 #if defined DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\ttry_ePaper_fix()"));
 #endif
 
   MENU.ln();
-  MENU.error_ln(F("\tTODO: IMPLEMENT\ttry_ePaper_fix()"));
+  MENU.error_ln(F("\tTODO: IMPLEMENT\ttry_ePaper_fix()\tOBOLETE?"));
   //~GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT>();
   //~GxEPD2_BW();	// destructor ?
 
@@ -720,10 +748,7 @@ void try_ePaper_fix() {
   MENU.print_free_RAM();
   MENU.ln();
   */
-
-  MENU.outln(F("setup_LILYGO_ePaper()"));
-  setup_LILYGO_ePaper();
-
+  setup_GxEPD2_ePaper();
   /*
   MENU.out(F("after:\t"));
   MENU.print_free_RAM();

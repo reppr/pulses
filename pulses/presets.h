@@ -20,12 +20,13 @@ void play_random_preset() {
   load_preset(random(MUSICBOX_PRESETs) + 1);	// TODO: sets preset, how to unset? ################
   no_restore_from_RTCmem = true;	// one shot, gets reset
   start_musicBox();
-#if defined USE_MONOCHROME_DISPLAY
+#if defined HAS_OLED
   monochrome_print(' ');
 #endif
 } // play_random_preset()
 
-#if defined USE_MONOCHROME_DISPLAY
+
+#if defined HAS_OLED	// DADA TODO: ePaper
 void monochrome_preset_names(short start_at_preset=0) {
   static short last_shown_preset=0;
 
@@ -66,7 +67,7 @@ void monochrome_preset_names(short start_at_preset=0) {
   load_preset((int) preset_was, false);		// restore preset
   MENU.verbosity = verbosity_was;
 } // monochrome_preset_names()
-#endif // USE_MONOCHROME_DISPLAY
+#endif // HAS_OLED
 
 
 int search_preset_list(char* s) {
@@ -103,7 +104,7 @@ int search_preset_list(char* s) {
       MENU.out(musicBoxConf.preset);
       MENU.tab();
       MENU.outln(musicBoxConf.name);
-#if defined USE_MONOCHROME_DISPLAY
+#if defined HAS_OLED	// DADA TODO: HAS_ePaper
       // if(monochrome_can_be_used()) {
       snprintf(name_buffer, max, "%i %s", musicBoxConf.preset, musicBoxConf.name);
       monochrome_print_1line(found, name_buffer);
@@ -113,7 +114,7 @@ int search_preset_list(char* s) {
     }
   }
 
-#if defined USE_MONOCHROME_DISPLAY
+#if defined HAS_OLED	// DADA TODO: HAS_ePaper
   // if(monochrome_can_be_used()) {
   if(found < (*u8x8_p).getRows())	// avoid scrolling when screen is full
     (*u8x8_p).clearLine(found);		// else empty line

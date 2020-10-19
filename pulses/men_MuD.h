@@ -3,6 +3,20 @@
   temporary test menu UI during development
 */
 
+
+// try to invert display... :(
+ePaper.invertDisplay(true);
+//ePaper.display(true);
+MENU.outln("invertDisplay(true)");
+MC_print_at(0,0, "invertDisplay(true)");
+delay(5000);
+ePaper.invertDisplay(false);
+ePaper.display(true);
+MENU.outln("invertDisplay(false)");
+MC_print_at(0,2, "invertDisplay(false)");
+delay(1000);
+break;
+
 set_used_font(&FreeMonoBold12pt7b);
 ePaper_line_matrix();
 delay(1000);

@@ -1452,7 +1452,7 @@ short morse_out_buffer_cnt=0;
 bool morse_output_to_do=false;		// triggers morse_do_output()
 extern bool musicbox_is_idle();
 
-#if defined USE_MONOCHROME_DISPLAY
+#if defined HAS_OLED
 extern bool monochrome_can_be_used();	// TODO: do i want that *here*?
 extern void MC_display_message(char * message);
 // avoid sound glitches when using OLED:
@@ -1467,12 +1467,12 @@ extern void MC_print(char* str);
 extern void monochrome_print_f(float f, int chiffres);
 extern void MC_printBIG_at(uint8_t col, uint8_t row, char* str);	// for short 2x2 strings
 extern void monochrome_clear();
-#endif // USE_MONOCHROME_DISPLAY
+#endif // HAS_OLED
 
 void morse_do_output() {
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
   if(morse_out_buffer_cnt) {
-#if defined BOARD_LILYGO_T5
+#if defined HAS_ePaper
   #if defined USE_MC_SEMAPHORE
     xSemaphoreTake(MC_mux, portMAX_DELAY);
   #endif
@@ -1482,7 +1482,7 @@ void morse_do_output() {
   #endif
 
     MC_print_1line_at(MORSE_MONOCHROME_ROW, "");
-#elif defined USE_MONOCHROME_DISPLAY
+#elif defined HAS_OLED
     MC_printlnBIG(MORSE_MONOCHROME_ROW, "        ");
 #endif
 
@@ -1498,7 +1498,7 @@ void morse_do_output() {
 
 char morse_output_char = '\0';	// '\0' means *no* output
 
-#if defined BOARD_LILYGO_T5
+#if defined HAS_ePaper
 void monochrome_out_morse_char() {
   if(morse_output_char && morse_out_buffer_cnt) {
     char s[]="  ";
@@ -1518,7 +1518,7 @@ void monochrome_out_morse_char() {
   morse_output_char = '\0';	// trigger off
 }
 
-#elif defined USE_MONOCHROME_DISPLAY
+#elif defined HAS_OLED
 void monochrome_out_morse_char() {
   if(! monochrome_can_be_used())
     return;
@@ -1527,23 +1527,23 @@ void monochrome_out_morse_char() {
     // 2x2 version
     char s[]="  ";
     s[0] = morse_output_char;
-#if defined BOARD_LILYGO_T5
+#if defined HAS_ePaper
     MC_printBIG_at((morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s);
-#elif defined USE_MONOCHROME_DISPLAY
+#elif defined HAS_OLED
     MC_printBIG_at(2*(morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s);
 #endif
   }
 
   morse_output_char = '\0';	// trigger off
 }
-#endif // USE_MONOCHROME_DISPLAY || BOARD_LILYGO_T5
+#endif // HAS_OLED || HAS_ePaper
 
 
 bool echo_morse_input=true;
 bool morse_store_received_letter(char letter) {		// returns error
   if(echo_morse_input)
     MENU.out(letter);
-#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+#if defined HAS_DISPLAY
   morse_output_char = letter;	// char and switch
 #endif
   if(morse_out_buffer_cnt < MORSE_OUTPUT_BUFFER_SIZE) {
@@ -1624,15 +1624,15 @@ void static morse_token_decode() {	// decode received token sequence
 	      else if(morse_PRESENT_COMMAND == "DELLAST") {
 		if(morse_out_buffer_cnt) {
 		  morse_out_buffer_cnt--;
-#if defined BOARD_LILYGO_T5
+#if defined HAS_ePaper
 		  MC_printBIG_at(morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " ");	// DELLAST
-#elif defined USE_MONOCHROME_DISPLAY
+#elif defined HAS_OLED
 		  MC_printBIG_at(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " ");	// DELLAST
 #endif
 		}
 
 	      } else if(morse_PRESENT_COMMAND == "OLED") {	// ---.-  "OA"
-#if defined USE_MONOCHROME_DISPLAY			// (NOOP if no USE_MONOCHROME_DISPLAY)
+#if defined HAS_OLED			// (NOOP if no HAS_OLED)
 		if(oled_feedback_while_playing ^= 1) {		// got switched on
 		  monochrome_power_save = 0;
 		  monochrome_setPowerSave(monochrome_power_save);
@@ -1651,7 +1651,7 @@ void static morse_token_decode() {	// decode received token sequence
 	      } else if(morse_PRESENT_COMMAND == "CANCEL") {	// CANCEL
 		morse_token_cnt = 0;
 		morse_out_buffer_cnt = 0;
-#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+#if defined HAS_DISPLAY
 		MC_printBIG_at(0, MORSE_MONOCHROME_ROW, "__");	// CANCEL shows "__"
 #endif
 	      } else if(morse_PRESENT_COMMAND == "ANY1") {	// '----'
@@ -1677,7 +1677,7 @@ void static morse_token_decode() {	// decode received token sequence
 		  MENU.out(F("motion UI "));
 		  MENU.out_ON_off(accGyro_is_active ^= 1);	// toggle and show
 		  MENU.ln();
-  #if defined USE_MONOCHROME_DISPLAY
+  #if defined HAS_OLED
 		  if(monochrome_can_be_used()) {
 		    MC_setCursor(monochrome_getCols() - 7 ,0);	// position of OLED UI display
 		    if(accGyro_is_active) {
@@ -1687,7 +1687,7 @@ void static morse_token_decode() {	// decode received token sequence
 		    } else
 		      MC_print(F("      "));
 		  }
-  #endif // USE_MONOCHROME_DISPLAY
+  #endif // HAS_OLED
 #endif // USE_MPU6050
 
 	      } else	// unknown morse command
@@ -1701,19 +1701,19 @@ void static morse_token_decode() {	// decode received token sequence
 	      return;
 	    }
 	  } else {	// no definition found, error
-#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+#if defined HAS_DISPLAY
 	    if(morse_out_buffer_cnt) {
-#if defined BOARD_LILYGO_T5
+#if defined HAS_ePaper
 	      MC_printBIG_at(morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, "'");	// TODO: TEST:
-#elif defined USE_MONOCHROME_DISPLAY
+#elif defined HAS_OLED
 	      if(monochrome_can_be_used()) {
 		MC_setInverseFont();
 		MC_printBIG_at(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, "'");	// TODO: TEST:
 		MC_clearInverseFont();
 	      }
-#endif
+#endif	// ePaper or OLED
 	    }
-#endif // USE_MONOCHROME_DISPLAY
+#endif // HAS_DISPLAY
 	    MENU.space(2);
 	    MENU.error_ln(F("morse  no definition"));
 	    morse_reset_definition("");
@@ -1773,7 +1773,7 @@ void static morse_token_decode() {	// decode received token sequence
 // } // morse_show_tokens_of_letter()
 
 
-#if defined COMPILE_MORSE_CHEAT_SHEETS
+#if defined COMPILE_MORSE_CHEAT_SHEETS && defined HAS_OLED	// not yet for HAS_ePaper
 bool /*ok*/ morse_tokens_of_letter(char* result, uint8_t len, char c) {	// uppercase only
   result[0] = '\0';
   char* format = F("%c %s");
@@ -1793,7 +1793,7 @@ void show_cheat_sheet() {
   char c;
   uint8_t maxlen=17;
 
-#if defined USE_MONOCHROME_DISPLAY || defined BOARD_LILYGO_T5
+#if defined HAS_DISPLAY
   monochrome_clear();	// subito, MC_clear_display() does it too late!
 #endif
   char result[maxlen];

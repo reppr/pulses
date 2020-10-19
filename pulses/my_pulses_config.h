@@ -40,18 +40,21 @@
 #define ESP32_DAC_ONLY
 
 // do you use an OLED board?
-//#define BOARD_HELTEC_OLED	// Heltec OLED BOARD
-//#define BOARD_OLED_LIPO	// LiPo battery OLED BOARD
+//#define BOARD_HELTEC_OLED	// Heltec OLED BOARD		// triggers HAS_OLED and HAS_DISPLAY
+//#define BOARD_OLED_LIPO	// LiPo battery OLED BOARD	// triggers HAS_OLED and HAS_DISPLAY
 //
-// but,
+// or do you use an ePaper display?
+//#define HAS_ePaper290_on_DEV_KIT	// triggers HAS_ePaper and HAS_DISPLAY
+#define BOARD_LILYGO_T5		// triggers HAS_ePaper and HAS_DISPLAY
+
 #if defined BOARD_OLED_LIPO && defined BOARD_HELTEC_OLED
   #error BOARD_HELTEC_OLED and BOARD_OLED_LIPO can *not both* be configured
 #endif
-//
-#define BOARD_LILYGO_T5
+
 #if defined BOARD_LILYGO_T5 && (defined BOARD_OLED_LIPO || defined BOARD_HELTEC_OLED)
-  #error BOARD_LILYGO_T5 and (BOARD_HELTEC_OLED or BOARD_OLED_LIPO can *not* be configured together, *only one*
+  #error BOARD_LILYGO_T5 and (BOARD_HELTEC_OLED or BOARD_OLED_LIPO) can *not* be configured together, *only one*
 #endif
+
 #if defined BOARD_LILYGO_T5
   #undef MORSE_TOUCH_INPUT_PIN
   #define MORSE_TOUCH_INPUT_PIN 	33
