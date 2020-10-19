@@ -732,13 +732,33 @@ ERROR: morse no definition	show received tokens
 //monochrome_preset_names(short start_at_preset=0)	// DADA TODO: ################################################################
 #if defined COMPILE_MORSE_CHEAT_SHEETS && defined HAS_OLED	// not yet for HAS_ePaper
 
-mv LILYGO_ePaper.h ePaper.h
+ePaper_infos();	// on display and menu UI
 
-ePaper_infos();	// to menu
-#include "LILYGO_ePaper.h"	// TODO: RENAME!	// TODO: include early!
+#include "GxEPD_ePaper.h"	// TODO: include early!
+
+//monochrome_preset_names(short start_at_preset=0)
+//MC_clear_display();
+//MC_clearLine(row); ???
+//MC_display_message("user mode active");
+//MC_esp_now_peer_list();
+//morse_cheat_sheets_UI();
+// default font (should always be selected)
+// get_cols
+// get_rows
+
 extern void MC_esp_now_peer_list();	// TODO: HAS_ePaper
 
 monochrome_preset_names(MENU.numeric_input(0));	// TODO: ePaper	//  n==0: continue through the list, or start at n
 int search_preset_list(char* s) {
 
-extended_output() ePaper
+fine tuning font parameters
+
+ERROR_feedback()
+
+full sync format and others like pitch etc
+
+(long) names display...
+
+mpu6050	// TODO: jiffle or iCODE ???
+
+pulses_boards.h		LILYGO etc

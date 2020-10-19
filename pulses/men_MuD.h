@@ -4,18 +4,10 @@
 */
 
 
-// try to invert display... :(
-ePaper.invertDisplay(true);
-//ePaper.display(true);
-MENU.outln("invertDisplay(true)");
-MC_print_at(0,0, "invertDisplay(true)");
-delay(5000);
-ePaper.invertDisplay(false);
-ePaper.display(true);
-MENU.outln("invertDisplay(false)");
-MC_print_at(0,2, "invertDisplay(false)");
-delay(1000);
-break;
+#if defined HAS_ePaper
+MC_print_1line_at(1, "aha!");
+MC_display_message("row 3    message from Alibaba");
+  break;
 
 set_used_font(&FreeMonoBold12pt7b);
 ePaper_line_matrix();
@@ -30,9 +22,6 @@ delay(1000);
 MC_print_1line_at(0, "   at the TOP");
 MENU.print_free_RAM(); MENU.ln();
 delay(4000);
-break;
-
-MC_show_musicBox_parameters();
 break;
 
 delay(1000);
@@ -130,9 +119,9 @@ break;
 
 // ePaper_show_tuning(); delay(5000);
 
-#if defined COMPILE_FONTTEST
+ #if defined COMPILE_FONTTEST
   ePaper_fonttest();
-#endif
+ #endif
 
 if(MENU.check_next('D')) {	// DD
   if(MENU.check_next('D'))	// DDD
@@ -141,6 +130,10 @@ if(MENU.check_next('D')) {	// DD
     ePaper_basic_parameters();	// DD
 } else
   MENU.play_KB_macro(F("187 P *6 N"));	// try out MELODY mode
+
+#else
+  MENU.play_KB_macro(F("187 P *6 N"));	// try out MELODY mode
+#endif // HAS_ePaper or not
 
 //#include "SPEED-TESTS.h"
 

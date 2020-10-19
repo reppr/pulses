@@ -104,11 +104,11 @@ int search_preset_list(char* s) {
       MENU.out(musicBoxConf.preset);
       MENU.tab();
       MENU.outln(musicBoxConf.name);
-#if defined HAS_OLED	// DADA TODO: HAS_ePaper
-      // if(monochrome_can_be_used()) {
       snprintf(name_buffer, max, "%i %s", musicBoxConf.preset, musicBoxConf.name);
+#if defined HAS_OLED
       monochrome_print_1line(found, name_buffer);
-      // }
+#elif defined HAS_DISPLAY
+      MC_print_1line_at(found, name_buffer);
 #endif
       found++;
     }

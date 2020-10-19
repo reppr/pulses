@@ -1,7 +1,9 @@
 /*
-  GxEPD2_ePaper.h
+  ePaper_GxEPD2.h
   see: GxEPD2/examples/GxEPD2_GFX_Example
 */
+
+#if ! defined GXEPD2_EPAPER_H
 
 #define DEBUG_ePAPER
 #define USE_MC_SEMAPHORE
@@ -34,6 +36,8 @@
 #include <Fonts/Picopixel.h>
 #include <Fonts/Tiny3x3a2pt7b.h>
 #include <Fonts/TomThumb.h>
+
+#define LIN_BUF_MAX	42	// temporal local line buffers only
 
 #if defined HAS_ePaper290_on_DEV_KIT
 /*
@@ -190,8 +194,8 @@ void ePaper_infos() {
 } // ePaper_infos()
 
 
-void setup_GxEPD2_ePaper() {
-  MENU.outln(F("setup_GxEPD2_ePaper()"));
+void setup_ePaper_GxEPD2() {
+  MENU.outln(F("setup_ePaper_GxEPD2()"));
 
   #if defined USE_MC_SEMAPHORE
   if(MC_mux == NULL)
@@ -206,11 +210,11 @@ void setup_GxEPD2_ePaper() {
 
 
   delay(1000);			// TODO: test, maybe REMOVE?:
-} // setup_GxEPD2_ePaper()
+} // setup_ePaper_GxEPD2()
 
 
 void inline hw_display_setup() {
-  setup_GxEPD2_ePaper();
+  setup_ePaper_GxEPD2();
 
 #if defined DEBUG_ePAPER
 //   // little helpers while implementing, TODO: REMOVE?:
@@ -250,14 +254,19 @@ void set_used_font(const GFXfont* font_p) {
     used_font_y = 128/7;	// 18
     font_linlen=22;
 
+  } else if(font_p == &FreeSansBold9pt7b) {
+    //used_font_x = 250/22;	// 11	*NOT* a fixed width font!
+    used_font_y = 23;	//24	128/7;	// 18	*NOT* a fixed width font!
+    font_linlen=33;
+
   } else if(font_p == &FreeMonoBold12pt7b) {
     used_font_x = 14;		// ~250/18;
     used_font_y = 24;		// ~128/5 -1;
     font_linlen=18;
 
   } else if(font_p == &FreeSansBold12pt7b) {
-    used_font_x = 14;		// ~250/18;
-    //used_font_y = 24;		// *NOT* a fixed width font!
+    //used_font_x = 14;		// ~250/18;
+    used_font_y = 24;		// *NOT* a fixed width font!
     font_linlen=33;		// *NOT* a fixed width font!
 
   } else {
@@ -396,68 +405,6 @@ void monochrome_clear() {
 } // monochrome_clear()
 
 
-#if false	// old or new version?
-// old:
-/* old */ void ePaper_basic_parameters() {
-	#if defined  DEBUG_ePAPER
-/* old */   MENU.outln(F("DEBUG_ePAPER\tePaper_basic_parameters() old"));
-	#endif
-/* old */
-/* old */   ePaper.setFullWindow();
-/* old */   ePaper.fillScreen(GxEPD_WHITE);
-/* old */   ePaper.setTextColor(GxEPD_BLACK);
-/* old */
-/* old */   char txt[23];
-/* old */   char* format_IstrI = F("|%s|");
-/* old */   char* format2s = F("%s  %s");
-/* old */   char* format_s = F("%s");
-/* old */   char* format_is = F("%i %s");
-/* old */   char* format_sync = F("S=%i");
-/* old */
-/* old */   ePaper.firstPage();
-/* old */   do
-/* old */   {
-/* old */     ePaper.fillScreen(GxEPD_WHITE);
-/* old */     ePaper.setCursor(0, 0);
-/* old */
-	#if defined USE_MANY_FONTS
-/* old */     ePaper.setFont(&FreeSansBold12pt7b);
-	#else
-/* old */     ePaper.setFont(&FreeMonoBold12pt7b);
-	#endif
-/* old */     ePaper.println();
-/* old */
-/* old */     snprintf(txt, 23, format_IstrI, my_IDENTITY.preName);
-/* old */     ePaper.println(txt);
-/* old */
-	#if defined USE_MANY_FONTS
-/* old */     ePaper.setFont(&FreeSansBold9pt7b);
-	#else
-/* old */     ePaper.setFont(&FreeMonoBold9pt7b);
-	#endif
-/* old */     snprintf(txt, 23, format_is, musicBoxConf.preset, musicBoxConf.name);
-/* old */     ePaper.println(txt);
-/* old */
-/* old */     extern char* metric_mnemonic;
-/* old */     snprintf(txt, 23, format2s, selected_name(SCALES), metric_mnemonic);
-/* old */     ePaper.println(txt);
-/* old */
-	#if defined ICODE_INSTEAD_OF_JIFFLES
-/* old */     snprintf(txt, 23, format_s, selected_name(iCODEs));
-	#else
-/* old */     snprintf(txt, 23, format_s, selected_name(JIFFLES));
-	#endif
-/* old */     ePaper.println(txt);
-/* old */
-/* old */     snprintf(txt, 23, format_sync, musicBoxConf.sync);
-/* old */     ePaper.println(txt);
-/* old */   }
-/* old */   while (ePaper.nextPage());
-/* old */ } // ePaper_basic_parameters()
-/* old */ // end old
-
-#else	// old or new version?
-// new version:
 void ePaper_basic_parameters() {
 #if defined  DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tePaper_basic_parameters() new"));
@@ -467,7 +414,7 @@ void ePaper_basic_parameters() {
   ePaper.fillScreen(GxEPD_WHITE);
   ePaper.setTextColor(GxEPD_BLACK);
 
-  char txt[23];
+  char txt[LIN_BUF_MAX];
   char* format_IstrI = F("|%s|");
   char* format2s = F("%s  %s");
   char* format_s = F("%s");
@@ -483,8 +430,8 @@ void ePaper_basic_parameters() {
   do
   {
     ePaper.fillScreen(GxEPD_WHITE);
-    ePaper.setFont(&FreeSansBold12pt7b);
     //set_used_font(&FreeMonoBold12pt7b);	// was: mono
+    set_used_font(&FreeSansBold12pt7b);
     ePaper.setCursor(0, 0);
     ePaper.println();
 
@@ -495,17 +442,17 @@ void ePaper_basic_parameters() {
 
     //ePaper.println();	// before???	bigger ssstep
     //set_used_font(&FreeMonoBold9pt7b);	// was: mono
-    ePaper.setFont(&FreeSansBold9pt7b);
+    set_used_font(&FreeSansBold9pt7b);
     ePaper.println(); // or after???  smaller step
 
     extern char* metric_mnemonic;
-    snprintf(txt, 23, format2s, selected_name(SCALES), metric_mnemonic);
+    snprintf(txt, LIN_BUF_MAX, format2s, selected_name(SCALES), metric_mnemonic);
     ePaper.println(txt);
 
 #if defined ICODE_INSTEAD_OF_JIFFLES
-    snprintf(txt, 23, format_s, selected_name(iCODEs));
+    snprintf(txt, LIN_BUF_MAX, format_s, selected_name(iCODEs));
 #else
-    snprintf(txt, 23, format_s, selected_name(JIFFLES));
+    snprintf(txt, LIN_BUF_MAX, format_s, selected_name(JIFFLES));
 #endif
     ePaper.println(txt);
 
@@ -525,7 +472,7 @@ void ePaper_basic_parameters() {
   }
   while (ePaper.nextPage());
 } // ePaper_basic_parameters()
-#endif	// old or new version?
+
 
 void inline MC_show_musicBox_parameters() {
 #if defined DEBUG_ePAPER
@@ -544,7 +491,7 @@ void  ePaper_show_program_version() {
   ePaper.fillScreen(GxEPD_WHITE);
   ePaper.setTextColor(GxEPD_BLACK);
 
-  char txt[23];
+  char txt[LIN_BUF_MAX];
   char* format_s = F("%s");
 
   ePaper.firstPage();
@@ -559,7 +506,7 @@ void  ePaper_show_program_version() {
 #endif
     ePaper.println();
 
-    snprintf(txt, 23, format_s, F(STRINGIFY(PROGRAM_VERSION)));
+    snprintf(txt, LIN_BUF_MAX, format_s, F(STRINGIFY(PROGRAM_VERSION)));
     ePaper.println(txt);
 
 #if defined USE_MANY_FONTS
@@ -568,7 +515,7 @@ void  ePaper_show_program_version() {
     ePaper.setFont(&FreeSansBold9pt7b);
 #endif
 #if defined PROGRAM_SUB_VERSION
-    snprintf(txt, 23, format_s, F(STRINGIFY(PROGRAM_SUB_VERSION)));
+    snprintf(txt, LIN_BUF_MAX, format_s, F(STRINGIFY(PROGRAM_SUB_VERSION)));
     ePaper.println(txt);
 #endif
     ePaper.println();
@@ -578,7 +525,7 @@ void  ePaper_show_program_version() {
 #else
     ePaper.setFont(&FreeSansBold12pt7b);
 #endif
-    snprintf(txt, 23, F("|%s|  (%i)"), my_IDENTITY.preName, my_IDENTITY.esp_now_time_slice);
+    snprintf(txt, LIN_BUF_MAX, F("|%s|  (%i)"), my_IDENTITY.preName, my_IDENTITY.esp_now_time_slice);
     ePaper.println(txt);
     //ePaper.println();
 
@@ -604,7 +551,7 @@ void  ePaper_show_tuning() {
   ePaper.fillScreen(GxEPD_WHITE);
   ePaper.setTextColor(GxEPD_BLACK);
 
-  char txt[23];
+  char txt[LIN_BUF_MAX];
   char* format_s = F("%s");
 
   ePaper.firstPage();
@@ -616,7 +563,7 @@ void  ePaper_show_tuning() {
     ePaper.setCursor(0, 0);
     ePaper.println();
 
-    snprintf(txt, 23, format_s, selected_name(SCALES));
+    snprintf(txt, LIN_BUF_MAX, format_s, selected_name(SCALES));
     ePaper.println(txt);
     ePaper.println();
 
@@ -665,6 +612,7 @@ void ePaper_1line_at_task(void* data_) {
   #if defined USE_MC_SEMAPHORE
     xSemaphoreTake(MC_mux, portMAX_DELAY);
   #endif
+  set_used_font(&FreeSansBold9pt7b);
   ePaper_print_1line_at(data->row, data->text, data->offset_y);
   free_text_buffer(data);
 
@@ -701,10 +649,13 @@ void multicore_ePaper_1line_at(int16_t row, char* text, int16_t offset_y) {	// c
 
 void MC_print_1line_at(int16_t row, char* text, int16_t offset_y=0) {
 #if defined DEBUG_ePAPER
-  MENU.outln(F("DEBUG_ePAPER\tMC_print_1line_at()"));
+  MENU.out(F("DEBUG_ePAPER\tMC_print_1line_at()\t"));
+  MENU.out(row);
+  MENU.tab();
+  MENU.outln(text);
 #endif
   multicore_ePaper_1line_at(row, text, offset_y);
-}
+} // MC_print_1line_at()
 
 #else
 void MC_print_1line_at(int16_t row, char* text, int16_t offset_y=0) {
@@ -748,7 +699,7 @@ void try_ePaper_fix() {	// maybe OBSOLETE?	let's hope ;)
   MENU.print_free_RAM();
   MENU.ln();
   */
-  setup_GxEPD2_ePaper();
+  setup_ePaper_GxEPD2();
   /*
   MENU.out(F("after:\t"));
   MENU.print_free_RAM();
@@ -794,6 +745,25 @@ void ePaper_BIG_or_multiline(int16_t row, char* text) {	// unused?
   #endif
 } // ePaper_BIG_or_multiline()
 
+
+void inline MC_display_message(char* text) {
+#if defined DEBUG_ePAPER
+  MENU.out(F("DEBUG_ePAPER\tMC_display_message()\t"));
+#endif
+  MENU.outln(text);
+  set_used_font(&FreeSansBold9pt7b);
+  MC_print_1line_at(3, text, /*offset*/ 27);	// bottom line
+
+// TODO: REMOVE: debugging code
+//  MC_print_1line_at(0, "row 0", /*offset*/ 27);	// 0	TODO: REMOVE: debugging code
+//  MC_print_1line_at(1, "row 1", /*offset*/ 27);	// 1
+//  MC_print_1line_at(2, "row 2", /*offset*/ 27);	// 2
+} // MC_display_message()
+
+
 #if defined DEBUG_ePAPER
   #include "ePaper_debugging.h"
+#endif
+
+#define GXEPD2_EPAPER_H
 #endif

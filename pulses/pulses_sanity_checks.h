@@ -126,3 +126,11 @@
   #define HAS_OLED
   #define HAS_DISPLAY
 #endif
+
+#if defined HAS_ePaper || defined HAS_OLED
+  #define HAS_DISPLAY
+#endif
+
+#if defined HAS_ePaper && defined HAS_OLED
+  #error 'HAS_ePaper & HAS_OLED cannot be defined both, only one'
+#endif

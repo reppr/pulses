@@ -1498,45 +1498,27 @@ void morse_do_output() {
 
 char morse_output_char = '\0';	// '\0' means *no* output
 
-#if defined HAS_ePaper
+#if defined HAS_DISPLAY
 void monochrome_out_morse_char() {
-  if(morse_output_char && morse_out_buffer_cnt) {
-    char s[]="  ";
-    s[0] = morse_output_char;
-
-  #if defined USE_MC_SEMAPHORE
-    xSemaphoreTake(MC_mux, portMAX_DELAY);
-  #endif
-    set_used_font(&FreeMonoBold12pt7b);
-  #if defined USE_MC_SEMAPHORE
-    xSemaphoreGive(MC_mux);
-  #endif
-
-    MC_print_at(morse_out_buffer_cnt - 1, MORSE_MONOCHROME_ROW, s);
-  }
-
-  morse_output_char = '\0';	// trigger off
-}
-
-#elif defined HAS_OLED
-void monochrome_out_morse_char() {
+ #if defined HAS_OLED
   if(! monochrome_can_be_used())
     return;
+ #endif
 
   if(morse_output_char && morse_out_buffer_cnt) {
     // 2x2 version
     char s[]="  ";
     s[0] = morse_output_char;
-#if defined HAS_ePaper
+ #if defined HAS_ePaper
     MC_printBIG_at((morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s);
-#elif defined HAS_OLED
+ #else	// HAS_OLED
     MC_printBIG_at(2*(morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s);
-#endif
+ #endif
   }
 
   morse_output_char = '\0';	// trigger off
 }
-#endif // HAS_OLED || HAS_ePaper
+#endif // HAS_DISPLAY
 
 
 bool echo_morse_input=true;
@@ -1703,15 +1685,15 @@ void static morse_token_decode() {	// decode received token sequence
 	  } else {	// no definition found, error
 #if defined HAS_DISPLAY
 	    if(morse_out_buffer_cnt) {
-#if defined HAS_ePaper
+  #if defined HAS_ePaper
 	      MC_printBIG_at(morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, "'");	// TODO: TEST:
-#elif defined HAS_OLED
+  #elif defined HAS_OLED
 	      if(monochrome_can_be_used()) {
 		MC_setInverseFont();
 		MC_printBIG_at(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, "'");	// TODO: TEST:
 		MC_clearInverseFont();
 	      }
-#endif	// ePaper or OLED
+  #endif	// ePaper | OLED
 	    }
 #endif // HAS_DISPLAY
 	    MENU.space(2);

@@ -236,13 +236,6 @@ extern uint8_t extended_output(char* data, uint8_t col, uint8_t row, bool force)
 void display_accGyro_mode() {
   MENU.out(F("accGyro mode: "));
 
-#if defined BOARD_LILYGO_T5	// TODO: adapt MONOCHROME_MOTION_STATE_ROW
-  ePaper.setCursor(0, MONOCHROME_MOTION_STATE_ROW);
-#elif defined USE_MONOCHROME_DISPLAY
-  if(monochrome_can_be_used())
-    MC_setCursor(0, MONOCHROME_MOTION_STATE_ROW);
-#endif
-
   char buffer[] = {"acc ...  gyr ..."};
   //              {"0123456789abcdef"}
 
@@ -260,7 +253,11 @@ void display_accGyro_mode() {
   if(accGyro_mode & AG_mode_Gz)
     buffer[15] = 'Z';
 
+#if defined HAS_OLED
   extended_output(buffer, 0, MONOCHROME_MOTION_STATE_ROW, false);
+#elif defined HAS_DISPLAY
+  MC_display_message(buffer);
+#endif
 } // display_accGyro_mode()
 
 
@@ -727,12 +724,18 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 	  if(Ax_i_new != _selected_Ax_i_seen) {
 	    _selected_Ax_i_seen = Ax_i_new;
 	    select_in(JIFFLES, jiffle);
-	    setup_jiffle_thrower_selected(selected_actions);
+//#if defined ICODE_INSTEAD_OF_JIFFLES
+//	    en_icode_seeder_selected((icode_t*) selected_in(iCODEs), selected_actions);
+//#else
+	    setup_jiffle_thrower_selected(selected_actions);	// TODO: jiffle or iCODE ???	###########
+//#endif
 	    MENU.outln(selected_name(JIFFLES));
 
-#if defined HAS_OLED	// TODO: ePaper
+#if defined HAS_OLED
 	    extern void MC_big_or_multiline(uint8_t row, char* str);
 	    MC_big_or_multiline(2, selected_name(JIFFLES));	// TODO: jiffle or iCODE ???	###########
+#elif defined HAS_DISPLAY
+	    MC_display_message(selected_name(JIFFLES));	    	// TODO: jiffle or iCODE ???	###########
 #endif
 	  }
 	} else {

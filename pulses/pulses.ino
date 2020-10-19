@@ -416,7 +416,7 @@ void copy_string_to_lower(char* source, char* destination, size_t max) {
 #endif
 
 #if defined HAS_ePaper
-  #include "LILYGO_ePaper.h"	// TODO: RENAME!
+  #include "ePaper_GxEPD2.h"
 #endif
 
 action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actions
@@ -1185,6 +1185,10 @@ uint8_t relaxmax=4;			// up to how many relax() in one todo chain
 
 #if defined DO_STRESS_MANAGMENT
   #include "stress_managment.h"
+#endif
+
+#if defined HAS_OLED
+  #include "monochrome_display.h"
 #endif
 
 #if defined HARMONICAL_MUSIC_BOX
@@ -2176,7 +2180,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
   if(force_start_to_usermode) {
     force_start_to_usermode=false;
     MENU.outln(F("\nforced start to user mode"));
-#if defined HAS_OLED	// TODO: HAS_ePaper
+#if defined HAS_DISPLAY
     MC_display_message("user mode active");
 #endif
 
@@ -7106,19 +7110,23 @@ bool menu_pulses_reaction(char menu_input) {
 /* **************************************************************** */
 
 // extended_output(...)  output on MENU, maybe OLED, morse, ...  // TODO: morse output?
-uint8_t /*next_row*/ extended_output(char* data, uint8_t col=0, uint8_t row=0, bool force=false) {
-  MENU.out(data);
-#if defined USE_MONOCHROME_DISPLAY
+uint8_t /*next_row*/ extended_output(char* text, uint8_t col=0, uint8_t row=0, bool force=false) {
+  MENU.out(text);
+#if defined HAS_OLED
   if(monochrome_can_be_used() || force || morse_output_char) {
     MC_clearLine(row);
     MC_clearLine(row +1);
-    MC_big_or_multiline(row, data);
+    MC_big_or_multiline(row, text);
   }
 
   row += 2;
-#endif // USE_MONOCHROME_DISPLAY
-  return row;	// return row on *monochrome display*
-}
+
+#elif defined HAS_DISPLAY
+  MC_display_message(text);
+#endif // HAS_OLED  |  HAS_DISPLAY
+
+  return row;	// return row on *OLED display* or ePaper
+} // extended_output()
 
 
 /* **************************************************************** */

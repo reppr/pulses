@@ -9,17 +9,17 @@
 
 #ifdef ARDUINO
   #if defined(ESP32)				// ESP32 :)
-    /* OLED boards	*/
+  /* OLED boards	*/
     #if defined BOARD_OLED_LIPO || defined BOARD_HELTEC_OLED
-      #if ! defined USE_MONOCHROME_DISPLAY
-        #define USE_MONOCHROME_DISPLAY
+      #if ! defined HAS_OLED
+        #define HAS_OLED
       #endif
       #define ESP32_DAC_ONLY_OLED	// not very flexible, but ok for now
     #else
-      #if defined USE_MONOCHROME_DISPLAY
-        //#error MONOCHROME DISPLAY BOARD TYPE UNKNOWN
-        #undef USE_MONOCHROME_DISPLAY
+      #if defined HAS_OLED
+        #undef HAS_OLED
         #warning *NOT* using monochrome display, type is unlnown
+        //#error MONOCHROME OLED DISPLAY BOARD TYPE UNKNOWN
       #endif
     #endif
 
