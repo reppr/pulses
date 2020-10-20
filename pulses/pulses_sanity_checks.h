@@ -134,3 +134,7 @@
 #if defined HAS_ePaper && defined HAS_OLED
   #error 'HAS_ePaper & HAS_OLED cannot be defined both, only one'
 #endif
+
+#if defined BOARD_OLED_LIPO && defined BOARD_HELTEC_OLED
+  #error 'BOARD_HELTEC_OLED and BOARD_OLED_LIPO can *not both* be configured'
+#endif

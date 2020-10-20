@@ -12,16 +12,24 @@
   /* OLED boards	*/
     #if defined BOARD_OLED_LIPO || defined BOARD_HELTEC_OLED
       #if ! defined HAS_OLED
-        #define HAS_OLED
+	#define HAS_OLED
       #endif
       #define ESP32_DAC_ONLY_OLED	// not very flexible, but ok for now
     #else
       #if defined HAS_OLED
-        #undef HAS_OLED
-        #warning *NOT* using monochrome display, type is unlnown
-        //#error MONOCHROME OLED DISPLAY BOARD TYPE UNKNOWN
+	#undef HAS_OLED
+	#warning '*NOT* using monochrome display, type is unlnown'
+	//#error 'MONOCHROME OLED DISPLAY BOARD TYPE UNKNOWN'
       #endif
     #endif
+
+    #if defined BOARD_LILYGO_T5
+      #undef MORSE_TOUCH_INPUT_PIN
+      #define MORSE_TOUCH_INPUT_PIN	33
+
+      #undef RGB_LED_STRIP_DATA_PIN
+      #define RGB_LED_STRIP_DATA_PIN	27
+    #endif // BOARD_LILYGO_T5
 
     /* ESP32 DAC
        #define USE_DACs in your configuration files to use ESP32 DAC output	*/
