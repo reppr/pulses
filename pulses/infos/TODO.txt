@@ -762,3 +762,6 @@ full sync format and others like pitch etc
 mpu6050	// TODO: jiffle or iCODE ???
 
 pulses_boards.h		LILYGO etc
+
+USE_MC_SEMAPHORE, always do that, obsolete
+MC_SEMAPHORE for OLED display too

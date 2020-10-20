@@ -24,7 +24,7 @@
 #if defined SETUP_PORTABLE_DAC_ONLY
 
   #define PERIPHERAL_POWER_SWITCH_PIN		12	// *pseudo* for green LED,  switch power, often green LED
-  #define PROGRAM_SUB_VERSION			portable 3D	// with morse and 3D accGyro UI
+//#define PROGRAM_SUB_VERSION			portable 3D	// with morse and 3D accGyro UI
   #if ! defined MAX_SUBCYCLE_SECONDS
     #define MAX_SUBCYCLE_SECONDS		60*18	// *max seconds*, produces short PRESET PIECES	   portable instruments 2019-06
   #endif
@@ -4470,6 +4470,10 @@ bool musicBox_reaction(char token) {
 #if defined HAS_DISPLAY
     case 'V':	// 'IV'	program version
       MENU.drop_input_token();
+      MENU.outln(F(STRINGIFY(PROGRAM_VERSION)));
+  #if defined PROGRAM_SUB_VERSION
+      MENU.outln(F(STRINGIFY(PROGRAM_SUB_VERSION)));
+  #endif
       MC_show_program_version();
       break;
 #endif

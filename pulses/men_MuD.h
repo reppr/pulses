@@ -4,7 +4,7 @@
 */
 
 
-#if defined HAS_ePaper
+#if defined HAS_ePaper && defined DEBUG_ePAPER
 MC_print_1line_at(1, "aha!");
 MC_display_message("row 3    message from Alibaba");
   break;

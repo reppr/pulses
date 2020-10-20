@@ -5,7 +5,7 @@
 
 #if ! defined GXEPD2_EPAPER_H
 
-#define DEBUG_ePAPER
+//#define DEBUG_ePAPER
 #define USE_MC_SEMAPHORE
 #define MC_DELAY_MS	10	// delay MC_mux lock release	// TODO: test&trimm	maybe obsolete?    ################
 #define USE_MANY_FONTS		// uses some more program storage space

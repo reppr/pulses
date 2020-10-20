@@ -15,7 +15,7 @@
 //#define FORCE_START_TO_USERMODE	// needs OLED_HALT_PIN0 to be declared
 
 
-// DISPLAY hardware:	activate zero or *one* of the following DISPLAYs
+// DISPLAY HARDWARE:	activate ZERO or *ONE* of the following DISPLAYs
 //	do you use a board with OLED DISPLAY?
 //#define BOARD_HELTEC_OLED	// Heltec OLED BOARD		// triggers HAS_OLED and HAS_DISPLAY
 //#define BOARD_OLED_LIPO	// LiPo battery OLED BOARD	// triggers HAS_OLED and HAS_DISPLAY
