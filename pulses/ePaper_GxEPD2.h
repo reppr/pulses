@@ -2,11 +2,11 @@
   ePaper_GxEPD2.h
   see: GxEPD2/examples/GxEPD2_GFX_Example
 */
-
 #if ! defined GXEPD2_EPAPER_H
 
+
 //#define DEBUG_ePAPER
-#define MC_DELAY_MS	10	// delay MC_mux lock release	// TODO: test&trimm	maybe obsolete?    ################
+#define MC_DELAY_MS	10	// delay MC_mux lock release	// TODO: test&trimm	maybe obsolete?
 #define USE_MANY_FONTS		// uses some more program storage space
 
 
@@ -275,12 +275,12 @@ void MC_printBIG_at(int16_t col, int16_t row, char* text, int16_t offset_y=0) {
 
   xSemaphoreTake(MC_mux, portMAX_DELAY);
   set_used_font(&FreeMonoBold12pt7b);
-
-  vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
+  // vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);	// hope we don*t need that...
   xSemaphoreGive(MC_mux);
 
   MC_print_at(col, row, text, offset_y);
-}
+} // MC_printBIG_at()
+
 
 void monochrome_clear() {
 #if defined  DEBUG_ePAPER
@@ -297,9 +297,9 @@ void monochrome_clear() {
 } // monochrome_clear()
 
 
-void ePaper_basic_parameters() {
+void ePaper_musicBox_parameters() {
 #if defined  DEBUG_ePAPER
-  MENU.outln(F("DEBUG_ePAPER\tePaper_basic_parameters() new"));
+  MENU.outln(F("DEBUG_ePAPER\tePaper_musicBox_parameters()"));
 #endif
 
   ePaper.setFullWindow();
@@ -363,14 +363,14 @@ void ePaper_basic_parameters() {
     ePaper.print(musicBoxConf.name);
   }
   while (ePaper.nextPage());
-} // ePaper_basic_parameters()
+} // ePaper_musicBox_parameters()
 
 
 void inline MC_show_musicBox_parameters() {
 #if defined DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tMC_show_musicBox_parameters()"));
 #endif
-  MC_do_on_other_core(&ePaper_basic_parameters);
+  MC_do_on_other_core(&ePaper_musicBox_parameters);
 }
 
 
@@ -390,7 +390,17 @@ void  ePaper_show_program_version() {
   do
   {
     ePaper.fillScreen(GxEPD_WHITE);
+#if defined USE_MANY_FONTS
+    ePaper.setFont(&FreeSans9pt7b);
+#else
+    ePaper.setFont(&FreeSansBold9pt7b);
+#endif
     ePaper.setCursor(0, 0);
+    ePaper.println();
+
+    snprintf(txt, LIN_BUF_MAX, format_s, F(STRINGIFY(PROGRAM_VERSION)));
+    ePaper.print(txt);
+
 #if defined USE_MANY_FONTS
     ePaper.setFont(&FreeSans12pt7b);
 #else
@@ -398,7 +408,7 @@ void  ePaper_show_program_version() {
 #endif
     ePaper.println();
 
-    snprintf(txt, LIN_BUF_MAX, format_s, F(STRINGIFY(PROGRAM_VERSION)));
+    snprintf(txt, LIN_BUF_MAX, F("|%s|  (%i)"), my_IDENTITY.preName, my_IDENTITY.esp_now_time_slice);
     ePaper.println(txt);
 
 #if defined USE_MANY_FONTS
@@ -406,22 +416,60 @@ void  ePaper_show_program_version() {
 #else
     ePaper.setFont(&FreeSansBold9pt7b);
 #endif
+
 #if defined PROGRAM_SUB_VERSION
     snprintf(txt, LIN_BUF_MAX, format_s, F(STRINGIFY(PROGRAM_SUB_VERSION)));
-    ePaper.println(txt);
+    ePaper.print(txt);
+    ePaper.print(' ');
+    ePaper.print(' ');
 #endif
+
+    if(HARDWARE.mpu6050_addr)
+      ePaper.print("MPU");
     ePaper.println();
 
-#if defined USE_MANY_FONTS
-    ePaper.setFont(&FreeSans12pt7b);
-#else
-    ePaper.setFont(&FreeSansBold12pt7b);
-#endif
-    snprintf(txt, LIN_BUF_MAX, F("|%s|  (%i)"), my_IDENTITY.preName, my_IDENTITY.esp_now_time_slice);
-    ePaper.println(txt);
-    //ePaper.println();
+    ePaper.print("DAC ");
+    ePaper.print(HARDWARE.DAC1_pin);
+    ePaper.print(' ');
+    ePaper.print(HARDWARE.DAC2_pin);
 
-    // TODO: option mnemonics?
+    ePaper.print("  GPIO ");
+    ePaper.println(HARDWARE.gpio_pins_cnt);	// TODO: show individual pins
+
+    if(HARDWARE.morse_touch_input_pin != ILLEGAL8) {
+      ePaper.print("M ");
+      ePaper.print(HARDWARE.morse_touch_input_pin);
+      ePaper.print(' ');
+      ePaper.print(' ');
+    }
+
+    if(HARDWARE.morse_output_pin != ILLEGAL8) {
+      ePaper.print("O ");
+      ePaper.print(HARDWARE.morse_output_pin);
+      ePaper.print(' ');
+      ePaper.print(' ');
+    }
+
+    char mnemonic;
+#if defined MUSICBOX_TRIGGER_PIN
+    if(musicBox_trigger_enabled)
+      mnemonic = 'T';
+    else
+      mnemonic = 't';
+    ePaper.print(mnemonic);
+    ePaper.print(' ');
+    ePaper.print(HARDWARE.musicbox_trigger_pin);
+    ePaper.print(' ');
+    ePaper.print(' ');
+#endif
+
+#if defined BATTERY_LEVEL_CONTROL_PIN
+    ePaper.print("V ");
+    ePaper.print(HARDWARE.battery_level_control_pin);	// TODO: show level
+    ePaper.print(' ');
+    ePaper.print(' ');
+#endif
+    ePaper.println();
   }
   while (ePaper.nextPage());
 } // ePaper_show_program_version()

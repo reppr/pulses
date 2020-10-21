@@ -85,7 +85,7 @@ ePaper.display();
 delay(6000);
 */
 
-//ePaper_basic_parameters(); break;
+//ePaper_musicBox_parameters(); break;
 
 //ePaper_line_testing(); break;
 
@@ -125,9 +125,9 @@ break;
 
 if(MENU.check_next('D')) {	// DD
   if(MENU.check_next('D'))	// DDD
-    do_on_other_core(&ePaper_basic_parameters);	// DDD
+    do_on_other_core(&ePaper_musicBox_parameters);	// DDD
   else
-    ePaper_basic_parameters();	// DD
+    ePaper_musicBox_parameters();	// DD
 } else
   MENU.play_KB_macro(F("187 P *6 N"));	// try out MELODY mode
 

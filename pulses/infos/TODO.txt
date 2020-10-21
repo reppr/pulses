@@ -746,8 +746,6 @@ ePaper_infos();	// on display and menu UI
 // get_cols
 // get_rows
 
-extern void MC_esp_now_peer_list();	// TODO: HAS_ePaper
-
 monochrome_preset_names(MENU.numeric_input(0));	// TODO: ePaper	//  n==0: continue through the list, or start at n
 int search_preset_list(char* s) {
 
@@ -772,3 +770,14 @@ void ePaper_BIG_or_multiline(int16_t row, char* text) {
 void morse_do_output() {
     xSemaphoreTake(MC_mux, portMAX_DELAY);	// TODO: could delay application...
 }
+
+ePaper_show_program_version() {
+	ePaper.print(HARDWARE.battery_level_control_pin);	// TODO: show level
+	ePaper.print(HARDWARE.gpio_pins_cnt);	// TODO: show individual pins
+
+
+HARDWARE
+  // uint8_t dac_channel_cnt=0;	// TODO:
+
+
+extern void MC_esp_now_peer_list();	// TODO: HAS_ePaper

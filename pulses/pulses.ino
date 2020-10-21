@@ -179,6 +179,7 @@ typedef struct pulses_hardware_conf_t {
   gpio_pin_t gpio_pins[20]={ILLEGAL8};					// %4
 
   // dac
+  // uint8_t dac_channel_cnt=0;	// TODO:
   uint8_t DAC1_pin=ILLEGAL8;	// !flag ILLEGAL8 or 25	// ILLEGAL8==!flag or pin  // %4
   uint8_t DAC2_pin=ILLEGAL8;	// !flag ILLEGAL8 or 26	// ILLEGAL8==!flag or pin
 
@@ -2159,7 +2160,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 //    magic_trigger_ON();
     #else
       if(HARDWARE.musicbox_trigger_pin != ILLEGAL8)
-        pinMode(HARDWARE.musicbox_trigger_pin, INPUT);
+	pinMode(HARDWARE.musicbox_trigger_pin, INPUT);
     #endif
   #endif
 #endif
@@ -2518,7 +2519,7 @@ void loop() {	// ARDUINO
   #if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
     #if defined MAGICAL_TOILET_HACKS	// some quick dirty hacks
       if(HARDWARE.musicbox_trigger_pin != ILLEGAL8) {
-        if(digitalRead(HARDWARE.musicbox_trigger_pin))
+	if(digitalRead(HARDWARE.musicbox_trigger_pin))
 	  musicBox_trigger_got_hot();	// must be called when musicBox trigger was detected high
       }
     #else
