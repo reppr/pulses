@@ -8,11 +8,7 @@
 
 // testing RTOS task priority for monochrome display routines:
 #define MONOCHROME_PRIORITY	0	// seems best
-//#define MONOCHROME_PRIORITY	1	// was 0
-//#define MONOCHROME_PRIORITY	2	// was 0
 
-#define MONOCHROME_TEXT_BUFFER_SIZE	156	// (7*22 +2)	// TODO: more versatile implementation
-char monochrome_text_buffer[MONOCHROME_TEXT_BUFFER_SIZE] = {0};
 
 typedef struct print_descrpt_t {
   int16_t col=0;
@@ -22,7 +18,6 @@ typedef struct print_descrpt_t {
   //uint8_t colour=0;
   //bool inverted=false;
   char* text = NULL;
-  //char* text = (char*) &monochrome_text_buffer;
 } print_descrpt_t;
 
 bool /*error*/ copy_text_to_text_buffer(char* text, print_descrpt_t* txt_descr_p) {
@@ -50,7 +45,8 @@ void free_text_buffer(print_descrpt_t* txt_descr_p) {
   MENU.outln("DEBUG_ePAPER\tfree_text_buffer() ");
   // MENU.print_free_RAM(); MENU.tab();		// deactivated	***I HAD CRASHES HERE***
 #endif
-  free((*txt_descr_p).text);
+  if((*txt_descr_p).text != NULL)
+    free((*txt_descr_p).text);
   free(txt_descr_p);
 }
 
@@ -63,6 +59,7 @@ void MC_do_on_other_core_task(void* function_p) {
   void (*fp)() = (void (*)()) function_p;
 
   xSemaphoreTake(MC_mux, portMAX_DELAY);
+
   (*fp)();
 
   vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);

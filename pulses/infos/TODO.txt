@@ -781,3 +781,13 @@ HARDWARE
 
 
 extern void MC_esp_now_peer_list();	// TODO: HAS_ePaper
+
+
+// TODO: monochrome_conf_t
+// TODO: void u8x8_SetPowerSave(u8x8_t *u8x8, uint8_t is_enable);
+
+multicore version of  void display_names(arr_descriptor* DB) {
+new do_on_other_core(void (*function_p)(), void* argument_p) version
+
+maybe even with semaphore?
+  generic_do_on_other_core(void (*function_p)(void*), void* argument_p, SemaphoreHandle_t* semaphore_p==NULL)

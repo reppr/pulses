@@ -7115,8 +7115,8 @@ uint8_t /*next_row*/ extended_output(char* text, uint8_t col=0, uint8_t row=0, b
   MENU.out(text);
 #if defined HAS_OLED
   if(monochrome_can_be_used() || force || morse_output_char) {
-    MC_clearLine(row);
-    MC_clearLine(row +1);
+    // MC_clearLine(row);	// was too audible, better now, but removed anyway	TODO: test
+    // MC_clearLine(row +1);	// was too audible, better now, but removed anyway	TODO: test
     MC_big_or_multiline(row, text);
   }
 

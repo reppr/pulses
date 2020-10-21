@@ -3,38 +3,14 @@
 
   see: https://github.com/olikraus/u8g2/wiki/u8x8reference
 */
-
-// DADA	TODO: monochrome_conf_t
-
-// TODO: void u8x8_SetPowerSave(u8x8_t *u8x8, uint8_t is_enable);
-
 #ifndef MONOCHROME_DISPLAY_H
 
+
+//#define MC_DELAY_MS	10	// delay MC_mux lock release		// TODO: test&trimm	maybe obsolete?
+#define MC_DELAY_MS	0	// *NO* delay MC_mux lock release?	// TODO: maybe OBSOLETE:?
+
 #if defined MULTICORE_DISPLAY
-  #include <freertos/task.h>
-
-  // testing RTOS task priority for monochrome display routines:
-  #define MONOCHROME_PRIORITY	0	// seems best
-  //#define MONOCHROME_PRIORITY	1	// was 0
-  //#define MONOCHROME_PRIORITY	2	// was 0
-
-/* MUTEX for 2x2 printing (or just wait a bit... ;)
-  SemaphoreHandle_t monochrome_mutex = xSemaphoreCreateMutex();
-*/
-
-  typedef struct display_string_t {
-    char * text=NULL;
-    short col=0;
-    short row=0;
-    //uint8_t size=0;
-    //uint8_t colour=0;
-    //bool inverted=false;
-  } display_string_t;
-
-  display_string_t monochrome_descriptor;				// HACK:  uses global data structure...
-
-  #define MONOCHROME_TEXT_BUFFER_SIZE	17				// TODO: more versatile implementation
-  char monochrome_text_buffer[MONOCHROME_TEXT_BUFFER_SIZE] = {0};	// HACK:  uses global buffer
+  #include "multicore_display_common.h"
 #endif
 
 #include <U8x8lib.h>
@@ -129,7 +105,7 @@ void monochrome_show_program_version() {	// monochrome oled display
 
 #if defined MULTICORE_DISPLAY
 void inline MC_show_program_version() {
-  do_on_other_core(&monochrome_show_program_version);
+  MC_do_on_other_core(&monochrome_show_program_version);
 }
 #else
 void inline MC_show_program_version() {
@@ -180,7 +156,7 @@ uint8_t /*next_row*/ monochrome_multiline_string(uint8_t row, char* s) { // mult
 } // monochrome multiline string()
 
 
-void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be used while playing
+void monochrome_show_musicBox_parameters() {
   extern char run_state_symbol();
 
   if(monochrome_can_be_used()) {
@@ -303,7 +279,7 @@ void monochrome_show_musicBox_parameters() {	// ATTENTION: takes too long to be 
 
 #if defined MULTICORE_DISPLAY
 void inline MC_show_musicBox_parameters() {
-  do_on_other_core(&monochrome_show_musicBox_parameters);
+  MC_do_on_other_core(&monochrome_show_musicBox_parameters);
 }
 #else
 void inline MC_show_musicBox_parameters() {
@@ -332,54 +308,7 @@ void monochrome_show_line(uint8_t row, char * s) {	// TODO: redundant? see: mono
     (*u8x8_p).setCursor(0,row);
     (*u8x8_p).print(full_line);
   }
-}
-
-#if defined MULTICORE_DISPLAY
-TaskHandle_t multicore_show_line_handle;
-
-void multicore_show_line_task(void* data_) {
-  display_string_t* data = (display_string_t*) data_;
-  monochrome_show_line(data->row, data->text);
-  vTaskDelete(NULL);
-}
-
-void multicore_show_line(uint8_t row, char* str) {	// create and do one shot task
-  char c;
-  for(int i=0; i < MONOCHROME_TEXT_BUFFER_SIZE; i++) {
-    c = monochrome_text_buffer[i] = str[i];
-    if(c==0)
-      break;
-  }
-  monochrome_text_buffer[MONOCHROME_TEXT_BUFFER_SIZE - 1]=0;
-  monochrome_descriptor.text = (char*) &monochrome_text_buffer;
-
-  monochrome_descriptor.col = 0;
-  monochrome_descriptor.row = row;
-
-  BaseType_t err = xTaskCreatePinnedToCore(multicore_show_line_task,		// function
-					   "show_line",				// name
-					   2000,				// stack size
-					   &monochrome_descriptor,		// task input parameter
-					   MONOCHROME_PRIORITY,			// task priority
-					   &multicore_show_line_handle,		// task handle
-					   0);					// core 0
-  if(err != pdPASS) {
-    MENU.out(err);
-    MENU.space();
-    MENU.error_ln(F("show_line"));
-  }
-}
-
-void MC_show_line(uint8_t row, char* str) {	// strange compiling problems when used as inline ????
-  multicore_show_line(row, str);
-}
-
-#else
-void inline MC_show_line(uint8_t row, char* str) {
-  monochrome_show_line(row, str);
-}
-#endif // MULTICORE_DISPLAY
-
+} // monochrome_show_line()
 
 void monochrome_display_message(char* message) {
   if(monochrome_can_be_used()) {
@@ -391,17 +320,31 @@ void monochrome_display_message(char* message) {
 #if defined MULTICORE_DISPLAY
 TaskHandle_t multicore_display_message_handle;
 
-void multicore_display_message_task(void* text_) {
-  char* text = (char*) text_;
-  monochrome_display_message(text);
+void multicore_display_message_task(void* data_) {
+  print_descrpt_t* data = (print_descrpt_t*) data_;
+
+  xSemaphoreTake(MC_mux, portMAX_DELAY);
+
+  monochrome_display_message(data->text);
+
+  free_text_buffer(data);
+  vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
+  xSemaphoreGive(MC_mux);
   vTaskDelete(NULL);
 }
 
 void multicore_display_message(char* text) {	// create and do one shot task
+  print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
+  if(txt_descript_p == NULL) {
+    MENU.error_ln(F("txt_descript malloc()"));
+    return;	// ERROR
+  }
+  copy_text_to_text_buffer(text, txt_descript_p);
+
   BaseType_t err = xTaskCreatePinnedToCore(multicore_display_message_task,		// function
 					   "display_message",			// name
 					   2000,				// stack size
-					   &text,				// task input parameter
+					   txt_descript_p,				// task input parameter
 					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_display_message_handle,		// task handle
 					   0);					// core 0
@@ -480,29 +423,32 @@ void monochrome_print2x2(uint8_t col, uint8_t row, char* str) {	// for short 2x2
 TaskHandle_t multicore_print2x2_handle;
 
 void multicore_print2x2_task(void* data_) {
-  display_string_t* data = (display_string_t*) data_;
+  print_descrpt_t* data = (print_descrpt_t*) data_;
+
+  xSemaphoreTake(MC_mux, portMAX_DELAY);
+
   monochrome_print2x2(data->col, data->row, data->text);
 
+  free_text_buffer(data);
+  vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
+  xSemaphoreGive(MC_mux);
   vTaskDelete(NULL);
 }
 
-void multicore_print2x2(uint8_t col, uint8_t row, char* str) {	// create and do one shot task
-  char c;
-  for(int i=0; i < MONOCHROME_TEXT_BUFFER_SIZE; i++) {
-    c = monochrome_text_buffer[i] = str[i];
-    if(c==0)
-      break;
+void multicore_print2x2(uint8_t col, uint8_t row, char* text) {	// create and do one shot task
+  print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
+  if(txt_descript_p == NULL) {
+    MENU.error_ln(F("txt_descript malloc()"));
+    return;	// ERROR
   }
-  monochrome_text_buffer[MONOCHROME_TEXT_BUFFER_SIZE - 1]=0;
-  monochrome_descriptor.text = (char*) &monochrome_text_buffer;
-
-  monochrome_descriptor.col = col;
-  monochrome_descriptor.row = row;
+  copy_text_to_text_buffer(text, txt_descript_p);
+  txt_descript_p->col = col;
+  txt_descript_p->row = row;
 
   BaseType_t err = xTaskCreatePinnedToCore(multicore_print2x2_task,		// function
 					   "print2x2",				// name
 					   2000,				// stack size
-					   &monochrome_descriptor,		// task input parameter
+					   txt_descript_p,			// task input parameter
 					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_print2x2_handle,		// task handle
 					   0);					// core 0
@@ -548,29 +494,30 @@ void monochrome_println2x2(uint8_t row, char* str) {	// 2x2 lines
 TaskHandle_t multicore_println2x2_handle;
 
 void multicore_println2x2_task(void* data_) {
-  display_string_t* data = (display_string_t*) data_;
+  print_descrpt_t* data = (print_descrpt_t*) data_;
+  xSemaphoreTake(MC_mux, portMAX_DELAY);
+
   monochrome_println2x2(data->row, data->text);
 
+  free_text_buffer(data);
+  vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
+  xSemaphoreGive(MC_mux);
   vTaskDelete(NULL);
 }
 
-void multicore_println2x2(uint8_t row, char* str) {	// create and do one shot task
-  char c;
-  for(int i=0; i < MONOCHROME_TEXT_BUFFER_SIZE; i++) {
-    c = monochrome_text_buffer[i] = str[i];
-    if(c==0)
-      break;
+void multicore_println2x2(uint8_t row, char* text) {	// create and do one shot task
+  print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
+  if(txt_descript_p == NULL) {
+    MENU.error_ln(F("txt_descript malloc()"));
+    return;	// ERROR
   }
-  monochrome_text_buffer[MONOCHROME_TEXT_BUFFER_SIZE - 1]=0;
-  monochrome_descriptor.text = (char*) &monochrome_text_buffer;
-
-  monochrome_descriptor.col = 0;
-  monochrome_descriptor.row = row;
+  copy_text_to_text_buffer(text, txt_descript_p);
+  txt_descript_p->row = row;
 
   BaseType_t err = xTaskCreatePinnedToCore(multicore_println2x2_task,		// function
 					   "println2x2",			// name
 					   2000,				// stack size
-					   &monochrome_descriptor,		// task input parameter
+					   txt_descript_p,			// task input parameter
 					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_println2x2_handle,	// task handle
 					   0);					// core 0
@@ -644,29 +591,30 @@ uint8_t /*next_row*/ monochrome_big_or_multiline(int row, char* str) {
 TaskHandle_t multicore_big_or_multiline_handle;
 
 void multicore_big_or_multiline_task(void* data_) {
-  display_string_t* data = (display_string_t*) data_;
+  print_descrpt_t* data = (print_descrpt_t*) data_;
+  xSemaphoreTake(MC_mux, portMAX_DELAY);
+
   monochrome_big_or_multiline(data->row, data->text);
 
+  free_text_buffer(data);
+  vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
+  xSemaphoreGive(MC_mux);
   vTaskDelete(NULL);
 }
 
-void multicore_big_or_multiline(uint8_t row, char* str) {	// create and do one shot task
-  char c;
-  for(int i=0; i < MONOCHROME_TEXT_BUFFER_SIZE; i++) {
-    c = monochrome_text_buffer[i] = str[i];
-    if(c==0)
-      break;
+void multicore_big_or_multiline(uint8_t row, char* text) {	// create and do one shot task
+  print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
+  if(txt_descript_p == NULL) {
+    MENU.error_ln(F("txt_descript malloc()"));
+    return;	// ERROR
   }
-  monochrome_text_buffer[MONOCHROME_TEXT_BUFFER_SIZE - 1]=0;
-  monochrome_descriptor.text = (char*) &monochrome_text_buffer;
-
-  monochrome_descriptor.col = 0;
-  monochrome_descriptor.row = row;
+  copy_text_to_text_buffer(text, txt_descript_p);
+  txt_descript_p->row = row;
 
   BaseType_t err = xTaskCreatePinnedToCore(multicore_big_or_multiline_task,	// function
 					   "big_or_multilin",			// name
 					   2000,				// stack size
-					   &monochrome_descriptor,		// task input parameter
+					   txt_descript_p,			// task input parameter
 					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_big_or_multiline_handle,	// task handle
 					   0);					// core 0
@@ -734,19 +682,30 @@ inline void monochrome_setCursor(uint8_t col, uint8_t row) {
 TaskHandle_t multicore_setCursor_handle;
 
 void multicore_setCursor_task(void* data_) {
-  display_string_t* data = (display_string_t*) data_;
+  print_descrpt_t* data = (print_descrpt_t*) data_;
+  xSemaphoreTake(MC_mux, portMAX_DELAY);
+
   monochrome_setCursor(data->col, data->row);
+
+  free_text_buffer(data);
+  vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
+  xSemaphoreGive(MC_mux);
   vTaskDelete(NULL);
 }
 
 void multicore_setCursor(uint8_t col, uint8_t row) {	// create and do one shot task
-  display_string_t data;
-  data.col = col;
-  data.row = row;
+  print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
+  if(txt_descript_p == NULL) {
+    MENU.error_ln(F("txt_descript malloc()"));
+    return;	// ERROR
+  }
+  txt_descript_p->col = col;
+  txt_descript_p->row = row;
+
   BaseType_t err = xTaskCreatePinnedToCore(multicore_setCursor_task,		// function
 					   "setCursor",			// name
 					   2000,				// stack size
-					   &data,				// task input parameter
+					   txt_descript_p,				// task input parameter
 					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_setCursor_handle,		// task handle
 					   0);					// core 0
@@ -776,17 +735,30 @@ inline void monochrome_print(char* str) {
 #if defined MULTICORE_DISPLAY
 TaskHandle_t multicore_print_handle;
 
-void multicore_print_task(void* text_) {
-  char* text = (char*) text_;
-  monochrome_print(text);
+void multicore_print_task(void* data_) {
+  print_descrpt_t* data = (print_descrpt_t*) data_;
+  xSemaphoreTake(MC_mux, portMAX_DELAY);
+
+  monochrome_print(data->text);
+  
+  free_text_buffer(data);
+  vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
+  xSemaphoreGive(MC_mux);
   vTaskDelete(NULL);
 }
 
 void multicore_print(char* text) {	// create and do one shot task
+  print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
+  if(txt_descript_p == NULL) {
+    MENU.error_ln(F("txt_descript malloc()"));
+    return;	// ERROR
+  }
+  copy_text_to_text_buffer(text, txt_descript_p);
+
   BaseType_t err = xTaskCreatePinnedToCore(multicore_print_task,		// function
 					   "print",			// name
 					   2000,				// stack size
-					   &text,				// task input parameter
+					   txt_descript_p,			// task input parameter
 					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_print_handle,		// task handle
 					   0);					// core 0
@@ -861,18 +833,30 @@ inline void monochrome_clearLine(uint8_t row) {	// slow
 TaskHandle_t multicore_clearLine_handle;
 
 void multicore_clearLine_task(void* data_) {
-  display_string_t* data = (display_string_t*) data_;
+  print_descrpt_t* data = (print_descrpt_t*) data_;
+  xSemaphoreTake(MC_mux, portMAX_DELAY);
+
   monochrome_clearLine(data->row);
+
+  free_text_buffer(data);
+  vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
+  xSemaphoreGive(MC_mux);
   vTaskDelete(NULL);
 }
 
 void multicore_clearLine(uint8_t row) {	// create and do one shot task
-  display_string_t data;
-  data.row = row;
+  print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
+  if(txt_descript_p == NULL) {
+    MENU.error_ln(F("txt_descript malloc()"));
+    return;	// ERROR
+  }
+  txt_descript_p->text = NULL;
+  txt_descript_p->row = row;
+
   BaseType_t err = xTaskCreatePinnedToCore(multicore_clearLine_task,		// function
 					   "clearLine",			// name
 					   2000,				// stack size
-					   &data,				// task input parameter
+					   txt_descript_p,			// task input parameter
 					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_clearLine_handle,	// task handle
 					   0);					// core 0
@@ -954,7 +938,7 @@ void monochrome_show_tuning() {
 
 #if defined MULTICORE_DISPLAY
 void inline MC_show_tuning() {
-  do_on_other_core(&monochrome_show_tuning);
+  MC_do_on_other_core(&monochrome_show_tuning);
 }
 #else
  void inline MC_show_tuning() {
@@ -996,7 +980,7 @@ void monochrome_show_peer_list() {
 
 void MC_esp_now_peer_list() {
 #if defined MULTICORE_DISPLAY
-  do_on_other_core(&monochrome_show_peer_list);
+  MC_do_on_other_core(&monochrome_show_peer_list);
 #else
   monochrome_show_peer_list();
 #endif
@@ -1073,6 +1057,10 @@ void hw_display_setup() {
     MENU.error_ln(F("unknown monochrome_type"));
   }
   MENU.ln();
+
+  if(MC_mux == NULL)
+    MC_mux = xSemaphoreCreateMutex();
+
 } // hw_display_setup()
 
 #define MONOCHROME_DISPLAY_H

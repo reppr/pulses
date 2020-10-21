@@ -4503,7 +4503,7 @@ bool musicBox_reaction(char token) {
       {
 	char* str;
 	str = selected_name(SCALES);
-	monochrome_big_or_multiline(0, str);
+	MC_big_or_multiline(0, str);
 	MENU.outln(str);
 
 #if defined ICODE_INSTEAD_OF_JIFFLES	// TODO: REMOVE: after testing a while
@@ -4511,7 +4511,7 @@ bool musicBox_reaction(char token) {
 #else
 	str = selected_name(JIFFLES);
 #endif
-	monochrome_big_or_multiline(3, str);
+	MC_big_or_multiline(3, str);
 	MENU.outln(str);
 	// TODO: monochrome metric_mnemonic 'IR...'
       }
