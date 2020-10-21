@@ -4522,8 +4522,11 @@ bool musicBox_reaction(char token) {
 
     case 'P':	// 'IP<num>' show preset names on monochrome display
       MENU.drop_input_token();
+      new_input = MENU.numeric_input(0);
 #if defined HAS_OLED	// TODO: ePaper
-      monochrome_preset_names(MENU.numeric_input(0));	// TODO: ePaper	//  n==0: continue through the list, or start at n
+      monochrome_preset_names(new_input);	//  n==0: continue through the list, or start at n
+#elif defined HAS_ePaper
+      show_ePaper_preset_names(new_input);	//  n==0: continue through the list, or start at n
 #endif
       break;
 

@@ -67,8 +67,60 @@ void monochrome_preset_names(short start_at_preset=0) {
   load_preset((int) preset_was, false);		// restore preset
   MENU.verbosity = verbosity_was;
 } // monochrome_preset_names()
-#endif // HAS_OLED
 
+#elif defined HAS_ePaper
+
+short preset_list_start_at=0;	// next start
+
+void ePaper_preset_names() {
+  int preset_was = musicBoxConf.preset;
+  int verbosity_was=MENU.verbosity;
+  MENU.verbosity = 0;	// *no* output from set_metric_pitch
+  short rows = 5;
+  uint8_t col;
+  char buffer[28] = {0};	// TODO: 28 was trial&error
+
+  ePaper.setFullWindow();
+  ePaper.fillScreen(GxEPD_WHITE);
+  ePaper.setCursor(0,0);
+  //  ePaper.display(true);
+
+  musicBoxConf.preset = preset_list_start_at;
+  for(int row=0; row<rows; row++) {
+    if(musicBoxConf.preset++ >= MUSICBOX_PRESETs) {
+      musicBoxConf.preset=0;
+      break;
+    } // else
+    ePaper.println();
+    load_preset((int) musicBoxConf.preset, false);
+    ePaper.print(musicBoxConf.preset);
+    MENU.out(musicBoxConf.preset);
+    ePaper.print(' ');
+    MENU.space();
+    col=2;
+    if(musicBoxConf.preset>9)
+      col++;
+    if(musicBoxConf.preset>99)
+      col++;
+    strncpy(buffer, musicBoxConf.name, sizeof(buffer) - col -1);
+    ePaper.print(buffer);
+    MENU.outln(musicBoxConf.name);
+  }
+  ePaper.display(true);
+
+  preset_list_start_at=musicBoxConf.preset;
+  musicBoxConf.preset = preset_was;
+  load_preset((int) preset_was, false);		// restore preset
+  MENU.verbosity = verbosity_was;
+} // ePaper_preset_names(void)
+
+void show_ePaper_preset_names(short start_at_preset) {
+  if(start_at_preset > 0)
+    preset_list_start_at = start_at_preset - 1;
+
+  MC_do_on_other_core(&ePaper_preset_names);
+}
+#endif
 
 int search_preset_list(char* s) {
   if(s==NULL || strlen(s)==0)

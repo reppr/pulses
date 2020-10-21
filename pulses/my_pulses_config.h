@@ -17,12 +17,12 @@
 
 // DISPLAY HARDWARE:	activate ZERO or *ONE* of the following DISPLAYs
 //	do you use a board with OLED DISPLAY?
-#define BOARD_HELTEC_OLED	// Heltec OLED BOARD		// triggers HAS_OLED and HAS_DISPLAY
+//#define BOARD_HELTEC_OLED	// Heltec OLED BOARD		// triggers HAS_OLED and HAS_DISPLAY
 //#define BOARD_OLED_LIPO	// LiPo battery OLED BOARD	// triggers HAS_OLED and HAS_DISPLAY
 //
 // or	do you use an ePaper DISPLAY?
 //#define HAS_ePaper290_on_DEV_KIT	// triggers HAS_ePaper and HAS_DISPLAY
-//#define BOARD_LILYGO_T5		// triggers HAS_ePaper and HAS_DISPLAY
+#define BOARD_LILYGO_T5		// triggers HAS_ePaper and HAS_DISPLAY
 
 
 //#define USE_ADS1115_AT_ADDR	0x48

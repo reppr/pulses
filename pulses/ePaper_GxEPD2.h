@@ -694,6 +694,53 @@ void inline MC_display_message(char* text) {
 } // MC_display_message()
 
 
+#if defined USE_ESP_NOW
+void ePaper_show_peer_list() {
+  int peer_cnt=0;
+  for(int i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {
+    if(mac_is_non_zero(esp_now_pulses_known_peers[i].mac_addr))
+      peer_cnt++;
+  }
+
+  ePaper.setFullWindow();
+  ePaper.fillScreen(GxEPD_WHITE);
+//  ePaper.setCursor(0,0);
+//  ePaper.println();
+//  ePaper.print(F("known peers:"));	// will be overwritten if there are any known peers
+  ePaper.setCursor(0,0);
+  ePaper.println();
+
+  uint8_t row=0;
+  bool is_send_to_peer;
+  for(int i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {
+    if(mac_is_non_zero(esp_now_pulses_known_peers[i].mac_addr)) {
+      ePaper.print(i+1);
+      if(is_send_to_peer = (! mac_cmp(esp_now_send2_mac_p, esp_now_pulses_known_peers[i].mac_addr)))	// send to peer?
+	ePaper.print('>');
+      else
+	ePaper.print(' ');
+      ePaper.print(esp_now_pulses_known_peers[i].preName);
+      if(is_send_to_peer)
+	ePaper.print(F(" <"));
+      ePaper.println();
+    }
+  }
+  if(peer_cnt==0)
+    ePaper.print("no peers");
+
+  ePaper.display(true);
+} // ePaper_show_peer_list()
+
+void MC_esp_now_peer_list() {
+#if defined MULTICORE_DISPLAY
+  MC_do_on_other_core(&ePaper_show_peer_list);
+#else
+  ePaper_show_peer_list();
+#endif
+}
+#endif // USE_ESP_NOW
+
+
 #if defined DEBUG_ePAPER
   #include "ePaper_debugging.h"
 #endif

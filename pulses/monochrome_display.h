@@ -985,7 +985,7 @@ void MC_esp_now_peer_list() {
   monochrome_show_peer_list();
 #endif
 }
-#endif
+#endif // USE_ESP_NOW
 
 
 void inline monochrome_set_default_font() {
