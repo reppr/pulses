@@ -6,7 +6,6 @@
 #if ! defined GXEPD2_EPAPER_H
 
 //#define DEBUG_ePAPER
-#define USE_MC_SEMAPHORE
 #define MC_DELAY_MS	10	// delay MC_mux lock release	// TODO: test&trimm	maybe obsolete?    ################
 #define USE_MANY_FONTS		// uses some more program storage space
 
@@ -123,27 +122,19 @@
   //#endif
   }
 
-
-  #if defined USE_MC_SEMAPHORE
-    SemaphoreHandle_t MC_mux = NULL;
-  #endif
-
+  SemaphoreHandle_t MC_mux = NULL;
 
   // MC_do_on_other_core() version with MC_mux and MC_DELAY_MS
   TaskHandle_t MC_do_on_other_core_handle;
 
   void MC_do_on_other_core_task(void* function_p) {
     void (*fp)() = (void (*)()) function_p;
-    #if defined USE_MC_SEMAPHORE
-      xSemaphoreTake(MC_mux, portMAX_DELAY);
-    #endif
 
+    xSemaphoreTake(MC_mux, portMAX_DELAY);
     (*fp)();
 
     vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
-    #if defined USE_MC_SEMAPHORE
-      xSemaphoreGive(MC_mux);
-    #endif
+    xSemaphoreGive(MC_mux);
     vTaskDelete(NULL);
   }
 
@@ -197,10 +188,8 @@ void ePaper_infos() {
 void setup_ePaper_GxEPD2() {
   MENU.outln(F("setup_ePaper_GxEPD2()"));
 
-  #if defined USE_MC_SEMAPHORE
   if(MC_mux == NULL)
     MC_mux = xSemaphoreCreateMutex();
-  #endif
 
   //ePaper.init(500000);	// debug baudrate
   ePaper.init(0);		// no debugging
@@ -317,16 +306,13 @@ TaskHandle_t ePaper_print_at_handle;
 
 void ePaper_print_at_task(void* data_) {
   print_descrpt_t* data = (print_descrpt_t*) data_;
-  #if defined USE_MC_SEMAPHORE
-    xSemaphoreTake(MC_mux, portMAX_DELAY);
-  #endif
+
+  xSemaphoreTake(MC_mux, portMAX_DELAY);
   ePaper_print_at(data->col, data->row, data->text, data->offset_y);
   free_text_buffer(data);
 
   vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
-  #if defined USE_MC_SEMAPHORE
-    xSemaphoreGive(MC_mux);
-  #endif
+  xSemaphoreGive(MC_mux);
   vTaskDelete(NULL);
 }
 
@@ -374,15 +360,12 @@ void MC_printBIG_at(int16_t col, int16_t row, char* text, int16_t offset_y=0) {
   MENU.outln(F("DEBUG_ePAPER\tMC_printBIG_at()"));
 #endif
 
-  #if defined USE_MC_SEMAPHORE
-    xSemaphoreTake(MC_mux, portMAX_DELAY);
-  #endif
+  xSemaphoreTake(MC_mux, portMAX_DELAY);
   set_used_font(&FreeMonoBold12pt7b);
 
   vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
-  #if defined USE_MC_SEMAPHORE
-    xSemaphoreGive(MC_mux);
-  #endif
+  xSemaphoreGive(MC_mux);
+
   MC_print_at(col, row, text, offset_y);
 }
 
@@ -391,17 +374,13 @@ void monochrome_clear() {
   MENU.outln(F("DEBUG_ePAPER\tmonochrome_clear()"));
 #endif
 
-  #if defined USE_MC_SEMAPHORE
-    xSemaphoreTake(MC_mux, portMAX_DELAY);
-  #endif
+  xSemaphoreTake(MC_mux, portMAX_DELAY);
   ePaper.setFullWindow();
   ePaper.fillScreen(GxEPD_WHITE);
   ePaper.display(true);
 
   vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
-  #if defined USE_MC_SEMAPHORE
-    xSemaphoreGive(MC_mux);
-  #endif
+  xSemaphoreGive(MC_mux);
 } // monochrome_clear()
 
 
@@ -609,17 +588,14 @@ TaskHandle_t ePaper_1line_at_handle;
 
 void ePaper_1line_at_task(void* data_) {
   print_descrpt_t* data = (print_descrpt_t*) data_;
-  #if defined USE_MC_SEMAPHORE
-    xSemaphoreTake(MC_mux, portMAX_DELAY);
-  #endif
+
+  xSemaphoreTake(MC_mux, portMAX_DELAY);
   set_used_font(&FreeSansBold9pt7b);
   ePaper_print_1line_at(data->row, data->text, data->offset_y);
   free_text_buffer(data);
 
   vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
-  #if defined USE_MC_SEMAPHORE
-    xSemaphoreGive(MC_mux);
-  #endif
+  xSemaphoreGive(MC_mux);
   vTaskDelete(NULL);
 }
 
@@ -726,9 +702,7 @@ void ePaper_BIG_or_multiline(int16_t row, char* text) {	// unused?
   MENU.outln(text);
 #endif
 
-  #if defined USE_MC_SEMAPHORE
-    xSemaphoreTake(MC_mux, portMAX_DELAY);
-  #endif
+  xSemaphoreTake(MC_mux, portMAX_DELAY);	// TODO: could delay application core
 
   int16_t col=0;
 
@@ -740,9 +714,7 @@ void ePaper_BIG_or_multiline(int16_t row, char* text) {	// unused?
   ePaper_print_at(col/*0*/, row, text);
   ePaper.display(true);
 
-  #if defined USE_MC_SEMAPHORE
-    xSemaphoreGive(MC_mux);
-  #endif
+  xSemaphoreGive(MC_mux);
 } // ePaper_BIG_or_multiline()
 
 

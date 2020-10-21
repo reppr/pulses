@@ -763,5 +763,12 @@ mpu6050	// TODO: jiffle or iCODE ???
 
 pulses_boards.h		LILYGO etc
 
-USE_MC_SEMAPHORE, always do that, obsolete
 MC_SEMAPHORE for OLED display too
+
+void ePaper_BIG_or_multiline(int16_t row, char* text) {
+  xSemaphoreTake(MC_mux, portMAX_DELAY);	// TODO: could delay application core
+}
+
+void morse_do_output() {
+    xSemaphoreTake(MC_mux, portMAX_DELAY);	// TODO: could delay application...
+}
