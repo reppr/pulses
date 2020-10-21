@@ -63,96 +63,9 @@
 
 
 #if defined MULTICORE_DISPLAY
-  #include <freertos/task.h>
-
-  // testing RTOS task priority for monochrome display routines:
-  #define MONOCHROME_PRIORITY	0	// seems best
-  //#define MONOCHROME_PRIORITY	1	// was 0
-  //#define MONOCHROME_PRIORITY	2	// was 0
-
-/*
-  // MUTEX for ePaper printing (or just wait a bit... ;)
-  portMUX_TYPE display_MUX = portMUX_INITIALIZER_UNLOCKED;
-  // SemaphoreHandle_t display_MUTEX = xSemaphoreCreateMutex();
-*/
-
-  #define MONOCHROME_TEXT_BUFFER_SIZE	156	// (7*22 +2)	// TODO: more versatile implementation
-  char monochrome_text_buffer[MONOCHROME_TEXT_BUFFER_SIZE] = {0};
-
-  typedef struct print_descrpt_t {
-    int16_t col=0;
-    int16_t row=0;
-    int16_t offset_y=0;
-    //uint8_t size=0;
-    //uint8_t colour=0;
-    //bool inverted=false;
-    char* text = NULL;
-    //char* text = (char*) &monochrome_text_buffer;
-  } print_descrpt_t;
-
-  bool /*error*/ copy_text_to_text_buffer(char* text, print_descrpt_t* txt_descr_p) {
-    char* txt_p = (char*) malloc(strlen(text) + 1);
-    if(txt_p == NULL) {
-      goto malloc_error;
-    }
-    txt_descr_p->text = txt_p;
-
-    char c;
-    for(int i=0; ; i++) {
-      c = txt_descr_p->text[i] = text[i];
-      if(c==0)
-	break;
-    }
-    return false;	// OK
-
-  malloc_error:
-    MENU.error_ln(F("text buffer malloc()"));
-    return true;	// ERROR
-  } // copy_text_to_text_buffer()
-
-  void free_text_buffer(print_descrpt_t* txt_descr_p) {
-  #if defined DEBUG_ePAPER
-    MENU.out("DEBUG_ePAPER\tfree_text_buffer() ");
-    MENU.ln();	//    MENU.print_free_RAM(); MENU.tab();	// deactivated	***I HAD CRASHES HERE***
-  #endif
-    free((*txt_descr_p).text);
-    free(txt_descr_p);
-  //#if defined DEBUG_ePAPER
-  //  MENU.print_free_RAM(); MENU.ln();			// deactivated both
-  //#endif
-  }
-
-  SemaphoreHandle_t MC_mux = NULL;
-
-  // MC_do_on_other_core() version with MC_mux and MC_DELAY_MS
-  TaskHandle_t MC_do_on_other_core_handle;
-
-  void MC_do_on_other_core_task(void* function_p) {
-    void (*fp)() = (void (*)()) function_p;
-
-    xSemaphoreTake(MC_mux, portMAX_DELAY);
-    (*fp)();
-
-    vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
-    xSemaphoreGive(MC_mux);
-    vTaskDelete(NULL);
-  }
-
-  void MC_do_on_other_core(void (*function_p)()) {	// create and do one shot task
-    BaseType_t err = xTaskCreatePinnedToCore(MC_do_on_other_core_task,	// function
-					   "other_fun",			// name
-					   4000,				// stack size
-					   (void*) function_p,			// task input parameter
-					   0,					// task priority
-					   &MC_do_on_other_core_handle,		// task handle
-					   0);					// core 0
-    if(err != pdPASS) {
-      MENU.out(err);
-      MENU.space();
-      MENU.error_ln(F("MC_do_on_other_core"));
-    }
-  }
+  #include "multicore_display_common.h"
 #endif MULTICORE_DISPLAY
+
 
 void ePaper_infos() {
   MENU.outln(F("ePaper_infos()"));
