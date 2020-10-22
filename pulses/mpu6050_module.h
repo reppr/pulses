@@ -104,7 +104,7 @@ bool mpu6050_setup() {
     MENU.out(o);
     MENU.outln('}');
     if(offsets_zero)
-      MENU.error_ln(F("accGyro not calibrated"));
+      ERROR_ln(F("accGyro not calibrated"));
     MENU.ln();
 
     return true;	// OK (but calibration *might* be missing)

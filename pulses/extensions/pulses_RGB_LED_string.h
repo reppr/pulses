@@ -232,7 +232,7 @@ void HSV_2_RGB_degree(pixelColor_t* pixel, float H, float S, float V) {	// TODO:
     MENU.out(h_i);
     if(h_i < 0 || h_i > 6) {	// catch programming errors ;)
       MENU.tab();
-      MENU.error_ln(F("HSV_2_RGB_degree()\th_i"));
+      ERROR_ln(F("HSV_2_RGB_degree()\th_i"));
     } else
       MENU.ln();
   #endif
@@ -277,19 +277,19 @@ void HSV_2_RGB_degree(pixelColor_t* pixel, float H, float S, float V) {	// TODO:
 //	  if(pixel->r<0 || pixel->r>1) {
 //	    MENU.out(pixel->r);
 //	    MENU.tab();
-//	    MENU.error_ln(F("HSV_2_RGB_degree()\tR"));
+//	    ERROR_ln(F("HSV_2_RGB_degree()\tR"));
 //	  }
 //	  if(pixel->g<0 || pixel->g>1) {
 //	    MENU.out(pixel->g);
 //	    MENU.tab();
-//	    MENU.error_ln(F("HSV_2_RGB_degree()\tG"));
+//	    ERROR_ln(F("HSV_2_RGB_degree()\tG"));
 //	  }
 //	  if((*pixel).b<0 || pixel->b>1) {
 //	    MENU.out(pixel->b);
 //	    MENU.tab();
-//	    MENU.error_ln(F("HSV_2_RGB_degree()\tB"));
+//	    ERROR_ln(F("HSV_2_RGB_degree()\tB"));
 //	  }
-}
+} // HSV_2_RGB_degree()
 
 
 //	// TODO: remove, just a test	################
@@ -630,10 +630,10 @@ void set_rgb_led_background(int pulse) {
       break;
 
     default:
-      MENU.error_ln(F("set_background_algorithm"));
+      ERROR_ln(F("set_background_algorithm"));
     } // switch (RGBstringConf.set_background_algorithm)
   } /* HAS_RGB_LEDs */ else
-    MENU.error_ln(F("no RGB LEDs"));
+    ERROR_ln(F("no RGB LEDs"));
 } // set_rgb_led_background(int pulse)
 
 #if defined MULTICORE_RGB_STRING

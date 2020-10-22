@@ -67,7 +67,7 @@ MENU.outln("DADA AP FIXME: ################");
     break;
 
   default:
-    MENU.error_ln(F("selected_wifi_mode"));	// ################ FIXME: ################
+    ERROR_ln(F("selected_wifi_mode"));	// ################ FIXME: ################
   }
 
   MENU.out(F("connecting to SSID: "));
@@ -122,7 +122,7 @@ MENU.outln("DADA AP FIXME: ################");
 #endif
 
   return false;
-}  // connectWiFi(...)
+} // connectWiFi()
 
 
 // setup_wifi_telnet(?)  might be called (void) from AUTOSTART_WIFI
@@ -143,7 +143,7 @@ bool setup_wifi_telnet(WiFiMode_t selected_wifi_mode=WIFI_DEFAULT_MODE) {
     break;
 
   default:
-    MENU.error_ln(F("wifi_mode"));	// ################ FIXME:	################
+    ERROR_ln(F("wifi_mode"));	// ################ FIXME:	################
   }
 
   if (WiFi.status() == WL_CONNECTED) {
@@ -165,7 +165,7 @@ bool setup_wifi_telnet(WiFiMode_t selected_wifi_mode=WIFI_DEFAULT_MODE) {
   }
 
   return false;
-}
+} // setup_wifi_telnet()
 
 #include "esp_wifi.h"
 #include "WiFi.h"

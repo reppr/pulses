@@ -60,7 +60,7 @@ using namespace std;	// ESP8266 needs that
 #define ILLEGAL16	(short) 0xffff
 #define ILLEGAL32	(int) 0xffffffff
 
-
+extern void ERROR_ln(const char* text);
 /* **************************************************************** */
 // configuration sequence:
 #include "pulses_engine_config.h"	// pulses engine configuration file, do not change
@@ -319,6 +319,25 @@ void show_peer_id(peer_ID_t* this_peer_ID_p) {	// TODO: move?
   uint8_t my_MAC[] = {0,0,0,0,0,0};
 // #endif // defined USE_ESP_NOW || defined USE_NVS
 
+
+void ERROR_ln(const char* text) {	// extended error reporting on MENU, ePaper or OLED, etc
+  MENU.error_ln(text);
+#if defined HAS_DISPLAY
+  uint16_t len = strlen(text) + 5;	// "ERR " + text + '\0'
+  char* str = (char*) malloc(len);
+  if(str == NULL) {	// not even space for error message :(
+    MENU.error_ln(F("malloc()"));
+    return;		// we better return, heap is empty...
+  } // else
+  snprintf(str, len, F("ERR %s"), text);
+  extern void MC_display_message(char*);
+  MC_display_message(str);
+  free(str);
+#endif
+  // ERROR LED?		// TODO: maybe
+  // morse output?	// TODO: maybe
+  // save to spiffs	// TODO: maybe
+} // ERROR_ln()
 
 #if defined USE_ESP_NOW
   #include "esp_now_pulses.h"	// needs pulses_hardware_conf_t  etc
@@ -753,7 +772,7 @@ gpio_pin_t next_gpio(gpio_pin_t set_i=ILLEGAL8) {
 
 gpio_pin_t this_or_next_gpio(int pulse) {
   if(pulse == ILLEGAL32) {
-    MENU.error_ln(F("this_or_next_gpio(ILLEGAL)"));
+    ERROR_ln(F("this_or_next_gpio(ILLEGAL)"));
     return ILLEGAL8;
   }
   if (PULSES.pulses[pulse].flags & HAS_GPIO)	// if a pulse already has gpio, return it
@@ -947,7 +966,7 @@ void selected_DACsq_intensity_proportional(int intensity, int channel) {
   bool there_is_something = (sum != 0.0);
 #else // old int overflow style
   if (sum.overflow)	// FIXME: if ever needed ;)
-    MENU.error_ln(F("sum.overflow"));
+    ERROR_ln(F("sum.overflow"));
   bool there_is_something = sum.time;
 #endif // old int overflow style
 
@@ -1366,7 +1385,7 @@ void show_monochrome_type(int type) {
     MENU.outln(F("LILYGO_T5"));
     break;
   default:
-    MENU.error_ln(F("monochrome_type unknown"));
+    ERROR_ln(F("monochrome_type unknown"));
   }
 } // show_monochrome_type(int type)
 
@@ -1713,7 +1732,7 @@ void show_esp32_pin_capabilities(gpio_pin_t pin) {
     break;
 
   default:
-    MENU.error_ln(F("no pin data"));
+    ERROR_ln(F("no pin data"));
   }
 } // esp32_pin_capabilities()
 
@@ -1831,7 +1850,7 @@ void setup() {
     if(core == 1)
       MENU.ln();
     else
-      MENU.error_ln(F("unexpected core"));
+      ERROR_ln(F("unexpected core"));
   }
 
   MENU.out(F("\tportTICK_PERIOD_MS "));
@@ -2244,7 +2263,7 @@ bool low_priority_tasks() {
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
   if(accGyro_new_data) {	//   check new input data
     if(!mpu6050_available)						// catch bugs, if any ;)  TODO: REMOVE:
-      MENU.error_ln(F("accGyro_new_data  mpu6050_available=false"));	// catch bugs, if any ;)  TODO: REMOVE:
+      ERROR_ln(F("accGyro_new_data  mpu6050_available=false"));	// catch bugs, if any ;)  TODO: REMOVE:
 
     //accGyro_reaction();
     accGyro_reaction_v2();
@@ -3330,7 +3349,7 @@ int tune_selected_2_scale_limited(Harmonical::fraction_t* scaling_p, unsigned in
 	  this_period = base_period;
 	  PULSES.mul_time(&this_period, multiplier);
 	  if(divisor==0)
-	    MENU.error_ln(F("divisor==0"));	// TODO: fix cause, if that happens
+	    ERROR_ln(F("divisor==0"));	// TODO: fix cause, if that happens
 	  else
 	    PULSES.div_time(&this_period, divisor);
 	  PULSES.pulses[pulse].period = this_period;
@@ -3365,7 +3384,7 @@ int tune_selected_2_scale_limited(Harmonical::fraction_t* scaling_p, unsigned in
       MagicConf.octave_shift--;
       scaling_p->multiplier *= 2;	// fixing musicBoxConf.pitch
     } // while off limit, tune octaves down...
-  } else MENU.error_ln(F("invalid tuning"));
+  } else ERROR_ln(F("invalid tuning"));
 
   return MagicConf.octave_shift;
 } // tune_selected_2_scale_limited()
@@ -3404,9 +3423,9 @@ bool tune_2_scale(int voices, unsigned long multiplier, unsigned long divisor, u
       return true;
 
     } else
-      MENU.error_ln(F("no voices"));
+      ERROR_ln(F("no voices"));
   } else
-      MENU.error_ln(F("no scale"));
+      ERROR_ln(F("no scale"));
 
   return false;
 } // tune_2_scale()
@@ -3430,7 +3449,7 @@ int lower_audio_if_too_high(unsigned long limit) {
   for (pulse=0; pulse<PL_MAX; pulse++) {		// check if there *is* period data at all:
     if (PULSES.pulse_is_selected(pulse)) {		//   in the first selected pulse
       if(PULSES.pulses[pulse].period == 0.0) {	//     (disregarding overflow)
-	MENU.error_ln(F("no period data"));
+	ERROR_ln(F("no period data"));
 	MENU.out(F("PRESET "));
 	MENU.outln(musicBoxConf.preset);
 	return INT_MIN;			//   return ERROR INT_MIN  if first selected pulse has no period data (not used yet)
@@ -3456,7 +3475,7 @@ int lower_audio_if_too_high(unsigned long limit) {
   for (pulse=0; pulse<PL_MAX; pulse++) {		// check if there *is* period data at all:
     if (PULSES.pulse_is_selected(pulse)) {		//   in the first selected pulse
       if(PULSES.pulses[pulse].period.time == 0) {	//     (disregarding overflow)
-	MENU.error_ln(F("no period data"));
+	ERROR_ln(F("no period data"));
 	MENU.out(F("PRESET "));
 	MENU.outln(musicBoxConf.preset);
 	return INT_MIN;			//   return ERROR INT_MIN  if first selected pulse has no period data (not used yet)

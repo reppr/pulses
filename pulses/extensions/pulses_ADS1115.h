@@ -117,7 +117,7 @@ void pulses_ADS1115_setup() {
     ADS1115_range_mV = 256;
     break;
   default:
-    MENU.error_ln(F("ADS1115_gain"));
+    ERROR_ln(F("ADS1115_gain"));
   } // switch(ADS1115_gain)
 
   MENU.out(F("\nADS1115_range_mV "));

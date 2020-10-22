@@ -48,7 +48,7 @@ void ledc_audio_setup() {
 //
 //  // Set configuration of timer0 for high speed
 //  if(ledc_timer_config(&ledc_audio_timer_cf);)
-//    MENU.error_ln("ledc_timer_config()");
+//    ERROR_ln("ledc_timer_config()");
 //  else {
 //    ;
 //  }

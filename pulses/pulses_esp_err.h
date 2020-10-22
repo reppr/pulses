@@ -16,7 +16,7 @@ bool /* error */ esp_err_info(esp_err_t status) {
   } else			// not ok
     if(MENU.maybe_display_more(VERBOSITY_LOWEST/* sic! */))	// *do* display that
       // was: if(MENU.maybe_display_more(VERBOSITY_LOWEST/* sic! */) || DEBUG_ESP_NOW_b)	// *do* display that
-      MENU.error_ln(esp_err_to_name(status));
+      ERROR_ln(esp_err_to_name(status));
   return true;		// ERROR
 }
 

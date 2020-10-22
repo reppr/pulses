@@ -1598,14 +1598,14 @@ double pitch_normalised=0.0;	// maybe MOVE?: to musicBoxConf?
 short normalised_octave=0;	// maybe MOVE?: to musicBoxConf?
 double get_normalised_pitch() {
   if(musicBoxConf.pitch.divisor==0)	// savety net
-    MENU.error_ln(F("pitch.divisor==0"));
+    ERROR_ln(F("pitch.divisor==0"));
   else {
     pitch_normalised = musicBoxConf.pitch.multiplier;
     pitch_normalised /= (double) musicBoxConf.pitch.divisor;
     normalised_octave=0;
 
     if(pitch_normalised < 0.0)		// savety net
-      MENU.error_ln(F("pitch_normalised *negative*"));
+      ERROR_ln(F("pitch_normalised *negative*"));
     else {				// everything looks ok
       while(pitch_normalised < 1.0) {	// below 1.0
 	normalised_octave++;
@@ -3299,10 +3299,10 @@ void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from mai
     dacWrite(26,0);	// no influence on noise :(
 
     if(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF))
-      MENU.error_ln(F("esp_sleep_pd_config()"));
+      ERROR_ln(F("esp_sleep_pd_config()"));
 
     if(esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_OFF))
-      MENU.error_ln(F("esp_sleep_pd_config()"));
+      ERROR_ln(F("esp_sleep_pd_config()"));
 
     dac_i2s_disable();
 
@@ -3319,23 +3319,23 @@ void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from mai
 #if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
   if(HARDWARE.musicbox_trigger_pin != ILLEGAL8 )	// hmm, what else could wake me up?
     if (esp_sleep_enable_ext0_wakeup((gpio_num_t) HARDWARE.musicbox_trigger_pin, 1))
-      MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
+      ERROR_ln(F("esp_sleep_enable_ext0_wakeup()"));
 /*
   if(HARDWARE.musicbox_trigger_pin != ILLEGAL8 )	// hmm, what else could wake me up?
     if(gpio_wakeup_enable((gpio_num_t) HARDWARE.musicbox_trigger_pin, GPIO_INTR_LOW_LEVEL))
-      MENU.error_ln(F("gpio_wakeup_enable()"));
+      ERROR_ln(F("gpio_wakeup_enable()"));
 
   if(HARDWARE.musicbox_trigger_pin != ILLEGAL8 )	// hmm, what else could wake me up?
     if (esp_sleep_enable_gpio_wakeup())
-      MENU.error_ln(F("esp_sleep_enable_gpio_wakeup"));
+      ERROR_ln(F("esp_sleep_enable_gpio_wakeup"));
 */
 #endif
 
 //  if(esp_sleep_enable_uart_wakeup(0))		// TODO: ################
-//    MENU.error_ln(F("esp_sleep_enable_uart_wakeup(0)"));
+//    ERROR_ln(F("esp_sleep_enable_uart_wakeup(0)"));
 //
 //  if(esp_sleep_enable_uart_wakeup(1))
-//    MENU.error_ln(F("esp_sleep_enable_uart_wakeup(1)"));
+//    ERROR_ln(F("esp_sleep_enable_uart_wakeup(1)"));
 
   MENU.outln(F("sleep well..."));
   delay(1500);
@@ -3348,7 +3348,7 @@ void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from mai
 #if defined USE_BLUETOOTH_SERIAL_MENU
   /*
   if(esp_bluedroid_enable())	// did not wake up with this one here, now does, or not ;)
-    MENU.error_ln(F("esp_bluedroid_enable()"));
+    ERROR_ln(F("esp_bluedroid_enable()"));
   */
 
   /* first boot: ERROR	TODO: ################ comment?
@@ -3368,7 +3368,7 @@ void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from mai
 
   /*
   if(esp_bluedroid_enable())	// wakes up *if* after bluetooth_setup(), but still no BT
-    MENU.error_ln(F("esp_bluedroid_enable()"));
+    ERROR_ln(F("esp_bluedroid_enable()"));
   */
 #endif
 
@@ -3419,7 +3419,7 @@ void deep_sleep() {
 #if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
   if(HARDWARE.musicbox_trigger_pin != ILLEGAL8 )	// hmm, what else could wake me up?
     if (esp_sleep_enable_ext0_wakeup((gpio_num_t) HARDWARE.musicbox_trigger_pin, 1))
-      MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
+      ERROR_ln(F("esp_sleep_enable_ext0_wakeup()"));
 #endif
 
   /* ONLY HELPS in light_sleep()
@@ -3527,7 +3527,7 @@ void musicBox_setup() {	// TODO:update
 #if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
   if(HARDWARE.musicbox_trigger_pin != ILLEGAL8 )	// hmm, what else could wake me up?
     if (esp_sleep_enable_ext0_wakeup((gpio_num_t) HARDWARE.musicbox_trigger_pin, 1))
-      MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
+      ERROR_ln(F("esp_sleep_enable_ext0_wakeup()"));
 #endif
 
 #if defined ESP32_DAC_ONLY || defined ESP32_DAC_ONLY_OLED	// *minimal* usb powered *DAC only* setups
@@ -3539,7 +3539,7 @@ void musicBox_setup() {	// TODO:update
   musicBoxConf.middle_pulses=15;	// see  setup_bass_middle_high()
   musicBoxConf.high_pulses=7;	// see  setup_bass_middle_high()
 #endif
-}
+} // musicBox_setup()
 
 
 #include "presets.h" // TODO: #define HAS_PRESETS ?
@@ -3999,27 +3999,27 @@ bool Y_UI() {	// 'Ux' 'X' 'Y' 'Z' "eXtended motion UI" planed eXtensions: other 
 //		switch(MENU.peek()) {
 //		case 'X': // 'UX'
 //		  MENU.drop_input_token();
-//		  MENU.error_ln(F("TODO: implement"));
+//		  ERROR_ln(F("TODO: implement"));
 //		  break;
 //
 //		case 'Y': // 'UY'
 //		  MENU.drop_input_token();
-//		  MENU.error_ln(F("TODO: implement"));
+//		  ERROR_ln(F("TODO: implement"));
 //		  break;
 //
 //		case 'Z': // 'UZ'
 //		  MENU.drop_input_token();
-//		  MENU.error_ln(F("TODO: implement"));
+//		  ERROR_ln(F("TODO: implement"));
 //		  break;
 //
 //		case 'A': // 'UA'
 //		  MENU.drop_input_token();
-//		  MENU.error_ln(F("TODO: implement"));
+//		  ERROR_ln(F("TODO: implement"));
 //		  break;
 //
 //		case 'G': // 'UG'
 //		  MENU.drop_input_token();
-//		  MENU.error_ln(F("TODO: implement"));
+//		  ERROR_ln(F("TODO: implement"));
 //		  break;
 //
 //		default: // EOF8 or unknown

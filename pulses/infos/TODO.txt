@@ -545,7 +545,7 @@ possibility to run without esp now and initialise at run time
 
 case 'I':	// info		// force OLED resdisplay or morse	// TODO: display help
 
-nvs MENU.error_ln(F("too much"));	// TODO: DEBUG: i have seen this...
+nvs ERROR_ln(F("too much"));	// TODO: DEBUG: i have seen this...
 
 
 respect   if(! monochrome_power_save)
@@ -698,7 +698,7 @@ RETHINK: not_a_preset and name
 
 if(HARDWARE.musicbox_trigger_pin != ILLEGAL8 )	// hmm, what else could wake me up?
   if (esp_sleep_enable_ext0_wakeup((gpio_num_t) HARDWARE.musicbox_trigger_pin, 1))
-    MENU.error_ln(F("esp_sleep_enable_ext0_wakeup()"));
+    ERROR_ln(F("esp_sleep_enable_ext0_wakeup()"));
 
 uint8_t rgb_pin[RGB_STRINGS_MAX]={RGB_LED_STRIP_DATA_PIN};		// %4	TODO: FIX ALIGNEMENT
 
@@ -751,8 +751,6 @@ int search_preset_list(char* s) {
 
 fine tuning font parameters
 
-ERROR_feedback()
-
 full sync format and others like pitch etc
 
 (long) names display...
@@ -793,3 +791,8 @@ maybe even with semaphore?
   generic_do_on_other_core(void (*function_p)(void*), void* argument_p, SemaphoreHandle_t* semaphore_p==NULL)
 
 'CCC' refresh peer list
+
+nvs_pulses      MENU.error_ln(F("monochrome type unknown"));	// TODO: ERROR_ln() does not work here???
+
+preset_data	after menu input 666 preset number is bad!
+	musicBoxConf.preset	= preset_was;	// TODO: does not work, fix that

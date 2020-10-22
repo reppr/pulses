@@ -72,7 +72,7 @@ void select_in(arr_descriptor* DB, unsigned int* array) {
   if (pointer2index(DB, array) != ILLEGAL32)	// TODO: remove debugging code
     DB[0].pointer=array;	// DB[0].pointer points to selected array
   else						// TODO: remove debugging code
-    MENU.error_ln(F("(invalid)"));		// TODO: remove debugging code
+    ERROR_ln(F("select_in()"));		// TODO: remove debugging code
 }
 
 unsigned int* selected_in(arr_descriptor* DB) {
@@ -98,9 +98,9 @@ bool register_in_DB(arr_descriptor* DB,	\
     return true;
   }
 
-  MENU.error_ln(F("could not register array"));
+  ERROR_ln(F("could not register array"));
   return false;
-}
+} // register_in_DB()
 
 char* selected_name(arr_descriptor* DB) {
   return array2name(DB, selected_in(DB));

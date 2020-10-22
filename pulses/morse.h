@@ -1693,7 +1693,7 @@ void static morse_token_decode() {	// decode received token sequence
 	    }
 #endif // HAS_DISPLAY
 	    MENU.space(2);
-	    MENU.error_ln(F("morse  no definition"));
+	    ERROR_ln(F("morse  no definition"));
 	    morse_reset_definition("");
 	    morse_token_cnt=0;
 	    return;

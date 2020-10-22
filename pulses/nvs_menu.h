@@ -82,7 +82,7 @@ bool nvs_menu_reaction(char token) {
       break;
 
     default:
-      MENU.error_ln(F("say HR HS H?"));	// error feedback
+      ERROR_ln(F("say HR HS H?"));	// error feedback
       return false;
     } // switch(next_token) after 'H'
 

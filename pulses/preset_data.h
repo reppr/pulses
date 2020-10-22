@@ -5550,8 +5550,8 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   default:
     MENU.tab();
-    MENU.error_ln(F("invalid preset"));	// ERROR, invalid preset
-    musicBoxConf.preset	= 0;
+    ERROR_ln(F("invalid preset"));	// ERROR, invalid preset
+    musicBoxConf.preset	= preset_was;	// TODO: does not work, fix that
     return true;
   } // switch preset
 

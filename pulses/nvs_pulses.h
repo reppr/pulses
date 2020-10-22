@@ -106,7 +106,7 @@ bool /*error*/ nvs_read_blob(char* key, void* new_blob, size_t buffer_size) {
   if(required_size > buffer_size) {
     MENU.out(required_size);
     MENU.space();
-    MENU.error_ln(F("too much TODO: DEBUG:"));	// TODO: DEBUG: i have seen this...
+    ERROR_ln(F("too much TODO: DEBUG:"));	// TODO: DEBUG: i have seen this...
     nvs_close(my_handle);
     return true; // error
   }
@@ -186,7 +186,7 @@ void configure_HARDWARE_from_nvs() {
 
   // check version compatibility
   if(HARDWARE_from_nvs.version != HARDWARE.version) {
-    MENU.error_ln(F("version mismatch"));
+    ERROR_ln(F("version mismatch"));
     return;
   }
 
@@ -218,7 +218,7 @@ void configure_HARDWARE_from_nvs() {
     MENU.outln(HARDWARE_from_nvs.gpio_pins_cnt);
 
     if(HARDWARE_from_nvs.gpio_pins_cnt > 20)	// invalid?
-      MENU.error_ln(F("gpio_pins_cnt"));
+      ERROR_ln(F("gpio_pins_cnt"));
     else {
       MENU.out(F("gpio_pins\t{"));
       uint8_t p;
@@ -324,7 +324,8 @@ void configure_HARDWARE_from_nvs() {
       MENU.outln(F("LiPO"));
       break;
     default:
-      MENU.error_ln(F("unknown"));
+      MENU.error_ln(F("monochrome type unknown"));	// TODO: ERROR_ln() does not work here???
+      //ERROR_ln(F("monochrome type unknown"));
     }
   }
 
@@ -469,7 +470,7 @@ void configure_IDENTITY_from_nvs() {
 
   // check version compatibility
   if(IDENTITY_from_nvs_p->version != my_IDENTITY.version) {
-    MENU.error_ln(F("version mismatch"));
+    ERROR_ln(F("version mismatch"));
     goto free_identity_nvs;
   }
 

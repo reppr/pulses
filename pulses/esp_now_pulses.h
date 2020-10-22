@@ -698,7 +698,7 @@ void esp_now_send_maybe_do_macro(uint8_t* mac_addr, char* macro) {
 
   } else						// sending failed
     if(MENU.maybe_display_more(VERBOSITY_LOWEST/* sic! */) || DEBUG_ESP_NOW_b)	// *do* display that
-      MENU.error_ln(esp_err_to_name(status));
+      ERROR_ln(esp_err_to_name(status));
 } // esp_now_send_maybe_do_macro()
 
 

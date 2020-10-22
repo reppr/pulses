@@ -191,7 +191,7 @@ void Initialize_imu_zero()
     if(accelgyro.testConnection())
       MENU.outln(F("OK"));
     else
-      MENU.error_ln(F("failed"));
+      ERROR_ln(F("MPU connection failed"));
   } // Initialize_imu_zero
 
 void SetOffsets(int TheOffsets[6])

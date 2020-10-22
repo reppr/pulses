@@ -4,6 +4,11 @@
 */
 
 
+ERROR_ln(F("dasch aber falsch!"));
+delay(2000);
+ERROR_ln(F("123456789012345678901234567890"));
+break;
+
 #if defined HAS_ePaper && defined DEBUG_ePAPER
 MC_print_1line_at(1, "aha!");
 MC_display_message("row 3    message from Alibaba");

@@ -47,7 +47,7 @@ bool bluetoothSerialBEGIN() {
 
 #if defined BLUETOOTH_ENABLE_PIN
   if(! bluetooth_switch_info()) {	// savety net, should not happen...
-    MENU.error_ln(F("BT is disabled"));
+    ERROR_ln(F("BT is disabled"));
     return false;
   }
 #endif
