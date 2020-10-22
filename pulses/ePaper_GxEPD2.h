@@ -145,6 +145,9 @@ GFXfont* big_font_p = (GFXfont*) &FreeMonoBold12pt7b;
 uint8_t used_font_x=11;
 uint8_t used_font_y=128/7;	// 18
 uint8_t font_linlen=22;
+bool used_font_is_monospace=false;	// TODO: use
+bool used_font_is_bold=false;		// TODO: use
+bool used_font_is_light=false;		// TODO: use
 
 
 void set_used_font(const GFXfont* font_p) {
@@ -155,21 +158,33 @@ void set_used_font(const GFXfont* font_p) {
     used_font_x = 250/22;	// 11
     used_font_y = 128/7;	// 18
     font_linlen=22;
+    used_font_is_monospace=true;
+    used_font_is_bold=true;
+    used_font_is_light=false;
 
   } else if(font_p == &FreeSansBold9pt7b) {
     //used_font_x = 250/22;	// 11	*NOT* a fixed width font!
     used_font_y = 23;	//24	128/7;	// 18	*NOT* a fixed width font!
     font_linlen=33;
+    used_font_is_monospace=false;
+    used_font_is_bold=true;
+    used_font_is_light=false;
 
   } else if(font_p == &FreeMonoBold12pt7b) {
     used_font_x = 14;		// ~250/18;
     used_font_y = 24;		// ~128/5 -1;
     font_linlen=18;
+    used_font_is_monospace=true;
+    used_font_is_bold=true;
+    used_font_is_light=false;
 
   } else if(font_p == &FreeSansBold12pt7b) {
     //used_font_x = 14;		// ~250/18;
     used_font_y = 24;		// *NOT* a fixed width font!
     font_linlen=33;		// *NOT* a fixed width font!
+    used_font_is_monospace=false;
+    used_font_is_bold=true;
+    used_font_is_light=false;
 
   } else {
     MENU.error_ln(F("unknown font size"));
