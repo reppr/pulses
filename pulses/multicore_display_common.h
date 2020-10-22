@@ -51,6 +51,9 @@ void free_text_buffer(print_descrpt_t* txt_descr_p) {
 }
 
 SemaphoreHandle_t MC_mux = NULL;
+/*
+  test:  MENU.outln(uxSemaphoreGetCount(MC_mux));	// free==1	taken==0
+*/
 
 // MC_do_on_other_core() version with MC_mux and MC_DELAY_MS
 TaskHandle_t MC_do_on_other_core_handle;

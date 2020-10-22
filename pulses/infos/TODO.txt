@@ -798,3 +798,22 @@ preset_data	after menu input 666 preset number is bad!
 	musicBoxConf.preset	= preset_was;	// TODO: does not work, fix that
 
 TODO: ePaper does not use it s bigger screen for morse cheat sheets yet
+
+delay after showinging error message on display
+or/and storing error messages
+
+more MPU feedback on display
+'IU' show current MCU values
+
+MENU.print_free_RAM	can crash when display is on
+
+
+pulses.ino: does this double do_on_other_core() work well?
+  case '?':	// help, overrides common menu entry for '?'
+    do_on_other_core(&menu_pulses_display);	// TODO: TEST: was: MENU.menu_display();  // menu as common
+    do_on_other_core(&all_pulses_info);		// + all_pulses_info();
+    break;
+
+#define CPU_IS_MULTICORE
+
+display_accGyro_mode()	show ON off

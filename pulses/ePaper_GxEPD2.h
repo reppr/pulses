@@ -38,9 +38,24 @@
 
 #define LIN_BUF_MAX	42	// temporal local line buffers only
 
-#if defined HAS_ePaper290_on_DEV_KIT
+#if defined HAS_ePaper290_on_PICO_KIT
 /*
-  connections:
+  ESP32-PICO-KIT_V4.1 connections:
+
+  BUSY	4
+  RST	9
+  DC	10
+  CS	5
+  CLK	18
+  DIN	23
+  GND	GND
+  VCC	3.3V
+*/
+  GxEPD2_BW<GxEPD2_290, GxEPD2_290::HEIGHT> ePaper(GxEPD2_290(/*CS*/ 5, /*DC*/ 10, /*RST*/ 9, /*BUSY*/ 4));
+
+#elif defined HAS_ePaper290_on_DEV_KIT
+/*
+  ESP32 dev kit connections:
 
   BUSY	4
   RST	16 (UART2 RCV)
@@ -439,8 +454,11 @@ void  ePaper_show_program_version() {
     ePaper.print(' ');
 #endif
 
-    if(HARDWARE.mpu6050_addr)
-      ePaper.print("MPU");
+#if defined USE_MPU6050
+    extern bool mpu6050_available;
+    if(mpu6050_available && HARDWARE.mpu6050_addr)
+      ePaper.print("  MPU");
+#endif
     ePaper.println();
 
     ePaper.print("DAC ");
@@ -448,18 +466,33 @@ void  ePaper_show_program_version() {
     ePaper.print(' ');
     ePaper.print(HARDWARE.DAC2_pin);
 
-    ePaper.print("  GPIO ");
-    ePaper.println(HARDWARE.gpio_pins_cnt);	// TODO: show individual pins
+    if(HARDWARE.gpio_pins_cnt) {
+      ePaper.print("  GPIO ");
+      ePaper.print(HARDWARE.gpio_pins_cnt);	// TODO: show individual pins?
+    }
+    ePaper.println();
+
+
+#if defined  USE_RGB_LED_STRIP
+    if(HARDWARE.rgb_strings) {
+      ePaper.print("RGB ");
+      ePaper.print(HARDWARE.rgb_pin[0]);
+      ePaper.print(',');
+      ePaper.print(HARDWARE.rgb_pixel_cnt[0]);
+      ePaper.print(' ');
+      ePaper.print(' ');
+    }
+#endif
 
     if(HARDWARE.morse_touch_input_pin != ILLEGAL8) {
-      ePaper.print("M ");
+      ePaper.print('M');
       ePaper.print(HARDWARE.morse_touch_input_pin);
       ePaper.print(' ');
       ePaper.print(' ');
     }
 
     if(HARDWARE.morse_output_pin != ILLEGAL8) {
-      ePaper.print("O ");
+      ePaper.print('O');
       ePaper.print(HARDWARE.morse_output_pin);
       ePaper.print(' ');
       ePaper.print(' ');
@@ -472,14 +505,14 @@ void  ePaper_show_program_version() {
     else
       mnemonic = 't';
     ePaper.print(mnemonic);
-    ePaper.print(' ');
+    ePaper.print(',');
     ePaper.print(HARDWARE.musicbox_trigger_pin);
     ePaper.print(' ');
     ePaper.print(' ');
 #endif
 
 #if defined BATTERY_LEVEL_CONTROL_PIN
-    ePaper.print("V ");
+    ePaper.print("V");
     ePaper.print(HARDWARE.battery_level_control_pin);	// TODO: show level
     ePaper.print(' ');
     ePaper.print(' ');

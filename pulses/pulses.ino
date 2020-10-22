@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICAL v.045   // LAMPION FESTIVAL 2020-09-12, BRACHE Zürich
+#define PROGRAM_VERSION	HARMONICAL v.046   // new with ePaper or OLED display
 /*			0123456789abcdef   */
 
 /* **************************************************************** */
@@ -1457,25 +1457,27 @@ void show_hardware_conf(pulses_hardware_conf_t* hardware) {
 
       MENU.out(F("\tcnt "));
       MENU.out(hardware->rgb_pixel_cnt[i]);
-      MENU.out(F("  \tvoltage "));
 
+      MENU.out(F("\tvoltage "));
       MENU.out(hardware->rgb_led_voltage_type[i]);
+
       MENU.out(F("\tstart "));
       MENU.outln(hardware->rgb_pattern0[i]);
     }
 
-    MENU.out(F("uses voltage type\t\t"));
+    MENU.out(F("all use voltage type\t"));
     MENU.outln(hardware->rgb_led_voltage_type[0]);
   } else
     MENU.outln('-');
-
-  MENU.outln(F("RTC\t\t\tTODO:"));
-  MENU.ln();
-
+/*
+  MENU.outln(F("RTC\t\t\tTODO:"));	// TODO: RTC
+*/
   // MIDI	// TODO:
   // other pins
   // switch(version)
   // nvs flags
+  // LORA?
+  MENU.ln();
 } // show_hardware_conf()
 
 
@@ -5421,8 +5423,8 @@ bool menu_pulses_reaction(char menu_input) {
 
   switch (menu_input) {
   case '?':	// help, overrides common menu entry for '?'
-    MENU.menu_display();		// menu as common
-    do_on_other_core(&all_pulses_info);	// + all_pulses_info();
+    do_on_other_core(&menu_pulses_display);	// TODO: TEST: was: MENU.menu_display();  // menu as common
+    do_on_other_core(&all_pulses_info);		// + all_pulses_info();
     break;
 
   case '.':	// ".xxx" select 16bit pulses masks  or  "." short info: time and flagged pulses info
@@ -7131,8 +7133,8 @@ bool menu_pulses_reaction(char menu_input) {
 
 // extended_output(...)  output on MENU, maybe OLED, morse, ...  // TODO: morse output?
 uint8_t /*next_row*/ extended_output(char* text, uint8_t col=0, uint8_t row=0, bool force=false) {
-  MENU.out(text);
 #if defined HAS_OLED
+  MENU.out(text);
   if(monochrome_can_be_used() || force || morse_output_char) {
     // MC_clearLine(row);	// was too audible, better now, but removed anyway	TODO: test
     // MC_clearLine(row +1);	// was too audible, better now, but removed anyway	TODO: test
@@ -7142,10 +7144,13 @@ uint8_t /*next_row*/ extended_output(char* text, uint8_t col=0, uint8_t row=0, b
   row += 2;
 
 #elif defined HAS_DISPLAY
-  MC_display_message(text);
+  MC_display_message(text);	// also does   MENU.out(text);
+
+#else // no display
+  MENU.out(text);
 #endif // HAS_OLED  |  HAS_DISPLAY
 
-  return row;	// return row on *OLED display* or ePaper
+  return row;	// return row on *OLED display*
 } // extended_output()
 
 

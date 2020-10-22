@@ -61,50 +61,54 @@ bool mpu6050_setup() {
 
     MENU.out(F("set accGyro offsets\t{"));
     int16_t o;
-    bool offsets_zero=true;
+    bool mpu_offsets_zero=true;
 
     mpu6050.setXAccelOffset(o = HARDWARE.accGyro_offsets[0]);
     if(o)
-      offsets_zero = false;
+      mpu_offsets_zero = false;
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
     mpu6050.setYAccelOffset(o = HARDWARE.accGyro_offsets[1]);
     if(o)
-      offsets_zero = false;
+      mpu_offsets_zero = false;
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
     mpu6050.setZAccelOffset(o = HARDWARE.accGyro_offsets[2]);
     if(o)
-      offsets_zero = false;
+      mpu_offsets_zero = false;
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
     mpu6050.setXGyroOffset(o = HARDWARE.accGyro_offsets[3]);
     if(o)
-      offsets_zero = false;
+      mpu_offsets_zero = false;
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
     mpu6050.setYGyroOffset(o = HARDWARE.accGyro_offsets[4]);
     if(o)
-      offsets_zero = false;
+      mpu_offsets_zero = false;
     MENU.out(o);
     MENU.out(',');
     MENU.space();
 
     mpu6050.setZGyroOffset(o = HARDWARE.accGyro_offsets[5]);
     if(o)
-      offsets_zero = false;
+      mpu_offsets_zero = false;
     MENU.out(o);
     MENU.outln('}');
-    if(offsets_zero)
+    if(mpu_offsets_zero) {
       ERROR_ln(F("accGyro not calibrated"));
+#if defined HAS_DISPLAY	// let the user read the message (happens only while booting)
+      delay(5500);	//     it's only visible for a second or so, *not* 5.5
+#endif
+    }
     MENU.ln();
 
     return true;	// OK (but calibration *might* be missing)
@@ -234,6 +238,12 @@ extern uint8_t extended_output(char* data, uint8_t col, uint8_t row, bool force)
 #endif
 
 void display_accGyro_mode() {
+  if(!mpu6050_available) {	// should not happen, just in case
+    extended_output(F("no MPU6050 "), 0,0,false);
+    MENU.ln();
+    return;
+  } // else
+
   MENU.out(F("accGyro mode: "));
 
   char buffer[] = {"acc ...  gyr ..."};

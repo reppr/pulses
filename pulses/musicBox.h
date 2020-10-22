@@ -2943,12 +2943,12 @@ void start_musicBox() {
     extern bool /*error*/ copy2_code_RAM(unsigned int *source, unsigned int size);
     if(selected_in(iCODEs) != code_RAM) {	// maybe populate code_RAM for motion UI?
       if(code_RAM[0] == '\0')
-        copy2_code_RAM(selected_in(iCODEs), selected_length_in(iCODEs));  // anything seems better than nothing ;)
+	copy2_code_RAM(selected_in(iCODEs), selected_length_in(iCODEs));  // anything seems better than nothing ;)
     }
   #else
     if(selected_in(JIFFLES) != code_RAM) {	// maybe populate code_RAM for motion UI?
       if(code_RAM[0] == '\0')
-        load_jiffle_2_code_RAM(selected_in(JIFFLES));	// anything seems better than nothing ;)
+	load_jiffle_2_code_RAM(selected_in(JIFFLES));	// anything seems better than nothing ;)
     }
   #endif
 #endif
@@ -3968,11 +3968,13 @@ bool Y_UI() {	// 'Ux' 'X' 'Y' 'Z' "eXtended motion UI" planed eXtensions: other 
   if(accGyro_mode==0)		// deconfigured, so deactivate
     accGyro_is_active = false;
 
-  display_accGyro_mode();
-  MENU.tab();
-  MENU.out_ON_off(accGyro_is_active);
   if(!mpu6050_available)
-    MENU.out(F("\tMPU6050 not available"));
+    extended_output(F("MPU6050 not available"), 0,0,false);
+  else {
+    display_accGyro_mode();
+    MENU.tab();
+    MENU.out_ON_off(accGyro_is_active);
+  }
   MENU.ln();
 
   if(accGyro_is_active && accGyro_is_active != was_active) {
@@ -4058,6 +4060,9 @@ bool musicBox_reaction(char token) {
       return false;	// for other menu modes let pulses menu do the work ;)	// TODO: TEST:
     } else {
       musicBox_short_info();
+#if defined HAS_DISPLAY
+      MC_show_musicBox_parameters();
+#endif
       if(MENU.check_next(',')) {     // ',,' shows parameters and parameters in source code format
 	MENU.ln();
 	show_configuration_code();
@@ -4463,7 +4468,12 @@ bool musicBox_reaction(char token) {
 #if defined USE_ESP_NOW
     case 'C':	// 'IC'	peer list
       MENU.drop_input_token();
-      display_peer_ID_list();
+      if(MENU.check_next('C')) {	// 'ICC' call participants and show
+	MENU.outln(F("esp_now_call_participants()"));
+	esp_now_call_participants();
+	trigger_display_peer_ID_list();	// show peer list after a short while
+      } else
+	display_peer_ID_list();		// show peer list
       break;
 #endif
 

@@ -3,6 +3,14 @@
   temporary test menu UI during development
 */
 
+for(int i=0; i<80; i++) {
+  MENU.out(i);
+  MENU.out(" MC_mux ");
+  MENU.outln(uxSemaphoreGetCount(MC_mux));	// free==1	taken==0
+  delay(100);
+ }
+break;
+
 
 ERROR_ln(F("dasch aber falsch!"));
 delay(2000);
