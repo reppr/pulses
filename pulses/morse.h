@@ -1751,7 +1751,7 @@ void static morse_token_decode() {	// decode received token sequence
 // } // morse_show_tokens_of_letter()
 
 
-#if defined COMPILE_MORSE_CHEAT_SHEETS && defined HAS_OLED	// not yet for HAS_ePaper
+#if defined COMPILE_MORSE_CHEAT_SHEETS && defined HAS_DISPLAY
 bool /*ok*/ morse_tokens_of_letter(char* result, uint8_t len, char c) {	// uppercase only
   result[0] = '\0';
   char* format = F("%c %s");
@@ -1765,7 +1765,12 @@ bool /*ok*/ morse_tokens_of_letter(char* result, uint8_t len, char c) {	// upper
   return false;	// ERROR, not found
 } // morse_tokens_of_letter()
 
-char cheat_buffer[5] = {0};
+#if defined HAS_OLED
+  #define CHEAT_BUFLEN	4
+#elif defined HAS_ePaper
+  #define CHEAT_BUFLEN	8
+#endif
+char cheat_buffer[CHEAT_BUFLEN] = {0};
 
 void show_cheat_sheet() {
   char c;
@@ -1775,11 +1780,20 @@ void show_cheat_sheet() {
   monochrome_clear();	// subito, MC_clear_display() does it too late!
 #endif
   char result[maxlen];
-  for(int i=0; i<4; i++) {
+#if defined HAS_OLED
+  uint8_t rows=4;
+#elif defined HAS_ePaper
+  uint8_t rows=5;
+#endif
+  for(int i=0; i<rows; i++) {
     if(c = cheat_buffer[i]) {
       if(morse_tokens_of_letter(result, maxlen, c)) {	// uppercase only
+#if defined HAS_OLED
 	extern uint8_t /*next_row*/ monochrome_big_or_multiline(int row, char* str);
 	monochrome_big_or_multiline(2*i, result);
+#elif defined HAS_ePaper
+	ePaper_BIG_or_multiline(i, result);
+#endif
 	MENU.outln(result);
       } else {	// morse code not found
 	MENU.out(F("unknown symbol "));
@@ -1792,7 +1806,7 @@ void show_cheat_sheet() {
 }
 
 void make_morse_cheat_sheet(char* symbols) {
-  for(int i=0; i<4; i++)
+  for(int i=0; i<CHEAT_BUFLEN; i++)
     cheat_buffer[i] = symbols[i];
   do_on_other_core(show_cheat_sheet);
 }

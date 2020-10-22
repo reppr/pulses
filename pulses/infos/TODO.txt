@@ -796,3 +796,5 @@ nvs_pulses      MENU.error_ln(F("monochrome type unknown"));	// TODO: ERROR_ln()
 
 preset_data	after menu input 666 preset number is bad!
 	musicBoxConf.preset	= preset_was;	// TODO: does not work, fix that
+
+TODO: ePaper does not use it s bigger screen for morse cheat sheets yet

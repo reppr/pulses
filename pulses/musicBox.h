@@ -4530,7 +4530,7 @@ bool musicBox_reaction(char token) {
 #endif
       break;
 
-  #if defined COMPILE_MORSE_CHEAT_SHEETS && defined HAS_OLED
+  #if defined COMPILE_MORSE_CHEAT_SHEETS && defined HAS_DISPLAY
     case 'M':	// 'IM'
       MENU.drop_input_token();
       morse_cheat_sheets_UI();

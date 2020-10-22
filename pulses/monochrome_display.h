@@ -355,12 +355,12 @@ void multicore_display_message(char* text) {	// create and do one shot task
   }
 }
 
-void inline MC_display_message(char* str) {
+void MC_display_message(char* str) {	// extern declaration does not work with inline version
   multicore_display_message(str);
 }
 
 #else
- void inline MC_display_message(char* str) {
+ void MC_display_message(char* str) {	// extern declaration does not work with inline version
   monochrome_display_message(str);
  }
 #endif // MULTICORE_DISPLAY
