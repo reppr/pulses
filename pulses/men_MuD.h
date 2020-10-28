@@ -3,38 +3,70 @@
   temporary test menu UI during development
 */
 
-for(int i=0; i<80; i++) {
-  MENU.out(i);
-  MENU.out(" MC_mux ");
-  MENU.outln(uxSemaphoreGetCount(MC_mux));	// free==1	taken==0
-  delay(100);
- }
+
+//	for(int i=0; i<80; i++) {
+//	  MENU.out(i);
+//	  MENU.out(" MC_mux ");
+//	  MENU.outln(uxSemaphoreGetCount(MC_mux));	// free==1	taken==0
+//	  delay(100);
+//	 }
+//	break;
+
+
+//	ERROR_ln(F("dasch aber falsch!"));
+//	delay(2000);
+//	ERROR_ln(F("123456789012345678901234567890"));
+//	break;
+
+#if true // defined HAS_ePaper && defined DEBUG_ePAPER
+//	MC_print_1line_at(1, "aha!");
+//	MC_display_message("row 3    message from Alibaba");
+//	  break;
+
+//ePaper_font_test();
+
+set_used_font(&Picopixel);
+ePaper_line_matrix();
 break;
 
-
-ERROR_ln(F("dasch aber falsch!"));
-delay(2000);
-ERROR_ln(F("123456789012345678901234567890"));
-break;
-
-#if defined HAS_ePaper && defined DEBUG_ePAPER
-MC_print_1line_at(1, "aha!");
-MC_display_message("row 3    message from Alibaba");
-  break;
-
-set_used_font(&FreeMonoBold12pt7b);
+set_used_font(&FreeSansBold9pt7b);
 ePaper_line_matrix();
 delay(1000);
-MENU.print_free_RAM(); MENU.ln();
-MC_print_at(1,1, "MALLOC() FREE()");
-MENU.print_free_RAM(); MENU.ln();
+//MENU.print_free_RAM(); MENU.ln();
+MC_print_at(0,1, "MALLOC() FREE()");	// adding, no clear
+//MENU.print_free_RAM(); MENU.ln();
 delay(1000);
-MC_print_1line_at(4, "malloc() free()");
-MENU.print_free_RAM(); MENU.ln();
+MC_print_1line_at(3, "malloc() free()");
+//MENU.print_free_RAM(); MENU.ln();
 delay(1000);
-MC_print_1line_at(0, "   at the TOP");
-MENU.print_free_RAM(); MENU.ln();
-delay(4000);
+MC_print_1line_at(0, "   at the TOP");	// clearing
+//MENU.print_free_RAM(); MENU.ln();
+delay(1000);
+int rows = ePaper.height() / used_font_p->yAdvance;
+MC_print_1line_at(rows-1, "   BOTTOM");
+delay(1000);
+MC_print_1line_at(rows, "BELOW");
+delay(12000);
+
+set_used_font(&FreeSansBold12pt7b);
+ePaper_line_matrix();
+delay(1000);
+//MENU.print_free_RAM(); MENU.ln();
+MC_print_at(0,1, "MALLOC() FREE()");	// adding, no clear
+//MENU.print_free_RAM(); MENU.ln();
+delay(1000);
+MC_print_1line_at(3, "malloc() free()");
+//MENU.print_free_RAM(); MENU.ln();
+delay(1000);
+MC_print_1line_at(0, "   at the TOP");	// clearing
+//MENU.print_free_RAM(); MENU.ln();
+delay(1000);
+rows = ePaper.height() / used_font_p->yAdvance;
+MC_print_1line_at(rows-1, "   BOTTOM");
+delay(1000);
+MC_print_1line_at(rows, "BELOW");
+delay(12000);
+
 break;
 
 delay(1000);

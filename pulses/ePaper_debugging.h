@@ -13,6 +13,7 @@ void ePaper_line_matrix() {
 
   char txt[24];
   char* format_is = F("%i.%s");
+  int rows = ePaper.height() / used_font_p->yAdvance;
 
   ePaper.firstPage();
   do
@@ -21,8 +22,10 @@ void ePaper_line_matrix() {
     ePaper.setCursor(0, 0);
     ePaper.println();
 
-    for(int i=0; i<7; i++) {
-      snprintf(txt, font_linlen+1, format_is, i, "23456789012345678901234567890");
+    for(int i=0; i<rows; i++) {
+      //      snprintf(txt, font_linlen+1, format_is, i, "23456789012345678901234567890");
+      //      snprintf(txt, font_linlen+1, format_is, i, "234567890123456789012");
+      snprintf(txt, font_linlen+1, format_is, i, "2345678901234");
       ePaper.println(txt);
     }
   }

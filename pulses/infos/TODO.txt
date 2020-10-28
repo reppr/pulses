@@ -816,4 +816,10 @@ pulses.ino: does this double do_on_other_core() work well?
 
 #define CPU_IS_MULTICORE
 
-display_accGyro_mode()	show ON off
+display_accGyro_mode()	show accGyro_is_active ON/off
+
+ePaper.fillRect(x, y - used_font_yAdvance + 4, ePaper.width(), used_font_yAdvance, GxEPD_WHITE);	// TODO test&trimm: -4
+uint8_t font_linlen=22;	// TODO: FIXME: ################
+
+last_row
+show_cheat_sheet font	&FreeMonoBold12pt7b

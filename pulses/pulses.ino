@@ -437,6 +437,7 @@ void copy_string_to_lower(char* source, char* destination, size_t max) {
 
 #if defined HAS_ePaper
   #include "ePaper_GxEPD2.h"
+  #include "ePaper_pulses.h"
 #endif
 
 action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actions
