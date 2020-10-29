@@ -4,6 +4,78 @@
 */
 
 
+MENU.out(MENU.float_input(-1.0),9);
+MENU.ln();
+break;
+
+double input_f;
+//char* input_string = F("1637.4835unggiftig");
+
+char* input_string;	// = F("1637.4835");
+char* end=NULL;
+
+input_string = "1369.7254chabislätz!";
+MENU.outln(input_string);
+input_f = strtod(input_string, &end);
+MENU.out(input_f, 6);
+MENU.tab();
+MENU.outln(end);
+//
+input_f = atof(input_string);
+MENU.out(input_f, 6);
+MENU.ln();
+
+
+input_string = "1369.72540ohalätz!";
+MENU.outln(input_string);
+input_f = strtod(input_string, &end);
+MENU.out(input_f, 6);
+MENU.tab();
+MENU.outln(end);
+MENU.outln((int) end - (int) input_string);
+//
+input_f = atof(input_string);
+MENU.out(input_f, 6);
+MENU.ln();
+
+
+input_string = "12.3";
+MENU.outln(input_string);
+input_f = strtod(input_string, &end);
+MENU.out(input_f, 6);
+MENU.tab();
+MENU.outln(end);
+//
+input_f = atof(input_string);
+MENU.out(input_f, 6);
+MENU.ln();
+
+input_string = "-2.5e-3";
+MENU.outln(input_string);
+input_f = strtod(input_string, &end);
+MENU.out(input_f, 6);
+MENU.tab();
+MENU.outln(end);
+//
+input_f = atof(input_string);
+MENU.out(input_f, 6);
+MENU.ln();
+
+
+input_string = "3.1415926535878323";
+MENU.outln(input_string);
+input_f = strtod(input_string, &end);
+MENU.out(input_f, 6);
+MENU.tab();
+MENU.outln(end);
+//
+input_f = atof(input_string);
+MENU.out(input_f, 6);
+MENU.ln();
+
+
+break;
+
 //	for(int i=0; i<80; i++) {
 //	  MENU.out(i);
 //	  MENU.out(" MC_mux ");
@@ -18,16 +90,16 @@
 //	ERROR_ln(F("123456789012345678901234567890"));
 //	break;
 
-#if true // defined HAS_ePaper && defined DEBUG_ePAPER
+#if defined HAS_ePaper && defined DEBUG_ePAPER
 //	MC_print_1line_at(1, "aha!");
 //	MC_display_message("row 3    message from Alibaba");
 //	  break;
 
 //ePaper_font_test();
 
-set_used_font(&Picopixel);
-ePaper_line_matrix();
-break;
+// set_used_font(&Picopixel);
+// ePaper_line_matrix();
+// break;
 
 set_used_font(&FreeSansBold9pt7b);
 ePaper_line_matrix();

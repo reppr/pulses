@@ -280,6 +280,7 @@ class Menu {
   bool get_numeric_input(unsigned long *result);	// if there's a number, read it  (only used internally)	// OBSOLETE?:
   bool maybe_calculate_input(unsigned long *result);	// check for & calculate positive integer input		// OBSOLETE?:
   long numeric_input(long default_value);			// read a number from the buffer
+  double float_input(double default_value);			// read a double value from input buffer
   bool get_signed_number(signed long *input_value);		// check for signed number, read it
   signed long calculate_input(signed long default_value);	// calculating replacement for numeric_input()
 								// calculates simply left to right

@@ -1247,17 +1247,18 @@ bool tuning_pitch_and_scale_UI() {	// 'Tx'
 //    MENU.ln();
 //    break;
 
-  case 'Z':	// 'TZ<n>'	tune to hertZ	integer only hertz input
+  case 'Z':	// 'TZ<n>'	tune to hertZ	hertz (double) input	// HACK: scaled *10000 to an integer ratio
     // global  float hertz = 0.0;	// TODO: maybe...
 
     MENU.drop_input_token();
     MENU.out(F("set tuning to frequency in hertz "));
     {
-      int hz = 0;
-      if(hz = MENU.numeric_input(0)) {	// TODO: float input
-	musicBoxConf.pitch = {1, hz};
+      double hz_f = MENU.float_input(0.0);
+      if(hz_f > 0.0) {
+	// was: musicBoxConf.pitch = {1, hz};
+	musicBoxConf.pitch = {10000, (10000.0 * hz_f)};	// HACK: scaled *10000 to an integer ratio
 	pitch_user_selected = true;
-	MENU.out(hz);
+	MENU.out(hz_f, 3);
 	MENU.tab();
 	set_metric_pitch(0);	// assumed to be *not* metric
       }

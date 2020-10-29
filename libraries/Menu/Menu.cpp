@@ -1120,6 +1120,43 @@ long Menu::numeric_input(long default_value) {
 } // numeric_input()
 
 
+double Menu::float_input(double default_value) {
+  double result=default_value;
+
+  if(cb_count) {	// there *is* input
+    char* float_inp_buf = (char*) malloc(cb_count+1);
+    if(float_inp_buf == NULL) {
+      malloc_error();
+      return result;	// ERROR exit
+    } // else ok
+
+    char token;
+    int i=0;
+    int cb_read_index;
+    for(; i<cb_count; i++) {
+      cb_read_index = (cb_start + i) % cb_size;		// build a linear array from cyclic cb_buf
+      token = float_inp_buf[i] = cb_buf[cb_read_index];
+      if(token==0)
+	break;
+    }
+    float_inp_buf[i] = 0;
+
+    if(i) {	// something *was* read
+      char* end=NULL;
+      result = strtod(float_inp_buf, &end);
+      if(end) {	// there is more input after the float
+	int valid = (int) end - (int) float_inp_buf;
+	while (valid--) { cb_read(); }	// restore tailing input after valid tokens
+      }
+    }
+
+    free(float_inp_buf);
+  }
+
+  return result;
+} // float_input()
+
+
 bool Menu::get_signed_number(signed long *result) {	// if there's a number, read it
   char token = peek();
   long sign=1L;

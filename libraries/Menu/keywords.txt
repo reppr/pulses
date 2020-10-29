@@ -29,6 +29,7 @@ is_chiffre	KEYWORD2
 is_numeric	KEYWORD2
 is_operator	KEYWORD2
 numeric_input	KEYWORD2
+float_input	KEYWORD2
 get_signed_number	KEYWORD2
 calculate_input	KEYWORD2
 maybe_calculate_input	KEYWORD2
