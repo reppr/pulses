@@ -9,6 +9,8 @@
 //#define MC_DELAY_MS	10	// delay MC_mux lock release		// TODO: test&trimm	maybe obsolete?
 #define MC_DELAY_MS	0	// *NO* delay MC_mux lock release?	// TODO: maybe OBSOLETE:?
 
+//#define DEBUG_MULTICORE_DISPLAY	// used to debug errors with MONOCHROME multicore display
+
 #if defined MULTICORE_DISPLAY
   #include "multicore_display_common.h"
 #endif
@@ -105,6 +107,9 @@ void monochrome_show_program_version() {	// monochrome oled display
 
 #if defined MULTICORE_DISPLAY
 void inline MC_show_program_version() {
+ #if defined DEBUG_MULTICORE_DISPLAY
+   MENU.outln(F("DEBUG_MULTICORE_DISPLAY\tMC_show_program_version()"));
+ #endif
   MC_do_on_other_core(&monochrome_show_program_version);
 }
 #else
@@ -279,6 +284,9 @@ void monochrome_show_musicBox_parameters() {
 
 #if defined MULTICORE_DISPLAY
 void inline MC_show_musicBox_parameters() {
+ #if defined DEBUG_MULTICORE_DISPLAY
+   MENU.outln(F("DEBUG_MULTICORE_DISPLAY\tMC_show_musicBox_parameters()"));
+ #endif
   MC_do_on_other_core(&monochrome_show_musicBox_parameters);
 }
 #else
@@ -643,6 +651,9 @@ inline void monochrome_setInverseFont() {
 
 #if defined MULTICORE_DISPLAY
 void inline MC_setInverseFont() {
+ #if defined DEBUG_MULTICORE_DISPLAY
+   MENU.outln(F("DEBUG_MULTICORE_DISPLAY\tMC_setInverseFont()"));
+ #endif
   do_on_other_core(monochrome_setInverseFont);
 }
 #else
@@ -659,6 +670,9 @@ inline void monochrome_clearInverseFont() {
 
 #if defined MULTICORE_DISPLAY
 void inline MC_clearInverseFont() {
+ #if defined DEBUG_MULTICORE_DISPLAY
+   MENU.outln(F("DEBUG_MULTICORE_DISPLAY\tMC_clearInverseFont()"));
+ #endif
   do_on_other_core(&monochrome_clearInverseFont);
 }
 #else
@@ -816,6 +830,9 @@ inline void monochrome_clear() {	// slow, but does it *now*
 
 #if defined MULTICORE_DISPLAY
 void inline MC_clear_display() {	// does it later, might be too late...	(use: monochrome_clear())
+ #if defined DEBUG_MULTICORE_DISPLAY
+   MENU.outln(F("DEBUG_MULTICORE_DISPLAY\tMC_clear_display()"));
+ #endif
   do_on_other_core(&monochrome_clear);
 }
 #else
@@ -913,6 +930,9 @@ void monochrome_show_names() {
 
 #if defined MULTICORE_DISPLAY
 void inline MC_show_names() {
+ #if defined DEBUG_MULTICORE_DISPLAY
+   MENU.outln(F("DEBUG_MULTICORE_DISPLAY\tMC_show_names()"));
+ #endif
   do_on_other_core(&monochrome_show_names);
 }
 #else
@@ -927,17 +947,22 @@ void monochrome_show_tuning() {
     (*u8x8_p).clear();
     monochrome_big_or_multiline(0, selected_name(SCALES));
 
-    char txt[9];
-    char* format = F("%i / %i  %s");
+    char txt[24];	// was: 9
+    //char* format = F("%i / %i  %s");	// was:
+    char* format = F("%i/%i %s");	// more condensed format
     extern char* metric_mnemonic;
-    snprintf(txt, 9, format, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, metric_mnemonic);
-    monochrome_print2x2(0, 3, txt);
+    snprintf(txt, 24, format, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, metric_mnemonic);
+    //monochrome_print2x2(0, 3, txt);		// was:
+    monochrome_big_or_multiline(3, txt);	// better for longer strings
     MENU.outln(txt);
   }
-}
+} // monochrome_show_tuning()
 
 #if defined MULTICORE_DISPLAY
 void inline MC_show_tuning() {
+ #if defined DEBUG_MULTICORE_DISPLAY
+   MENU.outln(F("DEBUG_MULTICORE_DISPLAY\tMC_show_tuning()"));
+ #endif
   MC_do_on_other_core(&monochrome_show_tuning);
 }
 #else
@@ -980,6 +1005,9 @@ void monochrome_show_peer_list() {
 
 void MC_esp_now_peer_list() {
 #if defined MULTICORE_DISPLAY
+ #if defined DEBUG_MULTICORE_DISPLAY
+   MENU.outln(F("DEBUG_MULTICORE_DISPLAY\tMC_esp_now_peer_list()"));
+ #endif
   MC_do_on_other_core(&monochrome_show_peer_list);
 #else
   monochrome_show_peer_list();
