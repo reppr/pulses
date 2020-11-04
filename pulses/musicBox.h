@@ -980,6 +980,19 @@ void toggle_magic_autochanges() {
 } // toggle_magic_autochanges()
 
 
+void hertz_2_pitch(double hertz) {
+  // was: musicBoxConf.pitch = {1, hz};    HACK: scaled *1000000 to an integer ratio
+  unsigned int const scaling = 1000000;
+  musicBoxConf.pitch = {scaling, ((double) scaling * hertz)};
+
+  while ((musicBoxConf.pitch.divisor % 10) == 0  &&  (musicBoxConf.pitch.multiplier % 10) == 0)
+    {
+      musicBoxConf.pitch.multiplier /= 10;
+      musicBoxConf.pitch.divisor /= 10;
+    }
+} // hertz_2_pitch()
+
+
 char* metric_mnemonic = "::";	// set by set_metric_pitch() only	 default "::" == not metric
 
 enum metric_pitch_t {
@@ -1255,8 +1268,7 @@ bool tuning_pitch_and_scale_UI() {	// 'Tx'
     {
       double hz_f = MENU.float_input(0.0);
       if(hz_f > 0.0) {
-	// was: musicBoxConf.pitch = {1, hz};
-	musicBoxConf.pitch = {10000, (10000.0 * hz_f)};	// HACK: scaled *10000 to an integer ratio
+	hertz_2_pitch(hz_f);	// was: musicBoxConf.pitch = {1, hz};
 	pitch_user_selected = true;
 	MENU.out(hz_f, 3);
 	MENU.tab();

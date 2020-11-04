@@ -823,3 +823,8 @@ uint8_t font_linlen=22;	// TODO: FIXME: ################
 
 last_row
 show_cheat_sheet font	&FreeMonoBold12pt7b
+
+https://github.com/espressif/arduino-esp32/tree/master/libraries/ESP32/examples/ChipID/GetChipID
+esp_get_free_heap_size();
+
+PULSES.tuning = (double) input_value;	// TODO: (double) input, (double) calculations
