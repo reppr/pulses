@@ -73,16 +73,14 @@ void ePaper_musicBox_parameters() {
   ePaper.setTextColor(GxEPD_BLACK);
 
   char txt[LIN_BUF_MAX];
-  char* format_IstrI = F("|%s|");
-  char* format2s = F("%s  %s");
   char* format_s = F("%s");
-  char* format_is = F("%i %s");
-
-  char* fmt_1st_row = F("%c %i  |%s|");
-  //char* fmt_1st_row = F("%c |%s| P%i");
-  char* fmt_sync = F("S=%i");
-  char* fmt_synstack = F(" |%i");
-  char* fmt_basepulse = F(" p[%i]");
+  char* fmt_1st_row = F("%c %i  |%s|");		// fmt_1st_row, run_state_symbol(), musicBoxConf.preset, my_IDENTITY.preName
+  //char* fmt_1st_row = F("%c |%s| P%i");	// fmt_1st_row, run_state_symbol(), musicBoxConf.preset, my_IDENTITY.preName
+  char* fmt_2nd_row = F("%s  %i/%i %s");	// fmt_2nd_row, selected_name(SCALES),
+						//	musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, metric_mnemonic
+  char* fmt_sync = F("S=%i");			// fmt_sync, musicBoxConf.sync
+  char* fmt_synstack = F(" |%i");		// fmt_synstack, musicBoxConf.stack_sync_slices
+  char* fmt_basepulse = F(" p[%i]");		// fmt_basepulse, musicBoxConf.base_pulse
 
   ePaper.firstPage();
   do
@@ -102,7 +100,8 @@ void ePaper_musicBox_parameters() {
     ePaper.println(); // or after???  smaller step
 
     extern char* metric_mnemonic;
-    snprintf(txt, LIN_BUF_MAX, format2s, selected_name(SCALES), metric_mnemonic);
+    snprintf(txt, LIN_BUF_MAX, fmt_2nd_row,
+	     selected_name(SCALES), musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, metric_mnemonic);
     ePaper.println(txt);
 
 #if defined ICODE_INSTEAD_OF_JIFFLES

@@ -828,3 +828,7 @@ https://github.com/espressif/arduino-esp32/tree/master/libraries/ESP32/examples/
 esp_get_free_heap_size();
 
 PULSES.tuning = (double) input_value;	// TODO: (double) input, (double) calculations
+
+multiply_musicBox_periods(2); and pitch, octave?
+
+ePaper and "Busy Timeout!"

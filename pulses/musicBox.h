@@ -1382,8 +1382,9 @@ bool tuning_pitch_and_scale_UI() {	// 'Tx'
     }	// // sequential input loop		'Tx'
   }
 #if defined HAS_DISPLAY
-    MC_show_tuning();
+  MC_show_tuning();
 #endif
+  return true;	// hmm? I think that's ok?
 } // tuning_pitch_and_scale_UI()
 
 

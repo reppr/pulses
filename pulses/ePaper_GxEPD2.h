@@ -128,7 +128,6 @@ uint8_t font_linlen=22;	// TODO: FIXME: ################
 //bool used_font_is_light=false;	// TODO: use?
 
 
-#define DEBUG_ePAPER
 void set_used_font(const GFXfont* font_p) {
 #if defined DEBUG_ePAPER
   MENU.out(F("DEBUG_ePAPER\tset_used_font()"));
