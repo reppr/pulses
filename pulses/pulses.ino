@@ -3814,9 +3814,10 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
     char * name=array2name(iCODEs, (unsigned int *) PULSES.pulses[pulse].icode_p);
     if (name != "")
       MENU.out(name);
-    else	// maybe it is a jiffle, played as iCode?
+    else {	// maybe it is a jiffle, played as iCode?
       MENU.out("J:");
-    MENU.out(array2name(JIFFLES, (unsigned int *) PULSES.pulses[pulse].icode_p));
+      MENU.out(array2name(JIFFLES, (unsigned int *) PULSES.pulses[pulse].icode_p));
+    }
     MENU.space();
   }
 
@@ -4003,17 +4004,15 @@ void display_payload(int pulse) {
   scratch=&seed_icode_player;
   if (PULSES.pulses[pulse].payload == scratch) {
     MENU.out("seed_iCode ");
-    if (MENU.verbosity > VERBOSITY_LOWEST) {	// normally we *want* to see the names
-      char * name=array2name(iCODEs, (unsigned int *) PULSES.pulses[pulse].icode_p);
+    char * name=array2name(iCODEs, (unsigned int *) PULSES.pulses[pulse].icode_p);
+    if (name != "")
+      MENU.out(name);		// display iCode name
+    else {			// maybe it is a jiffle, played as iCode?
+      name=array2name(JIFFLES, (unsigned int *) PULSES.pulses[pulse].icode_p);
       if (name != "")
-	MENU.out(name);		// display iCode name
-      else {			// maybe it is a jiffle, played as iCode?
-	name=array2name(JIFFLES, (unsigned int *) PULSES.pulses[pulse].icode_p);
-	if (name != "")
-	  MENU.out(name);	// name of jiffle, played as iCode
-	else
-	  MENU.outln(F("(none)"));
-      }
+	MENU.out(name);	// name of jiffle, played as iCode
+      else
+	MENU.outln(F("(none)"));
     }
     return;
   }
@@ -4027,7 +4026,7 @@ void display_payload(int pulse) {
 
   scratch=&do_throw_a_jiffle;
   if (PULSES.pulses[pulse].payload == scratch) {
-    MENU.out(F("seed jiff:"));
+    MENU.out(F("seed_jiff:"));
     MENU.out(array2name(JIFFLES, (unsigned int*) PULSES.pulses[pulse].data));
     return;
   }
@@ -6175,27 +6174,21 @@ bool menu_pulses_reaction(char menu_input) {
     #include "menu_z_tmp.h"
     break;
 
-  case 'V':	// set voices	V[num]! PULSES.select_n_voices
+  case 'V':	// set voices	and do PULSES.select_n_voices
     if(MENU.check_next('V')) {	// 'VV' PULSES.voices
       MENU.out(F("voices "));
 
       new_input = MENU.calculate_input(voices);
-      if (new_input>0 && new_input<=PL_MAX) {
+      if (new_input>0 && new_input<=PL_MAX)
 	voices = new_input;
-//	if (voices>GPIO_PINS) {			// TODO: OBSOLETE?
-//	  if (DO_or_maybe_display(VERBOSITY_LOWEST))
-//	    MENU.outln(F("WARNING: voices > gpio"));
-//	}
-      } else
+      else
 	MENU.outln_invalid();
 
       if (voices==0)
 	voices=36;	// just a guess (was: voices=GPIO_PINS;)
+      PULSES.select_n(voices);
 
       MENU.outln(voices);
-
-      if(MENU.check_next('!'))
-	PULSES.select_n(voices);
     } else { // bare 'V' and 'VE' (*NOT* 'VVx')	PULSES.volume
 
       if(MENU.check_next('E'))	// 'VE' (morse shortcut) reset PULSES.volume=1.0
