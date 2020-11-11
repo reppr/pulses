@@ -7,7 +7,7 @@
   also see: preset-hashtags.txt
 */
 
-#define MUSICBOX_PRESETs	188	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
+#define MUSICBOX_PRESETs	189	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
 
 #if defined ICODE_INSTEAD_OF_JIFFLES	// TODO: REMOVE: after testing a while
   #define USED_DB	iCODEs		//   new style: play jiffles as iCode
@@ -37,7 +37,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
   musicBoxConf.date=NULL;
   musicBoxConf.pitch={1,1};
   musicBoxConf.stack_sync_slices = 0;
-  musicBoxConf.chromatic_pitch = 0; // not metric
+  set_metric_pitch(0); // not metric
 
   PULSES.time_unit = 1000000;	// DEFAULT	a bit rude
 
@@ -5551,6 +5551,16 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     musicBoxConf.sync = 1;
     select_in(USED_DB, (unsigned int*) d4096_1024);
     musicBoxConf.pitch = {1, 272};
+    set_metric_pitch(0);
+    break;
+
+  case 189:
+    musicBoxConf.name = F("Bass Santur tuning (tmp)");
+    select_in(SCALES, major_scale);
+    musicBoxConf.sync = 1;
+    select_in(USED_DB, (unsigned int*) d4096_1024);
+    musicBoxConf.pitch = {1, 100};
+    set_metric_pitch(0);
     break;
 
     // DADA:	todo: CHECK FROM HERE <<<====	====>>>   #define SHORT_PRESET_COLLECTION

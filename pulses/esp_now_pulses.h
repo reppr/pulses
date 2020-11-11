@@ -440,7 +440,7 @@ esp_err_t esp_now_add_peer_mac_only(const uint8_t *mac_addr) {	// might give fee
 }
 
 void send_IDENTITY_time_sliced() {	// send data stored in esp_now_send_buffer
-  esp_err_t status = esp_now_pulses_send(time_sliced_sent_to_mac);
+  esp_err_t status = esp_now_pulses_send(time_sliced_sent_to_mac);	// CRASH! ################ possibly brownout?
 
   if(MENU.maybe_display_more(VERBOSITY_SOME) || DEBUG_ESP_NOW_b)
     esp_err_info(status);

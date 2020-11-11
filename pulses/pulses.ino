@@ -6231,11 +6231,9 @@ bool menu_pulses_reaction(char menu_input) {
     }
     break;
 
-#if defined AUTOSTART
-  case 'A':	// autostart
-    AUTOSTART;
+  case 'A':	// A_UI()	// 'A...'  A_UI()  "A" is just a morse conveniant letter, *not* mnemonic
+    A_UI();
     break;
-#endif
 
   case 'X':	// PANIC BUTTON  reset, remove all (flagged) pulses, restart selections at none
     // reset, remove all (flagged) pulses, restart selections at none, reset selection mask

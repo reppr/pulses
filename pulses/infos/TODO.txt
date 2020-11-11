@@ -832,3 +832,6 @@ PULSES.tuning = (double) input_value;	// TODO: (double) input, (double) calculat
 multiply_musicBox_periods(2); and pitch, octave?
 
 ePaper and "Busy Timeout!"
+
+esp_err_t status = esp_now_pulses_send(time_sliced_sent_to_mac);	// CRASH! ################
+	  possibly brownout?

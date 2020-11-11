@@ -1027,7 +1027,8 @@ void set_metric_pitch(int metric_pitch) {	// SETS PARAMETERS ONLY, does *not* tu
     if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {	//    else we might loose octave setup
       MENU.outln(F("metric pitch not changed"));
     }
-    return;
+    if(musicBoxConf.chromatic_pitch)	// if zero metric_mnemonic might be wrong, so reset it
+      return;
   }
 
   int metric_pitch_was = musicBoxConf.chromatic_pitch = (uint8_t) metric_pitch;	// check follows
@@ -2997,7 +2998,7 @@ void start_musicBox() {
   // random pitch	// TODO: factor out randomisation
   if(!pitch_user_selected) {	// if *not* set by user interaction
     if(!MagicConf.some_metric_tunings_only) {	// RANDOM tuning?
-      musicBoxConf.chromatic_pitch = 0;
+      set_metric_pitch(0);
 
 #if defined RANDOM_ENTROPY_H
       random_entropy();	// entropy from hardware
@@ -4056,6 +4057,78 @@ bool Y_UI() {	// 'Ux' 'X' 'Y' 'Z' "eXtended motion UI" planed eXtensions: other 
   return false;
 #endif
 } // Y_UI()
+
+
+bool /*error*/ bass_middle_high_voices_sanity() {
+  int voices = musicBoxConf.bass_pulses + musicBoxConf.middle_pulses + musicBoxConf.high_pulses;
+  if(voices >= PL_MAX) {
+    ERROR_ln(F("too many voices"));
+    return true;	// ERROR
+  } // else
+
+  musicBoxConf.voices = musicBoxConf.primary_count = voices;
+  // PULSES.select_n(musicBoxConf.voices);	// maybe?  maybe not?
+  return false;		// OK
+}
+
+void show_voices() {
+  char txt[36];
+  snprintf(txt, 36, F("bass %i  mid %i  high %i  v=%i"), \
+	   musicBoxConf.bass_pulses,
+	   musicBoxConf.middle_pulses,
+	   musicBoxConf.high_pulses,
+	   musicBoxConf.primary_count
+	   );
+  extended_output(txt, 0, 0, false);
+  MENU.ln();
+} // show_voices()
+
+void A_UI() {	// 'A' is not mnemonic, just a morse convenient char that was rarely used
+  signed long new_value;
+
+  switch(MENU.peek()) {	// 'A...'
+  case 'A':
+    MENU.drop_input_token();	// 'AA' AUTOSTART (just in case bare 'A' will be used for other purposes)
+  case EOF8: // bare 'A'	// rarely used old keybinding to AUTOSTART
+#if defined AUTOSTART
+    AUTOSTART;
+#endif
+    break;
+
+  case 'B':	// 'AB'	musicBoxConf.bass_pulses
+    MENU.drop_input_token();
+    new_value = MENU.calculate_input(musicBoxConf.bass_pulses);
+    if(new_value >=0  &&  new_value < PL_MAX) {
+      musicBoxConf.bass_pulses = new_value;
+    }
+    bass_middle_high_voices_sanity();
+    show_voices();
+    break;
+  case 'M':	// 'AM'	musicBoxConf.middle_pulses
+    MENU.drop_input_token();
+    new_value = MENU.calculate_input(musicBoxConf.middle_pulses);
+    if(new_value >=0  &&  new_value < PL_MAX) {
+      musicBoxConf.middle_pulses = new_value;
+    }
+    bass_middle_high_voices_sanity();
+    show_voices();
+    break;
+  case 'H':	// 'AH'	musicBoxConf.high_pulses
+    MENU.drop_input_token();
+    new_value = MENU.calculate_input(musicBoxConf.high_pulses);
+    if(new_value >=0  &&  new_value < PL_MAX) {
+      musicBoxConf.high_pulses = new_value;
+    }
+    bass_middle_high_voices_sanity();
+    show_voices();
+    break;
+  case 'V':	// 'AV' show_voices()
+    MENU.drop_input_token();
+    bass_middle_high_voices_sanity();
+    show_voices();
+    break;
+  }
+} // A_UI()
 
 
 bool musicBox_reaction(char token) {
