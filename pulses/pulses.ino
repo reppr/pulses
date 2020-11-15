@@ -1076,6 +1076,10 @@ bool stack_sync_user_selected=false;
   #include "extensions/pulses_RGB_LED_string.h"
 #endif
 
+#if defined USE_MIDI_OUT_PIN
+  #include "midi.h"
+#endif
+
 /* **************************************************************** */
 double cent_factor = 1.0005777895;	// 1 cent
 void selected_detune_cents(short cents) {
@@ -1936,6 +1940,10 @@ void setup() {
 
 #if defined USE_MPU6050
   mpu6050_available = mpu6050_setup();	// this will switch MPU6050 *OFF* if not found, including sampling
+#endif
+
+#if defined USE_MIDI_OUT_PIN
+  midi_setup(/*RX*/ 39, /*TX*/ 19);
 #endif
 
 #if defined MUSICBOX_TRIGGER_PIN

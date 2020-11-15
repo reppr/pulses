@@ -3,6 +3,28 @@
   temporary test menu UI during development
 */
 
+#if defined USE_MIDI_OUT_PIN
+MENU.outln(F("MIDI test Serial2  TX17"));
+//midi_setup(39, 19);
+
+for (int note = 0x1E; note < 0x5A; note ++) {
+  //Note on channel 1 (0x90), some note value (note), middle velocity (0x45):
+  //  noteOn(0x90, note, 0x45);
+  MENU.outln(note);
+  Serial2.write(0x90);
+  Serial2.write(note);
+  Serial2.write(0x45);
+  delay(330);
+  //Note on channel 1 (0x90), some note value (note), silent velocity (0x00):
+  //  noteOn(0x90, note, 0x00);
+  Serial2.write(0x90);
+  Serial2.write(note);
+  Serial2.write(0x00);
+  delay(110);
+ }
+break;
+#endif
+
 
 MENU.out(MENU.float_input(-1.0),9);
 MENU.ln();
