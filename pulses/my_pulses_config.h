@@ -27,7 +27,9 @@
 //#define BOARD_LILYGO_T5		// triggers HAS_ePaper and HAS_DISPLAY
 
 
-#define USE_MIDI_OUT_PIN	17	// Serial2 TX
+#define USE_MIDI
+#define MIDI_OUT_PIN	19	// configured as Serial2 TX
+#define MIDI_IN_PIN	39	// configured as Serial2 RX
 
 //#define USE_ADS1115_AT_ADDR	0x48
 

@@ -148,3 +148,10 @@
 #if defined BOARD_HELTEC_OLED && defined BOARD_OLED_LIPO
   #error 'BOARD_HELTEC_OLED and BOARD_OLED_LIPO cannot both be defined'
 #endif
+
+
+#if defined USE_MIDI
+  #if ! defined MIDI_IN_PIN  ||  ! defined MIDI_OUT_PIN
+    #error '#define  MIDI_IN_PIN  and  MIDI_OUT_PIN'
+  #endif
+#endif

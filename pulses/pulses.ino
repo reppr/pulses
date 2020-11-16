@@ -1076,7 +1076,7 @@ bool stack_sync_user_selected=false;
   #include "extensions/pulses_RGB_LED_string.h"
 #endif
 
-#if defined USE_MIDI_OUT_PIN
+#if defined USE_MIDI
   #include "midi.h"
 #endif
 
@@ -1942,8 +1942,8 @@ void setup() {
   mpu6050_available = mpu6050_setup();	// this will switch MPU6050 *OFF* if not found, including sampling
 #endif
 
-#if defined USE_MIDI_OUT_PIN
-  midi_setup(/*RX*/ 39, /*TX*/ 19);
+#if defined USE_MIDI
+  MIDI_setup(/*RX*/ MIDI_IN_PIN, /*TX*/ MIDI_OUT_PIN);	// midi_setup(/*RX*/ 39, /*TX*/ 19);
 #endif
 
 #if defined MUSICBOX_TRIGGER_PIN

@@ -995,6 +995,21 @@ void hertz_2_pitch(double hertz) {
 
 char* metric_mnemonic = "::";	// set by set_metric_pitch() only	 default "::" == not metric
 
+char* metric_mnemonics[] = {"::",	// not metric
+			    "A ",
+			    "Bb",
+			    "B ",
+			    "C ",
+			    "C#",
+			    "D ",
+			    "D#",
+			    "E ",
+			    "F ",
+			    "F#",
+			    "G ",
+			    "G#",
+			    "??"};	// illegal, unknown	like "::" but flags an ERROR
+
 enum metric_pitch_t {
 		     mp_free = 0,
 		     mp_A,
@@ -1040,67 +1055,67 @@ void set_metric_pitch(int metric_pitch) {	// SETS PARAMETERS ONLY, does *not* tu
 
   switch(metric_pitch) {
   case 1: // A
-    metric_mnemonic = "A ";
+    //metric_mnemonic = "A ";
     musicBoxConf.pitch = {1, 220};	// A  220.0
     break;
 
   case 2: // Bb
-    metric_mnemonic = "Bb";
+    //metric_mnemonic = "Bb";
     musicBoxConf.pitch = {1, 233};	// Bb 233.08
     break;
 
   case 3: // B == H
-    metric_mnemonic = "B "; // B == H
+    //metric_mnemonic = "B "; // B == H
     musicBoxConf.pitch = {1, 247};	// B=H 246.94
     break;
 
   case 4: // C
-    metric_mnemonic = "C ";
+    //metric_mnemonic = "C ";
     musicBoxConf.pitch = {1, 262};	// C  261.63
     break;
 
   case 5: // C#
-    metric_mnemonic = "C#";
+    //metric_mnemonic = "C#";
     musicBoxConf.pitch = {1, 277};	// C# 277.18
     break;
 
   case 6: // D
-    metric_mnemonic = "D ";
+    //metric_mnemonic = "D ";
     musicBoxConf.pitch = {1, 294};	// D  293.66
     break;
 
   case 7: // D#
-    metric_mnemonic = "D#";
+    //metric_mnemonic = "D#";
     musicBoxConf.pitch = {1, 311};	// D# 311.12
     break;
 
   case 8: // E
-    metric_mnemonic = "E ";
+    //metric_mnemonic = "E ";
     musicBoxConf.pitch = {1, 330};	// E  329.36
     break;
 
   case 9: // F
-    metric_mnemonic = "F ";
+    //metric_mnemonic = "F ";
     musicBoxConf.pitch = {1, 175};	// F  349.23 / 2
     break;
 
   case 10: // F#
-    metric_mnemonic = "F#";
+    //metric_mnemonic = "F#";
     musicBoxConf.pitch = {1, 185};	// F# 369.99 / 2
     break;
 
   case 11: // G
-    metric_mnemonic = "G ";
+    //metric_mnemonic = "G ";
     musicBoxConf.pitch = {1, 196};	// G  392.00 / 2
     break;
 
   case 12: // G#
-    metric_mnemonic = "G#";
+    //metric_mnemonic = "G#";
     musicBoxConf.pitch = {1, 208};	// G# 415.30 / 2
     break;
 
   case 0:	// set not metric
-    metric_mnemonic = "::";
+    //metric_mnemonic = "::";
     musicBoxConf.chromatic_pitch = 0;	// not metric
     break;
 
@@ -1109,10 +1124,12 @@ void set_metric_pitch(int metric_pitch) {	// SETS PARAMETERS ONLY, does *not* tu
     MENU.out(F("invalid metric pitch "));
     MENU.outln(metric_pitch);
 
-    metric_mnemonic = "??";		// "??" like "::" but flags an ERROR, result undefined
+    //metric_mnemonic = "??";		// "??" like "::" but flags an ERROR, result undefined
     musicBoxConf.chromatic_pitch = metric_pitch_was;
     PULSES.time_unit = time_unit_was;
   }
+
+  metric_mnemonic = metric_mnemonics[metric_pitch];
 
   if(MENU.maybe_display_more(VERBOSITY_LOWEST))
     MENU.outln(metric_mnemonic);		// TODO: do i want that?
