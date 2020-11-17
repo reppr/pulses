@@ -29,5 +29,11 @@ icode_t melody_downthirds_rise[] = { SEPARATO,NOTE_32, 0,-1,1,-1,2,0,3,1,4,2,5,3
 
 icode_t melody_dwnthirds_fall[] = { SEPARATO,NOTE_32, 7,6,7,5,6,4,5,3,4,2,3,1,2,0,1,-1, 0,0,0,NOTE_8,0, KILL };
 
+icode_t midi_melody_16[] = {NOTE_16, 0, KILL};
+icode_t midi_melody_8[] = {NOTE_8, 0, KILL};
+icode_t midi_melody_4[] = {NOTE_4, 0, KILL};
+
+icode_t midi_melody2[] = {NOTE_8, PAUSE, 0, NOTE_4, 0, NOTE_8, 4, PAUSE, 8, KILL};
+
 #define ICODE_H
 #endif

@@ -29,7 +29,8 @@
 
 #define USE_MIDI
 #define MIDI_OUT_PIN	19	// configured as Serial2 TX
-#define MIDI_IN_PIN	39	// configured as Serial2 RX
+//#define MIDI_IN_PIN	39	// configured as Serial2 RX
+#define MIDI_IN_PIN	18	// configured as Serial2 RX
 
 //#define USE_ADS1115_AT_ADDR	0x48
 

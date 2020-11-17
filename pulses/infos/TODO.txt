@@ -837,3 +837,13 @@ esp_err_t status = esp_now_pulses_send(time_sliced_sent_to_mac);	// CRASH! #####
 	  possibly brownout?
 
 show_metric_cents_list()
+
+if(midi_available())	// TODO: implement MIDI in reaction
+
+preset setup macros, save in SPIFFS?
+
+#if defined USE_MIDI	// TODO: add runtime switch, and pulses action flag
+
+void midi_all_notes_off() {	// does not work?
+
+A_UI() display

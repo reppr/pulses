@@ -352,6 +352,9 @@ struct pulse_t {
 
   uint8_t rgb_string_idx;	// use  set_rgb_led_string(), remove_rgb_led_string()
   uint8_t rgb_pixel_idx;
+
+  uint8_t midi_note;		// save last midi_note for stopping it
+  uint8_t midi_channel;
 };
 
 /* **************************************************************** */

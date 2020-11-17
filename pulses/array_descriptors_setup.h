@@ -215,6 +215,11 @@ REGISTER_iCODE(melody_diatonic_fall);
 REGISTER_iCODE(melody_upthirds_rise);
 REGISTER_iCODE(melody_downthirds_rise);
 REGISTER_iCODE(melody_dwnthirds_fall);
+REGISTER_iCODE(midi_melody_16);
+REGISTER_iCODE(midi_melody_8);
+REGISTER_iCODE(midi_melody_4);
+
+REGISTER_iCODE(midi_melody2);
 
 /*
 #if defined USE_i2c

@@ -4104,11 +4104,16 @@ void A_UI() {	// 'A' is not mnemonic, just a morse convenient char that was rare
   signed long new_value;
 
   switch(MENU.peek()) {	// 'A...'
+  case EOF8: // bare 'A'
+    show_voices();
+    break;
+
   case 'A':
     MENU.drop_input_token();	// 'AA' AUTOSTART (just in case bare 'A' will be used for other purposes)
-  case EOF8: // bare 'A'	// rarely used old keybinding to AUTOSTART
 #if defined AUTOSTART
     AUTOSTART;
+#else
+    show_voices();
 #endif
     break;
 

@@ -11,6 +11,15 @@
 //	 }
 //	break;
 
+//midi_all_notes_off();	// does not work?
+//break;
+
+//while (true)
+//  {
+//    if(midi_available())
+//      MENU.outln(midi_receive());
+//  }
+
 int note;
 double note_f;
 double period_f;
@@ -31,13 +40,13 @@ for(int i = musicBoxConf.lowest_primary; i <= musicBoxConf.highest_primary; i++)
   MENU.outln(midi_note_name(note));
 
   if(note<127) {
-    note_on_send(0, note, 0x45);
+    midi_note_on_send(0, note, 0x45);
 //    Serial2.write(0x90);
 //    Serial2.write(note);
 //    Serial2.write(0x45);
     delay(330);
 
-    note_off_send(0, note);
+    midi_note_off_send(0, note);
 //    Serial2.write(0x90);
 //    Serial2.write(note);
 //    Serial2.write(0x00);

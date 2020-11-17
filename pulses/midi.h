@@ -6,9 +6,10 @@
 
 #include "HardwareSerial.h"
 
-#define RXD2 16		// ESP32 *default* pins
-#define TXD2 17		// ESP32 *default* pins
-
+/*
+  #define RXD2 16	// ESP32 *default* pins, not used
+  #define TXD2 17	// ESP32 *default* pins, not used
+*/
 
 /*
   see: musicbox.h
@@ -61,13 +62,51 @@ void midi_channel_msg_send(uint8_t status, uint8_t channel, uint8_t data1, uint8
   midi_send(data2);
 }
 
-void note_on_send(uint8_t channel, uint8_t note, uint8_t velocity) {
+void midi_note_on_send(uint8_t channel, uint8_t note, uint8_t velocity) {
   midi_channel_msg_send(0x90, channel, note, velocity);
 }
 
-void note_off_send(uint8_t channel, uint8_t note) {
+void midi_note_off_send(uint8_t channel, uint8_t note) {
   midi_channel_msg_send(0x90, channel, note, 0);
 }
+
+bool inline midi_available() {
+  return Serial2.available();
+}
+
+uint8_t midi_receive() {
+  return Serial2.read();
+}
+
+void midi_all_notes_off() {
+  for(uint8_t channel=0; channel<16; channel++) {
+    midi_send(176 | channel);	// channel mode message
+    midi_send(120);		// cc=120: all sounds off
+    midi_send(0);		// dummy
+
+    midi_send(176 | channel);	// channel mode message
+    midi_send(123);		// cc=123: all notes off
+    midi_send(0);		// dummy
+  }
+}
+
+
+void MIDI_reaction() {	// TODO: implement MIDI in reaction
+  uint8_t midibyte = midi_receive();
+  switch(midibyte) {
+  case 254:	// active sensing
+    {
+      static uint16_t active_sensing_cnt=0;
+      if((active_sensing_cnt++ % 256) == 0)
+	MENU.outln(F("MIDI active sensing"));
+    }
+    break;
+
+  default:
+    MENU.out(F("MIDI in "));
+    MENU.outln(midi_receive());
+  }
+} // MIDI_reaction
 
 
 void MIDI_setup(uint8_t midi_RX, uint8_t midi_TX) {

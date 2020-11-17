@@ -808,6 +808,11 @@ int reset_all_flagged_pulses_GPIO_OFF() {	  // see: tabula_rasa()
     }
   }
 
+#if defined USE_MIDI
+  extern void midi_all_notes_off();
+  midi_all_notes_off();		// TODO: test and fix
+#endif
+
 #if defined USE_MORSE
   extern int morse_length_feedback_pulse_i;
   morse_length_feedback_pulse_i = ILLEGAL32;
@@ -2251,6 +2256,13 @@ bool low_priority_tasks() {
   static uint32_t low_priority_cnt = 0;
 
   low_priority_cnt++;
+
+#if defined USE_MIDI
+  if(midi_available()) {	// TODO: implement MIDI in reaction
+    MIDI_reaction();
+    return true;
+  }
+#endif
 
 #if defined USE_ESP_NOW && defined ESP_NOW_IDLE_ID_SEND
   if(esp_now_send_idle_identity)

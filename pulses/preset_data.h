@@ -7,7 +7,7 @@
   also see: preset-hashtags.txt
 */
 
-#define MUSICBOX_PRESETs	189	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
+#define MUSICBOX_PRESETs	191	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
 
 #if defined ICODE_INSTEAD_OF_JIFFLES	// TODO: REMOVE: after testing a while
   #define USED_DB	iCODEs		//   new style: play jiffles as iCode
@@ -5561,6 +5561,26 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     select_in(USED_DB, (unsigned int*) d4096_1024);
     musicBoxConf.pitch = {1, 100};
     set_metric_pitch(0);
+    break;
+
+  case 190:
+    musicBoxConf.name = F("MIDI melody test");
+    select_in(SCALES, major_scale);
+    musicBoxConf.sync = 1;
+    select_in(USED_DB, (unsigned int*) midi_melody_8);
+    musicBoxConf.pitch = {1, 220};
+    set_metric_pitch(1);
+    musicBoxConf.high_pulses = 5;	// !
+    break;
+
+  case 191:
+    musicBoxConf.name = F("MIDI melody2 test");
+    select_in(SCALES, europ_PENTAtonic);
+    musicBoxConf.sync = 6;
+    select_in(USED_DB, (unsigned int*) midi_melody2);
+    musicBoxConf.pitch = {1, 110};
+    set_metric_pitch(1);
+    musicBoxConf.high_pulses = 5;	// !
     break;
 
     // DADA:	todo: CHECK FROM HERE <<<====	====>>>   #define SHORT_PRESET_COLLECTION

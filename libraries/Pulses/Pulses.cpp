@@ -1813,12 +1813,23 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 
 	  if(! pause) {							// MELODY_MODE	NOTE? (or pause)
 	    div_time(&pulses[pulse].period, pulses[pulse].note_div_scale);
+
+#if defined USE_MIDI	// TODO: add runtime switch, and pulses action flag
+	    extern double /*midi_note*/ period_2_midi_note(pulse_time_t period);
+	    extern void midi_note_on_send(uint8_t channel, uint8_t note, uint8_t velocity);
+	    pulses[pulse].midi_note = (uint8_t) period_2_midi_note(pulses[pulse].period);
+	    midi_note_on_send(pulses[pulse].midi_channel, pulses[pulse].midi_note, 0x7f);
+#endif
 	    pulses[pulse].countdown = pulses[pulse].note_sounding;
 
 	    if((pulses[pulse].flags & HAS_GPIO) && (pulses[pulse].gpio != ILLEGAL8))
 	      digitalWrite(pulses[pulse].gpio, pulses[pulse].counter & 1);	// first gpio click
 
 	  } else { 								// MELODY_MODE	PAUSE for total note length
+#if defined USE_MIDI
+	    extern void midi_note_off_send(uint8_t channel, uint8_t note);
+	    midi_note_off_send(pulses[pulse].midi_channel, pulses[pulse].midi_note);
+#endif
 	    if(pulses[pulse].note_length_mul != pulses[pulse].note_length_div) {
 	      mul_time(&pulses[pulse].period, pulses[pulse].note_length_mul);
 	      div_time(&pulses[pulse].period, pulses[pulse].note_length_div);
@@ -1839,6 +1850,10 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	    busy = false;	// return immediately
 
 	  } else {								// MELODY_MODE sound ENDED: WAIT for next
+#if defined USE_MIDI
+	    extern void midi_note_off_send(uint8_t channel, uint8_t note);
+	    midi_note_off_send(pulses[pulse].midi_channel, pulses[pulse].midi_note);
+#endif
 	    // add note break wait
 	    int diff = pulses[pulse].note_length - pulses[pulse].note_sounding;
 	    if(diff)
