@@ -440,7 +440,11 @@ void copy_string_to_lower(char* source, char* destination, size_t max) {
   #include "ePaper_pulses.h"
 #endif
 
-action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actions
+#if defined USE_MIDI
+  action_flags_t selected_actions = DACsq1 | DACsq2 | sendMIDI;	// TODO: better default actions
+#else
+  action_flags_t selected_actions = DACsq1 | DACsq2;	// TODO: better default actions
+#endif
 
 /* **************************************************************** */
 // define gpio_pin_t gpio_pins[GPIO_PINS]	// see: pulses_boards.h
@@ -4691,6 +4695,10 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   for(int pulse=0; pulse<bass_pulses; pulse++) {
     setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(iCODEs) , DACsq1 | doesICODE);
 
+#if defined USE_MIDI
+    PULSES.pulses[pulse].dest_action_flags |= sendMIDI;
+#endif
+
 #if defined USE_i2c
   #if defined USE_MCP23017
     PULSES.set_i2c_addr_pin(pulse, 0x20, pulse);	// ???
@@ -4712,6 +4720,11 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
 #else
     setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(JIFFLES), DACsq1 | doesICODE | CLICKs);
 #endif
+
+#if defined USE_MIDI
+    PULSES.pulses[pulse].dest_action_flags |= sendMIDI;
+#endif
+
     PULSES.set_gpio(pulse, next_gpio());
   }
   PULSES.add_selected_to_group(g_MIDDLE);
@@ -4726,6 +4739,10 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
     setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) selected_in(iCODEs), DACsq2 | doesICODE);
 #else
     setup_icode_seeder(pulse, PULSES.pulses[pulse].period, (icode_t*) d4096_256, DACsq2 | doesICODE);
+#endif
+
+#if defined USE_MIDI
+    PULSES.pulses[pulse].dest_action_flags |= sendMIDI;
 #endif
   }
   PULSES.add_selected_to_group(g_HIGH_END);
@@ -6216,6 +6233,19 @@ bool menu_pulses_reaction(char menu_input) {
       PULSES.select_n(voices);
 
       MENU.outln(voices);
+
+#if defined USE_MIDI
+    } else if(MENU.check_next('M')) {	// 'VM' PULSES.MIDIvolume
+      float input_f = MENU.float_input(PULSES.MIDI_volume);
+      if(input_f > 1.0)
+	input_f = 1.0;
+      if(input_f < 0)
+	input_f = 0.0;
+      PULSES.MIDI_volume = input_f;
+      MENU.out(F("global MIDI volume "));
+      MENU.outln(PULSES.MIDI_volume);
+#endif
+
     } else { // bare 'V' and 'VE' (*NOT* 'VVx')	PULSES.volume
 
       if(MENU.check_next('E'))	// 'VE' (morse shortcut) reset PULSES.volume=1.0

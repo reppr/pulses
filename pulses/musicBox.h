@@ -3689,7 +3689,7 @@ void musicBox_display() {
   MENU.out(F("'v' peripheral power"));
   MENU.out_ON_off(peripheral_power_on);
 #endif
-  MENU.out(F("  'V'=volume 'VE'vol=1.0 'VT..'volume-   'VV'=voices   '|' sync slices ="));    // ('V' and 'VV' are actually in menu pulses)
+  MENU.out(F("  'V'=volume 'VE'vol=1.0 'VT..'volume- 'VM'=MIDIvolume  'VV'=voices   '|' sync slices ="));    // ('V' and 'VV' are actually in menu pulses)
   MENU.out(musicBoxConf.stack_sync_slices);
   MENU.out(F("  '|b' base ="));
   MENU.out(musicBoxConf.base_pulse);

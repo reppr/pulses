@@ -77,7 +77,7 @@ enum icode {	// names are all four letter words ?	// maybe 8? 12? 16?(15?)
 #endif
 
 #ifndef action_flags_t
-  #define action_flags_t	uint8_t
+  #define action_flags_t	uint16_t
 #endif
 
 #ifndef group_flags_t
@@ -85,7 +85,7 @@ enum icode {	// names are all four letter words ?	// maybe 8? 12? 16?(15?)
 #endif
 
 #ifndef gpio_pin_t
-  #define gpio_pin_t	int8_t			// negative values might be used for pin extensions
+  #define gpio_pin_t		int8_t		// negative values might be used for pin extensions
 //  #define gpio_pin_t		short		// negative values might be used for pin extensions
 #endif
 
@@ -174,9 +174,11 @@ struct pulse_t {
 
 #define DO_after		64	// do after other actions	// TODO: UNUSED:
 
-#define noACTION		128	// 'mutes' all actions
+#define sendMIDI		128	// send MIDI notes (see: MELODY_MODE and JIFFLE_MODE)
 
-#define ACTION_MASK_BITS	8	// >>>>>>>> *DO CHANGE* number of flags changes here <<<<<<<
+#define noACTION		256	// 'mutes' all actions
+
+#define ACTION_MASK_BITS	9	// >>>>>>>> *DO CHANGE* number of flags changes here <<<<<<<
 					// ACTION_MASK_BITS is used by mask displaying code (only)
 
   group_flags_t groups;			// flags like primary pulse, pentatonic, bass, octave and the like
@@ -415,6 +417,9 @@ class Pulses {
 //	  int function_wave_OFF(int pulse, int volume);		// ZERO
 #endif
 
+#if defined USE_MIDI
+  float MIDI_volume = 0.75;
+#endif
 
 #ifdef IMPLEMENT_TUNING		// implies floating point
   unsigned long ticks_per_octave;

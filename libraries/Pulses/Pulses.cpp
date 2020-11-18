@@ -675,6 +675,11 @@ void Pulses::show_action_flags(action_flags_t flags) {
   else
     (*MENU).out('.');
 
+  if(flags & sendMIDI)
+    (*MENU).out('M');
+  else
+    (*MENU).out('.');
+
   if(flags & noACTION)
     (*MENU).out('X');
   else
@@ -1711,8 +1716,10 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 #endif
 
 #if defined USE_MIDI
-	  extern void midi_note_off_send(uint8_t channel, uint8_t note);
-	  midi_note_off_send(pulses[pulse].midi_channel, pulses[pulse].midi_note);
+	  if(pulses[pulse].action_flags & sendMIDI) {
+	    extern void midi_note_off_send(uint8_t channel, uint8_t note);
+	    midi_note_off_send(pulses[pulse].midi_channel, pulses[pulse].midi_note);
+	  }
 #endif
 	  // icode_p += 3;	// skip invalid data triple
 	  if(pulses[pulse].flags & HAS_GPIO)		// TODO: reset gpio here or not, see 'KILL'
@@ -1736,8 +1743,10 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 #endif
 
 #if defined USE_MIDI
+	  if(pulses[pulse].action_flags & sendMIDI) {
 	    extern void midi_note_off_send(uint8_t channel, uint8_t note);
 	    midi_note_off_send(pulses[pulse].midi_channel, pulses[pulse].midi_note);
+	  }
 #endif
 
 	  pulses[pulse].period = pulses[pulse].base_period;
@@ -1762,14 +1771,16 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	    div_time(&pulses[pulse].period, divisor);
 
 #if defined USE_MIDI
-	    extern void midi_note_off_send(uint8_t channel, uint8_t note);
-	    midi_note_off_send(pulses[pulse].midi_channel, pulses[pulse].midi_note);	// stop last note
+	    if(pulses[pulse].action_flags & sendMIDI) {
+	      extern void midi_note_off_send(uint8_t channel, uint8_t note);
+	      midi_note_off_send(pulses[pulse].midi_channel, pulses[pulse].midi_note);	// stop last note
 
-	    if(pulses[pulse].countdown > 8) {						// skip very short jiffs  TODO: test&trimm
-	      extern double /*midi_note*/ period_2_midi_note(pulse_time_t period);
-	      extern void midi_note_on_send(uint8_t channel, uint8_t note, uint8_t velocity);
-	      pulses[pulse].midi_note = (uint8_t) period_2_midi_note(pulses[pulse].period);
-	      midi_note_on_send(pulses[pulse].midi_channel, pulses[pulse].midi_note, 0x7f);
+	      if(pulses[pulse].countdown > 8) {						// skip very short jiffs  TODO: test&trimm
+		extern double /*midi_note*/ period_2_midi_note(pulse_time_t period);
+		extern void midi_note_on_send(uint8_t channel, uint8_t note, uint8_t velocity);
+		pulses[pulse].midi_note = (uint8_t) period_2_midi_note(pulses[pulse].period);
+		midi_note_on_send(pulses[pulse].midi_channel, pulses[pulse].midi_note, (0x7f*MIDI_volume + 0.5));
+	      }
 	    }
 #endif
 	  }
@@ -1796,8 +1807,10 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 #endif
 
 #if defined USE_MIDI
-	    extern void midi_note_off_send(uint8_t channel, uint8_t note);
-	    midi_note_off_send(pulses[pulse].midi_channel, pulses[pulse].midi_note);
+	    if(pulses[pulse].action_flags & sendMIDI) {
+	      extern void midi_note_off_send(uint8_t channel, uint8_t note);
+	      midi_note_off_send(pulses[pulse].midi_channel, pulses[pulse].midi_note);
+	    }
 #endif
 	    icode_p += 3;
 	    busy= false; // wait another period on last gpio state
@@ -1843,10 +1856,12 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	    div_time(&pulses[pulse].period, pulses[pulse].note_div_scale);
 
 #if defined USE_MIDI	// TODO: add runtime switch, and pulses action flag
-	    extern double /*midi_note*/ period_2_midi_note(pulse_time_t period);
-	    extern void midi_note_on_send(uint8_t channel, uint8_t note, uint8_t velocity);
-	    pulses[pulse].midi_note = (uint8_t) period_2_midi_note(pulses[pulse].period);
-	    midi_note_on_send(pulses[pulse].midi_channel, pulses[pulse].midi_note, 0x7f);
+	    if(pulses[pulse].action_flags & sendMIDI) {
+	      extern double /*midi_note*/ period_2_midi_note(pulse_time_t period);
+	      extern void midi_note_on_send(uint8_t channel, uint8_t note, uint8_t velocity);
+	      pulses[pulse].midi_note = (uint8_t) period_2_midi_note(pulses[pulse].period);
+	      midi_note_on_send(pulses[pulse].midi_channel, pulses[pulse].midi_note, (0x7f*MIDI_volume + 0.5));
+	    }
 #endif
 	    pulses[pulse].countdown = pulses[pulse].note_sounding;
 
@@ -1855,8 +1870,10 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 
 	  } else { 								// MELODY_MODE	PAUSE for total note length
 #if defined USE_MIDI
-	    extern void midi_note_off_send(uint8_t channel, uint8_t note);
-	    midi_note_off_send(pulses[pulse].midi_channel, pulses[pulse].midi_note);
+	    if(pulses[pulse].action_flags & sendMIDI) {
+	      extern void midi_note_off_send(uint8_t channel, uint8_t note);
+	      midi_note_off_send(pulses[pulse].midi_channel, pulses[pulse].midi_note);
+	    }
 #endif
 	    if(pulses[pulse].note_length_mul != pulses[pulse].note_length_div) {
 	      mul_time(&pulses[pulse].period, pulses[pulse].note_length_mul);
@@ -1879,8 +1896,10 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 
 	  } else {								// MELODY_MODE sound ENDED: WAIT for next
 #if defined USE_MIDI
-	    extern void midi_note_off_send(uint8_t channel, uint8_t note);
-	    midi_note_off_send(pulses[pulse].midi_channel, pulses[pulse].midi_note);
+	    if(pulses[pulse].action_flags & sendMIDI) {
+	      extern void midi_note_off_send(uint8_t channel, uint8_t note);
+	      midi_note_off_send(pulses[pulse].midi_channel, pulses[pulse].midi_note);
+	    }
 #endif
 	    // add note break wait
 	    int diff = pulses[pulse].note_length - pulses[pulse].note_sounding;

@@ -12,6 +12,7 @@ pulse_time_t	KEYWORD1
 
 DAC_output	KEYWORD2
 volume	KEYWORD2
+MIDI_volume	KEYWORD2
 activate_pulse_synced	KEYWORD2
 activate_selected_stack_sync_now	KEYWORD2
 activate_selected_synced_now	KEYWORD2
@@ -98,6 +99,8 @@ DONE	LITERAL1
 DO_NOT_DELETE	LITERAL1
 DO_after	LITERAL1
 DO_first	LITERAL1
+sendMIDI	LITERAL1
+noACTION	LITERAL1
 HAS_GPIO	LITERAL1
 HAS_I2C_ADDR_PIN	LITERAL1
 HAS_ICODE	LITERAL1
