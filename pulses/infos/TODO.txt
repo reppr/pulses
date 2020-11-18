@@ -847,3 +847,5 @@ preset setup macros, save in SPIFFS?
 void midi_all_notes_off() {	// does not work?
 
 A_UI() display
+
+midi note velocity, volume

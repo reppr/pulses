@@ -1709,6 +1709,11 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 #if defined DEBUG_ICODE
 	  (*MENU).outln(F("multiplier|divisor==0,  END of JIFF, KILL"));
 #endif
+
+#if defined USE_MIDI
+	  extern void midi_note_off_send(uint8_t channel, uint8_t note);
+	  midi_note_off_send(pulses[pulse].midi_channel, pulses[pulse].midi_note);
+#endif
 	  // icode_p += 3;	// skip invalid data triple
 	  if(pulses[pulse].flags & HAS_GPIO)		// TODO: reset gpio here or not, see 'KILL'
 	    if(pulses[pulse].gpio != ILLEGAL8) {	// currently the gpios stay high after a jiff without
@@ -1729,6 +1734,12 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	  (*MENU).out("\nwait ");
 	  (*MENU).outln(pulses[pulse].base_period * multiplier / divisor);
 #endif
+
+#if defined USE_MIDI
+	    extern void midi_note_off_send(uint8_t channel, uint8_t note);
+	    midi_note_off_send(pulses[pulse].midi_channel, pulses[pulse].midi_note);
+#endif
+
 	  pulses[pulse].period = pulses[pulse].base_period;
 	  mul_time(&pulses[pulse].period, multiplier);
 	  div_time(&pulses[pulse].period, divisor);
@@ -1749,6 +1760,18 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	    pulses[pulse].period = pulses[pulse].base_period;
 	    mul_time(&pulses[pulse].period, multiplier);
 	    div_time(&pulses[pulse].period, divisor);
+
+#if defined USE_MIDI
+	    extern void midi_note_off_send(uint8_t channel, uint8_t note);
+	    midi_note_off_send(pulses[pulse].midi_channel, pulses[pulse].midi_note);	// stop last note
+
+	    if(pulses[pulse].countdown > 8) {						// skip very short jiffs  TODO: test&trimm
+	      extern double /*midi_note*/ period_2_midi_note(pulse_time_t period);
+	      extern void midi_note_on_send(uint8_t channel, uint8_t note, uint8_t velocity);
+	      pulses[pulse].midi_note = (uint8_t) period_2_midi_note(pulses[pulse].period);
+	      midi_note_on_send(pulses[pulse].midi_channel, pulses[pulse].midi_note, 0x7f);
+	    }
+#endif
 	  }
 
 	  if((pulses[pulse].flags & HAS_GPIO) && (pulses[pulse].gpio != ILLEGAL8))
@@ -1770,6 +1793,11 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	  } else {	// countdown finished, 1 JIFF done				// this JIFFLE is ending
 #if defined DEBUG_ICODE
 	    (*MENU).outln(F("1 JIFF done"));
+#endif
+
+#if defined USE_MIDI
+	    extern void midi_note_off_send(uint8_t channel, uint8_t note);
+	    midi_note_off_send(pulses[pulse].midi_channel, pulses[pulse].midi_note);
 #endif
 	    icode_p += 3;
 	    busy= false; // wait another period on last gpio state
