@@ -1776,8 +1776,8 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	      midi_note_off_send(pulses[pulse].midi_channel, pulses[pulse].midi_note);	// stop last note
 
 	      if(pulses[pulse].countdown > 8) {	// SKIP very short jiffs  TODO: test&trimm
-		extern void pulses_midi_note_send(int pulse);
-		pulses_midi_note_send(pulse);
+		extern void pulses_midi_note_and_bend_send(int pulse);
+		pulses_midi_note_and_bend_send(pulse);
 	      }
 	    }
 #endif
@@ -1855,8 +1855,8 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 
 #if defined USE_MIDI
 	    if(pulses[pulse].action_flags & sendMIDI) {
-	      extern void pulses_midi_note_send(int pulse);
-	      pulses_midi_note_send(pulse);
+	      extern void pulses_midi_note_and_bend_send(int pulse);
+	      pulses_midi_note_and_bend_send(pulse);
 	    }
 #endif
 	    pulses[pulse].countdown = pulses[pulse].note_sounding;

@@ -25,7 +25,19 @@ typedef struct midi_pitch_t {
 } midi_pitch_t;
 
 
-bool /*midi_note_OK*/ hertz_2_midi_note(double hz, midi_pitch_t* result_note) {
+double midi_note_2_hertz(uint8_t midi_note) {
+  double note_f = (double) midi_note;
+  double hertz;
+  if(midi_note<128)
+    hertz = pow(2.0, (note_f - 69.0) / 12.0) * 440.0;
+  else
+    hertz = 0.0;	// ERROR
+
+  return hertz;
+}
+
+
+bool /*midi_note_OK*/ hertz_2_midi_note_and_bend(double hz, midi_pitch_t* result_note) {
   double semitone = pow(2.0, (1.0 / 12.0));
   double note_f;
   note_f = log(hz / 440.0);
@@ -36,16 +48,36 @@ bool /*midi_note_OK*/ hertz_2_midi_note(double hz, midi_pitch_t* result_note) {
   if(note_i >= 0  &&  note_i <= 127) {		// in range?
     result_note->midi_note_i = note_i;		// range OK
     result_note->midi_note_f = note_f;
-    return true;			// resultat is valid
+
+    // pitch bend:
+    double bend_factor = hz / midi_note_2_hertz(note_i);
+    result_note->pitch_bend_value = (8192.0 + (4096.0*12.0 * log2(bend_factor)) + 0.5);
+
+#if false	// alternative methods to get pitch bend value:
+    MENU.out("hz "); MENU.out(hz); MENU.tab();
+    MENU.out("note "); MENU.out(note_i); MENU.tab(); MENU.out("=hz "); MENU.out(midi_note_2_hertz(note_i)); MENU.ln();
+    MENU.out("bend1 "); MENU.outln(result_note->pitch_bend_value);
+
+    double detune_cents = log(hz/midi_note_2_hertz(note_i))/log(2.0) * 1200.0;
+    int  pitch_bend_value = 8192.0 + (8192.0 * detune_cents / 200.0) + 0.5;
+    MENU.out("detune cents "); MENU.out(detune_cents); MENU.ln();
+    MENU.out("bend2 "); MENU.outln(pitch_bend_value);
+
+    double note_frac = note_f - note_i;				// <<<< TODO: use *this* version
+    pitch_bend_value = 8192.0 + (4096.0 * note_frac) + 0.5;	// <<<< TODO: use *this* version
+    MENU.out("bend3 "); MENU.outln(pitch_bend_value);
+#endif
+
+    return true;			// resultat is VALID
   } // else
 
   return false;				// result is *NOT* valid
-} // hertz_2_midi_note()
+} // hertz_2_midi_note_and_bend()
 
 
 bool /*midi_note_OK*/ period_2_midi_note(pulse_time_t period, midi_pitch_t* result_midi_note) {
   // was: hertz_2_midi_note(1e6 / period);
-  return hertz_2_midi_note(5e5 / period, result_midi_note); // was: ...(1e6 / period);  hertz counts *double* periods, so 5e5 instead 1e6
+  return hertz_2_midi_note_and_bend(5e5 / period, result_midi_note); // was: ...(1e6 / period);  hertz counts *double* periods, so 5e5 instead 1e6
 }
 
 
@@ -86,6 +118,11 @@ void midi_note_off_send(uint8_t channel, uint8_t note) {
   midi_channel_msg_send(0x90, channel, note, 0);
 }
 
+
+void midi_pitch_bend_send(uint8_t channel, uint16_t bend_value) {
+  midi_channel_msg_send(0xE0, channel, /*LSB*/ (bend_value & 0x7f), /*MSB*/ ((bend_value >> 7) & 0x7f));
+}
+
 bool inline midi_available() {
   return Serial2.available();
 }
@@ -93,6 +130,7 @@ bool inline midi_available() {
 uint8_t midi_receive() {
   return Serial2.read();
 }
+
 
 void midi_all_notes_off() {
   MENU.outln(F("MIDI all notes off"));
@@ -109,13 +147,14 @@ void midi_all_notes_off() {
 }
 
 
-void pulses_midi_note_send(int pulse) {
+void pulses_midi_note_and_bend_send(int pulse) {
   midi_pitch_t note;
   if(period_2_midi_note(PULSES.pulses[pulse].period, &note)) {
     PULSES.pulses[pulse].midi_note = note.midi_note_i;
     midi_note_on_send(PULSES.pulses[pulse].midi_channel, PULSES.pulses[pulse].midi_note, (0x7f*PULSES.MIDI_volume + 0.5));
+    midi_pitch_bend_send(PULSES.pulses[pulse].midi_channel, note.pitch_bend_value);
   }
-} // pulses_midi_note_send()
+} // pulses_midi_note_and_bend_send()
 
 
 // void midi_note_and_pitch_bend_send(int pulse) {

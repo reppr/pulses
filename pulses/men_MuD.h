@@ -4,17 +4,19 @@
 */
 
 #if defined USE_MIDI
+midi_all_notes_off();
 
 double hz = MENU.float_input(0.0);
-if(hz==0.0) {
-  midi_all_notes_off();
-  break;
- }
+// if(hz==0.0) {
+//   midi_all_notes_off();
+//   break;
+//  }
 
 midi_pitch_t note;
-if(hertz_2_midi_note(hz, &note))
+if(hertz_2_midi_note_and_bend(hz, &note)) {
   midi_note_on_send(0, note.midi_note_i, 127);
-
+  midi_pitch_bend_send(0, note.pitch_bend_value);
+ }
 break;
 
 //	for(int i=21; i<99; i++) {

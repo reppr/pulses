@@ -846,4 +846,6 @@ preset setup macros, save in SPIFFS?
 
 A_UI() display
 
-midi note velocity, volume
+MIDI running status
+
+MIDI fine tune by pitch bend table[12] (or [127]?)
