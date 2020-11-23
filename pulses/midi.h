@@ -17,19 +17,35 @@
   double cent = pow(2.0, (1.0 / 1200.0));		// ln: const does not work!  ????
 */
 
-double /*midi_note*/ hertz_2_midi_note(double hz) {
+typedef struct midi_pitch_t {
+  double midi_note_f;
+  double pitch_bend_f;
+  int16_t pitch_bend_value=0;
+  uint8_t midi_note_i=0;
+} midi_pitch_t;
+
+
+bool /*midi_note_OK*/ hertz_2_midi_note(double hz, midi_pitch_t* result_note) {
   double semitone = pow(2.0, (1.0 / 12.0));
-  double midi_note = log(hz / 440.0);
-  midi_note /= log(semitone);
-  midi_note += 69.0;
+  double note_f;
+  note_f = log(hz / 440.0);
+  note_f /= log(semitone);
+  note_f += 69.0;
 
-  return midi_note;
-}
+  int note_i = (int) ((double) note_f + 0.5);	// int midi_note
+  if(note_i >= 0  &&  note_i <= 127) {		// in range?
+    result_note->midi_note_i = note_i;		// range OK
+    result_note->midi_note_f = note_f;
+    return true;			// resultat is valid
+  } // else
+
+  return false;				// result is *NOT* valid
+} // hertz_2_midi_note()
 
 
-double /*midi_note*/ period_2_midi_note(pulse_time_t period) {
+bool /*midi_note_OK*/ period_2_midi_note(pulse_time_t period, midi_pitch_t* result_midi_note) {
   // was: hertz_2_midi_note(1e6 / period);
-  return hertz_2_midi_note(5e5 / period);	// hertz counts *double* periods, so 5e5 instead 1e6
+  return hertz_2_midi_note(5e5 / period, result_midi_note); // was: ...(1e6 / period);  hertz counts *double* periods, so 5e5 instead 1e6
 }
 
 
@@ -79,6 +95,8 @@ uint8_t midi_receive() {
 }
 
 void midi_all_notes_off() {
+  MENU.outln(F("MIDI all notes off"));
+
   for(uint8_t channel=0; channel<16; channel++) {
     midi_send(176 | channel);	// channel mode message
     midi_send(120);		// cc=120: all sounds off
@@ -90,6 +108,27 @@ void midi_all_notes_off() {
   }
 }
 
+
+void pulses_midi_note_send(int pulse) {
+  midi_pitch_t note;
+  if(period_2_midi_note(PULSES.pulses[pulse].period, &note)) {
+    PULSES.pulses[pulse].midi_note = note.midi_note_i;
+    midi_note_on_send(PULSES.pulses[pulse].midi_channel, PULSES.pulses[pulse].midi_note, (0x7f*PULSES.MIDI_volume + 0.5));
+  }
+} // pulses_midi_note_send()
+
+
+// void midi_note_and_pitch_bend_send(int pulse) {
+//   double midi_note;
+//   if(period_2_midi_note(PULSES.pulses[pulse].period), &midi_note) {
+//
+//     int note = (int) ((double) midi_note + 0.5);
+//
+//   PULSES.pulses[pulse].midi_note = (uint8_t) period_2_midi_note(PULSES.pulses[pulse].period);
+//   midi_note_on_send(PULSE.pulses[pulse].midi_channel, PULSES.pulses[pulse].midi_note, (0x7f*PULSES.MIDI_volume + 0.5));
+//
+//
+// }
 
 void MIDI_reaction() {	// TODO: implement MIDI in reaction
   uint8_t midibyte = midi_receive();

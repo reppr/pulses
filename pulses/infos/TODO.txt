@@ -844,8 +844,6 @@ preset setup macros, save in SPIFFS?
 
 #if defined USE_MIDI	// TODO: add runtime switch, and pulses action flag
 
-void midi_all_notes_off() {	// does not work?
-
 A_UI() display
 
 midi note velocity, volume

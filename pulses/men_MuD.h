@@ -5,6 +5,18 @@
 
 #if defined USE_MIDI
 
+double hz = MENU.float_input(0.0);
+if(hz==0.0) {
+  midi_all_notes_off();
+  break;
+ }
+
+midi_pitch_t note;
+if(hertz_2_midi_note(hz, &note))
+  midi_note_on_send(0, note.midi_note_i, 127);
+
+break;
+
 //	for(int i=21; i<99; i++) {
 //	  MENU.out(i); MENU.space();
 //	  MENU.outln(midi_note_name(i));
@@ -20,71 +32,71 @@
 //      MENU.outln(midi_receive());
 //  }
 
-int note;
-double note_f;
-double period_f;
-for(int i = musicBoxConf.lowest_primary; i <= musicBoxConf.highest_primary; i++) {
-  MENU.out(i);	MENU.tab();
+//	int note;
+//	double note_f;
+//	double period_f;
+//	for(int i = musicBoxConf.lowest_primary; i <= musicBoxConf.highest_primary; i++) {
+//	  MENU.out(i);	MENU.tab();
+//	
+//	  period_f = PULSES.pulses[i].period;
+//	  period_f /= 4096;
+//	  MENU.out("pf ");
+//	  MENU.out(period_f, 6);	MENU.tab();
+//	
+//	  note_f = period_2_midi_note(period_f);
+//	  MENU.out("nf ");
+//	  MENU.out(note_f, 6);	MENU.tab();
+//	
+//	  note = (int) (note_f + 0.5);
+//	  MENU.out(note); MENU.space();
+//	  MENU.outln(midi_note_name(note));
+//	
+//	  if(note<127) {
+//	    midi_note_on_send(0, note, 0x45);
+//	//    Serial2.write(0x90);
+//	//    Serial2.write(note);
+//	//    Serial2.write(0x45);
+//	    delay(330);
+//	
+//	    midi_note_off_send(0, note);
+//	//    Serial2.write(0x90);
+//	//    Serial2.write(note);
+//	//    Serial2.write(0x00);
+//	  }
+//	 }
+//	break;
 
-  period_f = PULSES.pulses[i].period;
-  period_f /= 4096;
-  MENU.out("pf ");
-  MENU.out(period_f, 6);	MENU.tab();
 
-  note_f = period_2_midi_note(period_f);
-  MENU.out("nf ");
-  MENU.out(note_f, 6);	MENU.tab();
-
-  note = (int) (note_f + 0.5);
-  MENU.out(note); MENU.space();
-  MENU.outln(midi_note_name(note));
-
-  if(note<127) {
-    midi_note_on_send(0, note, 0x45);
-//    Serial2.write(0x90);
-//    Serial2.write(note);
-//    Serial2.write(0x45);
-    delay(330);
-
-    midi_note_off_send(0, note);
-//    Serial2.write(0x90);
-//    Serial2.write(note);
-//    Serial2.write(0x00);
-  }
- }
-break;
-
-
-//MENU.out(F("hertz_2_midi_note()\t"));
-//MENU.out(hz); MENU.tab(); MENU.outln(midi_note);
-hertz_2_midi_note(32.703);	// 24
-period_2_midi_note(1e6 / 32.703);
-//hertz_2_midi_note(174.61);	// 53
-hertz_2_midi_note(440.0);	// 69
-period_2_midi_note(1e6 / 440.0);
-//hertz_2_midi_note(4186.0);	// 108
-break;
-
-MENU.outln(F("MIDI test Serial2  TX17"));
-//midi_setup(39, 19);
-
-for (int note = 0x1E; note < 0x5A; note ++) {
-  //Note on channel 1 (0x90), some note value (note), middle velocity (0x45):
-  //  noteOn(0x90, note, 0x45);
-  MENU.outln(note);
-  Serial2.write(0x90);
-  Serial2.write(note);
-  Serial2.write(0x45);
-  delay(330);
-  //Note on channel 1 (0x90), some note value (note), silent velocity (0x00):
-  //  noteOn(0x90, note, 0x00);
-  Serial2.write(0x90);
-  Serial2.write(note);
-  Serial2.write(0x00);
-  delay(110);
- }
-break;
-#endif
+//	//MENU.out(F("hertz_2_midi_note()\t"));
+//	//MENU.out(hz); MENU.tab(); MENU.outln(midi_note);
+//	hertz_2_midi_note(32.703);	// 24
+//	period_2_midi_note(1e6 / 32.703);
+//	//hertz_2_midi_note(174.61);	// 53
+//	hertz_2_midi_note(440.0);	// 69
+//	period_2_midi_note(1e6 / 440.0);
+//	//hertz_2_midi_note(4186.0);	// 108
+//	break;
+//	
+//	MENU.outln(F("MIDI test Serial2  TX17"));
+//	//midi_setup(39, 19);
+//	
+//	for (int note = 0x1E; note < 0x5A; note ++) {
+//	  //Note on channel 1 (0x90), some note value (note), middle velocity (0x45):
+//	  //  noteOn(0x90, note, 0x45);
+//	  MENU.outln(note);
+//	  Serial2.write(0x90);
+//	  Serial2.write(note);
+//	  Serial2.write(0x45);
+//	  delay(330);
+//	  //Note on channel 1 (0x90), some note value (note), silent velocity (0x00):
+//	  //  noteOn(0x90, note, 0x00);
+//	  Serial2.write(0x90);
+//	  Serial2.write(note);
+//	  Serial2.write(0x00);
+//	  delay(110);
+//	 }
+//	break;
+#endif // USE_MIDI
 
 
 MENU.out(MENU.float_input(-1.0),9);
