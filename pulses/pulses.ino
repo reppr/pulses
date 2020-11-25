@@ -2403,6 +2403,13 @@ bool lowest_priority_tasks() {
   }
 #endif
 
+#if defined USE_ESP_NOW
+  if(do_esp_now_send_identity) {
+    send_IDENTITY_time_sliced();
+    return true;
+  }
+#endif
+
   return false;		// ################ FIXME: return values ################
 } // lowest_priority_tasks()
 

@@ -439,7 +439,14 @@ esp_err_t esp_now_add_peer_mac_only(const uint8_t *mac_addr) {	// might give fee
   return esp_now_pulses_add_peer(&fake_id);
 }
 
-void send_IDENTITY_time_sliced() {	// send data stored in esp_now_send_buffer
+
+bool do_esp_now_send_identity=false;	// flag to trigger ID sending
+
+void trigger_send_identity() {
+  do_esp_now_send_identity = true;
+}
+
+void send_IDENTITY_time_sliced() {	// send data stored in esp_now_send_buffer, triggered by do_esp_now_send_identity
   esp_err_t status = esp_now_pulses_send(time_sliced_sent_to_mac);	// CRASH! ################ possibly brownout?
 
   if(MENU.maybe_display_more(VERBOSITY_SOME) || DEBUG_ESP_NOW_b)
@@ -448,7 +455,8 @@ void send_IDENTITY_time_sliced() {	// send data stored in esp_now_send_buffer
 //	#if defined DEBUG_ESP_NOW_NETWORKING
 //	  MENU.outln("\nsend_IDENTITY_time_sliced() sent previously prepared data");
 //	#endif
-}
+  do_esp_now_send_identity=false;	// unset trigger
+} // send_IDENTITY_time_sliced()
 
 
 void esp_now_send_identity(uint8_t* to_mac) {
@@ -507,7 +515,7 @@ void esp_now_prepare_N_ID(uint8_t* to_mac) {
 
   // setup time sliced reaction
   esp_now_reaction_timer = timerBegin(0, 80, true /* count upwards */);
-  timerAttachInterrupt(esp_now_reaction_timer, &send_IDENTITY_time_sliced, true /* edge */);
+  timerAttachInterrupt(esp_now_reaction_timer, &trigger_send_identity, true /* edge */);
   timerAlarmWrite(esp_now_reaction_timer, (time_slice_ms * 1000), false /* only once */);
   timerAlarmEnable(esp_now_reaction_timer);
 } // esp_now_prepare_N_ID()
