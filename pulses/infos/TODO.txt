@@ -846,6 +846,10 @@ preset setup macros, save in SPIFFS?
 
 A_UI() display
 
+MIDI UI switch using pitch bend, running status
 MIDI running status
 
 MIDI fine tune by pitch bend table[12] (or [127]?)
+
+MIDI pins on pico kit?
+MIDI pins and ePaper?

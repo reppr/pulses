@@ -225,8 +225,17 @@ typedef struct pulses_hardware_conf_t {
   uint8_t rgb_pattern0[RGB_STRINGS_MAX]={0};				// %4
 
   // MIDI?
-  uint8_t MIDI_in_pin=ILLEGAL8;		// reserved, not implemented yet // %4
-  uint8_t MIDI_out_pin=ILLEGAL8;	// reserved, not implemented yet
+#if defined MIDI_IN_PIN
+  uint8_t MIDI_in_pin=MIDI_IN_PIN;					// %4
+#else
+  uint8_t MIDI_in_pin=ILLEGAL8;						// %4
+#endif
+
+#if defined MIDI_OUT_PIN
+  uint8_t MIDI_out_pin=MIDI_OUT_PIN;
+#else
+  uint8_t MIDI_out_pin=ILLEGAL8;
+#endif
 
   // SD CARD?	// TODO: implement
   // type
@@ -1368,7 +1377,6 @@ void setup_initial_HARDWARE_conf() {
   HARDWARE.RTC_type = RTC_type_DS1307;
 #endif
 
-  // MIDI		// TODO: implement hard and software
   // other pins		// TODO: implement
   // nvs flags		// ?????	TODO: implement
   // version		// switch(version)
@@ -1483,10 +1491,17 @@ void show_hardware_conf(pulses_hardware_conf_t* hardware) {
     MENU.outln(hardware->rgb_led_voltage_type[0]);
   } else
     MENU.outln('-');
+
+  MENU.out(F("MIDI\t\t\tin "));
+  show_pin_or_dash(hardware->MIDI_in_pin);
+  MENU.out(F("\tout "));
+  show_pin_or_dash(hardware->MIDI_out_pin);
+  MENU.ln();
+
 /*
   MENU.outln(F("RTC\t\t\tTODO:"));	// TODO: RTC
 */
-  // MIDI	// TODO:
+
   // other pins
   // switch(version)
   // nvs flags
@@ -1952,7 +1967,7 @@ void setup() {
 #endif
 
 #if defined USE_MIDI
-  MIDI_setup(/*RX*/ MIDI_IN_PIN, /*TX*/ MIDI_OUT_PIN);	// midi_setup(/*RX*/ 39, /*TX*/ 19);
+  MIDI_setup(/*RX*/ HARDWARE.MIDI_in_pin, /*TX*/ HARDWARE.MIDI_out_pin);	// midi_setup(/*RX*/ 18, /*TX*/ 19);
 #endif
 
 #if defined MUSICBOX_TRIGGER_PIN

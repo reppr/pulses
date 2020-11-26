@@ -250,6 +250,15 @@ void  ePaper_show_program_version() {
     ePaper.print(' ');
     ePaper.print(' ');
 #endif
+
+#if defined USE_MIDI
+    ePaper.print("MIDI ");
+    ePaper.print(HARDWARE.MIDI_in_pin);
+    ePaper.print(' ');
+    ePaper.print(HARDWARE.MIDI_out_pin);
+    ePaper.print(' ');
+#endif
+
     ePaper.println();
   }
   while (ePaper.nextPage());
