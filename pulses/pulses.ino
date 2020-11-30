@@ -262,8 +262,8 @@ typedef struct pulses_hardware_conf_t {
   uint8_t magical_sense_pin=ILLEGAL8;		// maybe?	i.e. see: magical_fart
 
   // 8 bytes RESERVED for future use, forward compatibility
-  uint8_t reserved0=ILLEGAL8;						// %4
-  uint8_t reserved1=ILLEGAL8;
+  uint8_t esp_now_channel=ILLEGAL8;	// *not used yet*		// %4
+  uint8_t midi_does_pitch_bend=false;	// *not used yet*
   uint8_t reserved2=ILLEGAL8;
   uint8_t reserved3=ILLEGAL8;
   uint8_t reserved4=ILLEGAL8;						// %4
@@ -2227,6 +2227,10 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 
 #ifdef USE_MORSE
   morse_init();	// ATTENTION: *do this AFTER esp_now_pulses_setup()*
+#endif
+
+#if defined USE_MIDI
+  while (midi_available()) { midi_receive(); yield(); }	// get rid of fake '255' midi input
 #endif
 
   MENU.men_selected = musicBox_page;	// default to musicBox menu

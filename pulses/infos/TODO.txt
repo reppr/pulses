@@ -849,7 +849,20 @@ A_UI() display
 MIDI UI switch using pitch bend, running status
 MIDI running status
 
+uint8_t midi_does_pitch_bend=false;	// *not used yet*
 MIDI fine tune by pitch bend table[12] (or [127]?)
 
 MIDI pins on pico kit?
 MIDI pins and ePaper?
+
+
+fix esp-now channel
+#define ESP_NOW_CHANNEL	0	// was:4 (DOES NOT WORK ANY MORE)	TODO: UI
+//peer_info.channel = 0;	// OK
+//peer_info.channel = 1;	// OK
+//peer_info.channel = 2;	// ERROR
+
+esp-now SDR tests
+uint8_t esp_now_channel=ILLEGAL8;	// *not used yet*		// %4
+//ap_config.ap.channel = ESP_NOW_CHANNEL;	// TODO: ????
++//esp_wifi_set_channel(ESP_NOW_CHANNEL);	???

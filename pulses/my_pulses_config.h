@@ -31,6 +31,7 @@
 #define MIDI_OUT_PIN	19	// configured as Serial2 TX
 //#define MIDI_IN_PIN	39	// configured as Serial2 RX
 #define MIDI_IN_PIN	18	// configured as Serial2 RX
+//#define MIDI_DOES_PITCH_BEND	// probably won't use this, so just a pp macro
 
 //#define USE_ADS1115_AT_ADDR	0x48
 

@@ -147,14 +147,16 @@ void midi_all_notes_off() {
 }
 
 
-void pulses_midi_note_and_bend_send(int pulse) {
+void pulses_midi_note_maybe_bend_send(int pulse) {
   midi_pitch_t note;
   if(period_2_midi_note(PULSES.pulses[pulse].period, &note)) {
     PULSES.pulses[pulse].midi_note = note.midi_note_i;
     midi_note_on_send(PULSES.pulses[pulse].midi_channel, PULSES.pulses[pulse].midi_note, (0x7f*PULSES.MIDI_volume + 0.5));
+#if defined MIDI_DOES_PITCH_BEND
     midi_pitch_bend_send(PULSES.pulses[pulse].midi_channel, note.pitch_bend_value);
+#endif
   }
-} // pulses_midi_note_and_bend_send()
+} // pulses_midi_note_maybe_bend_send()
 
 
 // void midi_note_and_pitch_bend_send(int pulse) {
@@ -194,7 +196,10 @@ void MIDI_setup(uint8_t midi_RX, uint8_t midi_TX) {
   MENU.outln(midi_TX);
 
   Serial2.begin(31250, SERIAL_8N1, midi_RX, midi_TX);
-}
+  yield();
+  while (! Serial2) { yield(); }			// just in case?
+  while (midi_available()) { midi_receive(); yield(); }	// not helpful?
+} // MIDI_setup();
 
 #define MIDI_H
 #endif
