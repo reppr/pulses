@@ -11,11 +11,6 @@
   #define TXD2 17	// ESP32 *default* pins, not used
 */
 
-/*
-  see: musicbox.h
-  const double semitone = pow(2.0, (1.0 / 12.0));
-  double cent = pow(2.0, (1.0 / 1200.0));		// ln: const does not work!  ????
-*/
 
 typedef struct midi_pitch_t {
   double midi_note_f;
@@ -24,6 +19,12 @@ typedef struct midi_pitch_t {
   uint8_t midi_note_i=0;
 } midi_pitch_t;
 
+
+/*
+  see: musicbox.h
+  const double semitone = pow(2.0, (1.0 / 12.0));
+  double cent = pow(2.0, (1.0 / 1200.0));		// ln: const does not work!  ????
+*/
 
 double midi_note_2_hertz(uint8_t midi_note) {
   double note_f = (double) midi_note;
@@ -171,6 +172,7 @@ void pulses_midi_note_maybe_bend_send(int pulse) {
 //
 // }
 
+
 void MIDI_reaction() {	// TODO: implement MIDI in reaction
   uint8_t midibyte = midi_receive();
   switch(midibyte) {
@@ -182,23 +184,40 @@ void MIDI_reaction() {	// TODO: implement MIDI in reaction
     }
     break;
 
+  case 255:	// real time sys reset	not connected?
+    {
+      static uint16_t rt_sys_reset_cnt=0;
+      if((rt_sys_reset_cnt++ % 4096) == 0)
+	MENU.outln(F("MIDI in 255,\trt sys reset,\tnot connected?"));
+    }
+    break;
+
   default:
-    MENU.out(F("MIDI in "));
+    MENU.out(F("MIDI in "));		// TODO: implement MIDI input
     MENU.outln(midi_receive());
   }
 } // MIDI_reaction
 
 
 void MIDI_setup(uint8_t midi_RX, uint8_t midi_TX) {
-  MENU.out(F("MIDI_setup()\tRX="));
-  MENU.out(midi_RX);
-  MENU.out(F(" TX="));
-  MENU.outln(midi_TX);
+  MENU.out(F("MIDI_setup()\t"));
+  int baudrate = 10 * HARDWARE.midi_baudrate_div10;
 
-  Serial2.begin(31250, SERIAL_8N1, midi_RX, midi_TX);
-  yield();
-  while (! Serial2) { yield(); }			// just in case?
-  while (midi_available()) { midi_receive(); yield(); }	// not helpful?
+  if(baudrate == 0)
+    ERROR_ln(F("define baudrate"));
+  else {
+    MENU.out(F("RX="));
+    MENU.out(midi_RX);
+    MENU.out(F(" TX="));
+    MENU.out(midi_TX);
+    MENU.out(F(" BAUD="));
+    MENU.outln(baudrate);
+
+    Serial2.begin(baudrate, SERIAL_8N1, midi_RX, midi_TX);
+    yield();
+    while (! Serial2) { yield(); }			// just in case?
+    while (midi_available()) { midi_receive(); yield(); }	// not helpful?
+  }
 } // MIDI_setup();
 
 #define MIDI_H

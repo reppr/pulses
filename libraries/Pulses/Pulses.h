@@ -175,6 +175,11 @@ struct pulse_t {
 #define DO_after		64	// do after other actions	// TODO: UNUSED:
 
 #define sendMIDI		128	// send MIDI notes (see: MELODY_MODE and JIFFLE_MODE)
+  // TODO: maybe?
+  // #define sendPITCHBEND	256	// send MIDI pitch bend (sendMIDI must be set too)
+  // #define noACTION		512	// 'mutes' all actions
+  // #define ACTION_MASK_BITS	10	// >>>>>>>> *DO CHANGE* number of flags changes here <<<<<<<
+					// ACTION_MASK_BITS is used by mask displaying code (only)
 
 #define noACTION		256	// 'mutes' all actions
 
@@ -257,10 +262,10 @@ struct pulse_t {
   /*
     a kind of running mode for treating bare numbers inside iCode
       JIFFLE_MODE is default
-        zero is considered to be equal to JIFFLE_MODE
+	zero is considered to be equal to JIFFLE_MODE
 	triplets mul, div, cnt
       MELODY_MODE
-        notes relative to basic pulse tuning
+	notes relative to basic pulse tuning
   */
 
   int other_pulse;

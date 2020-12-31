@@ -225,13 +225,13 @@ typedef struct pulses_hardware_conf_t {
   uint8_t rgb_pattern0[RGB_STRINGS_MAX]={0};				// %4
 
   // MIDI?
-#if defined MIDI_IN_PIN
+#if defined USE_MIDI && defined MIDI_IN_PIN
   uint8_t MIDI_in_pin=MIDI_IN_PIN;					// %4
 #else
   uint8_t MIDI_in_pin=ILLEGAL8;						// %4
 #endif
 
-#if defined MIDI_OUT_PIN
+#if defined USE_MIDI && defined MIDI_OUT_PIN
   uint8_t MIDI_out_pin=MIDI_OUT_PIN;
 #else
   uint8_t MIDI_out_pin=ILLEGAL8;
@@ -263,9 +263,29 @@ typedef struct pulses_hardware_conf_t {
 
   // 8 bytes RESERVED for future use, forward compatibility
   uint8_t esp_now_channel=ILLEGAL8;	// *not used yet*		// %4
+
   uint8_t midi_does_pitch_bend=false;	// *not used yet*
-  uint8_t reserved2=ILLEGAL8;
-  uint8_t reserved3=ILLEGAL8;
+#if defined USE_MIDI
+  uint16_t midi_baudrate_div10 = (MIDI_BAUDRATE / 10);
+#else
+  uint16_t midi_baudrate_div10=0;	// 0: no MIDI	3125: 31250	11520: 115200
+#endif
+  /*
+        0	(MIDI not used)
+	120	1200
+	240	2400
+	480	4800
+	960	9600
+	1920	19200
+	3125	31250	<<< MIDI
+	3840	38400
+	5760	57600
+	11520	115200	<<< UART default
+	23040	230400
+	25000	250000
+	50000	500000
+	// 111111	1000000
+  */
   uint8_t reserved4=ILLEGAL8;						// %4
   uint8_t reserved5=ILLEGAL8;
   uint8_t reserved6=ILLEGAL8;
@@ -2281,10 +2301,11 @@ bool low_priority_tasks() {
   low_priority_cnt++;
 
 #if defined USE_MIDI
-  if(midi_available()) {	// TODO: implement MIDI in reaction
-    MIDI_reaction();
-    return true;
-  }
+  #warning "MIDI_reaction() is DEACTIVATED	TODO: implement"
+//  if(midi_available()) {	// TODO: implement MIDI in reaction
+//    MIDI_reaction();
+//    return true;
+//  }
 #endif
 
 #if defined USE_ESP_NOW && defined ESP_NOW_IDLE_ID_SEND

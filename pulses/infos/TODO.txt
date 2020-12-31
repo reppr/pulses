@@ -855,8 +855,16 @@ MIDI fine tune by pitch bend table[12] (or [127]?)
 MIDI pins on pico kit?
 MIDI pins and ePaper?
 
+MIDI BAUDRATE
+MIDI pitch bend range
+ // TODO: maybe?
+ // #define sendPITCHBEND	256	// send MIDI pitch bend (sendMIDI must be set too)
+ // #define noACTION		512	// 'mutes' all actions
+ // #define ACTION_MASK_BITS	10	// >>>>>>>> *DO CHANGE* number of flags changes here <<<<<<<
+void MIDI_reaction();	// TODO: implement MIDI in reaction
 
-fix esp-now channel
+
+TODO: fix ESP-NOW channel
 #define ESP_NOW_CHANNEL	0	// was:4 (DOES NOT WORK ANY MORE)	TODO: UI
 //peer_info.channel = 0;	// OK
 //peer_info.channel = 1;	// OK
@@ -866,3 +874,9 @@ esp-now SDR tests
 uint8_t esp_now_channel=ILLEGAL8;	// *not used yet*		// %4
 //ap_config.ap.channel = ESP_NOW_CHANNEL;	// TODO: ????
 +//esp_wifi_set_channel(ESP_NOW_CHANNEL);	???
+
+
+implement: MENU save last input, repeat
+implement: MENU do in other menu page '::Xy'
+
+A_UI()	   stress managment UI

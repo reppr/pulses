@@ -1424,13 +1424,26 @@ void noAction_flags_line() {	// show a line with primary noACTION flag signs
 void muting_actions_UI_line() {
   MENU.outln(F("'M'=muting actions: 'MH''MM''MB''ML'=toggle HIGH,MELODY,BASS,LOW  'M<n>'=~notes  'MX'=~selected"));
   MENU.outln(F("  'MT'='M0'=mute all  'ME'='MA'=all on   'MO'=mute top octave  'MQ'=unmute top octave"));
+#if defined USE_MIDI
+  MENU.outln(F("  'MI'= ~ MIDI"));
+#endif
 }
 
 void muting_actions_UI() {	// 'M' already received   action muting UI
   char next_letter;
 
   switch (MENU.peek()) {
-  case '?':
+  case 'I':				// 'MIx' special case: MIDI I/O UI
+    MENU.drop_input_token();
+    MENU.out(F("MIDI"));
+#if defined USE_MIDI
+    selected_actions ^= sendMIDI;	// 'MI' toggle sendMIDI
+#endif
+    MENU.out_ON_off(selected_actions & sendMIDI);
+    return;
+    break;
+
+  case '?':			// follows normal (not MIDI) muting actions UI
     MENU.drop_input_token();
   case EOF8:
     noAction_flags_line();
@@ -4101,6 +4114,7 @@ void show_voices() {
 } // show_voices()
 
 void A_UI() {	// 'A' is not mnemonic, just a morse convenient char that was rarely used
+  // UI extension for additional functions
   signed long new_value;
 
   switch(MENU.peek()) {	// 'A...'

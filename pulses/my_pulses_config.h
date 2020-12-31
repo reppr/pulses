@@ -18,20 +18,23 @@
 // DISPLAY HARDWARE:	activate ZERO or *ONE* of the following DISPLAYs
 //
 // OLED DISPLAY?
-#define BOARD_HELTEC_OLED	// Heltec OLED BOARD		// triggers HAS_OLED and HAS_DISPLAY
+//#define BOARD_HELTEC_OLED	// Heltec OLED BOARD		// triggers HAS_OLED and HAS_DISPLAY
 //#define BOARD_OLED_LIPO	// LiPo battery OLED BOARD	// triggers HAS_OLED and HAS_DISPLAY
 //
 // ePaper DISPLAY?
 //#define HAS_ePaper290_on_PICO_KIT	// triggers HAS_ePaper and HAS_DISPLAY
 //#define HAS_ePaper290_on_DEV_KIT	// triggers HAS_ePaper and HAS_DISPLAY
-//#define BOARD_LILYGO_T5		// triggers HAS_ePaper and HAS_DISPLAY
+#define BOARD_LILYGO_T5		// triggers HAS_ePaper and HAS_DISPLAY
 
 
-#define USE_MIDI
+//#define USE_MIDI		// *only* compile MIDI if you *do* intend to use it
 #define MIDI_OUT_PIN	19	// configured as Serial2 TX
 //#define MIDI_IN_PIN	39	// configured as Serial2 RX
-#define MIDI_IN_PIN	18	// configured as Serial2 RX
+#define MIDI_IN_PIN	27	// configured as Serial2 RX	TODO: was: 18,	maybe use 27?
+//#define MIDI_BAUDRATE	31250	// *REAL* MIDI IO
+#define MIDI_BAUDRATE	115200	// testing faster MIDI over UART
 //#define MIDI_DOES_PITCH_BEND	// probably won't use this, so just a pp macro
+
 
 //#define USE_ADS1115_AT_ADDR	0x48
 

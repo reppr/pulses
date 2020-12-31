@@ -154,4 +154,8 @@
   #if ! defined MIDI_IN_PIN  ||  ! defined MIDI_OUT_PIN
     #error '#define  MIDI_IN_PIN  and  MIDI_OUT_PIN'
   #endif
+
+  #if ! defined MIDI_BAUDRATE
+    #define MIDI_BAUDRATE	31250
+  #endif
 #endif
