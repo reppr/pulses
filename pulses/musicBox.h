@@ -3587,7 +3587,99 @@ void musicBox_setup() {	// TODO:update
 } // musicBox_setup()
 
 
+// ****************  A_UI() menu extension  ****************
+bool /*error*/ bass_middle_high_voices_sanity() {
+  int voices = musicBoxConf.bass_pulses + musicBoxConf.middle_pulses + musicBoxConf.high_pulses;
+  if(voices >= PL_MAX) {
+    ERROR_ln(F("too many voices"));
+    return true;	// ERROR
+  } // else
+
+  musicBoxConf.voices = musicBoxConf.primary_count = voices;
+  // PULSES.select_n(musicBoxConf.voices);	// maybe?  maybe not?
+  return false;		// OK
+}
+
+void show_voices() {
+  char txt[36];
+  snprintf(txt, 36, F("bass %i  mid %i  high %i  v=%i"), \
+	   musicBoxConf.bass_pulses,
+	   musicBoxConf.middle_pulses,
+	   musicBoxConf.high_pulses,
+	   musicBoxConf.primary_count
+	   );
+  extended_output(txt, 0, 0, false);
+  MENU.ln();
+} // show_voices()
+
+void A_UI_display() {
+  MENU.out(F("'A[BMH]<n>'= voices Bass["));
+  MENU.out(musicBoxConf.bass_pulses);
+  MENU.out(F("] Middle["));
+  MENU.out(musicBoxConf.middle_pulses);
+  MENU.out(F("] High["));
+  MENU.out(musicBoxConf.high_pulses);
+  MENU.outln(']');
+} // A_UI_display()
+
+void A_UI() {	// 'A' is not mnemonic, just a morse convenient char that was rarely used
+  // UI extension for additional functions
+  // very temporary code, most is voice number configuration , not much more yet
+
+  signed long new_value;
+
+  switch(MENU.peek()) {	// 'A...'
+  case EOF8: // bare 'A'
+    show_voices();
+    break;
+
+  case 'A':
+    MENU.drop_input_token();	// 'AA' AUTOSTART (just in case bare 'A' will be used for other purposes)
+#if defined AUTOSTART
+    AUTOSTART;
+#else
+    show_voices();
+#endif
+    break;
+
+  case 'B':	// 'AB'	musicBoxConf.bass_pulses
+    MENU.drop_input_token();
+    new_value = MENU.calculate_input(musicBoxConf.bass_pulses);
+    if(new_value >=0  &&  new_value < PL_MAX) {
+      musicBoxConf.bass_pulses = new_value;
+    }
+    bass_middle_high_voices_sanity();
+    show_voices();
+    break;
+  case 'M':	// 'AM'	musicBoxConf.middle_pulses
+    MENU.drop_input_token();
+    new_value = MENU.calculate_input(musicBoxConf.middle_pulses);
+    if(new_value >=0  &&  new_value < PL_MAX) {
+      musicBoxConf.middle_pulses = new_value;
+    }
+    bass_middle_high_voices_sanity();
+    show_voices();
+    break;
+  case 'H':	// 'AH'	musicBoxConf.high_pulses
+    MENU.drop_input_token();
+    new_value = MENU.calculate_input(musicBoxConf.high_pulses);
+    if(new_value >=0  &&  new_value < PL_MAX) {
+      musicBoxConf.high_pulses = new_value;
+    }
+    bass_middle_high_voices_sanity();
+    show_voices();
+    break;
+  case 'V':	// 'AV' show_voices()
+    MENU.drop_input_token();
+    bass_middle_high_voices_sanity();
+    show_voices();
+    break;
+  }
+} // A_UI()
+
+
 #include "presets.h" // TODO: #define HAS_PRESETS ?
+
 
 /* **************************************************************** */
 // musicBox menu
@@ -3648,6 +3740,9 @@ void musicBox_display() {
     MENU.out(F("un"));
   MENU.outln(F("freeze parameters"));
 
+  MENU.ln();
+
+  A_UI_display();
   MENU.ln();
 
   MENU.out(F("'o' show position ticker"));
@@ -4087,84 +4182,6 @@ bool Y_UI() {	// 'Ux' 'X' 'Y' 'Z' "eXtended motion UI" planed eXtensions: other 
   return false;
 #endif
 } // Y_UI()
-
-
-bool /*error*/ bass_middle_high_voices_sanity() {
-  int voices = musicBoxConf.bass_pulses + musicBoxConf.middle_pulses + musicBoxConf.high_pulses;
-  if(voices >= PL_MAX) {
-    ERROR_ln(F("too many voices"));
-    return true;	// ERROR
-  } // else
-
-  musicBoxConf.voices = musicBoxConf.primary_count = voices;
-  // PULSES.select_n(musicBoxConf.voices);	// maybe?  maybe not?
-  return false;		// OK
-}
-
-void show_voices() {
-  char txt[36];
-  snprintf(txt, 36, F("bass %i  mid %i  high %i  v=%i"), \
-	   musicBoxConf.bass_pulses,
-	   musicBoxConf.middle_pulses,
-	   musicBoxConf.high_pulses,
-	   musicBoxConf.primary_count
-	   );
-  extended_output(txt, 0, 0, false);
-  MENU.ln();
-} // show_voices()
-
-void A_UI() {	// 'A' is not mnemonic, just a morse convenient char that was rarely used
-  // UI extension for additional functions
-  signed long new_value;
-
-  switch(MENU.peek()) {	// 'A...'
-  case EOF8: // bare 'A'
-    show_voices();
-    break;
-
-  case 'A':
-    MENU.drop_input_token();	// 'AA' AUTOSTART (just in case bare 'A' will be used for other purposes)
-#if defined AUTOSTART
-    AUTOSTART;
-#else
-    show_voices();
-#endif
-    break;
-
-  case 'B':	// 'AB'	musicBoxConf.bass_pulses
-    MENU.drop_input_token();
-    new_value = MENU.calculate_input(musicBoxConf.bass_pulses);
-    if(new_value >=0  &&  new_value < PL_MAX) {
-      musicBoxConf.bass_pulses = new_value;
-    }
-    bass_middle_high_voices_sanity();
-    show_voices();
-    break;
-  case 'M':	// 'AM'	musicBoxConf.middle_pulses
-    MENU.drop_input_token();
-    new_value = MENU.calculate_input(musicBoxConf.middle_pulses);
-    if(new_value >=0  &&  new_value < PL_MAX) {
-      musicBoxConf.middle_pulses = new_value;
-    }
-    bass_middle_high_voices_sanity();
-    show_voices();
-    break;
-  case 'H':	// 'AH'	musicBoxConf.high_pulses
-    MENU.drop_input_token();
-    new_value = MENU.calculate_input(musicBoxConf.high_pulses);
-    if(new_value >=0  &&  new_value < PL_MAX) {
-      musicBoxConf.high_pulses = new_value;
-    }
-    bass_middle_high_voices_sanity();
-    show_voices();
-    break;
-  case 'V':	// 'AV' show_voices()
-    MENU.drop_input_token();
-    bass_middle_high_voices_sanity();
-    show_voices();
-    break;
-  }
-} // A_UI()
 
 
 bool musicBox_reaction(char token) {

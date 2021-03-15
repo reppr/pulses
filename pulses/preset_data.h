@@ -7,7 +7,7 @@
   also see: preset-hashtags.txt
 */
 
-#define MUSICBOX_PRESETs	191	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
+#define MUSICBOX_PRESETs	192	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
 
 #if defined ICODE_INSTEAD_OF_JIFFLES	// TODO: REMOVE: after testing a while
   #define USED_DB	iCODEs		//   new style: play jiffles as iCode
@@ -5546,7 +5546,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 188:
-    musicBoxConf.name = F("Santur tuning (temporary)");
+    musicBoxConf.name = F("Santur tuning (temporary)");	// AH8 188
     select_in(SCALES, major_scale);
     musicBoxConf.sync = 1;
     select_in(USED_DB, (unsigned int*) d4096_1024);
@@ -5581,6 +5581,15 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     musicBoxConf.pitch = {1, 110};
     set_metric_pitch(1);
     musicBoxConf.high_pulses = 5;	// !
+    break;
+
+  case 192:
+    musicBoxConf.name = F("f 348Hz Santur tuning");	// AH8 192
+    select_in(SCALES, minor_scale);
+    musicBoxConf.sync = 1;
+    select_in(USED_DB, (unsigned int*) d4096_1024);
+    musicBoxConf.pitch = {1, 348};
+    set_metric_pitch(0);
     break;
 
     // DADA:	todo: CHECK FROM HERE <<<====	====>>>   #define SHORT_PRESET_COLLECTION

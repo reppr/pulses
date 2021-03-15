@@ -23,8 +23,8 @@
 //
 // ePaper DISPLAY?
 //#define HAS_ePaper290_on_PICO_KIT	// triggers HAS_ePaper and HAS_DISPLAY
-//#define HAS_ePaper290_on_DEV_KIT	// triggers HAS_ePaper and HAS_DISPLAY
-#define BOARD_LILYGO_T5		// triggers HAS_ePaper and HAS_DISPLAY
+#define HAS_ePaper290_on_DEV_KIT	// triggers HAS_ePaper and HAS_DISPLAY
+//#define BOARD_LILYGO_T5		// triggers HAS_ePaper and HAS_DISPLAY
 
 
 //#define USE_MIDI		// *only* compile MIDI if you *do* intend to use it
