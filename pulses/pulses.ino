@@ -1,6 +1,9 @@
 #define PROGRAM_VERSION	HARMONICAL v.046   // new with ePaper or OLED display
 /*			0123456789abcdef   */
 
+
+#define USE_LEDC_AUDIO very first tests
+
 /* **************************************************************** */
 /*
 			pulses.ino
@@ -1097,9 +1100,9 @@ bool stack_sync_user_selected=false;
   #include "morse.h"
 #endif
 
-#if defined USE_LEDC
-  #include "ledc_tone.h"
-#endif
+// #if defined USE_LEDC
+//   #include "ledc_tone.h"
+// #endif
 
 #if defined USE_RTC_MODULE
   #include "RTC_DS1307_module.h"
@@ -2023,12 +2026,16 @@ void setup() {
 show_GPIOs();	// *does* work for GPIO_PINS==0
 //MENU.ln();
 
-#if defined USE_LEDC
-  #include "ledc_tone_setup.h"
-#endif
+// #if defined USE_LEDC
+//   #include "ledc_tone_setup.h"
+// #endif
 
 #if defined BATTERY_LEVEL_CONTROL_PIN
   battery_control_setup();
+#endif
+
+#ifdef USE_LEDC_AUDIO
+  ledc_audio_setup();
 #endif
 
 #ifdef HARMONICAL_MUSIC_BOX
@@ -2095,10 +2102,6 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
   #endif
 
 #endif // USE_i2c
-
-#ifdef USE_LEDC_AUDIO
-  ledc_audio_setup();
-#endif
 
 #if defined USE_ESP_NOW
   {

@@ -3,6 +3,43 @@
   temporary test menu UI during development
 */
 
+#if defined USE_LEDC_AUDIO //	very first tests
+
+MENU.outln(F("LEDC test duty (ARDUINO) "));
+int value;
+esp_err_t status;
+
+for (int i=1; i<17; i++) {
+  value=(ledc_audio_max - 1) / i;
+  MENU.out(value);
+
+  ledcWrite(LEDC_CHANNEL_0, value);
+
+//  // esp_err_t ledc_set_duty(ledc_mode_t speed_mode, ledc_channel_t channel, uint32_t duty)
+//  status = ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, value);
+//  MENU.out(F(" set "));
+//  esp_err_info(status);
+//
+//
+//
+//  status = ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
+//  MENU.out(F("update "));
+//  esp_err_info(status);
+//  delay(100);
+
+// uint32_t ledc_get_duty(ledc_mode_t speed_mode, ledc_channel_t channel)
+//  MENU.out(F("get "));
+//  MENU.outln(ledc_get_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0));
+  MENU.ln();
+  delay(1000);
+ }
+
+break;
+
+
+// esp_err_t ledc_set_duty_and_update(ledc_mode_tspeed_mode, ledc_channel_tchannel, uint32_t duty, uint32_t hpoint)
+#endif
+
 #if defined USE_MIDI
 midi_all_notes_off();
 
@@ -39,27 +76,27 @@ break;
 //	double period_f;
 //	for(int i = musicBoxConf.lowest_primary; i <= musicBoxConf.highest_primary; i++) {
 //	  MENU.out(i);	MENU.tab();
-//	
+//
 //	  period_f = PULSES.pulses[i].period;
 //	  period_f /= 4096;
 //	  MENU.out("pf ");
 //	  MENU.out(period_f, 6);	MENU.tab();
-//	
+//
 //	  note_f = period_2_midi_note(period_f);
 //	  MENU.out("nf ");
 //	  MENU.out(note_f, 6);	MENU.tab();
-//	
+//
 //	  note = (int) (note_f + 0.5);
 //	  MENU.out(note); MENU.space();
 //	  MENU.outln(midi_note_name(note));
-//	
+//
 //	  if(note<127) {
 //	    midi_note_on_send(0, note, 0x45);
 //	//    Serial2.write(0x90);
 //	//    Serial2.write(note);
 //	//    Serial2.write(0x45);
 //	    delay(330);
-//	
+//
 //	    midi_note_off_send(0, note);
 //	//    Serial2.write(0x90);
 //	//    Serial2.write(note);
@@ -78,10 +115,10 @@ break;
 //	period_2_midi_note(1e6 / 440.0);
 //	//hertz_2_midi_note(4186.0);	// 108
 //	break;
-//	
+//
 //	MENU.outln(F("MIDI test Serial2  TX17"));
 //	//midi_setup(39, 19);
-//	
+//
 //	for (int note = 0x1E; note < 0x5A; note ++) {
 //	  //Note on channel 1 (0x90), some note value (note), middle velocity (0x45):
 //	  //  noteOn(0x90, note, 0x45);
