@@ -2,8 +2,6 @@
 /*			0123456789abcdef   */
 
 
-#define USE_LEDC_AUDIO very first tests
-
 /* **************************************************************** */
 /*
 			pulses.ino

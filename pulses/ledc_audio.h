@@ -16,10 +16,10 @@
   ...
 */
 
+// uint8_t ledc_audio_pin0=26;	// hi jacking dac2 channel for a test
+uint8_t ledc_audio_pin0=19;	// *TEMPORARY* using GPIO19 as ledc test pin
 
-uint8_t ledc_audio_pin1=26;	// hi jacking dac2 channel for a test
-
-uint8_t	ledc_audio_channel=0;
+uint8_t	ledc_audio_channel_0=0;	// LEDC_CHANNEL_0
 uint8_t	ledc_audio_resolution=12;
 double	ledc_audio_frequency=19531.25;
 
@@ -30,8 +30,8 @@ unsigned int ledc_audio_set_max() {
   return --ledc_audio_max;			// maximal possible value
 }
 
-#define TRY_LEDC_ARDUINO_VERSION
-#if defined  TRY_LEDC_ARDUINO_VERSION
+#define try_ARDUINO_LEDC_version
+#if defined  try_ARDUINO_LEDC_version
 	// LEDC Arduino version:
 	/*
 	  https://github.com/espressif/arduino-esp32/blob/master/cores/esp32/esp32-hal-ledc.h
@@ -46,9 +46,9 @@ unsigned int ledc_audio_set_max() {
 	void        ledcDetachPin(uint8_t pin);
 	*/
 
-	void ledc_audio_setup() {
+  void ledc_audio_setup() {	// ARDUINO version
 	  MENU.out(F("ARDUINO ledc_audio_setup("));
-	  MENU.out(ledc_audio_channel);
+	  MENU.out(ledc_audio_channel_0);
 	  MENU.out(',');
 	  MENU.space();
 	  MENU.out(ledc_audio_frequency);
@@ -58,29 +58,33 @@ unsigned int ledc_audio_set_max() {
 	  MENU.out(F(")\tfreq="));
 
 	  // double ledcSetup(uint8_t channel, double freq, uint8_t resolution_bits);
-	  ledcSetup(ledc_audio_channel, ledc_audio_frequency, ledc_audio_resolution);
-	  MENU.out(ledcReadFreq(ledc_audio_channel));
+	  ledcSetup(ledc_audio_channel_0, ledc_audio_frequency, ledc_audio_resolution);
+	  MENU.out(ledcReadFreq(ledc_audio_channel_0));
 
 	  // void ledcAttachPin(uint8_t pin, uint8_t channel);
-	  ledcAttachPin(ledc_audio_pin1, ledc_audio_channel);
+	  ledcAttachPin(ledc_audio_pin0, ledc_audio_channel_0);
 
 	  // void ledcWrite(uint8_t channel, uint32_t duty);
-	  ledcWrite(ledc_audio_channel, 0);
+	  ledcWrite(ledc_audio_channel_0, 0);
 
 	  MENU.out(F("\t0..."));
-	  MENU.outln(ledc_audio_set_max());
-	}
+	  MENU.out(ledc_audio_set_max());
+	  MENU.out(F("\tfreq read: "));
+	  MENU.outln(ledcReadFreq(ledc_audio_channel_0));
+	} // ARDUINO version	ledc_audio_setup()
 
-#else // (not TRY_LEDC_ARDUINO_VERSION)
+    #define pulses_ledc_write(c, v)	ledcWrite((c), (v))
+
+#else // ESP IDF version (not try_ARDUINO_LEDC_version)
 
 	#include "driver/ledc.h"
 
 	/*
 	  see: https://github.com/espressif/esp-idf/blob/master/examples/peripherals/ledc/main/ledc_example_main.c
 	*/
-	void ledc_audio_setup() {
-	  MENU.out(F("ledc_audio_setup("));
-	  MENU.out(ledc_audio_channel);
+        void ledc_audio_setup() {	// ESP IDE version
+	  MENU.out(F("ESP IDE  ledc_audio_setup("));
+	  MENU.out(ledc_audio_channel_0);
 	  MENU.out(',');
 	  MENU.space();
 	  MENU.out(ledc_audio_frequency);
@@ -102,21 +106,30 @@ unsigned int ledc_audio_set_max() {
 	//  else {
 	//    ;
 	//  }
-	  ledcSetup(ledc_audio_channel, ledc_audio_frequency, ledc_audio_resolution);
+	  ledcSetup(ledc_audio_channel_0, ledc_audio_frequency, ledc_audio_resolution);	// borrowed from ARDUINO version!
 
-	  MENU.outln(ledc_audio_set_max());	// get&show maximal possible pwm value
+	  MENU.out(ledc_audio_set_max());	// get&show maximal possible pwm value
+
+	  MENU.out(F("\tfreq read:"));
+	  MENU.outln(ledcReadFreq(ledc_audio_channel_0));	// ARDUINO style does not work here
+	  // uint32_t ledc_get_freq(ledc_mode_tspeed_mode, ledc_timer_t timer_num)
 
 	  MENU.out(F("ledc_set_pin() "));
-	  esp_err_t status = ledc_set_pin(ledc_audio_pin1, LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
+	  esp_err_t status = ledc_set_pin(ledc_audio_pin0, LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
 	  esp_err_info(status);
+	} // ESP IDE version  ledc_audio_setup()
 
-	}
+void pulses_ledc_write(ledc_channel_t channel, uint32_t value) {
+  ledc_set_duty(LEDC_HIGH_SPEED_MODE, channel, value);
+  ledc_update_duty(LEDC_HIGH_SPEED_MODE, channel);
+} // ESP IDE version  pulses_ledc_write()
+
 
 	// esp_err_t ledc_set_pin(int gpio_num, ledc_mode_t speed_mode, ledc_channel_t ledc_channel)
 
 	// esp_err_t ledc_stop(ledc_mode_tspeed_mode, ledc_channel_tchannel, uint32_t idle_level)
 
-	// uint32_t ledc_get_freq(ledc_mode_tspeed_mode, ledc_timer_ttimer_num)
+	// uint32_t ledc_get_freq(ledc_mode_tspeed_mode, ledc_timer_t timer_num)
 
 	// esp_err_t ledc_set_duty(ledc_mode_t speed_mode, ledc_channel_t channel, uint32_t duty)
 
@@ -126,7 +139,7 @@ unsigned int ledc_audio_set_max() {
 
 	// esp_err_t ledc_update_duty(ledc_mode_t speed_mode, ledc_channel_t channel)
 
-#endif // TRY_LEDC_ARDUINO_VERSION or ESP version
+#endif // try_ARDUINO_LEDC_version or ESP LEDC version
 
 #define LEDC_AUDIO_H
 #endif

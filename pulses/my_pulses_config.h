@@ -12,6 +12,9 @@
 // /*			0123456789abcdef	// 16 bytes	*/
 
 
+#define USE_LEDC_AUDIO // very first LEDC tests, *not* working yet
+
+
 //#define FORCE_START_TO_USERMODE	// needs OLED_HALT_PIN0 to be declared
 
 

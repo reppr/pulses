@@ -5,40 +5,50 @@
 
 #if defined USE_LEDC_AUDIO //	very first tests
 
-MENU.outln(F("LEDC test duty (ARDUINO) "));
-int value;
-esp_err_t status;
+MENU.out(F("LEDC test duty "));
+#if defined try_ARDUINO_LEDC_version
+  MENU.outln(F("(ARDUINO version)"));
+#else
+  MENU.outln(F("(ESP IDF version)"));
+  esp_err_t status;
+#endif
+
+uint32_t value;
 
 for (int i=1; i<17; i++) {
   value=(ledc_audio_max - 1) / i;
   MENU.out(value);
 
-  ledcWrite(LEDC_CHANNEL_0, value);
+#if defined try_ARDUINO_LEDC_version
+  //  ledcWrite(ledc_audio_channel_0, value);
+  pulses_ledc_write(ledc_audio_channel_0, value);
+  MENU.out(F(" read: "));
+  MENU.outln(ledcRead(ledc_audio_channel_0));
+#else
+  // alias  pulses_ledc_write(uint8_t channel, uint32_t value) here  *with error check*
+  // esp_err_t ledc_set_duty(ledc_mode_t speed_mode, ledc_channel_t channel, uint32_t duty)
+  status = ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, value);
+  MENU.out(F(" set "));
+  esp_err_info(status);
+  status = ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
+  MENU.out(F("update "));
+  esp_err_info(status);
+  delay(100);
 
-//  // esp_err_t ledc_set_duty(ledc_mode_t speed_mode, ledc_channel_t channel, uint32_t duty)
-//  status = ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, value);
-//  MENU.out(F(" set "));
-//  esp_err_info(status);
-//
-//
-//
-//  status = ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
-//  MENU.out(F("update "));
-//  esp_err_info(status);
-//  delay(100);
+  // uint32_t ledc_get_duty(ledc_mode_t speed_mode, ledc_channel_t channel);
+  MENU.out(F("get: "));
+  MENU.outln(ledc_get_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0));
+#endif
 
-// uint32_t ledc_get_duty(ledc_mode_t speed_mode, ledc_channel_t channel)
-//  MENU.out(F("get "));
-//  MENU.outln(ledc_get_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0));
   MENU.ln();
-  delay(1000);
+  //  delay(1000);
  }
 
 break;
 
 
 // esp_err_t ledc_set_duty_and_update(ledc_mode_tspeed_mode, ledc_channel_tchannel, uint32_t duty, uint32_t hpoint)
-#endif
+#endif	// USE_LEDC_AUDIO very first tests
 
 #if defined USE_MIDI
 midi_all_notes_off();
