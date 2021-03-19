@@ -1355,6 +1355,7 @@ bool tuning_pitch_and_scale_UI() {	// 'Tx'
 	    MENU.drop_input_token();
 	    set_metric_pitch(mp_Bb);
 	    pitch_user_selected = true;
+	    break;
 	  case 'H':
 	    MENU.drop_input_token();
 	    set_metric_pitch(mp_B);
