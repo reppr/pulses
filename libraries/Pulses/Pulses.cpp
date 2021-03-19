@@ -18,6 +18,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "driver/ledc.h"		// *testing* LEDC
+//#define  try_ARDUINO_LEDC_version	// set *equally* in Pulses.cpp and ledc_audio.h
+
 #ifdef ARDUINO
   #if ARDUINO >= 100
     #include "Arduino.h"
@@ -1156,18 +1159,37 @@ void Pulses::DAC_output() {
 #if defined DEBUG_DACsq
 Serial.println();
 #endif
-  if(dac1_value != dac1_last) {
+ bool TEST_LEDC_AUDIO_b=false;
+ if(dac1_value != dac1_last) {
 #if defined DEBUG_DACsq
 //Serial.print(dac1_value); Serial.print(' ');
 #endif
     dacWrite(BOARD_DAC1, (int) (dac1_value * volume));
     dac1_last = dac1_value;
+    TEST_LEDC_AUDIO_b=true;
   }
 
   if(dac2_value != dac2_last) {
     dacWrite(BOARD_DAC2, (int) (dac2_value * volume));
     dac2_last = dac2_value;
+    TEST_LEDC_AUDIO_b=true;
   }
+
+  if(TEST_LEDC_AUDIO_b) {
+    uint32_t ledcVal = (dac1_value + dac2_value) * 8;
+    //(*MENU).outln(ledcVal);
+#if defined try_ARDUINO_LEDC_version	// set equally in Pulses.cpp and ledc_audio.h
+    //#error  try_ARDUINO_LEDC_version
+    ledcWrite(0, ledcVal);
+#else	// set equally in Pulses.cpp and ledc_audio.h
+//extern void pulses_ledc_write(int8_t channel, uint32_t value);
+//pulses_ledc_write(0, (dac1_value + dac2_value)*4);
+//  #include "driver/ledc.h"
+    //#error ESP IDF LEDC test
+    ledc_set_duty(LEDC_HIGH_SPEED_MODE, (ledc_channel_t) 0, ledcVal);
+    ledc_update_duty(LEDC_HIGH_SPEED_MODE, (ledc_channel_t) 0);
+#endif
+  } // TEST_LEDC_AUDIO_b
 }
 #endif	// USE_DACs
 
@@ -1864,7 +1886,7 @@ void Pulses::play_icode(int pulse) {	// can be called by pulse_do
 	    if((pulses[pulse].flags & HAS_GPIO) && (pulses[pulse].gpio != ILLEGAL8))
 	      digitalWrite(pulses[pulse].gpio, pulses[pulse].counter & 1);	// first gpio click
 
-	  } else { 								// MELODY_MODE	PAUSE for total note length
+	  } else {								// MELODY_MODE	PAUSE for total note length
 #if defined USE_MIDI
 	    if(pulses[pulse].action_flags & sendMIDI) {
 	      extern void midi_note_off_send(uint8_t channel, uint8_t note);

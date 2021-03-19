@@ -880,3 +880,10 @@ implement: MENU save last input, repeat
 implement: MENU do in other menu page '::Xy'
 
 A_UI()	   stress managment UI
+
+selected_DACsq_intensity_proportional()
+	is only used in very few (test?) cases
+	test&fix?
+
+int dac1_intensity;	// maybe use float?
+// and how about ledc0, ledc1, ledc2, ledc3 intensities?

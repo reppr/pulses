@@ -350,7 +350,7 @@ struct pulse_t {
 
 #if defined USE_DACs
   //  int (*dac1_wave_function)(int pulse, int volume);
-  int dac1_intensity;
+  int dac1_intensity;	// maybe use float?
   #if (USE_DACs > 1)	// only 1 or 2 DACs supported
     //  int (*dac2_wave_function)(int pulse, int volume);
     int dac2_intensity;

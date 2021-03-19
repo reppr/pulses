@@ -30,7 +30,7 @@ unsigned int ledc_audio_set_max() {
   return --ledc_audio_max;			// maximal possible value
 }
 
-#define try_ARDUINO_LEDC_version
+//#define try_ARDUINO_LEDC_version	// set equally in Pulses.cpp and ledc_audio.h
 #if defined  try_ARDUINO_LEDC_version
 	// LEDC Arduino version:
 	/*
@@ -82,7 +82,7 @@ unsigned int ledc_audio_set_max() {
 	/*
 	  see: https://github.com/espressif/esp-idf/blob/master/examples/peripherals/ledc/main/ledc_example_main.c
 	*/
-        void ledc_audio_setup() {	// ESP IDE version
+	void ledc_audio_setup() {	// ESP IDE version
 	  MENU.out(F("ESP IDE  ledc_audio_setup("));
 	  MENU.out(ledc_audio_channel_0);
 	  MENU.out(',');
