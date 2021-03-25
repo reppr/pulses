@@ -12,9 +12,6 @@
 // /*			0123456789abcdef	// 16 bytes	*/
 
 
-#define USE_LEDC_AUDIO // very first LEDC tests, *not* working yet
-
-
 //#define FORCE_START_TO_USERMODE	// needs OLED_HALT_PIN0 to be declared
 
 
@@ -31,13 +28,14 @@
 
 
 //#define USE_MIDI		// *only* compile MIDI if you *do* intend to use it
-#define MIDI_OUT_PIN	19	// configured as Serial2 TX
-//#define MIDI_IN_PIN	39	// configured as Serial2 RX
-#define MIDI_IN_PIN	27	// configured as Serial2 RX	TODO: was: 18,	maybe use 27?
-//#define MIDI_BAUDRATE	31250	// *REAL* MIDI IO
-#define MIDI_BAUDRATE	115200	// testing faster MIDI over UART
-//#define MIDI_DOES_PITCH_BEND	// probably won't use this, so just a pp macro
-
+#if defined USE_MIDI
+  #define MIDI_OUT_PIN	19	// configured as Serial2 TX
+  //#define MIDI_IN_PIN	39	// configured as Serial2 RX
+  #define MIDI_IN_PIN	27	// configured as Serial2 RX	TODO: was: 18,	maybe use 27?
+  //#define MIDI_BAUDRATE	31250	// *REAL* MIDI IO
+  #define MIDI_BAUDRATE	115200	// testing faster MIDI over UART
+  //#define MIDI_DOES_PITCH_BEND	// probably won't use this, so just a pp macro
+#endif
 
 //#define USE_ADS1115_AT_ADDR	0x48
 

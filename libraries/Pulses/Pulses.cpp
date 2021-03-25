@@ -11,6 +11,10 @@
 */
 /* **************************************************************** */
 
+#include "../../pulses/pulses_engine_config.h"
+#include "../../pulses/my_pulses_config.h"
+#include "../../pulses/pulses_systems.h"
+#include "../../pulses/pulses_boards.h"
 
 /* **************************************************************** */
 // Preprocessor #includes:
@@ -19,7 +23,6 @@
 #include <stdlib.h>
 
 #include "driver/ledc.h"		// *testing* LEDC
-//#define  try_ARDUINO_LEDC_version	// set *equally* in Pulses.cpp and ledc_audio.h
 
 #ifdef ARDUINO
   #if ARDUINO >= 100
@@ -109,7 +112,6 @@ Pulses::~Pulses() {
 // init time:
 
 #if defined PULSES_USE_DOUBLE_TIMES	// use double float time type
-
 pulse_time_t Pulses::INVALID_time() {
   return (pulse_time_t) 1.7E+308;
 }
@@ -1161,32 +1163,46 @@ Serial.println();
 #endif
  bool TEST_LEDC_AUDIO_b=false;
  if(dac1_value != dac1_last) {
-#if defined DEBUG_DACsq
-//Serial.print(dac1_value); Serial.print(' ');
+
+#if ! defined LEDC_INSTEAD_OF_DACs
+    dacWrite(BOARD_DAC1, (int) (dac1_value * volume));	// use ESP DAC hardware
+
+#else							// use LEDC instead of dac
+//    extern void pulses_ledc_write(unsigned char channel, uint32_t value);
+//    //    pulses_ledc_write(LEDC_CHANNEL_1, (unsigned int) (dac1_value * volume));	// use LEDC instead of DAC
+//    pulses_ledc_write(1, (uint32_t) (dac1_value * volume));	// use LEDC instead of DAC
+    ledc_set_duty(LEDC_HIGH_SPEED_MODE, (ledc_channel_t) 1, (uint32_t) (dac1_value * volume));
+    ledc_update_duty(LEDC_HIGH_SPEED_MODE, (ledc_channel_t) 1);
 #endif
-    dacWrite(BOARD_DAC1, (int) (dac1_value * volume));
     dac1_last = dac1_value;
     TEST_LEDC_AUDIO_b=true;
   }
 
   if(dac2_value != dac2_last) {
-    dacWrite(BOARD_DAC2, (int) (dac2_value * volume));
+#if ! defined LEDC_INSTEAD_OF_DACs
+    dacWrite(BOARD_DAC2, (int) (dac2_value * volume));	// use ESP DAC hardware
+#else
+//    extern void pulses_ledc_write(unsigned char channel, uint32_t value);
+//    pulses_ledc_write(LEDC_CHANNEL_2, (unsigned int) (dac2_value * volume));	// use LEDC instead of DAC
+    ledc_set_duty(LEDC_HIGH_SPEED_MODE, (ledc_channel_t) 2, (uint32_t) (dac2_value * volume));
+    ledc_update_duty(LEDC_HIGH_SPEED_MODE, (ledc_channel_t) 2);
+#endif
     dac2_last = dac2_value;
     TEST_LEDC_AUDIO_b=true;
   }
 
-  if(TEST_LEDC_AUDIO_b) {
+  if(TEST_LEDC_AUDIO_b && false) {
     uint32_t ledcVal = (dac1_value + dac2_value) * 8;
     //(*MENU).outln(ledcVal);
-#if defined try_ARDUINO_LEDC_version	// set equally in Pulses.cpp and ledc_audio.h
+#if defined try_ARDUINO_LEDC_version
     //#error  try_ARDUINO_LEDC_version
     ledcWrite(0, ledcVal);
-#else	// set equally in Pulses.cpp and ledc_audio.h
+#else	// use esp32 ledc code
 //extern void pulses_ledc_write(int8_t channel, uint32_t value);
 //pulses_ledc_write(0, (dac1_value + dac2_value)*4);
 //  #include "driver/ledc.h"
     //#error ESP IDF LEDC test
-    ledc_set_duty(LEDC_HIGH_SPEED_MODE, (ledc_channel_t) 0, ledcVal);
+    ledc_set_duty(LEDC_HIGH_SPEED_MODE, (ledc_channel_t) 0, ledcVal);	// TODO: remove test code
     ledc_update_duty(LEDC_HIGH_SPEED_MODE, (ledc_channel_t) 0);
 #endif
   } // TEST_LEDC_AUDIO_b

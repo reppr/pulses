@@ -887,3 +887,12 @@ selected_DACsq_intensity_proportional()
 
 int dac1_intensity;	// maybe use float?
 // and how about ledc0, ledc1, ledc2, ledc3 intensities?
+
+move ledc audio configuration to pulses_engine_config.h
+#if defined LEDC_INSTEAD_OF_DACs	// use LEDC instead of DAC?	// TODO: shut off LEDC	################
+MENU.outln(F("uses LEDC on pin 25 & 26"));	// TODO: read dac/ledc pins from HARDWARE
+extern void pulses_ledc_write(unsigned char channel, uint32_t value);	// DOES NOT WORK?
+ledc_set_duty(LEDC_HIGH_SPEED_MODE, (ledc_channel_t) 0, ledcVal);	// TODO: remove test code
+REMOVE: ledc_audio_pin0  and all related code
+
+all DAC | LEDc etc  should have resolution data in HARDWARE

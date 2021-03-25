@@ -16,10 +16,11 @@
   ...
 */
 
+// TODO: REMOVE: ledc_audio_pin0  and all related code
 // uint8_t ledc_audio_pin0=26;	// hi jacking dac2 channel for a test
 uint8_t ledc_audio_pin0=19;	// *TEMPORARY* using GPIO19 as ledc test pin
-
 uint8_t	ledc_audio_channel_0=0;	// LEDC_CHANNEL_0
+
 uint8_t	ledc_audio_resolution=12;
 double	ledc_audio_frequency=19531.25;
 
@@ -30,7 +31,14 @@ unsigned int ledc_audio_set_max() {
   return --ledc_audio_max;			// maximal possible value
 }
 
-//#define try_ARDUINO_LEDC_version	// set equally in Pulses.cpp and ledc_audio.h
+// DAx_max maximal data value for digital to analogue system (either hardware DAC or LEDC)
+#if ! defined LEDC_INSTEAD_OF_DACs
+  int DAx_max=255;
+#else
+  int DAx_max= (1 << ledc_audio_resolution) -1 ;
+#endif
+
+//#define try_ARDUINO_LEDC_version	// define in my_pulses_config.h or in pulses_engine_config.h to be visible in Pulses.cpp
 #if defined  try_ARDUINO_LEDC_version
 	// LEDC Arduino version:
 	/*
@@ -58,14 +66,14 @@ unsigned int ledc_audio_set_max() {
 	  MENU.out(F(")\tfreq="));
 
 	  // double ledcSetup(uint8_t channel, double freq, uint8_t resolution_bits);
-	  ledcSetup(ledc_audio_channel_0, ledc_audio_frequency, ledc_audio_resolution);
+	  ledcSetup(ledc_audio_channel_0, ledc_audio_frequency, ledc_audio_resolution);	// TODO: REMOVE: ledc_audio_pin0
 	  MENU.out(ledcReadFreq(ledc_audio_channel_0));
 
 	  // void ledcAttachPin(uint8_t pin, uint8_t channel);
-	  ledcAttachPin(ledc_audio_pin0, ledc_audio_channel_0);
+	  ledcAttachPin(ledc_audio_pin0, ledc_audio_channel_0);	// TODO: REMOVE: ledc_audio_pin0  and all related code
 
 	  // void ledcWrite(uint8_t channel, uint32_t duty);
-	  ledcWrite(ledc_audio_channel_0, 0);
+	  ledcWrite(ledc_audio_channel_0, 0);		// TODO: REMOVE: ledc_audio_pin0  and all related code
 
 	  MENU.out(F("\t0..."));
 	  MENU.out(ledc_audio_set_max());
@@ -115,14 +123,28 @@ unsigned int ledc_audio_set_max() {
 	  // uint32_t ledc_get_freq(ledc_mode_tspeed_mode, ledc_timer_t timer_num)
 
 	  MENU.out(F("ledc_set_pin() "));
-	  esp_err_t status = ledc_set_pin(ledc_audio_pin0, LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
+	  esp_err_t status;
+#if ! defined LEDC_INSTEAD_OF_DACs
+	  MENU.out(ledc_audio_pin0);	// TODO: REMOVE: ledc_audio_pin0  and all related code
+	  MENU.tab();
+	  status = ledc_set_pin(ledc_audio_pin0, LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);	// TODO: REMOVE: ledc_audio_pin0
 	  esp_err_info(status);
+#else
+	  MENU.out(F("25, 26\t"));
+	  ledcSetup(LEDC_CHANNEL_1, ledc_audio_frequency, ledc_audio_resolution);	// borrowed from ARDUINO version!
+	  status = ledc_set_pin(25, LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_1);	// channel 1 pin 25
+	  esp_err_info(status);
+
+	  ledcSetup(LEDC_CHANNEL_2, ledc_audio_frequency, ledc_audio_resolution);	// borrowed from ARDUINO version!
+	  status = ledc_set_pin(26, LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_2);	// channel 2 pin 26
+	  esp_err_info(status);
+#endif
 	} // ESP IDE version  ledc_audio_setup()
 
-void pulses_ledc_write(ledc_channel_t channel, uint32_t value) {
-  ledc_set_duty(LEDC_HIGH_SPEED_MODE, channel, value);
-  ledc_update_duty(LEDC_HIGH_SPEED_MODE, channel);
-} // ESP IDE version  pulses_ledc_write()
+	void pulses_ledc_write(ledc_channel_t channel, uint32_t value) {
+	  ledc_set_duty(LEDC_HIGH_SPEED_MODE, channel, value);
+	  ledc_update_duty(LEDC_HIGH_SPEED_MODE, channel);
+	} // ESP IDE version  pulses_ledc_write()
 
 
 	// esp_err_t ledc_set_pin(int gpio_num, ledc_mode_t speed_mode, ledc_channel_t ledc_channel)

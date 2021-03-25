@@ -858,11 +858,22 @@ int reset_all_flagged_pulses_GPIO_OFF() {	  // see: tabula_rasa()
 
   PULSES.clear_selection();		// restart selections at none
 
-#if defined USE_DACs			// reset DACs
-  dacWrite(BOARD_DAC1, 0);
-#if (USE_DACs > 1)
-  dacWrite(BOARD_DAC2, 0);
-#endif
+#if defined LEDC_INSTEAD_OF_DACs	// use LEDC instead of DACs?	// TODO: shut off LEDC	################
+//  extern void pulses_ledc_write(uint8_t, uint32_t);
+//  pulses_ledc_write(1, 0);		// LEDC channel1 off
+//  pulses_ledc_write(2, 0);		// LEDC channel2 off
+////  ledc_set_duty(LEDC_HIGH_SPEED_MODE, 1, 0);
+////  ledc_update_duty(LEDC_HIGH_SPEED_MODE, 1);
+////  ledc_set_duty(LEDC_HIGH_SPEED_MODE, 2, 0);
+////  ledc_update_duty(LEDC_HIGH_SPEED_MODE, 2);
+
+#else // use esp32 genuine DACs?
+  #if defined USE_DACs			// reset DACs
+    dacWrite(BOARD_DAC1, 0);
+    #if (USE_DACs > 1)
+      dacWrite(BOARD_DAC2, 0);
+    #endif
+  #endif
 #endif
 
 #if defined USE_i2c
@@ -1229,6 +1240,9 @@ int8_t musicBox_page=ILLEGAL8;	// NOTE: musicBox_page is not used	// TODO: ???
 
 #if defined USE_LEDC_AUDIO
   #include "ledc_audio.h"
+#else
+  // DAx_max maximal data value for digital to analogue system (either hardware DAC or LEDC)
+  int DAx_max=255;	// used for esp DAC only (no ledc audio compiled)
 #endif
 
 #if defined USE_BLUETOOTH_SERIAL_MENU
@@ -2034,6 +2048,9 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 
 #ifdef USE_LEDC_AUDIO
   ledc_audio_setup();
+  #if defined LEDC_INSTEAD_OF_DACs
+    MENU.outln(F("uses LEDC on pin 25 & 26"));	// TODO: read dac/ledc pins from HARDWARE
+  #endif
 #endif
 
 #ifdef HARMONICAL_MUSIC_BOX
@@ -4749,8 +4766,8 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   PULSES.add_selected_to_group(g_LOW_END);
 
   PULSES.select_from_to(0,bass_pulses);			// TODO: do not start by 0!	pulse[bass_pulses] belongs to both output groups
-  // selected_DACsq_intensity_proportional(255, 1);
-  selected_share_DACsq_intensity(255, 1);		// bass DAC1 intensity
+  // selected_DACsq_intensity_proportional(DAx_max, 1);
+  selected_share_DACsq_intensity(DAx_max, 1);		// bass DAC1 intensity
 
   // 2 middle octaves on 15 gpios
   PULSES.select_from_to(bass_pulses, bass_pulses + middle_pulses -1);
@@ -4790,8 +4807,8 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
 
   // fix pulse[21] belonging to both output groups
   PULSES.pulses[bass_pulses + middle_pulses - 1].dest_action_flags |= DACsq2;
-  selected_share_DACsq_intensity(255, 2);
-  //	selected_DACsq_intensity_proportional(255, 2);
+  selected_share_DACsq_intensity(DAx_max, 2);
+  //	selected_DACsq_intensity_proportional(DAx_max, 2);
 
   PULSES.select_n(voices);	// select all primary voices again
 
@@ -6295,15 +6312,15 @@ bool menu_pulses_reaction(char menu_input) {
 	while(MENU.check_next('T')) {
 	  PULSES.volume *= 0.7;
 	}
-      else {			// 'V<nnn>' PULSES.volume (0..255)
-	long inp = MENU.calculate_input((long) (PULSES.volume*255 + 0.5));  // given as 0...255	// TODO: float input
+      else {			// 'V<nnn>' PULSES.volume (0..DAx_max)
+	long inp = MENU.calculate_input((long) (PULSES.volume*DAx_max + 0.5));  // given as 0...DAx_max	// TODO: float input
 	input_value = (int) inp;
-	if(input_value > 255)
-	  input_value = 255;
+	if(input_value > DAx_max)
+	  input_value = DAx_max;
 	if(input_value < 0)
 	  input_value = 0;
 	if(input_value >=0)
-	  PULSES.volume = ((float) input_value) / 255.0;
+	  PULSES.volume = ((float) input_value) / (float) DAx_max;
       }
 
       MENU.out(F("global audio volume "));
@@ -6540,13 +6557,13 @@ bool menu_pulses_reaction(char menu_input) {
   #ifndef USE_DACs	// TODO: review and use test code
 	setup_jiffle_thrower_selected(selected_actions);
   #else // *do* use dac		// TODO: not here ################
-	selected_share_DACsq_intensity(255, 1);
+	selected_share_DACsq_intensity(DAx_max, 1);
 
     #if (USE_DACs == 1)
 	setup_jiffle_thrower_selected(DACsq1);
     #else
-	selected_DACsq_intensity_proportional(255, 2);
-//	selected_share_DACsq_intensity(255, 2);
+	selected_DACsq_intensity_proportional(DAx_max, 2);
+//	selected_share_DACsq_intensity(DAx_max, 2);
 
 	setup_jiffle_thrower_selected(DACsq1 | DACsq2);
     #endif
@@ -6944,13 +6961,13 @@ bool menu_pulses_reaction(char menu_input) {
   #ifndef USE_DACs	// TODO: review and use test code
 	setup_jiffle_thrower_selected(selected_actions);
   #else // *do* use dac		// TODO: not here ################
-	selected_share_DACsq_intensity(255, 1);
+	selected_share_DACsq_intensity(DAx_max, 1);
 
     #if (USE_DACs == 1)
 	setup_jiffle_thrower_selected(DACsq1);
     #else
-	selected_DACsq_intensity_proportional(255, 2);
-//	selected_share_DACsq_intensity(255, 2);
+	selected_DACsq_intensity_proportional(DAx_max, 2);
+//	selected_share_DACsq_intensity(DAx_max, 2);
 
 	setup_jiffle_thrower_selected(DACsq1 | DACsq2);
     #endif
@@ -7008,8 +7025,8 @@ bool menu_pulses_reaction(char menu_input) {
 	  en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL8, DACsq1);	// FIXME: use inbuilt click
 	}
 	PULSES.select_from_to(0,7);
-	// selected_DACsq_intensity_proportional(255, 1);
-	selected_share_DACsq_intensity(255, 1);
+	// selected_DACsq_intensity_proportional(DAx_max, 1);
+	selected_share_DACsq_intensity(DAx_max, 1);
 
 	// 2 middle octaves on 15 gpios
 	// select_in(JIFFLES, d4096_512);
@@ -7017,7 +7034,7 @@ bool menu_pulses_reaction(char menu_input) {
 	PULSES.select_from_to(7,6+15);
 	setup_jiffle_thrower_selected(0);	// overwrites pulse[7]
 	//	setup_jiffle_thrower_selected(DACsq2);
-	//	selected_share_DACsq_intensity(255, 2);
+	//	selected_share_DACsq_intensity(DAx_max, 2);
 
 	// fix pulse[7] that belongs to both groups:
 	PULSES.pulses[7].dest_action_flags |= DACsq1;
@@ -7035,8 +7052,8 @@ bool menu_pulses_reaction(char menu_input) {
 	}
 	// fix pulse[21] belonging to both groups
 	PULSES.pulses[21].dest_action_flags |= DACsq2;
-	selected_share_DACsq_intensity(255, 2);
-	//	selected_DACsq_intensity_proportional(255, 2);
+	selected_share_DACsq_intensity(DAx_max, 2);
+	//	selected_DACsq_intensity_proportional(DAx_max, 2);
 
 	PULSES.select_n(voices);	// select all primary voices
 
@@ -7075,8 +7092,8 @@ bool menu_pulses_reaction(char menu_input) {
 	  for(int pulse=0; pulse<musicBoxConf.bass_pulses; pulse++)
 	    en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL8, DACsq1);	// TODO: FIXME: use inbuilt click
 	  PULSES.select_from_to(0,musicBoxConf.bass_pulses);			// pulse[bass_pulses] belongs to both groups
-	  // selected_DACsq_intensity_proportional(255, 1);
-	  selected_share_DACsq_intensity(255, 1);		// bass DAC1 intensity
+	  // selected_DACsq_intensity_proportional(DAx_max, 1);
+	  selected_share_DACsq_intensity(DAx_max, 1);		// bass DAC1 intensity
 
 	  // 2 middle octaves on 15 gpios
 	  // select_in(JIFFLES, d4096_512);
@@ -7096,8 +7113,8 @@ bool menu_pulses_reaction(char menu_input) {
 	  }
 	  // fix pulse[21] belonging to both groups
 	  PULSES.pulses[musicBoxConf.bass_pulses + musicBoxConf.middle_pulses - 1].dest_action_flags |= DACsq2;
-	  selected_share_DACsq_intensity(255, 2);
-	  //	selected_DACsq_intensity_proportional(255, 2);
+	  selected_share_DACsq_intensity(DAx_max, 2);
+	  //	selected_DACsq_intensity_proportional(DAx_max, 2);
 
 	  PULSES.select_n(voices);	// select all primary voices
 

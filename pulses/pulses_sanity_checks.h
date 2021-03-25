@@ -159,3 +159,8 @@
     #define MIDI_BAUDRATE	31250
   #endif
 #endif
+
+
+#if defined LEDC_INSTEAD_OF_DACs
+  #define USE_LEDC_AUDIO
+#endif
