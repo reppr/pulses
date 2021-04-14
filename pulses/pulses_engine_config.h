@@ -7,9 +7,10 @@
 
 #if ! defined PULSES_ENGINE_CONFIG_H
 
-#define USE_LEDC_AUDIO	 		// LEDC tests, experimental
-//#define try_ARDUINO_LEDC_version	// prefer arduino ledc code over esp ide code? (no)
-#define LEDC_INSTEAD_OF_DACs		// testing LEDC audio on hardware that was built for DAC audio on pins 25 & 26
+// LEDC AUDIO TESTS DEACTIVATED:
+//   #define USE_LEDC_AUDIO		// LEDC tests, experimental
+//   //#define try_ARDUINO_LEDC_version	// prefer arduino ledc code over esp ide code? (no)
+//   #define LEDC_INSTEAD_OF_DACs	// TESTING LEDC audio on hardware that was built for DAC audio on pins 25 & 26
 
 #define ICODE_INSTEAD_OF_JIFFLES	// TESTING using all jiffles as icodes	TODO: REMOVE: after a while
 					//   test speed, bugs
@@ -26,8 +27,7 @@
 
 #define PULSES_USE_DOUBLE_TIMES		// working fine :)
 
-#define USE_ESP_NOW	// starts working :)	// compiles fine when switched off, but
-			// TODO: watch sketch size!	check WiFI and Bt stuff
+#define USE_ESP_NOW			// TODO: watch sketch size!	check WiFI and Bt stuff
 
 #define DO_STRESS_MANAGMENT
 //#define STRESS_MONITOR_LEVEL	64*2	// TODO: menu interface	// TODO: move to another configuration file

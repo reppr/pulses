@@ -896,3 +896,12 @@ ledc_set_duty(LEDC_HIGH_SPEED_MODE, (ledc_channel_t) 0, ledcVal);	// TODO: remov
 REMOVE: ledc_audio_pin0  and all related code
 
 all DAC | LEDc etc  should have resolution data in HARDWARE
+
+
+test GPIO0 button as (slow) MORSE input ;)
+
+TEST ALL INPUT ONLY PINS
+
+softboard: show ESP32 pin configuration
+
+prepare Menu and Softboard for Raspberry pico rp2040
