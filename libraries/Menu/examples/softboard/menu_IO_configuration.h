@@ -75,7 +75,12 @@
 */
 
 #if defined USE_BLUETOOTH_SERIAL_MENU
-  #define MENU_OUTSTREAM2	BLUEtoothSerial
+  #if defined ESP32
+    #define MENU_OUTSTREAM2	BLUEtoothSerial
+  #else
+    #undef USE_BLUETOOTH_SERIAL_MENU
+    #warning USE_BLUETOOTH_SERIAL_MENU was switched off
+  #endif
 #endif
 
 // do we need WiFi?
@@ -85,7 +90,8 @@
     #elif defined(ESP32)
 	#include <WiFi.h>	// might break:  min() max()   use:  _min() _max()
     #else
-	#error "WiFi code unknown,  see: pulses_boards.h"
+	#undef USE_WIFI_telnet_menu
+	#warning "WiFi code unknown,  see: pulses_boards.h, WiFi telnet menu DEACTIVATED"
     #endif
   #endif
 
