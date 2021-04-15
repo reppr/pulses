@@ -1,4 +1,3 @@
-#error "sorry this module is temporary switched off"
 // REPLACE *ALL* STRINGS 'TEMPLATE' with the NAME OF YOUR MENU PAGE!
 /*
  * ****************************************************************
@@ -24,13 +23,12 @@
   #include <iostream>
 #endif
 
-#include <Inputs.h>
 #include <Menu.h>
-
 
 /* **************************************************************** */
 /* BAUDRATE for Serial:	uncomment one of the following lines:	*/
-#define BAUDRATE	115200		// works fine here
+#define BAUDRATE	500000		// works fine on ESP32
+//#define BAUDRATE	115200		// works fine here
 //#define BAUDRATE	57600
 //#define BAUDRATE	38400
 //#define BAUDRATE	19200
@@ -39,12 +37,14 @@
 
 
 /* **************************************************************** */
-Inputs INPUTS(8);
+#if true	// needed for rp2040 ???	TODO: FIXME: ################
+  #undef F
+  #define F(s)	(s)
+  #warning "*NOT* using F() macro..."
+#endif
 
 
 /* **************************************************************** */
-// DADA TODO:  #error "sorry this module is temporary switched off"
-
 /*
   This version definines the menu INPUT routine int men_getchar();
   in the *program* not inside the Menu class.
@@ -56,7 +56,25 @@ int men_getchar() {	// returns EOF32
   return Serial.read();
 }
 
-Menu MENU(32, 1, &men_getchar, Serial);
+
+#if ! defined MENU_OUTSTREAM2
+  // see: https://stackoverflow.com/questions/11826554/standard-no-op-output-stream
+  #include <iostream>
+  class NullBuffer :  public std::streambuf
+  {
+  public:
+    int overflow(int c) { return c; }
+    // streambuf::overflow is the function called when the buffer has to output data to the actual destination of the stream.
+    // The NullBuffer class above does nothing when overflow is called so any stream using it will not produce any output.
+  };
+
+  NullBuffer null_buffer;
+  //#define MENU_OUTSTREAM2	std::ostream null_stream(&null_buffer)
+  #define MENU_OUTSTREAM2	(Stream &) null_buffer
+#endif
+
+
+Menu MENU(32, 1, &men_getchar, Serial, MENU_OUTSTREAM2);
 /* **************************************************************** */
 
 
@@ -117,71 +135,6 @@ void loop() {	// ARDUINO
 
 /* CODE TO INSERT INTO YOUR PROGRAM loop() ends. ****************** */
 /* **************************************************************** */
-
-
-
-/* **************************************************************** */
-/* ARDUINO BOARD SPECIFIC THINGS  try to use ARDUINO MACROS: */
-#include <pins_arduino.h>
-
-
-#ifndef NUM_DIGITAL_PINS		// try harder... ?
-  #warning "#define NUM_DIGITAL_PINS	// FIXME: ################"
-
-  #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
-    #define NUM_DIGITAL_PINS	70
-  #elif defined(__SAM3X8E__)
-    #ifdef PINS_COUNT	// on Arduino DUE	// FIXME: ################
-      #define NUM_DIGITAL_PINS	PINS_COUNT	// FIXME: ################
-    #else
-      #warning "#define MISING NUM_DIGITAL_PINS	// FIXME: ################"
-      #warning "#define NUM_DIGITAL_PINS 79	// FIXME: ################"
-      #define NUM_DIGITAL_PINS	79		// FIXME: DUE ################
-    #endif
-  #else						// FIXME: 168/328 boards ???
-    #define NUM_DIGITAL_PINS	20
-  #endif
-
-  #ifndef NUM_DIGITAL_PINS
-    #error "#define NUM_DIGITAL_PINS		// FIXME: ################"
-  #endif
-#endif
-
-
-#ifndef NUM_ANALOG_INPUTS		// try harder... ?
-  #warning "#define NUM_ANALOG_INPUTS	// FIXME: ################"
-
-  #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) // mega boards
-    #define NUM_ANALOG_INPUTS	16
-  #elif defined(__SAM3X8E__)
-     #define NUM_ANALOG_INPUTS	16		// FIXME: DUE ################
-  #else						// FIXME: 168/328 boards ???
-    #define NUM_ANALOG_INPUTS	6
-  #endif
-
-  #ifndef NUM_ANALOG_INPUTS
-    #error "#define NUM_ANALOG_INPUTS		// FIXME: ################"
-  #endif
-#endif
-
-
-#ifndef digitalPinHasPWM	// ################
-  #ifdef __SAM3X8E__		// FIXME: ################
-    #warning "#define MISSING digitalPinHasPWM(p)"
-    #define digitalPinHasPWM(p)         ((p) >= 2 && (p) <= 13)
-  #else
-    #error #define digitalPinHasPWM
-  #endif
-#endif
-
-
-/*
-  DIGITAL_IOs
-  number of arduino pins configured for digital I/O
-  *not* counting analog inputs:
-*/
-
-#define DIGITAL_IOs	(NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS)
 
 
 /* **************************************************************** */
