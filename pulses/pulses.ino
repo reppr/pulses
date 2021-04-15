@@ -2555,8 +2555,16 @@ void loop() {	// ARDUINO
 
       (*musicBox_when_done)();		//      MUSICBOX_ENDING_FUNCTION	MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
 
-      if(musicBox_when_done != &user)	// user() is a flag *NOT to autostart* musicBox
-	start_musicBox();
+      if(musicBox_when_done != &user) {	// user() is a flag *NOT to autostart* musicBox
+	if(musicBox_when_done == &light_sleep) {
+	  #if defined AUTOSTART
+	    AUTOSTART;	// AUTOSTART after light_sleep()
+	  #else
+	    ;
+	  #endif
+	} else
+	  start_musicBox();
+      }
     }
   #endif // HARMONICAL_MUSIC_BOX
 

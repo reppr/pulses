@@ -11,6 +11,8 @@
 #define FAMILY_NAME	SoundShipBand		// configuration family	// see: pulses_engine_config.h
 // /*			0123456789abcdef	// 16 bytes	*/
 
+#define MUSICBOX2_PIN_MAPPING	// #define this in my_pulses_config.h	 (new pin mapping april 2021)
+#define TRIGGERED_MUSICBOX2	// #define this in my_pulses_config.h
 
 //#define FORCE_START_TO_USERMODE	// needs OLED_HALT_PIN0 to be declared
 
@@ -23,7 +25,7 @@
 //
 // ePaper DISPLAY?
 //#define HAS_ePaper290_on_PICO_KIT	// triggers HAS_ePaper and HAS_DISPLAY
-#define HAS_ePaper290_on_DEV_KIT	// triggers HAS_ePaper and HAS_DISPLAY
+//#define HAS_ePaper290_on_DEV_KIT	// triggers HAS_ePaper and HAS_DISPLAY
 //#define BOARD_LILYGO_T5		// triggers HAS_ePaper and HAS_DISPLAY
 
 
@@ -48,13 +50,21 @@
 #endif
 
 #define USE_MORSE	// touch morse code is in use :)
-#define MORSE_OUTPUT_PIN	PERIPHERAL_POWER_SWITCH_PIN	// *ONLY* possible if there's *NO POWER SWITCH HARDWARE*
+#if defined MUSICBOX2_PIN_MAPPING	// #define this in my_pulses_config.h
+  #define MORSE_OUTPUT_PIN	12
+#else
+  #define MORSE_OUTPUT_PIN	PERIPHERAL_POWER_SWITCH_PIN	// *ONLY* possible if there's *NO POWER SWITCH HARDWARE*
+#endif
 
 #define USE_MPU6050	// MPU-6050 6d accelero/gyro
 #define INCLUDE_IMU_ZERO
 
-#define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_OUTPUT_PIN	green LED in many musicBoxes
-// TODO: change PERIPHERAL_POWER_SWITCH_PIN as GPIO12 is active during boot process...
+#if defined MUSICBOX2_PIN_MAPPING	// #define this in my_pulses_config.h
+  #define PERIPHERAL_POWER_SWITCH_PIN	2
+#else
+  #define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_OUTPUT_PIN	green LED in many musicBoxes
+  // TODO: change PERIPHERAL_POWER_SWITCH_PIN as GPIO12 is active during boot process...
+#endif
 
 #define ESP32_DAC_ONLY
 

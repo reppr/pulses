@@ -14,12 +14,12 @@
 // #define SOFT_END_STOPPS_MOTION_UI
 
 
-#define RANDOM_PRESET_LOOP
+// #define RANDOM_PRESET_LOOP
 
 #define LONELY_BUTLER_QUITS	// lonely butler detect SAVETY NET, TODO: will be completely *wrong* in other situations
 
 // PRE DEFINED SETUPS: uncomment *one* (or zero) of the following setups:
-#define SETUP_PORTABLE_DAC_ONLY		2019-04
+//#define SETUP_PORTABLE_DAC_ONLY		2019-04
 //#define SETUP_BRACHE_TRIGGERED_PRESETs		BRACHE_2019-04
 //#define SETUP_BRACHE		BRACHE_2019-03
 //#define SETUP_BAHNPARKPLATZ	BahnParkPlatz 2018/2019

@@ -24,7 +24,37 @@
   in most cases you can let all these lines inactive, commented out
 */
 
-#define ESP32_15_clicks_no_display_TIME_MACHINE2	// ESP32 new default
+//#define MAGICAL_MUSICBOX2	// #define this in my_pulses_config.h
+
+#if defined MUSICBOX2_PIN_MAPPING	// new pin mapping april 2021
+  #if ! defined ESP32
+    #error MUSICBOX2_PIN_MAPPING *only* on ESP32
+  #endif
+
+  #define NO_GPIO_PINS				// DAC only
+  #define PERIPHERAL_POWER_SWITCH_PIN	2	// <<< NEW >>>
+  #define MORSE_OUTPUT_PIN		12
+  #define MORSE_INPUT_PIN		13	// ok
+  #define RGB_LED_STRIP_DATA_PIN	14	// testing 27, 14
+  #define MUSICBOX_TRIGGER_PIN		34	// activates trigger pin, needs pulldown (i.e. 470k, 100k ok)
+//#define BATTERY_LEVEL_CONTROL_PIN	35	// NEW	TODO: test other input only pins, leaving for DIP switch (i.e. Bluetooth)?
+#endif // MUSICBOX2_PIN_MAPPING
+
+#if defined TRIGGERED_MUSICBOX2	// define this in my_pulses_config.h
+  #if ! defined ESP32
+    #error TRIGGERED_MUSICBOX2 *only* on ESP32
+  #endif
+
+//#define PROGRAM_SUB_VERSION	BrachenSound
+  #define MAGICAL_TOILET_HACK_2	// continue using (parts of) setup_bass_middle_high() to setup musicbox
+  #undef AUTOSTART
+  #define AUTOSTART	play_random_preset();		// same as pulses_project_conf.h
+  #undef MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
+  #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&light_sleep	// do test for dac noise...
+#endif	// TRIGGERED_MUSICBOX2
+
+
+//#define ESP32_15_clicks_no_display_TIME_MACHINE2	// ESP32 new default
 
 //#define ESP32_DAC_ONLY			// minimal setup to play on DACs only
 //#define ESP32_DAC_ONLY_OLED			// minimal setup to play on DACs only with OLED display
@@ -79,7 +109,9 @@
       #undef USE_MONOCHROME_DISPLAY
     #endif
 
-    #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user	// a possible snoring workaround on usb dac only models
+    #if ! defined MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
+      #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user	// a possible snoring workaround on usb dac only models
+    #endif
 
   #elif defined ESP32_DAC_ONLY_OLED
     #define PROGRAM_SUB_VERSION			DAC_only_OLED
@@ -99,7 +131,9 @@
 
   #if defined ESP32_15_clicks_no_display_TIME_MACHINE2 || defined ESP32_DAC_ONLY || defined ESP32_DAC_ONLY_OLED
     #if defined HARMONICAL_MUSIC_BOX
-      #define AUTOSTART	start_musicBox();
+      #if ! defined AUTOSTART
+        #define AUTOSTART	start_musicBox();
+      #endif
 //    #define AUTOSTART	start_musicBox(); magic_trigger_ON();
     #else
       #define AUTOSTART	MENU.play_KB_macro("-E40a5 *2 n"); selected_experiment=-1;	// Lichterfest	a5 == TIME MACHINE

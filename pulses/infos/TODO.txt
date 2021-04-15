@@ -904,3 +904,19 @@ TEST ALL INPUT ONLY PINS
 softboard: show ESP32 pin configuration
 
 prepare Menu and Softboard for Raspberry pico rp2040
+
+make automatic ESP-NOW sending runtime switchable, default to OFF
+
+from start_musicBox()      return;	// ################	TODO: TEST low battery
+
+// TODO: what about AUTOSTART after deep sleep?
+if(musicBox_when_done != &user)	// user() is a flag *NOT to autostart* musicBox
+  start_musicBox();
+
+repeated 'E'
+    else // 'E' bare
+      start_soft_ending(MagicConf.soft_end_days_to_live, MagicConf.soft_end_survive_level);
+
+BUG: sometimes it does not stop after one cycle
+
+hardware description for new pin mapping

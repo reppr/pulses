@@ -22,7 +22,6 @@
 // pre defined SETUPS:
 
 #if defined SETUP_PORTABLE_DAC_ONLY
-
   #define PERIPHERAL_POWER_SWITCH_PIN		12	// *pseudo* for green LED,  switch power, often green LED
 //#define PROGRAM_SUB_VERSION			portable 3D	// with morse and 3D accGyro UI
   #if ! defined MAX_SUBCYCLE_SECONDS
@@ -33,8 +32,8 @@
   #define SOFT_END_DAYS_TO_LIVE_DEFAULT		1	// quite fast ending
   #undef RANDOM_PRESET_LOOP				// just in case, does not work well togetoher	TODO: TEST: ################
   #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user	// new default for *portable* instruments
-//  #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&random_preset
-//  #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
+//#define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&random_preset
+//#define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k, 100k ok)
   #define MAGICAL_TOILET_HACK_2	// continue using (parts of) setup_bass_middle_high() to setup musicbox
   #undef AUTOSTART
   #define AUTOSTART	play_random_preset();		// same as pulses_project_conf.h
@@ -51,7 +50,7 @@
   #undef RANDOM_PRESET_LOOP				// just in case, does not work well together
   #undef MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
   #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&deep_sleep	// do test for dac noise...	BT checks BLUETOOTH_ENABLE_PIN on boot
-  #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
+  #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k, 100k ok)
 //#define MAGICAL_TOILET_HACKS	// some quick dirty hacks around fake triggering
   #define MAGICAL_TOILET_HACK_2	// continue using (parts of) setup_bass_middle_high() to setup musicbox
   #undef AUTOSTART
@@ -68,7 +67,7 @@
   #if ! defined MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
     #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&deep_sleep	// do test for dac noise...	BT checks BLUETOOTH_ENABLE_PIN on boot
   #endif
-  #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
+  #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k, 100k ok)
   #define MUSICBOX_TRIGGERED_FUNCTION		start_musicBox();
   #define MAGICAL_TOILET_HACKS	// some quick dirty hacks around fake triggering
 
@@ -76,7 +75,7 @@
   #define PROGRAM_SUB_VERSION			SETUP_BAHNPARKPLATZ
   #define MAX_SUBCYCLE_SECONDS	12*60		// *max seconds*, produce sample pieces		BahnParkPlatz 18
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	13	// BahnParkPlatz
-  // #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
+//#define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k, 100k ok)
 
 #elif defined SETUP_CHAMBER_ORCHESTRA
   #define PROGRAM_SUB_VERSION			SETUP_CHAMBER_ORCHESTRA
@@ -87,7 +86,7 @@
   #define MAX_SUBCYCLE_SECONDS		12*60		// *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
   //#define MAX_SUBCYCLE_SECONDS	7*60		// DEBUG *max seconds*, produce sample pieces   The Harmonical Chambre Orchestra
 
-  #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k)
+  #define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k, 100k ok)
   #define MUSICBOX_TRIGGER_BLOCK_SECONDS	1	// debounce only
 
 #endif	// (pre defined setups)
@@ -247,7 +246,7 @@ void hibernate() {	// see: https://esp32.com/viewtopic.php?t=3083
   esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
   esp_sleep_enable_timer_wakeup(1000000 * musicBox_pause_seconds);
   esp_deep_sleep_start();
-}
+} // hybernate()
 
 
 // void (*musicBox_when_done)(void)=&deep_sleep;	// function* called when musicBox ends
@@ -278,7 +277,7 @@ void show_when_done_function() {
     MENU.out("(unknown)");
 
   MENU.out(F("();"));
-}
+} // show_when_done_function()
 
 
 // TODO: musicBox_runtime_data_t block?
@@ -2030,6 +2029,7 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
       if(PULSES.time_reached(inactivity_limit_time)) {
 	MENU.out(F("inactivity stop\t"));
 	HARD_END_playing(true);			// END
+	peripheral_power_switch_OFF();
       }
       else
 	if(MENU.verbosity >= VERBOSITY_SOME)
@@ -2050,6 +2050,7 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
     if(MENU.verbosity >= VERBOSITY_LOWEST)	// TODO: review
       MENU.out(F("END reached\t"));
     HARD_END_playing(false);			// END
+    peripheral_power_switch_OFF();
   }
 } // magical_cleanup(p)
 
@@ -2185,6 +2186,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 	MENU.outln(F("POWER LOW"));
 	if(!assure_battery_level()) {	// double ckeck
 	  HARD_END_playing(true);
+	  peripheral_power_switch_OFF();
 	}
       }
     }
@@ -2195,6 +2197,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
       if(PULSES.time_reached(musicBox_hard_end_time)) {
 	MENU.out(F("butler: MUSICBOX_HARD_END_SECONDS "));
 	HARD_END_playing(true);
+	peripheral_power_switch_OFF();
       }
     }
 #endif
@@ -2221,6 +2224,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
       if(!survivor) {	// lonely butler detect SAVETY NET, TODO: will be completely *wrong* in other situations
 	MENU.out(F("butler: lonely butler quits "));
 	HARD_END_playing(true);
+	peripheral_power_switch_OFF();
       }
     }
 #endif
@@ -2946,8 +2950,11 @@ void start_musicBox() {
     MENU.outln(F("power accepted"));
   else {
     MENU.outln(F(">>> NO POWER <<<"));
-    if(!assure_battery_level())	// double ckeck
+    if(!assure_battery_level()) {	// double ckeck
       HARD_END_playing(false);
+      peripheral_power_switch_OFF();
+      return;				// ################	TODO: TEST low battery
+    }
   }
 #endif
 
@@ -3422,19 +3429,19 @@ void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from mai
   // see  https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/system/sleep_modes.html#_CPPv218esp_sleep_source_t
   switch (cause = esp_sleep_get_wakeup_cause()) {
   case 0:	// ESP_SLEEP_WAKEUP_UNDEFINED	0
-    MENU.outln(F("wakeup undefined"));
-#if defined AUTOSTART
-    MENU.out(F("HACK: restart anyway "));
-    AUTOSTART;
-#endif
+    MENU.outln(F("wakeup undefined"));	// TODO: does this happen?
+//  #if defined AUTOSTART		// TODO: do we need that?
+//      MENU.out(F("HACK: restart anyway "));
+//      AUTOSTART;
+//  #endif
     break;
   case 2:	// ESP_SLEEP_WAKEUP_EXT0	2
     MENU.outln(F("wakeup EXT0\t"));
     // TODO: gpio?
     break;
   case 7:	// ESP_SLEEP_WAKEUP_GPIO	7
+    MENU.outln(F("wakeup gpio"));	// TODO: does this happen?
     /*	// TODO: FIXME: GPIO?
-    MENU.outln(F("wakeup gpio\t"));
     unsigned int bits;
     bits = esp_sleep_get_ext1_wakeup_status();
     MENU.outBIN(bits, 40);
@@ -3445,7 +3452,7 @@ void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from mai
   default:
     MENU.outln(cause);
   }
-}
+} // light_sleep()
 
 
 void deep_sleep() {
@@ -3502,7 +3509,7 @@ void deep_sleep() {
 
   esp_deep_sleep_start();	// sleep well ... ... ...
   // it will never get here
-}
+} // deep_sleep()
 
 
 /* **************************************************************** */
@@ -3634,9 +3641,10 @@ void A_UI() {	// 'A' is not mnemonic, just a morse convenient char that was rare
     show_voices();
     break;
 
-  case 'A':
+  case 'A':	// 'AA'
     MENU.drop_input_token();	// 'AA' AUTOSTART (just in case bare 'A' will be used for other purposes)
 #if defined AUTOSTART
+    MENU.outln(F(STRINGIFY(AUTOSTART)));
     AUTOSTART;
 #else
     show_voices();
@@ -4320,6 +4328,7 @@ bool musicBox_reaction(char token) {
 
   case 'H': // HARD_END_playing(true);
     HARD_END_playing(true);
+    peripheral_power_switch_OFF();	// maybe, maybe not?
     break;
 
   case 'C': // 'C' hierarchy: esp now send or configure
