@@ -272,7 +272,7 @@ typedef struct pulses_hardware_conf_t {
   uint16_t midi_baudrate_div10=0;	// 0: no MIDI	3125: 31250	11520: 115200
 #endif
   /*
-        0	(MIDI not used)
+	0	(MIDI not used)
 	120	1200
 	240	2400
 	480	4800
@@ -1269,6 +1269,10 @@ uint8_t relaxmax=4;			// up to how many relax() in one todo chain
   #include "monochrome_display.h"
 #endif
 
+#if defined USE_LoRa
+  #include "LoRa_pulses.h"
+#endif
+
 #if defined HARMONICAL_MUSIC_BOX
   #include "musicBox.h"
 #endif
@@ -2028,6 +2032,10 @@ void setup() {
     }
 #endif
 
+#if defined USE_LoRa
+  setup_LoRa();
+#endif
+
 #include "array_descriptors_setup.h"
 
 #if defined USE_NVS	// always used on ESP32
@@ -2387,6 +2395,14 @@ bool low_priority_tasks() {
 #else
     MENU.out(morse_output_char);
 #endif
+    return true;
+  }
+#endif
+
+#if defined USE_LoRa	// TODO: just for first tests ################
+  if(LoRa_packet_size_received) {
+    LoRa_has_received(LoRa_packet_size_received);
+    LoRa_packet_size_received = 0;
     return true;
   }
 #endif

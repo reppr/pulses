@@ -920,3 +920,11 @@ repeated 'E'
 BUG: sometimes it does not stop after one cycle
 
 hardware description for new pin mapping
+
+update pin mapping docu
+
+FIXME: '_' toggle echo
+
+LoRa configuration and nvs
+
+TODO: LoRa does not work yet ################

@@ -14,6 +14,9 @@
 #define MUSICBOX2_PIN_MAPPING	// #define this in my_pulses_config.h	 (new pin mapping april 2021)
 #define TRIGGERED_MUSICBOX2	// #define this in my_pulses_config.h
 
+#define USE_LoRa		// implementing LoRa basics	################ TODO: does not work yet
+
+
 //#define FORCE_START_TO_USERMODE	// needs OLED_HALT_PIN0 to be declared
 
 
