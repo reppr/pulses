@@ -148,6 +148,16 @@ void LoRa_has_received(int packetSize) {	// TODO: just for first tests #########
 } // LoRa_has_received()
 
 
+int LoRa_send_blob(uint8_t* buf, size_t buflen) {
+  LoRa.beginPacket();
+  int accepted_bytes = LoRa.write(buf, buflen);
+  // remember time
+  LoRa.endPacket(true);
+  LoRa.receive();		// switch back to receive mode
+  return accepted_bytes;
+} // LoRa_send_blob()
+
+
 bool /*error=*/ setup_LoRa() {
   MENU.out(F("setup_LoRa();\t"));
 

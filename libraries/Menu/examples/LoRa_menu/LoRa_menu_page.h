@@ -46,6 +46,24 @@ bool LoRa_menu_reaction(char token) {
   case '=':
     show_pulses_LORA_conf();		// shows (known) configuration
     break;
+  case '"':
+    {
+     size_t buflen = MENU.cb_stored();
+     MENU.out(F("LoRa send "));
+     MENU.out(buflen);
+     MENU.outln(F(" bytes"));
+
+     if(buflen) {
+       uint8_t buf[buflen];
+       for(int i=0; i<buflen; i++){
+	 buf[i] = MENU.drop_input_token();
+       }
+       MENU.out(F("LoRa sent "));
+       MENU.out(LoRa_send_blob(buf, buflen));
+       MENU.outln(F(" bytes"));
+     }
+    }
+    break;
 
   case 'B': case 'b':
     input_value = MENU.calculate_input(pulses_LORA.bandwidth);

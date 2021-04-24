@@ -920,7 +920,7 @@ void Menu::play_KB_macro(char *macro, bool newline) {	// most often you might do
     if (cb_is_full()) {
       // Inform user:
       if (verbosity) {
-	out(F("buffer "));
+	out(F("cb_buffer "));
 	out_Error_();
 	OutOfRange();
       }
@@ -1003,7 +1003,7 @@ bool Menu::lurk_then_do() {
     if (cb_is_full()) {
       // Inform user:
       if (verbosity) {
-	out(F("buffer "));
+	out(F("cb_buffer "));
 	out_Error_();
 	OutOfRange();
       }

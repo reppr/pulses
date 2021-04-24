@@ -318,6 +318,8 @@ class Menu {
 				// most often you might do  'men_selected=0;'  before
 
   int menu_mode;		// currently only used to edit data arrays
+  int cb_stored() const { return cb_count; }   // inlined: number of accumulated bytes
+
   friend class Pulses;
 
  protected:
@@ -331,9 +333,6 @@ class Menu {
 #endif
   int (*maybe_input)(void);	// maybe_input()  Must return EOF32 or char
   bool (*action)(void);		// will be called on receiving an end token
-
-  int cb_stored() const { return cb_count; }   // inlined: number of accumulated bytes
-
 
  private:
   int cb_start;
