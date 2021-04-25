@@ -111,9 +111,9 @@ pulses_LoRa_conf_t pulses_LORA ;
 
 
 void show_pulses_LORA_conf() {
-  MENU.out(F("pulses_LORA\t"));
+  MENU.out(F("pulses_LORA\t(size"));
   MENU.out(sizeof(pulses_LoRa_conf_t));
-  MENU.outln(F(" bytes"));
+  MENU.outln(F(" bytes)"));
 
   MENU.out(F("bandwidth "));
   MENU.out(pulses_LORA.bandwidth);
@@ -160,9 +160,9 @@ void onLoRaReceive(int packetSize) {
   LoRa_packet_size_received = packetSize;
 }
 
-void LoRa_has_received(int packetSize) {
-  // received a packet
+void LoRa_has_received(int packetSize) {	  // has received a packet
   static uint8_t buffer[64]={0};
+  LoRa_packet_size_received = 0;
 
   MENU.out("LoRa received ");
   MENU.out(packetSize);
@@ -205,14 +205,38 @@ void LoRa_has_received(int packetSize) {
 } // LoRa_has_received()
 
 
+unsigned long LoRa_send_start_time=0;
+unsigned long LoRa_send_duration=0;	// flag and duration
+
 int LoRa_send_blob(uint8_t* buf, size_t buflen) {
+  if(LoRa_send_start_time)
+    MENU.outln(F("previous sending not treated"));
+
   LoRa.beginPacket();
   int accepted_bytes = LoRa.write(buf, buflen);
-  // remember time
+  if(accepted_bytes == 0) {	// ERROR
+    LoRa.receive();		// switch back to receive mode
+    return 0;
+  }
+
+  // else do send it:
+  LoRa.onTxDone(onLoRaSent);
+  LoRa_send_start_time = micros();
   LoRa.endPacket(true);
-  LoRa.receive();		// switch back to receive mode
   return accepted_bytes;
 } // LoRa_send_blob()
+
+void onLoRaSent() {		// send callback
+  LoRa_send_duration = micros() - LoRa_send_start_time;
+  LoRa.receive();		// switch back to receive mode
+}
+
+void show_on_air_time() {
+  MENU.out((float) LoRa_send_duration / 1000.0);
+  MENU.outln(F(" ms on air"));
+  LoRa_send_start_time = 0;
+  LoRa_send_duration = 0;
+} // show_on_air_time()
 
 
 bool /*error=*/ setup_LoRa() {
@@ -267,6 +291,7 @@ bool /*error=*/ setup_LoRa() {
 
   // register the receive callback
   LoRa.onReceive(onLoRaReceive);
+  LoRa.onTxDone(onLoRaSent);
 
   MENU.outln(F("LoRa in receive mode\n"));
   LoRa.receive();
@@ -312,10 +337,11 @@ void setup() {
 void loop() {	// ARDUINO
   MENU.lurk_then_do();
 
-  if(LoRa_packet_size_received) {
+  if(LoRa_packet_size_received)
     LoRa_has_received(LoRa_packet_size_received);
-    LoRa_packet_size_received = 0;
-  }
+
+  if(LoRa_send_duration)
+    show_on_air_time();
 
   // Insert your own code here.
   // Do not let your program block program flow,

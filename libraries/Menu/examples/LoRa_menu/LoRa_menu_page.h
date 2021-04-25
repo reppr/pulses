@@ -32,9 +32,9 @@ void LoRa_menu_display() {
   MENU.outln(F("]"));
 
   MENU.outln(F("'S'=start  'E'=end  'R'=receive  'I'=idle  'L'=sleep"));
-  MENU.outln(F("'G'=gain  'X'=TxPower  'P'=spreading  'C'=codingRate  'M'=preambleLen  'W'=syncWord 'B'=bandwith"));
+  MENU.outln(F("'G'=gain  'X'=TxPower  'P'=spreading  'C'=codingRate"));
+  MENU.outln(F("'M'=preambleLen  'W'=syncWord  'B'=bandwith"));
   MENU.outln(F("'D'=register dump  '='=show config"));
-
 } // LoRa_menu_display()
 
 
@@ -49,10 +49,6 @@ bool LoRa_menu_reaction(char token) {
   case '"':
     {
      size_t buflen = MENU.cb_stored();
-     MENU.out(F("LoRa send "));
-     MENU.out(buflen);
-     MENU.outln(F(" bytes"));
-
      if(buflen) {
        uint8_t buf[buflen];
        for(int i=0; i<buflen; i++){
@@ -60,7 +56,9 @@ bool LoRa_menu_reaction(char token) {
        }
        MENU.out(F("LoRa sent "));
        MENU.out(LoRa_send_blob(buf, buflen));
-       MENU.outln(F(" bytes"));
+       MENU.out('/');
+       MENU.out(buflen);
+       MENU.out(F(" bytes\t"));
      }
     }
     break;
