@@ -123,7 +123,7 @@ NullBuffer null_buffer;
 
 #endif
 
-Menu MENU(CB_SIZE, 7, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
+Menu MENU(CB_SIZE, 8, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
 
   #if defined USE_ADS1115_AT_ADDR
     #include "extensions/pulses_ADS1115.h"
@@ -1271,6 +1271,7 @@ uint8_t relaxmax=4;			// up to how many relax() in one todo chain
 
 #if defined USE_LoRa
   #include "LoRa_pulses.h"
+  #include "LoRa_menu_page.h"
 #endif
 
 #if defined HARMONICAL_MUSIC_BOX
@@ -2199,7 +2200,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 
   #ifdef USE_WIFI_telnet_menu
     // add WiFi page:
-  MENU.add_page("WiFi", 'W', &WiFi_menu_display, &WiFi_menu_reaction, 'W');
+    MENU.add_page("WiFi", 'W', &WiFi_menu_display, &WiFi_menu_reaction, 'W');
   #endif
 
   #ifdef HARMONICAL_MUSIC_BOX
@@ -2219,6 +2220,9 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
     MENU.add_page("NVS", 'N', &nvs_menu_display, &nvs_menu_reaction, 'M');
   #endif
 
+  #if defined USE_LoRa
+    MENU.add_page("LoRa", 'L', &LoRa_menu_display, &LoRa_menu_reaction, 'M');
+  #endif
 
   // display menu at startup, but not in music box
   #if ! defined HARMONICAL_MUSIC_BOX
@@ -2402,9 +2406,11 @@ bool low_priority_tasks() {
 #if defined USE_LoRa	// TODO: just for first tests ################
   if(LoRa_packet_size_received) {
     LoRa_has_received(LoRa_packet_size_received);
-    LoRa_packet_size_received = 0;
     return true;
   }
+
+  if(LoRa_send_duration)
+    show_on_air_time();
 #endif
 
   if (maybe_run_continuous())		// even lower priority: maybe display input state changes.
