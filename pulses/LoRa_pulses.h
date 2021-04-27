@@ -97,57 +97,6 @@ void show_pulses_LORA_conf() {
 } // show_pulses_LORA_conf()
 
 
-volatile int LoRa_packet_size_received=0;	// used as a flag
-
-void onLoRaReceive(int packetSize) {
-  LoRa_packet_size_received = packetSize;
-}
-
-void LoRa_has_received(int packetSize) {	  // has received a packet
-  static uint8_t buffer[64]={0};
-  LoRa_packet_size_received = 0;
-
-  MENU.out("LoRa received ");
-  MENU.out(packetSize);
-  MENU.out(" bytes  '");
-
-  // read packet
-  uint8_t c;
-  for (int i = 0; i < packetSize; i++) {
-    buffer[i] =  c = LoRa.read();
-    MENU.out((char) c);
-  }
-
-  // print RSSI of packet
-  MENU.out("'  RSSI ");
-  MENU.out(LoRa.packetRssi());
-
-  float snr = LoRa.packetSnr();
-  MENU.out("\tsnr ");
-  MENU.out(snr);
-
-  long freqErr = LoRa.packetFrequencyError();
-  MENU.out("\tfreqErr ");
-  MENU.outln(freqErr);
-
-  MENU.out("uint8_t  ");
-  for (int i = 0; i < packetSize; i++) {
-    MENU.out((uint8_t) buffer[i]);
-    MENU.out(", ");
-  }
-  MENU.outln("");
-
-  MENU.out("uint16_t ");
-  uint16_t * i16_p;
-  for (int i = 0; i < packetSize; i += 2) {
-    i16_p = (uint16_t *) &buffer[i];
-    MENU.out((uint16_t) *i16_p);
-    MENU.out(", ");
-  }
-  MENU.outln("\n");
-} // LoRa_has_received()
-
-
 unsigned long LoRa_send_start_time=0;
 unsigned long LoRa_send_duration=0;	// flag and duration
 
@@ -180,6 +129,74 @@ void show_on_air_time() {
   LoRa_send_start_time = 0;
   LoRa_send_duration = 0;
 } // show_on_air_time()
+
+
+volatile int LoRa_packet_size_received=0;	// used as a flag
+
+void onLoRaReceive(int packetSize) {
+  LoRa_packet_size_received = packetSize;
+}
+
+#if defined  USE_LoRa_EXPLORING
+  #include "LoRa_exploring.h"
+#endif
+
+
+void LoRa_has_received(int packetSize) {	// has received a packet
+  #define LoRa_RECEIVE_BUF_SIZE	128		// TODO: quite big, just for testing (and LoRa chat...)
+  static uint8_t LoRa_RX_buffer[LoRa_RECEIVE_BUF_SIZE] = {0};
+  LoRa_packet_size_received = 0;
+
+#if defined  USE_LoRa_EXPLORING
+  uint8_t code = LoRa.peek();	// first byte might be a LoRa_function_code
+#endif
+
+  MENU.out(F("\nLoRa received "));
+#if defined  USE_LoRa_EXPLORING
+  show_LoRa_code_name(code);	// known codes display name
+#endif
+  MENU.out(packetSize);
+  MENU.out(F(" bytes  '"));
+
+  // read packet
+  uint8_t c;
+  for (int i = 0; i < packetSize; i++) {
+    LoRa_RX_buffer[i] =  c = LoRa.read();
+    MENU.out((char) c);
+  }
+  MENU.out(F("'\t"));
+
+  char rx_quality[36];
+  char* format = F("RSSI=%i  snr=%4.2f  freqErr=%i");
+  snprintf(rx_quality, 36, format, LoRa.packetRssi(), LoRa.packetSnr(), LoRa.packetFrequencyError());
+  MENU.outln(rx_quality);
+
+  if(MENU.verbosity > VERBOSITY_SOME) {
+    MENU.out("uint8_t  ");
+    for (int i = 0; i < packetSize; i++) {
+      MENU.out((uint8_t) LoRa_RX_buffer[i]);
+      MENU.out(", ");
+    }
+    MENU.outln("");
+
+    if(MENU.verbosity > VERBOSITY_MORE) {
+      MENU.out("uint16_t ");
+      uint16_t * i16_p;
+      for (int i = 0; i < packetSize; i += 2) {
+	i16_p = (uint16_t *) &LoRa_RX_buffer[i];
+	MENU.out((uint16_t) *i16_p);
+	MENU.out(", ");
+      }
+      MENU.ln();
+    }
+  } // VERBOSITY, show content data
+
+#if defined  USE_LoRa_EXPLORING
+  LoRa_code_interpreter(code, (const char*) rx_quality);
+#endif
+
+  MENU.ln();	// ??
+} // LoRa_has_received()
 
 
 bool /*error=*/ setup_LoRa() {
@@ -241,6 +258,99 @@ bool /*error=*/ setup_LoRa() {
 
   return 0;
 } // setup_LoRa()
+
+
+// some extended LoRa menu functionality
+#if ! defined ILLEGAL16
+  #define ILLEGAL16	0xffff
+#endif
+
+unsigned long LoRa_sequence_start_time=0;
+unsigned long LoRa_sequence_end_time=0;
+
+uint32_t LoRa_tx_count=0;
+uint16_t LoRa_tx_repetitions=4;		// ILLEGAL16 means forever
+uint16_t LoRa_tx_to_repeat=0;		// ILLEGAL16 means forever
+uint16_t LoRa_tx_interval_seconds=3;	// seconds, for automatic sequences
+uint16_t LoRa_tx_hard_end_minutes=60;	// stop automatic sequence
+
+bool LoRa_interpret_codes=true;		// ################ TODO: menu UI
+
+//enum LoRa_function_codes	// <= 31, these codes must *not* be printable ASCII chars!
+//  {
+//   LoRa_code_noop='"',		// " info, chat send and show reception
+//   LoRa_code_init='S',		// 0 init default, stop and reset
+//   LoRa_code_stop=';',		// ; stop sequence
+//   LoRa_code_ping='>',		// > send ping
+//   LoRa_code_pong='<',		// < pong with RSSI and snr
+//   LoRa_code_until_end='+',	// + repeat until hard end time
+//   LoRa_code_forever='*',	// * endless repeating, no automatic ending
+//   LoRa_code_kb_macro='!',	// ! play KB macro in :L
+//   LoRa_code_max,
+//  };
+
+// bool /*is LoRa code*/ LoRa_function_interpreter(uint8_t code, void* text=NULL) {
+//   //  if(code > 31 || ! LoRa_interpret_codes)	// printable ASCII is just displayed
+//   //    return false;
+//
+//   switch(code) {
+//   case LoRa_code_noop:
+//     MENU.out(F("<noop>\t"));
+//     break;
+//
+//   case LoRa_code_init:
+//     MENU.out(F("<init>\t"));
+//     setup_LoRa();
+//     LoRa_tx_to_repeat=0;
+//     LoRa_sequence_start_time=0L;
+//     LoRa_sequence_end_time=0L;
+//     break;
+//
+//   case LoRa_code_stop:
+//     MENU.out(F("<stop>\t"));
+//     LoRa_tx_to_repeat=0;
+//     LoRa_sequence_start_time=0L;
+//     LoRa_sequence_end_time=0L;
+//     break;
+//
+//   case LoRa_code_ping:
+//     MENU.out(F("<ping>\t"));
+//     if(text)
+//     // send pong
+//     break;
+//
+//   case LoRa_code_pong:
+//     MENU.out(F("<pong>\t"));
+//     // just show
+//     break;
+//
+//   case LoRa_code_until_end:
+//     MENU.out(F("<cont>\t"));
+//     LoRa_tx_repetitions = ILLEGAL16;	// ILLEGAL16 means forever
+//     break;
+//
+//   case LoRa_code_forever:
+//     MENU.out(F("<forever>\t"));
+//     LoRa_tx_repetitions = ILLEGAL16;	// ILLEGAL16 means forever
+//     LoRa_sequence_end_time=0;		// 0 means no hard end
+//     break;
+//
+//   case LoRa_code_kb_macro:
+//     MENU.out(F("<macro>\t"));
+//     break;
+//
+//     // case LoRa_code_max:
+//   default:
+//     MENU.out(code);
+//     MENU.error_ln(F("LoRa code"));
+//     return false;
+//   }
+//   return true;
+// }
+
+
+// LoRa_send_sequence()	// RTOS
+//	include last on air time
 
 #define LORA_PULSES_H
 #endif

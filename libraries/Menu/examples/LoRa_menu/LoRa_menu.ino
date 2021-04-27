@@ -2,6 +2,8 @@
   LoRa_menu.ino
 */
 
+#define USE_LoRa_EXPLORING
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
@@ -58,9 +60,11 @@ int men_getchar() {
 
 
 #include <Menu.h>
-#define MENU_INPUT_BUFFER_SIZE	128	// a big menu input buffer size allows LoRa chat with long lines
-					// if you are short on RAM something like 32 is big enough
-Menu MENU(MENU_INPUT_BUFFER_SIZE, 1, &men_getchar, Serial, MENU_OUTSTREAM2);
+
+#define CB_SIZE		128	// a big menu input buffer size allows LoRa chat with long lines
+				// if you are short on RAM something like 32 is big enough
+
+Menu MENU(CB_SIZE, 1, &men_getchar, Serial, MENU_OUTSTREAM2);
 
 #include "LoRa_pulses.h"
 

@@ -15,7 +15,9 @@
 #define TRIGGERED_MUSICBOX2	// #define this in my_pulses_config.h
 
 #define USE_LoRa		// implementing LoRa basics	################ TODO: does not work yet
-
+#if defined USE_LoRa
+  #define USE_LoRa_EXPLORING
+#endif
 
 //#define FORCE_START_TO_USERMODE	// needs OLED_HALT_PIN0 to be declared
 

@@ -927,4 +927,11 @@ FIXME: '_' toggle echo
 
 LoRa configuration and nvs
 
-TODO: LoRa does not work yet ################
+bool LoRa_interpret_codes=true;		// ################ TODO: menu UI
+
+note *all* adc pins
+the following GPIOs can act as ADC pins: 0, 2, 4, 12, 13, 14, 15, 25, 26, 27, 32, 33, 34, 35, 36, and 39
+
+deactivate library Inputs
+
+(soft) deactivate ESP-NOW?
