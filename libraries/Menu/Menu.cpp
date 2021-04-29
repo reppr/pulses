@@ -43,6 +43,7 @@ Menu::Menu(int bufSize, int menuPages, int (*maybeInput)(void), Stream & port, S
   cb_start(0),
   cb_count(0),
   men_selected(0),
+  men_was(255),
   cb_buf(NULL),
   men_pages(NULL),
   echo_switch(true),
@@ -1512,6 +1513,11 @@ void Menu::interpret_men_input() {
 	menu_pages_info();	// then info, like ':' only
 	continue;
 	break;
+
+      case MENU_MENU_PAGES_KEY:	// '::X' menu excursion to menu X, then return  // *must* be *last* before default
+	drop_input_token();
+	token = peek();		// read next token (new menu to excurse to)
+	men_was = men_selected;
       default:	// search if it is a menupage page_key
     // search menu page page_keys:
 #ifdef DEBUGGING_MENU
@@ -1532,7 +1538,7 @@ void Menu::interpret_men_input() {
 #endif
 	    // often menu_display() will be called anyway, depending verbosity
 	    // if verbosity is too low, (but still not zero,)  we do it from here
-	    if (verbosity <= VERBOSITY_MORE)
+	    if ((verbosity <= VERBOSITY_MORE) || men_was != 255)
 	      if (maybe_display_more(VERBOSITY_LOWEST))
 		menu_display();
 
@@ -1692,5 +1698,9 @@ void Menu::interpret_men_input() {
     }
 
   } // interpreter loop over all tokens
-}
+  if(men_was != 255) {
+    men_selected = men_was;	// restore previous menu after an excursion
+    men_was = 255;		// 255 means no menu excursion active
+  }
+} // interpret_men_input()
 /* **************************************************************** */

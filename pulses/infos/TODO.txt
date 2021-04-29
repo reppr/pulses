@@ -877,7 +877,6 @@ uint8_t esp_now_channel=ILLEGAL8;	// *not used yet*		// %4
 
 
 implement: MENU save last input, repeat
-implement: MENU do in other menu page '::Xy'
 
 A_UI()	   stress managment UI
 

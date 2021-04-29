@@ -351,6 +351,7 @@ class Menu {
   char men_max;			// maximal number of menu pages
   char men_known;		// initialized pages
   menupage *men_pages;		// pages' data
+  char men_was;			// menu to return after a '::X' excursion, 255 means no excursion in progress
 };
 
 /* **************************************************************** */
