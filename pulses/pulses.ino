@@ -2514,6 +2514,11 @@ bool lowest_priority_tasks() {
   }
 #endif
 
+#if defined USE_LoRa
+  if(LoRa_maybe_repeat_TX())
+    return true;
+#endif
+
   return false;		// ################ FIXME: return values ################
 } // lowest_priority_tasks()
 

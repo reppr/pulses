@@ -3,6 +3,37 @@
   temporary test menu UI during development
 */
 
+//LoRa_repeat_set_new_payload((uint8_t*) "hallihallo", 11);
+
+{
+  static bool started=true;
+  started = ! started;
+  if(started)
+    LoRa_pause_repeated_TX();
+  else
+    //LoRa_start_repeated_TX(int repetitions, uint32_t interval_sec, uint8_t* blob, short size);
+    //    LoRa_start_repeated_TX(10, 1, (uint8_t*) "message", 7);
+    LoRa_start_repeated_TX(4, 1, NULL, 0);
+}
+break;
+
+// #include "driver/timer.h"
+//
+// uint64_t timer_val=0;
+// esp_err_t status;
+// for(int g=0; g<2; g++) {
+//   MENU.out("g="); MENU.outln(g);
+//   for(int i=0; i<2; i++) {
+//     MENU.out("\ti="); MENU.outln(i);
+//     status = timer_get_counter_value((timer_group_t) g, (timer_idx_t) i, &timer_val);
+//     MENU.out("\tok? "); MENU.outln(status);
+//     MENU.out("\tn="); MENU.out((int) (timer_val &0xffffffff)); MENU.tab(); MENU.out((int) ((timer_val >> 32) &0xffffffff));
+//
+//     MENU.ln(2);
+//   }
+//  }
+// break;
+
 #if defined USE_LEDC_AUDIO //	very first tests
 
 MENU.out(F("LEDC test duty "));

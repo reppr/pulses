@@ -8,6 +8,7 @@
 #include <SPI.h>
 #include <LoRa.h>
 
+#include "ESP32TimerInterrupt.h"	// see: https://github.com/khoih-prog/ESP32TimerInterrupt
 
 /* **************************************************************** */
 #define LoRa_SCK	18
@@ -199,6 +200,115 @@ void LoRa_has_received(int packetSize) {	// has received a packet
 } // LoRa_has_received()
 
 
+// automatic repeated transmissions
+ESP32Timer LoRa_timer(1);	// automatic LoRa_transmissions
+uint8_t* repeated_TX_payload=NULL;
+short repeated_tx_size=0;
+int TX_repetitions=0;
+volatile uint32_t TX_repetition_number=0;
+
+bool /*ok=*/ LoRa_repeat_set_new_payload(uint8_t* payload, short size) {
+  if(repeated_TX_payload) {
+    free(repeated_TX_payload);
+    repeated_TX_payload = NULL;
+    repeated_tx_size=0;
+  }
+  if(payload == NULL)
+    return true;	// ok, no payload
+
+  if(repeated_TX_payload = (uint8_t*) malloc(size)) {
+    repeated_tx_size=size;
+    for(int i=0; i<size; i++) {
+      repeated_TX_payload[i] = payload[i];
+      MENU.out((char) repeated_TX_payload[i]);
+    }
+    return true;		// ok, payload
+  } else {
+    MENU.error_ln(F("LoRa new payload"));
+    return false;		// ERROR
+  }
+} // LoRa_repeat_set_new_payload()
+
+void LoRa_send_repeated_TX() {
+  if(LoRa_send_start_time) {
+    MENU.outln(F("previous sending not treated"));
+    LoRa_send_start_time=0;
+  }
+
+  LoRa.beginPacket();
+  if(repeated_TX_payload && repeated_tx_size) {
+    int accepted_bytes = LoRa.write(repeated_TX_payload, repeated_tx_size);
+    if(accepted_bytes == 0) {	// ERROR
+      LoRa.receive();		// switch back to receive mode
+      MENU.error_ln(F("LoRa sending"));
+      // TX_repetitions = 0; ################
+      return;
+    }
+    LoRa.write('\t');
+  } // payload?
+
+  LoRa.write(TX_repetition_number);
+
+  MENU.out(TX_repetition_number);
+  MENU.out('/');
+  MENU.out(TX_repetitions);
+  MENU.out('\t');
+
+  // do send it:
+  LoRa.onTxDone(onLoRaSent);
+  LoRa_send_start_time = micros();
+  LoRa.endPacket(true);
+} // LoRa_send_repeated_TX()
+
+void IRAM_ATTR LoRa_repeated_TX_ISR() {
+  TX_repetition_number++;
+  extern void LoRa_stop_repeated_TX();
+  if(TX_repetition_number > TX_repetitions)
+    LoRa_stop_repeated_TX();
+} // LoRa_repeated_TX_ISR()
+
+
+bool /*did send*/ LoRa_maybe_repeat_TX() {
+  static uint32_t TX_repetition_number_was=0;
+  if(TX_repetition_number_was != TX_repetition_number) {
+    if(TX_repetition_number)	// do not send *after* it was just stopped
+      LoRa_send_repeated_TX();
+    TX_repetition_number_was = TX_repetition_number;
+    return true;
+  } else
+    return false;
+} // LoRa_maybe_repeat_TX()
+
+bool /*ok=*/ LoRa_start_repeated_TX(int repetitions, uint32_t interval_sec, uint8_t* blob, short size) {
+  MENU.outln(F("LoRa_start_repeated_TX()"));
+  TX_repetitions = repetitions;
+  TX_repetition_number = 0;
+  if(LoRa_repeat_set_new_payload(blob, size)) {
+    if(LoRa_timer.attachInterruptInterval(interval_sec * 1000000, LoRa_repeated_TX_ISR)) {	// ok?
+      LoRa_timer.restartTimer();
+      return true;				// OK
+    }
+  } //else
+  MENU.error_ln(F("LoRa start repeat"));	// ERROR
+  return false;
+} // LoRa_start_repeated_TX()
+
+void LoRa_stop_repeated_TX() {
+  MENU.outln(F("LoRa_stop_repeated_TX()"));
+  LoRa_timer.stopTimer();
+  TX_repetition_number=0;
+  if(repeated_TX_payload) {
+    //	####### free(repeated_TX_payload);
+    repeated_TX_payload=NULL;
+  }
+} // LoRa_stop_repeated_TX()
+
+void LoRa_pause_repeated_TX() {
+  MENU.outln(F("LoRa_pause_repeated_TX()"));
+  LoRa_timer.stopTimer();
+} // LoRa_stop_repeated_TX()
+
+
 bool /*error=*/ setup_LoRa() {
   MENU.out(F("setup_LoRa();\t"));
 
@@ -249,7 +359,7 @@ bool /*error=*/ setup_LoRa() {
   // LoRa.disableInvertIQ();
 
 
-  // register the receive callback
+  // register callbacks
   LoRa.onReceive(onLoRaReceive);
   LoRa.onTxDone(onLoRaSent);
 
