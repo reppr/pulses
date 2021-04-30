@@ -13,7 +13,7 @@
   else
     //LoRa_start_repeated_TX(int repetitions, uint32_t interval_sec, uint8_t* blob, short size);
     //    LoRa_start_repeated_TX(10, 1, (uint8_t*) "message", 7);
-    LoRa_start_repeated_TX(4, 1, NULL, 0);
+    LoRa_start_repeated_TX(10, LoRa_tx_interval_seconds, NULL, 0);
 }
 break;
 

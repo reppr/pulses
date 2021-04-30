@@ -142,10 +142,18 @@ void onLoRaReceive(int packetSize) {
   #include "LoRa_exploring.h"
 #endif
 
+#if ! defined LoRa_RECEIVE_BUF_SIZE
+  #define LoRa_RECEIVE_BUF_SIZE	128	// TODO: quite big, just for testing (and LoRa chat...)
+#endif
+uint8_t LoRa_RX_buffer[LoRa_RECEIVE_BUF_SIZE] = {0};
 
 void LoRa_has_received(int packetSize) {	// has received a packet
-  #define LoRa_RECEIVE_BUF_SIZE	128		// TODO: quite big, just for testing (and LoRa chat...)
-  static uint8_t LoRa_RX_buffer[LoRa_RECEIVE_BUF_SIZE] = {0};
+  if((packetSize + 1) > LoRa_RECEIVE_BUF_SIZE) {
+    MENU.out(packetSize);
+    MENU.space();
+    MENU.error_ln(F("LoRa rx buf too small"));
+    return;
+  }
   LoRa_packet_size_received = 0;
 
 #if defined  USE_LoRa_EXPLORING
@@ -161,10 +169,12 @@ void LoRa_has_received(int packetSize) {	// has received a packet
 
   // read packet
   uint8_t c;
-  for (int i = 0; i < packetSize; i++) {
+  int i;
+  for (i = 0; i < packetSize; i++) {
     LoRa_RX_buffer[i] =  c = LoRa.read();
     MENU.out((char) c);
   }
+  LoRa_RX_buffer[i]='\0';
   MENU.out(F("'\t"));
 
   char rx_quality[36];
@@ -204,7 +214,7 @@ void LoRa_has_received(int packetSize) {	// has received a packet
 ESP32Timer LoRa_timer(1);	// automatic LoRa_transmissions
 uint8_t* repeated_TX_payload=NULL;
 short repeated_tx_size=0;
-int TX_repetitions=0;
+int TX_repetitions=3;
 volatile uint32_t TX_repetition_number=0;
 
 bool /*ok=*/ LoRa_repeat_set_new_payload(uint8_t* payload, short size) {

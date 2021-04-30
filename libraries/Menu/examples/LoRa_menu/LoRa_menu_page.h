@@ -31,13 +31,14 @@ void LoRa_menu_display() {
   MENU.outln(F("]"));
 
   MENU.outln(F("'S'=start  'E'=end  'R'=receive  'I'=idle  'L'=sleep"));
-  MENU.outln(F("'G'=gain  'X'=TxPower  'P'=spreading  'C'=codingRate"));
+  MENU.outln(F("'G'=gain  'X'=TxPower  'P'=spreading  'T'=codingRate"));
   MENU.outln(F("'M'=preambleLen  'W'=syncWord  'B'=bandwith"));
   MENU.outln(F("'D'=register dump  '='=show config"));
   MENU.ln();
 
 #if defined USE_LoRa_EXPLORING
-  MENU.outln(F("'O'=ping other"));
+  MENU.outln(F("'O'=ping other\t'C<xxx>'=send macro  'CC<xxx>=send and do"));
+  MENU.outln(F("'N'=send repeated\t'N<number>T<seconds>\"<text>"));	// ################ TODO: implement "
   MENU.ln();
 #endif
 
@@ -99,7 +100,7 @@ bool LoRa_menu_reaction(char token) {
     MENU.ln();
     break;
 
-  case 'C': case 'c':
+  case 'T': case 't':
     input_value = MENU.calculate_input(pulses_LORA.coding_rate4);
     if(input_value > 4 && input_value < 9)
       pulses_LORA.coding_rate4 = input_value;
@@ -140,6 +141,40 @@ bool LoRa_menu_reaction(char token) {
     MENU.out(F("preamble_len: "));
     MENU.outln(pulses_LORA.preamble_len);
     LoRa.setPreambleLength(pulses_LORA.preamble_len);
+    break;
+
+  case 'N': case 'n':
+    {
+      if(MENU.is_numeric())	// 'N<nnn>' TX_repetitions
+	TX_repetitions = MENU.calculate_input(TX_repetitions);
+
+      if(MENU.check_next('T'))	// 'NT<nnn>' time intervall
+	LoRa_tx_interval_seconds = MENU.calculate_input(LoRa_tx_interval_seconds);
+
+      MENU.out(F("send repeated "));
+      MENU.out(TX_repetitions);
+
+      MENU.out(F(" all "));
+      MENU.out(LoRa_tx_interval_seconds);
+      MENU.out(F("\"\t|"));
+      char* rest_of_line = NULL;
+      int data_len=0;
+      if(data_len = MENU.cb_stored()) {
+	rest_of_line = (char*) malloc(data_len + 1);
+	if(rest_of_line) {
+	  int i;
+	  char c;
+	  for(i=0; i<data_len; i++) {
+	    c = *(rest_of_line + i) = MENU.drop_input_token();
+	    MENU.out(c);
+	  }
+	  *(rest_of_line + i) = '\0';
+	} else
+	  MENU.malloc_error();
+      }
+      MENU.outln('|');
+      LoRa_start_repeated_TX(TX_repetitions, LoRa_tx_interval_seconds, (uint8_t*) rest_of_line, data_len);
+    }
     break;
 
   case 'R': case 'r':
@@ -194,6 +229,46 @@ bool LoRa_menu_reaction(char token) {
     break;
 
 #if defined USE_LoRa_EXPLORING
+  case 'C': case 'c':	// 'C','c' = LoRa send macro	'CC'=send and do macro
+    {
+      bool do_locally=false;
+      MENU.out(F("LoRa send macro "));
+      if(MENU.check_next('C') || MENU.check_next('c')) {
+	do_locally = true;
+	MENU.out(F("and do it "));
+      }
+
+      int len=0;
+      char c;
+      for(;len < 128; len++) {
+	if(MENU.peek(len) == EOF8)
+	  break;
+      }
+      // _macro = "! <macro code>"	
+      //      len++;	// '\0'
+      len += 2;	// LORA_CODE_KB_MACRO + ' ' precedes the macro code
+      char* _macro = (char*) malloc(len + /*'\0'*/ 1);
+      if(_macro) {
+	_macro[0] = (char) LORA_CODE_KB_MACRO;
+	_macro[1] = ' ';
+	int i;
+	for (i=2; i<len; i++)
+	  *(_macro + i) = (char) MENU.drop_input_token();
+	*(_macro + i) = '\0';
+	MENU.out((char*) _macro);
+	MENU.tab();
+	LoRa_send_blob((uint8_t*) _macro, len+1);
+	if(do_locally) {
+	  yield();
+	  MENU.ln();
+	  MENU.play_KB_macro(_macro+2);
+	}
+	free(_macro);
+      } else
+	MENU.malloc_error();
+    }
+    break;
+
   case 'O': case 'o':
     LoRa_send_ping();
     break;

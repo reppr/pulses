@@ -11,18 +11,24 @@
 #define  LORA_CODE_PONG		'<'	// < pong with RSSI and snr
 #define  LORA_CODE_UNTIL_END	'+'	// + repeat until hard end time
 #define  LORA_CODE_FOREVER	'*'	// * endless repeating, no automatic ending
-#define  LORA_CODE_KB_MACRO	'!'	// ! play KB macro in :L
+#define  LORA_CODE_KB_MACRO	'!'	// ! play KB macro in ::L
 
 void show_LoRa_code_name(uint8_t code) {
   switch(code) {
-  case LORA_CODE_PING:
+  case LORA_CODE_PING:		// '>'
     MENU.out(F("ping "));
     break;
-  case LORA_CODE_PONG:
+  case LORA_CODE_PONG:		// '<'
     MENU.out(F("pong "));
     break;
-  case LORA_CODE_INFO:	// '"'
+  case LORA_CODE_INFO:		// '"'
+    MENU.out(F("info "));
+    break;
+  case LORA_CODE_KB_MACRO:	// '!'
+    MENU.out(F("macro "));
+    break;
   default:
+    // MENU.out(F("unknown "));
     ;
   }
 } // show_LoRa_code_name()
@@ -67,8 +73,12 @@ void LoRa_send_pong(const char* rx_quality) {
 
 void LoRa_code_interpreter(uint8_t code, const char* rx_quality) {	// react on received messages
   switch(code) {
-  case LORA_CODE_PING:
+  case LORA_CODE_PING:		// '>'
     LoRa_send_pong(rx_quality);
+    break;
+  case LORA_CODE_KB_MACRO:	// '!'  }
+    extern uint8_t* LoRa_RX_buffer;
+    MENU.play_KB_macro((char*) LoRa_RX_buffer + 2 /*'! '*/);
     break;
   }
 } // LoRa_code_interpreter()
