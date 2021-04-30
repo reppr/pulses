@@ -55,35 +55,12 @@ pulses_LoRa_conf_t pulses_LORA ;
 
 
 void show_pulses_LORA_conf() {
-  MENU.out(F("pulses_LORA\t(size"));
+  MENU.out(F(" pulses_LORA (size "));
   MENU.out(sizeof(pulses_LoRa_conf_t));
-  MENU.outln(F(" bytes)"));
-
-  MENU.out(F("bandwidth "));
-  MENU.out(pulses_LORA.bandwidth);
-  MENU.out(F("\tfrequency "));
-  MENU.outln(pulses_LORA.frequency);
-
-  MENU.out(F("gain "));
-  MENU.out(pulses_LORA.gain);
-  MENU.out(F("\t\tTxPower "));
-  MENU.out(pulses_LORA.TxPower);
-  MENU.out(F("\tspreading "));
-  MENU.out(pulses_LORA.spreading);
-  MENU.out(F("\tcoding_rate4 "));
-  MENU.outln(pulses_LORA.coding_rate4);
-
-  MENU.out(F("preamble_len "));
-  MENU.out(pulses_LORA.preamble_len);
-  MENU.out(F("\tsync_word "));
-  MENU.out(pulses_LORA.sync_word);
-  MENU.out(F("\tCRC_enabled "));
-  MENU.out(pulses_LORA.CRC_enabled);
-  MENU.out(F("\tinvertIQ "));
-  MENU.outln(pulses_LORA.invertIQ);
+  MENU.out(F(" bytes)"));
 
   // pins
-  MENU.out(F("MISO "));
+  MENU.out(F("\tMISO "));
   MENU.out(pulses_LORA.MISO);
   MENU.out(F("   SCK "));
   MENU.out(pulses_LORA.SCK);
@@ -93,7 +70,33 @@ void show_pulses_LORA_conf() {
   MENU.out(pulses_LORA.RESET);
   MENU.out(F("   DIO0 "));
   MENU.outln(pulses_LORA.DIO0);
+  MENU.ln();
 
+  // parameters
+  MENU.out(F("'B'=bandwidth "));
+  MENU.out(pulses_LORA.bandwidth);
+  MENU.out(F("\t\t'F'=frequency "));
+  MENU.outln(pulses_LORA.frequency);
+  MENU.outln(F(" bandwidth supported 7800, 10400, 15600, 20800, 31250, 41700, 62500, 125000, 250000, 500000"));
+  MENU.ln();
+
+  MENU.out(F("'G'=gain "));
+  MENU.out(pulses_LORA.gain);
+  MENU.out(F("\t'X'=TxPower "));
+  MENU.out(pulses_LORA.TxPower);
+  MENU.out(F("\t'P'=spreading "));
+  MENU.out(pulses_LORA.spreading);
+  MENU.out(F("\t\t'T'=coding_rate4 "));
+  MENU.outln(pulses_LORA.coding_rate4);
+
+  MENU.out(F("'M'=preamble "));
+  MENU.out(pulses_LORA.preamble_len);
+  MENU.out(F("\t'W'=sync wd"));
+  MENU.out(pulses_LORA.sync_word);
+  MENU.out(F("\t'Y'=CRC_enabled "));
+  MENU.out(pulses_LORA.CRC_enabled);
+  MENU.out(F("\t'Q'=invertIQ "));
+  MENU.outln(pulses_LORA.invertIQ);
   MENU.ln();
 } // show_pulses_LORA_conf()
 

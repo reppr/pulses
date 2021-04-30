@@ -25,14 +25,7 @@ void LoRa_menu_display() {
   MENU.ln();
   show_pulses_LORA_conf();
 
-  MENU.ln();
-  MENU.out(F("'F<nnn>'=set frequency ["));
-  MENU.out(pulses_LORA.frequency);
-  MENU.outln(F("]"));
-
   MENU.outln(F("'S'=start  'E'=end  'R'=receive  'I'=idle  'L'=sleep"));
-  MENU.outln(F("'G'=gain  'X'=TxPower  'P'=spreading  'T'=codingRate"));
-  MENU.outln(F("'M'=preambleLen  'W'=syncWord  'B'=bandwith"));
   MENU.outln(F("'D'=register dump  '='=show config"));
   MENU.ln();
 
@@ -41,7 +34,6 @@ void LoRa_menu_display() {
   MENU.outln(F("'N'=send repeated\t'N<number>T<seconds>\"<text>"));	// ################ TODO: implement "
   MENU.ln();
 #endif
-
 } // LoRa_menu_display()
 
 
@@ -71,42 +63,47 @@ bool LoRa_menu_reaction(char token) {
     break;
 
   case 'B': case 'b':
-    input_value = MENU.calculate_input(pulses_LORA.bandwidth);
+    input_value = MENU.numeric_input(pulses_LORA.bandwidth);
     switch(input_value) {
-    case 7800:
-    case 10400:
-    case 15600:
-    case 20800:
-    case 31250:
-    case 41700:
-    case 62500:
-    case 125000:
-    case 250000:
-    case 500000:
-      pulses_LORA.bandwidth = input_value;
-      LoRa.setSignalBandwidth(pulses_LORA.bandwidth);
-      MENU.out(F("LoRa.setSignalBandwidth("));
-      MENU.out(pulses_LORA.bandwidth);
-      MENU.outln(')');
-      LoRa.setSignalBandwidth(pulses_LORA.bandwidth);
+    case 7800: case 7: case 78:
+      input_value=7800;
       break;
-
+    case 10400: case 10: case 104:
+      input_value=10400;
+      break;
+    case 15600: case 15: case 156:
+      input_value=15600;
+      break;
+    case 20800: case 20: case 208:
+      input_value=20800;
+      break;
+    case 31250: case 3: case 31: case 312: case 3125: 
+      input_value=31250;
+      break;
+    case 41700: case 4: case 41: case 417:
+      input_value=41700;
+      break;
+    case 62500: case 6: case 62: case 625:
+      input_value=62500;
+      break;
+    case 125000: case 12: case 125:
+      input_value=125000;
+      break;
+    case 250000: case 25: case 250:
+      input_value=250000;
+    case 500000: case 5: case 50: case 500:
+      input_value=500000;
+      break;
     default:
       MENU.outln_invalid();
     }
-    MENU.outln(F("bandwidth supported 7800, 10400, 15600, 20800, 31250, 41700, 62500, 125000, 250000, 500000"));
-    MENU.out(F("bandwidth: "));
-    MENU.outln(pulses_LORA.bandwidth);
+    pulses_LORA.bandwidth = input_value;
+    LoRa.setSignalBandwidth(pulses_LORA.bandwidth);
+    MENU.out(F("LoRa.setSignalBandwidth("));
+    MENU.out(pulses_LORA.bandwidth);
+    MENU.outln(')');
+    LoRa.setSignalBandwidth(pulses_LORA.bandwidth);
     MENU.ln();
-    break;
-
-  case 'T': case 't':
-    input_value = MENU.calculate_input(pulses_LORA.coding_rate4);
-    if(input_value > 4 && input_value < 9)
-      pulses_LORA.coding_rate4 = input_value;
-    MENU.out(F("coding rate: 4/"));
-    MENU.outln(pulses_LORA.coding_rate4);
-    LoRa.setCodingRate4(pulses_LORA.coding_rate4);
     break;
 
   case 'D': case 'd':
@@ -186,6 +183,15 @@ bool LoRa_menu_reaction(char token) {
     setup_LoRa();
     break;
 
+  case 'T': case 't':
+    input_value = MENU.calculate_input(pulses_LORA.coding_rate4);
+    if(input_value > 4 && input_value < 9)
+      pulses_LORA.coding_rate4 = input_value;
+    MENU.out(F("coding rate: 4/"));
+    MENU.outln(pulses_LORA.coding_rate4);
+    LoRa.setCodingRate4(pulses_LORA.coding_rate4);
+    break;
+
    case 'E': case 'e':
     MENU.outln(F("LoRa.end();"));
     LoRa.end();
@@ -208,6 +214,9 @@ bool LoRa_menu_reaction(char token) {
     MENU.out(F("spreading factor: "));
     MENU.outln(pulses_LORA.spreading);
     LoRa.setSpreadingFactor(pulses_LORA.spreading);
+    break;
+
+  case 'Q': case 'q':
     break;
 
   case 'W': case 'w':
