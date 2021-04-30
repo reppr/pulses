@@ -232,6 +232,7 @@ bool /*ok=*/ LoRa_repeat_set_new_payload(uint8_t* payload, short size) {
       repeated_TX_payload[i] = payload[i];
       MENU.out((char) repeated_TX_payload[i]);
     }
+    MENU.ln();
     return true;		// ok, payload
   } else {
     MENU.error_ln(F("LoRa new payload"));
@@ -296,6 +297,7 @@ bool /*ok=*/ LoRa_start_repeated_TX(int repetitions, uint32_t interval_sec, uint
   if(LoRa_repeat_set_new_payload(blob, size)) {
     if(LoRa_timer.attachInterruptInterval(interval_sec * 1000000, LoRa_repeated_TX_ISR)) {	// ok?
       LoRa_timer.restartTimer();
+      TX_repetition_number++;			// trigger immediate first transmission
       return true;				// OK
     }
   } //else
@@ -317,6 +319,23 @@ void LoRa_pause_repeated_TX() {
   MENU.outln(F("LoRa_pause_repeated_TX()"));
   LoRa_timer.stopTimer();
 } // LoRa_stop_repeated_TX()
+
+
+bool /*did something*/ check_for_LoRa_jobs() {	// put this in the loop()
+  if(LoRa_packet_size_received) {
+    LoRa_has_received(LoRa_packet_size_received);
+    return true;
+  }
+  if(LoRa_send_duration) {
+    show_on_air_time();
+    return true;
+  }
+
+  if(LoRa_maybe_repeat_TX())
+    return true;
+
+  return false;
+} // check_for_LoRa_jobs()
 
 
 bool /*error=*/ setup_LoRa() {

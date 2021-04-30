@@ -30,6 +30,8 @@
 
 
 /* **************************************************************** */
+#define LoRa_RECEIVE_BUF_SIZE	256	// TODO: very big, just for testing (and LoRa chat...)
+/* **************************************************************** */
 
 #if ! defined MENU_OUTSTREAM2
   // see: https://stackoverflow.com/questions/11826554/standard-no-op-output-stream
@@ -104,12 +106,7 @@ void setup() {
 
 void loop() {	// ARDUINO
   MENU.lurk_then_do();
-
-  if(LoRa_packet_size_received)
-    LoRa_has_received(LoRa_packet_size_received);
-
-  if(LoRa_send_duration)
-    show_on_air_time();
+  check_for_LoRa_jobs();
 
   // Insert your own code here.
   // Do not let your program block program flow,

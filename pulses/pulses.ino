@@ -2403,16 +2403,6 @@ bool low_priority_tasks() {
   }
 #endif
 
-#if defined USE_LoRa	// TODO: just for first tests ################
-  if(LoRa_packet_size_received) {
-    LoRa_has_received(LoRa_packet_size_received);
-    return true;
-  }
-
-  if(LoRa_send_duration)
-    show_on_air_time();
-#endif
-
   if (maybe_run_continuous())		// even lower priority: maybe display input state changes.
     return true;
 
@@ -2515,8 +2505,8 @@ bool lowest_priority_tasks() {
 #endif
 
 #if defined USE_LoRa
-  if(LoRa_maybe_repeat_TX())
-    return true;
+  if(check_for_LoRa_jobs())
+     return true;
 #endif
 
   return false;		// ################ FIXME: return values ################

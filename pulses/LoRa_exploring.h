@@ -78,7 +78,7 @@ void LoRa_code_interpreter(uint8_t code, const char* rx_quality) {	// react on r
     break;
   case LORA_CODE_KB_MACRO:	// '!'  }
     extern uint8_t* LoRa_RX_buffer;
-    MENU.play_KB_macro((char*) LoRa_RX_buffer + 2 /*'! '*/);
+    MENU.play_KB_macro((char*) &LoRa_RX_buffer+2 /*'! '*/);
     break;
   }
 } // LoRa_code_interpreter()
