@@ -1372,7 +1372,11 @@ void Menu::menu_display() const {
   out(F("\n * ** *** MENU "));
   out(men_pages[men_selected].title);
   out(F(" *** ** *\t"));
+#if defined ESP32
+  #warning 'menu page display does not print_free_RAM() on ESP32'
+#else
   print_free_RAM();	// real or fake ;)
+#endif
   ln();
 
   (*men_pages[men_selected].display)();

@@ -938,3 +938,7 @@ deactivate library Inputs
 
 ESP32_TIMER_INTERRUPT_VERSION
 ARDUINO_BOARD
+
+DEACTIVATE print_free_RAM(), too many crashes!!!	<-- done
+
+LoRa feedback and verbosity
