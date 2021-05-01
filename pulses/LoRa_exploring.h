@@ -84,5 +84,13 @@ void LoRa_code_interpreter(uint8_t code, const char* rx_quality) {	// react on r
 } // LoRa_code_interpreter()
 
 
+pulses_LoRa_conf_t LORA_conf_ok;	// fallback for failed experiments
+
+uint16_t LORA_ok_cnt=0;
+
+void LoRa_experiments_setup() {		// call that from setup_LoRa()
+  LORA_conf_ok = pulses_LORA;		// init LORA configuration structure (only)
+}
+
 #define LORA_EXPLORING_H
 #endif

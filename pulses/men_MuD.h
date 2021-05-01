@@ -3,7 +3,10 @@
   temporary test menu UI during development
 */
 
+LORA_conf_reset();
+
 //LoRa_repeat_set_new_payload((uint8_t*) "hallihallo", 11);
+
 
 /*void dumpSysInfo()*/ {
   esp_chip_info_t sysinfo;

@@ -1270,8 +1270,8 @@ uint8_t relaxmax=4;			// up to how many relax() in one todo chain
   #include "monochrome_display.h"
 #endif
 
-#if defined USE_LoRa	// needs: https://github.com/sandeepmistry/arduino-LoRa
-  #include "LoRa_pulses.h"
+#if defined USE_LoRa		// needs: https://github.com/sandeepmistry/arduino-LoRa
+  #include "LoRa_pulses.h"	//	  https://github.com/khoih-prog/ESP32TimerInterrupt
   #include "LoRa_menu_page.h"
 #endif
 

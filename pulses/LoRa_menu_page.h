@@ -23,7 +23,7 @@
 
 void LoRa_menu_display() {
   MENU.ln();
-  show_pulses_LORA_conf();
+  show_pulses_LORA_conf(&pulses_LORA);
 
   MENU.outln(F("'S'=start  'E'=end  'R'=receive  'I'=idle  'L'=sleep"));
   MENU.outln(F("'D'=register dump  '='=show config"));
@@ -43,7 +43,7 @@ bool LoRa_menu_reaction(char token) {
   case '0':	// default
     // TODO: reset to default ################
   case '=':
-    show_pulses_LORA_conf();		// shows (known) configuration
+    show_pulses_LORA_conf(&pulses_LORA);	// shows (known) configuration
     break;
   case '"':
     {

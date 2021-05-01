@@ -2,6 +2,7 @@
   LoRa_pulses.h
 
   uses: https://github.com/sandeepmistry/arduino-LoRa
+	https://github.com/khoih-prog/ESP32TimerInterrupt
 */
 
 #if ! defined LORA_PULSES_H
@@ -16,7 +17,7 @@
 #define LoRa_SCK	18
 #define LoRa_MISO	19
 
-#define LoRa_NSS	5	// 2
+#define LoRa_NSS	32	// was 5, 2
 #define LoRa_RESET	33	// tested: 14, 27, 32, 33
 #define LoRa_DIO0	37	// tested: 2, 27,  INPUTS: 35, 37, 38	(0 fails)
 
@@ -56,49 +57,54 @@ typedef struct pulses_LoRa_conf_t {
 pulses_LoRa_conf_t pulses_LORA ;
 
 
-void show_pulses_LORA_conf() {
+void LORA_conf_reset() {
+  pulses_LoRa_conf_t LORA_default;
+  pulses_LORA = LORA_default;
+}
+
+void show_pulses_LORA_conf(pulses_LoRa_conf_t* LORA_conf) {
   MENU.out(F(" pulses_LORA (size "));
   MENU.out(sizeof(pulses_LoRa_conf_t));
   MENU.out(F(" bytes)"));
 
   // pins
   MENU.out(F("\tMISO "));
-  MENU.out(pulses_LORA.MISO);
+  MENU.out(LORA_conf->MISO);
   MENU.out(F("   SCK "));
-  MENU.out(pulses_LORA.SCK);
+  MENU.out(LORA_conf->SCK);
   MENU.out(F("   NSS "));
-  MENU.out(pulses_LORA.NSS);
+  MENU.out(LORA_conf->NSS);
   MENU.out(F("   RESET "));
-  MENU.out(pulses_LORA.RESET);
+  MENU.out(LORA_conf->RESET);
   MENU.out(F("   DIO0 "));
-  MENU.outln(pulses_LORA.DIO0);
+  MENU.outln(LORA_conf->DIO0);
   MENU.ln();
 
   // parameters
   MENU.out(F("'B'=bandwidth "));
-  MENU.out(pulses_LORA.bandwidth);
+  MENU.out(LORA_conf->bandwidth);
   MENU.out(F("\t\t'F'=frequency "));
-  MENU.outln(pulses_LORA.frequency);
+  MENU.outln(LORA_conf->frequency);
   MENU.outln(F(" bandwidth supported: 7800, 10400, 15600, 20800, 31250, 41700, 62500, 125000, 250000, 500000"));
   MENU.ln();
 
   MENU.out(F("'G'=gain "));
-  MENU.out(pulses_LORA.gain);
+  MENU.out(LORA_conf->gain);
   MENU.out(F("\t'X'=TxPower "));
-  MENU.out(pulses_LORA.TxPower);
+  MENU.out(LORA_conf->TxPower);
   MENU.out(F("\t'P'=spreading "));
-  MENU.out(pulses_LORA.spreading);
+  MENU.out(LORA_conf->spreading);
   MENU.out(F("\t\t'T'=coding_rate4 "));
-  MENU.outln(pulses_LORA.coding_rate4);
+  MENU.outln(LORA_conf->coding_rate4);
 
   MENU.out(F("'M'=preamble "));
-  MENU.out(pulses_LORA.preamble_len);
-  MENU.out(F("\t'W'=sync wd"));
-  MENU.out(pulses_LORA.sync_word);
+  MENU.out(LORA_conf->preamble_len);
+  MENU.out(F("\t'W'=sync wd "));
+  MENU.out(LORA_conf->sync_word);
   MENU.out(F("\t'Y'=CRC_enabled "));
-  MENU.out(pulses_LORA.CRC_enabled);
+  MENU.out(LORA_conf->CRC_enabled);
   MENU.out(F("\t'Q'=invertIQ "));
-  MENU.outln(pulses_LORA.invertIQ);
+  MENU.outln(LORA_conf->invertIQ);
   MENU.ln();
 } // show_pulses_LORA_conf()
 
@@ -210,8 +216,7 @@ void LoRa_has_received(int packetSize) {	// has received a packet
 #if defined  USE_LoRa_EXPLORING
   LoRa_code_interpreter(code, (const char*) rx_quality);
 #endif
-
-  MENU.ln();	// ??
+  // MENU.ln();	// *no* maybe on air time will follow (i.e. after sending pong)
 } // LoRa_has_received()
 
 
@@ -406,6 +411,10 @@ bool /*error=*/ setup_LoRa() {
 
   MENU.outln(F("LoRa in receive mode\n"));
   LoRa.receive();
+
+#if defined  USE_LoRa_EXPLORING
+  LoRa_experiments_setup();
+#endif
 
   return 0;
 } // setup_LoRa()

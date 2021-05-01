@@ -942,6 +942,7 @@ ARDUINO_BOARD
 DEACTIVATE print_free_RAM(), too many crashes!!!	<-- done
 
 LoRa feedback and verbosity
+
 LoRa check for LoRa transmitter...
 
 //#define USE_BLUETOOTH_SERIAL_MENU	// needs new git versions
@@ -973,6 +974,7 @@ void LoRa_experiments_setup()	TODO: change that horrible name
 
 LoRa needs ESP32TimerInterrupt.h
 
+
 morse_2output_buffer(MORSE_TOKEN_ILLEGAL);	// TODO: WARNING: multibyte
 
 /home/buster/Arduino/pulses/pulses.ino:340:14: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
@@ -980,3 +982,10 @@ morse_2output_buffer(MORSE_TOKEN_ILLEGAL);	// TODO: WARNING: multibyte
 
 if(*mac_addr == NULL) { // esp_now_pulses.h:261:19: warning: NULL used in arithmetic [-Wpointer-arith]
 
+LoRa duty cycle
+repetition number
+fallback
+    // Timer will call function 'f' every 'd' milliseconds 'n' times
+    // returns the timer number (numTimer) on success or
+    // -1 on failure (f == NULL) or no free timers
+    int setTimer(unsigned long d, timer_callback f, unsigned n);

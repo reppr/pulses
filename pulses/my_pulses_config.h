@@ -15,6 +15,7 @@
 #define TRIGGERED_MUSICBOX2	// #define this in my_pulses_config.h
 
 #define USE_LoRa		// needs: https://github.com/sandeepmistry/arduino-LoRa
+				//	  https://github.com/khoih-prog/ESP32TimerInterrupt
 #if defined USE_LoRa
   #define USE_LoRa_EXPLORING
 
