@@ -32,7 +32,7 @@
 #define DO_STRESS_MANAGMENT
 //#define STRESS_MONITOR_LEVEL	64*2	// TODO: menu interface	// TODO: move to another configuration file
 
-//#define USE_BLUETOOTH_SERIAL_MENU
+//#define USE_BLUETOOTH_SERIAL_MENU	// needs new git versions
 
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	// TODO: check, remove?
 #define HARMONICAL_MUSIC_BOX

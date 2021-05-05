@@ -5,15 +5,24 @@
 
 //LoRa_repeat_set_new_payload((uint8_t*) "hallihallo", 11);
 
+/*void dumpSysInfo()*/ {
+  esp_chip_info_t sysinfo;
+  esp_chip_info(&sysinfo);
+  Serial.print("Model: ");
+  Serial.print((int)sysinfo.model);
+  Serial.print("; Features: 0x");
+  Serial.print((int)sysinfo.features, HEX);
+  Serial.print("; Cores: ");
+  Serial.print((int)sysinfo.cores);
+  Serial.print("; Revision: r");
+  Serial.println((int)sysinfo.revision);
+}
+
+
 {
-  static bool started=true;
-  started = ! started;
-  if(started)
-    LoRa_pause_repeated_TX();
-  else
-    //LoRa_start_repeated_TX(int repetitions, uint32_t interval_sec, uint8_t* blob, short size);
-    //    LoRa_start_repeated_TX(10, 1, (uint8_t*) "message", 7);
-    LoRa_start_repeated_TX(10, LoRa_tx_interval_seconds, NULL, 0);
+  esp_chip_info_t sysinfo;
+  MENU.out(F("cores "));
+  MENU.outln((int) sysinfo.cores);
 }
 break;
 

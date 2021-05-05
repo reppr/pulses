@@ -38,7 +38,7 @@ void LoRa_menu_display() {
 
 
 bool LoRa_menu_reaction(char token) {
-  uint32_t input_value;
+  int input_value;
   switch (token) {
   case '0':	// default
     // TODO: reset to default ################
@@ -142,35 +142,41 @@ bool LoRa_menu_reaction(char token) {
 
   case 'N': case 'n':
     {
+      input_value=-1;
       if(MENU.is_numeric())	// 'N<nnn>' TX_repetitions
-	TX_repetitions = MENU.calculate_input(TX_repetitions);
+	input_value = MENU.calculate_input(TX_repetitions);
+      if(input_value>0)	// not for 'N0' (which stops repetitions)
+	TX_repetitions = input_value;
 
-      if(MENU.check_next('T'))	// 'NT<nnn>' time intervall
-	LoRa_tx_interval_seconds = MENU.calculate_input(LoRa_tx_interval_seconds);
+      if(input_value>0) {	// *not* if the user says 'N0'
+	if(MENU.check_next('T'))	// 'NT<nnn>' time intervall
+	  LoRa_tx_interval_seconds = MENU.calculate_input(LoRa_tx_interval_seconds);
 
-      MENU.out(F("send repeated "));
-      MENU.out(TX_repetitions);
+	MENU.out(F("send repeated "));
+	MENU.out(TX_repetitions);
 
-      MENU.out(F(" all "));
-      MENU.out(LoRa_tx_interval_seconds);
-      MENU.out(F("\"\t|"));
-      char* rest_of_line = NULL;
-      int data_len=0;
-      if(data_len = MENU.cb_stored()) {
-	rest_of_line = (char*) malloc(data_len + 1);
-	if(rest_of_line) {
-	  int i;
-	  char c;
-	  for(i=0; i<data_len; i++) {
-	    c = *(rest_of_line + i) = MENU.drop_input_token();
-	    MENU.out(c);
-	  }
-	  *(rest_of_line + i) = '\0';
-	} else
-	  MENU.malloc_error();
-      }
-      MENU.outln('|');
-      LoRa_start_repeated_TX(TX_repetitions, LoRa_tx_interval_seconds, (uint8_t*) rest_of_line, data_len);
+	MENU.out(F(" all "));
+	MENU.out(LoRa_tx_interval_seconds);
+	MENU.out(F("\"\t|"));
+	char* rest_of_line = NULL;
+	int data_len=0;
+	if(data_len = MENU.cb_stored()) {
+	  rest_of_line = (char*) malloc(data_len + 1);
+	  if(rest_of_line) {
+	    int i;
+	    char c;
+	    for(i=0; i<data_len; i++) {
+	      c = *(rest_of_line + i) = MENU.drop_input_token();
+	      MENU.out(c);
+	    }
+	    *(rest_of_line + i) = '\0';
+	  } else
+	    MENU.malloc_error();
+	}
+	MENU.outln('|');
+	LoRa_start_repeated_TX(TX_repetitions, LoRa_tx_interval_seconds, (uint8_t*) rest_of_line, data_len);
+      } else
+	LoRa_stop_repeated_TX();	// repetitions == 0,
     }
     break;
 

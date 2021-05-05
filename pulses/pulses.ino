@@ -1269,7 +1269,7 @@ uint8_t relaxmax=4;			// up to how many relax() in one todo chain
   #include "monochrome_display.h"
 #endif
 
-#if defined USE_LoRa
+#if defined USE_LoRa	// needs: https://github.com/sandeepmistry/arduino-LoRa
   #include "LoRa_pulses.h"
   #include "LoRa_menu_page.h"
 #endif
@@ -2285,6 +2285,11 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 
   MENU.men_selected = musicBox_page;	// default to musicBox menu
   MENU.ln();
+
+#if defined USE_LoRa
+  LoRa_send_ping();	// activates receiving
+  //setup_LoRa();	// activates receiving
+#endif
 
   if(force_start_to_usermode) {
     force_start_to_usermode=false;

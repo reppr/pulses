@@ -942,3 +942,29 @@ ARDUINO_BOARD
 DEACTIVATE print_free_RAM(), too many crashes!!!	<-- done
 
 LoRa feedback and verbosity
+LoRa check for LoRa transmitter...
+
+//#define USE_BLUETOOTH_SERIAL_MENU	// needs new git versions
+
+use bool LoRa_is_functional=false;
+
+
+/*void dumpSysInfo()*/ {
+  esp_chip_info_t sysinfo;
+  esp_chip_info(&sysinfo);
+  Serial.print("Model: ");
+  Serial.print((int)sysinfo.model);
+  Serial.print("; Features: 0x");
+  Serial.print((int)sysinfo.features, HEX);
+  Serial.print("; Cores: ");
+  Serial.print((int)sysinfo.cores);
+  Serial.print("; Revision: r");
+  Serial.println((int)sysinfo.revision);
+}
+
+
+{
+  esp_chip_info_t sysinfo;
+  MENU.out(F("cores "));
+  MENU.outln((int) sysinfo.cores);
+}

@@ -1,12 +1,13 @@
 /*
   LoRa_pulses.h
+  uses: https://github.com/sandeepmistry/arduino-LoRa
 */
 
 #if ! defined LORA_PULSES_H
 
 /* **************************************************************** */
 #include <SPI.h>
-#include <LoRa.h>
+#include <LoRa.h>			// uses: https://github.com/sandeepmistry/arduino-LoRa
 
 #include "ESP32TimerInterrupt.h"	// see: https://github.com/khoih-prog/ESP32TimerInterrupt
 

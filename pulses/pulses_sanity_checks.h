@@ -71,10 +71,13 @@
   hmm?
 */
 
+/*
   #if defined USE_BLUETOOTH_SERIAL_MENU
     #warning undefining USE_BLUETOOTH_SERIAL_MENU
     #undef USE_BLUETOOTH_SERIAL_MENU
   #endif
+*/
+
 /*
   'MENU_OUTSTREAM2' was not declared in this scope	fixed
   some more troubles,	fixed

@@ -1,5 +1,6 @@
 /*
   LoRa_menu.ino
+  uses: https://github.com/sandeepmistry/arduino-LoRa
 */
 
 #define USE_LoRa_EXPLORING

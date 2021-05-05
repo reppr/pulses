@@ -1,5 +1,7 @@
 /*
   LoRa_pulses.h
+
+  uses: https://github.com/sandeepmistry/arduino-LoRa
 */
 
 #if ! defined LORA_PULSES_H
@@ -294,6 +296,11 @@ bool /*did send*/ LoRa_maybe_repeat_TX() {
 } // LoRa_maybe_repeat_TX()
 
 bool /*ok=*/ LoRa_start_repeated_TX(int repetitions, uint32_t interval_sec, uint8_t* blob, short size) {
+  if(repetitions == 0) {
+    extern void LoRa_stop_repeated_TX();
+    LoRa_stop_repeated_TX();
+    return false;	// dummy
+  }
   MENU.outln(F("LoRa_start_repeated_TX()"));
   TX_repetitions = repetitions;
   TX_repetition_number = 0;
@@ -340,7 +347,7 @@ bool /*did something*/ check_for_LoRa_jobs() {	// put this in the loop()
   return false;
 } // check_for_LoRa_jobs()
 
-
+bool LoRa_is_functional=false;
 bool /*error=*/ setup_LoRa() {
   MENU.out(F("setup_LoRa();\t"));
 
@@ -353,12 +360,14 @@ bool /*error=*/ setup_LoRa() {
 
   //LoRa.setSPIFrequency(pulses_LORA.frequency);
 
-  MENU.out((int) pulses_LORA.frequency);
-  MENU.tab();
+//  MENU.out((int) pulses_LORA.frequency);
+//  MENU.tab();
   if (! LoRa.begin(pulses_LORA.frequency)) {
+    LoRa_is_functional=false;
     MENU.outln("starting LoRa failed!\n");
     return -1;	// error
-  }
+  } else
+    LoRa_is_functional=true;
 
   // set LNA Gain for better RX sensitivity, by default AGC (Automatic Gain Control) is used and LNA gain is not used.
   // Uncomment the next line to disable the default AGC and set LNA gain, values between 1 - 6 are supported
