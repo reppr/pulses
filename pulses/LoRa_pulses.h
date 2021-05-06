@@ -346,15 +346,21 @@ bool /*did something*/ check_for_LoRa_jobs() {	// put this in the loop()
     return true;
   }
 
+  if(LoRa_do_fallback_flag) {
+    LoRa_do_fallback_flag=false;
+    LoRa_maybe_fallback();
+    return true;
+  }
   if(LoRa_maybe_repeat_TX())
     return true;
 
   return false;
 } // check_for_LoRa_jobs()
 
+
 bool LoRa_is_functional=false;
-bool /*error=*/ setup_LoRa() {
-  MENU.out(F("setup_LoRa();\t"));
+bool /*error=*/ setup_LoRa_default() {
+  MENU.out(F("setup_LoRa_default();\t"));
 
   size_t maxlen=64;
   char txt[maxlen]={0};
@@ -413,11 +419,53 @@ bool /*error=*/ setup_LoRa() {
   LoRa.receive();
 
 #if defined  USE_LoRa_EXPLORING
-  LoRa_experiments_setup();
+  LORA_conf_ok = pulses_LORA;		// init LORA configuration structure (only)
+  LoRa_ok_cnt=0;
 #endif
 
   return 0;
-} // setup_LoRa()
+} // setup_LoRa_default()
+
+
+bool /*error=*/ setup_LoRa(pulses_LoRa_conf_t* LORA_conf) {
+  MENU.outln(F("setup_LoRa()"));
+  show_pulses_LORA_conf(LORA_conf);
+
+  if (! LoRa.begin(LORA_conf->frequency)) {
+    LoRa_is_functional=false;
+    MENU.outln("starting LoRa failed!\n");
+    return -1;	// error
+  } else
+    LoRa_is_functional=true;
+
+  LoRa.setSignalBandwidth(LORA_conf->bandwidth);
+  LoRa.setGain(LORA_conf->gain);
+  LoRa.setTxPower(LORA_conf->TxPower);
+  LoRa.setSpreadingFactor(LORA_conf->spreading);
+  LoRa.setCodingRate4(LORA_conf->coding_rate4);
+  LoRa.setPreambleLength(LORA_conf->preamble_len);
+  LoRa.setSyncWord(LORA_conf->sync_word);
+  if(LORA_conf->CRC_enabled)
+    LoRa.enableCrc();
+  else
+    LoRa.disableCrc();
+  if(LORA_conf->invertIQ)
+    LoRa.enableInvertIQ();
+  else
+    LoRa.disableInvertIQ();
+
+  // register callbacks
+  LoRa.onReceive(onLoRaReceive);
+  LoRa.onTxDone(onLoRaSent);
+
+  pulses_LORA = *LORA_conf;	// TODO: check ################
+  LoRa_ok_cnt=0;
+
+  MENU.outln(F("LoRa in receive mode\n"));
+  LoRa.receive();
+
+  return 0;
+} // setup_LoRa(&LORA_conf)
 
 
 // some extended LoRa menu functionality
@@ -460,7 +508,7 @@ bool LoRa_interpret_codes=true;		// ################ TODO: menu UI
 //
 //   case LoRa_code_init:
 //     MENU.out(F("<init>\t"));
-//     setup_LoRa();
+//     setup_LoRa_default();
 //     LoRa_tx_to_repeat=0;
 //     LoRa_sequence_start_time=0L;
 //     LoRa_sequence_end_time=0L;

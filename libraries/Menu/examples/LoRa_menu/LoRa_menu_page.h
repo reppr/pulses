@@ -30,8 +30,9 @@ void LoRa_menu_display() {
   MENU.ln();
 
 #if defined USE_LoRa_EXPLORING
-  MENU.outln(F("'O'=ping other\t'C<xxx>'=send macro  'CC<xxx>=send and do"));
-  MENU.outln(F("'N'=send repeated\t'N<number>T<seconds>\"<text>"));	// ################ TODO: implement "
+  MENU.outln(F("'O'=ping other\t'C<xxx>'=send macro  'CC<xxx>'=send and do"));
+  MENU.outln(F("'N'=send repeated\t'N<number>T<seconds>\"<text>"));
+  MENU.outln(F("'Z'=stop fallback\t'Z<nnn>'=set callback seconds"));
   MENU.ln();
 #endif
 } // LoRa_menu_display()
@@ -41,7 +42,8 @@ bool LoRa_menu_reaction(char token) {
   int input_value;
   switch (token) {
   case '0':	// default
-    // TODO: reset to default ################
+    setup_LoRa_default();
+    break;
   case '=':
     show_pulses_LORA_conf(&pulses_LORA);	// shows (known) configuration
     break;
@@ -121,6 +123,7 @@ bool LoRa_menu_reaction(char token) {
       pulses_LORA.frequency *= 1000000;
     MENU.out(F("LoRa frequency: "));
     MENU.outln(pulses_LORA.frequency);
+    LoRa.setFrequency(pulses_LORA.frequency);
     break;
 
   case 'G': case 'g':
@@ -129,6 +132,7 @@ bool LoRa_menu_reaction(char token) {
       pulses_LORA.gain = input_value;
     MENU.out(F("gain: "));
     MENU.outln(pulses_LORA.gain);
+    LoRa.setGain(pulses_LORA.gain);
     break;
 
   case 'M': case 'm':
@@ -186,7 +190,7 @@ bool LoRa_menu_reaction(char token) {
     break;
 
   case 'S': case 's':
-    setup_LoRa();
+    setup_LoRa(&pulses_LORA);
     break;
 
   case 'T': case 't':
@@ -276,6 +280,7 @@ bool LoRa_menu_reaction(char token) {
 	if(do_locally) {
 	  yield();
 	  MENU.ln();
+	  LoRa_setup_fallback();
 	  MENU.play_KB_macro(_macro+2);
 	}
 	free(_macro);
@@ -286,6 +291,23 @@ bool LoRa_menu_reaction(char token) {
 
   case 'O': case 'o':
     LoRa_send_ping();
+    break;
+
+  case 'Z': case 'z':
+    input_value=-1;
+    if(MENU.is_numeric()) {	// 'Z<nnn>' LoRa_fallback_timer_sec
+      input_value = MENU.calculate_input(LoRa_fallback_timer_sec);
+      if(input_value>0)	// positive only
+	LoRa_fallback_timer_sec = input_value;
+      MENU.out(F("fallback after "));
+      MENU.out(LoRa_fallback_timer_sec);
+      MENU.outln(F(" seconds"));
+
+      LoRa_setup_fallback();
+    } else {			// 'Z' no number  *stop* fallbacks
+      LoRa_send_no_fallback();
+      LoRa_stop_fallbacks();
+    }
     break;
 #endif
 

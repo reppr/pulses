@@ -2035,7 +2035,7 @@ void setup() {
 #endif
 
 #if defined USE_LoRa
-  setup_LoRa();
+  setup_LoRa_default();
 #endif
 
 #include "array_descriptors_setup.h"
@@ -2288,8 +2288,8 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
   MENU.ln();
 
 #if defined USE_LoRa
-  LoRa_send_ping();	// activates receiving
-  //setup_LoRa();	// activates receiving
+  LoRa_send_ping();		// activates receiving
+  // setup_LoRa_default();	// activates receiving
 #endif
 
   if(force_start_to_usermode) {

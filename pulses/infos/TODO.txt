@@ -970,8 +970,6 @@ use bool LoRa_is_functional=false;
 }
 
 
-void LoRa_experiments_setup()	TODO: change that horrible name
-
 LoRa needs ESP32TimerInterrupt.h
 
 
@@ -984,8 +982,7 @@ if(*mac_addr == NULL) { // esp_now_pulses.h:261:19: warning: NULL used in arithm
 
 LoRa duty cycle
 repetition number
-fallback
-    // Timer will call function 'f' every 'd' milliseconds 'n' times
-    // returns the timer number (numTimer) on success or
-    // -1 on failure (f == NULL) or no free timers
-    int setTimer(unsigned long d, timer_callback f, unsigned n);
+
+//  LoRa_fallback_timer.stopTimer();		// FIXME: crash
+//  LoRa_fallback_timer.disableTimer();	// FIXME: crash
+//  LoRa_fallback_timer.detachInterrupt();	// FIXME: crash

@@ -85,7 +85,7 @@ void setup() {
   MENU.outln(F("LoRa menu\thttp://github.com/reppr/pulses/"));
   MENU.ln();
 
-  setup_LoRa();
+  setup_LoRa_default();
 
   MENU.menu_display();		// display menu at startup
   MENU.ln();
