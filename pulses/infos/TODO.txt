@@ -962,9 +962,21 @@ use bool LoRa_is_functional=false;
   Serial.println((int)sysinfo.revision);
 }
 
-
 {
   esp_chip_info_t sysinfo;
   MENU.out(F("cores "));
   MENU.outln((int) sysinfo.cores);
 }
+
+
+void LoRa_experiments_setup()	TODO: change that horrible name
+
+LoRa needs ESP32TimerInterrupt.h
+
+morse_2output_buffer(MORSE_TOKEN_ILLEGAL);	// TODO: WARNING: multibyte
+
+/home/buster/Arduino/pulses/pulses.ino:340:14: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
+       return ">*< ALL KNOWN >*<";  // for esp_now
+
+if(*mac_addr == NULL) { // esp_now_pulses.h:261:19: warning: NULL used in arithmetic [-Wpointer-arith]
+

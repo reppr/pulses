@@ -1,7 +1,7 @@
 /* pulses_CLICK_PIN_configuration.h	*/
 
-#ifndef GPIO_PINS_CONFIGURATION.H
-#define GPIO_PINS_CONFIGURATION.H
+#ifndef GPIO_PINS_CONFIGURATION_H
+#define GPIO_PINS_CONFIGURATION_H
 
 #if defined(GPIO_PINS) && ! defined NO_GPIO_PINS
 
@@ -161,4 +161,4 @@
 
 
 #endif // GPIO_PINS && ! NO_GPIO_PINS
-#endif // GPIO_PINS_CONFIGURATION.H
+#endif // GPIO_PINS_CONFIGURATION_H

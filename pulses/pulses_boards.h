@@ -113,7 +113,7 @@
 
 
 // default number of GPIO_PINS controlling an associated hardware pin each
-  #ifndef GPIO_PINS && ! defined NO_GPIO_PINS
+  #if ! defined GPIO_PINS && ! defined NO_GPIO_PINS
     #if defined(ESP32)			// ESP32: many pins, a lot of RAM :)
       #if defined(KALIMBA7_v2)
 	#define GPIO_PINS	8	// only 7 used
@@ -188,7 +188,7 @@
 #ifndef USE_F_MACRO	// NOOP fake
   // For tests and on PC:  Fake Arduino F("string") macro as NOOP:
   #undef F
-  #define F(s)	(s)
+  #define F(s)	((char*) (s))
   #warning "using a NOOP fake F() macro."
 #endif
 

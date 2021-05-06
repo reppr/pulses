@@ -65,7 +65,7 @@ void setup_timer64() {
   MENU.tab();
 
   TIME64_conf.alarm_en = TIMER_ALARM_DIS;
-  TIME64_conf.counter_en = true;
+  TIME64_conf.counter_en = TIMER_START;
   //TIME64_conf.intr_type
   TIME64_conf.counter_dir = TIMER_COUNT_UP;
   //TIME64_conf.auto_reload

@@ -39,7 +39,7 @@
 /* **************************************************************** */
 #if true	// needed for rp2040 ???	TODO: FIXME: ################
   #undef F
-  #define F(s)	(s)
+  #define F(s)	((char*) (s))
   #warning "*NOT* using F() macro..."
 #endif
 

@@ -85,7 +85,7 @@ class Pulses;
 #ifndef USE_F_MACRO	// NOOP fake
   // For tests and on PC:  Fake Arduino F("string") macro as NOOP:
   #undef F
-  #define F(s)	(s)
+  #define F(s)	((char*) (s))
   #warning "using a NOOP fake F() macro."
 #endif
 

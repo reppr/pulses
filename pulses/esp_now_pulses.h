@@ -258,7 +258,7 @@ esp_err_t  esp_now_send_HI(uint8_t* mac_addr) {
 esp_now_peer_info_t peer_info;
 
 bool mac_is_non_zero(uint8_t* mac_addr) {
-  if(*mac_addr == NULL) {
+  if(*mac_addr == NULL) { // TODO?: esp_now_pulses.h:261:19: warning: NULL used in arithmetic [-Wpointer-arith]
     // MENU.out(F("MAC*NULL "));
     return false;	// *not* planed to be used like this...   meanwhile it *is* ;)
   }
@@ -835,6 +835,8 @@ esp_err_t esp_now_pulses_setup() {
   peer_info.channel = ESP_NOW_CHANNEL;
   memcpy(peer_info.peer_addr, broadcast_mac, 6);
   peer_info.ifidx = ESP_IF_WIFI_STA;
+  //  peer_info.ifidx =(wifi_interface_t) ESP_IF_WIFI_STA;
+  //  peer_info.ifidx = WIFI_IF_STA;
   peer_info.encrypt = false;
 
   status = add_broascast_2_ESP_peer_list();		// add broadcast as ESP peer

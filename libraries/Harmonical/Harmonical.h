@@ -3,8 +3,8 @@
    Harmonical.h
 */
 /* **************************************************************** */
-#ifndef HARMONICAL_h
-#define HARMONICAL_h
+#ifndef HARMONICAL_H
+#define HARMONICAL_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,4 +64,4 @@ class Harmonical {
 
 
 /* **************************************************************** */
-#endif HARMONICAL_h
+#endif // HARMONICAL_H
