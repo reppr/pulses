@@ -4,6 +4,12 @@
 
 #if ! defined LORA_EXPLORING_H
 
+#if defined PULSES_SYSTEM && defined BATTERY_LEVEL_CONTROL_PIN
+  #define LORA_DEFAULT_VOLTAGE_PIN	BATTERY_LEVEL_CONTROL_PIN	// 'V 255' does analogRead(LORA_DEFAULT_VOLTAGE_PIN)
+#else
+  #define LORA_DEFAULT_VOLTAGE_PIN	35				// 'V 255' does analogRead(LORA_DEFAULT_VOLTAGE_PIN)
+#endif
+
 #define  LORA_CODE_INFO		'"'	// " info, chat send and show reception
 #define  LORA_CODE_INIT		'S'	// S init default, stop and reset
 #define  LORA_CODE_STOP		';'	// ; stop sequence
@@ -13,6 +19,7 @@
 #define  LORA_CODE_FOREVER	'*'	// * endless repeating, no automatic ending
 #define  LORA_CODE_KB_MACRO	'!'	// ! play KB macro in ::L
 #define  LORA_CODE_NO_FALLBACK	'Z'	// do LoRa_stop_fallbacks()
+#define  LORA_CODE_ASK_VOLTAGE	'V'	// ask to read LORA_DEFAULT_VOLTAGE_PIN (or another pin)
 
 void show_LoRa_code_name(uint8_t code) {
   switch(code) {
@@ -31,9 +38,9 @@ void show_LoRa_code_name(uint8_t code) {
   case LORA_CODE_NO_FALLBACK:	// 'Z'
     MENU.out(F("no fallback "));
     break;
-  default:
-    // MENU.out(F("unknown "));
-    ;
+  case LORA_CODE_ASK_VOLTAGE:	// 'V'
+    MENU.out(F("ask voltage "));
+    break;
   }
 } // show_LoRa_code_name()
 
@@ -43,14 +50,7 @@ void LoRa_send_ping() {
 
   LoRa.beginPacket();
   LoRa.write(LORA_CODE_PING);
-  if (LoRa.endPacket(true)) {
-    LoRa.onTxDone(onLoRaSent);
-    LoRa_send_start_time = micros();
-    MENU.out(F("ok\t"));
-  } else {			// ERROR
-    LoRa.receive();		// switch back to receive mode
-    MENU.outln(F("failed"));
-  }
+  LoRa_send_packet();
 } // LoRa_send_ping()
 
 
@@ -61,19 +61,12 @@ void LoRa_send_pong(const char* rx_quality) {
   LoRa.write(LORA_CODE_PONG);
   LoRa.write(' ');
   if(/*accepted_bytes*/ LoRa.write((const uint8_t*) rx_quality, strlen(rx_quality))) {
-    if (LoRa.endPacket(true)) {
-      LoRa_send_start_time = micros();
-      LoRa.onTxDone(onLoRaSent);
-      MENU.out(F("ok\t"));
+    if(0 == LoRa_send_packet())
       return;			// OK
-    }
   }
-
-  // else			// ERROR
   LoRa.receive();		// switch back to receive mode
   MENU.outln(F("failed"));
 } // LoRa_send_pong()
-
 
 
 // fallback to a working state
@@ -120,31 +113,48 @@ void LoRa_stop_fallbacks() {
   LoRa_do_fallback_flag=false;
 };
 
-
-void LoRa_send_no_fallback() {	// stops fallback in receiving system
-  MENU.out(F("\nLoRa_send_no_fallback()\t"));
-
-  LoRa.beginPacket();
-  LoRa.write(LORA_CODE_NO_FALLBACK);
-  if (LoRa.endPacket(true)) {
-    LoRa.onTxDone(onLoRaSent);
-    LoRa_send_start_time = micros();
-    MENU.out(F("ok\t"));
-  } else {			// ERROR
-    LoRa.receive();		// switch back to receive mode
-    MENU.outln(F("failed"));
-  }
-} // LoRa_send_no_fallback()
-
-
 void LoRa_setup_fallback() {		// call that from setup_LoRa_default()
   LORA_conf_ok = pulses_LORA;		// init LORA configuration structure (only)
   LoRa_ok_cnt=0;
   LoRa_fallback_timer.attachInterruptInterval(LoRa_fallback_timer_sec * 1000000, &LoRa_fallback_ISR);
 }
 
+void LoRa_send_no_fallback() {	// stops fallback in receiving system
+  MENU.out(F("\nLoRa_send_no_fallback()\t"));
 
-void LoRa_code_interpreter(uint8_t code, const char* rx_quality) {	// react on received messages
+  LoRa.beginPacket();
+  LoRa.write(LORA_CODE_NO_FALLBACK);
+  LoRa_send_packet();
+} // LoRa_send_no_fallback()
+
+
+void LoRa_send_voltage_inquiry(uint8_t pin) {
+  MENU.out(F("ask voltage pin "));
+  MENU.out(pin);
+  MENU.tab();
+
+  LoRa.beginPacket();
+  LoRa.write(LORA_CODE_ASK_VOLTAGE);
+  LoRa.print(' ');
+  LoRa.print(pin);
+  LoRa_send_packet();
+} // LoRa_send_voltage_inquiry()
+
+void LoRa_send_voltage(uint8_t pin) {
+  if(pin == 255)
+    pin = LORA_DEFAULT_VOLTAGE_PIN;
+
+  int voltage = analogRead(pin);
+  LoRa.beginPacket();
+  LoRa.print(F("voltage="));
+  LoRa.print(voltage);
+  LoRa.print(F("\tpin "));
+  LoRa.print(pin);
+  LoRa_send_packet();
+} // LoRa_send_voltage()
+
+
+void LoRa_code_interpreter(uint8_t code, void* data, const char* rx_quality) {	// react on received messages, see: LoRa_has_received()
   switch(code) {
   case LORA_CODE_PING:		// '>'
     LoRa_send_pong(rx_quality);
@@ -157,7 +167,9 @@ void LoRa_code_interpreter(uint8_t code, const char* rx_quality) {	// react on r
   case LORA_CODE_NO_FALLBACK:	// 'Z'
     LoRa_stop_fallbacks();
     break;
-
+  case LORA_CODE_ASK_VOLTAGE:	// 'V' <nn>
+    LoRa_send_voltage(/*pin=*/ atoi((char*) data + 2));
+    break;
   case LORA_CODE_PONG:		// '<'
   case LORA_CODE_INFO:		// '\"'
     // just display

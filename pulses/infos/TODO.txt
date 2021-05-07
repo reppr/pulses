@@ -984,5 +984,36 @@ LoRa duty cycle
 repetition number
 
 //  LoRa_fallback_timer.stopTimer();		// FIXME: crash
-//  LoRa_fallback_timer.disableTimer();	// FIXME: crash
+//  LoRa_fallback_timer.disableTimer();		// FIXME: crash
 //  LoRa_fallback_timer.detachInterrupt();	// FIXME: crash
+
+do use bool LoRa_interpret_codes
+
+//	  case 'V': case 'v':	// 'V' 'V<nn>' analogRead(pin);		// TODO: implement analogRead
+//#define  LORA_CODE_READ_VOLTAGE	'V'	// read BATTERY_LEVEL_CONTROL_PIN or another pin	TODO: implement
+
+//  case 'Q': case 'q':		// TODO: LoRa invertIQ
+
+LoRa_exploring.h
+	// ****************************************************************
+	#if defined PULSES_SYSTEM	// this code is only compiled for pulses
+	  #if defined BATTERY_LEVEL_CONTROL_PIN
+	    #include "battery_control.h"
+	  #endif
+	#endif // PULSES_SYSTEM
+
+LORA	nvs
+	// configure_LORA_from_nvs();
+	menu case comments
+	LORA_DEFAULT_VOLTAGE_PIN
+
+BATTERY	nvs
+  // configure_BATTERY_from_nvs();
+
+USE_BATTERY_CONTROL instead of BATTERY_LEVEL_CONTROL_PIN
+
+system menu:
+	#if defined BATTERY_LEVEL_CONTROL_PIN
+	  MENU.out(F("battery_level_conf_t\t"));
+	  MENU.outln(sizeof(battery_level_conf_t));
+	#endif

@@ -25,14 +25,17 @@ void LoRa_menu_display() {
   MENU.ln();
   show_pulses_LORA_conf(&pulses_LORA);
 
-  MENU.outln(F("'S'=start  'E'=end  'R'=receive  'I'=idle  'L'=sleep"));
+  MENU.outln(F("'S'=setup&start  'E'=end  'R'=receive  'I'=idle  'L'=sleep"));
   MENU.outln(F("'D'=register dump  '='=show config"));
   MENU.ln();
 
 #if defined USE_LoRa_EXPLORING
   MENU.outln(F("'O'=ping other\t'C<xxx>'=send macro  'CC<xxx>'=send and do"));
   MENU.outln(F("'N'=send repeated\t'N<number>T<seconds>\"<text>"));
-  MENU.outln(F("'Z'=stop fallback\t'Z<nnn>'=set callback seconds"));
+  MENU.out(F("'Z'=stop fallback\t'Z<nnn>'=set callback seconds ["));
+  MENU.out(LoRa_fallback_timer_sec);
+  MENU.outln(F("\"]"));
+  MENU.outln(F("'V'=read voltage\t'V<nn>'=read pin"));
   MENU.ln();
 #endif
 } // LoRa_menu_display()
@@ -79,7 +82,7 @@ bool LoRa_menu_reaction(char token) {
     case 20800: case 20: case 208:
       input_value=20800;
       break;
-    case 31250: case 3: case 31: case 312: case 3125: 
+    case 31250: case 3: case 31: case 312: case 3125:
       input_value=31250;
       break;
     case 41700: case 4: case 41: case 417:
@@ -226,7 +229,15 @@ bool LoRa_menu_reaction(char token) {
     LoRa.setSpreadingFactor(pulses_LORA.spreading);
     break;
 
-  case 'Q': case 'q':
+  case 'Q': case 'q':	// 'Q' toggle invertIQ
+    MENU.out(F("invertIQ "));
+    if(pulses_LORA.invertIQ = ! pulses_LORA.invertIQ) {	// toggled
+      LoRa.enableInvertIQ();
+      MENU.outln(F("enabled"));
+    } else {
+      LoRa.disableInvertIQ();
+      MENU.outln(F("disabled"));
+    }
     break;
 
   case 'W': case 'w':
@@ -263,7 +274,7 @@ bool LoRa_menu_reaction(char token) {
 	if(MENU.peek(len) == EOF8)
 	  break;
       }
-      // _macro = "! <macro code>"	
+      // _macro = "! <macro code>"
       //      len++;	// '\0'
       len += 2;	// LORA_CODE_KB_MACRO + ' ' precedes the macro code
       char* _macro = (char*) malloc(len + /*'\0'*/ 1);
@@ -293,6 +304,17 @@ bool LoRa_menu_reaction(char token) {
     LoRa_send_ping();
     break;
 
+  case 'V': case 'v':	// 'V' 'V<nn>' analogRead(pin);		// TODO: implement
+    input_value=-1;				// -1 means BATTERY_LEVEL_CONTROL_PIN (on the receiver)
+    if(MENU.is_numeric())
+      input_value = MENU.numeric_input(-1);	// -1 means BATTERY_LEVEL_CONTROL_PIN (on the receiver)
+
+    {
+      uint8_t pin = input_value & 0xff;
+      LoRa_send_voltage_inquiry(pin);
+    }
+    break;
+
   case 'Z': case 'z':
     input_value=-1;
     if(MENU.is_numeric()) {	// 'Z<nnn>' LoRa_fallback_timer_sec
@@ -309,7 +331,7 @@ bool LoRa_menu_reaction(char token) {
       LoRa_stop_fallbacks();
     }
     break;
-#endif
+#endif // USE_LoRa_EXPLORING
 
   default:
     return 0;		// token not found in this menu

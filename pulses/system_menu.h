@@ -23,6 +23,11 @@ void display_type_sizes() {
   MENU.outln(sizeof(peer_ID_t));
 #endif
 
+#if defined USE_LORA
+  MENU.out(F("pulses_LoRa_conf_t\t"));
+  MENU.outln(sizeof(pulses_LoRa_conf_t));
+#endif
+
   MENU.out(F("pulse_t\t\t"));
   MENU.outln(sizeof(pulse_t));
 

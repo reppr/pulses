@@ -56,11 +56,12 @@ typedef struct pulses_LoRa_conf_t {
 
 pulses_LoRa_conf_t pulses_LORA ;
 
-
+/*
 void LORA_conf_reset() {
   pulses_LoRa_conf_t LORA_default;
   pulses_LORA = LORA_default;
 }
+*/
 
 void show_pulses_LORA_conf(pulses_LoRa_conf_t* LORA_conf) {
   MENU.out(F(" pulses_LORA (size "));
@@ -110,14 +111,27 @@ void show_pulses_LORA_conf(pulses_LoRa_conf_t* LORA_conf) {
 
 
 unsigned long LoRa_send_start_time=0;
-unsigned long LoRa_send_duration=0;	// flag and duration
+unsigned long LoRa_on_air_duration=0;		// flag and duration,  triggers show_on_air_time()
 
-void onLoRaSent() {		// send callback
-  LoRa_send_duration = micros() - LoRa_send_start_time;
-  LoRa.receive();		// switch back to receive mode
+void onLoRaSent() {						// LoRa TX callback
+  LoRa_on_air_duration = micros() - LoRa_send_start_time;	// triggers show_on_air_time()
+  LoRa.receive();						// switch back to receive mode
 }
 
-int LoRa_send_blob(uint8_t* buf, size_t buflen) {
+bool /*error*/ LoRa_send_packet() {	// end a packet, remember send time, reconfigure appropriate mode
+  if (LoRa.endPacket(true)) {
+    LoRa_send_start_time = micros();
+    LoRa.onTxDone(onLoRaSent);
+    MENU.out(F("ok\t"));
+    return 0;
+  } else {			// ERROR
+    LoRa.receive();		// switch back to receive mode
+    MENU.outln(F("failed"));
+    return 1;
+  }
+} // LoRa_send_packet()
+
+int /*bytes_sent*/ LoRa_send_blob(uint8_t* buf, size_t buflen) {
   if(LoRa_send_start_time)
     MENU.outln(F("previous sending not treated"));
 
@@ -129,24 +143,28 @@ int LoRa_send_blob(uint8_t* buf, size_t buflen) {
   }
 
   // else do send it:
-  LoRa.onTxDone(onLoRaSent);
-  LoRa_send_start_time = micros();
-  LoRa.endPacket(true);
-  return accepted_bytes;
+  if(LoRa_send_packet())
+    return 0;			// ERROR
+
+  return accepted_bytes;	// OK, bytes sent
 } // LoRa_send_blob()
 
-void show_on_air_time() {
-  MENU.out((float) LoRa_send_duration / 1000.0);
+void LoRa_send_str(char* str) {		// TODO: test ################
+  if(str)
+    LoRa_send_blob((uint8_t*) str, strlen(str));
+} // LoRa_sent_str()
+
+void show_on_air_time() {	// triggered by (LoRa_on_air_duration != 0)
+  MENU.out((float) LoRa_on_air_duration / 1000.0);
   MENU.outln(F(" ms on air"));
   LoRa_send_start_time = 0;
-  LoRa_send_duration = 0;
+  LoRa_on_air_duration = 0;
 } // show_on_air_time()
 
-
-volatile int LoRa_packet_size_received=0;	// used as a flag
+volatile int LoRa_packet_size_received=0;	// also flag to trigger LoRa_has_received(LoRa_packet_size_received);
 
 void onLoRaReceive(int packetSize) {
-  LoRa_packet_size_received = packetSize;
+  LoRa_packet_size_received = packetSize;	// triggers LoRa_has_received(LoRa_packet_size_received);
 }
 
 #if defined  USE_LoRa_EXPLORING
@@ -158,7 +176,7 @@ void onLoRaReceive(int packetSize) {
 #endif
 uint8_t LoRa_RX_buffer[LoRa_RECEIVE_BUF_SIZE] = {0};
 
-void LoRa_has_received(int packetSize) {	// has received a packet
+void LoRa_has_received(int packetSize) {	// has received a packet, triggered by (LoRa_packet_size_received != 0)
   if((packetSize + 1) > LoRa_RECEIVE_BUF_SIZE) {
     MENU.out(packetSize);
     MENU.space();
@@ -214,7 +232,7 @@ void LoRa_has_received(int packetSize) {	// has received a packet
   } // VERBOSITY, show content data
 
 #if defined  USE_LoRa_EXPLORING
-  LoRa_code_interpreter(code, (const char*) rx_quality);
+  LoRa_code_interpreter(code, (void*) LoRa_RX_buffer, (const char*) rx_quality);
 #endif
   // MENU.ln();	// *no* maybe on air time will follow (i.e. after sending pong)
 } // LoRa_has_received()
@@ -223,7 +241,7 @@ void LoRa_has_received(int packetSize) {	// has received a packet
 // automatic repeated transmissions
 ESP32Timer LoRa_timer(1);	// automatic LoRa_transmissions
 uint8_t* repeated_TX_payload=NULL;
-short repeated_tx_size=0;
+short repeated_TX_size=0;
 int TX_repetitions=3;
 volatile uint32_t TX_repetition_number=0;
 
@@ -231,13 +249,13 @@ bool /*ok=*/ LoRa_repeat_set_new_payload(uint8_t* payload, short size) {
   if(repeated_TX_payload) {
     free(repeated_TX_payload);
     repeated_TX_payload = NULL;
-    repeated_tx_size=0;
+    repeated_TX_size=0;
   }
   if(payload == NULL)
     return true;	// ok, no payload
 
   if(repeated_TX_payload = (uint8_t*) malloc(size)) {
-    repeated_tx_size=size;
+    repeated_TX_size=size;
     for(int i=0; i<size; i++) {
       repeated_TX_payload[i] = payload[i];
       MENU.out((char) repeated_TX_payload[i]);
@@ -257,8 +275,8 @@ void LoRa_send_repeated_TX() {
   }
 
   LoRa.beginPacket();
-  if(repeated_TX_payload && repeated_tx_size) {
-    int accepted_bytes = LoRa.write(repeated_TX_payload, repeated_tx_size);
+  if(repeated_TX_payload && repeated_TX_size) {
+    int accepted_bytes = LoRa.write(repeated_TX_payload, repeated_TX_size);
     if(accepted_bytes == 0) {	// ERROR
       LoRa.receive();		// switch back to receive mode
       MENU.error_ln(F("LoRa sending"));
@@ -275,10 +293,7 @@ void LoRa_send_repeated_TX() {
   MENU.out(TX_repetitions);
   MENU.out('\t');
 
-  // do send it:
-  LoRa.onTxDone(onLoRaSent);
-  LoRa_send_start_time = micros();
-  LoRa.endPacket(true);
+  LoRa_send_packet();
 } // LoRa_send_repeated_TX()
 
 void IRAM_ATTR LoRa_repeated_TX_ISR() {
@@ -324,10 +339,14 @@ void LoRa_stop_repeated_TX() {
   MENU.outln(F("LoRa_stop_repeated_TX()"));
   LoRa_timer.stopTimer();
   TX_repetition_number=0;
-  if(repeated_TX_payload) {
-    //	####### free(repeated_TX_payload);
-    repeated_TX_payload=NULL;
-  }
+  /*
+    // *NO* this is delayed until LoRa_repeat_set_new_payload()
+    if(repeated_TX_payload) {
+      free(repeated_TX_payload);
+      repeated_TX_payload=NULL;
+      repeated_TX_size=0;
+    }
+  */
 } // LoRa_stop_repeated_TX()
 
 void LoRa_pause_repeated_TX() {
@@ -341,7 +360,7 @@ bool /*did something*/ check_for_LoRa_jobs() {	// put this in the loop()
     LoRa_has_received(LoRa_packet_size_received);
     return true;
   }
-  if(LoRa_send_duration) {
+  if(LoRa_on_air_duration) {
     show_on_air_time();
     return true;
   }
@@ -477,7 +496,7 @@ unsigned long LoRa_sequence_start_time=0;
 unsigned long LoRa_sequence_end_time=0;
 
 uint32_t LoRa_tx_count=0;
-uint16_t LoRa_tx_repetitions=4;		// ILLEGAL16 means forever
+//uint16_t LoRa_tx_repetitions=4;		// ILLEGAL16 means forever
 uint16_t LoRa_tx_to_repeat=0;		// ILLEGAL16 means forever
 uint16_t LoRa_tx_interval_seconds=3;	// seconds, for automatic sequences
 uint16_t LoRa_tx_hard_end_minutes=60;	// stop automatic sequence
