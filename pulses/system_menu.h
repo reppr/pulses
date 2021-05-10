@@ -87,7 +87,7 @@ void system_menu_display() {
   cpp_info_display();		// sizeof compiler specific types
   MENU.ln();
 
-#if defined BATTERY_LEVEL_CONTROL_PIN
+#if defined USE_BATTERY_LEVEL_CONTROL
   show_battery_level();
 #endif
 

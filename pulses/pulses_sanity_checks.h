@@ -167,3 +167,10 @@
 #if defined LEDC_INSTEAD_OF_DACs
   #define USE_LEDC_AUDIO
 #endif
+
+#if defined USE_BATTERY_LEVEL_CONTROL
+  #if ! defined BATTERY_LEVEL_CONTROL_PIN
+    #warning BATTERY_LEVEL_CONTROL_PIN was defined in pulses_sanity_checks.h
+    #define BATTERY_LEVEL_CONTROL_PIN	35	// NEW default, (was: 36)	see: MUSICBOX2_PIN_MAPPING
+  #endif
+#endif

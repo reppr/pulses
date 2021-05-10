@@ -91,7 +91,7 @@ void monochrome_show_program_version() {	// monochrome oled display
 #endif
     (*u8x8_p).print(' ');
 
-#if defined BATTERY_LEVEL_CONTROL_PIN
+#if defined USE_BATTERY_LEVEL_CONTROL
     (*u8x8_p).print(F("V "));
 #endif
 

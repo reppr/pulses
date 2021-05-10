@@ -53,8 +53,7 @@
 #define USE_RTC_MODULE
 //#define USE_i2c_SCANNER
 
-//#define BATTERY_LEVEL_CONTROL_PIN switched in SETUP_BRACHE
-//#define USE_LEDC_AUDIO	// not written yet ;)
+//#define USE_LEDC_AUDIO
 
 /*
   OLED_HALT_PIN0	// halts display in monochrome_show_program_version() by pressing boot switch on GPIO 0

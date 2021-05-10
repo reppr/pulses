@@ -37,7 +37,7 @@
   #define MORSE_INPUT_PIN		13	// ok
   #define RGB_LED_STRIP_DATA_PIN	14	// testing 27, 14
   #define MUSICBOX_TRIGGER_PIN		34	// activates trigger pin, needs pulldown (i.e. 470k, 100k ok)
-//#define BATTERY_LEVEL_CONTROL_PIN	35	// NEW	TODO: test other input only pins, leaving for DIP switch (i.e. Bluetooth)?
+  #define BATTERY_LEVEL_CONTROL_PIN	35	// NEW default, (was: 36)
 #endif // MUSICBOX2_PIN_MAPPING
 
 #if defined TRIGGERED_MUSICBOX2	// define this in my_pulses_config.h

@@ -1235,7 +1235,7 @@ int8_t musicBox_page=ILLEGAL8;	// NOTE: musicBox_page is not used	// TODO: ???
   #include "peripheral_power_switch.h"
 #endif
 
-#if defined BATTERY_LEVEL_CONTROL_PIN
+#if defined USE_BATTERY_LEVEL_CONTROL
   #include "battery_control.h"
 #endif
 
@@ -1371,8 +1371,10 @@ void setup_initial_HARDWARE_conf() {
   HARDWARE.musicbox_trigger_pin=MUSICBOX_TRIGGER_PIN;
 #endif
 
-#if defined BATTERY_LEVEL_CONTROL_PIN
+#if defined USE_BATTERY_LEVEL_CONTROL
   HARDWARE.battery_level_control_pin=BATTERY_LEVEL_CONTROL_PIN;
+#else
+  HARDWARE.battery_level_control_pin=ILLEGAL8;
 #endif
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
@@ -2052,7 +2054,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 //   #include "ledc_tone_setup.h"
 // #endif
 
-#if defined BATTERY_LEVEL_CONTROL_PIN
+#if defined USE_BATTERY_LEVEL_CONTROL
   battery_control_setup();
 #endif
 

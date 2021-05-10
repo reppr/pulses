@@ -1,15 +1,16 @@
 /*
   battery_control.h
 
-  #define BATTERY_LEVEL_CONTROL_PIN 36		triggers loading
+  #define USE_BATTERY_LEVEL_CONTROL	// triggers loading
+  #define BATTERY_LEVEL_CONTROL_PIN 35	// NEW default, (was: 36)		see: MUSICBOX2_PIN_MAPPING
 */
 
 
 #if ! defined BATTERY_CONTROL_H
 
 #if ! defined BATTERY_LEVEL_CONTROL_PIN		// TODO: must be set somewhere appropriate
-  #error TODO: BATTERY_LEVEL_CONTROL_PIN must be set somewhere appropriate
-//  #define BATTERY_LEVEL_CONTROL_PIN	36	// TODO: must be set somewhere appropriate
+  #warning TODO: BATTERY_LEVEL_CONTROL_PIN should be set somewhere appropriate	set to 35
+  #define BATTERY_LEVEL_CONTROL_PIN	35	// NEW default, (was: 36)	see: MUSICBOX2_PIN_MAPPING
 #endif
 
 /*
@@ -34,6 +35,9 @@ unsigned int battery_off_level=1130;	// ~ ????? justaTEST ################
 unsigned int battery_high_level=1402;	// ~ 13.8V
 
 unsigned int read_battery_level(unsigned int oversampling=15) {
+  if(HARDWARE.battery_level_control_pin == ILLEGAL8)
+    return 0;	// dummy
+
   unsigned int data=0;
   analogRead(HARDWARE.battery_level_control_pin);	// without this prior read, it reads always zero :(
 
@@ -41,7 +45,7 @@ unsigned int read_battery_level(unsigned int oversampling=15) {
     data += analogRead(HARDWARE.battery_level_control_pin);
 
   return data / oversampling;
-}
+} // read_battery_level()
 
 enum battery_levels {unknown,	// probably USB
 		     too_LOW,	// automatic installations should better switch off
@@ -86,7 +90,7 @@ void show_battery_level() {
   MENU.tab();
   switch (check_battery_level()) {
   case unknown:
-    MENU.out(F("?USB?"));
+    MENU.out(F("?USB? unknown"));
     break;
   case GOOD:
     MENU.out(F("GOOD"));
@@ -119,6 +123,9 @@ void show_battery_level() {
 }
 
 bool assure_battery_level() {
+  if(HARDWARE.battery_level_control_pin == ILLEGAL8)	// battery level is *not* tested
+    return true;
+
   switch(check_battery_level()) {
   case unknown:   // probably running from USB, so let that pass....     *** !!! DANGEROUS !!! ***
 #if defined ACCEPT_USB_LEVEL	// probably running from USB, so let that pass...
@@ -143,6 +150,11 @@ bool assure_battery_level() {
 }
 
 void battery_control_setup() {
+  if(HARDWARE.battery_level_control_pin == ILLEGAL8) {	// no pin configured, battery level ignored
+    MENU.outln(F("ignoring BATTERY LEVEL"));
+    return;
+  }
+
   pinMode(HARDWARE.battery_level_control_pin, INPUT);
   analogRead(HARDWARE.battery_level_control_pin);	// without this prior read, it reads always zero :(
 

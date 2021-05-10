@@ -244,7 +244,7 @@ void  ePaper_show_program_version() {
     ePaper.print(' ');
 #endif
 
-#if defined BATTERY_LEVEL_CONTROL_PIN
+#if defined USE_BATTERY_LEVEL_CONTROL
     ePaper.print("V");
     ePaper.print(HARDWARE.battery_level_control_pin);	// TODO: show level
     ePaper.print(' ');
