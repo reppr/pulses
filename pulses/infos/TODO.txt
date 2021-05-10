@@ -1015,13 +1015,6 @@ check for valid HARDWARE.battery_level_control_pin		ok, done  TODO: needs testin
 
 if((PULSES.pulses[pulse].counter % 13) == 0) {	// keep an eye on the battery	// TODO: seems to often
 
-system menu:
-	#if defined BATTERY_LEVEL_CONTROL_PIN
-	  MENU.out(F("battery_level_conf_t\t"));
-	  MENU.outln(sizeof(battery_level_conf_t));
-	#endif
-
-
 int pulse_2_rgb_pixel(int pulse)
 void set_pulse_LED_pixel_from_counter(int pulse)
 *SIGNED* offsets?	int8_t (or even int16_t)	uint8_t rgb_pattern0[RGB_STRINGS_MAX]={0};

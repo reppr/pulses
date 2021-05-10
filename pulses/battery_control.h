@@ -26,6 +26,30 @@
 */
 #define ACCEPT_USB_LEVEL	200
 
+
+typedef struct {
+  uint8_t version=0;		// % 0
+  uint8_t reserved1=0;
+  uint8_t reserved2=0;
+  uint8_t type=12;		// 12 = 12V lead acide battery, static charge on 13.8
+				// 11 = 12V lead acide battery, static charge on 13.65
+  uint16_t level_12V=1200;	// calibrated to read 1200 on 12.0V	// % 4
+  uint16_t low_level=1175;	// ~ 11.8V
+  uint16_t off_level=1130;	// ~ ??.?V TODO: TEST&TRIM		// %8
+  uint16_t static_13V8_level=1402;	// ~ 13.8V
+  uint16_t static_13V65_level=0;	// ~ 13.65V			// *12
+
+  uint8_t reserved14=0;
+  uint8_t reserved15=0;
+  uint8_t reserved16=0;							// %16
+  uint8_t reserved17=0;
+  uint8_t reserved18=0;
+  uint8_t reserved19=0;
+} battery_levels_conf_t;
+
+battery_levels_conf_t BATTERY;
+
+
 const unsigned int battery_12V_level=1200;	// calibrated reading for 12.00V
 //float battery_level_scaling = battery_12V_level / 12.00 ;	// NO, it's too far from being linear...
 

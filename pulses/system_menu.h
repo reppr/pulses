@@ -6,6 +6,11 @@ void display_type_sizes() {
   MENU.out(F("pulses_hardware_conf_t\t"));
   MENU.outln(sizeof(pulses_hardware_conf_t));
 
+#if defined USE_BATTERY_LEVEL_CONTROL
+  MENU.out(F("battery_levels_conf_t\t"));
+  MENU.outln(sizeof(battery_levels_conf_t));
+#endif
+
   MENU.out(F("musicBox_conf_t\t"));
   MENU.outln(sizeof(musicBox_conf_t));
 
@@ -33,8 +38,8 @@ void display_type_sizes() {
 
   MENU.out(F("pulse_time_t\t"));
   MENU.outln(sizeof(pulse_time_t));
-} // display_type_sizes()
 
+} // display_type_sizes()
 
 void cpp_info_display() {
 //  bool dummybool[8];
@@ -69,7 +74,8 @@ void cpp_info_display() {
 
   MENU.out(F("\t(long double) "));
   MENU.outln(sizeof(long double));
-}
+} // cpp_info_display()
+
 
 void system_menu_display() {
   //MENU.outln(F("Pulses System Menu\n"));
@@ -80,19 +86,15 @@ void system_menu_display() {
 #endif
 
   display_program_version();	// display program versions, maybe preName. menu output only
+  MENU.ln();
 
   display_type_sizes();		// sizeof pulses data types
   MENU.ln();
 
   cpp_info_display();		// sizeof compiler specific types
   MENU.ln();
+} // system_menu_display()
 
-#if defined USE_BATTERY_LEVEL_CONTROL
-  show_battery_level();
-#endif
-
-  MENU.ln();
-}
 
 bool system_menu_reaction(char token) {
   int input_value;
@@ -108,4 +110,4 @@ bool system_menu_reaction(char token) {
   }
 
   return true;
-}
+} // system_menu_reaction()

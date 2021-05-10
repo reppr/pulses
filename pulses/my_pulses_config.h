@@ -13,6 +13,7 @@
 
 #define MUSICBOX2_PIN_MAPPING	// #define this in my_pulses_config.h	 (new pin mapping april 2021)
 #define TRIGGERED_MUSICBOX2	// #define this in my_pulses_config.h
+#define USE_BATTERY_LEVEL_CONTROL
 
 #define USE_LoRa		// needs: https://github.com/sandeepmistry/arduino-LoRa
 				//	  https://github.com/khoih-prog/ESP32TimerInterrupt
