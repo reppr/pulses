@@ -497,6 +497,34 @@ void configure_IDENTITY_from_nvs() {
 } // configure_IDENTITY_from_nvs()
 
 
+bool /*configured?*/ configure_BATTERY_from_nvs() {	// can even be used *without* USE_BATTERY_LEVEL_CONTROL
+  MENU.outln(F("\nconfigure_BATTERY_from_nvs()\t"));
+  size_t size = nvs_test_key("BATTERY_nvs");
+  if(size==0) {		// no BATTERY configuration in nvs
+#if defined USE_BATTERY_LEVEL_CONTROL
+    MENU.outln(F("\nno BATTERY nvs data, using:"));
+    show_BATTERY_conf();
+#endif
+    return false;	// no data
+  } // else
+
+  // there *is* BATTERY data in nvs
+#if defined USE_BATTERY_LEVEL_CONTROL
+  MENU.out(F("read BATTERY_nvs\t"));
+  if(nvs_read_blob("BATTERY_nvs", &BATTERY, sizeof(battery_levels_conf_t))) {
+    MENU.ln();
+    return false;	// ERROR
+  }
+  show_BATTERY_conf();
+  return true;	// configuration OK
+
+#else		// no code, but data...
+  MENU.error_ln(F("BATTERY data ignored"));
+  return false;	// no code, but data...
+#endif
+} // configure_BATTERY_from_nvs()
+
+
 char* nvs_AUTOSTART_kb_macro=NULL;	// will be interpreted instead of AUTOSTART if it exists
 					// 'A' will still do "normal" autostart
 void set_nvs_autostart_kb_macro(char* macro) {
@@ -568,6 +596,7 @@ void nvs_clear_all_keys() {	// TODO: tried to write new, still crashes pulses...
 void nvs_pulses_setup() {
   configure_HARDWARE_from_nvs();
   configure_IDENTITY_from_nvs();
+  configure_BATTERY_from_nvs();
   MENU.ln();
   read_nvs_autostart();
   MENU.ln();

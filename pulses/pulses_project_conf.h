@@ -38,6 +38,7 @@
   #define RGB_LED_STRIP_DATA_PIN	14	// testing 27, 14
   #define MUSICBOX_TRIGGER_PIN		34	// activates trigger pin, needs pulldown (i.e. 470k, 100k ok)
   #define BATTERY_LEVEL_CONTROL_PIN	35	// NEW default, (was: 36)
+  #define HAS_ePaper290_on_PICO_KIT		// triggers HAS_ePaper and HAS_DISPLAY
 #endif // MUSICBOX2_PIN_MAPPING
 
 #if defined TRIGGERED_MUSICBOX2	// define this in my_pulses_config.h

@@ -72,6 +72,7 @@ void monochrome_show_program_version() {	// monochrome oled display
 #endif	// USE_BLUETOOTH_SERIAL_MENU
 
 #if defined MUSICBOX_TRIGGER_PIN
+    extern bool musicBox_trigger_enabled;
     if(musicBox_trigger_enabled)
       (*u8x8_p).print('I');
     else

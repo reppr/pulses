@@ -14,7 +14,7 @@
 #endif
 
 /*
-  #define ACCEPT_USB_LEVEL	150
+  #define ACCEPT_USB_LEVEL	200
 
   defaults accepts very low readings as usb level
   it assumes running from USB, so accepts it	possibly *** !!! DANGEROUS !!! ***
@@ -24,39 +24,49 @@
 		 or then switch off below battery_off_level
   so probably no need to change that #define
 */
-#define ACCEPT_USB_LEVEL	200
-
+#if ! defined ACCEPT_USB_LEVEL
+  #define ACCEPT_USB_LEVEL	200	// level below that are accepted assuming USB power
+#endif
 
 typedef struct {
-  uint8_t version=0;		// % 0
+  uint8_t version=1;							// % 0
   uint8_t reserved1=0;
   uint8_t reserved2=0;
   uint8_t type=12;		// 12 = 12V lead acide battery, static charge on 13.8
 				// 11 = 12V lead acide battery, static charge on 13.65
   uint16_t level_12V=1200;	// calibrated to read 1200 on 12.0V	// % 4
-  uint16_t low_level=1175;	// ~ 11.8V
-  uint16_t off_level=1130;	// ~ ??.?V TODO: TEST&TRIM		// %8
+  uint16_t low_level=1181;	// ~ 11.8V
+  uint16_t off_level=1130;	// ~ 11.7V	TODO: TEST&TRIM		// %8
   uint16_t static_13V8_level=1402;	// ~ 13.8V
-  uint16_t static_13V65_level=0;	// ~ 13.65V			// *12
-
-  uint8_t reserved14=0;
-  uint8_t reserved15=0;
-  uint8_t reserved16=0;							// %16
-  uint8_t reserved17=0;
+  uint16_t static_13V65_level=0;	// ~ 13.65V			// %12		// TODO?: not implemented
+  uint16_t accepted_USB_level=ACCEPT_USB_LEVEL;	// level below that are accepted assuming USB power
+  uint16_t high_level=1234;	// ~12.4V	TODO: test&trimm			// %16
   uint8_t reserved18=0;
   uint8_t reserved19=0;
 } battery_levels_conf_t;
 
 battery_levels_conf_t BATTERY;
 
+void show_BATTERY_conf() {
+  MENU.out(BATTERY.type);
+  MENU.out(F("V BATTERY levels\tversion "));
+  MENU.outln(BATTERY.version);
 
-const unsigned int battery_12V_level=1200;	// calibrated reading for 12.00V
-//float battery_level_scaling = battery_12V_level / 12.00 ;	// NO, it's too far from being linear...
+  MENU.out(F("high_level=")); MENU.out(BATTERY.high_level);
+  MENU.space(3);
+  MENU.out(F("level_12V =")); MENU.out(BATTERY.level_12V);
+  MENU.space(3);
+  MENU.out(F("low_level =")); MENU.out(BATTERY.low_level);
+  MENU.space(3);
+  MENU.out(F("off_level =")); MENU.out(BATTERY.off_level);
 
-unsigned int battery_low_level=1175;	// ~ 11.8V
-//unsigned int battery_off_level=1140;	// ~ 11.5V
-unsigned int battery_off_level=1130;	// ~ ????? justaTEST ################
-unsigned int battery_high_level=1402;	// ~ 13.8V
+  MENU.space(3);
+  MENU.out(F("static_13V8 ="));  MENU.out(BATTERY.static_13V8_level);
+//MENU.space(3);
+//MENU.out(F("static_13V65 =")); MENU.out(BATTERY.static_13V65_level);	// TODO?: not implemented
+  MENU.space(3);
+  MENU.out(F("accepted \"USB\" =")); MENU.outln(BATTERY.accepted_USB_level);
+} // show_BATTERY_conf()
 
 unsigned int read_battery_level(unsigned int oversampling=15) {
   if(HARDWARE.battery_level_control_pin == ILLEGAL8)
@@ -81,21 +91,21 @@ enum battery_levels {unknown,	// probably USB
 battery_levels check_battery_level() {
   unsigned int value = read_battery_level();
 
-  if(value < ACCEPT_USB_LEVEL)	// probably running from USB, on automatic installations this is *** !!! DANGEROUS !!! ***
-    return unknown;		// 0 unknown
+  if(value < BATTERY.accepted_USB_level)	// probably running from USB, on automatic installations this is *** !!! DANGEROUS !!! ***
+    return unknown;				// 0 unknown
 
   if(value == 4095)	// *FULL* LEVEL, probably pin connected to high to deactivate vu control
     return OVER;
 
-  if(value > battery_high_level)
+  if(value > BATTERY.static_13V8_level)
     return CHARGE;		// 4 *OVER* 13.8V
 
-  if(value > battery_low_level)
+  if(value > BATTERY.low_level)
     return GOOD;
 
   // else:
   MENU.out(F("BATTERY "));
-  if(value <= battery_off_level) {
+  if(value <= BATTERY.off_level) {
     MENU.out(F("> OFF !!! "));
     MENU.outln(value);
     return too_LOW;		// *BATTERY LOW*	automatic installations better switch off...
@@ -104,7 +114,7 @@ battery_levels check_battery_level() {
     MENU.outln(value);
     return MEDIOCRE;
   }
-}
+} // check_battery_level()
 
 void show_battery_level() {
   MENU.out(F("battery control pin: "));
@@ -135,11 +145,11 @@ void show_battery_level() {
 
   if (MENU.verbosity > VERBOSITY_SOME) {
     MENU.out(F("\t(off <= "));
-    MENU.out(battery_off_level);
+    MENU.out(BATTERY.off_level);
     MENU.out(F("  low < "));
-    MENU.out(battery_low_level);
+    MENU.out(BATTERY.low_level);
     MENU.out(F("  high >= "));
-    MENU.out(battery_high_level);
+    MENU.out(BATTERY.high_level);
     MENU.out(F("  HIGH = 4095"));
     MENU.outln(')');
   } else
@@ -172,6 +182,90 @@ bool assure_battery_level() {
     break;
   }
 }
+
+uint16_t input_battery_level() {	// read from MENU.numeric_input() if exists, or take level on the pin
+  if(MENU.is_numeric())
+    return (uint16_t) MENU.numeric_input(/*dummy*/ 0);	// from MENU
+  // else (no numeric MENU input, read voltage on pin)
+  return (uint16_t) read_battery_level(1000 /*samples*/);	// read pin voltage
+} // input_battery_level()
+
+void battery_UI_display() {
+  MENU.out(F("'B'=battery\t'BO<nn>'='B0<nn>'=off level\t'BL'=low lv\t'BH'=high\t'BU'=USB lv\t'C'=calibrate 12V\t'Z'=13V8"));
+//MENU.out(F("\t'Y'=13V65"));		// TODO?: not implemented
+  MENU.ln();
+} // battery_UI_display()
+
+bool battery_UI_reaction() {	// 'B' was already received
+  switch (MENU.drop_input_token()) {
+  case EOF8:	// bare 'B'  show_BATTERY_conf()
+  case '?':	// 'B?'	     show_BATTERY_conf()
+    show_BATTERY_conf();
+    battery_UI_display();
+    MENU.out(F("level "));
+    MENU.outln(read_battery_level(1000));
+    MENU.ln();
+    break;
+
+  case 'O':	// 'BO' 'B0' BATTERY.off_level
+  case '0':
+    BATTERY.off_level = input_battery_level();		// numeric MENU input or read voltage on pin
+    MENU.out(F("off_level "));
+    MENU.outln(BATTERY.off_level);
+    break;
+
+  case 'Z':	// 'BZ' 13.8V	BATTERY.static_13V8_level
+    BATTERY.static_13V8_level = input_battery_level();	// numeric MENU input or read voltage on pin
+    MENU.out(F("static_13V8 "));
+    MENU.outln(BATTERY.static_13V8_level);
+    break;
+
+  case 'Y':	// 'BY' 13.65V	BATTERY.static_13V65_level	// TODO?: NOT IMPLEMENTED
+    BATTERY.static_13V65_level = input_battery_level();	// numeric MENU input or read voltage on pin
+    MENU.out(F("static_13V65 "));
+    MENU.outln(BATTERY.static_13V65_level);
+    break;
+
+  case 'U':	// 'BU' accepted USB level BATTERY.accepted_USB_level
+    BATTERY.accepted_USB_level = input_battery_level();	// numeric MENU input or read voltage on pin
+    MENU.out(F("accepted_USB_level "));
+    MENU.outln(BATTERY.accepted_USB_level);
+    break;
+
+  case 'C':	// 'BC' Calibrate 12V	BATTERY.level_12V
+    BATTERY.level_12V = input_battery_level();		// numeric MENU input or read voltage on pin
+    MENU.out(F("level_12V "));
+    MENU.outln(BATTERY.level_12V);
+    break;
+
+  case 'H':	// 'BL' high	BATTERY.high_level
+    BATTERY.high_level = input_battery_level();		// numeric MENU input or read voltage on pin
+    MENU.out(F("high_level "));
+    MENU.outln(BATTERY.high_level);
+    break;
+
+  case 'L':	// 'BL' low	BATTERY.low_level
+    BATTERY.low_level = input_battery_level();		// numeric MENU input or read voltage on pin
+    MENU.out(F("low_level "));
+    MENU.outln(BATTERY.low_level);
+    break;
+
+#if defined USE_NVS
+  case 'S':	// 'BS' nvs save as 'BATTERY_nvs'
+    extern bool /*error*/ nvs_save_blob(char* key, void* new_blob, size_t buffer_size);
+    nvs_save_blob("BATTERY_nvs", &BATTERY, sizeof(battery_levels_conf_t));
+    show_BATTERY_conf();
+    break;
+#endif // USE_NVS
+
+  default:	// unknown 'B<x>'
+    MENU.restore_input_token();
+    show_BATTERY_conf();
+    MENU.ln();
+  }
+  return true;	// always true, as 'B' was already seen
+} // battery_UI_reaction()
+
 
 void battery_control_setup() {
   if(HARDWARE.battery_level_control_pin == ILLEGAL8) {	// no pin configured, battery level ignored

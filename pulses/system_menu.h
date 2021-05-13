@@ -93,6 +93,13 @@ void system_menu_display() {
 
   cpp_info_display();		// sizeof compiler specific types
   MENU.ln();
+
+#if defined USE_BATTERY_LEVEL_CONTROL
+  MENU.ln();
+  extern void battery_UI_display();
+  battery_UI_display();
+  MENU.ln();
+#endif
 } // system_menu_display()
 
 
@@ -104,6 +111,13 @@ bool system_menu_reaction(char token) {
   case '?':
     MENU.menu_display();
     break;
+
+#if defined USE_BATTERY_LEVEL_CONTROL
+  case 'B':
+    extern bool battery_UI_reaction();
+    battery_UI_reaction();		// 'B' was already received, always returns true
+    break;
+#endif
 
   default:
     return false;

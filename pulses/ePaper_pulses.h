@@ -233,6 +233,7 @@ void  ePaper_show_program_version() {
 
     char mnemonic;
 #if defined MUSICBOX_TRIGGER_PIN
+    extern bool musicBox_trigger_enabled;
     if(musicBox_trigger_enabled)
       mnemonic = 'T';
     else

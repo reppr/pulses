@@ -455,12 +455,6 @@ void copy_string_to_lower(char* source, char* destination, size_t max) {
 #include "array_descriptors.h"		// make data arrays accessible for the menu, give names to the data arrays
 
 
-/* ESP32 NVS	*/
-#if defined USE_NVS		// always used on ESP32
-  #include "nvs_pulses.h"
-#endif
-
-
 #if defined HAS_OLED
   #include <U8x8lib.h>
   U8X8_SSD1306_128X64_NONAME_SW_I2C* u8x8_p;
@@ -1237,6 +1231,11 @@ int8_t musicBox_page=ILLEGAL8;	// NOTE: musicBox_page is not used	// TODO: ???
 
 #if defined USE_BATTERY_LEVEL_CONTROL
   #include "battery_control.h"
+#endif
+
+/* ESP32 NVS	*/
+#if defined USE_NVS		// always used on ESP32
+  #include "nvs_pulses.h"
 #endif
 
 #if defined USE_LEDC_AUDIO
