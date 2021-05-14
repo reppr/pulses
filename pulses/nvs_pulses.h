@@ -503,7 +503,7 @@ bool /*configured?*/ configure_BATTERY_from_nvs() {	// can even be used *without
   if(size==0) {		// no BATTERY configuration in nvs
 #if defined USE_BATTERY_LEVEL_CONTROL
     MENU.outln(F("\nno BATTERY nvs data, using:"));
-    show_BATTERY_conf();
+    battery_conf_UI_display(false);	// just show configuration, no data
 #endif
     return false;	// no data
   } // else
@@ -515,7 +515,7 @@ bool /*configured?*/ configure_BATTERY_from_nvs() {	// can even be used *without
     MENU.ln();
     return false;	// ERROR
   }
-  show_BATTERY_conf();
+  battery_conf_UI_display(false);	// just show configuration, no data
   return true;	// configuration OK
 
 #else		// no code, but data...

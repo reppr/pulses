@@ -96,8 +96,8 @@ void system_menu_display() {
 
 #if defined USE_BATTERY_LEVEL_CONTROL
   MENU.ln();
-  extern void battery_UI_display();
-  battery_UI_display();
+  extern void battery_conf_UI_display(bool show_menu_keys=true);
+  battery_conf_UI_display(true);
   MENU.ln();
 #endif
 } // system_menu_display()

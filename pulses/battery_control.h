@@ -25,15 +25,15 @@
   so probably no need to change that #define
 */
 #if ! defined ACCEPT_USB_LEVEL
-  #define ACCEPT_USB_LEVEL	200	// level below that are accepted assuming USB power
+  #define ACCEPT_USB_LEVEL	400	// level below that are accepted assuming USB power
 #endif
 
 typedef struct {
   uint8_t version=1;							// % 0
   uint8_t reserved1=0;
   uint8_t reserved2=0;
-  uint8_t type=12;		// 12 = 12V lead acide battery, static charge on 13.8
-				// 11 = 12V lead acide battery, static charge on 13.65
+  uint8_t type=12;		// 12 = 12V lead acid battery, static charge on 13.8
+				// 11 = 12V lead acid battery, static charge on 13.65
   uint16_t level_12V=1200;	// calibrated to read 1200 on 12.0V	// % 4
   uint16_t low_level=1181;	// ~ 11.8V
   uint16_t off_level=1130;	// ~ 11.7V	TODO: TEST&TRIM		// %8
@@ -47,26 +47,61 @@ typedef struct {
 
 battery_levels_conf_t BATTERY;
 
-void show_BATTERY_conf() {
+void battery_conf_UI_display(bool show_menu_keys=true) { // if show_menu_keys==false just show state and configuration, no UI hints
   MENU.out(BATTERY.type);
-  MENU.out(F("V BATTERY levels\tversion "));
-  MENU.outln(BATTERY.version);
+  MENU.out(F("V BATTERY levels (version "));
+  MENU.out(BATTERY.version);
+  MENU.out(F(")\t"));
+  if(show_menu_keys)
+    MENU.out(F("'B','B?'=info\t"));
+  extern void show_battery_level();
+  show_battery_level();
 
-  MENU.out(F("high_level=")); MENU.out(BATTERY.high_level);
+  if(show_menu_keys) {
+    MENU.outln(F(" set voltage level on pin or give numeric raw value:"));
+    MENU.out(F("'BO'="));
+  }
+  MENU.out(F("off_level=")); MENU.out(BATTERY.off_level);
   MENU.space(3);
-  MENU.out(F("level_12V =")); MENU.out(BATTERY.level_12V);
-  MENU.space(3);
-  MENU.out(F("low_level =")); MENU.out(BATTERY.low_level);
-  MENU.space(3);
-  MENU.out(F("off_level =")); MENU.out(BATTERY.off_level);
 
+  if(show_menu_keys)
+    MENU.out(F("'BL'="));
+  MENU.out(F("low_level=")); MENU.out(BATTERY.low_level);
   MENU.space(3);
-  MENU.out(F("static_13V8 ="));  MENU.out(BATTERY.static_13V8_level);
+
+  if(show_menu_keys)
+    MENU.out(F("'BH'="));
+  MENU.out(F("high_level=")); MENU.outln(BATTERY.high_level);
+
+
+  if(show_menu_keys)
+    MENU.out(F("'BC'=calibrate "));
+  MENU.out(F("level_12V=")); MENU.out(BATTERY.level_12V);
+  MENU.space(3);
+
+  if(show_menu_keys)
+    MENU.out(F("'BZ'="));
+  MENU.out(F("static_13V8="));  MENU.out(BATTERY.static_13V8_level);
+  MENU.space(3);
+
+//if(show_menu_keys)
+//  MENU.out(F("'BY'="));
 //MENU.space(3);
-//MENU.out(F("static_13V65 =")); MENU.out(BATTERY.static_13V65_level);	// TODO?: not implemented
-  MENU.space(3);
-  MENU.out(F("accepted \"USB\" =")); MENU.outln(BATTERY.accepted_USB_level);
-} // show_BATTERY_conf()
+//MENU.out(F("static_13V65=")); MENU.out(BATTERY.static_13V65_level);	// TODO?: not implemented
+//MENU.space(3);
+
+  if(show_menu_keys)
+    MENU.out(F("'BU'="));
+  MENU.out(F("accepted \"USB\"=")); MENU.out(BATTERY.accepted_USB_level);
+
+#if defined USE_NVS
+  if(show_menu_keys) {
+    MENU.space(3);
+    MENU.out(F("'BS'=nvs save"));
+  }
+#endif // USE_NVS
+  MENU.ln();
+} // battery_conf_UI_display(bool show_menu_keys=true)
 
 unsigned int read_battery_level(unsigned int oversampling=15) {
   if(HARDWARE.battery_level_control_pin == ILLEGAL8)
@@ -107,24 +142,24 @@ battery_levels check_battery_level() {
   MENU.out(F("BATTERY "));
   if(value <= BATTERY.off_level) {
     MENU.out(F("> OFF !!! "));
-    MENU.outln(value);
+    MENU.out(value);
     return too_LOW;		// *BATTERY LOW*	automatic installations better switch off...
   } else {
     MENU.out(F("LOW "));
-    MENU.outln(value);
+    MENU.out(value);
     return MEDIOCRE;
   }
 } // check_battery_level()
 
 void show_battery_level() {
-  MENU.out(F("battery control pin: "));
+  MENU.out(F("battery control pin:"));
   MENU.out(HARDWARE.battery_level_control_pin);
-  MENU.tab();
+  MENU.out(F(" level="));
   MENU.out(read_battery_level());
-  MENU.tab();
+  MENU.space(3);
   switch (check_battery_level()) {
   case unknown:
-    MENU.out(F("?USB? unknown"));
+    MENU.out(F("unknown, USB"));
     break;
   case GOOD:
     MENU.out(F("GOOD"));
@@ -154,7 +189,7 @@ void show_battery_level() {
     MENU.outln(')');
   } else
     MENU.ln();
-}
+} // show_battery_level()
 
 bool assure_battery_level() {
   if(HARDWARE.battery_level_control_pin == ILLEGAL8)	// battery level is *not* tested
@@ -190,25 +225,14 @@ uint16_t input_battery_level() {	// read from MENU.numeric_input() if exists, or
   return (uint16_t) read_battery_level(1000 /*samples*/);	// read pin voltage
 } // input_battery_level()
 
-void battery_UI_display() {
-  MENU.out(F("'B'=battery\t'BO<nn>'='B0<nn>'=off level\t'BL'=low lv\t'BH'=high\t'BU'=USB lv\t'C'=calibrate 12V\t'Z'=13V8"));
-//MENU.out(F("\t'Y'=13V65"));		// TODO?: not implemented
-  MENU.ln();
-} // battery_UI_display()
-
 bool battery_UI_reaction() {	// 'B' was already received
   switch (MENU.drop_input_token()) {
-  case EOF8:	// bare 'B'  show_BATTERY_conf()
-  case '?':	// 'B?'	     show_BATTERY_conf()
-    show_BATTERY_conf();
-    battery_UI_display();
-    MENU.out(F("level "));
-    MENU.outln(read_battery_level(1000));
-    MENU.ln();
+  case EOF8:	// bare 'B'  battery_conf_UI_display()
+  case '?':	// 'B?'	     battery_conf_UI_display()
+    battery_conf_UI_display(true);
     break;
 
-  case 'O':	// 'BO' 'B0' BATTERY.off_level
-  case '0':
+  case 'O':	// 'BO'   BATTERY.off_level
     BATTERY.off_level = input_battery_level();		// numeric MENU input or read voltage on pin
     MENU.out(F("off_level "));
     MENU.outln(BATTERY.off_level);
@@ -254,13 +278,13 @@ bool battery_UI_reaction() {	// 'B' was already received
   case 'S':	// 'BS' nvs save as 'BATTERY_nvs'
     extern bool /*error*/ nvs_save_blob(char* key, void* new_blob, size_t buffer_size);
     nvs_save_blob("BATTERY_nvs", &BATTERY, sizeof(battery_levels_conf_t));
-    show_BATTERY_conf();
+    battery_conf_UI_display(false);
     break;
 #endif // USE_NVS
 
   default:	// unknown 'B<x>'
     MENU.restore_input_token();
-    show_BATTERY_conf();
+    battery_conf_UI_display(true);
     MENU.ln();
   }
   return true;	// always true, as 'B' was already seen

@@ -3,6 +3,13 @@
   temporary test menu UI during development
 */
 
+MENU.ln();
+battery_conf_UI_display(false);
+MENU.ln();
+battery_conf_UI_display(true);
+MENU.ln();
+break;
+
 /*void dumpSysInfo()*/ {
   esp_chip_info_t sysinfo;
   esp_chip_info(&sysinfo);
