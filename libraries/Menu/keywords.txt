@@ -55,6 +55,7 @@ out_ticked_hexs	KEYWORD2
 outln	KEYWORD2
 outln_invalid	KEYWORD2
 pad	KEYWORD2
+get_next	KEYWORD2
 peek	KEYWORD2
 play_KB_macro	KEYWORD2
 print_free_RAM	KEYWORD2

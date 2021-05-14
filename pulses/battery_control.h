@@ -226,9 +226,9 @@ uint16_t input_battery_level() {	// read from MENU.numeric_input() if exists, or
 } // input_battery_level()
 
 bool battery_UI_reaction() {	// 'B' was already received
-  switch (MENU.drop_input_token()) {
-  case EOF8:	// bare 'B'  battery_conf_UI_display()
-  case '?':	// 'B?'	     battery_conf_UI_display()
+  switch (MENU.get_next()) {
+  case EOF8: // bare 'B'	battery_conf_UI_display()
+  case '?':	  // 'B?'	battery_conf_UI_display()
     battery_conf_UI_display(true);
     break;
 
@@ -251,7 +251,7 @@ bool battery_UI_reaction() {	// 'B' was already received
     break;
 
   case 'U':	// 'BU' accepted USB level BATTERY.accepted_USB_level
-    BATTERY.accepted_USB_level = input_battery_level();	// numeric MENU input or read voltage on pin
+    BATTERY.accepted_USB_level = MENU.numeric_input(ACCEPT_USB_LEVEL);  // numeric MENU input *only*
     MENU.out(F("accepted_USB_level "));
     MENU.outln(BATTERY.accepted_USB_level);
     break;

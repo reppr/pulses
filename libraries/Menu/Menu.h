@@ -154,6 +154,7 @@ class Menu {
 
   void flush() const { port_.flush(); }	// flush menu output, inlined.
 
+  int get_next();			// get next input token or EOF8
   int peek() const;			// peek at next if any, else return EOF8
   int peek(int offset) const;		// peek at next, overnext... if any, else EOF8
   unsigned int skip_spaces();		// skip leading spaces from the buffer

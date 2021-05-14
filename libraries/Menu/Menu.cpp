@@ -330,7 +330,6 @@ bool Menu::maybe_display_more(unsigned char verbosity_level) {	// avoid too much
 }
 
 
-
 /* numeric input, calculating (left to right)				*/
   int Menu::is_chiffre(char token) {		// is token a chiffre?
     if (token > '9' || token < '0')
@@ -825,6 +824,17 @@ void Menu::out_flags_()	const { out(F("\tflags ")); }
 // Buffer interface functions for parsing:
 
 /*
+  int get_next()
+  get next input token and return it, or EOF8			*/
+int Menu::get_next() {
+  if(cb_count)
+    return drop_input_token();
+  // else
+  return EOF8;
+}
+
+
+/*
   int peek()
   return EOF8 if buffer is empty, else
   return next char without removing it from buffer		*/
@@ -881,7 +891,7 @@ uint8_t  Menu::next_input_token() const {
 
 /* int drop_input_token()
    drop next input token from the input and return it
-   no checks
+   *no checks*
    only use if you must...					*/
 int Menu::drop_input_token() {
   return cb_read();
