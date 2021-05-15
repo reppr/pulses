@@ -95,7 +95,7 @@ void show_pulses_LORA_conf(pulses_LoRa_conf_t* LORA_conf) {
   MENU.out(LORA_conf->TxPower);
   MENU.out(F("\t'P'=spreading "));
   MENU.out(LORA_conf->spreading);
-  MENU.out(F("\t\t'T'=coding_rate4 "));
+  MENU.out(F("  \t'T'=coding_rate4 "));
   MENU.outln(LORA_conf->coding_rate4);
 
   MENU.out(F("'M'=preamble "));

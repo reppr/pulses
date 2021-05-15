@@ -32,7 +32,7 @@ void LoRa_menu_display() {
 #if defined USE_LoRa_EXPLORING
   MENU.outln(F("'O'=ping other\t'C<xxx>'=send macro  'CC<xxx>'=send and do"));
   MENU.outln(F("'N'=send repeated\t'N<number>T<seconds>\"<text>"));
-  MENU.out(F("'Z'=stop fallback\t'Z<nnn>'=set callback seconds ["));
+  MENU.out(F("'Z'=stop fallback\t'Z<nnn>'=set fallback seconds ["));
   MENU.out(LoRa_fallback_timer_sec);
   MENU.outln(F("\"]"));
   MENU.outln(F("'V'=read voltage\t'V<nn>'=read pin"));
@@ -96,6 +96,7 @@ bool LoRa_menu_reaction(char token) {
       break;
     case 250000: case 25: case 250:
       input_value=250000;
+      break;
     case 500000: case 5: case 50: case 500:
       input_value=500000;
       break;
