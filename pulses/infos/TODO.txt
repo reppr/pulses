@@ -1032,3 +1032,50 @@ replace MENU.drop_input_token()
 LoRa and extended output?
 
 change boot sequence
+
+system_menu: show_internal_configurations();	// TODO: some info might be redundant
+
+set_metric_pitch(n, bool output=true);
+
+wake up by serial?
+
+/*
+  maybe_restore_from_RTCmem();
+  *either* from
+  pulses.ino setup()	would be better, but does not work?
+  *or* from
+  start_musicBox();	must be blocked if appropriate
+*/
+//  maybe_restore_from_RTCmem();		// only after deep sleep, else noop
+
+
+//	// TODO: maybe use somewhere?
+//	void dumpSysInfo() {
+//	  esp_chip_info_t sysinfo;
+//	  esp_chip_info(&sysinfo);
+//	  MENU.out("Model: ");
+//	  MENU.out((int)sysinfo.model);
+//	  MENU.out("; Features: 0x");
+//	  MENU.out((int)sysinfo.features, HEX);
+//	  MENU.out("; Cores: ");
+//	  MENU.out((int)sysinfo.cores);
+//	  MENU.out("; Revision: r");
+//	  MENU.outln((int)sysinfo.revision);
+//	}
+
+TODO: test RGB string
+
+TODO: delay(100); in esp_now_call_participants();
+
+MAGICAL_TOILET_HACKS mystery
+WTF, check that!
+#ifdef HARMONICAL_MUSIC_BOX
+  #if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
+    #if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks, *no* interrupt
+//    magic_trigger_ON();
+    #else
+      if(HARDWARE.musicbox_trigger_pin != ILLEGAL8)
+	pinMode(HARDWARE.musicbox_trigger_pin, INPUT);
+    #endif
+  #endif
+#endif

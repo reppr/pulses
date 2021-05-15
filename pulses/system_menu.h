@@ -88,11 +88,17 @@ void system_menu_display() {
   display_program_version();	// display program versions, maybe preName. menu output only
   MENU.ln();
 
-  display_type_sizes();		// sizeof pulses data types
-  MENU.ln();
+  if(MENU.verbosity >= VERBOSITY_MORE) {
+    display_type_sizes();		// sizeof pulses data types
+    MENU.ln();
+  }
 
-  cpp_info_display();		// sizeof compiler specific types
-  MENU.ln();
+  if(MENU.verbosity >= VERBOSITY_HIGH) {
+    cpp_info_display();			// sizeof compiler specific types
+    MENU.ln();
+  }
+
+  show_internal_configurations();	// TODO: some info might be redundant
 
 #if defined USE_BATTERY_LEVEL_CONTROL
   MENU.ln();

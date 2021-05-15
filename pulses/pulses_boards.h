@@ -53,7 +53,7 @@
     #endif
 
 
-    #define STARTUP_DELAY	256	// ESP32 seems to need that for successful booting
+//  #define STARTUP_DELAY	256	// ESP32 seemed to need that for successful booting, probably *OBSOLETE?*
 
 #if ! defined PL_MAX	// see: pulses_project_conf.h
   //#define PL_MAX		64

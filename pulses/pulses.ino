@@ -1216,7 +1216,7 @@ int8_t musicBox_page=ILLEGAL8;	// NOTE: musicBox_page is not used	// TODO: ???
 
 
 #ifndef STARTUP_DELAY
-  #define STARTUP_DELAY	0	// noop or yield()
+  #define STARTUP_DELAY	0	// obsolete, noop or yield()
 #endif
 
 #ifndef RAM_IS_SCARE	// enough RAM?
@@ -1840,79 +1840,11 @@ void show_pulses_all_pins_usage() {
 } // show_pulses_all_pins_usage()
 
 
-
-int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very first one
-
-#if defined FORCE_START_TO_USERMODE
-  bool force_start_to_usermode=true;
-#else
-  bool force_start_to_usermode=false;
-#endif
-
-void setup() {
-  setup_initial_HARDWARE_conf();
-
-#if defined USE_RGB_LED_STRIP
-  pulses_RGB_LED_string_init();	// DO THAT EARLY to switch led string off after booting
-#endif
-
-#if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
-  random_entropy();	// start gathering entropy before initialisation
-#endif
-
-  HARMONICAL = new Harmonical(3628800uL);	// old style harmonical unit, obsolete?
-
-  delay(STARTUP_DELAY);		// yield()
-  Serial.begin(BAUDRATE);	// Start serial communication.
-
-#if defined(__AVR_ATmega32U4__) || defined(ESP8266) || defined(ESP32)	// FIXME: test ESP32  ################
-  /* on ATmega32U4		Leonardo, Mini, LilyPad Arduino USB
-     to be able to use Serial.print() from setup()
-     we *must* do that before:
-  */
-  while (!Serial) { yield(); }		// wait for Serial to open
-#endif
-
-  // try to get rid of menu input garbage, "dopplet gnaeht hebt vilicht besser" ;)
-  //  delay(STARTUP_DELAY);
-  while (Serial.available())  { Serial.read(); yield(); }
-  delay(STARTUP_DELAY);
-  while (MENU.peek() != EOF8) { MENU.drop_input_token(); yield(); }
-  MENU.ln();	// try to get empty start lines after serial garbage...
-  MENU.space(8);
-  MENU.ln();
-
-#if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
-  random_entropy();	// gathering entropy from serial noise
-#endif
-
-  MENU.outln(F("PULSES  http://github.com/reppr/pulses/\n"));
-
-#if defined USE_NVS
-  nvs_pulses_setup();
-#endif
-
-#if defined PERIPHERAL_POWER_SWITCH_PIN	// switch peripheral power on
-  // for some strange reason i had to repeat this at the end of setup(), see below
-  peripheral_power_switch_ON();		// default peripheral power supply ON
-  //  peripheral_power_switch_OFF();	// default peripheral power supply OFF
-  delay(100);	// wait a bit longer
-#endif
-
-#if defined HAS_DISPLAY
-  // SEE: https://github.com/olikraus/u8g2/wiki/u8x8reference
-  hw_display_setup();	// monochrome_begin() and monochrome_set_default_font() included in hw_display_setup() now
-
-  bool has_display_hardware=true;	// for delay only	TODO: fix&use monochrome_display detection
-#endif
-
-  MENU.print_free_RAM();
-  MENU.ln(2);
-
+void show_internal_configurations() {
   show_program_version();	// prename now known
-  #if defined HAS_DISPLAY
-    delay(1200);	// sorry for that
-  #endif
+//  #if defined HAS_DISPLAY
+//    delay(1200);	// sorry for that
+//  #endif
 
   MENU.ln();
 
@@ -1962,6 +1894,88 @@ void setup() {
   MENU.outln(getMacAddress());
   MENU.ln();
 #endif
+} // show_internal_configurations()
+
+
+int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very first one
+
+#if defined FORCE_START_TO_USERMODE
+  bool force_start_to_usermode=true;
+#else
+  bool force_start_to_usermode=false;
+#endif
+
+void setup() {
+  setup_initial_HARDWARE_conf();
+
+#if defined USE_RGB_LED_STRIP
+  pulses_RGB_LED_string_init();	// DO THAT EARLY to switch led string off after booting
+#endif
+
+#if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
+  random_entropy();	// start gathering entropy before initialisation
+#endif
+
+  HARMONICAL = new Harmonical(3628800uL);	// old style harmonical unit, obsolete?
+
+  delay(STARTUP_DELAY);		// yield()
+  Serial.begin(BAUDRATE);	// Start serial communication.
+
+#if defined(__AVR_ATmega32U4__) || defined(ESP8266) || defined(ESP32)	// FIXME: test ESP32  ################
+  /* on ATmega32U4		Leonardo, Mini, LilyPad Arduino USB
+     to be able to use Serial.print() from setup()
+     we *must* do that before:
+  */
+  while (!Serial) { yield(); }		// wait for Serial to open
+#endif
+
+  // try to get rid of menu input garbage, "dopplet gnaeht hebt vilicht besser" ;)
+  //  delay(STARTUP_DELAY);
+  while (Serial.available())  { Serial.read(); yield(); }
+  delay(STARTUP_DELAY);
+  while (MENU.peek() != EOF8) { MENU.drop_input_token(); yield(); }
+  MENU.ln();	// try to get empty start lines after serial garbage...
+  MENU.space(8);
+  MENU.ln();
+
+#if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
+  random_entropy();	// gathering entropy from serial noise
+#endif
+
+  MENU.out(F("PULSES  http://github.com/reppr/pulses/\t\t"));
+  MENU.outln(F(STRINGIFY(PROGRAM_VERSION)));
+  MENU.ln();
+
+#if defined USE_NVS
+  nvs_pulses_setup();
+#endif
+
+#if defined PERIPHERAL_POWER_SWITCH_PIN	// switch peripheral power on
+  // for some strange reason i had to repeat this at the end of setup(), see below
+  peripheral_power_switch_ON();		// default peripheral power supply ON
+  //  peripheral_power_switch_OFF();	// default peripheral power supply OFF
+  delay(100);	// wait a bit longer
+
+  #if defined USE_RGB_LED_STRIP
+    pulses_RGB_LED_string_init();	// do that *AGAIN*, as the string could hang on peripheral_power...
+  #endif
+#endif
+
+#if defined HAS_DISPLAY
+  // SEE: https://github.com/olikraus/u8g2/wiki/u8x8reference
+  hw_display_setup();	// monochrome_begin() and monochrome_set_default_font() included in hw_display_setup() now
+
+  bool has_display_hardware=true;	// for delay only	TODO: fix&use monochrome_display detection
+  MENU.ln();
+#endif
+
+  show_internal_configurations();
+  #if defined HAS_DISPLAY && ! defined TRIGGERED_MUSICBOX2
+    delay(3000);	// sorry for that
+  #endif
+
+  MENU.print_free_RAM();
+  MENU.ln();
 
   /*
     maybe_restore_from_RTCmem();
@@ -1972,6 +1986,13 @@ void setup() {
   */
   //  maybe_restore_from_RTCmem();		// only after deep sleep, else noop
 
+  MENU.out(F("sizeof(pulse_t) "));
+  MENU.out(sizeof(pulse_t));
+  MENU.out(F(" * "));
+  MENU.out(PL_MAX);
+  MENU.out(F(" pulses = \t"));
+  MENU.outln(sizeof(pulse_t)*PL_MAX);
+  MENU.ln();
 
 #if defined ESP32
   setup_timer64();
@@ -2126,52 +2147,18 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
     show_DS1307_time_stamp();
     MENU.ln();
   #endif
-
 #endif // USE_i2c
 
+
 #if defined USE_ESP_NOW
-  {
-    esp_err_t status;
-    MENU.out(F("\nesp_now_pulses_setup()\t"));
-    if(status = esp_now_pulses_setup()) {
-      MENU.out(F("failed "));
-      MENU.outln(esp_err_to_name(status));
-
-    } else {
-      MENU.out(F("ok  MAC: "));
-      esp_read_mac(my_MAC, ESP_MAC_WIFI_STA);	// set my_MAC
-      extern char* MAC_str(const uint8_t* mac);
-      MENU.outln(MAC_str(my_MAC));
-
-      status = add_broascast_2_ESP_peer_list();
-
-  #if defined ESP_NOW_SETUP_CALL_PARTICIPANTS
-      esp_now_call_participants();
-  #else
-      MENU.outln(F("NOT calling participants"));
-  #endif
-    }
-    delay(100);	// esp_now network build up, left anyway to make all instruments come up in time  TODO: test&trimm
-    MENU.ln();	//   TODO: test&trimm ;)
-  }
+  esp_now_pulses_setup();
 #else
-  delay(100);	// don't change startup time if esp_now is used or not
+  delay(100);	// esp_now network build up, don't change startup time if esp_now *is* used or not
 #endif
-
-//#ifdef USE_MORSE
-//  morse_init();	// ATTENTION: *do this AFTER esp_now_pulses_setup()*
-//#endif
 
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
   random_entropy();	// more entropy from hardware like wifi, etc
 #endif
-
-  MENU.out(F("sizeof(pulse_t) "));
-  MENU.out(sizeof(pulse_t));
-  MENU.out(F(" * "));
-  MENU.out(PL_MAX);
-  MENU.out(F(" pulses = \t"));
-  MENU.outln(sizeof(pulse_t)*PL_MAX);
 
 
   // setting up the menu:
@@ -2242,23 +2229,15 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 
   PULSES.fix_global_next();		// we *must* call that here late in setup();
 
-//#ifdef AUTOSTART			// see: pulses_project_conf.h
-// WAS HERE, see below			// EXPERIMENTAL: was here, see below
-//#endif
-
   // informations about alive pulses:
-  if(MENU.verbosity >= VERBOSITY_SOME) { // can be switched of by autostart ;)
-    MENU.ln();
+  if(MENU.verbosity >= VERBOSITY_SOME) 	// can be switched off by autostart ;)
     selected_or_flagged_pulses_info_lines();
-  }
+
 
   // try to get rid of menu input garbage, "dopplet gnaeht hebt vilicht besser" ;)
   while (Serial.available())  { Serial.read(); yield(); }
   while (MENU.peek() != EOF8) { MENU.drop_input_token(); yield(); }
 
-#if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
-  random_entropy();	// entropy from thit and that
-#endif
 
 #ifdef HARMONICAL_MUSIC_BOX
   #if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
@@ -2286,12 +2265,12 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 #endif
 
   MENU.men_selected = musicBox_page;	// default to musicBox menu
-  MENU.ln();
 
 #if defined USE_LoRa
   LoRa_send_ping();		// activates receiving
   // setup_LoRa_default();	// activates receiving
 #endif
+  MENU.ln();
 
   if(force_start_to_usermode) {
     force_start_to_usermode=false;
@@ -2315,7 +2294,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 	MENU.out(F("\nAUTOSTART "));
 	MENU.out(autostart_counter);
 	MENU.tab();
-	MENU.out(STRINGIFY(AUTOSTART));
+	MENU.outln(STRINGIFY(AUTOSTART));
 	AUTOSTART;
       }
 #else

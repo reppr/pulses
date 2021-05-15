@@ -5,6 +5,8 @@
 #include "musicBox_config.h"	// included in the configuration sequence
 #include "my_pulses_config.h"
 
+//#define TABULA_RASA_PRINT_FREE_RAM	// maybe?
+
 /* **************************************************************** */
 // some DEFAULTs, setups might change them
 
@@ -424,11 +426,14 @@ char scale_symbol_char() {	// 1 char SCALE index as hex and beyond for monochrom
 } // scale_symbol_char()
 
 
+//#define TABULA_RASA_PRINT_FREE_RAM
 void tabula_rasa() {
   if (MENU.verbosity > VERBOSITY_LOWEST) {
     MENU.out(F("tabula rasa\t"));
+#if defined TABULA_RASA_PRINT_FREE_RAM
     MENU.print_free_RAM();
     MENU.tab();
+#endif
   }
 
   reset_all_flagged_pulses_GPIO_OFF();
@@ -437,7 +442,10 @@ void tabula_rasa() {
 
   musicBoxConf.date=NULL;	// TODO: TEST: hmm?
   if (MENU.verbosity > VERBOSITY_LOWEST) {
+#if defined TABULA_RASA_PRINT_FREE_RAM
+    MENU.tab(2);
     MENU.print_free_RAM();
+#endif
     MENU.ln();
   }
 
@@ -1031,10 +1039,10 @@ enum metric_pitch_t {
 // float hertz = 0.0;	// TODO: maybe
 
 void set_metric_pitch(int metric_pitch) {	// SETS PARAMETERS ONLY, does *not* tune
-  if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {
+  if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {	// set verbosity==0 to avoid output from set_metric_pitch()
     MENU.out(F("set_metric_pitch("));
     MENU.out(metric_pitch);
-    MENU.outln(')');
+    MENU.out(F(")  "));
   }
 
 // was: deactivated, gave wrong ';;' et al mnemonics
@@ -1042,10 +1050,13 @@ void set_metric_pitch(int metric_pitch) {	// SETS PARAMETERS ONLY, does *not* tu
 // TODO: TEST:
   if(musicBoxConf.chromatic_pitch == metric_pitch) {	// do *not* touch parameters for same tonica
     if(MENU.maybe_display_more(VERBOSITY_LOWEST)) {	//    else we might loose octave setup
-      MENU.outln(F("metric pitch not changed"));
+      MENU.out(F("metric pitch not changed\t"));
     }
-    if(musicBoxConf.chromatic_pitch)	// if zero metric_mnemonic might be wrong, so reset it
-      return;
+    if(musicBoxConf.chromatic_pitch) {	// if *zero* metric_mnemonic might be wrong, so *do* reset it
+      if(MENU.maybe_display_more(VERBOSITY_LOWEST))
+	MENU.ln();
+      return;	// not changed and not zero
+    }
   }
 
   int metric_pitch_was = musicBoxConf.chromatic_pitch = (uint8_t) metric_pitch;	// check follows
@@ -1176,6 +1187,8 @@ void show_metric_cents_list(double base_note=220.0) {	// helper function, not ne
   MENU.out(pow(cent, 1200), 18);	// octave test
   MENU.ln(2);
 
+  int verbosity_was = MENU.verbosity;
+  MENU.verbosity=0;		// *no* output from set_metric_pitch()
   double b;
   for(int i=0; i<12; i++) {
     b = pow(semitone, i);
@@ -1190,6 +1203,7 @@ void show_metric_cents_list(double base_note=220.0) {	// helper function, not ne
   }
 
   set_metric_pitch(metric_pitch_was);	// restore
+  MENU.verbosity = verbosity_was;	// restore
 } // show_metric_cents_list()
 
 
@@ -1812,8 +1826,8 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
     MENU.ln(2);
     musicBox_short_info();
     MENU.ln();
-    show_configuration_code();
-    MENU.ln();
+//  show_configuration_code();
+//  MENU.ln();
   }
 
 #if defined HAS_DISPLAY
@@ -2984,8 +2998,6 @@ void start_musicBox() {
     start_musicBox();	must be blocked if appropriate
   */
   maybe_restore_from_RTCmem();		// only after deep sleep, else noop
-
-  MENU.ln();
 
   MENU.men_selected = musicBox_page;
   MENU.verbosity = VERBOSITY_LOWEST;

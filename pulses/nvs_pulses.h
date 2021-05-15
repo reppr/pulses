@@ -599,8 +599,7 @@ void nvs_pulses_setup() {
   configure_BATTERY_from_nvs();
   MENU.ln();
   read_nvs_autostart();
-  MENU.ln();
-}
+} // nvs_pulses_setup()
 
 #define NVS_PULSES_H
 #endif

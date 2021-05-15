@@ -393,20 +393,19 @@ void esp_now_ID_2_list(peer_ID_t* ID_p) {
 esp_err_t esp_now_pulses_add_peer(peer_ID_t* ID_new_p) {	// might give feedback
   bool do_display = (MENU.maybe_display_more(VERBOSITY_SOME) || DEBUG_ESP_NOW_b);
   if(do_display)
-    MENU.out(F("esp_now_pulses_add_peer(), esp_now_add_peer() "));
+    MENU.out(F("  esp_now_pulses_add_peer(), esp_now_add_peer() "));
 
   peer_info.channel = ESP_NOW_CHANNEL;
   memcpy(peer_info.peer_addr, (*ID_new_p).mac_addr, 6);	// if((*ID_new_p).mac_addr != NULL)
   peer_info.ifidx = ESP_IF_WIFI_STA;
   peer_info.encrypt = false;
-
   esp_err_t status = esp_now_add_peer(&peer_info);	// try to add peer
   switch (status) {
   case ESP_OK:						// *new* peer added
     //    *ID_new_p.preName[15] = '\0';			// savety net
     esp_now_ID_2_list(ID_new_p);
     if(do_display) {
-      MENU.out(F("ok\t"));
+      MENU.out(F("  ok\t"));
       MENU.out_IstrI((*ID_new_p).preName);
       MENU.out(F(" added "));
     }
@@ -716,9 +715,9 @@ void esp_now_call_participants() {	// kickstart network connections
 
   esp_now_send_identity(broadcast_mac);
   yield();
-  delay(100); // ################################################################
+  delay(100); // TODO: delay(100); in esp_now_call_participants(); ################################
   esp_now_send_who(broadcast_mac);
-}
+} // esp_now_call_participants()
 
 void payload_display_peer_ID_list(int pulse) {
   if(PULSES.pulses[pulse].counter > 1) {
@@ -773,7 +772,7 @@ void trigger_display_peer_ID_list() { // display peer ID list after a while
   }
 #endif	// ESP_NOW_IDLE_ID_SEND
 
-esp_err_t add_broascast_2_ESP_peer_list() {
+esp_err_t add_broadcast_2_ESP_peer_list() {
   peer_ID_t broadcast_ID;
   memcpy(&broadcast_ID.mac_addr, &broadcast_mac, 6);
   char preName[16] = "broadcast\0\0\0\0\0\0";
@@ -783,9 +782,7 @@ esp_err_t add_broascast_2_ESP_peer_list() {
 
 
 // setup:
-esp_err_t esp_now_pulses_setup() {
-  MENU.outln(F("esp_now_pulses_setup()"));
-
+esp_err_t esp_now_pulses_setup_0() {		// setup 1st stage
   MENU.outln(F("  WiFi.mode(WIFI_OFF)"));
   WiFi.mode(WIFI_OFF);
   yield();
@@ -813,7 +810,7 @@ esp_err_t esp_now_pulses_setup() {
   } // else *ignore* errors here
 
   // WiFi.setSleep(false);			// TODO: no idea if/why we would need this, just a test...
-  MENU.outln(F("WiFi.setSleep(false)\t TODO: test"));
+  MENU.outln(F("  WiFi.setSleep(false)\t TODO: test"));
   WiFi.setSleep(false);
 
   MENU.outln(F("  esp_now_register_send_cb()"));
@@ -839,7 +836,7 @@ esp_err_t esp_now_pulses_setup() {
   //  peer_info.ifidx = WIFI_IF_STA;
   peer_info.encrypt = false;
 
-  status = add_broascast_2_ESP_peer_list();		// add broadcast as ESP peer
+  status = add_broadcast_2_ESP_peer_list();		// add broadcast as ESP peer
 
   set_my_IDENTITY();
 
@@ -859,6 +856,31 @@ esp_err_t esp_now_pulses_setup() {
     timerAlarmEnable(esp_now_idle_identity_timer);
   }
 #endif
+  return status;
+} // esp_now_pulses_setup_0()
 
-return status;
+
+void esp_now_pulses_setup() {
+  esp_err_t status;
+  MENU.outln(F("\nesp_now_pulses_setup()"));
+  if(status = esp_now_pulses_setup_0()) {
+    MENU.out(F("failed "));
+    MENU.outln(esp_err_to_name(status));
+
+  } else {
+    MENU.out(F("ok  MAC: "));
+    esp_read_mac(my_MAC, ESP_MAC_WIFI_STA);	// set my_MAC
+    extern char* MAC_str(const uint8_t* mac);
+    MENU.outln(MAC_str(my_MAC));
+
+    status = add_broadcast_2_ESP_peer_list();
+
+#if defined ESP_NOW_SETUP_CALL_PARTICIPANTS
+    MENU.ln();
+    esp_now_call_participants();
+#else
+    MENU.outln(F("  NOT calling participants"));
+#endif
+  }
+  delay(100);	// esp_now network build up, don't change startup time if esp_now *is* used or not
 } // esp_now_pulses_setup()

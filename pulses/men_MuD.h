@@ -3,6 +3,13 @@
   temporary test menu UI during development
 */
 
+
+MENU.out(F("STARTUP_DELAY "));
+MENU.outln(STARTUP_DELAY);
+MENU.ln();
+
+show_metric_cents_list();	// TODO: move to Tuning hierarchy
+
 MENU.ln();
 battery_conf_UI_display(false);
 MENU.ln();

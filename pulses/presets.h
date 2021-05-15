@@ -17,8 +17,12 @@ void play_random_preset() {
   MENU.out(F("random("));
   MENU.out(MUSICBOX_PRESETs);
   MENU.out(F(") "));
-  load_preset(random(MUSICBOX_PRESETs) + 1);	// TODO: sets preset, how to unset? ################
-  no_restore_from_RTCmem = true;	// one shot, gets reset
+
+  int verbosity_was=MENU.verbosity;
+  MENU.verbosity = 0;		// set verbosity==0 to avoid output from set_metric_pitch()
+  load_preset(random(MUSICBOX_PRESETs) + 1);
+  MENU.verbosity = verbosity_was;
+  no_restore_from_RTCmem = true;		// one shot, gets reset
   start_musicBox();
 #if defined HAS_OLED
   monochrome_print(' ');

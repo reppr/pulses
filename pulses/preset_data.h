@@ -37,7 +37,10 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
   musicBoxConf.date=NULL;
   musicBoxConf.pitch={1,1};
   musicBoxConf.stack_sync_slices = 0;
+  int verbosity_was=MENU.verbosity;
+  MENU.verbosity=0;		// set verbosity==0 to avoid output from set_metric_pitch()
   set_metric_pitch(0); // not metric
+  MENU.verbosity=verbosity_was;
 
   PULSES.time_unit = 1000000;	// DEFAULT	a bit rude
 
@@ -5569,7 +5572,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     musicBoxConf.sync = 1;
     select_in(USED_DB, (unsigned int*) midi_melody_8);
     musicBoxConf.pitch = {1, 220};
-    set_metric_pitch(1);
+    set_metric_pitch(mp_A);
     musicBoxConf.high_pulses = 5;	// !
     break;
 
@@ -5579,7 +5582,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     musicBoxConf.sync = 6;
     select_in(USED_DB, (unsigned int*) midi_melody2);
     musicBoxConf.pitch = {1, 110};
-    set_metric_pitch(1);
+    set_metric_pitch(mp_A);
     musicBoxConf.high_pulses = 5;	// !
     break;
 

@@ -291,21 +291,6 @@ void HSV_2_RGB_degree(pixelColor_t* pixel, float H, float S, float V) {	// TODO:
 //	  }
 } // HSV_2_RGB_degree()
 
-
-//	// TODO: remove, just a test	################
-//	void dumpSysInfo() {
-//	  esp_chip_info_t sysinfo;
-//	  esp_chip_info(&sysinfo);
-//	  MENU.out("Model: ");
-//	  MENU.out((int)sysinfo.model);
-//	  MENU.out("; Features: 0x");
-//	  MENU.out((int)sysinfo.features, HEX);
-//	  MENU.out("; Cores: ");
-//	  MENU.out((int)sysinfo.cores);
-//	  MENU.out("; Revision: r");
-//	  MENU.outln((int)sysinfo.revision);
-//	}
-
 void pulses_RGB_LED_string_init() {
   if(rgb_strings_available) {
     initStrands();
