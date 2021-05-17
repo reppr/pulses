@@ -2267,8 +2267,11 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
   MENU.men_selected = musicBox_page;	// default to musicBox menu
 
 #if defined USE_LoRa
-  LoRa_send_ping();		// activates receiving
-  // setup_LoRa_default();	// activates receiving
+  #if defined LoRa_SEND_PING_ON_STARTUP && defined USE_LoRa_EXPLORING
+    LoRa_send_ping();		// ping activates receiving
+  #else
+    setup_LoRa_default();	// activates receiving
+  #endif
 #endif
   MENU.ln();
 

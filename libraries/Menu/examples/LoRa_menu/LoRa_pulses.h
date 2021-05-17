@@ -194,8 +194,11 @@ void LoRa_has_received(int packetSize) {	// has received a packet, triggered by 
   show_LoRa_code_name(code);	// known codes display name
 #endif
   MENU.out(packetSize);
-  MENU.out(F(" bytes  '"));
+  MENU.out(F(" bytes  "));
+  if(packetSize > 40)		// TODO: test&trimm
+    MENU.ln();
 
+  MENU.out('\'');
   // read packet
   uint8_t c;
   int i;
@@ -204,8 +207,11 @@ void LoRa_has_received(int packetSize) {	// has received a packet, triggered by 
     MENU.out((char) c);
   }
   LoRa_RX_buffer[i]='\0';
-  MENU.out(F("'\t"));
 
+  if(packetSize > 63)
+    MENU.ln();
+  else
+    MENU.out(F("'\t"));
   char rx_quality[36];
   char* format = F("RSSI=%i  snr=%4.2f  freqErr=%i");
   snprintf(rx_quality, 36, format, LoRa.packetRssi(), LoRa.packetSnr(), LoRa.packetFrequencyError());

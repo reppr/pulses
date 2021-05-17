@@ -20,8 +20,10 @@
 #if defined USE_LoRa
   #define USE_LoRa_EXPLORING
 
-//#define LoRa_RECEIVE_BUF_SIZE		64	// save some RAM?	default 128 (for chatting)
-#define LoRa_RECEIVE_BUF_SIZE	256	// ################################################################
+//#define LoRa_RECEIVE_BUF_SIZE		64	// save some RAM?
+  #define LoRa_RECEIVE_BUF_SIZE		256	// 256 (for chatting and debugging)	default 128
+
+//#define LoRa_SEND_PING_ON_STARTUP
 #endif
 
 //#define FORCE_START_TO_USERMODE	// needs OLED_HALT_PIN0 to be declared
