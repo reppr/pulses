@@ -1079,3 +1079,7 @@ WTF, check that!
     #endif
   #endif
 #endif
+
+FIXME: soft_end i.e. preset 50
+
+bool RGB is on *peripheral* power

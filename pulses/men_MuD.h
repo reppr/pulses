@@ -3,6 +3,13 @@
   temporary test menu UI during development
 */
 
+pulses_RGB_LED_string_init();	// needed after wake up from light sleep
+
+
+MENU.out(F("battery level "));
+MENU.outln(analogRead(BATTERY_LEVEL_CONTROL_PIN));	// pin *may* be incorrect
+MENU.outln(BATTERY_LEVEL_CONTROL_PIN);	// pin *may* be incorrect
+
 
 MENU.out(F("STARTUP_DELAY "));
 MENU.outln(STARTUP_DELAY);

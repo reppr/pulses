@@ -912,8 +912,6 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
       if(HARDWARE.periph_power_switch_pin != ILLEGAL8) {
-	MENU.out(F("peripheral POWER OFF "));
-	MENU.outln(HARDWARE.periph_power_switch_pin);
 	peripheral_power_switch_OFF();
 	delay(600);	// let power go down softly
       }
@@ -1842,8 +1840,6 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
   delay(3200); // aesthetics	DADA
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
-  MENU.out(F("peripheral POWER OFF "));
-  MENU.out(HARDWARE.periph_power_switch_pin);
   #if defined USE_BATTERY_LEVEL_CONTROL
     if(HARDWARE.battery_level_control_pin != ILLEGAL8) {
       MENU.tab();
@@ -1977,7 +1973,7 @@ void musicBox_trigger_got_hot() {	// must be called when magical trigger was det
 
     musicBox_trigger_enabled=false;
   }
-}
+} // musicBox_trigger_got_hot();
 #endif
 
 
@@ -2934,10 +2930,6 @@ void start_musicBox() {
   MC_show_program_version();
 #endif
 
-#if defined USE_RGB_LED_STRIP
-  rgb_led_reset_to_default();	// reset rgb led strip management to default conditions
-#endif
-
   set_MusicBoxState(AWAKE);
 
   /*	TODO: *test* that first, might be too much, so deactivated for now
@@ -2976,18 +2968,19 @@ void start_musicBox() {
     if(!assure_battery_level()) {	// double ckeck
       HARD_END_playing(false);
       peripheral_power_switch_OFF();
-      return;				// ################	TODO: TEST low battery
+      return;
     }
   }
 #endif
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   peripheral_power_switch_ON();
+  delay(200);	// give peripheral supply voltage time to stabilise
+#endif
 
-  MENU.out(F("peripheral POWER ON "));
-  MENU.outln(HARDWARE.periph_power_switch_pin);
-
-  delay(250);	// give peripheral supply voltage time to stabilise
+#if defined USE_RGB_LED_STRIP
+  rgb_led_reset_to_default();	// reset rgb led strip management to default conditions
+  pulses_RGB_LED_string_init();	// needed after wake up from light sleep
 #endif
 
   /*
@@ -3137,10 +3130,6 @@ void start_musicBox() {
   MENU.out(F("normalised_pitch "));
   MENU.out(pitch_normalised, 6);
   MENU.ln();
-
-#if defined PERIPHERAL_POWER_SWITCH_PIN
-  peripheral_power_switch_ON();
-#endif
 
   pulse_time_t period_lowest = PULSES.pulses[musicBoxConf.lowest_primary].period;
   CyclesConf.harmonical_CYCLE = scale2harmonical_cycle(selected_in(SCALES), &period_lowest);
@@ -3825,7 +3814,7 @@ void musicBox_display() {
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
   MENU.out(F("'v' peripheral power"));
-  MENU.out_ON_off(peripheral_power_on);
+  MENU.out_ON_off(peripheral_power_is_on);
 #endif
   MENU.out(F("  'V'=volume 'VE'vol=1.0 'VT..'volume- 'VM'=MIDIvolume  'VV'=voices   '|' sync slices ="));    // ('V' and 'VV' are actually in menu pulses)
   MENU.out(musicBoxConf.stack_sync_slices);
@@ -4727,7 +4716,7 @@ bool musicBox_reaction(char token) {
     break;
 
   case 'v':
-    if(peripheral_power_on)
+    if(peripheral_power_is_on)
       peripheral_power_switch_OFF();
     else
       peripheral_power_switch_ON();
