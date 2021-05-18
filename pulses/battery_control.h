@@ -41,8 +41,7 @@ typedef struct {
   uint16_t static_13V65_level=0;	// ~ 13.65V			// %12		// TODO?: not implemented
   uint16_t accepted_USB_level=ACCEPT_USB_LEVEL;	// level below that are accepted assuming USB power
   uint16_t high_level=1234;	// ~12.4V	TODO: test&trimm			// %16
-  uint8_t reserved18=0;
-  uint8_t reserved19=0;
+  uint16_t over_level=1404;
 } battery_levels_conf_t;
 
 battery_levels_conf_t BATTERY;
@@ -91,6 +90,11 @@ void battery_conf_UI_display(bool show_menu_keys=true) { // if show_menu_keys==f
 //MENU.space(3);
 
   if(show_menu_keys)
+    MENU.out(F("'BX'="));
+  MENU.out(F("over_level="));  MENU.out(BATTERY.over_level);
+  MENU.space(3);
+
+  if(show_menu_keys)
     MENU.out(F("'BU'="));
   MENU.out(F("accepted \"USB\"=")); MENU.out(BATTERY.accepted_USB_level);
 
@@ -118,10 +122,12 @@ unsigned int read_battery_level(unsigned int oversampling=15) {
 
 enum battery_levels {unknown,	// probably USB
 		     too_LOW,	// automatic installations should better switch off
+		     LOW_lv,
 		     MEDIOCRE,	// low, but no danger for battery
 		     GOOD,	// good working condition
+		     HIGH_lv,	// very good
 		     CHARGE,	// above about 13.8V (if calibrated accordingly)
-		     OVER};	// reads max value 4095 probably pin connected to 3.3V to deactivate vu control
+		     OVER};	// >= 13.88	or max value 4095 probably pin connected to 3.3V to deactivate vu control
 
 battery_levels check_battery_level() {
   unsigned int value = read_battery_level();
@@ -129,25 +135,31 @@ battery_levels check_battery_level() {
   if(value < BATTERY.accepted_USB_level)	// probably running from USB, on automatic installations this is *** !!! DANGEROUS !!! ***
     return unknown;				// 0 unknown
 
-  if(value == 4095)	// *FULL* LEVEL, probably pin connected to high to deactivate vu control
+  if(value >= BATTERY.over_level)	// over ~13.88V  4095==*FULL* LEVEL, probably pin connected to high to deactivate vu control
     return OVER;
 
-  if(value > BATTERY.static_13V8_level)
-    return CHARGE;		// 4 *OVER* 13.8V
+  if(value >= BATTERY.static_13V8_level)
+    return CHARGE;			// *OVER* 13.8V
+
+  if(value > BATTERY.high_level)
+    return HIGH_lv;
+
+  if(value >= BATTERY.level_12V)
+    return GOOD;
 
   if(value > BATTERY.low_level)
-    return GOOD;
+    return MEDIOCRE;
 
   // else:
   MENU.out(F("BATTERY "));
   if(value <= BATTERY.off_level) {
     MENU.out(F("> OFF !!! "));
-    MENU.out(value);
+    MENU.outln(value);
     return too_LOW;		// *BATTERY LOW*	automatic installations better switch off...
   } else {
     MENU.out(F("LOW "));
-    MENU.out(value);
-    return MEDIOCRE;
+    MENU.outln(value);
+    return LOW_lv;
   }
 } // check_battery_level()
 
@@ -159,36 +171,27 @@ void show_battery_level() {
   MENU.space(3);
   switch (check_battery_level()) {
   case unknown:
-    MENU.out(F("unknown, USB"));
-    break;
-  case GOOD:
-    MENU.out(F("GOOD"));
-    break;
-  case MEDIOCRE:
-    MENU.out(F("LOW"));
+    MENU.outln(F("unknown, USB"));
     break;
   case too_LOW:
-    MENU.out(F("*BATTERY LOW*"));
+    MENU.outln(F("*BATTERY LOW*"));
+    break;
+  case MEDIOCRE:
+    MENU.outln(F("LOW"));
+    break;
+  case GOOD:
+    MENU.outln(F("GOOD"));
+    break;
+  case HIGH_lv:
+    MENU.outln(F("HIGH"));
     break;
   case CHARGE:
-    MENU.out(F("*HIGH*"));
+    MENU.outln(F("*CHARGE*"));
     break;
   case OVER:
-    MENU.out(F("*4095*"));	// *FULL* LEVEL, probably pin connected to high to deactivate vu control
+    MENU.outln(F("*OVER*"));	// >~13.88V	or *FULL* 4095 LEVEL, probably pin connected to high to deactivate vu control
     break;
   }
-
-  if (MENU.verbosity > VERBOSITY_SOME) {
-    MENU.out(F("\t(off <= "));
-    MENU.out(BATTERY.off_level);
-    MENU.out(F("  low < "));
-    MENU.out(BATTERY.low_level);
-    MENU.out(F("  high >= "));
-    MENU.out(BATTERY.high_level);
-    MENU.out(F("  HIGH = 4095"));
-    MENU.outln(')');
-  } else
-    MENU.ln();
 } // show_battery_level()
 
 bool assure_battery_level() {
@@ -210,15 +213,16 @@ bool assure_battery_level() {
     // TODO: start a battery watcher job  ################
     return true;	// user has been warned, but start the same...	################ TODO: real life test
     break;
-  case GOOD:
-  case CHARGE:
-  case OVER:
+//  case GOOD:
+//  case CHARGE:
+//  case OVER:
+  default:
     return true;
     break;
   }
-}
+} // assure_battery_level()
 
-uint16_t input_battery_level() {	// read from MENU.numeric_input() if exists, or take level on the pin
+uint16_t input_battery_level() {	// read from MENU.numeric_input() if exists, *or* take level on the pin
   if(MENU.is_numeric())
     return (uint16_t) MENU.numeric_input(/*dummy*/ 0);	// from MENU
   // else (no numeric MENU input, read voltage on pin)
@@ -242,6 +246,12 @@ bool battery_UI_reaction() {	// 'B' was already received
     BATTERY.static_13V8_level = input_battery_level();	// numeric MENU input or read voltage on pin
     MENU.out(F("static_13V8 "));
     MENU.outln(BATTERY.static_13V8_level);
+    break;
+
+  case 'X':	// 'BX' 13.85V	BATTERY.over_level
+    BATTERY.over_level = input_battery_level();	// numeric MENU input or read voltage on pin
+    MENU.out(F("over_level "));
+    MENU.outln(BATTERY.over_level);
     break;
 
   case 'Y':	// 'BY' 13.65V	BATTERY.static_13V65_level	// TODO?: NOT IMPLEMENTED

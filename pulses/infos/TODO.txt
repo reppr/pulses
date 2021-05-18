@@ -1083,3 +1083,10 @@ WTF, check that!
 FIXME: soft_end i.e. preset 50
 
 bool RGB is on *peripheral* power
+
+FIXME: low battery does *not* stop playing :(		fixed, was hardware bug
+
+nvs: 'BK' kill, delete 'B' entry?
+     see all keys?
+
+FIXME: esp-now peer channel

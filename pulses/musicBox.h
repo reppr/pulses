@@ -1840,14 +1840,6 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
   delay(3200); // aesthetics	DADA
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
-  #if defined USE_BATTERY_LEVEL_CONTROL
-    if(HARDWARE.battery_level_control_pin != ILLEGAL8) {
-      MENU.tab();
-      MENU.out(read_battery_level());
-    }
-  #endif
-  MENU.ln();
-
   peripheral_power_switch_OFF();
   delay(3000);	// let power go down softly, do *not* shorten that without testing...
 #endif
@@ -2048,7 +2040,6 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
       if(PULSES.time_reached(inactivity_limit_time)) {
 	MENU.out(F("inactivity stop\t"));
 	HARD_END_playing(true);			// END
-	peripheral_power_switch_OFF();
       }
       else
 	if(MENU.verbosity >= VERBOSITY_SOME)
@@ -2069,7 +2060,6 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
     if(MENU.verbosity >= VERBOSITY_LOWEST)	// TODO: review
       MENU.out(F("END reached\t"));
     HARD_END_playing(false);			// END
-    peripheral_power_switch_OFF();
   }
 } // magical_cleanup(p)
 
@@ -2203,10 +2193,8 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     if((PULSES.pulses[pulse].counter % 13) == 0) {	// keep an eye on the battery	// TODO: seems to often
       if(!assure_battery_level()) {
 	MENU.outln(F("POWER LOW"));
-	if(!assure_battery_level()) {	// double ckeck
+	if(!assure_battery_level())	// double ckeck
 	  HARD_END_playing(true);
-	  peripheral_power_switch_OFF();
-	}
       }
     }
 #endif
@@ -2216,7 +2204,6 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
       if(PULSES.time_reached(musicBox_hard_end_time)) {
 	MENU.out(F("butler: MUSICBOX_HARD_END_SECONDS "));
 	HARD_END_playing(true);
-	peripheral_power_switch_OFF();
       }
     }
 #endif
@@ -2243,7 +2230,6 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
       if(!survivor) {	// lonely butler detect SAVETY NET, TODO: will be completely *wrong* in other situations
 	MENU.out(F("butler: lonely butler quits "));
 	HARD_END_playing(true);
-	peripheral_power_switch_OFF();
       }
     }
 #endif
@@ -2967,7 +2953,6 @@ void start_musicBox() {
     MENU.outln(F(">>> NO POWER <<<"));
     if(!assure_battery_level()) {	// double ckeck
       HARD_END_playing(false);
-      peripheral_power_switch_OFF();
       return;
     }
   }
@@ -4338,7 +4323,6 @@ bool musicBox_reaction(char token) {
 
   case 'H': // HARD_END_playing(true);
     HARD_END_playing(true);
-    peripheral_power_switch_OFF();	// maybe, maybe not?
     break;
 
   case 'C': // 'C' hierarchy: esp now send or configure
