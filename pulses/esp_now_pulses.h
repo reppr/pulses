@@ -791,6 +791,9 @@ esp_err_t esp_now_pulses_setup_0() {		// setup 1st stage
   WiFi.mode(WIFI_STA);				// TODO: BUG: does not returm on PSRAM boards!
   yield();
 
+  WiFi.channel(ESP_NOW_CHANNEL);		// TODO: ESP_NOW_CHANNEL
+  yield();
+
   MENU.outln(F("  WiFi.disconnect()"));
   WiFi.disconnect();	// just in case
   yield();
@@ -801,6 +804,9 @@ esp_err_t esp_now_pulses_setup_0() {		// setup 1st stage
   status = esp_now_init();
   if(status != ESP_OK)
     return status;
+  yield();
+
+  WiFi.channel(ESP_NOW_CHANNEL);		// TODO: ESP_NOW_CHANNEL
   yield();
 
   uint32_t esp_now_version=0;

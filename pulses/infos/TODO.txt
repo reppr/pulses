@@ -1089,4 +1089,4 @@ FIXME: low battery does *not* stop playing :(		fixed, was hardware bug
 nvs: 'BK' kill, delete 'B' entry?
      see all keys?
 
-FIXME: esp-now peer channel
+FIXME: esp-now peer channel		// TODO: ESP_NOW_CHANNEL

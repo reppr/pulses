@@ -194,7 +194,7 @@ bool setup_AP() {
   strcpy((char*) ap_config.ap.ssid, AP_ssid);
   ap_config.ap.ssid_len=0;
   strcpy((char*) ap_config.ap.password, AP_password);
-  ap_config.ap.channel=0;
+  ap_config.ap.channel=0;	  	// TODO?: ap_config.ap.channel=ESP_NOW_CHANNEL;
   ap_config.ap.authmode=WIFI_AUTH_OPEN;
   ap_config.ap.ssid_hidden=0;
   ap_config.ap.max_connection=4;
