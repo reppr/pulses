@@ -344,7 +344,7 @@ void configure_HARDWARE_from_nvs() {
     HARDWARE.RTC_type = x;
   }
 
-  a = HARDWARE_from_nvs.RTC_addr;
+  a = HARDWARE_from_nvs.RTC_addr;	// see: #define RTC_I2C_ADDRESS 0x68
   if(a) {
     MENU.out(F("RTC_addr\t\t"));
     MENU.outln(a);

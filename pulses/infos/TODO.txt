@@ -1090,3 +1090,16 @@ nvs: 'BK' kill, delete 'B' entry?
      see all keys?
 
 FIXME: esp-now peer channel		// TODO: ESP_NOW_CHANNEL
+
+use musicBoxConf.cycle_slices
+
+i2c address collision RTC and MPU6050
+    pulses_sanity_checks et al
+
+
+#define RTC_I2C_ADDRESS 0x68
+//#if defined PULSES_SYSTEM	// see: HARDWARE.RTC_addr (unsused)
+HARDWARE.RTC_addr and cc macro
+HARDWARE.RTC_type = RTC_type_DS1307;	// FIXME: RTC_type_DS3231 ???
+
+// show_metric_cents_list();	// TODO: move to Tuning hierarchy

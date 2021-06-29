@@ -8,6 +8,9 @@
 
 #if ! defined MY_PULSES_CONFIG_H
 
+#define USE_RTC_MODULE	// DS3231 TEST only	TODO: REMOVE: (from here) ################
+
+
 #define FAMILY_NAME	SoundShipBand		// configuration family	// see: pulses_engine_config.h
 // /*			0123456789abcdef	// 16 bytes	*/
 

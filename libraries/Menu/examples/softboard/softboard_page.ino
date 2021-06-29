@@ -734,9 +734,22 @@ int i2c_scan() {
       MENU.out_hex(adr);
       MENU.tab();
       switch(adr) {
+      case 0x57:
+      case 0x58:
+      case 0x59:
+      case 0x5A:
+      case 0x5B:
+      case 0x5C:
+      case 0x5D:
+      case 0x5E:
+	MENU.outln(F("EEPROM 24C32"));	// probably on a DS3231 RTC module
+	break;
+
       case 0x68:
+	MENU.outln(F("MPU6050 / DS1307 / DS3231 *????*"));	// they all can use the same address :(
+	break;
       case 0x69:
-	MENU.outln(F("MPU6050 / DS1307  *????*"));	// they both use the same address :(
+	MENU.outln(F("MPU6050"));	// other address
 	break;
 
       default:
@@ -755,7 +768,7 @@ int i2c_scan() {
   MENU.outln(F(" I2C devices found"));
 
   return found;
-}
+} //i2c_scan()
 #endif
 
 /* **************************************************************** */
@@ -874,7 +887,7 @@ void softboard_display() {
 #endif
   MENU.ln();
 
-#if defined USE_RTC_MODULE
+#if defined USE_RTC_MODULE	// in PULSES_SYSTEM (only)
   MENU.outln(F("t=time\tt! <year> <month> <day> <hour> <minute> =set time"));
 #endif
 }
@@ -1103,9 +1116,9 @@ bool softboard_reaction(char token) {
     }
     break;
 
-#if defined USE_RTC_MODULE
+#if defined USE_RTC_MODULE	// in PULSES_SYSTEM (only)
   case 't':
-    show_DS1307_time_stamp();
+    show_DS1307_time_stamp();	// DS3231 or DS1307
     MENU.ln();
     if(MENU.check_next('!')) {
       uint8_t year=2018;
@@ -1157,7 +1170,7 @@ bool softboard_reaction(char token) {
 
 		// void set_DS1307_time(byte second, byte minute, byte hour, byte month, byte year)
 		set_DS1307_time(second, minute, hour, day, month, year);
-		show_DS1307_time_stamp();
+		show_DS1307_time_stamp();	// DS3231 or DS1307
 		MENU.ln();
 	      }
 	    }

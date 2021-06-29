@@ -217,7 +217,8 @@ typedef struct pulses_hardware_conf_t {
 
   // RTC
   uint8_t RTC_type = RTC_type_off;	// flag and RTC_type
-  uint8_t RTC_addr=0;			// DS1307_I2C_ADDRESS 0x68	DS3231
+  uint8_t RTC_addr=0;			// *NOT USED* see: RTC_I2C_ADDRESS 0x68    DS3231 and DS1307 use the same address
+					// use RTC_I2C_ADDRESS instead of HARDWARE.RTC_addr
 
   // RGB LED strings
   uint8_t rgb_strings=0;		// flag and rgb led string cnt
@@ -1109,7 +1110,7 @@ bool stack_sync_user_selected=false;
 // #endif
 
 #if defined USE_RTC_MODULE
-  #include "RTC_DS1307_module.h"
+  #include "RTC_module_DS1307_or_DS3231.h"
 #endif
 
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
@@ -1416,7 +1417,7 @@ void setup_initial_HARDWARE_conf() {
 #endif
 
 #if defined USE_RTC_MODULE
-  HARDWARE.RTC_type = RTC_type_DS1307;
+  HARDWARE.RTC_type = RTC_type_DS1307;		// FIXME: RTC_type_DS3231 ???
 #endif
 
   // other pins		// TODO: implement
@@ -2144,7 +2145,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 
   #if defined  USE_RTC_MODULE
     MENU.ln();
-    show_DS1307_time_stamp();
+    show_DS1307_time_stamp();	// DS3231 or DS1307
     MENU.ln();
   #endif
 #endif // USE_i2c

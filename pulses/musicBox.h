@@ -2931,7 +2931,7 @@ void start_musicBox() {
 //#endif
 
 #if defined  USE_RTC_MODULE
-  show_DS1307_time_stamp();
+  show_DS1307_time_stamp();	// also for DS3231 module
   MENU.ln();
 #endif
 
@@ -3158,7 +3158,7 @@ void start_musicBox() {
 
 #if defined  USE_RTC_MODULE		// repeat that in here, keeping first one for power failing cases
   MENU.out(F("date="));
-  show_DS1307_time_stamp();
+  show_DS1307_time_stamp();		// DS3231 or DS1307
   MENU.ln();
 #endif
 

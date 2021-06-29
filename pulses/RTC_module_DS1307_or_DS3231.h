@@ -1,8 +1,7 @@
 /*
-  RTC_DS1307_module.h
+  RTC_module_DS1307_or_DS3231.h
 
-  tested on 'Tiny RTC Module'	DS1307
-  DS3231 should work also
+  tested on 'Tiny RTC Module' DS1307  and  'precision RTC module' DS3231
 
   see: https://randomnerdtutorials.com/guide-for-real-time-clock-rtc-module-with-arduino-ds1307-and-ds3231/
   sketch was written by John Boxall from http://tronixstuff.com
@@ -14,7 +13,8 @@
 
 bool rtc_module_is_usable=true;	// to *get* a test read on first read, we fake it to be there
 
-#define DS1307_I2C_ADDRESS 0x68
+//#if defined PULSES_SYSTEM	// see: HARDWARE.RTC_addr (unsused)
+#define RTC_I2C_ADDRESS 0x68	// DS3231 and DS1307 use the same address 0x68	// attention MPU6050 can use it too
 
 byte decToBcd(byte val) {	// convert normal decimal numbers to binary coded decimal
   return( (val/10*16) + (val%10) );
@@ -39,7 +39,7 @@ int day_of_week(int y, int m, int d) {		// SUN == 1, MON == 2, , , , , SAT == 7
 void set_DS1307_time(byte second, byte minute, byte hour, byte day, byte month, byte year) {
   byte weekday= day_of_week(year, month, day);	// SUN == 1, MON == 2, , , , , SAT == 7
 
-  Wire.beginTransmission(DS1307_I2C_ADDRESS);
+  Wire.beginTransmission(RTC_I2C_ADDRESS);
   Wire.write(0);			// set next input to start at the seconds register
   Wire.write(decToBcd(second));		// set seconds
   Wire.write(decToBcd(minute));		// set minutes
@@ -53,10 +53,10 @@ void set_DS1307_time(byte second, byte minute, byte hour, byte day, byte month, 
 
 bool read_DS1307_time(byte *second, byte *minute, byte *hour,
 		      byte *weekday, byte *day, byte *month, byte *year) {	// returns error
-  Wire.beginTransmission(DS1307_I2C_ADDRESS);
+  Wire.beginTransmission(RTC_I2C_ADDRESS);
   Wire.write(0);	// set DS1307 register pointer to 00h
   Wire.endTransmission();
-  Wire.requestFrom(DS1307_I2C_ADDRESS, 7);
+  Wire.requestFrom(RTC_I2C_ADDRESS, 7);
   // request seven bytes of data from DS1307 starting from register 00h
   *second = bcdToDec(Wire.read() & 0x7f);
   *minute = bcdToDec(Wire.read());

@@ -89,8 +89,9 @@
 
 
 #if defined USE_MPU6050 && defined USE_RTC_MODULE	// clash i2c address
-  #warning MPU6050 and RTC_MODULE use the same i2c address, USE_RTC_MODULE *deactivated*
-  #undef USE_RTC_MODULE
+  #warning MPU6050 and RTC_MODULE use the same i2c address	// TODO: FIXME: ################
+//  #warning MPU6050 and RTC_MODULE use the same i2c address, USE_RTC_MODULE *deactivated*
+//  #undef USE_RTC_MODULE
 #endif
 
 #if defined INCLUDE_IMU_ZERO && ! defined USE_MPU6050
