@@ -26,6 +26,29 @@
 
 //#define MAGICAL_MUSICBOX2	// #define this in my_pulses_config.h
 
+#if defined TRIGGERED_MUSICBOX2	// define this in my_pulses_config.h
+  #if ! defined ESP32
+    #error TRIGGERED_MUSICBOX2 *only* on ESP32
+  #endif
+
+  #define MUSICBOX2_PIN_MAPPING		// new pin mapping april 2021	(see below)
+
+//#define PROGRAM_SUB_VERSION	BrachenSound
+  #define MAGICAL_TOILET_HACK_2	// continue using (parts of) setup_bass_middle_high() to setup musicbox
+  #undef AUTOSTART
+  #define AUTOSTART	play_random_preset();		// in pulses_project_conf.h
+  #undef MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
+  #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&light_sleep	// do test for dac noise...
+  #define SOFT_END_AFTER_N_CYCLE_SLICES		// BUGFIX: (safety net) make sure soft ending *IS* triggered
+
+  // some options:
+  #define USE_BATTERY_LEVEL_CONTROL
+  #define HAS_ePaper290_on_PICO_KIT		// triggers HAS_ePaper and HAS_DISPLAY
+//#define USE_RTC_MODULE			// DS3231
+//#define USE_ESP_NOW				// possible, if you want that
+#endif	// TRIGGERED_MUSICBOX2
+
+
 #if defined MUSICBOX2_PIN_MAPPING	// new pin mapping april 2021
   #if ! defined ESP32
     #error MUSICBOX2_PIN_MAPPING *only* on ESP32
@@ -38,21 +61,9 @@
   #define RGB_LED_STRIP_DATA_PIN	14	// testing 27, 14
   #define MUSICBOX_TRIGGER_PIN		34	// activates trigger pin, needs pulldown (i.e. 470k, 100k ok)
   #define BATTERY_LEVEL_CONTROL_PIN	35	// NEW default, (was: 36)
-  #define HAS_ePaper290_on_PICO_KIT		// triggers HAS_ePaper and HAS_DISPLAY
+//#define HAS_ePaper290_on_PICO_KIT		// (reserve these pins for optional ePaper display)
 #endif // MUSICBOX2_PIN_MAPPING
 
-#if defined TRIGGERED_MUSICBOX2	// define this in my_pulses_config.h
-  #if ! defined ESP32
-    #error TRIGGERED_MUSICBOX2 *only* on ESP32
-  #endif
-
-//#define PROGRAM_SUB_VERSION	BrachenSound
-  #define MAGICAL_TOILET_HACK_2	// continue using (parts of) setup_bass_middle_high() to setup musicbox
-  #undef AUTOSTART
-  #define AUTOSTART	play_random_preset();		// same as pulses_project_conf.h
-  #undef MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
-  #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&light_sleep	// do test for dac noise...
-#endif	// TRIGGERED_MUSICBOX2
 
 
 //#define ESP32_15_clicks_no_display_TIME_MACHINE2	// ESP32 new default

@@ -10,7 +10,7 @@
 #define USE_MANY_FONTS		// uses some more program storage space
 
 
-#include <GxEPD2_BW.h>
+#include <GxEPD2_BW.h>		// tested versions 1.2.13   1.3.4
 #include <GxEPD2_GFX.h>
 
 #include <Fonts/FreeMonoBold9pt7b.h>	// mono 9pt

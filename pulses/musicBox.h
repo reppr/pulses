@@ -2248,6 +2248,12 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 
     if(magic_autochanges) {	// the butler influences performance and changes phases like ending
       if(soft_end_cnt==0) {	// *before* starting soft end
+
+#if defined SOFT_END_AFTER_N_CYCLE_SLICES	// BUGFIX: (safety net) make sure soft ending *IS* triggered
+	if(PULSES.pulses[pulse].counter == (cycle_slices + 1))
+	  MENU.outln(F("FULL CYCLE SOFT ENDING"));
+#endif
+
 	// soft end time could be reprogrammed by user interaction, always compute new:
 	if(PULSES.time_reached(butler_soft_end_time)) {
 	  soft_end_cnt++;

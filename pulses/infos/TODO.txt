@@ -1097,6 +1097,7 @@ i2c address collision RTC and MPU6050
     pulses_sanity_checks et al
 
 
+do use RTC module in TRIGGERED_MUSICBOX2
 #define RTC_I2C_ADDRESS 0x68
 //#if defined PULSES_SYSTEM	// see: HARDWARE.RTC_addr (unsused)
 HARDWARE.RTC_addr and cc macro

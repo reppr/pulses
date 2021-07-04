@@ -14,18 +14,23 @@
 #define FAMILY_NAME	SoundShipBand		// configuration family	// see: pulses_engine_config.h
 // /*			0123456789abcdef	// 16 bytes	*/
 
-#define MUSICBOX2_PIN_MAPPING	// #define this in my_pulses_config.h	 (new pin mapping april 2021)
-#define TRIGGERED_MUSICBOX2	// #define this in my_pulses_config.h
+#define MAGICAL_TOILET_HACK_2
+
+#define TRIGGERED_MUSICBOX2	// #define this in my_pulses_config.h	see: pulses_project_conf.h
+//#define MUSICBOX2_PIN_MAPPING	// (new pin mapping april 2021)
+
+// some options for TRIGGERED_MUSICBOX2:
+//#define HAS_ePaper290_on_PICO_KIT
+//#define USE_RTC_MODULE			// DS3231
+//#define USE_ESP_NOW				// possible, if you want that
 #define USE_BATTERY_LEVEL_CONTROL
 
-#define USE_LoRa		// needs: https://github.com/sandeepmistry/arduino-LoRa
+//#define USE_LoRa		// needs: https://github.com/sandeepmistry/arduino-LoRa
 				//	  https://github.com/khoih-prog/ESP32TimerInterrupt
 #if defined USE_LoRa
   #define USE_LoRa_EXPLORING
-
 //#define LoRa_RECEIVE_BUF_SIZE		64	// save some RAM?
   #define LoRa_RECEIVE_BUF_SIZE		256	// 256 (for chatting and debugging)	default 128
-
 //#define LoRa_SEND_PING_ON_STARTUP
 #endif
 

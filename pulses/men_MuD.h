@@ -3,25 +3,30 @@
   temporary test menu UI during development
 */
 
-pulses_RGB_LED_string_init();	// needed after wake up from light sleep
 
+#if defined USE_RGB_LED_STRIP
+  pulses_RGB_LED_string_init();	// needed after wake up from light sleep
+#endif
 
-MENU.out(F("battery level "));
-MENU.outln(analogRead(BATTERY_LEVEL_CONTROL_PIN));	// pin *may* be incorrect
-MENU.outln(BATTERY_LEVEL_CONTROL_PIN);	// pin *may* be incorrect
+#if defined BATTERY_LEVEL_CONTROL_PIN
+  MENU.out(F("battery level "));
+  MENU.outln(analogRead(BATTERY_LEVEL_CONTROL_PIN));	// pin *may* be incorrect
+  MENU.outln(BATTERY_LEVEL_CONTROL_PIN);	// pin *may* be incorrect
 
+  MENU.ln();
+  battery_conf_UI_display(false);
+  MENU.ln();
+  battery_conf_UI_display(true);
+  MENU.ln();
+#endif
 
-MENU.out(F("STARTUP_DELAY "));
-MENU.outln(STARTUP_DELAY);
-MENU.ln();
+#if defined STARTUP_DELAY
+  MENU.out(F("STARTUP_DELAY "));
+  MENU.outln(STARTUP_DELAY);
+  MENU.ln();
+#endif
 
-show_metric_cents_list();	// TODO: move to Tuning hierarchy
-
-MENU.ln();
-battery_conf_UI_display(false);
-MENU.ln();
-battery_conf_UI_display(true);
-MENU.ln();
+// show_metric_cents_list();	// TODO: move to Tuning hierarchy
 break;
 
 /*void dumpSysInfo()*/ {
