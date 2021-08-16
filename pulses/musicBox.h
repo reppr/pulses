@@ -1001,22 +1001,22 @@ void hertz_2_pitch(double hertz) {
 } // hertz_2_pitch()
 
 
-char* metric_mnemonic = "::";	// set by set_metric_pitch() only	 default "::" == not metric
+char* metric_mnemonic = (char*) "::";	// set by set_metric_pitch() only	 default "::" == not metric
 
-char* metric_mnemonics[] = {"::",	// not metric
-			    "A ",
-			    "Bb",
-			    "B ",
-			    "C ",
-			    "C#",
-			    "D ",
-			    "D#",
-			    "E ",
-			    "F ",
-			    "F#",
-			    "G ",
-			    "G#",
-			    "??"};	// illegal, unknown	like "::" but flags an ERROR
+char* metric_mnemonics[] = {(char*) "::",	// not metric
+			    (char*) "A ",
+			    (char*) "Bb",
+			    (char*) "B ",
+			    (char*) "C ",
+			    (char*) "C#",
+			    (char*) "D ",
+			    (char*) "D#",
+			    (char*) "E ",
+			    (char*) "F ",
+			    (char*) "F#",
+			    (char*) "G ",
+			    (char*) "G#",
+			    (char*) "??"};	// illegal, unknown	like "::" but flags an ERROR
 
 enum metric_pitch_t {
 		     mp_free = 0,

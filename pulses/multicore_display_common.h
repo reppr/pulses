@@ -20,7 +20,7 @@ typedef struct print_descrpt_t {
   char* text = NULL;
 } print_descrpt_t;
 
-bool /*error*/ copy_text_to_text_buffer(char* text, print_descrpt_t* txt_descr_p) {
+bool /*error*/ copy_text_to_text_buffer(const char* text, print_descrpt_t* txt_descr_p) {
   char* txt_p = (char*) malloc(strlen(text) + 1);
   if(txt_p == NULL) {
     goto malloc_error;

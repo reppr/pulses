@@ -649,7 +649,7 @@ void Menu::outBIN(unsigned long value, int bits ) const {
 }
 
 // show one letter mnemonics for flag state and a trailing space
-void Menu::show_flag_mnemonics(unsigned long flags, int bits, char* ON_chars, char* OFF_chars) const {
+void Menu::show_flag_mnemonics(unsigned long flags, int bits, const char* ON_chars, const char* OFF_chars) const {
   for (int i = bits - 1; i >= 0; i--) {
     if (flags & (1 << i))
       out(ON_chars[i]);
@@ -917,7 +917,7 @@ bool Menu::check_next(char token) {	// check for token as next input, drop if fo
   return false;
 }
 
-void Menu::play_KB_macro(char *macro, bool newline) {	// most often you might do  'men_selected=0;'  before
+void Menu::play_KB_macro(const char *macro, bool newline) {	// most often you might do  'men_selected=0;'  before
   out("play_KB_macro  ");
   outln(macro);
 

@@ -27,7 +27,7 @@ int nvs_free_entries() {
 
 typedef uint32_t nvs_handle_t;	// TODO: *where* is that defined?	################
 
-size_t /*size*/ nvs_test_key(char* key) {	// no trailing newline
+size_t /*size*/ nvs_test_key(const char* key) {	// no trailing newline
   MENU.out(F("nvs key  "));
   MENU.out(key);
   MENU.tab();
@@ -59,7 +59,7 @@ size_t /*size*/ nvs_test_key(char* key) {	// no trailing newline
 } // nvs_test_key()
 
 
-void nvs_delete_key(char* key) {
+void nvs_delete_key(const char* key) {
   nvs_handle_t my_handle;
   esp_err_t err = nvs_open("CONFIG", NVS_READWRITE, &my_handle);
   if (err == ESP_OK)
@@ -73,7 +73,7 @@ void nvs_delete_key(char* key) {
 } // nvs_delete_key()
 
 
-bool /*error*/ nvs_read_blob(char* key, void* new_blob, size_t buffer_size) {
+bool /*error*/ nvs_read_blob(const char* key, void* new_blob, size_t buffer_size) {
   // see: https://github.com/espressif/esp-idf/blob/master/examples/storage/nvs_rw_blob/main/nvs_blob_example_main.c
 
   MENU.out(F("nvs_read_blob\t"));
@@ -126,7 +126,7 @@ bool /*error*/ nvs_read_blob(char* key, void* new_blob, size_t buffer_size) {
 } // nvs_read_blob
 
 
-bool /*error*/ nvs_save_blob(char* key, void* new_blob, size_t buffer_size) {
+bool /*error*/ nvs_save_blob(const char* key, void* new_blob, size_t buffer_size) {
   // see: https://github.com/espressif/esp-idf/blob/master/examples/storage/nvs_rw_blob/main/nvs_blob_example_main.c
 
   MENU.out(F("nvs_save_blob\t"));

@@ -286,7 +286,7 @@ bool battery_UI_reaction() {	// 'B' was already received
 
 #if defined USE_NVS
   case 'S':	// 'BS' nvs save as 'BATTERY_nvs'
-    extern bool /*error*/ nvs_save_blob(char* key, void* new_blob, size_t buffer_size);
+    extern bool /*error*/ nvs_save_blob(const char* key, void* new_blob, size_t buffer_size);
     nvs_save_blob("BATTERY_nvs", &BATTERY, sizeof(battery_levels_conf_t));
     battery_conf_UI_display(false);
     break;

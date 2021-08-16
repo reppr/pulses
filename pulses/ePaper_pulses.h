@@ -6,7 +6,7 @@
 #define LIN_BUF_MAX	42	// temporal local line buffers only
 
 
-void MC_display_message(char* text) {	// inline does not work
+void MC_display_message(const char* text) {	// inline does not work
 #if defined DEBUG_ePAPER
   MENU.out(F("DEBUG_ePAPER\tMC_display_message()\t"));
 #endif

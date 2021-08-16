@@ -1455,18 +1455,18 @@ extern bool musicbox_is_idle();
 
 #if defined HAS_OLED
 extern bool monochrome_can_be_used();	// TODO: do i want that *here*?
-extern void MC_display_message(char * message);
+extern void MC_display_message(const char * message);
 // avoid sound glitches when using OLED:
 extern bool oled_feedback_while_playing;
-extern void MC_printlnBIG(uint8_t row, char* str);		// 2x2 lines
+extern void MC_printlnBIG(uint8_t row, const char* str);		// 2x2 lines
 extern void MC_setInverseFont();
 extern void MC_clearInverseFont();
 extern void monochrome_setPowerSave(uint8_t value);
 extern void MC_setCursor(uint8_t col, uint8_t row);
 extern uint8_t monochrome_getCols();
-extern void MC_print(char* str);
+extern void MC_print(const char* str);
 extern void monochrome_print_f(float f, int chiffres);
-extern void MC_printBIG_at(uint8_t col, uint8_t row, char* str);	// for short 2x2 strings
+extern void MC_printBIG_at(uint8_t col, uint8_t row, const char* str);	// for short 2x2 strings
 extern void monochrome_clear();
 #endif // HAS_OLED
 
@@ -1790,7 +1790,7 @@ void show_cheat_sheet() {
     if(c = cheat_buffer[i]) {
       if(morse_tokens_of_letter(result, maxlen, c)) {	// uppercase only
 #if defined HAS_OLED
-	extern uint8_t /*next_row*/ monochrome_big_or_multiline(int row, char* str);
+	extern uint8_t /*next_row*/ monochrome_big_or_multiline(int row, const char* str);
 	monochrome_big_or_multiline(2*i, result);
 #elif defined HAS_ePaper
 	ePaper_BIG_or_multiline(i, result);

@@ -992,7 +992,7 @@ int Pulses::remove_selected_from_group(group_flags_t groups_to_remove) { // remo
 }
 
 void Pulses::show_group_mnemonics(int pulse) {
-  char * mnemonics = "012345678LMH";
+  const char * mnemonics = "012345678LMH";
   char c;
 
   int i=0;
@@ -1377,8 +1377,8 @@ void Pulses::show_pulse_flag_mnemonics(pulse_flags_t flags) {	// show pulse flag
   // #define HAS_I2C_ADDR_PIN	      128	// do not set directly, use set_i2c_addr_pin(uint8_t adr, uint8_t pin)
   // #define HAS_RGB_LEDs	      256	// has RGB LED string, set_rgb_led_string(pulse, string_idx, pixel)
 
-  char* pulses_ON_mnemonics  =	"!NGsdTIiL";
-  char* pulses_OFF_mnemonics =	".........";
+  const char* pulses_ON_mnemonics  =	"!NGsdTIiL";
+  const char* pulses_OFF_mnemonics =	".........";
   (*MENU).show_flag_mnemonics(flags, 9, pulses_ON_mnemonics, pulses_OFF_mnemonics);
 } // show_pulse_flag_mnemonics()
 

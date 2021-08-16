@@ -45,7 +45,7 @@ void ePaper_bounds() {
   MENU.outln("FreeMonoBold9pt7b");
 
   for(int i=0; i<2; i++) {
-    str = "M";
+    str = (char*) "M";
     ePaper.getTextBounds(str, 50, 50, &tbx, &tby, &tbw, &tbh);
     MENU.out(str); MENU.tab();
     MENU.out("x, y, w, h\t");
@@ -54,7 +54,7 @@ void ePaper_bounds() {
     MENU.out(tbw); MENU.tab();
     MENU.outln(tbh);
 
-    str = "X";
+    str = (char*) "X";
     ePaper.getTextBounds(str, 50, 50, &tbx, &tby, &tbw, &tbh);
     MENU.out(str); MENU.tab();
     MENU.out("x, y, w, h\t");
@@ -63,7 +63,7 @@ void ePaper_bounds() {
     MENU.out(tbw); MENU.tab();
     MENU.outln(tbh);
 
-    str="1234567890";
+    str= (char*) "1234567890";
     ePaper.getTextBounds(str, 50, 50, &tbx, &tby, &tbw, &tbh);	// 10 chars
     MENU.out(str); MENU.tab();
     MENU.out("x, y, w, h\t");

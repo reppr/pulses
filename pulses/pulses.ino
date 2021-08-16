@@ -337,9 +337,9 @@ void show_peer_id(peer_ID_t* this_peer_ID_p) {	// TODO: move?
   peer_ID_t my_IDENTITY;
 
   // MAC as string
-  char* MAC_str(const uint8_t* mac) {	// TODO: TEST: mac==NULL case
+  char* MAC_str(const uint8_t* mac) {		// TODO: TEST: mac==NULL case
     if(mac == NULL)
-      return ">*< ALL KNOWN >*<";		// for esp_now
+      return (char*) ">*< ALL KNOWN >*<";	// for esp_now
     // else
 
     static char MACstr[18];
@@ -362,7 +362,7 @@ void ERROR_ln(const char* text) {	// extended error reporting on MENU, ePaper or
     return;		// we better return, heap is empty...
   } // else
   snprintf(str, len, F("ERR %s"), text);
-  extern void MC_display_message(char*);
+  extern void MC_display_message(const char*);
   MC_display_message(str);
   free(str);
 #endif
@@ -755,7 +755,7 @@ void test_code(unsigned int* code, char* name, int count) {	// works for iCode a
   display an array of strings like names of scales, jiffles, experiments
   mark the selected one with an asterisk
 */
-void display_names_OBSOLETE(char** names, int count, int selected) {	// TODO: maybe obsolete?  (only for experiment names)
+void display_names_OBSOLETE(const char** names, int count, int selected) {	// TODO: maybe obsolete?  (only for experiment names)
   MENU.ln();
   for (int i = 0; i < count; i++) {
     if (i==selected)
@@ -4361,7 +4361,7 @@ void info_select_destination_with(bool extended_destinations) {
 // variables used to setup the experiments
 
 #ifndef RAM_IS_SCARE	// enough RAM?
-char * experiment_names[] = {		// FIXME: const char * experiment_names would be better
+const char * experiment_names[] = {		// FIXME: const char * experiment_names would be better
       "(invalid)",				// 0
       "setup_jiffle128",			// 1
       "init_div_123456",			// 2
@@ -5074,7 +5074,7 @@ void display_last_par(long parameter) {
   MENU.outln(F(")"));
 }
 
-void display_name5pars(char* name, bool g_inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
+void display_name5pars(const char* name, bool g_inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   if (MENU.verbosity) {
     MENU.out((char *) name);
     MENU.out("(");

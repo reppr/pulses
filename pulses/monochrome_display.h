@@ -131,7 +131,7 @@ void monochrome_show_subcycle_octave() {
 
 
 // no MC_xxx version
-uint8_t /*next_row*/ monochrome_multiline_string(uint8_t row, char* s) { // multiline string from row to bottom (max)
+uint8_t /*next_row*/ monochrome_multiline_string(uint8_t row, const char* s) { // multiline string from row to bottom (max)
   if(s && *s /*no empty string*/) {
     uint8_t cols = (*u8x8_p).getCols();
     uint8_t rows = (*u8x8_p).getRows();
@@ -319,7 +319,7 @@ void monochrome_show_line(uint8_t row, char * s) {	// TODO: redundant? see: mono
   }
 } // monochrome_show_line()
 
-void monochrome_display_message(char* message) {
+void monochrome_display_message(const char* message) {
   if(monochrome_can_be_used()) {
     (*u8x8_p).setCursor((*u8x8_p).getCols() - strlen(message),  (*u8x8_p).getRows() -1);	// last line > right is message spot
     (*u8x8_p).print(message);
@@ -342,7 +342,7 @@ void multicore_display_message_task(void* data_) {
   vTaskDelete(NULL);
 }
 
-void multicore_display_message(char* text) {	// create and do one shot task
+void multicore_display_message(const char* text) {	// create and do one shot task
   print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
   if(txt_descript_p == NULL) {
     MENU.error_ln(F("txt_descript malloc()"));
@@ -364,12 +364,12 @@ void multicore_display_message(char* text) {	// create and do one shot task
   }
 }
 
-void MC_display_message(char* str) {	// extern declaration does not work with inline version
+void MC_display_message(const char* str) {	// extern declaration does not work with inline version
   multicore_display_message(str);
 }
 
 #else
- void MC_display_message(char* str) {	// extern declaration does not work with inline version
+ void MC_display_message(const char* str) {	// extern declaration does not work with inline version
   monochrome_display_message(str);
  }
 #endif // MULTICORE_DISPLAY
@@ -413,7 +413,7 @@ bool OLED_UI() {	// follows 'O'		'OE'	'OT'	'OP'
 } // OLED_UI()
 
 
-void monochrome_print2x2(uint8_t col, uint8_t row, char* str) {	// for short 2x2 strings
+void monochrome_print2x2(uint8_t col, uint8_t row, const char* str) {	// for short 2x2 strings
   if(monochrome_can_be_used()) {
     int max=((*u8x8_p).getCols()/2);	// limit length
     char truncated[max+1]={0};
@@ -444,7 +444,7 @@ void multicore_print2x2_task(void* data_) {
   vTaskDelete(NULL);
 }
 
-void multicore_print2x2(uint8_t col, uint8_t row, char* text) {	// create and do one shot task
+void multicore_print2x2(uint8_t col, uint8_t row, const char* text) {	// create and do one shot task
   print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
   if(txt_descript_p == NULL) {
     MENU.error_ln(F("txt_descript malloc()"));
@@ -468,18 +468,18 @@ void multicore_print2x2(uint8_t col, uint8_t row, char* text) {	// create and do
   }
 }
 
-void inline MC_printBIG_at(uint8_t col, uint8_t row, char* str) {
+void inline MC_printBIG_at(uint8_t col, uint8_t row, const char* str) {
   multicore_print2x2(col, row, str);
 }
 
 #else
-void inline MC_printBIG_at(uint8_t col, uint8_t row, char* str) {
+void inline MC_printBIG_at(uint8_t col, uint8_t row, const char* str) {
   monochrome_print2x2(col, row, str);
 }
 #endif // MULTICORE_DISPLAY
 
 
-void monochrome_println2x2(uint8_t row, char* str) {	// 2x2 lines
+void monochrome_println2x2(uint8_t row, const char* str) {	// 2x2 lines
   if(monochrome_can_be_used()) {
     int max=((*u8x8_p).getCols()/2);	// limit length
     char truncated[max+1];
@@ -514,7 +514,7 @@ void multicore_println2x2_task(void* data_) {
   vTaskDelete(NULL);
 }
 
-void multicore_println2x2(uint8_t row, char* text) {	// create and do one shot task
+void multicore_println2x2(uint8_t row, const char* text) {	// create and do one shot task
   print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
   if(txt_descript_p == NULL) {
     MENU.error_ln(F("txt_descript malloc()"));
@@ -537,12 +537,12 @@ void multicore_println2x2(uint8_t row, char* text) {	// create and do one shot t
   }
 }
 
-void inline MC_printlnBIG(uint8_t row, char* str) {
+void inline MC_printlnBIG(uint8_t row, const char* str) {
   multicore_println2x2(row, str);
 }
 
 #else
-void inline MC_printlnBIG(uint8_t row, char* str) {
+void inline MC_printlnBIG(uint8_t row, const char* str) {
   monochrome_println2x2(row, str);
 }
 #endif // MULTICORE_DISPLAY
@@ -573,7 +573,7 @@ void monochrome_print_1line(uint8_t row, char* str) { // truncating, padding	// 
   }
 } // monochrome_print_1line()
 
-uint8_t /*next_row*/ monochrome_big_or_multiline(int row, char* str) {
+uint8_t /*next_row*/ monochrome_big_or_multiline(int row, const char* str) {
   /*
     print one line on monochrome
     use 2x2 size if it fits
@@ -611,7 +611,7 @@ void multicore_big_or_multiline_task(void* data_) {
   vTaskDelete(NULL);
 }
 
-void multicore_big_or_multiline(uint8_t row, char* text) {	// create and do one shot task
+void multicore_big_or_multiline(uint8_t row, const char* text) {	// create and do one shot task
   print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
   if(txt_descript_p == NULL) {
     MENU.error_ln(F("txt_descript malloc()"));
@@ -634,12 +634,12 @@ void multicore_big_or_multiline(uint8_t row, char* text) {	// create and do one 
   }
 }
 
-void MC_big_or_multiline(uint8_t row, char* str) {	// does not work as inline
+void MC_big_or_multiline(uint8_t row, const char* str) {	// does not work as inline
   multicore_big_or_multiline(row, str);
 }
 
 #else
-void inline MC_big_or_multiline(uint8_t row, char* str) {
+void inline MC_big_or_multiline(uint8_t row, const char* str) {
   monochrome_big_or_multiline(row, str);
 }
 #endif // MULTICORE_DISPLAY
@@ -762,7 +762,7 @@ void multicore_print_task(void* data_) {
   vTaskDelete(NULL);
 }
 
-void multicore_print(char* text) {	// create and do one shot task
+void multicore_print(const char* text) {	// create and do one shot task
   print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
   if(txt_descript_p == NULL) {
     MENU.error_ln(F("txt_descript malloc()"));
@@ -784,12 +784,12 @@ void multicore_print(char* text) {	// create and do one shot task
   }
 }
 
-void inline MC_print(char* str) {
+void inline MC_print(const char* str) {
   multicore_print(str);
 }
 
 #else
- void inline MC_print(char* str) {
+ void inline MC_print(const char* str) {
    monochrome_print(str);
  }
 #endif // MULTICORE_DISPLAY

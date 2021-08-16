@@ -234,7 +234,7 @@ class Menu {
   void outBIN(unsigned long l, int bits ) const; // binary output
 
   // show one letter mnemonics for flag state
-  void show_flag_mnemonics(unsigned long l, int bits, char* ON_chars, char* OFF_chars) const;
+  void show_flag_mnemonics(unsigned long l, int bits, const char* ON_chars, const char* OFF_chars) const;
 
   // Print a hex chiffre:
   void out_hex_chiffre(unsigned char chiffre) const; // output 1 hex chiffre
@@ -320,7 +320,7 @@ class Menu {
 				// *dangerous* no checks, you *can* restore a just-read-token
   bool check_next(char token);	// check for token, drop it if found, return token *is* next
 
-  void play_KB_macro(char *macro, bool newline=true);	//  keyboard input from a string
+  void play_KB_macro(const char *macro, bool newline=true);	//  keyboard input from a string
 				// most often you might do  'men_selected=0;'  before
 
   int menu_mode;		// currently only used to edit data arrays

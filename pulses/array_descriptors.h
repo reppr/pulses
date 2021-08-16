@@ -8,8 +8,8 @@
 
 #define ARRAY_DESCRIPTORS	100	// FIXME: ################
 
-char* noname="no name";
-char* notype="no type";
+char* noname=(char*) "no name";
+char* notype=(char*) "no type";
 
 // void display_jiffletab(unsigned int *);	// see: pulses.ino
 
@@ -26,13 +26,13 @@ struct arr_descriptor {
 
 // init an array as array database
 // set DB[0] to describe the database
-void init_DB(arr_descriptor * DB, unsigned int len, char* name) {
+void init_DB(arr_descriptor * DB, unsigned int len, const char* name) {
   // DB[0] describes the database itself
   DB[0].pointer=NULL;	// DB[0].pointer points to selected array
   DB[0].len=len;	// data base length in bytes
   DB[0].item=1;		// DB[0].item is used as registration counter
-  DB[0].name=name;
-  DB[0].type="DB";
+  DB[0].name=(char*) name;
+  DB[0].type=(char*) "DB";
 }
 
 
@@ -49,7 +49,7 @@ char* array2name(arr_descriptor * DB, unsigned int* array) {
     if (DB[i].pointer == array)
       return DB[i].name;
 
-  return "";
+  return (char*) "";
 }
 
 unsigned int* index2pointer(arr_descriptor * DB, unsigned int index) {
@@ -84,15 +84,15 @@ unsigned int selected_length_in(arr_descriptor* DB) {
 }
 
 bool register_in_DB(arr_descriptor* DB,	\
-	unsigned int* array, unsigned int len, unsigned int item, char* name, char* type) {
+	unsigned int* array, unsigned int len, unsigned int item, const char* name, const char* type) {
   // DB[0] describes the database itself
   unsigned int next=DB[0].item;
   if((next * sizeof(arr_descriptor)) < DB[0].len) {
     DB[next].pointer=array;
     DB[next].len=len;
     DB[next].item=item;
-    DB[next].name=name;
-    DB[next].type=type;
+    DB[next].name= (char*) name;
+    DB[next].type= (char*) type;
 
     DB[0].item++;	// count registrations in DB[0].item
     return true;
@@ -150,7 +150,7 @@ arr_descriptor iCODEs[iCODE_DESCRIPTORS];
 
 
 // register_scale(europ_PENTAtonic, sizeof(europ_PENTAtonic), "europ_PENTAtonic");
-bool register_scale(unsigned int* scale, unsigned int len, char* name) {
+bool register_scale(unsigned int* scale, unsigned int len, const char* name) {
   return register_in_DB(SCALES, scale, len, 2, name, "scale");
 }
 
@@ -158,13 +158,14 @@ bool register_scale(unsigned int* scale, unsigned int len, char* name) {
   // see:  https://stackoverflow.com/questions/20631922/expand-macro-inside-string-literal
   #define STRINGIFY2(X) #X
   #define STRINGIFY(X) STRINGIFY2(X)
+//#define STRINGIFY(X) (char*) STRINGIFY2(X)	// this version avoids the C++ warnings about string constants and char*
 #endif
 
 #define REGISTER_SCALE(X)	register_scale((X), sizeof((X)), STRINGIFY(X))
 
 
 // i.e.  register_jiffle(pentatonic_rise, sizeof(pentatonic_rise), "pentatonic_rise");
-bool register_jiffle(unsigned int* jiffle, unsigned int len, char* name) {
+bool register_jiffle(unsigned int* jiffle, unsigned int len, const char* name) {
   return register_in_DB(JIFFLES, jiffle, len, 3, name, "jiffle");
 }
 
@@ -285,7 +286,7 @@ bool UI_select_from_DB(arr_descriptor* DB) {
 #define REGISTER_JIFFLE(X)	register_jiffle((X), sizeof((X)), STRINGIFY(X))
 
 
-bool register_iCODE(void* icode, unsigned int len, char* name) {
+bool register_iCODE(void* icode, unsigned int len, const char* name) {
   return register_in_DB(iCODEs, (unsigned int *) icode, len, 1, name, "icode");
 }
 

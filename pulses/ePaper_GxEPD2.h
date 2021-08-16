@@ -198,7 +198,7 @@ int16_t row2y(int16_t row) {	// *do* call set_used_font() before using that
   return (row+1)*used_font_yAdvance;
 }
 
-void ePaper_print_at(uint16_t col, uint16_t row, char* text, int16_t offset_y=0) {	// *do* call set_used_font() before using that
+void ePaper_print_at(uint16_t col, uint16_t row, const char* text, int16_t offset_y=0) {    // *do* call set_used_font() before using that
 #if defined  DEBUG_ePAPER
   MENU.out(F("DEBUG_ePAPER\tePaper_print_at(...)\t"));
   MENU.outln(text);
@@ -231,7 +231,7 @@ void ePaper_print_at_task(void* data_) {
   vTaskDelete(NULL);
 }
 
-void multicore_ePaper_print_at(int16_t col, int16_t row, char* text, int16_t offset_y=0) {	// create and start a one shot task
+void multicore_ePaper_print_at(int16_t col, int16_t row, const char* text, int16_t offset_y=0) {    // create and start a one shot task
   print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
   if(txt_descript_p == NULL) {
     MENU.error_ln(F("txt_descript malloc()"));
@@ -257,7 +257,7 @@ void multicore_ePaper_print_at(int16_t col, int16_t row, char* text, int16_t off
   }
 } // multicore_ePaper_print_at()
 
-void MC_print_at(int16_t col, int16_t row, char* text, int16_t offset_y=0) {
+void MC_print_at(int16_t col, int16_t row, const char* text, int16_t offset_y=0) {
 #if defined DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tMC_print_at()"));
 #endif
@@ -265,13 +265,13 @@ void MC_print_at(int16_t col, int16_t row, char* text, int16_t offset_y=0) {
 }
 
 #else
-void MC_print_at(int16_t col, int16_t row, char* text, int16_t offset_y=0) {
+void MC_print_at(int16_t col, int16_t row, const char* text, int16_t offset_y=0) {
   ePaper_print_at(col, row, text, offset_y);
 }
 #endif
 
 
-void MC_printBIG_at(int16_t col, int16_t row, char* text, int16_t offset_y=0) {
+void MC_printBIG_at(int16_t col, int16_t row, const char* text, int16_t offset_y=0) {
 #if defined DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tMC_printBIG_at()"));
 #endif
@@ -335,7 +335,7 @@ void inline hw_display_setup() {
 }
 
 
-void ePaper_print_1line_at(uint16_t row, char* text, int16_t offset_y=0) {	// *do* call set_used_font() before using that
+void ePaper_print_1line_at(uint16_t row, const char* text, int16_t offset_y=0) {	// *do* call set_used_font() before using that
 #if defined  DEBUG_ePAPER
   MENU.out(F("DEBUG_ePAPER\tePaper_print_1line_at() "));
   MENU.out(row);
@@ -372,7 +372,7 @@ void ePaper_1line_at_task(void* data_) {
   vTaskDelete(NULL);
 }
 
-void multicore_ePaper_1line_at(int16_t row, char* text, int16_t offset_y) {	// create and start a one shot task
+void multicore_ePaper_1line_at(int16_t row, const char* text, int16_t offset_y) {	// create and start a one shot task
   print_descrpt_t* txt_descrpt_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
   if(txt_descrpt_p == NULL) {
     MENU.error_ln(F("txt_descript malloc()"));
@@ -396,7 +396,7 @@ void multicore_ePaper_1line_at(int16_t row, char* text, int16_t offset_y) {	// c
   }
 } // multicore_ePaper_1line_at()
 
-void MC_print_1line_at(int16_t row, char* text, int16_t offset_y=0) {
+void MC_print_1line_at(int16_t row, const char* text, int16_t offset_y=0) {
 #if defined DEBUG_ePAPER
   MENU.out(F("DEBUG_ePAPER\tMC_print_1line_at()\t"));
   MENU.out(row);
@@ -407,13 +407,13 @@ void MC_print_1line_at(int16_t row, char* text, int16_t offset_y=0) {
 } // MC_print_1line_at()
 
 #else
-void MC_print_1line_at(int16_t row, char* text, int16_t offset_y=0) {
+void MC_print_1line_at(int16_t row, const char* text, int16_t offset_y=0) {
   ePaper_print_1line_at(row, text, offset_y);
 }
 #endif
 
 
-void ePaper_print_str(char* text) {	// unused?
+void ePaper_print_str(const char* text) {	// unused?
 #if defined DEBUG_ePAPER
   MENU.out(F("DEBUG_ePAPER\tePaper_print_str()\t"));
   MENU.outln(text);
@@ -431,7 +431,7 @@ void ePaper_print_str(char* text) {	// unused?
 } // ePaper_print_str()
 
 
-void ePaper_BIG_or_multiline(int16_t row, char* text) {	// unused?
+void ePaper_BIG_or_multiline(int16_t row, const char* text) {	// unused?
 #if defined DEBUG_ePAPER
   MENU.out(F("DEBUG_ePAPER\tePaper_print_str()\t"));
   MENU.out(row);

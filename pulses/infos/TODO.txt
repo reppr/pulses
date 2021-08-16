@@ -1116,12 +1116,14 @@ CONFIG_ARDUINO_IDF_COMMIT from config/sdkconfig.h header
 Menu.h
   #if defined(TEENSYDUINO)	// just preparing (Menu on TEENSYDUINO is not working yet)
 
-ePaper_GxEPD2.h test new ePapers with
-  //#define GxEPD2_DRIVER_CLASS GxEPD2_290     // GDEH029A1   128x296, SSD1608 (IL3820)
-  //#define GxEPD2_DRIVER_CLASS GxEPD2_290_T5  // GDEW029T5   128x296, UC8151 (IL0373)
-  //#define GxEPD2_DRIVER_CLASS GxEPD2_290_T5D // GDEW029T5D  128x296, UC8151D
-  //#define GxEPD2_DRIVER_CLASS GxEPD2_290_T94 // GDEM029T94  128x296, SSD1680
-  //#define GxEPD2_DRIVER_CLASS GxEPD2_290_M06 // GDEW029M06  128x296, UC8151 (IL0373)
+ePaper_GxEPD2.h 55 is
+  GxEPD2_BW<GxEPD2_290, GxEPD2_290::HEIGHT> ePaper(GxEPD2_290(/*CS*/ 5, /*DC*/ 10, /*RST*/ 9, /*BUSY*/ 4));
+  test new ePapers with
+    //#define GxEPD2_DRIVER_CLASS GxEPD2_290     // GDEH029A1   128x296, SSD1608 (IL3820)
+    //#define GxEPD2_DRIVER_CLASS GxEPD2_290_T5  // GDEW029T5   128x296, UC8151 (IL0373)
+    //#define GxEPD2_DRIVER_CLASS GxEPD2_290_T5D // GDEW029T5D  128x296, UC8151D
+    //#define GxEPD2_DRIVER_CLASS GxEPD2_290_T94 // GDEM029T94  128x296, SSD1680
+    //#define GxEPD2_DRIVER_CLASS GxEPD2_290_M06 // GDEW029M06  128x296, UC8151 (IL0373)
 
 
 TODO: extensions/FOREIGN/ should not contain libraries
@@ -1138,10 +1140,13 @@ how to deal with that one?
 
 
 TODO: RGB_STRINGS_MAX should *NOT* change size of pulses_hardware_conf_t !!!
-./pulses/pulses.ino 170:#define RGB_STRINGS_MAX		1	// 8 "possible"
-./pulses/pulses.ino 225:  uint8_t rgb_pin[RGB_STRINGS_MAX]={RGB_LED_STRIP_DATA_PIN};		// %4	TODO: FIX ALIGNEMENT
+  how many data pins for RGB strings are available?
+./pulses/pulses.ino 170:#define RGB_STRINGS_MAX		1	// 8 "possible"
+./pulses/pulses.ino 225:  uint8_t rgb_pin[RGB_STRINGS_MAX]={RGB_LED_STRIP_DATA_PIN};		// %4	TODO: FIX ALIGNEMENT
 
 TODO: FIXME: /home/test/Arduino/pulses/pulses.ino:364: undefined reference to `MC_display_message(char*)'
 
 TEST: in esp_now_ID_2_list()
     esp_now_pulses_known_peers[peer].preName[b] = (*ID_p).preName[b];
+
+use ESP.getFreeHeap());

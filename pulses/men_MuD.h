@@ -222,7 +222,7 @@ double input_f;
 char* input_string;	// = F("1637.4835");
 char* end=NULL;
 
-input_string = "1369.7254chabislätz!";
+input_string = (char*) "1369.7254chabislätz!";
 MENU.outln(input_string);
 input_f = strtod(input_string, &end);
 MENU.out(input_f, 6);
@@ -234,7 +234,7 @@ MENU.out(input_f, 6);
 MENU.ln();
 
 
-input_string = "1369.72540ohalätz!";
+input_string = (char*) "1369.72540ohalätz!";
 MENU.outln(input_string);
 input_f = strtod(input_string, &end);
 MENU.out(input_f, 6);
@@ -247,7 +247,7 @@ MENU.out(input_f, 6);
 MENU.ln();
 
 
-input_string = "12.3";
+input_string = (char*) "12.3";
 MENU.outln(input_string);
 input_f = strtod(input_string, &end);
 MENU.out(input_f, 6);
@@ -258,7 +258,7 @@ input_f = atof(input_string);
 MENU.out(input_f, 6);
 MENU.ln();
 
-input_string = "-2.5e-3";
+input_string = (char*) "-2.5e-3";
 MENU.outln(input_string);
 input_f = strtod(input_string, &end);
 MENU.out(input_f, 6);
@@ -270,7 +270,7 @@ MENU.out(input_f, 6);
 MENU.ln();
 
 
-input_string = "3.1415926535878323";
+input_string = (char*) "3.1415926535878323";
 MENU.outln(input_string);
 input_f = strtod(input_string, &end);
 MENU.out(input_f, 6);

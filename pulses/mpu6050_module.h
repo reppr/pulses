@@ -742,7 +742,7 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 	    MENU.outln(selected_name(JIFFLES));
 
 #if defined HAS_OLED
-	    extern void MC_big_or_multiline(uint8_t row, char* str);
+	    extern void MC_big_or_multiline(uint8_t row, const char* str);
 	    MC_big_or_multiline(2, selected_name(JIFFLES));	// TODO: jiffle or iCODE ???	###########
 #elif defined HAS_DISPLAY
 	    MC_display_message(selected_name(JIFFLES));	    	// TODO: jiffle or iCODE ???	###########
