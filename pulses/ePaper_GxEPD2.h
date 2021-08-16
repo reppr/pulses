@@ -78,7 +78,7 @@
 
 #if defined MULTICORE_DISPLAY
   #include "multicore_display_common.h"
-#endif MULTICORE_DISPLAY
+#endif // MULTICORE_DISPLAY
 
 
 void ePaper_infos() {

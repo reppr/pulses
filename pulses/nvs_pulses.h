@@ -13,8 +13,6 @@
 
 #define DEBUG_NVS
 
-#define RGB_STRINGS_MAX		2	// 8 possible	// TODO: DOES NOT BELONG HERE
-
 #include "pulses_esp_err.h"		// esp_err_t ERROR reporting
 
 int nvs_free_entries() {
@@ -544,13 +542,13 @@ void set_nvs_autostart_kb_macro(char* macro) {
   }
 } // set_nvs_autostart_kb_macro()
 
-bool read_nvs_autostart() {
+void read_nvs_autostart() {
   size_t size = nvs_test_key("nvs_AUTOSTART");
   MENU.ln();
   if(size == 0) {
     set_nvs_autostart_kb_macro(NULL);
     MENU.ln();
-    return false;
+    return;
   } // else
 
 //  MENU.out(F(" nvs AUTOSTART kb macro\tsize "));

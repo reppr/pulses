@@ -3855,13 +3855,13 @@ void musicBox_display() {
   stress_event_cnt = -3;	// heavy stress expected after musicBox_display
 } // musicBox_display()
 
-bool load_preset_and_start(short preset_new, bool start=true) {	// returns error
+void load_preset_and_start(short preset_new, bool start=true) {	// returns error
   short preset_was = musicBoxConf.preset;
   musicBoxConf.preset = preset_new;
   if(load_preset(musicBoxConf.preset)) {	// error?
     MENU.outln_invalid();
     musicBoxConf.preset = preset_was;
-    return true;		// ERROR
+    return;					// ERROR
   } // else
 
   if(MusicBoxState != OFF)	// end a running session?
@@ -3949,7 +3949,7 @@ bool do_recalibrate_Y_ui = false;	// when switching on accGyro parameters should
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
 void Y_UI_display_lines() {
   MENU.outln(F("'U'=toggle AccelGyro\t 'X' 'Y' 'Z' toggle axes on|off"));
-  MENU.outln(F("  'U0'='U='restart\T'UP'=accGyroPreset\t'UT'=tuning"));
+  MENU.outln(F("  'U0'='U='restart\t'UP'=accGyroPreset\t'UT'=tuning"));
   MENU.out_ON_off(accGyro_is_active);
   MENU.ln();
   MENU.outln(F("  'UUS'='UUSM..'=sync shift scale double\t'UUSD..'=halve"));

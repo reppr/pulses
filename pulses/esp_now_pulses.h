@@ -328,9 +328,9 @@ void esp_now_ID_2_list(peer_ID_t* ID_p) {
       }
 
       if(peer_is_known != ILLEGAL8) {	// known peer?
-	if((*ID_p).preName != '\0') {	// preName could have been empty or changed ;)
+	if(*(*ID_p).preName != '\0') {	// preName could have been empty or changed ;)
 	  for(int b=0; b<16; b++)
-	    esp_now_pulses_known_peers[peer].preName[b] = (*ID_p).mac_addr[b];
+	    esp_now_pulses_known_peers[peer].preName[b] = (*ID_p).preName[b];
 	  esp_now_pulses_known_peers[peer].preName[15] = '\0';	// savety net
 	}
 #if DEBUG_ESP_NOW_b || defined DEBUG_ESP_NOW_NETWORKING
@@ -397,7 +397,7 @@ esp_err_t esp_now_pulses_add_peer(peer_ID_t* ID_new_p) {	// might give feedback
 
   peer_info.channel = ESP_NOW_CHANNEL;
   memcpy(peer_info.peer_addr, (*ID_new_p).mac_addr, 6);	// if((*ID_new_p).mac_addr != NULL)
-  peer_info.ifidx = ESP_IF_WIFI_STA;
+  peer_info.ifidx = (wifi_interface_t) ESP_IF_WIFI_STA;
   peer_info.encrypt = false;
   esp_err_t status = esp_now_add_peer(&peer_info);	// try to add peer
   switch (status) {
@@ -415,7 +415,7 @@ esp_err_t esp_now_pulses_add_peer(peer_ID_t* ID_new_p) {	// might give feedback
       MENU.out(F(" peer existed "));
       MENU.out_IstrI((*ID_new_p).preName);
     }
-    if((*ID_new_p).preName != '\0') {	// if there *is* a preName, copy prename into list again:
+    if(*(*ID_new_p).preName != '\0') {	// if there *is* a preName, copy prename into list again:
       (*ID_new_p).preName[15] = '\0';			// savety net
       ; //      DADA search index
     }
@@ -618,7 +618,7 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
       }
       esp_now_add_peer_mac_only(mac_addr);
 
-      extern bool load_preset_and_start(short preset, bool start=true);
+      extern void load_preset_and_start(short preset, bool start=true);
       load_preset_and_start(new_preset);
     }
     break;
@@ -837,9 +837,7 @@ esp_err_t esp_now_pulses_setup_0() {		// setup 1st stage
 
   peer_info.channel = ESP_NOW_CHANNEL;
   memcpy(peer_info.peer_addr, broadcast_mac, 6);
-  peer_info.ifidx = ESP_IF_WIFI_STA;
-  //  peer_info.ifidx =(wifi_interface_t) ESP_IF_WIFI_STA;
-  //  peer_info.ifidx = WIFI_IF_STA;
+  peer_info.ifidx = (wifi_interface_t) ESP_IF_WIFI_STA;
   peer_info.encrypt = false;
 
   status = add_broadcast_2_ESP_peer_list();		// add broadcast as ESP peer

@@ -491,7 +491,7 @@ void Pulses::wake_pulse(int pulse) {
     if (action_flags & (DACsq1|DACsq2))
       DAC_output();
 #endif
-#endif CLICK_AND_DAC_BEFORE_PAYLOAD_OLDSTYLE	// TODO: TEST&REMOVE	old style
+#endif // CLICK_AND_DAC_BEFORE_PAYLOAD_OLDSTYLE	// TODO: TEST&REMOVE	old style
 
     if (action_flags & PAYLOAD) {		// for flexibility payload comes *before* icode
       (*pulses[pulse].payload)(pulse);		// do payload

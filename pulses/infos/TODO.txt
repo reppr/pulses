@@ -973,8 +973,6 @@ use bool LoRa_is_functional=false;
 LoRa needs ESP32TimerInterrupt.h
 
 
-morse_2output_buffer(MORSE_TOKEN_ILLEGAL);	// TODO: WARNING: multibyte
-
 /home/buster/Arduino/pulses/pulses.ino:340:14: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
        return ">*< ALL KNOWN >*<";  // for esp_now
 
@@ -1104,3 +1102,46 @@ HARDWARE.RTC_addr and cc macro
 HARDWARE.RTC_type = RTC_type_DS1307;	// FIXME: RTC_type_DS3231 ???
 
 // show_metric_cents_list();	// TODO: move to Tuning hierarchy
+
+check for   Serial.clear();	// Teensy?
+
+use ESP_ARDUINO_VERSION https://github.com/espressif/arduino-esp32/blob/master/cores/esp32/esp_arduino_version.h
+see also: https://github.com/espressif/esp-idf/blob/master/components/esp_common/include/esp_idf_version.h
+
+git add basic_menu
+
+CONFIG_ARDUINO_IDF_COMMIT from config/sdkconfig.h header
+	see: https://www.esp32.com/viewtopic.php?f=19&t=22333&sid=182b837b69a2e273a29f95570b39a739
+
+Menu.h
+  #if defined(TEENSYDUINO)	// just preparing (Menu on TEENSYDUINO is not working yet)
+
+ePaper_GxEPD2.h test new ePapers with
+  //#define GxEPD2_DRIVER_CLASS GxEPD2_290     // GDEH029A1   128x296, SSD1608 (IL3820)
+  //#define GxEPD2_DRIVER_CLASS GxEPD2_290_T5  // GDEW029T5   128x296, UC8151 (IL0373)
+  //#define GxEPD2_DRIVER_CLASS GxEPD2_290_T5D // GDEW029T5D  128x296, UC8151D
+  //#define GxEPD2_DRIVER_CLASS GxEPD2_290_T94 // GDEM029T94  128x296, SSD1680
+  //#define GxEPD2_DRIVER_CLASS GxEPD2_290_M06 // GDEW029M06  128x296, UC8151 (IL0373)
+
+
+TODO: extensions/FOREIGN/ should not contain libraries
+In file included from /home/test/Arduino/pulses/extensions/FOREIGN/ESP32-Digital-RGB-LED-Drivers/src/esp32_digital_led_lib.cpp:44,
+                 from /home/test/Arduino/pulses/extensions/pulses_RGB_LED_string.h:92,
+                 from /home/test/Arduino/pulses/pulses.ino:1122:
+/home/test/.arduino15/packages/esp32/hardware/esp32/2.0.0-rc1/tools/sdk/esp32/include/esp_hw_support/include/esp_intr.h:16:2: warning: #warning esp_intr.h is deprecated, please include esp_intr_alloc.h instead [-Wcpp]
+ #warning esp_intr.h is deprecated, please include esp_intr_alloc.h instead
+  ^~~~~~~
+
+how to deal with that one?
+	/home/test/Arduino/libraries/Menu/Menu.cpp:1525:12: warning: multi-character character constant [-Wmultichar]
+	case 'ß':  // some broken configuration sends 'ß' instead of '?', silently accept
+
+
+TODO: RGB_STRINGS_MAX should *NOT* change size of pulses_hardware_conf_t !!!
+./pulses/pulses.ino 170:#define RGB_STRINGS_MAX		1	// 8 "possible"
+./pulses/pulses.ino 225:  uint8_t rgb_pin[RGB_STRINGS_MAX]={RGB_LED_STRIP_DATA_PIN};		// %4	TODO: FIX ALIGNEMENT
+
+TODO: FIXME: /home/test/Arduino/pulses/pulses.ino:364: undefined reference to `MC_display_message(char*)'
+
+TEST: in esp_now_ID_2_list()
+    esp_now_pulses_known_peers[peer].preName[b] = (*ID_p).preName[b];

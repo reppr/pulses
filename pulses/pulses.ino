@@ -178,7 +178,7 @@ typedef struct pulses_hardware_conf_t {
   // gpio
   uint8_t gpio_pins_cnt=0;		// used GPIO click pins
   //  gpio_pin_t gpio_pins[20]={ILLEGAL8};					// %4
-  gpio_pin_t gpio_pins[20]={255};					// %4
+  gpio_pin_t gpio_pins[20]={(gpio_pin_t) 255};					// %4
 
   // dac
   // uint8_t dac_channel_cnt=0;	// TODO:
@@ -1071,7 +1071,7 @@ bool stack_sync_user_selected=false;
   // unsigned long ticks_per_octave=10000000L;		// 10 seconds/octave
   // unsigned long ticks_per_octave=60000000L;		//  1 minute/octave
   // unsigned long ticks_per_octave=60000000L*10L;	// 10 minutes/octave
-  unsigned long ticks_per_octave=60000000L*60L;	//  1 hour/octave
+  unsigned long ticks_per_octave=60000000L*60UL;	//  1 hour/octave
   // unsigned long ticks_per_octave=60000000L*60L*24;	//  1 day/octave  FIXME: overflows
 
 // re-implement, see tuned_sweep_click()
@@ -4292,10 +4292,10 @@ void do_throw_a_jiffle(int seeder_pulse) {		// for pulse_do
 
 
 // old style, obsolete	// TODO: remove?
-int prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
+void prepare_magnets(bool inverse, int voices, unsigned int multiplier, unsigned int divisor, int sync) {
   if (inverse) {
     no_g_inverse();
-    return 0;
+    return;
   }
 
   select_in(SCALES, pentatonic_minor);

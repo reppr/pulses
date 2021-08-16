@@ -49,7 +49,7 @@ class Harmonical {
 
   unsigned int GCD(unsigned int a, unsigned int b);		// greatest common divisor, Euklid
   unsigned long LCM(unsigned int a, unsigned int b);		// least common multiple
-  bool fraction_LCM(fraction_t* F, fraction_t*LCM);	// LCM for fractions, returns error
+  void fraction_LCM(fraction_t* F, fraction_t*LCM);		// LCM for fractions, should return error?
   void reduce_fraction(fraction_t*f);
   void expand_fractions(fraction_t* a, fraction_t* b);
   fraction_t* add_fraction(fraction_t* delta, fraction_t* sum);

@@ -31,6 +31,7 @@
 #define MORSE_COMPILE_HELPERS		// compile some functions for info, debugging, *can be left out*
 
 #include "touch.h"
+#include "driver/touch_pad.h"   // new ESP32-arduino version needs this for 'touch_pad_set_trigger_mode' declaration
 #include "esp_attr.h"
 
 #if defined ESP32
@@ -129,7 +130,7 @@ float morse_token_duration[MORSE_TOKEN_MAX];	// debugging and statistics
 //  #define MORSE_TOKEN_OFF		'o'
 //  #define MORSE_TOKEN_ON		'°'
 
-#define MORSE_TOKEN_ILLEGAL		'§'
+#define MORSE_TOKEN_ILLEGAL		ILLEGAL8	// was: '§' multichar
 
 bool is_real_token(char token) {	// check for real tokens like . - ! V and separation (word, letter)
   switch(token) {			//	reject all debugging and debounce stuff
@@ -663,7 +664,7 @@ bool morse_poll_letter_separation() {
 char morse_OUTPUT_buffer[MORSE_OUTPUT_MAX];
 short morse_OUTPUT_cnt=0;
 
-bool morse_2output_buffer(char letter) {
+void morse_2output_buffer(char letter) {
   if (morse_OUTPUT_cnt < MORSE_OUTPUT_MAX) {
     morse_OUTPUT_buffer[morse_OUTPUT_cnt++] = letter;
   } else {
@@ -683,12 +684,12 @@ void show_morse_output_buffer() {
   }
 }
 
-bool morse_store_as_letter(char token) {	// translate special cases and store as letters
+void morse_store_as_letter(char token) {	// translate special cases and store as letters		TODO: obsolete?
   switch (token) {
   case ILLEGAL8:
     morse_2output_buffer(MORSE_TOKEN_ILLEGAL);
   case '\0':
-    return false;
+    return;
     break;
 
   case MORSE_TOKEN_separeWord:	// separe words by a space
@@ -735,7 +736,7 @@ bool morse_store_as_letter(char token) {	// translate special cases and store as
     morse_2output_buffer(token);
     break;
   }
-}
+} // morse_store_as_letter(char token)
 
 
 

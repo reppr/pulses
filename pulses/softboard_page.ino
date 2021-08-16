@@ -1121,7 +1121,7 @@ bool softboard_reaction(char token) {
     show_DS1307_time_stamp();	// DS3231 or DS1307
     MENU.ln();
     if(MENU.check_next('!')) {
-      uint8_t year=2018;
+      uint8_t year=21;	// year 2021
       uint8_t month=11;
       uint8_t day=11;
       uint8_t hour=11;

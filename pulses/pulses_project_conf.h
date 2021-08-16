@@ -55,6 +55,7 @@
   #endif
 
   #define NO_GPIO_PINS				// DAC only
+//#undef PERIPHERAL_POWER_SWITCH_PIN		// maybe let the warning appear?
   #define PERIPHERAL_POWER_SWITCH_PIN	2	// <<< NEW >>>
   #define MORSE_OUTPUT_PIN		12
   #define MORSE_INPUT_PIN		13	// ok

@@ -71,7 +71,7 @@ unsigned long Harmonical::LCM(unsigned int a, unsigned int b) {	// least common 
 }
 
 
-bool Harmonical::fraction_LCM(fraction_t *F, fraction_t *LCM_) {	// returns error
+void Harmonical::fraction_LCM(fraction_t *F, fraction_t *LCM_) {	// should return error?
   reduce_fraction(F);
   reduce_fraction(LCM_);
   (*LCM_).multiplier = LCM((*F).multiplier, (*LCM_).multiplier);
@@ -153,6 +153,7 @@ int Harmonical::prime_factors(unsigned int p_factors[], unsigned long number) {
     } // loop over small_primes[]
     return ILLEGAL32;	// not enough small primes, ILLEGAL32, abort
   }
+  return ILLEGAL32;	// should not happen, but keep compiler happy...
 }
 
 

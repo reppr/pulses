@@ -70,6 +70,11 @@ class Pulses;
     #undef USE_F_MACRO
   #endif
 
+  #if defined(TEENSYDUINO)	// just preparing (Menu on TEENSYDUINO is not working yet)
+    #undef USE_F_MACRO
+    #undef GET_FREE_RAM
+  #endif
+
 #else	// NO GET_FREE_RAM on PC	(*ARDUINO ONLY*)
 
   // GET_FREE_RAM
