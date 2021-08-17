@@ -1126,7 +1126,7 @@ ePaper_GxEPD2.h 55 is
     //#define GxEPD2_DRIVER_CLASS GxEPD2_290_M06 // GDEW029M06  128x296, UC8151 (IL0373)
 
 
-TODO: extensions/FOREIGN/ should not contain libraries
+TODO: extensions/FOREIGN/ should not contain libraries		DONE: moved to libraries/
 In file included from /home/test/Arduino/pulses/extensions/FOREIGN/ESP32-Digital-RGB-LED-Drivers/src/esp32_digital_led_lib.cpp:44,
                  from /home/test/Arduino/pulses/extensions/pulses_RGB_LED_string.h:92,
                  from /home/test/Arduino/pulses/pulses.ino:1122:
@@ -1144,9 +1144,5 @@ TODO: RGB_STRINGS_MAX should *NOT* change size of pulses_hardware_conf_t !!!
 ./pulses/pulses.ino 170:#define RGB_STRINGS_MAX		1	// 8 "possible"
 ./pulses/pulses.ino 225:  uint8_t rgb_pin[RGB_STRINGS_MAX]={RGB_LED_STRIP_DATA_PIN};		// %4	TODO: FIX ALIGNEMENT
 
-TODO: FIXME: /home/test/Arduino/pulses/pulses.ino:364: undefined reference to `MC_display_message(char*)'
-
 TEST: in esp_now_ID_2_list()
     esp_now_pulses_known_peers[peer].preName[b] = (*ID_p).preName[b];
-
-use ESP.getFreeHeap());
