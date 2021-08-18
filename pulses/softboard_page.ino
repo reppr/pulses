@@ -832,12 +832,16 @@ void _select_analog(bool key) {
 #endif
 }
 
+#if defined ESP32
+  #include "esp_get_infos.h"
+#endif
 
 void softboard_display() {
   MENU.outln(F("Arduino Softboard  http://github.com/reppr/pulses/\n"));
 
 #if defined ESP32
   display_esp_versions();
+  MENU.ln();
   MENU.out(F("MAC: "));
   MENU.outln(getMacAddress());
 

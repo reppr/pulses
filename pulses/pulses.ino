@@ -1288,30 +1288,7 @@ uint8_t relaxmax=4;			// up to how many relax() in one todo chain
 #endif
 
 #if defined ESP32
-  // ESP32  int getChipRevision()	see: Andreas Spiess ESP32_Version.ino, register names updated
-  #include "soc/efuse_reg.h"
-  int get_ESP32_ChipRevision() {
-    return (REG_READ(EFUSE_BLK0_RDATA3_REG) >> (EFUSE_RD_CHIP_VER_REV1_S)&&EFUSE_RD_CHIP_VER_REV1_V) ;
-  }
-
-  void display_esp_versions() {
-    MENU.out(F("ESP32 revision "));
-    MENU.outln(get_ESP32_ChipRevision());
-
-    MENU.out(F("ESP IDF version "));
-    MENU.outln(esp_get_idf_version());
-  }
-
-  // see: https://github.com/espressif/arduino-esp32/issues/932
-  #include "esp_system.h"
-  String getMacAddress() {
-    uint8_t baseMac[6];
-    // Get MAC address for WiFi station
-    esp_read_mac(baseMac, ESP_MAC_WIFI_STA);
-    char baseMacChr[18] = {0};
-    sprintf(baseMacChr, "%02X:%02X:%02X:%02X:%02X:%02X", baseMac[0], baseMac[1], baseMac[2], baseMac[3], baseMac[4], baseMac[5]);
-    return String(baseMacChr);
-  }
+  #include "esp_get_infos.h"
 #endif
 
 

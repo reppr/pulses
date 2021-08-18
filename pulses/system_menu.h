@@ -76,6 +76,9 @@ void cpp_info_display() {
   MENU.outln(sizeof(long double));
 } // cpp_info_display()
 
+#if defined ESP32
+  #include "esp_get_infos.h"
+#endif
 
 void system_menu_display() {
   //MENU.outln(F("Pulses System Menu\n"));
