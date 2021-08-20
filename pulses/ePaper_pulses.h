@@ -32,12 +32,11 @@ void ePaper_show_peer_list() {
   ePaper.setCursor(0,0);
   ePaper.println();
 
-  uint8_t row=0;
   bool is_send_to_peer;
   for(int i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {
     if(mac_is_non_zero(esp_now_pulses_known_peers[i].mac_addr)) {
       ePaper.print(i+1);
-      if(is_send_to_peer = (! mac_cmp(esp_now_send2_mac_p, esp_now_pulses_known_peers[i].mac_addr)))	// send to peer?
+      if((is_send_to_peer = (! mac_cmp(esp_now_send2_mac_p, esp_now_pulses_known_peers[i].mac_addr))))	// send to peer?
 	ePaper.print('>');
       else
 	ePaper.print(' ');

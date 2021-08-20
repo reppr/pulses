@@ -176,6 +176,9 @@ void show_battery_level() {
   case too_LOW:
     MENU.outln(F("*BATTERY LOW*"));
     break;
+  case LOW_lv:
+    MENU.outln(F("low"));
+    break;
   case MEDIOCRE:
     MENU.outln(F("LOW"));
     break;

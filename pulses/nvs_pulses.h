@@ -168,7 +168,6 @@ bool /*error*/ nvs_save_blob(const char* key, void* new_blob, size_t buffer_size
 extern bool rgb_strings_available;
 extern bool rgb_strings_active;
 void configure_HARDWARE_from_nvs() {
-  int v;
   pulses_hardware_conf_t HARDWARE_from_nvs;
   HARDWARE_from_nvs.version = ILLEGAL8;	// see below
   MENU.outln(F("configure_HARDWARE_from_nvs()\t"));

@@ -2647,14 +2647,15 @@ void loop() {	// ARDUINO
 #ifdef USE_INPUTS
   if(! maybe_check_inputs())		// reading inputs can be time critical, so check early
 #endif
+    {
+      // DEBUG: see: infos/internal/2019-08-20_backtrace.txt
+      if(MENU.lurk_then_do()) {		// MENU second in priority, check if something to do,
+	stress_event_cnt = -1;		//   after many menu actions there will be a stress event, ignore that
+      } else {      // no, menu did not do much
 
-    // DEBUG: see: infos/internal/2019-08-20_backtrace.txt
-    if(MENU.lurk_then_do()) {		// MENU second in priority, check if something to do,
-      stress_event_cnt = -1;		//   after many menu actions there will be a stress event, ignore that
-    } else {      // no, menu did not do much
-
-      if (! low_priority_tasks())		// check low_priority_tasks()
-	lowest_priority_tasks();		// if still nothing done, check lowest_priority_tasks()
+	if (! low_priority_tasks())		// check low_priority_tasks()
+	  lowest_priority_tasks();		// if still nothing done, check lowest_priority_tasks()
+      }
     }
 } // ARDUINO loop()
 
@@ -2902,7 +2903,6 @@ bool maybe_display_tuning_steps() {
 
     int tuning_step = tuning;			// integer part
     int current_fraction = 1.0/(double) tuning;	// integer part
-    bool tuning_up = (tuning > last_tuning);
 
     if (tuning_step != last_tuning_step) {	// integer part changed
       last_tuning_step = tuning_step;
@@ -3235,7 +3235,7 @@ void select_alive() {
 
 // ****************************************************************
 /* scale[]
-/* a scale array has elements of multiplier/divisor pairs
+   a scale array has elements of multiplier/divisor pairs
    each is the integer representation of a rational number
    very useful for all kind of things like scales, chords, rhythms */
 
@@ -3383,7 +3383,6 @@ int tune_selected_2_scale_limited(Harmonical::fraction_t* scaling_p, unsigned in
     PULSES.div_time(&base_period, scaling_p->divisor);
 
     // check if highest note is within limit
-    bool first_run=true;
     pulse_time_t this_period = PULSES.simple_time(0);	// bluff the very first test to pass
 #if defined PULSES_USE_DOUBLE_TIMES
     while (this_period <= shortest_limit) { // SHORTEST LIMIT *CAN* BE ZERO (to switch it off)
@@ -3829,8 +3828,6 @@ bool en_info(int pulse) {
 
 // TODO: move to Pulses.cpp
 void pulse_info_1line(int pulse) {	// one line pulse info, short version
-  unsigned long realtime=micros();	// take time *before* serial output
-
   if (PULSES.pulse_is_selected(pulse))
     MENU.out('*');
   else
@@ -3941,7 +3938,7 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
   }
 
   MENU.ln();
-}
+} // pulse_info_1line()
 
 
 // pulse_info() as paylod for pulses: print pulse info:	// ################ TODO: update ################
@@ -5511,8 +5508,7 @@ bool menu_pulses_reaction(char menu_input) {
   static unsigned long input_value=0;	// static???	// TODO: OBSOLETE? see: new_input
   static long calc_result=0;
   long new_input;	// static ???
-  pulse_time_t now, time_scratch;
-  pulses_mask_t bitmask;
+  pulse_time_t time_scratch;
   char next_token;	// for multichar commands
 
   switch (menu_input) {
@@ -6155,11 +6151,12 @@ bool menu_pulses_reaction(char menu_input) {
     } else {	// toggle TUNED on selected pulses
       // we work on voices anyway, regardless dest
       for (int pulse=0; pulse<voices; pulse++)
-	if (PULSES.pulse_is_selected(pulse))
+	if (PULSES.pulse_is_selected(pulse)) {
 	  if (PULSES.pulses[pulse].flags & TUNED)
 	    PULSES.stop_tuning(pulse);
 	  else
 	    PULSES.activate_tuning(pulse);
+	}
     }
 
     PULSES.fix_global_next();	// just in case?
@@ -6423,8 +6420,6 @@ bool menu_pulses_reaction(char menu_input) {
 	reverse_gpio_pins();
 #endif
 	if (MENU.maybe_display_more()) {
-	  // display_name5pars("setup_jiffles0", g_inverse, voices, \
-				musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	  MENU.out(F("setup_jiffles0("));
 	  MENU.out(g_inverse);
 	  display_next_par(voices);

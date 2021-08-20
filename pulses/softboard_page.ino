@@ -678,13 +678,14 @@ void toggle_tone() {
   return true  if any time consuming action like menu output was done
 */
 bool maybe_run_continuous() {
-  if (run_VU)
+  if (run_VU) {
     if (touch_VU) {	// touchRead()
       if (bar_graph_VU(PIN_digital))
 	return true;		// there was *output*
     } else		// analogRead()
     if (bar_graph_VU(PIN_analog))
       return true;		// there was *output*
+  }
 
 #ifdef has_ARDUINO_TONE
   if(run_analog2tone)

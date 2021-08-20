@@ -1341,7 +1341,7 @@ void morse_show_space_delimited_string(const char *p) {
     return;
 
   char c;
-  for(int i=0; c = p[i] ; i++) {
+  for(int i=0; (c = p[i]) ; i++) {
     MENU.out(c);
     if(c == ' ')	// *does* show delimiting space
       break;
@@ -1364,6 +1364,7 @@ void morse_definition_set_show(bool uppercase) {
   case '*':	// letters
     //    morse_show_space_delimited_string(morse_def_Letter_in_CASE);
     MENU.out(morse_def_Letter_in_CASE->c_str());
+    break;	// TODO: inserted break, is it ok?
   case 'C':	// COMMANDs
     morse_show_space_delimited_string(morse_def_COMMAND->c_str());
     break;
@@ -1549,7 +1550,6 @@ void static morse_token_decode() {	// decode received token sequence
 */
   char pattern[10] = { '\0' };	// 10 (up to 9 real tokens + '\0'
   char token;
-  bool last_was_separeLetter=false;	// normally we want to store *only the first space* of a sequence
 
 #if defined MORSE_DECODE_DEBUG
   MENU.outln("morse_token_decode()");
@@ -1787,7 +1787,7 @@ void show_cheat_sheet() {
   uint8_t rows=5;
 #endif
   for(int i=0; i<rows; i++) {
-    if(c = cheat_buffer[i]) {
+    if((c = cheat_buffer[i])) {
       if(morse_tokens_of_letter(result, maxlen, c)) {	// uppercase only
 #if defined HAS_OLED
 	extern uint8_t /*next_row*/ monochrome_big_or_multiline(int row, const char* str);

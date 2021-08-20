@@ -605,10 +605,10 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
     // last selected slice, integer
     static int _selected_Ax_i_seen;
     static int _selected_Ay_i_seen;
-    static int _selected_Az_i_seen;
+    // static int _selected_Az_i_seen;	// TODO: unused?
 
-    static int _selected_Gx_i_seen;
-    static int _selected_Gy_i_seen;
+    // static int _selected_Gx_i_seen;	// TODO: unused?
+    // static int _selected_Gy_i_seen;	// TODO: unused?
     static int _selected_Gz_i_seen;
 
     float Ax_f_new=0.0;
@@ -730,7 +730,7 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
       // now react;
       if(accGyro_mode & AG_mode_Ax) {		// accelero X
 	unsigned int* jiffle = NULL;
-	if(jiffle = index2pointer(JIFFLES, Ax_i_new)) {
+	if((jiffle = index2pointer(JIFFLES, Ax_i_new))) {
 	  if(Ax_i_new != _selected_Ax_i_seen) {
 	    _selected_Ax_i_seen = Ax_i_new;
 	    select_in(JIFFLES, jiffle);

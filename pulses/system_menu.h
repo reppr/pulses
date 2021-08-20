@@ -113,7 +113,6 @@ void system_menu_display() {
 
 
 bool system_menu_reaction(char token) {
-  int input_value;
   String s;
 
   switch(token) {

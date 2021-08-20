@@ -201,7 +201,7 @@ void esp_now_read_received_identity(peer_ID_t* receive_ID_p) {	// reads identity
 esp_err_t esp_now_send_who(uint8_t* mac_addr) {
   esp_err_t status;
   bool do_display;
-  if(do_display = (MENU.maybe_display_more(VERBOSITY_SOME) || DEBUG_ESP_NOW_b))
+  if((do_display = (MENU.maybe_display_more(VERBOSITY_SOME) || DEBUG_ESP_NOW_b)))
     MENU.out(F("ESP-NOW send N_WHO\t"));
 
   status = esp_now_send_bare(mac_addr, N_WHO);
@@ -867,7 +867,7 @@ esp_err_t esp_now_pulses_setup_0() {		// setup 1st stage
 void esp_now_pulses_setup() {
   esp_err_t status;
   MENU.outln(F("\nesp_now_pulses_setup()"));
-  if(status = esp_now_pulses_setup_0()) {
+  if((status = esp_now_pulses_setup_0())) {
     MENU.out(F("failed "));
     MENU.outln(esp_err_to_name(status));
 

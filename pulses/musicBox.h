@@ -208,7 +208,7 @@ int max_subcycle_seconds=MAX_SUBCYCLE_SECONDS;
 int musicBox_pause_seconds=18;		// DADA changed that ################
 void delay_pause() {	// TODO; FIXME: (i.e. morse input...)
   if(musicBox_pause_seconds) {
-    if(MENU.verbosity >= VERBOSITY_LOWEST); {
+    if((MENU.verbosity >= VERBOSITY_LOWEST)) {
       MENU.out(F("restarting after "));
       MENU.out(musicBox_pause_seconds);
       MENU.outln(F(" seconds"));
@@ -961,9 +961,8 @@ void tag_randomness(bool user_selected) {
 
 pulse_time_t butler_soft_end_time;	// used by musicBox_butler(int pulse), toggle_magic_autochanges()
 void toggle_magic_autochanges() {
-  if(magic_autochanges = !magic_autochanges) {	// if magic_autochanges got *SWITCHED ON*
-    if(musicBox_butler_i != ILLEGAL32) {	// deal with soft_end_time
-      pulse_time_t thisNow = PULSES.get_now();
+  if((magic_autochanges = !magic_autochanges)) {	// if magic_autochanges got *SWITCHED ON*
+    if(musicBox_butler_i != ILLEGAL32) {		// deal with soft_end_time
       pulse_time_t soft_end_time;	// scratch
       int cnt=0;
       while (true)
@@ -991,7 +990,7 @@ void toggle_magic_autochanges() {
 void hertz_2_pitch(double hertz) {
   // was: musicBoxConf.pitch = {1, hz};    HACK: scaled *1000000 to an integer ratio
   unsigned int const scaling = 1000000;
-  musicBoxConf.pitch = {scaling, ((double) scaling * hertz)};
+  musicBoxConf.pitch = {scaling, (unsigned int) ((double) scaling * hertz)};
 
   while ((musicBoxConf.pitch.divisor % 10) == 0  &&  (musicBoxConf.pitch.multiplier % 10) == 0)
     {
@@ -1878,7 +1877,6 @@ void musicBox_trigger_ISR() {	// can also be used on the non interrupt version :
   static pulse_time_t triggered_at=PULSES.get_now();	// preserves last seen fresh trigger time
 
   pulse_time_t new_trigger = PULSES.get_now();		// new trigger time
-  pulse_time_t duration = new_trigger;			// remember
 
   bool triggered=false;
   switch (MusicBoxState) {
@@ -1908,7 +1906,7 @@ void musicBox_trigger_ISR() {	// can also be used on the non interrupt version :
   }
 
   portEXIT_CRITICAL_ISR(&musicBox_trigger_MUX);
-}
+} // musicBox_trigger_ISR()
 
 void musicBox_trigger_ON() {
 #if ! defined MAGICAL_TOILET_HACKS	// some quick dirty hacks *NOT* using the interrupt
@@ -2089,7 +2087,7 @@ int stop_on_LOW_H1(void) {	// TODO: DEBUG ################
   if(/*were_high=*/stop_on_LOW()) {
     for(int pulse=0; pulse<PL_MAX; pulse++) {
       if(PULSES.pulses[pulse].flags  &&  PULSES.pulses[pulse].groups & g_SECONDARY  &&  PULSES.pulses[pulse].counter & 1) {
-	if(! PULSES.pulses[pulse].flags & COUNTED) {
+	if(! (PULSES.pulses[pulse].flags & COUNTED)) {
 	  PULSES.pulses[pulse].flags |= COUNTED;
 	  PULSES.pulses[pulse].remaining = 1;
 	  were_high++;
@@ -2138,8 +2136,6 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
   static short current_slice=0;
   static pulse_time_t butler_start_time;
   static pulse_time_t trigger_enable_time;
-
-  pulse_time_t this_start_time =  PULSES.pulses[pulse].next;	// still unchanged?
 
   pulse_time_t this_time = PULSES.pulses[pulse].next;		// TODO: verify ################
   PULSES.sub_time(&PULSES.pulses[pulse].last, &this_time);	// so long inside this cycle
@@ -3094,7 +3090,7 @@ void start_musicBox() {
     default:
       RGBstringConf.hue_slice_cnt = musicBoxConf.steps_in_octave * 3;
       if(RGBstringConf.hue_slice_cnt < 6)
-	RGBstringConf.hue_slice_cnt;
+	RGBstringConf.hue_slice_cnt=6;
       break;
     } // switch(musicBoxConf.steps_in_octave)
 
@@ -3902,7 +3898,7 @@ void input_preset_and_start() {	// factored out UI component	// TODO: sets prese
 
   default:	// numeric input (expected)
     if(MENU.is_numeric()) {
-      if(new_input = MENU.numeric_input(0)) {
+      if((new_input = MENU.numeric_input(0))) {
 	musicBoxConf.preset = new_input;
 	load = true;
       } else
@@ -4197,8 +4193,6 @@ bool Y_UI() {	// 'Ux' 'X' 'Y' 'Z' "eXtended motion UI" planed eXtensions: other 
 bool musicBox_reaction(char token) {
   int cnt;
   signed long new_input;
-  char next_token;
-  pulse_time_t T_scratch;
 
   switch(token) {
   case '?': // musicBox_display();
@@ -4427,7 +4421,6 @@ bool musicBox_reaction(char token) {
 	  MENU.out(F("send NOW\t"));
 
 	int len=0;
-	char c;
 	for(;len < 64; len++) {
 	  if(MENU.peek(len) == EOF8)
 	    break;

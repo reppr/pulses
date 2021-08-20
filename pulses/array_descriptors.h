@@ -42,8 +42,6 @@ int DB_items(arr_descriptor * DB) {
 
 
 char* array2name(arr_descriptor * DB, unsigned int* array) {
-  arr_descriptor * arr= DB;
-
   // do *not* start at 0,  if the array is selected. you would get DB name ;)
   for(int i=1; i < DB[0].item; i++)
     if (DB[i].pointer == array)
