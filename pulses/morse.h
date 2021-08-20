@@ -1248,7 +1248,7 @@ uint8_t morse_seen_TOKENS=0;
 uint8_t morse_SYMBOLS_cnt=0;
 
 void morse_show_definition() {
-  if(morse_DEFINITION.c_str() != "") {
+  if(morse_DEFINITION.length()) {
     MENU.out(morse_PRESENT_TYPE);
     MENU.space();
     MENU.out(morse_DEFINITION_TOKENS.c_str());

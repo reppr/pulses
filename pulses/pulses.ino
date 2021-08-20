@@ -3890,7 +3890,7 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
   if (PULSES.pulses[pulse].action_flags & doesICODE) {
     MENU.out(':');
     char * name=array2name(iCODEs, (unsigned int *) PULSES.pulses[pulse].icode_p);
-    if (name != "")
+    if (name[0])
       MENU.out(name);
     else {	// maybe it is a jiffle, played as iCode?
       MENU.out("J:");
@@ -4083,11 +4083,11 @@ void display_payload(int pulse) {
   if (PULSES.pulses[pulse].payload == scratch) {
     MENU.out("seed_iCode ");
     char * name=array2name(iCODEs, (unsigned int *) PULSES.pulses[pulse].icode_p);
-    if (name != "")
+    if (name[0])
       MENU.out(name);		// display iCode name
     else {			// maybe it is a jiffle, played as iCode?
       name=array2name(JIFFLES, (unsigned int *) PULSES.pulses[pulse].icode_p);
-      if (name != "")
+      if (name[0])
 	MENU.out(name);	// name of jiffle, played as iCode
       else
 	MENU.outln(F("(none)"));

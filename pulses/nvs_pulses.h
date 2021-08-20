@@ -471,7 +471,7 @@ void configure_IDENTITY_from_nvs() {
     goto free_identity_nvs;
   }
 
-  if(IDENTITY_from_nvs_p->preName != "") {
+  if(IDENTITY_from_nvs_p->preName[0]) {
     for(int b=0; b<16; b++)
       my_IDENTITY.preName[b] = IDENTITY_from_nvs_p->preName[b];
 
