@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICAL v.046   // new with ePaper or OLED display
+#define PROGRAM_VERSION	HARMONICAL v.046   // testing esp32-arduino 2.0.0 rc1
 /*			0123456789abcdef   */
 
 
@@ -1862,6 +1862,10 @@ void show_internal_configurations() {
     MENU.outln(F("\tuses ESP_NOW"));
   #else
     MENU.outln(F("\tesp_now *not* used"));
+  #endif
+
+  #if defined USE_BLUETOOTH_SERIAL_MENU
+    MENU.outln(F("\tuses BT Serial"));
   #endif
 
   MENU.ln();

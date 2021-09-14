@@ -52,7 +52,8 @@
     //#define BAUDRATE	1000000	// (I get many errors on some ESP32 boards)
     //#define BAUDRATE	500000	// fine on ESP32 with bad USB cable
 #if defined ESP32
-  #define BAUDRATE	500000	// TODO: test with better USB connection and also ESP8266
+//#define BAUDRATE	500000	// TODO: test with better USB connection and also ESP8266
+  #define BAUDRATE	115200	// allows to read the boot messages
 #else
   #define BAUDRATE	115200	// works fine here on all tested Arduinos
 #endif

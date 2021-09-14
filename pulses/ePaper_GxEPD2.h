@@ -359,10 +359,25 @@ void ePaper_print_1line_at(uint16_t row, const char* text, int16_t offset_y=0) {
 #if defined MULTICORE_DISPLAY
 TaskHandle_t ePaper_1line_at_handle;
 
+//#define WORKAROUND_SemTakeCrash	// define that to activate workaraound in v2.0.0 rc1, *NOT* working in v2.0.0 any more
 void ePaper_1line_at_task(void* data_) {
   print_descrpt_t* data = (print_descrpt_t*) data_;
 
-  xSemaphoreTake(MC_mux, portMAX_DELAY);
+#if defined ESP_ARDUINO_VERSION_MAJOR	// older versions do work
+ #if defined WORKAROUND_SemTakeCrash	// activates workaround for v2.0.0 rc1 (only)
+  static bool first_time=true
+  if(first_time) {
+    delay(150);		// version 2.0.0 rc1 crashes without that!
+    first_time=false;
+  }
+  #warning ePaper_GxEPD2.h compiling with WORKAROUND_SemTakeCrash
+ #else
+  #warning ePaper_GxEPD2.h compiling *without* WORKAROUND_SemTakeCrash
+ #endif
+#endif	// ESP_ARDUINO_VERSION_MAJOR
+
+  xSemaphoreTake(MC_mux, portMAX_DELAY);	// <<<<<<<<<<<<<<<< TODO: esp32-arduino v2.0.0 crashes here
+
   // set_used_font(used_font_p);
   ePaper_print_1line_at(data->row, data->text, data->offset_y);
   free_text_buffer(data);
@@ -370,7 +385,7 @@ void ePaper_1line_at_task(void* data_) {
   vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
   xSemaphoreGive(MC_mux);
   vTaskDelete(NULL);
-}
+} // ePaper_1line_at_task()
 
 void multicore_ePaper_1line_at(int16_t row, const char* text, int16_t offset_y) {	// create and start a one shot task
   print_descrpt_t* txt_descrpt_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
