@@ -122,7 +122,7 @@
 
 
 // has display hardware?
-#if defined HAS_ePaper290_on_PICO_KIT || defined HAS_ePaper290_on_DEV_KIT || defined BOARD_LILYGO_T5	// ePaper?
+#if defined HAS_ePaper290_on_PICO_KIT || defined HAS_ePaper290_on_DEV_KIT || defined ePaper213B73_BOARD_LILYGO_T5 || defined ePaper213B74_BOARD_LILYGO_T5	// ePaper?
   #define HAS_ePaper
 #endif
 
@@ -142,12 +142,20 @@
   #error 'HAS_ePaper & HAS_OLED cannot be defined both, only one'
 #endif
 
-#if defined HAS_ePaper290_on_PICO_KIT && (defined HAS_ePaper290_on_DEV_KIT || defined BOARD_LILYGO_T5)
+#if defined ePaper213B73_BOARD_LILYGO_T5 && defined ePaper213B74_BOARD_LILYGO_T5
+  #error multiple LILIGO_T5 ePaper types
+#endif
+
+#if defined ePaper213B73_BOARD_LILYGO_T5 || defined ePaper213B74_BOARD_LILYGO_T5	// any LILYGO_T5 ePaper ?
+  #if defined HAS_ePaper290_on_PICO_KIT || defined HAS_ePaper290_on_DEV_KIT
+    #error 'multiple ePaper types defined including LILYGO_T5'
+  #endif
+#endif
+
+#if defined HAS_ePaper290_on_PICO_KIT && defined HAS_ePaper290_on_DEV_KIT
   #error 'multiple ePaper types defined'
 #endif
-#if defined HAS_ePaper290_on_DEV_KIT && defined BOARD_LILYGO_T5
-  #error 'multiple ePaper types defined'
-#endif
+
 
 #if defined BOARD_HELTEC_OLED && defined BOARD_OLED_LIPO
   #error 'BOARD_HELTEC_OLED and BOARD_OLED_LIPO cannot both be defined'

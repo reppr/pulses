@@ -1379,7 +1379,7 @@ void setup_initial_HARDWARE_conf() {
     HARDWARE.monochrome_type = monochrome_type_heltec;
   #elif defined BOARD_OLED_LIPO
     HARDWARE.monochrome_type = monochrome_type_LiPO;
-  #elif defined BOARD_LILYGO_T5
+  #elif defined ePaper213B73_BOARD_LILYGO_T5 || defined ePaper213B74_BOARD_LILYGO_T5
     HARDWARE.monochrome_type = monochrome_type_LILYGO_T5;
   #endif
 #endif

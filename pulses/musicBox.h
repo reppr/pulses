@@ -2921,7 +2921,7 @@ void start_musicBox() {
   set_MusicBoxState(AWAKE);
 
   /*	TODO: *test* that first, might be too much, so deactivated for now
-#if defined BOARD_LILYGO_T5
+#if defined HAS_ePaper
   extern void MC_show_musicBox_parameters();
   MC_show_musicBox_parameters();
 #endif
@@ -4631,7 +4631,7 @@ bool musicBox_reaction(char token) {
       break;
 #endif
 
-#if defined BOARD_LILYGO_T5
+#if defined HAS_ePaper
     case 'D':	// 'ID'	ePaper.display(false);
       MENU.drop_input_token();
       ePaper.display(false);

@@ -43,7 +43,7 @@
 
   // some options:
   #define USE_BATTERY_LEVEL_CONTROL
-  #define HAS_ePaper290_on_PICO_KIT		// triggers HAS_ePaper and HAS_DISPLAY
+//#define HAS_ePaper290_on_PICO_KIT		// triggers HAS_ePaper and HAS_DISPLAY
 //#define BOARD_HELTEC_OLED			// either OLED or ePaper, not both
 //#define USE_RTC_MODULE			// DS3231
 //#define USE_ESP_NOW				// possible, if you want that

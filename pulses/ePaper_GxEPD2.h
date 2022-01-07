@@ -67,9 +67,13 @@
 */
  GxEPD2_BW<GxEPD2_290, GxEPD2_290::HEIGHT> ePaper(GxEPD2_290(/*CS*/ 5, /*DC*/ 17, /*RST*/ 16, /*BUSY*/ 4));
 
-#elif defined BOARD_LILYGO_T5
- // GDEH0213B73
+#elif defined ePaper213B73_BOARD_LILYGO_T5	// old
+ // GDEH0213B73 old style "BOARD_LILYGO_T5"
  GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT> ePaper(GxEPD2_213_B73(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
+	
+#elif defined ePaper213B74_BOARD_LILYGO_T5	// newer (20.8.26)
+ // GDEH0213BN = GDEH0213B74	newer board:	20.8.26
+ GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> ePaper(GxEPD2_213_B74(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
 
 #else
   #error no ePaper display defined for GxEPD2
