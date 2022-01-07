@@ -303,8 +303,14 @@ void monochrome_clear() {
 void setup_ePaper_GxEPD2() {
   MENU.outln(F("setup_ePaper_GxEPD2()"));
 
-  if(MC_mux == NULL)
+  MC_mux = xSemaphoreCreateMutex();
+  while(MC_mux == NULL) {
     MC_mux = xSemaphoreCreateMutex();
+    yield();
+  }
+  xSemaphoreTake(MC_mux, portMAX_DELAY);
+  yield();
+  xSemaphoreGive(MC_mux);
 
   //ePaper.init(500000);	// debug baudrate
   ePaper.init(0);		// no debugging
