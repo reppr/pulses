@@ -1146,3 +1146,14 @@ TODO: RGB_STRINGS_MAX should *NOT* change size of pulses_hardware_conf_t !!!
 
 TEST: in esp_now_ID_2_list()
     esp_now_pulses_known_peers[peer].preName[b] = (*ID_p).preName[b];
+
+menu input giving 248 (flipped question mark)
+
+ePaper: show prename on change
+	no obsolete screen updates
+	do not show pitch
+	move name up
+
+// TODO: touch_threshold should go to HARDWARE
+
+#error "ePaper_DEPG0290B_LILIGO_0290 does not work yet"

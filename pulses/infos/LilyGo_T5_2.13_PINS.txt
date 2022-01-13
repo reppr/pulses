@@ -1,0 +1,40 @@
+LilyGo_T5_2.13_PINS.txt
+
+
+
+	    [ANTENNA]
+3V3 3V3				36   (BATTERY LEVEL?)
+
+GND				39   [button]   (BATTERY LEVEL?)
+
+21  WIRE SDA			RST  reset
+
+TX				34   MUSICBOX TRIGGER
+
+RX				3V3
+
+22  WIRE SCL			32   (touch?) (PERIPHERAL POWER?)
+
+19  MIDI out			33   MORSE TOUCH INPUT
+
+14  (TF SCK)			25   DAC
+
+2   (TF MISO)			26   DAC
+
+15  (TF MOSI)			27   RGB STRING
+
+13  (IF CS)			12   MORSE OUTPUT PIN
+
+5V				0    (PERIPHERAL POWER?)
+
+VBAT				GND
+        [ePaper connector]
+
+
+ePaper: (these are *not* on external pins)
+	14 BUSY
+	16 RST
+	23 MOSI
+	18 CLK
+	17 DC
+	5  CS

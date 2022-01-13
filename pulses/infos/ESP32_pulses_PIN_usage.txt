@@ -1,16 +1,18 @@
 ESP32_pulses_PIN_usage.txt
 
 
-GPIO00	strapping	button
+						(is on pin header of board LilyGo T5 2.9 eInk)	LilyGo2.9 OK
 
-GPIO01  TX0	Serial TX
+GPIO00	strapping	button									LilyGo2.9 OK
 
-GPIO02	strapping [touch]	(rarely used as MORSE_OUTPUT_PIN	(LILYGO T5 SD-CARD MISO)
+GPIO01  TX0	Serial TX									LilyGo2.9 OK
+
+GPIO02	strapping [touch]	(rarely used as MORSE_OUTPUT_PIN    (LILYGO T5 SD-CARD MISO)	LilyGo2.9 OK
 	[sometimes blue onboard led, add piezzo?])
 	TODO: test as touch (led!)
 	PERIPHERAL_POWER_SWITCH_PIN ???		LoRa DIO0???
 
-GPIO03	RX0	Serial RX
+GPIO03	RX0	Serial RX									LilyGo2.9 OK
 
 GPIO04	[touch]	HELTEC OLED_SDA, ePaper		(LILYGO T5 ePaper 2.13 BUSY)
 	TODO: test as touch (with display?)
@@ -29,14 +31,14 @@ GPIO10 FLASH D3
 
 GPIO11 FLASH CMD
 
-GPIO12	[touch]       MORSE_OUTPUT_PIN  ||  PERIPHERAL_POWER_SWITCH_PIN		(MISO MICROSD)
+GPIO12	[touch]       MORSE_OUTPUT_PIN  ||  PERIPHERAL_POWER_SWITCH_PIN		(MISO MICROSD)		LilyGo2.9 OK
        ((was: MORSE_TOUCH_INPUT_PIN (ESP32 touch sensor as morse input))
 
-GPIO13	[touch]	TOUCH		MORSE_TOUCH_INPUT_PIN	(LILYGO T5 SD-CARD MOSI)	(LyraT:touch TP5"Vol-")
+GPIO13	[touch]	TOUCH		MORSE_TOUCH_INPUT_PIN	(LILYGO T5 CS)		(LyraT:touch TP5"Vol-")	LilyGo2.9 OK
 
-GPIO14	[touch]	TOUCH		RGB_LED_STRIP_DATA_PIN	(LILYGO T5 SD-CARD SCK)	(MOSI MICROSD)
+GPIO14	[touch]	TOUCH		RGB_LED_STRIP_DATA_PIN	(LILYGO T5 SD-CARD SCK)	(MOSI MICROSD)	LilyGo2.9 OK
 
-GPIO15	[touch]	HELTEC OLED_SCL	(RGB_LED_STRING)	(LILYGO T5 SD-CARD MOSI)
+GPIO15	[touch]	HELTEC OLED_SCL	(RGB_LED_STRING)	(LILYGO T5 SD-CARD MOSI)		LilyGo2.9 OK
 
 GPIO16	HELTEC OLED_RST, ePaper	UART2 RX  MIDI IN	(LILYGO T5 ePaper 2.13 RST)	// *CONFLICT* UART2 MIDI <> OLED
 	DO *NOT* use GPIO16&17  on WROVER MODULES!
@@ -46,7 +48,7 @@ GPIO17				UART2 TX  MIDI OUT	(LILYGO T5 ePaper 2.13 DC)
 
 GPIO18				MIDI_IN_PIN [maybe 27] (Heltec?)	(LILYGO T5 ePaper 2.13 CLK)	(LoRa SCK)
 
-GPIO19				MIDI_OUT_PIN (Heltec?)							(LoRa MISO)
+GPIO19				MIDI_OUT_PIN (Heltec?)							(LoRa MISO)		LilyGo2.9 OK
 
 
 
@@ -60,29 +62,29 @@ GPIO23							(LILYGO T5 ePaper 2.13 MOSI)			(LoRa MOSI)
 
 GPIO25	DAC (low, right)				(HELTEC_oled onboard LED!)
 
-GPIO26	DAC (high, left)	(RGB_LED_STRING)	(HELTEC_oled maybe put a LED too?    channel symmetry)
+GPIO26	DAC (high, left)	(RGB_LED_STRING)	(HELTEC_oled maybe put a LED too?    channel symmetry)		LilyGo2.9 OK
 
-GPIO27	[touch]	TOUCH		RGB_LED_STRING, MIDI_IN_PIN (LILYGO?)	(SCK MICROSD)	(LyraT:touch TP6"Vol+")
-
-
-GPI_32	[X-tal?, adc, touch]	TOUCH	(CS MICROSD)	(LyraT:touch TP4"SET")
-
-GPI_33	[X-tal?, adc, touch]	TOUCH			(LyraT:touch TP3"Play")
+GPIO27	[touch]	TOUCH		RGB_LED_STRING, MIDI_IN_PIN (LILYGO?)	(SCK MICROSD)	(LyraT:touch TP6"Vol+")		LilyGo2.9 OK
 
 
-GPI_34	[INPUT, adc]	MUSICBOX_TRIGGER_PIN, MORSE_GPIO_INPUT_PIN (needs hw pulldown)
+GPI_32	[X-tal?, adc, touch]	TOUCH	(CS MICROSD)	(LyraT:touch TP4"SET")			LilyGo2.9 OK
 
-GPI_35	[INPUT, adc]	new: BATTERY_LEVEL_CONTROL_PIN (was: BLUETOOTH_ENABLE_PIN	obsolete?)
-
-GPI_36	[INPUT, adc]	=='SENSOR VP'
+GPI_33	[X-tal?, adc, touch]	TOUCH			(LyraT:touch TP3"Play")			LilyGo2.9 OK
 
 
-GPI_37	[INPUT, adc]		GPI 37, 38 see: https://github.com/espressif/arduino-esp32/issues/397
+GPI_34	[INPUT, adc]	MUSICBOX_TRIGGER_PIN, MORSE_GPIO_INPUT_PIN (needs hw pulldown)		LilyGo2.9 OK
+
+GPI_35	[INPUT, adc]	new: BATTERY_LEVEL_CONTROL_PIN (was: BLUETOOTH_ENABLE_PIN obsolete?)	LilyGo2.9 OK
+
+GPI_36	[INPUT, adc]	=='SENSOR VP'								LilyGo2.9 OK
+
+
+GPI_37	[INPUT, adc]		GPI 37, 38 see: https://github.com/espressif/arduino-esp32/issues/397	LilyGo2.9 OK +Button 1
 				  these pins connects some 270pF capacitors which determinate the gain
-GPI_38	[INPUT, adc]		  of internal Low Noise Amplifier
+GPI_38	[INPUT, adc]		  of internal Low Noise Amplifier					LilyGo2.9 OK +Button 2
 
 
-GPI_39	[INPUT, adc]	=='SENSOR VN'
+GPI_39	[INPUT, adc]	=='SENSOR VN'									LilyGo2.9 OK +Button 3
 
 
 RTC pins of ESP32 devKit

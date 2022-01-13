@@ -816,7 +816,11 @@ void _select_digital(bool key) {
   MENU.out(select_);
   MENU.out(F("digital"));
   MENU.out(pinFor);
-  MENU.out(F("'d, r, I, O, H, L, W'"));
+  MENU.out(F("'d, r, I, O, H, L, W"));
+#if defined ESP32	// touch interface
+  MENU.out(F(", t"));
+#endif
+  MENU.outln('\'');
 }
 
 
@@ -883,7 +887,11 @@ void softboard_display() {
   MENU.outln(F("watch over time:\tv=VU bar\tr=read"));
 #endif
 
-  MENU.out(F("\n.=all digital\t,=all analog\t;=both\tx=extra\t"));
+#if defined ESP32	// touch interface?
+  MENU.outln(F("\nT=touch<nn>"));
+#endif
+
+  MENU.out(F("\n.=all digital\t,=all analog\t;=both\tf=touch\tx=extra\t"));
 #if defined USE_i2c
   MENU.out(F("\tC=i2c scan"));
 #endif
@@ -968,7 +976,7 @@ bool softboard_reaction(char token) {
       if (newValue != ILLEGAL8)
 	MENU.OutOfRange();
 
-    touch_VU=false;
+    touch_VU=false;	// maybe not?
     break;
 
   case 'O':
@@ -1186,6 +1194,7 @@ bool softboard_reaction(char token) {
     break;
 #endif
 
+#if defined ESP32	// touch interface?
   case 'T':	// ################ TODO: clashes with 'T' for Arduino style tone();
     newValue = MENU.numeric_input(PIN_digital);
     if (newValue>=0 && newValue<visible_digital_pins) {
@@ -1197,6 +1206,7 @@ bool softboard_reaction(char token) {
 
     touch_VU=true;
     run_VU=true;
+#endif
 
 #if defined PULSES_SYSTEM
     if(PIN_digital == ILLEGAL8)
@@ -1238,7 +1248,7 @@ bool softboard_reaction(char token) {
     break;
 
 #if defined ESP32
-  case ':':	// all touch	// TODO: clashes with menu key
+  case 'f':	// all touch
     pins_info_touch();
     break;
 #endif

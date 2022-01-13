@@ -122,7 +122,7 @@
 
 
 // has display hardware?
-#if defined HAS_ePaper290_on_PICO_KIT || defined HAS_ePaper290_on_DEV_KIT || defined ePaper213B73_BOARD_LILYGO_T5 || defined ePaper213B74_BOARD_LILYGO_T5	// ePaper?
+#if defined HAS_ePaper290_on_PICO_KIT || defined HAS_ePaper290_on_DEV_KIT || defined ePaper213B73_BOARD_LILYGO_T5 || defined ePaper213B74_BOARD_LILYGO_T5 || defined ePaper_DEPG0290B_LILIGO_0290	// ePaper?
   #define HAS_ePaper
 #endif
 
@@ -135,9 +135,6 @@
 #endif
 
 
-#if defined HAS_ePaper && defined HAS_OLED
-  #error 'HAS_ePaper & HAS_OLED cannot be defined both, only one'
-#endif
 #if defined HAS_ePaper && defined HAS_OLED
   #error 'HAS_ePaper & HAS_OLED cannot be defined both, only one'
 #endif

@@ -8,13 +8,14 @@
 */
 #ifndef TOUCH_H
 
+// TODO: touch_threshold should go to HARDWARE
 //int touch_threshold = 70;		// TODO: does not work well on some new instruments ???
 //int touch_threshold = 60;		// TODO: TEST&TRIM:
 //int touch_threshold = 58;		// TODO: TEST&TRIM:
 #if defined ePaper213B73_BOARD_LILYGO_T5 || defined ePaper213B74_BOARD_LILYGO_T5
-int touch_threshold = 45;		// TODO: TEST&TRIM:
+  int touch_threshold = 45;		// TODO: TEST&TRIM:
 #else
-int touch_threshold = 61;		// TODO: TEST&TRIM:
+  int touch_threshold = 61;		// TODO: TEST&TRIM:
 #endif
 
 /* see also:
