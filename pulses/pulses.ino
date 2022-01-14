@@ -1314,11 +1314,12 @@ void display_program_version() {  // program versions, mac, maybe preName.  MENU
 } // display_program_version()
 
 
-void show_program_version() {	// program version on menu output *and* OLED
+void show_program_version(bool show_on_monochrome=true) {	// program version on menu output *and* OLED or ePaper
   display_program_version();
 
 #if defined HAS_DISPLAY
-  MC_show_program_version();
+  if(show_on_monochrome)
+    MC_show_program_version();
 #endif
 }
 
@@ -1819,7 +1820,7 @@ void show_pulses_all_pins_usage() {
 
 
 void show_internal_configurations() {
-  show_program_version();	// prename now known
+  show_program_version(false);	// *not* on ePaper	// prename now known
 //  #if defined HAS_DISPLAY
 //    delay(1200);	// sorry for that
 //  #endif
