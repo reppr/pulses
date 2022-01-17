@@ -122,7 +122,7 @@
 
 
 // has display hardware?
-#if defined HAS_ePaper290_on_PICO_KIT || defined HAS_ePaper290_on_DEV_KIT || defined ePaper213B73_BOARD_LILYGO_T5 || defined ePaper213B74_BOARD_LILYGO_T5 || defined ePaper_DEPG0290B_LILIGO_0290	// ePaper?
+#if defined HAS_ePaper290_on_PICO_KIT || defined HAS_ePaper290_on_DEV_KIT || defined ePaper213B73_BOARD_LILYGO_T5 || defined ePaper213B74_BOARD_LILYGO_T5 || defined ePaper_DEPG0290B_LILYGO_0290	// ePaper?
   #define HAS_ePaper
 #endif
 
@@ -140,7 +140,7 @@
 #endif
 
 #if defined ePaper213B73_BOARD_LILYGO_T5 && defined ePaper213B74_BOARD_LILYGO_T5
-  #error multiple LILIGO_T5 ePaper types
+  #error multiple LILYGO_T5 ePaper types
 #endif
 
 #if defined ePaper213B73_BOARD_LILYGO_T5 || defined ePaper213B74_BOARD_LILYGO_T5	// any LILYGO_T5 ePaper ?

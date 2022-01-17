@@ -24,14 +24,47 @@
   in most cases you can let all these lines inactive, commented out
 */
 
-//#define MAGICAL_MUSICBOX2	// #define this in my_pulses_config.h
+#if defined TRIGGERED_MUSICBOX_LILYGO_213		// define this in my_pulses_config.h
+  #if defined ePaper213B73_BOARD_LILYGO_T5  ||  defined ePaper213B74_BOARD_LILYGO_T5
+    #if defined ePaper213B73_BOARD_LILYGO_T5  &&  defined ePaper213B74_BOARD_LILYGO_T5
+      #error "define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213B74_BOARD_LILYGO_T5"
+    #endif
+  #else
+    #error "ePaper213B73_BOARD_LILYGO_T5 *or* ePaper213B74_BOARD_LILYGO_T5"
+  #endif
 
-#if defined TRIGGERED_MUSICBOX2	// define this in my_pulses_config.h
+  #if ! defined ESP32
+    #error  TRIGGERED_MUSICBOX_LILYGO_213 *only* on ESP32
+  #endif
+
+  #define TRIGGERED_MUSICBOX2
+  #undef MUSICBOX2_PIN_MAPPING
+
+  #define NO_GPIO_PINS				// DAC only
+
+  //#undef PERIPHERAL_POWER_SWITCH_PIN		// maybe let the warning appear?
+  #define PERIPHERAL_POWER_SWITCH_PIN	32	// <<< NEW >>> LilyGo 2.13
+
+  #define MORSE_OUTPUT_PIN		0
+  #define MORSE_TOUCH_INPUT_PIN		33	// MORSE TOUCH INPUT
+  #define RGB_LED_STRIP_DATA_PIN	27	// testing 27, 14
+  #define MUSICBOX_TRIGGER_PIN		34	// activates trigger pin, needs pulldown (i.e. 470k, 100k ok)
+  #define BATTERY_LEVEL_CONTROL_PIN	36	// (35 is used for internal LiPo battery level?)
+
+  // some options:
+  //#define MIDI_OUT_PIN		19
+  //#define USE_RTC_MODULE
+#endif // TRIGGERED_MUSICBOX_LILYGO_213
+
+
+#if defined TRIGGERED_MUSICBOX2		// also for TRIGGERED_MUSICBOX_LILYGO_213	// define in my_pulses_config.h
   #if ! defined ESP32
     #error TRIGGERED_MUSICBOX2 *only* on ESP32
   #endif
 
-  #define MUSICBOX2_PIN_MAPPING		// new pin mapping april 2021	(see below)
+  #if ! defined TRIGGERED_MUSICBOX_LILYGO_213
+    #define MUSICBOX2_PIN_MAPPING		// new pin mapping april 2021	(see below)
+  #endif
 
 //#define PROGRAM_SUB_VERSION	BrachenSound
   #define MAGICAL_TOILET_HACK_2	// continue using (parts of) setup_bass_middle_high() to setup musicbox
@@ -59,8 +92,9 @@
 //#undef PERIPHERAL_POWER_SWITCH_PIN		// maybe let the warning appear?
   #define PERIPHERAL_POWER_SWITCH_PIN	2	// <<< NEW >>>
   #define MORSE_OUTPUT_PIN		12
-  #define MORSE_INPUT_PIN		13	// ok
+  #define MORSE_TOUCH_INPUT_PIN		13	// ok
   #define RGB_LED_STRIP_DATA_PIN	14	// testing 27, 14
+//#define RGB_LED_STRIP_DATA_PIN	27	// testing 27, 14
   #define MUSICBOX_TRIGGER_PIN		34	// activates trigger pin, needs pulldown (i.e. 470k, 100k ok)
   #define BATTERY_LEVEL_CONTROL_PIN	35	// NEW default, (was: 36)
 //#define HAS_ePaper290_on_PICO_KIT		// (reserve these pins for optional ePaper display)

@@ -75,7 +75,7 @@
  // GDEH0213BN = GDEH0213B74	newer board:	20.8.26
  GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> ePaper(GxEPD2_213_B74(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
 
-#elif defined ePaper_DEPG0290B_LILIGO_0290
+#elif defined ePaper_DEPG0290B_LILYGO_0290
  //GxEPD2_BW<GxEPD2_290, GxEPD2_290::HEIGHT> ePaper(GxEPD2_290(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));	// GRAU NOISE!
  //GxEPD2_BW<GxEPD2_290_B, GxEPD2_290_B::HEIGHT> ePaper(GxEPD2_290_B(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
  //GxEPD2_BW<GxEPD2_290_B73, GxEPD2_290_B73::HEIGHT> ePaper(GxEPD2_290_B73(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
@@ -84,7 +84,7 @@
  //GxEPD2_BW<GxEPD2_290_T94_V2, GxEPD2_290_T94_V2::HEIGHT> ePaper(GxEPD2_290_T94_V2(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
  //GxEPD2_BW<GxEPD2_290_T5, GxEPD2_290_T5::HEIGHT> ePaper(GxEPD2_290_T5(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4)); // GDEW029T5
  GxEPD2_BW<GxEPD2_290_T5D, GxEPD2_290_T5D::HEIGHT> ePaper(GxEPD2_290_T5D(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4)); // GDEW029T5
- #error "ePaper_DEPG0290B_LILIGO_0290 does not work yet"
+ #error "ePaper_DEPG0290B_LILYGO_0290 does not work yet"
 #else
   #error no ePaper display defined for GxEPD2
 #endif

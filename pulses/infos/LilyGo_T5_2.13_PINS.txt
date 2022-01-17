@@ -3,7 +3,7 @@ LilyGo_T5_2.13_PINS.txt
 
 
 	    [ANTENNA]
-3V3 3V3				36   (BATTERY LEVEL?)
+3V3 3V3				36   BATTERY LEVEL?
 
 GND				39   [button]   (BATTERY LEVEL?)
 
@@ -23,11 +23,11 @@ RX				3V3
 
 15  (TF MOSI)			27   RGB STRING
 
-13  (IF CS)			12   MORSE OUTPUT PIN
+13  (IF CS)			12   MORSE OUTPUT PIN, orange LED
 
-5V				0    (PERIPHERAL POWER?)
+5V				0    PERIPHERAL POWER, green LED
 
-VBAT				GND
+35  (VBAT internal)		GND
         [ePaper connector]
 
 

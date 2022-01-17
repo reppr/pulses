@@ -1156,4 +1156,6 @@ ePaper: show prename on change
 
 // TODO: touch_threshold should go to HARDWARE
 
-#error "ePaper_DEPG0290B_LILIGO_0290 does not work yet"
+#error "ePaper_DEPG0290B_LILYGO_0290 does not work yet"
+
+TODO: morse input feedback is not working on ePaper

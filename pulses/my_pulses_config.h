@@ -8,9 +8,6 @@
 
 #if ! defined MY_PULSES_CONFIG_H
 
-#define USE_RTC_MODULE	// DS3231 TEST only	TODO: REMOVE: (from here) ################
-
-
 #define FAMILY_NAME	SoundShipBand		// configuration family	// see: pulses_engine_config.h
 // /*			0123456789abcdef	// 16 bytes	*/
 
@@ -23,6 +20,19 @@
 //#define HAS_ePaper290_on_PICO_KIT
 //#define USE_RTC_MODULE			// DS3231
 //#define USE_ESP_NOW				// possible, if you want that
+
+#define TRIGGERED_MUSICBOX_LILYGO_213	// also #define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213B74_BOARD_LILYGO_T5"
+#if defined TRIGGERED_MUSICBOX_LILYGO_213	// also #define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213B74_BOARD_LILYGO_T5"
+  #define ePaper213B74_BOARD_LILYGO_T5		// (new) T5_V2.3.1    20.8.26	triggers HAS_ePaper and HAS_DISPLAY
+  //#define ePaper213B73_BOARD_LILYGO_T5	// (old) T5_V2.3_2.13 20190107	triggers HAS_ePaper and HAS_DISPLAY
+
+  #if defined ePaper213B73_BOARD_LILYGO_T5  ||  defined ePaper213B74_BOARD_LILYGO_T5
+    // ok
+  #else
+    #error "#define one of ePaper213B73_BOARD_LILYGO_T5 *or* ePaper213B74_BOARD_LILYGO_T5"
+  #endif
+#endif
+
 #define USE_BATTERY_LEVEL_CONTROL
 
 //#define USE_LoRa		// needs: https://github.com/sandeepmistry/arduino-LoRa
@@ -46,9 +56,11 @@
 // ePaper DISPLAY?
 //#define HAS_ePaper290_on_PICO_KIT	// old		triggers HAS_ePaper and HAS_DISPLAY
 //#define HAS_ePaper290_on_DEV_KIT	// old		triggers HAS_ePaper and HAS_DISPLAY
-//#define ePaper213B73_BOARD_LILYGO_T5	// old		triggers HAS_ePaper and HAS_DISPLAY
-#define ePaper213B74_BOARD_LILYGO_T5	// new 20.8.26	triggers HAS_ePaper and HAS_DISPLAY
-//#define ePaper_DEPG0290B_LILIGO_0290	// very first tests only...
+
+#define ePaper213B74_BOARD_LILYGO_T5	// new  T5_V2.3.1     20-8-26	triggers HAS_ePaper and HAS_DISPLAY
+//#define ePaper213B73_BOARD_LILYGO_T5	// old  T5_V2.3_2.13  20190107	triggers HAS_ePaper and HAS_DISPLAY
+
+//#define ePaper_DEPG0290B_LILYGO_0290	// very first tests only...
 
 //#define USE_MIDI		// *only* compile MIDI if you *do* intend to use it
 #if defined USE_MIDI
@@ -66,7 +78,11 @@
 #if defined USE_RGB_LED_STRIP
 //  #define RGB_STRING_LED_CNT		144	// number of RGB leds in the string
   #define RGB_STRING_LED_CNT		150	// number of RGB leds in the string
-  #define RGB_LED_STRIP_DATA_PIN	14	// use GPIO14 || GPIO27
+  #if defined ePaper213B73_BOARD_LILYGO_T5 || defined ePaper213B74_BOARD_LILYGO_T5
+    #define RGB_LED_STRIP_DATA_PIN	27	// GPIO27  (GPIO14 in internal use)
+  #else
+    #define RGB_LED_STRIP_DATA_PIN	14	// use GPIO14 || GPIO27
+  #endif
 // DEFAULT_LED_STRING_INTENSITY
 #endif
 
@@ -88,6 +104,8 @@
 #endif
 
 #define ESP32_DAC_ONLY
+
+//#define USE_RTC_MODULE	// DS3231 TEST only	TODO: REMOVE: (from here) ################
 
 
 #if defined ESP32
