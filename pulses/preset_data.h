@@ -18,6 +18,9 @@
 // *all* existing presets should be playable now :)
 //#define SHORT_PRESET_COLLECTION	181	// only the first <nn> presets are at choice, overrides MUSICBOX_PRESETs
 
+#if defined HAS_ePaper
+  #define REPLACE_UMLAUTS
+#endif
 
 bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets preset, how to unset? ################
   if(new_preset < 1 /*|| new_preset > MUSICBOX_PRESETs*/)	// TODO: fix!
@@ -46,7 +49,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   switch(musicBoxConf.preset) {
   case 1:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("wunderschoens obenabe vogelgetzwitscher bistuefinbass :)");
+#else
     musicBoxConf.name = F("wunderschöns obenabe vogelgetzwitscher bistüüfinbass :)");
+#endif
     //# FAVORITE	P1 2020 KUNSTDREIECK
     //# melodies
     //# shortIsOk
@@ -186,7 +193,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 7:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("klassisch, wunderschoen, vo A bis Z :)");
+#else
     musicBoxConf.name = F("klassisch, wunderschön, vo A bis Z :)");
+#endif
     //comment: und übrigens:	harmonical cycle    12' 19"
     //# FAVORITE	P7 2020 KUNSTDREIECK mit bildschirm 'op'
     //# harmonies
@@ -209,7 +220,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 8:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("wunderschoen melodisch :) :) :)");
+#else
     musicBoxConf.name = F("wunderschön melodisch :) :) :)");
+#endif
     //comment: mit schönem, aberendlosem schluss ;)
     //# FAVORITE	P8 2020 KUNSTDREIECK
     //# FAVORITE
@@ -232,7 +247,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 9:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("e rechts fuerwerch a jubelnde wirbel oderso :)");
+#else
     musicBoxConf.name = F("e rechts füürwerch a jubelnde wirbel oderso :)");
+#endif
     //# FAVORITE
     //# melodies
     //# shortIsOk
@@ -444,7 +463,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 19:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("simple, huebsche bigBang");
+#else
     musicBoxConf.name = F("simple, hübsche bigBang");
+#endif
     //# bigBang	is ok	sometimes problematic	use autostack_S0
     //# FAVORITE	P19 2020 KUNSTDREIECK
     //# shortIsOk
@@ -510,7 +533,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 22:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("huebsche start mit geknatter");
+#else
     musicBoxConf.name = F("hübsche start mit geknatter");
+#endif
     //# FAVORITE(-)	has dropouts, (nice) system stress
     //# bigBang	is ok
     //# shortIsOk
@@ -532,7 +559,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 23:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("froehlichs, crazy witzigs Taenzli :)");
+#else
     musicBoxConf.name = F("fröhlichs, crazy witzigs Tänzli :)");
+#endif
     //# favorite	P23? DADA?
     //# shortIsOk
     //# crazy
@@ -549,7 +580,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 24:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("wienen raegeboge vo striicher wo abeschwebed uf t erde");
+#else
     musicBoxConf.name = F("wienen rägeboge vo striicher wo abeschwebed uf t erde bis tüüf in bass und meh und meh i en zyclische reige iistimmed");
+#endif
     //# FAVORITE
     //# shortIsOk
     //# fullCycleIsOk		maybe
@@ -619,7 +654,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 26:
-    musicBoxConf.name = F("en andere brachklassiker");
+    musicBoxConf.name = F("en andere Brachklassiker");
     //# FAVORITE+	wunderschön :)
     //# shortIsOk
     //# harmonies
@@ -764,7 +799,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 32:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("schoen, ruhig, eifach");
+#else
     musicBoxConf.name = F("schön, ruhig, eifach");
+#endif
     //# FAVORITE
     //# shortIsOk
     //# melodies
@@ -832,7 +871,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 34:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("huebsch, langipausenamaafang");
+#else
     musicBoxConf.name = F("hübsch, langipausenamaafang");
+#endif
     //# FAVORITE	P34 2020 KUNSTDREIECK
     //# shortIsOk
     //# melodies
@@ -866,7 +909,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 35:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("uuspraegts melodiemotiv, fughetta");
+#else
     musicBoxConf.name = F("uusprägts melodiemotiv, fughetta");
+#endif
     //# FAVORITE	P35 2020 KUNSTDREIECK
     //# FAVORITE
     //# shortIsOk
@@ -931,7 +978,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 37:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("sehr sehr spezielle S0 aafang, wunderschoen");
+#else
     musicBoxConf.name = F("sehr sehr spezielle S0 aafang, wunderschön");
+#endif
     //# FAVORITE	P37 2020 KUNSTDREIECK
     //# heavy start	on some instruments...
     //# shortIsOk
@@ -994,7 +1045,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 39:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("Nebel");
+#else
     musicBoxConf.name = F("näbel");
+#endif
     //# FAVORITE
     //# systemStress	really???
     musicBoxConf.date = F("2018-11-19_10h30m25s	MON");
@@ -1141,7 +1196,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 44:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("melodischs taenzle");
+#else
     musicBoxConf.name = F("melodischs tänzle");
+#endif
     //# FAVORITE ???	P44 2020 KUNSTDREIECK
     //# shortIsOk
     //# fullCycleIsOk		probably yes
@@ -1233,7 +1292,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 47:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("es sphaerischs netz vo eigenartige melodie wiegt ueber eus");
+#else
     musicBoxConf.name = F("es sphärischs netz vo eigenartige melodie wiegt über öis");
+#endif
     //# favorite	P47 2020 KUNSTDREIECK
     //# shortIsOk
     //# fullCycleIsOk		possible
@@ -1262,7 +1325,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 48:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("eifach und schoen, blue");	// harmonical cycle    55' 27"
+#else
     musicBoxConf.name = F("eifach und schön, blue");	// harmonical cycle    55' 27"
+#endif
     // simile 'Blue Night Cadence'
     //# FAVORITE	P48 2020 KUNSTDREIECK
     //# FAVORITE
@@ -1483,7 +1550,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 55:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("uufregig im huehnerstall weg de chileglogge");
+#else
     musicBoxConf.name = F("uufregig im hüehnerstall weg de chileglogge");
+#endif
     //# favorite
     //# shortIsOk
     //# motives
@@ -1546,7 +1617,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 57:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("klassisch, schoen, als grundlag zu eme 22' 1\" stuck");
+#else
     musicBoxConf.name = F("klassisch, schön, als grundlag zu eme 22' 1\" stuck");
+#endif
     // FIXME: is double speed on chamber orchestra
     //# FAVORITE+
     //# shortIsOk
@@ -1575,7 +1650,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 58:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("eifach und eigenartig schoen");
+#else
     musicBoxConf.name = F("eifach und eigenartig schön");
+#endif
     //# FAVORITE	P58 2020 KUNSTDREIECK
     //# FAVORITE
     //# shortIsOk
@@ -1601,7 +1680,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 59:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("gradnomal wunderschoen :)");
+#else
     musicBoxConf.name = F("gradnomal wunderschön :)");
+#endif
     //# favorite+
     //# shortIsOk
     //# motives
@@ -1847,7 +1930,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 67:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("sehr eifach & schoen");		// ähnlich love like a morning bird
+#else
     musicBoxConf.name = F("sehr eifach & schön");		// ähnlich love like a morning bird
+#endif
     //# FAVORITE	// morning birds sibling :)
     //# shortIsOk
     //# melodies
@@ -1904,7 +1991,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 69:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("schoen melodisch, mit recht guetem schluss");
+#else
     musicBoxConf.name = F("schön melodisch, mit recht guetem schluss");
+#endif
     //comment: de schluss chönnt no chli schneller fertig sii
     //# favorite+
     //# shortIsOk
@@ -2242,7 +2333,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 80:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("Aurora mit taenzelnde Liechter");
+#else
     musicBoxConf.name = F("Aurora mit tänzelnde Liechter");
+#endif
     //# FAVORITE	P80 2020 KUNSTDREIECK
     //# FAVORITE
     //# fullCycleIsOk	harmonical CYCLE: 55' 27"
@@ -2521,7 +2616,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 88:
-    musicBoxConf.name = F("I_IV_V mit Knatterrhytheme");
+    musicBoxConf.name = F("I_IV_V mit Knatterrhythme");
     //# favorite
     //# shortIsOk	rhythm will probably not start yet
     //# motives		rhythmical melodies
@@ -2637,7 +2732,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 92:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("de Reige vo de Dezemberfee");
+#else
     musicBoxConf.name = F("de Reige vo de Dezämberfee");
+#endif
     //# favorite+
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 1h 3' 53"
@@ -2808,7 +2907,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 97:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("Jazzigi Rhythme mit schnarrend schnarchende KnatterKlaeng");	// really???
+#else
     musicBoxConf.name = F("Jazzigi Rhythme mit schnarrend schnarchende KnatterKläng");	// really???
+#endif
     // TODO: PRESET 97: di tüüfere tön lüüter stelle
     // meh wi e musikdose	steady endless looping
     //# favorite
@@ -3114,7 +3217,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 106:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("melodisches Gefuege");
+#else
     musicBoxConf.name = F("melodischs gfüeg");
+#endif
     //# favorite+
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 55' 27"
@@ -3213,7 +3320,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 109:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("eifache schoene reige");
+#else
     musicBoxConf.name = F("eifache schöne reige");
+#endif
     //# favorite+
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 55' 27"
@@ -3346,7 +3457,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 113:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("Kletterrose");
+#else
     musicBoxConf.name = F("Chläderrose");
+#endif
     //# FAVORITE
     //# shortIsOk
     //# motives
@@ -3764,7 +3879,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 124:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("brummbaers ratterkiste");
+#else
     musicBoxConf.name = F("brummbärs ratterkiste");
+#endif
     //# favorite+	P124 2020 KUNSTDREIECK
     //# shortIsOk
     //# melodies	jazzy harmonic progression
@@ -4744,7 +4863,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 153:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("eifach wunderschoen");
+#else
     musicBoxConf.name = F("eifach wunderschön");
+#endif
     //# FAVORITE
     //comment: sehr ruhig
     musicBoxConf.date = F("2019-02-26_12h46m19s	TUE");
@@ -4855,7 +4978,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 157:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("Marianne 3  s erst Mal underwaegs");
+#else
     musicBoxConf.name = F("Marianne 3  s erst Mal underwägs");
+#endif
     /*
       Bild: Spital in Shri Lanka
       ein Mann ist das allererste Mal mit seinen Prothesen unterwegs
@@ -4918,7 +5045,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 159:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("Marianne 5  Gefaengnisgeburt");
+#else
     musicBoxConf.name = F("Marianne 5  Gefängnisgeburt");
+#endif
     /*
       eine Freundin von Marianne bekommt im Gefängnis ihr Baby
     */
@@ -5002,7 +5133,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 161:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("au sehr schoen:");
+#else
     musicBoxConf.name = F("au sehr schön:");
+#endif
     //# favorite+
     //# shortIsOk
     //# ritch
@@ -5034,7 +5169,11 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 162:
+#if defined REPLACE_UMLAUTS
+    musicBoxConf.name = F("klassisch und simpel schoen");
+#else
     musicBoxConf.name = F("klassisch und simpel schön");
+#endif
     //# favorite
     //# heavyStart	problematcic	use autostack_S0
     //# shortIsOk
