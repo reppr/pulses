@@ -1828,8 +1828,10 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
   }
 
 #if defined HAS_DISPLAY
-  MC_show_musicBox_parameters();
-  delay(2000);	// TODO: TEST: maybe ESP now confuses display?
+  #if ! defined NO_ePAPER_UPDATE_ON_END
+    MC_show_musicBox_parameters();	// TODO:???
+    delay(2000);	// TODO: TEST: maybe ESP now confuses display?
+  #endif
 #endif
 
 #if defined USE_ESP_NOW

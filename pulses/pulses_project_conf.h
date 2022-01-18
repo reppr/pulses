@@ -51,6 +51,7 @@
   #define MUSICBOX_TRIGGER_PIN		34	// activates trigger pin, needs pulldown (i.e. 470k, 100k ok)
   #define BATTERY_LEVEL_CONTROL_PIN	36	// (35 is used for internal LiPo battery level?)
 
+  #define NO_ePAPER_UPDATE_ON_END		// *NO* ePaper display update on hard END
   // some options:
   //#define MIDI_OUT_PIN		19
   //#define USE_RTC_MODULE
