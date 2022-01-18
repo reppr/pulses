@@ -213,7 +213,7 @@ int16_t row2y(int16_t row) {	// *do* call set_used_font() before using that
 }
 
 void ePaper_print_at(uint16_t col, uint16_t row, const char* text, int16_t offset_y=0) {    // *do* call set_used_font() before using that
-#if defined  DEBUG_ePAPER
+#if defined  DEBUG_ePAPER || defined DEBUG_ePAPER_MORSE_FEEDBACK
   MENU.out(F("DEBUG_ePAPER\tePaper_print_at(...)\t"));
   MENU.outln(text);
 #endif
@@ -243,7 +243,7 @@ void ePaper_print_at_task(void* data_) {
   vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
   xSemaphoreGive(MC_mux);
   vTaskDelete(NULL);
-}
+} // ePaper_print_at_task()
 
 void multicore_ePaper_print_at(int16_t col, int16_t row, const char* text, int16_t offset_y=0) {    // create and start a one shot task
   print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));

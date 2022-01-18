@@ -62,9 +62,11 @@ void MC_esp_now_peer_list() {
 #endif // USE_ESP_NOW
 
 
-void ePaper_musicBox_parameters() {
+#if ! defined ePAPER_SMALL_213		// BIGGER ePaper size, i.e. 2.9" size ePaper
+
+void ePaper_musicBox_parameters() {	// BIGGER ePaper size, i.e. 2.9" size ePaper
 #if defined  DEBUG_ePAPER
-  MENU.outln(F("DEBUG_ePAPER\tePaper_musicBox_parameters()"));
+  MENU.outln(F("DEBUG_ePAPER\tePaper_musicBox_parameters() bigger"));
 #endif
 
   ePaper.setFullWindow();
@@ -125,7 +127,89 @@ void ePaper_musicBox_parameters() {
     ePaper.print(musicBoxConf.name);
   }
   while (ePaper.nextPage());
-} // ePaper_musicBox_parameters()
+} // ePaper_musicBox_parameters(), bigger
+
+#else	// ePAPER_SMALL_213	SMALL ePaper size, i.e. LilyGo 2.13" boards
+
+void ePaper_musicBox_parameters() {	// ePAPER_SMALL_213	SMALL ePaper size, i.e. LilyGo 2.13" boards
+#if defined  DEBUG_ePAPER
+  MENU.outln(F("DEBUG_ePAPER\tePaper_musicBox_parameters() small"));
+#endif
+
+  ePaper.setFullWindow();
+  ePaper.fillScreen(GxEPD_WHITE);
+  ePaper.setTextColor(GxEPD_BLACK);
+
+  char txt[LIN_BUF_MAX];
+  char* format_s = F("%s");
+  char* fmt_1st_row = F("%c %i  |%s|");		// fmt_1st_row, run_state_symbol(), musicBoxConf.preset, my_IDENTITY.preName
+  //char* fmt_1st_row = F("%c |%s| P%i");	// fmt_1st_row, run_state_symbol(), musicBoxConf.preset, my_IDENTITY.preName
+  char* fmt_2nd_row = F("  %s  %s  S=%i");	// fmt_2nd_row, metric_mnemonic, selected_name(SCALES), sync	// with indent
+
+  char* fmt_sync = F("S=%i");			// fmt_sync, musicBoxConf.sync
+  char* fmt_synstack = F("  |%i");		// fmt_synstack, musicBoxConf.stack_sync_slices
+  char* fmt_basepulse = F("p[%i]");		// fmt_basepulse, musicBoxConf.base_pulse
+
+  ePaper.firstPage();
+  do
+  {
+    ePaper.fillScreen(GxEPD_WHITE);
+    set_used_font(big_font_p);
+    ePaper.setCursor(0, 0);
+    ePaper.println();
+
+    extern char run_state_symbol();
+    snprintf(txt, font_linlen+1, fmt_1st_row, run_state_symbol(), musicBoxConf.preset, my_IDENTITY.preName);
+    ePaper.print(txt);
+    // monochrome_show_subcycle_octave();
+
+    //ePaper.println();	// before???	bigger step
+    #if defined USE_MANY_FONTS
+      ePaper.setFont(&FreeSans9pt7b);
+    #else
+      set_used_font(medium_font_p);
+    #endif
+    ePaper.println(); // or after???	smaller step
+
+    extern char* metric_mnemonic;
+    snprintf(txt, LIN_BUF_MAX, fmt_2nd_row, metric_mnemonic, selected_name(SCALES), musicBoxConf.sync);
+    ePaper.println(txt);
+
+#if defined ICODE_INSTEAD_OF_JIFFLES
+    snprintf(txt, LIN_BUF_MAX, format_s, selected_name(iCODEs));
+#else
+    snprintf(txt, LIN_BUF_MAX, format_s, selected_name(JIFFLES));
+#endif
+    ePaper.print("  ");	// indent
+    ePaper.print(txt);
+
+//	    snprintf(txt, font_linlen+1, fmt_sync, musicBoxConf.sync);
+//	    ePaper.print(txt);
+    if(musicBoxConf.stack_sync_slices) {	// stack_sync_slices?
+      snprintf(txt, font_linlen+1, fmt_synstack, musicBoxConf.stack_sync_slices);
+      ePaper.print(txt);
+      if(musicBoxConf.base_pulse != ILLEGAL16) {
+	snprintf(txt, font_linlen+1, fmt_basepulse, musicBoxConf.base_pulse);
+	ePaper.print(txt);
+      }
+    }
+    ePaper.println();
+
+    int len = strlen(musicBoxConf.name);
+    if(len < 19) {	// TODO: test&trimm
+      ePaper.println();		// empty line (before BIG line)
+      set_used_font(big_font_p);// BIG font
+    } else {			// normal size
+      set_used_font(medium_font_p);
+      if(len < 29)	// TODO: test&trimm
+	ePaper.println();	// insert empty line
+    }
+    ePaper.print(musicBoxConf.name);
+  }
+  while (ePaper.nextPage());
+} // ePaper_musicBox_parameters(), SMALL
+
+#endif	// (big | SMALL) ePaper size
 
 
 void inline MC_show_musicBox_parameters() {

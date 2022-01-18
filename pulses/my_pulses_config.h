@@ -27,6 +27,7 @@
   //#define ePaper213B73_BOARD_LILYGO_T5	// (old) T5_V2.3_2.13 20190107	triggers HAS_ePaper and HAS_DISPLAY
 
   #if defined ePaper213B73_BOARD_LILYGO_T5  ||  defined ePaper213B74_BOARD_LILYGO_T5
+    #define DEBUG_ePAPER_MORSE_FEEDBACK		// TODO: remove
     // ok
   #else
     #error "#define one of ePaper213B73_BOARD_LILYGO_T5 *or* ePaper213B74_BOARD_LILYGO_T5"
@@ -57,7 +58,7 @@
 //#define HAS_ePaper290_on_PICO_KIT	// old		triggers HAS_ePaper and HAS_DISPLAY
 //#define HAS_ePaper290_on_DEV_KIT	// old		triggers HAS_ePaper and HAS_DISPLAY
 
-#define ePaper213B74_BOARD_LILYGO_T5	// new  T5_V2.3.1     20-8-26	triggers HAS_ePaper and HAS_DISPLAY
+//#define ePaper213B74_BOARD_LILYGO_T5	// new  T5_V2.3.1     20-8-26	triggers HAS_ePaper and HAS_DISPLAY
 //#define ePaper213B73_BOARD_LILYGO_T5	// old  T5_V2.3_2.13  20190107	triggers HAS_ePaper and HAS_DISPLAY
 
 //#define ePaper_DEPG0290B_LILYGO_0290	// very first tests only...

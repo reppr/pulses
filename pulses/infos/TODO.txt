@@ -1159,3 +1159,7 @@ ePaper: show prename on change
 #error "ePaper_DEPG0290B_LILYGO_0290 does not work yet"
 
 TODO: morse input feedback is not working on ePaper
+
++#define OLED_HALT_PIN0	// see: monochrome_show_program_version()	// TODO: test with LilyGo T5_2.13
+
+#define DEBUG_ePAPER_MORSE_FEEDBACK	// TODO: remove

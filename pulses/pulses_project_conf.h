@@ -26,6 +26,7 @@
 
 #if defined TRIGGERED_MUSICBOX_LILYGO_213		// define this in my_pulses_config.h
   #if defined ePaper213B73_BOARD_LILYGO_T5  ||  defined ePaper213B74_BOARD_LILYGO_T5
+    #define ePAPER_SMALL_213
     #if defined ePaper213B73_BOARD_LILYGO_T5  &&  defined ePaper213B74_BOARD_LILYGO_T5
       #error "define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213B74_BOARD_LILYGO_T5"
     #endif

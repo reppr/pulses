@@ -64,7 +64,7 @@
   ATTENTION: *DANGEROUS!*	could possibly block boot sequence in systems with monochrome display code
   *not* tested with GPIO00 as click or such...
 */
-#define OLED_HALT_PIN0	// see: monochrome_show_program_version()
+#define OLED_HALT_PIN0	// see: monochrome_show_program_version()	// TODO: test with LilyGo T5_2.13
 
 #if defined ESP32
   #define USE_NVS		// always used on ESP32
