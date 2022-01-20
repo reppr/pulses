@@ -30,8 +30,11 @@
     #if defined ePaper213B73_BOARD_LILYGO_T5  &&  defined ePaper213B74_BOARD_LILYGO_T5
       #error "define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213B74_BOARD_LILYGO_T5"
     #endif
+    #define ePAPER_SMALL_213
+    #define USE_SD_CARD
+    #define LOG_PLAY
   #else
-    #error "ePaper213B73_BOARD_LILYGO_T5 *or* ePaper213B74_BOARD_LILYGO_T5"
+    #error "#define ePaper213B73_BOARD_LILYGO_T5 *or* ePaper213B74_BOARD_LILYGO_T5"
   #endif
 
   #if ! defined ESP32

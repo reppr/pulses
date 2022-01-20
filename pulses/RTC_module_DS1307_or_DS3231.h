@@ -75,67 +75,61 @@ bool read_DS1307_time(byte *second, byte *minute, byte *hour,
   return false;	// ok
 }
 
-// if(rtc_module_is_usable) show time stamp, else be quiet :)
-void show_DS1307_time_stamp() {		// format like  "2018-11-11_11h11m11s"
+#define TIMESTAMPLEN	26	// including '\0'
+char* DS1307_time_stamp__() {	// format like  "2018-11-11_11h11m11s_DAY"
   if(! rtc_module_is_usable)
-    return;	// be quiet if the system considers the module to be missing or not initialized
+    return NULL;	// be quiet if the system considers the module to be missing or not initialized
 
   byte second, minute, hour, weekday, day, month, year;
   if(read_DS1307_time(&second, &minute, &hour, &weekday, &day, &month, &year)) {
     MENU.out_Error_();
     MENU.out(F("read_DS1307_time()\t*deactivated*"));
-    return;	// ERROR
+    return NULL;	// ERROR
   }
 
-  MENU.out((int) 20);	// "20xx" century
-  if(year < 10)
-    MENU.out('0');
-  MENU.out((int) year);
-  MENU.out('-');
-  if(month < 10)
-    MENU.out('0');
-  MENU.out((int) month);
-  MENU.out('-');
-  if(day < 10)
-    MENU.out('0');
-  MENU.out((int) day);
-  MENU.out('_');
-  if(hour < 10)
-    MENU.out('0');
-  MENU.out((int) hour);
-  MENU.out('h');
-  if (minute < 10)
-    MENU.out('0');
-  MENU.out((int) minute);
-  MENU.out('m');
-  if (second < 10)
-    MENU.out('0');
-  MENU.out((int) second);
-  MENU.out(F("s\t"));
+  char* timestamp = (char*) malloc(TIMESTAMPLEN);
+  if (timestamp == NULL)
+    return NULL;	// ERROR
 
+  snprintf(timestamp, TIMESTAMPLEN, "20%02d-%02d-%02d_%02dh%02dm%02ds_", year, month, day, hour, minute, second);
   switch(weekday){
   case 1:
-    MENU.out(F("SUN"));
+    strcat(timestamp, "SUN");
     break;
   case 2:
-    MENU.out(F("MON"));
+    strcat(timestamp, "MON");
     break;
   case 3:
-    MENU.out(F("TUE"));
+    strcat(timestamp, "TUE");
     break;
   case 4:
-    MENU.out(F("WED"));
+    strcat(timestamp, "WED");
     break;
   case 5:
-    MENU.out(F("THU"));
+    strcat(timestamp, "THU");
     break;
   case 6:
-    MENU.out(F("FRI"));
+    strcat(timestamp, "FRI");
     break;
   case 7:
-    MENU.out(F("SAT"));
+    strcat(timestamp, "SAT");
     break;
   default:
-    MENU.out(F("???"));		// ERROR:  like 0 == not initialised
+    strcat(timestamp, "???");		// ERROR:  like 0 == not initialised
   }
-}
+
+  return timestamp;
+} // DS1307_time_stamp__()
+
+
+// if(rtc_module_is_usable) show time stamp, else be quiet :)
+void show_DS1307_time_stamp() {		// format like  "2018-11-11_11h11m11s"
+  if(! rtc_module_is_usable)
+    return;	// be quiet if the system considers the module to be missing or not initialized
+
+  char* timestamp= DS1307_time_stamp__();
+  if(timestamp) {
+    MENU.out(timestamp);
+    free(timestamp);
+  }
+} // show_DS1307_time_stamp()

@@ -1113,6 +1113,10 @@ bool stack_sync_user_selected=false;
   #include "RTC_module_DS1307_or_DS3231.h"
 #endif
 
+#if defined USE_SD_CARD
+  #include "SD_card_logging.h"
+#endif
+
 #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
   #include "mpu6050_module.h"
   #include "extensions/IMU_Zero.h"
@@ -2002,6 +2006,10 @@ void setup() {
   MENU.ln();
 #endif
 
+#if defined USE_SD_CARD
+  setup_SD_card();
+#endif
+
 #if defined USE_RGB_LED_STRIP
   MENU.out(F("RGB LED string on pin "));
   MENU.outln(HARDWARE.rgb_pin[0]);	// RGB_LED_STRIP_DATA_PIN
@@ -2051,7 +2059,6 @@ void setup() {
 #endif
 
 show_GPIOs();	// *does* work for GPIO_PINS==0
-//MENU.ln();
 
 // #if defined USE_LEDC
 //   #include "ledc_tone_setup.h"
@@ -2257,6 +2264,10 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
   #endif
 #endif
   MENU.ln();
+
+#if defined USE_SD_CARD
+  log_message_timestamped(F(">>>> NEWBORN  boot & setup"), true);	// NEWBORN
+#endif
 
   if(force_start_to_usermode) {
     force_start_to_usermode=false;
