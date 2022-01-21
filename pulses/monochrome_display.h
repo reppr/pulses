@@ -342,10 +342,14 @@ void multicore_display_message_task(void* data_) {
   vTaskDelete(NULL);
 }
 
+void error_txt_descript_malloc() {	// factored out
+  ERROR_ln(F("txt_descript malloc()"));
+}
+
 void multicore_display_message(const char* text) {	// create and do one shot task
   print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
   if(txt_descript_p == NULL) {
-    MENU.error_ln(F("txt_descript malloc()"));
+    error_txt_descript_malloc();
     return;	// ERROR
   }
   copy_text_to_text_buffer(text, txt_descript_p);
@@ -360,7 +364,7 @@ void multicore_display_message(const char* text) {	// create and do one shot tas
   if(err != pdPASS) {
     MENU.out(err);
     MENU.space();
-    MENU.error_ln(F("display_message"));
+    ERROR_ln(F("display_message"));
   }
 }
 
@@ -447,7 +451,7 @@ void multicore_print2x2_task(void* data_) {
 void multicore_print2x2(uint8_t col, uint8_t row, const char* text) {	// create and do one shot task
   print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
   if(txt_descript_p == NULL) {
-    MENU.error_ln(F("txt_descript malloc()"));
+    error_txt_descript_malloc();
     return;	// ERROR
   }
   copy_text_to_text_buffer(text, txt_descript_p);
@@ -464,7 +468,7 @@ void multicore_print2x2(uint8_t col, uint8_t row, const char* text) {	// create 
   if(err != pdPASS) {
     MENU.out(err);
     MENU.space();
-    MENU.error_ln(F("2x2display task"));
+    ERROR_ln(F("2x2display task"));
   }
 }
 
@@ -517,7 +521,7 @@ void multicore_println2x2_task(void* data_) {
 void multicore_println2x2(uint8_t row, const char* text) {	// create and do one shot task
   print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
   if(txt_descript_p == NULL) {
-    MENU.error_ln(F("txt_descript malloc()"));
+    error_txt_descript_malloc();
     return;	// ERROR
   }
   copy_text_to_text_buffer(text, txt_descript_p);
@@ -533,7 +537,7 @@ void multicore_println2x2(uint8_t row, const char* text) {	// create and do one 
   if(err != pdPASS) {
     MENU.out(err);
     MENU.space();
-    MENU.error_ln(F("println2x2"));
+    ERROR_ln(F("println2x2"));
   }
 }
 
@@ -614,7 +618,7 @@ void multicore_big_or_multiline_task(void* data_) {
 void multicore_big_or_multiline(uint8_t row, const char* text) {	// create and do one shot task
   print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
   if(txt_descript_p == NULL) {
-    MENU.error_ln(F("txt_descript malloc()"));
+    error_txt_descript_malloc();
     return;	// ERROR
   }
   copy_text_to_text_buffer(text, txt_descript_p);
@@ -630,7 +634,7 @@ void multicore_big_or_multiline(uint8_t row, const char* text) {	// create and d
   if(err != pdPASS) {
     MENU.out(err);
     MENU.space();
-    MENU.error_ln(F("big_or_multiline"));
+    ERROR_ln(F("big_or_multiline"));
   }
 }
 
@@ -711,7 +715,7 @@ void multicore_setCursor_task(void* data_) {
 void multicore_setCursor(uint8_t col, uint8_t row) {	// create and do one shot task
   print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
   if(txt_descript_p == NULL) {
-    MENU.error_ln(F("txt_descript malloc()"));
+    error_txt_descript_malloc();
     return;	// ERROR
   }
   txt_descript_p->col = col;
@@ -727,7 +731,7 @@ void multicore_setCursor(uint8_t col, uint8_t row) {	// create and do one shot t
   if(err != pdPASS) {
     MENU.out(err);
     MENU.space();
-    MENU.error_ln(F("setCursor"));
+    ERROR_ln(F("setCursor"));
   }
 }
 
@@ -765,7 +769,7 @@ void multicore_print_task(void* data_) {
 void multicore_print(const char* text) {	// create and do one shot task
   print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
   if(txt_descript_p == NULL) {
-    MENU.error_ln(F("txt_descript malloc()"));
+    error_txt_descript_malloc();
     return;	// ERROR
   }
   copy_text_to_text_buffer(text, txt_descript_p);
@@ -780,7 +784,7 @@ void multicore_print(const char* text) {	// create and do one shot task
   if(err != pdPASS) {
     MENU.out(err);
     MENU.space();
-    MENU.error_ln(F("MC_print"));
+    ERROR_ln(F("MC_print"));
   }
 }
 
@@ -865,7 +869,7 @@ void multicore_clearLine_task(void* data_) {
 void multicore_clearLine(uint8_t row) {	// create and do one shot task
   print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
   if(txt_descript_p == NULL) {
-    MENU.error_ln(F("txt_descript malloc()"));
+    error_txt_descript_malloc();
     return;	// ERROR
   }
   txt_descript_p->text = NULL;
@@ -881,7 +885,7 @@ void multicore_clearLine(uint8_t row) {	// create and do one shot task
   if(err != pdPASS) {
     MENU.out(err);
     MENU.space();
-    MENU.error_ln(F("clearLine"));
+    ERROR_ln(F("clearLine"));
   }
 }
 
@@ -1073,7 +1077,7 @@ void hw_display_setup() {
     break;
 
   case monochrome_type_off:
-    MENU.error_ln(F("monochrome is off in nvs?"));
+    ERROR_ln(F("monochrome is off in nvs?"));
 #if defined BOARD_OLED_LIPO		// try to fix from pp macros
     HARDWARE.monochrome_type = monochrome_type_LiPO;
     hw_display_setup();		// fixed(?), recurse
@@ -1083,7 +1087,7 @@ void hw_display_setup() {
 #endif
     break;
   default:
-    MENU.error_ln(F("unknown monochrome_type"));
+    ERROR_ln(F("unknown monochrome_type"));
   }
   MENU.ln();
 

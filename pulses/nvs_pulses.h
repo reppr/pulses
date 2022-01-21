@@ -321,8 +321,7 @@ void configure_HARDWARE_from_nvs() {
       MENU.outln(F("LiPO"));
       break;
     default:
-      MENU.error_ln(F("monochrome type unknown"));	// TODO: ERROR_ln() does not work here???
-      //ERROR_ln(F("monochrome type unknown"));
+      ERROR_ln(F("monochrome type unknown"));
     }
   }
 
@@ -516,7 +515,7 @@ bool /*configured?*/ configure_BATTERY_from_nvs() {	// can even be used *without
   return true;	// configuration OK
 
 #else		// no code, but data...
-  MENU.error_ln(F("BATTERY data ignored"));
+  ERROR_ln(F("BATTERY data ignored"));
   return false;	// no code, but data...
 #endif
 } // configure_BATTERY_from_nvs()

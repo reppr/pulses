@@ -180,7 +180,7 @@ void LoRa_has_received(int packetSize) {	// has received a packet, triggered by 
   if((packetSize + 1) > LoRa_RECEIVE_BUF_SIZE) {
     MENU.out(packetSize);
     MENU.space();
-    MENU.error_ln(F("LoRa rx buf too small"));
+    ERROR_ln(F("LoRa rx buf too small"));
     return;
   }
   LoRa_packet_size_received = 0;
@@ -269,7 +269,7 @@ bool /*ok=*/ LoRa_repeat_set_new_payload(uint8_t* payload, short size) {
     MENU.ln();
     return true;		// ok, payload
   } else {
-    MENU.error_ln(F("LoRa new payload"));
+    ERROR_ln(F("LoRa new payload"));
     return false;		// ERROR
   }
 } // LoRa_repeat_set_new_payload()
@@ -285,7 +285,7 @@ void LoRa_send_repeated_TX() {
     int accepted_bytes = LoRa.write(repeated_TX_payload, repeated_TX_size);
     if(accepted_bytes == 0) {	// ERROR
       LoRa.receive();		// switch back to receive mode
-      MENU.error_ln(F("LoRa sending"));
+      ERROR_ln(F("LoRa sending"));
       // TX_repetitions = 0; ################
       return;
     }
@@ -337,7 +337,7 @@ bool /*ok=*/ LoRa_start_repeated_TX(int repetitions, uint32_t interval_sec, uint
       return true;				// OK
     }
   } //else
-  MENU.error_ln(F("LoRa start repeat"));	// ERROR
+  ERROR_ln(F("LoRa start repeat"));	// ERROR
   return false;
 } // LoRa_start_repeated_TX()
 
@@ -575,7 +575,7 @@ bool LoRa_interpret_codes=true;		// ################ TODO: menu UI
 //     // case LoRa_code_max:
 //   default:
 //     MENU.out(code);
-//     MENU.error_ln(F("LoRa code"));
+//     ERROR_ln(F("LoRa code"));
 //     return false;
 //   }
 //   return true;

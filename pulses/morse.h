@@ -409,7 +409,7 @@ void trigger_token_duration_feedback() {
   if(err != pdPASS) {
     MENU.out(err);
     MENU.space();
-    MENU.error_ln(F("morse input feedback"));
+    ERROR_ln(F("morse input feedback"));
   }
 }
 
@@ -504,7 +504,7 @@ bool check_and_treat_morse_events_v3() {	// polled from pulses.ino main loop()	*
     too_many_events = false;
     portEXIT_CRITICAL(&morse_MUX);
 
-    MENU.error_ln(F("morse event buffer too small"));
+    ERROR_ln(F("morse event buffer too small"));
     return true;			// give up (for this round)
 
   } else {	// (! too_many_events)		OK,  *NO ISR ERROR*
@@ -668,7 +668,7 @@ void morse_2output_buffer(char letter) {
   if (morse_OUTPUT_cnt < MORSE_OUTPUT_MAX) {
     morse_OUTPUT_buffer[morse_OUTPUT_cnt++] = letter;
   } else {
-    MENU.error_ln(F("MORSE_OUTPUT_MAX	output skipped"));
+    ERROR_ln(F("MORSE_OUTPUT_MAX	output skipped"));
     morse_OUTPUT_cnt=0;	// TODO: maybe output data first? maybe not...
   }
 
@@ -996,7 +996,7 @@ void morse_received_token(char token, float duration) {
     }
 #endif
   } else {
-    MENU.error_ln(F("MORSE_TOKEN_MAX	buffer cleared"));
+    ERROR_ln(F("MORSE_TOKEN_MAX	buffer cleared"));
     morse_token_cnt=0;	// TODO: maybe still use data or use a ring buffer?
   }
 
@@ -1434,7 +1434,7 @@ char morse_2ACTION() {
       break;
 
     default:
-      MENU.error_ln(F("morse_2ACTION"));
+      ERROR_ln(F("morse_2ACTION"));
     }
   }
 
@@ -1562,7 +1562,7 @@ void static morse_token_decode() {	// decode received token sequence
       token = morse_SEEN_TOKENS[i];
       if(is_real_token(token)) {
 	if(pattern_length > 8) {	  // ERROR
-	  MENU.error_ln(F("morse pattern_length"));
+	  ERROR_ln(F("morse pattern_length"));
 	  morse_token_cnt=0;
 	  return;
 	}
@@ -1674,7 +1674,7 @@ void static morse_token_decode() {	// decode received token sequence
 	      break;
 
 	    default:
-	      MENU.error_ln(F("morse_decode type"));
+	      ERROR_ln(F("morse_decode type"));
 	      morse_reset_definition("");
 	      morse_token_cnt=0;
 	      return;
@@ -1720,7 +1720,7 @@ void static morse_token_decode() {	// decode received token sequence
 	  break;
 
 	default:
-	  MENU.error_ln(F("morse real token unknown"));
+	  ERROR_ln(F("morse real token unknown"));
 	  morse_reset_definition("");
 	  morse_token_cnt=0;
 	  return;

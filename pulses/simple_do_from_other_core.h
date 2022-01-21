@@ -29,7 +29,7 @@ void do_on_other_core(void (*function_p)()) {	// create and do one shot task
   if(err != pdPASS) {
     MENU.out(err);
     MENU.space();
-    MENU.error_ln(F("do_on_other_core"));
+    ERROR_ln(F("do_on_other_core"));
   }
 }
 

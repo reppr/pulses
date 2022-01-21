@@ -456,7 +456,7 @@ void accGyro_speed_test(int n=1000) {
 // #define DEBUG_SHOW_EACH_MPU_SAMLE
 void accGyro_sample_v2() {
   if(!mpu6050_available) {						// catch bugs, if any ;)  TODO: REMOVE:
-    MENU.error_ln(F("accGyro_sample_v2() mpu6050_available=false"));	// catch bugs, if any ;)  TODO: REMOVE:
+    ERROR_ln(F("accGyro_sample_v2() mpu6050_available=false"));	// catch bugs, if any ;)  TODO: REMOVE:
     return;
   }
 
@@ -560,7 +560,7 @@ void multicore_sample_mpu() {	// create and do one shot task
   if(err != pdPASS) {
     MENU.out(err);
     MENU.space();
-    MENU.error_ln(F("sample mpu"));
+    ERROR_ln(F("sample mpu"));
   }
 } // multicore_sample_mpu()
 #endif
@@ -598,7 +598,7 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
     accGyro_new_data = false;
 
     if(! accGyro_is_active) {	// maybe catch errors here, if any?	TODO: REMOVE:
-      MENU.error_ln(F("accGyro_reaction_v2():\taccGyro_is_active is false"));
+      ERROR_ln(F("accGyro_reaction_v2():\taccGyro_is_active is false"));
       return;
     }
 
@@ -749,7 +749,7 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
 #endif
 	  }
 	} else {
-	  MENU.error_ln(F("no jiffle?"));
+	  ERROR_ln(F("no jiffle?"));
 	} // Ax JIFFLES
       }
 
@@ -1007,7 +1007,7 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
       break;
 
     default:
-      MENU.error_ln(F("unknown accGyro_preset"));
+      ERROR_ln(F("unknown accGyro_preset"));
     } // switch (accGyro_preset)
   } // if(accGyro_new_data && accGyro_mode)
 } // accGyro_reaction_v2()

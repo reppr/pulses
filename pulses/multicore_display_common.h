@@ -36,7 +36,7 @@ bool /*error*/ copy_text_to_text_buffer(const char* text, print_descrpt_t* txt_d
   return false;	// OK
 
  malloc_error:
-  MENU.error_ln(F("text buffer malloc()"));
+  ERROR_ln(F("text buffer malloc()"));
   return true;	// ERROR
 } // copy_text_to_text_buffer()
 
@@ -97,7 +97,7 @@ void MC_do_on_other_core(void (*function_p)()) {	// create and do one shot task
   if(err != pdPASS) {
     MENU.out(esp_err_to_name(err));
     MENU.tab();
-    MENU.error_ln(F("MC_do_on_other_core"));
+    ERROR_ln(F("MC_do_on_other_core"));
   }
 }
 

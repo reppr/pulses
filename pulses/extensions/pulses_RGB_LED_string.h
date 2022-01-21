@@ -637,7 +637,7 @@ void multicore_rgb_string_draw() {	// create and do one shot task
   if(err != pdPASS) {
     MENU.out(err);
     MENU.space();
-    MENU.error_ln(F("rgb_string_draw"));
+    ERROR_ln(F("rgb_string_draw"));
   }
 }
 #endif // MULTICORE_RGB_STRING

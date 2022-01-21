@@ -385,7 +385,7 @@ void esp_now_ID_2_list(peer_ID_t* ID_p) {
       }
       // TODO: new connected peer maybe show on monochrome?
     } else		// no free entry
-      MENU.error_ln(F("too many peers"));
+      ERROR_ln(F("too many peers"));
   } // mac_addr != NULL
 } // esp_now_ID_2_list()
 
@@ -423,7 +423,7 @@ esp_err_t esp_now_pulses_add_peer(peer_ID_t* ID_new_p) {	// might give feedback
       MENU.ln();
     break;
   default:
-    MENU.error_ln(esp_err_to_name(status));
+    ERROR_ln(esp_err_to_name(status));
   }
   return status;
 } // esp_now_pulses_add_peer()
@@ -636,7 +636,7 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
   default:
     MENU.out((int) meaning);
     MENU.space(2);
-    MENU.error_ln(F("what?"));
+    ERROR_ln(F("ESP-NOW meaning?"));
     esp_now_show_raw_data(esp_now_received_data, esp_now_received_data_cnt);
     // the peer is *not* added
   } // switch meaning
@@ -853,7 +853,7 @@ esp_err_t esp_now_pulses_setup_0() {		// setup 1st stage
 
   esp_now_idle_identity_timer = timerBegin(0, 80, true /* count upwards */);	// microseconds
   if(esp_now_idle_identity_timer==NULL)
-    MENU.error_ln(F("timerBegin"));
+    ERROR_ln(F("esp-now idle timer timerBegin"));
   else {
     timerAttachInterrupt(esp_now_idle_identity_timer, &trigger_idle_identification, true /* edge */);
     timerAlarmWrite(esp_now_idle_identity_timer, esp_now_idle_ms*1000, true /* repeat */);

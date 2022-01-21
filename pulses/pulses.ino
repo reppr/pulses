@@ -358,7 +358,7 @@ void ERROR_ln(const char* text) {	// extended error reporting on MENU, ePaper or
   uint16_t len = strlen(text) + 5;	// "ERR " + text + '\0'
   char* str = (char*) malloc(len);
   if(str == NULL) {	// not even space for error message :(
-    MENU.error_ln(F("malloc()"));
+    MENU.error_ln(F("malloc() in ERROR_ln()!"));
     return;		// we better return, heap is empty...
   } // else
   snprintf(str, len, F("ERR %s"), text);

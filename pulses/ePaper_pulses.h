@@ -405,7 +405,7 @@ void try_ePaper_fix() {	// maybe OBSOLETE?	let's hope ;)
 #endif
 
   MENU.ln();
-  MENU.error_ln(F("\tTODO: IMPLEMENT\ttry_ePaper_fix()\tOBOLETE?"));
+  ERROR_ln(F("\tTODO: IMPLEMENT\ttry_ePaper_fix()\tOBOLETE?"));
   //~GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT>();
   //~GxEPD2_BW();	// destructor ?
 

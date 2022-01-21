@@ -1167,5 +1167,7 @@ TODO: morse input feedback is not working on ePaper
 logging UI
 ERROR logging
   replace most MENU.error_ln() by ERROR_ln()
+	./LoRa_pulses.h 183:    MENU.error_ln(F("LoRa rx buf too small"));	etc
+	
 battery handling logging
 play_cnt, boot_cnt, trigger_cnt

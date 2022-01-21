@@ -5,8 +5,10 @@
 
 ERROR_ln("Men_MuD.h");
 
-log_battery_level();
-show_logfile();
+#if defined USE_SD_CARD
+  log_battery_level();
+  show_logfile();
+#endif
 
 // #if defined DEBUG_ePAPER_MORSE_FEEDBACK
 //   MC_display_message("MESSAGE");

@@ -187,7 +187,7 @@ void set_used_font(const GFXfont* font_p) {
     //used_font_is_light=false;
 
   } else {
-    MENU.error_ln(F("unknown font size"));
+    ERROR_ln(F("unknown font size"));
   }
 
 #if defined DEBUG_ePAPER
@@ -248,7 +248,7 @@ void ePaper_print_at_task(void* data_) {
 void multicore_ePaper_print_at(int16_t col, int16_t row, const char* text, int16_t offset_y=0) {    // create and start a one shot task
   print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
   if(txt_descript_p == NULL) {
-    MENU.error_ln(F("txt_descript malloc()"));
+    ERROR_ln(F("txt_descript malloc()"));
     return;	// ERROR
   }
   copy_text_to_text_buffer(text, txt_descript_p);
@@ -267,7 +267,7 @@ void multicore_ePaper_print_at(int16_t col, int16_t row, const char* text, int16
   if(err != pdPASS) {
     MENU.out(err);
     MENU.space();
-    MENU.error_ln(F("ePaper_print_at_task"));
+    ERROR_ln(F("ePaper_print_at_task"));
   }
 } // multicore_ePaper_print_at()
 
@@ -410,7 +410,7 @@ void ePaper_1line_at_task(void* data_) {
 void multicore_ePaper_1line_at(int16_t row, const char* text, int16_t offset_y) {	// create and start a one shot task
   print_descrpt_t* txt_descrpt_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
   if(txt_descrpt_p == NULL) {
-    MENU.error_ln(F("txt_descript malloc()"));
+    ERROR_ln(F("txt_descript malloc()"));
     return;	// ERROR
   }
   copy_text_to_text_buffer(text, txt_descrpt_p);
@@ -427,7 +427,7 @@ void multicore_ePaper_1line_at(int16_t row, const char* text, int16_t offset_y) 
   if(err != pdPASS) {
     MENU.out(err);
     MENU.space();
-    MENU.error_ln(F("ePaper_1line_at_task"));
+    ERROR_ln(F("ePaper_1line_at_task"));
   }
 } // multicore_ePaper_1line_at()
 
