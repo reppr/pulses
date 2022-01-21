@@ -366,6 +366,14 @@ void ERROR_ln(const char* text) {	// extended error reporting on MENU, ePaper or
   MC_display_message(str);
   free(str);
 #endif
+
+#if defined USE_SD_CARD
+  extern void start_log_entry(char* text=NULL, bool log_battery=false);
+  start_log_entry(F("ERROR: "));
+  extern void end_log_entry(char* text=NULL, bool log_battery=false);
+  end_log_entry((char*) text);
+#endif
+
   // ERROR LED?		// TODO: maybe
   // morse output?	// TODO: maybe
   // save to spiffs	// TODO: maybe

@@ -2922,7 +2922,7 @@ void start_musicBox() {
 
 #if defined LOG_PLAY
   start_log_entry(F("start_musicBox()"), true);
-  logFile.print("\n\t   preset ");
+  logFile.print("\n\t   preset  ");
   logFile.print((int) musicBoxConf.preset);
   logFile.print('\t');
   logFile.print(musicBoxConf.name);

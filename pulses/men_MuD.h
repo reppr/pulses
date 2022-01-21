@@ -3,6 +3,8 @@
   temporary test menu UI during development
 */
 
+ERROR_ln("Men_MuD.h");
+
 log_battery_level();
 show_logfile();
 
