@@ -3,11 +3,24 @@
   temporary test menu UI during development
 */
 
-ERROR_ln("Men_MuD.h");
+//ERROR_ln("Men_MuD.h");
 
 #if defined USE_SD_CARD
-  log_battery_level();
-  show_logfile();
+extern void do_on_other_core(void (*function_p)());
+extern unsigned int read_battery_level(unsigned int oversampling=15);
+
+if(MENU.check_next('s'))
+  do_on_other_core(&show_logfile);
+ else
+   if(MENU.check_next('l'))
+     log_battery_level();
+   else
+     if(MENU.check_next('i'))
+       setup_SD_card();
+     else
+       if(MENU.check_next('r'))
+	 MENU.outln(read_battery_level());
+//  do_on_other_core(&log_battery_level);
 #endif
 
 // #if defined DEBUG_ePAPER_MORSE_FEEDBACK
@@ -22,27 +35,27 @@ ERROR_ln("Men_MuD.h");
 // break;
 // #endif // DEBUG_ePAPER_MORSE_FEEDBACK
 
-#if defined USE_RGB_LED_STRIP
-  pulses_RGB_LED_string_init();	// needed after wake up from light sleep
-#endif
+// #if defined USE_RGB_LED_STRIP
+//   pulses_RGB_LED_string_init();	// needed after wake up from light sleep
+// #endif
 
-#if defined BATTERY_LEVEL_CONTROL_PIN
-// MENU.out(F("men_MuD.h	battery level "));
-// MENU.outln(analogRead(BATTERY_LEVEL_CONTROL_PIN));	// pin *may* be incorrect
-// MENU.outln(BATTERY_LEVEL_CONTROL_PIN);	// pin *may* be incorrect
+// #if defined BATTERY_LEVEL_CONTROL_PIN
+// // MENU.out(F("men_MuD.h	battery level "));
+// // MENU.outln(analogRead(BATTERY_LEVEL_CONTROL_PIN));	// pin *may* be incorrect
+// // MENU.outln(BATTERY_LEVEL_CONTROL_PIN);	// pin *may* be incorrect
+//
+//   MENU.ln();
+//   battery_conf_UI_display(false);
+//   MENU.ln();
+//   battery_conf_UI_display(true);
+//   MENU.ln();
+// #endif
 
-  MENU.ln();
-  battery_conf_UI_display(false);
-  MENU.ln();
-  battery_conf_UI_display(true);
-  MENU.ln();
-#endif
-
-#if defined STARTUP_DELAY
-  MENU.out(F("STARTUP_DELAY "));
-  MENU.outln(STARTUP_DELAY);
-  MENU.ln();
-#endif
+// #if defined STARTUP_DELAY
+//   MENU.out(F("STARTUP_DELAY "));
+//   MENU.outln(STARTUP_DELAY);
+//   MENU.ln();
+// #endif
 
 // show_metric_cents_list();	// TODO: move to Tuning hierarchy
 break;

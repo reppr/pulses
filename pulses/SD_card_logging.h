@@ -19,9 +19,9 @@ void setup_SD_card() {
   SDspi.begin(14, 2, 15, 13);
 
   if(SD_card_ok = SD.begin(13, SDspi))
-    MENU.outln(F("ok\n"));
+    MENU.outln(F("ok"));
   else {
-    MENU.outln(F("failed\n"));
+    MENU.outln(F("failed"));
     return;	// no card
   }
 
@@ -39,6 +39,9 @@ void setup_SD_card() {
   }
 } // setup_SD_card()
 
+
+// try:	extern void do_on_other_core(void (*function_p)());
+//	do_on_other_core(&append_battery_log);
 void append_battery_log() {	// factored out
   if(! SD_card_ok)
     return;
@@ -64,7 +67,7 @@ void log_message(char* text, bool log_battery=false) {		// simple log message	op
   if(logFile = SD.open(logfilename, FILE_APPEND)) {
     logFile.print(text);
     if(log_battery)
-      append_battery_log();
+      do_on_other_core(&append_battery_log);
     logFile.println("");
 
     logFile.close();
@@ -84,7 +87,7 @@ void log_message_timestamped(char* text, bool log_battery=false) {	// simple log
     }
     logFile.print(text);
     if(log_battery)
-      append_battery_log();
+      do_on_other_core(&append_battery_log);
     logFile.println("");
 
     logFile.close();
@@ -106,7 +109,7 @@ void start_log_entry(char* text=NULL, bool log_battery=false) {		// opens logFil
       logFile.print(text);
     }
     if(log_battery)
-      append_battery_log();
+      do_on_other_core(&append_battery_log);
     // *logFile stays open*	*NO* logFile.close();
   } //  else ignore
 } // start_log_entry()
@@ -118,12 +121,14 @@ void end_log_entry(char* text=NULL, bool log_battery=false) {		// closes logFile
   if(text)
     logFile.print(text);
   if(log_battery)
-    append_battery_log();
+    do_on_other_core(&append_battery_log);
 
   logFile.println("");
   logFile.close();
 } // end_log_entry()
 
+// try:	extern void do_on_other_core(void (*function_p)());
+//	do_on_other_core(&log_battery_level);
 void log_battery_level() {	// TODO: FIXME: use append_battery_log() ################################################################
   if(! SD_card_ok)
     return;
@@ -141,6 +146,8 @@ void log_battery_level() {	// TODO: FIXME: use append_battery_log() ############
   } else MENU.malloc_error();
 } // log_battery_level()
 
+// try:	extern void do_on_other_core(void (*function_p)());
+//	do_on_other_core(&show_logfile);
 void show_logfile() {
   if(logFile = SD.open(logfilename, FILE_READ)) {
     while (logFile.available()) {
