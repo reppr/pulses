@@ -14,7 +14,7 @@
 #endif
 
 /*
-  #define ACCEPT_USB_LEVEL	200
+  #define ACCEPT_USB_LEVEL	400
 
   defaults accepts very low readings as usb level
   it assumes running from USB, so accepts it	possibly *** !!! DANGEROUS !!! ***
@@ -28,21 +28,40 @@
   #define ACCEPT_USB_LEVEL	400	// level below that are accepted assuming USB power
 #endif
 
+#if defined BATTERY_LEVELS_DOUBLED	// *NEW*	12V ~ 2400
 typedef struct {
   uint8_t version=1;							// % 0
   uint8_t reserved1=0;
   uint8_t reserved2=0;
   uint8_t type=12;		// 12 = 12V lead acid battery, static charge on 13.8
 				// 11 = 12V lead acid battery, static charge on 13.65
-  uint16_t level_12V=1200;	// calibrated to read 1200 on 12.0V	// % 4
-  uint16_t low_level=1181;	// ~ 11.8V
-  uint16_t off_level=1130;	// ~ 11.7V	TODO: TEST&TRIM		// %8
-  uint16_t static_13V8_level=1402;	// ~ 13.8V
+  uint16_t level_12V=2400;	// calibrated to read 1200 on 12.0V	// % 4
+  uint16_t low_level=2360;	// ~ 11.8V
+  uint16_t off_level=2340;	// ~ 11.7V	TODO: TEST&TRIM		// %8
+  uint16_t static_13V8_level=2760;	// ~ 13.8V
   uint16_t static_13V65_level=0;	// ~ 13.65V			// %12		// TODO?: not implemented
   uint16_t accepted_USB_level=ACCEPT_USB_LEVEL;	// level below that are accepted assuming USB power
-  uint16_t high_level=1234;	// ~12.4V	TODO: test&trimm			// %16
-  uint16_t over_level=1404;
+  uint16_t high_level=2480;	// ~12.4V	TODO: test&trimm	// %16
+  uint16_t over_level=2780;	// ~12.9V	TODO: test&trimm
 } battery_levels_conf_t;
+
+#else	// keep old battery levels for some old instruments
+  typedef struct {
+    uint8_t version=1;							// % 0
+    uint8_t reserved1=0;
+    uint8_t reserved2=0;
+    uint8_t type=12;		// 12 = 12V lead acid battery, static charge on 13.8
+				// 11 = 12V lead acid battery, static charge on 13.65
+    uint16_t level_12V=1200;	// calibrated to read 1200 on 12.0V	// % 4
+    uint16_t low_level=1181;	// ~ 11.8V
+    uint16_t off_level=1130;	// ~ 11.7V	TODO: TEST&TRIM		// %8
+    uint16_t static_13V8_level=1402;	// ~ 13.8V
+    uint16_t static_13V65_level=0;	// ~ 13.65V			// %12		// TODO?: not implemented
+    uint16_t accepted_USB_level=ACCEPT_USB_LEVEL;	// level below that are accepted assuming USB power
+    uint16_t high_level=1234;	// ~12.4V	TODO: test&trimm	// %16
+    uint16_t over_level=1404;
+  } battery_levels_conf_t;
+#endif // Battery levels
 
 battery_levels_conf_t BATTERY;
 

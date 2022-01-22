@@ -1171,3 +1171,5 @@ ERROR logging
 	
 battery handling logging
 play_cnt, boot_cnt, trigger_cnt
+
+test&trimm new  BATTERY_LEVELS_DOUBLED

@@ -26,6 +26,7 @@
   #define ePaper213B74_BOARD_LILYGO_T5		// (new) T5_V2.3.1    20.8.26	triggers HAS_ePaper and HAS_DISPLAY
   //#define ePaper213B73_BOARD_LILYGO_T5	// (old) T5_V2.3_2.13 20190107	triggers HAS_ePaper and HAS_DISPLAY
 
+  #define BATTERY_LEVELS_DOUBLED	// 12V ~ 2400
   #if defined ePaper213B73_BOARD_LILYGO_T5  ||  defined ePaper213B74_BOARD_LILYGO_T5
     #define DEBUG_ePAPER_MORSE_FEEDBACK		// TODO: remove
     // ok
