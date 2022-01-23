@@ -735,7 +735,23 @@ int i2c_scan() {
       MENU.out_hex(adr);
       MENU.tab();
       switch(adr) {
+      case 0x29:
+	MENU.outln(F("GY-530  VL53LOX"));
+	break;
+      case 0x39:
+	MENU.outln(F("APDS9960 proximity, gesture, RGB sensor"));
+	break;
+      case 0x50:
+      case 0x51:
+      case 0x52:
+      case 0x53:
+      case 0x54:
+      case 0x55:
+      case 0x56:
       case 0x57:
+	MENU.outln(F("EEPROM AT24CX"));	// probably on a DS3231 RTC module
+	break;
+      // case 0X57:	// ??? at24cx OR 24c32 ???
       case 0x58:
       case 0x59:
       case 0x5A:
@@ -743,7 +759,7 @@ int i2c_scan() {
       case 0x5C:
       case 0x5D:
       case 0x5E:
-	MENU.outln(F("EEPROM 24C32"));	// probably on a DS3231 RTC module
+	MENU.outln(F("EEPROM 24C32"));	// probably on a DS3231 RTC module ???
 	break;
 
       case 0x68:

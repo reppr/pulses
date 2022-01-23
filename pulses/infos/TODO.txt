@@ -1173,3 +1173,9 @@ battery handling logging
 play_cnt, boot_cnt, trigger_cnt
 
 test&trimm new  BATTERY_LEVELS_DOUBLED
+
+for i2c EEPROM in tinyRTC use
+  https://github.com/WifWaf/AT24CM01/blob/master/src/AT24CM01.h
+
+for GY-530
+  VL53LOX library
