@@ -16,6 +16,20 @@ bool rtc_module_is_usable=true;	// to *get* a test read on first read, we fake i
 //#if defined PULSES_SYSTEM	// see: HARDWARE.RTC_addr (unsused)
 #define RTC_I2C_ADDRESS 0x68	// DS3231 and DS1307 use the same address 0x68	// attention MPU6050 can use it too
 
+// check_for_rtc_module() set 'rtc_module_is_usable' and inform user about RTC
+bool check_for_rtc_module() {	// TODO: FIXME: RTC and mpu6050 might be on same address!
+  Wire.beginTransmission(RTC_I2C_ADDRESS);
+  rtc_module_is_usable = ! Wire.endTransmission();
+
+  MENU.out(F("\nRTC module "));
+  if(rtc_module_is_usable)
+    MENU.outln(F("found"));
+  else
+    MENU.outln(F("not available"));
+
+  return rtc_module_is_usable;
+}
+
 byte decToBcd(byte val) {	// convert normal decimal numbers to binary coded decimal
   return( (val/10*16) + (val%10) );
 }

@@ -1179,3 +1179,5 @@ for i2c EEPROM in tinyRTC use
 
 for GY-530
   VL53LOX library
+
+bool check_for_rtc_module() {	// TODO: FIXME: RTC and mpu6050 might be on same address!

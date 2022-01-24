@@ -79,12 +79,17 @@ void log_message_timestamped(char* text, bool log_battery=false) {	// simple log
     return;
 
   if(logFile = SD.open(logfilename, FILE_APPEND)) {
-    char* timestamp = DS1307_time_stamp__();
-    if(timestamp) {
-      logFile.print(timestamp);
-      free(timestamp);
-      logFile.print(" ");
+#if defined USE_RTC_MODULE
+    if(rtc_module_is_usable) {
+      char* timestamp = DS1307_time_stamp__();
+      if(timestamp) {
+	logFile.print(timestamp);
+	free(timestamp);
+	logFile.print(" ");
+      }
     }
+#endif // USE_RTC_MODULE
+
     logFile.print(text);
     if(log_battery)
       do_on_other_core(&append_battery_log);
@@ -99,11 +104,16 @@ void start_log_entry(char* text=NULL, bool log_battery=false) {		// opens logFil
     return;
 
   if(logFile = SD.open(logfilename, FILE_APPEND)) {
-    char* timestamp = DS1307_time_stamp__();
-    if(timestamp) {
-      logFile.print(timestamp);
-      free(timestamp);
+#if defined USE_RTC_MODULE
+    if(rtc_module_is_usable) {
+      char* timestamp = DS1307_time_stamp__();
+      if(timestamp) {
+	logFile.print(timestamp);
+	free(timestamp);
+      }
     }
+#endif // USE_RTC_MODULE
+
     if(text) {
       logFile.print(" ");
       logFile.print(text);

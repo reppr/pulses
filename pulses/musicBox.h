@@ -2921,11 +2921,11 @@ void start_musicBox() {
   MENU.out(F("\nstart_musicBox()\t"));
 
 #if defined LOG_PLAY
-  start_log_entry(F("start_musicBox()"), true);
-  logFile.print(F("\n\t   preset "));
+  start_log_entry(F("start_musicBox()  preset "), true);
   logFile.print((int) musicBoxConf.preset);
-  logFile.print(F("\t "));
+  logFile.print(F(" \""));
   logFile.print(musicBoxConf.name);
+  logFile.print('\"');
   end_log_entry();
 #endif
 
@@ -3450,7 +3450,9 @@ void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from mai
   case 2:	// ESP_SLEEP_WAKEUP_EXT0	2
     MENU.outln(F("wakeup EXT0\t"));
 #if defined USE_SD_CARD
-    log_message_timestamped(F(">>>> wakeup TRIGGERED"), true);
+    start_log_entry(F(">>>> WAKEUP TRIGGERED\t\t|"));
+    logFile.print(my_IDENTITY.preName);
+    end_log_entry("|", true);
 #endif
     // TODO: gpio?
     break;

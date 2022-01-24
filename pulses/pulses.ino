@@ -2141,9 +2141,11 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
   #endif
 
   #if defined  USE_RTC_MODULE
-    MENU.ln();
-    show_DS1307_time_stamp();	// DS3231 or DS1307
-    MENU.ln();
+    if(check_for_rtc_module()) {
+      MENU.ln();
+      show_DS1307_time_stamp();	// DS3231 or DS1307
+      MENU.ln(2);
+    }
   #endif
 #endif // USE_i2c
 
@@ -2274,7 +2276,9 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
   MENU.ln();
 
 #if defined USE_SD_CARD
-  log_message_timestamped(F(">>>> NEWBORN  boot & setup"), true);	// NEWBORN
+  start_log_entry(F(">>>> NEWBORN  boot & setup\t|"));		// NEWBORN
+  logFile.print(my_IDENTITY.preName);
+  end_log_entry("|", true);
 #endif
 
   if(force_start_to_usermode) {
