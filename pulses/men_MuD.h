@@ -9,18 +9,11 @@
 extern void do_on_other_core(void (*function_p)());
 extern unsigned int read_battery_level(unsigned int oversampling=15);
 
-if(MENU.check_next('s'))
-  do_on_other_core(&show_logfile);
+if(MENU.check_next('l'))
+  log_battery_level();
  else
-   if(MENU.check_next('l'))
-     log_battery_level();
-   else
-     if(MENU.check_next('i'))
-       setup_SD_card();
-     else
-       if(MENU.check_next('r'))
-	 MENU.outln(read_battery_level());
-//  do_on_other_core(&log_battery_level);
+   if(MENU.check_next('r'))
+     MENU.outln(read_battery_level());
 #endif
 
 // #if defined DEBUG_ePAPER_MORSE_FEEDBACK

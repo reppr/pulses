@@ -85,11 +85,10 @@ void system_menu_display() {
 
 #if defined ESP32
   display_esp_versions();
-  MENU.ln();
+  // DADA  MENU.ln();
 #endif
 
-  display_program_version();	// display program versions, maybe preName. menu output only
-  MENU.ln();
+  show_internal_configurations();	// TODO: some info might be redundant
 
   if(MENU.verbosity >= VERBOSITY_MORE) {
     display_type_sizes();		// sizeof pulses data types
@@ -101,14 +100,16 @@ void system_menu_display() {
     MENU.ln();
   }
 
-  show_internal_configurations();	// TODO: some info might be redundant
-
 #if defined USE_BATTERY_LEVEL_CONTROL
   MENU.ln();
   extern void battery_conf_UI_display(bool show_menu_keys=true);
   battery_conf_UI_display(true);
   MENU.ln();
 #endif
+
+#if defined DO_LOGGING
+  logging_UI_display();
+#endif // DO_LOGGING
 } // system_menu_display()
 
 
@@ -126,6 +127,12 @@ bool system_menu_reaction(char token) {
     battery_UI_reaction();		// 'B' was already received, always returns true
     break;
 #endif
+
+#if defined DO_LOGGING
+  case 'O':
+    return logging_UI_reaction();
+    break;
+#endif // DO_LOGGING
 
   default:
     return false;

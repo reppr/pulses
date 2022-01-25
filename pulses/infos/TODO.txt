@@ -1163,21 +1163,22 @@ TODO: morse input feedback is not working on ePaper
 +#define OLED_HALT_PIN0	// see: monochrome_show_program_version()	// TODO: test with LilyGo T5_2.13
 
 #define DEBUG_ePAPER_MORSE_FEEDBACK	// TODO: remove
-
-logging UI
-ERROR logging
-  replace most MENU.error_ln() by ERROR_ln()
-	./LoRa_pulses.h 183:    MENU.error_ln(F("LoRa rx buf too small"));	etc
 	
 battery handling logging
-play_cnt, boot_cnt, trigger_cnt
-
 test&trimm new  BATTERY_LEVELS_DOUBLED
 
 for i2c EEPROM in tinyRTC use
   https://github.com/WifWaf/AT24CM01/blob/master/src/AT24CM01.h
 
+play_cnt, boot_cnt, trigger_cnt
+
 for GY-530
   VL53LOX library
 
 bool check_for_rtc_module() {	// TODO: FIXME: RTC and mpu6050 might be on same address!
+
+fix esp-now channel
+
+test APDS9960 prox (and rgb) sensor
+
+MENU.out(F("TODO: IMPLEMENT "));    MENU.outln(F("logging battery"));

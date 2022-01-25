@@ -1887,7 +1887,6 @@ void show_internal_configurations() {
   MENU.ln();
   MENU.out(F("MAC: "));
   MENU.outln(getMacAddress());
-  MENU.ln();
 #endif
 } // show_internal_configurations()
 
@@ -1965,6 +1964,8 @@ void setup() {
 #endif
 
   show_internal_configurations();
+  MENU.ln();
+
   #if defined HAS_DISPLAY && ! defined TRIGGERED_MUSICBOX2
     delay(3000);	// sorry for that
   #endif
@@ -2275,11 +2276,13 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 #endif
   MENU.ln();
 
-#if defined USE_SD_CARD
-  start_log_entry(F(">>>> NEWBORN  boot & setup\t|"));		// NEWBORN
-  logFile.print(my_IDENTITY.preName);
-  end_log_entry("|", true);
-#endif
+#if defined DO_LOGGING
+  if(do_log) {
+    start_log_entry(F(">>>> NEWBORN  boot & setup\t|"));	// NEWBORN
+    logFile.print(my_IDENTITY.preName);
+    end_log_entry("|", true);
+  }
+#endif // DO_LOGGING
 
   if(force_start_to_usermode) {
     force_start_to_usermode=false;

@@ -1827,8 +1827,9 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
 //  MENU.ln();
   }
 
-#if defined LOG_PLAY
-  log_message_timestamped(F("HARD END"), true);
+#if defined DO_LOGGING
+  if(do_log && log_play)
+    log_message_timestamped(F("HARD END"), true);
 #endif
 
 #if defined HAS_DISPLAY
@@ -2920,14 +2921,16 @@ void start_musicBox() {
 #endif
   MENU.out(F("\nstart_musicBox()\t"));
 
-#if defined LOG_PLAY
-  start_log_entry(F("start_musicBox()  preset "), true);
-  logFile.print((int) musicBoxConf.preset);
-  logFile.print(F(" \""));
-  logFile.print(musicBoxConf.name);
-  logFile.print('\"');
-  end_log_entry();
-#endif
+#if defined DO_LOGGING
+  if(do_log && log_play) {
+    start_log_entry(F("start_musicBox()  preset "), true);
+    logFile.print((int) musicBoxConf.preset);
+    logFile.print(F(" \""));
+    logFile.print(musicBoxConf.name);
+    logFile.print('\"');
+    end_log_entry();
+  }
+#endif // DO_LOGGING
 
 #if defined HAS_DISPLAY && defined MUSICBOX_SHOW_PROGRAM_VERSION	// default *off*
   MC_show_program_version();
@@ -3450,9 +3453,11 @@ void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from mai
   case 2:	// ESP_SLEEP_WAKEUP_EXT0	2
     MENU.outln(F("wakeup EXT0\t"));
 #if defined USE_SD_CARD
-    start_log_entry(F(">>>> WAKEUP TRIGGERED\t\t|"));
-    logFile.print(my_IDENTITY.preName);
-    end_log_entry("|", true);
+    if(do_log) {
+      start_log_entry(F(">>>> WAKEUP TRIGGERED\t\t|"));
+      logFile.print(my_IDENTITY.preName);
+      end_log_entry("|", true);
+    }
 #endif
     // TODO: gpio?
     break;

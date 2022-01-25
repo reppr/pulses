@@ -31,8 +31,12 @@
       #error "define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213B74_BOARD_LILYGO_T5"
     #endif
     #define ePAPER_SMALL_213
+
     #define USE_SD_CARD
-    #define LOG_PLAY
+    #define DO_LOGGING
+    #define LOG_PLAY_DEFAULT
+    #define LOG_BATTERY_DEFAULT
+
   #else
     #error "#define ePaper213B73_BOARD_LILYGO_T5 *or* ePaper213B74_BOARD_LILYGO_T5"
   #endif

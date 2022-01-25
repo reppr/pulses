@@ -180,3 +180,19 @@
     #define BATTERY_LEVEL_CONTROL_PIN	35	// NEW default, (was: 36)	see: MUSICBOX2_PIN_MAPPING
   #endif
 #endif
+
+
+#if defined DO_LOGGING && ! defined USE_SD_CARD
+  #error 'DO_LOGGING' needs #define USE_SD_CARD
+#else
+  #if defined LOG_PLAY_DEFAULT && ! defined DO_LOGGING
+    #error 'LOG_PLAY_DEFAULT' needs #define DO_LOGGING
+  #endif
+  #if defined LOG_BATTERY_DEFAULT && ! defined DO_LOGGING
+    #error 'LOG_BATTERY_DEFAULT' needs #define DO_LOGGING
+  #else
+    #if defined LOG_BATTERY_DEFAULT && ! defined USE_BATTERY_LEVEL_CONTROL
+      #error 'LOG_BATTERY_DEFAULT' needs #define USE_BATTERY_LEVEL_CONTROL
+    #endif
+  #endif
+#endif
