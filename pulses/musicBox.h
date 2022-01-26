@@ -4358,7 +4358,6 @@ bool musicBox_reaction(char token) {
     // exclude special first 'CC...' 'EOF' '?' and such:
     switch(MENU.peek()) {	// second letter after 'CC...' configure esp_now sending
     case EOF8:  // bare 'C'	// *broadcast* to spread peer detection
-      MENU.outln(F("esp_now_call_participants()"));
       esp_now_call_participants();
       trigger_display_peer_ID_list();	// show peer list after a short while
       break;
@@ -4373,7 +4372,6 @@ bool musicBox_reaction(char token) {
       MENU.drop_input_token();
 
       if(MENU.peek() == EOF8) {	// bare 'CC'
-	MENU.outln(F("esp_now_call_participants()"));
 	esp_now_call_participants();
 	trigger_display_peer_ID_list();		// show peer list after a short while
 
@@ -4637,7 +4635,6 @@ bool musicBox_reaction(char token) {
     case 'C':	// 'IC'	peer list
       MENU.drop_input_token();
       if(MENU.check_next('C')) {	// 'ICC' call participants and show
-	MENU.outln(F("esp_now_call_participants()"));
 	esp_now_call_participants();
 	trigger_display_peer_ID_list();	// show peer list after a short while
       } else

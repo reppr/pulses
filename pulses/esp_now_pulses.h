@@ -6,6 +6,11 @@
 	https://hackaday.io/project/164132-hello-world-for-esp-now/log/160570-esp-now-introduction
 */
 
+#define ESP_NOW_SECOND_CHAN_NONE	// use *NEW* ESP_NOW_CHANNEL implementation	TODO: test and REMOVE older version
+#if defined  ESP_NOW_SECOND_CHAN_NONE
+  #include <esp_wifi.h>
+#endif
+
 #include <esp_now.h>
 #include <WiFi.h>
 #include "pulses_esp_err.h"		// esp_err_t ERROR reporting
@@ -27,7 +32,9 @@
 
 //#define DEBUG_ESP_NOW_NETWORKING
 
-#define ESP_NOW_CHANNEL	4		// TODO: UI
+#define ESP_NOW_CHANNEL		11		// works fine TODO: UI
+//#define ESP_NOW_CHANNEL		4		// does not work well here???
+//#define ESP_NOW_CHANNEL		0		// works fine TODO: UI
 
 // react on broadcast or all-known-peers messages in an individual time slice
 // defines the length of *one* slice in milliseconds
@@ -710,8 +717,8 @@ void esp_now_send_maybe_do_macro(uint8_t* mac_addr, char* macro) {
 
 
 void esp_now_call_participants() {	// kickstart network connections
-  if(MENU.maybe_display_more(VERBOSITY_SOME) || DEBUG_ESP_NOW_b)
-    MENU.outln(F("esp_now_call_participants()"));
+  MENU.out(F("esp_now_call_participants()\tchannel "));
+  MENU.outln(ESP_NOW_CHANNEL);
 
   esp_now_send_identity(broadcast_mac);
   yield();
@@ -783,6 +790,8 @@ esp_err_t add_broadcast_2_ESP_peer_list() {
 
 // setup:
 esp_err_t esp_now_pulses_setup_0() {		// setup 1st stage
+  esp_err_t status;
+
   MENU.outln(F("  WiFi.mode(WIFI_OFF)"));
   WiFi.mode(WIFI_OFF);
   yield();
@@ -791,14 +800,19 @@ esp_err_t esp_now_pulses_setup_0() {		// setup 1st stage
   WiFi.mode(WIFI_STA);				// TODO: BUG: does not returm on PSRAM boards!
   yield();
 
-  WiFi.channel(ESP_NOW_CHANNEL);		// TODO: ESP_NOW_CHANNEL
+#if defined ESP_NOW_SECOND_CHAN_NONE	// use *NEW* ESP_NOW_CHANNEL implementation
+  status = esp_wifi_set_channel(ESP_NOW_CHANNEL, WIFI_SECOND_CHAN_NONE);	// *NEW* ESP_NOW_CHANNEL implementation
+  if(status != ESP_OK)
+    return status;
+#else
+  WiFi.channel(ESP_NOW_CHANNEL);		// old	TODO: ESP_NOW_CHANNEL
+#endif
   yield();
 
   MENU.outln(F("  WiFi.disconnect()"));
   WiFi.disconnect();	// just in case
   yield();
 
-  esp_err_t status;
   MENU.out(F("  esp_now_init() "));
 
   status = esp_now_init();
@@ -806,7 +820,14 @@ esp_err_t esp_now_pulses_setup_0() {		// setup 1st stage
     return status;
   yield();
 
-  WiFi.channel(ESP_NOW_CHANNEL);		// TODO: ESP_NOW_CHANNEL
+#if defined ESP_NOW_SECOND_CHAN_NONE	// use *NEW* ESP_NOW_CHANNEL implementation
+  status = esp_wifi_set_channel(ESP_NOW_CHANNEL, WIFI_SECOND_CHAN_NONE);	// *NEW* ESP_NOW_CHANNEL implementation
+  if(status != ESP_OK)
+    return status;
+#else
+  WiFi.channel(ESP_NOW_CHANNEL);		// old	TODO: ESP_NOW_CHANNEL
+#endif
+
   yield();
 
   uint32_t esp_now_version=0;

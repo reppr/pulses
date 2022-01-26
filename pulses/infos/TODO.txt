@@ -1182,3 +1182,8 @@ fix esp-now channel
 test APDS9960 prox (and rgb) sensor
 
 MENU.out(F("TODO: IMPLEMENT "));    MENU.outln(F("logging battery"));
+
+put ESP_NOW_CHANNEL	in HARDWARE
+
+#define ESP_NOW_SECOND_CHAN_NONE	// use *NEW* ESP_NOW_CHANNEL implementation	TODO: test and REMOVE older version
+why does channel 4 not work well???

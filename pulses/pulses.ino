@@ -265,7 +265,11 @@ typedef struct pulses_hardware_conf_t {
   uint8_t magical_sense_pin=ILLEGAL8;		// maybe?	i.e. see: magical_fart
 
   // 8 bytes RESERVED for future use, forward compatibility
+#if defined ESP_NOW_CHANNEL
+  uint8_t esp_now_channel=ESP_NOW_CHANNEL;	// *not used yet*	// %4
+#else
   uint8_t esp_now_channel=ILLEGAL8;	// *not used yet*		// %4	TODO: ESP_NOW_CHANNEL?
+#endif
 
   uint8_t midi_does_pitch_bend=false;	// *not used yet*
 #if defined USE_MIDI

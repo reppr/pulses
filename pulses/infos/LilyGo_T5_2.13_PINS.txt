@@ -5,7 +5,7 @@ LilyGo_T5_2.13_PINS.txt
 	    [ANTENNA]
 3V3 3V3				36   BATTERY LEVEL?
 
-GND				39   [button]   (BATTERY LEVEL?)
+GND				39   *UNUSED* [button]
 
 21  WIRE SDA			RST  reset
 
@@ -13,7 +13,7 @@ TX				34   MUSICBOX TRIGGER
 
 RX				3V3
 
-22  WIRE SCL			32   (touch?) (PERIPHERAL POWER?)
+22  WIRE SCL			32   *FREE* (touch?) (PERIPHERAL POWER?)
 
 19  MIDI out			33   MORSE TOUCH INPUT
 
