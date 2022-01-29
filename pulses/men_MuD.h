@@ -3,7 +3,12 @@
   temporary test menu UI during development
 */
 
-//ERROR_ln("Men_MuD.h");
+
+#if defined USE_VL53L0X_max
+  MENU.out(F("VL53L0X_read_mm() "));
+  MENU.outln(VL53L0X_read_mm());
+break;
+#endif
 
 #if defined USE_SD_CARD
 extern void do_on_other_core(void (*function_p)());

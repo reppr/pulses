@@ -38,6 +38,7 @@
 #define USE_BATTERY_LEVEL_CONTROL
 
 #define USE_VL53L0X_max		1	// maximal number of used VL53L0X sensors like GY-530
+//#define USE_VL53L0X_Adafruit		// test Adafruit_VL53L0X library instead of pololu
 
 //#define USE_LoRa		// needs: https://github.com/sandeepmistry/arduino-LoRa
 				//	  https://github.com/khoih-prog/ESP32TimerInterrupt

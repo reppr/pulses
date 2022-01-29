@@ -736,7 +736,7 @@ int i2c_scan() {
       MENU.tab();
       switch(adr) {
       case 0x29:
-	MENU.outln(F("GY-530  VL53LOX"));
+	MENU.outln(F("GY-530  VL53L0X"));
 	break;
       case 0x39:
 	MENU.outln(F("APDS9960 proximity, gesture, RGB sensor"));
