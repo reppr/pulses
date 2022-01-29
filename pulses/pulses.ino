@@ -1286,6 +1286,12 @@ uint8_t relaxmax=4;			// up to how many relax() in one todo chain
   #include "LoRa_menu_page.h"
 #endif
 
+//soon: #if defined USE_VL53L0X_max
+//soon:   #include "Adafruit_VL53L0X.h"
+//soon:   Adafruit_VL53L0X VL53L0X_1;
+//soon:   #include "VL53L0X_pulses.h"
+//soon: #endif
+
 #if defined HARMONICAL_MUSIC_BOX
   #include "musicBox.h"
 #endif
@@ -1946,12 +1952,27 @@ void setup() {
   // for some strange reason i had to repeat this at the end of setup(), see below
   peripheral_power_switch_ON();		// default peripheral power supply ON
   //  peripheral_power_switch_OFF();	// default peripheral power supply OFF
-  delay(100);	// wait a bit longer
+  // delay(100);	// WAS: waiting longer when switching peripheral_power	NEW: wait anyway
 
   #if defined USE_RGB_LED_STRIP
     pulses_RGB_LED_string_init();	// do that *AGAIN*, as the string could hang on peripheral_power...
   #endif
 #endif
+delay(100);			//NEW: wait anyway	WAS: waiting longer when switching peripheral_power
+
+#if defined USE_i2c
+  Wire.begin(21, 22, 400000L);	//NEW: start i2c early
+  /*
+    was:
+     Wire.begin();
+     Wire.setClock(400000L);	// must be *after* Wire.begin()
+  */
+
+//soon:   #if defined USE_VL53L0X_max
+//soon:     setup_VL53L0X();
+//soon:   #endif
+#endif
+
 
 #if defined HAS_DISPLAY
   // SEE: https://github.com/olikraus/u8g2/wiki/u8x8reference
@@ -1965,7 +1986,7 @@ void setup() {
   MENU.ln();
 
   #if defined HAS_DISPLAY && ! defined TRIGGERED_MUSICBOX2
-    delay(3000);	// sorry for that
+    delay(3000);	// sorry for that	TODO: check that...
   #endif
 
   MENU.print_free_RAM();
@@ -2121,12 +2142,16 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 #endif // to WiFi or not
 
 #if defined USE_i2c
-  Wire.begin(21, 22, 400000L);
-  /*
-    was:
-     Wire.begin();
-     Wire.setClock(400000L);	// must be *after* Wire.begin()
-  */
+//WAS:  Wire.begin(21, 22, 400000L);
+//WAS:  /*
+//WAS:    was:
+//WAS:     Wire.begin();
+//WAS:     Wire.setClock(400000L);	// must be *after* Wire.begin()
+//WAS:  */
+//WAS:
+//WAS:  #if defined USE_VL53L0X_max
+//WAS:    setup_VL53L0X();
+//WAS:  #endif
 
   #if defined USE_MCP23017
     MCP23017.begin();

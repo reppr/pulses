@@ -37,7 +37,7 @@
 
 // i2c
 #if ! defined USE_i2c
-#if defined(USE_MCP23017) || defined(USE_RTC_MODULE) || defined(USE_i2c_SCANNER) || defined(USE_MPU6050) || defined(USE_MCP23017)
+  #if defined(USE_MCP23017) || defined(USE_RTC_MODULE) || defined(USE_i2c_SCANNER) || defined(USE_MPU6050) || defined(USE_VL53L0X_max)
     #define USE_i2c
   #endif
 #endif

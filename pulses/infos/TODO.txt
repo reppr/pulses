@@ -1187,3 +1187,7 @@ put ESP_NOW_CHANNEL	in HARDWARE
 
 #define ESP_NOW_SECOND_CHAN_NONE	// use *NEW* ESP_NOW_CHANNEL implementation	TODO: test and REMOVE older version
 why does channel 4 not work well???
+
+#if defined HAS_DISPLAY && ! defined TRIGGERED_MUSICBOX2
+  delay(3000);	// sorry for that	TODO: check that...
+#endif
