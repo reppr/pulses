@@ -18,11 +18,11 @@ if(MENU.check_next('l'))
 
 // #if defined DEBUG_ePAPER_MORSE_FEEDBACK
 //   MC_display_message("MESSAGE");
-//   sleep(3000);
+//   delay(3000);
 //
 //   set_used_font(big_font_p);
 //   ePaper_print_at(0,0, "ePaper_print_at()", 0);	// *do* call set_used_font() before using that
-//   sleep(5000);
+//   delay(5000);
 //   MC_print_at(0,2, "MC HERE");
 //   MC_print_1line_at(4, "MC there");
 // break;
@@ -41,12 +41,6 @@ if(MENU.check_next('l'))
 //   battery_conf_UI_display(false);
 //   MENU.ln();
 //   battery_conf_UI_display(true);
-//   MENU.ln();
-// #endif
-
-// #if defined STARTUP_DELAY
-//   MENU.out(F("STARTUP_DELAY "));
-//   MENU.outln(STARTUP_DELAY);
 //   MENU.ln();
 // #endif
 

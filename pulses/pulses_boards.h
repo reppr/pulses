@@ -53,8 +53,6 @@
     #endif
 
 
-//  #define STARTUP_DELAY	256	// ESP32 seemed to need that for successful booting, probably *OBSOLETE?*
-
 #if ! defined PL_MAX	// see: pulses_project_conf.h
   //#define PL_MAX		64
     #define PL_MAX		128
@@ -71,8 +69,6 @@
     //#define AUTOSTART_WIFI	// start wifi on booting?  see: WiFi_stuff.ino
 
   #elif defined(ESP8266)			// ESP8266: "a lot of RAM"
-    #define STARTUP_DELAY	64	// ESP8266 maybe does not need that, but...
-
     #define PL_MAX	32
     #define CODE_RAM_SIZE	256*3+2
     #define SCALES_RAM_SIZE	256*2+2

@@ -1231,11 +1231,6 @@ int8_t softboard_page=-1;	// see: maybe_run_continuous()
 int8_t musicBox_page=ILLEGAL8;	// NOTE: musicBox_page is not used	// TODO: ???
 
 
-
-#ifndef STARTUP_DELAY
-  #define STARTUP_DELAY	0	// obsolete, noop or yield()
-#endif
-
 #ifndef RAM_IS_SCARE	// enough RAM?
   #include "jiffles.h"
 #endif
@@ -1916,7 +1911,7 @@ void setup() {
 
   HARMONICAL = new Harmonical(3628800uL);	// old style harmonical unit, obsolete?
 
-  delay(STARTUP_DELAY);		// yield()
+  yield();
   Serial.begin(BAUDRATE);	// Start serial communication.
 
 #if defined(__AVR_ATmega32U4__) || defined(ESP8266) || defined(ESP32)	// FIXME: test ESP32  ################
@@ -1928,9 +1923,8 @@ void setup() {
 #endif
 
   // try to get rid of menu input garbage, "dopplet gnaeht hebt vilicht besser" ;)
-  //  delay(STARTUP_DELAY);
   while (Serial.available())  { Serial.read(); yield(); }
-  delay(STARTUP_DELAY);
+  yield();
   while (MENU.peek() != EOF8) { MENU.drop_input_token(); yield(); }
   MENU.ln();	// try to get empty start lines after serial garbage...
   MENU.space(8);
