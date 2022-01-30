@@ -1976,7 +1976,7 @@ delay(100);			//NEW: wait anyway	WAS: waiting longer when switching peripheral_p
 
    #if defined USE_VL53L0X_max
      MENU.ln();
-     setup_VL53L0X();
+     setup_VL53L0X(&VL53L0X_1);
      //setup_multi_VL53L0X();
      MENU.ln();
    #endif

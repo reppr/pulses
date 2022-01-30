@@ -5,16 +5,9 @@
 
 
 #if defined USE_VL53L0X_max
-  MENU.out(F("VL53L0X_read_mm() "));
-  MENU.outln(VL53L0X_read_mm());
+  MENU.out(F("VL53L0X_read_mm(&VL53L0X_1) "));
+  MENU.outln(VL53L0X_read_mm(&VL53L0X_1));
 
-VL53L0X* VL53_p = &VL53L0X_1;
-
-  MENU.out(F("POINTER VL53L0X_read_mm() "));
-  MENU.outln((*VL53_p).readRangeSingleMillimeters());
-
-//setup_multi_VL53L0X();
-//MENU.outln(VL53L0X_read_mm());
 break;
 #endif
 
