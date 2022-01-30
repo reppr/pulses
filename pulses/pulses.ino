@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICAL v.046   // testing esp32-arduino 2.0.0 rc1
+#define PROGRAM_VERSION	HARMONICAL v.046   //
 /*			0123456789abcdef   */
 
 
@@ -1294,7 +1294,7 @@ uint8_t relaxmax=4;			// up to how many relax() in one todo chain
     #include "VL53L0X_pulses.h"			// DEFAULT: use pololu library
   #endif
 
-//#include "VL53L0X_multi.h"
+  #include "VL53L0X_multi.h"
 #endif
 
 #if defined HARMONICAL_MUSIC_BOX
@@ -1974,12 +1974,10 @@ delay(100);			//NEW: wait anyway	WAS: waiting longer when switching peripheral_p
      Wire.setClock(400000L);	// must be *after* Wire.begin()
   */
 
-   #if defined USE_VL53L0X_max
-     MENU.ln();
-     setup_VL53L0X(&VL53L0X_1);
-     //setup_multi_VL53L0X();
-     MENU.ln();
-   #endif
+  #if defined USE_VL53L0X_max
+    MENU.ln();
+    setup_sequence_multi_VL53L0X();
+  #endif
 #endif
 
 

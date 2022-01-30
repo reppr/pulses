@@ -4,12 +4,12 @@
 */
 
 
-#if defined USE_VL53L0X_max
-  MENU.out(F("VL53L0X_read_mm(&VL53L0X_1) "));
-  MENU.outln(VL53L0X_read_mm(&VL53L0X_1));
-
-break;
-#endif
+// #if defined USE_VL53L0X_max
+//   MENU.out(F("VL53L0X_read_mm(&VL53L0X_1) "));
+//   MENU.outln(VL53L0X_read_mm(&VL53L0X_1));
+// 
+// break;
+// #endif
 
 #if defined USE_SD_CARD
 extern void do_on_other_core(void (*function_p)());
