@@ -1287,11 +1287,14 @@ uint8_t relaxmax=4;			// up to how many relax() in one todo chain
 #endif
 
 #if defined USE_VL53L0X_max
+#define VL53L0X_DEBUG
   #if defined USE_VL53L0X_Adafruit
     #include "VL53L0X_pulses_Adafruit.h"	// use Adafruit library instead of pololu
   #else
     #include "VL53L0X_pulses.h"			// DEFAULT: use pololu library
   #endif
+
+//#include "VL53L0X_multi.h"
 #endif
 
 #if defined HARMONICAL_MUSIC_BOX
@@ -1964,6 +1967,7 @@ delay(100);			//NEW: wait anyway	WAS: waiting longer when switching peripheral_p
 
 #if defined USE_i2c
   Wire.begin(21, 22, 400000L);	//NEW: start i2c early
+  yield();
   /*
     was:
      Wire.begin();
@@ -1971,7 +1975,9 @@ delay(100);			//NEW: wait anyway	WAS: waiting longer when switching peripheral_p
   */
 
    #if defined USE_VL53L0X_max
+     MENU.ln();
      setup_VL53L0X();
+     //setup_multi_VL53L0X();
      MENU.ln();
    #endif
 #endif

@@ -2,6 +2,8 @@
   VL53L0X_pulses.h
 */
 
+#define VL53L0X_DEBUG
+
 #if ! defined VL53L0X_H
 
 #include "VL53L0X.h"
@@ -17,7 +19,8 @@ int16_t VL53L0X_read_mm() {	// negative values ERROR	-1 out of range 	-2 not ini
   int16_t mm = VL53L0X_1.readRangeSingleMillimeters();
   if(VL53L0X_1.timeoutOccurred()) {
     MENU.out(mm);
-    ERROR_ln(" VL53L0X timeout");
+    //ERROR_ln(" VL53L0X timeout");
+    MENU.error_ln(" VL53L0X timeout");
     mm = -3;	// mm = -1;
   }
 
@@ -48,6 +51,12 @@ void setup_VL53L0X() {
   MENU.out(F("\n################ VL53L0X init\t"));
   VL53lox_usable=false;
 
+#if defined VL53L0X_DEBUG
+  MENU.out(F("@ms "));
+  MENU.out(millis());
+  MENU.out('\t');
+#endif
+
   VL53L0X_1.setTimeout(500);
   if(VL53L0X_1.init()) {	// ok
     VL53lox_usable=true;
@@ -57,7 +66,8 @@ void setup_VL53L0X() {
     return;			// OK :)
   } // else
 
-  ERROR_ln(F("VL53L0X_1.begin()"));	// ERROR
+  //ERROR_ln(F("VL53L0X_1.init()"));	// ERROR
+  MENU.error_ln(F("VL53L0X_1.init()"));	// ERROR
 } // setup_VL53L0X()
 
 #define VL53L0X_H

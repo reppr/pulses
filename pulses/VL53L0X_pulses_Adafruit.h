@@ -28,6 +28,13 @@ void setup_VL53L0X() {
   MENU.out(F("\n################ VL53L0X init\t"));
   VL53lox_usable=false;
 
+
+#if defined VL53L0X_DEBUG
+  MENU.out(F("@ms "));
+  MENU.out(millis());
+  MENU.out('\t');
+#endif
+
   if(VL53L0X_1.begin()) {	// ok
     VL53lox_usable=true;
     MENU.out(F("ok\tmm "));
@@ -35,7 +42,8 @@ void setup_VL53L0X() {
     return;			// OK :)
   } // else
 
-  ERROR_ln(F("VL53L0X_1.begin()"));	// ERROR
+  //ERROR_ln(F("VL53L0X_1.begin()"));	// ERROR
+  MENU.error_ln(F("VL53L0X_1.begin()"));	// ERROR
 } // setup_VL53L0X()
 
 #define USE_VL53L0X_Adafruit_H
