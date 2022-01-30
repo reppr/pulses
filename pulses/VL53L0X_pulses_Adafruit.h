@@ -22,6 +22,7 @@ Adafruit_VL53L0X VL53L0X_4;
 #endif
 #endif
 
+
 bool VL53lox_usable=false;
 
 int16_t VL53L0X_read_mm(Adafruit_VL53L0X* L0X) {	// negative values ERROR	-1 out of range 	-2 not initialized
@@ -36,10 +37,10 @@ int16_t VL53L0X_read_mm(Adafruit_VL53L0X* L0X) {	// negative values ERROR	-1 out
     return measure.RangeMilliMeter;	// OK
 } // VL53L0X_read_mm()
 
+
 void setup_VL53L0X(Adafruit_VL53L0X* L0X) {
   MENU.out(F("\n################ VL53L0X init\t"));
   VL53lox_usable=false;
-
 
 #if defined VL53L0X_DEBUG
   MENU.out(F("@ms "));

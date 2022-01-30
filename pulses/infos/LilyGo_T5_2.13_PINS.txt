@@ -13,7 +13,7 @@ TX				34   MUSICBOX TRIGGER
 
 RX				3V3
 
-22  WIRE SCL			32   *FREE* (touch?) (PERIPHERAL POWER?)
+22  WIRE SCL			32   PERIPHERAL POWER, green LED   (touch)
 
 19  MIDI out			33   MORSE TOUCH INPUT
 
@@ -23,12 +23,12 @@ RX				3V3
 
 15  (TF MOSI)			27   RGB STRING
 
-13  (IF CS)			12   MORSE OUTPUT PIN, orange LED
+13  (IF CS)			12   *FREE*
 
-5V				0    PERIPHERAL POWER, green LED
+5V				0    MORSE OUTPUT PIN, orange LED
 
 35  (VBAT internal)		GND
-        [ePaper connector]
+	 [ePaper connector]
 
 
 ePaper: (these are *not* on external pins)

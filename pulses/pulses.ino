@@ -1287,7 +1287,6 @@ uint8_t relaxmax=4;			// up to how many relax() in one todo chain
 #endif
 
 #if defined USE_VL53L0X_max
-#define VL53L0X_DEBUG
   #if defined USE_VL53L0X_Adafruit
     #include "VL53L0X_pulses_Adafruit.h"	// use Adafruit library instead of pololu
   #else
@@ -1932,6 +1931,7 @@ void setup() {
   */
   while (!Serial) { yield(); }		// wait for Serial to open
 #endif
+  delay(300);	// first part of serial output is very often lost...	seems to help, sometimes ;)
 
   // try to get rid of menu input garbage, "dopplet gnaeht hebt vilicht besser" ;)
   while (Serial.available())  { Serial.read(); yield(); }

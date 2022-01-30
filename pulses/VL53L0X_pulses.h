@@ -8,8 +8,8 @@
 
 #include "VL53L0X.h"
 
-bool VL53lox_usable=false;	// TODO: ################################
-
+bool VL53lox_usable=false;	// was (only) used in the first (one sensor only) version
+//				// see: WORKAROUND: to keep *single sensor* version and multy sensor versions cooperate
 
 int16_t VL53L0X_read_mm(VL53L0X* L0X) {	// negative values ERROR	-1 out of range 	-2 not initialized
   if(! VL53lox_usable)
@@ -49,7 +49,7 @@ bool set_VL53L0X_high_accuracy(VL53L0X* L0X) {
 
 
 bool setup_VL53L0X(VL53L0X* L0X) {
-  MENU.out(F("\n################ VL53L0X init\t"));
+  MENU.out(F("################ VL53L0X init\t"));
   VL53lox_usable=false;
 
 #if defined VL53L0X_DEBUG
