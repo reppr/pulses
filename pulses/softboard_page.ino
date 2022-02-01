@@ -729,9 +729,7 @@ int i2c_scan() {
 
     if (error == 0) {
       found++;
-      MENU.out("I2C device at 0x");
-      if (adr<16)
-	MENU.out('0');
+      MENU.out("I2C device at ");
       MENU.out_hex(adr);
       MENU.tab();
       switch(adr) {
@@ -773,9 +771,7 @@ int i2c_scan() {
 	MENU.outln('!');
       }
     } else if (error==4) {
-      MENU.out("Unknown error at address 0x");
-      if (adr<16)
-	MENU.out("0");
+      MENU.out("Unknown error at address ");
       MENU.out_hex(adr);
       MENU.ln();
     }

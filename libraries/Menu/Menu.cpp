@@ -673,8 +673,8 @@ void Menu::out_hex_chiffre(unsigned char chiffre) const { // output 1 hex chiffr
 
 // Print a uint32_t in hex:
 void Menu::out_hex(uint32_t n) const {			// uint32_t  hex output
-  char hex[9];
-  sprintf(hex, "%x", n);
+  char hex[11];
+  sprintf(hex, "0x%02x", n);
   out(hex);
 }
 
