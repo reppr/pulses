@@ -750,14 +750,32 @@ int i2c_scan() {
 	MENU.outln(F("EEPROM AT24CX"));	// probably on a DS3231 RTC module
 	break;
       // case 0X57:	// ??? at24cx OR 24c32 ???
+
+      case 0x5A:	// MPR121 or 24C32
+      case 0x5B:	// MPR121 or 24C32
+      case 0x5C:	// MPR121 or 24C32
+      case 0x5D:	// MPR121 or 24C32
+	MENU.out(F("MPR121 touch sensor ("));
+	switch(adr) {	// ADR address selecting
+	case 0x5A:
+	  MENU.out(F("ADR:nc"));
+	    break;
+	case 0x5B:
+	  MENU.out(F("ADR:+3V"));
+	    break;
+	case 0x5C:
+	  MENU.out(F("ADR:SDA"));
+	    break;
+	case 0x5D:
+	  MENU.out(F("ADR:SCL"));
+	    break;
+	}
+	MENU.out(F("\t)"));
       case 0x58:
       case 0x59:
-      case 0x5A:
-      case 0x5B:
-      case 0x5C:
-      case 0x5D:
+	// 0x5A, 0x5B, 0x5C, 0x5D see above	(can be either MPR121 or 24C32)
       case 0x5E:
-	MENU.outln(F("EEPROM 24C32"));	// probably on a DS3231 RTC module ???
+	MENU.outln(F("EEPROM 24C32"));	// maybe on a DS3231 RTC module ???
 	break;
 
       case 0x68:
