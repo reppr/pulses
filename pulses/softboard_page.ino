@@ -733,12 +733,30 @@ int i2c_scan() {
       MENU.out_hex(adr);
       MENU.tab();
       switch(adr) {
-      case 0x29:
-	MENU.outln(F("GY-530  VL53L0X"));
+      case 0x20:
+      case 0x21:
+      case 0x22:
+      case 0x23:
+      case 0x24:
+      case 0x25:
+      case 0x26:
+      case 0x27:
+	MENU.outln(F("MCP23008  8-bit port expander"));
 	break;
+
+      case 0x30:	// could be VL53L0X after moving?
+      case 0x31:	// could be VL53L0X after moving?
+      case 0x32:	// could be VL53L0X after moving?
+      case 0x33:	// could be VL53L0X after moving?
+	MENU.out(F("? "));
+      case 0x29:	// VL53L0X on default address
+	MENU.outln(F("GY-530  VL53L0X TOF distance sensor"));
+	break;
+
       case 0x39:
-	MENU.outln(F("APDS9960 proximity, gesture, RGB sensor"));
+	MENU.outln(F("APDS9960  proximity, gesture, RGB sensor"));
 	break;
+
       case 0x50:
       case 0x51:
       case 0x52:
@@ -750,14 +768,32 @@ int i2c_scan() {
 	MENU.outln(F("EEPROM AT24CX"));	// probably on a DS3231 RTC module
 	break;
       // case 0X57:	// ??? at24cx OR 24c32 ???
+
+      case 0x5A:	// MPR121 or 24C32
+      case 0x5B:	// MPR121 or 24C32
+      case 0x5C:	// MPR121 or 24C32
+      case 0x5D:	// MPR121 or 24C32
+	MENU.out(F("MPR121 touch sensor ("));
+	switch(adr) {	// ADR address selecting
+	case 0x5A:
+	  MENU.out(F("ADR:nc"));
+	    break;
+	case 0x5B:
+	  MENU.out(F("ADR:+3V"));
+	    break;
+	case 0x5C:
+	  MENU.out(F("ADR:SDA"));
+	    break;
+	case 0x5D:
+	  MENU.out(F("ADR:SCL"));
+	    break;
+	}
+	MENU.out(F("\t)"));
       case 0x58:
       case 0x59:
-      case 0x5A:
-      case 0x5B:
-      case 0x5C:
-      case 0x5D:
+	// 0x5A, 0x5B, 0x5C, 0x5D see above	(can be either MPR121 or 24C32)
       case 0x5E:
-	MENU.outln(F("EEPROM 24C32"));	// probably on a DS3231 RTC module ???
+	MENU.outln(F("EEPROM 24C32"));	// maybe on a DS3231 RTC module ???
 	break;
 
       case 0x68:

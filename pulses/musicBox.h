@@ -3606,13 +3606,21 @@ void musicBox_setup() {	// TODO:update
 #endif
 
 #if defined ESP32_DAC_ONLY || defined ESP32_DAC_ONLY_OLED	// *minimal* usb powered *DAC only* setups
-  musicBoxConf.bass_pulses=14;	// see  setup_bass_middle_high()
-  musicBoxConf.middle_pulses=0;	// see  setup_bass_middle_high()
-  musicBoxConf.high_pulses=22;	// see  setup_bass_middle_high()
-#else	// most setups:
-  musicBoxConf.bass_pulses=14;	// see  setup_bass_middle_high()
-  musicBoxConf.middle_pulses=15;	// see  setup_bass_middle_high()
-  musicBoxConf.high_pulses=7;	// see  setup_bass_middle_high()
+  #if defined TRIGGERED_MUSICBOX_LILYGO_213	// voices	TODO: activate this also for similar setups
+    musicBoxConf.bass_pulses=15;	// see  setup_bass_middle_high()
+    musicBoxConf.middle_pulses=0;	// see  setup_bass_middle_high()
+    musicBoxConf.high_pulses=15;	// see  setup_bass_middle_high()
+
+  #else // other ESP32_DAC_ONLY setups:
+    musicBoxConf.bass_pulses=14;	// see  setup_bass_middle_high()
+    musicBoxConf.middle_pulses=0;	// see  setup_bass_middle_high()
+    musicBoxConf.high_pulses=22;	// see  setup_bass_middle_high()
+  #endif
+
+#else // most other setups:
+    musicBoxConf.bass_pulses=14;	// see  setup_bass_middle_high()
+    musicBoxConf.middle_pulses=15;	// see  setup_bass_middle_high()
+    musicBoxConf.high_pulses=7;	// see  setup_bass_middle_high()
 #endif
 } // musicBox_setup()
 

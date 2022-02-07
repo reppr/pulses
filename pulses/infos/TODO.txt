@@ -1191,3 +1191,17 @@ why does channel 4 not work well???
 #if defined HAS_DISPLAY && ! defined TRIGGERED_MUSICBOX2
   delay(3000);	// sorry for that	TODO: check that...
 #endif
+
+switch ePaper off (during long debugging sessions)
+switch morse input off (on public installations)
+dito esp-now	(maybe already done?)
+
+multiple wakeup sources
+	 trigger
+	 GPI39
+	 radar
+	 trigger
+	 morse
+
+fix led count	// OK
+switch RBG string depending battery charge
