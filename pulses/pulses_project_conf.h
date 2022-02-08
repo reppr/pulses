@@ -37,6 +37,8 @@
     #define LOG_PLAY_DEFAULT
     #define LOG_BATTERY_DEFAULT
 
+    #undef RGB_STRING_LED_CNT			// WAS: 150
+    #define RGB_STRING_LED_CNT		30	// NEW: 30 (50cm 5V string)
   #else
     #error "#define ePaper213B73_BOARD_LILYGO_T5 *or* ePaper213B74_BOARD_LILYGO_T5"
   #endif

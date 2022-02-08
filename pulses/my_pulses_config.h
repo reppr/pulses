@@ -85,12 +85,13 @@
 
 #define USE_RGB_LED_STRIP
 #if defined USE_RGB_LED_STRIP
-//  #define RGB_STRING_LED_CNT		144	// number of RGB leds in the string
-  #define RGB_STRING_LED_CNT		150	// number of RGB leds in the string
-  #if defined ePaper213B73_BOARD_LILYGO_T5 || defined ePaper213B74_BOARD_LILYGO_T5
+  #if defined TRIGGERED_MUSICBOX_LILYGO_213
     #define RGB_LED_STRIP_DATA_PIN	27	// GPIO27  (GPIO14 in internal use)
+    #define RGB_STRING_LED_CNT		30	// 50cm 5Volt string: number of RGB leds in the string
   #else
     #define RGB_LED_STRIP_DATA_PIN	14	// use GPIO14 || GPIO27
+//  #define RGB_STRING_LED_CNT		144	// number of RGB leds in the string
+    #define RGB_STRING_LED_CNT		150	// number of RGB leds in the string
   #endif
 // DEFAULT_LED_STRING_INTENSITY
 #endif

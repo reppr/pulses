@@ -1866,7 +1866,7 @@ bool blocked_trigger_shown=false;	// show only once a run
 void activate_musicBox_trigger(int dummy_p=ILLEGAL32) {
 #if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
   musicBox_trigger_enabled = true;
-  if(MENU.verbosity >= VERBOSITY_LOWEST) {
+  if(MENU.verbosity >= VERBOSITY_SOME) {
     MENU.out(F("trigger enabled "));
     MENU.outln(HARDWARE.musicbox_trigger_pin);
   }
@@ -3865,10 +3865,9 @@ void musicBox_display() {
   MENU.ln();
 #endif
 
-  MENU.out(F("'I'= info"));
+  MENU.out(F("'I'= info\t"));
 
 #if defined HAS_OLED
-  MENU.tab();
   oled_ui_display();
 #endif
 
