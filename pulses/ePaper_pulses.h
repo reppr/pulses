@@ -144,7 +144,7 @@ void ePaper_musicBox_parameters() {	// ePAPER_SMALL_213	SMALL ePaper size, i.e. 
   char* format_s = F("%s");
   char* fmt_1st_row = F("%c %i  |%s|");		// fmt_1st_row, run_state_symbol(), musicBoxConf.preset, my_IDENTITY.preName
   //char* fmt_1st_row = F("%c |%s| P%i");	// fmt_1st_row, run_state_symbol(), musicBoxConf.preset, my_IDENTITY.preName
-  char* fmt_2nd_row = F("  %s  %s  S=%i");	// fmt_2nd_row, metric_mnemonic, selected_name(SCALES), sync	// with indent
+  char* fmt_key_scale_sync = F("  %s  %s  S=%i");// fmt_key_scale_sync, metric_mnemonic, selected_name(SCALES), sync	// with indent
 
   char* fmt_sync = F("S=%i");			// fmt_sync, musicBoxConf.sync
   char* fmt_synstack = F("  |%i");		// fmt_synstack, musicBoxConf.stack_sync_slices
@@ -162,17 +162,36 @@ void ePaper_musicBox_parameters() {	// ePAPER_SMALL_213	SMALL ePaper size, i.e. 
     snprintf(txt, font_linlen+1, fmt_1st_row, run_state_symbol(), musicBoxConf.preset, my_IDENTITY.preName);
     ePaper.print(txt);
     // monochrome_show_subcycle_octave();
+    ePaper.println();
 
-    //ePaper.println();	// before???	bigger step
+    int len = strlen(musicBoxConf.name);
+    bool bigFont_name= len < 19;	// TODO: test&trimm
+    if(bigFont_name) {
+      if(len < 18) {			// try to center short preset names
+	for(int i=0; i < ((17 - len)); i++)
+	  ePaper.print(' ');
+      }
+      set_used_font(big_font_p);	// now BIG font
+
+    } else				// normal size
+      set_used_font(medium_font_p);
+    ePaper.print(musicBoxConf.name);	// preset NAME
+
     #if defined USE_MANY_FONTS
       ePaper.setFont(&FreeSans9pt7b);
     #else
       set_used_font(medium_font_p);
     #endif
-    ePaper.println(); // or after???	smaller step
+    ePaper.println();		// empty line
+    if(bigFont_name)  		// if name (above) was big font
+      ePaper.println();		//    another empty line (after BIG line)
+    else
+      if(len < 30)
+	ePaper.println();	//    empty line (after shortish medium sized line)
+
 
     extern char* metric_mnemonic;
-    snprintf(txt, LIN_BUF_MAX, fmt_2nd_row, metric_mnemonic, selected_name(SCALES), musicBoxConf.sync);
+    snprintf(txt, LIN_BUF_MAX, fmt_key_scale_sync, metric_mnemonic, selected_name(SCALES), musicBoxConf.sync);
     ePaper.println(txt);
 
 #if defined ICODE_INSTEAD_OF_JIFFLES
@@ -193,18 +212,6 @@ void ePaper_musicBox_parameters() {	// ePAPER_SMALL_213	SMALL ePaper size, i.e. 
 	ePaper.print(txt);
       }
     }
-    ePaper.println();
-
-    int len = strlen(musicBoxConf.name);
-    if(len < 19) {	// TODO: test&trimm
-      ePaper.println();		// empty line (before BIG line)
-      set_used_font(big_font_p);// BIG font
-    } else {			// normal size
-      set_used_font(medium_font_p);
-      if(len < 29)	// TODO: test&trimm
-	ePaper.println();	// insert empty line
-    }
-    ePaper.print(musicBoxConf.name);
   }
   while (ePaper.nextPage());
 } // ePaper_musicBox_parameters(), SMALL
