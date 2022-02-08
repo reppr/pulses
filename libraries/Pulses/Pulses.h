@@ -153,6 +153,7 @@ struct pulse_t {
 #define HAS_ICODE	       64	// do not set directly, use set_icode_p(int pulse, icode_t* icode_p)
 #define HAS_I2C_ADDR_PIN      128	// do not set directly, use set_i2c_addr_pin(uint8_t adr, uint8_t pin)
 #define HAS_RGB_LEDs	      256	// has RGB LED string, set_rgb_led_string(pulse, string_idx, pixel)
+#define DO_ON_EXIT	      512	// done before the pulse is terminated
 
   //#define INVERSE_LOGIC	      128	// TODO: implement
 
@@ -178,13 +179,10 @@ struct pulse_t {
   // TODO: maybe?
   // #define sendPITCHBEND	256	// send MIDI pitch bend (sendMIDI must be set too)
 					// ACTION_MASK_BITS is used by mask displaying code (only)
-
-#define doBeforeEXIT		256	// done before the pulse is terminated
-
-#define noACTION		512	// 'mutes' all actions
+#define noACTION		256	// 'mutes' all actions
 
 
-#define ACTION_MASK_BITS	10	// >>>>>>>> *DO CHANGE* number of flags changes here <<<<<<<
+#define ACTION_MASK_BITS	9	// >>>>>>>> *DO CHANGE* number of flags changes here <<<<<<<
 					// ACTION_MASK_BITS is used by mask displaying code (only)
 
   group_flags_t groups;			// flags like primary pulse, pentatonic, bass, octave and the like

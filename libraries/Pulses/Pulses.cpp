@@ -439,7 +439,7 @@ void Pulses::global_shift(int global_octave) {
 // init pulses:
 
 void Pulses::init_pulse(int pulse) {
-  if (pulses[pulse].action_flags & doBeforeEXIT) {
+  if (pulses[pulse].flags & DO_ON_EXIT) {
     if((*pulses[pulse].do_before_exit) != NULL)
       (*pulses[pulse].do_before_exit)(pulse);
   }
@@ -508,14 +508,14 @@ void Pulses::wake_pulse(int pulse) {
       play_icode(pulse);
 #if defined PULSES_USE_DOUBLE_TIMES
       if(pulses[pulse].period == simple_time(0)) {	// pulse got killed?
-	if(action_flags & doBeforeEXIT) {
+	if(pulses[pulse].flags & DO_ON_EXIT) {
 	  (*pulses[pulse].do_before_exit)(pulse);
 	}
 	return;
       }
 #else
       if(pulses[pulse].period.time == 0 && pulses[pulse].period.overflow == 0) {// pulse got killed?
-	if(action_flags & doBeforeEXIT) {
+	if(pulses[pulse].flags & DO_ON_EXIT) {
 	  (*pulses[pulse].do_before_exit)(pulse);
 	}
 	return;
@@ -553,7 +553,7 @@ void Pulses::wake_pulse(int pulse) {
   if (pulses[pulse].flags & COUNTED) {	// COUNTED pulse && end reached?
     if(--pulses[pulse].remaining < 1) {			// END REACHED with 0,	(below just as safety net ;)
       if (pulses[pulse].flags & DO_NOT_DELETE) {	//   yes: DO_NOT_DELETE?
-	if (pulses[pulse].action_flags & doBeforeEXIT) {
+	if (pulses[pulse].flags & DO_ON_EXIT) {
 	  (*pulses[pulse].do_before_exit)(pulse);	// maybe not?	not sure if to do that here...
 	}
 	pulses[pulse].flags &= ~ACTIVE;			//     yes: just deactivate
@@ -585,10 +585,10 @@ void Pulses::set_do_first(int pulse, void (*do_first)(int)) {	// set and activat
 
 void Pulses::set_do_before_exit(int pulse, void (*do_before_exit)(int)) {	// set and activate do_before_exit
   pulses[pulse].do_before_exit = do_before_exit;
-  pulses[pulse].action_flags |= doBeforeEXIT;
+  pulses[pulse].flags |= DO_ON_EXIT;
 
   if (do_before_exit == NULL)
-    pulses[pulse].action_flags &= ~doBeforeEXIT;	// clear doBeforeEXIT bit if do_before_exit==NULL
+    pulses[pulse].flags &= ~DO_ON_EXIT;		// clear DO_ON_EXIT bit if do_before_exit==NULL
 }
 
 
@@ -1408,10 +1408,11 @@ void Pulses::show_pulse_flag_mnemonics(pulse_flags_t flags) {	// show pulse flag
   // #define HAS_ICODE		       64	// do not set directly, use set_icode_p(int pulse, icode_t* icode_p)
   // #define HAS_I2C_ADDR_PIN	      128	// do not set directly, use set_i2c_addr_pin(uint8_t adr, uint8_t pin)
   // #define HAS_RGB_LEDs	      256	// has RGB LED string, set_rgb_led_string(pulse, string_idx, pixel)
+  // #define DO_ON_EXIT		      512	// done before the pulse is terminated
 
-  const char* pulses_ON_mnemonics  =	"!NGsdTIiL";
-  const char* pulses_OFF_mnemonics =	".........";
-  (*MENU).show_flag_mnemonics(flags, 9, pulses_ON_mnemonics, pulses_OFF_mnemonics);
+  const char* pulses_ON_mnemonics  =	"!NGsdTIiLX";
+  const char* pulses_OFF_mnemonics =	"..........";
+  (*MENU).show_flag_mnemonics(flags, 10, pulses_ON_mnemonics, pulses_OFF_mnemonics);
 } // show_pulse_flag_mnemonics()
 
 /* **************************************************************** */
