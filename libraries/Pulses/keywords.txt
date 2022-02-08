@@ -58,6 +58,7 @@ selected_clear_no_actions	KEYWORD2
 selected_set_no_actions	KEYWORD2
 selected_toggle_no_actions	KEYWORD2
 set_do_first	KEYWORD2
+set_do_before_exit	KEYWORD 2
 set_gpio	KEYWORD2
 set_i2c_addr_pin	KEYWORD2
 set_icode_p	KEYWORD2
@@ -100,6 +101,7 @@ DO_NOT_DELETE	LITERAL1
 DO_after	LITERAL1
 DO_first	LITERAL1
 sendMIDI	LITERAL1
+doBeforeEXIT	LITERAL1
 noACTION	LITERAL1
 HAS_GPIO	LITERAL1
 HAS_I2C_ADDR_PIN	LITERAL1

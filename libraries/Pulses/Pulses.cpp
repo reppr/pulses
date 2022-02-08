@@ -438,6 +438,11 @@ void Pulses::global_shift(int global_octave) {
 // init pulses:
 
 void Pulses::init_pulse(int pulse) {
+  if (pulses[pulse].action_flags & doBeforeEXIT) {
+    if((*pulses[pulse].do_before_exit) != NULL)
+      (*pulses[pulse].do_before_exit)(pulse);
+  }
+
   memset(&pulses[pulse], 0, sizeof(pulse_t));
 
   pulses[pulse].next = INVALID_time();
@@ -446,6 +451,8 @@ void Pulses::init_pulse(int pulse) {
 
 // called from constructor:
 void Pulses::init_pulses() {
+  memset(&pulses[0], 0, sizeof(pulse_t) * pl_max);	// pre init to avoid crashes by accidentally calling do_before_exit
+
   for (int pulse=0; pulse<pl_max; pulse++) {
     init_pulse(pulse);
   }
@@ -501,11 +508,19 @@ void Pulses::wake_pulse(int pulse) {
     if (action_flags & doesICODE) {		// play_icode(pulse)   (payload already done)
       play_icode(pulse);
 #if defined PULSES_USE_DOUBLE_TIMES
-      if(pulses[pulse].period == simple_time(0))	// pulse got killed?
+      if(pulses[pulse].period == simple_time(0)) {	// pulse got killed?
+	if(action_flags & doBeforeEXIT) {
+	  (*pulses[pulse].do_before_exit)(pulse);
+	}
 	return;
+      }
 #else
-      if(pulses[pulse].period.time == 0 && pulses[pulse].period.overflow == 0)	// pulse got killed?
+      if(pulses[pulse].period.time == 0 && pulses[pulse].period.overflow == 0) {// pulse got killed?
+	if(action_flags & doBeforeEXIT) {
+	  (*pulses[pulse].do_before_exit)(pulse);
+	}
 	return;
+      }
 #endif
     }
 
@@ -537,11 +552,15 @@ void Pulses::wake_pulse(int pulse) {
 #endif // old int overflow style
 
   if (pulses[pulse].flags & COUNTED) {	// COUNTED pulse && end reached?
-    if(--pulses[pulse].remaining < 1) {		// END REACHED with 0,	(below just as safety net ;)
-      if (pulses[pulse].flags & DO_NOT_DELETE)	//   yes: DO_NOT_DELETE?
-	pulses[pulse].flags &= ~ACTIVE;		//     yes: just deactivate
-      else
-	init_pulse(pulse);			//     no:  DELETE pulse
+    if(--pulses[pulse].remaining < 1) {			// END REACHED with 0,	(below just as safety net ;)
+      if (pulses[pulse].flags & DO_NOT_DELETE) {	//   yes: DO_NOT_DELETE?
+	if (pulses[pulse].action_flags & doBeforeEXIT) {
+	  (*pulses[pulse].do_before_exit)(pulse);	// maybe not?	not sure if to do that here...
+	}
+	pulses[pulse].flags &= ~ACTIVE;			//     yes: just deactivate
+      } else {
+	init_pulse(pulse);				//     no:  DELETE pulse
+      }
     }
   }
 } // wake_pulse(p)
@@ -562,6 +581,15 @@ void Pulses::set_do_first(int pulse, void (*do_first)(int)) {	// set and activat
 
   if (do_first == NULL)
     pulses[pulse].action_flags &= ~DO_first;	// clear DO_first bit if do_first==NULL
+}
+
+
+void Pulses::set_do_before_exit(int pulse, void (*do_before_exit)(int)) {	// set and activate do_before_exit
+  pulses[pulse].do_before_exit = do_before_exit;
+  pulses[pulse].action_flags |= doBeforeEXIT;
+
+  if (do_before_exit == NULL)
+    pulses[pulse].action_flags &= ~doBeforeEXIT;	// clear doBeforeEXIT bit if do_before_exit==NULL
 }
 
 
@@ -685,12 +713,17 @@ void Pulses::show_action_flags(action_flags_t flags) {
   else
     (*MENU).out('.');
 
+  if(flags & doBeforeEXIT)
+    (*MENU).out('9');
+  else
+    (*MENU).out('.');
+
   if(flags & noACTION)
     (*MENU).out('X');
   else
     (*MENU).space();
   (*MENU).space();
-}
+} // Pulses::show_action_flags()
 
 
 

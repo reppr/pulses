@@ -177,13 +177,14 @@ struct pulse_t {
 #define sendMIDI		128	// send MIDI notes (see: MELODY_MODE and JIFFLE_MODE)
   // TODO: maybe?
   // #define sendPITCHBEND	256	// send MIDI pitch bend (sendMIDI must be set too)
-  // #define noACTION		512	// 'mutes' all actions
-  // #define ACTION_MASK_BITS	10	// >>>>>>>> *DO CHANGE* number of flags changes here <<<<<<<
 					// ACTION_MASK_BITS is used by mask displaying code (only)
 
-#define noACTION		256	// 'mutes' all actions
+#define doBeforeEXIT		256	// done before the pulse is terminated
 
-#define ACTION_MASK_BITS	9	// >>>>>>>> *DO CHANGE* number of flags changes here <<<<<<<
+#define noACTION		512	// 'mutes' all actions
+
+
+#define ACTION_MASK_BITS	10	// >>>>>>>> *DO CHANGE* number of flags changes here <<<<<<<
 					// ACTION_MASK_BITS is used by mask displaying code (only)
 
   group_flags_t groups;			// flags like primary pulse, pentatonic, bass, octave and the like
@@ -226,6 +227,8 @@ struct pulse_t {
   int8_t note_octave;		// *ONLY VALID if(note_position)*	// TODO: use
 
   void (*do_first)(int);	// see: action flag DO_first
+
+  void (*do_before_exit)(int);	// see: action flag EXIT_action
 
   // internal parameter:
   unsigned int remaining;		// if COUNTED, gives number of remaining executions
@@ -439,6 +442,7 @@ class Pulses {
   void wake_pulse(int pulse);		// wake a pulse up, called from check_maybe_do()
   void deactivate_pulse(int pulse);	// clear ACTIVE flag, keep data
   void set_do_first(int pulse, void (*do_first)(int));	// set and activate do_first
+  void set_do_before_exit(int pulse, void (*do_before_exit)(int));	// set and activate do_before_exit
   void set_payload(int pulse, void (*payload)(int));	// set and activate payload
   void set_payload_with_pin(int pulse, void (*payload)(int), gpio_pin_t pin);	// set and activate payload with gpio
   void set_gpio(int pulse, gpio_pin_t pin);		// set gpio
