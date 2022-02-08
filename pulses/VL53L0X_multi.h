@@ -103,7 +103,7 @@ bool detect_i2c_device(uint8_t adr) {
   each sensor (but the first) with RC. Never worked reliable.
 */
 uint8_t setup_sequence_multi_VL53L0X() {
-  MENU.out(F(">>>>>>>>>>>>>>>> setup_sequence_multi_VL53L0X()\t"));
+  MENU.out(F("setup_sequence_multi_VL53L0X()\t"));
   uint8_t cnt_index=0;	// index and count all devices, new and already existing
   uint8_t cnt_new=0;	// new setup
   uint8_t adr_new=0x29;	// next i2c address

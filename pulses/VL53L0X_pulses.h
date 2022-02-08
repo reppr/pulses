@@ -49,7 +49,7 @@ bool set_VL53L0X_high_accuracy(VL53L0X* L0X) {
 
 
 bool setup_VL53L0X(VL53L0X* L0X) {
-  MENU.out(F("################ VL53L0X init\t"));
+  MENU.out(F("VL53L0X init\t"));
   VL53lox_usable=false;
 
 #if defined VL53L0X_DEBUG
