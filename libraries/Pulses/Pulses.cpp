@@ -64,6 +64,7 @@ Pulses::Pulses(int pl_max, Menu *MENU):
 {
   pulses = (pulse_t*) malloc(pl_max * sizeof(pulse_t));
   // ERROR ################
+  memset(&pulses[0], 0, sizeof(pulse_t) * pl_max);	// pre init to avoid crashes by accidentally calling do_before_exit
 
   global_next_pulses = (int*) malloc(pl_max * sizeof(int));
   // ERROR ################
@@ -451,8 +452,6 @@ void Pulses::init_pulse(int pulse) {
 
 // called from constructor:
 void Pulses::init_pulses() {
-  memset(&pulses[0], 0, sizeof(pulse_t) * pl_max);	// pre init to avoid crashes by accidentally calling do_before_exit
-
   for (int pulse=0; pulse<pl_max; pulse++) {
     init_pulse(pulse);
   }
