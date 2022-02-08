@@ -39,9 +39,16 @@ typedef struct rgb_string_config_t {
 
   float saturation_change_factor = 1.004;	// TODO: UI
   float saturation_reset_value = 0.35;
+
+#if defined TRIGGERED_MUSICBOX_LILYGO_213
+  //  float rgb_background_dim = 0.056;
+  float rgb_background_dim = 0.055;
+  float rgb_background_history_mix = 0.2;	//0.25;	// how much history included in bg color
+#else
   float rgb_background_dim = 0.45;	// ok for 5V version 1m 144
   //float rgb_background_dim = 0.1;	// TEST: for "12V" version 5m 300
   float rgb_background_history_mix = 0.66;	// how much history included in bg color
+#endif
 
 //float BlueHack_factor = 2.0;	// HACK: increase blueness
   float BlueHack_factor = 1.4;	// HACK: increase blueness
@@ -823,6 +830,20 @@ void rgb_led_string_UI() {	// starting 'L' already received
 
   } // switch second letter
 } // rgb_led_string_UI()
+
+
+void set_rgb_pix_of_parent_to_background(int pulse /*secondary*/) {	// see: beforeEXIT
+//maybe:  if(! RGBstringConf.rgb_strings_active) {
+//maybe:    return;
+//maybe:  } // else
+
+  if(PULSES.pulses[pulse].flags & DO_ON_EXIT) {
+    int parent= PULSES.pulses[pulse].other_pulse;
+    if(PULSES.pulses[parent].groups & g_PRIMARY) {		// safety net
+      set_rgb_led_background(parent);
+    } // else ERROR parent not g_PRIMARY
+  }
+} // set_rgb_pix_of_parent_to_background()
 
 
 #define PULSES_RGB_LED_STRING_H

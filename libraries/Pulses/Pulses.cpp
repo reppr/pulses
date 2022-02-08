@@ -712,11 +712,6 @@ void Pulses::show_action_flags(action_flags_t flags) {
   else
     (*MENU).out('.');
 
-  if(flags & doBeforeEXIT)
-    (*MENU).out('9');
-  else
-    (*MENU).out('.');
-
   if(flags & noACTION)
     (*MENU).out('X');
   else

@@ -593,6 +593,11 @@ void seed_icode_player(int seeder_pulse) {	// as payload for seeder
     if(PULSES.pulses[seeder_pulse].dac2_intensity)		// if the seeder has dac2_intensity
       PULSES.pulses[dest_pulse].dac2_intensity = PULSES.pulses[seeder_pulse].dac2_intensity; // set intensity
 
+#if defined USE_RGB_LED_STRIP
+  extern void set_rgb_pix_of_parent_to_background(int pulse /*secondary*/);	// see: beforeEXIT
+  PULSES.set_do_before_exit(dest_pulse, &set_rgb_pix_of_parent_to_background);
+#endif
+
 #if defined USE_i2c
   #if defined USE_MCP23017
       if(PULSES.pulses[seeder_pulse].flags & HAS_I2C_ADDR_PIN)	// if the seeder has i2c_addr and i2c_pin
@@ -2261,7 +2266,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
   PULSES.fix_global_next();		// we *must* call that here late in setup();
 
   // informations about alive pulses:
-  if(MENU.verbosity >= VERBOSITY_SOME) 	// can be switched off by autostart ;)
+  if(MENU.verbosity >= VERBOSITY_SOME)	// can be switched off by autostart ;)
     selected_or_flagged_pulses_info_lines();
 
 
@@ -4318,6 +4323,8 @@ void do_throw_a_jiffle(int seeder_pulse) {		// for pulse_do
 #if defined USE_RGB_LED_STRIP
     if(PULSES.pulses[seeder_pulse].flags & HAS_RGB_LEDs) {
       PULSES.set_rgb_led_string(destination_pulse, PULSES.pulses[seeder_pulse].rgb_string_idx, PULSES.pulses[seeder_pulse].rgb_pixel_idx);
+      extern void set_rgb_pix_of_parent_to_background(int pulse /*secondary*/);	// see: beforeEXIT
+      PULSES.set_do_before_exit(seeder_pulse, &set_rgb_pix_of_parent_to_background);
     }
 #endif
 
