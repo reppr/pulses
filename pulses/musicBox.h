@@ -3292,7 +3292,7 @@ void magical_stress_release() {		// special stress release for magical music box
   }
   set_primary_block_bounds();
   // instant_stress_release();	// DEACTIVATED
-}
+} // magical_stress_release()
 
 
 // magical fart on reading a floating GPIO pin ;)
@@ -3820,7 +3820,7 @@ void musicBox_display() {
   MENU.ln();
 
 #if defined USE_RGB_LED_STRIP
-  rgb_led_string_UI_display();
+  RGB_led_string_UI_display();
   MENU.ln();
 #endif
 
@@ -3860,8 +3860,9 @@ void musicBox_display() {
   if(mpu6050_available) {
     extern void Y_UI_display_lines();
     Y_UI_display_lines();
-  } else
-    MENU.outln(F("*no* MPU6050"));
+  }
+//else
+//  MENU.outln(F("*no* MPU6050"));
   MENU.ln();
 #endif
 
@@ -4541,7 +4542,7 @@ bool musicBox_reaction(char token) {
 
   case 'L':	 // 'L' RGB LED STRING
 #if defined USE_RGB_LED_STRIP
-    rgb_led_string_UI();
+    RGB_led_string_UI();
 #else
     MENU.outln(F("*NO* rgb led string code"));
 #endif

@@ -37,7 +37,7 @@ void nvs_menu_display() {
   MENU.ln();
 
 #if defined USE_RGB_LED_STRIP
-  rgb_led_string_UI_display();
+  RGB_led_string_UI_display();
   MENU.ln();
 #endif
 
@@ -170,7 +170,7 @@ bool nvs_menu_reaction(char token) {
 
   case 'L':	 // 'L' RGB LED STRING
 #if defined USE_RGB_LED_STRIP
-    rgb_led_string_UI();
+    RGB_led_string_UI();
 #else
     MENU.outln(F("*NO* rgb led string code"));
 #endif

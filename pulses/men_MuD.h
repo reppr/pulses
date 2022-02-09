@@ -4,7 +4,6 @@
 */
 
 #if defined USE_VL53L0X_max
-
 MENU.outln(VL53L0X_read_mm(L0Xp_array[0]));
    if(MENU.check_next('I'))
     setup_sequence_multi_VL53L0X();

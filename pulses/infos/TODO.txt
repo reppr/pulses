@@ -1203,5 +1203,11 @@ multiple wakeup sources
 	 trigger
 	 morse
 
-fix led count	// OK
+try to fix ePaper partial update
+implement working battery managment
 switch RBG string depending battery charge
+
+nvs	  rgb_string_config_t RGBstringConf; 'L' 'L?' 'L!' 'LL'
+
+double MENU.calculate_double(double default)
+use in RGB configuration

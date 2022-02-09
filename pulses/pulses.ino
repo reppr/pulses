@@ -3996,7 +3996,19 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
     MENU.out(F("expected in"));
     PULSES.display_realtime_sec(sum);
     // PULSES.display_real_ovfl_and_sec(sum);	// debugging
-  }
+
+#if defined USE_RGB_LED_STRIP
+    MENU.out(F("  RGBpix "));
+    MENU.out(PULSES.pulses[pulse].rgb_pixel_idx);
+#endif
+
+#if defined USE_MIDI
+    MENU.out(F("  MIDI "));
+    MENU.out(PULSES.pulses[pulse].midi_note);
+    MENU.out('@');
+    MENU.out(PULSES.pulses[pulse].midi_channel);
+#endif
+  } // VERBOSITY
 
   if (PULSES.pulse_is_selected(pulse)) {
     MENU.space();
@@ -4735,7 +4747,7 @@ void do_jiffle (int pulse) {	// to be called by pulse_do
 
 #if defined USE_RGB_LED_STRIP
     if(PULSES.pulses[pulse].flags & HAS_RGB_LEDs)
-      set_rgb_led_background(pulse);
+      switch_rgb_pix_2_background(pulse);
 #endif
 
     PULSES.init_pulse(pulse);	// remove pulse
@@ -4867,7 +4879,9 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   selected_share_DACsq_intensity(DAx_max, 2);
   //	selected_DACsq_intensity_proportional(DAx_max, 2);
 
+
   PULSES.select_n(voices);	// select all primary voices again
+  set_primary_block_bounds();	// needed by pulse_2_rgb_pixel(pulse)) et al
 
 #if defined USE_RGB_LED_STRIP
   int pl_max = PULSES.get_pl_max();
