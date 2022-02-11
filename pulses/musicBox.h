@@ -1866,7 +1866,7 @@ bool blocked_trigger_shown=false;	// show only once a run
 void activate_musicBox_trigger(int dummy_p=ILLEGAL32) {
 #if defined MUSICBOX_TRIGGER_PIN	// trigger pin?
   musicBox_trigger_enabled = true;
-  if(MENU.verbosity >= VERBOSITY_SOME) {
+  if(MENU.verbosity > VERBOSITY_SOME) {
     MENU.out(F("trigger enabled "));
     MENU.outln(HARDWARE.musicbox_trigger_pin);
   }
@@ -2241,7 +2241,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
   #if defined MUSICBOX_TRIGGER_BLOCK_SECONDS
     if(! musicBox_trigger_enabled) {
       if(PULSES.time_reached(trigger_enable_time)) {
-	if(MENU.verbosity >= VERBOSITY_LOWEST)
+	if(MENU.verbosity > VERBOSITY_SOME)
 	  MENU.out(F("butler: "));
 	activate_musicBox_trigger();
       }
@@ -2951,8 +2951,10 @@ void start_musicBox() {
 //#endif
 
 #if defined  USE_RTC_MODULE
-  show_DS1307_time_stamp();	// also for DS3231 module
-  MENU.ln();
+  if(rtc_module_is_usable) {
+    show_DS1307_time_stamp();	// also for DS3231 module
+    MENU.ln();
+  }
 #endif
 
 #if defined MUSICBOX_TRIGGER_PIN
@@ -3177,9 +3179,11 @@ void start_musicBox() {
   //  MENU.outln(F("\n >>> * <<<"));	// start output block with configurations
 
 #if defined  USE_RTC_MODULE		// repeat that in here, keeping first one for power failing cases
-  MENU.out(F("date="));
-  show_DS1307_time_stamp();		// DS3231 or DS1307
-  MENU.ln();
+  if(rtc_module_is_usable) {
+    MENU.out(F("date="));
+    show_DS1307_time_stamp();		// DS3231 or DS1307
+    MENU.ln();
+  }
 #endif
 
   if(MENU.verbosity >= VERBOSITY_MORE) {
@@ -3646,6 +3650,7 @@ void show_voices() {
 	   musicBoxConf.high_pulses,
 	   musicBoxConf.primary_count
 	   );
+  extern uint8_t extended_output(char* data, uint8_t col=0, uint8_t row=0, bool force=false);
   extended_output(txt, 0, 0, false);
   MENU.ln();
 } // show_voices()

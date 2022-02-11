@@ -3,6 +3,20 @@
   temporary test menu UI during development
 */
 
+#if defined HAS_ePaper
+  MENU.out("testing setCursor()\t");
+  set_used_font(&FreeSansBold9pt7b);
+
+  ePaper.setCursor(20, 30);
+  ePaper.print("(20, 30)");
+
+  ePaper.setCursor(25, 40);
+  ePaper.print("(25, 40)");
+
+  ePaper.display(true);
+  MENU.outln("done");
+#endif
+
 #if defined USE_VL53L0X_max
 MENU.outln(VL53L0X_read_mm(L0Xp_array[0]));
    if(MENU.check_next('I'))

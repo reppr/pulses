@@ -10,7 +10,7 @@
 #define USE_MANY_FONTS		// uses some more program storage space
 
 
-#include <GxEPD2_BW.h>		// tested versions 1.2.13   1.3.4
+#include <GxEPD2_BW.h>		// tested versions  1.2.13   1.3.4   1.4.5
 #include <GxEPD2_GFX.h>
 
 #include <Fonts/FreeMonoBold9pt7b.h>	// mono 9pt
@@ -67,12 +67,13 @@
 */
  GxEPD2_BW<GxEPD2_290, GxEPD2_290::HEIGHT> ePaper(GxEPD2_290(/*CS*/ 5, /*DC*/ 17, /*RST*/ 16, /*BUSY*/ 4));
 
-#elif defined ePaper213B73_BOARD_LILYGO_T5	// old
+#elif defined ePaper213B73_BOARD_LILYGO_T5	// OLDER boards	T5_V2.3_2.13	20190107
  // GDEH0213B73 old style "BOARD_LILYGO_T5"
  GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT> ePaper(GxEPD2_213_B73(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
-	
-#elif defined ePaper213B74_BOARD_LILYGO_T5	// newer (20.8.26)
- // GDEH0213BN = GDEH0213B74	newer board:	20.8.26
+
+#elif defined ePaper213B74_BOARD_LILYGO_T5	// NEWER boards T5_V2.3.1_2.13	20-8-26
+ // GDEH0213BN = GDEH0213B74
+ // works, but *NO setCursor()*
  GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> ePaper(GxEPD2_213_B74(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
 
 #elif defined ePaper_DEPG0290B_LILYGO_0290

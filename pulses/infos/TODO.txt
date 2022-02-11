@@ -1211,3 +1211,10 @@ nvs	  rgb_string_config_t RGBstringConf; 'L' 'L?' 'L!' 'LL'
 
 double MENU.calculate_double(double default)
 use in RGB configuration
+
+TODO: report problem with ePaper.setCursor(2, 3);
+
+TODO: morse output on RGB string ;)
+      bar display on RGB string...
+
+what is with ESP_ARDUINO_VERSION_MAJOR ???
