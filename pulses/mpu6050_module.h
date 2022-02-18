@@ -42,16 +42,8 @@ bool gyrY_invert = false;	// TODO: ???
 bool gyrZ_invert = true;	// TODO: TEST:
 
 
-bool mpu6050_setup() {
+bool mpu6050_setup() {		// Wire must be started before
   MENU.out(F("mpu6050_setup()\t"));
-
-  // join I2C bus (I2Cdev library doesn't do this automatically)
-  #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-    Wire.begin();
-    Wire.setClock(400000L);	// must be *after* Wire.begin()
-  #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
-    Fastwire::setup(400, true);
-  #endif
 
   mpu6050.initialize();
 
