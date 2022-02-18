@@ -34,6 +34,7 @@ do_jiffle	KEYWORD2
 fastest_from_selected	KEYWORD2
 fastest_pulse	KEYWORD2
 fix_global_next	KEYWORD2
+get_timer64_value	KEYWORD2
 global_shift	KEYWORD2
 highest_available_pulse	KEYWORD2
 init_pulse	KEYWORD2
@@ -50,6 +51,7 @@ remove_rgb_led_string	KEYWORD2
 remove_selected_from_group	KEYWORD2
 reset_and_edit_pulse	KEYWORD2
 reset_and_edit_selected	KEYWORD2
+reset_timer64	KEYWORD2
 seconds=	KEYWORD2
 select_from_to	KEYWORD2
 select_n	KEYWORD2
@@ -83,8 +85,11 @@ sub_time	KEYWORD2
 time_info	KEYWORD2
 time_reached	KEYWORD2
 time_skip_selected	KEYWORD2
+timer64Group	KEYWORD2
+timer64Num	KEYWORD2
 toggle_selection	KEYWORD2
 wake_pulse	KEYWORD2
+
 
 #######################################
 # Constants (LITERAL1)

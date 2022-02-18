@@ -449,7 +449,7 @@ void tabula_rasa() {
     MENU.ln();
   }
 
-  //reset_timer64();  // restart timer64?
+  //PULSES.reset_timer64();  // restart timer64?
   //PULSES.get_now();
 } // tabula_rasa()
 

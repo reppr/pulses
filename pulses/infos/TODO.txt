@@ -421,8 +421,6 @@ peer ID mac_addr  vs  global my_MAC[]
 
 morse touch pin output is off road
 
-//#define TEMPORARY_TIME64_TEST	// TODO:  REMOVE:
-
 MENU.outln(F("todo: maybe give subcycle infos?"));	// TODO:
 
 return (pulse_time_t) 999999999.0;	// INVALID_time() TODO: select value

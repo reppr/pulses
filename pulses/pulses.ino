@@ -141,10 +141,6 @@ Menu MENU(CB_SIZE, 8, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
 #include "pulses_systems.h"
 #include "pulses_boards.h"
 
-#if defined ESP32
-  #include "time64bit.h"
-#endif
-
 Pulses PULSES(PL_MAX, &MENU);
 // MENU and PULSES are defined now
 
@@ -2022,7 +2018,8 @@ delay(100);			//NEW: wait anyway	WAS: waiting longer when switching peripheral_p
   MENU.ln();
 
 #if defined ESP32
-  setup_timer64();
+  MENU.out(F("init_time()\t"));
+  esp_err_info(PULSES.init_time());
 #endif
 
 #if defined HAS_DISPLAY
@@ -2517,18 +2514,6 @@ bool lowest_priority_tasks() {
     MENU.ln();
   }
 #endif // USE_WIFI_telnet_menu
-
-//#define TEMPORARY_TIME64_TEST	// TODO:  REMOVE:
-#if defined TEMPORARY_TIME64_TEST
-  if (random(1000000)==1) {
-    MENU.out(F("ovfl "));
-    MENU.out(PULSES.now.overflow);
-    MENU.space(2);
-
-    test_timer64();
-    return true;
-  }
-#endif
 
 #if defined USE_ESP_NOW
   if(do_esp_now_send_identity) {

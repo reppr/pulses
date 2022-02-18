@@ -22,7 +22,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "driver/ledc.h"		// *testing* LEDC
+#if defined ESP32
+  #include "driver/timer.h"		// timer64
+  #include "esp_err.h"
+  #include "driver/ledc.h"		// *testing* LEDC
+#endif
 
 #ifdef ARDUINO
   #if ARDUINO >= 100
@@ -57,7 +61,11 @@ Pulses::Pulses(int pl_max, Menu *MENU):
   time_unit(TIME_UNIT),
   hex_input_mask_index(0),
   do_A2(NULL),
-  overflow_sec(4294.9672851562600)	// overflow time in seconds
+  now64((uint64_t) -1),
+  overflow_sec(4294.9672851562600),	// OBSOLETE: overflow time in seconds
+  timer64Group((timer_group_t) 1),
+  timer64Num((timer_idx_t) 1)
+
 #ifdef IMPLEMENT_TUNING
   , tuning(1.0)
 #endif
@@ -73,7 +81,6 @@ Pulses::Pulses(int pl_max, Menu *MENU):
   // ERROR ################
   clear_selection();
 
-  init_time();
   init_pulses();
 }
 
@@ -97,7 +104,7 @@ Pulses::~Pulses() {
    all times get stored in 'pulse_time_t', taking care of time overflow
    *always* get time by calling get_now() to have overflow treated correctly.
 
-   in this version init_time() is called from constructor.
+   in this version init_time() must be called called from arduino setup().
 
    'running-through' program design:
    never wait,
@@ -126,28 +133,17 @@ pulse_time_t Pulses::INVALID_time() {
 }
 #endif
 
-// do this once from setup()	################
-void Pulses::init_time() {
-#if defined(ESP8266) || defined(ESP32)
-  static unsigned long timer0_overflow_count=0;	// FIXME: hmm, really?
-#else
-  #if defined(ARDUINO)
-    extern volatile unsigned long timer0_overflow_count;
-
-    #ifdef __SAM3X8E__		// ################
-      #warning 'cli() and sei() *not* on the DUE yet...	################'
-      // cli();			// ################
-      // timer0_overflow_count = 0;	// FIXME: timer overflow reset ################
-      // sei();			// ################
-    #else				// ################
-      cli();
-      timer0_overflow_count = 0;
-      sei();
-    #endif				// ################
-  #else
-    #warning 'init_time(); only on ARDUINO'
-  #endif
-#endif
+esp_err_t /*error=*/ Pulses::init_time() {	// do this once from setup()
+  timer_config_t TIME64_conf;
+  TIME64_conf.alarm_en = TIMER_ALARM_DIS;
+  TIME64_conf.counter_en = TIMER_START;
+  //TIME64_conf.intr_type
+  TIME64_conf.counter_dir = TIMER_COUNT_UP;
+  //TIME64_conf.auto_reload
+  TIME64_conf.divider=80;
+  esp_err_t err = timer_init(timer64Group, timer64Num, &TIME64_conf);
+  if(err != ESP_OK)
+    return err;
 
 #if defined PULSES_USE_DOUBLE_TIMES
   get_now();
@@ -158,18 +154,27 @@ void Pulses::init_time() {
   now.overflow = 0;		// start with now.overflow = 0
 
   last_now = now;		// correct overflow
-
 #endif // double times or int overflow
 
   global_next=INVALID_time();
+
+  return err;
 } // Pulses::init_time()
 
+esp_err_t Pulses::get_timer64_value(uint64_t* value64) {
+  return timer_get_counter_value(timer64Group, timer64Num, value64);
+}
+
+void Pulses::reset_timer64() {
+  // esp_err_t timer_set_counter_value(timer_group_t group_num, timer_idx_t timer_num, uint64_t load_val)
+  timer_set_counter_value(timer64Group, timer64Num, 0L);
+  get_now();
+}
 
 // *always* get time through get_now()
 pulse_time_t Pulses::get_now() {	// get time, set now.time and now.overflow
 #if defined PULSES_USE_DOUBLE_TIMES
-  extern void get_timer64_value(uint64_t* value64);
-  get_timer64_value(&now64);
+  /*ERROR*/ get_timer64_value(&now64);
   now = (pulse_time_t) now64;	//
 
 #else // old int overflow style

@@ -16,6 +16,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include "driver/timer.h"		// timer64
+#include "esp_err.h"
 
 #include "../../pulses/pulses_engine_config.h"
 #include "../../pulses/my_pulses_config.h"
@@ -370,10 +372,13 @@ class Pulses {
  public:
   Pulses(int pl_max, Menu *MENU);
   ~Pulses();
-  void init_time();
+
+  esp_err_t init_time();
   pulse_time_t get_now();	// *always* use get_now() to get current time!
 				// get_now() works directly on 'now'
 				// returns now
+  esp_err_t get_timer64_value(uint64_t* value64);
+  void reset_timer64();			// reset counter to zero
 
   pulse_time_t simple_time(unsigned long time);	// integer only, overflow==0	// TODO: transition only, then obsolete
 
@@ -552,6 +557,9 @@ class Pulses {
 				//   (there can't be more then pl_max)
 
   pulses_mask_t * selected_pulses_p;  // bitmask pointer, a bit for each selected pulse
+
+  timer_group_t timer64Group;
+  timer_idx_t timer64Num;
 };
 
 /* **************************************************************** */
