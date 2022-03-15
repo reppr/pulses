@@ -17,18 +17,6 @@
   MENU.outln("done");
 #endif
 
-#if defined USE_VL53L0X_max
-MENU.outln(VL53L0X_read_mm(L0Xp_array[0]));
-   if(MENU.check_next('I'))
-    setup_sequence_multi_VL53L0X();
-   else {
-     MENU.outln(VL53L0X_get_mm_from_sensor(0));
-     MENU.outln(VL53L0X_get_mm_from_sensor(1));
-     MENU.outln(VL53L0X_get_mm_from_sensor(99));
-   }
- break;
-#endif
-
 #if defined USE_SD_CARD
 extern void do_on_other_core(void (*function_p)());
 extern unsigned int read_battery_level(unsigned int oversampling=15);

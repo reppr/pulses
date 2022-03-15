@@ -1287,16 +1287,6 @@ uint8_t relaxmax=4;			// up to how many relax() in one todo chain
   #include "LoRa_menu_page.h"
 #endif
 
-#if defined USE_VL53L0X_max
-  #if defined USE_VL53L0X_Adafruit
-    #include "VL53L0X_pulses_Adafruit.h"	// use Adafruit library instead of pololu
-  #else
-    #include "VL53L0X_pulses.h"			// DEFAULT: use pololu library
-  #endif
-
-  #include "VL53L0X_multi.h"
-#endif
-
 #if defined HARMONICAL_MUSIC_BOX
   #include "musicBox.h"
 #endif
@@ -1974,11 +1964,6 @@ delay(100);			//NEW: wait anyway	WAS: waiting longer when switching peripheral_p
      Wire.begin();
      Wire.setClock(400000L);	// must be *after* Wire.begin()
   */
-
-  #if defined USE_VL53L0X_max
-    MENU.ln();
-    setup_sequence_multi_VL53L0X();
-  #endif
 #endif
 
 
@@ -2151,17 +2136,6 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 #endif // to WiFi or not
 
 #if defined USE_i2c
-//WAS:  Wire.begin(21, 22, 400000L);
-//WAS:  /*
-//WAS:    was:
-//WAS:     Wire.begin();
-//WAS:     Wire.setClock(400000L);	// must be *after* Wire.begin()
-//WAS:  */
-//WAS:
-//WAS:  #if defined USE_VL53L0X_max
-//WAS:    setup_VL53L0X();
-//WAS:  #endif
-
   #if defined USE_MCP23017
     MCP23017.begin();
     Wire.setClock(100000L);	// must be *after* Wire.begin()  TODO: check if 400kHz does not work
