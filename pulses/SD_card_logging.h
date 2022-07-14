@@ -117,7 +117,7 @@ void log_message_timestamped(char* text, bool log_battery=false) {	// simple log
   } // else ignore
 } // log_message_timestamped()
 
-void start_log_entry(char* text=NULL, bool log_battery=false) {		// opens logFile, does not close
+void start_log_entry(const char* text=NULL, bool log_battery=false) {		// opens logFile, does not close
   if(! do_log)
     return;
 
@@ -142,7 +142,7 @@ void start_log_entry(char* text=NULL, bool log_battery=false) {		// opens logFil
   } //  else ignore
 } // start_log_entry()
 
-void end_log_entry(char* text=NULL, bool log_battery=false) {		// closes logFile
+void end_log_entry(const char* text=NULL, bool log_battery=false) {		// closes logFile
   if(! do_log)
     return;
 
