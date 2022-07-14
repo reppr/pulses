@@ -27,7 +27,7 @@
       #undef MORSE_TOUCH_INPUT_PIN
       #define MORSE_TOUCH_INPUT_PIN	33
 
-      #undef RGB_LED_STRIP_DATA_PIN
+      // #undef RGB_LED_STRIP_DATA_PIN		// *let* the warning appear
       #define RGB_LED_STRIP_DATA_PIN	27
    #endif // ePaper213B73_BOARD_LILYGO_T5 || ePaper213B74_BOARD_LILYGO_T5
 
@@ -54,9 +54,7 @@
 
 
 #if ! defined PL_MAX	// see: pulses_project_conf.h
-  //#define PL_MAX		64
-    #define PL_MAX		128
-  //#define PL_MAX		256	// TEST :)
+  #define PL_MAX		128	// often redefined in pulses_project_conf.h
 #endif
 
     #define CODE_RAM_SIZE	256*3+2

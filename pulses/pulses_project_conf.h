@@ -53,11 +53,13 @@
   #define NO_GPIO_PINS				// DAC only
   #undef OLED_HALT_PIN0
 
-  //#undef PERIPHERAL_POWER_SWITCH_PIN		// maybe let the warning appear?
+  //#undef PERIPHERAL_POWER_SWITCH_PIN		// was: 12	maybe let the warning appear?
   #define PERIPHERAL_POWER_SWITCH_PIN	32	// <<< NEW >>> LilyGo 2.13
 
+  //#undef MORSE_OUTPUT_PIN			// was: 12	maybe let the warning appear?
   #define MORSE_OUTPUT_PIN		0	// <<< NEW >>> LilyGo 2.13
   #define MORSE_TOUCH_INPUT_PIN		33	// MORSE TOUCH INPUT
+
   #define RGB_LED_STRIP_DATA_PIN	27	// testing 27, 14
   #define MUSICBOX_TRIGGER_PIN		34	// activates trigger pin, needs pulldown (i.e. 470k, 100k ok)
   #define BATTERY_LEVEL_CONTROL_PIN	36	// (35 is used for internal LiPo battery level?)
@@ -204,6 +206,8 @@
 	// #define AUTOSTART	MENU.play_KB_macro("-E40 *2 n"); selected_experiment=-1;	// Lichterfest	a	default
     #endif
 //    #define AUTOSTART	MENU.play_KB_macro("-E40 S0 n"); selected_experiment=-1;	// the big bang
+
+    #undef  PL_MAX		// was: 128  *deactivates*  #define in pulses_boards.h
     #define PL_MAX	96	// *deactivates*  #define in pulses_boards.h
 
 /*  TIME_MACHINE did not use i2c	*i2c DEACTIVATED*

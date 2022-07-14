@@ -1220,3 +1220,11 @@ what is with ESP_ARDUINO_VERSION_MAJOR ???
 display midi_baudrate_div10 and MIDI_BAUDRATE on startup and in nvs menu (HARDWARE)
 
 TODO: TEST:  if(mac_addr == NULL)
+
+TODO: fix #warning MPU6050 and RTC_MODULE use the same i2c address, USE_RTC_MODULE *deactivated*
+
+TODO: TEST:  #define USE_BLUETOOTH_SERIAL_MENU	// needs new git versions
+
+TODO: TEST: new GxEPD2 version!
+
+please display less	#warning "using a NOOP fake F() macro."

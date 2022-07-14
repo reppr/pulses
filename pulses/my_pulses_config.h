@@ -97,7 +97,7 @@
   #define MORSE_OUTPUT_PIN	PERIPHERAL_POWER_SWITCH_PIN	// *ONLY* possible if there's *NO POWER SWITCH HARDWARE*
 #endif
 
-#define USE_MPU6050	// MPU-6050 6d accelero/gyro
+// #define USE_MPU6050		// MPU-6050 6d accelero/gyro
 #define INCLUDE_IMU_ZERO
 
 #if defined MUSICBOX2_PIN_MAPPING	// #define this in my_pulses_config.h
