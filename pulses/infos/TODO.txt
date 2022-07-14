@@ -1216,3 +1216,7 @@ TODO: morse output on RGB string ;)
       bar display on RGB string...
 
 what is with ESP_ARDUINO_VERSION_MAJOR ???
+
+display midi_baudrate_div10 and MIDI_BAUDRATE on startup and in nvs menu (HARDWARE)
+
+TODO: TEST:  if(mac_addr == NULL)

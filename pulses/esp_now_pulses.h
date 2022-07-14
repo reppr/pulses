@@ -265,8 +265,8 @@ esp_err_t  esp_now_send_HI(uint8_t* mac_addr) {
 esp_now_peer_info_t peer_info;
 
 bool mac_is_non_zero(uint8_t* mac_addr) {
-  if(*mac_addr == NULL) { // TODO?: esp_now_pulses.h:261:19: warning: NULL used in arithmetic [-Wpointer-arith]
-    // MENU.out(F("MAC*NULL "));
+  if(mac_addr == NULL) {
+    // MENU.out(F("MAC NULL "));
     return false;	// *not* planed to be used like this...   meanwhile it *is* ;)
   }
 
