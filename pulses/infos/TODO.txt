@@ -1228,3 +1228,9 @@ TODO: TEST:  #define USE_BLUETOOTH_SERIAL_MENU	// needs new git versions
 TODO: TEST: new GxEPD2 version!
 
 please display less	#warning "using a NOOP fake F() macro."
+
+NOT USING HW BLUETOOTH PIN any more
+
+FIXME: in menu nvs 'LX' should not delete all nvs keys!!!!
+
+LOG reboot cause (reboot, trigger, ...)

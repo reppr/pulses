@@ -35,6 +35,7 @@
 //#define STRESS_MONITOR_LEVEL	64*2	// TODO: menu interface	// TODO: move to another configuration file
 
 //#define USE_BLUETOOTH_SERIAL_MENU	// needs new git versions
+//#define BLUETOOTH_ENABLE_PIN	35	// used by some old instruments, probably obsolete
 
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	// TODO: check, remove?
 #define HARMONICAL_MUSIC_BOX

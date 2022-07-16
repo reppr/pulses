@@ -836,9 +836,13 @@ esp_err_t esp_now_pulses_setup_0() {		// setup 1st stage
     MENU.outln(esp_now_version);
   } // else *ignore* errors here
 
-  // WiFi.setSleep(false);			// TODO: no idea if/why we would need this, just a test...
-  MENU.outln(F("  WiFi.setSleep(false)\t TODO: test"));
-  WiFi.setSleep(false);
+  #if defined USE_BLUETOOTH_SERIAL_MENU
+    #warning 'no WiFi.setSleep() in esp_now_pulses_setup_0() when BLUETOOTH is used'
+    // wifi:Error! Should enable WiFi modem sleep when both WiFi and Bluetooth are enabled!!!!!!
+  #else
+    MENU.outln(F("  WiFi.setSleep(false)\t TODO: test"));
+    WiFi.setSleep(false);			// TODO: no idea if/why we would need this, just a test...
+  #endif
 
   MENU.outln(F("  esp_now_register_send_cb()"));
   yield();

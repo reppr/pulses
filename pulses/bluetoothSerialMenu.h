@@ -11,7 +11,7 @@
 
 String bluetooth_name;
 
-#define BLUETOOTH_ENABLE_PIN	35	// check pin to see if bluetooth is enabled
+//#define BLUETOOTH_ENABLE_PIN	35	// check pin to see if bluetooth is enabled?  used by some OLD instruments, probably OBSOLETE
 
 #if defined BLUETOOTH_ENABLE_PIN
   bool bluetooth_switch_info() {

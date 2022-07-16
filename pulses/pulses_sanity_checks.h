@@ -48,9 +48,10 @@
   #error BOARD_HELTEC_OLED and BOARD_OLED_LIPO can *not both* be configured
 #endif
 
+
 #if defined USE_BLUETOOTH_SERIAL_MENU && defined USE_WIFI_telnet_menu
   #undef USE_WIFI_telnet_menu
-  #warning USE_BLUETOOTH_SERIAL_MENU so #undef USE_WIFI_telnet_menu
+  #warning USE_BLUETOOTH_SERIAL_MENU so did #undef USE_WIFI_telnet_menu
 #endif
 
 
@@ -62,7 +63,7 @@
 */
 
   #if defined USE_WIFI_telnet_menu
-    #warning undefining USE_WIFI_telnet_menu
+    #warning undefining USE_WIFI_telnet_menu because of USE_ESP_NOW
     #undef USE_WIFI_telnet_menu
   #endif
 /*

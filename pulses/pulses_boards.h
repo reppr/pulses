@@ -63,7 +63,7 @@
     #define IMPLEMENT_TUNING		// needs float
     #undef USE_F_MACRO			// F() does not work here, FIXME: see also Menu.h  TODO: test again	################
 
-    #define USE_WIFI_telnet_menu	// use WIFI as menu over telnet?
+    //#define USE_WIFI_telnet_menu	// use WIFI as menu over telnet?
     //#define AUTOSTART_WIFI	// start wifi on booting?  see: WiFi_stuff.ino
 
   #elif defined(ESP8266)			// ESP8266: "a lot of RAM"
@@ -181,9 +181,9 @@
 // use Arduino F() macro to save RAM or just a NOOP?
 #ifndef USE_F_MACRO	// NOOP fake
   // For tests and on PC:  Fake Arduino F("string") macro as NOOP:
+  #warning "using a NOOP fake F() macro."
   #undef F
   #define F(s)	((char*) (s))
-  #warning "using a NOOP fake F() macro."
 #endif
 
 /* **************************************************************** */

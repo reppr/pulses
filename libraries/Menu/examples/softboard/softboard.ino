@@ -69,7 +69,7 @@ Copyright © Robert Epprecht  www.RobertEpprecht.ch   GPLv2
 
 
 /* **************************************************************** */
-#define USE_WIFI_telnet_menu	// ################ FIXME: always active WiFi
+#define USE_WIFI_telnet_menu	// DADA: really?	################ FIXME: always active WiFi
 #include "menu_IO_configuration.h"
 #include <Menu.h>
 Menu MENU(32, 1, &men_getchar, Serial, MENU_OUTSTREAM2);
