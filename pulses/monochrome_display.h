@@ -6,6 +6,10 @@
 #ifndef MONOCHROME_DISPLAY_H
 
 
+#if ! defined MC_DISPLAY_STACK_SIZE
+  #define MC_DISPLAY_STACK_SIZE		4*1024
+#endif
+
 //#define MC_DELAY_MS	10	// delay MC_mux lock release		// TODO: test&trimm	maybe obsolete?
 #define MC_DELAY_MS	0	// *NO* delay MC_mux lock release?	// TODO: maybe OBSOLETE:?
 
@@ -356,10 +360,10 @@ void multicore_display_message(const char* text) {	// create and do one shot tas
 
   BaseType_t err = xTaskCreatePinnedToCore(multicore_display_message_task,		// function
 					   "display_message",			// name
-					   2000,				// stack size
-					   txt_descript_p,				// task input parameter
+					   MC_DISPLAY_STACK_SIZE,		// stack size
+					   txt_descript_p,			// task input parameter
 					   MONOCHROME_PRIORITY,			// task priority
-					   &multicore_display_message_handle,		// task handle
+					   &multicore_display_message_handle,	// task handle
 					   0);					// core 0
   if(err != pdPASS) {
     MENU.out(err);
@@ -460,7 +464,7 @@ void multicore_print2x2(uint8_t col, uint8_t row, const char* text) {	// create 
 
   BaseType_t err = xTaskCreatePinnedToCore(multicore_print2x2_task,		// function
 					   "print2x2",				// name
-					   2000,				// stack size
+					   MC_DISPLAY_STACK_SIZE,		// stack size
 					   txt_descript_p,			// task input parameter
 					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_print2x2_handle,		// task handle
@@ -529,7 +533,7 @@ void multicore_println2x2(uint8_t row, const char* text) {	// create and do one 
 
   BaseType_t err = xTaskCreatePinnedToCore(multicore_println2x2_task,		// function
 					   "println2x2",			// name
-					   2000,				// stack size
+					   MC_DISPLAY_STACK_SIZE,		// stack size
 					   txt_descript_p,			// task input parameter
 					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_println2x2_handle,	// task handle
@@ -626,7 +630,7 @@ void multicore_big_or_multiline(uint8_t row, const char* text) {	// create and d
 
   BaseType_t err = xTaskCreatePinnedToCore(multicore_big_or_multiline_task,	// function
 					   "big_or_multilin",			// name
-					   2000,				// stack size
+					   MC_DISPLAY_STACK_SIZE,		// stack size
 					   txt_descript_p,			// task input parameter
 					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_big_or_multiline_handle,	// task handle
@@ -722,9 +726,9 @@ void multicore_setCursor(uint8_t col, uint8_t row) {	// create and do one shot t
   txt_descript_p->row = row;
 
   BaseType_t err = xTaskCreatePinnedToCore(multicore_setCursor_task,		// function
-					   "setCursor",			// name
-					   2000,				// stack size
-					   txt_descript_p,				// task input parameter
+					   "setCursor",				// name
+					   MC_DISPLAY_STACK_SIZE,		// stack size
+					   txt_descript_p,			// task input parameter
 					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_setCursor_handle,		// task handle
 					   0);					// core 0
@@ -775,8 +779,8 @@ void multicore_print(const char* text) {	// create and do one shot task
   copy_text_to_text_buffer(text, txt_descript_p);
 
   BaseType_t err = xTaskCreatePinnedToCore(multicore_print_task,		// function
-					   "print",			// name
-					   2000,				// stack size
+					   "print",				// name
+					   MC_DISPLAY_STACK_SIZE,		// stack size
 					   txt_descript_p,			// task input parameter
 					   MONOCHROME_PRIORITY,			// task priority
 					   &multicore_print_handle,		// task handle
@@ -877,11 +881,11 @@ void multicore_clearLine(uint8_t row) {	// create and do one shot task
 
   BaseType_t err = xTaskCreatePinnedToCore(multicore_clearLine_task,		// function
 					   "clearLine",			// name
-					   2000,				// stack size
-					   txt_descript_p,			// task input parameter
-					   MONOCHROME_PRIORITY,			// task priority
+					   MC_DISPLAY_STACK_SIZE,	// stack size
+					   txt_descript_p,		// task input parameter
+					   MONOCHROME_PRIORITY,		// task priority
 					   &multicore_clearLine_handle,	// task handle
-					   0);					// core 0
+					   0);				// core 0
   if(err != pdPASS) {
     MENU.out(err);
     MENU.space();

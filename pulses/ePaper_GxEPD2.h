@@ -6,6 +6,11 @@
 
 
 //#define DEBUG_ePAPER
+
+#if ! defined MC_DISPLAY_STACK_SIZE
+  #define MC_DISPLAY_STACK_SIZE		4*1024
+#endif
+
 #define MC_DELAY_MS	10	// delay MC_mux lock release	// TODO: test&trimm	maybe obsolete?
 #define USE_MANY_FONTS		// uses some more program storage space
 
@@ -260,7 +265,7 @@ void multicore_ePaper_print_at(int16_t col, int16_t row, const char* text, int16
 
   BaseType_t err = xTaskCreatePinnedToCore(ePaper_print_at_task,		// function
 					   "ePaper_print_at",			// name
-					   2000,				// stack size
+					   MC_DISPLAY_STACK_SIZE,		// stack size
 					   txt_descript_p,			// task input parameter
 					   MONOCHROME_PRIORITY,			// task priority
 					   &ePaper_print_at_handle,		// task handle
@@ -420,7 +425,7 @@ void multicore_ePaper_1line_at(int16_t row, const char* text, int16_t offset_y) 
 
   BaseType_t err = xTaskCreatePinnedToCore(ePaper_1line_at_task,		// function
 					   "ePaper_1line_at",			// name
-					   2000,				// stack size
+					   MC_DISPLAY_STACK_SIZE,		// stack size
 					   txt_descrpt_p,			// task input parameter
 					   MONOCHROME_PRIORITY,			// task priority
 					   &ePaper_1line_at_handle,		// task handle

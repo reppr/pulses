@@ -1234,3 +1234,16 @@ NOT USING HW BLUETOOTH PIN any more
 FIXME: in menu nvs 'LX' should not delete all nvs keys!!!!
 
 LOG reboot cause (reboot, trigger, ...)
+
+TODO: test stack sizes:
+      MC_DISPLAY_STACK_SIZE
+      pulses_RGB_LED_string.h	multicore_rgb_string_draw()
+      morse.h			trigger_token_duration_feedback()
+      mpu6050_module.h		MC_SAMPLE_MCU_STACK_SIZE
+      multicore_display_common.h MC_do_on_other_core(void (*function_p)(), stack_size=16*1024) {}
+      simple_do_from_other_core.h do_on_other_core(void (*function_p)(), int stack_size=16*1024) {}
+
+TODO: //#define USE_BLUETOOTH_SERIAL_MENU		// DADA: FIXME:
+
+TODO: debug
+  E (37212) gpio: gpio_set_level(226): GPIO output gpio_num error

@@ -401,7 +401,7 @@ void morse_input_duration_feedback(void* dummy) {
 void trigger_token_duration_feedback() {
   BaseType_t err = xTaskCreatePinnedToCore(morse_input_duration_feedback,	// function
 					   "morse_duration",			// name
-					   2000,				// stack size
+					   4*1024,				// stack size	TODO: test
 					   NULL,				// task input parameter
 					   0,					// task priority
 					   &morse_input_feedback_handle,	// task handle

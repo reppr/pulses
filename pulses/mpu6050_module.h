@@ -541,10 +541,14 @@ void multicore_sample_mpu_task(void* dummy) {
   vTaskDelete(NULL);
 }
 
+
+#if ! defined MC_SAMPLE_MCU_STACK_SIZE
+  #define MC_SAMPLE_MCU_STACK_SIZE	4*1024		// TODO: test
+#endif
 void multicore_sample_mpu() {	// create and do one shot task
   BaseType_t err = xTaskCreatePinnedToCore(multicore_sample_mpu_task,		// function
 					   "sample mpu",			// name
-					   2000,				// stack size
+					   MC_SAMPLE_MCU_STACK_SIZE,		// stack size
 					   NULL,				// task input parameter
 					   0,					// task priority
 					   &multicore_sample_mpu_handle,	// task handle

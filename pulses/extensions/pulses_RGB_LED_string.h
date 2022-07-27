@@ -754,7 +754,7 @@ void multicore_rgb_string_draw_task(void* dummy) {
 void multicore_rgb_string_draw() {	// create and do one shot task
   BaseType_t err = xTaskCreatePinnedToCore(multicore_rgb_string_draw_task,	// function
 					   "rgb_draw",			// name
-					   2000,				// stack size
+					   4*1024,				// stack size	TODO: test
 					   NULL,				// task input parameter
 					   0,					// task priority
 					   &multicore_rgb_string_draw_handle,	// task handle

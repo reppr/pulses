@@ -94,7 +94,7 @@
 //#define BOARD_HELTEC_OLED			// either OLED or ePaper, not both
 //#define USE_RTC_MODULE			// DS3231
 //#define USE_ESP_NOW				// possible, if you want that
-  #define USE_BLUETOOTH_SERIAL_MENU
+//#define USE_BLUETOOTH_SERIAL_MENU		// DADA: FIXME:
 //#define BLUETOOTH_ENABLE_PIN	35		// used by some OLD instruments, probably OBSOLETE
 
 #endif	// TRIGGERED_MUSICBOX2

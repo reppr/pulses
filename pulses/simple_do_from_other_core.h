@@ -18,14 +18,14 @@ void do_on_other_core_task(void* function_p) {
   vTaskDelete(NULL);
 }
 
-void do_on_other_core(void (*function_p)()) {	// create and do one shot task
+void do_on_other_core(void (*function_p)(), int stack_size=8*1024) {	// create and do one shot task
   BaseType_t err = xTaskCreatePinnedToCore(do_on_other_core_task,	// function
 					   "other_fun",			// name
-					   4000,				// stack size
-					   (void*) function_p,			// task input parameter
-					   0,					// task priority
-					   &do_on_other_core_handle,		// task handle
-					   0);					// core 0
+					   stack_size,			// stack size
+					   (void*) function_p,		// task input parameter
+					   0,				// task priority
+					   &do_on_other_core_handle,	// task handle
+					   0);				// core 0
   if(err != pdPASS) {
     MENU.out(err);
     MENU.space();

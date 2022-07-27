@@ -18,6 +18,9 @@
 #define MULTICORE_DISPLAY	// send hw display from other core (core 0)
 				// to avoid audible clicks and dropouts
 
+//#define MC_DISPLAY_STACK_SIZE		4*1024	// (default)
+//#define MC_SAMPLE_MCU_STACK_SIZE	4*1024	// (default)
+
 // MULTICORE_RGB_STRING	does *not* avoid clicks, so deactivated
 //#define MULTICORE_RGB_STRING	// avoid clicks, see: multicore_rgb_string_draw()
 
