@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICAL v.046   //
+#define PROGRAM_VERSION	HARMONICAL_v.046   //	preparing transition to v.047
 /*			0123456789abcdef   */
 
 

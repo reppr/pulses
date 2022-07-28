@@ -93,8 +93,8 @@
 //#define HAS_ePaper290_on_PICO_KIT		// triggers HAS_ePaper and HAS_DISPLAY
 //#define BOARD_HELTEC_OLED			// either OLED or ePaper, not both
 //#define USE_RTC_MODULE			// DS3231
-//#define USE_ESP_NOW				// possible, if you want that
-//#define USE_BLUETOOTH_SERIAL_MENU		// DADA: FIXME:
+//#undef USE_ESP_NOW				// default is ON
+#define USE_BLUETOOTH_SERIAL_MENU		// DADA: FIXME:
 //#define BLUETOOTH_ENABLE_PIN	35		// used by some OLD instruments, probably OBSOLETE
 
 #endif	// TRIGGERED_MUSICBOX2

@@ -347,6 +347,7 @@ void configure_HARDWARE_from_nvs() {
     HARDWARE.RTC_addr = a;
   }
 
+#if defined USE_RGB_LED_STRIP
   // RGB LED strings
   n = HARDWARE_from_nvs.rgb_strings;
   if(n) {
@@ -392,6 +393,7 @@ void configure_HARDWARE_from_nvs() {
       MENU.outln(F("*switched RGB LED STRINGS OFF*"));
     }
   }
+#endif // USE_RGB_LED_STRIP
 
   // MIDI
   pin = HARDWARE_from_nvs.MIDI_in_pin;

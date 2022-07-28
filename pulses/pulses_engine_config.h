@@ -31,7 +31,7 @@
 #define PULSES_USE_DOUBLE_TIMES		// working fine :)
 
 #if ! defined TRIGGERED_MUSICBOX2
-  #define USE_ESP_NOW			// TODO: watch sketch size!	check WiFI and Bt stuff
+  #define USE_ESP_NOW
 #endif
 
 #define DO_STRESS_MANAGMENT
