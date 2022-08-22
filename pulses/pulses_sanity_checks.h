@@ -96,7 +96,7 @@
 #endif
 
 #if defined INCLUDE_IMU_ZERO && ! defined USE_MPU6050
-  #warning no MPU6050, no IMU ZERO
+  //#warning no MPU6050, no IMU ZERO
   #undef INCLUDE_IMU_ZERO
 #endif
 

@@ -79,7 +79,7 @@ void ePaper_musicBox_parameters() {	// BIGGER ePaper size, i.e. 2.9" size ePaper
   //char* fmt_1st_row = F("%c |%s| P%i");	// fmt_1st_row, run_state_symbol(), musicBoxConf.preset, my_IDENTITY.preName
   char* fmt_2nd_row = F("%s  %i/%i %s");	// fmt_2nd_row, selected_name(SCALES),
 						//	musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, metric_mnemonic
-  char* fmt_sync = F("S=%i");			// fmt_sync, musicBoxConf.sync
+  // char* fmt_sync = F("S=%i");		// fmt_sync, musicBoxConf.sync
   char* fmt_synstack = F(" |%i");		// fmt_synstack, musicBoxConf.stack_sync_slices
   char* fmt_basepulse = F(" p[%i]");		// fmt_basepulse, musicBoxConf.base_pulse
 
@@ -146,7 +146,7 @@ void ePaper_musicBox_parameters() {	// ePAPER_SMALL_213	SMALL ePaper size, i.e. 
   //char* fmt_1st_row = F("%c |%s| P%i");	// fmt_1st_row, run_state_symbol(), musicBoxConf.preset, my_IDENTITY.preName
   char* fmt_key_scale_sync = F("  %s  %s  S=%i");// fmt_key_scale_sync, metric_mnemonic, selected_name(SCALES), sync	// with indent
 
-  char* fmt_sync = F("S=%i");			// fmt_sync, musicBoxConf.sync
+  //char* fmt_sync = F("S=%i");			// fmt_sync, musicBoxConf.sync
   char* fmt_synstack = F("  |%i");		// fmt_synstack, musicBoxConf.stack_sync_slices
   char* fmt_basepulse = F("p[%i]");		// fmt_basepulse, musicBoxConf.base_pulse
 

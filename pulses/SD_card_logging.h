@@ -33,7 +33,7 @@ void setup_SD_card() {
   MENU.out(F("\nsetup_SD_card(14, 2, 15, 13) SPI\t"));
   SDspi.begin(14, 2, 15, 13);
 
-  if(SD_card_ok = SD.begin(13, SDspi))
+  if((SD_card_ok = SD.begin(13, SDspi)))
     MENU.outln(F("ok"));
   else {
     MENU.outln(F("failed"));
@@ -247,10 +247,10 @@ bool logging_UI_reaction() {	// 'Ox'
 #if defined USE_BATTERY_LEVEL_CONTROL
   case 'B':
     MENU.drop_input_token();
-    if(log_battery = ! log_battery)
+    if((log_battery = ! log_battery))
       MENU.out(F("not "));
     else
-      MENU.out(F("TODO: IMPLEMENT "));
+      MENU.out(F("TODO: IMPLEMENT LOGGING BATTERY"));
     MENU.outln(F("logging battery"));
     break;
 #endif

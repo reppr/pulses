@@ -1249,3 +1249,5 @@ TODO: debug
   E (37212) gpio: gpio_set_level(226): GPIO output gpio_num error
 
 TODO: FIXME: stack overflow crashes...
+
+TODO: IMPLEMENT LOGGING BATTERY

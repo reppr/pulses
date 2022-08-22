@@ -90,8 +90,7 @@ bool bluetooth_menu_reaction(char token) {
 
 //    case '+':
 //      MENU.drop_input_token();
-//      MENU.ok_or_error_ln(F("esp_bt_controller_enable(BTDM)"), \
-//			  esp_bt_controller_enable(BTDM));
+//      MENU.ok_or_error_ln(F("esp_bt_controller_enable(BTDM)"), esp_bt_controller_enable(BTDM));
 //      yield();
 //      break;
 

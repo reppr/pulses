@@ -1991,7 +1991,7 @@ void magical_cleanup(int p) {	// deselect unused primary pulses, check if playin
 #endif
     MENU.out(F("magical_cleanup() "));
 
-  unsigned int deselected = PULSES.deselect_zombie_primaries();	// deselect deleted primary pulses
+  //unsigned int deselected = PULSES.deselect_zombie_primaries();	// deselect deleted primary pulses
   bool do_display = MENU.maybe_display_more(VERBOSITY_MORE);
   int skipped=0;
   int flagged=0;
@@ -2140,8 +2140,8 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
   static bool soft_cleanup_started=false;
   static int fast_cleanup_minimal_fraction_weighting=slice_weighting({1,4});
   static uint8_t stop_on_low_cnt=0;
-  static short current_slice=0;
-  static pulse_time_t butler_start_time;
+  //static short current_slice=0;
+  //static pulse_time_t butler_start_time;
   static pulse_time_t trigger_enable_time;
 
   pulse_time_t this_time = PULSES.pulses[pulse].next;		// TODO: verify ################
@@ -2155,8 +2155,8 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
 
   if(PULSES.pulses[pulse].counter==1) {	// the butler initializes himself:
     PULSES.pulses[pulse].groups |= g_MASTER;
-    current_slice=0;			// start musicBox clock
-    butler_start_time = PULSES.pulses[pulse].next;	// still unchanged?
+    //current_slice=0;			// start musicBox clock
+    //butler_start_time = PULSES.pulses[pulse].next;	// still unchanged?
     init_primary_counters();
     soft_end_cnt=0;
     soft_cleanup_started=false;
