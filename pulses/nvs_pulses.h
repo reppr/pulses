@@ -320,6 +320,9 @@ void configure_HARDWARE_from_nvs() {
     case monochrome_type_LiPO:
       MENU.outln(F("LiPO"));
       break;
+    case monochrome_type_LILYGO_T5:
+      MENU.outln(F("LILYGO T5"));
+      break;
     default:
       ERROR_ln(F("monochrome type unknown"));
     }

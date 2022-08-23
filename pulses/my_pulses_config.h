@@ -28,8 +28,6 @@
 
   #define BATTERY_LEVELS_DOUBLED	// 12V ~ 2400
   #if defined ePaper213B73_BOARD_LILYGO_T5  ||  defined ePaper213BN_BOARD_LILYGO_BN
-    #define DEBUG_ePAPER_MORSE_FEEDBACK		// TODO: remove
-    // ok
   #else
     #error "#define one of ePaper213B73_BOARD_LILYGO_T5 *or* ePaper213BN_BOARD_LILYGO_BN"
   #endif

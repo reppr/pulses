@@ -28,18 +28,6 @@ if(MENU.check_next('l'))
      MENU.outln(read_battery_level());
 #endif
 
-// #if defined DEBUG_ePAPER_MORSE_FEEDBACK
-//   MC_display_message("MESSAGE");
-//   delay(3000);
-//
-//   set_used_font(big_font_p);
-//   ePaper_print_at(0,0, "ePaper_print_at()", 0);	// *do* call set_used_font() before using that
-//   delay(5000);
-//   MC_print_at(0,2, "MC HERE");
-//   MC_print_1line_at(4, "MC there");
-// break;
-// #endif // DEBUG_ePAPER_MORSE_FEEDBACK
-
 // #if defined USE_RGB_LED_STRIP
 //   pulses_RGB_LED_string_init();	// needed after wake up from light sleep
 // #endif

@@ -1834,8 +1834,10 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
 
 #if defined HAS_DISPLAY
   #if ! defined NO_ePAPER_UPDATE_ON_END
-    MC_show_musicBox_parameters();	// TODO:???
+    MC_show_musicBox_parameters();
     delay(2000);	// TODO: TEST: maybe ESP now confuses display?
+  #else
+    MC_printBIG_at(0, 0, "=");	// ' ' does not cover the right side of the 'e' completely.  '=' hides that ;)
   #endif
 #endif
 

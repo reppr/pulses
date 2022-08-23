@@ -1618,7 +1618,8 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 57:
 #if defined REPLACE_UMLAUTS
-    musicBoxConf.name = F("klassisch, schoen, als grundlag zu eme 22' 1\" stuck");
+    musicBoxConf.name = F("klassisch, schoen");
+    // musicBoxConf.name = F("klassisch, schoen, als grundlag zu eme 22' 1\" stuck");
 #else
     musicBoxConf.name = F("klassisch, schön, als grundlag zu eme 22' 1\" stuck");
 #endif
@@ -1992,7 +1993,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 69:
 #if defined REPLACE_UMLAUTS
-    musicBoxConf.name = F("schoen melodisch, mit recht guetem schluss");
+    musicBoxConf.name = F("schoen melodisch, recht guete schluss");
 #else
     musicBoxConf.name = F("schön melodisch, mit recht guetem schluss");
 #endif
