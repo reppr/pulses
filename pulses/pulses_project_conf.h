@@ -25,10 +25,10 @@
 */
 
 #if defined TRIGGERED_MUSICBOX_LILYGO_213		// define this in my_pulses_config.h
-  #if defined ePaper213B73_BOARD_LILYGO_T5  ||  defined ePaper213B74_BOARD_LILYGO_T5
+  #if defined ePaper213B73_BOARD_LILYGO_T5  ||  defined ePaper213BN_BOARD_LILYGO_BN
     #define ePAPER_SMALL_213
-    #if defined ePaper213B73_BOARD_LILYGO_T5  &&  defined ePaper213B74_BOARD_LILYGO_T5
-      #error "define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213B74_BOARD_LILYGO_T5"
+    #if defined ePaper213B73_BOARD_LILYGO_T5  &&  defined ePaper213BN_BOARD_LILYGO_BN
+      #error "define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213BN_BOARD_LILYGO_BN"
     #endif
     #define ePAPER_SMALL_213
 
@@ -40,7 +40,7 @@
     #undef RGB_STRING_LED_CNT			// WAS: 150
     #define RGB_STRING_LED_CNT		30	// NEW: 30 (50cm 5V string)
   #else
-    #error "#define ePaper213B73_BOARD_LILYGO_T5 *or* ePaper213B74_BOARD_LILYGO_T5"
+    #error "#define ePaper213B73_BOARD_LILYGO_T5 *or* ePaper213BN_BOARD_LILYGO_BN"
   #endif
 
   #if ! defined ESP32

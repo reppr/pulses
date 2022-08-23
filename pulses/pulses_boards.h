@@ -23,13 +23,13 @@
       #endif
     #endif
 
-   #if defined ePaper213B73_BOARD_LILYGO_T5  ||  defined ePaper213B74_BOARD_LILYGO_T5
+   #if defined ePaper213B73_BOARD_LILYGO_T5  ||  defined ePaper213BN_BOARD_LILYGO_BN
       #undef MORSE_TOUCH_INPUT_PIN
       #define MORSE_TOUCH_INPUT_PIN	33
 
       // #undef RGB_LED_STRIP_DATA_PIN		// *let* the warning appear
       #define RGB_LED_STRIP_DATA_PIN	27
-   #endif // ePaper213B73_BOARD_LILYGO_T5 || ePaper213B74_BOARD_LILYGO_T5
+   #endif // ePaper213B73_BOARD_LILYGO_T5 || ePaper213BN_BOARD_LILYGO_BN
 
     /* ESP32 DAC
        #define USE_DACs in your configuration files to use ESP32 DAC output	*/

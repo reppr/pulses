@@ -76,10 +76,8 @@
  // GDEH0213B73 old style "BOARD_LILYGO_T5"
  GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT> ePaper(GxEPD2_213_B73(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
 
-#elif defined ePaper213B74_BOARD_LILYGO_T5	// NEWER boards T5_V2.3.1_2.13	20-8-26
- // GDEH0213BN = GDEH0213B74
- // works, but *NO setCursor()*
- GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> ePaper(GxEPD2_213_B74(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
+#elif defined ePaper213BN_BOARD_LILYGO_BN	// NEWER boards T5_V2.3.1_2.13	20-8-26
+ GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> ePaper(GxEPD2_213_BN(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
 
 #elif defined ePaper_DEPG0290B_LILYGO_0290
  //GxEPD2_BW<GxEPD2_290, GxEPD2_290::HEIGHT> ePaper(GxEPD2_290(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));	// GRAU NOISE!

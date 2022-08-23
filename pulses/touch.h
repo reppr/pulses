@@ -13,7 +13,7 @@
 //int touch_threshold = 60;		// TODO: TEST&TRIM:
 //int touch_threshold = 58;		// TODO: TEST&TRIM:
 
-#if defined ePaper213B73_BOARD_LILYGO_T5 || defined ePaper213B74_BOARD_LILYGO_T5
+#if defined ePaper213B73_BOARD_LILYGO_T5 || defined ePaper213BN_BOARD_LILYGO_BN
   int touch_threshold = 40;		// TODO: TEST&TRIM:	// touch_threshold should go to HARDWARE
 #else
   int touch_threshold = 61;		// TODO: TEST&TRIM:	// touch_threshold should go to HARDWARE

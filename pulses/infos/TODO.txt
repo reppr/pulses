@@ -1154,8 +1154,6 @@ ePaper: show prename on change
 
 // TODO: touch_threshold should go to HARDWARE
 
-#error "ePaper_DEPG0290B_LILYGO_0290 does not work yet"
-
 TODO: morse input feedback is not working on ePaper
 
 +#define OLED_HALT_PIN0	// see: monochrome_show_program_version()	// TODO: test with LilyGo T5_2.13
@@ -1201,7 +1199,6 @@ multiple wakeup sources
 	 trigger
 	 morse
 
-try to fix ePaper partial update
 implement working battery managment
 switch RBG string depending battery charge
 
@@ -1209,8 +1206,6 @@ nvs	  rgb_string_config_t RGBstringConf; 'L' 'L?' 'L!' 'LL'
 
 double MENU.calculate_double(double default)
 use in RGB configuration
-
-TODO: report problem with ePaper.setCursor(2, 3);
 
 TODO: morse output on RGB string ;)
       bar display on RGB string...
@@ -1251,3 +1246,5 @@ TODO: debug
 TODO: FIXME: stack overflow crashes...
 
 TODO: IMPLEMENT LOGGING BATTERY
+
+TODO: #error "ePaper_DEPG0290B_LILYGO_0290 does not work yet"	TEST: maybe it does now on new GxEPD2 version?

@@ -21,17 +21,17 @@
 //#define USE_RTC_MODULE			// DS3231
 //#define USE_ESP_NOW				// possible, if you want that
 
-#define TRIGGERED_MUSICBOX_LILYGO_213	// also #define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213B74_BOARD_LILYGO_T5"
-#if defined TRIGGERED_MUSICBOX_LILYGO_213	// also #define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213B74_BOARD_LILYGO_T5"
-  #define ePaper213B74_BOARD_LILYGO_T5		// (NEW) T5_V2.3.1    20.8.26	triggers HAS_ePaper and HAS_DISPLAY
+#define TRIGGERED_MUSICBOX_LILYGO_213	// also #define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213BN_BOARD_LILYGO_BN"
+#if defined TRIGGERED_MUSICBOX_LILYGO_213	// also #define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213BN_BOARD_LILYGO_BN"
+  #define ePaper213BN_BOARD_LILYGO_BN		// (NEW) T5_V2.3.1    20.8.26	triggers HAS_ePaper and HAS_DISPLAY
 //#define ePaper213B73_BOARD_LILYGO_T5		// (OLD) T5_V2.3_2.13 20190107	triggers HAS_ePaper and HAS_DISPLAY
 
   #define BATTERY_LEVELS_DOUBLED	// 12V ~ 2400
-  #if defined ePaper213B73_BOARD_LILYGO_T5  ||  defined ePaper213B74_BOARD_LILYGO_T5
+  #if defined ePaper213B73_BOARD_LILYGO_T5  ||  defined ePaper213BN_BOARD_LILYGO_BN
     #define DEBUG_ePAPER_MORSE_FEEDBACK		// TODO: remove
     // ok
   #else
-    #error "#define one of ePaper213B73_BOARD_LILYGO_T5 *or* ePaper213B74_BOARD_LILYGO_T5"
+    #error "#define one of ePaper213B73_BOARD_LILYGO_T5 *or* ePaper213BN_BOARD_LILYGO_BN"
   #endif
 #endif
 
@@ -60,7 +60,7 @@
 //#define HAS_ePaper290_on_PICO_KIT	// old		triggers HAS_ePaper and HAS_DISPLAY
 //#define HAS_ePaper290_on_DEV_KIT	// old		triggers HAS_ePaper and HAS_DISPLAY
 
-//#define ePaper213B74_BOARD_LILYGO_T5	// new  T5_V2.3.1     20-8-26	triggers HAS_ePaper and HAS_DISPLAY
+//#define ePaper213BN_BOARD_LILYGO_BN	// new  T5_V2.3.1     20-8-26	triggers HAS_ePaper and HAS_DISPLAY
 //#define ePaper213B73_BOARD_LILYGO_T5	// old  T5_V2.3_2.13  20190107	triggers HAS_ePaper and HAS_DISPLAY
 
 //#define ePaper_DEPG0290B_LILYGO_0290	// very first tests only...
