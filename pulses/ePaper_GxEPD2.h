@@ -4,6 +4,9 @@
 */
 #if ! defined GXEPD2_EPAPER_H
 
+#if ! defined MONOCHROME_PRIORITY
+  #define MONOCHROME_PRIORITY	0	// old default TODO: test&trimm
+#endif
 
 //#define DEBUG_ePAPER
 

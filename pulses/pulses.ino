@@ -1895,6 +1895,17 @@ int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very fi
   bool force_start_to_usermode=false;
 #endif
 
+#if defined NEW_LOOP_TASK_STACK_SIZE
+  #if defined ESP32
+    #if defined ESP_ARDUINO_VERSION_MAJOR	// only since version 2
+      //#include "esp_arduino_version.h"
+      // see: https://github.com/espressif/arduino-esp32/blob/master/libraries/ESP32/examples/ArduinoStackSize/ArduinoStackSize.ino
+      SET_LOOP_TASK_STACK_SIZE(NEW_LOOP_TASK_STACK_SIZE); // 16KB
+    #endif
+  #endif
+#endif
+
+
 void setup() {
   setup_initial_HARDWARE_conf();
 

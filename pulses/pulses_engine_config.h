@@ -7,6 +7,11 @@
 
 #if ! defined PULSES_ENGINE_CONFIG_H
 
+//#define NEW_LOOP_TASK_STACK_SIZE	16*1024		// TODO: experimental
+
+#define DO_ON_OTHER_CORE_PRIORITY	1		// was: 0  new default: 1
+#define MONOCHROME_PRIORITY		0		// was: 0  seemed best	TODO: test&trimm
+
 // LEDC AUDIO TESTS DEACTIVATED:
 //   #define USE_LEDC_AUDIO		// LEDC tests, experimental
 //   //#define try_ARDUINO_LEDC_version	// prefer arduino ledc code over esp ide code? (no)

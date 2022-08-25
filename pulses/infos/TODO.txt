@@ -1252,6 +1252,7 @@ TODO: experimental	#define NEW_LOOP_TASK_STACK_SIZE	16*1024
 SET_LOOP_TASK_STACK_SIZE(16*1024); // 16KB
 #
 In components/freertos/tasks.c:117
+
 #define tskIDLE_STACK_SIZE 512
 #define tskIDLE_STACK_SIZE 1024
 #
@@ -1263,7 +1264,6 @@ find . -type f -exec grep --color -nH --null -e CONFIG_FREERTOS_IDLE_TASK_STACKS
 ./tools/sdk/esp32/include/freertos/include/esp_additions/freertos/FreeRTOSConfig.h 187:#define configIDLE_TASK_STACK_SIZE CONFIG_FREERTOS_IDLE_TASK_STACKSIZE
 ./tools/sdk/esp32/dout_qspi/include/sdkconfig.h 382:#define CONFIG_FREERTOS_IDLE_TASK_STACKSIZE 1024
 ./tools/sdk/esp32/qio_qspi/include/sdkconfig.h 382:#define CONFIG_FREERTOS_IDLE_TASK_STACKSIZE 1024
-
 
 // TODO: TEST: task priorities:
 morse.h	   		MORSE_DURATION_TASK_PRIORITY,	// task priority

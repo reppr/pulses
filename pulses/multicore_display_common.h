@@ -6,9 +6,14 @@
 
 #include <freertos/task.h>
 
-// testing RTOS task priority for monochrome display routines:
-#define MONOCHROME_PRIORITY	0	// seems best
+// testing RTOS task priority for monochrome multicore display routines:
+#if ! defined MONOCHROME_PRIORITY	// see: 'pulses_engine_config.h'
+  #define MONOCHROME_PRIORITY	0	// old default TODO: test&trimm
+#endif
 
+#if ! defined DO_ON_OTHER_CORE_PRIORITY	// see: 'pulses_engine_config.h'
+  #define DO_ON_OTHER_CORE_PRIORITY	1
+#endif
 
 typedef struct print_descrpt_t {
   int16_t col=0;
@@ -91,7 +96,7 @@ void MC_do_on_other_core(void (*function_p)(), int stack_size=8*1024) {	// creat
 					   "other_fun",			// name
 					   stack_size,			// stack size
 					   (void*) function_p,		// task input parameter
-					   0,				// task priority
+					   DO_ON_OTHER_CORE_PRIORITY,	// task priority
 					   &MC_do_on_other_core_handle,	// task handle
 					   0);				// core 0
   if(err != pdPASS) {

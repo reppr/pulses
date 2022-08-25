@@ -9,7 +9,10 @@
 #define TOUCH_ISR_VERSION_3	// other code removed, see: morse_unused.txt
 
 #define TOKEN_LENGTH_FEEDBACK_PULSE	// using a pulse for morse duration feedback
+// or:
 //#define TOKEN_LENGTH_FEEDBACK_TASK	// using a rtos task for morse duration feedback, experimental
+//#define MORSE_DURATION_TASK_PRIORITY	0
+
 // sanity check:
 #if defined TOKEN_LENGTH_FEEDBACK_PULSE && defined TOKEN_LENGTH_FEEDBACK_TASK
   #error morse.h: TOKEN_LENGTH_FEEDBACK_PULSE and TOKEN_LENGTH_FEEDBACK_TASK are both defined
@@ -403,7 +406,7 @@ void trigger_token_duration_feedback() {
 					   "morse_duration",			// name
 					   4*1024,				// stack size	TODO: test
 					   NULL,				// task input parameter
-					   0,					// task priority
+					   MORSE_DURATION_TASK_PRIORITY,	// task priority
 					   &morse_input_feedback_handle,	// task handle
 					   0);					// core 0
   if(err != pdPASS) {

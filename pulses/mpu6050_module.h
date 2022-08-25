@@ -9,6 +9,8 @@
 //#define DEBUG_AG_REACTION	// TODO: remove or fix the debug mess
 //#define DEBUG_ACCELGYRO_BASICS	// TODO: remove or fix the debug mess
 
+#define MPU6050_SAMPLE_TASK_PRIORITY	0
+
 bool display_accGyro_raw=false;	  // for debugging only
 
 bool mpu6050_available=true;	// will be reset automagically if there's no MPU6050 found
@@ -550,7 +552,7 @@ void multicore_sample_mpu() {	// create and do one shot task
 					   "sample mpu",			// name
 					   MC_SAMPLE_MCU_STACK_SIZE,		// stack size
 					   NULL,				// task input parameter
-					   0,					// task priority
+					   MPU6050_SAMPLE_TASK_PRIORITY,	// task priority
 					   &multicore_sample_mpu_handle,	// task handle
 					   0);					// core 0
   if(err != pdPASS) {

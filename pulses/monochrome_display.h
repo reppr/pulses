@@ -5,6 +5,9 @@
 */
 #ifndef MONOCHROME_DISPLAY_H
 
+#if ! defined MONOCHROME_PRIORITY
+  #define MONOCHROME_PRIORITY	0	// old default TODO: test&trimm
+#endif
 
 #if ! defined MC_DISPLAY_STACK_SIZE
   #define MC_DISPLAY_STACK_SIZE		4*1024

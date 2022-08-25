@@ -9,6 +9,8 @@
 //#define DEBUG_LED_STRINGS			// empty  or 'SATURATION'
 //#define DEBUG_LED_STRINGS	SATURATION	// empty  or 'SATURATION'
 
+#define RGB_LED_STRING_TASK_PRIORITY	0
+
 // TODO: bool rgb_strings_available	MOVE: to HARDWARE
 bool rgb_strings_available = true;	// default, can be switched off i.e. from nvs
 
@@ -756,7 +758,7 @@ void multicore_rgb_string_draw() {	// create and do one shot task
 					   "rgb_draw",			// name
 					   4*1024,				// stack size	TODO: test
 					   NULL,				// task input parameter
-					   0,					// task priority
+					   RGB_LED_STRING_TASK_PRIORITY,	// task priority
 					   &multicore_rgb_string_draw_handle,	// task handle
 					   0);					// core 0
   if(err != pdPASS) {
