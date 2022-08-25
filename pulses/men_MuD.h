@@ -3,19 +3,26 @@
   temporary test menu UI during development
 */
 
-#if defined HAS_ePaper
-  MENU.out("testing setCursor()\t");
-  set_used_font(&FreeSansBold9pt7b);
+  extern void display_esp_versions();
+  display_esp_versions();
+//  MENU.out(F("ESP IDF version\t\t"));
+//  MENU.outln(esp_get_idf_version());
+//  MENU.outln(ESP_IDF_VERSION);
 
-  ePaper.setCursor(20, 30);
-  ePaper.print("(20, 30)");
 
-  ePaper.setCursor(25, 40);
-  ePaper.print("(25, 40)");
-
-  ePaper.display(true);
-  MENU.outln("done");
-#endif
+// #if defined HAS_ePaper
+//   MENU.out("testing setCursor()\t");
+//   set_used_font(&FreeSansBold9pt7b);
+//
+//   ePaper.setCursor(20, 30);
+//   ePaper.print("(20, 30)");
+//
+//   ePaper.setCursor(25, 40);
+//   ePaper.print("(25, 40)");
+//
+//   ePaper.display(true);
+//   MENU.outln("done");
+// #endif
 
 #if defined USE_SD_CARD
 extern void do_on_other_core(void (*function_p)());

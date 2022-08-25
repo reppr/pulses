@@ -1029,8 +1029,6 @@ LoRa and extended output?
 
 change boot sequence
 
-system_menu: show_internal_configurations();	// TODO: some info might be redundant
-
 set_metric_pitch(n, bool output=true);
 
 wake up by serial?
@@ -1273,5 +1271,3 @@ extensions/pulses_RGB_LED_string.h	RGB_LED_STRING_TASK_PRIORITY,	// task priorit
 mpu6050_module.h	MPU6050_SAMPLE_TASK_PRIORITY,	// task priority
 
 in pulses_RGB_LED_string.h L186		#include <esp32_digital_led_funcs.h>	// is not used
-
-FIXED: BUG: in relax(): PULSES.init_pulse(pulse);	// remove highest secondary pulses	// TODO: relax() had crashes here!

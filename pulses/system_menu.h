@@ -81,14 +81,7 @@ void cpp_info_display() {
 #endif
 
 void system_menu_display() {
-  //MENU.outln(F("Pulses System Menu\n"));
-
-#if defined ESP32
-  display_esp_versions();
-  // DADA  MENU.ln();
-#endif
-
-  show_internal_configurations();	// TODO: some info might be redundant
+  show_internal_configurations();	// calls also display_esp_versions();
 
   if(MENU.verbosity >= VERBOSITY_MORE) {
     display_type_sizes();		// sizeof pulses data types

@@ -1831,12 +1831,8 @@ void show_pulses_all_pins_usage() {
 } // show_pulses_all_pins_usage()
 
 
-void show_internal_configurations() {
+void show_internal_configurations() {		// also calls display_esp_versions();
   show_program_version(false);	// *not* on ePaper	// prename now known
-//  #if defined HAS_DISPLAY
-//    delay(1200);	// sorry for that
-//  #endif
-
   MENU.ln();
 
   {

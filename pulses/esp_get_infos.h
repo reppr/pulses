@@ -15,6 +15,7 @@ int get_ESP32_ChipRevision() {
   return (REG_READ(EFUSE_BLK0_RDATA3_REG) >> (EFUSE_RD_CHIP_VER_REV1_S)&&EFUSE_RD_CHIP_VER_REV1_V) ;
 }
 
+// #include "esp_arduino_version.h"	// OBSOLETE: some git versions needed this
 void display_esp_versions() {
   MENU.out(F("ESP32 chip revision\t"));
   MENU.outln(get_ESP32_ChipRevision());
@@ -22,13 +23,15 @@ void display_esp_versions() {
   MENU.out(F("ESP IDF version\t\t"));
   MENU.outln(esp_get_idf_version());
 
-#if defined ESP_ARDUINO_VERSION_MAJOR
   MENU.out(F("ESP32 ARDUINO VERSION\t"));
+#if defined ESP_ARDUINO_VERSION_MAJOR
   MENU.out(ESP_ARDUINO_VERSION_MAJOR);
   MENU.out('.');
   MENU.out(ESP_ARDUINO_VERSION_MINOR);
   MENU.out('.');
   MENU.outln(ESP_ARDUINO_VERSION_PATCH);
+#else
+  MENU.outln(F("unknown (pre v2)"));
 #endif
 } // display_esp_versions()
 
