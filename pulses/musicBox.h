@@ -3257,7 +3257,7 @@ void start_musicBox() {
 
 
 void relax() {		// kill highest secondary pulse
-  for(int pulse=PL_MAX ; pulse >= 0; pulse--) {
+  for(int pulse=PL_MAX-1 ; pulse >= 0; pulse--) {
     if(PULSES.pulses[pulse].groups & g_SECONDARY) {
       if(PULSES.pulses[pulse].flags & ACTIVE) {			// highest active secondary pulse
 	if(PULSES.pulses[pulse].flags & HAS_GPIO)		// set GPIO low?  maybe MAKES NOISE?
