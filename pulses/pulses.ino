@@ -4165,7 +4165,7 @@ void display_payload(int pulse) {
     MENU.tab(2);
     return;
   }
-#if defined USE_MORSE && defined MORSE_OUTPUT_PIN
+#if defined USE_MORSE && defined MORSE_OUTPUT_PIN && defined TOKEN_LENGTH_FEEDBACK_PULSE
   scratch=&morse_feedback_d;
   if (PULSES.pulses[pulse].payload == scratch) {
     MENU.out(F("morse_feedback_d"));

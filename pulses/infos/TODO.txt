@@ -1124,8 +1124,8 @@ ePaper_GxEPD2.h 55 is
 
 TODO: extensions/FOREIGN/ should not contain libraries		DONE: moved to libraries/
 In file included from /home/test/Arduino/pulses/extensions/FOREIGN/ESP32-Digital-RGB-LED-Drivers/src/esp32_digital_led_lib.cpp:44,
-                 from /home/test/Arduino/pulses/extensions/pulses_RGB_LED_string.h:92,
-                 from /home/test/Arduino/pulses/pulses.ino:1122:
+		 from /home/test/Arduino/pulses/extensions/pulses_RGB_LED_string.h:92,
+		 from /home/test/Arduino/pulses/pulses.ino:1122:
 /home/test/.arduino15/packages/esp32/hardware/esp32/2.0.0-rc1/tools/sdk/esp32/include/esp_hw_support/include/esp_intr.h:16:2: warning: #warning esp_intr.h is deprecated, please include esp_intr_alloc.h instead [-Wcpp]
  #warning esp_intr.h is deprecated, please include esp_intr_alloc.h instead
   ^~~~~~~
@@ -1157,7 +1157,7 @@ TODO: morse input feedback is not working on ePaper
 +#define OLED_HALT_PIN0	// see: monochrome_show_program_version()	// TODO: test with LilyGo T5_2.13
 
 #define DEBUG_ePAPER_MORSE_FEEDBACK	// TODO: remove
-	
+
 battery handling logging
 test&trimm new  BATTERY_LEVELS_DOUBLED
 
@@ -1266,8 +1266,32 @@ find . -type f -exec grep --color -nH --null -e CONFIG_FREERTOS_IDLE_TASK_STACKS
 ./tools/sdk/esp32/qio_qspi/include/sdkconfig.h 382:#define CONFIG_FREERTOS_IDLE_TASK_STACKSIZE 1024
 
 // TODO: TEST: task priorities:
-morse.h	   		MORSE_DURATION_TASK_PRIORITY,	// task priority
+morse.h			MORSE_DURATION_TASK_PRIORITY,	// task priority
 extensions/pulses_RGB_LED_string.h	RGB_LED_STRING_TASK_PRIORITY,	// task priority
 mpu6050_module.h	MPU6050_SAMPLE_TASK_PRIORITY,	// task priority
 
 in pulses_RGB_LED_string.h L186		#include <esp32_digital_led_funcs.h>	// is not used
+
+DEBUG: morse_MUX
+used in:
+     morse_feedback_d()
+	pulse payload
+
+     start_morse_feedback_d_pulse()	(MUX removed)
+	touch_morse_ISR_v3
+
+     touch_morse_ISR_v3()		with MUX
+	ISR
+
+     check_and_treat_morse_events_v3()	with MUX
+	polled from pulses L2671
+
+     morse_received_token()		(MUX removed)
+	check_and_treat_morse_events_v3()
+	morse_poll_letter_separation()
+
+
+touch_threshold should go to HARDWARE
+automagic touch_threshold on startup
+
+start_musicbox() separe configuration and start

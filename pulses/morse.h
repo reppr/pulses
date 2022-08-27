@@ -1,6 +1,8 @@
 /*
   morse.h
   version 3 touch only
+
+  (there is an alternative morse implementation in branch MORSE4)
 */
 
 #ifndef MORSE_H
@@ -365,7 +367,7 @@ void prepare_morse_feedback_d_pulse() {	// prepares, but does not start it
 } // prepare_morse_feedback_d_pulse()
 
 void start_morse_feedback_d_pulse() {
-  portENTER_CRITICAL(&morse_MUX);
+  // portENTER_CRITICAL(&morse_MUX);	// no: already done in caller:
   // deactivate_morse_feedback_d_pulse();	// safety net...
   if((morse_length_feedback_pulse_i==ILLEGAL32) || (PULSES.pulses[morse_length_feedback_pulse_i].flags==0)) {
     prepare_morse_feedback_d_pulse();
@@ -375,7 +377,6 @@ void start_morse_feedback_d_pulse() {
     PULSES.pulses[morse_length_feedback_pulse_i].flags |= ACTIVE;
     PULSES.fix_global_next();
   } // else (no free pulse): just ignore
-  portEXIT_CRITICAL(&morse_MUX);
 } // start_morse_feedback_d_pulse()
 
   #else // no TOKEN_LENGTH_FEEDBACK_PULSE
@@ -423,7 +424,7 @@ void trigger_token_duration_feedback() {
 //     morse_input_feedback_handle = NULL;
 //   }
 // }
-  #endif // TOKEN_LENGTH_FEEDBACK_TASK	// experimental
+    #endif // TOKEN_LENGTH_FEEDBACK_TASK	// experimental
   #endif // kind of token length feedback
 #endif // MORSE_OUTPUT_PIN
 
@@ -646,6 +647,7 @@ bool morse_poll_letter_separation() {
   if(diff < 0)		// not time yet
     return false;	//   do *not* block while polling
   else {		// it *is* time
+    // morse_MUX is respected by caller
     morse_received_token(MORSE_TOKEN_separeLetter, separeLetterTim /*that's a fake!*/);
     morse_letter_separation_expected = 0L;
 #if defined DEBUG_TREAT_MORSE_EVENTS_V3
@@ -939,8 +941,7 @@ void static IRAM_ATTR morse_stats_do() {
 void static morse_token_decode();	// pre declaration
 
 void morse_received_token(char token, float duration) {
-  portENTER_CRITICAL(&morse_MUX);
-
+  // portENTER_CRITICAL(&morse_MUX);	// respected by caller
 #if defined MORSE_DEBUG_RECEIVE_TOKEN
   //MENU.out("morse_received_token() "); MENU.outln(token);
 #endif
@@ -1002,8 +1003,6 @@ void morse_received_token(char token, float duration) {
     ERROR_ln(F("MORSE_TOKEN_MAX	buffer cleared"));
     morse_token_cnt=0;	// TODO: maybe still use data or use a ring buffer?
   }
-
-  portEXIT_CRITICAL(&morse_MUX);
 } // morse_received_token()
 
 
