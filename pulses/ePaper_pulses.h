@@ -164,31 +164,39 @@ void ePaper_musicBox_parameters() {	// ePAPER_SMALL_213	SMALL ePaper size, i.e. 
     // monochrome_show_subcycle_octave();
     ePaper.println();
 
-    int len = strlen(musicBoxConf.name);
-    bool bigFont_name= len < 19;	// TODO: test&trimm
-    if(bigFont_name) {
-      if(len < 18) {			// try to center short preset names
-	for(int i=0; i < ((17 - len)); i++)
-	  ePaper.print(' ');
-      }
-      set_used_font(big_font_p);	// now BIG font
+    if(musicBoxConf.name) {
+      int len = strlen(musicBoxConf.name);
+      bool bigFont_name= len < 19;	// TODO: test&trimm
+      if(bigFont_name) {
+	if(len < 18) {			// try to center short preset names
+	  for(int i=0; i < ((17 - len)); i++)
+	    ePaper.print(' ');
+	}
+	set_used_font(big_font_p);	// now BIG font
 
-    } else				// normal size
-      set_used_font(medium_font_p);
-    ePaper.print(musicBoxConf.name);	// preset NAME
+      } else				// normal size
+	set_used_font(medium_font_p);
+      ePaper.print(musicBoxConf.name);	// preset NAME
 
     #if defined USE_MANY_FONTS
       ePaper.setFont(&FreeSans9pt7b);
     #else
       set_used_font(medium_font_p);
     #endif
-    ePaper.println();		// empty line
-    if(bigFont_name)  		// if name (above) was big font
-      ePaper.println();		//    another empty line (after BIG line)
-    else
-      if(len < 30)
-	ePaper.println();	//    empty line (after shortish medium sized line)
-
+      ePaper.println();		// empty line
+      if(bigFont_name)  		// if name (above) was big font
+	ePaper.println();		//    another empty line (after BIG line)
+      else
+	if(len < 30)
+	  ePaper.println();	//    empty line (after shortish medium sized line)
+    } else { // (musicBoxConf.name == NULL)
+      ePaper.println();	//    empty line (after shortish medium sized line)
+    #if defined USE_MANY_FONTS
+      ePaper.setFont(&FreeSans9pt7b);
+    #else
+      set_used_font(medium_font_p);
+    #endif
+    }
 
     extern char* metric_mnemonic;
     snprintf(txt, LIN_BUF_MAX, fmt_key_scale_sync, metric_mnemonic, selected_name(SCALES), musicBoxConf.sync);
