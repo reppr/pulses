@@ -83,6 +83,10 @@ void cpp_info_display() {
 void system_menu_display() {
   show_internal_configurations();	// calls also display_esp_versions();
 
+  MENU.ln();
+  MENU.outln(F("X=reboot"));
+  MENU.ln();
+
   if(MENU.verbosity >= VERBOSITY_MORE) {
     display_type_sizes();		// sizeof pulses data types
     MENU.ln();
@@ -126,6 +130,15 @@ bool system_menu_reaction(char token) {
     return logging_UI_reaction();
     break;
 #endif // USE_LOGGING
+
+  case 'X':		// reboot system!
+    MENU.ln();
+    MENU.outln(F("=> user: RESTART!"));
+    MENU.ln();
+    ESP.restart();
+
+    return false;	// point of no return!
+    break;
 
   default:
     return false;
