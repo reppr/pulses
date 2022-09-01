@@ -1495,6 +1495,12 @@ void show_hardware_conf(pulses_hardware_conf_t* hardware) {
 
   show_monochrome_type(hardware->monochrome_type);
 
+#if defined USE_ESP_NOW
+  MENU.out(F("ESP-NOW CHANNEL\t\t"));
+  show_pin_or_dash(hardware->esp_now_channel);
+  MENU.ln();
+#endif
+
   MENU.out(F("RGB LED strings\t\t"));
   if(hardware->rgb_strings) {
     MENU.outln(hardware->rgb_strings);
@@ -1863,7 +1869,11 @@ void show_internal_configurations() {		// also calls display_esp_versions();
 
 #if defined ESP32
   #if defined USE_ESP_NOW
-    MENU.outln(F("\tuses ESP-NOW"));
+    MENU.out(F("\tuses ESP-NOW\tchannel: "));
+    if(HARDWARE.esp_now_channel == ILLEGAL8)
+      MENU.outln('?');
+    else
+      MENU.outln(HARDWARE.esp_now_channel);
   #else
     MENU.outln(F("\tesp-now *not* used"));
   #endif

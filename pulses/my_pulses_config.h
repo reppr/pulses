@@ -132,6 +132,11 @@
 #define HIGH_PRIORITY_RGB_LED_UPDATE		// TODO: TEST MOVE:
 #define RGB_LED_STRING_VOLTAGE_TYPE	5	// TODO: TEST MOVE:
 
+#if defined USE_ESP_NOW
+#if ! defined ESP_NOW_CHANNEL			// sanity check
+    #define ESP_NOW_CHANNEL		11	// works fine TODO: UI
+  #endif
+#endif
 
 /*
  DEBUGGING RAM USAGE:

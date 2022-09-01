@@ -1285,3 +1285,6 @@ touch_threshold should go to HARDWARE
 automagic touch_threshold on startup
 
 start_musicbox() separe configuration and start
+
+UI for ESP-NOW CHANNEL
+feedback when reading it from HARDWARE_nvs

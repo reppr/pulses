@@ -39,6 +39,7 @@
 
 #if ! defined TRIGGERED_MUSICBOX2
   #define USE_ESP_NOW
+//#define ESP_NOW_CHANNEL		11		// works fine TODO: UI
 #endif
 
 #define DO_STRESS_MANAGMENT

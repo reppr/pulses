@@ -57,6 +57,10 @@
 
 // ESP-NOW
 #if defined USE_ESP_NOW
+  #if ! defined ESP_NOW_CHANNEL
+    #define ESP_NOW_CHANNEL		11		// works fine TODO: UI
+  #endif
+
 /*
   Sketch uses 1447262 bytes (110%) of program storage space. Maximum is 1310720 bytes.
   Global variables use 96048 bytes (29%) of dynamic memory, leaving 231632 bytes for local variables. Maximum is 327680 bytes.

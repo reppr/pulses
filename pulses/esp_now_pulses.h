@@ -34,9 +34,11 @@
 
 //#define DEBUG_ESP_NOW_NETWORKING
 
-#define ESP_NOW_CHANNEL		11		// works fine TODO: UI
+#if ! defined ESP_NOW_CHANNEL
+  #define ESP_NOW_CHANNEL		11		// works fine TODO: UI
 //#define ESP_NOW_CHANNEL		4		// does not work well here???
 //#define ESP_NOW_CHANNEL		0		// works fine TODO: UI
+#endif
 
 // react on broadcast or all-known-peers messages in an individual time slice
 // defines the length of *one* slice in milliseconds
@@ -404,7 +406,7 @@ esp_err_t esp_now_pulses_add_peer(peer_ID_t* ID_new_p) {	// might give feedback
   if(do_display)
     MENU.out(F("  esp_now_pulses_add_peer(), esp_now_add_peer() "));
 
-  peer_info.channel = ESP_NOW_CHANNEL;
+  peer_info.channel = HARDWARE.esp_now_channel;
   memcpy(peer_info.peer_addr, (*ID_new_p).mac_addr, 6);	// if((*ID_new_p).mac_addr != NULL)
   peer_info.ifidx = (wifi_interface_t) ESP_IF_WIFI_STA;
   peer_info.encrypt = false;
@@ -720,7 +722,7 @@ void esp_now_send_maybe_do_macro(uint8_t* mac_addr, char* macro) {
 
 void esp_now_call_participants() {	// kickstart network connections
   MENU.out(F("esp_now_call_participants()\tchannel "));
-  MENU.outln(ESP_NOW_CHANNEL);
+  MENU.outln(HARDWARE.esp_now_channel);
 
   esp_now_send_identity(broadcast_mac);
   yield();
@@ -815,11 +817,11 @@ esp_err_t esp_now_pulses_setup_0() {		// setup 1st stage
   yield();
 
 #if defined ESP_NOW_SECOND_CHAN_NONE	// use *NEW* ESP_NOW_CHANNEL implementation
-  status = esp_wifi_set_channel(ESP_NOW_CHANNEL, WIFI_SECOND_CHAN_NONE);	// *NEW* ESP_NOW_CHANNEL implementation
+  status = esp_wifi_set_channel(HARDWARE.esp_now_channel, WIFI_SECOND_CHAN_NONE);	// *NEW* ESP_NOW_CHANNEL implementation
   if(status != ESP_OK)
     return status;
 #else
-  WiFi.channel(ESP_NOW_CHANNEL);		// old	TODO: ESP_NOW_CHANNEL
+  WiFi.channel(HARDWARE.esp_now_channel);		// old	TODO: ESP_NOW_CHANNEL
 #endif
   yield();
 
@@ -835,11 +837,11 @@ esp_err_t esp_now_pulses_setup_0() {		// setup 1st stage
   yield();
 
 #if defined ESP_NOW_SECOND_CHAN_NONE	// use *NEW* ESP_NOW_CHANNEL implementation
-  status = esp_wifi_set_channel(ESP_NOW_CHANNEL, WIFI_SECOND_CHAN_NONE);	// *NEW* ESP_NOW_CHANNEL implementation
+  status = esp_wifi_set_channel(HARDWARE.esp_now_channel, WIFI_SECOND_CHAN_NONE);	// *NEW* ESP_NOW_CHANNEL implementation
   if(status != ESP_OK)
     return status;
 #else
-  WiFi.channel(ESP_NOW_CHANNEL);		// old	TODO: ESP_NOW_CHANNEL
+  WiFi.channel(HARDWARE.esp_now_channel);		// old	TODO: ESP_NOW_CHANNEL
 #endif
   yield();
 
@@ -871,9 +873,9 @@ esp_err_t esp_now_pulses_setup_0() {		// setup 1st stage
 
   yield();
   MENU.out(F("  broadcast ch="));
-  MENU.outln((int) ESP_NOW_CHANNEL);
+  MENU.outln((int) HARDWARE.esp_now_channel);
 
-  peer_info.channel = ESP_NOW_CHANNEL;
+  peer_info.channel = HARDWARE.esp_now_channel;
   memcpy(peer_info.peer_addr, broadcast_mac, 6);
   peer_info.ifidx = (wifi_interface_t) ESP_IF_WIFI_STA;
   peer_info.encrypt = false;
