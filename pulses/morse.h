@@ -501,7 +501,7 @@ bool check_and_treat_morse_events_v3() {	// polled from pulses.ino main loop()	*
       retval = morse_poll_letter_separation();
     }
     portEXIT_CRITICAL(&morse_MUX);
-    return false;			// NO DATA, or no letter separation check needed
+    return retval;			// NO DATA, or no letter separation check needed
   }
 
   if(too_many_events) {			// ERROR buffer too small

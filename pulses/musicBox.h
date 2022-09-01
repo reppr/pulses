@@ -1827,8 +1827,8 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
 //  MENU.ln();
   }
 
-#if defined DO_LOGGING
-  if(do_log && log_play)
+#if defined USE_LOGGING
+  if(do_log_SD && log_play)
     log_message_timestamped(F("HARD END"), true);
 #endif
 
@@ -1883,7 +1883,7 @@ void musicBox_trigger_OFF();
 
 void musicBox_trigger_ISR() {	// can also be used on the non interrupt version :)
   portENTER_CRITICAL_ISR(&musicBox_trigger_MUX);
-  static pulse_time_t triggered_at=PULSES.get_now();	// preserves last seen fresh trigger time
+  //static pulse_time_t triggered_at=PULSES.get_now();	// (not used)	preserves last seen fresh trigger time
 
   pulse_time_t new_trigger = PULSES.get_now();		// new trigger time
 
@@ -1910,7 +1910,7 @@ void musicBox_trigger_ISR() {	// can also be used on the non interrupt version :
   if(triggered) {
     musicBox_trigger_enabled = false;
     blocked_trigger_shown = false;
-    triggered_at = new_trigger;
+    //triggered_at = new_trigger;		// (not used)
     musicbox_trigger_cnt++;
   }
 
@@ -2923,8 +2923,8 @@ void start_musicBox() {
 #endif
   MENU.out(F("\nstart_musicBox()\t"));
 
-#if defined DO_LOGGING
-  if(do_log && log_play) {
+#if defined USE_LOGGING
+  if(do_log_SD && log_play) {
     start_log_entry(F("start_musicBox()  preset "), true);
     logFile.print((int) musicBoxConf.preset);
     logFile.print(F(" \""));
@@ -2932,7 +2932,7 @@ void start_musicBox() {
     logFile.print('\"');
     end_log_entry();
   }
-#endif // DO_LOGGING
+#endif // USE_LOGGING
 
 #if defined HAS_DISPLAY && defined MUSICBOX_SHOW_PROGRAM_VERSION	// default *off*
   MC_show_program_version();
@@ -3459,7 +3459,7 @@ void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from mai
   case 2:	// ESP_SLEEP_WAKEUP_EXT0	2
     MENU.outln(F("wakeup EXT0\t"));
 #if defined USE_SD_CARD
-    if(do_log) {
+    if(do_log_SD) {
       start_log_entry(F(">>>> WAKEUP TRIGGERED\t\t|"));
       logFile.print(my_IDENTITY.preName);
       end_log_entry("|", true);

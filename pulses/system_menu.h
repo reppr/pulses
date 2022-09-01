@@ -100,9 +100,9 @@ void system_menu_display() {
   MENU.ln();
 #endif
 
-#if defined DO_LOGGING
+#if defined USE_LOGGING
   logging_UI_display();
-#endif // DO_LOGGING
+#endif // USE_LOGGING
 } // system_menu_display()
 
 
@@ -121,11 +121,11 @@ bool system_menu_reaction(char token) {
     break;
 #endif
 
-#if defined DO_LOGGING
+#if defined USE_LOGGING
   case 'O':
     return logging_UI_reaction();
     break;
-#endif // DO_LOGGING
+#endif // USE_LOGGING
 
   default:
     return false;

@@ -297,7 +297,7 @@ void MC_printBIG_at(int16_t col, int16_t row, const char* text, int16_t offset_y
   MENU.outln(F("DEBUG_ePAPER\tMC_printBIG_at()"));
 #endif
 
-  xSemaphoreTake(MC_mux, portMAX_DELAY);
+  xSemaphoreTake(MC_mux, portMAX_DELAY);	// had a crash here while booting a morse event
   set_used_font(big_font_p);
   // vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);	// hope we don*t need that...
   xSemaphoreGive(MC_mux);

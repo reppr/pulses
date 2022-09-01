@@ -182,7 +182,7 @@ void set_rgb_string_voltage_type(int voltage, int string) {
 }
 
 #include <esp32_digital_led_lib.h>
-#include <esp32_digital_led_funcs.h>
+//#include <esp32_digital_led_funcs.h>	// not used
 
 
 #define COUNT_OF(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))

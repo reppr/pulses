@@ -3993,7 +3993,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
    break;
 
   case 128:
-    musicBoxConf.name = F("clear winter sky");
+    musicBoxConf.name = F("Clear Winter Sky");
     //# favorite+
     //# shortIsOk
     //# fullCycleIsOk	harmonical CYCLE: 1h 10' 13"
@@ -5634,7 +5634,7 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     break;
 
   case 183:
-    musicBoxConf.name = F("Santur c#- minor");
+    musicBoxConf.name = F("Santur c#- minor  \"BACH\"");
     select_in(SCALES, minor_scale);
     musicBoxConf.pitch = {1, 271};
     musicBoxConf.sync = 0;

@@ -23,7 +23,7 @@ void display_esp_versions() {
   MENU.out(F("ESP IDF version\t\t"));
   MENU.outln(esp_get_idf_version());
 
-  MENU.out(F("ESP32 ARDUINO VERSION\t"));
+  MENU.out(F("ESP32 ARDUINO version\t"));
 #if defined ESP_ARDUINO_VERSION_MAJOR
   MENU.out(ESP_ARDUINO_VERSION_MAJOR);
   MENU.out('.');

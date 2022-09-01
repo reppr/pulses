@@ -264,10 +264,10 @@ typedef struct pulses_hardware_conf_t {
 #if defined ESP_NOW_CHANNEL
   uint8_t esp_now_channel=ESP_NOW_CHANNEL;	// *not used yet*	// %4
 #else
-  uint8_t esp_now_channel=ILLEGAL8;	// *not used yet*		// %4	TODO: ESP_NOW_CHANNEL?
+  uint8_t esp_now_channel=ILLEGAL8;		// *not used yet*	// %4	TODO: ESP_NOW_CHANNEL?
 #endif
 
-  uint8_t midi_does_pitch_bend=false;	// *not used yet*
+  uint8_t midi_does_pitch_bend=false;		// *not used yet*
 #if defined USE_MIDI
   uint16_t midi_baudrate_div10 = (MIDI_BAUDRATE / 10);
 #else
@@ -1231,11 +1231,6 @@ void selected_do_detune_periods(short cents) {	// works on the period time of ea
 int8_t softboard_page=-1;	// see: maybe_run_continuous()
 int8_t musicBox_page=ILLEGAL8;	// NOTE: musicBox_page is not used	// TODO: ???
 
-
-#ifndef RAM_IS_SCARE	// enough RAM?
-  #include "jiffles.h"
-#endif
-
 #include "random_entropy.h"	// TODO: only if used
 
 #if defined PERIPHERAL_POWER_SWITCH_PIN
@@ -1837,7 +1832,7 @@ void show_internal_configurations() {		// also calls display_esp_versions();
 
   {
     int core;
-    MENU.out(F("pulses\trunning on core "));
+    MENU.out(F("pulses\trunning on CORE "));
     MENU.out(core = xPortGetCoreID());
     if(core == 1)
       MENU.ln();
@@ -1849,32 +1844,40 @@ void show_internal_configurations() {		// also calls display_esp_versions();
   MENU.outln(portTICK_PERIOD_MS);
 
 #if defined MULTICORE_DISPLAY
-  MENU.outln(F("\tdisplays from other core"));
+  MENU.outln(F("\tdisplays from OTHER CORE"));
 #endif
 
 #if defined MULTICORE_RGB_STRING
-  MENU.outln(F("\tdrives rgb from other core"));
+  MENU.outln(F("\tdrives rgb from OTHER CORE"));
 #endif
 
 #if defined MULTICORE_MPU_SAMPLING  &&  defined USE_MPU6050
-  MENU.outln(F("\tmpu sampling from other core"));
+  MENU.outln(F("\tmpu sampling from OTHER CORE"));
 #endif
 
 #if defined PULSES_USE_DOUBLE_TIMES
   MENU.outln(F("\tuses DOUBLE times"));
 #else
-  MENU.outln(F("\tuses int overflow times"));
+  MENU.outln(F("\tuses INT-OVERFLOW times"));
 #endif
 
 #if defined ESP32
   #if defined USE_ESP_NOW
-    MENU.outln(F("\tuses ESP_NOW"));
+    MENU.outln(F("\tuses ESP-NOW"));
   #else
-    MENU.outln(F("\tesp_now *not* used"));
+    MENU.outln(F("\tesp-now *not* used"));
   #endif
 
   #if defined USE_BLUETOOTH_SERIAL_MENU
-    MENU.outln(F("\tuses BT Serial"));
+    MENU.outln(F("\tuses BLUETOOTH Serial"));
+  #endif
+
+  #if defined USE_RGB_LED_STRIP
+    MENU.outln(F("\tcan drive RGB LED strip"));
+  #endif
+
+  #if defined USE_LOGGING
+    MENU.outln(F("\tdoes LOGGING"));	// TODO: IS there a CARD?
   #endif
 
   MENU.ln();
@@ -2158,7 +2161,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
     if(check_for_rtc_module()) {
       MENU.ln();
       show_DS1307_time_stamp();	// DS3231 or DS1307
-      MENU.ln(2);
+      MENU.ln();
     }
   #endif
 #endif // USE_i2c
@@ -2181,9 +2184,10 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
   MENU.add_page("Pulses", 'P', \
 		&menu_pulses_display, &menu_pulses_reaction, 'P');
 
-  // add softboard page:
-  softboard_page = MENU.add_page("Hardware Softboard", 'H',		\
-			 &softboard_display, &softboard_reaction, 'H');
+  #if defined HAS_SOFTBOARD_MENU  // add softboard page:
+    softboard_page = MENU.add_page("Hardware Softboard", 'H',		\
+				   &softboard_display, &softboard_reaction, 'H');
+  #endif
 
   #ifdef USE_INPUTS
     // add inputs page:
@@ -2211,7 +2215,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
     musicBox_page = MENU.add_page("musicBox", 'M', &musicBox_display, &musicBox_reaction, 'P');
   #endif
 
-  #if defined  USE_BLUETOOTH_SERIAL_MENU	// hi jacking USE_BLUETOOTH_SERIAL_MENU
+  #if defined USE_BLUETOOTH_SERIAL_MENU	// hi jacking USE_BLUETOOTH_SERIAL_MENU
     MENU.add_page("Bluetooth", 'B', &bluetooth_menu_display, &bluetooth_menu_reaction, 'M');
   #endif
 
@@ -2289,13 +2293,13 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 #endif
   MENU.ln();
 
-#if defined DO_LOGGING
-  if(do_log) {
+#if defined USE_LOGGING
+  if(do_log_SD) {
     start_log_entry(F(">>>> NEWBORN  boot & setup\t|"));	// NEWBORN
     logFile.print(my_IDENTITY.preName);
     end_log_entry("|", true);
   }
-#endif // DO_LOGGING
+#endif // USE_LOGGING
 
   if(force_start_to_usermode) {
     force_start_to_usermode=false;

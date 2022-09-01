@@ -181,9 +181,12 @@
 // use Arduino F() macro to save RAM or just a NOOP?
 #ifndef USE_F_MACRO	// NOOP fake
   // For tests and on PC:  Fake Arduino F("string") macro as NOOP:
-  #warning "using a NOOP fake F() macro."
-  #undef F
-  #define F(s)	((char*) (s))
+  #if ! defined NOOP_FAKE_F_MACRO_INSTALLED	// probably obsolete, leave it in to make it more robust
+    #define NOOP_FAKE_F_MACRO_INSTALLED
+    #warning "using a NOOP fake F() macro."
+    #undef F
+    #define F(s)	((char*) (s))
+  #endif
 #endif
 
 /* **************************************************************** */

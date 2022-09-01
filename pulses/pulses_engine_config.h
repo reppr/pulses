@@ -31,6 +31,8 @@
 
 //#define MULTICORE_MPU_SAMPLING	// sample MPU from core 0	CRASHES VERY OFTEN
 
+#define HAS_SOFTBOARD_MENU		// inlude Hardware Softboard menu
+
 #define PRENAME_MAX_LENGTH	15	// *excluding* '\0'
 
 #define PULSES_USE_DOUBLE_TIMES		// working fine :)
@@ -42,7 +44,12 @@
 #define DO_STRESS_MANAGMENT
 //#define STRESS_MONITOR_LEVEL	64*2	// TODO: menu interface	// TODO: move to another configuration file
 
-//#define USE_BLUETOOTH_SERIAL_MENU	// needs new git versions
+#define USE_BLUETOOTH_SERIAL_MENU	// needs new git versions
+/*
+  see: https://github.com/pjalocha/esp32-ogn-tracker/issues/6
+    esp_bt_gap_set_scan_mode(ESP_BT_SCAN_MODE_CONNECTABLE_DISCOVERABLE); // for older ESP-IDF
+    esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE); // for newer ESP-IDF
+*/
 //#define BLUETOOTH_ENABLE_PIN	35	// used by some old instruments, probably obsolete
 
 // #define ESP32_G15_T01	boards_layout/G15-T1-esp32_dev.h	// TODO: check, remove?
