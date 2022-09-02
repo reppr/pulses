@@ -14,6 +14,8 @@ void nvs_menu_display() {
 
   if (! nvs_test_key("HARDWARE_nvs"))
     MENU.out(F("\t\tsay 'HS' to create"));
+  else
+    MENU.out(F("\t\tsay 'XH!' to delete"));
   MENU.ln();
 
   MENU.outln(F("\n\n'H'=HARDWARE 'HR'=read 'HS'=save '?'=info"));
@@ -45,9 +47,9 @@ void nvs_menu_display() {
   if(nvs_AUTOSTART_kb_macro && strlen(nvs_AUTOSTART_kb_macro)) {
     MENU.out(F(" (\""));
     MENU.out(nvs_AUTOSTART_kb_macro);
-    MENU.out(F("\")\t'D'=delete autostart"));
+    MENU.out(F("\")\t'XA!'=delete autostart"));
   }
-  MENU.ln();
+  MENU.outln(F("\t'XX!'=DELETE ALL KEYS!"));
 
   MENU.ln();
 } // nvs_menu_display()
@@ -228,9 +230,22 @@ bool nvs_menu_reaction(char token) {
     }
     break;
 
-  case 'X':
-    nvs_clear_all_keys();
-    yield();
+  case 'X':	// must be 'XH!' or 'XA!' or 'XX!'
+    if(MENU.string_match("X!")) {	// 'XX!'=delete *ALL* nvs keys
+      nvs_clear_all_keys();
+      yield();
+    } else
+      if(MENU.string_match("H!")) {	// 'XH!'=delete HARDWARE_nvs
+	MENU.outln(F("delete HARDWARE_nvs"));
+	nvs_delete_key("HARDWARE_nvs");
+      } else
+	if(MENU.string_match("A!")) {	// 'XA!=delete nvs_AUTOSTART
+	  MENU.out(F("remove nvs_AUTOSTART\t"));
+	  nvs_delete_key("nvs_AUTOSTART");
+	  set_nvs_autostart_kb_macro(NULL);
+	  MENU.ln();
+	} else
+	  MENU.outln_invalid();
     break;
 
   case 'A': // 'Axxx' nvs_autostart()
@@ -251,13 +266,6 @@ bool nvs_menu_reaction(char token) {
       if(! nvs_save_blob("nvs_AUTOSTART", buffer, len + 1))
 	set_nvs_autostart_kb_macro(buffer);
     }
-    break;
-
-  case 'D': // 'D' delete nvs_AUTOSTART
-    MENU.out(F("remove nvs_AUTOSTART\t"));
-    nvs_delete_key("nvs_AUTOSTART");
-    set_nvs_autostart_kb_macro(NULL);
-    MENU.ln();
     break;
 
   default:
