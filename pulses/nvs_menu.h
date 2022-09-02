@@ -49,6 +49,7 @@ void nvs_menu_display() {
     MENU.out(nvs_AUTOSTART_kb_macro);
     MENU.out(F("\")\t'XA!'=delete autostart"));
   }
+
   MENU.outln(F("\t'XX!'=DELETE ALL KEYS!"));
 
   MENU.ln();
