@@ -4,6 +4,9 @@
 */
 
 /* **************************************************************** */
+
+#define DEBUG_INPUT_BETA	// TODO: REMOVE	// some broken configuration sends 'ß' instead of '?'
+
 // Preprocessor #includes:
 
 #include <stdio.h>
@@ -1523,8 +1526,14 @@ void Menu::interpret_men_input() {
 	menu_pages_info();
 	return;
 	break;
-      case '?':		// maybe also on ":?" too?  drop one of 2 tokens
+
       case 'ß':		// some broken configuration sends 'ß' instead of '?', silently accept
+#if defined DEBUG_INPUT_BETA	// TODO: remove
+	out(F(" DEBUG_INPUT_BETA "));
+	out(token);
+	out(' ');
+#endif
+      case '?':		// maybe also on ":?" too?  drop one of 2 tokens
 	drop_input_token();
 	menu_pages_info();	// then info, like ':' only
 	continue;
@@ -1633,8 +1642,13 @@ void Menu::interpret_men_input() {
     outln(F("* search internal key bindings"));
 #endif
     switch (token) {
-    case '?':
     case 'ß':	// some broken configuration sends 'ß' instead of '?'
+#if defined DEBUG_INPUT_BETA	// TODO: remove
+      out(F(" DEBUG_INPUT_BETA "));
+      out(token);
+      out(' ');
+#endif
+    case '?':
       if (verbosity <= VERBOSITY_MORE)	// if verbosity is too low	// TODO: test!
 	menu_display();			//   we do it from here
 
