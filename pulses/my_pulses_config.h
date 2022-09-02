@@ -132,5 +132,31 @@
 #define HIGH_PRIORITY_RGB_LED_UPDATE		// TODO: TEST MOVE:
 #define RGB_LED_STRING_VOLTAGE_TYPE	5	// TODO: TEST MOVE:
 
+
+/*
+ DEBUGGING RAM USAGE:
+   see also: GET_FREE_RAM in class Menu
+   see also: MENU_DOES_PRINT_FREE_RAM_ON_ESP32  in class MENU
+*/
+//#define TABULA_RASA_PRINT_FREE_RAM	// maybe? RAM information
+//#define DEBUG_DISPLAY_RAM_USAGE	// might crash...
+//#define DEBUG_ePAPER_RAM_USAGE	// try_ePaper_fix() {	// maybe OBSOLETE?	let's hope ;)
+//#define DEBUG_ESP_NOW_RAM_USAGE
+
+/*
+  // explore RAM usage...
+  #undef USE_INPUTS
+  #undef USE_RTC_MODULE
+  #undef HAS_SOFTBOARD_MENU
+  #undef USE_WIFI_telnet_menu
+  //#undef USE_BLUETOOTH_SERIAL_MENU
+  #undef USE_LoRa
+  #undef USE_LOGGING
+*/
+
+
+//#undef USE_BLUETOOTH_SERIAL_MENU	// not needed on version 2.0.2
+//#undef USE_ESP_NOW			// just for easy testing...
+
 #define MY_PULSES_CONFIG_H
 #endif

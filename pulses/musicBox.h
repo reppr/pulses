@@ -5,8 +5,6 @@
 #include "musicBox_config.h"	// included in the configuration sequence
 #include "my_pulses_config.h"
 
-//#define TABULA_RASA_PRINT_FREE_RAM	// maybe?
-
 /* **************************************************************** */
 // some DEFAULTs, setups might change them
 
@@ -426,7 +424,7 @@ char scale_symbol_char() {	// 1 char SCALE index as hex and beyond for monochrom
 } // scale_symbol_char()
 
 
-//#define TABULA_RASA_PRINT_FREE_RAM
+// #define TABULA_RASA_PRINT_FREE_RAM	// see: my_pulses_config.h
 void tabula_rasa() {
   if (MENU.verbosity > VERBOSITY_LOWEST) {
     MENU.out(F("tabula rasa\t"));

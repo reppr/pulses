@@ -25,6 +25,7 @@
   #include <Menu/Menu.h>
 #endif
 
+#define MENU_DOES_PRINT_FREE_RAM_ON_ESP32	// might crash...
 
 /* **************************************************************** */
 // Constructor/Destructor:
@@ -525,6 +526,7 @@ bool Menu::string_match(const char * teststring) {
       int Menu::get_free_RAM() const {
 	return ESP.getFreeHeap();
       }
+
     #else // ARDUINO, but not ESPxx
       /* int get_free_RAM(): determine free RAM on ARDUINO:		*/
       int Menu::get_free_RAM() const {
@@ -1382,7 +1384,7 @@ void Menu::menu_display() const {
   out(F("\n * ** *** MENU "));
   out(men_pages[men_selected].title);
   out(F(" *** ** *\t"));
-#if defined ESP32
+#if defined ESP32 && ! defined MENU_DOES_PRINT_FREE_RAM_ON_ESP32
   #warning 'menu page display does not print_free_RAM() on ESP32'
 #else
   print_free_RAM();	// real or fake ;)

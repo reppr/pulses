@@ -50,10 +50,20 @@ void free_text_buffer(print_descrpt_t* txt_descr_p) {
   MENU.outln("DEBUG_ePAPER\tfree_text_buffer() ");
   // MENU.print_free_RAM(); MENU.tab();		// deactivated	***I HAD CRASHES HERE***
 #endif
+#if defined DEBUG_DISPLAY_RAM_USAGE
+  MENU.out(F("free_text_buffer()\t"));
+  MENU.print_free_RAM(); MENU.tab();		// could crash...
+#endif
+
   if((*txt_descr_p).text != NULL)
     free((*txt_descr_p).text);
   free(txt_descr_p);
-}
+
+#if defined DEBUG_DISPLAY_RAM_USAGE
+  MENU.print_free_RAM();
+  MENU.ln();
+#endif
+} // free_text_buffer()
 
 SemaphoreHandle_t MC_mux = NULL;
 /*

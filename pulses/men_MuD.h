@@ -3,6 +3,8 @@
   temporary test menu UI during development
 */
 
+MENU.print_free_RAM(); MENU.ln();
+
   extern void display_esp_versions();
   display_esp_versions();
 //  MENU.out(F("ESP IDF version\t\t"));

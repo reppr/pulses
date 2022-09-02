@@ -6,6 +6,8 @@
 	https://hackaday.io/project/164132-hello-world-for-esp-now/log/160570-esp-now-introduction
 */
 
+//#define DEBUG_ESP_NOW_RAM_USAGE	// see: my_pulses_config.h
+
 #define ESP_NOW_SECOND_CHAN_NONE	// use *NEW* ESP_NOW_CHANNEL implementation	TODO: test and REMOVE older version
 #if defined  ESP_NOW_SECOND_CHAN_NONE
   #include <esp_wifi.h>
@@ -793,11 +795,23 @@ esp_err_t esp_now_pulses_setup_0() {		// setup 1st stage
   esp_err_t status;
 
   MENU.outln(F("  WiFi.mode(WIFI_OFF)"));
+#if defined DEBUG_ESP_NOW_RAM_USAGE
+    MENU.print_free_RAM(); MENU.tab();
+#endif
   WiFi.mode(WIFI_OFF);
+#if defined DEBUG_ESP_NOW_RAM_USAGE
+    MENU.print_free_RAM(); MENU.ln();
+#endif
   yield();
 
   MENU.outln(F("  WiFi.mode(WIFI_STA)"));
+#if defined DEBUG_ESP_NOW_RAM_USAGE
+    MENU.print_free_RAM(); MENU.tab();
+#endif
   WiFi.mode(WIFI_STA);				// TODO: BUG: does not returm on PSRAM boards!
+#if defined DEBUG_ESP_NOW_RAM_USAGE
+    MENU.print_free_RAM(); MENU.ln();
+#endif
   yield();
 
 #if defined ESP_NOW_SECOND_CHAN_NONE	// use *NEW* ESP_NOW_CHANNEL implementation
@@ -827,7 +841,6 @@ esp_err_t esp_now_pulses_setup_0() {		// setup 1st stage
 #else
   WiFi.channel(ESP_NOW_CHANNEL);		// old	TODO: ESP_NOW_CHANNEL
 #endif
-
   yield();
 
   uint32_t esp_now_version=0;

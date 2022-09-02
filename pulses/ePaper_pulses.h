@@ -424,17 +424,19 @@ void try_ePaper_fix() {	// maybe OBSOLETE?	let's hope ;)
   //~GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT>();
   //~GxEPD2_BW();	// destructor ?
 
-  /*
+#if defined DEBUG_ePAPER_RAM_USAGE
   MENU.out(F("before:\t"));
   MENU.print_free_RAM();
   MENU.ln();
-  */
+#endif
+
   setup_ePaper_GxEPD2();
-  /*
+
+#if defined DEBUG_ePAPER_RAM_USAGE
   MENU.out(F("after:\t"));
   MENU.print_free_RAM();
   MENU.ln();
-  */
+#endif
 
   delay(1000);	// TODO: ?
 
