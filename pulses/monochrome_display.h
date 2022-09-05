@@ -10,7 +10,7 @@
 #endif
 
 #if ! defined MC_DISPLAY_STACK_SIZE
-  #define MC_DISPLAY_STACK_SIZE		4*1024
+  #define MC_DISPLAY_STACK_SIZE		2*1024	// was: 4*1024
 #endif
 
 //#define MC_DELAY_MS	10	// delay MC_mux lock release		// TODO: test&trimm	maybe obsolete?
