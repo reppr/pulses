@@ -15,6 +15,10 @@
   #define DO_ON_OTHER_CORE_PRIORITY	1
 #endif
 
+#if ! defined DO_ON_OTHER_CORE_STACK_SIZE
+  #define DO_ON_OTHER_CORE_STACK_SIZE	8*1024	// DEFAULT
+#endif
+
 TaskHandle_t do_on_other_core_handle;
 
 void do_on_other_core_task(void* function_p) {
@@ -23,7 +27,7 @@ void do_on_other_core_task(void* function_p) {
   vTaskDelete(NULL);
 }
 
-void do_on_other_core(void (*function_p)(), int stack_size=8*1024) {	// create and do one shot task
+void do_on_other_core(void (*function_p)(), int stack_size=DO_ON_OTHER_CORE_STACK_SIZE) {  // create and do one shot task
   BaseType_t err = xTaskCreatePinnedToCore(do_on_other_core_task,	// function
 					   "other_fun",			// name
 					   stack_size,			// stack size

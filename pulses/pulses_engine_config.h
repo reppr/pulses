@@ -26,6 +26,8 @@
 //#define MC_DISPLAY_STACK_SIZE		4*1024	// (default)
 //#define MC_SAMPLE_MCU_STACK_SIZE	4*1024	// (default)
 
+//#define DO_ON_OTHER_CORE_STACK_SIZE	8*1024	// (default)	old	TODO: test&trimm
+
 // MULTICORE_RGB_STRING	does *not* avoid clicks, so deactivated
 //#define MULTICORE_RGB_STRING	// avoid clicks, see: multicore_rgb_string_draw()
 
