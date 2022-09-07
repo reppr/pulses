@@ -916,6 +916,7 @@ void monochrome_show_names() {
   uint8_t rows = monochrome_getRows();
   uint8_t next_row = 0;
 
+  extern uint8_t extended_output(char* data, uint8_t col=0, uint8_t row=0, bool force=false);
   next_row = extended_output(my_IDENTITY.preName, 0, next_row, true);
   MENU.ln();
   monochrome_clearLine(next_row++);	// clear one more line
