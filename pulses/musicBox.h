@@ -961,12 +961,12 @@ pulse_time_t butler_soft_end_time;	// used by musicBox_butler(int pulse), toggle
 void toggle_magic_autochanges() {
   if((magic_autochanges = !magic_autochanges)) {	// if magic_autochanges got *SWITCHED ON*
     if(musicBox_butler_i != ILLEGAL32) {		// deal with soft_end_time
-      pulse_time_t soft_end_time;	// scratch
+      pulse_time_t soft_end_time_scratch;	// scratch
       int cnt=0;
       while (true)
 	{
-	  soft_end_time = butler_soft_end_time;
-	  if(PULSES.time_reached(soft_end_time)) {
+	  soft_end_time_scratch = butler_soft_end_time;
+	  if(PULSES.time_reached(soft_end_time_scratch)) {
 	    PULSES.add_time(&CyclesConf.used_subcycle, &butler_soft_end_time);
 	    cnt++;
 	  } else
@@ -2162,10 +2162,10 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     soft_cleanup_started=false;
     stop_on_low_cnt=0;
 
-    pulse_time_t soft_end_time=musicBox_start_time;
-    PULSES.add_time(&CyclesConf.used_subcycle, &soft_end_time);
-    PULSES.add_time(100/*tolerance*/, &soft_end_time);	// tolerance	TODO: rethink&check
-    butler_soft_end_time = soft_end_time;
+    pulse_time_t soft_end_time_scratch=musicBox_start_time;	// scratch
+    PULSES.add_time(&CyclesConf.used_subcycle, &soft_end_time_scratch);
+    PULSES.add_time(100/*tolerance*/, &soft_end_time_scratch);	// tolerance	TODO: rethink&check
+    butler_soft_end_time = soft_end_time_scratch;
     musicBox_trigger_enabled=false;			// do we need that?
 
   } else if(PULSES.pulses[pulse].counter==2) {	// now we might have more time for some setup
