@@ -1288,3 +1288,6 @@ start_musicbox() separe configuration and start
 
 UI for ESP-NOW CHANNEL
 feedback when reading it from HARDWARE_nvs
+
+REMOVE: NO_BLUETOOTH_SERIAL_ON_VERSION1
+REMOVE: '*NOT* respecting USE_BLUETOOTH_SERIAL_MENU on older ESP32-ARDUINO versions...'

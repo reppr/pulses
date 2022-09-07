@@ -159,6 +159,8 @@
   #undef USE_LOGGING
 */
 
+// temporary fix:
+#define NO_BLUETOOTH_SERIAL_ON_VERSION1
 
 //#undef USE_BLUETOOTH_SERIAL_MENU	// not needed on version 2.0.2
 //#undef USE_ESP_NOW			// just for easy testing...
