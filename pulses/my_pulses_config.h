@@ -13,7 +13,7 @@
 
 #define MAGICAL_TOILET_HACK_2
 
-#define TRIGGERED_MUSICBOX2	// #define this in my_pulses_config.h	see: pulses_project_conf.h
+//#define TRIGGERED_MUSICBOX2	// #define this in my_pulses_config.h	see: pulses_project_conf.h
 //#define MUSICBOX2_PIN_MAPPING	// (new pin mapping april 2021)
 
 // some options for TRIGGERED_MUSICBOX2:
@@ -21,7 +21,7 @@
 //#define USE_RTC_MODULE			// DS3231
 //#define USE_ESP_NOW				// possible, if you want that
 
-#define TRIGGERED_MUSICBOX_LILYGO_213	// also #define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213BN_BOARD_LILYGO_BN"
+//#define TRIGGERED_MUSICBOX_LILYGO_213	// also #define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213BN_BOARD_LILYGO_BN"
 #if defined TRIGGERED_MUSICBOX_LILYGO_213	// also #define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213BN_BOARD_LILYGO_BN"
   #define ePaper213BN_BOARD_LILYGO_BN		// (NEW) T5_V2.3.1    20.8.26	triggers HAS_ePaper and HAS_DISPLAY
 //#define ePaper213B73_BOARD_LILYGO_T5		// (OLD) T5_V2.3_2.13 20190107	triggers HAS_ePaper and HAS_DISPLAY
@@ -51,7 +51,19 @@
 // DISPLAY HARDWARE:	activate ZERO or *ONE* of the following DISPLAYs
 //
 // OLED DISPLAY?
-//#define BOARD_HELTEC_OLED	// Heltec OLED BOARD		// triggers HAS_OLED and HAS_DISPLAY
+#define BOARD_HELTEC_OLED	// Heltec OLED BOARD		// triggers HAS_OLED and HAS_DISPLAY
+#if defined BOARD_HELTEC_OLED
+  #define PERIPHERAL_POWER_SWITCH_PIN	12	// maybe the hardware is in use by the board? (get s hot!) TODO: TEST!
+
+  #undef AUTOSTART
+  #define AUTOSTART	play_random_preset();		// same as pulses_project_conf.h	TODO: ???
+  #if defined USE_RTC_MODULE
+    #warning '*NOT* using RTC_MODUE	FIXME...'
+    #undef USE_RTC_MODULE
+  #endif
+#endif
+
+
 //#define BOARD_OLED_LIPO	// LiPo battery OLED BOARD	// triggers HAS_OLED and HAS_DISPLAY
 //
 // ePaper DISPLAY?
@@ -100,6 +112,8 @@
 
 #if defined MUSICBOX2_PIN_MAPPING	// #define this in my_pulses_config.h
   #define PERIPHERAL_POWER_SWITCH_PIN	2
+#elif defined BOARD_HELTEC_OLED
+  #define PERIPHERAL_POWER_SWITCH_PIN	255	// maybe the hardware is in use by the board? (get s hot!) TODO: TEST!
 #else
   #define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_OUTPUT_PIN	green LED in many musicBoxes
   // TODO: change PERIPHERAL_POWER_SWITCH_PIN as GPIO12 is active during boot process...
