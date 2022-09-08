@@ -27,10 +27,8 @@ void nvs_menu_display() {
   MENU.outln(F("'MH'=monochrome_type heltec  'MO'=type LiPO  'ML'=type lilygo eInk  'M0'=type off"));
   MENU.ln();
 
-#if defined USE_MORSE
-  MENU.outln(F("'Px' pins:  'PT'=morse Touch  'PO'=morse Output"));
+  MENU.outln(F("'Px' pins:  'PT'=morse Touch  'PO'=morse Output  'PP'=peripheral power"));
   MENU.ln();
-#endif
 
   MENU.out(F("'S'=SYSTEM"));
 #if defined USE_MPU6050
@@ -228,6 +226,14 @@ bool nvs_menu_reaction(char token) {
 	pinMode(HARDWARE.morse_output_pin, OUTPUT);
       }
       MENU.outln(HARDWARE.morse_output_pin);
+    } else if(MENU.check_next('P')) {	// 'PP' set peripheral power pin
+      MENU.out(F("peripheral power pin "));
+      input_value = MENU.numeric_input(ILLEGAL8);
+      if((input_value <= ILLEGAL8) && (input_value >= 0)) {
+	HARDWARE.periph_power_switch_pin = input_value;
+	pinMode(HARDWARE.periph_power_switch_pin, OUTPUT);
+      }
+      MENU.outln(HARDWARE.periph_power_switch_pin);
     }
     break;
 
