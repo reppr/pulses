@@ -35,6 +35,20 @@
 
 #define USE_BATTERY_LEVEL_CONTROL
 
+#define HELTEC_OLED_PORTABLE22
+#if defined HELTEC_OLED_PORTABLE22
+  #define BOARD_HELTEC_OLED	// Heltec OLED BOARD		// triggers HAS_OLED and HAS_DISPLAY
+
+  #define PERIPHERAL_POWER_SWITCH_PIN	12
+
+  #undef AUTOSTART
+  #define AUTOSTART	play_random_preset();		// same as pulses_project_conf.h	TODO: ???
+
+  #if defined USE_RTC_MODULE
+    #warning '*NOT* using RTC_MODUE	FIXME: WORKAROUND...'
+    #undef USE_RTC_MODULE
+  #endif
+#endif
 
 //#define USE_LoRa		// needs: https://github.com/sandeepmistry/arduino-LoRa
 				//	  https://github.com/khoih-prog/ESP32TimerInterrupt
@@ -53,7 +67,7 @@
 // OLED DISPLAY?
 #define BOARD_HELTEC_OLED	// Heltec OLED BOARD		// triggers HAS_OLED and HAS_DISPLAY
 #if defined BOARD_HELTEC_OLED
-  #define PERIPHERAL_POWER_SWITCH_PIN	12	// maybe the hardware is in use by the board? (get s hot!) TODO: TEST!
+  #define PERIPHERAL_POWER_SWITCH_PIN	12
 
   #undef AUTOSTART
   #define AUTOSTART	play_random_preset();		// same as pulses_project_conf.h	TODO: ???
@@ -112,8 +126,6 @@
 
 #if defined MUSICBOX2_PIN_MAPPING	// #define this in my_pulses_config.h
   #define PERIPHERAL_POWER_SWITCH_PIN	2
-#elif defined BOARD_HELTEC_OLED
-  #define PERIPHERAL_POWER_SWITCH_PIN	255	// maybe the hardware is in use by the board? (get s hot!) TODO: TEST!
 #else
   #define PERIPHERAL_POWER_SWITCH_PIN	12	// == MORSE_OUTPUT_PIN	green LED in many musicBoxes
   // TODO: change PERIPHERAL_POWER_SWITCH_PIN as GPIO12 is active during boot process...

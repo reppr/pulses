@@ -18,7 +18,7 @@
 // *all* existing presets should be playable now :)
 //#define SHORT_PRESET_COLLECTION	181	// only the first <nn> presets are at choice, overrides MUSICBOX_PRESETs
 
-#if defined HAS_ePaper
+#if defined HAS_ePaper || defined HAS_OLED
   #define REPLACE_UMLAUTS
 #endif
 

@@ -274,6 +274,16 @@
   #undef AUTOSTART
   #define AUTOSTART	play_random_preset();	// same as musicBox.h
 #endif
+
+#if defined HELTEC_OLED_PORTABLE22
+  #define MUSICBOX_SHOW_PROGRAM_VERSION		// TODO: test compatibility with ESP-NOW synchronisation!
+
+  #if defined USE_BATTERY_LEVEL_CONTROL
+    #warning 'pulses_project_conf.h switched USE_BATTERY_LEVEL_CONTROL off'
+    #undef USE_BATTERY_LEVEL_CONTROL
+  #endif
+#endif
+
 /* **************************************************************** */
 #define PULSES_PROJECT_CONF_H
 #endif

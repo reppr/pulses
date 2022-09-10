@@ -1293,3 +1293,11 @@ REMOVE: NO_BLUETOOTH_SERIAL_ON_VERSION1
 REMOVE: '*NOT* respecting USE_BLUETOOTH_SERIAL_MENU on older ESP32-ARDUINO versions...'
 
 touch_threshold should go to HARDWARE?
+UI for touch_threshold
+
+#define MUSICBOX_SHOW_PROGRAM_VERSION		// TODO: test compatibility with ESP-NOW synchronisation!
+
+#if defined USE_RTC_MODULE
+  #warning '*NOT* using RTC_MODUE	FIXME: WORKAROUND...'
+  #undef USE_RTC_MODULE
+#endif

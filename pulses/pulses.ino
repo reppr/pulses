@@ -65,7 +65,7 @@ extern void ERROR_ln(const char* text);
 /* **************************************************************** */
 // configuration sequence:
 #include "pulses_engine_config.h"	// pulses engine configuration file, do not change
-#include "pulses_systems.h"		// different software systems
+#include "pulses_systems.h"		// different software systems Arduino, PC
 #include "pulses_boards.h"		// different boards
 #include "musicBox_config.h"		// basic musicBox configuration
 #include "my_pulses_config.h"		// your configuration

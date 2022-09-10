@@ -43,6 +43,18 @@
 #endif
 
 
+#if defined HELTEC_OLED_PORTABLE22
+  #define BOARD_HELTEC_OLED
+
+  #if defined TRIGGERED_MUSICBOX2
+    #error 'HELTEC_OLED_PORTABLE22 and TRIGGERED_MUSICBOX2 can NOT both be defined'
+  #endif
+  #if defined MUSICBOX2_PIN_MAPPING
+    #error 'HELTEC_OLED_PORTABLE22 and MUSICBOX2_PIN_MAPPING can NOT both be defined'
+  #endif
+#endif
+
+
 // OLED boards
 #if defined BOARD_OLED_LIPO && defined BOARD_HELTEC_OLED
   #error BOARD_HELTEC_OLED and BOARD_OLED_LIPO can *not both* be configured
