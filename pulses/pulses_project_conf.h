@@ -172,10 +172,10 @@
   #if defined ESP32_DAC_ONLY
     #define PROGRAM_SUB_VERSION			SoundShip1
 
-    #if defined USE_MONOCHROME_DISPLAY		// hmm, do we want this or not?
-      #warning *NOT* using monochrome display
-      #undef USE_MONOCHROME_DISPLAY
-    #endif
+//  #if defined USE_MONOCHROME_DISPLAY		// I think we do not want this?
+//    #warning *NOT* using monochrome display
+//    #undef USE_MONOCHROME_DISPLAY
+//  #endif
 
     #if ! defined MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
       #define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&user	// a possible snoring workaround on usb dac only models
@@ -278,10 +278,11 @@
 #if defined HELTEC_OLED_PORTABLE22
   #define MUSICBOX_SHOW_PROGRAM_VERSION		// TODO: test compatibility with ESP-NOW synchronisation!
 
-  #if defined USE_BATTERY_LEVEL_CONTROL
-    #warning 'pulses_project_conf.h switched USE_BATTERY_LEVEL_CONTROL off'
-    #undef USE_BATTERY_LEVEL_CONTROL
-  #endif
+//  #if defined USE_BATTERY_LEVEL_CONTROL	// without USE_BATTERY_LEVEL_CONTROL RGB LEDS to *not* work, very strange!
+//    #warning 'pulses_project_conf.h switched USE_BATTERY_LEVEL_CONTROL off'
+//    #undef USE_BATTERY_LEVEL_CONTROL
+//    #define BATTERY_LEVEL_CONTROL_PIN	255
+//  #endif
 #endif
 
 /* **************************************************************** */

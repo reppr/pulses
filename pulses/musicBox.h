@@ -2196,7 +2196,7 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
     if((PULSES.pulses[pulse].counter % 13) == 0) {	// keep an eye on the battery	// TODO: seems to often
       if(!assure_battery_level()) {
 	MENU.outln(F("POWER LOW"));
-	if(!assure_battery_level())	// double ckeck
+	if(!assure_battery_level())	// double check
 	  HARD_END_playing(true);
       }
     }
