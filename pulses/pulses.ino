@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICAL_v.046   //	preparing transition to v.047
+#define PROGRAM_VERSION	HARMONICALv.046+   //	preparing transition to v.047
 /*			0123456789abcdef   */
 
 
@@ -1832,7 +1832,7 @@ void show_pulses_all_pins_usage() {
 } // show_pulses_all_pins_usage()
 
 
-void show_internal_configurations() {		// also calls display_esp_versions();
+void show_internals() {		// also calls display_esp_versions();  and   esp_heap_and_stack_info();
   show_program_version(false);	// *not* on ePaper	// prename now known
   MENU.ln();
 
@@ -1893,11 +1893,14 @@ void show_internal_configurations() {		// also calls display_esp_versions();
   MENU.ln();
   display_esp_versions();
 
+  extern void esp_heap_and_stack_info();
+  esp_heap_and_stack_info();
+
   MENU.ln();
   MENU.out(F("MAC: "));
   MENU.outln(getMacAddress());
 #endif
-} // show_internal_configurations()
+} // show_internals()
 
 
 int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very first one
@@ -1995,7 +1998,7 @@ delay(100);			//NEW: wait anyway	WAS: waiting longer when switching peripheral_p
   MENU.ln();
 #endif
 
-  show_internal_configurations();
+  show_internals();			// also calls display_esp_versions();  and   esp_heap_and_stack_info();
   MENU.ln();
 
   #if defined HAS_DISPLAY && ! defined TRIGGERED_MUSICBOX2

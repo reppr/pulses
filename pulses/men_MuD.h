@@ -3,7 +3,10 @@
   temporary test menu UI during development
 */
 
-MENU.print_free_RAM(); MENU.ln();
+  MENU.print_free_RAM(); MENU.ln();
+
+  extern void esp_heap_and_stack_info();
+  esp_heap_and_stack_info();
 
   extern void display_esp_versions();
   display_esp_versions();

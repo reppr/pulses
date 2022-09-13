@@ -81,7 +81,7 @@ void cpp_info_display() {
 #endif
 
 void system_menu_display() {
-  show_internal_configurations();	// calls also display_esp_versions();
+  show_internals();		// also calls display_esp_versions();  and   esp_heap_and_stack_info();
 
   MENU.ln();
   MENU.outln(F("X=reboot"));
