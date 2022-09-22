@@ -21,9 +21,9 @@
 //#define USE_RTC_MODULE			// DS3231
 //#define USE_ESP_NOW				// possible, if you want that
 
-//#define TRIGGERED_MUSICBOX_LILYGO_213	// also #define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213BN_BOARD_LILYGO_BN"
+#define TRIGGERED_MUSICBOX_LILYGO_213	// also #define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213BN_BOARD_LILYGO_BN"
 #if defined TRIGGERED_MUSICBOX_LILYGO_213	// also #define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213BN_BOARD_LILYGO_BN"
-  #define ePaper213BN_BOARD_LILYGO_BN		// (NEW) T5_V2.3.1    20.8.26	triggers HAS_ePaper and HAS_DISPLAY
+#define ePaper213BN_BOARD_LILYGO_BN		// (NEW) T5_V2.3.1    20.8.26	triggers HAS_ePaper and HAS_DISPLAY
 //#define ePaper213B73_BOARD_LILYGO_T5		// (OLD) T5_V2.3_2.13 20190107	triggers HAS_ePaper and HAS_DISPLAY
 
   #define BATTERY_LEVELS_DOUBLED	// 12V ~ 2400
@@ -35,10 +35,9 @@
 
 #define USE_BATTERY_LEVEL_CONTROL
 
-#define HELTEC_OLED_PORTABLE22
+//#define HELTEC_OLED_PORTABLE22
 #if defined HELTEC_OLED_PORTABLE22
   #define BOARD_HELTEC_OLED	// Heltec OLED BOARD		// triggers HAS_OLED and HAS_DISPLAY
-
   #define PERIPHERAL_POWER_SWITCH_PIN	12
 
   #undef AUTOSTART
@@ -65,7 +64,7 @@
 // DISPLAY HARDWARE:	activate ZERO or *ONE* of the following DISPLAYs
 //
 // OLED DISPLAY?
-#define BOARD_HELTEC_OLED	// Heltec OLED BOARD		// triggers HAS_OLED and HAS_DISPLAY
+//#define BOARD_HELTEC_OLED	// Heltec OLED BOARD		// triggers HAS_OLED and HAS_DISPLAY
 #if defined BOARD_HELTEC_OLED
   #define PERIPHERAL_POWER_SWITCH_PIN	12
 

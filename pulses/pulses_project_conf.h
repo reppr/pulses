@@ -163,7 +163,7 @@
     #if ! defined USE_MONOCHROME_DISPLAY
       #define USE_MONOCHROME_DISPLAY
     #endif
-    #define ESP32_DAC_ONLY_OLED		// not very flexible, but ok for now
+    #define ESP32_DAC_ONLY_OLED		// not very flexible, but ok for now???
 
     #undef MORSE_OUTPUT_PIN			// was: 12	let the warning appear?
     #define MORSE_OUTPUT_PIN		0	// <<< NEW >>> try also on BOARD_HELTEC_OLED
