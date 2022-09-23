@@ -323,7 +323,7 @@ class Menu {
   void play_KB_macro(const char *macro, bool newline=true);	//  keyboard input from a string
 				// most often you might do  'men_selected=0;'  before
 
-  int menu_mode;		// currently only used to edit data arrays
+  int menu_mode;		// edit data arrays, unmute notes in tuning_mode
   int cb_stored() const { return cb_count; }   // inlined: number of accumulated bytes
 
   friend class Pulses;

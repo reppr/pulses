@@ -19,6 +19,11 @@
 
 #define ICODE_INSTEAD_OF_JIFFLES	// TESTING using all jiffles as icodes	TODO: REMOVE: after a while
 					//   test speed, bugs
+//	#if defined ICODE_INSTEAD_OF_JIFFLES	/*TODO:*/
+//	  #define USED_DB	iCODEs		/*TODO:*/
+//	#else					/*TODO:*/
+//	  #define USED_DB	JIFFLES		/*TODO:*/
+//	#endif					/*TODO:*/
 
 #define MULTICORE_DISPLAY	// send hw display from other core (core 0)
 				// to avoid audible clicks and dropouts

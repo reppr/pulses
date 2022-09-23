@@ -62,6 +62,12 @@ using namespace std;	// ESP8266 needs that
 #define ILLEGAL32	(int) 0xffffffff
 
 extern void ERROR_ln(const char* text);
+
+/* **************************************************************** */
+// special menu modes, like numeric input for jiffles, unmuting notes when tuning
+#define JIFFLE_ENTRY_UNTIL_ZERO_MODE	1	// menu_mode for unsigned integer data entry, stop at zero
+#define TUNING_UNMUTE_NOTES_MENU_MODE	2	// menu_mode for unmuting notes on single chiffres when tuning
+
 /* **************************************************************** */
 // configuration sequence:
 #include "pulses_engine_config.h"	// pulses engine configuration file, do not change
@@ -4457,10 +4463,6 @@ bool g_inverse=false;	// bottom DOWN/up GPIO click-pin mapping	// TODO: update!
   'reverse_gpio_pins()' works on the global gpio_pins[] array
 			 the pulses won't notice but play with new pin mapping */
 
-
-/* **************************************************************** */
-// special menu modes, like numeric input for jiffles
-#define JIFFLE_ENTRY_UNTIL_ZERO_MODE	1	// menu_mode for unsigned integer data entry, stop at zero
 
 /* **************************************************************** */
 

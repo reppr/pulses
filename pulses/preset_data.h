@@ -7,7 +7,7 @@
   also see: preset-hashtags.txt
 */
 
-#define MUSICBOX_PRESETs	192	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
+#define MUSICBOX_PRESETs	194	// default: all presets, can get replaced by SHORT_PRESET_COLLECTION
 
 #if defined ICODE_INSTEAD_OF_JIFFLES	// TODO: REMOVE: after testing a while
   #define USED_DB	iCODEs		//   new style: play jiffles as iCode
@@ -5699,11 +5699,16 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 189:
     musicBoxConf.name = F("Bass Santur tuning (tmp)");
-    select_in(SCALES, major_scale);
+    // select_in(SCALES, major_scale);
+    // musicBoxConf.pitch = {1, 100};
+    // set_metric_pitch(0);
+
+    select_in(SCALES, minor_scale);
+    musicBoxConf.pitch = {1, 330};
+    set_metric_pitch(mp_E);
+
     musicBoxConf.sync = 1;
     select_in(USED_DB, (unsigned int*) d4096_1024);
-    musicBoxConf.pitch = {1, 100};
-    set_metric_pitch(0);
     break;
 
   case 190:
@@ -5733,6 +5738,31 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
     select_in(USED_DB, (unsigned int*) d4096_1024);
     musicBoxConf.pitch = {1, 348};
     set_metric_pitch(0);
+    break;
+
+  case 193:
+    musicBoxConf.name = F("Santur f-doric (tmp)");
+
+    select_in(SCALES, doric_scale);
+    musicBoxConf.pitch = {1, 175};
+    set_metric_pitch(mp_F);
+
+    musicBoxConf.sync = 1;
+    select_in(USED_DB, (unsigned int*) d4096_1024);
+    break;
+
+  case 194:
+    musicBoxConf.name = F("Clicks, Shantur in f#-minor");
+    // select_in(SCALES, major_scale);
+    // musicBoxConf.pitch = {1, 100};
+    // set_metric_pitch(0);
+
+    select_in(SCALES, minor_scale);
+    musicBoxConf.pitch = {1, 185};	// F# 369.99 / 2
+    set_metric_pitch(mp_Fis);
+
+    musicBoxConf.sync = 1;
+    select_in(USED_DB, (unsigned int*) d4096_16);
     break;
 
     // DADA:	todo: CHECK FROM HERE <<<====	====>>>   #define SHORT_PRESET_COLLECTION

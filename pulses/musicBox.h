@@ -1425,7 +1425,10 @@ void noAction_flags_line() {	// show a line with primary noACTION flag signs
       if(PULSES.pulses[pulse].action_flags & noACTION)
 	MENU.out('x');	// actions are blocked
       else
-	MENU.out('A');	// actions on
+	if (PULSES.pulses[pulse].note_position)
+	  MENU.out((int) PULSES.pulses[pulse].note_position);	// active: show note_position
+	else
+	  MENU.out('A');					// actions on (but note_position unknown)
     } else
       MENU.out('.');	// nothing there
   }
@@ -1434,12 +1437,32 @@ void noAction_flags_line() {	// show a line with primary noACTION flag signs
 }
 
 void muting_actions_UI_line() {
-  MENU.outln(F("'M'=muting actions: 'MH''MM''MB''ML'=toggle HIGH,MELODY,BASS,LOW  'M<n>'=~notes  'MX'=~selected"));
+  MENU.outln(F("'M'=muting actions: 'M'=~tuning mode  'MH''MM''MB''ML'=toggle HIGH,MELODY,BASS,LOW  'M<n>'=~notes  'MX'=~selected"));
   MENU.outln(F("  'MT'='M0'=mute all  'ME'='MA'=all on   'MO'=mute top octave  'MQ'=unmute top octave"));
 #if defined USE_MIDI
   MENU.outln(F("  'MI'= ~ MIDI"));
 #endif
 }
+
+void unmute_notes_when_tuning() {	// menu_mode TUNING_UNMUTE_NOTES_MENU_MODE only
+  uint8_t this_note_position;
+
+  MENU.out(F("play only position "));
+  for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++)
+    PULSES.pulses[pulse].action_flags |= noACTION;	// first MUTE ALL
+
+  while (MENU.is_numeric())
+    {
+      this_note_position = MENU.get_next() - '0';
+      MENU.out(this_note_position);
+      MENU.space();
+      for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++) {
+	if (PULSES.pulses[pulse].note_position == this_note_position)
+	  PULSES.pulses[pulse].action_flags &= ~noACTION;		// unmute this_note_position
+      }
+    }
+  MENU.ln();
+} //  unmute_notes_when_tuning()
 
 void muting_actions_UI() {	// 'M' already received   action muting UI
   char next_letter;
@@ -1455,9 +1478,21 @@ void muting_actions_UI() {	// 'M' already received   action muting UI
     return;
     break;
 
+  case ' ':
+  case EOF8:	// bare 'M' (or 'M ') toggle single chiffre unmuting for tuning
+    if (MENU.menu_mode)
+      MENU.menu_mode = 0;
+    else
+      MENU.menu_mode = TUNING_UNMUTE_NOTES_MENU_MODE;
+
+    MENU.out(F("single chiffre unmuting"));
+    MENU.out_ON_off(MENU.menu_mode == TUNING_UNMUTE_NOTES_MENU_MODE);
+    MENU.ln();
+    return;
+    break;
+
   case '?':			// follows normal (not MIDI) muting actions UI
     MENU.drop_input_token();
-  case EOF8:
     noAction_flags_line();
     muting_actions_UI_line();
     return;
@@ -1470,7 +1505,7 @@ void muting_actions_UI() {	// 'M' already received   action muting UI
     case 'T':	// 'MT' (morse)	all MUTED
     case '0':	// 'M0' == 'MT' all MUTED
       MENU.drop_input_token();
-      for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++) {	// tonic only
+      for(int pulse=musicBoxConf.lowest_primary; pulse <= musicBoxConf.highest_primary; pulse++) {
 	PULSES.pulses[pulse].action_flags |= noACTION;	// MUTE ALL
       }
       MENU.outln(F("all MUTED"));
@@ -1582,15 +1617,6 @@ void muting_actions_UI() {	// 'M' already received   action muting UI
 
 	MENU.out(F("unmuted "));
 	MENU.outln(unmuted);
-      }
-      break;
-
-    case 'N':	// 'MN<nn>' toggle pulse 'N'
-      MENU.drop_input_token();
-      {
-	int input = MENU.numeric_input(-1);
-	if(input >= musicBoxConf.lowest_primary && input <= musicBoxConf.highest_primary)
-	  PULSES.pulses[input].action_flags ^= noACTION;
       }
       break;
 
@@ -4908,6 +4934,10 @@ bool musicBox_reaction(char token) {
   case '8':
   case '9':
     MENU.restore_input_token();	// restore first chiffre
+    if (MENU.menu_mode == TUNING_UNMUTE_NOTES_MENU_MODE) {
+      unmute_notes_when_tuning();
+      break;
+    }
   case 'y':
     input_preset_and_start();	// reads preset number
     break;
