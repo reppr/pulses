@@ -57,8 +57,10 @@
   #define PERIPHERAL_POWER_SWITCH_PIN	32	// <<< NEW >>> LilyGo 2.13
 
   //#undef MORSE_OUTPUT_PIN			// was: 12	maybe let the warning appear?
-  #define MORSE_OUTPUT_PIN		0	// <<< NEW >>> LilyGo 2.13
-  #define MORSE_TOUCH_INPUT_PIN		33	// MORSE TOUCH INPUT
+  #if defined USE_MORSE
+    #define MORSE_OUTPUT_PIN		0	// <<< NEW >>> LilyGo 2.13
+    #define MORSE_TOUCH_INPUT_PIN	33	// MORSE TOUCH INPUT
+  #endif
 
   #define RGB_LED_STRIP_DATA_PIN	27	// testing 27, 14
   #define MUSICBOX_TRIGGER_PIN		34	// activates trigger pin, needs pulldown (i.e. 470k, 100k ok)
@@ -108,8 +110,10 @@
   #define NO_GPIO_PINS				// DAC only
 //#undef PERIPHERAL_POWER_SWITCH_PIN		// maybe let the warning appear?
   #define PERIPHERAL_POWER_SWITCH_PIN	2	// <<< NEW >>>
-  #define MORSE_OUTPUT_PIN		12
-  #define MORSE_TOUCH_INPUT_PIN		13	// ok
+  #if defined USE_MORSE
+    #define MORSE_OUTPUT_PIN		12
+    #define MORSE_TOUCH_INPUT_PIN	13	// ok
+  #endif
   #define RGB_LED_STRIP_DATA_PIN	14	// testing 27, 14
 //#define RGB_LED_STRIP_DATA_PIN	27	// testing 27, 14
   #define MUSICBOX_TRIGGER_PIN		34	// activates trigger pin, needs pulldown (i.e. 470k, 100k ok)

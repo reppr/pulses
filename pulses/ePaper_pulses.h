@@ -12,7 +12,7 @@ void MC_display_message(const char* text) {	// inline does not work
 #endif
   MENU.outln(text);
   set_used_font(medium_font_p);
-  MC_print_1line_at(3, text, /*offset*/ 27);	// bottom line
+  MC_print_1line_at(3, text, /*offset*/ 27);	// bottom line		currently offset_y is *only* used here...
 } // MC_display_message()
 
 
