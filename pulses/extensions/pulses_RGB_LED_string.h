@@ -217,7 +217,8 @@ boolean initStrands()
   digitalLeds_initDriver();
 
   for (int i = 0; i < STRANDCNT; i++) {
-    gpioSetup(HARDWARE.rgb_pin[i], OUTPUT, LOW);
+    pinMode(HARDWARE.rgb_pin[i], OUTPUT);
+    digitalWrite(HARDWARE.rgb_pin[i], LOW);
   }
 
   // strand_t * strands[RGB_STRINGS_MAX];

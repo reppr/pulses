@@ -174,6 +174,7 @@ bool nvs_menu_reaction(char token) {
     RGB_led_string_UI();
 #else
     MENU.outln(F("*NO* rgb led string code"));
+    MENU.skip_input();
 #endif
     break;
 

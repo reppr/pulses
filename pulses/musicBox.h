@@ -3357,6 +3357,10 @@ void magical_fart_setup(gpio_pin_t sense_pin, gpio_pin_t output_pin) {
 void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from main loop
   MENU.out(F("light_sleep()\t"));
 
+#if defined USE_RGB_LED_STRIP
+  pulses_RGB_LED_string_init();	// switch RGB LED string off
+#endif
+
 #if defined USE_BLUETOOTH_SERIAL_MENU
   bt_status_before_sleeping = esp_bt_controller_get_status();
 
@@ -3511,6 +3515,10 @@ void deep_sleep() {
   MENU.out(F("deep_sleep()\t"));
 
   rtc_save_configuration();
+
+#if defined USE_RGB_LED_STRIP
+  pulses_RGB_LED_string_init();	// switch RGB LED string off
+#endif
 
 #if defined USE_BLUETOOTH_SERIAL_MENU	// do we use bluetooth?
   esp_bluedroid_disable();
@@ -4576,6 +4584,7 @@ bool musicBox_reaction(char token) {
     RGB_led_string_UI();
 #else
     MENU.outln(F("*NO* rgb led string code"));
+    MENU.skip_input();
 #endif
     break;
 
