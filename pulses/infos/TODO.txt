@@ -1294,6 +1294,8 @@ REMOVE: '*NOT* respecting USE_BLUETOOTH_SERIAL_MENU on older ESP32-ARDUINO versi
 
 touch_threshold should go to HARDWARE?
 UI for touch_threshold
+maybe display touch_threshold (and touch reading) on startup?
+
 
 #define MUSICBOX_SHOW_PROGRAM_VERSION		// TODO: test compatibility with ESP-NOW synchronisation!
 
@@ -1326,3 +1328,8 @@ xPortGetFreeHeapSize();
 uxTaskGetStackHighWaterMark();
 
 // see: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/heap_debug.html
+
+FIXME: MULTICORE_DISPLAY does not work any more on ESP32-Arduino v2.0.8
+#define MULTICORE_DISPLAY
+
+#define USE_BLUETOOTH_SERIAL_MENU		// DADA: *does* compile on ESP32-Arduino 2.0.8  TODO: test!

@@ -656,7 +656,7 @@ void inline MC_big_or_multiline(uint8_t row, const char* str) {
 #endif // MULTICORE_DISPLAY
 
 
-inline void monochrome_setInverseFont() {
+inline void monochrome_setInverseFont() {	// inline might not work here, TODO: test
   if(monochrome_can_be_used())
     (*u8x8_p).setInverseFont(1);
 }

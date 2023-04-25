@@ -99,6 +99,8 @@
 
 #if defined MULTICORE_DISPLAY
   #include "multicore_display_common.h"
+#else
+  SemaphoreHandle_t MC_mux = NULL;	// allow testing without MULTICORE_DISPLAY
 #endif // MULTICORE_DISPLAY
 
 

@@ -25,10 +25,10 @@
 //	  #define USED_DB	JIFFLES		/*TODO:*/
 //	#endif					/*TODO:*/
 
-#define MULTICORE_DISPLAY	// send hw display from other core (core 0)
+#define MULTICORE_DISPLAY	// send hw display from other core (core 0)	// DADA FIXME! on 2.0.8
 				// to avoid audible clicks and dropouts
 
-//#define MC_DISPLAY_STACK_SIZE		4*1024	// (default)
+//#define MC_DISPLAY_STACK_SIZE		4*1024	// (default is 2k)
 //#define MC_SAMPLE_MCU_STACK_SIZE	4*1024	// (default)
 
 //#define DO_ON_OTHER_CORE_STACK_SIZE	8*1024	// (default)	old	TODO: test&trimm

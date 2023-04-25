@@ -231,7 +231,11 @@ void inline MC_show_musicBox_parameters() {
 #if defined DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tMC_show_musicBox_parameters()"));
 #endif
+#if defined MULTICORE_DISPLAY
   MC_do_on_other_core(&ePaper_musicBox_parameters);
+#else
+  ePaper_musicBox_parameters();
+#endif
 }
 
 
@@ -369,7 +373,11 @@ void inline MC_show_program_version() {
 #if defined DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tMC_show_program_version()"));
 #endif
+#if defined MULTICORE_DISPLAY
   MC_do_on_other_core(&ePaper_show_program_version);
+#else
+  ePaper_show_program_version();
+#endif
 }
 
 
@@ -410,7 +418,11 @@ void inline MC_show_tuning() {
 #if defined DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tMC_show_tuning()"));
 #endif
+#if defined MULTICORE_DISPLAY
   MC_do_on_other_core(&ePaper_show_tuning);
+#else
+  ePaper_show_tuning();
+#endif
 }
 
 

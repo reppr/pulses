@@ -122,7 +122,11 @@ void show_ePaper_preset_names(short start_at_preset) {
   if(start_at_preset > 0)
     preset_list_start_at = start_at_preset - 1;
 
+#if defined MULTICORE_DISPLAY
   MC_do_on_other_core(&ePaper_preset_names);
+#else
+  ePaper_preset_names();
+#endif
 }
 #endif
 
