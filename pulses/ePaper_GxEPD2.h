@@ -277,6 +277,7 @@ void multicore_ePaper_print_at(int16_t col, int16_t row, const char* text, int16
     MENU.out(err);
     MENU.space();
     ERROR_ln(F("ePaper_print_at_task"));
+    free(txt_descript_p);
   }
 } // multicore_ePaper_print_at()
 
@@ -437,6 +438,7 @@ void multicore_ePaper_1line_at(int16_t row, const char* text, int16_t offset_y) 
     MENU.out(err);
     MENU.space();
     ERROR_ln(F("ePaper_1line_at_task"));
+    free(txt_descrpt_p);
   }
 } // multicore_ePaper_1line_at()
 

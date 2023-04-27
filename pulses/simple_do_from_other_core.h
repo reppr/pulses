@@ -39,6 +39,7 @@ void do_on_other_core(void (*function_p)(), int stack_size=DO_ON_OTHER_CORE_STAC
     MENU.out(err);
     MENU.space();
     ERROR_ln(F("do_on_other_core"));
+    // vTaskDelete(do_on_other_core_handle);	// FREEZE...
   }
 }
 
