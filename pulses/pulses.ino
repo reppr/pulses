@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICALv.046+   //	preparing transition to v.047
+#define PROGRAM_VERSION	HARMONICALv.0461   // last version of old MULTICORE_DISPLAY
 /*			0123456789abcdef   */
 
 
