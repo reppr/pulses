@@ -1489,9 +1489,9 @@ void morse_do_output() {
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
   if(morse_out_buffer_cnt) {
 #if defined HAS_ePaper
-    xSemaphoreTake(MC_mux, portMAX_DELAY);	// TODO: could delay application...
+    xSemaphoreTake(MC_mux2, portMAX_DELAY);	// TODO: could delay application...
     set_used_font(&FreeMonoBold12pt7b);
-    xSemaphoreGive(MC_mux);
+    xSemaphoreGive(MC_mux2);
 
     MC_print_1line_at(MORSE_MONOCHROME_ROW, "");
 #elif defined HAS_OLED

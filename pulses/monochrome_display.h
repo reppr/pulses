@@ -339,13 +339,13 @@ TaskHandle_t multicore_display_message_handle;
 void multicore_display_message_task(void* data_) {
   print_descrpt_t* data = (print_descrpt_t*) data_;
 
-  xSemaphoreTake(MC_mux, portMAX_DELAY);
+  xSemaphoreTake(MC_mux2, portMAX_DELAY);
 
   monochrome_display_message(data->text);
 
   free_text_buffer(data);
   vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
-  xSemaphoreGive(MC_mux);
+  xSemaphoreGive(MC_mux2);
   vTaskDelete(NULL);
 }
 
@@ -445,13 +445,13 @@ TaskHandle_t multicore_print2x2_handle;
 void multicore_print2x2_task(void* data_) {
   print_descrpt_t* data = (print_descrpt_t*) data_;
 
-  xSemaphoreTake(MC_mux, portMAX_DELAY);
+  xSemaphoreTake(MC_mux2, portMAX_DELAY);
 
   monochrome_print2x2(data->col, data->row, data->text);
 
   free_text_buffer(data);
   vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
-  xSemaphoreGive(MC_mux);
+  xSemaphoreGive(MC_mux2);
   vTaskDelete(NULL);
 }
 
@@ -515,13 +515,13 @@ TaskHandle_t multicore_println2x2_handle;
 
 void multicore_println2x2_task(void* data_) {
   print_descrpt_t* data = (print_descrpt_t*) data_;
-  xSemaphoreTake(MC_mux, portMAX_DELAY);
+  xSemaphoreTake(MC_mux2, portMAX_DELAY);
 
   monochrome_println2x2(data->row, data->text);
 
   free_text_buffer(data);
   vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
-  xSemaphoreGive(MC_mux);
+  xSemaphoreGive(MC_mux2);
   vTaskDelete(NULL);
 }
 
@@ -612,13 +612,13 @@ TaskHandle_t multicore_big_or_multiline_handle;
 
 void multicore_big_or_multiline_task(void* data_) {
   print_descrpt_t* data = (print_descrpt_t*) data_;
-  xSemaphoreTake(MC_mux, portMAX_DELAY);
+  xSemaphoreTake(MC_mux2, portMAX_DELAY);
 
   monochrome_big_or_multiline(data->row, data->text);
 
   free_text_buffer(data);
   vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
-  xSemaphoreGive(MC_mux);
+  xSemaphoreGive(MC_mux2);
   vTaskDelete(NULL);
 }
 
@@ -709,13 +709,13 @@ TaskHandle_t multicore_setCursor_handle;
 
 void multicore_setCursor_task(void* data_) {
   print_descrpt_t* data = (print_descrpt_t*) data_;
-  xSemaphoreTake(MC_mux, portMAX_DELAY);
+  xSemaphoreTake(MC_mux2, portMAX_DELAY);
 
   monochrome_setCursor(data->col, data->row);
 
   free_text_buffer(data);
   vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
-  xSemaphoreGive(MC_mux);
+  xSemaphoreGive(MC_mux2);
   vTaskDelete(NULL);
 }
 
@@ -763,13 +763,13 @@ TaskHandle_t multicore_print_handle;
 
 void multicore_print_task(void* data_) {
   print_descrpt_t* data = (print_descrpt_t*) data_;
-  xSemaphoreTake(MC_mux, portMAX_DELAY);
+  xSemaphoreTake(MC_mux2, portMAX_DELAY);
 
   monochrome_print(data->text);
   
   free_text_buffer(data);
   vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
-  xSemaphoreGive(MC_mux);
+  xSemaphoreGive(MC_mux2);
   vTaskDelete(NULL);
 }
 
@@ -863,13 +863,13 @@ TaskHandle_t multicore_clearLine_handle;
 
 void multicore_clearLine_task(void* data_) {
   print_descrpt_t* data = (print_descrpt_t*) data_;
-  xSemaphoreTake(MC_mux, portMAX_DELAY);
+  xSemaphoreTake(MC_mux2, portMAX_DELAY);
 
   monochrome_clearLine(data->row);
 
   free_text_buffer(data);
   vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
-  xSemaphoreGive(MC_mux);
+  xSemaphoreGive(MC_mux2);
   vTaskDelete(NULL);
 }
 
@@ -1101,6 +1101,8 @@ void hw_display_setup() {
 
   if(MC_mux == NULL)
     MC_mux = xSemaphoreCreateMutex();
+  if(MC_mux2 == NULL)
+    MC_mux2 = xSemaphoreCreateMutex();
 
 } // hw_display_setup()
 

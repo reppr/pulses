@@ -101,6 +101,7 @@
   #include "multicore_display_common.h"
 #else
   SemaphoreHandle_t MC_mux = NULL;	// allow testing without MULTICORE_DISPLAY
+  SemaphoreHandle_t MC_mux2 = NULL;	// allow testing without MULTICORE_DISPLAY	TODO: needed?
 #endif // MULTICORE_DISPLAY
 
 
@@ -245,12 +246,12 @@ TaskHandle_t ePaper_print_at_handle;
 void ePaper_print_at_task(void* data_) {
   print_descrpt_t* data = (print_descrpt_t*) data_;
 
-  xSemaphoreTake(MC_mux, portMAX_DELAY);
+  xSemaphoreTake(MC_mux2, portMAX_DELAY);
   ePaper_print_at(data->col, data->row, data->text, data->offset_y);
   free_text_buffer(data);
 
   vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
-  xSemaphoreGive(MC_mux);
+  xSemaphoreGive(MC_mux2);
   vTaskDelete(NULL);
 } // ePaper_print_at_task()
 
@@ -300,10 +301,10 @@ void MC_printBIG_at(int16_t col, int16_t row, const char* text, int16_t offset_y
   MENU.outln(F("DEBUG_ePAPER\tMC_printBIG_at()"));
 #endif
 
-  xSemaphoreTake(MC_mux, portMAX_DELAY);	// had a crash here while booting a morse event
+  xSemaphoreTake(MC_mux2, portMAX_DELAY);	// had a crash here while booting a morse event
   set_used_font(big_font_p);
   // vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);	// hope we don*t need that...
-  xSemaphoreGive(MC_mux);
+  xSemaphoreGive(MC_mux2);
 
   MC_print_at(col, row, text, offset_y);
 } // MC_printBIG_at()
@@ -314,13 +315,13 @@ void monochrome_clear() {
   MENU.outln(F("DEBUG_ePAPER\tmonochrome_clear()"));
 #endif
 
-  xSemaphoreTake(MC_mux, portMAX_DELAY);
+  xSemaphoreTake(MC_mux2, portMAX_DELAY);
   ePaper.setFullWindow();
   ePaper.fillScreen(GxEPD_WHITE);
   ePaper.display(true);
 
   vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
-  xSemaphoreGive(MC_mux);
+  xSemaphoreGive(MC_mux2);
 } // monochrome_clear()
 
 
@@ -335,6 +336,15 @@ void setup_ePaper_GxEPD2() {
   xSemaphoreTake(MC_mux, portMAX_DELAY);
   yield();
   xSemaphoreGive(MC_mux);
+
+  MC_mux2 = xSemaphoreCreateMutex();
+  while(MC_mux2 == NULL) {
+    MC_mux2 = xSemaphoreCreateMutex();
+    yield();
+  }
+  xSemaphoreTake(MC_mux2, portMAX_DELAY);
+  yield();
+  xSemaphoreGive(MC_mux2);
 
   //ePaper.init(500000);	// debug baudrate
   ePaper.init(0);		// no debugging
@@ -397,7 +407,7 @@ void ePaper_1line_at_task(void* data_) {
  #if defined WORKAROUND_SemTakeCrash	// activates workaround for v2.0.0 rc1 (only)
   static bool first_time=true;
   if(first_time) {
-    delay(150);		// version 2.0.0 rc1 crashes without that!
+    delay(150);		// version 2.0.0 rc1 crashes without that!	TODO: check that!
     first_time=false;
   }
   #warning ePaper_GxEPD2.h compiling with WORKAROUND_SemTakeCrash
@@ -406,14 +416,14 @@ void ePaper_1line_at_task(void* data_) {
  #endif
 #endif	// ESP_ARDUINO_VERSION_MAJOR
 
-  xSemaphoreTake(MC_mux, portMAX_DELAY);	// <<<<<<<<<<<<<<<< TODO: esp32-arduino v2.0.0 crashes here
+  xSemaphoreTake(MC_mux2, portMAX_DELAY);	// <<<<<<<<<<<<<<<< TODO: esp32-arduino v2.0.0 crashes here	TODO: check that!
 
   // set_used_font(used_font_p);
   ePaper_print_1line_at(data->row, data->text, data->offset_y);
   free_text_buffer(data);
 
   vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
-  xSemaphoreGive(MC_mux);
+  xSemaphoreGive(MC_mux2);
   vTaskDelete(NULL);
 } // ePaper_1line_at_task()
 
@@ -485,7 +495,7 @@ void ePaper_BIG_or_multiline(int16_t row, const char* text) {	// unused?
   MENU.outln(text);
 #endif
 
-  xSemaphoreTake(MC_mux, portMAX_DELAY);	// TODO: could delay application core
+  xSemaphoreTake(MC_mux2, portMAX_DELAY);	// TODO: could delay application core
 
   int16_t col=0;
 
@@ -497,7 +507,7 @@ void ePaper_BIG_or_multiline(int16_t row, const char* text) {	// unused?
   ePaper_print_at(col/*0*/, row, text);
   ePaper.display(true);
 
-  xSemaphoreGive(MC_mux);
+  xSemaphoreGive(MC_mux2);
 } // ePaper_BIG_or_multiline()
 
 #if defined DEBUG_ePAPER || true

@@ -65,7 +65,8 @@ void free_text_buffer(print_descrpt_t* txt_descr_p) {
 #endif
 } // free_text_buffer()
 
-SemaphoreHandle_t MC_mux = NULL;
+SemaphoreHandle_t MC_mux = NULL;	// outer MUX
+SemaphoreHandle_t MC_mux2 = NULL;	// inner MUX
 /*
   test:  MENU.outln(uxSemaphoreGetCount(MC_mux));	// free==1	taken==0
 */
