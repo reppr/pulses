@@ -10,10 +10,10 @@
 //#define TOUCH_ISR_VERSION_2	// removed, see: morse_unused.txt
 #define TOUCH_ISR_VERSION_3	// other code removed, see: morse_unused.txt
 
-#define TOKEN_LENGTH_FEEDBACK_PULSE	// using a pulse for morse duration feedback
+//#define TOKEN_LENGTH_FEEDBACK_PULSE	// using a pulse for morse duration feedback
 // or:
-//#define TOKEN_LENGTH_FEEDBACK_TASK	// using a rtos task for morse duration feedback, experimental
-//#define MORSE_DURATION_TASK_PRIORITY	0
+#define TOKEN_LENGTH_FEEDBACK_TASK	// using a rtos task for morse duration feedback, experimental
+#define MORSE_DURATION_TASK_PRIORITY	2	// was: 0	// TODO: test&trim
 
 // sanity check:
 #if defined TOKEN_LENGTH_FEEDBACK_PULSE && defined TOKEN_LENGTH_FEEDBACK_TASK
@@ -268,9 +268,9 @@ typedef struct morse_seen_events_t {
 #if ! defined MORSE_EVENTS_MAX
   #define MORSE_EVENTS_MAX	256			// TODO: TEST&TRIMM:
 #endif
-volatile morse_seen_events_t morse_events_cbuf[MORSE_EVENTS_MAX];
-volatile unsigned int morse_events_write_i=0;		// morse_events_cbuf[i]  write index
-unsigned int morse_events_read_i=0;			// morse_events_cbuf[i]  read index
+volatile IRAM_ATTR morse_seen_events_t morse_events_cbuf[MORSE_EVENTS_MAX];			// new: IRAM_ATTR
+volatile IRAM_ATTR unsigned int morse_events_write_i=0;	// morse_events_cbuf[i]  write index	// new: IRAM_ATTR
+unsigned IRAM_ATTR int morse_events_read_i=0;		// morse_events_cbuf[i]  read index	// new: IRAM_ATTR
 
 volatile bool too_many_events=false;			// error flag set by touch_morse_ISR_v3()
 
@@ -386,6 +386,7 @@ void start_morse_feedback_d_pulse() {
 
 TaskHandle_t morse_input_feedback_handle;
 
+// #define MORSE_INPUT_DURATION_FEEDBACK_SHOW_STACK_USE	// DEBUGGING ONLY
 void morse_input_duration_feedback(void* dummy) {
   if(touchRead(HARDWARE.morse_touch_input_pin) < touch_threshold) {	// looks STILL TOUCHED
     vTaskDelay((TickType_t) (limit_dash_loong * morse_TimeUnit / 1000 / portTICK_PERIOD_MS));
@@ -399,13 +400,17 @@ void morse_input_duration_feedback(void* dummy) {
     }
   }
   morse_input_feedback_handle = NULL;
+#if defined MORSE_INPUT_DURATION_FEEDBACK_SHOW_STACK_USE
+  MENU.out(F("morse_input_duration_feedback free STACK "));
+  MENU.outln(uxTaskGetStackHighWaterMark(NULL));
+#endif
   vTaskDelete(NULL);
-}
+} // morse_input_duration_feedback()
 
 void trigger_token_duration_feedback() {
   BaseType_t err = xTaskCreatePinnedToCore(morse_input_duration_feedback,	// function
 					   "morse_duration",			// name
-					   4*1024,				// stack size	TODO: test
+					   1024,				// stack size	TODO: test
 					   NULL,				// task input parameter
 					   MORSE_DURATION_TASK_PRIORITY,	// task priority
 					   &morse_input_feedback_handle,	// task handle
@@ -448,6 +453,7 @@ void IRAM_ATTR touch_morse_ISR_v3() {	// ISR for ESP32 touch sensor as morse inp
     morse_events_cbuf[morse_events_write_i].type = 1 /*touched*/;
 #if defined MORSE_OUTPUT_PIN
     digitalWrite(HARDWARE.morse_output_pin, HIGH);		// feedback: pin is TOUCHED, LED on
+
  #if defined TOKEN_LENGTH_FEEDBACK_PULSE
     start_morse_feedback_d_pulse();
  #elif defined TOKEN_LENGTH_FEEDBACK_TASK	// experimental
@@ -465,6 +471,7 @@ void IRAM_ATTR touch_morse_ISR_v3() {	// ISR for ESP32 touch sensor as morse inp
     morse_events_cbuf[morse_events_write_i].type = 0 /*released*/;
 #if defined MORSE_OUTPUT_PIN
     digitalWrite(HARDWARE.morse_output_pin, LOW);		// feedback: pin is RELEASED, LED off
+
   #if defined TOKEN_LENGTH_FEEDBACK_PULSE
     deactivate_morse_feedback_d_pulse();
   #elif defined TOKEN_LENGTH_FEEDBACK_TASK		// experimental rtos task
@@ -483,6 +490,7 @@ void IRAM_ATTR touch_morse_ISR_v3() {	// ISR for ESP32 touch sensor as morse inp
 } // touch_morse_ISR_v3()
 
 
+//#define SHOW_REPEATED_TOUCH_OR_RELEASE	// TODO: FIXME: why does it happen so often?
 bool check_and_treat_morse_events_v3() {	// polled from pulses.ino main loop()	*NEW VERSION 3*
   static int last_seen_type=ILLEGAL32;
 
@@ -514,12 +522,16 @@ bool check_and_treat_morse_events_v3() {	// polled from pulses.ino main loop()	*
   } else {	// (! too_many_events)		OK,  *NO ISR ERROR*
      // check if already seen same type?
     if(morse_events_cbuf[morse_events_read_i].type == last_seen_type) { // already seen SAME TYPE?
+
+#if defined SHOW_REPEATED_TOUCH_OR_RELEASE || defined DEBUG_TREAT_MORSE_EVENTS_V3
       MENU.out_Error_();					// strange ERROR, SAVETY NET, ignore
       MENU.out(F("skip repeated "));				// strange ERROR, SAVETY NET, ignore
       if(morse_events_cbuf[morse_events_read_i].type)
 	MENU.outln(F("TOUCH"));
       else
 	MENU.outln(F("RELEASE"));
+#endif
+
       morse_events_read_i++;				// just ignore?
       morse_events_read_i %= MORSE_EVENTS_MAX;
 

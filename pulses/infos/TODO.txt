@@ -1333,3 +1333,26 @@ FIXME: MULTICORE_DISPLAY does not work any more on ESP32-Arduino v2.0.8
 #define MULTICORE_DISPLAY
 
 #define USE_BLUETOOTH_SERIAL_MENU		// DADA: *does* compile on ESP32-Arduino 2.0.8  TODO: test!
+
+
+DISPLAY_TASK_CORE:
+ get rid of MC_mux when DISPLAY_TASK_CORE
+
+ TEST!
+ |   // accGyro_sample_v2()
+ |   if(display_accGyro_raw && accGyro_new_data) {		// debugging
+ | #if defined DISPLAY_TASK_CORE
+ |     extern void trigger_other_core_do(void (*function_p)());
+ |     trigger_other_core_do(show_current_accGyro_values);	// <<<<<<<<<<<<<<<< TODO: test!
+ | #else
+ |     // do_on_other_core(&show_current_accGyro_values);	// could be dangerous
+ |     show_current_accGyro_values();
+ | #endif
+ |   }
+
+ rewrite monochrome_display.h ???
+
+ adapt SD_card_logging.h
+
+in:	bool check_and_treat_morse_events_v3()
+#define SHOW_REPEATED_TOUCH_OR_RELEASE		// TODO: FIXME: why does it happen so often?

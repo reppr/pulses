@@ -862,7 +862,7 @@ int reset_all_flagged_pulses_GPIO_OFF() {	  // see: tabula_rasa()
   midi_all_notes_off();		// TODO: test and fix
 #endif
 
-#if defined USE_MORSE
+#if defined USE_MORSE && defined TOKEN_LENGTH_FEEDBACK_PULSE
   extern int morse_length_feedback_pulse_i;
   morse_length_feedback_pulse_i = ILLEGAL32;
 #endif
