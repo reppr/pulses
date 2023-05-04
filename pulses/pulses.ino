@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICALv.0461   // last version of old MULTICORE_DISPLAY
+#define PROGRAM_VERSION	HARMONICALv.0468   // 1st version mending MULTICORE_DISPLAY
 /*			0123456789abcdef   */
 
 
@@ -1927,6 +1927,9 @@ int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very fi
   #endif
 #endif
 
+#if defined DEBUG_DOUBLE_MUX
+  #include "DEBUG_DOUBLE_MUX.h"
+#endif
 
 void setup() {
   setup_initial_HARDWARE_conf();
@@ -2334,6 +2337,10 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
       MENU.play_KB_macro(nvs_AUTOSTART_kb_macro);
     }
     else
+#endif
+
+#if defined DEBUG_DOUBLE_MUX
+      // DEBUG_DOUBLE_MUX_one_shot_tests();	// aborts after that	// TODO: remove
 #endif
 
 #ifdef AUTOSTART			// see: pulses_project_conf.h

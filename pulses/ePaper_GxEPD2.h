@@ -248,6 +248,15 @@ void ePaper_print_at_task(void* data_) {
 
   xSemaphoreTake(MC_mux2, portMAX_DELAY);
   ePaper_print_at(data->col, data->row, data->text, data->offset_y);
+
+#if defined DEBUG_DOUBLE_MUX
+  //  ePaper.display(true);	// new
+  MENU.outln("DADA: ePaper_print_at_task()\t*NO* ePaper.display(true)");
+  // or:
+//  ePaper.display(true);	// new
+//  MENU.outln("DADA: ePaper_print_at_task()\tePaper.display(true)");
+#endif
+
   free_text_buffer(data);
 
   vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
@@ -307,6 +316,14 @@ void MC_printBIG_at(int16_t col, int16_t row, const char* text, int16_t offset_y
   xSemaphoreGive(MC_mux2);
 
   MC_print_at(col, row, text, offset_y);
+
+#if defined DEBUG_DOUBLE_MUX
+//ePaper.display(true);		// new
+//MENU.outln("DADA: MC_printBIG_at()  ePaper.display(true)");
+  // or:
+  //ePaper.display(true);
+  MENU.outln("DADA: MC_printBIG_at()\t\t*NO* ePaper.display(true)");
+#endif
 } // MC_printBIG_at()
 
 
@@ -416,7 +433,7 @@ void ePaper_1line_at_task(void* data_) {
  #endif
 #endif	// ESP_ARDUINO_VERSION_MAJOR
 
-  xSemaphoreTake(MC_mux2, portMAX_DELAY);	// <<<<<<<<<<<<<<<< TODO: esp32-arduino v2.0.0 crashes here	TODO: check that!
+  xSemaphoreTake(MC_mux2, portMAX_DELAY);
 
   // set_used_font(used_font_p);
   ePaper_print_1line_at(data->row, data->text, data->offset_y);

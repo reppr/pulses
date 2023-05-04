@@ -1356,3 +1356,6 @@ DISPLAY_TASK_CORE:
 
 in:	bool check_and_treat_morse_events_v3()
 #define SHOW_REPEATED_TOUCH_OR_RELEASE		// TODO: FIXME: why does it happen so often?
+
+
+get rid of DEBUG_DOUBLE_MUX stuff

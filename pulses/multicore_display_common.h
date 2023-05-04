@@ -102,7 +102,7 @@ void MC_do_on_other_core_task(void* function_p) {
   vTaskDelete(NULL);
 }
 
-void MC_do_on_other_core(void (*function_p)(), int stack_size=8*1024) {	// create and do one shot task
+void MC_do_on_other_core(void (*function_p)(), int stack_size=4*1024) {	// create and do one shot task
   BaseType_t err = xTaskCreatePinnedToCore(MC_do_on_other_core_task,	// function
 					   "other_fun",			// name
 					   stack_size,			// stack size
