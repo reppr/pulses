@@ -30,7 +30,7 @@ void play_random_preset() {
 } // play_random_preset()
 
 
-#if defined HAS_OLED	// DADA TODO: ePaper
+#if defined HAS_OLED
 void monochrome_preset_names(short start_at_preset=0) {
   static short last_shown_preset=0;
 
@@ -86,8 +86,9 @@ void ePaper_preset_names() {
 
   ePaper.setFullWindow();
   ePaper.fillScreen(GxEPD_WHITE);
-  ePaper.setCursor(0,0);
-  //  ePaper.display(true);
+  set_used_font(medium_font_p);
+  extern void ePaper_setCursor_0_0();
+  ePaper_setCursor_0_0();
 
   musicBoxConf.preset = preset_list_start_at;
   for(int row=0; row<rows; row++) {
@@ -95,7 +96,6 @@ void ePaper_preset_names() {
       musicBoxConf.preset=0;
       break;
     } // else
-    ePaper.println();
     load_preset((int) musicBoxConf.preset, false);
     ePaper.print(musicBoxConf.preset);
     MENU.out(musicBoxConf.preset);
@@ -106,8 +106,10 @@ void ePaper_preset_names() {
       col++;
     if(musicBoxConf.preset>99)
       col++;
-    strncpy(buffer, musicBoxConf.name, sizeof(buffer) - col -1);
-    ePaper.print(buffer);
+    uint8_t maxlen = 25;	// TODO: adapt if needed
+    maxlen -= col;
+    strncpy(buffer, musicBoxConf.name, maxlen);
+    ePaper.println(buffer);
     MENU.outln(musicBoxConf.name);
   }
   ePaper.display(true);

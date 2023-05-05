@@ -25,7 +25,7 @@
 //	  #define USED_DB	JIFFLES		/*TODO:*/
 //	#endif					/*TODO:*/
 
-#define MULTICORE_DISPLAY	// send hw display from other core (core 0)	// DADA FIXME! on 2.0.8
+#define MULTICORE_DISPLAY	// send hw display from other core (core 0)	// new: FIXED on 2.0.8 :)
 				// to avoid audible clicks and dropouts
 
 //#define MC_DISPLAY_STACK_SIZE		4*1024	// (default is 2k)

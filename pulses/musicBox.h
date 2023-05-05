@@ -4411,7 +4411,7 @@ bool musicBox_reaction(char token) {
 
     case '?':	// 'C?' == 'CC?'
       MENU.drop_input_token();
-      display_peer_ID_list();		// display current list, *no*t rebuilding it
+      display_peer_ID_list();		// display current list, *not* rebuilding it
       break;
 
     // 'CC' hierarchy
@@ -4746,7 +4746,7 @@ bool musicBox_reaction(char token) {
     case 'P':	// 'IP<num>' show preset names on monochrome display
       MENU.drop_input_token();
       new_input = MENU.numeric_input(0);
-#if defined HAS_OLED	// TODO: ePaper
+#if defined HAS_OLED
       monochrome_preset_names(new_input);	//  n==0: continue through the list, or start at n
 #elif defined HAS_ePaper
       show_ePaper_preset_names(new_input);	//  n==0: continue through the list, or start at n

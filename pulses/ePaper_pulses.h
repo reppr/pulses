@@ -16,6 +16,17 @@ void MC_display_message(const char* text) {	// inline does not work
 } // MC_display_message()
 
 
+#define ePAPER_at_0_0_POSITIONING_WORKAROUND	// the old code did not work right any more: position was too low!
+void ePaper_setCursor_0_0() {
+#if defined ePAPER_at_0_0_POSITIONING_WORKAROUND // WORKAROUND to fix Cursor(0,0) y-positioning
+  #warning uses ePAPER_at_0_0_POSITIONING_WORKAROUND
+  ePaper.setCursor(0, used_font_yAdvance - 6);	// 6 by TRIAL&ERROR	was: ePaper.setCursor(0,0);
+#else
+  ePaper.setCursor(0,0);		// old code (*was* doing the right thing)
+  ePaper.println();
+#endif
+} // ePaper_setCursor_0_0()
+
 
 #if defined USE_ESP_NOW
 void ePaper_show_peer_list() {
@@ -29,8 +40,7 @@ void ePaper_show_peer_list() {
 
   ePaper.setFullWindow();
   ePaper.fillScreen(GxEPD_WHITE);
-  ePaper.setCursor(0,0);
-  ePaper.println();
+  ePaper_setCursor_0_0();
 
   bool is_send_to_peer;
   for(int i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {
@@ -88,8 +98,7 @@ void ePaper_musicBox_parameters() {	// BIGGER ePaper size, i.e. 2.9" size ePaper
   {
     ePaper.fillScreen(GxEPD_WHITE);
     set_used_font(big_font_p);
-    ePaper.setCursor(0, 0);
-    ePaper.println();
+    ePaper_setCursor_0_0();
 
     extern char run_state_symbol();
     snprintf(txt, font_linlen+1, fmt_1st_row, run_state_symbol(), musicBoxConf.preset, my_IDENTITY.preName);
@@ -155,8 +164,7 @@ void ePaper_musicBox_parameters() {	// ePAPER_SMALL_213	SMALL ePaper size, i.e. 
   {
     ePaper.fillScreen(GxEPD_WHITE);
     set_used_font(big_font_p);
-    ePaper.setCursor(0, 0);
-    ePaper.println();
+    ePaper_setCursor_0_0();
 
     extern char run_state_symbol();
     snprintf(txt, font_linlen+1, fmt_1st_row, run_state_symbol(), musicBoxConf.preset, my_IDENTITY.preName);
@@ -260,8 +268,7 @@ void  ePaper_show_program_version() {
 #else
     ePaper.setFont(&FreeSansBold9pt7b);
 #endif
-    ePaper.setCursor(0, 0);
-    ePaper.println();
+    ePaper_setCursor_0_0();
 
     snprintf(txt, LIN_BUF_MAX, format_s, F(STRINGIFY(PROGRAM_VERSION)));
     ePaper.print(txt);
@@ -398,8 +405,7 @@ void  ePaper_show_tuning() {
   {
     ePaper.setFont(big_font_p);
     ePaper.fillScreen(GxEPD_WHITE);
-    ePaper.setCursor(0, 0);
-    ePaper.println();
+    ePaper_setCursor_0_0();
 
     snprintf(txt, LIN_BUF_MAX, format_s, selected_name(SCALES));
     ePaper.println(txt);

@@ -21,9 +21,14 @@
 
 TaskHandle_t do_on_other_core_handle;
 
+//#define DO_ON_OTHER_CORE_SHOW_STACK_USE	// DEBUGGING ONLY
 void do_on_other_core_task(void* function_p) {
   void (*fp)() = (void (*)()) function_p;
   (*fp)();
+#if defined DO_ON_OTHER_CORE_SHOW_STACK_USE	// DEBUGGING ONLY
+  MENU.out(F("do on other core FREE STACK "));
+  MENU.outln(uxTaskGetStackHighWaterMark(NULL));
+#endif
   vTaskDelete(NULL);
 }
 

@@ -1359,3 +1359,9 @@ in:	bool check_and_treat_morse_events_v3()
 
 
 get rid of DEBUG_DOUBLE_MUX stuff
+
+void try_ePaper_fix();	// maybe OBSOLETE?	let's hope ;)
+try_monochrome_fix()
+
+use ePaper.getTextBounds(HelloWorld, 0, 0, &tbx, &tby, &tbw, &tbh);
+

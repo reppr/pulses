@@ -18,8 +18,8 @@
 #define USE_MANY_FONTS		// uses some more program storage space
 
 
-#include <GxEPD2_BW.h>		// tested versions  1.2.13   1.3.4   1.4.5
-#include <GxEPD2_GFX.h>
+#include <GxEPD2_BW.h>		// tested versions  1.2.13   1.3.4   1.4.5   1.5.2
+#include <GxEPD2_GFX.h>		//					     1.2.10(?)
 
 #include <Fonts/FreeMonoBold9pt7b.h>	// mono 9pt
 #include <Fonts/FreeMonoBold12pt7b.h>	// mono 12pt
