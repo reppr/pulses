@@ -12,7 +12,7 @@ void MC_display_message(const char* text) {	// inline does not work
 #endif
   MENU.outln(text);
   set_used_font(medium_font_p);
-  MC_print_1line_at(3, text, /*offset*/ 27);	// bottom line		currently offset_y is *only* used here...
+  MC_print_1line_at(3, text, /*offset_y*/ 27);	// bottom line
 } // MC_display_message()
 
 
@@ -429,6 +429,12 @@ void inline MC_show_tuning() {
 #else
   ePaper_show_tuning();
 #endif
+}
+
+extern char run_state_symbol();
+void ePaper_put_run_state_symbol(char symbol=run_state_symbol()) {
+  char text[] = {symbol, 0};
+  MC_printBIG_at(0,0, text, -6);	// offset_y = -6
 }
 
 

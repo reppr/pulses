@@ -18,7 +18,9 @@
 typedef struct print_descrpt_t {
   int16_t col=0;
   int16_t row=0;
-  int16_t offset_y=0;	// currently *only* used by MC_print_1line_at() in MC_display_message
+  int16_t offset_y=0;	// currently only used by MC_print_1line_at()
+			//   MC_display_message(), ePaper_put_run_state_symbol(),
+			//   monochrome_out_morse_char()
   //uint8_t size=0;
   //uint8_t colour=0;
   //bool inverted=false;

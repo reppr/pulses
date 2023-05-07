@@ -1365,3 +1365,8 @@ try_monochrome_fix()
 
 use ePaper.getTextBounds(HelloWorld, 0, 0, &tbx, &tby, &tbw, &tbh);
 
+for other displays then ePaper:  #warning 'define put_run_state(symbol) for your display type'
+
+leave some time for UI interaction after musicBox ending
+
+TODO: maybe OBSOLETE:?	#define MC_DELAY_MS	0

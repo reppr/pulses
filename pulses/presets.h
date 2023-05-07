@@ -86,6 +86,7 @@ void ePaper_preset_names() {
 
   ePaper.setFullWindow();
   ePaper.fillScreen(GxEPD_WHITE);
+  ePaper.setTextWrap(false);	// trimm names to one line on ePaper
   set_used_font(medium_font_p);
   extern void ePaper_setCursor_0_0();
   ePaper_setCursor_0_0();
@@ -113,6 +114,7 @@ void ePaper_preset_names() {
     MENU.outln(musicBoxConf.name);
   }
   ePaper.display(true);
+  ePaper.setTextWrap(true);	// restore default
 
   preset_list_start_at=musicBoxConf.preset;
   musicBoxConf.preset = preset_was;

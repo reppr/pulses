@@ -16,7 +16,7 @@
 #endif
 
 #if ! defined DO_ON_OTHER_CORE_STACK_SIZE
-  #define DO_ON_OTHER_CORE_STACK_SIZE	8*1024	// DEFAULT
+  #define DO_ON_OTHER_CORE_STACK_SIZE	2*1024	// DEFAULT	(was: 8k)
 #endif
 
 TaskHandle_t do_on_other_core_handle;

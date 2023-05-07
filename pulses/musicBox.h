@@ -871,9 +871,12 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
       MENU.ln();
     }
 
-#if defined HAS_DISPLAY
-    char s[] = {run_state_symbol(),0};
-    MC_printBIG_at(0, 0, s);
+#if defined HAS_DISPLAY	// ePaper
+  #if defined HAS_ePaper
+    ePaper_put_run_state_symbol();
+  #else
+    #warning 'define put_run_state(symbol) for your display type'
+  #endif
 #endif
 
     for (int pulse=0; pulse<PL_MAX; pulse++) {	// make days_to_live COUNTED generating pulses
@@ -1861,7 +1864,8 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
     MC_show_musicBox_parameters();
     delay(2000);	// TODO: TEST: maybe ESP now confuses display?
   #else
-    MC_printBIG_at(0, 0, "=");	// ' ' does not cover the right side of the 'e' completely.  '=' hides that ;)
+    ePaper_put_run_state_symbol('=');	// ' ' does not cover the right side of the 'e' completely.  '=' hides that ;)
+    //ePaper_put_run_state_symbol('<');	// ' ' does not cover the right side of the 'e' completely.  '<' hides that ;)
   #endif
 #endif
 

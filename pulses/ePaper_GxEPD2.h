@@ -259,7 +259,6 @@ void ePaper_print_at_task(void* data_) {
 
   free_text_buffer(data);
 
-  vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
   xSemaphoreGive(MC_mux2);
   vTaskDelete(NULL);
 } // ePaper_print_at_task()
@@ -312,7 +311,6 @@ void MC_printBIG_at(int16_t col, int16_t row, const char* text, int16_t offset_y
 
   xSemaphoreTake(MC_mux2, portMAX_DELAY);	// had a crash here while booting a morse event
   set_used_font(big_font_p);
-  // vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);	// hope we don*t need that...
   xSemaphoreGive(MC_mux2);
 
   MC_print_at(col, row, text, offset_y);
@@ -416,22 +414,8 @@ void ePaper_print_1line_at(uint16_t row, const char* text, int16_t offset_y=0) {
 #if defined MULTICORE_DISPLAY
 TaskHandle_t ePaper_1line_at_handle;
 
-//#define WORKAROUND_SemTakeCrash	// define that to activate workaraound in v2.0.0 rc1, *NOT* working in v2.0.0 any more
-void ePaper_1line_at_task(void* data_) {
+void ePaper_1line_at_task(void* data_) {	// MULTICORE_DISPLAY version
   print_descrpt_t* data = (print_descrpt_t*) data_;
-
-#if defined ESP_ARDUINO_VERSION_MAJOR	// older versions do work
- #if defined WORKAROUND_SemTakeCrash	// activates workaround for v2.0.0 rc1 (only)
-  static bool first_time=true;
-  if(first_time) {
-    delay(150);		// version 2.0.0 rc1 crashes without that!	TODO: check that!
-    first_time=false;
-  }
-  #warning ePaper_GxEPD2.h compiling with WORKAROUND_SemTakeCrash
- #else
-  #warning ePaper_GxEPD2.h compiling *without* WORKAROUND_SemTakeCrash
- #endif
-#endif	// ESP_ARDUINO_VERSION_MAJOR
 
   xSemaphoreTake(MC_mux2, portMAX_DELAY);
 
@@ -479,8 +463,8 @@ void MC_print_1line_at(int16_t row, const char* text, int16_t offset_y=0) {
   multicore_ePaper_1line_at(row, text, offset_y);
 } // MC_print_1line_at()
 
-#else
-void MC_print_1line_at(int16_t row, const char* text, int16_t offset_y=0) {
+#else	// *NO* MULTICORE_DISPLAY
+void MC_print_1line_at(int16_t row, const char* text, int16_t offset_y=0) {	// SINGLE CORE version
   ePaper_print_1line_at(row, text, offset_y);
 }
 #endif

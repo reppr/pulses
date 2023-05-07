@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICALv.0468   // 1st version mending MULTICORE_DISPLAY
+#define PROGRAM_VERSION	HARMONICALv04690   // mending MULTICORE_DISPLAY et al
 /*			0123456789abcdef   */
 
 
