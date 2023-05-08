@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICALv04690   // mending MULTICORE_DISPLAY et al
+#define PROGRAM_VERSION	HARMONICALv04691   // mending MORSE ePaper display
 /*			0123456789abcdef   */
 
 

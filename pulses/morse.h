@@ -1522,9 +1522,9 @@ void monochrome_out_morse_char() {
     char s[]="  ";
     s[0] = morse_output_char;
  #if defined HAS_ePaper
-    MC_printBIG_at((morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s);
+    MC_printBIG_at((morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s, /*offset_y= */ -6);
  #else	// HAS_OLED
-    MC_printBIG_at(2*(morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s);
+    MC_printBIG_at(2*(morse_out_buffer_cnt - 1), MORSE_MONOCHROME_ROW, s, /*offset_y= */ -6);
  #endif
   }
 
