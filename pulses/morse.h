@@ -678,7 +678,7 @@ bool morse_poll_letter_separation() {
 #if ! defined MORSE_OUTPUT_MAX
   #define MORSE_OUTPUT_MAX	64
 #endif
-char morse_OUTPUT_buffer[MORSE_OUTPUT_MAX];
+char morse_OUTPUT_buffer[MORSE_OUTPUT_MAX]={'0'};
 short morse_OUTPUT_cnt=0;
 
 void morse_2output_buffer(char letter) {
@@ -959,6 +959,11 @@ void morse_received_token(char token, float duration) {
 #endif
 
   if(morse_token_cnt < MORSE_TOKEN_MAX) {	// buffer not full?
+    extern short morse_out_buffer_cnt;
+    if(morse_out_buffer_cnt==0 && token==MORSE_TOKEN_overlong) {	// 'V' overlong cannot be starting token
+      MENU.outln(F("skip 'V'"));					//     but sometimes it *is* (i.e. when starting morse input)
+      return;
+    }
     morse_token_duration[morse_token_cnt] = duration;	// SAVE TOKEN and duration
     morse_SEEN_TOKENS[morse_token_cnt++] = token;
 
@@ -1461,11 +1466,11 @@ char morse_2ACTION() {
 #ifndef MORSE_OUTPUT_BUFFER_SIZE
   #define MORSE_OUTPUT_BUFFER_SIZE	64	// size of morse output buffer
 #endif
-char  morse_output_buffer[MORSE_OUTPUT_BUFFER_SIZE];	// buffer
+char  morse_output_buffer[MORSE_OUTPUT_BUFFER_SIZE]={'0'};	// buffer
 short morse_out_buffer_cnt=0;
 
+volatile bool morse_trigger_KB_macro = false;		// triggers morse_PLAY_input_KB_macro()
 
-bool morse_output_to_do=false;		// triggers morse_do_output()
 extern bool musicbox_is_idle();
 
 #if defined HAS_OLED
@@ -1485,28 +1490,35 @@ extern void MC_printBIG_at(uint8_t col, uint8_t row, const char* str);	// for sh
 extern void monochrome_clear();
 #endif // HAS_OLED
 
-void morse_do_output() {
+#if defined MULTICORE_DISPLAY
+void morse_clear_display__prepare_action() {	// can set trigger  morse_trigger_KB_macro = true;	// MULTICORE_DISPLAY version
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
   if(morse_out_buffer_cnt) {
 #if defined HAS_ePaper
-    xSemaphoreTake(MC_mux2, portMAX_DELAY);	// TODO: could delay application...
-    set_used_font(&FreeMonoBold12pt7b);
-    xSemaphoreGive(MC_mux2);
+    set_used_font(big_mono_font_p);
+    ePaper.fillRect(0, 0, morse_out_buffer_cnt*used_font_x, used_font_yAdvance, GxEPD_WHITE);
+    ePaper.display(true);
 
-    MC_print_1line_at(MORSE_MONOCHROME_ROW, "");
 #elif defined HAS_OLED
     MC_printlnBIG(MORSE_MONOCHROME_ROW, "        ");
 #endif
 
-    MENU.out(F("morse "));
-    MENU.play_KB_macro((char*) morse_output_buffer);	// *does* the menu feedack
+    morse_out_buffer_cnt = 0;
+    morse_trigger_KB_macro = true;	// *triggers* morse_PLAY_input_KB_macro()
   }
-
-  morse_out_buffer_cnt=0;
-  morse_output_to_do=false;
-
   morse_uppercase = true;	// reset to uppercase
-} // morse_do_output()
+} // morse_clear_display__prepare_action()
+
+void morse_PLAY_input_KB_macro() {	// triggered by morse_clear_display__prepare_action() by setting  morse_trigger_KB_macro = true;
+  morse_trigger_KB_macro = false;	// reset trigger
+
+  MENU.out(F("morse "));
+  MENU.play_KB_macro((char*) morse_output_buffer);	// *does* the menu feedack
+}
+
+#else // *NO* MULTICORE_DISPLAY
+  #error 'please IMPLEMENT morse without MULTICORE_DISPLAY...'
+#endif
 
 char morse_output_char = '\0';	// '\0' means *no* output
 
@@ -1603,10 +1615,10 @@ void static morse_token_decode() {	// decode received token sequence
 	    case 'C':	// Command
 	      if(morse_PRESENT_COMMAND == "NEXT") {
 		if(morse_out_buffer_cnt)	// if something is buffered, send it,
-		  morse_output_to_do = true;	//	triggers morse_do_output() on morse input
+		  do_on_other_core(&morse_clear_display__prepare_action);	// might set trigger  morse_trigger_KB_macro=true
 		else {				// else: 'P'=START/STOP		TODO: for preset mode, TEST: for others
 		  morse_store_received_letter(morse_PRESENT_in_case_Letter = 'P');
-		  morse_output_to_do = true;	//	triggers morse_do_output() on 'P'
+		  do_on_other_core(&morse_clear_display__prepare_action);	// will set trigger  morse_trigger_KB_macro=true
 		}
 	      } else if(morse_PRESENT_COMMAND == "LOWER")
 		morse_uppercase = false;
@@ -1707,6 +1719,7 @@ void static morse_token_decode() {	// decode received token sequence
   #endif	// ePaper | OLED
 	    }
 #endif // HAS_DISPLAY
+	    MENU.out(pattern);
 	    MENU.space(2);
 	    ERROR_ln(F("morse  no definition"));
 	    morse_reset_definition("");

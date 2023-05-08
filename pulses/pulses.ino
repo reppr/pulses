@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICALv04691   // mending MORSE ePaper display
+#define PROGRAM_VERSION	HARMONICALv04692   // mending MORSE ePaper display
 /*			0123456789abcdef   */
 
 
@@ -206,6 +206,8 @@ typedef struct pulses_hardware_conf_t {
   uint8_t monochrome_type = monochrome_type_off;	// flag and monochrome_type
   uint8_t monochrome_reserved=0;					// %4
   /*
+  uint8_t display_hw_rotation=ILLEGAL8;	// TODO: implement
+
   uint8_t display_hw_pin0=ILLEGAL8;	// OLED		TTGO T5_V2.3_2.13 CS 5==SS	// TODO: implement
   uint8_t display_hw_pin1=ILLEGAL8;	// OLED		TTGO T5_V2.3_2.13 DC 17
   uint8_t display_hw_pin2=ILLEGAL8;	// OLED		TTGO T5_V2.3_2.13 RST 16
@@ -2429,9 +2431,9 @@ bool low_priority_tasks() {
     return true;
 #endif
 
-#if defined USE_MORSE	// TODO: test right priority
-  if(morse_output_to_do) {
-    morse_do_output();
+#if defined USE_MORSE
+  if(morse_trigger_KB_macro) {
+    morse_PLAY_input_KB_macro();
     return true;
   }
   if(morse_output_char) {

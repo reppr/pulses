@@ -34,7 +34,6 @@ MENU.ln();
 
 #undef NOT_DEFINED	// DEACTIVATE...
 #if defined USE_MORSE && defined NOT_DEFINED	// && defined MORSE_COMPILE_HELPERS
-  morse_do_output();
 
   // morse_show_tokens(true);
   // MENU.ln();

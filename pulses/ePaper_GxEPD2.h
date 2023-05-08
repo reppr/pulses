@@ -138,11 +138,12 @@ void ePaper_infos() {
 
 // fonts:
 //GFXfont* tiny_font_p=	(GFXfont*) &Picopixel;
-GFXfont* small_font_p=	(GFXfont*) NULL;
-GFXfont* medium_font_p=	(GFXfont*) &FreeSansBold9pt7b;		// /* mono */ &FreeMonoBold9pt7b
-GFXfont* big_font_p=	(GFXfont*) &FreeSansBold12pt7b;		// /* mono */ &FreeMonoBold12pt7b
+GFXfont* small_font_p=		(GFXfont*) NULL;
+GFXfont* medium_font_p=		(GFXfont*) &FreeSansBold9pt7b;	// or: /* MONO */ &FreeMonoBold9pt7b
+GFXfont* big_font_p=		(GFXfont*) &FreeSansBold12pt7b;
+GFXfont* big_mono_font_p=	(GFXfont*) &FreeMonoBold12pt7b;	// BIG MONO	i.e. morse feedback
 
-GFXfont* used_font_p = (GFXfont*) &FreeMonoBold9pt7b;		// /* mono */ &FreeMonoBold9pt7b
+GFXfont* used_font_p = (GFXfont*) &FreeMonoBold9pt7b;		// /* MONO */ &FreeMonoBold9pt7b
 uint8_t used_font_x=11;	// TODO: FIXME: ################
 uint8_t used_font_yAdvance;
 uint8_t font_linlen=22;	// TODO: FIXME: ################
@@ -176,7 +177,7 @@ void set_used_font(const GFXfont* font_p) {
     //used_font_is_bold=true;
     //used_font_is_light=false;
 
-  } else if(font_p == &FreeMonoBold12pt7b) {
+  } else if(font_p == &FreeMonoBold12pt7b) {	// big_mono_font_p	BIG MONO	i.e. morse feedback
 #if defined DEBUG_ePAPER
     MENU.out(F("\tFreeMonoBold12pt7b"));
 #endif
@@ -453,7 +454,7 @@ void multicore_ePaper_1line_at(int16_t row, const char* text, int16_t offset_y) 
   }
 } // multicore_ePaper_1line_at()
 
-void MC_print_1line_at(int16_t row, const char* text, int16_t offset_y=0) {
+void MC_print_1line_at(int16_t row, const char* text, int16_t offset_y=0) {	// MULTICORE_DISPLAY version
 #if defined DEBUG_ePAPER
   MENU.out(F("DEBUG_ePAPER\tMC_print_1line_at()\t"));
   MENU.out(row);

@@ -145,12 +145,6 @@ void ePaper_musicBox_parameters() {	// ePAPER_SMALL_213	SMALL ePaper size, i.e. 
   MENU.outln(F("DEBUG_ePAPER\tePaper_musicBox_parameters() small"));
 #endif
 
-#if defined USE_MORSE
-  vTaskDelay(40 / portTICK_PERIOD_MS);	  // *wait*
-  xSemaphoreTake(MC_mux2, portMAX_DELAY); //   morse might still hide it's input characters by MC_print_1line_at()
-  xSemaphoreGive(MC_mux2);		  //   (i.e. after giving a preset number)	// see: morse_do_output()
-#endif
-
   ePaper.setFullWindow();
   ePaper.fillScreen(GxEPD_WHITE);
   ePaper.setTextColor(GxEPD_BLACK);

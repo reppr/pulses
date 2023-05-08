@@ -763,10 +763,6 @@ void ePaper_BIG_or_multiline(int16_t row, char* text) {
   xSemaphoreTake(MC_mux, portMAX_DELAY);	// TODO: could delay application core
 }
 
-void morse_do_output() {
-    xSemaphoreTake(MC_mux, portMAX_DELAY);	// TODO: could delay application...
-}
-
 ePaper_show_program_version() {
 	ePaper.print(HARDWARE.battery_level_control_pin);	// TODO: show level
 	ePaper.print(HARDWARE.gpio_pins_cnt);	// TODO: show individual pins
@@ -1370,3 +1366,13 @@ for other displays then ePaper:  #warning 'define put_run_state(symbol) for your
 leave some time for UI interaction after musicBox ending
 
 TODO: maybe OBSOLETE:?	#define MC_DELAY_MS	0
+
+#error 'please implement morse without MULTICORE_DISPLAY...'
+
+morse_reset_definition() to get rid of V ???
+
+morse_output_buffer vs morse_OUTPUT_buffer ??? !
+
+run cycle_monitor(pulse) from other core?
+
+systemmenu:  does logging   no SD card
