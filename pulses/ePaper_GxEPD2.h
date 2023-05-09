@@ -287,7 +287,7 @@ void multicore_ePaper_print_at(int16_t col, int16_t row, const char* text, int16
     MENU.out(err);
     MENU.space();
     ERROR_ln(F("ePaper_print_at_task"));
-    free(txt_descript_p);
+    free_text_buffer(txt_descript_p);
   }
 } // multicore_ePaper_print_at()
 
@@ -430,19 +430,19 @@ void ePaper_1line_at_task(void* data_) {	// MULTICORE_DISPLAY version
 } // ePaper_1line_at_task()
 
 void multicore_ePaper_1line_at(int16_t row, const char* text, int16_t offset_y) {	// create and start a one shot task
-  print_descrpt_t* txt_descrpt_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
-  if(txt_descrpt_p == NULL) {
+  print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
+  if(txt_descript_p == NULL) {
     ERROR_ln(F("txt_descript malloc()"));
     return;	// ERROR
   }
-  copy_text_to_text_buffer(text, txt_descrpt_p);
-  txt_descrpt_p->row = row;
-  txt_descrpt_p->offset_y = offset_y;
+  copy_text_to_text_buffer(text, txt_descript_p);
+  txt_descript_p->row = row;
+  txt_descript_p->offset_y = offset_y;
 
   BaseType_t err = xTaskCreatePinnedToCore(ePaper_1line_at_task,		// function
 					   "ePaper_1line_at",			// name
 					   MC_DISPLAY_STACK_SIZE,		// stack size
-					   txt_descrpt_p,			// task input parameter
+					   txt_descript_p,			// task input parameter
 					   MONOCHROME_PRIORITY,			// task priority
 					   &ePaper_1line_at_handle,		// task handle
 					   0);					// core 0
@@ -450,7 +450,7 @@ void multicore_ePaper_1line_at(int16_t row, const char* text, int16_t offset_y) 
     MENU.out(err);
     MENU.space();
     ERROR_ln(F("ePaper_1line_at_task"));
-    free(txt_descrpt_p);
+    free_text_buffer(txt_descript_p);
   }
 } // multicore_ePaper_1line_at()
 

@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICALv04692   // mending MORSE ePaper display
+#define PROGRAM_VERSION	HARMONICALv04693   // fix MC memory leak
 /*			0123456789abcdef   */
 
 

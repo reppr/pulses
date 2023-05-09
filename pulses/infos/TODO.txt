@@ -1376,3 +1376,7 @@ morse_output_buffer vs morse_OUTPUT_buffer ??? !
 run cycle_monitor(pulse) from other core?
 
 systemmenu:  does logging   no SD card
+
+CHECK and FIX:
+  bluetooth_serial
+  esp-now

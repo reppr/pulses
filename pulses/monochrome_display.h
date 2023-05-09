@@ -372,6 +372,7 @@ void multicore_display_message(const char* text) {	// create and do one shot tas
     MENU.out(err);
     MENU.space();
     ERROR_ln(F("display_message"));
+    free_text_buffer(txt_descript_p);
   }
 }
 
@@ -476,6 +477,7 @@ void multicore_print2x2(uint8_t col, uint8_t row, const char* text) {	// create 
     MENU.out(err);
     MENU.space();
     ERROR_ln(F("2x2display task"));
+    free_text_buffer(txt_descript_p);
   }
 }
 
@@ -545,6 +547,7 @@ void multicore_println2x2(uint8_t row, const char* text) {	// create and do one 
     MENU.out(err);
     MENU.space();
     ERROR_ln(F("println2x2"));
+    free_text_buffer(txt_descript_p);
   }
 }
 
@@ -642,6 +645,7 @@ void multicore_big_or_multiline(uint8_t row, const char* text) {	// create and d
     MENU.out(err);
     MENU.space();
     ERROR_ln(F("big_or_multiline"));
+    free_text_buffer(txt_descript_p);
   }
 }
 
@@ -739,6 +743,7 @@ void multicore_setCursor(uint8_t col, uint8_t row) {	// create and do one shot t
     MENU.out(err);
     MENU.space();
     ERROR_ln(F("setCursor"));
+    free_text_buffer(txt_descript_p);
   }
 }
 
@@ -792,6 +797,7 @@ void multicore_print(const char* text) {	// create and do one shot task
     MENU.out(err);
     MENU.space();
     ERROR_ln(F("MC_print"));
+    free_text_buffer(txt_descript_p);
   }
 }
 
@@ -893,6 +899,7 @@ void multicore_clearLine(uint8_t row) {	// create and do one shot task
     MENU.out(err);
     MENU.space();
     ERROR_ln(F("clearLine"));
+    free_text_buffer(txt_descript_p);
   }
 }
 
