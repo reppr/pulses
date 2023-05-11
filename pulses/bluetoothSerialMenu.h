@@ -38,9 +38,21 @@ esp_bt_controller_status_t bt_status_before_sleeping = (esp_bt_controller_status
 esp_bt_controller_status_t show_bt_controller_status() {
   MENU.out(F("esp_bt_controller_get_status() "));
   esp_bt_controller_status_t bt_c_status = esp_bt_controller_get_status();
-  MENU.outln(bt_c_status);
+  switch(bt_c_status) {
+  case ESP_BT_CONTROLLER_STATUS_IDLE:
+    MENU.outln(F("IDLE"));
+    break;
+  case ESP_BT_CONTROLLER_STATUS_INITED:
+    MENU.outln(F("INITED"));
+    break;
+  case ESP_BT_CONTROLLER_STATUS_ENABLED:
+    MENU.outln(F("ENABLED"));
+    break;
+  default:
+    MENU.outln_invalid();
+  }
   return bt_c_status;
-}
+} // show_bt_controller_status()
 
 bool bluetoothSerialBEGIN() {
   bool ok;

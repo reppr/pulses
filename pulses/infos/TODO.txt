@@ -1372,11 +1372,23 @@ TODO: maybe OBSOLETE:?	#define MC_DELAY_MS	0
 morse_reset_definition() to get rid of V ???
 
 morse_output_buffer vs morse_OUTPUT_buffer ??? !
+  line 680	char morse_OUTPUT_buffer[MORSE_OUTPUT_MAX]={'0'};
+  line 1467	char  morse_output_buffer[MORSE_OUTPUT_BUFFER_SIZE]={'0'};	// buffer
+
 
 run cycle_monitor(pulse) from other core?
 
 systemmenu:  does logging   no SD card
 
 CHECK and FIX:
-  bluetooth_serial
-  esp-now
+  bluetooth_serial	broken
+  esp-now		looks working :)
+  logging
+
+esp-now check availability of all peers, maybe update peer list?
+
+USE_MPU6050_AT_ADDR
+
+MENU: switch PSRAM display off...
+
+TODO: UI	//#define ESP_NOW_CHANNEL		11		// works fine TODO: UI

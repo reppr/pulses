@@ -5,8 +5,8 @@ GxEPD2	1.3.7
 I2Cdevlib
 "url": "https://github.com/jrowberg/i2cdevlib.git"
 git clone https://github.com/jrowberg/i2cdevlib
-  cp i2cdevlib/Arduino/I2Cdev/ libraries/		# I2Cdev
-  cp i2cdevlib/Arduino/MPU6050/ libraries/		# MPU6050
+  cp -r i2cdevlib/Arduino/I2Cdev/ libraries/		# I2Cdev
+  cp -r i2cdevlib/Arduino/MPU6050/ libraries/		# MPU6050
 
 # better move from extensions/FOREIGN to libraries
 git clone https://github.com/MartyMacGyver/ESP32-Digital-RGB-LED-Drivers
