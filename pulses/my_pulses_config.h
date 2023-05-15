@@ -125,8 +125,11 @@
   #endif
 #endif
 
-// #define USE_MPU6050		// MPU-6050 6d accelero/gyro
-#define INCLUDE_IMU_ZERO
+//#define USE_MPU6050_at_ADDR	0x68		// MPU-6050 6d accelero/gyro  0x68 DEFAULT A0=LOW
+#define USE_MPU6050_at_ADDR	0x69		// MPU-6050 6d accelero/gyro  0x69 A0=HIGH
+#if defined USE_MPU6050_at_ADDR
+  #define INCLUDE_IMU_ZERO
+#endif
 
 #if defined MUSICBOX2_PIN_MAPPING	// #define this in my_pulses_config.h
   #define PERIPHERAL_POWER_SWITCH_PIN	2

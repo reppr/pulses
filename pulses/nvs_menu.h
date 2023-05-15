@@ -31,7 +31,7 @@ void nvs_menu_display() {
   MENU.ln();
 
   MENU.out(F("'S'=SYSTEM"));
-#if defined USE_MPU6050
+#if defined USE_MPU6050_at_ADDR
   MENU.out(F(" 'SZ'=run IMU_Zero\t'SU'=set mpu6050 offsets by hand"));
 #endif
   MENU.ln();
@@ -181,7 +181,7 @@ bool nvs_menu_reaction(char token) {
   case 'S':	// 'S' system	in construction
     switch(next_token) { // second letter after 'S'
 
-#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
+#if defined USE_MPU6050_at_ADDR		// MPU-6050 6d accelero/gyro
     case 'U':	// 'SU' set MPU offsets by hand
       MENU.drop_input_token();
       set_accGyro_offsets_UI();

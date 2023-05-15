@@ -77,7 +77,8 @@
 
 //#define USE_LEDC	// to be written ;)
 
-#define USE_RTC_MODULE
+//#define USE_RTC_MODULE
+
 //#define USE_i2c_SCANNER
 
 //#define USE_LEDC_AUDIO

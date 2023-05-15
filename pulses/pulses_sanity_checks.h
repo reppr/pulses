@@ -37,7 +37,7 @@
 
 // i2c
 #if ! defined USE_i2c
-  #if defined(USE_MCP23017) || defined(USE_RTC_MODULE) || defined(USE_i2c_SCANNER) || defined(USE_MPU6050)
+  #if defined(USE_MCP23017) || defined(USE_RTC_MODULE) || defined(USE_i2c_SCANNER) || defined(USE_MPU6050_at_ADDR)
     #define USE_i2c
   #endif
 #endif
@@ -105,13 +105,15 @@
 #endif
 
 
-#if defined USE_MPU6050 && defined USE_RTC_MODULE	// clash i2c address
-  #warning MPU6050 and RTC_MODULE use the same i2c address	// TODO: FIXME: ################
-//  #warning MPU6050 and RTC_MODULE use the same i2c address, USE_RTC_MODULE *deactivated*
-//  #undef USE_RTC_MODULE
+#if defined USE_MPU6050_at_ADDR && defined USE_RTC_MODULE	// clash i2c address
+  #if USE_MPU6050_at_ADDR==0x68
+    #warning MPU6050 and RTC_MODULE use the same i2c address
+    #error 'FIX i2c addr == 0x68  MPU6050 and RTC module'
+//  #undef USE_RTC_MODULE	// maybe?
+  #endif
 #endif
 
-#if defined INCLUDE_IMU_ZERO && ! defined USE_MPU6050
+#if defined INCLUDE_IMU_ZERO && ! defined USE_MPU6050_at_ADDR
   //#warning no MPU6050, no IMU ZERO
   #undef INCLUDE_IMU_ZERO
 #endif

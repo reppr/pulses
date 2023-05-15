@@ -943,7 +943,7 @@ void softboard_display() {
 #if defined USE_i2c
   MENU.out(F("\tC=i2c scan"));
 #endif
-#if defined USE_MPU6050	// MPU-6050 6d accelero/gyro
+#if defined USE_MPU6050_at_ADDR	// MPU-6050 6d accelero/gyro
   MENU.out(F("\tG=accelero/gyro"));
 #endif
   MENU.ln();
@@ -1325,7 +1325,7 @@ bool softboard_reaction(char token) {
     break;
 #endif
 
-#if defined USE_MPU6050	// MPU-6050 6d accelero/gyro
+#if defined USE_MPU6050_at_ADDR	// MPU-6050 6d accelero/gyro
   case 'G':	// MPU-6050 6d accelero/gyro
     accGyro_data_display();
     break;

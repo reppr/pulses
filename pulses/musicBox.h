@@ -845,9 +845,9 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
 */
 
 #if defined SOFT_END_STOPPS_MOTION_UI	// TODO: integrate
-  #if defined USE_MPU6050		// MPU-6050 6d accelero/gyro	// TODO: RETHINK: HACK to avoid problems between 6050 and soft end
+  #if defined USE_MPU6050_at_ADDR	// MPU-6050 6d accelero/gyro
   extern bool accGyro_is_active;
-  accGyro_is_active = false;	// CANCEL accGyro_is_active	// TODO: RETHINK: HACK to avoid problems between 6050 and soft end
+  accGyro_is_active = false;	// CANCEL accGyro_is_active
   #endif
 #endif
 
@@ -3042,7 +3042,7 @@ void start_musicBox() {
   if(!jiffle_user_selected)	// if *not* set by user interaction	// TODO: factor out randomisation
     select_random_jiffle();	//   random jiffle			// TODO: ICODE_INSTEAD_OF_JIFFLES
 
-#if defined USE_MPU6050
+#if defined USE_MPU6050_at_ADDR
   #if defined ICODE_INSTEAD_OF_JIFFLES
     extern bool /*error*/ copy2_code_RAM(unsigned int *source, unsigned int size);
     if(selected_in(iCODEs) != code_RAM) {	// maybe populate code_RAM for motion UI?
@@ -3898,7 +3898,7 @@ void musicBox_display() {
 
   MENU.outln(F("\n'P?'=show preset names\t'P\"xxx\" = 'PNxxx' search in preset list"));
 
-#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
+#if defined USE_MPU6050_at_ADDR		// MPU-6050 6d accelero/gyro
   MENU.ln();
   if(mpu6050_available) {
     extern void Y_UI_display_lines();
@@ -4018,7 +4018,7 @@ void sync_landscape_time_sliced() {	// set this instruments time slice
 
 bool do_recalibrate_Y_ui = false;	// when switching on accGyro parameters should stay on spot, not change (i.e. jiffle, iCode)
 
-#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
+#if defined USE_MPU6050_at_ADDR		// MPU-6050 6d accelero/gyro
 void Y_UI_display_lines() {
   MENU.outln(F("'U'=toggle AccelGyro\t 'X' 'Y' 'Z' toggle axes on|off"));
   MENU.outln(F("  'U0'='U='restart\t'UP'=accGyroPreset\t'UT'=tuning"));
@@ -4029,7 +4029,7 @@ void Y_UI_display_lines() {
 #endif
 
 bool Y_UI() {	// 'Ux' 'X' 'Y' 'Z' "eXtended motion UI" planed eXtensions: other input sources: ADC, 'analog'Touch, distance sensors, etc
-#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
+#if defined USE_MPU6050_at_ADDR		// MPU-6050 6d accelero/gyro
   // TODO: REPLACE BY NEW ENGINE ################################################################
   // TODO: monochrome feedback on motion UI switching
   bool switch_activity=false;
@@ -4290,7 +4290,7 @@ bool musicBox_reaction(char token) {
     }
     break;
 
-#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
+#if defined USE_MPU6050_at_ADDR	// MPU-6050 6d accelero/gyro
   case 'X':
   case 'Y':
   case 'Z':

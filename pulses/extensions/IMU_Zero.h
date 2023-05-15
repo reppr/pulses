@@ -112,8 +112,9 @@ and so on.
 // specific I2C addresses may be passed as a parameter here
 // AD0 low = 0x68 (default for InvenSense evaluation board)
 // AD0 high = 0x69
-MPU6050 accelgyro;
-//MPU6050 accelgyro(0x69); // <-- use for AD0 high
+//  MPU6050 accelgyro;
+//  MPU6050 accelgyro(0x69); // <-- use for AD0 high
+//MPU6050 mpu6050(HARDWARE.mpu6050_addr);	// see: pulses.ino
 
 
 const char LBRACKET = '[';
@@ -155,7 +156,7 @@ void GetSmoothed()
 
     for (i = 1; i <= N; i++)
       { // get sums
-	accelgyro.getMotion6(&RawValue[iAx], &RawValue[iAy], &RawValue[iAz],
+	mpu6050.getMotion6(&RawValue[iAx], &RawValue[iAy], &RawValue[iAz],
 			     &RawValue[iGx], &RawValue[iGy], &RawValue[iGz]);
 	if ((i % 1000) == 0)	// was: 500
 	  MENU.out(PERIOD);
@@ -184,23 +185,23 @@ void Initialize_imu_zero()
 
     // initialize device
     MENU.outln(F("Initializing I2C devices..."));
-    accelgyro.initialize();
+    mpu6050.initialize();
 
     // verify connection
     MENU.out(F("Testing MPU6050 connection\t"));
-    if(accelgyro.testConnection())
+    if(mpu6050.testConnection())
       MENU.outln(F("OK"));
     else
       ERROR_ln(F("MPU connection failed"));
   } // Initialize_imu_zero
 
 void SetOffsets(int TheOffsets[6])
-  { accelgyro.setXAccelOffset(TheOffsets [iAx]);
-    accelgyro.setYAccelOffset(TheOffsets [iAy]);
-    accelgyro.setZAccelOffset(TheOffsets [iAz]);
-    accelgyro.setXGyroOffset (TheOffsets [iGx]);
-    accelgyro.setYGyroOffset (TheOffsets [iGy]);
-    accelgyro.setZGyroOffset (TheOffsets [iGz]);
+  { mpu6050.setXAccelOffset(TheOffsets [iAx]);
+    mpu6050.setYAccelOffset(TheOffsets [iAy]);
+    mpu6050.setZAccelOffset(TheOffsets [iAz]);
+    mpu6050.setXGyroOffset (TheOffsets [iGx]);
+    mpu6050.setYGyroOffset (TheOffsets [iGy]);
+    mpu6050.setZGyroOffset (TheOffsets [iGz]);
   } // SetOffsets
 
 void ShowProgress()

@@ -296,7 +296,7 @@ void  ePaper_show_program_version() {
     ePaper.print(' ');
 #endif
 
-#if defined USE_MPU6050
+#if defined USE_MPU6050_at_ADDR
     extern bool mpu6050_available;
     if(mpu6050_available && HARDWARE.mpu6050_addr)
       ePaper.print("  MPU");

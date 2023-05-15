@@ -1677,7 +1677,7 @@ void static morse_token_decode() {	// decode received token sequence
 		  MENU.outln(F("no data to send now"));
 		}
 
-#if defined USE_MPU6050
+#if defined USE_MPU6050_at_ADDR
 	      } else if(morse_PRESENT_COMMAND == "UIswM") {	// '..-..'  UI	switch Motion UI on/off
 		  MENU.out(F("motion UI "));
 		  MENU.out_ON_off(accGyro_is_active ^= 1);	// toggle and show
@@ -1693,7 +1693,7 @@ void static morse_token_decode() {	// decode received token sequence
 		      MC_print(F("      "));
 		  }
   #endif // HAS_OLED
-#endif // USE_MPU6050
+#endif // USE_MPU6050_at_ADDR
 
 	      } else	// unknown morse command
 		MENU.out("\nCOMMAND:\t"); MENU.outln(morse_PRESENT_COMMAND.c_str());

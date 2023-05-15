@@ -232,7 +232,7 @@ const char low_[] = "LOW";
 
 extern void show_esp32_pin_capabilities(gpio_pin_t pin);
 void pin_info_digital(gpio_pin_t pin) {
-  uint8_t mask = digitalPinToBitMask(pin);
+  //uint8_t mask = digitalPinToBitMask(pin);
 #ifdef __SAM3X8E__	// FIXME: ################
   #warning "softboard does not run on Arduino Due yet! ################"
   Pio* const port = digitalPinToPort(pin);
@@ -246,7 +246,7 @@ void pin_info_digital(gpio_pin_t pin) {
   if (port == NULL) return;
 
 #else
-  volatile uint8_t *reg;
+  //volatile uint8_t *reg;
 
   if (port == NOT_A_PIN) return;
 #endif
@@ -943,7 +943,7 @@ void softboard_display() {
 #if defined USE_i2c
   MENU.out(F("\tC=i2c scan"));
 #endif
-#if defined USE_MPU6050	// MPU-6050 6d accelero/gyro
+#if defined USE_MPU6050_at_ADDR	// MPU-6050 6d accelero/gyro
   MENU.out(F("\tG=accelero/gyro"));
 #endif
   MENU.ln();
@@ -994,7 +994,7 @@ bool softboard_reaction(char token) {
 #ifdef ESP8266	// FIXME: ESP32	################
   const int pwm_maX=1024;
 #else
-  const int pwm_maX=256;
+  //const int pwm_maX=256;
 #endif
 
   switch (token) {
@@ -1188,7 +1188,7 @@ bool softboard_reaction(char token) {
       uint8_t hour=11;
       uint8_t minute=11;
       uint8_t second=0;
-      uint8_t dayOfWeek=0;	// invalid
+      //uint8_t dayOfWeek=0;	// invalid
 
       // year
       newValue = MENU.numeric_input(year);
@@ -1325,7 +1325,7 @@ bool softboard_reaction(char token) {
     break;
 #endif
 
-#if defined USE_MPU6050	// MPU-6050 6d accelero/gyro
+#if defined USE_MPU6050_at_ADDR	// MPU-6050 6d accelero/gyro
   case 'G':	// MPU-6050 6d accelero/gyro
     accGyro_data_display();
     break;

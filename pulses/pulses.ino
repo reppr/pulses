@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICALv04693   // fix MC memory leak
+#define PROGRAM_VERSION	HARMONICALv04694   // USE_MPU6050_at_ADDR
 /*			0123456789abcdef   */
 
 
@@ -1138,7 +1138,7 @@ bool stack_sync_user_selected=false;
   #include "SD_card_logging.h"
 #endif
 
-#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
+#if defined USE_MPU6050_at_ADDR		// MPU-6050 6d accelero/gyro
   #include "mpu6050_module.h"
   #include "extensions/IMU_Zero.h"
 #endif
@@ -1340,9 +1340,9 @@ void show_program_version(bool show_on_monochrome=true) {	// program version on 
 
 
 void setup_initial_HARDWARE_conf() {
-#if defined USE_MPU6050
+#if defined USE_MPU6050_at_ADDR
   if(mpu6050_available)
-    HARDWARE.mpu6050_addr = 0x68;
+    HARDWARE.mpu6050_addr = USE_MPU6050_at_ADDR;	// HARDWARE.mpu6050_addr  A0=LOW 0x68  or  A0=HIGH 0x69
 #endif
 
   HARDWARE.gpio_pins_cnt = GPIO_PINS;
@@ -1466,7 +1466,7 @@ void show_hardware_conf(pulses_hardware_conf_t* hardware) {
   if(hardware->mpu6050_addr) {
     MENU.out_hex(hardware->mpu6050_addr);
     MENU.ln();
-#if defined USE_MPU6050
+#if defined USE_MPU6050_at_ADDR
     extern void show_accGyro_offsets();
     show_accGyro_offsets();
 #endif
@@ -1865,7 +1865,7 @@ void show_internals() {		// also calls display_esp_versions();  and   esp_heap_a
   MENU.outln(F("\tdrives rgb from OTHER CORE"));
 #endif
 
-#if defined MULTICORE_MPU_SAMPLING  &&  defined USE_MPU6050
+#if defined MULTICORE_MPU_SAMPLING  &&  defined USE_MPU6050_at_ADDR
   MENU.outln(F("\tmpu sampling from OTHER CORE"));
 #endif
 
@@ -2072,7 +2072,7 @@ delay(100);			//NEW: wait anyway	WAS: waiting longer when switching peripheral_p
   MENU.ln();
 #endif
 
-#if defined USE_MPU6050
+#if defined USE_MPU6050_at_ADDR
   mpu6050_available = mpu6050_setup();	// this will switch MPU6050 *OFF* if not found, including sampling
 #endif
 
@@ -2364,7 +2364,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
 // bool low_priority_tasks();
 // check lower priority tasks and do the first one that needs to be done
 // return true if something was done
-#if defined USE_MPU6050
+#if defined USE_MPU6050_at_ADDR
   uint32_t accgyro_modulus = 21221;	// prime	// TODO: UI
 #endif
 //
@@ -2400,7 +2400,7 @@ bool low_priority_tasks() {
   }
 #endif
 
-#if defined USE_MPU6050		// MPU-6050 6d accelero/gyro
+#if defined USE_MPU6050_at_ADDR	// MPU-6050 6d accelero/gyro
   if(accGyro_new_data) {	//   check new input data
     if(!mpu6050_available)						// catch bugs, if any ;)  TODO: REMOVE:
       ERROR_ln(F("accGyro_new_data  mpu6050_available=false"));	// catch bugs, if any ;)  TODO: REMOVE:

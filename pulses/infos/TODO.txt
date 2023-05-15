@@ -1388,7 +1388,19 @@ CHECK and FIX:
 esp-now check availability of all peers, maybe update peer list?
 
 USE_MPU6050_AT_ADDR
+  USE_MPU6050_at_ADDR // TODO: avoid problems between 6050 and RTC
+    mpu6050.testConnection()
 
 MENU: switch PSRAM display off...
 
 TODO: UI	//#define ESP_NOW_CHANNEL		11		// works fine TODO: UI
+
+instrument no trigger pin
+	   no autoplay
+	   no battry watch
+	   // #define USE_SD_CARD
+	   // #define USE_LOGGING
+	   // #define LOG_PLAY_DEFAULT
+	   // #define LOG_BATTERY_DEFAULT
+
+morse: delete input display when done

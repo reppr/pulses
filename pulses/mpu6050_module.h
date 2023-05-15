@@ -25,7 +25,8 @@ bool mpu6050_available=true;	// will be reset automagically if there's no MPU605
   #include "Wire.h"
 #endif
 
-MPU6050 mpu6050;
+//MPU6050 mpu6050(HARDWARE.mpu6050_addr);	// not possible here...
+MPU6050 mpu6050(USE_MPU6050_at_ADDR);
 
 int16_t ax, ay, az;
 int16_t gx, gy, gz;
@@ -45,13 +46,14 @@ bool gyrZ_invert = true;	// TODO: TEST:
 
 
 bool mpu6050_setup() {		// Wire must be started before
-  MENU.out(F("mpu6050_setup()\t"));
+  MENU.out(F("mpu6050_setup()  "));
+  MENU.out_hex(HARDWARE.mpu6050_addr);
 
   mpu6050.initialize();
 
   mpu6050_available=true;
   if(mpu6050.testConnection()) {
-    MENU.outln(F("MPU6050 connected"));
+    MENU.outln(F("  MPU6050 connected"));
 
     MENU.out(F("set accGyro offsets\t{"));
     int16_t o;
@@ -108,7 +110,7 @@ bool mpu6050_setup() {		// Wire must be started before
     return true;	// OK (but calibration *might* be missing)
   } // else
 
-  MENU.out(F("failed: "));
+  MENU.out(F("\tfailed: "));
   MENU.out(mpu6050.getDeviceID());
   MENU.ln(2);
   mpu6050_available=false;	// no connection to MPU6050

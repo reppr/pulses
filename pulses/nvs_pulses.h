@@ -191,6 +191,18 @@ void configure_HARDWARE_from_nvs() {
   if(HARDWARE_from_nvs.mpu6050_addr) {
     HARDWARE.mpu6050_addr = HARDWARE_from_nvs.mpu6050_addr;
 
+    bool mpu6050_error=false;
+#if defined USE_MPU6050_at_ADDR
+    if (HARDWARE.mpu6050_addr != USE_MPU6050_at_ADDR)
+      mpu6050_error=true;	// mismatch
+#else
+    mpu6050_error=true;		// defined in HARDWARE_from_nvs.mpu6050_addr but not as USE_MPU6050_at_ADDR
+#endif
+    if(mpu6050_error) {
+      extern void ERROR_ln(const char* text);
+      ERROR_ln(F("MPU addr mismatch"));
+    }
+
     bool AccGyr_offset_set=false;
     for(int i=0; i<6; i++) {
       if(HARDWARE_from_nvs.accGyro_offsets[i])
