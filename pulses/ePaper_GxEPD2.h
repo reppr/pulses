@@ -264,6 +264,8 @@ void ePaper_print_at_task(void* data_) {
   vTaskDelete(NULL);
 } // ePaper_print_at_task()
 
+
+#define ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help
 void multicore_ePaper_print_at(int16_t col, int16_t row, const char* text, int16_t offset_y=0) {    // create and start a one shot task
   print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
   if(txt_descript_p == NULL) {
@@ -287,6 +289,10 @@ void multicore_ePaper_print_at(int16_t col, int16_t row, const char* text, int16
     MENU.out(err);
     MENU.space();
     ERROR_ln(F("ePaper_print_at_task"));
+#if defined ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help
+    extern void esp_heap_and_stack_info();
+    esp_heap_and_stack_info();
+#endif
     free_text_buffer(txt_descript_p);
   }
 } // multicore_ePaper_print_at()
@@ -450,7 +456,14 @@ void multicore_ePaper_1line_at(int16_t row, const char* text, int16_t offset_y) 
     MENU.out(err);
     MENU.space();
     ERROR_ln(F("ePaper_1line_at_task"));
+#if defined ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help
+    extern void esp_heap_and_stack_info();
+    esp_heap_and_stack_info();
+#endif
     free_text_buffer(txt_descript_p);
+#if defined ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help
+    esp_heap_and_stack_info();
+#endif
   }
 } // multicore_ePaper_1line_at()
 

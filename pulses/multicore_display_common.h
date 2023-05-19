@@ -116,6 +116,10 @@ void MC_do_on_other_core(void (*function_p)(), int stack_size=4*1024) {	// creat
     MENU.out(esp_err_to_name(err));
     MENU.tab();
     ERROR_ln(F("MC_do_on_other_core"));
+#if defined ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help
+    extern void esp_heap_and_stack_info();
+    esp_heap_and_stack_info();
+#endif
   }
 }
 

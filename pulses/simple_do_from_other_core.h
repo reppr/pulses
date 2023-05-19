@@ -21,17 +21,18 @@
 
 TaskHandle_t do_on_other_core_handle;
 
-//#define DO_ON_OTHER_CORE_SHOW_STACK_USE	// DEBUGGING ONLY
+//#define DO_ON_OTHER_CORE_SHOW_STACK_USE	// from inside task,	DEBUGGING ONLY
 void do_on_other_core_task(void* function_p) {
   void (*fp)() = (void (*)()) function_p;
   (*fp)();
-#if defined DO_ON_OTHER_CORE_SHOW_STACK_USE	// DEBUGGING ONLY
+#if defined DO_ON_OTHER_CORE_SHOW_STACK_USE	// from inside task,	DEBUGGING ONLY
   MENU.out(F("do on other core FREE STACK "));
   MENU.outln(uxTaskGetStackHighWaterMark(NULL));
 #endif
   vTaskDelete(NULL);
 }
 
+//#define ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help
 void do_on_other_core(void (*function_p)(), int stack_size=DO_ON_OTHER_CORE_STACK_SIZE) {  // create and do one shot task
   BaseType_t err = xTaskCreatePinnedToCore(do_on_other_core_task,	// function
 					   "other_fun",			// name
@@ -44,6 +45,10 @@ void do_on_other_core(void (*function_p)(), int stack_size=DO_ON_OTHER_CORE_STAC
     MENU.out(err);
     MENU.space();
     ERROR_ln(F("do_on_other_core"));
+#if defined ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help
+    extern void esp_heap_and_stack_info();
+    esp_heap_and_stack_info();
+#endif
     // vTaskDelete(do_on_other_core_handle);	// FREEZE...
   }
 }

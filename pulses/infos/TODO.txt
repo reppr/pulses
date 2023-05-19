@@ -1404,3 +1404,7 @@ instrument no trigger pin
 	   // #define LOG_BATTERY_DEFAULT
 
 morse: delete input display when done
+
+MC_display_message(str)  used by ERROR_ln()  should be failsave...
+
+#define ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help	TODO: DADA deactivate

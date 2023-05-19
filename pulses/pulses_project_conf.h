@@ -96,7 +96,7 @@
 //#define BOARD_HELTEC_OLED			// either OLED or ePaper, not both
 //#define USE_RTC_MODULE			// DS3231
 //#undef USE_ESP_NOW				// default is ON
-  #define USE_BLUETOOTH_SERIAL_MENU		// DADA: *does* compile on ESP32-Arduino 2.0.8   TODO: test!
+//#define USE_BLUETOOTH_SERIAL_MENU		// DADA: *does* compile on ESP32-Arduino 2.0.8  *but* RAM goes very low...
 //#define BLUETOOTH_ENABLE_PIN	35		// used by some OLD instruments, probably OBSOLETE
 
 #endif	// TRIGGERED_MUSICBOX2

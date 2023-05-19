@@ -13,6 +13,8 @@
 
 #define MAGICAL_TOILET_HACK_2
 
+#define ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help	TODO: DADA deactivate
+
 //#define DEBUG_DOUBLE_MUX	// deactivated	TODO: REMOVE!
 
 

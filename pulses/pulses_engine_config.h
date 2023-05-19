@@ -52,7 +52,7 @@
 #define DO_STRESS_MANAGMENT
 //#define STRESS_MONITOR_LEVEL	64*2	// TODO: menu interface	// TODO: move to another configuration file
 
-#define USE_BLUETOOTH_SERIAL_MENU	// needs new git versions
+//#define USE_BLUETOOTH_SERIAL_MENU	// RAM gets very low...
 /*
   see: https://github.com/pjalocha/esp32-ogn-tracker/issues/6
     esp_bt_gap_set_scan_mode(ESP_BT_SCAN_MODE_CONNECTABLE_DISCOVERABLE); // for older ESP-IDF

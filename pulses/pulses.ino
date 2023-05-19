@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICALv04694   // USE_MPU6050_at_ADDR
+#define PROGRAM_VERSION	HARMONICALv04695   // some multicore RAM debugging help
 /*			0123456789abcdef   */
 
 
