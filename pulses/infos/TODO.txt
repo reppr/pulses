@@ -1408,3 +1408,5 @@ morse: delete input display when done
 MC_display_message(str)  used by ERROR_ln()  should be failsave...
 
 #define ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help	TODO: DADA deactivate
+
+#define MORSE_TOKEN_MAX		32		// new 32,  is uint8_t	TODO: test&trimm

@@ -53,13 +53,6 @@ MENU.ln();
   //    morse_play_out_tokens();	// play saved tokens in current morse speed ;)
   //  #endif
 
-  //  MENU.outln("DADA morse77");
-  //  show_morse_output_buffer();
-  //  morse_2ACTION();
-    //    morse_tokens2meaning_state();	// obsolete?
-
-    morse_OUTPUT_cnt=0;
-
     /*
     #if defined MORSE_TOKEN_DEBUG
       morse_show_tokens();
@@ -99,7 +92,7 @@ MENU.ln();
   /*
     for(int i = 0; i<MORSE_DEFINITIONS; i++) {
       morse_read_definition(i);
-      morse_definition_set_show(morse_uppercase);
+      morse_definition_set_show(morse_uppercase);	// probably only used for DEBUGGING
     }
   */
 

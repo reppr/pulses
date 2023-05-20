@@ -106,10 +106,11 @@ void morse_show_limits() {
 
   MENU.ln();
 }
-#endif
+#endif // MORSE_COMPILE_HELPERS
 
-#define MORSE_TOKEN_MAX	128			// a *lot* for debugging...	TODO:
-volatile unsigned int morse_token_cnt=0;	// count up to MORSE_TOKEN_MAX . _ ! V tokens to form one letter or COMMAND
+#define MORSE_TOKEN_MAX		32		// new 32,  is uint8_t	TODO: test&trimm
+// #define MORSE_TOKEN_MAX	128		// was: 128  a *lot* for debugging...	TODO:
+volatile uint8_t morse_token_cnt=0;	// count up to MORSE_TOKEN_MAX . _ ! V tokens to form one letter or COMMAND
 char morse_SEEN_TOKENS[MORSE_TOKEN_MAX];
 float morse_token_duration[MORSE_TOKEN_MAX];	// debugging and statistics
 
@@ -674,87 +675,12 @@ bool morse_poll_letter_separation() {
 #endif // MORSE_TOUCH_INPUT_PIN
 /* **************************************************************** */
 
-
-#if ! defined MORSE_OUTPUT_MAX
-  #define MORSE_OUTPUT_MAX	64
-#endif
-char morse_OUTPUT_buffer[MORSE_OUTPUT_MAX]={'0'};
-short morse_OUTPUT_cnt=0;
-
-void morse_2output_buffer(char letter) {
-  if (morse_OUTPUT_cnt < MORSE_OUTPUT_MAX) {
-    morse_OUTPUT_buffer[morse_OUTPUT_cnt++] = letter;
-  } else {
-    ERROR_ln(F("MORSE_OUTPUT_MAX	output skipped"));
-    morse_OUTPUT_cnt=0;	// TODO: maybe output data first? maybe not...
-  }
-
-  morse_OUTPUT_buffer[morse_OUTPUT_cnt] = '\0';	// c style string end
-}
-
-void show_morse_output_buffer() {
-  if (morse_OUTPUT_cnt) {
-    MENU.ln();
-    for (int i=0; i<morse_OUTPUT_cnt; i++)
-      MENU.out(morse_OUTPUT_buffer[i]);
-    MENU.ln();
-  }
-}
-
-void morse_store_as_letter(char token) {	// translate special cases and store as letters		TODO: obsolete?
-  switch (token) {
-  case ILLEGAL8:
-    morse_2output_buffer(MORSE_TOKEN_ILLEGAL);
-  case '\0':
-    return;
-    break;
-
-  case MORSE_TOKEN_separeWord:	// separe words by a space
-    morse_2output_buffer(' ');
-    break;
-
-  // translate special meanings like 'c' 'k' ...	and save
-  case 'c':	// CH
-    morse_2output_buffer('|');
-    morse_2output_buffer('C');
-    morse_2output_buffer('H');
-    morse_2output_buffer('|');
-    break;
-
-  case 'v':	// VE	verstanden
-    morse_2output_buffer('|');
-    morse_2output_buffer('V');
-    morse_2output_buffer('E');
-    morse_2output_buffer('|');
-    break;
-
-  case 'k':	// KA	Spruchanfang
-    morse_2output_buffer('|');
-    morse_2output_buffer('K');
-    morse_2output_buffer('A');
-    morse_2output_buffer('|');
-    break;
-
-  case 'a':	// AR	Spruchende
-    morse_2output_buffer('|');
-    morse_2output_buffer('A');
-    morse_2output_buffer('R');
-    morse_2output_buffer('|');
-    break;
-
-  case 'b':	// BT	Pause
-    morse_2output_buffer('|');
-    morse_2output_buffer('B');
-    morse_2output_buffer('T');
-    morse_2output_buffer('|');
-    break;
-
-  default:
-    morse_2output_buffer(token);
-    break;
-  }
-} // morse_store_as_letter(char token)
-
+// removed obsolete code:
+//   char morse_OUTPUT_buffer[MORSE_OUTPUT_MAX]={'0'};
+//   void morse_2output_buffer(char letter);
+//   void show_morse_output_buffer()
+//   void morse_store_as_letter(char token);
+//   char morse_2ACTION();
 
 
 /* **************************************************************** */
@@ -1354,8 +1280,7 @@ void morse_read_definition(int index) {	// keep index in range, please
   }
 }
 
-// probably only used for debugging
-void morse_show_space_delimited_string(const char *p) {
+void morse_show_space_delimited_string(const char *p) {		// probably only used for DEBUGGING
   if(p==NULL)
     return;
 
@@ -1365,10 +1290,10 @@ void morse_show_space_delimited_string(const char *p) {
     if(c == ' ')	// *does* show delimiting space
       break;
   }
-}
+} // morse_show_space_delimited_string()
 
-// probably only used for debugging
-void morse_definition_set_show(bool uppercase) {
+
+void morse_definition_set_show(bool uppercase) {	// probably only used for DEBUGGING
   MENU.ln();
   MENU.out(morse_def_token_cnt);
   MENU.space();
@@ -1390,7 +1315,7 @@ void morse_definition_set_show(bool uppercase) {
   }
 
   MENU.ln();
-}
+} // morse_definition_set_show()
 
 
 int morse_find_definition(const char* pattern) {  // returns index in morse_definitions_tab[i] or ILLEGAL32
@@ -1410,56 +1335,6 @@ int morse_find_definition(const char* pattern) {  // returns index in morse_defi
   return ILLEGAL32;	// not found
 } // morse_find_definition()
 
-char morse_2ACTION() {
-/*
-  SAVE LETTERS,
-  return CHAR for letters or ILLEGAL8 for unknown patterns
-
-  EXECUTE COMMANDS,
-  return of commands is currently unused, always 0
-*/
-  for(int i=0; i < MORSE_DEFINITIONS; i++) {
-    morse_read_definition(i);
-
-    switch (morse_def_TYPE) {
-    case '*': // LETTER
-      morse_show_space_delimited_string(morse_def_Letter_in_CASE->c_str());
-      MENU.tab();
-      MENU.outln(F("LETTER action"));
-      break;
-
-    case 'C': // COMMAND
-      morse_show_space_delimited_string(morse_def_COMMAND->c_str());
-      MENU.tab();
-      MENU.outln("COMMAND action");
-
-      if(strcmp(morse_def_COMMAND->c_str(), "UPPER") == 0) {
-	morse_uppercase = true;
-      } else if(strcmp(morse_def_COMMAND->c_str(), "LOWER") == 0) {
-	morse_uppercase = false;
-      } else if(strcmp(morse_def_COMMAND->c_str(), "NEXT") == 0) {
-	MENU.out(">>>> NEXT\t");
-	//MENU.outln(morse_OUTPUT_buffer);
-	//MENU.play_KB_macro(morse_OUTPUT_buffer);
-      } else if(strcmp(morse_def_COMMAND->c_str(), "DELLAST") == 0) {
-	MENU.outln(">>>> DELLAST");
-      } else if(strcmp(morse_def_COMMAND->c_str(), "DELWORD") == 0) {
-	MENU.outln(">>>> DELLWORD");
-
-      } else if(strcmp(morse_def_COMMAND->c_str(), "MISTAKE") == 0) {
-	MENU.outln(">>>> MISTAKE");
-      }
-
-      break;
-
-    default:
-      ERROR_ln(F("morse_2ACTION"));
-    }
-  }
-
-
-  return ILLEGAL8;
-} // morse_2ACTION()
 
 /* **************************************************************** */
 
