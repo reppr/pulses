@@ -757,6 +757,10 @@ int i2c_scan() {
 	MENU.outln(F("APDS9960  proximity, gesture, RGB sensor"));
 	break;
 
+      case 0x40:
+	MENU.outln(F("SHT21  humidity, temperature sensor"));
+	break;
+
       case 0x50:
       case 0x51:
       case 0x52:
