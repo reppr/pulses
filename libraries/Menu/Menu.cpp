@@ -12,6 +12,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <iostream>
+#include <string>
+#include <initializer_list>
+#include <stdarg.h>
+
 #ifdef ARDUINO
   /* Keep ARDUINO GUI happy ;(		*/
   #if ARDUINO >= 100
@@ -209,6 +214,23 @@ char Menu::cb_read() {
   void Menu::outln(const long l)	const	{ MENU_OUTln(l); }
   void Menu::outln(const char *str)	const	{ MENU_OUTln(str); }	// c-style character string and newline
   void Menu::outln(const String s)	const	{ MENU_OUTln(s); }	// c++ String and newline
+
+// printf style output,  see:
+// https://stackoverflow.com/questions/1056411/how-to-pass-variable-number-of-arguments-to-printf-sprintf
+/*
+   from man vsprintf:
+   The  functions  vprintf(),  vfprintf(),  vdprintf(), vsprintf(), vsnprintf() are equivalent to the functions printf(), fprintf(),
+   dprintf(), sprintf(), snprintf(), respectively, except that they are called with a va_list instead of a variable number of  argu‐
+   ments.   These  functions do not call the va_end macro.  Because they invoke the va_arg macro, the value of ap is undefined after
+   the call.  See stdarg(3).
+*/
+void Menu::printf(const char *format, ...) const {	// printf style output
+    va_list args;
+    char txt[64] {0};
+    va_start(args, format);
+    vsnprintf(txt, sizeof(txt), format, args);
+    MENU_OUT(txt);
+  }
 
 #ifndef INTEGER_ONLY
   void Menu::outln(const double d)	const	{ MENU_OUTln(d); }

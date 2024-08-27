@@ -9,6 +9,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <iostream>
+#include <string>
+#include <initializer_list>
+
 #ifdef ARDUINO
   #define STREAMTYPE	Stream
 #else
@@ -225,6 +229,8 @@ class Menu {
 #endif
 
   void out(const float f, int places)	const;	// formatted float output
+
+  void printf(const char *format, ...)	const;	// formatted printf style output
 
   void ticked(const char c) const;  // output a ticked char token like 'A'
 
