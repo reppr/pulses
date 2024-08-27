@@ -37,6 +37,7 @@ void display_esp_versions() {
 
 // see: https://github.com/espressif/arduino-esp32/issues/932
 #include "esp_system.h"
+#include "esp_mac.h"	// ESP_MAC_WIFI_STA was not defined
 String getMacAddress() {
   uint8_t baseMac[6];
   // Get MAC address for WiFi station
