@@ -27,16 +27,16 @@
 
 
 #if ! defined ILLEGAL8
-  #define ILLEGAL8	255
+  #define ILLEGAL8	(uint8_t) 255
 #endif
 #if ! defined EOF8
   #define EOF8		ILLEGAL8
 #endif
 #if ! defined ILLEGAL16
-  #define ILLEGAL16	0xffff
+  #define ILLEGAL16	(short) 0xffff
 #endif
 #if ! defined EOF32
-  #define EOF32		0xffffffff
+  #define EOF32		(int) 0xffffffff
 #endif
 
 /* **************************************************************** */

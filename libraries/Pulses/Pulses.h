@@ -25,10 +25,10 @@
 #include "../../pulses/pulses_boards.h"
 
 #if ! defined ILLEGAL8
-  #define ILLEGAL8	255
+#define ILLEGAL8	(uint8_t) 255
 #endif
 #if ! defined ILLEGAL16
-  #define ILLEGAL16	0xffff
+#define ILLEGAL16	(short) 0xffff
 #endif
 #if ! defined ILLEGAL32
   #define ILLEGAL32	0xffffffff

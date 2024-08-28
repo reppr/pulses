@@ -16,7 +16,7 @@
 #endif
 
 #if ! defined EOF32
-  #define EOF32		0xffffffff
+  #define EOF32		(int) 0xffffffff
 #endif
 
 /* **************************************************************** */
