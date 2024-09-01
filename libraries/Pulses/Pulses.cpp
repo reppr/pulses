@@ -187,7 +187,7 @@ pulse_time_t Pulses::get_now() {	// get time, set now.time and now.overflow
 #endif
 
   return now;
-} // Pulses::init_time()
+} // Pulses::get_now()
 
 
 /*
