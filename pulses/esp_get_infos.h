@@ -35,17 +35,24 @@ void display_esp_versions() {
 #endif
 } // display_esp_versions()
 
-// see: https://github.com/espressif/arduino-esp32/issues/932
-#include "esp_system.h"
-#include "esp_mac.h"	// ESP_MAC_WIFI_STA was not defined
+#if ! defined GET_6_BYTES_MAC_IS_COMPILED
+  void get_6_bytes_mac(uint8_t* c6) {
+    String mac = WiFi.macAddress();	// Get MAC address for WiFi station
+    const char * c = mac.c_str();
+    for(int i=0; i<6; i++) {		// 6 bytes
+      c6[i] = *c++;
+    }
+  } // get_6_bytes_mac()
+#define  GET_6_BYTES_MAC_IS_COMPILED
+#endif
+
 String getMacAddress() {
   uint8_t baseMac[6];
-  // Get MAC address for WiFi station
-  esp_read_mac(baseMac, ESP_MAC_WIFI_STA);
+  get_6_bytes_mac(baseMac);	// Get MAC address for WiFi station
   char baseMacChr[18] = {0};
   sprintf(baseMacChr, "%02X:%02X:%02X:%02X:%02X:%02X", baseMac[0], baseMac[1], baseMac[2], baseMac[3], baseMac[4], baseMac[5]);
   return String(baseMacChr);
-}
+} // getMacAddress()
 
 // see: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/heap_debug.html#heap-information
 #include "esp_heap_caps.h"
