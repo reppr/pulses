@@ -121,8 +121,8 @@
 #define USE_MORSE	// touch morse code is in use :)
 #if defined USE_MORSE
   #if defined MUSICBOX2_PIN_MAPPING	// #define this in my_pulses_config.h
-    #define MORSE_OUTPUT_PIN	12
-  #else
+    #define MORSE_OUTPUT_PIN	12	// *let* redefinition warnings appear...
+  #else					// *let* redefinition warnings appear...
     #define MORSE_OUTPUT_PIN	PERIPHERAL_POWER_SWITCH_PIN	// *ONLY* possible if there's *NO POWER SWITCH HARDWARE*
   #endif
 #endif
