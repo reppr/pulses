@@ -15,6 +15,7 @@
 
 #include <esp_now.h>
 #include <WiFi.h>
+#include <esp_wifi.h>			// maybe good to include anyway?
 #include "pulses_esp_err.h"		// esp_err_t ERROR reporting
 
 //#define ESP_NOW_SETUP_CALL_PARTICIPANTS	// TESTING: DEACTIVATED setup participants call
@@ -98,6 +99,7 @@ bool /*difference*/ mac_cmp(uint8_t* mac1,uint8_t* mac2) {
 uint8_t* esp_now_send2_mac_p = broadcast_mac; // DEFAULT: *first* message will be BROADCASTed
 
 // esp_now_reaction_timer  give reactions on broadcast or all_known_peers messages in an individual time slice
+#include "driver/gptimer.h"	// NEW: use new gptimer driver
 hw_timer_t * esp_now_reaction_timer = NULL;
 
 extern void show_peer_id(peer_ID_t* this_peer_ID_p);
@@ -536,10 +538,10 @@ void esp_now_prepare_N_ID(uint8_t* to_mac) {
   esp_now_add_identity();			// my_IDENTITY
 
   // setup time sliced reaction
-  esp_now_reaction_timer = timerBegin(0, 80, true /* count upwards */);
-  timerAttachInterrupt(esp_now_reaction_timer, &trigger_send_identity, true /* edge */);
-  timerAlarmWrite(esp_now_reaction_timer, (time_slice_ms * 1000), false /* only once */);
-  timerAlarmEnable(esp_now_reaction_timer);
+  esp_now_reaction_timer = timerBegin(1000000);
+  timerAttachInterrupt(esp_now_reaction_timer, &trigger_send_identity);
+  timerAlarm(esp_now_reaction_timer, (time_slice_ms * 1000), false /* only once */, 0);
+  //  timerAlarmEnable(esp_now_reaction_timer);	// DADA:  not needed any more? ################
 } // esp_now_prepare_N_ID()
 
 
@@ -879,7 +881,7 @@ esp_err_t esp_now_pulses_setup_0() {		// setup 1st stage
 
   MENU.outln(F("  esp_now_register_recv_cb()"));
   yield();
-  status = esp_now_register_recv_cb(pulses_data_received_callback);
+  status = esp_now_register_recv_cb((esp_now_recv_cb_t) pulses_data_received_callback);
   if(status != ESP_OK)
     return status;
 
@@ -918,6 +920,7 @@ esp_err_t esp_now_pulses_setup_0() {		// setup 1st stage
 
 void esp_now_pulses_setup() {
   esp_err_t status;
+
   MENU.outln(F("\nesp_now_pulses_setup()"));
   if((status = esp_now_pulses_setup_0())) {
     MENU.out(F("failed "));
@@ -925,7 +928,9 @@ void esp_now_pulses_setup() {
 
   } else {
     MENU.out(F("ok  MAC: "));
-    esp_read_mac(my_MAC, ESP_MAC_WIFI_STA);	// set my_MAC
+
+    char my_mac[6] = {0};
+    get_6_bytes_mac(my_MAC);
     extern char* MAC_str(const uint8_t* mac);
     MENU.outln(MAC_str(my_MAC));
 
