@@ -85,8 +85,7 @@ sub_time	KEYWORD2
 time_info	KEYWORD2
 time_reached	KEYWORD2
 time_skip_selected	KEYWORD2
-timer64Group	KEYWORD2
-timer64Num	KEYWORD2
+timer64_handle	KEYWORD2
 toggle_selection	KEYWORD2
 wake_pulse	KEYWORD2
 

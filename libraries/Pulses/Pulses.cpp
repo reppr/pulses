@@ -23,7 +23,7 @@
 #include <stdlib.h>
 
 #if defined ESP32
-  #include "driver/timer.h"		// timer64
+  #include "driver/gptimer.h"		// timer64
   #include "esp_err.h"
   #include "driver/ledc.h"		// *testing* LEDC
 #endif
@@ -62,10 +62,8 @@ Pulses::Pulses(int pl_max, Menu *MENU):
   hex_input_mask_index(0),
   do_A2(NULL),
   now64((uint64_t) -1),
-  overflow_sec(4294.9672851562600),	// OBSOLETE: overflow time in seconds
-  timer64Group((timer_group_t) 1),
-  timer64Num((timer_idx_t) 1)
-
+  overflow_sec(4294.9672851562600),	// OBSOLETE: overflow time in seconds	old int overflow style only
+  timer64_handle(NULL)
 #ifdef IMPLEMENT_TUNING
   , tuning(1.0)
 #endif
@@ -134,14 +132,23 @@ pulse_time_t Pulses::INVALID_time() {
 #endif
 
 esp_err_t /*error=*/ Pulses::init_time() {	// do this once from setup()
-  timer_config_t TIME64_conf;
-  TIME64_conf.alarm_en = TIMER_ALARM_DIS;
-  TIME64_conf.counter_en = TIMER_START;
-  //TIME64_conf.intr_type
-  TIME64_conf.counter_dir = TIMER_COUNT_UP;
-  //TIME64_conf.auto_reload
-  TIME64_conf.divider=80;
-  esp_err_t err = timer_init(timer64Group, timer64Num, &TIME64_conf);
+  gptimer_config_t TIME64_conf;
+  timer64_handle = NULL;
+  gptimer_config_t timer_config =
+    {
+     .clk_src = GPTIMER_CLK_SRC_DEFAULT,
+     .direction = GPTIMER_COUNT_UP,
+     .resolution_hz = 1 * 1000 * 1000, // 1MHz, 1 tick = 1us
+    };
+  esp_err_t err = (gptimer_new_timer(&timer_config, &timer64_handle));
+  if(err != ESP_OK)
+    return err;
+
+  err = gptimer_enable(timer64_handle);
+  if(err != ESP_OK)
+    return err;
+
+  err = gptimer_start(timer64_handle);
   if(err != ESP_OK)
     return err;
 
@@ -162,12 +169,12 @@ esp_err_t /*error=*/ Pulses::init_time() {	// do this once from setup()
 } // Pulses::init_time()
 
 esp_err_t Pulses::get_timer64_value(uint64_t* value64) {
-  return timer_get_counter_value(timer64Group, timer64Num, value64);
+  return gptimer_get_raw_count(timer64_handle, value64);
 }
 
 void Pulses::reset_timer64() {
-  // esp_err_t timer_set_counter_value(timer_group_t group_num, timer_idx_t timer_num, uint64_t load_val)
-  timer_set_counter_value(timer64Group, timer64Num, 0L);
+  // esp_err_t gptimer_set_raw_count(gptimer_handle_t timer, uint64_t value)
+  gptimer_set_raw_count(timer64_handle, 0L);
   get_now();
 }
 
@@ -2095,7 +2102,7 @@ float Pulses::display_realtime_sec(pulse_time_t duration) {
   float seconds=((float) ((unsigned long) duration.time) / 1000000.0);
 
   if (duration.overflow != 0)
-    seconds += overflow_sec * (float) ((signed long) duration.overflow);
+    seconds += overflow_sec * (float) ((signed long) duration.overflow);	// OBSOLETE: old int overflow style only
 #endif // old int overflow style
 
   float scratch = 1000.0;

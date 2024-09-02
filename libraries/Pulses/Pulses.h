@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include "driver/timer.h"		// timer64
+#include "driver/gptimer.h"	// timer64	NEW: replaces driver/timer.h
 #include "esp_err.h"
 
 #include "../../pulses/pulses_engine_config.h"
@@ -512,7 +512,7 @@ class Pulses {
   unsigned long time_unit;
 
   // Menu output, info
-  const float overflow_sec;				// overflow time in seconds
+  const float overflow_sec;				// overflow time in seconds	 // OBSOLETE: old int overflow style only
   void display_now();					// display current time
   void time_info();					// same with digital details and global next
   float display_realtime_sec(pulse_time_t duration);	// display duration in seconds
@@ -557,9 +557,7 @@ class Pulses {
 				//   (there can't be more then pl_max)
 
   pulses_mask_t * selected_pulses_p;  // bitmask pointer, a bit for each selected pulse
-
-  timer_group_t timer64Group;
-  timer_idx_t timer64Num;
+  gptimer_handle_t timer64_handle;
 };
 
 /* **************************************************************** */

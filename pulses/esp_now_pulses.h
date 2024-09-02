@@ -82,7 +82,7 @@ uint8_t time_sliced_sent_to_mac[6]={0};
 
 bool /*difference*/ mac_cmp(uint8_t* mac1,uint8_t* mac2) {
   if(mac1 == NULL || mac2 == NULL) // check for NULL pointers
-    return true;  		   // a NULL pointer is *always* considered unequal here ;)
+    return true;		   // a NULL pointer is *always* considered unequal here ;)
 
   // else
   return (mac1[5] != mac2[5]  ||  mac1[4] != mac2[4]  ||  mac1[3] != mac2[3]  ||  \
@@ -102,8 +102,20 @@ hw_timer_t * esp_now_reaction_timer = NULL;
 
 extern void show_peer_id(peer_ID_t* this_peer_ID_p);
 
+#if ! defined GET_6_BYTES_MAC_IS_COMPILED
+void get_6_bytes_mac(uint8_t* c6) {
+  String mac = WiFi.macAddress();	// Get MAC address for WiFi station
+  const char * c = mac.c_str();
+  for(int i=0; i<6; i++) {		// 6 bytes
+    c6[i] = *c++;
+  }
+} // get_6_bytes_mac()
+#define  GET_6_BYTES_MAC_IS_COMPILED
+#endif
+
 void set_my_IDENTITY() {
-  esp_read_mac(my_IDENTITY.mac_addr, ESP_MAC_WIFI_STA);
+//was:  esp_read_mac(my_IDENTITY.mac_addr, ESP_MAC_WIFI_STA);	// ESP_MAC_WIFI_STA was not known any more...
+  get_6_bytes_mac(my_IDENTITY.mac_addr);
 
 // my_IDENTITY.esp_now_time_slice  set from nvs
 
