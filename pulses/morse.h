@@ -506,7 +506,7 @@ bool check_and_treat_morse_events_v3() {	// polled from pulses.ino main loop()	*
   if(morse_events_read_i == morse_events_write_i) {
     bool retval=false;	// FIXME: unused?
     if(morse_letter_separation_expected) {
-      bool morse_poll_letter_separation();  // pre declaration
+      extern bool morse_poll_letter_separation();
       retval = morse_poll_letter_separation();
     }
     portEXIT_CRITICAL(&morse_MUX);

@@ -63,43 +63,28 @@ if(MENU.check_next('l'))
 // show_metric_cents_list();	// TODO: move to Tuning hierarchy
 break;
 
-/*void dumpSysInfo()*/ {
-  esp_chip_info_t sysinfo;
-  esp_chip_info(&sysinfo);
-  Serial.print("Model: ");
-  Serial.print((int)sysinfo.model);
-  Serial.print("; Features: 0x");
-  Serial.print((int)sysinfo.features, HEX);
-  Serial.print("; Cores: ");
-  Serial.print((int)sysinfo.cores);
-  Serial.print("; Revision: r");
-  Serial.println((int)sysinfo.revision);
-}
+// /*void dumpSysInfo()*/ {
+//   #include "esp_cpu.h"	// for esp_chip_info	// DADA: did not help
+//   #include "esp_chip_info.h"
+//   esp_chip_info_t sysinfo;
+//   esp_chip_info(&sysinfo);
+//   Serial.print("Model: ");
+//   Serial.print((int)sysinfo.model);
+//   Serial.print("; Features: 0x");
+//   Serial.print((int)sysinfo.features, HEX);
+//   Serial.print("; Cores: ");
+//   Serial.print((int)sysinfo.cores);
+//   Serial.print("; Revision: r");
+//   Serial.println((int)sysinfo.revision);
+// }
 
-
-{
-  esp_chip_info_t sysinfo;
-  MENU.out(F("cores "));
-  MENU.outln((int) sysinfo.cores);
-}
-break;
-
-// #include "driver/timer.h"
-//
-// uint64_t timer_val=0;
-// esp_err_t status;
-// for(int g=0; g<2; g++) {
-//   MENU.out("g="); MENU.outln(g);
-//   for(int i=0; i<2; i++) {
-//     MENU.out("\ti="); MENU.outln(i);
-//     status = timer_get_counter_value((timer_group_t) g, (timer_idx_t) i, &timer_val);
-//     MENU.out("\tok? "); MENU.outln(status);
-//     MENU.out("\tn="); MENU.out((int) (timer_val &0xffffffff)); MENU.tab(); MENU.out((int) ((timer_val >> 32) &0xffffffff));
-//
-//     MENU.ln(2);
-//   }
-//  }
+// {
+//   esp_chip_info_t sysinfo;
+//   MENU.out(F("cores "));
+//   MENU.outln((int) sysinfo.cores);
+// }
 // break;
+
 
 #if defined USE_LEDC_AUDIO //	very first tests
 

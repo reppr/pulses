@@ -1410,3 +1410,7 @@ MC_display_message(str)  used by ERROR_ln()  should be failsave...
 #define ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help	TODO: DADA deactivate
 
 #define MORSE_TOKEN_MAX		32		// new 32,  is uint8_t	TODO: test&trimm
+
+TODO.txt	should not look like a binary blob
+
+ledcAttach(LED_PIN, LEDC_BASE_FREQ, LEDC_TIMER_13_BIT);	// FIXME: TEST new LEDC espressif software version

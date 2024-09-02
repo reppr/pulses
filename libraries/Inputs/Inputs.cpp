@@ -150,8 +150,7 @@ bool Inputs::sample_and_react(int inp) {
     #define LEDC_BASE_FREQ	5000
     #define LEDC_TIMER_13_BIT	13	// ################ FIXME: test PWMBASE
     #define LED_PIN		2
-    ledcSetup(LEDC_CHANNEL_0, LEDC_BASE_FREQ, LEDC_TIMER_13_BIT);	// ################ FIXME:
-    ledcAttachPin(LED_PIN, LEDC_CHANNEL_0);
+    ledcAttach(LED_PIN, LEDC_BASE_FREQ, LEDC_TIMER_13_BIT);	// FIXME: TEST new LEDC espressif software version
   #endif
 
   analogWrite(inputs[inp].out_A, output_value);	// inbuilt PWM

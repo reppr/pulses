@@ -571,3 +571,34 @@ private:
 
 /* ****************  END DEMO SETUPS  **************** */
 /* **************************************************************** */
+
+
+/* **************************************************************** */
+/*
+  find_free_timer.h
+  ESP32 *only*
+*/
+
+#if ! defined FIND_FREE_TIMER_H
+
+#include "driver/timer.h"	// "driver/gptimer.h" does not need that any more...(???)
+				// NEVER USED anyway outside of debugging or exploring
+
+uint64_t timer_val=0;
+esp_err_t status;
+for(int g=0; g<2; g++) {
+  MENU.out("g="); MENU.outln(g);
+  for(int i=0; i<2; i++) {
+    MENU.out("\ti="); MENU.outln(i);
+    status = timer_get_counter_value((timer_group_t) g, (timer_idx_t) i, &timer_val);
+    MENU.out("\tok? "); MENU.outln(status);
+    MENU.out("\tn="); MENU.out((int) (timer_val &0xffffffff)); MENU.tab(); MENU.out((int) ((timer_val >> 32) &0xffffffff));
+
+    MENU.ln(2);
+  }
+ }
+
+
+#define FIND_FREE_TIMER_H
+#endif
+/* **************************************************************** */

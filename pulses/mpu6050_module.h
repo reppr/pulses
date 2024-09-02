@@ -831,8 +831,8 @@ void accGyro_reaction_v2() {	// react on data coming from accGyro_sample()
       if(accGyro_mode & AG_mode_Gz) {		// gyro Y
 	if(Gz_i_new != _selected_Gz_i_seen) {
 	  _selected_Gz_i_seen = Gz_i_new;
-	  extern int sync_shifting_divisor;
-	  extern int sync_shifting_multiplier;
+	  extern unsigned int sync_shifting_divisor;
+	  extern unsigned int sync_shifting_multiplier;
 #if defined PULSES_USE_DOUBLE_TIMES
 	  extern void sync_shifting(int multiplier, int divisor);
 	  sync_shifting(_selected_Gz_i_seen * sync_shifting_multiplier, sync_shifting_divisor);
