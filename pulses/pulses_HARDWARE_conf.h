@@ -79,7 +79,13 @@ typedef struct pulses_hardware_conf_t {
 
   // RGB LED strings
   uint8_t rgb_strings=0;		// flag and rgb led string cnt
-  uint8_t rgb_pin[RGB_STRINGS_MAX]={RGB_LED_STRIP_DATA_PIN};		// %4	TODO: FIX ALIGNEMENT
+
+  #if defined RGB_LED_STRIP_DATA_PIN
+    uint8_t rgb_pin[RGB_STRINGS_MAX]={RGB_LED_STRIP_DATA_PIN};		// %4	TODO: FIX ALIGNEMENT
+  #else
+    uint8_t rgb_pin[RGB_STRINGS_MAX]={255};				// %4	TODO: FIX ALIGNEMENT
+  #endif
+
   uint8_t rgb_pixel_cnt[RGB_STRINGS_MAX]={0};				// %4
   uint8_t rgb_led_voltage_type[RGB_STRINGS_MAX]={0};			// %4
   uint8_t rgb_pattern0[RGB_STRINGS_MAX]={0};				// %4
@@ -167,8 +173,289 @@ typedef struct pulses_hardware_conf_t {
 
 } pulses_hardware_conf_t;
 
-// pulses_hardware_conf_t HARDWARE;	// hardware of this instrument
+extern pulses_hardware_conf_t HARDWARE;	// hardware of this instrument
 
+void show_pin_or_dash(uint8_t pin) {
+  if(pin==ILLEGAL8)
+    MENU.out('-');
+  else
+    MENU.out(pin);
+}
+
+void show_monochrome_type(int type) {
+  MENU.out(F("monochrome\t\t"));
+  switch(type) {
+  case monochrome_type_off:
+    MENU.outln('-');
+    break;
+  case monochrome_type_heltec:
+    MENU.outln(F("heltec"));
+    break;
+  case monochrome_type_LiPO:
+    MENU.outln(F("OLED LiPO"));
+    break;
+  case monochrome_type_LILYGO_T5:
+    MENU.outln(F("LILYGO_T5"));
+    break;
+  default:
+    extern void ERROR_ln(const char* text);
+    ERROR_ln(F("monochrome_type unknown"));
+  }
+} // show_monochrome_type(int type)
+
+
+bool show_pulses_pin_usage(gpio_pin_t pin) {
+  bool retval=false;
+  // gpio
+  if(HARDWARE.gpio_pins_cnt) {
+    for(int i=0; 1 < HARDWARE.gpio_pins_cnt; i++) {
+      if(pin == HARDWARE.gpio_pins[i]) {
+	MENU.out(F("GPIO "));
+	MENU.out(pin);
+	MENU.tab(2);
+	retval = true;
+      }
+    }
+  }
+
+  // dac
+  if(pin == HARDWARE.DAC1_pin) {
+    MENU.out(F("DAC1 "));
+    MENU.out(pin);
+    MENU.tab(2);
+    retval = true;
+  }
+  if(pin == HARDWARE.DAC2_pin) {
+    MENU.out(F("DAC2 "));
+    MENU.out(pin);
+    MENU.tab(2);
+    retval = true;
+  }
+
+  // morse
+  if(pin == HARDWARE.morse_touch_input_pin) {
+    MENU.out(F("morse touch "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+  if(pin == HARDWARE.morse_gpio_input_pin) {
+    MENU.out(F("morse gpio "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+  if(pin == HARDWARE.morse_output_pin) {
+    MENU.out(F("morse out "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+
+  // rgb led strings
+  if(HARDWARE.rgb_strings) {
+    for(int i=0; i < RGB_STRINGS_MAX; i++) {
+      if(pin == HARDWARE.rgb_pin[i]) {
+	MENU.out(F("RGB["));
+	MENU.out(i);
+	MENU.out(F("] data "));
+	MENU.out(pin);
+	MENU.tab();
+	retval = true;
+      }
+    }
+  }
+
+  // trigger
+  if(pin == HARDWARE.musicbox_trigger_pin) {
+    MENU.out(F("trigger "));
+    MENU.out(pin);
+    MENU.tab(2);
+    retval = true;
+  }
+
+  // peripheral power switch
+  if(pin == HARDWARE.periph_power_switch_pin) {
+    MENU.out(F("peripheral power "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+
+  // battery control
+  if(pin == HARDWARE.battery_level_control_pin) {
+    MENU.out(F("battery level "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+
+  // bluetooth
+  if(pin == HARDWARE.bluetooth_enable_pin) {
+    MENU.out(F("bluetooth enable "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+
+  // MIDI
+  if(pin == HARDWARE.MIDI_in_pin) {
+    MENU.out(F("MIDI IN "));
+    MENU.out(pin);
+    MENU.tab(2);
+    retval = true;
+  }
+  if(pin == HARDWARE.MIDI_out_pin) {
+    MENU.out(F("MIDI OUT "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+
+  // other pins
+  if(pin == HARDWARE.magical_fart_output_pin) {
+    MENU.out(F("magical fart "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+
+  if(pin == HARDWARE.magical_sense_pin) {
+    MENU.out(F("magical sense "));
+    MENU.out(pin);
+    MENU.tab();
+    retval = true;
+  }
+
+  if(pin == HARDWARE.tone_pin) {	// from very old code, could be recycled?
+    MENU.out(F("tone "));
+    MENU.out(pin);
+    MENU.tab(2);
+    retval = true;
+  }
+
+// HCSR04_TRIGGER_PIN
+// HCSR04_ECHO_PIN
+
+// LED_PIN
+//#if defined ONBOARD_LED
+//  #error IMPLEMENT ONBOARD_LED ...
+//#endif
+
+  return retval;
+} // show_pulses_pin_usage()
+
+void show_hardware_conf(pulses_hardware_conf_t* hardware) {
+#if defined PULSES_SYSTEMS
+  MENU.out(F("GPIO click pins\t\t"));
+  if(hardware->gpio_pins_cnt) {
+    MENU.outln(hardware->gpio_pins_cnt);
+    extern void show_GPIOs();
+    show_GPIOs();
+  } else
+    MENU.outln('-');
+#endif
+
+  MENU.out(F("DAC1/DAC2 pins\t\t"));
+  show_pin_or_dash(hardware->DAC1_pin);
+  MENU.tab();
+  show_pin_or_dash(hardware->DAC2_pin);
+  MENU.ln();
+
+  MENU.out(F("MPU6050\t\t\t"));
+  if(hardware->mpu6050_addr) {
+    MENU.out_hex(hardware->mpu6050_addr);
+    MENU.ln();
+#if defined USE_MPU6050_at_ADDR
+    extern void show_accGyro_offsets();
+    show_accGyro_offsets();
+#endif
+  } else
+    MENU.outln(F("no"));
+
+  MENU.out(F("musicbox_trigger_pin\t"));
+  show_pin_or_dash(hardware->musicbox_trigger_pin);
+  MENU.ln();
+
+  MENU.out(F("battery level pin\t"));
+  show_pin_or_dash(hardware->battery_level_control_pin);
+  MENU.ln();
+
+  MENU.out(F("peripheral power switch\t"));
+  show_pin_or_dash(hardware->periph_power_switch_pin);
+  MENU.ln();
+
+  MENU.out(F("morse_touch_input\t"));
+  show_pin_or_dash(hardware->morse_touch_input_pin);
+  MENU.ln();
+
+  MENU.out(F("morse_gpio_input\t"));
+  show_pin_or_dash(hardware->morse_gpio_input_pin);
+  MENU.ln();
+
+  MENU.out(F("morse_output_pin\t"));
+  show_pin_or_dash(hardware->morse_output_pin);
+  MENU.ln();
+
+  MENU.out(F("bluetooth_enable_pin\t"));
+  show_pin_or_dash(hardware->bluetooth_enable_pin);
+  MENU.ln();
+
+  show_monochrome_type(hardware->monochrome_type);
+
+#if defined USE_ESP_NOW
+  MENU.out(F("ESP-NOW CHANNEL\t\t"));
+  show_pin_or_dash(hardware->esp_now_channel);
+  MENU.ln();
+#endif
+
+  MENU.out(F("RGB LED strings\t\t"));
+  if(hardware->rgb_strings) {
+    MENU.outln(hardware->rgb_strings);
+    for(int i=0; i<hardware->rgb_strings; i++) {
+      MENU.out(F(" #"));
+      MENU.out(i);
+
+      MENU.out(F("\tpin "));
+      MENU.out(hardware->rgb_pin[i]);
+
+      MENU.out(F("\tcnt "));
+      MENU.out(hardware->rgb_pixel_cnt[i]);
+
+      MENU.out(F("\tvoltage "));
+      MENU.out(hardware->rgb_led_voltage_type[i]);
+
+      MENU.out(F("\tstart "));
+      MENU.outln(hardware->rgb_pattern0[i]);
+    }
+
+    MENU.out(F("all use voltage type\t"));
+    MENU.outln(hardware->rgb_led_voltage_type[0]);
+  } else
+    MENU.outln('-');
+
+  MENU.out(F("MIDI\t\t\tin "));
+  show_pin_or_dash(hardware->MIDI_in_pin);
+  MENU.out(F("\tout "));
+  show_pin_or_dash(hardware->MIDI_out_pin);
+  MENU.ln();
+
+/*
+  MENU.outln(F("RTC\t\t\tTODO:"));	// TODO: RTC
+*/
+
+  // other pins
+  // switch(version)
+  // nvs flags
+  // LORA?
+  MENU.ln();
+} // show_hardware_conf()
+
+
+void show_current_hardware_conf() {	// same, with title, for menu output
+  MENU.outln(F("current HARDWARE configuration:"));
+  show_hardware_conf(&HARDWARE);
+}
 
 #define PULSES_HARDWARE_CONF_H
 #endif

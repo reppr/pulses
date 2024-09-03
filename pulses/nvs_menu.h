@@ -83,6 +83,7 @@ bool nvs_menu_reaction(char token) {
       break;
 
     default:
+      extern void ERROR_ln(const char* text);
       ERROR_ln(F("say HR HS H?"));	// error feedback
       return false;
     } // switch(next_token) after 'H'
@@ -281,4 +282,4 @@ bool nvs_menu_reaction(char token) {
   }
 
   return true;		// found
-}
+} // nvs_menu_reaction()

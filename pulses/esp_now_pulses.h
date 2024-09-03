@@ -622,8 +622,12 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
     break;
 
   case N_ST:
+#if defined PULSES_SYSTEM
     extern void sync_landscape_time_sliced();
     sync_landscape_time_sliced();
+#else
+    MENU.error_ln(F("no sync_landscape_time_sliced()"));
+#endif
     break;
 
   case PRES:
@@ -643,8 +647,12 @@ static void esp_now_pulses_reaction(const uint8_t *mac_addr) {
       }
       esp_now_add_peer_mac_only(mac_addr);
 
+#if defined PULSES_SYSTEM
       extern void load_preset_and_start(short preset, bool start=true);
       load_preset_and_start(new_preset);
+#else
+      MENU.error_ln(F("no presets to start one..."));
+#endif
     }
     break;
 

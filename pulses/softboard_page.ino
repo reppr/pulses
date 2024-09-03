@@ -978,9 +978,9 @@ bool digital_pin_ok() {
     _select_digital(true);
     MENU.ln();
     return false;
-  } else
-    return true;
-}
+  } // else
+  return true;
+} // digital_pin_ok()
 
 
 // bool softboard_reaction(char token)
