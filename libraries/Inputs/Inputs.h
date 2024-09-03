@@ -28,11 +28,7 @@
   #endif
 #endif // ARDUINO
 
-
-#ifndef gpio_pin_t
-  #define gpio_pin_t	int8_t		// negative values might be used for pin extensions
-//  #define gpio_pin_t	short			// negative values might be used for pin extensions
-#endif
+typedef int8_t gpio_pin_t;		// negative values might be used for pin extensions
 
 
 /* **************************************************************** */

@@ -3,6 +3,8 @@
 #ifndef GPIO_PINS_CONFIGURATION_H
 #define GPIO_PINS_CONFIGURATION_H
 
+typedef int8_t gpio_pin_t;	// negative values might be used for pin extensions
+
 #if defined(GPIO_PINS) && ! defined NO_GPIO_PINS
 
 // which board?

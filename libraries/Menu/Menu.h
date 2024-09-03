@@ -39,6 +39,8 @@
   #define EOF32		(int) 0xffffffff
 #endif
 
+typedef int8_t gpio_pin_t;		// negative values might be used for pin extensions
+
 /* **************************************************************** */
 // verbosity:	Levels of menu feedback:
 #define VERBOSITY_LOWEST	1

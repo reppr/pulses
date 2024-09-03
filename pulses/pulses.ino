@@ -1153,7 +1153,7 @@ void setup_initial_HARDWARE_conf() {
   if (GPIO_PINS) {
     for(int i=0; i<GPIO_PINS; i++) {
       extern gpio_pin_t gpio_pins[GPIO_PINS];
-      HARDWARE.gpio_pins[i] = gpio_pins[i];
+      HARDWARE.gpio_pins[i] = (gpio_pin_t) gpio_pins[i];
     }
   }
 
@@ -1634,9 +1634,9 @@ void show_pulses_all_pins_usage() {
     MENU.space();
     MENU.tab();
 
-    show_pulses_pin_usage(i);	// +++
+    show_pulses_pin_usage((gpio_pin_t) i);	// +++
 #if defined ESP32
-    show_esp32_pin_capabilities(i);
+    show_esp32_pin_capabilities((gpio_pin_t) i);
 #endif
     MENU.ln();
   }

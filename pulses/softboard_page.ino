@@ -22,10 +22,6 @@
   #include <iostream>
 #endif
 
-#ifndef gpio_pin_t
-  #define gpio_pin_t	int8_t		// negative values might be used for pin extensions
-//  #define gpio_pin_t	short			// negative values might be used for pin extensions
-#endif
 
 /* ****   CODE TO INSERT TO THE START OF YOUR PROGRAM ends:    **** */
 /* **************************************************************** */
@@ -87,6 +83,8 @@
 /* **************************************************************** */
 /* ARDUINO BOARD SPECIFIC THINGS  try to use ARDUINO MACROS: */
 #include <pins_arduino.h>
+
+typedef int8_t gpio_pin_t;		// negative values might be used for pin extensions
 
 
 // NodeMCU ESP8266 board
@@ -339,8 +337,8 @@ void pin_info_digital(gpio_pin_t pin) {
 
 // display configuration and state of all digital pins:
 void pins_info_digital() {
-  for (gpio_pin_t pin=0; pin<visible_digital_pins; pin++)
-    pin_info_digital(pin);
+  for (int pin=0; pin<visible_digital_pins; pin++)
+    pin_info_digital((gpio_pin_t) pin);
 }
 
 
@@ -455,7 +453,7 @@ void pin_info_analog(gpio_pin_t pin) {
   bar_graph(analogRead(pin), false /* no newline */);
 #if defined PULSES_SYSTEM
   MENU.tab();
-  show_pulses_pin_usage(pin);
+  show_pulses_pin_usage((gpio_pin_t) pin);
 #endif
   MENU.ln();
 }
@@ -469,12 +467,10 @@ const char bar_graph_header[] =	\
   "\npin\tvalue\t|\t\t\t\t|\t\t\t\t|";
 
 void pins_info_analog() {
-  int i;
-
   MENU.outln(bar_graph_header);
 
-  for (i=0; i<NUM_ANALOG_INPUTS; i++)
-    pin_info_analog(i);
+  for (int i=0; i<NUM_ANALOG_INPUTS; i++)
+    pin_info_analog((gpio_pin_t) i);
 
   MENU.ln();
 }
@@ -1023,7 +1019,7 @@ bool softboard_reaction(char token) {
     newValue = MENU.numeric_input(PIN_digital);
     if (newValue>=0 && newValue<visible_digital_pins) {
       PIN_digital = newValue;
-      pin_info_digital((int) PIN_digital);
+      pin_info_digital(PIN_digital);
     } else
       if (newValue != ILLEGAL8)
 	MENU.OutOfRange();

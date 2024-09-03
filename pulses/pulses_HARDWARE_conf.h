@@ -32,7 +32,7 @@ typedef struct pulses_hardware_conf_t {
 
   // gpio
   uint8_t gpio_pins_cnt=0;		// used GPIO click pins
-  //  gpio_pin_t gpio_pins[20]={ILLEGAL8};					// %4
+  // gpio_pin_t gpio_pins[20]={ILLEGAL8};					// %4
   gpio_pin_t gpio_pins[20]={(gpio_pin_t) 255};					// %4
 
   // dac

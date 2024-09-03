@@ -26,6 +26,7 @@ int nvs_free_entries() {
 }
 
 typedef uint32_t nvs_handle_t;	// TODO: *where* is that defined?	################
+typedef int8_t gpio_pin_t;	// negative values might be used for pin extensions
 
 size_t /*size*/ nvs_test_key(const char* key) {	// no trailing newline
   MENU.out(F("nvs key  "));
@@ -230,7 +231,7 @@ void configure_HARDWARE_from_nvs() {
       ERROR_ln(F("gpio_pins_cnt"));
     else {
       MENU.out(F("gpio_pins\t{"));
-      uint8_t p;
+      gpio_pin_t p;
       for(int i=0; i<HARDWARE_from_nvs.gpio_pins_cnt; i++) {
 	p = HARDWARE_from_nvs.gpio_pins[i];
 	if(p != ILLEGAL8) {	// illegal?
