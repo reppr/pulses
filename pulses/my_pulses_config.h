@@ -11,6 +11,10 @@
 #define FAMILY_NAME	SoundShipBand		// configuration family	// see: pulses_engine_config.h
 // /*			0123456789abcdef	// 16 bytes	*/
 
+#if defined ESP32 && defined ESP_ARDUINO_VERSION_MAJOR	// no bluetoth menu on v1
+  #define USE_BLUETOOTH_SERIAL_MENU
+#endif
+
 #define MAGICAL_TOILET_HACK_2
 
 #define ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help	TODO: DADA deactivate
@@ -112,7 +116,6 @@
     #define RGB_STRING_LED_CNT		30	// 50cm 5Volt string: number of RGB leds in the string
   #else
     #define RGB_LED_STRIP_DATA_PIN	14	// use GPIO14 || GPIO27
-//  #define RGB_STRING_LED_CNT		144	// number of RGB leds in the string
     #define RGB_STRING_LED_CNT		150	// number of RGB leds in the string
   #endif
 // DEFAULT_LED_STRING_INTENSITY
@@ -194,10 +197,6 @@
   #undef USE_LOGGING
 */
 
-// temporary fix:
-#define NO_BLUETOOTH_SERIAL_ON_VERSION1
-
-//#undef USE_BLUETOOTH_SERIAL_MENU	// not needed on version 2.0.2
 //#undef USE_ESP_NOW			// just for easy testing...
 
 #define MY_PULSES_CONFIG_H

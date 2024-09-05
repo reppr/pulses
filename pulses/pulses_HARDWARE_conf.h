@@ -78,7 +78,7 @@ typedef struct pulses_hardware_conf_t {
 					// use RTC_I2C_ADDRESS instead of HARDWARE.RTC_addr
 
   // RGB LED strings
-  uint8_t rgb_strings=0;		// flag and rgb led string cnt
+  uint8_t rgb_strings = RGB_STRINGS_MAX;	// flag and rgb led string cnt
 
   #if defined RGB_LED_STRIP_DATA_PIN
     uint8_t rgb_pin[RGB_STRINGS_MAX]={RGB_LED_STRIP_DATA_PIN};		// %4	TODO: FIX ALIGNEMENT
@@ -86,7 +86,7 @@ typedef struct pulses_hardware_conf_t {
     uint8_t rgb_pin[RGB_STRINGS_MAX]={255};				// %4	TODO: FIX ALIGNEMENT
   #endif
 
-  uint8_t rgb_pixel_cnt[RGB_STRINGS_MAX]={0};				// %4
+  uint8_t rgb_pixel_cnt[RGB_STRINGS_MAX]={50};				// %4
   uint8_t rgb_led_voltage_type[RGB_STRINGS_MAX]={0};			// %4
   uint8_t rgb_pattern0[RGB_STRINGS_MAX]={0};				// %4
 

@@ -216,10 +216,6 @@
   #endif
 #endif
 
-
-#if defined ESP32 && defined NO_BLUETOOTH_SERIAL_ON_VERSION1 && ! defined ESP_ARDUINO_VERSION_MAJOR	// no bluetoth menu on v1
-  #if defined USE_BLUETOOTH_SERIAL_MENU
-    #warning '*NOT* respecting USE_BLUETOOTH_SERIAL_MENU on older ESP32-ARDUINO versions...'
-    #undef USE_BLUETOOTH_SERIAL_MENU
-  #endif
+#if defined  USE_BLUETOOTH_SERIAL_MENU && defined USE_ESP_NOW
+  #warning 'RAM WILL BE VERY SCARE WITH ESP-NOW and BLUETOOTH_SERIAL_MENU AT THE SAME TIME'
 #endif

@@ -314,7 +314,6 @@ void  ePaper_show_program_version() {
     }
     ePaper.println();
 
-
 #if defined  USE_RGB_LED_STRIP
     if(HARDWARE.rgb_strings) {
       ePaper.print("RGB ");

@@ -44,10 +44,6 @@ if(MENU.check_next('l'))
      MENU.outln(read_battery_level());
 #endif
 
-// #if defined USE_RGB_LED_STRIP
-//   pulses_RGB_LED_string_init();	// needed after wake up from light sleep
-// #endif
-
 // #if defined BATTERY_LEVEL_CONTROL_PIN
 // // MENU.out(F("men_MuD.h	battery level "));
 // // MENU.outln(analogRead(BATTERY_LEVEL_CONTROL_PIN));	// pin *may* be incorrect

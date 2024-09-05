@@ -8,7 +8,8 @@
 void bluetooth_menu_display() {
   MENU.outln(F("simple bluetooth debugging  *test interface*\thttp://github.com/reppr/pulses/\n"));
 
-  MENU.outln(STRINGIFY(BLUETOOTH_NAME));
+  MENU.out(STRINGIFY(BLUETOOTH_NAME));
+  MENU.out(F(": "));
   MENU.outln(bluetooth_name);
 
   #if defined BLUETOOTH_ENABLE_PIN

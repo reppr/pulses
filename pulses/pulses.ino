@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICALv04695   // some multicore RAM debugging help
+#define PROGRAM_VERSION	HARMONICALv04696   // using FastLED for RGB LED strips
 /*			0123456789abcdef   */
 
 
@@ -124,10 +124,9 @@ public:
 NullBuffer null_buffer;
 
 //#define MENU_OUTSTREAM2		std::ostream null_stream(&null_buffer)
-
 #define MENU_OUTSTREAM2	(Stream &) null_buffer
+#endif // #if ! defined MENU_OUTSTREAM2
 
-#endif
 
 Menu MENU(CB_SIZE, 8, &men_getchar, MENU_OUTSTREAM, MENU_OUTSTREAM2);
 
@@ -936,7 +935,7 @@ bool stack_sync_user_selected=false;
 #endif
 
 #if defined USE_RGB_LED_STRIP
-  #include "extensions/pulses_RGB_LED_string.h"
+  #include "pulses_RGB_LED_string.h"
 #endif
 
 #if defined USE_MIDI
@@ -1199,6 +1198,7 @@ void setup_initial_HARDWARE_conf() {
   #if defined RGB_LED_STRING_VOLTAGE_TYPE
     HARDWARE.rgb_led_voltage_type[0] = RGB_LED_STRING_VOLTAGE_TYPE;
   #endif
+  //DADA	TODO:	RGB_STRING SATURATION in HARDWARE
 #endif
 
 #if defined USE_RTC_MODULE
@@ -1458,11 +1458,12 @@ int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very fi
   #include "DEBUG_DOUBLE_MUX.h"
 #endif
 
+
 void setup() {
   setup_initial_HARDWARE_conf();
 
 #if defined USE_RGB_LED_STRIP
-  pulses_RGB_LED_string_init();	// DO THAT EARLY to switch led string off after booting
+  clear_RGB_LEDs();	// DO THAT EARLY to switch led string off after booting
 #endif
 
 #if defined RANDOM_ENTROPY_H	// *one* call would be enough, getting crazy on it ;)
@@ -1510,7 +1511,7 @@ void setup() {
   // delay(100);	// WAS: waiting longer when switching peripheral_power	NEW: wait anyway
 
   #if defined USE_RGB_LED_STRIP
-    pulses_RGB_LED_string_init();	// do that *AGAIN*, as the string could hang on peripheral_power...
+    clear_RGB_LEDs();	// do that *AGAIN*, as the string could hang on peripheral_power...
   #endif
 #endif
 delay(100);			//NEW: wait anyway	WAS: waiting longer when switching peripheral_power
@@ -1918,7 +1919,7 @@ bool low_priority_tasks() {
     extern void multicore_rgb_string_draw();
     multicore_rgb_string_draw();
   #else
-    digitalLeds_drawPixels(strands, 1);
+    FastLED.show();
   #endif
     update_RGB_LED_string = false;
     return true;
@@ -2164,7 +2165,7 @@ void loop() {	// ARDUINO
 
 #if defined USE_RGB_LED_STRIP
     if(RGBstringConf.rgb_strings_active && update_RGB_LED_string && RGBstringConf.rgb_leds_high_priority) {
-      digitalLeds_drawPixels(strands, 1);
+      FastLED.show();
       update_RGB_LED_string = false;
     }
 #endif
@@ -6847,6 +6848,10 @@ uint8_t /*next_row*/ extended_output(char* text, uint8_t col=0, uint8_t row=0, b
 
   return row;	// return row on *OLED display*
 } // extended_output()
+
+#if defined  USE_BLUETOOTH_SERIAL_MENU && defined USE_ESP_NOW
+  #warning 'RAM WILL BE *VERY* SCARE WITH ESP-NOW and BLUETOOTH_SERIAL_MENU AT THE SAME TIME'
+#endif
 
 
 /* **************************************************************** */

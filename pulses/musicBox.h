@@ -327,7 +327,7 @@ void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditional
     MusicBoxState_name = F("OFF");
 
 #if defined USE_RGB_LED_STRIP	// TODO: more flexibility, like fading	DADA
-    digitalLeds_resetPixels(&strands[0], 1);
+    clear_RGB_LEDs();
 #endif
 
     // control if the butler is still running || musicBox_butler_i != ILLEGAL32
