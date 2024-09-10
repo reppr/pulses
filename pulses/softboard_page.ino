@@ -757,6 +757,10 @@ int i2c_scan() {
 	MENU.outln(F("SHT21  humidity, temperature sensor"));
 	break;
 
+      case 0x44:
+	MENU.outln(F("SHT45  precision humidity, temperature sensor"));
+	break;
+
       case 0x50:
       case 0x51:
       case 0x52:
@@ -801,6 +805,10 @@ int i2c_scan() {
 	break;
       case 0x69:
 	MENU.outln(F("MPU6050"));	// other address
+	break;
+
+      case 0x77:
+	MENU.outln(F("BMP390 barometric pressure and temperature sensor"));
 	break;
 
       default:
@@ -1182,8 +1190,8 @@ bool softboard_reaction(char token) {
     show_DS1307_time_stamp();	// DS3231 or DS1307
     MENU.ln();
     if(MENU.check_next('!')) {
-      uint8_t year=21;	// year 2021
-      uint8_t month=11;
+      uint8_t year=24;	// year 2024
+      uint8_t month=11-1;
       uint8_t day=11;
       uint8_t hour=11;
       uint8_t minute=11;
@@ -1205,7 +1213,7 @@ bool softboard_reaction(char token) {
 	if ( newValue > 12 || newValue < 1)
 	  MENU.outln_invalid();		// *all* invalid cases...
 	else {
-	  month = newValue;
+	  month = newValue - 1;
 
 	  // day
 	  newValue = MENU.numeric_input(day);
