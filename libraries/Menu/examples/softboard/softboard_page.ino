@@ -180,7 +180,7 @@ typedef int8_t gpio_pin_t;		// negative values might be used for pin extensions
   #define ILLEGAL16	0xffff
 #endif
 #if ! defined ILLEGAL32
-  #define ILLEGAL32	0xffffffff
+  #define ILLEGAL32	(int) 0xffffffff
 #endif
 
 uint8_t PIN_digital = ILLEGAL8;
@@ -807,7 +807,8 @@ int i2c_scan() {
 	MENU.outln(F("MPU6050"));	// other address
 	break;
 
-      case 0x77:
+      case 0x76: // alternative BMP390 address
+      case 0x77: // default     BMP390 address
 	MENU.outln(F("BMP390 barometric pressure and temperature sensor"));
 	break;
 
