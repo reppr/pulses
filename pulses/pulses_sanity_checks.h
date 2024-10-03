@@ -218,4 +218,7 @@
 
 #if defined  USE_BLUETOOTH_SERIAL_MENU && defined USE_ESP_NOW
   #warning 'RAM WILL BE VERY SCARE WITH ESP-NOW and BLUETOOTH_SERIAL_MENU AT THE SAME TIME'
+  #if defined USE_SD_CARD
+    #warning 'consider to #undef USE_SD_CARD to save RAM'
+  #endif
 #endif

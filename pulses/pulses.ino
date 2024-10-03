@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICALv04696   // using FastLED for RGB LED strips
+#define PROGRAM_VERSION	HARMONICALv04697   // using FastLED for RGB LED strips, *no* SD card logging
 /*			0123456789abcdef   */
 
 
@@ -6851,6 +6851,9 @@ uint8_t /*next_row*/ extended_output(char* text, uint8_t col=0, uint8_t row=0, b
 
 #if defined  USE_BLUETOOTH_SERIAL_MENU && defined USE_ESP_NOW
   #warning 'RAM WILL BE *VERY* SCARE WITH ESP-NOW and BLUETOOTH_SERIAL_MENU AT THE SAME TIME'
+  #if defined USE_SD_CARD
+    #warning 'consider to #undef USE_SD_CARD to save RAM'
+  #endif
 #endif
 
 

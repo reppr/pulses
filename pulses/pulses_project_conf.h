@@ -32,10 +32,12 @@
     #endif
     #define ePAPER_SMALL_213
 
-    #define USE_SD_CARD
-    #define USE_LOGGING
-    #define LOG_PLAY_DEFAULT
-    #define LOG_BATTERY_DEFAULT
+    //#define USE_SD_CARD	// #undef that to SAVE RAM?
+    #if defined USE_SD_CARD
+      #define USE_LOGGING
+      #define LOG_PLAY_DEFAULT
+      #define LOG_BATTERY_DEFAULT
+    #endif
 
     #undef RGB_STRING_LED_CNT			// WAS: 150
     #define RGB_STRING_LED_CNT		30	// NEW: 30 (50cm 5V string)
