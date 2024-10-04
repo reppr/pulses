@@ -187,14 +187,20 @@ void set_rgb_string_voltage_type(int voltage, int string) {
 
 #include <FastLED.h>
 
-#define RGB_CHIPSET		WS2811
-//#define RGB_LED_STRIP_DATA_PIN	14
-//#define RGB_STRING_LED_CNT	150
+#define RGB_CHIPSET		WS2812	// WS2811
+#define RGB_LED_STRIP_DATA_PIN	27
+#define RGB_STRING_LED_CNT	30
 #define COLOR_ORDER		GRB
 #define BRIGHTNESS		128
 //#define NUM_STRIPS		1	// this version uses only *one* strip
 
 CRGB leds[RGB_STRING_LED_CNT];	// declared global
+
+void clear_RGB_LEDs() {
+  FastLED.clear();
+  FastLED.show();
+}
+
 void setup_RGB_LED_strip() {
   MENU.out(F("setup_RGB_LED_strip()\t leds: "));
   MENU.out(RGB_STRING_LED_CNT);
@@ -202,20 +208,20 @@ void setup_RGB_LED_strip() {
   MENU.out(RGB_LED_STRIP_DATA_PIN);
   MENU.out(F("\tbrightness: "));
   MENU.out(BRIGHTNESS);
-  FastLED.addLeds<NEOPIXEL, RGB_LED_STRIP_DATA_PIN>(leds, RGB_STRING_LED_CNT);  // GRB ordering is assumed
-  FastLED.addLeds<RGB_CHIPSET, RGB_LED_STRIP_DATA_PIN, COLOR_ORDER>(leds, RGB_STRING_LED_CNT).setCorrection(TypicalSMD5050);
+  // FastLED.addLeds<NEOPIXEL,RGB_LED_STRIP_DATA_PIN,GRB>(leds,RGB_STRING_LED_CNT);  // GRB ordering is assumed
+
+  FastLED.addLeds<WS2812, RGB_LED_STRIP_DATA_PIN, GRB>(leds, RGB_STRING_LED_CNT);  // GRB ordering is assumed
+  //FastLED.addLeds<WS2812B, RGB_LED_STRIP_DATA_PIN, GRB>(leds, RGB_STRING_LED_CNT);  // GRB ordering is assumed
+  //FastLED.addLeds<NEOPIXEL, RGB_LED_STRIP_DATA_PIN, GRB>(leds, RGB_STRING_LED_CNT);  // GRB ordering is assumed
+
+  // FastLED.addLeds<WS2812, RGB_LED_STRIP_DATA_PIN, RGB>(leds, RGB_STRING_LED_CNT);  // GRB ordering is assumed
+  //FastLED.addLeds<RGB_CHIPSET, RGB_LED_STRIP_DATA_PIN, COLOR_ORDER>(leds, RGB_STRING_LED_CNT).setCorrection(TypicalSMD5050);
 
   FastLED.setBrightness(BRIGHTNESS);
 
-  pinMode(RGB_LED_STRIP_DATA_PIN, OUTPUT);
-  digitalWrite(RGB_LED_STRIP_DATA_PIN, LOW);
+  clear_RGB_LEDs();
   MENU.ln();
 } // setup_RGB_LED_strip()
-
-void clear_RGB_LEDs() {
-  FastLED.clear();
-  FastLED.show();
-}
 
 #define COUNT_OF(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 
@@ -299,6 +305,8 @@ void HSV_2_RGB_degree(CRGB* pixel, float H, float S, float V) {	// TODO: test
     if(h_i < 0 || h_i > 6) {	// catch programming errors ;)
       MENU.tab();
       ERROR_ln(F("HSV_2_RGB_degree()\th_i"));
+      //MENU.out(F("L305\tHSV_2_RGB_degree()\th_i: "));	// DADA: REMOVE: ################
+      //MENU.outln(h_i);	// DADA: REMOVE: ################
     } else
       MENU.ln();
   #endif
@@ -344,16 +352,19 @@ void HSV_2_RGB_degree(CRGB* pixel, float H, float S, float V) {	// TODO: test
     MENU.out(pixel->r);
     MENU.tab();
     ERROR_ln(F("HSV_2_RGB_degree()\tR"));
+    //MENU.outln(F("L352\tHSV_2_RGB_degree()\tR: "));	// DADA: REMOVE: ################
   }
   if(pixel->g<0 || pixel->g>1) {
     MENU.out(pixel->g);
     MENU.tab();
     ERROR_ln(F("HSV_2_RGB_degree()\tG"));
+    //MENU.outln(F("L358\tHSV_2_RGB_degree()\tR: "));	// DADA: REMOVE: ################
   }
   if((*pixel).b<0 || pixel->b>1) {
     MENU.out(pixel->b);
     MENU.tab();
     ERROR_ln(F("HSV_2_RGB_degree()\tB"));
+    //MENU.outln(F("L364\tHSV_2_RGB_degree()\tR: "));	// DADA: REMOVE: ################
   }
 } // HSV_2_RGB_degree()
 

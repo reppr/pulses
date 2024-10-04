@@ -120,9 +120,7 @@ void bluetooth_setup() {			// start bluetooth
 
   if(MENU.verbosity >= VERBOSITY_SOME)
     show_bt_controller_status();
-
-  MENU.ln();
-}
+} // bluetooth_setup()
 
 void bluetooth_end() {				// end bluetooth
   if(MENU.verbosity >= VERBOSITY_SOME)
