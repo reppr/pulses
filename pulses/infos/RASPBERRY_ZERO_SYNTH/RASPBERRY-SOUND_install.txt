@@ -1,0 +1,15 @@
+aptitude emacs
+
+alsa-utils
+fluidsynth fluid-soundfont-gm qsynth
+
+jackd qjackctl jack-tools
+aeolus
+
+sox
+
+# Virtual MIDI piano Keyboard:
+sudo apt install vmpk
+
+# aconnectgui
+# patchage

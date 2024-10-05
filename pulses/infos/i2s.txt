@@ -1,0 +1,99 @@
+
+https://github.com/pschatzmann/arduino-audiokit
+
+
+
+see: https://espressif-docs.readthedocs-hosted.com/projects/arduino-esp32/en/latest/api/i2s.html
+
+Pin setup¶
+Pins can be changed in two ways- 1st constants, 2nd functions.
+
+Note
+
+Shared data pin can be equal to any other data pin, but must not be equal to clock pin nor frame sync pin! Input and Output pins must not be equal, but one of them can be equal to shared data pin!
+
+sckPin != fsPin != outSdPin != inSdPin
+￼
+sckPin != fsPin != sdPin
+￼
+By default, the pin numbers are defined in constants in the header file. You can redefine any of those constants before including I2S.h. This way the driver will use these new default values and you will not need to specify pins in your code. The constants and their default values are:
+
+PIN_I2S_SCK 14
+
+PIN_I2S_FS 25
+
+PIN_I2S_SD 26
+
+PIN_I2S_SD_OUT 26
+
+PIN_I2S_SD_IN 35
+
+The second option to change pins is using the following functions. These functions can be called on either on initialized or uninitialized object.
+
+If called on the initialized object (after calling begin) the pins will change during operation. If called on the uninitialized object (before calling begin, or after calling end) the new pin setup will be used on next initialization.
+
+setSckPin¶
+Set and apply clock pin.
+
+int setSckPin(int sckPin)
+￼
+This function will return true on success or fail in case of failure.
+
+setFsPin¶
+Set and apply frame sync pin.
+
+int setFsPin(int fsPin)
+￼
+This function will return true on success or fail in case of failure.
+
+setDataPin¶
+Set and apply shared data pin used in simplex mode.
+
+int setDataPin(int sdPin)
+￼
+This function will return true on success or fail in case of failure.
+
+setDataInPin¶
+Set and apply data input pin.
+
+int setDataInPin(int inSdPin)
+￼
+This function will return true on success or fail in case of failure.
+
+setDataOutPin¶
+Set and apply data output pin.
+
+int setDataOutPin(int outSdPin)
+￼
+This function will return true on success or fail in case of failure.
+
+setAllPins¶
+Set all pins using given values in parameters. This is simply a wrapper of four functions mentioned above.
+
+int setAllPins(int sckPin, int fsPin, int sdPin, int outSdPin, int inSdPin)
+￼
+Set all pins to default i.e. take values from constants mentioned above. This simply calls the the function with the following constants.
+
+PIN_I2S_SCK 14
+
+PIN_I2S_FS 25
+
+PIN_I2S_SD 26
+
+PIN_I2S_SD_OUT 26
+
+PIN_I2S_SD_IN 35
+
+int setAllPins()
+￼
+
+
+auto cfg = i2s.defaultConfig(RX_MODE);
+  cfg.i2s_format = I2S_STD_FORMAT; // or try with I2S_LSB_FORMAT
+  cfg.bits_per_sample = 32;
+  cfg.channels = 1;
+  cfg.sample_rate = 16000;
+  cfg.pin_ws = 14;
+  cfg.pin_bck = 12;
+  cfg.pin_data = 38;
+  i2s.begin(cfg);

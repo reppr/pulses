@@ -1,0 +1,2 @@
+cd PULSES_i5/pulses/libraries/
+git clone https://github.com/BareConductive/mpr121.git

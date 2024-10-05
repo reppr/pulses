@@ -1,0 +1,46 @@
+output LEDs
+BLUE	GPIO2
+RED	pico ????
+
+touch "analog"
+GPI_32	[INPUT, adc, touch]	TOUCH	(CS MICROSD)	(LyraT:touch TP4"SET")
+GPI_33	[INPUT, adc, touch]	TOUCH	(LyraT:touch TP3"Play")
+
+GPIO14  seems *much* better for touch "analog" input, move RGB_LED_STRIP_DATA_PIN?
+
+
+GPIO00	strapping button
+
+GPIO02	strapping [touch]	(rarely used as MORSE_OUTPUT_PIN	[BLUE onboard led?, add piezzo?])
+	TODO: test as touch (led!)
+
+GPIO05	strapping	????
+
+GPIO12	[touch]		(MISO MICROSD)
+       MORSE_OUTPUT_PIN	  ||	PERIPHERAL_POWER_SWITCH_PIN
+       ((was: MORSE_TOUCH_INPUT_PIN (ESP32 touch sensor as morse input))
+
+
+GPIO18	[SCK] ?
+
+GPIO19	[MISO] ?
+
+GPIO23	[MOSI] ?
+
+
+GPI_32	[INPUT, adc, touch]	TOUCH	(CS MICROSD)	(LyraT:touch TP4"SET")
+
+GPI_33	[INPUT, adc, touch]	TOUCH	(LyraT:touch TP3"Play")
+
+
+GPI_34	[INPUT, adc]	MUSICBOX_TRIGGER_PIN, MORSE_GPIO_INPUT_PIN (needs hw pulldown)
+
+GPI_35	[INPUT, adc]	BLUETOOTH_CHECK_ENABLE_PIN
+
+GPIO36	[INPUT, adc]	BATTERY_LEVEL_CONTROL_PIN
+
+GPIO37	[INPUT, adc]
+
+GPIO38	[INPUT, adc]
+
+GPIO39	[INPUT, adc]

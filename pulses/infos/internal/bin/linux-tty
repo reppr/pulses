@@ -1,0 +1,3 @@
+#!/bin/sh
+
+stty -F /dev/ttyUSB1 cs8 500000 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts

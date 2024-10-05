@@ -1,0 +1,16 @@
+diff -u /boot/config.txt\~ /boot/config.txt
+--- /boot/config.txt~	2020-12-08 10:11:02.000000000 +0100
++++ /boot/config.txt	2020-12-08 10:24:28.000000000 +0100
+@@ -66,6 +66,8 @@
+ 
+ dtoverlay=hifiberry-dac
+ 
+-# enable_uart=1
+-# dtoverlay=pi3-miniuart-bt
++enable_uart=1
++dtoverlay=pi3-miniuart-bt
++
+ # dtoverlay=midi_uart0
++dtoverlay=midi_uart1
+
+Diff finished.  Tue Dec  8 11:27:29 2020

@@ -1,0 +1,20 @@
+MIDI MONITORS
+
+amidi	ALSA only
+  amidi -l     		list devices
+  amidi -p hw:2,0,0 -d	echos midi as hex numbers
+
+mididings	JACK
+  start jackd
+  mididings "Print()"
+  qjackctl routing
+  gives decimal dump and some explanation
+
+QMidiRoute	JACK	GUI
+  start jackd
+  qmidiroute
+  route with qjackctl
+  gives time stamps, meaning and decimal values
+
+midimon
+  can (also) log a MIDI stream to a file

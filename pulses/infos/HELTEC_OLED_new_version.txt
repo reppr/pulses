@@ -1,0 +1,32 @@
+low brightness problem:
+
+#define SDA_OLED     4
+#define SCL_OLED     15
+Wire.begin(SDA_OLED, SCL_OLED)
+
+4, 15
+
+see: https://community.home-assistant.io/t/problem-with-esp32-heltec-v2-display/134501/6
+
+The I2C hardware interface consists of 2 lines: SDA and SCL.
+In Arduino board definitions the names 'SDA' and 'SCL' normally
+map to the corresponding GPIO pins of the I2C interface.
+However, for the Heltec Wifi LoRa 32 V2 board 'SDA' and 'SCL'
+are incorrectly defined!: SDA is defined as 21 and SCL as 22.
+But on the Heltec Wifi LoRa 32 V2 board GPIO21 is used for switching 
+VExt output instead and is not used for SDA.
+The V2 board uses GPIO4 for SDA and GPIO15 for SCL instead.
+
+When using the Wire (I2C) interface in Arduino, it by default will use 
+pin definitions 'SDA' and 'SCL' which for Wifi LoRa 32 V2 are 
+incorrect! *Any any sketch and any library* that initializes the 
+Wire interface by calling Wire.begin() without parameters
+(which is common) will use the wrong pins for SDA and SCL!
+
+As workaround you must explicitly call Wire.begin(SDA_OLED, SCL_OLED)
+AT THE START of setup() BEFORE initializing any libraries.
+This will configure the wire interface to use
+the correct GPIO pins for SDA (4) and SCL (15).
+If you omit this then the I2C (Wire) interface and its connected
+peripherals will not work and strange things may happen to VExt.
+	  

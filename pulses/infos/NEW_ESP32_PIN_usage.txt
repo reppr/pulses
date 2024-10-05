@@ -1,0 +1,168 @@
+NEW_ESP32_PIN_usage
+
+wanted: PERIPHERAL_POWER_SWITCH_PIN != MORSE_OUT	0 (outputs PWM signal at boot?)  swap PERIPHERAL_PWR and LoRa NSS? 
+	NSS LoRa					2 ???	       	      	 	 swap PERIPHERAL_PWR and LoRa NSS?
+	DIO0 LoRa					27 (14) ???	INPUT-only possible??? PROBABLY POSSIBLE, TEST
+	MIDI IN	     	       	  			INPUT-only (35, 36, 37, 38, 39 if available on board...)
+	MIDI_OUT  != 19 (MISO) != 17			depending on board (displays)
+		     	       	  			on ePaper 2.9	MIDI_OUT = 4,
+							on LILYGO 2.13	MIDI_OUT = 15(no SD),
+							on HELTEC 	MIDI_OUT =
+							
+
+test G0 usage possibilities????	PERIPHERAL_POWER_SWITCH_PIN  swap PERIPHERAL_PWR and LoRa NSS? 
+     G2       						     swap PERIPHERAL_PWR and LoRa NSS? 
+     G4 (?)
+     G5 (?)
+     G13 free from MORSE_TOUCH_INPUT_PIN for OUTPUT? (32, 33)
+
+     GPIO14  would be *much* better for touch "analog" input, move RGB_LED_STRIP_DATA_PIN?
+
+     32,33 as OUTPUTs???
+
+     TEST ALL INPUT ONLY PINS
+
+
+SUGGESTION:
+
+GPIO_2	PERIPHERAL_POWER_SWITCH_PIN (basic sound, display)	(more on 32,33)
+GPIO_4			ePaper BUSY
+GPIO_5	LoRa NSS (32?)	(ePaper was: CS)	TODO: separe ################
+GPIO_9  		ePaper RST
+GPIO_10 		ePaper DC
+
+GPIO_12	MORSE_OUTPUT_PIN
+GPI0_13 (?)	MORSE_TOUCH_INPUT_PIN
+GPIO_14 RGB	14, (or 27) ???
+GPI0_18 LoRa SCK	ePaper CLK
+GPI0_19 LoRa MISO
+GPI0_21 i2c  SDA
+GPI0_22 i2c  SCL
+GPIO_23 LoRa MOSI	ePaper DIN
+GPIO_27 RGB	27, or 14   ???
+
+GPIO_32 LoRa NSS	(PERIPHERAL_POWER_SWITCH_PIN_2	power RGB-string, alternatively on i2c)
+GPIO_33 LoRa_RESET	(PERIPHERAL_POWER_SWITCH_PIN_3	power MIDI+synth, alternatively on i2c)
+
+GPI_34	[INPUT, adc]	MUSICBOX_TRIGGER_PIN,(needs hw pulldown  100k ok)
+GPI_35	[INPUT, adc]	BATTERY_LEVEL_CONTROL_PIN
+
+GPI_37	LoRa_DIO0	[INPUT, adc]
+
+
+
+GPIO00	strapping	button	<<<<<<<<<<<<<<<<	TEST other usages: TOUCH, (LoRa) CHIP_SELECT, LoRa RESET, LoRa DIO0
+
+GPIO01  TX0	Serial TX
+
+GPIO02	strapping [touch]	[sometimes blue onboard]
+	TODO: test as touch (led!)
+	LoRa DIO0, LoRa NSS		<<<<<<<<<<<<<<<<
+
+GPIO03	RX0	Serial RX
+
+GPIO04	[touch]	HELTEC OLED_SDA, ePaper		(LILYGO T5 ePaper 2.13 BUSY)
+	TODO: test as touch (with display?)	<<<<<<<<<<<<<<<<
+
+GPIO05	strapping				(LILYGO T5 ePaper 2.13 CS)
+
+GPIO06 FLASH SCK
+
+GPIO07 FLASH D0
+
+GPIO08 FLASH D1
+
+GPIO09 FLASH D2
+
+GPIO10 FLASH D3
+
+GPIO11 FLASH CMD
+
+GPIO12	[touch]       MORSE_OUTPUT_PIN  ||  PERIPHERAL_POWER_SWITCH_PIN		(MISO MICROSD)
+       ((was: MORSE_TOUCH_INPUT_PIN (ESP32 touch sensor as morse input))
+
+GPIO13	[touch]	TOUCH		MORSE_TOUCH_INPUT_PIN	(LILYGO T5 SD-CARD MOSI)	(LyraT:touch TP5"Vol-")
+
+GPIO14	[touch]	TOUCH		RGB_LED_STRIP_DATA_PIN	(LILYGO T5 SD-CARD SCK)	(MOSI MICROSD)
+
+GPIO15	[touch]	HELTEC OLED_SCL	(RGB_LED_STRING)	(LILYGO T5 SD-CARD MOSI)
+
+GPIO16	HELTEC OLED_RST, ePaper	UART2 RX  MIDI IN	(LILYGO T5 ePaper 2.13 RST)	// *CONFLICT* UART2 MIDI <> OLED
+	DO *NOT* use GPIO16&17  on WROVER MODULES!
+
+GPIO17				UART2 TX  MIDI OUT	(LILYGO T5 ePaper 2.13 DC)
+	DO *NOT* use GPIO16&17  on WROVER MODULES!
+
+GPIO18				MIDI_IN_PIN [maybe 27] (Heltec?)	(LILYGO T5 ePaper 2.13 CLK)	(LoRa SCK)
+
+GPIO19				MIDI_OUT_PIN (Heltec?)					(LoRa MISO)
+
+GPIO21	   i2c SDA	Wire SDA
+
+GPIO22	   i2c SCL	Wire SCL	(I2S codec DATA)
+
+GPIO23							(LILYGO T5 ePaper 2.13 MOSI)	(LoRa MOSI)
+
+
+
+GPIO25	DAC (low, right)				(HELTEC_oled onboard LED!)
+
+GPIO26	DAC (high, left)	(RGB_LED_STRING)	(HELTEC_oled maybe put a LED too?    channel symmetry)
+
+GPIO27	[touch]	TOUCH		RGB_LED_STRING, MIDI_IN_PIN (LILYGO?)	(SCK MICROSD)	(LyraT:touch TP6"Vol+")
+
+
+GPI_32	[X-tal?, adc, touch]	TOUCH	(CS MICROSD)		<<<<<<<<<<<<<<<< TEST as MORSE_TOUCH_INPUT_PIN
+
+GPI_33	[X-tal?, adc, touch]	TOUCH				<<<<<<<<<<<<<<<< TEST as MORSE_TOUCH_INPUT_PIN
+
+
+GPI_34	[INPUT, adc]	MUSICBOX_TRIGGER_PIN, MORSE_GPIO_INPUT_PIN (needs hw pulldown)
+
+GPI_35	[INPUT, adc]	BATTERY_LEVEL_CONTROL_PIN
+
+GPI_36	[INPUT, adc]
+
+GPI_37	[INPUT, adc]
+
+GPI_38	[INPUT, adc]
+
+GPI_39	[INPUT, adc]
+
+
+
+RTC pins of ESP32 devKit
+  This board also provide RTC pins which can be used to trigger ESP32 from sleep mode.
+	RTC_GPIO0 – GPIO36
+	RTC_GPIO3  -GPIO39
+	RTC_GPIO4 – GPIO34	<< MUSICBOX_TRIGGER_PIN
+	RTC_GPIO5 – GPIO35
+	RTC_GPIO6 – GPIO25
+	RTC_GPIO7 - GPIO26
+	RTC_GPIO8 – GPIO33
+	RTC_GPIO9 – GPIO32
+	RTC_GPIO10 - GPIO4
+	RTC_GPIO11 – GPIO0
+	RTC_GPIO12 – GPIO2
+	RTC_GPIO13 – GPIO15
+	RTC_GPIO14 – GPIO13	<< MORSE_TOUCH_INPUT_PIN
+	RTC_GPIO15 – GPIO12
+	RTC_GPIO16 – GPIO14
+	RTC_GPIO17 – GPIO27
+
+
+ePaper (driver board)	(weather)
+PIN_SPI_SCK	13	SCK	18
+PIN_SPI_DIN	14
+PIN_SPI_CS	15
+PIN_SPI_BUSY	25(!)	BUSY	4
+PIN_SPI_RST	26(!)	RST	16
+PIN_SPI_DC	27
+			SS	5
+			DC	17
+			MISO	19 (*not used*)
+			MOSI	23
+
+LILYGO T5 2.13 ePaper + MICROSD
+  GPIO27		RGB_LED_STRIP_DATA_PIN	(was: GPIO14)
+  GPI_33	 	MORSE_TOUCH_INPUT_PIN	(was: GPIO13)

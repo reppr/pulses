@@ -1,0 +1,24 @@
+sudo apt-get install qjackctl jack-tools
+sudo apt-get install aptitude emacs
+
+chromium "continue where you left off"
+
+terminal bigger font
+
+fluidsynth fluid-soundfont-gm qsynth
+alsa-utils
+
+Remove the line
+dtparam=audio=on
+from /boot/config.txt if it exists.
+
+If you have configured the correct overlay, but the system still doesn’t load the driver, this might be caused by these changes.
+In this case, you need to disable the onboard EEPROM by adding
+force_eeprom_read=0
+to your config.txt file.
+
+in qjackctl > Setup > Interface sndrpihifiberry		now JACK STARTS OK :)
+
+# Virtual MIDI piano Keyboard:
+sudo apt install vmpk
+
