@@ -1441,3 +1441,7 @@ use that where appropriate	void clear_background_buffer0() {	// TODO: DADA: unus
 switch gamma correction on/off
 
 //#define USE_OLD_STYLE_EXPERIMENTS	// switched them off to save some RAM (does it?)
+
+// avoid multicore display errors (i.e: ePaper) to trigger other display errors with the error messages
+// experimental
+volatile bool avoid_error_recursion=false;

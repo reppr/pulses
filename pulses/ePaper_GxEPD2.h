@@ -465,6 +465,7 @@ void multicore_ePaper_1line_at(int16_t row, const char* text, int16_t offset_y) 
     esp_heap_and_stack_info();
 #endif
   }
+  avoid_error_recursion=false;
 } // multicore_ePaper_1line_at()
 
 void MC_print_1line_at(int16_t row, const char* text, int16_t offset_y=0) {	// MULTICORE_DISPLAY version

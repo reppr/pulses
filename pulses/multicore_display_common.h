@@ -15,6 +15,10 @@
   #define DO_ON_OTHER_CORE_PRIORITY	1
 #endif
 
+// avoid multicore display errors (i.e: ePaper) to trigger other display errors with the error messages
+// experimental
+volatile bool avoid_error_recursion=false;
+
 typedef struct print_descrpt_t {
   int16_t col=0;
   int16_t row=0;

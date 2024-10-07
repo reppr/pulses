@@ -174,7 +174,14 @@ void ERROR_ln(const char* text) {	// extended error reporting on MENU, ePaper or
   } // else
   snprintf(str, len, F("ERR %s"), text);
   extern void MC_display_message(const char*);
-  MC_display_message(str);
+  extern volatile bool avoid_error_recursion;
+  if(avoid_error_recursion) {
+    // MENU.error_ln(text);	// was already called above
+    avoid_error_recursion=false;
+  } else {	// *first* error
+    avoid_error_recursion = true;
+    MC_display_message(str);
+  }
   free(str);
 #endif
 
