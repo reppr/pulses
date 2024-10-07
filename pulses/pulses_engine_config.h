@@ -66,7 +66,7 @@
 
 #define USE_SYSTEM_MENU		// only a start...
 
-#define USE_INPUTS		// not used any more, but left in for compilation test ;)
+//#define USE_INPUTS		// NEW: leave it out to free some RAM...	not used any more, left in for compilation test ;)
 /* was:
    #ifndef RAM_IS_SCARE	// ################ FIXME: USE_INPUTS default condition ################
      #if ! defined SMALL_SKETCH_SIZE_TEST
