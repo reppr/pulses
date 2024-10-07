@@ -4811,11 +4811,12 @@ bool musicBox_reaction(char token) {
     }
     break;
 
-  case 'R':	// OBSOLETE?: ################
-    select_scale__UI();		// TODO: see pulses.ino 'R'	make them identical? ################	// OBSOLETE?:
-    MENU.out(F("SCALE: "));
-    MENU.outln(selected_name(SCALES));
-    break;
+// replaced by pulses.ino 'R'
+//  case 'R':	// OBSOLETE?: ################
+//    select_scale__UI();		// TODO: see pulses.ino 'R'	make them identical? ################	// OBSOLETE?:
+//    MENU.out(F("SCALE: "));
+//    MENU.outln(selected_name(SCALES));
+//    break;
 
   case 'T':	// Tuning pitch and scale
     tuning_pitch_and_scale_UI();

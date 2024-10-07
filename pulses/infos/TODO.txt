@@ -1439,3 +1439,5 @@ use that where appropriate	void clear_background_buffer0() {	// TODO: DADA: unus
 //    // try the BlueHack, to give *more* blue
 
 switch gamma correction on/off
+
+//#define USE_OLD_STYLE_EXPERIMENTS	// switched them off to save some RAM (does it?)
