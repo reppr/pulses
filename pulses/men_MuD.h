@@ -3,6 +3,39 @@
   temporary test menu UI during development
 */
 
+{
+  for(int i=0; i<15; i++) {
+    RGB_LEDs.setPixelColor(i, RGB_LEDs.Color(255,0,0));         //  Set pixel's color RED (in RAM)
+  }
+  show_RGB_LEDs();                          //  Update RGB_LEDs to match
+  delay(3000);
+
+  for(int i=1; i<15; i++) {
+    RGB_LEDs.setPixelColor(i, 0, 255 ,0);  //  Set pixel's color GREEN (in RAM)
+  }
+  show_RGB_LEDs();                          //  Update RGB_LEDs to match
+  delay(3000);
+
+  for(int i=2; i<15; i++) {
+    RGB_LEDs.setPixelColor(i, RGB_LEDs.Color(0,0,255));         //  Set pixel's color BLUE (in RAM)
+  }
+  show_RGB_LEDs();                          //  Update RGB_LEDs to match
+
+  uint8_t * p = RGB_LEDs.getPixels();
+//  MENU.out("size: ");
+//  MENU.out(sizeof(*p));
+  for(int i=0; i<24; i++){
+    if((i % 3) == 0)
+      MENU.out('|');
+    MENU.out(*p++);
+    MENU.out(", ");
+  }
+  MENU.ln();
+
+  delay(10000);
+}
+  //  RGB_LEDs.updateLength(30);
+break;
 
   show_internals();
   MENU.ln();
@@ -507,28 +540,3 @@ if(MENU.check_next('D')) {	// DD
     //show_hardware_conf(&HARDWARE);
 
     //display_peer_ID_list();
-    //random_RGB_string(MENU.numeric_input(4));
-
-    // random_HSV_LED_string();
-
-    /*
-    {
-      int i=0;
-      strand_t * strands [STRANDCNT];
-      strands[i] = &STRANDS[i];
-
-      MENU.out("LED STRING ");
-      ulong t0 = micros();
-      int s = digitalLeds_drawPixels(strands, 1);
-      ulong d = micros() - t0;
-      MENU.out(s);
-      MENU.tab();
-      MENU.outln(d);
-
-//      randomStrands(strands, i, 100, 3000);
-//      scanners(strands, i, 0, 2000);
-//      scanners(strands, i, 0, 2000);
-//      rainbows(strands, i, 0, 4000);
-
-    }
-    */

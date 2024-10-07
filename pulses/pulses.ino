@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICALv04697   // using FastLED for RGB LED strips, *no* SD card logging
+#define PROGRAM_VERSION	HARMONICALv04698   // trying Adafruit_NeoPixels for RGB LED strips, *no* SD card logging
 /*			0123456789abcdef   */
 
 
@@ -1508,13 +1508,14 @@ void setup() {
   // for some strange reason i had to repeat this at the end of setup(), see below
   peripheral_power_switch_ON();		// default peripheral power supply ON
   //  peripheral_power_switch_OFF();	// default peripheral power supply OFF
-  // delay(100);	// WAS: waiting longer when switching peripheral_power	NEW: wait anyway
+  delay(100);	// NEW: wait *before* clear_RGB_LEDs()
 
   #if defined USE_RGB_LED_STRIP
     clear_RGB_LEDs();	// do that *AGAIN*, as the string could hang on peripheral_power...
   #endif
+#else
+  delay(100);			//NEW: wait anyway	WAS: waiting longer when switching peripheral_power
 #endif
-delay(100);			//NEW: wait anyway	WAS: waiting longer when switching peripheral_power
 
 #if defined USE_i2c
   Wire.begin(21, 22, 400000L);	//NEW: start i2c early
@@ -1593,8 +1594,7 @@ delay(100);			//NEW: wait anyway	WAS: waiting longer when switching peripheral_p
 #endif
 
 #if defined USE_RGB_LED_STRIP
-  MENU.out(F("RGB LED string on pin "));
-  MENU.outln(HARDWARE.rgb_pin[0]);	// RGB_LED_STRIP_DATA_PIN
+  setup_RGB_LED_strip();	// using Adafruit_NeoPixels
   MENU.ln();
 #endif
 
@@ -1919,9 +1919,8 @@ bool low_priority_tasks() {
     extern void multicore_rgb_string_draw();
     multicore_rgb_string_draw();
   #else
-    FastLED.show();
+    show_RGB_LEDs();
   #endif
-    update_RGB_LED_string = false;
     return true;
   }
 #endif
@@ -2165,8 +2164,7 @@ void loop() {	// ARDUINO
 
 #if defined USE_RGB_LED_STRIP
     if(RGBstringConf.rgb_strings_active && update_RGB_LED_string && RGBstringConf.rgb_leds_high_priority) {
-      FastLED.show();
-      update_RGB_LED_string = false;
+      show_RGB_LEDs();
     }
 #endif
   }

@@ -1,8 +1,9 @@
 /*
   pulses_RGB_LED_string.h
 
-  new version using fastLED
+  new version using <Adafruit_NeoPixel.h>
 */
+
 
 #if ! defined PULSES_RGB_LED_STRING_H
 
@@ -65,11 +66,11 @@ char* background_algorithm_name(int index) {
 			for *hardware* see pulses_hardware_conf_t	*/
 typedef struct rgb_string_config_t {
   uint8_t version=1;
-  uint8_t version_minor=0;
+  uint8_t version_minor=1;
   uint8_t reserved2=0;
   uint8_t reserved3=0;
 
-  float rgb_led_string_intensity = DEFAULT_LED_STRING_INTENSITY;
+  float rgb_led_string_intensity = (float) DEFAULT_LED_STRING_INTENSITY;
   float saturation_start_value = 0.2;	// TODO: test&trimm default value ################	UI
   float saturation = saturation_start_value;
 
@@ -90,7 +91,12 @@ typedef struct rgb_string_config_t {
   float BlueHack_factor = 1.4;	// HACK: increase blueness
 
   float reserve_float_36=0.0;
-  float reserve_float_40=0.0;
+
+  uint8_t brightness = 128;
+
+  uint8_t reserve_uint8_41=0;
+  uint8_t reserve_uint8_42=0;
+  uint8_t reserve_uint8_43=0;
 
   uint8_t hue_slice_cnt = 15;	// just a usable default  see: set_automagic_hue_slices
   uint8_t set_background_algorithm = bgDIM;
@@ -185,285 +191,110 @@ void set_rgb_string_voltage_type(int voltage, int string) {
   MENU.outln('V');
 }
 
-#include <FastLED.h>
+#include <Adafruit_NeoPixel.h>
 
-#define RGB_CHIPSET		WS2812	// WS2811
-#define RGB_LED_STRIP_DATA_PIN	27
-#define RGB_STRING_LED_CNT	30
-#define COLOR_ORDER		GRB
-#define BRIGHTNESS		128
 //#define NUM_STRIPS		1	// this version uses only *one* strip
 
-CRGB leds[RGB_STRING_LED_CNT];	// declared global
+Adafruit_NeoPixel RGB_LEDs(HARDWARE.rgb_pixel_cnt[0], HARDWARE.rgb_pin[0], NEO_GRB + NEO_KHZ800);
+//Adafruit_NeoPixel RGB_LEDs(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+
+void show_RGB_LEDs() {	// use *this* function, specially from other files
+  RGB_LEDs.show();
+  update_RGB_LED_string = false;
+}
 
 void clear_RGB_LEDs() {
-  FastLED.clear();
-  FastLED.show();
+  RGB_LEDs.clear();
+  show_RGB_LEDs();
 }
 
 void setup_RGB_LED_strip() {
   MENU.out(F("setup_RGB_LED_strip()\t leds: "));
   MENU.out(RGB_STRING_LED_CNT);
   MENU.out(F("\tpin: "));
-  MENU.out(RGB_LED_STRIP_DATA_PIN);
+  MENU.out(HARDWARE.rgb_pin[0]);
   MENU.out(F("\tbrightness: "));
-  MENU.out(BRIGHTNESS);
-  // FastLED.addLeds<NEOPIXEL,RGB_LED_STRIP_DATA_PIN,GRB>(leds,RGB_STRING_LED_CNT);  // GRB ordering is assumed
+  MENU.out(RGBstringConf.brightness);
 
-  FastLED.addLeds<WS2812, RGB_LED_STRIP_DATA_PIN, GRB>(leds, RGB_STRING_LED_CNT);  // GRB ordering is assumed
-  //FastLED.addLeds<WS2812B, RGB_LED_STRIP_DATA_PIN, GRB>(leds, RGB_STRING_LED_CNT);  // GRB ordering is assumed
-  //FastLED.addLeds<NEOPIXEL, RGB_LED_STRIP_DATA_PIN, GRB>(leds, RGB_STRING_LED_CNT);  // GRB ordering is assumed
+  RGB_LEDs.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+  show_RGB_LEDs();            // Turn OFF all pixels ASAP
+  RGB_LEDs.setBrightness(RGBstringConf.brightness);
 
-  // FastLED.addLeds<WS2812, RGB_LED_STRIP_DATA_PIN, RGB>(leds, RGB_STRING_LED_CNT);  // GRB ordering is assumed
-  //FastLED.addLeds<RGB_CHIPSET, RGB_LED_STRIP_DATA_PIN, COLOR_ORDER>(leds, RGB_STRING_LED_CNT).setCorrection(TypicalSMD5050);
-
-  FastLED.setBrightness(BRIGHTNESS);
-
-  clear_RGB_LEDs();
   MENU.ln();
 } // setup_RGB_LED_strip()
 
 #define COUNT_OF(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 
-int selected_rgb_LED_string = 0;	// default to the first string
+int selected_rgb_LED_string = 0;		// default to the first string, only one in use anyway...
 
-void inspect_LED_pixel(CRGB pixel) {
-  MENU.out(F("pixel.r = "));
-  MENU.out(pixel.r);
-  MENU.out(F("\tg = "));
-  MENU.out(pixel.g);
-  MENU.out(F("\tb = "));
-  MENU.outln(pixel.b);
+
+uint8_t /*red=*/ get_red(uint32_t color) {	// return red value from a packed uint32_t color
+  return (uint8_t) ((color >> 16) & 0xff);
 }
 
+uint8_t /*green=*/ get_green(uint32_t color) {	// return green value from a packed uint32_t color
+  return (uint8_t) ((color >> 8 ) & 0xff);
+}
 
-// background0[]  buffer for background colour history
-CRGB background0[RGB_STRING_LED_CNT] = {0};	// keeps last used background colour, dimmed
+uint8_t /*blue=*/ get_blue(uint32_t color) {	// return blue value from a packed uint32_t color
+  return (uint8_t) (color & 0xff);
+}
 
-void clear_background_buffer0() {
+void inspect_LED_pixel(short i) {
+  MENU.out(F("pixel: "));
+  MENU.outln(i);
+
+  uint32_t color = RGB_LEDs.getPixelColor(i);
+  MENU.out(F("color: "));
+  MENU.out_hex(color);
+  MENU.out(F("\tred = "));
+  MENU.out(get_red(color));
+  MENU.out(F("\tgreen = "));
+  MENU.out(get_green(color));
+  MENU.out(F("\tblue = "));
+  MENU.outln(get_blue(color));
+} // inspect_LED_pixel()
+
+
+// background0[]  buffer for background color history
+uint8_t background0[RGB_STRING_LED_CNT*3] = {0};	// keeps last used background colour, dimmed	TODO: allocate in setup?
+
+void clear_background_buffer0() {	// TODO: DADA: unused?
   if(RGBstringConf.rgb_strings_active && rgb_strings_available) {
-    for(int i=0; i < RGB_STRING_LED_CNT; i++)
-      background0[i].r = background0[i].g = background0[i].b = 0;
+    for(int i=0; i < RGB_STRING_LED_CNT*3; i++)
+      background0[i] = 0;
   }
 }
 
-// see: https://de.wikipedia.org/wiki/HSV-Farbraum
-void HSV_2_RGB_degree(CRGB* pixel, float H, float S, float V) {	// TODO: test
-#if defined DEBUG_LED_STRINGS
-  MENU.out(F("HSV_2_RGB_degree() "));
-#endif
-  // assure parameter range
-  int i;
-  if(H != 360.0) {
-    i = H / 360;	// (degree)
-    H -= i*360;		// 0...360
+void set_background_color(int i, uint8_t r, uint8_t g, uint8_t b) {
+  if(RGBstringConf.rgb_strings_active && rgb_strings_available) {
+    if(i < RGB_STRING_LED_CNT) {
+      background0[i*3 +2] =r;
+      background0[i*3 +1] =g;
+      background0[i*3]    =b;
+    }
   }
-  if(S != 1.0) {
-    i = S;
-    S -= i;	// 0...1
-  }
-  if(V != 1.0) {
-    i = V;
-    V -= i;	// 0...1
-  }
+} // set_background_color()
 
-#if defined DEBUG_LED_STRINGS
-  #if DEBUG_LED_STRINGS != SATURATION
-    MENU.out(F("H= "));
-    MENU.out(H);
-    MENU.out(F("\tS= "));
-    MENU.out(S);
-    MENU.out(F("\tV= "));
-    MENU.outln(V);
-  #else	//    DEBUG_LED_STRINGS == SATURATION
-    MENU.out(F("\tS= "));
-    MENU.outln(S);
-  #endif
-#endif
-  // parameters within range now	TODO: test
-
-  int h_i = H/60;		// (degree)
-  float f = H/60 - h_i;		// (degree)
-  float p = V * (1 - S);
-  float q = V * (1 - S*f);
-  float t = V * (1 - S*(1 - f));
-
-#if defined DEBUG_LED_STRINGS
-  #if DEBUG_LED_STRINGS != SATURATION
-    MENU.out(F("f = "));
-    MENU.out(f);
-    MENU.out(F("\tp = "));
-    MENU.out(p);
-    MENU.out(F("\tq = "));
-    MENU.out(q);
-    MENU.out(F("\tt = "));
-    MENU.outln(t);
-
-    // double check h_i range
-    MENU.out(F("h_i = "));
-    MENU.out(h_i);
-    if(h_i < 0 || h_i > 6) {	// catch programming errors ;)
-      MENU.tab();
-      ERROR_ln(F("HSV_2_RGB_degree()\th_i"));
-      //MENU.out(F("L305\tHSV_2_RGB_degree()\th_i: "));	// DADA: REMOVE: ################
-      //MENU.outln(h_i);	// DADA: REMOVE: ################
-    } else
-      MENU.ln();
-  #endif
-#endif
-
-  float rgb_led_string_intensity = RGBstringConf.rgb_led_string_intensity;
-  switch(h_i) {
-  case 0:
-  case 6:
-    pixel->r = V * rgb_led_string_intensity;
-    pixel->g = t * rgb_led_string_intensity;
-    pixel->b = p * rgb_led_string_intensity;
-    break;
-  case 1:
-    pixel->r = q * rgb_led_string_intensity;
-    pixel->g = V * rgb_led_string_intensity;
-    pixel->b = p * rgb_led_string_intensity;
-    break;
-  case 2:
-    pixel->r = p * rgb_led_string_intensity;
-    pixel->g = V * rgb_led_string_intensity;
-    pixel->b = t * rgb_led_string_intensity;
-    break;
-  case 3:
-    pixel->r = p * rgb_led_string_intensity;
-    pixel->g = q * rgb_led_string_intensity;
-    pixel->b = V * rgb_led_string_intensity;
-    break;
-  case 4:
-    pixel->r = t * rgb_led_string_intensity;
-    pixel->g = p * rgb_led_string_intensity;
-    pixel->b = V * rgb_led_string_intensity;
-    break;
-  case 5:
-    pixel->r = V * rgb_led_string_intensity;
-    pixel->g = p * rgb_led_string_intensity;
-    pixel->b = q * rgb_led_string_intensity;
-    break;
-  }
-
-  // check range:
-  if(pixel->r<0 || pixel->r>1) {
-    MENU.out(pixel->r);
-    MENU.tab();
-    ERROR_ln(F("HSV_2_RGB_degree()\tR"));
-    //MENU.outln(F("L352\tHSV_2_RGB_degree()\tR: "));	// DADA: REMOVE: ################
-  }
-  if(pixel->g<0 || pixel->g>1) {
-    MENU.out(pixel->g);
-    MENU.tab();
-    ERROR_ln(F("HSV_2_RGB_degree()\tG"));
-    //MENU.outln(F("L358\tHSV_2_RGB_degree()\tR: "));	// DADA: REMOVE: ################
-  }
-  if((*pixel).b<0 || pixel->b>1) {
-    MENU.out(pixel->b);
-    MENU.tab();
-    ERROR_ln(F("HSV_2_RGB_degree()\tB"));
-    //MENU.outln(F("L364\tHSV_2_RGB_degree()\tR: "));	// DADA: REMOVE: ################
-  }
-} // HSV_2_RGB_degree()
 
 void pulses_RGB_LED_string_init() {
-  if(rgb_strings_available)
+  if(rgb_strings_available) {
+    RGB_LEDs.begin();	// probably needed after wake up?
     clear_RGB_LEDs();
-}
-
-//	void random_RGB_string(uint8_t max=8) {
-//	#if defined DEBUG_LED_STRINGS
-//	  #if DEBUG_LED_STRINGS != SATURATION
-//	    MENU.outln(F("random_RGB_string()"));
-//	  #endif
-//	#endif
-//
-//	  for(int i=0; i<RGB_STRING_LED_CNT; i++) {
-//	    switch(i) {
-//	      /*	// TODO: REMOVE: DEBUGGING: why do i always get 3 identical LEDs ???
-//	    case 1:
-//	      leds[i] = pixelFromRGB(0, 0, 0);
-//	      break;
-//	    case 3:
-//	      leds[i] = pixelFromRGB(10, 10, 12);
-//	      break;
-//	    case 4:
-//	      leds[i] = pixelFromRGB(10, 0, 0);
-//	      break;
-//	    case 5:
-//	      leds[i] = pixelFromRGB(0, 10, 0);
-//	      break;
-//	    case 6:
-//	      leds[i] = pixelFromRGB(0, 0, 10);
-//	      break;
-//	      */
-//	    default:
-//	      leds[i] = pixelFromRGB(random(max), random(max), random(max));
-//	    }
-//
-//	#if defined DEBUG_LED_STRINGS
-//	  #if DEBUG_LED_STRINGS != SATURATION
-//	    inspect_LED_pixel(leds[i]);
-//	  #endif
-//	#endif
-//	  }
-//
-//	  digitalLeds_drawPixels(strands, 1);
-//	} // random_RGB_string(uint8_t max=8)
-
-//	void random_HSV_LED_string() {
-//	#if DEBUG_LED_STRINGS == true
-//	  MENU.outln(F("random_HSV_LED_string()"));
-//	#endif
-//
-//	  CRGB pixel;
-//	  int random_delta_i=1000000;	// just a random granularity
-//	  float H, S, V;
-//
-//	  for(int i=0; i<RGB_STRING_LED_CNT; i++) {
-//	    H = ((float) random(random_delta_i) / (float) random_delta_i) * 360.0;
-//	    S = (float) random(random_delta_i) / (float) random_delta_i;
-//	    V = (float) random(random_delta_i) / (float) random_delta_i;
-//
-//	#if DEBUG_LED_STRINGS == true
-//	    MENU.out(i);
-//	    MENU.tab();
-//	    MENU.out(H);
-//	    MENU.tab();
-//	    MENU.out(S);
-//	    MENU.tab();
-//	    MENU.outln(V);
-//	#endif
-//
-//	    HSV_2_RGB_degree(&pixel, H, S, V);
-//	    leds[i] = pixel;
-//
-//	#if DEBUG_LED_STRINGS == true
-//	    inspect_LED_pixel(pixel);
-//	#endif
-//	  }
-//
-//	  digitalLeds_drawPixels(strands, 1);
-//	} // random_HSV_LED_string()
+  }
+} // pulses_RGB_LED_string_init()
 
 int pulse_2_rgb_pixel(int pulse) {
   int pixel = pulse;
   pixel -= musicBoxConf.lowest_primary;
-  pixel += HARDWARE.rgb_pattern0[0];	// DADA	TODO: multiple RGB strings
+  pixel += HARDWARE.rgb_pattern0[0];	// DADA	TODO?: multiple RGB strings
   return pixel;
 } // pulse_2_rgb_pixel()
 
 void clear_RGB_string_pixel(int pulse) {
   if(RGBstringConf.rgb_strings_active && rgb_strings_available) {
     int pix_i = pulse_2_rgb_pixel(pulse);	// TODO: use pulse internal data
-    CRGB pixel;
-    pixel.r = 0;
-    pixel.g = 0;
-    pixel.b = 0;
-    leds[pix_i] = pixel;
-
+    RGB_LEDs.setPixelColor(pix_i, 0);
     update_RGB_LED_string = true;
   }
 } // clear_RGB_string_pixel()
@@ -487,19 +318,18 @@ void set_pulse_LED_pixel_from_counter(int pulse) {
     }
 
     H = (float) (PULSES.pulses[pulse].counter % RGBstringConf.hue_slice_cnt) / (float) RGBstringConf.hue_slice_cnt;
-    V = RGBstringConf.rgb_led_string_intensity / (float) 255;
-
+    H *= 65536L;
+    //    V = RGBstringConf.rgb_led_string_intensity / (float) 255.0;
+    uint8_t S = (uint8_t) (RGBstringConf.saturation * 255.0);
+    uint8_t I = (uint8_t) RGBstringConf.rgb_led_string_intensity;
     int pix_i = pulse_2_rgb_pixel(pulse);	// TODO: use pulse internal data
-    CRGB pixel;
+    RGB_LEDs.setPixelColor(pix_i, RGB_LEDs.gamma32(RGB_LEDs.ColorHSV((uint16_t) H, S, I)));	// use gamma32 correction
 
-    HSV_2_RGB_degree(&pixel, (H * 360.0), RGBstringConf.saturation, V);
-    leds[pix_i] = pixel;
-
-    // try the BlueHack, to give *more* blue
-    int blue = (int) (((float) leds[pix_i].b * RGBstringConf.BlueHack_factor) + 0.5);
-    if(blue > 255)
-      blue = 255;
-    leds[pix_i].b = blue;
+//    // try the BlueHack, to give *more* blue
+//    int blue = (int) (((float) leds[pix_i].b * RGBstringConf.BlueHack_factor) + 0.5);
+//    if(blue > 255)
+//      blue = 255;
+//    leds[pix_i].b = blue;
 
     update_RGB_LED_string=true;		// new buffer content to be displayed
   } // if(RGBstringConf.rgb_strings_active && rgb_strings_available) {
@@ -519,8 +349,9 @@ void switch_rgb_pix_2_background(int pulse) {
   if(!RGBstringConf.rgb_strings_active || !rgb_strings_available)
     return;
 
-  int i = PULSES.pulses[pulse].rgb_pixel_idx;
   if(PULSES.pulses[pulse].flags & HAS_RGB_LEDs) {
+    uint16_t i = PULSES.pulses[pulse].rgb_pixel_idx;
+    uint32_t fg_color = RGB_LEDs.getPixelColor(i);
 
     switch (RGBstringConf.set_background_algorithm) {
     case bgDIM: // DIM
@@ -531,33 +362,36 @@ void switch_rgb_pix_2_background(int pulse) {
 	// extern bool musicbox_is_ending();
 	// clear = musicbox_is_ending();
 #endif
-	float x = leds[i].r;
-	x *= RGBstringConf.rgb_background_dim;
-	leds[i].r = (x + 0.5);
-	if(clear)
-	  leds[i].r = 0;
+	float x;
 
-	x = leds[i].g;
+	x = get_red(fg_color);
 	x *= RGBstringConf.rgb_background_dim;
-	leds[i].g = (x + 0.5);
+	x += 0.5;
 	if(clear)
-	  leds[i].g = 0;
+	  x = 0;
+	uint8_t r=x;
 
-	x = leds[i].b;
+	x = get_green(fg_color);
 	x *= RGBstringConf.rgb_background_dim;
-	leds[i].b = (x + 0.5);
+	x += 0.5;
 	if(clear)
-	  leds[i].b = 0;
+	  x = 0;
+	uint8_t g=x;
 
+	x = get_blue(fg_color);
+	x *= RGBstringConf.rgb_background_dim;
+	x += 0.5;
+	if(clear)
+	  x = 0;
+	uint8_t b=x;
+
+	RGB_LEDs.setPixelColor(i, r, g, b);
 	update_RGB_LED_string=true;		// new buffer content to be displayed
       }
       break;
 
     case bgCLEAR:
-      leds[i].r = 0;
-      leds[i].b = 0;
-      leds[i].g = 0;
-
+      RGB_LEDs.setPixelColor(i, 0, 0, 0);
       update_RGB_LED_string=true;		// new buffer content to be displayed
       break;
 
@@ -566,9 +400,9 @@ void switch_rgb_pix_2_background(int pulse) {
 
     case bgINVERT:
       {
-	uint8_t R = 0xFF - leds[i].r;
-	uint8_t B = 0xFF - leds[i].b;
-	uint8_t G = 0xFF - leds[i].g;
+	uint8_t R = 0xFF - get_red(fg_color);
+	uint8_t G = 0xFF - get_green(fg_color);
+	uint8_t B = 0xFF - get_blue(fg_color);
 
 	// TODO: use rgb_led_string_intensity or DEFAULT_LED_STRING_INTENSITY or 0xFF when inverting?
 	float intesity_factor = RGBstringConf.rgb_led_string_intensity / 255.0;	// TODO: or DEFAULT_LED_STRING_INTENSITY ?
@@ -576,9 +410,12 @@ void switch_rgb_pix_2_background(int pulse) {
 	G *= intesity_factor;
 	B *= intesity_factor;
 
-	leds[i].r = (R + 0.5);
-	leds[i].g = (G + 0.5);
-	leds[i].b = (B + 0.5);
+	R += 0.5;
+	G += 0.5;
+	B += 0.5;
+
+	RGB_LEDs.setPixelColor(i, (uint8_t) R, (uint8_t) G, (uint8_t) B);
+	update_RGB_LED_string=true;		// new buffer content to be displayed
       }
       update_RGB_LED_string=true;		// new buffer content to be displayed
       break;
@@ -586,9 +423,9 @@ void switch_rgb_pix_2_background(int pulse) {
     case bgHISTORY_i: // HISTORY
       {
 	// start with background history
-	float R = background0[i].r;
-	float G = background0[i].g;
-	float B = background0[i].b;
+	float R = background0[i*3 +2];
+	float G = background0[i*3 +1];
+	float B = background0[i*3];
 
 #if defined DEBUG_RGB_STRING_BACKGROUND
 	MENU.out(F("bg pixel  "));
@@ -622,9 +459,9 @@ void switch_rgb_pix_2_background(int pulse) {
 #endif
 
 	// new (float) FG colors
-	float fg_R = leds[i].r;
-	float fg_G = leds[i].g;
-	float fg_B = leds[i].b;
+	float fg_R = get_red(fg_color);
+	float fg_G = get_green(fg_color);
+	float fg_B = get_blue(fg_color);
 
 #if defined DEBUG_RGB_STRING_BACKGROUND
 	MENU.out(F("new FG\t\t"));
@@ -678,10 +515,16 @@ void switch_rgb_pix_2_background(int pulse) {
 	R += fg_R;
 	G += fg_G;
 	B += fg_B;
-	// set and preserve history
-	leds[i].r = background0[i].r = (uint8_t) (R + 0.5);
-	leds[i].g = background0[i].g = (uint8_t) (G + 0.5);
-	leds[i].b = background0[i].b = (uint8_t) (B + 0.5);
+
+	R += 0.5;
+	G += 0.5;
+	B += 0.5;
+
+	// set pixels with some amount of history mixed in
+	RGB_LEDs.setPixelColor(i, (uint8_t) R, (uint8_t) G, (uint8_t) B);
+	update_RGB_LED_string=true;		// new buffer content to be displayed
+
+	set_background_color(i, (uint8_t) R, (uint8_t) G, (uint8_t) B);	// preserve history
 
 #if defined DEBUG_RGB_STRING_BACKGROUND
 	MENU.out(F("BG float\t"));
@@ -694,11 +537,11 @@ void switch_rgb_pix_2_background(int pulse) {
 	MENU.outln(F("as int"));
 
 	MENU.out(F("BACKGOUND\t"));
-	MENU.out(background0[i].r);
+	MENU.out(background0[i*3 +2]);	// bg red
 	MENU.tab();
-	MENU.out(background0[i].g);
+	MENU.out(background0[i*3 +1]);	// bg green
 	MENU.tab();
-	MENU.outln(background0[i].b);
+	MENU.outln(background0[i*3]);	// bg blue
 	MENU.ln();
 #endif
 
@@ -712,7 +555,7 @@ void switch_rgb_pix_2_background(int pulse) {
 
 #if defined DEBUG_RGB_STRING_BACKGROUND		// && UI was active
     MENU.out(i); MENU.tab();
-    MENU.out(leds[i].r); MENU.tab(); MENU.out(leds[i].g); MENU.tab(); MENU.outln(leds[i].b);
+    MENU.out(get_red(fg_color)); MENU.tab(); MENU.out(get_green(fg_color)); MENU.tab(); MENU.outln(get_blue(fg_color));
 #endif
 
   } /* HAS_RGB_LEDs */ else
@@ -723,7 +566,7 @@ void switch_rgb_pix_2_background(int pulse) {
 TaskHandle_t multicore_rgb_string_draw_handle;
 
 void multicore_rgb_string_draw_task(void* dummy) {
-  FastLED.show();
+  show_RGB_LEDs();
   vTaskDelete(NULL);
 }
 

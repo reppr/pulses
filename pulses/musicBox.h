@@ -326,7 +326,7 @@ void set_MusicBoxState(musicbox_state_t state) {	// sets the state unconditional
   case OFF:
     MusicBoxState_name = F("OFF");
 
-#if defined USE_RGB_LED_STRIP	// TODO: more flexibility, like fading	DADA
+#if defined USE_RGB_LED_STRIP	// TODO: more flexibility, like fading	DADA L329
     clear_RGB_LEDs();
 #endif
 
@@ -3362,7 +3362,7 @@ void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from mai
   MENU.out(F("light_sleep()\t"));
 
 #if defined USE_RGB_LED_STRIP
-  pulses_RGB_LED_string_init();	// switch RGB LED string off
+  clear_RGB_LEDs();		// switch RGB LED string off
 #endif
 
 #if defined USE_BLUETOOTH_SERIAL_MENU
@@ -3521,7 +3521,7 @@ void deep_sleep() {
   rtc_save_configuration();
 
 #if defined USE_RGB_LED_STRIP
-  pulses_RGB_LED_string_init();	// switch RGB LED string off
+  clear_RGB_LEDs();			// switch RGB LED string off
 #endif
 
 #if defined USE_BLUETOOTH_SERIAL_MENU	// do we use bluetooth?

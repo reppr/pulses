@@ -602,3 +602,200 @@ for(int g=0; g<2; g++) {
 #define FIND_FREE_TIMER_H
 #endif
 /* **************************************************************** */
+
+void random_HSV_LED_string() {
+#if DEBUG_LED_STRINGS == true
+  MENU.outln(F("random_HSV_LED_string()"));
+#endif
+
+  CRGB pixel;
+  int random_delta_i=1000000;	// just a random granularity
+  float H, S, V;
+
+  for(int i=0; i<RGB_STRING_LED_CNT; i++) {
+    H = ((float) random(random_delta_i) / (float) random_delta_i) * 360.0;
+    S = (float) random(random_delta_i) / (float) random_delta_i;
+    V = (float) random(random_delta_i) / (float) random_delta_i;
+
+#if DEBUG_LED_STRINGS == true
+    MENU.out(i);
+    MENU.tab();
+    MENU.out(H);
+    MENU.tab();
+    MENU.out(S);
+    MENU.tab();
+    MENU.outln(V);
+#endif
+
+    HSV_2_RGB_degree(&pixel, H, S, V);
+    leds[i] = pixel;
+
+#if DEBUG_LED_STRINGS == true
+    inspect_LED_pixel(i);
+#endif
+  }
+
+  digitalLeds_drawPixels(strands, 1);
+} // random_HSV_LED_string()
+
+void random_RGB_string(uint8_t max=8) {
+#if defined DEBUG_LED_STRINGS
+  #if DEBUG_LED_STRINGS != SATURATION
+    MENU.outln(F("random_RGB_string()"));
+  #endif
+#endif
+
+  for(int i=0; i<RGB_STRING_LED_CNT; i++) {
+    switch(i) {
+      /*	// TODO: REMOVE: DEBUGGING: why do i always get 3 identical LEDs ???
+    case 1:
+      leds[i] = pixelFromRGB(0, 0, 0);
+      break;
+    case 3:
+      leds[i] = pixelFromRGB(10, 10, 12);
+      break;
+    case 4:
+      leds[i] = pixelFromRGB(10, 0, 0);
+      break;
+    case 5:
+      leds[i] = pixelFromRGB(0, 10, 0);
+      break;
+    case 6:
+      leds[i] = pixelFromRGB(0, 0, 10);
+      break;
+      */
+    default:
+      leds[i] = pixelFromRGB(random(max), random(max), random(max));
+    }
+
+#if defined DEBUG_LED_STRINGS
+  #if DEBUG_LED_STRINGS != SATURATION
+    inspect_LED_pixel(i);
+  #endif
+#endif
+  }
+
+  digitalLeds_drawPixels(strands, 1);
+} // random_RGB_string(uint8_t max=8)
+
+
+// see: https://de.wikipedia.org/wiki/HSV-Farbraum
+void HSV_2_RGB_degree(CRGB* pixel, float H, float S, float V) {	// TODO: test
+#if defined DEBUG_LED_STRINGS
+  MENU.out(F("HSV_2_RGB_degree() "));
+#endif
+  // assure parameter range
+  int i;
+  if(H != 360.0) {
+    i = H / 360;	// (degree)
+    H -= i*360;		// 0...360
+  }
+  if(S != 1.0) {
+    i = S;
+    S -= i;	// 0...1
+  }
+  if(V != 1.0) {
+    i = V;
+    V -= i;	// 0...1
+  }
+
+#if defined DEBUG_LED_STRINGS
+  #if DEBUG_LED_STRINGS != SATURATION
+    MENU.out(F("H= "));
+    MENU.out(H);
+    MENU.out(F("\tS= "));
+    MENU.out(S);
+    MENU.out(F("\tV= "));
+    MENU.outln(V);
+  #else	//    DEBUG_LED_STRINGS == SATURATION
+    MENU.out(F("\tS= "));
+    MENU.outln(S);
+  #endif
+#endif
+  // parameters within range now	TODO: test
+
+  int h_i = H/60;		// (degree)
+  float f = H/60 - h_i;		// (degree)
+  float p = V * (1 - S);
+  float q = V * (1 - S*f);
+  float t = V * (1 - S*(1 - f));
+
+#if defined DEBUG_LED_STRINGS
+  #if DEBUG_LED_STRINGS != SATURATION
+    MENU.out(F("f = "));
+    MENU.out(f);
+    MENU.out(F("\tp = "));
+    MENU.out(p);
+    MENU.out(F("\tq = "));
+    MENU.out(q);
+    MENU.out(F("\tt = "));
+    MENU.outln(t);
+
+    // double check h_i range
+    MENU.out(F("h_i = "));
+    MENU.out(h_i);
+    if(h_i < 0 || h_i > 6) {	// catch programming errors ;)
+      MENU.tab();
+      ERROR_ln(F("HSV_2_RGB_degree()\th_i"));
+      //MENU.out(F("L305\tHSV_2_RGB_degree()\th_i: "));	// DADA: REMOVE: ################
+      //MENU.outln(h_i);	// DADA: REMOVE: ################
+    } else
+      MENU.ln();
+  #endif
+#endif
+
+  float rgb_led_string_intensity = RGBstringConf.rgb_led_string_intensity;
+  switch(h_i) {
+  case 0:
+  case 6:
+    pixel->r = V * rgb_led_string_intensity;
+    pixel->g = t * rgb_led_string_intensity;
+    pixel->b = p * rgb_led_string_intensity;
+    break;
+  case 1:
+    pixel->r = q * rgb_led_string_intensity;
+    pixel->g = V * rgb_led_string_intensity;
+    pixel->b = p * rgb_led_string_intensity;
+    break;
+  case 2:
+    pixel->r = p * rgb_led_string_intensity;
+    pixel->g = V * rgb_led_string_intensity;
+    pixel->b = t * rgb_led_string_intensity;
+    break;
+  case 3:
+    pixel->r = p * rgb_led_string_intensity;
+    pixel->g = q * rgb_led_string_intensity;
+    pixel->b = V * rgb_led_string_intensity;
+    break;
+  case 4:
+    pixel->r = t * rgb_led_string_intensity;
+    pixel->g = p * rgb_led_string_intensity;
+    pixel->b = V * rgb_led_string_intensity;
+    break;
+  case 5:
+    pixel->r = V * rgb_led_string_intensity;
+    pixel->g = p * rgb_led_string_intensity;
+    pixel->b = q * rgb_led_string_intensity;
+    break;
+  }
+
+  // check range:
+  if(pixel->r<0 || pixel->r>1) {
+    MENU.out(pixel->r);
+    MENU.tab();
+    ERROR_ln(F("HSV_2_RGB_degree()\tR"));
+    //MENU.outln(F("L352\tHSV_2_RGB_degree()\tR: "));	// DADA: REMOVE: ################
+  }
+  if(pixel->g<0 || pixel->g>1) {
+    MENU.out(pixel->g);
+    MENU.tab();
+    ERROR_ln(F("HSV_2_RGB_degree()\tG"));
+    //MENU.outln(F("L358\tHSV_2_RGB_degree()\tR: "));	// DADA: REMOVE: ################
+  }
+  if((*pixel).b<0 || pixel->b>1) {
+    MENU.out(pixel->b);
+    MENU.tab();
+    ERROR_ln(F("HSV_2_RGB_degree()\tB"));
+    //MENU.outln(F("L364\tHSV_2_RGB_degree()\tR: "));	// DADA: REMOVE: ################
+  }
+} // HSV_2_RGB_degree()

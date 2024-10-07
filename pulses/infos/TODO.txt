@@ -1414,7 +1414,7 @@ MC_display_message(str)  used by ERROR_ln()  should be failsave...
 ledcAttach(LED_PIN, LEDC_BASE_FREQ, LEDC_TIMER_13_BIT);	// FIXME: TEST new LEDC espressif software version
 
 DADA	TODO:	RGB_STRING SATURATION in HARDWARE
-use FastLED.setBrightness();
+use FastLED.setBrightness();	// not using FastLED any more...
 
 setup_ePaper_GxEPD2()
 [   551][E][esp32-hal-gpio.c:176] __digitalWrite(): IO 5 is not set as GPIO.
@@ -1424,3 +1424,18 @@ setup_ePaper_GxEPD2()
 // #include "timestamp.h"	// DADA	TODO:	in SD_card_logging.h
 
 '::' gives	UNKNOWN TOKEN '⸮'	255
+
+
+#if defined USE_RGB_LED_STRIP	// TODO: more flexibility, like fading	DADA L329  musicBox.h
+    clear_RGB_LEDs();
+#endif
+
+uint8_t background0[RGB_STRING_LED_CNT*3] = {0};	// keeps last used background colour, dimmed	TODO: allocate in setup
+void clear_background_buffer0() {	// TODO: DADA: unused?
+
+// bool clear_rgb_background_on_ending	// TODO: maybe	// DADA rgb_string_config
+use that where appropriate	void clear_background_buffer0() {	// TODO: DADA: unused?
+
+//    // try the BlueHack, to give *more* blue
+
+switch gamma correction on/off
