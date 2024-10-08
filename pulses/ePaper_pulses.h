@@ -235,14 +235,15 @@ void ePaper_musicBox_parameters() {	// ePAPER_SMALL_213	SMALL ePaper size, i.e. 
 #endif	// (big | SMALL) ePaper size
 
 
-void inline MC_show_musicBox_parameters() {
+uint32_t /*error=*/ MC_show_musicBox_parameters() {
 #if defined DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tMC_show_musicBox_parameters()"));
 #endif
 #if defined MULTICORE_DISPLAY
-  MC_do_on_other_core(&ePaper_musicBox_parameters);
+  return MC_do_on_other_core(&ePaper_musicBox_parameters, 2250);
 #else
   ePaper_musicBox_parameters();
+  return 0;
 #endif
 }
 
@@ -380,11 +381,11 @@ void inline MC_show_program_version() {
   MENU.outln(F("DEBUG_ePAPER\tMC_show_program_version()"));
 #endif
 #if defined MULTICORE_DISPLAY
-  MC_do_on_other_core(&ePaper_show_program_version);
+  MC_do_on_other_core(&ePaper_show_program_version, 2048);
 #else
   ePaper_show_program_version();
 #endif
-}
+} // MC_show_program_version()
 
 
 void  ePaper_show_tuning() {
@@ -464,7 +465,7 @@ void try_ePaper_fix() {	// maybe OBSOLETE?	let's hope ;)
   delay(1000);	// TODO: ?
 
   //  ePaper_show_program_version();	// just as a test
-  extern void MC_show_musicBox_parameters();
+  extern uint32_t MC_show_musicBox_parameters();
   delay(2000); MC_show_musicBox_parameters();	// just as a test
   delay(1500);	// TODO: ?
 } // try_ePaper_fix()

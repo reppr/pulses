@@ -3,6 +3,47 @@
   temporary test menu UI during development
 */
 
+#if true
+extern void ePaper_musicBox_parameters();
+extern void esp_heap_and_stack_info();
+//MC_show_tuning();	// ok
+//MC_show_program_version();	// ok
+
+extern void ePaper_put_run_state_symbol(char);
+ePaper_put_run_state_symbol('Z');
+
+break;
+#endif
+
+#if false
+int s;
+for(int i=5; i>0; i--) {
+  s=i*1024;
+  while(! Serial.available()) { ; };
+  Serial.read();
+
+  MENU.ln();
+  MENU.out(i);
+  MENU.tab();
+  MENU.outln(s);
+  esp_heap_and_stack_info();
+  MENU.ln();
+
+  MC_do_on_other_core(&ePaper_show_tuning, s);
+  //  MC_do_on_other_core(&ePaper_show_program_version, s);	// TODO: trimm
+  //MC_do_on_other_core(&ePaper_musicBox_parameters, s);
+  esp_heap_and_stack_info();
+  MENU.ln();
+}
+break;
+#endif
+
+#if false
+  MC_do_on_other_core(&ePaper_show_program_version, 5*1024);	// TODO: trimm
+#endif
+
+
+#if defined USE_RGB_LED_STRIP
 {
   for(int i=0; i<15; i++) {
     RGB_LEDs.setPixelColor(i, RGB_LEDs.Color(255,0,0));         //  Set pixel's color RED (in RAM)
@@ -36,14 +77,17 @@
 }
   //  RGB_LEDs.updateLength(30);
 break;
+#endif
 
   show_internals();
   MENU.ln();
 
   MENU.print_free_RAM(); MENU.ln();
 
+  MENU.ln();
   extern void esp_heap_and_stack_info();
   esp_heap_and_stack_info();
+  MENU.ln();
 
   extern void display_esp_versions();
   display_esp_versions();

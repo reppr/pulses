@@ -799,3 +799,27 @@ void HSV_2_RGB_degree(CRGB* pixel, float H, float S, float V) {	// TODO: test
     //MENU.outln(F("L364\tHSV_2_RGB_degree()\tR: "));	// DADA: REMOVE: ################
   }
 } // HSV_2_RGB_degree()
+
+#if true
+int s;
+extern void ePaper_musicBox_parameters();
+extern void esp_heap_and_stack_info();
+
+for(int i=5; i>0; i--) {
+  s=i*1024;
+  while(! Serial.available()) { ; };
+  Serial.read();
+
+  MENU.ln();
+  MENU.out(i);
+  MENU.tab();
+  MENU.outln(s);
+  esp_heap_and_stack_info();
+  MENU.ln();
+  MC_do_on_other_core(&ePaper_show_program_version, s);	// TODO: trimm
+  //MC_do_on_other_core(&ePaper_musicBox_parameters, s);
+  esp_heap_and_stack_info();
+  MENU.ln();
+}
+break;
+#endif

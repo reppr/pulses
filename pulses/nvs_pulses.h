@@ -188,6 +188,7 @@ void configure_HARDWARE_from_nvs() {
     return;
   }
 
+#if defined USE_MPU6050_at_ADDR
   // MPU6050
   if(HARDWARE_from_nvs.mpu6050_addr) {
     HARDWARE.mpu6050_addr = HARDWARE_from_nvs.mpu6050_addr;
@@ -221,6 +222,7 @@ void configure_HARDWARE_from_nvs() {
       MENU.outln('}');
     }
   }
+#endif // USE_MPU6050_at_ADDR
 
   // GPIO
   if(HARDWARE_from_nvs.gpio_pins_cnt) {

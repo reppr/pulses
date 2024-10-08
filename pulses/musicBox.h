@@ -2970,13 +2970,13 @@ void start_musicBox() {
 
   /*	TODO: *test* that first, might be too much, so deactivated for now
 #if defined HAS_ePaper
-  extern void MC_show_musicBox_parameters();
+  extern uint32_t MC_show_musicBox_parameters();
   MC_show_musicBox_parameters();
 #endif
   */
 
 //#if defined HAS_DISPLAY
-//  extern void MC_show_musicBox_parameters();
+//  extern uint32_t MC_show_musicBox_parameters();
 //  MC_show_musicBox_parameters();
 //#endif
 
@@ -3203,7 +3203,10 @@ void start_musicBox() {
   MENU.ln();
   musicBox_short_info();
 #if defined HAS_DISPLAY
-  MC_show_musicBox_parameters();
+ if(MC_show_musicBox_parameters()) {	// multicore error
+   MENU.outln(F("DADA: MC DISPLAY ERROR recovery fallback"));
+   ePaper_musicBox_parameters();	// fallback, use single core version...
+ }
 #endif
 
   //  MENU.outln(F("\n >>> * <<<"));	// start output block with configurations
@@ -4260,7 +4263,7 @@ bool Y_UI() {	// 'Ux' 'X' 'Y' 'Z' "eXtended motion UI" planed eXtensions: other 
 //	//    MENU.out(F("accGyro_preset "));
 //	//    MENU.outln(accGyro_preset);
 //	//    }
-#else	// no MPU6050
+#else	// no USE_MPU6050_at_ADDR
   return false;
 #endif
 } // Y_UI()

@@ -108,7 +108,7 @@ void MC_do_on_other_core_task(void* function_p) {
   vTaskDelete(NULL);
 }
 
-void MC_do_on_other_core(void (*function_p)(), int stack_size=4*1024) {	// create and do one shot task
+uint32_t /*error=*/ MC_do_on_other_core(void (*function_p)(), int stack_size=4*1024) {	// create and do one shot task
   BaseType_t err = xTaskCreatePinnedToCore(MC_do_on_other_core_task,	// function
 					   "other_fun",			// name
 					   stack_size,			// stack size
@@ -116,16 +116,22 @@ void MC_do_on_other_core(void (*function_p)(), int stack_size=4*1024) {	// creat
 					   DO_ON_OTHER_CORE_PRIORITY,	// task priority
 					   &MC_do_on_other_core_handle,	// task handle
 					   0);				// core 0
-  if(err != pdPASS) {
+
+  if(err != pdPASS) {	// pdPASS is == 1
     MENU.out(esp_err_to_name(err));
     MENU.tab();
     ERROR_ln(F("MC_do_on_other_core"));
 #if defined ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help
     extern void esp_heap_and_stack_info();
     esp_heap_and_stack_info();
+    MENU.ln();
 #endif
+    return (uint32_t) err;
   }
-}
+
+  return 0;	// pdPASS is == 1  and *NOT* =0
+} // MC_do_on_other_core()
+
 
 #define MULTICORE_DISPLAY_COMMON_H
 #endif

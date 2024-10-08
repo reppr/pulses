@@ -57,7 +57,6 @@ String getMacAddress() {
 // see: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/heap_debug.html#heap-information
 #include "esp_heap_caps.h"
 void esp_heap_and_stack_info() {
-  MENU.ln();
   MENU.out(F("heap_caps_get_free_size(0)\t\t"));
   MENU.outln(heap_caps_get_free_size(0));
 
@@ -66,8 +65,8 @@ void esp_heap_and_stack_info() {
 
   MENU.out(F("uxTaskGetStackHighWaterMark(NULL)\t"));
   MENU.outln(uxTaskGetStackHighWaterMark(NULL));
-  MENU.ln();
-}
+} // esp_heap_and_stack_info()
+
 
 #define ESP_GET_INFOS_H
 #endif

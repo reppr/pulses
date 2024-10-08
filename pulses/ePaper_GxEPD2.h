@@ -11,7 +11,9 @@
 //#define DEBUG_ePAPER
 
 #if ! defined MC_DISPLAY_STACK_SIZE
-  #define MC_DISPLAY_STACK_SIZE		2*1024	// was: 4*1024
+#define MC_DISPLAY_STACK_SIZE		2*1024	// TODO: needs more testing
+//#define MC_DISPLAY_STACK_SIZE		3*1024
+//#define MC_DISPLAY_STACK_SIZE		4*1024
 #endif
 
 #define MC_DELAY_MS	10	// delay MC_mux lock release	// TODO: test&trimm	maybe obsolete?
@@ -294,15 +296,20 @@ void multicore_ePaper_print_at(int16_t col, int16_t row, const char* text, int16
     esp_heap_and_stack_info();
 #endif
     free_text_buffer(txt_descript_p);
+#if defined ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help
+    MENU.outln(F("free_text_buffer"));
+    esp_heap_and_stack_info();
+    MENU.ln();
+#endif
   }
 } // multicore_ePaper_print_at()
 
-void MC_print_at(int16_t col, int16_t row, const char* text, int16_t offset_y=0) {
+void MC_print_at(int16_t col, int16_t row, const char* text, int16_t offset_y=0) {	// multicore
 #if defined DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tMC_print_at()"));
 #endif
   multicore_ePaper_print_at(col, row, text, offset_y);
-}
+} // MC_print_at() multicore
 
 #else
 void MC_print_at(int16_t col, int16_t row, const char* text, int16_t offset_y=0) {
@@ -323,11 +330,7 @@ void MC_printBIG_at(int16_t col, int16_t row, const char* text, int16_t offset_y
   MC_print_at(col, row, text, offset_y);
 
 #if defined DEBUG_DOUBLE_MUX
-//ePaper.display(true);		// new
-//MENU.outln("DADA: MC_printBIG_at()  ePaper.display(true)");
-  // or:
-  //ePaper.display(true);
-  MENU.outln("DADA: MC_printBIG_at()\t\t*NO* ePaper.display(true)");
+  MENU.outln(F("DADA: MC_printBIG_at()"));
 #endif
 } // MC_printBIG_at()
 
@@ -462,7 +465,9 @@ void multicore_ePaper_1line_at(int16_t row, const char* text, int16_t offset_y) 
 #endif
     free_text_buffer(txt_descript_p);
 #if defined ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help
+    MENU.outln(F("free_text_buffer"));
     esp_heap_and_stack_info();
+    MENU.ln();
 #endif
   }
   avoid_error_recursion=false;

@@ -1414,8 +1414,10 @@ void show_internals() {		// also calls display_esp_versions();  and   esp_heap_a
   MENU.ln();
   display_esp_versions();
 
+  MENU.ln();
   extern void esp_heap_and_stack_info();
   esp_heap_and_stack_info();
+  MENU.ln();
 
   MENU.ln();
   MENU.out(F("MAC: "));
@@ -1933,7 +1935,7 @@ bool low_priority_tasks() {
       return true;
     }
   }
-#endif
+#endif // USE_MPU6050_at_ADDR
 
 #ifdef IMPLEMENT_TUNING		// tuning, sweeping priority below menu		*implies floating point*
   tuning = PULSES.tuning;	// FIXME: workaround for having all 3 sweep implementations in parallel

@@ -48,6 +48,7 @@ void do_on_other_core(void (*function_p)(), int stack_size=DO_ON_OTHER_CORE_STAC
 #if defined ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help
     extern void esp_heap_and_stack_info();
     esp_heap_and_stack_info();
+    MENU.ln();
 #endif
     // vTaskDelete(do_on_other_core_handle);	// FREEZE...
   }
