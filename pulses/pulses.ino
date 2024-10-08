@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICALv04698   // trying Adafruit_NeoPixels for RGB LED strips, *no* SD card logging
+#define PROGRAM_VERSION	HARMONICALv04699   // save RAM, fixes eDisplay. const jiffles iCodes and scales
 /*			0123456789abcdef   */
 
 

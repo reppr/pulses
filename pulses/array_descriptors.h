@@ -41,7 +41,7 @@ int DB_items(arr_descriptor * DB) {
 }
 
 
-char* array2name(arr_descriptor * DB, unsigned int* array) {
+char* array2name(arr_descriptor * DB, unsigned int* array) {	// old style unsigned int*
   // do *not* start at 0,  if the array is selected. you would get DB name ;)
   for(int i=1; i < DB[0].item; i++)
     if (DB[i].pointer == array)
@@ -50,14 +50,33 @@ char* array2name(arr_descriptor * DB, unsigned int* array) {
   return (char*) "";
 }
 
-unsigned int* index2pointer(arr_descriptor * DB, unsigned int index) {
+char* array2name(arr_descriptor * DB, const unsigned int* array) {
+  // do *not* start at 0,  if the array is selected. you would get DB name ;)
+  for(int i=1; i < DB[0].item; i++)
+    if (DB[i].pointer == array)
+      return DB[i].name;
+
+  return (char*) "";
+}
+
+
+unsigned int* index2pointer(arr_descriptor * DB, unsigned int index) {	// old style  unsigned int*
   if (index > 0  &&  index < DB[0].item )
-    return DB[index].pointer;
+    return (unsigned int*) DB[index].pointer;
 
   return NULL;	// TIP: use to check if DB has the indexed item
 }
 
-int pointer2index(arr_descriptor * DB, unsigned int* array) {
+
+int pointer2index(arr_descriptor * DB, unsigned int* array) {	// old style unsigned int*
+  for (int i=1; i < DB[0].item ; i++)
+    if (DB[i].pointer == array)
+      return i;
+
+  return ILLEGAL32;	// TIP: use to check if array is in db ;)
+}
+
+int pointer2index(arr_descriptor * DB, const unsigned int* array) {	// new style  const unsigned int*  overloaded
   for (int i=1; i < DB[0].item ; i++)
     if (DB[i].pointer == array)
       return i;
@@ -66,12 +85,20 @@ int pointer2index(arr_descriptor * DB, unsigned int* array) {
 }
 
 
-void select_in(arr_descriptor* DB, unsigned int* array) {
+void select_in(arr_descriptor* DB, unsigned int* array) {	// old style  unsigned int*
   if (pointer2index(DB, array) != ILLEGAL32)	// TODO: remove debugging code
     DB[0].pointer=array;	// DB[0].pointer points to selected array
   else						// TODO: remove debugging code
     ERROR_ln(F("select_in()"));		// TODO: remove debugging code
 }
+
+void select_in(arr_descriptor* DB, const unsigned int* array) {	// new style  const unsigned int*  overloaded
+  if (pointer2index(DB, array) != ILLEGAL32)	// TODO: remove debugging code
+    DB[0].pointer=(unsigned int*) array;	// DB[0].pointer points to selected array
+  else						// TODO: remove debugging code
+    ERROR_ln(F("select_in()"));		// TODO: remove debugging code
+}
+
 
 unsigned int* selected_in(arr_descriptor* DB) {
   return DB[0].pointer;
@@ -81,6 +108,8 @@ unsigned int selected_length_in(arr_descriptor* DB) {
   return DB[pointer2index(DB, DB[0].pointer)].len;
 }
 
+
+// old style  unsigned int*
 bool register_in_DB(arr_descriptor* DB,	\
 	unsigned int* array, unsigned int len, unsigned int item, const char* name, const char* type) {
   // DB[0] describes the database itself
@@ -98,7 +127,29 @@ bool register_in_DB(arr_descriptor* DB,	\
 
   ERROR_ln(F("could not register array"));
   return false;
-} // register_in_DB()
+} // register_in_DB()  unsigned int*
+
+
+// new style  const unsigned int*  overloaded
+bool register_in_DB(arr_descriptor* DB,	\
+	const unsigned int* array, unsigned int len, unsigned int item, const char* name, const char* type) {
+  // DB[0] describes the database itself
+  unsigned int next=DB[0].item;
+  if((next * sizeof(arr_descriptor)) < DB[0].len) {
+    DB[next].pointer=(unsigned int*) array;
+    DB[next].len=len;
+    DB[next].item=item;
+    DB[next].name= (char*) name;
+    DB[next].type= (char*) type;
+
+    DB[0].item++;	// count registrations in DB[0].item
+    return true;
+  }
+
+  ERROR_ln(F("could not register array"));
+  return false;
+} // register_in_DB()  const unsigned int*
+
 
 char* selected_name(arr_descriptor* DB) {
   return array2name(DB, selected_in(DB));
@@ -149,7 +200,7 @@ arr_descriptor iCODEs[iCODE_DESCRIPTORS];
 
 // register_scale(europ_PENTAtonic, sizeof(europ_PENTAtonic), "europ_PENTAtonic");
 bool register_scale(unsigned int* scale, unsigned int len, const char* name) {
-  return register_in_DB(SCALES, scale, len, 2, name, "scale");
+  return register_in_DB(SCALES, (unsigned int*) scale, len, 2, name, "scale");
 }
 
 #ifndef STRINGIFY2
@@ -159,7 +210,7 @@ bool register_scale(unsigned int* scale, unsigned int len, const char* name) {
 //#define STRINGIFY(X) (char*) STRINGIFY2(X)	// this version avoids the C++ warnings about string constants and char*
 #endif
 
-#define REGISTER_SCALE(X)	register_scale((X), sizeof((X)), STRINGIFY(X))
+#define REGISTER_SCALE(X)	register_scale(((unsigned int*) X), sizeof((X)), STRINGIFY(X))
 
 
 // i.e.  register_jiffle(pentatonic_rise, sizeof(pentatonic_rise), "pentatonic_rise");
@@ -281,11 +332,11 @@ bool UI_select_from_DB(arr_descriptor* DB) {
 
 #endif // MENU_h
 
-#define REGISTER_JIFFLE(X)	register_jiffle((X), sizeof((X)), STRINGIFY(X))
+#define REGISTER_JIFFLE(X)	register_jiffle(((unsigned int*) X), sizeof((X)), STRINGIFY(X))
 
 
 bool register_iCODE(void* icode, unsigned int len, const char* name) {
   return register_in_DB(iCODEs, (unsigned int *) icode, len, 1, name, "icode");
 }
 
-#define REGISTER_iCODE(X)	register_iCODE((X), sizeof((X)), STRINGIFY(X))
+#define REGISTER_iCODE(X)	register_iCODE(((unsigned int*) X), sizeof((X)), STRINGIFY(X))
