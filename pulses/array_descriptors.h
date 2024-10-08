@@ -41,26 +41,17 @@ int DB_items(arr_descriptor * DB) {
 }
 
 
-char* array2name(arr_descriptor * DB, unsigned int* array) {	// old style unsigned int*
+// (void*) to allow old type (unsigned int*) and new type  (const unsigned int*)
+char* array2name(arr_descriptor * DB, void* array) {
   // do *not* start at 0,  if the array is selected. you would get DB name ;)
   for(int i=1; i < DB[0].item; i++)
-    if (DB[i].pointer == array)
+    if (DB[i].pointer == (unsigned int*) array)
       return DB[i].name;
 
   return (char*) "";
 }
 
-char* array2name(arr_descriptor * DB, const unsigned int* array) {
-  // do *not* start at 0,  if the array is selected. you would get DB name ;)
-  for(int i=1; i < DB[0].item; i++)
-    if (DB[i].pointer == array)
-      return DB[i].name;
-
-  return (char*) "";
-}
-
-
-unsigned int* index2pointer(arr_descriptor * DB, unsigned int index) {	// old style  unsigned int*
+unsigned int* index2pointer(arr_descriptor * DB, unsigned int index) {
   if (index > 0  &&  index < DB[0].item )
     return (unsigned int*) DB[index].pointer;
 
@@ -68,37 +59,27 @@ unsigned int* index2pointer(arr_descriptor * DB, unsigned int index) {	// old st
 }
 
 
-int pointer2index(arr_descriptor * DB, unsigned int* array) {	// old style unsigned int*
+int pointer2index(arr_descriptor * DB, void* array) {
   for (int i=1; i < DB[0].item ; i++)
-    if (DB[i].pointer == array)
+    if (DB[i].pointer == (unsigned int*) array)
       return i;
 
   return ILLEGAL32;	// TIP: use to check if array is in db ;)
 }
 
-int pointer2index(arr_descriptor * DB, const unsigned int* array) {	// new style  const unsigned int*  overloaded
-  for (int i=1; i < DB[0].item ; i++)
-    if (DB[i].pointer == array)
-      return i;
-
-  return ILLEGAL32;	// TIP: use to check if array is in db ;)
-}
-
-
-void select_in(arr_descriptor* DB, unsigned int* array) {	// old style  unsigned int*
+void select_in(arr_descriptor* DB, unsigned int* array) {	// old type  (unsigned int*)
   if (pointer2index(DB, array) != ILLEGAL32)	// TODO: remove debugging code
     DB[0].pointer=array;	// DB[0].pointer points to selected array
   else						// TODO: remove debugging code
     ERROR_ln(F("select_in()"));		// TODO: remove debugging code
 }
 
-void select_in(arr_descriptor* DB, const unsigned int* array) {	// new style  const unsigned int*  overloaded
-  if (pointer2index(DB, array) != ILLEGAL32)	// TODO: remove debugging code
-    DB[0].pointer=(unsigned int*) array;	// DB[0].pointer points to selected array
+void select_in(arr_descriptor* DB, const unsigned int* array) {	// new type  (const unsigned int*)  overloaded
+  if (pointer2index(DB, (unsigned int*) array) != ILLEGAL32)	// TODO: remove debugging code
+    DB[0].pointer= (unsigned int*) array;	// DB[0].pointer points to selected array
   else						// TODO: remove debugging code
     ERROR_ln(F("select_in()"));		// TODO: remove debugging code
 }
-
 
 unsigned int* selected_in(arr_descriptor* DB) {
   return DB[0].pointer;
@@ -109,30 +90,9 @@ unsigned int selected_length_in(arr_descriptor* DB) {
 }
 
 
-// old style  unsigned int*
+// (void*) to allow old type (unsigned int*) and new type  (const unsigned int*)
 bool register_in_DB(arr_descriptor* DB,	\
-	unsigned int* array, unsigned int len, unsigned int item, const char* name, const char* type) {
-  // DB[0] describes the database itself
-  unsigned int next=DB[0].item;
-  if((next * sizeof(arr_descriptor)) < DB[0].len) {
-    DB[next].pointer=array;
-    DB[next].len=len;
-    DB[next].item=item;
-    DB[next].name= (char*) name;
-    DB[next].type= (char*) type;
-
-    DB[0].item++;	// count registrations in DB[0].item
-    return true;
-  }
-
-  ERROR_ln(F("could not register array"));
-  return false;
-} // register_in_DB()  unsigned int*
-
-
-// new style  const unsigned int*  overloaded
-bool register_in_DB(arr_descriptor* DB,	\
-	const unsigned int* array, unsigned int len, unsigned int item, const char* name, const char* type) {
+	void* array, unsigned int len, unsigned int item, const char* name, const char* type) {
   // DB[0] describes the database itself
   unsigned int next=DB[0].item;
   if((next * sizeof(arr_descriptor)) < DB[0].len) {
@@ -148,7 +108,7 @@ bool register_in_DB(arr_descriptor* DB,	\
 
   ERROR_ln(F("could not register array"));
   return false;
-} // register_in_DB()  const unsigned int*
+} // register_in_DB()  void*
 
 
 char* selected_name(arr_descriptor* DB) {
@@ -199,7 +159,7 @@ arr_descriptor iCODEs[iCODE_DESCRIPTORS];
 
 
 // register_scale(europ_PENTAtonic, sizeof(europ_PENTAtonic), "europ_PENTAtonic");
-bool register_scale(unsigned int* scale, unsigned int len, const char* name) {
+bool register_scale(void* scale, unsigned int len, const char* name) {
   return register_in_DB(SCALES, (unsigned int*) scale, len, 2, name, "scale");
 }
 
@@ -214,8 +174,8 @@ bool register_scale(unsigned int* scale, unsigned int len, const char* name) {
 
 
 // i.e.  register_jiffle(pentatonic_rise, sizeof(pentatonic_rise), "pentatonic_rise");
-bool register_jiffle(unsigned int* jiffle, unsigned int len, const char* name) {
-  return register_in_DB(JIFFLES, jiffle, len, 3, name, "jiffle");
+bool register_jiffle(void* jiffle, unsigned int len, const char* name) {
+  return register_in_DB(JIFFLES, (unsigned int*) jiffle, len, 3, name, "jiffle");
 }
 
 #ifdef MENU_h
