@@ -201,6 +201,7 @@
 
 //#define USE_OLD_STYLE_EXPERIMENTS	// switched them off to save some RAM (does it?)
 
+#define USE_OLD_STYLE_EXPERIMENTS	// revitalised
 
 #define MY_PULSES_CONFIG_H
 #endif

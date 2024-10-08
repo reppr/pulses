@@ -9,6 +9,16 @@
 #if ! defined OLD_STYLE_EXPERIMENTS_H
 
 int selected_experiment=-1;
+extern bool scale_user_selected;
+extern bool g_inverse;
+extern int voices;
+extern int DAx_max;
+extern int prepare_scale(bool inverse, int voices, unsigned long multiplier, unsigned long divisor, int sync, unsigned int *scale, bool octaves);
+extern int sweep_up;
+extern void tabula_rasa();
+extern bool jiffle_user_selected;
+extern bool scale_user_selected;
+extern bool icode_user_selected;
 
 /* **************************************************************** */
 /*
@@ -525,8 +535,10 @@ void select_scale__UI() {	// DADA OBSOLETE?: only used inside oldstyle experimen
     break;
   }
 
-  if(selected_in(SCALES) != scale_was)
+  if(selected_in(SCALES) != scale_was) {
+    extern void not_a_preset();
     not_a_preset();
+  }
 } // select_scale__UI()
 
 void Press_toStart() {	// for old style 'experiment'
@@ -534,17 +546,64 @@ void Press_toStart() {	// for old style 'experiment'
 }
 
 
-old_style_experiments_menu_reaction() {
+const char * experiment_names[] = {		// FIXME: const char * experiment_names would be better
+      "(invalid)",				// 0
+      "setup_jiffle128",			// 1
+      "init_div_123456",			// 2
+      "ESP8266 Frogs",				// 3
+      "setup_jiffles2345",			// 4
+      "init_123456",				// 5
+      "init_chord_1345689a",			// 6
+      "init_rhythm_1",				// 7
+      "init_rhythm_2",				// 8
+      "init_rhythm_3",				// 9
+      "init_rhythm_4",				// 10
+      "setup_jifflesNEW",			// 11
+      "init_pentatonic",			// 12
+      "magnets: The Harmonical Strings Christmas Evening Sounds",  // 13
+      "magnets on strings 2",			// 14
+      "magnets on strings 3",			// 15
+      "piezzos on low strings 2016-12-28",	// 16
+      "magnets on steel strings, japanese",	// 17
+      "nylon stringed wooden box, piezzos",	// 18
+      "tuned sweep",				// 19
+      "arpeggio4096\tpentatonic",		// 20
+      "arpeggio4096down\tpentatonic",		// 21
+      "arpeggio_cont\tpentatonic",		// 22
+      "arpeggio_and_down\tpentatonic",		// 23
+      "stepping_down\tpentatonic",		// 24
+      "back_to_ground\tpentatonic rhythm slowdown", // 25
+      "arpeggio_and_sayling\tpentatonic",	// 26
+      "simple_theme\tpentatonic",		// 27
+      "peepeep4096\tpentatonic\tfor tuning",	// 28
+      "KALIMBA7 tuning",			// 29
+      "KALIMBA7 jiff pent minor",		// 30
+      "KALIMBA7 jiff pent euro",		// 31
+      "ESP32_12 pent euro",			// 32
+      "minor scale",				// 33
+      "major scale",				// 34
+      "tetraCHORD",				// 35
+      "more voices please",			// 36
+      "Guitar and other Instruments",		// 37
+      "Time Machine 1",				// 38
+      "Time Machine 2",				// 39
+      "Time Machine iCodeplayer",		// 40
+//    "(invalid)",				// over
+  };
+
+#define n_experiment_names (sizeof (experiment_names) / sizeof (const char *))
+
+
+void old_style_experiments_menu_reactions() {
     if (MENU.maybe_display_more()) {
       MENU.out(F("experiment "));
     }
 
-    input_value = MENU.numeric_input(-1);	// select experiment
+    int input_value = MENU.numeric_input(-1);	// select experiment
 
-    if (input_value==-1)
+    if (input_value==-1) {
       display_names_OBSOLETE(experiment_names, n_experiment_names, selected_experiment);
-
-    else if (input_value>=0 ) {	// select, initialize experiment
+    } else if (input_value>=0 ) {	// select, initialize experiment
       selected_experiment = input_value;
       switch (selected_experiment) {
 	/* some old style setups just initialise defaults,  but do not start yet, press '!'
@@ -761,7 +820,7 @@ old_style_experiments_menu_reaction() {
 
 	select_in(SCALES, pentatonic_minor);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, musicBoxConf.pitch.multiplier * 1024 , musicBoxConf.pitch.divisor * 1167, musicBoxConf.sync, selected_in(SCALES));
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier * 1024 , musicBoxConf.pitch.divisor * 1167, musicBoxConf.sync, selected_in(SCALES), true);
 	select_in(JIFFLES, ting1024);
 	PULSES.select_n(voices);
 	display_name5pars("E14", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
@@ -778,7 +837,7 @@ old_style_experiments_menu_reaction() {
 
 	select_in(SCALES, pentatonic_minor);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, musicBoxConf.pitch.multiplier * 4096 , musicBoxConf.pitch.divisor * 1167, musicBoxConf.sync, selected_in(SCALES));
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier * 4096 , musicBoxConf.pitch.divisor * 1167, musicBoxConf.sync, selected_in(SCALES), true);
 	select_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
 	display_name5pars("E15", g_inverse, voices, \
@@ -796,7 +855,7 @@ old_style_experiments_menu_reaction() {
 
 	select_in(SCALES, europ_PENTAtonic);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES), true);
 	select_in(JIFFLES, ting4096);
 	// select_in(JIFFLES, arpeggio4096);
 	display_name5pars("E16 PENTAtonic", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
@@ -813,7 +872,7 @@ old_style_experiments_menu_reaction() {
 
 	select_in(SCALES, mimic_japan_pentatonic);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES), true);
 	select_in(JIFFLES, ting4096);
 	display_name5pars("E17 mimic japan", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 
@@ -845,7 +904,7 @@ old_style_experiments_menu_reaction() {
 	select_in(JIFFLES, ting4096);
 
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES), true);
 	display_name5pars("E18 pentatonic minor", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 
 	if (MENU.verbosity >= VERBOSITY_SOME)
@@ -941,7 +1000,7 @@ old_style_experiments_menu_reaction() {
 	musicBoxConf.pitch.multiplier=1;
 	musicBoxConf.pitch.divisor=1024;
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES), true);
 	display_name5pars("E29 KALIMBA7 tuning", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	en_click_selected();							// for tuning ;)
 	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate
@@ -962,7 +1021,7 @@ old_style_experiments_menu_reaction() {
 	select_in(JIFFLES, ting4096);
 	// select_in(JIFFLES, tingeling4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES), true);
 	display_name5pars("E30 KALIMBA7 jiff", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate
@@ -981,7 +1040,7 @@ old_style_experiments_menu_reaction() {
 	musicBoxConf.pitch.divisor=1;
 	select_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES), true);
 	display_name5pars("E31 KALIMBA7 jiff", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
@@ -1000,7 +1059,7 @@ old_style_experiments_menu_reaction() {
 	// select_in(JIFFLES, ting4096);
 	select_in(JIFFLES, tigg_ding4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES), true);
 	display_name5pars("E32 ESP32_12", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
@@ -1018,7 +1077,7 @@ old_style_experiments_menu_reaction() {
 	musicBoxConf.pitch.divisor=1;
 	select_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES), true);
 	display_name5pars("minor", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
@@ -1036,7 +1095,7 @@ old_style_experiments_menu_reaction() {
 	musicBoxConf.pitch.divisor=1;
 	select_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES), true);
 	display_name5pars("major", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
@@ -1054,7 +1113,7 @@ old_style_experiments_menu_reaction() {
 	musicBoxConf.pitch.divisor=1;
 	select_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES), true);
 	display_name5pars("tetra", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
@@ -1072,7 +1131,7 @@ old_style_experiments_menu_reaction() {
 	musicBoxConf.pitch.divisor=1;
 	select_in(JIFFLES, ting4096);
 	PULSES.select_n(voices);
-	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES));
+	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync, selected_in(SCALES), true);
 	display_name5pars("BIG major", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	setup_jiffle_thrower_selected(selected_actions);
 	PULSES.activate_selected_synced_now(musicBoxConf.sync);	// sync and activate;
@@ -1108,7 +1167,7 @@ old_style_experiments_menu_reaction() {
 
 	// ################ FIXME: remove redundant code ################
 	PULSES.select_n(voices);
-//	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, 0, selected_in(SCALES));
+//	prepare_scale(false, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, 0, selected_in(SCALES), true);
 //	display_name5pars("GUITAR", g_inverse, voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, musicBoxConf.sync);
 	tune_2_scale(voices, musicBoxConf.pitch.multiplier, musicBoxConf.pitch.divisor, selected_in(SCALES));	// TODO: OBSOLETE?
 	lower_audio_if_too_high(409600);
@@ -1322,57 +1381,7 @@ old_style_experiments_menu_reaction() {
 
       } // switch (selected_experiment)
     } // if experiment >= 0
-} // old_style_experiments_menu_reaction()
-
-
-#ifndef RAM_IS_SCARE	// enough RAM?
-const char * experiment_names[] = {		// FIXME: const char * experiment_names would be better
-      "(invalid)",				// 0
-      "setup_jiffle128",			// 1
-      "init_div_123456",			// 2
-      "ESP8266 Frogs",				// 3
-      "setup_jiffles2345",			// 4
-      "init_123456",				// 5
-      "init_chord_1345689a",			// 6
-      "init_rhythm_1",				// 7
-      "init_rhythm_2",				// 8
-      "init_rhythm_3",				// 9
-      "init_rhythm_4",				// 10
-      "setup_jifflesNEW",			// 11
-      "init_pentatonic",			// 12
-      "magnets: The Harmonical Strings Christmas Evening Sounds",  // 13
-      "magnets on strings 2",			// 14
-      "magnets on strings 3",			// 15
-      "piezzos on low strings 2016-12-28",	// 16
-      "magnets on steel strings, japanese",	// 17
-      "nylon stringed wooden box, piezzos",	// 18
-      "tuned sweep",				// 19
-      "arpeggio4096\tpentatonic",		// 20
-      "arpeggio4096down\tpentatonic",		// 21
-      "arpeggio_cont\tpentatonic",		// 22
-      "arpeggio_and_down\tpentatonic",		// 23
-      "stepping_down\tpentatonic",		// 24
-      "back_to_ground\tpentatonic rhythm slowdown", // 25
-      "arpeggio_and_sayling\tpentatonic",	// 26
-      "simple_theme\tpentatonic",		// 27
-      "peepeep4096\tpentatonic\tfor tuning",	// 28
-      "KALIMBA7 tuning",			// 29
-      "KALIMBA7 jiff pent minor",		// 30
-      "KALIMBA7 jiff pent euro",		// 31
-      "ESP32_12 pent euro",			// 32
-      "minor scale",				// 33
-      "major scale",				// 34
-      "tetraCHORD",				// 35
-      "more voices please",			// 36
-      "Guitar and other Instruments",		// 37
-      "Time Machine 1",				// 38
-      "Time Machine 2",				// 39
-      "Time Machine iCodeplayer",		// 40
-//    "(invalid)",				// over
-  };
-
-  #define n_experiment_names (sizeof (experiment_names) / sizeof (const char *))
-#endif // ! RAM_IS_SCARE
+} // old_style_experiments_menu_reactions()
 
 
 void old_style_experiments_exclamation_mark_menu_reaction() {

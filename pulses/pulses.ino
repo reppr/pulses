@@ -526,6 +526,7 @@ void test_code(unsigned int* code, char* name, int count) {	// works for iCode a
   #include "old_style_experiments.h"
 #endif
 
+
 #if GPIO_PINS > 0
 /*	TODO: move to library Pulses
   gpio_pin_t next_gpio()	return next unused GPIO click pin (or ILLEGAL32)
@@ -3817,7 +3818,7 @@ void menu_pulses_display() {
 int setup_jiffle_thrower_synced(pulse_time_t when,
 				unsigned long unit,
 				unsigned long multiplier, unsigned long divisor,
-				int sync, unsigned int *jiffle)
+				int sync, unsigned int* jiffle)	// old type (unsigned int*)
 {
   pulse_time_t period = PULSES.simple_time(unit);
   PULSES.mul_time(&period, multiplier);
@@ -3831,7 +3832,27 @@ int setup_jiffle_thrower_synced(pulse_time_t when,
   }
 
   return pulse;
-} // setup_jiffle_thrower_synced()
+} // setup_jiffle_thrower_synced()  (unsigned int*)
+
+
+int setup_jiffle_thrower_synced(pulse_time_t when,
+				unsigned long unit,
+				unsigned long multiplier, unsigned long divisor,
+				int sync, const unsigned int* jiffle)	// old type (unsigned int*)
+{
+  pulse_time_t period = PULSES.simple_time(unit);
+  PULSES.mul_time(&period, multiplier);
+  PULSES.div_time(&period, divisor);
+  int pulse= PULSES.setup_pulse_synced(&do_throw_a_jiffle, ACTIVE, when, period, sync);
+  if ((pulse > -1) && (pulse < PL_MAX) && (pulse != ILLEGAL32)) {
+    PULSES.set_gpio(pulse, this_or_next_gpio(pulse));
+    PULSES.pulses[pulse].data = (unsigned int) jiffle;
+  } else {
+    out_noFreePulses();
+  }
+
+  return pulse;
+} // setup_jiffle_thrower_synced()  (const unsigned int*)   overloaded
 
 
 /* **************************************************************** */
@@ -4423,9 +4444,16 @@ void select_jiffle_UI() {	// 'J'  select jiffle, maybe apply to selected pulses
 } // select_jiffle_UI()
 
 
-void user_selected_scale(unsigned int* scale) {
+void user_selected_scale(unsigned int* scale) {	// old style
   if(scale != NULL) {
-    select_in(SCALES, scale);
+    select_in(SCALES, (unsigned int*) scale);
+    scale_user_selected = true;
+  }
+}
+
+void user_selected_scale(const unsigned int* scale) {	// new style, overloaded
+  if(scale != NULL) {
+    select_in(SCALES, (unsigned int*) scale);
     scale_user_selected = true;
   }
 }
@@ -5349,7 +5377,7 @@ bool menu_pulses_reaction(char menu_input) {
 
   case 'E':	// experiment, setups, instruments
 #if defined USE_OLD_STYLE_EXPERIMENTS
-    old_style_experiments_menu_reaction();
+    old_style_experiments_menu_reactions();
 #else
     MENU.outln(F("'experiments' depreciated, use presets instead"));
 #endif
