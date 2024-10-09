@@ -3485,11 +3485,7 @@ void light_sleep() {	// see: bool do_pause_musicBox	flag to go sleeping from mai
   // see  https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/system/sleep_modes.html#_CPPv218esp_sleep_source_t
   switch (cause = esp_sleep_get_wakeup_cause()) {
   case 0:	// ESP_SLEEP_WAKEUP_UNDEFINED	0
-    MENU.outln(F("wakeup undefined"));	// TODO: does this happen?
-//  #if defined AUTOSTART		// TODO: do we need that?
-//      MENU.out(F("HACK: restart anyway "));
-//      AUTOSTART;
-//  #endif
+    MENU.outln(F("wakeup undefined ???"));	// TODO: does this happen?
     break;
   case 2:	// ESP_SLEEP_WAKEUP_EXT0	2
     MENU.outln(F("wakeup EXT0\t"));
@@ -3720,8 +3716,8 @@ void A_UI() {	// 'A' is not mnemonic, just a morse convenient char that was rare
   case 'A':	// 'AA'
     MENU.drop_input_token();	// 'AA' AUTOSTART (just in case bare 'A' will be used for other purposes)
 #if defined AUTOSTART
-    MENU.outln(F(STRINGIFY(AUTOSTART)));
-    AUTOSTART;
+    extern bool maybe_do_AUTOSTART();
+    maybe_do_AUTOSTART();
 #else
     show_voices();
 #endif

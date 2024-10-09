@@ -1391,6 +1391,19 @@ int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very fi
   #include "DEBUG_DOUBLE_MUX.h"
 #endif
 
+bool /*did it*/ maybe_do_AUTOSTART() {
+ #ifdef AUTOSTART			// see: pulses_project_conf.h
+  autostart_counter++;
+  MENU.out(F("\nAUTOSTART "));
+  MENU.out(autostart_counter);
+  MENU.tab();
+  MENU.outln(F(STRINGIFY(AUTOSTART)));
+  AUTOSTART;
+  return true;
+#else
+  return false;
+#endif
+} // maybe_do_AUTOSTART()
 
 void setup() {
   setup_initial_HARDWARE_conf();
@@ -1799,23 +1812,7 @@ show_GPIOs();	// *does* work for GPIO_PINS==0
     }
     else
 #endif
-
-#if defined DEBUG_DOUBLE_MUX
-      // DEBUG_DOUBLE_MUX_one_shot_tests();	// aborts after that	// TODO: remove
-#endif
-
-#ifdef AUTOSTART			// see: pulses_project_conf.h
-      {
-	autostart_counter++;
-	MENU.out(F("\nAUTOSTART "));
-	MENU.out(autostart_counter);
-	MENU.tab();
-	MENU.outln(STRINGIFY(AUTOSTART));
-	AUTOSTART;
-      }
-#else
-    ;
-#endif
+      maybe_do_AUTOSTART();
   }
 } // setup()
 
@@ -2063,15 +2060,11 @@ void loop() {	// ARDUINO
 
       if(musicBox_when_done != &user) {	// user() is a flag *NOT to autostart* musicBox
 	if(musicBox_when_done == &light_sleep) {
-	  #if defined AUTOSTART
-	    AUTOSTART;	// AUTOSTART after light_sleep()
-	  #else
-	    ;
-	  #endif
+	  maybe_do_AUTOSTART();		// AUTOSTART after light_sleep()
 	} else
 	  start_musicBox();
       }
-    }
+    } // if(do_pause_musicBox)
   #endif // HARMONICAL_MUSIC_BOX
 
 /*
