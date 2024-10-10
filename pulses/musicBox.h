@@ -2370,6 +2370,11 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
   if(show_cycle_pattern)
     watch_primary_pulses();
 
+#if defined ePAPER_SHOW_CYCLE
+  if(! ePaper_is_updating)	// wait until ePaper_musicBox_parameters() has finished...
+    ePaper_update_progression((float) this_division.multiplier / (float) this_division.divisor);	// called by the butler
+#endif
+
   cycle_monitor(pulse);	// cycle_monitor() runs from within musicBox_butler()
 
   if(show_cycle_pattern || show_subcycle_position)
@@ -2966,6 +2971,10 @@ void start_musicBox() {
   MC_show_program_version();
 #endif
 
+#if defined ePAPER_SHOW_CYCLE
+  last_cycle_state_seen=0;	// reset
+#endif
+
   set_MusicBoxState(AWAKE);
 
   /*	TODO: *test* that first, might be too much, so deactivated for now
@@ -3203,10 +3212,12 @@ void start_musicBox() {
   MENU.ln();
   musicBox_short_info();
 #if defined HAS_DISPLAY
- if(MC_show_musicBox_parameters()) {	// multicore error
-   MENU.outln(F("DADA: MC DISPLAY ERROR recovery fallback"));
-   ePaper_musicBox_parameters();	// fallback, use single core version...
- }
+  ePaper_is_updating=true;		// wait until ePaper_musicBox_parameters() has finished?
+  if(MC_show_musicBox_parameters()) {	// multicore error
+    MENU.outln(F("DADA: MC DISPLAY ERROR recovery fallback"));
+    ePaper_musicBox_parameters();	// fallback, use single core version...
+    ePaper_is_updating=false;
+  }
 #endif
 
   //  MENU.outln(F("\n >>> * <<<"));	// start output block with configurations

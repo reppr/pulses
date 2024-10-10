@@ -71,6 +71,74 @@ void MC_esp_now_peer_list() {
 }
 #endif // USE_ESP_NOW
 
+#if defined ePAPER_SHOW_CYCLE
+const short cycle_bar_width=120;	// with Pixopixel font narrow chars |:.'!
+const short cycle_bar_symbol_width=2;
+const char* cycle_bar_marks=
+  F("!              :        .     :         '    :  .           !           .  :    '         :     .        :              !");
+const short cycle_bar_offset_y=-1;	// TEST same as 0?
+//const short cycle_bar_offset_y=0;	// compromise, progress bar a bit small
+//const short cycle_bar_offset_y=-2;	// cuts a bit too much from top line
+uint8_t cycle_bar_row=4;
+volatile short last_cycle_state_seen=0;
+
+
+short new_cycle_position=-999;
+
+//#define DEBUG_CYCLE_BAR_MULTICORE
+void ePaper_update_progression_multicore() {
+  // else  do update:
+  set_used_font(&Picopixel);
+
+  uint16_t x0, x, y, w, h;
+  x0= (last_cycle_state_seen +1) * cycle_bar_symbol_width;		// first x position for partial update
+  y= ((cycle_bar_row + 1) * used_font_p->yAdvance) + cycle_bar_offset_y; // stays constant
+  w=2;		// do not eat the marks
+  if(new_cycle_position < 8)	// startup
+    w=8;	// let a group of updates be possible at startup, no marks yet to protect there
+  h=2;
+
+#if defined DEBUG_CYCLE_BAR_MULTICORE
+  MENU.out(F("\ncycle bar  last ")); MENU.out(last_cycle_state_seen);
+  MENU.out(F("\tnew ")); MENU.outln(new_cycle_position);
+
+  MENU.out(F("PartialWindow (")); MENU.out(x0); MENU.out(','); MENU.out(y-1); MENU.out(',');
+  MENU.out(w); MENU.out(','); MENU.out(h); MENU.outln(')');
+
+  MENU.out(F("first set.Cursor(")); MENU.out((last_cycle_state_seen +1) * cycle_bar_symbol_width); MENU.out(',');
+  MENU.out(y); MENU.outln(')');
+#endif
+
+  ePaper.setPartialWindow(x0, y-1, w, h);	// works quite well...
+  ePaper.firstPage();
+  do
+  {
+    while(new_cycle_position > last_cycle_state_seen) {
+      x= ++last_cycle_state_seen * cycle_bar_symbol_width;
+      ePaper.setCursor(x, y);
+      ePaper.print("|");
+    }
+  }
+  while (ePaper.nextPage());
+
+  ePaper.setFullWindow();	// reset
+} // ePaper_update_progression_multicore()
+
+void ePaper_update_progression(float float_position) {	// just a wrapper
+  new_cycle_position = float_position * (float) cycle_bar_width;
+  if(new_cycle_position <= last_cycle_state_seen)	// already ok, nothing to do
+    return;
+
+  if(new_cycle_position < 0 || new_cycle_position > (cycle_bar_width + 1 /*shown range is cycle +1*/))
+    return;						// OUT OF RANGE, error ignored
+
+  MC_do_on_other_core(&ePaper_update_progression_multicore);
+} // ePaper_update_progression(float)  wrapper
+
+#endif // ePAPER_SHOW_CYCLE
+
+
+volatile bool ePaper_is_updating=false;	// wait until ePaper_musicBox_parameters() has finished
 
 #if ! defined ePAPER_SMALL_213		// BIGGER ePaper size, i.e. 2.9" size ePaper
 
@@ -98,7 +166,7 @@ void ePaper_musicBox_parameters() {	// BIGGER ePaper size, i.e. 2.9" size ePaper
   {
     ePaper.fillScreen(GxEPD_WHITE);
     set_used_font(big_font_p);
-    ePaper_setCursor_0_0();
+    ePaper.setCursor(0, used_font_yAdvance - 8);	// better compromise as ePaper_setCursor_0_0();
 
     extern char run_state_symbol();
     snprintf(txt, font_linlen+1, fmt_1st_row, run_state_symbol(), musicBoxConf.preset, my_IDENTITY.preName);
@@ -136,6 +204,8 @@ void ePaper_musicBox_parameters() {	// BIGGER ePaper size, i.e. 2.9" size ePaper
     ePaper.print(musicBoxConf.name);
   }
   while (ePaper.nextPage());
+
+  ePaper_is_updating = false;
 } // ePaper_musicBox_parameters(), bigger
 
 #else	// ePAPER_SMALL_213	SMALL ePaper size, i.e. LilyGo 2.13" boards
@@ -149,7 +219,7 @@ void ePaper_musicBox_parameters() {	// ePAPER_SMALL_213	SMALL ePaper size, i.e. 
   ePaper.fillScreen(GxEPD_WHITE);
   ePaper.setTextColor(GxEPD_BLACK);
 
-  char txt[LIN_BUF_MAX];
+  char txt[LIN_BUF_MAX];	// TODO: malloc
   char* format_s = F("%s");
   char* fmt_1st_row = F("%c %i  |%s|");		// fmt_1st_row, run_state_symbol(), musicBoxConf.preset, my_IDENTITY.preName
   //char* fmt_1st_row = F("%c |%s| P%i");	// fmt_1st_row, run_state_symbol(), musicBoxConf.preset, my_IDENTITY.preName
@@ -172,6 +242,12 @@ void ePaper_musicBox_parameters() {	// ePAPER_SMALL_213	SMALL ePaper size, i.e. 
     // monochrome_show_subcycle_octave();
     ePaper.println();
 
+#if defined ePAPER_SHOW_CYCLE
+    set_used_font(&Picopixel);
+    ePaper.setCursor(0, ((cycle_bar_row+1) * used_font_p->yAdvance) + cycle_bar_offset_y);
+    ePaper.print(cycle_bar_marks);
+#endif
+
     if(musicBoxConf.name) {
       int len = strlen(musicBoxConf.name);
       bool bigFont_name= len < 19;	// TODO: test&trimm
@@ -182,29 +258,37 @@ void ePaper_musicBox_parameters() {	// ePAPER_SMALL_213	SMALL ePaper size, i.e. 
 	}
 	set_used_font(big_font_p);	// now BIG font
 
-      } else				// normal size
+      } else {				// normal size
 	set_used_font(medium_font_p);
+      }
       ePaper.print(musicBoxConf.name);	// preset NAME
 
-    #if defined USE_MANY_FONTS
+#if defined USE_MANY_FONTS
       ePaper.setFont(&FreeSans9pt7b);
-    #else
+#else
       set_used_font(medium_font_p);
-    #endif
+#endif
       ePaper.println();		// empty line
-      if(bigFont_name)  		// if name (above) was big font
-	ePaper.println();		//    another empty line (after BIG line)
-      else
-	if(len < 30)
+      if(bigFont_name) {  		// if name (above) was big font
+	set_used_font(tiny_font_p);	// just to have a smaller lineskip
+	ePaper.println();
+#if defined USE_MANY_FONTS
+	ePaper.setFont(&FreeSans9pt7b);	// reset
+#else
+	set_used_font(medium_font_p);	// reset
+#endif
+      } else	// *not* big font
+	if(len < 30) {
 	  ePaper.println();	//    empty line (after shortish medium sized line)
+	}
     } else { // (musicBoxConf.name == NULL)
-      ePaper.println();	//    empty line (after shortish medium sized line)
-    #if defined USE_MANY_FONTS
+      ePaper.println();		//    empty line (after missing preset name)
+#if defined USE_MANY_FONTS
       ePaper.setFont(&FreeSans9pt7b);
-    #else
+#else
       set_used_font(medium_font_p);
-    #endif
-    }
+#endif
+    } // musicBoxConf.name  exists or not?
 
     extern char* metric_mnemonic;
     snprintf(txt, LIN_BUF_MAX, fmt_key_scale_sync, metric_mnemonic, selected_name(SCALES), musicBoxConf.sync);
@@ -230,10 +314,11 @@ void ePaper_musicBox_parameters() {	// ePAPER_SMALL_213	SMALL ePaper size, i.e. 
     }
   }
   while (ePaper.nextPage());
+
+  ePaper_is_updating = false;
 } // ePaper_musicBox_parameters(), SMALL
 
 #endif	// (big | SMALL) ePaper size
-
 
 uint32_t /*error=*/ MC_show_musicBox_parameters() {
 #if defined DEBUG_ePAPER

@@ -30,7 +30,8 @@
     #if defined ePaper213B73_BOARD_LILYGO_T5  &&  defined ePaper213BN_BOARD_LILYGO_BN
       #error "define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213BN_BOARD_LILYGO_BN"
     #endif
-    #define ePAPER_SMALL_213
+
+    #define ePAPER_SHOW_CYCLE	// while running do show a cycle progress bar over musicBox_parameters screen
 
     //#define USE_SD_CARD	// #undef that to SAVE RAM?
     #if defined USE_SD_CARD

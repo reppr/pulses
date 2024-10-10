@@ -148,7 +148,7 @@ void ePaper_infos() {
 
 
 // fonts:
-//GFXfont* tiny_font_p=	(GFXfont*) &Picopixel;
+GFXfont* tiny_font_p=		(GFXfont*) &Picopixel;
 GFXfont* small_font_p=		(GFXfont*) NULL;
 GFXfont* medium_font_p=		(GFXfont*) &FreeSansBold9pt7b;	// or: /* MONO */ &FreeMonoBold9pt7b
 GFXfont* big_font_p=		(GFXfont*) &FreeSansBold12pt7b;
@@ -205,6 +205,16 @@ void set_used_font(const GFXfont* font_p) {
 #endif
     //used_font_x = 14;		// ~250/18;	*NOT* a fixed width font!
     font_linlen=33;		//		*NOT* a fixed width font!
+    //used_font_is_monospace=false;
+    //used_font_is_bold=true;
+    //used_font_is_light=false;
+
+  } else if(font_p == &Picopixel) {
+#if defined DEBUG_ePAPER
+    MENU.out(F("\tPicopixel"));
+#endif
+    //used_font_x = 14;		// ~250/18;	*NOT* a fixed width font!
+    //font_linlen=33;		//		*NOT* a fixed width font!
     //used_font_is_monospace=false;
     //used_font_is_bold=true;
     //used_font_is_light=false;

@@ -1469,3 +1469,8 @@ mess with AUTOSTART and nvs_AUTOSTART_kb_macro
 UI to
 block trigger
 change endpoint
+
+#if defined MULTICORE_DISPLAY
+delete cycle bar
+
+sync as fraction, not integer?
