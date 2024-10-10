@@ -107,6 +107,11 @@ void system_menu_display() {
 #if defined USE_LOGGING
   logging_UI_display();
 #endif // USE_LOGGING
+
+#if defined GXEPD2_EPAPER_H
+  // ePaper_infos();
+#endif
+
 } // system_menu_display()
 
 

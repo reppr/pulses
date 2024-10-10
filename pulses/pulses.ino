@@ -1476,10 +1476,9 @@ void setup() {
 
 #if defined HAS_DISPLAY
   // SEE: https://github.com/olikraus/u8g2/wiki/u8x8reference
-  hw_display_setup();	// monochrome_begin() and monochrome_set_default_font() included in hw_display_setup() now
-
-  bool has_display_hardware=true;	// for delay only	TODO: fix&use monochrome_display detection
   MENU.ln();
+  hw_display_setup();	// monochrome_begin() and monochrome_set_default_font() included in hw_display_setup() now
+  bool has_display_hardware=true;	// for delay only	TODO: fix&use monochrome_display detection
 #endif
 
   show_internals();			// also calls display_esp_versions();  and   esp_heap_and_stack_info();

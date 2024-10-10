@@ -3152,7 +3152,7 @@ void start_musicBox() {
   MENU.outln(RGBstringConf.hue_slice_cnt);
 #endif
 
-  if(!pitch_user_selected)		// if *not* set by user interaction	// TODO: factor out randomisation
+  if(magic_autochanges && !pitch_user_selected)	// if *not* set by user interaction	// TODO: factor out randomisation
     random_octave_shift();		// random octave shift
 
 #if defined OLDSTYLE_TUNE_AND_LIMIT

@@ -1458,3 +1458,14 @@ UI trigger deactivation
 UI duration
 
 do all that stuff on monochrome oled display...
+
+magic_autochanges:
+use MagicConf.magic_autochanges
+
+new preset: europ_PENTATonic S=5 PENTA-3rd_rise 8192/143
+
+mess with AUTOSTART and nvs_AUTOSTART_kb_macro
+
+UI to
+block trigger
+change endpoint

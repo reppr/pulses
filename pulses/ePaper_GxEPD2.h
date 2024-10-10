@@ -109,19 +109,20 @@
 
 void ePaper_infos() {
   MENU.outln(F("ePaper_infos()"));
-
+  int rotation;
   MENU.out(F("height\t"));
   MENU.out(ePaper.height());
   MENU.out(F("\twidth\t"));
   MENU.out(ePaper.width());
   MENU.out(F("\trotation\t"));
-  MENU.out(ePaper.getRotation());
+  MENU.out(rotation = ePaper.getRotation());
   MENU.out(F("\tFastPartialUpdate "));
   if(ePaper.epd2.hasFastPartialUpdate)
     MENU.outln(F("yes"));
   else
     MENU.outln(F("no"));
 
+  /*
   int rotation_was=ePaper.getRotation();
   for(int rotation=0; rotation<4; rotation++) {
     ePaper.setRotation(rotation);
@@ -133,6 +134,14 @@ void ePaper_infos() {
     MENU.outln(ePaper.width());		//	128	250	128	250
   }
   ePaper.setRotation(rotation_was);
+  */
+
+  MENU.out(F("rotation:"));
+  MENU.out(rotation);
+  MENU.out(F("\tpage hight "));
+  MENU.out(ePaper.pageHeight());
+  MENU.out(F("\twidth "));
+  MENU.outln(ePaper.width());
 
   MENU.ln();
 } // ePaper_infos()
@@ -155,6 +164,7 @@ uint8_t font_linlen=22;	// TODO: FIXME: ################
 //bool used_font_is_light=false;	// TODO: use?
 
 
+//#define DEBUG_ePAPER
 void set_used_font(const GFXfont* font_p) {
 #if defined DEBUG_ePAPER
   MENU.out(F("DEBUG_ePAPER\tset_used_font()"));
@@ -386,11 +396,9 @@ void setup_ePaper_GxEPD2() {
 void inline hw_display_setup() {
   setup_ePaper_GxEPD2();
 
-#if defined DEBUG_ePAPER
-//   // little helpers while implementing, TODO: REMOVE?:
+#if true	// TODO: REMOVE?	little helpers while implementing,
   ePaper_infos();
 #endif
-
   delay(1500);
   /*	// TODO: TESTING ################	deactivated for a test
   extern void ePaper_show_program_version();
@@ -531,7 +539,14 @@ void ePaper_BIG_or_multiline(int16_t row, const char* text) {	// unused?
   xSemaphoreGive(MC_mux2);
 } // ePaper_BIG_or_multiline()
 
-#if defined DEBUG_ePAPER || true
+void show_cursor_position() {	// small developper's helper function
+  MENU.out(F("\nePaper Cursor x: "));
+  MENU.out(ePaper.getCursorX());
+  MENU.out(F("\ty: "));
+  MENU.outln(ePaper.getCursorY());
+}
+
+#if defined DEBUG_ePAPER
   #include "ePaper_debugging.h"
 #endif
 
