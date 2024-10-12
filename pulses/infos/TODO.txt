@@ -706,13 +706,7 @@ display.setRotation(1);	// TODO: rotation should go into HARDWARE
 implement for ePaper?
   monochrome_preset_names()
 
-void try_monochrome_fix() {	// DADA:  ################	not working appropriate
-
 delay(3000);		// TODO: TEST: maybe ESP now confuses display?
-
-void try_ePaper_fix() {
-  //~GxEPD2_BW<GxEPD2_213_B73, GxEPD2_213_B73::HEIGHT>();
-  //~GxEPD2_BW();	// destructor ?
 
 MC_printBIG(2*morse_out_buffer_cnt, MORSE_MONOCHROME_ROW, " "); TODO: avoid the 2*col
 
@@ -1355,9 +1349,6 @@ in:	bool check_and_treat_morse_events_v3()
 
 
 get rid of DEBUG_DOUBLE_MUX stuff
-
-void try_ePaper_fix();	// maybe OBSOLETE?	let's hope ;)
-try_monochrome_fix()
 
 use ePaper.getTextBounds(HelloWorld, 0, 0, &tbx, &tby, &tbw, &tbh);
 

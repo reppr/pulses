@@ -1041,40 +1041,6 @@ void inline monochrome_set_default_font() {
   monochrome_setFont(u8x8_font_amstrad_cpc_extended_f);	// *Umlaute here, but strange*
 }
 
-
-void try_monochrome_fix() {	// DADA:  ################	not working appropriate
-  MENU.outln(F("TODO: try_monochrome_fix()"));
-
-  // MENU.outln(F("(*u8x8_p).initDisplay();"));
-  // (*u8x8_p).initDisplay();
-
-  /*
-    MENU.outln(F("monochrome_begin()"));
-    monochrome_begin();	// is in hw_display_setup() now
-  */
-
-  /*
-    MENU.outln(F("monochrome <ESC>c"));
-    monochrome_print((char) 27);
-    monochrome_print('c');
-
-    MENU.outln(F("monochrome <ESC>C"));
-    monochrome_print((char) 27);
-    monochrome_print('C');
-  */
-
-  MENU.outln(F("(*u8x8_p).setFlipMode(0)"));
-  (*u8x8_p).setFlipMode(0);
-
-  /*
-    MENU.outln(F("(*u8x8_p).refreshDisplay()"));	// see: Only required for SSD1606
-    (*u8x8_p).refreshDisplay();
-  */
-
-  MENU.outln(F("(*u8x8_p).clear()"));
-  (*u8x8_p).clear();
-} // try_monochrome_fix()
-
 void hw_display_setup() {
   MENU.out(F("hw_display_setup() "));
   switch(HARDWARE.monochrome_type) {

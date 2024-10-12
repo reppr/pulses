@@ -183,7 +183,7 @@
 */
 //#define TABULA_RASA_PRINT_FREE_RAM	// maybe? RAM information
 //#define DEBUG_DISPLAY_RAM_USAGE	// might crash...
-//#define DEBUG_ePAPER_RAM_USAGE	// try_ePaper_fix() {	// maybe OBSOLETE?	let's hope ;)
+//#define DEBUG_ePAPER_RAM_USAGE
 //#define DEBUG_ESP_NOW_RAM_USAGE
 
 /*

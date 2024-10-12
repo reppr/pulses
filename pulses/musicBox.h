@@ -4777,10 +4777,6 @@ bool musicBox_reaction(char token) {
       break;
   #endif // COMPILE_MORSE_CHEAT_SHEETS
 
-    case 'X':	// 'IX' try_monochrome_fix()
-      MENU.drop_input_token();
-      try_monochrome_fix();
-      break;
 #endif // HAS_DISPLAY
     } // switch token after 'I'
     break;
