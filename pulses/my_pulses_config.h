@@ -19,8 +19,6 @@
 
 #define ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help	TODO: DADA deactivate
 
-//#define DEBUG_DOUBLE_MUX	// deactivated	TODO: REMOVE!
-
 
 //#define TRIGGERED_MUSICBOX2	// #define this in my_pulses_config.h	see: pulses_project_conf.h
 //#define MUSICBOX2_PIN_MAPPING	// (new pin mapping april 2021)

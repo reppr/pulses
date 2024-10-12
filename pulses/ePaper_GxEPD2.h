@@ -272,14 +272,6 @@ void ePaper_print_at_task(void* data_) {
   xSemaphoreTake(MC_mux2, portMAX_DELAY);
   ePaper_print_at(data->col, data->row, data->text, data->offset_y);
 
-#if defined DEBUG_DOUBLE_MUX
-  //  ePaper.display(true);	// new
-  MENU.outln("DADA: ePaper_print_at_task()\t*NO* ePaper.display(true)");
-  // or:
-//  ePaper.display(true);	// new
-//  MENU.outln("DADA: ePaper_print_at_task()\tePaper.display(true)");
-#endif
-
   free_text_buffer(data);
 
   xSemaphoreGive(MC_mux2);
@@ -348,10 +340,6 @@ void MC_printBIG_at(int16_t col, int16_t row, const char* text, int16_t offset_y
   xSemaphoreGive(MC_mux2);
 
   MC_print_at(col, row, text, offset_y);
-
-#if defined DEBUG_DOUBLE_MUX
-  MENU.outln(F("DADA: MC_printBIG_at()"));
-#endif
 } // MC_printBIG_at()
 
 

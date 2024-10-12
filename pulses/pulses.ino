@@ -1387,10 +1387,6 @@ int autostart_counter=0;	// can be used to change AUTOSTART i.e. for the very fi
   #endif
 #endif
 
-#if defined DEBUG_DOUBLE_MUX
-  #include "DEBUG_DOUBLE_MUX.h"
-#endif
-
 bool /*did it*/ maybe_do_AUTOSTART() {
  #ifdef AUTOSTART			// see: pulses_project_conf.h
   autostart_counter++;

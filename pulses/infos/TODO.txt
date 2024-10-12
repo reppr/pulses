@@ -1348,8 +1348,6 @@ in:	bool check_and_treat_morse_events_v3()
 #define SHOW_REPEATED_TOUCH_OR_RELEASE		// TODO: FIXME: why does it happen so often?
 
 
-get rid of DEBUG_DOUBLE_MUX stuff
-
 use ePaper.getTextBounds(HelloWorld, 0, 0, &tbx, &tby, &tbw, &tbh);
 
 for other displays then ePaper:  #warning 'define put_run_state(symbol) for your display type'
