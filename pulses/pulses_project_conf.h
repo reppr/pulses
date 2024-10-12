@@ -102,6 +102,10 @@
 //#define USE_BLUETOOTH_SERIAL_MENU		// DADA: *does* compile on ESP32-Arduino 2.0.8  *but* RAM goes very low...
 //#define BLUETOOTH_ENABLE_PIN	35		// used by some OLD instruments, probably OBSOLETE
 
+  #undef AUTOSTART	// DADA	*NO*, *PORTABLE* not triggered
+/* do these 2 lines make a difference? */
+  #define AUTOSTART	play_random_preset(); musicBox_when_done=&user;		// same as pulses_project_conf.h
+//#define AUTOSTART	play_random_preset();musicBox_when_done=&user;		// same as pulses_project_conf.h
 #endif	// TRIGGERED_MUSICBOX2
 
 

@@ -35,8 +35,11 @@
 //#define MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT	&random_preset
 //#define MUSICBOX_TRIGGER_PIN			34	// activates trigger pin, needs pulldown (i.e. 470k, 100k ok)
   #define MAGICAL_TOILET_HACK_2	// continue using (parts of) setup_bass_middle_high() to setup musicbox
+
   #undef AUTOSTART
-  #define AUTOSTART	play_random_preset();		// same as pulses_project_conf.h
+/* do these 2 lines make a difference? */
+  #define AUTOSTART	play_random_preset(); musicBox_when_done=&user;		// same as pulses_project_conf.h
+//#define AUTOSTART	play_random_preset();musicBox_when_done=&user;		// same as pulses_project_conf.h
 
 #elif defined SETUP_BRACHE_TRIGGERED_PRESETs
 //#define USE_BATTERY_LEVEL_CONTROL			// triggers battery control

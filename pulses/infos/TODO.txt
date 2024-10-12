@@ -1474,3 +1474,11 @@ change endpoint
 delete cycle bar
 
 sync as fraction, not integer?
+
+  #undef AUTOSTART
+/* do these 2 lines make a difference? */
+  #define AUTOSTART	play_random_preset(); musicBox_when_done=&user;		// same as pulses_project_conf.h
+//#define AUTOSTART	play_random_preset();musicBox_when_done=&user;		// same as pulses_project_conf.h
+
+but:
+  #undef AUTOSTART	// DADA	*NO*, *PORTABLE* not triggered
