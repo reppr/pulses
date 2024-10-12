@@ -2,6 +2,11 @@
   SD_card_logging
 */
 
+#warning using timestamps in pulses is not implemented, I did not need them yet  *delayed*
+#warning please se file timestamps.h and the Humidity project for useful code suggestions
+// #include "timestamp.h"	// DADA	TODO:	in SD_card_logging.h
+
+
 #include <SPI.h>
 #include <SD.h>
 
@@ -92,7 +97,7 @@ void log_message(char* text, bool log_battery=false) {		// simple log message	op
   } // else ignore
 } // log_message()
 
-void log_message_timestamped(char* text, bool log_battery=false) {	// simple log messagewith time stamp
+void log_message_timestamped(char* text, bool log_battery=false) {	// simple log message with time stamp
   if(! do_log_SD)
     return;
 
@@ -102,7 +107,7 @@ void log_message_timestamped(char* text, bool log_battery=false) {	// simple log
       char* timestamp = DS1307_time_stamp__();
       if(timestamp) {
 	logFile.print(timestamp);
-	free(timestamp);
+	free(timestamp);	// DADA TODO: will probably crash here ################ see: timestamps.h and the HUMIDITY project
 	logFile.print(" ");
       }
     }
@@ -127,7 +132,7 @@ void start_log_entry(const char* text=NULL, bool log_battery=false) {		// opens 
       char* timestamp = DS1307_time_stamp__();
       if(timestamp) {
 	logFile.print(timestamp);
-	free(timestamp);
+	free(timestamp);	// DADA TODO: will probably crash here ################ see: timestamps.h and the HUMIDITY project
       }
     }
 #endif // USE_RTC_MODULE
