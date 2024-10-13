@@ -1471,3 +1471,6 @@ sync as fraction, not integer?
 
 but:
   #undef AUTOSTART	// DADA	*NO*, *PORTABLE* not triggered
+
+// debugging helper ;)
+#define DADA(txt)	MENU.out(">>>> DEBUG "); MENU.out(__FILE__); MENU.space(); MENU.out('L'); MENU.out(__LINE__); MENU.out(' '); MENU.tab(); MENU.out(txt); MENU.outln("\t<<<<<<<<<<<<");

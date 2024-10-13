@@ -63,6 +63,9 @@ using namespace std;	// ESP8266 needs that
 
 extern void ERROR_ln(const char* text);
 
+// debugging helper ;)
+#define DADA(txt)	MENU.out(">>>> DEBUG "); MENU.out(__FILE__); MENU.space(); MENU.out('L'); MENU.out(__LINE__); MENU.out(' '); MENU.tab(); MENU.out(txt); MENU.outln("\t<<<<<<<<<<<<");
+
 /* **************************************************************** */
 // special menu modes, like numeric input for jiffles, unmuting notes when tuning
 #define JIFFLE_ENTRY_UNTIL_ZERO_MODE	1	// menu_mode for unsigned integer data entry, stop at zero
