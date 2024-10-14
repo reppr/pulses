@@ -74,8 +74,11 @@ void MC_esp_now_peer_list() {
 #if defined ePAPER_SHOW_CYCLE
 const short cycle_bar_width=120;	// with Pixopixel font narrow chars |:.'!
 const short cycle_bar_symbol_width=2;
+
 const char* cycle_bar_marks=
   F("!              :        .     :         '    :  .           !           .  :    '         :     .        :              !");
+//   |start         |1/8     |1/5  |1/4      |1/3 |3/8 2/5       |1/2        |3/5 5/8 2/3      |3/4  |4/5     |7/8           |1
+
 const short cycle_bar_offset_y=-1;	// TEST same as 0?
 //const short cycle_bar_offset_y=0;	// compromise, progress bar a bit small
 //const short cycle_bar_offset_y=-2;	// cuts a bit too much from top line

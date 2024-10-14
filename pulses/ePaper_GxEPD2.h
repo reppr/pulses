@@ -220,7 +220,7 @@ void set_used_font(const GFXfont* font_p) {
     //used_font_is_light=false;
 
   } else {
-    ERROR_ln(F("unknown font size"));
+    ERROR_ln(F("unknown font"));
   }
 
 #if defined DEBUG_ePAPER
@@ -323,11 +323,11 @@ void MC_print_at(int16_t col, int16_t row, const char* text, int16_t offset_y=0)
   multicore_ePaper_print_at(col, row, text, offset_y);
 } // MC_print_at() multicore
 
-#else
+#else // no MULTICORE_DISPLAY
 void MC_print_at(int16_t col, int16_t row, const char* text, int16_t offset_y=0) {
   ePaper_print_at(col, row, text, offset_y);
 }
-#endif
+#endif // MULTICORE_DISPLAY yes/no
 
 
 void MC_printBIG_at(int16_t col, int16_t row, const char* text, int16_t offset_y=0) {

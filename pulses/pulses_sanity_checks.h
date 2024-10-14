@@ -145,9 +145,16 @@
   #define HAS_ePaper
 #endif
 
+
+#if defined ePAPER_SHOW_CYCLE && ! defined HAS_ePaper
+  #warning ePAPER_SHOW_CYCLE needs HAS_ePaper
+  #undef ePAPER_SHOW_CYCLE
+#endif
+
 #if defined HAS_ePaper && ! defined ePAPER_SHOW_CYCLE
   #warning consider defining ePAPER_SHOW_CYCLE (implementing it for your board if it is not yet done)
 #endif
+
 
 #if defined BOARD_HELTEC_OLED || defined BOARD_OLED_LIPO	// OLED?
   #define HAS_OLED
