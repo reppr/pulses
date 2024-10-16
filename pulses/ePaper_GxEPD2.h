@@ -4,6 +4,7 @@
 */
 #if ! defined GXEPD2_EPAPER_H
 
+
 #if ! defined MONOCHROME_PRIORITY
   #define MONOCHROME_PRIORITY	0	// old default TODO: test&trimm
 #endif
@@ -105,6 +106,10 @@
   SemaphoreHandle_t MC_mux = NULL;	// allow testing without MULTICORE_DISPLAY
   SemaphoreHandle_t MC_mux2 = NULL;	// allow testing without MULTICORE_DISPLAY	TODO: needed?
 #endif // MULTICORE_DISPLAY
+
+
+extern SemaphoreHandle_t ePaper_generic_MUX;
+extern uint16_t ePaper_generic_print_job;
 
 
 void ePaper_infos() {
@@ -219,9 +224,8 @@ void set_used_font(const GFXfont* font_p) {
     //used_font_is_bold=true;
     //used_font_is_light=false;
 
-  } else {
+  } else
     ERROR_ln(F("unknown font"));
-  }
 
 #if defined DEBUG_ePAPER
   MENU.out(F("\tyAdvance "));
@@ -257,7 +261,14 @@ void ePaper_print_at(uint16_t col, uint16_t row, const char* text, int16_t offse
   int16_t y = row2y(row);
   y += offset_y;
 
-  ePaper.fillRect(x, y - used_font_yAdvance + 4, strlen(text)*used_font_x, used_font_yAdvance, GxEPD_WHITE);
+  ePaper.fillRect(x, y - used_font_yAdvance + 4, strlen(text)*used_font_x + 2, used_font_yAdvance, GxEPD_WHITE);
+#if defined  DEBUG_ePAPER
+  DADA("ePaper_print_at()");
+  MENU.out("\nePaper.fillRect("); MENU.out(x); MENU.out(", "); MENU.out(y - used_font_yAdvance + 4); MENU.out(", ");
+  MENU.out(strlen(text)*used_font_x + 2); MENU.out(", "); MENU.out( used_font_yAdvance); MENU.outln(", WHITE);\n");
+  MENU.outln(y); MENU.ln();
+#endif
+
   ePaper.setCursor(x, y);
   ePaper.print(text);
   ePaper.display(true);
@@ -267,6 +278,8 @@ void ePaper_print_at(uint16_t col, uint16_t row, const char* text, int16_t offse
 TaskHandle_t ePaper_print_at_handle;
 
 void ePaper_print_at_task(void* data_) {
+  xSemaphoreTake(ePaper_generic_MUX, portMAX_DELAY);
+  ePaper_generic_print_job=298;
   print_descrpt_t* data = (print_descrpt_t*) data_;
 
   xSemaphoreTake(MC_mux2, portMAX_DELAY);
@@ -275,15 +288,20 @@ void ePaper_print_at_task(void* data_) {
   free_text_buffer(data);
 
   xSemaphoreGive(MC_mux2);
+  DADA(F("*did* do xSemaphoreGive(MC_mux2);"));	// seams right, test some more, then REMOVE
+
+  ePaper_generic_print_job=false;
+  xSemaphoreGive(ePaper_generic_MUX);
   vTaskDelete(NULL);
 } // ePaper_print_at_task()
 
 
 #define ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help
 void multicore_ePaper_print_at(int16_t col, int16_t row, const char* text, int16_t offset_y=0) {    // create and start a one shot task
+  ePaper_generic_print_job=318;
   print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
   if(txt_descript_p == NULL) {
-    ERROR_ln(F("txt_descript malloc()"));
+    MENU.error_ln(F("txt_descript malloc()"));
     return;	// ERROR
   }
   copy_text_to_text_buffer(text, txt_descript_p);
@@ -299,10 +317,13 @@ void multicore_ePaper_print_at(int16_t col, int16_t row, const char* text, int16
 					   MONOCHROME_PRIORITY,			// task priority
 					   &ePaper_print_at_handle,		// task handle
 					   0);					// core 0
+
   if(err != pdPASS) {
+    xSemaphoreGive(ePaper_generic_MUX);
+    ePaper_generic_print_job=false;	// printing did not even start...
     MENU.out(err);
     MENU.space();
-    ERROR_ln(F("ePaper_print_at_task"));
+    MENU.error_ln(F("ePaper_print_at_task"));
 #if defined ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help
     extern void esp_heap_and_stack_info();
     esp_heap_and_stack_info();
@@ -326,6 +347,7 @@ void MC_print_at(int16_t col, int16_t row, const char* text, int16_t offset_y=0)
 #else // no MULTICORE_DISPLAY
 void MC_print_at(int16_t col, int16_t row, const char* text, int16_t offset_y=0) {
   ePaper_print_at(col, row, text, offset_y);
+  ePaper_generic_print_job=false;
 }
 #endif // MULTICORE_DISPLAY yes/no
 
@@ -344,6 +366,8 @@ void MC_printBIG_at(int16_t col, int16_t row, const char* text, int16_t offset_y
 
 
 void monochrome_clear() {
+  DADA("do we reach here on eDisplay?");
+  ePaper_generic_print_job=387;
 #if defined  DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tmonochrome_clear()"));
 #endif
@@ -355,6 +379,7 @@ void monochrome_clear() {
 
   vTaskDelay(MC_DELAY_MS / portTICK_PERIOD_MS);
   xSemaphoreGive(MC_mux2);
+  ePaper_generic_print_job=false;
 } // monochrome_clear()
 
 
@@ -407,24 +432,33 @@ void inline hw_display_setup() {
 
 
 void ePaper_print_1line_at(uint16_t row, const char* text, int16_t offset_y=0) {	// *do* call set_used_font() before using that
+  xSemaphoreTake(ePaper_generic_MUX, portMAX_DELAY);
+  ePaper_generic_print_job=453;
 #if defined  DEBUG_ePAPER
-  MENU.out(F("DEBUG_ePAPER\tePaper_print_1line_at() "));
+  MENU.out(F("DEBUG_ePAPER\tePaper_print_1line_at("));
   MENU.out(row);
-  MENU.tab();
-  MENU.outln(text);
+  MENU.out(", ");
+  MENU.out(text);
+  MENU.out(", ");
+  MENU.out(offset_y);
+  MENU.outln(')');
 #endif
 
   ePaper.setRotation(1);
   ePaper.setTextColor(GxEPD_BLACK);
   ePaper.setFont(used_font_p);
+
   int16_t x = 0;
   int16_t y = row2y(row);
   y += offset_y;
-
   ePaper.fillRect(x, y - used_font_yAdvance + 4, ePaper.width(), used_font_yAdvance, GxEPD_WHITE);	// TODO test&trimm: -4
   ePaper.setCursor(x, y);
+
   ePaper.print(text);
   ePaper.display(true);
+
+  ePaper_generic_print_job=false;
+  xSemaphoreGive(ePaper_generic_MUX);
 } // ePaper_print_1line_at()
 
 #if defined MULTICORE_DISPLAY
@@ -447,7 +481,7 @@ void ePaper_1line_at_task(void* data_) {	// MULTICORE_DISPLAY version
 void multicore_ePaper_1line_at(int16_t row, const char* text, int16_t offset_y) {	// create and start a one shot task
   print_descrpt_t* txt_descript_p = (print_descrpt_t*) malloc(sizeof(print_descrpt_t));
   if(txt_descript_p == NULL) {
-    ERROR_ln(F("txt_descript malloc()"));
+    MENU.error_ln(F("txt_descript malloc()"));
     return;	// ERROR
   }
   copy_text_to_text_buffer(text, txt_descript_p);
@@ -464,7 +498,7 @@ void multicore_ePaper_1line_at(int16_t row, const char* text, int16_t offset_y) 
   if(err != pdPASS) {
     MENU.out(err);
     MENU.space();
-    ERROR_ln(F("ePaper_1line_at_task"));
+    MENU.error_ln(F("ePaper_1line_at_task"));
 #if defined ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help
     extern void esp_heap_and_stack_info();
     esp_heap_and_stack_info();
@@ -497,6 +531,8 @@ void MC_print_1line_at(int16_t row, const char* text, int16_t offset_y=0) {	// S
 
 
 void ePaper_print_str(const char* text) {	// unused?
+ xSemaphoreTake(ePaper_generic_MUX, portMAX_DELAY);
+ ePaper_generic_print_job=547;
 #if defined DEBUG_ePAPER
   MENU.out(F("DEBUG_ePAPER\tePaper_print_str()\t"));
   MENU.outln(text);
@@ -511,10 +547,14 @@ void ePaper_print_str(const char* text) {	// unused?
     ePaper.print(text);
   }
   while (ePaper.nextPage());
+  ePaper_generic_print_job=false;
+  xSemaphoreGive(ePaper_generic_MUX);
 } // ePaper_print_str()
 
 
 void ePaper_BIG_or_multiline(int16_t row, const char* text) {	// unused?
+  xSemaphoreTake(ePaper_generic_MUX, portMAX_DELAY);
+  ePaper_generic_print_job=569;
 #if defined DEBUG_ePAPER
   MENU.out(F("DEBUG_ePAPER\tePaper_print_str()\t"));
   MENU.out(row);
@@ -535,6 +575,8 @@ void ePaper_BIG_or_multiline(int16_t row, const char* text) {	// unused?
   ePaper.display(true);
 
   xSemaphoreGive(MC_mux2);
+  ePaper_generic_print_job=false;
+  xSemaphoreGive(ePaper_generic_MUX);
 } // ePaper_BIG_or_multiline()
 
 void show_cursor_position() {	// small developper's helper function

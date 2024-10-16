@@ -47,7 +47,7 @@ bool /*error*/ copy_text_to_text_buffer(const char* text, print_descrpt_t* txt_d
   return false;	// OK
 
  malloc_error:
-  ERROR_ln(F("text buffer malloc()"));
+  MENU.error_ln(F("text buffer malloc()"));
   return true;	// ERROR
 } // copy_text_to_text_buffer()
 
@@ -120,7 +120,7 @@ uint32_t /*error=*/ MC_do_on_other_core(void (*function_p)(), int stack_size=4*1
   if(err != pdPASS) {	// pdPASS is == 1
     MENU.out(esp_err_to_name(err));
     MENU.tab();
-    ERROR_ln(F("MC_do_on_other_core"));
+    MENU.error_ln(F("MC_do_on_other_core"));
 #if defined ON_MULTICORE_ERRORS_SHOW_STACK_SIZES	// mild debugging help
     extern void esp_heap_and_stack_info();
     esp_heap_and_stack_info();

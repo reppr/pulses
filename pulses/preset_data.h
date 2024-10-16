@@ -221,9 +221,9 @@ bool /*error*/ load_preset(int new_preset, bool output=true) {	// TODO: sets pre
 
   case 8:
 #if defined REPLACE_UMLAUTS
-    musicBoxConf.name = F("wunderschoen melodisch :) :) :)");
+    musicBoxConf.name = F("wunderschoen melodisch :)");
 #else
-    musicBoxConf.name = F("wunderschön melodisch :) :) :)");
+    musicBoxConf.name = F("wunderschön melodisch :)");
 #endif
     //comment: mit schönem, aberendlosem schluss ;)
     //# FAVORITE	P8 2020 KUNSTDREIECK

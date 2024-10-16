@@ -6,7 +6,44 @@
 #define LIN_BUF_MAX	42	// temporal local line buffers only
 
 
+uint16_t ePaper_generic_print_job=false;	// for debugging *only*, no other functionality
+
+SemaphoreHandle_t ePaper_cycle_bar_MUX=xSemaphoreCreateMutex();
+SemaphoreHandle_t ePaper_mBox_parameters_MUX=xSemaphoreCreateMutex();
+SemaphoreHandle_t ePaper_runtime_symbol_MUX=xSemaphoreCreateMutex();
+SemaphoreHandle_t ePaper_generic_MUX=xSemaphoreCreateMutex();
+// TODO: morse...
+
+
+//#define SHOW_ePAPER_BUSY_INFORMATION
+bool ePaper_printing_available(bool busy_info=false) {	// pulses specific
+  bool busy = ((uxSemaphoreGetCount(ePaper_cycle_bar_MUX) < 1) || (uxSemaphoreGetCount(ePaper_generic_MUX) < 1)
+	       || (uxSemaphoreGetCount(ePaper_mBox_parameters_MUX) < 1) || (uxSemaphoreGetCount(ePaper_runtime_symbol_MUX) < 1));
+
+#if defined SHOW_ePAPER_BUSY_INFORMATION
+  busy_info=true;
+#endif
+
+  if(busy_info && busy) {
+    MENU.out(F("ePaper busy: "));
+    if(uxSemaphoreGetCount(ePaper_cycle_bar_MUX) < 1) {			// free==1	taken==0	semaphore is taken
+      MENU.outln(F("cycle bar"));
+    } else if(uxSemaphoreGetCount(ePaper_mBox_parameters_MUX) < 1) {	// free==1	taken==0	semaphore is taken
+      MENU.outln(F("mBox parameters"));
+    } else if(uxSemaphoreGetCount(ePaper_runtime_symbol_MUX) < 1) {	// free==1	taken==0	semaphore is taken
+      MENU.outln(F("runtime symbol"));
+    } else if(uxSemaphoreGetCount(ePaper_generic_MUX) < 1) {		// free==1	taken==0	semaphore is taken
+      MENU.out(F("generic printing #"));
+      MENU.outln(ePaper_generic_print_job);				// free==1	taken==0	semaphore is taken
+    }
+  }
+
+  return ! busy;
+} // ePaper_printing_available()
+
 void MC_display_message(const char* text) {	// inline does not work
+  // NO, not yet  // xSemaphoreTake(ePaper_generic_MUX, portMAX_DELAY);
+ ePaper_generic_print_job=57;
 #if defined DEBUG_ePAPER
   MENU.out(F("DEBUG_ePAPER\tMC_display_message()\t"));
 #endif
@@ -18,6 +55,7 @@ void MC_display_message(const char* text) {	// inline does not work
 
 #define ePAPER_at_0_0_POSITIONING_WORKAROUND	// the old code did not work right any more: position was too low!
 void ePaper_setCursor_0_0() {
+  // MUX'ed from outside
 #if defined ePAPER_at_0_0_POSITIONING_WORKAROUND // WORKAROUND to fix Cursor(0,0) y-positioning
   #warning uses ePAPER_at_0_0_POSITIONING_WORKAROUND
   ePaper.setCursor(0, used_font_yAdvance - 6);	// 6 by TRIAL&ERROR	was: ePaper.setCursor(0,0);
@@ -25,12 +63,15 @@ void ePaper_setCursor_0_0() {
   ePaper.setCursor(0,0);		// old code (*was* doing the right thing)
   ePaper.println();
 #endif
+  // deMUX'ed from outside
 } // ePaper_setCursor_0_0()
 
 
 #if defined USE_ESP_NOW
 void ePaper_show_peer_list() {
+  xSemaphoreTake(ePaper_generic_MUX, portMAX_DELAY);
   int peer_cnt=0;
+  ePaper_generic_print_job=85;
 
   set_used_font(medium_font_p);
   for(int i=0; i<ESP_NOW_MAX_TOTAL_PEER_NUM; i++) {
@@ -60,6 +101,8 @@ void ePaper_show_peer_list() {
     ePaper.print("no peers");
 
   ePaper.display(true);
+  ePaper_generic_print_job=false;
+  xSemaphoreGive(ePaper_generic_MUX);
 } // ePaper_show_peer_list()
 
 void MC_esp_now_peer_list() {
@@ -71,7 +114,7 @@ void MC_esp_now_peer_list() {
 }
 #endif // USE_ESP_NOW
 
-#if defined ePAPER_SHOW_CYCLE
+#if defined ePAPER_SHOW_CYCLE_bar
 const short cycle_bar_width=120;	// with Pixopixel font narrow chars |:.'!
 const short cycle_bar_symbol_width=2;
 
@@ -89,8 +132,14 @@ volatile short last_cycle_state_seen=0;
 short new_cycle_position=-999;
 
 //#define DEBUG_CYCLE_BAR_MULTICORE
-void ePaper_update_progression_multicore() {
-  // else  do update:
+void ePaper_update_cycle_bar_multicore() {
+  if(! ePaper_printing_available(true)) {
+    DADA(F("ePaper no more available (Cycle bar)"));
+    vTaskDelete(NULL);
+    return; // probably nonsense
+  }
+
+  xSemaphoreTake(ePaper_cycle_bar_MUX , portMAX_DELAY);
   set_used_font(&Picopixel);
 
   uint16_t x0, x, y, w, h;
@@ -125,9 +174,10 @@ void ePaper_update_progression_multicore() {
   while (ePaper.nextPage());
 
   ePaper.setFullWindow();	// reset
-} // ePaper_update_progression_multicore()
+  xSemaphoreGive(ePaper_cycle_bar_MUX);
+} // ePaper_update_cycle_bar_multicore()
 
-void ePaper_update_progression(float float_position) {	// just a wrapper
+void ePaper_update_cycle_bar(float float_position) {	// just a wrapper
   new_cycle_position = float_position * (float) cycle_bar_width;
   if(new_cycle_position <= last_cycle_state_seen)	// already ok, nothing to do
     return;
@@ -135,13 +185,16 @@ void ePaper_update_progression(float float_position) {	// just a wrapper
   if(new_cycle_position < 0 || new_cycle_position > (cycle_bar_width + 1 /*shown range is cycle +1*/))
     return;						// OUT OF RANGE, error ignored
 
-  MC_do_on_other_core(&ePaper_update_progression_multicore);
-} // ePaper_update_progression(float)  wrapper
+  // else do update:
+  if(ePaper_printing_available(true))
+    MC_do_on_other_core(&ePaper_update_cycle_bar_multicore);
+  else {
+    DADA("ePaper no more available (cycle bar wrapper)");
+  }
+} // ePaper_update_cycle_bar(float)  wrapper
+#endif // ePAPER_SHOW_CYCLE_bar
 
-#endif // ePAPER_SHOW_CYCLE
-
-
-volatile bool ePaper_is_updating=false;	// wait until ePaper_musicBox_parameters() has finished
+bool do_NOT_show_cycle_bar=false;	// possibly avoid cycle bar marks when not running
 
 #if ! defined ePAPER_SMALL_213		// BIGGER ePaper size, i.e. 2.9" size ePaper
 
@@ -208,13 +261,14 @@ void ePaper_musicBox_parameters() {	// BIGGER ePaper size, i.e. 2.9" size ePaper
   }
   while (ePaper.nextPage());
 
-  ePaper_is_updating = false;
 } // ePaper_musicBox_parameters(), bigger
 
 #else	// ePAPER_SMALL_213	SMALL ePaper size, i.e. LilyGo 2.13" boards
 
 void ePaper_musicBox_parameters() {	// ePAPER_SMALL_213	SMALL ePaper size, i.e. LilyGo 2.13" boards
+  xSemaphoreTake(ePaper_mBox_parameters_MUX, portMAX_DELAY);
 #if defined  DEBUG_ePAPER
+  MENU.ln();
   MENU.outln(F("DEBUG_ePAPER\tePaper_musicBox_parameters() small"));
 #endif
 
@@ -245,10 +299,14 @@ void ePaper_musicBox_parameters() {	// ePAPER_SMALL_213	SMALL ePaper size, i.e. 
     // monochrome_show_subcycle_octave();
     ePaper.println();
 
-#if defined ePAPER_SHOW_CYCLE
-    set_used_font(&Picopixel);
-    ePaper.setCursor(0, ((cycle_bar_row+1) * used_font_p->yAdvance) + cycle_bar_offset_y);
-    ePaper.print(cycle_bar_marks);
+#if defined ePAPER_SHOW_CYCLE_bar
+    if(do_NOT_show_cycle_bar) {		// SPECIAL CASE, i.e. not running
+      do_NOT_show_cycle_bar=false;	//   reset to default: *do* show cycle bar
+    } else {				// default: *do* show it
+      set_used_font(&Picopixel);
+      ePaper.setCursor(0, ((cycle_bar_row+1) * used_font_p->yAdvance) + cycle_bar_offset_y);
+      ePaper.print(cycle_bar_marks);
+    }
 #endif
 
     if(musicBoxConf.name) {
@@ -286,12 +344,31 @@ void ePaper_musicBox_parameters() {	// ePAPER_SMALL_213	SMALL ePaper size, i.e. 
 	}
     } else { // (musicBoxConf.name == NULL)
       ePaper.println();		//    empty line (after missing preset name)
+      ePaper.println();		//    twice
+#if defined ePAPER_SHOW_CYCLE_bar
+      ePaper.println();		//    even more, need space for the cycle_bar
+#endif
+
 #if defined USE_MANY_FONTS
       ePaper.setFont(&FreeSans9pt7b);
 #else
       set_used_font(medium_font_p);
 #endif
     } // musicBoxConf.name  exists or not?
+
+// #define CHECK_LOWER_SCREEN_START	
+// #if defined CHECK_LOWER_SCREEN_START
+//     if(ePaper.getCursorY() > 96) {
+//       show_cursor_position();	// y=96 seems OK
+//       DADA(F("================>>> ePaper\tCURSOR TOO LOW? <<<================"));
+//
+//       DADA(F("FIX ePaper cursor too low"));
+//       ePaper.setCursor(0, 96);	// fix too low position
+//     }
+// #endif
+
+    if(ePaper.getCursorY() > 96)
+      ePaper.setCursor(0, 96);		// fix if position is too low
 
     extern char* metric_mnemonic;
     snprintf(txt, LIN_BUF_MAX, fmt_key_scale_sync, metric_mnemonic, selected_name(SCALES), musicBoxConf.sync);
@@ -318,7 +395,7 @@ void ePaper_musicBox_parameters() {	// ePAPER_SMALL_213	SMALL ePaper size, i.e. 
   }
   while (ePaper.nextPage());
 
-  ePaper_is_updating = false;
+  xSemaphoreGive(ePaper_mBox_parameters_MUX);
 } // ePaper_musicBox_parameters(), SMALL
 
 #endif	// (big | SMALL) ePaper size
@@ -333,10 +410,12 @@ uint32_t /*error=*/ MC_show_musicBox_parameters() {
   ePaper_musicBox_parameters();
   return 0;
 #endif
-}
+} // MC_show_musicBox_parameters()
 
 
-void  ePaper_show_program_version() {
+void ePaper_show_program_version() {
+  xSemaphoreTake(ePaper_generic_MUX , portMAX_DELAY);
+  ePaper_generic_print_job=403;
 #if defined  DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tePaper_show_program_version()"));
 #endif
@@ -462,9 +541,12 @@ void  ePaper_show_program_version() {
   while (ePaper.nextPage());
 
   set_used_font(used_font_p);	// restore last used font
+  ePaper_generic_print_job=false;
+  xSemaphoreGive(ePaper_generic_MUX);
 } // ePaper_show_program_version()
 
 void inline MC_show_program_version() {
+  ePaper_generic_print_job=535;
 #if defined DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tMC_show_program_version()"));
 #endif
@@ -476,7 +558,9 @@ void inline MC_show_program_version() {
 } // MC_show_program_version()
 
 
-void  ePaper_show_tuning() {
+void ePaper_show_tuning() {
+  xSemaphoreTake(ePaper_generic_MUX, portMAX_DELAY);
+  ePaper_generic_print_job=549;
 #if defined  DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tePaper_show_tuning()"));	// DADA remove debugging code ################
 #endif
@@ -506,9 +590,12 @@ void  ePaper_show_tuning() {
   while (ePaper.nextPage());
 
   set_used_font(used_font_p);	// restore last used font
+  ePaper_generic_print_job=false;
+  xSemaphoreGive(ePaper_generic_MUX);
 } // ePaper_show_tuning()
 
 void inline MC_show_tuning() {
+  ePaper_generic_print_job=584;
 #if defined DEBUG_ePAPER
   MENU.outln(F("DEBUG_ePAPER\tMC_show_tuning()"));
 #endif
@@ -517,10 +604,58 @@ void inline MC_show_tuning() {
 #else
   ePaper_show_tuning();
 #endif
-}
+  ePaper_generic_print_job=false;
+} // MC_show_tuning()
+
+
+volatile char run_state_symbol_to_be_printed='\0';	// see low_priority_tasks()
 
 extern char run_state_symbol();
-void ePaper_put_run_state_symbol(char symbol=run_state_symbol()) {
+
+//DADA// void ePaper_put_run_state_symbol(char symbol=run_state_symbol()) {	// old
+//DADA//   ePaper_generic_print_job=600;
+//DADA//   MENU.outln("will start runtime symbol");
+//DADA//   char text[] = {symbol, 0};
+//DADA//   MC_printBIG_at(0,0, text, -6);	// offset_y = -6
+//DADA// } // ePaper_put_run_state_symbol()
+
+void ePaper_put_run_state_symbol_task() {	// new (task) parameter is in run_state_symbol_to_be_printed
+  if(! ePaper_printing_available(true)) {
+    DADA(F("ePaper no more available (run state symbol)"));
+    vTaskDelete(NULL);
+    return; // probably nonsense
+  }
+
+  xSemaphoreTake(ePaper_runtime_symbol_MUX, portMAX_DELAY);
+  char symbol =  run_state_symbol_to_be_printed;
+  run_state_symbol_to_be_printed='\0';		// clear as early as possible to hide it from low_priority_tasks()
+
   char text[] = {symbol, 0};
-  MC_printBIG_at(0,0, text, -6);	// offset_y = -6
-}
+  set_used_font(big_font_p);
+  ePaper.setTextColor(GxEPD_BLACK);
+  ePaper.setFont(used_font_p);
+  // ePaper.setPartialWindow(0, 0, 17, 28);	// does not work like I thought it would...
+  ePaper.fillRect(0, 0, 17, 28, GxEPD_WHITE);
+
+  ePaper.setCursor(0, 23);
+  ePaper.print(text);
+  ePaper.display(true);
+
+//DADA flag was declared volatile bool, tried also atomic //   ePaper_updating_runtime_symbol=false;
+//DADA flag was declared volatile bool, tried also atomic //   if(ePaper_updating_runtime_symbol)
+//DADA flag was declared volatile bool, tried also atomic //     DADA("what the hell: still there...");
+
+  //ePaper.setFullWindow();	// partial window only made problems, so not needed
+  xSemaphoreGive(ePaper_runtime_symbol_MUX);
+  //DADA("given, *no* vTaskDelete(NULL);");
+  //vTaskDelete(NULL);	// works a bit better without that
+} // ePaper_put_run_state_symbol_task()
+
+void ePaper_put_run_state_symbol_multicore(char symbol=run_state_symbol()) {	// TODO: DADA: pass symbol
+  run_state_symbol_to_be_printed=symbol;		// trick: if not printed here low_pririty_tasks() will try to
+  if(ePaper_printing_available(true)) {
+    MC_do_on_other_core(&ePaper_put_run_state_symbol_task, 4*1024);	// DADA: TODO: stack size can be reduced?
+  } else {
+    DADA(F("ePaper *is* busy"));
+  }
+} // ePaper_put_run_state_symbol_multicore()

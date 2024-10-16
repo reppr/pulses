@@ -1,4 +1,4 @@
-#define PROGRAM_VERSION	HARMONICALv04699   // save RAM, fixes eDisplay. const jiffles iCodes and scales
+#define PROGRAM_VERSION	HARMONICALv047p1   // more eDisplay access fixes
 /*			0123456789abcdef   */
 
 
@@ -652,7 +652,7 @@ int reset_all_flagged_pulses_GPIO_OFF() {	  // see: tabula_rasa()
   #endif
 #endif
     MENU.ln();
-  } else if(MENU.verbosity && cnt) {
+  } else if((MENU.verbosity > VERBOSITY_LOWEST) && cnt) {
     MENU.out(F("freed GPIOs "));
     MENU.outln(cnt);
   }
@@ -1898,6 +1898,22 @@ bool low_priority_tasks() {
     return true;
   }
 #endif
+
+#if defined  HAS_ePaper
+  if(run_state_symbol_to_be_printed) {	// try to put a run_state_symbol that could not be displayed before...
+    if(ePaper_printing_available(true)) {
+      DADA(F("try to put runtime symbol (delayed)"));
+      MENU.outln(run_state_symbol_to_be_printed);	// DADA: TODO: maybe remove?
+      ePaper_put_run_state_symbol_multicore(run_state_symbol_to_be_printed);
+      run_state_symbol_to_be_printed='\0';	// switch off
+      return true;
+    }
+    else {	// DADA:  TODO; remove
+      MENU.out(run_state_symbol_to_be_printed);
+      DADA(" still delayed");
+    }
+  }
+#endif // HAS_ePaper
 
   if (maybe_run_continuous())		// even lower priority: maybe display input state changes.
     return true;

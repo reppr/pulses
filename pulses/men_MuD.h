@@ -4,6 +4,17 @@
 */
 
 
+{
+  static char c='A';
+  while(! ePaper_printing_available(true)) { ; }
+  ePaper_put_run_state_symbol_multicore(c++);
+
+//  run_state_symbol_to_be_printed=c++;
+//  ePaper_put_run_state_symbol_task();
+  DADA("done");
+}
+break;
+
   show_internals();
   MENU.ln();
 

@@ -31,9 +31,9 @@
       #error "define *ONE* of ePaper213B73_BOARD_LILYGO_T5 *OR* ePaper213BN_BOARD_LILYGO_BN"
     #endif
 
-    #define ePAPER_SHOW_CYCLE	// while running do show a cycle progress bar over musicBox_parameters screen
+    #define ePAPER_SHOW_CYCLE_bar	// while running do show a cycle progress bar over musicBox_parameters screen
 
-    //#define USE_SD_CARD	// #undef that to SAVE RAM?
+    //#define USE_SD_CARD		// #undef that to SAVE RAM?
     #if defined USE_SD_CARD
       #define USE_LOGGING
       #define LOG_PLAY_DEFAULT
@@ -69,7 +69,8 @@
   #define MUSICBOX_TRIGGER_PIN		34	// activates trigger pin, needs pulldown (i.e. 470k, 100k ok)
   #define BATTERY_LEVEL_CONTROL_PIN	36	// (35 is used for internal LiPo battery level?)
 
-  #define NO_ePAPER_UPDATE_ON_END		// *NO* ePaper display update on hard END
+  #define SHOW_ePAPER_UPDATE_ON_END		// ePaper display update on hard END
+
   // some options:
   //#define MIDI_OUT_PIN		19
   //#define USE_RTC_MODULE

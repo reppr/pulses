@@ -1437,11 +1437,7 @@ volatile bool avoid_error_recursion=false;
 
 MC_do_on_other_core(&ePaper_show_program_version, 5*1024);	// TODO: trimm
 
-MENU.out("DADA L3206 mu free "); MENU.outln(heap_caps_get_free_size(0));	// DADA: REMOVE ################
-
-try const jiffles and iCodes
-
-wake up by seriel?
+wake up by serial?
 
 UI trigger deactivation
 UI duration
@@ -1459,18 +1455,45 @@ UI to
 block trigger
 change endpoint
 
-#if defined MULTICORE_DISPLAY
-delete cycle bar
-
 sync as fraction, not integer?
 
-  #undef AUTOSTART
-/* do these 2 lines make a difference? */
-  #define AUTOSTART	play_random_preset(); musicBox_when_done=&user;		// same as pulses_project_conf.h
-//#define AUTOSTART	play_random_preset();musicBox_when_done=&user;		// same as pulses_project_conf.h
 
-but:
-  #undef AUTOSTART	// DADA	*NO*, *PORTABLE* not triggered
+#undef AUTOSTART	// DADA	*NO*, *PORTABLE* not triggered
 
 // debugging helper ;)
 #define DADA(txt)	MENU.out(">>>> DEBUG "); MENU.out(__FILE__); MENU.space(); MENU.out('L'); MENU.out(__LINE__); MENU.out(' '); MENU.tab(); MENU.out(txt); MENU.outln("\t<<<<<<<<<<<<");
+
+avoid_error_recursion  might be obsolete?
+
+ePaper portable instrument project config
+
+
+void monochrome_clear() {
+  DADA("do we reach here on eDisplay?");
+  ePaper_generic_print_job=387;
+...
+
+
+try:
+  ePaper.setPartialWindow(x0, y-1, w, h);
+  ePaper.firstPage();
+  do
+  {
+...
+
+
+CHECK DEBUGGING COMMENTS like
+  DADA("something to keep an eye on");
+
+
+// #define WATCH_RAM_while_running	 // HIDES in  cycle_monitor()
+#if defined WATCH_RAM_while_running
+  MENU.out(F("\nheap ")); MENU.out(heap_caps_get_free_size(0)); MENU.out(F("\tfree: ")); MENU.out(xPortGetFreeHeapSize());
+  MENU.out(F("\thigh water ")); MENU.outln(uxTaskGetStackHighWaterMark(NULL));
+#endif
+
+#if defined SHOW_ePAPER_UPDATE_ON_END	// can be used as a workaround for the run_state_symbol troubles
+
+
+  xSemaphoreGive(MC_mux2);
+  DADA(F("*did* do xSemaphoreGive(MC_mux2);"));	// seams right, test some more, then REMOVE

@@ -790,6 +790,12 @@ void cycle_monitor(int pulse) {	// show markers at important cycle divisions
     }
   }
 
+// #define WATCH_RAM_while_running
+#if defined WATCH_RAM_while_running
+  MENU.out(F("\nheap ")); MENU.out(heap_caps_get_free_size(0)); MENU.out(F("\tfree: ")); MENU.out(xPortGetFreeHeapSize());
+  MENU.out(F("\thigh water ")); MENU.outln(uxTaskGetStackHighWaterMark(NULL));
+#endif
+
   cycle_monitor_last_seen_division++;
   cycle_monitor_last_seen_division %= cycle_slices;
 } // cycle_monitor()
@@ -874,14 +880,6 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
       MENU.ln();
     }
 
-#if defined HAS_DISPLAY	// ePaper
-  #if defined HAS_ePaper
-    ePaper_put_run_state_symbol();
-  #else
-    #warning 'define put_run_state(symbol) for your display type'
-  #endif
-#endif
-
     for (int pulse=0; pulse<PL_MAX; pulse++) {	// make days_to_live COUNTED generating pulses
       if(PULSES.pulses[pulse].groups & g_PRIMARY) {
 	//         pulse was already awake long enough?   && days_to_live positive?
@@ -897,6 +895,26 @@ void start_soft_ending(int days_to_live, int survive_level) {	// initiate soft e
       }
     }
     stress_event_cnt = -1;	// stress event expected after switching to ENDING
+
+#if defined HAS_DISPLAY	// ePaper
+#if ! defined ePAPER_SHOW_CYCLE_bar	// proves to be too difficult...
+  #if defined HAS_ePaper
+
+    DADA("want to ePaper_put_run_state_symbol('e')");
+    run_state_symbol_to_be_printed='e'; // run_state_symbol();		// maybe there's too much to do now, so delay that ;)
+//DADA maybe better delay that? //     if(ePaper_printing_available()) {
+//DADA maybe better delay that? //       //ePaper_put_run_state_symbol();
+//DADA maybe better delay that? //       ePaper_put_run_state_symbol_multicore();
+//DADA maybe better delay that? //     } else {
+//DADA maybe better delay that? //       MENU.outln("ePaper BUSY");
+//DADA maybe better delay that? //       run_state_symbol_to_be_printed=run_state_symbol();		// see low_priority_tasks()
+//DADA maybe better delay that? //     }
+  #else
+    #warning 'define put_run_state(symbol) for your display type'
+  #endif
+ #endif
+#endif
+
   } else {
     if(MusicBoxState == ENDING) {		// ENDING
       for (int pulse=0; pulse<PL_MAX; pulse++) {	// check for any active pulses
@@ -1862,13 +1880,27 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
     log_message_timestamped(F("HARD END"), true);
 #endif
 
-#if defined HAS_DISPLAY
-  #if ! defined NO_ePAPER_UPDATE_ON_END
-    MC_show_musicBox_parameters();
-    delay(2000);	// TODO: TEST: maybe ESP now confuses display?
+#if defined HAS_DISPLAY && defined HAS_ePaper
+  for(int i=0; (! ePaper_printing_available(true)) && i<10; i++)
+    delay(600);
+
+  #if defined SHOW_ePAPER_UPDATE_ON_END	// can be used as a workaround for the run_state_symbol troubles
+    if(ePaper_printing_available(true)) {
+      do_NOT_show_cycle_bar=true;
+      MC_show_musicBox_parameters();
+      delay(2000);
+    }
   #else
-    ePaper_put_run_state_symbol('=');	// ' ' does not cover the right side of the 'e' completely.  '=' hides that ;)
-    //ePaper_put_run_state_symbol('<');	// ' ' does not cover the right side of the 'e' completely.  '<' hides that ;)
+    MENU.outln("want to ePaper_put_run_state_symbol('=')");
+    run_state_symbol_to_be_printed='=';		// see low_priority_tasks()
+//DADA maybe better delay that? //     if(ePaper_printing_available(true)) {
+//DADA maybe better delay that? //       ePaper_generic_print_job=1892;		// maybe we need that here?
+//DADA maybe better delay that? // //    ePaper_put_run_state_symbol('=');	// ' ' does not cover the right side of the 'e' completely.  '=' hides that ;)
+//DADA maybe better delay that? //       ePaper_put_run_state_symbol_multicore('=');
+//DADA maybe better delay that? //     } else {
+//DADA maybe better delay that? //       MENU.outln("ePaper BUSY");
+//DADA maybe better delay that? //       run_state_symbol_to_be_printed='=';	// see low_priority_tasks()
+//DADA maybe better delay that? //     }
   #endif
 #endif
 
@@ -1889,6 +1921,7 @@ void HARD_END_playing(bool with_title) {	// switch off peripheral power and hard
   do_pause_musicBox = true;	//  triggers MUSICBOX_ENDING_FUNCTION;	sleep, restart or somesuch	// *ENDED*
   // MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT
 } // HARD_END_playing()
+
 
 portMUX_TYPE musicBox_trigger_MUX = portMUX_INITIALIZER_UNLOCKED;
 
@@ -2373,9 +2406,9 @@ void musicBox_butler(int pulse) {	// payload taking care of musicBox	ticking wit
   if(show_cycle_pattern)
     watch_primary_pulses();
 
-#if defined ePAPER_SHOW_CYCLE
-  if(! ePaper_is_updating)	// wait until ePaper_musicBox_parameters() has finished...
-    ePaper_update_progression((float) this_division.multiplier / (float) this_division.divisor);	// called by the butler
+#if defined ePAPER_SHOW_CYCLE_bar
+  if(ePaper_printing_available())	// wait until other ePaper printing is done, i.e. musicBox_parameters()
+    ePaper_update_cycle_bar((float) this_division.multiplier / (float) this_division.divisor);	// called by the butler
 #endif
 
   cycle_monitor(pulse);	// cycle_monitor() runs from within musicBox_butler()
@@ -2970,12 +3003,15 @@ void start_musicBox() {
   }
 #endif // USE_LOGGING
 
-#if defined HAS_DISPLAY && defined MUSICBOX_SHOW_PROGRAM_VERSION	// default *off*
-  MC_show_program_version();
+#if defined ePAPER_SHOW_CYCLE_bar
+  last_cycle_state_seen=0;	// reset
 #endif
 
-#if defined ePAPER_SHOW_CYCLE
-  last_cycle_state_seen=0;	// reset
+#if defined HAS_DISPLAY && defined MUSICBOX_SHOW_PROGRAM_VERSION	// default *off*
+ #if defined HAS_ePaper
+  if(ePaper_printing_available(true))
+ #endif
+    MC_show_program_version();
 #endif
 
   set_MusicBoxState(AWAKE);
@@ -3215,11 +3251,10 @@ void start_musicBox() {
   MENU.ln();
   musicBox_short_info();
 #if defined HAS_DISPLAY
-  ePaper_is_updating=true;		// wait until ePaper_musicBox_parameters() has finished?
   if(MC_show_musicBox_parameters()) {	// multicore error
-    MENU.outln(F("DADA: MC DISPLAY ERROR recovery fallback"));
+    MENU.ln();
+    DADA(F("MC DISPLAY ERROR recovery fallback"));
     ePaper_musicBox_parameters();	// fallback, use single core version...
-    ePaper_is_updating=false;
   }
 #endif
 
@@ -4287,7 +4322,7 @@ bool musicBox_reaction(char token) {
   case '?': // musicBox_display();
     do_on_other_core(&musicBox_display);	// musicBox_display() on other core
     break;
-  case ',': // show parameters		',,' shows parameters and parameters in source code format
+  case ',': // ',' = "--..--" show parameters		',,' shows parameters and parameters in source code format
     if (MENU.menu_mode)	{ // *exclude* special menu modes
       MENU.restore_input_token();
       return false;	// for other menu modes let pulses menu do the work ;)	// TODO: TEST:
@@ -4654,12 +4689,14 @@ bool musicBox_reaction(char token) {
 	MENU.outln(cnt);
       }
       break;
-    default:	// 'P' start/stop musicBox
+    default:	// bare 'P' start/stop musicBox
       {
 	bool start=false;
-	if(MusicBoxState != OFF)
+	if(MusicBoxState != OFF) {
+	  if(MENU.verbosity == VERBOSITY_LOWEST)
+	    MENU.outln(F("tabula_rasa()"));
 	  tabula_rasa();	// MusicBoxState is OFF now
-	else
+	} else
 	  start=true;
 
 	if(MENU.maybe_display_more(VERBOSITY_SOME))
@@ -4670,8 +4707,8 @@ bool musicBox_reaction(char token) {
 #endif
 	if(start)
 	  start_musicBox();
-      }
-    } // switch(MENU.peek())
+	}
+      } // switch(MENU.peek())
     break;
 
   case 'I':	// info		// force OLED resdisplay or morse	// TODO: display help
