@@ -110,7 +110,7 @@ void MC_do_on_other_core_task(void* function_p) {
 
 uint32_t /*error=*/ MC_do_on_other_core(void (*function_p)(), int stack_size=4*1024) {	// create and do one shot task
   BaseType_t err = xTaskCreatePinnedToCore(MC_do_on_other_core_task,	// function
-					   "other_core_fun",			// name
+					   "other_core_fun",		// name
 					   stack_size,			// stack size
 					   (void*) function_p,		// task input parameter
 					   DO_ON_OTHER_CORE_PRIORITY,	// task priority

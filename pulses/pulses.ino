@@ -1891,8 +1891,8 @@ bool low_priority_tasks() {
   }
   if(morse_output_char) {
 #if defined HAS_DISPLAY
-    monochrome_out_morse_char();
-#else
+    monochrome_out_morse_char();	// DADA	pulses.ino low_priority_tasks()  TODO: implemented for small ePaper only
+#else // no display
     MENU.out(morse_output_char);
 #endif
     return true;

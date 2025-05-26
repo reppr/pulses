@@ -1382,7 +1382,7 @@ void morse_clear_display__prepare_action() {	// can set trigger  morse_trigger_K
     morse_trigger_KB_macro = true;	// *triggers* morse_PLAY_input_KB_macro()
   }
   morse_uppercase = true;	// reset to uppercase
-} // morse_clear_display__prepare_action()
+} // morse_clear_display__prepare_action()  MULTICORE
 
 void morse_PLAY_input_KB_macro() {	// triggered by morse_clear_display__prepare_action() by setting  morse_trigger_KB_macro = true;
   morse_trigger_KB_macro = false;	// reset trigger
@@ -1416,7 +1416,7 @@ void monochrome_out_morse_char() {
   }
 
   morse_output_char = '\0';	// trigger off
-}
+} // monochrome_out_morse_char()
 #endif // HAS_DISPLAY
 
 
@@ -1706,7 +1706,7 @@ void show_cheat_sheet() {
       }
     } else break;
   }
-}
+} // show_cheat_sheet()
 
 void make_morse_cheat_sheet(char* symbols) {
   for(int i=0; i<CHEAT_BUFLEN; i++)

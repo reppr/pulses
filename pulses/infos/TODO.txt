@@ -1497,3 +1497,9 @@ CHECK DEBUGGING COMMENTS like
 
   xSemaphoreGive(MC_mux2);
   DADA(F("*did* do xSemaphoreGive(MC_mux2);"));	// seams right, test some more, then REMOVE
+
+
+monochrome_out_morse_char();	// DADA	pulses.ino low_priority_tasks()  TODO: implemented for small ePaper only
+
+check MC_mux vs MC_mux2
+DADA both???	MC_mux2  ePaper_generic_MUX
