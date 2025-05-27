@@ -9,15 +9,13 @@
 
 #if ! defined ESP_GET_INFOS_H
 
-// ESP32  int getChipRevision()	see: Andreas Spiess ESP32_Version.ino, register names updated
-#include "soc/efuse_reg.h"
-int get_ESP32_ChipRevision() {
-  return (REG_READ(EFUSE_BLK0_RDATA3_REG) >> (EFUSE_RD_CHIP_VER_REV1_S)&&EFUSE_RD_CHIP_VER_REV1_V) ;
-}
-
+#include "esp_chip_info.h"
+#include "hal/efuse_hal.h"
 void display_esp_versions() {
   MENU.out(F("ESP32 chip revision\t"));
-  MENU.outln(get_ESP32_ChipRevision());
+  MENU.out(efuse_hal_get_major_chip_version());
+  MENU.out('.');
+  MENU.outln(efuse_hal_get_major_chip_version());
 
   MENU.out(F("ESP IDF version\t\t"));
   MENU.outln(esp_get_idf_version());
@@ -34,6 +32,8 @@ void display_esp_versions() {
 
 // see: https://github.com/espressif/arduino-esp32/issues/932
 #include "esp_system.h"
+#include "esp_mac.h"
+
 String getMacAddress() {
   uint8_t baseMac[6];
   // Get MAC address for WiFi station
