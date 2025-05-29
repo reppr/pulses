@@ -41,7 +41,20 @@ String getMacAddress() {
   char baseMacChr[18] = {0};
   sprintf(baseMacChr, "%02X:%02X:%02X:%02X:%02X:%02X", baseMac[0], baseMac[1], baseMac[2], baseMac[3], baseMac[4], baseMac[5]);
   return String(baseMacChr);
-}
+} // getMacAddress()
+
+// see: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/heap_debug.html#heap-information
+#include "esp_heap_caps.h"
+void esp_heap_and_stack_info() {
+  MENU.out(F("heap_caps_get_free_size(0)\t\t"));
+  MENU.outln(heap_caps_get_free_size(0));
+
+  MENU.out(F("xPortGetFreeHeapSize()\t\t\t"));
+  MENU.outln(xPortGetFreeHeapSize());
+
+  MENU.out(F("uxTaskGetStackHighWaterMark(NULL)\t"));
+  MENU.outln(uxTaskGetStackHighWaterMark(NULL));
+} // esp_heap_and_stack_info()
 
 #define ESP_GET_INFOS_H
 #endif

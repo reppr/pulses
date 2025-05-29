@@ -2,7 +2,7 @@
  * ****************************************************************
  * softboard_page.ino
  * ****************************************************************
- */
+*/
 
 
 /* **************************************************************** */
@@ -407,7 +407,11 @@ void bar_graph(int value, bool newline=true) {
 
   #if defined ESP32
     if(touch_VU)
-      scale=160;	// read touch sensor
+#if CONFIG_IDF_TARGET_ESP32S3
+      scale=65536;	// read touch sensor on ESP32s3 variant
+#else
+      scale=160;	// read touch sensor on ESP32
+#endif
     else
       scale=4095;	// normal analogRead()
   #else

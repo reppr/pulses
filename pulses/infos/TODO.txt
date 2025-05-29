@@ -1503,3 +1503,29 @@ monochrome_out_morse_char();	// DADA	pulses.ino low_priority_tasks()  TODO: impl
 
 check MC_mux vs MC_mux2
 DADA both???	MC_mux2  ePaper_generic_MUX	TODO: ???
+
+
+#if CONFIG_IDF_TARGET_ESP32
+.............
+#elif CONFIG_IDF_TARGET_ESP32S2
+...............
+#elif CONFIG_IDF_TARGET_ESP32C2
+.................
+#elif CONFIG_IDF_TARGET_ESP32C3
+.................
+#elif CONFIG_IDF_TARGET_ESP32S3
+.................
+#elif CONFIG_IDF_TARGET_ESP32C6
+.................
+#elif CONFIG_IDF_TARGET_ESP32H2
+.................
+#else
+#error Target CONFIG_IDF_TARGET is not supported
+#endif
+
+rename softboard_page.ino to softboard_page.h
+
+
+check ESP-NOW	still working?	what about ESP32s3?
+
+ESP32-s3 and DAC
