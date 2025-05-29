@@ -31,8 +31,12 @@
       #define RGB_LED_STRIP_DATA_PIN	27
    #endif // ePaper213B73_BOARD_LILYGO_T5 || ePaper213BN_BOARD_LILYGO_BN
 
-    /* ESP32 DAC
-       #define USE_DACs in your configuration files to use ESP32 DAC output	*/
+   /* ESP32 DAC
+      #define USE_DACs in your configuration files to use ESP32 DAC output	*/
+#if CONFIG_IDF_TARGET_ESP32S3		// no DAC on ESP32s3
+   #undef USE_DACs
+   #undef BOARD_has_DACs
+#else
     #define BOARD_has_DACs		2
     #define BOARD_DAC_RESOLUTION	8
     #define BOARD_DAC1			25	// DAC1 gpio
@@ -41,6 +45,7 @@
     #if true	// change that if you do not want to use the dacs
        #define USE_DACs		BOARD_has_DACs
     #endif
+#endif
 
    /* ESP32 touch sensors
    #define USE_TOUCH in your configuration files to use ESP32 touch sensors	*/

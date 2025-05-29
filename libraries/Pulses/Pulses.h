@@ -403,9 +403,9 @@ class Pulses {
   bool time_reached(pulse_time_t when);
   pulse_time_t time_seconds(unsigned long seconds);	// seconds as pulse_time_t
 
+  float volume=1.0;		// volume (<= 1.0) for all audio output:  *both* DACs  (planed also LEDC)
 #if defined USE_DACs
   void DAC_output();		// calculate and output on DAC
-  float volume=1.0;		// volume (<= 1.0) for all audio output:  *both* DACs  (planed also LEDC)
 
 // TODO: use or remove code later
 //	 #if (USE_DACs == 1)

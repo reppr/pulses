@@ -405,10 +405,14 @@ void seed_icode_player(int seeder_pulse) {	// as payload for seeder
     PULSES.pulses[dest_pulse].groups |= g_SECONDARY;
     if(PULSES.pulses[seeder_pulse].flags & HAS_GPIO)		// if the seeder has gpio,
       PULSES.set_gpio(dest_pulse, PULSES.pulses[seeder_pulse].gpio);	// copy gpio
+#if defined USE_DACs
     if(PULSES.pulses[seeder_pulse].dac1_intensity)		// if the seeder has dac1_intensity
       PULSES.pulses[dest_pulse].dac1_intensity = PULSES.pulses[seeder_pulse].dac1_intensity; // set intensity
+  #if (USE_DACs > 1)
     if(PULSES.pulses[seeder_pulse].dac2_intensity)		// if the seeder has dac2_intensity
       PULSES.pulses[dest_pulse].dac2_intensity = PULSES.pulses[seeder_pulse].dac2_intensity; // set intensity
+  #endif
+#endif
 
 #if defined USE_RGB_LED_STRIP
   extern void set_rgb_pix_of_parent_to_background(int pulse /*secondary*/);	// see: beforeEXIT
@@ -519,7 +523,9 @@ void test_code(unsigned int* code, char* name, int count) {	// works for iCode a
   setup_icode_seeder(pulse, period, (icode_t*) code, DACsq1 | DACsq2 | doesICODE);
   PULSES.pulses[pulse].flags |= COUNTED;
   PULSES.pulses[pulse].remaining = count;
+#if (USE_DACs > 1)
   PULSES.pulses[pulse].dac1_intensity = PULSES.pulses[pulse].dac2_intensity = 20; // TODO: random test value
+#endif
   PULSES.activate_pulse_synced(pulse, PULSES.get_now(), 0 /* or abs(musicBoxConf.sync) */); // test with sync=0
   PULSES.fix_global_next();
 } // test_code()
@@ -1078,7 +1084,7 @@ void setup_initial_HARDWARE_conf() {
     }
   }
 
-#if defined  USE_DACs
+#if defined  USE_DACs	// TODO: setup_initial_HARDWARE_conf()	DACx-pin on ESP32s3 ???
   HARDWARE.DAC1_pin = 25;
   #if (USE_DACs > 1)
   HARDWARE.DAC2_pin = 26;
@@ -3314,8 +3320,9 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
   display_payload(pulse);
 
   MENU.space(); MENU.tab();
+#if defined USE_DACs		
   if(PULSES.pulses[pulse].dest_action_flags || \
-     PULSES.pulses[pulse].dac1_intensity || PULSES.pulses[pulse].dac2_intensity) {
+    PULSES.pulses[pulse].dac1_intensity || PULSES.pulses[pulse].dac2_intensity) {
     MENU.out(F("dAf: "));
     PULSES.show_action_flags(PULSES.pulses[pulse].dest_action_flags);
 
@@ -3326,6 +3333,7 @@ void pulse_info_1line(int pulse) {	// one line pulse info, short version
     MENU.pad(PULSES.pulses[pulse].dac2_intensity, 4);
   } else
     MENU.tab(2);
+#endif
 
   if (MENU.verbosity >= VERBOSITY_SOME) {
     MENU.tab();
@@ -4149,9 +4157,10 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   PULSES.add_selected_to_group(g_LOW_END);
 
   PULSES.select_from_to(0,bass_pulses);			// TODO: do not start by 0!	pulse[bass_pulses] belongs to both output groups
+#if defined USE_DACs
   // selected_DACsq_intensity_proportional(DAx_max, 1);
   selected_share_DACsq_intensity(DAx_max, 1);		// bass DAC1 intensity
-
+#endif
   // 2 middle octaves on 15 gpios
   PULSES.select_from_to(bass_pulses, bass_pulses + middle_pulses -1);
 
@@ -4189,10 +4198,11 @@ void setup_bass_middle_high(short bass_pulses, short middle_pulses, short high_p
   PULSES.add_selected_to_group(g_HIGH_END);
 
   // fix pulse[21] belonging to both output groups
+#if (USE_DACs > 1)
   PULSES.pulses[bass_pulses + middle_pulses - 1].dest_action_flags |= DACsq2;
   selected_share_DACsq_intensity(DAx_max, 2);
   //	selected_DACsq_intensity_proportional(DAx_max, 2);
-
+#endif
 
   PULSES.select_n(voices);	// select all primary voices again
   set_primary_block_bounds();	// needed by pulse_2_rgb_pixel(pulse)) et al

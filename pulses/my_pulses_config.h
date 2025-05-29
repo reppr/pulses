@@ -147,8 +147,14 @@
 
 
 #if defined ESP32
- // DEFINE how many DACs you want to use
- #define USE_DACs		BOARD_has_DACs	// TODO: FIXME: configuration sequence
+ #if CONFIG_IDF_TARGET_ESP32S3
+   // #warning 'ESP32s3 has no DAC   deactivated'
+   #undef USE_DACs
+   #undef BOARD_has_DACs
+ #else
+  // DEFINE how many DACs you want to use
+  #define USE_DACs		BOARD_has_DACs	// TODO: FIXME: configuration sequence
+ #endif
 #endif
 
 

@@ -1240,15 +1240,19 @@ void old_style_experiments_menu_reactions() {
 	}
 	PULSES.select_from_to(0,7);
 	// selected_DACsq_intensity_proportional(DAx_max, 1);
+#if defined USE_DACs
 	selected_share_DACsq_intensity(DAx_max, 1);
+#endif
 
 	// 2 middle octaves on 15 gpios
 	// select_in(JIFFLES, d4096_512);
 	//	select_in(JIFFLES, d4096_256);
 	PULSES.select_from_to(7,6+15);
 	setup_jiffle_thrower_selected(0);	// overwrites pulse[7]
+	//#if (USE_DACs > 1)
 	//	setup_jiffle_thrower_selected(DACsq2);
 	//	selected_share_DACsq_intensity(DAx_max, 2);
+	//#endif
 
 	// fix pulse[7] that belongs to both groups:
 	PULSES.pulses[7].dest_action_flags |= DACsq1;
@@ -1265,10 +1269,11 @@ void old_style_experiments_menu_reactions() {
 //	  PULSES.pulses[pulse].data = (unsigned int) jiffle;
 	}
 	// fix pulse[21] belonging to both groups
+#if (USE_DACs > 1)
 	PULSES.pulses[21].dest_action_flags |= DACsq2;
 	selected_share_DACsq_intensity(DAx_max, 2);
 	//	selected_DACsq_intensity_proportional(DAx_max, 2);
-
+#endif
 	PULSES.select_n(voices);	// select all primary voices
 
 	// maybe start?
@@ -1306,8 +1311,10 @@ void old_style_experiments_menu_reactions() {
 	  for(int pulse=0; pulse<musicBoxConf.bass_pulses; pulse++)
 	    en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL8, DACsq1);	// TODO: FIXME: use inbuilt click
 	  PULSES.select_from_to(0,musicBoxConf.bass_pulses);			// pulse[bass_pulses] belongs to both groups
+#if defined USE_DACs
 	  // selected_DACsq_intensity_proportional(DAx_max, 1);
 	  selected_share_DACsq_intensity(DAx_max, 1);		// bass DAC1 intensity
+#endif
 
 	  // 2 middle octaves on 15 gpios
 	  // select_in(JIFFLES, d4096_512);
@@ -1326,9 +1333,11 @@ void old_style_experiments_menu_reactions() {
 	    en_jiffle_thrower(pulse, selected_in(JIFFLES), ILLEGAL8, DACsq2);	// FIXME: use inbuilt click
 	  }
 	  // fix pulse[21] belonging to both groups
+#if (USE_DACs > 1)
 	  PULSES.pulses[musicBoxConf.bass_pulses + musicBoxConf.middle_pulses - 1].dest_action_flags |= DACsq2;
 	  selected_share_DACsq_intensity(DAx_max, 2);
 	  //	selected_DACsq_intensity_proportional(DAx_max, 2);
+#endif
 
 	  PULSES.select_n(voices);	// select all primary voices
 
