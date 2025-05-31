@@ -1530,4 +1530,5 @@ check ESP-NOW	still working?	what about ESP32s3?
 
 ESP32-s3 and DAC
 	TODO: setup_initial_HARDWARE_conf()	DACx-pin on ESP32s3 ???
-	hybernate (deactivated)
+	hibernate (deactivated)			no hibernate code on s3  but maybe buggy also on ESP32 ???
+	replace BluetoothSerial

@@ -239,6 +239,11 @@ void random_preset() {	// TODO: sets preset, how to unset?
   MENU.play_KB_macro(F("y0"));		// start random preset
 }
 
+
+#if CONFIG_IDF_TARGET_ESP32S3
+  #warning 'no hibernate() code for ESP32s3'
+#else
+// #include "esp_sleep.h"
 void hibernate() {	// see: https://esp32.com/viewtopic.php?t=3083
   if(MENU.verbosity >= VERBOSITY_LOWEST) {
     MENU.outln(F("hibernate()"));
@@ -252,8 +257,8 @@ void hibernate() {	// see: https://esp32.com/viewtopic.php?t=3083
   esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
   esp_sleep_enable_timer_wakeup(1000000 * musicBox_pause_seconds);
   esp_deep_sleep_start();
-} // hybernate()
-
+} // hibernate()
+#endif
 
 // void (*musicBox_when_done)(void)=&deep_sleep;	// function* called when musicBox ends
 void (*musicBox_when_done)(void)=MUSICBOX_WHEN_DONE_FUNCTION_DEFAULT;	// function* called when musicBox ends
@@ -265,11 +270,16 @@ void show_when_done_function() {
     MENU.out("deep_sleep");
   else if(musicBox_when_done == &light_sleep)
     MENU.out("light_sleep");
+#if CONFIG_IDF_TARGET_ESP32S3
+  #warning 'no hibernate() code for ESP32s3'
+#else
   else if(musicBox_when_done == &hibernate) {
     MENU.out("pause(");
     MENU.out(musicBox_pause_seconds);
     MENU.out("); hibernate");
-  } else if(musicBox_when_done == &restart) {
+  }
+#endif
+  else if(musicBox_when_done == &restart) {
     MENU.out("pause(");
     MENU.out(musicBox_pause_seconds);
     MENU.out("); restart");
