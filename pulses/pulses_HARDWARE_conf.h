@@ -158,8 +158,8 @@ typedef struct pulses_hardware_conf_t {
   */
   uint8_t reserved4=ILLEGAL8;						// %4
   uint8_t reserved5=ILLEGAL8;
-  uint8_t reserved6=ILLEGAL8;
-  uint8_t reserved7=ILLEGAL8;
+
+  uint16_t touch_threshold=ILLEGAL16;
 
   // other other
   uint8_t tone_pin=ILLEGAL8; // from very old code, could be recycled?	// %4
@@ -387,6 +387,11 @@ void show_hardware_conf(pulses_hardware_conf_t* hardware) {
 
   MENU.out(F("morse_touch_input\t"));
   show_pin_or_dash(hardware->morse_touch_input_pin);
+  MENU.out(F("\tTOUCH threshold\t\t"));
+  if (hardware->touch_threshold == ILLEGAL16)
+    MENU.out('-');
+  else
+    MENU.out(hardware->touch_threshold);
   MENU.ln();
 
   MENU.out(F("morse_gpio_input\t"));

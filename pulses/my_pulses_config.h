@@ -13,6 +13,10 @@
 
 #if defined ESP32 && defined ESP_ARDUINO_VERSION_MAJOR	// no bluetoth menu on v1
   #define USE_BLUETOOTH_SERIAL_MENU
+  #if CONFIG_IDF_TARGET_ESP32S3		// TODO: DADA:	IMPLEMENT for s3
+    #warning 'no BluetoothSerial menu on ESP32s3'
+    #undef USE_BLUETOOTH_SERIAL_MENU	// DADA
+  #endif
 #endif
 
 #define MAGICAL_TOILET_HACK_2
@@ -206,6 +210,39 @@
 //#define USE_OLD_STYLE_EXPERIMENTS	// switched them off to save some RAM (does it?)
 
 #define USE_OLD_STYLE_EXPERIMENTS	// revitalised
+
+
+// TODO: DADA: move '#define TOUCH_THRESHOLD' to another file
+#if CONFIG_IDF_TARGET_ESP32S3	// s3
+  #define TOUCH_THRESHOLD	1500	// TODO: TEST&TRIM:	// touch_threshold should go to HARDWARE
+
+#else				// other ESP32 boards;
+  #if defined ePaper213B73_BOARD_LILYGO_T5 || defined ePaper213BN_BOARD_LILYGO_BN
+    #define TOUCH_THRESHOLD	40	// TODO: TEST&TRIM:	// touch_threshold should go to HARDWARE
+  #else
+    #define TOUCH_THRESHOLD	61	// TODO: TEST&TRIM:	// touch_threshold should go to HARDWARE
+  #endif
+#endif
+
+
+#if CONFIG_IDF_TARGET_ESP32S3		// s3 TEST ONLY  TODO: DADA remove
+#warning 'compiling an ESP32s3 TEST only board...	TODO: REMOVE'
+
+  #undef BAUDRATE
+  #define BAUDRATE	115200
+  #warning 'BAUDRATE  115200'
+
+  #if defined USE_BATTERY_LEVEL_CONTROL
+    #warning 's3: switching USE_BATTERY_LEVEL_CONTROL off	TODO:'
+    #undef USE_BATTERY_LEVEL_CONTROL
+  #endif
+
+  #if defined MORSE_OUTPUT_PIN
+    #warning 's3 switching MORSE_OUTPUT_PIN off (no use on ATS MINI'
+    #undef MORSE_OUTPUT_PIN
+  #endif
+
+#endif		// s3 TEST ONLY  TODO: DADA remove
 
 #define MY_PULSES_CONFIG_H
 #endif

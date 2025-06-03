@@ -1532,3 +1532,8 @@ ESP32-s3 and DAC
 	TODO: setup_initial_HARDWARE_conf()	DACx-pin on ESP32s3 ???
 	hibernate (deactivated)			no hibernate code on s3  but maybe buggy also on ESP32 ???
 	replace BluetoothSerial
+	touch_threshold 1500			DONE, moved to HARDWARE
+
+// TODO: DADA: move '#define TOUCH_THRESHOLD' to another file
+
+#if CONFIG_IDF_TARGET_ESP32S3		// s3 TEST ONLY  TODO: DADA remove from my_pulses_config.h

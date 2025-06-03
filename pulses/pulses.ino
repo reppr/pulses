@@ -1145,6 +1145,11 @@ void setup_initial_HARDWARE_conf() {
   HARDWARE.RTC_type = RTC_type_DS1307;		// FIXME: RTC_type_DS3231 ???
 #endif
 
+
+#if defined TOUCH_THRESHOLD
+  HARDWARE.touch_threshold = TOUCH_THRESHOLD;
+#endif
+
   // other pins		// TODO: implement
   // nvs flags		// ?????	TODO: implement
   // version		// switch(version)

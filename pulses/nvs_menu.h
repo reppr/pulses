@@ -15,7 +15,7 @@ void nvs_menu_display() {
   if (! nvs_test_key("HARDWARE_nvs"))
     MENU.out(F("\t\tsay 'HS' to create"));
   else
-    MENU.out(F("\t\tsay 'XH!' to delete"));
+    MENU.out(F("\tsay 'XH!' to delete"));
   MENU.ln();
 
   MENU.outln(F("\n\n'H'=HARDWARE 'HR'=read 'HS'=save '?'=info"));
@@ -27,7 +27,7 @@ void nvs_menu_display() {
   MENU.outln(F("'MH'=monochrome_type heltec  'MO'=type LiPO  'ML'=type lilygo eInk  'M0'=type off"));
   MENU.ln();
 
-  MENU.outln(F("'Px' pins:  'PT'=morse Touch  'PO'=morse Output  'PP'=peripheral power"));
+  MENU.outln(F("'Px' pins:  'PT'=morse Touch  'PO'=morse Output  'PP'=peripheral power  'T'=touch Threshold"));
   MENU.ln();
 
   MENU.out(F("'S'=SYSTEM"));
@@ -208,6 +208,13 @@ bool nvs_menu_reaction(char token) {
     default:
       return false;
     } // second letter after 'S'
+    break;
+
+  case 'T':	// 'T' touch TRESHOLD
+      MENU.out(F("touch THRESHOLD "));
+      input_value = MENU.calculate_input(HARDWARE.touch_threshold);
+      HARDWARE.touch_threshold = (uint16_t) input_value;
+      MENU.outln(HARDWARE.touch_threshold);
     break;
 
   case 'P':	// 'Px' PINS

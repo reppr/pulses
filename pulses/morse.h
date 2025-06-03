@@ -35,7 +35,6 @@
 //#define DEBUG_MORSE_TOUCH_INTERRUPT
 #define MORSE_COMPILE_HELPERS		// compile some functions for info, debugging, *can be left out*
 
-#include "touch.h"
 #include "driver/touch_pad.h"   // new ESP32-arduino version needs this for 'touch_pad_set_trigger_mode' declaration
 #include "esp_attr.h"
 
@@ -389,13 +388,13 @@ TaskHandle_t morse_input_feedback_handle;
 
 // #define MORSE_INPUT_DURATION_FEEDBACK_SHOW_STACK_USE	// DEBUGGING ONLY
 void morse_input_duration_feedback(void* dummy) {
-  if(touchRead(HARDWARE.morse_touch_input_pin) < touch_threshold) {	// looks STILL TOUCHED
+  if(touchRead(HARDWARE.morse_touch_input_pin) < HARDWARE.touch_threshold) {	// looks STILL TOUCHED
     vTaskDelay((TickType_t) (limit_dash_loong * morse_TimeUnit / 1000 / portTICK_PERIOD_MS));
     //vTaskDelay((TickType_t) (dashTim * morse_TimeUnit / 1000 / portTICK_PERIOD_MS));
-    if(touchRead(HARDWARE.morse_touch_input_pin) < touch_threshold) {	// looks STILL TOUCHED
+    if(touchRead(HARDWARE.morse_touch_input_pin) < HARDWARE.touch_threshold) {	// looks STILL TOUCHED
       digitalWrite(HARDWARE.morse_output_pin, LOW);
       vTaskDelay((TickType_t) 100 / portTICK_PERIOD_MS);
-      if(touchRead(HARDWARE.morse_touch_input_pin) < touch_threshold) {	// looks STILL TOUCHED
+      if(touchRead(HARDWARE.morse_touch_input_pin) < HARDWARE.touch_threshold) {	// looks STILL TOUCHED
 	digitalWrite(HARDWARE.morse_output_pin, HIGH);
       }
     }
@@ -435,7 +434,8 @@ void trigger_token_duration_feedback() {
 #endif // MORSE_OUTPUT_PIN
 
 
-void IRAM_ATTR touch_morse_ISR_v3() {	// ISR for ESP32 touch sensor as morse input	*NEW VERSION 3*
+#if CONFIG_IDF_TARGET_ESP32
+void IRAM_ATTR touch_morse_ISR_v3() {	// ISR for  CONFIG_IDF_TARGET_ESP32 touch sensor as morse input	*NEW VERSION 3*
   unsigned long now = micros();
 
   portENTER_CRITICAL_ISR(&morse_MUX);
@@ -449,7 +449,7 @@ void IRAM_ATTR touch_morse_ISR_v3() {	// ISR for ESP32 touch sensor as morse inp
 
   morse_events_cbuf[morse_events_write_i].time = now;	// save time
 
-  if(touchRead(HARDWARE.morse_touch_input_pin) < touch_threshold) {	// >>>>>>>>>>>>>>>> looks TOUCHED <<<<<<<<<<<<<<<<
+  if(touchRead(HARDWARE.morse_touch_input_pin) < HARDWARE.touch_threshold) {	// >>>>>>>>>>>>>>>> looks TOUCHED <<<<<<<<<<<<<<<<
     touch_pad_set_trigger_mode(TOUCH_TRIGGER_ABOVE);		// wait for touch release
     morse_events_cbuf[morse_events_write_i].type = 1 /*touched*/;
 #if defined MORSE_OUTPUT_PIN
@@ -488,7 +488,64 @@ void IRAM_ATTR touch_morse_ISR_v3() {	// ISR for ESP32 touch sensor as morse inp
 
  morse_isr_exit:
   portEXIT_CRITICAL_ISR(&morse_MUX);
-} // touch_morse_ISR_v3()
+} // touch_morse_ISR_v3()	 CONFIG_IDF_TARGET_ESP32
+
+#elif CONFIG_IDF_TARGET_ESP32S3		// version on ESP32s3 boards
+
+void IRAM_ATTR touch_morse_ISR_v3() {	// ISR for CONFIG_IDF_TARGET_ESP32S3 touch sensor as morse input	*NEW VERSION 3*	  ESP32s3 variant
+  unsigned long now = micros();
+
+  portENTER_CRITICAL_ISR(&morse_MUX);
+  unsigned long next_index = morse_events_write_i + 1;
+  next_index %= MORSE_EVENTS_MAX;
+
+  if(next_index == morse_events_read_i) {		// buffer full?
+    too_many_events = true;				//   ERROR too_many_events
+    goto morse_isr_exit;				//	   return
+  }
+
+  morse_events_cbuf[morse_events_write_i].time = now;	// save time
+
+  if (touchInterruptGetLastStatus(MORSE_TOUCH_INPUT_PIN)) {	// >>>>>>>>>>>>>>>> TOUCHED <<<<<<<<<<<<<<<<
+    morse_events_cbuf[morse_events_write_i].type = 1 /*touched*/;
+#if defined MORSE_OUTPUT_PIN
+    digitalWrite(HARDWARE.morse_output_pin, HIGH);		// feedback: pin is TOUCHED, LED on
+
+ #if defined TOKEN_LENGTH_FEEDBACK_PULSE
+    start_morse_feedback_d_pulse();
+ #elif defined TOKEN_LENGTH_FEEDBACK_TASK	// experimental
+    // stop_token_duration_feedback();			// assert it is off	// works better as inline:
+    if(morse_input_feedback_handle != NULL) {
+      vTaskDelete(morse_input_feedback_handle);
+      morse_input_feedback_handle = NULL;
+    }
+    trigger_token_duration_feedback();			// switch on
+ #endif // TOKEN_LENGTH_FEEDBACK_TASK	// experimental
+#endif // MORSE_OUTPUT_PIN
+
+  } else {							// >>>>>>>>>>>>>>>> RELEASED <<<<<<<<<<<<<<<<
+    morse_events_cbuf[morse_events_write_i].type = 0 /*released*/;
+
+#if defined MORSE_OUTPUT_PIN
+    digitalWrite(HARDWARE.morse_output_pin, LOW);		// feedback: pin is RELEASED, LED off
+
+  #if defined TOKEN_LENGTH_FEEDBACK_PULSE
+    deactivate_morse_feedback_d_pulse();
+  #elif defined TOKEN_LENGTH_FEEDBACK_TASK		// experimental rtos task
+    // stop_token_duration_feedback();			// works better as inline:
+    if(morse_input_feedback_handle != NULL)
+      vTaskDelete(morse_input_feedback_handle);
+    morse_input_feedback_handle = NULL;
+  #endif // TOKEN_LENGTH_FEEDBACK_TASK			// experimental rtos task
+#endif // MORSE_OUTPUT_PIN
+  }
+  morse_events_write_i++;
+  morse_events_write_i %= MORSE_EVENTS_MAX;		// it's a ring buffer
+
+ morse_isr_exit:
+  portEXIT_CRITICAL_ISR(&morse_MUX);
+} // touch_morse_ISR_v3()	CONFIG_IDF_TARGET_ESP32S3
+#endif // ESP32 vs ESP32s3
 
 
 //#define SHOW_REPEATED_TOUCH_OR_RELEASE	// TODO: FIXME: why does it happen so often?
@@ -1365,6 +1422,13 @@ extern void MC_printBIG_at(uint8_t col, uint8_t row, const char* str);	// for sh
 extern void monochrome_clear();
 #endif // HAS_OLED
 
+void morse_PLAY_input_KB_macro() {	// triggered by morse_clear_display__prepare_action() by setting  morse_trigger_KB_macro = true;
+  morse_trigger_KB_macro = false;	// reset trigger
+
+  MENU.out(F("morse "));
+  MENU.play_KB_macro((char*) morse_output_buffer);	// *does* the menu feedack
+}
+
 #if defined MULTICORE_DISPLAY
 void morse_clear_display__prepare_action() {	// can set trigger  morse_trigger_KB_macro = true;	// MULTICORE_DISPLAY version
   morse_output_buffer[morse_out_buffer_cnt]='\0';	// append '\0'
@@ -1383,13 +1447,6 @@ void morse_clear_display__prepare_action() {	// can set trigger  morse_trigger_K
   }
   morse_uppercase = true;	// reset to uppercase
 } // morse_clear_display__prepare_action()  MULTICORE
-
-void morse_PLAY_input_KB_macro() {	// triggered by morse_clear_display__prepare_action() by setting  morse_trigger_KB_macro = true;
-  morse_trigger_KB_macro = false;	// reset trigger
-
-  MENU.out(F("morse "));
-  MENU.play_KB_macro((char*) morse_output_buffer);	// *does* the menu feedack
-}
 
 #else // *NO* MULTICORE_DISPLAY
   #error 'please IMPLEMENT morse without MULTICORE_DISPLAY...'
@@ -1803,8 +1860,8 @@ void morse_init() {
   MENU.out(F("MORSE touch pin "));
   MENU.out(HARDWARE.morse_touch_input_pin);
   MENU.out(F("\tinterrupt level "));
-  MENU.outln(touch_threshold);
-  // touchAttachInterrupt(HARDWARE.morse_touch_input_pin, touch_morse_ISR, touch_threshold);	// do that last
+  MENU.outln(HARDWARE.touch_threshold);
+  // touchAttachInterrupt(HARDWARE.morse_touch_input_pin, touch_morse_ISR, HARDWARE.touch_threshold);	// do that last, later
 #endif
 
 #ifdef MORSE_OUTPUT_PIN
@@ -1820,7 +1877,7 @@ void morse_init() {
 #endif
 
 #ifdef MORSE_TOUCH_INPUT_PIN	// use ESP32 touch sensor as morse input
-  touchAttachInterrupt(HARDWARE.morse_touch_input_pin, touch_morse_ISR_v3, touch_threshold);
+  touchAttachInterrupt(HARDWARE.morse_touch_input_pin, touch_morse_ISR_v3, HARDWARE.touch_threshold);	// do that last
 #endif // MORSE_TOUCH_INPUT_PIN
 } // morse_init()
 

@@ -297,6 +297,12 @@ void configure_HARDWARE_from_nvs() {
     HARDWARE.morse_touch_input_pin = pin;
   }
 
+  if(HARDWARE_from_nvs.touch_threshold != ILLEGAL16) {
+    MENU.out(F("TOUCH threshold\t"));
+    MENU.outln(HARDWARE_from_nvs.touch_threshold);
+    HARDWARE.touch_threshold = HARDWARE_from_nvs.touch_threshold;
+  }
+
   pin = HARDWARE_from_nvs.morse_gpio_input_pin;
   if(pin != ILLEGAL8) {
     MENU.out(F("morse gpio pin\t"));
@@ -447,6 +453,22 @@ void configure_HARDWARE_from_nvs() {
 } // configure_HARDWARE_from_nvs()
 
 
+bool hardware_conf_differs(pulses_hardware_conf_t* A, pulses_hardware_conf_t* B) {
+  size_t size=sizeof(pulses_hardware_conf_t);
+  if(A && B) {	// both exist
+    uint8_t * a = (uint8_t *) A;
+    uint8_t * b = (uint8_t *) B;
+    for (int i=0; i<size ; i++) {
+      if(*a++ != *b++ )
+	return true;	// difference between 2 existing conf
+    }
+  } else
+    return true;	// at least one does not exist
+
+  return false;	// identical, no difference
+} // hardware_conf_differs()
+
+
 void nvs_show_HW_both() {
   pulses_hardware_conf_t hardware_from_nvs;
   hardware_from_nvs.version = ILLEGAL8;	// see below
@@ -462,8 +484,12 @@ void nvs_show_HW_both() {
 
   extern void show_current_hardware_conf();
   show_current_hardware_conf();
-}
 
+  if(hardware_conf_differs(&HARDWARE, &hardware_from_nvs))
+    MENU.outln(F("unsaved HARDWARE changes, say 'HS'"));
+  else
+    MENU.outln(F("hardware configuration is all saved"));
+} //  nvs_show_HW_both()
 
 void configure_IDENTITY_from_nvs() {
   peer_ID_t* IDENTITY_from_nvs_p = (peer_ID_t*) malloc(sizeof(peer_ID_t));
